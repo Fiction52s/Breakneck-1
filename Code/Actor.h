@@ -232,6 +232,7 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
+	//kin action functions
 	void AIRDASH_Start();
 	void AIRDASH_End();
 	void AIRDASH_Change();
@@ -322,8 +323,6 @@ struct Actor : QuadTreeCollider,
 	void DOUBLE_Update();
 	void DOUBLE_UpdateSprite();
 
-	//done to here
-
 	void ENTERNEXUS1_Start();
 	void ENTERNEXUS1_End();
 	void ENTERNEXUS1_Change();
@@ -354,11 +353,11 @@ struct Actor : QuadTreeCollider,
 	void FAIR_Update();
 	void FAIR_UpdateSprite();
 
-	void GET_POWER_AIRDASH_FLIP_Start();
-	void GET_POWER_AIRDASH_FLIP_End();
-	void GET_POWER_AIRDASH_FLIP_Change();
-	void GET_POWER_AIRDASH_FLIP_Update();
-	void GET_POWER_AIRDASH_FLIP_UpdateSprite();
+	void GETPOWER_AIRDASH_FLIP_Start();
+	void GETPOWER_AIRDASH_FLIP_End();
+	void GETPOWER_AIRDASH_FLIP_Change();
+	void GETPOWER_AIRDASH_FLIP_Update();
+	void GETPOWER_AIRDASH_FLIP_UpdateSprite();
 
 	void GETPOWER_AIRDASH_MEDITATE_Start();
 	void GETPOWER_AIRDASH_MEDITATE_End();
@@ -806,7 +805,7 @@ struct Actor : QuadTreeCollider,
 
 
 	
-
+	void SetupActionFunctions();
 	
 	void UpdateRunSprite();
 	
@@ -814,6 +813,7 @@ struct Actor : QuadTreeCollider,
 	bool canStandUp;
 	V2d currNormal;
 
+	std::vector<void(Actor::*)()> startActionFuncs;
 	std::vector<void(Actor::*)()> endActionFuncs;
 	std::vector<void(Actor::*)()> changeActionFuncs;
 	std::vector<void(Actor::*)()> updateActionFuncs;

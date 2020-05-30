@@ -598,23 +598,589 @@ void Actor::Init()
 	}
 }
 
+void Actor::SetupActionFunctions()
+{
+	startActionFuncs.resize(Count);
+	endActionFuncs.resize(Count);
+	changeActionFuncs.resize(Count);
+	updateActionFuncs.resize(Count);
+	updateSpriteFuncs.resize(Count);
+
+	startActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Start;
+	endActionFuncs		[AIRDASH] =	&Actor::AIRDASH_End;
+	changeActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Change;
+	updateActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Update;
+	updateSpriteFuncs	[AIRDASH] =	&Actor::AIRDASH_UpdateSprite;
+
+	startActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Start;
+	endActionFuncs		[AIRHITSTUN] =	&Actor::AIRHITSTUN_End;
+	changeActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Change;
+	updateActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Update;
+	updateSpriteFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_UpdateSprite;
+
+	startActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Start;
+	endActionFuncs		[AUTORUN] =	&Actor::AUTORUN_End;
+	changeActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Change;
+	updateActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Update;
+	updateSpriteFuncs	[AUTORUN] =	&Actor::AUTORUN_UpdateSprite;
+
+	startActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Start;
+	endActionFuncs		[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_End;
+	changeActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Change;
+	updateActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Update;
+	updateSpriteFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_UpdateSprite;
+
+	startActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Start;
+	endActionFuncs		[BOUNCEAIR] =	&Actor::BOUNCEAIR_End;
+	changeActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Change;
+	updateActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Update;
+	updateSpriteFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_UpdateSprite;
+
+	startActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Start;
+	endActionFuncs		[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_End;
+	changeActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Change;
+	updateActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Update;
+	updateSpriteFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_UpdateSprite;
+
+	startActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Start;
+	endActionFuncs		[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_End;
+	changeActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Change;
+	updateActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Update;
+	updateSpriteFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_UpdateSprite;
+
+	startActionFuncs	[BRAKE] =	&Actor::BRAKE_Start;
+	endActionFuncs		[BRAKE] =	&Actor::BRAKE_End;
+	changeActionFuncs	[BRAKE] =	&Actor::BRAKE_Change;
+	updateActionFuncs	[BRAKE] =	&Actor::BRAKE_Update;
+	updateSpriteFuncs	[BRAKE] =	&Actor::BRAKE_UpdateSprite;
+
+	startActionFuncs	[DAIR] =	&Actor::DAIR_Start;
+	endActionFuncs		[DAIR] =	&Actor::DAIR_End;
+	changeActionFuncs	[DAIR] =	&Actor::DAIR_Change;
+	updateActionFuncs	[DAIR] =	&Actor::DAIR_Update;
+	updateSpriteFuncs	[DAIR] =	&Actor::DAIR_UpdateSprite;
+
+	startActionFuncs	[DASH] =	&Actor::DASH_Start;
+	endActionFuncs		[DASH] =	&Actor::DASH_End;
+	changeActionFuncs	[DASH] =	&Actor::DASH_Change;
+	updateActionFuncs	[DASH] =	&Actor::DASH_Update;
+	updateSpriteFuncs	[DASH] =	&Actor::DASH_UpdateSprite;
+
+	startActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Start;
+	endActionFuncs		[DASHATTACK] =	&Actor::DASHATTACK_End;
+	changeActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Change;
+	updateActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Update;
+	updateSpriteFuncs	[DASHATTACK] =	&Actor::DASHATTACK_UpdateSprite;
+
+	startActionFuncs	[DEATH] =	&Actor::DEATH_Start;
+	endActionFuncs		[DEATH] =	&Actor::DEATH_End;
+	changeActionFuncs	[DEATH] =	&Actor::DEATH_Change;
+	updateActionFuncs	[DEATH] =	&Actor::DEATH_Update;
+	updateSpriteFuncs	[DEATH] =	&Actor::DEATH_UpdateSprite;
+
+	startActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Start;
+	endActionFuncs		[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_End;
+	changeActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Change;
+	updateActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Update;
+	updateSpriteFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_UpdateSprite;
+
+	startActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Start;
+	endActionFuncs		[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_End;
+	changeActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Change;
+	updateActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Update;
+	updateSpriteFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_UpdateSprite;
+
+	startActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Start;
+	endActionFuncs		[DOUBLE] =	&Actor::DOUBLE_End;
+	changeActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Change;
+	updateActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Update;
+	updateSpriteFuncs	[DOUBLE] =	&Actor::DOUBLE_UpdateSprite;
+
+	startActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Start;
+	endActionFuncs		[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_End;
+	changeActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Change;
+	updateActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Update;
+	updateSpriteFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_UpdateSprite;
+
+	startActionFuncs	[EXIT] =	&Actor::EXIT_Start;
+	endActionFuncs		[EXIT] =	&Actor::EXIT_End;
+	changeActionFuncs	[EXIT] =	&Actor::EXIT_Change;
+	updateActionFuncs	[EXIT] =	&Actor::EXIT_Update;
+	updateSpriteFuncs	[EXIT] =	&Actor::EXIT_UpdateSprite;
+
+	startActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Start;
+	endActionFuncs		[EXITBOOST] =	&Actor::EXITBOOST_End;
+	changeActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Change;
+	updateActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Update;
+	updateSpriteFuncs	[EXITBOOST] =	&Actor::EXITBOOST_UpdateSprite;
+
+	startActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Start;
+	endActionFuncs		[EXITWAIT] =	&Actor::EXITWAIT_End;
+	changeActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Change;
+	updateActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Update;
+	updateSpriteFuncs	[EXITWAIT] =	&Actor::EXITWAIT_UpdateSprite;
+
+	startActionFuncs	[FAIR] =	&Actor::FAIR_Start;
+	endActionFuncs		[FAIR] =	&Actor::FAIR_End;
+	changeActionFuncs	[FAIR] =	&Actor::FAIR_Change;
+	updateActionFuncs	[FAIR] =	&Actor::FAIR_Update;
+	updateSpriteFuncs	[FAIR] =	&Actor::FAIR_UpdateSprite;
+
+	startActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Start;
+	endActionFuncs		[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_End;
+	changeActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Change;
+	updateActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Update;
+	updateSpriteFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_UpdateSprite;
+
+	startActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Start;
+	endActionFuncs		[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_End;
+	changeActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Change;
+	updateActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Update;
+	updateSpriteFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_UpdateSprite;
+
+	startActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Start;
+	endActionFuncs		[GETSHARD] =	&Actor::GETSHARD_End;
+	changeActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Change;
+	updateActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Update;
+	updateSpriteFuncs	[GETSHARD] =	&Actor::GETSHARD_UpdateSprite;
+
+	startActionFuncs	[GLIDE] =	&Actor::GLIDE_Start;
+	endActionFuncs		[GLIDE] =	&Actor::GLIDE_End;
+	changeActionFuncs	[GLIDE] =	&Actor::GLIDE_Change;
+	updateActionFuncs	[GLIDE] =	&Actor::GLIDE_Update;
+	updateSpriteFuncs	[GLIDE] =	&Actor::GLIDE_UpdateSprite;
+
+	startActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Start;
+	endActionFuncs		[GOALKILL] =	&Actor::GOALKILL_End;
+	changeActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Change;
+	updateActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Update;
+	updateSpriteFuncs	[GOALKILL] =	&Actor::GOALKILL_UpdateSprite;
+
+	startActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Start;
+	endActionFuncs		[GOALKILL1] =	&Actor::GOALKILL1_End;
+	changeActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Change;
+	updateActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Update;
+	updateSpriteFuncs	[GOALKILL1] =	&Actor::GOALKILL1_UpdateSprite;
+
+	startActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Start;
+	endActionFuncs		[GOALKILL2] =	&Actor::GOALKILL2_End;
+	changeActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Change;
+	updateActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Update;
+	updateSpriteFuncs	[GOALKILL2] =	&Actor::GOALKILL2_UpdateSprite;
+
+	startActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Start;
+	endActionFuncs		[GOALKILL3] =	&Actor::GOALKILL3_End;
+	changeActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Change;
+	updateActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Update;
+	updateSpriteFuncs	[GOALKILL3] =	&Actor::GOALKILL3_UpdateSprite;
+
+	startActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Start;
+	endActionFuncs		[GOALKILL4] =	&Actor::GOALKILL4_End;
+	changeActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Change;
+	updateActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Update;
+	updateSpriteFuncs	[GOALKILL4] =	&Actor::GOALKILL4_UpdateSprite;
+
+	startActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Start;
+	endActionFuncs		[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_End;
+	changeActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Change;
+	updateActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Update;
+	updateSpriteFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_UpdateSprite;
+
+	startActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Start;
+	endActionFuncs		[GRABSHIP] =	&Actor::GRABSHIP_End;
+	changeActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Change;
+	updateActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Update;
+	updateSpriteFuncs	[GRABSHIP] =	&Actor::GRABSHIP_UpdateSprite;
+
+	startActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Start;
+	endActionFuncs		[GRAVREVERSE] =	&Actor::GRAVREVERSE_End;
+	changeActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Change;
+	updateActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Update;
+	updateSpriteFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_UpdateSprite;
+
+	startActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Start;
+	endActionFuncs		[GRINDATTACK] =	&Actor::GRINDATTACK_End;
+	changeActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Change;
+	updateActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Update;
+	updateSpriteFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_UpdateSprite;
+
+	startActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Start;
+	endActionFuncs		[GRINDBALL] =	&Actor::GRINDBALL_End;
+	changeActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Change;
+	updateActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Update;
+	updateSpriteFuncs	[GRINDBALL] =	&Actor::GRINDBALL_UpdateSprite;
+
+	startActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Start;
+	endActionFuncs		[GRINDLUNGE] =	&Actor::GRINDLUNGE_End;
+	changeActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Change;
+	updateActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Update;
+	updateSpriteFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_UpdateSprite;
+
+	startActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Start;
+	endActionFuncs		[GRINDSLASH] =	&Actor::GRINDSLASH_End;
+	changeActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Change;
+	updateActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Update;
+	updateSpriteFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_UpdateSprite;
+
+	startActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Start;
+	endActionFuncs		[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_End;
+	changeActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Change;
+	updateActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Update;
+	updateSpriteFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_UpdateSprite;
+
+	startActionFuncs	[INTRO] =	&Actor::INTRO_Start;
+	endActionFuncs		[INTRO] =	&Actor::INTRO_End;
+	changeActionFuncs	[INTRO] =	&Actor::INTRO_Change;
+	updateActionFuncs	[INTRO] =	&Actor::INTRO_Update;
+	updateSpriteFuncs	[INTRO] =	&Actor::INTRO_UpdateSprite;
+
+	startActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Start;
+	endActionFuncs		[INTROBOOST] =	&Actor::INTROBOOST_End;
+	changeActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Change;
+	updateActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Update;
+	updateSpriteFuncs	[INTROBOOST] =	&Actor::INTROBOOST_UpdateSprite;
+
+	startActionFuncs	[JUMP] =	&Actor::JUMP_Start;
+	endActionFuncs		[JUMP] =	&Actor::JUMP_End;
+	changeActionFuncs	[JUMP] =	&Actor::JUMP_Change;
+	updateActionFuncs	[JUMP] =	&Actor::JUMP_Update;
+	updateSpriteFuncs	[JUMP] =	&Actor::JUMP_UpdateSprite;
+
+	startActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Start;
+	endActionFuncs		[JUMPSQUAT] =	&Actor::JUMPSQUAT_End;
+	changeActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Change;
+	updateActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Update;
+	updateSpriteFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_UpdateSprite;
+
+	startActionFuncs	[GLIDE] =	&Actor::GLIDE_Start;
+	endActionFuncs		[GLIDE] =	&Actor::GLIDE_End;
+	changeActionFuncs	[GLIDE] =	&Actor::GLIDE_Change;
+	updateActionFuncs	[GLIDE] =	&Actor::GLIDE_Update;
+	updateSpriteFuncs	[GLIDE] =	&Actor::GLIDE_UpdateSprite;
+
+	startActionFuncs	[LAND] =	&Actor::LAND_Start;
+	endActionFuncs		[LAND] =	&Actor::LAND_End;
+	changeActionFuncs	[LAND] =	&Actor::LAND_Change;
+	updateActionFuncs	[LAND] =	&Actor::LAND_Update;
+	updateSpriteFuncs	[LAND] =	&Actor::LAND_UpdateSprite;
+
+	startActionFuncs	[LAND2] =	&Actor::LAND2_Start;
+	endActionFuncs		[LAND2] =	&Actor::LAND2_End;
+	changeActionFuncs	[LAND2] =	&Actor::LAND2_Change;
+	updateActionFuncs	[LAND2] =	&Actor::LAND2_Update;
+	updateSpriteFuncs	[LAND2] =	&Actor::LAND2_UpdateSprite;
+
+	startActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Start;
+	endActionFuncs		[NEXUSKILL] =	&Actor::NEXUSKILL_End;
+	changeActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Change;
+	updateActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Update;
+	updateSpriteFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_UpdateSprite;
+
+	startActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Start;
+	endActionFuncs		[RAILDASH] =	&Actor::RAILDASH_End;
+	changeActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Change;
+	updateActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Update;
+	updateSpriteFuncs	[RAILDASH] =	&Actor::RAILDASH_UpdateSprite;
+
+	startActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Start;
+	endActionFuncs		[RAILGRIND] =	&Actor::RAILGRIND_End;
+	changeActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Change;
+	updateActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Update;
+	updateSpriteFuncs	[RAILGRIND] =	&Actor::RAILGRIND_UpdateSprite;
+
+	startActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Start;
+	endActionFuncs		[RAILSLIDE] =	&Actor::RAILSLIDE_End;
+	changeActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Change;
+	updateActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Update;
+	updateSpriteFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_UpdateSprite;
+
+	startActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Start;
+	endActionFuncs		[RIDESHIP] =	&Actor::RIDESHIP_End;
+	changeActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Change;
+	updateActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Update;
+	updateSpriteFuncs	[RIDESHIP] =	&Actor::RIDESHIP_UpdateSprite;
+
+	startActionFuncs	[RUN] =	&Actor::RUN_Start;
+	endActionFuncs		[RUN] =	&Actor::RUN_End;
+	changeActionFuncs	[RUN] =	&Actor::RUN_Change;
+	updateActionFuncs	[RUN] =	&Actor::RUN_Update;
+	updateSpriteFuncs	[RUN] =	&Actor::RUN_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_UpdateSprite;
+
+	startActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start;
+	endActionFuncs		[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End;
+	changeActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Change;
+	updateActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Update;
+	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_UpdateSprite;
+
+	startActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Start;
+	endActionFuncs		[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_End;
+	changeActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Change;
+	updateActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Update;
+	updateSpriteFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_UpdateSprite;
+
+	startActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Start;
+	endActionFuncs		[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_End;
+	changeActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Change;
+	updateActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Update;
+	updateSpriteFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_UpdateSprite;
+
+	startActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Start;
+	endActionFuncs		[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_End;
+	changeActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Change;
+	updateActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Update;
+	updateSpriteFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite;
+
+	startActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Start;
+	endActionFuncs		[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_End;
+	changeActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Change;
+	updateActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Update;
+	updateSpriteFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_UpdateSprite;
+
+	startActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Start;
+	endActionFuncs		[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_End;
+	changeActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Change;
+	updateActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Update;
+	updateSpriteFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_UpdateSprite;
+
+	startActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Start;
+	endActionFuncs		[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_End;
+	changeActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Change;
+	updateActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Update;
+	updateSpriteFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_UpdateSprite;
+
+	startActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Start;
+	endActionFuncs		[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_End;
+	changeActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Change;
+	updateActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Update;
+	updateSpriteFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_UpdateSprite;
+
+	startActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Start;
+	endActionFuncs		[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_End;
+	changeActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Change;
+	updateActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Update;
+	updateSpriteFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_UpdateSprite;
+
+	startActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Start;
+	endActionFuncs		[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_End;
+	changeActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Change;
+	updateActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Update;
+	updateSpriteFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_UpdateSprite;
+
+	startActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Start;
+	endActionFuncs		[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_End;
+	changeActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Change;
+	updateActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Update;
+	updateSpriteFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_UpdateSprite;
+
+	startActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Start;
+	endActionFuncs		[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_End;
+	changeActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Change;
+	updateActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Update;
+	updateSpriteFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_UpdateSprite;
+
+	startActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Start;
+	endActionFuncs		[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_End;
+	changeActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Change;
+	updateActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Update;
+	updateSpriteFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_UpdateSprite;
+
+	startActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Start;
+	endActionFuncs		[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_End;
+	changeActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Change;
+	updateActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Update;
+	updateSpriteFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_UpdateSprite;
+
+	startActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Start;
+	endActionFuncs		[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_End;
+	changeActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Change;
+	updateActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Update;
+	updateSpriteFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_UpdateSprite;
+
+	startActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Start;
+	endActionFuncs		[SEQ_WAIT] =	&Actor::SEQ_WAIT_End;
+	changeActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Change;
+	updateActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Update;
+	updateSpriteFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_UpdateSprite;
+
+	startActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Start;
+	endActionFuncs		[SKYDIVE] =	&Actor::SKYDIVE_End;
+	changeActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Change;
+	updateActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Update;
+	updateSpriteFuncs	[SKYDIVE] =	&Actor::SKYDIVE_UpdateSprite;
+
+	startActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Start;
+	endActionFuncs		[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_End;
+	changeActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Change;
+	updateActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Update;
+	updateSpriteFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_UpdateSprite;
+
+	startActionFuncs	[SLIDE] =	&Actor::SLIDE_Start;
+	endActionFuncs		[SLIDE] =	&Actor::SLIDE_End;
+	changeActionFuncs	[SLIDE] =	&Actor::SLIDE_Change;
+	updateActionFuncs	[SLIDE] =	&Actor::SLIDE_Update;
+	updateSpriteFuncs	[SLIDE] =	&Actor::SLIDE_UpdateSprite;
+
+	startActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Start;
+	endActionFuncs		[SPAWNWAIT] =	&Actor::SPAWNWAIT_End;
+	changeActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Change;
+	updateActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Update;
+	updateSpriteFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_UpdateSprite;
+
+	startActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Start;
+	endActionFuncs		[SPRINGSTUN] =	&Actor::SPRINGSTUN_End;
+	changeActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Change;
+	updateActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Update;
+	updateSpriteFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_UpdateSprite;
+
+	startActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Start;
+	endActionFuncs		[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_End;
+	changeActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Change;
+	updateActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Update;
+	updateSpriteFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_UpdateSprite;
+
+	startActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Start;
+	endActionFuncs		[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_End;
+	changeActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Change;
+	updateActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Update;
+	updateSpriteFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_UpdateSprite;
+
+	startActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Start;
+	endActionFuncs		[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_End;
+	changeActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Change;
+	updateActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Update;
+	updateSpriteFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_UpdateSprite;
+
+	startActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Start;
+	endActionFuncs		[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_End;
+	changeActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Change;
+	updateActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Update;
+	updateSpriteFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_UpdateSprite;
+
+	startActionFuncs	[SPRINT] =	&Actor::SPRINT_Start;
+	endActionFuncs		[SPRINT] =	&Actor::SPRINT_End;
+	changeActionFuncs	[SPRINT] =	&Actor::SPRINT_Change;
+	updateActionFuncs	[SPRINT] =	&Actor::SPRINT_Update;
+	updateSpriteFuncs	[SPRINT] =	&Actor::SPRINT_UpdateSprite;
+
+	startActionFuncs	[STAND] =	&Actor::STAND_Start;
+	endActionFuncs		[STAND] =	&Actor::STAND_End;
+	changeActionFuncs	[STAND] =	&Actor::STAND_Change;
+	updateActionFuncs	[STAND] =	&Actor::STAND_Update;
+	updateSpriteFuncs	[STAND] =	&Actor::STAND_UpdateSprite;
+
+	startActionFuncs	[STANDN] =	&Actor::STANDN_Start;
+	endActionFuncs		[STANDN] =	&Actor::STANDN_End;
+	changeActionFuncs	[STANDN] =	&Actor::STANDN_Change;
+	updateActionFuncs	[STANDN] =	&Actor::STANDN_Update;
+	updateSpriteFuncs	[STANDN] =	&Actor::STANDN_UpdateSprite;
+
+	startActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Start;
+	endActionFuncs		[STEEPCLIMB] =	&Actor::STEEPCLIMB_End;
+	changeActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Change;
+	updateActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Update;
+	updateSpriteFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_UpdateSprite;
+
+	startActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Start;
+	endActionFuncs		[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_End;
+	changeActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Change;
+	updateActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Update;
+	updateSpriteFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_UpdateSprite;
+
+	startActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Start;
+	endActionFuncs		[STEEPCLING] =	&Actor::STEEPCLING_End;
+	changeActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Change;
+	updateActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Update;
+	updateSpriteFuncs	[STEEPCLING] =	&Actor::STEEPCLING_UpdateSprite;
+
+	startActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Start;
+	endActionFuncs		[STEEPSLIDE] =	&Actor::STEEPSLIDE_End;
+	changeActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Change;
+	updateActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Update;
+	updateSpriteFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_UpdateSprite;
+
+	startActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Start;
+	endActionFuncs		[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_End;
+	changeActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Change;
+	updateActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Update;
+	updateSpriteFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_UpdateSprite;
+
+	startActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Start;
+	endActionFuncs		[SWINGSTUN] =	&Actor::SWINGSTUN_End;
+	changeActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Change;
+	updateActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Update;
+	updateSpriteFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_UpdateSprite;
+
+	startActionFuncs	[UAIR] =	&Actor::UAIR_Start;
+	endActionFuncs		[UAIR] =	&Actor::UAIR_End;
+	changeActionFuncs	[UAIR] =	&Actor::UAIR_Change;
+	updateActionFuncs	[UAIR] =	&Actor::UAIR_Update;
+	updateSpriteFuncs	[UAIR] =	&Actor::UAIR_UpdateSprite;
+
+	startActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Start;
+	endActionFuncs		[WAITFORSHIP] =	&Actor::WAITFORSHIP_End;
+	changeActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Change;
+	updateActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Update;
+	updateSpriteFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_UpdateSprite;
+
+	startActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Start;
+	endActionFuncs		[WALLATTACK] =	&Actor::WALLATTACK_End;
+	changeActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Change;
+	updateActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Update;
+	updateSpriteFuncs	[WALLATTACK] =	&Actor::WALLATTACK_UpdateSprite;
+
+	startActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Start;
+	endActionFuncs		[WALLCLING] =	&Actor::WALLCLING_End;
+	changeActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Change;
+	updateActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Update;
+	updateSpriteFuncs	[WALLCLING] =	&Actor::WALLCLING_UpdateSprite;
+
+	startActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Start;
+	endActionFuncs		[WALLJUMP] =	&Actor::WALLJUMP_End;
+	changeActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Change;
+	updateActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Update;
+	updateSpriteFuncs	[WALLJUMP] =	&Actor::WALLJUMP_UpdateSprite;
+
+	startActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Start;
+	endActionFuncs		[WIREHOLD] =	&Actor::WIREHOLD_End;
+	changeActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Change;
+	updateActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Update;
+	updateSpriteFuncs	[WIREHOLD] =	&Actor::WIREHOLD_UpdateSprite;
+}
+
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex )
 	{
-	endActionFuncs.resize(Count);
-	updateActionFuncs.resize(Count);
-	changeActionFuncs.resize(Count);
-
-	endActionFuncs[DAIR] = &DAIR_End;
-	changeActionFuncs[DAIR] = &DAIR_Change;
-	updateActionFuncs[DAIR] = &DAIR_Update;
-
-	endActionFuncs[DASH] = &DASH_End;
-	changeActionFuncs[DASH] = &DASH_Change;
-	updateActionFuncs[DASH] = &DASH_Update;
-
-
-
+	SetupActionFunctions();
 
 
 	SetSession(Session::GetSession(), gs, es);

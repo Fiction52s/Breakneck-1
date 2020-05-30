@@ -3,7 +3,7 @@
 using namespace sf;
 using namespace std;
 
-void Actor::SPRINGSTUNBAIROUNCE_Start()
+void Actor::SPRINGSTUNAIRBOUNCE_Start()
 {
 }
 
