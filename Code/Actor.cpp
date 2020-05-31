@@ -11393,7 +11393,7 @@ void Actor::UpdateSpeedParticles()
 				double angle = GroundedAngle();
 				V2d groundPos = ground->GetPosition(edgeQuantity);
 
-				V2d truePos = groundPos + gn * normalHeight;
+				V2d truePos = groundPos + currNormal * normalHeight;
 				int randx = rand() % rx;
 				randx -= rx / 2;
 				int randy = rand() % ry;
@@ -11412,7 +11412,7 @@ void Actor::UpdateSpeedParticles()
 				int randy = rand() % ry;
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
-				double angle = atan2(gn.x, gn.y);
+				double angle = atan2(currNormal.x, currNormal.y);
 				ActivateEffect(EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight);
 			}
 
@@ -11424,7 +11424,7 @@ void Actor::UpdateSpeedParticles()
 			if (ground != NULL)
 			{
 				V2d groundPos = ground->GetPosition(edgeQuantity);
-				V2d truePos = groundPos + gn * normalHeight;//.0;
+				V2d truePos = groundPos + currNormal * normalHeight;//.0;
 				int randx = rand() % rx;
 				randx -= rx / 2;
 				int randy = rand() % ry;
@@ -11442,7 +11442,7 @@ void Actor::UpdateSpeedParticles()
 				int randy = rand() % ry;
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
-				double angle = atan2(gn.x, gn.y);
+				double angle = atan2(currNormal.x, currNormal.y);
 				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight);
 			}
 		}
@@ -11614,14 +11614,11 @@ void Actor::UpdatePostPhysics()
 
 	ProcessSpecialTerrain();
 
-
 	UpdateScorpCap();
-
 	
-	V2d gn;
 	if( ground != NULL )
 	{
-		gn = ground->Normal();
+		currNormal = ground->Normal();
 	}
 
 	if( action == DEATH )

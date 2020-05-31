@@ -131,7 +131,4 @@ void Actor::RUN_UpdateSprite()
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;
 	}
-
-
-	updateAura = false;
 }
