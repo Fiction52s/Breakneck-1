@@ -370,6 +370,10 @@ struct Actor : QuadTreeCollider,
 	void UpdateBubbles();
 	void UpdateRegrindOffCounter();
 	void UpdateKnockbackDirectionAndHitboxType();
+	void UpdateSmallLightning();
+	void UpdateRisingAura();
+	void UpdateLockedFX();
+	void ProcessSpecialTerrain();
 
 	sf::Sprite exitAuraSprite;
 	Tileset *ts_exitAura;
@@ -497,8 +501,6 @@ struct Actor : QuadTreeCollider,
 	bool leftWireBoost;
 	bool rightWireBoost;
 	bool doubleWireBoost;
-
-	bool updateAura;
 
 	bool ExitGrind(bool jump);
 	
@@ -665,7 +667,6 @@ struct Actor : QuadTreeCollider,
 	double speedChangeDown;
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
-	sf::CircleShape speedCircle;
 
 	//RotaryParticleEffect *re;
 	//RotaryParticleEffect *re1;
@@ -835,6 +836,21 @@ struct Actor : QuadTreeCollider,
 	void ProcessReceivedHit();
 	void UpdateDrain();
 	void ProcessGravityGrass();
+	void UpdateScorpCap();
+	void ProcessHitGoal();
+
+	void UpdateSpeedBar();
+	bool CareAboutSpeedAction();
+	void UpdateMotionGhosts();
+	void UpdateSpeedParticles();
+	void UpdateAura();
+	void UpdateAttackLightning();
+	void UpdatePlayerShader();
+	void TryEndLevel();
+
+	void UpdateDashBooster();
+	void SlowDependentFrameIncrement();
+	void UpdateBounceFlameCounters();
 
 	void SetAerialScorpSprite();
 	int GetJumpFrame();
@@ -890,18 +906,14 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_gateEnter;
 
 
-	sf::Vector2<double> followerPos;
-	sf::Vector2<double> followerVel;
-	double followerFac;
-
 	int speedParticleCounter;
 	int speedParticleRate;
 	bool steepJump;
 
 	//new variables in here that need to work with clone power later
 
-
-	bool test;
+	bool hitEnemyDuringPhyiscs;
+	//bool test;
 	
 	double offSlopeByWallThresh;
 	//const static int MAX_MOTION_GHOSTS = 10;

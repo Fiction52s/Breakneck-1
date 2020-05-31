@@ -1381,9 +1381,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	toggleGrindInput = cont.keySettings.toggleGrind;
 	speedParticleRate = 10; //20
 	speedParticleCounter = 1;
-	followerPos = V2d( 0, 0 );
-	followerVel = V2d( 0, 0 );
-	followerFac = 1.0 / 60.0;
 	hitGoal = false;
 	hitNexus = false;
 	ground = NULL;
@@ -1415,7 +1412,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	drainCounter = 0;
 	//currentCheckPoint = NULL;
 	flashFrames = 0;
-	test = false;
+	hitEnemyDuringPhyiscs = false;
 
 	lastWire = 0;
 	inBubble = false;
@@ -2889,8 +2886,6 @@ void Actor::Respawn()
 
 	SetToOriginalPos();
 
-	followerPos = position;
-	followerVel = V2d( 0, 0 );
 	enemiesKilledThisFrame = 0;
 	gateTouched = NULL;
 
@@ -4172,6 +4167,7 @@ void Actor::UpdatePrePhysics()
 	highAccuracyHitboxes = true;
 	wallNormal.x = 0;
 	wallNormal.y = 0;
+	hitEnemyDuringPhyiscs = false;
 }
 
 double Actor::GetNumSteps()
@@ -7755,7 +7751,7 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	if( test )
+	if(hitEnemyDuringPhyiscs)
 		return;
 	
 	if( rightWire != NULL )
@@ -11104,9 +11100,8 @@ void Actor::HandleSpecialTerrain(int stType)
 	}
 }
 
-void Actor::UpdatePostPhysics()
+void Actor::UpdateSmallLightning()
 {
-
 	int smallLightningCounter = -1;
 	switch (speedLevel)
 	{
@@ -11121,10 +11116,11 @@ void Actor::UpdatePostPhysics()
 		break;
 	}
 
-	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON || 
+	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON ||
 		action == SEQ_MASKOFF || action == SEQ_MEDITATE;
 
-	if (!IsIntroAction(action) && GetTotalGameFrames() % smallLightningCounter == 0 && !dontActivateLightningAction)
+	if (!IsIntroAction(action) && GetTotalGameFrames() % smallLightningCounter == 0
+		&& !dontActivateLightningAction)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -11139,6 +11135,15 @@ void Actor::UpdatePostPhysics()
 		smallLightningPool[r]->ActivateEffect(&params);
 	}
 
+	for (int i = 0; i < 7; ++i)
+	{
+		smallLightningPool[i]->Update();
+	}
+}
+
+void Actor::UpdateRisingAura()
+{
+	//this is turned off atm
 	if (!IsIntroAction(action) && GetTotalGameFrames() % 30 == 0)
 	{
 		RelEffectInstance params;
@@ -11146,12 +11151,15 @@ void Actor::UpdatePostPhysics()
 		Transform tr = sf::Transform::Identity;
 		Vector2f randPos(rand() % 20 - 10, rand() % 20 - 10);
 
-		params.SetParams(randPos, tr, 1, 60, 0, &spriteCenter, 40 );
+		params.SetParams(randPos, tr, 1, 60, 0, &spriteCenter, 40);
 		//EffectInstance *ei = risingAuraPool->ActivateEffect(&params);
 		//ei->SetVelocityParams(Vector2f(0, 0), Vector2f(0, -.02), 5 );
 	}
+}
 
-	if (currLockedFairFX != NULL && action != FAIR )
+void Actor::UpdateLockedFX()
+{
+	if (currLockedFairFX != NULL && action != FAIR)
 	{
 		currLockedFairFX->ClearLockPos();
 		currLockedFairFX = NULL;
@@ -11166,27 +11174,20 @@ void Actor::UpdatePostPhysics()
 		currLockedUairFX->ClearLockPos();
 		currLockedUairFX = NULL;
 	}
+}
 
-	
-	QueryTouchGrass();
-
+void Actor::ProcessSpecialTerrain()
+{
 	ClearSpecialTerrainCounts();
 	queryMode = "specialterrain";
 	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 	GetSpecialTerrainTree()->Query(this, r);
 
 	HandleSpecialTerrain();
-	
-	for (int i = 0; i < 7; ++i)
-	{
-		smallLightningPool[i]->Update();
-	}
-	
-	updateAura = true;
+}
 
-	//cout << "action: " << action << endl;
-	test = false;
-
+void Actor::UpdateScorpCap()
+{
 	if (scorpOn)
 	{
 		scorpAdditionalCap += scorpAdditionalAccel;
@@ -11199,16 +11200,422 @@ void Actor::UpdatePostPhysics()
 		if (scorpAdditionalCap < 0)
 			scorpAdditionalCap = 0;
 	}
+}
 
-	//rightWire->UpdateState( false );
-	if( rightWire->numPoints == 0 )
+void Actor::ProcessHitGoal()
+{
+	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-	//	rightWire->segmentLength = length( rightWire->anchor.pos - position );//rightWire->totalLength;
+		if (owner != NULL)
+		{
+			owner->totalFramesBeforeGoal = owner->totalGameFrames;
+			SetActionExpr(GOALKILL);
+			desperationMode = false;
+			hitGoal = false;
+
+			if (owner->parentGame == NULL)
+			{
+				if (owner->recPlayer != NULL)
+				{
+					owner->recPlayer->RecordFrame();
+					owner->recPlayer->StopRecording();
+					owner->recPlayer->WriteToFile("testreplay.brep");
+				}
+
+				if (owner->recGhost != NULL)
+				{
+					owner->recGhost->StopRecording();
+					owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+				}
+			}
+
+			frame = 0;
+			position = owner->goalNodePos;
+			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
+			rightWire->Reset();
+			leftWire->Reset();
+			desperationMode = false;
+		}
+		else if (editOwner != NULL)
+		{
+			editOwner->EndTestMode();
+		}
+	}
+	else if (hitNexus)
+	{
+		owner->totalFramesBeforeGoal = owner->totalGameFrames;
+		SetActionExpr(NEXUSKILL);
+		desperationMode = false;
+		hitNexus = false;
+		if (owner->parentGame == NULL)
+		{
+			if (owner->recPlayer != NULL)
+			{
+				owner->recPlayer->RecordFrame();
+				owner->recPlayer->StopRecording();
+				owner->recPlayer->WriteToFile("testreplay.brep");
+			}
+
+			if (owner->recGhost != NULL)
+			{
+				owner->recGhost->StopRecording();
+				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+			}
+		}
+		frame = 0;
+		position = owner->goalNodePos;
+		rightWire->Reset();
+		leftWire->Reset();
+		desperationMode = false;
+	}
+}
+
+bool Actor::CareAboutSpeedAction()
+{
+	return action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP && action != GRINDBALL
+		&& action != GRINDATTACK;
+}
+
+void Actor::UpdateSpeedBar()
+{
+	V2d trueVel;
+	double speed;
+	if (ground != NULL) //ground
+	{
+		trueVel = normalize(ground->v1 - ground->v0) * groundSpeed;
+		//speed = abs(groundSpeed);
+	}
+	else //air
+	{
+		trueVel = velocity;
+		//speed = length( velocity );
+	}
+
+	trueVel.y = min(40.0, trueVel.y); //falling can only help your speed so much
+
+	speed = length(trueVel);
+
+	if (CareAboutSpeedAction())
+	{
+		if (speed > currentSpeedBar)
+		{
+			currentSpeedBar += speedChangeUp;
+			if (currentSpeedBar > speed)
+				currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
+		}
+		else if (speed < currentSpeedBar)
+		{
+			currentSpeedBar -= speedChangeDown;
+			if (currentSpeedBar < speed)
+			{
+				currentSpeedBar = speed;
+			}
+			//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
+		}
+
+		if (currentSpeedBar >= level2SpeedThresh)
+		{
+			speedLevel = 2;
+		}
+		else if (currentSpeedBar >= level1SpeedThresh)
+		{
+			speedLevel = 1;
+		}
+		else
+		{
+			speedLevel = 0;
+		}
+
+	}
+}
+
+void Actor::UpdateMotionGhosts()
+{
+	//shouldn't be max motion ghosts cuz thats not efficient
+	for (int i = 0; i < maxMotionGhosts; ++i)
+	{
+		motionGhostBuffer->SetRotation(i, sprite->getRotation() / 180.f * PI);
+		motionGhostBufferBlue->SetRotation(i, sprite->getRotation() / 180.f * PI);
+		motionGhostBufferPurple->SetRotation(i, sprite->getRotation() / 180.f * PI);
+	}
+
+	V2d motionGhostDir;
+	double motionMagnitude = 0;
+	if (ground != NULL)
+	{
+		motionGhostDir = -normalize(normalize(ground->v1 - ground->v0) * groundSpeed);
+		if (reversed)
+			motionGhostDir = -motionGhostDir;
+		motionMagnitude = abs(groundSpeed);
 	}
 	else
 	{
-	//	rightWire->segmentLength = length( rightWire->points[rightWire->numPoints-1].pos - position );
+		motionGhostDir = -normalize(velocity);
+		motionMagnitude = length(velocity);
 	}
+
+	float dist = motionGhostSpacing;
+
+	int showMotionGhosts = min(motionMagnitude / 1.0, 80.0);
+
+	if (speedLevel == 0)
+	{
+		showMotionGhosts = min(showMotionGhosts * 2.0, 80.0);
+	}
+	for (int i = 0; i < 3; ++i)
+	{
+		motionGhostsEffects[i]->SetSpread(showMotionGhosts, Vector2f(motionGhostDir.x, motionGhostDir.y), sprite->getRotation() / 180.f * PI);
+		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
+	}
+}
+
+void Actor::UpdateSpeedParticles()
+{
+	if (speedParticleCounter == speedParticleRate && CareAboutSpeedAction())
+	{
+		if (speedLevel == 1)
+		{
+			Tileset *tset = NULL;
+			int randTex = rand() % 3;
+			if (randTex == 0)
+				tset = ts_fx_chargeBlue0;
+			else if (randTex == 1)
+				tset = ts_fx_chargeBlue1;
+			else
+				tset = ts_fx_chargeBlue2;
+
+			int rx = 30;
+			int ry = 30;
+
+			if (ground != NULL)
+			{
+
+				double angle = GroundedAngle();
+				V2d groundPos = ground->GetPosition(edgeQuantity);
+
+				V2d truePos = groundPos + gn * normalHeight;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d(randx, randy);
+
+
+
+				ActivateEffect(EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight);
+			}
+			else
+			{
+				V2d truePos = position;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d(randx, randy);
+				double angle = atan2(gn.x, gn.y);
+				ActivateEffect(EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight);
+			}
+
+		}
+		else if (speedLevel == 2)
+		{
+			int rx = 30;
+			int ry = 30;
+			if (ground != NULL)
+			{
+				V2d groundPos = ground->GetPosition(edgeQuantity);
+				V2d truePos = groundPos + gn * normalHeight;//.0;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d(randx, randy);
+				double angle = GroundedAngle();
+
+				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight);
+			}
+			else
+			{
+				V2d truePos = position;
+				int randx = rand() % rx;
+				randx -= rx / 2;
+				int randy = rand() % ry;
+				randy -= ry / 2;
+				truePos += V2d(randx, randy);
+				double angle = atan2(gn.x, gn.y);
+				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight);
+			}
+		}
+
+		speedParticleCounter = 0;
+	}
+}
+
+void Actor::UpdateAura()
+{
+	if (usingAura)
+	{
+		testAura->Update();
+		testAura1->Update();
+		testAura2->Update();
+		testAura3->Update();
+	}
+}
+
+void Actor::UpdateAttackLightning()
+{
+	CreateAttackLightning();
+
+	for (int i = 0; i < 3; ++i)
+	{
+		fairLightningPool[i]->Update();
+		dairLightningPool[i]->Update();
+		uairLightningPool[i]->Update();
+	}
+}
+
+void Actor::UpdatePlayerShader()
+{
+	if (desperationMode)
+	{
+		//cout << "sending this parameter! "<< endl;
+		sh.setUniform("despFrame", (float)despCounter);
+	}
+	else
+	{
+
+		sh.setUniform("despFrame", (float)-1);
+	}
+}
+
+void Actor::UpdateDashBooster()
+{
+	//happens even when in time slow
+	if (action == DASH)
+	{
+		if (currBBoostCounter < maxBBoostCount)
+		{
+			currBBoostCounter++;
+		}
+	}
+}
+
+void Actor::SlowDependentFrameIncrement()
+{
+	if (slowCounter == slowMultiple)
+	{
+		if (wallJumpFrameCounter < wallJumpMovementLimit)
+			wallJumpFrameCounter++;
+		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
+		framesInAir++;
+		framesSinceDouble++;
+
+		if (gravResetFrames > 0)
+		{
+			gravResetFrames--;
+			if (gravResetFrames == 0)
+			{
+				extraGravityModifier = 1.0;
+			}
+		}
+
+
+		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
+		{
+			framesGrinding++;
+			framesNotGrinding = 0;
+		}
+		else
+		{
+			framesGrinding = 0;
+			framesNotGrinding++;
+		}
+
+		if (action == BOUNCEAIR && oldBounceEdge != NULL)
+		{
+			framesSinceBounce++;
+		}
+
+		++framesSinceRightWireBoost;
+		++framesSinceLeftWireBoost;
+		++framesSinceDoubleWireBoost;
+
+		++frame;
+
+
+
+		if (springStunFrames > 0)
+			--springStunFrames;
+		//cout << "frame: " << frame << endl;
+
+		++framesSinceClimbBoost;
+		++speedParticleCounter;
+
+
+		slowCounter = 1;
+
+		if (!IsIntroAction(action))
+			if (invincibleFrames > 0)
+				--invincibleFrames;
+
+		if (flashFrames > 0)
+			--flashFrames;
+	}
+	else
+		slowCounter++;
+}
+
+void Actor::UpdateBounceFlameCounters()
+{
+	if (bounceFlameOn)
+	{
+		if (ground == NULL)
+		{
+			airBounceFrame++;
+			if (airBounceFrame == airBounceFlameFrames)
+			{
+				airBounceFrame = 13 * 3;
+			}
+		}
+		else
+		{
+			runBounceFrame++;
+			if (runBounceFrame == runBounceFlameFrames)
+			{
+				runBounceFrame = 8 * 3;
+			}
+		}
+
+		++framesFlameOn;
+	}
+}
+
+void Actor::TryEndLevel()
+{
+	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
+	{
+		owner->EndLevel();
+		//owner->goalDestroyed = true;	
+	}
+	else if (action == EXITBOOST && frame == actionLength[EXITBOOST])
+	{
+		owner->EndLevel();
+		//owner->goalDestroyed = true;
+	}
+}
+
+void Actor::UpdatePostPhysics()
+{
+	UpdateSmallLightning();
+	UpdateRisingAura();
+
+	UpdateLockedFX();	
+	QueryTouchGrass();
+
+	ProcessSpecialTerrain();
+
+
+	UpdateScorpCap();
 
 	
 	V2d gn;
@@ -11219,11 +11626,6 @@ void Actor::UpdatePostPhysics()
 
 	if( action == DEATH )
 	{
-		//sh.setUniform( "On0", false );
-		//sh.setUniform( "On1", false );
-		//sh.setUniform( "On2", false );
-		//sh.setUniform( "despFrame", (float)-1 );
-
 		sprite->setTexture( *(tileset[DEATH]->texture));
 		if( facingRight )
 		{
@@ -11259,411 +11661,40 @@ void Actor::UpdatePostPhysics()
 			//cout << "randang: " << randAng << endl;
 			ActivateEffect( EffectLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
 		}
-		//if( slowCounter == slowMultiple )
-		//{
-		int total = actionLength[DEATH];
-		//int faceDeathAnimLength = 11;
-		//int an = 6;
-		//int extra = 22;
 
-		//if (frame == 0)
-		//{
-		//	kinMask->SetExpr(KinMask::Expr_DEATHYELL);
-		//}
-		//else if (frame == extra)
-		//{
-		//	kinMask->SetExpr(KinMask::Expr_DEATH);
-		//}
-
-		//if( frame < faceDeathAnimLength * an + extra && frame >= extra )
-		//{
-		//	int f = (frame - extra) / an;
-		//	expr = (Expr)(f);
-		//}
-		//else
-		//{
-		//	expr = (Expr)0;
-		//}
-	
-
-		////cout << "death: " << expr + 11 << endl;
-		//kinFace.setTextureRect( ts_kinFace->GetSubRect( expr + 11 ) );
-		//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(5));
 		if( kinMask != NULL)
 			kinMask->Update( speedLevel, desperationMode );
 
 
 		++frame;
-			//slowCounter = 1;
-		//}
-		//else
-		//	slowCounter++;
 		return;
 	}
 
-	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
-	{	
-		if (owner != NULL)
-		{
-			owner->totalFramesBeforeGoal = owner->totalGameFrames;
-			SetActionExpr(GOALKILL);
-			desperationMode = false;
-			hitGoal = false;
-
-			if (owner->parentGame == NULL)
-			{
-				if (owner->recPlayer != NULL)
-				{
-					owner->recPlayer->RecordFrame();
-					owner->recPlayer->StopRecording();
-					owner->recPlayer->WriteToFile("testreplay.brep");
-				}
-
-				if (owner->recGhost != NULL)
-				{
-					owner->recGhost->StopRecording();
-					owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
-				}
-			}
-
-			frame = 0;
-			position = owner->goalNodePos;
-			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
-			rightWire->Reset();
-			leftWire->Reset();
-			desperationMode = false;
-		}
-		else if (editOwner != NULL )
-		{
-			editOwner->EndTestMode();
-		}
-	}
-	else if (hitNexus)
-	{
-		owner->totalFramesBeforeGoal = owner->totalGameFrames;
-		SetActionExpr(NEXUSKILL);
-		desperationMode = false;
-		hitNexus = false;
-		if (owner->parentGame == NULL)
-		{
-			if (owner->recPlayer != NULL)
-			{
-				owner->recPlayer->RecordFrame();
-				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile("testreplay.brep");
-			}
-
-			if (owner->recGhost != NULL)
-			{
-				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
-			}
-		}
-		frame = 0;
-		position = owner->goalNodePos;
-		rightWire->Reset();
-		leftWire->Reset();
-		desperationMode = false;
-	}
+	ProcessHitGoal();
 
 	
 	UpdateSprite();
 	
 	//risingAuraPool->Update();
-	CreateAttackLightning();
-
-	for (int i = 0; i < 3; ++i)
-	{
-		fairLightningPool[i]->Update();
-		dairLightningPool[i]->Update();
-		uairLightningPool[i]->Update();
-	}
+	UpdateAttackLightning();
 	
 	gateBlackFXPool->Update();
 
-	if( usingAura )
-	{
-		testAura->Update();
-		testAura1->Update();
-		testAura2->Update();
-		testAura3->Update();
-	}
+	UpdateAura();
 
+	UpdateSpeedBar();
 
-	
-	//shouldn't be max motion ghosts cuz thats not efficient
-	for (int i = 0; i < maxMotionGhosts; ++i)
-	{
-		motionGhostBuffer->SetRotation( i, sprite->getRotation() / 180.f * PI);
-		motionGhostBufferBlue->SetRotation(i, sprite->getRotation() / 180.f * PI);
-		motionGhostBufferPurple->SetRotation(i, sprite->getRotation() / 180.f * PI);
-		/*Vector2f scale = motionGhostBuffer->GetMemberInfo(i).scale;
-		if (facingRight || (reversed && !facingRight) )
-		{
-			motionGhostBuffer->SetScale( i, Vector2f( abs(scale.x), scale.y ) );
-		}
-		else
-		{
-			motionGhostBuffer->SetScale(i, Vector2f(-abs( scale.x ), scale.y));
-		}*/
-		//motionGhostBuffer->setpo
-	}
+	UpdateMotionGhosts();
 
+	UpdateSpeedParticles();
 
-	V2d trueVel;
-	double speed;
-	if( ground != NULL ) //ground
-	{
-		trueVel = normalize( ground->v1 - ground->v0 ) * groundSpeed;
-		//speed = abs(groundSpeed);
-	}
-	else //air
-	{
-		trueVel = velocity;
-		//speed = length( velocity );
-	}
-
-	trueVel.y = min( 40.0, trueVel.y ); //falling can only help your speed so much
-		
-	speed = length( trueVel );
-
-	bool careAboutSpeedAction = action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP && action != GRINDBALL
-		&& action != GRINDATTACK;
-	if (careAboutSpeedAction)
-	{
-		if (speed > currentSpeedBar)
-		{
-			currentSpeedBar += speedChangeUp;
-			if (currentSpeedBar > speed)
-				currentSpeedBar = speed;//currentSpeedBar * (1.0 -fUp) + speed * fUp;
-		}
-		else if (speed < currentSpeedBar)
-		{
-			currentSpeedBar -= speedChangeDown;
-			if (currentSpeedBar < speed)
-			{
-				currentSpeedBar = speed;
-			}
-			//currentSpeedBar = currentSpeedBar * (1.0 -fDown) + speed * fDown;
-		}
-
-		if (currentSpeedBar >= level2SpeedThresh)
-		{
-			speedLevel = 2;
-		}
-		else if (currentSpeedBar >= level1SpeedThresh)
-		{
-			speedLevel = 1;
-		}
-		else
-		{
-			speedLevel = 0;
-		}
-
-	}
-
-	V2d motionGhostDir;
-	double motionMagnitude = 0;
-	if (ground != NULL)
-	{
-		motionGhostDir = -normalize(normalize(ground->v1 - ground->v0) * groundSpeed);
-		if (reversed)
-			motionGhostDir = -motionGhostDir;
-		motionMagnitude = abs(groundSpeed);
-	}
-	else
-	{
-		motionGhostDir = -normalize(velocity);
-		motionMagnitude = length(velocity);
-	}
-
-	float dist = motionGhostSpacing;
-
-	int showMotionGhosts = min(motionMagnitude / 1.0, 80.0);
-
-	if (speedLevel == 0)
-	{
-		showMotionGhosts = min(showMotionGhosts * 2.0, 80.0);
-	}
-	for (int i = 0; i < 3; ++i)
-	{
-		motionGhostsEffects[i]->SetSpread(showMotionGhosts, Vector2f(motionGhostDir.x, motionGhostDir.y), sprite->getRotation() / 180.f * PI);
-		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
-	}
-
-	if( speedParticleCounter == speedParticleRate && careAboutSpeedAction)
-	{
-		if( speedLevel == 1 )
-		{
-			Tileset *tset = NULL;
-			int randTex = rand() % 3;
-			if( randTex == 0 )
-				tset = ts_fx_chargeBlue0;
-			else if( randTex == 1 )
-				tset = ts_fx_chargeBlue1;
-			else
-				tset = ts_fx_chargeBlue2;
-
-			int rx = 30;
-			int ry = 30;
-
-			if( ground != NULL )
-			{
-				
-				double angle = GroundedAngle();
-				V2d groundPos = ground->GetPosition( edgeQuantity );
-				
-				V2d truePos =  groundPos + gn * normalHeight;
-				int randx = rand() % rx;
-				randx -= rx / 2;
-				int randy = rand() % ry;
-				randy -= ry / 2;
-				truePos += V2d( randx, randy );
-
-				
-
-				ActivateEffect( EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight );
-			}
-			else
-			{
-				V2d truePos = position;
-				int randx = rand() % rx;
-				randx -= rx / 2;
-				int randy = rand() % ry;
-				randy -= ry / 2;
-				truePos += V2d( randx, randy );
-				double angle = atan2( gn.x, gn.y );
-				ActivateEffect( EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight );
-			}
-		
-		}
-		else if( speedLevel == 2 )
-		{
-			int rx = 30;
-			int ry = 30;
-			if( ground != NULL )
-			{
-				V2d groundPos = ground->GetPosition( edgeQuantity );
-				V2d truePos =  groundPos + gn * normalHeight;//.0;
-				int randx = rand() % rx;
-				randx -= rx / 2;
-				int randy = rand() % ry;
-				randy -= ry / 2;
-				truePos += V2d( randx, randy );
-				double angle = GroundedAngle();
-				
-				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
-			}
-			else
-			{
-				V2d truePos = position;
-				int randx = rand() % rx;
-				randx -= rx / 2;
-				int randy = rand() % ry;
-				randy -= ry / 2;
-				truePos += V2d( randx, randy );
-				double angle = atan2( gn.x, gn.y );
-				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight );
-			}
-		}
-
-		speedParticleCounter = 0;
-	}
-	
-
-	Vector2i vi = Mouse::getPosition();
-	Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-	
-
-	if( desperationMode )
-	{
-		//cout << "sending this parameter! "<< endl;
-		sh.setUniform( "despFrame", (float)despCounter );
-	}
-	else
-	{
-		
-		sh.setUniform( "despFrame", (float)-1 );
-	}
-
-
-	
+	UpdatePlayerShader();
 
 	rotaryAngle = sprite->getRotation() / 180 * PI;
 
-	//happens even when in time slow
-	if (action == DASH)
-	{
-		if (currBBoostCounter < maxBBoostCount)
-		{
-			currBBoostCounter++;
-		}
-	}
+	UpdateDashBooster();
 
-	if( slowCounter == slowMultiple )
-	{
-		if( wallJumpFrameCounter < wallJumpMovementLimit )
-			wallJumpFrameCounter++;
-		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
-		framesInAir++;
-		framesSinceDouble++;
-
-		if (gravResetFrames > 0)
-		{
-			gravResetFrames--;
-			if (gravResetFrames == 0)
-			{
-				extraGravityModifier = 1.0;
-			}
-		}
-
-
-		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
-		{
-			framesGrinding++;
-			framesNotGrinding = 0;
-		}
-		else
-		{
-			framesGrinding = 0;
-			framesNotGrinding++;
-		}
-			
-		//if (hitCeilingCounter > 0)
-		//	--hitCeilingCounter;
-
-		if( action == BOUNCEAIR && oldBounceEdge != NULL )
-		{
-			framesSinceBounce++;
-		}
-
-		++framesSinceRightWireBoost;
-		++framesSinceLeftWireBoost;
-		++framesSinceDoubleWireBoost;
-
-		++frame;
-
-		
-
-		if (springStunFrames > 0)
-			--springStunFrames;
-		//cout << "frame: " << frame << endl;
-
-		++framesSinceClimbBoost;
-		++speedParticleCounter;
-		
-
-		slowCounter = 1;
-
-		if( !IsIntroAction(action) )
-			if( invincibleFrames > 0 )
-				--invincibleFrames;
-
-		if( flashFrames > 0 )
-			--flashFrames;
-	}
-	else
-		slowCounter++;
+	SlowDependentFrameIncrement();
 
 	if (framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 	{
@@ -11673,90 +11704,25 @@ void Actor::UpdatePostPhysics()
 	if( standNDashBoostCurr > 0 )
 		standNDashBoostCurr--;
 
-	if( bounceFlameOn )
-	{
-		if( ground == NULL )
-		{
-			airBounceFrame++;
-			if( airBounceFrame == airBounceFlameFrames )
-			{
-				airBounceFrame = 13 * 3;
-			}
-		}
-		else
-		{
-			runBounceFrame++;
-			if( runBounceFrame == runBounceFlameFrames )
-			{
-				runBounceFrame = 8 * 3;
-			}
-		}
-
-		++framesFlameOn;
-	}
+	UpdateBounceFlameCounters();
+	
 
 	UpdateHitboxes();
 
 	//pTrail->Update( position );
 
-	CircleShape cs;
-	cs.setFillColor( Color::Transparent );
-	switch( speedLevel )
-	{
-	case 0:
-		cs.setOutlineColor( Color::Blue );
-		cs.setOutlineThickness( 10 );
-		cs.setRadius( 32 );
-		break;
-	case 1:
-		cs.setOutlineColor( Color::Magenta );
-		cs.setOutlineThickness( 10 );
-		cs.setRadius( 64 );
-		break;
-	case 2:
-		cs.setOutlineColor( Color::Green );
-		cs.setOutlineThickness( 10 );
-		cs.setRadius( 128 );
-		break;
-	}
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );
-	speedCircle = cs;
-
 	if( kinMask != NULL)
 		kinMask->Update(speedLevel, desperationMode);
-
-	followerPos += followerVel;
-
-	V2d testVel = position - followerPos;
-	if( ground != NULL )
-	{
-		//testVel = groundSpeed * normalize( ground->v1 - ground->v0 );
-	}
-	followerVel = followerVel * ( 1 - followerFac ) + testVel * followerFac;
 
 	if( ground != NULL ) //doesn't work when grinding or bouncing yet
 	{
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
 
-	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
-	{
-		owner->EndLevel();
-		//owner->goalDestroyed = true;	
-	}
-	else if (action == EXITBOOST && frame == actionLength[EXITBOOST])
-	{
-		owner->EndLevel();
-		//owner->goalDestroyed = true;
-	}
-	
-
 	if (kinRing != NULL)
 		kinRing->Update();
 
-	/*if( updateAura )
-		testAura->Update();*/
+	TryEndLevel();
 }
 
 void Actor::BounceFlameOn()
@@ -14082,14 +14048,6 @@ void Actor::Draw( sf::RenderTarget *target )
 			target->draw( bubbleSprite );// &timeSlowShader );
 		}
 	}
-
-	/*Color followerCol = Color::Red;
-	sf::Vertex follower[2] = 
-	{
-		Vertex( Vector2f( position.x, position.y ), followerCol ),
-		Vertex( Vector2f( followerPos.x, followerPos.y ), followerCol )
-	};
-	target->draw( follower, 2, sf::Lines );*/
 	
 	for (int i = 0; i < 3; ++i)
 	{
@@ -14573,7 +14531,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 
 	currentSpeedBar += hitParams.speedBar;
-	test = true;
+	hitEnemyDuringPhyiscs = true;
 	currAttackHit = true;
 	if( bounceFlameOn )
 	{
