@@ -1155,15 +1155,6 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	string nodeFile = string("WorldMap/node_w") + worldIndexStr + string("_128x128.png");
 
 	ts_node = mm->tilesetManager.GetTileset(nodeFile, 128, 128);
-	//numNodeColumns = 10;
-	//nodeSelectorWidth = 400;
-	/*ts_node[0] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[1] = mm->tilesetManager.GetTileset("Worldmap/node_w2_128x128.png", 128, 128);
-	ts_node[2] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[3] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[4] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[5] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);
-	ts_node[6] = mm->tilesetManager.GetTileset("Worldmap/node_w1_128x128.png", 128, 128);*/
 
 	string scrollEnergyFile = string("WorldMap/sector_aura_w") + worldIndexStr + string("_1200x300.png");
 

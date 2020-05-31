@@ -11847,8 +11847,17 @@ void EditSession::CreateTerrainModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::X || ev.key.code == sf::Keyboard::Delete)
 		{
-			removeProgressPointWaiter->Reset();
-			RemovePointFromPolygonInProgress();
+			//if( createTerrainModeUI->)
+			if (createTerrainModeUI->GetCurrDrawTool() == TOOL_DRAW)
+			{
+				removeProgressPointWaiter->Reset();
+				RemovePointFromPolygonInProgress();
+			}
+			else
+			{
+				boxDrawStarted = false;
+			}
+			
 		}
 		//else if (ev.key.code == sf::Keyboard::E)
 		//{
