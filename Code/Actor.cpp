@@ -8055,7 +8055,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 	return false;
 }
 
-void Actor::TryUnlockOnTransfer( Edge * e)
+bool Actor::TryUnlockOnTransfer( Edge * e)
 {
 	if (e->edgeType == Edge::CLOSED_GATE)
 	{
@@ -8074,8 +8074,70 @@ void Actor::TryUnlockOnTransfer( Edge * e)
 				gateTouched = g->edgeA;
 
 			}
+
+			return true;
 		}
 	}
+
+	return false;
+}
+
+void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
+{
+	velocity = normalize(ground->v1 - ground->v0) * groundSpeed + leaveExtra;
+
+	movementVec = normalize(ground->v1 - ground->v0) * extra;
+
+	movementVec.y -= .01;
+	if (right)
+	{
+		if (movementVec.x <= .01)
+		{
+			movementVec.x = .01;
+		}
+	}
+	else
+	{
+		if (movementVec.x >= -.01)
+		{
+			movementVec.x = -.01;
+		}
+	}
+	
+
+	leftGround = true;
+	ground = NULL;
+	SetActionExpr(JUMP);
+	frame = 1;
+	holdJump = false;
+}
+
+bool Actor::UpdateAutoRunPhysics()
+{
+	if (IsAutoRunning())
+	{
+		if (autoRunStopEdge != NULL && autoRunStopEdge == ground)
+		{
+			if (facingRight)
+			{
+				if (autoRunStopQuant <= q && autoRunStopQuant >= q - m)
+				{
+					WaitInPlace();
+					return true;
+				}
+			}
+			else
+			{
+				if (autoRunStopQuant >= q && autoRunStopQuant <= q - m)
+				{
+					WaitInPlace();
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 void Actor::UpdatePhysics()
@@ -8095,7 +8157,7 @@ void Actor::UpdatePhysics()
 	leftGround = false;
 	double movement = 0;
 	double maxMovement = min( b.rw, b.rh );
-	V2d movementVec(0, 0);
+	movementVec = V2d(0, 0);
 	V2d lastExtra( 100000, 100000 );
 	
 	if( grindEdge != NULL )
@@ -8196,7 +8258,7 @@ void Actor::UpdatePhysics()
 			}
 
 
-			double extra = 0;
+			extra = 0;
 			bool leaveGround = false;
 			double q = edgeQuantity;
 
@@ -8323,18 +8385,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-					movementVec = normalize( ground->v1 - ground->v0 ) * (extra);
-					movementVec.y -= .01;
-					if( movementVec.x >= -.01 )
-					{
-						movementVec.x = -.01;
-					}
-					leftGround = true;
-					SetActionExpr( JUMP );
-					frame = 1;
-					holdJump = false;
-					ground = NULL;
+					LeaveGroundTransfer(false);
 				}
 			}
 			else if( transferRight )
@@ -8430,22 +8481,7 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-					//cout << "air because wall" << endl;
-					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-						
-					movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-					
-					movementVec.y -= .01;
-					if( movementVec.x <= .01 )
-					{
-						movementVec.x = .01;
-					}
-
-					leftGround = true;
-					ground = NULL;
-					SetActionExpr( JUMP );
-					frame = 1;
-					holdJump = false;
+					LeaveGroundTransfer(true);
 				}
 
 			}
@@ -8476,38 +8512,20 @@ void Actor::UpdatePhysics()
 				{
 					movement = 0;
 					offsetX += m;
-					/*if( abs( offsetX ) > b.rw + .00001 )
-					{
-						cout << "off: " << offsetX << endl;
-						assert( false );
-					}*/
 				}
 
 				if(!approxEquals( m, 0 ) )
 				{
 					V2d oldPos = position;
 					bool hit = ResolvePhysics( V2d( m, 0 ));
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
+						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
 					
 						V2d eNorm = minContact.edge->Normal();
 
-						/*if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
-						{
-							if( minContact.position == minContact.edge->v0 ) 
-							{
-								if( minContact.edge->edge0->Normal().y <= 0 )
-								{
-									minContact.edge = minContact.edge->edge0;
-									//eNorm = minContact.edge->Normal();
-								}
-							}
-							//cout << "here" << endl;
-						}*/
-
 						if( eNorm.y < 0 )
 						{
-
 							bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
 									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
 							if( minContact.position.y >= position.y + b.rh - 5 && !speedTransfer)
@@ -8561,15 +8579,12 @@ void Actor::UpdatePhysics()
 			}
 			else
 			{
-				//cout << "other" << endl;
 				if( movement > 0 )
 				{	
 					extra = (q + movement) - groundLength;
 				}
 				else 
 				{
-
-					//cout << "movement: " << movement << ", extra: " << extra << endl;
 					extra = (q + movement);
 				}
 					
@@ -8589,21 +8604,7 @@ void Actor::UpdatePhysics()
 							&& yDist > slopeLaunchMinSpeed
 							&& currInput.LUp() )
 						{
-
-							velocity = normalize(ground->v1 - ground->v0) * groundSpeed + V2d(0, -gravity * 2);
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-							movementVec.y -= .01;
-							if( movementVec.x <= .01 )
-							{
-								movementVec.x = .01;
-							}
-							cout << "real slope jump A" << endl;
-							leftGround = true;
-							SetActionExpr( JUMP );
-							holdJump = false;
-							frame = 1;
-							ground = NULL;
+							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 							break;
 						}
 						else
@@ -8611,23 +8612,7 @@ void Actor::UpdatePhysics()
 							if( gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0
 								&& abs( e1n.x ) < wallThresh && groundSpeed > 5 )
 							{
-								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);;
-								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-								movementVec.y -= .01;
-								if( movementVec.x <= .01 )
-								{
-									movementVec.x = .01;
-								}
-								//why did i put these in again? from steep slope right
-								cout << "real slope jump D" << endl;
-								leftGround = true;
-								SetActionExpr( JUMP );
-								holdJump = false;
-								frame = 1;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-								ground = NULL;
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 								break;
 							}
 							else
@@ -8648,23 +8633,7 @@ void Actor::UpdatePhysics()
 							&& yDist > slopeLaunchMinSpeed 
 							&& currInput.LUp() )
 						{
-
-							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-							movementVec.y -= .01;
-							if( movementVec.x <= .01 )
-							{
-								movementVec.x = .01;
-							}
-							cout << "real slope jump B" << endl;
-							leftGround = true;
-							SetActionExpr( JUMP );
-							holdJump = false;
-							frame = 1;
-							//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-							//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-							ground = NULL;
+							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 							break;
 						}
 						else
@@ -8672,28 +8641,12 @@ void Actor::UpdatePhysics()
 							if( gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
 								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
 							{
-								velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed + V2d(0, -gravity * 2);
-								movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-								movementVec.y -= .01;
-								if( movementVec.x <= .01 )
-								{
-									movementVec.x = .01;
-								}
-								cout << "real slope jump C" << endl;
-								leftGround = true;
-								SetActionExpr( JUMP );
-								holdJump = false;
-								frame = 1;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
-								ground = NULL;
+								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 								break;
 							}
 							else
 							{
 								q = 0;
-								//cout << "setting 0-1" << endl;
 							}
 							
 							
@@ -8710,41 +8663,11 @@ void Actor::UpdatePhysics()
 					q += m;
 				}
 				
-				if (IsAutoRunning())
-				{
-					if ( autoRunStopEdge != NULL && autoRunStopEdge == ground)
-					{
-						if (facingRight)
-						{
-							if (autoRunStopQuant <= q && autoRunStopQuant >= q - m)
-							{
-								//StandInPlace();
-								WaitInPlace();
-								return;
-							}
-						}
-						else
-						{
-							if (autoRunStopQuant >= q && autoRunStopQuant <= q - m)
-							{
-								//StandInPlace();
-								WaitInPlace();
-								return;
-							}
-						}
-					}
-				}
-				/*if( abs( offsetX ) > b.rw + .00001 )
-				{
-					cout << "off: " << offsetX << endl;
-						assert( false );
-				}*/
+				if (UpdateAutoRunPhysics())
+					return;
 
 				if( approxEquals( m, 0 ) )
 				{
-
-					//cout << "secret1: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX << ", " << groundSpeed <<  endl;
-
 					if( groundSpeed > 0 )
 					{
 						
@@ -8754,66 +8677,23 @@ void Actor::UpdatePhysics()
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
-
-								if( e1->edgeType == Edge::CLOSED_GATE )
-								{
-									//cout << "similar secret but not reversed B" << endl;
-									Gate *g = (Gate*)e1->info;
-									if( CanUnlockGate( g ) )
-									{
-										UnlockGate( g );
-
-										if( e1 == g->edgeA )
-										{
-											gateTouched = g->edgeB;
-										}
-										else
-										{
-											gateTouched = g->edgeA;
-											
-										}
-
-										break;
-									}
-
-								}
-
+								if (TryUnlockOnTransfer(e1))
+									break;
 								groundSpeed = 0;
 								break;
 							}
 							else
 							{
-								//ground = next;
-								//q = 0;
-							//	cout << "possible bug. solved secret left??" << endl;
 								break;
 							}
 					
 						}
 						else if( abs( e1n.x ) >= wallThresh )
 						{
-							//cout << "right wall" << endl;
-							if( e1->edgeType == Edge::CLOSED_GATE )
+							
+							if (TryUnlockOnTransfer(e1))
 							{
-							//	cout << "similar secret but not reversed A" << endl;
-								Gate *g = (Gate*)e1->info;
-
-								if( CanUnlockGate( g ) )
-								{
-									UnlockGate( g );
-
-									if( e1 == g->edgeA )
-									{
-										gateTouched = g->edgeB;
-									}
-									else
-									{
-										gateTouched = g->edgeA;
-										
-									}
-
-									break;
-								}
+								break;
 							}
 
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
@@ -8827,14 +8707,12 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							//cout << "LEFT GROUND" << endl;
 							velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 						
 							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
 						
 							leftGround = true;
 							ground = NULL;
-						//	cout << "leaving ground RIGHT!!!!!!!!" << endl;
 						}
 					}
 					else if( groundSpeed < 0 )
@@ -8882,27 +8760,10 @@ void Actor::UpdatePhysics()
 						}
 						else if( abs( e0n.x ) >= wallThresh )
 						{
-							if( e0->edgeType == Edge::CLOSED_GATE )
-								{
-							//		cout << "similar secret but not reversed D" << endl;
-									Gate *g = (Gate*)e0->info;
-
-									if( CanUnlockGate( g ) )
-									{
-										UnlockGate( g );
-
-										if( e0 == g->edgeA )
-										{
-											gateTouched = g->edgeB;
-										}
-										else
-										{
-											gateTouched = g->edgeA;
-										}
-
-										break;
-									}
-								}
+							if (TryUnlockOnTransfer(e0))
+							{
+								break;
+							}
 
 							if( bounceFlameOn && abs( groundSpeed ) > 1 )
 							{
@@ -8938,10 +8799,9 @@ void Actor::UpdatePhysics()
 					bool hit = ResolvePhysics( resMove );
 
 
-					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) || ( m < 0 && minContact.edge != ground->edge1 ) ) )
+					if( hit && (( m > 0 && minContact.edge != ground->edge0 ) 
+						|| ( m < 0 && minContact.edge != ground->edge1 ) ) )
 					{
-						//cout << "totally hit" << endl;
-							//cout << "change hit" << endl;
 						if( down)
 						{
 							V2d eNorm = minContact.normal;
@@ -8951,7 +8811,8 @@ void Actor::UpdatePhysics()
 
 							}
 							//minContact.edge->Normal();
-							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
+							if( minContact.position.y > position.y + b.offset.y + b.rh - 5 
+								&& minContact.edge->Normal().y >= 0 )
 							{
 								if( minContact.position == minContact.edge->v0 ) 
 								{
@@ -8975,35 +8836,17 @@ void Actor::UpdatePhysics()
 
 							if( eNorm.y < 0 )
 							{
-								//bool 
-								//cout << "min:" << minContact.position.x << ", " << minContact.position.y  << endl;
-								//cout << "lel: " << position.y + minContact.resolution.y + b.rh - 5 << endl;
-								//cout << "res: " << minContact.resolution.y << endl;
+								bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh 
+									&& groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
+									|| (eNorm.x >0  && eNorm.y > -steepThresh 
+										&& groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
 
-								/*CircleShape cs;
-								cs.setFillColor( Color::Cyan );
-								cs.setRadius( 20 );
-								cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-								cs.setPosition( minContact.resolution.x, minContact.resolution.y );
-
-								owner->window->draw( cs );
-								cs.setPosition( position.x, position.y + minContact.resolution.y + b.rh - 5);
-									cs.setRadius( 10 );
-								cs.setFillColor( Color::Magenta );
-								owner->window->draw( cs );*/
-								bool speedTransfer = (eNorm.x < 0 && eNorm.y > -steepThresh && groundSpeed > 0 && groundSpeed <= steepClimbSpeedThresh)
-									|| (eNorm.x >0  && eNorm.y > -steepThresh && groundSpeed < 0 && groundSpeed >= -steepClimbSpeedThresh);
-
-								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5  && !speedTransfer)
+								if( minContact.position.y >= position.y + minContact.resolution.y + b.rh + b.offset.y - 5  
+									&& !speedTransfer)
 								{
-									//double test = position.x + b.offset.x - minContact.resolution.x - minContact.position.x;
-									//double test = position.x + minContact.resolution.x - minContact.position.x;
 									double test = position.x + minContact.resolution.x - minContact.position.x;
-									/*cout << "pos: " << position.x << ", res: " << minContact.resolution.x
-										<< ", minContact: " << minContact.position.x << endl;;
-									cout << "test: " << test << endl;
-									cout << "oldpos: " << oldPos.x << ", vel: " << resMove.x << endl;*/
-									if( (test < -b.rw && !approxEquals(test,-b.rw))|| (test > b.rw && !approxEquals(test,b.rw)) )
+									if( (test < -b.rw && !approxEquals(test,-b.rw))
+										|| (test > b.rw && !approxEquals(test,b.rw)) )
 									{
 										//corner border case. hope it doesn't cause problems
 										cout << "CORNER BORDER CASE: " << test << endl;
@@ -9017,14 +8860,13 @@ void Actor::UpdatePhysics()
 										ground = minContact.edge;
 										q = ground->GetQuantity( minContact.position );
 
-										V2d eNorm = minContact.normal;//minContact.edge->Normal();		
+										V2d eNorm = minContact.normal;
 
-										//hopefully this doesn't cause any bugs. if it does i know exactly where to find it
+										//hopefully this doesn't cause any bugs. 
+										//if it does i know exactly where to find it
 
 										//CHANGED OFFSET
 										offsetX = position.x + minContact.resolution.x - minContact.position.x;
-										//offsetX = position.x - minContact.position.x;
-										//cout << "offsetX is now: " << offsetX << endl;
 
 									}
 
@@ -9067,9 +8909,6 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-
-									//cout << "action: "<< (int)action << endl;
-									//cout << "a bounceFlameOn: " << (int)bounceFlameOn << "gspeed: " << groundSpeed << endl;
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
 										if( action != STEEPCLIMB )
@@ -9077,7 +8916,6 @@ void Actor::UpdatePhysics()
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;
 										}
-										
 									}
 
 
@@ -9105,29 +8943,8 @@ void Actor::UpdatePhysics()
 
 					leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					rightWire->UpdateAnchors( V2d( 0, 0 ) );
-				}
-
-				
-			/*	else
-				{
-					edgeQuantity = q;
-					cout << "secret: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;
-				//	assert( false && "secret!" );
-					break;
-					//offsetX = -offsetX;
-			//		cout << "prev: " << e0n.x << ", " << e0n.y << endl;
-					//break;
-				}*/
-					
+				}	
 			}
-
-			/*if (groundSpeed < 0 && cantPushPastQuant >= 0 )
-			{
-				if (q < cantPushPastQuant + 1.0)
-				{
-					q = cantPushPastQuant + 1.0;
-				}
-			}*/
 
 			if( movement == extra )
 				movement += steal;
@@ -9138,7 +8955,6 @@ void Actor::UpdatePhysics()
 		}
 		else
 		{
-			
 			V2d stealVec(0,0);
 			double moveLength = length( movementVec );
 			
@@ -9146,15 +8962,12 @@ void Actor::UpdatePhysics()
 			if( moveLength > maxMovement )
 			{
 				stealVec = velDir * ( moveLength - maxMovement);
-				//cout << "setting steal vec: " << stealVec.x << ", " << stealVec.y << endl;
-				//	<< moveLength << endl;
 				movementVec = velDir * maxMovement;
 			}
 
 			V2d newVel( 0, 0 );
 			V2d oldPos = position;
 
-			//cout << "movement: " << movementVec.x << ", " << movementVec.y << endl;
 			bool tempCollision = ResolvePhysics( movementVec );
 			
 			V2d extraVel(0, 0);
@@ -9162,13 +8975,6 @@ void Actor::UpdatePhysics()
 			{
 				collision = true;			
 				position += minContact.resolution;
-
-				//if( minContact.movingPlat != NULL )
-				//{
-				//	//velocity += minContact.movingPlat->vel * NUM_STEPS;
-				//}
-				//cout << "movmeent vec: " << movementVec.x << ", " << movementVec.y << endl;
-				//cout << "contact res: " << minContact.resolution.x << ", " << minContact.resolution.y << endl;
 				
 				Edge *e = minContact.edge;
 				V2d en = e->Normal();
@@ -9283,19 +9089,10 @@ void Actor::UpdatePhysics()
 				}				
 				
 				double blah = length( velocity ) - length( minContact.resolution );
-				//cout << "blah: " << blah << endl;
-				//wish i knew what this one meant
-				//extraVel = dot( normalize( velocity ), extraDir ) * extraDir * length(minContact.resolution);
-				//extraVel = (length( velocity ) - length( minContact.resolution )) * extraDir;
-				if( dot( velocity, extraDir ) < 0 )
-				{
-					//extraVel = -extraVel;
-				}
 
 				//might still need some more work
 				extraVel = dot( normalize( velocity ), extraDir ) * length( minContact.resolution ) * extraDir;
 				
-				//cout << "extraVel: " << extraVel.x << ", " << extraVel.y << endl;
 				if( length(extraVel) < .01 )
 					extraVel = V2d( 0, 0 );
 
@@ -9305,7 +9102,6 @@ void Actor::UpdatePhysics()
 				if( length( stealVec ) > 0 )
 				{
 					stealVec = length( stealVec ) * normalize( extraVel );
-					//cout << "modify steal: " << stealVec.x << ", " << stealVec.y << endl;
 				}
 				if( approxEquals( extraVel.x, lastExtra.x ) && approxEquals( extraVel.y, lastExtra.y ) )
 				{
@@ -9329,7 +9125,6 @@ void Actor::UpdatePhysics()
 			leftWire->UpdateAnchors( wVel );
 			rightWire->UpdateAnchors( wVel );
 			
-
 			int maxJumpHeightFrame = 10;
 
 			if( leftWire->state == Wire::PULLING || leftWire->state == Wire::HIT )
@@ -9677,27 +9472,11 @@ void Actor::UpdatePhysics()
 				&& !minContact.edge->IsInvisibleWall() )
 			{
 				prevRail = NULL;
-				//cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-				/*if( b.rh == doubleJumpHeight )
-				{
-					b.offset.y = (normalHeight - doubleJumpHeight);
-				}*/
 
 				if( b.rh < normalHeight )
 				{
 					b.offset.y = -(normalHeight - b.rh);
-					/*if( minContact.normal.y > 0 )
-						
-					else if( minContact.normal.y < 0 )
-						b.offset.y = (normalHeight - b.rh);*/
 				}
-
-
-				//b.rh = dashHeight;
-				
-				//if( reversed )
-					//b.offset.y = -b.offset.y;
-
 
 				if( minContact.edge->Normal().y <= 0 )
 				{
@@ -9706,23 +9485,9 @@ void Actor::UpdatePhysics()
 						if( minContact.edge->edge0->Normal().y >= 0 )
 						{
 							minContact.edge = minContact.edge->edge0;
-							//eNorm = minContact.edge->Normal();
 						}
 					}
-					//cout << "here" << endl;
 				}
-				/*if(  minContact.edge->Normal().y  0 )
-				{
-					if( minContact.position == minContact.edge->v0 ) 
-					{
-						if( minContact.edge->edge0->Normal().y <= 0 )
-						{
-							minContact.edge = minContact.edge->edge0;
-							//eNorm = minContact.edge->Normal();
-						}
-					}
-					//cout << "here" << endl;
-				}*/
 
 				hasGravReverse = false;
 				hasAirDash = true;
@@ -9730,7 +9495,6 @@ void Actor::UpdatePhysics()
 				reversed = true;
 				lastWire = 0;
 
-				//b.offset.y = -b.offset.y;
 				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 
@@ -9738,53 +9502,20 @@ void Actor::UpdatePhysics()
 
 				double groundLength = length( ground->v1 - ground->v0 );
 				groundSpeed = 0;
-				//groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );//velocity.x;//length( velocity );
+
 				V2d gno = ground->Normal();
 
 
 				double angle = atan2( gno.x, -gno.y );
-
-
-				//cout << "frames in air: " << framesInAir << ", holdJump: " << (int)holdJump << endl;
-				if( trueFramesInAir < 10 && holdJump && -gno.y > -steepThresh )
-				{
-					//cout << "adjusted y vel from: " << velocity.y;
-					//velocity.y *= .7;
-					//cout << ", new: " << velocity.y << endl;
-					
-				}
-
 				
-				//cout << "gno: " << gno.x << ", " << gno.y << endl;
 				if( -gno.y > -steepThresh )
 				{
-				//	cout << "a" << endl;
 					groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );
-					if( velocity.x < 0 )
-					{
-					//	groundSpeed = -min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-					}
-					else if( velocity.x > 0 )
-					{
-					//	groundSpeed = -max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-					}
-					//groundSpeed = 0;
 				}
 				else
 				{
-				//	cout << "b" << endl;
 					groundSpeed = -dot( velocity, normalize( ground->v1 - ground->v0 ) );
-					if( velocity.x < 0 )
-					{
-						//groundSpeed = min( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-					}
-					else if( velocity.x > 0 )
-					{
-						//groundSpeed = max( velocity.x, dot( velocity, normalize( ground->v1 - ground->v0 ) ));
-					}
 				}
-
-				//cout << "groundspeed: " << groundSpeed << " .. vel: " << velocity.x << ", " << velocity.y << endl;
 
 				movement = 0;
 			
@@ -9801,11 +9532,8 @@ void Actor::UpdatePhysics()
 				//	offsetX = -b.rw;
 				}
 
-				//if( reversed )
-				//{
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
-				//}
 			}
 			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
@@ -9826,18 +9554,6 @@ void Actor::UpdatePhysics()
 				}
 				
 				SetActionGrind();
-				//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
-				//	&& action == AIRDASH && length( wallNormal ) > 0 )
-				//{
-				//	//assert( minContact.edge != NULL );
-				//	Edge *e = storedContact.edge;
-				//	V2d mp = storedContact.position;
-				//	double q = e->GetQuantity( mp );
-
-				//	
-
-				//	//cout << "grinding" << endl;
-				//}
 			}
 			else if( tempCollision )
 			{
@@ -9848,23 +9564,14 @@ void Actor::UpdatePhysics()
 				//cout << "no temp collision" << endl;
 			}
 
-			//cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
 			if( length( extraVel ) > 0 )
 			{
 				movementVec = stealVec + extraVel;
-				//cout << "steal: " << stealVec.x << ", " << stealVec.y << endl;
-				//cout << "movement: " << movementVec.x << ", " << movementVec.y 
-				//	<< ", steal: " << stealVec.x << ", " << stealVec.y << ", extra: "
-				//	<< extraVel.x << ", " << extraVel.y << endl;
-			//	cout << "x1: " << movementVec.x << ", " << movementVec.y << endl;
 			}
 
 			else
 			{
 				movementVec = stealVec;
-				//cout << "x2:  " << movementVec.x << ", " << movementVec.y << endl;
-			//	cout << "x21: " << stealVec.x << ", " << stealVec.y << endl;
-				//cout << "x22: " << movementVec.x << ", " << movementVec.y << endl;
 			}
 
 
