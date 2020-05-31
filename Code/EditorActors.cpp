@@ -187,11 +187,12 @@ Panel *ActorType::CreatePanel()
 	string &name = info.name;
 	//extra
 
-	if (name == "shard")
+
+	if (name == "shard" || name == "player" || name == "goal" )
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
-	if (name == "poi")
+	else if (name == "poi")
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
@@ -313,7 +314,8 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 	}
 
-	p->SetSize(Vector2f(p->autoStart.x, p->size.y));
+	if( p != NULL )
+		p->SetSize(Vector2f(p->autoStart.x, p->size.y));
 
 	return p;
 }

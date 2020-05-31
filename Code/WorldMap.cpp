@@ -1138,6 +1138,15 @@ MapSelector::MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex )
 	bg2 = Background::SetupFullBG("w1_02", &(mm->tilesetManager));
 	//bg->Set(Vector2f(0, 0), 1.f);
 
+
+	for (int i = 1; i <= 5; ++i)
+	{
+		ts_kinJump[i-1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
+	}
+
+	kinJumpFrame = 0;
+	kinJumpSprite.setPosition(960, 540 + 300);
+
 	worldIndex = wIndex;
 	state = S_IDLE;
 	mainMenu = mm;
@@ -1277,6 +1286,8 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	{
 		bg2->Draw(target);
 	}
+
+	target->draw(kinJumpSprite);
 	
 	//target->draw(newSelectTestSpr);
 	return;
@@ -1439,6 +1450,21 @@ void MapSelector::Update(ControllerState &curr,
 
 	horizScrollShader1.setUniform("quant", -facBack);
 	horizScrollShader2.setUniform("quant", -facFront);
+
+	++kinJumpFrame;
+	if (kinJumpFrame == 66 * 2)
+	{
+		kinJumpFrame = 0;
+	}
+
+	int kinMult = 2;
+	int kinTex = (kinJumpFrame / kinMult) / 16;
+	int realKinFrame = (kinJumpFrame / kinMult ) % 16;
+
+	ts_kinJump[kinTex]->SetSpriteTexture(kinJumpSprite);
+	ts_kinJump[kinTex]->SetSubRect(kinJumpSprite, realKinFrame);
+	kinJumpSprite.setOrigin(kinJumpSprite.getLocalBounds().width / 2,
+		kinJumpSprite.getLocalBounds().height / 2);
 
 	++frame;
 }

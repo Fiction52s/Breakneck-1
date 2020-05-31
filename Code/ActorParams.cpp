@@ -70,6 +70,17 @@ void PlayerParams::Activate()
 	//nothing
 }
 
+void PlayerParams::SetParams()
+{
+
+}
+
+
+void PlayerParams::SetPanelInfo()
+{
+
+}
+
 ActorParams *PlayerParams::Copy()
 {
 	assert(false);

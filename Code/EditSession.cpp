@@ -7480,13 +7480,11 @@ bool EditSession::ExecuteTerrainCompletion()
 
 	int liRes;
 
-	list<PolyPtr> intersectingPolys;
-	//list<PolyPtr> containedPolys;
-
 	bool tryMakeInverse = 
 		createTerrainModeUI->GetCurrTerrainTool() == TERRAINTOOL_SETINVERSE;//IsKeyPressed(Keyboard::LAlt);
 
 	auto &testPolygons = GetCorrectPolygonList(polygonInProgress);
+	ClearMostRecentError();
 	for (auto it = testPolygons.begin(); it != testPolygons.end(); ++it)
 	{
 		if (!(*it)->inverse && (*it)->Contains(polygonInProgress))
@@ -7496,12 +7494,14 @@ bool EditSession::ExecuteTerrainCompletion()
 			break;
 		}
 
-		if (tryMakeInverse)
+		if (tryMakeInverse && !(*it)->inverse )
 		{
 			liRes = polygonInProgress->LinesIntersect((*it));
 			if (liRes > 0)
 			{
+				CreateError(ERR_INVERSE_CANT_INTERSECT_NORMAL_POLYS);
 				applyOkay = false;
+				polygonInProgress->ClearPoints();
 				break;
 			}
 		}
@@ -7509,6 +7509,7 @@ bool EditSession::ExecuteTerrainCompletion()
 
 	if (!applyOkay)
 	{
+		ShowMostRecentError();
 		//MessagePop( "polygon is invalid!!! new message" );
 	}
 	else
@@ -7908,9 +7909,10 @@ void EditSession::SetInversePoly()
 	
 
 	Brush orig;
+	list<GateInfoPtr> gateList;
 	if( inversePolygon != NULL )
 	{
-		orig.AddObject(inversePolygon);
+		AddFullPolyToBrush(inversePolygon, gateList, &orig);
 	}
 
 	progressBrush->Clear();
@@ -9068,10 +9070,12 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 
 			if (newPoly->LinesIntersectMyself())
 			{
-				newPoly->TryFixPointsTouchingLines();
+				delete newPoly;
+				continue;
+				//newPoly->TryFixPointsTouchingLines();
 			}
-
-			else
+			
+			
 			{
 				finalCheckVec.push_back(make_pair(newPoly, false));
 			}
@@ -10328,8 +10332,52 @@ void EditSession::StartSelectedMove()
 
 void EditSession::ContinueSelectedMove()
 {
+	//if (HoldingShift())
+	//{
+	//	worldPos.x = editMouseGrabPos.x;
+	//}
+	
+	if (HoldingShift())
+	{
+		if (pasteAxis < 0)
+		{
+			editMouseOrigPos = Vector2i(worldPos);
+			pasteAxis = 0;
+		}
+		else// if (pasteAxis == 0)
+		{
+			Vector2i test = Vector2i(worldPos) - editMouseOrigPos;
+			if (test.x != 0 && test.y != 0)
+			{
+				if (abs(test.x) >= abs(test.y))
+				{
+					pasteAxis = 1;
+				}
+				else if (abs(test.y) > abs(test.x))
+				{
+					pasteAxis = 2;
+				}
+			}
+		}
+	}
+	else
+	{
+		pasteAxis = -1;
+	}
+
+	if (pasteAxis == 1)
+	{
+		worldPos.y = editMouseOrigPos.y;
+	}
+	else if (pasteAxis == 2)
+	{
+		worldPos.x = editMouseOrigPos.x;
+	}
+
+
 	Vector2i pos(worldPos.x, worldPos.y);
 	Vector2i delta = pos - editMouseGrabPos;
+	
 	
 	//if (IsSingleActorSelected() && selectedPoints.empty())
 	//if( selectedBrush->num)

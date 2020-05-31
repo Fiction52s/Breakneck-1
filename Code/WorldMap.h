@@ -168,6 +168,10 @@ struct MapSelector
 	Background *bg;
 	Background *bg2;
 	sf::Sprite newSelectTestSpr;
+
+	Tileset *ts_kinJump[5];
+	sf::Sprite kinJumpSprite;
+	int kinJumpFrame;
 	//sf::Sprite selectorTestKinSpr;
 
 	sf::Sprite nodeHighlight;
@@ -178,7 +182,8 @@ struct MapSelector
 
 	sf::Vertex backScrollEnergy[4];
 	sf::Vertex frontScrollEnergy[4];
-	//Tileset *ts_scrollingEnergy;
+
+
 
 	
 	void RunSelectedMap();

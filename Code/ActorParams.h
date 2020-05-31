@@ -56,6 +56,8 @@ struct PlayerParams : public ActorParams
 	void Deactivate();
 	ActorParams *Copy();
 	void Activate();
+	void SetParams();
+	void SetPanelInfo();
 };
 
 //extra

@@ -2812,7 +2812,7 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_LINES_INTERSECT_IN_PROGRESS] = "Polygon in progress intersects itself";
 
 	errorStringVec[ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS] = "Cannot modify material type on multiple layers at once";
-	
+	errorStringVec[ERR_INVERSE_CANT_INTERSECT_NORMAL_POLYS] = "New inverse polygon can't intersect other polygons";
 }
 
 UIMouse::UIMouse()
