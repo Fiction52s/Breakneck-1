@@ -89,7 +89,7 @@ struct MotionGhostEffect
 	//set scale if i >= 10
 	//setnumactivemembers
 	//setghostcolor
-	//updatevertices
+	//updateverticesg
 	//draw
 
 };
@@ -903,11 +903,6 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>> & GetHitboxList(
 		const std::string & str);
 
-
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
-		sf::Color *startColorBuf, sf::Color *endColorBuf);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin);
 
 	GameController &GetController(int index);
 

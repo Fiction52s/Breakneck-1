@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
@@ -25,7 +26,7 @@ void Actor::INTRO_UpdateSprite()
 {
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 22, 2, true);
+		ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 22, 2, true);
 	}
 	else if (frame / 2 >= 5)
 	{

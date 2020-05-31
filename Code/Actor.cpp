@@ -86,40 +86,6 @@ void Actor::SetupDrain()
 	drainAmount = drainPerFrame;
 }
 
-Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
-{
-	if (owner != NULL)
-	{
-		return owner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
-	}
-	else if (editOwner != NULL)
-	{
-		return editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex);
-	}
-	else
-		return NULL;
-}
-
-
-Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
-	sf::Color *startColorBuf, sf::Color *endColorBuf)
-{
-	if (owner != NULL)
-	{
-		return owner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
-	}
-	else if (editOwner != NULL)
-	{
-		return editOwner->GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf);
-	}
-	else
-		return NULL;
-}
-
-Tileset * Actor::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
-{
-	return sess->GetTileset(s, tileWidth, tileHeight, skin);
-}
 
 sf::SoundBuffer * Actor::GetSound(const std::string &name)
 {
@@ -133,15 +99,7 @@ sf::SoundBuffer * Actor::GetSound(const std::string &name)
 
 map<int, list<CollisionBox>> & Actor::GetHitboxList(const string & str)
 {
-	if (owner != NULL)
-	{
-		return owner->hitboxManager->GetHitboxList(str);
-	}
-	else
-	{
-		return editOwner->hitboxManager->GetHitboxList(str);
-	}
-	
+	return sess->hitboxManager->GetHitboxList(str);
 }
 
 void Actor::UpdatePowers()
@@ -165,12 +123,7 @@ QuadTree *Actor::GetTerrainTree()
 
 QuadTree *Actor::GetSpecialTerrainTree()
 {
-	if (owner != NULL)
-		return owner->specialTerrainTree;
-	else if (editOwner != NULL)
-	{
-		return editOwner->specialTerrainTree;
-	}
+	return sess->specialTerrainTree;
 }
 
 QuadTree *Actor::GetRailEdgeTree()
@@ -312,7 +265,6 @@ Collider &Actor::GetCollider()
 	{
 		return editOwner->collider;
 	}
-
 }
 
 void Actor::SetupFXTilesets( Skin *skin, Skin *swordSkin)
@@ -1286,9 +1238,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	}
 		
 	//preload them
-	GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
-	GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
-	GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
+	sess->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
+	sess->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
+	sess->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
 		
 			
 	currLockedFairFX = NULL;
@@ -1388,7 +1340,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-	ts_dirtyAura = GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+	ts_dirtyAura = sess->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
 	//dirtyAuraSprite.setpo
 	//dirtyAuraSprite.setOrigin( )
@@ -3451,15 +3403,15 @@ void Actor::UpdatePrePhysics()
 		{
 			if (frame == 0)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 2)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 4)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}	
 		}
 		else if (action == SEQ_KINFALL)
