@@ -856,9 +856,9 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 
-	int waitFrames[] = { 30, 10, 2 };
-	int waitModeThresh[] = { 1, 2 };
-	removeProgressPointWaiter = new FrameWaiter(3, waitFrames, 2, waitModeThresh );
+	int waitFrames[] = { 30, 2 };
+	int waitModeThresh[] = { 1 };
+	removeProgressPointWaiter = new FrameWaiter(2, waitFrames, 1, waitModeThresh );
 	
 	variationSelector = new EnemyVariationSelector( false );
 	playerTracker = new PlayerTracker();
@@ -11905,7 +11905,7 @@ void EditSession::CreateTerrainModeHandleEvent()
 		{
 			createTerrainModeUI->SetTerrainTool(TERRAINTOOL_ADD);
 		}
-		else if (ev.key.code == Keyboard::S)
+		else if (ev.key.code == Keyboard::S && !ev.key.control)
 		{
 			createTerrainModeUI->SetTerrainTool(TERRAINTOOL_SUBTRACT);
 		}
