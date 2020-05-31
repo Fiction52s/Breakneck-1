@@ -3612,37 +3612,11 @@ void Actor::UpdatePrePhysics()
 		return;
 	}
 
-
-	/*else if (action == GRABSHIP)
-	{
-
-		if (currInput.A && !prevInput.A && owner->scoreDisplay->waiting)
-		{
-			owner->scoreDisplay->Deactivate();
-		}
-	}*/
-
-	/*if( bounceAttackHit && enemiesKilledLastFrame > 0 )
-	{
-		action = BOUNCESWORDBOOST;
-		frame = 0;
-		if( facingRight )
-			bounceSwordBoostDir = normalize( V2d( 1, 1 ) );
-		else
-			bounceSwordBoostDir = normalize( V2d( -1, 1 ) );
-		break;
-	}*/
-
 	if( ground != NULL )
 		currNormal = ground->Normal();
 
 	
 	ProcessReceivedHit();
-
-	//cout << "hitstunFrames: " << hitstunFrames << endl;
-	//choose action
-
-	
 	
 	canStandUp = true;
 	if( b.rh < normalHeight )
@@ -4464,6 +4438,8 @@ void Actor::SetAction( Action a )
 
 	action = a;
 	frame = 0;
+
+	StartAction();
 
 	if (repeatingSound != NULL)
 	{
