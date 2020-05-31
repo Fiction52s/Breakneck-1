@@ -7738,41 +7738,358 @@ void Actor::GroundExtraAccel()
 	}
 }
 
-//int blah = 0;
-void Actor::UpdatePhysics()
+
+void Actor::UpdateWirePhysics()
 {
-	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
-		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
-		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST)
-		return;	
-
-	if( action == DEATH )
-	{
-		return;
-	}
-
-	if(hitEnemyDuringPhyiscs)
-		return;
-	
-	if( rightWire != NULL )
+	if (rightWire != NULL)
 		rightWire->UpdateChargesPhysics();
-	if( leftWire != NULL )
+	if (leftWire != NULL)
 		leftWire->UpdateChargesPhysics();
 
 	if (rightWire != NULL)
 	{
 		rightWire->UpdateEnemyAnchor();
 	}
-	
+
 	if (leftWire != NULL)
 	{
 		leftWire->UpdateEnemyAnchor();
 	}
+}
+
+void Actor::UpdateGrindPhysics(double movement)
+{
+	Edge *e0 = grindEdge->edge0;
+	Edge *e1 = grindEdge->edge1;
+	V2d e0n = e0->Normal();
+	V2d e1n = e1->Normal();
+
+	double q = grindQuantity;
+	double hitBorderSpeed = GetDashSpeed() / 2;
+
+	while (!approxEquals(movement, 0))
+	{
+		//cout << "movement: " << movement << endl;
+		double gLen = length(grindEdge->v1 - grindEdge->v0);
+		if (movement > 0)
+		{
+			double extra = q + movement - gLen;
+			V2d gPoint = grindEdge->GetPosition(q + movement);
+			if (owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
+			{
+				grindSpeed = max(-grindSpeed, -hitBorderSpeed);
+				//grindSpeed = -grindSpeed;
+				return;
+			}
+
+			if (extra > 0)
+			{
+				movement -= gLen - q;
+
+
+				V2d v0 = grindEdge->v0;
+				V2d v1 = grindEdge->v1;
+
+
+				if (e1->edgeType == Edge::CLOSED_GATE)
+				{
+					Gate *gg = (Gate*)e1->info;
+					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
+					{
+						if (CanUnlockGate(gg))
+						{
+							//cout << "unlock gate" << endl;
+							UnlockGate(gg);
+
+							if (e1 == gg->edgeA)
+							{
+								gateTouched = gg->edgeB;
+
+							}
+							else
+							{
+								gateTouched = gg->edgeA;
+
+							}
+
+							e1 = grindEdge->edge1;
+						}
+					}
+				}
+				grindEdge = e1;
+
+				if (GameSession::IsWall(grindEdge->Normal()) == -1)
+				{
+					if (hasPowerGravReverse || grindEdge->Normal().y < 0)
+					{
+						hasDoubleJump = true;
+						hasAirDash = true;
+						hasGravReverse = true;
+						lastWire = 0;
+					}
+				}
+				q = 0;
+			}
+			else
+			{
+				q += movement;
+				movement = 0;
+			}
+		}
+		else if (movement < 0)
+		{
+			double extra = q + movement;
+
+			V2d gPoint = grindEdge->GetPosition(q + movement);
+			if (owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
+			{
+				grindSpeed = min(-grindSpeed, hitBorderSpeed);
+
+				return;
+			}
+
+			if (extra < 0)
+			{
+				movement -= movement - extra;
+
+				V2d v0 = grindEdge->v0;
+				sf::Rect<double> r(v0.x - 1, v0.y - 1, 2, 2);
+
+
+				//CheckStandUp();
+				//if( )
+
+				if (e0->edgeType == Edge::CLOSED_GATE)
+				{
+					Gate *gg = (Gate*)e0->info;
+					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
+					{
+						if (CanUnlockGate(gg))
+						{
+							//cout << "unlock gate" << endl;
+							UnlockGate(gg);
+
+							if (e0 == gg->edgeA)
+							{
+								gateTouched = gg->edgeB;
+							}
+							else
+							{
+								gateTouched = gg->edgeA;
+
+							}
+
+							e0 = grindEdge->edge0;
+						}
+					}
+				}
+				grindEdge = e0;
+				q = length(grindEdge->v1 - grindEdge->v0);
+
+				if (GameSession::IsWall(grindEdge->Normal()) == -1)
+				{
+					if (hasPowerGravReverse || grindEdge->Normal().y < 0)
+					{
+						hasDoubleJump = true;
+						hasAirDash = true;
+						hasGravReverse = true;
+						lastWire = 0;
+					}
+				}
+			}
+			else
+			{
+				q += movement;
+				movement = 0;
+			}
+		}
+	}
+	grindQuantity = q;
+
+	PhysicsResponse();
+}
+
+void Actor::HandleBounceGrass()
+{
+	if (minContact.normal.y < 0)
+	{
+		velocity.y = -25;
+	}
+	else if (minContact.normal.y > 0)
+	{
+		velocity.y = 25;
+	}
+
+	hasDoubleJump = true;
+	hasAirDash = true;
+
+	if (action == AIRDASH || IsSpringAction(action))
+	{
+		SetAction(JUMP);
+		frame = 1;
+	}
+}
+
+bool Actor::UpdateGrindRailPhysics(double movement)
+{
+	Edge *e0 = grindEdge->edge0;
+	Edge *e1 = grindEdge->edge1;
+	//V2d e0n = e0->Normal();
+	//V2d e1n = e1->Normal();
+
+	double q = grindQuantity;
+	while (!approxEquals(movement, 0))
+	{
+		//cout << "movement: " << movement << endl;
+		double gLen = length(grindEdge->v1 - grindEdge->v0);
+		if (movement > 0)
+		{
+			double extra = q + movement - gLen;
+			if (extra > 0)
+			{
+				movement -= gLen - q;
+
+
+
+				V2d v0 = grindEdge->v0;
+				V2d v1 = grindEdge->v1;
+
+				if (e1 != NULL)
+				{
+					grindEdge = e1;
+					q = 0;
+				}
+				else
+				{
+					SetAction(JUMP);
+					frame = 1;
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+					grindEdge = NULL;
+					regrindOffCount = 0;
+					framesNotGrinding = 0;
+					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
+					PhysicsResponse();
+					return true;
+				}
+			}
+			else
+			{
+				q += movement;
+				V2d posOld = position;
+				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+				if (col)
+				{
+					position = posOld;
+					SetAction(JUMP);
+					frame = 1;
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+					grindEdge = NULL;
+					regrindOffCount = 0;
+					framesNotGrinding = 0;
+					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+				}
+				movement = 0;
+			}
+		}
+		else if (movement < 0)
+		{
+			double extra = q + movement;
+			if (extra < 0)
+			{
+				movement -= movement - extra;
+
+				V2d v0 = grindEdge->v0;
+				sf::Rect<double> r(v0.x - 1, v0.y - 1, 2, 2);
+
+				if (e0 != NULL)
+				{
+					grindEdge = e0;
+					q = length(grindEdge->v1 - grindEdge->v0);
+				}
+				else
+				{
+					SetAction(JUMP);
+					frame = 1;
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+					grindEdge = NULL;
+					regrindOffCount = 0;
+					framesSinceGrindAttempt = 0;
+					framesNotGrinding = 0;
+					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
+					PhysicsResponse();
+					return true;
+
+				}
+			}
+			else
+			{
+				q += movement;
+				V2d posOld = position;
+				bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
+				if (col)
+				{
+					position = posOld;
+					SetAction(JUMP);
+					frame = 1;
+					framesNotGrinding = 0;
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+					grindEdge = NULL;
+					regrindOffCount = 0;
+					framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+				}
+				movement = 0;
+			}
+		}
+	}
+
+	if (action == RAILGRIND || action == RAILSLIDE)
+	{
+		grindQuantity = q;
+
+		PhysicsResponse();
+		return true;
+	}
+
+	return false;
+}
+
+void Actor::TryUnlockOnTransfer( Edge * e)
+{
+	if (e->edgeType == Edge::CLOSED_GATE)
+	{
+		Gate * g = (Gate*)e->info;
+
+		if (CanUnlockGate(g))
+		{
+			UnlockGate(g);
+
+			if (e == g->edgeA)
+			{
+				gateTouched = g->edgeB;
+			}
+			else
+			{
+				gateTouched = g->edgeA;
+
+			}
+		}
+	}
+}
+
+void Actor::UpdatePhysics()
+{
+	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
+		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
+		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
+		|| action == DEATH || hitEnemyDuringPhyiscs)
+		return;	
 	
+	UpdateWirePhysics();
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
 	V2d temp_velocity = velocity / (double)slowMultiple;
-	//cout << "temp velocity: " << temp_velocity.x << ", " << temp_velocity.y << endl;
 	double temp_grindSpeed = grindSpeed / slowMultiple;
 
 	leftGround = false;
@@ -7812,8 +8129,6 @@ void Actor::UpdatePhysics()
 	else
 	{
 		movementVec = temp_velocity / GetNumSteps();
-		//cout << "movelength: " << moveLength << endl;
-		//cout << "movevec: " << movementVec.x << ", " << movementVec.y << endl;
 	}
 
 	if( physicsOver )
@@ -7831,275 +8146,13 @@ void Actor::UpdatePhysics()
 
 	if( grindEdge != NULL && ( action == GRINDBALL || action == GRINDATTACK ))
 	{
-		Edge *e0 = grindEdge->edge0;
-		Edge *e1 = grindEdge->edge1;
-		V2d e0n = e0->Normal();
-		V2d e1n = e1->Normal();
-		
-		double q = grindQuantity;
-		double hitBorderSpeed = GetDashSpeed() / 2;
-
-		while( !approxEquals(movement, 0 ) )
-		{
-			//cout << "movement: " << movement << endl;
-			double gLen = length( grindEdge->v1 - grindEdge->v0 );
-			if( movement > 0 )
-			{
-				double extra = q + movement - gLen;
-				V2d gPoint = grindEdge->GetPosition(q + movement);
-				if ( owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
-				{
-					grindSpeed = max(-grindSpeed, -hitBorderSpeed);
-					//grindSpeed = -grindSpeed;
-					return;
-				}
-
-				if( extra > 0 )
-				{
-					movement -= gLen - q;
-					
-					
-					V2d v0 = grindEdge->v0;
-					V2d v1 = grindEdge->v1;
-					
-
-					if( e1->edgeType == Edge::CLOSED_GATE )
-					{
-						Gate *gg = (Gate*)e1->info;
-						if( gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN )
-						{
-							if( CanUnlockGate( gg ) )
-							{
-								//cout << "unlock gate" << endl;
-								UnlockGate( gg );
-
-								if( e1 == gg->edgeA )
-								{
-									gateTouched = gg->edgeB;
-
-								}
-								else
-								{
-									gateTouched = gg->edgeA;
-									
-								}
-								
-								e1 = grindEdge->edge1;
-							}
-						}
-					}
-					grindEdge = e1;
-
-					if( GameSession::IsWall( grindEdge->Normal() ) == -1 )
-					{
-						if( hasPowerGravReverse || grindEdge->Normal().y < 0 )
-						{
-							hasDoubleJump = true;
-							hasAirDash = true;
-							hasGravReverse = true;
-							lastWire = 0;
-						}
-					}
-					q = 0;
-				}
-				else
-				{
-					q += movement;
-					movement = 0;
-				}
-			}
-			else if( movement < 0 )
-			{
-				double extra = q + movement;
-
-				V2d gPoint = grindEdge->GetPosition(q + movement);
-				if (owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
-				{
-					grindSpeed = min( -grindSpeed, hitBorderSpeed);
-					
-					return;
-				}
-
-				if( extra < 0 )
-				{
-					movement -= movement - extra;
-
-					V2d v0 = grindEdge->v0;
-					sf::Rect<double> r( v0.x - 1, v0.y - 1, 2, 2 );
-
-					
-					//CheckStandUp();
-					//if( )
-
-					if( e0->edgeType == Edge::CLOSED_GATE )
-					{
-						Gate *gg = (Gate*)e0->info;
-						if( gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN )
-						{
-							if( CanUnlockGate( gg ) )
-							{
-								//cout << "unlock gate" << endl;
-								UnlockGate( gg );
-
-								if( e0 == gg->edgeA )
-								{
-									gateTouched = gg->edgeB;
-								}
-								else
-								{
-									gateTouched = gg->edgeA;
-									
-								}
-								
-								e0 = grindEdge->edge0;
-							}
-						}
-					}
-					grindEdge = e0;
-					q = length( grindEdge->v1 - grindEdge->v0 );
-
-					if( GameSession::IsWall( grindEdge->Normal() ) == -1 )
-					{
-						if( hasPowerGravReverse || grindEdge->Normal().y < 0 )
-						{
-							hasDoubleJump = true;
-							hasAirDash = true;
-							hasGravReverse = true;
-							lastWire = 0;
-						}
-					}
-				}
-				else
-				{
-					q += movement;
-					movement = 0;
-				}
-			}
-		}
-		grindQuantity = q;
-
-		PhysicsResponse();
+		UpdateGrindPhysics(movement);
 		return;
 	}
 	else if (grindEdge != NULL && ( action == RAILGRIND || action == RAILSLIDE ))
 	{
-		Edge *e0 = grindEdge->edge0;
-		Edge *e1 = grindEdge->edge1;
-		//V2d e0n = e0->Normal();
-		//V2d e1n = e1->Normal();
-
-		double q = grindQuantity;
-		while (!approxEquals(movement, 0))
+		if (UpdateGrindRailPhysics(movement))
 		{
-			//cout << "movement: " << movement << endl;
-			double gLen = length(grindEdge->v1 - grindEdge->v0);
-			if (movement > 0)
-			{
-				double extra = q + movement - gLen;
-				if (extra > 0)
-				{
-					movement -= gLen - q;
-
-					
-
-					V2d v0 = grindEdge->v0;
-					V2d v1 = grindEdge->v1;
-					
-					if (e1 != NULL)
-					{
-						grindEdge = e1;
-						q = 0;
-					}
-					else
-					{
-						SetAction(JUMP);
-						frame = 1;
-						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-						grindEdge = NULL;
-						regrindOffCount = 0;
-						framesNotGrinding = 0;
-						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-
-						PhysicsResponse();
-						return;
-					}					
-				}
-				else
-				{
-					q += movement;
-					V2d posOld = position;
-					bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
-					if (col)
-					{
-						position = posOld;
-						SetAction(JUMP);
-						frame = 1;
-						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-						grindEdge = NULL;
-						regrindOffCount = 0;
-						framesNotGrinding = 0;
-						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-					}
-					movement = 0;
-				}
-			}
-			else if (movement < 0)
-			{
-				double extra = q + movement;
-				if (extra < 0)
-				{
-					movement -= movement - extra;
-
-					V2d v0 = grindEdge->v0;
-					sf::Rect<double> r(v0.x - 1, v0.y - 1, 2, 2);
-
-					if (e0 != NULL)
-					{
-						grindEdge = e0;
-						q = length(grindEdge->v1 - grindEdge->v0);
-					}
-					else
-					{
-						SetAction(JUMP);
-						frame = 1;
-						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-						grindEdge = NULL;
-						regrindOffCount = 0;
-						framesSinceGrindAttempt = 0;
-						framesNotGrinding = 0;
-						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-
-						PhysicsResponse();
-						return;
-						
-					}
-				}
-				else
-				{
-					q += movement;
-					V2d posOld = position;
-					bool col = ResolvePhysics(normalize(grindEdge->v1 - grindEdge->v0) * movement);
-					if (col)
-					{
-						position = posOld;
-						SetAction(JUMP);
-						frame = 1;
-						framesNotGrinding = 0;
-						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-						grindEdge = NULL;
-						regrindOffCount = 0;
-						framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-					}
-					movement = 0;
-				}
-			}
-		}
-
-		if (action == RAILGRIND || action == RAILSLIDE )
-		{
-			grindQuantity = q;
-
-			PhysicsResponse();
 			return;
 		}
 	}
@@ -8113,7 +8166,6 @@ void Actor::UpdatePhysics()
 			return;
 		}
 		movementVec = reverseExtra;
-		
 	}
 
 	do
@@ -8178,74 +8230,22 @@ void Actor::UpdatePhysics()
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ));
-		//	cout << "transferRight: " << transferRight << ": offset: " << offsetX << endl;
+
 			bool offsetLeft = movement < 0 && offsetX > -b.rw && ( (q == 0 && e0n.x < 0) || (q == groundLength && gNormal.x < 0) );
 				
 			bool offsetRight = movement > 0 && offsetX < b.rw && ( ( q == groundLength && e1n.x > 0 ) || (q == 0 && gNormal.x > 0) );
 			bool changeOffset = offsetLeft || offsetRight;
-		//	cout << "speed: " << groundSpeed << ", pass: " << (offsetX == -b.rw ) << ", " << (e1n.x <=0 ) << ", " << (q == groundLength && movement > 0) << ", q: " << q << ", len: " << groundLength << endl;
 
 			//on reverse doesnt need to fly up off of edges
 			if( transferLeft )
 			{
-				if( ground->edgeType == Edge::CLOSED_GATE )
-				{
-					Gate * g = (Gate*)ground->info;
-					if( g->edgeA == ground )
-					{
-						cout << "i am edgeA w/ edge0: ";
-					}
-					else
-					{
-						cout << "i am edgeB w/ edge0: ";
-					}
-					cout << ground->edge0 << ", ";
+				TryUnlockOnTransfer(e0);
 
-					if( ground->edge0 == g->temp0next )
-					{
-						cout << "temp0next" << endl;
-					}
-					else if( ground->edge0 == g->temp0prev )
-					{
-						cout << "temp0prev" << endl;
-					}
-					else if( ground->edge0 == g->temp1prev )
-					{
-						cout << "temp1prev" << endl;
-					}
-					else if( ground->edge0 == g->temp1prev )
-					{
-						cout << "temp1prev" << endl;
-					}
-				}
-				//cout << "gNormal: " << gNormal.x << ", " << gNormal.y << ", edge0: " << ground->edge0->Normal().x 
-				//	<< ", " << ground->edge0->Normal().y << endl;
-				if( e0->edgeType == Edge::CLOSED_GATE )
-				{
-					Gate * g = (Gate*)e0->info;
-					cout << "testing for unlock gate" << endl;
-					if( CanUnlockGate( g ) )
-					{
-						cout << "unlock gate" << endl;
-						UnlockGate( g );
-
-						if( e0 == g->edgeA )
-						{
-							gateTouched = g->edgeB;
-						}
-						else
-						{
-							gateTouched = g->edgeA;
-							
-						}
-						//break;
-					}
-				}
-				//cout << "transfer left "<< endl;
 				Edge *next = ground->edge0;
 				double yDist = abs( gNormal.x ) * groundSpeed;
-				//cout << "yDist: " << yDist << ", -slopeluanchspeed: " << -slopeLaunchMinSpeed << endl;
-				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() /*&& !currInput.LLeft()*/ && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
+				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh 
+					&& !(currInput.LUp() && gNormal.x > 0 
+						&& yDist < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
@@ -8256,8 +8256,6 @@ void Actor::UpdatePhysics()
 						}
 						else
 						{
-							//cout << "tff" << endl;
-							//cout << "steep transfer left" << endl;
 							ground = next;
 							q = length( ground->v1 - ground->v0 );	
 						}
@@ -8269,9 +8267,6 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
-					//	cout << "e0ny: " << e0n.y << ", gs: " << groundSpeed << "st: " << steepThresh <<
-					//		", scst: " << steepClimbSpeedThresh  << endl;
-
 						if( e0n.y > -steepThresh )
 						{
 							if( e0n.x < 0 )
@@ -8286,18 +8281,14 @@ void Actor::UpdatePhysics()
 									{
 										movementVec.x = -.01;
 									}
-									//cout << "airborne 6" << endl;
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 									holdJump = false;
 								}
 								else
 								{
-								//	cout << "this steep" << endl;
 									facingRight = false;
 									if (!IsGroundAttackAction(action))
 									{
@@ -8305,20 +8296,15 @@ void Actor::UpdatePhysics()
 										SetAction(STEEPSLIDE);
 										frame = 0;
 									}
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = length( ground->v1 - ground->v0 );	
 								}
 							}
 							else if( e0n.x > 0 )
 							{
-							//	cout << "this steepclimb" << endl;
 								facingRight = false;
 								SetAction(STEEPCLIMB);
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = length( ground->v1 - ground->v0 );	
 							}
@@ -8337,48 +8323,24 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
-				//	cout << "leave left 2" << endl;
 					velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
 					movementVec = normalize( ground->v1 - ground->v0 ) * (extra);
-					//cout << "b4 vec: " << movementVec.x << ", " << movementVec.y << endl;
 					movementVec.y -= .01;
 					if( movementVec.x >= -.01 )
 					{
 						movementVec.x = -.01;
 					}
-					//cout << "airborne 7" << endl;
-					//cout << "after vec: " << movementVec.x << ", " << movementVec.y << endl;
 					leftGround = true;
 					SetActionExpr( JUMP );
 					frame = 1;
 					holdJump = false;
-					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 					ground = NULL;
 				}
 			}
 			else if( transferRight )
 			{
-				if( e1->edgeType == Edge::CLOSED_GATE )
-				{
-					Gate * g = (Gate*)e1->info;
+				TryUnlockOnTransfer(e1);
 
-					if( CanUnlockGate( g ) )
-					{
-						UnlockGate( g );
-
-						if( e1 == g->edgeA )
-						{
-							gateTouched = g->edgeB;
-						}
-						else
-						{
-							gateTouched = g->edgeA;
-							
-						}
-					}
-				}
-			//	cout << "transferRight!" << endl;
 				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
 				V2d nextNorm = next->Normal();
@@ -8397,7 +8359,6 @@ void Actor::UpdatePhysics()
 						{
 							ground = next;
 							q = 0;
-					//		cout << "steep transfer right" << endl;
 						}
 					}
 					else if( gNormal.x < 0 && gNormal.y > -steepThresh )
@@ -8423,19 +8384,14 @@ void Actor::UpdatePhysics()
 									{
 										movementVec.x = .01;
 									}
-						//			cout << "airborne 9" << endl;
 									leftGround = true;
 									SetActionExpr( JUMP );
 									frame = 1;
 									holdJump = false;
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = NULL;
 								}
 								else
 								{
-						//			cout << "this steep 1" << endl;
-									//cout << "slidin" << endl;
 									facingRight = true;
 									if (!IsGroundAttackAction(action))
 									{
@@ -8443,21 +8399,15 @@ void Actor::UpdatePhysics()
 										SetAction(STEEPSLIDE);
 										frame = 0;
 									}
-									
-									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 									ground = next;
 									q = 0;
 								}
 							}
 							else if( e1n.x < 0 )
 							{
-						//		cout << "this here??" << endl;
 								facingRight = true;
 								SetAction(STEEPCLIMB);
 								frame = 0;
-								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
-								//leftWire->UpdateAnchors( V2d( 0, 0 ) );
 								ground = next;
 								q = 0;
 							}
@@ -9460,23 +9410,7 @@ void Actor::UpdatePhysics()
 			
 			if (tempCollision && bounceGrassCount > 0)
 			{
-				if (minContact.normal.y < 0)
-				{
-					velocity.y = -25;
-				}
-				else if( minContact.normal.y > 0 )
-				{
-					velocity.y = 25;
-				}
-				
-				hasDoubleJump = true;
-				hasAirDash = true;
-
-				if (action == AIRDASH || IsSpringAction(action) )
-				{
-					SetAction(JUMP);
-					frame = 1;
-				}
+				HandleBounceGrass();
 			}
 			else if (tempCollision && action == SPRINGSTUNBOUNCE)
 			{

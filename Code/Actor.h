@@ -839,6 +839,12 @@ struct Actor : QuadTreeCollider,
 	void UpdateScorpCap();
 	void ProcessHitGoal();
 
+	void UpdateWirePhysics();
+	void UpdateGrindPhysics(double movement);
+	void HandleBounceGrass();
+	bool UpdateGrindRailPhysics(double movement);
+	void TryUnlockOnTransfer( Edge *e );
+
 	void UpdateSpeedBar();
 	bool CareAboutSpeedAction();
 	void UpdateMotionGhosts();
