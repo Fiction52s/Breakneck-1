@@ -1534,9 +1534,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currHitboxInfo->freezeDuringStun = true;
 		
 	framesGrinding = 0;
-	percentCloneChanged = 0;
-	percentCloneRate = .01;
-	changingClone = false;
 
 	desperationMode = false;
 	maxDespFrames = 60 * 5;
@@ -1565,11 +1562,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//cb.offsetAngle = 0;
 	cb.rw = 64;
 	cb.rh = 64;
-
-	for( int i = 0; i < MAX_GHOSTS; ++i )
-	{
-		ghosts[i] = new PlayerGhost;
-	}
 
 	//setup hitboxes
 	{
@@ -2185,14 +2177,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	minRailGrindSpeed[1] = dashSpeed1;
 	minRailGrindSpeed[2] = dashSpeed2;
 
-	record = false;
-	blah = false;
-
 	touchEdgeWithLeftWire= false;
 	touchEdgeWithRightWire= false;
-	ghostFrame = 0;
-
-	recordedGhosts = 0;
 
 	bubbleSprite.setTexture( *ts_bubble->texture );
 
@@ -2219,7 +2205,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hasPowerTimeSlow = false;
 	hasPowerLeftWire = false;
 	hasPowerRightWire = false;
-	hasPowerClones = 0;
 
 	if (true)
 	{
@@ -2410,11 +2395,6 @@ Actor::~Actor()
 	}
 	delete[] bubbleHitboxes;
 
-	for (int i = 0; i < MAX_GHOSTS; ++i)
-	{
-		if (ghosts[i] != NULL)
-			delete ghosts[i];
-	}
 	//eventually delete everything here lol
 }
 
@@ -2940,10 +2920,7 @@ void Actor::Respawn()
 	grindEdge = NULL;
 	bounceEdge = NULL;
 	dead = false;
-	
-	record = 0;
-	recordedGhosts = 0;
-	blah = false;
+
 	receivedHit = NULL;
 	speedParticleCounter = 1;
 	speedLevel = 0;
@@ -3030,7 +3007,7 @@ double Actor::GetBounceFlameAccel()
 	return bounceFlameAccel;
 }
 
-void Actor::HandleAirTrigger()
+void Actor::CheckForAirTrigger()
 {
 	if (owner == NULL)
 		return;
@@ -3052,144 +3029,27 @@ void Actor::HandleAirTrigger()
 	}
 }
 
-void Actor::UpdatePrePhysics()
+void Actor::HandleAirTrigger()
 {
-
-	if ( owner != NULL && owner->stormCeilingOn)
-	{
-		//if (ground == NULL && grindEdge == NULL && bounceEdge == NULL)
-		//{
-		//	if (position.y < owner->stormCeilingHeight)
-		//	{
-		//		/*hitlagFrames = 10;
-		//		hitstunFrames = 60;
-		//		invincibleFrames = 0;
-
-		//		
-		//		owner->Pause(6);
-
-		//		
-
-		//		SetExpr(Expr::Expr_HURT);*/
-
-		//		
-		//	}
-
-		//	if (dmgRet > 0 && !desperationMode)
-		//	{
-		//		desperationMode = true;
-		//		despCounter = 0;
-		//		//action = DEATH;
-		//		//frame = 0;
-		//	}
-
-
-
-
-		//	receivedHit = NULL;
-		//	}
-		//}
-	}
-
-	//for gravity grass
-	if (ground != NULL && reversed && !hasPowerGravReverse && gravityGrassCount == 0 )
-	{
-		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
-		//need to delay a frame so that the player can see themselves not being in the grass
-		//before they fall
-		if (bounceFlameOn)
-			airBounceFrame = 13 * 3;
-		//so you dont jump straight up on a nearly vertical edge
-		double blah = .5;
-
-		V2d dir(0, 0);
-
-		dir.y = .2;
-		V2d along = normalize(ground->v1 - ground->v0);
-		V2d trueNormal = along;
-		if (groundSpeed > 0)
-			trueNormal = -trueNormal;
-
-		trueNormal = normalize(trueNormal + dir);
-		velocity = abs(groundSpeed) * trueNormal;
-
-		ground = NULL;
-		frame = 1; //so it doesnt use the jump frame when just dropping
-		reversed = false;
-		framesInAir = 0;
-		SetAction(JUMP);
-		frame = 1;
-
-	}
-
-	HandleAirTrigger();
-	//cout << "Start frame" << endl;
-	if (airTrigBehavior == AT_AUTORUNRIGHT)
-	{ 
-		if (ground != NULL)
-		{
-			owner->adventureHUD->Hide(60);
-			SetAction(AUTORUN);
-			frame = 0;
-			maxAutoRunSpeed = 25;
-			/*if (groundSpeed > 0)
-			{
-				
-			}
-			else
-			{
-				groundSpeed = 10;
-			}*/
-			facingRight = true;
-			airTrigBehavior = AT_NONE;
-		}
-	}
-	//cout << "JFRAME BEHI: " << frame << endl;
-
-	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown() 
-		&& ( owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
-	{
-		if (owner->drain && !desperationMode 
-			&& !IsIntroAction( action ) && !IsGoalKillAction( action ) && !IsExitAction( action ) && !IsSequenceAction( action )
-			&& owner->activeSequence == NULL )
-		{
-			drainCounter++;
-			if (drainCounter == drainCounterMax)
-			{
-				int res = kinRing->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
-				//cout << "drain by " << drainAmount << endl;
-				if (res > 0)
-				{
-					desperationMode = true;
-					despCounter = 0;
-				}
-				drainCounter = 0;
-			}
-		}
-	}
-	
-
-	enemiesKilledLastFrame = enemiesKilledThisFrame;
-	enemiesKilledThisFrame = 0;
-	
-
-	//cout << "action: " << action << endl;
-	
 	if (currAirTrigger != NULL)
 	{
-		HandleAirTrigger();
-	}
-
-	if( action == DEATH )
-	{
-		if( frame >= actionLength[action] ) 
+		if (airTrigBehavior == AT_AUTORUNRIGHT)
 		{
-			dead = true;
-			frame = 0;
+			if (ground != NULL)
+			{
+				owner->adventureHUD->Hide(60);
+				SetAction(AUTORUN);
+				frame = 0;
+				maxAutoRunSpeed = 25;
+				facingRight = true;
+				airTrigBehavior = AT_NONE;
+			}
 		}
-		return;
 	}
+}
 
+void Actor::DesperationUpdate()
+{
 	if( desperationMode )
 	{
 		
@@ -3263,11 +3123,7 @@ void Actor::UpdatePrePhysics()
 		//sh.setUniform( "despColor", ColorGL(currentDespColor) );
 		despFaceShader.setUniform( "toColor", ColorGL(currentDespColor) );
 		playerDespShader.setUniform("toColor", ColorGL(currentDespColor));
-		//sh.setUniform( "auraColor", ColorGL(auraColor) );
-		//currentDespColor
 
-
-		//cout << "desperation: " << despCounter << endl;
 		despCounter++;
 		if( kinRing != NULL && despCounter == maxDespFrames )
 		{
@@ -3292,93 +3148,403 @@ void Actor::UpdatePrePhysics()
 			{
 				kinRing->powerRing->mode == PowerRing::NORMAL;
 			}
-
 		}
 	}
+}
 
-	if( kinRing != NULL && hasPowerClones &&  ( (currInput.RUp() && !prevInput.RUp()) || ( currInput.rightPress && !prevInput.rightPress ) ) )
-	{
-		if( record == 0 )
-		{
-			//SaveState();
-			//owner->SaveState();
-			recordedGhosts = 1;
-			ghosts[record]->currFrame = 0;
-			ghostFrame = 0;
-			//owner->powerWheel->Use( 20 );
-			kinRing->powerRing->Drain(20);
-			record++;
-			changingClone = true;
-			percentCloneChanged = 0;
-			sess->Pause( 60 );
-			//percentCloneRate = .01;
-		}
-		else
-		{
-			if( recordedGhosts < MAX_GHOSTS )
-			{
-				cout << "creating ghost: " << recordedGhosts + 1 << ", of " << MAX_GHOSTS << endl;
-				//LoadState();
-				//owner->LoadState();
-				recordedGhosts++;
-				ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
-				ghosts[record]->currFrame = 0;
-				ghostFrame = 1;
-				record++;
-				changingClone = true;
-				sess->Pause( 60 );
-				percentCloneChanged = 0;
-			}
-			
-			
-		}
-
-		//record = true;
-		blah = false;
-	}
-		
-
-		
-	if( kinRing != NULL && record > 0 && ( ( currInput.RDown() && !prevInput.RDown() ) || ghosts[record-1]->currFrame == PlayerGhost::MAX_FRAMES - 1 ) )
-	{
-		//record = false;
-		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
-		record = 0;
-		//LoadState();
-		//owner->LoadState(); 
-		blah = true;
-		ghostFrame = 1;
-		//cout << "recordedGhosts: " << recordedGhosts << endl;
-		//owner->powerBar.Charge( 20 );
-		kinRing->powerRing->Fill(20);
-	}
-
-
-	if( reversed )
+void Actor::ReverseVerticalInputsWhenOnCeiling()
+{
+	if (reversed)
 	{
 		bool up = currInput.LUp();
 		bool down = currInput.LDown();
 
-		if( up ) currInput.leftStickPad -= 1;
-		if( down ) currInput.leftStickPad -= 2;
+		if (up) currInput.leftStickPad -= 1;
+		if (down) currInput.leftStickPad -= 2;
 
-		if( up ) currInput.leftStickPad += 2;
-		if( down ) currInput.leftStickPad += 1;
+		if (up) currInput.leftStickPad += 2;
+		if (down) currInput.leftStickPad += 1;
 	}
+}
+
+void Actor::ProcessReceivedHit()
+{
+	if (receivedHit != NULL)
+	{
+		assert(action != DEATH);
+
+		hitlagFrames = receivedHit->hitlagFrames;
+		hitstunFrames = receivedHit->hitstunFrames;
+		setHitstunFrames = hitstunFrames;
+		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+
+		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
+		sess->Pause(hitlagFrames);
+
+		ActivateSound(S_HURT);
+
+		if (kinRing != NULL)
+			kinRing->powerRing->Drain(receivedHit->damage);
+
+		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
+					   //bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
+
+		if (ground != NULL)
+		{
+			if (reversed)
+				reversed = false;
+			ground = NULL;
+			SetAction(JUMP);
+			frame = 1;
+		}
+
+		if (true)
+		{
+			bool onRail = IsOnRailAction(action) || (grindEdge != NULL && action == JUMPSQUAT);
+			if (grindEdge != NULL && !onRail)
+			{
+				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
+				//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
+				//grindSpeed *= .8;
+
+				V2d op = position;
+
+				V2d grindNorm = grindEdge->Normal();
+
+				if (grindNorm.y < 0)
+				{
+					double extra = 0;
+					if (grindNorm.x > 0)
+					{
+						offsetX = b.rw;
+						extra = .1;
+					}
+					else if (grindNorm.x < 0)
+					{
+						offsetX = -b.rw;
+						extra = -.1;
+					}
+					else
+					{
+						offsetX = 0;
+					}
+
+					position.x += offsetX + extra;
+
+					position.y -= normalHeight + .1;
+
+					if (!CheckStandUp())
+					{
+						position = op;
+
+						if (kinRing != NULL)
+							kinRing->powerRing->Drain(receivedHit->damage);
+
+						//apply extra damage since you cant stand up
+					}
+					else
+					{
+						framesNotGrinding = 0;
+						hasAirDash = true;
+						hasGravReverse = true;
+						hasDoubleJump = true;
+						lastWire = 0;
+						ground = grindEdge;
+						edgeQuantity = grindQuantity;
+						groundSpeed = grindSpeed;
+
+						hurtBody.isCircle = false;
+						hurtBody.rw = 7;
+						hurtBody.rh = normalHeight;
+
+						SetAction(GROUNDHITSTUN);
+						frame = 0;
+
+						if (receivedHit->knockback > 0)
+						{
+							groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+						}
+						else
+						{
+							groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+						}
+
+						if (toggleGrindInput)
+						{
+							currInput.Y = false;
+						}
+
+						grindEdge = NULL;
+						reversed = false;
+					}
+
+				}
+				else
+				{
+
+					if (grindNorm.x > 0)
+					{
+						position.x += b.rw + .1;
+					}
+					else if (grindNorm.x < 0)
+					{
+						position.x += -b.rw - .1;
+					}
+
+					if (grindNorm.y > 0)
+						position.y += normalHeight + .1;
+
+					if (!CheckStandUp())
+					{
+						position = op;
+
+						//owner->powerWheel->Damage( receivedHit->damage );
+						if (kinRing != NULL)
+							kinRing->powerRing->Drain(receivedHit->damage);
+
+						//apply extra damage since you cant stand up
+					}
+					else
+					{
+						//abs( e0n.x ) < wallThresh )
+
+						if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh || !hasGravReverse) || grindEdge->IsInvisibleWall())
+						{
+							framesNotGrinding = 0;
+							if (reversed)
+							{
+								velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
+							}
+							else
+							{
+								velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+							}
+
+
+							//SetActionExpr( JUMP );
+							SetAction(AIRHITSTUN);
+							frame = 0;
+							if (receivedHit->knockback > 0)
+							{
+								velocity = receivedHit->knockback * receivedHit->kbDir;
+							}
+							else
+							{
+								velocity.x *= (1 - receivedHit->drainX);
+								velocity.y *= (1 - receivedHit->drainY);
+							}
+
+							if (toggleGrindInput)
+							{
+								currInput.Y = false;
+							}
+
+							hurtBody.isCircle = false;
+							hurtBody.rw = 7;
+							hurtBody.rh = normalHeight;
+
+							//	frame = 0;
+							ground = NULL;
+							grindEdge = NULL;
+							reversed = false;
+						}
+						else
+						{
+							//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+							if (grindNorm.x > 0)
+							{
+								offsetX = b.rw;
+							}
+							else if (grindNorm.x < 0)
+							{
+								offsetX = -b.rw;
+							}
+							else
+							{
+								offsetX = 0;
+							}
+
+							hasAirDash = true;
+							hasGravReverse = true;
+							hasDoubleJump = true;
+							lastWire = 0;
+
+
+							ground = grindEdge;
+							groundSpeed = -grindSpeed;
+							edgeQuantity = grindQuantity;
+							grindEdge = NULL;
+							reversed = true;
+							hasGravReverse = false;
+
+							hurtBody.isCircle = false;
+							hurtBody.rw = 7;
+							hurtBody.rh = normalHeight;
+
+							SetAction(GROUNDHITSTUN);
+							frame = 0;
+
+							if (toggleGrindInput)
+							{
+								currInput.Y = false;
+							}
+
+							if (receivedHit->knockback > 0)
+							{
+								groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+							}
+							else
+							{
+								groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+							}
+
+							frame = 0;
+							framesNotGrinding = 0;
+
+							double angle = GroundedAngle();
 
 
 
+							ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+							ActivateSound(S_GRAVREVERSE);
+						}
+					}
+				}
+
+			}
+			else if (ground == NULL || onRail)
+			{
+				ground = NULL;
+				grindEdge = NULL;
+				bounceEdge = NULL;
+				SetAction(AIRHITSTUN);
+				frame = 0;
+				if (receivedHit->knockback > 0)
+				{
+					velocity = receivedHit->knockback * receivedHit->kbDir;
+				}
+				else
+				{
+					velocity.x *= (1 - receivedHit->drainX);
+					velocity.y *= (1 - receivedHit->drainY);
+				}
+
+			}
+			else
+			{
+				SetAction(GROUNDHITSTUN);
+				frame = 0;
+
+				if (receivedHit->knockback > 0)
+				{
+					groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+				}
+				else
+				{
+					groundSpeed *= (1 - receivedHit->drainX) * abs(currNormal.y) + (1 - receivedHit->drainY) * abs(currNormal.x);
+				}
+
+				//dot( receivedHit->kbDir, normalize( ground->v1 - ground->v0 ) ) * receivedHit->knockback;
+			}
+			bounceEdge = NULL;
+		}
+
+		if (dmgRet > 0 && !desperationMode)
+		{
+			desperationMode = true;
+			despCounter = 0;
+			//action = DEATH;
+			//frame = 0;
+		}
+
+
+
+
+		receivedHit = NULL;
+	}
+}
+
+void Actor::UpdateDrain()
+{
+	if (kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown()
+		&& (owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
+	{
+		if (owner->drain && !desperationMode
+			&& !IsIntroAction(action) && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
+			&& owner->activeSequence == NULL)
+		{
+			drainCounter++;
+			if (drainCounter == drainCounterMax)
+			{
+				int res = kinRing->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
+																 //cout << "drain by " << drainAmount << endl;
+				if (res > 0)
+				{
+					desperationMode = true;
+					despCounter = 0;
+				}
+				drainCounter = 0;
+			}
+		}
+	}
+}
+
+void Actor::ProcessGravityGrass()
+{
+	if (ground != NULL && reversed && !hasPowerGravReverse && gravityGrassCount == 0)
+	{
+		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
+		//need to delay a frame so that the player can see themselves not being in the grass
+		//before they fall
+		if (bounceFlameOn)
+			airBounceFrame = 13 * 3;
+		//so you dont jump straight up on a nearly vertical edge
+		double blah = .5;
+
+		V2d dir(0, 0);
+
+		dir.y = .2;
+		V2d along = normalize(ground->v1 - ground->v0);
+		V2d trueNormal = along;
+		if (groundSpeed > 0)
+			trueNormal = -trueNormal;
+
+		trueNormal = normalize(trueNormal + dir);
+		velocity = abs(groundSpeed) * trueNormal;
+
+		ground = NULL;
+		frame = 1; //so it doesnt use the jump frame when just dropping
+		reversed = false;
+		framesInAir = 0;
+		SetAction(JUMP);
+		frame = 1;
+	}
+}
+
+void Actor::UpdatePrePhysics()
+{
+	ProcessGravityGrass();
+	CheckForAirTrigger();
+	HandleAirTrigger();
+
+	UpdateDrain();
+	
+	enemiesKilledLastFrame = enemiesKilledThisFrame;
+	enemiesKilledThisFrame = 0;
+
+	DesperationUpdate();
+
+	ReverseVerticalInputsWhenOnCeiling();
 
 	ActionEnded();
+
+	if (action == DEATH)
+		return;
 
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST )
 	{
-		/*if (action == SPAWNWAIT && frame == actionLength[SPAWNWAIT] - 6)
-		{
-			ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), spriteCenter, false, 0, 6, 2, true);
-		}*/
 		if( action == WAITFORSHIP )
 		{ 
 			HandleWaitingScoreDisplay();
@@ -3445,6 +3611,8 @@ void Actor::UpdatePrePhysics()
 		}
 		return;
 	}
+
+
 	/*else if (action == GRABSHIP)
 	{
 
@@ -3468,303 +3636,8 @@ void Actor::UpdatePrePhysics()
 	if( ground != NULL )
 		currNormal = ground->Normal();
 
-	if( receivedHit != NULL && action != DEATH )
-	{
-		hitlagFrames = receivedHit->hitlagFrames;
-		hitstunFrames = receivedHit->hitstunFrames;
-		setHitstunFrames = hitstunFrames;
-		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
-		
-		ActivateEffect( EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight );
-		sess->Pause( hitlagFrames );
-
-		ActivateSound( S_HURT );
-
-		if( kinRing != NULL )
-			kinRing->powerRing->Drain(receivedHit->damage);
-
-		//kinMask->SetExpr( KinMask::Expr::Expr_HURT );
-		//expr = Expr::Expr_HURT;
-		
-		//cout << "damaging player with: " << receivedHit->damage << endl;
-		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
-		//bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
-
-		if (ground != NULL)
-		{
-			if (reversed)
-				reversed = false;
-			ground = NULL;
-			SetAction(JUMP);
-			frame = 1;
-			//velocity = V2d(0, 0);
-			//velocity = normalize( ground->v)
-		}
-
-		if( true )
-		{
-			bool onRail = IsOnRailAction(action) || (grindEdge != NULL && action == JUMPSQUAT);
-			if( grindEdge != NULL && !onRail)
-			{
-				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
-				//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
-				//grindSpeed *= .8;
-				
-				V2d op = position;
-
-				V2d grindNorm = grindEdge->Normal();
-
-				if( grindNorm.y < 0 )
-				{
-					double extra = 0;
-					if( grindNorm.x > 0 )
-					{
-						offsetX = b.rw;
-						extra = .1;
-					}
-					else if( grindNorm.x < 0 )
-					{
-						offsetX = -b.rw;
-						extra = -.1;
-					}
-					else
-					{
-						offsetX = 0;
-					}
-				
-					position.x += offsetX + extra;
-
-					position.y -= normalHeight + .1;
-
-					if( !CheckStandUp() )
-					{
-						position = op;
-						
-						if( kinRing != NULL )
-							kinRing->powerRing->Drain(receivedHit->damage);
-						
-						//apply extra damage since you cant stand up
-					}
-					else
-					{
-						framesNotGrinding = 0;
-						hasAirDash = true;
-						hasGravReverse = true;
-						hasDoubleJump = true;
-						lastWire = 0;
-						ground = grindEdge;
-						edgeQuantity = grindQuantity;
-						groundSpeed = grindSpeed;
-
-						hurtBody.isCircle = false;
-						hurtBody.rw = 7;
-						hurtBody.rh = normalHeight;
-
-						SetAction(GROUNDHITSTUN);
-						frame = 0;
-
-						if( receivedHit->knockback > 0 )
-						{
-							groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-						}
-						else
-						{
-							groundSpeed *= (1-receivedHit->drainX) * abs(grindNorm.y) + (1-receivedHit->drainY) * abs(grindNorm.x);
-						}
-
-						if( toggleGrindInput )
-						{
-							currInput.Y = false;
-						}
-
-						grindEdge = NULL;
-						reversed = false;
-					}
-
-				}
-				else
-				{
-					
-					if( grindNorm.x > 0 )
-					{
-						position.x += b.rw + .1;
-					}
-					else if( grindNorm.x < 0 )
-					{
-						position.x += -b.rw - .1;
-					}
-
-					if( grindNorm.y > 0 )
-						position.y += normalHeight + .1;
-
-					if( !CheckStandUp() )
-					{
-						position = op;
-
-						//owner->powerWheel->Damage( receivedHit->damage );
-						if( kinRing != NULL )
-							kinRing->powerRing->Drain(receivedHit->damage);
-						
-						//apply extra damage since you cant stand up
-					}
-					else
-					{
-						//abs( e0n.x ) < wallThresh )
-
-						if( !hasPowerGravReverse || ( abs( grindNorm.x ) >= wallThresh || !hasGravReverse ) || grindEdge->IsInvisibleWall() )
-						{
-							framesNotGrinding = 0;
-							if( reversed )
-							{
-								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * -grindSpeed;
-							}
-							else
-							{
-								velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-							}
-							
-
-							//SetActionExpr( JUMP );
-							SetAction(AIRHITSTUN);
-							frame = 0;
-							if( receivedHit->knockback > 0 )
-							{
-								velocity = receivedHit->knockback * receivedHit->kbDir;
-							}
-							else
-							{
-								velocity.x *= (1 - receivedHit->drainX);
-								velocity.y *= (1 - receivedHit->drainY);
-							}
-
-							if( toggleGrindInput )
-							{
-								currInput.Y = false;
-							}
-
-							hurtBody.isCircle = false;
-							hurtBody.rw = 7;
-							hurtBody.rh = normalHeight;
-
-						//	frame = 0;
-							ground = NULL;
-							grindEdge = NULL;
-							reversed = false;
-						}
-						else
-						{
-						//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-							if( grindNorm.x > 0 )
-							{
-								offsetX = b.rw;
-							}
-							else if( grindNorm.x < 0 )
-							{
-								offsetX = -b.rw;
-							}
-							else
-							{
-								offsetX = 0;
-							}
-
-							hasAirDash = true;
-							hasGravReverse = true;
-							hasDoubleJump = true;
-							lastWire = 0;
-
-
-							ground = grindEdge;
-							groundSpeed = -grindSpeed;
-							edgeQuantity = grindQuantity;
-							grindEdge = NULL;
-							reversed = true;
-							hasGravReverse = false;
-
-							hurtBody.isCircle = false;
-							hurtBody.rw = 7;
-							hurtBody.rh = normalHeight;
-
-							SetAction(GROUNDHITSTUN);
-							frame = 0;
-
-							if( toggleGrindInput )
-							{
-								currInput.Y = false;
-							}
-
-							if( receivedHit->knockback > 0 )
-							{
-								groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-							}
-							else
-							{
-								groundSpeed *= (1-receivedHit->drainX) * abs(grindNorm.y) + (1-receivedHit->drainY) * abs(grindNorm.x);
-							}
-
-							frame = 0;
-							framesNotGrinding = 0;
-
-							double angle = GroundedAngle();
-
-
-
-							ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-							ActivateSound( S_GRAVREVERSE );
-						}
-					}
-				}		
-
-			}
-			else if (ground == NULL || onRail)
-			{
-				ground = NULL;
-				grindEdge = NULL;
-				bounceEdge = NULL;
-				SetAction(AIRHITSTUN);
-				frame = 0;
-				if( receivedHit->knockback > 0 )
-				{
-					velocity = receivedHit->knockback * receivedHit->kbDir;
-				}
-				else
-				{
-					velocity.x *= (1 - receivedHit->drainX);
-					velocity.y *= (1 - receivedHit->drainY);
-				}
-				
-			}
-			else
-			{
-				SetAction(GROUNDHITSTUN);
-				frame = 0;
-
-				if( receivedHit->knockback > 0 )
-				{
-					groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-				}
-				else
-				{
-					groundSpeed *= (1-receivedHit->drainX) * abs(currNormal.y) + (1-receivedHit->drainY) * abs(currNormal.x);
-				}
-				
-				//dot( receivedHit->kbDir, normalize( ground->v1 - ground->v0 ) ) * receivedHit->knockback;
-			}
-			bounceEdge = NULL;
-		}
-		
-		if( dmgRet > 0 && !desperationMode )
-		{
-			desperationMode = true;
-			despCounter = 0;
-			//action = DEATH;
-			//frame = 0;
-		}
-
-
-
-		
-		receivedHit = NULL;
-	}
+	
+	ProcessReceivedHit();
 
 	//cout << "hitstunFrames: " << hitstunFrames << endl;
 	//choose action
@@ -3892,29 +3765,6 @@ void Actor::UpdatePrePhysics()
 
 	UpdateAction();
 	
-	
-	//if( action != GRINDBALL && action != GROUNDHITSTUN && action != AIRHITSTUN )
-
-	//if( action != GRINDBALL && action != GRINDATTACK )
-	//{
-	//	//for camera smoothing
-	//	framesNotGrinding++;
-	//}
-	
-	
-	if( blah || record > 1 )
-	{
-		int playback = recordedGhosts;
-		if( record > 1 )
-			playback--;
-
-		for( int i = 0; i < playback; ++i )
-		{
-			if( ghostFrame < ghosts[i]->totalRecorded )
-				ghosts[i]->UpdatePrePhysics( ghostFrame );
-		}
-	}
-
 	Wire::WireState oldLeftWireState = leftWire->state;
 	Wire::WireState oldRightWireState = rightWire->state;
 
@@ -4081,33 +3931,6 @@ void Actor::UpdatePrePhysics()
 	}
 
 
-	bool cloneBubbleCreated = false;
-	V2d cloneBubbleCreatedPos;
-
-
-
-	if( blah || record > 1 )
-	{
-		int playback = recordedGhosts;
-		if( record > 1 )
-			playback--;
-
-		for( int i = 0; i < playback; ++i )
-		{
-			if( ghostFrame < ghosts[i]->totalRecorded )
-			{
-				if( ghosts[i]->states[ghostFrame].createBubble )
-				{
-					cloneBubbleCreated = true;
-					cloneBubbleCreatedPos = ghosts[i]->states[ghostFrame].position;
-					cout << "creating bubble: " << ghostFrame << endl;
-					break;
-				}
-			}
-		}
-		
-	}
-
 	bool bubbleCreated = false;
 	oldInBubble = inBubble;
 	inBubble = false;
@@ -4158,9 +3981,9 @@ void Actor::UpdatePrePhysics()
 	}
 
 	int tempSlowCounter = slowCounter;
-	if( ( CanCreateTimeBubble() && hasPowerTimeSlow && currInput.leftShoulder ) || cloneBubbleCreated )
+	if( CanCreateTimeBubble() && hasPowerTimeSlow && currInput.leftShoulder )
 	{
-		if( (!prevInput.leftShoulder  && !inBubble) || cloneBubbleCreated )
+		if( !prevInput.leftShoulder  && !inBubble )
 		{
 			if( bubbleFramesToLive[currBubble] == 0 )
 			{
@@ -4176,32 +3999,18 @@ void Actor::UpdatePrePhysics()
 					fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
 				}
 				
+				bubblePos[currBubble] = position;
 
-				if( !cloneBubbleCreated )
+				CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
+				bHitbox.globalPosition = position;
+				bHitbox.rw = bubbleRadiusSize[currBubble];
+				bHitbox.rh = bHitbox.rw;
+
+				if (fBubblePos != NULL)
 				{
-					bubblePos[currBubble] = position;
-
-					CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
-					bHitbox.globalPosition = position;
-					bHitbox.rw = bubbleRadiusSize[currBubble];
-					bHitbox.rh = bHitbox.rw;
-
-					if (fBubblePos != NULL)
-					{
-						fBubblePos[currBubble].x = position.x;
-						fBubblePos[currBubble].y = position.y;
-					}
+					fBubblePos[currBubble].x = position.x;
+					fBubblePos[currBubble].y = position.y;
 				}
-				else
-				{
-					bubblePos[currBubble] = cloneBubbleCreatedPos;
-					if (fBubblePos != NULL)
-					{
-						fBubblePos[currBubble].x = cloneBubbleCreatedPos.x;
-						fBubblePos[currBubble].y = cloneBubbleCreatedPos.y;
-					}
-				}
-				
 
 				++currBubble;
 				if( currBubble == maxBubbles )
@@ -4253,55 +4062,7 @@ void Actor::UpdatePrePhysics()
 			slowCounter = tempSlowCounter;
 			slowMultiple = timeSlowStrength;
 		}
-	}
-	
-
-
-	if( record > 0 )
-	{
-		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-		p.createBubble = bubbleCreated;
-		/*if( p.createBubble )
-		{
-			cout << "recording clone bubble: " << ghosts[record-1]->currFrame << endl;
-		}*/
-	}
-
-	
-	//cout << "position: " << position.x << ", " << position.y << endl;
-//	cout << "velocity: " << velocity.x << ", " << velocity.y << endl;m
-	
-	
-	/*if (hasPowerGrindBall)
-	{
-		if (!currInput.Y && prevInput.Y)
-		{
-			framesSinceGrindAttempt = 0;
-		}
-
-		if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH)
-		{
-			if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
-			{
-				canRailGrind = true;
-			}
-		}
-		else
-		{
-			framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-		}
-	}
-	
-
-	
-	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !IsAttackAction(action);
-
-	if ( aerialRailSlideTest )
-	{
-		canRailSlide = true;
-	}*/
-	
+	}	
 
 	touchedJumpGrass = false;
 	grassBoosted = false;
@@ -4690,12 +4451,6 @@ void Actor::SeqGetAirdash()
 	frame = 0;
 }
 
-void Actor::StartAction(Action a)
-{
-	SetAction(a);
-	frame = 0;
-}
-
 void Actor::SetAction( Action a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
@@ -4708,58 +4463,18 @@ void Actor::SetAction( Action a )
 	}
 
 	action = a;
+	frame = 0;
 
 	if (repeatingSound != NULL)
 	{
 		DeactivateSound(repeatingSound);
 		repeatingSound = NULL;
 	}
-
-	StartAction();
-	
-	/*case UAIR:
-	{
-		if (currLockedUairFX != NULL && a != UAIR)
-		{
-			currLockedUairFX->ClearLockPos();
-			currLockedUairFX = NULL;
-		}
-		break;
-	}
-	case FAIR:
-	{
-		if (currLockedFairFX != NULL && a != FAIR)
-		{
-			currLockedFairFX->ClearLockPos();
-			currLockedFairFX = NULL;
-		}
-		break;
-	}
-	case DAIR:
-	{
-		if (currLockedDairFX != NULL && a != UAIR)
-		{
-			currLockedDairFX->ClearLockPos();
-			currLockedDairFX = NULL;
-		}
-		break;
-	}
-	*/
-
-	//shouldnt this be slow counter?
-	/*if( slowMultiple > 1 )
-	{
-		slowMultiple = 1;
-	}*/
-
-	
-
+		
 	if( slowCounter > 1 )
 	{
 		slowCounter = 1;
 	}
-
-
 }
 
 bool Actor::TryClimbBoost( V2d &gNorm)
@@ -11668,14 +11383,6 @@ void Actor::UpdatePostPhysics()
 		return;
 	}
 
-	if( record > 0 )
-	{
-
-		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-		p.showSword = false;
-	}
-
-
 	if( hitGoal )// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{	
 		if (owner != NULL)
@@ -11962,33 +11669,9 @@ void Actor::UpdatePostPhysics()
 	}
 
 
-	if( record > 0 )
-	{
-		PlayerGhost::P & p = ghosts[record-1]->states[ghosts[record-1]->currFrame];
-		p.action = (PlayerGhost::Action)action;
-		p.frame = frame;
-		p.angle = sprite->getRotation() / 180 * PI;
-		p.position = position;
-		p.s = *sprite;
-		//p.position = V2d(sprite->getPosition();
-		ghosts[record-1]->currFrame++;
-	}
+	
 
 	rotaryAngle = sprite->getRotation() / 180 * PI;
-
-	if( ghostFrame < PlayerGhost::MAX_FRAMES )
-		ghostFrame++;
-	/*else
-	{
-		ghosts[record-1]->totalRecorded = ghosts[record-1]->currFrame;
-		record = 0;
-		LoadState();
-		owner->LoadState(); 
-		blah = true;
-		ghostFrame = 1;
-		owner->powerBar.Charge( 20 );
-	}*/
-
 
 	//happens even when in time slow
 	if (action == DASH)
@@ -14460,30 +14143,6 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 	}
 	
-
-	if( blah || record > 1 )
-	{
-		int playback = recordedGhosts;
-		if( record > 1 )
-			playback--;
-			
-		for( int i = 0; i < playback; ++i )
-		{
-			PlayerGhost *g = ghosts[i];
-			if( ghostFrame-1 < g->totalRecorded )
-			{
-				target->draw( g->states[ghostFrame-1].s );
-				if( g->states[ghostFrame-1].showSword )
-					target->draw( g->states[ghostFrame-1].swordSprite1 );
-			}
-			
-		}
-
-		
-		//PlayerGhost *g = ghosts[record-1];
-		
-	}
-
 	for( int i = 0; i < maxBubbles; ++i )
 	{
 		if( bubbleFramesToLive[i] > 0 )
@@ -14618,54 +14277,9 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHitboxes->DebugDraw( currHitboxFrame, target);
 	}
 
-	//hurtBody.DebugDraw(target);
-
-
-
-	/*if (currHurtboxes != NULL)
-	{
-		currHurtboxes->DebugDraw( currHurtboxFrame, target);
-	}*/
+	//hurtBody.DebugDraw(target)
 
 	b.DebugDraw( CollisionBox::Physics, target);
-
-
-
-
-	/*sf::CircleShape cs;
-	cs.setOutlineThickness( 10 );
-	cs.setOutlineColor( Color::Red );
-	cs.setFillColor( Color::Transparent );
-	cs.setRadius( 160 );
-	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-	cs.setPosition( position.x, position.y );*/
-	//target->draw( cs );
-	
-
-	for( int i = 0; i < recordedGhosts; ++i )
-	{
-		ghosts[i]->DebugDraw( target );
-	}
-
-	/*if( blah )
-	{
-		for( int i = 0; i < recordedGhosts; ++i )
-		{
-			if( ghostFrame < ghosts[i]->totalRecorded )
-			{
-				sf::Rect<double> rd = ghosts[i]->states[ghostFrame].screenRect;
-				sf::RectangleShape rs;
-				rs.setPosition( rd.left, rd.top );
-				rs.setSize( sf::Vector2f( rd.width, rd.height ) );
-				rs.setFillColor( Color::Transparent );
-				rs.setOutlineColor( Color::Red );
-				rs.setOutlineThickness( 10 );
-				target->draw( rs );
-			}
-				//ghosts[i]->UpdatePrePhysics( ghostFrame );
-		}
-		//testGhost->UpdatePrePhysics( ghostFrame );
-	}*/
 
 	leftWire->DebugDraw( target );
 	rightWire->DebugDraw( target );
@@ -16395,128 +16009,6 @@ void Actor::UpdateInHitlag()
 	//	}
 	//}
 	return pair<bool, bool>(false,false);
-}
-
-PlayerGhost::PlayerGhost()
-	:currFrame( 0 ), currHitboxes( NULL )
-{
-
-}
-
-void PlayerGhost::DebugDraw( sf::RenderTarget *target )
-{
-	/*if( currHitboxes != NULL )
-	{
-		for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
-		{
-			(*it).DebugDraw( target );
-		}
-	}
-	sf::RectangleShape rs;*/
-}
-
-void PlayerGhost::UpdatePrePhysics( int ghostFrame )
-{
-	
-	/*Action action = states[ghostFrame].action;
-	int frame = states[ghostFrame].frame;
-	double angle = states[ghostFrame].angle;
-	V2d position = states[ghostFrame].position;
-
-	currHitboxes = NULL;
-
-	
-
-	switch( action )
-	{
-	case FAIR:
-		{
-			if( fairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = fairHitboxes[frame];
-			}
-			break;
-		}
-	case UAIR:
-		{
-			if( uairHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = uairHitboxes[frame];
-			}
-			break;
-		}
-	case DAIR:
-		{
-			
-			break;
-		}
-	case STANDN:
-		{
-			if( standHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = standHitboxes[frame];
-			}
-			break;
-		}
-	case WALLATTACK:
-		{
-			if( wallHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = wallHitboxes[frame];
-			}
-			break;
-		}
-	case STEEPCLIMBATTACK:
-		{
-			if( steepClimbHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = steepClimbHitboxes[frame];
-			}
-			break;
-		}
-	case STEEPSLIDEATTACK:
-		{
-			if( steepSlideHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = steepSlideHitboxes[frame];
-			}
-			break;
-		}
-	
-	}*/
-	/*case DIAGUPATTACK:
-		{
-			if( diagUpHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = diagUpHitboxes[frame];
-			}
-			break;
-		}
-	case DIAGDOWNATTACK:
-		{
-			if( diagDownHitboxes.count( frame ) > 0 )
-			{
-				currHitboxes = diagDownHitboxes[frame];
-			}
-			break;
-		}
-	}
-*/
-	//if( currHitboxes != NULL )
-	//{
-	//	for( list<CollisionBox>::iterator it = currHitboxes->begin(); it != currHitboxes->end(); ++it )
-	//	{
-	//		(*it).globalAngle = angle;
-
-	//		(*it).globalPosition = position + V2d( (*it).offset.x * cos( (*it).globalAngle ) + (*it).offset.y * sin( (*it).globalAngle ), 
-	//			(*it).offset.x * -sin( (*it).globalAngle ) + (*it).offset.y * cos( (*it).globalAngle ) );
-
-	//		//(*it).globalPosition = position ;//+ (*it).offset;
-	//	
-	//	}
-	//}
-
-	
 }
 
 int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,

@@ -122,11 +122,4 @@ void Actor::WALLATTACK_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
-
-	if (record > 0)
-	{
-		PlayerGhost::P & p = ghosts[record - 1]->states[ghosts[record - 1]->currFrame];
-		p.showSword = showSword;
-		p.swordSprite1 = wallAttackSword;
-	}
 }

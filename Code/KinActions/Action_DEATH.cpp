@@ -11,6 +11,7 @@ void Actor::DEATH_Start()
 void Actor::DEATH_End()
 {
 	frame = 0;
+	dead = true;
 }
 
 void Actor::DEATH_Change()

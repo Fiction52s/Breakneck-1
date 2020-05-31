@@ -163,11 +163,4 @@ void Actor::STANDN_UpdateSprite()
 
 
 	standingNSword.setPosition(pos.x, pos.y);
-
-	if (record > 0)
-	{
-		PlayerGhost::P & p = ghosts[record - 1]->states[ghosts[record - 1]->currFrame];
-		p.showSword = showSword;
-		p.swordSprite1 = standingNSword;
-	}
 }

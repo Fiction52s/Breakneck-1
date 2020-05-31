@@ -316,7 +316,7 @@ void CrawlerAttackSeq::UpdateState()
 		{
 			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
 			player->desperationMode = false;
-			player->StartAction(Actor::SEQ_LOOKUP);
+			player->SetAction(Actor::SEQ_LOOKUP);
 		}
 		break;
 	case ROCKSFALL:
@@ -326,7 +326,7 @@ void CrawlerAttackSeq::UpdateState()
 	{
 		if (frame == 15)
 		{
-			player->StartAction(Actor::SEQ_LOOKUPDISAPPEAR);
+			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
 		}
 
 		UpdateCrawlerSwoop();

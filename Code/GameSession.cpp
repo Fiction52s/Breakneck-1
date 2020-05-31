@@ -5940,24 +5940,6 @@ int GameSession::Run()
 
 				tempSpawnRect = spawnRect;
 				enemyTree->Query( this, spawnRect);
-
-				//if( player->blah || player->record > 1 )
-				//{
-				//	int playback = player->recordedGhosts;
-				//	if( player->record > 1 )
-				//		playback--;
-
-				//	for( int i = 0; i < playback; ++i )
-				//	{
-				//		PlayerGhost *g = player->ghosts[i];
-				//		if( player->ghostFrame < g->totalRecorded )
-				//		{
-				//			//cout << "querying! " << player->ghostFrame << endl;
-				//			tempSpawnRect = g->states[player->ghostFrame].screenRect;
-				//			enemyTree->Query( this, g->states[player->ghostFrame].screenRect );
-				//		}
-				//	}
-				//}
 				
 				EnvPlant *prevPlant = NULL;
 				EnvPlant *ev = activeEnvPlants;
@@ -7817,7 +7799,6 @@ void GameSession::UpdateTimeSlowShader()
 	Actor *p0 = GetPlayer(0);
 
 	cloneShader.setUniform("u_texture", preScreenTex->getTexture());
-	cloneShader.setUniform("newscreen", p0->percentCloneChanged);
 	cloneShader.setUniform("Resolution", Vector2f(1920, 1080));//window->getSize().x, window->getSize().y);
 	cloneShader.setUniform("zoom", cam.GetZoom());
 

@@ -82,13 +82,6 @@ void Actor::FAIR_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 
-	if (record > 0)
-	{
-		PlayerGhost::P & p = ghosts[record - 1]->states[ghosts[record - 1]->currFrame];
-		p.showSword = showSword;
-		p.swordSprite1 = fairSword;
-	}
-
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
