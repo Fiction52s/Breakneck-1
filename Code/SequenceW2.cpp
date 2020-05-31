@@ -125,7 +125,7 @@ void BirdPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -149,7 +149,7 @@ void BirdPostFightScene::SetupStates()
 void BirdPostFightScene::ReturnToGame()
 {
 	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 

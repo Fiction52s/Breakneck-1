@@ -363,7 +363,7 @@ void CrawlerAttackSeq::UpdateState()
 		{
 			owner->AddEnemy(queen);
 			queen->StartInitialUnburrow();
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	case CRAWLERFACE:
@@ -437,7 +437,7 @@ void AfterCrawlerFightSeq::ReturnToGame()
 	SetPlayerStandDefaultPoint(true);
 	owner->Fade(true, 60, Color::Black);
 	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 }
 
 void AfterCrawlerFightSeq::AddPoints()
@@ -514,7 +514,7 @@ void GetAirdashPowerScene::ReturnToGame()
 	SetPlayerStandDefaultPoint(true);
 	owner->Fade(true, 60, Color::Black);
 	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 
 	owner->mainMenu->musicPlayer->TransitionMusic(owner->originalMusic, 60);
 }

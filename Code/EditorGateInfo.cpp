@@ -14,6 +14,7 @@ double GateInfo::lineWidth = 10;//5;
 GateInfo::GateInfo()
 	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
 {
+	numToOpen = 3; //just for testing
 	edit = EditSession::GetSession();
 	thickLine[0].color = Color(255, 0, 0, 255);
 	thickLine[1].color = Color(255, 0, 0, 255);
@@ -21,16 +22,22 @@ GateInfo::GateInfo()
 	thickLine[3].color = Color(255, 0, 0, 255);
 }
 
+void GateInfo::SetNumToOpen(int num)
+{
+	assert(category == Gate::KEY || category == Gate::PICKUP);
+	numToOpen = num;
+}
+
 bool GateInfo::IsSameType(GateInfo *other)
 {
-	if (other->type != type)
+	if (other->category != category)
 		return false;
 
-	if (type == Gate::KEYGATE)
+	if (category == Gate::KEY)
 	{
 		//if number of keys is equal
 	}
-	else if (type == Gate::SHARD)
+	else if (category == Gate::SHARD)
 	{
 		if (shardWorld != other->shardWorld
 			|| shardIndex != other->shardIndex)
@@ -64,43 +71,6 @@ void GateInfo::Activate()
 
 		point0->gate = this;
 		point1->gate = this;
-	}
-}
-
-void GateInfo::SetType(const std::string &gType)
-{
-	if (gType == "black")
-	{
-		type = Gate::BLACK;
-	}
-	else if (gType == "keygate")
-	{
-		type = Gate::KEYGATE;
-	}
-	else if (gType == "birdfight")
-	{
-		type = Gate::CRAWLER_UNLOCK;
-	}
-	else if (gType == "secret")
-	{
-		type = Gate::SECRET;
-	}
-	else if (gType == "shard")
-	{
-		type = Gate::SHARD;
-		SetShard(0, 0);
-	}
-	else if (gType == "crawlerunlock")
-	{
-		type = Gate::CRAWLER_UNLOCK;
-	}
-	else if (gType == "nexus1unlock")
-	{
-		type = Gate::CRAWLER_UNLOCK;
-	}
-	else
-	{
-		assert(false);
 	}
 }
 
@@ -165,14 +135,26 @@ sf::IntRect GateInfo::GetAABB()
 
 void GateInfo::WriteFile(ofstream &of)
 {
-	//will eventually spit out the gate value
-	//but for now its just a constant to resave all the files
-	of << (int)type << " " << poly0->writeIndex << " "
-		<< point0->GetIndex() << " " << poly1->writeIndex << " " << point1->GetIndex() << " ";
+	of << category << " ";
+	of << variation << " ";
 
-	if (type == Gate::SHARD)
+	if (category == Gate::KEY || category == Gate::PICKUP)
 	{
-		of << shardWorld << " " << shardIndex << endl;
+		of << numToOpen << " ";
+	}
+
+	of << poly0->writeIndex << " ";
+	of << point0->GetIndex() << " ";
+	of << poly1->writeIndex << " ";
+	of << point1->GetIndex();
+
+	if (category == Gate::SHARD)
+	{
+		of << " " << shardWorld << " " << shardIndex << endl;
+	}
+	else
+	{
+		of << "\n";
 	}
 }
 
@@ -190,31 +172,23 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * halfWidth;
 	V2d rightv1 = dv1 + other * halfWidth;
 
-	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
-
-	//Color c;
-	if (type == Gate::BLACK)
+	if (category == Gate::BLACK)
 	{
 		color = Color(200, 200, 200);
 	}
-	else if (type == Gate::KEYGATE)
+	else if (category == Gate::KEY)
 	{
-		//if(!IsReformingType())
-		//	color = Color( 100, 100, 100 );
-		//else
-		//{
 		color = Color(200, 200, 200);
-		//}
 	}
-	else if (type == Gate::SECRET)
+	else if (category == Gate::SECRET)
 	{
 		color = Color(255, 0, 0);
 	}
-	else if (type == Gate::SHARD)
+	else if (category == Gate::SHARD)
 	{
 		color = Color(100, 255, 10);
 	}
-	else if (type == Gate::CRAWLER_UNLOCK)
+	else if (category == Gate::BOSS)
 	{
 		color = Color(0, 0, 255);
 	}
@@ -247,7 +221,7 @@ void GateInfo::Draw(sf::RenderTarget *target)
 
 	target->draw(thickLine);
 
-	if (type == Gate::SHARD)
+	if (category == Gate::SHARD)
 	{
 		target->draw(shardSpr);
 	}
@@ -271,12 +245,12 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 
 	//Color c;
-	if (type == Gate::BLACK)
+	if (category == Gate::BLACK)
 	{
 		color = Color::Cyan;
 		//color = Color(150, 150, 150);
 	}
-	else if (type == Gate::KEYGATE)
+	else if (category == Gate::KEY)
 	{
 		color = Color::Cyan;//Color(100, 100, 100);
 	}

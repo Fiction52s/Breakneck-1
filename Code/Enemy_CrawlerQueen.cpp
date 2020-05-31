@@ -1010,7 +1010,7 @@ void CrawlerQueen::ConfirmKill()
 
 	if (game != NULL)
 	{
-		game->SoftenGates(Gate::CRAWLER_UNLOCK);
+		game->SoftenGates(Gate::BOSS);
 		game->SetActiveSequence(seq);
 	}
 	

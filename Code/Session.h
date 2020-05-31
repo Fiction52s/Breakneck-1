@@ -300,7 +300,9 @@ struct Session : TilesetManager
 
 	bool ReadGates(std::ifstream &is);
 	virtual void SetNumGates(int numGates) {}
-	virtual void ProcessGate(int gType,
+	virtual void ProcessGate(int gCat,
+		int gVar,
+		int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex ) {}

@@ -913,8 +913,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	copiedBrush = NULL;
 	freeActorCopiedBrush = NULL;
-	newMapHeader.ver1 = 1;
-	newMapHeader.ver2 = 5;
+	newMapHeader.ver1 = 2;
+	newMapHeader.ver2 = 0;
 	newMapHeader.description = "no description";
 	newMapHeader.collectionName = "default";
 	newMapHeader.gameMode = MapHeader::T_STANDARD;//"default";
@@ -1514,7 +1514,7 @@ void EditSession::AddRecentEnemy(ActorPtr a)
 	
 }
 
-void EditSession::ProcessGate(int gType,
+void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 	int poly0Index, int vertexIndex0, int poly1Index,
 	int vertexIndex1, int shardWorld, int shardIndex)
 {
@@ -1565,10 +1565,12 @@ void EditSession::ProcessGate(int gType,
 	gi->poly1 = terrain1;
 	gi->vertexIndex0 = vertexIndex0;
 	gi->vertexIndex1 = vertexIndex1;
-	gi->type = (Gate::GateType)gType;
+	gi->category = gCat;
+	gi->variation = gVar;
+	gi->SetNumToOpen(numToOpen);
 	gi->edit = this;
 
-	if (gType == Gate::SHARD)
+	if (gCat == Gate::SHARD)
 	{
 		gi->SetShard(shardWorld, shardIndex);
 	}
@@ -1624,6 +1626,9 @@ void EditSession::WriteMapHeader(ofstream &of)
 	newMapHeader.boundsWidth = boundWidth;
 	newMapHeader.boundsHeight = boundHeight;
 	newMapHeader.bossFightType = bossType;
+
+	newMapHeader.ver1 = 2;
+	newMapHeader.ver2 = 0;
 
 	newMapHeader.shardNameList.clear();
 	ShardParams *sp = NULL;

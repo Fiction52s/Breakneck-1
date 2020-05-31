@@ -1139,7 +1139,9 @@ void GameSession::SetNumGates(int nGates)
 	numGates = nGates;
 }
 
-void GameSession::ProcessGate(int gType,
+void GameSession::ProcessGate(int gCat,
+	int gVar,
+	int numToOpen,
 	int poly0Index, int vertexIndex0, int poly1Index,
 	int vertexIndex1, int shardWorld,
 	int shardIndex)
@@ -1156,13 +1158,15 @@ void GameSession::ProcessGate(int gType,
 	V2d point0 = edge0->v0;
 	V2d point1 = edge1->v0;
 
-	Gate::GateType gateType = (Gate::GateType)gType;
+	Gate * gate = new Gate(this, gCat, gVar);
 
-	Gate * gate = new Gate(this, gateType);
-
-	if (gType == Gate::SHARD)
+	if (gCat == Gate::SHARD)
 	{
 		gate->SetShard(shardWorld, shardIndex);
+	}
+	else if (gCat == Gate::KEY || gCat == Gate::PICKUP)
+	{
+		gate->SetNumToOpen(numToOpen);
 	}
 
 	/*if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
@@ -7980,7 +7984,7 @@ void GameSession::DrawActiveEnvPlants()
 	}
 }
 
-void GameSession::SoftenGates(Gate::GateType gType)
+void GameSession::SoftenGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)
@@ -7991,7 +7995,7 @@ void GameSession::SoftenGates(Gate::GateType gType)
 	}
 }
 
-void GameSession::ReformGates(Gate::GateType gType)
+void GameSession::ReformGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)
@@ -8001,7 +8005,7 @@ void GameSession::ReformGates(Gate::GateType gType)
 	}
 }
 
-void GameSession::CloseGates(Gate::GateType gType)
+void GameSession::CloseGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)
@@ -8011,7 +8015,7 @@ void GameSession::CloseGates(Gate::GateType gType)
 	}
 }
 
-void GameSession::TotalDissolveGates(Gate::GateType gType)
+void GameSession::TotalDissolveGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)
@@ -8021,7 +8025,7 @@ void GameSession::TotalDissolveGates(Gate::GateType gType)
 	}
 }
 
-void GameSession::ReverseDissolveGates(Gate::GateType gType)
+void GameSession::ReverseDissolveGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)
@@ -8031,7 +8035,7 @@ void GameSession::ReverseDissolveGates(Gate::GateType gType)
 	}
 }
 
-void GameSession::OpenGates(Gate::GateType gType)
+void GameSession::OpenGates(int gCat)
 {
 	Gate *g;
 	for (int i = 0; i < numGates; ++i)

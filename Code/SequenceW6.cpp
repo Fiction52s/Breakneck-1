@@ -248,7 +248,7 @@ void SkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -332,7 +332,7 @@ void SkeletonPostFightScene::UpdateState()
 				owner->cam.SetManual(true);
 				MainMenu *mm = owner->mainMenu;
 				owner->CrossFade(10, 0, 60, Color::White);
-				owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+				owner->TotalDissolveGates(Gate::BOSS);
 			}
 			else if (IsLastFrame())
 			{
@@ -359,7 +359,7 @@ void SkeletonPostFightScene::UpdateState()
 
 			owner->Fade(true, 60, Color::Black);
 			owner->state = GameSession::RUN;
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 			SetCameraShot("skeletransformcam");
 		}
 		break;
@@ -384,7 +384,7 @@ void SkeletonPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 			EaseShot("skeleleavescam", 60 );
 			SetConvGroup("conv");
 		}
@@ -492,7 +492,7 @@ void TigerPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -570,7 +570,7 @@ void TigerPostFight2Scene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
 	case CONV:

@@ -1947,28 +1947,56 @@ bool Session::ReadGates(std::ifstream &is)
 
 	SetNumGates(numGates);
 
-	int gType;
+	int gCat;
+	int gVar;
 	int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
 	int shardWorld = -1;
 	int shardIndex = -1;
+	int numToOpen;
 	for (int i = 0; i < numGates; ++i)
 	{
 		shardWorld = -1;
 		shardIndex = -1;
 
-		is >> gType;
+
+		if (mapHeader->ver1 == 1) //version of map before the gate updates
+		{
+			is >> gCat;
+
+			is >> poly0Index;
+			is >> vertexIndex0;
+			is >> poly1Index;
+			is >> vertexIndex1;
+
+			if (gCat == Gate::SHARD)
+			{
+				is >> shardWorld;
+				is >> shardIndex;
+			}
+
+			continue;
+		}
+
+		is >> gCat;
+		is >> gVar;
+
+		if (gCat == Gate::KEY || gCat == Gate::PICKUP)
+		{
+			is >> numToOpen;
+		}
+
 		is >> poly0Index;
 		is >> vertexIndex0;
 		is >> poly1Index;
 		is >> vertexIndex1;
 
-		if (gType == Gate::SHARD)
+		if (gCat == Gate::SHARD)
 		{
 			is >> shardWorld;
 			is >> shardIndex;
 		}
 
-		ProcessGate( gType, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
+		ProcessGate( gCat, gVar, numToOpen, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
 			shardIndex);
 	
 	}

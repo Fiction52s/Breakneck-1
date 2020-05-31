@@ -1067,7 +1067,7 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	else if( edge->edgeType == Edge::CLOSED_GATE )
 	{
 		Gate *g = (Gate*)edge->info;
-		if( g->type != Gate::BLACK && g->gState != Gate::LOCKFOREVER && g->gState != Gate::HARD )
+		if( g->category != Gate::BLACK && g->gState != Gate::LOCKFOREVER && g->gState != Gate::HARD )
 		{
 			rayCancel = true;
 			return;

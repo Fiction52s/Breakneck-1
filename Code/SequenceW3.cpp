@@ -278,7 +278,7 @@ void CoyotePreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -354,7 +354,7 @@ void CoyotePostFightScene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;

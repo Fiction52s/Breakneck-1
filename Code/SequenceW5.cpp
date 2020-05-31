@@ -81,7 +81,7 @@ void BirdPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -105,7 +105,7 @@ void BirdPostFight2Scene::SetupStates()
 void BirdPostFight2Scene::ReturnToGame()
 {
 	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -340,7 +340,7 @@ void GatorPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -420,7 +420,7 @@ void GatorPostFightScene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
 	case GATORANGRY:

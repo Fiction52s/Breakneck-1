@@ -150,7 +150,7 @@ void BirdPreFight3Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -174,7 +174,7 @@ void BirdPostFight3Scene::SetupStates()
 void BirdPostFight3Scene::ReturnToGame()
 {
 	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -311,7 +311,7 @@ void FinalSkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -334,7 +334,7 @@ void FinalSkeletonPostFightScene::SetupStates()
 
 void FinalSkeletonPostFightScene::ReturnToGame()
 {
-	owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+	owner->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 

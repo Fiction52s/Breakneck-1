@@ -180,9 +180,9 @@ void CreateGatesModeUI::SetEditGate(GateInfo *gi)
 
 void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 {
-	switch (gi->type)
+	switch (gi->category)
 	{
-	case Gate::KEYGATE:
+	case Gate::KEY:
 		gateCategoryDropdown->SetSelectedIndex(0);
 		//set key num text based on gate params
 		break;
@@ -190,7 +190,7 @@ void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 		gateCategoryDropdown->SetSelectedIndex(1);
 		SetShard(gi->shardWorld, gi->shardIndex);
 		break;
-	case Gate::CRAWLER_UNLOCK:
+	case Gate::BOSS:
 		gateCategoryDropdown->SetSelectedIndex(2);
 		break;
 	case Gate::SECRET:
@@ -207,28 +207,7 @@ void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 {
 	int gateCat = GetGateCategory();
-	switch (gateCat)
-	{
-	case 0:
-		gi->type = Gate::GateType::KEYGATE;
-		break;
-	case 1:
-		gi->type = Gate::GateType::SHARD;
-		gi->SetShard(currShardWorld, currShardLocalIndex);
-		break;
-	case 2:
-		gi->type = Gate::GateType::CRAWLER_UNLOCK;
-		break;
-	case 3:
-		gi->type = Gate::GateType::SECRET;
-		break;
-	case 4:
-		gi->type = Gate::GateType::BLACK;
-		break;
-	case 5:
-		gi->type = Gate::GateType::BLACK;
-		break;
-	}
+	gi->category = gateCat;
 
 	gi->UpdateLine();
 }

@@ -11,9 +11,9 @@ struct ActorParams;
 struct GateInfo : ISelectable
 {
 	GateInfo();
-	void SetType(const std::string &gType);
 	void SetShard(int shardW, int shardI);
 	bool IsSameType(GateInfo *other);
+	void SetNumToOpen(int num);
 	sf::IntRect GetAABB();
 	TerrainPoint *point0;
 	TerrainPoint *point1;
@@ -32,12 +32,16 @@ struct GateInfo : ISelectable
 	void DrawPreview(sf::RenderTarget *target);
 	bool IsTouchingEnemy(ActorParams * a);
 	sf::Color color;
-	Gate::GateType type;
+	int category;
+	int variation;
+	
 
 	int shardWorld;
 	int shardIndex;
 	sf::Sprite shardSpr;
 	sf::RectangleShape shardBG;
+
+	int numToOpen;
 
 	static double lineWidth;
 

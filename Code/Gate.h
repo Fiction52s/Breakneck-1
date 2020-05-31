@@ -11,14 +11,27 @@ struct Zone;
 struct Gate : public QuadTreeEntrant//: public Edge
 {
 	
-	enum GateType
+	enum GateCategory
 	{
-		BLACK,
-		KEYGATE,
-		CRAWLER_UNLOCK,
-		SECRET,
+		KEY,
 		SHARD,
+		BOSS,
+		SECRET,
+		PICKUP,
+		BLACK,
 		Count
+	};
+
+	enum BossVariation
+	{
+		CRAWLER,
+		BIRD,
+	};
+
+	enum PickupVariation
+	{
+		FLY,
+		FLY2,
 	};
 
 	enum GateState
@@ -48,11 +61,13 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	V2d GetCenter();
 	//bool keyGate;
 	//int requiredKeys;
-	Gate( GameSession *owner, GateType type );
+	Gate( GameSession *owner, int tcat,
+		int var);
 	int dissolveLength;
 	~Gate();
 	void Reset();
-	GateType type;
+	int category;
+	int variation;
 	GameSession *owner;
 	GateState gState;
 	bool visible;
@@ -100,6 +115,7 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	void Draw( sf::RenderTarget *target );
 	void CalcAABB();
 	void SetShard(int w, int li);
+	void SetNumToOpen(int num);
 
 	sf::Rect<double> aabb;
 
@@ -125,6 +141,8 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	int shardWorld;
 	int shardIndex;
 	int shardType;
+
+	int numToOpen;
 	
 };
 

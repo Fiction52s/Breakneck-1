@@ -216,7 +216,8 @@ struct EditSession : GUIHandler, Session
 
 	void ProcessActor(ActorPtr a);
 
-	void ProcessGate(int gType,
+	void ProcessGate(int gCat, int gVar,
+		int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex);

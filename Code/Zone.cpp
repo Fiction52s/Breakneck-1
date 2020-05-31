@@ -269,7 +269,7 @@ void Zone::Init()
 		for (auto it = gates.begin(); it != gates.end(); ++it)
 		{
 			tempGate = (Gate*)((*it)->info);
-			if (tempGate->type != Gate::SECRET)
+			if (tempGate->category != Gate::SECRET)
 			{
 				allSecret = false;
 				break;

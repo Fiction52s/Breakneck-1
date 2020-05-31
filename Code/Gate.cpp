@@ -24,8 +24,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Gate::Gate( GameSession *p_owner, GateType p_type )
-	:type( p_type ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner )
+Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
+	:category( p_cat), variation( p_var ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner )
 {
 	visible = true;
 	blackGate = NULL;
@@ -58,6 +58,8 @@ Gate::Gate( GameSession *p_owner, GateType p_type )
 	}
 
 	gQuads = NULL;
+
+	numToOpen = 0;
 	
 
 	//Reset();
@@ -87,7 +89,7 @@ void Gate::Reset()
 		gState = OPEN;
 		SetLocked(false);
 	}
-	else if (type == BLACK)
+	else if (category == BLACK)
 	{
 		gState = LOCKFOREVER;
 	}
@@ -145,7 +147,7 @@ void Gate::ActionEnded()
 				gState = SOFT;
 				frame = 0;
 			}
-			else if (type == CRAWLER_UNLOCK)
+			else if (category == BOSS)
 			{
 				gState = HARD;
 				frame = 0;
@@ -163,7 +165,7 @@ void Gate::ActionEnded()
 
 bool Gate::IsZoneType()
 {
-	return type != CRAWLER_UNLOCK && type != BLACK;
+	return category != BOSS && category != BLACK;
 }
 
 void Gate::Reform()
@@ -186,7 +188,7 @@ void Gate::Close()
 
 void Gate::Update()
 {
-	if (type == BLACK)
+	if (category == BLACK)
 	{
 		return;
 	}
@@ -319,7 +321,7 @@ void Gate::ResetAttachedWires()
 
 bool Gate::CanSoften()
 {
-	if (type == BLACK || type == CRAWLER_UNLOCK )
+	if (category == BLACK || category == BOSS )
 	{
 		return false;
 	}
@@ -334,9 +336,9 @@ bool Gate::CanSoften()
 
 	if (correctStateAndZones)
 	{
-		switch (type)
+		switch (category)
 		{
-		case KEYGATE:
+		case KEY:
 		{
 			if ((owner->keyMarker->keysRequired == 0))
 				okayToSoften = true;
@@ -370,7 +372,7 @@ void Gate::CheckSoften()
 
 	if (canSoften)
 	{
-		if (type == SHARD)
+		if (category == SHARD)
 		{
 			Soften();
 		}
@@ -408,12 +410,12 @@ void Gate::UpdateSprite()
 
 bool Gate::IsTwoWay()
 {
-	return type == SECRET || type == SHARD;
+	return category == SECRET || category == SHARD;
 }
 
 bool Gate::IsAlwaysUnlocked()
 {
-	return type == SECRET;
+	return category == SECRET;
 }
 
 bool Gate::IsReformingType()
@@ -444,11 +446,11 @@ bool Gate::CanUnlock()
 		if (IsAlwaysUnlocked())
 			return true;
 
-		switch (type)
+		switch (category)
 		{
 		case BLACK:
 			return false;
-		case KEYGATE:
+		case KEY:
 		{
 			return true;
 		}
@@ -457,7 +459,7 @@ bool Gate::CanUnlock()
 			return true;
 			break;
 		}
-		case GateType::CRAWLER_UNLOCK:
+		case BOSS:
 		{
 			return true;
 			break;
@@ -543,16 +545,23 @@ void Gate::Draw( sf::RenderTarget *target )
 		target->draw(nodes, 8, sf::Quads, ts_node->texture);
 	}
 
-	if (type == Gate::SHARD)
+	if (category == Gate::SHARD)
 	{
 		target->draw(shardSprite);
 	}
 
 }
 
+void Gate::SetNumToOpen(int num)
+{
+	assert(category == KEY || category == PICKUP);
+
+	numToOpen = num;
+}
+
 void Gate::SetShard(int w, int li)
 {
-	assert(type == SHARD);
+	assert(category == SHARD);
 	
 	shardWorld = w;
 	shardIndex = li;
@@ -572,7 +581,7 @@ void Gate::UpdateLine()
 	
 	float tileHeight = 64;
 
-	switch( type )
+	switch(category)
 	{
 	case BLACK:
 		{
@@ -618,7 +627,7 @@ void Gate::UpdateLine()
 
 		break;
 	}
-	case CRAWLER_UNLOCK:
+	case BOSS:
 	{
 		c = Color::Blue;
 		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
@@ -634,7 +643,7 @@ void Gate::UpdateLine()
 		tileHeight = 128;
 		break;
 	}
-	case KEYGATE:
+	case KEY:
 		{
 		switch( owner->mapHeader->envWorldType )
 		{

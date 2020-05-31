@@ -250,7 +250,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void ProcessAllTerrain();
 	void ProcessActor(ActorPtr a);
 	void ProcessAllActors();
-	void ProcessGate(int gType,
+	void ProcessGate(int gCat, 
+		int gVar, int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
 		int shardIndex);
@@ -684,12 +685,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::vector<Gate*> gates;
 	int testGateCount;
 	Gate *gateList;
-	void SoftenGates(Gate::GateType gType);
-	void ReformGates(Gate::GateType gType);
-	void OpenGates(Gate::GateType gType);
-	void TotalDissolveGates(Gate::GateType gType);
-	void ReverseDissolveGates(Gate::GateType gType);
-	void CloseGates(Gate::GateType gType);
+	void SoftenGates(int gCat);
+	void ReformGates(int gCat );
+	void OpenGates(int gCat);
+	void TotalDissolveGates(int gCat);
+	void ReverseDissolveGates(int gCat);
+	void CloseGates(int gCat);
 	void UnlockGate(Gate *g);
 	void LockGate(Gate *g);
 	Gate *unlockedGateList;

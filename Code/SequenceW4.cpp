@@ -102,7 +102,7 @@ void CrawlerPreFight2Scene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -180,7 +180,7 @@ void CrawlerPostFight2Scene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
@@ -292,7 +292,7 @@ void TigerPreFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 			//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 			EaseShot("crawlerdeathcam", 60);
 		}
@@ -308,7 +308,7 @@ void TigerPreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 			EaseShot("scenecam", 60);
 			//owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
 		}
@@ -332,7 +332,7 @@ void TigerPreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
@@ -413,7 +413,7 @@ void TigerPostFightScene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
+			owner->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
