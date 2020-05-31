@@ -102,6 +102,112 @@ void Actor::SPRINT_Change()
 
 void Actor::SPRINT_Update()
 {
+	if (b.rh > sprintHeight || canStandUp)
+	{
+		b.rh = sprintHeight;
+		b.offset.y = (normalHeight - sprintHeight);
+
+		if (reversed)
+			b.offset.y = -b.offset.y;
+	}
+
+	if (currInput.LLeft())
+		facingRight = false;
+	else if (currInput.LRight())
+		facingRight = true;
+
+	double accel = 0;
+	if (!facingRight)//currInput.LLeft() )
+	{
+
+		if (groundSpeed > 0)
+		{
+			groundSpeed = 0;
+		}
+		else
+		{
+			if (groundSpeed > -maxRunInit)
+			{
+				groundSpeed -= runAccelInit * 2 / slowMultiple;
+				if (groundSpeed < -maxRunInit)
+					groundSpeed = -maxRunInit;
+			}
+			else
+			{
+
+
+				if (currNormal.x > 0)
+				{
+					//up a slope
+					double sprAccel = GetFullSprintAccel(false, currNormal);
+
+					//GroundExtraAccel();
+
+					accel = sprAccel / slowMultiple;
+					groundSpeed -= accel;
+
+				}
+				else
+				{
+					//GroundExtraAccel();
+
+					double sprAccel = GetFullSprintAccel(true, currNormal);
+
+					accel = sprAccel / slowMultiple;
+					groundSpeed -= accel;
+
+
+					//down a slope
+				}
+			}
+
+		}
+		facingRight = false;
+	}
+	//else if( currInput.LRight() )
+	else
+	{
+		if (groundSpeed < 0)
+			groundSpeed = 0;
+		else
+		{
+			V2d gn = ground->Normal();
+			if (groundSpeed < maxRunInit)
+			{
+				groundSpeed += runAccelInit * 2 / slowMultiple;
+				if (groundSpeed > maxRunInit)
+					groundSpeed = maxRunInit;
+			}
+			else
+			{
+				double minFactor = .2;
+				double factor = abs(currNormal.x);
+				factor = std::max(factor, minFactor);
+
+				if (currNormal.x < 0)
+				{
+					//GroundExtraAccel();
+
+					double sprAccel = GetFullSprintAccel(false, currNormal);
+
+					accel = sprAccel / slowMultiple;
+					groundSpeed += accel;
+				}
+				else
+				{
+
+					//GroundExtraAccel();
+
+					double sprAccel = GetFullSprintAccel(true, currNormal);
+
+					accel = sprAccel / slowMultiple;
+					groundSpeed += accel;
+					//down a slope
+				}
+			}
+		}
+		facingRight = true;
+	}
 }
 
 void Actor::SPRINT_UpdateSprite()

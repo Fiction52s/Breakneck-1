@@ -845,7 +845,7 @@ struct Actor : QuadTreeCollider,
 	bool UpdateGrindRailPhysics(double movement);
 	bool TryUnlockOnTransfer( Edge *e );
 	void LeaveGroundTransfer(bool right, V2d leaveExtra = V2d());
-	bool UpdateAutoRunPhysics();
+	bool UpdateAutoRunPhysics( double q, double m );
 
 	//physics variables:
 	V2d movementVec;

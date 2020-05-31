@@ -8112,7 +8112,7 @@ void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 	holdJump = false;
 }
 
-bool Actor::UpdateAutoRunPhysics()
+bool Actor::UpdateAutoRunPhysics( double q, double m )
 {
 	if (IsAutoRunning())
 	{
@@ -8335,19 +8335,7 @@ void Actor::UpdatePhysics()
 							{
 								if( gNormal.x >= -slopeTooSteepLaunchLimitX )
 								{
-									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-									movementVec.y -= .01;
-									if( movementVec.x >= -.01 )
-									{
-										movementVec.x = -.01;
-									}
-									leftGround = true;
-									SetActionExpr( JUMP );
-									frame = 1;
-									ground = NULL;
-									holdJump = false;
+									LeaveGroundTransfer(false);
 								}
 								else
 								{
@@ -8426,20 +8414,7 @@ void Actor::UpdatePhysics()
 							{
 								if( gNormal.x <= slopeTooSteepLaunchLimitX )
 								{
-									//cout << "bab" << endl;
-									velocity = normalize(ground->v1 - ground->v0 ) * groundSpeed;
-									movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-
-									movementVec.y -= .01;
-									if( movementVec.x <= .01 )
-									{
-										movementVec.x = .01;
-									}
-									leftGround = true;
-									SetActionExpr( JUMP );
-									frame = 1;
-									holdJump = false;
-									ground = NULL;
+									LeaveGroundTransfer(true);
 								}
 								else
 								{
@@ -8625,15 +8600,15 @@ void Actor::UpdatePhysics()
 					}
 					else
 					{
-						double yDist = abs( gNormal.x ) * groundSpeed;
+						double yDist = abs( gNormal.x ) * -groundSpeed;
 						if( gNormal.x > 0 
-							&& e1n.y < 0 
-							&& abs( e1n.x ) < wallThresh 
-							&& e1n.x <= 0 
+							&& e0n.y < 0 
+							&& abs( e0n.x ) < wallThresh 
+							&& e0n.x <= 0 
 							&& yDist > slopeLaunchMinSpeed 
 							&& currInput.LUp() )
 						{
-							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+							LeaveGroundTransfer(false, V2d(0, -gravity * 2));
 							break;
 						}
 						else
@@ -8641,7 +8616,7 @@ void Actor::UpdatePhysics()
 							if( gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
 								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
 							{
-								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
+								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
 								break;
 							}
 							else
@@ -8663,7 +8638,7 @@ void Actor::UpdatePhysics()
 					q += m;
 				}
 				
-				if (UpdateAutoRunPhysics())
+				if (UpdateAutoRunPhysics(q, m))
 					return;
 
 				if( approxEquals( m, 0 ) )
