@@ -360,6 +360,16 @@ struct Actor : QuadTreeCollider,
 	AirTrigger *currAirTrigger;
 	void CheckForAirTrigger();
 	void HandleAirTrigger();
+	void UpdateCanStandUp();
+	void UpdateBounceFlameOn();
+	void HitstunBufferedChangeAction();
+	void ProcessBooster();
+	void UpdateWireStates();
+	void ProcessBoostGrass();
+	void LimitMaxSpeeds();
+	void UpdateBubbles();
+	void UpdateRegrindOffCounter();
+	void UpdateKnockbackDirectionAndHitboxType();
 
 	sf::Sprite exitAuraSprite;
 	Tileset *ts_exitAura;

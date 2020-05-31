@@ -3521,6 +3521,516 @@ void Actor::ProcessGravityGrass()
 	}
 }
 
+void Actor::UpdateCanStandUp()
+{
+	canStandUp = true;
+	if (b.rh < normalHeight)
+	{
+		canStandUp = CheckStandUp();
+		if (canStandUp)
+		{
+			b.rh = normalHeight;
+			b.offset.y = 0;
+		}
+	}
+}
+
+void Actor::UpdateBounceFlameOn()
+{
+	justToggledBounce = false;
+	if (bounceFlameOn)
+	{
+		if (toggleBounceInput)
+		{
+			if (currInput.X && !prevInput.X)
+			{
+				BounceFlameOff();
+				bounceGrounded = false;
+				justToggledBounce = true;
+			}
+		}
+		else
+		{
+			//assert( !toggleBounceInput );
+			if (!currInput.X)
+			{
+				bounceFlameOn = false;
+				oldBounceEdge = NULL;
+				bounceGrounded = false;
+				scorpOn = false;
+			}
+		}
+	}
+}
+
+void Actor::HitstunBufferedChangeAction()
+{
+	if (action == AIRHITSTUN)
+	{
+		if (hitstunFrames == 0)
+		{
+			if (!TryDoubleJump())
+			{
+				if (!AirAttack())
+				{
+					if (!TryAirDash())
+					{
+						SetActionExpr(JUMP);
+						frame = 1;
+						holdJump = false;
+					}
+				}
+			}
+		}
+
+	}
+	else if (action == GROUNDHITSTUN)
+	{
+		if (hitstunFrames == 0)
+		{
+			if (stunBufferedJump)
+			{
+				if (stunBufferedAttack != Action::Count)
+				{
+					SetActionExpr(JUMPSQUAT);
+					frame = 0;
+
+					if (currInput.LUp())
+					{
+						bufferedAttack = UAIR;
+					}
+					else if (currInput.LDown())
+					{
+						bufferedAttack = DAIR;
+					}
+					else
+					{
+						bufferedAttack = FAIR;
+					}
+				}
+				else
+				{
+					SetActionExpr(JUMPSQUAT);
+					frame = 0;
+				}
+
+			}
+			else if (!TryGroundAttack())
+			{
+				if (stunBufferedDash)
+				{
+					SetActionExpr(DASH);
+					frame = 0;
+				}
+				else
+				{
+					SetActionExpr(LAND);
+					frame = 0;
+				}
+				//if( !)
+			}
+
+			//prevInput = ControllerState();
+		}
+
+	}
+}
+
+void Actor::UpdateWireStates()
+{
+	if (hasPowerLeftWire && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
+	{
+		leftWire->ClearDebug();
+		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();//leftWire->GetOriginPos(true);
+																						 //leftWire->UpdateAnchors2( V2d( 0, 0 ) );
+		leftWire->UpdateState(touchEdgeWithLeftWire);
+	}
+
+	if (hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->state == Wire::RETRACTING))
+	{
+		rightWire->ClearDebug();
+		rightWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
+		rightWire->UpdateState(touchEdgeWithRightWire);
+	}
+}
+
+void Actor::ProcessBooster()
+{
+	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
+	{
+		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+		{
+			SetBoostVelocity();
+			//velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
+		}
+		else if (grindEdge != NULL)
+		{
+			if (grindSpeed > 0)
+			{
+				grindSpeed += currBooster->strength;
+			}
+			else if (grindSpeed < 0)
+			{
+				grindSpeed -= currBooster->strength;
+			}
+
+			if (action == RAILGRIND || action == RAILSLIDE)
+			{
+				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+			}
+		}
+		else if (ground != NULL)
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed += currBooster->strength;
+			}
+			else if (groundSpeed < 0)
+			{
+				groundSpeed -= currBooster->strength;
+			}
+		}
+		//currBooster = NULL;
+		//boostUsed = false;
+	}
+}
+
+void Actor::ProcessBoostGrass()
+{
+	if (ground != NULL && grassBoosted)
+	{
+		if (groundSpeed > 0)
+		{
+			groundSpeed += boostGrassAccel;
+		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed -= boostGrassAccel;
+		}
+	}
+}
+
+void Actor::LimitMaxSpeeds()
+{
+	double maxReal = maxVelocity + scorpAdditionalCap;
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL
+		&& action != ENTERNEXUS1
+		&& action != SPRINGSTUN
+		&& action != GLIDE
+		&& action != SPRINGSTUNGLIDE
+		&& action != SPRINGSTUNBOUNCE
+		&& action != SPRINGSTUNAIRBOUNCE
+		&& action != SPRINGSTUNTELEPORT)
+	{
+		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
+		{
+			velocity = AddGravity(velocity);
+		}
+
+		if (velocity.x > maxReal)
+			velocity.x = maxReal;
+		else if (velocity.x < -maxReal)
+			velocity.x = -maxReal;
+
+		if (velocity.y > maxReal)
+			velocity.y = maxReal;
+		else if (velocity.y < -maxReal)
+			velocity.y = -maxReal;
+	}
+	else
+	{
+		if (groundSpeed > maxReal)
+		{
+			groundSpeed = maxReal;
+		}
+		else if (groundSpeed < -maxReal)
+		{
+			groundSpeed = -maxReal;
+		}
+	}
+}
+
+void Actor::UpdateBubbles()
+{
+	for (int i = 0; i < maxBubbles; ++i)
+	{
+		if (bubbleFramesToLive[i] > 0)
+		{
+			bubbleFramesToLive[i]--;
+			if (fBubblePos != NULL)
+			{
+				fBubbleFrame[i] = bubbleFramesToLive[i];
+			}
+		}
+	}
+
+
+	bool bubbleCreated = false;
+	oldInBubble = inBubble;
+	inBubble = false;
+
+	//int mBubbles = maxBubbles;
+
+	if (hasPowerTimeSlow)
+	{
+		//calculate this all the time so I can give myself infinite airdash
+		for (int i = 0; i < maxBubbles; ++i)
+		{
+			if (bubbleFramesToLive[i] > 0)
+			{
+				//if( IsQuadTouchingCircle( hurtB
+				if (length(position - bubblePos[i]) < bubbleRadiusSize[i])
+				{
+					inBubble = true;
+					break;
+				}
+			}
+		}
+	}
+
+	bool isInOwnBubble = inBubble;
+	bool isBeingSlowed = IsBeingSlowed();
+	if (isBeingSlowed)
+	{
+		inBubble = true;
+	}
+
+	if (toggleTimeSlowInput && !inBubble && oldInBubble)
+	{
+		currInput.leftShoulder = false;
+	}
+
+
+
+	if (!inBubble && action == AIRDASH && airDashStall)
+	{
+		SetActionExpr(JUMP);
+		frame = 1;
+		holdJump = false;
+	}
+
+	int tempSlowCounter = slowCounter;
+	if (CanCreateTimeBubble() && hasPowerTimeSlow && currInput.leftShoulder)
+	{
+		if (!prevInput.leftShoulder && !inBubble)
+		{
+			if (bubbleFramesToLive[currBubble] == 0)
+			{
+				inBubble = true;
+				//bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+
+				bubbleRadiusSize[currBubble] = GetBubbleRadius();
+
+				if (fBubblePos != NULL)
+				{
+					fBubbleFrame[currBubble] = bubbleLifeSpan;
+					fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
+				}
+
+				bubblePos[currBubble] = position;
+
+				CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
+				bHitbox.globalPosition = position;
+				bHitbox.rw = bubbleRadiusSize[currBubble];
+				bHitbox.rh = bHitbox.rw;
+
+				if (fBubblePos != NULL)
+				{
+					fBubblePos[currBubble].x = position.x;
+					fBubblePos[currBubble].y = position.y;
+				}
+
+				++currBubble;
+				if (currBubble == maxBubbles)
+				{
+					currBubble = 0;
+				}
+
+				bubbleCreated = true;
+				ActivateSound(S_TIMESLOW);
+			}
+		}
+
+		if (inBubble)
+		{
+			if (slowMultiple == baseSlowMultiple)
+			{
+				//cout << "a" << endl;
+				slowCounter = 1;
+				slowMultiple = timeSlowStrength;
+			}
+		}
+		else
+		{
+			//cout << "b" << endl;
+			slowCounter = 1;
+			slowMultiple = baseSlowMultiple;
+		}
+	}
+	else
+	{
+		//cout << "C " << endl;
+		//slowCounter = 1;
+		slowMultiple = baseSlowMultiple;
+
+		//changed when doing editor stuff. before it would always set to one
+		if (slowCounter > baseSlowMultiple)
+			slowCounter = 1;
+	}
+
+	if (isBeingSlowed && !isInOwnBubble)
+	{
+		if (currInput.leftShoulder)
+		{
+			slowCounter = 1;
+			slowMultiple = baseSlowMultiple;
+		}
+		else
+		{
+			slowCounter = tempSlowCounter;
+			slowMultiple = timeSlowStrength;
+		}
+	}
+}
+
+void Actor::UpdateRegrindOffCounter()
+{
+	if (action != RAILGRIND)
+	{
+		if (regrindOffCount < regrindOffMax)
+		{
+			regrindOffCount++;
+		}
+	}
+}
+
+void Actor::UpdateKnockbackDirectionAndHitboxType()
+{
+	currHitboxInfo->hType = HitboxInfo::NORMAL;
+
+	V2d trueNorm;
+	V2d along;
+	if (ground != NULL)
+	{
+		GroundedAngleAttack(trueNorm);
+		along = V2d(-trueNorm.y, trueNorm.x);
+	}
+
+	switch (action)
+	{
+	case FAIR:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = V2d(-1, 0);
+		}
+		break;
+	case DAIR:
+		currHitboxInfo->hDir = V2d(0, 1);
+		break;
+	case UAIR:
+		currHitboxInfo->hDir = V2d(0, -1);
+		break;
+	case STANDN:
+		if ((!reversed && facingRight) || (reversed && !facingRight))
+		{
+			currHitboxInfo->hDir = along;
+		}
+		else
+		{
+			currHitboxInfo->hDir = -along;
+		}
+		break;
+	case STEEPCLIMBATTACK:
+		if (reversed)
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
+			}
+		}
+		else
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
+			}
+		}
+		break;
+	case STEEPSLIDEATTACK:
+		if (reversed)
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
+			}
+		}
+		else
+		{
+			if (facingRight)
+			{
+				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
+			}
+			else
+			{
+				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
+			}
+		}
+		break;
+	case WALLATTACK:
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = V2d(-1, 0);//HitboxInfo::HitDirection::LEFT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
+		}
+		break;
+	case DIAGUPATTACK:
+		currHitboxInfo->hType = HitboxInfo::BLUE;
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
+		}
+		break;
+	case DIAGDOWNATTACK:
+		currHitboxInfo->hType = HitboxInfo::BLUE;
+		if (facingRight)
+		{
+			currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
+		}
+		else
+		{
+			currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
+		}
+		break;
+	default:
+		currHitboxInfo->hDir = V2d(0, 0);//HitboxInfo::HitDirection::NONE;
+		break;
+	}
+}
+
 void Actor::UpdatePrePhysics()
 {
 	ProcessGravityGrass();
@@ -3614,622 +4124,54 @@ void Actor::UpdatePrePhysics()
 
 	if( ground != NULL )
 		currNormal = ground->Normal();
-
 	
 	ProcessReceivedHit();
 	
-	canStandUp = true;
-	if( b.rh < normalHeight )
-	{
-		canStandUp = CheckStandUp();
-		if( canStandUp )
-		{
-			b.rh = normalHeight;
-			//cout << "setting to normal height" << endl;
-			b.offset.y = 0;
-		}
-	}
+	UpdateCanStandUp();
 
-	//cout << "can stand up: " << canStandUp << endl;
-	//cout << cout << "toggle bounce: " << (int)toggleBounceInput << endl;
-	justToggledBounce = false;
-	if( bounceFlameOn )
-	{
-		if( toggleBounceInput )
-		{
-			if( currInput.X && !prevInput.X )
-			{
-				BounceFlameOff();
-				bounceGrounded = false;
-				justToggledBounce = true;
-			}
-		}
-		else
-		{
-			//assert( !toggleBounceInput );
-			if( !currInput.X )
-			{
-				bounceFlameOn = false;
-				oldBounceEdge = NULL;
-				bounceGrounded = false;
-				scorpOn = false;
-			}
-		}
-	}
+	UpdateBounceFlameOn();
 	
-	
-	if( action == AIRHITSTUN )
-	{
-		if( hitstunFrames == 0 )
-		{
-			if (!TryDoubleJump())
-			{
-				if (!AirAttack())
-				{
-					if (!TryAirDash())
-					{
-						SetActionExpr(JUMP);
-						frame = 1;
-						holdJump = false;
-					}
-				}
-			}
-
-			
-			
-			//prevInput = ControllerState();
-		}
-		
-	}
-	else if( action == GROUNDHITSTUN )
-	{
-		if( hitstunFrames == 0 )
-		{
-			if (stunBufferedJump)
-			{
-				if (stunBufferedAttack != Action::Count )
-				{	
-					SetActionExpr(JUMPSQUAT);
-					frame = 0;
-
-					if (currInput.LUp())
-					{
-						bufferedAttack = UAIR;
-					}
-					else if (currInput.LDown())
-					{
-						bufferedAttack = DAIR;
-					}
-					else
-					{
-						bufferedAttack = FAIR;
-					}
-				}
-				else
-				{
-					SetActionExpr(JUMPSQUAT);
-					frame = 0;
-				}
-				
-			}
-			else if (!TryGroundAttack())
-			{
-				if (stunBufferedDash )
-				{
-					SetActionExpr(DASH);
-					frame = 0;
-				}
-				else
-				{
-					SetActionExpr(LAND);
-					frame = 0;
-				}
-				//if( !)
-			}
-			
-			//prevInput = ControllerState();
-		}
-		
-	}
-
+	HitstunBufferedChangeAction();
 	
 	ChangeAction();
 	
 	currHitboxes = NULL;
 
 	UpdateAction();
+
+	UpdateWireStates();
 	
-	Wire::WireState oldLeftWireState = leftWire->state;
-	Wire::WireState oldRightWireState = rightWire->state;
+	ProcessBooster();
 
+	ProcessBoostGrass();
 
-	if( hasPowerLeftWire && ( (action != GRINDBALL && action != GRINDATTACK ) || leftWire->state == Wire::RETRACTING ) )
-	{
-		leftWire->ClearDebug();
-		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();//leftWire->GetOriginPos(true);
-		//leftWire->UpdateAnchors2( V2d( 0, 0 ) );
-		leftWire->UpdateState( touchEdgeWithLeftWire );
-	}
-
-	if( hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK ) || rightWire->state == Wire::RETRACTING ) )
-	{
-		rightWire->ClearDebug();
-		rightWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
-		//rightWire->UpdateAnchors2( V2d( 0, 0 ) );
-		rightWire->UpdateState( touchEdgeWithRightWire );
-	}
-	
-	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
-	{	
-		if (ground == NULL && bounceEdge == NULL && grindEdge == NULL  )
-		{
-			SetBoostVelocity();
-			//velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
-		}
-		else if (grindEdge != NULL)
-		{
-			if (grindSpeed > 0)
-			{
-				grindSpeed += currBooster->strength;
-			}
-			else if (grindSpeed < 0)
-			{
-				grindSpeed -= currBooster->strength;
-			}
-
-			if (action == RAILGRIND || action == RAILSLIDE)
-			{
-				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-			}
-		}
-		else if (ground != NULL)
-		{
-			if (groundSpeed > 0)
-			{
-				groundSpeed += currBooster->strength;
-			}
-			else if (groundSpeed < 0)
-			{
-				groundSpeed -= currBooster->strength;
-			}
-		}
-		//currBooster = NULL;
-		//boostUsed = false;
-	}
-
-	//if (currBounceBooster != NULL && oldBounceBooster == NULL && action != AIRDASH && currBounceBooster->Boost())
-	//{
-	//	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
-	//	{
-	//		SetBounceBoostVelocity();
-	//	}
-	//	else if (grindEdge != NULL)
-	//	{
-	//		/*if (grindSpeed > 0)
-	//		{
-	//			grindSpeed += currBounceBooster->strength;
-	//		}
-	//		else if (grindSpeed < 0)
-	//		{
-	//			grindSpeed -= currBounceBooster->strength;
-	//		}
-
-	//		if (action == RAILGRIND)
-	//		{
-	//			velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-	//		}*/
-	//	}
-	//	else if (ground != NULL)
-	//	{
-	//		/*if (groundSpeed > 0)
-	//		{
-	//			groundSpeed += currBounceBooster->strength;
-	//		}
-	//		else if (groundSpeed < 0)
-	//		{
-	//			groundSpeed -= currBounceBooster->strength;
-	//		}*/
-	//	}
-	//}
-
-	/*if (currModifier != NULL && oldModifier == NULL && currModifier->Modify())
-	{
-		extraGravityModifier = currModifier->gravFactor;
-		gravResetFrames = currModifier->duration;
-	}*/
-
-
-	if (ground != NULL && grassBoosted)
-	{
-		if (groundSpeed > 0)
-		{
-			groundSpeed += boostGrassAccel;
-		}
-		else if (groundSpeed < 0)
-		{
-			groundSpeed -= boostGrassAccel;
-		}
-	}
-
-
-	double maxReal = maxVelocity + scorpAdditionalCap;
-	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL && action != DEATH
-		&& action != ENTERNEXUS1 && action != SPRINGSTUN && action != GLIDE && action != SPRINGSTUNGLIDE
-		&& action != SPRINGSTUNBOUNCE && action != SPRINGSTUNAIRBOUNCE && action != SPRINGSTUNTELEPORT )
-	{
-		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD )
-		{
-			velocity = AddGravity(velocity);
-		}
-
-		if (velocity.x > maxReal)
-			velocity.x = maxReal;
-		else if (velocity.x < -maxReal)
-			velocity.x = -maxReal;
-
-		if (velocity.y > maxReal)
-			velocity.y = maxReal;
-		else if (velocity.y < -maxReal)
-			velocity.y = -maxReal;
-	}
-	else
-	{
-		if (groundSpeed > maxReal)
-		{
-			groundSpeed = maxReal;
-		}
-		else if (groundSpeed < -maxReal)
-		{
-			groundSpeed = -maxReal;
-		}
-	}
-
-	//rightWire->UpdateEnemyAnchor();
-	//leftWire->UpdateEnemyAnchor();
+	LimitMaxSpeeds();
 
 	WireMovement();
 
-	
-	
+	UpdateBubbles();
 
-	for( int i = 0; i < maxBubbles; ++i )
-	{
-		if( bubbleFramesToLive[i] > 0 )
-		{
-			bubbleFramesToLive[i]--;
-			if (fBubblePos != NULL)
-			{
-				fBubbleFrame[i] = bubbleFramesToLive[i];
-			}
-		}
-	}
+	UpdateRegrindOffCounter();
 
+	UpdateKnockbackDirectionAndHitboxType();
 
-	bool bubbleCreated = false;
-	oldInBubble = inBubble;
-	inBubble = false;
-
-	//int mBubbles = maxBubbles;
-
-	if( hasPowerTimeSlow )
-	{
-		//calculate this all the time so I can give myself infinite airdash
-		for( int i = 0; i < maxBubbles; ++i )
-		{
-			if( bubbleFramesToLive[i] > 0 )
-			{
-				//if( IsQuadTouchingCircle( hurtB
-				if( length( position - bubblePos[i] ) < bubbleRadiusSize[i] )
-				{
-					inBubble = true;
-					break;
-				}
-			}
-		}
-	}
-
-	bool isInOwnBubble = inBubble;
-	bool isBeingSlowed = IsBeingSlowed();
-	if( isBeingSlowed )
-	{
-		inBubble = true;
-	}
-
-	if( toggleTimeSlowInput && !inBubble && oldInBubble )
-	{
-		currInput.leftShoulder = false;
-
-		/*if( currInput.leftShoulder )
-		{
-			
-		}*/
-	}
-
-	
-
-	if( !inBubble && action == AIRDASH && airDashStall )
-	{
-		SetActionExpr( JUMP );
-		frame = 1;
-		holdJump = false;
-	}
-
-	int tempSlowCounter = slowCounter;
-	if( CanCreateTimeBubble() && hasPowerTimeSlow && currInput.leftShoulder )
-	{
-		if( !prevInput.leftShoulder  && !inBubble )
-		{
-			if( bubbleFramesToLive[currBubble] == 0 )
-			{
-				inBubble = true;
-				//bubbleFramesToLive[currBubble] = bubbleLifeSpan;
-				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
-				
-				bubbleRadiusSize[currBubble] = GetBubbleRadius();
-
-				if (fBubblePos != NULL)
-				{
-					fBubbleFrame[currBubble] = bubbleLifeSpan;
-					fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
-				}
-				
-				bubblePos[currBubble] = position;
-
-				CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
-				bHitbox.globalPosition = position;
-				bHitbox.rw = bubbleRadiusSize[currBubble];
-				bHitbox.rh = bHitbox.rw;
-
-				if (fBubblePos != NULL)
-				{
-					fBubblePos[currBubble].x = position.x;
-					fBubblePos[currBubble].y = position.y;
-				}
-
-				++currBubble;
-				if( currBubble == maxBubbles )
-				{
-					currBubble = 0;
-				}
-
-				bubbleCreated = true;
-				ActivateSound( S_TIMESLOW );
-			}			
-		}
-
-		if( inBubble )
-		{
-			if( slowMultiple == baseSlowMultiple)
-			{
-				//cout << "a" << endl;
-				slowCounter = 1;
-				slowMultiple = timeSlowStrength;
-			}
-		}
-		else
-		{
-			//cout << "b" << endl;
-			slowCounter = 1;
-			slowMultiple = baseSlowMultiple;
-		}
-	}
-	else
-	{
-		//cout << "C " << endl;
-		//slowCounter = 1;
-		slowMultiple = baseSlowMultiple;
-
-		//changed when doing editor stuff. before it would always set to one
-		if (slowCounter > baseSlowMultiple) 
-			slowCounter = 1;
-	}
-
-	if( isBeingSlowed && !isInOwnBubble )
-	{
-		if( currInput.leftShoulder )
-		{
-			slowCounter = 1;
-			slowMultiple = baseSlowMultiple;
-		}
-		else
-		{
-			slowCounter = tempSlowCounter;
-			slowMultiple = timeSlowStrength;
-		}
-	}	
+	ClearPauseBufferedActions();
 
 	touchedJumpGrass = false;
 	grassBoosted = false;
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
-
-	//cout << "pre vel: " << velocity.x << ", " << velocity.y << endl;
-
-	//if( ground != NULL )
-	//	cout << "groundspeed: " << groundSpeed << endl;
-	
-
-	//cout << "groundspeed: " << groundSpeed << endl;
-	
-
 	touchEdgeWithLeftWire = false;
 	touchEdgeWithRightWire = false;
 	oldAction = action;
 	collision = false;
 	groundedWallBounce = false;
-
-	if (action != RAILGRIND)
-	{
-		if (regrindOffCount < regrindOffMax)
-		{
-			regrindOffCount++;
-		}
-	}
-
-	/*if( ground != NULL )
-	{
-		cout << "groundspeed: " << groundSpeed << endl;
-	}
-	else
-	{
-		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-	}*/
-	//if( ground == NULL )
-	//cout << "final vel: " << velocity.x << ", " << velocity.y << endl;
-	//cout << "before position: " << position.x << ", " << position.y << endl;
-	/*if (grindEdge != NULL)
-	{
-		cout << "grindspeed: " << grindSpeed << endl;
-	}
-	else if (ground != NULL)
-	{
-		cout << "speed: " << groundSpeed << endl;
-	}
-	else
-	{
-		cout << "vel: " << velocity.x << ", " << velocity.y << endl;
-	}*/
-
 	oldBooster = currBooster;
 	oldModifier = currModifier;
 	oldBounceBooster = currBounceBooster;
-
 	highAccuracyHitboxes = true;
-
 	wallNormal.x = 0;
 	wallNormal.y = 0;
-
-	currHitboxInfo->hType = HitboxInfo::NORMAL;
-
-	V2d trueNorm;
-	V2d along;
-	if (ground != NULL)
-	{
-		GroundedAngleAttack(trueNorm);
-		along = V2d(-trueNorm.y, trueNorm.x);
-	}
-	
-	
-	//sets directionality of attacks
-	switch (action)
-	{
-	case FAIR:
-		if (facingRight)
-		{
-			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
-		}
-		else
-		{
-			currHitboxInfo->hDir = V2d(-1, 0);
-		}
-		break;
-	case DAIR:
-		currHitboxInfo->hDir = V2d(0, 1);
-		break;
-	case UAIR:
-		currHitboxInfo->hDir = V2d(0, -1);
-		break;
-	case STANDN:
-		if ((!reversed && facingRight )|| (reversed && !facingRight ))
-		{	
-			currHitboxInfo->hDir = along;
-		}
-		else
-		{
-			currHitboxInfo->hDir = -along;
-		}
-		break;
-	case STEEPCLIMBATTACK:
-		if (reversed)
-		{
-			if (facingRight)
-			{
-				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
-			}
-			else
-			{
-				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
-			}
-		}
-		else
-		{
-			if (facingRight)
-			{
-				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
-			}
-			else
-			{
-				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
-			}
-		}
-		break;
-	case STEEPSLIDEATTACK:
-		if (reversed)
-		{
-			if (facingRight)
-			{
-				currHitboxInfo->hDir = -along;//V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
-			}
-			else
-			{
-				currHitboxInfo->hDir = along;//V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
-			}
-		}
-		else
-		{
-			if (facingRight)
-			{
-				currHitboxInfo->hDir = along;//V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
-			}
-			else
-			{
-				currHitboxInfo->hDir = -along;//V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
-			}
-		}
-		break;
-	case WALLATTACK:
-		if (facingRight)
-		{
-			currHitboxInfo->hDir = V2d(-1, 0);//HitboxInfo::HitDirection::LEFT;
-		}
-		else
-		{
-			currHitboxInfo->hDir = V2d(1, 0);//HitboxInfo::HitDirection::RIGHT;
-		}
-		break;
-	case DIAGUPATTACK:
-		currHitboxInfo->hType = HitboxInfo::BLUE;
-		if (facingRight)
-		{
-			currHitboxInfo->hDir = V2d(1, -1);//HitboxInfo::HitDirection::UPRIGHT;
-		}
-		else
-		{
-			currHitboxInfo->hDir = V2d(-1, -1);//HitboxInfo::HitDirection::UPLEFT;
-		}
-		break;
-	case DIAGDOWNATTACK:
-		currHitboxInfo->hType = HitboxInfo::BLUE;
-		if (facingRight)
-		{
-			currHitboxInfo->hDir = V2d(1, 1);//HitboxInfo::HitDirection::DOWNRIGHT;
-		}
-		else
-		{
-			currHitboxInfo->hDir = V2d(-1, 1);//HitboxInfo::HitDirection::DOWNLEFT;
-		}
-		break;
-	default:
-		currHitboxInfo->hDir = V2d(0, 0);//HitboxInfo::HitDirection::NONE;
-		break;
-	}
-
-	/*if (ground != NULL)
-	{
-		cout << "gSpeed: " << groundSpeed << endl;
-	}*/
-
-	ClearPauseBufferedActions();
 }
 
 double Actor::GetNumSteps()
