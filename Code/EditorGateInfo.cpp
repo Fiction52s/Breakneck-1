@@ -14,18 +14,29 @@ double GateInfo::lineWidth = 10;//5;
 GateInfo::GateInfo()
 	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
 {
-	numToOpen = 3; //just for testing
 	edit = EditSession::GetSession();
 	thickLine[0].color = Color(255, 0, 0, 255);
 	thickLine[1].color = Color(255, 0, 0, 255);
 	thickLine[2].color = Color(255, 0, 0, 255);
 	thickLine[3].color = Color(255, 0, 0, 255);
+	variation = 0;
+	category = 0;
+	numToOpen = 0;
+	//to its easier to track down errors
+	shardWorld = -1;
+	shardIndex = -1;
 }
 
 void GateInfo::SetNumToOpen(int num)
 {
-	assert(category == Gate::KEY || category == Gate::PICKUP);
-	numToOpen = num;
+	if (category == Gate::KEY || category == Gate::PICKUP)
+	{
+		numToOpen = num;
+	}
+	else
+	{
+		numToOpen = 0;
+	}
 }
 
 bool GateInfo::IsSameType(GateInfo *other)

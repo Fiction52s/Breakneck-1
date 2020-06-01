@@ -458,16 +458,12 @@ struct CreateGatesModeUI : GUIHandler
 	void SetEditGate(GateInfo *gi);
 	void CompleteEditingGate();
 	void Draw(sf::RenderTarget *target);
-
 	sf::RectangleShape modifyGateRect;
 	GateInfo *origModifyGate;
 	GateInfo *modifyGate;
 	int shardNumX;
 	int shardNumY;
 	void SetShard(int world, int localIndex);
-
-	int currBossGate;
-	int currPickupGate;
 
 	int currShardWorld;
 	int currShardLocalIndex;
@@ -492,11 +488,15 @@ struct CreateGatesModeUI : GUIHandler
 	Panel *pickupGateTypePanel;
 	Panel *bossGateTypePanel;
 
+	std::vector<int> currVariation;
+
 	void UpdateCategoryDropdownType();
 
-	TextBox *numKeysTextbox;
+	TextBox *numToOpenTextbox;
+	int numToOpen;
 	Button *deleteGateButton;
 	Button *OKGateButton;
+	
 
 	Dropdown *gateCategoryDropdown;
 

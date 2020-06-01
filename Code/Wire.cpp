@@ -926,16 +926,16 @@ void Wire::UpdateAnchors2( V2d vel )
 			return;
 		}
 
-		if( player->owner != NULL && player->owner->showDebugDraw )
-		{
-			sf::RectangleShape queryDebug;
-			queryDebug.setPosition( Vector2f( r.left, r.top ) );
-			queryDebug.setSize( Vector2f( r.width, r.height ) );
-			queryDebug.setFillColor( Color::Transparent );//Color( 255, 255, 255, 100 ) );
-			queryDebug.setOutlineColor( Color::White );
-			queryDebug.setOutlineThickness( 1 );
-			progressDraw.push_back( new sf::RectangleShape( queryDebug ) );
-		}
+		//if( player->owner != NULL && player->owner->showDebugDraw )
+		//{
+		//	sf::RectangleShape queryDebug;
+		//	queryDebug.setPosition( Vector2f( r.left, r.top ) );
+		//	queryDebug.setSize( Vector2f( r.width, r.height ) );
+		//	queryDebug.setFillColor( Color::Transparent );//Color( 255, 255, 255, 100 ) );
+		//	queryDebug.setOutlineColor( Color::White );
+		//	queryDebug.setOutlineThickness( 1 );
+		//	progressDraw.push_back( new sf::RectangleShape( queryDebug ) );
+		//}
 
 		SortNewPoints();
 
@@ -1901,7 +1901,7 @@ void Wire::Retract()
 void Wire::Draw( RenderTarget *target )
 {
 	//return;
-	if( player->owner != NULL && player->owner->showDebugDraw )
+	/*if( player->owner != NULL && player->owner->showDebugDraw )
 	{
 		CircleShape *cstest = new CircleShape;
 		cstest->setRadius( 10 );
@@ -1909,7 +1909,7 @@ void Wire::Draw( RenderTarget *target )
 		cstest->setOrigin( cstest->getLocalBounds().width / 2, cstest->getLocalBounds().height / 2 );
 		cstest->setPosition( Vector2f( player->position.x, player->position.y ) );
 		progressDraw.push_back( cstest );
-	}
+	}*/
 
 	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING || state == HITENEMY )
 	{	

@@ -1234,7 +1234,6 @@ void EditSession::Draw()
 	DrawPolygons();
 
 	DrawRails();
-	//DrawPolygonInProgress();
 
 	DrawDecorBetween();
 
@@ -1243,8 +1242,11 @@ void EditSession::Draw()
 		DrawActors();
 	}
 
+	DrawGraph();
+
+	DrawMode();
+
 	DebugDraw(preScreenTex);
-	
 }
 
 void EditSession::UpdateFullBounds()
@@ -3079,9 +3081,7 @@ int EditSession::Run()
 
 		Draw();
 		
-		DrawGraph();
-
-		DrawMode();		
+		
 
 		TempMoveSelectedBrush();
 

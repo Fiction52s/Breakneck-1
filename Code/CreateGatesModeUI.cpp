@@ -25,6 +25,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	int labelExtraSpacing = 30;
 	int labelExtraY = 10;
 	Vector2i labelExtra(30, 10);
+	currVariation.resize(Gate::Count);
 
 	gateGridSize = 64;
 	modifyGate = NULL;
@@ -63,9 +64,12 @@ CreateGatesModeUI::CreateGatesModeUI()
 	}
 	currGateTypeRects[0]->SetShown(true);
 
+	numToOpen = 0;
+
 	mainPanel->AddLabel("numkeyslabel", Vector2i( 0, labelExtraY ), labelCharHeight, "Number of keys/pickups:");
-	numKeysTextbox = mainPanel->AddTextBox("numkeys", Vector2i(0, 0), 50, 5, "");
-	numKeysTextbox->SetToolTip("Set number of keys/pickups to open a gate");
+	numToOpenTextbox = mainPanel->AddTextBox("numtoopen", Vector2i(0, 0), 50, 5, "");
+	numToOpenTextbox->SetToolTip("Set number of keys/pickups to open a gate");
+	numToOpenTextbox->SetString(to_string(numToOpen));
 
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(30, 0), Vector2f(200, 28 + 4), "delete");
 	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
@@ -75,6 +79,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 
 	popupPanelPos = Vector2i(currGateTypeRects[0]->pos.x, currGateTypeRects[0]->pos.y + 100 + 10);
 
+	
 
 	//CreateShardTypePanel();
 	ChooseShardType(shardGateTypeRects->at(0));
@@ -202,13 +207,18 @@ void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 	}
 
 	UpdateCategoryDropdownType();
+
+	numToOpen = gi->numToOpen;
+	numToOpenTextbox->SetString(to_string(numToOpen));
 }
 
 void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 {
 	int gateCat = GetGateCategory();
 	gi->category = gateCat;
+	gi->variation = currVariation[gateCat];
 
+	gi->SetNumToOpen(numToOpen);
 	gi->UpdateLine();
 }
 
@@ -323,7 +333,7 @@ void CreateGatesModeUI::ChooseBossGateType(ImageChooseRect *icRect)
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
 
-	currBossGate = y;
+	currVariation[Gate::BOSS] = y;
 
 	edit->RemoveActivePanel(bossGateTypePanel);
 }
@@ -335,7 +345,7 @@ void CreateGatesModeUI::ChoosePickupGateType(ImageChooseRect *icRect)
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
 	
-	currPickupGate = y;
+	currVariation[Gate::PICKUP] = y;
 
 	edit->RemoveActivePanel(pickupGateTypePanel);
 }
@@ -486,18 +496,22 @@ void CreateGatesModeUI::ButtonCallback(Button *b, const std::string & e)
 
 void CreateGatesModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
 {
-	/*if (tb == gridSizeTextbox)
+	if (tb == numToOpenTextbox)
 	{
 		string str = tb->GetString();
 		stringstream ss;
 		ss << str;
-		int spacing;
-		ss >> spacing;
+		int num;
+		ss >> num;
 		if (!ss.fail())
 		{
-			edit->graph->SetSpacing(spacing);
+			numToOpen = num;
+			if (modifyGate != NULL)
+			{
+				modifyGate->SetNumToOpen(numToOpen);
+			}
 		}
-	}*/
+	}
 }
 
 void CreateGatesModeUI::GridSelectorCallback(GridSelector *gs, const std::string & e)

@@ -63,8 +63,8 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	eye->SetPosition(GetPositionF());
 	
 	
-	BasicRectHurtBodySetup(32, 72, 0, V2d(0, 30));
-	BasicRectHitBodySetup(32, 72, 0, V2d(0, 30));
+	BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+	BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
