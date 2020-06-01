@@ -1295,7 +1295,7 @@ void Enemy::ConfirmKill()
 
 
 	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 5, true);
-	sess->cam.SetRumble(1, 1, 7);
+	sess->cam.SetRumble(1.5, 1.5, 7);
 	
 	if (hasMonitor && !suppressMonitor)
 	{

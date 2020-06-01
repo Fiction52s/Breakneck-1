@@ -2736,6 +2736,7 @@ void Actor::CreateKeyExplosion()
 	keyExplodeRingGroup->SetBase(floatPos);
 	keyExplodeRingGroup->Start();
 	owner->cam.SetRumble(5, 5, 20);
+	owner->Pause(5);
 }
 
 void Actor::CreateAttackLightning()
