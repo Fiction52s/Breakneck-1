@@ -390,3 +390,29 @@ void Actor::AIRDASH_UpdateSprite()
 
 	}
 }
+
+
+void Actor::AIRDASH_TransitionToAction(int a)
+{
+
+}
+
+void Actor::AIRDASH_TimeIndFrameInc()
+{
+
+}
+
+void Actor::AIRDASH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::AIRDASH_GetActionLength()
+{
+	return 33;
+}
+
+Tileset * Actor::AIRDASH_GetTileset()
+{
+	return GetActionTileset("airdash_80x80.png");
+}

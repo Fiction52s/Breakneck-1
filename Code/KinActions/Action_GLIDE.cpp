@@ -87,3 +87,28 @@ void Actor::GLIDE_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::GLIDE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GLIDE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GLIDE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GLIDE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GLIDE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

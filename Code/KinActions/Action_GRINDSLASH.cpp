@@ -79,3 +79,28 @@ void Actor::GRINDSLASH_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::GRINDSLASH_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRINDSLASH_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRINDSLASH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRINDSLASH_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRINDSLASH_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -22,3 +22,28 @@ void Actor::STEEPCLING_Update()
 void Actor::STEEPCLING_UpdateSprite()
 {
 }
+
+void Actor::STEEPCLING_TransitionToAction(int a)
+{
+
+}
+
+void Actor::STEEPCLING_TimeIndFrameInc()
+{
+
+}
+
+void Actor::STEEPCLING_TimeDepFrameInc()
+{
+
+}
+
+int Actor::STEEPCLING_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::STEEPCLING_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

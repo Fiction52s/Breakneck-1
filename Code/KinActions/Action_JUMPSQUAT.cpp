@@ -116,3 +116,28 @@ void Actor::JUMPSQUAT_UpdateSprite()
 	else
 		sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::JUMPSQUAT_TransitionToAction(int a)
+{
+
+}
+
+void Actor::JUMPSQUAT_TimeIndFrameInc()
+{
+
+}
+
+void Actor::JUMPSQUAT_TimeDepFrameInc()
+{
+
+}
+
+int Actor::JUMPSQUAT_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::JUMPSQUAT_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

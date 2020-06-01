@@ -24,3 +24,28 @@ void Actor::SEQ_KINSTAND_UpdateSprite()
 {
 	STAND_UpdateSprite();
 }
+
+void Actor::SEQ_KINSTAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_KINSTAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_KINSTAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_KINSTAND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_KINSTAND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

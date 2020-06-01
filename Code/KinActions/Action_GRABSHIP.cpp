@@ -34,3 +34,28 @@ void Actor::GRABSHIP_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::GRABSHIP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRABSHIP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRABSHIP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRABSHIP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRABSHIP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

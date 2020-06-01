@@ -183,3 +183,28 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 		scorpSet = true;
 	}
 }
+
+void Actor::STEEPSLIDEATTACK_TransitionToAction(int a)
+{
+
+}
+
+void Actor::STEEPSLIDEATTACK_TimeIndFrameInc()
+{
+
+}
+
+void Actor::STEEPSLIDEATTACK_TimeDepFrameInc()
+{
+
+}
+
+int Actor::STEEPSLIDEATTACK_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::STEEPSLIDEATTACK_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -552,3 +552,28 @@ void Actor::BOUNCEGROUND_UpdateSprite()
 
 	scorpSet = true;
 }
+
+void Actor::BOUNCEGROUND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::BOUNCEGROUND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::BOUNCEGROUND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::BOUNCEGROUND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::BOUNCEGROUND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

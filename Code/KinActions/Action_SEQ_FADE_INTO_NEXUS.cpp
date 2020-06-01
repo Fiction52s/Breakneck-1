@@ -34,3 +34,28 @@ void Actor::SEQ_FADE_INTO_NEXUS_UpdateSprite()
 	//sprite->setPosition(Vector2f(position));
 	sprite->setRotation(0);
 }
+
+void Actor::SEQ_FADE_INTO_NEXUS_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_FADE_INTO_NEXUS_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_FADE_INTO_NEXUS_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_FADE_INTO_NEXUS_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_FADE_INTO_NEXUS_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

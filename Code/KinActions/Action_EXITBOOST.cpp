@@ -53,3 +53,28 @@ void Actor::EXITBOOST_UpdateSprite()
 			owner->mainMenu->tilesetManager.GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
 	}
 }
+
+void Actor::EXITBOOST_TransitionToAction(int a)
+{
+
+}
+
+void Actor::EXITBOOST_TimeIndFrameInc()
+{
+
+}
+
+void Actor::EXITBOOST_TimeDepFrameInc()
+{
+
+}
+
+int Actor::EXITBOOST_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::EXITBOOST_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

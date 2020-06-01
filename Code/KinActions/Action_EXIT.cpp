@@ -32,3 +32,28 @@ void Actor::EXIT_UpdateSprite()
 	sprite->setPosition(position.x, position.y);//position.x, position.y );
 	sprite->setRotation(0);
 }
+
+void Actor::EXIT_TransitionToAction(int a)
+{
+
+}
+
+void Actor::EXIT_TimeIndFrameInc()
+{
+
+}
+
+void Actor::EXIT_TimeDepFrameInc()
+{
+
+}
+
+int Actor::EXIT_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::EXIT_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

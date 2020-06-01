@@ -22,3 +22,28 @@ void Actor::EXITWAIT_Update()
 void Actor::EXITWAIT_UpdateSprite()
 {
 }
+
+void Actor::EXITWAIT_TransitionToAction(int a)
+{
+
+}
+
+void Actor::EXITWAIT_TimeIndFrameInc()
+{
+
+}
+
+void Actor::EXITWAIT_TimeDepFrameInc()
+{
+
+}
+
+int Actor::EXITWAIT_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::EXITWAIT_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -68,3 +68,53 @@ void Actor::STAND_UpdateSprite()
 		scorpSet = true;
 	}
 }
+
+void Actor::STAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::STAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::STAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::STAND_GetActionLength()
+{
+	return 20 * 8;
+}
+
+Tileset * Actor::STAND_GetTileset()
+{
+	return GetActionTileset("stand_64x64.png");
+}
+
+void Actor::STAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::STAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::STAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::STAND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::STAND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

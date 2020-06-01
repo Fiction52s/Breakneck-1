@@ -23,3 +23,28 @@ void Actor::WIREHOLD_Update()
 void Actor::WIREHOLD_UpdateSprite()
 {
 }
+
+void Actor::WIREHOLD_TransitionToAction(int a)
+{
+
+}
+
+void Actor::WIREHOLD_TimeIndFrameInc()
+{
+
+}
+
+void Actor::WIREHOLD_TimeDepFrameInc()
+{
+
+}
+
+int Actor::WIREHOLD_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::WIREHOLD_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

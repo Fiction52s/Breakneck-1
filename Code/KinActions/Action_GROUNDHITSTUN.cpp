@@ -78,3 +78,28 @@ void Actor::GROUNDHITSTUN_UpdateSprite()
 	else
 		sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::GROUNDHITSTUN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GROUNDHITSTUN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GROUNDHITSTUN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GROUNDHITSTUN_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GROUNDHITSTUN_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

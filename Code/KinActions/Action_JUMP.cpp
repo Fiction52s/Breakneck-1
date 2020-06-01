@@ -280,3 +280,28 @@ void Actor::JUMP_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::JUMP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::JUMP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::JUMP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::JUMP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::JUMP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

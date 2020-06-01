@@ -71,3 +71,28 @@ void Actor::SLIDE_UpdateSprite()
 		scorpSet = true;
 	}
 }
+
+void Actor::SLIDE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SLIDE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SLIDE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SLIDE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SLIDE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -135,3 +135,28 @@ void Actor::GRAVREVERSE_UpdateSprite()
 	else
 		sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::GRAVREVERSE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRAVREVERSE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRAVREVERSE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRAVREVERSE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRAVREVERSE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

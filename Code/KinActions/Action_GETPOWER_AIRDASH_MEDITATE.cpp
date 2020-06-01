@@ -44,3 +44,28 @@ void Actor::GETPOWER_AIRDASH_MEDITATE_UpdateSprite()
 		sprite->setPosition(pp.x, pp.y);
 	sprite->setRotation(angle / PI * 180);
 }
+
+void Actor::GETPOWER_AIRDASH_MEDITATE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GETPOWER_AIRDASH_MEDITATE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GETPOWER_AIRDASH_MEDITATE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GETPOWER_AIRDASH_MEDITATE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

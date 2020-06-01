@@ -164,3 +164,28 @@ void Actor::STANDN_UpdateSprite()
 
 	standingNSword.setPosition(pos.x, pos.y);
 }
+
+void Actor::STANDN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::STANDN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::STANDN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::STANDN_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::STANDN_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

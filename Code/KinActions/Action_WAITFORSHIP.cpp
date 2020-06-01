@@ -45,3 +45,28 @@ void Actor::WAITFORSHIP_UpdateSprite()
 		//cout << "angle: " << angle / PI * 180  << endl;
 	}
 }
+
+void Actor::WAITFORSHIP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::WAITFORSHIP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::WAITFORSHIP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::WAITFORSHIP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::WAITFORSHIP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

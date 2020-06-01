@@ -119,3 +119,28 @@ void Actor::BOUNCEGROUNDEDWALL_UpdateSprite()
 
 	scorpSet = true;
 }
+
+void Actor::BOUNCEGROUNDEDWALL_TransitionToAction(int a)
+{
+
+}
+
+void Actor::BOUNCEGROUNDEDWALL_TimeIndFrameInc()
+{
+
+}
+
+void Actor::BOUNCEGROUNDEDWALL_TimeDepFrameInc()
+{
+
+}
+
+int Actor::BOUNCEGROUNDEDWALL_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::BOUNCEGROUNDEDWALL_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

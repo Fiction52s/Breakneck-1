@@ -24,3 +24,28 @@ void Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite()
 {
 	JUMP_UpdateSprite();
 }
+
+void Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

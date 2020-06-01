@@ -30,3 +30,28 @@ void Actor::SKYDIVE_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::SKYDIVE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SKYDIVE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SKYDIVE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SKYDIVE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SKYDIVE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

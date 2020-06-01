@@ -116,3 +116,28 @@ void Actor::GOALKILL_UpdateSprite()
 	sprite->setPosition(Vector2f(position));
 	sprite->setRotation(0);
 }
+
+void Actor::GOALKILL_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GOALKILL_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GOALKILL_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GOALKILL_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GOALKILL_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

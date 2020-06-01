@@ -32,3 +32,28 @@ void Actor::SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite()
 	//sprite->setPosition(Vector2f(position));
 	sprite->setRotation(0);
 }
+
+void Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

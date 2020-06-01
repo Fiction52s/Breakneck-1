@@ -45,3 +45,28 @@ void Actor::SEQ_TURNFACE_UpdateSprite()
 		//cout << "angle: " << angle / PI * 180  << endl;
 	}
 }
+
+void Actor::SEQ_TURNFACE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_TURNFACE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_TURNFACE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_TURNFACE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_TURNFACE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

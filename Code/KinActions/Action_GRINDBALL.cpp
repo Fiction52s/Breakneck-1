@@ -469,3 +469,28 @@ void Actor::GRINDBALL_UpdateSprite()
 	gstripurp.setPosition(pp.x, pp.y);
 	gstrirgb.setPosition(pp.x, pp.y);
 }
+
+void Actor::GRINDBALL_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRINDBALL_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRINDBALL_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRINDBALL_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRINDBALL_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

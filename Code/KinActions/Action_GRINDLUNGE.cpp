@@ -49,3 +49,28 @@ void Actor::GRINDLUNGE_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::GRINDLUNGE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRINDLUNGE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRINDLUNGE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRINDLUNGE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRINDLUNGE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

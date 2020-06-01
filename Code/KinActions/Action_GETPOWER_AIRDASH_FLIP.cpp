@@ -48,3 +48,28 @@ void Actor::GETPOWER_AIRDASH_FLIP_UpdateSprite()
 		sprite->setPosition(pp.x, pp.y);
 	sprite->setRotation(angle / PI * 180);
 }
+
+void Actor::GETPOWER_AIRDASH_FLIP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GETPOWER_AIRDASH_FLIP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GETPOWER_AIRDASH_FLIP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GETPOWER_AIRDASH_FLIP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GETPOWER_AIRDASH_FLIP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

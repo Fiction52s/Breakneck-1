@@ -79,3 +79,28 @@ void Actor::WALLCLING_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::WALLCLING_TransitionToAction(int a)
+{
+
+}
+
+void Actor::WALLCLING_TimeIndFrameInc()
+{
+
+}
+
+void Actor::WALLCLING_TimeDepFrameInc()
+{
+
+}
+
+int Actor::WALLCLING_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::WALLCLING_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -30,3 +30,28 @@ void Actor::SEQ_KINTHROWN_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::SEQ_KINTHROWN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_KINTHROWN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_KINTHROWN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_KINTHROWN_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_KINTHROWN_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

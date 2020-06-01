@@ -123,6 +123,7 @@ struct Wire;
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
+
 	enum PowerType
 	{
 		POWER_AIRDASH,
@@ -256,11 +257,23 @@ struct Actor : QuadTreeCollider,
 	std::vector<void(Actor::*)()> changeActionFuncs;
 	std::vector<void(Actor::*)()> updateActionFuncs;
 	std::vector<void(Actor::*)()> updateSpriteFuncs;
-	std::vector<void(Actor::*)()> transitionFuncs;
+	std::vector<void(Actor::*)(int)> transitionFuncs;
 	std::vector<void(Actor::*)()> timeIndFrameIncFuncs;
 	std::vector<void(Actor::*)()> timeDepFrameIncFuncs;
-	std::vector<void(Actor::*)()> getActionLengthFuncs;
-	std::vector<void(Actor::*)()> setTilesetFuncs;
+	std::vector<int(Actor::*)()> getActionLengthFuncs;
+	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
+
+	void SetupFuncsForAction(int a,
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(int),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		int(Actor::*)(),
+		Tileset*(Actor::*)());
 
 
 	void SetupDrain();
@@ -506,7 +519,7 @@ struct Actor : QuadTreeCollider,
 	bool TrySprintOrRun(V2d &gNorm);
 	void SetSprintStartFrame();
 	
-	bool TryAirDash();
+	bool TryAirdash();
 	bool TryGlide();
 
 	int framesStanding;
@@ -531,11 +544,14 @@ struct Actor : QuadTreeCollider,
 	void SetExpr( Expr ex );
 	void SetAction( Action a );
 
-	void SetupTilesets(Skin *kSkin, Skin*swordSkin);
-	void SetupFXTilesets( Skin *kSkin, Skin *swordSkin);
-	void SetupSwordTilesets(Skin *swordSkin);
-	void SetupExtraTilesets(Skin *skin);
-	void SetupActionTilesets( Skin *skin);
+	void SetupTilesets();
+	void SetupFXTilesets();
+	void SetupSwordTilesets();
+	void SetupExtraTilesets();
+	void SetupActionTilesets();
+	Skin *skin;
+	Skin *swordSkin;
+	std::string actionFolder;
 
 	void RailGrindMovement();
 
@@ -564,6 +580,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite kinPurpleOutline;
 	sf::Color currentDespColor;
 	float GetSpeedBarPart();
+	Tileset *GetActionTileset(const std::string &fn);
 
 
 
@@ -666,7 +683,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite dodecaSprite;
 
 	void SetActivePowers(
-		bool canAirDash,
+		bool canAirdash,
 		bool canGravReverse,
 		bool canBounce,
 		bool canGrind,
@@ -1360,157 +1377,282 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
 
-
 	//kin action functions
 	void AIRDASH_Start();
 	void AIRDASH_End();
 	void AIRDASH_Change();
 	void AIRDASH_Update();
 	void AIRDASH_UpdateSprite();
+	void AIRDASH_TransitionToAction(int a);
+	void AIRDASH_TimeIndFrameInc();
+	void AIRDASH_TimeDepFrameInc();
+	int AIRDASH_GetActionLength();
+	Tileset * AIRDASH_GetTileset();
+
 
 	void AIRHITSTUN_Start();
 	void AIRHITSTUN_End();
 	void AIRHITSTUN_Change();
 	void AIRHITSTUN_Update();
 	void AIRHITSTUN_UpdateSprite();
+	void AIRHITSTUN_TransitionToAction(int a);
+	void AIRHITSTUN_TimeIndFrameInc();
+	void AIRHITSTUN_TimeDepFrameInc();
+	int AIRHITSTUN_GetActionLength();
+	Tileset * AIRHITSTUN_GetTileset();
 
 	void AUTORUN_Start();
 	void AUTORUN_End();
 	void AUTORUN_Change();
 	void AUTORUN_Update();
 	void AUTORUN_UpdateSprite();
+	void AUTORUN_TransitionToAction(int a);
+	void AUTORUN_TimeIndFrameInc();
+	void AUTORUN_TimeDepFrameInc();
+	int AUTORUN_GetActionLength();
+	Tileset * AUTORUN_GetTileset();
 
 	void BACKWARDSDOUBLE_Start();
 	void BACKWARDSDOUBLE_End();
 	void BACKWARDSDOUBLE_Change();
 	void BACKWARDSDOUBLE_Update();
 	void BACKWARDSDOUBLE_UpdateSprite();
+	void BACKWARDSDOUBLE_TransitionToAction(int a);
+	void BACKWARDSDOUBLE_TimeIndFrameInc();
+	void BACKWARDSDOUBLE_TimeDepFrameInc();
+	int BACKWARDSDOUBLE_GetActionLength();
+	Tileset * BACKWARDSDOUBLE_GetTileset();
 
 	void BOUNCEAIR_Start();
 	void BOUNCEAIR_End();
 	void BOUNCEAIR_Change();
 	void BOUNCEAIR_Update();
 	void BOUNCEAIR_UpdateSprite();
+	void BOUNCEAIR_TransitionToAction(int a);
+	void BOUNCEAIR_TimeIndFrameInc();
+	void BOUNCEAIR_TimeDepFrameInc();
+	int BOUNCEAIR_GetActionLength();
+	Tileset * BOUNCEAIR_GetTileset();
 
 	void BOUNCEGROUND_Start();
 	void BOUNCEGROUND_End();
 	void BOUNCEGROUND_Change();
 	void BOUNCEGROUND_Update();
 	void BOUNCEGROUND_UpdateSprite();
+	void BOUNCEGROUND_TransitionToAction(int a);
+	void BOUNCEGROUND_TimeIndFrameInc();
+	void BOUNCEGROUND_TimeDepFrameInc();
+	int BOUNCEGROUND_GetActionLength();
+	Tileset * BOUNCEGROUND_GetTileset();
 
 	void BOUNCEGROUNDEDWALL_Start();
 	void BOUNCEGROUNDEDWALL_End();
 	void BOUNCEGROUNDEDWALL_Change();
 	void BOUNCEGROUNDEDWALL_Update();
 	void BOUNCEGROUNDEDWALL_UpdateSprite();
+	void BOUNCEGROUNDEDWALL_TransitionToAction(int a);
+	void BOUNCEGROUNDEDWALL_TimeIndFrameInc();
+	void BOUNCEGROUNDEDWALL_TimeDepFrameInc();
+	int BOUNCEGROUNDEDWALL_GetActionLength();
+	Tileset * BOUNCEGROUNDEDWALL_GetTileset();
 
 	void BRAKE_Start();
 	void BRAKE_End();
 	void BRAKE_Change();
 	void BRAKE_Update();
 	void BRAKE_UpdateSprite();
+	void BRAKE_TransitionToAction(int a);
+	void BRAKE_TimeIndFrameInc();
+	void BRAKE_TimeDepFrameInc();
+	int BRAKE_GetActionLength();
+	Tileset * BRAKE_GetTileset();
 
 	void DAIR_Start();
 	void DAIR_End();
 	void DAIR_Change();
 	void DAIR_Update();
 	void DAIR_UpdateSprite();
+	void DAIR_TransitionToAction(int a);
+	void DAIR_TimeIndFrameInc();
+	void DAIR_TimeDepFrameInc();
+	int DAIR_GetActionLength();
+	Tileset * DAIR_GetTileset();
 
 	void DASH_Start();
 	void DASH_End();
 	void DASH_Change();
 	void DASH_Update();
 	void DASH_UpdateSprite();
+	void DASH_TransitionToAction(int a);
+	void DASH_TimeIndFrameInc();
+	void DASH_TimeDepFrameInc();
+	int DASH_GetActionLength();
+	Tileset * DASH_GetTileset();
 
 	void DASHATTACK_Start();
 	void DASHATTACK_End();
 	void DASHATTACK_Change();
 	void DASHATTACK_Update();
 	void DASHATTACK_UpdateSprite();
+	void DASHATTACK_TransitionToAction(int a);
+	void DASHATTACK_TimeIndFrameInc();
+	void DASHATTACK_TimeDepFrameInc();
+	int DASHATTACK_GetActionLength();
+	Tileset * DASHATTACK_GetTileset();
 
 	void DEATH_Start();
 	void DEATH_End();
 	void DEATH_Change();
 	void DEATH_Update();
 	void DEATH_UpdateSprite();
+	void DEATH_TransitionToAction(int a);
+	void DEATH_TimeIndFrameInc();
+	void DEATH_TimeDepFrameInc();
+	int DEATH_GetActionLength();
+	Tileset * DEATH_GetTileset();
 
 	void DIAGDOWNATTACK_Start();
 	void DIAGDOWNATTACK_End();
 	void DIAGDOWNATTACK_Change();
 	void DIAGDOWNATTACK_Update();
 	void DIAGDOWNATTACK_UpdateSprite();
+	void DIAGDOWNATTACK_TransitionToAction(int a);
+	void DIAGDOWNATTACK_TimeIndFrameInc();
+	void DIAGDOWNATTACK_TimeDepFrameInc();
+	int DIAGDOWNATTACK_GetActionLength();
+	Tileset * DIAGDOWNATTACK_GetTileset();
 
 	void DIAGUPATTACK_Start();
 	void DIAGUPATTACK_End();
 	void DIAGUPATTACK_Change();
 	void DIAGUPATTACK_Update();
 	void DIAGUPATTACK_UpdateSprite();
+	void DIAGUPATTACK_TransitionToAction(int a);
+	void DIAGUPATTACK_TimeIndFrameInc();
+	void DIAGUPATTACK_TimeDepFrameInc();
+	int DIAGUPATTACK_GetActionLength();
+	Tileset * DIAGUPATTACK_GetTileset();
 
 	void DOUBLE_Start();
 	void DOUBLE_End();
 	void DOUBLE_Change();
 	void DOUBLE_Update();
 	void DOUBLE_UpdateSprite();
+	void DOUBLE_TransitionToAction(int a);
+	void DOUBLE_TimeIndFrameInc();
+	void DOUBLE_TimeDepFrameInc();
+	int DOUBLE_GetActionLength();
+	Tileset * DOUBLE_GetTileset();
 
 	void ENTERNEXUS1_Start();
 	void ENTERNEXUS1_End();
 	void ENTERNEXUS1_Change();
 	void ENTERNEXUS1_Update();
 	void ENTERNEXUS1_UpdateSprite();
+	void ENTERNEXUS1_TransitionToAction(int a);
+	void ENTERNEXUS1_TimeIndFrameInc();
+	void ENTERNEXUS1_TimeDepFrameInc();
+	int ENTERNEXUS1_GetActionLength();
+	Tileset * ENTERNEXUS1_GetTileset();
 
 	void EXIT_Start();
 	void EXIT_End();
 	void EXIT_Change();
 	void EXIT_Update();
 	void EXIT_UpdateSprite();
+	void EXIT_TransitionToAction(int a);
+	void EXIT_TimeIndFrameInc();
+	void EXIT_TimeDepFrameInc();
+	int EXIT_GetActionLength();
+	Tileset * EXIT_GetTileset();
 
 	void EXITBOOST_Start();
 	void EXITBOOST_End();
 	void EXITBOOST_Change();
 	void EXITBOOST_Update();
 	void EXITBOOST_UpdateSprite();
+	void EXITBOOST_TransitionToAction(int a);
+	void EXITBOOST_TimeIndFrameInc();
+	void EXITBOOST_TimeDepFrameInc();
+	int EXITBOOST_GetActionLength();
+	Tileset * EXITBOOST_GetTileset();
 
 	void EXITWAIT_Start();
 	void EXITWAIT_End();
 	void EXITWAIT_Change();
 	void EXITWAIT_Update();
 	void EXITWAIT_UpdateSprite();
+	void EXITWAIT_TransitionToAction(int a);
+	void EXITWAIT_TimeIndFrameInc();
+	void EXITWAIT_TimeDepFrameInc();
+	int EXITWAIT_GetActionLength();
+	Tileset * EXITWAIT_GetTileset();
 
 	void FAIR_Start();
 	void FAIR_End();
 	void FAIR_Change();
 	void FAIR_Update();
 	void FAIR_UpdateSprite();
+	void FAIR_TransitionToAction(int a);
+	void FAIR_TimeIndFrameInc();
+	void FAIR_TimeDepFrameInc();
+	int FAIR_GetActionLength();
+	Tileset * FAIR_GetTileset();
 
 	void GETPOWER_AIRDASH_FLIP_Start();
 	void GETPOWER_AIRDASH_FLIP_End();
 	void GETPOWER_AIRDASH_FLIP_Change();
 	void GETPOWER_AIRDASH_FLIP_Update();
 	void GETPOWER_AIRDASH_FLIP_UpdateSprite();
+	void GETPOWER_AIRDASH_FLIP_TransitionToAction(int a);
+	void GETPOWER_AIRDASH_FLIP_TimeIndFrameInc();
+	void GETPOWER_AIRDASH_FLIP_TimeDepFrameInc();
+	int GETPOWER_AIRDASH_FLIP_GetActionLength();
+	Tileset * GETPOWER_AIRDASH_FLIP_GetTileset();
 
 	void GETPOWER_AIRDASH_MEDITATE_Start();
 	void GETPOWER_AIRDASH_MEDITATE_End();
 	void GETPOWER_AIRDASH_MEDITATE_Change();
 	void GETPOWER_AIRDASH_MEDITATE_Update();
 	void GETPOWER_AIRDASH_MEDITATE_UpdateSprite();
+	void GETPOWER_AIRDASH_MEDITATE_TransitionToAction(int a);
+	void GETPOWER_AIRDASH_MEDITATE_TimeIndFrameInc();
+	void GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc();
+	int GETPOWER_AIRDASH_MEDITATE_GetActionLength();
+	Tileset * GETPOWER_AIRDASH_MEDITATE_GetTileset();
 
 	void GETSHARD_Start();
 	void GETSHARD_End();
 	void GETSHARD_Change();
 	void GETSHARD_Update();
 	void GETSHARD_UpdateSprite();
+	void GETSHARD_TransitionToAction(int a);
+	void GETSHARD_TimeIndFrameInc();
+	void GETSHARD_TimeDepFrameInc();
+	int GETSHARD_GetActionLength();
+	Tileset * GETSHARD_GetTileset();
 
 	void GLIDE_Start();
 	void GLIDE_End();
 	void GLIDE_Change();
 	void GLIDE_Update();
 	void GLIDE_UpdateSprite();
+	void GLIDE_TransitionToAction(int a);
+	void GLIDE_TimeIndFrameInc();
+	void GLIDE_TimeDepFrameInc();
+	int GLIDE_GetActionLength();
+	Tileset * GLIDE_GetTileset();
 
 	void GOALKILL_Start();
 	void GOALKILL_End();
 	void GOALKILL_Change();
 	void GOALKILL_Update();
 	void GOALKILL_UpdateSprite();
+	void GOALKILL_TransitionToAction(int a);
+	void GOALKILL_TimeIndFrameInc();
+	void GOALKILL_TimeDepFrameInc();
+	int GOALKILL_GetActionLength();
+	Tileset * GOALKILL_GetTileset();
 
 	void GOALKILL1_Start();
 	void GOALKILL1_End();
@@ -1541,390 +1683,715 @@ struct Actor : QuadTreeCollider,
 	void GOALKILLWAIT_Change();
 	void GOALKILLWAIT_Update();
 	void GOALKILLWAIT_UpdateSprite();
+	void GOALKILLWAIT_TransitionToAction(int a);
+	void GOALKILLWAIT_TimeIndFrameInc();
+	void GOALKILLWAIT_TimeDepFrameInc();
+	int GOALKILLWAIT_GetActionLength();
+	Tileset * GOALKILLWAIT_GetTileset();
 
 	void GRABSHIP_Start();
 	void GRABSHIP_End();
 	void GRABSHIP_Change();
 	void GRABSHIP_Update();
 	void GRABSHIP_UpdateSprite();
+	void GRABSHIP_TransitionToAction(int a);
+	void GRABSHIP_TimeIndFrameInc();
+	void GRABSHIP_TimeDepFrameInc();
+	int GRABSHIP_GetActionLength();
+	Tileset * GRABSHIP_GetTileset();
 
 	void GRAVREVERSE_Start();
 	void GRAVREVERSE_End();
 	void GRAVREVERSE_Change();
 	void GRAVREVERSE_Update();
 	void GRAVREVERSE_UpdateSprite();
+	void GRAVREVERSE_TransitionToAction(int a);
+	void GRAVREVERSE_TimeIndFrameInc();
+	void GRAVREVERSE_TimeDepFrameInc();
+	int GRAVREVERSE_GetActionLength();
+	Tileset * GRAVREVERSE_GetTileset();
 
 	void GRINDATTACK_Start();
 	void GRINDATTACK_End();
 	void GRINDATTACK_Change();
 	void GRINDATTACK_Update();
 	void GRINDATTACK_UpdateSprite();
+	void GRINDATTACK_TransitionToAction(int a);
+	void GRINDATTACK_TimeIndFrameInc();
+	void GRINDATTACK_TimeDepFrameInc();
+	int GRINDATTACK_GetActionLength();
+	Tileset * GRINDATTACK_GetTileset();
 
 	void GRINDBALL_Start();
 	void GRINDBALL_End();
 	void GRINDBALL_Change();
 	void GRINDBALL_Update();
 	void GRINDBALL_UpdateSprite();
+	void GRINDBALL_TransitionToAction(int a);
+	void GRINDBALL_TimeIndFrameInc();
+	void GRINDBALL_TimeDepFrameInc();
+	int GRINDBALL_GetActionLength();
+	Tileset * GRINDBALL_GetTileset();
 
 	void GRINDLUNGE_Start();
 	void GRINDLUNGE_End();
 	void GRINDLUNGE_Change();
 	void GRINDLUNGE_Update();
 	void GRINDLUNGE_UpdateSprite();
+	void GRINDLUNGE_TransitionToAction(int a);
+	void GRINDLUNGE_TimeIndFrameInc();
+	void GRINDLUNGE_TimeDepFrameInc();
+	int GRINDLUNGE_GetActionLength();
+	Tileset * GRINDLUNGE_GetTileset();
 
 	void GRINDSLASH_Start();
 	void GRINDSLASH_End();
 	void GRINDSLASH_Change();
 	void GRINDSLASH_Update();
 	void GRINDSLASH_UpdateSprite();
+	void GRINDSLASH_TransitionToAction(int a);
+	void GRINDSLASH_TimeIndFrameInc();
+	void GRINDSLASH_TimeDepFrameInc();
+	int GRINDSLASH_GetActionLength();
+	Tileset * GRINDSLASH_GetTileset();
 
 	void GROUNDHITSTUN_Start();
 	void GROUNDHITSTUN_End();
 	void GROUNDHITSTUN_Change();
 	void GROUNDHITSTUN_Update();
 	void GROUNDHITSTUN_UpdateSprite();
+	void GROUNDHITSTUN_TransitionToAction(int a);
+	void GROUNDHITSTUN_TimeIndFrameInc();
+	void GROUNDHITSTUN_TimeDepFrameInc();
+	int GROUNDHITSTUN_GetActionLength();
+	Tileset * GROUNDHITSTUN_GetTileset();
 
 	void INTRO_Start();
 	void INTRO_End();
 	void INTRO_Change();
 	void INTRO_Update();
 	void INTRO_UpdateSprite();
+	void INTRO_TransitionToAction(int a);
+	void INTRO_TimeIndFrameInc();
+	void INTRO_TimeDepFrameInc();
+	int INTRO_GetActionLength();
+	Tileset * INTRO_GetTileset();
 
 	void INTROBOOST_Start();
 	void INTROBOOST_End();
 	void INTROBOOST_Change();
 	void INTROBOOST_Update();
 	void INTROBOOST_UpdateSprite();
+	void INTROBOOST_TransitionToAction(int a);
+	void INTROBOOST_TimeIndFrameInc();
+	void INTROBOOST_TimeDepFrameInc();
+	int INTROBOOST_GetActionLength();
+	Tileset * INTROBOOST_GetTileset();
 
 	void JUMP_Start();
 	void JUMP_End();
 	void JUMP_Change();
 	void JUMP_Update();
 	void JUMP_UpdateSprite();
+	void JUMP_TransitionToAction(int a);
+	void JUMP_TimeIndFrameInc();
+	void JUMP_TimeDepFrameInc();
+	int JUMP_GetActionLength();
+	Tileset * JUMP_GetTileset();
 
 	void JUMPSQUAT_Start();
 	void JUMPSQUAT_End();
 	void JUMPSQUAT_Change();
 	void JUMPSQUAT_Update();
 	void JUMPSQUAT_UpdateSprite();
+	void JUMPSQUAT_TransitionToAction(int a);
+	void JUMPSQUAT_TimeIndFrameInc();
+	void JUMPSQUAT_TimeDepFrameInc();
+	int JUMPSQUAT_GetActionLength();
+	Tileset * JUMPSQUAT_GetTileset();
 
 	void LAND_Start();
 	void LAND_End();
 	void LAND_Change();
 	void LAND_Update();
 	void LAND_UpdateSprite();
+	void LAND_TransitionToAction(int a);
+	void LAND_TimeIndFrameInc();
+	void LAND_TimeDepFrameInc();
+	int LAND_GetActionLength();
+	Tileset * LAND_GetTileset();
 
 	void LAND2_Start();
 	void LAND2_End();
 	void LAND2_Change();
 	void LAND2_Update();
 	void LAND2_UpdateSprite();
+	void LAND2_TransitionToAction(int a);
+	void LAND2_TimeIndFrameInc();
+	void LAND2_TimeDepFrameInc();
+	int LAND2_GetActionLength();
+	Tileset * LAND2_GetTileset();
 
 	void NEXUSKILL_Start();
 	void NEXUSKILL_End();
 	void NEXUSKILL_Change();
 	void NEXUSKILL_Update();
 	void NEXUSKILL_UpdateSprite();
+	void NEXUSKILL_TransitionToAction(int a);
+	void NEXUSKILL_TimeIndFrameInc();
+	void NEXUSKILL_TimeDepFrameInc();
+	int NEXUSKILL_GetActionLength();
+	Tileset * NEXUSKILL_GetTileset();
 
 	void RAILDASH_Start();
 	void RAILDASH_End();
 	void RAILDASH_Change();
 	void RAILDASH_Update();
 	void RAILDASH_UpdateSprite();
+	void RAILDASH_TransitionToAction(int a);
+	void RAILDASH_TimeIndFrameInc();
+	void RAILDASH_TimeDepFrameInc();
+	int RAILDASH_GetActionLength();
+	Tileset * RAILDASH_GetTileset();
 
 	void RAILGRIND_Start();
 	void RAILGRIND_End();
 	void RAILGRIND_Change();
 	void RAILGRIND_Update();
 	void RAILGRIND_UpdateSprite();
+	void RAILGRIND_TransitionToAction(int a);
+	void RAILGRIND_TimeIndFrameInc();
+	void RAILGRIND_TimeDepFrameInc();
+	int RAILGRIND_GetActionLength();
+	Tileset * RAILGRIND_GetTileset();
 
 	void RAILSLIDE_Start();
 	void RAILSLIDE_End();
 	void RAILSLIDE_Change();
 	void RAILSLIDE_Update();
 	void RAILSLIDE_UpdateSprite();
+	void RAILSLIDE_TransitionToAction(int a);
+	void RAILSLIDE_TimeIndFrameInc();
+	void RAILSLIDE_TimeDepFrameInc();
+	int RAILSLIDE_GetActionLength();
+	Tileset * RAILSLIDE_GetTileset();
 
 	void RIDESHIP_Start();
 	void RIDESHIP_End();
 	void RIDESHIP_Change();
 	void RIDESHIP_Update();
 	void RIDESHIP_UpdateSprite();
+	void RIDESHIP_TransitionToAction(int a);
+	void RIDESHIP_TimeIndFrameInc();
+	void RIDESHIP_TimeDepFrameInc();
+	int RIDESHIP_GetActionLength();
+	Tileset * RIDESHIP_GetTileset();
 
 	void RUN_Start();
 	void RUN_End();
 	void RUN_Change();
 	void RUN_Update();
 	void RUN_UpdateSprite();
+	void RUN_TransitionToAction(int a);
+	void RUN_TimeIndFrameInc();
+	void RUN_TimeDepFrameInc();
+	int RUN_GetActionLength();
+	Tileset * RUN_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_DODGEBACK_Start();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_End();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_Change();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_Update();
 	void SEQ_CRAWLERFIGHT_DODGEBACK_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_DODGEBACK_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_DODGEBACK_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_DODGEBACK_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_DODGEBACK_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_LAND_Start();
 	void SEQ_CRAWLERFIGHT_LAND_End();
 	void SEQ_CRAWLERFIGHT_LAND_Change();
 	void SEQ_CRAWLERFIGHT_LAND_Update();
 	void SEQ_CRAWLERFIGHT_LAND_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_LAND_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_LAND_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_LAND_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_LAND_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_LAND_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_STAND_Start();
 	void SEQ_CRAWLERFIGHT_STAND_End();
 	void SEQ_CRAWLERFIGHT_STAND_Change();
 	void SEQ_CRAWLERFIGHT_STAND_Update();
 	void SEQ_CRAWLERFIGHT_STAND_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_STAND_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_STAND_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_STAND_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_STAND_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_End();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Change();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_Update();
 	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Change();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Update();
 	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset();
 
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Change();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Update();
 	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_UpdateSprite();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TransitionToAction(int a);
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeIndFrameInc();
+	void SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeDepFrameInc();
+	int SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength();
+	Tileset * SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset();
 
 	void SEQ_ENTERCORE1_Start();
 	void SEQ_ENTERCORE1_End();
 	void SEQ_ENTERCORE1_Change();
 	void SEQ_ENTERCORE1_Update();
 	void SEQ_ENTERCORE1_UpdateSprite();
+	void SEQ_ENTERCORE1_TransitionToAction(int a);
+	void SEQ_ENTERCORE1_TimeIndFrameInc();
+	void SEQ_ENTERCORE1_TimeDepFrameInc();
+	int SEQ_ENTERCORE1_GetActionLength();
+	Tileset * SEQ_ENTERCORE1_GetTileset();
 
 	void SEQ_FADE_INTO_NEXUS_Start();
 	void SEQ_FADE_INTO_NEXUS_End();
 	void SEQ_FADE_INTO_NEXUS_Change();
 	void SEQ_FADE_INTO_NEXUS_Update();
 	void SEQ_FADE_INTO_NEXUS_UpdateSprite();
+	void SEQ_FADE_INTO_NEXUS_TransitionToAction(int a);
+	void SEQ_FADE_INTO_NEXUS_TimeIndFrameInc();
+	void SEQ_FADE_INTO_NEXUS_TimeDepFrameInc();
+	int SEQ_FADE_INTO_NEXUS_GetActionLength();
+	Tileset * SEQ_FADE_INTO_NEXUS_GetTileset();
 
 	void SEQ_FLOAT_TO_NEXUS_OPENING_Start();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_End();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_Change();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_Update();
 	void SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_TransitionToAction(int a);
+	void SEQ_FLOAT_TO_NEXUS_OPENING_TimeIndFrameInc();
+	void SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc();
+	int SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength();
+	Tileset * SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset();
 
 	void SEQ_KINFALL_Start();
 	void SEQ_KINFALL_End();
 	void SEQ_KINFALL_Change();
 	void SEQ_KINFALL_Update();
 	void SEQ_KINFALL_UpdateSprite();
+	void SEQ_KINFALL_TransitionToAction(int a);
+	void SEQ_KINFALL_TimeIndFrameInc();
+	void SEQ_KINFALL_TimeDepFrameInc();
+	int SEQ_KINFALL_GetActionLength();
+	Tileset * SEQ_KINFALL_GetTileset();
 
 	void SEQ_KINSTAND_Start();
 	void SEQ_KINSTAND_End();
 	void SEQ_KINSTAND_Change();
 	void SEQ_KINSTAND_Update();
 	void SEQ_KINSTAND_UpdateSprite();
+	void SEQ_KINSTAND_TransitionToAction(int a);
+	void SEQ_KINSTAND_TimeIndFrameInc();
+	void SEQ_KINSTAND_TimeDepFrameInc();
+	int SEQ_KINSTAND_GetActionLength();
+	Tileset * SEQ_KINSTAND_GetTileset();
 
 	void SEQ_KINTHROWN_Start();
 	void SEQ_KINTHROWN_End();
 	void SEQ_KINTHROWN_Change();
 	void SEQ_KINTHROWN_Update();
 	void SEQ_KINTHROWN_UpdateSprite();
+	void SEQ_KINTHROWN_TransitionToAction(int a);
+	void SEQ_KINTHROWN_TimeIndFrameInc();
+	void SEQ_KINTHROWN_TimeDepFrameInc();
+	int SEQ_KINTHROWN_GetActionLength();
+	Tileset * SEQ_KINTHROWN_GetTileset();
 
 	void SEQ_KNEEL_Start();
 	void SEQ_KNEEL_End();
 	void SEQ_KNEEL_Change();
 	void SEQ_KNEEL_Update();
 	void SEQ_KNEEL_UpdateSprite();
+	void SEQ_KNEEL_TransitionToAction(int a);
+	void SEQ_KNEEL_TimeIndFrameInc();
+	void SEQ_KNEEL_TimeDepFrameInc();
+	int SEQ_KNEEL_GetActionLength();
+	Tileset * SEQ_KNEEL_GetTileset();
 
 	void SEQ_KNEEL_TO_MEDITATE_Start();
 	void SEQ_KNEEL_TO_MEDITATE_End();
 	void SEQ_KNEEL_TO_MEDITATE_Change();
 	void SEQ_KNEEL_TO_MEDITATE_Update();
 	void SEQ_KNEEL_TO_MEDITATE_UpdateSprite();
+	void SEQ_KNEEL_TO_MEDITATE_TransitionToAction(int a);
+	void SEQ_KNEEL_TO_MEDITATE_TimeIndFrameInc();
+	void SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc();
+	int SEQ_KNEEL_TO_MEDITATE_GetActionLength();
+	Tileset * SEQ_KNEEL_TO_MEDITATE_GetTileset();
 
 	void SEQ_LOOKUP_Start();
 	void SEQ_LOOKUP_End();
 	void SEQ_LOOKUP_Change();
 	void SEQ_LOOKUP_Update();
 	void SEQ_LOOKUP_UpdateSprite();
+	void SEQ_LOOKUP_TransitionToAction(int a);
+	void SEQ_LOOKUP_TimeIndFrameInc();
+	void SEQ_LOOKUP_TimeDepFrameInc();
+	int SEQ_LOOKUP_GetActionLength();
+	Tileset * SEQ_LOOKUP_GetTileset();
 
 	void SEQ_LOOKUPDISAPPEAR_Start();
 	void SEQ_LOOKUPDISAPPEAR_End();
 	void SEQ_LOOKUPDISAPPEAR_Change();
 	void SEQ_LOOKUPDISAPPEAR_Update();
 	void SEQ_LOOKUPDISAPPEAR_UpdateSprite();
+	void SEQ_LOOKUPDISAPPEAR_TransitionToAction(int a);
+	void SEQ_LOOKUPDISAPPEAR_TimeIndFrameInc();
+	void SEQ_LOOKUPDISAPPEAR_TimeDepFrameInc();
+	int SEQ_LOOKUPDISAPPEAR_GetActionLength();
+	Tileset * SEQ_LOOKUPDISAPPEAR_GetTileset();
 
 	void SEQ_MASKOFF_Start();
 	void SEQ_MASKOFF_End();
 	void SEQ_MASKOFF_Change();
 	void SEQ_MASKOFF_Update();
 	void SEQ_MASKOFF_UpdateSprite();
+	void SEQ_MASKOFF_TransitionToAction(int a);
+	void SEQ_MASKOFF_TimeIndFrameInc();
+	void SEQ_MASKOFF_TimeDepFrameInc();
+	int SEQ_MASKOFF_GetActionLength();
+	Tileset * SEQ_MASKOFF_GetTileset();
 
 	void SEQ_MEDITATE_Start();
 	void SEQ_MEDITATE_End();
 	void SEQ_MEDITATE_Change();
 	void SEQ_MEDITATE_Update();
 	void SEQ_MEDITATE_UpdateSprite();
+	void SEQ_MEDITATE_TransitionToAction(int a);
+	void SEQ_MEDITATE_TimeIndFrameInc();
+	void SEQ_MEDITATE_TimeDepFrameInc();
+	int SEQ_MEDITATE_GetActionLength();
+	Tileset * SEQ_MEDITATE_GetTileset();
 
 	void SEQ_MEDITATE_MASKON_Start();
 	void SEQ_MEDITATE_MASKON_End();
 	void SEQ_MEDITATE_MASKON_Change();
 	void SEQ_MEDITATE_MASKON_Update();
 	void SEQ_MEDITATE_MASKON_UpdateSprite();
+	void SEQ_MEDITATE_MASKON_TransitionToAction(int a);
+	void SEQ_MEDITATE_MASKON_TimeIndFrameInc();
+	void SEQ_MEDITATE_MASKON_TimeDepFrameInc();
+	int SEQ_MEDITATE_MASKON_GetActionLength();
+	Tileset * SEQ_MEDITATE_MASKON_GetTileset();
 
 	void SEQ_TURNFACE_Start();
 	void SEQ_TURNFACE_End();
 	void SEQ_TURNFACE_Change();
 	void SEQ_TURNFACE_Update();
 	void SEQ_TURNFACE_UpdateSprite();
+	void SEQ_TURNFACE_TransitionToAction(int a);
+	void SEQ_TURNFACE_TimeIndFrameInc();
+	void SEQ_TURNFACE_TimeDepFrameInc();
+	int SEQ_TURNFACE_GetActionLength();
+	Tileset * SEQ_TURNFACE_GetTileset();
 
 	void SEQ_WAIT_Start();
 	void SEQ_WAIT_End();
 	void SEQ_WAIT_Change();
 	void SEQ_WAIT_Update();
 	void SEQ_WAIT_UpdateSprite();
+	void SEQ_WAIT_TransitionToAction(int a);
+	void SEQ_WAIT_TimeIndFrameInc();
+	void SEQ_WAIT_TimeDepFrameInc();
+	int SEQ_WAIT_GetActionLength();
+	Tileset * SEQ_WAIT_GetTileset();
 
 	void SKYDIVE_Start();
 	void SKYDIVE_End();
 	void SKYDIVE_Change();
 	void SKYDIVE_Update();
 	void SKYDIVE_UpdateSprite();
+	void SKYDIVE_TransitionToAction(int a);
+	void SKYDIVE_TimeIndFrameInc();
+	void SKYDIVE_TimeDepFrameInc();
+	int SKYDIVE_GetActionLength();
+	Tileset * SKYDIVE_GetTileset();
 
 	void SKYDIVETOFALL_Start();
 	void SKYDIVETOFALL_End();
 	void SKYDIVETOFALL_Change();
 	void SKYDIVETOFALL_Update();
 	void SKYDIVETOFALL_UpdateSprite();
+	void SKYDIVETOFALL_TransitionToAction(int a);
+	void SKYDIVETOFALL_TimeIndFrameInc();
+	void SKYDIVETOFALL_TimeDepFrameInc();
+	int SKYDIVETOFALL_GetActionLength();
+	Tileset * SKYDIVETOFALL_GetTileset();
 
 	void SLIDE_Start();
 	void SLIDE_End();
 	void SLIDE_Change();
 	void SLIDE_Update();
 	void SLIDE_UpdateSprite();
+	void SLIDE_TransitionToAction(int a);
+	void SLIDE_TimeIndFrameInc();
+	void SLIDE_TimeDepFrameInc();
+	int SLIDE_GetActionLength();
+	Tileset * SLIDE_GetTileset();
 
 	void SPAWNWAIT_Start();
 	void SPAWNWAIT_End();
 	void SPAWNWAIT_Change();
 	void SPAWNWAIT_Update();
 	void SPAWNWAIT_UpdateSprite();
+	void SPAWNWAIT_TransitionToAction(int a);
+	void SPAWNWAIT_TimeIndFrameInc();
+	void SPAWNWAIT_TimeDepFrameInc();
+	int SPAWNWAIT_GetActionLength();
+	Tileset * SPAWNWAIT_GetTileset();
 
 	void SPRINGSTUN_Start();
 	void SPRINGSTUN_End();
 	void SPRINGSTUN_Change();
 	void SPRINGSTUN_Update();
 	void SPRINGSTUN_UpdateSprite();
+	void SPRINGSTUN_TransitionToAction(int a);
+	void SPRINGSTUN_TimeIndFrameInc();
+	void SPRINGSTUN_TimeDepFrameInc();
+	int SPRINGSTUN_GetActionLength();
+	Tileset * SPRINGSTUN_GetTileset();
 
 	void SPRINGSTUNAIRBOUNCE_Start();
 	void SPRINGSTUNAIRBOUNCE_End();
 	void SPRINGSTUNAIRBOUNCE_Change();
 	void SPRINGSTUNAIRBOUNCE_Update();
 	void SPRINGSTUNAIRBOUNCE_UpdateSprite();
+	void SPRINGSTUNAIRBOUNCE_TransitionToAction(int a);
+	void SPRINGSTUNAIRBOUNCE_TimeIndFrameInc();
+	void SPRINGSTUNAIRBOUNCE_TimeDepFrameInc();
+	int SPRINGSTUNAIRBOUNCE_GetActionLength();
+	Tileset * SPRINGSTUNAIRBOUNCE_GetTileset();
 
 	void SPRINGSTUNBOUNCE_Start();
 	void SPRINGSTUNBOUNCE_End();
 	void SPRINGSTUNBOUNCE_Change();
 	void SPRINGSTUNBOUNCE_Update();
 	void SPRINGSTUNBOUNCE_UpdateSprite();
+	void SPRINGSTUNBOUNCE_TransitionToAction(int a);
+	void SPRINGSTUNBOUNCE_TimeIndFrameInc();
+	void SPRINGSTUNBOUNCE_TimeDepFrameInc();
+	int SPRINGSTUNBOUNCE_GetActionLength();
+	Tileset * SPRINGSTUNBOUNCE_GetTileset();
 
 	void SPRINGSTUNGLIDE_Start();
 	void SPRINGSTUNGLIDE_End();
 	void SPRINGSTUNGLIDE_Change();
 	void SPRINGSTUNGLIDE_Update();
 	void SPRINGSTUNGLIDE_UpdateSprite();
+	void SPRINGSTUNGLIDE_TransitionToAction(int a);
+	void SPRINGSTUNGLIDE_TimeIndFrameInc();
+	void SPRINGSTUNGLIDE_TimeDepFrameInc();
+	int SPRINGSTUNGLIDE_GetActionLength();
+	Tileset * SPRINGSTUNGLIDE_GetTileset();
 
 	void SPRINGSTUNTELEPORT_Start();
 	void SPRINGSTUNTELEPORT_End();
 	void SPRINGSTUNTELEPORT_Change();
 	void SPRINGSTUNTELEPORT_Update();
 	void SPRINGSTUNTELEPORT_UpdateSprite();
+	void SPRINGSTUNTELEPORT_TransitionToAction(int a);
+	void SPRINGSTUNTELEPORT_TimeIndFrameInc();
+	void SPRINGSTUNTELEPORT_TimeDepFrameInc();
+	int SPRINGSTUNTELEPORT_GetActionLength();
+	Tileset * SPRINGSTUNTELEPORT_GetTileset();
 
 	void SPRINT_Start();
 	void SPRINT_End();
 	void SPRINT_Change();
 	void SPRINT_Update();
 	void SPRINT_UpdateSprite();
+	void SPRINT_TransitionToAction(int a);
+	void SPRINT_TimeIndFrameInc();
+	void SPRINT_TimeDepFrameInc();
+	int SPRINT_GetActionLength();
+	Tileset * SPRINT_GetTileset();
 
 	void STAND_Start();
 	void STAND_End();
 	void STAND_Change();
 	void STAND_Update();
 	void STAND_UpdateSprite();
+	void STAND_TransitionToAction(int a);
+	void STAND_TimeIndFrameInc();
+	void STAND_TimeDepFrameInc();
+	int STAND_GetActionLength();
+	Tileset * STAND_GetTileset();
 
 	void STANDN_Start();
 	void STANDN_End();
 	void STANDN_Change();
 	void STANDN_Update();
 	void STANDN_UpdateSprite();
+	void STANDN_TransitionToAction(int a);
+	void STANDN_TimeIndFrameInc();
+	void STANDN_TimeDepFrameInc();
+	int STANDN_GetActionLength();
+	Tileset * STANDN_GetTileset();
 
 	void STEEPCLIMB_Start();
 	void STEEPCLIMB_End();
 	void STEEPCLIMB_Change();
 	void STEEPCLIMB_Update();
 	void STEEPCLIMB_UpdateSprite();
+	void STEEPCLIMB_TransitionToAction(int a);
+	void STEEPCLIMB_TimeIndFrameInc();
+	void STEEPCLIMB_TimeDepFrameInc();
+	int STEEPCLIMB_GetActionLength();
+	Tileset * STEEPCLIMB_GetTileset();
 
 	void STEEPCLIMBATTACK_Start();
 	void STEEPCLIMBATTACK_End();
 	void STEEPCLIMBATTACK_Change();
 	void STEEPCLIMBATTACK_Update();
 	void STEEPCLIMBATTACK_UpdateSprite();
+	void STEEPCLIMBATTACK_TransitionToAction(int a);
+	void STEEPCLIMBATTACK_TimeIndFrameInc();
+	void STEEPCLIMBATTACK_TimeDepFrameInc();
+	int STEEPCLIMBATTACK_GetActionLength();
+	Tileset * STEEPCLIMBATTACK_GetTileset();
 
 	void STEEPCLING_Start();
 	void STEEPCLING_End();
 	void STEEPCLING_Change();
 	void STEEPCLING_Update();
 	void STEEPCLING_UpdateSprite();
+	void STEEPCLING_TransitionToAction(int a);
+	void STEEPCLING_TimeIndFrameInc();
+	void STEEPCLING_TimeDepFrameInc();
+	int STEEPCLING_GetActionLength();
+	Tileset * STEEPCLING_GetTileset();
 
 	void STEEPSLIDE_Start();
 	void STEEPSLIDE_End();
 	void STEEPSLIDE_Change();
 	void STEEPSLIDE_Update();
 	void STEEPSLIDE_UpdateSprite();
+	void STEEPSLIDE_TransitionToAction(int a);
+	void STEEPSLIDE_TimeIndFrameInc();
+	void STEEPSLIDE_TimeDepFrameInc();
+	int STEEPSLIDE_GetActionLength();
+	Tileset * STEEPSLIDE_GetTileset();
 
 	void STEEPSLIDEATTACK_Start();
 	void STEEPSLIDEATTACK_End();
 	void STEEPSLIDEATTACK_Change();
 	void STEEPSLIDEATTACK_Update();
 	void STEEPSLIDEATTACK_UpdateSprite();
+	void STEEPSLIDEATTACK_TransitionToAction(int a);
+	void STEEPSLIDEATTACK_TimeIndFrameInc();
+	void STEEPSLIDEATTACK_TimeDepFrameInc();
+	int STEEPSLIDEATTACK_GetActionLength();
+	Tileset * STEEPSLIDEATTACK_GetTileset();
 
 	void SWINGSTUN_Start();
 	void SWINGSTUN_End();
 	void SWINGSTUN_Change();
 	void SWINGSTUN_Update();
 	void SWINGSTUN_UpdateSprite();
+	void SWINGSTUN_TransitionToAction(int a);
+	void SWINGSTUN_TimeIndFrameInc();
+	void SWINGSTUN_TimeDepFrameInc();
+	int SWINGSTUN_GetActionLength();
+	Tileset * SWINGSTUN_GetTileset();
 
 	void UAIR_Start();
 	void UAIR_End();
 	void UAIR_Change();
 	void UAIR_Update();
 	void UAIR_UpdateSprite();
+	void UAIR_TransitionToAction(int a);
+	void UAIR_TimeIndFrameInc();
+	void UAIR_TimeDepFrameInc();
+	int UAIR_GetActionLength();
+	Tileset * UAIR_GetTileset();
 
 	void WAITFORSHIP_Start();
 	void WAITFORSHIP_End();
 	void WAITFORSHIP_Change();
 	void WAITFORSHIP_Update();
 	void WAITFORSHIP_UpdateSprite();
+	void WAITFORSHIP_TransitionToAction(int a);
+	void WAITFORSHIP_TimeIndFrameInc();
+	void WAITFORSHIP_TimeDepFrameInc();
+	int WAITFORSHIP_GetActionLength();
+	Tileset * WAITFORSHIP_GetTileset();
 
 	void WALLATTACK_Start();
 	void WALLATTACK_End();
 	void WALLATTACK_Change();
 	void WALLATTACK_Update();
 	void WALLATTACK_UpdateSprite();
+	void WALLATTACK_TransitionToAction(int a);
+	void WALLATTACK_TimeIndFrameInc();
+	void WALLATTACK_TimeDepFrameInc();
+	int WALLATTACK_GetActionLength();
+	Tileset * WALLATTACK_GetTileset();
 
 	void WALLCLING_Start();
 	void WALLCLING_End();
 	void WALLCLING_Change();
 	void WALLCLING_Update();
 	void WALLCLING_UpdateSprite();
+	void WALLCLING_TransitionToAction(int a);
+	void WALLCLING_TimeIndFrameInc();
+	void WALLCLING_TimeDepFrameInc();
+	int WALLCLING_GetActionLength();
+	Tileset * WALLCLING_GetTileset();
 
 	void WALLJUMP_Start();
 	void WALLJUMP_End();
 	void WALLJUMP_Change();
 	void WALLJUMP_Update();
 	void WALLJUMP_UpdateSprite();
+	void WALLJUMP_TransitionToAction(int a);
+	void WALLJUMP_TimeIndFrameInc();
+	void WALLJUMP_TimeDepFrameInc();
+	int WALLJUMP_GetActionLength();
+	Tileset * WALLJUMP_GetTileset();
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();
 	void WIREHOLD_Change();
 	void WIREHOLD_Update();
 	void WIREHOLD_UpdateSprite();
+	void WIREHOLD_TransitionToAction(int a);
+	void WIREHOLD_TimeIndFrameInc();
+	void WIREHOLD_TimeDepFrameInc();
+	int WIREHOLD_GetActionLength();
+	Tileset * WIREHOLD_GetTileset();
 
 };
 

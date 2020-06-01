@@ -67,3 +67,28 @@ void Actor::SWINGSTUN_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 }
+
+void Actor::SWINGSTUN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SWINGSTUN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SWINGSTUN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SWINGSTUN_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SWINGSTUN_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

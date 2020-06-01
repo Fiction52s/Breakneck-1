@@ -42,3 +42,28 @@ void Actor::INTROBOOST_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::INTROBOOST_TransitionToAction(int a)
+{
+
+}
+
+void Actor::INTROBOOST_TimeIndFrameInc()
+{
+
+}
+
+void Actor::INTROBOOST_TimeDepFrameInc()
+{
+
+}
+
+int Actor::INTROBOOST_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::INTROBOOST_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

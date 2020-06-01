@@ -139,3 +139,28 @@ void Actor::BOUNCEAIR_UpdateSprite()
 
 	scorpSet = true;
 }
+
+void Actor::BOUNCEAIR_TransitionToAction(int a)
+{
+
+}
+
+void Actor::BOUNCEAIR_TimeIndFrameInc()
+{
+
+}
+
+void Actor::BOUNCEAIR_TimeDepFrameInc()
+{
+
+}
+
+int Actor::BOUNCEAIR_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::BOUNCEAIR_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

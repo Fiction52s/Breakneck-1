@@ -45,3 +45,28 @@ void Actor::SEQ_MEDITATE_MASKON_UpdateSprite()
 
 	sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::SEQ_MEDITATE_MASKON_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_MEDITATE_MASKON_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_MEDITATE_MASKON_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_MEDITATE_MASKON_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_MEDITATE_MASKON_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

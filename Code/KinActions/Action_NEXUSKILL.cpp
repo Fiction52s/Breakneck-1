@@ -29,3 +29,28 @@ void Actor::NEXUSKILL_UpdateSprite()
 {
 	GOALKILL_UpdateSprite();
 }
+
+void Actor::NEXUSKILL_TransitionToAction(int a)
+{
+
+}
+
+void Actor::NEXUSKILL_TimeIndFrameInc()
+{
+
+}
+
+void Actor::NEXUSKILL_TimeDepFrameInc()
+{
+
+}
+
+int Actor::NEXUSKILL_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::NEXUSKILL_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

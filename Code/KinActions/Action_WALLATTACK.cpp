@@ -123,3 +123,28 @@ void Actor::WALLATTACK_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::WALLATTACK_TransitionToAction(int a)
+{
+
+}
+
+void Actor::WALLATTACK_TimeIndFrameInc()
+{
+
+}
+
+void Actor::WALLATTACK_TimeDepFrameInc()
+{
+
+}
+
+int Actor::WALLATTACK_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::WALLATTACK_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

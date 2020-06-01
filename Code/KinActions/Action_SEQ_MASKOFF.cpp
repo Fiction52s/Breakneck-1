@@ -46,3 +46,28 @@ void Actor::SEQ_MASKOFF_UpdateSprite()
 
 	sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::SEQ_MASKOFF_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_MASKOFF_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_MASKOFF_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_MASKOFF_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_MASKOFF_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

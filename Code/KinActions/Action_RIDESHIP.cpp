@@ -44,3 +44,28 @@ void Actor::RIDESHIP_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::RIDESHIP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::RIDESHIP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::RIDESHIP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::RIDESHIP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::RIDESHIP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

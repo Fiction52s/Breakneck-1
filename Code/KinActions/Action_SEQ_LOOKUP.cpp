@@ -43,3 +43,28 @@ void Actor::SEQ_LOOKUP_UpdateSprite()
 	else
 		sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::SEQ_LOOKUP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_LOOKUP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_LOOKUP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_LOOKUP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_LOOKUP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

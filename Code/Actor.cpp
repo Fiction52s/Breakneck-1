@@ -59,6 +59,7 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+//#define SETUP_ACTION_FUNCS(VAR) SetupFuncsForAction(##VAR,&Actor::##VAR_Start,&Actor::X_End,&Actor::X_Change,&Actor::X_Update,&Actor::X_UpdateSprite,&Actor::X_TransitionToAction,&Actor::X_TimeIndFrameInc,&Actor::X_TimeDepFrameInc,&Actor::X_GetActionLength,&Actor::X_GetTileset);
 
 void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 {
@@ -274,7 +275,7 @@ Collider &Actor::GetCollider()
 	}
 }
 
-void Actor::SetupFXTilesets( Skin *skin, Skin *swordSkin)
+void Actor::SetupFXTilesets()
 {
 	string folder = "Kin/FX/";
 
@@ -381,7 +382,7 @@ void Actor::SetupFXTilesets( Skin *skin, Skin *swordSkin)
 	keyExplodeRingGroup->Init();
 }
 
-void Actor::SetupSwordTilesets(Skin *swordSkin)
+void Actor::SetupSwordTilesets()
 {
 	string folder = "Sword/";
 
@@ -426,7 +427,7 @@ void Actor::SetupSwordTilesets(Skin *swordSkin)
 	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
 }
 
-void Actor::SetupExtraTilesets(Skin *skin)
+void Actor::SetupExtraTilesets()
 {
 	string folder = "Kin/";
 
@@ -461,11 +462,10 @@ void Actor::SetupExtraTilesets(Skin *skin)
 	}
 }
 
-void Actor::SetupActionTilesets(Skin *skin)
+void Actor::SetupActionTilesets()
 {
 	string folder = "Kin/";
 
-	tileset[STAND] = sess->GetSizedTileset( folder, "stand_64x64.png", skin);
 	tileset[WALLATTACK] = sess->GetSizedTileset( folder, "wall_att_64x128.png", skin);
 	tileset[DAIR] = sess->GetSizedTileset( folder, "dair_80x80.png", skin);
 	tileset[DASH] = sess->GetSizedTileset( folder, "dash_96x48.png", skin);
@@ -499,9 +499,7 @@ void Actor::SetupActionTilesets(Skin *skin)
 	tileset[STEEPSLIDE] = sess->GetSizedTileset( folder, "steepslide_64x64.png", skin);
 	tileset[STEEPCLIMBATTACK] = sess->GetSizedTileset( folder, "climb_att_128x64.png", skin);
 	tileset[STEEPSLIDEATTACK] = sess->GetSizedTileset( folder, "steep_att_128x64.png", skin);
-	tileset[AIRDASH] = sess->GetSizedTileset( folder, "airdash_80x80.png", skin);
 	tileset[STEEPCLIMB] = sess->GetSizedTileset( folder, "steepclimb_96x32.png", skin);
-	tileset[AIRHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
 	tileset[GROUNDHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
 	tileset[WIREHOLD] = tileset[STEEPSLIDE];
 	tileset[BOUNCEAIR] = sess->GetSizedTileset( folder, "bounce_224x224.png", skin);
@@ -548,12 +546,12 @@ void Actor::SetupActionTilesets(Skin *skin)
 	tileset[GOALKILL4] = sess->GetSizedTileset( folder, "goal_w01_kille_384x256.png");
 }
 
-void Actor::SetupTilesets( Skin *skin, Skin *swordSkin )
+void Actor::SetupTilesets()
 {
-	SetupFXTilesets(skin, swordSkin);
-	SetupSwordTilesets(swordSkin);
-	SetupExtraTilesets(skin);
-	SetupActionTilesets(skin);
+	SetupFXTilesets();
+	SetupSwordTilesets();
+	SetupExtraTilesets();
+	SetupActionTilesets();
 }
 
 void Actor::Init()
@@ -570,6 +568,36 @@ void Actor::Init()
 	}
 }
 
+void Actor::SetupFuncsForAction(
+	int a,
+	void(Actor::* start)(),
+	void(Actor::* end) (),
+	void(Actor::* change)(),
+	void(Actor::* update)(),
+	void(Actor::* updateSprite)(),
+	void(Actor::* transitionToAction)(int),
+	void(Actor::* timeIndInc)(),
+	void(Actor::* timeDepInc)(),
+	int(Actor::* getActionLength)(),
+	Tileset*(Actor::* getTileset)() )
+{
+	startActionFuncs[AIRDASH] = &Actor::AIRDASH_Start;
+	endActionFuncs[AIRDASH] = &Actor::AIRDASH_End;
+	changeActionFuncs[AIRDASH] = &Actor::AIRDASH_Change;
+	updateActionFuncs[AIRDASH] = &Actor::AIRDASH_Update;
+	updateSpriteFuncs[AIRDASH] = &Actor::AIRDASH_UpdateSprite;
+	transitionFuncs[AIRDASH] = &Actor::AIRDASH_TransitionToAction;
+	timeIndFrameIncFuncs[AIRDASH] = &Actor::AIRDASH_TimeIndFrameInc;
+	timeDepFrameIncFuncs[AIRDASH] = &Actor::AIRDASH_TimeDepFrameInc;
+	getActionLengthFuncs[AIRDASH] = &Actor::AIRDASH_GetActionLength;
+	getTilesetFuncs[AIRDASH] = &Actor::AIRDASH_GetTileset;
+}
+
+Tileset *Actor::GetActionTileset(const std::string &fn)
+{
+	return sess->GetSizedTileset(actionFolder, fn, skin);
+}
+
 void Actor::SetupActionFunctions()
 {
 	startActionFuncs.resize(Count);
@@ -581,577 +609,1099 @@ void Actor::SetupActionFunctions()
 	timeIndFrameIncFuncs.resize(Count);
 	timeDepFrameIncFuncs.resize(Count);
 	getActionLengthFuncs.resize(Count);
-	setTilesetFuncs.resize(Count);
-
-	startActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Start;
-	endActionFuncs		[AIRDASH] =	&Actor::AIRDASH_End;
-	changeActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Change;
-	updateActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Update;
-	updateSpriteFuncs	[AIRDASH] =	&Actor::AIRDASH_UpdateSprite;
-
-	startActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Start;
-	endActionFuncs		[AIRHITSTUN] =	&Actor::AIRHITSTUN_End;
-	changeActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Change;
-	updateActionFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_Update;
-	updateSpriteFuncs	[AIRHITSTUN] =	&Actor::AIRHITSTUN_UpdateSprite;
-
-	startActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Start;
-	endActionFuncs		[AUTORUN] =	&Actor::AUTORUN_End;
-	changeActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Change;
-	updateActionFuncs	[AUTORUN] =	&Actor::AUTORUN_Update;
-	updateSpriteFuncs	[AUTORUN] =	&Actor::AUTORUN_UpdateSprite;
-
-	startActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Start;
-	endActionFuncs		[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_End;
-	changeActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Change;
-	updateActionFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_Update;
-	updateSpriteFuncs	[BACKWARDSDOUBLE] =	&Actor::BACKWARDSDOUBLE_UpdateSprite;
-
-	startActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Start;
-	endActionFuncs		[BOUNCEAIR] =	&Actor::BOUNCEAIR_End;
-	changeActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Change;
-	updateActionFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_Update;
-	updateSpriteFuncs	[BOUNCEAIR] =	&Actor::BOUNCEAIR_UpdateSprite;
-
-	startActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Start;
-	endActionFuncs		[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_End;
-	changeActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Change;
-	updateActionFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_Update;
-	updateSpriteFuncs	[BOUNCEGROUND] =	&Actor::BOUNCEGROUND_UpdateSprite;
-
-	startActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Start;
-	endActionFuncs		[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_End;
-	changeActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Change;
-	updateActionFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_Update;
-	updateSpriteFuncs	[BOUNCEGROUNDEDWALL] =	&Actor::BOUNCEGROUNDEDWALL_UpdateSprite;
-
-	startActionFuncs	[BRAKE] =	&Actor::BRAKE_Start;
-	endActionFuncs		[BRAKE] =	&Actor::BRAKE_End;
-	changeActionFuncs	[BRAKE] =	&Actor::BRAKE_Change;
-	updateActionFuncs	[BRAKE] =	&Actor::BRAKE_Update;
-	updateSpriteFuncs	[BRAKE] =	&Actor::BRAKE_UpdateSprite;
-
-	startActionFuncs	[DAIR] =	&Actor::DAIR_Start;
-	endActionFuncs		[DAIR] =	&Actor::DAIR_End;
-	changeActionFuncs	[DAIR] =	&Actor::DAIR_Change;
-	updateActionFuncs	[DAIR] =	&Actor::DAIR_Update;
-	updateSpriteFuncs	[DAIR] =	&Actor::DAIR_UpdateSprite;
-
-	startActionFuncs	[DASH] =	&Actor::DASH_Start;
-	endActionFuncs		[DASH] =	&Actor::DASH_End;
-	changeActionFuncs	[DASH] =	&Actor::DASH_Change;
-	updateActionFuncs	[DASH] =	&Actor::DASH_Update;
-	updateSpriteFuncs	[DASH] =	&Actor::DASH_UpdateSprite;
-
-	startActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Start;
-	endActionFuncs		[DASHATTACK] =	&Actor::DASHATTACK_End;
-	changeActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Change;
-	updateActionFuncs	[DASHATTACK] =	&Actor::DASHATTACK_Update;
-	updateSpriteFuncs	[DASHATTACK] =	&Actor::DASHATTACK_UpdateSprite;
-
-	startActionFuncs	[DEATH] =	&Actor::DEATH_Start;
-	endActionFuncs		[DEATH] =	&Actor::DEATH_End;
-	changeActionFuncs	[DEATH] =	&Actor::DEATH_Change;
-	updateActionFuncs	[DEATH] =	&Actor::DEATH_Update;
-	updateSpriteFuncs	[DEATH] =	&Actor::DEATH_UpdateSprite;
-
-	startActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Start;
-	endActionFuncs		[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_End;
-	changeActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Change;
-	updateActionFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_Update;
-	updateSpriteFuncs	[DIAGDOWNATTACK] =	&Actor::DIAGDOWNATTACK_UpdateSprite;
-
-	startActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Start;
-	endActionFuncs		[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_End;
-	changeActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Change;
-	updateActionFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_Update;
-	updateSpriteFuncs	[DIAGUPATTACK] =	&Actor::DIAGUPATTACK_UpdateSprite;
-
-	startActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Start;
-	endActionFuncs		[DOUBLE] =	&Actor::DOUBLE_End;
-	changeActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Change;
-	updateActionFuncs	[DOUBLE] =	&Actor::DOUBLE_Update;
-	updateSpriteFuncs	[DOUBLE] =	&Actor::DOUBLE_UpdateSprite;
-
-	startActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Start;
-	endActionFuncs		[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_End;
-	changeActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Change;
-	updateActionFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_Update;
-	updateSpriteFuncs	[ENTERNEXUS1] =	&Actor::ENTERNEXUS1_UpdateSprite;
-
-	startActionFuncs	[EXIT] =	&Actor::EXIT_Start;
-	endActionFuncs		[EXIT] =	&Actor::EXIT_End;
-	changeActionFuncs	[EXIT] =	&Actor::EXIT_Change;
-	updateActionFuncs	[EXIT] =	&Actor::EXIT_Update;
-	updateSpriteFuncs	[EXIT] =	&Actor::EXIT_UpdateSprite;
-
-	startActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Start;
-	endActionFuncs		[EXITBOOST] =	&Actor::EXITBOOST_End;
-	changeActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Change;
-	updateActionFuncs	[EXITBOOST] =	&Actor::EXITBOOST_Update;
-	updateSpriteFuncs	[EXITBOOST] =	&Actor::EXITBOOST_UpdateSprite;
-
-	startActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Start;
-	endActionFuncs		[EXITWAIT] =	&Actor::EXITWAIT_End;
-	changeActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Change;
-	updateActionFuncs	[EXITWAIT] =	&Actor::EXITWAIT_Update;
-	updateSpriteFuncs	[EXITWAIT] =	&Actor::EXITWAIT_UpdateSprite;
-
-	startActionFuncs	[FAIR] =	&Actor::FAIR_Start;
-	endActionFuncs		[FAIR] =	&Actor::FAIR_End;
-	changeActionFuncs	[FAIR] =	&Actor::FAIR_Change;
-	updateActionFuncs	[FAIR] =	&Actor::FAIR_Update;
-	updateSpriteFuncs	[FAIR] =	&Actor::FAIR_UpdateSprite;
-
-	startActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Start;
-	endActionFuncs		[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_End;
-	changeActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Change;
-	updateActionFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_Update;
-	updateSpriteFuncs	[GETPOWER_AIRDASH_FLIP] =	&Actor::GETPOWER_AIRDASH_FLIP_UpdateSprite;
-
-	startActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Start;
-	endActionFuncs		[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_End;
-	changeActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Change;
-	updateActionFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_Update;
-	updateSpriteFuncs	[GETPOWER_AIRDASH_MEDITATE] =	&Actor::GETPOWER_AIRDASH_MEDITATE_UpdateSprite;
-
-	startActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Start;
-	endActionFuncs		[GETSHARD] =	&Actor::GETSHARD_End;
-	changeActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Change;
-	updateActionFuncs	[GETSHARD] =	&Actor::GETSHARD_Update;
-	updateSpriteFuncs	[GETSHARD] =	&Actor::GETSHARD_UpdateSprite;
-
-	startActionFuncs	[GLIDE] =	&Actor::GLIDE_Start;
-	endActionFuncs		[GLIDE] =	&Actor::GLIDE_End;
-	changeActionFuncs	[GLIDE] =	&Actor::GLIDE_Change;
-	updateActionFuncs	[GLIDE] =	&Actor::GLIDE_Update;
-	updateSpriteFuncs	[GLIDE] =	&Actor::GLIDE_UpdateSprite;
-
-	startActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Start;
-	endActionFuncs		[GOALKILL] =	&Actor::GOALKILL_End;
-	changeActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Change;
-	updateActionFuncs	[GOALKILL] =	&Actor::GOALKILL_Update;
-	updateSpriteFuncs	[GOALKILL] =	&Actor::GOALKILL_UpdateSprite;
-
-	startActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Start;
-	endActionFuncs		[GOALKILL1] =	&Actor::GOALKILL1_End;
-	changeActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Change;
-	updateActionFuncs	[GOALKILL1] =	&Actor::GOALKILL1_Update;
-	updateSpriteFuncs	[GOALKILL1] =	&Actor::GOALKILL1_UpdateSprite;
-
-	startActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Start;
-	endActionFuncs		[GOALKILL2] =	&Actor::GOALKILL2_End;
-	changeActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Change;
-	updateActionFuncs	[GOALKILL2] =	&Actor::GOALKILL2_Update;
-	updateSpriteFuncs	[GOALKILL2] =	&Actor::GOALKILL2_UpdateSprite;
-
-	startActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Start;
-	endActionFuncs		[GOALKILL3] =	&Actor::GOALKILL3_End;
-	changeActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Change;
-	updateActionFuncs	[GOALKILL3] =	&Actor::GOALKILL3_Update;
-	updateSpriteFuncs	[GOALKILL3] =	&Actor::GOALKILL3_UpdateSprite;
-
-	startActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Start;
-	endActionFuncs		[GOALKILL4] =	&Actor::GOALKILL4_End;
-	changeActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Change;
-	updateActionFuncs	[GOALKILL4] =	&Actor::GOALKILL4_Update;
-	updateSpriteFuncs	[GOALKILL4] =	&Actor::GOALKILL4_UpdateSprite;
-
-	startActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Start;
-	endActionFuncs		[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_End;
-	changeActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Change;
-	updateActionFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_Update;
-	updateSpriteFuncs	[GOALKILLWAIT] =	&Actor::GOALKILLWAIT_UpdateSprite;
-
-	startActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Start;
-	endActionFuncs		[GRABSHIP] =	&Actor::GRABSHIP_End;
-	changeActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Change;
-	updateActionFuncs	[GRABSHIP] =	&Actor::GRABSHIP_Update;
-	updateSpriteFuncs	[GRABSHIP] =	&Actor::GRABSHIP_UpdateSprite;
-
-	startActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Start;
-	endActionFuncs		[GRAVREVERSE] =	&Actor::GRAVREVERSE_End;
-	changeActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Change;
-	updateActionFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_Update;
-	updateSpriteFuncs	[GRAVREVERSE] =	&Actor::GRAVREVERSE_UpdateSprite;
-
-	startActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Start;
-	endActionFuncs		[GRINDATTACK] =	&Actor::GRINDATTACK_End;
-	changeActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Change;
-	updateActionFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_Update;
-	updateSpriteFuncs	[GRINDATTACK] =	&Actor::GRINDATTACK_UpdateSprite;
-
-	startActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Start;
-	endActionFuncs		[GRINDBALL] =	&Actor::GRINDBALL_End;
-	changeActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Change;
-	updateActionFuncs	[GRINDBALL] =	&Actor::GRINDBALL_Update;
-	updateSpriteFuncs	[GRINDBALL] =	&Actor::GRINDBALL_UpdateSprite;
-
-	startActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Start;
-	endActionFuncs		[GRINDLUNGE] =	&Actor::GRINDLUNGE_End;
-	changeActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Change;
-	updateActionFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_Update;
-	updateSpriteFuncs	[GRINDLUNGE] =	&Actor::GRINDLUNGE_UpdateSprite;
-
-	startActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Start;
-	endActionFuncs		[GRINDSLASH] =	&Actor::GRINDSLASH_End;
-	changeActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Change;
-	updateActionFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_Update;
-	updateSpriteFuncs	[GRINDSLASH] =	&Actor::GRINDSLASH_UpdateSprite;
-
-	startActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Start;
-	endActionFuncs		[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_End;
-	changeActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Change;
-	updateActionFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_Update;
-	updateSpriteFuncs	[GROUNDHITSTUN] =	&Actor::GROUNDHITSTUN_UpdateSprite;
-
-	startActionFuncs	[INTRO] =	&Actor::INTRO_Start;
-	endActionFuncs		[INTRO] =	&Actor::INTRO_End;
-	changeActionFuncs	[INTRO] =	&Actor::INTRO_Change;
-	updateActionFuncs	[INTRO] =	&Actor::INTRO_Update;
-	updateSpriteFuncs	[INTRO] =	&Actor::INTRO_UpdateSprite;
-
-	startActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Start;
-	endActionFuncs		[INTROBOOST] =	&Actor::INTROBOOST_End;
-	changeActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Change;
-	updateActionFuncs	[INTROBOOST] =	&Actor::INTROBOOST_Update;
-	updateSpriteFuncs	[INTROBOOST] =	&Actor::INTROBOOST_UpdateSprite;
-
-	startActionFuncs	[JUMP] =	&Actor::JUMP_Start;
-	endActionFuncs		[JUMP] =	&Actor::JUMP_End;
-	changeActionFuncs	[JUMP] =	&Actor::JUMP_Change;
-	updateActionFuncs	[JUMP] =	&Actor::JUMP_Update;
-	updateSpriteFuncs	[JUMP] =	&Actor::JUMP_UpdateSprite;
-
-	startActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Start;
-	endActionFuncs		[JUMPSQUAT] =	&Actor::JUMPSQUAT_End;
-	changeActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Change;
-	updateActionFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_Update;
-	updateSpriteFuncs	[JUMPSQUAT] =	&Actor::JUMPSQUAT_UpdateSprite;
-
-	startActionFuncs	[GLIDE] =	&Actor::GLIDE_Start;
-	endActionFuncs		[GLIDE] =	&Actor::GLIDE_End;
-	changeActionFuncs	[GLIDE] =	&Actor::GLIDE_Change;
-	updateActionFuncs	[GLIDE] =	&Actor::GLIDE_Update;
-	updateSpriteFuncs	[GLIDE] =	&Actor::GLIDE_UpdateSprite;
-
-	startActionFuncs	[LAND] =	&Actor::LAND_Start;
-	endActionFuncs		[LAND] =	&Actor::LAND_End;
-	changeActionFuncs	[LAND] =	&Actor::LAND_Change;
-	updateActionFuncs	[LAND] =	&Actor::LAND_Update;
-	updateSpriteFuncs	[LAND] =	&Actor::LAND_UpdateSprite;
-
-	startActionFuncs	[LAND2] =	&Actor::LAND2_Start;
-	endActionFuncs		[LAND2] =	&Actor::LAND2_End;
-	changeActionFuncs	[LAND2] =	&Actor::LAND2_Change;
-	updateActionFuncs	[LAND2] =	&Actor::LAND2_Update;
-	updateSpriteFuncs	[LAND2] =	&Actor::LAND2_UpdateSprite;
-
-	startActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Start;
-	endActionFuncs		[NEXUSKILL] =	&Actor::NEXUSKILL_End;
-	changeActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Change;
-	updateActionFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_Update;
-	updateSpriteFuncs	[NEXUSKILL] =	&Actor::NEXUSKILL_UpdateSprite;
-
-	startActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Start;
-	endActionFuncs		[RAILDASH] =	&Actor::RAILDASH_End;
-	changeActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Change;
-	updateActionFuncs	[RAILDASH] =	&Actor::RAILDASH_Update;
-	updateSpriteFuncs	[RAILDASH] =	&Actor::RAILDASH_UpdateSprite;
-
-	startActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Start;
-	endActionFuncs		[RAILGRIND] =	&Actor::RAILGRIND_End;
-	changeActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Change;
-	updateActionFuncs	[RAILGRIND] =	&Actor::RAILGRIND_Update;
-	updateSpriteFuncs	[RAILGRIND] =	&Actor::RAILGRIND_UpdateSprite;
-
-	startActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Start;
-	endActionFuncs		[RAILSLIDE] =	&Actor::RAILSLIDE_End;
-	changeActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Change;
-	updateActionFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_Update;
-	updateSpriteFuncs	[RAILSLIDE] =	&Actor::RAILSLIDE_UpdateSprite;
-
-	startActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Start;
-	endActionFuncs		[RIDESHIP] =	&Actor::RIDESHIP_End;
-	changeActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Change;
-	updateActionFuncs	[RIDESHIP] =	&Actor::RIDESHIP_Update;
-	updateSpriteFuncs	[RIDESHIP] =	&Actor::RIDESHIP_UpdateSprite;
-
-	startActionFuncs	[RUN] =	&Actor::RUN_Start;
-	endActionFuncs		[RUN] =	&Actor::RUN_End;
-	changeActionFuncs	[RUN] =	&Actor::RUN_Change;
-	updateActionFuncs	[RUN] =	&Actor::RUN_Update;
-	updateSpriteFuncs	[RUN] =	&Actor::RUN_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_DODGEBACK] =	&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_LAND] =	&Actor::SEQ_CRAWLERFIGHT_LAND_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_STAND] =	&Actor::SEQ_CRAWLERFIGHT_STAND_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_STRAIGHTFALL] =	&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] =	&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_UpdateSprite;
-
-	startActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start;
-	endActionFuncs		[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End;
-	changeActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Change;
-	updateActionFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Update;
-	updateSpriteFuncs	[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] =	&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_UpdateSprite;
-
-	startActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Start;
-	endActionFuncs		[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_End;
-	changeActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Change;
-	updateActionFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_Update;
-	updateSpriteFuncs	[SEQ_ENTERCORE1] =	&Actor::SEQ_ENTERCORE1_UpdateSprite;
-
-	startActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Start;
-	endActionFuncs		[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_End;
-	changeActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Change;
-	updateActionFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_Update;
-	updateSpriteFuncs	[SEQ_FADE_INTO_NEXUS] =	&Actor::SEQ_FADE_INTO_NEXUS_UpdateSprite;
-
-	startActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Start;
-	endActionFuncs		[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_End;
-	changeActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Change;
-	updateActionFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Update;
-	updateSpriteFuncs	[SEQ_FLOAT_TO_NEXUS_OPENING] =	&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite;
-
-	startActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Start;
-	endActionFuncs		[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_End;
-	changeActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Change;
-	updateActionFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_Update;
-	updateSpriteFuncs	[SEQ_KINFALL] =	&Actor::SEQ_KINFALL_UpdateSprite;
-
-	startActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Start;
-	endActionFuncs		[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_End;
-	changeActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Change;
-	updateActionFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_Update;
-	updateSpriteFuncs	[SEQ_KINSTAND] =	&Actor::SEQ_KINSTAND_UpdateSprite;
-
-	startActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Start;
-	endActionFuncs		[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_End;
-	changeActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Change;
-	updateActionFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_Update;
-	updateSpriteFuncs	[SEQ_KINTHROWN] =	&Actor::SEQ_KINTHROWN_UpdateSprite;
-
-	startActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Start;
-	endActionFuncs		[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_End;
-	changeActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Change;
-	updateActionFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_Update;
-	updateSpriteFuncs	[SEQ_KNEEL] =	&Actor::SEQ_KNEEL_UpdateSprite;
-
-	startActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Start;
-	endActionFuncs		[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_End;
-	changeActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Change;
-	updateActionFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_Update;
-	updateSpriteFuncs	[SEQ_KNEEL_TO_MEDITATE] =	&Actor::SEQ_KNEEL_TO_MEDITATE_UpdateSprite;
-
-	startActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Start;
-	endActionFuncs		[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_End;
-	changeActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Change;
-	updateActionFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_Update;
-	updateSpriteFuncs	[SEQ_LOOKUP] =	&Actor::SEQ_LOOKUP_UpdateSprite;
-
-	startActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Start;
-	endActionFuncs		[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_End;
-	changeActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Change;
-	updateActionFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_Update;
-	updateSpriteFuncs	[SEQ_LOOKUPDISAPPEAR] =	&Actor::SEQ_LOOKUPDISAPPEAR_UpdateSprite;
-
-	startActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Start;
-	endActionFuncs		[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_End;
-	changeActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Change;
-	updateActionFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_Update;
-	updateSpriteFuncs	[SEQ_MASKOFF] =	&Actor::SEQ_MASKOFF_UpdateSprite;
-
-	startActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Start;
-	endActionFuncs		[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_End;
-	changeActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Change;
-	updateActionFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_Update;
-	updateSpriteFuncs	[SEQ_MEDITATE] =	&Actor::SEQ_MEDITATE_UpdateSprite;
-
-	startActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Start;
-	endActionFuncs		[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_End;
-	changeActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Change;
-	updateActionFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_Update;
-	updateSpriteFuncs	[SEQ_MEDITATE_MASKON] =	&Actor::SEQ_MEDITATE_MASKON_UpdateSprite;
-
-	startActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Start;
-	endActionFuncs		[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_End;
-	changeActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Change;
-	updateActionFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_Update;
-	updateSpriteFuncs	[SEQ_TURNFACE] =	&Actor::SEQ_TURNFACE_UpdateSprite;
-
-	startActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Start;
-	endActionFuncs		[SEQ_WAIT] =	&Actor::SEQ_WAIT_End;
-	changeActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Change;
-	updateActionFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_Update;
-	updateSpriteFuncs	[SEQ_WAIT] =	&Actor::SEQ_WAIT_UpdateSprite;
-
-	startActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Start;
-	endActionFuncs		[SKYDIVE] =	&Actor::SKYDIVE_End;
-	changeActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Change;
-	updateActionFuncs	[SKYDIVE] =	&Actor::SKYDIVE_Update;
-	updateSpriteFuncs	[SKYDIVE] =	&Actor::SKYDIVE_UpdateSprite;
-
-	startActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Start;
-	endActionFuncs		[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_End;
-	changeActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Change;
-	updateActionFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_Update;
-	updateSpriteFuncs	[SKYDIVETOFALL] =	&Actor::SKYDIVETOFALL_UpdateSprite;
-
-	startActionFuncs	[SLIDE] =	&Actor::SLIDE_Start;
-	endActionFuncs		[SLIDE] =	&Actor::SLIDE_End;
-	changeActionFuncs	[SLIDE] =	&Actor::SLIDE_Change;
-	updateActionFuncs	[SLIDE] =	&Actor::SLIDE_Update;
-	updateSpriteFuncs	[SLIDE] =	&Actor::SLIDE_UpdateSprite;
-
-	startActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Start;
-	endActionFuncs		[SPAWNWAIT] =	&Actor::SPAWNWAIT_End;
-	changeActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Change;
-	updateActionFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_Update;
-	updateSpriteFuncs	[SPAWNWAIT] =	&Actor::SPAWNWAIT_UpdateSprite;
-
-	startActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Start;
-	endActionFuncs		[SPRINGSTUN] =	&Actor::SPRINGSTUN_End;
-	changeActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Change;
-	updateActionFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_Update;
-	updateSpriteFuncs	[SPRINGSTUN] =	&Actor::SPRINGSTUN_UpdateSprite;
-
-	startActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Start;
-	endActionFuncs		[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_End;
-	changeActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Change;
-	updateActionFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_Update;
-	updateSpriteFuncs	[SPRINGSTUNAIRBOUNCE] =	&Actor::SPRINGSTUNAIRBOUNCE_UpdateSprite;
-
-	startActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Start;
-	endActionFuncs		[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_End;
-	changeActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Change;
-	updateActionFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_Update;
-	updateSpriteFuncs	[SPRINGSTUNBOUNCE] =	&Actor::SPRINGSTUNBOUNCE_UpdateSprite;
-
-	startActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Start;
-	endActionFuncs		[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_End;
-	changeActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Change;
-	updateActionFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_Update;
-	updateSpriteFuncs	[SPRINGSTUNGLIDE] =	&Actor::SPRINGSTUNGLIDE_UpdateSprite;
-
-	startActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Start;
-	endActionFuncs		[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_End;
-	changeActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Change;
-	updateActionFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_Update;
-	updateSpriteFuncs	[SPRINGSTUNTELEPORT] =	&Actor::SPRINGSTUNTELEPORT_UpdateSprite;
-
-	startActionFuncs	[SPRINT] =	&Actor::SPRINT_Start;
-	endActionFuncs		[SPRINT] =	&Actor::SPRINT_End;
-	changeActionFuncs	[SPRINT] =	&Actor::SPRINT_Change;
-	updateActionFuncs	[SPRINT] =	&Actor::SPRINT_Update;
-	updateSpriteFuncs	[SPRINT] =	&Actor::SPRINT_UpdateSprite;
-
-	startActionFuncs	[STAND] =	&Actor::STAND_Start;
-	endActionFuncs		[STAND] =	&Actor::STAND_End;
-	changeActionFuncs	[STAND] =	&Actor::STAND_Change;
-	updateActionFuncs	[STAND] =	&Actor::STAND_Update;
-	updateSpriteFuncs	[STAND] =	&Actor::STAND_UpdateSprite;
-
-	startActionFuncs	[STANDN] =	&Actor::STANDN_Start;
-	endActionFuncs		[STANDN] =	&Actor::STANDN_End;
-	changeActionFuncs	[STANDN] =	&Actor::STANDN_Change;
-	updateActionFuncs	[STANDN] =	&Actor::STANDN_Update;
-	updateSpriteFuncs	[STANDN] =	&Actor::STANDN_UpdateSprite;
-
-	startActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Start;
-	endActionFuncs		[STEEPCLIMB] =	&Actor::STEEPCLIMB_End;
-	changeActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Change;
-	updateActionFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_Update;
-	updateSpriteFuncs	[STEEPCLIMB] =	&Actor::STEEPCLIMB_UpdateSprite;
-
-	startActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Start;
-	endActionFuncs		[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_End;
-	changeActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Change;
-	updateActionFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_Update;
-	updateSpriteFuncs	[STEEPCLIMBATTACK] =	&Actor::STEEPCLIMBATTACK_UpdateSprite;
-
-	startActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Start;
-	endActionFuncs		[STEEPCLING] =	&Actor::STEEPCLING_End;
-	changeActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Change;
-	updateActionFuncs	[STEEPCLING] =	&Actor::STEEPCLING_Update;
-	updateSpriteFuncs	[STEEPCLING] =	&Actor::STEEPCLING_UpdateSprite;
-
-	startActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Start;
-	endActionFuncs		[STEEPSLIDE] =	&Actor::STEEPSLIDE_End;
-	changeActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Change;
-	updateActionFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_Update;
-	updateSpriteFuncs	[STEEPSLIDE] =	&Actor::STEEPSLIDE_UpdateSprite;
-
-	startActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Start;
-	endActionFuncs		[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_End;
-	changeActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Change;
-	updateActionFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_Update;
-	updateSpriteFuncs	[STEEPSLIDEATTACK] =	&Actor::STEEPSLIDEATTACK_UpdateSprite;
-
-	startActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Start;
-	endActionFuncs		[SWINGSTUN] =	&Actor::SWINGSTUN_End;
-	changeActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Change;
-	updateActionFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_Update;
-	updateSpriteFuncs	[SWINGSTUN] =	&Actor::SWINGSTUN_UpdateSprite;
-
-	startActionFuncs	[UAIR] =	&Actor::UAIR_Start;
-	endActionFuncs		[UAIR] =	&Actor::UAIR_End;
-	changeActionFuncs	[UAIR] =	&Actor::UAIR_Change;
-	updateActionFuncs	[UAIR] =	&Actor::UAIR_Update;
-	updateSpriteFuncs	[UAIR] =	&Actor::UAIR_UpdateSprite;
-
-	startActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Start;
-	endActionFuncs		[WAITFORSHIP] =	&Actor::WAITFORSHIP_End;
-	changeActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Change;
-	updateActionFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_Update;
-	updateSpriteFuncs	[WAITFORSHIP] =	&Actor::WAITFORSHIP_UpdateSprite;
-
-	startActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Start;
-	endActionFuncs		[WALLATTACK] =	&Actor::WALLATTACK_End;
-	changeActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Change;
-	updateActionFuncs	[WALLATTACK] =	&Actor::WALLATTACK_Update;
-	updateSpriteFuncs	[WALLATTACK] =	&Actor::WALLATTACK_UpdateSprite;
-
-	startActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Start;
-	endActionFuncs		[WALLCLING] =	&Actor::WALLCLING_End;
-	changeActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Change;
-	updateActionFuncs	[WALLCLING] =	&Actor::WALLCLING_Update;
-	updateSpriteFuncs	[WALLCLING] =	&Actor::WALLCLING_UpdateSprite;
-
-	startActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Start;
-	endActionFuncs		[WALLJUMP] =	&Actor::WALLJUMP_End;
-	changeActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Change;
-	updateActionFuncs	[WALLJUMP] =	&Actor::WALLJUMP_Update;
-	updateSpriteFuncs	[WALLJUMP] =	&Actor::WALLJUMP_UpdateSprite;
-
-	startActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Start;
-	endActionFuncs		[WIREHOLD] =	&Actor::WIREHOLD_End;
-	changeActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Change;
-	updateActionFuncs	[WIREHOLD] =	&Actor::WIREHOLD_Update;
-	updateSpriteFuncs	[WIREHOLD] =	&Actor::WIREHOLD_UpdateSprite;
+	getTilesetFuncs.resize(Count);
+
+	SetupFuncsForAction(AIRDASH,
+		&Actor::AIRDASH_Start,
+		&Actor::AIRDASH_End,
+		&Actor::AIRDASH_Change,
+		&Actor::AIRDASH_Update,
+		&Actor::AIRDASH_UpdateSprite,
+		&Actor::AIRDASH_TransitionToAction,
+		&Actor::AIRDASH_TimeIndFrameInc,
+		&Actor::AIRDASH_TimeDepFrameInc,
+		&Actor::AIRDASH_GetActionLength,
+		&Actor::AIRDASH_GetTileset);
+
+	SetupFuncsForAction(AIRHITSTUN,
+		&Actor::AIRHITSTUN_Start,
+		&Actor::AIRHITSTUN_End,
+		&Actor::AIRHITSTUN_Change,
+		&Actor::AIRHITSTUN_Update,
+		&Actor::AIRHITSTUN_UpdateSprite,
+		&Actor::AIRHITSTUN_TransitionToAction,
+		&Actor::AIRHITSTUN_TimeIndFrameInc,
+		&Actor::AIRHITSTUN_TimeDepFrameInc,
+		&Actor::AIRHITSTUN_GetActionLength,
+		&Actor::AIRHITSTUN_GetTileset);
+
+	SetupFuncsForAction(AUTORUN,
+		&Actor::AUTORUN_Start,
+		&Actor::AUTORUN_End,
+		&Actor::AUTORUN_Change,
+		&Actor::AUTORUN_Update,
+		&Actor::AUTORUN_UpdateSprite,
+		&Actor::AUTORUN_TransitionToAction,
+		&Actor::AUTORUN_TimeIndFrameInc,
+		&Actor::AUTORUN_TimeDepFrameInc,
+		&Actor::AUTORUN_GetActionLength,
+		&Actor::AUTORUN_GetTileset);
+
+	SetupFuncsForAction(BACKWARDSDOUBLE,
+		&Actor::BACKWARDSDOUBLE_Start,
+		&Actor::BACKWARDSDOUBLE_End,
+		&Actor::BACKWARDSDOUBLE_Change,
+		&Actor::BACKWARDSDOUBLE_Update,
+		&Actor::BACKWARDSDOUBLE_UpdateSprite,
+		&Actor::BACKWARDSDOUBLE_TransitionToAction,
+		&Actor::BACKWARDSDOUBLE_TimeIndFrameInc,
+		&Actor::BACKWARDSDOUBLE_TimeDepFrameInc,
+		&Actor::BACKWARDSDOUBLE_GetActionLength,
+		&Actor::BACKWARDSDOUBLE_GetTileset);
+
+	SetupFuncsForAction(BOUNCEAIR,
+		&Actor::BOUNCEAIR_Start,
+		&Actor::BOUNCEAIR_End,
+		&Actor::BOUNCEAIR_Change,
+		&Actor::BOUNCEAIR_Update,
+		&Actor::BOUNCEAIR_UpdateSprite,
+		&Actor::BOUNCEAIR_TransitionToAction,
+		&Actor::BOUNCEAIR_TimeIndFrameInc,
+		&Actor::BOUNCEAIR_TimeDepFrameInc,
+		&Actor::BOUNCEAIR_GetActionLength,
+		&Actor::BOUNCEAIR_GetTileset);
+
+	SetupFuncsForAction(BOUNCEGROUND,
+		&Actor::BOUNCEGROUND_Start,
+		&Actor::BOUNCEGROUND_End,
+		&Actor::BOUNCEGROUND_Change,
+		&Actor::BOUNCEGROUND_Update,
+		&Actor::BOUNCEGROUND_UpdateSprite,
+		&Actor::BOUNCEGROUND_TransitionToAction,
+		&Actor::BOUNCEGROUND_TimeIndFrameInc,
+		&Actor::BOUNCEGROUND_TimeDepFrameInc,
+		&Actor::BOUNCEGROUND_GetActionLength,
+		&Actor::BOUNCEGROUND_GetTileset);
+
+	SetupFuncsForAction(BOUNCEGROUNDEDWALL,
+		&Actor::BOUNCEGROUNDEDWALL_Start,
+		&Actor::BOUNCEGROUNDEDWALL_End,
+		&Actor::BOUNCEGROUNDEDWALL_Change,
+		&Actor::BOUNCEGROUNDEDWALL_Update,
+		&Actor::BOUNCEGROUNDEDWALL_UpdateSprite,
+		&Actor::BOUNCEGROUNDEDWALL_TransitionToAction,
+		&Actor::BOUNCEGROUNDEDWALL_TimeIndFrameInc,
+		&Actor::BOUNCEGROUNDEDWALL_TimeDepFrameInc,
+		&Actor::BOUNCEGROUNDEDWALL_GetActionLength,
+		&Actor::BOUNCEGROUNDEDWALL_GetTileset);
+
+	SetupFuncsForAction(BRAKE,
+		&Actor::BRAKE_Start,
+		&Actor::BRAKE_End,
+		&Actor::BRAKE_Change,
+		&Actor::BRAKE_Update,
+		&Actor::BRAKE_UpdateSprite,
+		&Actor::BRAKE_TransitionToAction,
+		&Actor::BRAKE_TimeIndFrameInc,
+		&Actor::BRAKE_TimeDepFrameInc,
+		&Actor::BRAKE_GetActionLength,
+		&Actor::BRAKE_GetTileset);
+
+	SetupFuncsForAction(DAIR,
+		&Actor::DAIR_Start,
+		&Actor::DAIR_End,
+		&Actor::DAIR_Change,
+		&Actor::DAIR_Update,
+		&Actor::DAIR_UpdateSprite,
+		&Actor::DAIR_TransitionToAction,
+		&Actor::DAIR_TimeIndFrameInc,
+		&Actor::DAIR_TimeDepFrameInc,
+		&Actor::DAIR_GetActionLength,
+		&Actor::DAIR_GetTileset);
+
+	SetupFuncsForAction(DASH,
+		&Actor::DASH_Start,
+		&Actor::DASH_End,
+		&Actor::DASH_Change,
+		&Actor::DASH_Update,
+		&Actor::DASH_UpdateSprite,
+		&Actor::DASH_TransitionToAction,
+		&Actor::DASH_TimeIndFrameInc,
+		&Actor::DASH_TimeDepFrameInc,
+		&Actor::DASH_GetActionLength,
+		&Actor::DASH_GetTileset);
+
+	SetupFuncsForAction(DASHATTACK,
+		&Actor::DASHATTACK_Start,
+		&Actor::DASHATTACK_End,
+		&Actor::DASHATTACK_Change,
+		&Actor::DASHATTACK_Update,
+		&Actor::DASHATTACK_UpdateSprite,
+		&Actor::DASHATTACK_TransitionToAction,
+		&Actor::DASHATTACK_TimeIndFrameInc,
+		&Actor::DASHATTACK_TimeDepFrameInc,
+		&Actor::DASHATTACK_GetActionLength,
+		&Actor::DASHATTACK_GetTileset);
+
+	SetupFuncsForAction(DEATH,
+		&Actor::DEATH_Start,
+		&Actor::DEATH_End,
+		&Actor::DEATH_Change,
+		&Actor::DEATH_Update,
+		&Actor::DEATH_UpdateSprite,
+		&Actor::DEATH_TransitionToAction,
+		&Actor::DEATH_TimeIndFrameInc,
+		&Actor::DEATH_TimeDepFrameInc,
+		&Actor::DEATH_GetActionLength,
+		&Actor::DEATH_GetTileset);
+
+	SetupFuncsForAction(DIAGDOWNATTACK,
+		&Actor::DIAGDOWNATTACK_Start,
+		&Actor::DIAGDOWNATTACK_End,
+		&Actor::DIAGDOWNATTACK_Change,
+		&Actor::DIAGDOWNATTACK_Update,
+		&Actor::DIAGDOWNATTACK_UpdateSprite,
+		&Actor::DIAGDOWNATTACK_TransitionToAction,
+		&Actor::DIAGDOWNATTACK_TimeIndFrameInc,
+		&Actor::DIAGDOWNATTACK_TimeDepFrameInc,
+		&Actor::DIAGDOWNATTACK_GetActionLength,
+		&Actor::DIAGDOWNATTACK_GetTileset);
+
+	SetupFuncsForAction(DIAGUPATTACK,
+		&Actor::DIAGUPATTACK_Start,
+		&Actor::DIAGUPATTACK_End,
+		&Actor::DIAGUPATTACK_Change,
+		&Actor::DIAGUPATTACK_Update,
+		&Actor::DIAGUPATTACK_UpdateSprite,
+		&Actor::DIAGUPATTACK_TransitionToAction,
+		&Actor::DIAGUPATTACK_TimeIndFrameInc,
+		&Actor::DIAGUPATTACK_TimeDepFrameInc,
+		&Actor::DIAGUPATTACK_GetActionLength,
+		&Actor::DIAGUPATTACK_GetTileset);
+
+	SetupFuncsForAction(DOUBLE,
+		&Actor::DOUBLE_Start,
+		&Actor::DOUBLE_End,
+		&Actor::DOUBLE_Change,
+		&Actor::DOUBLE_Update,
+		&Actor::DOUBLE_UpdateSprite,
+		&Actor::DOUBLE_TransitionToAction,
+		&Actor::DOUBLE_TimeIndFrameInc,
+		&Actor::DOUBLE_TimeDepFrameInc,
+		&Actor::DOUBLE_GetActionLength,
+		&Actor::DOUBLE_GetTileset);
+
+	SetupFuncsForAction(ENTERNEXUS1,
+		&Actor::ENTERNEXUS1_Start,
+		&Actor::ENTERNEXUS1_End,
+		&Actor::ENTERNEXUS1_Change,
+		&Actor::ENTERNEXUS1_Update,
+		&Actor::ENTERNEXUS1_UpdateSprite,
+		&Actor::ENTERNEXUS1_TransitionToAction,
+		&Actor::ENTERNEXUS1_TimeIndFrameInc,
+		&Actor::ENTERNEXUS1_TimeDepFrameInc,
+		&Actor::ENTERNEXUS1_GetActionLength,
+		&Actor::ENTERNEXUS1_GetTileset);
+
+	SetupFuncsForAction(EXIT,
+		&Actor::EXIT_Start,
+		&Actor::EXIT_End,
+		&Actor::EXIT_Change,
+		&Actor::EXIT_Update,
+		&Actor::EXIT_UpdateSprite,
+		&Actor::EXIT_TransitionToAction,
+		&Actor::EXIT_TimeIndFrameInc,
+		&Actor::EXIT_TimeDepFrameInc,
+		&Actor::EXIT_GetActionLength,
+		&Actor::EXIT_GetTileset);
+
+	SetupFuncsForAction(EXITBOOST,
+		&Actor::EXITBOOST_Start,
+		&Actor::EXITBOOST_End,
+		&Actor::EXITBOOST_Change,
+		&Actor::EXITBOOST_Update,
+		&Actor::EXITBOOST_UpdateSprite,
+		&Actor::EXITBOOST_TransitionToAction,
+		&Actor::EXITBOOST_TimeIndFrameInc,
+		&Actor::EXITBOOST_TimeDepFrameInc,
+		&Actor::EXITBOOST_GetActionLength,
+		&Actor::EXITBOOST_GetTileset);
+
+	SetupFuncsForAction(EXITWAIT,
+		&Actor::EXITWAIT_Start,
+		&Actor::EXITWAIT_End,
+		&Actor::EXITWAIT_Change,
+		&Actor::EXITWAIT_Update,
+		&Actor::EXITWAIT_UpdateSprite,
+		&Actor::EXITWAIT_TransitionToAction,
+		&Actor::EXITWAIT_TimeIndFrameInc,
+		&Actor::EXITWAIT_TimeDepFrameInc,
+		&Actor::EXITWAIT_GetActionLength,
+		&Actor::EXITWAIT_GetTileset);
+
+	SetupFuncsForAction(FAIR,
+		&Actor::FAIR_Start,
+		&Actor::FAIR_End,
+		&Actor::FAIR_Change,
+		&Actor::FAIR_Update,
+		&Actor::FAIR_UpdateSprite,
+		&Actor::FAIR_TransitionToAction,
+		&Actor::FAIR_TimeIndFrameInc,
+		&Actor::FAIR_TimeDepFrameInc,
+		&Actor::FAIR_GetActionLength,
+		&Actor::FAIR_GetTileset);
+
+	SetupFuncsForAction(GETPOWER_AIRDASH_FLIP,
+		&Actor::GETPOWER_AIRDASH_FLIP_Start,
+		&Actor::GETPOWER_AIRDASH_FLIP_End,
+		&Actor::GETPOWER_AIRDASH_FLIP_Change,
+		&Actor::GETPOWER_AIRDASH_FLIP_Update,
+		&Actor::GETPOWER_AIRDASH_FLIP_UpdateSprite,
+		&Actor::GETPOWER_AIRDASH_FLIP_TransitionToAction,
+		&Actor::GETPOWER_AIRDASH_FLIP_TimeIndFrameInc,
+		&Actor::GETPOWER_AIRDASH_FLIP_TimeDepFrameInc,
+		&Actor::GETPOWER_AIRDASH_FLIP_GetActionLength,
+		&Actor::GETPOWER_AIRDASH_FLIP_GetTileset);
+
+	SetupFuncsForAction(GETPOWER_AIRDASH_MEDITATE,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_Start,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_End,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_Change,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_Update,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_UpdateSprite,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_TransitionToAction,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_TimeIndFrameInc,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_GetActionLength,
+		&Actor::GETPOWER_AIRDASH_MEDITATE_GetTileset);
+
+	SetupFuncsForAction(GETSHARD,
+		&Actor::GETSHARD_Start,
+		&Actor::GETSHARD_End,
+		&Actor::GETSHARD_Change,
+		&Actor::GETSHARD_Update,
+		&Actor::GETSHARD_UpdateSprite,
+		&Actor::GETSHARD_TransitionToAction,
+		&Actor::GETSHARD_TimeIndFrameInc,
+		&Actor::GETSHARD_TimeDepFrameInc,
+		&Actor::GETSHARD_GetActionLength,
+		&Actor::GETSHARD_GetTileset);
+
+	SetupFuncsForAction(GLIDE,
+		&Actor::GLIDE_Start,
+		&Actor::GLIDE_End,
+		&Actor::GLIDE_Change,
+		&Actor::GLIDE_Update,
+		&Actor::GLIDE_UpdateSprite,
+		&Actor::GLIDE_TransitionToAction,
+		&Actor::GLIDE_TimeIndFrameInc,
+		&Actor::GLIDE_TimeDepFrameInc,
+		&Actor::GLIDE_GetActionLength,
+		&Actor::GLIDE_GetTileset);
+
+	SetupFuncsForAction(GOALKILL,
+		&Actor::GOALKILL_Start,
+		&Actor::GOALKILL_End,
+		&Actor::GOALKILL_Change,
+		&Actor::GOALKILL_Update,
+		&Actor::GOALKILL_UpdateSprite,
+		&Actor::GOALKILL_TransitionToAction,
+		&Actor::GOALKILL_TimeIndFrameInc,
+		&Actor::GOALKILL_TimeDepFrameInc,
+		&Actor::GOALKILL_GetActionLength,
+		&Actor::GOALKILL_GetTileset);
+
+	SetupFuncsForAction(GOALKILLWAIT,
+		&Actor::GOALKILLWAIT_Start,
+		&Actor::GOALKILLWAIT_End,
+		&Actor::GOALKILLWAIT_Change,
+		&Actor::GOALKILLWAIT_Update,
+		&Actor::GOALKILLWAIT_UpdateSprite,
+		&Actor::GOALKILLWAIT_TransitionToAction,
+		&Actor::GOALKILLWAIT_TimeIndFrameInc,
+		&Actor::GOALKILLWAIT_TimeDepFrameInc,
+		&Actor::GOALKILLWAIT_GetActionLength,
+		&Actor::GOALKILLWAIT_GetTileset);
+
+	SetupFuncsForAction(GRABSHIP,
+		&Actor::GRABSHIP_Start,
+		&Actor::GRABSHIP_End,
+		&Actor::GRABSHIP_Change,
+		&Actor::GRABSHIP_Update,
+		&Actor::GRABSHIP_UpdateSprite,
+		&Actor::GRABSHIP_TransitionToAction,
+		&Actor::GRABSHIP_TimeIndFrameInc,
+		&Actor::GRABSHIP_TimeDepFrameInc,
+		&Actor::GRABSHIP_GetActionLength,
+		&Actor::GRABSHIP_GetTileset);
+
+	SetupFuncsForAction(GRAVREVERSE,
+		&Actor::GRAVREVERSE_Start,
+		&Actor::GRAVREVERSE_End,
+		&Actor::GRAVREVERSE_Change,
+		&Actor::GRAVREVERSE_Update,
+		&Actor::GRAVREVERSE_UpdateSprite,
+		&Actor::GRAVREVERSE_TransitionToAction,
+		&Actor::GRAVREVERSE_TimeIndFrameInc,
+		&Actor::GRAVREVERSE_TimeDepFrameInc,
+		&Actor::GRAVREVERSE_GetActionLength,
+		&Actor::GRAVREVERSE_GetTileset);
+
+	SetupFuncsForAction(GRINDATTACK,
+		&Actor::GRINDATTACK_Start,
+		&Actor::GRINDATTACK_End,
+		&Actor::GRINDATTACK_Change,
+		&Actor::GRINDATTACK_Update,
+		&Actor::GRINDATTACK_UpdateSprite,
+		&Actor::GRINDATTACK_TransitionToAction,
+		&Actor::GRINDATTACK_TimeIndFrameInc,
+		&Actor::GRINDATTACK_TimeDepFrameInc,
+		&Actor::GRINDATTACK_GetActionLength,
+		&Actor::GRINDATTACK_GetTileset);
+
+	SetupFuncsForAction(GRINDBALL,
+		&Actor::GRINDBALL_Start,
+		&Actor::GRINDBALL_End,
+		&Actor::GRINDBALL_Change,
+		&Actor::GRINDBALL_Update,
+		&Actor::GRINDBALL_UpdateSprite,
+		&Actor::GRINDBALL_TransitionToAction,
+		&Actor::GRINDBALL_TimeIndFrameInc,
+		&Actor::GRINDBALL_TimeDepFrameInc,
+		&Actor::GRINDBALL_GetActionLength,
+		&Actor::GRINDBALL_GetTileset);
+
+	SetupFuncsForAction(GRINDLUNGE,
+		&Actor::GRINDLUNGE_Start,
+		&Actor::GRINDLUNGE_End,
+		&Actor::GRINDLUNGE_Change,
+		&Actor::GRINDLUNGE_Update,
+		&Actor::GRINDLUNGE_UpdateSprite,
+		&Actor::GRINDLUNGE_TransitionToAction,
+		&Actor::GRINDLUNGE_TimeIndFrameInc,
+		&Actor::GRINDLUNGE_TimeDepFrameInc,
+		&Actor::GRINDLUNGE_GetActionLength,
+		&Actor::GRINDLUNGE_GetTileset);
+
+	SetupFuncsForAction(GRINDSLASH,
+		&Actor::GRINDSLASH_Start,
+		&Actor::GRINDSLASH_End,
+		&Actor::GRINDSLASH_Change,
+		&Actor::GRINDSLASH_Update,
+		&Actor::GRINDSLASH_UpdateSprite,
+		&Actor::GRINDSLASH_TransitionToAction,
+		&Actor::GRINDSLASH_TimeIndFrameInc,
+		&Actor::GRINDSLASH_TimeDepFrameInc,
+		&Actor::GRINDSLASH_GetActionLength,
+		&Actor::GRINDSLASH_GetTileset);
+
+	SetupFuncsForAction(GROUNDHITSTUN,
+		&Actor::GROUNDHITSTUN_Start,
+		&Actor::GROUNDHITSTUN_End,
+		&Actor::GROUNDHITSTUN_Change,
+		&Actor::GROUNDHITSTUN_Update,
+		&Actor::GROUNDHITSTUN_UpdateSprite,
+		&Actor::GROUNDHITSTUN_TransitionToAction,
+		&Actor::GROUNDHITSTUN_TimeIndFrameInc,
+		&Actor::GROUNDHITSTUN_TimeDepFrameInc,
+		&Actor::GROUNDHITSTUN_GetActionLength,
+		&Actor::GROUNDHITSTUN_GetTileset);
+
+	SetupFuncsForAction(INTRO,
+		&Actor::INTRO_Start,
+		&Actor::INTRO_End,
+		&Actor::INTRO_Change,
+		&Actor::INTRO_Update,
+		&Actor::INTRO_UpdateSprite,
+		&Actor::INTRO_TransitionToAction,
+		&Actor::INTRO_TimeIndFrameInc,
+		&Actor::INTRO_TimeDepFrameInc,
+		&Actor::INTRO_GetActionLength,
+		&Actor::INTRO_GetTileset);
+
+	SetupFuncsForAction(INTROBOOST,
+		&Actor::INTROBOOST_Start,
+		&Actor::INTROBOOST_End,
+		&Actor::INTROBOOST_Change,
+		&Actor::INTROBOOST_Update,
+		&Actor::INTROBOOST_UpdateSprite,
+		&Actor::INTROBOOST_TransitionToAction,
+		&Actor::INTROBOOST_TimeIndFrameInc,
+		&Actor::INTROBOOST_TimeDepFrameInc,
+		&Actor::INTROBOOST_GetActionLength,
+		&Actor::INTROBOOST_GetTileset);
+
+	SetupFuncsForAction(JUMP,
+		&Actor::JUMP_Start,
+		&Actor::JUMP_End,
+		&Actor::JUMP_Change,
+		&Actor::JUMP_Update,
+		&Actor::JUMP_UpdateSprite,
+		&Actor::JUMP_TransitionToAction,
+		&Actor::JUMP_TimeIndFrameInc,
+		&Actor::JUMP_TimeDepFrameInc,
+		&Actor::JUMP_GetActionLength,
+		&Actor::JUMP_GetTileset);
+
+	SetupFuncsForAction(JUMPSQUAT,
+		&Actor::JUMPSQUAT_Start,
+		&Actor::JUMPSQUAT_End,
+		&Actor::JUMPSQUAT_Change,
+		&Actor::JUMPSQUAT_Update,
+		&Actor::JUMPSQUAT_UpdateSprite,
+		&Actor::JUMPSQUAT_TransitionToAction,
+		&Actor::JUMPSQUAT_TimeIndFrameInc,
+		&Actor::JUMPSQUAT_TimeDepFrameInc,
+		&Actor::JUMPSQUAT_GetActionLength,
+		&Actor::JUMPSQUAT_GetTileset);
+
+	SetupFuncsForAction(GLIDE,
+		&Actor::GLIDE_Start,
+		&Actor::GLIDE_End,
+		&Actor::GLIDE_Change,
+		&Actor::GLIDE_Update,
+		&Actor::GLIDE_UpdateSprite,
+		&Actor::GLIDE_TransitionToAction,
+		&Actor::GLIDE_TimeIndFrameInc,
+		&Actor::GLIDE_TimeDepFrameInc,
+		&Actor::GLIDE_GetActionLength,
+		&Actor::GLIDE_GetTileset);
+
+	SetupFuncsForAction(LAND,
+		&Actor::LAND_Start,
+		&Actor::LAND_End,
+		&Actor::LAND_Change,
+		&Actor::LAND_Update,
+		&Actor::LAND_UpdateSprite,
+		&Actor::LAND_TransitionToAction,
+		&Actor::LAND_TimeIndFrameInc,
+		&Actor::LAND_TimeDepFrameInc,
+		&Actor::LAND_GetActionLength,
+		&Actor::LAND_GetTileset);
+
+	SetupFuncsForAction(LAND2,
+		&Actor::LAND2_Start,
+		&Actor::LAND2_End,
+		&Actor::LAND2_Change,
+		&Actor::LAND2_Update,
+		&Actor::LAND2_UpdateSprite,
+		&Actor::LAND2_TransitionToAction,
+		&Actor::LAND2_TimeIndFrameInc,
+		&Actor::LAND2_TimeDepFrameInc,
+		&Actor::LAND2_GetActionLength,
+		&Actor::LAND2_GetTileset);
+
+	SetupFuncsForAction(NEXUSKILL,
+		&Actor::NEXUSKILL_Start,
+		&Actor::NEXUSKILL_End,
+		&Actor::NEXUSKILL_Change,
+		&Actor::NEXUSKILL_Update,
+		&Actor::NEXUSKILL_UpdateSprite,
+		&Actor::NEXUSKILL_TransitionToAction,
+		&Actor::NEXUSKILL_TimeIndFrameInc,
+		&Actor::NEXUSKILL_TimeDepFrameInc,
+		&Actor::NEXUSKILL_GetActionLength,
+		&Actor::NEXUSKILL_GetTileset);
+
+	SetupFuncsForAction(RAILDASH,
+		&Actor::RAILDASH_Start,
+		&Actor::RAILDASH_End,
+		&Actor::RAILDASH_Change,
+		&Actor::RAILDASH_Update,
+		&Actor::RAILDASH_UpdateSprite,
+		&Actor::RAILDASH_TransitionToAction,
+		&Actor::RAILDASH_TimeIndFrameInc,
+		&Actor::RAILDASH_TimeDepFrameInc,
+		&Actor::RAILDASH_GetActionLength,
+		&Actor::RAILDASH_GetTileset);
+
+	SetupFuncsForAction(RAILGRIND,
+		&Actor::RAILGRIND_Start,
+		&Actor::RAILGRIND_End,
+		&Actor::RAILGRIND_Change,
+		&Actor::RAILGRIND_Update,
+		&Actor::RAILGRIND_UpdateSprite,
+		&Actor::RAILGRIND_TransitionToAction,
+		&Actor::RAILGRIND_TimeIndFrameInc,
+		&Actor::RAILGRIND_TimeDepFrameInc,
+		&Actor::RAILGRIND_GetActionLength,
+		&Actor::RAILGRIND_GetTileset);
+
+	SetupFuncsForAction(RAILSLIDE,
+		&Actor::RAILSLIDE_Start,
+		&Actor::RAILSLIDE_End,
+		&Actor::RAILSLIDE_Change,
+		&Actor::RAILSLIDE_Update,
+		&Actor::RAILSLIDE_UpdateSprite,
+		&Actor::RAILSLIDE_TransitionToAction,
+		&Actor::RAILSLIDE_TimeIndFrameInc,
+		&Actor::RAILSLIDE_TimeDepFrameInc,
+		&Actor::RAILSLIDE_GetActionLength,
+		&Actor::RAILSLIDE_GetTileset);
+
+	SetupFuncsForAction(RIDESHIP,
+		&Actor::RIDESHIP_Start,
+		&Actor::RIDESHIP_End,
+		&Actor::RIDESHIP_Change,
+		&Actor::RIDESHIP_Update,
+		&Actor::RIDESHIP_UpdateSprite,
+		&Actor::RIDESHIP_TransitionToAction,
+		&Actor::RIDESHIP_TimeIndFrameInc,
+		&Actor::RIDESHIP_TimeDepFrameInc,
+		&Actor::RIDESHIP_GetActionLength,
+		&Actor::RIDESHIP_GetTileset);
+
+	SetupFuncsForAction(RUN,
+		&Actor::RUN_Start,
+		&Actor::RUN_End,
+		&Actor::RUN_Change,
+		&Actor::RUN_Update,
+		&Actor::RUN_UpdateSprite,
+		&Actor::RUN_TransitionToAction,
+		&Actor::RUN_TimeIndFrameInc,
+		&Actor::RUN_TimeDepFrameInc,
+		&Actor::RUN_GetActionLength,
+		&Actor::RUN_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_DODGEBACK,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Start,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_End,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Change,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_Update,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_DODGEBACK_GetActionLength,
+		&Actor::AIRDASH_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_LAND,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_Start,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_End,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_Change,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_Update,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_LAND_GetActionLength,
+		&Actor::AIRDASH_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_STAND,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_Start,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_End,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_Change,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_Update,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_GetActionLength,
+		&Actor::SEQ_CRAWLERFIGHT_STAND_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_STRAIGHTFALL,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Start,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_End,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Change,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_Update,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength,
+		&Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Start,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_End,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Change,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_Update,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength,
+		&Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset);
+
+	SetupFuncsForAction(SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Start,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_End,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Change,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_Update,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_UpdateSprite,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TransitionToAction,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeIndFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_TimeDepFrameInc,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength,
+		&Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset);
+
+	SetupFuncsForAction(SEQ_ENTERCORE1,
+		&Actor::SEQ_ENTERCORE1_Start,
+		&Actor::SEQ_ENTERCORE1_End,
+		&Actor::SEQ_ENTERCORE1_Change,
+		&Actor::SEQ_ENTERCORE1_Update,
+		&Actor::SEQ_ENTERCORE1_UpdateSprite,
+		&Actor::SEQ_ENTERCORE1_TransitionToAction,
+		&Actor::SEQ_ENTERCORE1_TimeIndFrameInc,
+		&Actor::SEQ_ENTERCORE1_TimeDepFrameInc,
+		&Actor::SEQ_ENTERCORE1_GetActionLength,
+		&Actor::SEQ_ENTERCORE1_GetTileset);
+
+	SetupFuncsForAction(SEQ_FADE_INTO_NEXUS,
+		&Actor::SEQ_FADE_INTO_NEXUS_Start,
+		&Actor::SEQ_FADE_INTO_NEXUS_End,
+		&Actor::SEQ_FADE_INTO_NEXUS_Change,
+		&Actor::SEQ_FADE_INTO_NEXUS_Update,
+		&Actor::SEQ_FADE_INTO_NEXUS_UpdateSprite,
+		&Actor::SEQ_FADE_INTO_NEXUS_TransitionToAction,
+		&Actor::SEQ_FADE_INTO_NEXUS_TimeIndFrameInc,
+		&Actor::SEQ_FADE_INTO_NEXUS_TimeDepFrameInc,
+		&Actor::SEQ_FADE_INTO_NEXUS_GetActionLength,
+		&Actor::SEQ_FADE_INTO_NEXUS_GetTileset);
+
+	SetupFuncsForAction(SEQ_FLOAT_TO_NEXUS_OPENING,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Start,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_End,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Change,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_Update,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_UpdateSprite,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TransitionToAction,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeIndFrameInc,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength,
+		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset);
+
+	SetupFuncsForAction(SEQ_KINFALL,
+		&Actor::SEQ_KINFALL_Start,
+		&Actor::SEQ_KINFALL_End,
+		&Actor::SEQ_KINFALL_Change,
+		&Actor::SEQ_KINFALL_Update,
+		&Actor::SEQ_KINFALL_UpdateSprite,
+		&Actor::SEQ_KINFALL_TransitionToAction,
+		&Actor::SEQ_KINFALL_TimeIndFrameInc,
+		&Actor::SEQ_KINFALL_TimeDepFrameInc,
+		&Actor::SEQ_KINFALL_GetActionLength,
+		&Actor::SEQ_KINFALL_GetTileset);
+
+	SetupFuncsForAction(SEQ_KINSTAND,
+		&Actor::SEQ_KINSTAND_Start,
+		&Actor::SEQ_KINSTAND_End,
+		&Actor::SEQ_KINSTAND_Change,
+		&Actor::SEQ_KINSTAND_Update,
+		&Actor::SEQ_KINSTAND_UpdateSprite,
+		&Actor::SEQ_KINSTAND_TransitionToAction,
+		&Actor::SEQ_KINSTAND_TimeIndFrameInc,
+		&Actor::SEQ_KINSTAND_TimeDepFrameInc,
+		&Actor::SEQ_KINSTAND_GetActionLength,
+		&Actor::SEQ_KINSTAND_GetTileset);
+
+	SetupFuncsForAction(SEQ_KINTHROWN,
+		&Actor::SEQ_KINTHROWN_Start,
+		&Actor::SEQ_KINTHROWN_End,
+		&Actor::SEQ_KINTHROWN_Change,
+		&Actor::SEQ_KINTHROWN_Update,
+		&Actor::SEQ_KINTHROWN_UpdateSprite,
+		&Actor::SEQ_KINTHROWN_TransitionToAction,
+		&Actor::SEQ_KINTHROWN_TimeIndFrameInc,
+		&Actor::SEQ_KINTHROWN_TimeDepFrameInc,
+		&Actor::SEQ_KINTHROWN_GetActionLength,
+		&Actor::SEQ_KINTHROWN_GetTileset);
+
+	SetupFuncsForAction(SEQ_KNEEL,
+		&Actor::SEQ_KNEEL_Start,
+		&Actor::SEQ_KNEEL_End,
+		&Actor::SEQ_KNEEL_Change,
+		&Actor::SEQ_KNEEL_Update,
+		&Actor::SEQ_KNEEL_UpdateSprite,
+		&Actor::SEQ_KNEEL_TransitionToAction,
+		&Actor::SEQ_KNEEL_TimeIndFrameInc,
+		&Actor::SEQ_KNEEL_TimeDepFrameInc,
+		&Actor::SEQ_KNEEL_GetActionLength,
+		&Actor::SEQ_KNEEL_GetTileset);
+
+	SetupFuncsForAction(SEQ_KNEEL_TO_MEDITATE,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_Start,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_End,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_Change,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_Update,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_UpdateSprite,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_TransitionToAction,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_TimeIndFrameInc,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_GetActionLength,
+		&Actor::SEQ_KNEEL_TO_MEDITATE_GetTileset);
+
+	SetupFuncsForAction(SEQ_LOOKUP,
+		&Actor::SEQ_LOOKUP_Start,
+		&Actor::SEQ_LOOKUP_End,
+		&Actor::SEQ_LOOKUP_Change,
+		&Actor::SEQ_LOOKUP_Update,
+		&Actor::SEQ_LOOKUP_UpdateSprite,
+		&Actor::SEQ_LOOKUP_TransitionToAction,
+		&Actor::SEQ_LOOKUP_TimeIndFrameInc,
+		&Actor::SEQ_LOOKUP_TimeDepFrameInc,
+		&Actor::SEQ_LOOKUP_GetActionLength,
+		&Actor::SEQ_LOOKUP_GetTileset);
+
+	SetupFuncsForAction(SEQ_LOOKUPDISAPPEAR,
+		&Actor::SEQ_LOOKUPDISAPPEAR_Start,
+		&Actor::SEQ_LOOKUPDISAPPEAR_End,
+		&Actor::SEQ_LOOKUPDISAPPEAR_Change,
+		&Actor::SEQ_LOOKUPDISAPPEAR_Update,
+		&Actor::SEQ_LOOKUPDISAPPEAR_UpdateSprite,
+		&Actor::SEQ_LOOKUPDISAPPEAR_TransitionToAction,
+		&Actor::SEQ_LOOKUPDISAPPEAR_TimeIndFrameInc,
+		&Actor::SEQ_LOOKUPDISAPPEAR_TimeDepFrameInc,
+		&Actor::SEQ_LOOKUPDISAPPEAR_GetActionLength,
+		&Actor::SEQ_LOOKUPDISAPPEAR_GetTileset);
+
+	SetupFuncsForAction(SEQ_MASKOFF,
+		&Actor::SEQ_MASKOFF_Start,
+		&Actor::SEQ_MASKOFF_End,
+		&Actor::SEQ_MASKOFF_Change,
+		&Actor::SEQ_MASKOFF_Update,
+		&Actor::SEQ_MASKOFF_UpdateSprite,
+		&Actor::SEQ_MASKOFF_TransitionToAction,
+		&Actor::SEQ_MASKOFF_TimeIndFrameInc,
+		&Actor::SEQ_MASKOFF_TimeDepFrameInc,
+		&Actor::SEQ_MASKOFF_GetActionLength,
+		&Actor::SEQ_MASKOFF_GetTileset);
+
+	SetupFuncsForAction(SEQ_MEDITATE,
+		&Actor::SEQ_MEDITATE_Start,
+		&Actor::SEQ_MEDITATE_End,
+		&Actor::SEQ_MEDITATE_Change,
+		&Actor::SEQ_MEDITATE_Update,
+		&Actor::SEQ_MEDITATE_UpdateSprite,
+		&Actor::SEQ_MEDITATE_TransitionToAction,
+		&Actor::SEQ_MEDITATE_TimeIndFrameInc,
+		&Actor::SEQ_MEDITATE_TimeDepFrameInc,
+		&Actor::SEQ_MEDITATE_GetActionLength,
+		&Actor::SEQ_MEDITATE_GetTileset);
+
+	SetupFuncsForAction(SEQ_MEDITATE_MASKON,
+		&Actor::SEQ_MEDITATE_MASKON_Start,
+		&Actor::SEQ_MEDITATE_MASKON_End,
+		&Actor::SEQ_MEDITATE_MASKON_Change,
+		&Actor::SEQ_MEDITATE_MASKON_Update,
+		&Actor::SEQ_MEDITATE_MASKON_UpdateSprite,
+		&Actor::SEQ_MEDITATE_MASKON_TransitionToAction,
+		&Actor::SEQ_MEDITATE_MASKON_TimeIndFrameInc,
+		&Actor::SEQ_MEDITATE_MASKON_TimeDepFrameInc,
+		&Actor::SEQ_MEDITATE_MASKON_GetActionLength,
+		&Actor::SEQ_MEDITATE_MASKON_GetTileset);
+
+	SetupFuncsForAction(SEQ_TURNFACE,
+		&Actor::SEQ_TURNFACE_Start,
+		&Actor::SEQ_TURNFACE_End,
+		&Actor::SEQ_TURNFACE_Change,
+		&Actor::SEQ_TURNFACE_Update,
+		&Actor::SEQ_TURNFACE_UpdateSprite,
+		&Actor::SEQ_TURNFACE_TransitionToAction,
+		&Actor::SEQ_TURNFACE_TimeIndFrameInc,
+		&Actor::SEQ_TURNFACE_TimeDepFrameInc,
+		&Actor::SEQ_TURNFACE_GetActionLength,
+		&Actor::SEQ_TURNFACE_GetTileset);
+
+	SetupFuncsForAction(SEQ_WAIT,
+		&Actor::SEQ_WAIT_Start,
+		&Actor::SEQ_WAIT_End,
+		&Actor::SEQ_WAIT_Change,
+		&Actor::SEQ_WAIT_Update,
+		&Actor::SEQ_WAIT_UpdateSprite,
+		&Actor::SEQ_WAIT_TransitionToAction,
+		&Actor::SEQ_WAIT_TimeIndFrameInc,
+		&Actor::SEQ_WAIT_TimeDepFrameInc,
+		&Actor::SEQ_WAIT_GetActionLength,
+		&Actor::SEQ_WAIT_GetTileset);
+
+	SetupFuncsForAction(SKYDIVE,
+		&Actor::SKYDIVE_Start,
+		&Actor::SKYDIVE_End,
+		&Actor::SKYDIVE_Change,
+		&Actor::SKYDIVE_Update,
+		&Actor::SKYDIVE_UpdateSprite,
+		&Actor::SKYDIVE_TransitionToAction,
+		&Actor::SKYDIVE_TimeIndFrameInc,
+		&Actor::SKYDIVE_TimeDepFrameInc,
+		&Actor::SKYDIVE_GetActionLength,
+		&Actor::SKYDIVE_GetTileset);
+
+	SetupFuncsForAction(SKYDIVETOFALL,
+		&Actor::SKYDIVETOFALL_Start,
+		&Actor::SKYDIVETOFALL_End,
+		&Actor::SKYDIVETOFALL_Change,
+		&Actor::SKYDIVETOFALL_Update,
+		&Actor::SKYDIVETOFALL_UpdateSprite,
+		&Actor::SKYDIVETOFALL_TransitionToAction,
+		&Actor::SKYDIVETOFALL_TimeIndFrameInc,
+		&Actor::SKYDIVETOFALL_TimeDepFrameInc,
+		&Actor::SKYDIVETOFALL_GetActionLength,
+		&Actor::SKYDIVETOFALL_GetTileset);
+
+	SetupFuncsForAction(SLIDE,
+		&Actor::SLIDE_Start,
+		&Actor::SLIDE_End,
+		&Actor::SLIDE_Change,
+		&Actor::SLIDE_Update,
+		&Actor::SLIDE_UpdateSprite,
+		&Actor::SLIDE_TransitionToAction,
+		&Actor::SLIDE_TimeIndFrameInc,
+		&Actor::SLIDE_TimeDepFrameInc,
+		&Actor::SLIDE_GetActionLength,
+		&Actor::SLIDE_GetTileset);
+
+	SetupFuncsForAction(SPAWNWAIT,
+		&Actor::SPAWNWAIT_Start,
+		&Actor::SPAWNWAIT_End,
+		&Actor::SPAWNWAIT_Change,
+		&Actor::SPAWNWAIT_Update,
+		&Actor::SPAWNWAIT_UpdateSprite,
+		&Actor::SPAWNWAIT_TransitionToAction,
+		&Actor::SPAWNWAIT_TimeIndFrameInc,
+		&Actor::SPAWNWAIT_TimeDepFrameInc,
+		&Actor::SPAWNWAIT_GetActionLength,
+		&Actor::SPAWNWAIT_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUN,
+		&Actor::SPRINGSTUN_Start,
+		&Actor::SPRINGSTUN_End,
+		&Actor::SPRINGSTUN_Change,
+		&Actor::SPRINGSTUN_Update,
+		&Actor::SPRINGSTUN_UpdateSprite,
+		&Actor::SPRINGSTUN_TransitionToAction,
+		&Actor::SPRINGSTUN_TimeIndFrameInc,
+		&Actor::SPRINGSTUN_TimeDepFrameInc,
+		&Actor::SPRINGSTUN_GetActionLength,
+		&Actor::SPRINGSTUN_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNAIRBOUNCE,
+		&Actor::SPRINGSTUNAIRBOUNCE_Start,
+		&Actor::SPRINGSTUNAIRBOUNCE_End,
+		&Actor::SPRINGSTUNAIRBOUNCE_Change,
+		&Actor::SPRINGSTUNAIRBOUNCE_Update,
+		&Actor::SPRINGSTUNAIRBOUNCE_UpdateSprite,
+		&Actor::SPRINGSTUNAIRBOUNCE_TransitionToAction,
+		&Actor::SPRINGSTUNAIRBOUNCE_TimeIndFrameInc,
+		&Actor::SPRINGSTUNAIRBOUNCE_TimeDepFrameInc,
+		&Actor::SPRINGSTUNAIRBOUNCE_GetActionLength,
+		&Actor::SPRINGSTUNAIRBOUNCE_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNBOUNCE,
+		&Actor::SPRINGSTUNBOUNCE_Start,
+		&Actor::SPRINGSTUNBOUNCE_End,
+		&Actor::SPRINGSTUNBOUNCE_Change,
+		&Actor::SPRINGSTUNBOUNCE_Update,
+		&Actor::SPRINGSTUNBOUNCE_UpdateSprite,
+		&Actor::SPRINGSTUNBOUNCE_TransitionToAction,
+		&Actor::SPRINGSTUNBOUNCE_TimeIndFrameInc,
+		&Actor::SPRINGSTUNBOUNCE_TimeDepFrameInc,
+		&Actor::SPRINGSTUNBOUNCE_GetActionLength,
+		&Actor::SPRINGSTUNBOUNCE_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNGLIDE,
+		&Actor::SPRINGSTUNGLIDE_Start,
+		&Actor::SPRINGSTUNGLIDE_End,
+		&Actor::SPRINGSTUNGLIDE_Change,
+		&Actor::SPRINGSTUNGLIDE_Update,
+		&Actor::SPRINGSTUNGLIDE_UpdateSprite,
+		&Actor::SPRINGSTUNGLIDE_TransitionToAction,
+		&Actor::SPRINGSTUNGLIDE_TimeIndFrameInc,
+		&Actor::SPRINGSTUNGLIDE_TimeDepFrameInc,
+		&Actor::SPRINGSTUNGLIDE_GetActionLength,
+		&Actor::SPRINGSTUNGLIDE_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNTELEPORT,
+		&Actor::SPRINGSTUNTELEPORT_Start,
+		&Actor::SPRINGSTUNTELEPORT_End,
+		&Actor::SPRINGSTUNTELEPORT_Change,
+		&Actor::SPRINGSTUNTELEPORT_Update,
+		&Actor::SPRINGSTUNTELEPORT_UpdateSprite,
+		&Actor::SPRINGSTUNTELEPORT_TransitionToAction,
+		&Actor::SPRINGSTUNTELEPORT_TimeIndFrameInc,
+		&Actor::SPRINGSTUNTELEPORT_TimeDepFrameInc,
+		&Actor::SPRINGSTUNTELEPORT_GetActionLength,
+		&Actor::SPRINGSTUNTELEPORT_GetTileset);
+
+	SetupFuncsForAction(SPRINT,
+		&Actor::SPRINT_Start,
+		&Actor::SPRINT_End,
+		&Actor::SPRINT_Change,
+		&Actor::SPRINT_Update,
+		&Actor::SPRINT_UpdateSprite,
+		&Actor::SPRINT_TransitionToAction,
+		&Actor::SPRINT_TimeIndFrameInc,
+		&Actor::SPRINT_TimeDepFrameInc,
+		&Actor::SPRINT_GetActionLength,
+		&Actor::SPRINT_GetTileset);
+
+	SetupFuncsForAction(STAND,
+		&Actor::STAND_Start,
+		&Actor::STAND_End,
+		&Actor::STAND_Change,
+		&Actor::STAND_Update,
+		&Actor::STAND_UpdateSprite,
+		&Actor::STAND_TransitionToAction,
+		&Actor::STAND_TimeIndFrameInc,
+		&Actor::STAND_TimeDepFrameInc,
+		&Actor::STAND_GetActionLength,
+		&Actor::STAND_GetTileset);
+
+	SetupFuncsForAction(STANDN,
+		&Actor::STANDN_Start,
+		&Actor::STANDN_End,
+		&Actor::STANDN_Change,
+		&Actor::STANDN_Update,
+		&Actor::STANDN_UpdateSprite,
+		&Actor::STANDN_TransitionToAction,
+		&Actor::STANDN_TimeIndFrameInc,
+		&Actor::STANDN_TimeDepFrameInc,
+		&Actor::STANDN_GetActionLength,
+		&Actor::STANDN_GetTileset);
+
+	SetupFuncsForAction(STEEPCLIMB,
+		&Actor::STEEPCLIMB_Start,
+		&Actor::STEEPCLIMB_End,
+		&Actor::STEEPCLIMB_Change,
+		&Actor::STEEPCLIMB_Update,
+		&Actor::STEEPCLIMB_UpdateSprite,
+		&Actor::STEEPCLIMB_TransitionToAction,
+		&Actor::STEEPCLIMB_TimeIndFrameInc,
+		&Actor::STEEPCLIMB_TimeDepFrameInc,
+		&Actor::STEEPCLIMB_GetActionLength,
+		&Actor::STEEPCLIMB_GetTileset);
+
+	SetupFuncsForAction(STEEPCLIMBATTACK,
+		&Actor::STEEPCLIMBATTACK_Start,
+		&Actor::STEEPCLIMBATTACK_End,
+		&Actor::STEEPCLIMBATTACK_Change,
+		&Actor::STEEPCLIMBATTACK_Update,
+		&Actor::STEEPCLIMBATTACK_UpdateSprite,
+		&Actor::STEEPCLIMBATTACK_TransitionToAction,
+		&Actor::STEEPCLIMBATTACK_TimeIndFrameInc,
+		&Actor::STEEPCLIMBATTACK_TimeDepFrameInc,
+		&Actor::STEEPCLIMBATTACK_GetActionLength,
+		&Actor::STEEPCLIMBATTACK_GetTileset);
+
+	SetupFuncsForAction(STEEPCLING,
+		&Actor::STEEPCLING_Start,
+		&Actor::STEEPCLING_End,
+		&Actor::STEEPCLING_Change,
+		&Actor::STEEPCLING_Update,
+		&Actor::STEEPCLING_UpdateSprite,
+		&Actor::STEEPCLING_TransitionToAction,
+		&Actor::STEEPCLING_TimeIndFrameInc,
+		&Actor::STEEPCLING_TimeDepFrameInc,
+		&Actor::STEEPCLING_GetActionLength,
+		&Actor::STEEPCLING_GetTileset);
+
+	SetupFuncsForAction(STEEPSLIDE,
+		&Actor::STEEPSLIDE_Start,
+		&Actor::STEEPSLIDE_End,
+		&Actor::STEEPSLIDE_Change,
+		&Actor::STEEPSLIDE_Update,
+		&Actor::STEEPSLIDE_UpdateSprite,
+		&Actor::STEEPSLIDE_TransitionToAction,
+		&Actor::STEEPSLIDE_TimeIndFrameInc,
+		&Actor::STEEPSLIDE_TimeDepFrameInc,
+		&Actor::STEEPSLIDE_GetActionLength,
+		&Actor::STEEPSLIDE_GetTileset);
+
+	SetupFuncsForAction(STEEPSLIDEATTACK,
+		&Actor::STEEPSLIDEATTACK_Start,
+		&Actor::STEEPSLIDEATTACK_End,
+		&Actor::STEEPSLIDEATTACK_Change,
+		&Actor::STEEPSLIDEATTACK_Update,
+		&Actor::STEEPSLIDEATTACK_UpdateSprite,
+		&Actor::STEEPSLIDEATTACK_TransitionToAction,
+		&Actor::STEEPSLIDEATTACK_TimeIndFrameInc,
+		&Actor::STEEPSLIDEATTACK_TimeDepFrameInc,
+		&Actor::STEEPSLIDEATTACK_GetActionLength,
+		&Actor::STEEPSLIDEATTACK_GetTileset);
+
+	SetupFuncsForAction(SWINGSTUN,
+		&Actor::SWINGSTUN_Start,
+		&Actor::SWINGSTUN_End,
+		&Actor::SWINGSTUN_Change,
+		&Actor::SWINGSTUN_Update,
+		&Actor::SWINGSTUN_UpdateSprite,
+		&Actor::SWINGSTUN_TransitionToAction,
+		&Actor::SWINGSTUN_TimeIndFrameInc,
+		&Actor::SWINGSTUN_TimeDepFrameInc,
+		&Actor::SWINGSTUN_GetActionLength,
+		&Actor::SWINGSTUN_GetTileset);
+
+	SetupFuncsForAction(UAIR,
+		&Actor::UAIR_Start,
+		&Actor::UAIR_End,
+		&Actor::UAIR_Change,
+		&Actor::UAIR_Update,
+		&Actor::UAIR_UpdateSprite,
+		&Actor::UAIR_TransitionToAction,
+		&Actor::UAIR_TimeIndFrameInc,
+		&Actor::UAIR_TimeDepFrameInc,
+		&Actor::UAIR_GetActionLength,
+		&Actor::UAIR_GetTileset);
+
+	SetupFuncsForAction(WAITFORSHIP,
+		&Actor::WAITFORSHIP_Start,
+		&Actor::WAITFORSHIP_End,
+		&Actor::WAITFORSHIP_Change,
+		&Actor::WAITFORSHIP_Update,
+		&Actor::WAITFORSHIP_UpdateSprite,
+		&Actor::WAITFORSHIP_TransitionToAction,
+		&Actor::WAITFORSHIP_TimeIndFrameInc,
+		&Actor::WAITFORSHIP_TimeDepFrameInc,
+		&Actor::WAITFORSHIP_GetActionLength,
+		&Actor::WAITFORSHIP_GetTileset);
+
+	SetupFuncsForAction(WALLATTACK,
+		&Actor::WALLATTACK_Start,
+		&Actor::WALLATTACK_End,
+		&Actor::WALLATTACK_Change,
+		&Actor::WALLATTACK_Update,
+		&Actor::WALLATTACK_UpdateSprite,
+		&Actor::WALLATTACK_TransitionToAction,
+		&Actor::WALLATTACK_TimeIndFrameInc,
+		&Actor::WALLATTACK_TimeDepFrameInc,
+		&Actor::WALLATTACK_GetActionLength,
+		&Actor::WALLATTACK_GetTileset);
+
+	SetupFuncsForAction(WALLCLING,
+		&Actor::WALLCLING_Start,
+		&Actor::WALLCLING_End,
+		&Actor::WALLCLING_Change,
+		&Actor::WALLCLING_Update,
+		&Actor::WALLCLING_UpdateSprite,
+		&Actor::WALLCLING_TransitionToAction,
+		&Actor::WALLCLING_TimeIndFrameInc,
+		&Actor::WALLCLING_TimeDepFrameInc,
+		&Actor::WALLCLING_GetActionLength,
+		&Actor::WALLCLING_GetTileset);
+
+	SetupFuncsForAction(WALLJUMP,
+		&Actor::WALLJUMP_Start,
+		&Actor::WALLJUMP_End,
+		&Actor::WALLJUMP_Change,
+		&Actor::WALLJUMP_Update,
+		&Actor::WALLJUMP_UpdateSprite,
+		&Actor::WALLJUMP_TransitionToAction,
+		&Actor::WALLJUMP_TimeIndFrameInc,
+		&Actor::WALLJUMP_TimeDepFrameInc,
+		&Actor::WALLJUMP_GetActionLength,
+		&Actor::WALLJUMP_GetTileset);
+
+	SetupFuncsForAction(WIREHOLD,
+		&Actor::WIREHOLD_Start,
+		&Actor::WIREHOLD_End,
+		&Actor::WIREHOLD_Change,
+		&Actor::WIREHOLD_Update,
+		&Actor::WIREHOLD_UpdateSprite,
+		&Actor::WIREHOLD_TransitionToAction,
+		&Actor::WIREHOLD_TimeIndFrameInc,
+		&Actor::WIREHOLD_TimeDepFrameInc,
+		&Actor::WIREHOLD_GetActionLength,
+		&Actor::WIREHOLD_GetTileset);
 }
 
 void Actor::StartAction()
@@ -1320,11 +1870,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		sf::Color(0x53, 0xf9, 0xf9)
 	};
 
-		
+	skin = NULL;
+	swordSkin = NULL;
+	actionFolder = "Kin/";
 		
 	team = (Team)actorIndex; //debug
 
-	SetupTilesets(NULL, NULL);
+	SetupTilesets();
 
 	/*if (actorIndex == 0)
 	{
@@ -1876,12 +2428,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
 	actionLength[LAND2] = 1;
 	actionLength[RUN] = 10 * 4;
-	actionLength[AUTORUN] = actionLength[RUN];
 	actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
 	actionLength[SLIDE] = 1;
 	actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
 	actionLength[SPRINT] = 8 * 4;
-	actionLength[STAND] = 20 * 8;
 	actionLength[SEQ_ENTERCORE1] = 60;
 	actionLength[SPRINGSTUN] = 8;
 	actionLength[SPRINGSTUNGLIDE] = 8;
@@ -1920,7 +2470,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionLength[JUMPSQUAT] = 3;
 	actionLength[INTRO] = 18 * 2;
 	actionLength[INTROBOOST] = 22 * 2;//40 * 2;
-	actionLength[AIRDASH] = 33;//27;
 	actionLength[STEEPSLIDEATTACK] = 16;
 	actionLength[AIRHITSTUN] = 1;
 	actionLength[STEEPCLIMB] = 8 * 4;
@@ -14571,70 +15120,6 @@ void Actor::SetSpriteTile( sf::Sprite *spr,
 
 void Actor::SetupAction(Action a)
 {
-	//actionLength[WALLATTACK] = 8 * 2;
-	//actionLength[DAIR] = 16;
-	//actionLength[DASH] = 45;
-	//actionLength[DOUBLE] = 28 + 10;
-	//actionLength[BACKWARDSDOUBLE] = 40;
-	//actionLength[FAIR] = 8 * 2;
-	//actionLength[DIAGUPATTACK] = 14 * 2;
-	//actionLength[DIAGDOWNATTACK] = 15 * 2;
-	//actionLength[JUMP] = 2;
-	//actionLength[SEQ_WAIT] = 2;
-	//actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
-	//actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
-	//actionLength[LAND] = 1;
-	//actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
-	//actionLength[LAND2] = 1;
-	//actionLength[RUN] = 10 * 4;
-	//actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
-	//actionLength[SLIDE] = 1;
-	//actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
-	//actionLength[SPRINT] = 8 * 4;
-	//actionLength[STAND] = 20 * 8;
-	//actionLength[SPRINGSTUN] = 8;
-	//actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
-	//actionLength[DASHATTACK] = 8 * 2;
-	//actionLength[STANDN] = 4 * 4;
-	//actionLength[UAIR] = 16;
-	//actionLength[GRINDATTACK] = 1;
-	//actionLength[STEEPSLIDE] = 1;
-	//actionLength[WALLCLING] = 1;
-	//actionLength[WALLJUMP] = 9 * 2;
-	//actionLength[GRINDBALL] = 1;
-	//actionLength[GRINDLUNGE] = 20;
-	//actionLength[GRINDSLASH] = 16;
-	//actionLength[STEEPCLIMBATTACK] = 4 * 4;
-	//actionLength[SKYDIVETOFALL] = 10 * 4;
-	//actionLength[WAITFORSHIP] = 60 * 1;
-	//actionLength[GRABSHIP] = 4 * 4 + 20;
-	//actionLength[GETPOWER_AIRDASH_MEDITATE] = 120;
-	//actionLength[RIDESHIP] = 1;
-	//actionLength[SKYDIVE] = 9 * 2;
-	//actionLength[EXIT] = 27 * 2;
-	//actionLength[GRAVREVERSE] = 20;
-	//actionLength[JUMPSQUAT] = 3;
-	//actionLength[INTRO] = 10 * 4;
-	//actionLength[AIRDASH] = 33;//27;
-	//actionLength[STEEPSLIDEATTACK] = 6 * 3;
-	//actionLength[AIRHITSTUN] = 1;
-	//actionLength[STEEPCLIMB] = 8 * 4;
-	//actionLength[GROUNDHITSTUN] = 1;
-	//actionLength[WIREHOLD] = 1;
-	//actionLength[BOUNCEAIR] = 1;
-	//actionLength[BOUNCEGROUND] = 15;
-	//actionLength[BOUNCEGROUNDEDWALL] = 30;
-	//actionLength[DEATH] = 44 * 2;
-	//actionLength[GETPOWER_AIRDASH_FLIP] = 20 * 5;
-	//actionLength[GOALKILL] = 72 * 2;
-	//actionLength[ENTERNEXUS1] = 10 * 4;
-	//actionLength[GOALKILLWAIT] = 2;
-	//actionLength[SPAWNWAIT] = 120;
-	//actionLength[RAILDASH] = 20;
-	//switch (a)
-	//{
-	//	//case 
-	//}
 }
 
 void Actor::AirMovement()

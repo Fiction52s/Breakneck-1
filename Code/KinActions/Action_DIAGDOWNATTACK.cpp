@@ -93,3 +93,28 @@ void Actor::DIAGDOWNATTACK_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::DIAGDOWNATTACK_TransitionToAction(int a)
+{
+
+}
+
+void Actor::DIAGDOWNATTACK_TimeIndFrameInc()
+{
+
+}
+
+void Actor::DIAGDOWNATTACK_TimeDepFrameInc()
+{
+
+}
+
+int Actor::DIAGDOWNATTACK_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::DIAGDOWNATTACK_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

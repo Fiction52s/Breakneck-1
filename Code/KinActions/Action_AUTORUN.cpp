@@ -27,3 +27,28 @@ void Actor::AUTORUN_UpdateSprite()
 {
 	RUN_UpdateSprite();
 }
+
+void Actor::AUTORUN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::AUTORUN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::AUTORUN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::AUTORUN_GetActionLength()
+{
+	return RUN_GetActionLength();
+}
+
+Tileset * Actor::AUTORUN_GetTileset()
+{
+	return NULL;
+}

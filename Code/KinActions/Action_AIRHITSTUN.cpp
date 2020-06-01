@@ -73,3 +73,28 @@ void Actor::AIRHITSTUN_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::AIRHITSTUN_TransitionToAction(int a)
+{
+
+}
+
+void Actor::AIRHITSTUN_TimeIndFrameInc()
+{
+
+}
+
+void Actor::AIRHITSTUN_TimeDepFrameInc()
+{
+
+}
+
+int Actor::AIRHITSTUN_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::AIRHITSTUN_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -85,3 +85,28 @@ void Actor::FAIR_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::FAIR_TransitionToAction(int a)
+{
+
+}
+
+void Actor::FAIR_TimeIndFrameInc()
+{
+
+}
+
+void Actor::FAIR_TimeDepFrameInc()
+{
+
+}
+
+int Actor::FAIR_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::FAIR_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

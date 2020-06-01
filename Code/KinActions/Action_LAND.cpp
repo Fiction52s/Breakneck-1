@@ -252,3 +252,28 @@ void Actor::LAND_UpdateSprite()
 
 	}
 }
+
+void Actor::LAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::LAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::LAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::LAND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::LAND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

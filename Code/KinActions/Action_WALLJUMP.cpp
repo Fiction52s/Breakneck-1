@@ -77,3 +77,28 @@ void Actor::WALLJUMP_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::WALLJUMP_TransitionToAction(int a)
+{
+
+}
+
+void Actor::WALLJUMP_TimeIndFrameInc()
+{
+
+}
+
+void Actor::WALLJUMP_TimeDepFrameInc()
+{
+
+}
+
+int Actor::WALLJUMP_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::WALLJUMP_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

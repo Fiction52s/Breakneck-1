@@ -22,3 +22,28 @@ void Actor::SEQ_LOOKUPDISAPPEAR_Update()
 void Actor::SEQ_LOOKUPDISAPPEAR_UpdateSprite()
 {
 }
+
+void Actor::SEQ_LOOKUPDISAPPEAR_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_LOOKUPDISAPPEAR_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_LOOKUPDISAPPEAR_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_LOOKUPDISAPPEAR_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_LOOKUPDISAPPEAR_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

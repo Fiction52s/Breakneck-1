@@ -284,3 +284,28 @@ void Actor::DASH_UpdateSprite()
 		scorpSet = true;
 	}
 }
+
+void Actor::DASH_TransitionToAction(int a)
+{
+
+}
+
+void Actor::DASH_TimeIndFrameInc()
+{
+
+}
+
+void Actor::DASH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::DASH_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::DASH_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

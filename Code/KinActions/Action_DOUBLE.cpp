@@ -71,3 +71,28 @@ void Actor::DOUBLE_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::DOUBLE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::DOUBLE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::DOUBLE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::DOUBLE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::DOUBLE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

@@ -29,3 +29,28 @@ void Actor::DEATH_Update()
 void Actor::DEATH_UpdateSprite()
 {
 }
+
+void Actor::DEATH_TransitionToAction(int a)
+{
+
+}
+
+void Actor::DEATH_TimeIndFrameInc()
+{
+
+}
+
+void Actor::DEATH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::DEATH_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::DEATH_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

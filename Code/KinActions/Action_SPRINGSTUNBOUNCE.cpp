@@ -110,3 +110,28 @@ void Actor::SPRINGSTUNBOUNCE_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::SPRINGSTUNBOUNCE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SPRINGSTUNBOUNCE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SPRINGSTUNBOUNCE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SPRINGSTUNBOUNCE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SPRINGSTUNBOUNCE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

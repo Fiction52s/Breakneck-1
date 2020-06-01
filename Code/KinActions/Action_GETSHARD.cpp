@@ -39,3 +39,28 @@ void Actor::GETSHARD_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	SetSpriteTile(0, facingRight);
 }
+
+void Actor::GETSHARD_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GETSHARD_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GETSHARD_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GETSHARD_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GETSHARD_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

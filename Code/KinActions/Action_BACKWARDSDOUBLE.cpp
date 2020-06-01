@@ -66,3 +66,28 @@ void Actor::BACKWARDSDOUBLE_UpdateSprite()
 	if (scorpOn)
 		SetAerialScorpSprite();
 }
+
+void Actor::BACKWARDSDOUBLE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::BACKWARDSDOUBLE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::BACKWARDSDOUBLE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::BACKWARDSDOUBLE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::BACKWARDSDOUBLE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

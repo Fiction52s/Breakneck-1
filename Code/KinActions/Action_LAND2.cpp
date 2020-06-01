@@ -222,3 +222,28 @@ void Actor::LAND2_UpdateSprite()
 	else
 		sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::LAND2_TransitionToAction(int a)
+{
+
+}
+
+void Actor::LAND2_TimeIndFrameInc()
+{
+
+}
+
+void Actor::LAND2_TimeDepFrameInc()
+{
+
+}
+
+int Actor::LAND2_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::LAND2_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

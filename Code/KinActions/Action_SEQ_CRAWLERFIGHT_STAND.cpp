@@ -24,3 +24,28 @@ void Actor::SEQ_CRAWLERFIGHT_STAND_UpdateSprite()
 {
 	STAND_UpdateSprite();
 }
+
+void Actor::SEQ_CRAWLERFIGHT_STAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_STAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_CRAWLERFIGHT_STAND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_CRAWLERFIGHT_STAND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

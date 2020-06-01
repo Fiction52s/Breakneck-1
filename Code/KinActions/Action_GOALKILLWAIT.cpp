@@ -30,3 +30,28 @@ void Actor::GOALKILLWAIT_UpdateSprite()
 	//sprite->setPosition( owner->goalNodePos.x, owner->goalNodePos.y - 24.f );
 	sprite->setRotation(0);
 }
+
+void Actor::GOALKILLWAIT_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GOALKILLWAIT_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GOALKILLWAIT_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GOALKILLWAIT_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GOALKILLWAIT_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

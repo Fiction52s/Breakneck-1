@@ -55,3 +55,28 @@ void Actor::BRAKE_UpdateSprite()
 		scorpSet = true;
 	}
 }
+
+void Actor::BRAKE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::BRAKE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::BRAKE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::BRAKE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::BRAKE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

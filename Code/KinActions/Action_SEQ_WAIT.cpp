@@ -43,3 +43,28 @@ void Actor::SEQ_WAIT_UpdateSprite()
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
 }
+
+void Actor::SEQ_WAIT_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_WAIT_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_WAIT_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_WAIT_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_WAIT_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

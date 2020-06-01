@@ -409,3 +409,28 @@ void Actor::GRINDATTACK_UpdateSprite()
 {
 	GRINDBALL_UpdateSprite();
 }
+
+void Actor::GRINDATTACK_TransitionToAction(int a)
+{
+
+}
+
+void Actor::GRINDATTACK_TimeIndFrameInc()
+{
+
+}
+
+void Actor::GRINDATTACK_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GRINDATTACK_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::GRINDATTACK_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

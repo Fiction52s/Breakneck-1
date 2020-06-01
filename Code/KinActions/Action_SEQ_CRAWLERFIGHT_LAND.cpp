@@ -25,3 +25,28 @@ void Actor::SEQ_CRAWLERFIGHT_LAND_UpdateSprite()
 {
 	LAND_UpdateSprite();
 }
+
+void Actor::SEQ_CRAWLERFIGHT_LAND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_LAND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_CRAWLERFIGHT_LAND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_CRAWLERFIGHT_LAND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_CRAWLERFIGHT_LAND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

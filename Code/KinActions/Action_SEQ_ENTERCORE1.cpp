@@ -24,3 +24,28 @@ void Actor::SEQ_ENTERCORE1_UpdateSprite()
 {
 	STAND_UpdateSprite();
 }
+
+void Actor::SEQ_ENTERCORE1_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_ENTERCORE1_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_ENTERCORE1_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_ENTERCORE1_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_ENTERCORE1_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

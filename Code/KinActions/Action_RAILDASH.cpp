@@ -33,3 +33,28 @@ void Actor::RAILDASH_UpdateSprite()
 {
 	sprite->setPosition(position.x, position.y);
 }
+
+void Actor::RAILDASH_TransitionToAction(int a)
+{
+
+}
+
+void Actor::RAILDASH_TimeIndFrameInc()
+{
+
+}
+
+void Actor::RAILDASH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::RAILDASH_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::RAILDASH_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

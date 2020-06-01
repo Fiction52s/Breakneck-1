@@ -30,3 +30,28 @@ void Actor::ENTERNEXUS1_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 }
+
+void Actor::ENTERNEXUS1_TransitionToAction(int a)
+{
+
+}
+
+void Actor::ENTERNEXUS1_TimeIndFrameInc()
+{
+
+}
+
+void Actor::ENTERNEXUS1_TimeDepFrameInc()
+{
+
+}
+
+int Actor::ENTERNEXUS1_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::ENTERNEXUS1_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

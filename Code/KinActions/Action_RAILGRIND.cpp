@@ -62,3 +62,28 @@ void Actor::RAILGRIND_UpdateSprite()
 {
 	GRINDBALL_UpdateSprite();
 }
+
+void Actor::RAILGRIND_TransitionToAction(int a)
+{
+
+}
+
+void Actor::RAILGRIND_TimeIndFrameInc()
+{
+
+}
+
+void Actor::RAILGRIND_TimeDepFrameInc()
+{
+
+}
+
+int Actor::RAILGRIND_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::RAILGRIND_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}

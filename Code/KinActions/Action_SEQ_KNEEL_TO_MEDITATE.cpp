@@ -46,3 +46,28 @@ void Actor::SEQ_KNEEL_TO_MEDITATE_UpdateSprite()
 
 	sprite->setPosition(pp.x, pp.y);
 }
+
+void Actor::SEQ_KNEEL_TO_MEDITATE_TransitionToAction(int a)
+{
+
+}
+
+void Actor::SEQ_KNEEL_TO_MEDITATE_TimeIndFrameInc()
+{
+
+}
+
+void Actor::SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc()
+{
+
+}
+
+int Actor::SEQ_KNEEL_TO_MEDITATE_GetActionLength()
+{
+	return 1;
+}
+
+Tileset * Actor::SEQ_KNEEL_TO_MEDITATE_GetTileset()
+{
+	return GetActionTileset("hurt_64x64.png");
+}
