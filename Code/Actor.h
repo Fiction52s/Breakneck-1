@@ -35,6 +35,7 @@ struct ObjectPool;
 struct RelEffectInstance;
 struct VertexBuf;
 struct Kin;
+struct MovingGeoGroup;
 
 struct TerrainRail;
 
@@ -103,7 +104,6 @@ struct BounceBooster;
 struct Spring;
 struct Teleporter;
 struct SwingLauncher;
-struct EffectPool;
 struct EnemyParams;
 struct SoundNode;
 
@@ -113,6 +113,7 @@ struct KinMask;
 struct KinRing;
 struct RisingParticleUpdater;
 struct EffectPool;
+struct KeyExplodeUpdater;
 struct ShapeEmitter;
 
 struct BasicEffect;
@@ -352,6 +353,13 @@ struct Actor : QuadTreeCollider,
 	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
+
+	EffectPool *keyExplodePool;
+	KeyExplodeUpdater *keyExplodeUpdater;
+	void CreateKeyExplosion();
+	Tileset *ts_keyExplode;
+	Tileset *ts_key;
+	MovingGeoGroup *keyExplodeRingGroup;
 
 	KinRing *kinRing;
 

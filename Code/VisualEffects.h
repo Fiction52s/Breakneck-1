@@ -103,7 +103,8 @@ struct RelEffectInstance : EffectInstance
 
 struct EffectPoolUpdater
 {
-	virtual void UpdateEffect(EffectInstance *ei) = 0;
+	virtual void UpdateEffect(EffectInstance *ei) {}
+	virtual void OnDeactivate(EffectInstance *ei) {}
 };
 
 struct RisingParticleUpdater : EffectPoolUpdater
@@ -113,18 +114,32 @@ struct RisingParticleUpdater : EffectPoolUpdater
 	void UpdateEffect(EffectInstance *ei);
 };
 
+struct KeyExplodeUpdater : EffectPoolUpdater
+{
+	KeyExplodeUpdater(Actor *a)
+		:actor( a )
+	{
+
+	}
+	Actor *actor;
+	void OnDeactivate(EffectInstance *ei);
+};
+
 struct EffectPool : ObjectPool
 {
 	EffectPool( EffectType et, int maxNumFX, float depth = 1.f );
 	virtual ~EffectPool();
 	void Reset();
-	void Update( EffectPoolUpdater *epu = NULL );
+	void Update();
 	void DeactivateMember(PoolMember *pm);
 	void SetTileset(Tileset *ts);
 	virtual EffectInstance * ActivateEffect( EffectInstance *params );
 	virtual IndEffectInstance * ActivateIndEffect(EffectInstance *params,
 		Tileset *ts );
 	void Draw( sf::RenderTarget *target );
+	EffectPoolUpdater *updater;
+	void SetUpdater(EffectPoolUpdater *up);
+	void OnDeactivate(EffectInstance *inst);
 	Tileset *ts;
 	sf::Vertex *va;
 	sf::Shader *effectShader;

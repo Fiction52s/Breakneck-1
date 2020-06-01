@@ -24,6 +24,8 @@ EffectPool::EffectPool(EffectType et, int p_maxNumFX, float p_depth )
 {
 	eType = et;
 
+	updater = NULL;
+
 	if (eType != FX_IND)
 	{
 		va = new Vertex[maxNumFX * 4];
@@ -83,7 +85,12 @@ void EffectPool::DeactivateMember(PoolMember *pm)
 	ei->Clear();
 }
 
-void EffectPool::Update(EffectPoolUpdater *epu)
+void EffectPool::SetUpdater(EffectPoolUpdater *up)
+{
+	updater = up;
+}
+
+void EffectPool::Update()
 {
 	switch (eType)
 	{
@@ -96,9 +103,9 @@ void EffectPool::Update(EffectPoolUpdater *epu)
 		{
 			tNext = (EffectInstance*)ei->pmnext;
 
-			if (epu != NULL)
+			if (updater != NULL)
 			{
-				epu->UpdateEffect(ei);
+				updater->UpdateEffect(ei);
 			}
 			
 			ei->Update();
@@ -127,6 +134,14 @@ void EffectPool::Update(EffectPoolUpdater *epu)
 	}
 	}
 	
+}
+
+void EffectPool::OnDeactivate(EffectInstance *inst)
+{
+	if (updater != NULL)
+	{
+		updater->OnDeactivate(inst);
+	}
 }
 
 EffectInstance* EffectPool::ActivateEffect( EffectInstance *params )
@@ -318,6 +333,7 @@ bool EffectInstance::Update()
 	{
 		Clear();
 		parent->DeactivatePoolMember(this);
+		parent->OnDeactivate(this);
 		return false;
 	}
 

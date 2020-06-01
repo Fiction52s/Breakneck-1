@@ -349,6 +349,7 @@ void Shard::ProcessState()
 	if (!geoGroup.Update())
 	{
 		geoGroup.Reset();
+		geoGroup.Start();
 	}
 
 	Vector2f sparkleCenter(GetPositionF());

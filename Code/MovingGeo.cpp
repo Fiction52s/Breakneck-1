@@ -102,6 +102,11 @@ void MovingGeoGroup::Reset()
 	running = false;
 }
 
+void MovingGeoGroup::Start()
+{
+	running = true;
+}
+
 void MovingGeoGroup::SetBase(sf::Vector2f &pos)
 {
 	for (auto it = geoList.begin(); it != geoList.end(); ++it)
@@ -112,6 +117,9 @@ void MovingGeoGroup::SetBase(sf::Vector2f &pos)
 
 bool MovingGeoGroup::Update()
 {
+	if (!running)
+		return false;
+
 	bool stillRunning = false;
 
 	auto wit = waitFrames.begin();
@@ -169,6 +177,8 @@ void MovingGeoGroup::Init()
 		curr += np;
 		(*it)->Init();
 	}
+
+	Reset();
 }
 
 

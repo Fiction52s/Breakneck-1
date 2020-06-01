@@ -38,6 +38,7 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 	{
 	case DARK:
 		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
+		ts_explodeDestroy = owner->GetSizedTileset("FX/keyexplode_128x128.png");
 		animFactor = 2;
 		break;
 	case SHARD:
@@ -356,9 +357,8 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		}
 		case DARK:
 		{
-			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
 			parent->owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				tss, V2d(targetPos), true, 0, 6, 3, true);
+				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
 			parent->owner->CollectKey();
 			break;
 		}

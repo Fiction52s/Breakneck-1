@@ -37,6 +37,7 @@ struct MovingGeoGroup
 {
 	MovingGeoGroup();
 	~MovingGeoGroup();
+	void Start();
 	void Reset();
 	bool Update();
 	void AddGeo(MovingGeo *mg, int waitFrames = 0);

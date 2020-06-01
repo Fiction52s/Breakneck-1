@@ -44,6 +44,7 @@
 #include "AbsorbParticles.h"
 #include "EditSession.h"
 #include "EditorRail.h"
+#include "MovingGeo.h"
 
 using namespace sf;
 using namespace std;
@@ -58,6 +59,12 @@ using namespace std;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+
+void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
+{
+	actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+		actor->ts_keyExplode, V2d(ei->pos), true, 0, 6, 3, true);
+}
 
 //#define cout std::cout
 
@@ -359,6 +366,19 @@ void Actor::SetupFXTilesets( Skin *skin, Skin *swordSkin)
 
 	gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
 	gateBlackFXPool->ts = sess->GetSizedTileset(folder, "keydrain_160x160.png");
+
+	ts_key = sess->GetSizedTileset("FX/key_128x128.png");
+
+	keyExplodePool = new EffectPool(EffectType::FX_REGULAR, 32, 1.f);
+	keyExplodePool->ts = ts_key;
+	keyExplodeUpdater = new KeyExplodeUpdater(this);
+	keyExplodePool->SetUpdater(keyExplodeUpdater);
+	ts_keyExplode = sess->GetSizedTileset("FX/keyexplode_128x128.png");
+
+	keyExplodeRingGroup = new MovingGeoGroup;
+	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 60));
+	keyExplodeRingGroup->Init();
 }
 
 void Actor::SetupSwordTilesets(Skin *swordSkin)
@@ -2333,6 +2353,10 @@ Actor::~Actor()
 	}
 	delete gateBlackFXPool;
 	delete wireChargeInfo;
+
+	delete keyExplodePool;
+	delete keyExplodeUpdater;
+	delete keyExplodeRingGroup;
 	
 	delete sprite;
 
@@ -2685,6 +2709,35 @@ bool Actor::AirAttack()
 	return false;
 }
 
+
+void Actor::CreateKeyExplosion()
+{
+	EffectInstance params;
+	Transform tr = sf::Transform::Identity;
+	//params.SetParams(Vector2f(position), tr, 16, 4, 0);
+	//params.SetVelocityParams(Vector2f(0, -1), Vector2f(), 10);
+
+	Transform posTransform;
+	Vector2f pos(0, -10);
+	Vector2f adjustedPoint;
+
+	Vector2f floatPos(position);
+	for (int i = 0; i < numKeysHeld; ++i)
+	{
+		adjustedPoint = posTransform.transformPoint(pos);
+		params.SetParams(floatPos + adjustedPoint, tr, 16, 4, 0);
+		params.SetVelocityParams(normalize(adjustedPoint) * 4.f, Vector2f(), 10.f);
+
+		keyExplodePool->ActivateEffect(&params);
+
+		posTransform.rotate(360.f / numKeysHeld);
+	}
+
+	keyExplodeRingGroup->SetBase(floatPos);
+	keyExplodeRingGroup->Start();
+	owner->cam.SetRumble(5, 5, 20);
+}
+
 void Actor::CreateAttackLightning()
 {
 	if ( frame != 0 || slowCounter != 1 
@@ -2790,6 +2843,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	keyExplodeRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
@@ -9823,12 +9877,21 @@ void Actor::HandleTouchedGate()
 			g->centerShader.setUniform("breakPosQuant", aa);
 		}
 
+		//needs to be placed before keys go to 0
+		CreateKeyExplosion();
+
+		//needs an adjustment for secret zones
+		numKeysHeld = 0;
+
+
 		V2d gEnterPos = alongPos + nEdge;// *32.0;
 
 		//this gets rid of any keys that are still around, instead of
 		//letting the player collect them after going through the door
 
 		owner->absorbDarkParticles->KillAllActive();
+
+		
 
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 			ts_fx_gateEnter, gEnterPos, false, ang, 8, 3, true);
@@ -9837,6 +9900,8 @@ void Actor::HandleTouchedGate()
 		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
 		//it only enters this state if you already unlock it though
 		gateTouched = NULL;
+
+		
 	}
 	else if (crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0)
 	{
@@ -11190,6 +11255,12 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	keyExplodePool->Update();
+	if (!keyExplodeRingGroup->Update())
+	{
+		//keyExplodeRingGroup->Reset();
+	}
+
 	UpdateSmallLightning();
 	UpdateRisingAura();
 
@@ -13643,6 +13714,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	{
 		smallLightningPool[i]->Draw(target);
 	}
+
+	keyExplodeRingGroup->Draw(target);
+	keyExplodePool->Draw(target);
 }
 
 void Actor::DrawMapWires(sf::RenderTarget *target)
