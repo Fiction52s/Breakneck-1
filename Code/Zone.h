@@ -70,8 +70,8 @@ struct Zone
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
 	bool active;
-	int requiredKeys;
-	int totalStartingKeys;
+	//int requiredKeys;
+	//int totalStartingKeys;
 
 	bool showShadow;
 	GameSession *owner;

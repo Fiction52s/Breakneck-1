@@ -577,11 +577,11 @@ void GameSession::Cleanup()
 		topClouds = NULL;
 	}
 
-	if (parentGame == NULL && keyMarker != NULL)
+	/*if (parentGame == NULL && keyMarker != NULL)
 	{
 		delete keyMarker;
 		keyMarker = NULL;
-	}
+	}*/
 
 
 	if (specterTree != NULL)
@@ -3842,13 +3842,13 @@ void GameSession::SetupZones()
 				++numTotalKeys;
 			}
 		}
-		(*zit)->totalStartingKeys = numTotalKeys;
+		//(*zit)->totalStartingKeys = numTotalKeys;
 	}
 
-	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
-	{
-		(*zit)->requiredKeys = (*zit)->totalStartingKeys;
-	}
+	//for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	//{
+		//(*zit)->requiredKeys = (*zit)->totalStartingKeys;
+	//}
 
 	//set key number objects correctly
 	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
@@ -3879,7 +3879,7 @@ void GameSession::SetupZones()
 
 		if( assignZone != NULL )
 		{
-			assignZone->requiredKeys = (*it)->numKeys;
+			//assignZone->requiredKeys = (*it)->numKeys;
 			if( (*it)->zoneType > 0 )
 				assignZone->SetZoneType((Zone::ZoneType)(*it)->zoneType);
 		}
@@ -3923,9 +3923,8 @@ void GameSession::SetupZones()
 	if( originalZone != NULL )
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
-		//originalZone->active = true;
 		ActivateZone(originalZone, true);
-		keyMarker->SetStartKeysZone(originalZone);
+		//keyMarker->SetStartKeysZone(originalZone);
 	}
 	
 	//cout << "3: numgates: " << numGates << endl;
@@ -4700,14 +4699,13 @@ bool GameSession::Load()
 	{
 
 		//this is a temporary test. create a bonus whenever you have a parent level
-		boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
-
+		/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
 		bonusGame = new GameSession(saveFile, p);
 		bonusGame->SetParentGame(this);
 		bonusGame->Load();
 
 		currSession = this;
-		pauseMenu->owner = this;
+		pauseMenu->owner = this;*/
 	}
 
 	//bonusPaths.push_back(p);
@@ -4785,12 +4783,12 @@ void GameSession::SetupPlayers()
 
 void GameSession::SetupKeyMarker()
 {
-	if (parentGame != NULL)
+	/*if (parentGame != NULL)
 	{
 		keyMarker = parentGame->keyMarker;
 	}
 	else if( keyMarker == NULL )
-		keyMarker = new KeyMarker(this);
+		keyMarker = new KeyMarker(this);*/
 }
 
 void GameSession::SetupShardsCapturedField()
@@ -5338,7 +5336,10 @@ int GameSession::Run()
 		
 		while ( accumulator >= TIMESTEP )
         {
-			OneFrameModeUpdate();
+			if (!OneFrameModeUpdate())
+			{
+				break;
+			}
 
 			bool k = IsKeyPressed( sf::Keyboard::K );
 			bool levelReset = IsKeyPressed( sf::Keyboard::L );
@@ -5603,7 +5604,7 @@ int GameSession::Run()
 						p->UpdatePrePhysics();
 				}
 
-				if (parentGame == NULL )
+				if (parentGame == NULL && bonusGame != NULL )
 				{
 					if (GetCurrInputUnfiltered(0).rightShoulder && 
 						!GetPrevInputUnfiltered(0).rightShoulder)
@@ -5776,7 +5777,7 @@ int GameSession::Run()
 				UpdateEffects();
 				UpdateEmitters();
 
-				keyMarker->Update();
+				//keyMarker->Update();
 
 				mini->Update();
 
@@ -6248,7 +6249,7 @@ int GameSession::Run()
 		DrawHitEnemies(); //whited out hit enemies
 
 		absorbParticles->Draw(preScreenTex);
-
+		absorbDarkParticles->Draw(preScreenTex);
 
 		DrawPlayers(preScreenTex);
 		
@@ -6374,7 +6375,7 @@ int GameSession::Run()
 
 		preScreenTex->setView(uiView);
 
-		absorbDarkParticles->Draw(preScreenTex);
+		//absorbDarkParticles->Draw(preScreenTex);
 
 		//absorbShardParticles->Draw(preScreenTex);
 		
@@ -8690,7 +8691,7 @@ void GameSession::RestartLevel()
 	if (originalZone != NULL)
 	{
 		ActivateZone(originalZone, true);
-		keyMarker->SetStartKeysZone(originalZone);
+		//keyMarker->SetStartKeysZone(originalZone);
 	}
 	//	originalZone->active = true;
 	//
@@ -9715,7 +9716,8 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 
 void GameSession::CollectKey()
 {
-	keyMarker->CollectKey();
+	GetPlayer(0)->numKeysHeld++;
+	//keyMarker->CollectKey();
 }
 
 void GameSession::FreezePlayerAndEnemies( bool freeze)
@@ -10001,8 +10003,8 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 
 	if (!instant)
 	{
-		int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);
-		ActivateSound(gameSoundBuffers[soundIndex]);
+		//int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);
+		//ActivateSound(gameSoundBuffers[soundIndex]);
 	}
 }
 

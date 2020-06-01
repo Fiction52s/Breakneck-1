@@ -233,7 +233,7 @@ struct Actor : QuadTreeCollider,
 	};
 
 	
-
+	int numKeysHeld;
 
 	
 	void SetupActionFunctions();
@@ -242,6 +242,9 @@ struct Actor : QuadTreeCollider,
 	void ChangeAction();
 	void UpdateAction();
 	void UpdateActionSprite();
+
+	void HandleTouchedGate();
+	//void TransferZones(
 	
 
 	bool canStandUp;
@@ -574,7 +577,6 @@ struct Actor : QuadTreeCollider,
 	void UpdatePrePhysics();
 	void ApplyHit( HitboxInfo *info );
 	bool ResolvePhysics( sf::Vector2<double> vel );
-	bool CaptureMonitor( Monitor *m );
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool TryGroundAttack();
@@ -1274,15 +1276,10 @@ struct Actor : QuadTreeCollider,
 	bool startHasPowerLeftWire;
 	bool startHasPowerRightWire;
 
-
 	int lastWire;
 
 	//unstored while working on
-	bool dead;	
-
-	//dummy key at 0 for GREY
-	//int hasKey[Gate::GateType::Count];
-	int numKeys;
+	bool dead;
 	
 
 	int framesSinceClimbBoost;

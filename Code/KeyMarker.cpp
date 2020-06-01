@@ -95,7 +95,7 @@ void KeyMarker::CollectKey()
 
 void KeyMarker::SetStartKeysZone(Zone *z)
 {
-	SetStartKeys(z->requiredKeys, z->totalStartingKeys);
+	//SetStartKeys(z->requiredKeys, z->totalStartingKeys);
 }
 
 void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )

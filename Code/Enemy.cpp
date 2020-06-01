@@ -1221,7 +1221,7 @@ void Enemy::ProcessHit()
 		{
 			if (hasMonitor && !suppressMonitor )
 			{
-				sess->CollectKey();
+				//sess->CollectKey();
 			}
 
 			sess->PlayerConfirmEnemyKill(this);
@@ -1299,7 +1299,7 @@ void Enemy::ConfirmKill()
 	
 	if (hasMonitor && !suppressMonitor)
 	{
-		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::ENERGY,
+		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
 			sess->GetPlayer(0), 1, GetPosition());
 		
 	}

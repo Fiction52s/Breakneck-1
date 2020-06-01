@@ -327,7 +327,7 @@ bool Gate::CanSoften()
 	}
 
 	Zone *currZone = owner->currentZone;
-	bool enoughKeys = (owner->keyMarker->keysRequired == 0);
+	Actor * player = owner->GetPlayer(0);
 
 	bool correctStateAndZones = gState == HARD && (currZone == NULL
 		|| (currZone == zoneA || currZone == zoneB));
@@ -340,7 +340,7 @@ bool Gate::CanSoften()
 		{
 		case KEY:
 		{
-			if ((owner->keyMarker->keysRequired == 0))
+			if ((player->numKeysHeld >= numToOpen))
 				okayToSoften = true;
 			break;
 		}

@@ -649,7 +649,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 
 	EnvPlant *activeEnvPlants;
-	int totalGameFrames;
+	//int totalGameFrames;
 	int totalFramesBeforeGoal;	
 	
 	

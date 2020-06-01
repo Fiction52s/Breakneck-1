@@ -1174,7 +1174,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	{
 	SetupActionFunctions();
 
-
+	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
 
 	usingAura = false;
@@ -1417,8 +1417,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	lastWire = 0;
 	inBubble = false;
 	oldInBubble = false;
-
-	numKeys = 0;
 		
 		
 
@@ -2792,6 +2790,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	numKeysHeld = 0;
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	autoRunStopEdge = NULL;
@@ -9706,6 +9705,151 @@ bool Actor::TryGroundAttack()
 	//}
 }
 
+void Actor::HandleTouchedGate()
+{
+	Edge *edge = gateTouched;
+	Gate *g = (Gate*)gateTouched->info;
+
+
+	V2d A(b.globalPosition.x - b.rw, b.globalPosition.y - b.rh);
+	V2d B(b.globalPosition.x + b.rw, b.globalPosition.y - b.rh);
+	V2d C(b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
+	V2d D(b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
+	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
+	double ang = atan2(nEdge.x, -nEdge.y);
+
+	double crossA = dot(A - edge->v0, nEdge);
+	double crossB = dot(B - edge->v0, nEdge);
+	double crossC = dot(C - edge->v0, nEdge);
+	double crossD = dot(D - edge->v0, nEdge);
+
+	//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
+	double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
+	alongAmount /= length(edge->v1 - edge->v0);
+	alongAmount = 1.0 - alongAmount;
+	V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
+
+	double thresh = .01;
+	bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
+
+
+	g->SetLocked(true);
+
+	if (grindEdge != NULL)
+	{
+		Edge *otherEdge;
+		if (edge == g->edgeA)
+			otherEdge = g->edgeB;
+		else
+			otherEdge = g->edgeA;
+
+		if (grindEdge == edge->edge0 || grindEdge == edge->edge1)
+		{
+			//this could be flawed. needs more testing
+
+			activate = true;
+		}
+	}
+
+	g->SetLocked(false);
+
+	if (activate)
+	{
+
+		RelEffectInstance params;
+		Transform tr = sf::Transform::Identity;
+		int s = 1;
+		if (!facingRight)
+		{
+			tr.scale(Vector2f(-s, s));
+		}
+		else
+		{
+			tr.scale(Vector2f(s, s));
+		}
+		params.SetParams(Vector2f(0, 0), tr, 8, 2, 0, &spriteCenter);
+		//fair should be 25 but meh
+
+		gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
+
+		//lock all the gates from this zone now that I chose one
+
+		if (g->IsZoneType())
+		{
+
+			owner->SuppressEnemyKeys(g);
+
+			Zone *oldZone;
+			Zone *newZone;
+			if (edge == g->edgeA)
+			{
+				oldZone = g->zoneB;
+				newZone = g->zoneA;
+			}
+			else
+			{
+				oldZone = g->zoneA;
+				newZone = g->zoneB;
+			}
+
+			if (!g->IsTwoWay()) //for secret gates
+			{
+				if (oldZone != NULL && oldZone->active)
+				{
+					oldZone->ReformAllGates(g);
+				}
+
+				//owner->keyMarker->SetStartKeysZone(newZone);
+			}
+
+			owner->ActivateZone(newZone);
+
+		}
+
+		if (g->IsReformingType())
+		{
+			owner->LockGate(g);
+
+			g->gState = Gate::REFORM;
+			g->frame = 0;
+			float aa = alongAmount;
+			g->centerShader.setUniform("breakPosQuant", aa);
+		}
+		else
+		{
+			g->gState = Gate::DISSOLVE;
+			g->frame = 0;
+			float aa = alongAmount;
+			g->centerShader.setUniform("breakPosQuant", aa);
+		}
+
+		V2d gEnterPos = alongPos + nEdge;// *32.0;
+
+		//this gets rid of any keys that are still around, instead of
+		//letting the player collect them after going through the door
+
+		owner->absorbDarkParticles->KillAllActive();
+
+		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			ts_fx_gateEnter, gEnterPos, false, ang, 8, 3, true);
+
+		//set gate action to disperse
+		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
+		//it only enters this state if you already unlock it though
+		gateTouched = NULL;
+	}
+	else if (crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0)
+	{
+		gateTouched = NULL;
+		owner->LockGate(g);
+		//cout << "went back" << endl;
+	}
+	else
+	{
+		//cout << "not clear" << endl;
+	}
+}
+
 void Actor::PhysicsResponse()
 {
 	V2d gn;
@@ -9887,6 +10031,7 @@ void Actor::PhysicsResponse()
 				//velocity = V2d( 0, 0 );
 				leaveGround = true;
 				ground = NULL;
+				reversed = false;
 				//return;
 
 			}
@@ -10195,174 +10340,12 @@ void Actor::PhysicsResponse()
 		}
 	}
 
-	//rightWire->UpdateAnchors(V2d( 0, 0 ));
-	//leftWire->UpdateAnchors(V2d( 0, 0 ));
-
 	UpdateHitboxes();
 
-	if( grindEdge != NULL )
-	{
-		//cout << "blah grind: " << grindEdge << endl;
-	}
 	if( gateTouched != NULL )
 	{
-		Edge *edge = gateTouched;
-		Gate *g = (Gate*)gateTouched->info;
-
-
-		V2d A( b.globalPosition.x - b.rw, b.globalPosition.y - b.rh );
-		V2d B( b.globalPosition.x + b.rw, b.globalPosition.y - b.rh );
-		V2d C( b.globalPosition.x + b.rw, b.globalPosition.y + b.rh );
-		V2d D( b.globalPosition.x - b.rw, b.globalPosition.y + b.rh );
-		V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
-		double ang = atan2(nEdge.x, -nEdge.y);
-
-		double crossA = dot( A - edge->v0, nEdge );
-		double crossB = dot( B - edge->v0, nEdge );
-		double crossC = dot( C - edge->v0, nEdge );
-		double crossD = dot( D - edge->v0, nEdge );
-
-		//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
-		double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
-		alongAmount /= length(edge->v1 - edge->v0);
-		alongAmount = 1.0 - alongAmount;
-		V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
-
-		double thresh = .01;
-		bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
-		 
-
-		g->SetLocked( true );
-
-		if( grindEdge != NULL )
-		{
-			Edge *otherEdge;
-			if( edge == g->edgeA )
-				otherEdge = g->edgeB;
-			else
-				otherEdge = g->edgeA;
-
-			/*cout << "grindEdge: " << grindEdge << ", e1: " << grindEdge->edge1
-				<<", e0: : " << grindEdge->edge0 << endl;
-			cout << "edge: " << edge << ", edge1: " << edge->edge1 << ", edge0: "
-				<< edge->edge0 << endl;
-			cout << "other: " << otherEdge << ", oth1: :" << otherEdge->edge1 << ", oth0: " << otherEdge->edge0 << endl;*/
-			if( grindEdge == edge->edge0 || grindEdge == edge->edge1 )
-			{
-				//this could be flawed. needs more testing
-
-				activate = true;
-			}
-		}
-
-		if( ground != NULL 
-			&& ground != gateTouched 
-			&& ( ( groundSpeed > 0 && ground->edge0 == gateTouched )
-			|| ( groundSpeed < 0 && ground->edge1 == gateTouched ) ) )
-		{
-			//glitch here because you are actually grounded ON the gate, so this doesnt work out.
-			//activate = true;
-		}
-		else
-		{
-			//cout << "groundSpeed: " << groundSpeed << ", " << 
-		}
-		g->SetLocked( false );
-
-		if( activate )
-		{
-
-			RelEffectInstance params;
-			Transform tr = sf::Transform::Identity;
-			int s = 1;
-			if (!facingRight)
-			{
-				tr.scale(Vector2f(-s, s));
-			}
-			else
-			{
-				tr.scale(Vector2f(s, s));
-			}
-			params.SetParams(Vector2f(0, 0), tr, 8, 2, 0, &spriteCenter);
-			//fair should be 25 but meh
-
-			gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
-
-			//lock all the gates from this zone now that I chose one
-			
-			if (g->IsZoneType())
-			{
-
-				owner->SuppressEnemyKeys(g);
-
-				Zone *oldZone;
-				Zone *newZone;
-				if (edge == g->edgeA)
-				{
-					oldZone = g->zoneB;
-					newZone = g->zoneA;
-				}
-				else
-				{
-					oldZone = g->zoneA;
-					newZone = g->zoneB;
-				}
-
-				if (!g->IsTwoWay()) //for secret gates
-				{
-					if (oldZone != NULL && oldZone->active)
-					{
-						oldZone->ReformAllGates(g);
-					}
-
-					owner->keyMarker->SetStartKeysZone(newZone);
-				}
-
-				owner->ActivateZone(newZone);
-
-			}
-			
-			if( g->IsReformingType())
-			{
-				owner->LockGate( g );
-				
-				g->gState = Gate::REFORM;
-				g->frame = 0;
-				float aa = alongAmount;
-				g->centerShader.setUniform("breakPosQuant", aa);
-			}
-			else
-			{
-				g->gState = Gate::DISSOLVE;
-				g->frame = 0;
-				float aa = alongAmount;
-				g->centerShader.setUniform("breakPosQuant", aa);
-			}
-
-			V2d gEnterPos = alongPos + nEdge;// *32.0;
-			
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				ts_fx_gateEnter, gEnterPos, false, ang, 8, 3, true);
-
-			//set gate action to disperse
-			//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
-			//it only enters this state if you already unlock it though
-			gateTouched = NULL;
-		}
-		else if( crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0 )
-		{
-			gateTouched = NULL;
-			owner->LockGate( g );
-			//cout << "went back" << endl;
-		}
-		else
-		{
-			//cout << "not clear" << endl;
-		}
+		HandleTouchedGate();
 	}
-
-	//only for motion ghosts
-	//UpdateSprite();
 	
 	if( owner != NULL && owner->raceFight != NULL )
 	{
@@ -10387,21 +10370,6 @@ void Actor::PhysicsResponse()
 				owner->raceFight->PlayerHitByPlayer( actorIndex, target );
 		}
 	}
-
-	
-	/*if( ghostSpacingCounter == motionGhostSpacing )
-	{
-		ghostSpacingCounter = 0;
-		for( int i = maxMotionGhosts -1; i > 0; --i )
-		{
-			motionGhosts[i] = motionGhosts[i-1];
-		}
-		motionGhosts[0] = *sprite;
-	}
-	else
-	{
-		ghostSpacingCounter++;
-	}*/
 }
 
 void Actor::UpdateHitboxes()
@@ -14983,28 +14951,6 @@ void Actor::SetActionGrind()
 bool Actor::CanUnlockGate( Gate *g )
 {
 	return g->CanUnlock();
-}
-
-bool Actor::CaptureMonitor( Monitor * m )
-{
-	assert( m != NULL );
-
-	//int gType = (int)m->monitorType + 1;
-	if( numKeys == 6 )
-	{
-		cout << "ALREADY HAS SIX KEYS" << endl;
-
-		return false;
-		//return false;
-	}
-	else
-	{
-		//cout << "GIVING ME A KEY: " << (int)gType << endl;
-		//hasKey[gType]++;
-		numKeys++;
-		owner->keyMarker->CollectKey();
-		return true;
-	}
 }
 
 void Actor::SetExpr( Expr ex )

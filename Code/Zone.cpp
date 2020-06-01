@@ -28,7 +28,6 @@ Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
 	secretZone = false;
 	reexplored = false;
 	parentZone = NULL;
-	requiredKeys = 0;
 	showShadow = true;
 	tp.FixWinding();
 

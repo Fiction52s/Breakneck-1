@@ -66,8 +66,12 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 		break;
 	}
 	case DARK:
-		return Vector2f(1920 - 100, 100);//owner->keyMarker->keyNumberNeededHUD->center;
+	{
+		V2d playerPos = playerTarget->position;
+		return Vector2f(playerPos);
+		//return Vector2f(1920 - 100, 100);
 		break;
+	}
 	case SHARD:
 	{
 		V2d playerPos = playerTarget->position;
@@ -140,10 +144,13 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	}
 	case DARK:
 	{
-		startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
+		startPos = Vector2f(p_pos);
+		targetPos = Vector2f(playerTarget->position);
+		vel = normalize(Vector2f(startPos) - targetPos) * startSpeed; //away from player
+		/*startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		targetPos = GetTargetPos(DARK);
 		t = Transform::Identity;
-		vel = normalize(Vector2f(startPos) - targetPos ) * startSpeed;
+		vel = normalize(Vector2f(startPos) - targetPos ) * startSpeed;*/
 		break;
 	}
 	case SHARD:
@@ -278,6 +285,21 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	float accel = 1;
 	Vector2f targetPos = parent->GetTargetPos(parent->abType);
 	
+	if (parent->directKilled)
+	{
+		switch (parent->abType)
+		{
+		case DARK:
+		{
+			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
+			parent->owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+				tss, V2d(pos), true, 0, 6, 3, true);
+			break;
+		}
+		}
+		return false;
+	}
+
 
 	float len = length(targetPos - pos);
 	if ( lockFrame != -1 || (len < 60 && frame > 30) )
@@ -335,9 +357,9 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		case DARK:
 		{
 			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
-			parent->owner->ActivateEffect(EffectLayer::UI_FRONT,
+			parent->owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				tss, V2d(targetPos), true, 0, 6, 3, true);
-			parent->owner->keyMarker->VibrateNumbers();
+			parent->owner->CollectKey();
 			break;
 		}
 		case SHARD:
@@ -418,6 +440,8 @@ void AbsorbParticles::Update()
 		}
 		sp = tNext;
 	}
+
+	directKilled = false;
 }
 
 void AbsorbParticles::Draw(sf::RenderTarget *target)
@@ -436,8 +460,14 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 	
 }
 
+void AbsorbParticles::KillAllActive()
+{
+	directKilled = true;
+}
+
 void AbsorbParticles::Reset()
 {
+	directKilled = false;
 	while (activeList != NULL)
 	{
 		DeactivateParticle(activeList);

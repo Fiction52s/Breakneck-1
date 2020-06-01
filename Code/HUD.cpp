@@ -147,7 +147,7 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 
 	keyMarker = owner->keyMarker;
 
-	keyMarkerShowPos = keyMarker->GetPosition();
+	keyMarkerShowPos = Vector2f(0, 0);//keyMarker->GetPosition();
 	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
 	
 	/*momentumShowPos = momentumBar->GetTopLeft();
@@ -163,7 +163,7 @@ void AdventureHUD::Hide(int frames)
 		state = HIDDEN;
 		frame = 0;
 		mini->SetCenter(miniHidePos);
-		keyMarker->SetPosition(keyMarkerHidePos);
+		//keyMarker->SetPosition(keyMarkerHidePos);
 		kinMask->SetTopLeft(kinMaskHidePos);
 	}
 	else
@@ -182,7 +182,7 @@ void AdventureHUD::Show(int frames)
 		frame = 0;
 		mini->SetCenter(miniShowPos);
 		kinMask->SetTopLeft(kinMaskShowPos);
-		keyMarker->SetPosition(keyMarkerShowPos);
+		//keyMarker->SetPosition(keyMarkerShowPos);
 	}
 	else
 	{
@@ -216,7 +216,7 @@ void AdventureHUD::Update()
 			frame = 0;
 			mini->SetCenter(miniShowPos);
 			kinMask->SetTopLeft(kinMaskShowPos);
-			keyMarker->SetPosition(keyMarkerShowPos);
+			//keyMarker->SetPosition(keyMarkerShowPos);
 			//momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
@@ -228,8 +228,7 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskHidePos * (1.f - a) + a * kinMaskShowPos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
-			keyMarker->SetPosition(neededCenter);
-			//momentumBar->SetTopLeft(topLeft);
+			//keyMarker->SetPosition(neededCenter);
 		}
 		break;
 	case EXITING:
@@ -238,7 +237,7 @@ void AdventureHUD::Update()
 			state = HIDDEN;
 			frame = 0;
 			mini->SetCenter(miniHidePos);
-			keyMarker->SetPosition(keyMarkerHidePos);
+			//keyMarker->SetPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 		}
 		else
@@ -250,8 +249,7 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskShowPos * (1.f - a) + a * kinMaskHidePos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
-			keyMarker->SetPosition(neededCenter);
-			//momentumBar->SetTopLeft(topLeft);
+			//keyMarker->SetPosition(neededCenter);
 		}
 		break;
 	case HIDDEN:
@@ -271,7 +269,7 @@ void AdventureHUD::Reset()
 
 	mini->SetCenter(miniShowPos);
 	kinMask->SetTopLeft(kinMaskShowPos);
-	keyMarker->SetPosition(keyMarkerShowPos);
+	//keyMarker->SetPosition(keyMarkerShowPos);
 	//momentumBar->SetTopLeft(momentumShowPos);
 }
 
@@ -294,7 +292,10 @@ void AdventureHUD::Draw(RenderTarget *target)
 			owner->powerRing->Draw(target);
 			owner->despOrb->Draw(target);
 		}*/
-		owner->keyMarker->Draw(target);
+
+
+
+		//owner->keyMarker->Draw(target);
 		
 	}
 }

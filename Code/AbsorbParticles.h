@@ -40,6 +40,8 @@ struct AbsorbParticles
 		//Vector2f accel;
 	};
 
+	void KillAllActive();
+	bool directKilled;
 	AbsorbType abType;
 	sf::Vector2f GetTargetPos(AbsorbType ab);
 	AbsorbParticles( GameSession *owner,
