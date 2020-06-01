@@ -67,5 +67,5 @@ int Actor::RIDESHIP_GetActionLength()
 
 Tileset * Actor::RIDESHIP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("dive_64x64.png");
 }

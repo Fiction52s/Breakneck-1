@@ -245,5 +245,5 @@ int Actor::LAND2_GetActionLength()
 
 Tileset * Actor::LAND2_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("land_64x64.png");
 }

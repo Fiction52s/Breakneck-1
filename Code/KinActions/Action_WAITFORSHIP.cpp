@@ -63,10 +63,10 @@ void Actor::WAITFORSHIP_TimeDepFrameInc()
 
 int Actor::WAITFORSHIP_GetActionLength()
 {
-	return 1;
+	return 60 * 1;
 }
 
 Tileset * Actor::WAITFORSHIP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("shipjump_160x96.png");
 }

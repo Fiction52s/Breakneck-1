@@ -71,10 +71,10 @@ void Actor::EXITBOOST_TimeDepFrameInc()
 
 int Actor::EXITBOOST_GetActionLength()
 {
-	return 1;
+	return 79 * 2;
 }
 
 Tileset * Actor::EXITBOOST_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("exit_96x128.png");
 }

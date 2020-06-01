@@ -48,10 +48,10 @@ void Actor::GOALKILLWAIT_TimeDepFrameInc()
 
 int Actor::GOALKILLWAIT_GetActionLength()
 {
-	return 1;
+	return 2;
 }
 
 Tileset * Actor::GOALKILLWAIT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

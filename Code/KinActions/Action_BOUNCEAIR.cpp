@@ -162,5 +162,5 @@ int Actor::BOUNCEAIR_GetActionLength()
 
 Tileset * Actor::BOUNCEAIR_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("bounce_224x224.png");
 }

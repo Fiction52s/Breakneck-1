@@ -432,5 +432,5 @@ int Actor::GRINDATTACK_GetActionLength()
 
 Tileset * Actor::GRINDATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("grindball_64x64.png");
 }

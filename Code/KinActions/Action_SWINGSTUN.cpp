@@ -85,10 +85,10 @@ void Actor::SWINGSTUN_TimeDepFrameInc()
 
 int Actor::SWINGSTUN_GetActionLength()
 {
-	return 1;
+	return 8;
 }
 
 Tileset * Actor::SWINGSTUN_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SPRINGSTUN_GetTileset();
 }

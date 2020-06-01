@@ -48,10 +48,10 @@ void Actor::SKYDIVETOFALL_TimeDepFrameInc()
 
 int Actor::SKYDIVETOFALL_GetActionLength()
 {
-	return 1;
+	return 10 * 4;
 }
 
 Tileset * Actor::SKYDIVETOFALL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("intro_0_160x80.png");
 }

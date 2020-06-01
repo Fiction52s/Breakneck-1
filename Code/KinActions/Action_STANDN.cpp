@@ -182,10 +182,10 @@ void Actor::STANDN_TimeDepFrameInc()
 
 int Actor::STANDN_GetActionLength()
 {
-	return 1;
+	return 8 * 2;
 }
 
 Tileset * Actor::STANDN_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("standn_96x64.png");
 }

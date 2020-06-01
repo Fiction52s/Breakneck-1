@@ -570,10 +570,10 @@ void Actor::BOUNCEGROUND_TimeDepFrameInc()
 
 int Actor::BOUNCEGROUND_GetActionLength()
 {
-	return 1;
+	return 15;
 }
 
 Tileset * Actor::BOUNCEGROUND_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("bounce_224x224.png");
 }

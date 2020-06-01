@@ -302,10 +302,10 @@ void Actor::DASH_TimeDepFrameInc()
 
 int Actor::DASH_GetActionLength()
 {
-	return 1;
+	return 40;
 }
 
 Tileset * Actor::DASH_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("dash_96x48.png");
 }

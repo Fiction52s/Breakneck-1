@@ -299,10 +299,10 @@ void Actor::SPRINT_TimeDepFrameInc()
 
 int Actor::SPRINT_GetActionLength()
 {
-	return 1;
+	return 8 * 4;
 }
 
 Tileset * Actor::SPRINT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("sprint_80x48.png");
 }

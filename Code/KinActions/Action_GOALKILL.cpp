@@ -134,10 +134,15 @@ void Actor::GOALKILL_TimeDepFrameInc()
 
 int Actor::GOALKILL_GetActionLength()
 {
-	return 1;
+	return 72 * 2;
 }
 
 Tileset * Actor::GOALKILL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	tileset[GOALKILL1] = GetActionTileset("goal_w01_killb_384x256.png");
+	tileset[GOALKILL2] = GetActionTileset("goal_w01_killc_384x256.png");
+	tileset[GOALKILL3] = GetActionTileset("goal_w01_killd_384x256.png");
+	tileset[GOALKILL4] = GetActionTileset("goal_w01_kille_384x256.png");
+
+	return GetActionTileset("goal_w01_killa_384x256.png");
 }

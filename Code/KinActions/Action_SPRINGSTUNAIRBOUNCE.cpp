@@ -109,27 +109,27 @@ void Actor::SPRINGSTUNAIRBOUNCE_UpdateSprite()
 		SetAerialScorpSprite();
 }
 
-void Actor::SPRINTSTUNAIRBOUNCE_TransitionToAction(int a)
+void Actor::SPRINGSTUNAIRBOUNCE_TransitionToAction(int a)
 {
 
 }
 
-void Actor::SPRINTSTUNAIRBOUNCE_TimeIndFrameInc()
+void Actor::SPRINGSTUNAIRBOUNCE_TimeIndFrameInc()
 {
 
 }
 
-void Actor::SPRINTSTUNAIRBOUNCE_TimeDepFrameInc()
+void Actor::SPRINGSTUNAIRBOUNCE_TimeDepFrameInc()
 {
 
 }
 
-int Actor::SPRINTSTUNAIRBOUNCE_GetActionLength()
+int Actor::SPRINGSTUNAIRBOUNCE_GetActionLength()
 {
-	return 1;
+	return 30;
 }
 
-Tileset * Actor::SPRINTSTUNAIRBOUNCE_GetTileset()
+Tileset * Actor::SPRINGSTUNAIRBOUNCE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SPRINGSTUN_GetTileset();
 }

@@ -53,5 +53,5 @@ int Actor::SEQ_KINTHROWN_GetActionLength()
 
 Tileset * Actor::SEQ_KINTHROWN_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return AIRHITSTUN_GetTileset();
 }

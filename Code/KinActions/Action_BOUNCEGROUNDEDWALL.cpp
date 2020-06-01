@@ -137,10 +137,10 @@ void Actor::BOUNCEGROUNDEDWALL_TimeDepFrameInc()
 
 int Actor::BOUNCEGROUNDEDWALL_GetActionLength()
 {
-	return 1;
+	return 30;
 }
 
 Tileset * Actor::BOUNCEGROUNDEDWALL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("bounce_wall_224x224.png");
 }

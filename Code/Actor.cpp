@@ -467,18 +467,11 @@ void Actor::SetupActionTilesets()
 	string folder = "Kin/";
 
 	tileset[WALLATTACK] = sess->GetSizedTileset( folder, "wall_att_64x128.png", skin);
-	tileset[DAIR] = sess->GetSizedTileset( folder, "dair_80x80.png", skin);
-	tileset[DASH] = sess->GetSizedTileset( folder, "dash_96x48.png", skin);
-	tileset[DOUBLE] = sess->GetSizedTileset( folder, "double_64x64.png", skin);
-	tileset[BACKWARDSDOUBLE] = sess->GetSizedTileset( folder, "double_back_96x96.png", skin);
 	tileset[FAIR] = sess->GetSizedTileset( folder, "fair_80x80.png", skin);
-	tileset[DIAGUPATTACK] = sess->GetSizedTileset( folder, "airdash_attack_up_96x80.png", skin);
-	tileset[DIAGDOWNATTACK] = sess->GetSizedTileset( folder, "airdash_attack_down_64x64.png", skin);
 	tileset[JUMP] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
 	tileset[LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
 	tileset[LAND2] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
 	tileset[RUN] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
-	tileset[BRAKE] = sess->GetSizedTileset(folder, "brake_64x64.png", skin);
 	tileset[SPRINGSTUN] = sess->GetSizedTileset( folder, "launch_96x64.png", skin);
 	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
 	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
@@ -502,14 +495,8 @@ void Actor::SetupActionTilesets()
 	tileset[STEEPCLIMB] = sess->GetSizedTileset( folder, "steepclimb_96x32.png", skin);
 	tileset[GROUNDHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
 	tileset[WIREHOLD] = tileset[STEEPSLIDE];
-	tileset[BOUNCEAIR] = sess->GetSizedTileset( folder, "bounce_224x224.png", skin);
-	tileset[BOUNCEGROUND] = sess->GetSizedTileset( folder, "bounce_224x224.png", skin);
-	tileset[BOUNCEGROUNDEDWALL] = sess->GetSizedTileset( folder, "bounce_wall_224x224.png", skin);
-	tileset[DEATH] = sess->GetSizedTileset( folder, "death_128x96.png", skin);
 	tileset[JUMPSQUAT] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
 	tileset[INTRO] = sess->GetSizedTileset( folder, "enter_64x64.png", skin);
-	tileset[EXIT] = sess->GetSizedTileset( folder, "exit_64x128.png", skin);
-	tileset[EXITBOOST] = sess->GetSizedTileset( folder, "exit_96x128.png", skin);
 	tileset[INTROBOOST] = tileset[EXITBOOST];
 	tileset[EXITWAIT] = NULL;
 	tileset[GRAVREVERSE] = sess->GetSizedTileset( folder, "grav_64x64.png", skin);
@@ -518,7 +505,6 @@ void Actor::SetupActionTilesets()
 	tileset[SKYDIVETOFALL] = sess->GetSizedTileset( folder, "intro_0_160x80.png", skin);
 	tileset[WAITFORSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
 	tileset[GRABSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
-	tileset[ENTERNEXUS1] = sess->GetSizedTileset( folder, "intro_0_160x80.png", skin);
 	tileset[GETPOWER_AIRDASH_MEDITATE] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
 	tileset[GETPOWER_AIRDASH_FLIP] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
 	tileset[SEQ_LOOKUP] = sess->GetSizedTileset( folder, "kin_cover_64x64.png", skin);
@@ -2413,13 +2399,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	runBounceFlameFrames = 21 * 3;
 	actionLength[WALLATTACK] = 8 * 2;
 	actionLength[DAIR] = 16;
-	actionLength[DASH] = 40;
 	maxBBoostCount = actionLength[DASH];
-	actionLength[DOUBLE] = 28 + 10;
-	actionLength[BACKWARDSDOUBLE] = 40;//28 + 10;
 	actionLength[FAIR] = 8 * 2;
-	actionLength[DIAGUPATTACK] = 11 * 2;
-	actionLength[DIAGDOWNATTACK] = 11 * 2;
 	actionLength[JUMP] = 2;
 	actionLength[SEQ_WAIT] = 2;
 	actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
@@ -2444,7 +2425,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	actionLength[GLIDE] = 8;
 	actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
-	actionLength[DASHATTACK] = 8 * 2;
 	actionLength[STANDN] = 8 * 2;
 	actionLength[UAIR] = 16;
 	actionLength[GRINDATTACK] = 1;
@@ -2462,8 +2442,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
 	actionLength[RIDESHIP] = 1;
 	actionLength[SKYDIVE] = 9 * 2;
-	actionLength[EXIT] = 29 * 2; //16 * 7
-	actionLength[EXITBOOST] = 79 * 2;//71 * 2;
 
 	actionLength[EXITWAIT] = 6 * 3 * 2;
 	actionLength[GRAVREVERSE] = 20;
@@ -2475,13 +2453,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionLength[STEEPCLIMB] = 8 * 4;
 	actionLength[GROUNDHITSTUN] = 1;
 	actionLength[WIREHOLD] = 1;
-	actionLength[BOUNCEAIR] = 1;
-	actionLength[BOUNCEGROUND] = 15;
-	actionLength[BOUNCEGROUNDEDWALL] = 30;
-	actionLength[DEATH] = 44 * 2;
 	actionLength[GETPOWER_AIRDASH_FLIP] = 133 * 2;
-		
-	actionLength[ENTERNEXUS1] = 10 * 4;
+	
 		
 	actionLength[SPAWNWAIT] = 120;
 	actionLength[RAILDASH] = 20;

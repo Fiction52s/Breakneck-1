@@ -42,10 +42,10 @@ void Actor::SEQ_ENTERCORE1_TimeDepFrameInc()
 
 int Actor::SEQ_ENTERCORE1_GetActionLength()
 {
-	return 1;
+	return 60;
 }
 
 Tileset * Actor::SEQ_ENTERCORE1_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

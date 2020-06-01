@@ -102,5 +102,5 @@ int Actor::WALLCLING_GetActionLength()
 
 Tileset * Actor::WALLCLING_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("wallcling_64x64.png");
 }

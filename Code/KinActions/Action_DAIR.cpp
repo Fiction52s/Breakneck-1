@@ -116,10 +116,10 @@ void Actor::DAIR_TimeDepFrameInc()
 
 int Actor::DAIR_GetActionLength()
 {
-	return 1;
+	return 16;
 }
 
 Tileset * Actor::DAIR_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("dair_80x80.png");
 }

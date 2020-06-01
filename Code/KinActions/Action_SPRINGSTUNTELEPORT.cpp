@@ -71,10 +71,9 @@ void Actor::SPRINGSTUNTELEPORT_TimeDepFrameInc()
 
 int Actor::SPRINGSTUNTELEPORT_GetActionLength()
 {
-	return 1;
+	return 8;
 }
 
 Tileset * Actor::SPRINGSTUNTELEPORT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
-}
+	return SPRINGSTUN_GetTileset();

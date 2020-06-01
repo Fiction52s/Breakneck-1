@@ -48,10 +48,10 @@ void Actor::SKYDIVE_TimeDepFrameInc()
 
 int Actor::SKYDIVE_GetActionLength()
 {
-	return 1;
+	return 9 * 2;
 }
 
 Tileset * Actor::SKYDIVE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("walljump_64x64.png");
 }

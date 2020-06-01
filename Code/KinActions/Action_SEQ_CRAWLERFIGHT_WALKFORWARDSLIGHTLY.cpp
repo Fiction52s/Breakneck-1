@@ -43,10 +43,10 @@ void Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_TimeDepFrameInc()
 
 int Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetActionLength()
 {
-	return 1;
+	return 10 * 4;
 }
 
 Tileset * Actor::SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("run_64x64.png");
 }

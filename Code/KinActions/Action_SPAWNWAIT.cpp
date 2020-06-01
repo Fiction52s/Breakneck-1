@@ -42,10 +42,10 @@ void Actor::SPAWNWAIT_TimeDepFrameInc()
 
 int Actor::SPAWNWAIT_GetActionLength()
 {
-	return 1;
+	return 120;
 }
 
 Tileset * Actor::SPAWNWAIT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

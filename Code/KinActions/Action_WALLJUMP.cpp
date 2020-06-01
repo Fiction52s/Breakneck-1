@@ -95,10 +95,10 @@ void Actor::WALLJUMP_TimeDepFrameInc()
 
 int Actor::WALLJUMP_GetActionLength()
 {
-	return 1;
+	return 9 * 2;
 }
 
 Tileset * Actor::WALLJUMP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("walljump_64x64.png");
 }

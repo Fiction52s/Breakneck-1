@@ -134,10 +134,10 @@ void Actor::JUMPSQUAT_TimeDepFrameInc()
 
 int Actor::JUMPSQUAT_GetActionLength()
 {
-	return 1;
+	return 3;
 }
 
 Tileset * Actor::JUMPSQUAT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("jump_64x64.png");
 }

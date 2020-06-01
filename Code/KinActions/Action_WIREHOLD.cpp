@@ -46,5 +46,5 @@ int Actor::WIREHOLD_GetActionLength()
 
 Tileset * Actor::WIREHOLD_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return STEEPSLIDE_GetTileset();
 }

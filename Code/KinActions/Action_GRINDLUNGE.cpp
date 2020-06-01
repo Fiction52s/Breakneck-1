@@ -67,10 +67,10 @@ void Actor::GRINDLUNGE_TimeDepFrameInc()
 
 int Actor::GRINDLUNGE_GetActionLength()
 {
-	return 1;
+	return 20;
 }
 
 Tileset * Actor::GRINDLUNGE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("airdash_80x80.png");
 }

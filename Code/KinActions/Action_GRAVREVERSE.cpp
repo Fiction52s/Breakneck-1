@@ -153,10 +153,10 @@ void Actor::GRAVREVERSE_TimeDepFrameInc()
 
 int Actor::GRAVREVERSE_GetActionLength()
 {
-	return 1;
+	return 20;
 }
 
 Tileset * Actor::GRAVREVERSE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("grav_64x64.png");
 }

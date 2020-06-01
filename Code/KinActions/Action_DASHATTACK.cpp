@@ -44,10 +44,10 @@ void Actor::DASHATTACK_TimeDepFrameInc()
 
 int Actor::DASHATTACK_GetActionLength()
 {
-	return 1;
+	return 8 * 2;
 }
 
 Tileset * Actor::DASHATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

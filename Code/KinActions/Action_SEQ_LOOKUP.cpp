@@ -66,5 +66,5 @@ int Actor::SEQ_LOOKUP_GetActionLength()
 
 Tileset * Actor::SEQ_LOOKUP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("kin_cover_64x64.png");
 }

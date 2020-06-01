@@ -64,10 +64,10 @@ void Actor::SEQ_MASKOFF_TimeDepFrameInc()
 
 int Actor::SEQ_MASKOFF_GetActionLength()
 {
-	return 1;
+	return 24 * 3;
 }
 
 Tileset * Actor::SEQ_MASKOFF_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SEQ_KNEEL_GetTileset();
 }

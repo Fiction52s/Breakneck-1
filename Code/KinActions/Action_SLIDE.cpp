@@ -94,5 +94,5 @@ int Actor::SLIDE_GetActionLength()
 
 Tileset * Actor::SLIDE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("slide_64x64.png");
 }

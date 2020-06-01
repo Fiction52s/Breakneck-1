@@ -96,5 +96,5 @@ int Actor::RAILSLIDE_GetActionLength()
 
 Tileset * Actor::RAILSLIDE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

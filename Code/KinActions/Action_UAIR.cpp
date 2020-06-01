@@ -101,10 +101,10 @@ void Actor::UAIR_TimeDepFrameInc()
 
 int Actor::UAIR_GetActionLength()
 {
-	return 1;
+	return 16;
 }
 
 Tileset * Actor::UAIR_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("uair_96x96.png");
 }

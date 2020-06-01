@@ -64,10 +64,10 @@ void Actor::SEQ_KNEEL_TO_MEDITATE_TimeDepFrameInc()
 
 int Actor::SEQ_KNEEL_TO_MEDITATE_GetActionLength()
 {
-	return 1;
+	return 7 * 3;
 }
 
 Tileset * Actor::SEQ_KNEEL_TO_MEDITATE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SEQ_KNEEL_GetTileset();
 }

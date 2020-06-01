@@ -150,10 +150,10 @@ void Actor::RUN_TimeDepFrameInc()
 
 int Actor::RUN_GetActionLength()
 {
-	return 1;
+	return 10 * 4;
 }
 
 Tileset * Actor::RUN_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("run_64x64.png");
 }

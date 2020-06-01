@@ -169,10 +169,10 @@ void Actor::STEEPCLIMBATTACK_TimeDepFrameInc()
 
 int Actor::STEEPCLIMBATTACK_GetActionLength()
 {
-	return 1;
+	return 4 * 4;
 }
 
 Tileset * Actor::STEEPCLIMBATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("climb_att_128x64.png");
 }

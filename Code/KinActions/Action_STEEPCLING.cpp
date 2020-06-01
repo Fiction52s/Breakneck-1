@@ -45,5 +45,5 @@ int Actor::STEEPCLING_GetActionLength()
 
 Tileset * Actor::STEEPCLING_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

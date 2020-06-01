@@ -45,5 +45,5 @@ int Actor::SEQ_LOOKUPDISAPPEAR_GetActionLength()
 
 Tileset * Actor::SEQ_LOOKUPDISAPPEAR_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

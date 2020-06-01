@@ -52,10 +52,10 @@ void Actor::SEQ_FADE_INTO_NEXUS_TimeDepFrameInc()
 
 int Actor::SEQ_FADE_INTO_NEXUS_GetActionLength()
 {
-	return 1;
+	return 8 * 10;
 }
 
 Tileset * Actor::SEQ_FADE_INTO_NEXUS_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset();
 }

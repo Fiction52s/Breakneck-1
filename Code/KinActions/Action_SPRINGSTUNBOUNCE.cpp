@@ -128,10 +128,10 @@ void Actor::SPRINGSTUNBOUNCE_TimeDepFrameInc()
 
 int Actor::SPRINGSTUNBOUNCE_GetActionLength()
 {
-	return 1;
+	return 8;
 }
 
 Tileset * Actor::SPRINGSTUNBOUNCE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return SPRINGSTUN_GetTileset();
 }

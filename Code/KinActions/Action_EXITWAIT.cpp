@@ -40,10 +40,10 @@ void Actor::EXITWAIT_TimeDepFrameInc()
 
 int Actor::EXITWAIT_GetActionLength()
 {
-	return 1;
+	return 6 * 3 * 2;
 }
 
 Tileset * Actor::EXITWAIT_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

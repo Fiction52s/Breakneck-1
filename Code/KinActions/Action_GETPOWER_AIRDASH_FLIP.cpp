@@ -66,10 +66,10 @@ void Actor::GETPOWER_AIRDASH_FLIP_TimeDepFrameInc()
 
 int Actor::GETPOWER_AIRDASH_FLIP_GetActionLength()
 {
-	return 1;
+	return 133 * 2;
 }
 
 Tileset * Actor::GETPOWER_AIRDASH_FLIP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("w1_airdashget_128x128.png");
 }

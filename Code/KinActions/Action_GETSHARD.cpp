@@ -57,10 +57,10 @@ void Actor::GETSHARD_TimeDepFrameInc()
 
 int Actor::GETSHARD_GetActionLength()
 {
-	return 1;
+	return 2;
 }
 
 Tileset * Actor::GETSHARD_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return DEATH_GetTileset();
 }

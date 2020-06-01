@@ -62,10 +62,10 @@ void Actor::GETPOWER_AIRDASH_MEDITATE_TimeDepFrameInc()
 
 int Actor::GETPOWER_AIRDASH_MEDITATE_GetActionLength()
 {
-	return 1;
+	return 300;
 }
 
 Tileset * Actor::GETPOWER_AIRDASH_MEDITATE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("w1_airdashget_128x128.png");
 }

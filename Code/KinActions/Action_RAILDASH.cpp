@@ -51,10 +51,10 @@ void Actor::RAILDASH_TimeDepFrameInc()
 
 int Actor::RAILDASH_GetActionLength()
 {
-	return 1;
+	return 20;
 }
 
 Tileset * Actor::RAILDASH_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

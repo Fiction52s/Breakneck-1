@@ -42,10 +42,10 @@ void Actor::SEQ_KINSTAND_TimeDepFrameInc()
 
 int Actor::SEQ_KINSTAND_GetActionLength()
 {
-	return 1;
+	return STAND_GetActionLength();
 }
 
 Tileset * Actor::SEQ_KINSTAND_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

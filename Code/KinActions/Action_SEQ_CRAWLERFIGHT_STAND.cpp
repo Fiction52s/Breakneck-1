@@ -42,10 +42,10 @@ void Actor::SEQ_CRAWLERFIGHT_STAND_TimeDepFrameInc()
 
 int Actor::SEQ_CRAWLERFIGHT_STAND_GetActionLength()
 {
-	return 1;
+	return 20 * 8;
 }
 
 Tileset * Actor::SEQ_CRAWLERFIGHT_STAND_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("stand_64x64.png");
 }

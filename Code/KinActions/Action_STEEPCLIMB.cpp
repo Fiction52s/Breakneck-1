@@ -250,10 +250,10 @@ void Actor::STEEPCLIMB_TimeDepFrameInc()
 
 int Actor::STEEPCLIMB_GetActionLength()
 {
-	return 1;
+	return 8 * 4;
 }
 
 Tileset * Actor::STEEPCLIMB_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("steepclimb_96x32.png");
 }

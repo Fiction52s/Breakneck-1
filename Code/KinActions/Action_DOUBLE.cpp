@@ -89,10 +89,10 @@ void Actor::DOUBLE_TimeDepFrameInc()
 
 int Actor::DOUBLE_GetActionLength()
 {
-	return 1;
+	return 28 + 10;
 }
 
 Tileset * Actor::DOUBLE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("double_64x64.png");
 }

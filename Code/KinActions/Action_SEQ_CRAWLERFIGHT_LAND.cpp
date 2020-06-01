@@ -48,5 +48,5 @@ int Actor::SEQ_CRAWLERFIGHT_LAND_GetActionLength()
 
 Tileset * Actor::SEQ_CRAWLERFIGHT_LAND_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("land_64x64.png");
 }

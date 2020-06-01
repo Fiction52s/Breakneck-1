@@ -103,10 +103,10 @@ void Actor::FAIR_TimeDepFrameInc()
 
 int Actor::FAIR_GetActionLength()
 {
-	return 1;
+	return 8 * 2;
 }
 
 Tileset * Actor::FAIR_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("fair_80x80.png");
 }

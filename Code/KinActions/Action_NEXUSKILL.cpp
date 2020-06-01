@@ -47,10 +47,10 @@ void Actor::NEXUSKILL_TimeDepFrameInc()
 
 int Actor::NEXUSKILL_GetActionLength()
 {
-	return 1;
+	return 63 * 2;
 }
 
 Tileset * Actor::NEXUSKILL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

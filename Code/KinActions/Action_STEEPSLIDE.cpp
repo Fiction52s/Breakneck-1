@@ -222,5 +222,5 @@ int Actor::STEEPSLIDE_GetActionLength()
 
 Tileset * Actor::STEEPSLIDE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("steepslide_64x64.png");
 }

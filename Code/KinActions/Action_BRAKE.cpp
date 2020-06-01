@@ -78,5 +78,5 @@ int Actor::BRAKE_GetActionLength()
 
 Tileset * Actor::BRAKE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("brake_64x64.png");
 }

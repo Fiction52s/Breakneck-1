@@ -50,10 +50,10 @@ void Actor::SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc()
 
 int Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength()
 {
-	return 1;
+	return 3 * 10;
 }
 
 Tileset * Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("nexus_enter_384x256.png");
 }

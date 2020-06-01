@@ -108,10 +108,10 @@ void Actor::DIAGUPATTACK_TimeDepFrameInc()
 
 int Actor::DIAGUPATTACK_GetActionLength()
 {
-	return 1;
+	return 11 * 2;
 }
 
 Tileset * Actor::DIAGUPATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("airdash_attack_up_96x80.png");
 }

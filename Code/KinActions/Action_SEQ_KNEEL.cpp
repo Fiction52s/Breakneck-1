@@ -66,5 +66,5 @@ int Actor::SEQ_KNEEL_GetActionLength()
 
 Tileset * Actor::SEQ_KNEEL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("kin_meditate_64x96.png");
 }

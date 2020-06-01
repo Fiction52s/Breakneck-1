@@ -47,5 +47,5 @@ int Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetActionLength()
 
 Tileset * Actor::SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("slide_64x64.png");
 }

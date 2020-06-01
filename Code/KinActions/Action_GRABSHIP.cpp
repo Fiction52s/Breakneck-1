@@ -52,10 +52,10 @@ void Actor::GRABSHIP_TimeDepFrameInc()
 
 int Actor::GRABSHIP_GetActionLength()
 {
-	return 1;
+	return 10 * 5 + 20;
 }
 
 Tileset * Actor::GRABSHIP_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("shipjump_160x96.png");
 }

@@ -97,10 +97,10 @@ void Actor::GRINDSLASH_TimeDepFrameInc()
 
 int Actor::GRINDSLASH_GetActionLength()
 {
-	return 1;
+	return 16;
 }
 
 Tileset * Actor::GRINDSLASH_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("grind_lunge_96x128.png");
 }

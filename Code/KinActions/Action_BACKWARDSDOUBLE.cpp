@@ -84,10 +84,10 @@ void Actor::BACKWARDSDOUBLE_TimeDepFrameInc()
 
 int Actor::BACKWARDSDOUBLE_GetActionLength()
 {
-	return 1;
+	return 40;
 }
 
 Tileset * Actor::BACKWARDSDOUBLE_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("double_back_96x96.png");
 }

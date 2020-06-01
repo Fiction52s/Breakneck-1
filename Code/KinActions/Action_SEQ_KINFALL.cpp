@@ -47,5 +47,5 @@ int Actor::SEQ_KINFALL_GetActionLength()
 
 Tileset * Actor::SEQ_KINFALL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return NULL;
 }

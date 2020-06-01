@@ -57,10 +57,10 @@ void Actor::INTRO_TimeDepFrameInc()
 
 int Actor::INTRO_GetActionLength()
 {
-	return 1;
+	return 18 * 2;
 }
 
 Tileset * Actor::INTRO_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("enter_64x64.png");
 }

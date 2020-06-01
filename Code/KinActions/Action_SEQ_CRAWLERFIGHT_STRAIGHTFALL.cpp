@@ -42,10 +42,10 @@ void Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_TimeDepFrameInc()
 
 int Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetActionLength()
 {
-	return 1;
+	return 2;
 }
 
 Tileset * Actor::SEQ_CRAWLERFIGHT_STRAIGHTFALL_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("jump_64x64.png");
 }

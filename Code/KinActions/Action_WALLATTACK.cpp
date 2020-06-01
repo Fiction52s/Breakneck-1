@@ -141,10 +141,10 @@ void Actor::WALLATTACK_TimeDepFrameInc()
 
 int Actor::WALLATTACK_GetActionLength()
 {
-	return 1;
+	return 8 * 2;
 }
 
 Tileset * Actor::WALLATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("wall_att_64x128.png");
 }

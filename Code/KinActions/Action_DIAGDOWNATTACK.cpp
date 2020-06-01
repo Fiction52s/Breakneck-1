@@ -111,10 +111,10 @@ void Actor::DIAGDOWNATTACK_TimeDepFrameInc()
 
 int Actor::DIAGDOWNATTACK_GetActionLength()
 {
-	return 1;
+	return 11 * 2;
 }
 
 Tileset * Actor::DIAGDOWNATTACK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("airdash_attack_down_64x64.png");
 }

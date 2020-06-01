@@ -47,10 +47,10 @@ void Actor::DEATH_TimeDepFrameInc()
 
 int Actor::DEATH_GetActionLength()
 {
-	return 1;
+	return 44 * 2;
 }
 
 Tileset * Actor::DEATH_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("death_128x96.png");
 }
