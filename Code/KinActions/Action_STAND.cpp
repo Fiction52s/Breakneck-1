@@ -1,10 +1,13 @@
 #include "Actor.h"
+#include "Editsession.h" //testing
+#include "GateMarker.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::STAND_Start()
 {
+	framesStanding = 0;
 }
 
 void Actor::STAND_End()
@@ -20,6 +23,14 @@ void Actor::STAND_Change()
 void Actor::STAND_Update()
 {
 	groundSpeed = 0;
+
+	if (framesStanding == 120)
+	{
+		if (editOwner != NULL)
+		{
+			editOwner->testGateMarker->FadeIn();
+		}
+	}
 }
 
 void Actor::STAND_UpdateSprite()

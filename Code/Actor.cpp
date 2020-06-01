@@ -577,6 +577,11 @@ void Actor::SetupActionFunctions()
 	changeActionFuncs.resize(Count);
 	updateActionFuncs.resize(Count);
 	updateSpriteFuncs.resize(Count);
+	transitionFuncs.resize(Count);
+	timeIndFrameIncFuncs.resize(Count);
+	timeDepFrameIncFuncs.resize(Count);
+	getActionLengthFuncs.resize(Count);
+	setTilesetFuncs.resize(Count);
 
 	startActionFuncs	[AIRDASH] =	&Actor::AIRDASH_Start;
 	endActionFuncs		[AIRDASH] =	&Actor::AIRDASH_End;
@@ -2844,6 +2849,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	framesStanding = 0;
 	keyExplodeRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
@@ -11348,6 +11354,11 @@ void Actor::UpdatePostPhysics()
 	UpdateDashBooster();
 
 	SlowDependentFrameIncrement();
+
+	if (action == STAND)
+	{
+		++framesStanding;
+	}
 
 	if (framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 	{

@@ -32,6 +32,8 @@
 #include "ItemSelector.h"
 #include "EnemyChain.h"
 
+#include "GateMarker.h"
+
 using namespace std;
 using namespace sf;
 
@@ -2624,8 +2626,6 @@ int EditSession::Run()
 
 	players[0] = new Actor(NULL, this, 0);
 	
-	
-
 	oldShaderZoom = -1;
 	complexPaste = NULL;
 
@@ -2806,17 +2806,7 @@ int EditSession::Run()
 	returnVal = 0;
 	Color testColor( 0x75, 0x70, 0x90 );
 
-	//view = View( cameraPos, cameraSize );
-	//if( cameraSize.x == 0 && cameraSize.y == 0 )
-	//	view.setSize( 1920, 1080 );
-
 	preScreenTex->setView( view );
-
-	//recentEnemies.reserve(MAX_RECENT_ENEMIES);
-	/*for (int i = 0; i < MAX_RECENT_ENEMIES; ++i)
-	{
-		recentEnemies.push_back(make_pair((ActorType*)NULL, 0));
-	}*/
 
 	ReadDecorImagesFile();
 
@@ -2916,6 +2906,7 @@ int EditSession::Run()
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
 	
+	testGateMarker = new GateMarker();
 	
 
 	//bool s = IsKeyPressed( sf::Keyboard::T );
@@ -11548,6 +11539,13 @@ void EditSession::DrawUI()
 	}
 
 	generalUI->Draw(preScreenTex);
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		testGateMarker->Update(view, (*it));
+	}
+
+	testGateMarker->Draw(preScreenTex);
 }
 
 void EditSession::Display()

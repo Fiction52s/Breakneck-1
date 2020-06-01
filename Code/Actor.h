@@ -256,6 +256,12 @@ struct Actor : QuadTreeCollider,
 	std::vector<void(Actor::*)()> changeActionFuncs;
 	std::vector<void(Actor::*)()> updateActionFuncs;
 	std::vector<void(Actor::*)()> updateSpriteFuncs;
+	std::vector<void(Actor::*)()> transitionFuncs;
+	std::vector<void(Actor::*)()> timeIndFrameIncFuncs;
+	std::vector<void(Actor::*)()> timeDepFrameIncFuncs;
+	std::vector<void(Actor::*)()> getActionLengthFuncs;
+	std::vector<void(Actor::*)()> setTilesetFuncs;
+
 
 	void SetupDrain();
 	void SetupTimeBubbles();
@@ -502,6 +508,8 @@ struct Actor : QuadTreeCollider,
 	
 	bool TryAirDash();
 	bool TryGlide();
+
+	int framesStanding;
 
 	int framesSinceRightWireBoost;
 	int singleWireBoostTiming;

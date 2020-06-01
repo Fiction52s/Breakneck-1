@@ -68,6 +68,8 @@
 #include "HitboxManager.h"
 #include "EditorRail.h"
 
+#include "GateMarker.h"
+
 
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
@@ -4715,8 +4717,6 @@ bool GameSession::Load()
 		
 	}*/
 
-	
-
 	cout << "done loading" << endl;
 
 	if (progressDisplay != NULL)
@@ -7377,7 +7377,6 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
-
 	inversePoly = NULL;
 
 	drain = true;

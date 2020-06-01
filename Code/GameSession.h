@@ -25,6 +25,8 @@
 
 #include "Session.h"
 
+struct GateMarker;
+
 struct Actor;
 struct ComboObject;
 
@@ -650,7 +652,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	EnvPlant *activeEnvPlants;
 	//int totalGameFrames;
-	int totalFramesBeforeGoal;	
+	int totalFramesBeforeGoal;
 	
 	
 	int GetPlayerTeamIndex(int index = 0);
@@ -663,7 +665,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool PlayerIsMovingLeft(int index = 0);
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
-	
 	
 	
 	

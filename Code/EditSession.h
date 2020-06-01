@@ -25,7 +25,7 @@
 #include "PositionInfo.h"
 //#include "ActorParamsBase.h"
 //#include "EditorRail.h"
-
+struct GateMarker;
 
 struct FrameWaiter;
 struct TransformTools;
@@ -680,7 +680,8 @@ struct EditSession : GUIHandler, Session
 
 	EditorGraph *graph;
 
-
+	
+	GateMarker *testGateMarker;
 
 	void DrawPolygons();
 	void DrawRails();
