@@ -10896,7 +10896,7 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 	V2d groundP = e->GetPosition(edgeQuantity);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
+	sprite->setRotation(angle / PI * 180);ite  
 
 	double factor = 1.0 - abs((angle / (PI / 6)));
 	cout << "factor: " << factor << "angle: " << angle << endl;

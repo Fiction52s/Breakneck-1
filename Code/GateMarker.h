@@ -6,6 +6,23 @@
 
 struct GateInfo;
 struct Tileset;
+struct Gate;
+struct GateMarker;
+struct Zone;
+
+struct GateMarkerGroup
+{
+	GateMarkerGroup(int maxGates);
+	~GateMarkerGroup();
+	void SetToZone(Zone *z);
+	void Update(sf::View &v);
+	void Draw(sf::RenderTarget *target);
+	sf::Vertex *allQuads;
+	Tileset *ts_gateMarker;
+	sf::Font *font;
+	int fadeInFrames;
+	int fadeOutFrames;
+};
 
 struct GateMarker
 {
@@ -16,7 +33,7 @@ struct GateMarker
 		SHOW,
 		FADEOUT,
 	};
-
+	GateMarker(GateMarkerGroup *g, sf::Vertex *p_quad);
 	void FadeIn();
 	void FadeOut();
 	void Reset();
@@ -24,19 +41,20 @@ struct GateMarker
 	int frame;
 	int fadeInFrames;
 	int fadeOutFrames;
-	sf::Vertex quad[4];
-	GateMarker();
-	void Update(sf::View &v,
-		GateInfo *gi);
+	sf::Vertex *quad;
+	
+	void SetGate(Gate *g);
+	void Update(sf::View &v );
 	void SetGatePos(V2d pos);
 	//bool show;
 	//void SetType(int type, int num);
 	void Draw(sf::RenderTarget *target);
-	Tileset *ts_gateMarker;
 	sf::CircleShape cs;
 	sf::Text numText;
 
 	GateInfo *currInfo;
+	Gate *currGate;
+	GateMarkerGroup *group;
 };
 
 #endif

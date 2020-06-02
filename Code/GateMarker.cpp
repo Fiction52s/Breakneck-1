@@ -9,23 +9,26 @@
 using namespace sf;
 using namespace std;
 
-GateMarker::GateMarker()
+GateMarker::GateMarker( GateMarkerGroup *g, sf::Vertex *p_quad)
 {
-	SetRectColor(quad, Color::Green);
-	fadeInFrames = 60;
-	fadeOutFrames = 60;
-	Reset();
+	group = g;
+	quad = p_quad;
 
-	Session *sess = Session::GetSession();
 
+	
 	numText.setFillColor(Color::Black);
-	numText.setCharacterSize(20);
-	numText.setFont(sess->mainMenu->arial);
+	numText.setCharacterSize(32);
+	numText.setFont(*group->font);
+
+
+	SetRectColor(quad, Color::Green);
+	group->ts_gateMarker->SetQuadSubRect(quad, 0);
 
 	currInfo = NULL;
 
-	ts_gateMarker = sess->GetSizedTileset("HUD/gatemarker_100x30.png");
-	ts_gateMarker->SetQuadSubRect(quad, 0);
+	currGate = NULL;
+
+	Reset();
 }
 
 void GateMarker::Reset()
@@ -46,42 +49,33 @@ void GateMarker::FadeOut()
 	frame = 0;
 }
 
-//void GateMarker::Show()
-//{
-//
-//}
-//void GateMarker::Hide()
-//{
-//
-//}
-
-void GateMarker::Update(sf::View &v,
-	GateInfo *gi)
+void GateMarker::SetGate(Gate *g)
 {
-	if (gi != currInfo)
-	{
-		currInfo = gi;
-		numText.setString(to_string(gi->numToOpen));
-		auto bounds = numText.getLocalBounds();
-		numText.setOrigin( bounds.left + bounds.width / 2, 
-			bounds.top + bounds.height / 2);
-	}
-		
+	currGate = g;
+	numText.setString(to_string(g->numToOpen));
+	auto bounds = numText.getLocalBounds();
+	numText.setOrigin(bounds.left + bounds.width / 2,
+		bounds.top + bounds.height / 2);
+}
+
+void GateMarker::Update(sf::View &v )
+{		
 	if (state == HIDE)
 		return;
 
 	switch (state)
 	{
 	case FADEIN:
-		if (frame == fadeInFrames)
+		if (frame == group->fadeInFrames)
 		{
 			state = SHOW;
 		}
 		break;
 	case FADEOUT:
-		if (frame == fadeOutFrames)
+		if (frame == group->fadeOutFrames)
 		{
 			state = HIDE;
+			ClearRect(quad);
 			return;
 		}
 	}
@@ -111,26 +105,24 @@ void GateMarker::Update(sf::View &v,
 	textColor.a = alpha;
 	numText.setFillColor(textColor);
 
-	sf::FloatRect aabb(gi->GetAABB());
-
 	Vector2f size = v.getSize();
 	Vector2f vCenter = v.getCenter();
 	sf::FloatRect vRect(vCenter.x - size.x / 2, vCenter.y - size.y / 2, size.x, size.y);
 
-	/*if (vRect.intersects(aabb) )
-	{
-		show = false;
-		return;
-	}*/
-
-	//sf::FloatRect vAABB( v.)
-
-	V2d center(gi->point0->pos + gi->point1->pos);
+	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
 	center = center / 2.0;
-	V2d pos = center - V2d(v.getCenter());
-	SetGatePos(pos);
+
+	if (vRect.contains( Vector2f( center ) ) )
+	{
+		state = HIDE;
+		frame = 0;
+		ClearRect(quad);
+		return;
+	}
 
 	
+	V2d pos = center - V2d(v.getCenter());
+	SetGatePos(pos);
 
 	++frame;
 
@@ -188,7 +180,40 @@ void GateMarker::Draw(sf::RenderTarget *target)
 {
 	if (state != HIDE)
 	{
-		target->draw(quad, 4, sf::Quads, ts_gateMarker->texture);
+		//target->draw(quad, 4, sf::Quads, ts_gateMarker->texture);
 		target->draw(numText);
 	}
+}
+
+
+GateMarkerGroup::GateMarkerGroup(int maxGates)
+{
+	allQuads = new Vertex[maxGates * 4];
+
+	Session *sess = Session::GetSession();
+
+	ts_gateMarker = sess->GetSizedTileset("HUD/gatemarker_100x30.png");
+	font = &sess->mainMenu->arial;
+	fadeInFrames = 60;
+	fadeOutFrames = 60;
+}
+
+GateMarkerGroup::~GateMarkerGroup()
+{
+	delete[] allQuads;
+}
+
+void GateMarkerGroup::SetToZone(Zone *z)
+{
+
+}
+
+void GateMarkerGroup::Update(sf::View &v)
+{
+
+}
+
+void GateMarkerGroup::Draw(sf::RenderTarget *target)
+{
+	target->draw( allQuads, )
 }
