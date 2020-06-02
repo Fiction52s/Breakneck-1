@@ -495,7 +495,7 @@ struct CreateGatesModeUI : GUIHandler
 	TextBox *numToOpenTextbox;
 	int numToOpen;
 	Button *deleteGateButton;
-	Button *OKGateButton;
+	//Button *OKGateButton;
 	
 
 	Dropdown *gateCategoryDropdown;

@@ -10,6 +10,7 @@ using namespace sf;
 using namespace std;
 
 double GateInfo::lineWidth = 10;//5;
+double GateInfo::selectWidth = 100;//5;
 
 GateInfo::GateInfo()
 	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
@@ -39,14 +40,18 @@ void GateInfo::SetNumToOpen(int num)
 	}
 }
 
-bool GateInfo::IsSameType(GateInfo *other)
+bool GateInfo::HasSameInfo(GateInfo *other)
 {
 	if (other->category != category)
 		return false;
 
-	if (category == Gate::KEY)
+	if (other->variation != variation)
+		return false;
+
+	if (category == Gate::KEY || category == Gate::PICKUP)
 	{
-		//if number of keys is equal
+		if (other->numToOpen != numToOpen)
+			return false;
 	}
 	else if (category == Gate::SHARD)
 	{
@@ -123,7 +128,7 @@ bool GateInfo::ContainsPoint( V2d &p )
 	V2d along = normalize(end - start);
 	V2d other(along.y, -along.x);
 
-	double halfThickness = lineWidth / 2.0;
+	double halfThickness = selectWidth / 2.0;
 	
 	V2d a = start + other * halfThickness;
 	V2d b = start - other * halfThickness;

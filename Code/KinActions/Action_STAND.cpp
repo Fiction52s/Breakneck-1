@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "Editsession.h" //testing
 #include "GateMarker.h"
+#include "GameSession.h"
 
 using namespace sf;
 using namespace std;
@@ -26,10 +27,14 @@ void Actor::STAND_Update()
 
 	if (framesStanding == 30)
 	{
-		if (editOwner != NULL)
+		if (owner != NULL)
+		{
+			//owner->gateMarkers->FadeIn();
+		}
+		/*if (editOwner != NULL)
 		{
 			editOwner->testGateMarker->FadeIn();
-		}
+		}*/
 	}
 }
 
@@ -63,7 +68,11 @@ void Actor::STAND_TransitionToAction(int a)
 {
 	if (framesStanding >= 30)
 	{
-		editOwner->testGateMarker->FadeOut();
+		if (owner != NULL)
+		{
+			//owner->gateMarkers->FadeOut();
+		}
+		//editOwner->testGateMarker->FadeOut();
 	}
 }
 

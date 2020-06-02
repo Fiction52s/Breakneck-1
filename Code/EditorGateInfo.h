@@ -12,7 +12,7 @@ struct GateInfo : ISelectable
 {
 	GateInfo();
 	void SetShard(int shardW, int shardI);
-	bool IsSameType(GateInfo *other);
+	bool HasSameInfo(GateInfo *other);
 	void SetNumToOpen(int num);
 	sf::IntRect GetAABB();
 	TerrainPoint *point0;
@@ -44,6 +44,7 @@ struct GateInfo : ISelectable
 	int numToOpen;
 
 	static double lineWidth;
+	static double selectWidth;
 
 };
 

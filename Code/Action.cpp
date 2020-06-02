@@ -1176,6 +1176,12 @@ void ModifyGateAction::Perform()
 	(*gate) = newInfo;
 
 	gate->UpdateLine();
+
+	EditSession *edit = EditSession::GetSession();
+	if (edit->createGatesModeUI->modifyGate == gate)
+	{
+		edit->createGatesModeUI->SetFromGateInfo(gate);
+	}
 }
 
 void ModifyGateAction::Undo()
@@ -1189,6 +1195,12 @@ void ModifyGateAction::Undo()
 	//gate->SetType( oldType );
 	//gate->type = oldType;
 	gate->UpdateLine();
+
+	EditSession *edit = EditSession::GetSession();
+	if (edit->createGatesModeUI->modifyGate == gate)
+	{
+		edit->createGatesModeUI->SetFromGateInfo(gate);
+	}
 }
 
 //doesn't make a copy of the brush!

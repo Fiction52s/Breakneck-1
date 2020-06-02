@@ -45,6 +45,7 @@
 #include "EditSession.h"
 #include "EditorRail.h"
 #include "MovingGeo.h"
+#include "GateMarker.h"
 
 using namespace sf;
 using namespace std;
@@ -10294,18 +10295,24 @@ void Actor::HandleTouchedGate()
 				newZone = g->zoneB;
 			}
 
-			if (!g->IsTwoWay()) //for secret gates
+			if (oldZone != newZone)
 			{
-				if (oldZone != NULL && oldZone->active)
+				if (!g->IsTwoWay()) //for secret gates
 				{
-					oldZone->ReformAllGates(g);
+					if (oldZone != NULL && oldZone->active)
+					{
+						oldZone->ReformAllGates(g);
+					}
+
+					//owner->keyMarker->SetStartKeysZone(newZone);
 				}
 
-				//owner->keyMarker->SetStartKeysZone(newZone);
+				owner->ActivateZone(newZone);
+
+				
+
+				CreateKeyExplosion();
 			}
-
-			owner->ActivateZone(newZone);
-
 		}
 
 		if (g->IsReformingType())
@@ -10326,7 +10333,8 @@ void Actor::HandleTouchedGate()
 		}
 
 		//needs to be placed before keys go to 0
-		CreateKeyExplosion();
+		
+		
 
 		//needs an adjustment for secret zones
 		numKeysHeld = 0;
@@ -10896,10 +10904,10 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 	V2d groundP = e->GetPosition(edgeQuantity);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);ite  
+	sprite->setRotation(angle / PI * 180);
 
 	double factor = 1.0 - abs((angle / (PI / 6)));
-	cout << "factor: " << factor << "angle: " << angle << endl;
+	//cout << "factor: " << factor << "angle: " << angle << endl;
 		//if (factor < .9)
 		//	factor = 0;
 

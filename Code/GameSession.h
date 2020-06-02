@@ -25,7 +25,7 @@
 
 #include "Session.h"
 
-struct GateMarker;
+struct GateMarkerGroup;
 
 struct Actor;
 struct ComboObject;
@@ -378,6 +378,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void Init();
 	void Cleanup();
 
+	GateMarkerGroup *gateMarkers;
 
 	void RestartLevel();
 	void NextFrameRestartLevel();
@@ -815,6 +816,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void SetupRecGhost();
 
 	void SetupEnergyFlow();
+
+	void SetupGateMarkers();
 
 	sf::VertexArray *SetupBushes( int bgLayer,
 		Edge *startEdge, Tileset *ts );

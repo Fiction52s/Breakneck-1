@@ -428,6 +428,12 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}
 
+	if (gateMarkers != NULL)
+	{
+		delete gateMarkers;
+		gateMarkers = NULL;
+	}
+
 	//for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
@@ -4640,8 +4646,15 @@ bool GameSession::Load()
 		topClouds = new TopClouds(this);
 	}
 
+	
+
 	CreateZones();
+
+	SetupGateMarkers();
+
 	SetupZones();
+
+	
 
 	SetupBackground();
 	
@@ -4690,12 +4703,12 @@ bool GameSession::Load()
 	}
 
 	
+	
 	cout << "last one" << endl;
 	for( auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it )
 	{
 		(*it)->Setup();
 	}
-
 	
 	if (parentGame == NULL)
 	{
@@ -5770,6 +5783,8 @@ int GameSession::Run()
 					gates[i]->Update();
 				}
 
+				gateMarkers->Update(view);
+
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
 				absorbShardParticles->Update();
@@ -6352,9 +6367,10 @@ int GameSession::Run()
 			preScreenTex->draw(runningTimerText);
 		}
 
-		if(inputVis != NULL)
+		if (inputVis != NULL)
 			inputVis->Draw(preScreenTex);
 
+		gateMarkers->Draw(preScreenTex);
 
 		preScreenTex->setView( view );
 		
@@ -7377,6 +7393,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	gateMarkers = NULL;
 	inversePoly = NULL;
 
 	drain = true;
@@ -8563,7 +8580,7 @@ void GameSession::NextFrameRestartLevel()
 void GameSession::RestartLevel()
 {
 	
-		
+	gateMarkers->Reset();
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();
@@ -9198,6 +9215,33 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 	
 	return currVA;
+}
+
+void GameSession::SetupGateMarkers()
+{
+	if (gateMarkers != NULL)
+	{
+		delete gateMarkers;
+		gateMarkers = NULL;
+	}
+
+	int maxGates = 0;
+	int numGatesInZone;
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		numGatesInZone = (*it)->gates.size();
+		if (numGatesInZone > maxGates)
+		{
+			maxGates = numGatesInZone;
+		}
+	}
+
+	if (maxGates > 0)
+	{
+		gateMarkers = new GateMarkerGroup(maxGates);
+	}
+
+	//gateMarkers = new GateMarkerGroup()
 }
 
 typedef pair<V2d, V2d> pairV2d;
@@ -9999,6 +10043,8 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	}
 
 	currentZone = z;
+
+	gateMarkers->SetToZone(currentZone);
 
 	if (!instant)
 	{

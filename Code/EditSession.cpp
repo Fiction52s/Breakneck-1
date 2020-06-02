@@ -302,10 +302,10 @@ void EditSession::TestPlayerModeUpdate()
 		if (GetCurrInput(0).start && !GetPrevInput(0).start)
 		{
 			SetMode(EDIT);
-			if (gameCam)
+			/*if (gameCam)
 			{
 				SetZoom(2);
-			}
+			}*/
 
 			pTemp = GetPlayer(0);
 
@@ -2068,6 +2068,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 		if (!foundOn)
 		{
 			createGatesModeUI->CompleteEditingGate();
+			createGatesModeUI->modifyGate = NULL;
 		}
 	}
 }
@@ -2906,7 +2907,7 @@ int EditSession::Run()
 	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
 
 	
-	testGateMarker = new GateMarker();
+	//testGateMarker = new GateMarker();
 	
 
 	//bool s = IsKeyPressed( sf::Keyboard::T );
@@ -9912,6 +9913,12 @@ void EditSession::SetMode(Emode m)
 		playerTracker->HideAll();
 		//playerTracker->SetOn(false);
 		break;
+	case CREATE_GATES:
+	{
+		createGatesModeUI->CompleteEditingGate();
+		createGatesModeUI->modifyGate = NULL;
+		break;
+	}
 	}
 
 	ClearActivePanels();
@@ -11437,7 +11444,7 @@ void EditSession::DrawModeUI()
 		preScreenTex->draw(textgreen);
 
 		sf::Text textorange;
-		textorange.setString("CREATE\nGATES");
+		textorange.setString("GATES");
 		textorange.setFont(arial);
 		textorange.setCharacterSize(fontSize);
 		textorange.setFillColor(sf::Color::White);
@@ -11538,14 +11545,15 @@ void EditSession::DrawUI()
 		(*it)->Draw(preScreenTex);
 	}
 
-	generalUI->Draw(preScreenTex);
+	if( mode != TEST_PLAYER )
+		generalUI->Draw(preScreenTex);
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	/*for (auto it = gates.begin(); it != gates.end(); ++it)
 	{
 		testGateMarker->Update(view, (*it));
 	}
 
-	testGateMarker->Draw(preScreenTex);
+	testGateMarker->Draw(preScreenTex);*/
 }
 
 void EditSession::Display()
@@ -11588,13 +11596,10 @@ void EditSession::GeneralEventHandler()
 		{
 			if (ev.mouseButton.button == Mouse::Button::Middle)
 			{
-				if (!gameCam || mode != TEST_PLAYER)
-				{
-					ClearMostRecentError();
-					panning = true;
-					panAnchor = worldPos;
-				}
-				//cout << "setting panAnchor: " << panAnchor.x << " , " << panAnchor.y << endl;
+				gameCam = false;
+				ClearMostRecentError();
+				panning = true;
+				panAnchor = worldPos;
 			}
 			else if (ev.mouseButton.button == Mouse::Button::Right)
 			{
@@ -11612,71 +11617,70 @@ void EditSession::GeneralEventHandler()
 		}
 		case Event::MouseWheelMoved:
 		{
-			if (!gameCam || mode != TEST_PLAYER)
+			if (IsGridOn() && HoldingControl())
 			{
-				if (IsGridOn() && HoldingControl())
+				if (ev.mouseWheel.delta > 0)
 				{
-					if (ev.mouseWheel.delta > 0)
-					{
-						graph->ModifyGraphSpacing(.5);
-						createTerrainModeUI->SetGridSize(graph->GetSpacing());
-					}
-					else if (ev.mouseWheel.delta < 0)
-					{
-						graph->ModifyGraphSpacing(2.0);
-						createTerrainModeUI->SetGridSize(graph->GetSpacing());
-					}
+					graph->ModifyGraphSpacing(.5);
+					createTerrainModeUI->SetGridSize(graph->GetSpacing());
 				}
-				else
+				else if (ev.mouseWheel.delta < 0)
 				{
-					if (ev.mouseWheel.delta > 0)
-					{
-						if (zoomMultiple > 32)
-						{
-							ModifyZoom(.5);
-						}
-						else if (zoomMultiple > 8)
-						{
-							SetZoom(zoomMultiple - 8);
-							//zoomMultiple += 10;
-						}
-						else if (zoomMultiple > 1)
-						{
-							SetZoom(zoomMultiple - 1);
-						}
-						else
-						{
-							ModifyZoom(.5);
-						}
-
-						//ModifyZoom(.5);
-						//ModifyZoom(.5);
-					}
-					else if (ev.mouseWheel.delta < 0)
-					{
-						if (zoomMultiple >= 32)
-						{
-							ModifyZoom(2);
-						}
-						else if (zoomMultiple >= 8)
-						{
-							SetZoom(zoomMultiple + 8);
-							//ModifyZoom(2.0);
-							//zoomMultiple += 10;
-						}
-						else if (zoomMultiple >= 1)
-						{
-							SetZoom(zoomMultiple + 1);
-						}
-						else
-						{
-							ModifyZoom(2.0);
-						}
-						//ModifyZoom(2);
-						//ModifyZoom(2.0);
-					}
+					graph->ModifyGraphSpacing(2.0);
+					createTerrainModeUI->SetGridSize(graph->GetSpacing());
 				}
 			}
+			else
+			{
+				gameCam = false;
+				if (ev.mouseWheel.delta > 0)
+				{
+					if (zoomMultiple > 32)
+					{
+						ModifyZoom(.5);
+					}
+					else if (zoomMultiple > 8)
+					{
+						SetZoom(zoomMultiple - 8);
+						//zoomMultiple += 10;
+					}
+					else if (zoomMultiple > 1)
+					{
+						SetZoom(zoomMultiple - 1);
+					}
+					else
+					{
+						ModifyZoom(.5);
+					}
+
+					//ModifyZoom(.5);
+					//ModifyZoom(.5);
+				}
+				else if (ev.mouseWheel.delta < 0)
+				{
+					if (zoomMultiple >= 32)
+					{
+						ModifyZoom(2);
+					}
+					else if (zoomMultiple >= 8)
+					{
+						SetZoom(zoomMultiple + 8);
+						//ModifyZoom(2.0);
+						//zoomMultiple += 10;
+					}
+					else if (zoomMultiple >= 1)
+					{
+						SetZoom(zoomMultiple + 1);
+					}
+					else
+					{
+						ModifyZoom(2.0);
+					}
+					//ModifyZoom(2);
+					//ModifyZoom(2.0);
+				}
+			}
+
 			break;
 		}
 		case Event::KeyPressed:
@@ -11752,7 +11756,7 @@ void EditSession::HandleEvents()
 
 		bool noFocusedPanel = (focusedPanel == NULL);
 
-		if (generalUI->mainPanel->ContainsPoint(mousePos))
+		if ( mode != TEST_PLAYER && generalUI->mainPanel->ContainsPoint(mousePos))
 		{
 			if (focusedPanel != generalUI->mainPanel)
 			{

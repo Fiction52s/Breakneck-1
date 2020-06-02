@@ -681,7 +681,7 @@ struct EditSession : GUIHandler, Session
 	EditorGraph *graph;
 
 	
-	GateMarker *testGateMarker;
+	//GateMarker *testGateMarker;
 
 	void DrawPolygons();
 	void DrawRails();

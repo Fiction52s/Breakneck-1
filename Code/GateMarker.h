@@ -14,14 +14,20 @@ struct GateMarkerGroup
 {
 	GateMarkerGroup(int maxGates);
 	~GateMarkerGroup();
+	void Reset();
 	void SetToZone(Zone *z);
 	void Update(sf::View &v);
 	void Draw(sf::RenderTarget *target);
+	void FadeIn();
+	void FadeOut();
 	sf::Vertex *allQuads;
 	Tileset *ts_gateMarker;
 	sf::Font *font;
 	int fadeInFrames;
 	int fadeOutFrames;
+	int maxGates;
+	std::vector<GateMarker*> markers;
+	int currActive;
 };
 
 struct GateMarker
@@ -39,8 +45,6 @@ struct GateMarker
 	void Reset();
 	State state;
 	int frame;
-	int fadeInFrames;
-	int fadeOutFrames;
 	sf::Vertex *quad;
 	
 	void SetGate(Gate *g);

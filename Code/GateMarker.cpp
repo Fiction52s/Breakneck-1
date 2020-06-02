@@ -5,6 +5,7 @@
 #include "EditorTerrain.h"
 #include "Session.h"
 #include "MainMenu.h"
+#include "Zone.h"
 
 using namespace sf;
 using namespace std;
@@ -13,8 +14,6 @@ GateMarker::GateMarker( GateMarkerGroup *g, sf::Vertex *p_quad)
 {
 	group = g;
 	quad = p_quad;
-
-
 	
 	numText.setFillColor(Color::Black);
 	numText.setCharacterSize(32);
@@ -35,6 +34,7 @@ void GateMarker::Reset()
 {
 	state = HIDE;
 	frame = 0;
+	ClearRect(quad);
 }
 
 void GateMarker::FadeIn()
@@ -59,9 +59,36 @@ void GateMarker::SetGate(Gate *g)
 }
 
 void GateMarker::Update(sf::View &v )
-{		
+{
+	Vector2f size = v.getSize();
+	Vector2f vCenter = v.getCenter();
+	sf::FloatRect vRect(vCenter.x - size.x / 2, vCenter.y - size.y / 2, size.x, size.y);
+
+	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
+	center = center / 2.0;
+
 	if (state == HIDE)
+	{
+		if (!vRect.contains(Vector2f(center)))
+		{
+			state = FADEIN;
+			frame = 0;
+		}
 		return;
+	}
+	else if( state == SHOW )
+	{
+		if (vRect.contains(Vector2f(center)))
+		{
+			state = HIDE;
+			frame = 0;
+			ClearRect(quad);
+			//state = HIDE;
+			//ClearRect(quad);
+			return;
+		}
+	}
+		
 
 	switch (state)
 	{
@@ -78,6 +105,7 @@ void GateMarker::Update(sf::View &v )
 			ClearRect(quad);
 			return;
 		}
+		break;
 	}
 
 	int alpha = 255;
@@ -85,13 +113,13 @@ void GateMarker::Update(sf::View &v )
 	{
 	case FADEIN:
 	{
-		float fac = ((float)frame) / fadeInFrames;
+		float fac = ((float)frame) / group->fadeInFrames;
 		alpha = 255 * fac;
 		break;
 	}
 	case FADEOUT:
 	{
-		float fac = ((float)frame) / fadeOutFrames;
+		float fac = ((float)frame) / group->fadeOutFrames;
 		alpha = 255 * (1.f - fac);
 		break;
 	}
@@ -105,20 +133,11 @@ void GateMarker::Update(sf::View &v )
 	textColor.a = alpha;
 	numText.setFillColor(textColor);
 
-	Vector2f size = v.getSize();
-	Vector2f vCenter = v.getCenter();
-	sf::FloatRect vRect(vCenter.x - size.x / 2, vCenter.y - size.y / 2, size.x, size.y);
+	
 
-	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
-	center = center / 2.0;
+	
 
-	if (vRect.contains( Vector2f( center ) ) )
-	{
-		state = HIDE;
-		frame = 0;
-		ClearRect(quad);
-		return;
-	}
+	
 
 	
 	V2d pos = center - V2d(v.getCenter());
@@ -186,34 +205,93 @@ void GateMarker::Draw(sf::RenderTarget *target)
 }
 
 
-GateMarkerGroup::GateMarkerGroup(int maxGates)
+GateMarkerGroup::GateMarkerGroup(int p_maxGates)
 {
+	assert(p_maxGates > 0);
+	currActive = 0;
+	maxGates = p_maxGates;
 	allQuads = new Vertex[maxGates * 4];
 
 	Session *sess = Session::GetSession();
 
 	ts_gateMarker = sess->GetSizedTileset("HUD/gatemarker_100x30.png");
 	font = &sess->mainMenu->arial;
-	fadeInFrames = 60;
-	fadeOutFrames = 60;
+	fadeInFrames = 20;
+	fadeOutFrames = 20;
+
+	markers.resize(maxGates);
+	for (int i = 0; i < maxGates; ++i)
+	{
+		markers[i] = new GateMarker(this, allQuads + 4 * i);
+	}
 }
 
 GateMarkerGroup::~GateMarkerGroup()
 {
 	delete[] allQuads;
+
+	for (int i = 0; i < maxGates; ++i)
+	{
+		delete markers[i];
+	}
+}
+
+void GateMarkerGroup::Reset()
+{
+	currActive = 0;
+	for (int i = 0; i < maxGates; ++i)
+	{
+		markers[i]->Reset();
+	}
 }
 
 void GateMarkerGroup::SetToZone(Zone *z)
 {
-
+	Reset();
+	int counter = 0;
+	Gate *g;
+	for (auto it = z->gates.begin(); it != z->gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+		if (g->gState != Gate::LOCKFOREVER && g->gState != Gate::REFORM )
+		{
+			markers[counter]->SetGate(g);
+			++counter;
+		}
+	}
+	currActive = counter;
 }
 
 void GateMarkerGroup::Update(sf::View &v)
 {
-
+	for (int i = 0; i < currActive; ++i)
+	{
+		markers[i]->Update(v);
+	}
 }
+
+void GateMarkerGroup::FadeIn()
+{
+	for (int i = 0; i < currActive; ++i)
+	{
+		markers[i]->FadeIn();
+	}
+}
+
+void GateMarkerGroup::FadeOut()
+{
+	for (int i = 0; i < currActive; ++i)
+	{
+		markers[i]->FadeOut();
+	}
+}
+
 
 void GateMarkerGroup::Draw(sf::RenderTarget *target)
 {
-	target->draw( allQuads, )
+	target->draw(allQuads, currActive * 4, sf::Quads, ts_gateMarker->texture);
+	for (int i = 0; i < currActive; ++i)
+	{
+		markers[i]->Draw(target);
+	}
 }

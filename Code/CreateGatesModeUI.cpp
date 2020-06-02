@@ -6,6 +6,7 @@
 #include "EditSession.h"
 #include "EditorGraph.h"
 #include "Action.h"
+#include "VectorMath.h"
 
 using namespace std;
 using namespace sf;
@@ -74,8 +75,8 @@ CreateGatesModeUI::CreateGatesModeUI()
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(30, 0), Vector2f(200, 28 + 4), "delete");
 	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
 
-	OKGateButton = mainPanel->AddButton("ok", Vector2i(0, 0), Vector2f(200, 28 + 4), "OK");
-	OKGateButton->SetToolTip("Finish editing a selected gate (Enter)");
+	//OKGateButton = mainPanel->AddButton("ok", Vector2i(0, 0), Vector2f(200, 28 + 4), "OK");
+	//OKGateButton->SetToolTip("Finish editing a selected gate (Enter)");
 
 	popupPanelPos = Vector2i(currGateTypeRects[0]->pos.x, currGateTypeRects[0]->pos.y + 100 + 10);
 
@@ -174,10 +175,19 @@ void CreateGatesModeUI::SetEditGate(GateInfo *gi)
 {
 	CompleteEditingGate();
 	modifyGate = gi;
-	sf::IntRect aabb = gi->GetAABB();
+	//sf::IntRect aabb = gi->GetAABB();
 	int extra = 10;
-	modifyGateRect.setSize(Vector2f(aabb.width + extra * 2, aabb.height + extra * 2));
-	modifyGateRect.setPosition(Vector2f(aabb.left - extra, aabb.top - extra));
+
+	Vector2f diff = Vector2f(modifyGate->point1->pos - modifyGate->point0->pos);
+	Vector2f center = Vector2f(modifyGate->point1->pos + modifyGate->point0->pos) / 2.f;
+	float height = length(diff);
+	modifyGateRect.setSize(Vector2f(GateInfo::selectWidth, height));
+	modifyGateRect.setOrigin(modifyGateRect.getLocalBounds().width / 2,
+		modifyGateRect.getLocalBounds().height / 2);
+	float angle = GetVectorAngleCW(normalize(diff));
+	angle = angle * 180 / PI + 90;
+	modifyGateRect.setRotation(angle);
+	modifyGateRect.setPosition(center);
 	
 	*origModifyGate = *gi;
 	SetFromGateInfo(gi);
@@ -445,30 +455,31 @@ void CreateGatesModeUI::CompleteEditingGate()
 {
 	if (modifyGate != NULL )
 	{
-		if( !modifyGate->IsSameType( origModifyGate ) )
+		if( !modifyGate->HasSameInfo( origModifyGate ) )
 		{
 			Action * action = new ModifyGateAction(modifyGate, origModifyGate);
 			action->performed = true;
 			edit->AddDoneAction(action);
 		}
-		modifyGate = NULL;
+		//modifyGate = NULL;
 	}
 }
 
 void CreateGatesModeUI::ButtonCallback(Button *b, const std::string & e)
 {
-	if (b == OKGateButton)
-	{
-		CompleteEditingGate();
-		//modifyGate = NULL;
+	//if (b == OKGateButton)
+	//{
+	//	CompleteEditingGate();
+	//	//modifyGate = NULL;
 
-		
-		//add action here
-	}
-	else if (b == deleteGateButton)
+	//	
+	//	//add action here
+	//}
+	if (b == deleteGateButton)
 	{
 		if (modifyGate != NULL)
 		{
+			CompleteEditingGate();
 			Action * action = new DeleteGateAction(modifyGate, edit->mapStartBrush);
 			action->Perform();
 			edit->AddDoneAction(action);
