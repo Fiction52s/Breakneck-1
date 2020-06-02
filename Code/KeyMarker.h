@@ -20,9 +20,6 @@ struct KeyMarker
 	Action action;
 	int frame;
 	void VibrateNumbers();
-//	State state;
-	int keysRequired;
-	int startKeys;
 	GameSession *owner;
 	KeyMarker( GameSession *owner );
 	~KeyMarker();
@@ -31,7 +28,7 @@ struct KeyMarker
 		int totalKeys );
 	void SetStartKeysZone(Zone *z);
 	void Update();
-	void CollectKey();
+	void UpdateKeyNumbers();
 	void SetPosition(sf::Vector2f &pos);
 	sf::Vector2f GetPosition();
 
@@ -49,7 +46,7 @@ struct KeyMarker
 	Tileset *ts_keyNumDark;
 	ImageText *keyNumberNeededHUD;
 	ImageText *keyNumberNeededHUDBack;
-	ImageText *keyNumberTotalHUD;
+	//ImageText *keyNumberTotalHUD;
 
 	Tileset *ts_keyRing;
 	sf::Sprite keyRingSpr;

@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::AIRHITSTUN_Start()
 {
-
+	
 }
 
 void Actor::AIRHITSTUN_End()
@@ -76,7 +76,9 @@ void Actor::AIRHITSTUN_UpdateSprite()
 
 void Actor::AIRHITSTUN_TransitionToAction(int a)
 {
-
+	stunBufferedJump = false;
+	stunBufferedDash = false;
+	stunBufferedAttack = Action::Count;
 }
 
 void Actor::AIRHITSTUN_TimeIndFrameInc()

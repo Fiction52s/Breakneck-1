@@ -6,6 +6,7 @@
 #include "Session.h"
 #include "MainMenu.h"
 #include "Zone.h"
+#include "Actor.h"
 
 using namespace sf;
 using namespace std;
@@ -125,7 +126,17 @@ void GateMarker::Update(sf::View &v )
 	}
 	}
 
-	Color testColor = Color::Green;
+	Session *sess = Session::GetSession();
+	Color testColor;
+	if (sess->GetPlayer(0)->numKeysHeld >= currGate->numToOpen)
+	{
+		testColor = Color::Green;
+	}
+	else
+	{
+		testColor = Color::Red;
+	}
+
 	testColor.a = alpha;
 	SetRectColor(quad, testColor);
 

@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::GROUNDHITSTUN_Start()
 {
+	
 }
 
 void Actor::GROUNDHITSTUN_End()
@@ -68,7 +69,9 @@ void Actor::GROUNDHITSTUN_UpdateSprite()
 
 void Actor::GROUNDHITSTUN_TransitionToAction(int a)
 {
-
+	stunBufferedJump = false;
+	stunBufferedDash = false;
+	stunBufferedAttack = Action::Count;
 }
 
 void Actor::GROUNDHITSTUN_TimeIndFrameInc()

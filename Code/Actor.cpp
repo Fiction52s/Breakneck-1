@@ -4849,27 +4849,27 @@ void Actor::TransitionAction(int a)
 
 void Actor::SetAction( int a )
 {
-	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
+	//standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
 
-	if (action == AIRHITSTUN || action == GROUNDHITSTUN )
+	/*if (action == AIRHITSTUN || action == GROUNDHITSTUN )
 	{
 		stunBufferedJump = false;
 		stunBufferedDash = false;
 		stunBufferedAttack = Action::Count;
-	}
+	}*/
 
 	TransitionAction(a);
 
 	action = a;
 	frame = 0;
 
-	StartAction();
-
 	if (repeatingSound != NULL)
 	{
 		DeactivateSound(repeatingSound);
 		repeatingSound = NULL;
 	}
+
+	StartAction();
 		
 	if( slowCounter > 1 )
 	{
@@ -10277,6 +10277,24 @@ void Actor::HandleTouchedGate()
 
 		//lock all the gates from this zone now that I chose one
 
+
+		if (g->IsReformingType())
+		{
+			owner->LockGate(g);
+
+			g->gState = Gate::REFORM;
+			g->frame = 0;
+			float aa = alongAmount;
+			g->centerShader.setUniform("breakPosQuant", aa);
+		}
+		else
+		{
+			g->gState = Gate::DISSOLVE;
+			g->frame = 0;
+			float aa = alongAmount;
+			g->centerShader.setUniform("breakPosQuant", aa);
+		}
+
 		if (g->IsZoneType())
 		{
 
@@ -10304,7 +10322,7 @@ void Actor::HandleTouchedGate()
 						oldZone->ReformAllGates(g);
 					}
 
-					//owner->keyMarker->SetStartKeysZone(newZone);
+					owner->keyMarker->Reset();
 				}
 
 				owner->ActivateZone(newZone);
@@ -10315,22 +10333,7 @@ void Actor::HandleTouchedGate()
 			}
 		}
 
-		if (g->IsReformingType())
-		{
-			owner->LockGate(g);
-
-			g->gState = Gate::REFORM;
-			g->frame = 0;
-			float aa = alongAmount;
-			g->centerShader.setUniform("breakPosQuant", aa);
-		}
-		else
-		{
-			g->gState = Gate::DISSOLVE;
-			g->frame = 0;
-			float aa = alongAmount;
-			g->centerShader.setUniform("breakPosQuant", aa);
-		}
+		
 
 		//needs to be placed before keys go to 0
 		

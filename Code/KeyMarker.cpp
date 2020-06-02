@@ -1,6 +1,7 @@
 #include "KeyMarker.h"
 #include "GameSession.h"
 #include "ImageText.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -15,13 +16,7 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 	//backSprite.setPosition( 1920 - 256 - 40, 1080 - 256 - 40 );
 	//energySprite.setPosition( backSprite.getPosition() );
 
-	
-
-	//state = ZERO;
-	startKeys = 0;
-	keysRequired = 0;
 	frame = 0;
-
 
 	Tileset *scoreTS = owner->GetTileset("Menu/keynum_small_32x32.png", 32, 32);
 	ts_keyNumLight = owner->GetTileset("Menu/keynum_light_80x80.png", 80, 80);
@@ -29,7 +24,7 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 
 	keyNumberNeededHUD = new ImageText(2, ts_keyNumDark);
 	keyNumberNeededHUDBack = new ImageText(2, ts_keyNumLight);
-	keyNumberTotalHUD = new ImageText(2, scoreTS);
+	//keyNumberTotalHUD = new ImageText(2, scoreTS);
 
 	SetPosition(Vector2f(1920 - 100, 100));
 	//SetPosition(Vector2f(226 + 10, 141 + 10));
@@ -39,7 +34,7 @@ KeyMarker::~KeyMarker()
 {
 	delete keyNumberNeededHUD;
 	delete keyNumberNeededHUDBack;
-	delete keyNumberTotalHUD;
+	//delete keyNumberTotalHUD;
 }
 
 void KeyMarker::SetPosition(Vector2f &pos)
@@ -49,7 +44,7 @@ void KeyMarker::SetPosition(Vector2f &pos)
 	keyNumberNeededHUDBack->SetCenter(neededCenter);
 
 
-	keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(-60, -40));
+	//keyNumberTotalHUD->SetCenter(neededCenter + Vector2f(-60, -40));
 	
 }
 
@@ -58,43 +53,42 @@ Vector2f KeyMarker::GetPosition()
 	return neededCenter;
 }
 
-void KeyMarker::CollectKey()
+void KeyMarker::UpdateKeyNumbers()
 {
-	owner->numKeysCollected++;
-	if( keysRequired == 0 )
-	{
-		return;
-	}
-	//assert( keysRequired > 0 );
-	
-	
-	//int f = ((maxKeys-1) * 4) + (frame / growMult);
+	//owner->numKeysCollected++;
+	int numKeys = owner->GetPlayer(0)->numKeysHeld;
 
-	--keysRequired;
+	//--keysRequired;
 
-	if( keysRequired == 0 )
-	{
-		int soundIndex = GameSession::SoundType::S_KEY_COMPLETE_W1 + ( startKeys - 1 );
-		owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[soundIndex] );
+	//if( keysRequired == 0 )
+	//{
+		//int soundIndex = GameSession::SoundType::S_KEY_COMPLETE_W1 + ( startKeys - 1 );
+		//owner->soundNodeList->ActivateSound( owner->gameSoundBuffers[soundIndex] );
 		//state = TOZERO;
-		frame = 0;
-	}
-	else
-	{
+		//frame = 0;
+	//}
+	//else
+	//{
 		//SetEnergySprite();
-	}
+	//}
 
-	keyNumberNeededHUD->SetNumber(keyNumberNeededHUD->value-1);
-	keyNumberNeededHUDBack->SetNumber(keyNumberNeededHUD->value);
-	keyNumberTotalHUD->SetNumber(keyNumberTotalHUD->value-1);
+	VibrateNumbers();
+
+	keyNumberNeededHUD->SetNumber(numKeys);
+	keyNumberNeededHUDBack->SetNumber(numKeys);
+	//keyNumberTotalHUD->SetNumber(numKeys);
 
 	keyNumberNeededHUD->UpdateSprite();
 	keyNumberNeededHUDBack->UpdateSprite();
-	keyNumberTotalHUD->UpdateSprite();
+	//keyNumberTotalHUD->UpdateSprite();
 }
 
 void KeyMarker::SetStartKeysZone(Zone *z)
 {
+	//keyNumberNeededHUD->SetNumber(0);
+	//keyNumberNeededHUDBack->SetNumber(0);
+	//keyNumberTotalHUD->SetNumber(z->;
+	Reset();
 	//SetStartKeys(z->requiredKeys, z->totalStartingKeys);
 }
 
@@ -103,29 +97,16 @@ void KeyMarker::SetStartKeys( int neededKeys, int totalKeys )
 	if (neededKeys > totalKeys)
 		neededKeys = totalKeys;
 
-	startKeys = neededKeys;
-	keysRequired = neededKeys;
 	
 	keyNumberNeededHUD->SetNumber(neededKeys);
 	keyNumberNeededHUDBack->SetNumber(neededKeys);
-	keyNumberTotalHUD->SetNumber(totalKeys);
+	//keyNumberTotalHUD->SetNumber(totalKeys);
 
 
 	keyNumberNeededHUD->UpdateSprite();
 	keyNumberNeededHUDBack->UpdateSprite();
-	keyNumberTotalHUD->UpdateSprite();
+//	keyNumberTotalHUD->UpdateSprite();
 	//set bg sprite
-	
-	if(neededKeys > 0 )
-	{
-		//state = FROMZERO;
-		//frame = 0;
-	}
-	else
-	{
-		//state = ZERO;
-		//backSprite.setTextureRect( ts_keys->GetSubRect( 24 ) );
-	}
 
 	Reset();
 	//SetEnergySprite();
@@ -136,6 +117,9 @@ void KeyMarker::Reset()
 	action = IDLE;
 	frame = 0;
 	keyNumberNeededHUD->ts = ts_keyNumDark;
+
+	keyNumberNeededHUD->SetNumber(0);
+	keyNumberNeededHUDBack->SetNumber(0);
 
 	keyNumberNeededHUDBack->SetCenter(neededCenter);
 	keyNumberNeededHUDBack->UpdateSprite();
@@ -153,7 +137,7 @@ void KeyMarker::Draw( sf::RenderTarget *target )
 	}
 	
 
-	keyNumberTotalHUD->Draw(target);
+	//keyNumberTotalHUD->Draw(target);
 	
 	keyNumberNeededHUD->Draw(target);
 	

@@ -585,11 +585,11 @@ void GameSession::Cleanup()
 		topClouds = NULL;
 	}
 
-	/*if (parentGame == NULL && keyMarker != NULL)
+	if (parentGame == NULL && keyMarker != NULL)
 	{
 		delete keyMarker;
 		keyMarker = NULL;
-	}*/
+	}
 
 
 	if (specterTree != NULL)
@@ -3932,7 +3932,7 @@ void GameSession::SetupZones()
 	{
 		cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
-		//keyMarker->SetStartKeysZone(originalZone);
+		keyMarker->Reset();
 	}
 	
 	//cout << "3: numgates: " << numGates << endl;
@@ -4796,12 +4796,12 @@ void GameSession::SetupPlayers()
 
 void GameSession::SetupKeyMarker()
 {
-	/*if (parentGame != NULL)
+	if (parentGame != NULL)
 	{
 		keyMarker = parentGame->keyMarker;
 	}
 	else if( keyMarker == NULL )
-		keyMarker = new KeyMarker(this);*/
+		keyMarker = new KeyMarker(this);
 }
 
 void GameSession::SetupShardsCapturedField()
@@ -5792,7 +5792,7 @@ int GameSession::Run()
 				UpdateEffects();
 				UpdateEmitters();
 
-				//keyMarker->Update();
+				keyMarker->Update();
 
 				mini->Update();
 
@@ -8579,7 +8579,7 @@ void GameSession::NextFrameRestartLevel()
 
 void GameSession::RestartLevel()
 {
-	
+	keyMarker->Reset();
 	gateMarkers->Reset();
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
@@ -8703,19 +8703,21 @@ void GameSession::RestartLevel()
 
 	//was resetting zones here before
 
+	for (int i = 0; i < numGates; ++i)
+	{
+		gates[i]->Reset();
+	}
+
 	currentZone = NULL;
 	if (originalZone != NULL)
 	{
 		ActivateZone(originalZone, true);
-		//keyMarker->SetStartKeysZone(originalZone);
+		keyMarker->SetStartKeysZone(originalZone);
 	}
 	//	originalZone->active = true;
 	//
 	//later don't relock gates in a level unless there is a "level reset"
-	for( int i = 0; i < numGates; ++i )
-	{
-		gates[i]->Reset();
-	}
+	
 
 	inactiveEnemyList = NULL;
 
@@ -9760,6 +9762,7 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 void GameSession::CollectKey()
 {
 	GetPlayer(0)->numKeysHeld++;
+	keyMarker->UpdateKeyNumbers();
 	//keyMarker->CollectKey();
 }
 

@@ -9,6 +9,7 @@
 #include "SaveFile.h"
 #include "Wire.h"
 #include "Actor.h"
+#include "MainMenu.h"
 
 
 using namespace std;
@@ -61,6 +62,14 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	numToOpen = 0;
 	
+	numberCircle.setFillColor(Color::Green);
+	numberCircle.setRadius(30);
+	numberCircle.setOrigin(numberCircle.getLocalBounds().width / 2,
+		numberCircle.getLocalBounds().height / 2);
+
+	numberText.setFont(owner->mainMenu->arial);
+	numberText.setCharacterSize(50);
+	numberText.setFillColor(Color::Black);
 
 	//Reset();
 }
@@ -197,6 +206,19 @@ void Gate::Update()
 	UpdateSprite();
 	CheckSoften();
 	UpdateShaders();
+
+	if (category == KEY)
+	{
+		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
+		{
+			numberCircle.setFillColor(Color::Green);
+		}
+		else
+		{
+			numberCircle.setFillColor(Color::Red);
+		}
+	}
+	
 
 	if( gState != LOCKFOREVER && gState != OPEN )
 		++frame;
@@ -539,6 +561,12 @@ void Gate::Draw( sf::RenderTarget *target )
 				{
 					//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
 				}
+
+				if (category == KEY || category == PICKUP)
+				{
+					target->draw(numberCircle);
+					target->draw(numberText);
+				}
 			}
 		}
 
@@ -557,6 +585,10 @@ void Gate::SetNumToOpen(int num)
 	assert(category == KEY || category == PICKUP);
 
 	numToOpen = num;
+	numberText.setString(to_string(numToOpen));
+	auto &bounds = numberText.getLocalBounds();
+	numberText.setOrigin(bounds.left + bounds.width / 2,
+		bounds.top + bounds.height / 2);
 }
 
 void Gate::SetShard(int w, int li)
@@ -578,6 +610,10 @@ void Gate::UpdateLine()
 {
 	stateLength[DISSOLVE] = 20 * max( 1.0, length(edgeA->v1 - edgeA->v0) / 400.0 );
 	stateLength[REVERSEDISSOLVE] = stateLength[DISSOLVE];
+
+	Vector2f centerPos = Vector2f(edgeA->v1 + edgeA->v0) / 2.f;
+	numberCircle.setPosition(centerPos);
+	numberText.setPosition(centerPos);
 	
 	float tileHeight = 64;
 

@@ -143,6 +143,9 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	int shardType;
 
 	int numToOpen;
+
+	sf::CircleShape numberCircle;
+	sf::Text numberText;
 	
 };
 
