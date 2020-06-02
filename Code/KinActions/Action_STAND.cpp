@@ -24,7 +24,7 @@ void Actor::STAND_Update()
 {
 	groundSpeed = 0;
 
-	if (framesStanding == 120)
+	if (framesStanding == 30)
 	{
 		if (editOwner != NULL)
 		{
@@ -61,12 +61,16 @@ void Actor::STAND_UpdateSprite()
 
 void Actor::STAND_TransitionToAction(int a)
 {
-
+	if (framesStanding >= 30)
+	{
+		editOwner->testGateMarker->FadeOut();
+	}
 }
 
 void Actor::STAND_TimeIndFrameInc()
 {
-
+	
+	++framesStanding;
 }
 
 void Actor::STAND_TimeDepFrameInc()

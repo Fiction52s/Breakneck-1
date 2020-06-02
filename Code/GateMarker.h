@@ -5,6 +5,7 @@
 #include "VectorMath.h"
 
 struct GateInfo;
+struct Tileset;
 
 struct GateMarker
 {
@@ -31,6 +32,11 @@ struct GateMarker
 	//bool show;
 	//void SetType(int type, int num);
 	void Draw(sf::RenderTarget *target);
+	Tileset *ts_gateMarker;
+	sf::CircleShape cs;
+	sf::Text numText;
+
+	GateInfo *currInfo;
 };
 
 #endif

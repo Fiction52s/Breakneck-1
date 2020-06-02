@@ -267,6 +267,7 @@ struct Actor : QuadTreeCollider,
 	std::vector<int(Actor::*)()> getActionLengthFuncs;
 	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
 
+	void TransitionAction(int a);
 	void ActionTimeIndFrameInc();
 	void ActionTimeDepFrameInc();
 	int GetActionLength(int a);
@@ -456,10 +457,10 @@ struct Actor : QuadTreeCollider,
 	void StandInPlace();
 	void WaitInPlace();
 	void Wait();
-	bool IsGoalKillAction(Action a);
-	bool IsIntroAction(Action a);
-	bool IsExitAction(Action a);
-	bool IsSequenceAction(Action a);
+	bool IsGoalKillAction(int a);
+	bool IsIntroAction(int a);
+	bool IsExitAction(int a);
+	bool IsSequenceAction(int a);
 
 	void StartSeqKinThrown( V2d &pos, V2d &vel );
 	void SeqKneel();
@@ -485,7 +486,7 @@ struct Actor : QuadTreeCollider,
 
 	Team team;
 
-	Action spriteAction;
+	int spriteAction;
 	int currTileIndex;
 	bool flipTileX;
 	bool flipTileY;
@@ -495,7 +496,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> spriteCenter;
 	bool dairBoostedDouble;
 	bool aerialHitCancelDouble;
-	Action cancelAttack;
+	int cancelAttack;
 	double dairBoostVel;
 	bool standNDashBoost;
 	double standNDashBoostQuant;
@@ -512,7 +513,7 @@ struct Actor : QuadTreeCollider,
 
 	void WireMovement();
 
-	Action GetDoubleJump();
+	int GetDoubleJump();
 	bool CanDoubleJump();
 	void ExecuteDoubleJump();
 	void ExecuteWallJump();
@@ -543,13 +544,13 @@ struct Actor : QuadTreeCollider,
 
 	bool ExitGrind(bool jump);
 	
-	void SetSpriteTexture( Action a );
+	void SetSpriteTexture( int a );
 	void SetSpriteTile( int tileIndex, bool noFlipX = true, bool noFlipY = true );
 	void SetSpriteTile( sf::Sprite *spr, 
 		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true );
-	void SetActionExpr( Action a );
+	void SetActionExpr( int a );
 	void SetExpr( Expr ex );
-	void SetAction( Action a );
+	void SetAction( int a );
 
 	void SetupTilesets();
 	void SetupFXTilesets();
@@ -734,7 +735,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *tileset[Count];
 
 		//std::map<int, 
-	void SetupAction(Action a);
+	void SetupAction(int a);
 	void LoadAllAuras();
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;
@@ -1229,7 +1230,7 @@ struct Actor : QuadTreeCollider,
 	void HandleSpecialTerrain();
 	void HandleSpecialTerrain(int stType);
 
-	Action action;
+	int action;
 	int steepClimbBoostStart;
 	bool TryClimbBoost( V2d &gNorm);
 	int frame;
@@ -1326,7 +1327,7 @@ struct Actor : QuadTreeCollider,
 	int climbBoostLimit;
 
 	bool longWallJump;
-	Action oldAction;
+	int oldAction;
 
 	bool currAttackHit;
 	bool bounceAttackHit;
@@ -1342,9 +1343,9 @@ struct Actor : QuadTreeCollider,
 	int flashFrames;
 
 	//bool bufferedAttack;
-	Action bufferedAttack;
-	Action doubleJumpBufferedAttack;
-	Action wallJumpBufferedAttack;
+	int bufferedAttack;
+	int doubleJumpBufferedAttack;
+	int wallJumpBufferedAttack;
 
 	bool SpringLaunch();
 	bool TeleporterLaunch();
@@ -1356,21 +1357,21 @@ struct Actor : QuadTreeCollider,
 	bool CheckRightStickSwingHeld();
 	bool CheckSwingHeld();
 
-	Action pauseBufferedAttack;
+	int pauseBufferedAttack;
 	bool pauseBufferedJump;
 	bool pauseBufferedDash;
 
 	bool stunBufferedJump;
 	bool stunBufferedDash;
-	Action stunBufferedAttack;
+	int stunBufferedAttack;
 	
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
-	bool IsAttackAction( Action a );
-	bool IsGroundAttackAction(Action a);
-	bool IsSpringAction(Action a);
-	bool IsOnRailAction(Action a);
-	bool IsInHistunAction( Action a );
+	bool IsAttackAction( int a );
+	bool IsGroundAttackAction(int a);
+	bool IsSpringAction(int a);
+	bool IsOnRailAction(int a);
+	bool IsInHistunAction( int a );
 
 	V2d GetKnockbackDirFromVel();
 

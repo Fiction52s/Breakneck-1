@@ -3,6 +3,8 @@
 #include "Physics.h"
 #include "EditorGateInfo.h"
 #include "EditorTerrain.h"
+#include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -13,6 +15,17 @@ GateMarker::GateMarker()
 	fadeInFrames = 60;
 	fadeOutFrames = 60;
 	Reset();
+
+	Session *sess = Session::GetSession();
+
+	numText.setFillColor(Color::Black);
+	numText.setCharacterSize(20);
+	numText.setFont(sess->mainMenu->arial);
+
+	currInfo = NULL;
+
+	ts_gateMarker = sess->GetSizedTileset("HUD/gatemarker_100x30.png");
+	ts_gateMarker->SetQuadSubRect(quad, 0);
 }
 
 void GateMarker::Reset()
@@ -45,6 +58,15 @@ void GateMarker::FadeOut()
 void GateMarker::Update(sf::View &v,
 	GateInfo *gi)
 {
+	if (gi != currInfo)
+	{
+		currInfo = gi;
+		numText.setString(to_string(gi->numToOpen));
+		auto bounds = numText.getLocalBounds();
+		numText.setOrigin( bounds.left + bounds.width / 2, 
+			bounds.top + bounds.height / 2);
+	}
+		
 	if (state == HIDE)
 		return;
 
@@ -81,6 +103,14 @@ void GateMarker::Update(sf::View &v,
 	}
 	}
 
+	Color testColor = Color::Green;
+	testColor.a = alpha;
+	SetRectColor(quad, testColor);
+
+	Color textColor = Color::Black;
+	textColor.a = alpha;
+	numText.setFillColor(textColor);
+
 	sf::FloatRect aabb(gi->GetAABB());
 
 	Vector2f size = v.getSize();
@@ -99,6 +129,8 @@ void GateMarker::Update(sf::View &v,
 	center = center / 2.0;
 	V2d pos = center - V2d(v.getCenter());
 	SetGatePos(pos);
+
+	
 
 	++frame;
 
@@ -140,15 +172,23 @@ void GateMarker::SetGatePos(V2d pos)
 		}
 	}
 
-	V2d currPos = li.position;// -dir * 200.0;
+	double ang = GetVectorAngleCW(dir);
+	
 
-	SetRectCenter(quad, 50, 50, Vector2f(currPos));
+	V2d currPos = li.position - dir * 60.0;
+	Vector2f currPosF(currPos);
+
+	numText.setPosition(currPosF);
+
+	SetRectRotation(quad, ang, 100, 30, currPosF);
+	//SetRectCenter(quad, 50, 50, Vector2f(currPos));
 }
 
 void GateMarker::Draw(sf::RenderTarget *target)
 {
-	if (state != SHOW)
+	if (state != HIDE)
 	{
-		target->draw(quad, 4, sf::Quads);
+		target->draw(quad, 4, sf::Quads, ts_gateMarker->texture);
+		target->draw(numText);
 	}
 }

@@ -1710,6 +1710,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex )
 	{
+	action = -1; //for init
 	SetupActionFunctions();
 
 	numKeysHeld = 0;
@@ -3260,6 +3261,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	action = -1;
 	framesStanding = 0;
 	keyExplodeRingGroup->Reset();
 	numKeysHeld = 0;
@@ -4834,7 +4836,17 @@ void Actor::SeqGetAirdash()
 	frame = 0;
 }
 
-void Actor::SetAction( Action a )
+void Actor::TransitionAction(int a)
+{
+	if (action == -1)
+		return;
+	if (transitionFuncs[action] != NULL)
+	{
+		(this->*transitionFuncs[action])(a);
+	}
+}
+
+void Actor::SetAction( int a )
 {
 	standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
 
@@ -4844,6 +4856,8 @@ void Actor::SetAction( Action a )
 		stunBufferedDash = false;
 		stunBufferedAttack = Action::Count;
 	}
+
+	TransitionAction(a);
 
 	action = a;
 	frame = 0;
@@ -10884,9 +10898,10 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);
 
-	double factor = 1.0 - abs((angle / (PI / 2)));
-		if (factor < .9)
-			factor = 0;
+	double factor = 1.0 - abs((angle / (PI / 6)));
+	cout << "factor: " << factor << "angle: " << angle << endl;
+		//if (factor < .9)
+		//	factor = 0;
 
 	Vector2f testOffset(e->Along() * offsetX * factor);
 
@@ -11633,6 +11648,8 @@ void Actor::SlowDependentFrameIncrement()
 {
 	if (slowCounter == slowMultiple)
 	{
+		ActionTimeDepFrameInc();
+
 		if (wallJumpFrameCounter < wallJumpMovementLimit)
 			wallJumpFrameCounter++;
 		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
@@ -11828,10 +11845,7 @@ void Actor::UpdatePostPhysics()
 
 	SlowDependentFrameIncrement();
 
-	if (action == STAND)
-	{
-		++framesStanding;
-	}
+	ActionTimeIndFrameInc();
 
 	if (framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 	{
@@ -12396,7 +12410,7 @@ void Actor::SetBounceBoostVelocity()
 	
 }
 
-bool Actor::IsGoalKillAction(Action a)
+bool Actor::IsGoalKillAction(int a)
 {
 	return (a == GOALKILL || a == GOALKILL1 || a == GOALKILL2 || a == GOALKILL3 || a == GOALKILL4 || a == GOALKILLWAIT
 		|| a == NEXUSKILL || a == SEQ_FLOAT_TO_NEXUS_OPENING || a == SEQ_FADE_INTO_NEXUS);
@@ -12433,18 +12447,18 @@ void Actor::QueryTouchGrass()
 	}
 }
 
-bool Actor::IsIntroAction(Action a)
+bool Actor::IsIntroAction(int a)
 {
 	return a == INTRO || a == SPAWNWAIT || a == INTROBOOST;
 }
 
-bool Actor::IsSequenceAction(Action a)
+bool Actor::IsSequenceAction(int a)
 {
 	return a == SEQ_ENTERCORE1 || action == SEQ_LOOKUP || action == SEQ_KINTHROWN
 		|| action == SEQ_KINFALL;
 }
 
-bool Actor::IsExitAction(Action a)
+bool Actor::IsExitAction(int a)
 {
 	return a == EXIT || a == EXITWAIT || a == WAITFORSHIP || a == GRABSHIP || a == EXITBOOST;
 }
@@ -14863,7 +14877,7 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 	return angle;
 }
 
-void Actor::SetSpriteTexture( Action a )
+void Actor::SetSpriteTexture( int a )
 {
 	spriteAction = a;
 	sprite->setTexture( *tileset[a]->texture );
@@ -15042,7 +15056,7 @@ void Actor::SetSpriteTile( sf::Sprite *spr,
 	//}
 }
 
-void Actor::SetupAction(Action a)
+void Actor::SetupAction(int a)
 {
 }
 
@@ -15595,7 +15609,7 @@ void Actor::ExecuteWallJump()
 	}
 }
 
-Actor::Action Actor::GetDoubleJump()
+int Actor::GetDoubleJump()
 {
 	if( (facingRight && currInput.LLeft()) || ( !facingRight && currInput.LRight() ) )
 	{
@@ -15699,7 +15713,7 @@ bool Actor::IsSingleWirePulling()
 		&& !IsDoubleWirePulling() );
 }
 
-void Actor::SetActionExpr( Action a )
+void Actor::SetActionExpr( int a )
 {
 	SetAction( a );
 	//action = a;
@@ -15761,29 +15775,29 @@ void Actor::ClearPauseBufferedActions()
 	pauseBufferedDash = false;
 }
 
-bool Actor::IsAttackAction( Action a )
+bool Actor::IsAttackAction( int a )
 {
 	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN || a == DIAGDOWNATTACK
 		|| a == DIAGUPATTACK || a == WALLATTACK || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK );
 }
 
-bool Actor::IsGroundAttackAction(Action a)
+bool Actor::IsGroundAttackAction(int a)
 {
 	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK);
 }
 
-bool Actor::IsSpringAction(Action a)
+bool Actor::IsSpringAction(int a)
 {
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
 		|| a == SPRINGSTUNTELEPORT || a == SPRINGSTUNAIRBOUNCE;
 }
 
-bool Actor::IsOnRailAction(Action a)
+bool Actor::IsOnRailAction(int a)
 {
 	return a == RAILGRIND || a == RAILSLIDE;
 }
 
-bool Actor::IsInHistunAction( Action a )
+bool Actor::IsInHistunAction( int a )
 {
 	return a == GROUNDHITSTUN || a == AIRHITSTUN;
 }
