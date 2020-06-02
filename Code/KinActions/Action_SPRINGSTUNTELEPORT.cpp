@@ -77,3 +77,4 @@ int Actor::SPRINGSTUNTELEPORT_GetActionLength()
 Tileset * Actor::SPRINGSTUNTELEPORT_GetTileset()
 {
 	return SPRINGSTUN_GetTileset();
+}

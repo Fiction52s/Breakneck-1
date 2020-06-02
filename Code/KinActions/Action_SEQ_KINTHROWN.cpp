@@ -9,7 +9,7 @@ void Actor::SEQ_KINTHROWN_Start()
 
 void Actor::SEQ_KINTHROWN_End()
 {
-	frame = actionLength[SEQ_KINTHROWN] = 1;
+	frame = GetActionLength(SEQ_KINTHROWN) - 1;
 }
 
 void Actor::SEQ_KINTHROWN_Change()

@@ -30,7 +30,7 @@ void Actor::BOUNCEGROUND_Change()
 
 
 	V2d bn = bounceNorm;//bounceEdge->Normal();
-	bool framesDone = frame == actionLength[BOUNCEGROUND] - 1;
+	bool framesDone = frame == GetActionLength(BOUNCEGROUND) - 1;
 	if (boostBounce || (framesDone && bn.y >= 0))
 	{
 		ActivateSound(S_BOUNCEJUMP);

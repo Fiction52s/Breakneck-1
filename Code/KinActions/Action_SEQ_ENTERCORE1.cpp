@@ -9,7 +9,7 @@ void Actor::SEQ_ENTERCORE1_Start()
 
 void Actor::SEQ_ENTERCORE1_End()
 {
-	frame = actionLength[SEQ_ENTERCORE1] - 1;
+	frame = GetActionLength(SEQ_ENTERCORE1) - 1;
 }
 
 void Actor::SEQ_ENTERCORE1_Change()

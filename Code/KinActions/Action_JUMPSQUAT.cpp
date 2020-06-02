@@ -50,7 +50,7 @@ void Actor::JUMPSQUAT_Change()
 		//bufferedAttack = true;
 	}
 
-	if (frame == actionLength[JUMPSQUAT] - 1)
+	if (frame == GetActionLength(JUMPSQUAT) - 1)
 	{
 		SetActionExpr(JUMP);
 		frame = 0;

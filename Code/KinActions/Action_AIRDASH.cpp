@@ -14,7 +14,7 @@ void Actor::AIRDASH_Start()
 	//special unlimited airdash
 	if (inBubble && !hasAirDash)
 	{
-		frame = actionLength[AIRDASH] - 1;
+		frame = GetActionLength(AIRDASH) - 1;
 	}
 	else
 	{
@@ -27,7 +27,7 @@ void Actor::AIRDASH_End()
 	if (inBubble)//|| rightWire->state == Wire::PULLING )
 	{
 		//5 is here to give you extra frames to airdash
-		frame = actionLength[AIRDASH] - 1;
+		frame = GetActionLength(AIRDASH) - 1;
 		++framesExtendingAirdash;
 		airDashStall = true;
 	}

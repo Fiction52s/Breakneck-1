@@ -462,74 +462,51 @@ void Actor::SetupExtraTilesets()
 	}
 }
 
+int Actor::GetActionLength(int a)
+{
+	if (getActionLengthFuncs[a] != NULL)
+	{
+		return (this->*getActionLengthFuncs[a])();
+	}
+
+	return 0;
+}
+
+void Actor::ActionTimeIndFrameInc()
+{
+	if (timeIndFrameIncFuncs[action] != NULL)
+	{
+		(this->*timeIndFrameIncFuncs[action])();
+	}
+}
+
+void Actor::ActionTimeDepFrameInc()
+{
+	if (timeDepFrameIncFuncs[action] != NULL)
+	{
+		(this->*timeDepFrameIncFuncs[action])();
+	}
+}
+
 void Actor::SetupActionTilesets()
 {
-	string folder = "Kin/";
+	for (int i = 0; i < Count; ++i)
+	{
+		tileset[i] = NULL;
+	}
 
-	tileset[WALLATTACK] = sess->GetSizedTileset( folder, "wall_att_64x128.png", skin);
-	tileset[FAIR] = sess->GetSizedTileset( folder, "fair_80x80.png", skin);
-	tileset[JUMP] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
-	tileset[LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
-	tileset[LAND2] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
-	tileset[RUN] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
-	tileset[SPRINGSTUN] = sess->GetSizedTileset( folder, "launch_96x64.png", skin);
-	tileset[SPRINGSTUNGLIDE] = tileset[SPRINGSTUN];
-	tileset[SPRINGSTUNAIRBOUNCE] = tileset[SPRINGSTUN];
-	tileset[SPRINGSTUNBOUNCE] = tileset[SPRINGSTUN];
-	tileset[SPRINGSTUNTELEPORT] = tileset[SPRINGSTUN];
-	tileset[SWINGSTUN] = tileset[SPRINGSTUN];
-	tileset[GLIDE] = tileset[SPRINGSTUN];
-	tileset[SLIDE] = sess->GetSizedTileset( folder, "slide_64x64.png", skin);
-	tileset[SPRINT] = sess->GetSizedTileset( folder, "sprint_80x48.png", skin);
-	tileset[STANDN] = sess->GetSizedTileset( folder, "standn_96x64.png", skin);
-	tileset[UAIR] = sess->GetSizedTileset( folder, "uair_96x96.png", skin);
-	tileset[WALLCLING] = sess->GetSizedTileset( folder, "wallcling_64x64.png", skin);
-	tileset[WALLJUMP] = sess->GetSizedTileset( folder, "walljump_64x64.png", skin);
-	tileset[GRINDBALL] = sess->GetSizedTileset( folder, "grindball_64x64.png", skin);
-	tileset[GRINDLUNGE] = sess->GetSizedTileset( folder, "airdash_80x80.png", skin);
-	tileset[GRINDSLASH] = sess->GetSizedTileset( folder, "grind_lunge_96x128.png", skin);
-	tileset[GRINDATTACK] = sess->GetSizedTileset( folder, "grindball_64x64.png", skin);
-	tileset[STEEPSLIDE] = sess->GetSizedTileset( folder, "steepslide_64x64.png", skin);
-	tileset[STEEPCLIMBATTACK] = sess->GetSizedTileset( folder, "climb_att_128x64.png", skin);
-	tileset[STEEPSLIDEATTACK] = sess->GetSizedTileset( folder, "steep_att_128x64.png", skin);
-	tileset[STEEPCLIMB] = sess->GetSizedTileset( folder, "steepclimb_96x32.png", skin);
-	tileset[GROUNDHITSTUN] = sess->GetSizedTileset( folder, "hurt_64x64.png", skin);
-	tileset[WIREHOLD] = tileset[STEEPSLIDE];
-	tileset[JUMPSQUAT] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
-	tileset[INTRO] = sess->GetSizedTileset( folder, "enter_64x64.png", skin);
-	tileset[INTROBOOST] = tileset[EXITBOOST];
-	tileset[EXITWAIT] = NULL;
-	tileset[GRAVREVERSE] = sess->GetSizedTileset( folder, "grav_64x64.png", skin);
-	tileset[RIDESHIP] = sess->GetSizedTileset( folder, "dive_64x64.png", skin);
-	tileset[SKYDIVE] = sess->GetSizedTileset( folder, "walljump_64x64.png", skin);
-	tileset[SKYDIVETOFALL] = sess->GetSizedTileset( folder, "intro_0_160x80.png", skin);
-	tileset[WAITFORSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
-	tileset[GRABSHIP] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
-	tileset[GETPOWER_AIRDASH_MEDITATE] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
-	tileset[GETPOWER_AIRDASH_FLIP] = sess->GetSizedTileset( folder, "w1_airdashget_128x128.png", skin);
-	tileset[SEQ_LOOKUP] = sess->GetSizedTileset( folder, "kin_cover_64x64.png", skin);
-	tileset[SEQ_KINTHROWN] = tileset[AIRHITSTUN];
-	tileset[SEQ_KNEEL] = sess->GetSizedTileset( folder, "kin_meditate_64x96.png", skin);
-	tileset[SEQ_KNEEL_TO_MEDITATE] = tileset[SEQ_KNEEL];
-	tileset[SEQ_MEDITATE_MASKON] = tileset[SEQ_KNEEL];
-	tileset[SEQ_MASKOFF] = tileset[SEQ_KNEEL];
-	tileset[SEQ_MEDITATE] = tileset[SEQ_KNEEL];
-	tileset[SEQ_FLOAT_TO_NEXUS_OPENING] = sess->GetSizedTileset( folder, "nexus_enter_384x256.png", skin);
-	tileset[SEQ_FADE_INTO_NEXUS] = tileset[SEQ_FLOAT_TO_NEXUS_OPENING];
-	tileset[SEQ_CRAWLERFIGHT_STAND] = sess->GetSizedTileset( folder, "stand_64x64.png", skin);
-	tileset[SEQ_WAIT] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
-	tileset[SEQ_CRAWLERFIGHT_DODGEBACK] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
-	tileset[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = sess->GetSizedTileset( folder, "jump_64x64.png", skin);
-	tileset[SEQ_CRAWLERFIGHT_LAND] = sess->GetSizedTileset( folder, "land_64x64.png", skin);
-	tileset[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = sess->GetSizedTileset( folder, "run_64x64.png", skin);
-	tileset[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = sess->GetSizedTileset( folder, "slide_64x64.png", skin);
-	tileset[SEQ_TURNFACE] = sess->GetSizedTileset( folder, "shipjump_160x96.png", skin);
-	tileset[GETSHARD] = tileset[DEATH];
-	tileset[GOALKILL] = sess->GetSizedTileset( folder, "goal_w01_killa_384x256.png");
-	tileset[GOALKILL1] = sess->GetSizedTileset( folder, "goal_w01_killb_384x256.png");
-	tileset[GOALKILL2] = sess->GetSizedTileset( folder, "goal_w01_killc_384x256.png");
-	tileset[GOALKILL3] = sess->GetSizedTileset( folder, "goal_w01_killd_384x256.png");
-	tileset[GOALKILL4] = sess->GetSizedTileset( folder, "goal_w01_kille_384x256.png");
+	Tileset *temp;
+	for (int i = 0; i < Count; ++i)
+	{
+		if (getTilesetFuncs[i] != NULL)
+		{
+			temp = (this->*getTilesetFuncs[i])();
+			if (temp != NULL)
+			{
+				tileset[i] = temp;
+			}
+		}
+	}
 }
 
 void Actor::SetupTilesets()
@@ -567,16 +544,16 @@ void Actor::SetupFuncsForAction(
 	int(Actor::* getActionLength)(),
 	Tileset*(Actor::* getTileset)() )
 {
-	startActionFuncs[AIRDASH] = &Actor::AIRDASH_Start;
-	endActionFuncs[AIRDASH] = &Actor::AIRDASH_End;
-	changeActionFuncs[AIRDASH] = &Actor::AIRDASH_Change;
-	updateActionFuncs[AIRDASH] = &Actor::AIRDASH_Update;
-	updateSpriteFuncs[AIRDASH] = &Actor::AIRDASH_UpdateSprite;
-	transitionFuncs[AIRDASH] = &Actor::AIRDASH_TransitionToAction;
-	timeIndFrameIncFuncs[AIRDASH] = &Actor::AIRDASH_TimeIndFrameInc;
-	timeDepFrameIncFuncs[AIRDASH] = &Actor::AIRDASH_TimeDepFrameInc;
-	getActionLengthFuncs[AIRDASH] = &Actor::AIRDASH_GetActionLength;
-	getTilesetFuncs[AIRDASH] = &Actor::AIRDASH_GetTileset;
+	startActionFuncs[a] = start;
+	endActionFuncs[a] = end;
+	changeActionFuncs[a] = change;
+	updateActionFuncs[a] = update;
+	updateSpriteFuncs[a] = updateSprite;
+	transitionFuncs[a] = transitionToAction;
+	timeIndFrameIncFuncs[a] = timeIndInc;
+	timeDepFrameIncFuncs[a] = timeDepInc;
+	getActionLengthFuncs[a] = getActionLength;
+	getTilesetFuncs[a] = getTileset;
 }
 
 Tileset *Actor::GetActionTileset(const std::string &fn)
@@ -2122,13 +2099,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	cb.rh = 64;
 
 	//setup hitboxes
-	{
 	//for( int j = 4; j < 10; ++j )
 
 	/*diagDownSwordOffset[0] = Vector2f(32, 24);
 	diagDownSwordOffset[1] = Vector2f(32, 24);
 	diagDownSwordOffset[2] = Vector2f(32, 24);*/
-
 	diagDownSwordOffset[0] = Vector2f(32, 24);
 	diagDownSwordOffset[1] = Vector2f(16, 32);
 	diagDownSwordOffset[2] = Vector2f(16, 64);
@@ -2397,93 +2372,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	airBounceFlameFrames = 20 * 3;
 	runBounceFlameFrames = 21 * 3;
-	actionLength[WALLATTACK] = 8 * 2;
-	actionLength[DAIR] = 16;
-	maxBBoostCount = actionLength[DASH];
-	actionLength[FAIR] = 8 * 2;
-	actionLength[JUMP] = 2;
-	actionLength[SEQ_WAIT] = 2;
-	actionLength[SEQ_CRAWLERFIGHT_DODGEBACK] = 2;
-	actionLength[SEQ_CRAWLERFIGHT_STRAIGHTFALL] = 2;
-	actionLength[LAND] = 1;
-	actionLength[SEQ_CRAWLERFIGHT_LAND] = 1;
-	actionLength[LAND2] = 1;
-	actionLength[RUN] = 10 * 4;
-	actionLength[SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY] = 10 * 4;
-	actionLength[SLIDE] = 1;
-	actionLength[SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED] = 1;
-	actionLength[SPRINT] = 8 * 4;
-	actionLength[SEQ_ENTERCORE1] = 60;
-	actionLength[SPRINGSTUN] = 8;
-	actionLength[SPRINGSTUNGLIDE] = 8;
-
-	actionLength[SPRINGSTUNAIRBOUNCE] = 30;
-	actionLength[SPRINGSTUNBOUNCE] = 8;
-	actionLength[SPRINGSTUNTELEPORT] = 8;
-
-	actionLength[SWINGSTUN] = 8;
-
-	actionLength[GLIDE] = 8;
-	actionLength[SEQ_CRAWLERFIGHT_STAND] = 20 * 8;//240;//20 * 8;
-	actionLength[STANDN] = 8 * 2;
-	actionLength[UAIR] = 16;
-	actionLength[GRINDATTACK] = 1;
-	actionLength[STEEPSLIDE] = 1;
-	actionLength[STEEPCLING] = 1;
-	actionLength[WALLCLING] = 1;
-	actionLength[WALLJUMP] = 9 * 2;
-	actionLength[GRINDBALL] = 1;
-	actionLength[GRINDLUNGE] = 20;
-	actionLength[GRINDSLASH] = 16;
-	actionLength[STEEPCLIMBATTACK] = 4 * 4;
-	actionLength[SKYDIVETOFALL] = 10 * 4;
-	actionLength[WAITFORSHIP] = 60 * 1;
-	actionLength[GRABSHIP] = 10 * 5 + 20;
-	actionLength[GETPOWER_AIRDASH_MEDITATE] = 300;
-	actionLength[RIDESHIP] = 1;
-	actionLength[SKYDIVE] = 9 * 2;
-
-	actionLength[EXITWAIT] = 6 * 3 * 2;
-	actionLength[GRAVREVERSE] = 20;
-	actionLength[JUMPSQUAT] = 3;
-	actionLength[INTRO] = 18 * 2;
-	actionLength[INTROBOOST] = 22 * 2;//40 * 2;
-	actionLength[STEEPSLIDEATTACK] = 16;
-	actionLength[AIRHITSTUN] = 1;
-	actionLength[STEEPCLIMB] = 8 * 4;
-	actionLength[GROUNDHITSTUN] = 1;
-	actionLength[WIREHOLD] = 1;
-	actionLength[GETPOWER_AIRDASH_FLIP] = 133 * 2;
-	
-		
-	actionLength[SPAWNWAIT] = 120;
-	actionLength[RAILDASH] = 20;
-	actionLength[RAILSLIDE] = 1;
-
-
-	actionLength[GOALKILL] = 72 * 2;
-	actionLength[GOALKILLWAIT] = 2;
-
-	actionLength[NEXUSKILL] = 63 * 2;//actionLength[GOALKILL];
-
-	actionLength[SEQ_LOOKUP] = 1;
-	actionLength[SEQ_LOOKUPDISAPPEAR] = 1;
-		
-	actionLength[SEQ_KINTHROWN] = 1;
-	actionLength[SEQ_KINSTAND] = actionLength[STAND];
-
-	actionLength[SEQ_KNEEL] = 1;
-
-	actionLength[SEQ_KNEEL_TO_MEDITATE] = 7 * 3;
-	actionLength[SEQ_MEDITATE_MASKON] = 1;
-	actionLength[SEQ_MASKOFF] = 24 * 3;
-	actionLength[SEQ_MEDITATE] = 1;
-
-	actionLength[SEQ_FLOAT_TO_NEXUS_OPENING] = 3 * 10;
-	actionLength[SEQ_FADE_INTO_NEXUS] = 8 * 10;
-
-	actionLength[GETSHARD] = 2;//44 * 2;
-	}
+	maxBBoostCount = GetActionLength(DASH);
 		 	
 
 	gsdodeca.setTexture( *tsgsdodeca->texture);
@@ -2991,7 +2880,7 @@ void Actor::SetupTimeBubbles()
 
 void Actor::ActionEnded()
 {
-	if (frame >= actionLength[action])
+	if (frame >= GetActionLength(action))
 	{
 		EndAction();
 	}
@@ -9051,6 +8940,7 @@ void Actor::UpdatePhysics()
 					extra = (offsetX + movement) + b.rw;
 				}
 				double m = movement;
+
 				if( (movement > 0 && extra > 0) || (movement < 0 && extra < 0) )
 				{
 					m -= extra;
@@ -9068,7 +8958,22 @@ void Actor::UpdatePhysics()
 				else
 				{
 					movement = 0;
+
 					offsetX += m;
+					/*if ( m > 0 && offsetX + m < 0)
+					{
+						m = -offsetX;
+						offsetX = 0;
+					}
+					else if( m < 0 && offsetX + m > 0 )
+					{
+						m = -offsetX;
+						offsetX = 0;
+					}
+					else
+					{
+						offsetX += m;
+					}				*/	
 				}
 
 				if(!approxEquals( m, 0 ) )
@@ -10966,6 +10871,29 @@ void Actor::PhysicsResponse()
 	}
 }
 
+void Actor::SetGroundedSpritePos()
+{
+	V2d groundP = ground->GetPosition(edgeQuantity);
+	double angle = GroundedAngle();
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+	sprite->setRotation(angle / PI * 180);
+
+	double factor = 1.0 - abs((angle / (PI / 2)));. 
+	if (factor < .9)
+		factor = 0;
+	cout << "factor: " << factor << endl;
+
+	Vector2f testOffset(ground->Along() * offsetX * factor);
+
+	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+	{
+		sprite->setPosition(groundP.x + offsetX, groundP.y);
+	}
+	else
+		sprite->setPosition(Vector2f(groundP) + testOffset);
+}
+
 void Actor::UpdateHitboxes()
 {
 	double angle = 0;
@@ -11770,12 +11698,12 @@ void Actor::UpdateBounceFlameCounters()
 
 void Actor::TryEndLevel()
 {
-	if (action == EXITWAIT && frame == actionLength[EXITWAIT])
+	if (action == EXITWAIT && frame == GetActionLength(EXITWAIT))
 	{
 		owner->EndLevel();
 		//owner->goalDestroyed = true;	
 	}
-	else if (action == EXITBOOST && frame == actionLength[EXITBOOST])
+	else if (action == EXITBOOST && frame == GetActionLength(EXITBOOST))
 	{
 		owner->EndLevel();
 		//owner->goalDestroyed = true;

@@ -109,7 +109,7 @@ void Actor::DASH_Change()
 	else
 	{
 		//cout << "cant stand up" << endl;
-		if (frame == actionLength[DASH] - 2)
+		if (frame == GetActionLength(DASH) - 2)
 			frame = 10;
 	}
 }
@@ -220,7 +220,7 @@ void Actor::DASH_UpdateSprite()
 	{
 		checkFrame = frame / 2;
 	}
-	else if (frame < actionLength[DASH] - 1)
+	else if (frame < GetActionLength(DASH) - 1)
 	{
 		checkFrame = 1 + ((frame / 2 - 1) % 5);
 	}

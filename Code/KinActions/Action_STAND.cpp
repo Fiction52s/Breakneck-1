@@ -43,17 +43,7 @@ void Actor::STAND_UpdateSprite()
 	SetSpriteTile(f, r);
 	//assert(ground != NULL);
 
-	double angle = GroundedAngle();
-
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-	V2d pp = ground->GetPosition(edgeQuantity);
-
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
-	sprite->setRotation(angle / PI * 180);
+	SetGroundedSpritePos();
 
 	if (scorpOn)
 	{
@@ -67,31 +57,6 @@ void Actor::STAND_UpdateSprite()
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;
 	}
-}
-
-void Actor::STAND_TransitionToAction(int a)
-{
-
-}
-
-void Actor::STAND_TimeIndFrameInc()
-{
-
-}
-
-void Actor::STAND_TimeDepFrameInc()
-{
-
-}
-
-int Actor::STAND_GetActionLength()
-{
-	return 20 * 8;
-}
-
-Tileset * Actor::STAND_GetTileset()
-{
-	return GetActionTileset("stand_64x64.png");
 }
 
 void Actor::STAND_TransitionToAction(int a)

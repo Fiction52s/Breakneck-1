@@ -24,9 +24,7 @@ void Actor::RUN_Update()
 
 void Actor::RUN_UpdateSprite()
 {
-	V2d pp = ground->GetPosition(edgeQuantity);
-
-	double angle = GroundedAngle();
+	
 
 
 	//V2d along = normalize( ground->v1 - ground->v0 );
@@ -38,13 +36,15 @@ void Actor::RUN_UpdateSprite()
 
 	//assert(ground != NULL);
 
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
+	SetGroundedSpritePos();
+
+	V2d pp = ground->GetPosition(edgeQuantity);
+
+	double angle = GroundedAngle();
 
 	V2d along;
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 	{
-		sprite->setPosition(pp.x + offsetX, pp.y);
 		if (!reversed)
 		{
 			along = V2d(1, 0);
@@ -56,7 +56,6 @@ void Actor::RUN_UpdateSprite()
 	}
 	else
 	{
-		sprite->setPosition(pp.x, pp.y);
 		along = normalize(ground->v1 - ground->v0);
 	}
 

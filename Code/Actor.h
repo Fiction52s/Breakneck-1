@@ -246,6 +246,8 @@ struct Actor : QuadTreeCollider,
 	void UpdateActionSprite();
 
 	void HandleTouchedGate();
+
+	void SetGroundedSpritePos();
 	//void TransferZones(
 	
 
@@ -263,6 +265,9 @@ struct Actor : QuadTreeCollider,
 	std::vector<int(Actor::*)()> getActionLengthFuncs;
 	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
 
+	void ActionTimeIndFrameInc();
+	void ActionTimeDepFrameInc();
+	int GetActionLength(int a);
 	void SetupFuncsForAction(int a,
 		void(Actor::*)(),
 		void(Actor::*)(),
@@ -519,7 +524,7 @@ struct Actor : QuadTreeCollider,
 	bool TrySprintOrRun(V2d &gNorm);
 	void SetSprintStartFrame();
 	
-	bool TryAirdash();
+	bool TryAirDash();
 	bool TryGlide();
 
 	int framesStanding;
@@ -1058,7 +1063,7 @@ struct Actor : QuadTreeCollider,
 
 	double steepThresh;
 
-	int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
+	//int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
 	std::list<sf::Vector2f> *auraPoints[3][Action::Count];
 	bool usingAura;
 	int CreateAura( std::list<sf::Vector2f> *&outPointList,

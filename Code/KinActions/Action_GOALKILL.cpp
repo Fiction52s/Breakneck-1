@@ -97,7 +97,7 @@ void Actor::GOALKILL_UpdateSprite()
 		int st = 48 * 2;
 		if (frame >= st)
 		{
-			double a = (frame - st) / (double)(actionLength[GOALKILL] - (st + 1));
+			double a = (frame - st) / (double)(GetActionLength(GOALKILL) - (st + 1));
 			double t = cb.GetValue(a);
 			V2d newPos = start + (end - start) * t;
 			position = newPos;

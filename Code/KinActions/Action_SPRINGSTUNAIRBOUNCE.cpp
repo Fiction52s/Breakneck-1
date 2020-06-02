@@ -9,7 +9,7 @@ void Actor::SPRINGSTUNAIRBOUNCE_Start()
 
 void Actor::SPRINGSTUNAIRBOUNCE_End()
 {
-	frame = actionLength[SPRINGSTUNAIRBOUNCE] - 1;
+	frame = GetActionLength(SPRINGSTUNAIRBOUNCE) - 1;
 }
 
 void Actor::SPRINGSTUNAIRBOUNCE_Change()
