@@ -172,10 +172,6 @@ void Actor::STEEPSLIDE_UpdateSprite()
 	V2d pp = ground->GetPosition(edgeQuantity);
 
 	sprite->setPosition(pp.x, pp.y);
-	//if( angle == 0 )
-	//	sprite->setPosition( pp.x + offsetX, pp.y );
-	//else
-	//	sprite->setPosition( pp.x, pp.y );
 
 	if (scorpOn)
 	{

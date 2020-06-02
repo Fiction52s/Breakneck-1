@@ -46,7 +46,7 @@ void Actor::SLIDE_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(0, r);
 
-	SetGroundedSpritePos();
+	SetGroundedSpriteTransform();
 
 	if (scorpOn)
 	{

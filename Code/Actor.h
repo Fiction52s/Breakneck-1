@@ -247,7 +247,9 @@ struct Actor : QuadTreeCollider,
 
 	void HandleTouchedGate();
 
-	void SetGroundedSpritePos();
+	void SetGroundedSpritePos( Edge * e, double angle );
+	void SetGroundedSpriteTransform();
+	void SetGroundedSpriteTransform(Edge * e, double angle );
 	//void TransferZones(
 	
 

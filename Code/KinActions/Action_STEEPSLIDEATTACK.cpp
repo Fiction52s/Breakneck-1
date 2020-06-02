@@ -143,15 +143,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 	}
 
 
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
-
-	V2d pp = ground->GetPosition(edgeQuantity);
-
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
+	SetGroundedSpriteTransform();
 
 	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
 	V2d truDir(-trueNormal.y, trueNormal.x);//normalize( ground->v1 - ground->v0 );

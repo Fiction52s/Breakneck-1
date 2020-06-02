@@ -212,15 +212,11 @@ void Actor::LAND_UpdateSprite()
 	double angle = GroundedAngle();
 
 
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
+	
 
 	V2d pp = ground->GetPosition(edgeQuantity);
 
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
+	SetGroundedSpriteTransform();
 
 	if (frame == 0 && slowCounter == 1)
 	{

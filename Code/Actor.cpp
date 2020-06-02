@@ -10871,20 +10871,43 @@ void Actor::PhysicsResponse()
 	}
 }
 
-void Actor::SetGroundedSpritePos()
+void Actor::SetGroundedSpriteTransform()
 {
-	V2d groundP = ground->GetPosition(edgeQuantity);
 	double angle = GroundedAngle();
+	SetGroundedSpriteTransform(ground, angle );
+}
+
+void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
+{
+	V2d groundP = e->GetPosition(edgeQuantity);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);
 
-	double factor = 1.0 - abs((angle / (PI / 2)));. 
-	if (factor < .9)
-		factor = 0;
-	cout << "factor: " << factor << endl;
+	double factor = 1.0 - abs((angle / (PI / 2)));
+		if (factor < .9)
+			factor = 0;
 
-	Vector2f testOffset(ground->Along() * offsetX * factor);
+	Vector2f testOffset(e->Along() * offsetX * factor);
+
+	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+	{
+		sprite->setPosition(groundP.x + offsetX, groundP.y);
+	}
+	else
+		sprite->setPosition(Vector2f(groundP) + testOffset);
+}
+
+void Actor::SetGroundedSpritePos( Edge * e, double angle )
+{
+	V2d groundP = e->GetPosition(edgeQuantity);
+
+	double factor = 1.0 - abs((angle / (PI / 2)));
+		if (factor < .9)
+			factor = 0;
+
+	//aligns based on slopes
+	Vector2f testOffset(e->Along() * offsetX * factor);
 
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 	{

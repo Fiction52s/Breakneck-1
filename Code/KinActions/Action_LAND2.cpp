@@ -210,17 +210,7 @@ void Actor::LAND2_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(1, r);
 
-	double angle = GroundedAngle();
-
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
-
-	V2d pp = ground->GetPosition(edgeQuantity);
-
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
+	SetGroundedSpriteTransform();
 }
 
 void Actor::LAND2_TransitionToAction(int a)

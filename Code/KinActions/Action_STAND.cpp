@@ -43,7 +43,7 @@ void Actor::STAND_UpdateSprite()
 	SetSpriteTile(f, r);
 	//assert(ground != NULL);
 
-	SetGroundedSpritePos();
+	SetGroundedSpriteTransform();
 
 	if (scorpOn)
 	{

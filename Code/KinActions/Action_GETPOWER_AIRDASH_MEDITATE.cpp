@@ -30,19 +30,7 @@ void Actor::GETPOWER_AIRDASH_MEDITATE_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(f, r);
 
-	//assert(ground != NULL);
-
-	double angle = GroundedAngle();
-
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-	V2d pp = ground->GetPosition(edgeQuantity);
-
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
-	sprite->setRotation(angle / PI * 180);
+	SetGroundedSpriteTransform();
 }
 
 void Actor::GETPOWER_AIRDASH_MEDITATE_TransitionToAction(int a)

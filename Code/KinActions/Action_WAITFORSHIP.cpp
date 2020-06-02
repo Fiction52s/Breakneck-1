@@ -29,18 +29,8 @@ void Actor::WAITFORSHIP_UpdateSprite()
 
 	if (ground != NULL)
 	{
-		double angle = GroundedAngle();
-
-		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-
-		V2d pp = ground->GetPosition(edgeQuantity);
-
-		if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-			sprite->setPosition(pp.x + offsetX, pp.y);
-		else
-			sprite->setPosition(pp.x, pp.y);
-		sprite->setRotation(angle / PI * 180);
-
+		SetGroundedSpriteTransform();
+		
 
 		//cout << "angle: " << angle / PI * 180  << endl;
 	}

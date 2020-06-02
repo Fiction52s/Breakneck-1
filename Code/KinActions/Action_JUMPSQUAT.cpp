@@ -94,27 +94,18 @@ void Actor::JUMPSQUAT_UpdateSprite()
 			angle = 0;
 		}
 	}
-
-
-
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
-
-
-	V2d pp;
+	
 	if (ground != NULL)
-		pp = ground->GetPosition(edgeQuantity);
+		SetGroundedSpriteTransform( ground, angle );
 	else if (grindEdge != NULL)
-		pp = grindEdge->GetPosition(grindQuantity);
+	{
+		SetGroundedSpriteTransform( grindEdge, angle);
+	}
+		
 	else
 	{
 		assert(0);
 	}
-
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
 }
 
 void Actor::JUMPSQUAT_TransitionToAction(int a)

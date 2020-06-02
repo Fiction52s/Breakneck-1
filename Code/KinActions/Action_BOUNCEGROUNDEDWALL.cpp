@@ -112,10 +112,7 @@ void Actor::BOUNCEGROUNDEDWALL_UpdateSprite()
 	sprite->setRotation(angle / PI * 180);
 	V2d pp = ground->GetPosition(edgeQuantity);
 
-	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
-		sprite->setPosition(pp.x + offsetX, pp.y);
-	else
-		sprite->setPosition(pp.x, pp.y);
+	SetGroundedSpritePos(ground, angle);
 
 	scorpSet = true;
 }

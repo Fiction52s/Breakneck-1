@@ -230,7 +230,6 @@ void Actor::SPRINT_UpdateSprite()
 	V2d along;
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 	{
-		sprite->setPosition(pp.x + offsetX, pp.y);
 		if (!reversed)
 		{
 			along = V2d(1, 0);
@@ -242,9 +241,10 @@ void Actor::SPRINT_UpdateSprite()
 	}
 	else
 	{
-		sprite->setPosition(pp.x, pp.y);
 		along = normalize(ground->v1 - ground->v0);
 	}
+
+	SetGroundedSpriteTransform();
 
 	V2d gn(along.y, -along.x);
 

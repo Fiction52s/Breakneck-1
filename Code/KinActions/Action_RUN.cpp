@@ -36,7 +36,7 @@ void Actor::RUN_UpdateSprite()
 
 	//assert(ground != NULL);
 
-	SetGroundedSpritePos();
+	SetGroundedSpriteTransform();
 
 	V2d pp = ground->GetPosition(edgeQuantity);
 
