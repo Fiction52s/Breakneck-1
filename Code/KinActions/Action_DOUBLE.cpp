@@ -5,8 +5,8 @@ using namespace std;
 
 void Actor::DOUBLE_Start()
 {
-	action = GetDoubleJump(); //a bit messy to use this
-	frame = 0;
+	//action = GetDoubleJump(); //a bit messy to use this
+	//frame = 0;
 	holdDouble = true;
 }
 

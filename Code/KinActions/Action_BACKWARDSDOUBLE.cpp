@@ -5,8 +5,8 @@ using namespace std;
 
 void Actor::BACKWARDSDOUBLE_Start()
 {
-	action = GetDoubleJump();
-	frame = 0;
+	//action = GetDoubleJump();
+	//frame = 0;
 	holdDouble = true;
 }
 

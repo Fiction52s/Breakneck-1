@@ -15659,7 +15659,7 @@ bool Actor::TryDoubleJump()
 			cancelAttack = action;
 		}
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
-		SetActionExpr( DOUBLE );
+		SetActionExpr( GetDoubleJump() );
 
 		if (currInput.rightShoulder && !pauseBufferedJump && !stunBufferedJump)
 		{
