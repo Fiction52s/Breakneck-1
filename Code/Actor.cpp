@@ -3152,9 +3152,10 @@ void Actor::CreateKeyExplosion()
 	}
 
 	keyExplodeRingGroup->SetBase(floatPos);
+	keyExplodeRingGroup->Reset();
 	keyExplodeRingGroup->Start();
-	owner->cam.SetRumble(5, 5, 20);
-	owner->Pause(5);
+	owner->cam.SetRumble(3, 3, 20);//5
+	owner->Pause(4);//5
 }
 
 void Actor::CreateAttackLightning()
@@ -10329,7 +10330,7 @@ void Actor::HandleTouchedGate()
 
 				oldZone->connectedCount = 0;
 				oldZone->DecrementNeighborsAttached( newZone );
-				newZone->ReformDeadEnds();
+				//newZone->ReformDeadEnds();
 				
 
 				CreateKeyExplosion();

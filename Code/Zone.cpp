@@ -427,7 +427,7 @@ void Zone::DecrementConnected( Zone *z )
 			connectedCount--;
 			if (connectedCount == 1)
 			{
-				ReformDeadEnds();
+				ReformAllGates();
 				DecrementNeighborsAttached(NULL);
 			}
 		}
