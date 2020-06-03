@@ -3822,22 +3822,8 @@ void GameSession::SetupZones()
 			}
 		}
 
-		//if( (*it)->type == EnemyType::EN_CRAWLERQUEEN )
-		//{
-		//	//cout << "whats this" << endl;
-		//	if( (*it)->zone != NULL )
-		//	{
-		//		(*it)->zone->action = Zone::OPEN;
-		//	}
-		//	
-		//}
-		//else
-		//{
 		if( (*it)->zone != NULL )
 			(*it)->zone->allEnemies.push_back( (*it) );
-		//}
-
-
 	}
 
 	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
@@ -3850,13 +3836,7 @@ void GameSession::SetupZones()
 				++numTotalKeys;
 			}
 		}
-		//(*zit)->totalStartingKeys = numTotalKeys;
 	}
-
-	//for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
-	//{
-		//(*zit)->requiredKeys = (*zit)->totalStartingKeys;
-	//}
 
 	//set key number objects correctly
 	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
@@ -3980,14 +3960,64 @@ void GameSession::SetupZones()
 		(*it)->Init();
 	}
 
-
-	/*for( int i = 0; i < numGates; ++i )
+	//std::vector<Zone*> zoneVec(zones.size());
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
 	{
-		if( gates[i]->zoneA == gates[i]->zoneB )
+		(*it)->hasGoal = false;
+	}
+
+	bool foundGoal = false;
+	//Zone *goalZone = NULL;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (auto ait = (*it)->allEnemies.begin(); ait != (*it)->allEnemies.end(); ++ait)
 		{
-			gates[i]->SetLocked( true );
+			if ((*ait)->IsGoalType())
+			{
+				(*it)->hasGoal = true;
+				foundGoal = true;
+				break;
+			}
 		}
-	}*/
+		if (foundGoal)
+			break;
+	}
+
+	if (!foundGoal)
+	{
+		assert(foundGoal);
+	}
+
+	Gate *g;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ((*it)->hasGoal)
+		{
+			(*it)->connectedCount = -1;
+		}
+
+		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
+		{
+			g = (Gate*)(*git)->info;
+			if ( g->zoneA == (*it))
+			{
+				(*it)->connectedSet.insert(g->zoneB);
+			}
+			else if (g->zoneB == (*it))
+			{
+				(*it)->connectedSet.insert(g->zoneA);
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+
+		(*it)->connectedCount = (*it)->connectedSet.size();
+	}
+
+	//originalZone->goalIndex = 0;
+	//originalZone->SetAdjacentZoneIndexes();
 }
 
 int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
@@ -9997,8 +10027,6 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 			(*it)->spawned = true;
 			AddEnemy( (*it) );
 		}
-
-		//cout << "setting active " << z << " to true" << endl;
 		
 		z->active = true;
 
@@ -10013,6 +10041,8 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 			z->activeNext = activatedZoneList;
 			activatedZoneList = z;
 		}
+
+		//z->ReformHigherIndexGates();
 	}
 	else
 	{
@@ -10046,6 +10076,7 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	}
 
 	currentZone = z;
+
 
 	gateMarkers->SetToZone(currentZone);
 

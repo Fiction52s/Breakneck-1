@@ -59,6 +59,8 @@ struct HitParams
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
+
+	bool IsGoalType();
 	virtual void UpdateSpriteFromParams(ActorParams *ap) {}
 	virtual void AddToWorldTrees() {}
 

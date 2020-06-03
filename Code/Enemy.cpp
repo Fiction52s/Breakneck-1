@@ -30,6 +30,13 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+bool Enemy::IsGoalType()
+{
+	return type == EN_GOAL 
+		|| type == EN_SHIPPICKUP
+		|| type == EN_NEXUS;
+}
+
 void Enemy::CreateSurfaceMover(PositionInfo &pi,
 	double rad, SurfaceMoverHandler *handler )
 {

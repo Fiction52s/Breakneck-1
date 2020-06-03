@@ -10327,6 +10327,9 @@ void Actor::HandleTouchedGate()
 
 				owner->ActivateZone(newZone);
 
+				oldZone->connectedCount = 0;
+				oldZone->DecrementNeighborsAttached( newZone );
+				newZone->ReformDeadEnds();
 				
 
 				CreateKeyExplosion();

@@ -81,6 +81,8 @@ void Zone::SetZoneType( ZoneType zt )
 	zType = zt;
 }
 
+
+
 void Zone::ReformAllGates( Gate *ignoreGate)
 {
 	for (list<Edge*>::iterator it = gates.begin(); it !=
@@ -365,6 +367,132 @@ vector<sf::Vector2i> &Zone::PointVector()
 	return pointVector[0];
 }
 
+void Zone::ReformDeadEnds()
+{
+	Gate *og;
+	for (auto it = connectedSet.begin(); it != connectedSet.end(); ++it)
+	{
+		if ((*it)->hasGoal)
+			continue;
+
+		if ((*it)->connectedCount < 2)
+		{
+			for (auto git = gates.begin(); git != gates.end(); ++git)
+			{
+				og = (Gate*)(*git)->info;
+				if (og->zoneA == (*it))
+				{
+					if ((og->gState == Gate::HARD
+						|| og->gState == Gate::SOFT
+						|| og->gState == Gate::SOFTEN))
+					{
+						og->Reform();
+					}
+				}
+				else if (og->zoneB == (*it))
+				{
+					if ((og->gState == Gate::HARD
+						|| og->gState == Gate::SOFT
+						|| og->gState == Gate::SOFTEN))
+					{
+						og->Reform();
+					}
+				}
+				else
+				{
+					//assert(0);
+				}
+			}
+		}
+	}
+}
+
+void Zone::DecrementNeighborsAttached( Zone *exclude )
+{
+	for (auto it = connectedSet.begin(); it != connectedSet.end(); ++it)
+	{
+		if (exclude == (*it) || (*it)->hasGoal )
+			continue;
+		(*it)->DecrementConnected(this);
+	}
+}
+
+void Zone::DecrementConnected( Zone *z )
+{
+	auto findIt = connectedSet.find(z);
+	if (findIt != connectedSet.end())
+	{
+		if (connectedCount > 1)
+		{
+			connectedCount--;
+			if (connectedCount == 1)
+			{
+				ReformDeadEnds();
+				DecrementNeighborsAttached(NULL);
+			}
+		}
+			
+		//connectedSet.erase(findIt);
+
+	}
+}
+
+void Zone::SetAdjacentZoneIndexes()
+{
+	Gate *g;
+	assert(goalIndex >= 0);
+
+	int newGoalIndex = goalIndex + 1;
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+		if (g->zoneA == this)
+		{
+			if (g->zoneB->goalIndex < newGoalIndex)
+			{
+				g->zoneB->goalIndex = newGoalIndex;
+			}
+		}
+		else if (g->zoneB == this)
+		{
+			if (g->zoneA->goalIndex < newGoalIndex)
+			{
+				g->zoneA->goalIndex = newGoalIndex;
+			}
+		}
+		else
+		{
+			assert(0);
+		}
+	}
+
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+		if (g->zoneA == this)
+		{
+			if (g->zoneB->goalIndex > goalIndex)
+			{
+				higherIndexGates.push_back(g);
+				g->zoneB->SetAdjacentZoneIndexes();
+			}
+		}
+		else if (g->zoneB == this)
+		{
+			if (g->zoneA->goalIndex > goalIndex)
+			{
+				higherIndexGates.push_back(g);
+				g->zoneA->SetAdjacentZoneIndexes();
+			}
+		}
+		else
+		{
+			assert(0);
+		}
+		
+	}
+}
+
 void Zone::SetShadowColor( sf::Color c )
 {
 	int vCount = definedArea->getVertexCount();
@@ -377,6 +505,7 @@ void Zone::SetShadowColor( sf::Color c )
 
 void Zone::Reset()
 {
+	connectedCount = connectedSet.size();
 	active = false;
 	action = UNEXPLORED;
 	frame = 0;

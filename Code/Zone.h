@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include "Gate.h"
 #include <list>
+#include <set>
 
 //typedef std::pair <Gate*,bool> GateBool;
 struct Enemy;
@@ -32,6 +33,8 @@ struct Zone
 	int frame;
 	float GetOpeningAlpha();
 	bool secretZone;
+	void SetAdjacentZoneIndexes();
+	std::list<Gate*> higherIndexGates;
 
 	bool reexplored;
 	int openFrames;
@@ -60,6 +63,12 @@ struct Zone
 	ZoneType zType;
 	void Reset();
 	void ReformAllGates( Gate *ignoreGate = NULL);
+	void ReformDeadEnds();
+	void DecrementNeighborsAttached( Zone * exclude );
+	void DecrementConnected( Zone * z);
+
+
+	bool hasGoal;
 
 	sf::VertexArray *definedArea;
 	std::list<Edge*> gates;
@@ -69,9 +78,11 @@ struct Zone
 	std::list<Zone*> subZones;
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
+	std::set<Zone*> connectedSet;
 	bool active;
-	//int requiredKeys;
-	//int totalStartingKeys;
+	
+	int goalIndex;
+	int connectedCount;
 
 	bool showShadow;
 	GameSession *owner;
