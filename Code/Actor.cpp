@@ -10918,6 +10918,8 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 	double factor;
 	if (reversed)
 	{
+		if (angle < 0)
+			angle += 2 * PI;
 		factor = 1.0 - abs(((angle-PI) / (PI / 6)));
 	}
 	else
@@ -10925,7 +10927,7 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 		factor = 1.0 - abs((angle / (PI / 6)));
 	}
 	
-	cout << "factor: " << factor << "angle: " << angle << endl;
+	//cout << "factor: " << factor << "angle: " << angle << endl;
 		//if (factor < .9)
 		//	factor = 0;
 	V2d along = e->Along();
@@ -10947,12 +10949,25 @@ void Actor::SetGroundedSpritePos( Edge * e, double angle )
 {
 	V2d groundP = e->GetPosition(edgeQuantity);
 
-	double factor = 1.0 - abs((angle / (PI / 2)));
-		if (factor < .9)
-			factor = 0;
+	double factor;
+	if (reversed)
+	{
+		if (angle < 0)
+			angle += 2 * PI;
+		factor = 1.0 - abs(((angle - PI) / (PI / 6)));
+	}
+	else
+	{
+		factor = 1.0 - abs((angle / (PI / 6)));
+	}
 
 	//aligns based on slopes
-	Vector2f testOffset(e->Along() * offsetX * factor);
+	V2d along = e->Along();
+	if (reversed)
+	{
+		along = -along;
+	}
+	Vector2f testOffset(along * offsetX * factor);
 
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 	{
