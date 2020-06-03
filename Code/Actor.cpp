@@ -10326,10 +10326,12 @@ void Actor::HandleTouchedGate()
 					owner->keyMarker->Reset();
 				}
 
-				owner->ActivateZone(newZone);
+				//activatezone
 
 				oldZone->connectedCount = 0;
 				oldZone->DecrementNeighborsAttached( newZone );
+
+				owner->ActivateZone(newZone);
 				//newZone->ReformDeadEnds();
 				
 
@@ -10913,12 +10915,25 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
 	sprite->setRotation(angle / PI * 180);
 
-	double factor = 1.0 - abs((angle / (PI / 6)));
-	//cout << "factor: " << factor << "angle: " << angle << endl;
+	double factor;
+	if (reversed)
+	{
+		factor = 1.0 - abs(((angle-PI) / (PI / 6)));
+	}
+	else
+	{
+		factor = 1.0 - abs((angle / (PI / 6)));
+	}
+	
+	cout << "factor: " << factor << "angle: " << angle << endl;
 		//if (factor < .9)
 		//	factor = 0;
-
-	Vector2f testOffset(e->Along() * offsetX * factor);
+	V2d along = e->Along();
+	if (reversed)
+	{
+		along = -along;
+	}
+	Vector2f testOffset(along * offsetX * factor);
 
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 	{
