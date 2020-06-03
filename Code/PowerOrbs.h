@@ -81,6 +81,7 @@ struct FillRing
 	void ResetFull();
 	bool IsFull();
 	bool IsEmpty();
+	float GetCurrPortionOfTotal();
 
 	sf::VertexArray *ringVA;
 	sf::VertexArray *middleVA;
@@ -127,6 +128,7 @@ struct KinRing
 	void Update();
 	PowerRing *powerRing;
 	DesperationOrb *despOrb;
+	sf::CircleShape statusCircle;
 };
 
 #endif

@@ -10336,6 +10336,9 @@ void Actor::HandleTouchedGate()
 				
 
 				CreateKeyExplosion();
+
+				RestoreAirDash();
+				RestoreDoubleJump();
 			}
 		}
 

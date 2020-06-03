@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Actor.h"
 #include "MainMenu.h"
+#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -298,10 +299,11 @@ void FillRing::CreateRing()
 
 void FillRing::Draw( sf::RenderTarget *target )
 {
-	for (int i = 0; i < numRings; ++i)
+	rings[currRing]->Draw(target);
+	/*for (int i = 0; i < numRings; ++i)
 	{
 		rings[i]->Draw(target);
-	}
+	}*/
 	//target->draw( *ringVA );
 	//target->draw( *middleVA );
 	//target->draw( scorpTest );
@@ -319,6 +321,11 @@ int FillRing::Fill( int fill )
 	}
 
 	return res;
+}
+
+float FillRing::GetCurrPortionOfTotal()
+{
+	return ((float)rings[currRing]->currPower) / rings[currRing]->maxPower;
 }
 
 int FillRing::Drain(int drain)
@@ -363,15 +370,25 @@ KinRing::KinRing( Actor *actor )
 	float totalHealth = actor->totalHealth;
 	FillRingSection *blah[] = {
 		//new FillRingSection(tm, Color::Black, sf::Color::Black, sf::Color::Black,0, 300, 0),
-		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth / 3, 0),
-		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, totalHealth / 3, 0),
-		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, totalHealth / 3, 0)
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth/3, -PI / 2.0),
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth/3, -PI / 2.0),
+		new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth/3, -PI / 2.0),
+		//new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,1, totalHealth / 3, 0),
+		//new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,2, totalHealth / 3, 0),
+		//new FillRingSection(tm, Color::Cyan, sf::Color::Cyan, sf::Color::Cyan,3, totalHealth / 3, 0)
 	};
 
 	//Vector2f powerRingPos(80, 220);
 	Vector2f powerRingPos(0, 0);
 	powerRing = new PowerRing(powerRingPos, sizeof(blah) / sizeof(FillRingSection*), blah);
 	despOrb = new DesperationOrb(tm, powerRingPos);
+
+	statusCircle.setRadius(30);
+	//statusCircle.setOutlineColor(Color::Black);
+	//statusCircle.setOutlineThickness(3);
+	statusCircle.setFillColor(Color::Green);
+	statusCircle.setOrigin(statusCircle.getLocalBounds().width / 2,
+		statusCircle.getLocalBounds().height / 2);
 }
 
 sf::Vector2f KinRing::GetCenter()
@@ -383,6 +400,7 @@ void KinRing::SetCenter(sf::Vector2f &pos)
 {
 	powerRing->SetPosition(pos);
 	despOrb->SetPosition(pos);
+	statusCircle.setPosition(pos);
 }
 
 void KinRing::Reset()
@@ -399,11 +417,43 @@ KinRing::~KinRing()
 void KinRing::Update()
 {
 	powerRing->Update();
-	//despOrb->Update();
+	//float portion = powerRing->GetCurrPortionOfTotal();
+	//Color c = Color::Red;
+	//Color c1 = Color::Green;
+	Color green(30, 155, 67);
+	Color yellow(228, 223, 5);
+	Color red(211, 10, 15);
+
+	if (powerRing->currRing == 2)
+	{
+		statusCircle.setFillColor(green);
+	}
+	else if (powerRing->currRing == 1)
+	{
+		statusCircle.setFillColor(yellow);
+	}
+	else
+	{
+		statusCircle.setFillColor(red);
+	}
+
+	/*if (portion > .5)
+	{
+		
+	}
+	else if (portion > .3)
+	{
+		
+	}
+	else if (portion >= 0)
+	{
+		
+	}*/
 }
 
 void KinRing::Draw(RenderTarget *target)
 {
+	target->draw(statusCircle);
 	powerRing->Draw(target);
 	despOrb->Draw(target);
 }
