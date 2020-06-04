@@ -1974,11 +1974,15 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "player shader not loaded" );
 	}
-	Tileset *ts_auraTest = sess->GetSizedTileset("FX/auratest_64x64.png");
+	Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
+	Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
 	Color auraColor(Color::Magenta);
 	//auraColor.a = 200;
 	sh.setUniform("u_auraColor", ColorGL( auraColor ));
+	ts_auraTest2->texture->setRepeated(true);
+	ts_auraTest->texture->setRepeated(true);
 	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
+	sh.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
 	if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -14974,7 +14978,22 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 {
 	currTileIndex = tileIndex;
 
-	IntRect ir = tileset[spriteAction]->GetSubRect( currTileIndex );
+	Tileset *ts = tileset[spriteAction];
+	IntRect ir = ts->GetSubRect( currTileIndex );
+
+	float width = ts->texture->getSize().x;
+	float height = ts->texture->getSize().y;
+	sh.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+	static float testCounter = 0;
+	sh.setUniform("u_slide", testCounter);
+	testCounter += .01f;
+	/*if (testCounter > 1.f)
+	{
+		testCounter -= 1.f;
+	}*/
+
+
 	if( !noFlipX )
 	{
 		flipTileX = true;
@@ -14996,6 +15015,8 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	{
 		flipTileY = false;
 	}
+
+	
 
 
 	CubicBezier cb(.11, 1.01, .4, .96);
