@@ -128,7 +128,9 @@ struct KinRing
 	void Update();
 	PowerRing *powerRing;
 	DesperationOrb *despOrb;
-	sf::CircleShape statusCircle;
+	sf::Vertex orbQuad[4];
+	Tileset *ts_powerOrb;
+	//sf::CircleShape statusCircle;
 };
 
 #endif

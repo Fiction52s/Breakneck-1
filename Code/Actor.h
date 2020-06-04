@@ -580,6 +580,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_kinFace;
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
+	sf::Shader auraTestShader;
 	sf::Sprite kinFace;
 	sf::Sprite kinFaceBG;
 	sf::Sprite kinUnderOutline;

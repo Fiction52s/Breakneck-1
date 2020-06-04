@@ -59,9 +59,9 @@ struct Zone
 	enum ZoneType
 	{
 		NORMAL,
-		NEXUS,
 		MOMENTA,
 		SECRET,
+		NEXUS,
 		EXTRA
 	};
 

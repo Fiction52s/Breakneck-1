@@ -36,9 +36,10 @@ FillRingSection::FillRingSection(TilesetManager &tm,
 	
 	stringstream ss;
 	//ss << "powerring" << (int)rType << "_200x200.png";
-	ss << "HUD/powerring" << p_rType << "_100x100.png";
+	//ss << "HUD/powerring" << p_rType << "_100x100.png";
 	//ss << "powerring_200x200.png";
-	ts_ring = tm.GetTileset(ss.str(), 100, 100);
+	//ts_ring = tm.GetSizedTileset(ss.str());
+	ts_ring = tm.GetSizedTileset("HUD/black_ring_86x86.png");//tm.GetTileset(ss.str(), 100, 100);
 	/*switch( rType )
 	{
 	case NORMAL:
@@ -360,7 +361,7 @@ sf::Vector2f DesperationOrb::GetPosition()
 
 void DesperationOrb::Draw(sf::RenderTarget *target)
 {
-	target->draw(orbSpr);
+	//target->draw(orbSpr);
 }
 
 KinRing::KinRing( Actor *actor )
@@ -383,12 +384,7 @@ KinRing::KinRing( Actor *actor )
 	powerRing = new PowerRing(powerRingPos, sizeof(blah) / sizeof(FillRingSection*), blah);
 	despOrb = new DesperationOrb(tm, powerRingPos);
 
-	statusCircle.setRadius(30);
-	//statusCircle.setOutlineColor(Color::Black);
-	//statusCircle.setOutlineThickness(3);
-	statusCircle.setFillColor(Color::Green);
-	statusCircle.setOrigin(statusCircle.getLocalBounds().width / 2,
-		statusCircle.getLocalBounds().height / 2);
+	ts_powerOrb = actor->sess->GetSizedTileset("HUD/power_ring_86x86.png");
 }
 
 sf::Vector2f KinRing::GetCenter()
@@ -400,7 +396,7 @@ void KinRing::SetCenter(sf::Vector2f &pos)
 {
 	powerRing->SetPosition(pos);
 	despOrb->SetPosition(pos);
-	statusCircle.setPosition(pos);
+	SetRectCenter(orbQuad, ts_powerOrb->tileWidth, ts_powerOrb->tileHeight, pos);
 }
 
 void KinRing::Reset()
@@ -426,15 +422,15 @@ void KinRing::Update()
 
 	if (powerRing->currRing == 2)
 	{
-		statusCircle.setFillColor(green);
+		ts_powerOrb->SetQuadSubRect(orbQuad, 0);
 	}
 	else if (powerRing->currRing == 1)
 	{
-		statusCircle.setFillColor(yellow);
+		ts_powerOrb->SetQuadSubRect(orbQuad, 2);
 	}
 	else
 	{
-		statusCircle.setFillColor(red);
+		ts_powerOrb->SetQuadSubRect(orbQuad, 4);
 	}
 
 	/*if (portion > .5)
@@ -453,7 +449,7 @@ void KinRing::Update()
 
 void KinRing::Draw(RenderTarget *target)
 {
-	target->draw(statusCircle);
+	target->draw(orbQuad, 4, sf::Quads, ts_powerOrb->texture);
 	powerRing->Draw(target);
 	despOrb->Draw(target);
 }

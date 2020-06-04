@@ -1970,9 +1970,15 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
 	{
+
 		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "player shader not loaded" );
 	}
+	Tileset *ts_auraTest = sess->GetSizedTileset("FX/auratest_64x64.png");
+	Color auraColor(Color::Magenta);
+	//auraColor.a = 200;
+	sh.setUniform("u_auraColor", ColorGL( auraColor ));
+	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
 
 	if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -11681,6 +11687,8 @@ void Actor::UpdatePlayerShader()
 
 		sh.setUniform("despFrame", (float)-1);
 	}
+
+	
 }
 
 void Actor::UpdateDashBooster()
@@ -14931,16 +14939,20 @@ double Actor::GroundedAngleAttack( sf::Vector2<double> &trueNormal )
 void Actor::SetSpriteTexture( int a )
 {
 	spriteAction = a;
-	sprite->setTexture( *tileset[a]->texture );
+	Tileset *ts = tileset[a];
+	sprite->setTexture( *ts->texture );
 	//orbSprite.setTexture( )
-	motionGhostBuffer->SetTileset(tileset[a]);
+	motionGhostBuffer->SetTileset(ts);
 	for (int i = 0; i < 3; ++i)
 	{
-		motionGhostsEffects[i]->SetTileset(tileset[a]);
+		motionGhostsEffects[i]->SetTileset(ts);
 	}
 	
-	motionGhostBufferBlue->SetTileset(tileset[a]);
-	motionGhostBufferPurple->SetTileset(tileset[a]);
+	motionGhostBufferBlue->SetTileset(ts);
+	motionGhostBufferPurple->SetTileset(ts);
+
+	//const auto &size = ts->texture->getSize();
+
 }
 
 void Actor::SetAerialScorpSprite()

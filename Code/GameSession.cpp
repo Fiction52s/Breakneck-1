@@ -73,7 +73,7 @@
 
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
-//#include "Enemy_StagBeetle.h"
+//#infclude "Enemy_StagBeetle.h"
 //#include "Enemy_Cactus.h"
 //#include "Enemy_GravityModifier.h"
 //#include "Enemy_HealthFly.h"

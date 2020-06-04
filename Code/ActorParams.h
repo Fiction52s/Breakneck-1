@@ -164,7 +164,21 @@ struct ShipPickupParams : public ActorParams
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
 	bool facingRight;
+	
 };
+
+//struct ZonePropertiesParams : public ActorParams
+//{
+//	ZonePropertiesParams(ActorType *at, int level);
+//	ZonePropertiesParams(ActorType *at,
+//		std::ifstream &is);
+//
+//	ActorParams *Copy();
+//	void SetParams();
+//	void SetPanelInfo();
+//	void WriteParamFile(std::ofstream &of);
+//	bool facingRight;
+//};
 
 struct PoiParams : public ActorParams
 {
