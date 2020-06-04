@@ -434,6 +434,11 @@ void GameSession::Cleanup()
 		gateMarkers = NULL;
 	}
 
+	if (zoneTree != NULL)
+	{
+		delete zoneTree;
+	}
+
 	//for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
@@ -3766,42 +3771,20 @@ void GameSession::CreateZones()
 
 void GameSession::CloseOffLimitZones()
 {
-	//currentZone->CloseOffLimitZones();
-	//bool allClosed = true;
-
-	/*int activeCount = 0;
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ((*it)->active)
+		(*it)->shouldReform = true;
+	}
+
+	currentZoneNode->SetChildrenShouldNotReform();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ( !(*it)->visited && (*it)->shouldReform )
 		{
-			++activeCount;
-			if (activeCount > 1)
-			{
-				int xx = 5;
-			}
+			(*it)->visited = true;
+			(*it)->ReformAllGates();
 		}
-	}*/
-
-	for (auto it = zones.begin(); it != zones.end(); ++it)
-	{
-		(*it)->CloseOffLimitZones();
-		/*if (!(*it)->visited)
-		{
-			allClosed = true;
-			for (auto zit = (*it)->leadInZones.begin(); zit != (*it)->leadInZones.end(); ++zit)
-			{
-				if (!(*zit)->visited || (*zit)->active)
-				{
-					allClosed = false;
-					break;
-				}
-			}
-
-			if (allClosed)
-			{
-				(*it)->ReformAllGates();
-			}
-		}*/
 	}
 }
 
@@ -4051,40 +4034,19 @@ void GameSession::SetupZones()
 		}
 	}
 
-	ZoneNode *treeStart = new ZoneNode;
-	treeStart->parent = NULL;
-	treeStart->startZone = originalZone;
-	treeStart->endZone = goalZone;
-	treeStart->SetZone(goalZone);
 
-	int xxx = 5;
-	/*Gate *g;
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	if (zoneTree != NULL)
 	{
-		if ((*it)->hasGoal)
-		{
-			(*it)->connectedCount = -1;
-		}
+		delete zoneTree;
+		zoneTree = NULL;
+	}
 
-		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
-		{
-			g = (Gate*)(*git)->info;
-			if ( g->zoneA == (*it))
-			{
-				(*it)->connectedSet.insert(g->zoneB);
-			}
-			else if (g->zoneB == (*it))
-			{
-				(*it)->connectedSet.insert(g->zoneA);
-			}
-			else
-			{
-				assert(0);
-			}
-		}
-
-		(*it)->connectedCount = (*it)->connectedSet.size();
-	}*/
+	zoneTreeStart = originalZone;
+	zoneTreeEnd = goalZone;
+	zoneTree = new ZoneNode;
+	zoneTree->parent = NULL;
+	zoneTree->SetZone(zoneTreeStart);
+	currentZoneNode = zoneTree;
 }
 
 int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
@@ -7490,6 +7452,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	zoneTree = NULL;
 	gateMarkers = NULL;
 	inversePoly = NULL;
 
@@ -8808,6 +8771,7 @@ void GameSession::RestartLevel()
 	currentZone = NULL;
 	if (originalZone != NULL)
 	{
+		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
 		keyMarker->SetStartKeysZone(originalZone);
 	}
@@ -10144,6 +10108,24 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 		currentZone->action = Zone::CLOSING;
 
 		currentZone->active = false;
+
+		bool foundNode = false;
+		for (auto it = currentZoneNode->children.begin();
+			it != currentZoneNode->children.end(); ++it)
+		{
+			if ((*it)->myZone == z)
+			{
+				currentZoneNode = (*it);
+				foundNode = true;
+				break;
+			}
+		}
+
+		if (!foundNode)
+		{
+			assert(foundNode);
+		}
+		
 	}
 
 	currentZone = z;

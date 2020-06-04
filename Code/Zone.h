@@ -16,12 +16,12 @@ struct Zone;
 
 struct ZoneNode
 {
-	Zone *startZone;
-	Zone *endZone;
+	~ZoneNode();
 	Zone *myZone;
 	std::vector<ZoneNode*> children;
 	ZoneNode *parent;
 
+	void SetChildrenShouldNotReform();
 	bool IsInMyBranch(Zone *z);
 	bool SetZone(Zone *myZone);
 };
@@ -31,7 +31,6 @@ struct Zone
 	Zone( GameSession *owner, TerrainPolygon & tp );
 	~Zone();
 	
-	void CloseOffLimitZones();
 	void Init();
 	void Draw( sf::RenderTarget *target );
 	void DrawMinimap(sf::RenderTarget *target);
@@ -50,8 +49,8 @@ struct Zone
 	int frame;
 	float GetOpeningAlpha();
 	bool secretZone;
-	void SetAdjacentZoneIndexes();
-	std::list<Gate*> higherIndexGates;
+
+	bool shouldReform;
 
 	bool visited;
 	bool reexplored;
@@ -81,9 +80,6 @@ struct Zone
 	ZoneType zType;
 	void Reset();
 	void ReformAllGates( Gate *ignoreGate = NULL);
-	void ReformDeadEnds();
-	void DecrementNeighborsAttached( Zone * exclude );
-	void DecrementConnected( Zone * z);
 
 
 	bool hasGoal;
@@ -97,8 +93,6 @@ struct Zone
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
 	std::set<Zone*> connectedSet;
-	std::set<Zone*> leadInZones;
-	std::set<Zone*> leadOutZones;
 	bool active;
 	
 	//int goalIndex;

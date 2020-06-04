@@ -23,8 +23,10 @@
 #include <boost/thread/mutex.hpp>
 #include "earcut.hpp"
 
+
 #include "Session.h"
 
+struct ZoneNode;
 struct GateMarkerGroup;
 
 struct Actor;
@@ -239,6 +241,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		Count
 	};
 	
+	ZoneNode *zoneTree;
+	ZoneNode *currentZoneNode;
+	Zone *zoneTreeStart;
+	Zone *zoneTreeEnd;
+
 
 	//new stuff from session
 
@@ -559,6 +566,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	Zone *activatedZoneList;
 	std::list<Zone*> zones;
 	Zone *currentZone;
+	
 	Zone *originalZone;
 
 	void DrawActiveEnvPlants();

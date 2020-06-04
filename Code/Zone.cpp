@@ -367,132 +367,6 @@ vector<sf::Vector2i> &Zone::PointVector()
 	return pointVector[0];
 }
 
-void Zone::ReformDeadEnds()
-{
-	//Gate *og;
-	//for (auto it = connectedSet.begin(); it != connectedSet.end(); ++it)
-	//{
-	//	if ((*it)->hasGoal)
-	//		continue;
-
-	//	if ((*it)->connectedCount < 2)
-	//	{
-	//		for (auto git = gates.begin(); git != gates.end(); ++git)
-	//		{
-	//			og = (Gate*)(*git)->info;
-	//			if (og->zoneA == (*it))
-	//			{
-	//				if ((og->gState == Gate::HARD
-	//					|| og->gState == Gate::SOFT
-	//					|| og->gState == Gate::SOFTEN))
-	//				{
-	//					og->Reform();
-	//				}
-	//			}
-	//			else if (og->zoneB == (*it))
-	//			{
-	//				if ((og->gState == Gate::HARD
-	//					|| og->gState == Gate::SOFT
-	//					|| og->gState == Gate::SOFTEN))
-	//				{
-	//					og->Reform();
-	//				}
-	//			}
-	//			else
-	//			{
-	//				//assert(0);
-	//			}
-	//		}
-	//	}
-	//}
-}
-
-void Zone::DecrementNeighborsAttached( Zone *exclude )
-{
-	for (auto it = connectedSet.begin(); it != connectedSet.end(); ++it)
-	{
-		if (exclude == (*it) || (*it)->hasGoal )
-			continue;
-		(*it)->DecrementConnected(this);
-	}
-}
-
-void Zone::DecrementConnected( Zone *z )
-{
-	//auto findIt = connectedSet.find(z);
-	//if (findIt != connectedSet.end())
-	//{
-	//	if (connectedCount > 1)
-	//	{
-	//		connectedCount--;
-	//		if (connectedCount == 1)
-	//		{
-	//			ReformAllGates();
-	//			DecrementNeighborsAttached(NULL);
-	//		}
-	//	}
-	//		
-	//	//connectedSet.erase(findIt);
-
-	//}
-}
-
-void Zone::SetAdjacentZoneIndexes()
-{
-	/*Gate *g;
-	assert(goalIndex >= 0);
-
-	int newGoalIndex = goalIndex + 1;
-	for (auto it = gates.begin(); it != gates.end(); ++it)
-	{
-		g = (Gate*)(*it)->info;
-		if (g->zoneA == this)
-		{
-			if (g->zoneB->goalIndex < newGoalIndex)
-			{
-				g->zoneB->goalIndex = newGoalIndex;
-			}
-		}
-		else if (g->zoneB == this)
-		{
-			if (g->zoneA->goalIndex < newGoalIndex)
-			{
-				g->zoneA->goalIndex = newGoalIndex;
-			}
-		}
-		else
-		{
-			assert(0);
-		}
-	}
-
-	for (auto it = gates.begin(); it != gates.end(); ++it)
-	{
-		g = (Gate*)(*it)->info;
-		if (g->zoneA == this)
-		{
-			if (g->zoneB->goalIndex > goalIndex)
-			{
-				higherIndexGates.push_back(g);
-				g->zoneB->SetAdjacentZoneIndexes();
-			}
-		}
-		else if (g->zoneB == this)
-		{
-			if (g->zoneA->goalIndex > goalIndex)
-			{
-				higherIndexGates.push_back(g);
-				g->zoneA->SetAdjacentZoneIndexes();
-			}
-		}
-		else
-		{
-			assert(0);
-		}
-		
-	}*/
-}
-
 void Zone::SetShadowColor( sf::Color c )
 {
 	int vCount = definedArea->getVertexCount();
@@ -506,7 +380,6 @@ void Zone::SetShadowColor( sf::Color c )
 void Zone::Reset()
 {
 	visited = false;
-	//connectedCount = connectedSet.size();
 	active = false;
 	action = UNEXPLORED;
 	frame = 0;
@@ -738,94 +611,21 @@ Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
 	}
 }
 
-void Zone::CloseOffLimitZones()
+ZoneNode::~ZoneNode()
 {
-	if (!visited && !hasGoal )
+	for (auto it = children.begin(); it != children.end(); ++it)
 	{
-		bool allClosed = true;
-		for (auto zit = leadInZones.begin(); zit != leadInZones.end(); ++zit)
-		{
-			if (!(*zit)->visited || (*zit)->active)
-			{
-				allClosed = false;
-				break;
-			}
-		}
-
-		if (allClosed)
-		{
-			ReformAllGates();
-			//active = false;
-			visited = true;
-
-			for (auto it = leadOutZones.begin(); it != leadOutZones.end(); ++it)
-			{
-				(*it)->CloseOffLimitZones();
-			}
-		}
-
-		//allClosed = true;
-		//for (auto zit = leadOutZones.begin(); zit != leadOutZones.end(); ++zit)
-		//{
-		//	if (!(*zit)->visited)// || (*zit)->active)
-		//	{
-		//		allClosed = false;
-		//		break;
-		//	}
-		//}
-
-		//if (allClosed)
-		//{
-		//	ReformAllGates();
-		//	active = false;
-		//	visited = true;
-
-		//	for (auto it = leadInZones.begin(); it != leadInZones.end(); ++it)
-		//	{
-		//		(*it)->CloseOffLimitZones();
-		//	}
-		//}
-	}
-	else if (active)
-	{
-		bool allClosed = true;
-		for (auto zit = leadInZones.begin(); zit != leadInZones.end(); ++zit)
-		{
-			if (!(*zit)->visited)
-			{
-				if (active && leadOutZones.find((*zit)) == leadOutZones.end())
-				{
-					(*zit)->ReformAllGates();
-					(*zit)->visited = true;
-					//(*zit)->CloseOffLimitZones();
-				}
-				else
-				{
-					allClosed = false;
-				}
-				break;
-			}
-		}
-
-		//if (allClosed)
-		//{
-		//	ReformAllGates();
-		//	//active = false;
-		//	visited = true;
-
-		//	for (auto it = leadOutZones.begin(); it != leadOutZones.end(); ++it)
-		//	{
-		//		(*it)->CloseOffLimitZones();
-		//	}
-		//}
+		delete (*it);
 	}
 }
 
 bool ZoneNode::SetZone(Zone *p_myZone)
 {
+	GameSession *owner = GameSession::GetSession();
+
 	myZone = p_myZone;
 
-	if (myZone == startZone)
+	if (myZone == owner->zoneTreeEnd)
 	{
 		return true;
 	}
@@ -836,8 +636,6 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 		if (!IsInMyBranch((*it)))
 		{
 			ZoneNode *zn = new ZoneNode;
-			zn->startZone = startZone;
-			zn->endZone = endZone;
 			zn->parent = this;
 			if (zn->SetZone((*it)))
 			{
@@ -849,16 +647,17 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 			}
 		}
 	}
+
 	if (children.size() == 0)
 		return false;
 
-	if( parent != NULL )
+	/*if( parent != NULL )
 		myZone->leadOutZones.insert(parent->myZone);
 
 	for (auto it = children.begin(); it != children.end(); ++it)
 	{
 		myZone->leadInZones.insert((*it)->myZone);
-	}
+	}*/
 
 	return true;
 }
@@ -877,4 +676,13 @@ bool ZoneNode::IsInMyBranch(Zone *z)
 		p = p->parent;
 	}
 	return false;
+}
+
+void ZoneNode::SetChildrenShouldNotReform()
+{
+	myZone->shouldReform = false;
+	for (auto it = children.begin(); it != children.end(); ++it)
+	{
+		(*it)->SetChildrenShouldNotReform();
+	}
 }
