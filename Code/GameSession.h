@@ -722,6 +722,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void UpdateInput();
 	void KeyboardUpdate( int index );
 	
+	void CloseOffLimitZones();
 
 	Collider coll;
 	

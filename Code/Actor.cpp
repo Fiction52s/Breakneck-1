@@ -10327,11 +10327,14 @@ void Actor::HandleTouchedGate()
 				}
 
 				//activatezone
-
-				oldZone->connectedCount = 0;
-				oldZone->DecrementNeighborsAttached( newZone );
+				
+				//oldZone->connectedCount = 0;
+				//oldZone->DecrementNeighborsAttached( newZone );
 
 				owner->ActivateZone(newZone);
+
+				owner->CloseOffLimitZones();
+
 				//newZone->ReformDeadEnds();
 				
 

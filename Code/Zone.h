@@ -10,11 +10,28 @@
 struct Enemy;
 struct GameSession;
 struct TerrainPolygon;
+struct Zone;
+
+
+
+struct ZoneNode
+{
+	Zone *startZone;
+	Zone *endZone;
+	Zone *myZone;
+	std::vector<ZoneNode*> children;
+	ZoneNode *parent;
+
+	bool IsInMyBranch(Zone *z);
+	bool SetZone(Zone *myZone);
+};
+
 struct Zone
 {
 	Zone( GameSession *owner, TerrainPolygon & tp );
 	~Zone();
 	
+	void CloseOffLimitZones();
 	void Init();
 	void Draw( sf::RenderTarget *target );
 	void DrawMinimap(sf::RenderTarget *target);
@@ -36,6 +53,7 @@ struct Zone
 	void SetAdjacentZoneIndexes();
 	std::list<Gate*> higherIndexGates;
 
+	bool visited;
 	bool reexplored;
 	int openFrames;
 	int closeFrames;
@@ -79,10 +97,12 @@ struct Zone
 	std::list<Enemy*> spawnEnemies;
 	std::list<Enemy*> allEnemies;
 	std::set<Zone*> connectedSet;
+	std::set<Zone*> leadInZones;
+	std::set<Zone*> leadOutZones;
 	bool active;
 	
-	int goalIndex;
-	int connectedCount;
+	//int goalIndex;
+	//int connectedCount;
 
 	bool showShadow;
 	GameSession *owner;
