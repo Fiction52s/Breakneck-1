@@ -9,7 +9,6 @@
 #include <fstream>
 #include "MainMenu.h" //just for glsl color macro
 #include "PlayerRecord.h"
-#include "Aura.h"
 #include "VisualEffects.h"
 #include "Enemy.h"
 #include "Enemy_Booster.h"
@@ -1717,7 +1716,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
 
-	usingAura = false;
 	fBubblePos = NULL;
 	fBubbleRadiusSize = NULL;
 	fBubbleFrame = NULL;
@@ -2421,12 +2419,12 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
 	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
-	cout << "Start aura" << endl;
+	//cout << "Start aura" << endl;
 	//sh.setUniform( "u_texture", *tileset[action]->texture ); 
 
 	//LoadAllAuras();
 		
-	cout << "end aura" << endl;
+	//cout << "end aura" << endl;
 
 		
 		
@@ -2634,12 +2632,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		
 
 	bubbleLifeSpan = 240;
-		
-	int maxAura = 128 * 128;//64 * 64;//1000 * 1000;//300 * 300;//64 * 64;
-	testAura = new Aura(this, 1, maxAura, 0);
-	testAura1 = new Aura(this, 1, maxAura, 1);
-	testAura2 = new Aura(this, 1, maxAura, 2);
-	testAura3 = new Aura(this, 1, maxAura, 3);
 
 	hasPowerAirDash = true;//false;//true;
 	hasPowerGravReverse = false;
@@ -2741,22 +2733,6 @@ Actor::~Actor()
 
 	delete rpu;
 
-	if (usingAura)
-	{
-		list<Vector2f> *currP = NULL;
-		for (int i = 0; i < 3; ++i)
-		{
-			for (int j = 0; j < Action::Count; ++j)
-			{
-				currP = auraPoints[i][j];
-				if (currP != NULL)
-				{
-					delete[] currP;
-				}
-			}
-		}
-	}
-
 	if( kinMask != NULL)
 		delete kinMask;
 	for (int i = 0; i < 7; ++i)
@@ -2787,11 +2763,6 @@ Actor::~Actor()
 	delete keyExplodeRingGroup;
 	
 	delete sprite;
-
-	delete testAura;
-	delete testAura1;
-	delete testAura2;
-	delete testAura3;
 
 	delete motionGhostBuffer;
 	delete motionGhostBufferBlue;
@@ -3626,6 +3597,9 @@ void Actor::DesperationUpdate()
 				leftWire->Reset();
 				slowCounter = 1;
 				frame = 0;
+
+				//owner->deathSeq->Reset();
+				//owner->SetActiveSequence(owner->deathSeq);
 
 				for (int i = 0; i < 3; ++i)
 				{
@@ -4532,6 +4506,7 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
+	kinRing->powerRing->Drain(1000000);
 	DesperationUpdate();
 
 	ReverseVerticalInputsWhenOnCeiling();
@@ -4677,152 +4652,7 @@ double Actor::GetNumSteps()
 	}
 }
 
-void Actor::LoadAllAuras()
-{
-	usingAura = true;
 
-	ifstream is;
-	is.open("Resources/Kin/kinaura", ios::in|ios::binary );
-
-	if (is.is_open())
-	{
-		sf::Uint32 totalSize;
-		is.read((char*)&totalSize, sizeof(sf::Uint32));
-
-		sf::Uint32 *iList = new sf::Uint32[totalSize];
-
-		is.read((char*)iList, totalSize * sizeof( sf::Uint32) );
-
-		int currIndex = 0;
-		sf::Uint32 size;
-
-		sf::Uint32 numT;
-
-		list<Vector2f> *fListArr;
-		list<Vector2f> *listPtr;
-
-		Vector2f curr;
-		//autorun thing is temporary, should be < Count when fixed
-		for (int j = 0; j < Action::Count; ++j)  //AUTORUN
-		{
-			numT = iList[currIndex++];
-
-			for (int f = 0; f < 3; ++f)
-			{
-				fListArr = new list<Vector2f>[numT];
-				auraPoints[f][j] = fListArr;
-					
-				for (int t = 0; t < numT; ++t)
-				{
-					listPtr = &(fListArr[t]);
-					size = iList[currIndex++];
-					for (int s = 0; s < size; ++s)
-					{
-						curr.x = iList[currIndex++];
-						curr.y = iList[currIndex++];
-						listPtr->push_back(curr);
-					}
-				}
-			}
-		}
-
-		delete[] iList;
-		
-		
-		cout << "finished reading auras" << endl;
-	}
-	else
-	{
-		int totalCounter = 0;
-		int totalSize = 0;
-		int numTA[Action::Count];
-		int sizeExtra = 0;
-		int numT;
-
-		for (int j = 0; j < Action::Count; ++j)
-		{
-			numT = CreateAura(auraPoints[0][j], tileset[j], 0);
-			numTA[j] = numT;
-			for (int z = 0; z < numT; ++z)
-			{
-				totalSize += auraPoints[0][j][z].size();
-			}
-			
-			//++totalSize; //num tiles
-
-			CreateAura(auraPoints[1][j], tileset[j], 0, 0, 2);
-			for (int z = 0; z < numT; ++z)
-			{
-				totalSize += auraPoints[1][j][z].size();
-			}
-			//++totalSize;
-
-			CreateAura(auraPoints[2][j], tileset[j], 0, 0, 4);
-			for (int z = 0; z < numT; ++z)
-			{
-				totalSize += auraPoints[2][j][z].size();
-			}
-
-			sizeExtra += numT * 3;
-		}
-		totalSize *= 2; //because there are 2 position values for each value
-		totalSize += Action::Count; //number of tiles
-
-		totalSize += sizeExtra;
-		//totalSize +=  //for sizes
-		totalSize++; //putting total size at the front
-
-		ofstream os;
-		os.open("Resources/Kin/kinaura", ios::out | ios::binary);
-
-		cout << "no aura file found. generating one now." << endl;
-		if (!os.is_open())
-		{
-			cout << "couldn't open aura file for writing" << endl;
-			assert(0);
-			return;
-		}
-
-		sf::Uint32 *viList = new sf::Uint32[totalSize];
-		list<Vector2f>::iterator begin;
-		list<Vector2f>::iterator end;
-		sf::Uint32 size;
-		list<Vector2f> *aList;
-
-		viList[totalCounter++] = totalSize - 1; //doesn't count itself
-
-		for (int j = 0; j < Action::Count; ++j)
-		{
-			numT = numTA[j];
-			viList[totalCounter++] = numT;
-			for (int f = 0; f < 3; ++f)
-			{
-				aList = auraPoints[f][j];
-				for (int s = 0; s < numT; ++s)
-				{
-					begin = aList[s].begin();
-					end = aList[s].end();
-					size = aList[s].size();
-					
-					viList[totalCounter++] = size;
-
-					for (auto it = begin; it != end; ++it)
-					{
-						viList[totalCounter++] = (*it).x;
-						viList[totalCounter++] = (*it).y;
-					}
-				}
-			}
-		}
-
-		os.write((char*)viList, sizeof(sf::Uint32) * totalSize);
-		os.close();
-		cout << "finished creating aura file" << endl;
-
-		delete[] viList;
-	}
-	
-}
 
 void Actor::StartSeqKinThrown( V2d &pos, V2d &vel )
 {
@@ -11677,18 +11507,6 @@ void Actor::UpdateSpeedParticles()
 		speedParticleCounter = 0;
 	}
 }
-
-void Actor::UpdateAura()
-{
-	if (usingAura)
-	{
-		testAura->Update();
-		testAura1->Update();
-		testAura2->Update();
-		testAura3->Update();
-	}
-}
-
 void Actor::UpdateAttackLightning()
 {
 	CreateAttackLightning();
@@ -11874,27 +11692,27 @@ void Actor::UpdatePostPhysics()
 		sprite->setPosition( position.x, position.y );
 		sprite->setRotation( 0 );
 
-		if( frame % 1 == 0 )
-		{
-			double startRadius = 64;
-			double endRadius = 500;
+		//if( frame % 1 == 0 )
+		//{
+		//	double startRadius = 64;
+		//	double endRadius = 500;
 
-			double part = frame / 88.f;
+		//	double part = frame / 88.f;
 
-			double currRadius = startRadius * ( 1.f - part ) + endRadius * ( part );
+		//	double currRadius = startRadius * ( 1.f - part ) + endRadius * ( part );
 
-			int randAng = (rand() % 360);
-			double randAngle = randAng / 180.0 * PI;
-			//randAngle += PI / 2.0;
-			V2d pos( sin( randAngle ) * currRadius, -cos( randAngle ) * currRadius );
+		//	int randAng = (rand() % 360);
+		//	double randAngle = randAng / 180.0 * PI;
+		//	//randAngle += PI / 2.0;
+		//	V2d pos( sin( randAngle ) * currRadius, -cos( randAngle ) * currRadius );
 
-			pos += position;
-			double fxAngle = randAngle - PI / 3.5;
-			//cout << "randAngle: " << randAngle << endl;
+		//	pos += position;
+		//	double fxAngle = randAngle - PI / 3.5;
+		//	//cout << "randAngle: " << randAngle << endl;
 
-			//cout << "randang: " << randAng << endl;
-			ActivateEffect( EffectLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
-		}
+		//	//cout << "randang: " << randAng << endl;
+		//	ActivateEffect( EffectLayer::IN_FRONT, ts_fx_death_1c, pos, false, fxAngle, 12, 2, true );
+		//}
 
 		if( kinMask != NULL)
 			kinMask->Update( speedLevel, desperationMode );
@@ -11913,8 +11731,6 @@ void Actor::UpdatePostPhysics()
 	UpdateAttackLightning();
 	
 	gateBlackFXPool->Update();
-
-	UpdateAura();
 
 	UpdateSpeedBar();
 
@@ -14025,23 +13841,6 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 		
 	}
-
-	if (action != DEATH)
-	{
-		if (usingAura)
-		{
-			if (speedLevel > 1)
-			{
-				testAura2->Draw(target);
-			}
-			if (speedLevel > 0)
-			{
-				testAura1->Draw(target);
-			}
-
-			testAura->Draw(target);
-		}
-	}
 	
 	if (showExitAura)
 	{
@@ -14051,80 +13850,6 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 	{
-
-		//RayCast( this, owner->testTree, position, V2d( position.x - 100, position.y ) );
-		
-		
-
-		//Vector2i vi = Mouse::getPosition();
-		////Vector2i vi = owner->window->mapCoordsToPixel( Vector2f( position.x, position.y ) );//sf::Vector2f( 0, -300 ) );
-
-		//Vector3f blahblah( vi.x / 1920.f, (1080 - vi.y) / 1080.f, .015 );
-		////Vector3f blahblah( vi.x / (float)owner->window->getSize().x, 
-		////	(owner->window->getSize().y - vi.y) / (float)owner->window->getSize().x, .015 );
-
-		//
-		//
-		//if( action != DEATH && action != SPAWNWAIT && action != GOALKILL && action != GOALKILLWAIT )
-		////if( action == RUN )
-		//{
-		//	//sh.setUniform( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
-		//	/*Sprite spr;
-		//	
-		//	spr.setTexture( *GetTileset( "testrocks.png", 300, 225)->texture );
-		//	spr.setOrigin( spr.getLocalBounds().width / 2, spr.getLocalBounds().height / 2 );
-		//	if( !facingRight )
-		//	{
-		//		sf::IntRect r = spr.getTextureRect();
-		//		spr.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-		//	}
-		//	spr.setPosition( sprite->getPosition() );
-		//	
-		//	// global positions first. then zooming
-
-		//	
-		//	sh.setUniform( "u_texture",( *GetTileset( "testrocks.png" , 300, 225 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	sh.setUniform( "u_normals", *GetTileset( "testrocksnormal.png", 300, 225 )->texture );
-		//	sh.setUniform( "Resolution", owner->window->getSize().x, owner->window->getSize().y );
-		//	//sh.setUniform( "LightPos", blahblah );//Vector3f( 0, -300, .075 ) );
-		//	//sh.setUniform( "LightColor", 1, .8, .6, 1 );
-		//	sh.setUniform( "AmbientColor", .6, .6, 1, .8 );
-		//	//sh.setUniform( "Falloff", Vector3f( .4, 3, 20 ) );
-		//	sh.setUniform( "right", (facingRight && !reversed) || (facingRight && reversed ) );
-		//	sh.setUniform( "zoom", owner->cam.GetZoom() );
-		//	//cout << "right: " << (float)facingRight << endl;
-
-		//	CircleShape cs;
-		//	cs.setFillColor( Color::Magenta );
-		//	cs.setRadius( 40 );
-		//	cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-		//	cs.setPosition( 0, -300 );*/
-		//	
-
-		//	//target->draw( spr, &sh );
-
-
-
-
-
-
-		//	//sh.setUniform( "u_texture",( *GetTileset( "run2.png" , 80, 48 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *GetTileset( "run_NORMALS.png", 80, 48 )->texture );
-
-
-		//	//sh.setUniform( "u_texture",( *GetTileset( "run.png" , 128, 64 )->texture ) ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *GetTileset( "run_normal.png", 128, 64 )->texture );
-		//	//cout << "action: " << action << endl;
-		//	//sh.setUniform( "u_texture", *tileset[action]->texture ); //*GetTileset( "testrocks.png", 25, 25 )->texture );
-		//	//sh.setUniform( "u_normals", *normal[action]->texture );
-		//	
-		//}
-		//else
-		//{
-		//	target->draw( *sprite );
-		//}
-		
 
 		
 	}
@@ -14616,45 +14341,7 @@ void Actor::UpdateSprite()
 	{
 		tr.scale(Vector2f(-1, 1));
 	}
-
-	Transform tr1 = tr;
-	//tr1.scale(1.5, 1.5);
-	//Vector2f oldOrigin = sprite->getOrigin();
-	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-	//Vector2f diff = center - oldOrigin;
-
-	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-
-	Aura::NormalParams np;
-	//sf::FloatRect gb = sprite->getGlobalBounds();
-	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-
 	
-	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
-	//sprite->setOrigin(oldOrigin);
-	
-	if (usingAura)
-	{
-		if (auraPoints[0][spriteAction] != NULL)
-		{
-			testAura->ActivateParticles(auraPoints[0][spriteAction][currTileIndex], tr, Vector2f(spriteCenter), &np, 0);
-			//testAura1->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr1, Vector2f( spriteCenter ) + extraParticle0, &np);
-			//testAura2->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
-			//testAura3->ActivateParticles(auraPoints[spriteAction][currTileIndex], tr, sprite->getOrigin(), &np);
-		}
-
-		if (auraPoints[1][spriteAction] != NULL)
-		{
-			testAura1->ActivateParticles(auraPoints[1][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle1, &np, 3);
-		}
-
-		if (auraPoints[2][spriteAction] != NULL)
-		{
-			//np.thickness = 10.f;
-			//tr.scale(2, 2);
-			testAura2->ActivateParticles(auraPoints[2][spriteAction][currTileIndex], tr, Vector2f(spriteCenter) + extraParticle2, &np, 1);
-		}
-	}
 	if( scorpOn && !scorpSet )
 	{
 		if( ground != NULL )
@@ -15139,27 +14826,6 @@ void Actor::SetSpriteTile( sf::Sprite *spr,
 	{
 		tr.scale(Vector2f(-1, 1));
 	}
-
-
-	Vector2f oldOrigin = sprite->getOrigin();
-	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-	Vector2f diff = center - oldOrigin;
-
-	//Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-
-	Aura::NormalParams np;
-	//sf::FloatRect gb = sprite->getGlobalBounds();
-	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-
-
-	np.centerPos = sprite->getPosition() + diff;//sprite->getPosition() + center;//Vector2f(gn.x, gn.y) * (sprite->getLocalBounds().height / 2);
-	sprite->setOrigin(oldOrigin);
-	//if (auraPoints[action] != NULL)
-	//{
-	//	testAura->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle0, &np);
-	//	testAura1->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle1, &np);
-	//	testAura2->ActivateParticles(auraPoints[action][tileIndex], tr, sprite->getOrigin() + extraParticle2, &np);
-	//}
 }
 
 void Actor::SetupAction(int a)
@@ -16060,40 +15726,6 @@ void Actor::UpdateInHitlag()
 	//}
 	return pair<bool, bool>(false,false);
 }
-
-int Actor::CreateAura(std::list<sf::Vector2f> *&outPointList,
-	Tileset *ts, int startTile, int numTiles, int layer )
-{
-	//auraPoints[WALLATTACK] = 8;
-	//CreateAura(WALLATTACK, 8);
-	if (ts == NULL)
-	{
-		outPointList = NULL;
-		return 0;
-	}
-
-	//int endTile = startTile + numTiles;
-	if (numTiles == 0)
-	{
-		numTiles = ts->GetNumTiles() - startTile;
-		//endTile = ts->GetNumTiles() - startTile;
-	}
-
-	outPointList = new list<Vector2f>[numTiles];
-
-	//Image im = ts->texture->copyToImage();
-	if (ts->sourceName == tileset[GOALKILL]->sourceName)
-	{
-		int bbb = 5;
-	}
-	for (int i = 0; i < numTiles; ++i)
-	{
-		Aura::CreateParticlePointList( owner->mainMenu->auraCheckTexture, ts, i + startTile, outPointList[i], layer);
-	}
-
-	return numTiles;
-}
-
 
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

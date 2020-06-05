@@ -543,6 +543,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	ShardPopup *shardPop;
 	BitField *shardsCapturedField;
 	Sequence *getShardSeq;
+	Sequence *deathSeq;
+	void CreateDeathSequence();
 
 	RaceFight *raceFight;
 	

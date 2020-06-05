@@ -69,6 +69,7 @@
 #include "EditorRail.h"
 
 #include "GateMarker.h"
+#include "DeathSequence.h"
 
 
 //#include "Enemy_Badger.h"
@@ -3177,6 +3178,14 @@ void GameSession::SetGlobalBorders()
 
 }
 
+void GameSession::CreateDeathSequence()
+{
+	if (deathSeq == NULL)
+	{
+		deathSeq = new DeathSequence(this);
+	}
+}
+
 void GameSession::TryCreateShardResources()
 {
 	if (shardPop == NULL)
@@ -4743,6 +4752,8 @@ bool GameSession::Load()
 
 
 	SetPlayersGameMode();
+
+	CreateDeathSequence();
 
 	/*for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -7467,6 +7478,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	deathSeq = NULL;
 	currentZoneNode = NULL;
 	zoneTree = NULL;
 	gateMarkers = NULL;

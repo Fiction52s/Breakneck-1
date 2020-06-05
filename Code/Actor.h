@@ -738,7 +738,6 @@ struct Actor : QuadTreeCollider,
 
 		//std::map<int, 
 	void SetupAction(int a);
-	void LoadAllAuras();
 	Tileset *ts_dodecaSmall;
 	Tileset *ts_dodecaBig;
 
@@ -807,11 +806,6 @@ struct Actor : QuadTreeCollider,
 	int runBounceFlameFrames;
 	int runBounceFrame;
 	Tileset *ts_runBounceFlame;
-
-	Aura *testAura;
-	Aura *testAura1;
-	Aura *testAura2;
-	Aura* testAura3;
 
 	int airBounceFlameFrames;
 	int airBounceFrame;
@@ -900,7 +894,6 @@ struct Actor : QuadTreeCollider,
 	bool CareAboutSpeedAction();
 	void UpdateMotionGhosts();
 	void UpdateSpeedParticles();
-	void UpdateAura();
 	void UpdateAttackLightning();
 	void UpdatePlayerShader();
 	void TryEndLevel();
@@ -1067,14 +1060,6 @@ struct Actor : QuadTreeCollider,
 
 
 	double steepThresh;
-
-	//int actionLength[Action::Count]; //actionLength-1 is the max frame counter for each action
-	std::list<sf::Vector2f> *auraPoints[3][Action::Count];
-	bool usingAura;
-	int CreateAura( std::list<sf::Vector2f> *&outPointList,
-		Tileset *ts, int startTile = 0, int numTiles= 0, int layer = 0);
-	//std::list<sf::Vector2f> *runPoints;
-	//std::list<sf::Vector2f> *standPoints;
 
 	int wallJumpMovementLimit;
 
