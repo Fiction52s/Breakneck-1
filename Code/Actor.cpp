@@ -4514,7 +4514,10 @@ void Actor::UpdatePrePhysics()
 	ActionEnded();
 
 	if (action == DEATH)
+	{
+		UpdateAction();
 		return;
+	}
 
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
@@ -13617,7 +13620,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);
-	if (action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR || action == SPRINGSTUNTELEPORT )
+	if (action == DEATH || action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR || action == SPRINGSTUNTELEPORT )
 	{
 		return;
 	}
@@ -13652,7 +13655,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 
-	if( bounceFlameOn && action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
+	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
 		target->draw( scorpSprite );
@@ -13871,7 +13874,7 @@ void Actor::Draw( sf::RenderTarget *target )
 			flashFrames = owner->pauseFrames;
 		else
 			flashFrames = 0;
-		if (desperationMode && action != DEATH)
+		if (desperationMode)
 		{
 			target->draw(*sprite, &playerDespShader);
 		}
@@ -14026,6 +14029,14 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	keyExplodeRingGroup->Draw(target);
 	keyExplodePool->Draw(target);
+}
+
+void Actor::DeathDraw(sf::RenderTarget *target)
+{
+	if (action == DEATH)
+	{
+		target->draw(*sprite);// , &sh);
+	}
 }
 
 void Actor::DrawMapWires(sf::RenderTarget *target)

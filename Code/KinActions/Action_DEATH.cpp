@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "GameSession.h"
 
 using namespace sf;
 using namespace std;
@@ -10,6 +11,7 @@ void Actor::DEATH_Start()
 
 void Actor::DEATH_End()
 {
+	
 	frame = 0;
 	dead = true;
 }
@@ -24,6 +26,11 @@ void Actor::DEATH_Update()
 	velocity.x = 0;
 	velocity.y = 0;
 	groundSpeed = 0;
+
+	if (frame == GetActionLength(DEATH) - 1)
+	{
+		owner->NextFrameRestartLevel();
+	}
 }
 
 void Actor::DEATH_UpdateSprite()

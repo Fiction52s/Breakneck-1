@@ -6127,11 +6127,11 @@ int GameSession::Run()
 				}*/
 
 				//hacky
-				if( p0->dead )
+				/*if( p0->dead )
 				{
 					RestartLevel();
 				}
-				else if( raceFight != NULL )
+				else */if( raceFight != NULL )
 				{
 					if( raceFight->gameOver || GetCurrInput( 0 ).back )
 					{
@@ -7895,10 +7895,7 @@ void GameSession::DrawDyingPlayers()
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			if (p->action == Actor::DEATH)
-			{
-				p->Draw(preScreenTex);
-			}
+			p->DeathDraw(preScreenTex);
 		}
 	}
 }
