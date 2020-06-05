@@ -10348,9 +10348,9 @@ void Actor::HandleTouchedGate()
 
 				if (!twoWay)
 				{
-					owner->CloseOffLimitZones();
+					//owner->CloseOffLimitZones();
 
-					owner->gateMarkers->SetToZone(owner->currentZone);
+					//owner->gateMarkers->SetToZone(owner->currentZone);
 				}
 				
 

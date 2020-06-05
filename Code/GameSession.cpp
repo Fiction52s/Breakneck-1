@@ -3790,7 +3790,7 @@ void GameSession::CloseOffLimitZones()
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ( ( !(*it)->visited || (*it)->active ) && (*it)->shouldReform )
+		if ( !(*it)->visited  && (*it)->shouldReform )
 		{
 			(*it)->visited = true;
 			(*it)->ReformAllGates();
@@ -3942,7 +3942,7 @@ void GameSession::SetupZones()
 
 	if( originalZone != NULL )
 	{
-		cout << "setting original zone to active: " << originalZone << endl;
+		//cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
 		keyMarker->Reset();
 	}
@@ -10096,6 +10096,8 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 			}
 		}
 
+		
+
 		if (!foundNode)
 		{
 			assert(foundNode);
@@ -10103,13 +10105,15 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 
 		//if (z->zType != Zone::SECRET)
 		//{
-			//KillAllEnemies();
+		KillAllEnemies();
 		//}
 	}
 
 	currentZone = z;
 
-	
+	CloseOffLimitZones();
+
+	gateMarkers->SetToZone(currentZone);
 
 	if (!instant)
 	{
