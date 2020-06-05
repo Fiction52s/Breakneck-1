@@ -131,7 +131,13 @@ void EditModeUI::CreateLayerPanel()
 	vector<string> dropdownOptions{ "testing", "shephard", "water", "terrain" };
 	layerPanel->AddDropdown("test", Vector2i(10, 20), Vector2i(150, 24), dropdownOptions, 0);
 
-	layerPanel->AddSlider("testslider", Vector2i(10, 400), 200, 0, 100, 50);
+	float maxFloatValue = 5.f;
+	float floatStep = .25;
+	float floatStart = 0;
+	int numSpaces = (maxFloatValue - floatStep) / floatStep + 1;
+	//Slider *sl = layerPanel->AddSlider("testslider", Vector2i(10, 400), 200, 0, numSpaces, 50);
+	Slider *sl = layerPanel->AddFloatSlider("testslider", Vector2i(10, 400), 200, 0, 5.0, 2.5, .25);
+	//sl->SetDecimalLabeling(floatStart, floatStep);
 
 	int startY = 60 + 100;
 

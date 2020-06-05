@@ -774,8 +774,15 @@ struct Slider : PanelMember
 {
 	Slider(const std::string &name, sf::Vector2i &pos,
 		int width, sf::Font &f,
-		int minValue, int maxValue, int defaultValue, 
+		int minValue, int maxValue, int defaultValue,
 		Panel *panel);
+	void SetFloatMode(
+		float minDec, float step);
+
+	bool floatSlider;
+	float minDec;
+	float step;
+
 	//~Slider();
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
@@ -787,6 +794,8 @@ struct Slider : PanelMember
 	void SetCircle(int x);
 	int GetCurrValue();
 	void SetCurrValue(int v);
+	float GetCurrValueF();
+	void SetCurrValueF(float v);
 	//int GetCurrValue(const sf::Vector2i &mousePos);
 
 	sf::Vector2i pos;
@@ -949,6 +958,8 @@ struct Panel
 	void UpdateSprites(int numUpdateFrames = 1);
 	Slider * AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
+	Slider * AddFloatSlider(const std::string &name, sf::Vector2i &pos,
+		int width, float minValue, float maxValue, float defaultValue, float step);
 	Dropdown * AddDropdown(const std::string &name, sf::Vector2i &pos,
 		sf::Vector2i &size, const std::vector<std::string> &p_options,
 		int defaultIndex );

@@ -866,17 +866,20 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	
 void Enemy::DirectKill()
 {
-	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
-
-	dead = true;
-
-	numHealth = 0;
-	HandleNoHealth();
-	receivedHit = NULL;
-
-	if (cutObject != NULL)
+	if (!dead)
 	{
-		cutObject->SetCutRootPos(GetPositionF());
+		sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+
+		dead = true;
+
+		numHealth = 0;
+		HandleNoHealth();
+		receivedHit = NULL;
+
+		if (cutObject != NULL)
+		{
+			cutObject->SetCutRootPos(GetPositionF());
+		}
 	}
 }
 

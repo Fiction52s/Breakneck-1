@@ -722,6 +722,7 @@ Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f
 	:PanelMember( p ), pos(p_pos), clickedDown(false), characterHeight(20), name(n),
 	myFont(f), minValue( p_min ), maxValue( p_max ), defaultValue(p_defaultNum)
 {
+	floatSlider = false;
 	size.y = 20;
 	size.x = width;
 	circleRad = 13;
@@ -744,6 +745,14 @@ Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f
 	SetCurrValue(currValue);
 }
 
+void Slider::SetFloatMode(float p_min, float p_step)
+{
+	floatSlider = true;
+	step = p_step;
+	minDec = p_min;
+	SetCurrValue(currValue);
+}
+
 void Slider::Deactivate()
 {
 	clickedDown = false;
@@ -758,7 +767,19 @@ void Slider::SetCircle(int x)
 void Slider::SetToFactor(float factor)
 {
 	currValue = CalcCurrValue(factor);
-	displayText.setString(to_string(currValue));
+
+	if (!floatSlider)
+	{
+		displayText.setString(to_string(currValue));
+	}
+	else
+	{
+		float currFloat = GetCurrValueF();
+		string floatStr = to_string(currFloat);
+
+		displayText.setString(floatStr.substr(0, floatStr.find('.') + 3));
+	}
+
 	int currX = GetCurrX(factor);
 	auto textBounds = displayText.getLocalBounds();
 	displayText.setOrigin(textBounds.left + textBounds.width / 2,
@@ -771,6 +792,14 @@ void Slider::SetToFactor(float factor)
 bool Slider::IsPointOnRect(sf::Vector2f &point)
 {
 	return QuadContainsPoint(mainRect, point);
+}
+
+float Slider::GetCurrValueF()
+{
+	assert(floatSlider);
+	int offset = currValue - minValue;
+	float curr = minDec + step * offset;
+	return curr;
 }
 
 float Slider::GetCurrFactor(const sf::Vector2i &mousePos)
@@ -799,13 +828,32 @@ float Slider::GetCurrFactor(const sf::Vector2i &mousePos)
 	}
 }
 
+void Slider::SetCurrValueF(float v)
+{
+	int curr = (v - minDec) / step;
+	SetCurrValue(curr);
+	//int currPos = (v - minDec)
+}
+
 void Slider::SetCurrValue(int v)
 {
 	currValue = v;
 	float totalDiff = maxValue - minValue;
 	float factor = ( currValue - minValue ) / totalDiff;
 
-	displayText.setString(to_string(currValue));
+	if (!floatSlider)
+	{
+		displayText.setString(to_string(currValue));
+	}
+	else
+	{
+		float currFloat = GetCurrValueF();
+		string floatStr = to_string(currFloat);
+
+		displayText.setString(floatStr.substr(0, floatStr.find('.') + 3));
+	}
+
+	
 	int currX = GetCurrX(factor);
 	auto textBounds = displayText.getLocalBounds();
 	displayText.setOrigin(textBounds.left + textBounds.width / 2,
@@ -1919,6 +1967,24 @@ Slider * Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
 {
 	assert(sliders.count(name) == 0);
 	Slider *slider = new Slider(name, autoStart + pos, width, arial, minValue, maxValue, defaultValue, this);
+	sliders[name] = slider;
+
+	AddAutoSpaceX(slider->size.x + pos.x);
+	AddAutoSpaceY(slider->size.y + pos.y);
+
+	return slider;
+}
+
+Slider * Panel::AddFloatSlider(const std::string &name, sf::Vector2i &pos,
+	int width, float minValue, float maxValue, float defaultValue, float step)
+{
+	float iDefault = ((defaultValue - minValue) / step);
+	int numSpaces = (maxValue - minValue) / step;
+
+	assert(sliders.count(name) == 0);
+	Slider *slider = new Slider(name, autoStart + pos, width, arial, 0, numSpaces, iDefault, this);
+	slider->SetFloatMode(minValue, step);
+
 	sliders[name] = slider;
 
 	AddAutoSpaceX(slider->size.x + pos.x);

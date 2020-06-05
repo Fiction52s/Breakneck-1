@@ -1976,7 +1976,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	}
 	Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
 	Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
-	Color auraColor(Color::Magenta);
+	Color auraColor(Color::Cyan);
 	//auraColor.a = 200;
 	sh.setUniform("u_auraColor", ColorGL( auraColor ));
 	ts_auraTest2->texture->setRepeated(true);
@@ -10337,7 +10337,6 @@ void Actor::HandleTouchedGate()
 				}
 
 				//activatezone
-				
 				//oldZone->connectedCount = 0;
 				//oldZone->DecrementNeighborsAttached( newZone );
 

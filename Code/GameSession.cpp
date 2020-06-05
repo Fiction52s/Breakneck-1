@@ -3938,46 +3938,6 @@ void GameSession::SetupZones()
 		ActivateZone(originalZone, true);
 		keyMarker->Reset();
 	}
-	
-	//cout << "3: numgates: " << numGates << endl;
-	//cout << "num zones: " << zones.size() << endl;
-	//assign correct zones to gates
-	//for( int i = 0; i < numGates; ++i )
-	//{
-	//	
-
-	//	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	//	{
-	//		cout << i << ", it gates: " << (*it)->gates.size() << endl;
-	//		for( list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit )
-	//		{
-	//			if( gates[i]->edgeA == (*eit) )
-	//			{
-	//				cout << "gate zone a: " << (*it ) << endl;
-	//				gates[i]->zoneA = (*it);
-	//				//done++;
-	//			}
-	//			else if( gates[i]->edgeB == (*eit) )
-	//			{
-	//				cout << "gate zone B: " << (*it ) << endl;
-	//				gates[i]->zoneB = (*it);
-	//				//done++;
-	//			}
-	//		}
-	//	}
-	//}
-	
-
-	
-	
-
-	/*for( int i = 0; i < numGates; ++i )
-	{
-		if( gates[i]->zoneA == gates[i]->zoneB )
-		{
-			gates[i]->SetLocked( false );
-		}
-	}*/
 
 	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
 	{
@@ -4047,6 +4007,11 @@ void GameSession::SetupZones()
 	zoneTree->parent = NULL;
 	zoneTree->SetZone(zoneTreeStart);
 	currentZoneNode = zoneTree;
+
+	if (originalZone != NULL)
+	{
+		CloseOffLimitZones();
+	}
 }
 
 int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
@@ -8773,7 +8738,9 @@ void GameSession::RestartLevel()
 	{
 		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
-		keyMarker->SetStartKeysZone(originalZone);
+		keyMarker->Reset();
+		//keyMarker->SetStartKeysZone(originalZone);
+		CloseOffLimitZones();
 	}
 	//	originalZone->active = true;
 	//
@@ -10124,8 +10091,10 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 		if (!foundNode)
 		{
 			assert(foundNode);
-		}
-		
+		}		
+
+		KillAllEnemies();
+
 	}
 
 	currentZone = z;
