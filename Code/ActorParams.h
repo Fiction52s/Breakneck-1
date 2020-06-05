@@ -177,7 +177,8 @@ struct ZonePropertiesParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	bool facingRight;
+	int zoneType;
+	float drainFactor;
 };
 
 struct PoiParams : public ActorParams

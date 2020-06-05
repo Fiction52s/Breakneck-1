@@ -192,6 +192,13 @@ Panel *ActorType::CreatePanel()
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
+	else if (name == "zoneproperties")
+	{
+		p = CreateDefaultPanel();
+		std::vector<string> zoneTypes{ "Normal", "Momenta", "Secret", "Nexus", "Extra" };
+		p->AddDropdown("zonetype", Vector2i(0, 10), Vector2i(200, 28), zoneTypes, 0);
+		p->AddFloatSlider("drainfactor", Vector2i(0, 0), 200, 0.f, 5.f, 1.f, .25);
+	}
 	else if (name == "poi")
 	{
 		p = CreateDefaultPanel();

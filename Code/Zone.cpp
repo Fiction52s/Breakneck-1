@@ -76,7 +76,7 @@ Zone::~Zone()
 	}
 }
 
-void Zone::SetZoneType( ZoneType zt )
+void Zone::SetZoneType( int zt )
 {
 	zType = zt;
 }

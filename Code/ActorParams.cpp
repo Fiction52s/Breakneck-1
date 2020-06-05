@@ -424,6 +424,48 @@ ActorParams *ShipPickupParams::Copy()
 	return copy;
 }
 
+ZonePropertiesParams::ZonePropertiesParams(ActorType *at, int level)
+	:ActorParams(at), zoneType( 0 ), drainFactor( 1.f )
+{
+	PlaceAerial(Vector2i(0, 0));
+}
+
+ZonePropertiesParams::ZonePropertiesParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+	is >> zoneType;
+	is >> drainFactor;
+}
+
+void ZonePropertiesParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	p->dropdowns["zonetype"]->SetSelectedIndex(zoneType);
+	p->sliders["drainfactor"]->SetCurrValueF(drainFactor);
+}
+
+void ZonePropertiesParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	zoneType = p->dropdowns["zonetype"]->selectedIndex;
+	drainFactor = p->sliders["drainfactor"]->GetCurrValueF();
+}
+
+void ZonePropertiesParams::WriteParamFile(ofstream &of)
+{
+	of << zoneType << "\n";
+	of << drainFactor << "\n";
+}
+
+ActorParams *ZonePropertiesParams::Copy()
+{
+	ZonePropertiesParams *copy = new ZonePropertiesParams(*this);
+	return copy;
+}
+
 ShardParams::ShardParams(ActorType *at, int level)
 	:ActorParams(at)
 {

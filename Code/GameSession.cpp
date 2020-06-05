@@ -3074,6 +3074,13 @@ void GameSession::ProcessActor(ActorPtr a)
 		
 			ResetShipSequence();
 		}
+		else if (typeName == "zoneproperties")
+		{
+			ZonePropertiesParams *zp = (ZonePropertiesParams*)a;
+			ZonePropertiesObj *obj = new ZonePropertiesObj(zp->GetIntPos(), zp->zoneType,
+				zp->drainFactor);
+			zoneObjects.push_back(obj);
+		}
 		else
 		{
 			cout << "cant handle enemy of type: " << typeName << endl;
@@ -3771,6 +3778,9 @@ void GameSession::CreateZones()
 
 void GameSession::CloseOffLimitZones()
 {
+	if (currentZoneNode == NULL)
+		return;
+
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->shouldReform = true;
@@ -3780,7 +3790,7 @@ void GameSession::CloseOffLimitZones()
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ( !(*it)->visited && (*it)->shouldReform )
+		if ( ( !(*it)->visited || (*it)->active ) && (*it)->shouldReform )
 		{
 			(*it)->visited = true;
 			(*it)->ReformAllGates();
@@ -3863,7 +3873,7 @@ void GameSession::SetupZones()
 	}
 
 	//set key number objects correctly
-	for( list<KeyNumberObj*>::iterator it = keyNumberObjects.begin(); it != keyNumberObjects.end(); ++it )
+	for( auto it = zoneObjects.begin(); it != zoneObjects.end(); ++it )
 	{
 		Zone *assignZone = NULL;
 		V2d cPos( (*it)->pos.x, (*it)->pos.y );
@@ -3891,16 +3901,14 @@ void GameSession::SetupZones()
 
 		if( assignZone != NULL )
 		{
-			//assignZone->requiredKeys = (*it)->numKeys;
 			if( (*it)->zoneType > 0 )
-				assignZone->SetZoneType((Zone::ZoneType)(*it)->zoneType);
+				assignZone->SetZoneType((*it)->zoneType);
 		}
 
 		delete (*it);
 	}
 
-
-	keyNumberObjects.clear();
+	zoneObjects.clear();
 
 	
 
@@ -7417,6 +7425,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
+	currentZoneNode = NULL;
 	zoneTree = NULL;
 	gateMarkers = NULL;
 	inversePoly = NULL;
@@ -8739,8 +8748,7 @@ void GameSession::RestartLevel()
 		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
 		keyMarker->Reset();
-		//keyMarker->SetStartKeysZone(originalZone);
-		CloseOffLimitZones();
+		
 	}
 	//	originalZone->active = true;
 	//
@@ -10093,14 +10101,15 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 			assert(foundNode);
 		}		
 
-		KillAllEnemies();
-
+		//if (z->zType != Zone::SECRET)
+		//{
+			//KillAllEnemies();
+		//}
 	}
 
 	currentZone = z;
 
-
-	gateMarkers->SetToZone(currentZone);
+	
 
 	if (!instant)
 	{

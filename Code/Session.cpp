@@ -178,6 +178,10 @@ void Session::SetupEnemyType(ParamsInfo &pi)
 
 void Session::AddGeneralEnemies()
 {
+	AddExtraEnemy("zoneproperties", NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
+		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Editor/zoneproperties_128x128.png"));
+
 	AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
 
@@ -209,6 +213,8 @@ void Session::AddGeneralEnemies()
 
 	AddExtraEnemy("ship", NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Ship/ship_864x400.png"));
+
+	
 	//ignore flowerpods until I figure out how I want to change them.
 
 	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,

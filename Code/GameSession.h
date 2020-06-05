@@ -180,6 +180,24 @@ struct KeyNumberObj
 	int zoneType;
 };
 
+struct ZonePropertiesObj
+{
+	ZonePropertiesObj(
+		sf::Vector2i &p_pos,
+		int p_zoneType,
+		float p_drainFactor)
+		:pos(p_pos),
+		zoneType(p_zoneType),
+		drainFactor(p_drainFactor)
+	{
+
+	}
+
+	sf::Vector2i pos;
+	int zoneType;
+	float drainFactor;
+};
+
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
 	//new stuff
@@ -516,6 +534,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void CollectKey();
 	KeyMarker *keyMarker;
 	std::list<KeyNumberObj*> keyNumberObjects;
+	std::list<ZonePropertiesObj*> zoneObjects;
 	int numKeysCollected;
 	void SuppressEnemyKeys(Gate *g);
 	

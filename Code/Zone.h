@@ -56,7 +56,7 @@ struct Zone
 	bool reexplored;
 	int openFrames;
 	int closeFrames;
-	enum ZoneType
+	enum ZoneType : int
 	{
 		NORMAL,
 		MOMENTA,
@@ -76,8 +76,8 @@ struct Zone
 	};
 
 	Action action;
-	void SetZoneType( ZoneType zt );
-	ZoneType zType;
+	void SetZoneType( int zt );
+	int zType;
 	void Reset();
 	void ReformAllGates( Gate *ignoreGate = NULL);
 

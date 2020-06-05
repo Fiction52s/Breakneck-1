@@ -10326,7 +10326,9 @@ void Actor::HandleTouchedGate()
 
 			if (oldZone != newZone)
 			{
-				if (!g->IsTwoWay()) //for secret gates
+
+				bool twoWay = g->IsTwoWay();
+				if (!twoWay) //for secret gates
 				{
 					if (oldZone != NULL && oldZone->active)
 					{
@@ -10334,6 +10336,8 @@ void Actor::HandleTouchedGate()
 					}
 
 					owner->keyMarker->Reset();
+
+					
 				}
 
 				//activatezone
@@ -10342,7 +10346,13 @@ void Actor::HandleTouchedGate()
 
 				owner->ActivateZone(newZone);
 
-				owner->CloseOffLimitZones();
+				if (!twoWay)
+				{
+					owner->CloseOffLimitZones();
+
+					owner->gateMarkers->SetToZone(owner->currentZone);
+				}
+				
 
 				//newZone->ReformDeadEnds();
 				
