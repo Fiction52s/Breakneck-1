@@ -3790,7 +3790,7 @@ void GameSession::CloseOffLimitZones()
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
-		if ( !(*it)->visited  && (*it)->shouldReform )
+		if ( (*it)->zType != Zone::SECRET && !(*it)->visited  && (*it)->shouldReform )
 		{
 			(*it)->visited = true;
 			(*it)->ReformAllGates();
@@ -3947,10 +3947,7 @@ void GameSession::SetupZones()
 		keyMarker->Reset();
 	}
 
-	for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	{
-		(*it)->Init();
-	}
+	
 
 	//std::vector<Zone*> zoneVec(zones.size());
 	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
@@ -4003,6 +4000,17 @@ void GameSession::SetupZones()
 	}
 
 
+	/*if ((*it)->connectedSet.size() == 1 && (*it) != goalZone)
+	{
+		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
+		{
+			g = (Gate*)(*git)->info;
+			g->category = Gate::SECRET;
+			g->UpdateLine();
+		}
+		(*it)->SetZoneType(Zone::SECRET);
+	}*/
+
 	if (zoneTree != NULL)
 	{
 		delete zoneTree;
@@ -4015,6 +4023,35 @@ void GameSession::SetupZones()
 	zoneTree->parent = NULL;
 	zoneTree->SetZone(zoneTreeStart);
 	currentZoneNode = zoneTree;
+
+	//std::vector<bool> hasNodeVec(zones.size());
+
+	//using shouldreform to test the secret gate stuff
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->shouldReform = true;
+	}
+
+	zoneTree->SetChildrenShouldNotReform();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ((*it)->shouldReform)
+		{
+			for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
+			{
+				g = (Gate*)(*git)->info;
+				g->category = Gate::SECRET;
+				g->UpdateLine();
+			}
+			(*it)->SetZoneType(Zone::SECRET);
+		}
+	}
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Init();
+	}
 
 	if (originalZone != NULL)
 	{
@@ -10054,23 +10091,27 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 	{
 		z->reexplored = true;
 		{
-			
-			if (z->action == Zone::CLOSING)
+			//z->frame = 0;
+			//z->action = Zone::OPEN;
+
+			/*if (z->action == Zone::CLOSING)
 			{
 				z->frame = z->openFrames - z->frame;
+				z->action = Zone::OPENING;
 			}
 			else
 			{
 				z->frame = 0;
-			}
-			z->action = Zone::OPENING;
+				z->action = Zone::OPEN;
+			}*/
+			
 		}
 		//already activated
 		//assert(0);
 	}
 
 
-	if (currentZone != NULL )
+	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
 	{
 		if (currentZone->action == Zone::OPENING)
 		{
@@ -10096,25 +10137,33 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 			}
 		}
 
-		
-
 		if (!foundNode)
 		{
 			assert(foundNode);
 		}		
 
-		//if (z->zType != Zone::SECRET)
-		//{
 		KillAllEnemies();
-		//}
+
+		currentZone = z;
+
+		CloseOffLimitZones();
+
+		gateMarkers->SetToZone(currentZone);
 	}
+	else
+	{
 
-	currentZone = z;
+		Zone *oldZone = currentZone;
+		currentZone = z;
 
-	CloseOffLimitZones();
+		if (oldZone == NULL) //for starting the map
+		{
+			CloseOffLimitZones();
 
-	gateMarkers->SetToZone(currentZone);
-
+			gateMarkers->SetToZone(currentZone);
+		}
+	}
+	
 	if (!instant)
 	{
 		//int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);

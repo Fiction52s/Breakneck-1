@@ -384,6 +384,7 @@ struct Actor : QuadTreeCollider,
 	EffectPool *keyExplodePool;
 	KeyExplodeUpdater *keyExplodeUpdater;
 	void CreateKeyExplosion();
+	void CreateGateExplosion();
 	Tileset *ts_keyExplode;
 	Tileset *ts_key;
 	MovingGeoGroup *keyExplodeRingGroup;

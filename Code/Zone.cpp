@@ -85,6 +85,9 @@ void Zone::SetZoneType( int zt )
 
 void Zone::ReformAllGates( Gate *ignoreGate)
 {
+	//note: for secret zones, this should put it into a special reform
+	//where it is closed forever, not the temporary reform that it gets
+	//from being a 2 way gate.
 	for (list<Edge*>::iterator it = gates.begin(); it !=
 		gates.end(); ++it)
 	{

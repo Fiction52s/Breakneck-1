@@ -3137,9 +3137,23 @@ bool Actor::AirAttack()
 	return false;
 }
 
+void Actor::CreateGateExplosion()
+{
+	Vector2f floatPos(position);
+	keyExplodeRingGroup->SetBase(floatPos);
+	keyExplodeRingGroup->Reset();
+	keyExplodeRingGroup->Start();
+	owner->cam.SetRumble(3, 3, 20);//5
+	owner->Pause(4);//5
+}
 
 void Actor::CreateKeyExplosion()
 {
+	//this gets rid of any keys that are still around, instead of
+	//letting the player collect them after going through the door
+	
+
+
 	EffectInstance params;
 	Transform tr = sf::Transform::Identity;
 	//params.SetParams(Vector2f(position), tr, 16, 4, 0);
@@ -3161,11 +3175,7 @@ void Actor::CreateKeyExplosion()
 		posTransform.rotate(360.f / numKeysHeld);
 	}
 
-	keyExplodeRingGroup->SetBase(floatPos);
-	keyExplodeRingGroup->Reset();
-	keyExplodeRingGroup->Start();
-	owner->cam.SetRumble(3, 3, 20);//5
-	owner->Pause(4);//5
+	CreateGateExplosion();
 }
 
 void Actor::CreateAttackLightning()
@@ -10336,8 +10346,6 @@ void Actor::HandleTouchedGate()
 					}
 
 					owner->keyMarker->Reset();
-
-					
 				}
 
 				//activatezone
@@ -10356,8 +10364,16 @@ void Actor::HandleTouchedGate()
 
 				//newZone->ReformDeadEnds();
 				
-
-				CreateKeyExplosion();
+				if (!twoWay)
+				{
+					CreateKeyExplosion();
+					owner->absorbDarkParticles->KillAllActive();
+					numKeysHeld = 0;
+				}
+				else
+				{ 
+					CreateGateExplosion();
+				}
 
 				RestoreAirDash();
 				RestoreDoubleJump();
@@ -10371,15 +10387,12 @@ void Actor::HandleTouchedGate()
 		
 
 		//needs an adjustment for secret zones
-		numKeysHeld = 0;
+		
 
 
 		V2d gEnterPos = alongPos + nEdge;// *32.0;
 
-		//this gets rid of any keys that are still around, instead of
-		//letting the player collect them after going through the door
-
-		owner->absorbDarkParticles->KillAllActive();
+		
 
 		
 

@@ -805,6 +805,10 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
+	if (blackGate != NULL)
+	{
+		delete[] blackGate;
+	}
 	blackGate = new Vertex[numVertices];
 	numBlackQuads = numTiles;
 	
