@@ -4056,8 +4056,9 @@ void GameSession::SetupZones()
 	}
 
 	if (originalZone != NULL)
-	{
-		CloseOffLimitZones();
+	{		
+		//CloseOffLimitZones();
+		gateMarkers->SetToZone(currentZone);
 	}
 }
 
@@ -8789,6 +8790,7 @@ void GameSession::RestartLevel()
 	{
 		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
+		gateMarkers->SetToZone(currentZone);
 		keyMarker->Reset();
 		
 	}
@@ -10163,9 +10165,7 @@ void GameSession::ActivateZone( Zone *z, bool instant )
 
 		if (oldZone == NULL) //for starting the map
 		{
-			CloseOffLimitZones();
-
-			gateMarkers->SetToZone(currentZone);
+			
 		}
 	}
 	

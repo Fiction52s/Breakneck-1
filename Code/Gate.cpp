@@ -38,6 +38,9 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 	ts_black = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
 	ts_lightning = owner->GetTileset("Zone/gates_lightning_1_64x64.png", 64, 64);
 	
+	orbFrame = 0;
+	orbState = ORB_RED;
+
 	stateLength[HARD] = 61;
 	stateLength[SOFTEN] = 61;
 	stateLength[SOFT] = 11 * 3;
@@ -85,6 +88,8 @@ Gate::~Gate()
 
 void Gate::Reset()
 {
+	orbState = ORB_RED;
+	orbFrame = 0;
 	centerShader.setUniform("breakQuant", 0.f);
 	gateShader.setUniform("fadeQuant", 0.f);
 	flowFrame = 0;
@@ -206,13 +211,41 @@ void Gate::Update()
 
 	if (category == KEY)
 	{
+		
+
 		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
 		{
-			ts_orb->SetQuadSubRect(orbQuad, 0);
+			bool currZone = (owner->currentZone == zoneA ||
+				owner->currentZone == zoneB);
+			if (orbState != ORB_GO && currZone)
+			{
+				orbState = ORB_GO;
+				orbFrame = 0;
+			}
+			else if( !currZone )
+			{
+				orbState = ORB_GREEN;
+				orbFrame = 0;
+			}
+
+			if (orbState == ORB_GO)
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 2 + orbFrame / 2);
+
+				orbFrame++;
+				if (orbFrame == 10 * 2)
+				{
+					orbFrame = 0;
+				}
+			}
+			else
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 1 );
+			}
 		}
 		else
 		{
-			ts_orb->SetQuadSubRect(orbQuad, 1);
+			ts_orb->SetQuadSubRect(orbQuad, 0);
 		}
 	}
 	
@@ -559,10 +592,14 @@ void Gate::Draw( sf::RenderTarget *target )
 					//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
 				}
 
-				if (category == KEY || category == PICKUP)
+				if ( category == KEY || category == PICKUP)
 				{
 					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture );
-					target->draw(numberText);
+
+					if( orbState != ORB_GO )
+					{
+						target->draw(numberText);
+					}
 				}
 			}
 		}

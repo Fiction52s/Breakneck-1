@@ -148,6 +148,15 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	sf::Vertex orbQuad[4];
 	//sf::CircleShape numberCircle;
 	sf::Text numberText;
+	int orbFrame;
+	enum OrbState
+	{
+		ORB_RED,
+		ORB_GREEN,
+		ORB_GO,
+	};
+
+	int orbState;
 	
 };
 
