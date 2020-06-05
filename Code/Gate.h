@@ -144,7 +144,9 @@ struct Gate : public QuadTreeEntrant//: public Edge
 
 	int numToOpen;
 
-	sf::CircleShape numberCircle;
+	Tileset *ts_orb;
+	sf::Vertex orbQuad[4];
+	//sf::CircleShape numberCircle;
 	sf::Text numberText;
 	
 };

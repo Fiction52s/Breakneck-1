@@ -62,10 +62,7 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	numToOpen = 0;
 	
-	numberCircle.setFillColor(Color::Green);
-	numberCircle.setRadius(30);
-	numberCircle.setOrigin(numberCircle.getLocalBounds().width / 2,
-		numberCircle.getLocalBounds().height / 2);
+	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
 
 	numberText.setFont(owner->mainMenu->arial);
 	numberText.setCharacterSize(50);
@@ -211,11 +208,11 @@ void Gate::Update()
 	{
 		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
 		{
-			numberCircle.setFillColor(Color::Green);
+			ts_orb->SetQuadSubRect(orbQuad, 0);
 		}
 		else
 		{
-			numberCircle.setFillColor(Color::Red);
+			ts_orb->SetQuadSubRect(orbQuad, 1);
 		}
 	}
 	
@@ -564,7 +561,7 @@ void Gate::Draw( sf::RenderTarget *target )
 
 				if (category == KEY || category == PICKUP)
 				{
-					target->draw(numberCircle);
+					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture );
 					target->draw(numberText);
 				}
 			}
@@ -612,7 +609,7 @@ void Gate::UpdateLine()
 	stateLength[REVERSEDISSOLVE] = stateLength[DISSOLVE];
 
 	Vector2f centerPos = Vector2f(edgeA->v1 + edgeA->v0) / 2.f;
-	numberCircle.setPosition(centerPos);
+	SetRectCenter(orbQuad, ts_orb->tileWidth, ts_orb->tileHeight, centerPos);
 	numberText.setPosition(centerPos);
 	
 	float tileHeight = 64;

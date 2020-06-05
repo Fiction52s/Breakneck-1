@@ -3800,6 +3800,8 @@ void GameSession::CloseOffLimitZones()
 
 void GameSession::SetupZones()
 {
+	if (zones.size() == 0)
+		return;
 	//cout << "setupzones" << endl;
 	//setup subzones
 	//for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
@@ -5852,7 +5854,8 @@ int GameSession::Run()
 					gates[i]->Update();
 				}
 
-				gateMarkers->Update(view);
+				if( gateMarkers != NULL )
+					gateMarkers->Update(view);
 
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
@@ -6439,7 +6442,8 @@ int GameSession::Run()
 		if (inputVis != NULL)
 			inputVis->Draw(preScreenTex);
 
-		gateMarkers->Draw(preScreenTex);
+		if( gateMarkers != NULL )
+			gateMarkers->Draw(preScreenTex);
 
 		preScreenTex->setView( view );
 		
@@ -8651,7 +8655,8 @@ void GameSession::NextFrameRestartLevel()
 void GameSession::RestartLevel()
 {
 	keyMarker->Reset();
-	gateMarkers->Reset();
+	if( gateMarkers != NULL)
+		gateMarkers->Reset();
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();
