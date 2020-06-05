@@ -3598,8 +3598,8 @@ void Actor::DesperationUpdate()
 				slowCounter = 1;
 				frame = 0;
 
-				//owner->deathSeq->Reset();
-				//owner->SetActiveSequence(owner->deathSeq);
+				owner->deathSeq->Reset();
+				owner->SetActiveSequence(owner->deathSeq);
 
 				for (int i = 0; i < 3; ++i)
 				{

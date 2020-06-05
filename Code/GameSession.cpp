@@ -429,6 +429,12 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}
 
+	if (deathSeq != NULL)
+	{
+		delete deathSeq;
+		deathSeq = NULL;
+	}
+
 	if (gateMarkers != NULL)
 	{
 		delete gateMarkers;
@@ -3180,7 +3186,11 @@ void GameSession::SetGlobalBorders()
 
 void GameSession::CreateDeathSequence()
 {
-	if (deathSeq == NULL)
+	if (parentGame != NULL)
+	{
+		deathSeq = parentGame->deathSeq;
+	}
+	else if (deathSeq == NULL)
 	{
 		deathSeq = new DeathSequence(this);
 	}
@@ -9310,6 +9320,8 @@ VertexArray * GameSession::SetupBorderQuads( int bgLayer,
 
 void GameSession::SetupGateMarkers()
 {
+	//doesnt care about parentGame
+
 	if (gateMarkers != NULL)
 	{
 		delete gateMarkers;

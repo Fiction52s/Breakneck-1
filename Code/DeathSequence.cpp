@@ -21,8 +21,10 @@ DeathSequence::DeathSequence(GameSession *p_owner)
 	{
 		geoGroup->AddGeo(new SpinningTri(0 + i * PI / 2.5), 30);
 	}
-	//geoGroup.AddGeo(new Laser(0));
+	
 
+	//geoGroup->AddGeo( )
+	geoGroup->AddGeo(new Laser(0));
 	geoGroup->AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
 		Color::White, Color(100, 0, 0, 0), 30), 0);
 	geoGroup->AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
@@ -85,8 +87,6 @@ bool DeathSequence::Update()
 		if (state == END)
 		{
 			owner->cam.EaseOutOfManual(60);
-			player->SetAction(Actor::JUMP);
-			player->frame = 1;
 			owner->cam.StopRumble();
 			return false;
 		}
@@ -103,7 +103,12 @@ bool DeathSequence::Update()
 			owner->cam.SetRumble(10, 10, 90);
 		}
 
-		int freezeFrame = 100;
+		if (frame == 60)
+		{
+			owner->Fade(false, 14, Color::White, true);
+		}
+
+		/*int freezeFrame = 100;
 		if (frame == freezeFrame)
 		{
 			owner->state = GameSession::FROZEN;
@@ -115,7 +120,7 @@ bool DeathSequence::Update()
 			{
 				owner->state = GameSession::RUN;
 			}
-		}
+		}*/
 
 		if (owner->state == GameSession::RUN)
 			if (!geoGroup->Update())
@@ -157,9 +162,11 @@ void DeathSequence::Reset()
 	state = GET;
 	geoGroup->SetBase(pPos);
 	geoGroup->Reset();
+	geoGroup->Start();
 
 	emitter->SetPos(Vector2f(pPos));
 	emitter->Reset();
-	owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	//emitter->SetOn(false);
+	//owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 }

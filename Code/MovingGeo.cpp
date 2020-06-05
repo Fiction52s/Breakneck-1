@@ -334,6 +334,7 @@ void Laser::Reset()
 	angle = startAngle;
 	width = startWidth;
 	done = false;
+	Clear();
 }
 
 void Laser::SetHeight(float h)
