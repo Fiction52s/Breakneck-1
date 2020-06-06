@@ -2377,6 +2377,8 @@ bool TerrainPolygon::IsInternallyValid()
 
 	if (LinesIntersectMyself())
 	{
+		//shouldnt really be possible when moving points,
+		//but it can happen somehow while shift moving points.
 		edit->CreateError(ERR_POLY_INTERSECTS_ITSELF);
 		return false;
 	}
@@ -2544,7 +2546,8 @@ Vector2i TerrainPolygon::GetExtreme(TerrainPoint *p0,
 }
 
 //only used for moving points now
-bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints) //std::vector<PointMoveInfo> &lockPoints)
+bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints,
+	std::list<PointMoveInfo> &addedLockPoints) //std::vector<PointMoveInfo> &lockPoints)
 {
 	double primLimit = EditSession::PRIMARY_LIMIT;
 	bool adjustedAtAll = false;
@@ -2619,7 +2622,7 @@ bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints) //std:
 
 				pi.newPos = next->pos;
 				
-				lockPoints.push_back(pi);
+				addedLockPoints.push_back(pi);
 				lockedPointIndexes.insert(pi.pointIndex);
 
 				result = 2;
@@ -2643,7 +2646,7 @@ bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints) //std:
 				}
 
 				pi.newPos = curr->pos;
-				lockPoints.push_back(pi);
+				addedLockPoints.push_back(pi);
 				lockedPointIndexes.insert(pi.pointIndex);
 
 				result = 1;
@@ -2668,21 +2671,13 @@ bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints) //std:
 		}
 	}
 
-	/*lockPoints.reserve(lockPoints.size() + newInfoList.size());
-	for (auto it = newInfoList.begin(); it != newInfoList.end(); ++it)
-	{
-		lockPoints.push_back((*it));
-	}*/
-
-	//lockPoints.reserve( lockedPointIndexes)
-
 	return adjustedAtAll;
 }
 
 bool TerrainPolygon::AlignExtremes()
 {
 	list<PointMoveInfo> emptyLockPoints;
-	return AlignExtremes(emptyLockPoints);
+	return AlignExtremes(emptyLockPoints, emptyLockPoints);
 }
 
 

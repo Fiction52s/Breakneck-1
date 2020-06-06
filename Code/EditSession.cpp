@@ -4718,25 +4718,34 @@ bool EditSession::PerformMovePointsAction()
 	PointMover *pm = new PointMover;//need to worry about alignextremes but for now just use the actual moving points.
 
 	PolyPtr poly;
+	std::list<PointMoveInfo> adjList;
 	for (auto mit = selectedPoints.begin(); mit != selectedPoints.end(); ++mit)
 	{
+		adjList.clear();
 		poly = (*mit).first;
 
 		 //adjust this later!!! need to take this into account
 
-		poly->AlignExtremes((*mit).second);
+		poly->AlignExtremes((*mit).second, adjList);
 
 		vector<PointMoveInfo> &pmVec = pm->movePoints[poly];
 
 		
 
-		pmVec.reserve((*mit).second.size());
+		pmVec.reserve((*mit).second.size() + adjList.size() );
 
 		for (auto it = (*mit).second.begin(); it != (*mit).second.end(); ++it)
 		{
 			(*it).newPos = (*it).GetPolyPoint()->pos;
 			pmVec.push_back((*it));
 		}
+
+		for (auto it = adjList.begin(); it != adjList.end(); ++it)
+		{
+			(*it).newPos = (*it).GetPolyPoint()->pos;
+			pmVec.push_back((*it));
+		}
+
 		pm->oldEnemyPosInfo.insert(pm->oldEnemyPosInfo.end(),
 			poly->enemyPosBackups.begin(), poly->enemyPosBackups.end());
 
@@ -6064,10 +6073,17 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	list<PointMoveInfo> piList;
 	piList.push_back(pi);
 
-	poly->AlignExtremes(piList);
 
-	pmap->movePoints[poly].reserve(piList.size());
+	list<PointMoveInfo> adjList;
+	poly->AlignExtremes(piList, adjList );
+
+	pmap->movePoints[poly].reserve(piList.size() + adjList.size() );
 	for (auto it = piList.begin(); it != piList.end(); ++it)
+	{
+		pmap->movePoints[poly].push_back((*it));
+	}
+
+	for (auto it = adjList.begin(); it != adjList.end(); ++it)
 	{
 		pmap->movePoints[poly].push_back((*it));
 	}

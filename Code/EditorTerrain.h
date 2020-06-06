@@ -463,7 +463,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool IsClockwise();
 	bool AlignExtremes();
 	bool AlignExtremes(
-		std::list<PointMoveInfo> &lockPoints);
+		std::list<PointMoveInfo> &lockPoints,
+		std::list<PointMoveInfo> &addedLockPoints );
 		//std::vector<PointMoveInfo> &lockPoints);
 	//bool AlignExtremesMovePoints(
 	//	std::map<TerrainPoint*, sf::Vector2f> &affectedPoints);
