@@ -13619,6 +13619,11 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 	return NULL;
 }
 
+void Actor::MiniDraw(sf::RenderTarget *target)
+{
+	keyExplodeRingGroup->Draw(target);
+}
+
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);

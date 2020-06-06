@@ -157,7 +157,18 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
-
+void GameSession::DrawPlayersMini(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->MiniDraw(target);
+		}
+	}
+}
 //new stuff
 
 PolyPtr GameSession::GetPolygon(int index)

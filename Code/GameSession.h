@@ -858,7 +858,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 	std::string queryMode;
 
-
+	void DrawPlayersMini(sf::RenderTarget *target);
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	bool drawInversePoly;
 	Edge *inverseEdgeList;

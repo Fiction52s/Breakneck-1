@@ -33,6 +33,7 @@ Minimap::Minimap( GameSession *p_owner)
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
 		kinMinimapIcon.getLocalBounds().height / 2);
 	kinMinimapIcon.setPosition(0, 0);
+	kinMinimapIcon.setScale(.5, .5);
 
 
 	goalMapIcon.setTexture(*ts_miniIcons->texture);
@@ -87,6 +88,8 @@ void Minimap::DrawToTex()
 	owner->DrawAllMapWires(minimapTex);
 
 	owner->EnemiesCheckedMiniDraw(minimapTex, FloatRect(minimapRect));
+
+	owner->DrawPlayersMini(minimapTex);
 
 	sf::View iconView;
 	iconView.setCenter(0, 0);

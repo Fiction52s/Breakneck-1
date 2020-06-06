@@ -649,6 +649,7 @@ struct Actor : QuadTreeCollider,
 	bool justToggledBounce;
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
+	void MiniDraw(sf::RenderTarget *target);
 	void DeathDraw(sf::RenderTarget *target);
 	void DebugDraw( sf::RenderTarget *target );
 	void DrawMapWires(sf::RenderTarget *target);
