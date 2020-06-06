@@ -200,7 +200,11 @@ void Gate::UpdateOrb()
 {
 	if (category == KEY)
 	{
-
+		if (gState == LOCKFOREVER || gState == REFORM)
+		{
+			SetRectColor(mapLine, mapLineColor);
+			return;
+		}
 
 		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
 		{
@@ -226,15 +230,31 @@ void Gate::UpdateOrb()
 				{
 					orbFrame = 0;
 				}
+
+				int mapLineFrame = (orbFrame / 2) % 3;
+				switch (mapLineFrame)
+				{
+				case 0:
+					SetRectColor(mapLine, mapLineColor);
+					break;
+				case 1:
+					SetRectColor(mapLine, Color::Red);
+					break;
+				case 2:
+					SetRectColor(mapLine, Color::Yellow);
+					break;
+				}
 			}
 			else
 			{
 				ts_orb->SetQuadSubRect(orbQuad, 1);
+				SetRectColor(mapLine, mapLineColor);
 			}
 		}
 		else
 		{
 			ts_orb->SetQuadSubRect(orbQuad, 0);
+			SetRectColor(mapLine, mapLineColor);
 		}
 	}
 }
