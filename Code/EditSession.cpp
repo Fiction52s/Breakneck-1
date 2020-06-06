@@ -8038,52 +8038,109 @@ Vector2i EditSession::GetCopiedCenter()
 	}
 }
 
-void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
+bool EditSession::PasteInverseTerrain(Brush *cBrush)
 {
-	std::vector<list<PolyPtr>> brushPolyLists;
-	brushPolyLists.resize(TERRAINLAYER_Count);
-	PolyPtr poly;
+	list<PolyPtr> inverseCopiedList;
 
-	bool terrainEmpty = true;
-	for (int i = TERRAINLAYER_Count-1; i >= 0; --i)
-	{
-		if (cBrush != NULL)
-		{
-			for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
-			{
-				poly = (*bit)->GetAsTerrain();
-				if (poly != NULL)
-				{
-					brushPolyLists[poly->GetSpecialPolyIndex()].push_back(poly);
-					terrainEmpty = false;
-				}
-			}
-		}
-	}
-
-	/*list<PolyPtr> brushPolys;
-	list<PolyPtr> waterBrushPolys;
 	PolyPtr poly;
 	if (cBrush != NULL)
 	{
 		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
 		{
 			poly = (*bit)->GetAsTerrain();
-			if (poly != NULL  )
+			if (poly != NULL)
 			{
-				if (poly->terrainWorldType < TerrainPolygon::TerrainWorldType::SPECIAL)
+				if (poly->copiedInverse)
 				{
-					brushPolys.push_back(poly);
-				}
-				else
-				{
-					waterBrushPolys.push_back(poly);
+					inverseCopiedList.push_back(poly);
+					break;
 				}
 			}
 		}
-	}*/
+	}
 
-	
+	Brush orig;
+	Brush result;
+	bool success = true;
+
+	if (!inverseCopiedList.empty())
+	{
+		//opposite of normal
+		if (!HoldingControl())
+		{
+			success = ExecuteTerrainMultiSubtract(inverseCopiedList, orig, result, 0);
+		}
+		else
+		{
+			success = ExecuteTerrainMultiAdd(inverseCopiedList, orig, result, 0);
+		}
+	}
+	else
+	{
+		return true;
+	}
+
+	if (success && (!orig.IsEmpty() || !result.IsEmpty()))
+	{
+		ClearUndoneActions(); //critical to have this before the deactivation
+
+		orig.Deactivate();
+		result.Activate();
+
+		if (complexPaste == NULL)
+		{
+			//assert(complexPaste == NULL);
+			complexPaste = new ComplexPasteAction(mapStartBrush);
+			AddDoneAction(complexPaste);
+
+			lastBrushPastePos = worldPos;
+			brushRepeatDist = 20.0;
+			complexPaste->SetNewest(orig, result);
+			lastBrushPastePos = worldPos;
+		}
+		else
+		{
+			complexPaste->SetNewest(orig, result);
+			lastBrushPastePos = worldPos;
+		}
+	}
+
+	return success;
+}
+
+void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
+{
+	if (!PasteInverseTerrain(cBrush))
+	{
+		return;
+	}
+
+	std::vector<list<PolyPtr>> brushPolyLists;
+	brushPolyLists.resize(TERRAINLAYER_Count);
+	PolyPtr poly;
+
+	bool terrainEmpty = true;
+
+	if (cBrush != NULL)
+	{
+		for (auto bit = cBrush->objects.begin(); bit != cBrush->objects.end(); ++bit)
+		{
+			poly = (*bit)->GetAsTerrain();
+			if (poly != NULL )
+			{
+				if (poly->copiedInverse)
+				{     
+				}
+				else
+				{
+					brushPolyLists[poly->GetSpecialPolyIndex()].push_back(poly);
+					terrainEmpty = false;
+				}
+					
+			}
+		}
+	}
+
 	Brush orig;
 	Brush result;
 	
@@ -8111,31 +8168,6 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 		}
 	}
 
-	/*if (!waterBrushPolys.empty())
-	{
-		if (HoldingControl())
-		{
-			success = ExecuteTerrainMultiSubtract(waterBrushPolys, orig, result, 1);
-		}
-		else
-		{
-			success = ExecuteTerrainMultiAdd(waterBrushPolys, orig, result, 1);
-		}
-	}
-
-	if (success && !brushPolys.empty())
-	{
-		if (HoldingControl())
-		{
-			success = ExecuteTerrainMultiSubtract(brushPolys, orig, result, 0 );
-		}
-		else
-		{
-			success = ExecuteTerrainMultiAdd(brushPolys, orig, result, 0 );
-		}
-	}*/
-
-	
 	if( terrainEmpty )
 	{
 		if ( freeActorBrush != NULL && freeActorBrush->CanApply())

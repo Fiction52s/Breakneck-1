@@ -418,9 +418,11 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void CopyPoints(PolyPtr poly,
 		bool storeSelected = false );
 	PolyPtr Copy();
-	PolyPtr CopyForPointMove();
+	PolyPtr InverseCopy();
+	bool copiedInverse;
 	int GetSpecialPolyIndex();
 	bool IsTouchingEnemiesFromPoly(PolyPtr p);
+	
 
 	std::vector<sf::Vector2f> triBackups;//for transforms
 

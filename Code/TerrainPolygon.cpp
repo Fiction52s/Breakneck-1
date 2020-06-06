@@ -1125,6 +1125,7 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	copiedInverse = false;
 	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
 	flyTransRotate = 0;
@@ -1164,6 +1165,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	copiedInverse = false;
 	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
 	flyTransRotate = 0;
@@ -5195,10 +5197,22 @@ PolyPtr TerrainPolygon::Copy()
 	return newPoly;
 }
 
-PolyPtr TerrainPolygon::CopyForPointMove()
+PolyPtr TerrainPolygon::InverseCopy()
 {
-	//PolyPtr newPoly = new TerrainPolygon(*this, true, true );
-	return NULL;
+	PolyPtr newPoly = new TerrainPolygon;
+	int numP = GetNumPoints();
+	newPoly->Reserve(numP);
+
+	for (int i = 0; i < numP; ++i)
+	{
+		newPoly->AddPoint(GetPoint(i)->pos, false);
+	}
+	newPoly->SetMaterialType(terrainWorldType, terrainVariation);
+
+	newPoly->Finalize();
+	newPoly->copiedInverse = true;
+
+	return newPoly;
 }
 
 void TerrainPolygon::CopyPoints(PolyPtr poly, bool storeSelected )

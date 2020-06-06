@@ -928,6 +928,7 @@ struct EditSession : GUIHandler, Session
 		sf::Vector2i &p1, sf::Vector2i &prim);
 	bool GetPrimaryAdjustment(sf::Vector2i &p0,
 		sf::Vector2i &p1, sf::Vector2i &adjust);
+	bool PasteInverseTerrain(Brush *cBrush);
 	void PasteTerrain(Brush *cBrush, Brush *freeActorBrush );
 	bool ExecuteTerrainMultiAdd(
 		std::list<PolyPtr> &brushPolys,
