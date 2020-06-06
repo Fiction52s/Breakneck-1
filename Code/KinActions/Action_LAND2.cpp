@@ -65,16 +65,26 @@ void Actor::LAND2_Change()
 			}
 			else
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
-				SetAction(STEEPSLIDE);
-				if (SteepSlideAttack())
+				if (currInput.LUp())
 				{
-
+					SetAction(STEEPCLING);
+					frame = 0;
+					facingRight = currNormal.x < 0;
 				}
-				frame = 0;
+				else
+				{
+					if (groundSpeed > 0)
+						facingRight = true;
+					else
+						facingRight = false;
+					SetAction(STEEPSLIDE);
+					if (SteepSlideAttack())
+					{
+
+					}
+					frame = 0;
+				}
+				
 				return;
 			}
 

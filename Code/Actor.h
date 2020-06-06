@@ -992,7 +992,8 @@ struct Actor : QuadTreeCollider,
 	double storedReverseSpeed;
 
 	double steepClimbGravFactor;
-	double steepClimbFastFactor;
+	double steepClimbUpFactor;
+	double steepClimbDownFactor;
 
 	double GetDashSpeed();
 	double GetAirDashSpeed();

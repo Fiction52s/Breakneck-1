@@ -2469,9 +2469,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	slopeTooSteepLaunchLimitX = .1;
 		
-		
-	steepClimbGravFactor = .7;//.31;
-	steepClimbFastFactor = .7;//.2;
+	steepClimbGravFactor = .6;//.31;
+	steepClimbUpFactor = .31;
+	steepClimbDownFactor = .8;
+	//steepClimbFastFactor = .7;//.2;
 	framesSinceClimbBoost = 0;
 	climbBoostLimit = 25;//22;//15;
 		

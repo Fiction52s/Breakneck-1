@@ -77,6 +77,19 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
+			if (currInput.LUp())
+			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
+
+				}
+				facingRight = (currNormal.x < 0);
+				return;
+			}
+
+
 			//is steep
 			if ((currNormal.x < 0 && groundSpeed > 0) 
 				|| (currNormal.x > 0 && groundSpeed < 0))

@@ -63,7 +63,11 @@ void Actor::STEEPCLIMBATTACK_Update()
 	if (currInput.LUp())
 	{
 		//cout << "speeding up climb!" << endl;
-		factor = steepClimbFastFactor;//.5;
+		factor = steepClimbUpFactor;//.5;
+	}
+	else if( currInput.LDown() )
+	{
+		factor = steepClimbDownFactor;
 	}
 
 	if (reversed)

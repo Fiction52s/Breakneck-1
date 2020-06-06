@@ -54,23 +54,47 @@ void Actor::STEEPCLIMB_Change()
 
 		if (currNormal.x > 0 && groundSpeed >= 0)
 		{
-			SetAction(STEEPSLIDE);
-			frame = 0;
-			facingRight = true;
-			if (SteepSlideAttack())
+			if (currInput.LUp())
 			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
 
+				}
+			}
+			else
+			{
+				SetAction(STEEPSLIDE);
+				frame = 0;
+				facingRight = true;
+				if (SteepSlideAttack())
+				{
+
+				}
 			}
 			return;
 		}
 		else if (currNormal.x < 0 && groundSpeed <= 0)
 		{
-			SetAction(STEEPSLIDE);
-			frame = 0;
-			facingRight = false;
-			if (SteepSlideAttack())
+			if (currInput.LUp())
 			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
 
+				}
+			}
+			else
+			{
+				SetAction(STEEPSLIDE);
+				frame = 0;
+				facingRight = false;
+				if (SteepSlideAttack())
+				{
+
+				}
 			}
 			return;
 		}
@@ -93,23 +117,47 @@ void Actor::STEEPCLIMB_Change()
 
 		if (currNormal.x > 0 && groundSpeed >= 0)
 		{
-			SetAction(STEEPSLIDE);
-			frame = 0;
-			facingRight = true;
-			if (SteepSlideAttack())
+			if (currInput.LUp())
 			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
 
+				}
+			}
+			else
+			{
+				SetAction(STEEPSLIDE);
+				frame = 0;
+				facingRight = true;
+				if (SteepSlideAttack())
+				{
+
+				}
 			}
 			return;
 		}
 		else if (currNormal.x < 0 && groundSpeed <= 0)
 		{
-			SetAction(STEEPSLIDE);
-			frame = 0;
-			facingRight = false;
-			if (SteepSlideAttack())
+			if (currInput.LUp())
 			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
 
+				}
+			}
+			else
+			{
+				SetAction(STEEPSLIDE);
+				frame = 0;
+				facingRight = false;
+				if (SteepSlideAttack())
+				{
+
+				}
 			}
 			return;
 		}
@@ -120,7 +168,7 @@ void Actor::STEEPCLIMB_Change()
 		return;
 	}
 
-	bool fallAway = false;
+	/*bool fallAway = false;
 	if (reversed)
 	{
 	}
@@ -148,19 +196,22 @@ void Actor::STEEPCLIMB_Change()
 		frame = 0;
 		steepJump = true;
 		return;
-	}
+	}*/
 }
 
 void Actor::STEEPCLIMB_Update()
 {
 	bool boost = TryClimbBoost(currNormal);
 
-	//the factor is just to make you climb a little farther
-	float factor = steepClimbGravFactor;//.7 ;
+	float factor = steepClimbGravFactor;
 	if (currInput.LUp())
 	{
-		//cout << "speeding up climb!" << endl;
-		factor = steepClimbFastFactor;//.5;
+		//the factor is just to make you climb a little farther
+		factor = steepClimbUpFactor;
+	}
+	else if (currInput.LDown())
+	{
+		factor = steepClimbDownFactor;
 	}
 
 	if (reversed)
