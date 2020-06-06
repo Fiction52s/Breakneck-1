@@ -603,6 +603,12 @@ void Gate::Draw( sf::RenderTarget *target )
 
 }
 
+void Gate::MapDraw(sf::RenderTarget *target)
+{
+	if( locked && visible)
+		target->draw(mapLine, 4, sf::Quads);
+}
+
 void Gate::SetNumToOpen(int num)
 {
 	assert(category == KEY || category == PICKUP);

@@ -138,32 +138,9 @@ void Minimap::DrawGates(sf::Rect<double> &rect,
 	Gate *gateList = owner->gateList;
 	while (gateList != NULL)
 	{
-		if (gateList->locked && gateList->visible)
-		{
-			V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-			V2d other(along.y, -along.x);
-			double width = 25;
+		gateList->MapDraw(target);
 
-			V2d leftGround = gateList->edgeA->v0 + other * -width;
-			V2d rightGround = gateList->edgeA->v0 + other * width;
-			V2d leftAir = gateList->edgeA->v1 + other * -width;
-			V2d rightAir = gateList->edgeA->v1 + other * width;
-			//cout << "drawing color: " << gateList->c.b << endl;
-			sf::Vertex activePreview[4] =
-			{
-				sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->mapLineColor),
-				sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->mapLineColor),
-
-
-				sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->mapLineColor),
-
-
-				sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->mapLineColor)
-			};
-			target->draw(activePreview, 4, sf::Quads);
-		}
-
-		Gate *next = gateList->next;//edgeA->edge1;
+		Gate *next = gateList->next;
 		gateList = next;
 	}
 	owner->gateList = NULL;

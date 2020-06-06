@@ -6684,34 +6684,7 @@ int GameSession::Run()
 			Gate *mGateList = gateList;
 			while( gateList != NULL )
 			{
-				//gateList->Draw( preScreenTex );
-				if( gateList->locked )
-				{
-
-					V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-					V2d other( along.y, -along.x );
-					double width = 25;
-				
-				
-
-					V2d leftGround = gateList->edgeA->v0 + other * -width;
-					V2d rightGround = gateList->edgeA->v0 + other * width;
-					V2d leftAir = gateList->edgeA->v1 + other * -width;
-					V2d rightAir = gateList->edgeA->v1 + other * width;
-					//cout << "drawing color: " << gateList->c.b << endl;
-					sf::Vertex activePreview[4] =
-					{
-						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->mapLineColor),
-						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->mapLineColor),
-
-
-						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->mapLineColor),
-
-					
-						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->mapLineColor)
-					};
-					mapTex->draw( activePreview, 4, sf::Quads );
-				}
+				gateList->MapDraw(mapTex);
 
 				Gate *next = gateList->next;//edgeA->edge1;
 				gateList = next;
@@ -7222,37 +7195,7 @@ int GameSession::Run()
 				Gate *mGateList = gateList;
 				while (gateList != NULL)
 				{
-					//gateList->Draw( preScreenTex );
-					if (gateList->locked && gateList->visible)
-					{
-
-						V2d along = normalize(gateList->edgeA->v1 - gateList->edgeA->v0);
-						V2d other(along.y, -along.x);
-						double width = 25;
-
-
-
-						V2d leftGround = gateList->edgeA->v0 + other * -width;
-						V2d rightGround = gateList->edgeA->v0 + other * width;
-						V2d leftAir = gateList->edgeA->v1 + other * -width;
-						V2d rightAir = gateList->edgeA->v1 + other * width;
-						//cout << "drawing color: " << gateList->c.b << endl;
-						sf::Vertex activePreview[4] =
-						{
-							//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
-							//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
-
-							sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->mapLineColor),
-							sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->mapLineColor),
-
-
-							sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->mapLineColor),
-
-
-							sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->mapLineColor)
-						};
-						mapTex->draw(activePreview, 4, sf::Quads);
-					}
+					gateList->MapDraw(mapTex);
 
 					Gate *next = gateList->next;//edgeA->edge1;
 					gateList = next;

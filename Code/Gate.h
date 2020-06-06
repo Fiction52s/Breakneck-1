@@ -90,6 +90,7 @@ struct Gate : public QuadTreeEntrant
 	void SetNumToOpen(int num);
 	void UpdateOrb();
 	void SetMapLineColor();
+	void MapDraw(sf::RenderTarget *target);
 
 	GameSession *owner;
 	GateState gState;
