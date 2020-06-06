@@ -52,5 +52,8 @@ bool EnemyTracker::GetClosestEnemyPos(GameSession *owner, V2d &pos,
 
 bool EnemyTracker::IsValidTrackEnemy( Enemy *e )
 {
+	if (e->dead)
+		return false;
+
 	return true;
 }

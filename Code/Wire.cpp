@@ -215,8 +215,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case FIRING:
 		{
-			//rcEdge = NULL;
-		//	RayCast( this, player->owner->terrainTree->startNode, anchor.pos, player->position );
 			if( rcEdge != NULL )
 			{
 				CheckAntiWireGrass();
@@ -393,9 +391,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	case FIRING:
 		{
 			rcEdge = NULL;
-			//rcQuantity = 0;
-			
-			rayCancel = false;
+			rcCancelDist = -1;
 			V2d currPos = playerPos + fireDir * fireRate * (double)(framesFiring);
 			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
 			RayCast( this, player->GetTerrainTree()->startNode, playerPos, futurePos );
@@ -410,9 +406,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			tipHitboxInfo->hDir = fireDir;
 
-			if( rayCancel )
+			if (rcEdge != NULL && rcCancelDist >= 0)
 			{
-				Reset();
+				double rcLength = length(rcEdge->GetPosition(rcQuant) - playerPos);
+				if (rcCancelDist < rcLength)
+				{
+					Reset();
+					return;
+				}
 			}
 
 			//cout << "framesFiring " << framesFiring << endl;
@@ -1058,35 +1059,49 @@ void Wire::UpdateAnchors( V2d vel )
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
-	if( edge->IsInvisibleWall())
-	{
-
-		rayCancel = true;
+	if (edge->edgeType == Edge::OPEN_GATE)
 		return;
+
+	V2d playerPos = GetPlayerPos();
+	double lengthToPlayer = length(edge->GetPosition(edgeQuantity) - playerPos );
+	
+	double rcLength = 0;
+	if (rcEdge != NULL)
+	{
+		rcLength = length(rcEdge->GetPosition(rcQuant) - playerPos);
 	}
-	else if( edge->edgeType == Edge::CLOSED_GATE )
+
+	if (edge->IsInvisibleWall())
+	{
+		if (rcCancelDist < 0 || lengthToPlayer < rcCancelDist)
+			rcCancelDist = lengthToPlayer;
+	}
+	else if (edge->edgeType == Edge::CLOSED_GATE)
 	{
 		Gate *g = (Gate*)edge->info;
-		if( g->category != Gate::BLACK && g->gState != Gate::LOCKFOREVER && g->gState != Gate::HARD )
+		if (g->category != Gate::BLACK && g->gState != Gate::LOCKFOREVER && g->gState != Gate::HARD && g->gState)
 		{
-			rayCancel = true;
-			return;
+			if (rcCancelDist < 0 || lengthToPlayer < rcCancelDist)
+			{
+				rcCancelDist = lengthToPlayer;
+			}	
+		}
+		else
+		{
+			if (rcEdge == NULL || lengthToPlayer < rcLength)
+			{
+				rcEdge = edge;
+				rcQuant = edgeQuantity;
+			}
 		}
 	}
-	else if( edge->edgeType == Edge::OPEN_GATE )
+	else
 	{
-		return;
-	}
-	//rayPortion > 1 &&
-	//V2d playerPos = player->position;
-	//playerPos += V2d( offset.x, offset.y );	
-	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
-
-	if( rayPortion > .1 && ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - playerPos ) 
-		< length( rcEdge->GetPosition( rcQuant ) - playerPos ) ) )
-	{
-		rcEdge = edge;
-		rcQuant = edgeQuantity;
+		if (rcEdge == NULL || lengthToPlayer < rcLength)
+		{
+			rcEdge = edge;
+			rcQuant = edgeQuantity;
+		}
 	}
 }
 

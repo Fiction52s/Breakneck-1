@@ -241,6 +241,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 
 	Actor *player;
 
+	double rcCancelDist;
 	Edge *rcEdge;
 	double rcQuant;
 
@@ -248,8 +249,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 
 	sf::Rect<double> grassQueryBox;
 	std::string queryMode;
-
-	bool rayCancel;
 
 	sf::Vector2<double> quadOldPosA;
 	sf::Vector2<double> quadOldWirePosB;
