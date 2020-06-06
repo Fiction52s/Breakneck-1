@@ -565,12 +565,12 @@ Brush *Brush::CopyFreeActors()
 
 			PolyPtr myPoly = ap->posInfo.ground;
 
-			ActorPtr aPtr = ap->Copy();
-			aPtr->CreateMyEnemy();
-			aPtr->selected = false;
-
 			if (myPoly != NULL && ( !myPoly->selected || myPoly->inverse ))
 			{
+				ActorPtr aPtr = ap->Copy();
+				aPtr->CreateMyEnemy();
+				aPtr->selected = false;
+
 				aPtr->UnAnchor();
 				if (aPtr->myEnemy != NULL)
 				{
@@ -580,6 +580,10 @@ Brush *Brush::CopyFreeActors()
 			}
 			else if (myPoly == NULL)
 			{
+				ActorPtr aPtr = ap->Copy();
+				aPtr->CreateMyEnemy();
+				aPtr->selected = false;
+
 				newBrush->AddObject(aPtr);
 			}
 		}
