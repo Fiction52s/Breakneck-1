@@ -26,15 +26,17 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
-	:category( p_cat), variation( p_var ), locked( true ), thickLine( sf::Quads, 4 ), zoneA( NULL ), zoneB( NULL ),owner( p_owner )
+	:category( p_cat), variation( p_var ), locked( true ), 
+	zoneA( NULL ), zoneB( NULL ),owner( p_owner )
 {
 	visible = true;
-	blackGate = NULL;
+	gateQuads = NULL;
 
 	edgeA = NULL;
 	edgeB = NULL;
 
 	ts = NULL;
+
 	ts_black = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
 	ts_lightning = owner->GetTileset("Zone/gates_lightning_1_64x64.png", 64, 64);
 	
@@ -61,8 +63,6 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 		assert(0);
 	}
 
-	gQuads = NULL;
-
 	numToOpen = 0;
 	
 	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
@@ -70,17 +70,12 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 	numberText.setFont(owner->mainMenu->arial);
 	numberText.setCharacterSize(50);
 	numberText.setFillColor(Color::Black);
-
-	//Reset();
 }
 
 Gate::~Gate()
 {
-	if (gQuads != NULL)
-		delete gQuads;
-
-	if (blackGate != NULL)
-		delete blackGate;
+	if (gateQuads != NULL)
+		delete gateQuads;
 
 	delete edgeA;
 	delete edgeB;
@@ -88,14 +83,15 @@ Gate::~Gate()
 
 void Gate::Reset()
 {
-	orbState = ORB_RED;
-	orbFrame = 0;
 	centerShader.setUniform("breakQuant", 0.f);
 	gateShader.setUniform("fadeQuant", 0.f);
 	flowFrame = 0;
 	frame = 0;
 
-	if (!IsZoneType())
+	orbState = ORB_RED;
+	orbFrame = 0;
+
+	if (category == BOSS )
 	{
 		gState = OPEN;
 		SetLocked(false);
@@ -103,6 +99,10 @@ void Gate::Reset()
 	else if (category == BLACK)
 	{
 		gState = LOCKFOREVER;
+	}
+	else if (category == SECRET)
+	{
+		gState = SOFT;
 	}
 	else
 	{
@@ -114,9 +114,9 @@ void Gate::Reset()
 void Gate::ActionEnded()
 {
 	if (gState == OPEN || gState == LOCKFOREVER)
-	{
-	}
-	else if (frame == stateLength[gState])
+		return;
+	
+	if (frame == stateLength[gState])
 	{
 		frame = 0;
 		switch (gState)
@@ -197,21 +197,11 @@ void Gate::Close()
 	SetLocked(true);
 }
 
-void Gate::Update()
+void Gate::UpdateOrb()
 {
-	if (category == BLACK)
-	{
-		return;
-	}
-
-	ActionEnded();
-	UpdateSprite();
-	CheckSoften();
-	UpdateShaders();
-
 	if (category == KEY)
 	{
-		
+
 
 		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
 		{
@@ -222,7 +212,7 @@ void Gate::Update()
 				orbState = ORB_GO;
 				orbFrame = 0;
 			}
-			else if( !currZone )
+			else if (!currZone)
 			{
 				orbState = ORB_GREEN;
 				orbFrame = 0;
@@ -240,7 +230,7 @@ void Gate::Update()
 			}
 			else
 			{
-				ts_orb->SetQuadSubRect(orbQuad, 1 );
+				ts_orb->SetQuadSubRect(orbQuad, 1);
 			}
 		}
 		else
@@ -248,7 +238,20 @@ void Gate::Update()
 			ts_orb->SetQuadSubRect(orbQuad, 0);
 		}
 	}
-	
+}
+
+void Gate::Update()
+{
+	if (category == BLACK)
+	{
+		return;
+	}
+
+	ActionEnded();
+	CheckSoften();
+	UpdateSprite();
+	UpdateShaders();
+	UpdateOrb();
 
 	if( gState != LOCKFOREVER && gState != OPEN )
 		++frame;
@@ -284,15 +287,11 @@ void Gate::UpdateShaders()
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
-	VertexArray & gq = *gQuads;
-
 	Vector2f leftv0f(leftv0.x, leftv0.y);
 	Vector2f leftv1f(leftv1.x, leftv1.y);
 	Vector2f rightv1f(rightv1.x, rightv1.y);
 	Vector2f rightv0f(rightv0.x, rightv0.y);
 	int f = frame / 3;
-
-
 
 	float ff = flowFrame / 60.f;
 	gateShader.setUniform("quant", ff);
@@ -345,7 +344,6 @@ void Gate::ReverseDissolve()
 	frame = 0;
 	SetLocked(true);
 	centerShader.setUniform("breakPosQuant", .5f);
-	//ResetAttachedWires();
 }
 
 void Gate::Soften()
@@ -373,7 +371,7 @@ void Gate::ResetAttachedWires()
 
 bool Gate::CanSoften()
 {
-	if (category == BLACK || category == BOSS )
+	if (category == BLACK || category == BOSS || category == SECRET )
 	{
 		return false;
 	}
@@ -396,11 +394,6 @@ bool Gate::CanSoften()
 				okayToSoften = true;
 			break;
 		}
-		case SECRET:
-		{
-			okayToSoften = true;
-			break;
-		}
 		case SHARD:
 		{
 			double len = length(owner->GetPlayer(0)->position - GetCenter());
@@ -408,6 +401,11 @@ bool Gate::CanSoften()
 			{
 				okayToSoften = true;
 			}
+			break;
+		}
+		case PICKUP:
+		{
+			//TODO
 			break;
 		}
 		}
@@ -418,6 +416,11 @@ bool Gate::CanSoften()
 
 void Gate::CheckSoften()
 {
+	if (category == BLACK || category == BOSS || category == SECRET)
+	{
+		return;
+	}
+
 	bool canSoften = CanSoften();
 
 	Zone *currZone = owner->currentZone;
@@ -448,14 +451,14 @@ void Gate::UpdateSprite()
 	{
 		for (int i = 0; i < numBlackQuads; ++i)
 		{
-			SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(frame / 3));
+			SetRectSubRect(gateQuads + i * 4, ts_black->GetSubRect(frame / 3));
 		}
 	}
 	else if (gState == SOFT)
 	{
 		for (int i = 0; i < numBlackQuads; ++i)
 		{
-			SetRectSubRect(blackGate + i * 4, ts_lightning->GetSubRect(frame / 3));
+			SetRectSubRect(gateQuads + i * 4, ts_lightning->GetSubRect(frame / 3));
 		}
 	}
 }
@@ -555,57 +558,47 @@ void Gate::Draw( sf::RenderTarget *target )
 {
 	if (!visible)
 		return;
-
-	if( gQuads != NULL )
+	
+	if( gState != OPEN )
 	{
-		if( gState != OPEN )
+		if (gState == REFORM || gState == LOCKFOREVER)
 		{
-			target->draw( *gQuads, ts->texture );
-		}
-	}
-	else
-	{
-		if( gState != OPEN )
-		{
-			if (gState == REFORM || gState == LOCKFOREVER)
+			if (gState == REFORM)
 			{
-				if (gState == REFORM)
-				{
-					target->draw(centerLine, 4, sf::Quads, &centerShader);
-				}
-				target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_black->texture );
+				target->draw(centerLine, 4, sf::Quads, &centerShader);
+			}
+			target->draw(gateQuads, numBlackQuads * 4, sf::Quads, ts_black->texture );
+		}
+		else
+		{
+			if (gState == SOFT)
+			{
+				target->draw(gateQuads, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
+			}
+			target->draw(centerLine, 4, sf::Quads, &centerShader);
+
+			if (gState != SOFT)
+			{
+				target->draw(testLine, 4, sf::Quads, &gateShader);
 			}
 			else
 			{
-				if (gState == SOFT)
-				{
-					target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
-				}
-				target->draw(centerLine, 4, sf::Quads, &centerShader);
+				//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
+			}
 
-				if (gState != SOFT)
-				{
-					target->draw(testLine, 4, sf::Quads, &gateShader);
-				}
-				else
-				{
-					//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
-				}
+			if ( category == KEY || category == PICKUP)
+			{
+				target->draw(orbQuad, 4, sf::Quads, ts_orb->texture );
 
-				if ( category == KEY || category == PICKUP)
+				if( orbState != ORB_GO )
 				{
-					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture );
-
-					if( orbState != ORB_GO )
-					{
-						target->draw(numberText);
-					}
+					target->draw(numberText);
 				}
 			}
 		}
-
-		target->draw(nodes, 8, sf::Quads, ts_node->texture);
 	}
+
+	target->draw(nodes, 8, sf::Quads, ts_node->texture);
 
 	if (category == Gate::SHARD)
 	{
@@ -655,7 +648,7 @@ void Gate::UpdateLine()
 	{
 	case BLACK:
 		{
-		c = Color( 150, 150, 150 );
+		mapLineColor = Color( 150, 150, 150 );
 		ts = owner->GetTileset( "Zone/gate_black_128x128.png", 128, 128 );
 		tileHeight = 128;
 		}
@@ -663,7 +656,7 @@ void Gate::UpdateLine()
 	
 	case SHARD:
 	{
-		c = Color::Transparent;
+		mapLineColor = Color::Transparent;
 		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
 
 		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
@@ -682,24 +675,24 @@ void Gate::UpdateLine()
 	}
 	case SECRET:
 	{
-		c = Color::Transparent;
-		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
+		mapLineColor = Color::Transparent;
+		ts = owner->GetSizedTileset("Zone/secret_gate_loop_256x256.png");
 
-		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
-		gateShader.setUniform("u_texture", *tts->texture);
-		gateShader.setUniform("tile", 1.f);
+		//Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+		//gateShader.setUniform("u_texture", *tts->texture);
+		//gateShader.setUniform("tile", 1.f);
 		//gateShader.setUniform("fadeQuant", 1.f);
 
-		centerShader.setUniform("u_texture", *tts->texture);
+		//centerShader.setUniform("u_texture", *tts->texture);
 		frame = 0;
 
-		tileHeight = 128;
+		tileHeight = 256;
 
 		break;
 	}
 	case BOSS:
 	{
-		c = Color::Blue;
+		mapLineColor = Color::Blue;
 		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
 
 		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
@@ -718,41 +711,38 @@ void Gate::UpdateLine()
 		switch( owner->mapHeader->envWorldType )
 		{
 		case 0:
-			c = COLOR_BLUE;
+			mapLineColor = COLOR_BLUE;
 			ts = owner->GetTileset( "Zone/gate_blue_128x128.png", 128, 128 );
 			break;
 		case 1:
-			c = COLOR_GREEN;
+			mapLineColor = COLOR_GREEN;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 2:
-			c = COLOR_YELLOW;
+			mapLineColor = COLOR_YELLOW;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 3:
-			c = COLOR_ORANGE;
+			mapLineColor = COLOR_ORANGE;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 4:
-			c = COLOR_RED;
+			mapLineColor = COLOR_RED;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 5:
-			c = COLOR_MAGENTA;
+			mapLineColor = COLOR_MAGENTA;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		case 6:
-			c = COLOR_MAGENTA;
+			mapLineColor = COLOR_MAGENTA;
 			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
 			break;
 		}
-		
-		//ts = owner->GetTileset("gate_32x64.png", 32, 64);
 
 		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
 		gateShader.setUniform("u_texture", *tts->texture );
 		gateShader.setUniform("tile", 1.f);
-		//gateShader.setUniform("fadeQuant", 1.f);
 
 		centerShader.setUniform("u_texture", *tts->texture);
 		frame = 0;
@@ -839,18 +829,15 @@ void Gate::UpdateLine()
 	}
 	int numVertices = numTiles * 4;
 
-	if (blackGate != NULL)
+	if (gateQuads != NULL)
 	{
-		delete[] blackGate;
+		delete[] gateQuads;
 	}
-	blackGate = new Vertex[numVertices];
+	gateQuads = new Vertex[numVertices];
 	numBlackQuads = numTiles;
 	
 
 	double angle = atan2(-along.x, along.y);
-	//angle *= 180 / PI;
-	//cout << "along: " << along.x << ", " << along.y << endl;
-	//cout << "angle: " << angle << endl;
 
 
 	for (int i = 0; i < numTiles; ++i)
@@ -861,25 +848,13 @@ void Gate::UpdateLine()
 			V2d start = edgeA->GetPosition(64 * i);
 			V2d end = edgeA->v1;
 			double h = length(end - start);
-			SetRectRotation(blackGate + i * 4, angle, 64, h, Vector2f(edgeA->GetPosition(64 * i + (32 - (64 - h) / 2))));
+			SetRectRotation(gateQuads + i * 4, angle, 64, h, Vector2f(edgeA->GetPosition(64 * i + (32 - (64 - h) / 2))));
 		}
 		else
 		{
-			SetRectRotation(blackGate + i * 4, angle, 64, 64, Vector2f(edgeA->GetPosition(64 * i + 32 )));
-		}
-		//SetRectSubRect(blackGate + i * 4, ts_black->GetSubRect(6));
-		
+			SetRectRotation(gateQuads + i * 4, angle, 64, 64, Vector2f(edgeA->GetPosition(64 * i + 32 )));
+		}	
 	}
-
-	VertexArray & gq = *gQuads;
-	//if( type == Gate::GREY || type == Gate::BLACK || keyGate )
-	//{
-		if( gQuads == NULL )
-		{
-			//gQuads = new VertexArray( sf::Quads, numVertices );
-		}
-	//}
-	//cout << "giving gquads value!" << endl;
 }
 
 void Gate::SetNodeSprite(bool active)

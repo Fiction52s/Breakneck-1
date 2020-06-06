@@ -8,9 +8,8 @@
 struct GameSession;
 struct Zone;
 
-struct Gate : public QuadTreeEntrant//: public Edge
+struct Gate : public QuadTreeEntrant
 {
-	
 	enum GateCategory
 	{
 		KEY,
@@ -50,42 +49,23 @@ struct Gate : public QuadTreeEntrant//: public Edge
 		State_Count
 	};
 
-	int stateLength[State_Count];
-	
+	enum OrbState
+	{
+		ORB_RED,
+		ORB_GREEN,
+		ORB_GO,
+	};
+
+	Gate(GameSession *owner, int tcat,
+		int var);
+	~Gate();
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
 	bool IsReformingType();
 	bool CanUnlock();
 	bool IsInUnlockableState();
-	
 	V2d GetCenter();
-	//bool keyGate;
-	//int requiredKeys;
-	Gate( GameSession *owner, int tcat,
-		int var);
-	int dissolveLength;
-	~Gate();
 	void Reset();
-	int category;
-	int variation;
-	GameSession *owner;
-	GateState gState;
-	bool visible;
-	bool locked;
-	int frame;
-	int flowFrame;
-	sf::Color c;
-	sf::Vertex testLine[4];
-	sf::Vertex centerLine[4];
-	sf::VertexArray thickLine;
-	sf::VertexArray *gQuads;
-	sf::Vertex nodes[8];
-	Tileset *ts_node;
-	Tileset *ts;
-	Tileset *ts_black;
-	Tileset *ts_lightning;
-	sf::Vertex *blackGate;
-	int numBlackQuads;
 	void UpdateLine();
 	void SetLocked( bool on );
 	void Update();
@@ -93,31 +73,54 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	void UpdateSprite();
 	void UpdateShaders();
 	void CheckSoften();
-
 	void TotalDissolve();
 	void ReverseDissolve();
 	void Soften();
 	void Reform();
 	void Close();
-
 	bool IsZoneType();
-
 	bool CanSoften();
 	void ResetAttachedWires();
 	void ActionEnded();
-
-	sf::Shader gateShader;
-	sf::Shader centerShader;
-
 	void HandleQuery( QuadTreeCollider * qtc );
 	bool IsTouchingBox( const sf::Rect<double> &r );
-
 	void Draw( sf::RenderTarget *target );
 	void CalcAABB();
 	void SetShard(int w, int li);
 	void SetNumToOpen(int num);
+	void UpdateOrb();
+
+	GameSession *owner;
+	GateState gState;
+
+	int category;
+	int variation;
+	
+	bool visible;
+	bool locked;
+
+	int frame;
+	int flowFrame;
+
+	sf::Color mapLineColor;
+	sf::Vertex testLine[4];
+	sf::Vertex centerLine[4];
+	sf::Vertex thickLine[4];
+	sf::Vertex nodes[8];
+
+	Tileset *ts_node;
+	Tileset *ts;
+	Tileset *ts_black;
+	Tileset *ts_lightning;
+	sf::Vertex *gateQuads;
+	int numBlackQuads;
+
+	sf::Shader gateShader;
+	sf::Shader centerShader;
 
 	sf::Rect<double> aabb;
+
+	int stateLength[State_Count];
 
 	Edge *temp0prev;
 	Edge *temp0next;
@@ -133,30 +136,24 @@ struct Gate : public QuadTreeEntrant//: public Edge
 	Gate *next;
 	Gate *prev;
 
-	//Gate *activeNext;
-	//
+	
+
+	//key or pickup
+	int numToOpen;
+	Tileset *ts_orb;
+	sf::Vertex orbQuad[4];
+	sf::Text numberText;
+	int orbState;
+	int orbFrame;
+	
+
+	//just for shard stuff
 	sf::Sprite shardSprite;
 	sf::Sprite shardBGSprite;
 	Tileset *ts_shard;
 	int shardWorld;
 	int shardIndex;
 	int shardType;
-
-	int numToOpen;
-
-	Tileset *ts_orb;
-	sf::Vertex orbQuad[4];
-	//sf::CircleShape numberCircle;
-	sf::Text numberText;
-	int orbFrame;
-	enum OrbState
-	{
-		ORB_RED,
-		ORB_GREEN,
-		ORB_GO,
-	};
-
-	int orbState;
 	
 };
 
