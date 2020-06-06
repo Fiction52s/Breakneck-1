@@ -151,14 +151,14 @@ void Minimap::DrawGates(sf::Rect<double> &rect,
 			//cout << "drawing color: " << gateList->c.b << endl;
 			sf::Vertex activePreview[4] =
 			{
-				sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->c),
-				sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->c),
+				sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->mapLineColor),
+				sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->mapLineColor),
 
 
-				sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->c),
+				sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->mapLineColor),
 
 
-				sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->c)
+				sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->mapLineColor)
 			};
 			target->draw(activePreview, 4, sf::Quads);
 		}

@@ -404,6 +404,7 @@ EnemyChain::EnemyChain(ActorParams *ap, EnemyType et)
 	chainEnemyVariation = -1;
 	SetNumActions(Count);
 	SetEditorActions(0, EXIST, 0);
+	numEnemies = -1;
 
 	
 

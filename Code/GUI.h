@@ -461,8 +461,6 @@ struct CreateGatesModeUI : GUIHandler
 	sf::RectangleShape modifyGateRect;
 	GateInfo *origModifyGate;
 	GateInfo *modifyGate;
-	int shardNumX;
-	int shardNumY;
 	void SetShard(int world, int localIndex);
 
 	int currShardWorld;

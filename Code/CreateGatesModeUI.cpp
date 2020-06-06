@@ -326,8 +326,8 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
 
-	int world = y / shardNumY;
-	int localIndex = (y % shardNumY) * shardNumX + x;
+	int world = y / edit->shardNumY;
+	int localIndex = (y % edit->shardNumY) * edit->shardNumX + x;
 
 	currShardWorld = world;
 	currShardLocalIndex = localIndex;

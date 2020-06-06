@@ -10083,7 +10083,8 @@ void Actor::HandleTouchedGate()
 	//double crossCenter = cross(b.globalPosition - edge->v0, nEdge);
 	double alongAmount = dot(b.globalPosition - edge->v0, normalize(edge->v1 - edge->v0));
 	alongAmount /= length(edge->v1 - edge->v0);
-	alongAmount = 1.0 - alongAmount;
+	//alongAmount = 1.0 - alongAmount;
+	//alongAmount = 1.0 - alongAmount;
 	V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
 
 	double thresh = .01;

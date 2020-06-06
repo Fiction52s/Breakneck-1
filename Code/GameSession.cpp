@@ -1221,7 +1221,7 @@ void GameSession::ProcessGate(int gCat,
 
 	gate->SetLocked(true);
 
-	gate->UpdateLine();
+	gate->Init();
 
 	terrainTree->Insert(gate->edgeA);
 	terrainTree->Insert(gate->edgeB);
@@ -4020,18 +4020,6 @@ void GameSession::SetupZones()
 		}
 	}
 
-
-	/*if ((*it)->connectedSet.size() == 1 && (*it) != goalZone)
-	{
-		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
-		{
-			g = (Gate*)(*git)->info;
-			g->category = Gate::SECRET;
-			g->UpdateLine();
-		}
-		(*it)->SetZoneType(Zone::SECRET);
-	}*/
-
 	if (zoneTree != NULL)
 	{
 		delete zoneTree;
@@ -4063,7 +4051,7 @@ void GameSession::SetupZones()
 			{
 				g = (Gate*)(*git)->info;
 				g->category = Gate::SECRET;
-				g->UpdateLine();
+				g->Init();
 			}
 			(*it)->SetZoneType(Zone::SECRET);
 		}
@@ -6713,14 +6701,14 @@ int GameSession::Run()
 					//cout << "drawing color: " << gateList->c.b << endl;
 					sf::Vertex activePreview[4] =
 					{
-						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->c ),
-						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->c ),
+						sf::Vertex(sf::Vector2<float>( leftGround.x, leftGround.y ), gateList->mapLineColor),
+						sf::Vertex(sf::Vector2<float>( leftAir.x, leftAir.y ), gateList->mapLineColor),
 
 
-						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->c ),
+						sf::Vertex(sf::Vector2<float>( rightAir.x, rightAir.y ), gateList->mapLineColor),
 
 					
-						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->c )
+						sf::Vertex(sf::Vector2<float>( rightGround.x, rightGround.y ), gateList->mapLineColor)
 					};
 					mapTex->draw( activePreview, 4, sf::Quads );
 				}
@@ -7254,14 +7242,14 @@ int GameSession::Run()
 							//sf::Vertex(sf::Vector2<float>( gateList->v0.x, gateList->v0.y ), gateList->c ),
 							//sf::Vertex(sf::Vector2<float>( gateList->v1.x, gateList->v1.y ), gateList->c ),
 
-							sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->c),
-							sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->c),
+							sf::Vertex(sf::Vector2<float>(leftGround.x, leftGround.y), gateList->mapLineColor),
+							sf::Vertex(sf::Vector2<float>(leftAir.x, leftAir.y), gateList->mapLineColor),
 
 
-							sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->c),
+							sf::Vertex(sf::Vector2<float>(rightAir.x, rightAir.y), gateList->mapLineColor),
 
 
-							sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->c)
+							sf::Vertex(sf::Vector2<float>(rightGround.x, rightGround.y), gateList->mapLineColor)
 						};
 						mapTex->draw(activePreview, 4, sf::Quads);
 					}

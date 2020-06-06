@@ -66,7 +66,7 @@ struct Gate : public QuadTreeEntrant
 	bool IsInUnlockableState();
 	V2d GetCenter();
 	void Reset();
-	void UpdateLine();
+	void Init();
 	void SetLocked( bool on );
 	void Update();
 	void SetNodeSprite(bool active);
@@ -89,6 +89,7 @@ struct Gate : public QuadTreeEntrant
 	void SetShard(int w, int li);
 	void SetNumToOpen(int num);
 	void UpdateOrb();
+	void SetMapLineColor();
 
 	GameSession *owner;
 	GateState gState;
@@ -103,17 +104,17 @@ struct Gate : public QuadTreeEntrant
 	int flowFrame;
 
 	sf::Color mapLineColor;
-	sf::Vertex testLine[4];
+	sf::Vertex hardLine[4];
 	sf::Vertex centerLine[4];
-	sf::Vertex thickLine[4];
+	sf::Vertex mapLine[4];
 	sf::Vertex nodes[8];
 
 	Tileset *ts_node;
 	Tileset *ts;
-	Tileset *ts_black;
-	Tileset *ts_lightning;
+	Tileset *ts_lockedAndHardened;
+	Tileset *ts_wiggle;
 	sf::Vertex *gateQuads;
-	int numBlackQuads;
+	int numGateQuads;
 
 	sf::Shader gateShader;
 	sf::Shader centerShader;

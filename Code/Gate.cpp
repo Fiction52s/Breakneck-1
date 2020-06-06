@@ -37,8 +37,9 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	ts = NULL;
 
-	ts_black = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
-	ts_lightning = owner->GetTileset("Zone/gates_lightning_1_64x64.png", 64, 64);
+	ts_lockedAndHardened = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
+	
+	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
 	
 	orbFrame = 0;
 	orbState = ORB_RED;
@@ -64,8 +65,6 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 	}
 
 	numToOpen = 0;
-	
-	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
 
 	numberText.setFont(owner->mainMenu->arial);
 	numberText.setCharacterSize(50);
@@ -449,16 +448,16 @@ void Gate::UpdateSprite()
 {
 	if (gState == REFORM)
 	{
-		for (int i = 0; i < numBlackQuads; ++i)
+		for (int i = 0; i < numGateQuads; ++i)
 		{
-			SetRectSubRect(gateQuads + i * 4, ts_black->GetSubRect(frame / 3));
+			ts_lockedAndHardened->SetQuadSubRect(gateQuads + i * 4, frame / 3);
 		}
 	}
 	else if (gState == SOFT)
 	{
-		for (int i = 0; i < numBlackQuads; ++i)
+		for (int i = 0; i < numGateQuads; ++i)
 		{
-			SetRectSubRect(gateQuads + i * 4, ts_lightning->GetSubRect(frame / 3));
+			ts_wiggle->SetQuadSubRect(gateQuads + i * 4, frame / 3);
 		}
 	}
 }
@@ -567,23 +566,20 @@ void Gate::Draw( sf::RenderTarget *target )
 			{
 				target->draw(centerLine, 4, sf::Quads, &centerShader);
 			}
-			target->draw(gateQuads, numBlackQuads * 4, sf::Quads, ts_black->texture );
+			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_lockedAndHardened->texture );
 		}
 		else
 		{
 			if (gState == SOFT)
 			{
-				target->draw(gateQuads, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
+				target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_wiggle->texture);
 			}
+
 			target->draw(centerLine, 4, sf::Quads, &centerShader);
 
 			if (gState != SOFT)
 			{
-				target->draw(testLine, 4, sf::Quads, &gateShader);
-			}
-			else
-			{
-				//target->draw(blackGate, numBlackQuads * 4, sf::Quads, ts_lightning->texture);
+				target->draw(hardLine, 4, sf::Quads, &gateShader);
 			}
 
 			if ( category == KEY || category == PICKUP)
@@ -633,7 +629,56 @@ void Gate::SetShard(int w, int li)
 	shardType = Shard::GetShardType(shardWorld, shardIndex);
 }
 
-void Gate::UpdateLine()
+void Gate::SetMapLineColor()
+{
+	switch (category)
+	{
+	case BLACK:
+		mapLineColor = Color(150, 150, 150);
+		break;
+	case SHARD:
+		mapLineColor = Color::Transparent;
+		break;
+	case SECRET:
+		mapLineColor = Color::Transparent;
+		break;
+	case BOSS:
+		mapLineColor = Color::Blue;
+		break;
+	case KEY:
+	{
+		switch (owner->mapHeader->envWorldType)
+		{
+		case 0:
+			mapLineColor = COLOR_BLUE;
+			break;
+		case 1:
+			mapLineColor = COLOR_GREEN;
+			break;
+		case 2:
+			mapLineColor = COLOR_YELLOW;
+			break;
+		case 3:
+			mapLineColor = COLOR_ORANGE;
+			break;
+		case 4:
+			mapLineColor = COLOR_RED;
+			break;
+		case 5:
+			mapLineColor = COLOR_MAGENTA;
+			break;
+		case 6:
+			mapLineColor = COLOR_MAGENTA;
+			break;
+		}
+	}
+	case PICKUP:
+		//todo
+		break;
+	}
+}
+
+void Gate::Init()
 {
 	stateLength[DISSOLVE] = 20 * max( 1.0, length(edgeA->v1 - edgeA->v0) / 400.0 );
 	stateLength[REVERSEDISSOLVE] = stateLength[DISSOLVE];
@@ -642,120 +687,38 @@ void Gate::UpdateLine()
 	SetRectCenter(orbQuad, ts_orb->tileWidth, ts_orb->tileHeight, centerPos);
 	numberText.setPosition(centerPos);
 	
+	double width = 16;
 	float tileHeight = 64;
 
-	switch(category)
+	SetMapLineColor();
+
+	frame = 0;
+
+	if (category == SHARD)
 	{
-	case BLACK:
-		{
-		mapLineColor = Color( 150, 150, 150 );
-		ts = owner->GetTileset( "Zone/gate_black_128x128.png", 128, 128 );
-		tileHeight = 128;
-		}
-		break;
-	
-	case SHARD:
-	{
-		mapLineColor = Color::Transparent;
-		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
-
-		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
-		gateShader.setUniform("u_texture", *tts->texture);
-		gateShader.setUniform("tile", 1.f);
-		//gateShader.setUniform("fadeQuant", 1.f);
-
-		centerShader.setUniform("u_texture", *tts->texture);
-		frame = 0;
-
-		tileHeight = 128;
-
 		V2d center = (edgeA->v0 + edgeA->v1) / 2.0;
 		shardSprite.setPosition(Vector2f(center));
-		break;
 	}
-	case SECRET:
+	else if (category == SECRET)
 	{
-		mapLineColor = Color::Transparent;
-		ts = owner->GetSizedTileset("Zone/secret_gate_loop_256x256.png");
-
-		//Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
-		//gateShader.setUniform("u_texture", *tts->texture);
-		//gateShader.setUniform("tile", 1.f);
-		//gateShader.setUniform("fadeQuant", 1.f);
-
-		//centerShader.setUniform("u_texture", *tts->texture);
-		frame = 0;
-
-		tileHeight = 256;
-
-		break;
+		//tileHeight = 256;
+		//width = 128;
 	}
-	case BOSS:
+
+	/*if (category == SECRET)
 	{
-		mapLineColor = Color::Blue;
-		ts = owner->GetTileset("Zone/gate_blue_128x128.png", 128, 128);
-
-		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
-		gateShader.setUniform("u_texture", *tts->texture);
-		gateShader.setUniform("tile", 1.f);
-		//gateShader.setUniform("fadeQuant", 1.f);
-
-		centerShader.setUniform("u_texture", *tts->texture);
-		frame = 0;
-
-		tileHeight = 128;
-		break;
+		ts_wiggle = owner->GetSizedTileset("Zone/secret_gate_loop_256x256.png");
 	}
-	case KEY:
-		{
-		switch( owner->mapHeader->envWorldType )
-		{
-		case 0:
-			mapLineColor = COLOR_BLUE;
-			ts = owner->GetTileset( "Zone/gate_blue_128x128.png", 128, 128 );
-			break;
-		case 1:
-			mapLineColor = COLOR_GREEN;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		case 2:
-			mapLineColor = COLOR_YELLOW;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		case 3:
-			mapLineColor = COLOR_ORANGE;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		case 4:
-			mapLineColor = COLOR_RED;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		case 5:
-			mapLineColor = COLOR_MAGENTA;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		case 6:
-			mapLineColor = COLOR_MAGENTA;
-			ts = owner->GetTileset( "Zone/gate_green_128x128.png", 128, 128 );
-			break;
-		}
-
-		Tileset *tts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
-		gateShader.setUniform("u_texture", *tts->texture );
-		gateShader.setUniform("tile", 1.f);
-
-		centerShader.setUniform("u_texture", *tts->texture);
-		frame = 0;
-		
-
-		tileHeight = 128;
-		}
-		break;
+	else*/
+	{
+		ts_wiggle = owner->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
 	}
 
-	tileHeight = 64;
-
-	double width = 16; //5
+	ts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+	gateShader.setUniform("u_texture", *ts->texture);
+	gateShader.setUniform("tile", 1.f);
+	centerShader.setUniform("u_texture", *ts->texture);
+	 //5
 	V2d dv0( edgeA->v0.x, edgeA->v0.y );
 	V2d dv1( edgeA->v1.x, edgeA->v1.y );
 	V2d along = normalize( dv1 - dv0 );
@@ -777,15 +740,15 @@ void Gate::UpdateLine()
 	V2d nodeBLeftv1 = leftv1 - along * 32.0;
 	V2d nodeBRightv1 = rightv1 - along * 32.0;
 
-	thickLine[0].position = Vector2f( leftv0.x, leftv0.y );
-	thickLine[1].position = Vector2f( leftv1.x, leftv1.y );
-	thickLine[2].position = Vector2f( rightv1.x, rightv1.y );
-	thickLine[3].position = Vector2f( rightv0.x, rightv0.y );
+	mapLine[0].position = Vector2f( leftv0.x, leftv0.y );
+	mapLine[1].position = Vector2f( leftv1.x, leftv1.y );
+	mapLine[2].position = Vector2f( rightv1.x, rightv1.y );
+	mapLine[3].position = Vector2f( rightv0.x, rightv0.y );
 
-	testLine[0].position = Vector2f(rightv0.x, rightv0.y); 
-	testLine[1].position = Vector2f(leftv0.x, leftv0.y); 
-	testLine[2].position = Vector2f(leftv1.x, leftv1.y); 
-	testLine[3].position = Vector2f(rightv1.x, rightv1.y);
+	hardLine[0].position = Vector2f(rightv0.x, rightv0.y);
+	hardLine[1].position = Vector2f(leftv0.x, leftv0.y);
+	hardLine[2].position = Vector2f(leftv1.x, leftv1.y);
+	hardLine[3].position = Vector2f(rightv1.x, rightv1.y);
 
 	centerLine[0].position = Vector2f(rightv0.x, rightv0.y);
 	centerLine[1].position = Vector2f(leftv0.x, leftv0.y);
@@ -816,7 +779,7 @@ void Gate::UpdateLine()
 	centerShader.setUniform("numReps", ir.height);
 	gateShader.setUniform("numReps", ir.height);
 
-	SetRectSubRect(testLine, ir);
+	SetRectSubRect(hardLine, ir);
 	SetRectSubRect(centerLine, ir);
 	
 	double gateLength = length(edgeA->v1 - edgeA->v0 );
@@ -833,26 +796,33 @@ void Gate::UpdateLine()
 	{
 		delete[] gateQuads;
 	}
+
 	gateQuads = new Vertex[numVertices];
-	numBlackQuads = numTiles;
+	numGateQuads = numTiles;
 	
 
 	double angle = atan2(-along.x, along.y);
 
+	float wiggleWidth = ts_wiggle->tileWidth;
+	float wiggleHeight = ts_wiggle->tileHeight;
+	float wiggleHalfHeight = wiggleHeight / 2;
 
 	for (int i = 0; i < numTiles; ++i)
 	{
 
 		if (i == numTiles - 1 && remainder > 0)
 		{
-			V2d start = edgeA->GetPosition(64 * i);
+			V2d start = edgeA->GetPosition(wiggleHeight * i);
 			V2d end = edgeA->v1;
 			double h = length(end - start);
-			SetRectRotation(gateQuads + i * 4, angle, 64, h, Vector2f(edgeA->GetPosition(64 * i + (32 - (64 - h) / 2))));
+			SetRectRotation(gateQuads + i * 4, angle, wiggleWidth, h, 
+				Vector2f(edgeA->GetPosition(wiggleHeight * i 
+					+ (wiggleHalfHeight - (wiggleHeight - h) / 2))));
 		}
 		else
 		{
-			SetRectRotation(gateQuads + i * 4, angle, 64, 64, Vector2f(edgeA->GetPosition(64 * i + 32 )));
+			SetRectRotation(gateQuads + i * 4, angle, wiggleWidth, wiggleHeight, 
+				Vector2f(edgeA->GetPosition(wiggleHeight * i + wiggleHalfHeight)));
 		}	
 	}
 }
@@ -861,8 +831,6 @@ void Gate::SetNodeSprite(bool active)
 {
 	//SetRectSubRect( nodes, ts)
 }
-
-
 
 void Gate::SetLocked( bool on )
 {
