@@ -4506,7 +4506,7 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
-	kinRing->powerRing->Drain(1000000);
+	//kinRing->powerRing->Drain(1000000);
 	DesperationUpdate();
 
 	ReverseVerticalInputsWhenOnCeiling();

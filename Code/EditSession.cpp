@@ -1889,16 +1889,18 @@ void EditSession::WriteFile(string fileName)
 		}
 	}
 
-	if( !hasGoal )
+	/*if( !hasGoal )
 	{
 		MessagePop( "Map not saved because no goal is in place. \nPlease add it from the CREATE ENEMIES mode." );
 		cout << "you need to place a goal in the map. file not written to!. add a popup to this alert later"
 			<< endl;
 		return;
-	}
+	}*/
+	//boost::filesystem::copy_file()
+	string tempMap = "tempmap";
 
 	ofstream of;
-	of.open(fileName);
+	of.open(tempMap);
 
 	WriteMapHeader(of);
 
@@ -1935,13 +1937,17 @@ void EditSession::WriteFile(string fileName)
 
 	WriteGates(of);
 	
+	of.close();
+
+	string from = tempMap;
+	string to = fileName;
+	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
+	boost::filesystem::remove(from);
 
 	CreatePreview(Vector2i( 1920 / 2 - 48, 1080 / 2 - 48 ));
 	//CreatePreview(Vector2i(960 * 1.25f, 540 * ));
 
 	//enemies here
-
-
 }
 
 bool EditSession::PointOnLine( V2d &pos, V2d &p0, V2d &p1, double width)
