@@ -8168,7 +8168,8 @@ void EditSession::PasteTerrain(Brush *cBrush, Brush *freeActorBrush)
 		}
 	}
 
-	if( terrainEmpty )
+	//if( terrainEmpty )
+	//freeactors are bugged right now
 	{
 		if ( freeActorBrush != NULL && freeActorBrush->CanApply())
 		{
@@ -8847,7 +8848,16 @@ bool EditSession::ExecuteTerrainMultiSubtract(list<PolyPtr> &brushPolys,
 		TryAttachActorsToPoly(inversePolygon, attachList, &resultBrush);
 		TryKeepGrass(inversePolygon, attachList);
 	}
-		
+	
+
+	for (auto it = brushPolys.begin(); it != brushPolys.end(); ++it)
+	{
+		if ((*it)->copiedInverse)
+		{
+			TryAttachActorsToPoly((*it), attachList, &resultBrush);
+			break;
+		}
+	}
 
 	TryAttachActorsToPolys(nonInverseIntersList, attachList, &resultBrush);
 	TryKeepGrass(nonInverseIntersList, attachList);
@@ -9323,10 +9333,10 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 	AddFullPolysToBrush(inverseConnectedInters, gateInfoList, &orig);
 	AddFullPolysToBrush(containedPolys, gateInfoList, &orig);
 
-	if (complexPaste == NULL)
+	//if (complexPaste == NULL)
 	{
 		TryAttachActorsToPolys(brushPolys, attachList, &resultBrush);
-		TryKeepGrass(brushPolys, attachList);
+		//TryKeepGrass(brushPolys, attachList);
 	}
 	
 	TryAttachActorsToPolys(nonInverseInters, attachList, &resultBrush);

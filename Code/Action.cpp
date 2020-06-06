@@ -565,7 +565,7 @@ Brush *Brush::CopyFreeActors()
 
 			PolyPtr myPoly = ap->posInfo.ground;
 
-			if (myPoly != NULL && ( !myPoly->selected || myPoly->inverse ))
+			if (myPoly != NULL && !myPoly->selected )
 			{
 				ActorPtr aPtr = ap->Copy();
 				aPtr->CreateMyEnemy();
@@ -616,12 +616,12 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 
 		if (tp != NULL)
 		{
-			if (tp->inverse )
+			/*if (tp->inverse )
 			{
 				PolyPtr invCopy = tp->InverseCopy();
 				newBrush->AddObject(invCopy);
 			}
-			else
+			else*/
 			{
 				PolyPtr ptr = tp->Copy();
 				newBrush->AddObject(ptr);
@@ -652,7 +652,7 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			PolyPtr myPoly = ap->posInfo.ground;
 			RailPtr myRail = ap->posInfo.railGround;
 
-			if (myPoly != NULL && myPoly->selected && !myPoly->inverse)
+			if (myPoly != NULL && myPoly->selected)
 			{
 				ActorPtr aPtr = ap->Copy();
 				aPtr->CreateMyEnemy();

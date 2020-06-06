@@ -5194,6 +5194,11 @@ PolyPtr TerrainPolygon::Copy()
 	PolyPtr newPoly = new TerrainPolygon(*this, true);
 	newPoly->Finalize();
 	mostRecentCopy = newPoly;
+
+	if (inverse)
+	{
+		newPoly->copiedInverse = true;
+	}
 	return newPoly;
 }
 
