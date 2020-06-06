@@ -3008,10 +3008,16 @@ void TerrainPolygon::UpdateMaterialType()
 	selectCol = sCol;
 	//selectCol = 
 
+	SetTerrainColor(fillCol);
+}
+
+void TerrainPolygon::SetTerrainColor(sf::Color c)
+{
+	fillCol = c;
 	int vCount = va->getVertexCount();
 	VertexArray &v = *va;
-	for( int i = 0; i < vCount; ++i )
-	{	
+	for (int i = 0; i < vCount; ++i)
+	{
 		v[i].color = fillCol;
 	}
 }
@@ -5802,6 +5808,14 @@ bool TerrainPolygon::IsPlacementOkay()
 void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 {
 	target->draw(lines, GetNumPoints() * 2, sf::Lines);
+}
+
+void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
+{
+	if (va != NULL)
+	{
+		target->draw(*va);
+	}
 }
 
 void TerrainPolygon::Draw( sf::RenderTarget *target )

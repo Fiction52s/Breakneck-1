@@ -625,7 +625,7 @@ void Gate::Draw( sf::RenderTarget *target )
 
 void Gate::MapDraw(sf::RenderTarget *target)
 {
-	if( locked && visible)
+	if( locked && visible && category != SECRET )
 		target->draw(mapLine, 4, sf::Quads);
 }
 
@@ -851,6 +851,8 @@ void Gate::Init()
 				Vector2f(edgeA->GetPosition(wiggleHeight * i + wiggleHalfHeight)));
 		}	
 	}
+
+	Reset();
 }
 
 void Gate::SetNodeSprite(bool active)

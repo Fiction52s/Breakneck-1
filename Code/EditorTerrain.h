@@ -508,6 +508,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//void Move( sf::Vector2i delta );
 	void BrushDraw(sf::RenderTarget *target,
 		bool valid);
+	void MiniDraw(sf::RenderTarget *target);
+	void SetTerrainColor(sf::Color c);
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void Activate();

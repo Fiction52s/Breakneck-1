@@ -4239,8 +4239,16 @@ void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 
 	if (blackBorder[0])
 		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini, Color::Transparent);
+	}
 	if (blackBorder[1])
 		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini + 4, Color::Transparent);
+	}
 
 	if (stormCeilingOn || topBorderOn )
 	{
@@ -8494,17 +8502,10 @@ void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
 	PolyPtr poly = polyQueryList;
 	while (poly != NULL)
 	{
-		poly->Draw(target);
-		/*int vertexCount = poly->terrainVA->getVertexCount();
-		for (int i = 0; i < vertexCount; ++i)
-		{
-			(*listVAIter->terrainVA)[i].color = c;
-		}
-		target->draw(*listVAIter->terrainVA);
-		for (int i = 0; i < vertexCount; ++i)
-		{
-			(*listVAIter->terrainVA)[i].color = Color::White;
-		}*/
+		Color &oldColor = poly->fillCol;
+		poly->SetTerrainColor(c);
+		poly->MiniDraw(target);
+		poly->SetTerrainColor(oldColor);
 		
 		poly = poly->queryNext;
 	}
