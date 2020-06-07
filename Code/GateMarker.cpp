@@ -7,6 +7,7 @@
 #include "MainMenu.h"
 #include "Zone.h"
 #include "Actor.h"
+#include "Camera.h"
 
 using namespace sf;
 using namespace std;
@@ -59,10 +60,10 @@ void GateMarker::SetGate(Gate *g)
 		bounds.top + bounds.height / 2);
 }
 
-void GateMarker::Update(sf::View &v )
+void GateMarker::Update( Camera *cam )
 {
-	Vector2f size = v.getSize();
-	Vector2f vCenter = v.getCenter();
+	Vector2f size = Vector2f( 960, 540) * cam->GetZoom();
+	Vector2f vCenter = cam->GetPos();
 	sf::FloatRect vRect(vCenter.x - size.x / 2, vCenter.y - size.y / 2, size.x, size.y);
 
 	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
@@ -151,7 +152,7 @@ void GateMarker::Update(sf::View &v )
 	
 
 	
-	V2d pos = center - V2d(v.getCenter());
+	V2d pos = center - V2d(vCenter);
 	SetGatePos(pos);
 
 	++frame;
@@ -274,11 +275,11 @@ void GateMarkerGroup::SetToZone(Zone *z)
 	currActive = counter;
 }
 
-void GateMarkerGroup::Update(sf::View &v)
+void GateMarkerGroup::Update(Camera *cam)
 {
 	for (int i = 0; i < currActive; ++i)
 	{
-		markers[i]->Update(v);
+		markers[i]->Update(cam);
 	}
 }
 

@@ -5883,8 +5883,7 @@ int GameSession::Run()
 					gates[i]->Update();
 				}
 
-				if( gateMarkers != NULL )
-					gateMarkers->Update(view);
+				
 
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
@@ -5938,6 +5937,9 @@ int GameSession::Run()
 				{
 					cam.Update(GetPlayer(0));
 				}
+
+				if (gateMarkers != NULL)
+					gateMarkers->Update(&cam);
 
 				Vector2f camPos = cam.GetPos();
 
@@ -6268,8 +6270,6 @@ int GameSession::Run()
 		
 		preScreenTex->setView(view);
 		background->Draw(preScreenTex);
-		
-		//preScreenTex->setView( view );
 		
 		cloudView.setCenter( 960, 540 );
 		cloudView.setCenter( 960, 540 );	

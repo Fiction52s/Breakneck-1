@@ -3255,6 +3255,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	
 	action = -1;
 	framesStanding = 0;
 	keyExplodeRingGroup->Reset();

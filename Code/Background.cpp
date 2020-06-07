@@ -80,7 +80,7 @@ void ScrollingBackground::SetLeftPos(Vector2f &pos)
 {
 	xPos = pos.x;
 	float currX = pos.x;
-	float top = pos.y - 540;
+	float top = -540;//pos.y - 540;
 	float width = 1920;
 	float height = 1080;
 	for (int i = 0; i < 2; ++i)
@@ -118,8 +118,9 @@ void ScrollingBackground::Draw(RenderTarget *target)
 	oldView.setCenter(target->getView().getCenter());
 	oldView.setSize(target->getView().getSize());
 
-	newView.setCenter(oldView.getCenter() - extraOffset);
+	newView.setCenter(Vector2f( oldView.getCenter().x, 0) - extraOffset);
 	newView.setSize(Vector2f(1920, 1080) / extraZoom );
+	
 	target->setView(newView);
 
 	target->draw(va, ts->texture);
@@ -473,7 +474,6 @@ void Background::Draw(sf::RenderTarget *target)
 	target->draw(background);
 
 	target->setView(oldView);
-	//target->setView(oldView);
 
 	for (list<ScrollingBackground*>::iterator it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)

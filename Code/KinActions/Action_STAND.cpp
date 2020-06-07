@@ -14,6 +14,7 @@ void Actor::STAND_Start()
 void Actor::STAND_End()
 {
 	frame = 0;
+	owner->cam.SetRumble(3, 3, 10000);//5
 }
 
 void Actor::STAND_Change()

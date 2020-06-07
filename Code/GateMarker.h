@@ -9,6 +9,7 @@ struct Tileset;
 struct Gate;
 struct GateMarker;
 struct Zone;
+struct Camera;
 
 struct GateMarkerGroup
 {
@@ -16,7 +17,7 @@ struct GateMarkerGroup
 	~GateMarkerGroup();
 	void Reset();
 	void SetToZone(Zone *z);
-	void Update(sf::View &v);
+	void Update(Camera *cam);
 	void Draw(sf::RenderTarget *target);
 	void FadeIn();
 	void FadeOut();
@@ -48,7 +49,7 @@ struct GateMarker
 	sf::Vertex *quad;
 	
 	void SetGate(Gate *g);
-	void Update(sf::View &v );
+	void Update(Camera *cam);
 	void SetGatePos(V2d pos);
 	//bool show;
 	//void SetType(int type, int num);
