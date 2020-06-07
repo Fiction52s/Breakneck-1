@@ -617,7 +617,7 @@ void GetAirdashPowerScene::UpdateState()
 			owner->state = GameSession::RUN;
 			owner->Fade(true, 60, Color::Black, true);
 			owner->adventureHUD->Show(60);
-			owner->UnlockPower(Actor::PowerType::POWER_AIRDASH);
+			owner->UnlockPower(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
 		}
 		break;
 	}

@@ -5863,11 +5863,7 @@ int GameSession::Run()
 					p = GetPlayer( i );
 					if( p != NULL )
 					{
-						if( p->hasPowerLeftWire )
-							p->leftWire->UpdateQuads();
-
-						if( p->hasPowerRightWire )
-							p->rightWire->UpdateQuads();
+						p->UpdateWireQuads();
 					}
 				}
 
@@ -8488,7 +8484,8 @@ SaveFile *GameSession::GetCurrentProgress()
 bool GameSession::HasPowerUnlocked( int pIndex )
 {
 	SaveFile *prog = GetCurrentProgress();
-	if ( mainMenu->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE && prog != NULL && prog->HasPowerUnlocked((Actor::PowerType)pIndex))
+	if ( mainMenu->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE && prog != NULL 
+		&& prog->HasPowerUnlocked((Actor::UpgradeType)pIndex))
 	{
 		return true;
 	}

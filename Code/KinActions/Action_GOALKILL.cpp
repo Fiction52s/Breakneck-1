@@ -1,13 +1,14 @@
 #include "Actor.h"
 #include "GameSession.h"
 #include "ScoreDisplay.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::GOALKILL_Start()
 {
-	SetExpr(Expr_NEUTRAL);
+	SetExpr(KinMask::Expr_NEUTRAL);
 	velocity = V2d(0, 0);
 	groundSpeed = 0;
 	grindSpeed = 0;

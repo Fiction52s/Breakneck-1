@@ -110,7 +110,7 @@ map<int, list<CollisionBox>> & Actor::GetHitboxList(const string & str)
 	return sess->hitboxManager->GetHitboxList(str);
 }
 
-void Actor::UpdatePowers()
+void Actor::UpdatePowersMenu()
 {
 	if (owner != NULL)
 	{
@@ -2634,88 +2634,27 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	bubbleLifeSpan = 240;
 
-	hasPowerAirDash = true;//false;//true;
-	hasPowerGravReverse = false;
-	hasPowerBounce = false;
-	hasPowerGrindBall = false;
-	hasPowerTimeSlow = false;
-	hasPowerLeftWire = false;
-	hasPowerRightWire = false;
-
-	if (true)
+	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
-		hasPowerAirDash = true;
-		hasPowerGravReverse = true;
-		hasPowerBounce = true;
-		hasPowerGrindBall = true;
-		hasPowerTimeSlow = true;
-		hasPowerLeftWire = true;
-		hasPowerRightWire = true;
+		bHasUpgrade[i] = false;
+		bStartHasUpgrade[i] = false;
 	}
 
 	if (owner != NULL)
 	{
 		SaveFile *currProgress = owner->GetCurrentProgress();
-		if (currProgress != NULL && currProgress->HasPowerUnlocked(POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
+		if (currProgress != NULL && currProgress->HasPowerUnlocked(UPGRADE_POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
 		{
-			hasPowerAirDash = true;
+			SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
 		}
 	}
 
-	startHasPowerAirDash = hasPowerAirDash;
-	startHasPowerGravReverse =	hasPowerGravReverse;
-	startHasPowerBounce = hasPowerBounce;
-	startHasPowerGrindBall = hasPowerGrindBall;
-	startHasPowerTimeSlow = hasPowerTimeSlow;
-	startHasPowerLeftWire = hasPowerLeftWire;
-	startHasPowerRightWire = hasPowerRightWire;
-
-	//do this a little later.
-	UpdatePowers();
-
-
-	//only set these parameters again if u get a power or lose one.
-	//sh.setUniform( "hasPowerAirDash", hasPowerAirDash );
-	//sh.setUniform( "hasPowerGravReverse", hasPowerGravReverse );
-	//sh.setUniform( "hasPowerBounce", hasPowerBounce );
-	//sh.setUniform( "hasPowerGrindBall", hasPowerGrindBall );
-	//sh.setUniform( "hasPowerTimeSlow", hasPowerTimeSlow );
-	//sh.setUniform( "hasPowerLeftWire", hasPowerLeftWire );
-	//sh.setUniform( "hasPowerRightWire", hasPowerRightWire );
-
-	/*Color basicArmor( 0x14, 0x59, 0x22 );
-	Color basicArmorDark( 0x08, 0x40, 0x12 );
-
-	if( actorIndex == 1 )
+	for (int i = 0; i < UPGRADE_Count; ++i)
 	{
-		sf::Uint8 basicRed = basicArmor.r;
-		sf::Uint8 basicGreen = basicArmor.g;
-		sf::Uint8 basicBlue = basicArmor.b;
+		SetStartUpgrade(i, true);
+	}
 
-		basicArmor.r = basicGreen;
-		basicArmor.b = basicRed;
-		basicArmor.g = basicBlue;
-
-		sf::Uint8 basicRedDark = basicArmorDark.r;
-		sf::Uint8 basicGreenDark = basicArmorDark.g;
-		sf::Uint8 basicBlueDark = basicArmorDark.b;
-
-		basicArmorDark.r = basicGreenDark;
-		basicArmorDark.b = basicRedDark;
-		basicArmorDark.g = basicBlueDark;
-
-	}*/
-			
-	//sh.setUniform( "armorColor", basicArmor );
-	//sh.setUniform( "armorColorDark", basicArmorDark );
-		
-	//sh.setUniform( "hasPowerClones", hasPowerClones > 0 );
-
-	//for( int i = 0; i < MAX_MOTION_GHOSTS; ++i )
-	//{
-	//	motionGhosts[i] = 
-	//}
-
+	SetStartUpgrade(UPGRADE_POWER_AIRDASH, false);
 
 	SetupTimeBubbles();
 
@@ -3277,13 +3216,10 @@ void Actor::Respawn()
 	airTrigBehavior = AT_NONE;
 	currAirTrigger = NULL;
 
-	hasPowerAirDash = startHasPowerAirDash;
-	hasPowerGravReverse = startHasPowerGravReverse;
-	hasPowerBounce = startHasPowerBounce;
-	hasPowerGrindBall = startHasPowerGrindBall;
-	hasPowerTimeSlow = startHasPowerTimeSlow;
-	hasPowerLeftWire = startHasPowerLeftWire;
-	hasPowerRightWire = startHasPowerRightWire;
+	for (int i = 0; i < UPGRADE_Count; ++i)
+	{
+		bHasUpgrade[i] = bStartHasUpgrade[i];
+	}
 
 	activeComboObjList = NULL;
 
@@ -3392,11 +3328,11 @@ void Actor::Respawn()
 	bounceFlameOn = false;
 	scorpOn = false;
 
-	if( hasPowerLeftWire )
+	if( HasUpgrade( UPGRADE_POWER_LWIRE ) )
 	{
 		leftWire->Reset();
 	}
-	if( hasPowerRightWire )
+	if(HasUpgrade(UPGRADE_POWER_RWIRE))
 	{
 		rightWire->Reset();
 	}
@@ -3435,8 +3371,6 @@ void Actor::Respawn()
 	{
 		invincibleFrames = 180;
 	}
-
-	SetExpr( Actor::Expr::Expr_NEUTRAL );
 
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
 	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
@@ -3525,35 +3459,35 @@ void Actor::DesperationUpdate()
 		blah[0] = Color( 0x00, 0xff, 0xff );
 		blah[1] = Color( 0x00, 0xbb, 0xff );
 		int cIndex = 2;
-		if( hasPowerAirDash )
+		if( HasUpgrade( UPGRADE_POWER_AIRDASH ) )
 		{
 			blah[cIndex] = Color( 0x00, 0x55, 0xff );
 			cIndex++;
 		}
-		if( hasPowerGravReverse )
+		if(HasUpgrade(UPGRADE_POWER_GRAV))
 		{
 			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
 			cIndex++;
 		}
-		if( hasPowerBounce )
+		if(HasUpgrade(UPGRADE_POWER_BOUNCE))
 		{
 			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
 			cIndex++;
 		}
 
-		if( hasPowerGrindBall )
+		if(HasUpgrade(UPGRADE_POWER_GRIND))
 		{
 			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
 			cIndex++;
 		}
 
-		if( hasPowerTimeSlow )
+		if(HasUpgrade(UPGRADE_POWER_TIME ))
 		{
 			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
 			cIndex++;
 		}
 
-		if( hasPowerRightWire || hasPowerLeftWire )
+		if(HasUpgrade(UPGRADE_POWER_LWIRE) || HasUpgrade(UPGRADE_POWER_RWIRE))
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -3590,7 +3524,7 @@ void Actor::DesperationUpdate()
 		despCounter++;
 		if( kinRing != NULL && despCounter == maxDespFrames )
 		{
-			desperationMode = false;
+			SetDespMode(false);
 			if (kinRing->powerRing->IsEmpty())
 			{
 
@@ -3774,7 +3708,7 @@ void Actor::ProcessReceivedHit()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh || !hasGravReverse) || grindEdge->IsInvisibleWall())
+						if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh || !hasGravReverse) || grindEdge->IsInvisibleWall())
 						{
 							framesNotGrinding = 0;
 							if (reversed)
@@ -3917,8 +3851,7 @@ void Actor::ProcessReceivedHit()
 
 		if (dmgRet > 0 && !desperationMode)
 		{
-			desperationMode = true;
-			despCounter = 0;
+			SetDespMode(true);
 			//action = DEATH;
 			//frame = 0;
 		}
@@ -3927,6 +3860,21 @@ void Actor::ProcessReceivedHit()
 
 
 		receivedHit = NULL;
+	}
+}
+
+void Actor::SetDespMode(bool on)
+{
+	if (on)
+	{
+		desperationMode = true;
+		despCounter = 0;
+		SetExpr(KinMask::Expr::Expr_DESP);
+	}
+	else
+	{
+		SetExpr(KinMask::Expr::Expr_NEUTRAL);
+		desperationMode = false;
 	}
 }
 
@@ -3946,8 +3894,7 @@ void Actor::UpdateDrain()
 																 //cout << "drain by " << drainAmount << endl;
 				if (res > 0)
 				{
-					desperationMode = true;
-					despCounter = 0;
+					SetDespMode(true);
 				}
 				drainCounter = 0;
 			}
@@ -3957,7 +3904,7 @@ void Actor::UpdateDrain()
 
 void Actor::ProcessGravityGrass()
 {
-	if (ground != NULL && reversed && !hasPowerGravReverse && gravityGrassCount == 0)
+	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && gravityGrassCount == 0)
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
@@ -4104,7 +4051,7 @@ void Actor::HitstunBufferedChangeAction()
 
 void Actor::UpdateWireStates()
 {
-	if (hasPowerLeftWire && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
+	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
 	{
 		leftWire->ClearDebug();
 		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();//leftWire->GetOriginPos(true);
@@ -4112,7 +4059,7 @@ void Actor::UpdateWireStates()
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
-	if (hasPowerRightWire && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->state == Wire::RETRACTING))
+	if (HasUpgrade(UPGRADE_POWER_RWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || rightWire->state == Wire::RETRACTING))
 	{
 		rightWire->ClearDebug();
 		rightWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
@@ -4237,7 +4184,7 @@ void Actor::UpdateBubbles()
 
 	//int mBubbles = maxBubbles;
 
-	if (hasPowerTimeSlow)
+	if (HasUpgrade(UPGRADE_POWER_TIME))
 	{
 		//calculate this all the time so I can give myself infinite airdash
 		for (int i = 0; i < maxBubbles; ++i)
@@ -4276,7 +4223,7 @@ void Actor::UpdateBubbles()
 	}
 
 	int tempSlowCounter = slowCounter;
-	if (CanCreateTimeBubble() && hasPowerTimeSlow && currInput.leftShoulder)
+	if (CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.leftShoulder)
 	{
 		if (!prevInput.leftShoulder && !inBubble)
 		{
@@ -5462,7 +5409,7 @@ bool Actor::CanRailSlide()
 
 bool Actor::CanRailGrind()
 {
-	if (hasPowerGrindBall)
+	if (HasUpgrade(UPGRADE_POWER_GRIND))
 	{
 		if (!currInput.Y && prevInput.Y)
 		{
@@ -5501,23 +5448,21 @@ bool Actor::IsRailSlideFacingRight()
 	return r;
 }
 
-bool Actor::HasPower(int index)
+bool Actor::HasUpgrade(int index)
 {
-	switch (index)
-	{
-	case 0:
-		return hasPowerAirDash;
-	case 1:
-		return hasPowerGravReverse;
-	case 2:
-		return hasPowerBounce;
-	case 3:
-		return hasPowerGrindBall;
-	case 4:
-		return hasPowerTimeSlow;
-	case 5:
-		return hasPowerLeftWire || hasPowerRightWire;
-	}
+	return bHasUpgrade[index];
+}
+
+void Actor::SetUpgrade(int upgrade, bool on)
+{
+	bHasUpgrade[upgrade] = on;
+	UpdatePowersMenu();
+}
+
+void Actor::SetStartUpgrade(int upgrade, bool on)
+{
+	bStartHasUpgrade[upgrade] = on;
+	SetUpgrade(upgrade, on);
 }
 
 
@@ -7402,7 +7347,7 @@ bool Actor::ExitGrind(bool jump)
 		}
 		else
 		{
-			if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+			if (!HasUpgrade( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
 			{
 				if (grindSpeed < 0)
 				{
@@ -7699,7 +7644,7 @@ double Actor::GetDashSpeed()
 
 bool Actor::TryGrind()
 {
-	if (hasPowerGrindBall && currInput.Y && !prevInput.Y)
+	if (HasUpgrade( UPGRADE_POWER_GRIND ) && currInput.Y && !prevInput.Y)
 	{
 		SetActionGrind();
 		BounceFlameOff();
@@ -7824,7 +7769,7 @@ bool Actor::BasicAirAttackAction()
 
 void Actor::CheckBounceFlame()
 {
-	if (hasPowerBounce)
+	if (HasUpgrade( UPGRADE_POWER_BOUNCE ) )
 	{
 		if (currInput.X && !bounceFlameOn && !justToggledBounce)
 		{
@@ -8162,7 +8107,7 @@ void Actor::UpdateGrindPhysics(double movement)
 
 				if (GameSession::IsWall(grindEdge->Normal()) == -1)
 				{
-					if (hasPowerGravReverse || grindEdge->Normal().y < 0)
+					if (HasUpgrade( UPGRADE_POWER_GRAV ) || grindEdge->Normal().y < 0)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
@@ -8230,7 +8175,7 @@ void Actor::UpdateGrindPhysics(double movement)
 
 				if (GameSession::IsWall(grindEdge->Normal()) == -1)
 				{
-					if (hasPowerGravReverse || grindEdge->Normal().y < 0)
+					if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
@@ -9797,8 +9742,8 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( (hasPowerGravReverse || gravityGrassCount > 0 ) 
-				&& tempCollision && ((currInput.B && currInput.LUp())|| (hasPowerGrindBall && currInput.Y ))
+			else if( (HasUpgrade(UPGRADE_POWER_GRAV) || gravityGrassCount > 0 )
+				&& tempCollision && ((currInput.B && currInput.LUp())|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y ))
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -9868,7 +9813,7 @@ void Actor::UpdatePhysics()
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
 			}
-			else if( tempCollision && hasPowerGrindBall /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
+			else if( tempCollision && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -10564,20 +10509,6 @@ void Actor::PhysicsResponse()
 			//oldAction = action;
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
-				//if( hasPowerGrindBall && currInput.Y //&& !prevInput.Y
-				//	&& action == AIRDASH && length( wallNormal ) > 0 )
-				//{
-				//	//assert( minContact.edge != NULL );
-				//	Edge *e = storedContact.edge;
-				//	V2d mp = storedContact.position;
-				//	double q = e->GetQuantity( mp );
-
-				//	ground = e;
-				//	groundSpeed = velocity.y;
-				//	SetActionGrind();
-
-				//	//cout << "grinding" << endl;
-				//}
 				if( length( wallNormal ) > 0 
 					&& (currWall == NULL || !currWall->IsInvisibleWall())
 					&& oldVelocity.y >= 0 /*&& rightWire->state != Wire::PULLING
@@ -11231,7 +11162,7 @@ void Actor::ProcessHitGoal()
 		{
 			owner->totalFramesBeforeGoal = owner->totalGameFrames;
 			SetAction(GOALKILL);
-			desperationMode = false;
+			SetDespMode(false);
 			hitGoal = false;
 
 			if (owner->parentGame == NULL)
@@ -11255,7 +11186,7 @@ void Actor::ProcessHitGoal()
 			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
 			rightWire->Reset();
 			leftWire->Reset();
-			desperationMode = false;
+			SetDespMode(false);
 		}
 		else if (editOwner != NULL)
 		{
@@ -11266,7 +11197,7 @@ void Actor::ProcessHitGoal()
 	{
 		owner->totalFramesBeforeGoal = owner->totalGameFrames;
 		SetAction(NEXUSKILL);
-		desperationMode = false;
+		SetDespMode(false);
 		hitNexus = false;
 		if (owner->parentGame == NULL)
 		{
@@ -11287,7 +11218,6 @@ void Actor::ProcessHitGoal()
 		position = owner->goalNodePos;
 		rightWire->Reset();
 		leftWire->Reset();
-		desperationMode = false;
 	}
 }
 
@@ -11817,8 +11747,8 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_HOUSEFAMILY:
 	{
-		desperationMode = false;
-		SetExpr(Expr_NEUTRAL);
+		SetDespMode(false);
+		SetExpr(KinMask::Expr_NEUTRAL);
 		assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
@@ -11839,8 +11769,8 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_GETAIRDASH:
 	{
-		desperationMode = false;
-		SetExpr(Expr_NEUTRAL);
+		SetDespMode(false);
+		SetExpr(KinMask::Expr_NEUTRAL);
 		assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
@@ -11861,7 +11791,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_DESTROYNEXUS1:
 	{
-		desperationMode = false;
+		SetDespMode(false);
 		//SetExpr(Expr_NEUTRAL);
 		//assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
@@ -11886,7 +11816,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_CRAWLERATTACK:
 	{
-		desperationMode = false;
+		SetDespMode(false);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
@@ -11904,7 +11834,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_TEXTTEST:
 	{
-		desperationMode = false;
+		SetDespMode(false);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
@@ -12230,23 +12160,6 @@ bool Actor::SpringLaunch()
 	}
 
 	return false;
-}
-
-void Actor::SetActivePowers(
-		bool p_canAirDash,
-		bool p_canGravReverse,
-		bool p_canBounce,
-		bool p_canGrind,
-		bool p_canTimeSlow,
-		bool p_canWire )
-{
-	hasPowerAirDash = p_canAirDash;
-	hasPowerGravReverse = p_canGravReverse;
-	hasPowerBounce = p_canBounce;
-	hasPowerGrindBall = p_canGrind;
-	hasPowerTimeSlow = p_canTimeSlow;
-	hasPowerRightWire = p_canWire;
-	hasPowerLeftWire = p_canWire;
 }
 
 void Actor::SetBoostVelocity()
@@ -14028,8 +13941,8 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
 		owner->totalFramesBeforeGoal = owner->totalGameFrames;
-		desperationMode = false;
-		SetExpr(Expr_NEUTRAL);
+		SetDespMode(false);
+		SetExpr(KinMask::Expr_NEUTRAL);
 		owner->scoreDisplay->Activate();
 		SetAction(WAITFORSHIP);
 		frame = 0;
@@ -14458,7 +14371,7 @@ void Actor::ConfirmHit( Enemy *e )
 	if( kinRing != NULL )
 		kinRing->powerRing->Fill(hitParams.charge);
 	
-	desperationMode = false;
+	SetDespMode(false);
 	
 	
 	hasDoubleJump = true;
@@ -14479,15 +14392,6 @@ void Actor::ConfirmHit( Enemy *e )
 	{
 		velocity.y = slowDownFall;
 	}
-	/*if( bounceFlameOn )
-	{
-		if( ground == NULL )
-		{
-			velocity = -velocity;
-		}
-	}*/
-	//owner->GetPlayer( 0 )->test = true;
-	//desperationMode = false;
 }
 
 //void Actor::ConfirmWireHit( bool right )
@@ -14890,13 +14794,13 @@ void Actor::AirMovement()
 
 void Actor::DrawWires(sf::RenderTarget *target)
 {
-	if (hasPowerLeftWire &&
+	if (HasUpgrade(UPGRADE_POWER_LWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| leftWire->state == Wire::RETRACTING))
 	{
 		leftWire->Draw(target);
 	}
-	if (hasPowerRightWire &&
+	if (HasUpgrade(UPGRADE_POWER_RWIRE) &&
 		((action != Actor::GRINDBALL && action != Actor::GRINDATTACK)
 			|| rightWire->state == Wire::RETRACTING))
 	{
@@ -14906,10 +14810,10 @@ void Actor::DrawWires(sf::RenderTarget *target)
 
 void Actor::UpdateWireQuads()
 {
-	if (hasPowerLeftWire)
+	if (HasUpgrade(UPGRADE_POWER_LWIRE))
 		leftWire->UpdateQuads();
 
-	if (hasPowerRightWire)
+	if (HasUpgrade(UPGRADE_POWER_RWIRE))
 		rightWire->UpdateQuads();
 }
 
@@ -15211,9 +15115,12 @@ bool Actor::CanUnlockGate( Gate *g )
 	return g->CanUnlock();
 }
 
-void Actor::SetExpr( Expr ex )
+void Actor::SetExpr( int ex )
 {
-	expr = ex;
+	if (kinMask != NULL)
+	{
+		kinMask->SetExpr((KinMask::Expr)ex);
+	}
 }
 
 void Actor::ExecuteDoubleJump()
@@ -15430,7 +15337,7 @@ bool Actor::TryDoubleJump()
 
 bool Actor::TryAirDash()
 {
-	if (hasPowerAirDash && !IsSingleWirePulling())
+	if (HasUpgrade(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
 	{
 		if ((hasAirDash || inBubble) && ((!prevInput.B && currInput.B) || pauseBufferedDash
 			|| stunBufferedDash ))
@@ -15446,7 +15353,8 @@ bool Actor::TryAirDash()
 
 bool Actor::TryGlide()
 {
-	bool ad = (hasPowerAirDash && !hasAirDash) || !hasPowerAirDash;
+	bool ad = (HasUpgrade(UPGRADE_POWER_AIRDASH) && !hasAirDash) 
+		|| !HasUpgrade(UPGRADE_POWER_AIRDASH);
 	if (!prevInput.B && currInput.B)
 	{
 		SetAction(GLIDE);

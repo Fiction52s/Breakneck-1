@@ -12269,7 +12269,11 @@ void EditSession::EditModeHandleEvent()
 			else if( selectedBrush->IsSingleActor() )
 			{
 				ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
-				if (a->type->info.name == "shard")
+				if (a->type->info.name == "player")
+				{
+					editModeUI->ToggleKinOptionsPanel();
+				}
+				else if (a->type->info.name == "shard")
 				{
 					editModeUI->ExpandShardLibrary();
 				}

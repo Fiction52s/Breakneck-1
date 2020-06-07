@@ -124,15 +124,17 @@ struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
 
-	enum PowerType
+	enum UpgradeType
 	{
-		POWER_AIRDASH,
-		POWER_GRAV,
-		POWER_BOUNCE,
-		POWER_GRIND,
-		POWER_TIME,
-		POWER_RWIRE,
-		POWER_LWIRE
+		UPGRADE_POWER_AIRDASH,
+		UPGRADE_POWER_GRAV,
+		UPGRADE_POWER_BOUNCE,
+		UPGRADE_POWER_GRIND,
+		UPGRADE_POWER_TIME,
+		UPGRADE_POWER_RWIRE,
+		UPGRADE_POWER_LWIRE,
+		UPGRADE_DASH_BOOSTER_1,
+		UPGRADE_Count,
 	};
 
 	enum Action
@@ -234,7 +236,8 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
-	
+	bool bHasUpgrade[UPGRADE_Count];
+	bool bStartHasUpgrade[UPGRADE_Count];
 	int numKeysHeld;
 
 	
@@ -349,7 +352,7 @@ struct Actor : QuadTreeCollider,
 		float depth = 1.f);
 	void DeactivateSound(SoundNode *sn);
 	void SetToOriginalPos();
-	void UpdatePowers();
+	void UpdatePowersMenu();
 	void SetSession(Session *sess,
 		GameSession *game,
 		EditSession *edit);
@@ -431,19 +434,6 @@ struct Actor : QuadTreeCollider,
 		AT_AUTORUNRIGHT,
 	};
 	AirTriggerBehavior airTrigBehavior;
-	
-	
-
-	enum Expr
-	{
-		Expr_NEUTRAL,
-		Expr_HURT,
-		Expr_SPEED1,
-		Expr_SPEED2,
-		Expr_DESP,
-		Expr_DEATH,
-		Expr_NONE
-	};
 
 	enum Team
 	{
@@ -549,7 +539,7 @@ struct Actor : QuadTreeCollider,
 	void SetSpriteTile( int tileIndex, bool noFlipX = true, bool noFlipY = true );
 	void SetSpriteTile( sf::Sprite *spr, 
 		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true );
-	void SetExpr( Expr ex );
+	void SetExpr( int ex );
 	void SetAction( int a );
 
 	void SetupTilesets();
@@ -564,7 +554,6 @@ struct Actor : QuadTreeCollider,
 	void RailGrindMovement();
 
 	bool AirAttack();
-	Expr expr;
 	sf::Vector2<double> movingPlatExtra;
 	bool testr;
 	
@@ -692,14 +681,6 @@ struct Actor : QuadTreeCollider,
 	void BounceFlameOn();
 
 	sf::Sprite dodecaSprite;
-
-	void SetActivePowers(
-		bool canAirdash,
-		bool canGravReverse,
-		bool canBounce,
-		bool canGrind,
-		bool canTimeSlow,
-		bool canWire );
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
@@ -871,6 +852,7 @@ struct Actor : QuadTreeCollider,
 	bool CanRailGrind();
 	bool IsRailSlideFacingRight();
 
+	void SetDespMode(bool on);
 	void DesperationUpdate();
 	void ReverseVerticalInputsWhenOnCeiling();
 	void ProcessReceivedHit();
@@ -1288,23 +1270,9 @@ struct Actor : QuadTreeCollider,
 
 	int currBubble;
 
-	bool hasPowerAirDash;
-	bool hasPowerGravReverse;
-	bool hasPowerBounce;
-	bool hasPowerGrindBall;
-	bool hasPowerTimeSlow;
-	bool hasPowerLeftWire;
-	bool hasPowerRightWire;
-
-	bool HasPower(int index);
-
-	bool startHasPowerAirDash;
-	bool startHasPowerGravReverse;
-	bool startHasPowerBounce;
-	bool startHasPowerGrindBall;
-	bool startHasPowerTimeSlow;
-	bool startHasPowerLeftWire;
-	bool startHasPowerRightWire;
+	bool HasUpgrade(int index);
+	void SetUpgrade(int upgrade, bool on);
+	void SetStartUpgrade(int upgrade, bool on);
 
 	int lastWire;
 

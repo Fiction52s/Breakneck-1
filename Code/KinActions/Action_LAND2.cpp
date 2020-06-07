@@ -15,24 +15,24 @@ void Actor::LAND2_End()
 
 void Actor::LAND2_Change()
 {
-	if (hasPowerGrindBall && currInput.Y)//&& !prevInput.Y )
+	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y)//&& !prevInput.Y )
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
-		if (!reversed || (hasPowerGravReverse && reversed))
+		if (!reversed || (HasUpgrade(UPGRADE_POWER_GRAV) && reversed))
 		{
 			SetActionGrind();
 			return;
 		}
 	}
 
-	if (hasPowerBounce && currInput.X && !bounceFlameOn)
+	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 	{
 		//bounceGrounded = true;
 		BounceFlameOn();
 		oldBounceEdge = NULL;
 		//break;
 	}
-	else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
 	{
 		BounceFlameOff();
 	}

@@ -16,7 +16,7 @@ void Actor::BOUNCEGROUNDEDWALL_End()
 
 void Actor::BOUNCEGROUNDEDWALL_Change()
 {
-	if (hasPowerGrindBall && currInput.Y && !prevInput.Y)
+	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
 	{
 		SetActionGrind();
 		BounceFlameOff();

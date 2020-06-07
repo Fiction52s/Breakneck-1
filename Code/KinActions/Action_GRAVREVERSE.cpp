@@ -17,10 +17,10 @@ void Actor::GRAVREVERSE_End()
 
 void Actor::GRAVREVERSE_Change()
 {
-	if (hasPowerGrindBall && currInput.Y)//&& !prevInput.Y )
+	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y)//&& !prevInput.Y )
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
-		if (!reversed || (hasPowerGravReverse && reversed))
+		if (!reversed || (HasUpgrade(UPGRADE_POWER_GRAV) && reversed))
 		{
 			groundSpeed = storedReverseSpeed;
 			SetActionGrind();

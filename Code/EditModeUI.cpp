@@ -62,6 +62,35 @@ EditModeUI::EditModeUI()
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
+
+	kinOptionsPanel = new Panel("kinoptions", 400, 400, this, true);
+	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
+		540 - kinOptionsPanel->size.y / 2));
+	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+
+	kinOptionsPanel->AddLabel("airdashlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Airdash:");
+	hasAirdashCheck = kinOptionsPanel->AddCheckBox("airdash", Vector2i(0, 0), true);
+	hasAirdashCheck->SetToolTip("Toggle Airdash Power");
+
+	kinOptionsPanel->AddLabel("gravlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Gravity Reverse:");
+	hasGravityReverseCheck = kinOptionsPanel->AddCheckBox("grav", Vector2i(0, 0), true);
+	hasGravityReverseCheck->SetToolTip("Toggle Gravity Reverse Power");
+
+	kinOptionsPanel->AddLabel("bouncelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Bounce Scorpion:");
+	hasBounceCheck = kinOptionsPanel->AddCheckBox("bounce", Vector2i(0, 0), true);
+	hasBounceCheck->SetToolTip("Toggle Bounce Scorpion Power");
+
+	kinOptionsPanel->AddLabel("grindlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Grind Wheel:");
+	hasGrindCheck = kinOptionsPanel->AddCheckBox("grind", Vector2i(0, 0), true);
+	hasGrindCheck->SetToolTip("Toggle Grind Power");
+
+	kinOptionsPanel->AddLabel("timelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Time Slow:");
+	hasTimeSlowCheck = kinOptionsPanel->AddCheckBox("time", Vector2i(0, 0), true);
+	hasTimeSlowCheck->SetToolTip("Toggle Time Slow Power");
+
+	kinOptionsPanel->AddLabel("wirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Wires:");
+	hasWiresCheck = kinOptionsPanel->AddCheckBox("wire", Vector2i(0, 0), true);
+	hasWiresCheck->SetToolTip("Toggle Wire Power");
 }
 
 EditModeUI::~EditModeUI()
@@ -69,6 +98,19 @@ EditModeUI::~EditModeUI()
 	delete mainPanel;
 	delete layerPanel;
 	delete lpSlider;
+	delete kinOptionsPanel;
+}
+
+void EditModeUI::ToggleKinOptionsPanel()
+{
+	if (kinOptionsPanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(kinOptionsPanel);
+	}
+	else
+	{
+		edit->AddActivePanel(kinOptionsPanel);
+	}
 }
 
 void EditModeUI::ExpandTerrainLibrary( int layer )

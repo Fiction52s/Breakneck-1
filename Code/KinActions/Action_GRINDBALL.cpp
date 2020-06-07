@@ -126,7 +126,7 @@ void Actor::GRINDBALL_Change()
 			}
 			else
 			{
-				if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || j || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || j || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
 				{
 					if (grindSpeed < 0)
 					{

@@ -17,17 +17,17 @@ void Actor::STEEPCLIMBATTACK_Change()
 {
 	if (currAttackHit)//&& frame > 0 )
 	{
-		if (hasPowerBounce && currInput.X && !bounceFlameOn)
+		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 		{
 			BounceFlameOn();
 		}
-		else if (!(hasPowerBounce && currInput.X) && bounceFlameOn)
+		else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
 		{
 			//bounceGrounded = false;
 			BounceFlameOff();
 		}
 
-		if (hasPowerGrindBall && currInput.Y && !prevInput.Y)
+		if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
 		{
 			SetActionGrind();
 			return;

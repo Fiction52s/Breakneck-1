@@ -118,7 +118,7 @@ void Actor::GRINDATTACK_Change()
 			{
 				//abs( e0n.x ) < wallThresh )
 
-				if (!hasPowerGravReverse || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
 				{
 					if (grindSpeed < 0)
 					{

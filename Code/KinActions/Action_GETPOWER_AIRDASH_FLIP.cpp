@@ -10,7 +10,7 @@ void Actor::GETPOWER_AIRDASH_FLIP_Start()
 
 void Actor::GETPOWER_AIRDASH_FLIP_End()
 {
-	hasPowerAirDash = true;
+	SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
 	SetAction(STAND);
 	frame = 0;
 }

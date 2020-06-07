@@ -936,7 +936,7 @@ V2d Enemy::TurretSetup()
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 {
 	Actor *player = sess->GetPlayer(0);
-	if( player->hasPowerRightWire )
+	if( player->HasUpgrade(Actor::UPGRADE_POWER_RWIRE))
 	{
 		Wire::WireCharge *charge = player->rightWire->activeChargeList;
 		while( charge != NULL )
@@ -957,7 +957,7 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 {
 	Actor *player = sess->GetPlayer(0);
-	if(player->hasPowerLeftWire )
+	if(player->HasUpgrade(Actor::UPGRADE_POWER_LWIRE))
 	{
 		Wire::WireCharge *charge = player->leftWire->activeChargeList;
 		while( charge != NULL )

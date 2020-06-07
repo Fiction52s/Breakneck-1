@@ -362,6 +362,15 @@ struct EditModeUI : GUIHandler
 	ActorParams *currParams;
 	TerrainRail *currRail;
 
+	void ToggleKinOptionsPanel();
+	Panel *kinOptionsPanel;
+	CheckBox *hasAirdashCheck;
+	CheckBox *hasGravityReverseCheck;
+	CheckBox *hasBounceCheck;
+	CheckBox *hasGrindCheck;
+	CheckBox *hasTimeSlowCheck;
+	CheckBox *hasWiresCheck;
+
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();

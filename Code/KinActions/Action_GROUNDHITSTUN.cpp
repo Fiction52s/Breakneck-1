@@ -1,11 +1,12 @@
 #include "Actor.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::GROUNDHITSTUN_Start()
 {
-	
+	SetExpr(KinMask::Expr::Expr_HURT);
 }
 
 void Actor::GROUNDHITSTUN_End()
@@ -69,6 +70,14 @@ void Actor::GROUNDHITSTUN_UpdateSprite()
 
 void Actor::GROUNDHITSTUN_TransitionToAction(int a)
 {
+	if (desperationMode)
+	{
+		SetExpr(KinMask::Expr::Expr_DESP);
+	}
+	else
+	{
+		SetExpr(KinMask::Expr::Expr_NEUTRAL);
+	}
 	stunBufferedJump = false;
 	stunBufferedDash = false;
 	stunBufferedAttack = Action::Count;

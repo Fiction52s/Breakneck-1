@@ -1,12 +1,13 @@
 #include "Actor.h"
 #include "GameSession.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::DEATH_Start()
 {
-
+	SetExpr(KinMask::Expr_DEATHYELL);
 }
 
 void Actor::DEATH_End()
@@ -27,7 +28,15 @@ void Actor::DEATH_Update()
 	velocity.y = 0;
 	groundSpeed = 0;
 
-	if (frame == GetActionLength(DEATH) - 1)
+	int myActionLength = DEATH_GetActionLength();
+
+	if (frame == myActionLength - 56) //66 because 11 frames, mult of 6
+	{
+		SetExpr(KinMask::Expr_DEATH);
+	}
+	
+
+	if (frame == myActionLength - 1)
 	{
 		owner->NextFrameRestartLevel();
 	}

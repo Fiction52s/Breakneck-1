@@ -374,6 +374,7 @@ void KinMask::Draw(RenderTarget *target)
 void KinMask::SetExpr(KinMask::Expr ex)
 {
 	frame = 0;
+
 	expr = ex;
 }
 
@@ -381,13 +382,16 @@ void KinMask::Update( int speedLevel, bool desp )
 {
 	if (expr == Expr_DEATH )
 	{
-		int faceDeathAnimLength = 11;
-		int an = 6;
+		int faceDeathAnimLength = 12;
+		int an = 4;
 		int f = frame / an;
-		
-		face.setTextureRect(ts_face->GetSubRect(11 + f));
-		
-		++frame;
+
+		if (f < 12 )
+		{
+			face.setTextureRect(ts_face->GetSubRect(11 + f));
+
+			++frame;
+		}
 	}
 	else if (expr == Expr_DEATHYELL)
 	{
@@ -396,7 +400,7 @@ void KinMask::Update( int speedLevel, bool desp )
 	}
 	else
 	{ 
-		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 || expr == Expr_HURT)
+		if (expr == Expr_NEUTRAL || expr == Expr_SPEED1 || expr == Expr_SPEED2 )
 		{
 			switch (speedLevel)
 			{
@@ -411,7 +415,7 @@ void KinMask::Update( int speedLevel, bool desp )
 				break;
 			}
 
-			if (desp)
+			/*if (desp)
 			{
 				expr = Expr_DESP;
 			}
@@ -419,7 +423,7 @@ void KinMask::Update( int speedLevel, bool desp )
 			if (actor->action == Actor::GROUNDHITSTUN || actor->action == Actor::AIRHITSTUN)
 			{
 				expr = Expr_HURT;
-			}
+			}*/
 		}
 
 		face.setTextureRect(ts_face->GetSubRect(expr + 6));
