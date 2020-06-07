@@ -10,7 +10,7 @@ void Actor::DIAGUPATTACK_Start()
 
 void Actor::DIAGUPATTACK_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

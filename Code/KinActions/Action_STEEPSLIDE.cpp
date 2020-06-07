@@ -39,7 +39,7 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
-			SetActionExpr(JUMPSQUAT);
+			SetAction(JUMPSQUAT);
 			frame = 0;
 		}
 

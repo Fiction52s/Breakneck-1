@@ -21,7 +21,7 @@ void Actor::RAILGRIND_Change()
 	{
 		if (GameSession::IsWall(grindEdge->Normal()) < 0) //not wall
 		{
-			SetActionExpr(JUMPSQUAT);
+			SetAction(JUMPSQUAT);
 			//frame = 0;
 		}
 		else

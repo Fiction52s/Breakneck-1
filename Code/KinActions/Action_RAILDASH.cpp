@@ -9,7 +9,7 @@ void Actor::RAILDASH_Start()
 
 void Actor::RAILDASH_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

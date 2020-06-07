@@ -12,7 +12,7 @@ void Actor::BACKWARDSDOUBLE_Start()
 
 void Actor::BACKWARDSDOUBLE_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

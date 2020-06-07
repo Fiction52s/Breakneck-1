@@ -17,7 +17,7 @@ void Actor::BOUNCEAIR_Change()
 {
 	if (!currInput.X)
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 1;
 		BounceFlameOff();
 	}

@@ -9,7 +9,7 @@ void Actor::UAIR_Start()
 
 void Actor::UAIR_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

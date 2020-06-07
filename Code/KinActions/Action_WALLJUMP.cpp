@@ -28,7 +28,7 @@ void Actor::WALLJUMP_Start()
 
 void Actor::WALLJUMP_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 	holdJump = false;
 }

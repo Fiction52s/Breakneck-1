@@ -96,7 +96,7 @@ void Actor::GRINDBALL_Change()
 					ground = grindEdge;
 					edgeQuantity = grindQuantity;
 					groundSpeed = grindSpeed;
-					SetActionExpr(JUMPSQUAT);
+					SetAction(JUMPSQUAT);
 					frame = 0;
 				}
 
@@ -148,7 +148,7 @@ void Actor::GRINDBALL_Change()
 						velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 					}
 
-					SetActionExpr(JUMP);
+					SetAction(JUMP);
 					frame = 1;
 					ground = NULL;
 					grindEdge = NULL;
@@ -206,7 +206,7 @@ void Actor::GRINDBALL_Change()
 			if (CheckStandUp())
 			{
 				framesInAir = 0;
-				SetActionExpr(JUMP);
+				SetAction(JUMP);
 				frame = 1;
 				grindEdge = NULL;
 				ground = NULL;

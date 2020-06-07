@@ -33,7 +33,7 @@ void Actor::STEEPCLING_Change()
 
 	if (currInput.A && !prevInput.A)
 	{
-		SetActionExpr(JUMPSQUAT);
+		SetAction(JUMPSQUAT);
 		frame = 0;
 		return;
 	}

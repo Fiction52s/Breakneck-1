@@ -19,7 +19,7 @@ void Actor::BOUNCEGROUND_Change()
 	{
 
 
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		velocity = storedBounceVel;
 		frame = 1;
 		BounceFlameOff();

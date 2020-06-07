@@ -33,7 +33,7 @@ void Actor::AIRDASH_End()
 	}
 	else
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 1;
 		holdJump = false;
 	}
@@ -45,7 +45,7 @@ void Actor::AIRDASH_Change()
 	{
 		if (!currInput.B)//|| ( oldInBubble && !inBubble ) )
 		{
-			SetActionExpr(JUMP);
+			SetAction(JUMP);
 			frame = 1;
 			holdJump = false;
 

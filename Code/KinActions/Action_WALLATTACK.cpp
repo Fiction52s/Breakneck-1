@@ -9,7 +9,7 @@ void Actor::WALLATTACK_Start()
 
 void Actor::WALLATTACK_End()
 {
-	SetActionExpr(WALLCLING);
+	SetAction(WALLCLING);
 	frame = 0;
 }
 

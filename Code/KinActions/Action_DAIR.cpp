@@ -10,7 +10,7 @@ void Actor::DAIR_Start()
 
 void Actor::DAIR_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

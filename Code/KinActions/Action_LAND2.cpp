@@ -93,7 +93,7 @@ void Actor::LAND2_Change()
 		{
 			if ((currInput.B && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
 			{
-				SetActionExpr(DASH);
+				SetAction(DASH);
 
 				if (currInput.LLeft())
 					facingRight = false;
@@ -193,7 +193,7 @@ void Actor::LAND2_Change()
 
 				}
 
-				SetActionExpr(DASH);
+				SetAction(DASH);
 			}
 			else if (TrySprintOrRun(currNormal))
 			{

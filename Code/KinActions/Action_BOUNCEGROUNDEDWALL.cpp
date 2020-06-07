@@ -27,7 +27,7 @@ void Actor::BOUNCEGROUNDEDWALL_Change()
 
 	if (currInput.A && !prevInput.A)
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 0;
 		//runTappingSound.stop();
 		return;

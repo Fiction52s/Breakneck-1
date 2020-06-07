@@ -141,7 +141,7 @@ void Actor::GRINDATTACK_Change()
 					}
 
 
-					SetActionExpr(JUMP);
+					SetAction(JUMP);
 					frame = 0;
 					ground = NULL;
 					grindEdge = NULL;

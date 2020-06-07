@@ -27,8 +27,8 @@ void Actor::SPRINT_Change()
 		}
 		else
 		{
-			SetActionExpr(BRAKE);
-			//SetActionExpr(STAND);
+			SetAction(BRAKE);
+			//SetAction(STAND);
 			frame = 0;
 			return;
 		}
@@ -45,7 +45,7 @@ void Actor::SPRINT_Change()
 			}
 			else
 			{
-				SetActionExpr(RUN);
+				SetAction(RUN);
 			}
 
 			groundSpeed = 0;
@@ -62,7 +62,7 @@ void Actor::SPRINT_Change()
 			}
 			else
 			{
-				SetActionExpr(RUN);
+				SetAction(RUN);
 			}
 
 			groundSpeed = 0;
@@ -75,7 +75,7 @@ void Actor::SPRINT_Change()
 			|| (currInput.LUp() && ((currNormal.x < 0 && facingRight) 
 				|| (currNormal.x > 0 && !facingRight)))))
 		{
-			SetActionExpr(RUN);
+			SetAction(RUN);
 			frame = frame / 4;
 			if (frame < 3)
 			{

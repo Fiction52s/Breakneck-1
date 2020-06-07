@@ -10,7 +10,7 @@ void Actor::DIAGDOWNATTACK_Start()
 
 void Actor::DIAGDOWNATTACK_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

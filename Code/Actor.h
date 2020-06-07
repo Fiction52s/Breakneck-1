@@ -549,7 +549,6 @@ struct Actor : QuadTreeCollider,
 	void SetSpriteTile( int tileIndex, bool noFlipX = true, bool noFlipY = true );
 	void SetSpriteTile( sf::Sprite *spr, 
 		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true );
-	void SetActionExpr( int a );
 	void SetExpr( Expr ex );
 	void SetAction( int a );
 

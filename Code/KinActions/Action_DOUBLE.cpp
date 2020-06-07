@@ -12,7 +12,7 @@ void Actor::DOUBLE_Start()
 
 void Actor::DOUBLE_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

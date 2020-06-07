@@ -9,7 +9,7 @@ void Actor::FAIR_Start()
 
 void Actor::FAIR_End()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 }
 

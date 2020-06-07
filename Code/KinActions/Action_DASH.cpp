@@ -11,7 +11,7 @@ void Actor::DASH_Start()
 
 void Actor::DASH_End()
 {
-	SetActionExpr(STAND);
+	SetAction(STAND);
 	frame = 0;
 }
 
@@ -25,7 +25,7 @@ void Actor::DASH_Change()
 
 	if (currInput.A && !prevInput.A)
 	{
-		SetActionExpr(JUMPSQUAT);
+		SetAction(JUMPSQUAT);
 		frame = 0;
 		return;
 	}
@@ -91,7 +91,7 @@ void Actor::DASH_Change()
 
 			if (currInput.LLeft() || currInput.LRight())
 			{
-				SetActionExpr(RUN);
+				SetAction(RUN);
 				frame = 0;
 			}
 			else if (currInput.LDown() || currInput.LUp())

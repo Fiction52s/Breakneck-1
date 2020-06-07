@@ -13,21 +13,21 @@ void Actor::STANDN_End()
 	{
 		if (currInput.B)
 		{
-			SetActionExpr(DASH);
+			SetAction(DASH);
 			//action = DASH;
 			//re->Reset();
 			//re1->Reset();
 		}
 		else
 		{
-			SetActionExpr(RUN);
+			SetAction(RUN);
 		}
 		facingRight = currInput.LRight();
 	}
 	else
 	{
-		SetActionExpr(BRAKE);
-		//SetActionExpr(STAND);
+		SetAction(BRAKE);
+		//SetAction(STAND);
 	}
 	frame = 0;
 }
@@ -57,7 +57,7 @@ void Actor::STANDN_Change()
 
 		if ((currInput.A && !prevInput.A) || pauseBufferedJump)
 		{
-			SetActionExpr(JUMPSQUAT);
+			SetAction(JUMPSQUAT);
 			frame = 0;
 			return;
 		}
@@ -74,7 +74,7 @@ void Actor::STANDN_Change()
 				standNDashBoost = true;
 				standNDashBoostCurr = standNDashBoostCooldown;
 			}
-			SetActionExpr(DASH);
+			SetAction(DASH);
 			frame = 0;
 			return;
 		}

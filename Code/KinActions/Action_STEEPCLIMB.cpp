@@ -33,7 +33,7 @@ void Actor::STEEPCLIMB_Change()
 
 	if (currInput.A && !prevInput.A)
 	{
-		SetActionExpr(JUMPSQUAT);
+		SetAction(JUMPSQUAT);
 		frame = 0;
 		return;
 	}
@@ -192,7 +192,7 @@ void Actor::STEEPCLIMB_Change()
 
 	if (fallAway)
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 0;
 		steepJump = true;
 		return;

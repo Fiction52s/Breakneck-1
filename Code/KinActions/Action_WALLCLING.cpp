@@ -35,7 +35,7 @@ void Actor::WALLCLING_Change()
 	}
 	else if (currInput.LDown())
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 1;
 		holdJump = false;
 	}
@@ -49,7 +49,7 @@ void Actor::WALLCLING_Change()
 
 		if (normalSwing || (rightStickSwing && (currInput.RLeft() || currInput.RRight())))
 		{
-			SetActionExpr(WALLATTACK);
+			SetAction(WALLATTACK);
 			frame = 0;
 		}
 		/*else if (!normalSwing && (rightStickSwing && (currInput.RUp() || currInput.RDown())))

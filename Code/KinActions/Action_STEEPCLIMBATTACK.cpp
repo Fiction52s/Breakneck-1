@@ -9,7 +9,7 @@ void Actor::STEEPCLIMBATTACK_Start()
 
 void Actor::STEEPCLIMBATTACK_End()
 {
-	SetActionExpr(STEEPCLIMB);
+	SetAction(STEEPCLIMB);
 	frame = 0;
 }
 
@@ -35,7 +35,7 @@ void Actor::STEEPCLIMBATTACK_Change()
 
 		if (currInput.A && !prevInput.A || pauseBufferedJump)
 		{
-			SetActionExpr(JUMPSQUAT);
+			SetAction(JUMPSQUAT);
 			frame = 0;
 			return;
 		}

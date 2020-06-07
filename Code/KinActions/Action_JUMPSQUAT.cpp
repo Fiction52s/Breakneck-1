@@ -52,7 +52,7 @@ void Actor::JUMPSQUAT_Change()
 
 	if (frame == GetActionLength(JUMPSQUAT) - 1)
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 0;
 		groundSpeed = storedGroundSpeed;
 	}

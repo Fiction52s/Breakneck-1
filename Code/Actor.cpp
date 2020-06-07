@@ -521,12 +521,12 @@ void Actor::Init()
 {
 	if (owner != NULL)
 	{
-		SetActionExpr(INTROBOOST);//INTRO
+		SetAction(INTROBOOST);//INTRO
 		frame = 0;
 	}
 	else
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 1;
 	}
 }
@@ -2430,16 +2430,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		
 
 	grindActionLength = 32;
-	//SetActionExpr( SPAWNWAIT );
+	//SetAction( SPAWNWAIT );
 
 	//if (owner != NULL)
 	//{
-	//	SetActionExpr(INTROBOOST);//INTRO
+	//	SetAction(INTROBOOST);//INTRO
 	//	frame = 0;
 	//}
 	//else
 	//{
-	//	SetActionExpr(JUMP);
+	//	SetAction(JUMP);
 	//	frame = 1;
 	//}
 		
@@ -3787,7 +3787,7 @@ void Actor::ProcessReceivedHit()
 							}
 
 
-							//SetActionExpr( JUMP );
+							//SetAction( JUMP );
 							SetAction(AIRHITSTUN);
 							frame = 0;
 							if (receivedHit->knockback > 0)
@@ -4041,7 +4041,7 @@ void Actor::HitstunBufferedChangeAction()
 				{
 					if (!TryAirDash())
 					{
-						SetActionExpr(JUMP);
+						SetAction(JUMP);
 						frame = 1;
 						holdJump = false;
 					}
@@ -4058,7 +4058,7 @@ void Actor::HitstunBufferedChangeAction()
 			{
 				if (stunBufferedAttack != Action::Count)
 				{
-					SetActionExpr(JUMPSQUAT);
+					SetAction(JUMPSQUAT);
 					frame = 0;
 
 					if (currInput.LUp())
@@ -4076,7 +4076,7 @@ void Actor::HitstunBufferedChangeAction()
 				}
 				else
 				{
-					SetActionExpr(JUMPSQUAT);
+					SetAction(JUMPSQUAT);
 					frame = 0;
 				}
 
@@ -4085,12 +4085,12 @@ void Actor::HitstunBufferedChangeAction()
 			{
 				if (stunBufferedDash)
 				{
-					SetActionExpr(DASH);
+					SetAction(DASH);
 					frame = 0;
 				}
 				else
 				{
-					SetActionExpr(LAND);
+					SetAction(LAND);
 					frame = 0;
 				}
 				//if( !)
@@ -4270,7 +4270,7 @@ void Actor::UpdateBubbles()
 
 	if (!inBubble && action == AIRDASH && airDashStall)
 	{
-		SetActionExpr(JUMP);
+		SetAction(JUMP);
 		frame = 1;
 		holdJump = false;
 	}
@@ -5523,7 +5523,7 @@ bool Actor::HasPower(int index)
 
 void Actor::ReverseSteepSlideJump()
 {
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 
 	V2d along = ground->Along();
@@ -6265,7 +6265,7 @@ V2d Actor::UpdateReversePhysics()
 
 					//cout << "airborne 2" << endl;
 					leftGround = true;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					frame = 1;
 					
 					ground = NULL;
@@ -6332,7 +6332,7 @@ V2d Actor::UpdateReversePhysics()
 
 						cout << "airborne 2" << endl;
 						leftGround = true;
-						SetActionExpr( JUMP );
+						SetAction( JUMP );
 						frame = 1;
 						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6365,7 +6365,7 @@ V2d Actor::UpdateReversePhysics()
 									leftGroundExtra.x = .01;
 
 									leftGround = true;
-									SetActionExpr( JUMP );
+									SetAction( JUMP );
 									frame = 1;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6428,7 +6428,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 
 					leftGround = true;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					frame = 1;
 					ground = NULL;
 					holdJump = false;
@@ -6548,7 +6548,7 @@ V2d Actor::UpdateReversePhysics()
 					}
 
 					leftGround = true;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					frame = 1;
 					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6616,7 +6616,7 @@ V2d Actor::UpdateReversePhysics()
 						}
 
 						leftGround = true;
-						SetActionExpr( JUMP );
+						SetAction( JUMP );
 						frame = 1;
 						//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 						//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6649,7 +6649,7 @@ V2d Actor::UpdateReversePhysics()
 
 									cout << "airborne 3" << endl;
 									leftGround = true;
-									SetActionExpr( JUMP );
+									SetAction( JUMP );
 									frame = 1;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -6718,7 +6718,7 @@ V2d Actor::UpdateReversePhysics()
 						movementVec.x = -.1;
 					}
 					cout << "airborne 4: " << velocity.x << ", " << velocity.y << endl;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					frame = 1;
 					//rightWire->UpdateAnchors( V2d( 0, 0 ) );
 					//leftWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -7372,7 +7372,7 @@ bool Actor::ExitGrind(bool jump)
 				ground = grindEdge;
 				edgeQuantity = grindQuantity;
 				groundSpeed = grindSpeed;
-				SetActionExpr(JUMPSQUAT);
+				SetAction(JUMPSQUAT);
 				frame = 0;
 			}
 
@@ -7424,7 +7424,7 @@ bool Actor::ExitGrind(bool jump)
 					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 				}
 
-				SetActionExpr(JUMP);
+				SetAction(JUMP);
 				frame = 1;
 				ground = NULL;
 				grindEdge = NULL;
@@ -7480,7 +7480,7 @@ bool Actor::ExitGrind(bool jump)
 	else
 	{
 		framesInAir = 0;
-		SetActionExpr(DOUBLE);
+		SetAction(DOUBLE);
 		frame = 0;
 		grindEdge = NULL;
 		ground = NULL;
@@ -7616,7 +7616,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			if (action != SPRINT)
 			{
-				SetActionExpr(SPRINT);
+				SetAction(SPRINT);
 				SetSprintStartFrame();
 			}
 		}
@@ -7624,7 +7624,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			if (action != RUN)
 			{
-				SetActionExpr(RUN);
+				SetAction(RUN);
 				frame = 0;
 			}
 		}
@@ -7645,7 +7645,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			if (action != SPRINT)
 			{
-				SetActionExpr(SPRINT);
+				SetAction(SPRINT);
 				SetSprintStartFrame();
 			}
 		}
@@ -7653,7 +7653,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			if (action != RUN)
 			{
-				SetActionExpr(RUN);
+				SetAction(RUN);
 				frame = 0;
 			}
 		}
@@ -7713,7 +7713,7 @@ bool Actor::TryJumpSquat()
 {
 	if (currInput.A && !prevInput.A)
 	{
-		SetActionExpr(JUMPSQUAT);
+		SetAction(JUMPSQUAT);
 		frame = 0;
 		return true;
 	}
@@ -7726,7 +7726,7 @@ bool Actor::TryDash()
 	bool landAction = action == LAND || action == LAND2;
 	if (currInput.B && (!prevInput.B || landAction ))
 	{
-		SetActionExpr(DASH);
+		SetAction(DASH);
 		frame = 0;
 		return true;
 	}
@@ -8449,7 +8449,7 @@ void Actor::LeaveGroundTransfer(bool right, V2d leaveExtra )
 
 	leftGround = true;
 	ground = NULL;
-	SetActionExpr(JUMP);
+	SetAction(JUMP);
 	frame = 1;
 	holdJump = false;
 }
@@ -9234,7 +9234,7 @@ void Actor::UpdatePhysics()
 						
 									leftGround = true;
 									ground = NULL;
-									SetActionExpr( JUMP );
+									SetAction( JUMP );
 									holdJump = false;
 									frame = 1;
 									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -9498,7 +9498,7 @@ void Actor::UpdatePhysics()
 					bounceOkay = false;
 					bounceEdge = NULL;
 					oldBounceEdge = NULL;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					holdJump = false;
 					frame = 1;
 					break;
@@ -9629,7 +9629,7 @@ void Actor::UpdatePhysics()
 						cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
 						bounceEdge = NULL;
 						oldBounceEdge = NULL;
-						SetActionExpr( JUMP );
+						SetAction( JUMP );
 						holdJump = false;
 						frame = 1;
 						break;
@@ -10384,7 +10384,7 @@ void Actor::PhysicsResponse()
 
 				UnlockGate( g );
 
-				SetActionExpr( JUMP );
+				SetAction( JUMP );
 				frame = 1;
 				
 				framesInAir = 0;
@@ -10640,7 +10640,7 @@ void Actor::PhysicsResponse()
 				if( stopWallClinging )
 				{
 					//cout << "stop wall clinging" << endl;
-					SetActionExpr( JUMP );
+					SetAction( JUMP );
 					frame = 1;
 					holdJump = false;
 				}
@@ -10648,7 +10648,7 @@ void Actor::PhysicsResponse()
 
 			if( leftGround )
 			{
-				SetActionExpr( JUMP );
+				SetAction( JUMP );
 				frame = 1;
 				holdJump = false;
 			}
@@ -11230,7 +11230,7 @@ void Actor::ProcessHitGoal()
 		if (owner != NULL)
 		{
 			owner->totalFramesBeforeGoal = owner->totalGameFrames;
-			SetActionExpr(GOALKILL);
+			SetAction(GOALKILL);
 			desperationMode = false;
 			hitGoal = false;
 
@@ -11265,7 +11265,7 @@ void Actor::ProcessHitGoal()
 	else if (hitNexus)
 	{
 		owner->totalFramesBeforeGoal = owner->totalGameFrames;
-		SetActionExpr(NEXUSKILL);
+		SetAction(NEXUSKILL);
 		desperationMode = false;
 		hitNexus = false;
 		if (owner->parentGame == NULL)
@@ -15400,7 +15400,7 @@ bool Actor::TryDoubleJump()
 			cancelAttack = action;
 		}
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
-		SetActionExpr( GetDoubleJump() );
+		SetAction( GetDoubleJump() );
 
 		if (currInput.rightShoulder && !pauseBufferedJump && !stunBufferedJump)
 		{
@@ -15436,7 +15436,7 @@ bool Actor::TryAirDash()
 			|| stunBufferedDash ))
 		{
 			hasFairAirDashBoost = (action == FAIR);
-			SetActionExpr( AIRDASH );
+			SetAction( AIRDASH );
 			return true;
 		}
 	}
@@ -15460,12 +15460,6 @@ bool Actor::IsSingleWirePulling()
 {
 	return ( ( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
 		&& !IsDoubleWirePulling() );
-}
-
-void Actor::SetActionExpr( int a )
-{
-	SetAction( a );
-	//action = a;
 }
 
 bool Actor::IHitPlayer( int otherPlayerIndex )
