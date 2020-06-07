@@ -2879,6 +2879,8 @@ void ErrorBar::CreateErrorTable()
 
 	errorStringVec[ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS] = "Cannot modify material type on multiple layers at once";
 	errorStringVec[ERR_INVERSE_CANT_INTERSECT_NORMAL_POLYS] = "New inverse polygon can't intersect other polygons";
+
+	errorStringVec[ERR_CANT_DELETE_WHILE_MOVING] = "Can't delete while moving objects";
 }
 
 UIMouse::UIMouse()

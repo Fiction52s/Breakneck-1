@@ -12042,13 +12042,23 @@ void EditSession::CreateRailsModeHandleEvent()
 
 void EditSession::EditModeDelete()
 {
-	if (CountSelectedPoints() > 0)
+	if (!editStartMove)
 	{
-		TryRemoveSelectedPoints();
+
+		if (CountSelectedPoints() > 0)
+		{
+			TryRemoveSelectedPoints();
+		}
+		else
+		{
+			TryRemoveSelectedObjects();
+		}
 	}
 	else
 	{
-		TryRemoveSelectedObjects();
+		ClearMostRecentError();
+		CreateError(ERR_CANT_DELETE_WHILE_MOVING);
+		ShowMostRecentError();
 	}
 }
 
@@ -12343,7 +12353,6 @@ void EditSession::PasteModeHandleEvent()
 					{
 						a->UnAnchor();
 					}
-					
 				}
 			}
 
