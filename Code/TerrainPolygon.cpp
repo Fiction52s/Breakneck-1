@@ -5768,20 +5768,34 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 
 	sf::Rect<double> rectD(rect);
 
-	if (!IsTouchingBox(rectD))
+	if ( !inverse && !IsTouchingBox(rectD))
 	{
 		return false;
+	}
+
+
+	if (inverse)
+	{
+		Edge testEdge;
+		int n;
+		for (int i = 0; i < 4; ++i)
+		{
+			n = i + 1;
+			if (n == 4)
+				n = 0;
+			testEdge.v0 = V2d(pointVector[0][i].pos);
+			testEdge.v1 = V2d(pointVector[0][n].pos);
+			if (IsEdgeTouchingBox(&testEdge, rectD))
+			{
+				return true;
+			}
+		}
 	}
 
 	if (CheckRectIntersectEdges(rectD))
 	{
 		return true;
 	}
-	/*emptyResult = true;
-	sf::Rect<double> r(rect);
-	myTerrainTree->Query(this, r);
-	if (!emptyResult)
-		return true;*/
 
 	Vector2f center(rect.left + rect.width / 2, rect.top + rect.height / 2);
 	if (ContainsPoint(center))
