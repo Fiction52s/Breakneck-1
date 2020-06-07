@@ -46,6 +46,7 @@ struct Gate : public QuadTreeEntrant
 		REFORM,
 		LOCKFOREVER,
 		OPEN,
+		GLITCH,
 		State_Count
 	};
 
@@ -59,6 +60,7 @@ struct Gate : public QuadTreeEntrant
 	Gate(GameSession *owner, int tcat,
 		int var);
 	~Gate();
+	void PassThrough(double alongAmount);
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
 	bool IsReformingType();
@@ -113,6 +115,7 @@ struct Gate : public QuadTreeEntrant
 	Tileset *ts_node;
 	Tileset *ts;
 	Tileset *ts_lockedAndHardened;
+	Tileset *ts_glitch;
 	Tileset *ts_wiggle;
 	sf::Vertex *gateQuads;
 	int numGateQuads;

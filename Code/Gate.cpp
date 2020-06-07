@@ -38,6 +38,7 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 	ts = NULL;
 
 	ts_lockedAndHardened = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
+	ts_glitch = NULL;
 	
 	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
 	
@@ -46,7 +47,8 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	stateLength[HARD] = 61;
 	stateLength[SOFTEN] = 61;
-	stateLength[SOFT] = 11 * 3;
+	stateLength[GLITCH] = 7 * 3;
+	
 	stateLength[TOTALDISSOLVE] = 61;
 	stateLength[REFORM] = 7 * 3;
 	stateLength[LOCKFOREVER] = 1;
@@ -110,6 +112,32 @@ void Gate::Reset()
 	}
 }
 
+void Gate::PassThrough(double alongAmount)
+{
+	if (category == SECRET)
+	{
+		gState = Gate::GLITCH;
+		frame = 0;
+		owner->LockGate(this);
+	}
+	else if (IsReformingType())
+	{
+		owner->LockGate(this);
+
+		gState = Gate::REFORM;
+		frame = 0;
+		float aa = alongAmount;
+		centerShader.setUniform("breakPosQuant", aa);
+	}
+	else
+	{
+		gState = Gate::DISSOLVE;
+		frame = 0;
+		float aa = alongAmount;
+		centerShader.setUniform("breakPosQuant", aa);
+	}
+}
+
 void Gate::ActionEnded()
 {
 	if (gState == OPEN || gState == LOCKFOREVER)
@@ -169,6 +197,9 @@ void Gate::ActionEnded()
 			}
 			break;
 		}
+		case GLITCH:
+			gState = SOFT;
+			break;
 		}
 	}
 }
@@ -480,6 +511,13 @@ void Gate::UpdateSprite()
 			ts_wiggle->SetQuadSubRect(gateQuads + i * 4, frame / 3);
 		}
 	}
+	else if (gState == GLITCH)
+	{
+		for (int i = 0; i < numGateQuads; ++i)
+		{
+			ts_glitch->SetQuadSubRect(gateQuads + i * 4, frame / 3);
+		}
+	}
 }
 
 bool Gate::IsTwoWay()
@@ -584,9 +622,21 @@ void Gate::Draw( sf::RenderTarget *target )
 		{
 			if (gState == REFORM)
 			{
-				target->draw(centerLine, 4, sf::Quads, &centerShader);
+				if (category == SECRET)
+				{
+
+				}
+				else
+				{
+					target->draw(centerLine, 4, sf::Quads, &centerShader);
+				}
+				
 			}
 			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_lockedAndHardened->texture );
+		}
+		else if (gState == GLITCH)
+		{
+			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_glitch->texture);
 		}
 		else
 		{
@@ -595,22 +645,26 @@ void Gate::Draw( sf::RenderTarget *target )
 				target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_wiggle->texture);
 			}
 
-			target->draw(centerLine, 4, sf::Quads, &centerShader);
-
-			if (gState != SOFT)
+			if (category != SECRET)
 			{
-				target->draw(hardLine, 4, sf::Quads, &gateShader);
-			}
+				target->draw(centerLine, 4, sf::Quads, &centerShader);
 
-			if ( category == KEY || category == PICKUP)
-			{
-				target->draw(orbQuad, 4, sf::Quads, ts_orb->texture );
-
-				if( orbState != ORB_GO )
+				if (gState != SOFT)
 				{
-					target->draw(numberText);
+					target->draw(hardLine, 4, sf::Quads, &gateShader);
+				}
+
+				if (category == KEY || category == PICKUP)
+				{
+					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
+
+					if (orbState != ORB_GO)
+					{
+						target->draw(numberText);
+					}
 				}
 			}
+			
 		}
 	}
 
@@ -720,6 +774,9 @@ void Gate::Init()
 
 	frame = 0;
 
+
+	
+
 	if (category == SHARD)
 	{
 		V2d center = (edgeA->v0 + edgeA->v1) / 2.0;
@@ -727,17 +784,20 @@ void Gate::Init()
 	}
 	else if (category == SECRET)
 	{
+		ts_glitch = owner->GetSizedTileset("Zone/gate_glitch_64x64.png");
 		//tileHeight = 256;
 		//width = 128;
 	}
 
-	/*if (category == SECRET)
+	if (category == SECRET)
 	{
-		ts_wiggle = owner->GetSizedTileset("Zone/secret_gate_loop_256x256.png");
+		ts_wiggle = owner->GetSizedTileset("Zone/gate_glitch_loop_64x64.png");
+		stateLength[SOFT] = 5 * 3;
 	}
-	else*/
+	else
 	{
 		ts_wiggle = owner->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
+		stateLength[SOFT] = 11 * 3;
 	}
 
 	ts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);

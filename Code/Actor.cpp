@@ -10134,22 +10134,7 @@ void Actor::HandleTouchedGate()
 		//lock all the gates from this zone now that I chose one
 
 
-		if (g->IsReformingType())
-		{
-			owner->LockGate(g);
-
-			g->gState = Gate::REFORM;
-			g->frame = 0;
-			float aa = alongAmount;
-			g->centerShader.setUniform("breakPosQuant", aa);
-		}
-		else
-		{
-			g->gState = Gate::DISSOLVE;
-			g->frame = 0;
-			float aa = alongAmount;
-			g->centerShader.setUniform("breakPosQuant", aa);
-		}
+		g->PassThrough(alongAmount);
 
 		if (g->IsZoneType())
 		{
@@ -10182,22 +10167,7 @@ void Actor::HandleTouchedGate()
 
 					owner->keyMarker->Reset();
 				}
-
-				//activatezone
-				//oldZone->connectedCount = 0;
-				//oldZone->DecrementNeighborsAttached( newZone );
-
 				owner->ActivateZone(newZone);
-
-				if (!twoWay)
-				{
-					//owner->CloseOffLimitZones();
-
-					//owner->gateMarkers->SetToZone(owner->currentZone);
-				}
-				
-
-				//newZone->ReformDeadEnds();
 				
 				if (!twoWay)
 				{
@@ -10215,37 +10185,25 @@ void Actor::HandleTouchedGate()
 			}
 		}
 
-		
+		//V2d gEnterPos = alongPos;// +nEdge;// *32.0;
 
-		//needs to be placed before keys go to 0
-		
-		
-
-		//needs an adjustment for secret zones
-		
-
-
-		V2d gEnterPos = alongPos + nEdge;// *32.0;
-
-		
-
-		
+		V2d enterPos = edge->v1 + normalize(edge->v0 - edge->v1) * (1.0-alongAmount) * edge->GetLength()
+			+ nEdge * 0.0; //could change this for offset along the normal
 
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			ts_fx_gateEnter, gEnterPos, false, ang, 8, 3, true);
+			ts_fx_gateEnter, enterPos, false, ang, 8, 3, true);
 
 		//set gate action to disperse
 		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
 		//it only enters this state if you already unlock it though
 		gateTouched = NULL;
-
-		
 	}
 	else if (crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0)
 	{
+		//cout << "went back" << endl;
 		gateTouched = NULL;
 		owner->LockGate(g);
-		//cout << "went back" << endl;
+
 	}
 	else
 	{

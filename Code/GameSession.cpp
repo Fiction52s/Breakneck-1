@@ -8502,7 +8502,7 @@ void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
 	PolyPtr poly = polyQueryList;
 	while (poly != NULL)
 	{
-		Color &oldColor = poly->fillCol;
+		Color oldColor = poly->fillCol;
 		poly->SetTerrainColor(c);
 		poly->MiniDraw(target);
 		poly->SetTerrainColor(oldColor);
