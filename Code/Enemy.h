@@ -59,7 +59,9 @@ struct HitParams
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
-
+	void UpdateKeySprite();
+	bool keyShaderLoaded;
+	void SetKey();
 	bool IsGoalType();
 	virtual void UpdateSpriteFromParams(ActorParams *ap) {}
 	virtual void AddToWorldTrees() {}
@@ -98,6 +100,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void SetOffGroundHeight(double h);
 	void SetGroundOffset(double x);
 	V2d groundOffset;
+	
 	
 
 	double DistFromPlayer(int index = 0);

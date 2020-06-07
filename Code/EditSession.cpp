@@ -2624,6 +2624,7 @@ void EditSession::SetupShardSelectPanel()
 
 int EditSession::Run()
 {
+	totalGameFrames = 0;
 	grassChanges = NULL;
 	focusedPanel = NULL;
 

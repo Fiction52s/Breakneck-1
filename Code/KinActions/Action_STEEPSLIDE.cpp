@@ -59,6 +59,34 @@ void Actor::STEEPSLIDE_Change()
 			}
 			return;
 		}
+		else
+		{
+			if (currInput.LUp())
+			{
+				SetAction(STEEPCLING);
+				frame = 0;
+				if (SteepClimbAttack())
+				{
+
+				}
+				facingRight = (currNormal.x < 0);
+				return;
+			}
+
+
+			//is steep
+			if ((currNormal.x < 0 && groundSpeed > 0)
+				|| (currNormal.x > 0 && groundSpeed < 0))
+			{
+				SetAction(STEEPCLIMB);
+				frame = 1;
+				if (SteepClimbAttack())
+				{
+
+				}
+				return;
+			}
+		}
 	}
 	else
 	{

@@ -295,6 +295,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	keyShaderLoaded = false;
 	origFacingRight = true;
 	facingRight = true;
 	editLoopAction = 0;
@@ -421,60 +422,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 
 
-	if( hasMonitor )
-	{
-		switch( world )
-		{
-		case 1:
-			keyColor = COLOR_BLUE;
-			break;
-		case 2:
-			keyColor = COLOR_GREEN;
-			break;
-		case 3:
-			keyColor = COLOR_YELLOW;
-			break;
-		case 4:
-			keyColor = COLOR_ORANGE;
-			break;
-		case 5:
-			keyColor = COLOR_RED;
-			break;
-		case 6:
-			keyColor = COLOR_MAGENTA;
-			break;
-		}
-		/*keyColor.r = min( 255.f, 1.8f * keyColor.r );
-		keyColor.g *= min(255.f, 1.8f * keyColor.g);
-		keyColor.b *= min(255.f, 1.8f * keyColor.b);*/
-		/*keyColor.r = (sf::Uint8)(floor( (float)(keyColor.r) * .1f + .5f ));
-		keyColor.g = (sf::Uint8)(floor( (float)(keyColor.g) * .1f + .5f ));
-		keyColor.b = (sf::Uint8)(floor( (float)(keyColor.b) * .1f + .5f ));*/
-		keyColor = Color::White;
-		
-		//keyColor = Color::White;
-
-		//cout << "doing the add monitor thing" << endl;
-		if( !keyShader.loadFromFile( "Resources/Shader/key_shader.frag", sf::Shader::Fragment ) )
-		{
-			cout << "couldnt load enemy key shader" << endl;
-			assert( false );
-		}
-
-		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
-		keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
-
-		stringstream ss;
-		ss << "FX/key_w0" << world << "_1_128x128.png";
-		ts_key = sess->GetTileset( ss.str(), 128, 128 );
-
-		keySprite.setTexture( *ts_key->texture );
-	}
-	else
-	{
-		cout << "doing the no monitor thing" << endl;
-		ts_key = NULL;
-	}
+	SetKey();
 
 
 	stringstream ss;
@@ -505,9 +453,68 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
 }
 
+void Enemy::SetKey()
+{
+	if (hasMonitor)
+	{
+		switch (world)
+		{
+		case 1:
+			keyColor = COLOR_BLUE;
+			break;
+		case 2:
+			keyColor = COLOR_GREEN;
+			break;
+		case 3:
+			keyColor = COLOR_YELLOW;
+			break;
+		case 4:
+			keyColor = COLOR_ORANGE;
+			break;
+		case 5:
+			keyColor = COLOR_RED;
+			break;
+		case 6:
+			keyColor = COLOR_MAGENTA;
+			break;
+		}
+		keyColor = Color::White;
+
+		if (!keyShaderLoaded)
+		{
+			if (!keyShader.loadFromFile("Resources/Shader/key_shader.frag", sf::Shader::Fragment))
+			{
+				cout << "couldnt load enemy key shader" << endl;
+				assert(false);
+			}
+			keyShaderLoaded = true;
+		}
+
+		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
+		keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
+
+		stringstream ss;
+		ss << "FX/key_w0" << world << "_1_128x128.png";
+		ts_key = sess->GetTileset(ss.str(), 128, 128);
+
+		keySprite.setTexture(*ts_key->texture);
+		UpdateKeySprite();
+	}
+	else
+	{
+		ts_key = NULL;
+	}
+}
+
 void Enemy::UpdateParamsSettings()
 {
+	bool oldHasMonitor = hasMonitor;
 	hasMonitor = editParams->hasMonitor;
+
+	if (hasMonitor != oldHasMonitor)
+	{
+		SetKey();
+	}
 }
 
 void Enemy::SetActionEditLoop()
@@ -578,7 +585,7 @@ void Enemy::UpdateFromParams( ActorParams *ap, int numFrames )
 	}
 
 	//UpdateFromParams(editParams);
-
+	UpdateKeySprite();
 	UpdateSprite();
 	UpdateSpriteFromParams(ap);
 }
@@ -1144,16 +1151,7 @@ void Enemy::UpdatePostPhysics()
 
 	if (!dead)
 	{
-		if (hasMonitor && !suppressMonitor)
-		{
-			int fac = 5;
-			int kFrame = sess->totalGameFrames % (16 * fac);
-			keySprite.setTextureRect(ts_key->GetSubRect(kFrame / fac));
-			keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
-				keySprite.getLocalBounds().height / 2);
-			keySprite.setPosition(GetPositionF());
-			keySprite.setColor(Color(255, 255, 255, 255));
-		}
+		UpdateKeySprite();
 		UpdateSprite();
 		if (currShield != NULL)
 		{
@@ -1178,6 +1176,20 @@ void Enemy::UpdatePostPhysics()
 				currShield->FrameIncrement();
 			}
 		}
+	}
+}
+
+void Enemy::UpdateKeySprite()
+{
+	if (hasMonitor && !suppressMonitor)
+	{
+		int fac = 5;
+		int kFrame = sess->totalGameFrames % (16 * fac);
+		keySprite.setTextureRect(ts_key->GetSubRect(kFrame / fac));
+		keySprite.setOrigin(keySprite.getLocalBounds().width / 2,
+			keySprite.getLocalBounds().height / 2);
+		keySprite.setPosition(GetPositionF());
+		keySprite.setColor(Color(255, 255, 255, 255));
 	}
 }
 
