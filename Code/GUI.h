@@ -358,18 +358,15 @@ struct EditModeUI : GUIHandler
 
 	void SetEnemyPanel( ActorParams * ap );
 	void SetCurrRailPanel(TerrainRail *rail);
+	void SaveKinOptions();
 	Panel *currEnemyPanel;
 	ActorParams *currParams;
 	TerrainRail *currRail;
 
 	void ToggleKinOptionsPanel();
 	Panel *kinOptionsPanel;
-	CheckBox *hasAirdashCheck;
-	CheckBox *hasGravityReverseCheck;
-	CheckBox *hasBounceCheck;
-	CheckBox *hasGrindCheck;
-	CheckBox *hasTimeSlowCheck;
-	CheckBox *hasWiresCheck;
+
+	std::vector<CheckBox*> kinCheckboxes;
 
 	void SetShown(bool s);
 	bool IsGridOn();

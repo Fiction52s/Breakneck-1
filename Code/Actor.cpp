@@ -2638,29 +2638,30 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bHasUpgradeField.Reset();
 	bStartHasUpgradeField.Reset();
 
-	bool campaign = false;
+	bool isCampaign = false;
 	if (owner != NULL)
 	{
 		SaveFile *currProgress = owner->GetCurrentProgress();
 		if (currProgress != NULL )
 		{
-			campaign = true;
+			isCampaign = true;
 			//set this up better later
 			if( currProgress->HasPowerUnlocked(UPGRADE_POWER_AIRDASH) )
 				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
 		}
 	}
 
-	if (!campaign)
+	if (!isCampaign)
 	{
+		SetAllUpgrades(sess->playerOptionsField);
 	}
 
-	for (int i = 0; i < UPGRADE_Count; ++i)
-	{
-		SetStartUpgrade(i, true);
-	}
+	//for (int i = 0; i < UPGRADE_Count; ++i)
+	//{
+	//	SetStartUpgrade(i, true);
+	//}
 
-	SetStartUpgrade(UPGRADE_POWER_AIRDASH, false);
+	//SetStartUpgrade(UPGRADE_POWER_AIRDASH, false);
 
 	SetupTimeBubbles();
 
@@ -5450,6 +5451,12 @@ bool Actor::IsRailSlideFacingRight()
 	}
 
 	return r;
+}
+
+void Actor::SetAllUpgrades(BitField &b)
+{
+	bStartHasUpgradeField.Set(b);
+	bHasUpgradeField.Set(b);
 }
 
 bool Actor::HasUpgrade(int index)

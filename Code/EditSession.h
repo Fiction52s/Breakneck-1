@@ -247,6 +247,7 @@ struct EditSession : GUIHandler, Session
 	void WriteMapHeader(std::ofstream &of);
 	void CreatePreview(sf::Vector2i imageSize);
 	void WriteInversePoly(std::ofstream &of);
+	void WritePlayerOptions(std::ofstream &of);
 
 	void ClearSelectedPolys();
 	void ClearSelectedBrush();

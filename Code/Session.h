@@ -16,7 +16,7 @@
 #include "PositionInfo.h"
 #include "EditorActors.h"
 #include "Enemy_BasicEffect.h"
-#include "SaveFile.h"
+#include "BitField.h"
 
 
 struct SoundManager;
@@ -43,7 +43,7 @@ struct GameSession;
 
 struct Session : TilesetManager
 {
-	const static int PLAYER_OPTION_BIT_COUNT = 32 * 4;
+	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
 
 	enum SessionType
 	{
@@ -53,6 +53,7 @@ struct Session : TilesetManager
 
 	BitField playerOptionsField;
 
+	void SetPlayerOptionField(int pIndex);
 	//cleaning up load stuff:
 	void SetupHitboxManager();
 	void SetupSoundManager();
@@ -284,6 +285,7 @@ struct Session : TilesetManager
 	virtual void ProcessPlayerStartPos() {}
 
 	bool ReadPlayerOptions(std::ifstream &is);
+	virtual void ProcessPlayerOptions() {}
 
 	bool ReadTerrain(std::ifstream &is);
 	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly );

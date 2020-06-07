@@ -6,6 +6,7 @@
 #include "EditSession.h"
 #include "EditorGraph.h"
 #include "EditorRail.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -63,34 +64,47 @@ EditModeUI::EditModeUI()
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
 
-	kinOptionsPanel = new Panel("kinoptions", 400, 400, this, true);
+	kinOptionsPanel = new Panel("kinoptions", 400, 800, this, true);
 	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
 		540 - kinOptionsPanel->size.y / 2));
 	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
+	kinCheckboxes.resize(Actor::UPGRADE_Count);
+
 	kinOptionsPanel->AddLabel("airdashlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Airdash:");
-	hasAirdashCheck = kinOptionsPanel->AddCheckBox("airdash", Vector2i(0, 0), true);
-	hasAirdashCheck->SetToolTip("Toggle Airdash Power");
+	kinCheckboxes[Actor::UPGRADE_POWER_AIRDASH] = kinOptionsPanel->AddCheckBox("airdash", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit( Actor::UPGRADE_POWER_AIRDASH ));
+	kinCheckboxes[Actor::UPGRADE_POWER_AIRDASH]->SetToolTip("Toggle Airdash Power");
 
 	kinOptionsPanel->AddLabel("gravlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Gravity Reverse:");
-	hasGravityReverseCheck = kinOptionsPanel->AddCheckBox("grav", Vector2i(0, 0), true);
-	hasGravityReverseCheck->SetToolTip("Toggle Gravity Reverse Power");
+	kinCheckboxes[Actor::UPGRADE_POWER_GRAV] = kinOptionsPanel->AddCheckBox("grav", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_GRAV));
+	kinCheckboxes[Actor::UPGRADE_POWER_GRAV]->SetToolTip("Toggle Gravity Reverse Power");
 
 	kinOptionsPanel->AddLabel("bouncelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Bounce Scorpion:");
-	hasBounceCheck = kinOptionsPanel->AddCheckBox("bounce", Vector2i(0, 0), true);
-	hasBounceCheck->SetToolTip("Toggle Bounce Scorpion Power");
+	kinCheckboxes[Actor::UPGRADE_POWER_BOUNCE] = kinOptionsPanel->AddCheckBox("bounce", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_BOUNCE));
+	kinCheckboxes[Actor::UPGRADE_POWER_BOUNCE]->SetToolTip("Toggle Bounce Scorpion Power");
 
 	kinOptionsPanel->AddLabel("grindlabel", Vector2i(0, labelExtra.y), labelCharHeight, "Grind Wheel:");
-	hasGrindCheck = kinOptionsPanel->AddCheckBox("grind", Vector2i(0, 0), true);
-	hasGrindCheck->SetToolTip("Toggle Grind Power");
+	kinCheckboxes[Actor::UPGRADE_POWER_GRIND] = kinOptionsPanel->AddCheckBox("grind", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_GRIND));
+	kinCheckboxes[Actor::UPGRADE_POWER_GRIND]->SetToolTip("Toggle Grind Power");
 
 	kinOptionsPanel->AddLabel("timelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Time Slow:");
-	hasTimeSlowCheck = kinOptionsPanel->AddCheckBox("time", Vector2i(0, 0), true);
-	hasTimeSlowCheck->SetToolTip("Toggle Time Slow Power");
+	kinCheckboxes[Actor::UPGRADE_POWER_TIME] = kinOptionsPanel->AddCheckBox("time", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_TIME));
+	kinCheckboxes[Actor::UPGRADE_POWER_TIME]->SetToolTip("Toggle Time Slow Power");
 
-	kinOptionsPanel->AddLabel("wirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Wires:");
-	hasWiresCheck = kinOptionsPanel->AddCheckBox("wire", Vector2i(0, 0), true);
-	hasWiresCheck->SetToolTip("Toggle Wire Power");
+	kinOptionsPanel->AddLabel("lwirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Left Wire:");
+	kinCheckboxes[Actor::UPGRADE_POWER_LWIRE] = kinOptionsPanel->AddCheckBox("lwire", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_LWIRE));
+	kinCheckboxes[Actor::UPGRADE_POWER_LWIRE]->SetToolTip("Toggle Left Wire Power");
+
+	kinOptionsPanel->AddLabel("rwirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Right Wire:");
+	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE] = kinOptionsPanel->AddCheckBox("rwire", Vector2i(0, 0), 
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_RWIRE));
+	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE]->SetToolTip("Toggle Right Wire Power");
 }
 
 EditModeUI::~EditModeUI()
@@ -106,6 +120,7 @@ void EditModeUI::ToggleKinOptionsPanel()
 	if (kinOptionsPanel == edit->focusedPanel)
 	{
 		edit->RemoveActivePanel(kinOptionsPanel);
+		SaveKinOptions();
 	}
 	else
 	{
@@ -404,6 +419,17 @@ void EditModeUI::UpdateLayerLock(int layer, bool lock)
 	}
 }
 
+void EditModeUI::SaveKinOptions()
+{
+	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
+	{
+		if (kinCheckboxes[i] != NULL)
+		{
+			edit->playerOptionsField.SetBit( i, kinCheckboxes[i]->checked);
+		}
+	}
+}
+
 void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (eventType == ChooseRect::E_LEFTCLICKED ||
@@ -596,8 +622,12 @@ void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)
 
 void EditModeUI::PanelCallback(Panel *p, const std::string & e)
 {
-	if (e == "leftclickoffpopup" )//&& p == matTypePanel)
+	if (e == "leftclickoffpopup" )
 	{
+		if (p == kinOptionsPanel)
+		{
+			SaveKinOptions();
+		}
 		edit->RemoveActivePanel(p);
 	}
 }

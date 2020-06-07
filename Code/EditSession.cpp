@@ -364,6 +364,8 @@ void EditSession::TestPlayerMode()
 {
 	cam.Reset();
 	
+
+	SetPlayerOptionField(0);
 	skipped = false;
 	oneFrameMode = false;
 
@@ -915,8 +917,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	copiedBrush = NULL;
 	freeActorCopiedBrush = NULL;
-	newMapHeader.ver1 = 2;
-	newMapHeader.ver2 = 1;
+	//newMapHeader.ver1 = 2;
+	//newMapHeader.ver2 = 1;
 	newMapHeader.description = "no description";
 	newMapHeader.collectionName = "default";
 	newMapHeader.gameMode = MapHeader::T_STANDARD;//"default";
@@ -1632,7 +1634,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 	newMapHeader.bossFightType = bossType;
 
 	newMapHeader.ver1 = 2;
-	newMapHeader.ver2 = 0;
+	newMapHeader.ver2 = 1;
 
 	newMapHeader.shardNameList.clear();
 	ShardParams *sp = NULL;
@@ -1873,6 +1875,11 @@ void EditSession::WriteRails(ofstream &of)
 	}
 }
 
+void EditSession::WritePlayerOptions(std::ofstream &of)
+{
+	playerOptionsField.Save(of);
+}
+
 void EditSession::WriteFile(string fileName)
 {
 	bool hasGoal = false;
@@ -1924,6 +1931,8 @@ void EditSession::WriteFile(string fileName)
 
 	Vector2i playerIntPos(player->GetIntPos());
 	of << playerIntPos.x << " " << playerIntPos.y << endl;
+
+	WritePlayerOptions(of);
 
 	WriteInversePoly(of);
 

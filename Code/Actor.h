@@ -15,6 +15,7 @@
 #include "Gate.h"
 #include "SpecialTerrainTypes.h"
 #include "EffectLayer.h"
+#include "BitField.h"
 
 struct EditSession;
 
@@ -1273,6 +1274,7 @@ struct Actor : QuadTreeCollider,
 
 	int currBubble;
 
+	void SetAllUpgrades(BitField &b);
 	bool HasUpgrade(int index);
 	void SetUpgrade(int upgrade, bool on);
 	void SetStartUpgrade(int upgrade, bool on);

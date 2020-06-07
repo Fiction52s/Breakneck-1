@@ -6,6 +6,7 @@
 #include "ShardTypes.h"
 #include <list>
 #include <string>
+#include "BitField.h"
 //#include "Actor.h"
 
 struct Sector;
@@ -14,21 +15,7 @@ struct Actor;
 
 
 
-struct BitField
-{
-	BitField(int p_numOptions);
-	bool Load(std::ifstream &is);
-	void Save(std::ofstream &of);
-	~BitField();
-	void SetBit(int index, bool val );
-	bool GetBit(int index);
-	bool IsNonZero();
-	void Reset();
-	void Set(const BitField & otherField);
-	sf::Uint32 *optionField;
-	int numOptions;
-	int numFields;
-};
+
 
 struct Level
 {

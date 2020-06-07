@@ -151,6 +151,11 @@ void Session::SetParentGame(GameSession *game)
 	SetParentTilesetManager(game);
 }
 
+void Session::SetPlayerOptionField(int pIndex)
+{
+	GetPlayer(0)->SetAllUpgrades(playerOptionsField);
+}
+
 void Session::SetupHitboxManager()
 {
 	if (parentGame != NULL)
@@ -1760,8 +1765,14 @@ bool Session::ReadPlayerOptions(std::ifstream &is)
 {
 	if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
 	{
-		playerOptionsField.Load(is);
+		return playerOptionsField.Load(is);
 	}
+	else
+	{
+		playerOptionsField.Reset();
+	}
+
+	return true;
 }
 
 bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
