@@ -12149,20 +12149,10 @@ void EditSession::EditModePaste()
 				if (actor == NULL)
 					continue;
 
-				actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+				actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
 			}
-
-			//for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-			//{
-			//	actor = (*it)->GetAsActor();
-			//	if (actor == NULL)
-			//		continue;
-
-			//	actor->Move(Vector2i(actor->diffFromGrabbed.x, actor->diffFromGrabbed.y));//diffFromGrabbed = actor->posInfo.GetPosition() - V2d(GetCopiedCenter());//worldPos;//V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-			//}
 		}
 
-		// (pos - copiedBrush->GetCenter());
 		editMouseGrabPos = pos;
 		editMouseOrigPos = pos;
 
@@ -13277,36 +13267,23 @@ void EditSession::PasteModeUpdate()
 		pasteAxis = -1;
 	}
 
-	//if (pasteAxis == 1)
-	//	delta.y = 0;
-	//else if (pasteAxis == 2)
-	//	delta.x = 0;
-
-	//copiedBrush->Move(delta);
-
 	Vector2i centerPoint;
 	if (pasteAxis <= 0)
 	{
 		centerPoint = pos;
-		//Move(point - GetCenter());
-		//grabbedActor = copiedBrush->objects.front()->GetAsActor(); //only works for grabbing one actor
-		//MoveActors(pos - copiedBrush->GetCenter(), V2d(copiedBrush->GetCenter()), copiedBrush);
 	}
 	else if (pasteAxis == 1)
 	{
 		centerPoint = Vector2i(pos.x, editMouseOrigPos.y);
-		//copiedBrush->CenterOnPoint(Vector2i(pos.x, editMouseOrigPos.y));
 	}
 	else if (pasteAxis == 2)
 	{
 		centerPoint = Vector2i(editMouseOrigPos.x, pos.y);
-		//copiedBrush->CenterOnPoint(Vector2i(editMouseOrigPos.x, pos.y));
 	}
-	//GetCopiedCenter()
+
 	if (freeActorCopiedBrush != NULL)
 	{
 		MoveActors(centerPoint - freeActorCopiedBrush->GetCenter(), worldPos, freeActorCopiedBrush);
-		//MoveActors(centerPoint - GetCopiedCenter(), worldPos, freeActorCopiedBrush);
 		freeActorCopiedBrush->CenterOnPoint(centerPoint);
 	}
 
@@ -13316,29 +13293,6 @@ void EditSession::PasteModeUpdate()
 	}
 
 	editMouseGrabPos = pos;
-	
-
-	//if (copiedBrush->objects.size() > 1)
-	if( freeActorCopiedBrush != NULL )
-	{
-		ActorPtr actor;
-		for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-		{
-			actor = (*it)->GetAsActor();
-			if (actor != NULL)
-			{
-				if (actor->myEnemy != NULL)
-				{
-					//actor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-				}
-			}
-		}
-	}
-	/*else
-	{
-		grabbedActor->myEnemy->UpdateFromEditParams(spriteUpdateFrames);
-	}*/
-
 
 	if (!panning && IsMousePressed(Mouse::Left) && (delta.x != 0 || delta.y != 0)
 		&& length(lastBrushPastePos - worldPos ) >= brushRepeatDist )
