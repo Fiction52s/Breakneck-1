@@ -24,6 +24,7 @@ struct BitField
 	bool GetBit(int index);
 	bool IsNonZero();
 	void Reset();
+	void Set(const BitField & otherField);
 	sf::Uint32 *optionField;
 	int numOptions;
 	int numFields;

@@ -120,6 +120,8 @@ struct BasicEffect;
 
 struct Wire;
 
+
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -236,8 +238,9 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
-	bool bHasUpgrade[UPGRADE_Count];
-	bool bStartHasUpgrade[UPGRADE_Count];
+	BitField bHasUpgradeField;
+	BitField bStartHasUpgradeField;
+	
 	int numKeysHeld;
 
 	
@@ -2359,9 +2362,6 @@ struct Actor : QuadTreeCollider,
 	Tileset * WIREHOLD_GetTileset();
 
 };
-
-
-
 
 
 #endif

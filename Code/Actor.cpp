@@ -1708,7 +1708,8 @@ void Actor::UpdateActionSprite()
 }
 
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
-	:dead( false ), actorIndex( p_actorIndex )
+	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2634,19 +2635,24 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	bubbleLifeSpan = 240;
 
-	for (int i = 0; i < UPGRADE_Count; ++i)
-	{
-		bHasUpgrade[i] = false;
-		bStartHasUpgrade[i] = false;
-	}
+	bHasUpgradeField.Reset();
+	bStartHasUpgradeField.Reset();
 
+	bool campaign = false;
 	if (owner != NULL)
 	{
 		SaveFile *currProgress = owner->GetCurrentProgress();
-		if (currProgress != NULL && currProgress->HasPowerUnlocked(UPGRADE_POWER_AIRDASH))//currProgress->ShardIsCaptured( ShardType::SHARD_W1_GET_AIRDASH ))
+		if (currProgress != NULL )
 		{
-			SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
+			campaign = true;
+			//set this up better later
+			if( currProgress->HasPowerUnlocked(UPGRADE_POWER_AIRDASH) )
+				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
 		}
+	}
+
+	if (!campaign)
+	{
 	}
 
 	for (int i = 0; i < UPGRADE_Count; ++i)
@@ -3216,10 +3222,8 @@ void Actor::Respawn()
 	airTrigBehavior = AT_NONE;
 	currAirTrigger = NULL;
 
-	for (int i = 0; i < UPGRADE_Count; ++i)
-	{
-		bHasUpgrade[i] = bStartHasUpgrade[i];
-	}
+
+	bHasUpgradeField.Set(bStartHasUpgradeField);
 
 	activeComboObjList = NULL;
 
@@ -5450,18 +5454,18 @@ bool Actor::IsRailSlideFacingRight()
 
 bool Actor::HasUpgrade(int index)
 {
-	return bHasUpgrade[index];
+	return bHasUpgradeField.GetBit(index);
 }
 
 void Actor::SetUpgrade(int upgrade, bool on)
 {
-	bHasUpgrade[upgrade] = on;
+	bHasUpgradeField.SetBit(upgrade, on);
 	UpdatePowersMenu();
 }
 
 void Actor::SetStartUpgrade(int upgrade, bool on)
 {
-	bStartHasUpgrade[upgrade] = on;
+	bStartHasUpgradeField.SetBit(upgrade, on);
 	SetUpgrade(upgrade, on);
 }
 

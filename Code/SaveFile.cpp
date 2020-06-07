@@ -29,6 +29,16 @@ BitField::~BitField()
 	delete[] optionField;
 }
 
+void BitField::Set(const BitField & otherField)
+{
+	assert(numFields == otherField.numFields);
+
+	for (int i = 0; i < numFields; ++i)
+	{
+		optionField[i] = otherField.optionField[i];
+	}
+}
+
 void BitField::SetBit(int index, bool val)
 {
 	int trueIndex = index % 32;

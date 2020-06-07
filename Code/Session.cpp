@@ -1230,6 +1230,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 }
 
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
+	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
 	parentGame = NULL;
 
@@ -1755,6 +1756,14 @@ bool Session::ReadPlayerStartPos(std::ifstream &is)
 	return true;
 }
 
+bool Session::ReadPlayerOptions(std::ifstream &is)
+{
+	if ((mapHeader->ver1 == 2 && mapHeader->ver2 >= 1) || mapHeader->ver1 > 2)
+	{
+		playerOptionsField.Load(is);
+	}
+}
+
 bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
 {
 	int edgesWithSegments;
@@ -2022,6 +2031,8 @@ bool Session::ReadFile()
 		ReadDecor(is);
 
 		ReadPlayerStartPos(is);
+
+		ReadPlayerOptions(is);
 
 		ReadTerrain(is);
 

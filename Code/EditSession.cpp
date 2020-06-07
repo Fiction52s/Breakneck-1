@@ -916,7 +916,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	copiedBrush = NULL;
 	freeActorCopiedBrush = NULL;
 	newMapHeader.ver1 = 2;
-	newMapHeader.ver2 = 0;
+	newMapHeader.ver2 = 1;
 	newMapHeader.description = "no description";
 	newMapHeader.collectionName = "default";
 	newMapHeader.gameMode = MapHeader::T_STANDARD;//"default";
