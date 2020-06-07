@@ -12134,13 +12134,13 @@ void EditSession::EditModePaste()
 
 		if (copiedBrush != NULL)
 		{
-			copiedBrush->CenterOnPoint(pos);
+			//copiedBrush->CenterOnPoint(pos);
 		}
 
 		if (freeActorCopiedBrush != NULL)
 		{
 
-			freeActorCopiedBrush->CenterOnPoint(pos);
+			//freeActorCopiedBrush->CenterOnPoint(pos);
 
 			ActorPtr actor;
 			for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
@@ -12149,7 +12149,7 @@ void EditSession::EditModePaste()
 				if (actor == NULL)
 					continue;
 
-				actor->diffFromGrabbed = actor->posInfo.GetPosition() - worldPos;
+				actor->diffFromGrabbed = actor->posInfo.GetPosition() - V2d(freeActorCopiedBrush->GetCenter());//worldPos;
 			}
 		}
 
@@ -12332,6 +12332,21 @@ void EditSession::PasteModeHandleEvent()
 	{
 		if (ev.key.code == Keyboard::X)
 		{
+			if (freeActorCopiedBrush != NULL)
+			{
+				ActorPtr a;
+				for (auto it = freeActorCopiedBrush->objects.begin();
+					it != freeActorCopiedBrush->objects.end(); ++it)
+				{
+					a = (*it)->GetAsActor();
+					if (a->posInfo.ground != NULL )
+					{
+						a->UnAnchor();
+					}
+					
+				}
+			}
+
 			SetMode(EDIT);
 			if (complexPaste != NULL)
 			{
@@ -13281,15 +13296,19 @@ void EditSession::PasteModeUpdate()
 		centerPoint = Vector2i(editMouseOrigPos.x, pos.y);
 	}
 
+	Vector2i cent = GetCopiedCenter();
+
 	if (freeActorCopiedBrush != NULL)
 	{
-		MoveActors(centerPoint - freeActorCopiedBrush->GetCenter(), worldPos, freeActorCopiedBrush);
-		freeActorCopiedBrush->CenterOnPoint(centerPoint);
+		Vector2i diff = freeActorCopiedBrush->GetCenter() - cent;
+		MoveActors(( centerPoint + diff ) - freeActorCopiedBrush->GetCenter(), worldPos, freeActorCopiedBrush);
+		//freeActorCopiedBrush->CenterOnPoint(centerPoint + diff);
 	}
 
 	if (copiedBrush != NULL)
 	{
-		copiedBrush->CenterOnPoint(centerPoint);
+		Vector2i test = centerPoint + ( copiedBrush->GetCenter() - cent );
+		copiedBrush->CenterOnPoint(test );
 	}
 
 	editMouseGrabPos = pos;
