@@ -466,6 +466,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i pointGrabDelta;
 	sf::Vector2i oldPointGrabPos;
 
+	void DestroyCopiedBrushes();
 
 	bool justCompletedPolyWithClick;
 	bool justCompletedRailWithClick;
@@ -554,6 +555,7 @@ struct EditSession : GUIHandler, Session
 	void SaveBrush(Brush *b);
 	Brush *LoadBrush(const std::string &path);
 	
+	Brush *currLoadingBrush;
 
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;

@@ -1932,10 +1932,7 @@ bool Session::ReadActors(std::ifstream &is)
 			string typeName;
 			is >> typeName;
 
-			//ActorParams *a; //= new ActorParams;
 			ActorPtr a(NULL);
-
-
 
 			ActorType *at = NULL;
 			cout << "typename: " << typeName << endl;

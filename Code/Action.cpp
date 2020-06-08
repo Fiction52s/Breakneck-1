@@ -487,11 +487,6 @@ Brush *Brush::Copy()
 		tp = (*it)->GetAsTerrain();
 		if (tp != NULL)
 		{
-			if (tp->inverse)
-			{
-				continue;
-			}
-
 			PolyPtr ptr = tp->Copy();
 			newBrush->AddObject(ptr);
 		}
@@ -553,6 +548,19 @@ Brush *Brush::CopyFreeActors()
 	Brush *newBrush = new Brush;
 	ActorPtr ap;
 
+
+	set<PolyPtr> polys;
+
+	PolyPtr p;
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		p = (*it)->GetAsTerrain();
+		if (p != NULL)
+		{
+			polys.insert(p);
+		}
+	}
+
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		ap = (*it)->GetAsActor();
@@ -565,7 +573,8 @@ Brush *Brush::CopyFreeActors()
 
 			PolyPtr myPoly = ap->posInfo.ground;
 
-			if (myPoly != NULL && !myPoly->selected )
+			//if (myPoly != NULL && !myPoly->selected )
+			if( myPoly != NULL && polys.find( myPoly  ) == polys.end() )
 			{
 				ActorPtr aPtr = ap->Copy();
 				aPtr->CreateMyEnemy();
@@ -608,6 +617,9 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 	RailPtr rp;
 	DecorPtr dp;
 
+	set<PolyPtr> polys;
+	set<RailPtr> rails;
+
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
@@ -616,21 +628,16 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 
 		if (tp != NULL)
 		{
-			/*if (tp->inverse )
-			{
-				PolyPtr invCopy = tp->InverseCopy();
-				newBrush->AddObject(invCopy);
-			}
-			else*/
-			{
-				PolyPtr ptr = tp->Copy();
-				newBrush->AddObject(ptr);
-			}
+			PolyPtr ptr = tp->Copy();
+			newBrush->AddObject(ptr);
+			polys.insert(tp);
 		}
 		else if (rp != NULL)
 		{
 			RailPtr ptr = rp->Copy();
 			newBrush->AddObject(ptr);
+
+			rails.insert(rp);
 		}
 		else if (dp != NULL)
 		{
@@ -652,7 +659,8 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 			PolyPtr myPoly = ap->posInfo.ground;
 			RailPtr myRail = ap->posInfo.railGround;
 
-			if (myPoly != NULL && myPoly->selected)
+			//if (myPoly != NULL && myPoly->selected)
+			if( myPoly != NULL && polys.find( myPoly ) != polys.end() )
 			{
 				ActorPtr aPtr = ap->Copy();
 				aPtr->CreateMyEnemy();
@@ -663,7 +671,8 @@ Brush *Brush::CopyTerrainAndAttachedActors()
 				aPtr->posInfo.AddActor(aPtr);
 				newBrush->AddObject(aPtr);
 			}
-			else if (myRail != NULL && myRail->selected)
+			//else if (myRail != NULL && myRail->selected)
+			else if( myRail != NULL && rails.find( myRail ) != rails.end() )
 			{
 				ActorPtr aPtr = ap->Copy();
 				aPtr->CreateMyEnemy();
@@ -732,9 +741,29 @@ SelectPtr Brush::GetFirst()
 
 void Brush::Save(std::ofstream &of)
 {
+	int terrainCounter = 0;
+	PolyPtr poly;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
-		(*it)->Save(of);
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+		{
+			poly->writeIndex = terrainCounter;
+			poly->BrushSave(of);
+			++terrainCounter;
+		}
+		
+	}
+
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+		{
+			continue;
+		}
+
+		(*it)->BrushSave(of);
 	}
 }
 
@@ -742,9 +771,18 @@ bool Brush::Load(std::ifstream &is)
 {
 	int selType;
 	int inversePoly;
-	while (!is.eof())
+	string typeName;
+	string groupName;
+
+	EditSession *edit = EditSession::GetSession();
+
+	while (true)
 	{
 		is >> selType;
+		if (is.fail())
+		{
+			break;
+		}
 		switch (selType)
 		{
 		case ISelectable::TERRAIN:
@@ -763,7 +801,35 @@ bool Brush::Load(std::ifstream &is)
 			break;
 		}
 		case ISelectable::ACTOR:
+		{
+			is >> groupName;
+
+			is >> typeName;
+
+			ActorPtr a(NULL);
+			ActorType *at = NULL;
+
+			if (edit->types.count(typeName) == 0)
+			{
+				cout << "TYPENAME: " << typeName << endl;
+				assert(false && "bad typename");
+			}
+			else
+			{
+				at = edit->types[typeName];
+			}
+
+			at->LoadEnemy(is, a);
+
+			ActorGroup *ag = edit->groups[groupName];
+			a->group = ag;
+
+			objects.push_back(a);
 			break;
+		}
+			
+
+			
 		case ISelectable::GATE:
 			break;
 		case ISelectable::IMAGE:
@@ -772,6 +838,8 @@ bool Brush::Load(std::ifstream &is)
 			break;
 		}
 	}
+
+	return true;
 	/*for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		(*it)->Save(of);

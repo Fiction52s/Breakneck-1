@@ -1002,6 +1002,27 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 PolyPtr EditSession::GetPolygon(int index )
 {
+	if (currLoadingBrush != NULL)
+	{
+		int counter = 0;
+		for (auto it = currLoadingBrush->objects.begin(); it != currLoadingBrush->objects.end(); ++it)
+		{
+			if( (*it)->selectableType == ISelectable::TERRAIN )
+			{
+				if (counter == index)
+				{
+					return (*it)->GetAsTerrain();
+				}
+				else
+				{
+					++counter;
+				}
+			}
+		}
+		return NULL;
+	}
+
+
 	PolyPtr terrain = NULL;
 	if (index == -1)
 	{
@@ -1109,17 +1130,7 @@ EditSession::~EditSession()
 
 	delete progressBrush;
 	delete selectedBrush;
-	if (copiedBrush != NULL)
-	{
-		copiedBrush->Destroy();
-		delete copiedBrush;
-	}
-
-	if (freeActorCopiedBrush != NULL)
-	{
-		freeActorCopiedBrush->Destroy();
-		delete freeActorCopiedBrush;
-	}
+	DestroyCopiedBrushes();
 
 	if (createEnemyModeUI != NULL)
 	{
@@ -2633,6 +2644,7 @@ void EditSession::SetupShardSelectPanel()
 
 int EditSession::Run()
 {
+	currLoadingBrush = NULL;
 	totalGameFrames = 0;
 	grassChanges = NULL;
 	focusedPanel = NULL;
@@ -3693,10 +3705,17 @@ void EditSession::HideErrorBar()
 
 void EditSession::SaveBrush(Brush *b)
 {
-	ofstream of;
-	of.open("testbrush");
-	b->Save(of);
-	of.close();
+	if (b != NULL)
+	{
+		ofstream of;
+		of.open("testbrush");
+		b->Save(of);
+		of.close();
+	}
+	else
+	{
+		cout << "cannot save null brush" << endl;
+	}
 }
 
 
@@ -3708,7 +3727,9 @@ Brush *EditSession::LoadBrush(const std::string &path)
 	if (is.is_open())
 	{
 		Brush *b = new Brush;
+		currLoadingBrush = b;
 		b->Load(is);
+		currLoadingBrush = NULL;
 		return b;
 	}
 	else
@@ -12153,9 +12174,8 @@ void EditSession::EditModeTransform()
 	}
 }
 
-void EditSession::EditModeCopy()
+void EditSession::DestroyCopiedBrushes()
 {
-	//copiedBrush = selectedBrush->Copy();
 	if (copiedBrush != NULL)
 	{
 		copiedBrush->Destroy();
@@ -12168,6 +12188,12 @@ void EditSession::EditModeCopy()
 		delete freeActorCopiedBrush;
 		freeActorCopiedBrush = NULL;
 	}
+}
+
+void EditSession::EditModeCopy()
+{
+	//copiedBrush = selectedBrush->Copy();
+	DestroyCopiedBrushes();
 
 	copiedBrush = selectedBrush->CopyTerrainAndAttachedActors();
 	freeActorCopiedBrush = selectedBrush->CopyFreeActors();
@@ -12362,6 +12388,22 @@ void EditSession::EditModeHandleEvent()
 		{
 			playerTracker->SwitchOnOff();
 		}
+		else if (ev.key.code == Keyboard::Num9)
+		{
+			Brush *loadedBrush = LoadBrush("testbrush");
+			DestroyCopiedBrushes();
+
+			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
+			freeActorCopiedBrush = loadedBrush->CopyFreeActors();
+
+			loadedBrush->Destroy();
+			delete loadedBrush;
+			EditModePaste();
+		}
+		else if (ev.key.code == sf::Keyboard::Num8)
+		{
+			SaveBrush(selectedBrush);
+		}
 		break;
 	}
 	case Event::KeyReleased:
@@ -12412,6 +12454,10 @@ void EditSession::PasteModeHandleEvent()
 		{
 			RedoMostRecentUndoneAction();
 		}
+		/*else if (ev.key.code == sf::Keyboard::B)
+		{
+			SaveBrush(copiedBrush);
+		}*/
 		break;
 	}
 	}

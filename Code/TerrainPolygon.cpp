@@ -1967,6 +1967,15 @@ vector<TerrainPoint> &TerrainPolygon::PointVector()
 	return pointVector[i];
 }
 
+void TerrainPolygon::BrushSave(std::ofstream &of)
+{
+	of << ISelectable::TERRAIN << "\n";
+	
+	of << (int)inverse << "\n";
+
+	WriteFile(of);
+}
+
 void TerrainPolygon::WriteFile(std::ofstream & of)
 {
 	of << terrainWorldType << " " << terrainVariation << endl;

@@ -559,6 +559,18 @@ void ActorParams::DrawMonitor(sf::RenderTarget *target)
 
 }
 
+void ActorParams::BrushSave(std::ofstream &of)
+{
+	if (type->info.name == "player")
+	{
+		return;
+	}
+
+	of << ISelectable::ACTOR << "\n";
+	of << group->name << "\n";
+	WriteFile(of);
+}
+
 void ActorParams::WriteFile(ofstream &of)
 {
 	of << type->info.name << " ";

@@ -473,7 +473,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//	std::map<TerrainPoint*, sf::Vector2f> &affectedPoints);
 	void UpdateGrass();
 
-	void WriteFile(std::ofstream & of);
+	void BrushSave(std::ofstream & of);
+	void WriteFile(std::ofstream &of);
 	void WriteGrass(std::ofstream &of);
 
 	int grassSize;

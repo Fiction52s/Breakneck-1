@@ -47,6 +47,7 @@ struct ActorParams : ISelectable
 	virtual void Init() {};
 	virtual void WriteParamFile(std::ofstream &of);
 	void WriteBasicParamFile(std::ofstream &of);
+	void BrushSave(std::ofstream &of);
 	void WriteFile(std::ofstream &of);
 	void WriteMonitor(std::ofstream &of);
 	void LoadBool(std::ifstream &is, bool &b);
