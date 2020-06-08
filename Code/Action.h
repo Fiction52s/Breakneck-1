@@ -46,6 +46,8 @@ struct Brush
 	bool IsSingleFlyPoly();
 	bool IsSingleRail();
 	SelectPtr GetFirst();
+	void Save(std::ofstream &of);
+	bool Load(std::ifstream &is);
 
 	sf::Vector2f GetTerrainSize();
 };

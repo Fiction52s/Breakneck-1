@@ -105,6 +105,46 @@ EditModeUI::EditModeUI()
 	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE] = kinOptionsPanel->AddCheckBox("rwire", Vector2i(0, 0), 
 		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_RWIRE));
 	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE]->SetToolTip("Toggle Right Wire Power");
+
+	/*mapOptionsPanel = new Panel("mapoptions", 500, 500, this, true);
+	kinOptionsPanel->AddLabel("rwirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Right Wire:");
+	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE] = kinOptionsPanel->AddCheckBox("rwire", Vector2i(0, 0),
+		edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_RWIRE));
+	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE]->SetToolTip("Toggle Right Wire Power");*/
+
+	bgOptions = new Panel("bgoptions", 125*8, 125*8, this, true);
+
+	/*GridSelector *bgSel = bgPopup->AddGridSelector(
+		"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
+
+	bgOptions->ReserveImageRects(8 * 8);
+
+	bgOptions->SetPosition(Vector2i(960 - bgOptions->size.x / 2,
+		540 - bgOptions->size.y / 2));
+
+	Tileset *bgTS;
+	string bgName;
+	string numStr;
+	string fullName;
+	ImageChooseRect *icr;
+	for (int w = 0; w < 8; ++w)
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			numStr = to_string(i + 1);
+			bgName = "w" + to_string(w + 1) + "_0";
+			fullName = "BGInfo/" + bgName + numStr + ".png";
+			bgTS = edit->GetTileset(fullName, 1920, 1080);
+			if (bgTS == NULL)
+			{
+				continue;
+			}
+			icr = bgOptions->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+				Vector2f(i * 125, w * 125), bgTS, 0, 125);
+			icr->Init();
+			icr->SetShown(true);			
+		}
+	}
 }
 
 EditModeUI::~EditModeUI()
@@ -125,6 +165,7 @@ void EditModeUI::ToggleKinOptionsPanel()
 	else
 	{
 		edit->AddActivePanel(kinOptionsPanel);
+		edit->AddActivePanel(bgOptions);
 	}
 }
 

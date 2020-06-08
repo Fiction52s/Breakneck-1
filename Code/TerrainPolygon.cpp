@@ -5726,6 +5726,35 @@ bool TerrainPolygon::Load(std::ifstream &is)
 	return true;
 }
 
+bool TerrainPolygon::LoadGrass(std::ifstream &is)
+{
+	int edgesWithSegments;
+	is >> edgesWithSegments;
+
+	list<GrassSeg> segments;
+	for (int i = 0; i < edgesWithSegments; ++i)
+	{
+		int edgeIndex;
+		is >> edgeIndex;
+
+		int numSegments;
+		is >> numSegments;
+
+		for (int j = 0; j < numSegments; ++j)
+		{
+			int index;
+			is >> index;
+			int reps;
+			is >> reps;
+			segments.push_back(GrassSeg(edgeIndex, index, reps));
+		}
+	}
+
+	ProcessGrass(segments);
+
+	return true;
+}
+
 Edge * TerrainPolygon::CheckPlayerOnLine( V2d &edgePos, double &quant )
 {
 	playerEdgePos = edgePos;

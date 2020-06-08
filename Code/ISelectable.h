@@ -54,6 +54,8 @@ struct ISelectable
 	{
 		return true;
 	}
+	virtual void Save(std::ofstream &of) {}
+	virtual bool Load(std::ofstream &is) {}
 	virtual void Move(sf::Vector2i delta) {}
 	virtual void BrushDraw(sf::RenderTarget *target,
 		bool valid) {}

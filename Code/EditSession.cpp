@@ -3691,6 +3691,33 @@ void EditSession::HideErrorBar()
 	errorBar.SetShown(false);
 }
 
+void EditSession::SaveBrush(Brush *b)
+{
+	ofstream of;
+	of.open("testbrush");
+	b->Save(of);
+	of.close();
+}
+
+
+Brush *EditSession::LoadBrush(const std::string &path)
+{
+	ifstream is;
+	is.open(path);
+
+	if (is.is_open())
+	{
+		Brush *b = new Brush;
+		b->Load(is);
+		return b;
+	}
+	else
+	{
+		cout << "couldn't open brush file: " << path << endl;
+		assert(0);
+	}
+}
+
 int EditSession::GetSpecialTerrainMode()
 {
 	if (mode == CREATE_TERRAIN)

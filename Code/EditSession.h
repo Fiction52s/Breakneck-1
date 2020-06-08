@@ -551,6 +551,8 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> flyPolygons;
 
 	int GetSpecialTerrainMode();
+	void SaveBrush(Brush *b);
+	Brush *LoadBrush(const std::string &path);
 	
 
 	PolyPtr polygonInProgress;

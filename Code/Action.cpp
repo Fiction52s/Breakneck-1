@@ -730,6 +730,54 @@ SelectPtr Brush::GetFirst()
 	return objects.front();
 }
 
+void Brush::Save(std::ofstream &of)
+{
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		(*it)->Save(of);
+	}
+}
+
+bool Brush::Load(std::ifstream &is)
+{
+	int selType;
+	int inversePoly;
+	while (!is.eof())
+	{
+		is >> selType;
+		switch (selType)
+		{
+		case ISelectable::TERRAIN:
+		{
+			is >> inversePoly;
+			PolyPtr poly(new TerrainPolygon());
+			if (inversePoly)
+			{
+				poly->inverse = true;
+			}
+
+			poly->Load(is);
+			poly->Finalize();
+			poly->LoadGrass(is);
+			objects.push_back(poly);
+			break;
+		}
+		case ISelectable::ACTOR:
+			break;
+		case ISelectable::GATE:
+			break;
+		case ISelectable::IMAGE:
+			break;
+		case ISelectable::RAIL:
+			break;
+		}
+	}
+	/*for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		(*it)->Save(of);
+	}*/
+}
+
 bool Brush::IsSingleFlyPoly()
 {
 	if (objects.size() == 1 && objects.front()->selectableType == ISelectable::TERRAIN)

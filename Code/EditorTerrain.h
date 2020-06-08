@@ -357,6 +357,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	//QuadTree *edgeTree;
 	bool isBrushTest;
 	bool Load(std::ifstream &is);
+	bool LoadGrass(std::ifstream &is);
 
 	bool CheckRectIntersectEdges(
 		sf::Rect<double> &r);

@@ -363,6 +363,10 @@ struct EditModeUI : GUIHandler
 	ActorParams *currParams;
 	TerrainRail *currRail;
 
+	Panel *mapOptionsPanel;
+	Panel *bgOptions;
+
+
 	void ToggleKinOptionsPanel();
 	Panel *kinOptionsPanel;
 

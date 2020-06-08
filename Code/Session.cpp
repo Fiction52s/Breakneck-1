@@ -1846,9 +1846,7 @@ bool Session::ReadTerrain(std::ifstream &is)
 		ProcessTerrain(poly);
 		//poly->Finalize(); //need this before readTerrainGrass
 
-		ReadTerrainGrass(is, poly);
-
-		
+		poly->LoadGrass(is);
 	}
 
 	ProcessAllTerrain();
