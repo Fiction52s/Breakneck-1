@@ -34,6 +34,7 @@
 
 #include "GateMarker.h"
 #include "BrushManager.h"
+#include "FileChooser.h"
 
 using namespace std;
 using namespace sf;
@@ -2857,6 +2858,9 @@ int EditSession::Run()
 	ReadDecorImagesFile();
 
 	brushManager = new BrushManager;
+
+	fileChooser = new FileChooser;
+	delete fileChooser;
 
 	ReadFile();
 

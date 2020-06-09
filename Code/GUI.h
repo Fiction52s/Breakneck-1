@@ -109,8 +109,6 @@ struct PanelUpdater
 private:
 };
 
-
-
 struct PanelMember
 {
 	PanelMember(Panel * p)
@@ -139,9 +137,6 @@ struct PanelMember
 	Panel *panel;
 	ToolTip *toolTip;
 };
-
-
-
 
 struct ChooseRect : PanelMember
 {
@@ -227,7 +222,6 @@ struct ChooseRect : PanelMember
 	int circleRadius;
 };
 
-
 struct EnemyChooseRect : ChooseRect
 {
 	EnemyChooseRect( ChooseRectIdentity ident, 
@@ -246,7 +240,6 @@ struct EnemyChooseRect : ChooseRect
 	sf::View view;
 	int level;
 };
-
 
 struct ImageChooseRect : ChooseRect
 {
@@ -280,7 +273,6 @@ struct BrushChooseRect : ChooseRect
 	void SetBrush(Brush *b);
 	Brush *myBrush;
 };
-
 
 struct EnemyVariationSelector : PanelUpdater
 {
@@ -318,404 +310,6 @@ struct PanelSlider : PanelUpdater
 	sf::Vector2i destPos;
 	CubicBezier bez;
 	int normalDuration;
-};
-
-struct GeneralUI : GUIHandler
-{
-	GeneralUI();
-	~GeneralUI();
-
-	enum FileOptions
-	{
-
-	};
-
-	enum EditOptions
-	{
-		UNDO,
-		REDO,
-		EditOptions_Count
-	};
-
-	enum ModeOptions
-	{
-		CREATE_TERRAIN,
-		EDIT,
-		CREATE_ENEMIES,
-		CREATE_GATES,
-		CREATE_IMAGES,
-		MAP_OPTIONS,
-		ModeOptions_Count
-	};
-
-	Panel *mainPanel;
-	MenuDropdown *fileDropdown;
-	MenuDropdown *editDropdown;
-	MenuDropdown *modeDropdown;
-	EditSession *edit;
-
-	void Draw(sf::RenderTarget *target);
-	int height;
-
-	void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e);
-
-};
-
-struct EditModeUI : GUIHandler
-{
-	EditModeUI();
-	~EditModeUI();
-
-	void SetEnemyPanel( ActorParams * ap );
-	void SetCurrRailPanel(TerrainRail *rail);
-	void SaveKinOptions();
-	void CreateKinOptionsPanel();
-	void CreateMapOptionsPanel();
-	Panel *currEnemyPanel;
-	ActorParams *currParams;
-	TerrainRail *currRail;
-
-	Panel *mapOptionsPanel;
-	Panel *bgOptionsPanel;
-	Panel *nameBrushPanel;
-
-
-	int labelCharHeight;
-	int labelExtraSpacing;
-	int labelExtraY;
-	sf::Vector2i labelExtra;
-
-	void ToggleKinOptionsPanel();
-	Panel *kinOptionsPanel;
-
-	std::vector<CheckBox*> kinCheckboxes;
-
-	void SetShown(bool s);
-	bool IsGridOn();
-	void FlipGrid();
-	bool IsEditPointsOn();
-	void FlipEditPoints();
-	bool IsShowGrassOn();
-	void FlipShowGrass();
-	bool IsMoveOn();
-	void FlipMove();
-
-	void SetGridSize(int gs);
-	void ExpandTerrainLibrary( int layer );
-	void ExpandShardLibrary();
-	void ChooseMatType(ImageChooseRect *icRect);
-	void ButtonCallback(Button *b, const std::string & e);
-	void TextBoxCallback(TextBox *tb, const std::string & e);
-	void GridSelectorCallback(GridSelector *gs, const std::string & e);
-	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider);
-	void DropdownCallback(Dropdown *dropdown, const std::string & e);
-	void PanelCallback(Panel *p, const std::string & e);
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-
-	std::string GetLayerShowName(int layer);
-	std::string GetLayerLockedName(int layer);
-	bool IsLayerShowing(int layer);
-	bool IsLayerLocked(int layer);
-	bool IsLayerActionable(int layer);
-	void UpdateLayerShow(int layer, bool show);
-	void UpdateLayerLock(int layer, bool lock);
-
-	void CreateLayerPanel();
-	void AddLayerToPanel(
-		const std::string &name,
-		int currLayerIndex, int startY);
-
-	int terrainGridSize;
-	Panel *matTypePanel;
-	Panel *shardTypePanel;
-	//std::vector<ImageChooseRect*> *matTypeRects;
-	sf::Vector2i matPanelPos;
-	sf::Vector2i shardPanelPos;
-
-	std::map<int, std::string> layerMap;
-	std::map<std::string, int> reverseLayerMap;
-
-	std::map<int, int> terrainEditLayerMap;
-
-	//search for layer_ get terrainlayer_
-	std::map<int, int> terrainEditLayerReverseMap;
-
-	bool show;
-	EditSession *edit;
-	Panel *mainPanel;
-
-	Panel *layerPanel;
-	PanelSlider *lpSlider;
-
-	CheckBox *gridCheckbox;
-	CheckBox *editPointsCheckbox;
-	CheckBox *moveToolCheckbox;
-	CheckBox *showGrassCheckbox;
-
-	TextBox *gridSizeTextbox;
-	Button *deleteBrushButton;
-	Button *transformBrushButton;
-	Button *copyBrushButton;
-	Button *pasteBrushButton;
-};
-
-struct CreateGatesModeUI : GUIHandler
-{
-	CreateGatesModeUI();
-	~CreateGatesModeUI();
-	void ExpandLibrary();
-	void SetShown(bool s);
-	void ExpandShardLibrary();
-	void ExpandBossLibrary();
-	void ExpandPickupLibrary();
-	void ChooseShardType(ImageChooseRect *icRect);
-	void ChooseBossGateType(ImageChooseRect *icRect);
-	void ChoosePickupGateType(ImageChooseRect *icRect);
-	//void SetCurrMatType( )
-	void ButtonCallback(Button *b, const std::string & e);
-	void TextBoxCallback(TextBox *tb, const std::string & e);
-	void GridSelectorCallback(GridSelector *gs, const std::string & e);
-	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider);
-	void DropdownCallback(Dropdown *dropdown, const std::string & e);
-	void PanelCallback(Panel *p, const std::string & e);
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	void SetGateInfo(GateInfo *gi);
-	void SetFromGateInfo(GateInfo *gi);
-	void SetEditGate(GateInfo *gi);
-	void CompleteEditingGate();
-	void Draw(sf::RenderTarget *target);
-	sf::RectangleShape modifyGateRect;
-	GateInfo *origModifyGate;
-	GateInfo *modifyGate;
-	void SetShard(int world, int localIndex);
-
-	int currShardWorld;
-	int currShardLocalIndex;
-
-	sf::Vector2f currGateTypeRectPos;
-	sf::Vector2i popupPanelPos;
-
-	int GetGateCategory();
-	//void CreateShardTypePanel();
-	void CreateBossGateTypePanel();
-	void CreatePickupGateTypePanel();
-	Tileset *ts_shards[7];
-
-	Tileset *ts_gateCategories;
-	Tileset *ts_bossGateTypes;
-	Tileset *ts_pickupGateTypes;
-	bool show;
-	EditSession *edit;
-	Panel *mainPanel;
-	//Panel *gateTypePanel;
-	Panel *shardGateTypePanel;
-	Panel *pickupGateTypePanel;
-	Panel *bossGateTypePanel;
-
-	std::vector<int> currVariation;
-
-	void UpdateCategoryDropdownType();
-
-	TextBox *numToOpenTextbox;
-	int numToOpen;
-	Button *deleteGateButton;
-	//Button *OKGateButton;
-	
-
-	Dropdown *gateCategoryDropdown;
-
-	std::vector<ImageChooseRect*> currGateTypeRects;
-
-	std::vector<ImageChooseRect*> *shardGateTypeRects;
-	std::vector<ImageChooseRect*> pickupGateTypeRects;
-	std::vector<ImageChooseRect*> bossGateTypeRects;
-	int gateGridSize;
-};
-
-struct CreateRailModeUI : GUIHandler
-{
-	CreateRailModeUI();
-	~CreateRailModeUI();
-	void SetShown(bool s);
-	bool IsGridOn();
-	void FlipGrid();
-	bool IsSnapPointsOn();
-	void FlipSnapPoints();
-	void SetGridSize(int gs);
-	void ExpandLibrary();
-	void ChoosePhysicalType(ImageChooseRect *icRect);
-	void ChooseEnemyType(EnemyChooseRect *ecRect);
-	//void SetCurrMatType( )
-	void ButtonCallback(Button *b, const std::string & e);
-	void TextBoxCallback(TextBox *tb, const std::string & e);
-	void GridSelectorCallback(GridSelector *gs, const std::string & e);
-	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider);
-	void DropdownCallback(Dropdown *dropdown, const std::string & e);
-	void PanelCallback(Panel *p, const std::string & e);
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	int GetRailCategory();
-	void ExpandPhysicalLibrary();
-	void ExpandEnemyLibrary();
-	int GetRailType();
-
-	int physTypeIndex;
-	int enemyTypeIndex;
-
-
-	enum RailCategories
-	{
-		PHYSICAL,
-		ENEMY
-	};
-
-	enum RailPhysTypes
-	{
-		NORMAL,
-		ACCELERATOR,
-		FRICTION,
-		PhysTypes_Count
-	};
-
-	bool show;
-	EditSession *edit;
-
-	int railTypeGridSize;
-
-	Panel *mainPanel;
-	Panel *enemyPanel;
-	Panel *physicalPanel;
-
-
-	CheckBox *gridCheckbox;
-	CheckBox *snapPointsCheckbox;
-	TextBox *gridSizeTextbox;
-	Button *completeButton;
-	Button *removePointButton;
-	Button *removeAllPointsButton;
-
-	Dropdown *railCategoryDropdown;
-
-	sf::Vector2i matPanelPos;
-
-	ImageChooseRect *currPhysicalTypeRect;
-	EnemyChooseRect *currEnemyTypeRect;
-
-	std::vector<ImageChooseRect*> physRects;
-	std::vector<EnemyChooseRect*> enemyRects;
-};
-
-struct CreateTerrainModeUI : GUIHandler
-{
-	CreateTerrainModeUI();
-	~CreateTerrainModeUI();
-	void SetShown(bool s);
-	bool IsGridOn();
-	void FlipGrid();
-	bool IsSnapPointsOn();
-	void FlipSnapPoints();
-	void SetGridSize(int gs);
-	void ExpandTerrainLibrary();
-	void ChooseMatType(ImageChooseRect *icRect);
-	void ButtonCallback(Button *b, const std::string & e);
-	void TextBoxCallback(TextBox *tb, const std::string & e);
-	void GridSelectorCallback(GridSelector *gs, const std::string & e);
-	void CheckBoxCallback(CheckBox *cb, const std::string & e);
-	void SliderCallback(Slider *slider);
-	void DropdownCallback(Dropdown *dropdown, const std::string & e);
-	void PanelCallback(Panel *p, const std::string & e);
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	int GetTerrainLayer();
-	int GetCurrDrawTool();
-	void SetDrawTool(int t);
-	int GetCurrTerrainTool();
-	void SetTerrainTool(int t);
-	void SetTempTerrainTool(int t);
-	void RevertTerrainTool();
-
-	int realTerrainTool;
-	int terrainGridSize;
-
-	bool show;
-	EditSession *edit;
-	
-	Panel *matTypePanel;
-	Panel *mainPanel;
-	Panel *nameBrushPanel;
-
-	CheckBox *gridCheckbox;
-	CheckBox *snapPointsCheckbox;
-	TextBox *gridSizeTextbox;
-	Button *completeButton;
-	Button *removePointButton;
-	Button *removeAllPointsButton;
-	Dropdown *terrainActionDropdown;
-	Dropdown *terrainLayerDropdown;
-	Dropdown *drawModeDropdown;
-
-	sf::Vector2i matPanelPos;
-
-	std::vector<ImageChooseRect*> currMatRects;
-};
-
-struct CreateEnemyModeUI
-{
-	CreateEnemyModeUI();
-	~CreateEnemyModeUI();
-
-	EnemyVariationSelector *varSelector;
-	void ExpandVariation(EnemyChooseRect *ceRect);
-	std::vector<EnemyChooseRect*> allEnemyRects;
-	
-	std::vector<EnemyChooseRect*> hotbarEnemies;
-	ImageChooseRect *librarySearchRect;
-	int activeHotbarSize;
-	std::vector<std::vector<EnemyChooseRect*>> 
-		libraryEnemiesVec;
-	void SetActiveLibraryWorld(int w);
-	int activeLibraryWorld;
-	std::vector<ImageChooseRect*> worldSelectRects;
-
-	void UpdateHotbarTypes();
-	Panel *topbarPanel;
-	Panel *libPanel;
-	EditSession *edit;
-	void SetShown(bool s);
-	void SetLibraryShown(bool s);
-	void FlipLibraryShown();
-	bool showLibrary;
-	bool show;
-};
-
-struct CreateDecorModeUI
-{
-	CreateDecorModeUI();
-	~CreateDecorModeUI();
-
-	void SetActiveLibraryWorld(int w);
-	int activeLibraryWorld;
-	std::vector<ImageChooseRect*> worldSelectRects;
-	void UpdateHotbarTypes();
-	void SetShown(bool s);
-	void SetLibraryShown(bool s);
-	void FlipLibraryShown();
-
-	EditSession *edit;
-
-	bool showLibrary;
-	bool show;
-
-	Panel *topbarPanel;
-	Panel *libPanel;
-	std::vector<ImageChooseRect*> allImageRects;
-	std::vector<std::vector<ImageChooseRect*>>
-		libraryImagesVec;
-	std::vector<ImageChooseRect*> hotbarImages;
-	int activeHotbarSize;
-
-	ImageChooseRect *librarySearchRect;
 };
 
 struct GridSelector : PanelMember
@@ -1122,8 +716,402 @@ struct ErrorBar
 
 };
 
+struct GeneralUI : GUIHandler
+{
+	GeneralUI();
+	~GeneralUI();
+
+	enum FileOptions
+	{
+
+	};
+
+	enum EditOptions
+	{
+		UNDO,
+		REDO,
+		EditOptions_Count
+	};
+
+	enum ModeOptions
+	{
+		CREATE_TERRAIN,
+		EDIT,
+		CREATE_ENEMIES,
+		CREATE_GATES,
+		CREATE_IMAGES,
+		MAP_OPTIONS,
+		ModeOptions_Count
+	};
+
+	Panel *mainPanel;
+	MenuDropdown *fileDropdown;
+	MenuDropdown *editDropdown;
+	MenuDropdown *modeDropdown;
+	EditSession *edit;
+
+	void Draw(sf::RenderTarget *target);
+	int height;
+
+	void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e);
+
+};
+
+struct EditModeUI : GUIHandler
+{
+	EditModeUI();
+	~EditModeUI();
+
+	void SetEnemyPanel(ActorParams * ap);
+	void SetCurrRailPanel(TerrainRail *rail);
+	void SaveKinOptions();
+	void CreateKinOptionsPanel();
+	void CreateMapOptionsPanel();
+	Panel *currEnemyPanel;
+	ActorParams *currParams;
+	TerrainRail *currRail;
+
+	Panel *mapOptionsPanel;
+	Panel *bgOptionsPanel;
+	Panel *nameBrushPanel;
 
 
+	int labelCharHeight;
+	int labelExtraSpacing;
+	int labelExtraY;
+	sf::Vector2i labelExtra;
 
+	void ToggleKinOptionsPanel();
+	Panel *kinOptionsPanel;
+
+	std::vector<CheckBox*> kinCheckboxes;
+
+	void SetShown(bool s);
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsEditPointsOn();
+	void FlipEditPoints();
+	bool IsShowGrassOn();
+	void FlipShowGrass();
+	bool IsMoveOn();
+	void FlipMove();
+
+	void SetGridSize(int gs);
+	void ExpandTerrainLibrary(int layer);
+	void ExpandShardLibrary();
+	void ChooseMatType(ImageChooseRect *icRect);
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+
+	std::string GetLayerShowName(int layer);
+	std::string GetLayerLockedName(int layer);
+	bool IsLayerShowing(int layer);
+	bool IsLayerLocked(int layer);
+	bool IsLayerActionable(int layer);
+	void UpdateLayerShow(int layer, bool show);
+	void UpdateLayerLock(int layer, bool lock);
+
+	void CreateLayerPanel();
+	void AddLayerToPanel(
+		const std::string &name,
+		int currLayerIndex, int startY);
+
+	int terrainGridSize;
+	Panel *matTypePanel;
+	Panel *shardTypePanel;
+	//std::vector<ImageChooseRect*> *matTypeRects;
+	sf::Vector2i matPanelPos;
+	sf::Vector2i shardPanelPos;
+
+	std::map<int, std::string> layerMap;
+	std::map<std::string, int> reverseLayerMap;
+
+	std::map<int, int> terrainEditLayerMap;
+
+	//search for layer_ get terrainlayer_
+	std::map<int, int> terrainEditLayerReverseMap;
+
+	bool show;
+	EditSession *edit;
+	Panel *mainPanel;
+
+	Panel *layerPanel;
+	PanelSlider *lpSlider;
+
+	CheckBox *gridCheckbox;
+	CheckBox *editPointsCheckbox;
+	CheckBox *moveToolCheckbox;
+	CheckBox *showGrassCheckbox;
+
+	TextBox *gridSizeTextbox;
+	Button *deleteBrushButton;
+	Button *transformBrushButton;
+	Button *copyBrushButton;
+	Button *pasteBrushButton;
+};
+
+struct CreateGatesModeUI : GUIHandler
+{
+	CreateGatesModeUI();
+	~CreateGatesModeUI();
+	void ExpandLibrary();
+	void SetShown(bool s);
+	void ExpandShardLibrary();
+	void ExpandBossLibrary();
+	void ExpandPickupLibrary();
+	void ChooseShardType(ImageChooseRect *icRect);
+	void ChooseBossGateType(ImageChooseRect *icRect);
+	void ChoosePickupGateType(ImageChooseRect *icRect);
+	//void SetCurrMatType( )
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void SetGateInfo(GateInfo *gi);
+	void SetFromGateInfo(GateInfo *gi);
+	void SetEditGate(GateInfo *gi);
+	void CompleteEditingGate();
+	void Draw(sf::RenderTarget *target);
+	sf::RectangleShape modifyGateRect;
+	GateInfo *origModifyGate;
+	GateInfo *modifyGate;
+	void SetShard(int world, int localIndex);
+
+	int currShardWorld;
+	int currShardLocalIndex;
+
+	sf::Vector2f currGateTypeRectPos;
+	sf::Vector2i popupPanelPos;
+
+	int GetGateCategory();
+	//void CreateShardTypePanel();
+	void CreateBossGateTypePanel();
+	void CreatePickupGateTypePanel();
+	Tileset *ts_shards[7];
+
+	Tileset *ts_gateCategories;
+	Tileset *ts_bossGateTypes;
+	Tileset *ts_pickupGateTypes;
+	bool show;
+	EditSession *edit;
+	Panel *mainPanel;
+	//Panel *gateTypePanel;
+	Panel *shardGateTypePanel;
+	Panel *pickupGateTypePanel;
+	Panel *bossGateTypePanel;
+
+	std::vector<int> currVariation;
+
+	void UpdateCategoryDropdownType();
+
+	TextBox *numToOpenTextbox;
+	int numToOpen;
+	Button *deleteGateButton;
+	//Button *OKGateButton;
+
+
+	Dropdown *gateCategoryDropdown;
+
+	std::vector<ImageChooseRect*> currGateTypeRects;
+
+	std::vector<ImageChooseRect*> *shardGateTypeRects;
+	std::vector<ImageChooseRect*> pickupGateTypeRects;
+	std::vector<ImageChooseRect*> bossGateTypeRects;
+	int gateGridSize;
+};
+
+struct CreateRailModeUI : GUIHandler
+{
+	CreateRailModeUI();
+	~CreateRailModeUI();
+	void SetShown(bool s);
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsSnapPointsOn();
+	void FlipSnapPoints();
+	void SetGridSize(int gs);
+	void ExpandLibrary();
+	void ChoosePhysicalType(ImageChooseRect *icRect);
+	void ChooseEnemyType(EnemyChooseRect *ecRect);
+	//void SetCurrMatType( )
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	int GetRailCategory();
+	void ExpandPhysicalLibrary();
+	void ExpandEnemyLibrary();
+	int GetRailType();
+
+	int physTypeIndex;
+	int enemyTypeIndex;
+
+
+	enum RailCategories
+	{
+		PHYSICAL,
+		ENEMY
+	};
+
+	enum RailPhysTypes
+	{
+		NORMAL,
+		ACCELERATOR,
+		FRICTION,
+		PhysTypes_Count
+	};
+
+	bool show;
+	EditSession *edit;
+
+	int railTypeGridSize;
+
+	Panel *mainPanel;
+	Panel *enemyPanel;
+	Panel *physicalPanel;
+
+
+	CheckBox *gridCheckbox;
+	CheckBox *snapPointsCheckbox;
+	TextBox *gridSizeTextbox;
+	Button *completeButton;
+	Button *removePointButton;
+	Button *removeAllPointsButton;
+
+	Dropdown *railCategoryDropdown;
+
+	sf::Vector2i matPanelPos;
+
+	ImageChooseRect *currPhysicalTypeRect;
+	EnemyChooseRect *currEnemyTypeRect;
+
+	std::vector<ImageChooseRect*> physRects;
+	std::vector<EnemyChooseRect*> enemyRects;
+};
+
+struct CreateTerrainModeUI : GUIHandler
+{
+	CreateTerrainModeUI();
+	~CreateTerrainModeUI();
+	void SetShown(bool s);
+	bool IsGridOn();
+	void FlipGrid();
+	bool IsSnapPointsOn();
+	void FlipSnapPoints();
+	void SetGridSize(int gs);
+	void ExpandTerrainLibrary();
+	void ChooseMatType(ImageChooseRect *icRect);
+	void ButtonCallback(Button *b, const std::string & e);
+	void TextBoxCallback(TextBox *tb, const std::string & e);
+	void GridSelectorCallback(GridSelector *gs, const std::string & e);
+	void CheckBoxCallback(CheckBox *cb, const std::string & e);
+	void SliderCallback(Slider *slider);
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	int GetTerrainLayer();
+	int GetCurrDrawTool();
+	void SetDrawTool(int t);
+	int GetCurrTerrainTool();
+	void SetTerrainTool(int t);
+	void SetTempTerrainTool(int t);
+	void RevertTerrainTool();
+
+	int realTerrainTool;
+	int terrainGridSize;
+
+	bool show;
+	EditSession *edit;
+
+	Panel *matTypePanel;
+	Panel *mainPanel;
+	Panel *nameBrushPanel;
+
+	CheckBox *gridCheckbox;
+	CheckBox *snapPointsCheckbox;
+	TextBox *gridSizeTextbox;
+	Button *completeButton;
+	Button *removePointButton;
+	Button *removeAllPointsButton;
+	Dropdown *terrainActionDropdown;
+	Dropdown *terrainLayerDropdown;
+	Dropdown *drawModeDropdown;
+
+	sf::Vector2i matPanelPos;
+
+	std::vector<ImageChooseRect*> currMatRects;
+};
+
+struct CreateEnemyModeUI
+{
+	CreateEnemyModeUI();
+	~CreateEnemyModeUI();
+
+	EnemyVariationSelector *varSelector;
+	void ExpandVariation(EnemyChooseRect *ceRect);
+	std::vector<EnemyChooseRect*> allEnemyRects;
+
+	std::vector<EnemyChooseRect*> hotbarEnemies;
+	ImageChooseRect *librarySearchRect;
+	int activeHotbarSize;
+	std::vector<std::vector<EnemyChooseRect*>>
+		libraryEnemiesVec;
+	void SetActiveLibraryWorld(int w);
+	int activeLibraryWorld;
+	std::vector<ImageChooseRect*> worldSelectRects;
+
+	void UpdateHotbarTypes();
+	Panel *topbarPanel;
+	Panel *libPanel;
+	EditSession *edit;
+	void SetShown(bool s);
+	void SetLibraryShown(bool s);
+	void FlipLibraryShown();
+	bool showLibrary;
+	bool show;
+};
+
+struct CreateDecorModeUI
+{
+	CreateDecorModeUI();
+	~CreateDecorModeUI();
+
+	void SetActiveLibraryWorld(int w);
+	int activeLibraryWorld;
+	std::vector<ImageChooseRect*> worldSelectRects;
+	void UpdateHotbarTypes();
+	void SetShown(bool s);
+	void SetLibraryShown(bool s);
+	void FlipLibraryShown();
+
+	EditSession *edit;
+
+	bool showLibrary;
+	bool show;
+
+	Panel *topbarPanel;
+	Panel *libPanel;
+	std::vector<ImageChooseRect*> allImageRects;
+	std::vector<std::vector<ImageChooseRect*>>
+		libraryImagesVec;
+	std::vector<ImageChooseRect*> hotbarImages;
+	int activeHotbarSize;
+
+	ImageChooseRect *librarySearchRect;
+};
 
 #endif

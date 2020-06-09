@@ -48,7 +48,6 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 {
 	if (menuDrop == fileDropdown)
 	{
-
 	}
 	else if (menuDrop == editDropdown)
 	{
