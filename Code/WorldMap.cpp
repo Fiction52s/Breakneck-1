@@ -763,49 +763,12 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	case COLONY:
 		{
-		//if (currInput.A && !prevInput.A)
-		//{
-		//	state = OFF;
-		//	frame = 0;
-		//	return false; //start a map!
-		//}
-		if (currInput.B && !prevInput.B)
-		{
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_out"));
-			state = COLONY_TO_PLANET;
-			frame = 0;
-		}
-		else
-		{
-			CurrSelector()->Update(currInput, prevInput);
-		}
-			//if( frame == 0 )
-			//{
-			//	back.setTexture( *ts_colony[selectedColony]->texture );
-			//	back.setColor( Color( 255, 255, 255, 255 ) );
-			//}
-
-			////cout << "currInput.ldown: " << currInput.LDown() << ", prevldown: " << prevInput.LDown() << endl;
-			//if( currInput.LDown() && !prevInput.LDown() )
-			//{
-			//	++selectedLevel;
-			//	if( selectedLevel == numTotalEntries )
-			//		selectedLevel = 0;
-			//}
-			//else if( currInput.LUp() && !prevInput.LUp() )
-			//{
-			//	--selectedLevel;
-			//	if( selectedLevel == -1 )
-			//	{
-			//		selectedLevel = numTotalEntries - 1;
-			//	}
-			//}
-
-			//selectedRect.setSize( Vector2f( 300, yspacing ) );
-			//selectedRect.setFillColor( Color::Green );
-			//selectedRect.setPosition( menuPos.x, 
-			//	menuPos.y + yspacing * selectedLevel );
-
+			if (!CurrSelector()->Update(currInput, prevInput))
+			{
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_out"));
+				state = COLONY_TO_PLANET;
+				frame = 0;
+			}
 			break;
 		}
 	case COLONY_TO_PLANET:

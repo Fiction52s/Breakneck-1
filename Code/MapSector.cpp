@@ -166,7 +166,7 @@ void MapSector::SetXCenter(float x)
 {
 	xCenter = x;
 
-	left = Vector2f(xCenter - 600, 400 + sectorIndex * 120);
+	left = Vector2f(xCenter - 600, 400);
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
@@ -375,6 +375,11 @@ int MapSector::GetNumLevels()
 	return sec->numLevels;
 }
 
+void MapSector::UpdateBG()
+{
+	bg->Update(Vector2f(960, 540));
+}
+
 void MapSector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
@@ -481,8 +486,6 @@ void MapSector::Update(ControllerState &curr,
 				state = NORMAL;
 				//unlockedIndex
 			}
-			//UpdateUnlockedLevelCount();
-			//ms->mapSelector->SetTotalSize(unlockedLevelCount);
 
 			stateFrame = 0;
 		}
@@ -527,7 +530,7 @@ void MapSector::Update(ControllerState &curr,
 		}
 	}
 
-	bg->Update(Vector2f(960, 540));
+	
 
 	++frame;
 	++stateFrame;
@@ -756,8 +759,15 @@ void MapSector::Init(Sector *m_sec)
 	int oldNumLevels = numLevels;
 	numLevels = sec->numLevels;
 
-	bg = Background::SetupFullBG("w1_0" + to_string(sec->world->index + 1), &(ms->mainMenu->tilesetManager));
-
+	string worldStr = to_string(sec->world->index + 1);
+	
+	if (bg == NULL)
+	{
+		string secStr = to_string(sec->index + 1);
+		string bgStr = "w" + worldStr + "_0" + secStr;
+		bg = Background::SetupFullBG(bgStr, &(ms->mainMenu->tilesetManager));
+	}
+		
 	stringstream ss;
 
 	ss.str("");

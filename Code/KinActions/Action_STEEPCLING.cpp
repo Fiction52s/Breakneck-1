@@ -159,14 +159,13 @@ void Actor::STEEPCLING_Update()
 			normalize(ground->v1 - ground->v0)) / slowMultiple;
 	}
 
-	double limit = 2;
-	if (currNormal.x > 0 && groundSpeed > limit)
+	if (currNormal.x > 0 && groundSpeed > steepClingSpeedLimit)
 	{
-		groundSpeed = limit;
+		groundSpeed = steepClingSpeedLimit;
 	}
-	else if( currNormal.x < 0 && groundSpeed < -limit )
+	else if( currNormal.x < 0 && groundSpeed < -steepClingSpeedLimit)
 	{
-		groundSpeed = -limit;
+		groundSpeed = -steepClingSpeedLimit;
 	}
 }
 

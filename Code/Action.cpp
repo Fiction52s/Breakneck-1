@@ -759,19 +759,6 @@ void Brush::Save(std::ofstream &of)
 		}
 	}
 
-	//if (freeActorCopiedBrush != NULL)
-	//{
-	//	ActorPtr actor;
-	//	for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
-	//	{
-	//		actor = (*it)->GetAsActor();
-	//		if (actor == NULL)
-	//			continue;
-
-	//		actor->diffFromGrabbed = actor->posInfo.GetPosition() - V2d(freeActorCopiedBrush->GetCenter());//worldPos;
-	//	}
-	//}
-
 	Brush freeGroundedActors;
 
 	ActorPtr a;
@@ -806,8 +793,6 @@ void Brush::Save(std::ofstream &of)
 		{
 			(*it)->BrushSave(of);
 		}
-
-		
 	}
 }
 

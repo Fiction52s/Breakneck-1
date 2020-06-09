@@ -33,6 +33,7 @@
 #include "EnemyChain.h"
 
 #include "GateMarker.h"
+#include "BrushManager.h"
 
 using namespace std;
 using namespace sf;
@@ -869,6 +870,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	runToResave = false;
 
 	gameCam = false;
+	brushManager = NULL;
 
 	boxToolColor = Color(255, 0, 0, 50);
 	SetRectColor(boxToolQuad, boxToolColor);
@@ -1002,6 +1004,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 PolyPtr EditSession::GetPolygon(int index )
 {
+	Brush *currLoadingBrush = brushManager->currLoadingBrush;
 	if (currLoadingBrush != NULL)
 	{
 		int counter = 0;
@@ -1099,6 +1102,8 @@ EditSession::~EditSession()
 
 	delete graph;
 
+	delete brushManager;
+
 	delete polygonInProgress;
 	delete railInProgress;
 
@@ -1169,7 +1174,7 @@ EditSession::~EditSession()
 
 	delete matTypePanel;
 	delete shardTypePanel;
-		
+	delete nameBrushPanel;
 
 	mapStartBrush->Destroy();
 
@@ -2641,10 +2646,22 @@ void EditSession::SetupShardSelectPanel()
 	}
 }
 
+void EditSession::SetupBrushPanels()
+{
+	nameBrushPanel = new Panel("namebrush", 300, 150, this, true);
+	nameBrushPanel->AddLabel("name", Vector2i(10, 10), 28, "Name the Brush:");
+	nameBrushPanel->AddTextBox("text", Vector2i(40, 10), 200, 20, "");
+	Button *OK = nameBrushPanel->AddButton("ok", Vector2i(250, 10),
+		Vector2f(30, 30), "OK");
+	nameBrushPanel->SetConfirmButton(OK);
+	Button *cancel = nameBrushPanel->AddButton("cancel", Vector2i(250, 50),
+		Vector2f(30, 30), "Cancel");
+	nameBrushPanel->SetConfirmButton(cancel);
+}
+
 
 int EditSession::Run()
 {
-	currLoadingBrush = NULL;
 	totalGameFrames = 0;
 	grassChanges = NULL;
 	focusedPanel = NULL;
@@ -2839,6 +2856,8 @@ int EditSession::Run()
 
 	ReadDecorImagesFile();
 
+	brushManager = new BrushManager;
+
 	ReadFile();
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
@@ -2880,6 +2899,7 @@ int EditSession::Run()
 
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
+	SetupBrushPanels();
 
 	graph = new EditorGraph;
 
@@ -3701,42 +3721,6 @@ void EditSession::CreateError(ErrorType er)
 void EditSession::HideErrorBar()
 {
 	errorBar.SetShown(false);
-}
-
-void EditSession::SaveBrush(Brush *b)
-{
-	if (b != NULL)
-	{
-		ofstream of;
-		of.open("testbrush");
-		b->Save(of);
-		of.close();
-	}
-	else
-	{
-		cout << "cannot save null brush" << endl;
-	}
-}
-
-
-Brush *EditSession::LoadBrush(const std::string &path)
-{
-	ifstream is;
-	is.open(path);
-
-	if (is.is_open())
-	{
-		Brush *b = new Brush;
-		currLoadingBrush = b;
-		b->Load(is);
-		currLoadingBrush = NULL;
-		return b;
-	}
-	else
-	{
-		cout << "couldn't open brush file: " << path << endl;
-		assert(0);
-	}
 }
 
 int EditSession::GetSpecialTerrainMode()
@@ -12387,7 +12371,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			Brush *loadedBrush = LoadBrush("testbrush");
+			Brush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
 			DestroyCopiedBrushes();
 
 			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
@@ -12399,7 +12383,7 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			SaveBrush(selectedBrush);
+			brushManager->SaveBrush(selectedBrush, "", "testbrush");
 		}
 		break;
 	}

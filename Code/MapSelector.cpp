@@ -25,7 +25,7 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 	kinJumpSprite.setPosition(960, 540 + 300);
 
 	worldIndex = wIndex;
-	state = S_IDLE;
+	state = S_SECTORSELECT;
 	mainMenu = mm;
 
 	string worldIndexStr = to_string(1);//to_string(worldIndex+1);
@@ -113,7 +113,6 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 
 MapSelector::~MapSelector()
 {
-
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
 
@@ -147,7 +146,7 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	for (int i = 0; i < numSectors; ++i)
 	{
 		//sectors[saSelector->currIndex]->Draw(target);
-		sectors[0]->Draw(target);
+		sectors[sectorSelector->currIndex]->Draw(target);
 	}
 
 	target->draw(kinJumpSprite);
@@ -173,52 +172,63 @@ MapSector * MapSelector::GetFocusedSector()
 	return sectors[sectorSelector->currIndex];
 }
 
-void MapSelector::Update(ControllerState &curr,
+bool MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
 	ControllerState empty;
 	MapSector::State currSectorState = GetFocusedSector()->state;
-	if (state == S_IDLE && (currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE))
+
+
+	bool left = curr.LLeft();
+	bool right = curr.LRight();
+
+	switch (state)
 	{
-		bool left = curr.LLeft();
-		bool right = curr.LRight();
-
-		int changed = sectorSelector->UpdateIndex(curr.LUp(), curr.LDown());
-
+	case S_SECTORSELECT:
+	{
+		if (curr.A && !prev.A)
+		{
+			state = S_MAPSELECT;
+			break;
+		}
+		else if (curr.B && !prev.B)
+		{
+			return false;
+		}
+		//(currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE)
+		int changed = sectorSelector->UpdateIndex(curr.LLeft(), curr.LRight());
 		int numCurrLevels = GetFocusedSector()->unlockedLevelCount;
-		if (changed != 0)//&& mapSelector->currIndex > numCurrLevels)
+		if (changed != 0)
 		{
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
 			mapSelector->SetTotalSize(numCurrLevels);
 			GetFocusedSector()->UpdateLevelStats();
 		}
-		//if (changed > 0 && saSelector->totalItems > 1 )
-		//{
-		//	//state = S_SLIDINGRIGHT;
-		//	//frame = 0;
-		//}
-		//else if (changed < 0 && saSelector->totalItems > 1 )
-		//{
-		//	//state = S_SLIDINGLEFT;
-		//	//frame = 0;
-		//}
-		//else
-		{
-			sectors[sectorSelector->currIndex]->Update(curr, prev);
-		}
+		
+		break;
 	}
-	else if (state == S_IDLE)
+	case S_MAPSELECT:
 	{
+		if (curr.B && !prev.B)
+		{
+			state = S_SECTORSELECT;
+			break;
+		}
+
 		sectors[sectorSelector->currIndex]->Update(curr, prev);
+		break;
+	}
 	}
 
-	for (int i = 0; i < numSectors; ++i)
+	sectors[sectorSelector->currIndex]->UpdateBG();
+
+	/*for (int i = 0; i < numSectors; ++i)
 	{
 		if (sectorSelector->currIndex == i)
 			continue;
 
 		sectors[i]->UpdateNodes();
-	}
+	}*/
 
 	UpdateHighlight();
 	//else if (state == S_SLIDINGLEFT)
@@ -292,6 +302,8 @@ void MapSelector::Update(ControllerState &curr,
 		kinJumpSprite.getLocalBounds().height / 2);
 
 	++frame;
+
+	return true;
 }
 
 void MapSelector::UpdateAllInfo(int index)

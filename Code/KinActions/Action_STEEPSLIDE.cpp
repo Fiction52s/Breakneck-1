@@ -61,7 +61,7 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
-			if (currInput.LUp())
+			if (currInput.LUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
 			{
 				SetAction(STEEPCLING);
 				frame = 0;
@@ -105,7 +105,7 @@ void Actor::STEEPSLIDE_Change()
 		}
 		else
 		{
-			if (currInput.LUp())
+			if (currInput.LUp() && abs(groundSpeed) < steepClingSpeedLimit * 2)
 			{
 				SetAction(STEEPCLING);
 				frame = 0;

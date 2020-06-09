@@ -32,6 +32,8 @@ struct GateInfo;
 struct MenuDropdown;
 struct TerrainRail;
 
+struct Brush;
+
 struct UIMouse
 {
 	static UIMouse &GetInstance()
@@ -270,6 +272,14 @@ struct ImageChooseRect : ChooseRect
 	std::string decorName;
 };
 
+struct BrushChooseRect : ChooseRect
+{
+	BrushChooseRect(ChooseRectIdentity ident,
+		sf::Vertex *v, sf::Vector2f &position, 
+		int boxSize, Panel *p);
+	void SetBrush(Brush *b);
+	Brush *myBrush;
+};
 
 
 struct EnemyVariationSelector : PanelUpdater
@@ -359,13 +369,21 @@ struct EditModeUI : GUIHandler
 	void SetEnemyPanel( ActorParams * ap );
 	void SetCurrRailPanel(TerrainRail *rail);
 	void SaveKinOptions();
+	void CreateKinOptionsPanel();
+	void CreateMapOptionsPanel();
 	Panel *currEnemyPanel;
 	ActorParams *currParams;
 	TerrainRail *currRail;
 
 	Panel *mapOptionsPanel;
-	Panel *bgOptions;
+	Panel *bgOptionsPanel;
+	Panel *nameBrushPanel;
 
+
+	int labelCharHeight;
+	int labelExtraSpacing;
+	int labelExtraY;
+	sf::Vector2i labelExtra;
 
 	void ToggleKinOptionsPanel();
 	Panel *kinOptionsPanel;
@@ -612,26 +630,20 @@ struct CreateTerrainModeUI : GUIHandler
 	int GetTerrainLayer();
 	int GetCurrDrawTool();
 	void SetDrawTool(int t);
-
-	
 	int GetCurrTerrainTool();
 	void SetTerrainTool(int t);
 	void SetTempTerrainTool(int t);
 	void RevertTerrainTool();
+
 	int realTerrainTool;
-
-
-
+	int terrainGridSize;
 
 	bool show;
 	EditSession *edit;
-
-	int terrainGridSize;
-	Panel *matTypePanel;
-	//std::vector<ImageChooseRect*> *matTypeRects;
-
-	Panel *mainPanel;
 	
+	Panel *matTypePanel;
+	Panel *mainPanel;
+	Panel *nameBrushPanel;
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
@@ -646,8 +658,6 @@ struct CreateTerrainModeUI : GUIHandler
 	sf::Vector2i matPanelPos;
 
 	std::vector<ImageChooseRect*> currMatRects;
-	
-	
 };
 
 struct CreateEnemyModeUI
@@ -941,6 +951,9 @@ struct Panel
 	bool hasFocusedTextbox;
 	Button *confirmButton;
 	void SetConfirmButton(Button *b);
+
+	Button *cancelButton;
+	void SetCancelButton(Button *b);
 
 	PanelMember *focusedMember;
 	void SetFocusedMember(PanelMember*pm);

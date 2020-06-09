@@ -980,6 +980,7 @@ struct Actor : QuadTreeCollider,
 	double steepClimbGravFactor;
 	double steepClimbUpFactor;
 	double steepClimbDownFactor;
+	double steepClingSpeedLimit;
 
 	double GetDashSpeed();
 	double GetAirDashSpeed();

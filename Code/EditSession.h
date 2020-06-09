@@ -57,6 +57,8 @@ struct EnemyChooser;
 
 struct PlayerTracker;
 
+struct BrushManager;
+
 struct GrassDiff
 {
 	PolyPtr poly;
@@ -531,6 +533,9 @@ struct EditSession : GUIHandler, Session
 	std::vector<ImageChooseRect*> shardTypeRects;
 	void SetupShardSelectPanel();
 
+	Panel *nameBrushPanel;
+	void SetupBrushPanels();
+
 	void EditModeDelete();
 	void EditModeTransform();
 	void EditModeCopy();
@@ -552,10 +557,8 @@ struct EditSession : GUIHandler, Session
 	std::list<PolyPtr> flyPolygons;
 
 	int GetSpecialTerrainMode();
-	void SaveBrush(Brush *b);
-	Brush *LoadBrush(const std::string &path);
-	
-	Brush *currLoadingBrush;
+
+	BrushManager *brushManager;
 
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;

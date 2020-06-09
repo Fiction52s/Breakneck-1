@@ -49,6 +49,7 @@ struct MapSector
 	void Load();
 	void Update(ControllerState &curr,
 		ControllerState &prev);
+	void UpdateBG();
 	void SetXCenter(float x);
 	void Draw(sf::RenderTarget *target);
 	void UpdateNodes();
@@ -124,7 +125,8 @@ struct MapSelector
 	{
 		//S_SLIDINGLEFT,
 		//S_SLIDINGRIGHT,
-		S_IDLE,
+		S_SECTORSELECT,
+		S_MAPSELECT,
 	};
 
 	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
@@ -134,7 +136,7 @@ struct MapSelector
 	~MapSelector();
 	MapSector *GetFocusedSector();
 	void UpdateSprites();
-	void Update(ControllerState &curr,
+	bool Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateAllInfo(int index);
 	void Draw(sf::RenderTarget *target);

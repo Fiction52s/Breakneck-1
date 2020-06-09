@@ -2473,6 +2473,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	steepClimbGravFactor = .6;//.31;
 	steepClimbUpFactor = .31;
 	steepClimbDownFactor = .8;
+	steepClingSpeedLimit = 2.0;
 	//steepClimbFastFactor = .7;//.2;
 	framesSinceClimbBoost = 0;
 	climbBoostLimit = 25;//22;//15;
