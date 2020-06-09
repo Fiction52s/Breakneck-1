@@ -576,7 +576,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	float radDiff;
 	float flowSpacing;
 	float maxFlowRings;
-	void DrawGoal();
+	void DrawGoalEnergy();
 
 	
 	void DrawZones();

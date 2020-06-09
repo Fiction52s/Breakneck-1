@@ -6315,9 +6315,16 @@ int GameSession::Run()
 		
 		//DrawTerrainPieces(listVA);
 		
-		
+		DrawGoalEnergy();
 
-		DrawGoal();
+		preScreenTex->setView(uiView);
+
+		if (adventureHUD != NULL)
+		{
+			adventureHUD->Draw(preScreenTex);
+		}
+
+		preScreenTex->setView(view);
 
 		DrawGates();
 
@@ -6442,15 +6449,17 @@ int GameSession::Run()
 
 		preScreenTex->setView( uiView );
 
+
+
 		if( raceFight != NULL )
 		{
 			raceFight->DrawScore( preScreenTex );
 		}
 	
-		if (adventureHUD != NULL)
+		/*if (adventureHUD != NULL)
 		{
 			adventureHUD->Draw(preScreenTex);
-		}
+		}*/
 
 		scoreDisplay->Draw(preScreenTex);
 
@@ -8185,7 +8194,7 @@ void GameSession::DrawDecorBetween()
 	}
 }
 
-void GameSession::DrawGoal()
+void GameSession::DrawGoalEnergy()
 {
 	if (hasGoal)
 	{
