@@ -742,6 +742,9 @@ SelectPtr Brush::GetFirst()
 void Brush::Save(std::ofstream &of)
 {
 	int terrainCounter = 0;
+
+	set<PolyPtr> polys;
+
 	PolyPtr poly;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
@@ -751,10 +754,30 @@ void Brush::Save(std::ofstream &of)
 			poly->writeIndex = terrainCounter;
 			poly->BrushSave(of);
 			++terrainCounter;
+
+			polys.insert(poly);
 		}
-		
 	}
 
+	//if (freeActorCopiedBrush != NULL)
+	//{
+	//	ActorPtr actor;
+	//	for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
+	//	{
+	//		actor = (*it)->GetAsActor();
+	//		if (actor == NULL)
+	//			continue;
+
+	//		actor->diffFromGrabbed = actor->posInfo.GetPosition() - V2d(freeActorCopiedBrush->GetCenter());//worldPos;
+	//	}
+	//}
+
+	Brush freeGroundedActors;
+
+	ActorPtr a;
+	PolyPtr myPoly;
+
+	bool freeGrounded = false;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
@@ -763,7 +786,28 @@ void Brush::Save(std::ofstream &of)
 			continue;
 		}
 
-		(*it)->BrushSave(of);
+		a = (*it)->GetAsActor();
+		freeGrounded = false;
+
+		if (a != NULL)
+		{
+			myPoly = a->posInfo.ground;
+
+			if (myPoly != NULL && polys.find(myPoly) == polys.end())
+			{
+				myPoly->writeIndex = -2; //so that it can't show up in the list
+				freeGrounded = true;
+			}
+
+			a->BrushSave(of);
+			of << (int)freeGrounded << "\n";
+		}
+		else
+		{
+			(*it)->BrushSave(of);
+		}
+
+		
 	}
 }
 
@@ -803,6 +847,10 @@ bool Brush::Load(std::ifstream &is)
 		case ISelectable::ACTOR:
 		{
 			is >> groupName;
+			
+			Vector2i savedPos;
+			is >> savedPos.x;
+			is >> savedPos.y;
 
 			is >> typeName;
 
@@ -823,6 +871,14 @@ bool Brush::Load(std::ifstream &is)
 
 			ActorGroup *ag = edit->groups[groupName];
 			a->group = ag;
+
+			int freeGrounded;
+			is >> freeGrounded;
+
+			if (freeGrounded)
+			{
+				a->MoveTo(savedPos);
+			}
 
 			objects.push_back(a);
 			break;

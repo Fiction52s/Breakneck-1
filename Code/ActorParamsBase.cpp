@@ -283,9 +283,14 @@ void ActorParams::PlaceAerial(sf::Vector2i &pos)
 void ActorParams::PlaceGrounded(PolyPtr tp,
 	int edgeIndex, double quant)
 {
-	assert(tp != NULL);
-	AnchorToGround(tp, edgeIndex, quant);
-	SetBoundingQuad();
+	//assert(tp != NULL);
+	if (tp != NULL)
+	{
+
+
+		AnchorToGround(tp, edgeIndex, quant);
+		SetBoundingQuad();
+	}
 }
 
 void ActorParams::PlaceRailed(TerrainRail *rail,
@@ -566,8 +571,11 @@ void ActorParams::BrushSave(std::ofstream &of)
 		return;
 	}
 
+	Vector2i intPos = GetIntPos();
+
 	of << ISelectable::ACTOR << "\n";
 	of << group->name << "\n";
+	of << intPos.x << " " << intPos.y << "\n";
 	WriteFile(of);
 }
 

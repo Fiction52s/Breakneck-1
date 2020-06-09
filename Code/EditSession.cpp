@@ -12212,9 +12212,6 @@ void EditSession::EditModePaste()
 
 		if (freeActorCopiedBrush != NULL)
 		{
-
-			//freeActorCopiedBrush->CenterOnPoint(pos);
-
 			ActorPtr actor;
 			for (auto it = freeActorCopiedBrush->objects.begin(); it != freeActorCopiedBrush->objects.end(); ++it)
 			{
