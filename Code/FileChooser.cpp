@@ -37,9 +37,7 @@ void FolderNode::AddFile(const path &p_filePath)
 {
 	FileNode *fileNode = new FileNode;
 	fileNode->filePath = p_filePath;
-	fileNode->parentFolder = this;
 	SetRectColor(fileNode->previewSpr, Color::Red);
-
 	fileNodes.push_back(fileNode);
 }
 
@@ -167,12 +165,78 @@ void FolderTree::DebugPrintTree()
 
 FileChooser::FileChooser()
 {
-	folderTree = new FolderTree(current_path().string(), ".brknk");
-	folderTree->DebugPrintTree();
+	basePath = current_path();
+	ext = ".brknk";
+	SetPath("Resources/Maps/W1");
+	Print();
+	//folderTree = new FolderTree(current_path().string(), ".brknk");
+	//folderTree->DebugPrintTree();
+}
+
+void FileChooser::AddFile(const path &p_filePath)
+{
+	FileNode *fileNode = new FileNode;
+	fileNode->filePath = p_filePath;
+	SetRectColor(fileNode->previewSpr, Color::Red);
+
+	fileNodes.push_back(fileNode);
+}
+
+void FileChooser::ClearFiles()
+{
+	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+	{
+		delete (*it);
+	}
+	fileNodes.clear();
+}
+
+void FileChooser::SetPath(const std::string &relPath)
+{
+	ClearFiles();
+	childFolders.clear();
+
+	path p(basePath / relPath);
+
+	assert(exists(p));
+	assert(is_directory(p));
+	vector<path> v;
+	copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+
+	sort(v.begin(), v.end());
+
+	for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
+	{
+		if (is_regular_file((*it)))
+		{
+			if ((*it).extension().string() == ext)
+			{
+				AddFile((*it));
+			}
+		}
+		if (is_directory((*it)) )
+		{
+			childFolders.push_back((*it));
+		}
+	}
+}
+
+void FileChooser::Print()
+{
+	cout << "folders: " << "\n";
+	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
+	{
+		cout << "\t" << (*it).filename() << "\n";
+	}
+
+	cout << "files: " << "\n";
+	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+	{
+		cout << "\t" << (*it)->filePath.filename().string() << "\n";
+	}
 }
 
 FileChooser::~FileChooser()
 {
-	delete folderTree;
+	//delete folderTree;
 }
-

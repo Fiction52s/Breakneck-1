@@ -15,8 +15,6 @@ struct FileNode
 	Tileset *ts_preview;
 	boost::filesystem::path filePath;
 	sf::Vertex previewSpr[4];
-	FolderNode *parentFolder;
-	
 };
 
 struct FolderNode
@@ -54,9 +52,17 @@ struct FileChooser
 	FileChooser();
 	~FileChooser();
 
-	FolderTree *folderTree;
-	FolderNode *currentFolder;
-	//void SynchronousPreviewLoad();
+	void SetPath(const std::string &relPath);
+	void AddFile(const boost::filesystem::path &filePath);
+	std::list<FileNode*> fileNodes;
+	void ClearFiles();
+	std::list<boost::filesystem::path> childFolders;
+
+	void Print();
+
+	std::string ext;
+	boost::filesystem::path basePath;
+
 	Panel *panel;
 };
 
