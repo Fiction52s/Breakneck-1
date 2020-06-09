@@ -56,103 +56,84 @@ struct MapSector
 	MapSector(MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
-	int unlockedLevelCount;
-
-	int frame;
-	int stateFrame;
-	State state;
-
 	bool IsFocused();
 	void RunSelectedMap();
-
-	
-	Tileset *ts_thumb;
-	sf::Text sectorNameText;
-	
-	int nodeSize;
-	int pathLen;
-	sf::Vector2f left;
 	void Init(Sector *sec);
-	Sector *sec;
-
 	int GetNumLevels();
-
 	void UpdateNodePosition();
 	int GetSelectedIndex();
 	Level &GetSelectedLevel();
-
-
-	int numLevels;
 	void Load();
-	int unlockedIndex;
-	int unlockFrame;
-	//SingleAxisSelector *saSelector; //select level
-
-	int numTotalShards;
-	sf::Vertex *levelCollectedShards;
-	sf::Vertex *levelCollectedShardsBG;
-
-	sf::Sprite *nodes;
-
-	//worry about bonuses later
-	int selectedYIndex;
-	sf::Sprite *topBonusNodes;
-	sf::Sprite *botBonusNodes;
-	
-	
-	int sectorIndex;
-	sf::Sprite thumbnail;
-	sf::Vertex levelBG[4];
-	sf::Vertex statsBG[4];
-	sf::Vertex sectorStatsBG[4];
-	
-	sf::Text *unlockCondText;
-	int numUnlockConditions;
-	sf::Text shardsCollectedText;
-	sf::Text completionPercentText;
-	sf::Text levelPercentCompleteText;
-	sf::Sprite endSpr;
-
-	Tileset *ts_energyCircle;
-	Tileset *ts_energyTri;
-	Tileset *ts_energyMask;
-	Tileset *ts_nodeExplode;
-	Tileset *ts_shards;
-
-	sf::Sprite nodeExplodeSpr;
-
 	void Update(ControllerState &curr,
 		ControllerState &prev);
-	void SetXCenter( float x );
+	void SetXCenter(float x);
 	void Draw(sf::RenderTarget *target);
-	
-	
-	
 	void UpdateNodes();
 	sf::Vector2f GetNodePos(int n);
 	sf::Vector2f GetSelectedNodePos();
 	int GetNodeSubIndex(int node);
 	int GetSelectedNodeSubIndex();
-
 	int GetSelectedNodeBossFightType();
-
 	bool HasTopBonus(int node);
 	bool HasBotBonus(int node);
 	sf::Vector2f GetTopNodePos(int n);
 	sf::Vector2f GetBotNodePos(int n);
 	int GetNodeBonusIndexTop(int node);
 	int GetNodeBonusIndexBot(int node);
-	
-	float xCenter;
-	float percentComplete;
-	MapSelector *ms;
-	
 	void UpdateLevelStats();
 	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
 	void DrawUnlockConditions(sf::RenderTarget *target);
 	void UpdateUnlockConditions();
 	void UpdateStats();
+
+	State state;
+
+	sf::Vector2f left;
+
+	float xCenter;
+	float percentComplete;
+
+	int unlockedLevelCount;
+	int frame;
+	int stateFrame;
+	int nodeSize;
+	int pathLen;
+	int numLevels;
+	int unlockedIndex;
+	int unlockFrame;
+	int numTotalShards;
+	int numUnlockConditions;
+	int selectedYIndex;
+	int sectorIndex;
+
+	sf::Vertex *levelCollectedShards;
+	sf::Vertex *levelCollectedShardsBG;
+	sf::Vertex levelBG[4];
+	sf::Vertex statsBG[4];
+	sf::Vertex sectorStatsBG[4];
+	sf::Sprite *nodes;
+	sf::Sprite *topBonusNodes;
+	sf::Sprite *botBonusNodes;
+	sf::Sprite thumbnail;
+	sf::Sprite nodeExplodeSpr;
+	sf::Sprite endSpr;
+
+	sf::Text shardsCollectedText;
+	sf::Text completionPercentText;
+	sf::Text levelPercentCompleteText;
+	sf::Text *unlockCondText;
+	sf::Text sectorNameText;
+
+	Tileset *ts_thumb;
+	Tileset *ts_energyCircle;
+	Tileset *ts_energyTri;
+	Tileset *ts_energyMask;
+	Tileset *ts_nodeExplode;
+	Tileset *ts_shards;
+	
+	Sector *sec;
+	MapSelector *ms;
 };
 
 struct MapSelector
@@ -330,14 +311,10 @@ struct WorldMap
 	bool moveUp;
 	MapSelector *CurrSelector();
 	void InitSelectors();
-	//MapSelector *testSelector;
 	MapSelector *selectors[7];
 	MainMenu *mainMenu;
 
 	sf::Text currLevelTimeText;
-
-	//ControllerState currInput;
-	//ControllerState prevInput;
 };
 
 #endif
