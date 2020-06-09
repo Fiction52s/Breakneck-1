@@ -7,7 +7,6 @@
 using namespace std;
 using namespace sf;
 
-
 MapSector::MapSector(MapSelector *p_ms, int index)
 	:numLevels(-1), ms(p_ms), sectorIndex(index)
 {
@@ -19,42 +18,42 @@ MapSector::MapSector(MapSelector *p_ms, int index)
 	nodes = NULL;
 	unlockCondText = NULL;
 
-	//SetRectColor(levelBG, Color(100, 100, 100, 100));
+	MainMenu *mainMenu = ms->mainMenu;
+
+	bg = NULL;
+
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
 	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
 	SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
-	//SetRectColor(statsBG, Color(100, 100, 100, 100));
-	//SetRectColor(sectorStatsBG, Color(100, 100, 100, 100));
 
-	ts_energyCircle = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
-	ts_energyTri = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
-	ts_energyMask = ms->mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
-	ts_nodeExplode = ms->mainMenu->tilesetManager.GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
+	ts_energyCircle = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
+	ts_energyTri = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
+	ts_energyMask = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
+	ts_nodeExplode = mainMenu->tilesetManager.GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
+
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
 	nodeExplodeSpr.setOrigin(nodeExplodeSpr.getLocalBounds().width / 2, nodeExplodeSpr.getLocalBounds().height / 2);
 
-
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
 
-	shardsCollectedText.setFont(ms->mainMenu->arial);
-	completionPercentText.setFont(ms->mainMenu->arial);
+	shardsCollectedText.setFont(mainMenu->arial);
+	completionPercentText.setFont(mainMenu->arial);
 
 	shardsCollectedText.setCharacterSize(40);
-	completionPercentText.setCharacterSize(40);
-
 	shardsCollectedText.setFillColor(Color::White);
-	completionPercentText.setFillColor(Color::White);
 
+	completionPercentText.setCharacterSize(40);
+	completionPercentText.setFillColor(Color::White);
 
 	levelPercentCompleteText.setFillColor(Color::White);
 	levelPercentCompleteText.setCharacterSize(40);
-	levelPercentCompleteText.setFont(ms->mainMenu->arial);
+	levelPercentCompleteText.setFont(mainMenu->arial);
 
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(40);
-	sectorNameText.setFont(ms->mainMenu->arial);
+	sectorNameText.setFont(mainMenu->arial);
 	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 }
 
@@ -86,6 +85,8 @@ MapSector::~MapSector()
 	{
 		delete[]unlockCondText;
 	}
+
+	delete bg;
 }
 
 void MapSector::UpdateUnlockedLevelCount()
@@ -111,12 +112,10 @@ bool MapSector::IsFocused()
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
+	bg->Draw(target);
 
 	bool focused = IsFocused();
 	bool unlocked = sec->IsUnlocked();
-
-	//	sectorNameText.setPosition(960, 100 + rand() % 200 );
-
 
 	if (focused)
 	{
@@ -134,7 +133,6 @@ void MapSector::Draw(sf::RenderTarget *target)
 			DrawUnlockConditions(target);
 		}
 
-		target->draw(thumbnail);
 
 
 	}
@@ -180,8 +178,6 @@ void MapSector::SetXCenter(float x)
 	}
 
 
-
-	thumbnail.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 0);
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
@@ -531,6 +527,8 @@ void MapSector::Update(ControllerState &curr,
 		}
 	}
 
+	bg->Update(Vector2f(960, 540));
+
 	++frame;
 	++stateFrame;
 }
@@ -758,19 +756,14 @@ void MapSector::Init(Sector *m_sec)
 	int oldNumLevels = numLevels;
 	numLevels = sec->numLevels;
 
+	bg = Background::SetupFullBG("w1_0" + to_string(sec->world->index + 1), &(ms->mainMenu->tilesetManager));
+
 	stringstream ss;
-	ss.str("");
-	ss << "WorldMap/Thumbnails/mapthumb_w" << sec->world->index + 1 << "_" << sectorIndex + 1 << "_256x256.png";
-	ts_thumb = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 256, 256);
-	assert(ts_thumb != NULL);
 
 	ss.str("");
 	ss << "Shard/shards_w" << (sec->world->index + 1) << "_48x48.png";
 
 	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
-
-	thumbnail.setTexture(*ts_thumb->texture);
-	thumbnail.setOrigin(thumbnail.getLocalBounds().width / 2, thumbnail.getLocalBounds().height / 2);
 
 	sectorNameText.setString(sec->name);
 
@@ -787,9 +780,6 @@ void MapSector::Init(Sector *m_sec)
 		delete[] nodes;
 		nodes = NULL;
 
-		/*delete[] paths;
-		paths = NULL;*/
-
 		delete[] topBonusNodes;
 		topBonusNodes = NULL;
 
@@ -801,7 +791,6 @@ void MapSector::Init(Sector *m_sec)
 
 		Tileset *ts_node = ms->ts_node;
 		nodes = new Sprite[numLevels];
-		//paths = new Sprite[numLevels];
 		topBonusNodes = new Sprite[numLevels];
 		botBonusNodes = new Sprite[numLevels];
 

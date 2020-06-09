@@ -23,24 +23,7 @@ enum MapNodeState
 	NS_FULLY_BEATEN
 };
 
-struct SectorNode
-{
-	//shard info
-	//completion info
-};
-
 struct Sector;
-
-struct MapColony
-{
-
-};
-
-struct MapNode
-{
-
-};
-
 struct MapSector
 {
 	enum State
@@ -88,6 +71,8 @@ struct MapSector
 	void UpdateStats();
 
 	State state;
+	Sector *sec;
+	MapSelector *ms;
 
 	sf::Vector2f left;
 
@@ -115,7 +100,6 @@ struct MapSector
 	sf::Sprite *nodes;
 	sf::Sprite *topBonusNodes;
 	sf::Sprite *botBonusNodes;
-	sf::Sprite thumbnail;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
 
@@ -125,15 +109,13 @@ struct MapSector
 	sf::Text *unlockCondText;
 	sf::Text sectorNameText;
 
-	Tileset *ts_thumb;
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
 	Tileset *ts_shards;
-	
-	Sector *sec;
-	MapSelector *ms;
+
+	Background *bg;
 };
 
 struct MapSelector
@@ -145,80 +127,71 @@ struct MapSelector
 		S_IDLE,
 	};
 
-	bool showBG0;
-	Background *bg;
-	Background *bg2;
-	sf::Sprite newSelectTestSpr;
-
-	Tileset *ts_kinJump[5];
-	sf::Sprite kinJumpSprite;
-	int kinJumpFrame;
-	//sf::Sprite selectorTestKinSpr;
-
-	sf::Sprite nodeHighlight;
+	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
+		int wIndex);
 	void UpdateHighlight();
+	void RunSelectedMap();
+	~MapSelector();
+	MapSector *GetFocusedSector();
+	void UpdateSprites();
+	void Update(ControllerState &curr,
+		ControllerState &prev);
+	void UpdateAllInfo(int index);
+	void Draw(sf::RenderTarget *target);
 
+	State state;
+	MapSector **sectors;
+	MainMenu *mainMenu;
+
+	sf::Sprite newSelectTestSpr;
+	sf::Sprite nodeHighlight;
+	sf::Sprite kinJumpSprite;
+	sf::Sprite bottomBG;
+	sf::Sprite thumbnailBG;
+	sf::Sprite shardBG;
+
+	int worldIndex;
+	int kinJumpFrame;
+	int frame;
+	int numSectors;
+	
 	sf::Shader horizScrollShader1;
 	sf::Shader horizScrollShader2;
 
 	sf::Vertex backScrollEnergy[4];
 	sf::Vertex frontScrollEnergy[4];
-
-
-
 	
-	void RunSelectedMap();
-	State state;
-	//int slideDuration;
-	MapSelector( MainMenu *mm, sf::Vector2f &pos, int wIndex );
-	int worldIndex;
-	~MapSelector();
-	MapSector **sectors;
+	sf::Vector2f sectorCenter;
+	sf::Vector2f centerPos;
+	MapNodeState *nodeStates[3];
+	
+	SingleAxisSelector *sectorSelector;
+	SingleAxisSelector *mapSelector;
+
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;
 	Tileset *ts_sectorStatsBG;
 	Tileset *ts_scrollingEnergy;
-	MapSector *GetFocusedSector();
-
-	int numSectors;
-	
-	//int currSectorIndex;
-	sf::Vector2f sectorCenter;
-	
-	void UpdateAllInfo(int index);
-	MainMenu *mainMenu;
-
-	sf::Vector2f centerPos;
-	MapNodeState *nodeStates[3];
-	void UpdateSprites();
-	void Update(ControllerState &curr,
-		ControllerState &prev);
-
-	sf::Sprite bottomBG;
-	sf::Sprite thumbnailBG;
-	sf::Sprite shardBG;
-	void Draw(sf::RenderTarget *target);
-	SingleAxisSelector *sectorSelector;
-	SingleAxisSelector *mapSelector;
 	Tileset *ts_node;
 	Tileset **ts_bossFight;
 	Tileset *ts_sectorKey;
 	Tileset **ts_sectorOpen;
-	int frame;
+	Tileset *ts_kinJump[5];
+	
 };
 
 struct WorldSelector
 {
 	WorldSelector::WorldSelector(MainMenu *mm);
-	//void Reset()
-	sf::Vertex quads[4 * 4];
 	void Update();
-	sf::Vector2f position;
 	void SetPosition(sf::Vector2f &pos);
 	void SetAlpha(float alpha);
+	void Draw(sf::RenderTarget *target);
+
+	sf::Vector2f position;
 	float angles[4];
 	Tileset *ts;
-	void Draw(sf::RenderTarget *target);
+	sf::Vertex quads[4 * 4];
 };
 
 struct WorldMap
@@ -235,86 +208,88 @@ struct WorldMap
 		START_LEVEL
 	};
 
-
+	WorldMap(MainMenu *mainMenu);
 	void RunSelectedMap();
-	WorldSelector *worldSelector;
-	sf::Shader zoomShader;
-	WorldMap( MainMenu *mainMenu );
-	void Reset( SaveFile *sf );
+	void Reset(SaveFile *sf);
 	~WorldMap();
 	void Update(
 		ControllerState &prevInput,
-		ControllerState &currInput );
-	void Draw( sf::RenderTarget *target );
-	void CompleteCurrentMap( SaveFile *sf, int totalFrames );
+		ControllerState &currInput);
+	void Draw(sf::RenderTarget *target);
+	void CompleteCurrentMap(SaveFile *sf, int totalFrames);
 	Sector &GetCurrSector();
 	int GetCurrSectorNumLevels();
 	void UpdateMapList();
 	const std::string & GetSelected();
-	void UpdateMapList( TreeNode *parentNode, const std::string &relativePath );
+	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
 	void ClearEntries();
 	void UpdateColonySelect();
-	int Tex( int index, int level, TreeNode *entry );
-	State state;
-	int frame;
+	int Tex(int index, int level, TreeNode *entry);
 	void SetDefaultSelections();
-	sf::Sprite extraPassSpr;
-	sf::Sprite selectorExtraPass;
+	MapSelector *CurrSelector();
+	void InitSelectors();
+
+	State state;
+	WorldSelector *worldSelector;
+	MapSelector *selectors[7];
+	MainMenu *mainMenu;
+	
+	sf::Shader zoomShader;
+	sf::Shader asteroidShader;
+	
 	float currScale;
-	sf::Vector2f currCenter;
 	float oldZoomCurvePos;
 	float zoomCurvePos;
-	sf::View zoomView;
-	sf::View uiView;
 
-	Tileset *ts_space;
-	Tileset *ts_planet;
-
-	Tileset *ts_asteroids[4];
-	sf::Vertex asteroidQuads[4*4];
-	sf::Shader asteroidShader;
-	int asteroidFrame;
-
-	int selectedColony;
-	
-	Tileset *ts_colonyActiveZoomed[7];
-	sf::Vertex worldActiveQuads[7 * 4];
-	sf::Vertex worldActiveQuadsZoomed[7 * 4];
-	Tileset *ts_colonyActive[7];
-	Tileset *ts_colony[7];
-	Tileset *ts_colonySelect;
-	//Tileset *ts_colonySelect[7];
-	//Tileset *ts_colonySelectZoomed[7];
+	sf::Sprite extraPassSpr;
+	sf::Sprite selectorExtraPass;
 	sf::Sprite colonySpr[7];
 	sf::Sprite planetSpr;
 	sf::Sprite spaceSpr;
 	sf::Sprite colonySelectSpr;
 	sf::Sprite colonySelectSprZoomed;
 	
+	sf::Vector2f currCenter;
+	sf::Vector2f menuPos;
+	
+	sf::View zoomView;
+	sf::View uiView;
 
 	TreeNode **dirNode;
 	TreeNode *entries;
+
+	sf::Vertex asteroidQuads[4*4];
+	sf::Vertex worldActiveQuads[7 * 4];
+	sf::Vertex worldActiveQuadsZoomed[7 * 4];
+	
+	int frame;
+	int asteroidFrame;
 	int selectedLevel;
 	int numTotalEntries;
-	sf::Text * text;
-	sf::Font font;
-	std::string * localPaths;
+	int selectedColony;
 	int fontHeight;
 	int leftBorder;
-	//int xspacing;
 	int yspacing;
-	sf::Vector2f menuPos;
+	
+	Tileset *ts_space;
+	Tileset *ts_planet;
+	Tileset *ts_asteroids[4];
+	Tileset *ts_colonyActiveZoomed[7];
+	Tileset *ts_colonyActive[7];
+	Tileset *ts_colony[7];
+	Tileset *ts_colonySelect;
+	
+	sf::Text currLevelTimeText;
+	sf::Text * text;
+
+	sf::Font font;
+	std::string * localPaths;
+	
 	sf::RectangleShape bgRect;
 	sf::RectangleShape selectedRect;
 
 	bool moveDown;
 	bool moveUp;
-	MapSelector *CurrSelector();
-	void InitSelectors();
-	MapSelector *selectors[7];
-	MainMenu *mainMenu;
-
-	sf::Text currLevelTimeText;
 };
 
 #endif

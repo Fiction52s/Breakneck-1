@@ -677,7 +677,6 @@ struct MainMenu
 
 	static int masterVolume;
 
-;
 	//Tileset *ts_asteroid0;
 	//Tileset *ts_asteroid1;
 	//sf::Sprite asteroid0;
