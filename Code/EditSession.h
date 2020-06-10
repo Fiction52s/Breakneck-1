@@ -264,6 +264,11 @@ struct EditSession : GUIHandler, Session
 	sf::RenderTexture *mapPreviewTex;
 	sf::RenderTexture *brushPreviewTex;
 
+	void ChooseFileOpen(FileChooser *fc,
+		const std::string &fileName);
+	void ChooseFileSave(FileChooser *fc,
+		const std::string &fileName);
+
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);
 

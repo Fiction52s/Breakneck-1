@@ -30,8 +30,6 @@ TextBox::TextBox(const string &n, int posx, int posy, int width_p, int lengthLim
 	SetCursorIndex(initialText.length());
 
 	size = Vector2i(width, characterHeight + verticalBorder);
-
-
 }
 
 void TextBox::SetString(const std::string &str)
@@ -46,7 +44,7 @@ std::string TextBox::GetString()
 
 void TextBox::Deactivate()
 {
-	focused = false;
+	//focused = false;
 	clickedDown = false;
 }
 

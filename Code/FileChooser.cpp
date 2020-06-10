@@ -1,6 +1,7 @@
 #include "FileChooser.h"
 #include "VectorMath.h"
 #include <iostream>
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
@@ -169,7 +170,8 @@ FileChooser::FileChooser()
 	TilesetManager::SetGameResourcesMode(false); //allows tilesets to be outside
 	//of the resources folder
 	ext = ".brknk";
-	//ext = ".bnbrush";
+
+	edit = EditSession::GetSession();
 
 	float boxSize = 150;
 	Vector2f spacing(60, 60);
@@ -186,9 +188,9 @@ FileChooser::FileChooser()
 
 	imageRects = new ImageChooseRect*[totalRects];
 
-	panel = new Panel("filechooser", 1920, 
+	panel = new Panel("filechooser", 1920,
 		1080 - 28, this, true);
-	//panel->SetColor(Color(200, 100, 50, 100));
+
 	panel->SetPosition(Vector2i(0, 28));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
 	panel->ReserveImageRects(totalRects);
@@ -215,13 +217,19 @@ FileChooser::FileChooser()
 
 	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
 
-	SetRelativePath("Resources/Maps/W2");
-	//SetPath("Resources/Brushes");
+	panel->SetAutoSpacing(true, false, Vector2i(10, 960), Vector2i(30, 0));
+	fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+
+	//panel->AddButton("open", Vector2i(0, 0), Vector2f(60, 30), "Open");
+	panel->confirmButton = 
+		panel->AddButton("save", Vector2i(0, 0), Vector2f(60, 30), "Save");
+	panel->cancelButton = 
+		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
 }
 
 FileChooser::~FileChooser()
 {
-	ClearFiles();
+	ClearNodes();
 	delete panel;
 	delete[] imageRects;
 }
@@ -239,52 +247,56 @@ void FileChooser::Draw(sf::RenderTarget *target)
 	}
 }
 
-void FileChooser::Deactivate()
-{
-
-}
-
 void FileChooser::AddFile(const path &p_filePath)
 {
 	FileNode *fileNode = new FileNode;
 	fileNode->filePath = p_filePath;
+	fileNode->type = FileNode::FILE;
 
 	string pathStr = p_filePath.string();
-	//auto res = pathStr.find("Resources") + 10;
 	auto d = pathStr.find(".");
-
 	string middleTest = pathStr.substr(0, d);
-
-	//string relPath = p_filePath.string().substr( ;
-
 	string previewPath = middleTest + ".png";
 	fileNode->ts_preview = GetTileset(previewPath);
 
-	fileNodes.push_back(fileNode);
+	nodes.push_back(fileNode);
 }
 
-void FileChooser::ClearFiles()
+void FileChooser::AddFolder(const path &p_filePath)
 {
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+	FileNode *folderNode = new FileNode;
+	folderNode->filePath = p_filePath;
+	folderNode->type = FileNode::FOLDER;
+
+	string previewPath = "Resources/Menu/foldericon_100x100.png";
+	folderNode->ts_preview = GetSizedTileset(previewPath);
+
+	nodes.push_back(folderNode);
+}
+
+void FileChooser::ClearNodes()
+{
+	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
 		delete (*it);
 	}
-	fileNodes.clear();
+	nodes.clear();
 }
 
 void FileChooser::SetRelativePath(const std::string &p_relPath)
 {
-	//basePath = current_path();
 	string actualPath = current_path().string() + "/" + p_relPath;
 	SetPath(actualPath);
 }
 
 void FileChooser::SetPath(const std::string &p_path)
 {
-	ClearFiles();
-	childFolders.clear();
+	ClearNodes();
+	ClearTilesets();
 
 	topRow = 0;
+
+	ts_largePreview = NULL;
 
 	folderPathText->setString(p_path);
 
@@ -298,7 +310,7 @@ void FileChooser::SetPath(const std::string &p_path)
 
 	sort(v.begin(), v.end() );
 
-	fileNodes.reserve(v.size());
+	nodes.reserve(v.size());
 
 	for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
 	{
@@ -311,11 +323,11 @@ void FileChooser::SetPath(const std::string &p_path)
 		}
 		if (is_directory((*it)) )
 		{
-			childFolders.push_back((*it));
+			AddFolder((*it));
 		}
 	}
 
-	numEntries = fileNodes.size();
+	numEntries = nodes.size();
 
 	/*sort(fileNodes.begin(), fileNodes.end(),
 		[](FileNode *a, FileNode * b) -> bool
@@ -338,13 +350,15 @@ void FileChooser::PopulateRects()
 	Tileset *ts;
 	ImageChooseRect *icRect;
 	FileNode *node;
+	path *folderPath;
+
 	int start = topRow * cols;
 
 	int i;
 	for ( i = start; i < numEntries && i < start + totalRects; ++i )
 	{
 		icRect = imageRects[i - start];
-		node = fileNodes[i];
+		node = nodes[i];
 
 		icRect->SetName(node->filePath.filename().stem().string());
 		ts = node->ts_preview;
@@ -369,7 +383,7 @@ void FileChooser::PopulateRects()
 
 void FileChooser::Print()
 {
-	cout << "folders: " << "\n";
+	/*cout << "folders: " << "\n";
 	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
 	{
 		cout << "\t" << (*it).filename() << "\n";
@@ -379,14 +393,18 @@ void FileChooser::Print()
 	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
 	{
 		cout << "\t" << (*it)->filePath.filename().string() << "\n";
-	}
+	}*/
 }
 
 void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
+	FileNode *node = (FileNode*)cr->info;
 	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
 	{
-		ts_largePreview = cr->GetAsImageChooseRect()->ts;
+		if (node->type == FileNode::FILE)
+		{
+			ts_largePreview = cr->GetAsImageChooseRect()->ts;
+		}
 	}
 	else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
 	{
@@ -394,21 +412,116 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 	}
 	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
 	{
-		FileNode *node = (FileNode*)cr->info;
-		cout << "clicked: " << node->filePath.string() << endl;
+		if (node->type == FileNode::FOLDER)
+		{
+			SetPath(node->filePath.string());
+		}
+		else if (node->type == FileNode::FILE)
+		{
+			string fileName = cr->nameText.getString().toAnsiString();
+			if (fMode == OPEN)
+			{
+				bool found = false;
+				for (int i = 0; i < nodes.size(); ++i)
+				{
+					if (fileName == nodes[i]->filePath.stem().string())
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if (found)
+				{
+					edit->ChooseFileOpen(this, fileName);
+					TurnOff();
+				}
+			}
+			else if (fMode == SAVE)
+			{
+				edit->ChooseFileSave(this, fileName);
+				TurnOff();
+			}
+			//cout << "clicked: " << node->filePath.string() << endl;
+		}
+		//cout << "clicked: " << node->filePath.string() << endl;
 	}
 }
 
 void FileChooser::ButtonCallback(Button *b, const std::string & e)
 {
-	if (b == upButton)
+	if (b == b->panel->cancelButton)
+	{
+		TurnOff();
+	}
+	else if (b == b->panel->confirmButton)
+	{
+		string fileName = fileNameTextBox->GetString();
+		if (fileName != "")
+		{
+			if (fMode == OPEN)
+			{
+				edit->ChooseFileOpen(this, fileName);
+			}
+			else if (fMode == SAVE)
+			{
+				edit->ChooseFileSave(this, fileName);
+			}
+			TurnOff();
+		}
+	}
+	else if (b == upButton)
 	{
 		SetPath(currPath.parent_path().string());
 	}
-	/*if (e == "clicked")
-	{
+}
 
-	}*/
+void FileChooser::Deactivate()
+{
+	ClearNodes();
+	ClearTilesets();
+}
+
+void FileChooser::TurnOff()
+{
+	edit->RemoveActivePanel(panel);
+}
+
+void FileChooser::Init()
+{
+	edit->AddActivePanel(panel);
+	if (fMode == OPEN)
+	{
+		panel->confirmButton->text.setString("Open");
+	}
+	else
+	{
+		panel->confirmButton->text.setString("Save");
+	}
+	fileNameTextBox->SetString("");
+	panel->SetFocusedMember(fileNameTextBox);
+}
+
+void FileChooser::Start(const std::string &p_ext,
+	FileChooser::Mode p_fMode, const std::string &path)
+{
+	ext = p_ext;
+	fMode = p_fMode;
+	Init();
+	
+	//SetRelativePath("Resources/Maps/W2");
+
+	SetPath(path);
+}
+
+void FileChooser::StartRelative(const std::string &p_ext,
+	FileChooser::Mode p_fMode, const std::string &path)
+{
+	ext = p_ext;
+	fMode = p_fMode;
+	Init();
+
+	SetRelativePath(path);
 }
 
 void FileChooser::MouseScroll(int delta)

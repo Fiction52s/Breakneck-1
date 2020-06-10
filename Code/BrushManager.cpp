@@ -23,7 +23,7 @@ int BrushManager::SaveBrush(Brush *b,
 		if (b->IsEmpty())
 			return 1;
 
-		string filePath = path + name;
+		string filePath = path + "/" + name;
 
 		ofstream of;
 		of.open(filePath + ".bnbrush");
@@ -55,7 +55,7 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 	const std::string &name )
 {
 	ifstream is;
-	is.open(path + name + ".bnbrush");
+	is.open(path + "/" + name + ".bnbrush");
 
 	if (is.is_open())
 	{

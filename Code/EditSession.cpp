@@ -3704,6 +3704,33 @@ TerrainPoint * EditSession::TrySnapPosToPoint(V2d &p, SelectPtr &obj, double rad
 	return NULL;
 }
 
+void EditSession::ChooseFileOpen(FileChooser *fc,
+	const std::string &fileName)
+{
+	if (fc->ext == ".bnbrush")
+	{
+		Brush *loadedBrush = brushManager->LoadBrush(fc->currPath.string(),
+			fileName);
+		DestroyCopiedBrushes();
+
+		copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
+		freeActorCopiedBrush = loadedBrush->CopyFreeActors();
+
+		EditModePaste();
+	}
+	
+}
+
+void EditSession::ChooseFileSave(FileChooser *fc,
+	const std::string &fileName)
+{
+	if (fc->ext == ".bnbrush" )
+	{
+		brushManager->SaveBrush(selectedBrush, fc->currPath.string(),
+			fileName );
+	}
+}
+
 void EditSession::ShowMostRecentError()
 {
 	if (mostRecentError != ERR_NO_ERROR)
@@ -12378,19 +12405,15 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			Brush *loadedBrush = brushManager->LoadBrush( "Resources/Brushes/", 
-				"testbrush");
-			DestroyCopiedBrushes();
-
-			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
-			freeActorCopiedBrush = loadedBrush->CopyFreeActors();
-
-			EditModePaste();
+			fileChooser->StartRelative(".bnbrush",
+				FileChooser::OPEN, "Resources/Brushes");
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
-				"testbrush");
+			fileChooser->StartRelative(".bnbrush", 
+				FileChooser::SAVE, "Resources/Brushes");
+			/*brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
+				"testbrush");*/
 		}
 		break;
 	}

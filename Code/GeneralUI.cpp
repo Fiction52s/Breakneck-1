@@ -49,7 +49,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 {
 	if (menuDrop == fileDropdown)
 	{
-		edit->AddActivePanel(edit->fileChooser->panel);
+		//edit->fileChooser->TurnOn();
 	}
 	else if (menuDrop == editDropdown)
 	{

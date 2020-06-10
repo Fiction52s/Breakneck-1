@@ -7,9 +7,17 @@
 
 
 struct FolderNode;
+struct EditSession;
 
 struct FileNode
 {
+	enum Type
+	{
+		FILE,
+		FOLDER,
+	};
+
+	Type type;
 	void Draw(sf::RenderTarget *target);
 	boost::filesystem::path filePath;
 	Tileset *ts_preview;
@@ -70,6 +78,14 @@ struct FolderTree
 struct FileChooser : GUIHandler, TilesetManager,
 	PanelUpdater
 {
+	enum Mode : int
+	{
+		OPEN,
+		SAVE
+	};
+
+	Mode fMode;
+
 	FileChooser();
 	~FileChooser();
 
@@ -88,9 +104,16 @@ struct FileChooser : GUIHandler, TilesetManager,
 	void SetRelativePath(const std::string &p_relPath);
 	void SetPath(const std::string &p_path);
 	void AddFile(const boost::filesystem::path &filePath);
-	void ClearFiles();
+	void AddFolder(const boost::filesystem::path &folderPath);
+	void ClearNodes();
 	void Print();
 	void PopulateRects();
+	void Start( const std::string &ext, 
+		Mode fMode, const std::string &path );
+	void StartRelative(const std::string &ext,
+		Mode fMode, const std::string &path);
+	void Init();
+	void TurnOff();
 
 	Button *upButton;
 	sf::Text *folderPathText;
@@ -104,13 +127,14 @@ struct FileChooser : GUIHandler, TilesetManager,
 	int cols;
 	int rows;
 	int totalRects;
-	std::vector<FileNode*> fileNodes;
-	std::list<boost::filesystem::path> childFolders;
+	std::vector<FileNode*> nodes;
 	std::string ext;
 	//boost::filesystem::path basePath;
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
 	Panel *panel;
+	TextBox *fileNameTextBox;
+	EditSession *edit;
 };
 
 #endif

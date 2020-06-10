@@ -160,13 +160,13 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 	if (!tex->loadFromFile(s2))
 	{
 		delete tex;
-		cout << "failed to load: " << s << endl;
+		cout << "failed to load: " << s << "\n";
 		//assert( false );
 
 		return NULL;
 	}
 
-	cout << "created texture for: " << s2 << endl;
+	cout << "created texture for: " << s2 << "\n";
 
 	Tileset *t = new Tileset();
 	t->texture = tex;
