@@ -100,7 +100,8 @@ void ImageChooseRect::Draw(RenderTarget *target)
 		sf::View oldView = target->getView();
 		target->setView(view);
 
-		target->draw(spr);
+		if( ts != NULL )
+			target->draw(spr);
 
 		target->setView(oldView);
 

@@ -493,6 +493,15 @@ bool Panel::HandleEvent(sf::Event ev)
 		break;
 	case Event::KeyReleased:
 		break;
+	case Event::MouseWheelMoved:
+		if (ev.mouseWheel.delta != 0)
+		{
+			if (extraUpdater != NULL)
+			{
+				extraUpdater->MouseScroll(ev.mouseWheel.delta);
+			}
+		}
+		break;
 	}
 
 	return false;

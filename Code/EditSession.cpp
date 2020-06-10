@@ -12378,7 +12378,8 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			Brush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
+			Brush *loadedBrush = brushManager->LoadBrush( "Resources/Brushes/", 
+				"testbrush");
 			DestroyCopiedBrushes();
 
 			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
@@ -12388,7 +12389,8 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			brushManager->SaveBrush(selectedBrush, "", "testbrush");
+			brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
+				"testbrush");
 		}
 		break;
 	}

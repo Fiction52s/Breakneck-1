@@ -106,6 +106,7 @@ struct PanelUpdater
 	virtual bool MouseUpdate() = 0;
 	virtual void Draw(sf::RenderTarget *target){}
 	virtual void Deactivate() {}
+	virtual void MouseScroll(int delta) {}
 private:
 };
 

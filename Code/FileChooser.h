@@ -73,21 +73,32 @@ struct FileChooser : GUIHandler, TilesetManager,
 	FileChooser();
 	~FileChooser();
 
+	//panelupdater functions
 	bool MouseUpdate();
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
+	void MouseScroll(int delta);
+	//---------
+
+	//guihandler functions
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	//---------
 
 	void SetPath(const std::string &relPath);
 	void AddFile(const boost::filesystem::path &filePath);
 	void ClearFiles();
 	void Print();
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void PopulateRects();
+	
+	int topRow;
+	int maxTopRow;
+	int numEntries;
 
 	ImageChooseRect **imageRects;
 	int cols;
 	int rows;
 	int totalRects;
-	std::list<FileNode*> fileNodes;
+	std::vector<FileNode*> fileNodes;
 	std::list<boost::filesystem::path> childFolders;
 	std::string ext;
 	boost::filesystem::path basePath;

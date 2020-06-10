@@ -11,6 +11,8 @@ void FileNode::Draw(sf::RenderTarget *target)
 	//target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
 }
 
+
+
 FolderNode::~FolderNode()
 {
 	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
@@ -177,6 +179,8 @@ FileChooser::FileChooser()
 
 	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
 	
+	topRow = 0;
+	maxTopRow = 0;
 
 	imageRects = new ImageChooseRect*[totalRects];
 
@@ -268,6 +272,8 @@ void FileChooser::SetPath(const std::string &relPath)
 	ClearFiles();
 	childFolders.clear();
 
+	topRow = 0;
+
 	path p(basePath / relPath);
 
 	assert(exists(p));
@@ -275,7 +281,9 @@ void FileChooser::SetPath(const std::string &relPath)
 	vector<path> v;
 	copy(directory_iterator(p), directory_iterator(), back_inserter(v));
 
-	sort(v.begin(), v.end());
+	sort(v.begin(), v.end() );
+
+	fileNodes.reserve(v.size());
 
 	for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
 	{
@@ -292,22 +300,55 @@ void FileChooser::SetPath(const std::string &relPath)
 		}
 	}
 
-	int counter = 0;
+	numEntries = fileNodes.size();
+
+	/*sort(fileNodes.begin(), fileNodes.end(),
+		[](FileNode *a, FileNode * b) -> bool
+	{
+		return a->filePath.stem().string() > b->filePath.stem().string();
+	});*/
+		
+
+	//this currently ignores folders since they arent given a space yet.
+	int numRowsTaken = ceil(((float)numEntries) / cols);
+	maxTopRow = numRowsTaken - rows;
+	if (maxTopRow < 0)
+		maxTopRow = 0;
+
+	PopulateRects();
+}
+
+void FileChooser::PopulateRects()
+{
 	Tileset *ts;
 	ImageChooseRect *icRect;
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+	FileNode *node;
+	int start = topRow * cols;
+
+	int i;
+	for ( i = start; i < numEntries && i < start + totalRects; ++i )
 	{
-		icRect = imageRects[counter];
+		icRect = imageRects[i - start];
+		node = fileNodes[i];
 
-		icRect->SetName((*it)->filePath.filename().stem().string());
-		ts = (*it)->ts_preview;
-		icRect->SetInfo((*it));
+		icRect->SetName(node->filePath.filename().stem().string());
+		ts = node->ts_preview;
+		icRect->SetInfo(node);
 
-		if( ts != NULL )
+		if (ts != NULL)
 			icRect->SetImage(ts, ts->GetSubRect(0));
-		++counter;
-		if (counter == totalRects)
-			break;
+		else
+		{
+			icRect->SetImage(NULL, 0);
+		}
+
+		icRect->SetShown(true);
+	}
+	
+	for (; i < start + totalRects; ++i)
+	{
+		icRect = imageRects[i - start];
+		icRect->SetShown(false);
 	}
 }
 
@@ -340,5 +381,27 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		FileNode *node = (FileNode*)cr->info;
 		cout << "clicked: " << node->filePath.string() << endl;
+	}
+}
+
+void FileChooser::MouseScroll(int delta)
+{
+	int oldTopRow = topRow;
+	if (delta < 0)
+	{
+		topRow -= delta;
+		if (topRow > maxTopRow)
+			topRow = maxTopRow;
+	}
+	else if (delta > 0)
+	{
+		topRow -= delta;
+		if (topRow < 0)
+			topRow = 0;
+	}
+
+	if (topRow != oldTopRow)
+	{
+		PopulateRects();
 	}
 }
