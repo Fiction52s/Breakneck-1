@@ -262,6 +262,7 @@ struct EditSession : GUIHandler, Session
 	int tempWriteIndex;
 
 	sf::RenderTexture *mapPreviewTex;
+	sf::RenderTexture *brushPreviewTex;
 
 	PolyPtr GetPolygon(int index );
 	RailPtr GetRail(int index);

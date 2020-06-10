@@ -739,6 +739,18 @@ SelectPtr Brush::GetFirst()
 	return objects.front();
 }
 
+void Brush::CreatePreview(const std::string &filePath)
+{
+	sf::RenderTexture *previewTex = EditSession::GetSession()->brushPreviewTex;
+
+	previewTex->clear(Color::Green);
+
+	Image img = previewTex->getTexture().copyToImage();
+
+	std::string previewFile = filePath + ".png";
+	img.saveToFile(previewFile);
+}
+
 void Brush::Save(std::ofstream &of)
 {
 	int terrainCounter = 0;

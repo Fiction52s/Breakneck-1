@@ -950,7 +950,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	PoiParams::font = &mainMenu->arial;
 	
 	mapPreviewTex = MainMenu::mapPreviewTexture;
-
+	brushPreviewTex = MainMenu::brushPreviewTexture;
 
 
 	for( int i = 0; i < 16; ++i )
@@ -12378,14 +12378,12 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			Brush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
+			SplitBrush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
 			DestroyCopiedBrushes();
 
-			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
-			freeActorCopiedBrush = loadedBrush->CopyFreeActors();
+			copiedBrush = loadedBrush->terrainAndEnemies->Copy();
+			freeActorCopiedBrush = loadedBrush->freeEnemies->Copy();
 
-			loadedBrush->Destroy();
-			delete loadedBrush;
 			EditModePaste();
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)

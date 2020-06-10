@@ -54,6 +54,7 @@ sf::RenderTexture *MainMenu::mapTexture = NULL;
 sf::RenderTexture *MainMenu::pauseTexture = NULL;
 sf::RenderTexture *MainMenu::saveTexture = NULL;
 sf::RenderTexture *MainMenu::mapPreviewTexture = NULL;
+sf::RenderTexture *MainMenu::brushPreviewTexture = NULL;
 sf::RenderTexture *MainMenu::extraScreenTexture = NULL;
 sf::RenderTexture *MainMenu::auraCheckTexture = NULL;
 
@@ -856,6 +857,13 @@ MainMenu::MainMenu()
 		mapPreviewTexture->clear();
 	}
 
+	if (brushPreviewTexture == NULL)
+	{
+		brushPreviewTexture = new RenderTexture;
+		brushPreviewTexture->create(512, 512);
+		brushPreviewTexture->clear();
+	}
+
 	if (auraCheckTexture == NULL)
 	{
 		auraCheckTexture = new RenderTexture;
@@ -1014,6 +1022,7 @@ MainMenu::~MainMenu()
 	delete saveTexture;
 	delete mapPreviewTexture;
 	delete auraCheckTexture;
+	delete brushPreviewTexture;
 
 
 	delete worldMap;

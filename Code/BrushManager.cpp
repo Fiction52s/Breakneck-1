@@ -44,9 +44,12 @@ int BrushManager::SaveBrush(Brush *b,
 		if (b->IsEmpty())
 			return 1;
 
+		string filePath = path + name;
+
 		ofstream of;
-		of.open(path + name);
+		of.open(filePath + ".bnbrush");
 		b->Save(of);
+		b->CreatePreview(filePath);
 		of.close();
 
 		auto it = brushes.find(name);
@@ -69,11 +72,11 @@ int BrushManager::SaveBrush(Brush *b,
 	return 0;
 }
 
-Brush * BrushManager::LoadBrush(const std::string &path, 
+SplitBrush * BrushManager::LoadBrush(const std::string &path,
 	const std::string &name )
 {
 	ifstream is;
-	is.open(path + name );
+	is.open(path + name + ".bnbrush");
 
 	if (is.is_open())
 	{
@@ -97,7 +100,7 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 
 		brushes[name] = sb;
 
-		return b;
+		return sb;
 	}
 	else
 	{

@@ -48,6 +48,7 @@ struct Brush
 	SelectPtr GetFirst();
 	void Save(std::ofstream &of);
 	bool Load(std::ifstream &is);
+	void CreatePreview(const std::string &fileName);
 
 	sf::Vector2f GetTerrainSize();
 };

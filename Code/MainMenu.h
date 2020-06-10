@@ -586,6 +586,7 @@ struct MainMenu
 	static sf::RenderTexture *pauseTexture;
 	static sf::RenderTexture *saveTexture;
 	static sf::RenderTexture *mapPreviewTexture;
+	static sf::RenderTexture *brushPreviewTexture;
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
 	
