@@ -29,7 +29,7 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	nameText.setFillColor(Color::White);
 	nameText.setOutlineColor(Color::Black);
 	nameText.setOutlineThickness(3);
-	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));
+	UpdateTextPosition();
 }
 
 void ChooseRect::SetCircleMode(int p_radius)
@@ -44,6 +44,13 @@ void ChooseRect::SetRectMode()
 }
 
 
+void ChooseRect::SetName(const std::string &name)
+{
+	nameText.setString(name);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		0);
+}
+
 
 void ChooseRect::Init()
 {
@@ -51,11 +58,16 @@ void ChooseRect::Init()
 	SetSize(boxSize);
 }
 
+void ChooseRect::UpdateTextPosition()
+{
+	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y + boxSize + 2));
+}
+
 void ChooseRect::SetPosition(sf::Vector2f &p_pos)
 {
 	pos = p_pos;
 	UpdateRectDimensions();
-	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));
+	UpdateTextPosition();
 }
 
 void ChooseRect::SetSize(float s)

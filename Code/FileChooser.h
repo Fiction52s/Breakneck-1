@@ -12,6 +12,7 @@ struct FileNode
 {
 	void Draw(sf::RenderTarget *target);
 	boost::filesystem::path filePath;
+	Tileset *ts_preview;
 };
 
 struct FolderNode
@@ -53,12 +54,18 @@ struct FileChooser : GUIHandler, TilesetManager
 	void AddFile(const boost::filesystem::path &filePath);
 	void ClearFiles();
 	void Print();
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
 
-	ImageChooseRect *imageRects[25];
+	ImageChooseRect **imageRects;
+	int cols;
+	int rows;
+	int totalRects;
 	std::list<FileNode*> fileNodes;
 	std::list<boost::filesystem::path> childFolders;
 	std::string ext;
 	boost::filesystem::path basePath;
+	sf::Vertex largePreview[4];
+	Tileset *ts_largePreview;
 	Panel *panel;
 };
 

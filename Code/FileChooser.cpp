@@ -166,39 +166,63 @@ FileChooser::FileChooser()
 {
 	basePath = current_path();
 	ext = ".brknk";
-	SetPath("Resources/Maps/W1");
-	Print();
 
-	panel = new Panel("filechooser", 700, 700, this, true);
+	float boxSize = 200;
+	Vector2f spacing(60, 60);
+
+	cols = 4;
+	rows = 4;
+	totalRects = rows * cols;
+
+	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
+	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 400));
+
+	imageRects = new ImageChooseRect*[totalRects];
+
+	panel = new Panel("filechooser", 1600, 
+		(boxSize + spacing.y) * rows + 30, this, true);
 	panel->SetPosition(Vector2i( 960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
-	panel->ReserveImageRects(25);
+	panel->ReserveImageRects(totalRects);
+	
+	
 	int x, y;
-
-	Vector2f spacing(20, 20);
-	for (int i = 0; i < 25; ++i)
+	for (int i = 0; i < totalRects; ++i)
 	{
-		x = i % 5;
-		y = i / 5;
+		x = i % cols;
+		y = i / cols;
 		imageRects[i] = panel->AddImageRect(ChooseRect::ChooseRectIdentity::I_FILESELECT,
-			Vector2f(x * ( 100 + spacing.x ), y * ( 100 + spacing.y )), NULL, 0);
+			Vector2f(x * (boxSize + spacing.x ), y * (boxSize + spacing.y )), NULL, 0, boxSize);
 		imageRects[i]->SetShown(true);
 		imageRects[i]->Init();
 	}
+
+	SetPath("Resources/Maps/W2");
+	//Print();
 }
 
 FileChooser::~FileChooser()
 {
 	ClearFiles();
 	delete panel;
+	delete[] imageRects;
 }
 
 void FileChooser::AddFile(const path &p_filePath)
 {
 	FileNode *fileNode = new FileNode;
 	fileNode->filePath = p_filePath;
-	//fileNode->ts_preview = 
-	//SetRectColor(fileNode->previewSpr, Color::Red);
+
+	string pathStr = p_filePath.string();
+	auto res = pathStr.find("Resources") + 10;
+	auto d = pathStr.find(".");
+
+	string middleTest = pathStr.substr(res, d - res);
+
+	//string relPath = p_filePath.string().substr( ;
+
+	string previewPath = middleTest + ".png";
+	fileNode->ts_preview = GetTileset(previewPath);
 
 	fileNodes.push_back(fileNode);
 }
@@ -240,6 +264,19 @@ void FileChooser::SetPath(const std::string &relPath)
 			childFolders.push_back((*it));
 		}
 	}
+
+	int counter = 0;
+	Tileset *ts;
+	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+	{
+		imageRects[counter]->SetName((*it)->filePath.filename().stem().string());
+		ts = (*it)->ts_preview;
+		if( ts != NULL )
+			imageRects[counter]->SetImage(ts, ts->GetSubRect(0));
+		++counter;
+		if (counter == totalRects)
+			break;
+	}
 }
 
 void FileChooser::Print()
@@ -257,3 +294,10 @@ void FileChooser::Print()
 	}
 }
 
+void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
+	{
+		ts_largePreview = cr->GetAsImageChooseRect()->ts;
+	}
+}

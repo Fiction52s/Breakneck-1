@@ -7224,7 +7224,8 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Image img = mapPreviewTex->getTexture().copyToImage();
 		
 	std::stringstream ssPrev;
-	ssPrev << filePath.parent_path().relative_path().string() << "/Previews/" << filePath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+	//ssPrev << filePath.parent_path().relative_path().string() << "/Previews/" << filePath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
+	ssPrev << filePath.parent_path().relative_path().string() << "/" << filePath.stem().string() << ".png";
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
 	//currentFile

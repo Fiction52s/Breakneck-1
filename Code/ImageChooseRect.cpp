@@ -103,6 +103,8 @@ void ImageChooseRect::Draw(RenderTarget *target)
 		target->draw(spr);
 
 		target->setView(oldView);
+
+		target->draw(nameText);
 	}
 }
 

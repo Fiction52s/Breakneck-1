@@ -178,6 +178,7 @@ struct ChooseRect : PanelMember
 	};
 
 	sf::Text nameText;
+	void SetName(const std::string &name);
 	ChooseRectIdentity rectIdentity;
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();
@@ -198,6 +199,7 @@ struct ChooseRect : PanelMember
 	sf::Vector2f GetGlobalPos();
 	sf::Vector2f GetGlobalCenterPos();
 	void SetPosition(sf::Vector2f &pos);
+	void UpdateTextPosition();
 	virtual void SetSize(float s);
 	void UpdateRectDimensions();
 	float boxSize;
