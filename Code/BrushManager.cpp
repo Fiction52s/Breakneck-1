@@ -6,27 +6,6 @@
 using namespace std;
 using namespace sf;
 
-SplitBrush::SplitBrush()
-{
-	terrainAndEnemies = NULL;
-	freeEnemies = NULL;
-}
-
-SplitBrush::~SplitBrush()
-{
-	if (terrainAndEnemies != NULL)
-	{
-		terrainAndEnemies->Destroy();
-		delete terrainAndEnemies;
-	}
-	
-	if (freeEnemies != NULL)
-	{
-		freeEnemies->Destroy();
-		delete freeEnemies;
-	}
-}
-
 BrushManager::BrushManager()
 {
 	edit = EditSession::GetSession();
@@ -57,19 +36,12 @@ int BrushManager::SaveBrush(Brush *b,
 
 		newBrush->CreatePreview(filePath);
 		
-
 		auto it = brushes.find(name);
 		if (it != brushes.end())
 		{
 			delete (*it).second;
 			(*it).second = NULL;
 		}
-		/*SplitBrush *sb = new SplitBrush();
-		sb->terrainAndEnemies = b->CopyTerrainAndAttachedActors();
-		sb->freeEnemies = b->CopyFreeActors();*/
-
-		//hopefully not buggy
-//		brushes[name] = b->Copy();
 	}
 	else
 	{
@@ -91,12 +63,6 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 		currLoadingBrush = b;
 		b->Load(is);
 		currLoadingBrush = NULL;
-
-		//SplitBrush *sb = new SplitBrush;
-		//sb->terrainAndEnemies = b->CopyTerrainAndAttachedActors();
-		//sb->freeEnemies = b->CopyFreeActors();
-
-		//delete b;
 
 		auto it = brushes.find(name);
 		if (it != brushes.end())

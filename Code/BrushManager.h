@@ -7,14 +7,6 @@
 struct Brush;
 struct EditSession;
 
-struct SplitBrush
-{
-	SplitBrush();
-	~SplitBrush();
-	Brush *terrainAndEnemies;
-	Brush *freeEnemies;
-};
-
 struct BrushManager
 {
 	BrushManager();
