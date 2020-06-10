@@ -5860,6 +5860,7 @@ bool TerrainPolygon::IsPlacementOkay()
 void TerrainPolygon::BrushDraw( sf::RenderTarget *target, bool valid )
 {
 	target->draw(lines, GetNumPoints() * 2, sf::Lines);
+	//target->draw(*va);
 }
 
 void TerrainPolygon::MiniDraw(sf::RenderTarget *target)

@@ -167,7 +167,7 @@ void FolderTree::DebugPrintTree()
 FileChooser::FileChooser()
 {
 	basePath = current_path();
-	ext = ".brknk";
+	ext = ".bnbrush"; //".brknk";
 
 	float boxSize = 150;
 	Vector2f spacing(60, 60);
@@ -210,7 +210,8 @@ FileChooser::FileChooser()
 
 	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
 
-	SetPath("Resources/Maps/W2");
+	//SetPath("Resources/Maps/W2");
+	SetPath("Resources/Brushes");
 	//Print();
 }
 
