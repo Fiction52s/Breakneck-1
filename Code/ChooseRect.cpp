@@ -22,6 +22,7 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	SetShown(false);
 
 	focused = false;
+	info = NULL;
 
 	EditSession *edit = EditSession::GetSession();
 	nameText.setFont(edit->mainMenu->arial);
@@ -30,6 +31,11 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	nameText.setOutlineColor(Color::Black);
 	nameText.setOutlineThickness(3);
 	UpdateTextPosition();
+}
+
+void ChooseRect::SetInfo(void *inf)
+{
+	info = inf;
 }
 
 void ChooseRect::SetCircleMode(int p_radius)

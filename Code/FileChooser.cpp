@@ -200,7 +200,6 @@ FileChooser::FileChooser()
 				startRects.x + x * (boxSize + spacing.x ), 
 				startRects.y +  y * (boxSize + spacing.y )), 
 			NULL, 0, boxSize);
-
 		imageRects[i]->SetShown(true);
 		imageRects[i]->Init();
 	}
@@ -295,12 +294,17 @@ void FileChooser::SetPath(const std::string &relPath)
 
 	int counter = 0;
 	Tileset *ts;
+	ImageChooseRect *icRect;
 	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
 	{
-		imageRects[counter]->SetName((*it)->filePath.filename().stem().string());
+		icRect = imageRects[counter];
+
+		icRect->SetName((*it)->filePath.filename().stem().string());
 		ts = (*it)->ts_preview;
+		icRect->SetInfo((*it));
+
 		if( ts != NULL )
-			imageRects[counter]->SetImage(ts, ts->GetSubRect(0));
+			icRect->SetImage(ts, ts->GetSubRect(0));
 		++counter;
 		if (counter == totalRects)
 			break;
@@ -331,5 +335,10 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 	else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
 	{
 		ts_largePreview = NULL;
+	}
+	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
+	{
+		FileNode *node = (FileNode*)cr->info;
+		cout << "clicked: " << node->filePath.string() << endl;
 	}
 }

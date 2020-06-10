@@ -217,10 +217,11 @@ struct ChooseRect : PanelMember
 	void SetActive(bool a);
 	//virtual void Unfocus() {}
 	bool focused;
+	void SetInfo(void *inf);
 
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
-
+	void *info;
 	bool circleMode;
 	int circleRadius;
 };
@@ -260,6 +261,9 @@ struct ImageChooseRect : ChooseRect
 	void SetSize(float s);
 	void SetImage(Tileset *ts, int index);
 	void SetImage(Tileset *ts, const sf::IntRect &subRect);
+
+	
+	
 	EditorDecorInfo * CreateDecor();
 	sf::Sprite spr;
 	Tileset *ts;
