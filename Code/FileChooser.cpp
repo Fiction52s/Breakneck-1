@@ -166,12 +166,14 @@ void FolderTree::DebugPrintTree()
 
 FileChooser::FileChooser()
 {
-	basePath = current_path();
-	ext = ".bnbrush"; //".brknk";
+	TilesetManager::SetGameResourcesMode(false); //allows tilesets to be outside
+	//of the resources folder
+	ext = ".brknk";
+	//ext = ".bnbrush";
 
 	float boxSize = 150;
 	Vector2f spacing(60, 60);
-	Vector2f startRects(10, 10);
+	Vector2f startRects(10, 100);
 
 	cols = 4;
 	rows = 4;
@@ -194,6 +196,9 @@ FileChooser::FileChooser()
 	
 	ts_largePreview = NULL;
 	
+	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
+	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
 	{
@@ -210,9 +215,8 @@ FileChooser::FileChooser()
 
 	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
 
-	//SetPath("Resources/Maps/W2");
-	SetPath("Resources/Brushes");
-	//Print();
+	SetRelativePath("Resources/Maps/W2");
+	//SetPath("Resources/Brushes");
 }
 
 FileChooser::~FileChooser()
@@ -246,10 +250,10 @@ void FileChooser::AddFile(const path &p_filePath)
 	fileNode->filePath = p_filePath;
 
 	string pathStr = p_filePath.string();
-	auto res = pathStr.find("Resources") + 10;
+	//auto res = pathStr.find("Resources") + 10;
 	auto d = pathStr.find(".");
 
-	string middleTest = pathStr.substr(res, d - res);
+	string middleTest = pathStr.substr(0, d);
 
 	//string relPath = p_filePath.string().substr( ;
 
@@ -268,14 +272,24 @@ void FileChooser::ClearFiles()
 	fileNodes.clear();
 }
 
-void FileChooser::SetPath(const std::string &relPath)
+void FileChooser::SetRelativePath(const std::string &p_relPath)
+{
+	//basePath = current_path();
+	string actualPath = current_path().string() + "/" + p_relPath;
+	SetPath(actualPath);
+}
+
+void FileChooser::SetPath(const std::string &p_path)
 {
 	ClearFiles();
 	childFolders.clear();
 
 	topRow = 0;
 
-	path p(basePath / relPath);
+	folderPathText->setString(p_path);
+
+	path p(p_path);
+	currPath = p;
 
 	assert(exists(p));
 	assert(is_directory(p));
@@ -383,6 +397,18 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 		FileNode *node = (FileNode*)cr->info;
 		cout << "clicked: " << node->filePath.string() << endl;
 	}
+}
+
+void FileChooser::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b == upButton)
+	{
+		SetPath(currPath.parent_path().string());
+	}
+	/*if (e == "clicked")
+	{
+
+	}*/
 }
 
 void FileChooser::MouseScroll(int delta)

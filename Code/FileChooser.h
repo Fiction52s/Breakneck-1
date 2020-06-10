@@ -82,18 +82,24 @@ struct FileChooser : GUIHandler, TilesetManager,
 
 	//guihandler functions
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
 	//---------
 
-	void SetPath(const std::string &relPath);
+	void SetRelativePath(const std::string &p_relPath);
+	void SetPath(const std::string &p_path);
 	void AddFile(const boost::filesystem::path &filePath);
 	void ClearFiles();
 	void Print();
 	void PopulateRects();
+
+	Button *upButton;
+	sf::Text *folderPathText;
 	
 	int topRow;
 	int maxTopRow;
 	int numEntries;
 
+	boost::filesystem::path currPath;
 	ImageChooseRect **imageRects;
 	int cols;
 	int rows;
@@ -101,7 +107,7 @@ struct FileChooser : GUIHandler, TilesetManager,
 	std::vector<FileNode*> fileNodes;
 	std::list<boost::filesystem::path> childFolders;
 	std::string ext;
-	boost::filesystem::path basePath;
+	//boost::filesystem::path basePath;
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
 	Panel *panel;

@@ -86,6 +86,7 @@ int Tileset::GetNumTiles()
 
 TilesetManager::TilesetManager()
 {
+	gameResourcesMode = true;
 	parentManager = NULL;
 }
 
@@ -129,10 +130,23 @@ void TilesetManager::Add(TilesetCategory cat, const std::string &s, Tileset *ts)
 	tilesetMaps[cat][s].push_back(make_pair(ts,1));
 }
 
+void TilesetManager::SetGameResourcesMode(bool on)
+{
+	gameResourcesMode = on;
+}
+
 Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight,
 	int altColorIndex )
 {
-	string s2 = string("Resources/") + s;
+	string s2;
+	if (gameResourcesMode)
+	{
+		s2 = string("Resources/") + s;
+	}
+	else
+	{
+		s2 = s;
+	}
 	//not found
 
 	//if (!boost::filesystem::exists(s2))
@@ -285,7 +299,15 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	if (alreadyExistsTS != NULL)
 		return alreadyExistsTS;
 	
-	string s2 = string("Resources/") + s;
+	string s2;
+	if (gameResourcesMode)
+	{
+		s2 = string("Resources/") + s;
+	}
+	else
+	{
+		s2 = s;
+	}
 
 	sf::Image im;
 	if( !im.loadFromFile( s2 ) )

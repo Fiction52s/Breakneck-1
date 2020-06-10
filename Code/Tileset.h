@@ -75,6 +75,7 @@ public:
 	void DestroyTileset(Tileset * t);
 	void ResetTilesetAccessCount();
 	void CleanupUnusedTilests();
+	void SetGameResourcesMode(bool on);
 
 	sf::Texture *CreateAltColorTex( sf::Image &im,
 		int numAltColors, 
@@ -83,6 +84,7 @@ public:
 	
 	void SetParentTilesetManager(TilesetManager *man);
 private:
+	bool gameResourcesMode;
 	TilesetManager *parentManager;
 	TilesetCategory GetCategory(const std::string &s);
 	Tileset *Create( TilesetCategory cat, const std::string &s, int tw, int th,

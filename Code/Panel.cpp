@@ -680,7 +680,7 @@ TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int width
 	//textBoxes.push_back(  );
 }
 
-void Panel::AddLabel(const std::string &name, sf::Vector2i labelPos, int characterHeight, const std::string &text)
+sf::Text * Panel::AddLabel(const std::string &name, sf::Vector2i labelPos, int characterHeight, const std::string &text)
 {
 	assert(labels.count(name) == 0);
 	sf::Text *t = new sf::Text(text, arial, characterHeight);
@@ -695,6 +695,8 @@ void Panel::AddLabel(const std::string &name, sf::Vector2i labelPos, int charact
 	AddAutoSpaceY(bounds.height + labelPos.y);
 
 	labels[name] = t;
+
+	return t;
 }
 
 GridSelector * Panel::AddGridSelector(const std::string &name, sf::Vector2i pos,
