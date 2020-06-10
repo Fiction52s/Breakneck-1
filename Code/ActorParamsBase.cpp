@@ -491,8 +491,6 @@ void ActorParams::Draw(sf::RenderTarget *target)
 	if( GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
 			viewSize.x, viewSize.y)))
 	{
-		DrawLevel(target);
-
 		DrawMonitor(target);
 
 		DrawEnemy(target);
@@ -936,32 +934,6 @@ void ActorParams::DrawBoundary(sf::RenderTarget *target)
 	}
 }
 
-void ActorParams::DrawLevel(sf::RenderTarget *target)
-{
-	if (type->info.numLevels > 1 && enemyLevel > 1)
-	{
-		int extra = 10;
-		sf::RectangleShape rs;
-		rs.setFillColor(Color::Transparent);
-		rs.setOutlineColor(Color(255, 0, 0, 100));
-		//rs.setOutlineThickness(3 * EditSession::zoomMultiple);
-		rs.setPosition(image.getGlobalBounds().left - extra, image.getGlobalBounds().top - extra);
-		rs.setSize(Vector2f(image.getGlobalBounds().width + extra, image.getGlobalBounds().height + extra));
-		target->draw(rs);
-	}
-	if (type->info.numLevels > 2 && enemyLevel > 2)
-	{
-		int extra = 20;
-		sf::RectangleShape rs;
-		rs.setFillColor(Color::Transparent);
-		rs.setOutlineColor(Color(100, 100, 255, 100));
-		//rs.setOutlineThickness(3 * EditSession::zoomMultiple);
-		rs.setPosition(image.getGlobalBounds().left - extra, image.getGlobalBounds().top - extra);
-		rs.setSize(Vector2f(image.getGlobalBounds().width + extra, image.getGlobalBounds().height + extra));
-		target->draw(rs);
-	}
-}
-
 bool ActorParams::ContainsPoint(sf::Vector2f test)
 {
 	sf::Transform trans = image.getTransform();
@@ -1039,7 +1011,9 @@ void ActorParams::Move(sf::Vector2i delta)
 void ActorParams::BrushDraw(sf::RenderTarget *target,
 	bool valid)
 {
-	Draw(target);
+	DrawMonitor(target);
+	DrawEnemy(target);
+	//Draw(target);
 	//image.setColor(Color(255, 255, 255, 100));
 	//target->draw(image);
 	//image.setColor(Color::White);

@@ -12378,11 +12378,11 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			SplitBrush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
+			Brush *loadedBrush = brushManager->LoadBrush( "", "testbrush");
 			DestroyCopiedBrushes();
 
-			copiedBrush = loadedBrush->terrainAndEnemies->Copy();
-			freeActorCopiedBrush = loadedBrush->freeEnemies->Copy();
+			copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
+			freeActorCopiedBrush = loadedBrush->CopyFreeActors();
 
 			EditModePaste();
 		}

@@ -20,11 +20,11 @@ struct BrushManager
 	BrushManager();
 	int SaveBrush(Brush *b, const std::string &path,
 		const std::string &name);
-	SplitBrush * LoadBrush(const std::string &path,
+	Brush * LoadBrush(const std::string &path,
 		const std::string &name );
 
 	EditSession *edit;
-	std::map<std::string, SplitBrush*> brushes;
+	std::map<std::string, Brush*> brushes;
 	Brush *currLoadingBrush;
 };
 

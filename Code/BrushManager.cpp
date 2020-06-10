@@ -48,9 +48,15 @@ int BrushManager::SaveBrush(Brush *b,
 
 		ofstream of;
 		of.open(filePath + ".bnbrush");
-		b->Save(of);
-		b->CreatePreview(filePath);
+
+		Brush *newBrush = b->Copy();
+		brushes[name] = newBrush;
+
+		newBrush->Save(of);
 		of.close();
+
+		newBrush->CreatePreview(filePath);
+		
 
 		auto it = brushes.find(name);
 		if (it != brushes.end())
@@ -58,11 +64,12 @@ int BrushManager::SaveBrush(Brush *b,
 			delete (*it).second;
 			(*it).second = NULL;
 		}
-
-		SplitBrush *sb = new SplitBrush();
+		/*SplitBrush *sb = new SplitBrush();
 		sb->terrainAndEnemies = b->CopyTerrainAndAttachedActors();
-		sb->freeEnemies = b->CopyFreeActors();
-		brushes[name] = sb;
+		sb->freeEnemies = b->CopyFreeActors();*/
+
+		//hopefully not buggy
+//		brushes[name] = b->Copy();
 	}
 	else
 	{
@@ -72,7 +79,7 @@ int BrushManager::SaveBrush(Brush *b,
 	return 0;
 }
 
-SplitBrush * BrushManager::LoadBrush(const std::string &path,
+Brush * BrushManager::LoadBrush(const std::string &path,
 	const std::string &name )
 {
 	ifstream is;
@@ -85,11 +92,11 @@ SplitBrush * BrushManager::LoadBrush(const std::string &path,
 		b->Load(is);
 		currLoadingBrush = NULL;
 
-		SplitBrush *sb = new SplitBrush;
-		sb->terrainAndEnemies = b->CopyTerrainAndAttachedActors();
-		sb->freeEnemies = b->CopyFreeActors();
+		//SplitBrush *sb = new SplitBrush;
+		//sb->terrainAndEnemies = b->CopyTerrainAndAttachedActors();
+		//sb->freeEnemies = b->CopyFreeActors();
 
-		delete b;
+		//delete b;
 
 		auto it = brushes.find(name);
 		if (it != brushes.end())
@@ -98,9 +105,9 @@ SplitBrush * BrushManager::LoadBrush(const std::string &path,
 			(*it).second = NULL;
 		}
 
-		brushes[name] = sb;
+		brushes[name] = b;
 
-		return sb;
+		return b;
 	}
 	else
 	{

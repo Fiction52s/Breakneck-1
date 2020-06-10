@@ -73,7 +73,6 @@ struct ActorParams : ISelectable
 	virtual bool CanBeAerial() { return false; }
 	virtual bool CanBeRailGrounded() { return false; }*/
 
-	void DrawLevel(sf::RenderTarget *target);
 	void DrawBoundary(sf::RenderTarget *target);
 	void DrawMonitor(sf::RenderTarget *target);
 	void LoadGrounded(std::ifstream &is);

@@ -743,7 +743,22 @@ void Brush::CreatePreview(const std::string &filePath)
 {
 	sf::RenderTexture *previewTex = EditSession::GetSession()->brushPreviewTex;
 
-	previewTex->clear(Color::Green);
+	previewTex->clear(Color::Black);
+
+	//auto aabb = //GetAABB();
+	Vector2f center(GetCenter());
+	IntRect aabb = GetAABB();
+	int longestEdge = max(aabb.width, aabb.height) + 300;
+
+	sf::View previewView;
+	previewView.setCenter(center);
+	previewView.setSize(Vector2f(longestEdge, longestEdge));
+
+	previewTex->setView(previewView);
+
+	Draw(previewTex);
+
+	previewTex->display();
 
 	Image img = previewTex->getTexture().copyToImage();
 
