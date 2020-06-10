@@ -45,10 +45,37 @@ struct FolderTree
 	std::string treePath;
 };
 
-struct FileChooser : GUIHandler, TilesetManager
+//struct EnemyVariationSelector : PanelUpdater
+//{
+//	EnemyVariationSelector(bool createMode);
+//	~EnemyVariationSelector();
+//	bool MouseUpdate();
+//	EnemyChooseRect *centerRect;
+//	EnemyChooseRect *varRects[6];
+//	void Deactivate();
+//	int numVariations;
+//	void SetType(ActorType *type);
+//	void Draw(sf::RenderTarget *target);
+//	void SetPosition(sf::Vector2f &pos);
+//
+//	sf::Sprite orbSpr;
+//	//sf::Vertex testQuad[4];
+//	sf::Vertex enemyQuads[28];
+//	//bool show;
+//	Panel *panel;
+//	EditSession *edit;
+//	bool createMode;
+//};
+
+struct FileChooser : GUIHandler, TilesetManager,
+	PanelUpdater
 {
 	FileChooser();
 	~FileChooser();
+
+	bool MouseUpdate();
+	void Draw(sf::RenderTarget *target);
+	void Deactivate();
 
 	void SetPath(const std::string &relPath);
 	void AddFile(const boost::filesystem::path &filePath);

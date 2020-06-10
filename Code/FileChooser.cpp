@@ -167,24 +167,28 @@ FileChooser::FileChooser()
 	basePath = current_path();
 	ext = ".brknk";
 
-	float boxSize = 200;
+	float boxSize = 150;
 	Vector2f spacing(60, 60);
+	Vector2f startRects(10, 10);
 
 	cols = 4;
 	rows = 4;
 	totalRects = rows * cols;
 
 	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
-	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 400));
+	
 
 	imageRects = new ImageChooseRect*[totalRects];
 
-	panel = new Panel("filechooser", 1600, 
-		(boxSize + spacing.y) * rows + 30, this, true);
-	panel->SetPosition(Vector2i( 960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
+	panel = new Panel("filechooser", 1920, 
+		1080 - 28, this, true);
+	//panel->SetColor(Color(200, 100, 50, 100));
+	panel->SetPosition(Vector2i(0, 28));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
 	panel->ReserveImageRects(totalRects);
+	panel->extraUpdater = this;
 	
+	ts_largePreview = NULL;
 	
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
@@ -192,10 +196,16 @@ FileChooser::FileChooser()
 		x = i % cols;
 		y = i / cols;
 		imageRects[i] = panel->AddImageRect(ChooseRect::ChooseRectIdentity::I_FILESELECT,
-			Vector2f(x * (boxSize + spacing.x ), y * (boxSize + spacing.y )), NULL, 0, boxSize);
+			Vector2f(
+				startRects.x + x * (boxSize + spacing.x ), 
+				startRects.y +  y * (boxSize + spacing.y )), 
+			NULL, 0, boxSize);
+
 		imageRects[i]->SetShown(true);
 		imageRects[i]->Init();
 	}
+
+	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
 
 	SetPath("Resources/Maps/W2");
 	//Print();
@@ -206,6 +216,24 @@ FileChooser::~FileChooser()
 	ClearFiles();
 	delete panel;
 	delete[] imageRects;
+}
+
+bool FileChooser::MouseUpdate()
+{
+	return true;
+}
+
+void FileChooser::Draw(sf::RenderTarget *target)
+{
+	if (ts_largePreview)
+	{
+		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
+	}
+}
+
+void FileChooser::Deactivate()
+{
+
 }
 
 void FileChooser::AddFile(const path &p_filePath)
@@ -299,5 +327,9 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
 	{
 		ts_largePreview = cr->GetAsImageChooseRect()->ts;
+	}
+	else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
+	{
+		ts_largePreview = NULL;
 	}
 }
