@@ -1,5 +1,4 @@
 #include "FileChooser.h"
-#include "Tileset.h"
 #include "VectorMath.h"
 #include <iostream>
 
@@ -9,7 +8,7 @@ using namespace boost::filesystem;
 
 void FileNode::Draw(sf::RenderTarget *target)
 {
-	target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
+	//target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
 }
 
 FolderNode::~FolderNode()
@@ -37,7 +36,7 @@ void FolderNode::AddFile(const path &p_filePath)
 {
 	FileNode *fileNode = new FileNode;
 	fileNode->filePath = p_filePath;
-	SetRectColor(fileNode->previewSpr, Color::Red);
+	//SetRectColor(fileNode->previewSpr, Color::Red);
 	fileNodes.push_back(fileNode);
 }
 
@@ -169,15 +168,37 @@ FileChooser::FileChooser()
 	ext = ".brknk";
 	SetPath("Resources/Maps/W1");
 	Print();
-	//folderTree = new FolderTree(current_path().string(), ".brknk");
-	//folderTree->DebugPrintTree();
+
+	panel = new Panel("filechooser", 700, 700, this, true);
+	panel->SetPosition(Vector2i( 960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
+
+	panel->ReserveImageRects(25);
+	int x, y;
+
+	Vector2f spacing(20, 20);
+	for (int i = 0; i < 25; ++i)
+	{
+		x = i % 5;
+		y = i / 5;
+		imageRects[i] = panel->AddImageRect(ChooseRect::ChooseRectIdentity::I_FILESELECT,
+			Vector2f(x * ( 100 + spacing.x ), y * ( 100 + spacing.y )), NULL, 0);
+		imageRects[i]->SetShown(true);
+		imageRects[i]->Init();
+	}
+}
+
+FileChooser::~FileChooser()
+{
+	ClearFiles();
+	delete panel;
 }
 
 void FileChooser::AddFile(const path &p_filePath)
 {
 	FileNode *fileNode = new FileNode;
 	fileNode->filePath = p_filePath;
-	SetRectColor(fileNode->previewSpr, Color::Red);
+	//fileNode->ts_preview = 
+	//SetRectColor(fileNode->previewSpr, Color::Red);
 
 	fileNodes.push_back(fileNode);
 }
@@ -236,7 +257,3 @@ void FileChooser::Print()
 	}
 }
 
-FileChooser::~FileChooser()
-{
-	//delete folderTree;
-}

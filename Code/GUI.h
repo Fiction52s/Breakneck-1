@@ -174,6 +174,7 @@ struct ChooseRect : PanelMember
 		I_GATEPICKUPLIBRARY,
 		I_RAILSEARCH,
 		I_RAILLIBRARY,
+		I_FILESELECT,
 	};
 
 	sf::Text nameText;

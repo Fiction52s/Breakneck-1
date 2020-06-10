@@ -3,18 +3,15 @@
 
 #include "GUI.h"
 #include <boost/filesystem.hpp>
+#include "Tileset.h"
 
-struct Tileset;
 
 struct FolderNode;
 
 struct FileNode
 {
 	void Draw(sf::RenderTarget *target);
-
-	Tileset *ts_preview;
 	boost::filesystem::path filePath;
-	sf::Vertex previewSpr[4];
 };
 
 struct FolderNode
@@ -47,22 +44,21 @@ struct FolderTree
 	std::string treePath;
 };
 
-struct FileChooser
+struct FileChooser : GUIHandler, TilesetManager
 {
 	FileChooser();
 	~FileChooser();
 
 	void SetPath(const std::string &relPath);
 	void AddFile(const boost::filesystem::path &filePath);
-	std::list<FileNode*> fileNodes;
 	void ClearFiles();
-	std::list<boost::filesystem::path> childFolders;
-
 	void Print();
 
+	ImageChooseRect *imageRects[25];
+	std::list<FileNode*> fileNodes;
+	std::list<boost::filesystem::path> childFolders;
 	std::string ext;
 	boost::filesystem::path basePath;
-
 	Panel *panel;
 };
 

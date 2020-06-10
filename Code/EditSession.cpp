@@ -1105,6 +1105,8 @@ EditSession::~EditSession()
 
 	delete brushManager;
 
+	delete fileChooser;
+
 	delete polygonInProgress;
 	delete railInProgress;
 
@@ -2860,7 +2862,7 @@ int EditSession::Run()
 	brushManager = new BrushManager;
 
 	fileChooser = new FileChooser;
-	delete fileChooser;
+	
 
 	ReadFile();
 

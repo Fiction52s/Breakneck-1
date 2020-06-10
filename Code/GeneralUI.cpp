@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include "VectorMath.h"
 #include "EditSession.h"
+#include "FileChooser.h"
 
 using namespace std;
 using namespace sf;
@@ -48,6 +49,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 {
 	if (menuDrop == fileDropdown)
 	{
+		edit->AddActivePanel(edit->fileChooser->panel);
 	}
 	else if (menuDrop == editDropdown)
 	{
