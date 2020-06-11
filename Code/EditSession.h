@@ -138,7 +138,8 @@ struct EditSession : GUIHandler, Session
 	enum Tool
 	{
 		TOOL_DRAW,
-		TOOL_BOX
+		TOOL_BOX,
+		TOOL_BRUSH
 	};
 
 	enum TerrainTool : int

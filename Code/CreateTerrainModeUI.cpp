@@ -5,6 +5,8 @@
 #include "Enemy.h"
 #include "EditSession.h"
 #include "EditorGraph.h"
+#include "BrushManager.h"
+#include "Action.h"
 
 using namespace std;
 using namespace sf;
@@ -44,9 +46,9 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 	
-	std::vector<string> drawOptions = { "Draw", "Box" };// , "Brush"
+	std::vector<string> drawOptions = { "Draw", "Box", "Brush" };
 	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
-	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)");
+	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)\nBrush (R)");
 
 	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
 	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), actionOptions, 0);
@@ -96,13 +98,38 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	removeAllPointsButton->SetToolTip("Remove all progress points (no hotkey yet)");
 
 
+	Color panelColor;
+	panelColor = Color::Cyan;
+	panelColor.a = 80;
+	int totalHotbarCount = BrushManager::MAX_RECENT_BRUSHES;
+	int hotbarRectSize = 200;
+	int hotbarSpacing = 20;
+	int totalHotbarSize = hotbarRectSize * totalHotbarCount + hotbarSpacing * (totalHotbarCount - 1);
+	int extraHotbarSpacing = (1920 - totalHotbarSize) / 2;
+
+	//brushHotbar = new 
+	brushHotbar = new Panel("topbarpanel", 1920, 220, this, false);
+	brushHotbar->SetPosition(Vector2i(0, 20));
+	brushHotbar->SetColor(panelColor);
+	brushHotbar->ReserveImageRects(totalHotbarCount);
+	brushHotbarImages.resize(totalHotbarCount);
+
+	for (int i = 0; i < totalHotbarCount; ++i)
+	{
+		brushHotbarImages[i] = brushHotbar->AddImageRect(ChooseRect::I_BRUSHHOTBAR,
+			Vector2f(extraHotbarSpacing + 10 + i * (hotbarRectSize + hotbarSpacing), 10),
+			NULL, 0, hotbarRectSize);
+		brushHotbarImages[i]->SetShown(false);
+		brushHotbarImages[i]->Init();
+	}
+
 	matPanelPos = Vector2i(currMatRects[0]->pos.x, currMatRects[0]->pos.y + 100 + 10) + mainPanel->pos;
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
 {
 	delete mainPanel;
-	
+	delete brushHotbar;
 }
 
 void CreateTerrainModeUI::ExpandTerrainLibrary()
@@ -136,6 +163,26 @@ void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 }
 
 
+void CreateTerrainModeUI::UpdateBrushHotbar()
+{
+	int i = 0;
+	auto &recentBrushes = edit->brushManager->recentBrushes;
+	for (auto it = recentBrushes.begin(); it != recentBrushes.end(); ++it)
+	{
+		brushHotbarImages[i]->SetImage((*it)->ts_preview, 0);
+		brushHotbarImages[i]->SetShown(true);
+		brushHotbarImages[i]->SetInfo((*it));
+		++i;
+	}
+	int activeHotbarSize = i;
+	int maxRecentBrushes = BrushManager::MAX_RECENT_BRUSHES;
+	for (; i < maxRecentBrushes; ++i)
+	{
+		brushHotbarImages[i]->SetShown(false);
+		//brushHotbarImages[i]->SetImage(NULL, 0);
+	}
+}
+
 int CreateTerrainModeUI::GetCurrTerrainTool()
 {
 	return terrainActionDropdown->selectedIndex;
@@ -156,8 +203,6 @@ void CreateTerrainModeUI::RevertTerrainTool()
 {
 	terrainActionDropdown->SetSelectedIndex(realTerrainTool);
 }
-
-
 
 bool CreateTerrainModeUI::IsGridOn()
 {
@@ -196,13 +241,22 @@ int CreateTerrainModeUI::GetCurrDrawTool()
 
 void CreateTerrainModeUI::SetDrawTool(int t)
 {
-	if (t != drawModeDropdown->selectedIndex)
+	int sel = drawModeDropdown->selectedIndex;
+	if (t != sel)
 	{
+		if (sel == EditSession::TOOL_BRUSH)
+		{
+			edit->RemoveActivePanel(brushHotbar);
+		}
+
 		drawModeDropdown->SetSelectedIndex(t);
 		switch (t)
 		{
 		case EditSession::TOOL_BOX:
 			edit->SetBoxTool();
+			break;
+		case EditSession::TOOL_BRUSH:
+			edit->AddActivePanel(brushHotbar);
 			break;
 		}
 	}
@@ -236,6 +290,17 @@ void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			else if (icRect->rectIdentity == ChooseRect::I_TERRAINLIBRARY)
 			{
 				ChooseMatType(icRect);
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_BRUSHHOTBAR )
+			{
+				NamedBrush *nb = (NamedBrush*)cr->info;
+				//nb->myBrush
+				edit->DestroyCopiedBrushes();
+
+				edit->copiedBrush = nb->myBrush->CopyTerrainAndAttachedActors();
+				edit->freeActorCopiedBrush = nb->myBrush->CopyFreeActors();
+
+				edit->EditModePaste();
 			}
 		}
 	}

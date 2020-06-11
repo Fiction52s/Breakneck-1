@@ -501,6 +501,7 @@ bool Panel::HandleEvent(sf::Event ev)
 				extraUpdater->MouseScroll(ev.mouseWheel.delta);
 			}
 		}
+		return true;
 		break;
 	}
 

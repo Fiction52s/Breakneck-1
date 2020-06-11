@@ -176,6 +176,7 @@ struct ChooseRect : PanelMember
 		I_RAILSEARCH,
 		I_RAILLIBRARY,
 		I_FILESELECT,
+		I_BRUSHHOTBAR,
 	};
 
 	sf::Text nameText;
@@ -1047,7 +1048,12 @@ struct CreateTerrainModeUI : GUIHandler
 
 	Panel *matTypePanel;
 	Panel *mainPanel;
-	Panel *nameBrushPanel;
+	//Panel *nameBrushPanel;
+	Panel *brushHotbar;
+	void UpdateBrushHotbar();
+	//std::list<Brush*> recentBrushes;
+
+	std::vector<ImageChooseRect*> brushHotbarImages;
 
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;

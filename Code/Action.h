@@ -50,6 +50,7 @@ struct Brush
 	bool Load(std::ifstream &is);
 	void CreatePreview(const std::string &fileName);
 
+
 	sf::Vector2f GetTerrainSize();
 };
 

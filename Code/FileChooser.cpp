@@ -442,9 +442,7 @@ void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
 				edit->ChooseFileSave(this, fileName);
 				TurnOff();
 			}
-			//cout << "clicked: " << node->filePath.string() << endl;
 		}
-		//cout << "clicked: " << node->filePath.string() << endl;
 	}
 }
 
@@ -499,6 +497,8 @@ void FileChooser::Init()
 		panel->confirmButton->text.setString("Save");
 	}
 	fileNameTextBox->SetString("");
+	fileNameTextBox->focused = true;
+	fileNameTextBox->SetCursorIndex(0);
 	panel->SetFocusedMember(fileNameTextBox);
 }
 

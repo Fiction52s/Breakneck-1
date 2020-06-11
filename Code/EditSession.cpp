@@ -3711,6 +3711,9 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 	{
 		Brush *loadedBrush = brushManager->LoadBrush(fc->currPath.string(),
 			fileName);
+
+		createTerrainModeUI->UpdateBrushHotbar();
+
 		DestroyCopiedBrushes();
 
 		copiedBrush = loadedBrush->CopyTerrainAndAttachedActors();
@@ -3728,6 +3731,8 @@ void EditSession::ChooseFileSave(FileChooser *fc,
 	{
 		brushManager->SaveBrush(selectedBrush, fc->currPath.string(),
 			fileName );
+
+		createTerrainModeUI->UpdateBrushHotbar();
 	}
 }
 
@@ -11963,11 +11968,12 @@ void EditSession::HandleEvents()
 		if( !focuseHandled )
 		{
 			HandleEventFunc(mode);
+
+			GeneralEventHandler();
 		}
 
-		GeneralEventHandler();
 		
-		
+		//GeneralEventHandler();		
 	}
 }
 
@@ -12028,6 +12034,10 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::D)
 		{
 			createTerrainModeUI->SetDrawTool(TOOL_DRAW);
+		}
+		else if (ev.key.code == sf::Keyboard::R)
+		{
+			createTerrainModeUI->SetDrawTool(TOOL_BRUSH);
 		}
 		else if (ev.key.code == Keyboard::T )
 		{

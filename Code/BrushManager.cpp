@@ -6,10 +6,44 @@
 using namespace std;
 using namespace sf;
 
+const int BrushManager::MAX_RECENT_BRUSHES = 8;
+
+NamedBrush::NamedBrush(const std::string &p_path, const std::string &p_name,
+	Brush *b)
+	:path(p_path), name(p_name), myBrush( b )
+{
+}
+
+NamedBrush::~NamedBrush()
+{
+	myBrush->Destroy();
+	delete myBrush;
+
+	//needs to destroy the tileset too
+}
+
+void NamedBrush::LoadPreview(TilesetManager *tm)
+{
+	tm->SetGameResourcesMode(false);
+	string previewStr = path + "/" + name + ".png";
+	ts_preview = tm->GetTileset(previewStr);
+	tm->SetGameResourcesMode(true); //not sure if this is always true,
+	//but it is
+}
+
+
 BrushManager::BrushManager()
 {
 	edit = EditSession::GetSession();
 	currLoadingBrush = NULL;
+}
+
+BrushManager::~BrushManager()
+{
+	for (auto it = recentBrushes.begin(); it != recentBrushes.end(); ++it)
+	{
+		delete (*it);
+	}
 }
 
 int BrushManager::SaveBrush(Brush *b, 
@@ -29,19 +63,23 @@ int BrushManager::SaveBrush(Brush *b,
 		of.open(filePath + ".bnbrush");
 
 		Brush *newBrush = b->Copy();
-		brushes[name] = newBrush;
 
 		newBrush->Save(of);
 		of.close();
 
 		newBrush->CreatePreview(filePath);
-		
-		auto it = brushes.find(name);
+
+		NamedBrush *nb = new NamedBrush(path, name, newBrush);
+		nb->LoadPreview(edit);
+
+		AddRecentBrush(nb);
+
+		/*auto it = brushes.find(name);
 		if (it != brushes.end())
 		{
 			delete (*it).second;
 			(*it).second = NULL;
-		}
+		}*/
 	}
 	else
 	{
@@ -55,6 +93,7 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 	const std::string &name )
 {
 	ifstream is;
+
 	is.open(path + "/" + name + ".bnbrush");
 
 	if (is.is_open())
@@ -64,14 +103,19 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 		b->Load(is);
 		currLoadingBrush = NULL;
 
-		auto it = brushes.find(name);
+
+		NamedBrush *nb = new NamedBrush(path, name, b);
+		nb->LoadPreview(edit);
+		/*auto it = brushes.find(name);
 		if (it != brushes.end())
 		{
 			delete (*it).second;
 			(*it).second = NULL;
-		}
+		}*/
 
-		brushes[name] = b;
+		//brushes[name] = b;
+		
+		AddRecentBrush(nb);
 
 		return b;
 	}
@@ -82,4 +126,34 @@ Brush * BrushManager::LoadBrush(const std::string &path,
 	}
 
 	return NULL;
+}
+
+void BrushManager::AddRecentBrush(NamedBrush *b)
+{
+	NamedBrush *foundBrush = NULL;
+	for (auto it = recentBrushes.begin(); it != recentBrushes.end(); ++it)
+	{
+		if ((*it)->path == b->path && (*it)->name == b->name)
+		{
+			foundBrush = (*it);
+			recentBrushes.erase(it);
+			break;
+		}
+	}
+
+	if (!foundBrush && recentBrushes.size() == MAX_RECENT_BRUSHES)
+	{
+		recentBrushes.pop_front();
+	}
+
+	recentBrushes.push_back(b);
+
+	//might optimize this later
+	if (foundBrush)
+		delete foundBrush;
+
+	/*if (createEnemyModeUI != NULL)
+	{
+		createEnemyModeUI->UpdateHotbarTypes();
+	}*/
 }
