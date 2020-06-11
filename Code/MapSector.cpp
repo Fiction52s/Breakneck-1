@@ -461,6 +461,8 @@ bool MapSector::Update(ControllerState &curr,
 					state = NORMAL;
 				}
 
+				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
+
 				return false;
 			}
 		}

@@ -68,48 +68,21 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 
 
 	bottomBG.setPosition(624, 545);
-
 	numSectors = 0;
 	sectors = NULL;
-	//numSectors = 7;
-	//MapSector *ms;
-	sectorCenter = Vector2f(960, 550);/*bottomBG.getPosition()
-									  + Vector2f(bottomBG.getLocalBounds().width / 2,
-									  bottomBG.getLocalBounds().height / 2);*/
-
+	sectorCenter = Vector2f(960, 550);
 	sectorSelector = NULL;
 	mapSelector = NULL;
-	//slideDuration = 50;
-	////bottomCenter.x = 0;
-	//sectors = new MapSector*[numSectors];
-	//for (int i = 0; i < numSectors; ++i)
-	//{
-	//	ms = new MapSector( this, 6 );
-	//	//load sectors externally
-	//	sectors[i] = ms;
-	//	ms->SetCenter(bottomCenter);
-	//	//ms->ts_thumb 
-	//	
-	//}
 
-	//int waitFrames[3] = { 10, 5, 2 };
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	mapSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 
 	//bottomBG.setOrigin(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
-	//thumbnailBG.setOrigin(thumbnailBG.getLocalBounds().width / 2, thumbnailBG.getLocalBounds().height / 2);
 	//shardBG.setOrigin(shardBG.getLocalBounds().width / 2, shardBG.getLocalBounds().height / 2);
 
 
 	frame = 0;
-
-
-
-	//saSelectorLevel = new SingleAxisSelector(numLevelsInWorld, waitFrames, 2, waitModeThresh, 0, 0);
-	//Tileset *ts_thumb = mm->tilesetManager.GetTileset("WorldMap/thumbnail01.png", 256, 256);
-	//thumbnailSpr.setTexture(ts_thumb);
-
 }
 
 MapSelector::~MapSelector()
@@ -140,6 +113,7 @@ void MapSelector::UpdateSprites()
 void MapSelector::RunSelectedMap()
 {
 	sectors[sectorSelector->currIndex]->RunSelectedMap();
+	ReturnFromMap();
 }
 
 void MapSelector::Draw(sf::RenderTarget *target)
@@ -171,6 +145,12 @@ void MapSelector::Draw(sf::RenderTarget *target)
 
 }
 
+void MapSelector::ReturnFromMap()
+{
+	kinState = K_STAND;
+	frame = 0;
+}
+
 MapSector * MapSelector::GetFocusedSector()
 {
 	return sectors[sectorSelector->currIndex];
@@ -181,7 +161,6 @@ bool MapSelector::Update(ControllerState &curr,
 {
 	ControllerState empty;
 	MapSector::State currSectorState = GetFocusedSector()->state;
-
 
 	bool left = curr.LLeft();
 	bool right = curr.LRight();
@@ -234,35 +213,8 @@ bool MapSelector::Update(ControllerState &curr,
 
 	sectors[sectorSelector->currIndex]->UpdateBG();
 
-	/*for (int i = 0; i < numSectors; ++i)
-	{
-		if (sectorSelector->currIndex == i)
-			continue;
-
-		sectors[i]->UpdateNodes();
-	}*/
-
 	UpdateHighlight();
 
-	int scrollHeight = 400 + sectorSelector->currIndex * 120;
-	SetRectCenter(backScrollEnergy, 1200, 100, Vector2f(960, scrollHeight));
-	SetRectCenter(frontScrollEnergy, 1200, 100, Vector2f(960, scrollHeight));
-
-	int scrollFramesBack = 180;
-	int scrollFramesFront = 360;
-	float fBack = frame % scrollFramesBack;
-	float fFront = frame % scrollFramesFront;
-
-	int mult = frame / scrollFramesBack;
-	int multFront = frame / scrollFramesFront;
-
-	float facBack = fBack / (scrollFramesBack);
-	float facFront = fFront / (scrollFramesFront);
-
-	horizScrollShader1.setUniform("quant", -facBack);
-	horizScrollShader2.setUniform("quant", -facFront);
-
-	
 
 	if (kinState == K_STAND)
 	{
@@ -276,7 +228,6 @@ bool MapSelector::Update(ControllerState &curr,
 	{
 		if (kinFrame == 66 * 2)
 		{
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_select"));
 			mainMenu->SetMode(MainMenu::TRANS_WORLDMAP_TO_LOADING);
 			kinState = K_HIDE;
 			frame = 0;

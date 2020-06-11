@@ -138,6 +138,7 @@ struct MapSelector
 
 	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
 		int wIndex);
+	void ReturnFromMap();
 	void UpdateHighlight();
 	void RunSelectedMap();
 	~MapSelector();

@@ -189,6 +189,7 @@ void WorldMap::RunSelectedMap()
 {
 	MapSelector *ms = CurrSelector();
 	ms->RunSelectedMap();
+
 }
 
 void WorldMap::Reset( SaveFile *sf )

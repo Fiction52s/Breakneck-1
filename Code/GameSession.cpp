@@ -446,6 +446,12 @@ void GameSession::Cleanup()
 		deathSeq = NULL;
 	}
 
+	if (getShardSeq != NULL)
+	{
+		delete getShardSeq;
+		getShardSeq = NULL;
+	}
+
 	if (gateMarkers != NULL)
 	{
 		delete gateMarkers;
