@@ -14,6 +14,36 @@ struct World;
 struct Actor;
 
 
+struct AdventureMap
+{
+	std::string name;
+	void Load(std::ifstream &is);
+	void Save(std::ofstream &of);
+};
+
+struct AdventureSector
+{
+	AdventureSector();
+	int requirements[4];
+	int numRequirements[4];
+	AdventureMap maps[8];
+	void Load(std::ifstream &is);
+	void Save(std::ofstream &of);
+};
+
+struct AdventureWorld
+{
+	AdventureSector sectors[8];
+	void Load(std::ifstream &is);
+	void Save(std::ofstream &of);
+};
+
+struct AdventureFile
+{
+	AdventureWorld worlds[8];
+	void Load(std::ifstream &is);
+	void Save(std::ofstream &of);
+};
 
 
 
@@ -31,27 +61,11 @@ struct Level
 	};
 
 	Level();
-	Sector *sec;
-	BitField optionField;
-	std::string name;
-	bool justBeaten;
-	int bossFightType;
-	int bestTimeFrames;
 	void SetComplete(bool comp);
 	bool TrySetRecord(int numFrames);
 	bool IsLastInSector();
-	//void SetJustUnlocked(bool unlocked);
-	//void SetJustUnlockedTop(bool unlocked);
-	//void SetJustUnlockedBottom(bool unlocked);
-
-	//bool GetJustUnlocked();
-	//bool GetJustUnlockedTop();
-	//bool GetJustUnlockedBottom();
 	void UpdateFromMapHeader();
 	float GetCapturedShardsPortion();
-	std::list<std::string> shardNameList;
-	bool shardsLoaded;
-
 	bool IsOneHundredPercent();
 	bool GetComplete();
 	int GetNumTotalShards();
@@ -63,9 +77,28 @@ struct Level
 	void UnlockBottomBonus();
 	bool TopBonusUnlocked();
 	bool BottomBonusUnlocked();
-	int index;
 	std::string GetFullName();
 	float GetCompletionPercentage();
+
+
+	//void SetJustUnlocked(bool unlocked);
+	//void SetJustUnlockedTop(bool unlocked);
+	//void SetJustUnlockedBottom(bool unlocked);
+
+	//bool GetJustUnlocked();
+	//bool GetJustUnlockedTop();
+	//bool GetJustUnlockedBottom();
+
+
+	std::list<std::string> shardNameList;
+	bool shardsLoaded;
+	Sector *sec;
+	BitField optionField;
+	std::string name;
+	bool justBeaten;
+	int bossFightType;
+	int bestTimeFrames;
+	int index;
 };
 
 struct Sector
@@ -118,11 +151,6 @@ struct World
 	float GetCompletionPercentage();
 	int GetNumShardsCaptured();
 	std::list<std::string> shardNameList;
-};
-
-struct WorldFile
-{
-
 };
 
 struct SaveFile

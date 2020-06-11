@@ -2,6 +2,7 @@
 #define __ADVENTURE_CREATOR__
 
 #include "FileChooser.h"
+struct AdventureFile;
 
 struct AdventureCreator : FileChooserHandler
 {
@@ -12,6 +13,7 @@ struct AdventureCreator : FileChooserHandler
 	};
 
 	AdventureCreator();
+	~AdventureCreator();
 	void Cancel();
 	void Confirm();
 	void ClickFile(ChooseRect *cr);
@@ -22,6 +24,10 @@ struct AdventureCreator : FileChooserHandler
 	void ChangePath();
 	void Open();
 	bool MouseUpdate();
+	void ExpandWorlds();
+	void CollapseWorlds();
+	void ChooseWorld(int w);
+	void ChooseSector(int s);
 	
 
 	State state;
@@ -34,20 +40,35 @@ struct AdventureCreator : FileChooserHandler
 	sf::Vertex grabbedFileQuad[4];
 	FileNode *grabbedFile;
 
-	ImageChooseRect *worldRects[8];
-	ImageChooseRect *currWorldRect;
-	void ExpandWorlds();
-	void CollapseWorlds();
-	void ChooseWorld(int w);
+	void SetRectNode(ChooseRect *cr, FileNode *fn);
+	int GetNodeStart();
+
+	
+	Tileset *ts_sectorIcons;
+
+	//512 = 8 * 8 * 8
+	FileNode adventureNodes[512];
+	FileNode * GetCurrNode(int m);
+
+
+	
 	int currWorld;
+	int currSector;
 	bool worldsExpanded;
 
 	//ImageChooseRect *worldRects[8];
 	//ImageChooseRect *currWorldRect;
 
+	ImageChooseRect *worldRects[8];
+	ImageChooseRect *currWorldRect;
+
+	ImageChooseRect *sectorRects[8];
+
 	ImageChooseRect *mapRects[8];
 
-	const static int EXTRA_RECTS = 9 + 8;
+	AdventureFile *adventure;
+
+	const static int EXTRA_RECTS = 9 + 8 + 8;
 };
 
 #endif

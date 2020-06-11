@@ -18,6 +18,7 @@ struct FileNode
 		FOLDER,
 	};
 
+	FileNode() { ts_preview = NULL; type = FILE; }
 	Type type;
 	void Draw(sf::RenderTarget *target);
 	boost::filesystem::path filePath;

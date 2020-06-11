@@ -11,6 +11,108 @@
 using namespace std;
 using namespace boost::filesystem;
 
+
+void AdventureMap::Load(std::ifstream &is)
+{
+	is >> name;
+}
+
+void AdventureMap::Save(std::ofstream &of)
+{
+	if (name == "")
+	{
+		of << "----" << "\n";
+	}
+	else
+	{
+		of << name << "\n";
+	}
+	
+}
+
+AdventureSector::AdventureSector()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		requirements[i] = 0;
+		numRequirements[i] = 0;
+	}
+}
+
+void AdventureSector::Load(std::ifstream &is)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		is >> requirements[i];
+	}
+	for (int i = 0; i < 4; ++i)
+	{
+		is >> numRequirements[i];
+	}
+
+	for (int i = 0; i < 8; ++i)
+	{
+		maps[i].Load(is);
+	}
+}
+
+void AdventureSector::Save(std::ofstream &of)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		of << requirements[i] << " ";
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		of << numRequirements[i];
+		if (i < 3)
+		{
+			of << " ";
+		}
+	}
+
+	of << "\n";
+
+	for (int i = 0; i < 8; ++i)
+	{
+		maps[i].Save(of);
+	}
+}
+
+void AdventureWorld::Load(std::ifstream &is)
+{
+	for (int i = 0; i < 8; ++i)
+	{
+		sectors[i].Load(is);
+	}
+}
+
+void AdventureWorld::Save(std::ofstream &of)
+{
+	for (int i = 0; i < 8; ++i)
+	{
+		sectors[i].Save(of);
+	}
+}
+
+void AdventureFile::Load(std::ifstream &is)
+{
+	for (int i = 0; i < 8; ++i)
+	{
+		worlds[i].Load(is);
+	}
+}
+
+void AdventureFile::Save(std::ofstream &of)
+{
+	for (int i = 0; i < 8; ++i)
+	{
+		worlds[i].Save(of);
+	}
+}
+
+
 SaveFile::SaveFile( const std::string &name )
 	:shardField( 32 * 5 ), newShardField( 32 * 5 ), powerField(32),
 	momentaField( 32 * 2 )
