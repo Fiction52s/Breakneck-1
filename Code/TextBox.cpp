@@ -51,10 +51,8 @@ void TextBox::Deactivate()
 void TextBox::SetCursorIndex(int index)
 {
 	cursorIndex = index;
-
-
-
-	cursor.setPosition(text.getLocalBounds().width + leftBorder, pos.y);
+	cursor.setPosition(pos.x + text.getLocalBounds().width + leftBorder, pos.y);
+	//cursor.setPosition(text.getLocalBounds().width + leftBorder, pos.y);
 }
 
 void TextBox::SetCursorIndex(Vector2i &mousePos)
