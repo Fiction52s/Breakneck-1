@@ -80,48 +80,65 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	ShardParams *sParams = (ShardParams*)ap;
 	editParams = ap;
 
+
+	radius = 400;
+	shardType = -1;
 	//SetCurrPosInfo(startPosInfo);
 
+	UpdateParamsSettings();
+
+	alreadyCollected = false;
 	if (sess->IsSessTypeGame())
 	{
 		game = GameSession::GetSession();
+
+		GameSession *game = GameSession::GetSession();
+		if (game->IsShardCaptured(shardType))
+		{
+			alreadyCollected = true;
+		}
 	}
 	else
 	{
 		game = NULL;
 	}
 
-	if (game != NULL)
+	if (game != NULL && !alreadyCollected)
 	{
 		game->TryCreateShardResources();
 	}
 	
-	testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
-	testEmitter->CreateParticles();
-	testEmitter->SetPos(GetPositionF());
-	//testEmitter->SetTileset( owner->GetTileset("FX/fatgoku.png", 0, 0));
-	testEmitter->SetRatePerSecond(30);
+	testEmitter = NULL;
+	ts_sparkle = NULL;
+	ts_explodeCreate = NULL;
+	sparklePool = NULL;
+
+	if (!alreadyCollected)
+	{
+		testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
+		testEmitter->CreateParticles();
+		testEmitter->SetPos(GetPositionF());
+		testEmitter->SetRatePerSecond(30);
+
+		ts_sparkle = sess->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
+
+		ts_explodeCreate = sess->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
+
+		sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
+		sparklePool->ts = ts_sparkle;
+
+		BasicCircleHurtBodySetup(32);
+		BasicCircleHitBodySetup(32);
+
+		hitBody.hitboxInfo = NULL;
+
+		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+			Color::Cyan, Color(0, 0, 100, 0), 60));
+		geoGroup.Init();
+	}
+
 	
-	//testEmitter->AddForce(Vector2f(0, .1));
-
-	radius = 400;
-
-	shardType = -1;
-	UpdateParamsSettings();
-
-	ts_sparkle = sess->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
-
-	ts_explodeCreate = sess->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
-
-	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
-	sparklePool->ts = ts_sparkle;
-
 	
-	//sprite.setPosition( GetPositionF() );
-
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
-	hitBody.hitboxInfo = NULL;
 
 	actionLength[FLOAT] = 120;
 	actionLength[DISSIPATE] = 10;
@@ -131,26 +148,22 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	animFactor[DISSIPATE] = 1;
 	animFactor[LAUNCH] = 1;
 
-	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f( 0, 0 ), Vector2f( 0, 0 ),
-		Color::Cyan, Color(0, 0, 100, 0), 60));
-	geoGroup.Init();
-
-	/*geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
-		Color::Cyan, Color(0, 0, 100, 0), 60));
-	geoGroup.Init();*/
-
 	ResetEnemy();
 
 	SetSpawnRect();
-	//geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, GetPositionF(), GetPositionF(),
-	//	Color::Cyan, Color(0, 0, 100, 0), 60));
-	//geoGroup.Init();
 }
 
 Shard::~Shard()
 {
-	delete testEmitter;
-	delete sparklePool;
+	if (testEmitter != NULL)
+	{
+		delete testEmitter;
+	}
+	
+	if (sparklePool != NULL)
+	{
+		delete sparklePool;
+	}
 }
 
 void Shard::ResetEnemy()
@@ -159,7 +172,12 @@ void Shard::ResetEnemy()
 
 	geoGroup.Reset();
 	totalFrame = 0;
-	sparklePool->Reset();
+
+	if (sparklePool != NULL)
+	{
+		sparklePool->Reset();
+	}
+	
 	action = FLOAT;
 	frame = 0;
 	receivedHit = NULL;
@@ -168,13 +186,22 @@ void Shard::ResetEnemy()
 
 	UpdateSprite();
 
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
+	if (!alreadyCollected)
+	{
+		SetHitboxes(&hitBody, 0);
+		SetHurtboxes(&hurtBody, 0);
 
-	testEmitter->Reset();
-	testEmitter->SetOn(false);
+		sprite.setColor(Color(255, 255, 255, 255));
+		testEmitter->Reset();
+		testEmitter->SetOn(false);
+	}
+	else
+	{
+		sprite.setColor(Color(255, 255, 255, 40));
+		SetHitboxes(NULL, 0);
+		SetHurtboxes(NULL, 0);
+	}
 
-	//position = startPosInfo.GetPosition();
 	rootPos = GetPosition();
 }
 
@@ -345,39 +372,45 @@ void Shard::ProcessState()
 	}
 	
 	//testEmitter->Update();
-	sparklePool->Update();
-	if (!geoGroup.Update())
+	if (!alreadyCollected)
 	{
-		geoGroup.Reset();
-		geoGroup.Start();
+		sparklePool->Update();
+		if (!geoGroup.Update())
+		{
+			geoGroup.Reset();
+			geoGroup.Start();
+		}
+
+		Vector2f sparkleCenter(GetPositionF());
+
+		if (totalFrame % 60 == 0)
+		{
+			Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
+			EffectInstance ei;
+
+			int r = rand() % 3;
+			if (r == 0)
+			{
+				ei.SetParams(sparkleCenter + off,
+					Transform(Transform::Identity), 11, 5, 0);
+			}
+			else if (r == 1)
+			{
+				ei.SetParams(sparkleCenter + off,
+					Transform(Transform::Identity), 10, 5, 11);
+			}
+			else if (r == 2)
+			{
+				ei.SetParams(sparkleCenter + off,
+					Transform(Transform::Identity), 10, 5, 11);
+			}
+
+			sparklePool->ActivateEffect(&ei);
+		}
 	}
+	
 
-	Vector2f sparkleCenter(GetPositionF());
-
-	if (totalFrame % 60 == 0)
-	{
-		Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
-		EffectInstance ei;
-
-		int r = rand() % 3;
-		if (r == 0)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 11, 5, 0);
-		}
-		else if (r == 1)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 10, 5, 11);
-		}
-		else if (r == 2)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 10, 5, 11);
-		}
-
-		sparklePool->ActivateEffect(&ei);
-	}
+	
 }
 
 void Shard::ProcessHit()
@@ -398,15 +431,24 @@ void Shard::UpdateSprite()
 
 void Shard::EnemyDraw( sf::RenderTarget *target )
 {
-	geoGroup.Draw( target );
+	if (!alreadyCollected)
+	{
 
-	if (action != DISSIPATE)
+
+		geoGroup.Draw(target);
+
+		if (action != DISSIPATE)
+		{
+			target->draw(sprite);
+			sparklePool->Draw(target);
+		}
+
+		testEmitter->Draw(target);
+	}
+	else
 	{
 		target->draw(sprite);
-		sparklePool->Draw(target);
 	}
-
-	testEmitter->Draw(target);
 }
 
 void Shard::DrawMinimap( sf::RenderTarget *target )

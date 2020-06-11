@@ -1058,16 +1058,7 @@ void Session::PlayerRemoveActiveComboer(ComboObject *co, int index)
 void Session::AddEnemy(Enemy *e)
 {
 	//do not spawn shards that are already captured in the file.
-	if (e->type == EnemyType::EN_SHARD)
-	{
-		if (IsSessTypeGame())
-		{
-			GameSession *game = GameSession::GetSession();
-			Shard *sh = (Shard*)e;
-			if (game->IsShardCaptured(sh->shardType))
-				return;
-		}
-	}
+	
 
 	//cout << "spawning enemy! of type: " << e->type << endl;
 	if (e->spawned)
