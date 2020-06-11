@@ -120,6 +120,11 @@ struct World
 	std::list<std::string> shardNameList;
 };
 
+struct WorldFile
+{
+
+};
+
 struct SaveFile
 {
 	SaveFile( const std::string &name );
@@ -153,6 +158,9 @@ struct SaveFile
 	int numWorlds;
 
 	std::string controlProfileName;
+
+	const static int MAX_SECTORS = 8;
+	const static int MAX_LEVELS_PER_SECTOR = 8;
 
 
 };

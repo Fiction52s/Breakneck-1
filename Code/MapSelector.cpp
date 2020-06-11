@@ -34,27 +34,6 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 
 	ts_node = mm->tilesetManager.GetTileset(nodeFile, 128, 128);
 
-	string scrollEnergyFile = string("WorldMap/sector_aura_w") + worldIndexStr + string("_1200x300.png");
-
-	ts_scrollingEnergy = mainMenu->tilesetManager.GetTileset(scrollEnergyFile, 1200, 300);
-	//Tileset *ts_bottom = mm->tilesetManager.GetTileset("Worldmap/levelselect_672x256.png", 672, 256);
-	SetRectSubRect(frontScrollEnergy, ts_scrollingEnergy->GetSubRect(0));
-	SetRectSubRect(backScrollEnergy, ts_scrollingEnergy->GetSubRect(1));
-
-	if (!horizScrollShader1.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))
-	{
-		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	horizScrollShader1.setUniform("u_texture", sf::Shader::CurrentTexture);
-
-
-	if (!horizScrollShader2.loadFromFile("Resources/Shader/horizslider.frag", sf::Shader::Fragment))//("Shader/horizslider.frag", sf::Shader::Fragment))
-	{
-		cout << "horizslider SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	horizScrollShader2.setUniform("u_texture", sf::Shader::CurrentTexture);
-
-
 	ts_bossFight = new Tileset*[1];
 	ts_bossFight[0] = mm->tilesetManager.GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
 
@@ -66,23 +45,15 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 	ts_sectorOpen = new Tileset*[1];
 	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
 
-
 	bottomBG.setPosition(624, 545);
 	numSectors = 0;
-	sectors = NULL;
 	sectorCenter = Vector2f(960, 550);
-	sectorSelector = NULL;
-	mapSelector = NULL;
 
-	int waitFrames[3] = { 30, 15, 10 };
-	int waitModeThresh[2] = { 2, 2 };
-	mapSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
-
-	//bottomBG.setOrigin(bottomBG.getLocalBounds().width / 2, bottomBG.getLocalBounds().height / 2);
-	//shardBG.setOrigin(shardBG.getLocalBounds().width / 2, shardBG.getLocalBounds().height / 2);
-
+	sectorSASelector = NULL;
 
 	frame = 0;
+
+	sectors.resize(SaveFile::MAX_SECTORS);
 }
 
 MapSelector::~MapSelector()
@@ -90,19 +61,11 @@ MapSelector::~MapSelector()
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
 
-	if (sectors != NULL)
+	for (int i = 0; i < numSectors; ++i)
 	{
-		for (int i = 0; i < numSectors; ++i)
-		{
-			delete sectors[i];
-		}
-		delete[] sectors;
-		sectors = NULL;
-
-		delete sectorSelector;
-
+		delete sectors[i];
 	}
-	delete mapSelector;
+	delete sectorSASelector;
 }
 
 void MapSelector::UpdateSprites()
@@ -112,17 +75,13 @@ void MapSelector::UpdateSprites()
 
 void MapSelector::RunSelectedMap()
 {
-	sectors[sectorSelector->currIndex]->RunSelectedMap();
+	FocusedSector()->RunSelectedMap();
 	ReturnFromMap();
 }
 
 void MapSelector::Draw(sf::RenderTarget *target)
 {
-	for (int i = 0; i < numSectors; ++i)
-	{
-		//sectors[saSelector->currIndex]->Draw(target);
-		sectors[sectorSelector->currIndex]->Draw(target);
-	}
+	FocusedSector()->Draw(target);
 
 	if (kinState != K_HIDE)
 	{
@@ -130,19 +89,6 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	}
 
 	target->draw(nodeHighlight);
-
-	//return;
-
-	/*sf::RenderStates rs;
-	rs.texture = ts_scrollingEnergy->texture;
-	rs.shader = &horizScrollShader1;
-
-	target->draw(backScrollEnergy, 4, sf::Quads, rs);
-
-	rs.shader = &horizScrollShader2;
-
-	target->draw(frontScrollEnergy, 4, sf::Quads, rs);*/
-
 }
 
 void MapSelector::ReturnFromMap()
@@ -151,16 +97,16 @@ void MapSelector::ReturnFromMap()
 	frame = 0;
 }
 
-MapSector * MapSelector::GetFocusedSector()
+MapSector * MapSelector::FocusedSector()
 {
-	return sectors[sectorSelector->currIndex];
+	return sectors[sectorSASelector->currIndex];
 }
 
 bool MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
 	ControllerState empty;
-	MapSector::State currSectorState = GetFocusedSector()->state;
+	MapSector::State currSectorState = FocusedSector()->state;
 
 	bool left = curr.LLeft();
 	bool right = curr.LRight();
@@ -179,13 +125,13 @@ bool MapSelector::Update(ControllerState &curr,
 			return false;
 		}
 		//(currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE)
-		int changed = sectorSelector->UpdateIndex(curr.LLeft(), curr.LRight());
-		int numCurrLevels = GetFocusedSector()->unlockedLevelCount;
+		int changed = sectorSASelector->UpdateIndex(curr.LLeft(), curr.LRight());
+		int numCurrLevels = FocusedSector()->unlockedLevelCount;
 		if (changed != 0)
 		{
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
-			mapSelector->SetTotalSize(numCurrLevels);
-			GetFocusedSector()->UpdateLevelStats();
+			//mapSelector->SetTotalSize(numCurrLevels);
+			FocusedSector()->UpdateLevelStats();
 		}
 		
 		break;
@@ -200,7 +146,7 @@ bool MapSelector::Update(ControllerState &curr,
 				break;
 			}
 
-			if (!sectors[sectorSelector->currIndex]->Update(curr, prev))
+			if (!FocusedSector()->Update(curr, prev))
 			{
 				kinState = K_JUMP;
 				frame = 0;
@@ -211,7 +157,7 @@ bool MapSelector::Update(ControllerState &curr,
 	}
 	}
 
-	sectors[sectorSelector->currIndex]->UpdateBG();
+	FocusedSector()->UpdateBG();
 
 	UpdateHighlight();
 
@@ -253,63 +199,30 @@ bool MapSelector::Update(ControllerState &curr,
 	return true;
 }
 
-void MapSelector::UpdateAllInfo(int index)
+void MapSelector::Init(int index)
 {
 	SaveFile *sf = mainMenu->GetCurrentProgress();
 	World & w = sf->worlds[index];
 
-	MapSector *mSector;
-
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 
+	numSectors = w.numSectors;
+	
 
-	if ((sectors != NULL && numSectors != w.numSectors))
+	for (int i = 0; i < numSectors; ++i)
 	{
-		for (int i = 0; i < numSectors; ++i)
-		{
-			delete sectors[i];
-		}
-		delete[] sectors;
-		sectors = NULL;
-
-		delete sectorSelector;
-		sectorSelector = NULL;
+		//load sectors externally
+		sectors[i] = new MapSector(this, i);;
+		sectors[i]->Init(&(w.sectors[i]));
 	}
 
-	if (sectors == NULL)
-	{
-		numSectors = w.numSectors;
-		sectors = new MapSector*[numSectors];
-
-		for (int i = 0; i < numSectors; ++i)
-		{
-			mSector = new MapSector(this, i);
-			//load sectors externally
-			sectors[i] = mSector;
-			mSector->Init(&(w.sectors[i]));
-		}
-
-		sectorSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numSectors, 0);
-	}
-	else
-	{
-		for (int i = 0; i < numSectors; ++i)
-		{
-			sectors[i]->Init(&(w.sectors[i]));
-		}
-	}
-
-	int scrollHeight = 400 + sectorSelector->currIndex * 120;
-	SetRectCenter(backScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
-	SetRectCenter(frontScrollEnergy, 1200, 200, Vector2f(960, scrollHeight));
-
-	mapSelector->SetTotalSize(GetFocusedSector()->unlockedLevelCount);
+	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numSectors, 0);
 }
 
 void MapSelector::UpdateHighlight()
 {
-	MapSector *currSec = sectors[sectorSelector->currIndex];
+	MapSector *currSec = FocusedSector();
 	nodeHighlight.setPosition(currSec->GetSelectedNodePos());
 	int n = currSec->GetSelectedNodeSubIndex();
 

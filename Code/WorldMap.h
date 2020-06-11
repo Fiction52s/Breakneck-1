@@ -98,11 +98,14 @@ struct MapSector
 	sf::Vertex levelBG[4];
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
+	sf::Vertex lockedOverlayQuad[4];
+
 	sf::Sprite *nodes;
 	sf::Sprite *topBonusNodes;
 	sf::Sprite *botBonusNodes;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
+
 
 	sf::Text shardsCollectedText;
 	sf::Text completionPercentText;
@@ -115,6 +118,9 @@ struct MapSector
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
 	Tileset *ts_shards;
+
+
+	SingleAxisSelector *mapSASelector;
 
 	Background *bg;
 };
@@ -138,19 +144,20 @@ struct MapSelector
 
 	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
 		int wIndex);
+	void Init(int i);
 	void ReturnFromMap();
 	void UpdateHighlight();
 	void RunSelectedMap();
 	~MapSelector();
-	MapSector *GetFocusedSector();
+	MapSector *FocusedSector();
 	void UpdateSprites();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
-	void UpdateAllInfo(int index);
+	//void UpdateAllInfo(int index);
 	void Draw(sf::RenderTarget *target);
 
 	State state;
-	MapSector **sectors;
+	std::vector<MapSector*> sectors;
 	MainMenu *mainMenu;
 
 	sf::Sprite newSelectTestSpr;
@@ -166,23 +173,16 @@ struct MapSelector
 	int frame;
 	int numSectors;
 	
-	sf::Shader horizScrollShader1;
-	sf::Shader horizScrollShader2;
-
-	sf::Vertex backScrollEnergy[4];
-	sf::Vertex frontScrollEnergy[4];
-	
 	sf::Vector2f sectorCenter;
 	sf::Vector2f centerPos;
 	MapNodeState *nodeStates[3];
 	
-	SingleAxisSelector *sectorSelector;
-	SingleAxisSelector *mapSelector;
+	SingleAxisSelector *sectorSASelector;
+	
 
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;
 	Tileset *ts_sectorStatsBG;
-	Tileset *ts_scrollingEnergy;
 	Tileset *ts_node;
 	Tileset **ts_bossFight;
 	Tileset *ts_sectorKey;

@@ -22,6 +22,9 @@ MapSector::MapSector(MapSelector *p_ms, int index)
 
 	bg = NULL;
 
+	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
+	SetRectColor(lockedOverlayQuad, Color(100, 100, 100, 100));
+
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
 	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
 	SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
@@ -55,6 +58,12 @@ MapSector::MapSector(MapSelector *p_ms, int index)
 	sectorNameText.setCharacterSize(40);
 	sectorNameText.setFont(mainMenu->arial);
 	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
+
+
+	int waitFrames[3] = { 30, 15, 10 };
+	int waitModeThresh[2] = { 2, 2 };
+	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
+	mapSASelector->SetTotalSize(unlockedLevelCount);
 }
 
 MapSector::~MapSector()
@@ -62,6 +71,7 @@ MapSector::~MapSector()
 	delete[] levelCollectedShards;
 	delete[] levelCollectedShardsBG;
 
+	delete mapSASelector;
 
 	if (nodes != NULL)
 	{
@@ -104,15 +114,22 @@ void MapSector::UpdateUnlockedLevelCount()
 
 bool MapSector::IsFocused()
 {
-	if (ms->sectorSelector == NULL)
+	if (ms->sectorSASelector == NULL)
 		return false;
 
-	return ms->sectorSelector->currIndex == sectorIndex;
+	return ms->sectorSASelector->currIndex == sectorIndex;
 }
 
 void MapSector::Draw(sf::RenderTarget *target)
 {
 	bg->Draw(target);
+
+	if (!sec->IsUnlocked()) //later, store this variable instead of 
+		//calling the function every frame
+	{
+		target->draw(lockedOverlayQuad, 4, sf::Quads);
+	}
+	
 
 	bool focused = IsFocused();
 	bool unlocked = sec->IsUnlocked();
@@ -267,7 +284,7 @@ void MapSector::UpdateStats()
 
 int MapSector::GetSelectedIndex()
 {
-	return ms->mapSelector->currIndex;
+	return mapSASelector->currIndex;
 }
 
 Level &MapSector::GetSelectedLevel()
@@ -435,7 +452,7 @@ bool MapSector::Update(ControllerState &curr,
 		bool left = curr.LLeft();
 		bool right = curr.LRight();
 
-		int changed = ms->mapSelector->UpdateIndex(left, right);
+		int changed = mapSASelector->UpdateIndex(left, right);
 
 		if (changed != 0)
 		{
@@ -494,7 +511,7 @@ bool MapSector::Update(ControllerState &curr,
 			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
 			if (unlockedLevelCount < numLevels - 1)
 			{
-				ms->mapSelector->currIndex = unlockedLevelCount - 1;
+				mapSASelector->currIndex = unlockedLevelCount - 1;
 				UpdateLevelStats();
 				//saSelector->currIndex = unlockedIndex + 1;
 			}
@@ -782,7 +799,7 @@ void MapSector::Init(Sector *m_sec)
 	int waitFrames[3] = { 30, 10, 5 };
 	int waitModeThresh[2] = { 2, 2 };
 
-	bool blank = ms->mapSelector == NULL;
+	bool blank = mapSASelector == NULL;
 	bool diffNumLevels = false;
 
 	selectedYIndex = 1;

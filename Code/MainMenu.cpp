@@ -2817,7 +2817,7 @@ void MainMenu::HandleMenuMode()
 
 		window->setView(oldView);
 
-		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->mapSelector;
+		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
 		int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 		if (result == GameSession::GR_WIN)
 		{
@@ -2828,7 +2828,7 @@ void MainMenu::HandleMenuMode()
 			fader->Clear();
 
 			SetMode(WORLDMAP);
-			worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 			worldMap->Update(menuPrevInput, menuCurrInput);
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
@@ -2848,7 +2848,7 @@ void MainMenu::HandleMenuMode()
 
 				fader->Clear();
 				SetMode( MainMenu::WORLDMAP );
-				worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
+				worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 				worldMap->Update(menuPrevInput, menuCurrInput);
 			}
 
@@ -2868,7 +2868,7 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 
 			SetMode( MainMenu::WORLDMAP );
-			worldMap->CurrSelector()->GetFocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 			worldMap->Update(menuPrevInput, menuCurrInput);
 
 			musicPlayer->TransitionMusic(menuMusic, 60);

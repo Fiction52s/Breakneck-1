@@ -169,7 +169,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	for (int i = 0; i < 7; ++i)
 	{
-		selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540), i);
+		//selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540), i);
 	}
 }
 
@@ -424,10 +424,11 @@ void WorldMap::SetDefaultSelections()
 
 void WorldMap::InitSelectors()
 {
+	//selectors[i]->Init(i);
 	SaveFile *sFile = mainMenu->GetCurrentProgress();
 	for (int i = 0; i < sFile->numWorlds; ++i)
 	{
-		selectors[i]->UpdateAllInfo(i);
+		//selectors[i]->UpdateAllInfo(i);
 	}
 }
 
@@ -479,7 +480,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				}
 			}
 
-			currSelector->sectorSelector->currIndex = startSector;
+			currSelector->sectorSASelector->currIndex = startSector;
 
 			for (int se = 0; se < currSelector->numSectors; ++se)
 			{
@@ -493,7 +494,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 						break;
 					}
 				}
-				currSelector->mapSelector->currIndex = startLevel;
+				//currSelector->mapSelector->currIndex = startLevel;
 			}
 			
 			break;
@@ -988,16 +989,16 @@ Sector &WorldMap::GetCurrSector()
 {
 	SaveFile * currFile = mainMenu->GetCurrentProgress();
 	World & world = currFile->worlds[selectedColony];
-	int secIndex = selectors[selectedColony]->sectorSelector->currIndex;
+	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
 	return world.sectors[secIndex];
 }
 
 void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 {
 	World & world = sf->worlds[selectedColony];
-	int secIndex = selectors[selectedColony]->sectorSelector->currIndex;
+	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
 	Sector &sec = world.sectors[secIndex];
-	int levIndex = selectors[selectedColony]->mapSelector->currIndex;
+	int levIndex = selectors[selectedColony]->FocusedSector()->mapSASelector->currIndex;
 	
 	Level &lev = sec.levels[levIndex];
 
@@ -1006,9 +1007,9 @@ void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 		lev.justBeaten = true;
 		lev.SetComplete(true);
 
-		MapSector *mapSec = CurrSelector()->GetFocusedSector();
+		MapSector *mapSec = CurrSelector()->FocusedSector();
 		mapSec->UpdateUnlockedLevelCount();
-		mapSec->ms->mapSelector->SetTotalSize(mapSec->unlockedLevelCount);
+		mapSec->mapSASelector->SetTotalSize(mapSec->unlockedLevelCount);
 	}
 	else
 	{
@@ -1025,6 +1026,6 @@ void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 int WorldMap::GetCurrSectorNumLevels()
 {
 	MapSelector *currSelector = selectors[selectedColony];
-	int secIndex = currSelector->sectorSelector->currIndex;
+	int secIndex = currSelector->sectorSASelector->currIndex;
 	return currSelector->sectors[secIndex]->numLevels;
 }
