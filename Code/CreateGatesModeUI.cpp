@@ -49,7 +49,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	currGateTypeRects.resize(numGateCategories);
 	mainPanel->ReserveImageRects(numGateCategories);
 
-	mainPanel->StopAutoSpacing();
+	mainPanel->PauseAutoSpacing();
 
 	currGateTypeRectPos = Vector2f(0, 0);/*Vector2f(gateCategoryDropdown->pos)
 										 + Vector2f(gateCategoryDropdown->size.x + 20, 0);*/
@@ -57,7 +57,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	{
 		if (i == numGateCategories - 1)
 		{
-			mainPanel->RestartAutoSpacing();
+			mainPanel->UnpauseAutoSpacing();
 		}
 		currGateTypeRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GATESEARCH,
 			currGateTypeRectPos, ts_gateCategories, i, 100);

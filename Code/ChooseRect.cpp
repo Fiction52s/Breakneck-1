@@ -150,6 +150,9 @@ bool ChooseRect::ContainsPoint(sf::Vector2i &mousePos)
 
 bool ChooseRect::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	if (!show)
 	{
 		return false;

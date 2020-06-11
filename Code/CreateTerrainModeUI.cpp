@@ -69,12 +69,12 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	Vector2f currMatRectPos = Vector2f(0, 0);//Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
 		//+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
 
-	mainPanel->StopAutoSpacing();
+	mainPanel->PauseAutoSpacing();
 
 	for (int i = 0; i < numTerrainLayers; ++i)
 	{
 		if (i == numTerrainLayers - 1)
-			mainPanel->RestartAutoSpacing();
+			mainPanel->UnpauseAutoSpacing();
 
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
 			currMatRectPos, NULL, 0, 100);

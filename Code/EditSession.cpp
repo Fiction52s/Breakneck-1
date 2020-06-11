@@ -35,6 +35,7 @@
 #include "GateMarker.h"
 #include "BrushManager.h"
 #include "FileChooser.h"
+#include "AdventureCreator.h"
 
 using namespace std;
 using namespace sf;
@@ -1106,6 +1107,8 @@ EditSession::~EditSession()
 	delete brushManager;
 
 	delete fileChooser;
+
+	delete adventureCreator;
 
 	delete polygonInProgress;
 	delete railInProgress;
@@ -2861,7 +2864,9 @@ int EditSession::Run()
 
 	brushManager = new BrushManager;
 
-	fileChooser = new FileChooser;
+	fileChooser = new DefaultFileSelector;
+
+	adventureCreator = new AdventureCreator;
 	
 
 	ReadFile();
@@ -12415,12 +12420,12 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::Num9)
 		{
-			fileChooser->StartRelative(".bnbrush",
+			fileChooser->chooser->StartRelative(".bnbrush",
 				FileChooser::OPEN, "Resources/Brushes");
 		}
 		else if (ev.key.code == sf::Keyboard::Num8)
 		{
-			fileChooser->StartRelative(".bnbrush", 
+			fileChooser->chooser->StartRelative(".bnbrush",
 				FileChooser::SAVE, "Resources/Brushes");
 			/*brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
 				"testbrush");*/

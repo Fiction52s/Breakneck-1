@@ -28,6 +28,9 @@ void Button::Deactivate()
 
 bool Button::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r(pos.x, pos.y, size.x, size.y);
 
@@ -64,6 +67,9 @@ bool Button::MouseUpdate()
 
 void Button::Draw(RenderTarget *target)
 {
+	if (hidden)
+		return;
+
 	sf::RectangleShape rs;
 	rs.setSize(size);
 	rs.setPosition(pos.x, pos.y);

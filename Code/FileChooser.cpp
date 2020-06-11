@@ -12,161 +12,11 @@ void FileNode::Draw(sf::RenderTarget *target)
 	//target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
 }
 
-
-
-FolderNode::~FolderNode()
+FileChooser::FileChooser( FileChooserHandler *p_handler,
+	int p_cols, int p_rows, int extraImageRects )
+	:handler( p_handler )
 {
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
-	{
-		delete (*it);
-	}
-}
-
-void FolderNode::Draw(sf::RenderTarget *target)
-{
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
-	{
-		(*it)->Draw(target);
-	}
-}
-
-void FolderNode::AddFile(const path &p_filePath)
-{
-	FileNode *fileNode = new FileNode;
-	fileNode->filePath = p_filePath;
-	//SetRectColor(fileNode->previewSpr, Color::Red);
-	fileNodes.push_back(fileNode);
-}
-
-void FolderNode::AddFolder(FolderNode *fn)
-{
-	childFolders.push_back(fn);
-}
-
-std::string FolderNode::GetRelPath()
-{
-	if (parentFolder == NULL)
-	{
-		return "";
-	}
-
-	return parentFolder->GetRelPath() + "\\" + folderName + "\\";
-}
-
-void FolderNode::DebugPrint( int indent )
-{
-	for (int i = 0; i < indent; ++i)
-	{
-		cout << "\t";
-	}
-	cout << "folder: " << folderName << "\n";
-
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
-	{
-		for (int i = 0; i < indent + 1; ++i)
-		{
-			cout << "\t";
-		}
-
-		cout << "file: " << (*it)->filePath.filename().string() << "\n";
-	}
-
-	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
-	{
-		(*it)->DebugPrint(indent + 1);
-	}
-}
-
-FolderTree::FolderTree(const std::string &p_path, const std::string &p_ext)
-	:ext( p_ext )
-{
-	treePath = p_path;
-	treeRoot = NULL;
-
-	SetupTree();
-}
-
-FolderTree::~FolderTree()
-{
-	delete treeRoot;
-}
-
-void FolderTree::SetupTree()
-{
-	SetupEntry(NULL, "");
-}
-
-void FolderTree::SetupEntry( FolderNode *fn, const std::string &relPath )
-{
-	string fnPath = "";
-	if (fn != NULL)
-		fnPath = fn->GetRelPath();
-	string fullRelPath = fnPath + relPath;
-	path p(treePath / fullRelPath);
-	vector<path> v;
-	try
-	{
-		if (exists(p))
-		{
-			if (is_regular_file(p))
-			{
-				if (p.extension().string() == ext)
-				{
-					//cout << "adding map file: " << p.filename().string() << endl;
-					fn->AddFile( p );
-				}
-			}
-			else if (is_directory(p))      // is p a directory?
-			{
-				FolderNode *newFolder = new FolderNode;
-				newFolder->parentFolder = fn;
-				if (fn == NULL)
-				{
-					treeRoot = newFolder;
-				}
-				else
-				{
-					newFolder->folderName = p.filename().string();
-					fn->AddFolder(newFolder);
-				}
-
-				
-
-				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
-
-				sort(v.begin(), v.end());             // sort, since directory iteration
-													  // is not ordered on some file systems
-
-				//cout << "setting up new folder: " << p.filename().string() << endl;
-				for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
-				{
-					SetupEntry(newFolder, (*it).filename().string());
-				}
-			}
-			else
-				cout << p << " exists, but is neither a regular file nor a directory\n";
-		}
-		else
-			cout << p << " does not exist\n";
-	}
-	catch (const filesystem_error& ex)
-	{
-		cout << ex.what() << '\n';
-	}
-}
-
-void FolderTree::DebugPrintTree()
-{
-	treeRoot->DebugPrint(0);
-}
-
-FileChooser::FileChooser()
-{
+	handler->chooser = this;
 	TilesetManager::SetGameResourcesMode(false); //allows tilesets to be outside
 	//of the resources folder
 	ext = ".brknk";
@@ -177,11 +27,11 @@ FileChooser::FileChooser()
 	Vector2f spacing(60, 60);
 	Vector2f startRects(10, 100);
 
-	cols = 4;
-	rows = 4;
+	cols = p_cols;
+	rows = p_rows;
 	totalRects = rows * cols;
 
-	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
+	
 	
 	topRow = 0;
 	maxTopRow = 0;
@@ -189,14 +39,12 @@ FileChooser::FileChooser()
 	imageRects = new ImageChooseRect*[totalRects];
 
 	panel = new Panel("filechooser", 1920,
-		1080 - 28, this, true);
+		1080 - 28, handler, true);
 
 	panel->SetPosition(Vector2i(0, 28));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
-	panel->ReserveImageRects(totalRects);
+	panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;
-	
-	ts_largePreview = NULL;
 	
 	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
 	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
@@ -215,16 +63,21 @@ FileChooser::FileChooser()
 		imageRects[i]->Init();
 	}
 
-	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
+	
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 960), Vector2i(30, 0));
 	fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
 
-	//panel->AddButton("open", Vector2i(0, 0), Vector2f(60, 30), "Open");
 	panel->confirmButton = 
 		panel->AddButton("save", Vector2i(0, 0), Vector2f(60, 30), "Save");
 	panel->cancelButton = 
 		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+
+	panel->StopAutoSpacing();
+
+	//fileNameTextBox->HideMember();
+	//panel->confirmButton->HideMember();
+	//panel->cancelButton->HideMember();
 }
 
 FileChooser::~FileChooser()
@@ -236,15 +89,12 @@ FileChooser::~FileChooser()
 
 bool FileChooser::MouseUpdate()
 {
-	return true;
+	return handler->MouseUpdate();
 }
 
 void FileChooser::Draw(sf::RenderTarget *target)
 {
-	if (ts_largePreview)
-	{
-		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
-	}
+	handler->Draw(target);
 }
 
 void FileChooser::AddFile(const path &p_filePath)
@@ -296,7 +146,7 @@ void FileChooser::SetPath(const std::string &p_path)
 
 	topRow = 0;
 
-	ts_largePreview = NULL;
+	handler->ChangePath();
 
 	folderPathText->setString(p_path);
 
@@ -381,99 +231,6 @@ void FileChooser::PopulateRects()
 	}
 }
 
-void FileChooser::Print()
-{
-	/*cout << "folders: " << "\n";
-	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
-	{
-		cout << "\t" << (*it).filename() << "\n";
-	}
-
-	cout << "files: " << "\n";
-	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
-	{
-		cout << "\t" << (*it)->filePath.filename().string() << "\n";
-	}*/
-}
-
-void FileChooser::ChooseRectEvent(ChooseRect *cr, int eventType)
-{
-	FileNode *node = (FileNode*)cr->info;
-	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
-	{
-		if (node->type == FileNode::FILE)
-		{
-			ts_largePreview = cr->GetAsImageChooseRect()->ts;
-		}
-	}
-	else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
-	{
-		ts_largePreview = NULL;
-	}
-	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
-	{
-		if (node->type == FileNode::FOLDER)
-		{
-			SetPath(node->filePath.string());
-		}
-		else if (node->type == FileNode::FILE)
-		{
-			string fileName = cr->nameText.getString().toAnsiString();
-			if (fMode == OPEN)
-			{
-				bool found = false;
-				for (int i = 0; i < nodes.size(); ++i)
-				{
-					if (fileName == nodes[i]->filePath.stem().string())
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (found)
-				{
-					edit->ChooseFileOpen(this, fileName);
-					TurnOff();
-				}
-			}
-			else if (fMode == SAVE)
-			{
-				edit->ChooseFileSave(this, fileName);
-				TurnOff();
-			}
-		}
-	}
-}
-
-void FileChooser::ButtonCallback(Button *b, const std::string & e)
-{
-	if (b == b->panel->cancelButton)
-	{
-		TurnOff();
-	}
-	else if (b == b->panel->confirmButton)
-	{
-		string fileName = fileNameTextBox->GetString();
-		if (fileName != "")
-		{
-			if (fMode == OPEN)
-			{
-				edit->ChooseFileOpen(this, fileName);
-			}
-			else if (fMode == SAVE)
-			{
-				edit->ChooseFileSave(this, fileName);
-			}
-			TurnOff();
-		}
-	}
-	else if (b == upButton)
-	{
-		SetPath(currPath.parent_path().string());
-	}
-}
-
 void FileChooser::Deactivate()
 {
 	ClearNodes();
@@ -508,8 +265,6 @@ void FileChooser::Start(const std::string &p_ext,
 	ext = p_ext;
 	fMode = p_fMode;
 	Init();
-	
-	//SetRelativePath("Resources/Maps/W2");
 
 	SetPath(path);
 }
@@ -545,3 +300,296 @@ void FileChooser::MouseScroll(int delta)
 		PopulateRects();
 	}
 }
+
+void FileChooser::LateDraw(sf::RenderTarget *target)
+{
+	handler->LateDraw(target);
+}
+
+FileChooserHandler::FileChooserHandler(int cols, int rows, int extraImageRects)
+{
+	chooser = new FileChooser(this, cols, rows, extraImageRects );
+}
+
+FileChooserHandler::~FileChooserHandler()
+{
+	delete chooser;
+}
+
+void FileChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+	FileNode *node = (FileNode*)cr->info;
+	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
+	{
+		if (node->type == FileNode::FILE)
+		{
+			FocusFile(cr);
+		}
+	}
+	else if (eventType == ChooseRect::ChooseRectEventType::E_UNFOCUSED)
+	{
+		if (node->type == FileNode::FILE)
+		{
+			UnfocusFile(cr);
+		}
+	}
+	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
+	{
+		if (node->type == FileNode::FOLDER)
+		{
+			chooser->SetPath(node->filePath.string());
+		}
+		else if (node->type == FileNode::FILE)
+		{
+			ClickFile(cr);
+		}
+	}
+}
+
+void FileChooserHandler::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b == b->panel->cancelButton)
+	{
+		Cancel();
+	}
+	else if (b == b->panel->confirmButton)
+	{
+		Confirm();
+	}
+	else if (b == chooser->upButton)
+	{
+		chooser->SetPath(chooser->currPath.parent_path().string());
+	}
+}
+
+DefaultFileSelector::DefaultFileSelector()
+	:FileChooserHandler( 4, 4 )
+{
+	ts_largePreview = NULL;
+	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
+	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
+}
+
+void DefaultFileSelector::ChangePath()
+{
+	ts_largePreview = NULL;
+}
+
+void DefaultFileSelector::Cancel()
+{
+	chooser->TurnOff();
+}
+
+void DefaultFileSelector::Confirm()
+{
+	string fileName = chooser->fileNameTextBox->GetString();
+	if (fileName != "")
+	{
+		if (chooser->fMode == FileChooser::OPEN)
+		{
+			chooser->edit->ChooseFileOpen(chooser, fileName);
+		}
+		else if (chooser->fMode == FileChooser::SAVE)
+		{
+			chooser->edit->ChooseFileSave(chooser, fileName);
+		}
+		chooser->TurnOff();
+	}
+}
+
+void DefaultFileSelector::ClickFile(ChooseRect *cr)
+{
+	string fileName = cr->nameText.getString().toAnsiString();
+	if (chooser->fMode == FileChooser::OPEN)
+	{
+		bool found = false;
+		for (int i = 0; i < chooser->nodes.size(); ++i)
+		{
+			if (fileName == chooser->nodes[i]->filePath.stem().string())
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (found)
+		{
+			chooser->edit->ChooseFileOpen(chooser, fileName);
+			chooser->TurnOff();
+		}
+	}
+	else if (chooser->fMode == FileChooser::SAVE)
+	{
+		chooser->edit->ChooseFileSave(chooser, fileName);
+		chooser->TurnOff();
+	}
+}
+
+void DefaultFileSelector::FocusFile(ChooseRect *cr)
+{
+	ts_largePreview = cr->GetAsImageChooseRect()->ts;
+}
+
+void DefaultFileSelector::UnfocusFile(ChooseRect *cr)
+{
+	ts_largePreview = NULL;
+}
+
+void DefaultFileSelector::Draw(sf::RenderTarget *target)
+{
+	if (ts_largePreview)
+	{
+		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
+	}
+}
+
+//FolderNode::~FolderNode()
+//{
+//	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+//	{
+//		delete (*it);
+//	}
+//
+//	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
+//	{
+//		delete (*it);
+//	}
+//}
+//
+//void FolderNode::Draw(sf::RenderTarget *target)
+//{
+//	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+//	{
+//		(*it)->Draw(target);
+//	}
+//}
+//
+//void FolderNode::AddFile(const path &p_filePath)
+//{
+//	FileNode *fileNode = new FileNode;
+//	fileNode->filePath = p_filePath;
+//	//SetRectColor(fileNode->previewSpr, Color::Red);
+//	fileNodes.push_back(fileNode);
+//}
+//
+//void FolderNode::AddFolder(FolderNode *fn)
+//{
+//	childFolders.push_back(fn);
+//}
+//
+//std::string FolderNode::GetRelPath()
+//{
+//	if (parentFolder == NULL)
+//	{
+//		return "";
+//	}
+//
+//	return parentFolder->GetRelPath() + "\\" + folderName + "\\";
+//}
+//
+//void FolderNode::DebugPrint( int indent )
+//{
+//	for (int i = 0; i < indent; ++i)
+//	{
+//		cout << "\t";
+//	}
+//	cout << "folder: " << folderName << "\n";
+//
+//	for (auto it = fileNodes.begin(); it != fileNodes.end(); ++it)
+//	{
+//		for (int i = 0; i < indent + 1; ++i)
+//		{
+//			cout << "\t";
+//		}
+//
+//		cout << "file: " << (*it)->filePath.filename().string() << "\n";
+//	}
+//
+//	for (auto it = childFolders.begin(); it != childFolders.end(); ++it)
+//	{
+//		(*it)->DebugPrint(indent + 1);
+//	}
+//}
+//
+//FolderTree::FolderTree(const std::string &p_path, const std::string &p_ext)
+//	:ext( p_ext )
+//{
+//	treePath = p_path;
+//	treeRoot = NULL;
+//
+//	SetupTree();
+//}
+//
+//FolderTree::~FolderTree()
+//{
+//	delete treeRoot;
+//}
+//
+//void FolderTree::SetupTree()
+//{
+//	SetupEntry(NULL, "");
+//}
+//
+//void FolderTree::SetupEntry( FolderNode *fn, const std::string &relPath )
+//{
+//	string fnPath = "";
+//	if (fn != NULL)
+//		fnPath = fn->GetRelPath();
+//	string fullRelPath = fnPath + relPath;
+//	path p(treePath / fullRelPath);
+//	vector<path> v;
+//	try
+//	{
+//		if (exists(p))
+//		{
+//			if (is_regular_file(p))
+//			{
+//				if (p.extension().string() == ext)
+//				{
+//					//cout << "adding map file: " << p.filename().string() << endl;
+//					fn->AddFile( p );
+//				}
+//			}
+//			else if (is_directory(p))      // is p a directory?
+//			{
+//				FolderNode *newFolder = new FolderNode;
+//				newFolder->parentFolder = fn;
+//				if (fn == NULL)
+//				{
+//					treeRoot = newFolder;
+//				}
+//				else
+//				{
+//					newFolder->folderName = p.filename().string();
+//					fn->AddFolder(newFolder);
+//				}
+//
+//				
+//
+//				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
+//
+//				sort(v.begin(), v.end());             // sort, since directory iteration
+//													  // is not ordered on some file systems
+//
+//				//cout << "setting up new folder: " << p.filename().string() << endl;
+//				for (vector<path>::const_iterator it(v.begin()); it != v.end(); ++it)
+//				{
+//					SetupEntry(newFolder, (*it).filename().string());
+//				}
+//			}
+//			else
+//				cout << p << " exists, but is neither a regular file nor a directory\n";
+//		}
+//		else
+//			cout << p << " does not exist\n";
+//	}
+//	catch (const filesystem_error& ex)
+//	{
+//		cout << ex.what() << '\n';
+//	}
+//}
+//
+//void FolderTree::DebugPrintTree()
+//{
+//	treeRoot->DebugPrint(0);
+//}

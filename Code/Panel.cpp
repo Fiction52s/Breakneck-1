@@ -117,10 +117,18 @@ void Panel::SetAutoSpacing(bool aSpaceX, bool aSpaceY, Vector2i start, Vector2i 
 
 void Panel::StopAutoSpacing()
 {
+	autoSpace.x = false;
+	autoSpace.y = false;
+	autoStart = Vector2i( 0, 0 );
 	autoSpacePaused = true;
 }
 
-void Panel::RestartAutoSpacing()
+void Panel::PauseAutoSpacing()
+{
+	autoSpacePaused = true;
+}
+
+void Panel::UnpauseAutoSpacing()
 {
 	autoSpacePaused = false;
 }
@@ -865,6 +873,11 @@ void Panel::Draw(RenderTarget *target)
 
 	if (currToolTip != NULL)
 		currToolTip->Draw(target);
+
+	if (extraUpdater != NULL)
+	{
+		extraUpdater->LateDraw(target);
+	}
 
 	target->setView(oldView);
 }

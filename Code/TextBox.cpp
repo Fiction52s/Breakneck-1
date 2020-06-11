@@ -258,6 +258,9 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 bool TextBox::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	sf::Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r(pos.x, pos.y, width, characterHeight + verticalBorder);
 
@@ -329,6 +332,8 @@ bool TextBox::MouseUpdate()
 
 void TextBox::Draw(sf::RenderTarget *target)
 {
+	if (hidden)
+		return;
 	sf::RectangleShape rs;
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
 	rs.setSize(Vector2f(size));

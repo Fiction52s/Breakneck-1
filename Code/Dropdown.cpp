@@ -111,7 +111,8 @@ int Dropdown::GetIndex(const std::string &s)
 
 void Dropdown::Draw(sf::RenderTarget *target)
 {
-
+	if (hidden)
+		return;
 
 	target->draw(mainRect, 4, sf::Quads);
 	target->draw(selectedText);
@@ -159,6 +160,9 @@ bool Dropdown::IsMouseOnOption(int ind, Vector2f &point)
 
 bool Dropdown::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
 

@@ -105,6 +105,7 @@ struct PanelUpdater
 	}
 	virtual bool MouseUpdate() = 0;
 	virtual void Draw(sf::RenderTarget *target){}
+	virtual void LateDraw(sf::RenderTarget *target) {}
 	virtual void Deactivate() {}
 	virtual void MouseScroll(int delta) {}
 private:
@@ -113,11 +114,13 @@ private:
 struct PanelMember
 {
 	PanelMember(Panel * p)
-		:panel(p), locked(false),
+		:panel(p), locked(false),hidden(false),
 		toolTip(NULL)
 	{
 
 	}
+	void HideMember() { hidden = true; }
+	void ShowMember() { hidden = false; }
 	virtual ~PanelMember();
 	void SetToolTip(const std::string &str);
 	virtual void Draw(sf::RenderTarget *target) = 0;
@@ -135,6 +138,7 @@ struct PanelMember
 	//virtual void Unlock() { locked = false; }
 
 	bool locked;
+	bool hidden;
 	Panel *panel;
 	ToolTip *toolTip;
 };
@@ -177,6 +181,9 @@ struct ChooseRect : PanelMember
 		I_RAILLIBRARY,
 		I_FILESELECT,
 		I_BRUSHHOTBAR,
+		I_ADVENTURECREATOR_WORLD_SEARCH,
+		I_ADVENTURECREATOR_WORLD,
+		I_ADVENTURECREATOR_MAP,
 	};
 
 	sf::Text nameText;
@@ -542,7 +549,8 @@ struct Panel
 		bool spacingY = false, sf::Vector2i start = sf::Vector2i(),
 		sf::Vector2i defaultExtra = sf::Vector2i() );
 	void StopAutoSpacing();
-	void RestartAutoSpacing();
+	void PauseAutoSpacing();
+	void UnpauseAutoSpacing();
 	sf::Vector2<bool> autoSpace;
 	sf::Vector2i autoStart;
 	sf::Vector2i defaultExtra;

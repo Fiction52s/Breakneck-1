@@ -93,6 +93,9 @@ void MenuDropdown::SetOptions(const std::vector<std::string> &p_options)
 
 void MenuDropdown::Draw(sf::RenderTarget *target)
 {
+	if (hidden)
+		return;
+
 	target->draw(mainRect, 4, sf::Quads);
 	target->draw(menuText);
 
@@ -121,6 +124,9 @@ bool MenuDropdown::IsMouseOnOption(int ind, Vector2f &point)
 
 bool MenuDropdown::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
 

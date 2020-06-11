@@ -53,7 +53,7 @@ CreateRailModeUI::CreateRailModeUI()
 	mainPanel->ReserveImageRects(1);
 	mainPanel->ReserveEnemyRects(1);
 
-	mainPanel->StopAutoSpacing();
+	mainPanel->PauseAutoSpacing();
 
 	Vector2f currTypeRectPos = Vector2f(0, 0);/*Vector2f(railCategoryDropdown->pos)
 		+ Vector2f(railCategoryDropdown->size.x + 20, 0);*/

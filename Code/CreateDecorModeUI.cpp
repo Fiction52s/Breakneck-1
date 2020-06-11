@@ -51,7 +51,7 @@ CreateDecorModeUI::CreateDecorModeUI()
 
 	topbarPanel->ReserveImageRects(totalHotbarCount + numExtraRects );
 
-	Tileset *ts_worldChoosers = edit->GetSizedTileset("worldselector_64x64.png");
+	Tileset *ts_worldChoosers = edit->GetSizedTileset("Editor/worldselector_64x64.png");
 
 	librarySearchRect = topbarPanel->AddImageRect(ChooseRect::I_SEARCHDECORLIBRARY,
 		Vector2f(10 + 100, 10), ts_worldChoosers, 8);

@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include "EditSession.h"
 #include "FileChooser.h"
+#include "AdventureCreator.h"
 
 using namespace std;
 using namespace sf;
@@ -49,7 +50,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 {
 	if (menuDrop == fileDropdown)
 	{
-		//edit->fileChooser->TurnOn();
+		edit->adventureCreator->Open();
 	}
 	else if (menuDrop == editDropdown)
 	{

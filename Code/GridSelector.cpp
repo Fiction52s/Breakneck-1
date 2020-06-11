@@ -70,6 +70,9 @@ void GridSelector::Set(int xi, int yi, Sprite s, const std::string &name)
 
 void GridSelector::Draw(sf::RenderTarget *target)
 {
+	if (hidden)
+		return;
+
 	if (active)
 	{
 		sf::RectangleShape rs;
@@ -114,6 +117,9 @@ void GridSelector::Draw(sf::RenderTarget *target)
 //returns true if a selection has been made
 bool GridSelector::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	//cout << "update: " << posx << ", " << posy << endl;
 	if (!active)

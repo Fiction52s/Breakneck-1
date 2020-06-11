@@ -59,6 +59,8 @@ struct PlayerTracker;
 
 struct BrushManager;
 
+struct DefaultFileSelector;
+struct AdventureCreator;
 struct FileChooser;
 
 struct GrassDiff
@@ -568,7 +570,8 @@ struct EditSession : GUIHandler, Session
 	int GetSpecialTerrainMode();
 
 	BrushManager *brushManager;
-	FileChooser *fileChooser;
+	DefaultFileSelector *fileChooser;
+	AdventureCreator *adventureCreator;
 
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;

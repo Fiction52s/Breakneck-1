@@ -30,6 +30,9 @@ void CheckBox::SetLockedStatus(bool check, bool lock)
 
 bool CheckBox::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	sf::Rect<int> r(pos.x, pos.y, CHECKBOXSIZE, CHECKBOXSIZE);
 	bool containsMouse = r.contains(mousePos);
@@ -83,6 +86,9 @@ bool CheckBox::MouseUpdate()
 
 void CheckBox::Draw(RenderTarget *target)
 {
+	if (hidden)
+		return;
+
 	sf::RectangleShape rs;
 	rs.setSize(sf::Vector2f(CHECKBOXSIZE, CHECKBOXSIZE));
 	rs.setPosition(pos.x, pos.y);

@@ -177,6 +177,9 @@ int Slider::GetCurrX(float factor)
 
 bool Slider::MouseUpdate()
 {
+	if (hidden)
+		return false;
+
 	Vector2i mousePos = panel->GetMousePos();
 	Vector2f point(mousePos);
 	bool mouseDown = MOUSE.IsMouseDownLeft();
@@ -197,6 +200,9 @@ bool Slider::MouseUpdate()
 
 void Slider::Draw(sf::RenderTarget *target)
 {
+	if (hidden)
+		return;
+
 	target->draw(mainRect, 4, sf::Quads);
 	target->draw(underRect, 4, sf::Quads);
 	target->draw(selectCircle);

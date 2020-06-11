@@ -8,6 +8,7 @@
 
 struct FolderNode;
 struct EditSession;
+struct FileChooser;
 
 struct FileNode
 {
@@ -23,59 +24,44 @@ struct FileNode
 	Tileset *ts_preview;
 };
 
-struct FolderNode
+struct FileChooserHandler : GUIHandler
 {
-	~FolderNode();
-	void AddFile(
-		const boost::filesystem::path &filePath);
-	void AddFolder(FolderNode *fn);
+	FileChooserHandler( int cols, int rows, int extraImageRects = 0 );
+	virtual ~FileChooserHandler();
+	virtual void Cancel() = 0;
+	virtual void Confirm() = 0;
+	virtual void ClickFile(ChooseRect *cr) = 0;
+	virtual void FocusFile(ChooseRect *cr) = 0;
+	virtual void UnfocusFile(ChooseRect *cr) = 0;
+	virtual bool MouseUpdate() { return true; }
+	virtual void Draw(sf::RenderTarget *target) {}
+	virtual void ChangePath() {}
+	virtual void LateDraw(sf::RenderTarget *target) {}
+
+	//guihandler functions
+	virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
+	virtual void ButtonCallback(Button *b, const std::string & e);
+	//---------
+
+	FileChooser *chooser;
+};
+
+struct DefaultFileSelector : FileChooserHandler
+{
+	DefaultFileSelector();
+	void Cancel();
+	void Confirm();
+	void ClickFile(ChooseRect *cr);
+	void FocusFile(ChooseRect *cr);
+	void UnfocusFile(ChooseRect *cr);
 	void Draw(sf::RenderTarget *target);
+	void ChangePath();
 
-	std::list<FileNode*> fileNodes;
-	std::list<FolderNode*> childFolders;
-	FolderNode *parentFolder;
-	std::string GetRelPath();
-	std::string folderName;
-	void DebugPrint( int indent );
+	sf::Vertex largePreview[4];
+	Tileset *ts_largePreview;
 };
 
-struct FolderTree
-{
-	FolderTree(const std::string &p_path,
-		const std::string &ext );
-	~FolderTree();
-	void SetupEntry( FolderNode *fn, const std::string &relPath );
-	void SetupTree();
-	void DebugPrintTree();
-
-	FolderNode *treeRoot;
-	std::string ext;
-	std::string treePath;
-};
-
-//struct EnemyVariationSelector : PanelUpdater
-//{
-//	EnemyVariationSelector(bool createMode);
-//	~EnemyVariationSelector();
-//	bool MouseUpdate();
-//	EnemyChooseRect *centerRect;
-//	EnemyChooseRect *varRects[6];
-//	void Deactivate();
-//	int numVariations;
-//	void SetType(ActorType *type);
-//	void Draw(sf::RenderTarget *target);
-//	void SetPosition(sf::Vector2f &pos);
-//
-//	sf::Sprite orbSpr;
-//	//sf::Vertex testQuad[4];
-//	sf::Vertex enemyQuads[28];
-//	//bool show;
-//	Panel *panel;
-//	EditSession *edit;
-//	bool createMode;
-//};
-
-struct FileChooser : GUIHandler, TilesetManager,
+struct FileChooser : TilesetManager,
 	PanelUpdater
 {
 	enum Mode : int
@@ -84,9 +70,10 @@ struct FileChooser : GUIHandler, TilesetManager,
 		SAVE
 	};
 
-	Mode fMode;
+	
 
-	FileChooser();
+	FileChooser(FileChooserHandler *handler,
+		int p_cols, int p_rows, int extraImageRects = 0);
 	~FileChooser();
 
 	//panelupdater functions
@@ -94,19 +81,15 @@ struct FileChooser : GUIHandler, TilesetManager,
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void MouseScroll(int delta);
+	void LateDraw(sf::RenderTarget *target);
 	//---------
-
-	//guihandler functions
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	void ButtonCallback(Button *b, const std::string & e);
-	//---------
+	
 
 	void SetRelativePath(const std::string &p_relPath);
 	void SetPath(const std::string &p_path);
 	void AddFile(const boost::filesystem::path &filePath);
 	void AddFolder(const boost::filesystem::path &folderPath);
 	void ClearNodes();
-	void Print();
 	void PopulateRects();
 	void Start( const std::string &ext, 
 		Mode fMode, const std::string &path );
@@ -114,27 +97,64 @@ struct FileChooser : GUIHandler, TilesetManager,
 		Mode fMode, const std::string &path);
 	void Init();
 	void TurnOff();
+	//void HideConfirmButton();
 
-	Button *upButton;
-	sf::Text *folderPathText;
+
+	Mode fMode;
+	FileChooserHandler *handler;
+
+	std::string ext;
 	
 	int topRow;
 	int maxTopRow;
 	int numEntries;
-
-	boost::filesystem::path currPath;
-	ImageChooseRect **imageRects;
 	int cols;
 	int rows;
 	int totalRects;
+
+	boost::filesystem::path currPath;
+
 	std::vector<FileNode*> nodes;
-	std::string ext;
-	//boost::filesystem::path basePath;
-	sf::Vertex largePreview[4];
-	Tileset *ts_largePreview;
-	Panel *panel;
-	TextBox *fileNameTextBox;
+	
+	
+
 	EditSession *edit;
+
+	Panel *panel;
+	ImageChooseRect **imageRects;
+	TextBox *fileNameTextBox;
+	Button *upButton;
+	sf::Text *folderPathText;
 };
+
+//struct FolderNode
+//{
+//	~FolderNode();
+//	void AddFile(
+//		const boost::filesystem::path &filePath);
+//	void AddFolder(FolderNode *fn);
+//	void Draw(sf::RenderTarget *target);
+//
+//	std::list<FileNode*> fileNodes;
+//	std::list<FolderNode*> childFolders;
+//	FolderNode *parentFolder;
+//	std::string GetRelPath();
+//	std::string folderName;
+//	void DebugPrint( int indent );
+//};
+//
+//struct FolderTree
+//{
+//	FolderTree(const std::string &p_path,
+//		const std::string &ext );
+//	~FolderTree();
+//	void SetupEntry( FolderNode *fn, const std::string &relPath );
+//	void SetupTree();
+//	void DebugPrintTree();
+//
+//	FolderNode *treeRoot;
+//	std::string ext;
+//	std::string treePath;
+//};
 
 #endif
