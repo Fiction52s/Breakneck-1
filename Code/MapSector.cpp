@@ -380,7 +380,7 @@ void MapSector::UpdateBG()
 	bg->Update(Vector2f(960, 540));
 }
 
-void MapSector::Update(ControllerState &curr,
+bool MapSector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
 	UpdateUnlockedLevelCount();
@@ -452,7 +452,6 @@ void MapSector::Update(ControllerState &curr,
 		{
 			if (selectedYIndex == 1)
 			{
-
 				if (sec->IsComplete())
 				{
 					state = COMPLETE;
@@ -462,8 +461,7 @@ void MapSector::Update(ControllerState &curr,
 					state = NORMAL;
 				}
 
-				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
-				ms->mainMenu->SetMode(MainMenu::TRANS_WORLDMAP_TO_LOADING);
+				return false;
 			}
 		}
 	}
@@ -534,6 +532,8 @@ void MapSector::Update(ControllerState &curr,
 
 	++frame;
 	++stateFrame;
+
+	return true;
 }
 
 bool MapSector::HasTopBonus(int node)

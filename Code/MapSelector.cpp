@@ -21,8 +21,9 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
 	}
 
-	kinJumpFrame = 0;
-	kinJumpSprite.setPosition(960, 540 + 300);
+	kinState = K_STAND;
+	kinFrame = 0;
+	kinSprite.setPosition(960, 540 + 300);
 
 	worldIndex = wIndex;
 	state = S_SECTORSELECT;
@@ -149,7 +150,10 @@ void MapSelector::Draw(sf::RenderTarget *target)
 		sectors[sectorSelector->currIndex]->Draw(target);
 	}
 
-	target->draw(kinJumpSprite);
+	if (kinState != K_HIDE)
+	{
+		target->draw(kinSprite);
+	}
 
 	target->draw(nodeHighlight);
 
@@ -209,13 +213,21 @@ bool MapSelector::Update(ControllerState &curr,
 	}
 	case S_MAPSELECT:
 	{
-		if (curr.B && !prev.B)
+		if (kinState == K_STAND)
 		{
-			state = S_SECTORSELECT;
-			break;
-		}
+			if (curr.B && !prev.B)
+			{
+				state = S_SECTORSELECT;
+				break;
+			}
 
-		sectors[sectorSelector->currIndex]->Update(curr, prev);
+			if (!sectors[sectorSelector->currIndex]->Update(curr, prev))
+			{
+				kinState = K_JUMP;
+				frame = 0;
+			}
+
+		}
 		break;
 	}
 	}
@@ -231,42 +243,6 @@ bool MapSelector::Update(ControllerState &curr,
 	}*/
 
 	UpdateHighlight();
-	//else if (state == S_SLIDINGLEFT)
-	//{
-	//	if (frame == slideDuration+1)
-	//	{
-	//		state = S_IDLE;
-	//		frame = 0;
-	//		//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
-	//	}
-	//	else
-	//	{
-	//		float diff = 1920.f * (float)frame / slideDuration;
-	//		float oldCenter = sectorCenter.x + diff;
-	//		float newCenter = -960.f + diff;
-	//		sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
-	//		sectors[saSelector->currIndex]->SetXCenter(newCenter);
-	//	}
-	//	
-	//}
-	//else if (state == S_SLIDINGRIGHT)
-	//{
-	//	if (frame == slideDuration+1)
-	//	{
-	//		state = S_IDLE;
-	//		frame = 0;
-	//		//sectors[saSelector->currIndex]->SetXCenter(sectorCenter.x);
-	//	}
-	//	else
-	//	{
-	//		float diff = 1920.f * (float)frame / slideDuration;
-	//		float oldCenter = sectorCenter.x - diff;
-	//		float newCenter = (1920.f + 960.f) - diff;
-	//		sectors[saSelector->oldCurrIndex]->SetXCenter(oldCenter);
-	//		sectors[saSelector->currIndex]->SetXCenter(newCenter);
-	//	}
-	//	
-	//}
 
 	int scrollHeight = 400 + sectorSelector->currIndex * 120;
 	SetRectCenter(backScrollEnergy, 1200, 100, Vector2f(960, scrollHeight));
@@ -286,21 +262,41 @@ bool MapSelector::Update(ControllerState &curr,
 	horizScrollShader1.setUniform("quant", -facBack);
 	horizScrollShader2.setUniform("quant", -facFront);
 
-	++kinJumpFrame;
-	if (kinJumpFrame == 66 * 2)
+	
+
+	if (kinState == K_STAND)
 	{
-		kinJumpFrame = 0;
+		kinFrame = 0;
+		ts_kinJump[0]->SetSpriteTexture(kinSprite);
+		ts_kinJump[0]->SetSubRect(kinSprite, 0);
+		kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
+			kinSprite.getLocalBounds().height / 2);
+	}
+	else if (kinState == K_JUMP)
+	{
+		if (kinFrame == 66 * 2)
+		{
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_select"));
+			mainMenu->SetMode(MainMenu::TRANS_WORLDMAP_TO_LOADING);
+			kinState = K_HIDE;
+			frame = 0;
+			//load map
+		}
+		else
+		{
+			int kinMult = 2;
+			int kinTex = (kinFrame / kinMult) / 16;
+			int realKinFrame = (kinFrame / kinMult) % 16;
+
+			ts_kinJump[kinTex]->SetSpriteTexture(kinSprite);
+			ts_kinJump[kinTex]->SetSubRect(kinSprite, realKinFrame);
+			kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
+				kinSprite.getLocalBounds().height / 2);
+		}
 	}
 
-	int kinMult = 2;
-	int kinTex = (kinJumpFrame / kinMult) / 16;
-	int realKinFrame = (kinJumpFrame / kinMult) % 16;
 
-	ts_kinJump[kinTex]->SetSpriteTexture(kinJumpSprite);
-	ts_kinJump[kinTex]->SetSubRect(kinJumpSprite, realKinFrame);
-	kinJumpSprite.setOrigin(kinJumpSprite.getLocalBounds().width / 2,
-		kinJumpSprite.getLocalBounds().height / 2);
-
+	++kinFrame;
 	++frame;
 
 	return true;

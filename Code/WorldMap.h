@@ -47,7 +47,7 @@ struct MapSector
 	int GetSelectedIndex();
 	Level &GetSelectedLevel();
 	void Load();
-	void Update(ControllerState &curr,
+	bool Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateBG();
 	void SetXCenter(float x);
@@ -129,6 +129,13 @@ struct MapSelector
 		S_MAPSELECT,
 	};
 
+	enum KinState
+	{
+		K_STAND,
+		K_JUMP,
+		K_HIDE,
+	};
+
 	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
 		int wIndex);
 	void UpdateHighlight();
@@ -147,13 +154,14 @@ struct MapSelector
 
 	sf::Sprite newSelectTestSpr;
 	sf::Sprite nodeHighlight;
-	sf::Sprite kinJumpSprite;
+	sf::Sprite kinSprite;
 	sf::Sprite bottomBG;
 	sf::Sprite thumbnailBG;
 	sf::Sprite shardBG;
 
+	KinState kinState;
 	int worldIndex;
-	int kinJumpFrame;
+	int kinFrame;
 	int frame;
 	int numSectors;
 	

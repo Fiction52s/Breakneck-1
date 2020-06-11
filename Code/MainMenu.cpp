@@ -1233,86 +1233,6 @@ bool MainMenu::GetMouseVisible()
 void MainMenu::SetMode(Mode m)
 {
 	transFrame = 0;
-	//switch (m)
-	//{
-	//case TRANS_OPTIONS_TO_MAIN:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = topCenter;
-	//	slideEnd = trueCenter;
-	//	break;
-	//}
-	//case TRANS_MAIN_TO_OPTIONS:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = trueCenter;
-	//	slideEnd = topCenter;
-	//	break;
-	//}
-	//case TRANS_MAIN_TO_SAVE:
-	//{
-	//	transFrame = 0;
-	//	transLength = 60;
-	//	saveMenu->Reset();
-	//	saveMenu->Update();
-	//	slideCurrFrame = 0;
-	//	slideStart = trueCenter;
-	//	slideEnd = rightCenter;
-	//	break;
-	//}
-	//case TRANS_SAVE_TO_MAIN:
-	//{
-	//	transLength = 60;
-	//	transFrame = 0;
-	//	slideCurrFrame = 0;
-	//	slideStart = rightCenter;
-	//	slideEnd = trueCenter;
-	//	break;
-	//}
-	//case TRANS_MAIN_TO_CREDITS:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = trueCenter;
-	//	slideEnd = bottomCenter;
-	//	break;
-	//}
-	//case TRANS_CREDITS_TO_MAIN:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = bottomCenter;
-	//	slideEnd = trueCenter;
-	//	break;
-	//}
-	//case TRANS_MAIN_TO_MAPSELECT:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = trueCenter;
-	//	slideEnd = leftCenter;
-
-	//	break;
-	//}
-	//case TRANS_MAPSELECT_TO_MAIN:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = leftCenter;
-	//	slideEnd = trueCenter;
-	//	break;
-	//}
-	//case TRANS_MAPSELECT_TO_MULTIPREVIEW:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = leftCenter;
-	//	slideEnd = doubleLeftCenter;
-	//	break;
-	//}
-	//case TRANS_MULTIPREVIEW_TO_MAPSELECT:
-	//{
-	//	slideCurrFrame = 0;
-	//	slideStart = doubleLeftCenter;
-	//	slideEnd = leftCenter;
-	//	break;
-	//}
-	//}
 	
 	modeFrame = 0;
 
@@ -1342,13 +1262,6 @@ void MainMenu::SetMode(Mode m)
 	{
 		kinBoostScreen->Reset();
 	}
-
-	/*if (menuMode == MAINMENU)
-	{
-		
-	}*/
-
-	
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
