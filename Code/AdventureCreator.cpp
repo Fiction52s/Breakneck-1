@@ -420,6 +420,11 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		{
 			ChooseSector((int)cr->info);
 		}
+		else if (state == DRAG && eventType == ChooseRect::ChooseRectEventType::E_FOCUSED )
+		{
+			ChooseSector((int)cr->info);
+		}
+		
 	}
 	else if( cr->rectIdentity == ChooseRect::I_ADVENTURECREATOR_MAP )//map
 	{
