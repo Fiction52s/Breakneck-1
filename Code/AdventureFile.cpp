@@ -4,7 +4,11 @@
 #include <iostream>
 
 using namespace std;
-using namespace boost::filesystem;
+
+bool AdventureMap::Exists()
+{
+	return name != "";
+}
 
 void AdventureMap::Load(std::ifstream &is, int copyMode)
 {
@@ -69,7 +73,7 @@ int AdventureSector::GetNumActiveMaps()
 	int activeCounter = 0;
 	for (int i = 0; i < 8; ++i)
 	{
-		if (maps[i].name != "")
+		if (maps[i].Exists())
 		{
 			++activeCounter;
 		}

@@ -117,14 +117,13 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 				for (int m = 0; m < 8; ++m)
 				{
 					ind = w * 64 + s * 8 + m;
-					name = adventure->worlds[w].sectors[s].maps[m].name;
-					if (name != "");
+					if (adventure->worlds[w].sectors[s].maps[m].Exists())
 					{
+						name = adventure->worlds[w].sectors[s].maps[m].name;
 						file = sectorStr + name;
 						adventureNodes[ind].filePath = file + ".brknk";
 						adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
 					}
-
 				}
 			}
 		}
@@ -144,7 +143,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 				{
 					ind = w * 64 + s * 8 + m;
 					am = &(adventure->worlds[w].sectors[s].maps[m]);
-					if (am->name != "")
+					if (am->Exists() )
 					{
 						filePath = am->path + "\\" + am->name;
 						adventureNodes[ind].filePath = 

@@ -2,6 +2,7 @@
 #include <sstream>
 #include <assert.h>
 #include <iostream>
+#include "Session.h"
 //#include "MainMenu.h"
 #include "Enemy_Shard.h"
 #include "MapHeader.h"
@@ -555,6 +556,18 @@ bool SaveWorld::Load(std::ifstream &is)
 	return true;
 }
 
+bool SaveWorld::Save(std::ofstream &of)
+{
+	of << name << endl;
+	of << numSectors << endl;
+	cout << "numSectors: " << numSectors << endl;
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i].Save(of);
+	}
+	return true;
+}
+
 void SaveWorld::UpdateShardNameList()
 {
 	std::map<std::string, int> shardNameMap;
@@ -615,25 +628,18 @@ int SaveWorld::GetNumSectorTypeComplete(int sType)
 	return count;
 }
 
-bool SaveWorld::Save(std::ofstream &of)
-{
-	of << name << endl;
-	of << numSectors << endl;
-	cout << "numSectors: " << numSectors << endl;
-	for (int i = 0; i < numSectors; ++i)
-	{
-		sectors[i].Save( of );
-	}
-	return true;
-}
+
 
 
 
 
 
 SaveFile::SaveFile(const std::string &name)
-	:shardField(32 * 5), newShardField(32 * 5), powerField(32),
-	momentaField(32 * 2)
+	:levelsBeatenField( 512 ), 
+	shardField(32 * 5), 
+	newShardField(32 * 5), 
+	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	momentaField(32 * 4)
 {
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
@@ -828,15 +834,17 @@ void SaveFile::Save()
 	{
 		of << controlProfileName << endl;
 
-		of << numWorlds << endl;
-		cout << "numworlds: " << numWorlds << endl;
-		//save worlds, then save shards
-		for (int i = 0; i < numWorlds; ++i)
-		{
-			worlds[i].Save(of);
-		}
+		//of << numWorlds << endl;
+		//cout << "numworlds: " << numWorlds << endl;
+		////save worlds, then save shards
+		//for (int i = 0; i < numWorlds; ++i)
+		//{
+		//	worlds[i].Save(of);
+		//}
 
-		powerField.Save(of);
+		levelsBeatenField.Save(of);
+
+		upgradeField.Save(of);
 		momentaField.Save(of);
 
 		shardField.Save(of);

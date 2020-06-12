@@ -18,6 +18,7 @@ struct AdventureMap
 {
 	std::string name;
 	std::string path;
+	bool Exists();
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode);
 };
@@ -187,6 +188,7 @@ struct SaveFile
 	SaveWorld *worlds;
 	int numWorlds;
 	
+	BitField levelsBeatenField;
 	BitField upgradeField;
 	BitField momentaField;
 	BitField shardField;
