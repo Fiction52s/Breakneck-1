@@ -7,16 +7,14 @@
 using namespace std;
 using namespace sf;
 
-MapSector::MapSector(MapSelector *p_ms, int index)
+MapSector::MapSector( AdventureSector &adventureSector, MapSelector *p_ms, int index)
 	:numLevels(-1), ms(p_ms), sectorIndex(index)
 {
 	unlockedIndex = -1;
-	numUnlockConditions = -1;
 	nodeSize = 128;
 	pathLen = 16;
 	frame = 0;
 	nodes = NULL;
-	unlockCondText = NULL;
 
 	MainMenu *mainMenu = ms->mainMenu;
 
@@ -59,18 +57,95 @@ MapSector::MapSector(MapSelector *p_ms, int index)
 	sectorNameText.setFont(mainMenu->arial);
 	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 
-
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	mapSASelector->SetTotalSize(unlockedLevelCount);
+
+
+	string worldStr = to_string(index + 1);
+	if (bg == NULL)
+	{
+		string secStr = to_string(index + 1);
+		string bgStr = "w" + worldStr + "_0" + secStr;
+		bg = Background::SetupFullBG(bgStr, &(ms->mainMenu->tilesetManager));
+	}
+
+	stringstream ss;
+	ss.str("");
+	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
+	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
+
+	sectorNameText.setString("Sector " + to_string( index + 1 ));
+
+	int waitFrames[3] = { 30, 10, 5 };
+	int waitModeThresh[2] = { 2, 2 };
+
+	bool blank = mapSASelector == NULL;
+	bool diffNumLevels = false;
+
+	selectedYIndex = 1;
+
+	numLevels = adventureSector.GetNumActiveMaps();
+
+	Tileset *ts_node = ms->ts_node;
+	nodes = new Sprite[numLevels];
+	topBonusNodes = new Sprite[numLevels];
+	botBonusNodes = new Sprite[numLevels];
+
+	int counter = 0;
+	Tileset *currTS = ts_node;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		nodes[i].setTexture(*currTS->texture);
+		nodes[i].setTextureRect(currTS->GetSubRect(0));
+		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+	}
+
+	/*for (int i = 0; i < numLevels; ++i)
+	{
+		Tileset *currTS = NULL;
+		int bFType = sec->levels[i].bossFightType;
+		if (bFType == 0)
+		{
+			currTS = ts_node;
+		}
+		else
+		{
+			currTS = ms->ts_bossFight[bFType - 1];
+		}
+
+		assert(currTS != NULL);
+		nodes[i].setTexture(*currTS->texture);
+
+		nodes[i].setTextureRect(currTS->GetSubRect(0));
+		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
+
+		topBonusNodes[i].setTexture(*ts_node->texture);
+		topBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
+		topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
+		botBonusNodes[i].setTexture(*ts_node->texture);
+		botBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
+		botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
+	}*/
+
+	//requirementText
+	numRequiredRunes = adventureSector.requiredRunes;
+
+	requirementText.setFont(ms->mainMenu->arial);
+	requirementText.setCharacterSize(40);
+	requirementText.setFillColor(Color::White);
+	requirementText.setString(to_string(numRequiredRunes));
+
+	SetXCenter(960);
+	//UpdateNodes();
+	UpdateStats();
+	UpdateLevelStats();
+	UpdateUnlockedLevelCount();
 }
 
 MapSector::~MapSector()
 {
-	delete[] levelCollectedShards;
-	delete[] levelCollectedShardsBG;
-
 	delete mapSASelector;
 
 	if (nodes != NULL)
@@ -91,11 +166,6 @@ MapSector::~MapSector()
 		botBonusNodes = NULL;
 	}
 
-	if (unlockCondText != NULL)
-	{
-		delete[]unlockCondText;
-	}
-
 	delete bg;
 }
 
@@ -104,7 +174,7 @@ void MapSector::UpdateUnlockedLevelCount()
 	unlockedLevelCount = numLevels;
 	for (int i = 0; i < numLevels - 1; ++i)
 	{
-		if (!sec->levels[i].GetComplete())
+		if (!saveSector->levels[i].GetComplete())
 		{
 			unlockedLevelCount = max(1, i + 1);
 			break;
@@ -124,15 +194,14 @@ void MapSector::Draw(sf::RenderTarget *target)
 {
 	bg->Draw(target);
 
-	if (!sec->IsUnlocked()) //later, store this variable instead of 
+	if (!saveSector->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
 	{
 		target->draw(lockedOverlayQuad, 4, sf::Quads);
 	}
 	
-
 	bool focused = IsFocused();
-	bool unlocked = sec->IsUnlocked();
+	bool unlocked = saveSector->IsUnlocked();
 
 	if (focused)
 	{
@@ -142,16 +211,11 @@ void MapSector::Draw(sf::RenderTarget *target)
 		{
 			DrawStats(target);
 			DrawLevelStats(target);
-
-
 		}
 		else
 		{
-			DrawUnlockConditions(target);
+			DrawRequirement(target);
 		}
-
-
-
 	}
 
 	if (unlocked)
@@ -174,9 +238,9 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 void MapSector::DrawLevelStats(sf::RenderTarget *target)
 {
-	target->draw(levelCollectedShardsBG, numTotalShards * 4, sf::Quads);
-	target->draw(levelCollectedShards, numTotalShards * 4, sf::Quads, ts_shards->texture);
-	target->draw(levelPercentCompleteText);
+	//target->draw(levelCollectedShardsBG, numTotalShards * 4, sf::Quads);
+	//target->draw(levelCollectedShards, 16 * 4, sf::Quads, ts_shards->texture);
+	//target->draw(levelPercentCompleteText);
 }
 
 void MapSector::SetXCenter(float x)
@@ -213,16 +277,10 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x / 2, sectorStatsCenter.y - sectorStatsSize.y / 2);
 
-	int numUnlock = sec->numUnlockConditions;
-	for (int i = 0; i < numUnlock; ++i)
-	{
-		unlockCondText[i].setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * i);
-	}
+	requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
 	shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
 	completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
-
-
 
 	Vector2f shardGridOffset = Vector2f(20, 20);
 	Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
@@ -230,19 +288,15 @@ void MapSector::SetXCenter(float x)
 
 	float gridTotalRight = gridTopLeft.x + (ts_shards->tileWidth * 4) + (gridSpacing * 3);
 
-	for (int i = 0; i < numTotalShards; ++i)
+	/*for (int i = 0; i < numTotalShards; ++i)
 	{
-		//shardSpr[i].setPosition();
 		SetRectCenter(levelCollectedShards + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing) * (i % 4) + ts_shards->tileWidth / 2.f,
 			gridTopLeft.y + (ts_shards->tileHeight + gridSpacing) * (i / 4) + ts_shards->tileHeight / 2.f));
-		SetRectCenter(levelCollectedShardsBG + i * 4, 48, 48, Vector2f(gridTopLeft.x + (ts_shards->tileWidth + gridSpacing) * (i % 4) + ts_shards->tileWidth / 2.f,
-			gridTopLeft.y + (ts_shards->tileHeight + gridSpacing) * (i / 4) + ts_shards->tileHeight / 2.f));
-	}
+	}*/
 
 	Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
 
 	levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
-
 
 	UpdateNodePosition();
 }
@@ -253,21 +307,17 @@ void MapSector::DrawStats(sf::RenderTarget *target)
 	target->draw(shardsCollectedText);
 }
 
-void MapSector::DrawUnlockConditions(sf::RenderTarget *target)
+void MapSector::DrawRequirement(sf::RenderTarget *target)
 {
-	int numUnlock = sec->numUnlockConditions;
-	for (int i = 0; i < numUnlock; ++i)
-	{
-		target->draw(unlockCondText[i]);
-	}
+	target->draw(requirementText);
 }
 
 void MapSector::UpdateStats()
 {
 	stringstream ss;
 
-	int numTotalShards = sec->GetNumTotalShards();
-	int numShardsCaptured = sec->GetNumShardsCaptured();
+	int numTotalShards = saveSector->GetNumTotalShards();
+	int numShardsCaptured = saveSector->GetNumShardsCaptured();
 
 	ss << numShardsCaptured << " / " << numTotalShards;
 
@@ -275,7 +325,7 @@ void MapSector::UpdateStats()
 
 	ss.str("");
 
-	int percent = floor(sec->GetCompletionPercentage());
+	int percent = floor(saveSector->GetCompletionPercentage());
 
 	ss << percent << "%";
 
@@ -308,7 +358,7 @@ void MapSector::UpdateLevelStats()
 	//numTotalShards = snList.size();
 	for (int i = 0; i < numTotalShards; ++i)
 	{
-		SetRectColor(levelCollectedShardsBG + i * 4, Color(Color::Transparent));
+		//SetRectColor(levelCollectedShardsBG + i * 4, Color(Color::Transparent));
 		SetRectSubRect(levelCollectedShards + i * 4, IntRect());
 	}
 
@@ -316,7 +366,7 @@ void MapSector::UpdateLevelStats()
 	{
 		int sType = Shard::GetShardType((*it));
 		int subRectIndex = sType % 22;
-		if (sec->world->sf->ShardIsCaptured(sType))
+		if (saveSector->world->sf->ShardIsCaptured(sType))
 		{
 			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(subRectIndex));
 		}
@@ -325,7 +375,7 @@ void MapSector::UpdateLevelStats()
 			SetRectSubRect(levelCollectedShards + gridIndex * 4, IntRect());//ts_shards->GetSubRect(44));
 		}
 
-		SetRectColor(levelCollectedShardsBG + gridIndex * 4, Color(Color::Black));
+		//SetRectColor(levelCollectedShardsBG + gridIndex * 4, Color(Color::Black));
 		++gridIndex;
 	}
 
@@ -572,7 +622,7 @@ void MapSector::UpdateNodes()
 		//Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
 		//Vertex *nTop = (nodes + 0 * numLevels * 4 + i * 4);
 		//Vertex *nBot = (nodes + 2 * numLevels * 4 + i * 4);
-		if (HasTopBonus(i) && sec->levels[i].TopBonusUnlocked())
+		if (HasTopBonus(i) && saveSector->levels[i].TopBonusUnlocked())
 		{
 			//SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
 			//SetRectColor(nTop, Color(Color::White));
@@ -584,7 +634,7 @@ void MapSector::UpdateNodes()
 			topBonusNodes[i].setColor(Color::Transparent);
 		}
 
-		if (HasBotBonus(i) && sec->levels[i].BottomBonusUnlocked())
+		if (HasBotBonus(i) && saveSector->levels[i].BottomBonusUnlocked())
 		{
 			botBonusNodes[i].setTextureRect(ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
 
@@ -596,7 +646,7 @@ void MapSector::UpdateNodes()
 		}
 
 		Tileset *currTS = NULL;
-		int bFType = sec->levels[i].bossFightType;
+		int bFType = saveSector->levels[i].bossFightType;
 		if (bFType == 0)
 		{
 			currTS = ts_node;
@@ -605,7 +655,7 @@ void MapSector::UpdateNodes()
 		{
 			currTS = ms->ts_bossFight[bFType - 1];
 		}
-
+		currTS->SetSpriteTexture(nodes[i]);
 		nodes[i].setTextureRect(currTS->GetSubRect(GetNodeSubIndex(i)));
 		//SetRectSubRect(n, ms->ts_node->GetSubRect(GetNodeSubIndex(i)));
 	}
@@ -725,19 +775,6 @@ int MapSector::GetSelectedNodeBossFightType()
 	return sec->levels[GetSelectedIndex()].bossFightType;
 }
 
-void MapSector::UpdateUnlockConditions()
-{
-	int numUnlock = sec->numUnlockConditions;
-	stringstream ss;
-	for (int i = 0; i < numUnlock; ++i)
-	{
-		ss.str("");
-		int completeOfType = sec->world->GetNumSectorTypeComplete(sec->conditions[i]);
-		int numNeededOfType = sec->numTypesNeeded[i];
-		ss << completeOfType << " / " << numNeededOfType;
-		unlockCondText[i].setString(ss.str());
-	}
-}
 
 int MapSector::GetNodeBonusIndexTop(int node)
 {
@@ -771,106 +808,11 @@ int MapSector::GetNodeBonusIndexBot(int node)
 	}
 }
 
-void MapSector::Init(Sector *m_sec)
+void MapSector::Init(Sector *p_saveSector)
 {
-	unlockedIndex = -1;
-	sec = m_sec;
-	int oldNumLevels = numLevels;
-	numLevels = sec->numLevels;
-
-	string worldStr = to_string(sec->world->index + 1);
 	
-	if (bg == NULL)
-	{
-		string secStr = to_string(sec->index + 1);
-		string bgStr = "w" + worldStr + "_0" + secStr;
-		bg = Background::SetupFullBG(bgStr, &(ms->mainMenu->tilesetManager));
-	}
-		
-	stringstream ss;
 
-	ss.str("");
-	ss << "Shard/shards_w" << (sec->world->index + 1) << "_48x48.png";
-
-	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
-
-	sectorNameText.setString(sec->name);
-
-	int waitFrames[3] = { 30, 10, 5 };
-	int waitModeThresh[2] = { 2, 2 };
-
-	bool blank = mapSASelector == NULL;
-	bool diffNumLevels = false;
-
-	selectedYIndex = 1;
-
-	if (oldNumLevels > 0 && oldNumLevels != numLevels)
-	{
-		delete[] nodes;
-		nodes = NULL;
-
-		delete[] topBonusNodes;
-		topBonusNodes = NULL;
-
-		delete[] botBonusNodes;
-		botBonusNodes = NULL;
-	}
-	if (nodes == NULL)
-	{
-
-		Tileset *ts_node = ms->ts_node;
-		nodes = new Sprite[numLevels];
-		topBonusNodes = new Sprite[numLevels];
-		botBonusNodes = new Sprite[numLevels];
-
-		for (int i = 0; i < numLevels; ++i)
-		{
-			Tileset *currTS = NULL;
-			int bFType = sec->levels[i].bossFightType;
-			if (bFType == 0)
-			{
-				currTS = ts_node;
-			}
-			else
-			{
-				currTS = ms->ts_bossFight[bFType - 1];
-			}
-
-			assert(currTS != NULL);
-			nodes[i].setTexture(*currTS->texture);
-
-			nodes[i].setTextureRect(currTS->GetSubRect(0));
-			nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-
-			topBonusNodes[i].setTexture(*ts_node->texture);
-			topBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
-			topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
-			botBonusNodes[i].setTexture(*ts_node->texture);
-			botBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
-			botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
-		}
-	}
-
-	if (numUnlockConditions != -1 && sec->numUnlockConditions != numUnlockConditions)
-	{
-		delete[] unlockCondText;
-		unlockCondText = NULL;
-	}
-
-	if (unlockCondText == NULL)
-	{
-		numUnlockConditions = sec->numUnlockConditions;
-		unlockCondText = new Text[numUnlockConditions];
-
-		for (int i = 0; i < numUnlockConditions; ++i)
-		{
-			unlockCondText[i].setFont(ms->mainMenu->arial);
-			unlockCondText[i].setCharacterSize(40);
-			unlockCondText[i].setFillColor(Color::White);
-		}
-	}
-
-	if (sec->IsComplete())
+	if (saveSector->IsComplete())
 	{
 		state = COMPLETE;
 		endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));
@@ -883,13 +825,12 @@ void MapSector::Init(Sector *m_sec)
 	auto &snList = GetSelectedLevel().shardNameList;
 	numTotalShards = snList.size();
 
-	levelCollectedShards = new Vertex[numTotalShards * 4];
-	levelCollectedShardsBG = new Vertex[numTotalShards * 4];
+	//levelCollectedShards = new Vertex[numTotalShards * 4];
+	//levelCollectedShardsBG = new Vertex[numTotalShards * 4];
 
 	SetXCenter(960);
 
 	UpdateNodes();
-	UpdateUnlockConditions();
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();

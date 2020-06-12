@@ -29,6 +29,7 @@ struct AdventureSector
 	AdventureMap maps[8];
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode );
+	int GetNumActiveMaps();
 };
 
 struct AdventureWorld
@@ -36,6 +37,7 @@ struct AdventureWorld
 	AdventureSector sectors[8];
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode );
+	int GetNumActiveSectors();
 };
 
 struct AdventureFile
@@ -52,6 +54,7 @@ struct AdventureFile
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
 	CopyMode copyMode;
+	int GetNumActiveWorlds();
 };
 
 

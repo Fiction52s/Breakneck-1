@@ -17,16 +17,6 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
-	//extraPassRect.setSize(Vector2f(1920, 1080));
-
-	//ts_planetAndSpace = mainMenu->tilesetManager.GetTileset( "WorldMap/map_z1.jpg", 1920, 1080 );
-	//planetAndSpaceTex = new Texture;
-	//planetAndSpaceTex->loadFromFile( "WorldMap/map_z1.jpg" );
-	
-	//ts_planet = mainMenu->tilesetManager.GetTileset( "WorldMap/Map.png", 1920, 1080 );
-	//planetTex = new Texture;
-	//planetTex->loadFromFile( "WorldMap/map_z2.png" );
-
 	worldSelector = new WorldSelector(p_mainMenu);
 
 	ts_colonySelect = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -167,10 +157,34 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	Reset( NULL );
 
-	for (int i = 0; i < 7; ++i)
+	adventureFile.Load("Resources/Adventure", "tadventure");
+
+	for (int i = 0; i < 8; ++i)
 	{
-		//selectors[i] = new MapSelector(mainMenu, Vector2f(960, 540), i);
+		selectors[i] = new MapSelector( adventureFile, mainMenu, Vector2f(960, 540), i);
 	}
+}
+
+WorldMap::~WorldMap()
+{
+	//delete planetAndSpaceTex;
+	//delete planetTex;
+
+	delete worldSelector;
+	for (int i = 0; i < 8; ++i)
+	{
+		delete selectors[i];
+	}
+
+	//for( int i = 0; i < 6; ++i )
+	//{
+	//delete sectionTex[i];
+	//delete colonyTex[i];
+	//}
+
+	ClearEntries();
+	//delete [] text;
+	//delete [] localPaths;
 }
 
 void WorldMap::UpdateColonySelect()
@@ -223,27 +237,7 @@ const std::string & WorldMap::GetSelected()
 	return localPaths[selectedLevel];
 }
 
-WorldMap::~WorldMap()
-{
-	//delete planetAndSpaceTex;
-	//delete planetTex;
 
-	delete worldSelector;
-	for (int i = 0; i < 7; ++i)
-	{
-		delete selectors[i];
-	}
-
-	//for( int i = 0; i < 6; ++i )
-	//{
-		//delete sectionTex[i];
-		//delete colonyTex[i];
-	//}
-
-	ClearEntries();
-	//delete [] text;
-	//delete [] localPaths;
-}
 
 void WorldMap::ClearEntries()
 {

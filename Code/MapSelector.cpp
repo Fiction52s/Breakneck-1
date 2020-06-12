@@ -7,14 +7,13 @@
 using namespace std;
 using namespace sf;
 
-MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
+MapSelector::MapSelector( AdventureWorld &adventureWorld, 
+	MainMenu *mm, sf::Vector2f &pos, int wIndex)
 	:centerPos(pos)
 {
 	Tileset *ts_testNewSelect = mm->tilesetManager.GetTileset(
 		"selectortest2.png", 1920, 1080);
 	ts_testNewSelect->SetSpriteTexture(newSelectTestSpr);
-	//bg->Set(Vector2f(0, 0), 1.f);
-
 
 	for (int i = 1; i <= 5; ++i)
 	{
@@ -53,7 +52,25 @@ MapSelector::MapSelector(MainMenu *mm, sf::Vector2f &pos, int wIndex)
 
 	frame = 0;
 
-	sectors.resize(SaveFile::MAX_SECTORS);
+	int waitFrames[3] = { 30, 15, 10 };
+	int waitModeThresh[2] = { 2, 2 };
+
+	numSectors = adventureWorld.GetNumActiveSectors();
+
+	sectors.resize(numSectors);
+
+	int counter = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (adventureWorld.sectors[i].GetNumActiveMaps() > 0)
+		{
+			sectors[counter] = new MapSector(adventureWorld.sectors[i], this, counter);
+			++counter;
+		}
+	}
+
+	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, 
+		waitModeThresh, numSectors, 0);
 }
 
 MapSelector::~MapSelector()
@@ -197,27 +214,6 @@ bool MapSelector::Update(ControllerState &curr,
 	++frame;
 
 	return true;
-}
-
-void MapSelector::Init(int index)
-{
-	SaveFile *sf = mainMenu->GetCurrentProgress();
-	World & w = sf->worlds[index];
-
-	int waitFrames[3] = { 30, 15, 10 };
-	int waitModeThresh[2] = { 2, 2 };
-
-	numSectors = w.numSectors;
-	
-
-	for (int i = 0; i < numSectors; ++i)
-	{
-		//load sectors externally
-		sectors[i] = new MapSector(this, i);;
-		sectors[i]->Init(&(w.sectors[i]));
-	}
-
-	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numSectors, 0);
 }
 
 void MapSelector::UpdateHighlight()

@@ -36,7 +36,8 @@ struct MapSector
 		COMPLETE
 	};
 
-	MapSector(MapSelector *ms, int index);
+	MapSector( AdventureSector &adventureSector, 
+		MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
 	bool IsFocused();
@@ -67,14 +68,14 @@ struct MapSector
 	void UpdateLevelStats();
 	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
-	void DrawUnlockConditions(sf::RenderTarget *target);
-	void UpdateUnlockConditions();
+	void DrawRequirement(sf::RenderTarget *target);
 	void UpdateStats();
 
 	State state;
-	Sector *sec;
+	Sector *saveSector;
 	MapSelector *ms;
 
+	
 	sf::Vector2f left;
 
 	float xCenter;
@@ -89,12 +90,12 @@ struct MapSector
 	int unlockedIndex;
 	int unlockFrame;
 	int numTotalShards;
-	int numUnlockConditions;
+	int numRequiredRunes;
 	int selectedYIndex;
 	int sectorIndex;
 
-	sf::Vertex *levelCollectedShards;
-	sf::Vertex *levelCollectedShardsBG;
+	sf::Vertex levelCollectedShards[16 * 4];
+	//sf::Vertex *levelCollectedShardsBG;
 	sf::Vertex levelBG[4];
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
@@ -110,7 +111,7 @@ struct MapSector
 	sf::Text shardsCollectedText;
 	sf::Text completionPercentText;
 	sf::Text levelPercentCompleteText;
-	sf::Text *unlockCondText;
+	sf::Text requirementText;
 	sf::Text sectorNameText;
 
 	Tileset *ts_energyCircle;
@@ -142,9 +143,9 @@ struct MapSelector
 		K_HIDE,
 	};
 
-	MapSelector(MainMenu *mm, sf::Vector2f &pos, 
+	MapSelector( AdventureWorld &adventureWorld, 
+		MainMenu *mm, sf::Vector2f &pos, 
 		int wIndex);
-	void Init(int i);
 	void ReturnFromMap();
 	void UpdateHighlight();
 	void RunSelectedMap();
@@ -240,11 +241,14 @@ struct WorldMap
 	MapSelector *CurrSelector();
 	void InitSelectors();
 
+
 	State state;
 	WorldSelector *worldSelector;
-	MapSelector *selectors[7];
+	MapSelector *selectors[8];
 	MainMenu *mainMenu;
 	
+	AdventureFile adventureFile;
+
 	sf::Shader zoomShader;
 	sf::Shader asteroidShader;
 	

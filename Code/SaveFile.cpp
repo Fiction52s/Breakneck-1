@@ -70,6 +70,20 @@ AdventureSector::AdventureSector()
 	requiredRunes = 0;
 }
 
+int AdventureSector::GetNumActiveMaps()
+{
+	int activeCounter = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (maps[i].name != "")
+		{
+			++activeCounter;
+		}
+	}
+
+	return activeCounter;
+}
+
 void AdventureSector::Load(std::ifstream &is, int copyMode)
 {
 	is >> requiredRunes;
@@ -92,6 +106,20 @@ void AdventureSector::Save(std::ofstream &of, int copyMode)
 	}
 }
 
+int AdventureWorld::GetNumActiveSectors()
+{
+	int activeCounter = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (sectors[i].GetNumActiveMaps() > 0)
+		{
+			++activeCounter;
+		}
+	}
+
+	return activeCounter;
+}
+
 void AdventureWorld::Load(std::ifstream &is, int copyMode)
 {
 	for (int i = 0; i < 8; ++i)
@@ -106,6 +134,20 @@ void AdventureWorld::Save(std::ofstream &of, int copyMode)
 	{
 		sectors[i].Save(of, copyMode );
 	}
+}
+
+int AdventureFile::GetNumActiveWorlds()
+{
+	int activeCounter = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (worlds[i].GetNumActiveSectors() > 0)
+		{
+			activeCounter++;
+		}
+	}
+
+	return activeCounter;
 }
 
 bool AdventureFile::Load(const std::string &p_path,
