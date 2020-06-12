@@ -77,7 +77,7 @@ void AdventureCreator::Cancel()
 void AdventureCreator::Open()
 {
 	state = BROWSE;
-	chooser->StartRelative( ".brknk", FileChooser::Mode::OPEN, "Resources/Maps");
+	chooser->StartRelative( ".brknk", FileChooser::Mode::OPEN, "Resources\\Maps");
 
 	CollapseWorlds();
 	currWorld = 1;
@@ -125,6 +125,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 		chooser->SetGameResourcesMode(true);
 		AdventureMap *am;
 		string filePath;
+		string localDir = "BreakneckEmergence\\Resources\\";
 		for (int w = 0; w < 8; ++w)
 		{
 			for (int s = 0; s < 8; ++s)
@@ -137,7 +138,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 					{
 						filePath = am->path + "\\" + am->name;
 						adventureNodes[ind].filePath = 
-							filePath + ".brknk";
+							localDir + filePath + ".brknk";
 						adventureNodes[ind].ts_preview = 
 							chooser->GetTileset(filePath + ".png");
 					}
@@ -213,7 +214,7 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 	}
 	else if (copyMode == AdventureFile::PATH)
 	{
-		string findPath = "BreakneckEmergence/Resources/";
+		string findPath = "BreakneckEmergence\\Resources\\";
 		string nodePath;
 		string nodeName;
 

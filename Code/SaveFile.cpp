@@ -32,7 +32,7 @@ void AdventureMap::Load(std::ifstream &is, int copyMode )
 			return;
 		}
 
-		auto lastSlash = fullPath.find_last_of('/');
+		auto lastSlash = fullPath.find_last_of('\\');
 		if (lastSlash == std::string::npos )
 		{
 			name = fullPath;
@@ -40,7 +40,7 @@ void AdventureMap::Load(std::ifstream &is, int copyMode )
 		}
 		else
 		{
-			name = fullPath.substr(lastSlash);
+			name = fullPath.substr(lastSlash+1);
 			path = fullPath.substr(0, lastSlash);
 		}
 	}

@@ -135,7 +135,7 @@ void FileChooser::ClearNodes()
 
 void FileChooser::SetRelativePath(const std::string &p_relPath)
 {
-	string actualPath = current_path().string() + "/" + p_relPath;
+	string actualPath = current_path().string() + "\\" + p_relPath;
 	SetPath(actualPath);
 }
 
