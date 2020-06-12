@@ -40,6 +40,7 @@ struct AdventureCreator : FileChooserHandler
 
 	sf::Vertex grabbedFileQuad[4];
 	FileNode *grabbedFile;
+	FileNode tempGrabbedFile;
 
 	void SetRectNode(ChooseRect *cr, FileNode *fn);
 	int GetNodeStart();

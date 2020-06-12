@@ -243,6 +243,11 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 								nodePath.substr(pathClip + findPath.length());
 						}
 					}
+					else
+					{
+						adventure->worlds[w].sectors[s].maps[m].name = "";
+						adventure->worlds[w].sectors[s].maps[m].path = "";
+					}
 				}
 			}
 		}
@@ -338,6 +343,7 @@ void AdventureCreator::SetRectNode(ChooseRect *cr, FileNode *fn)
 {
 	ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 	icRect->SetInfo(fn);
+
 	icRect->SetImage(fn->ts_preview, 0);
 	if (fn->ts_preview == NULL)
 		icRect->SetShown(true);
@@ -427,10 +433,25 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
 		{
+			FileNode *fn = (FileNode*)cr->info;
+
+			if (fn->ts_preview != NULL)
+			{
+				tempGrabbedFile = *fn;
+
+				grabbedFile = &tempGrabbedFile;
+				grabbedFile->ts_preview->SetQuadSubRect(grabbedFileQuad, 0);
+				state = DRAG;
+
+				fn->ts_preview = NULL;
+				fn->filePath = "";
+
+				SetRectNode(cr, fn);
+			}
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
 		{
-			if (state == DRAG)
+			if (state == DRAG )
 			{
 				int mapIndex = -1;
 				for (int i = 0; i < 8; ++i)
@@ -448,6 +469,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				currNode->ts_preview = grabbedFile->ts_preview;
 				currNode->filePath = grabbedFile->filePath;
+
 
 				SetRectNode(cr, currNode);
 			}
