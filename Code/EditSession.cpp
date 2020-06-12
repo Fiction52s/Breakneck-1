@@ -13229,14 +13229,17 @@ void EditSession::EditModeUpdate()
 		oneActor )
 	{
 		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
-		if (a->ContainsPoint(testPoint))
+		if (a->type->info.name != "player")
 		{
-			Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
-			variationSelector->SetPosition(Vector2f(pixel));
-			variationSelector->SetType(a->type);
-			AddActivePanel(variationSelector->panel);
-			focusedPanel = variationSelector->panel;
-			return;
+			if (a->ContainsPoint(testPoint))
+			{
+				Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
+				variationSelector->SetPosition(Vector2f(pixel));
+				variationSelector->SetType(a->type);
+				AddActivePanel(variationSelector->panel);
+				focusedPanel = variationSelector->panel;
+				return;
+			}
 		}
 	}
 

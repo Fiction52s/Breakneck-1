@@ -67,23 +67,12 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 
 AdventureSector::AdventureSector()
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		requirements[i] = 0;
-		numRequirements[i] = 0;
-	}
+	requiredRunes = 0;
 }
 
 void AdventureSector::Load(std::ifstream &is, int copyMode)
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		is >> requirements[i];
-	}
-	for (int i = 0; i < 4; ++i)
-	{
-		is >> numRequirements[i];
-	}
+	is >> requiredRunes;
 
 	is.get();//goes to next line
 
@@ -95,21 +84,7 @@ void AdventureSector::Load(std::ifstream &is, int copyMode)
 
 void AdventureSector::Save(std::ofstream &of, int copyMode)
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		of << requirements[i] << " ";
-	}
-
-	for (int i = 0; i < 4; ++i)
-	{
-		of << numRequirements[i];
-		if (i < 3)
-		{
-			of << " ";
-		}
-	}
-
-	of << "\n";
+	of << requiredRunes << "\n";
 
 	for (int i = 0; i < 8; ++i)
 	{

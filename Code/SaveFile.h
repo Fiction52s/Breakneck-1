@@ -23,10 +23,9 @@ struct AdventureMap
 };
 
 struct AdventureSector
-{
+{	
 	AdventureSector();
-	int requirements[4];
-	int numRequirements[4];
+	int requiredRunes;
 	AdventureMap maps[8];
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode );

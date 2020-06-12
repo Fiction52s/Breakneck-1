@@ -37,10 +37,14 @@ struct AdventureCreator : FileChooserHandler
 	Tileset *ts_largePreview;
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void SliderCallback(Slider *slider);
 
 	sf::Vertex grabbedFileQuad[4];
 	FileNode *grabbedFile;
 	FileNode tempGrabbedFile;
+
+	Slider *sectorRequirementsSlider;
+	sf::Text *sectorLabel;
 
 	void SetRectNode(ChooseRect *cr, FileNode *fn);
 	int GetNodeStart();

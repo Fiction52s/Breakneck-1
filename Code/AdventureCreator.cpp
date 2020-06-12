@@ -22,8 +22,9 @@ AdventureCreator::AdventureCreator()
 
 	SetRectTopLeft(largePreview, 912, 492, Vector2f(rightSideStart, 540 ));
 
-	Vector2f startWorldPos(rightSideStart, 100);
-	Vector2f startSectorPos(rightSideStart, 220);
+	Vector2f startWorldPos(rightSideStart, 90);
+	Vector2f startSectorPos(rightSideStart, 210);
+	Vector2f startMapPos(rightSideStart, 385);
 
 	Tileset *ts_worldChoosers = chooser->edit->GetSizedTileset("Editor/worldselector_64x64.png");
 
@@ -52,7 +53,7 @@ AdventureCreator::AdventureCreator()
 		sectorRects[i]->SetInfo((void*)(i+1));
 	}
 
-	Vector2f startMapPos(rightSideStart, 360);
+	
 	for (int i = 0; i < 8; ++i)
 	{
 		mapRects[i] = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_MAP,
@@ -61,6 +62,15 @@ AdventureCreator::AdventureCreator()
 		mapRects[i]->Init();
 		//mapRects[i]->SetInfo((void*)(i+1));
 	}
+
+	Vector2i sectorLabelPos(rightSideStart, 340);
+
+	sectorLabel = panel->AddLabel("sectorlabel", sectorLabelPos, 40, "Sector 1");
+
+	Vector2i sliderPos(rightSideStart + 300, 350);
+	sectorRequirementsSlider = panel->AddSlider("requirements", sliderPos, 200, 0, 7, 0);
+
+	
 }
 
 AdventureCreator::~AdventureCreator()
@@ -373,6 +383,11 @@ void AdventureCreator::ChooseSector(int s)
 	{
 		SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
 	}
+
+	sectorRequirementsSlider->SetCurrValue(
+		adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes);
+
+	sectorLabel->setString("Sector " + to_string(currSector));
 	//update maps
 }
 
@@ -484,4 +499,9 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		assert(0);
 	}
+}
+
+void AdventureCreator::SliderCallback(Slider *slider)
+{
+	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes = slider->currValue;
 }

@@ -42,6 +42,7 @@ struct FileChooserHandler : GUIHandler
 	//guihandler functions
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
 	virtual void ButtonCallback(Button *b, const std::string & e);
+	virtual void SliderCallback(Slider *slider) {}
 	//---------
 
 	FileChooser *chooser;

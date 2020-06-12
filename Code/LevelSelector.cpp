@@ -55,7 +55,7 @@ LevelSelector::LevelSelector( MainMenu *p_mainMenu )
 	width = 400;
 	height = 1080;
 	
-	ts_previewNotFound = mainMenu->tilesetManager.GetTileset("Maps/Previews/notfound.png", 912, 492);
+	ts_previewNotFound = mainMenu->tilesetManager.GetTileset("Maps/notfound.png", 912, 492);
 	drawPanel.create( width, height );
 	drawPanel.clear();
 	entries = NULL;
@@ -170,11 +170,11 @@ void LevelSelector::GetPreview( const std::string &pName, const std::string &mNa
 	string fileName;
 	if (pName == "Maps")
 	{
-		fileName = string("Maps/Previews/") + mName + string("_preview_912x492.png");
+		fileName = "Maps/" + mName + ".png";
 	}
 	else
 	{
-		fileName = string("Maps/") + pName + string("/Previews/") + mName + string("_preview_912x492.png");
+		fileName = "Maps/" + pName + "/" + mName + ".png";
 	}
 	
 	if (update)
@@ -459,12 +459,6 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 			}
 			else if (is_directory(p))      // is p a directory?
 			{
-				//cout << p << " is a directory containing:\n";
-				if (p.filename().string() == "Previews")
-				{
-					return;
-				}
-
 				TreeNode *newDir = new TreeNode;
 				newDir->parent = parentNode;
 				newDir->next = NULL;
