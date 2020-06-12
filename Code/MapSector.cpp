@@ -808,7 +808,7 @@ int MapSector::GetNodeBonusIndexBot(int node)
 	}
 }
 
-void MapSector::Init(Sector *p_saveSector)
+void MapSector::Init(SaveSector *p_saveSector)
 {
 	
 

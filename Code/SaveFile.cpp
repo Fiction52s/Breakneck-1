@@ -12,348 +12,75 @@ using namespace std;
 using namespace boost::filesystem;
 
 
-void AdventureMap::Load(std::ifstream &is, int copyMode )
+
+
+SaveLevel::SaveLevel()
+	:optionField(32)
 {
-	if (copyMode == AdventureFile::COPY)
-	{
-		std::getline(is, name);
-		if (name == "----")
-			name = "";
-	}
-	else if( copyMode == AdventureFile::PATH )
-	{
-		string fullPath;
-		std::getline(is, fullPath);
-
-		if (fullPath == "----")
-		{
-			name = "";
-			path = "";
-			return;
-		}
-
-		auto lastSlash = fullPath.find_last_of('\\');
-		if (lastSlash == std::string::npos )
-		{
-			name = fullPath;
-			path = "";
-		}
-		else
-		{
-			name = fullPath.substr(lastSlash+1);
-			path = fullPath.substr(0, lastSlash);
-		}
-	}
+	bossFightType = 0;
+	SetComplete(false);
+	optionField.Reset();
+	shardsLoaded = false;
+	justBeaten = false;
 }
 
-void AdventureMap::Save(std::ofstream &of, int copyMode)
+bool SaveLevel::IsLastInSector()
 {
-	if (name == "")
-	{
-		of << "----" << "\n";
-	}
-	else
-	{
-		if (copyMode == AdventureFile::COPY)
-		{
-			of << name << "\n";
-		}
-		else if (copyMode == AdventureFile::PATH)
-		{
-			of << path << "\\" << name << "\n";
-		}
-	}
+	return (index == sec->numLevels - 1);
 }
 
-AdventureSector::AdventureSector()
+void SaveLevel::UpdateFromMapHeader()
 {
-	requiredRunes = 0;
-}
+	if (shardsLoaded) return;
 
-int AdventureSector::GetNumActiveMaps()
-{
-	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (maps[i].name != "")
-		{
-			++activeCounter;
-		}
-	}
+	shardsLoaded = true;
 
-	return activeCounter;
-}
-
-void AdventureSector::Load(std::ifstream &is, int copyMode)
-{
-	is >> requiredRunes;
-
-	is.get();//goes to next line
-
-	for (int i = 0; i < 8; ++i)
-	{
-		maps[i].Load(is, copyMode );
-	}
-}
-
-void AdventureSector::Save(std::ofstream &of, int copyMode)
-{
-	of << requiredRunes << "\n";
-
-	for (int i = 0; i < 8; ++i)
-	{
-		maps[i].Save(of, copyMode );
-	}
-}
-
-int AdventureWorld::GetNumActiveSectors()
-{
-	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (sectors[i].GetNumActiveMaps() > 0)
-		{
-			++activeCounter;
-		}
-	}
-
-	return activeCounter;
-}
-
-void AdventureWorld::Load(std::ifstream &is, int copyMode)
-{
-	for (int i = 0; i < 8; ++i)
-	{
-		sectors[i].Load(is, copyMode );
-	}
-}
-
-void AdventureWorld::Save(std::ofstream &of, int copyMode)
-{
-	for (int i = 0; i < 8; ++i)
-	{
-		sectors[i].Save(of, copyMode );
-	}
-}
-
-int AdventureFile::GetNumActiveWorlds()
-{
-	int activeCounter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (worlds[i].GetNumActiveSectors() > 0)
-		{
-			activeCounter++;
-		}
-	}
-
-	return activeCounter;
-}
-
-bool AdventureFile::Load(const std::string &p_path,
-	const std::string &adventureName)
-{
-	string filePath = p_path + "/" + adventureName + ".adventure";
+	string worldName = sec->world->name;
 
 	ifstream is;
-	is.open(filePath);
+
+	string file = "Resources/Maps/" + worldName + "/" + name + ".brknk";
+	is.open(file);
 
 	if (!is.is_open())
 	{
-		return false;
-	}
-	else
-	{
-		int cMode;
-		is >> cMode;
-
-		copyMode = (CopyMode)cMode;
-
-		for (int i = 0; i < 8; ++i)
-		{
-			worlds[i].Load(is, copyMode );
-		}
-
-		is.close();
+		//check the general directory if its not in the folder
+		is = ifstream();
+		file = "Resources/Maps/" + name + ".brknk";
+		is.open(file);
 	}
 
-	return true;
-}
-
-void AdventureFile::Save(const std::string &p_path,
-	const std::string &adventureName, CopyMode cpy )
-{
-	string ext = ".adventure";
-	ofstream of;
-
-	if (p_path == "")
-	{
-		of.open(adventureName + ext);
-	}
-	else
-	{
-		of.open(p_path + "/" + adventureName + ext);
-	}
-
-	of << (int)cpy << "\n";
-
-	for (int i = 0; i < 8; ++i)
-	{
-		worlds[i].Save(of, (int)cpy);
-	}
-
-	of.close();
-}
-
-
-SaveFile::SaveFile( const std::string &name )
-	:shardField( 32 * 5 ), newShardField( 32 * 5 ), powerField(32),
-	momentaField( 32 * 2 )
-{
-	stringstream ss;
-	ss << "Resources/Data/" << name << ".kin";
-
-	fileName = ss.str();
-}
-
-int SaveFile::GetTotalFrames()
-{
-	int total = 0;
-	int temp;
-	for (int i = 0; i < numWorlds; ++i)
-	{
-		temp = worlds[i].GetTotalFrames();
-
-		if (temp == -1)
-		{
-			return -1;
-		}
-
-		total += temp;
-	}
-
-	return total;
-}
-
-
-float SaveFile::GetCompletionPercentage()
-{
-	float totalComplete = 0;
-	float totalPossible = 0;
-
-	for (int i = 0; i < numWorlds; ++i)
-	{
-		totalComplete += worlds[i].GetCompletionPercentage();
-		totalPossible += 100.f;
-	}
-
-	return (totalComplete / totalPossible) * 100.f;
-}
-
-bool SaveFile::HasPowerUnlocked(int pow)
-{
-	return powerField.GetBit(pow);
-}
-
-void SaveFile::UnlockPower(int pow)
-{
-	powerField.SetBit(pow, true);
-}
-
-SaveFile::~SaveFile()
-{
-	if( worlds != NULL )
-		delete[] worlds;
-	/*for( int i = 0; i < 6; ++i )
-	{
-		if( worlds[i] != NULL )
-		{
-			delete [] worlds[i];
-		}
-	}*/
-}
-
-bool SaveFile::ShardIsCaptured(int sType)
-{
-	return shardField.GetBit(sType);
-}
-
-void SaveFile::CopyFromDefault()
-{
-	path from("Resources/Data/default.kin");
-
-	path to(fileName);
-
-	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
-}
-
-bool SaveFile::LoadInfo(ifstream &is)
-{
 	if (is.is_open())
 	{
-		getline(is, controlProfileName);
+		int capCount = 0;
+		float percent = 0;
 
-		is >> numWorlds;
-		worlds = new World[numWorlds];
-		for (int i = 0; i < numWorlds; ++i)
+		MapHeader *mh = MainMenu::ReadMapHeader(is);
+
+		shardNameList.clear();
+		for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
 		{
-			worlds[i].sf = this;
-			worlds[i].index = i;
-			worlds[i].Load(is);
+			shardNameList.push_back((*it));
 		}
 
-		powerField.Load(is);
-		momentaField.Load(is);
+		bossFightType = mh->bossFightType;
 
-		shardField.Load(is);
-		newShardField.Load(is);
-
-		UpdateShardNameList();
-
-		is.close();
-		return true;
+		delete mh;
 	}
 	else
 	{
-		/*if (fileName == "Data/blue.kin")
-		{
-			int xxx = 54;
-		}*/
-		return false;
+
+		assert(0);
 	}
 }
 
-void SaveFile::UpdateShardNameList()
-{
-	std::map<std::string, int> shardNameMap;
-	for (int i = 0; i < numWorlds; ++i)
-	{
-		for (auto it = worlds[i].shardNameList.begin(); it != worlds[i].shardNameList.end(); ++it)
-		{
-			if (shardNameMap.count((*it)) == 0)
-			{
-				shardNameMap[(*it)] = 0;
-			}
-			else
-			{
-				shardNameMap[(*it)]++;
-			}
-		}
-	}
-
-	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
-	{
-		shardNameList.push_back((*it).first);
-	}
-}
-
-int SaveFile::GetNumShardsCaptured()
+int SaveLevel::GetNumShardsCaptured()
 {
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
 	{
 		int st = Shard::GetShardType((*it));
-		if (ShardIsCaptured(st))
+		if (sec->world->sf->ShardIsCaptured(st))
 		{
 			++capCount;
 		}
@@ -361,104 +88,137 @@ int SaveFile::GetNumShardsCaptured()
 	return capCount;
 }
 
-int SaveFile::GetNumTotalShards()
+float SaveLevel::GetCapturedShardsPortion()
+{
+	int capCount = GetNumShardsCaptured();
+
+	if (capCount == 0)
+		return 0;
+
+	return (float)capCount / shardNameList.size();
+}
+
+int SaveLevel::GetNumTotalShards()
 {
 	return shardNameList.size();
 }
 
-bool SaveFile::HasNewShards()
+float SaveLevel::GetCompletionPercentage()
 {
-	return newShardField.IsNonZero();
-}
-
-//return true on normal loading, and false if you need to make a default
-bool SaveFile::Load()
-{
-	ifstream is;
-	
-	is.open( fileName );
-
-	if( !LoadInfo(is) )
+	float portion = 0;
+	if (GetComplete())
 	{
-		ifstream defIs;
-		defIs.open("Resources/Data/default.kin");
-		bool test = LoadInfo(defIs);
-		assert(test);
-		return false;
+		if (shardNameList.size() == 0)
+		{
+			portion = 1.0;
+		}
+		else
+		{
+			portion += .5f;
+			portion += GetCapturedShardsPortion() * .5f;
+		}
 	}
 	else
 	{
+		if (shardNameList.size() == 0)
+		{
+			portion = 0.0;
+		}
+		else
+		{
+			portion += GetCapturedShardsPortion() * .5f;
+		}
+	}
+
+
+
+	return portion * 100.f;
+	//MapSelectionMenu::ReadMapHeader()
+}
+
+bool SaveLevel::TopBonusUnlocked()
+{
+	return optionField.GetBit(UNLOCKEDTOPBONUS);
+}
+
+bool SaveLevel::BottomBonusUnlocked()
+{
+	return optionField.GetBit(UNLOCKEDBOTTOMBONUS);
+}
+
+void SaveLevel::UnlockBottomBonus()
+{
+	optionField.SetBit(UNLOCKEDBOTTOMBONUS, true);
+}
+
+void SaveLevel::UnlockTopBonus()
+{
+	optionField.SetBit(UNLOCKEDTOPBONUS, true);
+}
+
+void SaveLevel::Reset()
+{
+	SetComplete(false);
+	optionField = 0;
+	shardsLoaded = false;
+	justBeaten = false;
+}
+
+bool SaveLevel::Load(std::ifstream &is)
+{
+	is >> name;
+	optionField.Load(is);
+	is >> bestTimeFrames;
+
+	UpdateFromMapHeader();
+
+	return true;
+}
+
+void SaveLevel::Save(std::ofstream &of)
+{
+	of << name << endl;
+	optionField.Save(of);
+	of << bestTimeFrames << endl;
+	//cout << "save level: " << name << endl;
+}
+
+void SaveLevel::SetComplete(bool comp)
+{
+	optionField.SetBit(COMPLETE, comp);
+}
+
+bool SaveLevel::TrySetRecord(int numFrames)
+{
+	if (bestTimeFrames < 0 || numFrames < bestTimeFrames)
+	{
+		bestTimeFrames = numFrames;
 		return true;
 	}
+
+	return false;
 }
 
-//void SaveFile::CreateSaveThread(SaveFile *sf)
-//{
-//	if( sf->thr )
-//	sf->thr = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of);
-//}
-
-void SaveFile::Save()
+bool SaveLevel::GetComplete()
 {
-	ofstream of;
-
-	of.open( fileName );
-
-	cout << "saving save file" << endl;
-
-	if( of.is_open() )
-	{
-		of << controlProfileName << endl;
-
-		of << numWorlds << endl;
-		cout << "numworlds: " << numWorlds << endl;
-		//save worlds, then save shards
-		for (int i = 0; i < numWorlds; ++i)
-		{
-			worlds[i].Save( of );
-		}
-
-		powerField.Save(of);
-		momentaField.Save(of);
-
-		shardField.Save(of);
-		newShardField.Save(of);
-
-		of.close();
-	}
-	else
-	{
-		cout << "error saving file: " << fileName << endl;
-		assert( false );
-	}
+	return optionField.GetBit(COMPLETE);
 }
 
-//void SaveFile::SetJustUnlocked(int world, int sec, int lev)
-//{
-//	if (lev == worlds[world].sectors[sec].numLevels - 1)
-//	{
-//		return;
-//	}
-//	else
-//	{
-//		worlds[world].sectors[sec].levels[lev + 1].justUnlocked = true;
-//	}
-//	/*Level &level = worlds[world].sectors[sec].levels[lev];
-//	World &w = worlds[world];
-//
-//	for (int i = 0; i < w.numSectors; ++i)
-//	{
-//		Sector &sector = w.sectors[sec];
-//		if (sector.IsUnlocked())
-//		{
-//
-//		}
-//	}*/
-//}
+bool SaveLevel::IsOneHundredPercent()
+{
+	return(GetCompletionPercentage() == 100.f);
+}
+
+std::string SaveLevel::GetFullName()
+{
+	return "Resources/Maps/" + sec->world->name + "/" + name + ".brknk";
+}
 
 
 
-Sector::Sector()
+
+
+SaveSector::SaveSector()
 {
 	numLevels = 0;
 	levels = NULL;
@@ -468,7 +228,7 @@ Sector::Sector()
 	numUnlockConditions = 99;
 }
 
-bool Sector::IsLevelUnlocked(int index)
+bool SaveSector::IsLevelUnlocked(int index)
 {
 	for (int i = 0; i < index; ++i )
 	{
@@ -480,7 +240,7 @@ bool Sector::IsLevelUnlocked(int index)
 	return true;
 }
 
-void Sector::UpdateShardNameList()
+void SaveSector::UpdateShardNameList()
 {
 	std::map<std::string, int> shardNameMap;
 	for (int i = 0; i < numLevels; ++i)
@@ -504,12 +264,12 @@ void Sector::UpdateShardNameList()
 	}
 }
 
-int Sector::GetNumTotalShards()
+int SaveSector::GetNumTotalShards()
 {
 	return shardNameList.size();
 }
 
-int Sector::GetNumShardsCaptured()
+int SaveSector::GetNumShardsCaptured()
 {
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
@@ -523,7 +283,7 @@ int Sector::GetNumShardsCaptured()
 	return capCount;
 }
 
-float Sector::GetCompletionPercentage()
+float SaveSector::GetCompletionPercentage()
 {
 	float completePercent = 0;
 	float possiblePercent = 0;
@@ -536,16 +296,16 @@ float Sector::GetCompletionPercentage()
 	return (completePercent / possiblePercent) * 100.f;
 }
 
-bool Sector::HasTopBonus(int index)
+bool SaveSector::HasTopBonus(int index)
 {
 	return (topBonuses.count(index) > 0);
 }
-bool Sector::hasBottomBonus(int index)
+bool SaveSector::hasBottomBonus(int index)
 {
 	return (bottomBonuses.count(index) > 0);
 }
 
-int Sector::GetTotalFrames()
+int SaveSector::GetTotalFrames()
 {
 	int total = 0;
 	int temp;
@@ -564,7 +324,7 @@ int Sector::GetTotalFrames()
 	return total;
 }
 
-bool Sector::IsComplete()
+bool SaveSector::IsComplete()
 {
 	for (int i = 0; i < numLevels; ++i)
 	{
@@ -576,7 +336,7 @@ bool Sector::IsComplete()
 	return true;
 }
 
-bool Sector::Load(std::ifstream &is)
+bool SaveSector::Load(std::ifstream &is)
 {
 	is.get();
 	std::getline(is, name);
@@ -653,7 +413,7 @@ bool Sector::Load(std::ifstream &is)
 	return true;
 }
 
-Sector::~Sector()
+SaveSector::~SaveSector()
 {
 	if (levels != NULL)
 	{
@@ -666,14 +426,13 @@ Sector::~Sector()
 		delete[] numTypesNeeded;
 }
 
-
-bool Sector::IsConditionFulfilled(int index)
+bool SaveSector::IsConditionFulfilled(int index)
 {
 	int numTypeComplete = world->GetNumSectorTypeComplete(conditions[index]);
 	return (numTypeComplete >= numTypesNeeded[index]);
 }
 
-bool Sector::IsUnlocked()
+bool SaveSector::IsUnlocked()
 {
 	int numTypeComplete = -1;
 	for (int i = 0; i < numUnlockConditions; ++i)
@@ -687,7 +446,7 @@ bool Sector::IsUnlocked()
 	return true;
 }
 
-void Sector::Save(std::ofstream &of)
+void SaveSector::Save(std::ofstream &of)
 {
 	of << name << endl;
 	of << sectorType << endl;
@@ -726,241 +485,18 @@ void Sector::Save(std::ofstream &of)
 	
 }
 
-Level::Level( )
-	:optionField(32)
-{
-	bossFightType = 0;
-	SetComplete(false);
-	optionField.Reset();
-	shardsLoaded = false;
-	justBeaten = false;
-}
 
-bool Level::IsLastInSector()
-{
-	return (index == sec->numLevels - 1);
-}
 
-void Level::UpdateFromMapHeader()
-{
-	if (shardsLoaded) return;
 
-	shardsLoaded = true;
 
-	string worldName = sec->world->name;
 
-	ifstream is;
-
-	string file = "Resources/Maps/" + worldName + "/" + name + ".brknk";
-	is.open(file);
-
-	if (!is.is_open())
-	{
-		//check the general directory if its not in the folder
-		is = ifstream();
-		file = "Resources/Maps/" + name + ".brknk";
-		is.open(file);
-	}
-
-	if (is.is_open())
-	{
-		int capCount = 0;
-		float percent = 0;
-
-		MapHeader *mh = MainMenu::ReadMapHeader(is);
-
-		shardNameList.clear();
-		for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
-		{
-			shardNameList.push_back((*it));
-		}
-
-		bossFightType = mh->bossFightType;
-
-		delete mh;
-	}
-	else
-	{
-		
-		assert(0);
-	}
-}
-
-int Level::GetNumShardsCaptured()
-{
-	int capCount = 0;
-	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
-	{
-		int st = Shard::GetShardType((*it));
-		if (sec->world->sf->ShardIsCaptured(st))
-		{
-			++capCount;
-		}
-	}
-	return capCount;
-}
-
-float Level::GetCapturedShardsPortion()
-{
-	int capCount = GetNumShardsCaptured();
-
-	if (capCount == 0)
-		return 0;
-
-	return (float)capCount / shardNameList.size();
-}
-
-int Level::GetNumTotalShards()
-{
-	return shardNameList.size();
-}
-
-float Level::GetCompletionPercentage()
-{
-	float portion = 0;
-	if (GetComplete())
-	{
-		if (shardNameList.size() == 0)
-		{
-			portion = 1.0;
-		}
-		else
-		{
-			portion += .5f;
-			portion += GetCapturedShardsPortion() * .5f;
-		}
-	}
-	else
-	{
-		if (shardNameList.size() == 0)
-		{
-			portion = 0.0;
-		}
-		else
-		{
-			portion += GetCapturedShardsPortion() * .5f;
-		}
-	}
-
-	
-
-	return portion * 100.f;
-	//MapSelectionMenu::ReadMapHeader()
-}
-
-bool Level::TopBonusUnlocked()
-{
-	return optionField.GetBit(UNLOCKEDTOPBONUS);
-}
-
-bool Level::BottomBonusUnlocked()
-{
-	return optionField.GetBit(UNLOCKEDBOTTOMBONUS);
-}
-
-void Level::UnlockBottomBonus()
-{
-	optionField.SetBit(UNLOCKEDBOTTOMBONUS, true);
-}
-
-void Level::UnlockTopBonus()
-{
-	optionField.SetBit(UNLOCKEDTOPBONUS, true);
-}
-
-void Level::Reset()
-{
-	SetComplete(false);
-	optionField = 0;
-	shardsLoaded = false;
-	justBeaten = false;
-}
-
-bool Level::Load(std::ifstream &is)
-{
-	is >> name;
-	optionField.Load(is);
-	is >> bestTimeFrames;
-
-	UpdateFromMapHeader();
-
-	return true;
-}
-
-void Level::Save(std::ofstream &of)
-{
-	of << name << endl;
-	optionField.Save(of);
-	of << bestTimeFrames << endl;
-	//cout << "save level: " << name << endl;
-}
-
-void Level::SetComplete(bool comp)
-{
-	optionField.SetBit(COMPLETE, comp );
-}
-
-bool Level::TrySetRecord(int numFrames)
-{
-	if (bestTimeFrames < 0 || numFrames < bestTimeFrames)
-	{
-		bestTimeFrames = numFrames;
-		return true;
-	}
-
-	return false;
-}
-
-//void Level::SetJustUnlocked(bool unlocked)
-//{
-//	optionField.SetBit(JUSTUNLOCKED, unlocked);
-//}
-//
-//void Level::SetJustUnlockedTop(bool unlocked)
-//{
-//	optionField.SetBit(JUSTUNLOCKEDTOP, unlocked);
-//}
-//
-//void Level::SetJustUnlockedBottom(bool unlocked)
-//{
-//	optionField.SetBit(JUSTUNLOCKEDBOTTOM, unlocked);
-//}
-
-bool Level::GetComplete()
-{
-	return optionField.GetBit(COMPLETE);
-}
-
-//bool Level::GetJustUnlocked()
-//{
-//	return optionField.GetBit(JUSTUNLOCKED);
-//}
-//bool Level::GetJustUnlockedTop()
-//{
-//	return optionField.GetBit(JUSTUNLOCKEDTOP);
-//}
-//bool Level::GetJustUnlockedBottom()
-//{
-//	return optionField.GetBit(JUSTUNLOCKEDBOTTOM);
-//}
-
-bool Level::IsOneHundredPercent()
-{
-	return(GetCompletionPercentage() == 100.f);
-}
-
-std::string Level::GetFullName()
-{
-	return "Resources/Maps/" + sec->world->name + "/" + name + ".brknk";
-}
-
-World::World()
+SaveWorld::SaveWorld()
 {
 	sectors = NULL;
 	numSectors = 0;
 }
 
-World::~World()
+SaveWorld::~SaveWorld()
 {
 	if (sectors != NULL)
 	{
@@ -968,7 +504,7 @@ World::~World()
 	}
 }
 
-int World::GetTotalFrames()
+int SaveWorld::GetTotalFrames()
 {
 	int total = 0;
 	int temp;
@@ -986,7 +522,7 @@ int World::GetTotalFrames()
 	return total;
 }
 
-float World::GetCompletionPercentage()
+float SaveWorld::GetCompletionPercentage()
 {
 	float totalComplete = 0;
 	float totalPossible = 0;
@@ -1000,7 +536,7 @@ float World::GetCompletionPercentage()
 	return (totalComplete / totalPossible) * 100.f;
 }
 
-bool World::Load(std::ifstream &is)
+bool SaveWorld::Load(std::ifstream &is)
 {
 	is.get();
 	std::getline(is, name);
@@ -1019,7 +555,7 @@ bool World::Load(std::ifstream &is)
 	return true;
 }
 
-void World::UpdateShardNameList()
+void SaveWorld::UpdateShardNameList()
 {
 	std::map<std::string, int> shardNameMap;
 	for (int i = 0; i < numSectors; ++i)
@@ -1043,12 +579,12 @@ void World::UpdateShardNameList()
 	}
 }
 
-int World::GetNumTotalShards()
+int SaveWorld::GetNumTotalShards()
 {
 	return shardNameList.size();
 }
 
-int World::GetNumShardsCaptured()
+int SaveWorld::GetNumShardsCaptured()
 {
 	int capCount = 0;
 	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
@@ -1062,7 +598,7 @@ int World::GetNumShardsCaptured()
 	return capCount;
 }
 
-int World::GetNumSectorTypeComplete(int sType)
+int SaveWorld::GetNumSectorTypeComplete(int sType)
 {
 	int count = 0;
 	for (int i = 0; i < numSectors; ++i)
@@ -1079,7 +615,7 @@ int World::GetNumSectorTypeComplete(int sType)
 	return count;
 }
 
-bool World::Save(std::ofstream &of)
+bool SaveWorld::Save(std::ofstream &of)
 {
 	of << name << endl;
 	of << numSectors << endl;
@@ -1089,4 +625,228 @@ bool World::Save(std::ofstream &of)
 		sectors[i].Save( of );
 	}
 	return true;
+}
+
+
+
+
+
+SaveFile::SaveFile(const std::string &name)
+	:shardField(32 * 5), newShardField(32 * 5), powerField(32),
+	momentaField(32 * 2)
+{
+	stringstream ss;
+	ss << "Resources/Data/" << name << ".kin";
+
+	fileName = ss.str();
+}
+
+int SaveFile::GetTotalFrames()
+{
+	int total = 0;
+	int temp;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		temp = worlds[i].GetTotalFrames();
+
+		if (temp == -1)
+		{
+			return -1;
+		}
+
+		total += temp;
+	}
+
+	return total;
+}
+
+float SaveFile::GetCompletionPercentage()
+{
+	float totalComplete = 0;
+	float totalPossible = 0;
+
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		totalComplete += worlds[i].GetCompletionPercentage();
+		totalPossible += 100.f;
+	}
+
+	return (totalComplete / totalPossible) * 100.f;
+}
+
+bool SaveFile::HasPowerUnlocked(int pow)
+{
+	return powerField.GetBit(pow);
+}
+
+void SaveFile::UnlockPower(int pow)
+{
+	powerField.SetBit(pow, true);
+}
+
+SaveFile::~SaveFile()
+{
+	if (worlds != NULL)
+		delete[] worlds;
+	/*for( int i = 0; i < 6; ++i )
+	{
+	if( worlds[i] != NULL )
+	{
+	delete [] worlds[i];
+	}
+	}*/
+}
+
+bool SaveFile::ShardIsCaptured(int sType)
+{
+	return shardField.GetBit(sType);
+}
+
+void SaveFile::CopyFromDefault()
+{
+	path from("Resources/Data/default.kin");
+
+	path to(fileName);
+
+	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
+}
+
+bool SaveFile::LoadInfo(ifstream &is)
+{
+	if (is.is_open())
+	{
+		getline(is, controlProfileName);
+
+		is >> numWorlds;
+		worlds = new World[numWorlds];
+		for (int i = 0; i < numWorlds; ++i)
+		{
+			worlds[i].sf = this;
+			worlds[i].index = i;
+			worlds[i].Load(is);
+		}
+
+		powerField.Load(is);
+		momentaField.Load(is);
+
+		shardField.Load(is);
+		newShardField.Load(is);
+
+		UpdateShardNameList();
+
+		is.close();
+		return true;
+	}
+	else
+	{
+		/*if (fileName == "Data/blue.kin")
+		{
+		int xxx = 54;
+		}*/
+		return false;
+	}
+}
+
+void SaveFile::UpdateShardNameList()
+{
+	std::map<std::string, int> shardNameMap;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		for (auto it = worlds[i].shardNameList.begin(); it != worlds[i].shardNameList.end(); ++it)
+		{
+			if (shardNameMap.count((*it)) == 0)
+			{
+				shardNameMap[(*it)] = 0;
+			}
+			else
+			{
+				shardNameMap[(*it)]++;
+			}
+		}
+	}
+
+	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+	{
+		shardNameList.push_back((*it).first);
+	}
+}
+
+int SaveFile::GetNumShardsCaptured()
+{
+	int capCount = 0;
+	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+	{
+		int st = Shard::GetShardType((*it));
+		if (ShardIsCaptured(st))
+		{
+			++capCount;
+		}
+	}
+	return capCount;
+}
+
+int SaveFile::GetNumTotalShards()
+{
+	return shardNameList.size();
+}
+
+bool SaveFile::HasNewShards()
+{
+	return newShardField.IsNonZero();
+}
+
+//return true on normal loading, and false if you need to make a default
+bool SaveFile::Load()
+{
+	ifstream is;
+
+	is.open(fileName);
+
+	if (!LoadInfo(is))
+	{
+		ifstream defIs;
+		defIs.open("Resources/Data/default.kin");
+		bool test = LoadInfo(defIs);
+		assert(test);
+		return false;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void SaveFile::Save()
+{
+	ofstream of;
+
+	of.open(fileName);
+
+	cout << "saving save file" << endl;
+
+	if (of.is_open())
+	{
+		of << controlProfileName << endl;
+
+		of << numWorlds << endl;
+		cout << "numworlds: " << numWorlds << endl;
+		//save worlds, then save shards
+		for (int i = 0; i < numWorlds; ++i)
+		{
+			worlds[i].Save(of);
+		}
+
+		powerField.Save(of);
+		momentaField.Save(of);
+
+		shardField.Save(of);
+		newShardField.Save(of);
+
+		of.close();
+	}
+	else
+	{
+		cout << "error saving file: " << fileName << endl;
+		assert(false);
+	}
 }

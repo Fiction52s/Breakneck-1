@@ -23,7 +23,6 @@ enum MapNodeState
 	NS_FULLY_BEATEN
 };
 
-struct Sector;
 struct MapSector
 {
 	enum State
@@ -42,7 +41,7 @@ struct MapSector
 	void UpdateUnlockedLevelCount();
 	bool IsFocused();
 	void RunSelectedMap();
-	void Init(Sector *sec);
+	void Init(SaveSector *sec);
 	int GetNumLevels();
 	void UpdateNodePosition();
 	int GetSelectedIndex();
@@ -72,7 +71,7 @@ struct MapSector
 	void UpdateStats();
 
 	State state;
-	Sector *saveSector;
+	SaveSector *saveSector;
 	MapSelector *ms;
 
 	

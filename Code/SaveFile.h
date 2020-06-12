@@ -58,8 +58,7 @@ struct AdventureFile
 };
 
 
-
-struct Level
+struct SaveLevel
 {
 	
 	enum BitOption : int
@@ -72,7 +71,7 @@ struct Level
 		JUSTUNLOCKED,*/
 	};
 
-	Level();
+	SaveLevel();
 	void SetComplete(bool comp);
 	bool TrySetRecord(int numFrames);
 	bool IsLastInSector();
@@ -104,7 +103,7 @@ struct Level
 
 	std::list<std::string> shardNameList;
 	bool shardsLoaded;
-	Sector *sec;
+	SaveSector *sec;
 	BitField optionField;
 	std::string name;
 	bool justBeaten;
@@ -113,17 +112,17 @@ struct Level
 	int index;
 };
 
-struct Sector
+struct SaveSector
 {
-	Sector();
-	~Sector();
+	SaveSector();
+	~SaveSector();
 	bool HasTopBonus(int index);
 	bool hasBottomBonus(int index);
 	int numLevels;
 	Level *levels;
 	std::string name;
 	int index;
-	World *world;
+	SaveWorld *world;
 	bool IsLevelUnlocked(int index);
 	int numUnlockConditions;
 	void UpdateShardNameList();
@@ -145,10 +144,10 @@ struct Sector
 };
 
 struct SaveFile;
-struct World
+struct SaveWorld
 {
-	World();
-	~World();
+	SaveWorld();
+	~SaveWorld();
 	std::string name;
 	int numSectors;
 	Sector *sectors;
@@ -174,29 +173,24 @@ struct SaveFile
 	bool LoadInfo(std::ifstream &is );
 	float GetCompletionPercentage();
 	void CopyFromDefault();
-
 	int GetTotalFrames();
 	void UpdateShardNameList();
 	int GetNumShardsCaptured();
 	int GetNumTotalShards();
 	bool HasNewShards();
-	std::list<std::string> shardNameList;
-	/*void SetJustUnlocked(int world,
-		int sec, int lev);*/
-
-	BitField powerField;
 	bool HasPowerUnlocked(int pType);
 	void UnlockPower(int pType);
+	bool ShardIsCaptured(int sType);
 
+	std::string fileName;
+	std::list<std::string> shardNameList;
+	SaveWorld *worlds;
+	int numWorlds;
+	
+	BitField upgradeField;
 	BitField momentaField;
-
 	BitField shardField;
 	BitField newShardField; //for unviewed shards
-	std::string fileName;
-	bool ShardIsCaptured(int sType);
-	World *worlds;
-	int numWorlds;
-
 	std::string controlProfileName;
 
 	const static int MAX_SECTORS = 8;
