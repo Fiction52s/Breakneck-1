@@ -135,6 +135,11 @@ void TilesetManager::SetGameResourcesMode(bool on)
 	gameResourcesMode = on;
 }
 
+bool TilesetManager::IsResourceMode()
+{
+	return gameResourcesMode;
+}
+
 Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight,
 	int altColorIndex )
 {

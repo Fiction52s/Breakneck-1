@@ -12,12 +12,41 @@ using namespace std;
 using namespace boost::filesystem;
 
 
-void AdventureMap::Load(std::ifstream &is)
+void AdventureMap::Load(std::ifstream &is, int copyMode )
 {
-	is >> name;
+	if (copyMode == AdventureFile::COPY)
+	{
+		std::getline(is, name);
+		if (name == "----")
+			name = "";
+	}
+	else if( copyMode == AdventureFile::PATH )
+	{
+		string fullPath;
+		std::getline(is, fullPath);
+
+		if (fullPath == "----")
+		{
+			name = "";
+			path = "";
+			return;
+		}
+
+		auto lastSlash = fullPath.find_last_of('/');
+		if (lastSlash == std::string::npos )
+		{
+			name = fullPath;
+			path = "";
+		}
+		else
+		{
+			name = fullPath.substr(lastSlash);
+			path = fullPath.substr(0, lastSlash);
+		}
+	}
 }
 
-void AdventureMap::Save(std::ofstream &of)
+void AdventureMap::Save(std::ofstream &of, int copyMode)
 {
 	if (name == "")
 	{
@@ -25,9 +54,15 @@ void AdventureMap::Save(std::ofstream &of)
 	}
 	else
 	{
-		of << name << "\n";
+		if (copyMode == AdventureFile::COPY)
+		{
+			of << name << "\n";
+		}
+		else if (copyMode == AdventureFile::PATH)
+		{
+			of << path << "\\" << name << "\n";
+		}
 	}
-	
 }
 
 AdventureSector::AdventureSector()
@@ -39,7 +74,7 @@ AdventureSector::AdventureSector()
 	}
 }
 
-void AdventureSector::Load(std::ifstream &is)
+void AdventureSector::Load(std::ifstream &is, int copyMode)
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -50,13 +85,15 @@ void AdventureSector::Load(std::ifstream &is)
 		is >> numRequirements[i];
 	}
 
+	is.get();//goes to next line
+
 	for (int i = 0; i < 8; ++i)
 	{
-		maps[i].Load(is);
+		maps[i].Load(is, copyMode );
 	}
 }
 
-void AdventureSector::Save(std::ofstream &of)
+void AdventureSector::Save(std::ofstream &of, int copyMode)
 {
 	for (int i = 0; i < 4; ++i)
 	{
@@ -76,23 +113,23 @@ void AdventureSector::Save(std::ofstream &of)
 
 	for (int i = 0; i < 8; ++i)
 	{
-		maps[i].Save(of);
+		maps[i].Save(of, copyMode );
 	}
 }
 
-void AdventureWorld::Load(std::ifstream &is)
+void AdventureWorld::Load(std::ifstream &is, int copyMode)
 {
 	for (int i = 0; i < 8; ++i)
 	{
-		sectors[i].Load(is);
+		sectors[i].Load(is, copyMode );
 	}
 }
 
-void AdventureWorld::Save(std::ofstream &of)
+void AdventureWorld::Save(std::ofstream &of, int copyMode)
 {
 	for (int i = 0; i < 8; ++i)
 	{
-		sectors[i].Save(of);
+		sectors[i].Save(of, copyMode );
 	}
 }
 
@@ -110,24 +147,26 @@ bool AdventureFile::Load(const std::string &p_path,
 	}
 	else
 	{
+		int cMode;
+		is >> cMode;
+
+		copyMode = (CopyMode)cMode;
+
 		for (int i = 0; i < 8; ++i)
 		{
-			worlds[i].Load(is);
+			worlds[i].Load(is, copyMode );
 		}
 
 		is.close();
 	}
 
-	
-
 	return true;
 }
 
 void AdventureFile::Save(const std::string &p_path,
-	const std::string &adventureName)
+	const std::string &adventureName, CopyMode cpy )
 {
 	string ext = ".adventure";
-
 	ofstream of;
 
 	if (p_path == "")
@@ -139,11 +178,11 @@ void AdventureFile::Save(const std::string &p_path,
 		of.open(p_path + "/" + adventureName + ext);
 	}
 
-	
+	of << (int)cpy << "\n";
 
 	for (int i = 0; i < 8; ++i)
 	{
-		worlds[i].Save(of);
+		worlds[i].Save(of, (int)cpy);
 	}
 
 	of.close();

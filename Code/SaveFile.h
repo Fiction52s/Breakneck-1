@@ -17,8 +17,9 @@ struct Actor;
 struct AdventureMap
 {
 	std::string name;
-	void Load(std::ifstream &is);
-	void Save(std::ofstream &of);
+	std::string path;
+	void Load(std::ifstream &is, int copyMode );
+	void Save(std::ofstream &of, int copyMode);
 };
 
 struct AdventureSector
@@ -27,24 +28,31 @@ struct AdventureSector
 	int requirements[4];
 	int numRequirements[4];
 	AdventureMap maps[8];
-	void Load(std::ifstream &is);
-	void Save(std::ofstream &of);
+	void Load(std::ifstream &is, int copyMode );
+	void Save(std::ofstream &of, int copyMode );
 };
 
 struct AdventureWorld
 {
 	AdventureSector sectors[8];
-	void Load(std::ifstream &is);
-	void Save(std::ofstream &of);
+	void Load(std::ifstream &is, int copyMode );
+	void Save(std::ofstream &of, int copyMode );
 };
 
 struct AdventureFile
 {
+	enum CopyMode : int
+	{
+		PATH,
+		COPY,
+	};
+
 	AdventureWorld worlds[8];
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
-		const std::string &adventureName);
+		const std::string &adventureName, CopyMode cpy );
+	CopyMode copyMode;
 };
 
 

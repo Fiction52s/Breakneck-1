@@ -2,7 +2,6 @@
 #include "VectorMath.h"
 #include <iostream>
 #include "EditSession.h"
-#include "SaveFile.h"
 
 using namespace sf;
 using namespace std;
@@ -86,95 +85,175 @@ void AdventureCreator::Open()
 }
 
 void AdventureCreator::LoadAdventure(const std::string &path, 
-	const std::string &adventureName)
+	const std::string &adventureName )
 {
 	adventure->Load(path, adventureName);
 
-	string worldStr;
-	string sectorStr;
-	string file;
+
 	int ind;
-	string name;
-	for (int w = 0; w < 8; ++w)
+	if (adventure->copyMode == AdventureFile::COPY)
 	{
-		worldStr = path + "/W" + to_string(w + 1);
-		for (int s = 0; s < 8; ++s)
+		string worldStr;
+		string sectorStr;
+		string file;
+		
+		string name;
+		for (int w = 0; w < 8; ++w)
 		{
-			sectorStr = worldStr + "/Sector" + to_string(s + 1) + "/";
-			for (int m = 0; m < 8; ++m)
+			worldStr = path + "/W" + to_string(w + 1);
+			for (int s = 0; s < 8; ++s)
 			{
-				ind = w * 64 + s * 8 + m;
-				name = adventure->worlds[w].sectors[s].maps[m].name;
-				if (name != "----");
+				sectorStr = worldStr + "/Sector" + to_string(s + 1) + "/";
+				for (int m = 0; m < 8; ++m)
 				{
-					file = sectorStr + name;
-					adventureNodes[ind].filePath = file + ".brknk";
-					adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
+					ind = w * 64 + s * 8 + m;
+					name = adventure->worlds[w].sectors[s].maps[m].name;
+					if (name != "");
+					{
+						file = sectorStr + name;
+						adventureNodes[ind].filePath = file + ".brknk";
+						adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
+					}
+
 				}
-				
 			}
 		}
+	}
+	else if (adventure->copyMode == AdventureFile::PATH)
+	{
+		bool oldResourceMode = chooser->IsResourceMode();
+		chooser->SetGameResourcesMode(true);
+		AdventureMap *am;
+		string filePath;
+		for (int w = 0; w < 8; ++w)
+		{
+			for (int s = 0; s < 8; ++s)
+			{
+				for (int m = 0; m < 8; ++m)
+				{
+					ind = w * 64 + s * 8 + m;
+					am = &(adventure->worlds[w].sectors[s].maps[m]);
+					if (am->name != "")
+					{
+						filePath = am->path + "\\" + am->name;
+						adventureNodes[ind].filePath = 
+							filePath + ".brknk";
+						adventureNodes[ind].ts_preview = 
+							chooser->GetTileset(filePath + ".png");
+					}
+				}
+			}
+		}
+		chooser->SetGameResourcesMode(oldResourceMode);
 	}
 }
 
 void AdventureCreator::SaveAdventure(const std::string &p_path, 
-	const std::string &adventureName)
+	const std::string &adventureName, AdventureFile::CopyMode copyMode )
 {
-	string pathStr = p_path + "/" + adventureName;
-	path p(pathStr);
+	
 
-	if (boost::filesystem::exists(p))
-	{
-		if (boost::filesystem::is_directory(p))
-		{
-			//boost::filesystem::remove(p);
-			cout << "directory already exists. cannot create adventure. overwrite?" << endl;
-			return;
-		}
-	}
-
-	boost::filesystem::create_directory(p);
-
-	//populate adventure from filenodes
-	string worldDirStr;
-	string sectorStr;
-	string fileName;
 	FileNode *currentNode;
-	string imagePath;
-	for (int w = 0; w < 8; ++w)
+	
+	
+	if (copyMode == AdventureFile::COPY)
 	{
-		worldDirStr = pathStr + "/W" + to_string(w + 1);
-		boost::filesystem::create_directory(worldDirStr);
+		string pathStr = p_path + "/" + adventureName;
+		path p(pathStr);
 
-		for (int s = 0; s < 8; ++s)
+		adventure->Save(p.string(), adventureName, copyMode);
+
+		if (boost::filesystem::exists(p))
 		{
-			sectorStr = worldDirStr + "/Sector" + to_string(s + 1);
-			boost::filesystem::create_directory(sectorStr);
-
-			for (int m = 0; m < 8; ++m)
+			if (boost::filesystem::is_directory(p))
 			{
-				currentNode = &(adventureNodes[w * 64 + s * 8 + m]);
-				fileName = currentNode->filePath.stem().string();
+				//boost::filesystem::remove(p);
+				cout << "directory already exists. cannot create adventure. overwrite?" << endl;
+				return;
+			}
+		}
 
-				adventure->worlds[w].sectors[s].maps[m].name
-					= currentNode->filePath.stem().string();
-				if (currentNode->ts_preview != NULL)
+		boost::filesystem::create_directory(p);
+
+		//populate adventure from filenodes
+		string worldDirStr;
+		string sectorStr;
+		string fileName;
+		
+		string imagePath;
+		for (int w = 0; w < 8; ++w)
+		{
+			worldDirStr = pathStr + "/W" + to_string(w + 1);
+			boost::filesystem::create_directory(worldDirStr);
+
+			for (int s = 0; s < 8; ++s)
+			{
+				sectorStr = worldDirStr + "/Sector" + to_string(s + 1);
+				boost::filesystem::create_directory(sectorStr);
+
+				for (int m = 0; m < 8; ++m)
 				{
-					boost::filesystem::copy_file(currentNode->filePath, sectorStr + "/" + fileName + ".brknk");
+					currentNode = &(adventureNodes[w * 64 + s * 8 + m]);
+					fileName = currentNode->filePath.stem().string();
 
-					imagePath = currentNode->filePath.parent_path().string() + "/" + fileName + ".png";
-					boost::filesystem::copy_file(imagePath, sectorStr + "/" + fileName + ".png");
+					adventure->worlds[w].sectors[s].maps[m].name
+						= currentNode->filePath.stem().string();
+					if (currentNode->ts_preview != NULL)
+					{
+						boost::filesystem::copy_file(currentNode->filePath, sectorStr + "/" + fileName + ".brknk");
+
+						imagePath = currentNode->filePath.parent_path().string() + "/" + fileName + ".png";
+						boost::filesystem::copy_file(imagePath, sectorStr + "/" + fileName + ".png");
+					}
 				}
 			}
 		}
-	}
 
-	adventure->Save(p.string(), adventureName);
+		adventure->Save(p.string(), adventureName, AdventureFile::COPY);
+	}
+	else if (copyMode == AdventureFile::PATH)
+	{
+		string findPath = "BreakneckEmergence/Resources/";
+		string nodePath;
+		string nodeName;
+
+		for (int w = 0; w < 8; ++w)
+		{
+			for (int s = 0; s < 8; ++s)
+			{
+				for (int m = 0; m < 8; ++m)
+				{
+					currentNode = &(adventureNodes[w * 64 + s * 8 + m]);
+
+					if (currentNode->ts_preview != NULL)
+					{
+						nodePath = currentNode->filePath.parent_path().string();
+						nodeName = currentNode->filePath.stem().string();
+						auto pathClip = nodePath.find(findPath);
+						if (pathClip == string::npos)
+						{
+							cout << "cannot save adventure. bad path: " << nodePath << endl;
+							assert(0);
+						}
+						else
+						{
+							adventure->worlds[w].sectors[s].maps[m].name = nodeName;
+							adventure->worlds[w].sectors[s].maps[m].path =
+								nodePath.substr(pathClip + findPath.length());
+						}
+					}
+				}
+			}
+		}
+
+		adventure->Save(p_path, adventureName, AdventureFile::PATH);
+	}
+	
 }
 
 void AdventureCreator::Confirm()
 {
-	SaveAdventure(chooser->currPath.string(), "tadventure");
+	SaveAdventure(chooser->currPath.string(), "tadventure", AdventureFile::PATH );
 }
 
 bool AdventureCreator::MouseUpdate()

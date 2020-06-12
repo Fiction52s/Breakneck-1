@@ -76,6 +76,7 @@ public:
 	void ResetTilesetAccessCount();
 	void CleanupUnusedTilests();
 	void SetGameResourcesMode(bool on);
+	bool IsResourceMode();
 
 	sf::Texture *CreateAltColorTex( sf::Image &im,
 		int numAltColors, 

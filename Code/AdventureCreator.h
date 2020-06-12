@@ -2,6 +2,7 @@
 #define __ADVENTURE_CREATOR__
 
 #include "FileChooser.h"
+#include "SaveFile.h"
 struct AdventureFile;
 
 struct AdventureCreator : FileChooserHandler
@@ -43,7 +44,8 @@ struct AdventureCreator : FileChooserHandler
 	void SetRectNode(ChooseRect *cr, FileNode *fn);
 	int GetNodeStart();
 	void LoadAdventure(const std::string &path, const std::string &adventureName);
-	void SaveAdventure(const std::string &path, const std::string &adventureName);
+	void SaveAdventure(const std::string &path, const std::string &adventureName,
+		AdventureFile::CopyMode copyMode );
 
 	
 	Tileset *ts_sectorIcons;
