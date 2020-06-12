@@ -6,6 +6,7 @@
 
 using namespace sf;
 using namespace std;
+using namespace boost::filesystem;
 
 AdventureCreator::AdventureCreator()
 	:FileChooserHandler( 3, 4, EXTRA_RECTS )
@@ -81,28 +82,99 @@ void AdventureCreator::Open()
 
 	CollapseWorlds();
 	currWorld = 1;
-	currSector = 1;
+	ChooseSector(1);
 }
 
-void AdventureCreator::Confirm()
+void AdventureCreator::LoadAdventure(const std::string &path, 
+	const std::string &adventureName)
 {
-	ofstream of;
-	of.open("testadventure");
+	adventure->Load(path, adventureName);
 
+	string worldStr;
+	string sectorStr;
+	string file;
+	int ind;
+	string name;
 	for (int w = 0; w < 8; ++w)
 	{
+		worldStr = path + "/W" + to_string(w + 1);
 		for (int s = 0; s < 8; ++s)
 		{
+			sectorStr = worldStr + "/Sector" + to_string(s + 1) + "/";
 			for (int m = 0; m < 8; ++m)
 			{
+				ind = w * 64 + s * 8 + m;
+				name = adventure->worlds[w].sectors[s].maps[m].name;
+				if (name != "----");
+				{
+					file = sectorStr + name;
+					adventureNodes[ind].filePath = file + ".brknk";
+					adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
+				}
+				
+			}
+		}
+	}
+}
+
+void AdventureCreator::SaveAdventure(const std::string &p_path, 
+	const std::string &adventureName)
+{
+	string pathStr = p_path + "/" + adventureName;
+	path p(pathStr);
+
+	if (boost::filesystem::exists(p))
+	{
+		if (boost::filesystem::is_directory(p))
+		{
+			//boost::filesystem::remove(p);
+			cout << "directory already exists. cannot create adventure. overwrite?" << endl;
+			return;
+		}
+	}
+
+	boost::filesystem::create_directory(p);
+
+	//populate adventure from filenodes
+	string worldDirStr;
+	string sectorStr;
+	string fileName;
+	FileNode *currentNode;
+	string imagePath;
+	for (int w = 0; w < 8; ++w)
+	{
+		worldDirStr = pathStr + "/W" + to_string(w + 1);
+		boost::filesystem::create_directory(worldDirStr);
+
+		for (int s = 0; s < 8; ++s)
+		{
+			sectorStr = worldDirStr + "/Sector" + to_string(s + 1);
+			boost::filesystem::create_directory(sectorStr);
+
+			for (int m = 0; m < 8; ++m)
+			{
+				currentNode = &(adventureNodes[w * 64 + s * 8 + m]);
+				fileName = currentNode->filePath.stem().string();
+
 				adventure->worlds[w].sectors[s].maps[m].name
-					= adventureNodes[w * 64 + s * 8 + m].filePath.stem().string();
+					= currentNode->filePath.stem().string();
+				if (currentNode->ts_preview != NULL)
+				{
+					boost::filesystem::copy_file(currentNode->filePath, sectorStr + "/" + fileName + ".brknk");
+
+					imagePath = currentNode->filePath.parent_path().string() + "/" + fileName + ".png";
+					boost::filesystem::copy_file(imagePath, sectorStr + "/" + fileName + ".png");
+				}
 			}
 		}
 	}
 
-	adventure->Save(of);
-	of.close();
+	adventure->Save(p.string(), adventureName);
+}
+
+void AdventureCreator::Confirm()
+{
+	SaveAdventure(chooser->currPath.string(), "tadventure");
 }
 
 bool AdventureCreator::MouseUpdate()
@@ -187,9 +259,10 @@ void AdventureCreator::SetRectNode(ChooseRect *cr, FileNode *fn)
 	ImageChooseRect *icRect = cr->GetAsImageChooseRect();
 	icRect->SetInfo(fn);
 	icRect->SetImage(fn->ts_preview, 0);
+	if (fn->ts_preview == NULL)
+		icRect->SetShown(true);
 	icRect->SetName(fn->filePath.stem().string());
 }
-
 
 void AdventureCreator::ChooseWorld(int w)
 {

@@ -41,8 +41,10 @@ struct AdventureWorld
 struct AdventureFile
 {
 	AdventureWorld worlds[8];
-	void Load(std::ifstream &is);
-	void Save(std::ofstream &of);
+	bool Load(const std::string &p_path,
+		const std::string &adventureName);
+	void Save(const std::string &p_path,
+		const std::string &adventureName);
 };
 
 

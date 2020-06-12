@@ -96,20 +96,57 @@ void AdventureWorld::Save(std::ofstream &of)
 	}
 }
 
-void AdventureFile::Load(std::ifstream &is)
+bool AdventureFile::Load(const std::string &p_path,
+	const std::string &adventureName)
 {
-	for (int i = 0; i < 8; ++i)
+	string filePath = p_path + "/" + adventureName + ".adventure";
+
+	ifstream is;
+	is.open(filePath);
+
+	if (!is.is_open())
 	{
-		worlds[i].Load(is);
+		return false;
 	}
+	else
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			worlds[i].Load(is);
+		}
+
+		is.close();
+	}
+
+	
+
+	return true;
 }
 
-void AdventureFile::Save(std::ofstream &of)
+void AdventureFile::Save(const std::string &p_path,
+	const std::string &adventureName)
 {
+	string ext = ".adventure";
+
+	ofstream of;
+
+	if (p_path == "")
+	{
+		of.open(adventureName + ext);
+	}
+	else
+	{
+		of.open(p_path + "/" + adventureName + ext);
+	}
+
+	
+
 	for (int i = 0; i < 8; ++i)
 	{
 		worlds[i].Save(of);
 	}
+
+	of.close();
 }
 
 

@@ -50,7 +50,21 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 {
 	if (menuDrop == fileDropdown)
 	{
-		edit->adventureCreator->Open();
+		switch (menuDrop->selectedIndex)
+		{
+		case OPEN_ADVENTURE:
+		{
+			edit->fileChooser->chooser->StartRelative(".adventure", FileChooser::OPEN, "");
+			break;
+		}
+		case CREATE_ADVENTURE:
+		{
+			edit->adventureCreator->Open();
+			break;
+		}
+		}
+		
+		
 	}
 	else if (menuDrop == editDropdown)
 	{

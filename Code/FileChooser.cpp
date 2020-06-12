@@ -142,7 +142,6 @@ void FileChooser::SetRelativePath(const std::string &p_relPath)
 void FileChooser::SetPath(const std::string &p_path)
 {
 	ClearNodes();
-	ClearTilesets();
 
 	topRow = 0;
 
@@ -234,7 +233,7 @@ void FileChooser::PopulateRects()
 void FileChooser::Deactivate()
 {
 	ClearNodes();
-	ClearTilesets();
+	//ClearTilesets();
 }
 
 void FileChooser::TurnOff()
@@ -373,6 +372,7 @@ DefaultFileSelector::DefaultFileSelector()
 void DefaultFileSelector::ChangePath()
 {
 	ts_largePreview = NULL;
+	chooser->ClearTilesets();
 }
 
 void DefaultFileSelector::Cancel()

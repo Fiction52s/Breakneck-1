@@ -741,7 +741,8 @@ struct GeneralUI : GUIHandler
 
 	enum FileOptions
 	{
-
+		OPEN_ADVENTURE,
+		CREATE_ADVENTURE,
 	};
 
 	enum EditOptions

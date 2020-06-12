@@ -42,6 +42,8 @@ struct AdventureCreator : FileChooserHandler
 
 	void SetRectNode(ChooseRect *cr, FileNode *fn);
 	int GetNodeStart();
+	void LoadAdventure(const std::string &path, const std::string &adventureName);
+	void SaveAdventure(const std::string &path, const std::string &adventureName);
 
 	
 	Tileset *ts_sectorIcons;

@@ -3726,6 +3726,11 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 
 		EditModePaste();
 	}
+	else if (fc->ext == ".adventure")
+	{
+		adventureCreator->LoadAdventure(fc->currPath.string(), fileName);
+		adventureCreator->Open();
+	}
 	
 }
 
