@@ -634,6 +634,8 @@ struct MainMenu
 	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;
 	boost::thread *deadThread;
+
+
 	GameSession *currLevel;
 	GameSession *deadLevel;
 	void HandleMenuMode();

@@ -573,14 +573,15 @@ void LevelScore::Load(ifstream &is)
 	is >> bestFramesToBeat;
 }
 
-SaveFile::SaveFile(const std::string &name, AdventureFile &p_adventure)
+SaveFile::SaveFile(const std::string &p_name, AdventureFile &p_adventure)
 	:levelsBeatenField( 512 ), 
 	shardField(ShardInfo::MAX_SHARDS), 
 	newShardField(ShardInfo::MAX_SHARDS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	momentaField(4 * 32),
 	levelsJustBeatenField( 512 ),
-	adventureFile( p_adventure )
+	adventureFile( p_adventure ),
+	name( p_name )
 {
 	CreateSaveWorlds();
 

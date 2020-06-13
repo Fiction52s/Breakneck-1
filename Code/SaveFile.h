@@ -308,6 +308,7 @@ struct SaveFile
 	const static int MAX_LEVELS_PER_SECTOR = 8;
 
 	//info
+	std::string name;
 	std::string fileName;
 	AdventureFile &adventureFile;
 	

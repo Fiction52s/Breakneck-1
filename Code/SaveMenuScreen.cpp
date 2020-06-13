@@ -66,6 +66,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	//TilesetManager &tsMan = mainMenu->tilesetManager;
 	selectedSaveIndex = 0;
+	
 	frame = 0;
 	kinFaceTurnLength = 15;
 	selectedSaveIndex = 0;
@@ -87,12 +88,32 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	AdventureFile &af = mainMenu->worldMap->adventureFile;
 
-	files[0] = new SaveFile("blue",af );
+	string currName;
+	if (mainMenu->currSaveFile != NULL)
+	{
+		currName = mainMenu->currSaveFile->name;
+	}
+
+	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
+	for (int i = 0; i < 6; ++i)
+	{
+		if (saveNames[i] == currName)
+		{
+			files[i] = mainMenu->currSaveFile;
+		}
+		else
+		{
+			files[i] = new SaveFile(saveNames[i], af);
+		}
+	}
+
+	mainMenu->currSaveFile = files[selectedSaveIndex];
+	/*files[0] = new SaveFile("blue",af );
 	files[1] = new SaveFile("green", af);
 	files[2] = new SaveFile("yellow", af);
 	files[3] = new SaveFile("orange", af);
 	files[4] = new SaveFile("red", af);
-	files[5] = new SaveFile("magenta", af);
+	files[5] = new SaveFile("magenta", af);*/
 
 
 
@@ -208,7 +229,10 @@ SaveMenuScreen::~SaveMenuScreen()
 {
 	for (int i = 0; i < 6; ++i)
 	{
-		delete files[i];
+		if (files[i] != mainMenu->currSaveFile)
+		{
+			delete files[i];
+		}
 		delete fileDisplay[i];
 	}
 }
@@ -493,6 +517,7 @@ bool SaveMenuScreen::Update()
 	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
 	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
 
+	mainMenu->currSaveFile = files[selectedSaveIndex];
 	//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
 	//{
 	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );

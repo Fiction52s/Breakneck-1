@@ -115,6 +115,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case SAVEMENU:
 		delete worldMap;
 		worldMap = NULL;
+
+		currSaveFile = NULL;
 		delete saveMenu;
 		saveMenu = NULL;
 		break;
@@ -209,7 +211,7 @@ MainMenu::MainMenu()
 	assert(currInstance == NULL);
 	currInstance = this;
 
-	//currSaveFile = new SaveFile(;
+	currSaveFile = NULL;
 
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
@@ -555,14 +557,14 @@ void MainMenu::CreateRenderTextures()
 SaveFile *MainMenu::GetCurrentProgress()
 {
 	return currSaveFile;
-	if (saveMenu == NULL)
+	/*if (saveMenu == NULL)
 	{
 		return NULL;
 	}
 	else
 	{
 		return saveMenu->files[saveMenu->selectedSaveIndex];
-	}
+	}*/
 }
 
 MainMenu::~MainMenu()
