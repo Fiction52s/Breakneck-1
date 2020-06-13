@@ -59,10 +59,6 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		SetRectCenter(asteroidQuads + i * 4, ir.width, ir.height, Vector2f(960, 540));
 		//SetRectColor(asteroidQuads + i * 4, Color(Color::Red));
 	}
-	/*for (int i = 0; i < 4; ++i)
-	{
-		asteroidSpr[i].setTexture(*ts_asteroids[i]->texture);
-	}*/
 
 	if (!asteroidShader.loadFromFile("Resources/Shader/menuasteroid.frag", sf::Shader::Fragment))
 	{

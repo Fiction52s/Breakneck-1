@@ -89,7 +89,6 @@ struct MapSector
 	int unlockFrame;
 	int numTotalShards;
 	int numRequiredRunes;
-	int selectedYIndex;
 	int sectorIndex;
 
 	sf::Vertex levelCollectedShards[16 * 4];

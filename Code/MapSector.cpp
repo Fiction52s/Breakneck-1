@@ -63,13 +63,13 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	{
 		string secStr = to_string(index + 1);
 		string bgStr = "w" + worldStr + "_0" + secStr;
-		bg = Background::SetupFullBG(bgStr, &(ms->mainMenu->tilesetManager));
+		bg = Background::SetupFullBG(bgStr, &(mainMenu->tilesetManager));
 	}
 
 	stringstream ss;
 	ss.str("");
 	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
-	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
+	ts_shards = mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
 
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(60);
@@ -80,13 +80,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	bool blank = mapSASelector == NULL;
 	bool diffNumLevels = false;
 
-	selectedYIndex = 1;
-
 	numLevels = sec->numLevels;
 
 	Tileset *ts_node = ms->ts_node;
 	nodes = new Sprite[numLevels];
-
 
 	int counter = 0;
 	Tileset *currTS = ts_node;
@@ -97,30 +94,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
 	}
 
-	/*for (int i = 0; i < numLevels; ++i)
-	{
-		Tileset *currTS = NULL;
-		int bFType = sec->levels[i].bossFightType;
-		if (bFType == 0)
-		{
-			currTS = ts_node;
-		}
-		else
-		{
-			currTS = ms->ts_bossFight[bFType - 1];
-		}
-
-		assert(currTS != NULL);
-		nodes[i].setTexture(*currTS->texture);
-
-		nodes[i].setTextureRect(currTS->GetSubRect(0));
-		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-	}*/
-
 	//requirementText
 	numRequiredRunes = adventureFile.GetRequiredRunes(sec);
 
-	requirementText.setFont(ms->mainMenu->arial);
+	requirementText.setFont(mainMenu->arial);
 	requirementText.setCharacterSize(40);
 	requirementText.setFillColor(Color::White);
 	requirementText.setString(to_string(numRequiredRunes));
@@ -478,21 +455,18 @@ bool MapSector::Update(ControllerState &curr,
 
 		if (curr.A && !prev.A && saveFile->IsUnlockedSector( sec ))
 		{
-			if (selectedYIndex == 1)
+			if (saveFile->IsCompleteSector(sec) )
 			{
-				if (saveFile->IsCompleteSector(sec) )
-				{
-					state = COMPLETE;
-				}
-				else
-				{
-					state = NORMAL;
-				}
-
-				ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
-
-				return false;
+				state = COMPLETE;
 			}
+			else
+			{
+				state = NORMAL;
+			}
+
+			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
+
+			return false;
 		}
 	}
 
@@ -573,7 +547,7 @@ void MapSector::UpdateNodes()
 	{
 		Tileset *currTS = NULL;
 		
-		int bFType = adventureFile.GetAdventureSector( sec ).GetExistingMap(i).headerInfo.mapType;
+		int bFType = adventureFile.GetMapHeaderInfo(sec->GetLevelIndex(i)).mapType;
 		if (bFType == 0)
 		{
 			currTS = ts_node;
@@ -597,7 +571,7 @@ int MapSector::GetNodeSubIndex(int node)
 {
 	Level *lev = sec->GetLevel(node);
 
-	int bType = adventureFile.GetMap(lev->index).headerInfo.mapType;
+	int bType = adventureFile.GetMapHeaderInfo(lev->index).mapType;
 	int res;
 
 	bool isUnlocked = saveFile->IsUnlockedLevel(sec, node );
@@ -612,7 +586,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+			if (IsFocused() && GetSelectedIndex() == node)
 			{
 				if (isFullyComplete)
 				{
@@ -657,7 +631,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 		else
 		{
-			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+			if (IsFocused() && GetSelectedIndex() == node)
 			{
 				if (isFullyComplete)
 				{

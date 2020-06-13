@@ -225,26 +225,6 @@ void AdventureSector::Load(std::ifstream &is, int copyMode)
 	}
 }
 
-AdventureMap &AdventureSector::GetExistingMap(int index)
-{
-	int counter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (maps[i].Exists())
-		{
-			if (counter == index)
-				return maps[i];
-			else
-			{
-				++counter;
-			}
-		}
-	}
-
-	assert(0);
-	return maps[0];
-}
-
 void AdventureSector::Save(std::ofstream &of, int copyMode)
 {
 	of << requiredRunes << "\n";
@@ -379,6 +359,11 @@ AdventureMap &AdventureFile::GetMap(int index)
 	int m = (index % 8);
 
 	return worlds[w].sectors[s].maps[m];
+}
+
+AdventureMapHeaderInfo &AdventureFile::GetMapHeaderInfo(int index)
+{
+	return GetMap(index).headerInfo;
 }
 
 AdventureSector &AdventureFile::GetSector(int w, int s)
