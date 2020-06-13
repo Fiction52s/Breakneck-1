@@ -1658,9 +1658,12 @@ void EditSession::WriteMapHeader(ofstream &of)
 	newMapHeader.ver1 = 2;
 	newMapHeader.ver2 = 1;
 
-	newMapHeader.shardNameList.clear();
 	ShardParams *sp = NULL;
-	int numShards = 0;
+
+	auto &shardVec = newMapHeader.shardInfoVec;
+	shardVec.reserve(16);//unlikely to be more than 16 types
+	shardVec.clear();
+	bool foundShard;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		std::list<ActorPtr> &aList = (*it).second->actors;
@@ -1668,14 +1671,27 @@ void EditSession::WriteMapHeader(ofstream &of)
 		{
 			if ((*ait)->type->info.name == "shard")
 			{
-				numShards++;
 				sp = (ShardParams*)(*ait);
-				newMapHeader.shardNameList.push_back(sp->shardStr);
+				foundShard = false;
+				for (auto sit = shardVec.begin(); sit != shardVec.end(); ++sit)
+				{
+					if ((*sit).world == sp->shInfo.world
+						&& (*sit).localIndex == sp->shInfo.localIndex)
+					{
+						foundShard = true;
+						break;
+					}
+				}
+
+				if (!foundShard)
+				{
+					shardVec.push_back(sp->shInfo);
+				}
 			}
 		}
 	}
 
-	newMapHeader.numShards = numShards;
+	newMapHeader.numShards = shardVec.size();
 
 	newMapHeader.drainSeconds = drainSeconds;
 

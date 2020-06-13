@@ -1,0 +1,178 @@
+#include "MapHeader.h"
+#include <fstream>
+#include "SFML\Graphics.hpp"
+#include <assert.h>
+#include <sstream>
+
+using namespace std;
+using namespace sf;
+
+bool MapHeader::Load(std::ifstream &is)
+{
+	assert(is.is_open());
+
+	int part1Num = -1;
+	int part2Num = -1;
+
+	string versionString;
+	is >> versionString;
+	int sepIndex = versionString.find('.');
+	string part1 = versionString.substr(0, sepIndex);
+	string part2 = versionString.substr(sepIndex + 1);
+	try
+	{
+		part1Num = stoi(part1);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	try
+	{
+		part2Num = stoi(part2);
+	}
+	catch (std::exception & e)
+	{
+		assert(0);
+	}
+
+	//get description
+	char last = 0;
+	char curr = 0;
+	stringstream ss;
+	string tempStr;
+	if (!is.get()) //get newline char out of the way
+	{
+		assert(0);
+	}
+	while (true)
+	{
+		last = curr;
+		if (!is.get(curr))
+		{
+			assert(0);
+		}
+
+		if (last == '<' && curr == '>')
+		{
+			break;
+		}
+		else
+		{
+			if (last != 0)
+			{
+				ss << last;
+			}
+		}
+	}
+
+	is >> numShards;
+	shardInfoVec.reserve(16);
+	int w, li;
+	for (int i = 0; i < numShards; ++i)
+	{
+		is >> w;
+		is >> li;
+		shardInfoVec.push_back(ShardInfo(w, li));
+	}
+
+	int numSongValues;
+	is >> numSongValues;
+
+	int oftenLevel;
+	string tempSongStr;
+	is.get();
+	for (int i = 0; i < numSongValues; ++i)
+	{
+		getline(is, tempSongStr); //this allows spaces in names
+		is >> oftenLevel;
+
+		songLevels[tempSongStr] = oftenLevel;
+		is.get();
+	}
+
+	string collectionName;
+	is >> collectionName;
+
+	if (collectionName == "")
+	{
+		string test;
+		is >> test;
+		int bb = 65;
+		assert(0);
+	}
+
+	int p_gameMode;
+	is >> p_gameMode;
+	is >> envWorldType;
+	is >> envName;
+	is >> leftBounds;
+	is >> topBounds;
+	is >> boundsWidth;
+	is >> boundsHeight;
+	is >> drainSeconds;
+	is >> bossFightType;
+	is >> numVertices;
+
+	collectionName = collectionName;
+	ver1 = part1Num;
+	ver2 = part2Num;
+	description = ss.str();
+
+	gameMode = (MapHeader::MapType)p_gameMode;
+
+	return true;
+}
+
+void MapHeader::Save(std::ofstream &of)
+{
+	of << ver1 << "." << ver2 << "\n";
+	of << description << "<>\n";
+
+	of << numShards << "\n";
+	for (auto it = shardInfoVec.begin(); it != shardInfoVec.end(); ++it)
+	{
+		of << (*it).world << " " << (*it).localIndex << "\n";
+	}
+
+	of << songLevels.size() << "\n";
+	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
+	{
+		of << (*it).first << "\n" << (*it).second << "\n";
+	}
+
+	of << collectionName << "\n";
+	of << gameMode << "\n";
+
+	//of << (int)envType << " " << envLevel << endl;
+	of << envWorldType << " ";
+	of << envName << endl;
+
+	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
+
+	of << drainSeconds << endl;
+
+	of << bossFightType << endl;
+	//of << numVertices << endl;
+}
+
+int MapHeader::GetLeft()
+{
+	return leftBounds;
+}
+
+int MapHeader::GetTop()
+{
+	return topBounds;
+}
+
+int MapHeader::GetRight()
+{
+	return leftBounds + boundsWidth;
+}
+
+int MapHeader::GetBot()
+{
+	return topBounds + boundsHeight;
+}

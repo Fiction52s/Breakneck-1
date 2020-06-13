@@ -7,6 +7,7 @@
 #include <list>
 #include <string>
 #include "BitField.h"
+#include "ShardInfo.h"
 //#include "Actor.h"
 
 struct Sector;
@@ -14,13 +15,40 @@ struct World;
 struct Actor;
 
 
+struct AdventureMapHeaderInfo
+{
+	int mapType;
+	std::vector<ShardInfo> shardInfoVec;
+	bool IsLoaded() { return mapType >= 0; }
+	/*bool HasShard(int w, int li)
+	{
+		for (auto it = shardInfoVec.begin();
+			it != shardInfoVec.end(); ++it)
+		{
+			if ((*it).world == w && (*it).localIndex == li)
+				return true;
+		}
+
+		return false;
+	}*/
+
+	AdventureMapHeaderInfo()
+		:mapType(-1)
+	{
+
+	}
+};
+
 struct AdventureMap
 {
 	std::string name;
 	std::string path;
+	AdventureMapHeaderInfo headerInfo;
+
 	bool Exists();
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode);
+	bool LoadHeaderInfo();
 };
 
 struct AdventureSector
@@ -49,13 +77,17 @@ struct AdventureFile
 		COPY,
 	};
 
+	AdventureFile();
 	AdventureWorld worlds[8];
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
+	AdventureMap &GetMap(int index);
 	CopyMode copyMode;
+	BitField hasShardField;
 	int GetNumActiveWorlds();
+	bool LoadMapHeaders();
 };
 
 
@@ -65,11 +97,6 @@ struct SaveLevel
 	enum BitOption : int
 	{
 		COMPLETE,
-		UNLOCKEDTOPBONUS,
-		UNLOCKEDBOTTOMBONUS,
-	/*	JUSTUNLOCKEDTOP,
-		JUSTUNLOCKEDBOTTOM,
-		JUSTUNLOCKED,*/
 	};
 
 	SaveLevel();
@@ -85,22 +112,8 @@ struct SaveLevel
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
 	void Reset();
-	void UnlockTopBonus();
-	void UnlockBottomBonus();
-	bool TopBonusUnlocked();
-	bool BottomBonusUnlocked();
 	std::string GetFullName();
 	float GetCompletionPercentage();
-
-
-	//void SetJustUnlocked(bool unlocked);
-	//void SetJustUnlockedTop(bool unlocked);
-	//void SetJustUnlockedBottom(bool unlocked);
-
-	//bool GetJustUnlocked();
-	//bool GetJustUnlockedTop();
-	//bool GetJustUnlockedBottom();
-
 
 	std::list<std::string> shardNameList;
 	bool shardsLoaded;
@@ -149,7 +162,6 @@ struct SaveWorld
 {
 	SaveWorld();
 	~SaveWorld();
-	std::string name;
 	int numSectors;
 	Sector *sectors;
 	SaveFile *sf;
@@ -165,35 +177,59 @@ struct SaveWorld
 	std::list<std::string> shardNameList;
 };
 
+struct LevelScore
+{
+	LevelScore();
+	void Save(std::ofstream &of);
+	void Load(std::ifstream &is);
+	int bestFramesToBeat;
+	std::vector<std::string> shardNames;
+	int GetNumTotalShards();
+	int GetNumShardsCaptured();
+};
+
 struct SaveFile
 {
-	SaveFile( const std::string &name );
+	SaveFile( const std::string &name,
+		AdventureFile &adventureFile );
 	~SaveFile();
+
+	//functionality
 	void Save();
 	bool Load();
 	bool LoadInfo(std::ifstream &is );
-	float GetCompletionPercentage();
 	void CopyFromDefault();
-	int GetTotalFrames();
+
+	//queries
+	float GetCompletionPercentage();
+
+	int GetBestFrames();
+	int GetBestFramesWorld(int w);
+	int GetBestFramesSector(int w, int s);
+	int GetBestFramesLevel(int w, int s, int m);
+
 	void UpdateShardNameList();
 	int GetNumShardsCaptured();
 	int GetNumTotalShards();
 	bool HasNewShards();
-	bool HasPowerUnlocked(int pType);
-	void UnlockPower(int pType);
+	bool HasUpgrade(int pType);
+	void UnlockUpgrade(int pType);
 	bool ShardIsCaptured(int sType);
 
+	//info
 	std::string fileName;
-	std::list<std::string> shardNameList;
-	SaveWorld *worlds;
-	int numWorlds;
+	//std::vector<ShardInfo> shardInfoVec[8];
 	
+	//state
 	BitField levelsBeatenField;
+	LevelScore levelScores[512];
 	BitField upgradeField;
 	BitField momentaField;
 	BitField shardField;
 	BitField newShardField; //for unviewed shards
 	std::string controlProfileName;
+
+	AdventureFile &adventureFile;
 
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;

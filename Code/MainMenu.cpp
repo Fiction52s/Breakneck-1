@@ -3301,13 +3301,14 @@ MapHeader * MainMenu::ReadMapHeader(std::ifstream &is)
 	is >> numShards;
 
 	mh->numShards = numShards;
-	string temp;
+	mh->shardInfoVec.reserve(16);
+	int w, li;
 	for (int i = 0; i < numShards; ++i)
 	{
-		is >> temp;
-		mh->shardNameList.push_back(temp);
+		is >> w;
+		is >> li;
+		mh->shardInfoVec.push_back(ShardInfo(w, li));
 	}
-
 
 	int numSongValues;
 	is >> numSongValues;
@@ -5203,55 +5204,4 @@ void LoadingMapProgressDisplay::Draw(sf::RenderTarget *target)
 	}
 }
 
-void MapHeader::Save(std::ofstream &of)
-{
-	of << ver1 << "." << ver2 << "\n";
-	of << description << "<>\n";
-
-	of << numShards << "\n";
-	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
-	{
-		of << (*it) << "\n";
-	}
-
-	of << songLevels.size() << "\n";
-	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
-	{
-		of << (*it).first << "\n" << (*it).second << "\n";
-	}
-
-	of << collectionName << "\n";
-	of << gameMode << "\n";
-
-	//of << (int)envType << " " << envLevel << endl;
-	of << envWorldType << " ";
-	of << envName << endl;
-
-	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
-
-	of << drainSeconds << endl;
-
-	of << bossFightType << endl;
-	//of << numVertices << endl;
-}
-
-int MapHeader::GetLeft()
-{
-	return leftBounds;
-}
-
-int MapHeader::GetTop()
-{
-	return topBounds;
-}
-
-int MapHeader::GetRight()
-{
-	return leftBounds + boundsWidth;
-}
-
-int MapHeader::GetBot()
-{
-	return topBounds + boundsHeight;
-}
 

@@ -2,12 +2,42 @@
 #include <sstream>
 #include <assert.h>
 #include <iostream>
+#include "MapHeader.h"
 
 using namespace std;
 
 bool AdventureMap::Exists()
 {
 	return name != "";
+}
+
+bool AdventureMap::LoadHeaderInfo()
+{
+	assert(Exists());
+
+	ifstream is;
+
+	if (path == "")
+	{
+		is.open(name);
+	}
+	else
+	{
+		is.open(path + "\\" + name);
+	}
+
+	if (is.is_open())
+	{
+		MapHeader mh;
+		mh.Load(is);
+
+		headerInfo.mapType = mh.bossFightType;
+		headerInfo.shardInfoVec = mh.shardInfoVec;
+	}
+	else
+	{
+		assert(false);
+	}
 }
 
 void AdventureMap::Load(std::ifstream &is, int copyMode)
@@ -148,6 +178,12 @@ int AdventureFile::GetNumActiveWorlds()
 	return activeCounter;
 }
 
+AdventureFile::AdventureFile()
+	:hasShardField( 32 * 4 )
+{
+
+}
+
 bool AdventureFile::Load(const std::string &p_path,
 	const std::string &adventureName)
 {
@@ -201,4 +237,37 @@ void AdventureFile::Save(const std::string &p_path,
 	}
 
 	of.close();
+}
+
+AdventureMap &AdventureFile::GetMap(int index)
+{
+	int w = index / 64;
+	int s = (index % 64) / 8;
+	int m = (index % 8);
+
+	return worlds[w].sectors[s].maps[m];
+}
+
+bool AdventureFile::LoadMapHeaders()
+{
+	for (int w = 0; w < 8; ++w)
+	{
+		for (int s = 0; s < 8; ++s)
+		{
+			for (int m = 0; m < 8; ++m)
+			{
+				AdventureMap &am = worlds[w].sectors[s].maps[m];
+				if (am.Exists())
+				{
+					am.LoadHeaderInfo();
+					for (auto it = am.headerInfo.shardInfoVec.begin();
+						it != am.headerInfo.shardInfoVec.end(); ++it)
+					{
+						hasShardField.SetBit((*it).GetTrueIndex(), true);
+					}
+				}
+			}
+		}
+	}
+	return true;
 }

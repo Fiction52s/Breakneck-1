@@ -158,6 +158,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	Reset( NULL );
 
 	adventureFile.Load("Resources/Adventure", "tadventure");
+	adventureFile.LoadMapHeaders();
 
 	for (int i = 0; i < 8; ++i)
 	{

@@ -137,26 +137,6 @@ float SaveLevel::GetCompletionPercentage()
 	//MapSelectionMenu::ReadMapHeader()
 }
 
-bool SaveLevel::TopBonusUnlocked()
-{
-	return optionField.GetBit(UNLOCKEDTOPBONUS);
-}
-
-bool SaveLevel::BottomBonusUnlocked()
-{
-	return optionField.GetBit(UNLOCKEDBOTTOMBONUS);
-}
-
-void SaveLevel::UnlockBottomBonus()
-{
-	optionField.SetBit(UNLOCKEDBOTTOMBONUS, true);
-}
-
-void SaveLevel::UnlockTopBonus()
-{
-	optionField.SetBit(UNLOCKEDTOPBONUS, true);
-}
-
 void SaveLevel::Reset()
 {
 	SetComplete(false);
@@ -631,15 +611,39 @@ int SaveWorld::GetNumSectorTypeComplete(int sType)
 
 
 
+LevelScore::LevelScore()
+{
+	bestFramesToBeat = 0;
+}
+
+void LevelScore::Save(ofstream &of)
+{
+	of << bestFramesToBeat << "\n";
+}
+
+void LevelScore::Load(ifstream &is)
+{
+	is >> bestFramesToBeat;
+}
+
+int LevelScore::GetNumTotalShards()
+{
+
+}
+
+int LevelScore::GetNumShardsCaptured()
+{
+
+}
 
 
-
-SaveFile::SaveFile(const std::string &name)
+SaveFile::SaveFile(const std::string &name, AdventureFile &p_adventure)
 	:levelsBeatenField( 512 ), 
-	shardField(32 * 5), 
-	newShardField(32 * 5), 
+	shardField(ShardInfo::MAX_SHARDS), 
+	newShardField(ShardInfo::MAX_SHARDS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	momentaField(32 * 4)
+	momentaField(4 * 32),
+	adventureFile( p_adventure )
 {
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
@@ -647,23 +651,68 @@ SaveFile::SaveFile(const std::string &name)
 	fileName = ss.str();
 }
 
-int SaveFile::GetTotalFrames()
+SaveFile::~SaveFile()
+{
+}
+
+int SaveFile::GetBestFrames()
 {
 	int total = 0;
 	int temp;
-	for (int i = 0; i < numWorlds; ++i)
+
+	for (int i = 0; i < 512; ++i)
 	{
-		temp = worlds[i].GetTotalFrames();
-
-		if (temp == -1)
+		if (adventureFile.GetMap(i).Exists())
 		{
-			return -1;
+			total += levelScores[i].bestFramesToBeat;
 		}
-
-		total += temp;
 	}
 
 	return total;
+}
+
+int SaveFile::GetBestFramesWorld(int w)
+{
+	int total = 0;
+	int wStart = w * 64;
+	int wEnd = (w + 1) * 64;
+	for (int i = wStart; i < wEnd; ++i)
+	{
+		if (adventureFile.GetMap(i).Exists())
+		{
+			total += levelScores[i].bestFramesToBeat;
+		}
+	}
+
+	return total;
+}
+
+int SaveFile::GetBestFramesSector(int w, int s)
+{
+	int total = 0;
+	int sStart = w * 64 + s * 8;
+	int sEnd = w * 64 + (s + 1) * 8;
+
+	for (int i = sStart; i < sEnd; ++i)
+	{
+		if (adventureFile.GetMap(i).Exists())
+		{
+			total += levelScores[i].bestFramesToBeat;
+		}
+	}
+	
+	return total;
+}
+
+int SaveFile::GetBestFramesLevel(int w, int s, int m)
+{
+	int i = w * 64 + s * 8 + m;
+	if (adventureFile.GetMap(i).Exists())
+	{
+		return levelScores[i].bestFramesToBeat;
+	}
+
+	return -1;
 }
 
 float SaveFile::GetCompletionPercentage()
@@ -671,37 +720,57 @@ float SaveFile::GetCompletionPercentage()
 	float totalComplete = 0;
 	float totalPossible = 0;
 
-	for (int i = 0; i < numWorlds; ++i)
+	float totalMaps = 0;
+	float totalBeaten = 0;
+	for (int i = 0; i < 512; ++i)
 	{
-		totalComplete += worlds[i].GetCompletionPercentage();
-		totalPossible += 100.f;
+		if (adventureFile.GetMap(i).Exists())
+		{
+			++totalMaps;
+			if (levelsBeatenField.GetBit(i))
+			{
+				++totalBeaten;
+			}
+		}
 	}
 
-	return (totalComplete / totalPossible) * 100.f;
-}
-
-bool SaveFile::HasPowerUnlocked(int pow)
-{
-	return powerField.GetBit(pow);
-}
-
-void SaveFile::UnlockPower(int pow)
-{
-	powerField.SetBit(pow, true);
-}
-
-SaveFile::~SaveFile()
-{
-	if (worlds != NULL)
-		delete[] worlds;
-	/*for( int i = 0; i < 6; ++i )
+	float totalShards = 0;
+	float totalCaptured = 0;
+	for (int i = 0; i < ShardInfo::MAX_SHARDS; ++i)
 	{
-	if( worlds[i] != NULL )
-	{
-	delete [] worlds[i];
+		if (adventureFile.hasShardField.GetBit(i))
+		{
+			++totalShards;
+			if (shardField.GetBit(i))
+			{
+				++totalCaptured;
+			}
+		}
 	}
-	}*/
+
+	float shardPortion = totalCaptured / totalShards;
+
+	float portion = totalBeaten / totalMaps;
+
+	float totalPortion = shardPortion * .5 + portion * .5;
+
+	if (totalPortion > .99f)
+		totalPortion = 1.0f;
+
+	return totalPortion * 100.f;
 }
+
+bool SaveFile::HasUpgrade(int pow)
+{
+	return upgradeField.GetBit(pow);
+}
+
+void SaveFile::UnlockUpgrade(int pow)
+{
+	upgradeField.SetBit(pow, true);
+}
+
+
 
 bool SaveFile::ShardIsCaptured(int sType)
 {
@@ -723,16 +792,14 @@ bool SaveFile::LoadInfo(ifstream &is)
 	{
 		getline(is, controlProfileName);
 
-		is >> numWorlds;
-		worlds = new World[numWorlds];
-		for (int i = 0; i < numWorlds; ++i)
-		{
-			worlds[i].sf = this;
-			worlds[i].index = i;
-			worlds[i].Load(is);
-		}
+		levelsBeatenField.Load(is);
 
-		powerField.Load(is);
+		for (int i = 0; i < 512; ++i)
+		{
+			levelScores[i].Load(is);
+		}
+		
+		upgradeField.Load(is);
 		momentaField.Load(is);
 
 		shardField.Load(is);
@@ -755,6 +822,37 @@ bool SaveFile::LoadInfo(ifstream &is)
 
 void SaveFile::UpdateShardNameList()
 {
+	/*AdventureMap *am;
+	bool found;
+
+	shardInfoVec.reserve(128);
+	for (int i = 0; i < 512; ++i)
+	{
+		am = &adventureFile.GetMap(i);
+		if (am->Exists())
+		{
+			for (auto it = am->headerInfo.shardInfoVec.begin();
+				it != am->headerInfo.shardInfoVec.end(); ++it)
+			{
+				found = false;
+				for (auto myIt = shardInfoVec.begin(); myIt != shardInfoVec.end(); ++myIt)
+				{
+					if ((*it).world == (*myIt).world 
+						&& (*it).localIndex == (*myIt).localIndex)
+					{
+						found = true;
+						break;
+					}
+				}
+
+				if (!found)
+				{
+					shardInfoVec.push_back( )
+				}
+			}
+		}
+	}
+
 	std::map<std::string, int> shardNameMap;
 	for (int i = 0; i < numWorlds; ++i)
 	{
@@ -774,7 +872,7 @@ void SaveFile::UpdateShardNameList()
 	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
 	{
 		shardNameList.push_back((*it).first);
-	}
+	}*/
 }
 
 int SaveFile::GetNumShardsCaptured()
@@ -834,15 +932,12 @@ void SaveFile::Save()
 	{
 		of << controlProfileName << endl;
 
-		//of << numWorlds << endl;
-		//cout << "numworlds: " << numWorlds << endl;
-		////save worlds, then save shards
-		//for (int i = 0; i < numWorlds; ++i)
-		//{
-		//	worlds[i].Save(of);
-		//}
-
 		levelsBeatenField.Save(of);
+
+		for (int i = 0; i < 512; ++i)
+		{
+			levelScores[i].Save(of);
+		}
 
 		upgradeField.Save(of);
 		momentaField.Save(of);

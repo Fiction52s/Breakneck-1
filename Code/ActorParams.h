@@ -7,6 +7,7 @@
 #include "EditorActors.h"
 //#include "EditorTerrain.h"
 #include "ActorParamsBase.h"
+#include "ShardInfo.h"
 
 struct TerrainPolygon;
 
@@ -256,6 +257,8 @@ struct KeyParams : public ActorParams
 	int zoneType;
 };
 
+
+
 struct ShardParams : public ActorParams
 {
 	ShardParams(ActorType *at, int level);
@@ -267,13 +270,11 @@ struct ShardParams : public ActorParams
 	void SetShard(int world, int li);
 	void SetParams();
 	void SetPanelInfo();
-	void SetShardFromStr();
 	
 
-	int world;
+	ShardInfo shInfo;
 	int sX;
 	int sY;
-	int localIndex;
 	int GetTotalIndex();
 
 	

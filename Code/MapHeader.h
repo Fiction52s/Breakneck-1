@@ -1,6 +1,8 @@
 #ifndef __MAPHEADER_H__
 #define __MAPHEADER_H__
 
+#include "ShardInfo.h"
+
 struct MapHeader
 {
 	enum MapType
@@ -20,6 +22,7 @@ struct MapHeader
 
 	}
 
+	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
 	int GetLeft();
 	int GetTop();
@@ -40,7 +43,7 @@ struct MapHeader
 	int numVertices;
 	int numShards;
 	int bossFightType;
-	std::list<std::string> shardNameList;
+	std::vector<ShardInfo> shardInfoVec;
 
 	std::map < std::string, int > songLevels;
 

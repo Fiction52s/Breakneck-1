@@ -85,12 +85,14 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	actionLength[TRANSITIONMOVIE] = 30;
 	actionLength[FADEIN] = 30;
 
-	files[0] = new SaveFile("blue");
-	files[1] = new SaveFile("green");
-	files[2] = new SaveFile("yellow");
-	files[3] = new SaveFile("orange");
-	files[4] = new SaveFile("red");
-	files[5] = new SaveFile("magenta");
+	AdventureFile &af = mainMenu->worldMap->adventureFile;
+
+	files[0] = new SaveFile("blue",af );
+	files[1] = new SaveFile("green", af);
+	files[2] = new SaveFile("yellow", af);
+	files[3] = new SaveFile("orange", af);
+	files[4] = new SaveFile("red", af);
+	files[5] = new SaveFile("magenta", af);
 
 
 

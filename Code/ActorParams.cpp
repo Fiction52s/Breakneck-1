@@ -480,10 +480,10 @@ void ShardParams::SetShard(int w, int li)
 
 void ShardParams::SetShard(int w, int realX, int realY)
 {
-	world = w;
+	shInfo.world = w;
 	sX = realX;
 	sY = realY;
-	localIndex = realX + realY * 11;
+	shInfo.localIndex = realX + realY * 11;
 
 	if (myEnemy != NULL)
 	{
@@ -506,7 +506,7 @@ void ShardParams::SetShard(int w, int realX, int realY)
 
 int ShardParams::GetTotalIndex()
 {
-	return world * 22 + localIndex;
+	return shInfo.world * 22 + shInfo.localIndex;
 }
 
 ShardParams::ShardParams(ActorType *at,ifstream &is)
@@ -523,18 +523,9 @@ ShardParams::ShardParams(ActorType *at,ifstream &is)
 	SetShard(w, li);
 }
 
-void ShardParams::SetShardFromStr()
-{
-	/*ShardType st = Shard::GetShardType(shardStr);
-	int sti = st;
-	int rem = sti % 21;
-
-	SetShard(sti / 21, rem % 3, rem / 3);*/
-}
-
 void ShardParams::WriteParamFile( std::ofstream &of )
 {
-	of << world << " " << localIndex << endl;
+	of << shInfo.world << " " << shInfo.localIndex << endl;
 }
 
 void ShardParams::SetParams()
