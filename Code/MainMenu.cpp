@@ -119,19 +119,6 @@ void MainMenu::UpdateMenuOptionText()
 	}
 
 	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, 100 + alpha * 155 ));
-
-	//for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-	//{
-	//	if (saSelector->currIndex == i)
-	//	{
-	//		SetRectSubRect( mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7) );
-	//		//menuOptions[i].setFillColor(Color::Red);
-	//	}
-	//	else
-	//	{
-	//		SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
-	//	}
-	//}
 }
 
 MainMenu::MainMenu()
@@ -175,8 +162,6 @@ MainMenu::MainMenu()
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
-	
-
 	Shard::SetupShardMaps();
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
@@ -184,13 +169,10 @@ MainMenu::MainMenu()
 
 	pauseMenu = new PauseMenu(this);
 
-	
-
 	deadThread = NULL;
 	loadThread = NULL;
 	
 	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_560x64.png", 560, 64);
-
 
 	activatedMainMenuOptions[0] = true;
 	activatedMainMenuOptions[1] = false;//false;
@@ -202,35 +184,20 @@ MainMenu::MainMenu()
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
-		//if (saSelector->currIndex == i)
-		//{
-		//	SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
-		//	//menuOptions[i].setFillColor(Color::Red);
-		//}
-		//else
+		if (activatedMainMenuOptions[i])
 		{
-			if (activatedMainMenuOptions[i])
-			{
-				SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
-			}
-			else
-			{
-				SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
-			}
+			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i));
+		}
+		else
+		{
+			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
+		}
 
-			if (activatedMainMenuOptions[i])
-			{
-				SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 14));
-			}
-			/*else
-			{
-				SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 21));
-			}*/
-			
+		if (activatedMainMenuOptions[i])
+		{
+			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 14));
 		}
 	}
-
-	
 
 	introMovie = new IntroMovie(this);
 	MusicInfo *filmMusicInfo = musicManager->songMap["w0_0_Film"];
@@ -306,8 +273,6 @@ MainMenu::MainMenu()
 
 		SetRectCenter(mainMenuOptionQuads + i * 4, 560, 64, textBase + Vector2f(560/2, 32 + i * (64 + textOptionSpacing) ) );
 		SetRectCenter(mainMenuOptionHighlight + i * 4, 560, 64, textBase + Vector2f(560 / 2, 32 + i * (64 + textOptionSpacing)));
-		
-		//SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(0));
 	}
 
 	menuOptionsBG.setFillColor(Color( 0, 0, 0, 70 ));
@@ -319,97 +284,7 @@ MainMenu::MainMenu()
 	//soundNodeList->SetGlobalVolume(100);//config->GetData().soundVolume );
 
 
-	if( preScreenTexture == NULL )
-	{
-		preScreenTexture = new RenderTexture;
-		preScreenTexture->create( 1920, 1080 );
-		preScreenTexture->clear();
-	}
-
-	if (lastFrameTexture == NULL)
-	{
-		lastFrameTexture = new RenderTexture;
-		lastFrameTexture->create(1920, 1080);
-		lastFrameTexture->clear();
-	}
-
-	if ( extraScreenTexture == NULL)
-	{
-		extraScreenTexture = new RenderTexture;
-		extraScreenTexture->create(1920, 1080);
-		extraScreenTexture->clear();
-	}
-
-	if( postProcessTexture == NULL )
-	{
-		postProcessTexture = new RenderTexture;
-		postProcessTexture->create( 1920/2, 1080/2 );
-		postProcessTexture->clear();
-	}
-	
-	if( postProcessTexture1 == NULL )
-	{
-		postProcessTexture1 = new RenderTexture;
-		postProcessTexture1->create( 1920/2, 1080/2 );
-		postProcessTexture1->clear();
-	}
-	
-	if( postProcessTexture2 == NULL )
-	{
-		postProcessTexture2 = new RenderTexture;
-		postProcessTexture2->create( 1920, 1080 );
-		postProcessTexture2->clear();
-	}
-
-	if( minimapTexture == NULL )
-	{
-		minimapTexture = new RenderTexture;
-		//minimapTexture->setSmooth( true );
-		minimapTexture->create( 500, 500 );
-		minimapTexture->clear();
-	}
-
-	if( mapTexture == NULL )
-	{
-		mapTexture = new RenderTexture;
-		mapTexture->create( 1720, 880 );
-		mapTexture->clear();
-	}
-
-	if( pauseTexture == NULL )
-	{
-		pauseTexture = new RenderTexture;
-		pauseTexture->create( 1820, 980 );
-		pauseTexture->clear();
-	}
-
-	if( saveTexture == NULL )
-	{
-		saveTexture= new RenderTexture;
-		saveTexture->create( 1920, 1080 );
-		saveTexture->clear();
-	}
-
-	if( mapPreviewTexture == NULL )
-	{
-		mapPreviewTexture= new RenderTexture;
-		mapPreviewTexture->create( 960-48, 540-48 );
-		mapPreviewTexture->clear();
-	}
-
-	if (brushPreviewTexture == NULL)
-	{
-		brushPreviewTexture = new RenderTexture;
-		brushPreviewTexture->create(512, 512);
-		brushPreviewTexture->clear();
-	}
-
-	if (auraCheckTexture == NULL)
-	{
-		auraCheckTexture = new RenderTexture;
-		auraCheckTexture->create(256, 256);
-		auraCheckTexture->clear();
-	}
+	CreateRenderTextures();
 
 	transWorldMapFrame = 0;
 	
@@ -433,45 +308,7 @@ MainMenu::MainMenu()
 
 	currentMenuSelect = 0;
 
-	bool fullWindow = true;
-
-	
-	
-	
-	/*if( IsKeyPressed( Keyboard::W ) )
-	{
-		fullWindow = false;
-		windowWidth /= 2;
-		windowHeight /= 2;
-	}*/
-	window = NULL;
-
-	window = new RenderWindow( sf::VideoMode( windowWidth, windowHeight ), "Breakneck",
-		config->GetData().windowStyle, sf::ContextSettings( 0, 0, 0, 0, 0 ));
-	window->setKeyRepeatEnabled(false);
-
-	mouseGrabbed = true;
-	mouseVisible = false;
-
-	SetMouseGrabbed(mouseGrabbed);
-	SetMouseVisible(mouseVisible);
-
-	//window->setMouseCursorVisible();
-	//window->setMouseCursorGrabbed(true);
-
-	for (int i = 0; i < 4; ++i)
-	{
-		controllers[i]->window = window;
-		controllers[i]->UpdateState();
-	}
-	cout << "start mm constr 222" << endl;
-
-	assert( window != NULL );
-	window->setVerticalSyncEnabled( true );
-	//window->setFramerateLimit(120);
-	std::cout << "opened window" << endl;
-	
-	window->setView( v );
+	SetupWindow();
 
 	betaText.setString( " Press any button to start \n For help and info check \n - beta_info.txt\n Breakneck Beta\n Updated 9/2/2016");
 	betaText.setCharacterSize( 20 );
@@ -484,8 +321,6 @@ MainMenu::MainMenu()
 
 	Init();
 
-	
-
 	multiLoadingScreen = new MultiLoadingScreen( this );
 
 	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
@@ -493,17 +328,6 @@ MainMenu::MainMenu()
 	optionsMenu = new OptionsMenuScreen(this);
 
 	creditsMenu = new CreditsMenuScreen(this);
-
-	//saveMenu = new SaveMenuScreen(this);
-
-	//worldMap->Draw(preScreenTexture);
-	//saveMenu->Draw(preScreenTexture);
-
-
-
-	//FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
-	//	sf::Color::Blue,
-	//	3, 300, 0) };
 
 	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_320x320.png", 320, 320);
 
@@ -517,8 +341,131 @@ MainMenu::MainMenu()
 
 	ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
 	ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
-	//loadingBGSpr.setTexture(*ts_loadBG->texture);
-	//testRing = new FillRing( Vector2f( 200, 200 ), 1, blah);
+}
+
+void MainMenu::SetupWindow()
+{
+	window = NULL;
+
+	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
+		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
+	window->setKeyRepeatEnabled(false);
+
+	mouseGrabbed = true;
+	mouseVisible = false;
+
+	SetMouseGrabbed(mouseGrabbed);
+	SetMouseVisible(mouseVisible);
+
+
+	for (int i = 0; i < 4; ++i)
+	{
+		controllers[i]->window = window;
+		controllers[i]->UpdateState();
+	}
+
+	assert(window != NULL);
+	window->setVerticalSyncEnabled(true);
+	//window->setFramerateLimit(120);
+	std::cout << "opened window" << endl;
+
+	window->setView(v);
+}
+
+
+void MainMenu::CreateRenderTextures()
+{
+	if (preScreenTexture == NULL)
+	{
+		preScreenTexture = new RenderTexture;
+		preScreenTexture->create(1920, 1080);
+		preScreenTexture->clear();
+	}
+
+	if (lastFrameTexture == NULL)
+	{
+		lastFrameTexture = new RenderTexture;
+		lastFrameTexture->create(1920, 1080);
+		lastFrameTexture->clear();
+	}
+
+	if (extraScreenTexture == NULL)
+	{
+		extraScreenTexture = new RenderTexture;
+		extraScreenTexture->create(1920, 1080);
+		extraScreenTexture->clear();
+	}
+
+	if (postProcessTexture == NULL)
+	{
+		postProcessTexture = new RenderTexture;
+		postProcessTexture->create(1920 / 2, 1080 / 2);
+		postProcessTexture->clear();
+	}
+
+	if (postProcessTexture1 == NULL)
+	{
+		postProcessTexture1 = new RenderTexture;
+		postProcessTexture1->create(1920 / 2, 1080 / 2);
+		postProcessTexture1->clear();
+	}
+
+	if (postProcessTexture2 == NULL)
+	{
+		postProcessTexture2 = new RenderTexture;
+		postProcessTexture2->create(1920, 1080);
+		postProcessTexture2->clear();
+	}
+
+	if (minimapTexture == NULL)
+	{
+		minimapTexture = new RenderTexture;
+		//minimapTexture->setSmooth( true );
+		minimapTexture->create(500, 500);
+		minimapTexture->clear();
+	}
+
+	if (mapTexture == NULL)
+	{
+		mapTexture = new RenderTexture;
+		mapTexture->create(1720, 880);
+		mapTexture->clear();
+	}
+
+	if (pauseTexture == NULL)
+	{
+		pauseTexture = new RenderTexture;
+		pauseTexture->create(1820, 980);
+		pauseTexture->clear();
+	}
+
+	if (saveTexture == NULL)
+	{
+		saveTexture = new RenderTexture;
+		saveTexture->create(1920, 1080);
+		saveTexture->clear();
+	}
+
+	if (mapPreviewTexture == NULL)
+	{
+		mapPreviewTexture = new RenderTexture;
+		mapPreviewTexture->create(960 - 48, 540 - 48);
+		mapPreviewTexture->clear();
+	}
+
+	if (brushPreviewTexture == NULL)
+	{
+		brushPreviewTexture = new RenderTexture;
+		brushPreviewTexture->create(512, 512);
+		brushPreviewTexture->clear();
+	}
+
+	if (auraCheckTexture == NULL)
+	{
+		auraCheckTexture = new RenderTexture;
+		auraCheckTexture->create(256, 256);
+		auraCheckTexture->clear();
+	}
 }
 
 SaveFile *MainMenu::GetCurrentProgress()
@@ -785,11 +732,11 @@ void MainMenu::SetMode(Mode m)
 	
 	modeFrame = 0;
 
-	if (menuMode == MAINMENU && m != MAINMENU )
+	if (menuMode == TITLEMENU && m != TITLEMENU)
 	{
 		musicPlayer->TransitionMusic(menuMusic, 60);
 	}
-	else if (menuMode != MAINMENU && m == MAINMENU)
+	else if (menuMode != TITLEMENU && m == TITLEMENU)
 	{
 		musicPlayer->TransitionMusic(titleScreen->titleMusic, 60);
 	}
@@ -797,7 +744,7 @@ void MainMenu::SetMode(Mode m)
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
 	//get buffered
-	if (menuMode == MAINMENU || menuMode == TRANS_MAIN_TO_SAVE || menuMode == TRANS_MAIN_TO_MAPSELECT)//|| menuMode == WORLDMAP)
+	if (menuMode == TITLEMENU || menuMode == TRANS_MAIN_TO_SAVE || menuMode == TRANS_MAIN_TO_MAPSELECT)//|| menuMode == WORLDMAP)
 	{
 		//TerrainRender::CleanupLayers(); //saves a little time?
 		changedMode = false;
@@ -1217,10 +1164,7 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_CREDITS);
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
 	//SetMode(SPLASH);
-	menuMode = MAINMENU;
-	//SetMode(MAINMENU);
-	//musicPlayer->PlayMusic(titleScreen->titleMusic);
-	//SetMode(OPTIONS);
+	menuMode = TITLEMENU;
 	
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1368,7 +1312,7 @@ void MainMenu::Run()
 				preScreenTexture->draw( splashSprite );
 				break;
 			}
-		case MAINMENU:
+		case TITLEMENU:
 			{
 				//preScreenTexture->setView( v );
 			//extraScreenTexture->clear();
@@ -1831,6 +1775,11 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	//m->deadLevel = NULL;
 }
 
+void MainMenu::UpdateMenuMode()
+{
+	(this->*updateModeFuncs[menuMode])();
+}
+
 void MainMenu::HandleMenuMode()
 {
 
@@ -1877,11 +1826,11 @@ void MainMenu::HandleMenuMode()
 
 		}
 		
-		SetMode(MAINMENU);
+		SetMode(TITLEMENU);
 		
 		break;
 	}
-	case MAINMENU:
+	case TITLEMENU:
 	{
 		titleScreen->Update();
 
@@ -1892,31 +1841,6 @@ void MainMenu::HandleMenuMode()
 			{
 			case sf::Event::KeyPressed:
 			{
-				/*if( ev.key.code == Keyboard::Num1 )
-				{
-				cout << "starting level 1" << endl;
-				titleMusic.stop();
-				GameEditLoop2( "test1" );
-				window->setView( v );
-				titleMusic.play();
-				}
-				else if( ev.key.code == Keyboard::Num2 )
-				{
-				cout << "starting level 2" << endl;
-				titleMusic.stop();
-				GameEditLoop2( "test2" );
-				window->setView( v );
-				titleMusic.play();
-				}
-				else if( ev.key.code == Keyboard::Num3 )
-				{
-				cout << "starting level 3" << endl;
-				titleMusic.stop();
-
-				GameEditLoop2( "test3" );
-				window->setView( v );
-				titleMusic.play();
-				}*/
 				if (ev.key.code == Keyboard::Escape)
 				{
 					//quit = true;
@@ -2110,88 +2034,6 @@ void MainMenu::HandleMenuMode()
 		}
 
 		UpdateMenuOptionText();
-
-		//bool canMoveSame = (moveDelayCounter == 0);
-
-
-		//if( (menuCurrInput.LDown() || menuCurrInput.PDown()) && ( !moveDown || canMoveSame ) )
-		//{
-		//	currentMenuSelect++;
-		//	if( currentMenuSelect == M_Count )
-		//		currentMenuSelect = 0;
-		//	//moveDown = true;
-		//	moveDelayCounter = moveDelayFrames;
-		//}
-		//else if( ( menuCurrInput.LUp() || menuCurrInput.PUp() ) && ( !moveUp || canMoveSame ) )
-		//{
-		//	currentMenuSelect--;
-		//	if( currentMenuSelect < 0 )
-		//		currentMenuSelect = M_Count - 1;
-		//	//moveUp = true;
-		//	moveDelayCounter = moveDelayFrames;
-		//}
-		//else
-		//{
-		//}
-
-
-		/*if( moveDelayCounter > 0 )
-		{
-		moveDelayCounter--;
-		}*/
-
-		/*if( !(menuCurrInput.LDown() || menuCurrInput.PDown()) )
-		{
-		moveDelayCounter = 0;
-		moveDown = false;
-		}
-		else if( ! ( menuCurrInput.LUp() || menuCurrInput.PUp() ) )
-		{
-		moveDelayCounter = 0;
-		moveUp = false;
-		}*/
-
-
-		/*if( kinTitleSpriteFrame == kinTotalFrames )
-		{
-		kinTitleSpriteFrame = 0;
-		}
-
-		int trueKinFrame = 0;
-		if( kinTitleSpriteFrame < 8 * 2 )
-		{
-		trueKinFrame = 0;
-		}
-		else if( kinTitleSpriteFrame < 16 * 2 )
-		{
-		trueKinFrame = 1;
-		}
-		else if( kinTitleSpriteFrame < 24 * 2 )
-		{
-		trueKinFrame = 2;
-		}
-		else if( kinTitleSpriteFrame < 48 * 2 )
-		{
-		trueKinFrame = 3;
-		}
-		else if( kinTitleSpriteFrame < 56 * 2 )
-		{
-		trueKinFrame = 4;
-		}
-		else if( kinTitleSpriteFrame < 60 * 2 )
-		{
-		trueKinFrame = 5;
-		}
-		else
-		{
-		trueKinFrame = 6;
-		}*/
-
-		//cout << "kinsprite: " << trueKinFrame << endl;
-		//kinTitleSprite.setTexture( *(ts_kinTitle[ trueKinFrame ]->texture) );
-		//kinTitleSprite.setOrigin( 0, kinTitleSprite.getLocalBounds().height );
-
-		//kinTitleSpriteFrame++;	
 		break;
 	}
 	case WORLDMAP:
@@ -2219,9 +2061,6 @@ void MainMenu::HandleMenuMode()
 		loadingIconBackpack[1].rotate(-1);
 		loadingIconBackpack[2].rotate(2);
 
-		//if( modeFrame == 120 )
-		//	SetMode(RUNNINGMAP);
-
 		if (loadThread != NULL)
 		{
 			if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
@@ -2239,8 +2078,6 @@ void MainMenu::HandleMenuMode()
 				loadingIconBackpack[1].rotate(-1);
 				loadingIconBackpack[2].rotate(2);
 			}
-			//	//menuMode = MAINMENU;
-			//	//preScreenTexture->clear(Color::Yellow);
 		}
 		break;
 	}
@@ -2418,10 +2255,6 @@ void MainMenu::HandleMenuMode()
 		}
 		worldMap->Update(menuPrevInput, menuCurrInput);
 		saveMenu->Update();
-		//parBack->Update( offset0 );
-		//parFront->Update( offset1 );
-
-		//backPar->Update( 
 
 		break;
 	}
@@ -2476,7 +2309,7 @@ void MainMenu::HandleMenuMode()
 
 		if (transFrame == transLength)
 		{
-			SetMode( MAINMENU );
+			SetMode(TITLEMENU);
 			break;
 		}
 
@@ -2496,15 +2329,6 @@ void MainMenu::HandleMenuMode()
 			titleScreen->Update();
 		}
 		++transFrame;
-
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAINMENU;
-		}
-		else
-		{
-		Slide();
-		}*/
 		break;
 	}
 	case TRANS_SAVE_TO_WORLDMAP:
@@ -2592,15 +2416,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MAINMENU );
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAINMENU;
-		}
-		else
-		{
-		Slide();
-		}*/
+		SetMode(TITLEMENU);
 		break;
 	}
 	case TRANS_MAIN_TO_OPTIONS:
@@ -2642,15 +2458,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MAINMENU );
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAINMENU;
-		}
-		else
-		{
-		Slide();
-		}*/
+		SetMode(TITLEMENU);
 		break;
 	}
 	case TRANS_MAIN_TO_CREDITS:
@@ -2685,15 +2493,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MAINMENU );
-		/*if (slideCurrFrame > numSlideFrames)
-		{
-		menuMode = MAINMENU;
-		}
-		else
-		{
-		Slide();
-		}*/
+		SetMode(TITLEMENU);
 		break;
 	}
 	case TRANS_WORLDMAP_TO_LOADING:
@@ -2781,3 +2581,5 @@ MapCollection::~MapCollection()
 		delete (*mit);
 	}
 }
+
+void 

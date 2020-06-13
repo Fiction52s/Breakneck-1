@@ -451,7 +451,7 @@ struct MainMenu
 	{
 		SPLASH,
 		SPLASH_TRANS,
-		MAINMENU,
+		TITLEMENU,
 		WORLDMAP,
 		LOADINGMAP,
 		KINBOOSTLOADINGMAP,
@@ -492,6 +492,11 @@ struct MainMenu
 	};
 
 	void LoadAndResaveMap(const std::string &path);
+	void CreateRenderTextures();
+	void SetupWindow();
+	void UpdateMenuMode();
+
+	std::vector<void(MainMenu::*)()> updateModeFuncs;
 
 	GCC::USBDriver *gccDriver;
 	GCC::VJoyGCControllers *joys;
