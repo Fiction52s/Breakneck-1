@@ -7,9 +7,9 @@
 using namespace std;
 using namespace sf;
 
-MapSelector::MapSelector( WorldMap *worldMap, World *p_world,
+MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	MainMenu *mm, sf::Vector2f &pos )
-	:centerPos(pos), world( p_world )
+	:centerPos(pos), world( p_world ), worldMap( p_worldMap )
 {
 	for (int i = 1; i <= 5; ++i)
 	{
@@ -23,21 +23,22 @@ MapSelector::MapSelector( WorldMap *worldMap, World *p_world,
 	state = S_SECTORSELECT;
 	mainMenu = mm;
 
+
 	string worldIndexStr = to_string(1);//to_string(worldIndex+1);
 	string nodeFile = string("WorldMap/node_w") + worldIndexStr + string("_128x128.png");
 
-	ts_node = mm->tilesetManager.GetTileset(nodeFile, 128, 128);
+	ts_node = worldMap->GetTileset(nodeFile, 128, 128);
 
 	ts_bossFight = new Tileset*[1];
-	ts_bossFight[0] = mm->tilesetManager.GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
+	ts_bossFight[0] = worldMap->GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
 
-	ts_sectorLevelBG = mm->tilesetManager.GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
-	ts_levelStatsBG = mm->tilesetManager.GetTileset("Worldmap/level_stats_512x256.png", 512, 256);
-	ts_sectorStatsBG = mm->tilesetManager.GetTileset("Worldmap/sector_box_256x256.png", 256, 256);
+	ts_sectorLevelBG = worldMap->GetTileset("Worldmap/sector_levelbg_1200x400.png", 1200, 400);
+	ts_levelStatsBG = worldMap->GetTileset("Worldmap/level_stats_512x256.png", 512, 256);
+	ts_sectorStatsBG = worldMap->GetTileset("Worldmap/sector_box_256x256.png", 256, 256);
 
-	ts_sectorKey = mm->tilesetManager.GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
+	ts_sectorKey = worldMap->GetTileset("Worldmap/sectorkey_80x80.png", 80, 80);
 	ts_sectorOpen = new Tileset*[1];
-	ts_sectorOpen[0] = mm->tilesetManager.GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
+	ts_sectorOpen[0] = worldMap->GetTileset("Worldmap/sectorunlock_256x256.png", 256, 256);
 
 	bottomBG.setPosition(624, 545);
 	numSectors = 0;

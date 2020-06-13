@@ -64,7 +64,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 {
 	menuOffset = Vector2f(0, 0);
 
-	TilesetManager &tsMan = mainMenu->tilesetManager;
+	//TilesetManager &tsMan = mainMenu->tilesetManager;
 	selectedSaveIndex = 0;
 	frame = 0;
 	kinFaceTurnLength = 15;
@@ -75,9 +75,9 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	saveJumpFactor = 5;
 	saveJumpLength = 6;
 
-	ts_background = tsMan.GetTileset("Menu/save_bg_1920x1080.png", 1920, 1080);
-	ts_kinFace = tsMan.GetTileset("Menu/save_menu_kin_256x256.png", 256, 256);
-	ts_selectSlot = tsMan.GetTileset("Menu/save_select_710x270.png", 710, 270);
+	ts_background = GetTileset("Menu/save_bg_1920x1080.png", 1920, 1080);
+	ts_kinFace = GetTileset("Menu/save_menu_kin_256x256.png", 256, 256);
+	ts_selectSlot = GetTileset("Menu/save_select_710x270.png", 710, 270);
 	
 	actionLength[WAIT] = 1;
 	actionLength[SELECT] = 12 * 3 + 24 * 2 + 20;
@@ -123,17 +123,17 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	selectSlot.setTexture(*ts_selectSlot->texture);
 	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(0));
 
-	ts_kinJump[0] = tsMan.GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
-	ts_kinJump[1] = tsMan.GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
-	ts_kinJump[2] = tsMan.GetTileset("Menu/save_kin_jump3_500x1080.png", 500, 1080);
-	ts_kinJump[3] = tsMan.GetTileset("Menu/save_kin_jump4_500x1080.png", 500, 1080);
-	ts_kinJump[4] = tsMan.GetTileset("Menu/save_kin_jump5_500x1080.png", 500, 1080);
-	ts_kinJump[5] = tsMan.GetTileset("Menu/save_kin_jump6_500x1080.png", 500, 1080);
+	ts_kinJump[0] = GetTileset("Menu/save_kin_jump1_500x1080.png", 500, 1080);
+	ts_kinJump[1] = GetTileset("Menu/save_kin_jump2_500x1080.png", 500, 1080);
+	ts_kinJump[2] = GetTileset("Menu/save_kin_jump3_500x1080.png", 500, 1080);
+	ts_kinJump[3] = GetTileset("Menu/save_kin_jump4_500x1080.png", 500, 1080);
+	ts_kinJump[4] = GetTileset("Menu/save_kin_jump5_500x1080.png", 500, 1080);
+	ts_kinJump[5] = GetTileset("Menu/save_kin_jump6_500x1080.png", 500, 1080);
 
-	ts_kinClouds = tsMan.GetTileset("Menu/save_kin_clouds_500x416.png", 500, 416);
-	ts_kinWindow = tsMan.GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
+	ts_kinClouds = GetTileset("Menu/save_kin_clouds_500x416.png", 500, 416);
+	ts_kinWindow = GetTileset("Menu/save_kin_window_500x1080.png", 500, 1080);
 	//ts_saveKinWindow = tilesetManager.GetTileset( "Menu/save_kin_window_500x1080.png", 500, 1080 );
-	ts_kinSky = tsMan.GetTileset("Menu/save_menu_sky_01_500x1080.png", 500, 1080);
+	ts_kinSky = GetTileset("Menu/save_menu_sky_01_500x1080.png", 500, 1080);
 
 	kinClouds.setTexture(*ts_kinClouds->texture);
 	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(0));
@@ -154,11 +154,11 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	cloudFrame = 0;
 
-	ts_starBackground = tsMan.GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
+	ts_starBackground = GetTileset("WorldMap/map_z1_stars.png", 1920, 1080);
 	starBackground.setTexture(*ts_starBackground->texture);
 	starBackground.setPosition(menuOffset);
 
-	ts_world = tsMan.GetTileset("WorldMap/map_z1_world.png", 1120, 1080);
+	ts_world = GetTileset("WorldMap/map_z1_world.png", 1120, 1080);
 	world.setTexture(*ts_world->texture);
 	world.setOrigin(world.getLocalBounds().width / 2, world.getLocalBounds().height / 2);
 	world.setPosition(Vector2f(960, 540) + menuOffset);

@@ -18,7 +18,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	nodes = NULL;
 
 	MainMenu *mainMenu = ms->mainMenu;
-
+	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
 
 	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
@@ -28,10 +28,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
 	SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
 
-	ts_energyCircle = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
-	ts_energyTri = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
-	ts_energyMask = mainMenu->tilesetManager.GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
-	ts_nodeExplode = mainMenu->tilesetManager.GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
+	ts_energyCircle = worldMap->GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
+	ts_energyTri = worldMap->GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
+	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
+	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
@@ -63,13 +63,13 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	{
 		string secStr = to_string(index + 1);
 		string bgStr = "w" + worldStr + "_0" + secStr;
-		bg = Background::SetupFullBG(bgStr, &(mainMenu->tilesetManager));
+		bg = Background::SetupFullBG(bgStr, worldMap);
 	}
 
 	stringstream ss;
 	ss.str("");
 	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
-	ts_shards = mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
+	ts_shards = worldMap->GetTileset(ss.str(), 48, 48);
 
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(60);

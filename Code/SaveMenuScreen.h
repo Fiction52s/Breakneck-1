@@ -2,8 +2,8 @@
 #define __SAVEMENUSCREEN_H__
 
 #include <SFML\Graphics.hpp>
+#include "Tileset.h"
 
-struct Tileset;
 struct MainMenu;
 struct SaveFile;
 
@@ -18,7 +18,7 @@ struct SaveFileDisplay
 	void Draw(sf::RenderTarget *target);
 };
 
-struct SaveMenuScreen
+struct SaveMenuScreen : TilesetManager
 {
 	enum Action
 	{

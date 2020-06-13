@@ -155,6 +155,7 @@ struct MapSelector
 	State state;
 	std::vector<MapSector*> sectors;
 	MainMenu *mainMenu;
+	WorldMap *worldMap;
 
 	sf::Sprite nodeHighlight;
 	sf::Sprite kinSprite;
@@ -199,7 +200,7 @@ struct WorldSelector
 	sf::Vertex quads[4 * 4];
 };
 
-struct WorldMap
+struct WorldMap : TilesetManager
 {
 	enum State
 	{

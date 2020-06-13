@@ -19,37 +19,37 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 {
 	worldSelector = new WorldSelector(p_mainMenu);
 
-	ts_colonySelect = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
+	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 
-	ts_colonyActive[0] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
-	ts_colonyActive[1] = mainMenu->tilesetManager.GetTileset("WorldMap/w1_select.png", 1920, 1080);
-	ts_colonyActiveZoomed[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1_vein.png", 1920, 1080);
-	ts_colonyActiveZoomed[1] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w2_vein.png", 1920, 1080);
-	//ts_zoomedMapw1 = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
+	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActive[1] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
+	ts_colonyActiveZoomed[0] = GetTileset("WorldMap/map_w1_vein.png", 1920, 1080);
+	ts_colonyActiveZoomed[1] = GetTileset("WorldMap/map_w2_vein.png", 1920, 1080);
+	//ts_zoomedMapw1 = GetTileset("WorldMap/map_w1.png", 1920, 1080);
 
 	
 
-	ts_space = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
+	ts_space = GetTileset("WorldMap/worldmap_bg.png", 1920, 1080);
 	spaceSpr.setTexture(*ts_space->texture);
 	
-	ts_planet = mainMenu->tilesetManager.GetTileset("WorldMap/worldmap.png", 1920, 1080); 
+	ts_planet = GetTileset("WorldMap/worldmap.png", 1920, 1080); 
 	planetSpr.setTexture(*ts_planet->texture);
 	planetSpr.setOrigin(planetSpr.getLocalBounds().width / 2, planetSpr.getLocalBounds().height / 2);
 	planetSpr.setPosition(960, 540);
 	
 
-	ts_colony[0] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w1.png", 1920, 1080);
-	ts_colony[1] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w2.png", 1920, 1080);
-	ts_colony[2] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w3.png", 1920, 1080);
-	ts_colony[3] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w4.png", 1920, 1080);
-	ts_colony[4] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w5.png", 1920, 1080);
-	ts_colony[5] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w6.png", 1920, 1080);
-	ts_colony[6] = mainMenu->tilesetManager.GetTileset("WorldMap/map_w7.png", 1920, 1080);
+	ts_colony[0] = GetTileset("WorldMap/map_w1.png", 1920, 1080);
+	ts_colony[1] = GetTileset("WorldMap/map_w2.png", 1920, 1080);
+	ts_colony[2] = GetTileset("WorldMap/map_w3.png", 1920, 1080);
+	ts_colony[3] = GetTileset("WorldMap/map_w4.png", 1920, 1080);
+	ts_colony[4] = GetTileset("WorldMap/map_w5.png", 1920, 1080);
+	ts_colony[5] = GetTileset("WorldMap/map_w6.png", 1920, 1080);
+	ts_colony[6] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	
-	ts_asteroids[0] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
-	ts_asteroids[1] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
-	ts_asteroids[2] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
-	ts_asteroids[3] = mainMenu->tilesetManager.GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
+	ts_asteroids[0] = GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
+	ts_asteroids[1] = GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
+	ts_asteroids[2] = GetTileset("WorldMap/asteroid_3_1920x1080.png", 1920, 1080);
+	ts_asteroids[3] = GetTileset("WorldMap/asteroid_4_1920x1080.png", 1920, 1080);
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -124,14 +124,14 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	//{
 	//	stringstream ss;
 	//	ss << "WorldMap/map_z3_" << (i+1) << ".png";
-	//	ts_section[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
+	//	ts_section[i] = GetTileset( ss.str(), 1920, 1080 );
 
 	//	ss.clear();
 	//	ss.str( "" );
 	//	ss << "WorldMap/map_w" << (i+1) << ".png";
 	//	//colonyTex[i] = new Texture;
 	//	//colonyTex[i]->loadFromFile( ss.str() );
-	//	ts_colony[i] = mainMenu->tilesetManager.GetTileset( ss.str(), 1920, 1080 );
+	//	ts_colony[i] = GetTileset( ss.str(), 1920, 1080 );
 	//}
 
 	fontHeight = 24;
