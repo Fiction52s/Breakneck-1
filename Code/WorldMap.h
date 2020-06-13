@@ -100,8 +100,6 @@ struct MapSector
 	sf::Vertex lockedOverlayQuad[4];
 
 	sf::Sprite *nodes;
-	sf::Sprite *topBonusNodes;
-	sf::Sprite *botBonusNodes;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
 

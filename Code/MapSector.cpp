@@ -53,17 +53,11 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	levelPercentCompleteText.setCharacterSize(40);
 	levelPercentCompleteText.setFont(mainMenu->arial);
 
-	sectorNameText.setFillColor(Color::White);
-	sectorNameText.setCharacterSize(40);
-	sectorNameText.setFont(mainMenu->arial);
-	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
-
+	
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	
-
-
 	string worldStr = to_string(sec->worldIndex + 1);
 	if (bg == NULL)
 	{
@@ -77,10 +71,11 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
 	ts_shards = ms->mainMenu->tilesetManager.GetTileset(ss.str(), 48, 48);
 
+	sectorNameText.setFillColor(Color::White);
+	sectorNameText.setCharacterSize(60);
+	sectorNameText.setFont(mainMenu->arial);
 	sectorNameText.setString("Sector " + to_string( index + 1 ));
-
-	//int waitFrames[3] = { 30, 10, 5 };
-	//int waitModeThresh[2] = { 2, 2 };
+	sectorNameText.setOrigin(sectorNameText.getLocalBounds().left + sectorNameText.getLocalBounds().width / 2, 0);
 
 	bool blank = mapSASelector == NULL;
 	bool diffNumLevels = false;
@@ -91,8 +86,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	Tileset *ts_node = ms->ts_node;
 	nodes = new Sprite[numLevels];
-	topBonusNodes = new Sprite[numLevels];
-	botBonusNodes = new Sprite[numLevels];
+
 
 	int counter = 0;
 	Tileset *currTS = ts_node;
@@ -121,13 +115,6 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 		nodes[i].setTextureRect(currTS->GetSubRect(0));
 		nodes[i].setOrigin(nodes[i].getLocalBounds().width / 2, nodes[i].getLocalBounds().height / 2);
-
-		topBonusNodes[i].setTexture(*ts_node->texture);
-		topBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
-		topBonusNodes[i].setOrigin(topBonusNodes[i].getLocalBounds().width / 2, topBonusNodes[i].getLocalBounds().height / 2);
-		botBonusNodes[i].setTexture(*ts_node->texture);
-		botBonusNodes[i].setTextureRect(ts_node->GetSubRect(0));
-		botBonusNodes[i].setOrigin(botBonusNodes[i].getLocalBounds().width / 2, botBonusNodes[i].getLocalBounds().height / 2);
 	}*/
 
 	//requirementText
@@ -152,18 +139,6 @@ MapSector::~MapSector()
 	{
 		delete[] nodes;
 		nodes = NULL;
-	}
-
-	if (topBonusNodes != NULL)
-	{
-		delete[] topBonusNodes;
-		topBonusNodes = NULL;
-	}
-
-	if (botBonusNodes != NULL)
-	{
-		delete[] botBonusNodes;
-		botBonusNodes = NULL;
 	}
 
 	delete bg;
@@ -226,9 +201,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 	{
 		for (int i = 0; i < numLevels; ++i)
 		{
-			target->draw(topBonusNodes[i]);
 			target->draw(nodes[i]);
-			target->draw(botBonusNodes[i]);
 		}
 
 		target->draw(endSpr);
@@ -251,15 +224,16 @@ void MapSector::SetXCenter(float x)
 {
 	xCenter = x;
 
-	left = Vector2f(xCenter - 600, 400);
+	//left = Vector2f(xCenter - 600, 400);
+	left = Vector2f(xCenter, 400);
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
-		//left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevelsPlus / 2 - 1);
+		left.x -= pathLen / 2 + nodeSize + (pathLen + nodeSize) * (numLevelsPlus / 2 - 1);
 	}
 	else
 	{
-		//left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
+		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
 	}
 
 
