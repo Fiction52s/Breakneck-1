@@ -1687,7 +1687,8 @@ bool Session::ReadHeader(std::ifstream &is)
 	}
 		
 
-	mapHeader = mainMenu->ReadMapHeader(is);
+	mapHeader = new MapHeader;
+	mapHeader->Load(is);
 	if (mapHeader == NULL)
 		return false;
 

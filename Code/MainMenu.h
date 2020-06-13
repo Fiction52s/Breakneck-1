@@ -5,7 +5,6 @@
 #include "Input.h"
 #include "SoundManager.h"
 #include "Tileset.h"
-//#include "WorldMap.h"
 #include "GUI.h"
 #include "UIWindow.h"
 #include <boost/thread.hpp>
