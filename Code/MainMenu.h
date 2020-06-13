@@ -497,7 +497,10 @@ struct MainMenu
 	Mode modeLoadingFrom;
 	Mode modeToLoad;
 	void LoadMode(Mode m);
-	static void sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode);
+	static void sLevelLoad(MainMenu *mm, GameSession *gs);
+	void LevelLoad(GameSession *gs);
+	static void sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode);
+	void TransitionMode(Mode fromMode, Mode toMode);
 	void TitleMenuModeUpdate();
 	void DrawMode(Mode m);
 
@@ -540,6 +543,8 @@ struct MainMenu
 	CreditsMenuScreen *creditsMenu;
 	SaveMenuScreen *saveMenu;
 	SingleAxisSelector *saSelector;
+
+	SaveFile *currSaveFile;
 	sf::Text menuOptions[MainMenuOptions::M_Count];
 	void UpdateMenuOptionText();
 	void DrawMenuOptionText(sf::RenderTarget *target);

@@ -91,9 +91,60 @@ std::string GetTimeStr(int numFrames)
 	return ss.str();
 }
 
-void MainMenu::sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode )
+
+void MainMenu::LevelLoad(GameSession *gs)
+{
+	delete worldMap;
+	worldMap = NULL;
+	delete saveMenu;
+	saveMenu = NULL;
+
+	GameSession::sLoad(gs);
+}
+
+void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
+{
+	mm->LevelLoad(gs);
+}
+
+
+void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
 	switch (fromMode)
+	{
+	case SAVEMENU:
+		delete worldMap;
+		worldMap = NULL;
+		delete saveMenu;
+		saveMenu = NULL;
+		break;
+	case TITLEMENU:
+	{
+		delete titleScreen;
+		titleScreen = NULL;
+	}
+	}
+
+	switch (toMode)
+	{
+	case SAVEMENU:
+		worldMap = new WorldMap(this);
+		saveMenu = new SaveMenuScreen(this);
+		saveMenu->Reset();
+		break;
+	case TITLEMENU:
+		titleScreen = new TitleScreen(this);
+		titleScreen->Reset();
+	}
+}
+
+
+
+
+void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
+{
+	mm->TransitionMode(fromMode, toMode);
+	/*switch (fromMode)
 	{
 	case SAVEMENU:
 		delete mm->worldMap;
@@ -118,7 +169,7 @@ void MainMenu::sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode )
 	case TITLEMENU:
 		mm->titleScreen = new TitleScreen(mm);
 		mm->titleScreen->Reset();
-	}
+	}*/
 }
 
 
@@ -157,6 +208,8 @@ MainMenu::MainMenu()
 {
 	assert(currInstance == NULL);
 	currInstance = this;
+
+	//currSaveFile = new SaveFile(;
 
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	consolas.loadFromFile("Resources/Fonts/Courier New.ttf");
@@ -501,6 +554,7 @@ void MainMenu::CreateRenderTextures()
 
 SaveFile *MainMenu::GetCurrentProgress()
 {
+	return currSaveFile;
 	if (saveMenu == NULL)
 	{
 		return NULL;
@@ -1454,7 +1508,8 @@ void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, Level *lev, bool loa
 	currLevel->level = lev;
 
 
-	loadThread = new boost::thread(GameSession::sLoad, currLevel);
+	loadThread = new boost::thread(MainMenu::sLevelLoad, this, currLevel);
+	//loadThread = new boost::thread(GameSession::sLoad, currLevel);
 
 	accumulator = 0;//TIMESTEP + .1;
 	currentTime = 0;
@@ -1698,7 +1753,7 @@ void MainMenu::HandleMenuMode()
 			//fader->Reset();
 			fader->Fade(true, 30, Color::Black);
 			SetMode(LOADINGMENULOOP);
-			loadThread = new boost::thread(MainMenu::sLoadMode, this, modeLoadingFrom, modeToLoad );
+			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad );
 		}
 		break;
 	}
