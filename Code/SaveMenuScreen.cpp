@@ -213,7 +213,7 @@ SaveMenuScreen::~SaveMenuScreen()
 	}
 }
 
-void SaveMenuScreen::Update()
+bool SaveMenuScreen::Update()
 {
 	if (frame == actionLength[action])
 	{
@@ -253,13 +253,13 @@ void SaveMenuScreen::Update()
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
 
 			mainMenu->worldMap->InitSelectors();
-			return;
+			return true;
 			break;
 		}
 		case TRANSITIONMOVIE:
 		{
 			mainMenu->PlayIntroMovie();
-			return;
+			return true;
 			break;
 		}
 		case FADEIN:
@@ -288,17 +288,18 @@ void SaveMenuScreen::Update()
 	{
 		if (menuCurrInput.B && !menuPrevInput.B )
 		{
-			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
-			mainMenu->fader->CrossFade(30, 0, 30, Color::Black);
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-			return;
+			return false;
+			/*mainMenu->LoadMode(SAVEMENU);
+			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
+			mainMenu->fader->CrossFade(30, 0, 30, Color::Black);*/
 		}
 		else if (menuCurrInput.A && !menuPrevInput.A )
 		{
 			action = SELECT;
 			frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
-			return;
+			return true;
 		}
 
 		bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
@@ -526,6 +527,8 @@ void SaveMenuScreen::Update()
 	//}
 
 	++frame;
+	
+	return true;
 }
 
 Vector2f SaveMenuScreen::GetTopLeftSaveSlot(int index)

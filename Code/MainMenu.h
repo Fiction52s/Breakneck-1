@@ -454,6 +454,9 @@ struct MainMenu
 		TITLEMENU,
 		WORLDMAP,
 		LOADINGMAP,
+		LOADINGMENUSTART,
+		LOADINGMENULOOP,
+		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
 		RUNNINGMAP,
 		SAVEMENU,
@@ -490,6 +493,13 @@ struct MainMenu
 		GRT_ADVENTURE,
 		GRT_FREEPLAY
 	};
+
+	Mode modeLoadingFrom;
+	Mode modeToLoad;
+	void LoadMode(Mode m);
+	static void sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode);
+	void TitleMenuModeUpdate();
+	void DrawMode(Mode m);
 
 	void LoadAndResaveMap(const std::string &path);
 	void CreateRenderTextures();

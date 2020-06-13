@@ -40,7 +40,7 @@ struct SaveMenuScreen
 	Tileset *ts_selectSlot;//ts_saveMenuSelect;
 	Tileset *ts_kinFace;//ts_saveMenuKinFace;
 	sf::Vector2f GetTopLeftSaveSlot(int index);
-	void Update();
+	bool Update();
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	MainMenu *mainMenu;
