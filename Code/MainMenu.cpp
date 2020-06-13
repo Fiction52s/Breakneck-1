@@ -876,7 +876,9 @@ MainMenu::MainMenu()
 
 	titleScreen->Draw(preScreenTexture);
 
-	worldMap = new WorldMap( this );
+	worldMap = NULL;
+	saveMenu = NULL;
+	//worldMap = new WorldMap( this );
 
 	kinBoostScreen = new KinBoostScreen(this);
 
@@ -952,12 +954,12 @@ MainMenu::MainMenu()
 
 	creditsMenu = new CreditsMenuScreen(this);
 
-	saveMenu = new SaveMenuScreen(this);
+	//saveMenu = new SaveMenuScreen(this);
 
-	//worldMap->testSelector->UpdateAllInfo();
+	//worldMap->Draw(preScreenTexture);
+	//saveMenu->Draw(preScreenTexture);
 
-	worldMap->Draw(preScreenTexture);
-	saveMenu->Draw(preScreenTexture);
+
 
 	//FillRingSection *blah[] = { new FillRingSection(tilesetManager, Color::Red, sf::Color::Black,
 	//	sf::Color::Blue,
@@ -981,7 +983,14 @@ MainMenu::MainMenu()
 
 SaveFile *MainMenu::GetCurrentProgress()
 {
-	return saveMenu->files[saveMenu->selectedSaveIndex];
+	if (saveMenu == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		return saveMenu->files[saveMenu->selectedSaveIndex];
+	}
 }
 
 MainMenu::~MainMenu()
@@ -1902,6 +1911,16 @@ void MainMenu::Run()
 		}
 		case TRANS_MAIN_TO_SAVE:
 		{
+			if (worldMap == NULL)
+			{
+				worldMap = new WorldMap(this);
+
+				saveMenu = new SaveMenuScreen(this);
+
+				/*worldMap->Draw(preScreenTexture);
+				saveMenu->Draw(preScreenTexture);*/
+			}
+
 			int tFrame = transFrame - 1;
 			if (tFrame < transLength / 2)
 			{

@@ -268,7 +268,7 @@ void AdventureCreator::SaveAdventure(const std::string &p_path,
 
 void AdventureCreator::Confirm()
 {
-	SaveAdventure(chooser->currPath.string(), "tadventure", AdventureFile::PATH );
+	SaveAdventure("Adventure"/*chooser->currPath.string()*/, "tadventure", AdventureFile::PATH );
 }
 
 bool AdventureCreator::MouseUpdate()

@@ -931,17 +931,17 @@ bool SaveFile::HasNewShards()
 	return newShardField.IsNonZero();
 }
 
-bool SaveFile::IsUnlockedLevel(Sector *sec, Level *lev)
+bool SaveFile::IsUnlockedLevel(Sector *sec, int index )
 {
 	for (int i = 0; i < sec->numLevels; ++i)
 	{
-		if (sec->levels == lev)
+		if (i == index)
 		{
 			return true;
 		}
 		else
 		{
-			if (!IsCompleteLevel(&sec->levels[i]))
+			if (!IsCompleteLevel(sec->GetLevel(i)))
 			{
 				return false;
 			}

@@ -64,7 +64,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	
 
 
-	string worldStr = to_string(index + 1);
+	string worldStr = to_string(sec->worldIndex + 1);
 	if (bg == NULL)
 	{
 		string secStr = to_string(index + 1);
@@ -175,7 +175,7 @@ void MapSector::UpdateUnlockedLevelCount()
 	Level *level;
 	for (int i = 0; i < numLevels - 1; ++i)
 	{
-		level = &(sec->levels[i]);
+		level = sec->GetLevel(i);
 		if( saveFile->IsCompleteLevel( level ))
 		{
 			unlockedLevelCount = max(1, i + 1);
@@ -343,15 +343,12 @@ int MapSector::GetSelectedIndex()
 
 Level * MapSector::GetSelectedLevel()
 {
-	int selectedIndex = GetSelectedIndex();
-	return &sec->levels[selectedIndex];
+	return sec->GetLevel(GetSelectedIndex());
 }
 
 AdventureMap *MapSector::GetSelectedAdventureMap()
 {
-	int selectedIndex = GetSelectedIndex();
-
-	return &adventureFile.GetMap(sec->levels[selectedIndex].index);
+	return &adventureFile.GetMap(sec->GetLevelIndex(GetSelectedIndex()));
 }
 
 void MapSector::UpdateLevelStats()
@@ -461,14 +458,14 @@ bool MapSector::Update(ControllerState &curr,
 		int lastBeaten = -1;
 		for (int i = 0; i < numLevels; ++i)
 		{
-			if (saveFile->IsLevelJustBeaten( &sec->levels[i]))
+			if (saveFile->IsLevelJustBeaten( sec->GetLevel( i ) ) )
 			{
 				state = LEVELCOMPLETEDWAIT;
 
 				stateFrame = 0;
 				unlockedIndex = i;//saSelector->currIndex;
 								  //unlockFrame = frame;
-				saveFile->SetLevelNotJustBeaten(&sec->levels[i]);
+				saveFile->SetLevelNotJustBeaten(sec->GetLevel(i));
 				lastBeaten = i;
 				//break;
 			}
@@ -624,12 +621,14 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
-	int bType = adventureFile.GetMap(sec->levels[node].index).headerInfo.mapType;
+	Level *lev = sec->GetLevel(node);
+
+	int bType = adventureFile.GetMap(lev->index).headerInfo.mapType;
 	int res;
 
-	bool isUnlocked = saveFile->IsUnlockedLevel(sec, &sec->levels[node]);
-	bool isComplete = saveFile->IsCompleteLevel(&sec->levels[node]);
-	bool isFullyComplete = saveFile->IsFullyCompleteLevel(&sec->levels[node]);
+	bool isUnlocked = saveFile->IsUnlockedLevel(sec, node );
+	bool isComplete = saveFile->IsCompleteLevel(lev);
+	bool isFullyComplete = saveFile->IsFullyCompleteLevel(lev);
 
 	if (bType == 0)
 	{

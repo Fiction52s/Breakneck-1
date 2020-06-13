@@ -23,7 +23,15 @@ struct Sector
 	int index;
 	int numLevels;
 	Level * levels;
-	int world;
+	int worldIndex;
+	Level *GetLevel(int ind)
+	{
+		return &levels[ind];
+	}
+	int GetLevelIndex(int ind)
+	{
+		return levels[ind].index;
+	}
 	~Sector()
 	{
 		delete[] levels;
@@ -292,7 +300,7 @@ struct SaveFile
 	bool IsLevelJustBeaten(Level *lev);
 	void SetLevelNotJustBeaten(Level *lev);
 
-	bool IsUnlockedLevel(Sector *sec, Level *lev);
+	bool IsUnlockedLevel(Sector *sec, int index );
 	bool IsFullyCompleteLevel(Level *lev);
 
 	const static int MAX_SECTORS = 8;

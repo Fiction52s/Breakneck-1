@@ -52,7 +52,7 @@ Planet::Planet(AdventureFile &adventureFile)
 			if (numLevels > 0)
 			{
 				ss = &(sw->sectors[counter]);
-				ss->world = w;
+				ss->worldIndex = w;
 				ss->numLevels = numLevels;
 				ss->levels = new Level[numLevels];
 				ss->index = counter;
@@ -354,6 +354,8 @@ void AdventureFile::Save(const std::string &p_path,
 		of.open(p_path + "/" + adventureName + ext);
 	}
 
+	assert(of.is_open());
+
 	of << (int)cpy << "\n";
 
 	for (int i = 0; i < 8; ++i)
@@ -366,7 +368,7 @@ void AdventureFile::Save(const std::string &p_path,
 
 int AdventureFile::GetRequiredRunes(Sector *sec)
 {
-	return GetSector(sec->world, sec->index).requiredRunes;
+	return GetSector(sec->worldIndex, sec->index).requiredRunes;
 }
 
 
@@ -386,7 +388,7 @@ AdventureSector &AdventureFile::GetSector(int w, int s)
 
 AdventureSector &AdventureFile::GetAdventureSector(Sector *sec)
 {
-	return worlds[sec->world].sectors[sec->index];
+	return worlds[sec->worldIndex].sectors[sec->index];
 }
 
 AdventureWorld &AdventureFile::GetWorld(int w)
