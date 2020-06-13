@@ -62,6 +62,15 @@ bool BitField::GetBit(int index)
 	}
 }
 
+void BitField::Or(const BitField &b)
+{
+	assert(numFields == b.numFields);
+	for (int i = 0; i < numFields; ++i)
+	{
+		optionField[i] |= b.optionField[i];
+	}
+}
+
 bool BitField::IsNonZero()
 {
 	for (int i = 0; i < numFields; ++i)
@@ -73,6 +82,18 @@ bool BitField::IsNonZero()
 	}
 
 	return false;
+}
+
+int BitField::GetOnCount()
+{
+	int counter = 0;
+	for (int i = 0; i < numOptions; ++i)
+	{
+		if (GetBit(i))
+			++counter;
+	}
+
+	return counter;
 }
 
 void BitField::Reset()

@@ -33,6 +33,12 @@ bool AdventureMap::LoadHeaderInfo()
 
 		headerInfo.mapType = mh.bossFightType;
 		headerInfo.shardInfoVec = mh.shardInfoVec;
+
+		for (auto it = headerInfo.shardInfoVec.begin();
+			it != headerInfo.shardInfoVec.end(); ++it)
+		{
+			headerInfo.hasShardField.SetBit((*it).GetTrueIndex(), true);
+		}
 	}
 	else
 	{
@@ -94,6 +100,7 @@ void AdventureMap::Save(std::ofstream &of, int copyMode)
 }
 
 AdventureSector::AdventureSector()
+	:hasShardField(ShardInfo::MAX_SHARDS)
 {
 	requiredRunes = 0;
 }
@@ -260,14 +267,12 @@ bool AdventureFile::LoadMapHeaders()
 				if (am.Exists())
 				{
 					am.LoadHeaderInfo();
-					for (auto it = am.headerInfo.shardInfoVec.begin();
-						it != am.headerInfo.shardInfoVec.end(); ++it)
-					{
-						hasShardField.SetBit((*it).GetTrueIndex(), true);
-					}
+					worlds[w].sectors[s].hasShardField.Or(am.headerInfo.hasShardField);
 				}
 			}
+			worlds[w].hasShardField.Or(worlds[w].sectors[s].hasShardField);
 		}
+		hasShardField.Or(worlds[w].hasShardField);
 	}
 	return true;
 }

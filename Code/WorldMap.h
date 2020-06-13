@@ -41,7 +41,7 @@ struct MapSector
 	void UpdateUnlockedLevelCount();
 	bool IsFocused();
 	void RunSelectedMap();
-	void Init(SaveSector *sec);
+	void Init(SaveSector *sf);
 	int GetNumLevels();
 	void UpdateNodePosition();
 	int GetSelectedIndex();

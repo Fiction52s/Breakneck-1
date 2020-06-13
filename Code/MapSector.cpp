@@ -808,10 +808,8 @@ int MapSector::GetNodeBonusIndexBot(int node)
 	}
 }
 
-void MapSector::Init(SaveSector *p_saveSector)
+void MapSector::Init(SaveFile *p_saveSector)
 {
-	
-
 	if (saveSector->IsComplete())
 	{
 		state = COMPLETE;
