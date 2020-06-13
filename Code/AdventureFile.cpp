@@ -89,6 +89,13 @@ string AdventureMap::GetFilePath()
 	}
 }
 
+std::string AdventureMap::GetMapPath()
+{
+	return "Resources\\" + GetFilePath() + ".brknk";
+}
+
+
+
 bool AdventureMap::Exists()
 {
 	return name != "";

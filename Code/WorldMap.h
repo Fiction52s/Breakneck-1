@@ -47,7 +47,8 @@ struct MapSector
 	int GetNumLevels();
 	void UpdateNodePosition();
 	int GetSelectedIndex();
-	AdventureMap *GetSelectedLevel();
+	Level *GetSelectedLevel();
+	AdventureMap *GetSelectedAdventureMap();
 	void Load();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);

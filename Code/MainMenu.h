@@ -610,6 +610,7 @@ struct MainMenu
 	void PlayIntroMovie();
 	Mode menuMode;
 	void AdventureLoadLevel( int w, AdventureMap *am,
+		Level *lev,
 		bool loadingScreen = true );
 	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;

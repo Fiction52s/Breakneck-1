@@ -342,7 +342,13 @@ int MapSector::GetSelectedIndex()
 	return mapSASelector->currIndex;
 }
 
-AdventureMap * MapSector::GetSelectedLevel()
+Level * MapSector::GetSelectedLevel()
+{
+	int selectedIndex = GetSelectedIndex();
+	return &sec->levels[selectedIndex];
+}
+
+AdventureMap *MapSector::GetSelectedAdventureMap()
 {
 	int selectedIndex = GetSelectedIndex();
 
@@ -418,7 +424,8 @@ void MapSector::UpdateNodePosition()
 void MapSector::RunSelectedMap()
 {
 	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-	ms->mainMenu->AdventureLoadLevel( ms->world->index, GetSelectedLevel());
+	ms->mainMenu->AdventureLoadLevel( ms->world->index, GetSelectedAdventureMap(),
+		GetSelectedLevel());
 }
 
 int MapSector::GetNumLevels()

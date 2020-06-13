@@ -2142,11 +2142,11 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 }
 
-void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, bool loadingScreen)
+void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, Level *lev, bool loadingScreen)
 {
 	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
-	string levelPath = "Resources\\" + am->GetFilePath() + ".brknk";//lev->GetFullName();// name;
+	string levelPath = am->GetMapPath();//lev->GetFullName();// name;
 	//View oldView = window->getView();
 
 	
@@ -2167,7 +2167,7 @@ void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, bool loadingScreen)
 	//sf::sleep(sf::milliseconds(5000));
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
-	//currLevel->level = lev;
+	currLevel->level = lev;
 
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -2236,7 +2236,7 @@ void MainMenu::PlayIntroMovie()
 	
 	Level *lev = &(worldMap->planet->worlds[0].sectors[0].levels[0]);
 	AdventureMap &am = worldMap->adventureFile.GetMap(lev->index);
-	string levelPath = am.GetFilePath();//lev->GetFullName();
+	string levelPath = am.GetMapPath();//lev->GetFullName();
 	//window->setActive(false);
 	doneLoading = false;
 
@@ -2270,7 +2270,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	currFile->Save();
 
 	//AdventureMap &am = worldMap->
-	string levName = am->GetFilePath();
+	string levName = am->GetMapPath();
 	//Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
 	//delete m->currLevel;
 

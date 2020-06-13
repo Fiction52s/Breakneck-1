@@ -70,6 +70,7 @@ struct AdventureMap
 	std::string name;
 	std::string path;
 	std::string GetFilePath();
+	std::string GetMapPath();
 	AdventureMapHeaderInfo headerInfo;
 	bool Exists();
 	void Load(std::ifstream &is, int copyMode );
