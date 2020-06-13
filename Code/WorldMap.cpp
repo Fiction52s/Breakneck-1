@@ -159,15 +159,26 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	adventureFile.Load("Resources/Adventure", "tadventure");
 	adventureFile.LoadMapHeaders();
+	planet = new Planet(adventureFile);
 
-	for (int i = 0; i < 8; ++i)
+	int numWorlds = planet->numWorlds;
+	selectors = new MapSelector*[numWorlds];
+
+	for (int i = 0; i < numWorlds; ++i)
 	{
-		selectors[i] = new MapSelector( mainMenu, Vector2f(960, 540), i);
+		selectors[i] = new MapSelector( this, &(planet->worlds[i]), 
+			mainMenu, Vector2f(960, 540));
 	}
+	/*for (int i = 0; i < 8; ++i)
+	{
+		selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
+	}*/
 }
 
 WorldMap::~WorldMap()
 {
+	
+	delete planet;
 	//delete planetAndSpaceTex;
 	//delete planetTex;
 
@@ -176,6 +187,7 @@ WorldMap::~WorldMap()
 	{
 		delete selectors[i];
 	}
+	delete[] selectors;
 
 	//for( int i = 0; i < 6; ++i )
 	//{
@@ -419,12 +431,11 @@ void WorldMap::SetDefaultSelections()
 
 void WorldMap::InitSelectors()
 {
-	//selectors[i]->Init(i);
-	SaveFile *sFile = mainMenu->GetCurrentProgress();
-	//for (int i = 0; i < sFile->numWorlds; ++i)
-	//{
-	//	//selectors[i]->UpdateAllInfo(i);
-	//}
+	for (int i = 0; i < planet->numWorlds; ++i)
+	{
+		selectors[i]->Init();
+		//selectors[i]->UpdateAllInfo(i);
+	}
 }
 
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
@@ -483,11 +494,11 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				int startLevel = 0;
 				for (int i = 0; i < numLevels; ++i)
 				{
-					if (!currSelector->sectors[startSector]->sec->levels[i].GetComplete())
+					/*if (!currSelector->sectors[startSector]->sec->levels[i].GetComplete())
 					{
 						startLevel = i;
 						break;
-					}
+					}*/
 				}
 				//currSelector->mapSelector->currIndex = startLevel;
 			}
@@ -512,7 +523,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
 		{
 			selectedColony++;
-			if (selectedColony >= mainMenu->GetCurrentProgress()->numWorlds)
+			if (selectedColony >= planet->numWorlds)
 				selectedColony = 0;
 			moveDown = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
@@ -522,7 +533,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			selectedColony--;
 			if (selectedColony < 0)
-				selectedColony = mainMenu->GetCurrentProgress()->numWorlds - 1;
+				selectedColony = planet->numWorlds - 1;
 			moveUp = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
 		}
@@ -980,26 +991,28 @@ void WorldMap::Draw( RenderTarget *target )
 	}
 }
 
-AdventureSector &WorldMap::GetCurrSector()
+Sector & WorldMap::GetCurrSector()
 {
-	SaveFile * currFile = mainMenu->GetCurrentProgress();
+	//SaveFile * currFile = mainMenu->GetCurrentProgress();
 	//World & world = currFile->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	return currFile->adventureFile.GetSector(selectedColony, secIndex);
+	return planet->worlds[selectedColony].sectors[secIndex];
+	//return currFile->adventureFile.GetSector(selectedColony, secIndex);
 }
 
-void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
+void WorldMap::CompleteCurrentMap( Level *lev, int totalFrames )
 {
+	SaveFile *saveFile = mainMenu->GetCurrentProgress();
 	//World & world = sf->worlds[selectedColony];
-	int worldIndex = selectedColony;
-	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	int levIndex = selectors[selectedColony]->FocusedSector()->mapSASelector->currIndex;
+	//int worldIndex = selectedColony;
+	//int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
+	//int levIndex = selectors[selectedColony]->FocusedSector()->mapSASelector->currIndex;
 	
 	//Level &lev = sec.levels[levIndex];
 
-	if ( !sf->IsCompleteLevel( worldIndex, secIndex, levIndex ) )
+	if ( !saveFile->IsCompleteLevel( lev ) )
 	{
-		sf->CompleteLevel(worldIndex, secIndex, levIndex);
+		saveFile->CompleteLevel(lev);
 
 		MapSector *mapSec = CurrSelector()->FocusedSector();
 		mapSec->UpdateUnlockedLevelCount();
@@ -1010,7 +1023,7 @@ void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 		//lev.justBeaten = false;
 	}
 
-	bool isRecordSet = sf->TrySetRecordTime(totalFrames, worldIndex, secIndex, levIndex);
+	bool isRecordSet = saveFile->TrySetRecordTime(totalFrames, lev);
 	if (isRecordSet)
 	{
 		//create a flag so that you can get hype over this

@@ -2,6 +2,10 @@
 #define __MAPHEADER_H__
 
 #include "ShardInfo.h"
+#include <fstream>
+#include <string>
+#include <map>
+#include <vector>
 
 struct MapHeader
 {

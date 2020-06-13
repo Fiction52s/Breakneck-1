@@ -10,10 +10,46 @@
 #include "ShardInfo.h"
 //#include "Actor.h"
 
-struct SaveSector;
-struct SaveWorld;
 struct Actor;
+struct AdventureFile;
 
+struct Level
+{
+	int index;
+};
+
+struct Sector
+{
+	int index;
+	int numLevels;
+	Level * levels;
+	int world;
+	~Sector()
+	{
+		delete[] levels;
+	}
+
+};
+
+struct World
+{
+	int index;
+	int numSectors;
+	Sector *sectors;
+
+	~World()
+	{
+		delete[] sectors;
+	}
+};
+
+struct Planet
+{
+	Planet(AdventureFile &af);
+	~Planet();
+	int numWorlds;
+	World *worlds;	
+};
 
 struct AdventureMapHeaderInfo
 {
@@ -33,6 +69,7 @@ struct AdventureMap
 {
 	std::string name;
 	std::string path;
+	std::string GetFilePath();
 	AdventureMapHeaderInfo headerInfo;
 	bool Exists();
 	void Load(std::ifstream &is, int copyMode );
@@ -80,13 +117,17 @@ struct AdventureFile
 	BitField hasShardField;
 	AdventureWorld worlds[8];
 
+
 	AdventureFile();
+	~AdventureFile();
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
+	int GetRequiredRunes(Sector *sec);
 	AdventureMap &GetMap(int index);
 	AdventureSector &GetSector(int w, int s);
+	AdventureSector &GetAdventureSector(Sector *sec);
 	AdventureWorld &GetWorld(int w);
 	
 	
@@ -170,6 +211,31 @@ struct AdventureFile
 //	int GetNumShardsCaptured();
 //};
 
+
+//struct SaveWorld
+//{
+//	SaveFile *saveFile;
+//	int index;
+//	int numSectors;
+//	SaveSector *sectors;
+//
+//	SaveWorld(SaveFile *sf, int w)
+//		:saveFile( sf ), index( w )
+//	{
+//		
+//	}
+//	int GetTotalFrames();
+//	void UpdateShardNameList();
+//	int GetNumTotalShards();
+//	bool Load(std::ifstream &is);
+//	bool Save(std::ofstream &of);
+//	int GetNumSectorTypeComplete(int sType);
+//	float GetCompletionPercentage();
+//	int GetNumShardsCaptured();
+//};
+
+
+
 struct LevelScore
 {
 	int bestFramesToBeat;
@@ -191,6 +257,7 @@ struct SaveFile
 	bool LoadInfo(std::ifstream &is );
 	void CopyFromDefault();
 
+	void CreateSaveWorlds();
 	//queries
 	
 	float GetCompletionPercentage();
@@ -207,14 +274,22 @@ struct SaveFile
 	void UnlockUpgrade(int pType);
 	bool ShardIsCaptured(int sType);
 
-	bool IsCompleteSector(int w, int s);
-	bool IsCompleteWorld(int w);
-	bool IsCompleteLevel(int w, int s, int m);
-	void CompleteLevel(int w, int s, int m);
+	bool IsCompleteSector(Sector *sector);
+	bool IsCompleteWorld(World *world);
+	bool IsCompleteLevel(Level *lev);
+	void CompleteLevel(Level *lev);
 
-	bool IsUnlockedSector(int w, int s);
+	bool IsUnlockedSector(Sector *sector);
 	bool TrySetRecordTime(int totalFrames,
-		int w, int s, int m);
+		Level *lev );
+
+	int GetNumShardsCaptured();
+	int GetNumShardsTotal();
+
+	bool IsLevelLastInSector( Level *lev );
+
+	bool IsLevelJustBeaten(Level *lev);
+	void SetLevelNotJustBeaten(Level *lev);
 
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;
@@ -222,6 +297,7 @@ struct SaveFile
 	//info
 	std::string fileName;
 	AdventureFile &adventureFile;
+	
 	
 	//state
 	BitField levelsJustBeatenField;

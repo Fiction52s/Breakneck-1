@@ -14,6 +14,7 @@ struct MainMenu;
 struct SaveFile;
 struct MapSelector;
 struct MapSector;
+struct WorldMap;
 
 enum MapNodeState
 {
@@ -35,7 +36,8 @@ struct MapSector
 		COMPLETE
 	};
 
-	MapSector( SaveFile *sf, 
+	MapSector( AdventureFile &adventureFile,
+		Sector *p_sector, 
 		MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
@@ -45,7 +47,7 @@ struct MapSector
 	int GetNumLevels();
 	void UpdateNodePosition();
 	int GetSelectedIndex();
-	AdventureMap &GetSelectedLevel();
+	AdventureMap *GetSelectedLevel();
 	void Load();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
@@ -66,8 +68,9 @@ struct MapSector
 
 	State state;
 	MapSelector *ms;
+	Sector *sec;
 	SaveFile *saveFile;
-	AdventureSector *adventureSector;
+	AdventureFile &adventureFile;
 
 	
 	sf::Vector2f left;
@@ -137,11 +140,12 @@ struct MapSelector
 		K_HIDE,
 	};
 
-	MapSelector( MainMenu *mm, sf::Vector2f &pos, 
-		int wIndex);
+	MapSelector( WorldMap *worldMap, 
+		World *world, MainMenu *mm, sf::Vector2f &pos );
 	void ReturnFromMap();
 	void UpdateHighlight();
 	void RunSelectedMap();
+	void Init();
 	~MapSelector();
 	MapSector *FocusedSector();
 	void UpdateSprites();
@@ -154,7 +158,6 @@ struct MapSelector
 	std::vector<MapSector*> sectors;
 	MainMenu *mainMenu;
 
-	sf::Sprite newSelectTestSpr;
 	sf::Sprite nodeHighlight;
 	sf::Sprite kinSprite;
 	sf::Sprite bottomBG;
@@ -162,7 +165,6 @@ struct MapSelector
 	sf::Sprite shardBG;
 
 	KinState kinState;
-	int worldIndex;
 	int kinFrame;
 	int frame;
 	int numSectors;
@@ -172,7 +174,7 @@ struct MapSelector
 	MapNodeState *nodeStates[3];
 	
 	SingleAxisSelector *sectorSASelector;
-	
+	World *world;
 
 	Tileset *ts_sectorLevelBG;
 	Tileset *ts_levelStatsBG;
@@ -221,8 +223,8 @@ struct WorldMap
 		ControllerState &prevInput,
 		ControllerState &currInput);
 	void Draw(sf::RenderTarget *target);
-	void CompleteCurrentMap(SaveFile *sf, int totalFrames);
-	AdventureSector &GetCurrSector();
+	void CompleteCurrentMap( Level *level, int totalFrames);
+	Sector &GetCurrSector();
 	int GetCurrSectorNumLevels();
 	void UpdateMapList();
 	const std::string & GetSelected();
@@ -237,10 +239,11 @@ struct WorldMap
 
 	State state;
 	WorldSelector *worldSelector;
-	MapSelector *selectors[8];
+	MapSelector **selectors;
 	MainMenu *mainMenu;
 	
 	AdventureFile adventureFile;
+	Planet *planet;
 
 	sf::Shader zoomShader;
 	sf::Shader asteroidShader;

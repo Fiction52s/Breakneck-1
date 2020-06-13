@@ -673,7 +673,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool HasPowerUnlocked( int pIndex );
 
 	InputVisualizer *inputVis;
-	//Level *level;
+	Level *level;
 
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void FreezePlayerAndEnemies( bool freeze );

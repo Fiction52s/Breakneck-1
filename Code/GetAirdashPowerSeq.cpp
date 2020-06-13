@@ -175,7 +175,7 @@ bool GetAirdashPowerSeq::Update()
 				owner->Fade(true, 60, Color::Black, true);
 				owner->adventureHUD->Show(60);
 				owner->mainMenu->GetCurrentProgress()
-					->UnlockPower(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+					->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
 			}
 		}
 

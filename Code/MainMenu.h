@@ -619,6 +619,7 @@ struct MainMenu
 	void HandleMenuMode();
 
 	static void sGoToNextLevel(MainMenu *m,
+		AdventureMap *am,
 		Level *lev);
 
 

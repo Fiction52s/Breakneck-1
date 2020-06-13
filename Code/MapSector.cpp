@@ -7,11 +7,10 @@
 using namespace std;
 using namespace sf;
 
-MapSector::MapSector( SaveFile *sf, MapSelector *p_ms, int index)
-	:saveFile( sf ), numLevels(-1), ms(p_ms), sectorIndex(index)
+MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelector *p_ms, int index)
+	:saveFile( NULL ), numLevels(-1), ms(p_ms), sectorIndex(index), sec( p_sector ),
+	adventureFile( p_adventureFile )
 {
-	
-
 	unlockedIndex = -1;
 	nodeSize = 128;
 	pathLen = 16;
@@ -80,18 +79,15 @@ MapSector::MapSector( SaveFile *sf, MapSelector *p_ms, int index)
 
 	sectorNameText.setString("Sector " + to_string( index + 1 ));
 
-	int waitFrames[3] = { 30, 10, 5 };
-	int waitModeThresh[2] = { 2, 2 };
+	//int waitFrames[3] = { 30, 10, 5 };
+	//int waitModeThresh[2] = { 2, 2 };
 
 	bool blank = mapSASelector == NULL;
 	bool diffNumLevels = false;
 
 	selectedYIndex = 1;
 
-	adventureSector = &saveFile->adventureFile.GetSector(ms->worldIndex, sectorIndex);
-		
-
-	numLevels = adventureSector.GetNumActiveMaps();
+	numLevels = sec->numLevels;
 
 	Tileset *ts_node = ms->ts_node;
 	nodes = new Sprite[numLevels];
@@ -135,7 +131,7 @@ MapSector::MapSector( SaveFile *sf, MapSelector *p_ms, int index)
 	}*/
 
 	//requirementText
-	numRequiredRunes = adventureSector.requiredRunes;
+	numRequiredRunes = adventureFile.GetRequiredRunes(sec);
 
 	requirementText.setFont(ms->mainMenu->arial);
 	requirementText.setCharacterSize(40);
@@ -146,7 +142,6 @@ MapSector::MapSector( SaveFile *sf, MapSelector *p_ms, int index)
 	//UpdateNodes();
 	UpdateStats();
 	UpdateLevelStats();
-	UpdateUnlockedLevelCount();
 }
 
 MapSector::~MapSector()
@@ -177,9 +172,11 @@ MapSector::~MapSector()
 void MapSector::UpdateUnlockedLevelCount()
 {
 	unlockedLevelCount = numLevels;
+	Level *level;
 	for (int i = 0; i < numLevels - 1; ++i)
 	{
-		if (!saveSector->levels[i].GetComplete())
+		level = &(sec->levels[i]);
+		if( saveFile->IsCompleteLevel( level ))
 		{
 			unlockedLevelCount = max(1, i + 1);
 			break;
@@ -199,14 +196,16 @@ void MapSector::Draw(sf::RenderTarget *target)
 {
 	bg->Draw(target);
 
-	if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
+	//if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
+	bool unlocked = saveFile->IsUnlockedSector(sec);
+
+	if( !unlocked)
 	{
 		target->draw(lockedOverlayQuad, 4, sf::Quads);
 	}
 	
 	bool focused = IsFocused();
-	bool unlocked = saveSector->IsUnlocked();
 
 	if (focused)
 	{
@@ -321,7 +320,7 @@ void MapSector::UpdateStats()
 {
 	stringstream ss;
 
-	int numTotalShards = saveSector->GetNumTotalShards();
+	/*int numTotalShards = adventureFile.GetAdventureSector(sec).hasShardField.GetOnCount();
 	int numShardsCaptured = saveSector->GetNumShardsCaptured();
 
 	ss << numShardsCaptured << " / " << numTotalShards;
@@ -334,7 +333,7 @@ void MapSector::UpdateStats()
 
 	ss << percent << "%";
 
-	completionPercentText.setString(ss.str());
+	completionPercentText.setString(ss.str());*/
 }
 
 int MapSector::GetSelectedIndex()
@@ -342,28 +341,11 @@ int MapSector::GetSelectedIndex()
 	return mapSASelector->currIndex;
 }
 
-AdventureMap &MapSector::GetSelectedLevel()
+AdventureMap * MapSector::GetSelectedLevel()
 {
 	int selectedIndex = GetSelectedIndex();
 
-	int counter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (adventureSector->maps[i].Exists())
-		{
-			if (counter == selectedIndex)
-			{
-				return adventureSector->maps[i];
-			}
-			else
-			{
-				++counter;
-			}
-		}
-	}
-
-	assert(0);
-	return adventureSector->maps[0];
+	return &adventureFile.GetMap(sec->levels[selectedIndex].index);
 }
 
 void MapSector::UpdateLevelStats()
@@ -435,7 +417,7 @@ void MapSector::UpdateNodePosition()
 void MapSector::RunSelectedMap()
 {
 	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-	ms->mainMenu->AdventureLoadLevel( ms->worldIndex, &GetSelectedLevel());
+	ms->mainMenu->AdventureLoadLevel( ms->world->index, GetSelectedLevel());
 }
 
 int MapSector::GetNumLevels()
@@ -472,14 +454,14 @@ bool MapSector::Update(ControllerState &curr,
 		int lastBeaten = -1;
 		for (int i = 0; i < numLevels; ++i)
 		{
-			if (sec->levels[i].justBeaten)
+			if (saveFile->IsLevelJustBeaten( &sec->levels[i]))
 			{
 				state = LEVELCOMPLETEDWAIT;
 
 				stateFrame = 0;
 				unlockedIndex = i;//saSelector->currIndex;
 								  //unlockFrame = frame;
-				sec->levels[i].justBeaten = false;
+				saveFile->SetLevelNotJustBeaten(&sec->levels[i]);
 				lastBeaten = i;
 				//break;
 			}
@@ -516,11 +498,11 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateNodes();
 		}
 
-		if (curr.A && !prev.A && saveFile->IsUnlockedSector( ms->worldIndex, sectorIndex ))
+		if (curr.A && !prev.A && saveFile->IsUnlockedSector( sec ))
 		{
 			if (selectedYIndex == 1)
 			{
-				if (saveFile->IsCompleteSector(ms->worldIndex, sectorIndex))
+				if (saveFile->IsCompleteSector(sec) )
 				{
 					state = COMPLETE;
 				}
@@ -543,7 +525,7 @@ bool MapSector::Update(ControllerState &curr,
 		int ff = stateFrame / 7;
 		if (ff == 13)
 		{
-			bool secOver = saveFile->IsCompleteSector(ms->worldIndex, sectorIndex);
+			bool secOver = saveFile->IsCompleteSector(sec);
 
 			if (secOver)
 			{
@@ -612,7 +594,8 @@ void MapSector::UpdateNodes()
 	for (int i = 0; i < numLevels; ++i)
 	{
 		Tileset *currTS = NULL;
-		int bFType = adventureSector->GetExistingMap(i).headerInfo.mapType;
+		
+		int bFType = adventureFile.GetAdventureSector( sec ).GetExistingMap(i).headerInfo.mapType;
 		if (bFType == 0)
 		{
 			currTS = ts_node;
@@ -635,100 +618,102 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
-	int bType = sec->levels[node].bossFightType;
-	int res;
-	if (bType == 0)
-	{
-		if (!sec->IsLevelUnlocked(node))
-		{
-			res = 0;
-		}
-		else
-		{
-			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
-			{
-				if (sec->levels[node].IsOneHundredPercent())
-				{
-					res = 8;
-				}
-				else if (sec->levels[node].GetComplete())
-				{
-					res = 7;
-				}
-				else
-				{
-					res = 6;
-				}
+	
+	//int bType = adventureFile.GetMap(sec->levels[node].index).headerInfo.mapType;
+	//int res;
+	//if (bType == 0)
+	//{
+	//	if (!sec->IsLevelUnlocked(node))
+	//	{
+	//		res = 0;
+	//	}
+	//	else
+	//	{
+	//		if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+	//		{
+	//			if (sec->levels[node].IsOneHundredPercent())
+	//			{
+	//				res = 8;
+	//			}
+	//			else if (sec->levels[node].GetComplete())
+	//			{
+	//				res = 7;
+	//			}
+	//			else
+	//			{
+	//				res = 6;
+	//			}
 
-				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
-				{
-					res = 6;//--res;
-				}
-			}
-			else
-			{
-				if (sec->levels[node].IsOneHundredPercent())
-				{
-					res = 5;
-				}
-				else if (sec->levels[node].GetComplete())
-				{
-					res = 4;
-				}
-				else
-				{
-					res = 3;
-				}
-			}
-		}
-	}
-	else
-	{
-		if (!sec->IsLevelUnlocked(node))
-		{
-			res = 0;
-		}
-		else
-		{
-			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
-			{
-				if (sec->levels[node].IsOneHundredPercent())
-				{
-					res = 2;
-				}
-				else if (sec->levels[node].GetComplete())
-				{
-					res = 2;
-				}
-				else
-				{
-					res = 5;
-				}
+	//			if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+	//			{
+	//				res = 6;//--res;
+	//			}
+	//		}
+	//		else
+	//		{
+	//			if (sec->levels[node].IsOneHundredPercent())
+	//			{
+	//				res = 5;
+	//			}
+	//			else if (sec->levels[node].GetComplete())
+	//			{
+	//				res = 4;
+	//			}
+	//			else
+	//			{
+	//				res = 3;
+	//			}
+	//		}
+	//	}
+	//}
+	//else
+	//{
+	//	if (!sec->IsLevelUnlocked(node))
+	//	{
+	//		res = 0;
+	//	}
+	//	else
+	//	{
+	//		if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+	//		{
+	//			if (sec->levels[node].IsOneHundredPercent())
+	//			{
+	//				res = 2;
+	//			}
+	//			else if (sec->levels[node].GetComplete())
+	//			{
+	//				res = 2;
+	//			}
+	//			else
+	//			{
+	//				res = 5;
+	//			}
 
-				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
-				{
-					res = 5;
-					//--res;
-				}
-			}
-			else
-			{
-				if (sec->levels[node].IsOneHundredPercent())
-				{
-					res = 1;
-				}
-				else if (sec->levels[node].GetComplete())
-				{
-					res = 1;
-				}
-				else
-				{
-					res = 4;
-				}
-			}
-		}
-	}
-	return res;
+	//			if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+	//			{
+	//				res = 5;
+	//				//--res;
+	//			}
+	//		}
+	//		else
+	//		{
+	//			if (sec->levels[node].IsOneHundredPercent())
+	//			{
+	//				res = 1;
+	//			}
+	//			else if (sec->levels[node].GetComplete())
+	//			{
+	//				res = 1;
+	//			}
+	//			else
+	//			{
+	//				res = 4;
+	//			}
+	//		}
+	//	}
+	//}
+	//return res;
+	return 0;
 }
 
 int MapSector::GetSelectedNodeSubIndex()
@@ -741,9 +726,10 @@ int MapSector::GetSelectedNodeBossFightType()
 	return 0; //sec->levels[GetSelectedIndex()].bossFightType;
 }
 
-void MapSector::Init(SaveFile *saveFile)
+void MapSector::Init(SaveFile *p_saveFile)
 {
-	if (saveFile->IsCompleteSector(ms->worldIndex, sectorIndex) )
+	saveFile = p_saveFile;
+	if (saveFile->IsCompleteSector(sec) )
 	{
 		state = COMPLETE;
 		endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));

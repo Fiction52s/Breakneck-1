@@ -2647,7 +2647,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		{
 			isCampaign = true;
 			//set this up better later
-			if( currProgress->HasPowerUnlocked(UPGRADE_POWER_AIRDASH) )
+			if( currProgress->HasUpgrade(UPGRADE_POWER_AIRDASH) )
 				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
 		}
 	}
@@ -5515,7 +5515,8 @@ void Actor::HandleWaitingScoreDisplay()
 		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
 		if (a || x)
 		{
-			bool levValid = owner->level != NULL && !owner->level->IsLastInSector();
+			SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+			bool levValid = owner->level != NULL && !currFile->IsLevelLastInSector( owner->level );
 			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 			{
 				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
@@ -5531,8 +5532,8 @@ void Actor::HandleWaitingScoreDisplay()
 		{
 			if ( owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 			{
-				SaveFile *currFile = owner->GetCurrentProgress();
-				owner->mainMenu->worldMap->CompleteCurrentMap(currFile, owner->totalFramesBeforeGoal);
+				SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+				owner->mainMenu->worldMap->CompleteCurrentMap( owner->level, owner->totalFramesBeforeGoal);
 				currFile->Save();
 			}
 			owner->NextFrameRestartLevel();

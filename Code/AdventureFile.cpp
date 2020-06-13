@@ -6,6 +6,89 @@
 
 using namespace std;
 
+Planet::Planet(AdventureFile &adventureFile)
+{
+	int numSectors;
+	int numLevels;
+	World *sw;
+	Sector *ss;
+	Level *sl;
+	int counter;
+	int levelCounter;
+	int levelIndex;
+	
+	numWorlds = adventureFile.GetNumActiveWorlds();
+	if (numWorlds == 0)
+		assert(0);
+
+	worlds = new World[numWorlds];
+	int worldCounter = 0;
+
+	for (int w = 0; w < 8; ++w)
+	{
+		numSectors = adventureFile.worlds[w].GetNumActiveSectors();
+		if (numSectors == 0)
+		{
+			continue;
+		}
+
+		sw = &worlds[worldCounter];
+		sw->index = w;
+		++worldCounter;
+
+		sw->numSectors = numSectors;
+
+		if (numSectors == 0)
+		{
+			sw->sectors = NULL;
+			continue;
+		}
+
+		sw->sectors = new Sector[numSectors];
+		counter = 0;
+		for (int s = 0; s < 8; ++s)
+		{
+			numLevels = adventureFile.GetSector(w, s).GetNumActiveMaps();
+			if (numLevels > 0)
+			{
+				ss = &(sw->sectors[counter]);
+				ss->world = w;
+				ss->numLevels = numLevels;
+				ss->levels = new Level[numLevels];
+				ss->index = counter;
+				levelCounter = 0;
+				for (int m = 0; m < 8; ++m)
+				{
+					levelIndex = w * 64 + s * 8 + m;
+					if (adventureFile.GetMap(levelIndex).Exists())
+					{
+						sl = &(ss->levels[levelCounter]);
+						sl->index = levelIndex;
+
+						++levelCounter;
+					}
+				}
+				++counter;
+			}
+		}
+	}
+}
+
+Planet::~Planet()
+{
+	delete[] worlds;
+}
+
+string AdventureMap::GetFilePath()
+{
+	if (path == "")
+		return name;
+	else
+	{
+		return path + "\\" + name;
+	}
+}
+
 bool AdventureMap::Exists()
 {
 	return name != "";
@@ -19,12 +102,14 @@ bool AdventureMap::LoadHeaderInfo()
 
 	if (path == "")
 	{
-		is.open(name);
+		is.open( "Resources\\" + name + ".brknk");
 	}
 	else
 	{
-		is.open(path + "\\" + name);
+		is.open( "Resources\\" + path + "\\" + name + ".brknk");
 	}
+
+
 
 	if (is.is_open())
 	{
@@ -44,6 +129,8 @@ bool AdventureMap::LoadHeaderInfo()
 	{
 		assert(false);
 	}
+
+	return true;
 }
 
 void AdventureMap::Load(std::ifstream &is, int copyMode)
@@ -211,6 +298,10 @@ AdventureFile::AdventureFile()
 
 }
 
+AdventureFile::~AdventureFile()
+{
+}
+
 bool AdventureFile::Load(const std::string &p_path,
 	const std::string &adventureName)
 {
@@ -266,6 +357,11 @@ void AdventureFile::Save(const std::string &p_path,
 	of.close();
 }
 
+int AdventureFile::GetRequiredRunes(Sector *sec)
+{
+	return GetSector(sec->world, sec->index).requiredRunes;
+}
+
 
 AdventureMap &AdventureFile::GetMap(int index)
 {
@@ -279,6 +375,11 @@ AdventureMap &AdventureFile::GetMap(int index)
 AdventureSector &AdventureFile::GetSector(int w, int s)
 {
 	return worlds[w].sectors[s];
+}
+
+AdventureSector &AdventureFile::GetAdventureSector(Sector *sec)
+{
+	return worlds[sec->world].sectors[sec->index];
 }
 
 AdventureWorld &AdventureFile::GetWorld(int w)
@@ -305,5 +406,6 @@ bool AdventureFile::LoadMapHeaders()
 		}
 		hasShardField.Or(worlds[w].hasShardField);
 	}
+
 	return true;
 }

@@ -2146,7 +2146,7 @@ void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, bool loadingScreen)
 {
 	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
-	string levelPath = am->path + "\\" + am;//lev->GetFullName();// name;
+	string levelPath = am->path + "\\" + am->name;//lev->GetFullName();// name;
 	//View oldView = window->getView();
 
 	
@@ -2233,8 +2233,10 @@ void MainMenu::PlayIntroMovie()
 	//musicPlayer->FadeOutCurrentMusic(30);
 	MusicInfo *info = musicManager->songMap["w0_0_Film"];
 	musicPlayer->TransitionMusic(info, 60, sf::seconds( 60 ));
-	Level *lev = &(GetCurrentProgress()->worlds[0].sectors[0].levels[0]);
-	string levelPath = lev->GetFullName();
+	
+	Level *lev = &(worldMap->planet->worlds[0].sectors[0].levels[0]);
+	AdventureMap &am = worldMap->adventureFile.GetMap(lev->index);
+	string levelPath = am.GetFilePath();//lev->GetFullName();
 	//window->setActive(false);
 	doneLoading = false;
 
@@ -2255,7 +2257,7 @@ void MainMenu::PlayIntroMovie()
 	//AdventureLoadLevel(, false);
 }
 
-void MainMenu::sGoToNextLevel(MainMenu *m, Level *lev )//const std::string &levName)
+void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const std::string &levName)
 {
 
 	//sf::sleep(sf::milliseconds(1000));
@@ -2267,7 +2269,8 @@ void MainMenu::sGoToNextLevel(MainMenu *m, Level *lev )//const std::string &levN
 	SaveFile *currFile = m->GetCurrentProgress();
 	currFile->Save();
 
-	string levName = lev->GetFullName();
+	//AdventureMap &am = worldMap->
+	string levName = am->GetFilePath();
 	//Level *lev = &(currFile->worlds[0].sectors[0].levels[0]);
 	//delete m->currLevel;
 
@@ -2773,7 +2776,7 @@ void MainMenu::HandleMenuMode()
 				//window->setFramerateLimit(60);
 				//string levelPath = kinBoostScreen->level->GetFullName();//kinBoostScreen->levName;
 				Level *lev = kinBoostScreen->level;
-				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, lev);
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &worldMap->adventureFile.GetMap( lev->index ), lev);
 				kinBoostScreen->level = NULL;
 			}
 			
@@ -2798,7 +2801,7 @@ void MainMenu::HandleMenuMode()
 		SaveFile *currFile = GetCurrentProgress();
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
 		{
-			worldMap->CompleteCurrentMap(currFile, currLevel->totalFramesBeforeGoal);
+			worldMap->CompleteCurrentMap(currLevel->level, currLevel->totalFramesBeforeGoal);
 		}
 		switch (result)
 		{
@@ -2858,7 +2861,7 @@ void MainMenu::HandleMenuMode()
 			Sector &sec = worldMap->GetCurrSector();
 			for (int i = 0; i < sec.numLevels; ++i)
 			{
-				sec.levels[i].justBeaten = false;
+				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
 			}
 			//fix this later for other options
 
@@ -3923,37 +3926,38 @@ void MapSelectionMenu::LoadMap()
 
 bool MapSelectionMenu::WriteMapHeader(std::ofstream &of, MapHeader *mh)
 {
-	of << mh->ver1 << "." << mh->ver2 << "\n";
-	of << mh->description << "<>\n";
+	mh->Save(of);
+	//of << mh->ver1 << "." << mh->ver2 << "\n";
+	//of << mh->description << "<>\n";
 
-	of << mh->numShards << "\n";
-	for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
-	{
-		of << (*it) << "\n";
-	}
+	//of << mh->numShards << "\n";
+	//for (auto it = mh->shardNameList.begin(); it != mh->shardNameList.end(); ++it)
+	//{
+	//	of << (*it) << "\n";
+	//}
 
-	of << mh->songLevels.size() << "\n";
-	for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
-	{
-		of << (*it).first << "\n";
-		of << (*it).second << "\n";
-	}
+	//of << mh->songLevels.size() << "\n";
+	//for (auto it = mh->songLevels.begin(); it != mh->songLevels.end(); ++it)
+	//{
+	//	of << (*it).first << "\n";
+	//	of << (*it).second << "\n";
+	//}
 
-	of << mh->collectionName << "\n";
-	of << mh->gameMode << "\n";
+	//of << mh->collectionName << "\n";
+	//of << mh->gameMode << "\n";
 
-	//of << (int)mh->envType << " " << mh->envLevel << endl;
-	of << mh->envWorldType << " ";
-	of << mh->envName << endl;
+	////of << (int)mh->envType << " " << mh->envLevel << endl;
+	//of << mh->envWorldType << " ";
+	//of << mh->envName << endl;
 
-	of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
+	//of << mh->leftBounds << " " << mh->topBounds << " " << mh->boundsWidth << " " << mh->boundsHeight << endl;
 
 
-	of << mh->drainSeconds << endl;
+	//of << mh->drainSeconds << endl;
 
-	of << mh->bossFightType << endl;
+	//of << mh->bossFightType << endl;
 
-	of << mh->numVertices << endl;
+	//of << mh->numVertices << endl;
 
 	return true;
 }

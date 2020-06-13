@@ -35,8 +35,8 @@ void Shard::UpdateParamsSettings()
 	int oldShardType = shardType;
 
 	ShardParams *sParams = (ShardParams*)editParams;
-	shardWorld = sParams->world;
-	localIndex = sParams->localIndex;
+	shardWorld = sParams->shInfo.world;
+	localIndex = sParams->shInfo.localIndex;
 	shardType = Shard::GetShardType(shardWorld, localIndex);
 
 	if (shardType != oldShardType)

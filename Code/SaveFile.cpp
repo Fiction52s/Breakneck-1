@@ -582,6 +582,8 @@ SaveFile::SaveFile(const std::string &name, AdventureFile &p_adventure)
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure )
 {
+	CreateSaveWorlds();
+
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
 
@@ -590,6 +592,11 @@ SaveFile::SaveFile(const std::string &name, AdventureFile &p_adventure)
 
 SaveFile::~SaveFile()
 {
+}
+
+void SaveFile::CreateSaveWorlds()
+{
+	
 }
 
 int SaveFile::GetBestFrames()
@@ -762,10 +769,30 @@ bool SaveFile::IsRangeComplete(int start, int end)
 	return complete;
 }
 
-bool SaveFile::TrySetRecordTime(int totalFrames,
-	int w, int s, int m)
+int SaveFile::GetNumShardsCaptured()
 {
-	int index = GetMapIndex(w, s, m);
+	return shardField.GetOnCount();
+}
+
+int SaveFile::GetNumShardsTotal()
+{
+	return adventureFile.hasShardField.GetOnCount();
+}
+
+bool SaveFile::IsLevelJustBeaten(Level *lev)
+{
+	return levelsJustBeatenField.GetBit(lev->index);
+}
+
+void SaveFile::SetLevelNotJustBeaten(Level *lev)
+{
+	levelsJustBeatenField.SetBit(lev->index, false);
+}
+
+bool SaveFile::TrySetRecordTime(int totalFrames,
+	Level *lev )
+{
+	int index = lev->index;//GetMapIndex(w, s, m);
 	int toBeat = levelScores[index].bestFramesToBeat;
 	if ( toBeat < 0 || totalFrames < toBeat)
 	{
@@ -776,26 +803,46 @@ bool SaveFile::TrySetRecordTime(int totalFrames,
 	return false;
 }
 
-void SaveFile::CompleteLevel(int w, int s, int m)
+bool SaveFile::IsLevelLastInSector( Level *lev )
 {
-	int index = GetMapIndex(w, s, m);
+	int levIndex = lev->index;
+	int world = levIndex / 64;
+	int sector = (levIndex % 64) / 8;
+	int ind = (levIndex % 8);
+
+	AdventureSector &as = adventureFile.GetSector(world, sector);
+	for (int i = ind+1; i < 8; ++i)
+	{
+		if (as.maps[i].Exists())
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void SaveFile::CompleteLevel(Level *lev)
+{
+	int index = lev->index;
 	levelsJustBeatenField.SetBit(index, true);
 	levelsBeatenField.SetBit(index, true);
 }
 
-bool SaveFile::IsCompleteWorld(int w)
+bool SaveFile::IsCompleteWorld( World *world )
 {
-	IsRangeComplete(GetWorldStart(w), GetWorldEnd(w));
+	int w = world->index;
+	return IsRangeComplete(GetWorldStart(w), GetWorldEnd(w));
 }
 
-bool SaveFile::IsCompleteSector(int w, int s)
+bool SaveFile::IsCompleteSector(Sector *sector)
 {
-	IsRangeComplete(GetSectorStart(w, s), GetSectorEnd(w, s));
+	return IsRangeComplete(sector->index, sector->index + 8);
 }
 
-bool SaveFile::IsCompleteLevel(int w, int s, int m)
+bool SaveFile::IsCompleteLevel(Level *lev)
 {
-	int index = GetMapIndex(w, s, m);
+	int index = lev->index;
 	AdventureMap &am = adventureFile.GetMap(index);
 	if (am.Exists() && !levelsBeatenField.GetBit(index))
 	{
@@ -807,24 +854,25 @@ bool SaveFile::IsCompleteLevel(int w, int s, int m)
 	return false;
 }
 
-bool SaveFile::IsUnlockedSector(int w, int s)
+bool SaveFile::IsUnlockedSector(Sector *sector)
 {
-	AdventureSector &as = adventureFile.GetSector(w, s);
-	int required = as.requiredRunes;
+	//AdventureSector &as = adventureFile.GetAdventureSector(sector);//adventureFile.GetSector(sector->world, sector->);
+	//int required = as.requiredRunes;
 
-	AdventureWorld &aw = adventureFile.GetWorld(w);
-	int complete = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (IsCompleteSector(w, i))
-		{
-			++complete;
-			if (complete == required)
-				return true;
-		}
-	}
+	//int complete = 0;
+	//for (int i = 0; i < 8; ++i)
+	//{
+	//	if (IsCompleteSector(sector->world, i))
+	//	{
+	//		++complete;
+	//		if (complete == required)
+	//			return true;
+	//	}
+	//}
 
-	return false;
+	return true;
+
+	//return false;
 }
 
 bool SaveFile::HasUpgrade(int pow)
@@ -900,6 +948,7 @@ bool SaveFile::Load()
 	}
 	else
 	{
+
 		return true;
 	}
 }

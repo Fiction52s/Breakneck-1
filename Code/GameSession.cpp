@@ -861,7 +861,7 @@ void GameSession::RecordReplayEnemies()
 
 void GameSession::UnlockPower(int pType)
 {
-	mainMenu->GetCurrentProgress()->UnlockPower(pType);
+	mainMenu->GetCurrentProgress()->UnlockUpgrade(pType);
 }
 
 void GameSession::UpdateInput()
@@ -8500,7 +8500,7 @@ bool GameSession::HasPowerUnlocked( int pIndex )
 {
 	SaveFile *prog = GetCurrentProgress();
 	if ( mainMenu->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE && prog != NULL 
-		&& prog->HasPowerUnlocked((Actor::UpgradeType)pIndex))
+		&& prog->HasUpgrade((Actor::UpgradeType)pIndex))
 	{
 		return true;
 	}

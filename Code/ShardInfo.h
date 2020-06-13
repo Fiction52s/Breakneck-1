@@ -3,6 +3,11 @@
 
 struct ShardInfo
 {
+	ShardInfo()
+		:world(0), localIndex(0 )
+	{
+
+	}
 	ShardInfo(int w, int li)
 		:world(w), localIndex(li)
 	{

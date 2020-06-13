@@ -7,18 +7,10 @@
 using namespace std;
 using namespace sf;
 
-MapSelector::MapSelector( 
-	MainMenu *mm, sf::Vector2f &pos, int wIndex)
-	:centerPos(pos), worldIndex( wIndex )
+MapSelector::MapSelector( WorldMap *worldMap, World *p_world,
+	MainMenu *mm, sf::Vector2f &pos )
+	:centerPos(pos), world( p_world )
 {
-	AdventureWorld &adventureWorld = 
-		mm->GetCurrentProgress()->adventureFile.GetWorld(wIndex);
-
-
-	Tileset *ts_testNewSelect = mm->tilesetManager.GetTileset(
-		"selectortest2.png", 1920, 1080);
-	ts_testNewSelect->SetSpriteTexture(newSelectTestSpr);
-
 	for (int i = 1; i <= 5; ++i)
 	{
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
@@ -55,22 +47,20 @@ MapSelector::MapSelector(
 
 	frame = 0;
 
+	
+
+	
+	numSectors = world->numSectors;
+	sectors.resize(numSectors);
+	
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i] = new MapSector(worldMap->adventureFile,
+			&(world->sectors[i]), this, i);
+	}
+	
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
-
-	numSectors = adventureWorld.GetNumActiveSectors();
-
-	sectors.resize(numSectors);
-
-	int counter = 0;
-	for (int i = 0; i < 8; ++i)
-	{
-		if (adventureWorld.sectors[i].GetNumActiveMaps() > 0)
-		{
-			sectors[counter] = new MapSector(adventureWorld.sectors[i], this, counter);
-			++counter;
-		}
-	}
 
 	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, 
 		waitModeThresh, numSectors, 0);
@@ -86,6 +76,14 @@ MapSelector::~MapSelector()
 		delete sectors[i];
 	}
 	delete sectorSASelector;
+}
+
+void MapSelector::Init()
+{
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i]->Init(mainMenu->GetCurrentProgress());
+	}
 }
 
 void MapSelector::UpdateSprites()
