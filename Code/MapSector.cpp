@@ -62,6 +62,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	int waitModeThresh[2] = { 2, 2 };
 	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	mapSASelector->SetTotalSize(unlockedLevelCount);
+	mapSASelector->currIndex = 0;
 
 
 	string worldStr = to_string(index + 1);

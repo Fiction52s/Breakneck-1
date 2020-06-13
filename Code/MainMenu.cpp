@@ -2146,7 +2146,7 @@ void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, bool loadingScreen)
 {
 	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
-	string levelPath = am->path + "\\" + am->name;//lev->GetFullName();// name;
+	string levelPath = "Resources\\" + am->GetFilePath() + ".brknk";//lev->GetFullName();// name;
 	//View oldView = window->getView();
 
 	

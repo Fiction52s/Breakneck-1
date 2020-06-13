@@ -177,18 +177,17 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 WorldMap::~WorldMap()
 {
-	
-	delete planet;
 	//delete planetAndSpaceTex;
 	//delete planetTex;
 
 	delete worldSelector;
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < planet->numWorlds; ++i)
 	{
 		delete selectors[i];
 	}
 	delete[] selectors;
 
+	delete planet;
 	//for( int i = 0; i < 6; ++i )
 	//{
 	//delete sectionTex[i];
