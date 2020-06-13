@@ -61,8 +61,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	int waitFrames[3] = { 30, 15, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
-	mapSASelector->SetTotalSize(unlockedLevelCount);
-	mapSASelector->currIndex = 0;
+	
 
 
 	string worldStr = to_string(index + 1);
@@ -488,7 +487,7 @@ bool MapSector::Update(ControllerState &curr,
 
 	if (state == NORMAL || state == COMPLETE || (state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7))
 	{
-		int old = GetSelectedIndex();//saSelector->currIndex;
+		int old = GetSelectedIndex();
 
 		bool left = curr.LLeft();
 		bool right = curr.LRight();
@@ -500,7 +499,7 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateLevelStats();
 		}
 
-		if (changed != 0)//|| oldYIndex != selectedYIndex)
+		if (changed != 0)
 		{
 			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_change"));
 			UpdateNodes();
@@ -618,7 +617,6 @@ void MapSector::UpdateNodes()
 	}
 }
 
-
 void MapSector::Load()
 {
 
@@ -626,100 +624,104 @@ void MapSector::Load()
 
 int MapSector::GetNodeSubIndex(int node)
 {
-	
-	//int bType = adventureFile.GetMap(sec->levels[node].index).headerInfo.mapType;
-	//int res;
-	//if (bType == 0)
-	//{
-	//	if (!sec->IsLevelUnlocked(node))
-	//	{
-	//		res = 0;
-	//	}
-	//	else
-	//	{
-	//		if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
-	//		{
-	//			if (sec->levels[node].IsOneHundredPercent())
-	//			{
-	//				res = 8;
-	//			}
-	//			else if (sec->levels[node].GetComplete())
-	//			{
-	//				res = 7;
-	//			}
-	//			else
-	//			{
-	//				res = 6;
-	//			}
+	int bType = adventureFile.GetMap(sec->levels[node].index).headerInfo.mapType;
+	int res;
 
-	//			if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
-	//			{
-	//				res = 6;//--res;
-	//			}
-	//		}
-	//		else
-	//		{
-	//			if (sec->levels[node].IsOneHundredPercent())
-	//			{
-	//				res = 5;
-	//			}
-	//			else if (sec->levels[node].GetComplete())
-	//			{
-	//				res = 4;
-	//			}
-	//			else
-	//			{
-	//				res = 3;
-	//			}
-	//		}
-	//	}
-	//}
-	//else
-	//{
-	//	if (!sec->IsLevelUnlocked(node))
-	//	{
-	//		res = 0;
-	//	}
-	//	else
-	//	{
-	//		if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
-	//		{
-	//			if (sec->levels[node].IsOneHundredPercent())
-	//			{
-	//				res = 2;
-	//			}
-	//			else if (sec->levels[node].GetComplete())
-	//			{
-	//				res = 2;
-	//			}
-	//			else
-	//			{
-	//				res = 5;
-	//			}
+	bool isUnlocked = saveFile->IsUnlockedLevel(sec, &sec->levels[node]);
+	bool isComplete = saveFile->IsCompleteLevel(&sec->levels[node]);
+	bool isFullyComplete = saveFile->IsFullyCompleteLevel(&sec->levels[node]);
 
-	//			if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
-	//			{
-	//				res = 5;
-	//				//--res;
-	//			}
-	//		}
-	//		else
-	//		{
-	//			if (sec->levels[node].IsOneHundredPercent())
-	//			{
-	//				res = 1;
-	//			}
-	//			else if (sec->levels[node].GetComplete())
-	//			{
-	//				res = 1;
-	//			}
-	//			else
-	//			{
-	//				res = 4;
-	//			}
-	//		}
-	//	}
-	//}
+	if (bType == 0)
+	{
+		if (!isUnlocked)
+		{
+			res = 0;
+		}
+		else
+		{
+			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+			{
+				if (isFullyComplete)
+				{
+					res = 8;
+				}
+				else if (isComplete)
+				{
+					res = 7;
+				}
+				else
+				{
+					res = 6;
+				}
+
+				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+				{
+					res = 6;//--res;
+				}
+			}
+			else
+			{
+				if (isFullyComplete)
+				{
+					res = 5;
+				}
+				else if( isComplete)
+				{
+					res = 4;
+				}
+				else
+				{
+					res = 3;
+				}
+			}
+		}
+	}
+	else
+	{
+		if (!isUnlocked)
+		{
+			res = 0;
+		}
+		else
+		{
+			if (IsFocused() && selectedYIndex == 1 && GetSelectedIndex() == node)
+			{
+				if (isFullyComplete)
+				{
+					res = 2;
+				}
+				else if (isComplete)
+				{
+					res = 2;
+				}
+				else
+				{
+					res = 5;
+				}
+
+				if (state == LEVELCOMPLETEDWAIT || (state == LEVELJUSTCOMPLETE && stateFrame < 3 * 7))
+				{
+					res = 5;
+					//--res;
+				}
+			}
+			else
+			{
+				if (isFullyComplete)
+				{
+					res = 1;
+				}
+				else if (isComplete)
+				{
+					res = 1;
+				}
+				else
+				{
+					res = 4;
+				}
+			}
+		}
+	}
 	//return res;
 	return 0;
 }
@@ -759,4 +761,6 @@ void MapSector::Init(SaveFile *p_saveFile)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
+
+	mapSASelector->SetTotalSize(unlockedLevelCount);
 }

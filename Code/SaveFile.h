@@ -292,6 +292,9 @@ struct SaveFile
 	bool IsLevelJustBeaten(Level *lev);
 	void SetLevelNotJustBeaten(Level *lev);
 
+	bool IsUnlockedLevel(Sector *sec, Level *lev);
+	bool IsFullyCompleteLevel(Level *lev);
+
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;
 

@@ -931,6 +931,44 @@ bool SaveFile::HasNewShards()
 	return newShardField.IsNonZero();
 }
 
+bool SaveFile::IsUnlockedLevel(Sector *sec, Level *lev)
+{
+	for (int i = 0; i < sec->numLevels; ++i)
+	{
+		if (sec->levels == lev)
+		{
+			return true;
+		}
+		else
+		{
+			if (!IsCompleteLevel(&sec->levels[i]))
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+bool SaveFile::IsFullyCompleteLevel(Level *lev)
+{
+	int ind = lev->index;
+	AdventureMap &am = adventureFile.GetMap(ind);
+	
+	if (IsCompleteLevel(lev))
+	{
+		float totalShards, totalCaptured;
+		CalcShardProgress(am.headerInfo.hasShardField, totalShards, totalCaptured);
+
+		if (totalShards == totalCaptured)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 //return true on normal loading, and false if you need to make a default
 bool SaveFile::Load()
 {
