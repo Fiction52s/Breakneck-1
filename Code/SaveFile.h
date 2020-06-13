@@ -46,6 +46,7 @@ struct AdventureSector
 	BitField hasShardField;
 	int requiredRunes;
 	AdventureMap maps[8];
+	AdventureMap &GetExistingMap(int index);
 	void Load(std::ifstream &is, int copyMode );
 	void Save(std::ofstream &of, int copyMode );
 	int GetNumActiveMaps();
@@ -75,96 +76,99 @@ struct AdventureFile
 		COPY,
 	};
 
-	AdventureFile();
+	CopyMode copyMode;
+	BitField hasShardField;
 	AdventureWorld worlds[8];
+
+	AdventureFile();
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
 	AdventureMap &GetMap(int index);
-	CopyMode copyMode;
-	BitField hasShardField;
+	AdventureSector &GetSector(int w, int s);
+	AdventureWorld &GetWorld(int w);
+	
+	
 	int GetNumActiveWorlds();
 	bool LoadMapHeaders();
 };
 
 
-struct SaveLevel
-{
-	
-	enum BitOption : int
-	{
-		COMPLETE,
-	};
-
-	SaveLevel();
-	void SetComplete(bool comp);
-	bool TrySetRecord(int numFrames);
-	bool IsLastInSector();
-	float GetCapturedShardsPortion();
-	bool IsOneHundredPercent();
-	bool GetComplete();
-	int GetNumTotalShards();
-	int GetNumShardsCaptured();
-	bool Load(std::ifstream &is);
-	void Save(std::ofstream &of);
-	void Reset();
-	std::string GetFullName();
-	float GetCompletionPercentage();
-
-	SaveSector *sec;
-	BitField optionField;
-	std::string name;
-	bool justBeaten;
-	int bestTimeFrames;
-	int index;
-};
-
-struct SaveSector
-{
-	SaveSector();
-	~SaveSector();
-	bool HasTopBonus(int index);
-	bool hasBottomBonus(int index);
-	int numLevels;
-	SaveLevel levels[8];
-	std::string name;
-	int index;
-	SaveWorld *world;
-	bool IsLevelUnlocked(int index);
-	int numUnlockConditions;
-	void UpdateShardNameList();
-	int GetTotalFrames();
-	int GetNumTotalShards();
-	int GetNumShardsCaptured();
-	void Save(std::ofstream &of);
-	bool Load(std::ifstream &is);
-	bool IsConditionFulfilled(int i);
-	bool IsComplete();
-	bool IsUnlocked();
-	float GetCompletionPercentage();
-	std::map<int,Level> topBonuses;
-	std::map<int, Level> bottomBonuses;
-};
-
-struct SaveFile;
-struct SaveWorld
-{
-	SaveSector sectors[8];
-	SaveFile *sf;
-	int index;
-
-	SaveWorld();
-	~SaveWorld();
-	int GetTotalFrames();
-	void UpdateShardNameList();
-	int GetNumTotalShards();
-	bool Load(std::ifstream &is);
-	bool Save(std::ofstream &of);
-	int GetNumSectorTypeComplete(int sType);
-	float GetCompletionPercentage();
-	int GetNumShardsCaptured();
-};
+//struct SaveLevel
+//{
+//	
+//	enum BitOption : int
+//	{
+//		COMPLETE,
+//	};
+//
+//	SaveLevel();
+//	void SetComplete(bool comp);
+//	bool TrySetRecord(int numFrames);
+//	bool IsLastInSector();
+//	float GetCapturedShardsPortion();
+//	bool IsOneHundredPercent();
+//	bool GetComplete();
+//	int GetNumTotalShards();
+//	int GetNumShardsCaptured();
+//	bool Load(std::ifstream &is);
+//	void Save(std::ofstream &of);
+//	void Reset();
+//	std::string GetFullName();
+//	float GetCompletionPercentage();
+//
+//	SaveSector *sec;
+//	BitField optionField;
+//	std::string name;
+//	bool justBeaten;
+//	int bestTimeFrames;
+//	int index;
+//};
+//
+//struct SaveSector
+//{
+//	SaveSector();
+//	~SaveSector();
+//	bool HasTopBonus(int index);
+//	bool hasBottomBonus(int index);
+//	int numLevels;
+//	SaveLevel levels[8];
+//	std::string name;
+//	int index;
+//	SaveWorld *world;
+//	bool IsLevelUnlocked(int index);
+//	int numUnlockConditions;
+//	void UpdateShardNameList();
+//	int GetTotalFrames();
+//	int GetNumTotalShards();
+//	int GetNumShardsCaptured();
+//	void Save(std::ofstream &of);
+//	bool Load(std::ifstream &is);
+//	bool IsConditionFulfilled(int i);
+//	bool IsComplete();
+//	bool IsUnlocked();
+//	float GetCompletionPercentage();
+//};
+//
+//struct SaveFile;
+//struct SaveWorld
+//{
+//	SaveSector sectors[8];
+//	SaveFile *sf;
+//	int index;
+//
+//	SaveWorld();
+//	~SaveWorld();
+//	int GetTotalFrames();
+//	void UpdateShardNameList();
+//	int GetNumTotalShards();
+//	bool Load(std::ifstream &is);
+//	bool Save(std::ofstream &of);
+//	int GetNumSectorTypeComplete(int sType);
+//	float GetCompletionPercentage();
+//	int GetNumShardsCaptured();
+//};
 
 struct LevelScore
 {
@@ -203,6 +207,15 @@ struct SaveFile
 	void UnlockUpgrade(int pType);
 	bool ShardIsCaptured(int sType);
 
+	bool IsCompleteSector(int w, int s);
+	bool IsCompleteWorld(int w);
+	bool IsCompleteLevel(int w, int s, int m);
+	void CompleteLevel(int w, int s, int m);
+
+	bool IsUnlockedSector(int w, int s);
+	bool TrySetRecordTime(int totalFrames,
+		int w, int s, int m);
+
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;
 
@@ -211,12 +224,12 @@ struct SaveFile
 	AdventureFile &adventureFile;
 	
 	//state
-	LevelScore levelScores[512];
 	BitField levelsJustBeatenField;
 
 	//state that gets saved out
 	std::string controlProfileName;
 	BitField levelsBeatenField;
+	LevelScore levelScores[512];
 	BitField upgradeField;
 	BitField momentaField;
 	BitField shardField;
@@ -229,6 +242,13 @@ private:
 		float &totalCaptured);
 	float CalcCompletionPercentage(
 		int start, int end, BitField &b);
+	bool IsRangeComplete(int start, int end);
+	int GetWorldStart(int w);
+	int GetWorldEnd(int w);
+	int GetSectorStart(int w, int s);
+	int GetSectorEnd(int w, int s);
+	int GetMapIndex(int w, int s, int m);
+
 };
 
 #endif

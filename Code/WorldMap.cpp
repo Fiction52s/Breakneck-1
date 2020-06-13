@@ -162,7 +162,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	for (int i = 0; i < 8; ++i)
 	{
-		selectors[i] = new MapSelector( adventureFile, mainMenu, Vector2f(960, 540), i);
+		selectors[i] = new MapSelector( mainMenu, Vector2f(960, 540), i);
 	}
 }
 
@@ -421,10 +421,10 @@ void WorldMap::InitSelectors()
 {
 	//selectors[i]->Init(i);
 	SaveFile *sFile = mainMenu->GetCurrentProgress();
-	for (int i = 0; i < sFile->numWorlds; ++i)
-	{
-		//selectors[i]->UpdateAllInfo(i);
-	}
+	//for (int i = 0; i < sFile->numWorlds; ++i)
+	//{
+	//	//selectors[i]->UpdateAllInfo(i);
+	//}
 }
 
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
@@ -980,27 +980,26 @@ void WorldMap::Draw( RenderTarget *target )
 	}
 }
 
-Sector &WorldMap::GetCurrSector()
+AdventureSector &WorldMap::GetCurrSector()
 {
 	SaveFile * currFile = mainMenu->GetCurrentProgress();
-	World & world = currFile->worlds[selectedColony];
+	//World & world = currFile->worlds[selectedColony];
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	return world.sectors[secIndex];
+	return currFile->adventureFile.GetSector(selectedColony, secIndex);
 }
 
 void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 {
-	World & world = sf->worlds[selectedColony];
+	//World & world = sf->worlds[selectedColony];
+	int worldIndex = selectedColony;
 	int secIndex = selectors[selectedColony]->sectorSASelector->currIndex;
-	Sector &sec = world.sectors[secIndex];
 	int levIndex = selectors[selectedColony]->FocusedSector()->mapSASelector->currIndex;
 	
-	Level &lev = sec.levels[levIndex];
+	//Level &lev = sec.levels[levIndex];
 
-	if (!lev.GetComplete())
+	if ( !sf->IsCompleteLevel( worldIndex, secIndex, levIndex ) )
 	{
-		lev.justBeaten = true;
-		lev.SetComplete(true);
+		sf->CompleteLevel(worldIndex, secIndex, levIndex);
 
 		MapSector *mapSec = CurrSelector()->FocusedSector();
 		mapSec->UpdateUnlockedLevelCount();
@@ -1008,10 +1007,10 @@ void WorldMap::CompleteCurrentMap( SaveFile *sf, int totalFrames )
 	}
 	else
 	{
-		lev.justBeaten = false;
+		//lev.justBeaten = false;
 	}
 
-	bool isRecordSet = lev.TrySetRecord(totalFrames);
+	bool isRecordSet = sf->TrySetRecordTime(totalFrames, worldIndex, secIndex, levIndex);
 	if (isRecordSet)
 	{
 		//create a flag so that you can get hype over this

@@ -7,10 +7,14 @@
 using namespace std;
 using namespace sf;
 
-MapSelector::MapSelector( AdventureWorld &adventureWorld, 
+MapSelector::MapSelector( 
 	MainMenu *mm, sf::Vector2f &pos, int wIndex)
-	:centerPos(pos)
+	:centerPos(pos), worldIndex( wIndex )
 {
+	AdventureWorld &adventureWorld = 
+		mm->GetCurrentProgress()->adventureFile.GetWorld(wIndex);
+
+
 	Tileset *ts_testNewSelect = mm->tilesetManager.GetTileset(
 		"selectortest2.png", 1920, 1080);
 	ts_testNewSelect->SetSpriteTexture(newSelectTestSpr);
@@ -24,7 +28,6 @@ MapSelector::MapSelector( AdventureWorld &adventureWorld,
 	kinFrame = 0;
 	kinSprite.setPosition(960, 540 + 300);
 
-	worldIndex = wIndex;
 	state = S_SECTORSELECT;
 	mainMenu = mm;
 

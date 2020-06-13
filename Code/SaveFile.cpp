@@ -13,549 +13,549 @@ using namespace std;
 using namespace boost::filesystem;
 
 
-SaveLevel::SaveLevel()
-	:optionField(32)
-{
-	justBeaten = false;
-}
-
-bool SaveLevel::IsLastInSector()
-{
-	return (index == sec->numLevels - 1);
-}
-
-int SaveLevel::GetNumShardsCaptured()
-{
-	int capCount = 0;
-	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
-	{
-		int st = Shard::GetShardType((*it));
-		if (sec->world->sf->ShardIsCaptured(st))
-		{
-			++capCount;
-		}
-	}
-	return capCount;
-}
-
-float SaveLevel::GetCapturedShardsPortion()
-{
-	int capCount = GetNumShardsCaptured();
-
-	if (capCount == 0)
-		return 0;
-
-	return (float)capCount / shardNameList.size();
-}
-
-int SaveLevel::GetNumTotalShards()
-{
-	return shardNameList.size();
-}
-
-float SaveLevel::GetCompletionPercentage()
-{
-	float portion = 0;
-	if (GetComplete())
-	{
-		if (shardNameList.size() == 0)
-		{
-			portion = 1.0;
-		}
-		else
-		{
-			portion += .5f;
-			portion += GetCapturedShardsPortion() * .5f;
-		}
-	}
-	else
-	{
-		if (shardNameList.size() == 0)
-		{
-			portion = 0.0;
-		}
-		else
-		{
-			portion += GetCapturedShardsPortion() * .5f;
-		}
-	}
-
-
-
-	return portion * 100.f;
-	//MapSelectionMenu::ReadMapHeader()
-}
-
-void SaveLevel::Reset()
-{
-	SetComplete(false);
-	optionField = 0;
-	shardsLoaded = false;
-	justBeaten = false;
-}
-
-bool SaveLevel::Load(std::ifstream &is)
-{
-	is >> name;
-	optionField.Load(is);
-	is >> bestTimeFrames;
-
-	UpdateFromMapHeader();
-
-	return true;
-}
-
-void SaveLevel::Save(std::ofstream &of)
-{
-	of << name << endl;
-	optionField.Save(of);
-	of << bestTimeFrames << endl;
-	//cout << "save level: " << name << endl;
-}
-
-void SaveLevel::SetComplete(bool comp)
-{
-	optionField.SetBit(COMPLETE, comp);
-}
-
-bool SaveLevel::TrySetRecord(int numFrames)
-{
-	if (bestTimeFrames < 0 || numFrames < bestTimeFrames)
-	{
-		bestTimeFrames = numFrames;
-		return true;
-	}
-
-	return false;
-}
-
-bool SaveLevel::GetComplete()
-{
-	return optionField.GetBit(COMPLETE);
-}
-
-bool SaveLevel::IsOneHundredPercent()
-{
-	return(GetCompletionPercentage() == 100.f);
-}
-
-std::string SaveLevel::GetFullName()
-{
-	return "Resources/Maps/" + sec->world->name + "/" + name + ".brknk";
-}
-
-
-
-
-
-SaveSector::SaveSector()
-{
-	numLevels = 0;
-	levels = NULL;
-	conditions = NULL;
-	numTypesNeeded = NULL;
-	sectorType = 100;
-	numUnlockConditions = 99;
-}
-
-bool SaveSector::IsLevelUnlocked(int index)
-{
-	for (int i = 0; i < index; ++i )
-	{
-		if (!levels[i].GetComplete())
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-void SaveSector::UpdateShardNameList()
-{
-	std::map<std::string, int> shardNameMap;
-	for (int i = 0; i < numLevels; ++i)
-	{
-		for (auto it = levels[i].shardNameList.begin(); it != levels[i].shardNameList.end(); ++it)
-		{
-			if (shardNameMap.count((*it)) == 0)
-			{
-				shardNameMap[(*it)] = 0;
-			}
-			else
-			{
-				shardNameMap[(*it)]++;
-			}
-		}
-	}
-
-	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
-	{
-		shardNameList.push_back((*it).first);
-	}
-}
-
-int SaveSector::GetNumTotalShards()
-{
-	return shardNameList.size();
-}
-
-int SaveSector::GetNumShardsCaptured()
-{
-	int capCount = 0;
-	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
-	{
-		int st = Shard::GetShardType((*it));
-		if (world->sf->ShardIsCaptured(st))
-		{
-			++capCount;
-		}
-	}
-	return capCount;
-}
-
-float SaveSector::GetCompletionPercentage()
-{
-	float completePercent = 0;
-	float possiblePercent = 0;
-	for (int i = 0; i < numLevels; ++i)
-	{
-		completePercent += levels[i].GetCompletionPercentage();
-		possiblePercent += 100;
-	}
-
-	return (completePercent / possiblePercent) * 100.f;
-}
-
-bool SaveSector::HasTopBonus(int index)
-{
-	return (topBonuses.count(index) > 0);
-}
-bool SaveSector::hasBottomBonus(int index)
-{
-	return (bottomBonuses.count(index) > 0);
-}
-
-int SaveSector::GetTotalFrames()
-{
-	int total = 0;
-	int temp;
-	for (int i = 0; i < numLevels; ++i)
-	{
-		temp = levels[i].bestTimeFrames;
-
-		if (temp == -1)
-		{
-			return -1;
-		}
-
-		total += temp;
-	}
-
-	return total;
-}
-
-bool SaveSector::IsComplete()
-{
-	for (int i = 0; i < numLevels; ++i)
-	{
-		if (!levels[i].GetComplete())
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-bool SaveSector::Load(std::ifstream &is)
-{
-	is.get();
-	std::getline(is, name);
-	//is >> name;
-	is >> sectorType;
-	is >> numUnlockConditions;
-
-	if (numUnlockConditions > 0)
-	{
-		conditions= new int[numUnlockConditions];
-		numTypesNeeded = new int[numUnlockConditions];
-
-		int conditionType = -1;
-		int numOfTypeNeeded = -1;
-		for (int i = 0; i < numUnlockConditions; ++i)
-		{
-			is >> conditionType;
-			is >> numOfTypeNeeded;
-
-			conditions[i] = conditionType;
-			numTypesNeeded[i] = numOfTypeNeeded;
-		}
-	}
-
-	is >> numLevels;
-	levels = new Level[numLevels];
-	
-	bool res = true;
-	for (int i = 0; i < numLevels; ++i)
-	{
-		levels[i].sec = this;
-		levels[i].index = i;
-		res = levels[i].Load(is);
-
-		assert(res);
-	}
-
-	int numTopBonuses = 0;
-	int numBottomBonuses = 0;
-
-	
-	is >> numTopBonuses;
-	for (int j = 0; j < numTopBonuses; ++j) //0 - 2
-	{
-		int bonusIndex;
-		is >> bonusIndex;
-
-		Level &lev = topBonuses[bonusIndex];
-		lev.sec = this;
-		lev.index = bonusIndex;
-		res = lev.Load(is);
-
-		assert(res);
-	}
-
-	is >> numBottomBonuses;
-	for (int j = 0; j < numBottomBonuses; ++j) //0 - 2
-	{
-		int bonusIndex;
-		is >> bonusIndex;
-
-		Level &lev = bottomBonuses[bonusIndex];
-		lev.sec = this;
-		lev.index = bonusIndex;
-		res = lev.Load(is);
-
-		assert(res);
-	}
-	
-	assert(is.good());
-
-	UpdateShardNameList();
-
-	return true;
-}
-
-SaveSector::~SaveSector()
-{
-	if (levels != NULL)
-	{
-		delete[] levels;
-	}
-
-	if (conditions != NULL)
-		delete[] conditions;
-	if (numTypesNeeded != NULL)
-		delete[] numTypesNeeded;
-}
-
-bool SaveSector::IsConditionFulfilled(int index)
-{
-	int numTypeComplete = world->GetNumSectorTypeComplete(conditions[index]);
-	return (numTypeComplete >= numTypesNeeded[index]);
-}
-
-bool SaveSector::IsUnlocked()
-{
-	int numTypeComplete = -1;
-	for (int i = 0; i < numUnlockConditions; ++i)
-	{
-		if (!IsConditionFulfilled(i))
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-void SaveSector::Save(std::ofstream &of)
-{
-	of << name << endl;
-	of << sectorType << endl;
-	of << numUnlockConditions << endl;
-	if (numUnlockConditions > 0)
-	{
-		for (int i = 0; i < numUnlockConditions; ++i)
-		{
-			of << conditions[i] << endl;
-			of << numTypesNeeded[i] << endl;
-		}
-
-	}
-
-	of << numLevels << endl;
-	for (int i = 0; i < numLevels; ++i)
-	{
-		levels[i].Save(of);
-	}
-
-	int numTopBonuses = topBonuses.size();
-	int numBottomBonuses = bottomBonuses.size();
-	of << numTopBonuses << endl;	
-	for (auto it = topBonuses.begin(); it != topBonuses.end(); ++it)
-	{
-		of << (*it).first << endl;
-		(*it).second.Save(of);
-	}
-
-	of << numBottomBonuses << endl;
-	for (auto it = bottomBonuses.begin(); it != bottomBonuses.end(); ++it)
-	{
-		of << (*it).first << endl;
-		(*it).second.Save(of);
-	}
-	
-}
-
-
-
-
-
-
-SaveWorld::SaveWorld()
-{
-	sectors = NULL;
-	numSectors = 0;
-}
-
-SaveWorld::~SaveWorld()
-{
-	if (sectors != NULL)
-	{
-		delete[] sectors;
-	}
-}
-
-int SaveWorld::GetTotalFrames()
-{
-	int total = 0;
-	int temp;
-	for (int i = 0; i < numSectors; ++i)
-	{
-		temp = sectors[i].GetTotalFrames();
-		if (temp == -1)
-		{
-			return -1;
-		}
-
-		total += temp;
-	}
-
-	return total;
-}
-
-float SaveWorld::GetCompletionPercentage()
-{
-	float totalComplete = 0;
-	float totalPossible = 0;
-
-	for (int i = 0; i < numSectors; ++i)
-	{
-		totalComplete += sectors[i].GetCompletionPercentage();
-		totalPossible += 100.f;
-	}
-
-	return (totalComplete / totalPossible) * 100.f;
-}
-
-bool SaveWorld::Load(std::ifstream &is)
-{
-	is.get();
-	std::getline(is, name);
-	is >> numSectors;
-	assert(numSectors > 0);
-	sectors = new Sector[numSectors];
-
-	for (int i = 0; i < numSectors; ++i)
-	{
-		sectors[i].world = this;
-		sectors[i].index = i;
-		sectors[i].Load(is);
-	}
-
-	UpdateShardNameList();
-	return true;
-}
-
-bool SaveWorld::Save(std::ofstream &of)
-{
-	of << name << endl;
-	of << numSectors << endl;
-	cout << "numSectors: " << numSectors << endl;
-	for (int i = 0; i < numSectors; ++i)
-	{
-		sectors[i].Save(of);
-	}
-	return true;
-}
-
-void SaveWorld::UpdateShardNameList()
-{
-	std::map<std::string, int> shardNameMap;
-	for (int i = 0; i < numSectors; ++i)
-	{
-		for (auto it = sectors[i].shardNameList.begin(); it != sectors[i].shardNameList.end(); ++it)
-		{
-			if (shardNameMap.count((*it)) == 0)
-			{
-				shardNameMap[(*it)] = 0;
-			}
-			else
-			{
-				shardNameMap[(*it)]++;
-			}
-		}
-	}
-
-	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
-	{
-		shardNameList.push_back((*it).first);
-	}
-}
-
-int SaveWorld::GetNumTotalShards()
-{
-	return shardNameList.size();
-}
-
-int SaveWorld::GetNumShardsCaptured()
-{
-	int capCount = 0;
-	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
-	{
-		int st = Shard::GetShardType((*it));
-		if (sf->ShardIsCaptured(st))
-		{
-			++capCount;
-		}
-	}
-	return capCount;
-}
-
-int SaveWorld::GetNumSectorTypeComplete(int sType)
-{
-	int count = 0;
-	for (int i = 0; i < numSectors; ++i)
-	{
-		if (sectors[i].sectorType == sType)
-		{
-			if (sectors[i].IsComplete())
-			{
-				++count;
-			}
-		}
-	}
-
-	return count;
-}
+//SaveLevel::SaveLevel()
+//	:optionField(32)
+//{
+//	justBeaten = false;
+//}
+//
+//bool SaveLevel::IsLastInSector()
+//{
+//	return (index == sec->numLevels - 1);
+//}
+//
+//int SaveLevel::GetNumShardsCaptured()
+//{
+//	int capCount = 0;
+//	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+//	{
+//		int st = Shard::GetShardType((*it));
+//		if (sec->world->sf->ShardIsCaptured(st))
+//		{
+//			++capCount;
+//		}
+//	}
+//	return capCount;
+//}
+//
+//float SaveLevel::GetCapturedShardsPortion()
+//{
+//	int capCount = GetNumShardsCaptured();
+//
+//	if (capCount == 0)
+//		return 0;
+//
+//	return (float)capCount / shardNameList.size();
+//}
+//
+//int SaveLevel::GetNumTotalShards()
+//{
+//	return shardNameList.size();
+//}
+//
+//float SaveLevel::GetCompletionPercentage()
+//{
+//	float portion = 0;
+//	if (GetComplete())
+//	{
+//		if (shardNameList.size() == 0)
+//		{
+//			portion = 1.0;
+//		}
+//		else
+//		{
+//			portion += .5f;
+//			portion += GetCapturedShardsPortion() * .5f;
+//		}
+//	}
+//	else
+//	{
+//		if (shardNameList.size() == 0)
+//		{
+//			portion = 0.0;
+//		}
+//		else
+//		{
+//			portion += GetCapturedShardsPortion() * .5f;
+//		}
+//	}
+//
+//
+//
+//	return portion * 100.f;
+//	//MapSelectionMenu::ReadMapHeader()
+//}
+//
+//void SaveLevel::Reset()
+//{
+//	SetComplete(false);
+//	optionField = 0;
+//	shardsLoaded = false;
+//	justBeaten = false;
+//}
+//
+//bool SaveLevel::Load(std::ifstream &is)
+//{
+//	is >> name;
+//	optionField.Load(is);
+//	is >> bestTimeFrames;
+//
+//	UpdateFromMapHeader();
+//
+//	return true;
+//}
+//
+//void SaveLevel::Save(std::ofstream &of)
+//{
+//	of << name << endl;
+//	optionField.Save(of);
+//	of << bestTimeFrames << endl;
+//	//cout << "save level: " << name << endl;
+//}
+//
+//void SaveLevel::SetComplete(bool comp)
+//{
+//	optionField.SetBit(COMPLETE, comp);
+//}
+//
+//bool SaveLevel::TrySetRecord(int numFrames)
+//{
+//	if (bestTimeFrames < 0 || numFrames < bestTimeFrames)
+//	{
+//		bestTimeFrames = numFrames;
+//		return true;
+//	}
+//
+//	return false;
+//}
+//
+//bool SaveLevel::GetComplete()
+//{
+//	return optionField.GetBit(COMPLETE);
+//}
+//
+//bool SaveLevel::IsOneHundredPercent()
+//{
+//	return(GetCompletionPercentage() == 100.f);
+//}
+//
+//std::string SaveLevel::GetFullName()
+//{
+//	return "Resources/Maps/" + sec->world->name + "/" + name + ".brknk";
+//}
+//
+//
+//
+//
+//
+//SaveSector::SaveSector()
+//{
+//	numLevels = 0;
+//	levels = NULL;
+//	conditions = NULL;
+//	numTypesNeeded = NULL;
+//	sectorType = 100;
+//	numUnlockConditions = 99;
+//}
+//
+//bool SaveSector::IsLevelUnlocked(int index)
+//{
+//	for (int i = 0; i < index; ++i )
+//	{
+//		if (!levels[i].GetComplete())
+//		{
+//			return false;
+//		}
+//	}
+//	return true;
+//}
+//
+//void SaveSector::UpdateShardNameList()
+//{
+//	std::map<std::string, int> shardNameMap;
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		for (auto it = levels[i].shardNameList.begin(); it != levels[i].shardNameList.end(); ++it)
+//		{
+//			if (shardNameMap.count((*it)) == 0)
+//			{
+//				shardNameMap[(*it)] = 0;
+//			}
+//			else
+//			{
+//				shardNameMap[(*it)]++;
+//			}
+//		}
+//	}
+//
+//	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+//	{
+//		shardNameList.push_back((*it).first);
+//	}
+//}
+//
+//int SaveSector::GetNumTotalShards()
+//{
+//	return shardNameList.size();
+//}
+//
+//int SaveSector::GetNumShardsCaptured()
+//{
+//	int capCount = 0;
+//	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+//	{
+//		int st = Shard::GetShardType((*it));
+//		if (world->sf->ShardIsCaptured(st))
+//		{
+//			++capCount;
+//		}
+//	}
+//	return capCount;
+//}
+//
+//float SaveSector::GetCompletionPercentage()
+//{
+//	float completePercent = 0;
+//	float possiblePercent = 0;
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		completePercent += levels[i].GetCompletionPercentage();
+//		possiblePercent += 100;
+//	}
+//
+//	return (completePercent / possiblePercent) * 100.f;
+//}
+//
+//bool SaveSector::HasTopBonus(int index)
+//{
+//	return (topBonuses.count(index) > 0);
+//}
+//bool SaveSector::hasBottomBonus(int index)
+//{
+//	return (bottomBonuses.count(index) > 0);
+//}
+//
+//int SaveSector::GetTotalFrames()
+//{
+//	int total = 0;
+//	int temp;
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		temp = levels[i].bestTimeFrames;
+//
+//		if (temp == -1)
+//		{
+//			return -1;
+//		}
+//
+//		total += temp;
+//	}
+//
+//	return total;
+//}
+//
+//bool SaveSector::IsComplete()
+//{
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		if (!levels[i].GetComplete())
+//		{
+//			return false;
+//		}
+//	}
+//	return true;
+//}
+//
+//bool SaveSector::Load(std::ifstream &is)
+//{
+//	is.get();
+//	std::getline(is, name);
+//	//is >> name;
+//	is >> sectorType;
+//	is >> numUnlockConditions;
+//
+//	if (numUnlockConditions > 0)
+//	{
+//		conditions= new int[numUnlockConditions];
+//		numTypesNeeded = new int[numUnlockConditions];
+//
+//		int conditionType = -1;
+//		int numOfTypeNeeded = -1;
+//		for (int i = 0; i < numUnlockConditions; ++i)
+//		{
+//			is >> conditionType;
+//			is >> numOfTypeNeeded;
+//
+//			conditions[i] = conditionType;
+//			numTypesNeeded[i] = numOfTypeNeeded;
+//		}
+//	}
+//
+//	is >> numLevels;
+//	levels = new Level[numLevels];
+//	
+//	bool res = true;
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		levels[i].sec = this;
+//		levels[i].index = i;
+//		res = levels[i].Load(is);
+//
+//		assert(res);
+//	}
+//
+//	int numTopBonuses = 0;
+//	int numBottomBonuses = 0;
+//
+//	
+//	is >> numTopBonuses;
+//	for (int j = 0; j < numTopBonuses; ++j) //0 - 2
+//	{
+//		int bonusIndex;
+//		is >> bonusIndex;
+//
+//		Level &lev = topBonuses[bonusIndex];
+//		lev.sec = this;
+//		lev.index = bonusIndex;
+//		res = lev.Load(is);
+//
+//		assert(res);
+//	}
+//
+//	is >> numBottomBonuses;
+//	for (int j = 0; j < numBottomBonuses; ++j) //0 - 2
+//	{
+//		int bonusIndex;
+//		is >> bonusIndex;
+//
+//		Level &lev = bottomBonuses[bonusIndex];
+//		lev.sec = this;
+//		lev.index = bonusIndex;
+//		res = lev.Load(is);
+//
+//		assert(res);
+//	}
+//	
+//	assert(is.good());
+//
+//	UpdateShardNameList();
+//
+//	return true;
+//}
+//
+//SaveSector::~SaveSector()
+//{
+//	if (levels != NULL)
+//	{
+//		delete[] levels;
+//	}
+//
+//	if (conditions != NULL)
+//		delete[] conditions;
+//	if (numTypesNeeded != NULL)
+//		delete[] numTypesNeeded;
+//}
+//
+//bool SaveSector::IsConditionFulfilled(int index)
+//{
+//	int numTypeComplete = world->GetNumSectorTypeComplete(conditions[index]);
+//	return (numTypeComplete >= numTypesNeeded[index]);
+//}
+//
+//bool SaveSector::IsUnlocked()
+//{
+//	int numTypeComplete = -1;
+//	for (int i = 0; i < numUnlockConditions; ++i)
+//	{
+//		if (!IsConditionFulfilled(i))
+//		{
+//			return false;
+//		}
+//	}
+//
+//	return true;
+//}
+//
+//void SaveSector::Save(std::ofstream &of)
+//{
+//	of << name << endl;
+//	of << sectorType << endl;
+//	of << numUnlockConditions << endl;
+//	if (numUnlockConditions > 0)
+//	{
+//		for (int i = 0; i < numUnlockConditions; ++i)
+//		{
+//			of << conditions[i] << endl;
+//			of << numTypesNeeded[i] << endl;
+//		}
+//
+//	}
+//
+//	of << numLevels << endl;
+//	for (int i = 0; i < numLevels; ++i)
+//	{
+//		levels[i].Save(of);
+//	}
+//
+//	int numTopBonuses = topBonuses.size();
+//	int numBottomBonuses = bottomBonuses.size();
+//	of << numTopBonuses << endl;	
+//	for (auto it = topBonuses.begin(); it != topBonuses.end(); ++it)
+//	{
+//		of << (*it).first << endl;
+//		(*it).second.Save(of);
+//	}
+//
+//	of << numBottomBonuses << endl;
+//	for (auto it = bottomBonuses.begin(); it != bottomBonuses.end(); ++it)
+//	{
+//		of << (*it).first << endl;
+//		(*it).second.Save(of);
+//	}
+//	
+//}
+//
+//
+//
+//
+//
+//
+//SaveWorld::SaveWorld()
+//{
+//	sectors = NULL;
+//	numSectors = 0;
+//}
+//
+//SaveWorld::~SaveWorld()
+//{
+//	if (sectors != NULL)
+//	{
+//		delete[] sectors;
+//	}
+//}
+//
+//int SaveWorld::GetTotalFrames()
+//{
+//	int total = 0;
+//	int temp;
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		temp = sectors[i].GetTotalFrames();
+//		if (temp == -1)
+//		{
+//			return -1;
+//		}
+//
+//		total += temp;
+//	}
+//
+//	return total;
+//}
+//
+//float SaveWorld::GetCompletionPercentage()
+//{
+//	float totalComplete = 0;
+//	float totalPossible = 0;
+//
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		totalComplete += sectors[i].GetCompletionPercentage();
+//		totalPossible += 100.f;
+//	}
+//
+//	return (totalComplete / totalPossible) * 100.f;
+//}
+//
+//bool SaveWorld::Load(std::ifstream &is)
+//{
+//	is.get();
+//	std::getline(is, name);
+//	is >> numSectors;
+//	assert(numSectors > 0);
+//	sectors = new Sector[numSectors];
+//
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		sectors[i].world = this;
+//		sectors[i].index = i;
+//		sectors[i].Load(is);
+//	}
+//
+//	UpdateShardNameList();
+//	return true;
+//}
+//
+//bool SaveWorld::Save(std::ofstream &of)
+//{
+//	of << name << endl;
+//	of << numSectors << endl;
+//	cout << "numSectors: " << numSectors << endl;
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		sectors[i].Save(of);
+//	}
+//	return true;
+//}
+//
+//void SaveWorld::UpdateShardNameList()
+//{
+//	std::map<std::string, int> shardNameMap;
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		for (auto it = sectors[i].shardNameList.begin(); it != sectors[i].shardNameList.end(); ++it)
+//		{
+//			if (shardNameMap.count((*it)) == 0)
+//			{
+//				shardNameMap[(*it)] = 0;
+//			}
+//			else
+//			{
+//				shardNameMap[(*it)]++;
+//			}
+//		}
+//	}
+//
+//	for (auto it = shardNameMap.begin(); it != shardNameMap.end(); ++it)
+//	{
+//		shardNameList.push_back((*it).first);
+//	}
+//}
+//
+//int SaveWorld::GetNumTotalShards()
+//{
+//	return shardNameList.size();
+//}
+//
+//int SaveWorld::GetNumShardsCaptured()
+//{
+//	int capCount = 0;
+//	for (auto it = shardNameList.begin(); it != shardNameList.end(); ++it)
+//	{
+//		int st = Shard::GetShardType((*it));
+//		if (sf->ShardIsCaptured(st))
+//		{
+//			++capCount;
+//		}
+//	}
+//	return capCount;
+//}
+//
+//int SaveWorld::GetNumSectorTypeComplete(int sType)
+//{
+//	int count = 0;
+//	for (int i = 0; i < numSectors; ++i)
+//	{
+//		if (sectors[i].sectorType == sType)
+//		{
+//			if (sectors[i].IsComplete())
+//			{
+//				++count;
+//			}
+//		}
+//	}
+//
+//	return count;
+//}
 
 
 LevelScore::LevelScore()
@@ -653,6 +653,28 @@ int SaveFile::GetBestFramesLevel(int w, int s, int m)
 }
 
 
+int SaveFile::GetWorldStart(int w)
+{
+	return 64 * w;
+}
+int SaveFile::GetWorldEnd(int w)
+{
+	return 64 * (w + 1);
+}
+
+int SaveFile::GetSectorStart(int w, int s)
+{
+	return 64 * w + 8 * s;
+}
+int SaveFile::GetSectorEnd(int w, int s)
+{
+	return 64 * w + 8 * (s + 1);
+}
+
+int SaveFile::GetMapIndex(int w, int s, int m)
+{
+	return GetSectorStart(w, s) + m;
+}
 
 void SaveFile::CalcProgress(int start, int end, float &totalMaps,
 	float &totalBeaten)
@@ -714,14 +736,95 @@ float SaveFile::GetCompletionPercentage()
 
 float SaveFile::GetCompletionPercentageWorld(int w)
 {
-	return CalcCompletionPercentage(64 * w, 64 * (w + 1 ), 
+	return CalcCompletionPercentage(GetWorldStart(w), GetWorldEnd(w), 
 		adventureFile.worlds[w].hasShardField);
 }
 
 float SaveFile::GetCompletionPercentageSector(int w, int s)
 {
-	return CalcCompletionPercentage(64 * w + 8 * s, 64 * w + 8 * (s+1), 
+	return CalcCompletionPercentage(GetSectorStart(w,s), GetSectorEnd(w,s), 
 		adventureFile.worlds[w].sectors[s].hasShardField );
+}
+
+bool SaveFile::IsRangeComplete(int start, int end)
+{
+	bool complete = true;
+	for (int i = start; i < end; ++i)
+	{
+		AdventureMap &am = adventureFile.GetMap(i);
+		if (am.Exists() && !levelsBeatenField.GetBit( i ) )
+		{
+			complete = false;
+			break;
+		}
+	}
+
+	return complete;
+}
+
+bool SaveFile::TrySetRecordTime(int totalFrames,
+	int w, int s, int m)
+{
+	int index = GetMapIndex(w, s, m);
+	int toBeat = levelScores[index].bestFramesToBeat;
+	if ( toBeat < 0 || totalFrames < toBeat)
+	{
+		levelScores[index].bestFramesToBeat = totalFrames;
+		return true;
+	}
+
+	return false;
+}
+
+void SaveFile::CompleteLevel(int w, int s, int m)
+{
+	int index = GetMapIndex(w, s, m);
+	levelsJustBeatenField.SetBit(index, true);
+	levelsBeatenField.SetBit(index, true);
+}
+
+bool SaveFile::IsCompleteWorld(int w)
+{
+	IsRangeComplete(GetWorldStart(w), GetWorldEnd(w));
+}
+
+bool SaveFile::IsCompleteSector(int w, int s)
+{
+	IsRangeComplete(GetSectorStart(w, s), GetSectorEnd(w, s));
+}
+
+bool SaveFile::IsCompleteLevel(int w, int s, int m)
+{
+	int index = GetMapIndex(w, s, m);
+	AdventureMap &am = adventureFile.GetMap(index);
+	if (am.Exists() && !levelsBeatenField.GetBit(index))
+	{
+		return true;
+	}
+
+	assert(am.Exists());
+
+	return false;
+}
+
+bool SaveFile::IsUnlockedSector(int w, int s)
+{
+	AdventureSector &as = adventureFile.GetSector(w, s);
+	int required = as.requiredRunes;
+
+	AdventureWorld &aw = adventureFile.GetWorld(w);
+	int complete = 0;
+	for (int i = 0; i < 8; ++i)
+	{
+		if (IsCompleteSector(w, i))
+		{
+			++complete;
+			if (complete == required)
+				return true;
+		}
+	}
+
+	return false;
 }
 
 bool SaveFile::HasUpgrade(int pow)
@@ -763,7 +866,6 @@ bool SaveFile::LoadInfo(ifstream &is)
 		
 		upgradeField.Load(is);
 		momentaField.Load(is);
-
 		shardField.Load(is);
 		newShardField.Load(is);
 
@@ -823,7 +925,6 @@ void SaveFile::Save()
 
 		upgradeField.Save(of);
 		momentaField.Save(of);
-
 		shardField.Save(of);
 		newShardField.Save(of);
 

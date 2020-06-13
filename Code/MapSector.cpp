@@ -7,9 +7,11 @@
 using namespace std;
 using namespace sf;
 
-MapSector::MapSector( AdventureSector &adventureSector, MapSelector *p_ms, int index)
-	:numLevels(-1), ms(p_ms), sectorIndex(index)
+MapSector::MapSector( SaveFile *sf, MapSelector *p_ms, int index)
+	:saveFile( sf ), numLevels(-1), ms(p_ms), sectorIndex(index)
 {
+	
+
 	unlockedIndex = -1;
 	nodeSize = 128;
 	pathLen = 16;
@@ -85,6 +87,9 @@ MapSector::MapSector( AdventureSector &adventureSector, MapSelector *p_ms, int i
 	bool diffNumLevels = false;
 
 	selectedYIndex = 1;
+
+	adventureSector = &saveFile->adventureFile.GetSector(ms->worldIndex, sectorIndex);
+		
 
 	numLevels = adventureSector.GetNumActiveMaps();
 
@@ -194,7 +199,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 {
 	bg->Draw(target);
 
-	if (!saveSector->IsUnlocked()) //later, store this variable instead of 
+	if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
 	{
 		target->draw(lockedOverlayQuad, 4, sf::Quads);
@@ -337,64 +342,76 @@ int MapSector::GetSelectedIndex()
 	return mapSASelector->currIndex;
 }
 
-Level &MapSector::GetSelectedLevel()
+AdventureMap &MapSector::GetSelectedLevel()
 {
 	int selectedIndex = GetSelectedIndex();
-	if (selectedIndex >= sec->numLevels)
+
+	int counter = 0;
+	for (int i = 0; i < 8; ++i)
 	{
-		cout << "this is a bug in getselectedlevel()" << endl;
-		//assert(0);
-		selectedIndex = 0;
+		if (adventureSector->maps[i].Exists())
+		{
+			if (counter == selectedIndex)
+			{
+				return adventureSector->maps[i];
+			}
+			else
+			{
+				++counter;
+			}
+		}
 	}
-	return sec->levels[selectedIndex];
+
+	assert(0);
+	return adventureSector->maps[0];
 }
 
 void MapSector::UpdateLevelStats()
 {
-	int gridIndex = 0;
-	int uncaptured = 0;
-	Level &lev = GetSelectedLevel();
-	auto &snList = lev.shardNameList;
-	//numTotalShards = snList.size();
-	for (int i = 0; i < numTotalShards; ++i)
-	{
-		//SetRectColor(levelCollectedShardsBG + i * 4, Color(Color::Transparent));
-		SetRectSubRect(levelCollectedShards + i * 4, IntRect());
-	}
+	//int gridIndex = 0;
+	//int uncaptured = 0;
+	//Level &lev = GetSelectedLevel();
+	//auto &snList = lev.shardNameList;
+	////numTotalShards = snList.size();
+	//for (int i = 0; i < numTotalShards; ++i)
+	//{
+	//	//SetRectColor(levelCollectedShardsBG + i * 4, Color(Color::Transparent));
+	//	SetRectSubRect(levelCollectedShards + i * 4, IntRect());
+	//}
 
-	for (auto it = snList.begin(); it != snList.end(); ++it)
-	{
-		int sType = Shard::GetShardType((*it));
-		int subRectIndex = sType % 22;
-		if (saveSector->world->sf->ShardIsCaptured(sType))
-		{
-			SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(subRectIndex));
-		}
-		else
-		{
-			SetRectSubRect(levelCollectedShards + gridIndex * 4, IntRect());//ts_shards->GetSubRect(44));
-		}
+	//for (auto it = snList.begin(); it != snList.end(); ++it)
+	//{
+	//	int sType = Shard::GetShardType((*it));
+	//	int subRectIndex = sType % 22;
+	//	if (saveSector->world->sf->ShardIsCaptured(sType))
+	//	{
+	//		SetRectSubRect(levelCollectedShards + gridIndex * 4, ts_shards->GetSubRect(subRectIndex));
+	//	}
+	//	else
+	//	{
+	//		SetRectSubRect(levelCollectedShards + gridIndex * 4, IntRect());//ts_shards->GetSubRect(44));
+	//	}
 
-		//SetRectColor(levelCollectedShardsBG + gridIndex * 4, Color(Color::Black));
-		++gridIndex;
-	}
+	//	//SetRectColor(levelCollectedShardsBG + gridIndex * 4, Color(Color::Black));
+	//	++gridIndex;
+	//}
 
-	stringstream ss;
-	int percent = floor(GetSelectedLevel().GetCompletionPercentage());
+	//stringstream ss;
+	//int percent = floor(GetSelectedLevel().GetCompletionPercentage());
 
-	ss << percent << "%";
+	//ss << percent << "%";
 
-	Text &currLevelTimeText = ms->mainMenu->worldMap->currLevelTimeText;
+	//Text &currLevelTimeText = ms->mainMenu->worldMap->currLevelTimeText;
 
-	string levelTimeStr = "Fastest Level Time  ";
-	if (lev.bestTimeFrames < 0)
-	{
-		currLevelTimeText.setString(levelTimeStr + string("-- : --"));
-	}
-	else
-	{
-		currLevelTimeText.setString(levelTimeStr + GetTimeStr(lev.bestTimeFrames));
-	}
+	//string levelTimeStr = "Fastest Level Time  ";
+	//if (lev.bestTimeFrames < 0)
+	//{
+	//	currLevelTimeText.setString(levelTimeStr + string("-- : --"));
+	//}
+	//else
+	//{
+	//	currLevelTimeText.setString(levelTimeStr + GetTimeStr(lev.bestTimeFrames));
+	//}
 }
 
 sf::Vector2f MapSector::GetNodePos(int node)
@@ -407,39 +424,23 @@ sf::Vector2f MapSector::GetSelectedNodePos()
 	return GetNodePos(GetSelectedIndex());
 }
 
-sf::Vector2f MapSector::GetTopNodePos(int n)
-{
-	Vector2f res = GetNodePos(n);
-	res.y -= pathLen + nodeSize;
-	return res;
-}
-
-sf::Vector2f MapSector::GetBotNodePos(int n)
-{
-	Vector2f res = GetNodePos(n);
-	res.y += pathLen + nodeSize;
-	return res;
-}
-
 void MapSector::UpdateNodePosition()
 {
 	for (int i = 0; i < numLevels; ++i)
 	{
-		topBonusNodes[i].setPosition(GetTopNodePos(i));
 		nodes[i].setPosition(GetNodePos(i));
-		botBonusNodes[i].setPosition(GetBotNodePos(i));
 	}
 }
 
 void MapSector::RunSelectedMap()
 {
 	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-	ms->mainMenu->AdventureLoadLevel(&GetSelectedLevel());
+	ms->mainMenu->AdventureLoadLevel( ms->worldIndex, &GetSelectedLevel());
 }
 
 int MapSector::GetNumLevels()
 {
-	return sec->numLevels;
+	return numLevels;
 }
 
 void MapSector::UpdateBG()
@@ -515,11 +516,11 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateNodes();
 		}
 
-		if (curr.A && !prev.A && sec->IsUnlocked())
+		if (curr.A && !prev.A && saveFile->IsUnlockedSector( ms->worldIndex, sectorIndex ))
 		{
 			if (selectedYIndex == 1)
 			{
-				if (sec->IsComplete())
+				if (saveFile->IsCompleteSector(ms->worldIndex, sectorIndex))
 				{
 					state = COMPLETE;
 				}
@@ -542,7 +543,7 @@ bool MapSector::Update(ControllerState &curr,
 		int ff = stateFrame / 7;
 		if (ff == 13)
 		{
-			bool secOver = sec->IsComplete();
+			bool secOver = saveFile->IsCompleteSector(ms->worldIndex, sectorIndex);
 
 			if (secOver)
 			{
@@ -605,48 +606,13 @@ bool MapSector::Update(ControllerState &curr,
 	return true;
 }
 
-bool MapSector::HasTopBonus(int node)
-{
-	return sec->HasTopBonus(node);
-}
-bool MapSector::HasBotBonus(int node)
-{
-	return sec->HasTopBonus(node);
-}
-
 void MapSector::UpdateNodes()
 {
 	Tileset *ts_node = ms->ts_node;
 	for (int i = 0; i < numLevels; ++i)
 	{
-		//Vertex *n = (nodes + 1 * numLevels * 4 + i * 4);
-		//Vertex *nTop = (nodes + 0 * numLevels * 4 + i * 4);
-		//Vertex *nBot = (nodes + 2 * numLevels * 4 + i * 4);
-		if (HasTopBonus(i) && saveSector->levels[i].TopBonusUnlocked())
-		{
-			//SetRectSubRect(nTop, ms->ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
-			//SetRectColor(nTop, Color(Color::White));
-			topBonusNodes[i].setTextureRect(ts_node->GetSubRect(GetNodeBonusIndexTop(i)));
-			topBonusNodes[i].setColor(Color::White);
-		}
-		else
-		{
-			topBonusNodes[i].setColor(Color::Transparent);
-		}
-
-		if (HasBotBonus(i) && saveSector->levels[i].BottomBonusUnlocked())
-		{
-			botBonusNodes[i].setTextureRect(ts_node->GetSubRect(GetNodeBonusIndexBot(i)));
-
-			botBonusNodes[i].setColor(Color::White);
-		}
-		else
-		{
-			botBonusNodes[i].setColor(Color::Transparent);
-		}
-
 		Tileset *currTS = NULL;
-		int bFType = saveSector->levels[i].bossFightType;
+		int bFType = adventureSector->GetExistingMap(i).headerInfo.mapType;
 		if (bFType == 0)
 		{
 			currTS = ts_node;
@@ -772,45 +738,12 @@ int MapSector::GetSelectedNodeSubIndex()
 
 int MapSector::GetSelectedNodeBossFightType()
 {
-	return sec->levels[GetSelectedIndex()].bossFightType;
+	return 0; //sec->levels[GetSelectedIndex()].bossFightType;
 }
 
-
-int MapSector::GetNodeBonusIndexTop(int node)
+void MapSector::Init(SaveFile *saveFile)
 {
-	if (selectedYIndex == 0 && GetSelectedIndex() == node)
-	{
-		return 0;
-	}
-	else
-	{
-		return 0;
-	}
-	/*if (sec->levels[node].completed)
-	{
-	return 64;
-	}
-	else
-	{
-	return 65;
-	}*/
-}
-
-int MapSector::GetNodeBonusIndexBot(int node)
-{
-	if (selectedYIndex == 2 && GetSelectedIndex() == node)
-	{
-		return 0;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-void MapSector::Init(SaveFile *p_saveSector)
-{
-	if (saveSector->IsComplete())
+	if (saveFile->IsCompleteSector(ms->worldIndex, sectorIndex) )
 	{
 		state = COMPLETE;
 		endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(15));
@@ -820,8 +753,8 @@ void MapSector::Init(SaveFile *p_saveSector)
 		state = NORMAL;
 	}
 
-	auto &snList = GetSelectedLevel().shardNameList;
-	numTotalShards = snList.size();
+	//auto &snList = GetSelectedLevel().shardNameList;
+	//numTotalShards = snList.size();
 
 	//levelCollectedShards = new Vertex[numTotalShards * 4];
 	//levelCollectedShardsBG = new Vertex[numTotalShards * 4];
@@ -832,5 +765,4 @@ void MapSector::Init(SaveFile *p_saveSector)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
-	//UpdateHighlight();
 }

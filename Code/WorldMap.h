@@ -35,17 +35,17 @@ struct MapSector
 		COMPLETE
 	};
 
-	MapSector( AdventureSector &adventureSector, 
+	MapSector( SaveFile *sf, 
 		MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
 	bool IsFocused();
 	void RunSelectedMap();
-	void Init(SaveSector *sf);
+	void Init(SaveFile *sf);
 	int GetNumLevels();
 	void UpdateNodePosition();
 	int GetSelectedIndex();
-	Level &GetSelectedLevel();
+	AdventureMap &GetSelectedLevel();
 	void Load();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
@@ -58,12 +58,6 @@ struct MapSector
 	int GetNodeSubIndex(int node);
 	int GetSelectedNodeSubIndex();
 	int GetSelectedNodeBossFightType();
-	bool HasTopBonus(int node);
-	bool HasBotBonus(int node);
-	sf::Vector2f GetTopNodePos(int n);
-	sf::Vector2f GetBotNodePos(int n);
-	int GetNodeBonusIndexTop(int node);
-	int GetNodeBonusIndexBot(int node);
 	void UpdateLevelStats();
 	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
@@ -71,8 +65,9 @@ struct MapSector
 	void UpdateStats();
 
 	State state;
-	SaveSector *saveSector;
 	MapSelector *ms;
+	SaveFile *saveFile;
+	AdventureSector *adventureSector;
 
 	
 	sf::Vector2f left;
@@ -142,8 +137,7 @@ struct MapSelector
 		K_HIDE,
 	};
 
-	MapSelector( AdventureWorld &adventureWorld, 
-		MainMenu *mm, sf::Vector2f &pos, 
+	MapSelector( MainMenu *mm, sf::Vector2f &pos, 
 		int wIndex);
 	void ReturnFromMap();
 	void UpdateHighlight();
@@ -228,7 +222,7 @@ struct WorldMap
 		ControllerState &currInput);
 	void Draw(sf::RenderTarget *target);
 	void CompleteCurrentMap(SaveFile *sf, int totalFrames);
-	Sector &GetCurrSector();
+	AdventureSector &GetCurrSector();
 	int GetCurrSectorNumLevels();
 	void UpdateMapList();
 	const std::string & GetSelected();

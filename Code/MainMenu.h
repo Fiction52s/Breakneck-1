@@ -30,6 +30,7 @@ struct MainMenu;
 struct PauseMenu;
 struct LevelSelector;
 struct MusicInfo;
+struct AdventureMap;
 
 struct EffectPool;
 
@@ -608,7 +609,7 @@ struct MainMenu
 	void CustomMapOption();
 	void PlayIntroMovie();
 	Mode menuMode;
-	void AdventureLoadLevel( Level *lev,
+	void AdventureLoadLevel( int w, AdventureMap *am,
 		bool loadingScreen = true );
 	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;

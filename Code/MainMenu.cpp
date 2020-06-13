@@ -2142,11 +2142,11 @@ void MainMenu::SetModeKinBoostLoadingMap(int variation)
 
 }
 
-void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
+void MainMenu::AdventureLoadLevel( int w, AdventureMap *am, bool loadingScreen)
 {
 	//window->setVerticalSyncEnabled(false);
 	//window->setFramerateLimit(60);
-	string levelPath = lev->GetFullName();// name;
+	string levelPath = am->path + "\\" + am;//lev->GetFullName();// name;
 	//View oldView = window->getView();
 
 	
@@ -2155,7 +2155,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	//window->setActive(false);
 	doneLoading = false;
 
-	int wIndex = lev->sec->world->index;
+	int wIndex = w;
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	SetModeLoadingMap(wIndex);
 
@@ -2167,7 +2167,7 @@ void MainMenu::AdventureLoadLevel(Level *lev, bool loadingScreen)
 	//sf::sleep(sf::milliseconds(5000));
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
-	currLevel->level = lev;
+	//currLevel->level = lev;
 
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
