@@ -13,10 +13,10 @@ using namespace sf;
 TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
-	ts_breakneckTitle = p_mainMenu->tilesetManager.GetTileset("Title/breakneck_1034x835.png", 1034, 835);
+	ts_breakneckTitle = GetTileset("Title/breakneck_1034x835.png", 1034, 835);
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
-	ts_titleBG = p_mainMenu->tilesetManager.GetTileset("Title/title_base_1920x1080.png", 1920, 1080);
-	ts_emergenceTitle = p_mainMenu->tilesetManager.GetTileset("Title/emergence_337x51.png", 337, 51);
+	ts_titleBG = GetTileset("Title/title_base_1920x1080.png", 1920, 1080);
+	ts_emergenceTitle = GetTileset("Title/emergence_337x51.png", 337, 51);
 
 	titleBGSprite.setTexture(*ts_titleBG->texture);
 	breakneckTitleSprite.setTexture(*ts_breakneckTitle->texture);
@@ -27,45 +27,43 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	background = new Background(p_mainMenu);
 
-
-	ts_light[0] = p_mainMenu->tilesetManager.GetTileset("Title/titlelight_1_1920x1080.png", 1920, 1080);
-	ts_light[1] = p_mainMenu->tilesetManager.GetTileset("Title/titlelight_2_1920x1080.png", 1920, 1080);
-	ts_light[2] = p_mainMenu->tilesetManager.GetTileset("Title/titlelight_3_1920x1080.png", 1920, 1080);
-	ts_light[3] = p_mainMenu->tilesetManager.GetTileset("Title/titlelight_4_1920x1080.png", 1920, 1080);
+	ts_light[0] = GetTileset("Title/titlelight_1_1920x1080.png", 1920, 1080);
+	ts_light[1] = GetTileset("Title/titlelight_2_1920x1080.png", 1920, 1080);
+	ts_light[2] = GetTileset("Title/titlelight_3_1920x1080.png", 1920, 1080);
+	ts_light[3] = GetTileset("Title/titlelight_4_1920x1080.png", 1920, 1080);
 
 	for (int i = 0; i < 4; ++i)
 	{
 		lightSpr[i].setTexture(*ts_light[i]->texture);
 	}
 
-	ts_energy = p_mainMenu->tilesetManager.GetTileset("Title/energy_1920x1080.png", 1920, 1080);
+	ts_energy = GetTileset("Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
 
 	energySpr.setColor(Color::Blue);
 
-	ts_kin = p_mainMenu->tilesetManager.GetTileset("Title/kintitle_128x256.png", 128, 256);
+	ts_kin = GetTileset("Title/kintitle_128x256.png", 128, 256);
 	kinSpr.setTexture(*ts_kin->texture);
 	kinSpr.setTextureRect(ts_kin->GetSubRect(0));
 	kinSpr.setPosition(913, 710);
 
-	ts_kinHandEnergy = p_mainMenu->tilesetManager.GetTileset("Title/kintitle_energy_128x256.png", 128, 256);
+	ts_kinHandEnergy = GetTileset("Title/kintitle_energy_128x256.png", 128, 256);
 	kinHandEnergySpr.setTexture(*ts_kinHandEnergy->texture);
 	kinHandEnergySpr.setTextureRect(ts_kinHandEnergy->GetSubRect(0));
 	kinHandEnergySpr.setPosition(913, 710);
 
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, 5 * 5));
+			GetTileset("Title/titlecloud_1_1920x1080.png", 1920, 1080), 0, 1, 5 * 5));
 	scrollingBackgrounds.push_back(
 		new ScrollingBackground(
-			p_mainMenu->tilesetManager.GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
+			GetTileset("Title/titlecloud_2_1920x1080.png", 1920, 1080), 0, 1, 10 * 5));
 
 	frame = 0;
 
 	
 	titleMusic = mainMenu->musicManager->songMap["w0_1_Breakneck_Title"];
 	titleMusic->Load();
-
 }
 
 TitleScreen::~TitleScreen()

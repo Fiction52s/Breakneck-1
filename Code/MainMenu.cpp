@@ -101,6 +101,11 @@ void MainMenu::sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode )
 		delete mm->saveMenu;
 		mm->saveMenu = NULL;
 		break;
+	case TITLEMENU:
+	{
+		delete mm->titleScreen;
+		mm->titleScreen = NULL;
+	}
 	}
 
 	switch (toMode)
@@ -110,6 +115,9 @@ void MainMenu::sLoadMode(MainMenu *mm, Mode fromMode, Mode toMode )
 		mm->saveMenu = new SaveMenuScreen(mm);
 		mm->saveMenu->Reset();
 		break;
+	case TITLEMENU:
+		mm->titleScreen = new TitleScreen(mm);
+		mm->titleScreen->Reset();
 	}
 }
 

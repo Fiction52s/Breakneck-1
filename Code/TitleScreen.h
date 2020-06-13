@@ -3,14 +3,14 @@
 
 #include <SFML/Graphics.hpp>
 #include <list>
+#include "Tileset.h"
 
 struct MainMenu;
-struct Tileset;
 struct Background;
 struct ScrollingBackground;
 struct MusicInfo;
 
-struct TitleScreen
+struct TitleScreen : TilesetManager
 {
 	TitleScreen(MainMenu *p_mainMenu);
 	~TitleScreen();
