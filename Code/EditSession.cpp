@@ -1277,7 +1277,8 @@ void EditSession::Draw()
 	preScreenTex->clear();
 	preScreenTex->setView(view);
 
-	background->Draw(preScreenTex);
+	if( background != NULL )
+		background->Draw(preScreenTex);
 
 	preScreenTex->draw(border, 8, sf::Lines);
 
@@ -2740,7 +2741,6 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
-	reloadNew = false;
 	reload = false;
 
 	playerType = NULL;
@@ -2802,7 +2802,6 @@ void EditSession::ReloadNew()
 	quit = true;
 	filePathStr = "";
 	filePath = "";
-	reloadNew = true;
 }
 
 void EditSession::Reload(
@@ -2876,7 +2875,12 @@ int EditSession::EditRun()
 
 	preScreenTex->setView(view);
 
-	if ( reloadNew )
+	currentFile = filePath.string();
+
+	SetMode(EDIT);
+	stored = mode;
+
+	if (filePathStr == "" )
 	{
 		//clear groups on my own in case I don't load the file
 		for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -2885,18 +2889,18 @@ int EditSession::EditRun()
 		}
 		groups.clear();
 
-		envName = newMapInfo.envName;//"";//"w1_01";
+		envName = "";//newMapInfo.envName;//"";//"w1_01";
 
-		envWorldType = newMapInfo.envWorldType;
+		envWorldType = 0;//newMapInfo.envWorldType;
 
 		leftBound = -1500;
 		topBound = -1500;
 		boundWidth = 3000;
 		boundHeight = 3000;
 
-		drainSeconds = newMapInfo.envWorldType;//60;
+		drainSeconds = 60;//newMapInfo.drainSeconds;//60;
 
-		background = Background::SetupFullBG(envName, this);
+		//background = Background::SetupFullBG(envName, this);
 
 		bossType = 0;
 
@@ -2904,17 +2908,15 @@ int EditSession::EditRun()
 
 		UpdateFullBounds();
 
-		currentFile = newMapInfo.fileNameStr;//filePath.string();
+		currentFile = "";
 
-		//ActivateNewMapPanel();
+		ActivateNewMapPanel();
 	}
 	else
 	{
-		currentFile = filePath.string();
+		
 		ReadFile();
 	}
-
-	reloadNew = false;
 
 	
 
@@ -2993,8 +2995,7 @@ int EditSession::EditRun()
 	ts_guiMenu->SetSpriteTexture(guiMenuSprite);
 	guiMenuSprite.setOrigin(guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2);
 
-	SetMode(EDIT);
-	stored = mode;
+	
 	bool canCreatePoint = true;
 
 	menuCircleDist = 128;
@@ -3138,7 +3139,11 @@ int EditSession::EditRun()
 
 		UpdatePanning();
 
-		background->Update(view.getCenter(), spriteUpdateFrames);
+		if (background != NULL)
+		{
+			background->Update(view.getCenter(), spriteUpdateFrames);
+		}
+		
 
 		UpdatePolyShaders();
 
@@ -3227,18 +3232,23 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			string mapName = newMapPanel->textBoxes["mapname"]->GetString();
 			if ( mapName != "")
 			{
-				newMapInfo.envName = "w1_01";
+				envName = "w1_01";
+				envWorldType = 0;
+				background = Background::SetupFullBG(envName, this);
 
 				stringstream ss;
 				ss << newMapPanel->textBoxes["timetolive"]->GetString();
 				int d;
 				ss >> d;
-				newMapInfo.drainSeconds = d;
-				newMapInfo.envWorldType = 0;
-				newMapInfo.fileNameStr = newMapPanel->labels["pathlabel"]->getString().toAnsiString()
-					+ "\\" + mapName + ".brknk";
+				drainSeconds = d;
 
-				ReloadNew();
+				string pathStr = newMapPanel->labels["pathlabel"]->getString().toAnsiString()
+					+ "\\" + mapName + ".brknk";
+				filePathStr = pathStr;
+				filePath = pathStr;
+				currentFile = filePathStr;
+
+				RemoveActivePanel(newMapPanel);
 			}
 		}
 		else if (b == newMapPanel->cancelButton)
@@ -11551,7 +11561,8 @@ void EditSession::HandleEvents()
 		{
 			if (ev.key.code == Keyboard::F5)
 			{
-				background->FlipShown();
+				if( background != NULL )
+					background->FlipShown();
 				continue;
 			}
 		}

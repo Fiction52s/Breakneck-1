@@ -87,14 +87,6 @@ enum EditLayer : int
 	LAYER_WATER,
 };
 
-struct ReloadNewInfo
-{
-	std::string fileNameStr;
-	std::string envName;
-	int drainSeconds;
-	int envWorldType;
-};
-
 struct EditSession : GUIHandler, Session
 {
 	enum Emode : int
@@ -640,8 +632,6 @@ struct EditSession : GUIHandler, Session
 	int tempGridY;
 
 	bool reload;
-	bool reloadNew;
-	ReloadNewInfo newMapInfo;
 
 	void LoadAllPolyShaders();
 	void Reload(

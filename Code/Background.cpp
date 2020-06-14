@@ -216,8 +216,9 @@ Background *Background::SetupFullBG(const std::string &fName,
 	}
 	catch (std::system_error &e)
 	{
-		cout << "blizzle: " << e.code().message() << endl;
-		assert(0);
+		return NULL;
+		//cout << "blizzle: " << e.code().message() << endl;
+		//assert(0);
 	}
 
 	Background *newBG = NULL;
