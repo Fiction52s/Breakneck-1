@@ -20,7 +20,8 @@ GeneralUI::GeneralUI()
 	mainPanel->SetColor(Color::Red);
 	mainPanel->SetAutoSpacing(true);
 
-	std::vector<string> fileOptions = { "New Map", "Open Map",  "blah3" };
+	std::vector<string> fileOptions = { "New Map", "Open Map",  "Save Map", "Save Map As", "Edit Adventure",
+	"Create Adventure", "EXIT" };
 	fileDropdown = mainPanel->AddMenuDropdown("File", Vector2i(0, 0), 
 		Vector2i(fileWidth, height), 200, fileOptions);
 	std::vector<string> editOptions(EditOptions_Count);
@@ -54,24 +55,26 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		{
 		case NEW_MAP:
 		{
-			//edit->ActivateNewMapPanel();
-			edit->ReloadNew();
+			edit->TryReloadNew();
 			break;
 		}
 		case OPEN_MAP:
 		{
-			edit->fileChooser->chooser->StartRelative(".brknk", FileChooser::OPEN, "Resources\\Maps");
+			edit->OpenMapDialog();
+			
 			break;
 		}
 		case SAVE_MAP:
 		{
+			edit->TrySaveMap();
 			break;
 		}
 		case SAVE_MAP_AS:
 		{
+			edit->SaveMapDialog();
 			break;
 		}
-		case OPEN_ADVENTURE:
+		case EDIT_ADVENTURE:
 		{
 			edit->fileChooser->chooser->StartRelative(".adventure", FileChooser::OPEN, "");
 			break;
@@ -80,6 +83,10 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		{
 			edit->adventureCreator->Open();
 			break;
+		}
+		case EXIT_EDITOR:
+		{
+			//are you sure you want to exit without saving?
 		}
 		}
 		

@@ -1148,6 +1148,8 @@ EditSession::~EditSession()
 
 	delete graph;
 
+	delete confirmPopup;
+
 	delete brushManager;
 
 	delete fileChooser;
@@ -1733,6 +1735,15 @@ void EditSession::WriteMapHeader(ofstream &of)
 	newMapHeader.envWorldType = envWorldType;
 
 	newMapHeader.Save(of);
+
+	if (mapHeader == NULL)
+	{
+		mapHeader = new MapHeader(newMapHeader);
+	}
+	else
+	{
+		*mapHeader = newMapHeader;
+	}
 }
 
 void EditSession::WriteDecor(ofstream &of)
@@ -1953,6 +1964,8 @@ void EditSession::WritePlayerOptions(std::ofstream &of)
 
 void EditSession::WriteFile(string fileName)
 {
+	saveUpdated = true;
+
 	bool hasGoal = false;
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 	{
@@ -2271,6 +2284,7 @@ ActorParams * EditSession::AttachActorToRail(ActorPtr actor, RailPtr rail)
 
 void EditSession::AddDoneAction( Action *a )
 {
+	saveUpdated = false;
 	if (!doneActionStack.empty() && doneActionStack.back() == a)
 	{
 		int xxxxx = 5;
@@ -2281,6 +2295,7 @@ void EditSession::AddDoneAction( Action *a )
 
 void EditSession::UndoMostRecentAction()
 {
+	saveUpdated = false;
 	if (doneActionStack.size() > 0)
 	{
 		Action *action = doneActionStack.back();
@@ -2745,6 +2760,7 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	saveUpdated = true;
 	reload = false;
 	reloadNew = false;
 
@@ -2794,6 +2810,8 @@ void EditSession::Init()
 	SetupShardSelectPanel();
 	SetupBrushPanels();
 	SetupNewMapPanel();
+
+	confirmPopup = new ConfirmPopup();
 
 	graph = new EditorGraph;
 
@@ -2866,6 +2884,7 @@ void EditSession::DefaultInit()
 
 int EditSession::EditRun()
 {
+	saveUpdated = true;
 	reload = false;
 	mapStartBrush->Clear();
 	totalGameFrames = 0;
@@ -3241,7 +3260,7 @@ int EditSession::Run()
 void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
 	Panel *p = b->panel;
-	
+
 	if (p == newMapPanel)
 	{
 		if (b == newMapPanel->confirmButton)
@@ -3741,7 +3760,6 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 	{
 		Reload(fc->currPath.string() + "\\" + fileName + ".brknk");
 	}
-	
 }
 
 void EditSession::ChooseFileSave(FileChooser *fc,
@@ -3753,6 +3771,14 @@ void EditSession::ChooseFileSave(FileChooser *fc,
 			fileName );
 
 		createTerrainModeUI->UpdateBrushHotbar();
+	}
+	else if (fc->ext == ".brknk")
+	{
+		string fp = fc->currPath.string() + "\\" + fileName + ".brknk";
+		filePath = fp;
+		filePathStr = fp;
+		currentFile = fp;
+		WriteFile(fp);
 	}
 }
 
@@ -6617,10 +6643,7 @@ void EditSession::CreateDecorImage(DecorPtr dec)
 void EditSession::CreatePreview(Vector2i imageSize)
 {
 	int extraBound = 0;
-	int left;
-	int top;
-	int right;
-	int bot;
+	int left, top, right, bot;
 	cout << "CREATING PREVIEW" << endl;
 
 	if (inversePolygon != NULL)
@@ -6634,10 +6657,10 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	}
 	else
 	{
-		int pLeft;
-		int pTop;
-		int pRight;
-		int pBot;
+		int pLeft = 0;
+		int pTop = 0;
+		int pRight = 0;
+		int pBot = 0;
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
 			if (polygons.front() == (*it))
@@ -6881,7 +6904,10 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		
 	std::stringstream ssPrev;
 	//ssPrev << filePath.parent_path().relative_path().string() << "/Previews/" << filePath.stem().string() << "_preview_" << imageSize.x << "x" << imageSize.y << ".png";
-	ssPrev << filePath.parent_path().relative_path().string() << "/" << filePath.stem().string() << ".png";
+
+
+	//ssPrev << filePath.parent_path().relative_path().string() << "\\" << filePath.stem().string() << ".png";
+	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".png";
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
 	//currentFile
@@ -11355,6 +11381,41 @@ void EditSession::GeneralMouseUpdate()
 	}
 }
 
+void EditSession::SaveMapDialog()
+{
+	fileChooser->chooser->StartRelative(".brknk", FileChooser::SAVE, "Resources\\Maps\\CustomMaps");
+}
+
+void EditSession::OpenMapDialog()
+{
+	fileChooser->chooser->StartRelative(".brknk", FileChooser::OPEN, "Resources\\Maps\\CustomMaps");
+}
+
+void EditSession::TryReloadNew()
+{
+	if (saveUpdated)
+	{
+		ReloadNew();
+	}
+	else
+	{
+		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT);
+	}
+}
+
+void EditSession::TrySaveMap()
+{
+	if (currentFile == "")
+	{
+		SaveMapDialog();
+	}
+	else
+	{
+		cout << "writing to file: " << currentFile << endl;
+		WriteFile(currentFile);
+	}
+}
+
 void EditSession::GeneralEventHandler()
 {
 	if (mode != PAUSED && mode != SELECT_MODE)
@@ -11458,9 +11519,24 @@ void EditSession::GeneralEventHandler()
 			{
 				if (ev.key.code == Keyboard::S && ev.key.control)
 				{
-					polygonInProgress->ClearPoints();
-					cout << "writing to file: " << currentFile << endl;
-					WriteFile(currentFile);
+					if (ev.key.shift)
+					{
+						SaveMapDialog();
+					}
+					else
+					{
+						//polygonInProgress->ClearPoints();
+						TrySaveMap();
+					}
+					
+				}
+				else if (ev.key.code == Keyboard::O && ev.key.control)
+				{
+					OpenMapDialog();
+				}
+				else if (ev.key.code == Keyboard::N && ev.key.control)
+				{
+					TryReloadNew();
 				}
 				else if (ev.key.code == Keyboard::T )
 				{

@@ -209,6 +209,16 @@ struct EditSession : GUIHandler, Session
 	void Init();
 	void DefaultInit();
 
+	void TryReloadNew();
+	void TrySaveMap();
+
+	void SaveMapDialog();
+	void OpenMapDialog();
+
+	ConfirmPopup *confirmPopup;
+
+	bool saveUpdated;
+
 	//singleton
 	static EditSession *GetSession();
 	static EditSession *currSession;

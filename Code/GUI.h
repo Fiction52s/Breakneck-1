@@ -736,6 +736,28 @@ struct ErrorBar
 
 };
 
+struct ConfirmPopup : GUIHandler
+{
+	enum ConfirmType
+	{
+		OVERWRITE_MAP,
+		SAVE_CURRENT,
+	};
+
+	ConfirmType type;
+	Panel *panel;
+	EditSession *edit;
+
+	
+
+
+	ConfirmPopup();
+	~ConfirmPopup();
+	void Pop(ConfirmType ct);
+	void ButtonCallback(Button *b,
+		const std::string &e);
+};
+
 struct GeneralUI : GUIHandler
 {
 	GeneralUI();
@@ -747,8 +769,9 @@ struct GeneralUI : GUIHandler
 		OPEN_MAP,
 		SAVE_MAP,
 		SAVE_MAP_AS,
-		OPEN_ADVENTURE,
+		EDIT_ADVENTURE,
 		CREATE_ADVENTURE,
+		EXIT_EDITOR,
 	};
 
 	enum EditOptions
