@@ -204,6 +204,9 @@ struct EditSession : GUIHandler, Session
 	
 	~EditSession();
 
+	void Load();
+	void Init();
+
 	//singleton
 	static EditSession *GetSession();
 	static EditSession *currSession;
@@ -285,7 +288,6 @@ struct EditSession : GUIHandler, Session
 
 	std::list<Panel*> allPopups;
 
-	void SetupTerrainTypeSelector();
 
 	const static int TERRAIN_WORLDS = 10;
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
@@ -599,17 +601,7 @@ struct EditSession : GUIHandler, Session
 	
 
 	Panel * CreatePopupPanel( const std::string &p );
-	Panel *messagePopup;
-	Panel *errorPopup;
-	Panel *bgPopup;
-	Panel *shardSelectPopup;
-	Panel *gateSelectorPopup;
-	Panel *terrainSelectorPopup;
-	Panel *enemySelectPanel;
 
-	Panel *mapOptionsPanel;
-	Panel *terrainOptionsPanel;
-	Panel *railOptionsPanel;
 
 	void CreateShardGridSelector( Panel *p,
 		sf::Vector2i &pos );
@@ -624,19 +616,16 @@ struct EditSession : GUIHandler, Session
 
 	int IsRemovePointsOkay();
 
-	Panel *CreateOptionsPanel( const std::string &name );
 	int CountSelectedPoints();
 
 	std::vector<sf::Vector2i> patrolPath;
 	double minimumPathEdgeLength;
 	
-	bool ConfirmationPop( const std::string &question );
-	void GridSelectPop( const std::string &type );
 	std::string tempGridResult;
 	int tempGridX;
 	int tempGridY;
-	void MessagePop( const std::string &message );
-	void ErrorPop( const std::string &error );
+
+	void LoadAllPolyShaders();
 
 	void StartSelectedMove();
 	void ContinueSelectedMove();
@@ -866,19 +855,12 @@ struct EditSession : GUIHandler, Session
 	ActorType *playerType;
 	//std::list<Action*>::iterator currAction;
 
-	enum ConfirmChoices
-	{
-		NONE,
-		CONFIRM,
-		CANCEL
-	};
-	ConfirmChoices confirmChoice; 
 
 	//0 for no choice
 	//1 for confirm
 	//2 for cancel
 
-	Panel *confirm;
+	//Panel *confirm;
 	sf::View view;
 	
 	

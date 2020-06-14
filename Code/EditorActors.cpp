@@ -280,12 +280,12 @@ Panel *ActorType::CreatePanel()
 		//p->AddButton("setdirection", Vector2i(20, 300), Vector2f(100, 50), "Set Direction");
 	}
 	//w3
-	else if (name == "rail" || name == "grindrail")
+	/*else if (name == "rail" || name == "grindrail")
 	{
 		p = new Panel("rail_options", 200, 500, edit);
 		p->AddCheckBox("accelerate", Vector2i(120, 250));
 		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
-	}
+	}*/
 	//w5
 	else if (name == "narwhal")
 	{

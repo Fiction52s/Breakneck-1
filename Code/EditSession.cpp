@@ -825,6 +825,19 @@ void EditSession::UpdateModeFunc(int m)
 	}
 }
 
+void EditSession::LoadAllPolyShaders()
+{
+	int ind;
+	for (int worldI = 0; worldI < TERRAIN_WORLDS; ++worldI)
+	{
+		for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i)
+		{
+			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
+			LoadPolyShader(ind, worldI, i);
+		}
+	}
+}
+
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
 	errorBar(p_mainMenu->arial)
@@ -883,6 +896,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
 	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
+	LoadAllPolyShaders();
+	
 
 	transformTools = new TransformTools();
 
@@ -973,9 +988,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	preScreenTex = mainMenu->preScreenTexture;
 	
 	//minAngle = .99;
-	messagePopup = NULL;
-	errorPopup = NULL;
-	confirm = NULL;
 	progressBrush = new Brush();
 	selectedBrush = new Brush();
 	mapStartBrush = new Brush();
@@ -1000,9 +1012,9 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	AddW4Enemies();
 	AddW5Enemies();
 	AddW6Enemies();
+
+	Init();
 }
-
-
 
 PolyPtr EditSession::GetPolygon(int index )
 {
@@ -2681,18 +2693,70 @@ void EditSession::SetupBrushPanels()
 	nameBrushPanel->SetConfirmButton(cancel);
 }
 
-
-int EditSession::Run()
+void EditSession::Init()
 {
-	totalGameFrames = 0;
-	grassChanges = NULL;
-	focusedPanel = NULL;
+	graph = NULL;
+
+	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
+	currTerrainVar[TERRAINLAYER_NORMAL] = 0;
+
+	currTerrainWorld[TERRAINLAYER_WATER] = 8;
+	currTerrainVar[TERRAINLAYER_WATER] = 0;
+
+	currTerrainWorld[TERRAINLAYER_FLY] = 9;
+	currTerrainVar[TERRAINLAYER_FLY] = 0;
 
 	SetupHitboxManager();
 	SetupSoundManager();
 	SetupSoundLists();
 
-	players[0] = new Actor(NULL, this, 0);
+	SetupEnemyTypes();
+
+	brushManager = new BrushManager;
+	fileChooser = new DefaultFileSelector;
+	adventureCreator = new AdventureCreator;
+
+	for (auto it = types.begin(); it != types.end(); ++it)
+	{
+		(*it).second->CreateDefaultEnemy();
+	}
+
+	ReadDecorImagesFile();
+
+	SetupTerrainSelectPanel();
+	SetupShardSelectPanel();
+	SetupBrushPanels();
+
+	graph = new EditorGraph;
+
+	generalUI = new GeneralUI();
+
+	createEnemyModeUI = new CreateEnemyModeUI();
+	createDecorModeUI = new CreateDecorModeUI();
+	createTerrainModeUI = new CreateTerrainModeUI();
+	createRailModeUI = new CreateRailModeUI();
+	createGatesModeUI = new CreateGatesModeUI();
+	editModeUI = new EditModeUI();
+
+
+	polygonInProgress = new TerrainPolygon();
+	railInProgress = new TerrainRail();
+}
+
+void EditSession::Load()
+{
+
+}
+
+int EditSession::Run()
+{
+	mapStartBrush->Clear();
+	totalGameFrames = 0;
+	grassChanges = NULL;
+	focusedPanel = NULL;
+
+	if( players[0] == NULL )
+		players[0] = new Actor(NULL, this, 0);
 	
 	oldShaderZoom = -1;
 	complexPaste = NULL;
@@ -2714,11 +2778,7 @@ int EditSession::Run()
 	v.setSize( 1920/ 2, 1080 / 2 );
 	window->setView( v );
 
-	shardSelectPopup = CreatePopupPanel("shardselector");
-
-	confirm = CreatePopupPanel( "confirmation" );
 	validityRadius = 4;
-
 
 	modifyGate = NULL;
 
@@ -2730,142 +2790,14 @@ int EditSession::Run()
 	trackingEnemyParams = NULL;
 	trackingDecor = NULL;
 
-	sf::Texture playerZoomIconTex;
-	playerZoomIconTex.loadFromFile( "Resources/Editor/playerzoomicon.png" );
-	sf::Sprite playerZoomIcon( playerZoomIconTex );
+	Tileset *ts_playerZoomIcon = GetTileset("Editor/playerzoomicon.png");
+	sf::Sprite playerZoomIcon(*ts_playerZoomIcon->texture);
 	
 	playerZoomIcon.setOrigin( playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2 );	
 
-	SetupEnemyTypes();
-
-	//InitDecorPanel();
-
-	mapOptionsPanel = CreateOptionsPanel("map");
-	terrainOptionsPanel = CreateOptionsPanel("terrain");
-	railOptionsPanel = CreateOptionsPanel("rail");
-
-	messagePopup = CreatePopupPanel( "message" );
-	errorPopup = CreatePopupPanel( "error" );
-	bgPopup = CreatePopupPanel("bg");
-
-	GridSelector *bgSel = bgPopup->AddGridSelector(
-		"terraintypes", Vector2i(20, 20), 6, 7, 1920/8, 1080/8, false, true);
-
-	Tileset *bgTS;
-	string path = "BGInfo/";
-	string bgName; //"w1_0";
-	string png = ".png";
-	string numStr;
-	string fullName;
-	for (int w = 0; w < 2; ++w)
-	{
-		for (int i = 0; i < 6; ++i)
-		{
-			numStr = to_string(i + 1);
-			bgName = "w" + to_string(w + 1) + "_0";// +to_string(i + 1);
-			fullName = path + bgName + numStr + png;
-			bgTS = GetTileset(fullName, 1920, 1080);
-			if (bgTS == NULL)
-			{
-				continue;
-			}
-			Sprite bgSpr(*bgTS->texture);
-			bgSpr.setScale(.125, .125);
-			bgSel->Set(i, w, bgSpr, bgName + numStr);
-		}
-	}
-
-	enemySelectPanel = new Panel("enemyselection", 100, 150, this);//1920, 150, this );
-	allPopups.push_back(enemySelectPanel);
 	
-	/*int gridSizeX = 80;
-	int gridSizeY = 80;
 
-	GridSelector *gs = NULL;
-	int counter = 0;
-	for (int i = 0; i < 4; ++i)
-	{
-		gs = enemySelectPanel->AddGridSelector(to_string(i), Vector2i(0, 0), 15, 10, gridSizeX,
-			gridSizeY, false, true);
-		gs->active = false;
-		enemyGrid[i] = gs;
-
-		counter = 0;
-		for (int j = 0; j < 8; ++j)
-		{
-			auto &wen = worldEnemyNames[j];
-			counter = 0;
-			for (auto it = wen.begin(); it != wen.end(); ++it)
-			{
-				if ((*it).numLevels >= i+1)
-				{
-					SetEnemyGridIndex(gs, counter, j, (*it).name);
-				}
-				++counter;
-			}
-		}
-
-		counter = 0;
-		int row = 8;
-		for (auto it = extraEnemyNames.begin(); it != extraEnemyNames.end(); ++it)
-		{
-			if ((*it).numLevels >= i + 1)
-			{
-				SetEnemyGridIndex(gs, counter, row, (*it).name);
-			}
-			++counter;
-			if (counter == gs->xSize)
-			{
-				counter = 0;
-				++row;
-			}
-		}
-
-	}*/
-
-	//SetActiveEnemyGrid(0);
-
-	gateSelectorPopup = CreatePopupPanel( "gateselector" );
-	GridSelector *gateSel = gateSelectorPopup->AddGridSelector( "gatetypes", Vector2i( 20, 20 ), 7, 4, 32, 32, false, true );
-
-	sf::Texture whiteTex; //temp
-	whiteTex.loadFromFile( "Resources/Editor/whitesquare.png" );
-	Sprite tempSq;
-	tempSq.setTexture( whiteTex );
-
-	tempSq.setColor( Color::Black );
-	gateSel->Set( 0, 0, tempSq, "black" );
-
-	tempSq.setColor( Color( 100, 100, 100 ) );
-	gateSel->Set( 1, 0, tempSq, "keygate" );
-
-	tempSq.setColor( Color::Red );
-	gateSel->Set( 2, 0, tempSq, "secret" );
-
-	tempSq.setColor( Color( 0, 255, 40 ) );
-	gateSel->Set( 3, 0, tempSq, "birdfight" );
-
-	tempSq.setColor( Color::Blue );
-	gateSel->Set( 4, 0, tempSq, "crawlerunlock" );
-
-	tempSq.setColor( Color::Cyan );
-	gateSel->Set( 5, 0 , tempSq, "nexus1unlock" );
-
-	tempSq.setColor(Color(100, 255, 10));
-	gateSel->Set(6, 0, tempSq, "shard");
-
-	gateSelectorPopup->AddButton( "deletegate", Vector2i( 20, 300 ), Vector2f( 80, 40 ), "delete" );
-
-	SetupTerrainTypeSelector();
-
-	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
-	currTerrainVar[TERRAINLAYER_NORMAL] = 0;
-
-	currTerrainWorld[TERRAINLAYER_WATER] = 8;
-	currTerrainVar[TERRAINLAYER_WATER] = 0;
-
-	currTerrainWorld[TERRAINLAYER_FLY] = 9;
-	currTerrainVar[TERRAINLAYER_FLY] = 0;
+	
 
 
 	currTerrainTypeSpr.setPosition(0, 160);
@@ -2876,30 +2808,27 @@ int EditSession::Run()
 
 	preScreenTex->setView( view );
 
-	ReadDecorImagesFile();
-
-	brushManager = new BrushManager;
-
-	fileChooser = new DefaultFileSelector;
-
-	adventureCreator = new AdventureCreator;
 	
 
 	ReadFile();
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
-	ActorGroup *playerGroup = new ActorGroup("player");
-	groups["player"] = playerGroup;
 
-	ParamsInfo playerPI("player", NULL, NULL,
-		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
-		GetTileset("Kin/jump_64x64.png", 64, 64));
+	if (groups["player"] == NULL)
+	{
+		ActorGroup *playerGroup = new ActorGroup("player");
+		groups["player"] = playerGroup;
 
-	playerType = new ActorType(playerPI);
-	types["player"] = playerType;
+		ParamsInfo playerPI("player", NULL, NULL,
+			Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
+			GetTileset("Kin/jump_64x64.png", 64, 64));
 
-	player = new PlayerParams(playerType, Vector2i(0, 0));
-	groups["player"]->actors.push_back(player);
+		playerType = new ActorType(playerPI);
+		types["player"] = playerType;
+
+		player = new PlayerParams(playerType, Vector2i(0, 0));
+		groups["player"]->actors.push_back(player);
+	}
 
 	player->SetPosition(playerOrigPos);
 	player->image.setPosition(player->GetFloatPos());
@@ -2919,28 +2848,10 @@ int EditSession::Run()
 
 	cam.Init(GetPlayerPos(0));
 
-	for (auto it = types.begin(); it != types.end(); ++it)
-	{
-		(*it).second->CreateDefaultEnemy();
-	}
-
-	SetupTerrainSelectPanel();
-	SetupShardSelectPanel();
-	SetupBrushPanels();
-
-	graph = new EditorGraph;
-
-	generalUI = new GeneralUI();
-
-	createEnemyModeUI = new CreateEnemyModeUI();
-	createDecorModeUI = new CreateDecorModeUI();
-	createTerrainModeUI = new CreateTerrainModeUI();
-	createRailModeUI = new CreateRailModeUI();
-	createGatesModeUI = new CreateGatesModeUI();
-	editModeUI = new EditModeUI();
 	
-	//enemyChooser = new EnemyChooser(types, enemySelectPanel);
-	//enemySelectPanel->AddEnemyChooser("blah", enemyChooser);
+
+	
+
 
 	if (!initialViewSet)
 	{
@@ -2949,8 +2860,9 @@ int EditSession::Run()
 	}
 
 	quit = false;
-	polygonInProgress = new TerrainPolygon();
-	railInProgress = new TerrainRail();
+
+	
+	
 	//inversePolygon.reset( NULL );
 
 	zoomMultiple = 2;
@@ -3277,7 +3189,8 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 				p->textBoxes["minedgesize"]->text.setString("8");
 
-				MessagePop("minimum edge length too low.\n Set to minimum of 8");
+				//MessagePop("minimum edge length too low.\n Set to minimum of 8");
+
 				//assert( false && "made min edge length too small!" );
 			}
 			else
@@ -3314,7 +3227,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 		}
 		else if (b->name == "envtype")
 		{
-			GridSelectPop("bg");
+			//GridSelectPop("bg");
 		}
 	}
 	else if( p->name == "terrain_options" )
@@ -3324,21 +3237,21 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			RemoveActivePanel(p);
 		}
 	}
-	else if (p->name == "rail_options")
-	{
-		SelectPtr select = selectedBrush->objects.front();
-		TerrainRail *tr = (TerrainRail*)select;
-		if (b->name == "ok")
-		{
-			tr->SetParams(railOptionsPanel);
-			RemoveActivePanel(p);
-		}
-		else if (b->name == "reverse")
-		{
-			tr->SwitchDirection();
-			//reverse single rail
-		}
-	}
+	//else if (p->name == "rail_options")
+	//{
+	//	SelectPtr select = selectedBrush->objects.front();
+	//	TerrainRail *tr = (TerrainRail*)select;
+	//	if (b->name == "ok")
+	//	{
+	//		tr->SetParams(railOptionsPanel);
+	//		RemoveActivePanel(p);
+	//	}
+	//	else if (b->name == "reverse")
+	//	{
+	//		tr->SwitchDirection();
+	//		//reverse single rail
+	//	}
+	//}
 	else if( p->name == "error_popup" )
 	{
 		if (b->name == "ok")
@@ -3346,28 +3259,10 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			RemoveActivePanel(p);
 		}
 	}
-	else if( p->name == "confirmation_popup" )
-	{
-		if( b->name == "confirmOK" )
-		{
-			confirmChoice = ConfirmChoices::CONFIRM;
-		}
-		else if( b->name == "cancel" )
-		{
-			confirmChoice = ConfirmChoices::CANCEL;
-		}
-	}
-	else if( p == gateSelectorPopup )
+	/*else if( p == gateSelectorPopup )
 	{
 		tempGridResult = "delete";
-	}
-	else if (p == shardSelectPopup)
-	{
-		if (b->name == "ok")
-		{
-			tempGridResult = "shardclose";
-		}
-	}
+	}*/
 	else
 	{
 		if (b->name == "ok")
@@ -3457,55 +3352,7 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 	cout << "grid selector callback!" << endl;
 	string name = p_name;
 	Panel *panel = gs->panel;
-	if( panel == enemySelectPanel )
-	{
-		if( name != "not set" )
-		{
-			//trackingEnemy = types[name];
-
-			//enemySprite = trackingEnemy->GetSprite(false);
-
-			//enemyQuad.setSize( Vector2f( trackingEnemy->info.size.x, trackingEnemy->info.size.y) );
-
-			RemoveActivePanel(panel);
-
-			cout << "set your cursor as the image" << endl;
-		}
-		else
-		{
-			cout << "not set" << endl;
-		}
-	}
-	else if( panel == gateSelectorPopup || panel == terrainSelectorPopup )
-	{
-		cout << "callback!" << endl;
-		if( name != "not set" )
-		{
-			cout << "real result: " << name << endl;
-			tempGridResult = name;
-			tempGridX = gs->selectedX;
-			tempGridY = gs->selectedY;
-
-			if (selectedBrush->objects.size() > 0)
-			{
-				ModifyTerrainTypeAction * modifyAction = new ModifyTerrainTypeAction(
-					selectedBrush, tempGridX, tempGridY);
-				modifyAction->Perform();
-				AddDoneAction(modifyAction);
-			}
-
-			currTerrainWorld[0] = tempGridX;
-			currTerrainVar[0] = tempGridY;
-			UpdateCurrTerrainType();
-
-			RemoveActivePanel(panel);
-		}
-		else
-		{
-		//	cout << "not set" << endl;
-		}
-	}
-	else if (panel == decorPanel)
+	if (panel == decorPanel)
 	{
 		if (name != "not set")
 		{
@@ -3542,30 +3389,6 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		else
 		{
 			//	cout << "not set" << endl;
-		}
-	}
-	else if (panel == bgPopup)
-	{
-		if (name != "not set" )
-		{
-			if (background == NULL || name != background->name)
-			{
-				Background *newBG = Background::SetupFullBG(name, this);
-
-				if (newBG != NULL)
-				{
-					if (background != NULL)
-					{
-						background->DestroyTilesets();
-						delete background;
-					}
-
-					background = newBG;
-					tempGridResult = name;
-					envName = name;
-				}
-				
-			}
 		}
 	}
 	else if (panel->name == "shard_options" )
@@ -4268,7 +4091,7 @@ void EditSession::TryRemoveSelectedPoints()
 				{
 					delete (*pit);
 				}
-				MessagePop("problem removing points");
+				//MessagePop("problem removing points");
 				return;
 			}
 			
@@ -4657,28 +4480,6 @@ void EditSession::TryCompleteSelectedMove()
 		}
 	}
 
-}
-
-void EditSession::SetupTerrainTypeSelector()
-{
-	terrainSelectorPopup = CreatePopupPanel("terrainselector");
-	GridSelector *terrainSel = terrainSelectorPopup->AddGridSelector(
-		"terraintypes", Vector2i(20, 20), TERRAIN_WORLDS, MAX_TERRAINTEX_PER_WORLD, 64, 64, false, true);
-
-	for (int worldI = 0; worldI < TERRAIN_WORLDS; ++worldI)
-	{
-		int ind;
-		for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i)
-		{
-			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
-			
-			if (LoadPolyShader(ind, worldI, i))
-			{
-				terrainSel->Set(worldI, i, Sprite(*ts_polyShaders[ind]->texture, sf::IntRect(0, 0, 64, 64)),
-					"xx");
-			}
-		}
-	}
 }
 
 void EditSession::SetEnemyGridIndex( GridSelector *gs, int x, int y, const std::string &eName)
@@ -6348,331 +6149,6 @@ bool EditSession::IsPolygonValid( PolyPtr poly, PolyPtr ignore )
 	return a && b;
 }
 
-bool EditSession::ConfirmationPop( const std::string &question )
-{
-
-	confirm->labels["question"]->setString( question );
-
-	confirmChoice = ConfirmChoices::NONE;
-
-	window->setView( v );
-	
-	//preScreenTex->setView( uiView );	
-	
-	preScreenTex->display();
-	const Texture &preTex = preScreenTex->getTexture();
-	Sprite preTexSprite( preTex );
-	preTexSprite.setPosition( -960 / 2, -540 / 2 );
-	preTexSprite.setScale( .5, .5 );	
-
-	preScreenTex->setView( uiView );
-
-	sf::Event ev;
-	while( confirmChoice == ConfirmChoices::NONE )
-	{
-		Vector2i pPos = GetPixelPos();
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		window->clear();
-		while( window->pollEvent( ev ) )
-		{
-			switch( ev.type )
-			{
-			case Event::MouseButtonPressed:
-				{
-					if( ev.mouseButton.button == Mouse::Left )
-					{
-						confirm->MouseUpdate();
-					}			
-					break;
-				}
-			case Event::MouseButtonReleased:
-				{
-					confirm->MouseUpdate();
-					break;
-				}
-			case Event::MouseWheelMoved:
-				{
-					break;
-				}
-			case Event::KeyPressed:
-				{
-					confirm->SendKey( ev.key.code, ev.key.shift );
-					break;
-				}
-			case Event::KeyReleased:
-				{
-					break;
-				}
-			case Event::LostFocus:
-				{
-					break;
-				}
-			case Event::GainedFocus:
-				{
-					break;
-				}
-			}
-					break;	
-		}
-		//cout << "drawing confirm" << endl;
-
-		window->setView( v );
-
-		window->draw( preTexSprite );
-
-		window->setView( uiView );
-
-		confirm->Draw(window);
-
-		window->setView( v );
-
-		window->display();
-		//preScreenTex->display();
-	}
-
-	preScreenTex->setView( view );
-	window->setView( v );
-	//preScreenTex->setView( view );
-
-	if( confirmChoice == ConfirmChoices::CONFIRM )
-	{
-		return true;
-	}
-	else if( confirmChoice == ConfirmChoices::CANCEL )
-	{
-		return false;
-	}
-}
-
-void EditSession::MessagePop( const std::string &message )
-{
-	messagePopup->labels["message"]->setString( message );
-	bool closePopup = false;
-	window->setView( v );
-	
-	preScreenTex->display();
-	const Texture &preTex = preScreenTex->getTexture();
-	Sprite preTexSprite( preTex );
-	preTexSprite.setPosition( -960 / 2, -540 / 2 );
-	preTexSprite.setScale( .5, .5 );	
-
-	preScreenTex->setView( uiView );
-
-	sf::Event ev;
-	while( !closePopup )
-	{
-		Vector2i pPos = GetPixelPos();
-		Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		window->clear();
-
-		while(window->pollEvent( ev ) )
-		{
-			switch( ev.type )
-			{
-			case Event::MouseButtonPressed:
-				{
-					if( ev.mouseButton.button == Mouse::Left )
-					{
-						//if( uiMouse.x < messagePopup->pos.x 
-						//messagePopup->Update( true, uiMouse.x, uiMouse.y );		
-					}			
-					break;
-				}
-			case Event::MouseButtonReleased:
-				{
-					closePopup = true;
-					//messagePopup->Update( false, uiMouse.x, uiMouse.y );
-					break;
-				}
-			case Event::MouseWheelMoved:
-				{
-					break;
-				}
-			case Event::KeyPressed:
-				{
-					closePopup = true;
-					//messagePopup->SendKey( ev.key.code, ev.key.shift );
-					break;
-				}
-			case Event::KeyReleased:
-				{
-					break;
-				}
-			case Event::LostFocus:
-				{
-					break;
-				}
-			case Event::GainedFocus:
-				{
-					break;
-				}
-			}
-			break;	
-		}
-
-		window->setView( v );
-
-		window->draw( preTexSprite );
-
-		window->setView( uiView );
-
-		messagePopup->Draw(window);
-
-		window->setView( v );
-
-		window->display();
-	}
-
-	preScreenTex->setView( view );
-	window->setView( v );
-	//preScreenTex->setView( view );
-}
-
-void EditSession::ErrorPop( const std::string &error )
-{
-
-}
-
-
-void EditSession::GridSelectPop( const std::string &type )
-{
-	Panel *panel = NULL;
-	if( type == "gateselect" )
-	{
-		panel = gateSelectorPopup;
-	}
-	else if( type == "terraintypeselect" )
-	{
-		panel = terrainSelectorPopup;
-	}
-	else if (type == "bg")
-	{
-		panel = bgPopup;
-	}
-	else if (type == "shardselector")
-	{
-		panel = shardSelectPopup;//types["shard"]->panel;
-	}
-
-	assert( panel != NULL );
-	int selectedIndex = -1;
-	tempGridResult = "nothing";
-	bool closePopup = false;
-	window->setView( v );
-	
-	preScreenTex->display();
-	const Texture &preTex = preScreenTex->getTexture();
-	Sprite preTexSprite( preTex );
-	preTexSprite.setPosition( -960 / 2, -540 / 2 );
-	preTexSprite.setScale( .5, .5 );	
-
-
-	preScreenTex->setView( uiView );
-
-	Vector2i pPos = Vector2i(960, 540) - Vector2i( panel->size.x / 2, panel->size.y / 2 );
-	pPos.x *= 1920 / window->getSize().x;
-	pPos.y *= 1920 / window->getSize().y;
-
-	Vector2f uiMouse = preScreenTex->mapPixelToCoords(pPos);
-
-
-
-	panel->pos.x = uiMouse.x;
-	panel->pos.y = uiMouse.y;
-
-	sf::Event ev;
-	while( !closePopup )
-	{
-		pPos = GetPixelPos();
-		uiMouse = preScreenTex->mapPixelToCoords(pPos);
-		window->clear();
-
-		bool shardClose = tempGridResult == "shardclose";
-		if (panel != shardSelectPopup)
-		{
-			if (tempGridResult != "nothing")
-			{
-				return;
-			}
-		}
-		else
-		{
-			if (tempGridResult == "shardclose")
-			{
-				return;
-			}
-		}
-
-		while(window->pollEvent( ev ) )
-		{
-			switch( ev.type )
-			{
-			case Event::MouseButtonPressed:
-				{
-					if( ev.mouseButton.button == Mouse::Left )
-					{
-						cout << "are we here: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->MouseUpdate();
-						//if you click outside of the box, delete the gate
-						
-						//if( uiMouse.x < messagePopup->pos.x 
-						//messagePopup->Update( true, uiMouse.x, uiMouse.y );		
-					}			
-					break;
-				}
-			case Event::MouseButtonReleased:
-				{
-					//closePopup = true;
-					if( ev.mouseButton.button == Mouse::Left )
-					{
-						cout << "are we real: " << uiMouse.x << ", " << uiMouse.y << endl;
-						panel->MouseUpdate();
-					}
-					break;
-				}
-			case Event::MouseWheelMoved:
-				{
-					break;
-				}
-			case Event::KeyPressed:
-				{
-					//closePopup = true;
-					//messagePopup->SendKey( ev.key.code, ev.key.shift );
-					break;
-				}
-			case Event::KeyReleased:
-				{
-					break;
-				}
-			case Event::LostFocus:
-				{
-					break;
-				}
-			case Event::GainedFocus:
-				{
-					break;
-				}
-			}
-			break;	
-		}
-
-		window->setView( v );
-
-		window->draw( preTexSprite );
-
-		window->setView( uiView );
-
-		//messagePopup->Draw( w );
-		panel->Draw(window);
-
-		window->setView( v );
-
-		window->display();
-	}
-
-	preScreenTex->setView( view );
-	window->setView( v );
-}
 Panel * EditSession::CreatePopupPanel( const std::string &type )
 {
 	Panel *p = NULL;
@@ -6693,14 +6169,6 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 		p->AddLabel( "message", Vector2i( 25, 50 ), 12, "_EMPTY_ERROR_" );
 		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
 	}
-	else if( type == "confirmation" )
-	{
-		p = new Panel( "confirmation_popup", 400, 100, this );
-		p->AddButton( "confirmOK", Vector2i( 50, 25 ), Vector2f( 100, 50 ), "OK" );
-		p->AddButton( "cancel", Vector2i( 250, 25 ), Vector2f( 100, 50 ), "Cancel" );
-		p->AddLabel( "question", Vector2i( 10, 10 ), 12, "_EMPTY\n_QUESTION_" );
-		p->pos = Vector2i( 960 - p->size.x / 2, 540 - p->size.y );
-	}
 	else if( type == "gateselector" )
 	{
 		p = new Panel( "gate_popup", 200, 500, this );
@@ -6713,13 +6181,13 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	{
 		p = new Panel("bg_popup", 1500, 600, this);
 	}
-	else if (type == "shardselector")
+	/*else if (type == "shardselector")
 	{
 		p = new Panel("shardselector", 700, 1080, this);
 		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
 		CreateShardGridSelector(p, Vector2i(0, 0));
 		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
-	}
+	}*/
 
 	if( p != NULL )
 		allPopups.push_back(p);
@@ -6749,47 +6217,6 @@ int EditSession::IsRemovePointsOkay()
 
 	//return 1;
 	return 0;
-}
-
-Panel * EditSession::CreateOptionsPanel( const std::string &name )
-{
-	Panel *p = NULL;
-	
-	if( name == "map" )
-	{
-		p = new Panel( "map_options", 200, 800, this );
-		p->AddButton( "ok", Vector2i( 100, 600 ), Vector2f( 100, 50 ), "OK" );
-		p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
-		p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
-		p->AddLabel("draintime_label", Vector2i(20, 200), 20, "drain seconds:");
-		p->AddTextBox("draintime", Vector2i(20, 250), 200, 20, "60");
-		p->AddTextBox("bosstype", Vector2i(20, 300), 200, 20, "0");
-		p->AddButton( "envtype", Vector2i(20, 400), Vector2f(100, 50), "Choose BG");
-		//p->AddTextBox("envtype", Vector2i(20, 400), 200, 20, "w1_01");
-	}
-	else if( name == "terrain" )
-	{
-		p = new Panel( "terrain_options", 200, 400, this );
-		p->AddButton( "ok", Vector2i( 100, 300 ), Vector2f( 100, 50 ), "OK" );
-		//p->AddLabel( "minedgesize_label", Vector2i( 20, 150 ), 20, "minimum edge size:" );
-		//p->AddTextBox( "minedgesize", Vector2i( 20, 20 ), 200, 20, "8" );
-		p->AddButton( "create_path", Vector2i( 100, 0 ), Vector2f( 100, 50 ), "Create Path" );
-	}
-	else if (name == "rail")
-	{
-		p = new Panel("rail_options", 200, 600, this);
-		p->AddButton("ok", Vector2i(100, 500), Vector2f(100, 50), "OK");
-		p->AddLabel( "requirepower", Vector2i( 20, 50), 20, "require power:" );
-		p->AddCheckBox("requirepower", Vector2i(20, 100));
-		p->AddLabel("accelerate", Vector2i(20, 150), 20, "accelerate:");
-		p->AddCheckBox("accelerate", Vector2i(20, 200));
-		p->AddButton("reverse", Vector2i(20, 300), Vector2f(100, 50), "Reverse Dir");
-		p->AddTextBox("level", Vector2i(20, 400), 200, 20, "");
-	}
-	if( p != NULL )
-		allPopups.push_back(p);
-
-	return p;
 }
 
 void EditSession::SetPanelDefault( ActorType *type )
@@ -7703,7 +7130,7 @@ void EditSession::ExecuteRailCompletion()
 		bool applyOkay = true;
 		if (!applyOkay)
 		{
-			MessagePop("polygon is invalid!!! new message");
+			//MessagePop("polygon is invalid!!! new message");
 		}
 		else
 		{

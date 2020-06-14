@@ -5148,7 +5148,9 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 			if( (*it)->type->CanBeGrounded() && 
 				( (*(*it)->posInfo.GetPoint()).selected || next->selected ) )
 			{
-				bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
+				return 1;
+
+				/*bool removeSelectedActors = edit->ConfirmationPop("1 or more enemies will be removed by deleting these points.");
 
 				if( removeSelectedActors )
 				{
@@ -5157,7 +5159,7 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 				else
 				{
 					return 0;
-				}
+				}*/
 			}
 		}
 	}
