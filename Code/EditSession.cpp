@@ -11416,6 +11416,17 @@ void EditSession::TrySaveMap()
 	}
 }
 
+void EditSession::TryExitEditor()
+{
+	if (!saveUpdated)
+		confirmPopup->Pop(ConfirmPopup::ConfirmType::SAVE_CURRENT_EXIT);
+	else
+	{
+		quit = true;
+		returnVal = 1;
+	}
+}
+
 void EditSession::GeneralEventHandler()
 {
 	if (mode != PAUSED && mode != SELECT_MODE)
@@ -11546,8 +11557,7 @@ void EditSession::GeneralEventHandler()
 				}
 				else if (ev.key.code == Keyboard::Escape)
 				{
-					quit = true;
-					returnVal = 1;
+					TryExitEditor();
 				}
 				else if (ev.key.code == sf::Keyboard::Equal || ev.key.code == sf::Keyboard::Dash)
 				{

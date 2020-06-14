@@ -742,6 +742,7 @@ struct ConfirmPopup : GUIHandler
 	{
 		OVERWRITE_MAP,
 		SAVE_CURRENT,
+		SAVE_CURRENT_EXIT,
 	};
 
 	ConfirmType type;

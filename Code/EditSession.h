@@ -211,6 +211,7 @@ struct EditSession : GUIHandler, Session
 
 	void TryReloadNew();
 	void TrySaveMap();
+	void TryExitEditor();
 
 	void SaveMapDialog();
 	void OpenMapDialog();

@@ -30,7 +30,8 @@ void ConfirmPopup::Pop(ConfirmType ct)
 	switch (type)
 	{
 	case SAVE_CURRENT:
-		panel->labels["question"]->setString("Current file has not been saved.\nSave before continuing?");
+	case SAVE_CURRENT_EXIT:
+		panel->labels["question"]->setString("Changes to current map have not been saved.\nSave before continuing?");
 		break;
 	}
 }
@@ -48,10 +49,35 @@ void ConfirmPopup::ButtonCallback(Button *b,
 			edit->ReloadNew();
 			break;
 		}
+		case SAVE_CURRENT_EXIT:
+		{
+			edit->WriteFile(edit->currentFile);
+
+			edit->quit = true;
+			edit->returnVal = 1;
+			break;
+		}
 		}
 	}
 	else if (b == panel->cancelButton)
 	{
-		edit->ReloadNew();
+		switch (type)
+		{
+		case SAVE_CURRENT:
+		{
+			edit->ReloadNew();
+			break;
+		}
+		case SAVE_CURRENT_EXIT:
+		{
+			edit->quit = true;
+			edit->returnVal = 1;
+			break;
+		}
+			
+		}
+		
 	}
+
+	edit->RemoveActivePanel(panel);
 }
