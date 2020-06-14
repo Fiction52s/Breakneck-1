@@ -86,7 +86,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	actionLength[TRANSITIONMOVIE] = 30;
 	actionLength[FADEIN] = 30;
 
-	AdventureFile &af = mainMenu->worldMap->adventureFile;
+	AdventureFile *af = &mainMenu->worldMap->adventureFile;
 
 	string currName;
 	if (mainMenu->currSaveFile != NULL)
@@ -97,14 +97,15 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
 	for (int i = 0; i < 6; ++i)
 	{
-		if (saveNames[i] == currName)
+		files[i] = new SaveFile(saveNames[i], af);
+		/*if (saveNames[i] == currName)
 		{
 			files[i] = mainMenu->currSaveFile;
 		}
 		else
 		{
 			files[i] = new SaveFile(saveNames[i], af);
-		}
+		}*/
 	}
 
 	mainMenu->currSaveFile = files[selectedSaveIndex];

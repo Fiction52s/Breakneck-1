@@ -497,6 +497,7 @@ struct MainMenu
 	Mode modeLoadingFrom;
 	Mode modeToLoad;
 	void LoadMode(Mode m);
+	void StartLoadModeScreen();
 	static void sLevelLoad(MainMenu *mm, GameSession *gs);
 	void LevelLoad(GameSession *gs);
 	static void sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode);

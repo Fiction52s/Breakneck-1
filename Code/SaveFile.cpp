@@ -573,7 +573,7 @@ void LevelScore::Load(ifstream &is)
 	is >> bestFramesToBeat;
 }
 
-SaveFile::SaveFile(const std::string &p_name, AdventureFile &p_adventure)
+SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	:levelsBeatenField( 512 ), 
 	shardField(ShardInfo::MAX_SHARDS), 
 	newShardField(ShardInfo::MAX_SHARDS),
@@ -607,7 +607,7 @@ int SaveFile::GetBestFrames()
 
 	for (int i = 0; i < 512; ++i)
 	{
-		if (adventureFile.GetMap(i).Exists())
+		if (adventureFile->GetMap(i).Exists())
 		{
 			total += levelScores[i].bestFramesToBeat;
 		}
@@ -623,7 +623,7 @@ int SaveFile::GetBestFramesWorld(int w)
 	int wEnd = (w + 1) * 64;
 	for (int i = wStart; i < wEnd; ++i)
 	{
-		if (adventureFile.GetMap(i).Exists())
+		if (adventureFile->GetMap(i).Exists())
 		{
 			total += levelScores[i].bestFramesToBeat;
 		}
@@ -640,7 +640,7 @@ int SaveFile::GetBestFramesSector(int w, int s)
 
 	for (int i = sStart; i < sEnd; ++i)
 	{
-		if (adventureFile.GetMap(i).Exists())
+		if (adventureFile->GetMap(i).Exists())
 		{
 			total += levelScores[i].bestFramesToBeat;
 		}
@@ -652,7 +652,7 @@ int SaveFile::GetBestFramesSector(int w, int s)
 int SaveFile::GetBestFramesLevel(int w, int s, int m)
 {
 	int i = w * 64 + s * 8 + m;
-	if (adventureFile.GetMap(i).Exists())
+	if (adventureFile->GetMap(i).Exists())
 	{
 		return levelScores[i].bestFramesToBeat;
 	}
@@ -691,7 +691,7 @@ void SaveFile::CalcProgress(int start, int end, float &totalMaps,
 	totalBeaten = 0;
 	for (int i = start; i < end; ++i)
 	{
-		if (adventureFile.GetMap(i).Exists())
+		if (adventureFile->GetMap(i).Exists())
 		{
 			++totalMaps;
 			if (levelsBeatenField.GetBit(i))
@@ -739,19 +739,19 @@ float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
 
 float SaveFile::GetCompletionPercentage()
 {
-	return CalcCompletionPercentage(0, 512, adventureFile.hasShardField);
+	return CalcCompletionPercentage(0, 512, adventureFile->hasShardField);
 }
 
 float SaveFile::GetCompletionPercentageWorld(int w)
 {
 	return CalcCompletionPercentage(GetWorldStart(w), GetWorldEnd(w), 
-		adventureFile.worlds[w].hasShardField);
+		adventureFile->worlds[w].hasShardField);
 }
 
 float SaveFile::GetCompletionPercentageSector(int w, int s)
 {
 	return CalcCompletionPercentage(GetSectorStart(w,s), GetSectorEnd(w,s), 
-		adventureFile.worlds[w].sectors[s].hasShardField );
+		adventureFile->worlds[w].sectors[s].hasShardField );
 }
 
 bool SaveFile::IsRangeComplete(int start, int end)
@@ -759,7 +759,7 @@ bool SaveFile::IsRangeComplete(int start, int end)
 	bool complete = true;
 	for (int i = start; i < end; ++i)
 	{
-		AdventureMap &am = adventureFile.GetMap(i);
+		AdventureMap &am = adventureFile->GetMap(i);
 		if (am.Exists() && !levelsBeatenField.GetBit( i ) )
 		{
 			complete = false;
@@ -777,7 +777,7 @@ int SaveFile::GetNumShardsCaptured()
 
 int SaveFile::GetNumShardsTotal()
 {
-	return adventureFile.hasShardField.GetOnCount();
+	return adventureFile->hasShardField.GetOnCount();
 }
 
 bool SaveFile::IsLevelJustBeaten(Level *lev)
@@ -811,7 +811,7 @@ bool SaveFile::IsLevelLastInSector( Level *lev )
 	int sector = (levIndex % 64) / 8;
 	int ind = (levIndex % 8);
 
-	AdventureSector &as = adventureFile.GetSector(world, sector);
+	AdventureSector &as = adventureFile->GetSector(world, sector);
 	for (int i = ind+1; i < 8; ++i)
 	{
 		if (as.maps[i].Exists())
@@ -844,7 +844,7 @@ bool SaveFile::IsCompleteSector(Sector *sector)
 bool SaveFile::IsCompleteLevel(Level *lev)
 {
 	int index = lev->index;
-	AdventureMap &am = adventureFile.GetMap(index);
+	AdventureMap &am = adventureFile->GetMap(index);
 	if (am.Exists() && !levelsBeatenField.GetBit(index))
 	{
 		return true;
@@ -857,7 +857,7 @@ bool SaveFile::IsCompleteLevel(Level *lev)
 
 bool SaveFile::IsUnlockedSector(Sector *sector)
 {
-	//AdventureSector &as = adventureFile.GetAdventureSector(sector);//adventureFile.GetSector(sector->world, sector->);
+	//AdventureSector &as = adventureFile->GetAdventureSector(sector);//adventureFile->GetSector(sector->world, sector->);
 	//int required = as.requiredRunes;
 
 	//int complete = 0;
@@ -955,7 +955,7 @@ bool SaveFile::IsUnlockedLevel(Sector *sec, int index )
 bool SaveFile::IsFullyCompleteLevel(Level *lev)
 {
 	int ind = lev->index;
-	AdventureMap &am = adventureFile.GetMap(ind);
+	AdventureMap &am = adventureFile->GetMap(ind);
 	
 	if (IsCompleteLevel(lev))
 	{

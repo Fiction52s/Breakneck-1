@@ -94,10 +94,10 @@ std::string GetTimeStr(int numFrames)
 
 void MainMenu::LevelLoad(GameSession *gs)
 {
-	delete worldMap;
+	/*delete worldMap;
 	worldMap = NULL;
 	delete saveMenu;
-	saveMenu = NULL;
+	saveMenu = NULL;*/
 
 	GameSession::sLoad(gs);
 }
@@ -113,15 +113,18 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	switch (fromMode)
 	{
 	case SAVEMENU:
+		assert(worldMap != NULL);
 		delete worldMap;
 		worldMap = NULL;
 
+		assert(saveMenu != NULL);
 		currSaveFile = NULL;
 		delete saveMenu;
 		saveMenu = NULL;
 		break;
 	case TITLEMENU:
 	{
+		assert(titleScreen != NULL);
 		delete titleScreen;
 		titleScreen = NULL;
 	}
@@ -129,12 +132,16 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 	switch (toMode)
 	{
+	case WORLDMAP:
 	case SAVEMENU:
+		assert(worldMap == NULL);
+		assert(saveMenu == NULL);
 		worldMap = new WorldMap(this);
 		saveMenu = new SaveMenuScreen(this);
 		saveMenu->Reset();
 		break;
 	case TITLEMENU:
+		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
 		titleScreen->Reset();
 	}
@@ -146,32 +153,6 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 {
 	mm->TransitionMode(fromMode, toMode);
-	/*switch (fromMode)
-	{
-	case SAVEMENU:
-		delete mm->worldMap;
-		mm->worldMap = NULL;
-		delete mm->saveMenu;
-		mm->saveMenu = NULL;
-		break;
-	case TITLEMENU:
-	{
-		delete mm->titleScreen;
-		mm->titleScreen = NULL;
-	}
-	}
-
-	switch (toMode)
-	{
-	case SAVEMENU:
-		mm->worldMap = new WorldMap(mm);
-		mm->saveMenu = new SaveMenuScreen(mm);
-		mm->saveMenu->Reset();
-		break;
-	case TITLEMENU:
-		mm->titleScreen = new TitleScreen(mm);
-		mm->titleScreen->Reset();
-	}*/
 }
 
 
@@ -1752,10 +1733,7 @@ void MainMenu::HandleMenuMode()
 	{
 		if (fader->IsFullyFadedOut())
 		{
-			//fader->Reset();
-			fader->Fade(true, 30, Color::Black);
-			SetMode(LOADINGMENULOOP);
-			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad );
+			StartLoadModeScreen();
 		}
 		break;
 	}
@@ -1890,9 +1868,13 @@ void MainMenu::HandleMenuMode()
 			break;
 		}
 
-		
-
 		window->setView(oldView);
+
+		//JUST FOR TESTING
+		//worldMap = new WorldMap(this);
+		//saveMenu = new SaveMenuScreen(this);
+		//saveMenu->Reset();
+		//----ENDING JUST FOR TESTING
 
 		SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
 		int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
@@ -2268,6 +2250,13 @@ void MainMenu::LoadMode(Mode m)
 	SetMode(LOADINGMENUSTART);
 	
 	modeToLoad = m;
+}
+
+void MainMenu::StartLoadModeScreen()
+{
+	fader->Fade(true, 30, Color::Black);
+	SetMode(LOADINGMENULOOP);
+	loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 }
 
 ControlProfile *MainMenu::GetCurrSelectedProfile()

@@ -258,7 +258,7 @@ struct LevelScore
 struct SaveFile
 {
 	SaveFile( const std::string &name,
-		AdventureFile &adventureFile );
+		AdventureFile *adventureFile );
 	~SaveFile();
 
 	//functionality
@@ -310,7 +310,7 @@ struct SaveFile
 	//info
 	std::string name;
 	std::string fileName;
-	AdventureFile &adventureFile;
+	AdventureFile *adventureFile;
 	
 	
 	//state
