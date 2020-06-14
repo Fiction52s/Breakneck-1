@@ -459,6 +459,7 @@ struct MainMenu
 		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
 		RUNNINGMAP,
+		RUNNINGEDITOR,
 		SAVEMENU,
 		TRANS_MAIN_TO_SAVE,
 		TRANS_SAVE_TO_MAIN,
@@ -636,7 +637,7 @@ struct MainMenu
 	boost::thread *loadThread;
 	boost::thread *deadThread;
 
-
+	EditSession *currEditSession;
 	GameSession *currLevel;
 	GameSession *deadLevel;
 	void HandleMenuMode();

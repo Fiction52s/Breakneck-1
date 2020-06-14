@@ -127,7 +127,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(titleScreen != NULL);
 		delete titleScreen;
 		titleScreen = NULL;
+		break;
 	}
+	case RUNNINGEDITOR:
+		assert(currEditSession != NULL);
+		delete currEditSession;
+		currEditSession = NULL;
+		break;
 	}
 
 	switch (toMode)
@@ -144,6 +150,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(titleScreen == NULL);
 		titleScreen = new TitleScreen(this);
 		titleScreen->Reset();
+		break;
+	case RUNNINGEDITOR:
+		assert(currEditSession == NULL);
+		currEditSession = new EditSession(this, "");
+		break;
 	}
 }
 
@@ -191,6 +202,8 @@ MainMenu::MainMenu()
 {
 	assert(currInstance == NULL);
 	currInstance = this;
+
+	currEditSession = NULL;
 
 	currSaveFile = NULL;
 
@@ -244,7 +257,7 @@ MainMenu::MainMenu()
 	activatedMainMenuOptions[0] = true;
 	activatedMainMenuOptions[1] = false;//false;
 	activatedMainMenuOptions[2] = false;//false;
-	activatedMainMenuOptions[3] = false;//false;
+	activatedMainMenuOptions[3] = true;//false;
 	activatedMainMenuOptions[4] = true;
 	activatedMainMenuOptions[5] = false;
 	activatedMainMenuOptions[6] = true;
@@ -829,6 +842,9 @@ void MainMenu::SetMode(Mode m)
 	{
 		changedMode = true;
 	}
+
+	if (menuMode == RUNNINGEDITOR)
+		fader->Clear();
 
 	if (menuMode == KINBOOSTLOADINGMAP)
 	{
@@ -1937,6 +1953,22 @@ void MainMenu::HandleMenuMode()
 		break;
 
 	}
+	case RUNNINGEDITOR:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		View oldView = window->getView();
+
+		int result = currEditSession->Run();
+
+		window->setView(oldView);
+
+		LoadMode(TITLEMENU);
+		break;
+	}
 	case SAVEMENU:
 	{
 		while (window->pollEvent(ev))
@@ -2388,7 +2420,8 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LEVEL_EDITOR:
 		{
-			SetMode(TRANS_MAIN_TO_MAPSELECT);
+			LoadMode(RUNNINGEDITOR);
+				//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
 		case M_OPTIONS:
@@ -2640,6 +2673,11 @@ void MainMenu::DrawMode( Mode m )
 	case INTROMOVIE:
 		introMovie->Draw(preScreenTexture);
 		break;
+	case RUNNINGEDITOR:
+	{
+		int xxx = 6;
+		break;
+	}
 	default:
 		assert(0);
 		break;

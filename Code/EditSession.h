@@ -632,6 +632,7 @@ struct EditSession : GUIHandler, Session
 	int tempGridY;
 
 	bool reload;
+	bool reloadNew;
 
 	void LoadAllPolyShaders();
 	void Reload(

@@ -2766,7 +2766,17 @@ Actor::~Actor()
 
 void Actor::SetGameMode()
 {
-	auto mapType = sess->mapHeader->gameMode;
+	int mapType;
+	if (sess->mapHeader == NULL)
+	{
+		//blank editor files only:
+		mapType = MapHeader::MapType::T_STANDARD;
+	}
+	else
+	{
+		mapType = sess->mapHeader->gameMode;
+	}
+
 	if (mapType == MapHeader::MapType::T_RACEFIGHT)
 	{
 		maxBubbles = 2;

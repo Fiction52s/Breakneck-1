@@ -37,6 +37,8 @@
 #include "FileChooser.h"
 #include "AdventureCreator.h"
 
+#include "Fader.h"
+
 using namespace std;
 using namespace sf;
 
@@ -1302,6 +1304,8 @@ void EditSession::Draw()
 	DrawMode();
 
 	DebugDraw(preScreenTex);
+
+	//mainMenu->fader->Draw(preScreenTex);
 }
 
 void EditSession::UpdateFullBounds()
@@ -2742,6 +2746,7 @@ void EditSession::SetupBrushPanels()
 void EditSession::Init()
 {
 	reload = false;
+	reloadNew = false;
 
 	playerType = NULL;
 
@@ -2799,6 +2804,7 @@ void EditSession::Init()
 void EditSession::ReloadNew()
 {
 	reload = true;
+	reloadNew = true;
 	quit = true;
 	filePathStr = "";
 	filePath = "";
@@ -2882,6 +2888,11 @@ int EditSession::EditRun()
 
 	if (filePathStr == "" )
 	{
+		if (!reloadNew)
+		{
+
+		}
+
 		//clear groups on my own in case I don't load the file
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -2889,7 +2900,7 @@ int EditSession::EditRun()
 		}
 		groups.clear();
 
-		envName = "";//newMapInfo.envName;//"";//"w1_01";
+		envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
 
 		envWorldType = 0;//newMapInfo.envWorldType;
 
@@ -2900,7 +2911,7 @@ int EditSession::EditRun()
 
 		drainSeconds = 60;//newMapInfo.drainSeconds;//60;
 
-		//background = Background::SetupFullBG(envName, this);
+		background = Background::SetupFullBG(envName, this);
 
 		bossType = 0;
 
@@ -2910,7 +2921,8 @@ int EditSession::EditRun()
 
 		currentFile = "";
 
-		ActivateNewMapPanel();
+		if (reloadNew)
+			ActivateNewMapPanel();
 	}
 	else
 	{
@@ -2918,7 +2930,7 @@ int EditSession::EditRun()
 		ReadFile();
 	}
 
-	
+	reloadNew = false;
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 
@@ -3017,6 +3029,7 @@ int EditSession::EditRun()
 
 	Vector2f uiMouse;
 
+	editClock.restart();
 	while (!quit)
 	{
 		if (runToResave)
@@ -3043,6 +3056,11 @@ int EditSession::EditRun()
 
 			editAccumulator -= mult * TIMESTEP;
 		}
+
+		/*for (int i = 0; i < spriteUpdateFrames; ++i)
+		{
+			mainMenu->fader->Update();
+		}*/
 		//}
 
 		pixelPos = GetPixelPos();
