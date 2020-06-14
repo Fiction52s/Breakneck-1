@@ -204,8 +204,10 @@ struct EditSession : GUIHandler, Session
 	
 	~EditSession();
 
+	sf::Sprite playerZoomIcon;
 	void Load();
 	void Init();
+	void DefaultInit();
 
 	//singleton
 	static EditSession *GetSession();

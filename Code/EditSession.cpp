@@ -2748,6 +2748,15 @@ void EditSession::Init()
 	reload = false;
 	reloadNew = false;
 
+	Tileset *ts_playerZoomIcon = GetTileset("Editor/playerzoomicon.png");
+	playerZoomIcon.setTexture(*ts_playerZoomIcon->texture);
+	playerZoomIcon.setOrigin(playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2);
+
+	mainMenu->SetMouseGrabbed(true);
+	mainMenu->SetMouseVisible(true);
+
+	
+
 	playerType = NULL;
 
 	graph = NULL;
@@ -2764,6 +2773,9 @@ void EditSession::Init()
 	SetupHitboxManager();
 	SetupSoundManager();
 	SetupSoundLists();
+
+	if (players[0] == NULL)
+		players[0] = new Actor(NULL, this, 0);
 
 	SetupEnemyTypes();
 
@@ -2798,7 +2810,10 @@ void EditSession::Init()
 	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
 
-	
+	if (filePathStr == "")
+	{
+		DefaultInit();
+	}
 }
 
 void EditSession::ReloadNew()
@@ -2825,6 +2840,30 @@ void EditSession::Load()
 
 }
 
+void EditSession::DefaultInit()
+{
+	envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
+
+	envWorldType = 0;//newMapInfo.envWorldType;
+
+	leftBound = -1500;
+	topBound = -1500;
+	boundWidth = 3000;
+	boundHeight = 3000;
+
+	drainSeconds = 60;//newMapInfo.drainSeconds;//60;
+
+	background = Background::SetupFullBG(envName, this);
+
+	bossType = 0;
+
+	playerOrigPos = Vector2i(0, 0);
+
+	UpdateFullBounds();
+
+	currentFile = "";
+}
+
 int EditSession::EditRun()
 {
 	reload = false;
@@ -2833,9 +2872,6 @@ int EditSession::EditRun()
 	grassChanges = NULL;
 	focusedPanel = NULL;
 
-	if (players[0] == NULL)
-		players[0] = new Actor(NULL, this, 0);
-
 	oldShaderZoom = -1;
 	complexPaste = NULL;
 
@@ -2843,13 +2879,8 @@ int EditSession::EditRun()
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVis = mainMenu->GetMouseVisible();
 
-	mainMenu->SetMouseGrabbed(true);
-	mainMenu->SetMouseVisible(true);
-
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = window->getView();
-
-	
 
 	tempActor = NULL;
 	v.setCenter(0, 0);
@@ -2868,11 +2899,6 @@ int EditSession::EditRun()
 	trackingEnemyParams = NULL;
 	trackingDecor = NULL;
 
-	Tileset *ts_playerZoomIcon = GetTileset("Editor/playerzoomicon.png");
-	sf::Sprite playerZoomIcon(*ts_playerZoomIcon->texture);
-
-	playerZoomIcon.setOrigin(playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2);
-
 	currTerrainTypeSpr.setPosition(0, 160);
 	UpdateCurrTerrainType();
 
@@ -2886,13 +2912,8 @@ int EditSession::EditRun()
 	SetMode(EDIT);
 	stored = mode;
 
-	if (filePathStr == "" )
+	if (reloadNew )
 	{
-		if (!reloadNew)
-		{
-
-		}
-
 		//clear groups on my own in case I don't load the file
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -2900,33 +2921,12 @@ int EditSession::EditRun()
 		}
 		groups.clear();
 
-		envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
+		DefaultInit();
 
-		envWorldType = 0;//newMapInfo.envWorldType;
-
-		leftBound = -1500;
-		topBound = -1500;
-		boundWidth = 3000;
-		boundHeight = 3000;
-
-		drainSeconds = 60;//newMapInfo.drainSeconds;//60;
-
-		background = Background::SetupFullBG(envName, this);
-
-		bossType = 0;
-
-		playerOrigPos = Vector2i(0, 0);
-
-		UpdateFullBounds();
-
-		currentFile = "";
-
-		if (reloadNew)
-			ActivateNewMapPanel();
+		ActivateNewMapPanel();
 	}
-	else
+	else if( filePathStr != "" )
 	{
-		
 		ReadFile();
 	}
 
@@ -2945,7 +2945,6 @@ int EditSession::EditRun()
 	{
 		playerType = new ActorType(playerPI);
 		types["player"] = playerType;
-		
 	}
 
 	//need to make a new one each time because they get destroyed when I load actors in session
