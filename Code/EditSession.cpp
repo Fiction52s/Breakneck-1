@@ -2733,8 +2733,8 @@ void EditSession::SetupNewMapPanel()
 	Button *OK = newMapPanel->AddButton("ok", Vector2i(10, 300),
 		Vector2f(50, 30), "OK");
 	newMapPanel->SetConfirmButton(OK);
-	Button *cancel = newMapPanel->AddButton("cancel", Vector2i(10, 360),
-		Vector2f(50, 30), "Cancel");
+	Button *cancel = newMapPanel->AddButton("skip", Vector2i(10, 360),
+		Vector2f(50, 30), "Skip");
 	newMapPanel->SetCancelButton(cancel);
 }
 

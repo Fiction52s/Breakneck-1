@@ -8,12 +8,13 @@ ConfirmPopup::ConfirmPopup()
 {
 	edit = EditSession::GetSession();
 
-	panel = new Panel("confirmpanel", 500, 500, this, true);
+	panel = new Panel("confirmpanel", 500, 200, this, true);
+	panel->SetPosition(Vector2i(960 - panel->size.x / 2, 540 - panel->size.y / 2));
 
 	panel->AddLabel("question", Vector2i(10, 10), 28, "");
 
-	panel->SetConfirmButton(panel->AddButton("yes", Vector2i(10, 400), Vector2f(50, 30), "Yes"));
-	panel->SetCancelButton(panel->AddButton("no", Vector2i(70, 400), Vector2f(50, 30), "No"));
+	panel->SetConfirmButton(panel->AddButton("yes", Vector2i(10, 100), Vector2f(50, 30), "Yes"));
+	panel->SetCancelButton(panel->AddButton("no", Vector2i(70, 100), Vector2f(50, 30), "No"));
 }
 
 ConfirmPopup::~ConfirmPopup()
@@ -29,7 +30,7 @@ void ConfirmPopup::Pop(ConfirmType ct)
 	switch (type)
 	{
 	case SAVE_CURRENT:
-		panel->labels["question"]->setString("Current file has not been saved. Save before continuing?");
+		panel->labels["question"]->setString("Current file has not been saved.\nSave before continuing?");
 		break;
 	}
 }
