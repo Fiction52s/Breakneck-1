@@ -368,6 +368,7 @@ struct TextBox : PanelMember
 	void SetCursorIndex( int index );
 	void SetCursorIndex( sf::Vector2i &mousePos );
 	void Deactivate();
+	void SetNumbersOnly(bool b);
 	sf::Vector2i pos;
 	int width;
 	std::string name;
@@ -381,6 +382,7 @@ struct TextBox : PanelMember
 	bool clickedDown;
 	bool focused;
 	sf::Vector2i size;
+	bool numbersOnly;
 	
 };
 

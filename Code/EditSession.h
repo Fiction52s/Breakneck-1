@@ -87,6 +87,14 @@ enum EditLayer : int
 	LAYER_WATER,
 };
 
+struct ReloadNewInfo
+{
+	std::string fileNameStr;
+	std::string envName;
+	int drainSeconds;
+	int envWorldType;
+};
+
 struct EditSession : GUIHandler, Session
 {
 	enum Emode : int
@@ -531,6 +539,10 @@ struct EditSession : GUIHandler, Session
 
 	void UpdateCurrTerrainType();
 
+	void SetupNewMapPanel();
+	Panel *newMapPanel;
+	void ActivateNewMapPanel();
+
 	int terrainGridSize;
 	Panel *matTypePanel;
 	void SetMatTypePanelLayer(int layer);
@@ -628,12 +640,13 @@ struct EditSession : GUIHandler, Session
 	int tempGridY;
 
 	bool reload;
+	bool reloadNew;
+	ReloadNewInfo newMapInfo;
 
 	void LoadAllPolyShaders();
 	void Reload(
 		const boost::filesystem::path &p_filePath);
-	void SetReload(
-		const boost::filesystem::path &p_file);
+	void ReloadNew();
 
 	void StartSelectedMove();
 	void ContinueSelectedMove();

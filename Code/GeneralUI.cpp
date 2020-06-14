@@ -54,6 +54,8 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		{
 		case NEW_MAP:
 		{
+			edit->ActivateNewMapPanel();
+			//edit->ReloadNew();
 			break;
 		}
 		case OPEN_MAP:

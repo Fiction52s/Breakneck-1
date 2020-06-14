@@ -11,6 +11,7 @@ using namespace std;
 TextBox::TextBox(const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
 	:PanelMember(p), pos(posx, posy), width(width_p), maxLength(lengthLimit), clickedDown(false), name(n)
 {
+	numbersOnly = false;
 	focused = false;
 	leftBorder = 3;
 	verticalBorder = 10;
@@ -46,6 +47,11 @@ void TextBox::Deactivate()
 {
 	//focused = false;
 	clickedDown = false;
+}
+
+void TextBox::SetNumbersOnly(bool b)
+{
+	numbersOnly = b;
 }
 
 void TextBox::SetCursorIndex(int index)
@@ -235,6 +241,11 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 	if (c != 0 && text.getString().getSize() < maxLength)
 	{
+		if (numbersOnly && !(c >= '0' && c <= '9'))
+		{
+			return;
+		}
+
 		if (shift && c >= 'a' && c <= 'z')
 		{
 			c -= 32;

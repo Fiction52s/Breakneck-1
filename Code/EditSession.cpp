@@ -1212,6 +1212,7 @@ EditSession::~EditSession()
 	delete matTypePanel;
 	delete shardTypePanel;
 	delete nameBrushPanel;
+	delete newMapPanel;
 
 	//mapStartBrush->Destroy();
 
@@ -2695,6 +2696,35 @@ void EditSession::SetupShardSelectPanel()
 	}
 }
 
+void EditSession::SetupNewMapPanel()
+{
+	newMapPanel = new Panel("newmap", 500, 500, this, true);
+	newMapPanel->SetPosition(Vector2i(960 - newMapPanel->size.x/2, 540 - newMapPanel->size.y/2));
+	
+	newMapPanel->AddLabel("mapnamelabel", Vector2i( 10, 10 ), 28, "Map Name:");
+	newMapPanel->AddTextBox("mapname", Vector2i(200, 10), 200, 30, "");
+
+	newMapPanel->AddLabel("pathlabel", Vector2i(100, 60), 28, "Resources\\Maps\\CustomMaps");
+	newMapPanel->AddButton("pathbutton", Vector2i(10, 60), sf::Vector2f(30, 30), "");
+
+	newMapPanel->AddLabel("timetolivelabel", Vector2i(10, 120), 28, "Time to Live\n(seconds):");
+	TextBox *ttlBox = newMapPanel->AddTextBox("timetolive", Vector2i(200, 140), 200, 30, "60");
+
+	Button *OK = newMapPanel->AddButton("ok", Vector2i(10, 300),
+		Vector2f(50, 30), "OK");
+	newMapPanel->SetConfirmButton(OK);
+	Button *cancel = newMapPanel->AddButton("cancel", Vector2i(10, 360),
+		Vector2f(50, 30), "Cancel");
+	newMapPanel->SetCancelButton(cancel);
+}
+
+void EditSession::ActivateNewMapPanel()
+{
+	AddActivePanel(newMapPanel);
+	newMapPanel->textBoxes["mapname"]->SetString("");
+	newMapPanel->textBoxes["timetolive"]->SetString("60");
+}
+
 void EditSession::SetupBrushPanels()
 {
 	nameBrushPanel = new Panel("namebrush", 300, 150, this, true);
@@ -2710,6 +2740,9 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	reloadNew = false;
+	reload = false;
+
 	playerType = NULL;
 
 	graph = NULL;
@@ -2743,6 +2776,7 @@ void EditSession::Init()
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
 	SetupBrushPanels();
+	SetupNewMapPanel();
 
 	graph = new EditorGraph;
 
@@ -2762,12 +2796,13 @@ void EditSession::Init()
 	
 }
 
-void EditSession::SetReload(const boost::filesystem::path &p_filePath)
+void EditSession::ReloadNew()
 {
-	filePath = p_filePath;
-	filePathStr = filePath.string();
 	reload = true;
 	quit = true;
+	filePathStr = "";
+	filePath = "";
+	reloadNew = true;
 }
 
 void EditSession::Reload(
@@ -2809,7 +2844,7 @@ int EditSession::EditRun()
 	sf::View oldPreTexView = preScreenTex->getView();//mainMenu->preScreenTexture->
 	sf::View oldWindowView = window->getView();
 
-	currentFile = filePath.string();
+	
 
 	tempActor = NULL;
 	v.setCenter(0, 0);
@@ -2841,7 +2876,47 @@ int EditSession::EditRun()
 
 	preScreenTex->setView(view);
 
-	ReadFile();
+	if ( reloadNew )
+	{
+		//clear groups on my own in case I don't load the file
+		for (auto it = groups.begin(); it != groups.end(); ++it)
+		{
+			delete(*it).second;
+		}
+		groups.clear();
+
+		envName = newMapInfo.envName;//"";//"w1_01";
+
+		envWorldType = newMapInfo.envWorldType;
+
+		leftBound = -1500;
+		topBound = -1500;
+		boundWidth = 3000;
+		boundHeight = 3000;
+
+		drainSeconds = newMapInfo.envWorldType;//60;
+
+		background = Background::SetupFullBG(envName, this);
+
+		bossType = 0;
+
+		playerOrigPos = Vector2i(0, 0);
+
+		UpdateFullBounds();
+
+		currentFile = newMapInfo.fileNameStr;//filePath.string();
+
+		//ActivateNewMapPanel();
+	}
+	else
+	{
+		currentFile = filePath.string();
+		ReadFile();
+	}
+
+	reloadNew = false;
+
+	
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 
@@ -3145,7 +3220,33 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 {
 	Panel *p = b->panel;
 	
-	if (p == editDecorPanel)
+	if (p == newMapPanel)
+	{
+		if (b == newMapPanel->confirmButton)
+		{
+			string mapName = newMapPanel->textBoxes["mapname"]->GetString();
+			if ( mapName != "")
+			{
+				newMapInfo.envName = "w1_01";
+
+				stringstream ss;
+				ss << newMapPanel->textBoxes["timetolive"]->GetString();
+				int d;
+				ss >> d;
+				newMapInfo.drainSeconds = d;
+				newMapInfo.envWorldType = 0;
+				newMapInfo.fileNameStr = newMapPanel->labels["pathlabel"]->getString().toAnsiString()
+					+ "\\" + mapName + ".brknk";
+
+				ReloadNew();
+			}
+		}
+		else if (b == newMapPanel->cancelButton)
+		{
+			RemoveActivePanel(newMapPanel);
+		}
+	}
+	else if (p == editDecorPanel)
 	{
 		if (b->name == "ok")
 		{
