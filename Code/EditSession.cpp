@@ -1104,29 +1104,34 @@ RailPtr EditSession::GetRail(int index)
 	return rail;
 }
 
-void EditSession::Cleanup()
+void EditSession::CleanupForReload()
 {
 	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
 	{
 		delete (*it);
 	}
+	doneActionStack.clear();
 
 	for (auto it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it)
 	{
 		delete (*it);
 	}
+	undoneActionStack.clear();
 
 	DestroyCopiedBrushes();
 
 	mapStartBrush->Destroy();
 
+	inversePolygon = NULL;
 	polygons.clear();
 	waterPolygons.clear();
 	flyPolygons.clear();
-	/*for( auto it = allPolygons.begin(); it != allPolygons.end(); ++it )
+
+	if (background != NULL)
 	{
-		(*it).clear();
-	}*/
+		delete background;
+		background = NULL;
+	}
 }
 
 EditSession::~EditSession()
@@ -1153,7 +1158,21 @@ EditSession::~EditSession()
 	delete progressBrush;
 	delete selectedBrush;
 
-	Cleanup();
+	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
+	{
+		delete (*it);
+	}
+	doneActionStack.clear();
+
+	for (auto it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it)
+	{
+		delete (*it);
+	}
+	undoneActionStack.clear();
+
+	DestroyCopiedBrushes();
+
+	mapStartBrush->Destroy();
 
 	if (createEnemyModeUI != NULL)
 	{
@@ -2691,6 +2710,8 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	playerType = NULL;
+
 	graph = NULL;
 
 	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
@@ -2831,10 +2852,16 @@ int EditSession::EditRun()
 		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
 		GetTileset("Kin/jump_64x64.png", 64, 64));
 
-	playerType = new ActorType(playerPI);
-	types["player"] = playerType;
+	if (playerType == NULL)
+	{
+		playerType = new ActorType(playerPI);
+		types["player"] = playerType;
+		
+	}
 
+	//need to make a new one each time because they get destroyed when I load actors in session
 	player = new PlayerParams(playerType, Vector2i(0, 0));
+	
 	groups["player"]->actors.push_back(player);
 	//-------------------------
 
@@ -3099,7 +3126,8 @@ int EditSession::Run()
 		result = EditRun();
 		if (reload)
 		{
-			Cleanup();
+			CleanupForReload();
+			
 		}
 		else
 		{

@@ -320,7 +320,7 @@ struct EditSession : GUIHandler, Session
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
 	int Run();
 	int EditRun();
-	void Cleanup();
+	void CleanupForReload();
 	void LoadAndResave();
 	bool runToResave;
 
