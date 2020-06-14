@@ -20,7 +20,7 @@ GeneralUI::GeneralUI()
 	mainPanel->SetColor(Color::Red);
 	mainPanel->SetAutoSpacing(true);
 
-	std::vector<string> fileOptions = { "blah", "blah2",  "blah3" };
+	std::vector<string> fileOptions = { "New Map", "Open Map",  "blah3" };
 	fileDropdown = mainPanel->AddMenuDropdown("File", Vector2i(0, 0), 
 		Vector2i(fileWidth, height), 200, fileOptions);
 	std::vector<string> editOptions(EditOptions_Count);
@@ -52,6 +52,23 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 	{
 		switch (menuDrop->selectedIndex)
 		{
+		case NEW_MAP:
+		{
+			break;
+		}
+		case OPEN_MAP:
+		{
+			edit->fileChooser->chooser->StartRelative(".brknk", FileChooser::OPEN, "Resources\\Maps");
+			break;
+		}
+		case SAVE_MAP:
+		{
+			break;
+		}
+		case SAVE_MAP_AS:
+		{
+			break;
+		}
 		case OPEN_ADVENTURE:
 		{
 			edit->fileChooser->chooser->StartRelative(".adventure", FileChooser::OPEN, "");

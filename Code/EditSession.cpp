@@ -3609,6 +3609,10 @@ void EditSession::ChooseFileOpen(FileChooser *fc,
 		adventureCreator->LoadAdventure(fc->currPath.string(), fileName);
 		adventureCreator->Open();
 	}
+	else if (fc->ext == ".brknk")
+	{
+		Reload(fc->currPath.string() + "\\" + fileName + ".brknk");
+	}
 	
 }
 

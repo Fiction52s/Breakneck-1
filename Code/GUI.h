@@ -741,6 +741,10 @@ struct GeneralUI : GUIHandler
 
 	enum FileOptions
 	{
+		NEW_MAP,
+		OPEN_MAP,
+		SAVE_MAP,
+		SAVE_MAP_AS,
 		OPEN_ADVENTURE,
 		CREATE_ADVENTURE,
 	};
