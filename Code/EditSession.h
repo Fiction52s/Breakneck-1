@@ -319,6 +319,8 @@ struct EditSession : GUIHandler, Session
 	ActorParams * AttachActorToRail(ActorPtr actor, RailPtr rail);
 	void AttachActorsToPolygon( std::list<ActorPtr> &actors, PolyPtr poly );
 	int Run();
+	int EditRun();
+	void Cleanup();
 	void LoadAndResave();
 	bool runToResave;
 
@@ -625,7 +627,13 @@ struct EditSession : GUIHandler, Session
 	int tempGridX;
 	int tempGridY;
 
+	bool reload;
+
 	void LoadAllPolyShaders();
+	void Reload(
+		const boost::filesystem::path &p_filePath);
+	void SetReload(
+		const boost::filesystem::path &p_file);
 
 	void StartSelectedMove();
 	void ContinueSelectedMove();

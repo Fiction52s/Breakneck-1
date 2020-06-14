@@ -1104,6 +1104,31 @@ RailPtr EditSession::GetRail(int index)
 	return rail;
 }
 
+void EditSession::Cleanup()
+{
+	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	for (auto it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	DestroyCopiedBrushes();
+
+	mapStartBrush->Destroy();
+
+	polygons.clear();
+	waterPolygons.clear();
+	flyPolygons.clear();
+	/*for( auto it = allPolygons.begin(); it != allPolygons.end(); ++it )
+	{
+		(*it).clear();
+	}*/
+}
+
 EditSession::~EditSession()
 {
 	delete removeProgressPointWaiter;
@@ -1125,35 +1150,10 @@ EditSession::~EditSession()
 	delete polygonInProgress;
 	delete railInProgress;
 
-	/*for (auto it = gates.begin(); it != gates.end(); ++it)
-	{
-		delete (*it);
-	}*/
-
-	/*for (int i = 0; i < 2; ++i)
-	{
-		auto & polyList = GetCorrectPolygonList(i);
-		for (auto it = polyList.begin(); it != polyList.end(); ++it)
-		{
-			delete (*it);
-		}
-	}*/
-
-
-	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
-	{
-		delete (*it);
-	}
-
-	for (auto it = undoneActionStack.begin(); it != undoneActionStack.end(); ++it)
-	{
-		delete (*it);
-	}
-
-
 	delete progressBrush;
 	delete selectedBrush;
-	DestroyCopiedBrushes();
+
+	Cleanup();
 
 	if (createEnemyModeUI != NULL)
 	{
@@ -1194,7 +1194,7 @@ EditSession::~EditSession()
 	delete shardTypePanel;
 	delete nameBrushPanel;
 
-	mapStartBrush->Destroy();
+	//mapStartBrush->Destroy();
 
 	delete mapStartBrush;
 
@@ -1202,10 +1202,6 @@ EditSession::~EditSession()
 	{
 		delete (*it);
 	}
-	//delete groups, but not actors
-	
-
-	//delete[] decorTileIndexes;
 
 	currSession = NULL;
 }
@@ -2741,6 +2737,26 @@ void EditSession::Init()
 
 	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
+
+	
+}
+
+void EditSession::SetReload(const boost::filesystem::path &p_filePath)
+{
+	filePath = p_filePath;
+	filePathStr = filePath.string();
+	reload = true;
+	quit = true;
+}
+
+void EditSession::Reload(
+	const boost::filesystem::path &p_filePath)
+{
+	reload = true;
+	quit = true;
+	//ClearActivePanels();
+	filePath = p_filePath;
+	filePathStr = filePath.string();
 }
 
 void EditSession::Load()
@@ -2748,16 +2764,17 @@ void EditSession::Load()
 
 }
 
-int EditSession::Run()
+int EditSession::EditRun()
 {
+	reload = false;
 	mapStartBrush->Clear();
 	totalGameFrames = 0;
 	grassChanges = NULL;
 	focusedPanel = NULL;
 
-	if( players[0] == NULL )
+	if (players[0] == NULL)
 		players[0] = new Actor(NULL, this, 0);
-	
+
 	oldShaderZoom = -1;
 	complexPaste = NULL;
 
@@ -2774,9 +2791,9 @@ int EditSession::Run()
 	currentFile = filePath.string();
 
 	tempActor = NULL;
-	v.setCenter( 0, 0 );
-	v.setSize( 1920/ 2, 1080 / 2 );
-	window->setView( v );
+	v.setCenter(0, 0);
+	v.setSize(1920 / 2, 1080 / 2);
+	window->setView(v);
 
 	validityRadius = 4;
 
@@ -2792,43 +2809,35 @@ int EditSession::Run()
 
 	Tileset *ts_playerZoomIcon = GetTileset("Editor/playerzoomicon.png");
 	sf::Sprite playerZoomIcon(*ts_playerZoomIcon->texture);
-	
-	playerZoomIcon.setOrigin( playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2 );	
 
-	
-
-	
-
+	playerZoomIcon.setOrigin(playerZoomIcon.getLocalBounds().width / 2, playerZoomIcon.getLocalBounds().height / 2);
 
 	currTerrainTypeSpr.setPosition(0, 160);
 	UpdateCurrTerrainType();
 
 	returnVal = 0;
-	Color testColor( 0x75, 0x70, 0x90 );
+	Color testColor(0x75, 0x70, 0x90);
 
-	preScreenTex->setView( view );
-
-	
+	preScreenTex->setView(view);
 
 	ReadFile();
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 
-	if (groups["player"] == NULL)
-	{
-		ActorGroup *playerGroup = new ActorGroup("player");
-		groups["player"] = playerGroup;
+	ActorGroup *playerGroup = new ActorGroup("player");
+	groups["player"] = playerGroup;
 
-		ParamsInfo playerPI("player", NULL, NULL,
-			Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
-			GetTileset("Kin/jump_64x64.png", 64, 64));
+	ParamsInfo playerPI("player", NULL, NULL,
+		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
+		GetTileset("Kin/jump_64x64.png", 64, 64));
 
-		playerType = new ActorType(playerPI);
-		types["player"] = playerType;
+	playerType = new ActorType(playerPI);
+	types["player"] = playerType;
 
-		player = new PlayerParams(playerType, Vector2i(0, 0));
-		groups["player"]->actors.push_back(player);
-	}
+	player = new PlayerParams(playerType, Vector2i(0, 0));
+	groups["player"]->actors.push_back(player);
+	//-------------------------
+
 
 	player->SetPosition(playerOrigPos);
 	player->image.setPosition(player->GetFloatPos());
@@ -2848,11 +2857,6 @@ int EditSession::Run()
 
 	cam.Init(GetPlayerPos(0));
 
-	
-
-	
-
-
 	if (!initialViewSet)
 	{
 		view.setSize(1920, 1080);
@@ -2861,23 +2865,19 @@ int EditSession::Run()
 
 	quit = false;
 
-	
-	
-	//inversePolygon.reset( NULL );
-
 	zoomMultiple = 2;
 
 	view.setSize(Vector2f(960 * (zoomMultiple), 540 * (zoomMultiple)));
 	preScreenTex->setView(view);
 
 	UpdateFullBounds();
-	
+
 	panning = false;
 	minimumEdgeLength = 8;//8;
 
 	Color borderColor = sf::Color::Green;
 	int max = 1000000;
-	
+
 	border[0] = sf::Vertex(sf::Vector2<float>(-max, -max), borderColor);
 	border[1] = sf::Vertex(sf::Vector2<float>(-max, max), borderColor);
 	border[2] = sf::Vertex(sf::Vector2<float>(-max, max), borderColor);
@@ -2887,17 +2887,9 @@ int EditSession::Run()
 	border[6] = sf::Vertex(sf::Vector2<float>(max, -max), borderColor);
 	border[7] = sf::Vertex(sf::Vector2<float>(-max, -max), borderColor);
 
-	//sf::Texture guiMenuCubeTexture;
-	//guiMenuCubeTexture.loadFromFile( "Resources/Editor/guioptions.png" );
 	Tileset *ts_guiMenu = GetSizedTileset("Editor/orbmodeselector_384x384.png");
 	ts_guiMenu->SetSpriteTexture(guiMenuSprite);
-	guiMenuSprite.setOrigin( guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2 );
-
-	
-	//testGateMarker = new GateMarker();
-	
-
-	//bool s = IsKeyPressed( sf::Keyboard::T );
+	guiMenuSprite.setOrigin(guiMenuSprite.getLocalBounds().width / 2, guiMenuSprite.getLocalBounds().height / 2);
 
 	SetMode(EDIT);
 	stored = mode;
@@ -2906,15 +2898,15 @@ int EditSession::Run()
 	menuCircleDist = 128;
 	menuCircleRadius = 64;
 
-	circleTopPos =  V2d( 0, -1 ) * menuCircleDist;
+	circleTopPos = V2d(0, -1) * menuCircleDist;
 
-	circleUpperRightPos = V2d( sqrt( 3.0 ) / 2, -.5 ) * menuCircleDist;
-	circleLowerRightPos = V2d( sqrt( 3.0 ) / 2, .5 ) * menuCircleDist;
+	circleUpperRightPos = V2d(sqrt(3.0) / 2, -.5) * menuCircleDist;
+	circleLowerRightPos = V2d(sqrt(3.0) / 2, .5) * menuCircleDist;
 
-	circleUpperLeftPos = V2d( -sqrt( 3.0 ) / 2, -.5 ) * menuCircleDist;
-	circleLowerLeftPos = V2d( -sqrt( 3.0 ) / 2, .5 ) * menuCircleDist;
+	circleUpperLeftPos = V2d(-sqrt(3.0) / 2, -.5) * menuCircleDist;
+	circleLowerLeftPos = V2d(-sqrt(3.0) / 2, .5) * menuCircleDist;
 
-	circleBottomPos = V2d( 0, 1 ) * menuCircleDist;
+	circleBottomPos = V2d(0, 1) * menuCircleDist;
 
 	menuSelection = "";
 
@@ -2922,7 +2914,7 @@ int EditSession::Run()
 
 	Vector2f uiMouse;
 
-	while( !quit )
+	while (!quit)
 	{
 		if (runToResave)
 		{
@@ -2934,20 +2926,20 @@ int EditSession::Run()
 
 		/*if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
 		{*/
-			double newTime = editClock.getElapsedTime().asSeconds();
-			double frameTime = newTime - editCurrentTime;
-			editCurrentTime = newTime;
+		double newTime = editClock.getElapsedTime().asSeconds();
+		double frameTime = newTime - editCurrentTime;
+		editCurrentTime = newTime;
 
-			editAccumulator += frameTime;
-			double mult;
-			spriteUpdateFrames = 0;
-			while (editAccumulator >= TIMESTEP)
-			{
-				mult = floor(editAccumulator / TIMESTEP);
-				spriteUpdateFrames = mult;
+		editAccumulator += frameTime;
+		double mult;
+		spriteUpdateFrames = 0;
+		while (editAccumulator >= TIMESTEP)
+		{
+			mult = floor(editAccumulator / TIMESTEP);
+			spriteUpdateFrames = mult;
 
-				editAccumulator -= mult * TIMESTEP;
-			}
+			editAccumulator -= mult * TIMESTEP;
+		}
 		//}
 
 		pixelPos = GetPixelPos();
@@ -2961,14 +2953,14 @@ int EditSession::Run()
 			//worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
 			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
 		}
-		
 
-		preScreenTex->setView( uiView );
-		uiMouse = preScreenTex->mapPixelToCoords( pixelPos );
+
+		preScreenTex->setView(uiView);
+		uiMouse = preScreenTex->mapPixelToCoords(pixelPos);
 		uiMousePos = uiMouse;
-		
-		preScreenTex->setView( view );
-		
+
+		preScreenTex->setView(view);
+
 		testPoint.x = worldPos.x;
 		testPoint.y = worldPos.y;
 
@@ -3001,7 +2993,7 @@ int EditSession::Run()
 			}
 		}
 
-		MOUSE.Update( pixelPos);
+		MOUSE.Update(pixelPos);
 
 		if (IsKeyPressed(Keyboard::Num5))
 		{
@@ -3033,49 +3025,49 @@ int EditSession::Run()
 		{
 			HandleEvents();
 
-			if( mode != PAUSED )
+			if (mode != PAUSED)
 				UpdateMode();
 		}
 
-		
-		
-		
-		
+
+
+
+
 
 		UpdatePanning();
-		
-		background->Update(view.getCenter(), spriteUpdateFrames );
+
+		background->Update(view.getCenter(), spriteUpdateFrames);
 
 		UpdatePolyShaders();
-		
+
 		//ShowMostRecentError();
 
 		/*int testSize = 0;
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			auto aList = (*it).second->actors;
-			testSize += aList.size();
+		auto aList = (*it).second->actors;
+		testSize += aList.size();
 		}
 		cout << "testsize: " << testSize << endl;*/
 
 		Draw();
-		
-		
+
+
 
 		TempMoveSelectedBrush();
 
-		
+
 
 		DrawDecorFront();
 
-		if( zoomMultiple > 7 && ( !gameCam || mode != TEST_PLAYER ) )
+		if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 		{
-			playerZoomIcon.setPosition( player->GetFloatPos() );
-			playerZoomIcon.setScale( zoomMultiple * 1.8, zoomMultiple * 1.8 );
-			preScreenTex->draw( playerZoomIcon );
+			playerZoomIcon.setPosition(player->GetFloatPos());
+			playerZoomIcon.setScale(zoomMultiple * 1.8, zoomMultiple * 1.8);
+			preScreenTex->draw(playerZoomIcon);
 		}
 
-		preScreenTex->draw( fullBounds );
+		preScreenTex->draw(fullBounds);
 
 		if (mode == CREATE_IMAGES)
 		{
@@ -3085,11 +3077,11 @@ int EditSession::Run()
 
 		DrawUI();
 
-		preScreenTex->setView( view );
+		preScreenTex->setView(view);
 
 		Display();
 	}
-	
+
 	preScreenTex->setView(oldPreTexView);
 	window->setView(oldWindowView);
 
@@ -3097,6 +3089,25 @@ int EditSession::Run()
 	mainMenu->SetMouseVisible(oldMouseVis);
 
 	return returnVal;
+}
+
+int EditSession::Run()
+{
+	int result;
+	while( true )
+	{
+		result = EditRun();
+		if (reload)
+		{
+			Cleanup();
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	return result;
 }
 
 //THIS IS ALSO DEFINED IN ACTORPARAMS NEED TO GET RID OF THE DUPLICATE

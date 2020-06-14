@@ -493,6 +493,13 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 				SetRectNode(cr, currNode);
 			}
 		}
+		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
+		{
+			FileNode *fn = (FileNode*)cr->info;
+
+			chooser->TurnOff();
+			chooser->edit->Reload(fn->filePath);
+		}
 	}
 	else
 	{
