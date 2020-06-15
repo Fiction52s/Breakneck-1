@@ -128,6 +128,937 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
+void GameSession::UpdateBarriers()
+{
+	for (auto it = barriers.begin();
+		it != barriers.end(); ++it)
+	{
+		bool trig = (*it)->Update();
+		if (trig)
+		{
+			TriggerBarrier((*it));
+		}
+	}
+}
+
+void GameSession::UpdateReplayGhostSprites()
+{
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		(*it)->UpdateReplaySprite();
+	}
+}
+
+void GameSession::TryToActivateBonus()
+{
+	Actor *p = NULL;
+	if (parentGame == NULL && bonusGame != NULL)
+	{
+		if (GetCurrInputUnfiltered(0).rightShoulder &&
+			!GetPrevInputUnfiltered(0).rightShoulder)
+		{
+			currSession = bonusGame;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->SetSession(bonusGame, bonusGame, NULL);
+				}
+			}
+			pauseMenu->owner = bonusGame;
+
+			bonusGame->Run();
+
+			pauseMenu->owner = this;
+			currSession = this;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->SetSession(this, this, NULL);
+					p->Respawn(); //special respawn for leaving bonus later
+				}
+			}
+
+		}
+	}
+}
+
+void GameSession::HitlagUpdate()
+{
+	UpdateControllers();
+	UpdateAllPlayersInput();
+
+	UpdatePlayersInHitlag();
+
+	UpdateEffects(true);
+
+	cam.UpdateRumble();
+
+	fader->Update();
+	swiper->Update();
+	mainMenu->UpdateEffects();
+
+	pauseFrames--;
+
+	accumulator -= TIMESTEP;
+}
+
+void GameSession::ActiveStorySequenceUpdate()
+{
+	if (currStorySequence != NULL)
+	{
+		if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+		{
+			currStorySequence->EndSequence();
+			currStorySequence = NULL;
+		}
+		else
+		{
+		}
+	}
+}
+
+void GameSession::ActiveBroadcastUpdate()
+{
+	if (currBroadcast != NULL)
+	{
+		if (!currBroadcast->Update())
+		{
+			//currStorySequence->EndSequence();
+			currBroadcast = NULL;
+		}
+		else
+		{
+		}
+	}
+}
+
+void GameSession::ActiveSequenceUpdate()
+{
+	if (activeSequence != NULL)// && activeSequence == startSeq )
+	{
+		State oldState = state;
+		if (!activeSequence->Update())
+		{
+			if (activeSequence->nextSeq != NULL)
+			{
+				activeSequence->nextSeq->Reset();
+				SetActiveSequence(activeSequence->nextSeq);
+			}
+			else
+			{
+				if (activeSequence == preLevelScene)
+				{
+					FreezePlayerAndEnemies(false);
+					SetPlayerInputOn(true);
+				}
+
+
+				if (activeSequence == postLevelScene)
+				{
+					goalDestroyed = true;
+				}
+
+				state = RUN;
+				activeSequence = NULL;
+			}
+		}
+		else
+		{
+			if (state != oldState)
+			{
+				switchState = true;
+				return;
+				//goto starttest;
+			}
+		}
+
+		if (state == SEQUENCE)
+		{
+
+		}
+	}
+}
+
+void GameSession::ActiveDialogueUpdate()
+{
+	if (activeDialogue != NULL)
+	{
+		if (GetCurrInput(0).A && !GetPrevInput(0).A)
+		{
+			if (activeDialogue->ConfirmDialogue())
+				activeDialogue = NULL;
+		}
+	}
+}
+
+void GameSession::UpdateFrameRateCounterText( double frameTime )
+{
+	if (showFrameRate)
+	{
+		if (frameRateCounter == frameRateCounterWait)
+		{
+			double blah = 1.0 / frameTime;
+			frameRateTimeTotal += blah;
+			frameRateText.setString(to_string(frameRateTimeTotal / (frameRateCounterWait + 1)));
+			frameRateCounter = 0;
+			frameRateTimeTotal = 0;
+		}
+		else
+		{
+			double blah = 1.0 / frameTime;
+			frameRateTimeTotal += blah;
+			++frameRateCounter;
+		}
+	}
+}
+
+void GameSession::UpdateRunningTimerText()
+{
+	if (showRunningTimer && !scoreDisplay->active)
+	{
+		int tFrames = totalGameFrames;
+		if (totalFramesBeforeGoal >= 0)
+		{
+			tFrames = totalFramesBeforeGoal;
+		}
+		runningTimerText.setString(GetTimeStr(tFrames));
+
+	}
+}
+
+bool GameSession::RunModeUpdate( double frameTime )
+{
+	Actor *p = NULL;
+	Actor *p0 = GetPlayer(0);
+
+	accumulator += frameTime;
+
+	window->clear(Color::Red);
+
+	preScreenTex->clear(Color::Red);
+	postProcessTex->clear(Color::Red);
+	postProcessTex1->clear(Color::Red);
+	postProcessTex2->clear(Color::Red);
+
+	switch (mapHeader->bossFightType)
+	{
+	case 0:
+		break;
+	case 1:
+		break;
+	}
+
+	coll.ClearDebug();
+
+	while (accumulator >= TIMESTEP)
+	{
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
+
+		bool k = IsKeyPressed(sf::Keyboard::K);
+		bool levelReset = IsKeyPressed(sf::Keyboard::L);
+		Enemy *monitorList = NULL;
+
+		if (IsKeyPressed(sf::Keyboard::Y))
+		{
+			quit = true;
+			break;
+		}
+
+		if (IsKeyPressed(sf::Keyboard::Num9))
+		{
+			showRunningTimer = true;
+		}
+		if (IsKeyPressed(sf::Keyboard::Num0))
+		{
+			showRunningTimer = false;
+		}
+
+		if (goalDestroyed)
+		{
+			quit = true;
+			returnVal = resType;
+			break;
+		}
+
+		if (nextFrameRestart)
+		{
+			state = GameSession::RUN;
+			RestartLevel();
+			gameClock.restart();
+			currentTime = 0;
+			accumulator = TIMESTEP + .1;
+			frameRateCounter = 0;
+		}
+
+		if (pauseFrames == 0)
+		{
+			UpdateControllers();
+
+			//currently only records 1 player replays. fix this later
+			if (repPlayer != NULL)
+			{
+				repPlayer->UpdateInput(GetCurrInput(0));
+			}
+
+			if (recPlayer != NULL)
+			{
+				recPlayer->RecordFrame();
+			}
+
+			UpdateAllPlayersInput();
+
+		}
+		else if (pauseFrames > 0)
+		{
+			HitlagUpdate();
+			continue;
+		}
+
+		ActiveSequenceUpdate();
+		if (switchState)
+			break;
+
+		ActiveDialogueUpdate();
+		
+		totalGameFrames++;
+
+		UpdatePlayersPrePhysics();
+
+		TryToActivateBonus();
+
+		ActiveStorySequenceUpdate();
+
+		ActiveBroadcastUpdate();
+
+		if (inputVis != NULL)
+			inputVis->Update(GetPlayer(0)->currInput);
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPrePhysics();
+
+			UpdatePhysics();
+		}
+
+		RecordReplayEnemies();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdatePlayersPostPhysics();
+		}
+
+		if (recGhost != NULL)
+			recGhost->RecordFrame();
+
+		UpdateReplayGhostSprites();
+		
+
+		if (goalDestroyed)
+		{
+			quit = true;
+			returnVal = resType;
+			/*recGhost->StopRecording();
+			recGhost->WriteToFile( "testghost.bghst" );*/
+			break;
+		}
+
+		UpdatePlayerWireQuads();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPostPhysics();
+		}
+
+		UpdateGates();
+
+		absorbParticles->Update();
+		absorbDarkParticles->Update();
+		absorbShardParticles->Update();
+
+		UpdateEffects();
+		UpdateEmitters();
+
+		keyMarker->Update();
+
+		mini->Update();
+
+		mainMenu->musicPlayer->Update();
+
+		if (adventureHUD != NULL)
+			adventureHUD->Update();
+
+		scoreDisplay->Update();
+
+		soundNodeList->Update();
+
+		pauseSoundNodeList->Update();
+
+		goalPulse->Update();
+
+		if (rain != NULL)
+			rain->Update();
+
+		UpdateBarriers();
+
+		oldZoom = cam.GetZoom();
+		oldCamBotLeft = view.getCenter();
+		oldCamBotLeft.x -= view.getSize().x / 2;
+		oldCamBotLeft.y += view.getSize().y / 2;
+
+		oldView = view;
+
+		if (raceFight != NULL)
+		{
+			cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+		}
+		else
+		{
+			cam.Update(GetPlayer(0));
+		}
+
+		if (gateMarkers != NULL)
+			gateMarkers->Update(&cam);
+
+		Vector2f camPos = cam.GetPos();
+
+		fader->Update();
+		swiper->Update();
+		background->Update(camPos);
+		if (topClouds != NULL)
+			topClouds->Update();
+		//rain.Update();
+
+		mainMenu->UpdateEffects();
+
+		if (raceFight != NULL)
+		{
+			raceFight->UpdateScore();
+		}
+
+		if (shipSequence)
+		{
+			float oldLeft = cloud0[0].position.x;
+			float blah = 30.f;
+			float newLeft = oldLeft - blah; //cloudVel.x;
+			float diff = (shipStartPos.x - 480) - newLeft;
+			if (diff >= 480)
+			{
+				//cout << "RESETING: " << diff << endl;
+				newLeft = shipStartPos.x - 480 - (diff - 480);
+			}
+			else
+			{
+				//cout << "diff: " << diff << endl;
+			}
+
+			float allDiff = newLeft - oldLeft;
+			Vector2f cl = relShipVel;
+
+			middleClouds.move(Vector2f(0, cl.y));// + Vector2f( allDiff, 0 ) );
+			for (int i = 0; i < 3 * 4; ++i)
+			{
+				cloud0[i].position = cl + Vector2f(cloud0[i].position.x + allDiff, cloud0[i].position.y);
+				cloud1[i].position = cl + Vector2f(cloud1[i].position.x + allDiff, cloud1[i].position.y);
+
+				cloudBot0[i].position = cl + Vector2f(cloudBot0[i].position.x + allDiff, cloudBot0[i].position.y);
+				cloudBot1[i].position = cl + Vector2f(cloudBot1[i].position.x + allDiff, cloudBot1[i].position.y);
+
+			}
+
+			if (shipSeqFrame >= 90 && shipSeqFrame <= 180)
+			{
+				int tFrame = shipSeqFrame - 90;
+				shipSprite.setPosition(shipSprite.getPosition() + relShipVel);
+
+				relShipVel += Vector2f(.3, -.8);
+			}
+			else if (shipSeqFrame == 240)//121 )
+			{
+				Actor *player = GetPlayer(0);
+				//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
+				player->action = Actor::JUMP;
+				player->frame = 1;
+				player->velocity = V2d(20, 10);
+				player->UpdateSprite();
+				shipSequence = false;
+				player->hasDoubleJump = false;
+				player->hasAirDash = false;
+				player->hasGravReverse = false;
+				drain = true;
+			}
+
+			++shipSeqFrame;
+		}
+
+		double camWidth = 960 * cam.GetZoom();
+		double camHeight = 540 * cam.GetZoom();
+
+		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+
+		UpdateGoalFlow();
+
+		int speedLevel = p0->speedLevel;
+		float quant = 0;
+		if (speedLevel == 0)
+		{
+			quant = (float)(p0->currentSpeedBar / p0->level1SpeedThresh);
+		}
+		else if (speedLevel == 1)
+		{
+			quant = (float)((p0->currentSpeedBar - p0->level1SpeedThresh) / (p0->level2SpeedThresh - p0->level1SpeedThresh));
+		}
+		else
+		{
+			quant = (float)((p0->currentSpeedBar - p0->level2SpeedThresh) / (p0->maxGroundSpeed - p0->level2SpeedThresh));
+		}
+
+		queryMode = "enemy";
+
+		sf::Rect<double> spawnRect = screenRect;
+		double spawnExtra = 600;//800
+		spawnRect.left -= spawnExtra;
+		spawnRect.width += 2 * spawnExtra;
+		spawnRect.top -= spawnExtra;
+		spawnRect.height += 2 * spawnExtra;
+
+		tempSpawnRect = spawnRect;
+		enemyTree->Query(this, spawnRect);
+
+		EnvPlant *prevPlant = NULL;
+		EnvPlant *ev = activeEnvPlants;
+		while (ev != NULL)
+		{
+			EnvPlant *tempNext = ev->next;
+			ev->particle->Update(p0->position);
+
+			ev->frame++;
+			if (ev->frame == ev->disperseLength * ev->disperseFactor)
+			{
+				VertexArray &eva = *ev->va;
+				eva[ev->vaIndex + 0].position = Vector2f(0, 0);
+				eva[ev->vaIndex + 1].position = Vector2f(0, 0);
+				eva[ev->vaIndex + 2].position = Vector2f(0, 0);
+				eva[ev->vaIndex + 3].position = Vector2f(0, 0);
+
+				if (ev == activeEnvPlants)
+				{
+					activeEnvPlants = ev->next;
+				}
+				else
+				{
+					prevPlant->next = ev->next;
+				}
+			}
+			else
+			{
+				prevPlant = ev;
+			}
+
+			ev = tempNext;
+		}
+
+		queryMode = "envplant";
+		envPlantTree->Query(this, screenRect);
+
+		polyQueryList = NULL;
+		queryMode = "border";
+		numBorders = 0;
+		borderTree->Query(this, screenRect);
+
+
+
+		specialPieceList = NULL;
+		queryMode = "specialterrain";
+		specialTerrainTree->Query(this, screenRect);
+
+		flyTerrainList = NULL;
+		queryMode = "flyterrain";
+		flyTerrainTree->Query(this, screenRect);
+
+		drawInversePoly = ScreenIntersectsInversePoly(screenRect);
+
+		UpdateDecorSprites();
+
+
+		UpdateDecorLayers();
+
+		if (raceFight != NULL)
+		{
+			if (raceFight->gameOver || GetCurrInput(0).back)
+			{
+				state = RACEFIGHT_RESULTS;
+				raceFight->raceFightResultsFrame = 0;
+				raceFight->victoryScreen->Reset();
+				raceFight->victoryScreen->SetupColumns();
+				break;
+			}
+		}
+		else if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+		{
+			ControllerState &currInput = GetCurrInput(0);
+			ControllerState &prevInput = GetPrevInput(0);
+			//if( IsKeyPressed( Keyboard ) )
+			if (currInput.start && !prevInput.start)
+			{
+				state = PAUSE;
+				ActivatePauseSound(GetSound("pause_on"));
+				pauseMenu->SetTab(PauseMenu::PAUSE);
+				soundNodeList->Pause(true);
+			}
+			else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
+			{
+				state = PAUSE;
+				pauseMenu->SetTab(PauseMenu::MAP);
+				ActivatePauseSound(GetSound("pause_on"));
+				soundNodeList->Pause(true);
+			}
+		}
+		/*if( player->record > 0 )
+		{
+		player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
+		screenRect;
+		}*/
+		
+
+
+		accumulator -= TIMESTEP;
+
+		if (debugScreenRecorder != NULL)
+		{
+			break; //for recording stuff
+		}
+	}
+
+	if (switchState && state != FROZEN)
+	{
+		return false;
+	}
+
+	if (debugScreenRecorder != NULL)
+		if (IsKeyPressed(Keyboard::R))
+		{
+			debugScreenRecorder->StartRecording();
+			//player->maxFallSpeedSlo += maxFallSpeedFactor;
+			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
+		}
+
+
+
+
+
+	sf::Event ev;
+	while (window->pollEvent(ev))
+	{
+		if (ev.type == Event::LostFocus)
+		{
+			if (state == RUN)
+				state = PAUSE;
+		}
+		else if (ev.type == sf::Event::GainedFocus)
+		{
+			//if( state == PAUSE )
+			//	state = RUN;
+		}
+	}
+	Vector2f camOffset;
+
+	Vector2f camPos = cam.GetPos();
+	view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+
+	//this is because kin's sprite is 2x size in the game as well as other stuff
+	lastViewSize = view.getSize();
+	view.setCenter(camPos.x, camPos.y);
+
+	lastViewCenter = view.getCenter();
+
+	if (hasGoal)
+	{
+		flowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
+			view.getCenter().y + view.getSize().y / 2));
+	}
+
+	preScreenTex->setView(view);
+	background->Draw(preScreenTex);
+
+	cloudView.setCenter(960, 540);
+	cloudView.setCenter(960, 540);
+	preScreenTex->setView(cloudView);
+
+
+	preScreenTex->setView(view);
+
+
+	UpdateEnvShaders();
+
+	DrawTopClouds();
+
+	DrawBlackBorderQuads();
+
+	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
+	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
+	DrawEffects(EffectLayer::BEHIND_TERRAIN, preScreenTex);
+	DrawEmitters(EffectLayer::BEHIND_TERRAIN);
+
+
+	DrawZones(preScreenTex);
+
+	PolyPtr sp = specialPieceList;
+	while (sp != NULL)
+	{
+		sp->Draw(preScreenTex);
+		sp = sp->queryNext;
+	}
+
+	PolyPtr fp = flyTerrainList;
+	while (fp != NULL)
+	{
+		fp->DrawFlies(preScreenTex);
+		fp = fp->queryNext;
+	}
+
+
+	//JUST FOR TESTING
+	int numPolys = allPolysVec.size();
+	for (int i = 0; i < numPolys; ++i)
+	{
+		allPolysVec[i]->Draw(preScreenTex);
+	}
+
+
+	//DrawTerrainPieces(listVA);
+
+	DrawGoalEnergy();
+
+	preScreenTex->setView(uiView);
+
+	if (adventureHUD != NULL)
+	{
+		adventureHUD->Draw(preScreenTex);
+	}
+
+	preScreenTex->setView(view);
+
+	DrawGates();
+
+	DrawRails();
+
+
+	DrawDecorBetween();
+
+	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
+	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
+	DrawEffects(EffectLayer::BEHIND_ENEMIES, preScreenTex);
+	DrawEmitters(EffectLayer::BEHIND_ENEMIES);
+
+	UpdateEnemiesDraw();
+
+	if (activeSequence != NULL)
+	{
+		activeSequence->Draw(preScreenTex);
+	}
+
+	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
+	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+
+	goalPulse->Draw(preScreenTex);
+
+	DrawPlayerWires(preScreenTex);
+
+
+	if (shipSequence)
+	{
+		preScreenTex->draw(cloud1, ts_w1ShipClouds1->texture);
+		preScreenTex->draw(cloud0, ts_w1ShipClouds0->texture);
+		preScreenTex->draw(middleClouds);
+		preScreenTex->draw(cloudBot1, ts_w1ShipClouds1->texture);
+		preScreenTex->draw(cloudBot0, ts_w1ShipClouds0->texture);
+		preScreenTex->draw(shipSprite);
+	}
+
+	DrawHitEnemies(); //whited out hit enemies
+
+	absorbParticles->Draw(preScreenTex);
+	absorbDarkParticles->Draw(preScreenTex);
+
+	DrawPlayers(preScreenTex);
+
+	absorbShardParticles->Draw(preScreenTex);
+
+	DrawReplayGhosts();
+
+	DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
+	DrawEmitters(EffectLayer::IN_FRONT);
+	DrawStoryLayer(EffectLayer::IN_FRONT);
+	DrawActiveSequence(EffectLayer::IN_FRONT);
+
+	DrawBullets(preScreenTex);
+
+	rainView.setCenter((int)view.getCenter().x % 64, (int)view.getCenter().y % 64);
+	rainView.setSize(view.getSize());
+	preScreenTex->setView(rainView);
+
+	if (rain != NULL)
+		rain->Draw(preScreenTex);
+
+	preScreenTex->setView(view);
+
+	//DrawActiveEnvPlants();
+
+	UpdateDebugModifiers();
+
+	DebugDraw();
+
+
+	if (false)
+	{
+		Sprite blah;
+		blah.setTexture(preScreenTex->getTexture());
+		postProcessTex2->draw(blah);
+		//postProcessTex2->clear( Color::Red );
+		postProcessTex2->display();
+
+
+
+		Vector2f shockSize(580 / 2, 580 / 2);
+		sf::RectangleShape rectPost(shockSize);
+		rectPost.setOrigin(rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2);
+		rectPost.setPosition(p0->position.x, p0->position.y); //testing for now
+
+		Sprite shockSprite;
+		shockSprite.setTexture(shockwaveTex);
+		shockSprite.setOrigin(shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2);
+		shockSprite.setPosition(p0->position.x, p0->position.y);
+		//rectPost.setPosition( 0, 0 );
+
+		Vector2f botLeft(view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y);
+
+		shockwaveShader.setUniform("underTex", postProcessTex2->getTexture());
+		shockwaveShader.setUniform("shockSize", Vector2f(580, 580));
+		shockwaveShader.setUniform("botLeft", Vector2f(rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x,
+			rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y));
+		shockwaveShader.setUniform("zoom", cam.GetZoom());
+		//preScreenTex->draw( shockSprite );
+
+		shockSprite.setScale((1. / 60.) * shockTestFrame, (1. / 60.) * shockTestFrame);
+		preScreenTex->draw(shockSprite, &shockwaveShader);
+
+
+		shockTestFrame++;
+		if (shockTestFrame == 60)
+		{
+			shockTestFrame = 0;
+		}
+		//postProcessTex2->draw( rectPost, &shockwaveShader );
+		//postProcessTex2->display();
+
+		//sf::Sprite pptSpr;
+		//pptSpr.setTexture( postProcessTex2->getTexture() );
+		//preScreenTex->draw( pptSpr );
+	}
+
+
+	preScreenTex->setView(uiView);
+
+
+
+	if (raceFight != NULL)
+	{
+		raceFight->DrawScore(preScreenTex);
+	}
+
+	/*if (adventureHUD != NULL)
+	{
+	adventureHUD->Draw(preScreenTex);
+	}*/
+
+	scoreDisplay->Draw(preScreenTex);
+
+	if (showFrameRate)
+	{
+		preScreenTex->draw(frameRateText);
+	}
+
+	if (showRunningTimer && !scoreDisplay->active)
+	{
+		preScreenTex->draw(runningTimerText);
+	}
+
+	if (inputVis != NULL)
+		inputVis->Draw(preScreenTex);
+
+	if (gateMarkers != NULL)
+		gateMarkers->Draw(preScreenTex);
+
+	preScreenTex->setView(view);
+
+
+	DrawDyingPlayers();
+
+	UpdateTimeSlowShader();
+
+	if (currBroadcast != NULL)
+	{
+		preScreenTex->setView(uiView);
+		currBroadcast->Draw(preScreenTex);
+	}
+
+	DrawActiveSequence(EffectLayer::UI_FRONT);
+	DrawEffects(EffectLayer::UI_FRONT, preScreenTex);
+	DrawEmitters(EffectLayer::UI_FRONT);
+
+	preScreenTex->setView(uiView);
+
+	//absorbDarkParticles->Draw(preScreenTex);
+
+	//absorbShardParticles->Draw(preScreenTex);
+
+	fader->Draw(preScreenTex);
+	swiper->Draw(preScreenTex);
+
+	mainMenu->DrawEffects(preScreenTex);
+
+	preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
+	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
+	{
+		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				//if (p->action == Actor::DEATH)
+				{
+					p->Draw(preScreenTex);
+				}
+			}
+		}
+	}
+
+	preScreenTex->display();
+
+	const Texture &preTex0 = preScreenTex->getTexture();
+	Sprite preTexSprite(preTex0);
+	preTexSprite.setPosition(-960 / 2, -540 / 2);
+	preTexSprite.setScale(.5, .5);
+	preTexSprite.setTexture(preTex0);
+
+	if (debugScreenRecorder != NULL)
+		debugScreenRecorder->Update(preTex0);
+
+	window->draw(preTexSprite);//, &cloneShader );
+
+	return true;
+}
+
 void GameSession::DrawPlayersMini(sf::RenderTarget *target)
 {
 	Actor *p = NULL;
@@ -161,21 +1092,6 @@ PolyPtr GameSession::GetPolygon(int index)
 
 	return terrain;
 }
-
-
-
-
-
-
-
-
-//----------------------
-
-
-
-
-
-
 
 
 
@@ -715,7 +1631,7 @@ void GameSession::UpdateEnemiesPrePhysics()
 	}
 }
 
-void GameSession::UpdateEnemiesPhysics()
+void GameSession::UpdatePhysics()
 {
 	Actor *p = NULL;
 	Actor *player = GetPlayer( 0 );
@@ -2404,6 +3320,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 int GameSession::Run()
 {
 	goalDestroyed = false;
+	showFrameRate = true;
+	showRunningTimer = true;
 
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
@@ -2420,13 +3338,14 @@ int GameSession::Run()
 
 	preScreenTex->setView(view);
 	
-	bool showFrameRate = true;
-	bool showRunningTimer = true;
+	frameRateText.setString("00");
+	frameRateText.setFont(mainMenu->arial);
+	frameRateText.setCharacterSize(30);
+	frameRateText.setFillColor(Color::Red);
 
-	sf::Text frameRate("00", mainMenu->arial, 30);
-	frameRate.setFillColor(Color::Red);
-
-	sf::Text runningTimerText( "---- : --", mainMenu->arial, 30 );
+	runningTimerText.setString("---- : --");
+	runningTimerText.setFont(mainMenu->arial);
+	runningTimerText.setCharacterSize(30);
 	runningTimerText.setFillColor(Color::Red);
 	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
 		runningTimerText.getLocalBounds().width, 0 );
@@ -2501,9 +3420,9 @@ int GameSession::Run()
 	window->setView(v);
 	lastFrameTex->setView(v);
 	
-	int frameCounter = 0;
-	int frameCounterWait = 20;
-	double total = 0;
+	frameRateCounter = 0;
+	frameRateCounterWait = 20;
+	frameRateTimeTotal = 0;
 
 	cloudView = View(Vector2f(0, 0), Vector2f(1920, 1080));
 
@@ -2525,7 +3444,8 @@ int GameSession::Run()
 	}
 
 	//Rain rain(this);
-	sf::View rainView(Vector2f(0, 0), Vector2f(1920, 1080));
+	rainView.setCenter(Vector2f(0, 0));
+	rainView.setSize(Vector2f(1920, 1080));
 
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
@@ -2560,7 +3480,7 @@ int GameSession::Run()
 	SetOriginalMusic();
 
 	std::stringstream ss;
-	bool switchState = false;
+	switchState = false;
 
 	if (GetPlayer(0)->action == Actor::INTROBOOST)
 	{
@@ -2598,1072 +3518,16 @@ int GameSession::Run()
 		//frameTime = 0.167;//0.25;	
         currentTime = newTime;
 
-		if( showFrameRate )
-		{
-			if( frameCounter == frameCounterWait )
-			{
-				double blah = 1.0 / frameTime;
-				total += blah;
-				ss << total / ( frameCounterWait + 1 ) ;
-				frameRate.setString( ss.str() );
-				ss.clear();
-				ss.str( "" );
-				frameCounter = 0;
-				total = 0;
+		UpdateFrameRateCounterText( frameTime );
+		UpdateRunningTimerText();
 
-				
-			}
-			else
-			{
-				double blah = 1.0 / frameTime;
-				total += blah;
-				++frameCounter;
-			}
-
-			/*ss << inGameClock.getElapsedTime().asSeconds();
-			frameRate.setString( ss.str() );
-			ss.clear();
-			ss.str("");*/
-		}
-
-		if (showRunningTimer && !scoreDisplay->active)
-		{
-			int tFrames = totalGameFrames;
-			if (totalFramesBeforeGoal >= 0)
-			{
-				tFrames = totalFramesBeforeGoal;
-			}
-			runningTimerText.setString(GetTimeStr(tFrames));
-			
-		}
 
 		if( state == RUN )
 		{
-			
-		
-		accumulator += frameTime;
-
-		
-
-		window->clear(Color::Red);
-
-		preScreenTex->clear(Color::Red);
-		postProcessTex->clear(Color::Red);
-		postProcessTex1->clear(Color::Red);
-		postProcessTex2->clear(Color::Red);
-		
-		switch (mapHeader->bossFightType)
-		{
-		case 0:
-			break;
-		case 1:
-			break;
-		}
-		
-		coll.ClearDebug();
-		
-		while ( accumulator >= TIMESTEP )
-        {
-			if (!OneFrameModeUpdate())
+			if (!RunModeUpdate(frameTime))
 			{
-				break;
-			}
-
-			bool k = IsKeyPressed( sf::Keyboard::K );
-			bool levelReset = IsKeyPressed( sf::Keyboard::L );
-			Enemy *monitorList = NULL;
-			
-			if( IsKeyPressed( sf::Keyboard::Y ) )
-			{
-				quit = true;
-				break;
-			}
-
-			if (IsKeyPressed(sf::Keyboard::Num9))
-			{
-				showRunningTimer = true;
-			}
-			if (IsKeyPressed(sf::Keyboard::Num0))
-			{
-				showRunningTimer = false;
-			}
-
-			if( goalDestroyed )
-			{
-				quit = true;
-				returnVal = resType;
-				break;
-			}
-
-			if (nextFrameRestart)
-			{
-				state = GameSession::RUN;
-				RestartLevel();
-				gameClock.restart();
-				currentTime = 0;
-				accumulator = TIMESTEP + .1;
-				frameCounter = 0;
-			}
-
-			if( pauseFrames == 0 )
-			{
-				for( int i = 0; i < 4; ++i )
-				{
-					GetPrevInput( i ) = GetCurrInput( i );
-					GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-				}
-			
-				if( !cutPlayerInput )
-				{
-
-					Actor *pTemp = NULL;
-					for( int i = 0; i < 4; ++i )
-					{
-						pTemp = GetPlayer(i);
-						if (pTemp != NULL)
-						{
-							if (cutPlayerInput)
-							{
-								pTemp->prevInput = ControllerState();
-							}
-							else
-							{
-								pTemp->prevInput = GetCurrInput(i);
-							}
-						}		
-					}
-				}
-
-				vector<GCC::GCController> controllers;
-				if (mainMenu->gccDriverEnabled)
-					controllers = mainMenu->gccDriver->getState();
-
-				for( int i = 0; i < 1; ++i )
-				{
-					GameController &con = GetController( i );
-
-					if (mainMenu->gccDriverEnabled)
-						con.gcController = controllers[i];
-
-
-					bool canControllerUpdate = con.UpdateState();
-					if( !canControllerUpdate )
-					{
-						//KeyboardUpdate( 0 );
-					}
-					else
-					{
-						ControllerState &currInput = GetCurrInput(i);
-						ControllerState &conState = con.GetState();
-						currInput = conState;
-						GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-					}
-				}
-
-				//currently only records 1 player replays. fix this later
-				if( repPlayer != NULL )//repPlayer->init )
-				{
-					//cout << "replay input" << repPlayer->frame << endl;
-					repPlayer->UpdateInput( GetCurrInput( 0 ) );
-					//repPlayer->up
-				}
-
-				if( recPlayer != NULL )
-				{
-					//cout << "record player " << recPlayer->frame << endl;
-					recPlayer->RecordFrame();
-				}
-
-			
-				for (int i = 0; i < 4; ++i)
-				{
-					UpdatePlayerInput(i);
-				}
-
-			}
-			else if( pauseFrames > 0 )
-			{
-				for (int i = 0; i < 4; ++i)
-				{
-					GetPrevInput(i) = GetCurrInput(i);
-				}
-
-				if (!cutPlayerInput)
-				{
-
-					Actor *pTemp = NULL;
-					for (int i = 0; i < 4; ++i)
-					{
-						pTemp = GetPlayer(i);
-						if (pTemp != NULL)
-							pTemp->prevInput = GetCurrInput(i);
-					}
-				}
-
-				vector<GCC::GCController> controllers;
-				if (mainMenu->gccDriverEnabled)
-					controllers = mainMenu->gccDriver->getState();
-				
-				for (int i = 0; i < 4; ++i)
-				{
-					GameController &con = GetController(i);
-					if (mainMenu->gccDriverEnabled)
-						con.gcController = controllers[i];
-					bool canControllerUpdate = con.UpdateState();
-					if (!canControllerUpdate)
-					{
-						//KeyboardUpdate( 0 );
-					}
-					else
-					{
-						con.UpdateState();
-						GetCurrInput(i) = con.GetState();
-					}
-				}
-
-				if (!cutPlayerInput)
-				{
-					for (int i = 0; i < 4; ++i)
-					{
-						UpdatePlayerInput(i);
-					}
-					//else
-				}
-
-				Actor *pTemp = NULL;
-				for (int i = 0; i < 4; ++i)
-				{
-					pTemp = GetPlayer(i);
-					if (pTemp != NULL)
-					{
-						pTemp->UpdateInHitlag();
-					}
-				}
-
-				Actor *p = NULL;
-				for( int i = 0; i < 4; ++i )
-				{
-					 p = GetPlayer( i );
-					 if( p != NULL )
-						p->flashFrames--;
-				}
-				
-				UpdateEffects(true);
-
-				cam.UpdateRumble();
-
-				fader->Update();
-				swiper->Update();
-				mainMenu->UpdateEffects();
-				
-
-				pauseFrames--;
-				
-				accumulator -= TIMESTEP;
 				continue;
 			}
-
-			if( activeSequence != NULL )// && activeSequence == startSeq )
-			{
-				State oldState = state;
-				if (!activeSequence->Update())
-				{
-					if (activeSequence->nextSeq != NULL)
-					{
-						activeSequence->nextSeq->Reset();
-						SetActiveSequence(activeSequence->nextSeq);
-					}
-					else
-					{
-						if (activeSequence == preLevelScene)
-						{
-							FreezePlayerAndEnemies(false);
-							SetPlayerInputOn(true);
-						}
-
-
-						if (activeSequence == postLevelScene)
-						{
-							goalDestroyed = true;
-						}
-
-						state = RUN;
-						activeSequence = NULL;
-					}
-				}
-				else
-				{
-					if (state != oldState)
-					{
-						switchState = true;
-						break;
-						//goto starttest;
-					}
-				}
-
-				if (state == SEQUENCE)
-				{
-
-				}
-			}
-			if( activeDialogue != NULL )
-			{
-				if( GetCurrInput( 0 ).A && !GetPrevInput( 0 ).A )
-				{
-					if( activeDialogue->ConfirmDialogue() )
-						activeDialogue = NULL;
-					//activeDialogue->
-				}
-			}
-			//else
-			{
-				//cout << "-----------updating total frames------" << endl;
-				//cout << "before count: " << CountActiveEnemies() << endl;
-				//testBuf.Send( totalGameFrames );
-				int blafah = totalGameFrames % 60;
-				float fafa = blafah / 60.f;
-				//shaderTester.Update();
-
-				totalGameFrames++;
-				for( int i = 0; i < 4; ++i )
-				{
-					p = GetPlayer( i );
-					if( p != NULL )
-						p->UpdatePrePhysics();
-				}
-
-				if (parentGame == NULL && bonusGame != NULL )
-				{
-					if (GetCurrInputUnfiltered(0).rightShoulder && 
-						!GetPrevInputUnfiltered(0).rightShoulder)
-					{
-						currSession = bonusGame;
-						for (int i = 0; i < MAX_PLAYERS; ++i)
-						{
-							p = GetPlayer(i);
-							if (p != NULL)
-							{
-								p->SetSession(bonusGame, bonusGame, NULL);
-							}
-						}
-						pauseMenu->owner = bonusGame;
-
-						bonusGame->Run();
-
-						pauseMenu->owner = this;
-						currSession = this;
-						for (int i = 0; i < MAX_PLAYERS; ++i)
-						{
-							p = GetPlayer(i);
-							if (p != NULL)
-							{
-								p->SetSession(this, this, NULL);
-								p->Respawn(); //special respawn for leaving bonus later
-							}
-						}
-
-					}
-				}
-
-				if (currStorySequence != NULL)
-				{
-					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
-					{
-						currStorySequence->EndSequence();
-						currStorySequence = NULL;
-					}
-					else
-					{
-					}
-				}
-
-				if (currBroadcast != NULL)
-				{
-					if (!currBroadcast->Update() )
-					{
-						//currStorySequence->EndSequence();
-						currBroadcast = NULL;
-					}
-					else
-					{
-					}
-				}
-
-				if (inputVis != NULL)
-					inputVis->Update(GetPlayer(0)->currInput);
-
-				if (!playerAndEnemiesFrozen)
-				{
-					UpdateEnemiesPrePhysics();
-
-					UpdateEnemiesPhysics();
-				}
-
-				RecordReplayEnemies();
-
-				if (!playerAndEnemiesFrozen)
-				{
-					for (int i = 0; i < 4; ++i)
-					{
-						p = GetPlayer(i);
-						if (p != NULL)
-							p->UpdatePostPhysics();
-					}
-				}
-
-				if( recGhost != NULL )
-					recGhost->RecordFrame();
-
-				//cout << "replaying ghost: " << repGhost->frame << endl;
-				//if( re
-				/*if( repGhost != NULL )
-					repGhost->UpdateReplaySprite();*/
-
-				for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
-				{
-					(*it)->UpdateReplaySprite();
-				}
-
-				if( goalDestroyed )
-				{
-					quit = true;
-					//returnVal = GR_WIN;
-					returnVal = resType;
-					
-					/*recGhost->StopRecording();
-					recGhost->WriteToFile( "testghost.bghst" );*/
-					break;
-				}
-
-
-				for( int i = 0; i < 4; ++i )
-				{
-					p = GetPlayer( i );
-					if( p != NULL )
-					{
-						p->UpdateWireQuads();
-					}
-				}
-
-				if (!playerAndEnemiesFrozen)
-				{
-					UpdateEnemiesPostPhysics();
-				}
-				
-				for( int i = 0; i < numGates; ++i )
-				{
-					gates[i]->Update();
-				}
-
-				absorbParticles->Update();
-				absorbDarkParticles->Update();
-				absorbShardParticles->Update();
-
-				UpdateEffects();
-				UpdateEmitters();
-
-				keyMarker->Update();
-
-				mini->Update();
-
-				mainMenu->musicPlayer->Update();
-
-				if( adventureHUD != NULL )
-					adventureHUD->Update();
-
-				scoreDisplay->Update();
-
-				soundNodeList->Update();
-
-				pauseSoundNodeList->Update();
-
-				goalPulse->Update();
-
-				if (rain != NULL)
-					rain->Update();
-
-				for (auto it = barriers.begin();
-					it != barriers.end(); ++it)
-				{
-					bool trig = (*it)->Update();
-					if (trig)
-					{
-						TriggerBarrier((*it));
-					}
-				}
-
-				oldZoom = cam.GetZoom();
-				oldCamBotLeft = view.getCenter();
-				oldCamBotLeft.x -= view.getSize().x / 2;
-				oldCamBotLeft.y += view.getSize().y / 2;
-
-				oldView = view;
-
-				if (raceFight != NULL)
-				{
-					cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-				}
-				else
-				{
-					cam.Update(GetPlayer(0));
-				}
-
-				if (gateMarkers != NULL)
-					gateMarkers->Update(&cam);
-
-				Vector2f camPos = cam.GetPos();
-
-				fader->Update();
-				swiper->Update();
-				background->Update(camPos);
-				if( topClouds != NULL )
-					topClouds->Update();
-				//rain.Update();
-
-				mainMenu->UpdateEffects();
-
-				if( raceFight != NULL )
-				{
-					raceFight->UpdateScore();
-				}
-
-				if( shipSequence )
-				{
-					float oldLeft = cloud0[0].position.x;
-					float blah = 30.f;
-					float newLeft = oldLeft - blah; //cloudVel.x;
-					float diff = ( shipStartPos.x - 480 ) - newLeft;
-					if( diff >= 480 )
-					{
-						//cout << "RESETING: " << diff << endl;
-						newLeft = shipStartPos.x - 480 - ( diff - 480 );
-					}
-					else
-					{
-						//cout << "diff: " << diff << endl;
-					}
-
-					float allDiff = newLeft - oldLeft;
-					Vector2f cl = relShipVel;
-
-					middleClouds.move( Vector2f( 0, cl.y ) );// + Vector2f( allDiff, 0 ) );
-					for( int i = 0; i < 3 * 4; ++i)
-					{
-						cloud0[i].position = cl + Vector2f( cloud0[i].position.x + allDiff, cloud0[i].position.y );
-						cloud1[i].position = cl + Vector2f( cloud1[i].position.x + allDiff, cloud1[i].position.y );
-
-						cloudBot0[i].position = cl + Vector2f( cloudBot0[i].position.x + allDiff, cloudBot0[i].position.y );
-						cloudBot1[i].position = cl + Vector2f( cloudBot1[i].position.x + allDiff, cloudBot1[i].position.y );
-
-					}
-
-					if( shipSeqFrame >= 90 && shipSeqFrame <= 180 )
-					{
-						int tFrame = shipSeqFrame - 90;
-						shipSprite.setPosition( shipSprite.getPosition() + relShipVel );
-
-						relShipVel += Vector2f( .3, -.8 );
-					}
-					else if( shipSeqFrame == 240 )//121 )
-					{
-						Actor *player = GetPlayer( 0 );
-						//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
-						player->action = Actor::JUMP;
-						player->frame = 1;
-						player->velocity = V2d( 20, 10 );
-						player->UpdateSprite();
-						shipSequence = false;
-						player->hasDoubleJump = false;
-						player->hasAirDash = false;
-						player->hasGravReverse = false;
-						drain = true;
-					}
-
-					++shipSeqFrame;
-				}
-
-				double camWidth = 960 * cam.GetZoom();
-				double camHeight = 540 * cam.GetZoom();
-				
-				screenRect = sf::Rect<double>( camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight );
-
-				UpdateGoalFlow();
-				
-				int speedLevel = p0->speedLevel;
-				float quant = 0;
-				if( speedLevel == 0 )
-				{
-					quant = (float)(p0->currentSpeedBar / p0->level1SpeedThresh);
-				}
-				else if( speedLevel == 1 )
-				{
-					quant = (float)((p0->currentSpeedBar-p0->level1SpeedThresh) / ( p0->level2SpeedThresh - p0->level1SpeedThresh) );
-				}
-				else 
-				{
-					quant = (float)((p0->currentSpeedBar-p0->level2SpeedThresh) / ( p0->maxGroundSpeed - p0->level2SpeedThresh) );
-				}
-
-				queryMode = "enemy";
-
-				sf::Rect<double> spawnRect = screenRect;
-				double spawnExtra = 600;//800
-				spawnRect.left -= spawnExtra;
-				spawnRect.width += 2 * spawnExtra;
-				spawnRect.top -= spawnExtra;
-				spawnRect.height += 2 * spawnExtra;
-
-				tempSpawnRect = spawnRect;
-				enemyTree->Query( this, spawnRect);
-				
-				EnvPlant *prevPlant = NULL;
-				EnvPlant *ev = activeEnvPlants;
-				while( ev != NULL )
-				{
-					EnvPlant *tempNext = ev->next;
-					ev->particle->Update( p0->position );
-
-					ev->frame++;
-					if( ev->frame == ev->disperseLength * ev->disperseFactor )
-					{
-						VertexArray &eva = *ev->va;
-						eva[ev->vaIndex+0].position = Vector2f(0,0);
-						eva[ev->vaIndex+1].position = Vector2f(0,0);
-						eva[ev->vaIndex+2].position = Vector2f(0,0);
-						eva[ev->vaIndex+3].position = Vector2f(0,0);
-
-						if( ev == activeEnvPlants )
-						{
-							activeEnvPlants = ev->next;
-						}
-						else
-						{
-							prevPlant->next = ev->next;
-						}
-					}
-					else
-					{
-						prevPlant = ev;
-					}
-					
-					ev = tempNext;
-				}
-
-				queryMode = "envplant";
-				envPlantTree->Query( this, screenRect );
-
-				polyQueryList = NULL;
-				queryMode = "border";
-				numBorders = 0;
-				borderTree->Query( this, screenRect );
-
-			
-
-				specialPieceList = NULL;
-				queryMode = "specialterrain";
-				specialTerrainTree->Query(this, screenRect);
-
-				flyTerrainList = NULL;
-				queryMode = "flyterrain";
-				flyTerrainTree->Query(this, screenRect);
-
-				drawInversePoly = ScreenIntersectsInversePoly( screenRect );
-
-				UpdateDecorSprites();
-				
-
-				UpdateDecorLayers();
-
-				if( raceFight != NULL )
-				{
-					if( raceFight->gameOver || GetCurrInput( 0 ).back )
-					{
-						state = RACEFIGHT_RESULTS;
-						raceFight->raceFightResultsFrame = 0;
-						raceFight->victoryScreen->Reset();
-						raceFight->victoryScreen->SetupColumns();
-						break;
-					}
-				}
-				else if( !p0->IsGoalKillAction( p0->action ) && !p0->IsExitAction(p0->action) )
-				{
-					ControllerState &currInput = GetCurrInput( 0 );
-					ControllerState &prevInput = GetPrevInput( 0 );
-					//if( IsKeyPressed( Keyboard ) )
-					if( currInput.start && !prevInput.start )
-					{
-						state = PAUSE;
-						ActivatePauseSound(GetSound("pause_on"));
-						pauseMenu->SetTab( PauseMenu::PAUSE );
-						soundNodeList->Pause( true );
-					}
-					else if( ( currInput.back && !prevInput.back ) || IsKeyPressed( Keyboard::G ) )
-					{
-						state = PAUSE;
-						pauseMenu->SetTab( PauseMenu::MAP );
-						ActivatePauseSound(GetSound("pause_on"));
-						soundNodeList->Pause( true );
-					}
-				}
-				
-				
-				
-				/*if( player->record > 0 )
-				{
-					player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
-						screenRect;
-				}*/
-			}
-			
-
-			accumulator -= TIMESTEP;
-
-			if (debugScreenRecorder != NULL)
-			{
-				break; //for recording stuff
-			}
-		}
-
-		if (switchState && state != FROZEN)
-		{
-			continue;
-		}
-
-		if( debugScreenRecorder != NULL )
-		if( IsKeyPressed( Keyboard::R ) )
-		{
-			debugScreenRecorder->StartRecording();
-			//player->maxFallSpeedSlo += maxFallSpeedFactor;
-			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
-		}
-
-		
-		
-
-
-		sf::Event ev;
-		while( window->pollEvent( ev ) )
-		{
-			if( ev.type == Event::MouseWheelMoved )
-			{
-				if( ev.mouseWheel.delta > 0 )
-				{
-					zoomMultiple /= 2;
-				}
-				else if( ev.mouseWheel.delta < 0 )
-				{
-					zoomMultiple *= 2;
-				}
-				
-				if( zoomMultiple < 1 )
-				{
-					zoomMultiple = 1;
-				}
-				else if( zoomMultiple > 65536 )
-				{
-					zoomMultiple = 65536;
-				}
-			}
-			else if( ev.type == Event::LostFocus )
-			{
-				if( state == RUN )
-					state = PAUSE;
-			}
-			else if( ev.type == sf::Event::GainedFocus )
-			{
-				//if( state == PAUSE )
-				//	state = RUN;
-			}
-		}
-		Vector2f camOffset;
-
-		Vector2f camPos = cam.GetPos();
-		view.setSize(Vector2f(1920/2 * cam.GetZoom(), 1080/2 * cam.GetZoom()));
-
-		//this is because kin's sprite is 2x size in the game as well as other stuff
-		lastViewSize = view.getSize();
-		view.setCenter( camPos.x, camPos.y );
-
-		lastViewCenter = view.getCenter();
-
-		if (hasGoal)
-		{
-			flowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
-				view.getCenter().y + view.getSize().y / 2));
-		}
-		
-		preScreenTex->setView(view);
-		background->Draw(preScreenTex);
-		
-		cloudView.setCenter( 960, 540 );
-		cloudView.setCenter( 960, 540 );	
-		preScreenTex->setView( cloudView );
-		
-		
-		preScreenTex->setView( view );
-			
-
-		UpdateEnvShaders();
-		
-		DrawTopClouds();
-
-		DrawBlackBorderQuads();
-		
-		DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
-		DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
-		DrawEffects( EffectLayer::BEHIND_TERRAIN, preScreenTex );
-		DrawEmitters(EffectLayer::BEHIND_TERRAIN);
-		
-
-		DrawZones(preScreenTex);
-
-		PolyPtr sp = specialPieceList;
-		while (sp != NULL)
-		{
-			sp->Draw(preScreenTex);
-			sp = sp->queryNext;
-		}
-
-		PolyPtr fp = flyTerrainList;
-		while (fp != NULL)
-		{
-			fp->DrawFlies(preScreenTex);
-			fp = fp->queryNext;
-		}
-
-		
-		//JUST FOR TESTING
-		int numPolys = allPolysVec.size();
-		for (int i = 0; i < numPolys; ++i)
-		{
-			allPolysVec[i]->Draw(preScreenTex);
-		}
-
-		
-		//DrawTerrainPieces(listVA);
-		
-		DrawGoalEnergy();
-
-		preScreenTex->setView(uiView);
-
-		if (adventureHUD != NULL)
-		{
-			adventureHUD->Draw(preScreenTex);
-		}
-
-		preScreenTex->setView(view);
-
-		DrawGates();
-
-		DrawRails();
-
-
-		DrawDecorBetween();
-
-		DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
-		DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
-		DrawEffects( EffectLayer::BEHIND_ENEMIES, preScreenTex);
-		DrawEmitters(EffectLayer::BEHIND_ENEMIES);
-
-		UpdateEnemiesDraw();
-		
-		if (activeSequence != NULL)
-		{
-			activeSequence->Draw(preScreenTex);
-		}
-
-		DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-		DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-		DrawEffects( EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
-		DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-
-		goalPulse->Draw( preScreenTex );
-
-		DrawPlayerWires(preScreenTex);
-		
-
-		if( shipSequence )
-		{
-			preScreenTex->draw( cloud1, ts_w1ShipClouds1->texture );
-			preScreenTex->draw( cloud0, ts_w1ShipClouds0->texture );
-			preScreenTex->draw( middleClouds );
-			preScreenTex->draw( cloudBot1, ts_w1ShipClouds1->texture );
-			preScreenTex->draw( cloudBot0, ts_w1ShipClouds0->texture );
-			preScreenTex->draw( shipSprite );
-		}
-
-		DrawHitEnemies(); //whited out hit enemies
-
-		absorbParticles->Draw(preScreenTex);
-		absorbDarkParticles->Draw(preScreenTex);
-
-		DrawPlayers(preScreenTex);
-		
-		absorbShardParticles->Draw(preScreenTex);
-		
-		DrawReplayGhosts();
-		
-		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
-		DrawEmitters(EffectLayer::IN_FRONT);
-		DrawStoryLayer(EffectLayer::IN_FRONT);
-		DrawActiveSequence(EffectLayer::IN_FRONT);
-		
-		DrawBullets(preScreenTex);
-
-		rainView.setCenter( (int)view.getCenter().x % 64, (int)view.getCenter().y % 64 );
-		rainView.setSize( view.getSize() );
-		preScreenTex->setView( rainView );
-
-		if (rain != NULL)
-			rain->Draw(preScreenTex);
-
-		preScreenTex->setView( view );
-
-		//DrawActiveEnvPlants();
-
-		UpdateDebugModifiers();
-
-		DebugDraw();
-		
-
-		if( false )
-		{
-			Sprite blah;
-			blah.setTexture( preScreenTex->getTexture() );
-			postProcessTex2->draw( blah );
-			//postProcessTex2->clear( Color::Red );
-			postProcessTex2->display();
-
-
-
-			Vector2f shockSize( 580/2, 580/2 );
-			sf::RectangleShape rectPost( shockSize );
-			rectPost.setOrigin( rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2 );
-			rectPost.setPosition( p0->position.x, p0->position.y ); //testing for now
-
-			Sprite shockSprite;
-			shockSprite.setTexture( shockwaveTex );
-			shockSprite.setOrigin( shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2 );
-			shockSprite.setPosition( p0->position.x, p0->position.y );
-			//rectPost.setPosition( 0, 0 );
-
-			Vector2f botLeft( view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y );
-
-			shockwaveShader.setUniform( "underTex", postProcessTex2->getTexture() );
-			shockwaveShader.setUniform( "shockSize", Vector2f( 580, 580 ) );
-			shockwaveShader.setUniform( "botLeft", Vector2f( rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x, 
-				rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y ) );
-			shockwaveShader.setUniform( "zoom", cam.GetZoom() );
-			//preScreenTex->draw( shockSprite );
-
-			shockSprite.setScale( (1. / 60.) * shockTestFrame, (1. / 60.) * shockTestFrame );
-			preScreenTex->draw( shockSprite, &shockwaveShader );
-
-
-			shockTestFrame++;
-			if( shockTestFrame == 60 )
-			{
-				shockTestFrame = 0;
-			}
-			//postProcessTex2->draw( rectPost, &shockwaveShader );
-			//postProcessTex2->display();
-
-			//sf::Sprite pptSpr;
-			//pptSpr.setTexture( postProcessTex2->getTexture() );
-			//preScreenTex->draw( pptSpr );
-		}
-
-
-		preScreenTex->setView( uiView );
-
-
-
-		if( raceFight != NULL )
-		{
-			raceFight->DrawScore( preScreenTex );
-		}
-	
-		/*if (adventureHUD != NULL)
-		{
-			adventureHUD->Draw(preScreenTex);
-		}*/
-
-		scoreDisplay->Draw(preScreenTex);
-
-		if( showFrameRate )
-		{
-			preScreenTex->draw( frameRate );
-		}
-		
-		if (showRunningTimer && !scoreDisplay->active)
-		{
-			preScreenTex->draw(runningTimerText);
-		}
-
-		if (inputVis != NULL)
-			inputVis->Draw(preScreenTex);
-
-		if( gateMarkers != NULL )
-			gateMarkers->Draw(preScreenTex);
-
-		preScreenTex->setView( view );
-		
-
-		DrawDyingPlayers();
-		
-		UpdateTimeSlowShader();
-
-		if (currBroadcast != NULL)
-		{
-			preScreenTex->setView(uiView);
-			currBroadcast->Draw(preScreenTex);
-		}
-
-		DrawActiveSequence(EffectLayer::UI_FRONT);
-		DrawEffects(EffectLayer::UI_FRONT, preScreenTex);
-		DrawEmitters(EffectLayer::UI_FRONT);
-
-		preScreenTex->setView(uiView);
-
-		//absorbDarkParticles->Draw(preScreenTex);
-
-		//absorbShardParticles->Draw(preScreenTex);
-		
-		fader->Draw(preScreenTex);
-		swiper->Draw(preScreenTex);
-
-		mainMenu->DrawEffects(preScreenTex);
-
-		preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
-		if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()) )//IsFading()) //adjust later?
-		{
-			DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
-			for (int i = 0; i < 4; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					//if (p->action == Actor::DEATH)
-					{
-						p->Draw(preScreenTex);
-					}
-				}
-			}
-		}
-
-		preScreenTex->display();
-
-		const Texture &preTex0 = preScreenTex->getTexture();
-		Sprite preTexSprite(preTex0);
-		preTexSprite.setPosition(-960 / 2, -540 / 2);
-		preTexSprite.setScale(.5, .5);
-		preTexSprite.setTexture( preTex0 );
-		
-		if (debugScreenRecorder != NULL)
-			debugScreenRecorder->Update(preTex0);
-
-		window->draw( preTexSprite );//, &cloneShader );
-		
 		}
 		else if( state == FROZEN )
 		{
@@ -3765,7 +3629,6 @@ int GameSession::Run()
 			preTexSprite.setScale( .5, .5 );
 			window->draw( preTexSprite );
 
-			
 			accumulator += frameTime;
 
 			while ( accumulator >= TIMESTEP  )
@@ -3808,25 +3671,6 @@ int GameSession::Run()
 			borderTree->Query( this, mapRect );
 
 			DrawColoredMapTerrain(mapTex, Color(Color::Green));
-
-			/*Color testColor( 0x75, 0x70, 0x90, 191 );
-			testColor = Color::Green;
-			TerrainPiece * listVAIter = listVA;
-			while( listVAIter != NULL )
-			{
-				int vertexCount = listVAIter->terrainVA->getVertexCount();
-				for( int i = 0; i < vertexCount; ++i )
-				{
-					(*listVAIter->terrainVA)[i].color = testColor;
-				}
-				mapTex->draw( *listVAIter->terrainVA );
-				for( int i = 0; i < vertexCount; ++i )
-				{
-					(*listVAIter->terrainVA)[i].color = Color::White;
-				}
-
-				listVAIter = listVAIter->next;
-			}*/
 
 			testGateCount = 0;
 			queryMode = "gate";
@@ -3890,28 +3734,14 @@ int GameSession::Run()
 			realPosGoal.x = floor( realPosGoal.x + .5f );
 			realPosGoal.y = floor( realPosGoal.y + .5f );
 
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-
-
-
-			//goalMapIcon.setPosition( realPosGoal );
-			//mapTex->draw( goalMapIcon );
-
-
-			//mapTex->clear();
 			Sprite mapTexSprite;
 			mapTexSprite.setTexture( mapTex->getTexture() );
 			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
 			mapTexSprite.setPosition( 0, 0 );
-			
-			//window->setView( bigV );
 
-			//mapTexSprite.setScale( .5, -.5 );
 			mapTexSprite.setScale( .5, -.5 );
-			cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
-			//mapTexSprite.setColor( Color::Red );
+			//cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
 			window->draw( mapTexSprite );
-
 		}
 		else if( state == RACEFIGHT_RESULTS )
 		{
@@ -4048,7 +3878,7 @@ int GameSession::Run()
 
 			if (showFrameRate)
 			{
-				preScreenTex->draw(frameRate);
+				preScreenTex->draw(frameRateText);
 			}
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
@@ -4155,7 +3985,7 @@ int GameSession::Run()
 
 			if (showFrameRate)
 			{
-				preScreenTex->draw(frameRate);
+				preScreenTex->draw(frameRateText);
 			}
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
@@ -4222,7 +4052,7 @@ int GameSession::Run()
 					gameClock.restart();
 					currentTime = 0;
 					accumulator = TIMESTEP + .1;
-					frameCounter = 0;
+					frameRateCounter = 0;
 					//soundNodeList->Pause( false );
 					//kill sounds on respawn
 					break;
@@ -7300,6 +7130,9 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 {
 	target->draw(quads,	numVertices, sf::Quads, ts->texture);
 }
+
+
+
 
 //void GameSession::LoadEnemy(std::ifstream &is )
 //{

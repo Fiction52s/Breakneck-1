@@ -2148,10 +2148,13 @@ void Session::UpdateControllers()
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 
-		p = GetPlayer(i);
-		if (p != NULL)
+		if (!cutPlayerInput)
 		{
-			p->prevInput = GetCurrInput(i);
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->prevInput = GetCurrInput(i);
+			}
 		}
 
 		GameController &con = GetController(i);
@@ -3385,4 +3388,47 @@ void Session::CleanupGates()
 		delete (*it);
 	}
 	gates.clear();
+}
+
+void Session::UpdateGates()
+{
+	for (int i = 0; i < numGates; ++i)
+	{
+		gates[i]->Update();
+	}
+}
+
+void Session::UpdatePlayersInHitlag()
+{
+	Actor *pTemp = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		pTemp = GetPlayer(i);
+		if (pTemp != NULL)
+		{
+			pTemp->UpdateInHitlag();
+		}
+	}
+}
+
+void Session::UpdatePlayersPrePhysics()
+{
+	Actor *pTemp = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		pTemp = GetPlayer(i);
+		if (pTemp != NULL)
+			pTemp->UpdatePrePhysics();
+	}
+}
+
+void Session::UpdatePlayersPostPhysics()
+{
+	Actor *pTemp = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		pTemp = GetPlayer(i);
+		if (pTemp != NULL)
+			pTemp ->UpdatePostPhysics();
+	}
 }

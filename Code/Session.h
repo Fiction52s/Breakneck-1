@@ -343,6 +343,10 @@ struct Session : TilesetManager
 	void SetPlayerInputOn(bool on);
 	void UpdateDecorLayers();
 	void SetParentGame(GameSession *session);
+	void UpdateGates();
+	void UpdatePlayersInHitlag();
+	void UpdatePlayersPrePhysics();
+	void UpdatePlayersPostPhysics();
 };
 
 #endif

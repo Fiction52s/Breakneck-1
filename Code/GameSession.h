@@ -514,6 +514,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<AirTrigger*> fullAirTriggerList;
 	bool nextFrameRestart;
 	bool showTerrainDecor;
+	bool showRunningTimer;
+	bool showFrameRate;
+	int frameRateCounter;
+	int frameRateCounterWait;
+	double frameRateTimeTotal;
+	sf::Text frameRateText;
+	sf::Text runningTimerText;
+	bool switchState;
+	int returnVal;
+	sf::View rainView;
 
 	static int IsFlatGround(sf::Vector2<double> &normal);
 	static int IsSlopedGround(sf::Vector2<double> &normal);
@@ -664,7 +674,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void TriggerBarrier( Barrier *b );
 	void RemoveAllEnemies();
 	void UpdateEnemiesPrePhysics();
-	void UpdateEnemiesPhysics();
+	void UpdatePhysics();
 	void UpdateEnemiesPostPhysics();
 	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
@@ -701,5 +711,17 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool IsWithinCurrentBounds(V2d &p);
 	void QueryBorderTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
+	void UpdateFrameRateCounterText( double frameTime );
+	void UpdateRunningTimerText();
+	bool RunModeUpdate( double frameTime );
+	void ActiveSequenceUpdate();
+	void ActiveDialogueUpdate();
+	void ActiveStorySequenceUpdate();
+	void ActiveBroadcastUpdate();
+	void HitlagUpdate();
+	void TryToActivateBonus();
+	void UpdateReplayGhostSprites();
+	void UpdateBarriers();
+
 };
 #endif

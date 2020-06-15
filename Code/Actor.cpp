@@ -15566,6 +15566,8 @@ void Actor::UpdateInHitlag()
 				pauseBufferedDash = true;
 		}
 	}	
+
+	--flashFrames;
 }
 
  pair<bool, bool> Actor::PlayerHitMe( int otherPlayerIndex )
