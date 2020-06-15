@@ -259,13 +259,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		Count
 	};
 	
-	ZoneNode *zoneTree;
-	ZoneNode *currentZoneNode;
-	Zone *zoneTreeStart;
-	Zone *zoneTreeEnd;
 
-
-	//new stuff from session
 
 	void ProcessHeader();
 	void ProcessDecorSpr(const std::string &name,
@@ -294,7 +288,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	PolyPtr inversePoly;
 	std::list<PolyPtr> allPolygonsList;
-	std::vector<PolyPtr> allPolysVec;
+	
 	std::map<std::string, std::list<DecorInfo>> decorListMap;
 	//---------------------
 
@@ -403,7 +397,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void Init();
 	void Cleanup();
 
-	GateMarkerGroup *gateMarkers;
+	
 
 	void RestartLevel();
 	void NextFrameRestartLevel();
@@ -532,9 +526,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	};
 
 	void CollectKey();
-	KeyMarker *keyMarker;
+	
 	std::list<KeyNumberObj*> keyNumberObjects;
-	std::list<ZonePropertiesObj*> zoneObjects;
+	
 	int numKeysCollected;
 	void SuppressEnemyKeys(Gate *g);
 	
@@ -579,16 +573,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void DrawGoalEnergy();
 
 	
-	void DrawZones();
-	void CreateZones();
-	void SetupZones();
-	void ActivateZone(Zone * z, bool instant = false);
-
-	Zone *activatedZoneList;
-	std::list<Zone*> zones;
-	Zone *currentZone;
 	
-	Zone *originalZone;
 
 	void DrawActiveEnvPlants();
 	void DrawHitEnemies();
@@ -651,7 +636,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<Barrier*> barriers;
 	void TriggerBarrier( Barrier *b );
 	
-	std::list<Enemy*> fullEnemyList;
 	void RemoveAllEnemies();
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
@@ -712,8 +696,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//sf::Vector2<double> *points;
 
 	void DrawGates();
-	int numGates;
-	std::vector<Gate*> gates;
+
 	int testGateCount;
 	Gate *gateList;
 	void SoftenGates(int gCat);
@@ -751,7 +734,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void UpdateInput();
 	void KeyboardUpdate( int index );
 	
-	void CloseOffLimitZones();
+	
 
 	Collider coll;
 	
@@ -820,8 +803,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void SetupPlayers();
 
-	void SetupKeyMarker();
-
 	void SetupShardsCapturedField();
 
 	void SetupShaders();
@@ -847,7 +828,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	void SetupEnergyFlow();
 
-	void SetupGateMarkers();
+	
 
 	sf::VertexArray *SetupBushes( int bgLayer,
 		Edge *startEdge, Tileset *ts );

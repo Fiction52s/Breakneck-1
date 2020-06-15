@@ -22,8 +22,8 @@ using namespace std;
 
 
 
-Zone::Zone( GameSession *p_owner, TerrainPolygon &tp )
-	:active( false ), owner( p_owner )
+Zone::Zone( TerrainPolygon &tp )
+	:active( false )
 {
 	secretZone = false;
 	reexplored = false;
@@ -108,6 +108,8 @@ void Zone::Init()
 	list<Zone*> possibleSubs = subZones;
 
 	list<list<Zone*>> groupedZones;
+
+	Session *sess = Session::GetSession();
 
 	bool visibleZone = false;
 	if (gates.empty() || action == OPEN )
@@ -297,7 +299,7 @@ void Zone::Init()
 				cout << "zone shader not loading correctly!" << endl;
 				assert(false);
 			}
-			ts_z = owner->GetTileset("terrain_1_01_512x512.png", 512, 512);
+			ts_z = sess->GetTileset("terrain_1_01_512x512.png", 512, 512);
 			zShader->setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
 			zShader->setUniform("Resolution", Vector2f(1920, 1080));
 			zShader->setUniform("u_texture", ts_z->texture);
@@ -621,11 +623,11 @@ ZoneNode::~ZoneNode()
 
 bool ZoneNode::SetZone(Zone *p_myZone)
 {
-	GameSession *owner = GameSession::GetSession();
+	Session *sess = Session::GetSession();
 
 	myZone = p_myZone;
 
-	if (myZone == owner->zoneTreeEnd)
+	if (myZone == sess->zoneTreeEnd)
 	{
 		return true;
 	}

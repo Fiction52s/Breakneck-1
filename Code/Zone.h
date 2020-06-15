@@ -28,7 +28,7 @@ struct ZoneNode
 
 struct Zone
 {
-	Zone( GameSession *owner, TerrainPolygon & tp );
+	Zone( TerrainPolygon & tp );
 	~Zone();
 	
 	void Init();
@@ -99,7 +99,6 @@ struct Zone
 	//int connectedCount;
 
 	bool showShadow;
-	GameSession *owner;
 	Zone *activeNext;
 
 	Zone *parentZone;

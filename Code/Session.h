@@ -40,6 +40,13 @@ struct Enemy;
 
 struct GameSession;
 
+struct ZoneNode;
+struct Zone;
+struct ZonePropertiesObj;
+
+struct GateMarkerGroup;
+struct KeyMarker;
+struct Gate;
 
 struct Session : TilesetManager
 {
@@ -50,6 +57,34 @@ struct Session : TilesetManager
 		SESS_GAME,
 		SESS_EDIT,
 	};
+
+	int numGates;
+	std::vector<Gate*> gates;
+	std::vector<PolyPtr> allPolysVec;
+
+	std::list<Enemy*> fullEnemyList;
+	GateMarkerGroup *gateMarkers;
+	KeyMarker *keyMarker;
+
+	ZoneNode *zoneTree;
+	ZoneNode *currentZoneNode;
+	Zone *zoneTreeStart;
+	Zone *zoneTreeEnd;
+	Zone *activatedZoneList;
+	Zone *currentZone;
+	Zone *originalZone;
+	std::list<Zone*> zones;
+	std::list<ZonePropertiesObj*> zoneObjects;
+
+	void CleanupGates();
+	void SetupGateMarkers();
+	void SetupKeyMarker();
+	void CloseOffLimitZones();
+	void CleanupZones();
+	void DrawZones( sf::RenderTarget *target );
+	void CreateZones();
+	void SetupZones();
+	void ActivateZone(Zone * z, bool instant = false);
 
 	BitField playerOptionsField;
 

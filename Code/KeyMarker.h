@@ -3,7 +3,7 @@
 
 #include <SFML/Graphics.hpp>
 
-struct GameSession;
+struct Session;
 struct Zone;
 struct Tileset;
 struct ImageText;
@@ -20,8 +20,8 @@ struct KeyMarker
 	Action action;
 	int frame;
 	void VibrateNumbers();
-	GameSession *owner;
-	KeyMarker( GameSession *owner );
+	Session *sess;
+	KeyMarker();
 	~KeyMarker();
 	void Reset();
 	void SetStartKeys( int neededKeys,

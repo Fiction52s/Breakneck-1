@@ -11,6 +11,9 @@
 #include "Background.h"
 #include "HitboxManager.h"
 #include "Enemy_BasicEffect.h"
+#include "GateMarker.h"
+#include "KeyMarker.h"
+#include "Gate.h"
 
 //#include "Enemy_Shard.h"
 
@@ -1228,6 +1231,16 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	numGates = 0;
+
+	zoneTree = NULL;
+	currentZoneNode = NULL;
+	zoneTreeStart = NULL;
+	zoneTreeEnd = NULL;
+	currentZone = NULL;
+	originalZone = NULL;
+	activatedZoneList = NULL;
+
 	parentGame = NULL;
 
 	sessType = p_sessType;
@@ -1424,6 +1437,9 @@ Session::~Session()
 	{
 		delete(*it).second;
 	}
+
+	CleanupZones();
+	CleanupGates();
 }
 
 void Session::UpdateDecorLayers()
@@ -2318,4 +2334,1055 @@ bool Session::OneFrameModeUpdate()
 	}
 
 	return true;
+}
+
+void Session::CleanupZones()
+{
+	if (zoneTree != NULL)
+	{
+		delete zoneTree;
+		zoneTree = NULL;
+	}
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		delete (*it);
+	}
+	zones.clear();
+}
+
+void Session::DrawZones(sf::RenderTarget *target)
+{
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+}
+
+void Session::CreateZones()
+{
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+		if (!g->IsZoneType())
+		{
+			//UnlockGate(g);
+		}
+	}
+	//OpenGates(Gate::CRAWLER_UNLOCK);
+	//no gates, no zones!
+
+
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+
+		if (!g->IsZoneType())
+		{
+			continue;
+		}
+		//cout << "gate index: " << i << ", a: " << g->edgeA->v0.x << ", " << g->edgeA->v0.y << ", b: "
+		//	<< g->edgeA->v1.x << ", " << g->edgeA->v1.y << endl;
+
+		Edge *curr = g->edgeA;
+
+		TerrainPolygon tp;
+		V2d v0 = curr->v0;
+		V2d v1 = curr->v1;
+		list<Edge*> currGates;
+		list<Gate*> ignoreGates;
+
+		currGates.push_back(curr);
+
+
+		tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+		curr = curr->edge1;
+		while (true)
+		{
+			if (curr->v0 == g->edgeA->v0)//curr == g->edgeA )
+			{
+				//we found a zone!
+
+				if (!tp.IsClockwise())
+				{
+					//cout << "found a zone aaa!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
+					bool okayZone = true;
+
+
+					for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
+					{
+						for (list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
+						{
+							for (list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
+							{
+								if ((*cit) == (*git))
+								{
+									okayZone = false;
+								}
+							}
+							//for( list<Gate*>::iterator git =
+
+						}
+					}
+
+					if (okayZone)
+					{
+						Zone *z = new Zone(tp);
+						z->gates = currGates;
+						zones.push_back(z);
+						//	cout << "creating a zone with " << currGates.size() << " gatesAAA" << endl;
+						//	cout << "actually creating a new zone   1! with " << z->gates.size() << endl;
+					}
+
+
+				}
+				else
+				{
+					//cout << "woulda been a zone" << endl;
+				}
+
+				break;
+			}
+			else if (curr == g->edgeB)
+			{
+				//currGates.push_back( curr );
+				//cout << "not a zone even" << endl;
+				break;
+			}
+
+
+			tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+			if (curr->edgeType == Edge::CLOSED_GATE)
+			{
+				Gate *thisGate = (Gate*)curr->info;
+				//this loop is so both sides of a gate can't be hit in the same zone
+				bool okayGate = true;
+				bool quitLoop = false;
+				for (list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it)
+				{
+					Gate *otherGate = (Gate*)(*it)->info;
+
+
+					if (otherGate == thisGate)
+					{
+						//currGates.erase( it );
+						okayGate = false;
+						break;
+					}
+				}
+
+				if (!okayGate)
+				{
+					currGates.push_back(curr);
+					Edge *cc = curr->edge0;
+
+					tp.RemoveLastPoint();
+					//TerrainPoint *tempPoint = NULL;
+					//TerrainPoint *tempPoint = tp.pointEnd;
+					//tp.RemovePoint( tempPoint );
+					//delete tempPoint;
+					//cout << "removing from a( " << g << " ) start: " << tp.numPoints << endl;
+
+					while (true)
+					{
+						if (cc->edgeType == Edge::CLOSED_GATE)
+						{
+							Gate *ccGate = (Gate*)cc->info;
+							if (ccGate == thisGate)
+								break;
+							else
+							{
+								bool foundIgnore = false;
+								for (list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it)
+								{
+									if ((*it) == ccGate)
+									{
+										foundIgnore = true;
+										break;
+									}
+								}
+
+								if (foundIgnore)
+								{
+									Edge *temp = cc->edge1;
+									ccGate->SetLocked(false);
+									cc = temp->edge0;
+									ccGate->SetLocked(true);
+									continue;
+								}
+							}
+						}
+
+
+						if (true)
+							//if( tp.pointStart != NULL )
+						{
+							tp.RemoveLastPoint();
+
+							//if( tp.pointStart == tp.pointEnd )
+							if (tp.GetNumPoints() == 0)
+							{
+								quitLoop = true;
+								break;
+							}
+						}
+						else
+						{
+							quitLoop = true;
+							break;
+						}
+
+						cc = cc->edge0;
+					}
+
+					if (quitLoop)
+					{
+						//cout << "quitloop a" << endl;
+						break;
+					}
+
+					Edge *pr = cc->edge0;
+					thisGate->SetLocked(false);
+					curr = pr->edge1->edge1;
+					ignoreGates.push_back(thisGate);
+					thisGate->SetLocked(true);
+
+					//cout << "GATE IS NOT OKAY A: " << tp.numPoints << endl;
+					//break;
+					continue;
+				}
+				else
+				{
+					//cout << "found another gate AA: " <<  << endl;
+				}
+
+				//cout << "found another gate AA" << endl;
+				currGates.push_back(curr);
+			}
+			else
+			{
+
+			}
+			curr = curr->edge1;
+		}
+
+
+		currGates.clear();
+		ignoreGates.clear();
+
+		curr = g->edgeB;
+
+
+		currGates.push_back(curr);
+
+
+		TerrainPolygon tpb;
+
+		tpb.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+		curr = curr->edge1;
+		while (true)
+		{
+			if (curr->v0 == g->edgeB->v0)//curr == g->edgeB )
+			{
+				//we found a zone!
+
+				if (!tpb.IsClockwise())
+				{
+					//cout << "found a zone bbb!!! checking last " << zones.size() << " zones. gates: " << currGates.size() << endl;
+					bool okayZone = true;
+					for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end() && okayZone; ++zit)
+					{
+						for (list<Edge*>::iterator cit = currGates.begin(); cit != currGates.end() && okayZone; ++cit)
+						{
+							for (list<Edge*>::iterator git = (*zit)->gates.begin(); git != (*zit)->gates.end(); ++git)
+							{
+								if ((*cit) == (*git))
+								{
+									okayZone = false;
+								}
+							}
+							//for( list<Gate*>::iterator git =
+
+						}
+					}
+
+					if (okayZone)
+					{
+						Zone *z = new Zone(tpb);
+						//cout << "creating a zone with " << currGates.size() << " gatesBBB" << endl;
+						z->gates = currGates;
+						zones.push_back(z);
+						//cout << "actually creating a new zone   2! with " << z->gates.size() << endl;
+					}
+
+
+				}
+				else
+				{
+					//cout << "woulda been a zone" << endl;
+				}
+
+				break;
+			}
+			else if (curr == g->edgeA)
+			{
+				//currGates.push_back( curr );
+				//cout << "not a zone even b" << endl;
+				break;
+			}
+
+
+			tpb.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+			if (curr->edgeType == Edge::CLOSED_GATE)
+			{
+				bool quitLoop = false;
+				bool okayGate = true;
+				Gate *thisGate = (Gate*)curr->info;
+				for (list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it)
+				{
+					Gate *otherGate = (Gate*)(*it)->info;
+
+
+					if (otherGate == thisGate)
+					{
+						okayGate = false;
+						break;
+					}
+				}
+
+				if (!okayGate)
+				{
+					currGates.push_back(curr);
+
+					tpb.RemoveLastPoint();
+
+					Edge *cc = curr->edge0;
+
+					while (true)
+					{
+						if (cc->edgeType == Edge::CLOSED_GATE)
+						{
+
+							Gate *ccGate = (Gate*)cc->info;
+							if (ccGate == thisGate)
+								break;
+							else
+							{
+								bool foundIgnore = false;
+								for (list<Gate*>::iterator it = ignoreGates.begin(); it != ignoreGates.end(); ++it)
+								{
+									if ((*it) == ccGate)
+									{
+										foundIgnore = true;
+										break;
+									}
+								}
+
+								if (foundIgnore)
+								{
+									Edge *temp = cc->edge1;
+									ccGate->SetLocked(false);
+									cc = temp->edge0;
+									ccGate->SetLocked(true);
+									continue;
+								}
+								//for( list<Edge*>::iterator it = currGates.begin(); it != currGates.end(); ++it )
+								//{
+								//	//Gate *otherGate = (Gate*)(*it)->info;
+
+								//	if( 
+								//	//if( otherGate == thisGate )
+								//	//{
+								//	//	okayGate = false;
+								//	//	break;
+								//	//}
+								//}
+							}
+						}
+
+						if (true)
+						{
+							tpb.RemoveLastPoint();
+							//if( tpb.pointStart == tpb.pointEnd )
+							if (tpb.GetNumPoints() == 0)
+							{
+								quitLoop = true;
+								break;
+							}
+
+						}
+						else
+						{
+							quitLoop = true;
+							break;
+						}
+
+
+						cc = cc->edge0;
+
+
+
+					}
+
+					if (quitLoop)
+					{
+						//cout << "quitloop b" << endl;
+						break;
+					}
+
+					Edge *pr = cc->edge0;
+					thisGate->SetLocked(false);
+					curr = pr->edge1->edge1;
+					ignoreGates.push_back(thisGate);
+					thisGate->SetLocked(true);
+					continue;
+				}
+				else
+				{
+				}
+
+
+				currGates.push_back(curr);
+			}
+
+			curr = curr->edge1;
+		}
+	}
+
+
+
+	for (int i = 0; i < numGates; ++i)
+	{
+		if (!gates[i]->IsZoneType())
+		{
+			continue;
+		}
+		//gates[i]->SetLocked( true );
+		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		{
+			//cout << "setting gates in zone: " << (*it) << " which has " << (*it)->gates.size() << " gates " << endl;
+			//cout << i << ", it gates: " << (*it)->gates.size() << endl;
+			for (list<Edge*>::iterator eit = (*it)->gates.begin(); eit != (*it)->gates.end(); ++eit)
+			{
+				if (gates[i]->edgeA == (*eit))
+				{
+					//	cout << "gate: " << gates[i] << ", gate zone a: " << (*it ) << endl;
+					gates[i]->zoneA = (*it);
+					//done++;
+				}
+				else if (gates[i]->edgeB == (*eit))
+				{
+					//	cout << "gate: " << gates[i] << ", gate zone B: " << (*it ) << endl;
+					//cout << "gate zone B: " << (*it ) << endl;
+					gates[i]->zoneB = (*it);
+					//done++;
+				}
+			}
+		}
+	}
+
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		{
+			if ((*it) == (*it2))
+				continue;
+
+			if ((*it)->ContainsZone((*it2)))
+			{
+				//cout << "contains zone!" << endl;
+				(*it)->subZones.push_back((*it2));
+			}
+		}
+	}
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
+			it2 != (*it)->subZones.end(); ++it2)
+		{
+			if ((*it)->ContainsZoneMostSpecific((*it2)))
+			{
+				(*it2)->parentZone = (*it);
+			}
+		}
+	}
+	//list<Gate*> ;
+	list<Edge*> outsideGates;
+
+	int numOutsideGates = 0;
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+		if (!g->IsZoneType())
+		{
+			continue;
+		}
+		if (g->zoneA == NULL && g->zoneB == NULL)
+		{
+			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+			{
+				if ((*zit)->ContainsPoint(g->edgeA->v0))
+				{
+					g->zoneA = (*zit);
+					g->zoneB = (*zit);
+				}
+			}
+		}
+		else if (g->zoneA == NULL)
+		{
+			if (g->zoneB->parentZone != NULL)
+			{
+				g->zoneA = g->zoneB->parentZone;
+				g->zoneA->gates.push_back(g->edgeA);
+			}
+			else
+			{
+				outsideGates.push_back(g->edgeA);
+				numOutsideGates++;
+			}
+		}
+		else if (g->zoneB == NULL)
+		{
+			if (g->zoneA->parentZone != NULL)
+			{
+				g->zoneB = g->zoneA->parentZone;
+				g->zoneB->gates.push_back(g->edgeB);
+			}
+			else
+			{
+				outsideGates.push_back(g->edgeB);
+				numOutsideGates++;
+			}
+		}
+	}
+
+	if (numOutsideGates > 0)
+	{
+		//assert(inverseEdgeTree != NULL);
+
+		TerrainPolygon tp;
+		Edge *startEdge = allPolysVec[0]->GetEdge(0);
+		Edge *curr = startEdge;
+
+		tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+		curr = curr->edge1;
+
+		while (curr != startEdge)
+		{
+			tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
+
+			curr = curr->edge1;
+		}
+
+		tp.FixWinding();
+
+		Zone *z = new Zone(tp);
+		z->gates = outsideGates;
+		zones.push_back(z);
+
+		for (list<Edge*>::iterator it = outsideGates.begin(); it != outsideGates.end(); ++it)
+		{
+			Gate *g = (Gate*)(*it)->info;
+			if (g->zoneA == NULL)
+			{
+				g->zoneA = z;
+			}
+
+			if (g->zoneB == NULL)
+			{
+				g->zoneB = z;
+			}
+
+		}
+
+
+		for (list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2)
+		{
+			if (z == (*it2))
+				continue;
+
+			if (z->ContainsZone((*it2)))
+			{
+				//cout << "contains zone!" << endl;
+				z->subZones.push_back((*it2));
+			}
+		}
+
+
+
+		for (list<Zone*>::iterator it2 = z->subZones.begin();
+			it2 != z->subZones.end(); ++it2)
+		{
+			if (z->ContainsZoneMostSpecific((*it2)))
+			{
+				(*it2)->parentZone = z;
+			}
+		}
+
+		//TerrainPolygon tp( NULL );
+
+	}
+
+	for (int i = 0; i < numGates; ++i)
+	{
+		Gate *g = gates[i];
+		if (!g->IsZoneType())
+		{
+			//LockGate(g);
+		}
+	}
+}
+
+void Session::SetupZones()
+{
+	if (zones.size() == 0)
+		return;
+	//cout << "setupzones" << endl;
+	//setup subzones
+	//for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
+	//{
+	//	for( list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2 )
+	//	{
+	//		if( (*it) == (*it2) ) 
+	//			continue;
+
+	//		if( (*it)->ContainsZone( (*it2) ) )
+	//		{
+	//			//cout << "contains zone!" << endl;
+	//			(*it)->subZones.push_back( (*it2) );
+	//		}
+	//	}
+	//}
+
+	//for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	//{
+	//	for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
+	//		it2 != (*it)->subZones.end(); ++it2)
+	//	{
+	//		if ((*it)->ContainsZoneMostSpecific((*it2)))
+	//		{
+	//			(*it2)->parentZone = (*it);
+	//		}
+	//	}
+	//}
+
+
+	//	cout << "1" << endl;
+	//add enemies to the correct zone.
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+		{
+			bool hasPoint = (*zit)->ContainsPoint((*it)->GetPosition());
+			if (hasPoint)
+			{
+				bool mostSpecific = true;
+				for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+				{
+					if ((*zit2)->ContainsPoint((*it)->GetPosition()))
+					{
+						mostSpecific = false;
+						break;
+					}
+				}
+
+				if (mostSpecific)
+				{
+					(*it)->SetZone((*zit));
+				}
+			}
+		}
+
+		if ((*it)->zone != NULL)
+			(*it)->zone->allEnemies.push_back((*it));
+	}
+
+	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	{
+		int numTotalKeys = 0;
+		for (auto it = (*zit)->allEnemies.begin(); it != (*zit)->allEnemies.end(); ++it)
+		{
+			if ((*it)->hasMonitor)
+			{
+				++numTotalKeys;
+			}
+		}
+	}
+
+	//set key number objects correctly
+	for (auto it = zoneObjects.begin(); it != zoneObjects.end(); ++it)
+	{
+		Zone *assignZone = NULL;
+		V2d cPos((*it)->pos.x, (*it)->pos.y);
+		for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+		{
+			bool hasPoint = (*zit)->ContainsPoint(cPos);
+			if (hasPoint)
+			{
+				bool mostSpecific = true;
+				for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+				{
+					if ((*zit2)->ContainsPoint(cPos))
+					{
+						mostSpecific = false;
+						break;
+					}
+				}
+
+				if (mostSpecific)
+				{
+					assignZone = (*zit);
+				}
+			}
+		}
+
+		if (assignZone != NULL)
+		{
+			if ((*it)->zoneType > 0)
+				assignZone->SetZoneType((*it)->zoneType);
+		}
+
+		delete (*it);
+	}
+
+	zoneObjects.clear();
+
+
+
+	cout << "2" << endl;
+	//which zone is the player in?
+	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
+	{
+		//Vector2i truePos = Vector2i( player->position.x, player->position.y );
+		bool hasPoint = (*zit)->ContainsPoint(GetPlayer(0)->position);
+		if (hasPoint)
+		{
+			bool mostSpecific = true;
+			for (list<Zone*>::iterator zit2 = (*zit)->subZones.begin(); zit2 != (*zit)->subZones.end(); ++zit2)
+			{
+				if ((*zit2)->ContainsPoint(GetPlayer(0)->position))
+				{
+					mostSpecific = false;
+					break;
+				}
+			}
+
+			if (mostSpecific)
+			{
+				originalZone = (*zit);
+			}
+		}
+	}
+
+
+
+
+	if (originalZone != NULL)
+	{
+		//cout << "setting original zone to active: " << originalZone << endl;
+		ActivateZone(originalZone, true);
+		keyMarker->Reset();
+	}
+
+
+
+	//std::vector<Zone*> zoneVec(zones.size());
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->hasGoal = false;
+	}
+
+	bool foundGoal = false;
+	Zone *goalZone = NULL;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (auto ait = (*it)->allEnemies.begin(); ait != (*it)->allEnemies.end(); ++ait)
+		{
+			if ((*ait)->IsGoalType())
+			{
+				(*it)->hasGoal = true;
+				foundGoal = true;
+				goalZone = (*it);
+				break;
+			}
+		}
+		if (foundGoal)
+			break;
+	}
+
+	if (!foundGoal)
+	{
+		assert(foundGoal);
+	}
+
+	Gate *g;
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
+		{
+			g = (Gate*)(*git)->info;
+			if (g->zoneA == (*it))
+			{
+				(*it)->connectedSet.insert(g->zoneB);
+			}
+			else if (g->zoneB == (*it))
+			{
+				(*it)->connectedSet.insert(g->zoneA);
+			}
+			else
+			{
+				assert(0);
+			}
+		}
+	}
+
+	if (zoneTree != NULL)
+	{
+		delete zoneTree;
+		zoneTree = NULL;
+	}
+
+	zoneTreeStart = originalZone;
+	zoneTreeEnd = goalZone;
+	zoneTree = new ZoneNode;
+	zoneTree->parent = NULL;
+	zoneTree->SetZone(zoneTreeStart);
+	currentZoneNode = zoneTree;
+
+	//std::vector<bool> hasNodeVec(zones.size());
+
+	//using shouldreform to test the secret gate stuff
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->shouldReform = true;
+	}
+
+	zoneTree->SetChildrenShouldNotReform();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ((*it)->shouldReform)
+		{
+			for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
+			{
+				g = (Gate*)(*git)->info;
+				g->category = Gate::SECRET;
+				g->Init();
+			}
+			(*it)->SetZoneType(Zone::SECRET);
+		}
+	}
+
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Init();
+	}
+
+	if (originalZone != NULL)
+	{
+		//CloseOffLimitZones();
+		gateMarkers->SetToZone(currentZone);
+	}
+}
+
+void Session::ActivateZone(Zone * z, bool instant)
+{
+	if (z == NULL)
+		return;
+	//assert( z != NULL );
+	//cout << "ACTIVATE ZONE!!!" << endl;
+	if (!z->active)
+	{
+		if (instant)
+		{
+			z->action = Zone::OPEN;
+		}
+		else
+		{
+			z->action = Zone::OPENING;
+			z->frame = 0;
+		}
+
+		for (list<Enemy*>::iterator it = z->spawnEnemies.begin(); it != z->spawnEnemies.end(); ++it)
+		{
+			assert((*it)->spawned == false);
+
+			(*it)->Init();
+			(*it)->spawned = true;
+			AddEnemy((*it));
+		}
+
+		z->active = true;
+		z->visited = true;
+
+		if (activatedZoneList == NULL)
+		{
+			activatedZoneList = z;
+			z->activeNext = NULL;
+		}
+		else
+		{
+			z->activeNext = activatedZoneList;
+			activatedZoneList = z;
+		}
+
+		//z->ReformHigherIndexGates();
+	}
+	else
+	{
+		z->reexplored = true;
+		{
+			//z->frame = 0;
+			//z->action = Zone::OPEN;
+
+			/*if (z->action == Zone::CLOSING)
+			{
+			z->frame = z->openFrames - z->frame;
+			z->action = Zone::OPENING;
+			}
+			else
+			{
+			z->frame = 0;
+			z->action = Zone::OPEN;
+			}*/
+
+		}
+		//already activated
+		//assert(0);
+	}
+
+
+	if (currentZone != NULL && z->zType != Zone::SECRET && currentZone->zType != Zone::SECRET)
+	{
+		if (currentZone->action == Zone::OPENING)
+		{
+			currentZone->frame = z->openFrames - currentZone->frame;
+		}
+		else
+		{
+			currentZone->frame = 0;
+		}
+		currentZone->action = Zone::CLOSING;
+
+		currentZone->active = false;
+
+		bool foundNode = false;
+		for (auto it = currentZoneNode->children.begin();
+			it != currentZoneNode->children.end(); ++it)
+		{
+			if ((*it)->myZone == z)
+			{
+				currentZoneNode = (*it);
+				foundNode = true;
+				break;
+			}
+		}
+
+		if (!foundNode)
+		{
+			assert(foundNode);
+		}
+
+		KillAllEnemies();
+
+		currentZone = z;
+
+		CloseOffLimitZones();
+
+		gateMarkers->SetToZone(currentZone);
+	}
+	else
+	{
+
+		Zone *oldZone = currentZone;
+		currentZone = z;
+
+		if (oldZone == NULL) //for starting the map
+		{
+
+		}
+	}
+
+	if (!instant)
+	{
+		//int soundIndex = SoundType::S_KEY_ENTER_0 + (currentZone->requiredKeys);
+		//ActivateSound(gameSoundBuffers[soundIndex]);
+	}
+}
+
+void Session::CloseOffLimitZones()
+{
+	if (currentZoneNode == NULL)
+		return;
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->shouldReform = true;
+	}
+
+	currentZoneNode->SetChildrenShouldNotReform();
+
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		if ((*it)->zType != Zone::SECRET && !(*it)->visited && (*it)->shouldReform)
+		{
+			(*it)->visited = true;
+			(*it)->ReformAllGates();
+		}
+	}
+}
+
+void Session::SetupKeyMarker()
+{
+	if (parentGame != NULL)
+	{
+		keyMarker = parentGame->keyMarker;
+	}
+	else if (keyMarker == NULL)
+		keyMarker = new KeyMarker;
+}
+
+void Session::SetupGateMarkers()
+{
+	//doesnt care about parentGame
+
+	if (gateMarkers != NULL)
+	{
+		delete gateMarkers;
+		gateMarkers = NULL;
+	}
+
+	int maxGates = 0;
+	int numGatesInZone;
+	for (auto it = zones.begin(); it != zones.end(); ++it)
+	{
+		numGatesInZone = (*it)->gates.size();
+		if (numGatesInZone > maxGates)
+		{
+			maxGates = numGatesInZone;
+		}
+	}
+
+	if (maxGates > 0)
+	{
+		gateMarkers = new GateMarkerGroup(maxGates);
+	}
+
+	//gateMarkers = new GateMarkerGroup()
+}
+
+void Session::CleanupGates()
+{
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		delete (*it);
+	}
+	gates.clear();
 }

@@ -1,15 +1,14 @@
 #include "KeyMarker.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "ImageText.h"
 #include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-KeyMarker::KeyMarker( GameSession *p_owner )
+KeyMarker::KeyMarker()
 {
-	owner = p_owner;
-
+	sess = Session::GetSession();
 	//backSprite.setTexture( *ts_keys->texture );
 	//energySprite.setTexture( *ts_keyEnergy->texture );
 
@@ -18,9 +17,9 @@ KeyMarker::KeyMarker( GameSession *p_owner )
 
 	frame = 0;
 
-	Tileset *scoreTS = owner->GetTileset("Menu/keynum_small_32x32.png", 32, 32);
-	ts_keyNumLight = owner->GetTileset("Menu/keynum_light_80x80.png", 80, 80);
-	ts_keyNumDark = owner->GetTileset("Menu/keynum_dark_80x80.png", 80, 80);
+	Tileset *scoreTS = sess->GetTileset("Menu/keynum_small_32x32.png", 32, 32);
+	ts_keyNumLight = sess->GetTileset("Menu/keynum_light_80x80.png", 80, 80);
+	ts_keyNumDark = sess->GetTileset("Menu/keynum_dark_80x80.png", 80, 80);
 
 	keyNumberNeededHUD = new ImageText(2, ts_keyNumDark);
 	keyNumberNeededHUDBack = new ImageText(2, ts_keyNumLight);
@@ -56,7 +55,7 @@ Vector2f KeyMarker::GetPosition()
 void KeyMarker::UpdateKeyNumbers()
 {
 	//owner->numKeysCollected++;
-	int numKeys = owner->GetPlayer(0)->numKeysHeld;
+	int numKeys = sess->GetPlayer(0)->numKeysHeld;
 
 	//--keysRequired;
 
