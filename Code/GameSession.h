@@ -200,10 +200,6 @@ struct ZonePropertiesObj
 
 struct GameSession : QuadTreeCollider, RayCastHandler, Session
 {
-	//new stuff
-	PolyPtr GetPolygon(int index);
-
-
 	//maybe move this out eventually
 	struct DecorInfo
 	{
@@ -217,6 +213,72 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int layer;
 		Tileset *ts;
 		int tile;
+	};
+
+	struct DecorDraw
+	{
+		DecorDraw(sf::Vertex *q,
+			int numVerts,
+			Tileset *t);
+		~DecorDraw();
+		void Draw(sf::RenderTarget *target);
+		sf::Vertex *quads;
+		Tileset *ts;
+		int numVertices;
+	};
+
+	struct RaceFight
+	{
+		RaceFight(GameSession *owner,
+			int raceFightMaxSeconds);
+		void Reset();
+		int playerScore;
+		int player2Score;
+		void DrawScore(sf::RenderTarget *target);
+		void UpdateScore();
+		void Init();
+
+		RaceFightHUD *hud;
+		//RaceFightTarget *targetList;
+		GameSession *owner;
+
+		sf::Text tempAllTargets;
+
+		ResultsScreen *victoryScreen;
+
+		RaceFightTarget *hitByPlayerList;
+		RaceFightTarget *hitByPlayer2List;
+		void HitByPlayer(int playerIndex,
+			RaceFightTarget *target);
+
+		void PlayerHitByPlayer(int attacker,
+			int defender);
+		void TickClock();
+		void TickFrame();
+		int NumDigits(int number);
+		void RemoveFromPlayerHitList(RaceFightTarget *target);
+		void RemoveFromPlayer2HitList(RaceFightTarget *target);
+		int frameCounter;
+
+		int numTargets;
+		ImageText *playerScoreImage;
+		ImageText *player2ScoreImage;
+		int raceFightResultsFrame;
+		TimerText *gameTimer;
+		ImageText *numberTargetsRemainingImage;
+		ImageText *numberTargetsTotalImage;
+		int GetNumRemainingTargets();
+
+		UIWindow *testWindow;
+
+		int playerHitCounter;
+		int player2HitCounter;
+
+		bool gameOver;
+		int place[4];
+		//int p3Place;
+		//int p4Place;
+		int raceWinnerIndex;
 	};
 
 	enum GameResultType
@@ -258,9 +320,211 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		S_KEY_ENTER_6,
 		Count
 	};
+
+	enum EdgeType
+	{
+		FLAT_GROUND,
+		SLOPED_GROUND,
+		STEEP_GROUND,
+		WALL,
+		STEEP_CEILING,
+		SLOPED_CEILING,
+		CEILING
+	};
+
+	static GameSession *GetSession();
+	static GameSession *currSession;
+
 	
+	std::list<PolyPtr> allSpecialTerrain;
+	PolyPtr specialPieceList;
+	PolyPtr flyTerrainList;
+	PolyPtr inversePoly;
+	std::list<PolyPtr> allPolygonsList;
+	std::map<std::string, std::list<DecorInfo>> decorListMap;
+	sf::View view; //need to be added to session
+	std::set<std::pair<int, int>> matSet;
+	bool usePolyShader;
+	bool hasGrass[6];
+	bool hasAnyGrass;
+	PolyPtr polyQueryList;
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
+	Edge *rcEdge;
+	double rcQuantity;
+	Edge *rayIgnoreEdge;
+	Edge *rayIgnoreEdge1;
+	Fader *fader;
+	Swiper *swiper;
+	sf::Vertex blackBorderQuads[4 * 4];
+	AbsorbParticles *absorbParticles;
+	AbsorbParticles *absorbDarkParticles;
+	AbsorbParticles *absorbShardParticles;
+	bool continueLoading;
+	boost::mutex continueLoadingLock;
+	ShapeEmitter *testEmit;
+	std::list<DecorDraw*> decorBetween;
+	Minimap *mini;
+	PauseMenu *pauseMenu;
+	SaveFile *saveFile;
+	Config *config;
+	ScoreDisplay *scoreDisplay;
+	AdventureHUD *adventureHUD;
+	Sequence *activeSequence;
+	BasicBossScene *preLevelScene;
+	BasicBossScene *postLevelScene;
+	StorySequence *currStorySequence;
+	MomentaBroadcast *currBroadcast;
+	DialogueUser *activeDialogue;
+	TopClouds *topClouds;
+	bool stormCeilingOn;
+	double stormCeilingHeight;
+	ScreenRecorder *debugScreenRecorder;
+	std::list<KeyNumberObj*> keyNumberObjects;
+	int numKeysCollected;
+	ShardPopup *shardPop;
+	BitField *shardsCapturedField;
+	Sequence *getShardSeq;
+	Sequence *deathSeq;
+	RaceFight *raceFight;
+	MusicInfo *originalMusic;
+	std::map<std::string, MusicInfo*> musicMap;
+	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
+	sf::VertexArray * goalEnergyFlowVA;
+	GoalPulse *goalPulse;
+	bool hasGoal;
+	sf::Vector2<double> goalPos;
+	sf::Vector2<double> goalNodePos;
+	sf::Vector2<double> goalNodePosFinal;
+	V2d nexusPos;
+	Nexus *nexus;
+	sf::Shader flowShader;
+	float flowRadius;
+	int flowFrameCount;
+	int flowFrame;
+	float maxFlowRadius;
+	float radDiff;
+	float flowSpacing;
+	float maxFlowRings;
+	std::list<RailPtr> allRails;
+	RailPtr railDrawList;
+	int totalRails;
+	Buf testBuf;//for recording ghost
+	RecordGhost *recGhost;
+	RecordPlayer *recPlayer;
+	ReplayPlayer *repPlayer;
+	std::list<ReplayGhost*> replayGhosts;
+	Tileset *ts_gravityGrass;
+	Grass *explodingGravityGrass;
+	//ship sequence. should be in its own structure
+	Tileset *ts_w1ShipClouds0;
+	Tileset *ts_w1ShipClouds1;
+	Tileset *ts_ship;
+	sf::VertexArray cloud0;
+	sf::VertexArray cloud1;
+	sf::VertexArray cloudBot0;
+	sf::VertexArray cloudBot1;
+	sf::Vector2f relShipVel;
+	sf::Sprite shipSprite;
+	sf::RectangleShape middleClouds;
+	bool shipSequence;
+	bool hasShipEntrance;
+	V2d shipEntrancePos;
+	sf::Vector2f cloudVel;
+	int shipSeqFrame;
+	sf::Vector2f shipStartPos;
+	ShipExitScene *shipExitScene;
+	bool drain;
+	State state;
+	sf::Font font;
+	bool quit;
+	bool boostIntro;
+	InputVisualizer *inputVis;
+	Level *level;
+	bool playerAndEnemiesFrozen;
+	EnvPlant *activeEnvPlants;
+	int totalFramesBeforeGoal;
+	std::map<std::string, PoiInfo*> poiMap;
+	std::map<std::string, CameraShot*> cameraShotMap;
+	std::map<std::string, Barrier*> barrierMap;
+	std::list<Barrier*> barriers;
+	int m_numActivePlayers;
+	sf::Shader cloneShader; //actually time slow shader
+	std::list<Edge*> globalBorderEdges;
+	std::list<boost::filesystem::path> bonusPaths;
+	GameSession *bonusGame; //make this a container later
+	int testGateCount;
+	Gate *gateList;
+	Gate *unlockedGateList;
+	float oldZoom;
+	sf::Vector2f oldCamBotLeft;
+	sf::View oldView;
+	sf::Shader glowShader;
+	sf::Shader motionBlurShader;
+	sf::Shader hBlurShader;
+	sf::Shader vBlurShader;
+	sf::Shader shockwaveShader;
+	sf::Vector2f testShock;
+	sf::Texture shockwaveTex;
+	int shockTestFrame;
+	LoadingMapProgressDisplay *progressDisplay;
+	sf::VertexArray *va;
+	Collider coll;
+	std::list<sf::VertexArray*> polygonBorders;
+	sf::RenderTexture *lastFrameTex;
+	sf::RenderTexture *preScreenTex;
+	sf::RenderTexture *postProcessTex;
+	sf::RenderTexture *postProcessTex1;
+	sf::RenderTexture *postProcessTex2;
+	sf::RenderTexture *minimapTex;
+	sf::RenderTexture *mapTex;
+	sf::RenderTexture *pauseTex;
+	Rain *rain;
+	const static int NUM_CLOUDS = 5;
+	sf::Sprite clouds[NUM_CLOUDS];
+	Tileset *cloudTileset;
+	bool shadersLoaded;
+	std::string rayMode;
+	std::map<DecorType, DecorLayer*> decorLayerMap;
+	std::list<DecorLayer*> DecorLayers;
+	std::string queryMode;
+	bool drawInversePoly;
+	Edge *inverseEdgeList;
+	int numBorders;
+	sf::Vector2f lastViewSize;
+	sf::Vector2f lastViewCenter;
+	bool goalDestroyed;
+	GameResultType resType;
+	sf::View cloudView;
+	sf::Sprite kinMapSpawnIcon;
+	Tileset *ts_mapIcons;
+	ShapeEmitter *emitterLists[EffectLayer::Count];
+	sf::Rect<double> tempSpawnRect;
+	QuadTree *terrainBGTree;
+	QuadTree * enemyTree;
+	QuadTree * gateTree;
+	QuadTree * itemTree;
+	QuadTree *specterTree;
+	QuadTree *inverseEdgeTree;
+	QuadTree *railDrawTree;
+	QuadTree *activeEnemyItemTree;
+	QuadTree *envPlantTree;
+	std::list<EnvPlant*> allEnvPlants;
+	QuadTree *airTriggerTree;
+	std::list<AirTrigger*> fullAirTriggerList;
+	bool nextFrameRestart;
+	bool showTerrainDecor;
 
+	static int IsFlatGround(sf::Vector2<double> &normal);
+	static int IsSlopedGround(sf::Vector2<double> &normal);
+	static int IsSteepGround(sf::Vector2<double> &normal);
+	static int IsWall(sf::Vector2<double> &normal);
 
+	GameSession(SaveFile *sf,
+		const boost::filesystem::path &p_filePath);
+	~GameSession();
+
+	//process reading file
 	void ProcessHeader();
 	void ProcessDecorSpr(const std::string &name,
 		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
@@ -277,87 +541,21 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		int vertexIndex1, int shardWorld,
 		int shardIndex);
 	void ProcessRail(RailPtr rail);
-
 	void ProcessSpecialTerrain(PolyPtr poly);
 
-	std::list<PolyPtr> allSpecialTerrain;
-	PolyPtr specialPieceList;
-	PolyPtr flyTerrainList;
-
-	void SetNumGates( int nGates );
-
-	PolyPtr inversePoly;
-	std::list<PolyPtr> allPolygonsList;
-	
-	std::map<std::string, std::list<DecorInfo>> decorListMap;
-	//---------------------
-
-	GameSession(SaveFile *sf,
-		const boost::filesystem::path &p_filePath);
-	~GameSession();
-	
-
-	//need to be added to session
-	sf::View view;
-
+	//gamesession itself
+	int Run();
 	void Reload(const boost::filesystem::path &p_filePath);
-
-	//shared but keep
-	virtual int Run();
-
-	//needs to be adjusted
-	bool LoadEdges(std::ifstream &is,
-		std::map<int, int> &polyIndex);
-	bool LoadBGPlats(std::ifstream &is );
-	
-
-	bool LoadEnemies(std::ifstream &is);
-	Edge *LoadEdgeIndex(std::ifstream &is);
-	void LoadEdgeInfo(std::ifstream &is,
-		Edge *&edge, double &edgeQuant);
-	void LoadAirInfo(std::ifstream &is,
-		sf::Vector2i &pos);
-	void LoadNamedAirInfo(std::ifstream &is,
-		sf::Vector2i &pos, std::string &str);
-	void LoadStandardGroundedEnemy(std::ifstream &is,
-		Edge *&edge, double &edgeQuant,
-		int &hasMonitor, int &level);
-
-	//TilesetManager tm;
-
-	static GameSession *GetSession();
-	static GameSession *currSession;
-
-	//Actor *players[4]; //shared but change to vector
-
-	std::set<std::pair<int, int>> matSet;
-	bool usePolyShader;
-
-	//anything that I already share with Session
-
-	//anything that has to do with original terrain processing
-	bool hasGrass[6];
-	bool hasAnyGrass;
-	PolyPtr polyQueryList;
-	void UpdateDecorSprites();
-
+	static bool sLoad(GameSession *gs);
+	bool Load();
 	void HandleRayCollision(Edge *edge,
 		double edgeQuantity, double rayPortion);
-	sf::Vector2<double> rayStart;
-	sf::Vector2<double> rayEnd;
-	Edge *rcEdge;
-	double rcQuantity;
+	void SetContinueLoading(bool cont);
+	bool ShouldContinueLoading();
+	void Init();
+	void Cleanup();
 
-	//these might be for the goal.
-	Edge *rayIgnoreEdge;
-	Edge *rayIgnoreEdge1;
-
-	//anything that has to do with terrain but might be unique
-
-
-
-	//anything that I might want to take for session
-
+	//fader
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
 	void CrossFade(int fadeOutFrames,
 		int pauseFrames, int fadeInFrames,
@@ -365,277 +563,105 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool IsFading();
 	void ClearFade();
 
-	Fader *fader;
-	Swiper *swiper;
-
+	void SetNumGates( int nGates );
+	PolyPtr GetPolygon(int index);
 	
-
-	sf::Vertex blackBorderQuads[4 * 4];
+	void UpdateDecorSprites();
 	void DrawBlackBorderQuads();
 	void SetupMinimapBorderQuads(
 		bool *blackBorder,
 		bool topBorderOn);
-
-
-	static bool sLoad(GameSession *gs);
-	bool Load();
-
+	
 	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 		V2d &pos, float startAngle = 0);
-	AbsorbParticles *absorbParticles;
-	AbsorbParticles *absorbDarkParticles;
-	AbsorbParticles *absorbShardParticles;
-
-	bool continueLoading;
-	void SetContinueLoading(bool cont);
-	bool ShouldContinueLoading();
-	boost::mutex continueLoadingLock;
-
+	
 	void UpdatePolyShaders(sf::Vector2f &botLeft,
 		sf::Vector2f &playertest);
-
-	void Init();
-	void Cleanup();
-
 	
-
 	void RestartLevel();
 	void NextFrameRestartLevel();
-	bool nextFrameRestart;
-
-	//---------------------------------
-	void DrawHealthFlies(sf::RenderTarget *target);
-
-	/*sf::Vertex *healthFlyVA;
-	Tileset *ts_healthFly;
-	int numTotalFlies;
-	std::list<HealthFly*> allFlies;*/
-
-	ShapeEmitter *testEmit;
-
-	//related to decor/images not terrain related
-	struct DecorDraw
-	{
-		DecorDraw(sf::Vertex *q,
-			int numVerts,
-			Tileset *t);
-		~DecorDraw();
-		void Draw(sf::RenderTarget *target);
-		sf::Vertex *quads;
-		Tileset *ts;
-		int numVertices;
-	};
-	std::list<DecorDraw*> decorBetween;
-	void DrawDecorBetween();
-
 	
-
-	Minimap *mini;
-	void EnemiesCheckedMiniDraw(
-		sf::RenderTarget *target,
-		sf::FloatRect &rect);
 	void SetupMapBorderQuads(
 		bool *blackBorder,
 		bool &topBorderOn);
+
+	//draw map or minimap
 	void DrawColoredMapTerrain(
 		sf::RenderTarget *target,
 		sf::Color &c);
 	void DrawAllMapWires(
 		sf::RenderTarget *target);
 
-
-	PauseMenu *pauseMenu;
-	SaveFile *saveFile;
-	Config *config;
-	ScoreDisplay *scoreDisplay;
-	AdventureHUD *adventureHUD;
-
-	void UpdateDebugModifiers();
-	void DebugDraw();
-	bool showTerrainDecor;
-
-	Sequence *activeSequence;
-	void SetActiveSequence(Sequence *activeSeq);
-	BasicBossScene *preLevelScene;
-	BasicBossScene *postLevelScene;
-	void DrawStoryLayer(EffectLayer ef);
-	StorySequence *currStorySequence;
-	void SetStorySeq(StorySequence *storySeq);
-	MomentaBroadcast *currBroadcast;
-	DialogueUser *activeDialogue;
-	
-	TopClouds *topClouds;
-	bool stormCeilingOn;
-	double stormCeilingHeight;
+	//setup
 	void SetupStormCeiling();
+	void SetupGhosts(std::list<GhostEntry*> &ghosts);
+	void SetupPlayers();
+	void SetupShardsCapturedField();
+	void SetupShaders();
+	void SetupBackground();
+	void SetupMinimap();
+	void SetupAbsorbParticles();
+	void SetupScoreDisplay();
+	void SetupQuadTrees();
+	bool SetupControlProfiles();
+	void SetupGoalPulse();
+	void SetupHUD();
+	void SetupPauseMenu();
+	void SetupRecGhost();
+	void SetupEnergyFlow();
+	sf::VertexArray *SetupBushes(int bgLayer,
+		Edge *startEdge, Tileset *ts);
+	sf::VertexArray * SetupPlants(Edge *start, Tileset *ts);
 
-	ScreenRecorder *debugScreenRecorder;
+	//player
+	int GetPlayerTeamIndex(int index = 0);
+	int GetPlayerEnemiesKilledLastFrame(int index = 0);
+	void PlayerRestoreDoubleJump(int index = 0);
+	void PlayerRestoreAirDash(int index = 0);
+	int GetPlayerHitstunFrames(int index = 0);
+	bool PlayerIsMovingLeft(int index = 0);
+	bool PlayerIsMovingRight(int index = 0);
+	bool PlayerIsFacingRight(int index = 0);
 
-	struct RaceFight
-	{
-		RaceFight( GameSession *owner, 
-			int raceFightMaxSeconds );
-		void Reset();
-		int playerScore;
-		int player2Score;
-		void DrawScore( sf::RenderTarget *target );
-		void UpdateScore();
-		void Init();
-
-		RaceFightHUD *hud;
-		//RaceFightTarget *targetList;
-		GameSession *owner;
-
-		sf::Text tempAllTargets;
-		
-		ResultsScreen *victoryScreen;
-
-		RaceFightTarget *hitByPlayerList;
-		RaceFightTarget *hitByPlayer2List;
-		void HitByPlayer( int playerIndex,
-			RaceFightTarget *target );
-
-		void PlayerHitByPlayer( int attacker,
-			int defender );
-		void TickClock();
-		void TickFrame();
-		int NumDigits( int number );
-		void RemoveFromPlayerHitList( RaceFightTarget *target );
-		void RemoveFromPlayer2HitList( RaceFightTarget *target );
-		int frameCounter;
-
-		int numTargets;
-		ImageText *playerScoreImage;
-		ImageText *player2ScoreImage;
-		int raceFightResultsFrame;
-		TimerText *gameTimer;
-		ImageText *numberTargetsRemainingImage;
-		ImageText *numberTargetsTotalImage;
-		int GetNumRemainingTargets();
-
-		UIWindow *testWindow;
-
-		int playerHitCounter;
-		int player2HitCounter;
-
-		bool gameOver;
-		int place[4];
-		//int p3Place;
-		//int p4Place;
-		int raceWinnerIndex;
-	};
-
-	void CollectKey();
-	
-	std::list<KeyNumberObj*> keyNumberObjects;
-	
-	int numKeysCollected;
-	void SuppressEnemyKeys(Gate *g);
-	
-	bool IsShardCaptured(int sType);
-	void TryCreateShardResources();
-	ShardPopup *shardPop;
-	BitField *shardsCapturedField;
-	Sequence *getShardSeq;
-	Sequence *deathSeq;
-	void CreateDeathSequence();
-
-	RaceFight *raceFight;
-	
-	void SetOriginalMusic();
-	MusicInfo *originalMusic;
-	std::map<std::string, MusicInfo*> musicMap;
-
-	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
-
-	void UpdateTimeSlowShader();
-	void UpdateEnvShaders();
-
-	//goal
-	sf::VertexArray * goalEnergyFlowVA;
-	void UpdateGoalFlow();
-	GoalPulse *goalPulse;
-	
-	bool hasGoal;
-	sf::Vector2<double> goalPos;
-	sf::Vector2<double> goalNodePos;
-	sf::Vector2<double> goalNodePosFinal;
-	V2d nexusPos;
-	Nexus *nexus;
-	sf::Shader flowShader;
-	float flowRadius;
-	int flowFrameCount;
-	int flowFrame;
-	float maxFlowRadius;
-	float radDiff;
-	float flowSpacing;
-	float maxFlowRings;
+	//draw
+	void DrawHealthFlies(sf::RenderTarget *target);
+	void DrawDecorBetween();
+	void EnemiesCheckedMiniDraw(
+		sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void DebugDraw();
 	void DrawGoalEnergy();
-
-	
-	
-
 	void DrawActiveEnvPlants();
 	void DrawHitEnemies();
 	void DrawDyingPlayers();
 	void DrawTopClouds();
-	
-	std::list<RailPtr> allRails;
 	void DrawRails();
-	RailPtr railDrawList;
-	int totalRails;
-
-	void UnlockPower(int pType);
-
-	Buf testBuf;//for recording ghost
-	RecordGhost *recGhost;
-	RecordPlayer *recPlayer;
-	ReplayPlayer *repPlayer;
 	void DrawReplayGhosts();
-	void SetupGhosts(std::list<GhostEntry*> &ghosts);
-	std::list<ReplayGhost*> replayGhosts;
-	
-	Tileset *ts_gravityGrass;
-	Grass *explodingGravityGrass;
+	void DrawGates();
+	void DrawEmitters(EffectLayer layer);
+	void DrawActiveSequence(EffectLayer layer);
+	void DrawPlayersMini(sf::RenderTarget *target);
+
+
+	void UpdateDebugModifiers();
+	void SetActiveSequence(Sequence *activeSeq);
+	void DrawStoryLayer(EffectLayer ef);
+	void SetStorySeq(StorySequence *storySeq);
+	void CollectKey();
+	void SuppressEnemyKeys(Gate *g);
+	bool IsShardCaptured(int sType);
+	void TryCreateShardResources();
+	void CreateDeathSequence();
+	void SetOriginalMusic();
+	void UpdateTimeSlowShader();
+	void UpdateEnvShaders();
+	void UpdateGoalFlow();
+	void UnlockPower(int pType);
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
-
-	//ship sequence. should be in its own structure
-	void ResetShipSequence(); 
-	Tileset *ts_w1ShipClouds0;
-	Tileset *ts_w1ShipClouds1;
-	Tileset *ts_ship;
-	sf::VertexArray cloud0;
-	sf::VertexArray cloud1;
-	sf::VertexArray cloudBot0;
-	sf::VertexArray cloudBot1;
-	sf::Vector2f relShipVel;
-	sf::Sprite shipSprite;
-	sf::RectangleShape middleClouds;
-
-	bool shipSequence;
-	bool hasShipEntrance;
-	V2d shipEntrancePos;
-	sf::Vector2f cloudVel;
-	int shipSeqFrame;
-	sf::Vector2f shipStartPos;
-
-	ShipExitScene *shipExitScene;
-
-	bool drain;
-	State state;
-	sf::Font font;
-	bool quit;
-	bool boostIntro;
-
-	std::map<std::string,PoiInfo*> poiMap;
-	std::map<std::string, CameraShot*> cameraShotMap;
-
-	std::map<std::string, Barrier*> barrierMap;
-	std::list<Barrier*> barriers;
+	void ResetShipSequence();
 	void TriggerBarrier( Barrier *b );
-	
 	void RemoveAllEnemies();
 	void UpdateEnemiesPrePhysics();
 	void UpdateEnemiesPhysics();
@@ -644,61 +670,16 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void UpdateEnemiesSprites();
 	void UpdateEnemiesDraw();
 	void ResetEnemies();
-
 	void SetGlobalBorders();
-	
 	void ResetPlants();
 	void ResetInactiveEnemies();
 	void rResetEnemies( QNode *node );
 	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
-	
 	SaveFile *GetCurrentProgress();
 	bool HasPowerUnlocked( int pIndex );
-
-	InputVisualizer *inputVis;
-	Level *level;
-
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void FreezePlayerAndEnemies( bool freeze );
-	bool playerAndEnemiesFrozen;
-
-
-	EnvPlant *activeEnvPlants;
-	//int totalGameFrames;
-	int totalFramesBeforeGoal;
-	
-	
-	int GetPlayerTeamIndex(int index = 0);
-	
-
-	int GetPlayerEnemiesKilledLastFrame(int index = 0);
-	void PlayerRestoreDoubleJump(int index = 0);
-	void PlayerRestoreAirDash(int index = 0);
-	int GetPlayerHitstunFrames(int index = 0);
-	bool PlayerIsMovingLeft(int index = 0);
-	bool PlayerIsMovingRight(int index = 0);
-	bool PlayerIsFacingRight(int index = 0);
-	
-	
-	
-
-	int m_numActivePlayers;
-
-	
-	sf::Shader cloneShader; //actually time slow shader
-	//Edge **edges;
-	//Edge *GetEdge(int index);
-	std::list<Edge*> globalBorderEdges;
-
-	std::list<boost::filesystem::path> bonusPaths;
-	GameSession *bonusGame; //make this a container later
-	//sf::Vector2<double> *points;
-
-	void DrawGates();
-
-	int testGateCount;
-	Gate *gateList;
 	void SoftenGates(int gCat);
 	void ReformGates(int gCat );
 	void OpenGates(int gCat);
@@ -707,202 +688,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void CloseGates(int gCat);
 	void UnlockGate(Gate *g);
 	void LockGate(Gate *g);
-	Gate *unlockedGateList;
-
-	float oldZoom;
-	sf::Vector2f oldCamBotLeft;
-	sf::View oldView;
-
-	sf::Shader glowShader;
-	sf::Shader motionBlurShader;
-	sf::Shader hBlurShader;
-	sf::Shader vBlurShader;
-
-	sf::Shader shockwaveShader;
-	sf::Vector2f testShock;
-	sf::Texture shockwaveTex;
-	int shockTestFrame;
-
-	LoadingMapProgressDisplay *progressDisplay;
-	//sf::Sprite shockwaveSprite;
-
-	//sf::Sprite topbarSprite;
-
-	sf::VertexArray *va;
-
-	
 	void UpdateInput();
 	void KeyboardUpdate( int index );
-	
-	
-
-	Collider coll;
-	
-	//std::list<sf::VertexArray*> polygons;
-	std::list<sf::VertexArray*> polygonBorders;
-
-	sf::RenderTexture *lastFrameTex;
-	sf::RenderTexture *preScreenTex;
-	sf::RenderTexture *postProcessTex;
-	sf::RenderTexture *postProcessTex1;
-	sf::RenderTexture *postProcessTex2;
-	sf::RenderTexture *minimapTex;
-	sf::RenderTexture *mapTex;
-	sf::RenderTexture *pauseTex;
-
-	Rain *rain;
-	
-
-	
-
-	const static int NUM_CLOUDS = 5;
-	sf::Sprite clouds[NUM_CLOUDS];
-	Tileset *cloudTileset;
-
-	
-
-	static int IsFlatGround( sf::Vector2<double> &normal );
-	static int IsSlopedGround( sf::Vector2<double> &normal );
-	static int IsSteepGround(  sf::Vector2<double> &normal );
-	static int IsWall( sf::Vector2<double> &normal );
-	sf::VertexArray * SetupBorderQuads(
-		int bgLayer,
-		Edge *start,
-		//int currentEdgeIndex,
-		Tileset *ts,
-		int (*ValidEdge)(sf::Vector2<double> &)
-		);
-	enum EdgeType
-	{
-		FLAT_GROUND,
-		SLOPED_GROUND,
-		STEEP_GROUND,
-		WALL,
-		STEEP_CEILING,
-		SLOPED_CEILING,
-		CEILING
-	};
-	sf::VertexArray * SetupBorder(
-		int bgLayer,
-		Edge *start,
-		Tileset *ts,
-		int(*ValidEdge)(sf::Vector2<double> &)
-	);
-
-	sf::VertexArray * SetupPlants(
-		Edge *start,
-		Tileset *ts);//,
-		//int (*ValidEdge)(sf::Vector2<double> &));
-
-	
-	
-	//bool shaders
-	bool shadersLoaded;
-	
-	std::string rayMode;
-
-	void SetupPlayers();
-
-	void SetupShardsCapturedField();
-
-	void SetupShaders();
-
-	void SetupBackground();
-
-	void SetupMinimap();
-
-	void SetupAbsorbParticles();
-
-	void SetupScoreDisplay();
-
-	void SetupQuadTrees();
-
-	bool SetupControlProfiles();
-	void SetupGoalPulse();
-
-	void SetupHUD();
-
-	void SetupPauseMenu();
-
-	void SetupRecGhost();
-
-	void SetupEnergyFlow();
-
-	
-
-	sf::VertexArray *SetupBushes( int bgLayer,
-		Edge *startEdge, Tileset *ts );
-
-	std::map<DecorType,DecorLayer*> decorLayerMap;
-
-	std::list<DecorLayer*> DecorLayers;
-	
-	std::string queryMode;
-
-	void DrawPlayersMini(sf::RenderTarget *target);
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
-	bool drawInversePoly;
-	Edge *inverseEdgeList;
-	int numBorders;
-
-	sf::Vector2f lastViewSize;
-	sf::Vector2f lastViewCenter;
-
-	
-	bool goalDestroyed;
-
-	//void EndLevel(GameResultType rType);
 	void EndLevel();
-
-	GameResultType resType;
-	sf::View cloudView;
-
-	
-
-	
-
-	sf::Sprite kinMapSpawnIcon;
-	Tileset *ts_mapIcons;
-	//sf::Sprite goalMapIcon;
-
-	ShapeEmitter *emitterLists[EffectLayer::Count];
 	void AddEmitter(ShapeEmitter *emit,
 		EffectLayer layer);
 	void UpdateEmitters();
 	void ClearEmitters();
-	void DrawEmitters(EffectLayer layer);
-	void DrawActiveSequence(EffectLayer layer);
-
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
-
-	//sf::Vector2<double> originalPos;
-	sf::Rect<double> tempSpawnRect;
-	
-	QuadTree *terrainBGTree;
-	QuadTree * enemyTree;
-	QuadTree * gateTree;
-	QuadTree * itemTree;
-	
-	QuadTree *specterTree;
-	QuadTree *inverseEdgeTree;
-	
-	QuadTree *railDrawTree;
-	QuadTree *activeEnemyItemTree;
-	
-	QuadTree *envPlantTree;
-	std::list<EnvPlant*> allEnvPlants;
-
-	QuadTree *airTriggerTree;
-	std::list<AirTrigger*> fullAirTriggerList;
-
 	void QueryBorderTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
 };
-
-
-
-
-
 #endif

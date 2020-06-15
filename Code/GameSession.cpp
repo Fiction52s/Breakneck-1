@@ -1,5 +1,3 @@
-//game session
-
 #include "GameSession.h"
 #include <fstream>
 #include <iostream>
@@ -59,15 +57,12 @@
 #include "EnvPlant.h"
 #include "AbsorbParticles.h"
 #include "AirTrigger.h"
-
+#include "StorySequence.h"
 #include "Enemy.h"
 #include "EnemiesW1.h"
-
 #include "ActorParamsBase.h"
-
 #include "HitboxManager.h"
 #include "EditorRail.h"
-
 #include "GateMarker.h"
 #include "DeathSequence.h"
 
@@ -110,7 +105,8 @@
 //#include "Enemy_SwingLauncher.h"
 //#include "Enemy_WireTarget.h"
 
-
+using namespace std;
+using namespace sf;
 
 #define TIMESTEP (1.0 / 60.0)
 
@@ -122,31 +118,6 @@
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-using namespace std;
-using namespace sf;
-
-//Ground - 1155aa
-//
-//Steep Floor - 4488cc
-//
-//Steep Ceiling - 55aaff
-//
-//Ceiling - 88ccff
-//
-//Wall - 6688ee
-
-
-//Ground - 0d2d7d
-//
-//Steep Floor - 2244cc
-//
-//Wall - 0088cc
-//
-//Steep Ceiling - 2dcded
-//
-//Ceiling - 99ffff
-
 
 #define COLOR_GROUND Color( 0x0d, 0x2d, 0x7d )
 #define COLOR_STEEP_GROUND Color( 0x22, 0x44, 0xcc )
@@ -946,217 +917,6 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	
 }
 
-
-bool GameSession::LoadBGPlats( ifstream &is)
-{
-	//this doesn't work right now because I need to get all the earcut code
-	//working together instead of pointlessly rewriting it
-	int bgPlatformNum0;
-	is >> bgPlatformNum0;
-	//for( int i = 0; i < bgPlatformNum0; ++i )
-	//{
-	//	//layer is 1
-
-	//	int matWorld;
-	//	int matVariation;
-	//	
-	//	is >> matWorld;
-	//	is >> matVariation;
-
-	//	matSet.insert( pair<int,int>(matWorld,matVariation) );
-
-	//	int polyPoints;
-	//	is >> polyPoints;
-	//	
-	//	list<Vector2i> poly;
-	//	for( int i = 0; i < polyPoints; ++i )
-	//	{
-	//		int x,y, special;
-	//		is >> x;
-	//		is >> y;
-	//		poly.push_back( Vector2i( x, y ) );
-	//	}
-
-	//	TerrainPiece * tPiece = new TerrainPiece( this );
-
-	//	list<Vector2i>::iterator it = poly.begin();
-	//	list<Edge*> realEdges;
-	//	double left, right, top, bottom;
-	//	for( ; it != poly.end(); ++it )
-	//	{
-	//		Edge *ee = new Edge();
-	//		ee->poly = tPiece;
-	//		ee->v0 = V2d( (*it).x, (*it).y );
-	//		list<Vector2i>::iterator temp = it;
-	//		++temp;
-	//		if( temp == poly.end() )
-	//		{
-	//			ee->v1 = V2d( poly.front().x, poly.front().y );
-	//		}
-	//		else
-	//		{
-	//			ee->v1 = V2d( (*temp).x, (*temp).y );
-	//		}
-	//		
-	//		realEdges.push_back( ee );
-	//		terrainBGTree->Insert( ee );
-
-	//		double localLeft = min( ee->v0.x, ee->v1.x );
-	//		double localRight = max( ee->v0.x, ee->v1.x );
-	//		double localTop = min( ee->v0.y, ee->v1.y );
-	//		double localBottom = max( ee->v0.y, ee->v1.y ); 
-	//		if( i == 0 )
-	//		{
-	//			left = localLeft;
-	//			right = localRight;
-	//			top = localTop;
-	//			bottom = localBottom;
-	//		}
-	//		else
-	//		{
-	//			left = min( left, localLeft );
-	//			right = max( right, localRight );
-	//			top = min( top, localTop);
-	//			bottom = max( bottom, localBottom);
-	//		}
-	//	}
-
-
-	//	for( list<Edge*>::iterator eit = realEdges.begin(); eit != realEdges.end(); ++eit )
-	//	{
-	//		Edge * ee = (*eit);//edges[i + currentEdgeIndex];
-
-	//		Edge *prev;
-	//		if( eit == realEdges.begin() )
-	//		{
-	//			prev = realEdges.back();
-	//		}
-	//		else
-	//		{
-	//			eit--;
-	//			prev = (*eit);
-	//			eit++;
-	//		}
-
-	//		Edge *next;
-	//		eit++;
-	//		if( eit == realEdges.end() )
-	//		{
-	//			next = realEdges.front();
-	//			eit--;
-	//		}
-	//		else
-	//		{
-	//			next = (*eit);
-	//			eit--;
-	//		}
-
-	//		ee->edge0 = prev;
-	//		ee->edge1 = next;
-	//	}
-
-
-	//	//vector<p2t::Point*> polyline;
-	//	////for( int i = 0; i < polyPoints; ++i )
-	//	//for( list<Vector2i>::iterator pit = poly.begin(); pit != poly.end(); ++pit )
-	//	//{
-	//	//	polyline.push_back( new p2t::Point( (*pit).x, (*pit).y ) );
-	//	//}
-
-	//	//p2t::CDT * cdt = new p2t::CDT( polyline );
-	//
-	//	//cdt->Triangulate();
-	//	//vector<p2t::Triangle*> tris;
-	//	//tris = cdt->GetTriangles();
-	//	//	
-	//	//va = new VertexArray( sf::Triangles , tris.size() * 3 );
-	//	//VertexArray & v = *va;
-	//	//Color testColor( 0x75, 0x70, 0x90 );
-	//	//testColor = Color::White;
-	//	//Vector2f topLeft( left, top );
-	//	//cout << "topLeft: " << topLeft.x << ", " << topLeft.y << endl;
-	//	//for( int i = 0; i < tris.size(); ++i )
-	//	//{	
-	//	//	p2t::Point *p = tris[i]->GetPoint( 0 );	
-	//	//	p2t::Point *p1 = tris[i]->GetPoint( 1 );	
-	//	//	p2t::Point *p2 = tris[i]->GetPoint( 2 );	
-	//	//	v[i*3] = Vertex( Vector2f( p->x, p->y ), testColor );
-	//	//	v[i*3 + 1] = Vertex( Vector2f( p1->x, p1->y ), testColor );
-	//	//	v[i*3 + 2] = Vertex( Vector2f( p2->x, p2->y ), testColor );
-
-	//	//	Vector2f pp0 = (v[i*3].position - topLeft);
-	//	//	Vector2f pp1 = (v[i*3+1].position - topLeft);
-	//	//	Vector2f pp2 = (v[i*3+2].position - topLeft);
-	//	//	if( i == 0 )
-	//	//	{
-	//	//		cout << "pos0: " << pp0.x << ", " << pp0.y << endl;
-	//	//		cout << "pos1: " << pp1.x << ", " << pp1.y << endl;
-	//	//		cout << "pos2: " << pp2.x << ", " << pp2.y << endl;
-	//	//	}
-	//	//	v[i*3].texCoords = pp0;
-	//	//	v[i*3+1].texCoords = pp1;
-	//	//	v[i*3+2].texCoords = pp2;
-	//	//}
-
-	//	//polygons.push_back( va );
-
-	//	//VertexArray *polygonVA = va;
-
-	//	stringstream ss;
-
-	//	ss << "Borders/bor_" << matWorld + 1 << "_";
-
-	//	if( matVariation < 10 )
-	//	{
-	//		ss << "0" << matVariation + 1;
-	//	}
-	//	else
-	//	{
-	//		ss << matVariation + 1;
-	//	}
-
-	//	ss << ".png";
-	//	
-	//	Tileset *ts_border = GetTileset( ss.str(), 8, 64 );//128 );
-	//	VertexArray *groundVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-	//		&GameSession::IsFlatGround );
-	//	VertexArray *slopeVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-	//		&GameSession::IsSlopedGround );
-	//	VertexArray *steepVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-	//		&GameSession::IsSteepGround );
-	//	VertexArray *wallVA = SetupBorderQuads( 1, realEdges.front(), ts_border,
-	//		&GameSession::IsWall );
-
-	//	bool first = true;
-
-	//	
-	//	tPiece->next = NULL;
-	//	//testva->va = va;
-	//	tPiece->aabb.left = left;
-	//	tPiece->aabb.top = top;
-	//	tPiece->aabb.width = right - left;
-	//	tPiece->aabb.height = bottom - top;
-	//	//tPiece->terrainVA = polygonVA;
-	//	tPiece->grassVA = NULL;//grassVA;
-
-	//	tPiece->numPoints = polyPoints;
-
-	//	tPiece->ts_border = ts_border;
-	//	tPiece->groundva = groundVA;
-	//	tPiece->slopeva = slopeVA;
-	//	tPiece->steepva = steepVA;
-	//	tPiece->wallva = wallVA;
-
-	//	
-	//	borderTree->Insert(tPiece);
-	//	//allVA.push_back(tPiece);
-	//	
-	//	//no grass for now
-	//}
-
-	return true;
-}
-
 void GameSession::SetNumGates(int nGates)
 {
 	gates.reserve(nGates);
@@ -1192,11 +952,6 @@ void GameSession::ProcessGate(int gCat,
 	{
 		gate->SetNumToOpen(numToOpen);
 	}
-
-	/*if (!visibleTerrain[poly0Index] || !visibleTerrain[poly1Index])
-	{
-	gate->visible = false;
-	}*/
 
 	gate->temp0prev = edge0->edge0;
 	gate->temp0next = edge0;
@@ -1245,1667 +1000,6 @@ void GameSession::ProcessRail(RailPtr rail)
 
 
 
-bool GameSession::LoadEnemies( ifstream &is )
-{
-	int shardsLoadedCounter = 0;
-
-	/*numTotalFlies = 0;
-	ts_healthFly = NULL;
-	healthFlyVA = NULL;*/
-
-	int numGroups;
-	is >> numGroups;
-	for( int i = 0; i < numGroups; ++i )
-	{
-		string gName;
-		is >> gName;
-		int numActors;
-		is >> numActors;
-
-		for( int j = 0; j < numActors; ++j )
-		{
-			//LoadEnemy(is);
-		}
-	}
-
-	/*if (numTotalFlies > 0)
-	{
-		ts_healthFly = GetTileset("Enemies/healthfly_64x64.png", 64, 64);
-		healthFlyVA = new Vertex[numTotalFlies * 4];
-
-		for (auto it = allFlies.begin(); it != allFlies.end(); ++it)
-		{
-			(*it)->va = healthFlyVA;
-			(*it)->ResetEnemy();
-		}
-	}*/
-
-	
-
-	return true;
-}
-
-Edge *GameSession::LoadEdgeIndex(std::ifstream &is)
-{
-	int terrainIndex;
-	is >> terrainIndex;
-
-	int edgeIndex;
-	is >> edgeIndex;
-
-	if (inversePoly != NULL)
-	{
-		terrainIndex++;
-	}
-
-	return allPolysVec[terrainIndex]->GetEdge(edgeIndex);
-}
-
-void GameSession::LoadEdgeInfo(ifstream &is, Edge *&edge, double &edgeQuant)
-{
-	edge = LoadEdgeIndex(is);
-	is >> edgeQuant;
-}
-
-void GameSession::LoadStandardGroundedEnemy(std::ifstream &is,
-	Edge *&edge, double &edgeQuant,
-	int &hasMonitor, int &level)
-{
-	LoadEdgeInfo(is, edge, edgeQuant);
-
-	is >> hasMonitor;
-	is >> level;
-}
-
-void GameSession::LoadAirInfo(std::ifstream &is,
-	sf::Vector2i &pos)
-{
-	is >> pos.x;
-	is >> pos.y;
-}
-
-void GameSession::LoadNamedAirInfo(std::ifstream &is,
-	sf::Vector2i &pos, std::string &str)
-{
-	LoadAirInfo(is, pos);
-
-	is >> str;
-}
-
-//void GameSession::LoadEnemy(std::ifstream &is )
-//{
-//	string typeName;
-//	is >> typeName;
-//
-//	Enemy *enem = NULL;
-//
-//	Edge *loadedEdge;
-//	double edgeQuantity;
-//	int hasMonitor;
-//	int level;
-//	Vector2i pos;
-//	std::string pName;
-//
-//	int pathLength;
-//	vector<Vector2i> localPath;
-//	//LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//	if (typeName == "goal" || typeName == "greengoal")
-//	{
-//		//always grounded
-//
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//
-//		int w = 0;
-//		if (typeName == "greengoal")
-//		{
-//			w = 1;
-//		}
-//
-//		//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
-//		//Goal *enemy = new Goal(loadedEdge, edgeQuantity, w);
-//		Enemy *enemy = NULL;
-//		assert(0);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//
-//		hasGoal = true;
-//		goalPos = enemy->position;
-//
-//		V2d gPos = enemy->ground->GetPosition(enemy->edgeQuantity);
-//		V2d norm = enemy->ground->Normal();
-//		double nodeHeight = 104;
-//		goalNodePos = gPos + norm * nodeHeight;
-//		float space = 78.f;
-//		goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
-//		//cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
-//	}
-//	else if (typeName == "poi")
-//	{
-//		string air;
-//		//string pname;
-//		PoiInfo *pi = NULL;
-//
-//		int posType;
-//		is >> posType;
-//
-//		if (posType == 0)
-//		{
-//			LoadNamedAirInfo(is, pos, pName);
-//			pi = new PoiInfo(pName, pos);
-//		}
-//
-//		else if (posType == 1)
-//		{
-//			LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//			is >> pName;
-//
-//			pi = new PoiInfo(pName, loadedEdge,
-//				edgeQuantity);				
-//		}
-//		else
-//		{
-//			cout << "air failure: " << air << endl;
-//			assert(0);
-//		}
-//
-//		poiMap[pName] = pi;
-//	}
-//	else if (typeName == "xbarrier")
-//	{
-//		LoadNamedAirInfo(is, pos, pName);
-//
-//		int hEdge;
-//		is >> hEdge;
-//		bool hEdgeB = hEdge;
-//
-//		Barrier *b = new Barrier(this, pName, true, pos.x, hEdgeB, NULL);
-//
-//		barrierMap[pName] = b;
-//		barriers.push_back(b);
-//	}
-//	else if (typeName == "extrascene")
-//	{
-//		LoadNamedAirInfo(is, pos, pName);
-//
-//		int extraSceneType;
-//		is >> extraSceneType;
-//
-//		BasicBossScene *scene = BasicBossScene::CreateScene(this, pName);
-//		if (extraSceneType == 0)//prelevel
-//		{
-//			preLevelScene = scene;
-//		}
-//		else if (extraSceneType == 1)//postlevel
-//		{
-//			postLevelScene = scene;
-//		}
-//	}	
-//	else if (typeName == "camerashot")
-//	{
-//		LoadNamedAirInfo(is, pos, pName);
-//
-//		float z;
-//		is >> z;
-//
-//		CameraShot *shot = new CameraShot(pName, Vector2f(pos), z);
-//		if (cameraShotMap.count(pName) > 0 )
-//		{
-//			assert(false);
-//		}
-//
-//		cameraShotMap[pName] = shot;
-//	}
-//	else if (typeName == "shard")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int w;
-//		is >> w;
-//
-//		int localIndex;
-//		is >> localIndex;
-//
-//		Shard *enemy = new Shard(Vector2i(xPos, yPos), w, localIndex);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "ship")
-//	{
-//		LoadAirInfo(is, pos);
-//
-//		shipEntrancePos = V2d(pos);
-//		hasShipEntrance = true;
-//
-//		ResetShipSequence();
-//	}
-//	else if (typeName == "healthfly")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int level;
-//		is >> level;
-//
-//		/*HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
-//
-//		allFlies.push_back(enemy);
-//		numTotalFlies++;
-//		activeItemTree->Insert(enemy);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "blocker" || typeName == "greenblocker")
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		int bType;
-//		is >> bType;
-//
-//		if (typeName == "blocker")
-//		{
-//			bType = BlockerChain::BLUE;
-//		}
-//		else if (typeName == "greenblocker")
-//		{
-//			bType = BlockerChain::GREEN;
-//		}
-//
-//		int armored;
-//		is >> armored;
-//
-//		int spacing;
-//		is >> spacing;
-//
-//		int level;
-//		is >> level;
-//
-//		Enemy *enemy = NULL;
-//		assert(0);
-//		//BlockerChain *enemy = new BlockerChain(Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
-//
-//		fullEnemyList.push_back(enemy);
-//
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "comboer")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//		is >> xPos;
-//		is >> yPos;
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		bool loop;
-//		Enemy::ReadBool(is, loop);
-//
-//		int level;
-//		is >> level;
-//
-//
-//		//Comboer *enemy = new Comboer(Vector2i(xPos, yPos), localPath, loop, level);
-//		Enemy *enemy = NULL;
-//		assert(0);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "splitcomboer")
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		bool loop;
-//		Enemy::ReadBool(is, loop);
-//
-//		int level;
-//		is >> level;
-//
-//		Enemy *enemy = NULL;
-//		//SplitComboer *enemy = new SplitComboer(Vector2i(xPos, yPos), localPath, loop, level);
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "booster")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int level;
-//		is >> level;
-//
-//		Booster *enemy = new Booster(Vector2i(xPos, yPos), level);
-//		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
-//
-//		activeItemTree->Insert(enemy);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "key")
-//	{
-//		int xPos, yPos;
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int numKeys;
-//		is >> numKeys;
-//
-//		int zType;
-//		is >> zType;
-//
-//		keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
-//	}
-//	else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
-//		|| typeName == "airbouncespring" )//|| typeName == "teleportspring" )
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int speed = 0;
-//		//if (typeName == "spring" || typeName == "gravityspring" || ty)
-//		{
-//			is >> speed;
-//		}
-//
-//
-//		Vector2i other;
-//		is >> other.x;
-//		is >> other.y;
-//
-//		Spring::SpringType sp;
-//		if (typeName == "spring")
-//		{
-//			sp = Spring::BLUE;
-//		}
-//		else if (typeName == "gravityspring")
-//		{
-//			sp = Spring::GREEN;
-//		}
-//		else if (typeName == "bouncespring")
-//		{
-//			sp = Spring::BOUNCE;
-//		}
-//		else if (typeName == "airbouncespring")
-//		{
-//			sp = Spring::AIRBOUNCE;
-//		}
-//		else if (typeName == "teleportspring")
-//		{
-//			sp = Spring::TELEPORT;
-//		}
-//		//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
-//		Spring *enemy = new Spring( sp, Vector2i(xPos, yPos), other, speed);
-//
-//		activeItemTree->Insert(enemy);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "teleporter" || typeName == "onewayteleporter")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//
-//		Vector2i other;
-//		is >> other.x;
-//		is >> other.y;
-//
-//		bool bothWays = true;
-//		if (typeName == "onewayteleporter")
-//		{
-//			bothWays = false;
-//		}
-//
-//		/*Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
-//
-//		activeItemTree->Insert(enemy);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//
-//		Teleporter *secondary = enemy->CreateSecondary();
-//
-//		activeItemTree->Insert(secondary);
-//
-//		fullEnemyList.push_back(secondary);
-//
-//		enemyTree->Insert(secondary);*/
-//
-//
-//	}
-//	else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
-//	{
-//		int xPos, yPos;
-//			
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//			
-//		int level;
-//		is >> level;
-//
-//		bool upOnly = false;
-//		if (typeName == "upbouncebooster")
-//		{
-//			upOnly = true;
-//		}
-//
-//
-//		/*BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
-//
-//		activeItemTree->Insert(enemy);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "rail" || typeName == "grindrail" )
-//	{
-//			
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		int accelerate;
-//		is >> accelerate;
-//
-//		int level;
-//		is >> level;
-//
-//		bool requirePower = false;
-//		if (typeName == "grindrail")
-//		{
-//			requirePower = true;
-//		}
-//
-//		//Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
-//
-//		//++totalRails;
-//	}
-//	//w1
-//	else if (typeName == "patroller")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		bool loop;
-//		Enemy::ReadBool(is, loop);
-//
-//		int level;
-//		is >> level;
-//		Patroller *enemy = new Patroller(hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "bosscrawler")
-//	{
-//		//always grounded
-//
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//
-//		CrawlerQueen *enemy = new CrawlerQueen(loadedEdge,
-//			edgeQuantity, false);
-//
-//		fullEnemyList.push_back(enemy);
-//
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "basicturret")
-//	{
-//		//always grounded
-//
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//		BasicTurret *enemy = new BasicTurret(hasMonitor, loadedEdge, edgeQuantity,level);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "crawler")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		Crawler *enemy = new Crawler(hasMonitor, loadedEdge,
-//			edgeQuantity, level);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "shroom")
-//	{
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		Shroom *enemy = new Shroom(hasMonitor, loadedEdge, edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "airdasher")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//
-//		Airdasher *enemy = new Airdasher(hasMonitor, Vector2i(xPos, yPos), level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//
-//	//w2
-//	else if (typeName == "bat")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		bool loop;
-//		Enemy::ReadBool(is, loop);
-//
-//		int level;
-//		is >> level;
-//
-//
-//
-//		/*Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "airdashjuggler")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		int level;
-//		is >> level;
-//
-//			
-//
-//		/*AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
-//		|| typeName == "wirejuggler" )
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		int level;
-//		is >> level;
-//
-//		int numJuggles;
-//		is >> numJuggles;
-//
-//
-//		/*Enemy *enemy;
-//		if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
-//		{
-//			bool reversed = false;
-//			if (typeName == "upgravityjuggler")
-//			{
-//				reversed = true;
-//			}
-//
-//			enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-//				level, numJuggles, reversed);
-//		}
-//		else if (typeName == "bouncejuggler")
-//		{
-//			enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-//				level, numJuggles);
-//		}
-//		else if (typeName == "wirejuggler")
-//		{
-//			enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-//				level, numJuggles, WireJuggler::T_BLUE);
-//		}
-//			
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		int numJuggles;
-//		is >> numJuggles;
-//
-//		bool cw = true;
-//		if (typeName == "grindjugglerccw")
-//		{
-//			cw = false;
-//		}
-//
-//		/*Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
-//			level, numJuggles, cw);
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
-//	{
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		int numJuggles;
-//		is >> numJuggles;
-//
-//		bool cw = true;
-//		if (typeName == "groundedgrindjugglerccw")
-//		{
-//			cw = false;
-//		}
-//
-//	/*	Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, loadedEdge,
-//			edgeQuantity, level, numJuggles, cw);
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "jugglercatcher")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		//JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
-//		////GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
-//
-//		//activeEnemyItemTree->Insert(enemy);
-//		//fullEnemyList.push_back(enemy);
-//		//enem = enemy;
-//
-//		//enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "poisonfrog")
-//	{
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//		/*int gravFactor;
-//		is >> gravFactor;
-//
-//		int jumpStrengthX;
-//		is >> jumpStrengthX;
-//
-//		int jumpStrengthY;
-//		is >> jumpStrengthY;
-//
-//		int jumpFramesWait;
-//		is >> jumpFramesWait;*/
-//
-//		/*PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, loadedEdge,
-//			edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "gravityfaller")
-//	{
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*GravityFaller *enemy = new GravityFaller(this, hasMonitor, loadedEdge,
-//			edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "stagbeetle")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//
-//		/*StagBeetle *enemy = new StagBeetle(this, hasMonitor, loadedEdge,
-//			edgeQuantity, level );
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "curveturret")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*CurveTurret *enemy = new CurveTurret(this, hasMonitor, loadedEdge, edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
-//	{
-//		bool increaser = (typeName == "gravityincreaser");
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int level;
-//		is >> level;
-//
-//	/*	GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
-//
-//		activeItemTree->Insert(enemy);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//
-//	else if (typeName == "bossbird")
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		//BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
-//
-//		//fullEnemyList.push_back(enemy);
-//		//enem = enemy;
-//
-//		//enemyTree->Insert(enemy);
-//	}
-//
-//	//w3
-//	else if (typeName == "pulser")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		bool loop;
-//		Enemy::ReadBool(is, loop);
-//
-//		int level;
-//		is >> level;
-//
-//		/*Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
-//			loop, level );
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "cactus")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*Cactus *enemy = new Cactus(this, hasMonitor,
-//			loadedEdge, edgeQuantity, level );
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "owl")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		/*Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "badger")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*Badger *enemy = new Badger(this, hasMonitor, loadedEdge, edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "roadrunner")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge, edgeQuantity, level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "bouncefloater")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int level;
-//		is >> level;
-//
-//		/*BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "bosscoyote")
-//	{
-//		//always grounded
-//
-//		Vector2i pos;
-//
-//		is >> pos.x;
-//		is >> pos.y;
-//
-//		/*Boss_Coyote *enemy = new Boss_Coyote( this, pos );
-//		b_coyote = enemy;
-//
-//		fullEnemyList.push_back( enemy );*/
-//	}
-//
-//	//w4
-//	else if (typeName == "turtle")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		
-//		/*Vector2i pos(xPos, yPos);
-//		Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "coral")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int moveFrames;
-//		is >> moveFrames;
-//
-//		/*SecurityWeb * enemy = new SecurityWeb( this,
-//		hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
-//
-//
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "cheetah")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*Cheetah *enemy = new Cheetah( this, hasMonitor,
-//		loadedEdge, edgeQuantity, level );
-//
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "spider")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		/*Spider *enemy = new Spider(this, hasMonitor, loadedEdge, edgeQuantity,
-//			level);
-//
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "bosstiger")
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		/*Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
-//
-//		fullEnemyList.push_back( enemy );
-//
-//		b_tiger = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//
-//	//w5
-//	else if (typeName == "hungrycomboer" || typeName == "hungryreturncomboer" )
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		int numJuggles;
-//		is >> numJuggles;
-//
-//			
-//		bool returnsToPlayer = false;
-//		if (typeName == "hungryreturncomboer")
-//		{
-//			returnsToPlayer = true;
-//		}
-//			
-//		/*HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
-//			returnsToPlayer );
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		Enemy::ReadPath(is, pathLength, localPath);
-//
-//		int level;
-//		is >> level;
-//
-//		int numJuggles;
-//		is >> numJuggles;
-//
-//		bool detachOnKill = false;
-//		if (typeName == "relativecomboerdetach")
-//		{
-//			detachOnKill = true;
-//		}
-//
-//		/*RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
-//			detachOnKill);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "swarm")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		/*Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "shark")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		/*Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "ghost")
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		/*Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
-//
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "overgrowth")
-//	{
-//		//always grounded
-//
-//		/*int terrainIndex;
-//		is >> terrainIndex;
-//
-//		int edgeIndex;
-//		is >> edgeIndex;
-//
-//		double edgeQuantity;
-//		is >> edgeQuantity;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;*/
-//
-//		//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
-//		//	loadedEdge, 
-//		//	edgeQuantity, 32, 0, 1000 );
-//
-//		//
-//		//fullEnemyList.push_back( enemy );
-//		//enem = enemy;
-//
-//		//enemyTree->Insert( enemy );
-//	}
-//	else if (typeName == "growingtree")
-//	{
-//		//always grounded
-//
-//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
-//
-//		//GrowingTree * enemy = new GrowingTree(this, hasMonitor,
-//		//	loadedEdge, edgeQuantity, level);
-//
-//		////
-//		//fullEnemyList.push_back( enemy );
-//		//enem = enemy;
-//
-//		//enemyTree->Insert( enemy );
-//	}
-//	else if (typeName == "bossgator")
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		/*Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
-//
-//		fullEnemyList.push_back( enemy );
-//
-//		b_gator = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//
-//	//w6
-//	else if (typeName == "specter")
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
-//		//fullEnemyList.push_back( enemy );
-//		////enem = enemy;
-//
-//		//enemyTree->Insert( enemy );
-//	}
-//	else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int speed = 0;
-//		is >> speed;
-//
-//		Vector2i other;
-//		is >> other.x;
-//		is >> other.y;
-//
-//		bool cw = true;
-//		if (typeName == "swinglauncherccw")
-//		{
-//			cw = false;
-//		}
-//
-//		/*SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
-//
-//		activeItemTree->Insert(enemy);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "narwhal")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		Vector2i dest;
-//		is >> dest.x;
-//		is >> dest.y;
-//
-//		int moveFrames;
-//		is >> moveFrames;
-//
-//
-//		/*Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "copycat")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		/*Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
-//
-//
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "gorilla")
-//	{
-//
-//		int xPos, yPos;
-//
-//		//always air
-//
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		//int wallWidth;
-//		//is >> wallWidth;
-//
-//		//int followFrames;
-//		//is >> followFrames;
-//
-//		int level;
-//		is >> level;
-//
-//
-//		/*Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
-//
-//		fullEnemyList.push_back( enemy );
-//		enem = enemy;
-//
-//		enemyTree->Insert( enemy );*/
-//	}
-//	else if (typeName == "wiretarget")
-//	{
-//
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		int hasMonitor;
-//		is >> hasMonitor;
-//
-//		int level;
-//		is >> level;
-//
-//		/*WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);*/
-//	}
-//	else if (typeName == "bossskeleton")
-//	{
-//		int xPos, yPos;
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		/*Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
-//
-//		fullEnemyList.push_back( enemy );
-//
-//		b_skeleton = enemy;*/
-//	}
-//
-//
-//	else if (typeName == "nexus")
-//	{
-//		//always grounded
-//
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//
-//		int nexusIndex;
-//		is >> nexusIndex;
-//
-//		Nexus *enemy = new Nexus(loadedEdge, edgeQuantity);
-//
-//		goalNodePos = enemy->GetKillPos();
-//		float space = 78.f;
-//		V2d end(goalNodePos.x, goalNodePos.y - space);
-//		hasGoal = true;
-//		nexus = enemy;
-//		//nexusPos = enemy->GetKillPos();//enemy->position;
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "shippickup")
-//	{
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//		int facingRight;
-//		is >> facingRight;
-//
-//		ShipPickup *enemy = new ShipPickup(loadedEdge, edgeQuantity,
-//			facingRight);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//
-//
-//		if (shipExitScene == NULL )
-//		{
-//			shipExitScene = new ShipExitScene(this);
-//			shipExitScene->Init();
-//		}
-//		/*if (shipExitSeq == NULL)
-//		{
-//			shipExitSeq = new ShipExitSeq(this);
-//		}*/
-//	}
-//	else if (typeName == "groundtrigger")
-//	{
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//
-//		int facingRight;
-//		is >> facingRight;
-//
-//		string tType;
-//		is >> tType;
-//
-//		GroundTrigger *enemy = new GroundTrigger(loadedEdge, edgeQuantity,
-//			facingRight, tType);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	else if (typeName == "airtrigger")
-//	{
-//		Vector2i pos;
-//
-//		//always air
-//		is >> pos.x;
-//		is >> pos.y;
-//
-//		string typeStr;
-//		is >> typeStr;
-//
-//		int rectWidth;
-//		is >> rectWidth;
-//
-//		int rectHeight;
-//		is >> rectHeight;
-//		//int hasMonitor;
-//		//is >> hasMonitor;
-//		AirTrigger *at = new AirTrigger( this, V2d(pos), rectWidth, rectHeight, typeStr);
-//		airTriggerTree->Insert(at);
-//		fullAirTriggerList.push_back(at);
-//	}
-//	else if (typeName == "flowerpod")
-//	{
-//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
-//
-//		string tType;
-//		is >> tType;
-//
-//		FlowerPod *enemy = new FlowerPod(tType,
-//			loadedEdge, edgeQuantity);
-//
-//		fullEnemyList.push_back(enemy);
-//		enem = enemy;
-//
-//		enemyTree->Insert(enemy);
-//	}
-//	//w6
-//	else if (typeName == "racefighttarget")
-//	{
-//		int xPos, yPos;
-//
-//		//always air
-//
-//		is >> xPos;
-//		is >> yPos;
-//
-//		if (raceFight != NULL)
-//		{
-//			raceFight->numTargets++;
-//
-//			/*RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
-//
-//			fullEnemyList.push_back(enemy);
-//			enem = enemy;
-//
-//			enemyTree->Insert(enemy);*/
-//		}
-//		else
-//		{
-//			//ignore
-//		}
-//	}
-//	else
-//	{
-//		assert(false && "not a valid type name: ");
-//	}
-//}
 
 
 void GameSession::ProcessHeader()
@@ -4306,11 +2400,9 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 	}
 }
 
-#include "StorySequence.h"
+
 int GameSession::Run()
 {
-	//test
-	
 	goalDestroyed = false;
 
 	ClearEmitters();
@@ -4325,8 +2417,6 @@ int GameSession::Run()
 
 	View oldPreTexView = preScreenTex->getView();
 	View oldWindowView = window->getView();
-	
-	//showHUD = true;
 
 	preScreenTex->setView(view);
 	
@@ -4909,8 +2999,6 @@ int GameSession::Run()
 					UpdateEnemiesPhysics();
 				}
 
-				
-
 				RecordReplayEnemies();
 
 				if (!playerAndEnemiesFrozen)
@@ -4922,41 +3010,6 @@ int GameSession::Run()
 							p->UpdatePostPhysics();
 					}
 				}
-
-				switch (mapHeader->bossFightType)
-				{
-				case 0:
-					break;
-				case 1:
-				{
-					/*PoiInfo *pi = poiMap["nexuscore"];
-					assert(pi != NULL);
-					double halfX = 480 * pi->cameraZoom;
-					double halfY = 270 * pi->cameraZoom;
-					V2d A(pi->pos.x - halfX, pi->pos.y - halfY);
-					V2d B(pi->pos.x + halfX, pi->pos.y - halfY);
-					V2d C(pi->pos.x + halfX, pi->pos.y + halfY);
-					V2d D(pi->pos.x - halfX, pi->pos.y + halfY);
-					V2d pPos = GetPlayer(0)->position;
-					if (QuadContainsPoint(A, B, C, D, pPos))
-					{
-						if (!cam.manual)
-						{
-							cam.manual = true;
-							cam.Ease(Vector2f(pi->pos), pi->cameraZoom, 120, CubicBezier());
-						}
-					}
-					else
-					{
-						if (cam.manual)
-						{
-							cam.EaseOutOfManual(60);
-						}
-					}*/
-					break;
-				}
-				}
-
 
 				if( recGhost != NULL )
 					recGhost->RecordFrame();
@@ -4992,19 +3045,15 @@ int GameSession::Run()
 					}
 				}
 
-
 				if (!playerAndEnemiesFrozen)
 				{
 					UpdateEnemiesPostPhysics();
 				}
 				
-				
 				for( int i = 0; i < numGates; ++i )
 				{
 					gates[i]->Update();
 				}
-
-				
 
 				absorbParticles->Update();
 				absorbDarkParticles->Update();
@@ -5064,11 +3113,6 @@ int GameSession::Run()
 
 				Vector2f camPos = cam.GetPos();
 
-				if (totalGameFrames % 60 == 0)
-				{
-
-				}
-
 				fader->Update();
 				swiper->Update();
 				background->Update(camPos);
@@ -5085,9 +3129,6 @@ int GameSession::Run()
 
 				if( shipSequence )
 				{
-					
-
-
 					float oldLeft = cloud0[0].position.x;
 					float blah = 30.f;
 					float newLeft = oldLeft - blah; //cloudVel.x;
@@ -5146,14 +3187,6 @@ int GameSession::Run()
 				
 				screenRect = sf::Rect<double>( camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight );
 
-				if (totalGameFrames % 60 == 0)
-				{
-					float ddepth = .7;
-					//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("hit_spack_1_128x128.png", 128, 128), V2d(camPos / ddepth), true, 0, 10, 10, true, ddepth);
-				}
-
-				//flowShader.setUniform( "radius0", flow
-				
 				UpdateGoalFlow();
 				
 				int speedLevel = p0->speedLevel;
@@ -5170,8 +3203,6 @@ int GameSession::Run()
 				{
 					quant = (float)((p0->currentSpeedBar-p0->level2SpeedThresh) / ( p0->maxGroundSpeed - p0->level2SpeedThresh) );
 				}
-
-				//cout << "quant: " << quant << endl;
 
 				queryMode = "enemy";
 
@@ -5221,20 +3252,7 @@ int GameSession::Run()
 				queryMode = "envplant";
 				envPlantTree->Query( this, screenRect );
 
-				/*while( listVA != NULL )
-				{
-					TerrainPiece *t = listVA->next;
-					listVA->next = NULL;
-					listVA = t;
-				}*/
-
-
-				//works up to here!
-				
-
 				polyQueryList = NULL;
-				//listVA = NULL;
-				//listVA is null here
 				queryMode = "border";
 				numBorders = 0;
 				borderTree->Query( this, screenRect );
@@ -5255,23 +3273,8 @@ int GameSession::Run()
 				
 
 				UpdateDecorLayers();
-				//TerrainRender::UpdateDecorLayers();
 
-				
-
-				/*for( map<DecorType,DecorLayer*>::iterator mit =
-					decorLayerMap.begin(); mit != decorLayerMap.end();
-					++mit )
-				{
-					(*mit).second->Update();
-				}*/
-
-				//hacky
-				/*if( p0->dead )
-				{
-					RestartLevel();
-				}
-				else */if( raceFight != NULL )
+				if( raceFight != NULL )
 				{
 					if( raceFight->gameOver || GetCurrInput( 0 ).back )
 					{
@@ -5433,7 +3436,6 @@ int GameSession::Run()
 		int numPolys = allPolysVec.size();
 		for (int i = 0; i < numPolys; ++i)
 		{
-			//void TerrainPolygon::Draw(bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow)
 			allPolysVec[i]->Draw(preScreenTex);
 		}
 
@@ -8060,329 +6062,6 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 	}*/
 }
 
-VertexArray * GameSession::SetupBorderQuads( int bgLayer, 
-	Edge *startEdge, Tileset *ts, int (*ValidEdge)(sf::Vector2<double> & ) )
-{
-	/*int worldNum = 0;
-	if( envType < 1 )
-	{
-		worldNum = 0;
-	}
-	else if( envType < 2 )
-	{
-
-	}*/
-	//int worldNum = (int)envType; //temporary
-
-	rayMode = "border_quads";
-	QuadTree *qt = NULL;
-	if( bgLayer == 0 )
-	{
-		qt = terrainTree;
-	}
-	else if( bgLayer == 1 )
-	{
-		qt = terrainBGTree;
-	}
-
-	assert( qt != NULL );
-
-	int tw = ts->tileWidth;//128;//64;
-	//int th = 512;
-	int numTotalQuads = 0;
-	double intersect = 10;//tw / 6.0;//48;
-	double extraLength = 0;//32.0;
-	Edge *te = startEdge;//edges[currentEdgeIndex];
-
-	map<Edge*, int> numQuadMap;
-
-	do
-	{
-		V2d eNorm = te->Normal();
-		int valid = ValidEdge( eNorm );
-		if( valid != -1 )//eNorm.x == 0 )
-		{
-			double len = length(te->v1 - te->v0);// +extraLength * 2;
-
-			int numQuads = 0;
-			//if (len < 8 )//tw)
-			//{
-			//	numQuads = 0;
-			//}
-		//else
-			if (len <= tw - extraLength * 2)
-			{
-				numQuads = 1;
-			}
-			else
-			{
-				numQuads = 2;
-				double firstRight = tw - extraLength - intersect;
-				double endLeft = (len + extraLength) - tw + intersect;
-
-				//optimize later to not be a loop
-				while (firstRight <= endLeft)
-				{
-					firstRight += tw - intersect;
-					++numQuads;
-				}
-			}
-
-			// = ceil(len / (tw - intersect));
-			//double quadWidth = len / numQuads;
-			numTotalQuads += numQuads;
-			numQuadMap[te] = numQuads;
-		}
-		te = te->edge1;
-	}
-	while( te != startEdge );
-
-	if (numTotalQuads == 0)
-	{
-		return NULL;
-	}
-
-	VertexArray *currVA = new VertexArray( sf::Quads, numTotalQuads * 4 );
-	
-	VertexArray &va = *currVA;
-			
-	int extra = 0;
-	te = startEdge;
-	int varietyCounter = 0;
-	
-	do
-	{
-		V2d eNorm = te->Normal();
-		int valid = ValidEdge( eNorm );
-		if( valid != -1 )
-		{
-			double len = length(te->v1 - te->v0);// +extraLength * 2;
-			int numQuads = numQuadMap[te];//ceil( len / tw ); 
-			if (numQuads == 0)
-			{
-				te = te->edge1;
-				continue;
-			}
-			double quadWidth = ts->tileWidth;;//len / numQuads;
-
-			V2d along = normalize( te->v1 - te->v0 );
-			V2d other( along.y, -along.x );
-
-			
-			double out = 16;//40;//16;
-			double in = 64 - out;//256 - out;//; - out;
-			
-
-			V2d startInner = te->v0 - along * extraLength - other * in;
-			V2d startOuter = te->v0 - along * extraLength + other * out;
-
-			double startAlong = -extraLength;
-			double endAlong;
-
-
-			for( int i = 0; i < numQuads; ++i )
-			{
-				//worldNum * 5
-				//int valid = ValidEdge( eNorm );
-				//add (worldNum * 5) to realIndex to get the correct borders
-				int realIndex = valid;// *4 + varietyCounter;//32 + varietyCounter;
-				//cout << "real Index: " << realIndex << ", valid: " << valid << ", variety: " << varietyCounter << endl;
-				IntRect sub = ts->GetSubRect( realIndex );
-				//cout << "left: " << sub.left << ", top: " << sub.top << 
-				//	", w: " << sub.width << ", h: " << sub.height << endl;
-				if (numQuads == 1)
-				{
-					startAlong = len / 2 - tw / 2;
-					endAlong = startAlong + tw;
-				}
-				else if (numQuads == 2)
-				{
-					if (i == 0)
-					{
-						startAlong = -extraLength;
-						endAlong = startAlong + tw;
-					}
-					else
-					{
-						endAlong = len + extraLength;
-						startAlong = endAlong - tw;
-					}
-				}
-				else if (numQuads % 2 == 0 )
-				{
-					if (i < numQuads / 2 )
-					{
-						startAlong = -extraLength + ((tw - intersect) * i);
-						endAlong = startAlong + tw;
-					}
-					else 
-					{
-						endAlong = len + extraLength - ((tw - intersect) * ((numQuads - 1) - i));
-						startAlong = endAlong - tw;
-					}
-				}
-				else
-				{
-					if (i * 2 == numQuads - 1)
-					{
-						startAlong = len / 2 - tw / 2;
-						endAlong = startAlong + tw;
-					}
-					else if (i < numQuads / 2)
-					{
-						startAlong = -extraLength + ((tw - intersect) * i);
-						endAlong = startAlong + tw;
-					}
-					else
-					{
-						endAlong = len + extraLength - ((tw - intersect) * (( numQuads -1 ) - i));
-						startAlong = endAlong - tw;
-					}
-				}
-				
-				
-				
-
-				V2d currStartInner = startInner + startAlong * along;
-				V2d currStartOuter = startOuter + startAlong * along;
-				V2d currEndInner = startInner + endAlong * along;
-				V2d currEndOuter = startOuter + endAlong * along;
-						
-				double realHeight0 = 64;//256;//in;//sub.height;
-				double realHeight1 = 64;//256;//in;//sub.height;
-				
-				double d0 = dot( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
-				double c0 = cross( normalize( te->edge0->v0 - te->v0 ), normalize( te->v1 - te->v0 ) );
-
-				double d1 = dot( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
-				double c1 = cross( normalize( te->edge1->v1 - te->v1 ), normalize( te->v0 - te->v1 ) );
-
-				//if( d0 <= 0
-
-				rcEdge = NULL;
-				rayIgnoreEdge = te;
-				rayStart = te->v0 - along * extraLength + ( startAlong ) * along;
-				rayEnd = currStartInner;//te->v0 + (double)i * quadWidth * along - other * in;
-				RayCast( this, qt->startNode, rayStart, rayEnd );
-
-
-				//start ray
-				if( rcEdge != NULL )
-				{
-					//currStartInner = rcEdge->GetPoint( rcQuantity );
-					//realHeight0 = length( currStartInner - currStartOuter );
-				}
-
-				rcEdge = NULL;
-				rayStart = te->v0 - along * extraLength + ( endAlong ) * along;
-				rayEnd = currEndInner;
-				RayCast( this, qt->startNode, rayStart, rayEnd );
-
-				//end ray
-				if( rcEdge != NULL )
-				{
-					//currEndInner =  rcEdge->GetPoint( rcQuantity );//te->v0 + endAlong * along - rcQuantity * other;
-					//realHeight1 = length( currEndInner - currStartOuter );
-				}
-
-				
-				//RayCast( this, terrainTree, position, V2d( position.x - 100, position.y ) );
-				
-				//if( i == 0 && d0 <= 0 )
-				//{
-				//	Edge *prev = te->edge0;
-				//	V2d pNorm = prev->Normal();
-				//	V2d prevEndInner = prev->v1 - pNorm * in;
-				//	V2d prevEndOuter = prev->v1 + pNorm * out;
-				//	//V2d prevEndOuter = prev->v1 - 
-
-				//	va[extra + i * 4 + 0].position = Vector2f( ( currStartOuter.x + prevEndOuter.x ) / 2.0, 
-				//		( currStartOuter.y + prevEndOuter.y ) / 2.0 );
-				//	
-				//	va[extra + i * 4 + 3].position = Vector2f( (currStartInner.x + prevEndInner.x) / 2.0, 
-				//		( currStartInner.y + prevEndInner.y ) / 2.0  );
-				//}
-				//else
-				{
-					Vector2f a = Vector2f( currStartOuter.x, currStartOuter.y );
-					Vector2f b = Vector2f( currStartInner.x, currStartInner.y );
-					/*a += Vector2f( .5, .5 );
-					b += Vector2f( .5, .5 );
-					a.x = floor( a.x );
-					a.y = floor( a.y );
-					b.x = floor( b.x );
-					b.y = floor( b.y );*/
-
-					va[extra + i * 4 + 0].position = a;
-					va[extra + i * 4 + 3].position = b;
-				}
-
-				/*if( i == numQuads - 1 && d1 <= 0 )
-				{
-					Edge *next = te->edge1;
-					V2d nNorm = next->Normal();
-					V2d nextStartInner = next->v0 - nNorm * in;
-					V2d nextStartOuter = next->v0 + nNorm * out;
-					va[extra + i * 4 + 2].position = Vector2f( ( currEndInner.x + nextStartInner.x ) / 2, 
-						( currEndInner.y + nextStartInner.y ) / 2 );
-
-					va[extra + i * 4 + 1].position = Vector2f( ( currEndOuter.x + nextStartOuter.x ) / 2.0, 
-						( currEndOuter.y + nextStartOuter.y ) / 2.0 );
-
-				}
-				else*/
-				{
-					Vector2f c = Vector2f( currEndInner.x, currEndInner.y);
-					Vector2f d = Vector2f( currEndOuter.x, currEndOuter.y);
-
-					/*c += Vector2f( .5, .5 );
-					d += Vector2f( .5, .5 );
-					c.x = floor( c.x );
-					c.y = floor( c.y );
-					d.x = floor( d.x );
-					d.y = floor( d.y );*/
-
-					va[extra + i * 4 + 2].position = c;
-					va[extra + i * 4 + 1].position = d;
-				}
-
-				/*va[extra + i * 4 + 2].position = Vector2f( currEndInner.x, currEndInner.y );
-				va[extra + i * 4 + 3].position = Vector2f( currStartInner.x, currStartInner.y );*/
-				
-				
-				va[extra + i * 4 + 0].texCoords = Vector2f( sub.left, sub.top );
-				va[extra + i * 4 + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-				va[extra + i * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);//realHeight1);
-				va[extra + i * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);//+ realHeight0);
-
-				/*va[extra + i * 4 + 0].color = COLOR_BLUE;
-				va[extra + i * 4 + 1].color = COLOR_YELLOW;
-				va[extra + i * 4 + 2].color = COLOR_MAGENTA;
-				va[extra + i * 4 + 3].color = COLOR_TEAL;
-*/
-				++varietyCounter;
-				if( varietyCounter == 4 )//32 )
-				{
-					varietyCounter = 0;
-				}
-
-				startAlong += tw - intersect;
-			}
-
-			extra += numQuads * 4;
-		}
-
-		
-		te = te->edge1;
-	}
-	while( te != startEdge );
-
-	
-	return currVA;
-}
-
-
-
 typedef pair<V2d, V2d> pairV2d;
 void GameSession::SetupEnergyFlow()
 {
@@ -9607,8 +7286,6 @@ void GameSession::RaceFight::TickFrame()
 	}
 }
 
-
-
 GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
 	int numVerts,
 	Tileset *t)
@@ -9624,4 +7301,1577 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 	target->draw(quads,	numVertices, sf::Quads, ts->texture);
 }
 
-
+//void GameSession::LoadEnemy(std::ifstream &is )
+//{
+//	string typeName;
+//	is >> typeName;
+//
+//	Enemy *enem = NULL;
+//
+//	Edge *loadedEdge;
+//	double edgeQuantity;
+//	int hasMonitor;
+//	int level;
+//	Vector2i pos;
+//	std::string pName;
+//
+//	int pathLength;
+//	vector<Vector2i> localPath;
+//	//LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//	if (typeName == "goal" || typeName == "greengoal")
+//	{
+//		//always grounded
+//
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//
+//		int w = 0;
+//		if (typeName == "greengoal")
+//		{
+//			w = 1;
+//		}
+//
+//		//cout << "polyIndex: " << polyIndex[terrainIndex] << ", tindex: " << terrainIndex << endl;
+//		//Goal *enemy = new Goal(loadedEdge, edgeQuantity, w);
+//		Enemy *enemy = NULL;
+//		assert(0);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//
+//		hasGoal = true;
+//		goalPos = enemy->position;
+//
+//		V2d gPos = enemy->ground->GetPosition(enemy->edgeQuantity);
+//		V2d norm = enemy->ground->Normal();
+//		double nodeHeight = 104;
+//		goalNodePos = gPos + norm * nodeHeight;
+//		float space = 78.f;
+//		goalNodePosFinal = V2d(goalNodePos.x, goalNodePos.y - space);
+//		//cout << "setting goalPos: " << goalPos.x << ", " << goalPos.y << endl;
+//	}
+//	else if (typeName == "poi")
+//	{
+//		string air;
+//		//string pname;
+//		PoiInfo *pi = NULL;
+//
+//		int posType;
+//		is >> posType;
+//
+//		if (posType == 0)
+//		{
+//			LoadNamedAirInfo(is, pos, pName);
+//			pi = new PoiInfo(pName, pos);
+//		}
+//
+//		else if (posType == 1)
+//		{
+//			LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//			is >> pName;
+//
+//			pi = new PoiInfo(pName, loadedEdge,
+//				edgeQuantity);				
+//		}
+//		else
+//		{
+//			cout << "air failure: " << air << endl;
+//			assert(0);
+//		}
+//
+//		poiMap[pName] = pi;
+//	}
+//	else if (typeName == "xbarrier")
+//	{
+//		LoadNamedAirInfo(is, pos, pName);
+//
+//		int hEdge;
+//		is >> hEdge;
+//		bool hEdgeB = hEdge;
+//
+//		Barrier *b = new Barrier(this, pName, true, pos.x, hEdgeB, NULL);
+//
+//		barrierMap[pName] = b;
+//		barriers.push_back(b);
+//	}
+//	else if (typeName == "extrascene")
+//	{
+//		LoadNamedAirInfo(is, pos, pName);
+//
+//		int extraSceneType;
+//		is >> extraSceneType;
+//
+//		BasicBossScene *scene = BasicBossScene::CreateScene(this, pName);
+//		if (extraSceneType == 0)//prelevel
+//		{
+//			preLevelScene = scene;
+//		}
+//		else if (extraSceneType == 1)//postlevel
+//		{
+//			postLevelScene = scene;
+//		}
+//	}	
+//	else if (typeName == "camerashot")
+//	{
+//		LoadNamedAirInfo(is, pos, pName);
+//
+//		float z;
+//		is >> z;
+//
+//		CameraShot *shot = new CameraShot(pName, Vector2f(pos), z);
+//		if (cameraShotMap.count(pName) > 0 )
+//		{
+//			assert(false);
+//		}
+//
+//		cameraShotMap[pName] = shot;
+//	}
+//	else if (typeName == "shard")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int w;
+//		is >> w;
+//
+//		int localIndex;
+//		is >> localIndex;
+//
+//		Shard *enemy = new Shard(Vector2i(xPos, yPos), w, localIndex);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "ship")
+//	{
+//		LoadAirInfo(is, pos);
+//
+//		shipEntrancePos = V2d(pos);
+//		hasShipEntrance = true;
+//
+//		ResetShipSequence();
+//	}
+//	else if (typeName == "healthfly")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int level;
+//		is >> level;
+//
+//		/*HealthFly *enemy = new HealthFly(this, Vector2i(xPos, yPos), level, numTotalFlies);
+//
+//		allFlies.push_back(enemy);
+//		numTotalFlies++;
+//		activeItemTree->Insert(enemy);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "blocker" || typeName == "greenblocker")
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		int bType;
+//		is >> bType;
+//
+//		if (typeName == "blocker")
+//		{
+//			bType = BlockerChain::BLUE;
+//		}
+//		else if (typeName == "greenblocker")
+//		{
+//			bType = BlockerChain::GREEN;
+//		}
+//
+//		int armored;
+//		is >> armored;
+//
+//		int spacing;
+//		is >> spacing;
+//
+//		int level;
+//		is >> level;
+//
+//		Enemy *enemy = NULL;
+//		assert(0);
+//		//BlockerChain *enemy = new BlockerChain(Vector2i(xPos, yPos), localPath, bType, armored, spacing, level);
+//
+//		fullEnemyList.push_back(enemy);
+//
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "comboer")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//		is >> xPos;
+//		is >> yPos;
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		bool loop;
+//		Enemy::ReadBool(is, loop);
+//
+//		int level;
+//		is >> level;
+//
+//
+//		//Comboer *enemy = new Comboer(Vector2i(xPos, yPos), localPath, loop, level);
+//		Enemy *enemy = NULL;
+//		assert(0);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "splitcomboer")
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		bool loop;
+//		Enemy::ReadBool(is, loop);
+//
+//		int level;
+//		is >> level;
+//
+//		Enemy *enemy = NULL;
+//		//SplitComboer *enemy = new SplitComboer(Vector2i(xPos, yPos), localPath, loop, level);
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "booster")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int level;
+//		is >> level;
+//
+//		Booster *enemy = new Booster(Vector2i(xPos, yPos), level);
+//		//GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+//
+//		activeItemTree->Insert(enemy);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "key")
+//	{
+//		int xPos, yPos;
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int numKeys;
+//		is >> numKeys;
+//
+//		int zType;
+//		is >> zType;
+//
+//		keyNumberObjects.push_back(new KeyNumberObj(Vector2i(xPos, yPos), numKeys, zType));
+//	}
+//	else if (typeName == "spring" || typeName == "gravityspring" || typeName == "bouncespring" 
+//		|| typeName == "airbouncespring" )//|| typeName == "teleportspring" )
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int speed = 0;
+//		//if (typeName == "spring" || typeName == "gravityspring" || ty)
+//		{
+//			is >> speed;
+//		}
+//
+//
+//		Vector2i other;
+//		is >> other.x;
+//		is >> other.y;
+//
+//		Spring::SpringType sp;
+//		if (typeName == "spring")
+//		{
+//			sp = Spring::BLUE;
+//		}
+//		else if (typeName == "gravityspring")
+//		{
+//			sp = Spring::GREEN;
+//		}
+//		else if (typeName == "bouncespring")
+//		{
+//			sp = Spring::BOUNCE;
+//		}
+//		else if (typeName == "airbouncespring")
+//		{
+//			sp = Spring::AIRBOUNCE;
+//		}
+//		else if (typeName == "teleportspring")
+//		{
+//			sp = Spring::TELEPORT;
+//		}
+//		//CurveLauncher * enemy = new CurveLauncher(this, Vector2i(xPos, yPos), other, moveFrames);
+//		Spring *enemy = new Spring( sp, Vector2i(xPos, yPos), other, speed);
+//
+//		activeItemTree->Insert(enemy);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "teleporter" || typeName == "onewayteleporter")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//
+//		Vector2i other;
+//		is >> other.x;
+//		is >> other.y;
+//
+//		bool bothWays = true;
+//		if (typeName == "onewayteleporter")
+//		{
+//			bothWays = false;
+//		}
+//
+//		/*Teleporter *enemy = new Teleporter(this, Vector2i(xPos, yPos), other, bothWays);
+//
+//		activeItemTree->Insert(enemy);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//
+//		Teleporter *secondary = enemy->CreateSecondary();
+//
+//		activeItemTree->Insert(secondary);
+//
+//		fullEnemyList.push_back(secondary);
+//
+//		enemyTree->Insert(secondary);*/
+//
+//
+//	}
+//	else if (typeName == "upbouncebooster" || typeName == "omnibouncebooster")
+//	{
+//		int xPos, yPos;
+//			
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//			
+//		int level;
+//		is >> level;
+//
+//		bool upOnly = false;
+//		if (typeName == "upbouncebooster")
+//		{
+//			upOnly = true;
+//		}
+//
+//
+//		/*BounceBooster *enemy = new BounceBooster(this, Vector2i(xPos, yPos), upOnly, level);
+//
+//		activeItemTree->Insert(enemy);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "rail" || typeName == "grindrail" )
+//	{
+//			
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		int accelerate;
+//		is >> accelerate;
+//
+//		int level;
+//		is >> level;
+//
+//		bool requirePower = false;
+//		if (typeName == "grindrail")
+//		{
+//			requirePower = true;
+//		}
+//
+//		//Rail *r = new Rail(this, Vector2i(xPos, yPos), localPath, requirePower, accelerate, level );
+//
+//		//++totalRails;
+//	}
+//	//w1
+//	else if (typeName == "patroller")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		bool loop;
+//		Enemy::ReadBool(is, loop);
+//
+//		int level;
+//		is >> level;
+//		Patroller *enemy = new Patroller(hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "bosscrawler")
+//	{
+//		//always grounded
+//
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//
+//		CrawlerQueen *enemy = new CrawlerQueen(loadedEdge,
+//			edgeQuantity, false);
+//
+//		fullEnemyList.push_back(enemy);
+//
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "basicturret")
+//	{
+//		//always grounded
+//
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//		BasicTurret *enemy = new BasicTurret(hasMonitor, loadedEdge, edgeQuantity,level);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "crawler")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		Crawler *enemy = new Crawler(hasMonitor, loadedEdge,
+//			edgeQuantity, level);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "shroom")
+//	{
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		Shroom *enemy = new Shroom(hasMonitor, loadedEdge, edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "airdasher")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//
+//		Airdasher *enemy = new Airdasher(hasMonitor, Vector2i(xPos, yPos), level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//
+//	//w2
+//	else if (typeName == "bat")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		bool loop;
+//		Enemy::ReadBool(is, loop);
+//
+//		int level;
+//		is >> level;
+//
+//
+//
+//		/*Bat *enemy = new Bat(this, hasMonitor, Vector2i(xPos, yPos), localPath, loop, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "airdashjuggler")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		int level;
+//		is >> level;
+//
+//			
+//
+//		/*AirdashJuggler *enemy = new AirdashJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler" || typeName == "bouncejuggler" 
+//		|| typeName == "wirejuggler" )
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		int level;
+//		is >> level;
+//
+//		int numJuggles;
+//		is >> numJuggles;
+//
+//
+//		/*Enemy *enemy;
+//		if (typeName == "downgravityjuggler" || typeName == "upgravityjuggler")
+//		{
+//			bool reversed = false;
+//			if (typeName == "upgravityjuggler")
+//			{
+//				reversed = true;
+//			}
+//
+//			enemy = new GravityJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+//				level, numJuggles, reversed);
+//		}
+//		else if (typeName == "bouncejuggler")
+//		{
+//			enemy = new BounceJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+//				level, numJuggles);
+//		}
+//		else if (typeName == "wirejuggler")
+//		{
+//			enemy = new WireJuggler(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+//				level, numJuggles, WireJuggler::T_BLUE);
+//		}
+//			
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "grindjugglercw" || typeName == "grindjugglerccw" )
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		int numJuggles;
+//		is >> numJuggles;
+//
+//		bool cw = true;
+//		if (typeName == "grindjugglerccw")
+//		{
+//			cw = false;
+//		}
+//
+//		/*Enemy *enemy = new GrindJuggler(this, hasMonitor, Vector2i(xPos, yPos),
+//			level, numJuggles, cw);
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "groundedgrindjugglercw" || typeName == "groundedgrindjugglerccw")
+//	{
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		int numJuggles;
+//		is >> numJuggles;
+//
+//		bool cw = true;
+//		if (typeName == "groundedgrindjugglerccw")
+//		{
+//			cw = false;
+//		}
+//
+//	/*	Enemy *enemy = new GroundedGrindJuggler(this, hasMonitor, loadedEdge,
+//			edgeQuantity, level, numJuggles, cw);
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "jugglercatcher")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		//JugglerCatcher *enemy = new JugglerCatcher(this, hasMonitor, Vector2i(xPos, yPos), level);
+//		////GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), .5, 300);
+//
+//		//activeEnemyItemTree->Insert(enemy);
+//		//fullEnemyList.push_back(enemy);
+//		//enem = enemy;
+//
+//		//enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "poisonfrog")
+//	{
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//		/*int gravFactor;
+//		is >> gravFactor;
+//
+//		int jumpStrengthX;
+//		is >> jumpStrengthX;
+//
+//		int jumpStrengthY;
+//		is >> jumpStrengthY;
+//
+//		int jumpFramesWait;
+//		is >> jumpFramesWait;*/
+//
+//		/*PoisonFrog *enemy = new PoisonFrog(this, hasMonitor, loadedEdge,
+//			edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "gravityfaller")
+//	{
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*GravityFaller *enemy = new GravityFaller(this, hasMonitor, loadedEdge,
+//			edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "stagbeetle")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//
+//		/*StagBeetle *enemy = new StagBeetle(this, hasMonitor, loadedEdge,
+//			edgeQuantity, level );
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "curveturret")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*CurveTurret *enemy = new CurveTurret(this, hasMonitor, loadedEdge, edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "gravityincreaser" || typeName == "gravitydecreaser" )
+//	{
+//		bool increaser = (typeName == "gravityincreaser");
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int level;
+//		is >> level;
+//
+//	/*	GravityModifier *enemy = new GravityModifier(this, Vector2i(xPos, yPos), level, increaser);
+//
+//		activeItemTree->Insert(enemy);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//
+//	else if (typeName == "bossbird")
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		//BirdBoss *enemy = new BirdBoss(this, Vector2i(xPos, yPos));
+//
+//		//fullEnemyList.push_back(enemy);
+//		//enem = enemy;
+//
+//		//enemyTree->Insert(enemy);
+//	}
+//
+//	//w3
+//	else if (typeName == "pulser")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		bool loop;
+//		Enemy::ReadBool(is, loop);
+//
+//		int level;
+//		is >> level;
+//
+//		/*Pulser *enemy = new Pulser(this, hasMonitor, Vector2i(xPos, yPos), localPath,
+//			loop, level );
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "cactus")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*Cactus *enemy = new Cactus(this, hasMonitor,
+//			loadedEdge, edgeQuantity, level );
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "owl")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		/*Owl *enemy = new Owl(this, hasMonitor, Vector2i(xPos, yPos), level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "badger")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*Badger *enemy = new Badger(this, hasMonitor, loadedEdge, edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "roadrunner")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*RoadRunner *enemy = new RoadRunner(this, hasMonitor, loadedEdge, edgeQuantity, level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "bouncefloater")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int level;
+//		is >> level;
+//
+//		/*BounceFloater *enemy = new BounceFloater(this, Vector2i(xPos, yPos), level);
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "bosscoyote")
+//	{
+//		//always grounded
+//
+//		Vector2i pos;
+//
+//		is >> pos.x;
+//		is >> pos.y;
+//
+//		/*Boss_Coyote *enemy = new Boss_Coyote( this, pos );
+//		b_coyote = enemy;
+//
+//		fullEnemyList.push_back( enemy );*/
+//	}
+//
+//	//w4
+//	else if (typeName == "turtle")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		
+//		/*Vector2i pos(xPos, yPos);
+//		Turtle *enemy = new Turtle(this, hasMonitor, Vector2i(xPos, yPos), level);
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "coral")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int moveFrames;
+//		is >> moveFrames;
+//
+//		/*SecurityWeb * enemy = new SecurityWeb( this,
+//		hasMonitor, Vector2i( xPos, yPos ), 8, 0, 10 );
+//
+//
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "cheetah")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*Cheetah *enemy = new Cheetah( this, hasMonitor,
+//		loadedEdge, edgeQuantity, level );
+//
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "spider")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		/*Spider *enemy = new Spider(this, hasMonitor, loadedEdge, edgeQuantity,
+//			level);
+//
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "bosstiger")
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		/*Boss_Tiger *enemy = new Boss_Tiger( this, Vector2i ( xPos, yPos ) );
+//
+//		fullEnemyList.push_back( enemy );
+//
+//		b_tiger = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//
+//	//w5
+//	else if (typeName == "hungrycomboer" || typeName == "hungryreturncomboer" )
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		int numJuggles;
+//		is >> numJuggles;
+//
+//			
+//		bool returnsToPlayer = false;
+//		if (typeName == "hungryreturncomboer")
+//		{
+//			returnsToPlayer = true;
+//		}
+//			
+//		/*HungryComboer *enemy = new HungryComboer(this, hasMonitor, Vector2i(xPos, yPos), level, numJuggles,
+//			returnsToPlayer );
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "relativecomboer" || typeName == "relativecomboerdetach")
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		Enemy::ReadPath(is, pathLength, localPath);
+//
+//		int level;
+//		is >> level;
+//
+//		int numJuggles;
+//		is >> numJuggles;
+//
+//		bool detachOnKill = false;
+//		if (typeName == "relativecomboerdetach")
+//		{
+//			detachOnKill = true;
+//		}
+//
+//		/*RelativeComboer *enemy = new RelativeComboer(this, hasMonitor, Vector2i(xPos, yPos), localPath, level, numJuggles,
+//			detachOnKill);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "swarm")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		/*Swarm *enemy = new Swarm( this, Vector2i( xPos, yPos ), hasMonitor, level );
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "shark")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		/*Shark *enemy = new Shark( this, hasMonitor, Vector2i( xPos, yPos ), level );
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "ghost")
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		/*Ghost *enemy = new Ghost( this, hasMonitor, Vector2i( xPos, yPos ), level );
+//
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "overgrowth")
+//	{
+//		//always grounded
+//
+//		/*int terrainIndex;
+//		is >> terrainIndex;
+//
+//		int edgeIndex;
+//		is >> edgeIndex;
+//
+//		double edgeQuantity;
+//		is >> edgeQuantity;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;*/
+//
+//		//GrowingTree * enemy = new GrowingTree( this, hasMonitor,
+//		//	loadedEdge, 
+//		//	edgeQuantity, 32, 0, 1000 );
+//
+//		//
+//		//fullEnemyList.push_back( enemy );
+//		//enem = enemy;
+//
+//		//enemyTree->Insert( enemy );
+//	}
+//	else if (typeName == "growingtree")
+//	{
+//		//always grounded
+//
+//		LoadStandardGroundedEnemy(is, loadedEdge, edgeQuantity, hasMonitor, level);
+//
+//		//GrowingTree * enemy = new GrowingTree(this, hasMonitor,
+//		//	loadedEdge, edgeQuantity, level);
+//
+//		////
+//		//fullEnemyList.push_back( enemy );
+//		//enem = enemy;
+//
+//		//enemyTree->Insert( enemy );
+//	}
+//	else if (typeName == "bossgator")
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		/*Boss_Gator *enemy = new Boss_Gator( this, Vector2i ( xPos, yPos ) );
+//
+//		fullEnemyList.push_back( enemy );
+//
+//		b_gator = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//
+//	//w6
+//	else if (typeName == "specter")
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		//Specter *enemy = new Specter( this, hasMonitor, Vector2i( xPos, yPos ), level );
+//		//fullEnemyList.push_back( enemy );
+//		////enem = enemy;
+//
+//		//enemyTree->Insert( enemy );
+//	}
+//	else if (typeName == "swinglaunchercw" || typeName == "swinglauncherccw")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int speed = 0;
+//		is >> speed;
+//
+//		Vector2i other;
+//		is >> other.x;
+//		is >> other.y;
+//
+//		bool cw = true;
+//		if (typeName == "swinglauncherccw")
+//		{
+//			cw = false;
+//		}
+//
+//		/*SwingLauncher *enemy = new SwingLauncher(this, Vector2i(xPos, yPos), other, speed, cw);
+//
+//		activeItemTree->Insert(enemy);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "narwhal")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		Vector2i dest;
+//		is >> dest.x;
+//		is >> dest.y;
+//
+//		int moveFrames;
+//		is >> moveFrames;
+//
+//
+//		/*Jay *enemy = new Jay( this, hasMonitor, Vector2i( xPos, yPos ), dest );
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "copycat")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		/*Copycat *enemy = new Copycat( this, hasMonitor, Vector2i( xPos, yPos ) );
+//
+//
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "gorilla")
+//	{
+//
+//		int xPos, yPos;
+//
+//		//always air
+//
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		//int wallWidth;
+//		//is >> wallWidth;
+//
+//		//int followFrames;
+//		//is >> followFrames;
+//
+//		int level;
+//		is >> level;
+//
+//
+//		/*Gorilla *enemy = new Gorilla( this, hasMonitor, Vector2i( xPos, yPos ), level );
+//
+//		fullEnemyList.push_back( enemy );
+//		enem = enemy;
+//
+//		enemyTree->Insert( enemy );*/
+//	}
+//	else if (typeName == "wiretarget")
+//	{
+//
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		int hasMonitor;
+//		is >> hasMonitor;
+//
+//		int level;
+//		is >> level;
+//
+//		/*WireTarget *enemy = new WireTarget(this, hasMonitor, Vector2i(xPos, yPos), level);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);*/
+//	}
+//	else if (typeName == "bossskeleton")
+//	{
+//		int xPos, yPos;
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		/*Boss_Skeleton *enemy = new Boss_Skeleton( this, Vector2i ( xPos, yPos ) );
+//
+//		fullEnemyList.push_back( enemy );
+//
+//		b_skeleton = enemy;*/
+//	}
+//
+//
+//	else if (typeName == "nexus")
+//	{
+//		//always grounded
+//
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//
+//		int nexusIndex;
+//		is >> nexusIndex;
+//
+//		Nexus *enemy = new Nexus(loadedEdge, edgeQuantity);
+//
+//		goalNodePos = enemy->GetKillPos();
+//		float space = 78.f;
+//		V2d end(goalNodePos.x, goalNodePos.y - space);
+//		hasGoal = true;
+//		nexus = enemy;
+//		//nexusPos = enemy->GetKillPos();//enemy->position;
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "shippickup")
+//	{
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//		int facingRight;
+//		is >> facingRight;
+//
+//		ShipPickup *enemy = new ShipPickup(loadedEdge, edgeQuantity,
+//			facingRight);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//
+//
+//		if (shipExitScene == NULL )
+//		{
+//			shipExitScene = new ShipExitScene(this);
+//			shipExitScene->Init();
+//		}
+//		/*if (shipExitSeq == NULL)
+//		{
+//			shipExitSeq = new ShipExitSeq(this);
+//		}*/
+//	}
+//	else if (typeName == "groundtrigger")
+//	{
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//
+//		int facingRight;
+//		is >> facingRight;
+//
+//		string tType;
+//		is >> tType;
+//
+//		GroundTrigger *enemy = new GroundTrigger(loadedEdge, edgeQuantity,
+//			facingRight, tType);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	else if (typeName == "airtrigger")
+//	{
+//		Vector2i pos;
+//
+//		//always air
+//		is >> pos.x;
+//		is >> pos.y;
+//
+//		string typeStr;
+//		is >> typeStr;
+//
+//		int rectWidth;
+//		is >> rectWidth;
+//
+//		int rectHeight;
+//		is >> rectHeight;
+//		//int hasMonitor;
+//		//is >> hasMonitor;
+//		AirTrigger *at = new AirTrigger( this, V2d(pos), rectWidth, rectHeight, typeStr);
+//		airTriggerTree->Insert(at);
+//		fullAirTriggerList.push_back(at);
+//	}
+//	else if (typeName == "flowerpod")
+//	{
+//		LoadEdgeInfo(is, loadedEdge, edgeQuantity);
+//
+//		string tType;
+//		is >> tType;
+//
+//		FlowerPod *enemy = new FlowerPod(tType,
+//			loadedEdge, edgeQuantity);
+//
+//		fullEnemyList.push_back(enemy);
+//		enem = enemy;
+//
+//		enemyTree->Insert(enemy);
+//	}
+//	//w6
+//	else if (typeName == "racefighttarget")
+//	{
+//		int xPos, yPos;
+//
+//		//always air
+//
+//		is >> xPos;
+//		is >> yPos;
+//
+//		if (raceFight != NULL)
+//		{
+//			raceFight->numTargets++;
+//
+//			/*RaceFightTarget *enemy = new RaceFightTarget(this, Vector2i(xPos, yPos));
+//
+//			fullEnemyList.push_back(enemy);
+//			enem = enemy;
+//
+//			enemyTree->Insert(enemy);*/
+//		}
+//		else
+//		{
+//			//ignore
+//		}
+//	}
+//	else
+//	{
+//		assert(false && "not a valid type name: ");
+//	}
+//}

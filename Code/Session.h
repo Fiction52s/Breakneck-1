@@ -61,11 +61,9 @@ struct Session : TilesetManager
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;
-
 	std::list<Enemy*> fullEnemyList;
 	GateMarkerGroup *gateMarkers;
 	KeyMarker *keyMarker;
-
 	ZoneNode *zoneTree;
 	ZoneNode *currentZoneNode;
 	Zone *zoneTreeStart;
@@ -75,7 +73,114 @@ struct Session : TilesetManager
 	Zone *originalZone;
 	std::list<Zone*> zones;
 	std::list<ZonePropertiesObj*> zoneObjects;
+	BitField playerOptionsField;
+	//timeslow stuff
+	float *fBubbleRadiusSize;
+	sf::Vector2f *fBubblePos;
+	float *fBubbleFrame;
+	SessionType sessType;
+	std::map<std::string, ActorGroup*> groups;
+	std::map<std::string, ActorType*> types;
+	std::list<ParamsInfo> worldEnemyNames[8];
+	std::list<ParamsInfo> extraEnemyNames;
+	int keyFrame;
+	int numTotalKeys;
+	SoundManager *soundManager;
+	SoundNodeList * soundNodeList;
+	SoundNodeList * pauseSoundNodeList;
+	int pauseFrames;
+	sf::Rect<double> screenRect;
+	const static int MAX_EFFECTS = 100;
+	std::vector<Enemy*> effectListVec;
+	BasicEffect *inactiveEffects;
+	std::vector<BasicEffect> allEffectVec;
+	sf::View uiView;
+	Camera cam;
+	Enemy *activeEnemyList;
+	Enemy *activeEnemyListTail;
+	Enemy *inactiveEnemyList;
+	int totalNumberBullets;
+	sf::Vertex *bigBulletVA;
+	Tileset *ts_basicBullets;
+	bool skipped;
+	bool oneFrameMode;
+	bool showDebugDraw;
+	bool cutPlayerInput;
+	MainMenu *mainMenu;
+	std::vector<GCC::GCController> gcControllers;
+	std::vector<Actor*> players;
+	const static int MAX_PLAYERS = 4;
+	HitboxManager *hitboxManager;
+	Background *background;
+	QuadTree * terrainTree;
+	QuadTree *specialTerrainTree;
+	QuadTree *flyTerrainTree;
+	QuadTree *railEdgeTree;
+	QuadTree *barrierTree;
+	QuadTree *borderTree;
+	QuadTree *grassTree;
+	QuadTree *activeItemTree;
+	QuadTree *staticItemTree;
+	int substep;
+	double currentTime;
+	double accumulator;
+	sf::Clock gameClock;
+	Collider collider;
+	int totalGameFrames;
+	boost::filesystem::path filePath;
+	std::string filePathStr;
+	MapHeader *mapHeader;
+	std::map<std::string, Tileset*> decorTSMap;
+	sf::RenderWindow *window;
+	sf::Vector2i playerOrigPos;
+	int numPolyShaders;
+	sf::Shader *polyShaders;
+	std::vector<Tileset*> ts_polyShaders;
+	std::map<std::pair<int, int>, TerrainDecorInfo*> terrainDecorInfoMap;
+	std::map<DecorType, DecorLayer*> decorLayerMap;
+	GameSession *parentGame;
 
+	static Session *GetSession();
+
+	virtual void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+		V2d &pos, float startAngle = 0) {}
+	virtual void CollectKey() {}
+	virtual PolyPtr GetPolygon(int index) = 0;
+	virtual RailPtr GetRail(int index) //change this to abstract later when gamesession has rails again
+	{
+		return NULL;
+	}
+	virtual void ProcessDecorFromFile(const std::string &name,
+		int tile) {}
+	virtual void ProcessHeader() {}
+	virtual void ProcessDecorSpr(const std::string &name,
+		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
+		float rotation, sf::Vector2f &scale) {}
+	virtual void ProcessAllDecorSpr() {}
+	virtual void ProcessPlayerStartPos() {}
+	virtual void ProcessPlayerOptions() {}
+	virtual void ProcessTerrain(PolyPtr poly) {}
+	virtual void ProcessAllTerrain() {}
+	virtual void ProcessBGTerrain(PolyPtr poly) {}
+	virtual void ProcessRail(RailPtr rail) {}
+	virtual bool ReadActors(std::ifstream &is);
+	virtual void ProcessActor(ActorPtr a) {}
+	virtual void ProcessAllActors() {}
+	virtual void SetNumGates(int numGates) {}
+	virtual void ProcessGate(int gCat,
+		int gVar,
+		int numToOpen,
+		int poly0Index, int vertexIndex0, int poly1Index,
+		int vertexIndex1, int shardWorld,
+		int shardIndex) {}
+	virtual void ProcessSpecialTerrain(PolyPtr poly) {}
+	virtual int Run() = 0;
+	virtual void DebugDraw(sf::RenderTarget *target);
+	virtual void UpdateDecorSprites();
+
+
+	Session(SessionType p_sessType, const boost::filesystem::path &p_filePath);
+	virtual ~Session();
 	void CleanupGates();
 	void SetupGateMarkers();
 	void SetupKeyMarker();
@@ -85,33 +190,15 @@ struct Session : TilesetManager
 	void CreateZones();
 	void SetupZones();
 	void ActivateZone(Zone * z, bool instant = false);
-
-	BitField playerOptionsField;
-
 	void SetPlayerOptionField(int pIndex);
-	//cleaning up load stuff:
 	void SetupHitboxManager();
 	void SetupSoundManager();
 	void SetupSoundLists();
-
-	//timeslow stuff
-	float *fBubbleRadiusSize;
-	sf::Vector2f *fBubblePos;
-	float *fBubbleFrame;
 	void SetupTimeBubbles();
-
-	SessionType sessType;
 	bool IsSessTypeGame();
 	bool IsSessTypeEdit();
-
-	//stuff to test editor enemy loading in game
-
 	void SetupEnemyTypes();
 	void SetupEnemyType(ParamsInfo &pi);
-	std::map<std::string, ActorGroup*> groups;
-	std::map<std::string, ActorType*> types;
-
-	std::list<ParamsInfo> worldEnemyNames[8];
 	void AddWorldEnemy(const std::string &name, 
 		int w,
 		EnemyCreator *p_enemyCreator,
@@ -176,8 +263,6 @@ struct Session : TilesetManager
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	std::list<ParamsInfo> extraEnemyNames;
-
 	void AddGeneralEnemies();
 	void AddW1Enemies();
 	void AddW2Enemies();
@@ -185,34 +270,11 @@ struct Session : TilesetManager
 	void AddW4Enemies();
 	void AddW5Enemies();
 	void AddW6Enemies();
-
-	virtual PolyPtr GetPolygon(int index) = 0;
-	virtual RailPtr GetRail(int index) //change this to abstract later when gamesession has rails again
-	{
-		return NULL;
-	}
-
-
-
-	//--------------------------------------
-
-
-
-	//stuff I have to add in for enemies. Might have to adjust
-
-	int keyFrame;
-	int numTotalKeys;
-	SoundManager *soundManager;
 	sf::SoundBuffer *GetSound(const std::string &name);
 	SoundNode *ActivateSoundAtPos(V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
 	SoundNode *ActivateSound(sf::SoundBuffer *buffer, bool loop = false);
 	SoundNode *ActivatePauseSound(sf::SoundBuffer *buffer, bool loop = false);
-	SoundNodeList * soundNodeList;
-	SoundNodeList * pauseSoundNodeList;
 	int GetPauseFrames();
-	int pauseFrames;
-	sf::Rect<double> screenRect;
-
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,
 		Tileset *ts,
@@ -228,58 +290,24 @@ struct Session : TilesetManager
 	void DrawEffects(EffectLayer layer, sf::RenderTarget *target);
 	void ClearEffects();
 	void UpdateEffects(bool pauseImmuneOnly = false);
-	const static int MAX_EFFECTS = 100;
-	std::vector<Enemy*> effectListVec;
-	//Enemy *effectLists[EffectLayer::Count];
-	BasicEffect *inactiveEffects;
-	std::vector<BasicEffect> allEffectVec;
 	void AllocateEffects();
-
-	sf::View uiView;
-
 	void Pause(int frames);
-
-	virtual void CollectKey() {}
 	void PlayerConfirmEnemyNoKill(Enemy *, int index = 0);
 	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
 	void PlayerApplyHit(HitboxInfo *hi, int index = 0);
 	void PlayerHitNexus(int index = 0);
 	void PlayerHitGoal(int index = 0);
 	void SetPlayersGameMode();
-
 	void KillAllEnemies();
-
-	
-	virtual void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
-		V2d &pos, float startAngle = 0) {}
-
-	Camera cam;
-
 	V2d GetPlayerKnockbackDirFromVel(int index = 0);
 	V2d GetPlayerPos(int index = 0);
 	V2d GetPlayerTrueVel(int index = 0);
 	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
 	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
-
-	Enemy *activeEnemyList;
-	Enemy *activeEnemyListTail;
-	Enemy *inactiveEnemyList;
-
 	void AddEnemy(Enemy *e);
 	void RemoveEnemy(Enemy *e);
-
-	int totalNumberBullets;
-	sf::Vertex *bigBulletVA;
-	Tileset *ts_basicBullets;
-
 	void CreateBulletQuads();
 	void DrawBullets(sf::RenderTarget *target);
-	//-------------------------
-
-
-
-	Session( SessionType p_sessType, const boost::filesystem::path &p_filePath);
-	virtual ~Session();
 	Actor *GetPlayer(int i);
 	ControllerState &GetPrevInput(int index);
 	ControllerState &GetCurrInput(int index);
@@ -292,141 +320,29 @@ struct Session : TilesetManager
 	void UpdateControllersOneFrameMode();
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
-
 	void DrawPlayers(sf::RenderTarget *target );
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();
-
 	bool ReadFile();
 	bool ReadDecorImagesFile();
 	bool ReadDecorInfoFile( int tWorld, int tVar );
-
-	static Session *GetSession();
-	//static bool IsSessionTypeEdit();
-	//static bool IsSessionTypeGame();
-
-	virtual void ProcessDecorFromFile(const std::string &name,
-		int tile) {}
 	bool ReadHeader( std::ifstream &is );
-	virtual void ProcessHeader() {}
-
 	bool ReadDecor(std::ifstream &is);
-	virtual void ProcessDecorSpr(const std::string &name,
-		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
-		float rotation, sf::Vector2f &scale) {}
-	virtual void ProcessAllDecorSpr() {}
-
 	bool ReadPlayerStartPos(std::ifstream &is);
-	virtual void ProcessPlayerStartPos() {}
-
 	bool ReadPlayerOptions(std::ifstream &is);
-	virtual void ProcessPlayerOptions() {}
-
 	bool ReadTerrain(std::ifstream &is);
 	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly );
-	virtual void ProcessTerrain( PolyPtr poly ){}
-	virtual void ProcessAllTerrain() {}
-
 	bool ReadSpecialTerrain(std::ifstream &is);
-	virtual void ProcessSpecialTerrain(PolyPtr poly) {}
-
 	bool ReadBGTerrain(std::ifstream &is);
-	virtual void ProcessBGTerrain(PolyPtr poly) {}
-
 	bool ReadRails(std::ifstream &is);
-	virtual void ProcessRail(RailPtr rail) {}
-
-	virtual bool ReadActors(std::ifstream &is);
-	virtual void ProcessActor(ActorPtr a) {}
-	virtual void ProcessAllActors() {}
-
 	bool ReadGates(std::ifstream &is);
-	virtual void SetNumGates(int numGates) {}
-	virtual void ProcessGate(int gCat,
-		int gVar,
-		int numToOpen,
-		int poly0Index, int vertexIndex0, int poly1Index,
-		int vertexIndex1, int shardWorld,
-		int shardIndex ) {}
-
 	void AllocatePolyShaders(int numPolyTypes );
-	//virtual void ProcessActor( const std::string &groupName, int numActors,
-	//	const std::string &actorType ) {}
-//	virtual void ProcessActor(ActorPtr actor);
-//	virtual void ProcessActorGroup(const std::string &groupName, int numActors);
 	bool LoadPolyShader(int index, int matWorld, int matVariation);
-
-	virtual int Run() = 0;
-
 	bool OneFrameModeUpdate();
-	bool skipped;
-	bool oneFrameMode;
-
-	virtual void DebugDraw(sf::RenderTarget *target);
 	void DebugDrawActors(sf::RenderTarget *target);
-	bool showDebugDraw;
-
-	bool cutPlayerInput;
-	MainMenu *mainMenu;
-
-	std::vector<GCC::GCController> gcControllers;
-
-	//void TestLoad(); //change this to Load once Load has been changed to work for both sessions
-
-	std::vector<Actor*> players;
-
-	const static int MAX_PLAYERS = 4;
-
-	HitboxManager *hitboxManager;
-
-	Background *background;
-	//std::list<ScrollingBackground*> scrollingBackgrounds;
-
-	QuadTree * terrainTree;
-	QuadTree *specialTerrainTree;
-	QuadTree *flyTerrainTree;
-	QuadTree *railEdgeTree;
-	QuadTree *barrierTree;
-	QuadTree *borderTree;
-	QuadTree *grassTree;
-	QuadTree *activeItemTree;
-
-
-	QuadTree *staticItemTree;
-
-	int substep;
-	double currentTime;
-	double accumulator;
-	sf::Clock gameClock;
-	Collider collider;
-	int totalGameFrames;
-
-	boost::filesystem::path filePath;
-	std::string filePathStr;
-
-	MapHeader *mapHeader;
-
-	std::map<std::string, Tileset*> decorTSMap;
-
-	sf::RenderWindow *window;
-
-	sf::Vector2i playerOrigPos;
-
-	int numPolyShaders;
-	sf::Shader *polyShaders;
-	std::vector<Tileset*> ts_polyShaders;
-
-	std::map<std::pair<int,int>,TerrainDecorInfo*> terrainDecorInfoMap;
-	std::map<DecorType, DecorLayer*> decorLayerMap;
-
-
 	void SetPlayerInputOn(bool on);
 	void UpdateDecorLayers();
-	virtual void UpdateDecorSprites();
-
-	GameSession *parentGame;
 	void SetParentGame(GameSession *session);
-
 };
 
 #endif
