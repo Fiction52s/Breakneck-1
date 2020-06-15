@@ -599,8 +599,6 @@ void EditSession::TestPlayerMode()
 	for (auto it = testPolys1.begin(); it != testPolys1.end(); ++it)
 	{
 		specialTerrainTree->Insert((*it));
-		//(*it)->AddEdgesToQuadTree(terrainTree);
-		//(*it)->AddGrassToQuadTree(grassTree);
 	}
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
@@ -655,7 +653,6 @@ void EditSession::TestPlayerMode()
 			if (currEnemy != NULL)
 			{
 				AddEnemy(currEnemy);
-
 			}
 		}
 	}
