@@ -488,6 +488,13 @@ void GameSession::ActiveSequenceUpdate()
 				{
 					FreezePlayerAndEnemies(false);
 					SetPlayerInputOn(true);
+					if (shipEnterScene != NULL)
+					{
+						shipEnterScene->Reset();
+						SetActiveSequence(shipEnterScene);
+						state = RUN;
+						return;
+					}
 				}
 
 
@@ -572,7 +579,7 @@ void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 	tex->display();
 }
 
-bool GameSession::RunModeUpdate( double frameTime )
+bool GameSession::RunGameModeUpdate( double frameTime )
 {
 	Actor *p = NULL;
 	Actor *p0 = GetPlayer(0);
@@ -721,8 +728,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 		UpdateEmitters();
 
 		keyMarker->Update();
-
-		mini->Update();
 
 		mainMenu->musicPlayer->Update();
 
@@ -917,19 +922,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 	window->draw(preTexSprite);//, &timeSlowShader );
 
 	return true;
-}
-
-void GameSession::DrawPlayersMini(sf::RenderTarget *target)
-{
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->MiniDraw(target);
-		}
-	}
 }
 
 PolyPtr GameSession::GetPolygon(int index)
@@ -1262,12 +1254,6 @@ void GameSession::Cleanup()
 		recGhost = NULL;
 	}
 
-	if ( parentGame == NULL && mini != NULL)
-	{
-		delete mini;
-		mini = NULL;
-	}
-
 	if ( parentGame == NULL && shardsCapturedField != NULL)
 	{
 		delete shardsCapturedField;
@@ -1278,12 +1264,6 @@ void GameSession::Cleanup()
 	{
 		delete shardPop;
 		shardPop = NULL;
-	}
-
-	if (parentGame == NULL && adventureHUD != NULL)
-	{
-		delete adventureHUD;
-		adventureHUD = NULL;
 	}
 
 	if (parentGame == NULL && absorbParticles != NULL)
@@ -1344,12 +1324,6 @@ void GameSession::Cleanup()
 	{
 		delete inverseEdgeTree;
 		inverseEdgeTree = NULL;
-	}
-
-	if (gateTree != NULL)
-	{
-		delete gateTree;
-		gateTree = NULL;
 	}
 
 	if (enemyTree != NULL)
@@ -2484,7 +2458,7 @@ bool GameSession::Load()
 	//inputVis = new InputVisualizer;
 	
 
-	SetupMinimap();
+	//SetupMinimap();
 
 	SetupAbsorbParticles();
 
@@ -2512,11 +2486,7 @@ bool GameSession::Load()
 	AllocateEffects();
 
 
-	kinMapSpawnIcon.setTexture(*mini->ts_miniIcons->texture);
-	kinMapSpawnIcon.setTextureRect(mini->ts_miniIcons->GetSubRect(1));
-	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
-		kinMapSpawnIcon.getLocalBounds().height / 2);
-
+	
 	SetupKeyMarker();
 	
 	if (!ShouldContinueLoading())
@@ -2600,10 +2570,19 @@ bool GameSession::Load()
 
 	SetupStormCeiling();
 
+	SetupHUD();
+
 	bool blackBorder[2];
 	bool topBorderOn = false;
 	SetupMapBorderQuads(blackBorder, topBorderOn);
-	mini->SetupBorderQuads(blackBorder, topBorderOn || stormCeilingOn, mapHeader);
+	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn || stormCeilingOn, mapHeader);
+
+
+	kinMapSpawnIcon.setTexture(*adventureHUD->mini->ts_miniIcons->texture);
+	kinMapSpawnIcon.setTextureRect(adventureHUD->mini->ts_miniIcons->GetSubRect(1));
+	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
+		kinMapSpawnIcon.getLocalBounds().height / 2);
+
 
 	if (topBorderOn)
 	{
@@ -2648,7 +2627,7 @@ bool GameSession::Load()
 	
 
 	SetupRecGhost();
-	SetupHUD();
+	
 
 	SetupPauseMenu();
 
@@ -2809,16 +2788,6 @@ void GameSession::SetupBackground()
 	background = Background::SetupFullBG(mapHeader->envName, this);
 }
 
-void GameSession::SetupMinimap()
-{
-	if (parentGame != NULL)
-	{
-		mini = parentGame->mini;
-	}
-	else if( mini == NULL )
-		mini = new Minimap(this);
-}
-
 void GameSession::SetupAbsorbParticles()
 {
 	if (parentGame != NULL)
@@ -2937,16 +2906,6 @@ void GameSession::SetupPauseMenu()
 	{
 		pauseMenu->SetTab(PauseMenu::PAUSE);
 	}
-}
-
-void GameSession::SetupHUD()
-{
-	if (parentGame != NULL)
-	{
-		adventureHUD = parentGame->adventureHUD;
-	}
-	else if(mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL )
-		adventureHUD = new AdventureHUD(this);
 }
 
 bool GameSession::SetupControlProfiles()
@@ -3179,7 +3138,7 @@ int GameSession::Run()
 
 		if( state == RUN )
 		{
-			if (!RunModeUpdate(frameTime))
+			if (!RunGameModeUpdate(frameTime))
 			{
 				continue;
 			}
@@ -4055,11 +4014,7 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
-	fader = mainMenu->fader;
-	swiper = mainMenu->swiper;
-	postProcessTex2 = mainMenu->postProcessTexture2;
 	mapTex = mainMenu->mapTexture;
-	minimapTex = mainMenu->minimapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
 	bonusGame = NULL;
@@ -4074,10 +4029,8 @@ void GameSession::Init()
 	shardPop = NULL;
 	getShardSeq = NULL;
 	shardsCapturedField = NULL;
-	mini = NULL;
 	level = NULL;
 	inputVis = NULL;
-	adventureHUD = NULL;
 	goalPulse = NULL;
 	pauseMenu = NULL;
 	progressDisplay = NULL;
@@ -4148,236 +4101,11 @@ void GameSession::Init()
 	testBuf.SetRecOver(false);
 }
 
-void GameSession::TrySpawnEnemy(QuadTreeEntrant *qte)
-{
-	Enemy *e = (Enemy*)qte;
 
-	if (e->spawned)
-		return;
 
-	bool a = e->spawnRect.intersects(tempSpawnRect);
-	bool b = (e->zone == NULL || e->zone->active);
 
-	if (a && b)
-	{
-		AddEnemy(e);
-	}
-}
 
-void GameSession::TryAddPolyToQueryList(QuadTreeEntrant *qte)
-{
-	PolyPtr p = (PolyPtr)qte;
-	if (polyQueryList == NULL)
-	{
-		polyQueryList = p;
-		polyQueryList->queryNext = NULL;
-		numBorders++;
-	}
-	else
-	{
-		PolyPtr poly = p;
-		PolyPtr temp = polyQueryList;
-		bool okay = true;
-		while (temp != NULL)
-		{
-			if (temp == poly)
-			{
-				okay = false;
-				break;
-			}
-			temp = temp->queryNext;
-		}
 
-		if (okay)
-		{
-			poly->queryNext = polyQueryList;
-			polyQueryList = poly;
-			numBorders++;
-		}
-	}
-}
-
-void GameSession::TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte)
-{
-	PolyPtr p = (PolyPtr)qte;
-
-	if (specialPieceList == NULL)
-	{
-		specialPieceList = p;
-		specialPieceList->queryNext = NULL;
-	}
-	else
-	{
-		PolyPtr tva = p;
-		PolyPtr temp = specialPieceList;
-		bool okay = true;
-		while (temp != NULL)
-		{
-			if (temp == tva)
-			{
-				okay = false;
-				break;
-			}
-			temp = temp->queryNext;
-		}
-
-		if (okay)
-		{
-			tva->queryNext = specialPieceList;
-			specialPieceList = tva;
-		}
-	}
-}
-
-void GameSession::TryAddFlyPolyToQueryList(QuadTreeEntrant *qte)
-{
-	PolyPtr p = (PolyPtr)qte;
-
-	if (flyTerrainList == NULL)
-	{
-		flyTerrainList = p;
-		flyTerrainList->queryNext = NULL;
-	}
-	else
-	{
-		PolyPtr tva = p;
-		PolyPtr temp = flyTerrainList;
-		bool okay = true;
-		while (temp != NULL)
-		{
-			if (temp == tva)
-			{
-				okay = false;
-				break;
-			}
-			temp = temp->queryNext;
-		}
-
-		if (okay)
-		{
-			tva->queryNext = flyTerrainList;
-			flyTerrainList = tva;
-		}
-	}
-}
-
-void GameSession::TryAddGateToQueryList(QuadTreeEntrant *qte)
-{
-	Gate *g = (Gate*)qte;
-	//possible to add the same gate twice? fix.
-	if (gateList == NULL)
-	{
-		gateList = g;
-		gateList->next = NULL;
-		gateList->prev = NULL;
-
-		//cout << "setting gate: " << gateList->edgeA << endl;
-	}
-	else
-	{
-		g->next = gateList;
-		gateList = g;
-	}
-
-	//cout << "gate" << endl;
-	++testGateCount;
-}
-
-void GameSession::TryAddRailToQueryList(QuadTreeEntrant *qte)
-{
-	RailPtr r = (RailPtr)qte;
-	if (railDrawList == NULL)
-	{
-		railDrawList = r;
-		r->queryNext = NULL;
-	}
-	else
-	{
-		r->queryNext = railDrawList;
-		railDrawList = r;
-	}
-}
-
-void GameSession::SetQueriedInverseEdge(QuadTreeEntrant *qte)
-{
-	Edge *e = (Edge*)qte;
-
-	if (inverseEdgeList == NULL)
-	{
-		inverseEdgeList = e;
-		inverseEdgeList->info = NULL;
-		//numBorders++;
-	}
-	else
-	{
-		Edge *tva = e;
-		Edge *temp = inverseEdgeList;
-		bool okay = true;
-		while (temp != NULL)
-		{
-			if (temp == tva)
-			{
-				okay = false;
-				break;
-			}
-			temp = (Edge*)temp->info;//->edge1;
-		}
-
-		if (okay)
-		{
-			tva->info = (void*)inverseEdgeList;
-			inverseEdgeList = tva;
-		}
-	}
-}
-
-void GameSession::TryActivateQueriedEnvPlant(QuadTreeEntrant *qte)
-{
-	EnvPlant *ep = (EnvPlant*)qte;
-	if (!ep->activated)
-	{
-		int idleLength = ep->idleLength;
-		int idleFactor = ep->idleFactor;
-
-		IntRect sub = ep->ts->GetSubRect((totalGameFrames % (idleLength * idleFactor)) / idleFactor);
-		VertexArray &eva = *ep->va;
-		eva[ep->vaIndex + 0].texCoords = Vector2f(sub.left, sub.top);
-		eva[ep->vaIndex + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
-		eva[ep->vaIndex + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-		eva[ep->vaIndex + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
-	}
-}
-
-void GameSession::HandleEntrant( QuadTreeEntrant *qte )
-{
-	switch (queryMode)
-	{
-	case QUERY_ENEMY:
-		TrySpawnEnemy(qte);
-		break;
-	case QUERY_BORDER:
-		TryAddPolyToQueryList(qte);
-		break;
-	case QUERY_SPECIALTERRAIN:
-		TryAddSpecialPolyToQueryList(qte);
-		break;
-	case QUERY_FLYTERRAIN:
-		TryAddFlyPolyToQueryList(qte);
-		break;
-	case QUERY_INVERSEBORDER:
-		SetQueriedInverseEdge(qte);
-		break;
-	case QUERY_GATE:
-		TryAddGateToQueryList(qte);
-		break;
-	case QUERY_ENVPLANT:
-		TryActivateQueriedEnvPlant(qte);
-		break;
-	case QUERY_RAIL:
-		TryAddRailToQueryList(qte);
-		break;
-	}
-}
 
 bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
 {
@@ -4991,21 +4719,6 @@ void GameSession::SetOriginalMusic()
 	}
 }
 
-void GameSession::QueryBorderTree(sf::Rect<double> &rect)
-{
-	queryMode = QUERY_BORDER;
-	numBorders = 0;
-	borderTree->Query(this, rect);
-}
-
-void GameSession::QueryGateTree(sf::Rect<double>&rect)
-{
-	testGateCount = 0;
-	queryMode = QUERY_GATE;
-	gateList = NULL;
-	gateTree->Query(this, rect);
-}
-
 SaveFile *GameSession::GetCurrentProgress()
 {
 	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
@@ -5029,45 +4742,6 @@ bool GameSession::HasPowerUnlocked( int pIndex )
 
 	return false;
 }
-
-void GameSession::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
-{
-	//must be already filled from a query
-	PolyPtr poly = polyQueryList;
-	while (poly != NULL)
-	{
-		Color oldColor = poly->fillCol;
-		poly->SetTerrainColor(c);
-		poly->MiniDraw(target);
-		poly->SetTerrainColor(oldColor);
-		
-		poly = poly->queryNext;
-	}
-}
-
-void GameSession::EnemiesCheckedMiniDraw( RenderTarget *target,
-	sf::FloatRect &rect)
-{
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-	{
-		(*it)->CheckedMiniDraw(target, rect);
-	}
-}
-
-void GameSession::DrawAllMapWires(
-	sf::RenderTarget *target)
-{
-	Actor *p;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->DrawMapWires(target);
-		}
-	}
-}
-
 
 void GameSession::NextFrameRestartLevel()
 {

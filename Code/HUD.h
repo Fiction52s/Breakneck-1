@@ -6,6 +6,8 @@
 #include <SFML\Graphics.hpp>
 #include "GameSession.h"
 
+struct Session;
+struct GameSession;
 
 
 struct RaceFightHUD
@@ -110,7 +112,8 @@ struct AdventureHUD
 		HIDDEN
 	};
 
-	AdventureHUD(GameSession *owner);
+	AdventureHUD();
+	~AdventureHUD();
 	void Hide(int frames = 0);
 	void Show(int frames = 0);
 	void Draw(sf::RenderTarget *target);
@@ -140,7 +143,7 @@ struct AdventureHUD
 	KinMask *kinMask;
 	KeyMarker *keyMarker;
 
-	GameSession *owner;
+	Session *sess;
 };
 
 #endif

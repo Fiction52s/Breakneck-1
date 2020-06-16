@@ -7,6 +7,7 @@
 #include "PowerOrbs.h"
 #include "SaveFile.h"
 #include "Actor.h"
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
@@ -130,22 +131,31 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 
 }
 
-AdventureHUD::AdventureHUD(GameSession *p_owner)
-	:owner(p_owner)
+AdventureHUD::AdventureHUD()
 {
-	mini = owner->mini;
+	sess = Session::GetSession();
+
+	mini = new Minimap; //adventureHUD itself follows the rule of parentGame
+
+	/*if (sess->parentGame != NULL)
+	{
+		mini = sess->parentGame->adventureHUD->mini;
+	}
+	else
+	{
+		mini = new Minimap;
+	}*/
+
+
 	miniShowPos = mini->minimapSprite.getPosition();
 	miniHidePos = Vector2f(-500, miniShowPos.y);
 
-	kinMask = owner->GetPlayer(0)->kinMask;
-	
-
-
+	kinMask = sess->GetPlayer(0)->kinMask;
 
 	kinMaskShowPos = kinMask->GetTopLeft();
 	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
 
-	keyMarker = owner->keyMarker;
+	keyMarker = sess->keyMarker;
 
 	keyMarkerShowPos = keyMarker->GetPosition();
 	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
@@ -154,6 +164,11 @@ AdventureHUD::AdventureHUD(GameSession *p_owner)
 	momentumHidePos = Vector2f(-200, momentumShowPos.y);*/
 
 	Reset();
+}
+
+AdventureHUD::~AdventureHUD()
+{
+	delete mini;
 }
 
 void AdventureHUD::Hide(int frames)
@@ -257,6 +272,11 @@ void AdventureHUD::Update()
 		break;
 	}
 
+	if (state != HIDDEN)
+	{
+		mini->Update();
+	}
+
 	++frame;
 }
 
@@ -282,7 +302,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 		
 		
 
-		owner->mini->Draw(target);
+		mini->Draw(target);
 		//target->draw(owner->minimapSprite, &owner->minimapShader);
 
 		//kinRing->Draw(target);
@@ -295,7 +315,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 
 
-		owner->keyMarker->Draw(target);
+		keyMarker->Draw(target);
 		
 	}
 }

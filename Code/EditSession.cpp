@@ -60,6 +60,33 @@ EditSession * EditSession::currSession = NULL;
 
 #define TIMESTEP (1.0 / 60.0)
 
+void EditSession::DrawGame(sf::RenderTarget *target)
+{
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		current->Draw(preScreenTex);
+		current = current->next;
+	}
+
+	DrawPlayerWires(preScreenTex);
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Draw(preScreenTex);
+		}
+	}
+
+	DrawBullets(preScreenTex);
+
+	preScreenTex->setView(uiView);
+	
+}
+
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
@@ -11072,26 +11099,7 @@ void EditSession::DrawMode()
 	}
 	case TEST_PLAYER:
 	{
-		Enemy *current = activeEnemyList;
-		while (current != NULL)
-		{
-			current->Draw(preScreenTex);
-			current = current->next;
-		}
-
-		DrawPlayerWires(preScreenTex);
-
-		Actor *p = NULL;
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				p->Draw(preScreenTex);
-			}
-		}
-
-		DrawBullets(preScreenTex);
+		DrawGame(preScreenTex);
 		break;
 	}
 	case CREATE_TERRAIN:

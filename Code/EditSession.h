@@ -786,6 +786,7 @@ struct EditSession : GUIHandler, Session
 	bool HoldingShift();
 	bool HoldingControl();
 	void InitDecorPanel();
+	void DrawGame(sf::RenderTarget *target);
 };
 
 

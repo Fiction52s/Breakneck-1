@@ -48,7 +48,13 @@ struct GateMarkerGroup;
 struct KeyMarker;
 struct Gate;
 
-struct Session : TilesetManager
+struct Minimap;
+
+struct Fader;
+struct Swiper;
+struct AdventureHUD;
+
+struct Session : TilesetManager, QuadTreeCollider
 {
 	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
 
@@ -57,6 +63,27 @@ struct Session : TilesetManager
 		SESS_GAME,
 		SESS_EDIT,
 	};
+
+	//mark these with GAME soon, since they are the queries for the game, not the editor
+	enum QueryMode : int
+	{
+		QUERY_ENEMY,
+		QUERY_BORDER,
+		QUERY_SPECIALTERRAIN,
+		QUERY_FLYTERRAIN,
+		QUERY_INVERSEBORDER,
+		QUERY_GATE,
+		QUERY_ENVPLANT,
+		QUERY_RAIL,
+	};
+
+	AdventureHUD *adventureHUD;
+
+	Fader *fader;
+	Swiper *swiper;
+	sf::RenderTexture *minimapTex;
+	sf::RenderTexture *postProcessTex2;
+
 
 	sf::RenderTexture *preScreenTex;
 	int numGates;
@@ -122,6 +149,7 @@ struct Session : TilesetManager
 	QuadTree *grassTree;
 	QuadTree *activeItemTree;
 	QuadTree *staticItemTree;
+	QuadTree * gateTree;
 	int substep;
 	double currentTime;
 	double accumulator;
@@ -140,6 +168,17 @@ struct Session : TilesetManager
 	std::map<std::pair<int, int>, TerrainDecorInfo*> terrainDecorInfoMap;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	GameSession *parentGame;
+
+	Gate *gateList;
+	int numBorders;
+	QueryMode queryMode;
+	sf::Rect<double> tempSpawnRect;
+	PolyPtr polyQueryList;
+	PolyPtr specialPieceList;
+	PolyPtr flyTerrainList;
+	int testGateCount;
+	RailPtr railDrawList;
+	Edge *inverseEdgeList;
 
 	static Session *GetSession();
 
@@ -348,6 +387,27 @@ struct Session : TilesetManager
 	void UpdatePlayersInHitlag();
 	void UpdatePlayersPrePhysics();
 	void UpdatePlayersPostPhysics();
+	void QueryBorderTree(sf::Rect<double>&rect);
+	void QueryGateTree(sf::Rect<double>&rect);
+	void DrawAllMapWires(
+		sf::RenderTarget *target);
+	void DrawColoredMapTerrain(
+		sf::RenderTarget *target,
+		sf::Color &c);
+	void EnemiesCheckedMiniDraw(
+		sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void DrawPlayersMini(sf::RenderTarget *target);
+	void HandleEntrant(QuadTreeEntrant *qte);
+	void TrySpawnEnemy(QuadTreeEntrant *qte);
+	void TryAddPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddFlyPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddGateToQueryList(QuadTreeEntrant *qte);
+	void TryAddRailToQueryList(QuadTreeEntrant *qte);
+	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
+	void TryActivateQueriedEnvPlant(QuadTreeEntrant *qte);
+	void SetupHUD();
 };
 
 #endif

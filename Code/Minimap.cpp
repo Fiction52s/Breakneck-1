@@ -3,17 +3,18 @@
 #include <assert.h>
 #include "GameSession.h"
 #include "MapHeader.h"
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
 
 Color Minimap::terrainColor(0x75, 0x70, 0x90);// , 191);
 
-Minimap::Minimap( GameSession *p_owner)
+Minimap::Minimap()
 {
-	owner = p_owner;
+	sess = Session::GetSession();
 
-	minimapTex = owner->minimapTex;
+	minimapTex = sess->minimapTex;
 
 	if (!minimapShader.loadFromFile("Resources/Shader/minimap_shader.frag", sf::Shader::Fragment))
 	{
@@ -28,7 +29,7 @@ Minimap::Minimap( GameSession *p_owner)
 	
 	minimapSprite.setScale(1, -1);
 
-	ts_miniIcons = owner->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
+	ts_miniIcons = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
 	kinMinimapIcon.setTexture(*ts_miniIcons->texture);
 	kinMinimapIcon.setTextureRect(ts_miniIcons->GetSubRect(0));
 	kinMinimapIcon.setOrigin(kinMinimapIcon.getLocalBounds().width / 2,
@@ -42,7 +43,7 @@ Minimap::Minimap( GameSession *p_owner)
 	goalMapIcon.setOrigin(goalMapIcon.getLocalBounds().width / 2,
 		goalMapIcon.getLocalBounds().height / 2);
 
-	SetCenter(Vector2f(200, owner->preScreenTex->getSize().y - 200));
+	SetCenter(Vector2f(200, sess->preScreenTex->getSize().y - 200));
 }
 
 void Minimap::SetCenter(sf::Vector2f &center)
@@ -107,7 +108,7 @@ void Minimap::SetupBorderQuads(
 		SetRectColor(blackBorderQuadsMini + 4, Color::Transparent);
 	}
 
-	if (stormCeilingOn || topBorderOn)
+	if (topBorderOn)
 	{
 		SetRectColor(topBorderQuadMini, miniTopBorderColor);
 
@@ -128,7 +129,7 @@ void Minimap::DrawToTex()
 	//Actor *p0 = owner->GetPlayer(0);
 
 	double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
-	V2d pos0 = owner->GetPlayerPos(0);
+	V2d pos0 = sess->GetPlayerPos(0);
 	View vv;
 	vv.setCenter(pos0.x, pos0.y);
 	vv.setSize(minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom);
@@ -137,7 +138,7 @@ void Minimap::DrawToTex()
 	minimapTex->clear(Color(0, 0, 0, 191));
 
 
-	for (list<Zone*>::iterator it = owner->zones.begin(); it != owner->zones.end(); ++it)
+	for (list<Zone*>::iterator it = sess->zones.begin(); it != sess->zones.end(); ++it)
 	{
 		(*it)->Draw(minimapTex);
 	}
@@ -154,11 +155,11 @@ void Minimap::DrawToTex()
 
 	DrawGates(minimapRect, minimapTex);
 
-	owner->DrawAllMapWires(minimapTex);
+	sess->DrawAllMapWires(minimapTex);
 
-	owner->EnemiesCheckedMiniDraw(minimapTex, FloatRect(minimapRect));
+	sess->EnemiesCheckedMiniDraw(minimapTex, FloatRect(minimapRect));
 
-	owner->DrawPlayersMini(minimapTex);
+	sess->DrawPlayersMini(minimapTex);
 
 	sf::View iconView;
 	iconView.setCenter(0, 0);
@@ -183,7 +184,7 @@ void Minimap::Draw(sf::RenderTarget *target)
 
 void Minimap::DrawZones( RenderTarget *target)
 {
-	auto &zones = owner->zones;
+	auto &zones = sess->zones;
 	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->DrawMinimap(target);
@@ -192,8 +193,8 @@ void Minimap::DrawZones( RenderTarget *target)
 
 void Minimap::DrawTerrain( sf::Rect<double> &rect, sf::RenderTarget *target )
 {
-	owner->QueryBorderTree(rect);
-	owner->DrawColoredMapTerrain(target, terrainColor);
+	sess->QueryBorderTree(rect);
+	sess->DrawColoredMapTerrain(target, terrainColor);
 }
 
 void Minimap::DrawMapBorders(
@@ -206,8 +207,8 @@ void Minimap::DrawMapBorders(
 void Minimap::DrawGates(sf::Rect<double> &rect,
 	sf::RenderTarget *target)
 {
-	owner->QueryGateTree(rect);
-	Gate *gateList = owner->gateList;
+	sess->QueryGateTree(rect);
+	Gate *gateList = sess->gateList;
 	while (gateList != NULL)
 	{
 		gateList->MapDraw(target);
@@ -215,5 +216,5 @@ void Minimap::DrawGates(sf::Rect<double> &rect,
 		Gate *next = gateList->next;
 		gateList = next;
 	}
-	owner->gateList = NULL;
+	sess->gateList = NULL;
 }

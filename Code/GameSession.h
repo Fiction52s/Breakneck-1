@@ -32,8 +32,6 @@ struct GateMarkerGroup;
 struct Actor;
 struct ComboObject;
 
-struct MapHeader;
-
 struct BoxEmitter;
 struct ShapeEmitter;
 struct Minimap;
@@ -61,7 +59,6 @@ struct TimerText;
 struct AbsorbParticles;
 struct Tileset;
 
-struct AdventureHUD;
 struct Fader;
 struct Swiper;
 
@@ -187,7 +184,7 @@ struct ZonePropertiesObj
 	float drainFactor;
 };
 
-struct GameSession : QuadTreeCollider, RayCastHandler, Session
+struct GameSession : RayCastHandler, Session
 {
 	//maybe move this out eventually
 	struct DecorInfo
@@ -321,26 +318,11 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		CEILING
 	};
 
-	enum QueryMode : int
-	{
-		QUERY_ENEMY,
-		QUERY_BORDER,
-		QUERY_SPECIALTERRAIN,
-		QUERY_FLYTERRAIN,
-		QUERY_INVERSEBORDER,
-		QUERY_GATE,
-		QUERY_ENVPLANT,
-		QUERY_RAIL,
-	};
-
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
 	//from mainmenu
-	Fader *fader;
-	Swiper *swiper;
-	sf::RenderTexture *postProcessTex2;
-	sf::RenderTexture *minimapTex;
+
 	sf::RenderTexture *mapTex;
 	sf::RenderTexture *pauseTex;
 
@@ -348,19 +330,20 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<PolyPtr> allPolygonsList;
 	bool continueLoading;
 	boost::mutex continueLoadingLock;
+	LoadingMapProgressDisplay *progressDisplay;
+	std::set<std::pair<int, int>> matSet;
+	std::map<std::string, std::list<DecorInfo>> decorListMap;
 
 	ScreenRecorder *debugScreenRecorder;
 	SaveFile *saveFile;
 	Config *config;
 	ScoreDisplay *scoreDisplay;
-	AdventureHUD *adventureHUD;
-	Minimap *mini;
 	PauseMenu *pauseMenu;
 
 	//does not change during running
 	std::list<PolyPtr> allSpecialTerrain;
-	std::map<std::string, std::list<DecorInfo>> decorListMap;
-	std::set<std::pair<int, int>> matSet;
+	
+	
 	sf::Vertex blackBorderQuads[4 * 4];
 	BasicBossScene *preLevelScene;
 	BasicBossScene *postLevelScene;
@@ -390,9 +373,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<boost::filesystem::path> bonusPaths;
 
 	//for queries
-	PolyPtr polyQueryList;
-	PolyPtr specialPieceList;
-	PolyPtr flyTerrainList;
+	
 	PolyPtr inversePoly;
 	
 	
@@ -428,7 +409,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	V2d nexusPos;
 	Nexus *nexus;
 	
-	RailPtr railDrawList;
+	
 	
 	Buf testBuf;//for recording ghost
 	RecordGhost *recGhost;
@@ -454,12 +435,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::Shader timeSlowShader; //actually time slow shader
 	
 	GameSession *bonusGame; //make this a container later
-	int testGateCount;
-	Gate *gateList;
+	
+	
 	Gate *unlockedGateList;
 	sf::Vector2f oldCamBotLeft;
 	sf::View oldView;
-	LoadingMapProgressDisplay *progressDisplay;
+	
 	sf::VertexArray *va;
 	std::list<sf::VertexArray*> polygonBorders;
 
@@ -468,20 +449,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::string rayMode;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	std::list<DecorLayer*> DecorLayers;
-	QueryMode queryMode;
 	bool drawInversePoly;
-	Edge *inverseEdgeList;
-	int numBorders;
+	
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
 	bool goalDestroyed;
 	GameResultType resType;
 	sf::Sprite kinMapSpawnIcon;
 	ShapeEmitter *emitterLists[EffectLayer::Count];
-	sf::Rect<double> tempSpawnRect;
+	
 	QuadTree *terrainBGTree;
 	QuadTree * enemyTree;
-	QuadTree * gateTree;
+	
 	QuadTree * itemTree;
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
@@ -572,11 +551,8 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		bool &topBorderOn);
 
 	//draw map or minimap
-	void DrawColoredMapTerrain(
-		sf::RenderTarget *target,
-		sf::Color &c);
-	void DrawAllMapWires(
-		sf::RenderTarget *target);
+
+	
 
 	//setup
 	void SetupStormCeiling();
@@ -585,13 +561,12 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void SetupShardsCapturedField();
 	void SetupShaders();
 	void SetupBackground();
-	void SetupMinimap();
 	void SetupAbsorbParticles();
 	void SetupScoreDisplay();
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
 	void SetupGoalPulse();
-	void SetupHUD();
+	
 	void SetupPauseMenu();
 	void SetupRecGhost();
 	void SetupGoalFlow();
@@ -612,9 +587,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	//draw
 	void DrawHealthFlies(sf::RenderTarget *target);
 	void DrawDecorBetween(sf::RenderTarget *target);
-	void EnemiesCheckedMiniDraw(
-		sf::RenderTarget *target,
-		sf::FloatRect &rect);
+
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
@@ -627,7 +600,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
 	void DrawActiveSequence(EffectLayer layer, 
 		sf::RenderTarget *target);
-	void DrawPlayersMini(sf::RenderTarget *target);
+	
 
 
 	void UpdateDebugModifiers();
@@ -663,7 +636,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	int CountActiveEnemies();
 	SaveFile *GetCurrentProgress();
 	bool HasPowerUnlocked( int pIndex );
-	void HandleEntrant( QuadTreeEntrant *qte );
 	void FreezePlayerAndEnemies( bool freeze );
 	void SoftenGates(int gCat);
 	void ReformGates(int gCat );
@@ -684,11 +656,9 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
-	void QueryBorderTree(sf::Rect<double>&rect);
-	void QueryGateTree(sf::Rect<double>&rect);
 	void UpdateFrameRateCounterText( double frameTime );
 	void UpdateRunningTimerText();
-	bool RunModeUpdate( double frameTime );
+	bool RunGameModeUpdate( double frameTime );
 	void ActiveSequenceUpdate();
 	void ActiveDialogueUpdate();
 	void ActiveStorySequenceUpdate();
@@ -706,14 +676,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);
 	void DrawKinOverFader(sf::RenderTarget *target);
-	void TrySpawnEnemy(QuadTreeEntrant *qte);
-	void TryAddPolyToQueryList(QuadTreeEntrant *qte);
-	void TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte);
-	void TryAddFlyPolyToQueryList(QuadTreeEntrant *qte);
-	void TryAddGateToQueryList(QuadTreeEntrant *qte);
-	void TryAddRailToQueryList(QuadTreeEntrant *qte);
-	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
-	void TryActivateQueriedEnvPlant(QuadTreeEntrant *qte);
 	void UpdateCamera();
 };
 #endif

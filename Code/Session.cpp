@@ -14,8 +14,12 @@
 #include "GateMarker.h"
 #include "KeyMarker.h"
 #include "Gate.h"
+#include "Minimap.h"
+#include "EnvPlant.h"
+#include "HUD.h"
 
 //#include "Enemy_Shard.h"
+
 
 //enemy stuff:
 #include "SoundManager.h"
@@ -1233,8 +1237,14 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	mainMenu = MainMenu::GetInstance();
 	preScreenTex = MainMenu::preScreenTexture;
+	minimapTex = MainMenu::minimapTexture;
+	postProcessTex2 = MainMenu::postProcessTexture2;
+	fader = mainMenu->fader;
+	swiper = mainMenu->swiper;
 
 	numGates = 0;
+
+	adventureHUD = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -1270,6 +1280,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	borderTree = NULL;
 	grassTree = NULL;
 	activeItemTree = NULL;
+	gateTree = NULL;
 
 	staticItemTree = NULL;
 
@@ -1322,6 +1333,18 @@ Session::~Session()
 	{
 		delete [] bigBulletVA;
 	}
+
+
+	if (parentGame == NULL && adventureHUD != NULL)
+	{
+		delete adventureHUD;
+		adventureHUD = NULL;
+	}
+	/*if (parentGame == NULL && mini != NULL)
+	{
+		delete mini;
+		mini = NULL;
+	}*/
 
 	//---------------
 
@@ -1377,6 +1400,12 @@ Session::~Session()
 	{
 		delete staticItemTree;
 		staticItemTree = NULL;
+	}
+
+	if (gateTree != NULL)
+	{
+		delete gateTree;
+		gateTree = NULL;
 	}
 		
 
@@ -3434,4 +3463,311 @@ void Session::UpdatePlayersPostPhysics()
 		if (pTemp != NULL)
 			pTemp ->UpdatePostPhysics();
 	}
+}
+
+void Session::HandleEntrant(QuadTreeEntrant *qte)
+{
+	switch (queryMode)
+	{
+	case QUERY_ENEMY:
+		TrySpawnEnemy(qte);
+		break;
+	case QUERY_BORDER:
+		TryAddPolyToQueryList(qte);
+		break;
+	case QUERY_SPECIALTERRAIN:
+		TryAddSpecialPolyToQueryList(qte);
+		break;
+	case QUERY_FLYTERRAIN:
+		TryAddFlyPolyToQueryList(qte);
+		break;
+	case QUERY_INVERSEBORDER:
+		SetQueriedInverseEdge(qte);
+		break;
+	case QUERY_GATE:
+		TryAddGateToQueryList(qte);
+		break;
+	case QUERY_ENVPLANT:
+		TryActivateQueriedEnvPlant(qte);
+		break;
+	case QUERY_RAIL:
+		TryAddRailToQueryList(qte);
+		break;
+	}
+}
+
+void Session::TrySpawnEnemy(QuadTreeEntrant *qte)
+{
+	Enemy *e = (Enemy*)qte;
+
+	if (e->spawned)
+		return;
+
+	bool a = e->spawnRect.intersects(tempSpawnRect);
+	bool b = (e->zone == NULL || e->zone->active);
+
+	if (a && b)
+	{
+		AddEnemy(e);
+	}
+}
+
+void Session::TryAddPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+	if (polyQueryList == NULL)
+	{
+		polyQueryList = p;
+		polyQueryList->queryNext = NULL;
+		numBorders++;
+	}
+	else
+	{
+		PolyPtr poly = p;
+		PolyPtr temp = polyQueryList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == poly)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			poly->queryNext = polyQueryList;
+			polyQueryList = poly;
+			numBorders++;
+		}
+	}
+}
+
+void Session::TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+
+	if (specialPieceList == NULL)
+	{
+		specialPieceList = p;
+		specialPieceList->queryNext = NULL;
+	}
+	else
+	{
+		PolyPtr tva = p;
+		PolyPtr temp = specialPieceList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			tva->queryNext = specialPieceList;
+			specialPieceList = tva;
+		}
+	}
+}
+
+void Session::TryAddFlyPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+
+	if (flyTerrainList == NULL)
+	{
+		flyTerrainList = p;
+		flyTerrainList->queryNext = NULL;
+	}
+	else
+	{
+		PolyPtr tva = p;
+		PolyPtr temp = flyTerrainList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			tva->queryNext = flyTerrainList;
+			flyTerrainList = tva;
+		}
+	}
+}
+
+void Session::TryAddGateToQueryList(QuadTreeEntrant *qte)
+{
+	Gate *g = (Gate*)qte;
+	//possible to add the same gate twice? fix.
+	if (gateList == NULL)
+	{
+		gateList = g;
+		gateList->next = NULL;
+		gateList->prev = NULL;
+
+		//cout << "setting gate: " << gateList->edgeA << endl;
+	}
+	else
+	{
+		g->next = gateList;
+		gateList = g;
+	}
+
+	//cout << "gate" << endl;
+	++testGateCount;
+}
+
+void Session::TryAddRailToQueryList(QuadTreeEntrant *qte)
+{
+	RailPtr r = (RailPtr)qte;
+	if (railDrawList == NULL)
+	{
+		railDrawList = r;
+		r->queryNext = NULL;
+	}
+	else
+	{
+		r->queryNext = railDrawList;
+		railDrawList = r;
+	}
+}
+
+void Session::SetQueriedInverseEdge(QuadTreeEntrant *qte)
+{
+	Edge *e = (Edge*)qte;
+
+	if (inverseEdgeList == NULL)
+	{
+		inverseEdgeList = e;
+		inverseEdgeList->info = NULL;
+		//numBorders++;
+	}
+	else
+	{
+		Edge *tva = e;
+		Edge *temp = inverseEdgeList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = (Edge*)temp->info;//->edge1;
+		}
+
+		if (okay)
+		{
+			tva->info = (void*)inverseEdgeList;
+			inverseEdgeList = tva;
+		}
+	}
+}
+
+void Session::TryActivateQueriedEnvPlant(QuadTreeEntrant *qte)
+{
+	EnvPlant *ep = (EnvPlant*)qte;
+	if (!ep->activated)
+	{
+		int idleLength = ep->idleLength;
+		int idleFactor = ep->idleFactor;
+
+		IntRect sub = ep->ts->GetSubRect((totalGameFrames % (idleLength * idleFactor)) / idleFactor);
+		VertexArray &eva = *ep->va;
+		eva[ep->vaIndex + 0].texCoords = Vector2f(sub.left, sub.top);
+		eva[ep->vaIndex + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+		eva[ep->vaIndex + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+		eva[ep->vaIndex + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	}
+}
+
+void Session::QueryBorderTree(sf::Rect<double> &rect)
+{
+	queryMode = QUERY_BORDER;
+	numBorders = 0;
+	borderTree->Query(this, rect);
+}
+
+void Session::QueryGateTree(sf::Rect<double>&rect)
+{
+	testGateCount = 0;
+	queryMode = QUERY_GATE;
+	gateList = NULL;
+	gateTree->Query(this, rect);
+}
+
+void Session::EnemiesCheckedMiniDraw(RenderTarget *target,
+	sf::FloatRect &rect)
+{
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->CheckedMiniDraw(target, rect);
+	}
+}
+
+void Session::DrawAllMapWires(
+	sf::RenderTarget *target)
+{
+	Actor *p;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DrawMapWires(target);
+		}
+	}
+}
+
+void Session::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
+{
+	//must be already filled from a query
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
+	{
+		Color oldColor = poly->fillCol;
+		poly->SetTerrainColor(c);
+		poly->MiniDraw(target);
+		poly->SetTerrainColor(oldColor);
+
+		poly = poly->queryNext;
+	}
+}
+
+void Session::DrawPlayersMini(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->MiniDraw(target);
+		}
+	}
+}
+
+void Session::SetupHUD()
+{
+	if (parentGame != NULL)
+	{
+		adventureHUD = parentGame->adventureHUD;
+	}
+	else if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL)
+		adventureHUD = new AdventureHUD;
 }

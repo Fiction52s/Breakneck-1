@@ -5,7 +5,12 @@
 #include "Tileset.h"
 
 struct MapHeader;
-struct GameSession;
+struct Session;
+
+struct PauseMap
+{
+	sf::Sprite kinMapSpawnIcon;
+};
 
 struct Minimap
 {
@@ -15,14 +20,14 @@ struct Minimap
 	sf::Sprite goalMapIcon;
 	sf::RenderTexture *minimapTex;
 	sf::VertexArray miniVA;
-	GameSession *owner;
+	Session *sess;
 	Tileset *ts_miniIcons;
 	Tileset *ts_miniCircle;
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];
 	static sf::Color terrainColor;
 
-	Minimap(GameSession *owner);
+	Minimap();
 	void DrawToTex();
 	void SetupBorderQuads(
 		bool *blackBorder, bool topBorderOn,
