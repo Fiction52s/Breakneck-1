@@ -93,6 +93,7 @@ struct PauseMenu;
 struct Sequence;
 struct EnterNexus1Seq;
 struct ShipExitScene;
+struct ShipEnterScene;
 
 struct VictoryScreen;
 struct VictoryScreen2PlayerVS;

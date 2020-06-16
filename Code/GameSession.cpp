@@ -205,7 +205,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 	goalPulse->Draw(target);
 	DrawPlayerWires(target);
 
-	if (shipSequence)
+	/*if (shipSequence)
 	{
 		target->draw(cloud1, ts_w1ShipClouds1->texture);
 		target->draw(cloud0, ts_w1ShipClouds0->texture);
@@ -213,7 +213,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 		target->draw(cloudBot1, ts_w1ShipClouds1->texture);
 		target->draw(cloudBot0, ts_w1ShipClouds0->texture);
 		target->draw(shipSprite);
-	}
+	}*/
 
 	DrawHitEnemies(target); //whited out hit enemies
 
@@ -760,7 +760,8 @@ bool GameSession::RunModeUpdate( double frameTime )
 			raceFight->UpdateScore();
 		}
 
-		if (shipSequence)
+
+		if (shipSequence && false )
 		{
 			float oldLeft = cloud0[0].position.x;
 			float blah = 30.f;
@@ -997,8 +998,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 		flowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
 			view.getCenter().y + view.getSize().y / 2));
 	}
-
-	
 
 	DrawGame(preScreenTex);
 
@@ -1324,7 +1323,6 @@ void GameSession::Cleanup()
 		fBubbleFrame = NULL;
 	}
 
-	
 	for (auto it = barriers.begin();
 		it != barriers.end(); ++it)
 	{
@@ -1558,8 +1556,6 @@ GameSession *GameSession::GetSession()
 	return currSession;
 }
 
-
-
 void GameSession::UpdateEnemiesPrePhysics()
 {
 	Actor *player = GetPlayer( 0 );
@@ -1738,10 +1734,6 @@ void GameSession::UpdateEnemiesSprites()
 	}
 }
 
-
-
-
-
 int GameSession::CountActiveEnemies()
 {
 	Enemy *currEnemy = activeEnemyList;
@@ -1858,10 +1850,6 @@ void GameSession::ProcessRail(RailPtr rail)
 	allRails.push_back(rail);
 }
 
-
-
-
-
 void GameSession::ProcessHeader()
 {
 	if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
@@ -1870,7 +1858,6 @@ void GameSession::ProcessHeader()
 		raceFight = new RaceFight(this, 180);
 	}
 }
-
 
 void GameSession::ProcessDecorSpr(const std::string &name,
 	Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
@@ -2034,10 +2021,17 @@ void GameSession::ProcessActor(ActorPtr a)
 		}
 		else if (typeName == "ship")
 		{
-			shipEntrancePos = a->GetPosition();
-			hasShipEntrance = true;
+			if (shipEnterScene == NULL)
+			{
+				shipEnterScene = new ShipEnterScene(this);
+				shipEnterScene->Init();
+				shipEnterScene->shipEntrancePos = a->GetPosition();
+				//shipEnterScene->Reset();
+			}
+			//shipEntrancePos = a->GetPosition();
+			//hasShipEntrance = true;
 		
-			ResetShipSequence();
+			//ResetShipSequence();
 		}
 		else if (typeName == "zoneproperties")
 		{
@@ -2263,9 +2257,6 @@ bool GameSession::PlayerIsFacingRight(int index)
 	}
 }
 
-
-
-
 void GameSession::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 	V2d &pos, float startAngle)
 {
@@ -2282,8 +2273,6 @@ void GameSession::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHi
 		break;
 	}
 }
-
-
 
 void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
 {
@@ -2593,7 +2582,6 @@ void GameSession::KeyboardUpdate( int index )
 
 	GetCurrInput(index) = keyboardInput;
 }
-
 
 void GameSession::DrawHealthFlies(sf::RenderTarget *target)
 {
@@ -2981,8 +2969,6 @@ void GameSession::SetupPlayers()
 	assert(activePlayer);
 }
 
-
-
 void GameSession::SetupShardsCapturedField()
 {
 	if (parentGame != NULL)
@@ -3249,7 +3235,6 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 	}
 }
 
-
 int GameSession::Run()
 {
 	goalDestroyed = false;
@@ -3421,6 +3406,11 @@ int GameSession::Run()
 	if (preLevelScene != NULL)
 	{
 		SetActiveSequence(preLevelScene);
+	}
+	else if( shipEnterScene != NULL )
+	{
+		shipEnterScene->Reset();
+		SetActiveSequence(shipEnterScene);
 	}
 
 	if (parentGame != NULL)
@@ -4434,6 +4424,7 @@ void GameSession::Init()
 	showTerrainDecor = true;
 	//shipExitSeq = NULL;
 	shipExitScene = NULL;
+	shipEnterScene = NULL;
 	activeDialogue = NULL;
 
 	
@@ -4830,7 +4821,6 @@ void GameSession::UpdateTimeSlowShader()
 	//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 }
 
-
 void GameSession::SetupGoalPulse()
 {
 	if (parentGame != NULL)
@@ -4844,18 +4834,6 @@ void GameSession::SetupGoalPulse()
 
 	goalPulse->SetPosition(Vector2f(goalPos));
 }
-//void GameSession::EndLevel(GameResultType rType)
-//{
-//	resType = rType;
-//	if (postLevelScene != NULL)
-//	{
-//		SetActiveSequence(postLevelScene);
-//	}
-//	else
-//	{
-//		goalDestroyed = true;
-//	}
-//}
 
 void GameSession::EndLevel()
 {
@@ -5583,6 +5561,8 @@ void GameSession::RestartLevel()
 
 	//testEmit->SetPos(Vector2f(GetPlayer(0)->position));
 
+	
+
 	if(hasShipEntrance )
 	{
 		ResetShipSequence();
@@ -5651,6 +5631,12 @@ void GameSession::RestartLevel()
 	cam.SetManual( false );
 
 	activeSequence = NULL;
+
+	if (shipEnterScene != NULL)
+	{
+		shipEnterScene->Reset();
+		SetActiveSequence(shipEnterScene);
+	}
 	//later can have a setting for this if needed
 	/*if (preLevelScene != NULL)
 	{

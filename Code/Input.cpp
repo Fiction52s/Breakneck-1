@@ -993,12 +993,12 @@ void SetFilterDefault( XBoxButton *filter)
 
 void SetFilterDefaultGCC(XBoxButton *filter)
 {
-	filter[ControllerSettings::JUMP] = XBOX_A;
-	filter[ControllerSettings::DASH] = XBOX_Y;
-	filter[ControllerSettings::ATTACK] = XBOX_R1;
+	filter[ControllerSettings::JUMP] = XBOX_Y;
+	filter[ControllerSettings::DASH] = XBOX_X;
+	filter[ControllerSettings::ATTACK] = XBOX_A;
 	filter[ControllerSettings::BOUNCE] = XBOX_B;
-	filter[ControllerSettings::GRIND] = XBOX_X;
-	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
+	filter[ControllerSettings::GRIND] = XBOX_L1;
+	filter[ControllerSettings::TIMESLOW] = XBOX_R1;
 	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::RIGHTWIRE] = XBOX_R2;
 	filter[ControllerSettings::MAP] = XBOX_BACK;
