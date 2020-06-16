@@ -89,6 +89,7 @@ struct MainMenu;
 
 struct DialogueUser;
 struct GoalPulse;
+struct GoalFlow;
 struct PauseMenu;
 struct Sequence;
 struct EnterNexus1Seq;
@@ -389,22 +390,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap;
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
-	sf::VertexArray * goalEnergyFlowVA;
 	GoalPulse *goalPulse;
+	GoalFlow *goalFlow;
 	bool hasGoal;
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
 	sf::Vector2<double> goalNodePosFinal;
 	V2d nexusPos;
 	Nexus *nexus;
-	sf::Shader flowShader;
-	float flowRadius;
-	int flowFrameCount;
-	int flowFrame;
-	float maxFlowRadius;
-	float radDiff;
-	float flowSpacing;
-	float maxFlowRings;
 	std::list<RailPtr> allRails;
 	RailPtr railDrawList;
 	int totalRails;
@@ -590,7 +583,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void SetupHUD();
 	void SetupPauseMenu();
 	void SetupRecGhost();
-	void SetupEnergyFlow();
+	void SetupGoalFlow();
 	sf::VertexArray *SetupBushes(int bgLayer,
 		Edge *startEdge, Tileset *ts);
 	sf::VertexArray * SetupPlants(Edge *start, Tileset *ts);

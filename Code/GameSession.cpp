@@ -65,7 +65,7 @@
 #include "EditorRail.h"
 #include "GateMarker.h"
 #include "DeathSequence.h"
-
+#include "GoalFlow.h"
 
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
@@ -750,6 +750,14 @@ bool GameSession::RunModeUpdate( double frameTime )
 
 		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
+		view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+
+		//this is because kin's sprite is 2x size in the game as well as other stuff
+		lastViewSize = view.getSize();
+		view.setCenter(camPos.x, camPos.y);
+
+		lastViewCenter = view.getCenter();
+
 		UpdateGoalFlow();
 
 		int speedLevel = p0->speedLevel;
@@ -903,22 +911,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 			//if( state == PAUSE )
 			//	state = RUN;
 		}
-	}
-	Vector2f camOffset;
-
-	Vector2f camPos = cam.GetPos();
-	view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
-
-	//this is because kin's sprite is 2x size in the game as well as other stuff
-	lastViewSize = view.getSize();
-	view.setCenter(camPos.x, camPos.y);
-
-	lastViewCenter = view.getCenter();
-
-	if (hasGoal)
-	{
-		flowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
-			view.getCenter().y + view.getSize().y / 2));
 	}
 
 	DrawGame(preScreenTex);
@@ -1173,7 +1165,6 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	//enemyCreateMap["goal"] = Goal::Create;
 
 	shadersLoaded = false;
-	goalEnergyFlowVA = NULL;
 	//ifstream isTest;
 	//enemyCreateMap["goal"](isTest);
 
@@ -1245,10 +1236,10 @@ void GameSession::Cleanup()
 	}
 	fullEnemyList.clear();
 
-	if ( goalEnergyFlowVA != NULL)
+	if ( goalFlow != NULL)
 	{
-		delete goalEnergyFlowVA;
-		goalEnergyFlowVA = NULL;
+		delete goalFlow;
+		goalFlow = NULL;
 	}
 
 	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
@@ -2759,7 +2750,7 @@ bool GameSession::Load()
 
 	GetPlayer(0)->SetupDrain();
 
-	SetupEnergyFlow();
+	SetupGoalFlow();
 	cam.Init(GetPlayerPos(0));
 
 	if (!ShouldContinueLoading())
@@ -2907,16 +2898,6 @@ void GameSession::SetupShaders()
 		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
 	}
 	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
-
-	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-
-	flowShader.setUniform("radDiff", radDiff);
-	flowShader.setUniform("Resolution", Vector2f(1920, 1080));// window->getSize().x, window->getSize().y);
-	flowShader.setUniform("flowSpacing", flowSpacing);
-	flowShader.setUniform("maxFlowRings", maxFlowRadius / maxFlowRings);
 
 	if (!cloneShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
 	{
@@ -4247,6 +4228,7 @@ void GameSession::Init()
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
 	absorbShardParticles = NULL;
+	goalFlow = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
 		players[i] = NULL;
@@ -4274,12 +4256,6 @@ void GameSession::Init()
 	totalRails = 0;
 	stormCeilingHeight = 0;
 	numKeysCollected = 0;
-	flowFrameCount = 60;
-	flowFrame = 0;
-	maxFlowRadius = 10000;
-	radDiff = 100;
-	flowSpacing = 600;
-	maxFlowRings = 40;
 
 	preScreenTex->setSmooth(false);
 	postProcessTex2->setSmooth(false);
@@ -4875,9 +4851,9 @@ void GameSession::DrawDecorBetween(sf::RenderTarget *target)
 
 void GameSession::DrawGoalEnergy(sf::RenderTarget *target)
 {
-	if (hasGoal)
+	if (goalFlow != NULL)
 	{
-		target->draw(*goalEnergyFlowVA, &flowShader);
+		goalFlow->Draw(target);
 	}
 }
 
@@ -4951,23 +4927,11 @@ void GameSession::ClearEmitters()
 
 void GameSession::UpdateGoalFlow()
 {
-	Actor *p0 = GetPlayer(0);
-	if (hasGoal)
+	if (goalFlow != NULL)
 	{
-		flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
-
-		flowShader.setUniform("radius", flowRadius / maxFlowRings);
-		//cout << "radius: " << flowRadius / maxFlowRings << ", frame: " << flowFrame << endl;
-		flowShader.setUniform("zoom", cam.GetZoom());
-		flowShader.setUniform("playerPos", Vector2f(p0->position.x, p0->position.y));
-
-
-
-		++flowFrame;
-		if (flowFrame == flowFrameCount)
-		{
-			flowFrame = 0;
-		}
+		Vector2f topLeft(view.getCenter().x - view.getSize().x / 2,
+			view.getCenter().y + view.getSize().y / 2);
+		goalFlow->Update(cam.GetZoom(), topLeft);
 	}
 }
 
@@ -5555,24 +5519,22 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 }
 
 typedef pair<V2d, V2d> pairV2d;
-void GameSession::SetupEnergyFlow()
+void GameSession::SetupGoalFlow()
 {
 	//is still created in a bonus level
 
-	if (goalEnergyFlowVA != NULL)
+	if (goalFlow != NULL)
 	{
-		delete goalEnergyFlowVA;
+		delete goalFlow;
+		goalFlow = NULL;
 	}
 
-	if (hasGoal)
+	if (!hasGoal)
 	{
-		flowShader.setUniform("goalPos", Vector2f(goalPos.x, goalPos.y));
-	}
-	else
-	{
-		goalEnergyFlowVA = NULL;
 		return;
 	}
+
+	
 
 	int bgLayer = 0;
 	QuadTree *qt = NULL;
@@ -5586,10 +5548,7 @@ void GameSession::SetupEnergyFlow()
 	}
 
 	assert( qt != NULL );
-	//goalPos;
 	rayMode = "energy_flow";
-	//rayIgnoreEdge1 = NULL;
-	//rayIgnoreEdge = NULL;
 
 	double angle = 0;
 	double divs = 64;
@@ -5617,8 +5576,7 @@ void GameSession::SetupEnergyFlow()
 
 		rayStart = goalPos + rayDir * startRadius;
 		rayEnd = rayStart + rayDir * rayLen;
-		//rayIgnoreEdge->
-		//while( rcEdge 
+
 		bool rayOkay = rayEnd.x >= mapHeader->leftBounds && rayEnd.y >= mapHeader->topBounds 
 			&& rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
 			&& rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
@@ -5753,49 +5711,7 @@ void GameSession::SetupEnergyFlow()
 		return;
 	}
 
-	int totalPoints = 0;
-	for(list<list<pair<V2d,bool>>>::iterator it = allInfo.begin(); it != allInfo.end(); ++it )
-	{
-		list<pair<V2d,bool>> &pointList = (*it);
-		totalPoints += pointList.size();
-	}
-
-	cout << "number of quads: " << totalPoints / 2 << endl;
-	VertexArray *VA = new VertexArray( sf::Quads, (totalPoints / 2) * 4 );
-	VertexArray &va = *VA;
-	int extra = 0;
-	for(list<list<pair<V2d,bool>>>::iterator it2 = allInfo.begin(); it2 != allInfo.end(); ++it2 )
-	{
-		list<pair<V2d,bool>> &pointList = (*it2);
-		for(list<pair<V2d,bool>>::iterator it = pointList.begin(); it != pointList.end(); ++it )
-		{
-			V2d startPoint = (*it).first;
-			++it;
-			V2d endPoint = (*it).first;
-
-			V2d along = normalize( endPoint - startPoint );
-			V2d other( along.y, -along.x );
-
-			V2d startLeft = startPoint - other * width / 2.0 + along * 16.0;
-			V2d startRight = startPoint + other * width / 2.0 + along * 16.0;
-			V2d endLeft = endPoint - other * width / 2.0 - along * 16.0;
-			V2d endRight = endPoint + other * width / 2.0 - along * 16.0;
-
-			va[extra + 0].color = Color::Red;
-			va[extra + 1].color = Color::Red;
-			va[extra + 2].color = Color::Red;
-			va[extra + 3].color = Color::Red;
-
-			va[extra + 0].position = Vector2f( startLeft.x, startLeft.y );
-			va[extra + 1].position = Vector2f( startRight.x, startRight.y );
-			va[extra + 2].position = Vector2f( endRight.x, endRight.y );
-			va[extra + 3].position = Vector2f( endLeft.x, endLeft.y );
-
-			extra += 4;
-		}
-	}
-
-	goalEnergyFlowVA = VA;
+	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
 }
 
 sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset *ts )
