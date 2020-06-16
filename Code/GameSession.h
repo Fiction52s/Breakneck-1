@@ -168,19 +168,6 @@ enum EdgeAngleType
 
 EdgeAngleType GetEdgeAngleType(V2d &normal);
 
-struct KeyNumberObj
-{
-	KeyNumberObj(sf::Vector2i &p_pos,
-		int nKeys, int zt)
-		:pos(p_pos), numKeys(nKeys),
-		zoneType(zt)
-	{
-	}
-	sf::Vector2i pos;
-	int numKeys;
-	int zoneType;
-};
-
 struct ZonePropertiesObj
 {
 	ZonePropertiesObj(
@@ -393,7 +380,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool stormCeilingOn;
 	double stormCeilingHeight;
 	ScreenRecorder *debugScreenRecorder;
-	std::list<KeyNumberObj*> keyNumberObjects;
 	int numKeysCollected;
 	ShardPopup *shardPop;
 	BitField *shardsCapturedField;
