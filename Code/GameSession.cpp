@@ -760,21 +760,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 
 		UpdateGoalFlow();
 
-		int speedLevel = p0->speedLevel;
-		float quant = 0;
-		if (speedLevel == 0)
-		{
-			quant = (float)(p0->currentSpeedBar / p0->level1SpeedThresh);
-		}
-		else if (speedLevel == 1)
-		{
-			quant = (float)((p0->currentSpeedBar - p0->level1SpeedThresh) / (p0->level2SpeedThresh - p0->level1SpeedThresh));
-		}
-		else
-		{
-			quant = (float)((p0->currentSpeedBar - p0->level2SpeedThresh) / (p0->maxGroundSpeed - p0->level2SpeedThresh));
-		}
-
 		queryMode = QUERY_ENEMY;
 
 		sf::Rect<double> spawnRect = screenRect;
@@ -5420,7 +5405,6 @@ void GameSession::UpdateExplodingGravityGrass()
 	}
 }
 
-
 //double GameSession::GetTriangleArea(p2t::Triangle * t)
 //{
 //	p2t::Point *p_0 = t->GetPoint(0);
@@ -5443,7 +5427,6 @@ void GameSession::UpdateExplodingGravityGrass()
 //
 //	return A;
 //}
-
 
 sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, int (*ValidEdge)(sf::Vector2<double> &) )
 {
@@ -6139,7 +6122,6 @@ void GameSession::ResetInactiveEnemies()
 
 	inactiveEnemyList = NULL;
 }
-
 
 //please get rid of this soon lol
 void GameSession::rResetEnemies( QNode *node )
