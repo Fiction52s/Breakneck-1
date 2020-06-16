@@ -417,23 +417,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::list<ReplayGhost*> replayGhosts;
 	Tileset *ts_gravityGrass;
 	Grass *explodingGravityGrass;
-	//ship sequence. should be in its own structure
-	Tileset *ts_w1ShipClouds0;
-	Tileset *ts_w1ShipClouds1;
-	Tileset *ts_ship;
-	sf::VertexArray cloud0;
-	sf::VertexArray cloud1;
-	sf::VertexArray cloudBot0;
-	sf::VertexArray cloudBot1;
-	sf::Vector2f relShipVel;
-	sf::Sprite shipSprite;
-	sf::RectangleShape middleClouds;
-	bool shipSequence;
-	bool hasShipEntrance;
-	V2d shipEntrancePos;
-	sf::Vector2f cloudVel;
-	int shipSeqFrame;
-	sf::Vector2f shipStartPos;
 	ShipExitScene *shipExitScene;
 	ShipEnterScene *shipEnterScene;
 	bool drain;
@@ -669,7 +652,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
-	void ResetShipSequence();
 	void TriggerBarrier( Barrier *b );
 	void RemoveAllEnemies();
 	void UpdateEnemiesPrePhysics();

@@ -3310,7 +3310,7 @@ void Actor::Respawn()
 	gateTouched = NULL;
 
 
-	if( owner != NULL && !owner->hasShipEntrance )
+	if( owner != NULL && owner->shipEnterScene == NULL )
 	{
 		SetAction(INTROBOOST);
 		frame = 0;
