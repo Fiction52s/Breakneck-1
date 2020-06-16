@@ -128,6 +128,39 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
+void GameSession::UpdateCamera()
+{
+	oldZoom = cam.GetZoom();
+	oldCamBotLeft = view.getCenter();
+	oldCamBotLeft.x -= view.getSize().x / 2;
+	oldCamBotLeft.y += view.getSize().y / 2;
+
+	oldView = view;
+
+	if (raceFight != NULL)
+	{
+		cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+	}
+	else
+	{
+		cam.Update(GetPlayer(0));
+	}
+
+	Vector2f camPos = cam.GetPos();
+	double camWidth = 960 * cam.GetZoom();
+	double camHeight = 540 * cam.GetZoom();
+
+	screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+
+	view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+
+	//this is because kin's sprite is 2x size in the game as well as other stuff
+	lastViewSize = view.getSize();
+	view.setCenter(camPos.x, camPos.y);
+
+	lastViewCenter = view.getCenter();
+}
+
 void GameSession::DrawKinOverFader(sf::RenderTarget *target)
 {
 	Actor *p = NULL;
@@ -710,30 +743,14 @@ bool GameSession::RunModeUpdate( double frameTime )
 
 		UpdateBarriers();
 
-		oldZoom = cam.GetZoom();
-		oldCamBotLeft = view.getCenter();
-		oldCamBotLeft.x -= view.getSize().x / 2;
-		oldCamBotLeft.y += view.getSize().y / 2;
-
-		oldView = view;
-
-		if (raceFight != NULL)
-		{
-			cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-		}
-		else
-		{
-			cam.Update(GetPlayer(0));
-		}
+		UpdateCamera();
 
 		if (gateMarkers != NULL)
 			gateMarkers->Update(&cam);
 
-		Vector2f camPos = cam.GetPos();
-
 		fader->Update();
 		swiper->Update();
-		background->Update(camPos);
+		background->Update(cam.GetPos());
 		if (topClouds != NULL)
 			topClouds->Update();
 		//rain.Update();
@@ -744,19 +761,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 		{
 			raceFight->UpdateScore();
 		}
-
-		double camWidth = 960 * cam.GetZoom();
-		double camHeight = 540 * cam.GetZoom();
-
-		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
-
-		view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
-
-		//this is because kin's sprite is 2x size in the game as well as other stuff
-		lastViewSize = view.getSize();
-		view.setCenter(camPos.x, camPos.y);
-
-		lastViewCenter = view.getCenter();
 
 		UpdateGoalFlow();
 
@@ -928,7 +932,6 @@ void GameSession::DrawPlayersMini(sf::RenderTarget *target)
 		}
 	}
 }
-//new stuff
 
 PolyPtr GameSession::GetPolygon(int index)
 {
@@ -1144,16 +1147,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session( Session::SESS_GAME, p_filePath), saveFile( sf ), drain(true )
 {
-	bonusGame = NULL; //testing
-	//REGISTER_ENEMY(Goal);
-
-	//enemyCreateMap["goal"] = Goal::Create;
-
-	shadersLoaded = false;
-	//ifstream isTest;
-	//enemyCreateMap["goal"](isTest);
-
-	//cam.owner = this;
+	
 	currSession = this;
 
 	Init();
@@ -4164,6 +4158,7 @@ void GameSession::Init()
 	minimapTex = mainMenu->minimapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
+	bonusGame = NULL;
 	deathSeq = NULL;
 	gateMarkers = NULL;
 	inversePoly = NULL;
@@ -4219,6 +4214,7 @@ void GameSession::Init()
 		players[i] = NULL;
 	}
 
+	shadersLoaded = false;
 	drain = true;
 	hasGoal = false;
 	playerAndEnemiesFrozen = false;

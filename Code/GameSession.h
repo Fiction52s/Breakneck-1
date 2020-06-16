@@ -703,5 +703,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void TryAddRailToQueryList(QuadTreeEntrant *qte);
 	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
 	void TryActivateQueriedEnvPlant(QuadTreeEntrant *qte);
+	void UpdateCamera();
 };
 #endif
