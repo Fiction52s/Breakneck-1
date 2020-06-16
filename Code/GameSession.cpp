@@ -1228,6 +1228,12 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 		shipExitScene = NULL;
 	}
 
+	if (shipEnterScene != NULL)
+	{
+		delete shipEnterScene;
+		shipEnterScene = NULL;
+	}
+
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
 	inversePoly = NULL;
@@ -1301,9 +1307,6 @@ void GameSession::Cleanup()
 		gateMarkers = NULL;
 	}
 
-	
-
-	//for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
 		delete allPolysVec[i];
@@ -1315,40 +1318,49 @@ void GameSession::Cleanup()
 		delete[] fBubblePos;
 		delete[] fBubbleRadiusSize;
 		delete[] fBubbleFrame;
+
+		fBubblePos = NULL;
+		fBubbleRadiusSize = NULL;
+		fBubbleFrame = NULL;
 	}
 
 	
-
 	for (auto it = barriers.begin();
 		it != barriers.end(); ++it)
 	{
 		delete (*it);
 	}
+	barriers.clear();
 
 	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
 	{
 		delete (*it).second;
 	}
+	cameraShotMap.clear();
 
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		delete (*it);
 	}
+	fullEnemyList.clear();
 
 	if ( goalEnergyFlowVA != NULL)
 	{
 		delete goalEnergyFlowVA;
+		goalEnergyFlowVA = NULL;
 	}
 
 	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
 	{
 		delete (*it);
 	}
+	globalBorderEdges.clear();
 
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{
 		delete (*it).second;
 	}
+	decorLayerMap.clear();
 
 	for (auto it = allSpecialTerrain.begin(); it != allSpecialTerrain.end(); ++it)
 	{
@@ -1372,10 +1384,7 @@ void GameSession::Cleanup()
 	{
 		delete (*it);
 	}
-	/*if (inversePoly != NULL)
-	{
-		delete inversePoly;
-	}*/
+	allEnvPlants.clear();
 
 	if ( parentGame == NULL && recGhost != NULL)
 	{
@@ -1431,20 +1440,6 @@ void GameSession::Cleanup()
 		goalPulse = NULL;
 	}
 
-	/*if (parentGame == NULL)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			if (players[i] != NULL)
-			{
-				delete players[i];
-				players[i] = NULL;
-			}
-		}
-	}*/
-
-	
-
 	if (topClouds != NULL)
 	{
 		delete topClouds;
@@ -1457,7 +1452,6 @@ void GameSession::Cleanup()
 		keyMarker = NULL;
 	}
 
-
 	if (specterTree != NULL)
 	{
 		delete specterTree;
@@ -1469,13 +1463,6 @@ void GameSession::Cleanup()
 		delete envPlantTree;
 		envPlantTree = NULL;
 	}
-
-	/*if (stormCeilingInfo != NULL)
-	{
-		stormCeilingInfo = NULL;
-	}*/
-	//if (crawlerReverseTree != NULL)
-	//	delete crawlerReverseTree;
 
 	if (itemTree != NULL)
 	{
@@ -1519,8 +1506,6 @@ void GameSession::Cleanup()
 		scoreDisplay = NULL;
 	}
 
-	
-
 	if (activeEnemyItemTree != NULL)
 	{
 		delete activeEnemyItemTree;
@@ -1532,12 +1517,6 @@ void GameSession::Cleanup()
 		delete airTriggerTree;
 		airTriggerTree = NULL;
 	}
-
-	/*if (numTotalFlies > 0 && healthFlyVA != NULL )
-	{
-		delete[] healthFlyVA;
-	}*/
-
 
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
 	{
@@ -1557,6 +1536,13 @@ void GameSession::Cleanup()
 	if (shipExitScene != NULL)
 	{
 		delete shipExitScene;
+		shipExitScene = NULL;
+	}
+
+	if (shipEnterScene != NULL)
+	{
+		delete shipEnterScene;
+		shipEnterScene = NULL;
 	}
 }
 

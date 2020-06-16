@@ -9,6 +9,7 @@
 #include <sfeMovie\Movie.hpp>
 #include "EffectLayer.h"
 #include "MovingGeo.h"
+#include "VectorMath.h"
 
 struct Edge;
 struct GameSession;
@@ -196,18 +197,43 @@ struct BasicBossScene : Sequence
 		APPEAR,
 	};
 
-	SceneBG * AddBG(const std::string &name, std::list<Tileset*> &anim,
-		int animFactor );
-	SceneBG *GetBG(const std::string &name);
+	std::list<FlashedImage*> flashList;
+	std::map<std::string, Enemy *> enemies;
+	std::map<std::string, sfe::Movie*> movies;
+	FlashGroup *currFlashGroup;
+	sfe::Movie *currMovie;
+	ConversationGroup *currConvGroup;
+	int cIndex;
+	Barrier *barrier;
+	GameSession *owner;
+	EntranceType entranceType;
+	int movieFadeFrames;
+	sf::Color movieFadeColor;
+	int movieStopFrame;
+	int fadeFrames;
+	int state;
+	int *stateLength;//[Count];
+	int numStates;
+	int entranceIndex;
+	std::map<std::string, SceneBG*> bgs;
+	std::map<std::string, ConversationGroup*> groups;
+	std::map<std::string, CameraShot*> shots;
+	std::map<std::string, PoiInfo*> points;
+	std::map<std::string, FlashedImage*> flashes;
+	std::map <std::string, FlashGroup*> flashGroups;
+	
+	static BasicBossScene *CreateScene(
+		GameSession *owner, const std::string &name);
 
 	BasicBossScene(GameSession *owner, 
 		EntranceType et );
-	EntranceType entranceType;
 	virtual ~BasicBossScene();
-	void Init();
+
+	virtual void UpdateState() = 0;
+	virtual void SetupStates() = 0;
+
 	virtual void StartRunning();
 	virtual bool Update();
-	virtual void SetupStates() = 0;
 	void SetNumStates(int count);
 	virtual void Reset();
 	virtual void AddShots(){}
@@ -218,11 +244,6 @@ struct BasicBossScene : Sequence
 	virtual void AddMovies() {}
 	virtual void SpecialInit(){}
 	virtual void ConvUpdate();
-	void EndCurrState();
-	bool IsCamMoving();
-	bool IsLastFrame();
-	static BasicBossScene *CreateScene(
-		GameSession *owner, const std::string &name);
 	virtual void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	virtual void DrawFlashes(sf::RenderTarget *target);
@@ -233,9 +254,16 @@ struct BasicBossScene : Sequence
 	virtual void SetEntranceRun();
 	virtual void SetEntranceStand();
 	virtual void SetEntranceShot();
+
+	void Init();
+	void EndCurrState();
 	void SetPlayerStandPoint(const std::string &n,
 		bool fr);
-	virtual void UpdateState() = 0;
+	bool IsCamMoving();
+	bool IsLastFrame();
+	SceneBG * AddBG(const std::string &name, std::list<Tileset*> &anim,
+		int animFactor);
+	SceneBG *GetBG(const std::string &name);
 	void EaseShot(const std::string &shotName,
 		int frames, CubicBezier bez = CubicBezier());
 	void EasePoint(const std::string &pointName,
@@ -263,41 +291,21 @@ struct BasicBossScene : Sequence
 		int disappearFrames,
 		sf::Vector2f &pos);
 	void AddMovie(const std::string &movieName);
-	
 	void AddEnemy( const std::string &enName,
 		Enemy *e);
-
 	void UpdateFlashes();
 	void UpdateMovie();
 	void SetConvGroup(const std::string &n);
 	Conversation *GetCurrentConv();
-
 	void SetCurrMovie(const std::string &name,
 		int movFadeFrames = 0,
 		sf::Color movFadeColor = sf::Color::Black );
-	int movieFadeFrames;
-	sf::Color movieFadeColor;
-	int movieStopFrame;
-
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
 		const std::string &n1);
 	void StartEntranceStand(bool fr,
 		const std::string &n);
 	void SetCameraShot(const std::string &n);
-
-	int fadeFrames;
-	int state;
-	int *stateLength;//[Count];
-	int numStates;
-	int entranceIndex;
-
-	std::map<std::string, SceneBG*> bgs;
-	std::map<std::string, ConversationGroup*> groups;
-	std::map<std::string, CameraShot*> shots;
-	std::map<std::string, PoiInfo*> points;
-	std::map<std::string, FlashedImage*> flashes;
-	std::map <std::string, FlashGroup*> flashGroups;
 	FlashGroup * AddFlashGroup(const std::string &n);
 	void AddSeqFlashToGroup(FlashGroup *,
 		const std::string &n, int delayedStart = 0);
@@ -305,19 +313,6 @@ struct BasicBossScene : Sequence
 		const std::string &n, int delayedStart = 0);
 	void UpdateFlashGroup();
 	void SetFlashGroup( const std::string &n);
-	std::list<FlashedImage*> flashList;
-	std::map<std::string, Enemy *> enemies;
-	std::map<std::string, sfe::Movie*> movies;
-
-	FlashGroup *currFlashGroup;
-
-	sfe::Movie *currMovie;
-	ConversationGroup *currConvGroup;
-	int cIndex;
-
-	Barrier *barrier;
-
-	GameSession *owner;
 };
 
 struct ShipEnterScene : BasicBossScene
@@ -348,6 +343,10 @@ struct ShipEnterScene : BasicBossScene
 	sf::Vector2f shipStartPos;
 
 	ShipEnterScene(GameSession *owner);
+	void Reset();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	//void Draw(sf::RenderTarget *target);
 };
 
 struct ShipExitScene : BasicBossScene
@@ -358,8 +357,17 @@ struct ShipExitScene : BasicBossScene
 		Count
 	};
 
-	ShipExitScene(GameSession *owner);
+	int enterTime;
+	int exitTime;
+	sf::Vector2<double> abovePlayer;
+	sf::Vector2<double> origPlayer;
+	sf::Vector2<double> attachPoint;
+	MovementSequence shipMovement;
+	MovementSequence center;
+	Tileset *ts_ship;
+	sf::Sprite shipSprite;
 
+	ShipExitScene(GameSession *owner);
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -368,19 +376,6 @@ struct ShipExitScene : BasicBossScene
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
-
-	int enterTime;
-	int exitTime;
-
-	sf::Vector2<double> abovePlayer;
-	sf::Vector2<double> origPlayer;
-	sf::Vector2<double> attachPoint;
-
-	MovementSequence shipMovement;
-	MovementSequence center;
-
-	Tileset *ts_ship;
-	sf::Sprite shipSprite;
 };
 
 #endif 

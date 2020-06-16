@@ -434,6 +434,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	int shipSeqFrame;
 	sf::Vector2f shipStartPos;
 	ShipExitScene *shipExitScene;
+	ShipEnterScene *shipEnterScene;
 	bool drain;
 	State state;
 	sf::Font font;
