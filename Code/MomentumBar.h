@@ -7,7 +7,7 @@ struct GameSession;
 
 struct MomentumBar
 {
-	MomentumBar(GameSession *owner);
+	MomentumBar(Session *sess);
 	sf::Sprite teal;
 	sf::Sprite blue;
 	sf::Sprite purp;

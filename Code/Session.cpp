@@ -3123,7 +3123,7 @@ void Session::SetupZones()
 	{
 		//cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
-		keyMarker->Reset();
+		adventureHUD->keyMarker->Reset();
 	}
 
 
@@ -3372,16 +3372,6 @@ void Session::CloseOffLimitZones()
 			(*it)->ReformAllGates();
 		}
 	}
-}
-
-void Session::SetupKeyMarker()
-{
-	if (parentGame != NULL)
-	{
-		keyMarker = parentGame->keyMarker;
-	}
-	else if (keyMarker == NULL)
-		keyMarker = new KeyMarker;
 }
 
 void Session::SetupGateMarkers()
@@ -3698,6 +3688,7 @@ void Session::TryActivateQueriedEnvPlant(QuadTreeEntrant *qte)
 
 void Session::QueryBorderTree(sf::Rect<double> &rect)
 {
+	polyQueryList = NULL;
 	queryMode = QUERY_BORDER;
 	numBorders = 0;
 	borderTree->Query(this, rect);
@@ -3770,4 +3761,21 @@ void Session::SetupHUD()
 	}
 	else if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL)
 		adventureHUD = new AdventureHUD;
+}
+
+void Session::DrawHUD(sf::RenderTarget *target)
+{
+	if (adventureHUD != NULL)
+	{
+		sf::View oldView = target->getView();
+		target->setView(uiView);
+		adventureHUD->Draw(target);
+		target->setView(oldView);
+	}
+}
+
+void Session::UpdateHUD()
+{
+	if (adventureHUD != NULL)
+		adventureHUD->Update();
 }

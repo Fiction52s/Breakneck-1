@@ -62,6 +62,8 @@ EditSession * EditSession::currSession = NULL;
 
 void EditSession::DrawGame(sf::RenderTarget *target)
 {
+	DrawHUD(target);
+
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
@@ -84,6 +86,7 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	DrawBullets(preScreenTex);
 
 	preScreenTex->setView(uiView);
+
 	
 }
 
@@ -245,49 +248,6 @@ void EditSession::TestPlayerModeUpdate()
 			break;
 		}
 
-		{
-			//if (pauseFrames == 0)
-			//{
-
-			//}
-			//else if (pauseFrames > 0)
-			//{
-			
-
-			//	Actor *pTemp = NULL;
-			//	for (int i = 0; i < 4; ++i)
-			//	{
-			//		pTemp = GetPlayer(i);
-			//		if (pTemp != NULL)
-			//		{
-			//			pTemp->UpdateInHitlag();
-			//		}
-			//	}
-
-			//	Actor *p = NULL;
-			//	for (int i = 0; i < 4; ++i)
-			//	{
-			//		p = GetPlayer(i);
-			//		if (p != NULL)
-			//			p->flashFrames--;
-			//	}
-
-			//	UpdateEffects(true);
-
-			//	cam.UpdateRumble();
-
-			//	fader->Update();
-			//	swiper->Update();
-			//	mainMenu->UpdateEffects();
-
-
-			//	pauseFrames--;
-
-			//	accumulator -= TIMESTEP;
-			//	continue;
-			//}
-		}
-
 		UpdateControllers();
 
 		UpdateAllPlayersInput();
@@ -316,11 +276,6 @@ void EditSession::TestPlayerModeUpdate()
 
 			cam.UpdateRumble();
 
-			//	fader->Update();
-			//	swiper->Update();
-			//	mainMenu->UpdateEffects();
-
-
 			pauseFrames--;
 
 			accumulator -= TIMESTEP;
@@ -330,6 +285,8 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePrePhysics();
 		UpdatePhysics();
 		UpdatePostPhysics();
+
+		UpdateHUD();
 
 		if (GetCurrInput(0).start && !GetPrevInput(0).start)
 		{
@@ -536,6 +493,7 @@ void EditSession::TestPlayerMode()
 		grassTree->Clear();
 		activeItemTree->Clear();
 		railEdgeTree->Clear();
+		gateTree->Clear();
 
 		
 
@@ -576,8 +534,7 @@ void EditSession::TestPlayerMode()
 
 		activeItemTree = new QuadTree(1000000, 1000000);
 
-		
-
+		gateTree = new QuadTree(1000000, 1000000);
 
 		//Actor *p;
 		
@@ -2850,6 +2807,8 @@ void EditSession::Init()
 	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
 
+	
+
 	if (filePathStr == "")
 	{
 		DefaultInit();
@@ -2972,6 +2931,8 @@ int EditSession::EditRun()
 	}
 
 	reloadNew = false;
+
+	SetupHUD();
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 

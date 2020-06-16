@@ -45,7 +45,6 @@ struct Zone;
 struct ZonePropertiesObj;
 
 struct GateMarkerGroup;
-struct KeyMarker;
 struct Gate;
 
 struct Minimap;
@@ -91,7 +90,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::vector<PolyPtr> allPolysVec;
 	std::list<Enemy*> fullEnemyList;
 	GateMarkerGroup *gateMarkers;
-	KeyMarker *keyMarker;
 	ZoneNode *zoneTree;
 	ZoneNode *currentZoneNode;
 	Zone *zoneTreeStart;
@@ -223,7 +221,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual ~Session();
 	void CleanupGates();
 	void SetupGateMarkers();
-	void SetupKeyMarker();
 	void CloseOffLimitZones();
 	void CleanupZones();
 	void DrawZones( sf::RenderTarget *target );
@@ -408,6 +405,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
 	void TryActivateQueriedEnvPlant(QuadTreeEntrant *qte);
 	void SetupHUD();
+	void UpdateHUD();
+	void DrawHUD(sf::RenderTarget *target);
 };
 
 #endif

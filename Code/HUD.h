@@ -94,7 +94,7 @@ struct KinMask
 	Tileset *ts_face;
 	sf::Sprite face;
 	sf::Sprite faceBG;
-	GameSession *owner;
+	Session *sess;
 	MomentumBar *momentumBar;
 	KinRing *kinRing;
 

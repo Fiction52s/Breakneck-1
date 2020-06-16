@@ -128,6 +128,95 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
+void GameSession::QueryToSpawnEnemies()
+{
+	queryMode = QUERY_ENEMY;
+	sf::Rect<double> spawnRect = screenRect;
+	double spawnExtra = 600;//800
+	spawnRect.left -= spawnExtra;
+	spawnRect.width += 2 * spawnExtra;
+	spawnRect.top -= spawnExtra;
+	spawnRect.height += 2 * spawnExtra;
+
+	tempSpawnRect = spawnRect;
+	enemyTree->Query(this, spawnRect);
+}
+
+void GameSession::UpdateBackAndStartButtons()
+{
+	Actor *p0 = GetPlayer(0);
+	if (raceFight != NULL)
+	{
+		if (raceFight->gameOver || GetCurrInput(0).back)
+		{
+			state = RACEFIGHT_RESULTS;
+			raceFight->raceFightResultsFrame = 0;
+			raceFight->victoryScreen->Reset();
+			raceFight->victoryScreen->SetupColumns();
+		}
+	}
+	else if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+	{
+		ControllerState &currInput = GetCurrInput(0);
+		ControllerState &prevInput = GetPrevInput(0);
+		//if( IsKeyPressed( Keyboard ) )
+		if (currInput.start && !prevInput.start)
+		{
+			state = PAUSE;
+			ActivatePauseSound(GetSound("pause_on"));
+			pauseMenu->SetTab(PauseMenu::PAUSE);
+			soundNodeList->Pause(true);
+		}
+		else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
+		{
+			state = PAUSE;
+			pauseMenu->SetTab(PauseMenu::MAP);
+			ActivatePauseSound(GetSound("pause_on"));
+			soundNodeList->Pause(true);
+		}
+	}
+}
+
+void GameSession::UpdateEnvPlants()
+{
+	Actor *p0 = GetPlayer(0);
+	EnvPlant *prevPlant = NULL;
+	EnvPlant *ev = activeEnvPlants;
+	while (ev != NULL)
+	{
+		EnvPlant *tempNext = ev->next;
+		ev->particle->Update(p0->position);
+
+		ev->frame++;
+		if (ev->frame == ev->disperseLength * ev->disperseFactor)
+		{
+			VertexArray &eva = *ev->va;
+			eva[ev->vaIndex + 0].position = Vector2f(0, 0);
+			eva[ev->vaIndex + 1].position = Vector2f(0, 0);
+			eva[ev->vaIndex + 2].position = Vector2f(0, 0);
+			eva[ev->vaIndex + 3].position = Vector2f(0, 0);
+
+			if (ev == activeEnvPlants)
+			{
+				activeEnvPlants = ev->next;
+			}
+			else
+			{
+				prevPlant->next = ev->next;
+			}
+		}
+		else
+		{
+			prevPlant = ev;
+		}
+
+		ev = tempNext;
+	}
+
+	queryMode = QUERY_ENVPLANT;
+	envPlantTree->Query(this, screenRect);
+}
+
 void GameSession::UpdateCamera()
 {
 	oldCamBotLeft = view.getCenter();
@@ -212,12 +301,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawGoalEnergy(target);
 
-	if (adventureHUD != NULL)
-	{
-		preScreenTex->setView(uiView);
-		adventureHUD->Draw(target);
-		preScreenTex->setView(view);
-	}
+	DrawHUD(target);
 
 	DrawGates(target);
 	DrawRails(target);
@@ -608,9 +692,6 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 			break;
 		}
 
-		bool k = IsKeyPressed(sf::Keyboard::K);
-		bool levelReset = IsKeyPressed(sf::Keyboard::L);
-
 		if (IsKeyPressed(sf::Keyboard::Y))
 		{
 			quit = true;
@@ -727,12 +808,9 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		UpdateEffects();
 		UpdateEmitters();
 
-		keyMarker->Update();
-
 		mainMenu->musicPlayer->Update();
 
-		if (adventureHUD != NULL)
-			adventureHUD->Update();
+		UpdateHUD();
 
 		scoreDisplay->Update();
 
@@ -768,58 +846,11 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 
 		UpdateGoalFlow();
 
-		queryMode = QUERY_ENEMY;
+		QueryToSpawnEnemies();
 
-		sf::Rect<double> spawnRect = screenRect;
-		double spawnExtra = 600;//800
-		spawnRect.left -= spawnExtra;
-		spawnRect.width += 2 * spawnExtra;
-		spawnRect.top -= spawnExtra;
-		spawnRect.height += 2 * spawnExtra;
+		UpdateEnvPlants();
 
-		tempSpawnRect = spawnRect;
-		enemyTree->Query(this, spawnRect);
-
-		EnvPlant *prevPlant = NULL;
-		EnvPlant *ev = activeEnvPlants;
-		while (ev != NULL)
-		{
-			EnvPlant *tempNext = ev->next;
-			ev->particle->Update(p0->position);
-
-			ev->frame++;
-			if (ev->frame == ev->disperseLength * ev->disperseFactor)
-			{
-				VertexArray &eva = *ev->va;
-				eva[ev->vaIndex + 0].position = Vector2f(0, 0);
-				eva[ev->vaIndex + 1].position = Vector2f(0, 0);
-				eva[ev->vaIndex + 2].position = Vector2f(0, 0);
-				eva[ev->vaIndex + 3].position = Vector2f(0, 0);
-
-				if (ev == activeEnvPlants)
-				{
-					activeEnvPlants = ev->next;
-				}
-				else
-				{
-					prevPlant->next = ev->next;
-				}
-			}
-			else
-			{
-				prevPlant = ev;
-			}
-
-			ev = tempNext;
-		}
-
-		queryMode = QUERY_ENVPLANT;
-		envPlantTree->Query(this, screenRect);
-
-		polyQueryList = NULL;
-		queryMode = QUERY_BORDER;
-		numBorders = 0;
-		borderTree->Query(this, screenRect);
+		QueryBorderTree(screenRect);
 
 		specialPieceList = NULL;
 		queryMode = QUERY_SPECIALTERRAIN;
@@ -834,37 +865,8 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		UpdateDecorSprites();
 		UpdateDecorLayers();
 
-		if (raceFight != NULL)
-		{
-			if (raceFight->gameOver || GetCurrInput(0).back)
-			{
-				state = RACEFIGHT_RESULTS;
-				raceFight->raceFightResultsFrame = 0;
-				raceFight->victoryScreen->Reset();
-				raceFight->victoryScreen->SetupColumns();
-				break;
-			}
-		}
-		else if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
-		{
-			ControllerState &currInput = GetCurrInput(0);
-			ControllerState &prevInput = GetPrevInput(0);
-			//if( IsKeyPressed( Keyboard ) )
-			if (currInput.start && !prevInput.start)
-			{
-				state = PAUSE;
-				ActivatePauseSound(GetSound("pause_on"));
-				pauseMenu->SetTab(PauseMenu::PAUSE);
-				soundNodeList->Pause(true);
-			}
-			else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
-			{
-				state = PAUSE;
-				pauseMenu->SetTab(PauseMenu::MAP);
-				ActivatePauseSound(GetSound("pause_on"));
-				soundNodeList->Pause(true);
-			}
-		}
+		UpdateBackAndStartButtons();
+
 		/*if( player->record > 0 )
 		{
 		player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
@@ -1294,12 +1296,6 @@ void GameSession::Cleanup()
 	{
 		delete topClouds;
 		topClouds = NULL;
-	}
-
-	if (parentGame == NULL && keyMarker != NULL)
-	{
-		delete keyMarker;
-		keyMarker = NULL;
 	}
 
 	if (specterTree != NULL)
@@ -2450,15 +2446,10 @@ bool GameSession::Load()
 		return false;
 	}
 
-	
-
-
 	//return true;
 	
 	//inputVis = new InputVisualizer;
-	
 
-	//SetupMinimap();
 
 	SetupAbsorbParticles();
 
@@ -2477,17 +2468,11 @@ bool GameSession::Load()
 		return false;
 	}
 
-	SetupQuadTrees();
-
-	
+	SetupQuadTrees();	
 
 	cout << "weird timing 1" << endl;
 
 	AllocateEffects();
-
-
-	
-	SetupKeyMarker();
 	
 	if (!ShouldContinueLoading())
 	{
@@ -4035,7 +4020,6 @@ void GameSession::Init()
 	pauseMenu = NULL;
 	progressDisplay = NULL;
 	topClouds = NULL;
-	keyMarker = NULL;
 	specterTree = NULL;
 	envPlantTree = NULL;
 	itemTree = NULL;
@@ -4751,7 +4735,6 @@ void GameSession::NextFrameRestartLevel()
 
 void GameSession::RestartLevel()
 {
-	keyMarker->Reset();
 	if( gateMarkers != NULL)
 		gateMarkers->Reset();
 	//OpenGates(Gate::CRAWLER_UNLOCK);
@@ -4884,7 +4867,7 @@ void GameSession::RestartLevel()
 		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
 		gateMarkers->SetToZone(currentZone);
-		keyMarker->Reset();
+		adventureHUD->keyMarker->Reset();
 		
 	}
 	//	originalZone->active = true;
@@ -5543,7 +5526,7 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 void GameSession::CollectKey()
 {
 	GetPlayer(0)->numKeysHeld++;
-	keyMarker->UpdateKeyNumbers();
+	adventureHUD->keyMarker->UpdateKeyNumbers();
 	//keyMarker->CollectKey();
 }
 

@@ -1,14 +1,15 @@
-#include "GameSession.h"
+#include "Session.h"
 #include "MomentumBar.h"
+#include <iostream>
 
 using namespace std;
 using namespace sf;
 
-MomentumBar::MomentumBar(GameSession *owner)
+MomentumBar::MomentumBar(Session *sess)
 {
-	ts_bar = owner->GetTileset("HUD/momentumbar_105x105.png", 105, 105);
-	ts_container = owner->GetTileset("HUD/momentumbar_115x115.png", 115, 115);
-	ts_num = owner->GetTileset("HUD/momentumnum_48x48.png", 48, 48);
+	ts_bar = sess->GetTileset("HUD/momentumbar_105x105.png", 105, 105);
+	ts_container = sess->GetTileset("HUD/momentumbar_115x115.png", 115, 115);
+	ts_num = sess->GetTileset("HUD/momentumnum_48x48.png", 48, 48);
 
 	levelNumSpr.setTexture(*ts_num->texture);
 	levelNumSpr.setTextureRect(ts_bar->GetSubRect(0));

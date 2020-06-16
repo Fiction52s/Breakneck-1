@@ -677,5 +677,9 @@ struct GameSession : RayCastHandler, Session
 	void DrawShockwaves(sf::RenderTarget *target);
 	void DrawKinOverFader(sf::RenderTarget *target);
 	void UpdateCamera();
+	void UpdateEnvPlants();
+	void UpdateBackAndStartButtons();
+	void QueryToSpawnEnemies();
+	
 };
 #endif

@@ -1786,17 +1786,17 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
 	motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
 
-
-	if (owner != NULL)
+	kinRing = new KinRing(this);
+	kinMask = new KinMask(this);
+	/*if (owner != NULL)
 	{
-		kinRing = new KinRing(this);
-		kinMask = new KinMask(this);
+		
 	}
 	else
 	{
 		kinRing = NULL;
 		kinMask = NULL;
-	}
+	}*/
 		
 
 	//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
@@ -3889,8 +3889,9 @@ void Actor::SetDespMode(bool on)
 
 void Actor::UpdateDrain()
 {
-	if (kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && owner->adventureHUD->IsShown()
-		&& (owner->currentZone == NULL || owner->currentZone->zType != Zone::MOMENTA))
+	//change this soon. just so i can get the minimap running
+	if ( owner != NULL && kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->adventureHUD->IsShown()
+		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
 		if (owner->drain && !desperationMode
 			&& !IsIntroAction(action) && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
@@ -10127,7 +10128,7 @@ void Actor::HandleTouchedGate()
 						oldZone->ReformAllGates(g);
 					}
 
-					owner->keyMarker->Reset();
+					owner->adventureHUD->keyMarker->Reset();
 				}
 				owner->ActivateZone(newZone);
 				

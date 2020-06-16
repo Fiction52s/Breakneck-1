@@ -136,7 +136,7 @@ AdventureHUD::AdventureHUD()
 	sess = Session::GetSession();
 
 	mini = new Minimap; //adventureHUD itself follows the rule of parentGame
-
+	keyMarker = new KeyMarker;
 	/*if (sess->parentGame != NULL)
 	{
 		mini = sess->parentGame->adventureHUD->mini;
@@ -155,8 +155,6 @@ AdventureHUD::AdventureHUD()
 	kinMaskShowPos = kinMask->GetTopLeft();
 	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
 
-	keyMarker = sess->keyMarker;
-
 	keyMarkerShowPos = keyMarker->GetPosition();
 	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
 	
@@ -169,6 +167,7 @@ AdventureHUD::AdventureHUD()
 AdventureHUD::~AdventureHUD()
 {
 	delete mini;
+	delete keyMarker;
 }
 
 void AdventureHUD::Hide(int frames)
@@ -272,10 +271,12 @@ void AdventureHUD::Update()
 		break;
 	}
 
-	if (state != HIDDEN)
+	mini->Update();
+	keyMarker->Update();
+	/*if (state != HIDDEN)
 	{
-		mini->Update();
-	}
+		
+	}*/
 
 	++frame;
 }
@@ -286,6 +287,8 @@ void AdventureHUD::Reset()
 	show = true;
 	state = SHOWN;
 	frame = 0;
+
+	keyMarker->Reset();
 
 	mini->SetCenter(miniShowPos);
 	kinMask->SetTopLeft(kinMaskShowPos);
@@ -323,18 +326,18 @@ void AdventureHUD::Draw(RenderTarget *target)
 KinMask::KinMask( Actor *a )
 {
 	actor = a;
-	owner = actor->owner;
+	sess = actor->sess;
 
-	ts_face = owner->GetTileset("HUD/kinportrait_320x288.png", 320, 288);
+	ts_face = sess->GetTileset("HUD/kinportrait_320x288.png", 320, 288);
 	face.setTexture(*ts_face->texture);
 	face.setTextureRect(ts_face->GetSubRect(0));
 
 	faceBG.setTexture(*ts_face->texture);
 	faceBG.setTextureRect(ts_face->GetSubRect(0));
 
-	momentumBar = new MomentumBar(owner);
+	momentumBar = new MomentumBar(sess);
 
-	ts_newShardMarker = owner->GetTileset("HUD/shardexlcaim_48x48.png", 48, 48);
+	ts_newShardMarker = sess->GetTileset("HUD/shardexlcaim_48x48.png", 48, 48);
 	shardMarker.setTexture(*ts_newShardMarker->texture);
 	shardMarker.setTextureRect(ts_newShardMarker->GetSubRect(0));
 	shardMarker.setOrigin(shardMarker.getLocalBounds().width / 2, shardMarker.getLocalBounds().height / 2);
