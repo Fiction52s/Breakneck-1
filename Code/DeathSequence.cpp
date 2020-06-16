@@ -138,7 +138,7 @@ bool DeathSequence::Update()
 
 void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	owner->DrawEmitters(layer);
+	owner->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		if (state != END)

@@ -463,10 +463,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::Shader motionBlurShader;
 	sf::Shader hBlurShader;
 	sf::Shader vBlurShader;
-	sf::Shader shockwaveShader;
 	sf::Vector2f testShock;
-	sf::Texture shockwaveTex;
-	int shockTestFrame;
 	LoadingMapProgressDisplay *progressDisplay;
 	sf::VertexArray *va;
 	Collider coll;
@@ -495,7 +492,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::Vector2f lastViewCenter;
 	bool goalDestroyed;
 	GameResultType resType;
-	sf::View cloudView;
 	sf::Sprite kinMapSpawnIcon;
 	Tileset *ts_mapIcons;
 	ShapeEmitter *emitterLists[EffectLayer::Count];
@@ -577,7 +573,7 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
-	void DrawBlackBorderQuads();
+	void DrawBlackBorderQuads(sf::RenderTarget *target);
 	void SetupMinimapBorderQuads(
 		bool *blackBorder,
 		bool topBorderOn);
@@ -635,27 +631,28 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 
 	//draw
 	void DrawHealthFlies(sf::RenderTarget *target);
-	void DrawDecorBetween();
+	void DrawDecorBetween(sf::RenderTarget *target);
 	void EnemiesCheckedMiniDraw(
 		sf::RenderTarget *target,
 		sf::FloatRect &rect);
-	void DebugDraw();
-	void DrawGoalEnergy();
+	void DebugDraw(sf::RenderTarget *target);
+	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
-	void DrawHitEnemies();
-	void DrawDyingPlayers();
-	void DrawTopClouds();
-	void DrawRails();
+	void DrawHitEnemies(sf::RenderTarget *target);
+	void DrawDyingPlayers(sf::RenderTarget *target);
+	void DrawTopClouds( sf::RenderTarget *target );
+	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
-	void DrawGates();
-	void DrawEmitters(EffectLayer layer);
-	void DrawActiveSequence(EffectLayer layer);
+	void DrawGates(sf::RenderTarget *target);
+	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
+	void DrawActiveSequence(EffectLayer layer, 
+		sf::RenderTarget *target);
 	void DrawPlayersMini(sf::RenderTarget *target);
 
 
 	void UpdateDebugModifiers();
 	void SetActiveSequence(Sequence *activeSeq);
-	void DrawStoryLayer(EffectLayer ef);
+	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
 	void SetStorySeq(StorySequence *storySeq);
 	void CollectKey();
 	void SuppressEnemyKeys(Gate *g);
@@ -678,7 +675,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void UpdateEnemiesPostPhysics();
 	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
-	void UpdateEnemiesDraw();
 	void ResetEnemies();
 	void SetGlobalBorders();
 	void ResetPlants();
@@ -722,6 +718,14 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	void UpdateBarriers();
-
+	void DrawSpecialTerrain(sf::RenderTarget *target);
+	void DrawFlyTerrain(sf::RenderTarget *target);
+	void DrawTerrain(sf::RenderTarget *target);
+	void DrawEnemies(sf::RenderTarget *target);
+	void DrawGame(sf::RenderTexture *target);
+	void DrawRain(sf::RenderTarget *target);
+	void DrawSceneToPostProcess(sf::RenderTexture *tex);
+	void DrawShockwaves(sf::RenderTarget *target);
+	void DrawKinOverFader(sf::RenderTarget *target);
 };
 #endif

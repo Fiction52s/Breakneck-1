@@ -128,6 +128,218 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
+void GameSession::DrawKinOverFader(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
+	{
+		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Draw(preScreenTex);
+			}
+		}
+	}
+}
+
+void GameSession::DrawShockwaves(sf::RenderTarget *target)
+{
+	DrawSceneToPostProcess(postProcessTex2);
+	/*for (auto it = shockwaves.begin(); it != shockwaves.end(); ++it)
+	{
+		(*it)->Draw(postProcessTex2, target);
+	}*/
+}
+
+void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target)
+{
+	target->setView(view);
+
+	background->Draw(target);
+
+	UpdateEnvShaders(); //move this into the update loop
+
+	DrawTopClouds(target);
+
+	DrawBlackBorderQuads(target);
+
+	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
+	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target );
+	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
+	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
+	DrawZones(target);
+
+	DrawSpecialTerrain(target);
+
+	DrawFlyTerrain(target);
+
+	DrawTerrain(target);
+
+	DrawGoalEnergy(target);
+
+	if (adventureHUD != NULL)
+	{
+		preScreenTex->setView(uiView);
+		adventureHUD->Draw(target);
+		preScreenTex->setView(view);
+	}
+
+	DrawGates(target);
+	DrawRails(target);
+	DrawDecorBetween(target);
+	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
+	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
+	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
+	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target );
+
+	DrawEnemies(target);
+
+	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target );
+	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target );
+
+	goalPulse->Draw(target);
+	DrawPlayerWires(target);
+
+	if (shipSequence)
+	{
+		target->draw(cloud1, ts_w1ShipClouds1->texture);
+		target->draw(cloud0, ts_w1ShipClouds0->texture);
+		target->draw(middleClouds);
+		target->draw(cloudBot1, ts_w1ShipClouds1->texture);
+		target->draw(cloudBot0, ts_w1ShipClouds0->texture);
+		target->draw(shipSprite);
+	}
+
+	DrawHitEnemies(target); //whited out hit enemies
+
+	absorbParticles->Draw(target);
+	absorbDarkParticles->Draw(target);
+
+	DrawPlayers(target);
+
+	absorbShardParticles->Draw(target);
+
+	DrawReplayGhosts();
+
+	DrawEffects(EffectLayer::IN_FRONT, target);
+	DrawEmitters(EffectLayer::IN_FRONT, target );
+	DrawStoryLayer(EffectLayer::IN_FRONT, target);
+	DrawActiveSequence(EffectLayer::IN_FRONT, target );
+
+	DrawBullets(target);
+
+	DrawRain(target);
+
+	//DrawActiveEnvPlants();
+
+	UpdateDebugModifiers();
+
+	DebugDraw(target);
+
+	DrawShockwaves(target); //not operational atm
+
+	target->setView(uiView);
+
+	if (raceFight != NULL)
+	{
+		raceFight->DrawScore(target);
+	}
+
+	/*if (adventureHUD != NULL)
+	{
+	adventureHUD->Draw(preScreenTex);
+	}*/
+
+	scoreDisplay->Draw(target);
+
+	if (showFrameRate)
+	{
+		target->draw(frameRateText);
+	}
+
+	if (showRunningTimer && !scoreDisplay->active)
+	{
+		target->draw(runningTimerText);
+	}
+
+	if (inputVis != NULL)
+		inputVis->Draw(target);
+
+	if (gateMarkers != NULL)
+		gateMarkers->Draw(target);
+
+	target->setView(view);
+
+	DrawDyingPlayers(target);
+
+	UpdateTimeSlowShader();
+
+	if (currBroadcast != NULL)
+	{
+		target->setView(uiView);
+		currBroadcast->Draw(target);
+	}
+
+	DrawActiveSequence(EffectLayer::UI_FRONT, target );
+	DrawEffects(EffectLayer::UI_FRONT, target);
+	DrawEmitters(EffectLayer::UI_FRONT, target );
+
+	target->setView(uiView);
+
+	fader->Draw(target);
+	swiper->Draw(target);
+
+	mainMenu->DrawEffects(target);
+
+	target->setView(view); //sets it back to normal for any world -> pixel calcs
+	DrawKinOverFader(target);
+}
+
+void GameSession::DrawRain(sf::RenderTarget *target)
+{
+	rainView.setCenter((int)view.getCenter().x % 64, (int)view.getCenter().y % 64);
+	rainView.setSize(view.getSize());
+	preScreenTex->setView(rainView);
+	if (rain != NULL)
+		rain->Draw(preScreenTex);
+	preScreenTex->setView(view);
+}
+
+void GameSession::DrawTerrain(sf::RenderTarget *target)
+{
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
+	{
+		poly->Draw(preScreenTex);
+		poly = poly->queryNext;
+	}
+}
+
+void GameSession::DrawFlyTerrain(sf::RenderTarget *target)
+{
+	PolyPtr fp = flyTerrainList;
+	while (fp != NULL)
+	{
+		fp->DrawFlies(preScreenTex);
+		fp = fp->queryNext;
+	}
+}
+
+void GameSession::DrawSpecialTerrain(sf::RenderTarget *target)
+{
+	PolyPtr sp = specialPieceList;
+	while (sp != NULL)
+	{
+		sp->Draw(preScreenTex);
+		sp = sp->queryNext;
+	}
+}
+
 void GameSession::UpdateBarriers()
 {
 	for (auto it = barriers.begin();
@@ -330,6 +542,14 @@ void GameSession::UpdateRunningTimerText()
 	}
 }
 
+void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
+{
+	Sprite blah;
+	blah.setTexture(preScreenTex->getTexture());
+	tex->draw(blah);
+	tex->display();
+}
+
 bool GameSession::RunModeUpdate( double frameTime )
 {
 	Actor *p = NULL;
@@ -363,7 +583,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 
 		bool k = IsKeyPressed(sf::Keyboard::K);
 		bool levelReset = IsKeyPressed(sf::Keyboard::L);
-		Enemy *monitorList = NULL;
 
 		if (IsKeyPressed(sf::Keyboard::Y))
 		{
@@ -397,29 +616,29 @@ bool GameSession::RunModeUpdate( double frameTime )
 			frameRateCounter = 0;
 		}
 
-		if (pauseFrames == 0)
+		if (pauseFrames > 0)
 		{
-			UpdateControllers();
-
-			//currently only records 1 player replays. fix this later
-			if (repPlayer != NULL)
-			{
-				repPlayer->UpdateInput(GetCurrInput(0));
-			}
-
-			if (recPlayer != NULL)
-			{
-				recPlayer->RecordFrame();
-			}
-
-			UpdateAllPlayersInput();
-
-		}
-		else if (pauseFrames > 0)
-		{
-			HitlagUpdate();
+			HitlagUpdate(); //the full update while in hitlag
 			continue;
 		}
+
+		//pauseframes == 0
+
+		UpdateControllers();
+
+		//currently only records 1 player replays. fix this later
+		if (repPlayer != NULL)
+		{
+			repPlayer->UpdateInput(GetCurrInput(0));
+		}
+
+		if (recPlayer != NULL)
+		{
+			recPlayer->RecordFrame();
+		}
+
+		UpdateAllPlayersInput();
+
 
 		ActiveSequenceUpdate();
 		if (switchState)
@@ -459,7 +678,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 
 		UpdateReplayGhostSprites();
 		
-
 		if (goalDestroyed)
 		{
 			quit = true;
@@ -749,10 +967,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
 		}
 
-
-
-
-
 	sf::Event ev;
 	while (window->pollEvent(ev))
 	{
@@ -784,264 +998,9 @@ bool GameSession::RunModeUpdate( double frameTime )
 			view.getCenter().y + view.getSize().y / 2));
 	}
 
-	preScreenTex->setView(view);
-	background->Draw(preScreenTex);
+	
 
-	cloudView.setCenter(960, 540);
-	cloudView.setCenter(960, 540);
-	preScreenTex->setView(cloudView);
-
-
-	preScreenTex->setView(view);
-
-
-	UpdateEnvShaders();
-
-	DrawTopClouds();
-
-	DrawBlackBorderQuads();
-
-	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN);
-	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN);
-	DrawEffects(EffectLayer::BEHIND_TERRAIN, preScreenTex);
-	DrawEmitters(EffectLayer::BEHIND_TERRAIN);
-
-
-	DrawZones(preScreenTex);
-
-	PolyPtr sp = specialPieceList;
-	while (sp != NULL)
-	{
-		sp->Draw(preScreenTex);
-		sp = sp->queryNext;
-	}
-
-	PolyPtr fp = flyTerrainList;
-	while (fp != NULL)
-	{
-		fp->DrawFlies(preScreenTex);
-		fp = fp->queryNext;
-	}
-
-
-	//JUST FOR TESTING
-	int numPolys = allPolysVec.size();
-	for (int i = 0; i < numPolys; ++i)
-	{
-		allPolysVec[i]->Draw(preScreenTex);
-	}
-
-
-	//DrawTerrainPieces(listVA);
-
-	DrawGoalEnergy();
-
-	preScreenTex->setView(uiView);
-
-	if (adventureHUD != NULL)
-	{
-		adventureHUD->Draw(preScreenTex);
-	}
-
-	preScreenTex->setView(view);
-
-	DrawGates();
-
-	DrawRails();
-
-
-	DrawDecorBetween();
-
-	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES);
-	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES);
-	DrawEffects(EffectLayer::BEHIND_ENEMIES, preScreenTex);
-	DrawEmitters(EffectLayer::BEHIND_ENEMIES);
-
-	UpdateEnemiesDraw();
-
-	if (activeSequence != NULL)
-	{
-		activeSequence->Draw(preScreenTex);
-	}
-
-	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
-	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-
-	goalPulse->Draw(preScreenTex);
-
-	DrawPlayerWires(preScreenTex);
-
-
-	if (shipSequence)
-	{
-		preScreenTex->draw(cloud1, ts_w1ShipClouds1->texture);
-		preScreenTex->draw(cloud0, ts_w1ShipClouds0->texture);
-		preScreenTex->draw(middleClouds);
-		preScreenTex->draw(cloudBot1, ts_w1ShipClouds1->texture);
-		preScreenTex->draw(cloudBot0, ts_w1ShipClouds0->texture);
-		preScreenTex->draw(shipSprite);
-	}
-
-	DrawHitEnemies(); //whited out hit enemies
-
-	absorbParticles->Draw(preScreenTex);
-	absorbDarkParticles->Draw(preScreenTex);
-
-	DrawPlayers(preScreenTex);
-
-	absorbShardParticles->Draw(preScreenTex);
-
-	DrawReplayGhosts();
-
-	DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
-	DrawEmitters(EffectLayer::IN_FRONT);
-	DrawStoryLayer(EffectLayer::IN_FRONT);
-	DrawActiveSequence(EffectLayer::IN_FRONT);
-
-	DrawBullets(preScreenTex);
-
-	rainView.setCenter((int)view.getCenter().x % 64, (int)view.getCenter().y % 64);
-	rainView.setSize(view.getSize());
-	preScreenTex->setView(rainView);
-
-	if (rain != NULL)
-		rain->Draw(preScreenTex);
-
-	preScreenTex->setView(view);
-
-	//DrawActiveEnvPlants();
-
-	UpdateDebugModifiers();
-
-	DebugDraw();
-
-
-	if (false)
-	{
-		Sprite blah;
-		blah.setTexture(preScreenTex->getTexture());
-		postProcessTex2->draw(blah);
-		//postProcessTex2->clear( Color::Red );
-		postProcessTex2->display();
-
-
-
-		Vector2f shockSize(580 / 2, 580 / 2);
-		sf::RectangleShape rectPost(shockSize);
-		rectPost.setOrigin(rectPost.getLocalBounds().width / 2, rectPost.getLocalBounds().height / 2);
-		rectPost.setPosition(p0->position.x, p0->position.y); //testing for now
-
-		Sprite shockSprite;
-		shockSprite.setTexture(shockwaveTex);
-		shockSprite.setOrigin(shockSprite.getLocalBounds().width / 2, shockSprite.getLocalBounds().height / 2);
-		shockSprite.setPosition(p0->position.x, p0->position.y);
-		//rectPost.setPosition( 0, 0 );
-
-		Vector2f botLeft(view.getCenter().x - view.getSize().x / 2, view.getCenter().y + view.getSize().y);
-
-		shockwaveShader.setUniform("underTex", postProcessTex2->getTexture());
-		shockwaveShader.setUniform("shockSize", Vector2f(580, 580));
-		shockwaveShader.setUniform("botLeft", Vector2f(rectPost.getPosition().x - rectPost.getSize().x / 2 - botLeft.x,
-			rectPost.getPosition().y - rectPost.getSize().y / 2 + rectPost.getSize().y - botLeft.y));
-		shockwaveShader.setUniform("zoom", cam.GetZoom());
-		//preScreenTex->draw( shockSprite );
-
-		shockSprite.setScale((1. / 60.) * shockTestFrame, (1. / 60.) * shockTestFrame);
-		preScreenTex->draw(shockSprite, &shockwaveShader);
-
-
-		shockTestFrame++;
-		if (shockTestFrame == 60)
-		{
-			shockTestFrame = 0;
-		}
-		//postProcessTex2->draw( rectPost, &shockwaveShader );
-		//postProcessTex2->display();
-
-		//sf::Sprite pptSpr;
-		//pptSpr.setTexture( postProcessTex2->getTexture() );
-		//preScreenTex->draw( pptSpr );
-	}
-
-
-	preScreenTex->setView(uiView);
-
-
-
-	if (raceFight != NULL)
-	{
-		raceFight->DrawScore(preScreenTex);
-	}
-
-	/*if (adventureHUD != NULL)
-	{
-	adventureHUD->Draw(preScreenTex);
-	}*/
-
-	scoreDisplay->Draw(preScreenTex);
-
-	if (showFrameRate)
-	{
-		preScreenTex->draw(frameRateText);
-	}
-
-	if (showRunningTimer && !scoreDisplay->active)
-	{
-		preScreenTex->draw(runningTimerText);
-	}
-
-	if (inputVis != NULL)
-		inputVis->Draw(preScreenTex);
-
-	if (gateMarkers != NULL)
-		gateMarkers->Draw(preScreenTex);
-
-	preScreenTex->setView(view);
-
-
-	DrawDyingPlayers();
-
-	UpdateTimeSlowShader();
-
-	if (currBroadcast != NULL)
-	{
-		preScreenTex->setView(uiView);
-		currBroadcast->Draw(preScreenTex);
-	}
-
-	DrawActiveSequence(EffectLayer::UI_FRONT);
-	DrawEffects(EffectLayer::UI_FRONT, preScreenTex);
-	DrawEmitters(EffectLayer::UI_FRONT);
-
-	preScreenTex->setView(uiView);
-
-	//absorbDarkParticles->Draw(preScreenTex);
-
-	//absorbShardParticles->Draw(preScreenTex);
-
-	fader->Draw(preScreenTex);
-	swiper->Draw(preScreenTex);
-
-	mainMenu->DrawEffects(preScreenTex);
-
-	preScreenTex->setView(view); //sets it back to normal for any world -> pixel calcs
-	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
-	{
-		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				//if (p->action == Actor::DEATH)
-				{
-					p->Draw(preScreenTex);
-				}
-			}
-		}
-	}
+	DrawGame(preScreenTex);
 
 	preScreenTex->display();
 
@@ -1756,9 +1715,8 @@ void GameSession::UpdateInput()
 	}
 }
 
-void GameSession::UpdateEnemiesDraw()
+void GameSession::DrawEnemies( sf::RenderTarget *target )
 {
-
 	Enemy *current = activeEnemyList;
 	while( current != NULL )
 	{
@@ -1772,10 +1730,10 @@ void GameSession::UpdateEnemiesDraw()
 
 	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
-		(*it)->CheckedZoneDraw(preScreenTex, FloatRect(screenRect));
+		(*it)->CheckedZoneDraw(target, FloatRect(screenRect));
 	}
 
-	DrawHealthFlies(preScreenTex);
+	DrawHealthFlies(target);
 }
 
 void GameSession::UpdateEnemiesSprites()
@@ -3086,17 +3044,6 @@ void GameSession::SetupShaders()
 	}
 	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
 
-	if (!shockwaveShader.loadFromFile("Resources/Shader/shockwave_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "shockwave SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	shockwaveShader.setUniform("resolution", Vector2f(1920, 1080));
-	shockwaveShader.setUniform("texSize", Vector2f(580, 580));
-	shockwaveTex.loadFromFile("Resources/FX/shockwave_580x580.png");
-	shockwaveShader.setUniform("shockwaveTex", shockwaveTex);
-
-
-
 	if (!flowShader.loadFromFile("Resources/Shader/flow_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "flow SHADER NOT LOADING CORRECTLY" << endl;
@@ -3423,8 +3370,6 @@ int GameSession::Run()
 	frameRateCounter = 0;
 	frameRateCounterWait = 20;
 	frameRateTimeTotal = 0;
-
-	cloudView = View(Vector2f(0, 0), Vector2f(1920, 1080));
 
 	int flowSize = 64;
 
@@ -4536,8 +4481,6 @@ void GameSession::Init()
 
 	explodingGravityGrass = NULL;
 
-	shockTestFrame = 0;
-
 	usePolyShader = true;
 
 	flowFrameCount = 60;
@@ -4806,7 +4749,7 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	state = GameSession::STORY;
 }
 
-void GameSession::DrawDyingPlayers()
+void GameSession::DrawDyingPlayers(sf::RenderTarget *target)
 {
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -4814,7 +4757,7 @@ void GameSession::DrawDyingPlayers()
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			p->DeathDraw(preScreenTex);
+			p->DeathDraw(target);
 		}
 	}
 }
@@ -4940,34 +4883,33 @@ void GameSession::EndLevel()
 	}
 }
 
-void GameSession::DrawStoryLayer(EffectLayer ef)
+void GameSession::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
 {
 	if (currStorySequence != NULL)
 	{
-		sf::View oldV = preScreenTex->getView();
-		preScreenTex->setView(uiView);
-		currStorySequence->DrawLayer(preScreenTex, ef);
-		preScreenTex->setView(oldV);
+		sf::View oldV = target->getView();
+		target->setView(uiView);
+		currStorySequence->DrawLayer(target, ef);
+		target->setView(oldV);
 	}
 }
 
-void GameSession::DrawActiveSequence(EffectLayer layer )
+void GameSession::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
 {
-
-	sf::View oldView = preScreenTex->getView();
-	if (layer == UI_FRONT)
-	{
-		preScreenTex->setView(uiView);
-	}
-
 	if (activeSequence != NULL)
 	{
-		activeSequence->Draw(preScreenTex, layer);
-	}
+		sf::View oldView = target->getView();
+		if (layer == UI_FRONT)
+		{
+			target->setView(uiView);
+		}
 
-	if (layer == UI_FRONT)
-	{
-		preScreenTex->setView(oldView);
+		activeSequence->Draw(target, layer);
+
+		if (layer == UI_FRONT)
+		{
+			target->setView(oldView);
+		}
 	}
 }
 
@@ -5068,24 +5010,24 @@ void GameSession::OpenGates(int gCat)
 	}
 }
 
-void GameSession::DrawBlackBorderQuads()
+void GameSession::DrawBlackBorderQuads(sf::RenderTarget *target)
 {
 	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
 
 	if (cam.manual || narrowMap)
 	{
-		preScreenTex->draw(blackBorderQuads, 16, sf::Quads);
+		target->draw(blackBorderQuads, 16, sf::Quads);
 	}
 	else
 	{
-		preScreenTex->draw(blackBorderQuads, 8, sf::Quads);
+		target->draw(blackBorderQuads, 8, sf::Quads);
 	}
 }
 
-void GameSession::DrawTopClouds()
+void GameSession::DrawTopClouds(sf::RenderTarget *target)
 {
 	if (topClouds != NULL)
-		topClouds->Draw(preScreenTex);
+		topClouds->Draw(target);
 }
 
 void GameSession::UpdateEnvShaders()
@@ -5103,7 +5045,7 @@ void GameSession::UpdateEnvShaders()
 	}
 }
 
-void GameSession::DrawGates()
+void GameSession::DrawGates(sf::RenderTarget *target)
 {
 	testGateCount = 0;
 	queryMode = "gate";
@@ -5112,39 +5054,39 @@ void GameSession::DrawGates()
 
 	while (gateList != NULL)
 	{
-		gateList->Draw(preScreenTex);
+		gateList->Draw(target);
 		Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
 		gateList = next;
 	}
 }
 
-void GameSession::DrawRails()
+void GameSession::DrawRails(sf::RenderTarget *target)
 {
 	railDrawList = NULL;
 	queryMode = "rail";
 	railDrawTree->Query(this, screenRect);
 	while (railDrawList != NULL)
 	{
-		railDrawList->Draw(preScreenTex);
+		railDrawList->Draw(target);
 		RailPtr next = railDrawList->queryNext;
 		railDrawList->queryNext = NULL;
 		railDrawList = next;
 	}
 }
 
-void GameSession::DrawDecorBetween()
+void GameSession::DrawDecorBetween(sf::RenderTarget *target)
 {
 	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
 	{
-		(*it)->Draw(preScreenTex);
+		(*it)->Draw(target);
 	}
 }
 
-void GameSession::DrawGoalEnergy()
+void GameSession::DrawGoalEnergy(sf::RenderTarget *target)
 {
 	if (hasGoal)
 	{
-		preScreenTex->draw(*goalEnergyFlowVA, &flowShader);
+		target->draw(*goalEnergyFlowVA, &flowShader);
 	}
 }
 
@@ -5165,12 +5107,12 @@ void GameSession::AddEmitter(ShapeEmitter *emit,
 	}
 }
 
-void GameSession::DrawEmitters(EffectLayer layer)
+void GameSession::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
 {
 	ShapeEmitter *curr = emitterLists[layer];
 	while (curr != NULL)
 	{
-		curr->Draw(preScreenTex);
+		curr->Draw(target);
 		curr = curr->next;
 	}
 }
@@ -5258,21 +5200,21 @@ void GameSession::UpdateDebugModifiers()
 	}
 }
 
-void GameSession::DebugDraw()
+void GameSession::DebugDraw(sf::RenderTarget *target)
 {
 	if (showDebugDraw)
 	{
 		for (auto it = barriers.begin();
 			it != barriers.end(); ++it)
 		{
-			(*it)->DebugDraw(preScreenTex);
+			(*it)->DebugDraw(target);
 		}
 
-		DebugDrawActors(preScreenTex);
+		DebugDrawActors(target);
 
 		for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 		{
-			(*it)->DebugDraw(preScreenTex);
+			(*it)->DebugDraw(target);
 		}
 	}
 }
@@ -5288,14 +5230,14 @@ void GameSession::UpdateDecorSprites()
 	}
 }
 
-void GameSession::DrawHitEnemies()
+void GameSession::DrawHitEnemies(sf::RenderTarget *target)
 {
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
 		if ((pauseFrames >= 2 && current->receivedHit != NULL))
 		{
-			current->Draw(preScreenTex);
+			current->Draw(target);
 		}
 		current = current->next;
 	}
