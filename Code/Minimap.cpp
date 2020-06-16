@@ -2,6 +2,7 @@
 #include <iostream>
 #include <assert.h>
 #include "GameSession.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;
@@ -52,6 +53,74 @@ void Minimap::SetCenter(sf::Vector2f &center)
 void Minimap::Update()
 {
 
+}
+
+void Minimap::SetupBorderQuads(
+	bool *blackBorder, bool topBorderOn,
+	MapHeader *mapHeader)
+{
+	int miniQuadWidth = 4000;
+	int inverseTerrainBorder = 4000;
+	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
+	int blackMiniBot = mapHeader->topBounds + mapHeader->boundsHeight + inverseTerrainBorder;
+	int blackMiniLeft = mapHeader->leftBounds - miniQuadWidth;
+	int rightBounds = mapHeader->leftBounds + mapHeader->boundsWidth;
+	int blackMiniRight = rightBounds + miniQuadWidth;
+
+	blackBorderQuadsMini[1].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[2].position.x = mapHeader->leftBounds;
+	blackBorderQuadsMini[0].position.x = mapHeader->leftBounds - miniQuadWidth;
+	blackBorderQuadsMini[3].position.x = mapHeader->leftBounds - miniQuadWidth;
+
+	blackBorderQuadsMini[0].position.y = blackMiniTop;
+	blackBorderQuadsMini[1].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[2].position.y = blackMiniBot;
+	blackBorderQuadsMini[3].position.y = blackMiniBot;
+
+
+	blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
+	blackBorderQuadsMini[4].position.x = rightBounds;
+	blackBorderQuadsMini[7].position.x = rightBounds;
+
+	blackBorderQuadsMini[4].position.y = blackMiniTop;
+	blackBorderQuadsMini[5].position.y = blackMiniTop;
+
+	blackBorderQuadsMini[6].position.y = blackMiniBot;
+	blackBorderQuadsMini[7].position.y = blackMiniBot;
+
+	Color miniBorderColor = Color(100, 100, 100);
+	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
+	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
+
+	if (blackBorder[0])
+		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini, Color::Transparent);
+	}
+	if (blackBorder[1])
+		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
+	else
+	{
+		SetRectColor(blackBorderQuadsMini + 4, Color::Transparent);
+	}
+
+	if (stormCeilingOn || topBorderOn)
+	{
+		SetRectColor(topBorderQuadMini, miniTopBorderColor);
+
+		topBorderQuadMini[0].position.x = blackMiniLeft;
+		topBorderQuadMini[1].position.x = blackMiniRight;
+		topBorderQuadMini[2].position.x = blackMiniRight;
+		topBorderQuadMini[3].position.x = blackMiniLeft;
+
+		topBorderQuadMini[0].position.y = blackMiniTop;
+		topBorderQuadMini[1].position.y = blackMiniTop;
+		topBorderQuadMini[2].position.y = mapHeader->topBounds;
+		topBorderQuadMini[3].position.y = mapHeader->topBounds;
+	}
 }
 
 void Minimap::DrawToTex()

@@ -18,7 +18,7 @@ TextTestSeq::TextTestSeq(GameSession *p_owner)
 	stateLength[END] = 30;
 
 
-	sceneLabel.setFont(owner->font);
+	sceneLabel.setFont(owner->mainMenu->arial);
 	sceneLabel.setFillColor(Color::White);
 	sceneLabel.setCharacterSize(100);
 	sceneLabel.setPosition(500, 500);

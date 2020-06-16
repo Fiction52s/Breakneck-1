@@ -753,33 +753,6 @@ double Camera::GetMovementZoomTarget( Actor *player )
 	}
 
 	return max( 1.0, temp );
-
-	//double zDiff = temp - zFactor;
-	//if (zDiff > 0)
-	//{
-	//	zFactor += zDiff / 100.0/*35.0*/ / player->slowMultiple;
-	//}
-	//else if (zDiff < 0)
-	//{
-	//	double oldZoom = zFactor;
-	//	bool more = oldZoom > testZoom;
-	//	if (numActive == 0 )// || more)
-	//	{
-	//		zFactor += zDiff / 350.0 / player->slowMultiple;
-	//		if (more)
-	//		{
-	//			if (zFactor < testZoom)
-	//				zFactor = testZoom;
-	//		}
-	//	}
-	//}
-
-	//if (zFactor < 1)
-	//	zFactor = 1;
-	//else if (zFactor > maxZoom)
-	//	zFactor = maxZoom;
-
-	//return zFactor;
 }
 
 void Camera::SetMovementOffset( V2d &pVel )
@@ -1165,7 +1138,6 @@ void Camera::Update( Actor *player )
 	offset = currOffset;
 	double enemyZoom = GetEnemyZoomTarget( player );
 	offset = oldOffset;
-	//zoomFactor = oldZoomFactor;
 
 	//if( numActive > 0 )
 	if (enemyZoom > zoomFactor && numActive > 0 )

@@ -58,6 +58,7 @@ struct Session : TilesetManager
 		SESS_EDIT,
 	};
 
+	sf::RenderTexture *preScreenTex;
 	int numGates;
 	std::vector<Gate*> gates;
 	std::vector<PolyPtr> allPolysVec;

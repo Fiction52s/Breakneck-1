@@ -1231,6 +1231,9 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	mainMenu = MainMenu::GetInstance();
+	preScreenTex = MainMenu::preScreenTexture;
+
 	numGates = 0;
 
 	zoneTree = NULL;
@@ -1245,7 +1248,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	sessType = p_sessType;
 	cutPlayerInput = false;
-	mainMenu = MainMenu::GetInstance();
+	
 	assert(mainMenu != NULL);
 
 	window = mainMenu->window;

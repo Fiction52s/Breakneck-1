@@ -336,54 +336,40 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
-	
-	std::list<PolyPtr> allSpecialTerrain;
-	PolyPtr specialPieceList;
-	PolyPtr flyTerrainList;
-	PolyPtr inversePoly;
-	std::list<PolyPtr> allPolygonsList;
-	std::map<std::string, std::list<DecorInfo>> decorListMap;
-	sf::View view; //need to be added to session
-	std::set<std::pair<int, int>> matSet;
-	bool usePolyShader;
-	bool hasGrass[6];
-	bool hasAnyGrass;
-	PolyPtr polyQueryList;
-	sf::Vector2<double> rayStart;
-	sf::Vector2<double> rayEnd;
-	Edge *rcEdge;
-	double rcQuantity;
-	Edge *rayIgnoreEdge;
-	Edge *rayIgnoreEdge1;
+	//from mainmenu
 	Fader *fader;
 	Swiper *swiper;
-	sf::Vertex blackBorderQuads[4 * 4];
-	AbsorbParticles *absorbParticles;
-	AbsorbParticles *absorbDarkParticles;
-	AbsorbParticles *absorbShardParticles;
+	sf::RenderTexture *postProcessTex2;
+	sf::RenderTexture *minimapTex;
+	sf::RenderTexture *mapTex;
+	sf::RenderTexture *pauseTex;
+
+	//for loading only
+	std::list<PolyPtr> allPolygonsList;
 	bool continueLoading;
 	boost::mutex continueLoadingLock;
-	ShapeEmitter *testEmit;
-	std::list<DecorDraw*> decorBetween;
-	Minimap *mini;
-	PauseMenu *pauseMenu;
+
+	ScreenRecorder *debugScreenRecorder;
 	SaveFile *saveFile;
 	Config *config;
 	ScoreDisplay *scoreDisplay;
 	AdventureHUD *adventureHUD;
-	Sequence *activeSequence;
+	Minimap *mini;
+	PauseMenu *pauseMenu;
+
+	//does not change during running
+	std::list<PolyPtr> allSpecialTerrain;
+	std::map<std::string, std::list<DecorInfo>> decorListMap;
+	std::set<std::pair<int, int>> matSet;
+	sf::Vertex blackBorderQuads[4 * 4];
 	BasicBossScene *preLevelScene;
 	BasicBossScene *postLevelScene;
-	StorySequence *currStorySequence;
-	MomentaBroadcast *currBroadcast;
-	DialogueUser *activeDialogue;
 	TopClouds *topClouds;
+	bool usePolyShader;
+	bool hasGrass[6];
+	bool hasAnyGrass;
 	bool stormCeilingOn;
 	double stormCeilingHeight;
-	ScreenRecorder *debugScreenRecorder;
-	int numKeysCollected;
-	ShardPopup *shardPop;
-	BitField *shardsCapturedField;
 	Sequence *getShardSeq;
 	Sequence *deathSeq;
 	RaceFight *raceFight;
@@ -396,22 +382,63 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::Vector2<double> goalPos;
 	sf::Vector2<double> goalNodePos;
 	sf::Vector2<double> goalNodePosFinal;
+	std::list<RailPtr> allRails;
+	int totalRails;
+	ShipExitScene *shipExitScene;
+	ShipEnterScene *shipEnterScene;
+	std::list<Edge*> globalBorderEdges;
+	std::list<boost::filesystem::path> bonusPaths;
+
+	//for queries
+	PolyPtr polyQueryList;
+	PolyPtr specialPieceList;
+	PolyPtr flyTerrainList;
+	PolyPtr inversePoly;
+	
+	
+	sf::View view; //need to be added to session
+	
+	
+	//raycast temps
+	sf::Vector2<double> rayStart;
+	sf::Vector2<double> rayEnd;
+	Edge *rcEdge;
+	double rcQuantity;
+	Edge *rayIgnoreEdge;
+	Edge *rayIgnoreEdge1;
+	
+	
+	AbsorbParticles *absorbParticles;
+	AbsorbParticles *absorbDarkParticles;
+	AbsorbParticles *absorbShardParticles;
+	
+	ShapeEmitter *testEmit;
+	std::list<DecorDraw*> decorBetween;
+	
+	Sequence *activeSequence;
+	StorySequence *currStorySequence;
+	MomentaBroadcast *currBroadcast;
+	DialogueUser *activeDialogue;
+	
+	int numKeysCollected;
+	ShardPopup *shardPop;
+	BitField *shardsCapturedField;
+	
+	
 	V2d nexusPos;
 	Nexus *nexus;
-	std::list<RailPtr> allRails;
+	
 	RailPtr railDrawList;
-	int totalRails;
+	
 	Buf testBuf;//for recording ghost
 	RecordGhost *recGhost;
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
 	std::list<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
-	ShipExitScene *shipExitScene;
-	ShipEnterScene *shipEnterScene;
+	
 	bool drain;
 	State state;
-	sf::Font font;
 	bool quit;
 	bool boostIntro;
 	InputVisualizer *inputVis;
@@ -424,35 +451,23 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	std::map<std::string, Barrier*> barrierMap;
 	std::list<Barrier*> barriers;
 	int m_numActivePlayers;
-	sf::Shader cloneShader; //actually time slow shader
-	std::list<Edge*> globalBorderEdges;
-	std::list<boost::filesystem::path> bonusPaths;
+	sf::Shader timeSlowShader; //actually time slow shader
+	
 	GameSession *bonusGame; //make this a container later
 	int testGateCount;
 	Gate *gateList;
 	Gate *unlockedGateList;
-	float oldZoom;
 	sf::Vector2f oldCamBotLeft;
 	sf::View oldView;
-	sf::Shader glowShader;
-	sf::Shader motionBlurShader;
-	sf::Shader hBlurShader;
-	sf::Shader vBlurShader;
-	sf::Vector2f testShock;
 	LoadingMapProgressDisplay *progressDisplay;
 	sf::VertexArray *va;
 	std::list<sf::VertexArray*> polygonBorders;
-	sf::RenderTexture *preScreenTex;
-	sf::RenderTexture *postProcessTex2;
-	sf::RenderTexture *minimapTex;
-	sf::RenderTexture *mapTex;
-	sf::RenderTexture *pauseTex;
+
 	Rain *rain;
-	bool shadersLoaded;
+	bool shadersLoaded;//to prevent reloading of shaders
 	std::string rayMode;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	std::list<DecorLayer*> DecorLayers;
-
 	QueryMode queryMode;
 	bool drawInversePoly;
 	Edge *inverseEdgeList;
@@ -462,7 +477,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	bool goalDestroyed;
 	GameResultType resType;
 	sf::Sprite kinMapSpawnIcon;
-	Tileset *ts_mapIcons;
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 	sf::Rect<double> tempSpawnRect;
 	QuadTree *terrainBGTree;
@@ -543,9 +557,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	
 	void UpdateDecorSprites();
 	void DrawBlackBorderQuads(sf::RenderTarget *target);
-	void SetupMinimapBorderQuads(
-		bool *blackBorder,
-		bool topBorderOn);
 	
 	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 		V2d &pos, float startAngle = 0);

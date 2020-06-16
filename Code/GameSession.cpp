@@ -130,7 +130,6 @@ GameSession * GameSession::currSession = NULL;
 
 void GameSession::UpdateCamera()
 {
-	oldZoom = cam.GetZoom();
 	oldCamBotLeft = view.getCenter();
 	oldCamBotLeft.x -= view.getSize().x / 2;
 	oldCamBotLeft.y += view.getSize().y / 2;
@@ -915,7 +914,7 @@ bool GameSession::RunModeUpdate( double frameTime )
 	if (debugScreenRecorder != NULL)
 		debugScreenRecorder->Update(preTex0);
 
-	window->draw(preTexSprite);//, &cloneShader );
+	window->draw(preTexSprite);//, &timeSlowShader );
 
 	return true;
 }
@@ -2147,76 +2146,6 @@ void GameSession::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHi
 	}
 }
 
-void GameSession::SetupMinimapBorderQuads( bool *blackBorder, bool topBorderOn )
-{
-	int miniQuadWidth = 4000;
-	int inverseTerrainBorder = 4000;
-	int blackMiniTop = mapHeader->topBounds - inverseTerrainBorder;
-	int blackMiniBot = mapHeader->topBounds + mapHeader->boundsHeight + inverseTerrainBorder;
-	int blackMiniLeft = mapHeader->leftBounds - miniQuadWidth;
-	int rightBounds = mapHeader->leftBounds + mapHeader->boundsWidth;
-	int blackMiniRight = rightBounds + miniQuadWidth;
-
-	sf::Vertex *blackBorderQuadsMini = mini->blackBorderQuadsMini;
-
-	blackBorderQuadsMini[1].position.x = mapHeader->leftBounds;
-	blackBorderQuadsMini[2].position.x = mapHeader->leftBounds;
-	blackBorderQuadsMini[0].position.x = mapHeader->leftBounds - miniQuadWidth;
-	blackBorderQuadsMini[3].position.x = mapHeader->leftBounds - miniQuadWidth;
-
-	blackBorderQuadsMini[0].position.y = blackMiniTop;
-	blackBorderQuadsMini[1].position.y = blackMiniTop;
-
-	blackBorderQuadsMini[2].position.y = blackMiniBot;
-	blackBorderQuadsMini[3].position.y = blackMiniBot;
-
-
-	blackBorderQuadsMini[5].position.x = rightBounds + miniQuadWidth;
-	blackBorderQuadsMini[6].position.x = rightBounds + miniQuadWidth;
-	blackBorderQuadsMini[4].position.x = rightBounds;
-	blackBorderQuadsMini[7].position.x = rightBounds;
-
-	blackBorderQuadsMini[4].position.y = blackMiniTop;
-	blackBorderQuadsMini[5].position.y = blackMiniTop;
-
-	blackBorderQuadsMini[6].position.y = blackMiniBot;
-	blackBorderQuadsMini[7].position.y = blackMiniBot;
-
-	Color miniBorderColor = Color(100, 100, 100);
-	Color miniTopBorderColor = Color(0x10, 0x40, 0xff);
-	//SetRectColor(blackBorderQuads + 4, Color( 100, 100, 100 ));
-
-	if (blackBorder[0])
-		SetRectColor(blackBorderQuadsMini, miniTopBorderColor);
-	else
-	{
-		SetRectColor(blackBorderQuadsMini, Color::Transparent);
-	}
-	if (blackBorder[1])
-		SetRectColor(blackBorderQuadsMini + 4, miniTopBorderColor);
-	else
-	{
-		SetRectColor(blackBorderQuadsMini + 4, Color::Transparent);
-	}
-
-	if (stormCeilingOn || topBorderOn )
-	{
-		Vertex *topBorderQuadMini = mini->topBorderQuadMini;
-
-		SetRectColor(topBorderQuadMini, miniTopBorderColor);
-
-		topBorderQuadMini[0].position.x = blackMiniLeft;
-		topBorderQuadMini[1].position.x = blackMiniRight;
-		topBorderQuadMini[2].position.x = blackMiniRight;
-		topBorderQuadMini[3].position.x = blackMiniLeft;
-
-		topBorderQuadMini[0].position.y = blackMiniTop;
-		topBorderQuadMini[1].position.y = blackMiniTop;
-		topBorderQuadMini[2].position.y = mapHeader->topBounds;
-		topBorderQuadMini[3].position.y = mapHeader->topBounds;
-	}
-	
-}
 
 void GameSession::SetupMapBorderQuads(bool *blackBorder,
 	bool &topBorderOn)
@@ -2674,7 +2603,7 @@ bool GameSession::Load()
 	bool blackBorder[2];
 	bool topBorderOn = false;
 	SetupMapBorderQuads(blackBorder, topBorderOn);
-	SetupMinimapBorderQuads(blackBorder, topBorderOn);
+	mini->SetupBorderQuads(blackBorder, topBorderOn || stormCeilingOn, mapHeader);
 
 	if (topBorderOn)
 	{
@@ -2854,31 +2783,7 @@ void GameSession::SetupShaders()
 
 	shadersLoaded = true;
 
-	if (!glowShader.loadFromFile("Resources/Shader/glow_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "glow SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	glowShader.setUniform("texSize", Vector2f(1920, 1080));
-
-	if (!hBlurShader.loadFromFile("Resources/Shader/hblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "hBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	hBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
-
-	if (!vBlurShader.loadFromFile("Resources/Shader/vblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "vBlurShader SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	vBlurShader.setUniform("texSize", Vector2f(1920 / 2, 1080 / 2));
-
-	if (!motionBlurShader.loadFromFile("Resources/Shader/motionblur_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "motion blur SHADER NOT LOADING CORRECTLY" << endl;
-	}
-	motionBlurShader.setUniform("texSize", Vector2f(1920, 1080));
-
-	if (!cloneShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
+	if (!timeSlowShader.loadFromFile("Resources/Shader/clone_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "CLONE SHADER NOT LOADING CORRECTLY" << endl;
 	}
@@ -4152,7 +4057,6 @@ void GameSession::Init()
 {
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
-	preScreenTex = mainMenu->preScreenTexture;
 	postProcessTex2 = mainMenu->postProcessTexture2;
 	mapTex = mainMenu->mapTexture;
 	minimapTex = mainMenu->minimapTexture;
@@ -4525,22 +4429,22 @@ void GameSession::UpdateTimeSlowShader()
 {
 	Actor *p0 = GetPlayer(0);
 
-	cloneShader.setUniform("u_texture", preScreenTex->getTexture());
-	cloneShader.setUniform("Resolution", Vector2f(1920, 1080));//window->getSize().x, window->getSize().y);
-	cloneShader.setUniform("zoom", cam.GetZoom());
+	timeSlowShader.setUniform("u_texture", preScreenTex->getTexture());
+	timeSlowShader.setUniform("Resolution", Vector2f(1920, 1080));//window->getSize().x, window->getSize().y);
+	timeSlowShader.setUniform("zoom", cam.GetZoom());
 
-	cloneShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
+	timeSlowShader.setUniform("topLeft", Vector2f(view.getCenter().x - view.getSize().x / 2,
 		view.getCenter().y + view.getSize().y / 2));
 
-	cloneShader.setUniform("bubbleRadius0", (float)p0->bubbleRadiusSize[0]);
-	cloneShader.setUniform("bubbleRadius1", (float)p0->bubbleRadiusSize[1]);
-	cloneShader.setUniform("bubbleRadius2", (float)p0->bubbleRadiusSize[2]);
-	cloneShader.setUniform("bubbleRadius3", (float)p0->bubbleRadiusSize[3]);
-	cloneShader.setUniform("bubbleRadius4", (float)p0->bubbleRadiusSize[4]);
-	cloneShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
-	cloneShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
-	cloneShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
-	cloneShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
+	timeSlowShader.setUniform("bubbleRadius0", (float)p0->bubbleRadiusSize[0]);
+	timeSlowShader.setUniform("bubbleRadius1", (float)p0->bubbleRadiusSize[1]);
+	timeSlowShader.setUniform("bubbleRadius2", (float)p0->bubbleRadiusSize[2]);
+	timeSlowShader.setUniform("bubbleRadius3", (float)p0->bubbleRadiusSize[3]);
+	timeSlowShader.setUniform("bubbleRadius4", (float)p0->bubbleRadiusSize[4]);
+	timeSlowShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
+	timeSlowShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
+	timeSlowShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
+	timeSlowShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
 	//too many assumptions that p0 will always be here lots of refactoring to do
 
 
@@ -4583,24 +4487,24 @@ void GameSession::UpdateTimeSlowShader()
 
 
 
-	cloneShader.setUniformArray("bPos", fBubblePos, 5 * 4);
+	timeSlowShader.setUniformArray("bPos", fBubblePos, 5 * 4);
 	//cout << "pos0: " << pos0.x << ", " << pos0.y << endl;
 	//cout << "b0frame: " << player->bubbleFramesToLive[0] << endl;
 	//cout << "b1frame: " << player->bubbleFramesToLive[1] << endl;
 	//cout << "b2frame: " << player->bubbleFramesToLive[2] << endl;
 
-	//cloneShader.setUniform( "bubble0", pos0 );
-	cloneShader.setUniform("b0Frame", (float)p0->bubbleFramesToLive[0]);
-	//cloneShader.setUniform( "bubble1", pos1 );
-	cloneShader.setUniform("b1Frame", (float)p0->bubbleFramesToLive[1]);
-	//cloneShader.setUniform( "bubble2", pos2 );
-	cloneShader.setUniform("b2Frame", (float)p0->bubbleFramesToLive[2]);
-	//cloneShader.setUniform( "bubble3", pos3 );
-	cloneShader.setUniform("b3Frame", (float)p0->bubbleFramesToLive[3]);
-	//cloneShader.setUniform( "bubble4", pos4 );
-	cloneShader.setUniform("b4Frame", (float)p0->bubbleFramesToLive[4]);
-	//cloneShader.setUniform( "bubble5", pos5 );
-	//cloneShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
+	//timeSlowShader.setUniform( "bubble0", pos0 );
+	timeSlowShader.setUniform("b0Frame", (float)p0->bubbleFramesToLive[0]);
+	//timeSlowShader.setUniform( "bubble1", pos1 );
+	timeSlowShader.setUniform("b1Frame", (float)p0->bubbleFramesToLive[1]);
+	//timeSlowShader.setUniform( "bubble2", pos2 );
+	timeSlowShader.setUniform("b2Frame", (float)p0->bubbleFramesToLive[2]);
+	//timeSlowShader.setUniform( "bubble3", pos3 );
+	timeSlowShader.setUniform("b3Frame", (float)p0->bubbleFramesToLive[3]);
+	//timeSlowShader.setUniform( "bubble4", pos4 );
+	timeSlowShader.setUniform("b4Frame", (float)p0->bubbleFramesToLive[4]);
+	//timeSlowShader.setUniform( "bubble5", pos5 );
+	//timeSlowShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 }
 
 void GameSession::SetupGoalPulse()

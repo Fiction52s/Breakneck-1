@@ -983,8 +983,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	editMoveThresh = 5;
 	editStartMove = false;
 	//adding 5 for random distance buffer
-
-	preScreenTex = mainMenu->preScreenTexture;
 	
 	//minAngle = .99;
 	progressBrush = new Brush();

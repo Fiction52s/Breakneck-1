@@ -213,7 +213,6 @@ struct EditSession : GUIHandler, Session
 	const static int POINT_SIZE = 4;
 	const static double PRIMARY_LIMIT;
 	const static double SLIVER_LIMIT;
-	sf::RenderTexture *preScreenTex;
 	int validityRadius;
 	sf::Vector2i pointGrabPos;
 	sf::Vector2i pointGrabDelta;
