@@ -410,7 +410,6 @@ struct GameSession : RayCastHandler, Session
 	Nexus *nexus;
 	
 	
-	
 	Buf testBuf;//for recording ghost
 	RecordGhost *recGhost;
 	RecordPlayer *recPlayer;
@@ -663,7 +662,6 @@ struct GameSession : RayCastHandler, Session
 	void ActiveDialogueUpdate();
 	void ActiveStorySequenceUpdate();
 	void ActiveBroadcastUpdate();
-	void HitlagUpdate();
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	void UpdateBarriers();

@@ -53,6 +53,8 @@ struct Fader;
 struct Swiper;
 struct AdventureHUD;
 
+#define TIMESTEP (1.0 / 60.0)
+
 struct Session : TilesetManager, QuadTreeCollider
 {
 	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
@@ -407,6 +409,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupHUD();
 	void UpdateHUD();
 	void DrawHUD(sf::RenderTarget *target);
+	void HitlagUpdate();
 };
 
 #endif

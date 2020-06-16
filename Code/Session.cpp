@@ -17,6 +17,7 @@
 #include "Minimap.h"
 #include "EnvPlant.h"
 #include "HUD.h"
+#include "Fader.h"
 
 //#include "Enemy_Shard.h"
 
@@ -3778,4 +3779,24 @@ void Session::UpdateHUD()
 {
 	if (adventureHUD != NULL)
 		adventureHUD->Update();
+}
+
+void Session::HitlagUpdate()
+{
+	UpdateControllers();
+	UpdateAllPlayersInput();
+
+	UpdatePlayersInHitlag();
+
+	UpdateEffects(true);
+
+	cam.UpdateRumble();
+
+	fader->Update();
+	swiper->Update();
+	mainMenu->UpdateEffects();
+
+	pauseFrames--;
+
+	accumulator -= TIMESTEP;
 }

@@ -108,8 +108,6 @@
 using namespace std;
 using namespace sf;
 
-#define TIMESTEP (1.0 / 60.0)
-
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -502,26 +500,6 @@ void GameSession::TryToActivateBonus()
 
 		}
 	}
-}
-
-void GameSession::HitlagUpdate()
-{
-	UpdateControllers();
-	UpdateAllPlayersInput();
-
-	UpdatePlayersInHitlag();
-
-	UpdateEffects(true);
-
-	cam.UpdateRumble();
-
-	fader->Update();
-	swiper->Update();
-	mainMenu->UpdateEffects();
-
-	pauseFrames--;
-
-	accumulator -= TIMESTEP;
 }
 
 void GameSession::ActiveStorySequenceUpdate()

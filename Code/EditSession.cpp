@@ -58,36 +58,51 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
-#define TIMESTEP (1.0 / 60.0)
-
 void EditSession::DrawGame(sf::RenderTarget *target)
 {
+	target->setView(view);
+
+	if (background != NULL)
+		background->Draw(target);
+
+	DrawDecorBehind();
+
+	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
+
+	DrawPolygons();
+
+	DrawRails();
+
+	DrawGates();
+
+	DrawDecorBetween();
+
 	DrawHUD(target);
 
+	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
+	
 	Enemy *current = activeEnemyList;
 	while (current != NULL)
 	{
-		current->Draw(preScreenTex);
+		current->Draw(target);
 		current = current->next;
 	}
 
-	DrawPlayerWires(preScreenTex);
+	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->Draw(preScreenTex);
-		}
-	}
+	DrawPlayerWires(target);
 
-	DrawBullets(preScreenTex);
+	DrawPlayers(target);
 
-	preScreenTex->setView(uiView);
+	DrawEffects(EffectLayer::IN_FRONT, target);
 
-	
+	DrawBullets(target);
+
+	DebugDraw(target);
+
+	target->setView(uiView);
+
+	DrawEffects(EffectLayer::UI_FRONT, target);
 }
 
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
@@ -254,37 +269,15 @@ void EditSession::TestPlayerModeUpdate()
 		
 		if (pauseFrames > 0)
 		{
-			Actor *pTemp = NULL;
-			for (int i = 0; i < 4; ++i)
-			{
-				pTemp = GetPlayer(i);
-				if (pTemp != NULL)
-				{
-					pTemp->UpdateInHitlag();
-				}
-			}
-
-			pTemp = NULL;
-			for (int i = 0; i < 4; ++i)
-			{
-				pTemp = GetPlayer(i);
-				if (pTemp != NULL)
-					pTemp->flashFrames--;
-			}
-
-			//UpdateEffects(true);
-
-			cam.UpdateRumble();
-
-			pauseFrames--;
-
-			accumulator -= TIMESTEP;
+			HitlagUpdate(); //the full update while in hitlag
 			continue;
 		}
 
 		UpdatePrePhysics();
 		UpdatePhysics();
 		UpdatePostPhysics();
+
+		UpdateEffects();
 
 		UpdateHUD();
 
@@ -1113,6 +1106,8 @@ void EditSession::CleanupForReload()
 		delete background;
 		background = NULL;
 	}
+
+	ClearEffects();
 }
 
 EditSession::~EditSession()
@@ -1258,6 +1253,13 @@ bool EditSession::IsDrawMode(Emode em)
 void EditSession::Draw()
 {
 	preScreenTex->clear();
+
+	if (IsDrawMode(Emode::TEST_PLAYER))
+	{
+		DrawGame(preScreenTex);
+		return;
+	}
+
 	preScreenTex->setView(view);
 
 	if( background != NULL )
@@ -2807,7 +2809,7 @@ void EditSession::Init()
 	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
 
-	
+	AllocateEffects();
 
 	if (filePathStr == "")
 	{
@@ -11060,7 +11062,7 @@ void EditSession::DrawMode()
 	}
 	case TEST_PLAYER:
 	{
-		DrawGame(preScreenTex);
+		//DrawGame(preScreenTex);
 		break;
 	}
 	case CREATE_TERRAIN:

@@ -225,15 +225,8 @@ BasicEffect * Actor::ActivateEffect(
 	int startFrame,
 	float depth)
 {
-	if (owner != NULL)
-	{
-		return owner->ActivateEffect(layer, ts, pos, pauseImmune, angle, frameCount, animationFactor,
-			right, startFrame, depth);
-	}
-	else
-	{
-		return NULL;
-	}
+	return sess->ActivateEffect(layer, ts, pos, pauseImmune, angle, frameCount, animationFactor,
+		right, startFrame, depth);
 }
 
 GameController &Actor::GetController(int index)
