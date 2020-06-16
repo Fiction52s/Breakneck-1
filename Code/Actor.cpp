@@ -265,14 +265,7 @@ void Actor::SetCurrHitboxes(CollisionBody *cBody,
 
 Collider &Actor::GetCollider()
 {
-	if (owner != NULL)
-	{
-		return owner->coll;
-	}
-	else if (editOwner != NULL)
-	{
-		return editOwner->collider;
-	}
+	return sess->collider;
 }
 
 void Actor::SetupFXTilesets()

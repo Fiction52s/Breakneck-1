@@ -1,13 +1,10 @@
 #include "Enemy.h"
 #include <iostream>
-#include "GameSession.h"
+#include "Session.h"
 #include "Actor.h"
 
 using namespace std;
 using namespace sf;
-
-
-GameSession *Movable::owner = NULL;
 
 Movable::Movable()
 {
@@ -15,6 +12,7 @@ Movable::Movable()
 	slowCounter = 1;
 	collideWithTerrain = false;
 	collideWithPlayer = false;
+	sess = Session::GetSession();
 
 	//12
 	//bounceCount = 0;
@@ -48,7 +46,7 @@ void Movable::HandleEntrant( QuadTreeEntrant *qte )
 {
 	Edge *e = (Edge*)qte;
 
-	Contact *c = owner->coll.collideEdge( position + tempVel, physBody, e, tempVel, V2d( 0, 0 ) );
+	Contact *c = sess->collider.collideEdge( position + tempVel, physBody, e, tempVel, V2d( 0, 0 ) );
 
 	if( c != NULL )
 	{
@@ -111,7 +109,7 @@ void Movable::UpdatePhysics()
 
 		hitBody.globalPosition = position;
 
-		Actor *player = owner->GetPlayer( 0 );
+		Actor *player = sess->GetPlayer( 0 );
 		if( player->hurtBody.Intersects( hitBody ) )
 		{	
 			HitPlayer();
@@ -176,7 +174,8 @@ bool Movable::ResolvePhysics( sf::Vector2<double> vel )
 		tempVel = vel;
 		minContact.edge = NULL;
 
-		owner->terrainTree->Query( this, r );
+
+		sess->terrainTree->Query( this, r );
 
 		return col;
 	}

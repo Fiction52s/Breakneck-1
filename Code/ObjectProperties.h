@@ -41,7 +41,9 @@ struct Movable : QuadTreeCollider
 	bool col;
 	Contact minContact;
 	V2d tempVel;
-	static GameSession *owner;
+
+	Session *sess;
+	//static GameSession *owner;
 };
 
 

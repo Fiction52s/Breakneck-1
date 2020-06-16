@@ -599,9 +599,6 @@ struct MainMenu
 	sf::Text betaText; 
 
 	static sf::RenderTexture *preScreenTexture;
-	static sf::RenderTexture *lastFrameTexture;
-	static sf::RenderTexture *postProcessTexture;
-	static sf::RenderTexture *postProcessTexture1;
 	static sf::RenderTexture *postProcessTexture2;
 	static sf::RenderTexture *minimapTexture;
 	static sf::RenderTexture *mapTexture;

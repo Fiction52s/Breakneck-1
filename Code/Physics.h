@@ -11,6 +11,8 @@
 
 struct TerrainPolygon;
 struct TerrainRail;
+struct GameSession;
+struct EdgeParentNode;
 
 struct Edge : QuadTreeEntrant
 {
@@ -57,8 +59,6 @@ struct Edge : QuadTreeEntrant
 
 	void *info;
 };
-
-struct GameSession;
 
 struct HitboxInfo
 {
@@ -217,7 +217,6 @@ private:
 	std::vector<std::vector<CollisionBox>> collisionBoxVectors;
 };
 
-
 struct Contact
 {
 	Contact();
@@ -237,10 +236,10 @@ struct Collider
 	~Collider();
 	
 	Contact *collideEdge( 
-		sf::Vector2<double> position, 
+		V2d position, 
 		const CollisionBox &b, Edge *e, 
-		const sf::Vector2<double> &vel, 
-		const sf::Vector2<double> &tVel );
+		const V2d &vel, 
+		const V2d &tVel );
 	
 	void DebugDraw( sf::RenderTarget *target );
 	void ClearDebug();
@@ -249,8 +248,6 @@ struct Collider
 	std::list<sf::Drawable*> progressDraw;
 
 };
-
-struct EdgeParentNode;
 
 struct EdgeQNode
 {
@@ -262,8 +259,6 @@ struct EdgeQNode
 	EdgeParentNode *parent;
 	bool leaf;
 };
-
-
 
 struct EdgeParentNode : EdgeQNode
 {
@@ -283,7 +278,6 @@ struct EdgeLeafNode : EdgeQNode
 };
 
 EdgeQNode *Insert( EdgeQNode *node, Edge* e );
-//void Query( EdgeQNode *node, void (*f)( Edge *e ) );
 
 void DebugDrawQuadTree( sf::RenderWindow *rw, EdgeQNode *node );
 
@@ -301,61 +295,66 @@ struct RayCastHandler
 	virtual void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion ) = 0;
 };
 
-void RayCast( RayCastHandler *handler, QNode *node, 
-	sf::Vector2<double> startPoint, 
-	sf::Vector2<double> endPoint );
+void RayCast( RayCastHandler *handler, 
+	QNode *node, 
+	V2d startPoint, 
+	V2d endPoint );
 
-bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 );
-bool IsBoxTouchingBox( const sf::Rect<int> & r0, const sf::Rect<int> & r1 );
+bool IsBoxTouchingBox( const sf::Rect<double> & r0, 
+	const sf::Rect<double> & r1 );
+bool IsBoxTouchingBox( const sf::Rect<int> & r0, 
+	const sf::Rect<int> & r1 );
 
-bool isQuadTouchingQuad(  sf::Vector2<double> & A0, 
-						 sf::Vector2<double> & B0, 
-						 sf::Vector2<double> & C0, 
-						 sf::Vector2<double> & D0, 
-						 sf::Vector2<double> & A1, 
-						 sf::Vector2<double> & B1, 
-						 sf::Vector2<double> & C1, 
-						 sf::Vector2<double> & D1 );
+bool isQuadTouchingQuad( V2d & A0, 
+						 V2d & B0, 
+						 V2d & C0, 
+						 V2d & D0, 
+						 V2d & A1, 
+						 V2d & B1, 
+						 V2d & C1, 
+						 V2d & D1 );
 
-bool IsQuadTouchingCircle( sf::Vector2<double> & A, 
-						  sf::Vector2<double> &B, 
-						  sf::Vector2<double> &C, 
-						  sf::Vector2<double> &D, 
-						  sf::Vector2<double> &pos, 
+bool IsQuadTouchingCircle(V2d & A, 
+						  V2d &B, 
+						  V2d &C, 
+						  V2d &D, 
+						  V2d &pos, 
 						  double rad );
 
-bool QuadContainsPoint( sf::Vector2<double> &A, 
-						sf::Vector2<double> &B, 
-						sf::Vector2<double> &C, 
-						sf::Vector2<double> &D, 
-						sf::Vector2<double> &point );
+bool QuadContainsPoint( V2d &A, 
+						V2d &B, 
+						V2d &C, 
+						V2d &D, 
+						V2d &point );
 
 sf::FloatRect GetQuadAABB(sf::Vertex *v);
 
 
 sf::Vector2f GetQuadCenter(sf::Vertex *v);
 
-bool QuadContainsPoint(sf::Vector2<float> &A,
-	sf::Vector2<float> &B,
-	sf::Vector2<float> &C,
-	sf::Vector2<float> &D,
-	sf::Vector2<float> &point);
+bool QuadContainsPoint(
+	sf::Vector2f &A,
+	sf::Vector2f &B,
+	sf::Vector2f &C,
+	sf::Vector2f &D,
+	sf::Vector2f &point);
 
-bool QuadContainsPoint(sf::Vertex *quad, sf::Vector2f &point);
+bool QuadContainsPoint(sf::Vertex *quad, 
+	sf::Vector2f &point);
 
-bool IsEdgeTouchingCircle( sf::Vector2<double> & v0, 
-	sf::Vector2<double> &v1, 
-	sf::Vector2<double> &pos, double rad );
+bool IsEdgeTouchingCircle( 
+	V2d & v0, 
+	V2d &v1, 
+	V2d &pos, double rad );
 
 bool IsEdgeTouchingQuad(sf::Vector2<double> &v0,
-	sf::Vector2<double> &v1,
-	sf::Vector2<double> &A,
-	sf::Vector2<double> &B,
-	sf::Vector2<double> &C,
-	sf::Vector2<double> &D);
+	V2d &v1,
+	V2d &A,
+	V2d &B,
+	V2d &C,
+	V2d &D);
 
-bool WithinDistance(sf::Vector2<double> &A,
-	sf::Vector2<double> &B, double rad);
+bool WithinDistance( V2d &A, V2d &B, double rad);
 
 
 //struct QuadTree

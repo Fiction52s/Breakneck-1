@@ -333,6 +333,18 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 		CEILING
 	};
 
+	enum QueryMode : int
+	{
+		QUERY_ENEMY,
+		QUERY_BORDER,
+		QUERY_SPECIALTERRAIN,
+		QUERY_FLYTERRAIN,
+		QUERY_INVERSEBORDER,
+		QUERY_GATE,
+		QUERY_ENVPLANT,
+		QUERY_RAIL,
+	};
+
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
@@ -415,7 +427,6 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
 	std::list<ReplayGhost*> replayGhosts;
-	Tileset *ts_gravityGrass;
 	Grass *explodingGravityGrass;
 	ShipExitScene *shipExitScene;
 	ShipEnterScene *shipEnterScene;
@@ -451,25 +462,19 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	sf::Vector2f testShock;
 	LoadingMapProgressDisplay *progressDisplay;
 	sf::VertexArray *va;
-	Collider coll;
 	std::list<sf::VertexArray*> polygonBorders;
-	sf::RenderTexture *lastFrameTex;
 	sf::RenderTexture *preScreenTex;
-	sf::RenderTexture *postProcessTex;
-	sf::RenderTexture *postProcessTex1;
 	sf::RenderTexture *postProcessTex2;
 	sf::RenderTexture *minimapTex;
 	sf::RenderTexture *mapTex;
 	sf::RenderTexture *pauseTex;
 	Rain *rain;
-	const static int NUM_CLOUDS = 5;
-	sf::Sprite clouds[NUM_CLOUDS];
-	Tileset *cloudTileset;
 	bool shadersLoaded;
 	std::string rayMode;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	std::list<DecorLayer*> DecorLayers;
-	std::string queryMode;
+
+	QueryMode queryMode;
 	bool drawInversePoly;
 	Edge *inverseEdgeList;
 	int numBorders;
@@ -711,5 +716,13 @@ struct GameSession : QuadTreeCollider, RayCastHandler, Session
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);
 	void DrawKinOverFader(sf::RenderTarget *target);
+	void TrySpawnEnemy(QuadTreeEntrant *qte);
+	void TryAddPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddFlyPolyToQueryList(QuadTreeEntrant *qte);
+	void TryAddGateToQueryList(QuadTreeEntrant *qte);
+	void TryAddRailToQueryList(QuadTreeEntrant *qte);
+	void SetQueriedInverseEdge(QuadTreeEntrant *qte);
+	void TryActivateQueriedEnvPlant(QuadTreeEntrant *qte);
 };
 #endif

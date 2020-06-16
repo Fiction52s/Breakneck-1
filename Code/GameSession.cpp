@@ -205,16 +205,6 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 	goalPulse->Draw(target);
 	DrawPlayerWires(target);
 
-	/*if (shipSequence)
-	{
-		target->draw(cloud1, ts_w1ShipClouds1->texture);
-		target->draw(cloud0, ts_w1ShipClouds0->texture);
-		target->draw(middleClouds);
-		target->draw(cloudBot1, ts_w1ShipClouds1->texture);
-		target->draw(cloudBot0, ts_w1ShipClouds0->texture);
-		target->draw(shipSprite);
-	}*/
-
 	DrawHitEnemies(target); //whited out hit enemies
 
 	absorbParticles->Draw(target);
@@ -560,8 +550,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 	window->clear(Color::Red);
 
 	preScreenTex->clear(Color::Red);
-	postProcessTex->clear(Color::Red);
-	postProcessTex1->clear(Color::Red);
 	postProcessTex2->clear(Color::Red);
 
 	switch (mapHeader->bossFightType)
@@ -572,7 +560,7 @@ bool GameSession::RunModeUpdate( double frameTime )
 		break;
 	}
 
-	coll.ClearDebug();
+	collider.ClearDebug();
 
 	while (accumulator >= TIMESTEP)
 	{
@@ -622,13 +610,11 @@ bool GameSession::RunModeUpdate( double frameTime )
 			continue;
 		}
 
-		//pauseframes == 0
-
 		UpdateControllers();
 
-		//currently only records 1 player replays. fix this later
 		if (repPlayer != NULL)
 		{
+			//currently only records 1 player replays. fix this later
 			repPlayer->UpdateInput(GetCurrInput(0));
 		}
 
@@ -638,7 +624,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 		}
 
 		UpdateAllPlayersInput();
-
 
 		ActiveSequenceUpdate();
 		if (switchState)
@@ -782,7 +767,7 @@ bool GameSession::RunModeUpdate( double frameTime )
 			quant = (float)((p0->currentSpeedBar - p0->level2SpeedThresh) / (p0->maxGroundSpeed - p0->level2SpeedThresh));
 		}
 
-		queryMode = "enemy";
+		queryMode = QUERY_ENEMY;
 
 		sf::Rect<double> spawnRect = screenRect;
 		double spawnExtra = 600;//800
@@ -827,29 +812,25 @@ bool GameSession::RunModeUpdate( double frameTime )
 			ev = tempNext;
 		}
 
-		queryMode = "envplant";
+		queryMode = QUERY_ENVPLANT;
 		envPlantTree->Query(this, screenRect);
 
 		polyQueryList = NULL;
-		queryMode = "border";
+		queryMode = QUERY_BORDER;
 		numBorders = 0;
 		borderTree->Query(this, screenRect);
 
-
-
 		specialPieceList = NULL;
-		queryMode = "specialterrain";
+		queryMode = QUERY_SPECIALTERRAIN;
 		specialTerrainTree->Query(this, screenRect);
 
 		flyTerrainList = NULL;
-		queryMode = "flyterrain";
+		queryMode = QUERY_FLYTERRAIN;
 		flyTerrainTree->Query(this, screenRect);
 
 		drawInversePoly = ScreenIntersectsInversePoly(screenRect);
 
 		UpdateDecorSprites();
-
-
 		UpdateDecorLayers();
 
 		if (raceFight != NULL)
@@ -888,9 +869,6 @@ bool GameSession::RunModeUpdate( double frameTime )
 		player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
 		screenRect;
 		}*/
-		
-
-
 		accumulator -= TIMESTEP;
 
 		if (debugScreenRecorder != NULL)
@@ -995,8 +973,6 @@ PolyPtr GameSession::GetPolygon(int index)
 	return terrain;
 }
 
-
-
 EdgeAngleType GetEdgeAngleType(V2d &normal)
 {
 	if (GameSession::IsFlatGround(normal) == 0)
@@ -1040,7 +1016,6 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 	}
 }
 
-
 PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
 {
 	name = pname;
@@ -1057,15 +1032,6 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 	pos = edge->GetPosition( edgeQuantity );
 }
 
-
-//std::string & tolowerinplace(std::string &s)
-//{
-//	std::transform(s.begin(), s.end(), s.begin(), std::tolower);
-//	return s;
-//}
-
-//#define REGISTER_ENEMY(X) enemyCreateMap[tolowerinplace(string(#X))] = X::Create
-
 void GameSession::Reload(const boost::filesystem::path &p_filePath)
 {
 	//partial cleanup
@@ -1076,11 +1042,6 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	allPolysVec.clear();
 
 	CleanupZones();
-	/*for (auto it = zones.begin(); it != zones.end(); ++it)
-	{
-		delete (*it);
-	}
-	zones.clear();*/
 
 	for (auto it = barriers.begin();
 		it != barriers.end(); ++it)
@@ -3233,31 +3194,9 @@ int GameSession::Run()
 	oneFrameMode = false;
 	quit = false;
 
-
-	
-	vector<GCC::GCController> controllers;
-	if (mainMenu->gccDriverEnabled)
-		controllers = mainMenu->gccDriver->getState();
-	for (int i = 0; i < 4; ++i)
-	{
-		GameController &c = GetController(i);
-		if (mainMenu->gccDriverEnabled)
-			c.gcController = controllers[i];
-		c.UpdateState();
-		GetCurrInput(i) = GetController(i).GetState();
-	}
-
-	bool t = GetCurrInput(0).start;//sf::IsKeyPressed( sf::Keyboard::Y );
-	bool s = t;
-	t = false;
-
-	int returnVal = GR_EXITLEVEL;
-
-	ts_gravityGrass = GetTileset("Env/gravity_grass_128x128.png", 128, 128);
-	
+	returnVal = GR_EXITLEVEL;
 
 	goalDestroyed = false;
-
 
 	debugScreenRecorder = NULL;
 
@@ -3267,7 +3206,6 @@ int GameSession::Run()
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
-	lastFrameTex->setView(v);
 	
 	frameRateCounter = 0;
 	frameRateCounterWait = 20;
@@ -3514,7 +3452,7 @@ int GameSession::Run()
 				(*it)->Draw( mapTex );
 			}
 
-			queryMode = "border";
+			queryMode = QUERY_BORDER;
 			numBorders = 0;
 			polyQueryList = NULL;
 			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
@@ -3525,7 +3463,7 @@ int GameSession::Run()
 			DrawColoredMapTerrain(mapTex, Color(Color::Green));
 
 			testGateCount = 0;
-			queryMode = "gate";
+			queryMode = QUERY_GATE;
 			gateList = NULL;
 			gateTree->Query( this, mapRect );
 			Gate *mGateList = gateList;
@@ -3989,7 +3927,7 @@ int GameSession::Run()
 					(*it)->Draw(mapTex);
 				}
 
-				queryMode = "border";
+				queryMode = QUERY_BORDER;
 				numBorders = 0;
 				sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 					vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
@@ -4022,7 +3960,7 @@ int GameSession::Run()
 				}*/
 
 				testGateCount = 0;
-				queryMode = "gate";
+				queryMode = QUERY_GATE;
 				gateList = NULL;
 				gateTree->Query(this, mapRect);
 				Gate *mGateList = gateList;
@@ -4252,143 +4190,90 @@ bool GameSession::IsFading()
 
 void GameSession::Init()
 {
-	deathSeq = NULL;
-	gateMarkers = NULL;
-	inversePoly = NULL;
-
-	drain = true;
-	hasGoal = false;
-	numTotalKeys = 0;
-	numKeysCollected = 0;
-
-	fBubblePos = NULL;
-	fBubbleRadiusSize = NULL;
-	fBubbleFrame = NULL;
-
-
-	preLevelScene = NULL;
-	postLevelScene = NULL;
-	playerAndEnemiesFrozen = false;
-
-	shardPop = NULL;
-
-	nextFrameRestart = false;
-
-	ReadDecorImagesFile();
-
-	getShardSeq = NULL;
-
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
-
-	shardsCapturedField = NULL;
-
-	mini = NULL;
-
-	level = NULL;
-
-	boostIntro = false;
-
-	for (int i = 0; i < 6; ++i)
-	{
-		hasGrass[i] = false;
-	}
-
-	totalRails = 0;
-
-	stormCeilingOn = false;
-	stormCeilingHeight = 0;
-
-	inputVis = NULL;
-
-	adventureHUD = NULL;
-
-	goalPulse = NULL;
-	pauseMenu = NULL;
-	progressDisplay = NULL;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		players[i] = NULL;
-	}
-
-	topClouds = NULL;
-
-	keyMarker = NULL;
-	
-	specterTree = NULL;
-	
-	envPlantTree = NULL;
-	
-	itemTree = NULL;
-	
-	gateTree = NULL;
-	
-	enemyTree = NULL;
-
-	staticItemTree = NULL;
-
-	railDrawTree = NULL;
-	
-	terrainBGTree = NULL;
-	
-	scoreDisplay = NULL;
-	
-	originalMusic = NULL;
-
-	rain = NULL;//new Rain(this);//NULL;
-	//stormCeilingInfo = NULL;
-
-	va = NULL;
-	activeEnemyList = NULL;
-	activeEnemyListTail = NULL;
-	pauseFrames = 0;
-
-	raceFight = NULL;
-
-	recPlayer = NULL;
-	repPlayer = NULL;
-	recGhost = NULL;
-	//repGhost = NULL;
-	showTerrainDecor = true;
-	//shipExitSeq = NULL;
-	shipExitScene = NULL;
-	shipEnterScene = NULL;
-	activeDialogue = NULL;
-
-	
-
-	/*stormCeilingInfo = new HitboxInfo;
-	stormCeilingInfo->damage = 20;
-	stormCeilingInfo->drainX = .5;
-	stormCeilingInfo->drainY = .5;
-	stormCeilingInfo->hitlagFrames = 0;
-	stormCeilingInfo->hitstunFrames = 30;
-	stormCeilingInfo->knockback = 0;
-	stormCeilingInfo->freezeDuringStun = true;*/
-
 	preScreenTex = mainMenu->preScreenTexture;
-	lastFrameTex = mainMenu->lastFrameTexture;
-	postProcessTex = mainMenu->postProcessTexture;
-	postProcessTex1 = mainMenu->postProcessTexture1;
 	postProcessTex2 = mainMenu->postProcessTexture2;
 	mapTex = mainMenu->mapTexture;
 	minimapTex = mainMenu->minimapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
-	Movable::owner = this;
-
-	cutPlayerInput = false;
-
-	preScreenTex->setSmooth(false);
-	postProcessTex->setSmooth(false);
-	postProcessTex1->setSmooth(false);
-	postProcessTex2->setSmooth(false);
-
+	deathSeq = NULL;
+	gateMarkers = NULL;
+	inversePoly = NULL;
+	fBubblePos = NULL;
+	fBubbleRadiusSize = NULL;
+	fBubbleFrame = NULL;
+	preLevelScene = NULL;
+	postLevelScene = NULL;
+	shardPop = NULL;
+	getShardSeq = NULL;
+	shardsCapturedField = NULL;
+	mini = NULL;
+	level = NULL;
+	inputVis = NULL;
+	adventureHUD = NULL;
+	goalPulse = NULL;
+	pauseMenu = NULL;
+	progressDisplay = NULL;
+	topClouds = NULL;
+	keyMarker = NULL;
+	specterTree = NULL;
+	envPlantTree = NULL;
+	itemTree = NULL;
+	gateTree = NULL;
+	enemyTree = NULL;
+	staticItemTree = NULL;
+	railDrawTree = NULL;
+	terrainBGTree = NULL;
+	scoreDisplay = NULL;
+	originalMusic = NULL;
+	rain = NULL;//new Rain(this);//NULL;
+	va = NULL;
+	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
+	raceFight = NULL;
+	recPlayer = NULL;
+	repPlayer = NULL;
+	recGhost = NULL;
+	//repGhost = NULL;
+	shipExitScene = NULL;
+	shipEnterScene = NULL;
+	activeDialogue = NULL;
 	explodingGravityGrass = NULL;
+	polyQueryList = NULL;
+	specialPieceList = NULL;
+	flyTerrainList = NULL;
+	absorbParticles = NULL;
+	absorbDarkParticles = NULL;
+	absorbShardParticles = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		players[i] = NULL;
+	}
 
+	drain = true;
+	hasGoal = false;
+	playerAndEnemiesFrozen = false;
+	boostIntro = false;
+	nextFrameRestart = false;
+	stormCeilingOn = false;
+	showTerrainDecor = true;
+	cutPlayerInput = false;
 	usePolyShader = true;
+	drawInversePoly = true;
+	showDebugDraw = false;
+	for (int i = 0; i < 6; ++i)
+	{
+		hasGrass[i] = false;
+	}
 
+
+	numTotalKeys = 0;
+	pauseFrames = 0;
+	totalRails = 0;
+	stormCeilingHeight = 0;
+	numKeysCollected = 0;
 	flowFrameCount = 60;
 	flowFrame = 0;
 	maxFlowRadius = 10000;
@@ -4396,229 +4281,240 @@ void GameSession::Init()
 	flowSpacing = 600;
 	maxFlowRings = 40;
 
-	polyQueryList = NULL;
-	specialPieceList = NULL;
-	flyTerrainList = NULL;
-
-	drawInversePoly = true;
-	showDebugDraw = false;
-
+	preScreenTex->setSmooth(false);
+	postProcessTex2->setSmooth(false);
+	ReadDecorImagesFile();
 	testBuf.SetRecOver(false);
+}
 
-	absorbParticles = NULL;
-	absorbDarkParticles = NULL;
-	absorbShardParticles = NULL;
+void GameSession::TrySpawnEnemy(QuadTreeEntrant *qte)
+{
+	Enemy *e = (Enemy*)qte;
+
+	if (e->spawned)
+		return;
+
+	bool a = e->spawnRect.intersects(tempSpawnRect);
+	bool b = (e->zone == NULL || e->zone->active);
+
+	if (a && b)
+	{
+		AddEnemy(e);
+	}
+}
+
+void GameSession::TryAddPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+	if (polyQueryList == NULL)
+	{
+		polyQueryList = p;
+		polyQueryList->queryNext = NULL;
+		numBorders++;
+	}
+	else
+	{
+		PolyPtr poly = p;
+		PolyPtr temp = polyQueryList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == poly)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			poly->queryNext = polyQueryList;
+			polyQueryList = poly;
+			numBorders++;
+		}
+	}
+}
+
+void GameSession::TryAddSpecialPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+
+	if (specialPieceList == NULL)
+	{
+		specialPieceList = p;
+		specialPieceList->queryNext = NULL;
+	}
+	else
+	{
+		PolyPtr tva = p;
+		PolyPtr temp = specialPieceList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			tva->queryNext = specialPieceList;
+			specialPieceList = tva;
+		}
+	}
+}
+
+void GameSession::TryAddFlyPolyToQueryList(QuadTreeEntrant *qte)
+{
+	PolyPtr p = (PolyPtr)qte;
+
+	if (flyTerrainList == NULL)
+	{
+		flyTerrainList = p;
+		flyTerrainList->queryNext = NULL;
+	}
+	else
+	{
+		PolyPtr tva = p;
+		PolyPtr temp = flyTerrainList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = temp->queryNext;
+		}
+
+		if (okay)
+		{
+			tva->queryNext = flyTerrainList;
+			flyTerrainList = tva;
+		}
+	}
+}
+
+void GameSession::TryAddGateToQueryList(QuadTreeEntrant *qte)
+{
+	Gate *g = (Gate*)qte;
+	//possible to add the same gate twice? fix.
+	if (gateList == NULL)
+	{
+		gateList = g;
+		gateList->next = NULL;
+		gateList->prev = NULL;
+
+		//cout << "setting gate: " << gateList->edgeA << endl;
+	}
+	else
+	{
+		g->next = gateList;
+		gateList = g;
+	}
+
+	//cout << "gate" << endl;
+	++testGateCount;
+}
+
+void GameSession::TryAddRailToQueryList(QuadTreeEntrant *qte)
+{
+	RailPtr r = (RailPtr)qte;
+	if (railDrawList == NULL)
+	{
+		railDrawList = r;
+		r->queryNext = NULL;
+	}
+	else
+	{
+		r->queryNext = railDrawList;
+		railDrawList = r;
+	}
+}
+
+void GameSession::SetQueriedInverseEdge(QuadTreeEntrant *qte)
+{
+	Edge *e = (Edge*)qte;
+
+	if (inverseEdgeList == NULL)
+	{
+		inverseEdgeList = e;
+		inverseEdgeList->info = NULL;
+		//numBorders++;
+	}
+	else
+	{
+		Edge *tva = e;
+		Edge *temp = inverseEdgeList;
+		bool okay = true;
+		while (temp != NULL)
+		{
+			if (temp == tva)
+			{
+				okay = false;
+				break;
+			}
+			temp = (Edge*)temp->info;//->edge1;
+		}
+
+		if (okay)
+		{
+			tva->info = (void*)inverseEdgeList;
+			inverseEdgeList = tva;
+		}
+	}
+}
+
+void GameSession::TryActivateQueriedEnvPlant(QuadTreeEntrant *qte)
+{
+	EnvPlant *ep = (EnvPlant*)qte;
+	if (!ep->activated)
+	{
+		int idleLength = ep->idleLength;
+		int idleFactor = ep->idleFactor;
+
+		IntRect sub = ep->ts->GetSubRect((totalGameFrames % (idleLength * idleFactor)) / idleFactor);
+		VertexArray &eva = *ep->va;
+		eva[ep->vaIndex + 0].texCoords = Vector2f(sub.left, sub.top);
+		eva[ep->vaIndex + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
+		eva[ep->vaIndex + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
+		eva[ep->vaIndex + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	}
 }
 
 void GameSession::HandleEntrant( QuadTreeEntrant *qte )
 {
-	if( queryMode == "enemy" )
+	switch (queryMode)
 	{
-		Enemy *e = (Enemy*)qte;
-		if (e->spawned)
-			return;
-		
-
-		bool a = e->spawnRect.intersects( tempSpawnRect );
-		bool b = ( e->zone == NULL || e->zone->active ); 
-		
-		//if( e->type == Enemy::NEXUS )
-		//{
-		//	cout << "zone: " << e->zone << ", " << e->zone->active << endl;
-		//	cout << "orig: " << originalZone << ", " << originalZone->active << endl;
-		//	cout << "blah: " << e->zone->allEnemies.size() << endl;
-		//	//cout << "querying nexus: " << (int)a << ", " << (int)b << ", :: " 
-		//		//<< ( e->zone == NULL ) << endl;
-		//	
-		//}
-
-		//sf::Rect<double> screenRect( cam.pos.x - camWidth / 2, cam.pos.y - camHeight / 2, camWidth, camHeight );
-		if( a && b )
-		{
-			AddEnemy( e );
-		}
-	}
-	else if( queryMode == "enemyzone" )
-	{
-		Enemy *e = (Enemy*)qte;
-	}
-	else if( queryMode == "border" )
-	{
-		if(polyQueryList == NULL )
-		{
-			polyQueryList = (PolyPtr)qte;
-			polyQueryList->queryNext = NULL;
-			numBorders++;
-		}
-		else
-		{
-			PolyPtr poly = (PolyPtr)qte;
-			PolyPtr temp = polyQueryList;
-			bool okay = true;
-			while( temp != NULL )
-			{
-				if( temp == poly)
-				{
-					okay = false;
-					break;
-				}	
-				temp = temp->queryNext;
-			}
-
-			if( okay )
-			{
-				poly->queryNext = polyQueryList;
-				polyQueryList = poly;
-				numBorders++;
-			}
-		}
-		
-	}
-	else if (queryMode == "specialterrain")
-	{
-		if (specialPieceList == NULL)
-		{
-			specialPieceList = (PolyPtr)qte;
-			specialPieceList->queryNext = NULL;
-		}
-		else
-		{
-			PolyPtr tva = (PolyPtr)qte;
-			PolyPtr temp = specialPieceList;
-			bool okay = true;
-			while (temp != NULL)
-			{
-				if (temp == tva)
-				{
-					okay = false;
-					break;
-				}
-				temp = temp->queryNext;
-			}
-
-			if (okay)
-			{
-				tva->queryNext = specialPieceList;
-				specialPieceList = tva;
-			}
-		}
-
-	}
-	else if (queryMode == "flyterrain")
-	{
-		if (flyTerrainList == NULL)
-		{
-			flyTerrainList = (PolyPtr)qte;
-			flyTerrainList->queryNext = NULL;
-		}
-		else
-		{
-			PolyPtr tva = (PolyPtr)qte;
-			PolyPtr temp = flyTerrainList;
-			bool okay = true;
-			while (temp != NULL)
-			{
-				if (temp == tva)
-				{
-					okay = false;
-					break;
-				}
-				temp = temp->queryNext;
-			}
-
-			if (okay)
-			{
-				tva->queryNext = flyTerrainList;
-				flyTerrainList = tva;
-			}
-		}
-	}
-	else if( queryMode == "inverseborder" )
-	{
-		if( inverseEdgeList == NULL )
-		{
-			inverseEdgeList = (Edge*)qte;
-			inverseEdgeList->info = NULL;
-			//numBorders++;
-		}
-		else
-		{
-			
-			Edge *tva = (Edge*)qte;
-			Edge *temp = inverseEdgeList;
-			bool okay = true;
-			while( temp != NULL )
-			{
-				if( temp == tva )
-				{
-					okay = false;
-					break;
-				}	
-				temp = (Edge*)temp->info;//->edge1;
-			}
-
-			if( okay )
-			{
-				tva->info = (void*)inverseEdgeList;
-				inverseEdgeList = tva;
-			}
-		}
-		
-	}
-	else if( queryMode == "gate" )
-	{
-		Gate *g = (Gate*)qte;
-
-		if( gateList == NULL )
-		{
-			gateList = (Gate*)qte;
-			gateList->next = NULL;
-			gateList->prev = NULL;
-			
-			//cout << "setting gate: " << gateList->edgeA << endl;
-		}
-		else
-		{
-			g->next = gateList;
-			gateList = g;
-		}
-
-		//cout << "gate" << endl;
-		++testGateCount;
-	}
-	else if( queryMode == "envplant" )
-	{
-		EnvPlant *ep = (EnvPlant*)qte;
-
-		if( !ep->activated )
-		{
-
-			int idleLength = ep->idleLength;
-			int idleFactor = ep->idleFactor;
-
-			IntRect sub = ep->ts->GetSubRect( (totalGameFrames % ( idleLength * idleFactor )) / idleFactor );
-			VertexArray &eva = *ep->va;
-			eva[ep->vaIndex + 0].texCoords = Vector2f( sub.left, sub.top );
-			eva[ep->vaIndex + 1].texCoords = Vector2f( sub.left + sub.width, sub.top );
-			eva[ep->vaIndex + 2].texCoords = Vector2f( sub.left + sub.width, sub.top + sub.height );
-			eva[ep->vaIndex + 3].texCoords = Vector2f( sub.left, sub.top + sub.height );
-		}
-		//va[ep->
-	}
-	else if (queryMode == "rail")
-	{
-		RailPtr r = (RailPtr)qte;
-
-		if (railDrawList == NULL)
-		{
-			railDrawList = r;
-			r->queryNext = NULL;
-		}
-		else
-		{
-			r->queryNext = railDrawList;
-			railDrawList = r;
-		}
+	case QUERY_ENEMY:
+		TrySpawnEnemy(qte);
+		break;
+	case QUERY_BORDER:
+		TryAddPolyToQueryList(qte);
+		break;
+	case QUERY_SPECIALTERRAIN:
+		TryAddSpecialPolyToQueryList(qte);
+		break;
+	case QUERY_FLYTERRAIN:
+		TryAddFlyPolyToQueryList(qte);
+		break;
+	case QUERY_INVERSEBORDER:
+		SetQueriedInverseEdge(qte);
+		break;
+	case QUERY_GATE:
+		TryAddGateToQueryList(qte);
+		break;
+	case QUERY_ENVPLANT:
+		TryActivateQueriedEnvPlant(qte);
+		break;
+	case QUERY_RAIL:
+		TryAddRailToQueryList(qte);
+		break;
 	}
 }
 
@@ -4632,7 +4528,7 @@ bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
 	screenRect.height += extra * 2;
 
 	inverseEdgeList = NULL;
-	queryMode = "inverseborder";
+	queryMode = QUERY_INVERSEBORDER;
 	Edge *curr = inverseEdgeList;
 	while( curr != NULL )
 	{
@@ -4940,8 +4836,9 @@ void GameSession::UpdateEnvShaders()
 
 void GameSession::DrawGates(sf::RenderTarget *target)
 {
+	//put this query within the frame update, not the draw call
 	testGateCount = 0;
-	queryMode = "gate";
+	queryMode = QUERY_GATE;
 	gateList = NULL;
 	gateTree->Query(this, screenRect);
 
@@ -4955,8 +4852,9 @@ void GameSession::DrawGates(sf::RenderTarget *target)
 
 void GameSession::DrawRails(sf::RenderTarget *target)
 {
+	//put this query within the frame update, not the draw call
 	railDrawList = NULL;
-	queryMode = "rail";
+	queryMode = QUERY_RAIL;
 	railDrawTree->Query(this, screenRect);
 	while (railDrawList != NULL)
 	{
@@ -5246,7 +5144,7 @@ void GameSession::SetOriginalMusic()
 
 void GameSession::QueryBorderTree(sf::Rect<double> &rect)
 {
-	queryMode = "border";
+	queryMode = QUERY_BORDER;
 	numBorders = 0;
 	borderTree->Query(this, rect);
 }
@@ -5254,7 +5152,7 @@ void GameSession::QueryBorderTree(sf::Rect<double> &rect)
 void GameSession::QueryGateTree(sf::Rect<double>&rect)
 {
 	testGateCount = 0;
-	queryMode = "gate";
+	queryMode = QUERY_GATE;
 	gateList = NULL;
 	gateTree->Query(this, rect);
 }

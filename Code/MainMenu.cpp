@@ -45,9 +45,6 @@ using namespace boost::filesystem;
 const int LoadingMapProgressDisplay::NUM_LOAD_THREADS = 5;
 
 sf::RenderTexture *MainMenu::preScreenTexture = NULL;
-sf::RenderTexture *MainMenu::lastFrameTexture = NULL;
-sf::RenderTexture *MainMenu::postProcessTexture = NULL;
-sf::RenderTexture *MainMenu::postProcessTexture1 = NULL;
 sf::RenderTexture *MainMenu::postProcessTexture2 = NULL;
 sf::RenderTexture *MainMenu::minimapTexture = NULL;
 sf::RenderTexture *MainMenu::mapTexture = NULL;
@@ -462,32 +459,11 @@ void MainMenu::CreateRenderTextures()
 		preScreenTexture->clear();
 	}
 
-	if (lastFrameTexture == NULL)
-	{
-		lastFrameTexture = new RenderTexture;
-		lastFrameTexture->create(1920, 1080);
-		lastFrameTexture->clear();
-	}
-
 	if (extraScreenTexture == NULL)
 	{
 		extraScreenTexture = new RenderTexture;
 		extraScreenTexture->create(1920, 1080);
 		extraScreenTexture->clear();
-	}
-
-	if (postProcessTexture == NULL)
-	{
-		postProcessTexture = new RenderTexture;
-		postProcessTexture->create(1920 / 2, 1080 / 2);
-		postProcessTexture->clear();
-	}
-
-	if (postProcessTexture1 == NULL)
-	{
-		postProcessTexture1 = new RenderTexture;
-		postProcessTexture1->create(1920 / 2, 1080 / 2);
-		postProcessTexture1->clear();
 	}
 
 	if (postProcessTexture2 == NULL)
@@ -587,10 +563,7 @@ MainMenu::~MainMenu()
 	delete soundNodeList;
 
 	delete preScreenTexture;
-	delete lastFrameTexture;
 	delete extraScreenTexture;
-	delete postProcessTexture;
-	delete postProcessTexture1;
 	delete postProcessTexture2;
 	delete minimapTexture;
 	delete mapTexture;
