@@ -316,6 +316,8 @@ void EditSession::TestPlayerModeUpdate()
 
 		UpdateHUD();
 
+		QueryToSpawnEnemies();
+
 		UpdateZones();
 
 		if (GetCurrInput(0).start && !GetPrevInput(0).start)
@@ -583,6 +585,8 @@ void EditSession::TestPlayerMode()
 
 		gateTree = new QuadTree(1000000, 1000000);
 
+		enemyTree = new QuadTree(1000000, 1000000);
+
 		//Actor *p;
 		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -637,6 +641,7 @@ void EditSession::TestPlayerMode()
 		if ((*it)->enemyChain != NULL)
 		{
 			(*it)->AddEnemyChainToWorldTrees();
+			enemyTree->Insert((*it)->enemyChain);
 		}
 		else
 		{
@@ -653,6 +658,7 @@ void EditSession::TestPlayerMode()
 			if (currEnemy != NULL)
 			{
 				currEnemy->AddToWorldTrees();
+				enemyTree->Insert(currEnemy);
 				fullEnemyList.push_back(currEnemy);
 			}
 		}
@@ -678,7 +684,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	for (auto it = groups.begin(); it != groups.end(); ++it)
+	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 		{
@@ -696,7 +702,7 @@ void EditSession::TestPlayerMode()
 		{
 			AddEnemy((*it)->enemyChain);
 		}
-	}
+	}*/
 
 	if (continueTracking)
 	{
