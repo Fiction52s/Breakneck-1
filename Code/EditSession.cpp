@@ -277,17 +277,8 @@ void EditSession::DeselectObjectType(ISelectable::ISelectableType sType)
 	}
 }
 
-void EditSession::TestPlayerModeUpdate()
+bool EditSession::RunGameModeUpdate(double frameTime)
 {
-	double newTime = gameClock.getElapsedTime().asSeconds();
-	double frameTime = newTime - currentTime;
-
-	if (frameTime > 0.25)
-	{
-		frameTime = 0.25;
-	}
-	currentTime = newTime;
-
 	accumulator += frameTime;
 
 	Actor *pTemp = NULL;
@@ -299,15 +290,19 @@ void EditSession::TestPlayerModeUpdate()
 			break;
 		}
 
-		UpdateControllers();
-
-		UpdateAllPlayersInput();
-		
 		if (pauseFrames > 0)
 		{
 			HitlagUpdate(); //the full update while in hitlag
 			continue;
 		}
+
+		UpdateControllers();
+
+		UpdateAllPlayersInput();
+
+		ActiveSequenceUpdate();
+		if (switchGameState)
+			break;
 
 		UpdatePrePhysics();
 		UpdatePhysics();
@@ -335,30 +330,29 @@ void EditSession::TestPlayerModeUpdate()
 			SetMode(EDIT);
 			/*if (gameCam)
 			{
-				SetZoom(2);
+			SetZoom(2);
 			}*/
 
 			pTemp = GetPlayer(0);
 
-			if (pTemp->ground != NULL ) //doesn't work with bounce or grind
+			if (pTemp->ground != NULL) //doesn't work with bounce or grind
 			{
-				playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity), 
+				playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
 					pTemp->position);
 			}
 			//bounce and grind also later
-			
+
 			playerTracker->SetOn(true);
 			playerTracker->CalcShownCircles();
 			return;
 		}
-		
 
 		UpdateDecorSprites();
 		UpdateDecorLayers();
-		
+
 		/*if ( != NULL)
 		{
-			cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+		cam.UpdateVS(GetPlayer(0), GetPlayer(1));
 		}
 		else*/
 		{
@@ -394,8 +388,36 @@ void EditSession::TestPlayerModeUpdate()
 	}
 }
 
+void EditSession::TestPlayerModeUpdate()
+{
+	switchGameState = false;
+	double newTime = gameClock.getElapsedTime().asSeconds();
+	double frameTime = newTime - currentTime;
+
+	if (frameTime > 0.25)
+	{
+		frameTime = 0.25;
+	}
+	currentTime = newTime;
+
+	switch (gameState)
+	{
+	case RUN:
+		if (!RunGameModeUpdate(frameTime))
+		{
+			TestPlayerModeUpdate(); //eventually make testplayermodeupdate
+			//return a bool and loop itself. this is bad for the stack
+			return;
+		}
+		break;
+	}
+
+
+}
+
 void EditSession::TestPlayerMode()
 {
+	gameState = Session::RUN;
 	cam.Reset();
 	
 	ClearEffects();

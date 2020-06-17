@@ -779,6 +779,9 @@ struct EditSession : GUIHandler, Session
 	void DrawGame(sf::RenderTarget *target);
 	void SetupGates();
 	bool IsShardCaptured(int sType);
+	bool RunGameModeUpdate();
+	bool FrozenGameModeUpdate();
+	bool SequenceGameModeUpdate();
 };
 
 

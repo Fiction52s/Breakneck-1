@@ -591,7 +591,9 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinCurrentBounds(V2d &p);
 	void UpdateFrameRateCounterText( double frameTime );
 	void UpdateRunningTimerText();
-	bool RunGameModeUpdate( double frameTime );
+	bool RunGameModeUpdate();
+	bool FrozenGameModeUpdate();
+	bool SequenceGameModeUpdate();
 	
 	void ActiveDialogueUpdate();
 	void ActiveStorySequenceUpdate();

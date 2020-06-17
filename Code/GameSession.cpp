@@ -575,12 +575,12 @@ void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 	tex->display();
 }
 
-bool GameSession::RunGameModeUpdate( double frameTime )
+bool GameSession::RunGameModeUpdate()
 {
 	Actor *p = NULL;
 	Actor *p0 = GetPlayer(0);
 
-	accumulator += frameTime;
+	
 
 	window->clear(Color::Red);
 
@@ -663,8 +663,6 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 
 		ActiveDialogueUpdate();
 		
-		totalGameFrames++;
-
 		UpdatePlayersPrePhysics();
 
 		TryToActivateBonus();
@@ -787,6 +785,7 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		screenRect;
 		}*/
 		accumulator -= TIMESTEP;
+		totalGameFrames++;
 
 		if (debugScreenRecorder != NULL)
 		{
@@ -836,6 +835,155 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		debugScreenRecorder->Update(preTex0);
 
 	window->draw(preTexSprite);//, &timeSlowShader );
+
+	return true;
+}
+
+bool GameSession::FrozenGameModeUpdate()
+{
+	window->clear();
+
+	sf::Event ev;
+	while (window->pollEvent(ev))
+	{
+		/*if( ev.type == sf::Event::KeyPressed )
+		{
+		if( ev.key.code = Keyboard::O )
+		{
+		state = RUN;
+		soundNodeList->Pause( false );
+		break;
+		}
+		}*/
+		if (ev.type == sf::Event::GainedFocus)
+		{
+			//state = RUN;
+			//soundNodeList->Pause( false );
+			//break;
+		}
+		else if (ev.type == sf::Event::KeyPressed)
+		{
+			//if( ev.key.code == Keyboard::
+		}
+	}
+
+	//savedinput when you enter pause
+
+	accumulator += frameTime;
+
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateInput();
+
+		ActiveSequenceUpdate();
+
+		if (gameState != FROZEN)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+	}
+
+	if (gameState != FROZEN)
+	{
+		return false;
+	}
+	
+	Sprite preTexSprite;
+	preTexSprite.setTexture(preScreenTex->getTexture());
+	preTexSprite.setPosition(-960 / 2, -540 / 2);
+	preTexSprite.setScale(.5, .5);
+	window->draw(preTexSprite);
+
+	return true;
+}
+
+bool GameSession::SequenceGameModeUpdate()
+{
+	sf::Event ev;
+	while (window->pollEvent(ev))
+	{
+		/*if( ev.type == sf::Event::KeyPressed )
+		{
+		if( ev.key.code = Keyboard::O )
+		{
+		state = RUN;
+		soundNodeList->Pause( false );
+		break;
+		}
+		}*/
+		if (ev.type == sf::Event::GainedFocus)
+		{
+			//state = RUN;
+			//soundNodeList->Pause( false );
+			//break;
+		}
+		else if (ev.type == sf::Event::KeyPressed)
+		{
+			//if( ev.key.code == Keyboard::
+		}
+	}
+
+	window->clear();
+	window->setView(v);
+	preScreenTex->clear();
+
+	accumulator += frameTime;
+	Sprite preTexSprite;
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateInput();
+
+		ActiveSequenceUpdate();
+
+		mainMenu->musicPlayer->Update();
+
+		fader->Update();
+		swiper->Update();
+		mainMenu->UpdateEffects();
+		UpdateEmitters();
+
+		accumulator -= TIMESTEP;
+
+		if (goalDestroyed)
+		{
+			quit = true;
+
+			//returnVal = GR_WIN;
+			returnVal = resType;
+			break;
+		}
+	}
+
+	if (switchGameState)
+	{
+		return false;
+	}
+
+	if (activeSequence != NULL)
+	{
+		//preScreenTex->setView(uiView);
+		activeSequence->Draw(preScreenTex);
+	}
+
+	preScreenTex->setView(uiView);
+
+
+	fader->Draw(preScreenTex);
+	swiper->Draw(preScreenTex);
+
+	mainMenu->DrawEffects(preScreenTex);
+
+	if (showFrameRate)
+	{
+		preScreenTex->draw(frameRateText);
+	}
+
+	preTexSprite.setTexture(preScreenTex->getTexture());
+	preTexSprite.setPosition(-960 / 2, -540 / 2);
+	preTexSprite.setScale(.5, .5);
+	window->draw(preTexSprite);
 
 	return true;
 }
@@ -2672,80 +2820,21 @@ int GameSession::Run()
 		UpdateFrameRateCounterText( frameTime );
 		UpdateRunningTimerText();
 
+		accumulator += frameTime;
 
 		if(gameState == RUN )
 		{
-			if (!RunGameModeUpdate(frameTime))
+			if (!RunGameModeUpdate())
 			{
 				continue;
 			}
 		}
 		else if(gameState == FROZEN )
 		{
-			sf::Event ev;
-			while( window->pollEvent( ev ) )
-			{
-				/*if( ev.type == sf::Event::KeyPressed )
-				{
-					if( ev.key.code = Keyboard::O )
-					{
-						state = RUN;
-						soundNodeList->Pause( false );
-						break;
-					}
-				}*/
-				if( ev.type == sf::Event::GainedFocus )
-				{
-					//state = RUN;
-					//soundNodeList->Pause( false );
-					//break;
-				}
-				else if( ev.type == sf::Event::KeyPressed )
-				{
-					//if( ev.key.code == Keyboard::
-				}
-			}
-
-			//savedinput when you enter pause
-
-			accumulator += frameTime;
-
-			while (accumulator >= TIMESTEP)
-			{
-				UpdateInput();
-
-				ActiveSequenceUpdate();
-
-				if (gameState != FROZEN)
-				{
-					break;
-				}
-
-				accumulator -= TIMESTEP;
-			}
-
-			if (gameState != FROZEN)
+			if (!FrozenGameModeUpdate())
 			{
 				continue;
 			}
-
-			//pauseTex->clear( Color( 100, 100, 100, 50 ));	
-			window->clear();
-			Sprite preTexSprite;
-			preTexSprite.setTexture( preScreenTex->getTexture() );
-			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			preTexSprite.setScale( .5, .5 );
-			window->draw( preTexSprite );
-
-			//pauseMenu->Draw( pauseTex );
-			
-			//pauseTex->display();
-			//Sprite pauseMenuSprite;
-			//pauseMenuSprite.setTexture( pauseTex->getTexture() );
-			////bgSprite.setPosition( );
-			//pauseMenuSprite.setPosition( (1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2 );
-			//pauseMenuSprite.setScale( .5, .5 );
-			//window->draw( pauseMenuSprite );
 		}
 		else if(gameState == MAP )
 		{
@@ -3024,91 +3113,10 @@ int GameSession::Run()
 		}
 		else if (gameState == SEQUENCE)
 		{
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-				/*if( ev.type == sf::Event::KeyPressed )
-				{
-				if( ev.key.code = Keyboard::O )
-				{
-				state = RUN;
-				soundNodeList->Pause( false );
-				break;
-				}
-				}*/
-				if (ev.type == sf::Event::GainedFocus)
-				{
-					//state = RUN;
-					//soundNodeList->Pause( false );
-					//break;
-				}
-				else if (ev.type == sf::Event::KeyPressed)
-				{
-					//if( ev.key.code == Keyboard::
-				}
-			}
-
-			window->clear();
-			window->setView(v);
-			preScreenTex->clear();
-
-			accumulator += frameTime;
-			Sprite preTexSprite;
-			while (accumulator >= TIMESTEP)
-			{
-				
-
-				UpdateInput();
-
-				ActiveSequenceUpdate();
-
-				mainMenu->musicPlayer->Update();
-
-				fader->Update();
-				swiper->Update();
-				mainMenu->UpdateEffects();
-				UpdateEmitters();
-
-				accumulator -= TIMESTEP;
-
-				if (goalDestroyed)
-				{
-					quit = true;
-
-					//returnVal = GR_WIN;
-					returnVal = resType;
-					break;
-				}
-			}
-
-			if (switchGameState)
+			if (!SequenceGameModeUpdate())
 			{
 				continue;
 			}
-
-			if (activeSequence != NULL)
-			{
-				//preScreenTex->setView(uiView);
-				activeSequence->Draw(preScreenTex);
-			}
-
-			preScreenTex->setView(uiView);
-
-			
-			fader->Draw(preScreenTex);
-			swiper->Draw(preScreenTex);
-
-			mainMenu->DrawEffects(preScreenTex);
-
-			if (showFrameRate)
-			{
-				preScreenTex->draw(frameRateText);
-			}
-
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
 			//UpdateInput();
 
 		}
