@@ -1245,6 +1245,8 @@ EditSession::~EditSession()
 
 	mapStartBrush->Destroy();
 
+	CleanupGlobalBorders();
+
 	if (createEnemyModeUI != NULL)
 	{
 		delete createEnemyModeUI;
@@ -1254,6 +1256,7 @@ EditSession::~EditSession()
 	{
 		delete createDecorModeUI;
 	}
+
 
 	if (createGatesModeUI != NULL)
 	{

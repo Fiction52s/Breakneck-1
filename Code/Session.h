@@ -462,6 +462,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void FreezePlayerAndEnemies(bool freeze);
 	void SetGlobalBorders();
 	void SetupGlobalBorderQuads( bool *blackBorder, bool &topBorderOn );
+	void CleanupGlobalBorders();
 };
 
 #endif

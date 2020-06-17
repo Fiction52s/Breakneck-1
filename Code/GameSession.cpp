@@ -1027,11 +1027,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	fullEnemyList.clear();
 
-	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
-	{
-		delete (*it);
-	}
-	globalBorderEdges.clear();
+	CleanupGlobalBorders();
 
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{
@@ -1206,11 +1202,7 @@ void GameSession::Cleanup()
 		goalFlow = NULL;
 	}
 
-	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
-	{
-		delete (*it);
-	}
-	globalBorderEdges.clear();
+	CleanupGlobalBorders();
 
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{

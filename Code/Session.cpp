@@ -4243,3 +4243,12 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 		SetRectColor(blackBorderQuads + 12, Color(Color::Transparent));
 	}
 }
+
+void Session::CleanupGlobalBorders()
+{
+	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
+	{
+		delete (*it);
+	}
+	globalBorderEdges.clear();
+}
