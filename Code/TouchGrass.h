@@ -110,6 +110,7 @@ struct BasicTouchGrass : TouchGrass
 	void Destroy(Actor *a);
 	void UpdateSprite();
 	Tileset *myTS;
+	int currTile;
 };
 
 struct TestTouchGrass : TouchGrass

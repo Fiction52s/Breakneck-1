@@ -511,7 +511,7 @@ struct GameSession : RayCastHandler, Session
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
-	void DrawBlackBorderQuads(sf::RenderTarget *target);
+	
 	
 	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 		V2d &pos, float startAngle = 0);

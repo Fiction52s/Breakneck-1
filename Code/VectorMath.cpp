@@ -396,10 +396,14 @@ void SetRectColor(sf::Vertex *v, sf::Color c)
 
 void SetRectSubRect(sf::Vertex *v, sf::IntRect &sub)
 {
-	v[0].texCoords = Vector2f(sub.left, sub.top);
-	v[1].texCoords = Vector2f(sub.left + sub.width, sub.top);
-	v[2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-	v[3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	v[0].texCoords.x = sub.left;
+	v[0].texCoords.y = sub.top;
+	v[1].texCoords.x = sub.left + sub.width;
+	v[1].texCoords.y = sub.top;
+	v[2].texCoords.x = sub.left + sub.width;
+	v[2].texCoords.y = sub.top + sub.height;
+	v[3].texCoords.x = sub.left;
+	v[3].texCoords.y = sub.top + sub.height;
 }
 
 void SetRectSubRectGL(sf::Vertex *v, sf::IntRect &sub, Vector2f texSize )

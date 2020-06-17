@@ -90,6 +90,8 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	if (background != NULL)
 		background->Draw(target);
 
+	DrawBlackBorderQuads(target);
+
 	DrawDecorBehind();
 
 	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
@@ -306,6 +308,9 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
+		if (mode != TEST_PLAYER)
+			return;
+
 		UpdateGates();
 
 		absorbParticles->Update();
@@ -388,7 +393,7 @@ void EditSession::TestPlayerMode()
 {
 	cam.Reset();
 	
-
+	ClearEffects();
 	ResetAbsorbParticles();
 
 	SetPlayerOptionField(0);
@@ -508,7 +513,7 @@ void EditSession::TestPlayerMode()
 				if ((*enit)->myEnemy != NULL)
 				{
 					(*enit)->myEnemy->Reset();
-					AddEnemy((*enit)->myEnemy);
+					//AddEnemy((*enit)->myEnemy);
 				}
 			}
 		}
@@ -518,7 +523,7 @@ void EditSession::TestPlayerMode()
 			if ((*it)->enemyChain != NULL)
 			{
 				(*it)->enemyChain->Reset();
-				AddEnemy((*it)->enemyChain);
+				//AddEnemy((*it)->enemyChain);
 			}
 		}
 
@@ -732,7 +737,14 @@ void EditSession::TestPlayerMode()
 
 	bool blackBorder[2];
 	bool topBorderOn = false;
+
+	realLeftBounds = mapHeader->leftBounds;
+	realTopBounds = mapHeader->topBounds;
+	realBoundsWidth = mapHeader->boundsWidth;
+	realBoundsHeight = mapHeader->boundsHeight;
+
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
+
 	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 }
 
@@ -1000,11 +1012,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	copiedBrush = NULL;
 	freeActorCopiedBrush = NULL;
-	//newMapHeader.ver1 = 2;
-	//newMapHeader.ver2 = 1;
-	newMapHeader.description = "no description";
-	newMapHeader.collectionName = "default";
-	newMapHeader.gameMode = MapHeader::T_STANDARD;//"default";
+	
 	//arialFont.loadFromFile( "Breakneck_Font_01.ttf" );
 	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
@@ -1348,6 +1356,7 @@ void EditSession::Draw()
 	if (IsDrawMode(Emode::TEST_PLAYER))
 	{
 		DrawGame(preScreenTex);
+		DrawUI();
 		return;
 	}
 
@@ -1377,7 +1386,32 @@ void EditSession::Draw()
 
 	DrawMode();
 
-	DebugDraw(preScreenTex);
+	
+
+	preScreenTex->setView(view);
+
+	TempMoveSelectedBrush();
+
+
+
+	DrawDecorFront();
+
+	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
+	{
+		playerZoomIcon.setPosition(player->GetFloatPos());
+		playerZoomIcon.setScale(zoomMultiple * 1.8, zoomMultiple * 1.8);
+		preScreenTex->draw(playerZoomIcon);
+	}
+
+	preScreenTex->draw(fullBounds);
+
+	if (mode == CREATE_IMAGES)
+	{
+		//is this depreciated?
+		preScreenTex->draw(tempDecorSprite);
+	}
+
+	DrawUI();
 
 	//mainMenu->fader->Draw(preScreenTex);
 }
@@ -1385,6 +1419,11 @@ void EditSession::Draw()
 void EditSession::UpdateFullBounds()
 {
 	int boundRectWidth = 5 * zoomMultiple;
+
+	int leftBound = mapHeader->leftBounds;
+	int topBound = mapHeader->topBounds;
+	int boundWidth = mapHeader->boundsWidth;
+	int boundHeight = mapHeader->boundsHeight;
 		//top rect
 	fullBounds[0].position = Vector2f( leftBound, topBound - boundRectWidth );
 	fullBounds[1].position = Vector2f( leftBound + boundWidth, topBound - boundRectWidth );
@@ -1731,43 +1770,20 @@ void EditSession::ProcessPlayerStartPos()
 
 void EditSession::ProcessHeader()
 {
-	newMapHeader = *mapHeader;
-
-	envName = mapHeader->envName;
-
-	//newMapHeader.numVertices = mh->numVertices;
-
-	envWorldType = mapHeader->envWorldType;
-
-	leftBound = mapHeader->leftBounds;
-	topBound = mapHeader->topBounds;
-	boundWidth = mapHeader->boundsWidth;
-	boundHeight = mapHeader->boundsHeight;
-
-	drainSeconds = mapHeader->drainSeconds;
-
-	background = Background::SetupFullBG(envName, this);
+	background = Background::SetupFullBG(mapHeader->envName, this);
 	//background->Hide();
-
-	bossType = mapHeader->bossFightType;
 
 	UpdateFullBounds();
 }
 
 void EditSession::WriteMapHeader(ofstream &of)
 {
-	newMapHeader.leftBounds = leftBound;
-	newMapHeader.topBounds = topBound;
-	newMapHeader.boundsWidth = boundWidth;
-	newMapHeader.boundsHeight = boundHeight;
-	newMapHeader.bossFightType = bossType;
-
-	newMapHeader.ver1 = 2;
-	newMapHeader.ver2 = 1;
+	mapHeader->ver1 = 2;
+	mapHeader->ver2 = 1;
 
 	ShardParams *sp = NULL;
 
-	auto &shardVec = newMapHeader.shardInfoVec;
+	auto &shardVec = mapHeader->shardInfoVec;
 	shardVec.reserve(16);//unlikely to be more than 16 types
 	shardVec.clear();
 	bool foundShard;
@@ -1798,24 +1814,8 @@ void EditSession::WriteMapHeader(ofstream &of)
 		}
 	}
 
-	newMapHeader.numShards = shardVec.size();
-
-	newMapHeader.drainSeconds = drainSeconds;
-
-	newMapHeader.envName = envName;
-
-	newMapHeader.envWorldType = envWorldType;
-
-	newMapHeader.Save(of);
-
-	if (mapHeader == NULL)
-	{
-		mapHeader = new MapHeader(newMapHeader);
-	}
-	else
-	{
-		*mapHeader = newMapHeader;
-	}
+	mapHeader->numShards = shardVec.size();
+	mapHeader->Save(of);
 }
 
 void EditSession::WriteDecor(ofstream &of)
@@ -2936,20 +2936,25 @@ void EditSession::Load()
 
 void EditSession::DefaultInit()
 {
-	envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
+	mapHeader = new MapHeader;
+	mapHeader->description = "no description";
+	mapHeader->collectionName = "default";
+	mapHeader->gameMode = MapHeader::T_STANDARD;
 
-	envWorldType = 0;//newMapInfo.envWorldType;
+	mapHeader->envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
 
-	leftBound = -1500;
-	topBound = -1500;
-	boundWidth = 3000;
-	boundHeight = 3000;
+	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
+	
+	mapHeader->leftBounds = -1500;
+	mapHeader->topBounds = -1500;
+	mapHeader->boundsWidth = 3000;
+	mapHeader->boundsHeight = 3000;
 
-	drainSeconds = 60;//newMapInfo.drainSeconds;//60;
+	mapHeader->drainSeconds = 60;//newMapInfo.drainSeconds;//60;
 
-	background = Background::SetupFullBG(envName, this);
+	background = Background::SetupFullBG(mapHeader->envName, this);
 
-	bossType = 0;
+	mapHeader->bossFightType = 0;
 
 	playerOrigPos = Vector2i(0, 0);
 
@@ -3019,6 +3024,8 @@ int EditSession::EditRun()
 		DefaultInit();
 
 		ActivateNewMapPanel();
+
+		
 	}
 	else if( filePathStr != "" )
 	{
@@ -3273,30 +3280,7 @@ int EditSession::EditRun()
 
 		Draw();
 
-
-
-		TempMoveSelectedBrush();
-
-
-
-		DrawDecorFront();
-
-		if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
-		{
-			playerZoomIcon.setPosition(player->GetFloatPos());
-			playerZoomIcon.setScale(zoomMultiple * 1.8, zoomMultiple * 1.8);
-			preScreenTex->draw(playerZoomIcon);
-		}
-
-		preScreenTex->draw(fullBounds);
-
-		if (mode == CREATE_IMAGES)
-		{
-			//is this depreciated?
-			preScreenTex->draw(tempDecorSprite);
-		}
-
-		DrawUI();
+		
 
 		preScreenTex->setView(view);
 
@@ -3346,15 +3330,15 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			string mapName = newMapPanel->textBoxes["mapname"]->GetString();
 			if ( mapName != "")
 			{
-				envName = "w1_01";
-				envWorldType = 0;
-				background = Background::SetupFullBG(envName, this);
+				mapHeader->envName = "w1_01";
+				mapHeader->envWorldType = 0;
+				background = Background::SetupFullBG(mapHeader->envName, this);
 
 				stringstream ss;
 				ss << newMapPanel->textBoxes["timetolive"]->GetString();
 				int d;
 				ss >> d;
-				drainSeconds = d;
+				mapHeader->drainSeconds = d;
 
 				string pathStr = newMapPanel->labels["pathlabel"]->getString().toAnsiString()
 					+ "\\" + mapName + ".brknk";
@@ -3471,7 +3455,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			if (!ss.fail())
 			{
-				drainSeconds = dSecs;
+				mapHeader->drainSeconds = dSecs;
 			}
 
 			ss.clear();
@@ -3483,7 +3467,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 
 			if (!ss.fail())
 			{
-				bossType = bType;
+				//mapHeader->bossType = bType;
 			}
 
 
@@ -6758,30 +6742,30 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		}
 
 		left = pLeft;
-		top = topBound;
+		top = mapHeader->topBounds;
 		right = pRight;
 		bot = pBot;
 	}
 
 		
-	if (left < leftBound)
+	if (left < mapHeader->leftBounds)
 	{
-		left = leftBound;
+		left = mapHeader->leftBounds;
 	}
 	else
 	{
 		left -= extraBound;
 	}
 
-	if (top < topBound)
+	if (top < mapHeader->topBounds)
 	{
-		top = topBound;
+		top = mapHeader->topBounds;
 	}
 	else
 	{
 		top -= extraBound;
 	}
-	int bRight = leftBound + boundWidth;
+	int bRight = mapHeader->leftBounds + mapHeader->boundsWidth;
 	if (right > bRight)
 	{
 		right = bRight;
@@ -9769,6 +9753,11 @@ void EditSession::SetMode(Emode m)
 			}
 		}
 		playerTracker->HideAll();
+
+		mapHeader->leftBounds = realLeftBounds;
+		mapHeader->topBounds = realTopBounds;
+		mapHeader->boundsWidth = realBoundsWidth;
+		mapHeader->boundsHeight = realBoundsHeight;
 		//playerTracker->SetOn(false);
 		break;
 	case CREATE_GATES:
@@ -10453,21 +10442,21 @@ void EditSession::SetSelectedTerrainLayer(int layer)
 
 void EditSession::MoveTopBorder(int amount)
 {
-	topBound += amount;
-	boundHeight -= amount;
+	mapHeader->topBounds += amount;
+	mapHeader->boundsHeight -= amount;
 	UpdateFullBounds();
 }
 
 void EditSession::MoveLeftBorder(int amount)
 {
-	leftBound += amount;
-	boundWidth -= amount;
+	mapHeader->leftBounds += amount;
+	mapHeader->boundsWidth -= amount;
 	UpdateFullBounds();
 }
 
 void EditSession::MoveRightBorder(int amount)
 {
-	boundWidth += amount;
+	mapHeader->boundsWidth += amount;
 	UpdateFullBounds();
 }
 

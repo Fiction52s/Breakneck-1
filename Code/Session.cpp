@@ -4283,3 +4283,17 @@ void Session::QueryToSpawnEnemies()
 	tempSpawnRect = spawnRect;
 	enemyTree->Query(this, spawnRect);
 }
+
+void Session::DrawBlackBorderQuads(sf::RenderTarget *target)
+{
+	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
+
+	if (cam.manual || narrowMap)
+	{
+		target->draw(blackBorderQuads, 16, sf::Quads);
+	}
+	else
+	{
+		target->draw(blackBorderQuads, 8, sf::Quads);
+	}
+}

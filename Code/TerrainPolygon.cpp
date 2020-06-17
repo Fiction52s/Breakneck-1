@@ -496,7 +496,7 @@ void TerrainPolygon::DrawDecor(sf::RenderTarget *target)
 	{
 		//if ((*it)->layer != NULL)
 		{
-			target->draw(*(*it)->va, (*it)->layer->ts->texture);
+			(*it)->Draw(target);
 		}
 	}
 }

@@ -193,15 +193,6 @@ struct EditSession : GUIHandler, Session
 	RailPtr railAttachEnd;
 	bool runToResave;
 	sf::Sprite scaleSprite;
-	//mapheader stuff. make another mapheader to hold this?
-	std::string envName;
-	int envWorldType;
-	int leftBound;
-	int topBound;
-	int boundWidth;
-	int boundHeight;
-	int drainSeconds;
-	int bossType;
 	sf::VertexArray fullBounds;
 	std::list<GateInfoPtr> gateInfoList;
 	MainMenu *mainMenu;
@@ -209,7 +200,7 @@ struct EditSession : GUIHandler, Session
 	PositionInfo worldPosGround;
 	V2d worldPos;
 	ActorParams* tempActor;
-	MapHeader newMapHeader;
+	//MapHeader newMapHeader;
 	const static int POINT_SIZE = 4;
 	const static double PRIMARY_LIMIT;
 	const static double SLIVER_LIMIT;
@@ -360,6 +351,11 @@ struct EditSession : GUIHandler, Session
 	AirTriggerParams *rectCreatingTrigger;
 	CameraShotParams *currentCameraShot;
 	int setLevelCurrent;
+	//these hold the real bounds while in test mode.
+	int realLeftBounds;
+	int realTopBounds;
+	int realBoundsWidth;
+	int realBoundsHeight;
 
 	EditSession(MainMenu *p_mainMenu,
 		const boost::filesystem::path &p_filePath);

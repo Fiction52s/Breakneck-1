@@ -1,6 +1,7 @@
 #include "Tileset.h"
 #include "TerrainDecor.h"
 #include <assert.h>
+#include "VectorMath.h"
 
 using namespace sf;
 using namespace std;
@@ -37,8 +38,7 @@ DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
 
 	vaSize = numBushes * 4;
 
-	va = new VertexArray(sf::Quads, vaSize);
-	VertexArray &VA = *va;
+	va = new Vertex[vaSize];
 
 	IntRect subRect = ts->GetSubRect(0);
 	list<Vector2f>::iterator posIt;
@@ -50,20 +50,20 @@ DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
 	{
 		p = (*posIt);
 		//cout << "i: " << i << ", p: " <<  p.x << ", " << p.y << endl;
-		VA[i * 4 + 0].position = Vector2f(p.x - subRect.width / 2, p.y - subRect.height / 2);
-		VA[i * 4 + 1].position = Vector2f(p.x + subRect.width / 2, p.y - subRect.height / 2);
-		VA[i * 4 + 2].position = Vector2f(p.x + subRect.width / 2, p.y + subRect.height / 2);
-		VA[i * 4 + 3].position = Vector2f(p.x - subRect.width / 2, p.y + subRect.height / 2);
+		va[i * 4 + 0].position = Vector2f(p.x - subRect.width / 2, p.y - subRect.height / 2);
+		va[i * 4 + 1].position = Vector2f(p.x + subRect.width / 2, p.y - subRect.height / 2);
+		va[i * 4 + 2].position = Vector2f(p.x + subRect.width / 2, p.y + subRect.height / 2);
+		va[i * 4 + 3].position = Vector2f(p.x - subRect.width / 2, p.y + subRect.height / 2);
 
 		/*VA[i*4+0].color= Color::Red;
 		VA[i*4+1].color= Color::Red;
 		VA[i*4+2].color= Color::Red;
 		VA[i*4+3].color= Color::Red;*/
 
-		VA[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
-		VA[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
-		VA[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
-		VA[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+		va[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
+		va[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
+		va[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
+		va[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
 
 		++posIt;
 	}
@@ -71,16 +71,20 @@ DecorExpression::DecorExpression(std::list<sf::Vector2f> &pointList,
 
 void DecorExpression::Move(sf::Vector2f &move)
 {
-	VertexArray &v = *va;
 	for (int i = 0; i < vaSize; ++i)
 	{
-		v[i].position += move;
+		va[i].position += move;
 	}
+}
+
+void DecorExpression::Draw(sf::RenderTarget *target)
+{
+	target->draw(va, vaSize, sf::Quads, layer->ts->texture);
 }
 
 DecorExpression::~DecorExpression()
 {
-	delete va;
+	delete [] va;
 }
 
 void DecorExpression::UpdateSprites()
@@ -92,16 +96,11 @@ void DecorExpression::UpdateSprites()
 	int animLength = layer->animLength;
 	int animFactor = layer->animFactor;
 
-	VertexArray &bVA = *va;
-
 	IntRect subRect = ts_bush->GetSubRect((layer->startTile + frame) / animFactor);
 
 	for (int i = 0; i < numBushes; ++i)
 	{
-		bVA[i * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
-		bVA[i * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
-		bVA[i * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
-		bVA[i * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+		SetRectSubRect(va + i * 4, subRect);
 	}
 }
 

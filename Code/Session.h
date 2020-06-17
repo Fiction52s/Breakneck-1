@@ -466,6 +466,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupGlobalBorders();
 	void CleanupBarriers();
 	void QueryToSpawnEnemies();
+	void DrawBlackBorderQuads(sf::RenderTarget *target);
 };
 
 #endif

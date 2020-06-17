@@ -57,7 +57,8 @@ void TouchGrassCollection::Query(QuadTreeCollider *qtc, sf::Rect<double> &r)
 
 void TouchGrassCollection::UpdateGrass()
 {
-	for (auto it = myGrass.begin(); it != myGrass.end(); ++it)
+	auto end = myGrass.end();
+	for (auto it = myGrass.begin(); it != end; ++it)
 	{
 		(*it)->Update();
 	}
@@ -244,6 +245,7 @@ void BasicTouchGrass::Reset()
 	visible = true;
 	action = STILL;
 	frame = 0;
+	currTile = 0;
 }
 
 void BasicTouchGrass::UpdateSprite()
@@ -263,7 +265,13 @@ void BasicTouchGrass::UpdateSprite()
 		break;
 	}
 
-	SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(tileIndex));
+	if (tileIndex != currTile)
+	{
+		currTile = tileIndex;
+		SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(tileIndex));
+	}
+
+	
 
 	/*switch (action)
 	{

@@ -3984,19 +3984,7 @@ void GameSession::OpenGates(int gCat)
 	}
 }
 
-void GameSession::DrawBlackBorderQuads(sf::RenderTarget *target)
-{
-	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
 
-	if (cam.manual || narrowMap)
-	{
-		target->draw(blackBorderQuads, 16, sf::Quads);
-	}
-	else
-	{
-		target->draw(blackBorderQuads, 8, sf::Quads);
-	}
-}
 
 void GameSession::DrawTopClouds(sf::RenderTarget *target)
 {

@@ -34,9 +34,10 @@ struct DecorExpression
 	~DecorExpression();
 	void Move(sf::Vector2f &move);
 
-	sf::VertexArray *va;
+	sf::Vertex *va;
 	DecorLayer *layer;
 	int vaSize;
+	void Draw(sf::RenderTarget *target);
 
 	void UpdateSprites();
 };

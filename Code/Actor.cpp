@@ -195,16 +195,7 @@ SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 	if (sb == NULL)
 		return NULL;
 
-	if (owner != NULL)
-	{
-		return owner->soundNodeList->ActivateSound(sb, loop);
-	}
-	else
-	{
-
-	}
-
-	return NULL;
+	return sess->soundNodeList->ActivateSound(sb, loop);
 }
 
 void Actor::DeactivateSound(SoundNode *sn)
