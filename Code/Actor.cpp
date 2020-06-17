@@ -97,12 +97,7 @@ void Actor::SetupDrain()
 
 sf::SoundBuffer * Actor::GetSound(const std::string &name)
 {
-	if (owner != NULL)
-	{
-		return owner->soundManager->GetSound(name);
-	}
-	else
-		return NULL;
+	return sess->soundManager->GetSound(name);
 }
 
 map<int, list<CollisionBox>> & Actor::GetHitboxList(const string & str)
@@ -190,7 +185,7 @@ void Actor::SetToOriginalPos()
 
 SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 {
-	SoundBuffer *sb = soundBuffers[S_ENTER];
+	SoundBuffer *sb = soundBuffers[st];
 
 	if (sb == NULL)
 		return NULL;
