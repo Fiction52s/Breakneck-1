@@ -11,8 +11,8 @@
 using namespace sf;
 using namespace std;
 
-BirdPreFightScene::BirdPreFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+BirdPreFightScene::BirdPreFightScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 	
 }
@@ -27,7 +27,7 @@ void BirdPreFightScene::SetupStates()
 	stateLength[BIRDFALL] = 60;
 	stateLength[BIRDCONV] = -1;
 
-	BirdPostFightScene *scene = new BirdPostFightScene(owner);
+	BirdPostFightScene *scene = new BirdPostFightScene;
 	scene->Init();
 	nextSeq = scene;
 
@@ -82,7 +82,7 @@ void BirdPreFightScene::AddFlashes()
 
 void BirdPreFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -91,7 +91,7 @@ void BirdPreFightScene::ReturnToGame()
 
 void BirdPreFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -125,14 +125,14 @@ void BirdPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-BirdPostFightScene::BirdPostFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+BirdPostFightScene::BirdPostFightScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -148,8 +148,8 @@ void BirdPostFightScene::SetupStates()
 
 void BirdPostFightScene::ReturnToGame()
 {
-	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->cam.EaseOutOfManual(60);
+	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -181,7 +181,7 @@ void BirdPostFightScene::AddGroups()
 
 void BirdPostFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -189,11 +189,11 @@ void BirdPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide(fadeFrames);
+				sess->adventureHUD->Hide(fadeFrames);
 				//player->Wait();
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 		}
 	case WAIT:
@@ -207,8 +207,8 @@ void BirdPostFightScene::UpdateState()
 	}
 }
 
-BirdCrawlerAllianceScene::BirdCrawlerAllianceScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+BirdCrawlerAllianceScene::BirdCrawlerAllianceScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -261,7 +261,7 @@ void BirdCrawlerAllianceScene::AddGroups()
 
 void BirdCrawlerAllianceScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -269,10 +269,10 @@ void BirdCrawlerAllianceScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide();
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->Fade(true, 60, Color::Black);
+				sess->adventureHUD->Hide();
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->Fade(true, 60, Color::Black);
 				SetCameraShot("alliancecam");
 			}
 		}
@@ -291,7 +291,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->Fade(false, 60, Color::Black);
+			sess->Fade(false, 60, Color::Black);
 		}
 
 		if (IsLastFrame())

@@ -17,7 +17,7 @@ struct BirdPreFightScene : BasicBossScene
 		Count
 	};
 
-	BirdPreFightScene(GameSession *owner);
+	BirdPreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -42,7 +42,7 @@ struct BirdPostFightScene : BasicBossScene
 		Count
 	};
 
-	BirdPostFightScene(GameSession *owner);
+	BirdPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -65,7 +65,7 @@ struct BirdCrawlerAllianceScene : BasicBossScene
 		Count
 	};
 
-	BirdCrawlerAllianceScene(GameSession *owner);
+	BirdCrawlerAllianceScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

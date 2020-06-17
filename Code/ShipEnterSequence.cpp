@@ -6,12 +6,12 @@
 using namespace sf;
 using namespace std;
 
-ShipEnterScene::ShipEnterScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+ShipEnterScene::ShipEnterScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	ts_w1ShipClouds0 = owner->GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
-	ts_w1ShipClouds1 = owner->GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
-	ts_ship = owner->GetTileset("Ship/ship_864x400.png", 864, 400);
+	ts_w1ShipClouds0 = sess->GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
+	ts_w1ShipClouds1 = sess->GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
+	ts_ship = sess->GetTileset("Ship/ship_864x400.png", 864, 400);
 
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
@@ -24,13 +24,13 @@ void ShipEnterScene::Reset()
 	BasicBossScene::Reset();
 
 	
-	Actor *player = owner->GetPlayer(0);
-	owner->drain = false;
+	Actor *player = sess->GetPlayer(0);
+	sess->SetDrainOn(false);
 	player->action = Actor::RIDESHIP;
 	player->frame = 0;
 	player->position = shipEntrancePos;
-	owner->playerOrigPos = Vector2i(player->position);
-	shipSprite.setPosition(owner->playerOrigPos.x - 13, owner->playerOrigPos.y - 124);
+	sess->playerOrigPos = Vector2i(player->position);
+	shipSprite.setPosition(sess->playerOrigPos.x - 13, sess->playerOrigPos.y - 124);
 	shipSequence = true;
 	//shipSeqFrame = 0;
 	shipStartPos = shipSprite.getPosition();
@@ -45,7 +45,7 @@ void ShipEnterScene::Reset()
 	IntRect sub0 = ts_w1ShipClouds0->GetSubRect(0);
 	IntRect sub1 = ts_w1ShipClouds1->GetSubRect(0);
 
-	Vector2f bottomLeft = Vector2f(owner->playerOrigPos.x, owner->playerOrigPos.y) + Vector2f(-480, 270);
+	Vector2f bottomLeft = Vector2f(sess->playerOrigPos.x, sess->playerOrigPos.y) + Vector2f(-480, 270);
 	for (int i = 0; i < 3; ++i)
 	{
 		Vector2f xExtra(480 * i, 0);
@@ -90,14 +90,14 @@ void ShipEnterScene::Reset()
 		cloudBot1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
 	}
 
-	middleClouds.setPosition(owner->playerOrigPos.x - 480, owner->playerOrigPos.y + 270);
+	middleClouds.setPosition(sess->playerOrigPos.x - 480, sess->playerOrigPos.y + 270);
 }
 
 void ShipEnterScene::ReturnToGame()
 {
-	owner->SetPlayerInputOn(true);
-	owner->adventureHUD->Show(60);
-	owner->cam.SetManual(false);
+	sess->SetPlayerInputOn(true);
+	sess->adventureHUD->Show(60);
+	sess->cam.SetManual(false);
 	//owner->cam.EaseOutOfManual(5);
 }
 
@@ -105,7 +105,7 @@ void ShipEnterScene::UpdateState()
 {
 	if (frame == 0)
 	{
-		owner->adventureHUD->Hide();
+		sess->adventureHUD->Hide();
 	}
 
 	float oldLeft = cloud0[0].position.x;
@@ -144,7 +144,7 @@ void ShipEnterScene::UpdateState()
 	}
 	else if (frame == 240)//121 )
 	{
-		Actor *player = owner->GetPlayer(0);
+		Actor *player = sess->GetPlayer(0);
 		//cout << "relshipvel: " << relShipVel.x << ", " << relShipVel.y << endl;
 		player->action = Actor::JUMP;
 		player->frame = 1;
@@ -155,7 +155,7 @@ void ShipEnterScene::UpdateState()
 		player->hasDoubleJump = false;
 		player->hasAirDash = false;
 		player->hasGravReverse = false;
-		owner->drain = true;
+		sess->SetDrainOn(true);
 	}
 }
 

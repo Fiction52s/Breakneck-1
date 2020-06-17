@@ -84,11 +84,11 @@ struct StoryPart
 	bool blank;
 };
 
-struct GameSession;
+struct Session;
 struct StorySequence
 {
 	StorySequence( sf::Font &font, TilesetManager *tm);
-	StorySequence(GameSession *owner);
+	StorySequence();
 	bool Load( const std::string &sequenceName );
 	void Reset();
 	bool Update( ControllerState &prev, ControllerState &curr);
@@ -102,8 +102,8 @@ struct StorySequence
 	bool pUpdate[NUM_LAYERS];
 	std::list<StoryPart*>::iterator currPartIt[NUM_LAYERS];
 	TilesetManager *tm;
-	sf::Font &myFont;
-	GameSession *owner;
+	sf::Font *myFont;
+	Session *sess;
 	std::string seqName;
 	std::map<std::string, ConversationGroup*> convGroups;
 	Conversation* GetConv(const std::string &name, 

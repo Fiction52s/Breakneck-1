@@ -15,7 +15,7 @@ struct BirdChaseScene : BasicBossScene
 		Count
 	};
 
-	BirdChaseScene(GameSession *owner);
+	BirdChaseScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -39,7 +39,7 @@ struct BirdPreFight3Scene : BasicBossScene
 		Count
 	};
 
-	BirdPreFight3Scene(GameSession *owner);
+	BirdPreFight3Scene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -62,7 +62,7 @@ struct BirdPostFight3Scene : BasicBossScene
 		Count
 	};
 
-	BirdPostFight3Scene(GameSession *owner);
+	BirdPostFight3Scene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -83,7 +83,7 @@ struct FinalSkeletonPreFightScene : BasicBossScene
 		Count
 	};
 
-	FinalSkeletonPreFightScene(GameSession *owner);
+	FinalSkeletonPreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -107,7 +107,7 @@ struct FinalSkeletonPostFightScene : BasicBossScene
 		Count
 	};
 
-	FinalSkeletonPostFightScene(GameSession *owner);
+	FinalSkeletonPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

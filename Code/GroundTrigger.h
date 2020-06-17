@@ -16,6 +16,7 @@ enum TriggerType
 
 struct StorySequence;
 struct Sequence;
+struct Session;
 
 struct GroundTrigger : Enemy
 {
@@ -35,7 +36,7 @@ struct GroundTrigger : Enemy
 	StorySequence *storySeq;
 	Sequence *gameSequence;
 
-	GameSession *game;
+	Session *sess;
 
 	GroundTrigger(ActorParams *ap);
 		//Edge *ground, double quantity, 

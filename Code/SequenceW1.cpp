@@ -1,24 +1,26 @@
 #include "SequenceW1.h"
 #include "Actor.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "MainMenu.h"
 #include "Config.h"
 #include "MusicPlayer.h"
 #include "ImageText.h"
 #include "HUD.h"
 #include "Enemy_CrawlerQueen.h"
+#include "SaveFile.h"
 
 using namespace std;
 using namespace sf;
 
-TextTestSeq::TextTestSeq(GameSession *p_owner)
-	:owner(p_owner)
+TextTestSeq::TextTestSeq()
 {
+	sess = Session::GetSession();
+
 	stateLength[TALK] = 10000;
 	stateLength[END] = 30;
 
 
-	sceneLabel.setFont(owner->mainMenu->arial);
+	sceneLabel.setFont(sess->mainMenu->arial);
 	sceneLabel.setFillColor(Color::White);
 	sceneLabel.setCharacterSize(100);
 	sceneLabel.setPosition(500, 500);
@@ -92,7 +94,7 @@ void TextTestSeq::Init()
 
 bool TextTestSeq::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -110,8 +112,8 @@ bool TextTestSeq::Update()
 	{
 		player->SetAction(Actor::STAND);
 		player->frame = 0;
-		owner->adventureHUD->Show(60);
-		owner->cam.EaseOutOfManual(60);
+		sess->adventureHUD->Show(60);
+		sess->cam.EaseOutOfManual(60);
 		//player->set
 		return false;
 	}
@@ -123,16 +125,16 @@ bool TextTestSeq::Update()
 	case TALK:
 		if (frame == 0)
 		{
-			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
+			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 			conv->Show();
-			owner->adventureHUD->Hide(60);
+			sess->adventureHUD->Hide(60);
 		}
 
-		if (owner->GetCurrInput(0).A && !owner->GetPrevInput(0).A)
+		if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
 		{
 			conv->NextSection();
 		}
-		if (owner->GetCurrInput(0).B)
+		if (sess->GetCurrInput(0).B)
 		{
 			conv->SetRate(1, 5);
 		}
@@ -159,7 +161,7 @@ bool TextTestSeq::Update()
 					++gIndex;
 					UpdateSceneLabel();
 					cIndex = 0;
-					owner->CrossFade(10, 0, 10, Color::Black);
+					sess->CrossFade(10, 0, 10, Color::Black);
 
 					ConversationGroup *newcg = groups[gIndex];
 					Conversation *newconv = newcg->GetConv(cIndex);
@@ -188,7 +190,7 @@ void TextTestSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	}
 
 	View v = target->getView();
-	target->setView(owner->uiView);
+	target->setView(sess->uiView);
 
 	ConversationGroup *cg = groups[gIndex];
 	Conversation *conv = cg->GetConv(cIndex);
@@ -219,8 +221,8 @@ void TextTestSeq::UpdateSceneLabel()
 	sceneLabel.setString(cg->sceneName);
 }
 
-CrawlerAttackSeq::CrawlerAttackSeq(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+CrawlerAttackSeq::CrawlerAttackSeq()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 }
 
@@ -276,26 +278,26 @@ void CrawlerAttackSeq::AddEnemies()
 
 void CrawlerAttackSeq::AddFlashes()
 {
-	AddFlashedImage("detailedgrab", owner->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
+	AddFlashedImage("detailedgrab", sess->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
 		0, 30, 60, 30, Vector2f(1160, 540));
 
-	AddFlashedImage("crawlerface", owner->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
+	AddFlashedImage("crawlerface", sess->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
 		0, 30, 60, 30, Vector2f(1350, 325));
 
-	AddFlashedImage("kinface", owner->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
+	AddFlashedImage("kinface", sess->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
 		0, 30, 60, 30, Vector2f(625, 325));
 }
 
 void CrawlerAttackSeq::SpecialInit()
 {
-	ts_queenGrab = owner->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
+	ts_queenGrab = sess->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 }
 
 void CrawlerAttackSeq::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 	queen->StartFight();
@@ -305,7 +307,7 @@ void CrawlerAttackSeq::ReturnToGame()
 
 void CrawlerAttackSeq::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -314,7 +316,7 @@ void CrawlerAttackSeq::UpdateState()
 	case KINSTOP:
 		if (frame == 0)
 		{
-			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
+			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
 			player->desperationMode = false;
 			player->SetAction(Actor::SEQ_LOOKUP);
 		}
@@ -355,15 +357,15 @@ void CrawlerAttackSeq::UpdateState()
 	case THROWOUT:
 		if (frame == 0)
 		{
-			//owner->currentZone->ReformAllGates();
+			//sess->currentZone->ReformAllGates();
 
 			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
 		}
 		else if (frame == 30)
 		{
-			owner->AddEnemy(queen);
+			sess->AddEnemy(queen);
 			queen->StartInitialUnburrow();
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	case CRAWLERFACE:
@@ -391,7 +393,7 @@ void CrawlerAttackSeq::UpdateState()
 
 void CrawlerAttackSeq::UpdateCrawlerSwoop()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
 	queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
 		queenGrabSprite.getLocalBounds().height);
@@ -418,8 +420,8 @@ void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	BasicBossScene::Draw(target, layer);
 }
 
-AfterCrawlerFightSeq::AfterCrawlerFightSeq(GameSession *p_owner)
-	:BasicBossScene( p_owner, BasicBossScene::APPEAR )
+AfterCrawlerFightSeq::AfterCrawlerFightSeq()
+	:BasicBossScene( BasicBossScene::APPEAR )
 {
 
 }
@@ -435,9 +437,9 @@ void AfterCrawlerFightSeq::SetupStates()
 void AfterCrawlerFightSeq::ReturnToGame()
 {
 	SetPlayerStandDefaultPoint(true);
-	owner->Fade(true, 60, Color::Black);
-	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->Fade(true, 60, Color::Black);
+	sess->cam.EaseOutOfManual(60);
+	sess->TotalDissolveGates(Gate::BOSS);
 }
 
 void AfterCrawlerFightSeq::AddPoints()
@@ -447,7 +449,8 @@ void AfterCrawlerFightSeq::AddPoints()
 
 void AfterCrawlerFightSeq::StartRunning()
 {
-	owner->state = GameSession::SEQUENCE;
+	//right now only works in gamesession
+	sess->SetGameSessionState(GameSession::SEQUENCE);
 }
 
 void AfterCrawlerFightSeq::UpdateState()
@@ -456,9 +459,9 @@ void AfterCrawlerFightSeq::UpdateState()
 	{
 		if (frame == 0)
 		{
-			MainMenu *mm = owner->mainMenu;
+			MainMenu *mm = sess->mainMenu;
 
-			owner->CrossFade(10, 0, 60, Color::White);
+			sess->CrossFade(10, 0, 60, Color::White);
 			mm->musicPlayer->FadeOutCurrentMusic(60);
 		}
 	}
@@ -479,8 +482,8 @@ void AfterCrawlerFightSeq::AddMovies()
 }
 
 
-GetAirdashPowerScene::GetAirdashPowerScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+GetAirdashPowerScene::GetAirdashPowerScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 	darkRect.setFillColor(Color::Black);
 	darkRect.setSize(Vector2f(1920, 1080));
@@ -512,11 +515,11 @@ void GetAirdashPowerScene::AddMovies()
 void GetAirdashPowerScene::ReturnToGame()
 {
 	SetPlayerStandDefaultPoint(true);
-	owner->Fade(true, 60, Color::Black);
-	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->Fade(true, 60, Color::Black);
+	sess->cam.EaseOutOfManual(60);
+	sess->TotalDissolveGates(Gate::BOSS);
 
-	owner->mainMenu->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+	sess->mainMenu->musicPlayer->TransitionMusic(sess->originalMusic, 60);
 }
 
 void GetAirdashPowerScene::AddPoints()
@@ -531,14 +534,14 @@ void GetAirdashPowerScene::StartRunning()
 
 void GetAirdashPowerScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case KIN_KNEELING:
 		if (frame == 0)
 		{
 			//owner->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
-			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
+			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
 
 			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(0));
 			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
@@ -559,18 +562,18 @@ void GetAirdashPowerScene::UpdateState()
 	case FADE_BACKGROUND:
 		if (frame == 0)
 		{
-			owner->Fade(false, 60, Color::Black, true);
+			sess->Fade(false, 60, Color::Black, true);
 		}
 		else if (frame == stateLength[FADE_BACKGROUND] - 1)
 		{
-			owner->state = GameSession::SEQUENCE;
+			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 		break;
 	case EXPEL_ENERGY:
 	{
 		if (frame == 0)
 		{
-			owner->ClearFade();
+			sess->ClearFade();
 		}
 
 		int f = 60 - 3 * 10;
@@ -614,10 +617,15 @@ void GetAirdashPowerScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->state = GameSession::RUN;
-			owner->Fade(true, 60, Color::Black, true);
-			owner->adventureHUD->Show(60);
-			owner->UnlockPower(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+			sess->SetGameSessionState(GameSession::RUN);
+			sess->Fade(true, 60, Color::Black, true);
+			sess->adventureHUD->Show(60);
+			SaveFile *sf = sess->mainMenu->GetCurrentProgress();
+			if (sf != NULL)
+			{
+				sf->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
+			}
+			sess->GetPlayer(0)->SetUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH, true );
 		}
 		break;
 	}
@@ -633,7 +641,7 @@ void GetAirdashPowerScene::UpdateState()
 		else if (frame == stateLength[FADE_BACK] - 1)
 		{
 			//cout << "set easting out of manual" << endl;
-			owner->cam.EaseOutOfManual(120);
+			sess->cam.EaseOutOfManual(120);
 		}
 		break;
 	}
@@ -646,9 +654,9 @@ void GetAirdashPowerScene::UpdateState()
 	player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x,
 		player->sprite->getPosition().y - 32));
 
-	if (owner->state == GameSession::SEQUENCE)
+	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{
-		owner->totalGameFrames++;
+		sess->totalGameFrames++;
 		player->UpdatePrePhysics();
 		player->UpdatePostPhysics();
 	}
@@ -661,9 +669,9 @@ void GetAirdashPowerScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (owner->state == GameSession::SEQUENCE)
+	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{
-		target->setView(owner->uiView);
+		target->setView(sess->uiView);
 
 		if (state >= EXPEL_ENERGY)
 		{
@@ -674,9 +682,9 @@ void GetAirdashPowerScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		BasicBossScene::Draw(target, layer);
 
 
-		target->setView(owner->view);
+		target->setView(sess->view);
 
 
-		owner->GetPlayer(0)->Draw(target);
+		sess->GetPlayer(0)->Draw(target);
 	}
 }

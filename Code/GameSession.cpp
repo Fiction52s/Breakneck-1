@@ -126,6 +126,16 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
+int GameSession::GetGameSessionState()
+{
+	return state;
+}
+
+void GameSession::SetGameSessionState(int s)
+{
+	state = (State)s;
+}
+
 void GameSession::QueryToSpawnEnemies()
 {
 	queryMode = QUERY_ENEMY;
@@ -988,6 +998,8 @@ PoiInfo::PoiInfo( const std::string &pname, Edge *e, double q )
 void GameSession::Reload(const boost::filesystem::path &p_filePath)
 {
 	//partial cleanup
+	originalMusic = NULL;
+
 	for (int i = 0; i < allPolysVec.size(); ++i)
 	{
 		delete allPolysVec[i];
@@ -1118,7 +1130,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
-	:Session( Session::SESS_GAME, p_filePath), saveFile( sf ), drain(true )
+	:Session( Session::SESS_GAME, p_filePath), saveFile( sf )
 {
 	
 	currSession = this;
@@ -1769,16 +1781,12 @@ void GameSession::ProcessActor(ActorPtr a)
 		if (typeName == "xbarrier")
 		{
 			XBarrierParams *xbp = (XBarrierParams*)a;
-			const std::string &xbpName = xbp->GetName();
-			Barrier *b = new Barrier(this, xbpName , true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
-		
-			barrierMap[xbpName] = b;
-			barriers.push_back(b);
+			AddBarrier(xbp);
 		}
 		else if (typeName == "extrascene")
 		{
 			ExtraSceneParams *xp = (ExtraSceneParams*)a;
-			BasicBossScene *scene = BasicBossScene::CreateScene(this, xp->GetName());
+			BasicBossScene *scene = BasicBossScene::CreateScene(xp->GetName());
 			if (xp->extraSceneType == 0)//prelevel
 			{
 				preLevelScene = scene;
@@ -1804,7 +1812,7 @@ void GameSession::ProcessActor(ActorPtr a)
 		{
 			if (shipEnterScene == NULL)
 			{
-				shipEnterScene = new ShipEnterScene(this);
+				shipEnterScene = new ShipEnterScene;
 				shipEnterScene->Init();
 				shipEnterScene->shipEntrancePos = a->GetPosition();
 				//shipEnterScene->Reset();
@@ -3872,27 +3880,7 @@ int GameSession::Run()
 	return returnVal;
 }
 
-void GameSession::Fade(bool in, int frames, sf::Color c, bool skipKin)
-{
-	fader->Fade(in, frames, c, skipKin);
-}
 
-void GameSession::CrossFade(int fadeOutFrames,
-	int pauseFrames, int fadeInFrames,
-	sf::Color c, bool skipKin)
-{
-	fader->CrossFade(fadeOutFrames, pauseFrames, fadeInFrames, c, skipKin);
-}
-
-void GameSession::ClearFade()
-{
-	fader->Clear();
-}
-
-bool GameSession::IsFading()
-{
-	return fader->IsFading();
-}
 
 void GameSession::Init()
 {
@@ -3926,7 +3914,7 @@ void GameSession::Init()
 	railDrawTree = NULL;
 	terrainBGTree = NULL;
 	scoreDisplay = NULL;
-	originalMusic = NULL;
+	
 	rain = NULL;//new Rain(this);//NULL;
 	va = NULL;
 	activeEnemyList = NULL;
@@ -3953,9 +3941,8 @@ void GameSession::Init()
 	}
 
 	shadersLoaded = false;
-	drain = true;
+
 	hasGoal = false;
-	playerAndEnemiesFrozen = false;
 	boostIntro = false;
 	nextFrameRestart = false;
 	stormCeilingOn = false;
@@ -3969,7 +3956,6 @@ void GameSession::Init()
 		hasGrass[i] = false;
 	}
 
-
 	numTotalKeys = 0;
 	pauseFrames = 0;
 	totalRails = 0;
@@ -3981,12 +3967,6 @@ void GameSession::Init()
 	ReadDecorImagesFile();
 	testBuf.SetRecOver(false);
 }
-
-
-
-
-
-
 
 bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
 {
@@ -4237,25 +4217,7 @@ void GameSession::CloseGates(int gCat)
 	}
 }
 
-void GameSession::TotalDissolveGates(int gCat)
-{
-	Gate *g;
-	for (int i = 0; i < numGates; ++i)
-	{
-		g = gates[i];
-		g->TotalDissolve();
-	}
-}
 
-void GameSession::ReverseDissolveGates(int gCat)
-{
-	Gate *g;
-	for (int i = 0; i < numGates; ++i)
-	{
-		g = gates[i];
-		g->ReverseDissolve();
-	}
-}
 
 void GameSession::OpenGates(int gCat)
 {
@@ -4473,22 +4435,6 @@ void GameSession::DrawReplayGhosts()
 	}
 }
 
-void GameSession::RemoveAllEnemies()
-{
-	Enemy *curr = activeEnemyList;
-	while (curr != NULL)
-	{
-		Enemy *next = curr->next;
-
-		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS)
-		{
-			RemoveEnemy(curr);
-			//curr->health = 0;
-		}
-		curr = next;
-	}
-}
-
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
 	//inefficient. should only update these when they are changed.
@@ -4585,17 +4531,6 @@ SaveFile *GameSession::GetCurrentProgress()
 	}
 }
 
-bool GameSession::HasPowerUnlocked( int pIndex )
-{
-	SaveFile *prog = GetCurrentProgress();
-	if ( mainMenu->gameRunType == MainMenu::GameRunType::GRT_ADVENTURE && prog != NULL 
-		&& prog->HasUpgrade((Actor::UpgradeType)pIndex))
-	{
-		return true;
-	}
-
-	return false;
-}
 
 void GameSession::NextFrameRestartLevel()
 {
@@ -4617,6 +4552,8 @@ void GameSession::RestartLevel()
 	{
 		(*it)->ResetTouchGrass();
 	}
+
+	SetDrainOn(true);
 
 	shardsCapturedField->Reset();
 
@@ -4740,10 +4677,7 @@ void GameSession::RestartLevel()
 
 	inactiveEnemyList = NULL;
 
-	for( auto it = barriers.begin(); it != barriers.end(); ++it )
-	{
-		(*it)->Reset();
-	}
+	ResetBarriers();
 
 	cam.SetManual( false );
 
@@ -5386,10 +5320,7 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }
 
-void GameSession::FreezePlayerAndEnemies( bool freeze)
-{
-	playerAndEnemiesFrozen = freeze;
-}
+
 
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {

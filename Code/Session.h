@@ -53,6 +53,11 @@ struct AbsorbParticles;
 struct Fader;
 struct Swiper;
 struct AdventureHUD;
+struct Barrier;
+
+struct PoiInfo;
+struct CameraShot;
+struct MusicInfo;
 
 #define TIMESTEP (1.0 / 60.0)
 
@@ -85,7 +90,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	Swiper *swiper;
 	sf::RenderTexture *minimapTex;
 	sf::RenderTexture *postProcessTex2;
-
+	std::list<Barrier*> barriers;
+	std::map<std::string, Barrier*> barrierMap;
 
 	sf::RenderTexture *preScreenTex;
 	int numGates;
@@ -184,6 +190,17 @@ struct Session : TilesetManager, QuadTreeCollider
 	AbsorbParticles *absorbParticles;
 	AbsorbParticles *absorbDarkParticles;
 	AbsorbParticles *absorbShardParticles;
+
+	std::list<Edge*> globalBorderEdges;
+	bool drain;
+	bool playerAndEnemiesFrozen;
+
+	std::map<std::string, PoiInfo*> poiMap;
+	std::map<std::string, CameraShot*> cameraShotMap;
+	sf::View view;
+	MusicInfo *originalMusic;
+	std::map<std::string, MusicInfo*> musicMap; //for sequences to change music? might be useless..
+	bool goalDestroyed;
 
 	static Session *GetSession();
 
@@ -426,6 +443,21 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool IsShardCaptured(int sType) { return false; } //return to this later
 	void DrawGates(sf::RenderTarget *target);
 	void ResetGates();
+	void ResetBarriers();
+	void AddBarrier(XBarrierParams *xbp);
+	virtual void SetGameSessionState(int s) {}
+	virtual int GetGameSessionState();
+	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
+	void CrossFade(int fadeOutFrames,
+		int pauseFrames, int fadeInFrames,
+		sf::Color c, bool skipKin = false);
+	bool IsFading();
+	void ClearFade();
+	void TotalDissolveGates(int gCat);
+	void ReverseDissolveGates(int gCat);
+	void SetDrainOn(bool d);
+	void RemoveAllEnemies();
+	void FreezePlayerAndEnemies(bool freeze);
 };
 
 #endif

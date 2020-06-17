@@ -12,8 +12,8 @@ using namespace std;
 using namespace sf;
 
 
-BirdPreFight2Scene::BirdPreFight2Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+BirdPreFight2Scene::BirdPreFight2Scene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -26,7 +26,7 @@ void BirdPreFight2Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[BIRDCONV] = -1;
 
-	BirdPostFight2Scene *scene = new BirdPostFight2Scene(owner);
+	BirdPostFight2Scene *scene = new BirdPostFight2Scene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -58,7 +58,7 @@ void BirdPreFight2Scene::AddFlashes()
 
 void BirdPreFight2Scene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -67,7 +67,7 @@ void BirdPreFight2Scene::ReturnToGame()
 
 void BirdPreFight2Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -81,14 +81,14 @@ void BirdPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-BirdPostFight2Scene::BirdPostFight2Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+BirdPostFight2Scene::BirdPostFight2Scene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -104,8 +104,8 @@ void BirdPostFight2Scene::SetupStates()
 
 void BirdPostFight2Scene::ReturnToGame()
 {
-	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->cam.EaseOutOfManual(60);
+	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -137,7 +137,7 @@ void BirdPostFight2Scene::AddGroups()
 
 void BirdPostFight2Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -145,10 +145,10 @@ void BirdPostFight2Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide(fadeFrames);
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->adventureHUD->Hide(fadeFrames);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 			else if (frame == 10)
 			{
@@ -167,8 +167,8 @@ void BirdPostFight2Scene::UpdateState()
 }
 
 
-BirdTigerApproachScene::BirdTigerApproachScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+BirdTigerApproachScene::BirdTigerApproachScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -176,8 +176,8 @@ void BirdTigerApproachScene::StartRunning()
 {
 
 	//owner->state = GameSession::SEQUENCE;
-	owner->FreezePlayerAndEnemies(true);
-	owner->SetPlayerInputOn(false);
+	sess->FreezePlayerAndEnemies(true);
+	sess->SetPlayerInputOn(false);
 }
 
 void BirdTigerApproachScene::SetupStates()
@@ -224,7 +224,7 @@ void BirdTigerApproachScene::AddGroups()
 
 void BirdTigerApproachScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -232,10 +232,10 @@ void BirdTigerApproachScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide();
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->Fade(true, 60, Color::Black);
+				sess->adventureHUD->Hide();
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->Fade(true, 60, Color::Black);
 				SetCameraShot("scenecam");
 			}
 		}
@@ -254,13 +254,13 @@ void BirdTigerApproachScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->CrossFade(60, 0, 60, Color::Black);
+			sess->CrossFade(60, 0, 60, Color::Black);
 		}
 
 		if (IsLastFrame())
 		{
-			owner->cam.SetManual(false);
-			owner->adventureHUD->Show();
+			sess->cam.SetManual(false);
+			sess->adventureHUD->Show();
 		}
 		break;
 	}
@@ -271,8 +271,8 @@ void BirdTigerApproachScene::UpdateState()
 
 
 
-GatorPreFightScene::GatorPreFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+GatorPreFightScene::GatorPreFightScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -285,7 +285,7 @@ void GatorPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[GATORCONV] = -1;
 
-	GatorPostFightScene *scene = new GatorPostFightScene(owner);
+	GatorPostFightScene *scene = new GatorPostFightScene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -317,7 +317,7 @@ void GatorPreFightScene::AddFlashes()
 
 void GatorPreFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -326,7 +326,7 @@ void GatorPreFightScene::ReturnToGame()
 
 void GatorPreFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -340,14 +340,14 @@ void GatorPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-GatorPostFightScene::GatorPostFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+GatorPostFightScene::GatorPostFightScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -365,9 +365,9 @@ void GatorPostFightScene::SetupStates()
 
 void GatorPostFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	player->EndLevelWithoutGoal();
-	owner->SetPlayerInputOn(true);
+	sess->SetPlayerInputOn(true);
 }
 
 void GatorPostFightScene::AddShots()
@@ -398,7 +398,7 @@ void GatorPostFightScene::AddGroups()
 
 void GatorPostFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -406,13 +406,13 @@ void GatorPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 			else if (frame == 10)
 			{
-				owner->adventureHUD->Hide();
+				sess->adventureHUD->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				SetCameraShot("gatordeathcam");
 			}
@@ -420,7 +420,7 @@ void GatorPostFightScene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::BOSS);
+			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
 	case GATORANGRY:

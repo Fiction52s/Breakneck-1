@@ -335,7 +335,6 @@ struct EditSession : GUIHandler, Session
 	Emode stored;
 	ActorPtr player;
 	ActorType *playerType;
-	sf::View view;
 	int gatePoints;
 	bool quit;
 	int returnVal;

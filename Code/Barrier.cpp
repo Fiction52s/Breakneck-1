@@ -1,5 +1,5 @@
 #include "Barrier.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "BarrierReactions.h"
 #include "MapHeader.h"
 #include "Sequence.h"
@@ -7,9 +7,9 @@
 using namespace std;
 using namespace sf;
 
-Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int p_pos, bool hasEdge, BarrierCallback *cb)
+Barrier::Barrier(const std::string &p_name, bool p_x, int p_pos, bool hasEdge, BarrierCallback *cb)
 {
-	owner = p_owner;
+	sess = Session::GetSession();
 	name = p_name;
 	callback = cb;
 	x = p_x;
@@ -17,8 +17,8 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 
 	triggerSeq = NULL;
 
-	double top = owner->mapHeader->topBounds;
-	double bottom = owner->mapHeader->topBounds + owner->mapHeader->boundsHeight;
+	double top = sess->mapHeader->topBounds;
+	double bottom = sess->mapHeader->topBounds + sess->mapHeader->boundsHeight;
 
 	line[0].color = Color::Red;
 	line[1].color = Color::Red;
@@ -26,12 +26,12 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 	extraDistance = 50;
 	if (x)
 	{
-		positiveOpen = (owner->GetPlayerPos().x > pos);
+		positiveOpen = (sess->GetPlayerPos().x > pos);
 		
 	}
 	else
 	{
-		positiveOpen = (owner->GetPlayerPos().y > pos);
+		positiveOpen = (sess->GetPlayerPos().y > pos);
 	}
 
 	if (!positiveOpen)
@@ -43,7 +43,7 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 		barrierEdge->edgeType = Edge::BARRIER;
 		barrierEdge->info = this;
 
-		auto it = owner->globalBorderEdges.begin();
+		auto it = sess->globalBorderEdges.begin();
 		++it;
 		++it;
 
@@ -71,7 +71,7 @@ Barrier::Barrier(GameSession *p_owner, const std::string &p_name, bool p_x, int 
 		line[0].position = Vector2f(pos, top);
 		line[1].position = Vector2f(pos, bottom);
 
-		owner->barrierTree->Insert(barrierEdge);
+		sess->barrierTree->Insert(barrierEdge);
 	}
 	else
 	{
@@ -88,7 +88,7 @@ int Barrier::GetCamPos()
 
 void Barrier::SetScene()
 {
-	BasicBossScene *seq = BasicBossScene::CreateScene(owner,name);
+	BasicBossScene *seq = BasicBossScene::CreateScene(name);
 
 	if (seq != NULL)
 	{
@@ -175,7 +175,7 @@ bool Barrier::Update()
 	if (triggered )
 		return false;
 
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 
 	bool t = false;
 
@@ -221,7 +221,7 @@ bool Barrier::Update()
 
 void Barrier::SetPositive()
 {
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 	//should use a parameter eventually but for now just using this
 	if (x)
 	{
@@ -253,7 +253,7 @@ void Barrier::Trigger()
 
 double Barrier::GetPlayerDist()
 {
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 
 	double dist = 0;
 	if (x)

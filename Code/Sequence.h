@@ -12,7 +12,6 @@
 #include "VectorMath.h"
 
 struct Edge;
-struct GameSession;
 struct MovementSequence;
 struct PoiInfo;
 struct MusicInfo;
@@ -25,6 +24,7 @@ struct ButtonHolder;
 struct ConversationGroup;
 struct CameraShot;
 struct Barrier;
+struct Session;
 
 struct SceneBG;
 
@@ -205,7 +205,7 @@ struct BasicBossScene : Sequence
 	ConversationGroup *currConvGroup;
 	int cIndex;
 	Barrier *barrier;
-	GameSession *owner;
+	Session *sess;
 	EntranceType entranceType;
 	int movieFadeFrames;
 	sf::Color movieFadeColor;
@@ -222,11 +222,9 @@ struct BasicBossScene : Sequence
 	std::map<std::string, FlashedImage*> flashes;
 	std::map <std::string, FlashGroup*> flashGroups;
 	
-	static BasicBossScene *CreateScene(
-		GameSession *owner, const std::string &name);
+	static BasicBossScene *CreateScene(const std::string &name);
 
-	BasicBossScene(GameSession *owner, 
-		EntranceType et );
+	BasicBossScene(EntranceType et );
 	virtual ~BasicBossScene();
 
 	virtual void UpdateState() = 0;
@@ -346,7 +344,7 @@ struct ShipEnterScene : BasicBossScene
 	//int shipSeqFrame;
 	sf::Vector2f shipStartPos;
 
-	ShipEnterScene(GameSession *owner);
+	ShipEnterScene();
 	void Reset();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
@@ -374,7 +372,7 @@ struct ShipExitScene : BasicBossScene
 	Tileset *ts_ship;
 	sf::Sprite shipSprite;
 
-	ShipExitScene(GameSession *owner);
+	ShipExitScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

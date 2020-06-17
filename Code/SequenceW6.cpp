@@ -12,8 +12,8 @@ using namespace std;
 using namespace sf;
 
 
-EnterFortressScene::EnterFortressScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+EnterFortressScene::EnterFortressScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -54,14 +54,14 @@ void EnterFortressScene::AddFlashes()
 
 void EnterFortressScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 }
 
 void EnterFortressScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -82,8 +82,8 @@ void EnterFortressScene::UpdateState()
 
 
 
-TigerAndBirdTunnelScene::TigerAndBirdTunnelScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+TigerAndBirdTunnelScene::TigerAndBirdTunnelScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -91,8 +91,8 @@ void TigerAndBirdTunnelScene::StartRunning()
 {
 
 	//owner->state = GameSession::SEQUENCE;
-	owner->FreezePlayerAndEnemies(true);
-	owner->SetPlayerInputOn(false);
+	sess->FreezePlayerAndEnemies(true);
+	sess->SetPlayerInputOn(false);
 }
 
 void TigerAndBirdTunnelScene::SetupStates()
@@ -138,7 +138,7 @@ void TigerAndBirdTunnelScene::AddGroups()
 
 void TigerAndBirdTunnelScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -146,10 +146,10 @@ void TigerAndBirdTunnelScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide();
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->Fade(true, 60, Color::Black);
+				sess->adventureHUD->Hide();
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->Fade(true, 60, Color::Black);
 				SetCameraShot("scenecam");
 			}
 		}
@@ -164,13 +164,13 @@ void TigerAndBirdTunnelScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->CrossFade(60, 0, 60, Color::Black);
+			sess->CrossFade(60, 0, 60, Color::Black);
 		}
 
 		if (IsLastFrame())
 		{
-			owner->cam.SetManual(false);
-			owner->adventureHUD->Show();
+			sess->cam.SetManual(false);
+			sess->adventureHUD->Show();
 		}
 		break;
 	}
@@ -179,8 +179,8 @@ void TigerAndBirdTunnelScene::UpdateState()
 }
 
 
-SkeletonPreFightScene::SkeletonPreFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+SkeletonPreFightScene::SkeletonPreFightScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -193,7 +193,7 @@ void SkeletonPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELECONV] = -1;
 
-	SkeletonPostFightScene *scene = new SkeletonPostFightScene(owner);
+	SkeletonPostFightScene *scene = new SkeletonPostFightScene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -225,7 +225,7 @@ void SkeletonPreFightScene::AddFlashes()
 
 void SkeletonPreFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -234,7 +234,7 @@ void SkeletonPreFightScene::ReturnToGame()
 
 void SkeletonPreFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -248,14 +248,14 @@ void SkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-SkeletonPostFightScene::SkeletonPostFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+SkeletonPostFightScene::SkeletonPostFightScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -277,9 +277,9 @@ void SkeletonPostFightScene::SetupStates()
 
 void SkeletonPostFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	player->EndLevelWithoutGoal();
-	owner->SetPlayerInputOn(true);
+	sess->SetPlayerInputOn(true);
 	
 }
 
@@ -321,7 +321,7 @@ void SkeletonPostFightScene::AddGroups()
 
 void SkeletonPostFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -329,14 +329,14 @@ void SkeletonPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
-				owner->TotalDissolveGates(Gate::BOSS);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
+				sess->TotalDissolveGates(Gate::BOSS);
 			}
 			else if (IsLastFrame())
 			{
-				owner->adventureHUD->Hide();
+				sess->adventureHUD->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				
 			}
@@ -346,7 +346,7 @@ void SkeletonPostFightScene::UpdateState()
 		if (frame == 0)
 		{
 			SetCurrMovie("crawler_slash", 60);
-			owner->state = GameSession::SEQUENCE;
+			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 
 		UpdateMovie();
@@ -357,9 +357,9 @@ void SkeletonPostFightScene::UpdateState()
 		if (frame == 0)
 		{
 
-			owner->Fade(true, 60, Color::Black);
-			owner->state = GameSession::RUN;
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->Fade(true, 60, Color::Black);
+			sess->SetGameSessionState(GameSession::RUN);
+			sess->ReverseDissolveGates(Gate::BOSS);
 			SetCameraShot("skeletransformcam");
 		}
 		break;
@@ -384,7 +384,7 @@ void SkeletonPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::BOSS);
+			sess->TotalDissolveGates(Gate::BOSS);
 			EaseShot("skeleleavescam", 60 );
 			SetConvGroup("conv");
 		}
@@ -423,8 +423,8 @@ bool SkeletonPostFightScene::IsAutoRunState()
 
 
 
-TigerPreFight2Scene::TigerPreFight2Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+TigerPreFight2Scene::TigerPreFight2Scene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -437,7 +437,7 @@ void TigerPreFight2Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[TIGERCONV] = -1;
 
-	TigerPostFight2Scene *scene = new TigerPostFight2Scene(owner);
+	TigerPostFight2Scene *scene = new TigerPostFight2Scene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -469,7 +469,7 @@ void TigerPreFight2Scene::AddFlashes()
 
 void TigerPreFight2Scene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -478,7 +478,7 @@ void TigerPreFight2Scene::ReturnToGame()
 
 void TigerPreFight2Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -492,14 +492,14 @@ void TigerPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-TigerPostFight2Scene::TigerPostFight2Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+TigerPostFight2Scene::TigerPostFight2Scene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -515,9 +515,9 @@ void TigerPostFight2Scene::SetupStates()
 
 void TigerPostFight2Scene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	player->EndLevelWithoutGoal();
-	owner->SetPlayerInputOn(true);
+	sess->SetPlayerInputOn(true);
 }
 
 void TigerPostFight2Scene::AddShots()
@@ -548,7 +548,7 @@ void TigerPostFight2Scene::AddGroups()
 
 void TigerPostFight2Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -556,13 +556,13 @@ void TigerPostFight2Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 			else if (frame == 10)
 			{
-				owner->adventureHUD->Hide();
+				sess->adventureHUD->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				SetCameraShot("tigerdeathcam");
 			}
@@ -570,7 +570,7 @@ void TigerPostFight2Scene::UpdateState()
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::BOSS);
+			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
 	case CONV:

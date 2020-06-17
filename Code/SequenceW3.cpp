@@ -11,8 +11,8 @@
 using namespace sf;
 using namespace std;
 
-CoyoteSleepScene::CoyoteSleepScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+CoyoteSleepScene::CoyoteSleepScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -50,9 +50,9 @@ void CoyoteSleepScene::AddFlashes()
 {
 	
 	list<Tileset*> bgTiles;
-	bgTiles.push_back(owner->GetTileset("Story/test/BG_01.png", 1920, 1080));
-	bgTiles.push_back(owner->GetTileset("Story/test/BG_02.png", 1920, 1080));
-	bgTiles.push_back(owner->GetTileset("Story/test/BG_03.png", 1920, 1080));
+	bgTiles.push_back(sess->GetTileset("Story/test/BG_01.png", 1920, 1080));
+	bgTiles.push_back(sess->GetTileset("Story/test/BG_02.png", 1920, 1080));
+	bgTiles.push_back(sess->GetTileset("Story/test/BG_03.png", 1920, 1080));
 	AddBG("anim1", bgTiles, 4);
 
 	FlashGroup * group = AddFlashGroup("wakegroup");
@@ -72,31 +72,31 @@ void CoyoteSleepScene::AddFlashes()
 	AddSimulFlashToGroup(group, "wake0");
 	AddSimulFlashToGroup(group, "wake1", 90);*/
 
-	FlashedImage *testIm1 = AddFlashedImage("break_01", owner->GetTileset("Story/test/break_01.png", 1920, 1080),
+	FlashedImage *testIm1 = AddFlashedImage("break_01", sess->GetTileset("Story/test/break_01.png", 1920, 1080),
 	0, 0, 0, 0, Vector2f(960, 540));
-	testIm1->SetSplit(owner->GetTileset("Story/test/break_01_split.png", 1920, 1080),
-		owner->GetTileset("Story/test/break_01_line.png", 1920, 1080), 0,Vector2f(960, 540));
+	testIm1->SetSplit(sess->GetTileset("Story/test/break_01_split.png", 1920, 1080),
+		sess->GetTileset("Story/test/break_01_line.png", 1920, 1080), 0,Vector2f(960, 540));
 	testIm1->SetBG(GetBG("anim1"));
 
 
-	FlashedImage *testIm2 = AddFlashedImage("break_02", owner->GetTileset("Story/test/break_02.png", 1920, 1080),
+	FlashedImage *testIm2 = AddFlashedImage("break_02", sess->GetTileset("Story/test/break_02.png", 1920, 1080),
 		0, 0, 0, 0, Vector2f(960, 540));
-	testIm2->SetSplit(owner->GetTileset("Story/test/break_02_split.png", 1920, 1080),
-		owner->GetTileset("Story/test/break_02_line.png", 1920, 1080), 0, Vector2f(960, 540));
+	testIm2->SetSplit(sess->GetTileset("Story/test/break_02_split.png", 1920, 1080),
+		sess->GetTileset("Story/test/break_02_line.png", 1920, 1080), 0, Vector2f(960, 540));
 
-	FlashedImage *testIm3 = AddFlashedImage("break_03", owner->GetTileset("Story/test/break_03.png", 1920, 1080),
+	FlashedImage *testIm3 = AddFlashedImage("break_03", sess->GetTileset("Story/test/break_03.png", 1920, 1080),
 		0, 0, 0, 0, Vector2f(960, 540));
-	testIm3->SetSplit(owner->GetTileset("Story/test/break_03_split.png", 1920, 1080),
-		owner->GetTileset("Story/test/break_03_line.png", 1920, 1080), 0, Vector2f(960, 540));
+	testIm3->SetSplit(sess->GetTileset("Story/test/break_03_split.png", 1920, 1080),
+		sess->GetTileset("Story/test/break_03_line.png", 1920, 1080), 0, Vector2f(960, 540));
 	
 
-	FlashedImage *testIm4 = AddFlashedImage("break_04", owner->GetTileset("Story/test/break_04.png", 1920, 1080),
+	FlashedImage *testIm4 = AddFlashedImage("break_04", sess->GetTileset("Story/test/break_04.png", 1920, 1080),
 		0, 0, 0, 0, Vector2f(960, 540));
-	testIm4->SetSplit(owner->GetTileset("Story/test/break_04_split.png", 1920, 1080),
-		owner->GetTileset("Story/test/break_04_line.png", 1920, 1080), 0, Vector2f(960, 540));
+	testIm4->SetSplit(sess->GetTileset("Story/test/break_04_split.png", 1920, 1080),
+		sess->GetTileset("Story/test/break_04_line.png", 1920, 1080), 0, Vector2f(960, 540));
 	testIm4->SetBG(GetBG("anim1"));
 
-	FlashedImage *testIm5 = AddFlashedImage("break_05", owner->GetTileset("Story/test/break_05.png", 1920, 1080),
+	FlashedImage *testIm5 = AddFlashedImage("break_05", sess->GetTileset("Story/test/break_05.png", 1920, 1080),
 		0, 0, 240, 0, Vector2f(960, 540));
 
 	group->SetBG(bgs["anim1"]);
@@ -140,14 +140,14 @@ void CoyoteSleepScene::AddFlashes()
 
 void CoyoteSleepScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 }
 
 void CoyoteSleepScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -178,8 +178,8 @@ void CoyoteSleepScene::SetEntranceShot()
 	SetCameraShot("sleepcam");
 }
 
-CoyotePreFightScene::CoyotePreFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+CoyotePreFightScene::CoyotePreFightScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 	SetEntranceIndex(1);
 }
@@ -193,7 +193,7 @@ void CoyotePreFightScene::SetupStates()
 	stateLength[COYOTECONV] = -1;
 	stateLength[COYOTEFACES] = -1;
 
-	CoyotePostFightScene *scene = new CoyotePostFightScene(owner);
+	CoyotePostFightScene *scene = new CoyotePostFightScene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -223,13 +223,13 @@ void CoyotePreFightScene::AddFlashes()
 {
 	int togetherFrames = 5;
 
-	AddFlashedImage("stare0", owner->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare1", owner->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
+	AddFlashedImage("stare1", sess->GetTileset("Bosses/Coyote/Coy_10b.png", 1920, 1080),
 		0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("stare2", owner->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+	AddFlashedImage("stare2", sess->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
@@ -241,14 +241,14 @@ void CoyotePreFightScene::AddFlashes()
 
 void CoyotePreFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 }
 
 void CoyotePreFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -278,15 +278,15 @@ void CoyotePreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 	}
 }
 
-CoyotePostFightScene::CoyotePostFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+CoyotePostFightScene::CoyotePostFightScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -303,7 +303,7 @@ void CoyotePostFightScene::SetupStates()
 
 void CoyotePostFightScene::ReturnToGame()
 {
-	owner->cam.EaseOutOfManual(60);
+	sess->cam.EaseOutOfManual(60);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 	BasicBossScene::ReturnToGame();
 }
@@ -336,7 +336,7 @@ void CoyotePostFightScene::AddGroups()
 
 void CoyotePostFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -344,17 +344,17 @@ void CoyotePostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide(fadeFrames);
+				sess->adventureHUD->Hide(fadeFrames);
 				//player->Wait();
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 		}
 	case WAIT:
 		if (frame == 0)
 		{
-			owner->TotalDissolveGates(Gate::BOSS);
+			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		//EntranceUpdate();
 		break;
@@ -373,8 +373,8 @@ void CoyotePostFightScene::UpdateState()
 	}
 }
 
-CoyoteAndSkeletonScene::CoyoteAndSkeletonScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+CoyoteAndSkeletonScene::CoyoteAndSkeletonScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 	SetEntranceIndex(2);
 }
@@ -420,11 +420,11 @@ void CoyoteAndSkeletonScene::AddFlashes()
 
 	int holdFrames = scrollFrames + 60;
 
-	AddFlashedImage("screen0", owner->GetTileset("Bosses/Coyote/Coy_Pan_02a.png", 1920, 1080),
+	AddFlashedImage("screen0", sess->GetTileset("Bosses/Coyote/Coy_Pan_02a.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540))
 		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);
 
-	AddFlashedImage("screen1", owner->GetTileset("Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
+	AddFlashedImage("screen1", sess->GetTileset("Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080))
 		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);;
 	
@@ -432,14 +432,14 @@ void CoyoteAndSkeletonScene::AddFlashes()
 
 void CoyoteAndSkeletonScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 }
 
 void CoyoteAndSkeletonScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:

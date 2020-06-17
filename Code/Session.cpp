@@ -19,6 +19,7 @@
 #include "HUD.h"
 #include "Fader.h"
 #include "AbsorbParticles.h"
+#include "Barrier.h"
 
 //#include "Enemy_Shard.h"
 
@@ -1245,7 +1246,11 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	swiper = mainMenu->swiper;
 
 	numGates = 0;
+	drain = true;
+	goalDestroyed = false;
+	playerAndEnemiesFrozen = false;
 
+	originalMusic = NULL;
 	adventureHUD = NULL;
 	gateMarkers = NULL;
 
@@ -3961,4 +3966,94 @@ void Session::ResetGates()
 	{
 		gates[i]->Reset();
 	}
+}
+
+void Session::ResetBarriers()
+{
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+}
+
+void Session::AddBarrier(XBarrierParams *xbp)
+{
+	const std::string &xbpName = xbp->GetName();
+	Barrier *b = new Barrier(xbpName, true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
+
+	barrierMap[xbpName] = b;
+	barriers.push_back(b);
+}
+
+void Session::Fade(bool in, int frames, sf::Color c, bool skipKin)
+{
+	fader->Fade(in, frames, c, skipKin);
+}
+
+void Session::CrossFade(int fadeOutFrames,
+	int pauseFrames, int fadeInFrames,
+	sf::Color c, bool skipKin)
+{
+	fader->CrossFade(fadeOutFrames, pauseFrames, fadeInFrames, c, skipKin);
+}
+
+void Session::ClearFade()
+{
+	fader->Clear();
+}
+
+bool Session::IsFading()
+{
+	return fader->IsFading();
+}
+
+void Session::TotalDissolveGates(int gCat)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->TotalDissolve();
+	}
+}
+
+void Session::ReverseDissolveGates(int gCat)
+{
+	Gate *g;
+	for (int i = 0; i < numGates; ++i)
+	{
+		g = gates[i];
+		g->ReverseDissolve();
+	}
+}
+
+void Session::SetDrainOn(bool d)
+{
+	drain = d;
+}
+
+void Session::RemoveAllEnemies()
+{
+	Enemy *curr = activeEnemyList;
+	while (curr != NULL)
+	{
+		Enemy *next = curr->next;
+
+		if (curr->type != EnemyType::EN_GOAL && curr->type != EnemyType::EN_NEXUS)
+		{
+			RemoveEnemy(curr);
+			//curr->health = 0;
+		}
+		curr = next;
+	}
+}
+
+void Session::FreezePlayerAndEnemies(bool freeze)
+{
+	playerAndEnemiesFrozen = freeze;
+}
+
+int Session::GetGameSessionState()
+{
+	return GameSession::RUN;
 }

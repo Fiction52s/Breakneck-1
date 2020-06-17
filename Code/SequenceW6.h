@@ -23,7 +23,7 @@ struct EnterFortressScene : BasicBossScene
 		Count
 	};
 
-	EnterFortressScene(GameSession *owner);
+	EnterFortressScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -46,7 +46,7 @@ struct TigerAndBirdTunnelScene : BasicBossScene
 		Count
 	};
 
-	TigerAndBirdTunnelScene(GameSession *owner);
+	TigerAndBirdTunnelScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -68,7 +68,7 @@ struct SkeletonPreFightScene : BasicBossScene
 		Count
 	};
 
-	SkeletonPreFightScene(GameSession *owner);
+	SkeletonPreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -95,7 +95,7 @@ struct SkeletonPostFightScene : BasicBossScene
 		Count
 	};
 
-	SkeletonPostFightScene(GameSession *owner);
+	SkeletonPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -120,7 +120,7 @@ struct TigerPreFight2Scene : BasicBossScene
 		Count
 	};
 
-	TigerPreFight2Scene(GameSession *owner);
+	TigerPreFight2Scene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -143,7 +143,7 @@ struct TigerPostFight2Scene : BasicBossScene
 		Count
 	};
 
-	TigerPostFight2Scene(GameSession *owner);
+	TigerPostFight2Scene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

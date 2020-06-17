@@ -7,8 +7,8 @@
 using namespace std;
 using namespace sf;
 
-ShipExitScene::ShipExitScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+ShipExitScene::ShipExitScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 	enterTime = 60;
 	exitTime = 60 + 60;
@@ -19,7 +19,7 @@ ShipExitScene::ShipExitScene(GameSession *p_owner)
 	shipMovement.AddLineMovement(V2d(0, 0),
 		V2d(0, 0), CubicBezier(0, 0, 1, 1), exitTime);
 
-	ts_ship = owner->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
+	ts_ship = sess->GetTileset("Ship/ship_exit_864x540.png", 864, 540);
 	shipSprite.setTexture(*ts_ship->texture);
 	shipSprite.setTextureRect(ts_ship->GetSubRect(0));
 	shipSprite.setOrigin(421, 425);
@@ -53,7 +53,7 @@ void ShipExitScene::ReturnToGame()
 
 void ShipExitScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case SHIP_SWOOP:
@@ -66,13 +66,13 @@ void ShipExitScene::UpdateState()
 
 		if (frame == 0)
 		{
-			owner->cam.SetManual(true);
-			center.movementList->start = V2d(owner->cam.pos.x, owner->cam.pos.y);
-			center.movementList->end = V2d(owner->GetPlayer(0)->position.x,
-				owner->GetPlayer(0)->position.y - 200);
+			sess->cam.SetManual(true);
+			center.movementList->start = V2d(sess->cam.pos.x, sess->cam.pos.y);
+			center.movementList->end = V2d(sess->GetPlayer(0)->position.x,
+				sess->GetPlayer(0)->position.y - 200);
 
 			center.Reset();
-			owner->cam.SetMovementSeq(&center, false);
+			sess->cam.SetMovementSeq(&center, false);
 
 			abovePlayer = V2d(player->position.x, player->position.y - 300);
 
@@ -85,12 +85,12 @@ void ShipExitScene::UpdateState()
 			m->start = abovePlayer;
 			m->end = abovePlayer + V2d(1500, -900) + V2d(1500, -900);
 
-			origPlayer = owner->GetPlayer(0)->position;
+			origPlayer = sess->GetPlayer(0)->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
 		}
 		else  if (frame == startGrabWire)
 		{
-			owner->GetPlayer(0)->GrabShipWire();
+			sess->GetPlayer(0)->GrabShipWire();
 		}
 
 		for (int i = 0; i < NUM_MAX_STEPS; ++i)
@@ -103,7 +103,7 @@ void ShipExitScene::UpdateState()
 
 		if (frame > enterTime)
 		{
-			owner->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
+			sess->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
 		}
 		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
 		{
@@ -114,18 +114,18 @@ void ShipExitScene::UpdateState()
 									//cout << "a: " << a << endl;
 			V2d pAttachPoint = attachPoint;
 			pAttachPoint.y += 48.f;
-			owner->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
+			sess->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
 		}
 
 		if (shipMovement.currMovement == NULL)
 		{
 			frame = stateLength[SHIP_SWOOP] - 1;
-			owner->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
+			sess->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 		}
 
 		if (frame == (enterTime + exitTime) - 60)
 		{
-			owner->Fade(false, 60, Color::Black);
+			sess->Fade(false, 60, Color::Black);
 		}
 
 		shipSprite.setPosition(shipMovement.position.x,

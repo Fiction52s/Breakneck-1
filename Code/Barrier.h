@@ -8,11 +8,11 @@ struct GameSession;
 struct BarrierCallback;
 struct Edge;
 struct Sequence;
+struct Session;
 
 struct Barrier
 {
-	Barrier(GameSession *owner,
-		const std::string &p_name,
+	Barrier(const std::string &p_name,
 		bool p_x, int pos, bool hasEdge,
 		BarrierCallback *cb);
 	~Barrier();
@@ -30,7 +30,7 @@ struct Barrier
 	//void SetSequence( )
 	std::string name;
 	BarrierCallback *callback;
-	GameSession *owner;
+	Session *sess;
 	
 	bool x; //false means y
 	bool triggered;

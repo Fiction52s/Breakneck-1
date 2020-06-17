@@ -356,8 +356,7 @@ struct GameSession : RayCastHandler, Session
 	Sequence *getShardSeq;
 	Sequence *deathSeq;
 	RaceFight *raceFight;
-	MusicInfo *originalMusic;
-	std::map<std::string, MusicInfo*> musicMap;
+	
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
 	GoalPulse *goalPulse;
 	GoalFlow *goalFlow;
@@ -369,16 +368,11 @@ struct GameSession : RayCastHandler, Session
 	int totalRails;
 	ShipExitScene *shipExitScene;
 	ShipEnterScene *shipEnterScene;
-	std::list<Edge*> globalBorderEdges;
+	
 	std::list<boost::filesystem::path> bonusPaths;
 
 	//for queries
-	
 	PolyPtr inversePoly;
-	
-	
-	sf::View view; //need to be added to session
-	
 	
 	//raycast temps
 	sf::Vector2<double> rayStart;
@@ -387,9 +381,6 @@ struct GameSession : RayCastHandler, Session
 	double rcQuantity;
 	Edge *rayIgnoreEdge;
 	Edge *rayIgnoreEdge1;
-	
-	
-
 	
 	ShapeEmitter *testEmit;
 	std::list<DecorDraw*> decorBetween;
@@ -415,19 +406,16 @@ struct GameSession : RayCastHandler, Session
 	std::list<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
 	
-	bool drain;
+	
 	State state;
 	bool quit;
 	bool boostIntro;
 	InputVisualizer *inputVis;
 	Level *level;
-	bool playerAndEnemiesFrozen;
+	
 	EnvPlant *activeEnvPlants;
 	int totalFramesBeforeGoal;
-	std::map<std::string, PoiInfo*> poiMap;
-	std::map<std::string, CameraShot*> cameraShotMap;
-	std::map<std::string, Barrier*> barrierMap;
-	std::list<Barrier*> barriers;
+	
 	int m_numActivePlayers;
 	sf::Shader timeSlowShader; //actually time slow shader
 	
@@ -450,7 +438,7 @@ struct GameSession : RayCastHandler, Session
 	
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
-	bool goalDestroyed;
+	
 	GameResultType resType;
 	sf::Sprite kinMapSpawnIcon;
 	ShapeEmitter *emitterLists[EffectLayer::Count];
@@ -521,12 +509,7 @@ struct GameSession : RayCastHandler, Session
 	void Cleanup();
 
 	//fader
-	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
-	void CrossFade(int fadeOutFrames,
-		int pauseFrames, int fadeInFrames,
-		sf::Color c, bool skipKin = false);
-	bool IsFading();
-	void ClearFade();
+	
 
 	
 	PolyPtr GetPolygon(int index);
@@ -616,7 +599,7 @@ struct GameSession : RayCastHandler, Session
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
 	void TriggerBarrier( Barrier *b );
-	void RemoveAllEnemies();
+	
 	void UpdateEnemiesPrePhysics();
 	void UpdatePhysics();
 	void UpdateEnemiesPostPhysics();
@@ -630,13 +613,11 @@ struct GameSession : RayCastHandler, Session
 	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
 	SaveFile *GetCurrentProgress();
-	bool HasPowerUnlocked( int pIndex );
-	void FreezePlayerAndEnemies( bool freeze );
+	
 	void SoftenGates(int gCat);
 	void ReformGates(int gCat );
 	void OpenGates(int gCat);
-	void TotalDissolveGates(int gCat);
-	void ReverseDissolveGates(int gCat);
+
 	void CloseGates(int gCat);
 	void UpdateInput();
 	void KeyboardUpdate( int index );
@@ -671,6 +652,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateEnvPlants();
 	void UpdateBackAndStartButtons();
 	void QueryToSpawnEnemies();
-	
+	void SetGameSessionState(int s);
+	int GetGameSessionState();
 };
 #endif

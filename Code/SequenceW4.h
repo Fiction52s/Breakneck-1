@@ -14,7 +14,7 @@ struct CrawlerPreFight2Scene : BasicBossScene
 		Count
 	};
 
-	CrawlerPreFight2Scene(GameSession *owner);
+	CrawlerPreFight2Scene();
 
 	void SetupStates();
 	void SetEntranceShot();
@@ -38,7 +38,7 @@ struct CrawlerPostFight2Scene : BasicBossScene
 		Count
 	};
 
-	CrawlerPostFight2Scene(GameSession *owner);
+	CrawlerPostFight2Scene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -63,7 +63,7 @@ struct TigerPreFightScene : BasicBossScene
 		Count
 	};
 
-	TigerPreFightScene(GameSession *owner);
+	TigerPreFightScene();
 
 	void SetupStates();
 	bool IsAutoRunState();
@@ -88,7 +88,7 @@ struct TigerPostFightScene : BasicBossScene
 		Count
 	};
 
-	TigerPostFightScene(GameSession *owner);
+	TigerPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -111,7 +111,7 @@ struct BirdTigerAllianceScene : BasicBossScene
 		Count
 	};
 
-	BirdTigerAllianceScene(GameSession *owner);
+	BirdTigerAllianceScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -136,7 +136,7 @@ struct BirdVSTigerScene : BasicBossScene
 		Count
 	};
 
-	BirdVSTigerScene(GameSession *owner);
+	BirdVSTigerScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

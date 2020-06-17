@@ -10,6 +10,7 @@ struct TextDisp;
 struct Conversation;
 struct ConversationGroup;
 struct Nexus;
+struct Session;
 
 struct CrawlerAttackSeq : BasicBossScene
 {
@@ -28,7 +29,7 @@ struct CrawlerAttackSeq : BasicBossScene
 		Count
 	};
 
-	CrawlerAttackSeq(GameSession *owner);
+	CrawlerAttackSeq();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -59,7 +60,7 @@ struct AfterCrawlerFightSeq : BasicBossScene
 		Count
 	};
 
-	AfterCrawlerFightSeq(GameSession *owner);
+	AfterCrawlerFightSeq();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -84,14 +85,14 @@ struct NexusCore1Seq : Sequence
 
 	State state;
 	int stateLength[Count];
-	NexusCore1Seq(GameSession *owner);
+	NexusCore1Seq();
 	~NexusCore1Seq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	GameSession *owner;
+	Session *sess;
 
 	sfe::Movie mov;
 
@@ -116,7 +117,7 @@ struct GetAirdashPowerScene : BasicBossScene
 
 	State state;
 	int stateLength[Count];
-	GetAirdashPowerScene(GameSession *owner);
+	GetAirdashPowerScene();
 	//bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
@@ -163,7 +164,7 @@ struct GetAirdashPowerSeq : Sequence
 
 	State state;
 	int stateLength[Count];
-	GetAirdashPowerSeq(GameSession *owner);
+	GetAirdashPowerSeq();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
@@ -177,7 +178,7 @@ struct GetAirdashPowerSeq : Sequence
 
 	sfe::Movie mov;
 
-	GameSession *owner;
+	Session *sess;
 };
 
 struct TextTestSeq : Sequence
@@ -189,7 +190,7 @@ struct TextTestSeq : Sequence
 		Count
 	};
 
-	TextTestSeq(GameSession *owner);
+	TextTestSeq();
 	~TextTestSeq();
 	State state;
 	int stateLength[Count];
@@ -206,7 +207,7 @@ struct TextTestSeq : Sequence
 	int gIndex;
 	int cIndex;
 
-
+	Session *sess;
 	int frame;
 
 	sf::Text sceneLabel;

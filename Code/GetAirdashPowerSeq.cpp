@@ -33,13 +33,13 @@ using namespace std;
 
 #define TIMESTEP (1.0 / 60.0)
 
-GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
-	:owner(p_owner)
+GetAirdashPowerSeq::GetAirdashPowerSeq()
 {
+	sess = Session::GetSession();
 	assert(mov.openFromFile("Resources/Movie/kin_meditate_01.ogv"));
 	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
 
-	sceneMusic = owner->mainMenu->musicManager->songMap["w1_26_Edge"];
+	sceneMusic = sess->mainMenu->musicManager->songMap["w1_26_Edge"];
 	sceneMusic->Load();
 
 	stateLength[KIN_KNEELING] = 60;
@@ -60,7 +60,7 @@ GetAirdashPowerSeq::GetAirdashPowerSeq(GameSession *p_owner)
 
 bool GetAirdashPowerSeq::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -76,7 +76,7 @@ bool GetAirdashPowerSeq::Update()
 
 	if (state == END)
 	{
-		owner->mainMenu->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+		sess->mainMenu->musicPlayer->TransitionMusic(sess->originalMusic, 60);
 		return false;
 	}
 
@@ -87,9 +87,9 @@ bool GetAirdashPowerSeq::Update()
 	case KIN_KNEELING:
 		if (frame == 0)
 		{
-			owner->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
+			sess->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
 			//owner->cam.SetManual(true);
-			owner->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
+			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
 			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
 			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
 				player->dirtyAuraSprite.getLocalBounds().height / 2);
@@ -109,18 +109,18 @@ bool GetAirdashPowerSeq::Update()
 	case FADE_BACKGROUND:
 		if (frame == 0)
 		{
-			owner->Fade(false, 60, Color::Black, true);
+			sess->Fade(false, 60, Color::Black, true);
 		}
 		else if (frame == stateLength[FADE_BACKGROUND]-1)
 		{
-			owner->state = GameSession::SEQUENCE;
+			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 		break;
 	case EXPEL_ENERGY:
 	{
 		if (frame == 0)
 		{
-			owner->ClearFade();
+			sess->ClearFade();
 		}
 
 			int f = 60 - 3 * 10;
@@ -171,10 +171,10 @@ bool GetAirdashPowerSeq::Update()
 			{
 				frame = stateLength[PLAYMOVIE] - 1;
 
-				owner->state = GameSession::RUN;
-				owner->Fade(true, 60, Color::Black, true);
-				owner->adventureHUD->Show(60);
-				owner->mainMenu->GetCurrentProgress()
+				sess->SetGameSessionState(GameSession::RUN);
+				sess->Fade(true, 60, Color::Black, true);
+				sess->adventureHUD->Show(60);
+				sess->mainMenu->GetCurrentProgress()
 					->UnlockUpgrade(Actor::UpgradeType::UPGRADE_POWER_AIRDASH);
 			}
 		}
@@ -195,7 +195,7 @@ bool GetAirdashPowerSeq::Update()
 		else if (frame == stateLength[FADE_BACK] - 1)
 		{
 			cout << "set easting out of manual" << endl;
-			owner->cam.EaseOutOfManual(120);
+			sess->cam.EaseOutOfManual(120);
 		}
 		
 		
@@ -210,9 +210,9 @@ bool GetAirdashPowerSeq::Update()
 	player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x, 
 		player->sprite->getPosition().y - 32));
 
-	if (owner->state == GameSession::SEQUENCE)
+	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{
-		owner->totalGameFrames++;
+		sess->totalGameFrames++;
 		player->UpdatePrePhysics();
 		player->UpdatePostPhysics();
 	}
@@ -239,9 +239,9 @@ void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 		return;
 	}
 
-	if (owner->state == GameSession::SEQUENCE)
+	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{
-		target->setView(owner->uiView);
+		target->setView(sess->uiView);
 		/*sf::View v = target->getView();
 		target->setView(owner->uiView);*/
 
@@ -261,10 +261,10 @@ void GetAirdashPowerSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 
 
-		target->setView(owner->view);
+		target->setView(sess->view);
 
 
-		owner->GetPlayer(0)->Draw(target);
+		sess->GetPlayer(0)->Draw(target);
 	}
 }
 void GetAirdashPowerSeq::Reset()

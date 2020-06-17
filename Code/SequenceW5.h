@@ -13,7 +13,7 @@ struct BirdPreFight2Scene : BasicBossScene
 		Count
 	};
 
-	BirdPreFight2Scene(GameSession *owner);
+	BirdPreFight2Scene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -36,7 +36,7 @@ struct BirdPostFight2Scene : BasicBossScene
 		Count
 	};
 
-	BirdPostFight2Scene(GameSession *owner);
+	BirdPostFight2Scene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -58,7 +58,7 @@ struct GatorPreFightScene : BasicBossScene
 		Count
 	};
 
-	GatorPreFightScene(GameSession *owner);
+	GatorPreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -83,7 +83,7 @@ struct GatorPostFightScene : BasicBossScene
 		Count
 	};
 
-	GatorPostFightScene(GameSession *owner);
+	GatorPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -106,7 +106,7 @@ struct BirdTigerApproachScene : BasicBossScene
 		Count
 	};
 
-	BirdTigerApproachScene(GameSession *owner);
+	BirdTigerApproachScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

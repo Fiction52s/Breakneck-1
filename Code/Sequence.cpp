@@ -1,4 +1,4 @@
-#include "GameSession.h"
+#include "Session.h"
 #include <fstream>
 #include <iostream>
 #include <assert.h>
@@ -44,85 +44,85 @@ using namespace std;
 
 #define TIMESTEP (1.0 / 60.0)
 
-BasicBossScene *BasicBossScene::CreateScene(GameSession *owner, const std::string &name)
+BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 {
 	BasicBossScene *bScene = NULL;
 	if (name == "birdscene0")
 	{
-		bScene = new BirdPreFightScene(owner);
+		bScene = new BirdPreFightScene;
 	}
 	if (name == "birdscene1")
 	{
-		bScene = new BirdPreFight2Scene(owner);
+		bScene = new BirdPreFight2Scene;
 	}
 	else if (name == "crawlerscene0")
 	{
-		bScene = new CrawlerAttackSeq(owner);
+		bScene = new CrawlerAttackSeq;
 	}
 	else if (name == "birdcrawleralliance")
 	{
-		bScene = new BirdCrawlerAllianceScene(owner);
+		bScene = new BirdCrawlerAllianceScene;
 	}
 	else if (name == "birdtigerapproach")
 	{
-		bScene = new BirdTigerApproachScene(owner);
+		bScene = new BirdTigerApproachScene;
 	}
 	else if (name == "coyotescene0")
 	{
-		bScene = new CoyoteSleepScene(owner);
+		bScene = new CoyoteSleepScene;
 	}
 	else if (name == "coyotescene1")
 	{
-		bScene = new CoyotePreFightScene(owner);
+		bScene = new CoyotePreFightScene;
 	}
 	else if (name == "coyotescene2")
 	{
-		bScene = new CoyoteAndSkeletonScene(owner);
+		bScene = new CoyoteAndSkeletonScene;
 	}
 	else if (name == "crawlerscene2")
 	{
-		bScene = new CrawlerPreFight2Scene(owner);
+		bScene = new CrawlerPreFight2Scene;
 	}
 	else if (name == "tigerscene0")
 	{
-		bScene = new TigerPreFightScene(owner);
+		bScene = new TigerPreFightScene;
 	}
 	else if (name == "birdtigervsscene")
 	{
-		bScene = new BirdVSTigerScene(owner);
+		bScene = new BirdVSTigerScene;
 	}
 	else if (name == "gatorscene0")
 	{
-		bScene = new GatorPreFightScene(owner);
+		bScene = new GatorPreFightScene;
 	}
 	else if (name == "birdchase")
 	{
-		bScene = new BirdChaseScene(owner);
+		bScene = new BirdChaseScene;
 	}
 	else if (name == "birdfinalfight")
 	{
-		bScene = new BirdPreFight3Scene(owner);
+		bScene = new BirdPreFight3Scene;
 		
 	}
 	else if (name == "finalskeletonfight")
 	{
-		bScene = new FinalSkeletonPreFightScene(owner);
+		bScene = new FinalSkeletonPreFightScene;
 	}
 	else if (name == "enterfortress")
 	{
-		bScene = new TigerAndBirdTunnelScene(owner);
+		bScene = new TigerAndBirdTunnelScene;
 	}
 	else if( name == "tigerbirdtunnel")
 	{
-		bScene = new TigerAndBirdTunnelScene(owner);
+		bScene = new TigerAndBirdTunnelScene;
 	}
 	else if (name == "skeletonfight")
 	{
-		bScene = new SkeletonPreFightScene(owner);
+		bScene = new SkeletonPreFightScene;
 	}
 	else if (name == "tigerfight2")
 	{
-		bScene = new TigerPreFight2Scene(owner);
+		bScene = new TigerPreFight2Scene;
 	}
 	else
 	{
@@ -667,10 +667,10 @@ Tileset * SceneBG::GetCurrTileset(int frame)
 //
 //}
 
-BasicBossScene::BasicBossScene(GameSession *p_owner,
+BasicBossScene::BasicBossScene(
 	EntranceType et )
-	:owner(p_owner)
 {
+	sess = Session::GetSession();
 	entranceType = et;
 	barrier = NULL;
 	currConvGroup = NULL;
@@ -809,7 +809,7 @@ void BasicBossScene::UpdateMovie()
 	sfe::Status movStatus = currMovie->getStatus();
 	if (frame == 0)
 	{
-		currMovie->setVolume(owner->mainMenu->config->GetData().musicVolume);
+		currMovie->setVolume(sess->mainMenu->config->GetData().musicVolume);
 		currMovie->setPlayingOffset(sf::Time::Zero);
 		currMovie->play();
 	}
@@ -819,7 +819,7 @@ void BasicBossScene::UpdateMovie()
 		{
 			currMovie->update();
 
-			if (owner->GetCurrInput(0).A)
+			if (sess->GetCurrInput(0).A)
 			{
 				currMovie->pause();
 			}
@@ -836,16 +836,16 @@ void BasicBossScene::UpdateMovie()
 			else
 			{
 				frame = stateLength[state] - movieFadeFrames;
-				owner->Fade(false, movieFadeFrames, movieFadeColor);
+				sess->Fade(false, movieFadeFrames, movieFadeColor);
 			}
 		}
 
 		if (frame == stateLength[state] - 1)
 		{
-			if (owner->originalMusic != NULL)
+			if (sess->originalMusic != NULL)
 			{
-				MainMenu *mm = owner->mainMenu;
-				mm->musicPlayer->TransitionMusic(owner->originalMusic, 60);
+				MainMenu *mm = sess->mainMenu;
+				mm->musicPlayer->TransitionMusic(sess->originalMusic, 60);
 			}
 		}
 	}
@@ -855,7 +855,7 @@ void BasicBossScene::AddEnemy(const std::string &enName, Enemy *e)
 {
 	assert(enemies.count(enName) == 0);
 
-	owner->fullEnemyList.push_back(e);
+	sess->fullEnemyList.push_back(e);
 	enemies[enName] = e;
 }
 
@@ -890,12 +890,12 @@ void BasicBossScene::AddGroup(const std::string &groupName, const std::string &f
 
 void BasicBossScene::AddShot(const std::string &shotName)
 {
-	shots[shotName] = owner->cameraShotMap[shotName];
+	shots[shotName] = sess->cameraShotMap[shotName];
 }
 
 void BasicBossScene::AddPoint(const std::string &poiName)
 {
-	points[poiName] = owner->poiMap[poiName];
+	points[poiName] = sess->poiMap[poiName];
 }
 
 void BasicBossScene::ConvUpdate()
@@ -906,11 +906,11 @@ void BasicBossScene::ConvUpdate()
 		conv->Show();
 	}
 
-	if (owner->GetCurrInput(0).A && !owner->GetPrevInput(0).A)
+	if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
 	{
 		conv->NextSection();
 	}
-	if (owner->GetCurrInput(0).B)
+	if (sess->GetCurrInput(0).B)
 	{
 		conv->SetRate(1, 5);
 	}
@@ -938,7 +938,7 @@ void BasicBossScene::ConvUpdate()
 
 void BasicBossScene::StartRunning()
 {
-	owner->SetPlayerInputOn(false);
+	sess->SetPlayerInputOn(false);
 }
 
 void BasicBossScene::StartEntranceRun(bool fr,
@@ -947,7 +947,7 @@ void BasicBossScene::StartEntranceRun(bool fr,
 {
 	PoiInfo *kinStart = points[n0];
 	PoiInfo *kinStop = points[n1];
-	owner->GetPlayer(0)->SetStoryRun(fr, maxSpeed, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
+	sess->GetPlayer(0)->SetStoryRun(fr, maxSpeed, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
 		kinStop->edgeQuantity);
 }
 
@@ -956,7 +956,7 @@ void BasicBossScene::StartEntranceStand(bool fr,
 {
 	PoiInfo *kinStand = points[n];
 	assert(kinStand->edge != NULL);
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	player->facingRight = fr;
 	player->SetGroundedPos(kinStand->edge, kinStand->edgeQuantity);
 	player->StandInPlace();
@@ -965,7 +965,7 @@ void BasicBossScene::StartEntranceStand(bool fr,
 void BasicBossScene::SetCameraShot(const std::string &n)
 {
 	CameraShot *shot = shots[n];
-	owner->cam.Set(shot->centerPos, shot->zoom, owner->cam.zoomLevel);
+	sess->cam.Set(shot->centerPos, shot->zoom, sess->cam.zoomLevel);
 }
 
 void BasicBossScene::SetEntranceRun()
@@ -1028,22 +1028,22 @@ void BasicBossScene::SetEntranceShot()
 
 void BasicBossScene::EntranceUpdate()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (entranceType == RUN)
 	{
 		if (frame == 0)
 		{
-			owner->Fade(false, fadeFrames, Color::Black);
-			owner->adventureHUD->Hide(fadeFrames);
+			sess->Fade(false, fadeFrames, Color::Black);
+			sess->adventureHUD->Hide(fadeFrames);
 			player->Wait();
-			owner->cam.SetManual(true);
+			sess->cam.SetManual(true);
 		}
 		else if (frame == fadeFrames)
 		{
 			barrier->Trigger();
-			owner->RemoveAllEnemies();
-			owner->Fade(true, fadeFrames, Color::Black);
+			sess->RemoveAllEnemies();
+			sess->Fade(true, fadeFrames, Color::Black);
 			SetEntranceShot();
 			SetEntranceRun();
 		}
@@ -1060,7 +1060,7 @@ void BasicBossScene::SetPlayerStandPoint(const std::string &n,
 	assert(points.count(n) == 1);
 
 	PoiInfo *pi = points[n];
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
 }
 
@@ -1072,9 +1072,9 @@ void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
 
 void BasicBossScene::ReturnToGame()
 {
-	owner->SetPlayerInputOn(true);
-	owner->adventureHUD->Show(60);
-	owner->cam.EaseOutOfManual(60);
+	sess->SetPlayerInputOn(true);
+	sess->adventureHUD->Show(60);
+	sess->cam.EaseOutOfManual(60);
 }
 
 bool BasicBossScene::IsAutoRunState()
@@ -1119,7 +1119,7 @@ void BasicBossScene::SetCurrMovie(const std::string &name, int movFadeFrames, Co
 
 bool BasicBossScene::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != numStates)
 	{
@@ -1177,7 +1177,7 @@ void BasicBossScene::EaseShot(const std::string &shotName, int frames,
 	assert(shots.count(shotName) == 1);
 
 	CameraShot *shot = shots[shotName];
-	owner->cam.Ease(Vector2f(shot->centerPos), shot->zoom, frames, bez);
+	sess->cam.Ease(Vector2f(shot->centerPos), shot->zoom, frames, bez);
 }
 
 void BasicBossScene::EasePoint(const std::string &pointName, float targetZoom, 
@@ -1186,7 +1186,7 @@ void BasicBossScene::EasePoint(const std::string &pointName, float targetZoom,
 	assert(points.count(pointName) == 1);
 
 	PoiInfo *pi = points[pointName];
-	owner->cam.Ease(Vector2f(pi->pos), targetZoom, frames, bez);
+	sess->cam.Ease(Vector2f(pi->pos), targetZoom, frames, bez);
 }
 
 void BasicBossScene::Flash(const std::string &flashName)
@@ -1266,7 +1266,7 @@ bool BasicBossScene::IsLastFrame()
 
 bool BasicBossScene::IsCamMoving()
 {
-	return owner->cam.easing;
+	return sess->cam.easing;
 }
 
 FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
@@ -1301,7 +1301,7 @@ void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 	}
 
 	View v = target->getView();
-	target->setView(owner->uiView);
+	target->setView(sess->uiView);
 
 	//temporarily have this here, eventually move the BGs as another thing you can have a bunch of in a sequence.
 	if (currFlashGroup != NULL)
@@ -1337,7 +1337,7 @@ void BasicBossScene::DrawFlashes(sf::RenderTarget *target)
 
 void BasicBossScene::Rumble(int x, int y, int duration)
 {
-	owner->cam.SetRumble(x, y, duration);
+	sess->cam.SetRumble(x, y, duration);
 }
 
 void BasicBossScene::RumbleDuringState(int x, int y)

@@ -118,7 +118,7 @@ Nexus::Nexus( ActorParams *ap)
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
-		insideSeq = new NexusCore1Seq(game);
+		insideSeq = new NexusCore1Seq;
 	}
 	else
 	{

@@ -48,7 +48,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	
 	if (game != NULL)
 	{
-		AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq(game);
+		AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq;
 		acfseq->Init();
 		seq = acfseq;
 	}

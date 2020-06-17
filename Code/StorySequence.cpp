@@ -72,31 +72,31 @@ void StoryText::Draw(sf::RenderTarget *target)
 
 //eventually make this the font manager
 StorySequence::StorySequence(sf::Font &font, TilesetManager *p_tm)
-	:tm(p_tm), myFont(font)
+	:tm(p_tm), myFont(&font)
 {
 	
 }
 
-StorySequence::StorySequence(GameSession *p_owner)
-	:owner( p_owner ), tm( p_owner ), myFont( p_owner->mainMenu->arial)
-
+StorySequence::StorySequence()
 {
-
+	sess = Session::GetSession();
+	tm = sess;
+	myFont = &sess->mainMenu->arial;
 }
 
 void StorySequence::EndSequence()
 {
 	if (seqName == "queenhurt")
 	{
-		owner->Fade(true, 60, Color::Black);
+		sess->Fade(true, 60, Color::Black);
 		
-		Actor *player = owner->GetPlayer(0);
+		Actor *player = sess->GetPlayer(0);
 		player->SeqAfterCrawlerFight();
 	}
 	else if (seqName == "kinhouse")
 	{
-		owner->barrierMap["test"]->Trigger();
-		owner->GetPlayer(0)->StandInPlace();
+		sess->barrierMap["test"]->Trigger();
+		sess->GetPlayer(0)->StandInPlace();
 		//owner->Fade(true, 60, Color::White);
 	}
 }
@@ -231,19 +231,16 @@ bool StorySequence::Load(const std::string &sequenceName)
 					sm->startTime = sf::seconds(musicStartTime);
 					sm->transitionSeconds = musicFadeTime;
 
-					if (owner != NULL)
+					if (sm != NULL)
 					{
-						if (sm != NULL)
+						sm->musicInfo = NULL;
+						sm->musicInfo = sess->mainMenu->musicManager->songMap[sm->musicName];
+						if (sm->musicInfo == NULL)
 						{
-							sm->musicInfo = NULL;
-							sm->musicInfo = owner->mainMenu->musicManager->songMap[sm->musicName];
-							if (sm->musicInfo == NULL)
-							{
-								assert(0);
-							}
-							sm->musicInfo->Load();
-							owner->musicMap[sm->musicName] = sm->musicInfo;
+							assert(0);
 						}
+						sm->musicInfo->Load();
+						sess->musicMap[sm->musicName] = sm->musicInfo;
 					}
 					sp->music = sm;
 				}
@@ -474,7 +471,7 @@ bool StorySequence::UpdateLayer(int layer, ControllerState &prev, ControllerStat
 		return false;
 	}
 
-	MainMenu *mm = owner->mainMenu;
+	MainMenu *mm = sess->mainMenu;
 	StoryPart *sp = (*layerCurrPartIt);
 	if ( !sp->musicStarted && sp->frame == 0)
 	{
@@ -626,7 +623,7 @@ void StoryPart::Draw(sf::RenderTarget *target)
 
 bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 {	
-	GameSession *owner = seq->owner;
+	Session *sess = seq->sess;
 
 	if (doingTransIn)
 	{
@@ -639,7 +636,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 		{
 			if (frame == 0)
 			{
-				owner->Fade(true, fadeInFrames, fadeInColor);
+				sess->Fade(true, fadeInFrames, fadeInColor);
 			}
 			++frame;
 		}
@@ -677,11 +674,11 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 	if (text != NULL)//&& text->Update())
 	{
 		//return true;
-		if (owner->GetCurrInput(0).A && !owner->GetPrevInput(0).A)
+		if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
 		{
 			text->NextSection();
 		}
-		if (owner->GetCurrInput(0).B)
+		if (sess->GetCurrInput(0).B)
 		{
 			text->SetRate(1, 5);
 		}
@@ -698,7 +695,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 			{
 				doingTransOut = true;
 				frame = 0;
-				seq->owner->Fade(true, fadeOutFrames, fadeOutColor);
+				seq->sess->Fade(true, fadeOutFrames, fadeOutColor);
 			//	seq->owner->CrossFade( 60, 60, 60, Color::Black );
 			}
 			else if (outType == O_BLEND)
@@ -737,7 +734,7 @@ bool StoryPart::Update(ControllerState &prev, ControllerState &curr)
 			{
 				doingTransOut = true;
 				frame = 0;
-				seq->owner->Fade(false, fadeOutFrames, fadeOutColor);
+				seq->sess->Fade(false, fadeOutFrames, fadeOutColor);
 				return true;
 			}
 			else if (outType == O_BLEND)

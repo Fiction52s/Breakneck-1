@@ -13,7 +13,7 @@ struct CoyoteSleepScene : BasicBossScene
 		Count
 	};
 
-	CoyoteSleepScene(GameSession *owner);
+	CoyoteSleepScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -37,7 +37,7 @@ struct CoyotePreFightScene : BasicBossScene
 		Count
 	};
 
-	CoyotePreFightScene(GameSession *owner);
+	CoyotePreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -62,7 +62,7 @@ struct CoyotePostFightScene : BasicBossScene
 		Count
 	};
 
-	CoyotePostFightScene(GameSession *owner);
+	CoyotePostFightScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
@@ -84,7 +84,7 @@ struct CoyoteAndSkeletonScene : BasicBossScene
 		Count
 	};
 
-	CoyoteAndSkeletonScene(GameSession *owner);
+	CoyoteAndSkeletonScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

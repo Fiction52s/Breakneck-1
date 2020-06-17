@@ -1,6 +1,6 @@
 #include "SequenceW7.h"
 #include "Actor.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "MainMenu.h"
 #include "Config.h"
 #include "MusicPlayer.h"
@@ -11,8 +11,8 @@
 using namespace std;
 using namespace sf;
 
-BirdChaseScene::BirdChaseScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+BirdChaseScene::BirdChaseScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -53,7 +53,7 @@ void BirdChaseScene::AddFlashes()
 
 void BirdChaseScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -62,7 +62,7 @@ void BirdChaseScene::ReturnToGame()
 
 void BirdChaseScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -81,8 +81,8 @@ void BirdChaseScene::UpdateState()
 }
 
 
-BirdPreFight3Scene::BirdPreFight3Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+BirdPreFight3Scene::BirdPreFight3Scene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 
 }
@@ -95,7 +95,7 @@ void BirdPreFight3Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELETONCONV] = -1;
 
-	BirdPostFight3Scene *scene = new BirdPostFight3Scene(owner);
+	BirdPostFight3Scene *scene = new BirdPostFight3Scene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -127,7 +127,7 @@ void BirdPreFight3Scene::AddFlashes()
 
 void BirdPreFight3Scene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -136,7 +136,7 @@ void BirdPreFight3Scene::ReturnToGame()
 
 void BirdPreFight3Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -150,14 +150,14 @@ void BirdPreFight3Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-BirdPostFight3Scene::BirdPostFight3Scene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+BirdPostFight3Scene::BirdPostFight3Scene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -173,8 +173,8 @@ void BirdPostFight3Scene::SetupStates()
 
 void BirdPostFight3Scene::ReturnToGame()
 {
-	owner->cam.EaseOutOfManual(60);
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->cam.EaseOutOfManual(60);
+	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -206,7 +206,7 @@ void BirdPostFight3Scene::AddGroups()
 
 void BirdPostFight3Scene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -214,10 +214,10 @@ void BirdPostFight3Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide(fadeFrames);
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->adventureHUD->Hide(fadeFrames);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 			else if (frame == 10)
 			{
@@ -236,8 +236,8 @@ void BirdPostFight3Scene::UpdateState()
 }
 
 
-FinalSkeletonPreFightScene::FinalSkeletonPreFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::RUN)
+FinalSkeletonPreFightScene::FinalSkeletonPreFightScene()
+	:BasicBossScene(BasicBossScene::RUN)
 {
 	SetEntranceIndex(1);
 }
@@ -250,7 +250,7 @@ void FinalSkeletonPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELETONCONV] = -1;
 
-	FinalSkeletonPostFightScene *scene = new FinalSkeletonPostFightScene(owner);
+	FinalSkeletonPostFightScene *scene = new FinalSkeletonPostFightScene;
 	scene->Init();
 	nextSeq = scene;
 }
@@ -288,7 +288,7 @@ void FinalSkeletonPreFightScene::AddFlashes()
 
 void FinalSkeletonPreFightScene::ReturnToGame()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
 
@@ -297,7 +297,7 @@ void FinalSkeletonPreFightScene::ReturnToGame()
 
 void FinalSkeletonPreFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case ENTRANCE:
@@ -311,14 +311,14 @@ void FinalSkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
-			owner->ReverseDissolveGates(Gate::BOSS);
+			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
 	}
 }
 
-FinalSkeletonPostFightScene::FinalSkeletonPostFightScene(GameSession *p_owner)
-	:BasicBossScene(p_owner, BasicBossScene::APPEAR)
+FinalSkeletonPostFightScene::FinalSkeletonPostFightScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -334,7 +334,7 @@ void FinalSkeletonPostFightScene::SetupStates()
 
 void FinalSkeletonPostFightScene::ReturnToGame()
 {
-	owner->TotalDissolveGates(Gate::BOSS);
+	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
 
@@ -366,7 +366,7 @@ void FinalSkeletonPostFightScene::AddGroups()
 
 void FinalSkeletonPostFightScene::UpdateState()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
 	case FADE:
@@ -374,10 +374,10 @@ void FinalSkeletonPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				owner->adventureHUD->Hide(fadeFrames);
-				owner->cam.SetManual(true);
-				MainMenu *mm = owner->mainMenu;
-				owner->CrossFade(10, 0, 60, Color::White);
+				sess->adventureHUD->Hide(fadeFrames);
+				sess->cam.SetManual(true);
+				MainMenu *mm = sess->mainMenu;
+				sess->CrossFade(10, 0, 60, Color::White);
 			}
 			else if (frame == 10)
 			{
@@ -385,6 +385,7 @@ void FinalSkeletonPostFightScene::UpdateState()
 				SetCameraShot("victorycam");
 			}
 		}
+		break;
 	case WAIT:
 		//EntranceUpdate();
 		break;

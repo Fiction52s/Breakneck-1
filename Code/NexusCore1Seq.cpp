@@ -31,9 +31,10 @@ using namespace std;
 
 #define TIMESTEP (1.0 / 60.0)
 
-NexusCore1Seq::NexusCore1Seq(GameSession *p_owner)
-	:owner(p_owner)
+NexusCore1Seq::NexusCore1Seq()
 {
+	sess = Session::GetSession();
+
 	SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
 	SetRectColor(darkQuad, Color(Color::Black));
 	
@@ -124,7 +125,7 @@ NexusCore1Seq::~NexusCore1Seq()
 
 bool NexusCore1Seq::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -140,11 +141,15 @@ bool NexusCore1Seq::Update()
 
 	if (state == END)
 	{
-		owner->Fade(true, 60, sf::Color::White);
-		owner->state = GameSession::RUN;
+		sess->Fade(true, 60, sf::Color::White);
+		sess->SetGameSessionState(GameSession::RUN);
 		player->SetAction(Actor::GOALKILLWAIT);
 		player->frame = 0;
-		owner->scoreDisplay->Activate();
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+			game->scoreDisplay->Activate();
+		}
 		return false;
 	}
 
@@ -155,19 +160,19 @@ bool NexusCore1Seq::Update()
 	case FADETOBLACK:
 		if (frame == 0)
 		{
-			owner->Fade(false, 30, sf::Color::Black);
+			sess->Fade(false, 30, sf::Color::Black);
 			//owner->ClearFade();
 		}
 		if (frame == stateLength[FADETOBLACK] - 1)
 		{
-			owner->state = GameSession::SEQUENCE;
+			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}
 		break;
 	case ENTERCORE:
 		
 		if (frame == 0)
 		{
-			owner->Fade(true, 30, sf::Color::Black);
+			sess->Fade(true, 30, sf::Color::Black);
 
 			//coreImages[0].loadFromFile(imageNames[0]);
 			
@@ -204,7 +209,7 @@ bool NexusCore1Seq::Update()
 			{
 				if (pos > sec - 2.0)
 				{
-					owner->Fade(true, 30, sf::Color::White);
+					sess->Fade(true, 30, sf::Color::White);
 				}
 				frame = stateLength[DESTROYCORE] - 1;
 
@@ -258,8 +263,12 @@ bool NexusCore1Seq::Update()
 	case EXITCORE:
 		if (frame == 0)
 		{
-			owner->Fade(false, 30, sf::Color::White);
-			owner->nexus->FinishDestruction();
+			sess->Fade(false, 30, sf::Color::White);
+			if (sess->IsSessTypeGame())
+			{
+				GameSession *game = GameSession::GetSession();
+				game->nexus->FinishDestruction();
+			}
 		}
 			
 		break;

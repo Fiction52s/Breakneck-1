@@ -1,5 +1,5 @@
 #include "GroundTrigger.h"
-#include "GameSession.h"
+#include "Session.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
@@ -32,57 +32,48 @@ GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRi
 	facingRight = gtParams->facingRight;
 	trigType = GetTriggerType(gtParams->typeStr);
 
+	sess = Session::GetSession();
+
 	ts = sess->GetSizedTileset("Ship/shipleave_128x128.png");
 	sprite.setTexture(*ts->texture);
 
 	storySeq = NULL;
 	gameSequence = NULL;
-	game = NULL;
+	
 
-	if (sess->IsSessTypeGame())
+	switch (trigType)
 	{
-		game = GameSession::GetSession();
-	}
-	else
-	{
-		game = NULL;
-	}
-
-	if( game != NULL )
-	{
-		switch (trigType)
+	case TRIGGER_HOUSEFAMILY:
+		//gameSequence = new MonumentSeq(game);
+		storySeq = new StorySequence;
+		storySeq->Load("kinhouse");
+		break;
+	case TRIGGER_GETAIRDASH:
+		sess->SetDrainOn(false);
+		if (sess->GetPlayer(0)->HasUpgrade( 
+			Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
 		{
-		case TRIGGER_HOUSEFAMILY:
-			//gameSequence = new MonumentSeq(game);
-			storySeq = new StorySequence(game);
-			storySeq->Load("kinhouse");
-			break;
-		case TRIGGER_GETAIRDASH:
-			game->drain = false;
-			if (game->HasPowerUnlocked(0))
-			{
-			}
-			else
-			{
-				gameSequence = new GetAirdashPowerScene(game);//GetAirdashPowerSeq(game);
-			}
-
-			//storySeq = new StorySequence(game);
-			//storySeq->Load("getairdash");
-			break;
-		case TRIGGER_DESTROYNEXUS1:
-			gameSequence = new NexusCore1Seq(game);
-			break;
-		case TRIGGER_CRAWLERATTACK:
-			gameSequence = new CrawlerAttackSeq(game);
-			break;
-		case TRIGGER_TEXTTEST:
-			gameSequence = new TextTestSeq(game);
-			//storySeq = new StorySequence(game);
-			//storySeq->Load("kinhouse");
-			//gameSequence = new TextTestSeq(game);
-			break;
 		}
+		else
+		{
+			gameSequence = new GetAirdashPowerScene;//GetAirdashPowerSeq(game);
+		}
+
+		//storySeq = new StorySequence(game);
+		//storySeq->Load("getairdash");
+		break;
+	case TRIGGER_DESTROYNEXUS1:
+		gameSequence = new NexusCore1Seq;
+		break;
+	case TRIGGER_CRAWLERATTACK:
+		gameSequence = new CrawlerAttackSeq;
+		break;
+	case TRIGGER_TEXTTEST:
+		gameSequence = new TextTestSeq;
+		//storySeq = new StorySequence(game);
+		//storySeq->Load("kinhouse");
+		//gameSequence = new TextTestSeq(game);
+		break;
 	}
 
 	SetOffGroundHeight(ts->tileHeight / 2.0 - 10);
@@ -119,7 +110,8 @@ void GroundTrigger::ResetEnemy()
 	{
 	case TRIGGER_GETAIRDASH:
 	{
-		if (game != NULL && game->HasPowerUnlocked(0))
+		if (sess->GetPlayer(0)->HasUpgrade(
+			Actor::UpgradeType::UPGRADE_POWER_AIRDASH) )
 		{
 			action = DONE;
 		}
