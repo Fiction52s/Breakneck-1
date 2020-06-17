@@ -389,9 +389,7 @@ struct GameSession : RayCastHandler, Session
 	Edge *rayIgnoreEdge1;
 	
 	
-	AbsorbParticles *absorbParticles;
-	AbsorbParticles *absorbDarkParticles;
-	AbsorbParticles *absorbShardParticles;
+
 	
 	ShapeEmitter *testEmit;
 	std::list<DecorDraw*> decorBetween;
@@ -530,7 +528,7 @@ struct GameSession : RayCastHandler, Session
 	bool IsFading();
 	void ClearFade();
 
-	void SetNumGates( int nGates );
+	
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();
@@ -560,7 +558,6 @@ struct GameSession : RayCastHandler, Session
 	void SetupShardsCapturedField();
 	void SetupShaders();
 	void SetupBackground();
-	void SetupAbsorbParticles();
 	void SetupScoreDisplay();
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
@@ -584,18 +581,18 @@ struct GameSession : RayCastHandler, Session
 	bool PlayerIsFacingRight(int index = 0);
 
 	//draw
-	void DrawHealthFlies(sf::RenderTarget *target);
+	
 	void DrawDecorBetween(sf::RenderTarget *target);
 
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
-	void DrawHitEnemies(sf::RenderTarget *target);
+	
 	void DrawDyingPlayers(sf::RenderTarget *target);
 	void DrawTopClouds( sf::RenderTarget *target );
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
-	void DrawGates(sf::RenderTarget *target);
+	
 	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
 	void DrawActiveSequence(EffectLayer layer, 
 		sf::RenderTarget *target);
@@ -606,7 +603,6 @@ struct GameSession : RayCastHandler, Session
 	void SetActiveSequence(Sequence *activeSeq);
 	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
 	void SetStorySeq(StorySequence *storySeq);
-	void CollectKey();
 	void SuppressEnemyKeys(Gate *g);
 	bool IsShardCaptured(int sType);
 	void TryCreateShardResources();
@@ -642,8 +638,6 @@ struct GameSession : RayCastHandler, Session
 	void TotalDissolveGates(int gCat);
 	void ReverseDissolveGates(int gCat);
 	void CloseGates(int gCat);
-	void UnlockGate(Gate *g);
-	void LockGate(Gate *g);
 	void UpdateInput();
 	void KeyboardUpdate( int index );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
@@ -668,7 +662,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawFlyTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);
-	void DrawEnemies(sf::RenderTarget *target);
 	void DrawGame(sf::RenderTexture *target);
 	void DrawRain(sf::RenderTarget *target);
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);

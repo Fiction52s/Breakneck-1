@@ -845,6 +845,8 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 
 		UpdateBackAndStartButtons();
 
+		UpdateZones();
+
 		/*if( player->record > 0 )
 		{
 		player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
@@ -1246,23 +1248,7 @@ void GameSession::Cleanup()
 		shardPop = NULL;
 	}
 
-	if (parentGame == NULL && absorbParticles != NULL)
-	{
-		delete absorbParticles;
-		absorbParticles = NULL;
-	}
-
-	if (parentGame == NULL && absorbDarkParticles != NULL)
-	{
-		delete absorbDarkParticles;
-		absorbDarkParticles = NULL;
-	}
-
-	if (parentGame == NULL && absorbShardParticles != NULL)
-	{
-		delete absorbShardParticles;
-		absorbShardParticles = NULL;
-	}
+	
 
 	if (parentGame == NULL && goalPulse != NULL)
 	{
@@ -1517,26 +1503,7 @@ void GameSession::UpdateInput()
 	}
 }
 
-void GameSession::DrawEnemies( sf::RenderTarget *target )
-{
-	Enemy *current = activeEnemyList;
-	while( current != NULL )
-	{
-	//	cout << "draw" << endl;
-		if( current->type != EnemyType::EN_BASICEFFECT && ( pauseFrames < 2 || current->receivedHit == NULL ) )
-		{
-			current->Draw(preScreenTex);
-		}
-		current = current->next;
-	}
 
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-	{
-		(*it)->CheckedZoneDraw(target, FloatRect(screenRect));
-	}
-
-	DrawHealthFlies(target);
-}
 
 void GameSession::UpdateEnemiesSprites()
 {
@@ -1587,12 +1554,6 @@ void GameSession::ProcessSpecialTerrain(PolyPtr poly)
 	}
 	//matSet.insert(make_pair(poly->terrainWorldType, poly->terrainVariation));
 	
-}
-
-void GameSession::SetNumGates(int nGates)
-{
-	gates.reserve(nGates);
-	numGates = nGates;
 }
 
 void GameSession::ProcessGate(int gCat,
@@ -2077,24 +2038,6 @@ bool GameSession::PlayerIsFacingRight(int index)
 	}
 }
 
-void GameSession::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
-	V2d &pos, float startAngle)
-{
-	switch (absorbType)
-	{
-	case AbsorbParticles::ENERGY:
-		absorbParticles->Activate( p, storedHits, pos, startAngle);
-		break;
-	case AbsorbParticles::DARK:
-		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
-		break;
-	case AbsorbParticles::SHARD:
-		absorbShardParticles->Activate(p, storedHits, pos, startAngle);
-		break;
-	}
-}
-
-
 void GameSession::SetupMapBorderQuads(bool *blackBorder,
 	bool &topBorderOn)
 {
@@ -2331,14 +2274,6 @@ void GameSession::KeyboardUpdate( int index )
 	}
 
 	GetCurrInput(index) = keyboardInput;
-}
-
-void GameSession::DrawHealthFlies(sf::RenderTarget *target)
-{
-	/*if (numTotalFlies > 0)
-	{
-		target->draw(healthFlyVA, numTotalFlies * 4, sf::Quads, ts_healthFly->texture);
-	}*/
 }
 
 bool GameSession::sLoad( GameSession *gs )
@@ -2749,22 +2684,6 @@ void GameSession::SetupBackground()
 	}
 
 	background = Background::SetupFullBG(mapHeader->envName, this);
-}
-
-void GameSession::SetupAbsorbParticles()
-{
-	if (parentGame != NULL)
-	{
-		absorbParticles = parentGame->absorbParticles;
-		absorbDarkParticles = parentGame->absorbDarkParticles;
-		absorbShardParticles = parentGame->absorbShardParticles;
-	}
-	else if (absorbParticles == NULL)
-	{
-		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
-		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
-		absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
-	}
 }
 
 void GameSession::SetupScoreDisplay()
@@ -4379,27 +4298,13 @@ void GameSession::UpdateEnvShaders()
 
 	UpdatePolyShaders(botLeft, playertest);
 
-	for (auto it = zones.begin(); it != zones.end(); ++it)
+	/*for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
 		(*it)->Update(cam.GetZoom(), botLeft, playertest);
-	}
+	}*/
 }
 
-void GameSession::DrawGates(sf::RenderTarget *target)
-{
-	//put this query within the frame update, not the draw call
-	testGateCount = 0;
-	queryMode = QUERY_GATE;
-	gateList = NULL;
-	gateTree->Query(this, screenRect);
 
-	while (gateList != NULL)
-	{
-		gateList->Draw(target);
-		Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
-		gateList = next;
-	}
-}
 
 void GameSession::DrawRails(sf::RenderTarget *target)
 {
@@ -4557,19 +4462,6 @@ void GameSession::UpdateDecorSprites()
 		poly->UpdateDecorSprites();
 		poly->UpdateTouchGrass(); //put this in its own spot soon
 		poly = poly->queryNext;
-	}
-}
-
-void GameSession::DrawHitEnemies(sf::RenderTarget *target)
-{
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
-	{
-		if ((pauseFrames >= 2 && current->receivedHit != NULL))
-		{
-			current->Draw(target);
-		}
-		current = current->next;
 	}
 }
 
@@ -4812,9 +4704,8 @@ void GameSession::RestartLevel()
 
 	scoreDisplay->Reset();
 
-	absorbParticles->Reset();
-	absorbDarkParticles->Reset();
-	absorbShardParticles->Reset();
+	ResetAbsorbParticles();
+
 	//player->Respawn();
 
 	cam.pos.x = GetPlayer( 0 )->position.x;
@@ -4823,21 +4714,15 @@ void GameSession::RestartLevel()
 	//RespawnPlayer();
 	pauseFrames = 0;
 
-	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-	{
-		(*it)->Reset();
-	}
+	ResetZones();
 
 	ResetEnemies();
 	ResetPlants(); //eventually maybe treat these to reset like the rest of the stuff
 	//only w/ checkpoints. but for now its always back
 
 	//was resetting zones here before
-
-	for (int i = 0; i < numGates; ++i)
-	{
-		gates[i]->Reset();
-	}
+	
+	ResetGates();
 
 	currentZone = NULL;
 	if (originalZone != NULL)
@@ -5501,13 +5386,6 @@ bool GameSession::IsWithinCurrentBounds(V2d &p)
 	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }
 
-void GameSession::CollectKey()
-{
-	GetPlayer(0)->numKeysHeld++;
-	adventureHUD->keyMarker->UpdateKeyNumbers();
-	//keyMarker->CollectKey();
-}
-
 void GameSession::FreezePlayerAndEnemies( bool freeze)
 {
 	playerAndEnemiesFrozen = freeze;
@@ -5705,17 +5583,6 @@ void GameSession::rResetEnemies( QNode *node )
 		}
 		
 	}
-}
-
-void GameSession::UnlockGate( Gate *g )
-{
-	g->SetLocked( false );
-}
-
-void GameSession::LockGate( Gate *g )
-{
-	//inefficient but i can adjust it later using prev pointers
-	g->SetLocked( true );	
 }
 
 void GameSession::SetActiveSequence(Sequence *activeSeq)

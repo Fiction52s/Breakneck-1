@@ -395,10 +395,10 @@ void Zone::Reset()
 	}
 }
 
-void Zone::Update(float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest)
+void Zone::Update()
 {
 	VertexArray &va = *definedArea;
-	if (zType == NORMAL || zType == MOMENTA || zType == SECRET )
+	if (zType == NORMAL || zType == MOMENTA || zType == SECRET)
 	{
 		switch (action)
 		{
@@ -406,7 +406,59 @@ void Zone::Update(float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest)
 			break;
 		case OPENING:
 			if (frame == openFrames)
-			{ 
+			{
+				action = OPEN;
+				frame = 0;
+			}
+			else
+			{
+				float a = GetOpeningAlpha();
+				zShader->setUniform("alpha", a);
+
+				if (secretZone)
+				{
+					miniShader->setUniform("alpha", a);
+				}
+			}
+			break;
+		case OPEN:
+			break;
+		case CLOSING:
+			if (frame == closeFrames)
+			{
+				Close();
+			}
+			else
+			{
+				float a = 1.f - GetOpeningAlpha();
+				zShader->setUniform("alpha", a);
+
+				if (secretZone)
+				{
+					miniShader->setUniform("alpha", a);
+				}
+			}
+			break;
+		case CLOSED:
+			break;
+		}
+	}
+	
+	++frame;
+}
+
+void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
+{
+	VertexArray &va = *definedArea;
+	if (zType == NORMAL || zType == MOMENTA || zType == SECRET)
+	{
+		switch (action)
+		{
+		case UNEXPLORED:
+			break;
+		case OPENING:
+			if (frame == openFrames)
+			{
 				action = OPEN;
 				frame = 0;
 			}
@@ -445,18 +497,18 @@ void Zone::Update(float zoom, sf::Vector2f &botLeft, sf::Vector2f &playertest)
 	}
 
 
-switch (zType)
-{
-case NORMAL:
+	switch (zType)
+	{
+	case NORMAL:
 
-	break;
-case NEXUS:
-	zShader->setUniform("zoom", zoom);
-	zShader->setUniform("topLeft", botLeft); //just need to change the name topleft eventually
-	zShader->setUniform("playertest", playertest);
-	break;
-}
-++frame;
+		break;
+	case NEXUS:
+		zShader->setUniform("zoom", zoom);
+		zShader->setUniform("topLeft", topLeft); //just need to change the name topleft eventually
+		zShader->setUniform("playertest", playertest);
+		break;
+	}
+	++frame;
 }
 
 float Zone::GetOpeningAlpha()

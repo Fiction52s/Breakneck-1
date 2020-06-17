@@ -4,8 +4,9 @@
 #include "Physics.h"
 #include "Tileset.h"
 #include "ShardTypes.h"
+#include "ISelectable.h"
 
-struct GameSession;
+struct Session;
 struct Zone;
 
 struct Gate : public QuadTreeEntrant
@@ -57,9 +58,10 @@ struct Gate : public QuadTreeEntrant
 		ORB_GO,
 	};
 
-	Gate(GameSession *owner, int tcat,
+	Gate(Session *sess, int tcat,
 		int var);
 	~Gate();
+	void Setup(GateInfoPtr gi);
 	void PassThrough(double alongAmount);
 	bool IsTwoWay();
 	bool IsAlwaysUnlocked();
@@ -94,7 +96,7 @@ struct Gate : public QuadTreeEntrant
 	void SetMapLineColor();
 	void MapDraw(sf::RenderTarget *target);
 
-	GameSession *owner;
+	Session *sess;
 	GateState gState;
 
 	int category;

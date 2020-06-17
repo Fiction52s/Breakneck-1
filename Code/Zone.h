@@ -5,6 +5,7 @@
 #include "Gate.h"
 #include <list>
 #include <set>
+#include "VectorMath.h"
 
 //typedef std::pair <Gate*,bool> GateBool;
 struct Enemy;
@@ -35,7 +36,7 @@ struct Zone
 	void Draw( sf::RenderTarget *target );
 	void DrawMinimap(sf::RenderTarget *target);
 
-	bool ContainsPoint( sf::Vector2<double> point );
+	bool ContainsPoint( V2d point );
 	bool ContainsZone( Zone *z );
 	void Close();
 	void SetShadowColor( sf::Color c );
@@ -44,8 +45,9 @@ struct Zone
 		sf::Vector2i test );
 	bool ContainsZoneMostSpecific(
 		Zone *z);
-	void Update( float zoom, sf::Vector2f &botLeft,
+	void Update( float zoom, sf::Vector2f &topLeft,
 		sf::Vector2f &playertest );
+	void Update();
 	int frame;
 	float GetOpeningAlpha();
 	bool secretZone;

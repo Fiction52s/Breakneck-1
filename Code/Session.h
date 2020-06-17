@@ -48,6 +48,7 @@ struct GateMarkerGroup;
 struct Gate;
 
 struct Minimap;
+struct AbsorbParticles;
 
 struct Fader;
 struct Swiper;
@@ -180,11 +181,15 @@ struct Session : TilesetManager, QuadTreeCollider
 	RailPtr railDrawList;
 	Edge *inverseEdgeList;
 
+	AbsorbParticles *absorbParticles;
+	AbsorbParticles *absorbDarkParticles;
+	AbsorbParticles *absorbShardParticles;
+
 	static Session *GetSession();
 
-	virtual void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
-		V2d &pos, float startAngle = 0) {}
-	virtual void CollectKey() {}
+	void ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+		V2d &pos, float startAngle = 0);
+	void CollectKey();
 	virtual PolyPtr GetPolygon(int index) = 0;
 	virtual RailPtr GetRail(int index) //change this to abstract later when gamesession has rails again
 	{
@@ -206,7 +211,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool ReadActors(std::ifstream &is);
 	virtual void ProcessActor(ActorPtr a) {}
 	virtual void ProcessAllActors() {}
-	virtual void SetNumGates(int numGates) {}
 	virtual void ProcessGate(int gCat,
 		int gVar,
 		int numToOpen,
@@ -410,6 +414,18 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateHUD();
 	void DrawHUD(sf::RenderTarget *target);
 	void HitlagUpdate();
+	void SetupAbsorbParticles();
+	void ResetAbsorbParticles();
+	void DrawEnemies(sf::RenderTarget *target);
+	void DrawHitEnemies(sf::RenderTarget *target);
+	void ResetZones();
+	void UpdateZones();
+	void SetNumGates(int nGates);
+	void LockGate(Gate *g);
+	void UnlockGate(Gate *g);
+	virtual bool IsShardCaptured(int sType) { return false; } //return to this later
+	void DrawGates(sf::RenderTarget *target);
+	void ResetGates();
 };
 
 #endif

@@ -18,6 +18,7 @@
 #include "EnvPlant.h"
 #include "HUD.h"
 #include "Fader.h"
+#include "AbsorbParticles.h"
 
 //#include "Enemy_Shard.h"
 
@@ -1246,6 +1247,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	numGates = 0;
 
 	adventureHUD = NULL;
+	gateMarkers = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -1254,6 +1256,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	currentZone = NULL;
 	originalZone = NULL;
 	activatedZoneList = NULL;
+
+	absorbParticles = NULL;
+	absorbDarkParticles = NULL;
+	absorbShardParticles = NULL;
 
 	parentGame = NULL;
 
@@ -1333,6 +1339,24 @@ Session::~Session()
 	if (bigBulletVA != NULL)
 	{
 		delete [] bigBulletVA;
+	}
+
+	if (parentGame == NULL && absorbParticles != NULL)
+	{
+		delete absorbParticles;
+		absorbParticles = NULL;
+	}
+
+	if (parentGame == NULL && absorbDarkParticles != NULL)
+	{
+		delete absorbDarkParticles;
+		absorbDarkParticles = NULL;
+	}
+
+	if (parentGame == NULL && absorbShardParticles != NULL)
+	{
+		delete absorbShardParticles;
+		absorbShardParticles = NULL;
 	}
 
 
@@ -2379,6 +2403,8 @@ void Session::CleanupZones()
 		delete zoneTree;
 		zoneTree = NULL;
 	}
+	currentZoneNode = NULL;
+	currentZone = NULL;
 
 	for (auto it = zones.begin(); it != zones.end(); ++it)
 	{
@@ -3009,8 +3035,6 @@ void Session::SetupZones()
 	//	}
 	//}
 
-
-	//	cout << "1" << endl;
 	//add enemies to the correct zone.
 	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -3224,7 +3248,8 @@ void Session::SetupZones()
 	if (originalZone != NULL)
 	{
 		//CloseOffLimitZones();
-		gateMarkers->SetToZone(currentZone);
+		if( gateMarkers != NULL )
+			gateMarkers->SetToZone(currentZone);
 	}
 }
 
@@ -3332,7 +3357,10 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 		CloseOffLimitZones();
 
-		gateMarkers->SetToZone(currentZone);
+		if (gateMarkers != NULL)
+		{
+			gateMarkers->SetToZone(currentZone);
+		}
 	}
 	else
 	{
@@ -3799,4 +3827,138 @@ void Session::HitlagUpdate()
 	pauseFrames--;
 
 	accumulator -= TIMESTEP;
+}
+
+void Session::SetupAbsorbParticles()
+{
+	if (parentGame != NULL)
+	{
+		absorbParticles = parentGame->absorbParticles;
+		absorbDarkParticles = parentGame->absorbDarkParticles;
+		absorbShardParticles = parentGame->absorbShardParticles;
+	}
+	else if (absorbParticles == NULL)
+	{
+		absorbParticles = new AbsorbParticles(this, AbsorbParticles::ENERGY);
+		absorbDarkParticles = new AbsorbParticles(this, AbsorbParticles::DARK);
+		absorbShardParticles = new AbsorbParticles(this, AbsorbParticles::SHARD);
+	}
+}
+
+void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
+	V2d &pos, float startAngle)
+{
+	switch (absorbType)
+	{
+	case AbsorbParticles::ENERGY:
+		absorbParticles->Activate(p, storedHits, pos, startAngle);
+		break;
+	case AbsorbParticles::DARK:
+		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
+		break;
+	case AbsorbParticles::SHARD:
+		absorbShardParticles->Activate(p, storedHits, pos, startAngle);
+		break;
+	}
+}
+
+void Session::CollectKey()
+{
+	GetPlayer(0)->numKeysHeld++;
+	adventureHUD->keyMarker->UpdateKeyNumbers();
+}
+
+void Session::ResetAbsorbParticles()
+{
+	absorbParticles->Reset();
+	absorbDarkParticles->Reset();
+	absorbShardParticles->Reset();
+}
+
+void Session::DrawEnemies(sf::RenderTarget *target)
+{
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		if (current->type != EnemyType::EN_BASICEFFECT && (pauseFrames < 2 || current->receivedHit == NULL))
+		{
+			current->Draw(preScreenTex);
+		}
+		current = current->next;
+	}
+
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->CheckedZoneDraw(target, FloatRect(screenRect));
+	}
+}
+
+void Session::DrawHitEnemies(sf::RenderTarget *target)
+{
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		if ((pauseFrames >= 2 && current->receivedHit != NULL))
+		{
+			current->Draw(target);
+		}
+		current = current->next;
+	}
+}
+
+void Session::ResetZones()
+{
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Reset();
+	}
+}
+
+void Session::UpdateZones()
+{
+	for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+	{
+		(*it)->Update();
+	}
+}
+
+void Session::SetNumGates(int nGates)
+{
+	gates.reserve(nGates);
+	numGates = nGates;
+}
+
+void Session::LockGate(Gate *g)
+{
+	//inefficient but i can adjust it later using prev pointers
+	g->SetLocked(true);
+}
+
+void Session::UnlockGate(Gate *g)
+{
+	g->SetLocked(false);
+}
+
+void Session::DrawGates(sf::RenderTarget *target)
+{
+	//put this query within the frame update, not the draw call
+	testGateCount = 0;
+	queryMode = QUERY_GATE;
+	gateList = NULL;
+	gateTree->Query(this, screenRect);
+
+	while (gateList != NULL)
+	{
+		gateList->Draw(target);
+		Gate *next = gateList->next;//(Gate*)gateList->edgeA->edge1;
+		gateList = next;
+	}
+}
+
+void Session::ResetGates()
+{
+	for (int i = 0; i < numGates; ++i)
+	{
+		gates[i]->Reset();
+	}
 }

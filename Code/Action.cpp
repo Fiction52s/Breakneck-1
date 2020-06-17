@@ -1288,10 +1288,10 @@ CreateGateAction::~CreateGateAction()
 void CreateGateAction::Perform()
 {
 	assert( !performed );
-	EditSession *session = EditSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 	performed = true;
 
-	session->gates.push_back( gate );
+	edit->gateInfoList.push_back( gate );
 	gate->point0->gate = gate;
 	gate->point1->gate = gate;
 	//create the gate
@@ -1300,10 +1300,10 @@ void CreateGateAction::Perform()
 void CreateGateAction::Undo()
 {
 	assert( performed );
-	EditSession *session = EditSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 	performed = false;
 
-	session->gates.remove( gate );
+	edit->gateInfoList.remove( gate );
 	gate->point0->gate = NULL;
 	gate->point1->gate = NULL;
 	//destroy the gate
@@ -1334,9 +1334,9 @@ DeleteGateAction::~DeleteGateAction()
 
 void DeleteGateAction::Perform()
 {	
-	EditSession *session = EditSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 	performed = true;
-	session->gates.remove( gate );
+	edit->gateInfoList.remove( gate );
 	gate->point0->gate = NULL;
 	gate->point1->gate = NULL;
 	//create the gate
@@ -1344,9 +1344,9 @@ void DeleteGateAction::Perform()
 
 void DeleteGateAction::Undo()
 {
-	EditSession *session = EditSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 	performed = false;
-	session->gates.push_back( gate );
+	edit->gateInfoList.push_back( gate );
 	gate->point0->gate = gate;
 	gate->point1->gate = gate;
 	//destroy the gate

@@ -203,7 +203,7 @@ struct EditSession : GUIHandler, Session
 	int drainSeconds;
 	int bossType;
 	sf::VertexArray fullBounds;
-	std::list<GateInfoPtr> gates;
+	std::list<GateInfoPtr> gateInfoList;
 	MainMenu *mainMenu;
 	PositionInfo worldPosRail;
 	PositionInfo worldPosGround;
@@ -636,10 +636,6 @@ struct EditSession : GUIHandler, Session
 	void ClearUndoneActions();
 	void TempMoveSelectedBrush();
 	void DrawGraph();
-	void SetupGraph();
-	bool IsPathWithinPath(
-		ClipperLib::Path &pInner,
-		ClipperLib::Path &pOuter);
 	bool IsGridOn();
 	bool IsSnapPointsOn();
 	void DrawPolygons();
@@ -647,7 +643,7 @@ struct EditSession : GUIHandler, Session
 	void DrawPolygonInProgress();
 	void DrawRailInProgress();
 	void DrawActors();
-	void DrawGates();
+	void DrawGateInfos();
 	void DrawDecorBehind();
 	void DrawDecorBetween();
 	void DrawDecorFront();
@@ -787,6 +783,7 @@ struct EditSession : GUIHandler, Session
 	bool HoldingControl();
 	void InitDecorPanel();
 	void DrawGame(sf::RenderTarget *target);
+	void SetupGates();
 };
 
 

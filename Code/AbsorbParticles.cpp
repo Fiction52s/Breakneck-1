@@ -1,5 +1,5 @@
 #include "Actor.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "AbsorbParticles.h"
 #include "PowerOrbs.h"
 #include "KeyMarker.h"
@@ -7,9 +7,9 @@
 using namespace sf;
 using namespace std;
 
-AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
+AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 	:va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
-	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), owner( p_owner )
+	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), sess( p_sess )
 {
 	switch (p_abType)
 	{
@@ -37,18 +37,18 @@ AbsorbParticles::AbsorbParticles( GameSession *p_owner, AbsorbType p_abType )
 	switch (p_abType)
 	{
 	case DARK:
-		ts = owner->GetTileset("FX/key_128x128.png", 128, 128);
-		ts_explodeDestroy = owner->GetSizedTileset("FX/keyexplode_128x128.png");
+		ts = sess->GetTileset("FX/key_128x128.png", 128, 128);
+		ts_explodeDestroy = sess->GetSizedTileset("FX/keyexplode_128x128.png");
 		animFactor = 2;
 		break;
 	case SHARD:
-		ts = owner->GetTileset("HUD/shard_get_128x128.png", 128, 128);
+		ts = sess->GetTileset("HUD/shard_get_128x128.png", 128, 128);
 		animFactor = 2;
 		//ts_explodeCreate = GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
-		ts_explodeDestroy = owner->GetTileset("FX/shard_explode_02_256x256.png", 256, 256);
+		ts_explodeDestroy = sess->GetTileset("FX/shard_explode_02_256x256.png", 256, 256);
 		break;
 	default:
-		ts = owner->GetTileset("FX/absorb_64x64.png", 64, 64);
+		ts = sess->GetTileset("FX/absorb_64x64.png", 64, 64);
 		animFactor = 3;
 		break;
 	}
@@ -292,8 +292,8 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 		case DARK:
 		{
-			Tileset *tss = parent->owner->GetTileset("FX/keyexplode_128x128.png", 128, 128);
-			parent->owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			Tileset *tss = parent->sess->GetTileset("FX/keyexplode_128x128.png", 128, 128);
+			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				tss, V2d(pos), true, 0, 6, 3, true);
 			break;
 		}
@@ -348,7 +348,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 		case ENERGY:
 		{
-			PowerRing *powerRing = parent->owner->GetPlayer(0)->kinRing->powerRing;
+			PowerRing *powerRing = parent->sess->GetPlayer(0)->kinRing->powerRing;
 			if (powerRing != NULL)
 			{
 				powerRing->Fill(20);
@@ -357,14 +357,14 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		}
 		case DARK:
 		{
-			parent->owner->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
-			parent->owner->CollectKey();
+			parent->sess->CollectKey();
 			break;
 		}
 		case SHARD:
 		{
-			parent->owner->ActivateEffect(EffectLayer::IN_FRONT,
+			parent->sess->ActivateEffect(EffectLayer::IN_FRONT,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 9, 3, true);
 		}
 		}

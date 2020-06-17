@@ -36,6 +36,9 @@
 #include "BrushManager.h"
 #include "FileChooser.h"
 #include "AdventureCreator.h"
+#include "AbsorbParticles.h"
+#include "HUD.h"
+#include "KeyMarker.h"
 
 #include "Fader.h"
 
@@ -58,6 +61,27 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
+void EditSession::SetupGates()
+{
+	if (gates.size() > 0)
+	{
+		for (auto it = gates.begin(); it != gates.end(); ++it)
+		{
+			(*it)->SetLocked(false);
+			delete (*it);
+		}
+		gates.clear();
+	}
+
+	SetNumGates(gateInfoList.size());
+	Gate *g;
+	for (list<GateInfoPtr>::iterator it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
+	{
+		g = new Gate(this, (*it)->category, (*it)->variation);
+		g->Setup((*it)); //adds gate to gates
+	}
+}
+
 void EditSession::DrawGame(sf::RenderTarget *target)
 {
 	target->setView(view);
@@ -69,11 +93,13 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
 
+	DrawZones(target);
+
 	DrawPolygons();
 
 	DrawRails();
 
-	DrawGates();
+	DrawGates(target);
 
 	DrawDecorBetween();
 
@@ -81,18 +107,20 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
 	
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
-	{
-		current->Draw(target);
-		current = current->next;
-	}
+	DrawEnemies(target);
 
 	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	DrawPlayerWires(target);
 
+	DrawHitEnemies(target); //whited out hit enemies
+
+	absorbParticles->Draw(target);
+	absorbDarkParticles->Draw(target);
+
 	DrawPlayers(target);
+
+	absorbShardParticles->Draw(target);
 
 	DrawEffects(EffectLayer::IN_FRONT, target);
 
@@ -277,9 +305,17 @@ void EditSession::TestPlayerModeUpdate()
 		UpdatePhysics();
 		UpdatePostPhysics();
 
+		UpdateGates();
+
+		absorbParticles->Update();
+		absorbDarkParticles->Update();
+		absorbShardParticles->Update();
+
 		UpdateEffects();
 
 		UpdateHUD();
+
+		UpdateZones();
 
 		if (GetCurrInput(0).start && !GetPrevInput(0).start)
 		{
@@ -316,14 +352,17 @@ void EditSession::TestPlayerModeUpdate()
 			cam.Update(GetPlayer(0));
 		}
 
+		Vector2f camPos = cam.GetPos();
+		double camWidth = 960 * cam.GetZoom();
+		double camHeight = 540 * cam.GetZoom();
+		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+
 		if (totalGameFrames % 3 == 0)
 		{
 			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
 		}
 
-		cam.UpdateRumble();
-
-		Vector2f camPos = cam.GetPos();
+		//cam.UpdateRumble();
 		if (gameCam)
 		{
 
@@ -346,6 +385,8 @@ void EditSession::TestPlayerMode()
 {
 	cam.Reset();
 	
+
+	ResetAbsorbParticles();
 
 	SetPlayerOptionField(0);
 	skipped = false;
@@ -432,6 +473,18 @@ void EditSession::TestPlayerMode()
 			curr = next;
 		}
 		
+		ResetZones();
+
+		ResetGates();
+
+		currentZone = NULL;
+		if (originalZone != NULL)
+		{
+			currentZoneNode = zoneTree;
+			ActivateZone(originalZone, true);
+			//gateMarkers->SetToZone(currentZone);
+			adventureHUD->keyMarker->Reset();
+		}
 
 		/*for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
@@ -590,6 +643,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	fullEnemyList.clear();
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -598,6 +652,7 @@ void EditSession::TestPlayerMode()
 			if (currEnemy != NULL)
 			{
 				currEnemy->AddToWorldTrees();
+				fullEnemyList.push_back(currEnemy);
 			}
 		}
 	}
@@ -646,6 +701,12 @@ void EditSession::TestPlayerMode()
 	{
 		currentTime = gameClock.getElapsedTime().asSeconds();
 	}
+
+	SetupGates();
+
+	CleanupZones();
+	CreateZones();
+	SetupZones();
 }
 
 void EditSession::EndTestMode()
@@ -1096,6 +1157,8 @@ void EditSession::CleanupForReload()
 
 	mapStartBrush->Destroy();
 
+	gateInfoList.clear();
+
 	inversePolygon = NULL;
 	polygons.clear();
 	waterPolygons.clear();
@@ -1269,7 +1332,7 @@ void EditSession::Draw()
 
 	DrawDecorBehind();
 
-	DrawGates();
+	DrawGateInfos();
 
 	DrawPolygons();
 
@@ -1628,7 +1691,7 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 	gi->point1 = giPoint1;
 
 	gi->UpdateLine();
-	gates.push_back(gi);
+	gateInfoList.push_back(gi);
 
 	mapStartBrush->AddObject(gi);
 }
@@ -1915,8 +1978,8 @@ void EditSession::WriteActors(ofstream &of)
 
 void EditSession::WriteGates(ofstream &of)
 {
-	of << gates.size() << endl;
-	for (list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it)
+	of << gateInfoList.size() << endl;
+	for (list<GateInfoPtr>::iterator it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		(*it)->WriteFile(of);
 	}
@@ -2061,7 +2124,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 			{
 				bool onpoint0, onpoint1;
 
-				for (list<GateInfoPtr>::iterator git = gates.begin(); git != gates.end(); ++git)
+				for (list<GateInfoPtr>::iterator git = gateInfoList.begin(); git != gateInfoList.end(); ++git)
 				{
 					onpoint0 = (*git)->point0 == closePoint;
 					onpoint1 = (*git)->point1 == closePoint;
@@ -2134,7 +2197,7 @@ void EditSession::TryPlaceGatePoint(V2d &pos)
 	if (!found && gatePoints == 0 )
 	{
 		bool foundOn = false;
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
 			if ((*it)->ContainsPoint(pos))
 			{
@@ -2810,6 +2873,8 @@ void EditSession::Init()
 	railInProgress = new TerrainRail();
 
 	AllocateEffects();
+
+	SetupAbsorbParticles();
 
 	if (filePathStr == "")
 	{
@@ -4939,7 +5004,7 @@ bool EditSession::PerformMovePointsAction()
 	if (validMove )//action->moveValid)
 	{
 		int gateActionsAdded = 0;
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
 			bool gateAttachedToAffectedPoly = false;
 			PolyPtr poly;
@@ -5728,7 +5793,7 @@ bool EditSession::GateIsTouchingEnemies(GateInfo *gi)
 
 bool EditSession::PolyIntersectsGates(PolyPtr poly)
 {
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		if (poly->IntersectsGate((*it)))
 		{
@@ -5757,7 +5822,7 @@ bool EditSession::GateIntersectsPolys(GateInfo *gi)
 bool EditSession::GateIntersectsGates(GateInfo *gi)
 {
 	Vector2i myPoint0, myPoint1, otherPoint0, otherPoint1;
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		if ((*it) == gi)
 		{
@@ -5783,7 +5848,7 @@ bool EditSession::PolyGatesIntersectOthers(PolyPtr poly)
 {
 	auto &testPolygons = GetCorrectPolygonList(poly);
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 		{	
@@ -5849,7 +5914,7 @@ bool EditSession::IsGateValid(GateInfo *gi)
 		return false;
 	}
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		if ((*it)->point0 == gi->point0 || (*it)->point0 == gi->point1
 			|| (*it)->point1 == gi->point0 || (*it)->point1 == gi->point1)
@@ -5948,7 +6013,7 @@ bool EditSession::IsSliver( TerrainPoint *prev, TerrainPoint *curr, TerrainPoint
 
 bool EditSession::PolyGatesMakeSliverAngles(PolyPtr poly)
 {
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		if ((*it)->poly0 == poly || (*it)->poly1 == poly)
 		{
@@ -6060,7 +6125,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 
 		Brush attachedPolys;
 		PolyPtr p0, p1;
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
 			if ((*it) == gi)
 				continue;
@@ -6083,7 +6148,7 @@ bool EditSession::TryGateAdjustActionPoly( GateInfo *gi, sf::Vector2i &adjust, b
 		}
 
 
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
 			if ((*it) == gi)
 				continue;
@@ -6195,7 +6260,7 @@ bool EditSession::TryGateAdjustActionPoint( GateInfo *gi, Vector2i &adjust, bool
 	{
 		compound->subActions.push_back(action);
 
-		for (auto it = gates.begin(); it != gates.end(); ++it)
+		for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 		{
 			if ((*it) == gi)
 				continue;
@@ -6533,7 +6598,7 @@ bool EditSession::CanCreateGate( GateInfo &testGate )
 	Vector2i v1 = testGate.point1->pos;
 
 	//no duplicate points
-	for( list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it )
+	for( list<GateInfoPtr>::iterator it = gateInfoList.begin(); it != gateInfoList.end(); ++it )
 	{
 		if( v0 == (*it)->point0->pos || v0 == (*it)->point1->pos || v1 == (*it)->point0->pos || v1 == (*it)->point1->pos )
 		{
@@ -6827,7 +6892,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		(*it)->Draw(mapPreviewTex);
 	}
 
-	for (auto it = gates.begin(); it != gates.end(); ++it)
+	for (auto it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		(*it)->DrawPreview(mapPreviewTex);
 	}
@@ -10832,9 +10897,9 @@ void EditSession::DrawActors()
 	}
 }
 
-void EditSession::DrawGates()
+void EditSession::DrawGateInfos()
 {
-	for (list<GateInfoPtr>::iterator it = gates.begin(); it != gates.end(); ++it)
+	for (list<GateInfoPtr>::iterator it = gateInfoList.begin(); it != gateInfoList.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);
 	}
@@ -11308,13 +11373,6 @@ void EditSession::DrawUI()
 
 	if( mode != TEST_PLAYER )
 		generalUI->Draw(preScreenTex);
-
-	/*for (auto it = gates.begin(); it != gates.end(); ++it)
-	{
-		testGateMarker->Update(view, (*it));
-	}
-
-	testGateMarker->Draw(preScreenTex);*/
 }
 
 void EditSession::Display()

@@ -1,5 +1,5 @@
 #include "Gate.h"
-#include "GameSession.h"
+#include "Session.h"
 #include <iostream>
 #include "Physics.h"
 #include "KeyMarker.h"
@@ -10,7 +10,8 @@
 #include "Wire.h"
 #include "Actor.h"
 #include "MainMenu.h"
-
+#include "EditorGateInfo.h"
+#include "EditorTerrain.h"
 
 using namespace std;
 using namespace sf;
@@ -25,9 +26,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
+Gate::Gate( Session *p_sess, int p_cat, int p_var )
 	:category( p_cat), variation( p_var ), locked( true ), 
-	zoneA( NULL ), zoneB( NULL ),owner( p_owner )
+	zoneA( NULL ), zoneB( NULL ),sess( p_sess )
 {
 	visible = true;
 	gateQuads = NULL;
@@ -37,10 +38,10 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	ts = NULL;
 
-	ts_lockedAndHardened = owner->GetTileset("Zone/gates_black_32x32.png", 32, 32);
+	ts_lockedAndHardened = sess->GetTileset("Zone/gates_black_32x32.png", 32, 32);
 	ts_glitch = NULL;
 	
-	ts_orb = owner->GetSizedTileset("Zone/gate_orb_64x64.png");
+	ts_orb = sess->GetSizedTileset("Zone/gate_orb_64x64.png");
 	
 	orbFrame = 0;
 	orbState = ORB_RED;
@@ -68,7 +69,7 @@ Gate::Gate( GameSession *p_owner, int p_cat, int p_var )
 
 	numToOpen = 0;
 
-	numberText.setFont(owner->mainMenu->arial);
+	numberText.setFont(sess->mainMenu->arial);
 	numberText.setCharacterSize(50);
 	numberText.setFillColor(Color::Black);
 }
@@ -80,6 +81,61 @@ Gate::~Gate()
 
 	delete edgeA;
 	delete edgeB;
+}
+
+void Gate::Setup(GateInfoPtr gi)
+{
+	Edge *edge0 = gi->poly0->GetEdge(gi->point0->index);//allPolysVec[poly0Index]->GetEdge(vertexIndex0);
+	Edge *edge1 = gi->poly1->GetEdge(gi->point1->index);//allPolysVec[poly1Index]->GetEdge(vertexIndex1);
+
+	V2d point0 = edge0->v0;
+	V2d point1 = edge1->v0;
+
+	if (category == Gate::SHARD)
+	{
+		SetShard(gi->shardWorld, gi->shardIndex);
+	}
+	else if (category == Gate::KEY || category == Gate::PICKUP)
+	{
+		SetNumToOpen(gi->numToOpen);
+	}
+
+	temp0prev = edge0->edge0;
+	temp0next = edge0;
+	temp1prev = edge1->edge0;
+	temp1next = edge1;
+
+	edgeA = new Edge;
+	edgeA->edgeType = Edge::CLOSED_GATE;
+	edgeA->info = this;
+	edgeB = new Edge;
+	edgeB->edgeType = Edge::CLOSED_GATE;
+	edgeB->info = this;
+
+	edgeA->v0 = point0;
+	edgeA->v1 = point1;
+
+	edgeB->v0 = point1;
+	edgeB->v1 = point0;
+
+	next = NULL;
+	prev = NULL;
+
+	CalcAABB();
+
+	sess->gates.push_back(this);
+
+	SetLocked(true);
+
+	Init();
+
+	sess->terrainTree->Insert(edgeA);
+	sess->terrainTree->Insert(edgeB);
+
+	//cout << "inserting gate: " << gate->edgeA << endl;
+	sess->gateTree->Insert(this);
+
+	Reset();
 }
 
 void Gate::Reset()
@@ -118,11 +174,11 @@ void Gate::PassThrough(double alongAmount)
 	{
 		gState = Gate::GLITCH;
 		frame = 0;
-		owner->LockGate(this);
+		sess->LockGate(this);
 	}
 	else if (IsReformingType())
 	{
-		owner->LockGate(this);
+		sess->LockGate(this);
 
 		gState = Gate::REFORM;
 		frame = 0;
@@ -237,10 +293,10 @@ void Gate::UpdateOrb()
 			return;
 		}
 
-		if (owner->GetPlayer(0)->numKeysHeld >= numToOpen)
+		if (sess->GetPlayer(0)->numKeysHeld >= numToOpen)
 		{
-			bool currZone = (owner->currentZone == zoneA ||
-				owner->currentZone == zoneB);
+			bool currZone = (sess->currentZone == zoneA ||
+				sess->currentZone == zoneB);
 			if (orbState != ORB_GO && currZone)
 			{
 				orbState = ORB_GO;
@@ -407,8 +463,8 @@ void Gate::Soften()
 
 void Gate::ResetAttachedWires()
 {
-	Wire *rw = owner->GetPlayer(0)->rightWire;
-	Wire *lw = owner->GetPlayer(0)->leftWire;
+	Wire *rw = sess->GetPlayer(0)->rightWire;
+	Wire *lw = sess->GetPlayer(0)->leftWire;
 	if (rw != NULL && rw->anchor.e == edgeA || rw->anchor.e == edgeB)
 	{
 		rw->Reset();
@@ -426,8 +482,8 @@ bool Gate::CanSoften()
 		return false;
 	}
 
-	Zone *currZone = owner->currentZone;
-	Actor * player = owner->GetPlayer(0);
+	Zone *currZone = sess->currentZone;
+	Actor * player = sess->GetPlayer(0);
 
 	bool correctStateAndZones = gState == HARD && (currZone == NULL
 		|| (currZone == zoneA || currZone == zoneB));
@@ -446,8 +502,8 @@ bool Gate::CanSoften()
 		}
 		case SHARD:
 		{
-			double len = length(owner->GetPlayer(0)->position - GetCenter());
-			if (owner->IsShardCaptured(shardType) && len < 300)
+			double len = length(sess->GetPlayer(0)->position - GetCenter());
+			if (sess->IsShardCaptured(shardType) && len < 300)
 			{
 				okayToSoften = true;
 			}
@@ -473,7 +529,7 @@ void Gate::CheckSoften()
 
 	bool canSoften = CanSoften();
 
-	Zone *currZone = owner->currentZone;
+	Zone *currZone = sess->currentZone;
 
 	if (canSoften)
 	{
@@ -700,7 +756,7 @@ void Gate::SetShard(int w, int li)
 	
 	shardWorld = w;
 	shardIndex = li;
-	ts_shard = Shard::GetShardTileset(shardWorld, owner);
+	ts_shard = Shard::GetShardTileset(shardWorld, sess);
 	//shardSprite.setColor(Color::Black);
 	shardSprite.setTexture(*ts_shard->texture);
 	shardSprite.setTextureRect(ts_shard->GetSubRect(shardIndex));
@@ -727,7 +783,7 @@ void Gate::SetMapLineColor()
 		break;
 	case KEY:
 	{
-		switch (owner->mapHeader->envWorldType)
+		switch (sess->mapHeader->envWorldType)
 		{
 		case 0:
 			mapLineColor = COLOR_BLUE;
@@ -784,23 +840,23 @@ void Gate::Init()
 	}
 	else if (category == SECRET)
 	{
-		ts_glitch = owner->GetSizedTileset("Zone/gate_glitch_64x64.png");
+		ts_glitch = sess->GetSizedTileset("Zone/gate_glitch_64x64.png");
 		//tileHeight = 256;
 		//width = 128;
 	}
 
 	if (category == SECRET)
 	{
-		ts_wiggle = owner->GetSizedTileset("Zone/gate_glitch_loop_64x64.png");
+		ts_wiggle = sess->GetSizedTileset("Zone/gate_glitch_loop_64x64.png");
 		stateLength[SOFT] = 5 * 3;
 	}
 	else
 	{
-		ts_wiggle = owner->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
 		stateLength[SOFT] = 11 * 3;
 	}
 
-	ts = owner->GetTileset("Zone/gates_32x64.png", 32, 64);
+	ts = sess->GetTileset("Zone/gates_32x64.png", 32, 64);
 	gateShader.setUniform("u_texture", *ts->texture);
 	gateShader.setUniform("tile", 1.f);
 	centerShader.setUniform("u_texture", *ts->texture);
@@ -851,7 +907,7 @@ void Gate::Init()
 	nodes[6].position = Vector2f(nodeBLeftv1);
 	nodes[7].position = Vector2f(nodeBRightv1);
 
-	ts_node = owner->GetTileset("Zone/gatenode_32x64.png", 32, 64);
+	ts_node = sess->GetTileset("Zone/gatenode_32x64.png", 32, 64);
 
 	SetRectSubRect(nodes, ts_node->GetSubRect(0) );
 	SetRectSubRect((nodes+4), ts_node->GetSubRect(0));

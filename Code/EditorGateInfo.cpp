@@ -70,7 +70,7 @@ void GateInfo::Deactivate()
 	if (edit != NULL)
 	{
 		active = false;
-		edit->gates.remove(this);
+		edit->gateInfoList.remove(this);
 		edit = NULL;
 		point0->gate = NULL;
 		point1->gate = NULL;
@@ -83,7 +83,7 @@ void GateInfo::Activate()
 	{
 		active = true;
 		edit = EditSession::GetSession();
-		edit->gates.push_back(this);
+		edit->gateInfoList.push_back(this);
 
 		point0->gate = this;
 		point1->gate = this;

@@ -4,7 +4,7 @@
 #include <SFML\Graphics.hpp>
 
 
-struct GameSession;
+struct Session;
 struct Actor;
 struct Tileset;
 
@@ -44,7 +44,7 @@ struct AbsorbParticles
 	bool directKilled;
 	AbsorbType abType;
 	sf::Vector2f GetTargetPos(AbsorbType ab);
-	AbsorbParticles( GameSession *owner,
+	AbsorbParticles(Session *sess,
 		AbsorbType p_abType );
 	~AbsorbParticles();	
 	void Reset();
@@ -56,7 +56,7 @@ struct AbsorbParticles
 	void Update();
 	void Draw(sf::RenderTarget *rt);
 	float startAngle;
-	GameSession *owner;
+	Session *sess;
 	Tileset *ts;
 	//Tileset *ts_explodeCreate;
 	Tileset *ts_explodeDestroy;

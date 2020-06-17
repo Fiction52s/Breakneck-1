@@ -3058,8 +3058,8 @@ void Actor::CreateGateExplosion()
 	keyExplodeRingGroup->SetBase(floatPos);
 	keyExplodeRingGroup->Reset();
 	keyExplodeRingGroup->Start();
-	owner->cam.SetRumble(3, 3, 20);//5
-	owner->Pause(4);//5
+	sess->cam.SetRumble(3, 3, 20);//5
+	sess->Pause(4);//5
 }
 
 void Actor::CreateKeyExplosion()
@@ -10095,7 +10095,7 @@ void Actor::HandleTouchedGate()
 		if (g->IsZoneType())
 		{
 
-			owner->SuppressEnemyKeys(g);
+			//owner->SuppressEnemyKeys(g);
 
 			Zone *oldZone;
 			Zone *newZone;
@@ -10121,14 +10121,14 @@ void Actor::HandleTouchedGate()
 						oldZone->ReformAllGates(g);
 					}
 
-					owner->adventureHUD->keyMarker->Reset();
+					sess->adventureHUD->keyMarker->Reset();
 				}
-				owner->ActivateZone(newZone);
+				sess->ActivateZone(newZone);
 				
 				if (!twoWay)
 				{
 					CreateKeyExplosion();
-					owner->absorbDarkParticles->KillAllActive();
+					sess->absorbDarkParticles->KillAllActive();
 					numKeysHeld = 0;
 				}
 				else
