@@ -157,6 +157,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	QuadTree *activeItemTree;
 	QuadTree *staticItemTree;
 	QuadTree * gateTree;
+	QuadTree * enemyTree;
 	int substep;
 	double currentTime;
 	double accumulator;
@@ -464,6 +465,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupGlobalBorderQuads( bool *blackBorder, bool &topBorderOn );
 	void CleanupGlobalBorders();
 	void CleanupBarriers();
+	void QueryToSpawnEnemies();
 };
 
 #endif

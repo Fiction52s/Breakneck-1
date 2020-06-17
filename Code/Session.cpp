@@ -1393,7 +1393,12 @@ Session::~Session()
 		delete terrainTree;
 		terrainTree = NULL;
 	}
-		
+	
+	if (enemyTree!= NULL)
+	{
+		delete enemyTree;
+		enemyTree = NULL;
+	}
 
 	if (specialTerrainTree != NULL)
 	{
@@ -4263,4 +4268,18 @@ void Session::CleanupBarriers()
 		delete (*it);
 	}
 	barriers.clear();
+}
+
+void Session::QueryToSpawnEnemies()
+{
+	queryMode = QUERY_ENEMY;
+	sf::Rect<double> spawnRect = screenRect;
+	double spawnExtra = 600;//800
+	spawnRect.left -= spawnExtra;
+	spawnRect.width += 2 * spawnExtra;
+	spawnRect.top -= spawnExtra;
+	spawnRect.height += 2 * spawnExtra;
+
+	tempSpawnRect = spawnRect;
+	enemyTree->Query(this, spawnRect);
 }

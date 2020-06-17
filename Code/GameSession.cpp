@@ -136,20 +136,6 @@ void GameSession::SetGameSessionState(int s)
 	state = (State)s;
 }
 
-void GameSession::QueryToSpawnEnemies()
-{
-	queryMode = QUERY_ENEMY;
-	sf::Rect<double> spawnRect = screenRect;
-	double spawnExtra = 600;//800
-	spawnRect.left -= spawnExtra;
-	spawnRect.width += 2 * spawnExtra;
-	spawnRect.top -= spawnExtra;
-	spawnRect.height += 2 * spawnExtra;
-
-	tempSpawnRect = spawnRect;
-	enemyTree->Query(this, spawnRect);
-}
-
 void GameSession::UpdateBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
@@ -1274,12 +1260,6 @@ void GameSession::Cleanup()
 	{
 		delete inverseEdgeTree;
 		inverseEdgeTree = NULL;
-	}
-
-	if (enemyTree != NULL)
-	{
-		delete enemyTree;
-		enemyTree = NULL;
 	}
 
 	if (terrainBGTree != NULL)

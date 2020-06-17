@@ -442,8 +442,6 @@ struct GameSession : RayCastHandler, Session
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 	
 	QuadTree *terrainBGTree;
-	QuadTree * enemyTree;
-	
 	QuadTree * itemTree;
 	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
@@ -643,7 +641,6 @@ struct GameSession : RayCastHandler, Session
 	void UpdateCamera();
 	void UpdateEnvPlants();
 	void UpdateBackAndStartButtons();
-	void QueryToSpawnEnemies();
 	void SetGameSessionState(int s);
 	int GetGameSessionState();
 };
