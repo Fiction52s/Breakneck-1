@@ -88,24 +88,15 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	UpdateParamsSettings();
 
 	alreadyCollected = false;
-	if (sess->IsSessTypeGame())
-	{
-		game = GameSession::GetSession();
 
-		GameSession *game = GameSession::GetSession();
-		if (game->IsShardCaptured(shardType))
-		{
-			alreadyCollected = true;
-		}
-	}
-	else
+	if (sess->IsShardCaptured(shardType))
 	{
-		game = NULL;
+		alreadyCollected = true;
 	}
 
-	if (game != NULL && !alreadyCollected)
+	if( !alreadyCollected)
 	{
-		game->TryCreateShardResources();
+		sess->TryCreateShardResources();
 	}
 	
 	testEmitter = NULL;
@@ -275,13 +266,10 @@ void Shard::DissipateOnTouch()
 	SetHitboxes(NULL, 0);
 	SetHurtboxes(NULL, 0);
 
-	if (game != NULL)
-	{
-		GetShardSequence *gss = (GetShardSequence*)game->getShardSeq;
-		gss->shard = this;
-		game->getShardSeq->Reset();
-		game->SetActiveSequence(game->getShardSeq);
-	}
+	GetShardSequence *gss = (GetShardSequence*)sess->getShardSeq;
+	gss->shard = this;
+	sess->getShardSeq->Reset();
+	sess->SetActiveSequence(sess->getShardSeq);
 	
 	Actor *player = sess->GetPlayer(0);
 	player->SetAction(Actor::GETSHARD);
@@ -294,34 +282,25 @@ void Shard::Capture()
 {
 	//owner->absorbShardParticles->Activate(owner->GetPlayer(0), 1, position);
 
-	if (game != NULL)
+	sess->shardsCapturedField->SetBit(shardType, true);
+	if (sess->IsSessTypeGame())
 	{
-		game->shardsCapturedField->SetBit(shardType, true);
+		GameSession *game = GameSession::GetSession();
 		if (game->saveFile != NULL)
 		{
 			assert(!game->saveFile->shardField.GetBit(shardType));
-
 			//both give you the shard and mark it as a new shard
 			game->saveFile->shardField.SetBit(shardType, true);
 			game->saveFile->newShardField.SetBit(shardType, true);
 			game->saveFile->Save();
 		}
-
 	}
-
-	
-	//owner->state = GameSession::SEQUENCE;
-	//owner->absorbDarkParticles->Activate(owner->GetPlayer(0), 1, position);
-	
-	//owner->mainMenu->GetCurrentProgress()->Save(); //might need to multithread at some point. this can be annoying
 }
 
 void Shard::DirectKill()
 {
 
 }
-
-
 
 void Shard::Launch()
 {
@@ -455,21 +434,22 @@ void Shard::DrawMinimap( sf::RenderTarget *target )
 {
 }
 
-ShardPopup::ShardPopup(GameSession *p_owner)
-	:owner( p_owner )
+ShardPopup::ShardPopup()
 {
+	sess = Session::GetSession();
+
 	w = -1;
 	li = -1;
 
 	desc.setCharacterSize(20);
 	desc.setFillColor(Color::White);
-	desc.setFont(owner->mainMenu->arial);
+	desc.setFont(sess->mainMenu->arial);
 
 	descRel = Vector2f(200, 20);
 	effectRel = Vector2f(20, 20);
 	shardRel = Vector2f(100, 20);
 
-	Tileset *ts_bg = owner->GetTileset("Menu/GetShard/getshardbg.png", 0, 0 );
+	Tileset *ts_bg = sess->GetTileset("Menu/GetShard/getshardbg.png", 0, 0 );
 	bgSpr.setTexture(*ts_bg->texture);
 }
 
@@ -497,14 +477,14 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	w = p_w;
 	li = p_li;
 
-	Tileset *ts_shard = Shard::GetShardTileset(w, owner);
+	Tileset *ts_shard = Shard::GetShardTileset(w, sess);
 	shardSpr.setTexture(*ts_shard->texture);
 	shardSpr.setTextureRect(ts_shard->GetSubRect(li));
 
 	effectSpr.setTexture(*shardSpr.getTexture());
 	effectSpr.setTextureRect(shardSpr.getTextureRect());
 
-	string test = owner->pauseMenu->shardMenu->GetShardDesc(0, 0);
+	string test = sess->mainMenu->pauseMenu->shardMenu->GetShardDesc(0, 0);
 	desc.setString(test);
 }
 

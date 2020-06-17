@@ -7,9 +7,9 @@
 using namespace sf;
 using namespace std;
 
-GetShardSequence::GetShardSequence(GameSession *p_owner)
-	:owner(p_owner)
+GetShardSequence::GetShardSequence()
 {
+	sess = Session::GetSession();
 
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
@@ -63,7 +63,7 @@ GetShardSequence::GetShardSequence(GameSession *p_owner)
 
 	shard = NULL;
 
-	shardPop = owner->shardPop;
+	shardPop = sess->shardPop;
 
 	SetRectColor(overlayRect, Color(100, 100, 100, 100));
 	SetRectCenter(overlayRect, 1920, 1080, Vector2f(960, 540));
@@ -76,7 +76,7 @@ GetShardSequence::~GetShardSequence()
 
 bool GetShardSequence::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -87,10 +87,10 @@ bool GetShardSequence::Update()
 
 		if (state == END)
 		{
-			owner->cam.EaseOutOfManual(60);
+			sess->cam.EaseOutOfManual(60);
 			player->SetAction(Actor::JUMP);
 			player->frame = 1;
-			owner->cam.StopRumble();
+			sess->cam.StopRumble();
 			return false;
 		}
 	}
@@ -101,30 +101,32 @@ bool GetShardSequence::Update()
 	{
 		if (frame == 0)
 		{
-			owner->cam.SetManual(true);
-			owner->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
-			owner->cam.SetRumble(10, 10, 90);
+			sess->cam.SetManual(true);
+			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
+			sess->cam.SetRumble(10, 10, 90);
 		}
 
 		int freezeFrame = 100;
 		if (frame == freezeFrame)
 		{
-			owner->state = GameSession::FROZEN;
+			sess->SetGameSessionState(GameSession::FROZEN);
 			emitter->SetOn(false);
 		}
 		else if (frame > freezeFrame)
 		{
-			if (owner->GetCurrInputUnfiltered(0).A && !owner->GetPrevInputUnfiltered(0).A)
+			if (sess->GetCurrInputUnfiltered(0).A && !sess->GetPrevInputUnfiltered(0).A)
 			{
-				owner->state = GameSession::RUN;
+				sess->SetGameSessionState(GameSession::RUN);
 			}
 		}
 
-		if (owner->state == GameSession::RUN)
+		if (sess->GetGameSessionState() == GameSession::RUN)
+		{
 			if (!geoGroup.Update())
 			{
 				frame = stateLength[state] - 1;
 			}
+		}
 	}
 	}
 	++frame;
@@ -136,7 +138,7 @@ bool GetShardSequence::Update()
 
 void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	owner->DrawEmitters(layer, target);
+	sess->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		if (state != END)
@@ -146,7 +148,7 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
-		if (state != END && owner->state == GameSession::FROZEN)
+		if (state != END && sess->GetGameSessionState() == GameSession::FROZEN)
 		{
 			target->draw(overlayRect, 4, sf::Quads);
 			shardPop->Draw(target);
@@ -156,11 +158,12 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 void GetShardSequence::Reset()
 {
-	Vector2f pPos = Vector2f(owner->GetPlayer(0)->position);
+	Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
 	frame = 0;
 	state = GET;
 	geoGroup.SetBase(pPos);
 	geoGroup.Reset();
+	geoGroup.Start();
 
 	assert(shard != NULL);
 
@@ -170,6 +173,6 @@ void GetShardSequence::Reset()
 
 	emitter->SetPos(Vector2f(pPos));
 	emitter->Reset();
-	owner->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 
 }

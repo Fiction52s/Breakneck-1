@@ -62,6 +62,11 @@ const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
 EditSession * EditSession::currSession = NULL;
 
+bool EditSession::IsShardCaptured(int sType)
+{
+	return shardsCapturedField->GetBit(sType);
+}
+
 void EditSession::SetupGates()
 {
 	if (gates.size() > 0)
@@ -2861,6 +2866,8 @@ void EditSession::Init()
 	SetupHitboxManager();
 	SetupSoundManager();
 	SetupSoundLists();
+
+	SetupShardsCapturedField();
 
 	if (players[0] == NULL)
 		players[0] = new Actor(NULL, this, 0);

@@ -20,6 +20,9 @@
 #include "Fader.h"
 #include "AbsorbParticles.h"
 #include "Barrier.h"
+#include "ShardSequence.h"
+#include "Sequence.h"
+#include "ParticleEffects.h"
 
 //#include "Enemy_Shard.h"
 
@@ -1250,9 +1253,17 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	shardsCapturedField = NULL;
+	preLevelScene = NULL;
+	postLevelScene = NULL;
+	activeSequence = NULL;
+
 	originalMusic = NULL;
 	adventureHUD = NULL;
 	gateMarkers = NULL;
+
+	getShardSeq = NULL;
+	shardPop = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -1505,6 +1516,24 @@ Session::~Session()
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		delete(*it).second;
+	}
+
+	if (getShardSeq != NULL)
+	{
+		delete getShardSeq;
+		getShardSeq = NULL;
+	}
+
+	if (shardPop != NULL)
+	{
+		delete shardPop;
+		shardPop = NULL;
+	}
+
+	if (parentGame == NULL && shardsCapturedField != NULL)
+	{
+		delete shardsCapturedField;
+		shardsCapturedField = NULL;
 	}
 
 	CleanupZones();
@@ -4062,7 +4091,12 @@ void Session::FreezePlayerAndEnemies(bool freeze)
 
 int Session::GetGameSessionState()
 {
-	return GameSession::RUN;
+	return gameState;
+}
+
+void Session::SetGameSessionState(int s)
+{
+	gameState = (GameState)s;
 }
 
 void Session::SetGlobalBorders()
@@ -4295,5 +4329,145 @@ void Session::DrawBlackBorderQuads(sf::RenderTarget *target)
 	else
 	{
 		target->draw(blackBorderQuads, 8, sf::Quads);
+	}
+}
+
+void Session::TryCreateShardResources()
+{
+	if (shardPop == NULL)
+	{
+		shardPop = new ShardPopup;
+	}
+
+	if (getShardSeq == NULL)
+	{
+		getShardSeq = new GetShardSequence;
+	}
+}
+
+void Session::SetupShardsCapturedField()
+{
+	if (parentGame != NULL)
+	{
+		shardsCapturedField = parentGame->shardsCapturedField;
+	}
+	else if (shardsCapturedField == NULL)
+		shardsCapturedField = new BitField(32 * 5);
+	else
+	{
+		shardsCapturedField->Reset();
+	}
+}
+
+void Session::SetActiveSequence(Sequence *activeSeq)
+{
+	activeSequence = activeSeq;
+
+	if (activeSequence == preLevelScene)
+	{
+		FreezePlayerAndEnemies(true);
+		SetPlayerInputOn(false);
+	}
+
+	activeSequence->StartRunning();
+}
+
+void Session::ActiveSequenceUpdate()
+{
+	if (activeSequence != NULL)// && activeSequence == startSeq )
+	{
+		GameState oldState = gameState;
+		if (!activeSequence->Update())
+		{
+			if (activeSequence->nextSeq != NULL)
+			{
+				activeSequence->nextSeq->Reset();
+				SetActiveSequence(activeSequence->nextSeq);
+			}
+			else
+			{
+				if (activeSequence == preLevelScene)
+				{
+					FreezePlayerAndEnemies(false);
+					SetPlayerInputOn(true);
+					if (shipEnterScene != NULL)
+					{
+						shipEnterScene->Reset();
+						SetActiveSequence(shipEnterScene);
+						gameState = RUN;
+						return;
+					}
+				}
+
+
+				if (activeSequence == postLevelScene)
+				{
+					goalDestroyed = true;
+				}
+
+				gameState = RUN;
+				activeSequence = NULL;
+			}
+		}
+		else
+		{
+			if (gameState != oldState)
+			{
+				switchGameState = true;
+				return;
+				//goto starttest;
+			}
+		}
+	}
+}
+
+void Session::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
+{
+	if (activeSequence != NULL)
+	{
+		sf::View oldView = target->getView();
+		if (layer == UI_FRONT)
+		{
+			target->setView(uiView);
+		}
+
+		activeSequence->Draw(target, layer);
+
+		if (layer == UI_FRONT)
+		{
+			target->setView(oldView);
+		}
+	}
+}
+
+bool Session::IsShardCaptured(int s)
+{
+	return shardsCapturedField->GetBit(s);
+}
+
+void Session::AddEmitter(ShapeEmitter *emit,
+	EffectLayer layer)
+{
+	ShapeEmitter *&currList = emitterLists[layer];
+	if (currList == NULL)
+	{
+		currList = emit;
+		emit->next = NULL;
+	}
+	else
+	{
+		emit->next = currList;
+		currList = emit;
+	}
+}
+
+
+void Session::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
+{
+	ShapeEmitter *curr = emitterLists[layer];
+	while (curr != NULL)
+	{
+		curr->Draw(target);
+		curr = curr->next;
 	}
 }

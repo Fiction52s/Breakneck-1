@@ -10,7 +10,7 @@
 
 struct EffectPool;
 struct TilesetManager;
-struct GameSession;
+struct Session;
 
 struct ShardPopup
 {
@@ -21,7 +21,7 @@ struct ShardPopup
 	};
 
 
-	ShardPopup( GameSession *p_owner );
+	ShardPopup();
 	void SetTopLeft(sf::Vector2f &pos);
 	void SetCenter(sf::Vector2f &pos);
 	void Reset();
@@ -39,7 +39,7 @@ struct ShardPopup
 	sf::Vector2f effectRel;
 	sf::Vector2f shardRel;
 
-	GameSession *owner;
+	Session *sess;
 	int w;
 	int li;
 	int frame;
@@ -111,7 +111,6 @@ struct Shard : Enemy
 	bool caught;
 	int totalFrame;
 
-	GameSession *game;
 	int shardWorld;
 	int localIndex;
 

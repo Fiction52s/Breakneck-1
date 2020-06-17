@@ -122,7 +122,7 @@ bool DeathSequence::Update()
 			}
 		}*/
 
-		if (owner->state == GameSession::RUN)
+		if (owner->GetGameSessionState() == GameSession::RUN)
 			if (!geoGroup->Update())
 			{
 				frame = stateLength[state] - 1;
@@ -148,7 +148,7 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
-		if (state != END && owner->state == GameSession::FROZEN)
+		if (state != END && owner->GetGameSessionState() == GameSession::FROZEN)
 		{
 			target->draw(overlayRect, 4, sf::Quads);
 		}

@@ -748,7 +748,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			}
 
 			owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_off"));
-			owner->state = GameSession::State::RUN;
+			owner->SetGameSessionState(GameSession::RUN);
 			owner->soundNodeList->Pause(false);
 		}
 	}

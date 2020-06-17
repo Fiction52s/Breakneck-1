@@ -91,7 +91,7 @@ struct PauseMenu;
 struct Sequence;
 struct EnterNexus1Seq;
 struct ShipExitScene;
-struct ShipEnterScene;
+
 
 struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
@@ -276,18 +276,7 @@ struct GameSession : RayCastHandler, Session
 		GR_EXITGAME
 	};
 
-	enum State
-	{
-		RUN,
-		CUTPAUSE,
-		CUTSCENE,
-		PAUSE,
-		RACEFIGHT_RESULTS,
-		STORY,
-		SEQUENCE,
-		FROZEN,
-		MAP
-	};
+
 
 	enum SoundType
 	{
@@ -343,15 +332,11 @@ struct GameSession : RayCastHandler, Session
 	//does not change during running
 	std::list<PolyPtr> allSpecialTerrain;
 	
-	
-	
-	BasicBossScene *preLevelScene;
-	BasicBossScene *postLevelScene;
 	TopClouds *topClouds;
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;
-	Sequence *getShardSeq;
+	
 	Sequence *deathSeq;
 	RaceFight *raceFight;
 	
@@ -365,7 +350,7 @@ struct GameSession : RayCastHandler, Session
 	std::list<RailPtr> allRails;
 	int totalRails;
 	ShipExitScene *shipExitScene;
-	ShipEnterScene *shipEnterScene;
+	
 	
 	std::list<boost::filesystem::path> bonusPaths;
 
@@ -383,14 +368,14 @@ struct GameSession : RayCastHandler, Session
 	ShapeEmitter *testEmit;
 	std::list<DecorDraw*> decorBetween;
 	
-	Sequence *activeSequence;
+	
 	StorySequence *currStorySequence;
 	MomentaBroadcast *currBroadcast;
 	DialogueUser *activeDialogue;
 	
 	int numKeysCollected;
-	ShardPopup *shardPop;
-	BitField *shardsCapturedField;
+
+	
 	
 	
 	V2d nexusPos;
@@ -403,9 +388,6 @@ struct GameSession : RayCastHandler, Session
 	ReplayPlayer *repPlayer;
 	std::list<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
-	
-	
-	State state;
 	bool quit;
 	bool boostIntro;
 	InputVisualizer *inputVis;
@@ -439,7 +421,7 @@ struct GameSession : RayCastHandler, Session
 	
 	GameResultType resType;
 	sf::Sprite kinMapSpawnIcon;
-	ShapeEmitter *emitterLists[EffectLayer::Count];
+	
 	
 	QuadTree *terrainBGTree;
 	QuadTree * itemTree;
@@ -460,7 +442,7 @@ struct GameSession : RayCastHandler, Session
 	double frameRateTimeTotal;
 	sf::Text frameRateText;
 	sf::Text runningTimerText;
-	bool switchState;
+	
 	int returnVal;
 	sf::View rainView;
 
@@ -522,13 +504,9 @@ struct GameSession : RayCastHandler, Session
 	void RestartLevel();
 	void NextFrameRestartLevel();
 	
-
-	
-
 	//setup
 	void SetupGhosts(std::list<GhostEntry*> &ghosts);
 	void SetupPlayers();
-	void SetupShardsCapturedField();
 	void SetupShaders();
 	void SetupBackground();
 	void SetupScoreDisplay();
@@ -556,29 +534,21 @@ struct GameSession : RayCastHandler, Session
 	//draw
 	
 	void DrawDecorBetween(sf::RenderTarget *target);
-
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
-	
 	void DrawDyingPlayers(sf::RenderTarget *target);
 	void DrawTopClouds( sf::RenderTarget *target );
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
-	
-	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
-	void DrawActiveSequence(EffectLayer layer, 
-		sf::RenderTarget *target);
-	
 
+	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
 
 	void UpdateDebugModifiers();
-	void SetActiveSequence(Sequence *activeSeq);
-	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
+	
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
 	bool IsShardCaptured(int sType);
-	void TryCreateShardResources();
 	void CreateDeathSequence();
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
@@ -613,8 +583,7 @@ struct GameSession : RayCastHandler, Session
 	void KeyboardUpdate( int index );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	void EndLevel();
-	void AddEmitter(ShapeEmitter *emit,
-		EffectLayer layer);
+
 	void UpdateEmitters();
 	void ClearEmitters();
 	bool IsWithinBounds(V2d &p);
@@ -623,7 +592,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateFrameRateCounterText( double frameTime );
 	void UpdateRunningTimerText();
 	bool RunGameModeUpdate( double frameTime );
-	void ActiveSequenceUpdate();
+	
 	void ActiveDialogueUpdate();
 	void ActiveStorySequenceUpdate();
 	void ActiveBroadcastUpdate();
@@ -641,7 +610,5 @@ struct GameSession : RayCastHandler, Session
 	void UpdateCamera();
 	void UpdateEnvPlants();
 	void UpdateBackAndStartButtons();
-	void SetGameSessionState(int s);
-	int GetGameSessionState();
 };
 #endif

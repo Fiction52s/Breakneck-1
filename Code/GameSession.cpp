@@ -48,7 +48,7 @@
 #include "ShaderTester.h"
 #include "ControlSettingsMenu.h"
 #include "TouchGrass.h"
-#include "ShardSequence.h"
+
 #include "Barrier.h"
 #include "SequenceW4.h"
 #include "ParticleEffects.h"
@@ -126,16 +126,6 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
-int GameSession::GetGameSessionState()
-{
-	return state;
-}
-
-void GameSession::SetGameSessionState(int s)
-{
-	state = (State)s;
-}
-
 void GameSession::UpdateBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
@@ -143,7 +133,7 @@ void GameSession::UpdateBackAndStartButtons()
 	{
 		if (raceFight->gameOver || GetCurrInput(0).back)
 		{
-			state = RACEFIGHT_RESULTS;
+			gameState = RACEFIGHT_RESULTS;
 			raceFight->raceFightResultsFrame = 0;
 			raceFight->victoryScreen->Reset();
 			raceFight->victoryScreen->SetupColumns();
@@ -156,14 +146,14 @@ void GameSession::UpdateBackAndStartButtons()
 		//if( IsKeyPressed( Keyboard ) )
 		if (currInput.start && !prevInput.start)
 		{
-			state = PAUSE;
+			gameState = PAUSE;
 			ActivatePauseSound(GetSound("pause_on"));
 			pauseMenu->SetTab(PauseMenu::PAUSE);
 			soundNodeList->Pause(true);
 		}
 		else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
 		{
-			state = PAUSE;
+			gameState = PAUSE;
 			pauseMenu->SetTab(PauseMenu::MAP);
 			ActivatePauseSound(GetSound("pause_on"));
 			soundNodeList->Pause(true);
@@ -528,59 +518,7 @@ void GameSession::ActiveBroadcastUpdate()
 	}
 }
 
-void GameSession::ActiveSequenceUpdate()
-{
-	if (activeSequence != NULL)// && activeSequence == startSeq )
-	{
-		State oldState = state;
-		if (!activeSequence->Update())
-		{
-			if (activeSequence->nextSeq != NULL)
-			{
-				activeSequence->nextSeq->Reset();
-				SetActiveSequence(activeSequence->nextSeq);
-			}
-			else
-			{
-				if (activeSequence == preLevelScene)
-				{
-					FreezePlayerAndEnemies(false);
-					SetPlayerInputOn(true);
-					if (shipEnterScene != NULL)
-					{
-						shipEnterScene->Reset();
-						SetActiveSequence(shipEnterScene);
-						state = RUN;
-						return;
-					}
-				}
 
-
-				if (activeSequence == postLevelScene)
-				{
-					goalDestroyed = true;
-				}
-
-				state = RUN;
-				activeSequence = NULL;
-			}
-		}
-		else
-		{
-			if (state != oldState)
-			{
-				switchState = true;
-				return;
-				//goto starttest;
-			}
-		}
-
-		if (state == SEQUENCE)
-		{
-
-		}
-	}
-}
 
 void GameSession::ActiveDialogueUpdate()
 {
@@ -690,7 +628,7 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 
 		if (nextFrameRestart)
 		{
-			state = GameSession::RUN;
+			gameState = GameSession::RUN;
 			RestartLevel();
 			gameClock.restart();
 			currentTime = 0;
@@ -720,7 +658,7 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		UpdateAllPlayersInput();
 
 		ActiveSequenceUpdate();
-		if (switchState)
+		if (switchGameState)
 			break;
 
 		ActiveDialogueUpdate();
@@ -856,7 +794,7 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 		}
 	}
 
-	if (switchState && state != FROZEN)
+	if (switchGameState && gameState != FROZEN)
 	{
 		return false;
 	}
@@ -874,8 +812,8 @@ bool GameSession::RunGameModeUpdate( double frameTime )
 	{
 		if (ev.type == Event::LostFocus)
 		{
-			if (state == RUN)
-				state = PAUSE;
+			if (gameState == RUN)
+				gameState = PAUSE;
 		}
 		else if (ev.type == sf::Event::GainedFocus)
 		{
@@ -1041,6 +979,12 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	shardPop = NULL;
 
+	if (getShardSeq != NULL)
+	{
+		delete getShardSeq;
+	}
+	getShardSeq = NULL;
+
 	//might be able to setup in setuptopclouds
 	if (topClouds != NULL)
 	{
@@ -1104,12 +1048,9 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupUnusedTilests();
 }
 
-
-
 GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
 	:Session( Session::SESS_GAME, p_filePath), saveFile( sf )
 {
-	
 	currSession = this;
 
 	Init();
@@ -1127,12 +1068,6 @@ void GameSession::Cleanup()
 	{
 		delete deathSeq;
 		deathSeq = NULL;
-	}
-
-	if (getShardSeq != NULL)
-	{
-		delete getShardSeq;
-		getShardSeq = NULL;
 	}
 
 	if (gateMarkers != NULL)
@@ -1211,20 +1146,6 @@ void GameSession::Cleanup()
 		delete recGhost;
 		recGhost = NULL;
 	}
-
-	if ( parentGame == NULL && shardsCapturedField != NULL)
-	{
-		delete shardsCapturedField;
-		shardsCapturedField = NULL;
-	}
-
-	if (shardPop != NULL)
-	{
-		delete shardPop;
-		shardPop = NULL;
-	}
-
-	
 
 	if (parentGame == NULL && goalPulse != NULL)
 	{
@@ -1830,8 +1751,6 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 	return a.first > b.first;
 }
 
-
-
 void GameSession::CreateDeathSequence()
 {
 	if (parentGame != NULL)
@@ -1841,19 +1760,6 @@ void GameSession::CreateDeathSequence()
 	else if (deathSeq == NULL)
 	{
 		deathSeq = new DeathSequence(this);
-	}
-}
-
-void GameSession::TryCreateShardResources()
-{
-	if (shardPop == NULL)
-	{
-		shardPop = new ShardPopup(this);
-	}
-
-	if (getShardSeq == NULL)
-	{
-		getShardSeq = new GetShardSequence(this);
 	}
 }
 
@@ -2400,20 +2306,6 @@ void GameSession::SetupPlayers()
 	assert(activePlayer);
 }
 
-void GameSession::SetupShardsCapturedField()
-{
-	if (parentGame != NULL)
-	{
-		shardsCapturedField = parentGame->shardsCapturedField;
-	}
-	else if( shardsCapturedField == NULL )
-		shardsCapturedField = new BitField(32 * 5);
-	else
-	{
-		shardsCapturedField->Reset();
-	}
-}
-
 void GameSession::SetupShaders()
 {
 	//since these are not pointers, cannot transfer them from the parentGame. Might want to change that?
@@ -2685,7 +2577,7 @@ int GameSession::Run()
 	if (raceFight != NULL)
 	{
 		raceFight->victoryScreen->Reset();
-		state = RUN;//RACEFIGHT_RESULTS;
+		gameState = RUN;//RACEFIGHT_RESULTS;
 		raceFight->place[0] = 1;
 		raceFight->place[1] = 2;
 
@@ -2694,7 +2586,7 @@ int GameSession::Run()
 	}
 	else
 	{
-		state = RUN;
+		gameState = RUN;
 	}
 
 	//Rain rain(this);
@@ -2734,7 +2626,7 @@ int GameSession::Run()
 	SetOriginalMusic();
 
 	std::stringstream ss;
-	switchState = false;
+	switchGameState = false;
 
 	if (GetPlayer(0)->action == Actor::INTROBOOST)
 	{
@@ -2766,7 +2658,7 @@ int GameSession::Run()
 
 	while( !quit )
 	{
-		switchState = false;
+		switchGameState = false;
 		double newTime = gameClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - currentTime;
 
@@ -2781,14 +2673,14 @@ int GameSession::Run()
 		UpdateRunningTimerText();
 
 
-		if( state == RUN )
+		if(gameState == RUN )
 		{
 			if (!RunGameModeUpdate(frameTime))
 			{
 				continue;
 			}
 		}
-		else if( state == FROZEN )
+		else if(gameState == FROZEN )
 		{
 			sf::Event ev;
 			while( window->pollEvent( ev ) )
@@ -2822,26 +2714,9 @@ int GameSession::Run()
 			{
 				UpdateInput();
 
-				if (activeSequence != NULL)
-				{
-					State oldState = state;
-					if (!activeSequence->Update())
-					{
-						state = RUN;
-						activeSequence = NULL;
-					}
-					else
-					{
-						if (state != oldState)
-						{
-							switchState = true;
-							break;
-							//goto starttest;
-						}
-					}
-				}
+				ActiveSequenceUpdate();
 
-				if (state != FROZEN)
+				if (gameState != FROZEN)
 				{
 					break;
 				}
@@ -2849,7 +2724,7 @@ int GameSession::Run()
 				accumulator -= TIMESTEP;
 			}
 
-			if (state != FROZEN)
+			if (gameState != FROZEN)
 			{
 				continue;
 			}
@@ -2872,7 +2747,7 @@ int GameSession::Run()
 			//pauseMenuSprite.setScale( .5, .5 );
 			//window->draw( pauseMenuSprite );
 		}
-		else if( state == MAP )
+		else if(gameState == MAP )
 		{
 			window->clear();
 
@@ -2894,9 +2769,9 @@ int GameSession::Run()
 			{
 				UpdateInput();
 
-				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && state == MAP )
+				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && gameState == MAP )
 				{
-					state = RUN;
+					gameState = RUN;
 					soundNodeList->Pause( false );
 					ActivatePauseSound(GetSound("pause_off"));
 				}
@@ -3002,7 +2877,7 @@ int GameSession::Run()
 			//cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
 			window->draw( mapTexSprite );
 		}
-		else if( state == RACEFIGHT_RESULTS )
+		else if(gameState == RACEFIGHT_RESULTS )
 		{
 			/*quit = true;
 			returnVal = 1;
@@ -3061,7 +2936,7 @@ int GameSession::Run()
 
 			++raceFight->raceFightResultsFrame;
 		}
-		else if (state == STORY)
+		else if (gameState == STORY)
 		{
 			sf::Event ev;
 			while (window->pollEvent(ev))
@@ -3102,7 +2977,7 @@ int GameSession::Run()
 					//if( false )
 					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
 					{
-						state = RUN;
+						gameState = RUN;
 						//preScreenTex->setView(uiView);
 						//currStorySequence->Draw(preScreenTex);
 						currStorySequence->EndSequence();
@@ -3147,7 +3022,7 @@ int GameSession::Run()
 			//UpdateInput();
 		
 		}
-		else if (state == SEQUENCE)
+		else if (gameState == SEQUENCE)
 		{
 			sf::Event ev;
 			while (window->pollEvent(ev))
@@ -3185,24 +3060,7 @@ int GameSession::Run()
 
 				UpdateInput();
 
-				if (activeSequence != NULL)
-				{
-					State oldState = state;
-					if (!activeSequence->Update())
-					{
-						state = RUN;
-						activeSequence = NULL;
-					}
-					else
-					{
-						if (state != oldState)
-						{
-							switchState = true;
-							break;
-							//goto starttest;
-						}
-					}
-				}
+				ActiveSequenceUpdate();
 
 				mainMenu->musicPlayer->Update();
 
@@ -3223,7 +3081,7 @@ int GameSession::Run()
 				}
 			}
 
-			if (switchState)
+			if (switchGameState)
 			{
 				continue;
 			}
@@ -3254,7 +3112,7 @@ int GameSession::Run()
 			//UpdateInput();
 
 		}
-		else if (state == PAUSE)
+		else if (gameState == PAUSE)
 		{
 			sf::Event ev;
 			while (window->pollEvent(ev))
@@ -3298,7 +3156,7 @@ int GameSession::Run()
 				}
 				case PauseMenu::R_P_RESUME:
 				{
-					state = GameSession::RUN;
+					gameState = GameSession::RUN;
 					ActivatePauseSound(GetSound("pause_off"));
 					soundNodeList->Pause(false);
 					pauseMenu->shardMenu->StopMusic();
@@ -3306,7 +3164,7 @@ int GameSession::Run()
 				}
 				case PauseMenu::R_P_RESPAWN:
 				{
-					state = GameSession::RUN;
+					gameState = GameSession::RUN;
 					RestartLevel();
 					gameClock.restart();
 					currentTime = 0;
@@ -3337,7 +3195,7 @@ int GameSession::Run()
 
 				}
 
-				if (state != PAUSE)
+				if (gameState != PAUSE)
 				{
 					break;
 				}
@@ -3345,7 +3203,7 @@ int GameSession::Run()
 				accumulator -= TIMESTEP;
 			}
 
-			if (state != PAUSE)
+			if (gameState != PAUSE)
 			{
 				continue;
 			}
@@ -3649,10 +3507,8 @@ void GameSession::Init()
 	fBubblePos = NULL;
 	fBubbleRadiusSize = NULL;
 	fBubbleFrame = NULL;
-	preLevelScene = NULL;
+	
 	postLevelScene = NULL;
-	shardPop = NULL;
-	getShardSeq = NULL;
 	shardsCapturedField = NULL;
 	level = NULL;
 	inputVis = NULL;
@@ -3751,7 +3607,7 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 {
 	storySeq->Reset();
 	currStorySequence = storySeq;
-	state = GameSession::STORY;
+	gameState = GameSession::STORY;
 }
 
 void GameSession::DrawDyingPlayers(sf::RenderTarget *target)
@@ -3886,24 +3742,7 @@ void GameSession::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
 	}
 }
 
-void GameSession::DrawActiveSequence(EffectLayer layer, sf::RenderTarget *target)
-{
-	if (activeSequence != NULL)
-	{
-		sf::View oldView = target->getView();
-		if (layer == UI_FRONT)
-		{
-			target->setView(uiView);
-		}
 
-		activeSequence->Draw(target, layer);
-
-		if (layer == UI_FRONT)
-		{
-			target->setView(oldView);
-		}
-	}
-}
 
 void GameSession::SuppressEnemyKeys( Gate *g )
 {
@@ -4041,31 +3880,6 @@ void GameSession::DrawGoalEnergy(sf::RenderTarget *target)
 }
 
 
-void GameSession::AddEmitter(ShapeEmitter *emit,
-	EffectLayer layer)
-{
-	ShapeEmitter *&currList = emitterLists[layer];
-	if (currList == NULL)
-	{
-		currList = emit;
-		emit->next = NULL;
-	}
-	else
-	{
-		emit->next = currList;
-		currList = emit;
-	}
-}
-
-void GameSession::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
-{
-	ShapeEmitter *curr = emitterLists[layer];
-	while (curr != NULL)
-	{
-		curr->Draw(target);
-		curr = curr->next;
-	}
-}
 
 void GameSession::UpdateEmitters()
 {
@@ -5255,19 +5069,6 @@ void GameSession::rResetEnemies( QNode *node )
 		}
 		
 	}
-}
-
-void GameSession::SetActiveSequence(Sequence *activeSeq)
-{
-	activeSequence = activeSeq;
-
-	if (activeSequence == preLevelScene)
-	{
-		FreezePlayerAndEnemies(true);
-		SetPlayerInputOn(false);
-	}
-
-	activeSequence->StartRunning();
 }
 
 void GameSession::TriggerBarrier( Barrier *b )

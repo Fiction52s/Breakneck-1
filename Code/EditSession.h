@@ -778,6 +778,7 @@ struct EditSession : GUIHandler, Session
 	void InitDecorPanel();
 	void DrawGame(sf::RenderTarget *target);
 	void SetupGates();
+	bool IsShardCaptured(int sType);
 };
 
 

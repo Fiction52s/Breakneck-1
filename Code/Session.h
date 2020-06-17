@@ -59,6 +59,14 @@ struct PoiInfo;
 struct CameraShot;
 struct MusicInfo;
 
+struct ShardPopup;
+
+struct BasicBossScene;
+struct Sequence;
+struct ShipEnterScene;
+
+struct ShapeEmitter;
+
 #define TIMESTEP (1.0 / 60.0)
 
 struct Session : TilesetManager, QuadTreeCollider
@@ -84,6 +92,23 @@ struct Session : TilesetManager, QuadTreeCollider
 		QUERY_RAIL,
 	};
 
+	enum GameState
+	{
+		RUN,
+		CUTPAUSE,
+		CUTSCENE,
+		PAUSE,
+		RACEFIGHT_RESULTS,
+		STORY,
+		SEQUENCE,
+		FROZEN,
+		MAP
+	};
+
+
+	bool switchGameState;
+	ShipEnterScene *shipEnterScene;
+	GameState gameState;
 	AdventureHUD *adventureHUD;
 
 	Fader *fader;
@@ -204,6 +229,15 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool goalDestroyed;
 	sf::Vertex blackBorderQuads[4 * 4];
 	PolyPtr inversePolygon;
+	ShardPopup *shardPop;
+	Sequence *getShardSeq;
+	BitField *shardsCapturedField;
+
+	Sequence *activeSequence;
+	BasicBossScene *preLevelScene;
+	BasicBossScene *postLevelScene;
+
+	ShapeEmitter *emitterLists[EffectLayer::Count];
 
 	static Session *GetSession();
 
@@ -443,12 +477,11 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetNumGates(int nGates);
 	void LockGate(Gate *g);
 	void UnlockGate(Gate *g);
-	virtual bool IsShardCaptured(int sType) { return false; } //return to this later
 	void DrawGates(sf::RenderTarget *target);
 	void ResetGates();
 	void ResetBarriers();
 	void AddBarrier(XBarrierParams *xbp);
-	virtual void SetGameSessionState(int s) {}
+	void SetGameSessionState(int s);
 	virtual int GetGameSessionState();
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
 	void CrossFade(int fadeOutFrames,
@@ -467,6 +500,16 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupBarriers();
 	void QueryToSpawnEnemies();
 	void DrawBlackBorderQuads(sf::RenderTarget *target);
+	void TryCreateShardResources();
+	virtual bool IsShardCaptured(int sType);
+	void SetupShardsCapturedField();
+	void SetActiveSequence(Sequence *activeSeq);
+	void ActiveSequenceUpdate();
+	void AddEmitter(ShapeEmitter *emit,
+		EffectLayer layer);
+	void DrawActiveSequence(EffectLayer layer,
+		sf::RenderTarget *target);
+	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
 };
 
 #endif
