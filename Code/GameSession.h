@@ -344,15 +344,13 @@ struct GameSession : RayCastHandler, Session
 	std::list<PolyPtr> allSpecialTerrain;
 	
 	
-	sf::Vertex blackBorderQuads[4 * 4];
+	
 	BasicBossScene *preLevelScene;
 	BasicBossScene *postLevelScene;
 	TopClouds *topClouds;
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;
-	bool stormCeilingOn;
-	double stormCeilingHeight;
 	Sequence *getShardSeq;
 	Sequence *deathSeq;
 	RaceFight *raceFight;
@@ -372,7 +370,7 @@ struct GameSession : RayCastHandler, Session
 	std::list<boost::filesystem::path> bonusPaths;
 
 	//for queries
-	PolyPtr inversePoly;
+	
 	
 	//raycast temps
 	sf::Vector2<double> rayStart;
@@ -525,17 +523,10 @@ struct GameSession : RayCastHandler, Session
 	
 	void RestartLevel();
 	void NextFrameRestartLevel();
-	
-	void SetupMapBorderQuads(
-		bool *blackBorder,
-		bool &topBorderOn);
-
-	//draw map or minimap
 
 	
 
 	//setup
-	void SetupStormCeiling();
 	void SetupGhosts(std::list<GhostEntry*> &ghosts);
 	void SetupPlayers();
 	void SetupShardsCapturedField();
@@ -606,7 +597,7 @@ struct GameSession : RayCastHandler, Session
 	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
 	void ResetEnemies();
-	void SetGlobalBorders();
+	
 	void ResetPlants();
 	void ResetInactiveEnemies();
 	void rResetEnemies( QNode *node );

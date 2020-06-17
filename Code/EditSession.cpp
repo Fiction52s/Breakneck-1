@@ -41,6 +41,7 @@
 #include "KeyMarker.h"
 
 #include "Fader.h"
+#include "Minimap.h"
 
 using namespace std;
 using namespace sf;
@@ -725,6 +726,17 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}
+
+	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
+	{
+		delete (*it);
+	}
+	globalBorderEdges.clear();
+
+	bool blackBorder[2];
+	bool topBorderOn = false;
+	SetupGlobalBorderQuads(blackBorder, topBorderOn);
+	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 }
 
 void EditSession::EndTestMode()
@@ -6751,21 +6763,6 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		top = topBound;
 		right = pRight;
 		bot = pBot;
-	}
-
-	for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		for (auto it2 = (*it).second->actors.begin(); it2 != (*it).second->actors.end(); ++it2)
-		{
-			if ((*it2)->type->info.name == "poi" )
-			{
-				PoiParams *pp = (PoiParams*)((*it2));
-				if (pp->name == "stormceiling")
-				{
-					top = pp->GetPosition().y;
-				}
-			}
-		}
 	}
 
 		

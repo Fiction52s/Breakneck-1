@@ -201,6 +201,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap; //for sequences to change music? might be useless..
 	bool goalDestroyed;
+	sf::Vertex blackBorderQuads[4 * 4];
+	PolyPtr inversePolygon;
 
 	static Session *GetSession();
 
@@ -458,6 +460,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetDrainOn(bool d);
 	void RemoveAllEnemies();
 	void FreezePlayerAndEnemies(bool freeze);
+	void SetGlobalBorders();
+	void SetupGlobalBorderQuads( bool *blackBorder, bool &topBorderOn );
 };
 
 #endif

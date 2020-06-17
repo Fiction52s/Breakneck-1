@@ -251,7 +251,6 @@ struct EditSession : GUIHandler, Session
 	AdventureCreator *adventureCreator;
 	PolyPtr polygonInProgress;
 	RailPtr railInProgress;
-	PolyPtr inversePolygon;
 	sf::Font arialFont;
 	sf::Text cursorLocationText;
 	sf::Text scaleText;

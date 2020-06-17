@@ -4057,3 +4057,189 @@ int Session::GetGameSessionState()
 {
 	return GameSession::RUN;
 }
+
+void Session::SetGlobalBorders()
+{
+	//borders not allowed to intersect w/ gates
+	V2d topLeft(mapHeader->leftBounds, mapHeader->topBounds);
+	V2d topRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds);
+	V2d bottomRight(mapHeader->leftBounds + mapHeader->boundsWidth, mapHeader->topBounds + mapHeader->boundsHeight);
+	V2d bottomLeft(mapHeader->leftBounds, mapHeader->topBounds + mapHeader->boundsHeight);
+
+	Edge *left = new Edge;
+	left->v0 = topLeft;
+	left->v1 = bottomLeft;
+	left->edgeType = Edge::BORDER;
+
+	Edge *right = new Edge;
+	right->v0 = bottomRight;
+	right->v1 = topRight;
+	right->edgeType = Edge::BORDER;
+	cout << "making new edge at x value: " << right->v0.x << endl;
+
+	Edge *top = new Edge;
+	top->v0 = topRight;
+	top->v1 = topLeft;
+	top->edgeType = Edge::BORDER;
+
+	Edge *bot = new Edge;
+	bot->v0 = bottomLeft;
+	bot->v1 = bottomRight;
+	bot->edgeType = Edge::BORDER;
+
+	left->edge0 = top;
+	left->edge1 = bot;
+
+	top->edge0 = right;
+	top->edge1 = left;
+
+	right->edge0 = bot;
+	right->edge1 = top;
+
+	bot->edge0 = left;
+	bot->edge1 = right;
+
+	terrainTree->Insert(left);
+	terrainTree->Insert(right);
+	terrainTree->Insert(top);
+
+	globalBorderEdges.push_back(left);
+	globalBorderEdges.push_back(right);
+	globalBorderEdges.push_back(top);
+	globalBorderEdges.push_back(bot);
+	//terrainTree->Insert(bot);
+
+}
+
+void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
+{
+	double extraBorder = 100;
+	if (inversePolygon != NULL)
+	{
+		IntRect inverseAABB = inversePolygon->GetAABB();
+
+		int trueTop = mapHeader->topBounds;
+		int possibleTop = inverseAABB.top; //- extraBorder;
+		if (possibleTop > trueTop)
+			trueTop = possibleTop;
+		else
+		{
+			topBorderOn = true;
+		}
+		mapHeader->topBounds = trueTop - extraBorder / 2;
+		int inversePolyBottom = inverseAABB.top + inverseAABB.height;
+		mapHeader->boundsHeight = (inversePolyBottom + extraBorder) - trueTop;
+
+		int inversePolyRight = (inverseAABB.left + inverseAABB.width);
+		blackBorder[0] = inverseAABB.left < mapHeader->leftBounds; //inverse is further left than border
+		blackBorder[1] = inversePolyRight >(mapHeader->leftBounds + mapHeader->boundsWidth); //inverse is further right than border
+
+		int leftB = mapHeader->leftBounds;
+		int rightB = mapHeader->leftBounds + mapHeader->boundsWidth;
+		if (!blackBorder[0])
+		{
+			mapHeader->leftBounds = inverseAABB.left - extraBorder;
+			mapHeader->boundsWidth = rightB - mapHeader->leftBounds;
+		}
+		if (!blackBorder[1])
+		{
+			mapHeader->boundsWidth = (inversePolyRight + extraBorder) - mapHeader->leftBounds;
+		}
+		else
+		{
+			cout << "creating black border at " << (mapHeader->leftBounds + mapHeader->boundsWidth) << endl;
+		}
+	}
+	else
+	{
+		blackBorder[0] = true;
+		blackBorder[1] = true;
+
+
+		auto it = allPolysVec.begin();
+
+		IntRect polyAABB = (*it)->GetAABB();
+		int maxY = polyAABB.top + polyAABB.height;
+		int minX = polyAABB.left;
+		int maxX = polyAABB.left + polyAABB.width;
+
+		++it;
+		int temp;
+		for (; it != allPolysVec.end(); ++it)
+		{
+			polyAABB = (*it)->GetAABB();
+			temp = polyAABB.top + polyAABB.height;
+			if (temp > maxY)
+			{
+				maxY = temp;
+			}
+			temp = polyAABB.left;
+			if (temp < minX)
+			{
+				minX = temp;
+			}
+			temp = polyAABB.left + polyAABB.width;
+			if (temp > maxX)
+			{
+				maxX = temp;
+			}
+		}
+
+		mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
+		int oldRight = mapHeader->leftBounds + mapHeader->boundsWidth;
+		int oldLeft = mapHeader->leftBounds;
+		if (minX > oldLeft)
+		{
+			mapHeader->leftBounds = minX;
+		}
+		if (maxX <= oldRight)
+		{
+			mapHeader->boundsWidth = maxX - mapHeader->leftBounds;
+		}
+	}
+
+	SetGlobalBorders();
+
+	int quadWidth = 200;
+	int extra = 1000;
+
+	int top = mapHeader->topBounds;
+	int lBound = mapHeader->leftBounds;
+	int rBound = mapHeader->leftBounds + mapHeader->boundsWidth;
+	int height = mapHeader->boundsHeight;
+
+	SetRectCenter(blackBorderQuads, quadWidth, height, Vector2f(lBound + quadWidth / 2,
+		top + height / 2));
+	SetRectCenter(blackBorderQuads + 4, quadWidth, height, Vector2f(rBound - quadWidth / 2,
+		top + height / 2));
+
+	SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
+		top + height / 2));
+	SetRectCenter(blackBorderQuads + 12, extra, height, Vector2f(rBound + extra / 2,
+		top + height / 2));
+	SetRectColor(blackBorderQuads, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 8, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 12, Color(Color::Black));
+
+	if (blackBorder[0])
+	{
+		blackBorderQuads[1].color.a = 0;
+		blackBorderQuads[2].color.a = 0;
+	}
+	else
+	{
+		SetRectColor(blackBorderQuads, Color(Color::Transparent));
+		SetRectColor(blackBorderQuads + 8, Color(Color::Transparent));
+	}
+	if (blackBorder[1])
+	{
+		blackBorderQuads[4].color.a = 0;
+		blackBorderQuads[7].color.a = 0;
+	}
+	else
+	{
+		SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
+		SetRectColor(blackBorderQuads + 12, Color(Color::Transparent));
+	}
+}
