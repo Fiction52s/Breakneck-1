@@ -463,6 +463,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetGlobalBorders();
 	void SetupGlobalBorderQuads( bool *blackBorder, bool &topBorderOn );
 	void CleanupGlobalBorders();
+	void CleanupBarriers();
 };
 
 #endif

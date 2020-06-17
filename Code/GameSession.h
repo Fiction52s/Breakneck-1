@@ -523,6 +523,7 @@ struct GameSession : RayCastHandler, Session
 	
 	void RestartLevel();
 	void NextFrameRestartLevel();
+	
 
 	
 

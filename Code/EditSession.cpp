@@ -709,12 +709,7 @@ void EditSession::TestPlayerMode()
 	CreateZones();
 	SetupZones();
 
-	for (auto it = barriers.begin(); it != barriers.end(); ++it)
-	{
-		delete (*it);
-	}
-	barriers.clear();
-
+	CleanupBarriers();
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -727,11 +722,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	for (auto it = globalBorderEdges.begin(); it != globalBorderEdges.end(); ++it)
-	{
-		delete (*it);
-	}
-	globalBorderEdges.clear();
+	CleanupGlobalBorders();
 
 	bool blackBorder[2];
 	bool topBorderOn = false;
@@ -1244,8 +1235,6 @@ EditSession::~EditSession()
 	DestroyCopiedBrushes();
 
 	mapStartBrush->Destroy();
-
-	CleanupGlobalBorders();
 
 	if (createEnemyModeUI != NULL)
 	{

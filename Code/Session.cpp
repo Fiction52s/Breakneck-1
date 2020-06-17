@@ -1477,6 +1477,8 @@ Session::~Session()
 		delete (*it).second;
 	}
 
+	CleanupGlobalBorders();
+
 	if (background != NULL)
 	{
 		delete background;
@@ -4251,4 +4253,14 @@ void Session::CleanupGlobalBorders()
 		delete (*it);
 	}
 	globalBorderEdges.clear();
+}
+
+void Session::CleanupBarriers()
+{
+	for (auto it = barriers.begin();
+		it != barriers.end(); ++it)
+	{
+		delete (*it);
+	}
+	barriers.clear();
 }

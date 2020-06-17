@@ -1008,12 +1008,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupZones();
 
-	for (auto it = barriers.begin();
-		it != barriers.end(); ++it)
-	{
-		delete (*it);
-	}
-	barriers.clear();
+	CleanupBarriers();
 
 	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
 	{
@@ -1177,13 +1172,6 @@ void GameSession::Cleanup()
 		fBubbleFrame = NULL;
 	}
 
-	for (auto it = barriers.begin();
-		it != barriers.end(); ++it)
-	{
-		delete (*it);
-	}
-	barriers.clear();
-
 	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
 	{
 		delete (*it).second;
@@ -1201,8 +1189,6 @@ void GameSession::Cleanup()
 		delete goalFlow;
 		goalFlow = NULL;
 	}
-
-	CleanupGlobalBorders();
 
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{
