@@ -707,6 +707,24 @@ void EditSession::TestPlayerMode()
 	CleanupZones();
 	CreateZones();
 	SetupZones();
+
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		delete (*it);
+	}
+	barriers.clear();
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			if ((*enit)->type == types["xbarrier"])
+			{
+				XBarrierParams *xbp = (XBarrierParams*)(*enit);
+				AddBarrier(xbp);
+			}
+		}
+	}
 }
 
 void EditSession::EndTestMode()
