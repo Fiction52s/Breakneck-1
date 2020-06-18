@@ -4212,46 +4212,96 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 		blackBorder[0] = true;
 		blackBorder[1] = true;
 
+		int maxY;
+		int minX;
+		int maxX;
+		bool adjust = false;
 
-		auto it = allPolysVec.begin();
-
-		IntRect polyAABB = (*it)->GetAABB();
-		int maxY = polyAABB.top + polyAABB.height;
-		int minX = polyAABB.left;
-		int maxX = polyAABB.left + polyAABB.width;
-
-		++it;
-		int temp;
-		for (; it != allPolysVec.end(); ++it)
+		if (IsSessTypeGame() && !allPolysVec.empty())
 		{
-			polyAABB = (*it)->GetAABB();
-			temp = polyAABB.top + polyAABB.height;
-			if (temp > maxY)
+			adjust = true;
+			auto it = allPolysVec.begin();
+
+			IntRect polyAABB = (*it)->GetAABB();
+			maxY = polyAABB.top + polyAABB.height;
+			minX = polyAABB.left;
+			maxX = polyAABB.left + polyAABB.width;
+
+			++it;
+			int temp;
+			for (; it != allPolysVec.end(); ++it)
 			{
-				maxY = temp;
+				polyAABB = (*it)->GetAABB();
+				temp = polyAABB.top + polyAABB.height;
+				if (temp > maxY)
+				{
+					maxY = temp;
+				}
+				temp = polyAABB.left;
+				if (temp < minX)
+				{
+					minX = temp;
+				}
+				temp = polyAABB.left + polyAABB.width;
+				if (temp > maxX)
+				{
+					maxX = temp;
+				}
 			}
-			temp = polyAABB.left;
-			if (temp < minX)
+		}
+		else if (IsSessTypeEdit())
+		{
+			EditSession *edit = EditSession::GetSession();
+
+			auto &polyList = edit->polygons;
+
+			if (!polyList.empty())
 			{
-				minX = temp;
-			}
-			temp = polyAABB.left + polyAABB.width;
-			if (temp > maxX)
-			{
-				maxX = temp;
+				adjust = true;
+				auto it = polyList.begin();
+
+				IntRect polyAABB = (*it)->GetAABB();
+				maxY = polyAABB.top + polyAABB.height;
+				minX = polyAABB.left;
+				maxX = polyAABB.left + polyAABB.width;
+
+				++it;
+				int temp;
+				for (; it != polyList.end(); ++it)
+				{
+					polyAABB = (*it)->GetAABB();
+					temp = polyAABB.top + polyAABB.height;
+					if (temp > maxY)
+					{
+						maxY = temp;
+					}
+					temp = polyAABB.left;
+					if (temp < minX)
+					{
+						minX = temp;
+					}
+					temp = polyAABB.left + polyAABB.width;
+					if (temp > maxX)
+					{
+						maxX = temp;
+					}
+				}
 			}
 		}
 
-		mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
-		int oldRight = mapHeader->leftBounds + mapHeader->boundsWidth;
-		int oldLeft = mapHeader->leftBounds;
-		if (minX > oldLeft)
+		if (adjust)
 		{
-			mapHeader->leftBounds = minX;
-		}
-		if (maxX <= oldRight)
-		{
-			mapHeader->boundsWidth = maxX - mapHeader->leftBounds;
+			mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
+			int oldRight = mapHeader->leftBounds + mapHeader->boundsWidth;
+			int oldLeft = mapHeader->leftBounds;
+			if (minX > oldLeft)
+			{
+				mapHeader->leftBounds = minX;
+			}
+			if (maxX <= oldRight)
+			{
+				mapHeader->boundsWidth = maxX - mapHeader->leftBounds;
+			}
 		}
 	}
 
