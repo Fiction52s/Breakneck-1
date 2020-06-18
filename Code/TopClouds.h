@@ -5,11 +5,12 @@
 
 struct Tileset;
 struct TopCloud;
-struct GameSession;
+struct Session;
 struct TopClouds
 {
-	TopClouds( GameSession *owner );
+	TopClouds();
 	~TopClouds();
+	void SetToHeader();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	int numClouds;
@@ -17,9 +18,13 @@ struct TopClouds
 	Tileset *ts;
 	int animFactor;
 	int animLength;
-	GameSession *owner;
+	Session *sess;
 	int startIndex;
 	int endIndex;
+
+	int currWidth;
+	int currLeft;
+	int currTop;
 };
 
 

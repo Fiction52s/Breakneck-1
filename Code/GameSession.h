@@ -330,7 +330,7 @@ struct GameSession : RayCastHandler, Session
 	//does not change during running
 	std::list<PolyPtr> allSpecialTerrain;
 	
-	TopClouds *topClouds;
+	
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;
@@ -535,7 +535,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
 	
-	void DrawTopClouds( sf::RenderTarget *target );
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
 

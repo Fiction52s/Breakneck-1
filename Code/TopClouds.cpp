@@ -1,42 +1,66 @@
 #include "TopClouds.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
 
-TopClouds::TopClouds( GameSession *p_owner )
-	:owner( p_owner )
+TopClouds::TopClouds()
 {
-	ts = owner->GetTileset("FX/cloud_ceiling_256x256.png", 256, 256);
-	assert(owner->mapHeader != NULL);
-	int boundsWidth = owner->mapHeader->boundsWidth;
-	int left = owner->mapHeader->leftBounds;
-	int top = owner->mapHeader->topBounds;
-
-	numClouds = boundsWidth / ts->tileWidth;
-
-	int remainder = boundsWidth % ts->tileWidth;
-	//deal with remainder later
-	/*if (remainder != 0)
-	{
-		numClouds++;
-	*/
+	sess = Session::GetSession();
+	ts = sess->GetTileset("FX/cloud_ceiling_256x256.png", 256, 256);
 	animLength = 11;
 	animFactor = 10;
+	cloudVA = NULL;
+}
+
+void TopClouds::SetToHeader()
+{
+	//assert(sess->mapHeader != NULL);
+
+	int width = sess->mapHeader->boundsWidth;
+	int left= sess->mapHeader->leftBounds;
+	int top = sess->mapHeader->topBounds;
+
+	if (cloudVA != NULL)
+	{
+		if (currWidth == width && currLeft == left && currTop == top)
+		{
+			return;
+		}
+		else
+		{
+			delete[] cloudVA;
+			cloudVA = NULL;
+		}
+	}
+
+	currWidth = width;
+	currLeft = left;
+	currTop = top;
+
+	numClouds = currWidth / ts->tileWidth;
+
+	int remainder = currWidth  % ts->tileWidth;
+	//deal with remainder later
+	if (remainder > 0)
+	{
+		numClouds++;
+	}
+
 
 	//numClouds = 1;
-
 	cloudVA = new Vertex[numClouds * 4];
 
-	
 	for (int i = 0; i < numClouds; ++i)
 	{
-		SetRectCenter(cloudVA + i * 4, 256, 256, 
-			Vector2f(left + ts->tileWidth / 2 + i * ts->tileWidth, top + ts->tileHeight / 2 ));
+		SetRectCenter(cloudVA + i * 4, 256, 256,
+			Vector2f(currLeft + ts->tileWidth / 2 + i * ts->tileWidth, 
+				currTop + ts->tileHeight / 2));
 		//SetRectColor(cloudVA + i * 4, Color(Color::Red));
 	}
 }
+
 
 TopClouds::~TopClouds()
 {
@@ -45,11 +69,11 @@ TopClouds::~TopClouds()
 
 void TopClouds::Update()
 {
-	int frame = (owner->totalGameFrames % (animFactor * animLength)) / animFactor;
+	int frame = (sess->totalGameFrames % (animFactor * animLength)) / animFactor;
 
-	FloatRect camRect = owner->cam.GetRect();
+	FloatRect camRect = sess->cam.GetRect();
 
-	startIndex = (camRect.left - owner->mapHeader->leftBounds) / ts->tileWidth;
+	startIndex = (camRect.left - sess->mapHeader->leftBounds) / ts->tileWidth;
 	endIndex = startIndex + camRect.width / ts->tileWidth;
 
 	//fix efficiency later

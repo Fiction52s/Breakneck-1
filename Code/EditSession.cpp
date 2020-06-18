@@ -45,6 +45,7 @@
 #include "Sequence.h"
 #include "MusicPlayer.h"
 #include "Barrier.h"
+#include "TopClouds.h"
 
 using namespace std;
 using namespace sf;
@@ -97,6 +98,8 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	if (background != NULL)
 		background->Draw(target);
+
+	DrawTopClouds(target);
 
 	DrawBlackBorderQuads(target);
 
@@ -394,6 +397,8 @@ bool EditSession::RunGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 
+		UpdateTopClouds();
+
 		if (totalGameFrames % 3 == 0)
 		{
 			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
@@ -491,6 +496,7 @@ bool EditSession::SequenceGameModeUpdate()
 
 		fader->Update();
 		swiper->Update();
+
 		mainMenu->UpdateEffects();
 		UpdateEmitters();
 
@@ -966,6 +972,13 @@ void EditSession::TestPlayerMode()
 
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
 
+	CleanupTopClouds();
+	if (topBorderOn)
+	{
+		topClouds = new TopClouds;
+		topClouds->SetToHeader();
+	}
+
 	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
 	GetPlayer(0)->SetupDrain();
@@ -1439,6 +1452,8 @@ void EditSession::CleanupForReload()
 	}
 
 	ClearEffects();
+
+	CleanupTopClouds();
 
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
 }
@@ -7087,6 +7102,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	mapPreviewTex->setView( pView );
 
+	//DrawTopClouds(mapPreviewTex);
 
 	CircleShape cs;
 	cs.setRadius( 10.f * ( (float)width / 1920 ) );

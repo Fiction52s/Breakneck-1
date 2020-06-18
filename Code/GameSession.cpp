@@ -697,8 +697,7 @@ bool GameSession::RunGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 		background->Update(cam.GetPos());
-		if (topClouds != NULL)
-			topClouds->Update();
+		UpdateTopClouds();
 		//rain.Update();
 
 		mainMenu->UpdateEffects();
@@ -1081,11 +1080,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	getShardSeq = NULL;
 
 	//might be able to setup in setuptopclouds
-	if (topClouds != NULL)
-	{
-		delete topClouds;
-		topClouds = NULL;
-	}
+	CleanupTopClouds();
 
 	CleanupGates();
 
@@ -1233,12 +1228,6 @@ void GameSession::Cleanup()
 	{
 		delete goalPulse;
 		goalPulse = NULL;
-	}
-
-	if (topClouds != NULL)
-	{
-		delete topClouds;
-		topClouds = NULL;
 	}
 
 	if (specterTree != NULL)
@@ -2195,7 +2184,8 @@ bool GameSession::Load()
 
 	if (topBorderOn)
 	{
-		topClouds = new TopClouds(this);
+		topClouds = new TopClouds;
+		topClouds->SetToHeader();
 	}
 
 	
@@ -3712,11 +3702,7 @@ void GameSession::OpenGates(int gCat)
 
 
 
-void GameSession::DrawTopClouds(sf::RenderTarget *target)
-{
-	if (topClouds != NULL)
-		topClouds->Draw(target);
-}
+
 
 void GameSession::UpdateEnvShaders()
 {

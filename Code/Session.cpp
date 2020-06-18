@@ -24,7 +24,7 @@
 #include "Sequence.h"
 #include "ParticleEffects.h"
 #include "DeathSequence.h"
-
+#include "TopClouds.h"
 //#include "Enemy_Shard.h"
 
 
@@ -1262,6 +1262,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	originalMusic = NULL;
 	adventureHUD = NULL;
 	gateMarkers = NULL;
+	topClouds = NULL;
 
 	getShardSeq = NULL;
 	deathSeq = NULL;
@@ -1306,6 +1307,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	grassTree = NULL;
 	activeItemTree = NULL;
 	gateTree = NULL;
+	enemyTree = NULL;
 
 	staticItemTree = NULL;
 
@@ -1550,6 +1552,8 @@ Session::~Session()
 	CleanupCameraShots();
 	CleanupPoi();
 	CleanupBarriers();
+
+	CleanupTopClouds();
 }
 
 void Session::UpdateDecorLayers()
@@ -4652,4 +4656,25 @@ void Session::CleanupPoi()
 		delete (*it).second;
 	}
 	poiMap.clear();
+}
+
+void Session::CleanupTopClouds()
+{
+	if (topClouds != NULL)
+	{
+		delete topClouds;
+		topClouds = NULL;
+	}
+}
+
+void Session::DrawTopClouds(sf::RenderTarget *target)
+{
+	if (topClouds != NULL)
+		topClouds->Draw(target);
+}
+
+void Session::UpdateTopClouds()
+{
+	if (topClouds != NULL)
+		topClouds->Update();
 }

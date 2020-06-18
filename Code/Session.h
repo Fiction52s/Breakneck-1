@@ -67,7 +67,7 @@ struct Sequence;
 struct ShipEnterScene;
 struct CameraShotParams;
 struct ShapeEmitter;
-
+struct TopClouds;
 struct PoiParams;
 
 #define TIMESTEP (1.0 / 60.0)
@@ -240,6 +240,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Sequence *activeSequence;
 	BasicBossScene *preLevelScene;
 	BasicBossScene *postLevelScene;
+	TopClouds *topClouds;
 
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 
@@ -527,6 +528,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AddCameraShot(CameraShotParams *csp);
 	void AddPoi(PoiParams *pp);
 	void CleanupPoi();
+	void CleanupTopClouds();
+	void DrawTopClouds(sf::RenderTarget *target);
+	void UpdateTopClouds();
 };
 
 #endif
