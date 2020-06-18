@@ -684,9 +684,12 @@ ConversationGroup::~ConversationGroup()
 {
 	if (convs != NULL)
 	{
+		for (int i = 0; i < numConvs; ++i)
+		{
+			delete convs[i];
+		}
 		delete[] convs;
 	}
-	
 }
 
 Conversation* ConversationGroup::GetConv(int index)
@@ -767,6 +770,10 @@ Conversation::~Conversation()
 {
 	if (speeches != NULL)
 	{
+		for (int i = 0; i < numSpeeches; ++i)
+		{
+			delete speeches[i];
+		}
 		delete[] speeches;
 	}
 	

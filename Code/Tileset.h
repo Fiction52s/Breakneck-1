@@ -38,7 +38,6 @@ struct Tileset
 
 struct TilesetManager
 {
-private:
 	enum TilesetCategory : int
 	{
 		C_DEFAULT,
@@ -57,7 +56,7 @@ private:
 		C_ZONE,
 		C_Count
 	};
-public:
+
 	TilesetManager();
 	~TilesetManager();
 	Tileset * GetSizedTileset(const std::string & s, int altColorIndex = 0);
@@ -73,6 +72,7 @@ public:
 		const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
 	void ClearTilesets();
 	void DestroyTileset(Tileset * t);
+	void DestroyTilesetCategory(TilesetCategory tc);
 	void ResetTilesetAccessCount();
 	void CleanupUnusedTilests();
 	void SetGameResourcesMode(bool on);

@@ -852,84 +852,83 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	}
 
 	Barrier *leftb = NULL, *rightb = NULL, *topb = NULL, *botb = NULL;
-	if (game != NULL)
+	
+	for (list<Barrier*>::iterator it = sess->barriers.begin(); it != sess->barriers.end(); ++it)
 	{
-		for (list<Barrier*>::iterator it = game->barriers.begin(); it != game->barriers.end(); ++it)
+		//continue;
+		if ((*it)->triggered)
 		{
-			//continue;
-			if ((*it)->triggered)
-			{
-				continue;
-			}
+			continue;
+		}
 
 
-			if ((*it)->x)
+		if ((*it)->x)
+		{
+			if ((*it)->positiveOpen)
 			{
-				if ((*it)->positiveOpen)
+				float diff = (*it)->GetCamPos() - left;
+				if (diff > 0)
 				{
-					float diff = (*it)->GetCamPos() - left;
-					if (diff > 0)
+					if (diff > xChangePos)
 					{
-						if (diff > xChangePos)
-						{
-							xChangePos = diff;
-							leftb = (*it);
-						}
-						//pos.x += diff;
-						//cout << "moving right" << endl;
-						//offset.x += (*it)->pos - left;
+						xChangePos = diff;
+						leftb = (*it);
 					}
-				}
-				else
-				{
-					float diff = right - (*it)->GetCamPos();
-					if (diff > 0)
-					{
-						//cout << "moving left: " << diff << endl;
-						//pos.x -= right - (*it)->pos;
-						//offset.x -= diff;
-						if (-diff < xChangeNeg)
-						{
-							xChangeNeg = -diff;
-							rightb = (*it);
-						}
-						//pos.x -= diff;
-					}
+					//pos.x += diff;
+					//cout << "moving right" << endl;
+					//offset.x += (*it)->pos - left;
 				}
 			}
 			else
 			{
-				if ((*it)->positiveOpen)
+				float diff = right - (*it)->GetCamPos();
+				if (diff > 0)
 				{
-					float diff = (*it)->GetCamPos() - top;
-					if (diff > 0)
+					//cout << "moving left: " << diff << endl;
+					//pos.x -= right - (*it)->pos;
+					//offset.x -= diff;
+					if (-diff < xChangeNeg)
 					{
-						if (diff > yChangePos)
-						{
-							yChangePos = diff;
-							topb = (*it);
-						}
-						//offset.y += (*it)->pos - top;
-						//pos.y += diff;
+						xChangeNeg = -diff;
+						rightb = (*it);
 					}
+					//pos.x -= diff;
 				}
-				else
+			}
+		}
+		else
+		{
+			if ((*it)->positiveOpen)
+			{
+				float diff = (*it)->GetCamPos() - top;
+				if (diff > 0)
 				{
-					float diff = bottom - (*it)->GetCamPos();
-					if (diff > 0)
+					if (diff > yChangePos)
 					{
-						if (-diff < yChangeNeg)
-						{
-							yChangeNeg = -diff;
-							botb = (*it);
-						}
-						//pos.y -= diff;
-						//offset.y -= bot - (*it)->pos;
+						yChangePos = diff;
+						topb = (*it);
 					}
+					//offset.y += (*it)->pos - top;
+					//pos.y += diff;
+				}
+			}
+			else
+			{
+				float diff = bottom - (*it)->GetCamPos();
+				if (diff > 0)
+				{
+					if (-diff < yChangeNeg)
+					{
+						yChangeNeg = -diff;
+						botb = (*it);
+					}
+					//pos.y -= diff;
+					//offset.y -= bot - (*it)->pos;
 				}
 			}
 		}
 	}
+	
 
 	Vector2f barrierOffset;
 	Vector2f borderOffset;

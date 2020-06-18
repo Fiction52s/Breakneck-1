@@ -1546,6 +1546,10 @@ Session::~Session()
 
 	CleanupZones();
 	CleanupGates();
+
+	CleanupCameraShots();
+	CleanupPoi();
+	CleanupBarriers();
 }
 
 void Session::UpdateDecorLayers()
@@ -4561,4 +4565,91 @@ void Session::DrawKinOverFader(sf::RenderTarget *target)
 			}
 		}
 	}
+}
+
+void Session::UpdateBarriers()
+{
+	for (auto it = barriers.begin();
+		it != barriers.end(); ++it)
+	{
+		bool trig = (*it)->Update();
+		if (trig)
+		{
+			TriggerBarrier((*it));
+		}
+	}
+}
+
+void Session::TriggerBarrier(Barrier *b)
+{
+	if (b->triggerSeq != NULL)
+	{
+		SetActiveSequence(b->triggerSeq);
+	}
+	else
+	{
+		b->Trigger();
+	}
+}
+
+void Session::SetupBarrierScenes()
+{
+	//happens after all enemies have been loaded
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		(*it)->SetScene();
+	}
+}
+
+void Session::SetupEnemyZoneSprites()
+{
+	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->SetZoneSpritePosition();
+	}
+}
+
+void Session::CleanupCameraShots()
+{
+	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	cameraShotMap.clear();
+}
+
+void Session::AddCameraShot(CameraShotParams *csp)
+{
+	const std::string &cName = csp->GetName();
+	CameraShot *shot = new CameraShot(csp->GetName(), csp->GetFloatPos(), csp->zoom);
+	if (cameraShotMap.count(cName) > 0)
+	{
+		assert(false);
+	}
+
+	cameraShotMap[cName] = shot;
+}
+
+void Session::AddPoi(PoiParams *pp)
+{
+	PoiInfo *pi = NULL;
+	if (pp->posInfo.IsAerial())
+	{
+		pi = new PoiInfo(pp->name, pp->GetIntPos());
+	}
+	else
+	{
+		pi = new PoiInfo(pp->name, pp->GetGroundEdge(), pp->posInfo.GetQuant() );
+
+	}
+	poiMap[pp->name] = pi;
+}
+
+void Session::CleanupPoi()
+{
+	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
+	{
+		delete (*it).second;
+	}
+	poiMap.clear();
 }

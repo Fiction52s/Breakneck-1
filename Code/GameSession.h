@@ -83,8 +83,6 @@ struct SaveFile;
 struct Level;
 struct MainMenu;
 
-
-struct DialogueUser;
 struct GoalPulse;
 struct GoalFlow;
 struct PauseMenu;
@@ -371,7 +369,6 @@ struct GameSession : RayCastHandler, Session
 	
 	StorySequence *currStorySequence;
 	MomentaBroadcast *currBroadcast;
-	DialogueUser *activeDialogue;
 	
 	int numKeysCollected;
 
@@ -557,7 +554,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
-	void TriggerBarrier( Barrier *b );
+	
 	
 	void UpdateEnemiesPrePhysics();
 	void UpdatePhysics();
@@ -592,12 +589,11 @@ struct GameSession : RayCastHandler, Session
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	
-	void ActiveDialogueUpdate();
 	void ActiveStorySequenceUpdate();
 	void ActiveBroadcastUpdate();
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
-	void UpdateBarriers();
+	
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawFlyTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);

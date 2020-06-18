@@ -327,17 +327,20 @@ Panel *ActorType::CreatePanel()
 	return p;
 }
 
-bool ActorType::IsInSpecialOptions(const std::string & n)
+int ActorType::GetSpecialOptionsIndex(const std::string & n)
 {
+	int ind = 0;
 	for (auto it = specialTypeOptions.begin(); it != specialTypeOptions.end(); ++it)
 	{
 		if (n == (*it))
 		{
-			return true;
+			return ind;
 		}
+
+		++ind;
 	}
 
-	return false;
+	return -1;
 }
 
 bool ActorType::LoadSpecialTypeOptions()

@@ -112,7 +112,7 @@ struct ActorType
 	bool CanBeAerial();
 	bool CanBeRailGrounded();
 	bool LoadSpecialTypeOptions();
-	bool IsInSpecialOptions(const std::string & n);
+	int GetSpecialOptionsIndex(const std::string & n);
 	const std::string &GetSelectedSpecialDropStr();
 	const std::string &GetSpecialDropStr(int ind);
 	int GetSelectedSpecialDropIndex();

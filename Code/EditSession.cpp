@@ -44,6 +44,7 @@
 #include "Minimap.h"
 #include "Sequence.h"
 #include "MusicPlayer.h"
+#include "Barrier.h"
 
 using namespace std;
 using namespace sf;
@@ -339,6 +340,8 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateEffects();
 
+		mainMenu->musicPlayer->Update();
+
 		UpdateHUD();
 
 		soundNodeList->Update();
@@ -347,7 +350,7 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateZones();
 
-		if (GetCurrInput(0).start && !GetPrevInput(0).start)
+		if (GetCurrInput(0).start && !GetPrevInput(0).start )
 		{
 			SetMode(EDIT);
 			/*if (gameCam)
@@ -371,6 +374,8 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateDecorSprites();
 		UpdateDecorLayers();
+
+		UpdateBarriers();
 
 		/*if ( != NULL)
 		{
@@ -579,6 +584,8 @@ void EditSession::TestPlayerMode()
 	cam.Reset();
 
 	soundNodeList->Reset();
+
+	SetPlayerInputOn(true);
 
 	fader->Reset();
 	swiper->Reset();
@@ -817,7 +824,7 @@ void EditSession::TestPlayerMode()
 
 	CreateBulletQuads();
 
-
+	
 	
 
 	auto &testPolys = GetCorrectPolygonList(0);
@@ -913,7 +920,10 @@ void EditSession::TestPlayerMode()
 	CreateZones();
 	SetupZones();
 
-	CleanupBarriers();
+	
+	CleanupCameraShots();
+	CleanupPoi();
+
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -923,8 +933,26 @@ void EditSession::TestPlayerMode()
 				XBarrierParams *xbp = (XBarrierParams*)(*enit);
 				AddBarrier(xbp);
 			}
+			else if ((*enit)->type == types["camerashot"])
+			{
+				CameraShotParams *csp = (CameraShotParams*)(*enit);
+				//tempCameraShots.push_back(csp);
+				AddCameraShot(csp);
+			}
+			else if ((*enit)->type == types["poi"])
+			{
+				PoiParams *pp = (PoiParams*)(*enit);
+				//tempPoiParams.push_back(pp);
+				AddPoi(pp);
+			}
 		}
 	}
+
+	//an issue right now is that these load tilesets that do not get deleted
+	//might not get deleted ever! need to at least get rid of them when reloading.
+	SetupBarrierScenes();
+
+	SetupEnemyZoneSprites();
 
 	CleanupGlobalBorders();
 
@@ -1411,6 +1439,8 @@ void EditSession::CleanupForReload()
 	}
 
 	ClearEffects();
+
+	DestroyTilesetCategory(TilesetCategory::C_STORY);
 }
 
 EditSession::~EditSession()

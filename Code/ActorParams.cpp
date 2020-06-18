@@ -131,7 +131,7 @@ PoiParams::PoiParams(ActorType *at,
 
 
 		name = pname;
-		if (!type->IsInSpecialOptions(name))
+		if (type->GetSpecialOptionsIndex(name) < 0)
 		{
 			assert(0);
 		}
@@ -148,7 +148,7 @@ PoiParams::PoiParams(ActorType *at,
 		nameText.setFillColor(Color::White);
 
 		name = pname;
-		if (!type->IsInSpecialOptions(name))
+		if (type->GetSpecialOptionsIndex(name) < 0)
 		{
 			assert(0);
 		}
@@ -1327,16 +1327,11 @@ XBarrierParams::XBarrierParams(ActorType *at,
 
 	string n;
 	is >> n;
-	if (!type->IsInSpecialOptions(n))
-	{
-		assert(0);
-	}
-	else
-	{
-		nameIndex = type->GetSelectedSpecialDropIndex();
-		assert(nameIndex >= 0);
-		SetText(n);
-	}
+	
+	nameIndex = type->GetSpecialOptionsIndex(n);
+	assert(nameIndex >= 0);
+	SetText(n);
+	
 
 	LoadBool(is, hasEdge);
 }
@@ -1426,16 +1421,11 @@ CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
 
 	string n;
 	is >> n;
-	if (!type->IsInSpecialOptions(n))
-	{
-		assert(0);
-	}
-	else
-	{
-		nameIndex = type->GetSelectedSpecialDropIndex();
-		assert(nameIndex >= 0);
-		SetText(n);
-	}
+	
+	nameIndex = type->GetSpecialOptionsIndex(n);
+	assert(nameIndex >= 0);
+	SetText(n);
+	
 
 	float z;
 	is >> z;
@@ -1569,16 +1559,11 @@ ExtraSceneParams::ExtraSceneParams(ActorType *at,
 
 	string n;
 	is >> n;
-	if (!type->IsInSpecialOptions(n))
-	{
-		assert(0);
-	}
-	else
-	{
-		nameIndex = type->GetSelectedSpecialDropIndex();
-		SetText(n);
-		assert(nameIndex >= 0);
-	}
+
+	nameIndex = type->GetSpecialOptionsIndex(n);
+	SetText(n);
+	assert(nameIndex >= 0);
+	
 
 	is >> extraSceneType;
 }

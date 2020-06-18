@@ -5527,9 +5527,17 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
-	owner->scoreDisplay->Activate();
-	SetAction(Actor::GOALKILLWAIT);
-	frame = 0;
+	if (owner != NULL)
+	{
+		owner->scoreDisplay->Activate();
+		SetAction(Actor::GOALKILLWAIT);
+		frame = 0;
+	}
+	else
+	{
+		editOwner->EndTestMode();
+	}
+	
 }
 
 void Actor::SetStandInPlacePos(Edge *g, double q,

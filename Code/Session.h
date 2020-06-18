@@ -65,8 +65,10 @@ struct DeathSequece;
 struct BasicBossScene;
 struct Sequence;
 struct ShipEnterScene;
-
+struct CameraShotParams;
 struct ShapeEmitter;
+
+struct PoiParams;
 
 #define TIMESTEP (1.0 / 60.0)
 
@@ -517,6 +519,14 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupDeathSequence();
 	void DrawDyingPlayers(sf::RenderTarget *target);
 	void DrawKinOverFader(sf::RenderTarget *target);
+	void UpdateBarriers();
+	void TriggerBarrier(Barrier *b);
+	void SetupBarrierScenes();
+	void SetupEnemyZoneSprites();
+	void CleanupCameraShots();
+	void AddCameraShot(CameraShotParams *csp);
+	void AddPoi(PoiParams *pp);
+	void CleanupPoi();
 };
 
 #endif

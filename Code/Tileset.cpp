@@ -533,3 +533,17 @@ void TilesetManager::CleanupUnusedTilests()
 		}
 	}
 }
+
+void TilesetManager::DestroyTilesetCategory(TilesetCategory tc)
+{
+	auto & currMap = tilesetMaps[tc];
+	for (auto it = currMap.begin(); it != currMap.end(); ++it)
+	{
+		auto & tsList = (*it).second;
+		for (auto lit = tsList.begin(); lit != tsList.end(); ++lit)
+		{
+			delete (*lit).first;
+		}
+	}
+	currMap.clear();
+}

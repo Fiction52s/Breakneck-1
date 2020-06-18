@@ -371,6 +371,9 @@ FlashedImage::~FlashedImage()
 	
 	if (splitShader != NULL)
 		delete splitShader;
+
+	if (bgSplitShader != NULL)
+		delete bgSplitShader;
 }
 
 void FlashedImage::SetBG(SceneBG * p_bg)

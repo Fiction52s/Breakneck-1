@@ -413,19 +413,6 @@ void GameSession::DrawSpecialTerrain(sf::RenderTarget *target)
 	}
 }
 
-void GameSession::UpdateBarriers()
-{
-	for (auto it = barriers.begin();
-		it != barriers.end(); ++it)
-	{
-		bool trig = (*it)->Update();
-		if (trig)
-		{
-			TriggerBarrier((*it));
-		}
-	}
-}
-
 void GameSession::UpdateReplayGhostSprites()
 {
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
@@ -497,20 +484,6 @@ void GameSession::ActiveBroadcastUpdate()
 		}
 		else
 		{
-		}
-	}
-}
-
-
-
-void GameSession::ActiveDialogueUpdate()
-{
-	if (activeDialogue != NULL)
-	{
-		if (GetCurrInput(0).A && !GetPrevInput(0).A)
-		{
-			if (activeDialogue->ConfirmDialogue())
-				activeDialogue = NULL;
 		}
 	}
 }
@@ -643,8 +616,6 @@ bool GameSession::RunGameModeUpdate()
 		ActiveSequenceUpdate();
 		if (switchGameState)
 			break;
-
-		ActiveDialogueUpdate();
 		
 		UpdatePlayersPrePhysics();
 
@@ -1062,11 +1033,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupBarriers();
 
-	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
-	{
-		delete (*it).second;
-	}
-	cameraShotMap.clear();
+	CleanupCameraShots();
 
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -1134,11 +1101,8 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	fullAirTriggerList.clear();
 
-	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
-	{
-		delete (*it).second;
-	}
-	poiMap.clear();
+	CleanupPoi();
+
 
 	if (shipExitScene != NULL)
 	{
@@ -1216,12 +1180,6 @@ void GameSession::Cleanup()
 		fBubbleRadiusSize = NULL;
 		fBubbleFrame = NULL;
 	}
-
-	for (auto it = cameraShotMap.begin(); it != cameraShotMap.end(); ++it)
-	{
-		delete (*it).second;
-	}
-	cameraShotMap.clear();
 
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -1347,10 +1305,7 @@ void GameSession::Cleanup()
 		delete (*it);
 	}
 
-	for (auto it = poiMap.begin(); it != poiMap.end(); ++it)
-	{
-		delete (*it).second;
-	}
+
 	
 	if (shipExitScene != NULL)
 	{
@@ -1782,14 +1737,13 @@ void GameSession::ProcessActor(ActorPtr a)
 		else if (typeName == "camerashot")
 		{
 			CameraShotParams *csp = (CameraShotParams*)a;
-			const std::string &cName = csp->GetName();
-			CameraShot *shot = new CameraShot(csp->GetName(), csp->GetFloatPos(),csp->zoom);
-			if (cameraShotMap.count(cName) > 0 )
-			{
-				assert(false);
-			}
-		
-			cameraShotMap[cName] = shot;
+			AddCameraShot(csp);
+		}
+		else if (typeName == "poi")
+		{
+			PoiParams *pp = (PoiParams*)a;
+			AddPoi(pp);
+			
 		}
 		else if (typeName == "ship")
 		{
@@ -1833,16 +1787,10 @@ void GameSession::ProcessAllActors()
 	}
 
 	//create sequences for the barriers after all enemies have already been loaded
-	for (auto it = barriers.begin(); it != barriers.end(); ++it)
-	{
-		(*it)->SetScene();
-	}
+	SetupBarrierScenes();
 
-
-	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-	{
-		(*it)->SetZoneSpritePosition();
-	}
+	SetupEnemyZoneSprites();
+	
 }
 
 bool cmpPairs(pair<double,int> & a, pair<double,int> & b)
@@ -3490,7 +3438,6 @@ void GameSession::Init()
 	//repGhost = NULL;
 	shipExitScene = NULL;
 	shipEnterScene = NULL;
-	activeDialogue = NULL;
 	explodingGravityGrass = NULL;
 	polyQueryList = NULL;
 	specialPieceList = NULL;
@@ -4032,7 +3979,6 @@ void GameSession::RestartLevel()
 	goalPulse->Reset();
 	//f->Reset();
 
-	activeDialogue = NULL;
 
 	fader->Reset();
 	numKeysCollected = 0;
@@ -4965,18 +4911,6 @@ void GameSession::rResetEnemies( QNode *node )
 			e->Reset();
 		}
 		
-	}
-}
-
-void GameSession::TriggerBarrier( Barrier *b )
-{
-	if (b->triggerSeq != NULL)
-	{
-		SetActiveSequence(b->triggerSeq);
-	}
-	else
-	{
-		b->Trigger();
 	}
 }
 
