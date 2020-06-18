@@ -3522,8 +3522,8 @@ void Actor::DesperationUpdate()
 				slowCounter = 1;
 				frame = 0;
 
-				owner->deathSeq->Reset();
-				owner->SetActiveSequence(owner->deathSeq);
+				sess->deathSeq->Reset();
+				sess->SetActiveSequence(sess->deathSeq);
 
 				for (int i = 0; i < 3; ++i)
 				{
@@ -3869,12 +3869,12 @@ void Actor::SetDespMode(bool on)
 void Actor::UpdateDrain()
 {
 	//change this soon. just so i can get the minimap running
-	if ( owner != NULL && kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->adventureHUD->IsShown()
+	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->adventureHUD->IsShown()
 		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
-		if (owner->drain && !desperationMode
+		if (sess->drain && !desperationMode
 			&& !IsIntroAction(action) && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
-			&& owner->activeSequence == NULL)
+			&& sess->activeSequence == NULL)
 		{
 			drainCounter++;
 			if (drainCounter == drainCounterMax)
@@ -5647,7 +5647,7 @@ void Actor::StandInPlace()
 
 void Actor::WaitInPlace()
 {
-	owner->SetPlayerInputOn(false);
+	sess->SetPlayerInputOn(false);
 	SetAction(STAND);
 	//SetAction(SEQ_WAIT);
 	frame = 0;
@@ -5692,8 +5692,8 @@ bool Actor::CheckWall( bool right )
 
 	GetTerrainTree()->Query( this, r );
 	
-	if( owner != NULL )
-		owner->barrierTree->Query(this, r);
+	
+	sess->barrierTree->Query(this, r);
 	
 
 
@@ -5815,8 +5815,8 @@ bool Actor::CheckStandUp()
 	//	Query( this, owner->testTree, r );
 		GetTerrainTree()->Query( this, r );
 
-		if( owner != NULL )
-			owner->barrierTree->Query(this, r);
+		
+		sess->barrierTree->Query(this, r);
 
 		possibleEdgeCount = 0;
 
@@ -5890,8 +5890,8 @@ bool Actor::ResolvePhysics( V2d vel )
 	//cout << "Start resolve" << endl;
 	GetTerrainTree()->Query( this, r );
 
-	if( owner != NULL )
-		owner->barrierTree->Query(this, r);
+	
+	sess->barrierTree->Query(this, r);
 
 
 	testr = false;
@@ -10144,7 +10144,7 @@ void Actor::HandleTouchedGate()
 	{
 		//cout << "went back" << endl;
 		gateTouched = NULL;
-		owner->LockGate(g);
+		sess->LockGate(g);
 
 	}
 	else
@@ -11780,7 +11780,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//SetAction(GETPOWER_AIRDASH_MEDITATE);
 		//frame = 0;
 		physicsOver = true;
-		owner->activeSequence = trigger->gameSequence;
+		sess->activeSequence = trigger->gameSequence;
 		//owner->currStorySequence = trigger->storySeq;
 		//owner->state = GameSession::STORY;
 		break;
@@ -11800,7 +11800,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 
 		//owner->Fade(false, 30, Color::Black);
 
-		owner->activeSequence = trigger->gameSequence;
+		sess->activeSequence = trigger->gameSequence;
 
 		SetAction(SEQ_ENTERCORE1);
 		frame = 0;
@@ -11825,7 +11825,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		frame = 0;
 		physicsOver = true;
 
-		owner->activeSequence = trigger->gameSequence;
+		sess->activeSequence = trigger->gameSequence;
 		break;
 	}
 	case TRIGGER_TEXTTEST:
@@ -11842,7 +11842,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		WaitInPlace();
 		physicsOver = true;
 
-		owner->activeSequence = trigger->gameSequence;
+		sess->activeSequence = trigger->gameSequence;
 		//owner->SetStorySeq(trigger->storySeq);
 		break;
 	}

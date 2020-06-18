@@ -4,7 +4,7 @@
 #include "Sequence.h"
 
 struct ShapeEmitter;
-struct GameSession;
+struct Session;
 struct MovingGeoGroup;
 
 struct DeathSequence : Sequence
@@ -15,7 +15,7 @@ struct DeathSequence : Sequence
 		END
 	};
 
-	DeathSequence(GameSession *owner);
+	DeathSequence();
 	~DeathSequence();
 	bool Update();
 	void Draw(sf::RenderTarget *target,
@@ -26,7 +26,7 @@ struct DeathSequence : Sequence
 	int stateLength[END];
 	MovingGeoGroup *geoGroup;
 	ShapeEmitter *emitter;
-	GameSession *owner;
+	Session *sess;
 
 	sf::Vertex overlayRect[4];
 };

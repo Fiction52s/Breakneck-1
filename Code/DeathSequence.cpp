@@ -1,14 +1,15 @@
 #include "DeathSequence.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "ParticleEffects.h"
 #include "Actor.h"
 
 using namespace sf;
 using namespace std;
 
-DeathSequence::DeathSequence(GameSession *p_owner)
-	:owner(p_owner)
+DeathSequence::DeathSequence()
 {
+	sess = Session::GetSession();
+
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
@@ -75,7 +76,7 @@ DeathSequence::~DeathSequence()
 
 bool DeathSequence::Update()
 {
-	Actor *player = owner->GetPlayer(0);
+	Actor *player = sess->GetPlayer(0);
 
 	if (frame == stateLength[state] && state != END)
 	{
@@ -86,8 +87,8 @@ bool DeathSequence::Update()
 
 		if (state == END)
 		{
-			owner->cam.EaseOutOfManual(60);
-			owner->cam.StopRumble();
+			sess->cam.EaseOutOfManual(60);
+			sess->cam.StopRumble();
 			return false;
 		}
 	}
@@ -98,14 +99,14 @@ bool DeathSequence::Update()
 	{
 		if (frame == 0)
 		{
-			owner->cam.SetManual(true);
-			owner->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
-			owner->cam.SetRumble(10, 10, 90);
+			sess->cam.SetManual(true);
+			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
+			sess->cam.SetRumble(10, 10, 90);
 		}
 
 		if (frame == 60)
 		{
-			owner->Fade(false, 14, Color::White, true);
+			sess->Fade(false, 14, Color::White, true);
 		}
 
 		/*int freezeFrame = 100;
@@ -122,7 +123,7 @@ bool DeathSequence::Update()
 			}
 		}*/
 
-		if (owner->GetGameSessionState() == GameSession::RUN)
+		if (sess->GetGameSessionState() == Session::RUN)
 			if (!geoGroup->Update())
 			{
 				frame = stateLength[state] - 1;
@@ -138,7 +139,7 @@ bool DeathSequence::Update()
 
 void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 {
-	owner->DrawEmitters(layer, target);
+	sess->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		if (state != END)
@@ -148,7 +149,7 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
-		if (state != END && owner->GetGameSessionState() == GameSession::FROZEN)
+		if (state != END && sess->GetGameSessionState() == Session::FROZEN)
 		{
 			target->draw(overlayRect, 4, sf::Quads);
 		}
@@ -157,7 +158,7 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 void DeathSequence::Reset()
 {
-	Vector2f pPos = Vector2f(owner->GetPlayer(0)->position);
+	Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
 	frame = 0;
 	state = GET;
 	geoGroup->SetBase(pPos);

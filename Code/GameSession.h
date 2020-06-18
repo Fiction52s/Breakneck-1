@@ -337,7 +337,7 @@ struct GameSession : RayCastHandler, Session
 	bool hasGrass[6];
 	bool hasAnyGrass;
 	
-	Sequence *deathSeq;
+	
 	RaceFight *raceFight;
 	
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
@@ -537,7 +537,7 @@ struct GameSession : RayCastHandler, Session
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
-	void DrawDyingPlayers(sf::RenderTarget *target);
+	
 	void DrawTopClouds( sf::RenderTarget *target );
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
@@ -549,7 +549,6 @@ struct GameSession : RayCastHandler, Session
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
 	bool IsShardCaptured(int sType);
-	void CreateDeathSequence();
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
@@ -579,13 +578,11 @@ struct GameSession : RayCastHandler, Session
 	void OpenGates(int gCat);
 
 	void CloseGates(int gCat);
-	void UpdateInput();
 	void KeyboardUpdate( int index );
 	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	void EndLevel();
 
-	void UpdateEmitters();
-	void ClearEmitters();
+	
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
@@ -608,7 +605,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawRain(sf::RenderTarget *target);
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);
-	void DrawKinOverFader(sf::RenderTarget *target);
 	void UpdateCamera();
 	void UpdateEnvPlants();
 	void UpdateBackAndStartButtons();

@@ -23,6 +23,7 @@
 #include "ShardSequence.h"
 #include "Sequence.h"
 #include "ParticleEffects.h"
+#include "DeathSequence.h"
 
 //#include "Enemy_Shard.h"
 
@@ -1263,6 +1264,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	gateMarkers = NULL;
 
 	getShardSeq = NULL;
+	deathSeq = NULL;
 	shardPop = NULL;
 
 	zoneTree = NULL;
@@ -1534,6 +1536,12 @@ Session::~Session()
 	{
 		delete shardsCapturedField;
 		shardsCapturedField = NULL;
+	}
+
+	if ( parentGame == NULL && deathSeq != NULL)
+	{
+		delete deathSeq;
+		deathSeq = NULL;
 	}
 
 	CleanupZones();
@@ -4469,5 +4477,88 @@ void Session::DrawEmitters(EffectLayer layer, sf::RenderTarget *target)
 	{
 		curr->Draw(target);
 		curr = curr->next;
+	}
+}
+
+void Session::UpdateEmitters()
+{
+	ShapeEmitter *prev = NULL;
+	ShapeEmitter *curr;
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		curr = emitterLists[i];
+		prev = NULL;
+		while (curr != NULL)
+		{
+			if (curr->IsDone())
+			{
+				if (curr == emitterLists[i])
+				{
+					emitterLists[i] = curr->next;
+				}
+				else
+				{
+					prev->next = curr->next;
+				}
+				curr = curr->next;
+			}
+			else
+			{
+				curr->Update();
+
+				prev = curr;
+				curr = curr->next;
+			}
+		}
+	}
+}
+
+void Session::ClearEmitters()
+{
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		emitterLists[i] = NULL;
+	}
+}
+
+void Session::SetupDeathSequence()
+{
+	if (parentGame != NULL)
+	{
+		deathSeq = parentGame->deathSeq;
+	}
+	else if (deathSeq == NULL)
+	{
+		deathSeq = new DeathSequence;
+	}
+}
+
+void Session::DrawDyingPlayers(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->DeathDraw(target);
+		}
+	}
+}
+
+void Session::DrawKinOverFader(sf::RenderTarget *target)
+{
+	Actor *p = NULL;
+	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
+	{
+		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Draw(preScreenTex);
+			}
+		}
 	}
 }

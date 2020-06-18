@@ -380,7 +380,7 @@ struct EditSession : GUIHandler, Session
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void UpdatePostPhysics();
-	void TestPlayerModeUpdate();
+	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
 	void Load();
 	void Init();

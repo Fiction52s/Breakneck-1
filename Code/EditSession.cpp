@@ -42,6 +42,8 @@
 
 #include "Fader.h"
 #include "Minimap.h"
+#include "Sequence.h"
+#include "MusicPlayer.h"
 
 using namespace std;
 using namespace sf;
@@ -99,7 +101,9 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawDecorBehind();
 
+	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target);
 	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
+	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
 
 	DrawZones(target);
 
@@ -113,11 +117,15 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawHUD(target);
 
+	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
 	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
+	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target);
 	
 	DrawEnemies(target);
 
+	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	DrawPlayerWires(target);
 
@@ -130,7 +138,11 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	absorbShardParticles->Draw(target);
 
+	DrawDyingPlayers(target);
+
 	DrawEffects(EffectLayer::IN_FRONT, target);
+	DrawEmitters(EffectLayer::IN_FRONT, target);
+	DrawActiveSequence(EffectLayer::IN_FRONT, target);
 
 	DrawBullets(target);
 
@@ -138,7 +150,17 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	target->setView(uiView);
 
+	DrawActiveSequence(EffectLayer::UI_FRONT, target);
 	DrawEffects(EffectLayer::UI_FRONT, target);
+	DrawEmitters(EffectLayer::UI_FRONT, target);
+
+	fader->Draw(target);
+	swiper->Draw(target);
+
+	mainMenu->DrawEffects(target);
+
+	target->setView(view); //sets it back to normal for any world -> pixel calcs
+	DrawKinOverFader(target);
 }
 
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
@@ -277,10 +299,8 @@ void EditSession::DeselectObjectType(ISelectable::ISelectableType sType)
 	}
 }
 
-bool EditSession::RunGameModeUpdate(double frameTime)
+bool EditSession::RunGameModeUpdate()
 {
-	accumulator += frameTime;
-
 	Actor *pTemp = NULL;
 
 	while (accumulator >= TIMESTEP)
@@ -309,7 +329,7 @@ bool EditSession::RunGameModeUpdate(double frameTime)
 		UpdatePostPhysics();
 
 		if (mode != TEST_PLAYER)
-			return;
+			return true;
 
 		UpdateGates();
 
@@ -344,7 +364,7 @@ bool EditSession::RunGameModeUpdate(double frameTime)
 
 			playerTracker->SetOn(true);
 			playerTracker->CalcShownCircles();
-			return;
+			return true;
 		}
 
 		UpdateDecorSprites();
@@ -386,9 +406,130 @@ bool EditSession::RunGameModeUpdate(double frameTime)
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
 	}
+
+	return true;
 }
 
-void EditSession::TestPlayerModeUpdate()
+bool EditSession::FrozenGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateControllers();
+
+		ActiveSequenceUpdate();
+
+		if (gameState != FROZEN)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+	}
+
+	if (gameState != FROZEN)
+	{
+		return false;
+	}
+
+	Sprite preTexSprite;
+	preTexSprite.setTexture(preScreenTex->getTexture());
+	preTexSprite.setPosition(-960 / 2, -540 / 2);
+	preTexSprite.setScale(.5, .5);
+	window->draw(preTexSprite);
+
+	return true;
+}
+
+bool EditSession::SequenceGameModeUpdate()
+{
+	sf::Event ev;
+	while (window->pollEvent(ev))
+	{
+		/*if( ev.type == sf::Event::KeyPressed )
+		{
+		if( ev.key.code = Keyboard::O )
+		{
+		state = RUN;
+		soundNodeList->Pause( false );
+		break;
+		}
+		}*/
+		if (ev.type == sf::Event::GainedFocus)
+		{
+			//state = RUN;
+			//soundNodeList->Pause( false );
+			//break;
+		}
+		else if (ev.type == sf::Event::KeyPressed)
+		{
+			//if( ev.key.code == Keyboard::
+		}
+	}
+
+	window->clear();
+	//window->setView(v);
+	preScreenTex->clear();
+
+	Sprite preTexSprite;
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateControllers();
+
+		ActiveSequenceUpdate();
+
+		mainMenu->musicPlayer->Update();
+
+		fader->Update();
+		swiper->Update();
+		mainMenu->UpdateEffects();
+		UpdateEmitters();
+
+		accumulator -= TIMESTEP;
+
+		if (goalDestroyed)
+		{
+			EndTestMode();
+
+			//quit = true;
+
+			//returnVal = GR_WIN;
+			//returnVal = resType;
+			break;
+		}
+	}
+
+	if (switchGameState)
+	{
+		return false;
+	}
+
+	if (activeSequence != NULL)
+	{
+		//preScreenTex->setView(uiView);
+		activeSequence->Draw(preScreenTex);
+	}
+
+	preScreenTex->setView(uiView);
+
+
+	fader->Draw(preScreenTex);
+	swiper->Draw(preScreenTex);
+
+	mainMenu->DrawEffects(preScreenTex);
+
+	return true;
+	/*if (showFrameRate)
+	{
+		preScreenTex->draw(frameRateText);
+	}*/
+
+	//preTexSprite.setTexture(preScreenTex->getTexture());
+	//preTexSprite.setPosition(-960 / 2, -540 / 2);
+	//preTexSprite.setScale(.5, .5);
+	//window->draw(preTexSprite);
+}
+
+bool EditSession::TestPlayerModeUpdate()
 {
 	switchGameState = false;
 	double newTime = gameClock.getElapsedTime().asSeconds();
@@ -400,26 +541,42 @@ void EditSession::TestPlayerModeUpdate()
 	}
 	currentTime = newTime;
 
+	accumulator += frameTime;
+
 	switch (gameState)
 	{
 	case RUN:
-		if (!RunGameModeUpdate(frameTime))
+		if (!RunGameModeUpdate())
 		{
-			TestPlayerModeUpdate(); //eventually make testplayermodeupdate
-			//return a bool and loop itself. this is bad for the stack
-			return;
+			return false; //loop the function again
+		}
+		break;
+	case FROZEN:
+		if (!FrozenGameModeUpdate())
+		{
+			return false; //loop the function again
+		}
+		break;
+	case SEQUENCE:
+		if (!SequenceGameModeUpdate())
+		{
+			return false;
 		}
 		break;
 	}
 
-
+	return true;
 }
 
 void EditSession::TestPlayerMode()
 {
 	gameState = Session::RUN;
 	cam.Reset();
+
+	fader->Reset();
+	swiper->Reset();
 	
+	ClearEmitters();
 	ClearEffects();
 	ResetAbsorbParticles();
 
@@ -428,6 +585,8 @@ void EditSession::TestPlayerMode()
 	oneFrameMode = false;
 
 	accumulator = TIMESTEP + .1;
+
+	activeSequence = NULL;
 
 	Actor *p;
 
@@ -773,6 +932,8 @@ void EditSession::TestPlayerMode()
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
 
 	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+
+	GetPlayer(0)->SetupDrain();
 }
 
 void EditSession::EndTestMode()
@@ -922,6 +1083,16 @@ void EditSession::LoseFocusFunc(int m)
 
 void EditSession::UpdateModeFunc(int m)
 {
+	if (m == TEST_PLAYER)
+	{
+		while (true )
+		{
+			if (TestPlayerModeUpdate())
+				break;
+		}
+		return;
+	}
+
 	if (updateModeFunctions.find(m) != updateModeFunctions.end())
 	{
 		(this->*updateModeFunctions[m])();
@@ -976,7 +1147,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[CREATE_IMAGES] = &EditSession::CreateImagesModeUpdate;
 	updateModeFunctions[CREATE_RAILS] = &EditSession::CreateRailsModeUpdate;
 	updateModeFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeUpdate;
-	updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
+	//updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 
 	int waitFrames[] = { 30, 2 };
@@ -2933,6 +3104,8 @@ void EditSession::Init()
 
 	SetupAbsorbParticles();
 
+	SetupDeathSequence();
+
 	if (filePathStr == "")
 	{
 		DefaultInit();
@@ -3341,6 +3514,9 @@ int EditSession::Run()
 			break;
 		}
 	}
+
+	fader->Reset();
+	swiper->Reset();
 
 	return result;
 }

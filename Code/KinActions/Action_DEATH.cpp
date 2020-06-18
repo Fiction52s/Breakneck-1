@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "GameSession.h"
 #include "HUD.h"
+#include "EditSession.h"
 
 using namespace sf;
 using namespace std;
@@ -38,8 +39,16 @@ void Actor::DEATH_Update()
 
 	if (frame == myActionLength - 1)
 	{
-		owner->NextFrameRestartLevel();
+		if (owner != NULL)
+		{
+			owner->NextFrameRestartLevel();	
+		}
+		else if (editOwner != NULL)
+		{
+			editOwner->TestPlayerMode();
+		}
 	}
+	
 }
 
 void Actor::DEATH_UpdateSprite()

@@ -233,23 +233,6 @@ void GameSession::UpdateCamera()
 	lastViewCenter = view.getCenter();
 }
 
-void GameSession::DrawKinOverFader(sf::RenderTarget *target)
-{
-	Actor *p = NULL;
-	if ((fader->fadeSkipKin && fader->fadeAlpha > 0) || (swiper->skipKin && swiper->IsSwiping()))//IsFading()) //adjust later?
-	{
-		DrawEffects(EffectLayer::IN_FRONT, preScreenTex);
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				p->Draw(preScreenTex);
-			}
-		}
-	}
-}
-
 void GameSession::DrawShockwaves(sf::RenderTarget *target)
 {
 	DrawSceneToPostProcess(postProcessTex2);
@@ -316,9 +299,9 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawReplayGhosts();
 
+	DrawStoryLayer(EffectLayer::IN_FRONT, target);
 	DrawEffects(EffectLayer::IN_FRONT, target);
 	DrawEmitters(EffectLayer::IN_FRONT, target );
-	DrawStoryLayer(EffectLayer::IN_FRONT, target);
 	DrawActiveSequence(EffectLayer::IN_FRONT, target );
 
 	DrawBullets(target);
@@ -869,11 +852,9 @@ bool GameSession::FrozenGameModeUpdate()
 
 	//savedinput when you enter pause
 
-	accumulator += frameTime;
-
 	while (accumulator >= TIMESTEP)
 	{
-		UpdateInput();
+		UpdateControllers();
 
 		ActiveSequenceUpdate();
 
@@ -926,14 +907,13 @@ bool GameSession::SequenceGameModeUpdate()
 	}
 
 	window->clear();
-	window->setView(v);
+	//window->setView(v);
 	preScreenTex->clear();
 
-	accumulator += frameTime;
 	Sprite preTexSprite;
 	while (accumulator >= TIMESTEP)
 	{
-		UpdateInput();
+		UpdateControllers();
 
 		ActiveSequenceUpdate();
 
@@ -1212,11 +1192,7 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}
 
-	if (deathSeq != NULL)
-	{
-		delete deathSeq;
-		deathSeq = NULL;
-	}
+	
 
 	if (gateMarkers != NULL)
 	{
@@ -1523,26 +1499,6 @@ void GameSession::UnlockPower(int pType)
 {
 	mainMenu->GetCurrentProgress()->UnlockUpgrade(pType);
 }
-
-void GameSession::UpdateInput()
-{
-	vector<GCC::GCController> controllers;
-	if( mainMenu->gccDriverEnabled ) 
-		controllers = mainMenu->gccDriver->getState();
-	for (int i = 0; i < 4; ++i)
-	{
-		GetPrevInput(i) = GetCurrInput(i);
-		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-		GameController &con = GetController(i);
-		if(mainMenu->gccDriverEnabled )
-			con.gcController = controllers[i];
-		con.UpdateState();
-		GetCurrInput(i) = con.GetState();
-		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-	}
-}
-
-
 
 void GameSession::UpdateEnemiesSprites()
 {
@@ -1899,17 +1855,7 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 	return a.first > b.first;
 }
 
-void GameSession::CreateDeathSequence()
-{
-	if (parentGame != NULL)
-	{
-		deathSeq = parentGame->deathSeq;
-	}
-	else if (deathSeq == NULL)
-	{
-		deathSeq = new DeathSequence(this);
-	}
-}
+
 
 int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
 {
@@ -2330,7 +2276,7 @@ bool GameSession::Load()
 
 	SetPlayersGameMode();
 
-	CreateDeathSequence();
+	SetupDeathSequence();
 
 	/*for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
@@ -2856,7 +2802,7 @@ int GameSession::Run()
 
 			while ( accumulator >= TIMESTEP  )
 			{
-				UpdateInput();
+				UpdateControllers();
 
 				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && gameState == MAP )
 				{
@@ -2987,7 +2933,7 @@ int GameSession::Run()
 			
 
 			
-				UpdateInput();
+				UpdateControllers();
 
 			//if( GetCurrInput( 0 ).start )
 			//{
@@ -3059,7 +3005,7 @@ int GameSession::Run()
 				window->setView(v);
 				preScreenTex->clear();
 
-				UpdateInput();
+				UpdateControllers();
 
 				if (currStorySequence != NULL)
 				{
@@ -3152,7 +3098,7 @@ int GameSession::Run()
 
 			while (accumulator >= TIMESTEP)
 			{
-				UpdateInput();
+				UpdateControllers();
 
 				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
 				switch (ur)
@@ -3509,7 +3455,6 @@ void GameSession::Init()
 	pauseTex = mainMenu->pauseTexture;
 
 	bonusGame = NULL;
-	deathSeq = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;
 	fBubblePos = NULL;
@@ -3616,19 +3561,6 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	storySeq->Reset();
 	currStorySequence = storySeq;
 	gameState = GameSession::STORY;
-}
-
-void GameSession::DrawDyingPlayers(sf::RenderTarget *target)
-{
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->DeathDraw(target);
-		}
-	}
 }
 
 void GameSession::UpdateTimeSlowShader()
@@ -3884,49 +3816,6 @@ void GameSession::DrawGoalEnergy(sf::RenderTarget *target)
 	if (goalFlow != NULL)
 	{
 		goalFlow->Draw(target);
-	}
-}
-
-
-
-void GameSession::UpdateEmitters()
-{
-	ShapeEmitter *prev = NULL;
-	ShapeEmitter *curr;
-	for (int i = 0; i < EffectLayer::Count; ++i)
-	{
-		curr = emitterLists[i];
-		prev = NULL;
-		while (curr != NULL)
-		{
-			if (curr->IsDone())
-			{
-				if (curr == emitterLists[i])
-				{
-					emitterLists[i] = curr->next;
-				}
-				else
-				{
-					prev->next = curr->next;
-				}
-				curr = curr->next;
-			}
-			else
-			{
-				curr->Update();
-
-				prev = curr;
-				curr = curr->next;
-			}
-		}
-	}
-}
-
-void GameSession::ClearEmitters()
-{
-	for (int i = 0; i < EffectLayer::Count; ++i)
-	{
-		emitterLists[i] = NULL;
 	}
 }
 

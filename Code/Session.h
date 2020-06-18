@@ -60,6 +60,7 @@ struct CameraShot;
 struct MusicInfo;
 
 struct ShardPopup;
+struct DeathSequece;
 
 struct BasicBossScene;
 struct Sequence;
@@ -231,6 +232,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	Sequence *getShardSeq;
+	Sequence *deathSeq;
 	BitField *shardsCapturedField;
 
 	Sequence *activeSequence;
@@ -507,9 +509,14 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ActiveSequenceUpdate();
 	void AddEmitter(ShapeEmitter *emit,
 		EffectLayer layer);
+	void UpdateEmitters();
+	void ClearEmitters();
 	void DrawActiveSequence(EffectLayer layer,
 		sf::RenderTarget *target);
 	void DrawEmitters(EffectLayer layer, sf::RenderTarget *target);
+	void SetupDeathSequence();
+	void DrawDyingPlayers(sf::RenderTarget *target);
+	void DrawKinOverFader(sf::RenderTarget *target);
 };
 
 #endif
