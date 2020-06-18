@@ -542,6 +542,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdatePhysics();
 	void UpdateEnemiesPostPhysics();
 	virtual bool UpdateRunModeBackAndStartButtons() = 0;
+	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
+	virtual void DrawTerrain(sf::RenderTarget *target) = 0;
+	virtual void DrawFlyTerrain(sf::RenderTarget *target) = 0;
 };
 
 #endif

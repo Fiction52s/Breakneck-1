@@ -103,34 +103,43 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawBlackBorderQuads(target);
 
-	DrawDecorBehind();
+	DrawDecorBehind(target);
 
+	//DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
 	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target);
 	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
 	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
-
 	DrawZones(target);
 
-	DrawPolygons();
+	DrawSpecialTerrain(target);
 
-	DrawRails();
+	DrawFlyTerrain(target);
 
-	DrawGates(target);
+	DrawTerrain(target);
 
-	DrawDecorBetween();
+	//DrawGoalEnergy(target);
 
 	DrawHUD(target);
 
+	DrawGates(target);
+	DrawRails(target);
+
+	DrawDecorBetween(target);
+
+	
+	//DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
 	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
 	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
 	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target);
 	
 	DrawEnemies(target);
 
+	//DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
+	//goalPulse->Draw(target);
 	DrawPlayerWires(target);
 
 	DrawHitEnemies(target); //whited out hit enemies
@@ -142,17 +151,60 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	absorbShardParticles->Draw(target);
 
-	DrawDyingPlayers(target);
+	//DrawReplayGhosts();
 
+	
+
+	//DrawStoryLayer(EffectLayer::IN_FRONT, target);
 	DrawEffects(EffectLayer::IN_FRONT, target);
 	DrawEmitters(EffectLayer::IN_FRONT, target);
 	DrawActiveSequence(EffectLayer::IN_FRONT, target);
 
 	DrawBullets(target);
 
+	//DrawRain(target);
+
 	DebugDraw(target);
 
+	//DrawShockwaves(target); //not operational atm
+
 	target->setView(uiView);
+
+	/*if (raceFight != NULL)
+	{
+		raceFight->DrawScore(target);
+	}*/
+
+	//scoreDisplay->Draw(target);
+
+	/*if (showFrameRate)
+	{
+		target->draw(frameRateText);
+	}
+
+	if (showRunningTimer && !scoreDisplay->active)
+	{
+		target->draw(runningTimerText);
+	}
+
+	if (inputVis != NULL)
+		inputVis->Draw(target);
+
+	if (gateMarkers != NULL)
+		gateMarkers->Draw(target);*/
+
+	target->setView(view);
+
+	DrawDyingPlayers(target);
+
+	//UpdateTimeSlowShader();
+
+	target->setView(uiView);
+
+	/*if (currBroadcast != NULL)
+	{
+		currBroadcast->Draw(target);
+	}*/
 
 	DrawActiveSequence(EffectLayer::UI_FRONT, target);
 	DrawEffects(EffectLayer::UI_FRONT, target);
@@ -347,17 +399,10 @@ bool EditSession::RunGameModeUpdate()
 			quit = true;
 			break;
 		}
+		*/
+		//UpdateDebugModifiers();
 
-		if (IsKeyPressed(sf::Keyboard::Num9))
-		{
-			showRunningTimer = true;
-		}
-		if (IsKeyPressed(sf::Keyboard::Num0))
-		{
-			showRunningTimer = false;
-		}
-
-		if (goalDestroyed)
+		/*if (goalDestroyed)
 		{
 			quit = true;
 			returnVal = resType;
@@ -1673,15 +1718,19 @@ void EditSession::Draw()
 
 	preScreenTex->draw(border, 8, sf::Lines);
 
-	DrawDecorBehind();
+	DrawDecorBehind(preScreenTex);
 
 	DrawGateInfos();
 
-	DrawPolygons();
+	DrawSpecialTerrain(preScreenTex);
 
-	DrawRails();
+	DrawFlyTerrain(preScreenTex);
 
-	DrawDecorBetween();
+	DrawTerrain(preScreenTex);
+
+	DrawRails(preScreenTex);
+
+	DrawDecorBetween(preScreenTex);
 
 	if (!IsDrawMode(Emode::TEST_PLAYER))
 	{
@@ -1700,7 +1749,7 @@ void EditSession::Draw()
 
 
 
-	DrawDecorFront();
+	DrawDecorFront(preScreenTex);
 
 	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 	{
@@ -11044,7 +11093,18 @@ bool EditSession::IsShowingPoints()
 	return showPoints;
 }
 
-void EditSession::DrawPolygons()
+void EditSession::DrawSpecialTerrain(sf::RenderTarget *target)
+{
+	bool showPoints = IsShowingPoints();
+
+	auto & currPolyList = GetCorrectPolygonList(1);
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+	{
+		(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+	}
+}
+
+void EditSession::DrawTerrain(sf::RenderTarget *target)
 {
 	bool showPoints = IsShowingPoints();
 
@@ -11053,20 +11113,28 @@ void EditSession::DrawPolygons()
 		inversePolygon->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 	}
 
-	for (int i = 0; i < 3; ++i)
+	auto & currPolyList = GetCorrectPolygonList(0);
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
 	{
-		auto & currPolyList = GetCorrectPolygonList(i);
-		for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
-		{
-			if ((*it)->inverse)
-				continue;
+		if ((*it)->inverse)
+			continue;
 
-			(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
-		}
+		(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
 	}
 }
 
-void EditSession::DrawRails()
+void EditSession::DrawFlyTerrain(sf::RenderTarget *target)
+{
+	bool showPoints = IsShowingPoints();
+
+	auto & currPolyList = GetCorrectPolygonList(2);
+	for (auto it = currPolyList.begin(); it != currPolyList.end(); ++it)
+	{
+		(*it)->Draw(false, zoomMultiple, preScreenTex, showPoints, NULL);
+	}
+}
+
+void EditSession::DrawRails( sf::RenderTarget *target )
 {
 	bool showPoints = IsShowingPoints();
 
@@ -11074,7 +11142,7 @@ void EditSession::DrawRails()
 	{
 		if (mode != TEST_PLAYER || (*it)->enemyChain == NULL)
 		{
-			(*it)->Draw(zoomMultiple, showPoints, preScreenTex);
+			(*it)->Draw(zoomMultiple, showPoints, target);
 		}
 	}
 }
@@ -11222,7 +11290,7 @@ void EditSession::DrawGateInfos()
 	}
 }
 
-void EditSession::DrawDecorBehind()
+void EditSession::DrawDecorBehind(sf::RenderTarget *target)
 {
 	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
@@ -11230,11 +11298,11 @@ void EditSession::DrawDecorBehind()
 	}
 	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
 	{
-		(*it)->Draw(preScreenTex);
+		(*it)->Draw(target);
 	}
 }
 
-void EditSession::DrawDecorBetween()
+void EditSession::DrawDecorBetween( sf::RenderTarget *target )
 {
 	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
@@ -11242,7 +11310,7 @@ void EditSession::DrawDecorBetween()
 	}
 	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
 	{
-		(*it)->Draw(preScreenTex);
+		(*it)->Draw(target);
 	}
 }
 
@@ -11393,7 +11461,7 @@ void EditSession::DrawGateInProgress()
 	}
 }
 
-void EditSession::DrawDecorFront()
+void EditSession::DrawDecorFront(sf::RenderTarget *target)
 {
 	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
@@ -11401,7 +11469,7 @@ void EditSession::DrawDecorFront()
 	}
 	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
 	{
-		(*it)->Draw(preScreenTex);
+		(*it)->Draw(target);
 	}
 }
 

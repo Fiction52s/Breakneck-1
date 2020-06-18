@@ -629,15 +629,17 @@ struct EditSession : GUIHandler, Session
 	void DrawGraph();
 	bool IsGridOn();
 	bool IsSnapPointsOn();
-	void DrawPolygons();
-	void DrawRails();
+	void DrawSpecialTerrain(sf::RenderTarget *target);
+	void DrawTerrain(sf::RenderTarget *target);
+	void DrawFlyTerrain(sf::RenderTarget *target);
+	void DrawRails(sf::RenderTarget *target);
 	void DrawPolygonInProgress();
 	void DrawRailInProgress();
 	void DrawActors();
 	void DrawGateInfos();
-	void DrawDecorBehind();
-	void DrawDecorBetween();
-	void DrawDecorFront();
+	void DrawDecorBehind( sf::RenderTarget *target );
+	void DrawDecorBetween(sf::RenderTarget *target );
+	void DrawDecorFront( sf::RenderTarget *target );
 	void Draw();
 	void DrawUI();
 	void Display();
@@ -779,7 +781,7 @@ struct EditSession : GUIHandler, Session
 	bool RunGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
-	bool UpdateBackAndStartButtons();
+	bool UpdateRunModeBackAndStartButtons();
 };
 
 

@@ -251,9 +251,10 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 {
 	target->setView(view);
 
-	background->Draw(target);
+	if( background != NULL)
+		background->Draw(target);
 
-	UpdateEnvShaders(); //move this into the update loop
+	//UpdateEnvShaders(); //move this into the update loop
 
 	DrawTopClouds(target);
 
@@ -315,8 +316,6 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	//DrawActiveEnvPlants();
 
-	UpdateDebugModifiers();
-
 	DebugDraw(target);
 
 	DrawShockwaves(target); //not operational atm
@@ -357,17 +356,17 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	UpdateTimeSlowShader();
 
+	target->setView(uiView);
+
 	if (currBroadcast != NULL)
 	{
-		target->setView(uiView);
+		
 		currBroadcast->Draw(target);
 	}
 
 	DrawActiveSequence(EffectLayer::UI_FRONT, target );
 	DrawEffects(EffectLayer::UI_FRONT, target);
 	DrawEmitters(EffectLayer::UI_FRONT, target );
-
-	target->setView(uiView);
 
 	fader->Draw(target);
 	swiper->Draw(target);
@@ -570,14 +569,9 @@ bool GameSession::RunGameModeUpdate()
 			break;
 		}
 
-		if (IsKeyPressed(sf::Keyboard::Num9))
-		{
-			showRunningTimer = true;
-		}
-		if (IsKeyPressed(sf::Keyboard::Num0))
-		{
-			showRunningTimer = false;
-		}
+		UpdateDebugModifiers();
+
+		
 
 		if (goalDestroyed)
 		{
@@ -734,6 +728,8 @@ bool GameSession::RunGameModeUpdate()
 		}
 
 		UpdateZones();
+
+		UpdateEnvShaders(); //havent tested
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
@@ -3659,6 +3655,14 @@ void GameSession::UpdateDebugModifiers()
 	else if (IsKeyPressed(Keyboard::Num4))
 	{
 		showTerrainDecor = true;
+	}
+	else if (IsKeyPressed(sf::Keyboard::Num9))
+	{
+		showRunningTimer = true;
+	}
+	else if (IsKeyPressed(sf::Keyboard::Num0))
+	{
+		showRunningTimer = false;
 	}
 }
 
