@@ -377,9 +377,6 @@ struct EditSession : GUIHandler, Session
 	void UpdateDecorSprites();
 	void SetInitialView(sf::Vector2f &center,
 		sf::Vector2f &size);
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
 	void Load();
@@ -782,6 +779,7 @@ struct EditSession : GUIHandler, Session
 	bool RunGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
+	bool UpdateBackAndStartButtons();
 };
 
 

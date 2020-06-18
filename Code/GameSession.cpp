@@ -126,7 +126,7 @@ using namespace sf;
 
 GameSession * GameSession::currSession = NULL;
 
-void GameSession::UpdateBackAndStartButtons()
+bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
 	if (raceFight != NULL)
@@ -137,6 +137,7 @@ void GameSession::UpdateBackAndStartButtons()
 			raceFight->raceFightResultsFrame = 0;
 			raceFight->victoryScreen->Reset();
 			raceFight->victoryScreen->SetupColumns();
+			return true;
 		}
 	}
 	else if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
@@ -150,6 +151,7 @@ void GameSession::UpdateBackAndStartButtons()
 			ActivatePauseSound(GetSound("pause_on"));
 			pauseMenu->SetTab(PauseMenu::PAUSE);
 			soundNodeList->Pause(true);
+			return true;
 		}
 		else if ((currInput.back && !prevInput.back) || IsKeyPressed(Keyboard::G))
 		{
@@ -157,8 +159,11 @@ void GameSession::UpdateBackAndStartButtons()
 			pauseMenu->SetTab(PauseMenu::MAP);
 			ActivatePauseSound(GetSound("pause_on"));
 			soundNodeList->Pause(true);
+			return true;
 		}
 	}
+
+	return false;
 }
 
 void GameSession::UpdateEnvPlants()
@@ -539,17 +544,16 @@ bool GameSession::RunGameModeUpdate()
 	
 
 	window->clear(Color::Red);
-
 	preScreenTex->clear(Color::Red);
 	postProcessTex2->clear(Color::Red);
 
-	switch (mapHeader->bossFightType)
+	/*switch (mapHeader->bossFightType)
 	{
 	case 0:
 		break;
 	case 1:
 		break;
-	}
+	}*/
 
 	collider.ClearDebug();
 
@@ -715,28 +719,22 @@ bool GameSession::RunGameModeUpdate()
 
 		QueryBorderTree(screenRect);
 
-		specialPieceList = NULL;
-		queryMode = QUERY_SPECIALTERRAIN;
-		specialTerrainTree->Query(this, screenRect);
+		QuerySpecialTerrainTree(screenRect);
 
-		flyTerrainList = NULL;
-		queryMode = QUERY_FLYTERRAIN;
-		flyTerrainTree->Query(this, screenRect);
+		QueryFlyTerrainTree(screenRect);
 
 		drawInversePoly = ScreenIntersectsInversePoly(screenRect);
 
 		UpdateDecorSprites();
 		UpdateDecorLayers();
 
-		UpdateBackAndStartButtons();
+		if (UpdateRunModeBackAndStartButtons())
+		{
+
+		}
 
 		UpdateZones();
 
-		/*if( player->record > 0 )
-		{
-		player->ghosts[player->record-1]->states[player->ghosts[player->record-1]->currFrame].screenRect =
-		screenRect;
-		}*/
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
 
@@ -1300,103 +1298,8 @@ GameSession *GameSession::GetSession()
 	return currSession;
 }
 
-void GameSession::UpdateEnemiesPrePhysics()
-{
-	Actor *player = GetPlayer( 0 );
-	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
-	{
-		return;
-	}
-
-	Enemy *current = activeEnemyList;
-	while( current != NULL )
-	{
-		current->UpdatePrePhysics();
-		current = current->next;
-	}
-}
-
-void GameSession::UpdatePhysics()
-{
-	Actor *p = NULL;
-	Actor *player = GetPlayer( 0 );
-	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
-	{
-		return;
-	}
-
-	for( int i = 0; i < 4; ++i )
-	{
-		p = GetPlayer( i );
-		if( p != NULL )
-			p->physicsOver = false;
-	}
 
 
-	for( substep = 0; substep < NUM_MAX_STEPS; ++substep )
-	{
-		for( int i = 0; i < 4; ++i )
-		{
-			p = GetPlayer( i );
-			if (p != NULL)
-			{
-				if( substep == 0 || p->highAccuracyHitboxes )
-					p->UpdatePhysics();
-			}
-		}
-
-		Enemy *current = activeEnemyList;
-		while( current != NULL )
-		{
-			current->UpdatePhysics( substep );
-			current = current->next;
-		}
-	}
-}
-
-void GameSession::UpdateEnemiesPostPhysics()
-{
-	Actor *player = GetPlayer( 0 );
-	if( player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT )
-	{
-		return;
-	}
-
-	int keyLength = 30;//16 * 5;
-	keyFrame = totalGameFrames % keyLength;
-	
-
-	Enemy *current = activeEnemyList;
-	while( current != NULL )
-	{
-		Enemy *temp = current->next; //need this in case enemy is removed during its update
-
-		current->UpdatePostPhysics();
-		
-		if( current->hasMonitor)
-		{
-			float halftot = keyLength / 2;
-			float fac;
-			if( keyFrame < keyLength / 2 )
-			{
-				fac = keyFrame / (halftot-1);
-			}
-			else
-			{
-				fac = 1.f - ( keyFrame - halftot ) / (halftot-1);
-			}
-			//cout << "fac: " << fac << endl;
-			current->keyShader.setUniform( "prop", fac );
-		}
-
-		current = temp;
-	}
-
-	/*for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
-	{
-		(*it)->CheckedZoneUpdate(FloatRect(screenRect));
-	}*/
-}
 
 void GameSession::RecordReplayEnemies()
 {

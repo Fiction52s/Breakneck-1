@@ -303,6 +303,34 @@ void EditSession::DeselectObjectType(ISelectable::ISelectableType sType)
 	}
 }
 
+bool EditSession::UpdateRunModeBackAndStartButtons()
+{
+	Actor *pTemp;
+	if (GetCurrInput(0).start && !GetPrevInput(0).start)
+	{
+		SetMode(EDIT);
+		/*if (gameCam)
+		{
+		SetZoom(2);
+		}*/
+
+		pTemp = GetPlayer(0);
+
+		if (pTemp->ground != NULL) //doesn't work with bounce or grind
+		{
+			playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
+				pTemp->position);
+		}
+		//bounce and grind also later
+
+		playerTracker->SetOn(true);
+		playerTracker->CalcShownCircles();
+		return true;
+	}
+
+	return false;
+}
+
 bool EditSession::RunGameModeUpdate()
 {
 	Actor *pTemp = NULL;
@@ -314,6 +342,38 @@ bool EditSession::RunGameModeUpdate()
 			break;
 		}
 
+		/*if (IsKeyPressed(sf::Keyboard::Y))
+		{
+			quit = true;
+			break;
+		}
+
+		if (IsKeyPressed(sf::Keyboard::Num9))
+		{
+			showRunningTimer = true;
+		}
+		if (IsKeyPressed(sf::Keyboard::Num0))
+		{
+			showRunningTimer = false;
+		}
+
+		if (goalDestroyed)
+		{
+			quit = true;
+			returnVal = resType;
+			break;
+		}
+
+		if (nextFrameRestart)
+		{
+			gameState = GameSession::RUN;
+			RestartLevel();
+			gameClock.restart();
+			currentTime = 0;
+			accumulator = TIMESTEP + .1;
+			frameRateCounter = 0;
+		}*/
+
 		if (pauseFrames > 0)
 		{
 			HitlagUpdate(); //the full update while in hitlag
@@ -322,18 +382,72 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateControllers();
 
+		//if (repPlayer != NULL)
+		//{
+		//	//currently only records 1 player replays. fix this later
+		//	repPlayer->UpdateInput(GetCurrInput(0));
+		//}
+
+		//if (recPlayer != NULL)
+		//{
+		//	recPlayer->RecordFrame();
+		//}
+
 		UpdateAllPlayersInput();
 
 		ActiveSequenceUpdate();
 		if (switchGameState)
 			break;
 
-		UpdatePrePhysics();
-		UpdatePhysics();
-		UpdatePostPhysics();
+		UpdatePlayersPrePhysics();
+
+		/*TryToActivateBonus();
+
+		ActiveStorySequenceUpdate();
+
+		ActiveBroadcastUpdate();
+
+		if (inputVis != NULL)
+			inputVis->Update(GetPlayer(0)->currInput);*/
+
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPrePhysics();
+
+			UpdatePhysics();
+		}
+
+		//RecordReplayEnemies();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdatePlayersPostPhysics();
+		}
+
+		//if (recGhost != NULL)
+		//	recGhost->RecordFrame();
+
+		//UpdateReplayGhostSprites();
+
+		//if (goalDestroyed)
+		//{
+		//	quit = true;
+		//	returnVal = resType;
+		//	/*recGhost->StopRecording();
+		//	recGhost->WriteToFile( "testghost.bghst" );*/
+		//	break;
+		//}
 
 		if (mode != TEST_PLAYER)
 			return true;
+
+		UpdatePlayerWireQuads();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPostPhysics();
+		}
 
 		UpdateGates();
 
@@ -342,41 +456,21 @@ bool EditSession::RunGameModeUpdate()
 		absorbShardParticles->Update();
 
 		UpdateEffects();
+		//UpdateEmitters();
 
 		mainMenu->musicPlayer->Update();
 
 		UpdateHUD();
 
+		//scoreDisplay->Update();
+
 		soundNodeList->Update();
 
-		QueryToSpawnEnemies();
+		//pauseSoundNodeList->Update();
+		//goalPulse->Update();
 
-		UpdateZones();
-
-		if (GetCurrInput(0).start && !GetPrevInput(0).start )
-		{
-			SetMode(EDIT);
-			/*if (gameCam)
-			{
-			SetZoom(2);
-			}*/
-
-			pTemp = GetPlayer(0);
-
-			if (pTemp->ground != NULL) //doesn't work with bounce or grind
-			{
-				playerTracker->SetOldTrackPos(pTemp->ground->GetPosition(pTemp->edgeQuantity),
-					pTemp->position);
-			}
-			//bounce and grind also later
-
-			playerTracker->SetOn(true);
-			playerTracker->CalcShownCircles();
-			return true;
-		}
-
-		UpdateDecorSprites();
-		UpdateDecorLayers();
+		/*if (rain != NULL)
+			rain->Update();*/
 
 		UpdateBarriers();
 
@@ -394,17 +488,15 @@ bool EditSession::RunGameModeUpdate()
 		double camHeight = 540 * cam.GetZoom();
 		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
-		fader->Update();
-		swiper->Update();
 
-		UpdateTopClouds();
+
+
 
 		if (totalGameFrames % 3 == 0)
 		{
 			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
 		}
 
-		//cam.UpdateRumble();
 		if (gameCam)
 		{
 
@@ -414,12 +506,56 @@ bool EditSession::RunGameModeUpdate()
 			//lastViewSize = view.getSize();
 			view.setCenter(camPos.x, camPos.y);
 		}
-		//UpdatePlayerWireQuads();
 
-		preScreenTex->setView(view);
+		//UpdateCamera();
+
+		/*if (gateMarkers != NULL)
+			gateMarkers->Update(&cam);*/
+
+		fader->Update();
+		swiper->Update();
+		//background->Update(cam.GetPos());
+
+		UpdateTopClouds();
+
+		mainMenu->UpdateEffects();
+
+		/*if (raceFight != NULL)
+		{
+			raceFight->UpdateScore();
+		}*/
+
+		//UpdateGoalFlow();
+
+		QueryToSpawnEnemies();
+
+		//UpdateEnvPlants();
+
+		//QueryBorderTree(screenRect);
+
+		/*QuerySpecialTerrainTree(screenRect);
+
+		QueryFlyTerrainTree(screenRect);*/
+
+		//drawInversePoly = ScreenIntersectsInversePoly(screenRect);
+
+		UpdateDecorSprites();
+		UpdateDecorLayers();
+
+		if (UpdateRunModeBackAndStartButtons())
+		{
+			//return true;
+		}
+
+		UpdateZones();
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
+
+		//if (debugScreenRecorder != NULL)
+		//{
+		//	break; //for recording stuff
+		//}
 	}
 
 	return true;
@@ -1022,124 +1158,11 @@ void EditSession::EndTestMode()
 	SetMode(EDIT);
 }
 
-void EditSession::UpdatePrePhysics()
-{
-	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
-	{
-		return;
-	}
-
-	Actor *p;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-			p->UpdatePrePhysics();
-	}
-
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
-	{
-		current->UpdatePrePhysics();
-		current = current->next;
-	}
-}
-
 void EditSession::ProcessDecorFromFile(const std::string &name,
 	int tile)
 {
 	decorTileIndexMap[name].push_back(tile);
 }
-
-void EditSession::UpdatePhysics()
-{
-	Actor *p = NULL;
-	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
-	{
-		return;
-	}
-
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-			p->physicsOver = false;
-	}
-
-
-	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
-	{
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				if (substep == 0 || p->highAccuracyHitboxes)
-					p->UpdatePhysics();
-			}
-		}
-
-		Enemy *current = activeEnemyList;
-		while (current != NULL)
-		{
-			current->UpdatePhysics(substep);
-			current = current->next;
-		}
-	}
-}
-
-void EditSession::UpdatePostPhysics()
-{
-	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
-	{
-		return;
-	}
-
-	Actor *p;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-			p->UpdatePostPhysics();
-	}
-
-	UpdatePlayerWireQuads();
-
-	int keyLength = 30;//16 * 5;
-	keyFrame = totalGameFrames % keyLength;
-
-	Enemy *current = activeEnemyList;
-	while (current != NULL)
-	{
-		Enemy *temp = current->next; //need this in case enemy is removed during its update
-
-		current->UpdatePostPhysics();
-
-		if (current->hasMonitor)
-		{
-			float halftot = keyLength / 2;
-			float fac;
-			if (keyFrame < keyLength / 2)
-			{
-				fac = keyFrame / (halftot - 1);
-			}
-			else
-			{
-				fac = 1.f - (keyFrame - halftot) / (halftot - 1);
-			}
-			//cout << "fac: " << fac << endl;
-			current->keyShader.setUniform("prop", fac);
-		}
-
-		current = temp;
-	}
-}
-
-
-
 
 EditSession *EditSession::GetSession()
 {

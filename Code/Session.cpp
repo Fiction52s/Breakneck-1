@@ -4752,3 +4752,115 @@ void Session::CleanupShipExit()
 		shipExitScene = NULL;
 	}
 }
+
+void Session::UpdateEnemiesPrePhysics()
+{
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		current->UpdatePrePhysics();
+		current = current->next;
+	}
+}
+
+void Session::UpdatePhysics()
+{
+	Actor *p = NULL;
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->physicsOver = false;
+	}
+
+
+	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				if (substep == 0 || p->highAccuracyHitboxes)
+					p->UpdatePhysics();
+			}
+		}
+
+		Enemy *current = activeEnemyList;
+		while (current != NULL)
+		{
+			current->UpdatePhysics(substep);
+			current = current->next;
+		}
+	}
+}
+
+void Session::UpdateEnemiesPostPhysics()
+{
+	Actor *player = GetPlayer(0);
+	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	{
+		return;
+	}
+
+	int keyLength = 30;//16 * 5;
+	keyFrame = totalGameFrames % keyLength;
+
+
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		Enemy *temp = current->next; //need this in case enemy is removed during its update
+
+		current->UpdatePostPhysics();
+
+		if (current->hasMonitor)
+		{
+			float halftot = keyLength / 2;
+			float fac;
+			if (keyFrame < keyLength / 2)
+			{
+				fac = keyFrame / (halftot - 1);
+			}
+			else
+			{
+				fac = 1.f - (keyFrame - halftot) / (halftot - 1);
+			}
+			//cout << "fac: " << fac << endl;
+			current->keyShader.setUniform("prop", fac);
+		}
+
+		current = temp;
+	}
+
+	/*for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+	(*it)->CheckedZoneUpdate(FloatRect(screenRect));
+	}*/
+}
+
+void Session::QuerySpecialTerrainTree(sf::Rect<double>&rect)
+{
+	specialPieceList = NULL;
+	queryMode = QUERY_SPECIALTERRAIN;
+	specialTerrainTree->Query(this, screenRect);
+}
+
+void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
+{
+	flyTerrainList = NULL;
+	queryMode = QUERY_FLYTERRAIN;
+	flyTerrainTree->Query(this, screenRect);
+}

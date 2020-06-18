@@ -453,6 +453,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdatePlayersPostPhysics();
 	void QueryBorderTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
+	void QuerySpecialTerrainTree(sf::Rect<double>&rect);
+	void QueryFlyTerrainTree(sf::Rect<double>&rect);
+
 	void DrawAllMapWires(
 		sf::RenderTarget *target);
 	void DrawColoredMapTerrain(
@@ -535,6 +538,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateTopClouds();
 	void CleanupShipEntrance();
 	void CleanupShipExit();
+	void UpdateEnemiesPrePhysics();
+	void UpdatePhysics();
+	void UpdateEnemiesPostPhysics();
+	virtual bool UpdateRunModeBackAndStartButtons() = 0;
 };
 
 #endif

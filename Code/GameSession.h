@@ -330,7 +330,6 @@ struct GameSession : RayCastHandler, Session
 	//does not change during running
 	std::list<PolyPtr> allSpecialTerrain;
 	
-	
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;
@@ -348,13 +347,10 @@ struct GameSession : RayCastHandler, Session
 	std::list<RailPtr> allRails;
 	int totalRails;
 	
-	
-	
 	std::list<boost::filesystem::path> bonusPaths;
 
 	//for queries
-	
-	
+
 	//raycast temps
 	sf::Vector2<double> rayStart;
 	sf::Vector2<double> rayEnd;
@@ -602,6 +598,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawShockwaves(sf::RenderTarget *target);
 	void UpdateCamera();
 	void UpdateEnvPlants();
-	void UpdateBackAndStartButtons();
+	bool UpdateRunModeBackAndStartButtons();
 };
 #endif
