@@ -341,6 +341,8 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateHUD();
 
+		soundNodeList->Update();
+
 		QueryToSpawnEnemies();
 
 		UpdateZones();
@@ -575,6 +577,8 @@ void EditSession::TestPlayerMode()
 {
 	gameState = Session::RUN;
 	cam.Reset();
+
+	soundNodeList->Reset();
 
 	fader->Reset();
 	swiper->Reset();
@@ -3520,6 +3524,7 @@ int EditSession::Run()
 
 	fader->Reset();
 	swiper->Reset();
+	soundNodeList->Reset();
 
 	return result;
 }
