@@ -291,7 +291,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target );
 
-	goalPulse->Draw(target);
+	DrawGoalPulse(target);
 	DrawPlayerWires(target);
 
 	DrawHitEnemies(target); //whited out hit enemies
@@ -347,8 +347,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 	if (inputVis != NULL)
 		inputVis->Draw(target);
 
-	if (gateMarkers != NULL)
-		gateMarkers->Draw(target);
+	DrawGateMarkers(target);
 
 	target->setView(view);
 
@@ -357,12 +356,6 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 	UpdateTimeSlowShader();
 
 	target->setView(uiView);
-
-	if (currBroadcast != NULL)
-	{
-		
-		currBroadcast->Draw(target);
-	}
 
 	DrawActiveSequence(EffectLayer::UI_FRONT, target );
 	DrawEffects(EffectLayer::UI_FRONT, target);
@@ -470,21 +463,6 @@ void GameSession::ActiveStorySequenceUpdate()
 		{
 			currStorySequence->EndSequence();
 			currStorySequence = NULL;
-		}
-		else
-		{
-		}
-	}
-}
-
-void GameSession::ActiveBroadcastUpdate()
-{
-	if (currBroadcast != NULL)
-	{
-		if (!currBroadcast->Update())
-		{
-			//currStorySequence->EndSequence();
-			currBroadcast = NULL;
 		}
 		else
 		{
@@ -620,8 +598,6 @@ bool GameSession::RunGameModeUpdate()
 		TryToActivateBonus();
 
 		ActiveStorySequenceUpdate();
-
-		ActiveBroadcastUpdate();
 
 		if (inputVis != NULL)
 			inputVis->Update(GetPlayer(0)->currInput);
@@ -2412,7 +2388,6 @@ int GameSession::Run()
 	mainMenu->SetMouseVisible(false);
 
 	currStorySequence = NULL;
-	currBroadcast = NULL;
 
 	View oldPreTexView = preScreenTex->getView();
 	View oldWindowView = window->getView();
@@ -3484,19 +3459,6 @@ void GameSession::EndLevel()
 	}
 }
 
-void GameSession::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
-{
-	if (currStorySequence != NULL)
-	{
-		sf::View oldV = target->getView();
-		target->setView(uiView);
-		currStorySequence->DrawLayer(target, ef);
-		target->setView(oldV);
-	}
-}
-
-
-
 void GameSession::SuppressEnemyKeys( Gate *g )
 {
 	if( g->IsTwoWay() )
@@ -3828,7 +3790,6 @@ void GameSession::RestartLevel()
 
 	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;
-	currBroadcast = NULL;
 	currStorySequence = NULL;
 
 	if( raceFight != NULL )
@@ -4781,6 +4742,14 @@ void GameSession::rResetEnemies( QNode *node )
 			e->Reset();
 		}
 		
+	}
+}
+
+void GameSession::DrawGoalPulse(sf::RenderTarget *target)
+{
+	if (goalPulse != NULL)
+	{
+		goalPulse->Draw(target);
 	}
 }
 

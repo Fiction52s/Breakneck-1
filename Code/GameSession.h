@@ -27,7 +27,6 @@
 #include "Session.h"
 
 struct ZoneNode;
-struct GateMarkerGroup;
 
 struct Actor;
 struct ComboObject;
@@ -45,7 +44,6 @@ struct ReplayGhost;
 struct Config;
 struct RaceFightHUD;
 struct InputVisualizer;
-struct MomentaBroadcast;
 struct TerrainDecorInfo;
 
 struct BasicBossScene;
@@ -362,10 +360,6 @@ struct GameSession : RayCastHandler, Session
 	ShapeEmitter *testEmit;
 	std::list<DecorDraw*> decorBetween;
 	
-	
-	StorySequence *currStorySequence;
-	MomentaBroadcast *currBroadcast;
-	
 	int numKeysCollected;
 
 	
@@ -530,11 +524,13 @@ struct GameSession : RayCastHandler, Session
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
+
+	void DrawGoalPulse(sf::RenderTarget *target);
 	
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
 
-	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
+	
 
 	void UpdateDebugModifiers();
 	
@@ -585,7 +581,6 @@ struct GameSession : RayCastHandler, Session
 	bool SequenceGameModeUpdate();
 	
 	void ActiveStorySequenceUpdate();
-	void ActiveBroadcastUpdate();
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	

@@ -105,7 +105,7 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawDecorBehind(target);
 
-	//DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
+	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
 	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target);
 	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
 	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
@@ -127,19 +127,19 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	DrawDecorBetween(target);
 
 	
-	//DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
+	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
 	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
 	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
 	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target);
 	
 	DrawEnemies(target);
 
-	//DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
-	//goalPulse->Draw(target);
+	//DrawGoalPulse(target);
 	DrawPlayerWires(target);
 
 	DrawHitEnemies(target); //whited out hit enemies
@@ -153,9 +153,7 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	//DrawReplayGhosts();
 
-	
-
-	//DrawStoryLayer(EffectLayer::IN_FRONT, target);
+	DrawStoryLayer(EffectLayer::IN_FRONT, target);
 	DrawEffects(EffectLayer::IN_FRONT, target);
 	DrawEmitters(EffectLayer::IN_FRONT, target);
 	DrawActiveSequence(EffectLayer::IN_FRONT, target);
@@ -188,10 +186,9 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	}
 
 	if (inputVis != NULL)
-		inputVis->Draw(target);
+		inputVis->Draw(target);*/
 
-	if (gateMarkers != NULL)
-		gateMarkers->Draw(target);*/
+	DrawGateMarkers(target);
 
 	target->setView(view);
 
@@ -200,11 +197,6 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	//UpdateTimeSlowShader();
 
 	target->setView(uiView);
-
-	/*if (currBroadcast != NULL)
-	{
-		currBroadcast->Draw(target);
-	}*/
 
 	DrawActiveSequence(EffectLayer::UI_FRONT, target);
 	DrawEffects(EffectLayer::UI_FRONT, target);
@@ -449,8 +441,6 @@ bool EditSession::RunGameModeUpdate()
 		/*TryToActivateBonus();
 
 		ActiveStorySequenceUpdate();
-
-		ActiveBroadcastUpdate();
 
 		if (inputVis != NULL)
 			inputVis->Update(GetPlayer(0)->currInput);*/
@@ -769,6 +759,7 @@ void EditSession::TestPlayerMode()
 {
 	gameState = Session::RUN;
 	cam.Reset();
+	currStorySequence = NULL;
 
 	soundNodeList->Reset();
 
@@ -1112,6 +1103,8 @@ void EditSession::TestPlayerMode()
 	CleanupZones();
 	CreateZones();
 	SetupZones();
+
+	SetupGateMarkers();
 
 	
 	CleanupCameraShots();

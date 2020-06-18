@@ -70,6 +70,7 @@ struct CameraShotParams;
 struct ShapeEmitter;
 struct TopClouds;
 struct PoiParams;
+struct StorySequence;
 
 #define TIMESTEP (1.0 / 60.0)
 
@@ -243,6 +244,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	BasicBossScene *preLevelScene;
 	BasicBossScene *postLevelScene;
 	TopClouds *topClouds;
+
+	StorySequence *currStorySequence;
 
 	ShapeEmitter *emitterLists[EffectLayer::Count];
 
@@ -545,6 +548,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawFlyTerrain(sf::RenderTarget *target) = 0;
+	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
+	void DrawGateMarkers(sf::RenderTarget *target);
 };
 
 #endif

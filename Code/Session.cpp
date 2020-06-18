@@ -25,6 +25,7 @@
 #include "ParticleEffects.h"
 #include "DeathSequence.h"
 #include "TopClouds.h"
+#include "StorySequence.h"
 //#include "Enemy_Shard.h"
 
 
@@ -1254,6 +1255,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	currStorySequence = NULL;
 	shardsCapturedField = NULL;
 	preLevelScene = NULL;
 	postLevelScene = NULL;
@@ -4863,4 +4865,21 @@ void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
 	flyTerrainList = NULL;
 	queryMode = QUERY_FLYTERRAIN;
 	flyTerrainTree->Query(this, screenRect);
+}
+
+void Session::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
+{
+	if (currStorySequence != NULL)
+	{
+		sf::View oldV = target->getView();
+		target->setView(uiView);
+		currStorySequence->DrawLayer(target, ef);
+		target->setView(oldV);
+	}
+}
+
+void Session::DrawGateMarkers(sf::RenderTarget *target)
+{
+	if (gateMarkers != NULL)
+		gateMarkers->Draw(target);
 }
