@@ -347,7 +347,7 @@ struct GameSession : RayCastHandler, Session
 	sf::Vector2<double> goalNodePosFinal;
 	std::list<RailPtr> allRails;
 	int totalRails;
-	ShipExitScene *shipExitScene;
+	
 	
 	
 	std::list<boost::filesystem::path> bonusPaths;

@@ -1259,6 +1259,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	postLevelScene = NULL;
 	activeSequence = NULL;
 
+	shipEnterScene = NULL;
+	shipExitScene = NULL;
+
 	originalMusic = NULL;
 	adventureHUD = NULL;
 	gateMarkers = NULL;
@@ -1545,6 +1548,9 @@ Session::~Session()
 		delete deathSeq;
 		deathSeq = NULL;
 	}
+
+	CleanupShipEntrance();
+	CleanupShipExit();
 
 	CleanupZones();
 	CleanupGates();
@@ -4727,4 +4733,22 @@ void Session::UpdateTopClouds()
 {
 	if (topClouds != NULL)
 		topClouds->Update();
+}
+
+void Session::CleanupShipEntrance()
+{
+	if (shipEnterScene != NULL)
+	{
+		delete shipEnterScene;
+		shipEnterScene = NULL;
+	}
+}
+
+void Session::CleanupShipExit()
+{
+	if (shipExitScene != NULL)
+	{
+		delete shipExitScene;
+		shipExitScene = NULL;
+	}
 }

@@ -1099,17 +1099,10 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupPoi();
 
 
-	if (shipExitScene != NULL)
-	{
-		delete shipExitScene;
-		shipExitScene = NULL;
-	}
+	CleanupShipExit();
 
-	if (shipEnterScene != NULL)
-	{
-		delete shipEnterScene;
-		shipEnterScene = NULL;
-	}
+	CleanupShipEntrance();
+	
 
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
@@ -1292,20 +1285,6 @@ void GameSession::Cleanup()
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
 		delete (*it);
-	}
-
-
-	
-	if (shipExitScene != NULL)
-	{
-		delete shipExitScene;
-		shipExitScene = NULL;
-	}
-
-	if (shipEnterScene != NULL)
-	{
-		delete shipEnterScene;
-		shipEnterScene = NULL;
 	}
 }
 
@@ -3426,8 +3405,6 @@ void GameSession::Init()
 	repPlayer = NULL;
 	recGhost = NULL;
 	//repGhost = NULL;
-	shipExitScene = NULL;
-	shipEnterScene = NULL;
 	explodingGravityGrass = NULL;
 	polyQueryList = NULL;
 	specialPieceList = NULL;

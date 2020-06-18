@@ -65,6 +65,7 @@ struct DeathSequece;
 struct BasicBossScene;
 struct Sequence;
 struct ShipEnterScene;
+struct ShipExitScene;
 struct CameraShotParams;
 struct ShapeEmitter;
 struct TopClouds;
@@ -111,6 +112,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	bool switchGameState;
 	ShipEnterScene *shipEnterScene;
+	ShipExitScene *shipExitScene;
 	GameState gameState;
 	AdventureHUD *adventureHUD;
 
@@ -531,6 +533,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupTopClouds();
 	void DrawTopClouds(sf::RenderTarget *target);
 	void UpdateTopClouds();
+	void CleanupShipEntrance();
+	void CleanupShipExit();
 };
 
 #endif

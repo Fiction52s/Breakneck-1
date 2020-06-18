@@ -982,6 +982,15 @@ void EditSession::TestPlayerMode()
 	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
 	GetPlayer(0)->SetupDrain();
+
+	CleanupShipEntrance();
+	CleanupShipExit();
+
+	if (shipEnterScene != NULL)
+	{
+		shipEnterScene->Reset();
+		SetActiveSequence(shipEnterScene);
+	}
 }
 
 void EditSession::EndTestMode()
