@@ -733,6 +733,12 @@ void EditSession::TestPlayerMode()
 			}
 		}
 
+		if (shipEnterScene != NULL)
+		{
+			shipEnterScene->Reset();
+			SetActiveSequence(shipEnterScene);
+		}
+
 		
 		return;
 	}
@@ -930,6 +936,9 @@ void EditSession::TestPlayerMode()
 	CleanupCameraShots();
 	CleanupPoi();
 
+	//CleanupShipExit();
+
+	bool foundShipEnter = false;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -951,7 +960,23 @@ void EditSession::TestPlayerMode()
 				//tempPoiParams.push_back(pp);
 				AddPoi(pp);
 			}
+			else if ((*enit)->type == types["ship"])
+			{
+				if (shipEnterScene == NULL)
+				{
+					shipEnterScene = new ShipEnterScene;
+					shipEnterScene->Init();
+				}
+				foundShipEnter = true;
+				shipEnterScene->shipEntrancePos = (*enit)->GetPosition();
+
+			}
 		}
+	}
+
+	if (!foundShipEnter && shipEnterScene != NULL)
+	{
+		CleanupShipEntrance();
 	}
 
 	//an issue right now is that these load tilesets that do not get deleted
@@ -983,8 +1008,7 @@ void EditSession::TestPlayerMode()
 
 	GetPlayer(0)->SetupDrain();
 
-	CleanupShipEntrance();
-	CleanupShipExit();
+	
 
 	if (shipEnterScene != NULL)
 	{
