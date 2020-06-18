@@ -384,6 +384,9 @@ bool EditSession::RunGameModeUpdate()
 		double camHeight = 540 * cam.GetZoom();
 		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
+		fader->Update();
+		swiper->Update();
+
 		if (totalGameFrames % 3 == 0)
 		{
 			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
