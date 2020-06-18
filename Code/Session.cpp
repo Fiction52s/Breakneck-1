@@ -4883,3 +4883,12 @@ void Session::DrawGateMarkers(sf::RenderTarget *target)
 	if (gateMarkers != NULL)
 		gateMarkers->Draw(target);
 }
+
+void Session::LayeredDraw(EffectLayer ef, sf::RenderTarget *target)
+{
+	DrawDecor(ef, target);
+	DrawStoryLayer(ef, target);
+	DrawActiveSequence(ef, target);
+	DrawEffects(ef, target);
+	DrawEmitters(ef, target);
+}

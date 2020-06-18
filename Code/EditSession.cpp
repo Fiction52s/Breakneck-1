@@ -103,12 +103,8 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawBlackBorderQuads(target);
 
-	DrawDecorBehind(target);
+	LayeredDraw( EffectLayer::BEHIND_TERRAIN, target);
 
-	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
-	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target);
-	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
-	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
 	DrawZones(target);
 
 	DrawSpecialTerrain(target);
@@ -124,20 +120,11 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 	DrawGates(target);
 	DrawRails(target);
 
-	DrawDecorBetween(target);
-
-	
-	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
-	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
-	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
-	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target);
+	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
 	
 	DrawEnemies(target);
 
-	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	//DrawGoalPulse(target);
 	DrawPlayerWires(target);
@@ -149,14 +136,11 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawPlayers(target);
 
-	absorbShardParticles->Draw(target);
-
 	//DrawReplayGhosts();
+	
+	LayeredDraw(EffectLayer::IN_FRONT, target);
 
-	DrawStoryLayer(EffectLayer::IN_FRONT, target);
-	DrawEffects(EffectLayer::IN_FRONT, target);
-	DrawEmitters(EffectLayer::IN_FRONT, target);
-	DrawActiveSequence(EffectLayer::IN_FRONT, target);
+	absorbShardParticles->Draw(target);
 
 	DrawBullets(target);
 
@@ -198,9 +182,7 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	target->setView(uiView);
 
-	DrawActiveSequence(EffectLayer::UI_FRONT, target);
-	DrawEffects(EffectLayer::UI_FRONT, target);
-	DrawEmitters(EffectLayer::UI_FRONT, target);
+	LayeredDraw(EffectLayer::UI_FRONT, target);
 
 	fader->Draw(target);
 	swiper->Draw(target);
@@ -1711,7 +1693,7 @@ void EditSession::Draw()
 
 	preScreenTex->draw(border, 8, sf::Lines);
 
-	DrawDecorBehind(preScreenTex);
+	DrawDecor(EffectLayer::BEHIND_TERRAIN, preScreenTex );
 
 	DrawGateInfos();
 
@@ -1723,7 +1705,7 @@ void EditSession::Draw()
 
 	DrawRails(preScreenTex);
 
-	DrawDecorBetween(preScreenTex);
+	DrawDecor(EffectLayer::BEHIND_ENEMIES, preScreenTex);
 
 	if (!IsDrawMode(Emode::TEST_PLAYER))
 	{
@@ -1740,9 +1722,7 @@ void EditSession::Draw()
 
 	TempMoveSelectedBrush();
 
-
-
-	DrawDecorFront(preScreenTex);
+	DrawDecor(EffectLayer::IN_FRONT, preScreenTex);
 
 	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 	{
@@ -1851,18 +1831,18 @@ void EditSession::ProcessDecorSpr(const std::string &name,
 		rotation, scale );
 	if (dLayer > 0)
 	{
-		dec->myList = &decorImagesBehindTerrain;
+		dec->myList = &decorImages[BEHIND_TERRAIN];//&decorImagesBehindTerrain;
 		//decorImagesBehindTerrain.sort(CompareDecorInfo);
 		//decorImagesBehindTerrain.push_back(dec);
 	}
 	else if (dLayer < 0)
 	{
-		dec->myList = &decorImagesFrontTerrain;
+		dec->myList = &decorImages[BEHIND_ENEMIES];//&decorImagesFrontTerrain;
 		//decorImagesFrontTerrain.push_back(dec);
 	}
 	else if (dLayer == 0)
 	{
-		dec->myList = &decorImagesBetween;
+		dec->myList = &decorImages[EffectLayer::BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
 		//decorImagesBetween.push_back(dec);
 	}
 
@@ -2169,23 +2149,21 @@ void EditSession::WriteMapHeader(ofstream &of)
 void EditSession::WriteDecor(ofstream &of)
 {
 	int totalDecor = 0;
-	totalDecor += decorImagesBehindTerrain.size() + decorImagesBetween.size() + decorImagesFrontTerrain.size();
+
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		totalDecor += decorImages[i].size();
+	}
 
 	of << totalDecor << endl;
 
-	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
+	for (int i = 0; i < EffectLayer::Count; ++i)
 	{
-		(*it)->WriteFile(of);
-	}
-
-	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
-	{
-		(*it)->WriteFile(of);
-	}
-
-	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
-	{
-		(*it)->WriteFile(of);
+		auto &dList = decorImages[i];
+		for (auto it = dList.begin(); it != dList.end(); ++it)
+		{
+			(*it)->WriteFile(of);
+		}
 	}
 }
 
@@ -4870,43 +4848,33 @@ bool EditSession::PointSelectDecor(V2d &pos)
 		return false;
 	}
 
-	for (auto it = decorImagesBehindTerrain.begin();
-		it != decorImagesBehindTerrain.end(); ++it)
+	for (int i = EffectLayer::Count; i >= 0; --i)
 	{
+		auto &dList = decorImages[i];
 
-	}
-
-	for (auto it = decorImagesBetween.begin();
-		it != decorImagesBetween.end(); ++it)
-	{
-		if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
+		for (auto it = dList.begin(); it != dList.end(); ++it)
 		{
-		
-			if ((*it)->selected)
+			if ((*it)->ContainsPoint(Vector2f(worldPos.x, worldPos.y)))
 			{
-
-			}
-			else
-			{
-				if (!HoldingShift())
+				if ((*it)->selected)
 				{
-					ClearSelectedBrush();
+
+				}
+				else
+				{
+					if (!HoldingShift())
+					{
+						ClearSelectedBrush();
+					}
+
+					grabbedObject = (*it);
+					SelectObject((*it));
 				}
 
-				grabbedObject = (*it);
-				SelectObject((*it));
+				return true;
 			}
-
-			return true;
 		}
 	}
-
-	for (auto it = decorImagesFrontTerrain.begin();
-		it != decorImagesFrontTerrain.end(); ++it)
-	{
-
-	}
-
 	return false;
 }
 
@@ -5030,15 +4998,15 @@ void EditSession::TryCompleteSelectedMove()
 		assert(grabbedImage != NULL);
 		if (grabbedImage->layer > 0)
 		{
-			grabbedImage->myList = &decorImagesBehindTerrain;
+			grabbedImage->myList = &decorImages[BEHIND_TERRAIN];//&decorImagesBehindTerrain;
 		}
 		else if (grabbedImage->layer < 0)
 		{
-			grabbedImage->myList = &decorImagesFrontTerrain;
+			grabbedImage->myList = &decorImages[BEHIND_ENEMIES];//&decorImagesFrontTerrain;
 		}
 		else if (grabbedImage->layer == 0)
 		{
-			grabbedImage->myList = &decorImagesBetween;
+			grabbedImage->myList = &decorImages[BETWEEN_PLAYER_AND_ENEMIES];//&decorImagesBetween;
 		}
 
 		Action *apply = new ApplyBrushAction(selectedBrush);
@@ -9799,28 +9767,34 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 	}
 
 	bool found = false;
-	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
+
+	for (int i = EffectLayer::Count; i >= 0; --i)
 	{
-		if ((*it)->Intersects(rect))
+		auto &dList = decorImages[i];
+
+		for (auto it = dList.begin(); it != dList.end(); ++it)
 		{
-			if (HoldingShift())
+			if ((*it)->Intersects(rect))
 			{
-				if ((*it)->selected)
+				if (HoldingShift())
 				{
-					DeselectObject((*it));
+					if ((*it)->selected)
+					{
+						DeselectObject((*it));
+					}
+					else
+					{
+						SelectObject((*it));
+					}
 				}
 				else
 				{
 					SelectObject((*it));
 				}
-			}
-			else
-			{
-				SelectObject((*it));
-			}
 
 
-			found = true;
+				found = true;
+			}
 		}
 	}
 
@@ -11283,25 +11257,16 @@ void EditSession::DrawGateInfos()
 	}
 }
 
-void EditSession::DrawDecorBehind(sf::RenderTarget *target)
+void EditSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
 {
-	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
+	if (mode != TEST_PLAYER && !editModeUI->IsLayerShowing(LAYER_IMAGE))
 	{
 		return;
 	}
-	for (auto it = decorImagesBehindTerrain.begin(); it != decorImagesBehindTerrain.end(); ++it)
-	{
-		(*it)->Draw(target);
-	}
-}
 
-void EditSession::DrawDecorBetween( sf::RenderTarget *target )
-{
-	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
-	{
-		return;
-	}
-	for (auto it = decorImagesBetween.begin(); it != decorImagesBetween.end(); ++it)
+	auto &dList = decorImages[ef];
+
+	for (auto it = dList.begin(); it != dList.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}
@@ -11451,18 +11416,6 @@ void EditSession::DrawGateInProgress()
 
 		preScreenTex->draw(quad, 4, sf::Quads);
 		preScreenTex->draw(cs);
-	}
-}
-
-void EditSession::DrawDecorFront(sf::RenderTarget *target)
-{
-	if (!editModeUI->IsLayerShowing(LAYER_IMAGE))
-	{
-		return;
-	}
-	for (auto it = decorImagesFrontTerrain.begin(); it != decorImagesFrontTerrain.end(); ++it)
-	{
-		(*it)->Draw(target);
 	}
 }
 

@@ -358,7 +358,7 @@ struct GameSession : RayCastHandler, Session
 	Edge *rayIgnoreEdge1;
 	
 	ShapeEmitter *testEmit;
-	std::list<DecorDraw*> decorBetween;
+	std::list<DecorDraw*> decor[EffectLayer::Count];
 	
 	int numKeysCollected;
 
@@ -519,8 +519,7 @@ struct GameSession : RayCastHandler, Session
 	bool PlayerIsFacingRight(int index = 0);
 
 	//draw
-	
-	void DrawDecorBetween(sf::RenderTarget *target);
+
 	void DebugDraw(sf::RenderTarget *target);
 	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
@@ -594,5 +593,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateCamera();
 	void UpdateEnvPlants();
 	bool UpdateRunModeBackAndStartButtons();
+	void CleanupDecor();
+	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
 };
 #endif

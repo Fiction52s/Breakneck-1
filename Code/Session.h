@@ -550,6 +550,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void DrawFlyTerrain(sf::RenderTarget *target) = 0;
 	void DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target);
 	void DrawGateMarkers(sf::RenderTarget *target);
+	virtual void DrawDecor(EffectLayer ef, sf::RenderTarget *target) = 0;
+	void LayeredDraw(EffectLayer ef, sf::RenderTarget *target);
 };
 
 #endif

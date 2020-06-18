@@ -260,10 +260,8 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawBlackBorderQuads(target);
 
-	DrawStoryLayer(EffectLayer::BEHIND_TERRAIN, target);
-	DrawActiveSequence(EffectLayer::BEHIND_TERRAIN, target );
-	DrawEffects(EffectLayer::BEHIND_TERRAIN, target);
-	DrawEmitters(EffectLayer::BEHIND_TERRAIN, target);
+	LayeredDraw(EffectLayer::BEHIND_TERRAIN, target);
+
 	DrawZones(target);
 
 	DrawSpecialTerrain(target);
@@ -278,18 +276,12 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawGates(target);
 	DrawRails(target);
-	DrawDecorBetween(target);
-	DrawStoryLayer(EffectLayer::BEHIND_ENEMIES, target);
-	DrawActiveSequence(EffectLayer::BEHIND_ENEMIES, target);
-	DrawEffects(EffectLayer::BEHIND_ENEMIES, target);
-	DrawEmitters(EffectLayer::BEHIND_ENEMIES, target );
+
+	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
 
 	DrawEnemies(target);
 
-	DrawStoryLayer(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-	DrawActiveSequence(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target );
-	DrawEffects(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-	DrawEmitters(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target );
+	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
 
 	DrawGoalPulse(target);
 	DrawPlayerWires(target);
@@ -305,10 +297,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawReplayGhosts();
 
-	DrawStoryLayer(EffectLayer::IN_FRONT, target);
-	DrawEffects(EffectLayer::IN_FRONT, target);
-	DrawEmitters(EffectLayer::IN_FRONT, target );
-	DrawActiveSequence(EffectLayer::IN_FRONT, target );
+	LayeredDraw(EffectLayer::IN_FRONT, target);
 
 	DrawBullets(target);
 
@@ -318,7 +307,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DebugDraw(target);
 
-	DrawShockwaves(target); //not operational atm
+	//DrawShockwaves(target); //not operational atm
 
 	target->setView(uiView);
 
@@ -353,13 +342,11 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawDyingPlayers(target);
 
-	UpdateTimeSlowShader();
+	//UpdateTimeSlowShader();
 
 	target->setView(uiView);
 
-	DrawActiveSequence(EffectLayer::UI_FRONT, target );
-	DrawEffects(EffectLayer::UI_FRONT, target);
-	DrawEmitters(EffectLayer::UI_FRONT, target );
+	LayeredDraw(EffectLayer::UI_FRONT, target);
 
 	fader->Draw(target);
 	swiper->Draw(target);
@@ -1054,11 +1041,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 
 	CleanupGates();
 
-	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
-	{
-		delete (*it);
-	}
-	decorBetween.clear();
+	CleanupDecor();
 
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
@@ -1247,10 +1230,7 @@ void GameSession::Cleanup()
 		airTriggerTree = NULL;
 	}
 
-	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
-	{
-		delete (*it);
-	}
+	CleanupDecor();
 
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
@@ -1482,7 +1462,7 @@ void GameSession::ProcessAllDecorSpr()
 				vi++;
 			}
 
-			decorBetween.push_back(new DecorDraw(betweenVerts,
+			decor[BETWEEN_PLAYER_AND_ENEMIES].push_back(new DecorDraw(betweenVerts,
 				numBetweenLayer * 4, betweenList.front().ts));
 		}
 	}
@@ -3574,9 +3554,11 @@ void GameSession::DrawRails(sf::RenderTarget *target)
 	}
 }
 
-void GameSession::DrawDecorBetween(sf::RenderTarget *target)
+void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
 {
-	for (auto it = decorBetween.begin(); it != decorBetween.end(); ++it)
+	auto &dList = decor[ef];
+
+	for (auto it = dList.begin(); it != dList.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}
@@ -4750,6 +4732,19 @@ void GameSession::DrawGoalPulse(sf::RenderTarget *target)
 	if (goalPulse != NULL)
 	{
 		goalPulse->Draw(target);
+	}
+}
+
+void GameSession::CleanupDecor()
+{
+	for (int i = 0; i < EffectLayer::Count; ++i)
+	{
+		auto &dList = decor[i];
+		for (auto it = dList.begin(); it != dList.end(); ++it)
+		{
+			delete (*it);
+		}
+		dList.clear();
 	}
 }
 
