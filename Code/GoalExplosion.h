@@ -3,13 +3,12 @@
 
 #include <SFML/Graphics.hpp>
 
-struct GameSession;
+struct Session;
 
 struct GoalPulse
 {
-	GoalPulse( GameSession *owner );
+	GoalPulse();
 	sf::VertexArray circleVA;
-	GameSession *owner;
 	void Draw( sf::RenderTarget *target );
 	void Reset();
 	void Update();

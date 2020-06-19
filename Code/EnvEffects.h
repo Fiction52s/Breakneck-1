@@ -4,15 +4,15 @@
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
 
-struct GameSession;
+struct Session;
 struct Rain
 {
-	Rain( GameSession *owner );
+	Rain();
 	void Draw( sf::RenderTarget *target );
 	void Reset();
 	sf::VertexArray va;
 
-	GameSession *owner;
+	Session *sess;
 
 	Tileset *ts_rain;
 

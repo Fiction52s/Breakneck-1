@@ -7,8 +7,8 @@ using namespace std;
 
 const int GoalPulse::circlePoints = 32;
 
-GoalPulse::GoalPulse( GameSession *p_owner)
-	:owner( p_owner ), circleVA( sf::Quads, circlePoints * 4 ), innerRadius( 100 ), 
+GoalPulse::GoalPulse()
+	:circleVA( sf::Quads, circlePoints * 4 ), innerRadius( 100 ), 
 	outerRadius( 200 ), show( false ), frame( 0 ), pulseLength( 60 ),
 	maxOuterRadius( 3000.f ), maxInnerRadius( 2800.f )
 {

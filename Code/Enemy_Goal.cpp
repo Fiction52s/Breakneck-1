@@ -83,45 +83,37 @@ Goal::Goal( ActorParams *ap )
 	//clean this up 
 	if (sess->IsSessTypeGame())
 	{
-		GameSession *game = GameSession::GetSession();
+		SetMapGoalPos();
+	}
 
-		miniSprite.setTexture(*ts_mini->texture);
-		miniSprite.setTextureRect(ts_mini->GetSubRect(2));
+	miniSprite.setTexture(*ts_mini->texture);
+	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 
-		miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
-		miniSprite.setPosition(startPosInfo.GetPositionF());
-		miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
-		miniSprite.setScale(16, 16);
+	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
+	miniSprite.setPosition(startPosInfo.GetPositionF());
+	miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+	miniSprite.setScale(16, 16);
 
-		switch (sess->mapHeader->envWorldType)
-		{
-		case 0:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(5));
-			break;
-		case 1:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
-			break;
-		case 2:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
-			break;
-		case 3:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
-			break;
-		case 4:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
-			break;
-		case 5:
-			miniSprite.setTextureRect(ts_mini->GetSubRect(4));
-			break;
-		}
-
-		game->hasGoal = true;
-		game->goalPos = GetPosition();
-
-		double nodeHeight = 104;
-		game->goalNodePos = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), nodeHeight);
-		float space = 78.f;
-		game->goalNodePosFinal = V2d(game->goalNodePos.x, game->goalNodePos.y - space);
+	switch (world)
+	{
+	case 0:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(5));
+		break;
+	case 1:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+		break;
+	case 2:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+		break;
+	case 3:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+		break;
+	case 4:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+		break;
+	case 5:
+		miniSprite.setTextureRect(ts_mini->GetSubRect(4));
+		break;
 	}
 
 	ResetEnemy();
@@ -131,6 +123,17 @@ Goal::Goal( ActorParams *ap )
 
 Goal::~Goal()
 {
+}
+
+void Goal::SetMapGoalPos()
+{
+	sess->hasGoal = true;
+	sess->goalPos = GetPosition();
+
+	double nodeHeight = 104;
+	sess->goalNodePos = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), nodeHeight);
+	float space = 78.f;
+	sess->goalNodePosFinal = V2d(sess->goalNodePos.x, sess->goalNodePos.y - space);
 }
 
 void Goal::ConfirmKill()

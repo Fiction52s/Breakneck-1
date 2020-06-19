@@ -46,6 +46,7 @@
 #include "MusicPlayer.h"
 #include "Barrier.h"
 #include "TopClouds.h"
+#include "Enemy_Goal.h"
 
 using namespace std;
 using namespace sf;
@@ -113,7 +114,7 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawTerrain(target);
 
-	//DrawGoalEnergy(target);
+	DrawGoalFlow(target);
 
 	DrawHUD(target);
 
@@ -136,15 +137,17 @@ void EditSession::DrawGame(sf::RenderTarget *target)
 
 	DrawPlayers(target);
 
+	absorbShardParticles->Draw(target);
+
 	//DrawReplayGhosts();
 	
 	LayeredDraw(EffectLayer::IN_FRONT, target);
 
-	absorbShardParticles->Draw(target);
-
 	DrawBullets(target);
 
 	//DrawRain(target);
+
+	//DrawActiveEnvPlants();
 
 	DebugDraw(target);
 
@@ -484,7 +487,7 @@ bool EditSession::RunGameModeUpdate()
 		soundNodeList->Update();
 
 		//pauseSoundNodeList->Update();
-		//goalPulse->Update();
+		UpdateGoalPulse();
 
 		/*if (rain != NULL)
 			rain->Update();*/
@@ -517,7 +520,7 @@ bool EditSession::RunGameModeUpdate()
 		if (gameCam)
 		{
 
-			view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
+			view.setSize(Vector2f(960 * cam.GetZoom(), 540 * cam.GetZoom()));
 
 			//this is because kin's sprite is 2x size in the game as well as other stuff
 			//lastViewSize = view.getSize();
@@ -541,8 +544,14 @@ bool EditSession::RunGameModeUpdate()
 		{
 			raceFight->UpdateScore();
 		}*/
-
-		//UpdateGoalFlow();
+		UpdateGoalFlow();
+		if (gameCam)
+		{
+			//if you aren't using gamecam, the flow is wrong
+			//might be something I can fix later.
+			
+		}
+		
 
 		QueryToSpawnEnemies();
 
@@ -1094,6 +1103,8 @@ void EditSession::TestPlayerMode()
 
 	//CleanupShipExit();
 
+	hasGoal = false;
+
 	bool foundShipEnter = false;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -1127,6 +1138,11 @@ void EditSession::TestPlayerMode()
 				shipEnterScene->shipEntrancePos = (*enit)->GetPosition();
 
 			}
+			else if ((*enit)->type == types["goal"] && !hasGoal )
+			{
+				Goal *g = (Goal*)((*enit)->myEnemy);
+				g->SetMapGoalPos();
+			}
 		}
 	}
 
@@ -1158,6 +1174,12 @@ void EditSession::TestPlayerMode()
 	{
 		topClouds = new TopClouds;
 		topClouds->SetToHeader();
+	}
+
+	if (hasGoal)
+	{
+		SetupGoalFlow();
+		SetupGoalPulse();
 	}
 
 	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
@@ -2364,7 +2386,7 @@ void EditSession::WriteFile(string fileName)
 {
 	saveUpdated = true;
 
-	bool hasGoal = false;
+	bool hGoal = false;
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 	{
 		ActorGroup *group = (*it).second;
@@ -2372,7 +2394,7 @@ void EditSession::WriteFile(string fileName)
 		{
 			if( (*it2)->type->IsGoalType() )
 			{
-				hasGoal = true;
+				hGoal = true;
 				break;
 			}
 		}
@@ -4848,7 +4870,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 		return false;
 	}
 
-	for (int i = EffectLayer::Count; i >= 0; --i)
+	for (int i = EffectLayer::Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 

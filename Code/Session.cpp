@@ -26,6 +26,8 @@
 #include "DeathSequence.h"
 #include "TopClouds.h"
 #include "StorySequence.h"
+#include "GoalFlow.h"
+#include "GoalExplosion.h"
 //#include "Enemy_Shard.h"
 
 
@@ -43,6 +45,8 @@
 
 using namespace sf;
 using namespace std;
+
+
 
 
 template <typename X>ActorParams * MakeParams(ActorType *at, int level)
@@ -1243,6 +1247,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	flowHandler.sess = this;
 	mainMenu = MainMenu::GetInstance();
 	preScreenTex = MainMenu::preScreenTexture;
 	minimapTex = MainMenu::minimapTexture;
@@ -1255,6 +1260,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	goalFlow = NULL;
+	goalPulse = NULL;
 	currStorySequence = NULL;
 	shardsCapturedField = NULL;
 	preLevelScene = NULL;
@@ -1562,6 +1569,9 @@ Session::~Session()
 	CleanupBarriers();
 
 	CleanupTopClouds();
+
+	CleanupGoalFlow();
+	CleanupGoalPulse();
 }
 
 void Session::UpdateDecorLayers()
@@ -4167,12 +4177,13 @@ void Session::SetGlobalBorders()
 	terrainTree->Insert(left);
 	terrainTree->Insert(right);
 	terrainTree->Insert(top);
+	//terrainTree->Insert(bot); //this is a problem because it lets the goal flow leak out. can probably fix it in goal flow rather than doing it here.
 
 	globalBorderEdges.push_back(left);
 	globalBorderEdges.push_back(right);
 	globalBorderEdges.push_back(top);
 	globalBorderEdges.push_back(bot);
-	//terrainTree->Insert(bot);
+	//
 
 }
 
@@ -4891,4 +4902,257 @@ void Session::LayeredDraw(EffectLayer ef, sf::RenderTarget *target)
 	DrawActiveSequence(ef, target);
 	DrawEffects(ef, target);
 	DrawEmitters(ef, target);
+}
+
+typedef pair<V2d, V2d> pairV2d;
+void Session::SetupGoalFlow()
+{
+	//is still created in a bonus level
+
+	CleanupGoalFlow();
+
+	int bgLayer = 0;
+	QuadTree *qt = terrainTree;
+
+	assert(qt != NULL);
+
+	double angle = 0;
+	double divs = 64;
+	double moveAngle = (2 * PI) / divs;
+	double tau = 2 * PI;
+	double startRadius = 50;
+	bool insideTerrain = false;
+	bool knowInside = false;
+	double rayLen = 100;
+	double width = 16;
+
+	list<list<pair<V2d, bool>>> allInfo;
+	double rayCheck = 0;
+
+	for (int i = 0; i < divs; ++i)
+	{
+		rayIgnoreEdge1 = NULL;
+		rayIgnoreEdge = NULL;
+
+		allInfo.push_back(list<pair<V2d, bool>>());
+		list<pair<V2d, bool>> &pointList = allInfo.back();
+
+		double angle = (tau / divs) * i;
+		V2d rayDir(cos(angle), sin(angle));
+
+		rayStart = goalPos + rayDir * startRadius;
+		rayEnd = rayStart + rayDir * rayLen;
+
+		bool rayOkay = rayEnd.x >= mapHeader->leftBounds && rayEnd.y >= mapHeader->topBounds
+			&& rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
+			&& rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
+
+
+		Edge *cEdge = NULL;
+		//list<pair<V2d, bool>> pointList; //if true, then its facing the ray
+
+
+		while (rayOkay)
+		{
+			//cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
+			rcEdge = NULL;
+
+			RayCast(&flowHandler, qt->startNode, rayStart, rayEnd);
+			//rayStart = v0 + along * quant;
+			//rayIgnoreEdge = te;
+			//V2d goalDir = normalize( rayStart - goalPos );
+			//rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
+
+
+			//start ray
+			if (rcEdge != NULL)
+			{
+				cout << "point list size: " << pointList.size() << endl;
+				if (rcEdge->IsInvisibleWall() || rcEdge->edgeType == Edge::CLOSED_GATE)
+				{
+					//	cout << "secret break" << endl;
+					break;
+				}
+
+				rayIgnoreEdge1 = rayIgnoreEdge;
+				rayIgnoreEdge = rcEdge;
+
+				V2d rn = rcEdge->Normal();
+				double d = dot(rn, rayDir);
+				V2d hitPoint = rcEdge->GetPosition(rcQuantity);
+				if (d > 0)
+				{
+					if (pointList.size() > 0 && pointList.back().second == false)
+					{
+						pointList.pop_back();
+						cout << "goal lines failing here: " << i << " although nothing seems wrong"
+							<< endl;
+						//assert( 0 );
+					}
+					else
+					{
+						//pointList.pop_back
+						pointList.push_back(pair<V2d, bool>(hitPoint, false)); //not facing the ray, so im inside
+																			   //cout << "adding false: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
+					}
+				}
+				else if (d < 0)
+				{
+					if (pointList.size() > 0 && pointList.back().second == true)
+					{
+						pointList.pop_back();
+						//cout << "failing here111 " << i << endl;
+						//assert( 0 ); //commented out this assert for testing
+					}
+					else
+					{
+
+						pointList.push_back(pair<V2d, bool>(hitPoint, true)); // facing the ray, so im outside
+																			  //cout << "adding true: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
+					}
+				}
+				else
+				{
+
+				}
+				//rayPoint = rcEdge->GetPoint( rcQuantity );	
+				//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
+				rayStart = hitPoint;
+				rayEnd = hitPoint + rayDir * rayLen;
+
+
+
+				//currStartInner = rcEdge->GetPoint( rcQuantity );
+				//realHeight0 = length( currStartInner - currStartOuter );
+
+			}
+			else
+			{
+				rayStart = rayEnd;
+				rayEnd = rayStart + rayDir * rayLen;
+			}
+
+			double oldRayCheck = rayCheck;
+			rayCheck = length((goalPos + rayDir * startRadius) - rayEnd);
+
+			if (rayCheck == oldRayCheck)
+			{
+				rayOkay = false;
+			}
+			else
+			{
+				rayOkay = rayCheck <= 10000;
+			}
+			//cout << "rayLen: " << rayLen << endl;
+
+			//rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
+			//	&& rayEnd.y <= topBounds + boundsHeight;
+		}
+
+		if (pointList.size() > 0)
+		{
+			if (pointList.front().second == false)
+			{
+				//	cout << "adding to front!" << endl;
+				//pointList.pop_front();
+				pointList.push_front(pair<V2d, bool>(goalPos + rayDir * startRadius, true));
+			}
+			if (pointList.back().second == true)
+			{
+				//pointList.pop_back();
+				//	cout << "popping from back!" << endl;
+				pointList.push_back(pair<V2d, bool>(rayEnd, false));
+			}
+		}
+
+		assert(pointList.size() % 2 == 0);
+
+		//true then false
+
+		//always an even number of them
+	}
+
+	if (allInfo.empty())
+	{
+		return;
+	}
+
+	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
+}
+
+void Session::CleanupGoalFlow()
+{
+	if (goalFlow != NULL)
+	{
+		delete goalFlow;
+		goalFlow = NULL;
+	}
+}
+
+void Session::FlowHandler::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+{
+	if (edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE)
+	{
+		return;
+	}
+
+	if (edge != sess->rayIgnoreEdge && edge != sess->rayIgnoreEdge1
+		&& (sess->rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - sess->rayStart) <
+			length(sess->rcEdge->GetPosition(sess->rcQuantity) - sess->rayStart)))
+	{
+		sess->rcEdge = edge;
+		sess->rcQuantity = edgeQuantity;
+	}
+}
+
+void Session::DrawGoalFlow(sf::RenderTarget *target)
+{
+	if (goalFlow != NULL)
+	{
+		goalFlow->Draw(target);
+	}
+}
+
+void Session::UpdateGoalFlow()
+{
+	if (goalFlow != NULL)
+	{
+		//Vector2f topLeft(screenRect.left, screenRect.top + screenRect.height); //actually bottom left
+		Vector2f topLeft(view.getCenter().x - view.getSize().x / 2,
+			view.getCenter().y + view.getSize().y / 2);
+		float zoom = view.getSize().x / 960.f;
+		//goalFlow->Update(cam.GetZoom(), topLeft);
+		goalFlow->Update(zoom, topLeft);
+	}
+}
+
+void Session::CleanupGoalPulse()
+{
+	if (parentGame == NULL && goalPulse != NULL)
+	{
+		delete goalPulse;
+		goalPulse = NULL;
+	}
+}
+
+void Session::UpdateGoalPulse()
+{
+	if (goalPulse != NULL)
+	{
+		goalPulse->Update();
+	}
+}
+
+void Session::SetupGoalPulse()
+{
+	if (parentGame != NULL)
+	{
+		goalPulse = parentGame->goalPulse;
+	}
+	else if (goalPulse == NULL)
+	{
+		goalPulse = new GoalPulse;// , Vector2f(goalPos.x, goalPos.y));
+	}
+
+	goalPulse->SetPosition(Vector2f(goalPos));
 }

@@ -1,5 +1,5 @@
 #include "EnvEffects.h"
-#include "GameSession.h"
+#include "Session.h"
 #include <math.h>
 
 using namespace std;
@@ -14,10 +14,11 @@ const int Rain::ANIM_FACTOR = 5;
 	
 
 
-Rain::Rain( GameSession *p_owner )
-	:owner( p_owner ), va( sf::Quads, TOTAL_QUADS * 4 ) 
+Rain::Rain()
+	:va( sf::Quads, TOTAL_QUADS * 4 ) 
 {
-	ts_rain = owner->GetTileset( "Env/rain_64x64.png", 64, 64 );
+	sess = Session::GetSession();
+	ts_rain = sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
 	frame = 0;
 	loopLength = 7;
 }
@@ -35,8 +36,8 @@ void Rain::Update()
 		frame = 0;
 	}
 
-	int xPos = (int)owner->cam.pos.x;
-	int yPos = (int)owner->cam.pos.y;
+	int xPos = (int)sess->cam.pos.x;
+	int yPos = (int)sess->cam.pos.y;
 
 	xPos = xPos % TILE_WIDTH;
 	yPos = yPos % TILE_HEIGHT;

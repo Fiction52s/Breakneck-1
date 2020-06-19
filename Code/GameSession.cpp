@@ -270,7 +270,7 @@ void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target
 
 	DrawTerrain(target);
 
-	DrawGoalEnergy(target);
+	DrawGoalFlow(target);
 
 	DrawHUD(target);
 
@@ -1128,11 +1128,7 @@ void GameSession::Cleanup()
 	}
 	fullEnemyList.clear();
 
-	if ( goalFlow != NULL)
-	{
-		delete goalFlow;
-		goalFlow = NULL;
-	}
+	CleanupGoalFlow();
 
 	for (auto it = decorLayerMap.begin(); it != decorLayerMap.end(); ++it)
 	{
@@ -1170,11 +1166,7 @@ void GameSession::Cleanup()
 		recGhost = NULL;
 	}
 
-	if (parentGame == NULL && goalPulse != NULL)
-	{
-		delete goalPulse;
-		goalPulse = NULL;
-	}
+	CleanupGoalPulse();
 
 	if (specterTree != NULL)
 	{
@@ -2066,11 +2058,21 @@ bool GameSession::Load()
 
 	SetupControlProfiles();
 
-	SetupGoalPulse();
+	
 
 	GetPlayer(0)->SetupDrain();
 
-	SetupGoalFlow();
+	if (hasGoal)
+	{
+		SetupGoalFlow();
+		SetupGoalPulse();
+	}
+	else
+	{
+		CleanupGoalPulse();
+		CleanupGoalFlow();
+	}
+	
 	cam.Init(GetPlayerPos(0));
 
 	if (!ShouldContinueLoading())
@@ -3236,7 +3238,7 @@ void GameSession::Init()
 	shardsCapturedField = NULL;
 	level = NULL;
 	inputVis = NULL;
-	goalPulse = NULL;
+	
 	pauseMenu = NULL;
 	progressDisplay = NULL;
 	topClouds = NULL;
@@ -3251,6 +3253,7 @@ void GameSession::Init()
 	scoreDisplay = NULL;
 	
 	rain = NULL;//new Rain(this);//NULL;
+	//rain = new Rain;//NULL;
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
@@ -3266,7 +3269,6 @@ void GameSession::Init()
 	absorbParticles = NULL;
 	absorbDarkParticles = NULL;
 	absorbShardParticles = NULL;
-	goalFlow = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
 		players[i] = NULL;
@@ -3413,19 +3415,7 @@ void GameSession::UpdateTimeSlowShader()
 	//timeSlowShader.setUniform( "b5Frame", player->bubbleFramesToLive[5] );
 }
 
-void GameSession::SetupGoalPulse()
-{
-	if (parentGame != NULL)
-	{
-		goalPulse = parentGame->goalPulse;
-	}
-	else if (goalPulse == NULL)
-	{
-		goalPulse = new GoalPulse(this);// , Vector2f(goalPos.x, goalPos.y));
-	}
 
-	goalPulse->SetPosition(Vector2f(goalPos));
-}
 
 void GameSession::EndLevel()
 {
@@ -3564,23 +3554,7 @@ void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
 	}
 }
 
-void GameSession::DrawGoalEnergy(sf::RenderTarget *target)
-{
-	if (goalFlow != NULL)
-	{
-		goalFlow->Draw(target);
-	}
-}
 
-void GameSession::UpdateGoalFlow()
-{
-	if (goalFlow != NULL)
-	{
-		Vector2f topLeft(view.getCenter().x - view.getSize().x / 2,
-			view.getCenter().y + view.getSize().y / 2);
-		goalFlow->Update(cam.GetZoom(), topLeft);
-	}
-}
 
 void GameSession::UpdateDebugModifiers()
 {
@@ -4066,201 +4040,7 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 	}*/
 }
 
-typedef pair<V2d, V2d> pairV2d;
-void GameSession::SetupGoalFlow()
-{
-	//is still created in a bonus level
 
-	if (goalFlow != NULL)
-	{
-		delete goalFlow;
-		goalFlow = NULL;
-	}
-
-	if (!hasGoal)
-	{
-		return;
-	}
-
-	
-
-	int bgLayer = 0;
-	QuadTree *qt = NULL;
-	if( bgLayer == 0 )
-	{
-		qt = terrainTree;
-	}
-	else if( bgLayer == 1 )
-	{
-		qt = terrainBGTree;
-	}
-
-	assert( qt != NULL );
-	rayMode = "energy_flow";
-
-	double angle = 0;
-	double divs = 64;
-	double moveAngle = (2 * PI) / divs;
-	double tau = 2 * PI;
-	double startRadius = 50;
-	bool insideTerrain = false;
-	bool knowInside = false;
-	double rayLen = 100;
-	double width = 16;
-
-	list<list<pair<V2d,bool>>> allInfo;
-	double rayCheck = 0;
-
-	for( int i = 0; i < divs; ++i )
-	{
-		rayIgnoreEdge1 = NULL;
-		rayIgnoreEdge = NULL;
-
-		allInfo.push_back( list<pair<V2d,bool>>() );
-		list<pair<V2d,bool>> &pointList = allInfo.back();
-
-		double angle = (tau / divs) * i;
-		V2d rayDir( cos( angle ), sin( angle ) );
-
-		rayStart = goalPos + rayDir * startRadius;
-		rayEnd = rayStart + rayDir * rayLen;
-
-		bool rayOkay = rayEnd.x >= mapHeader->leftBounds && rayEnd.y >= mapHeader->topBounds 
-			&& rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
-			&& rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
-		
-		
-		Edge *cEdge = NULL;
-		//list<pair<V2d, bool>> pointList; //if true, then its facing the ray
-
-		
-		while( rayOkay )
-		{
-			//cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
-			rcEdge = NULL;
-
-			RayCast( this, qt->startNode, rayStart, rayEnd );
-			//rayStart = v0 + along * quant;
-			//rayIgnoreEdge = te;
-			//V2d goalDir = normalize( rayStart - goalPos );
-			//rayEnd = rayStart + goalDir * maxRayLength;//rayStart - norm * maxRayLength;
-			
-			
-			//start ray
-			if( rcEdge != NULL )
-			{
-				cout << "point list size: " << pointList.size() << endl;
-				if( rcEdge->IsInvisibleWall() || rcEdge->edgeType == Edge::CLOSED_GATE )
-				{
-				//	cout << "secret break" << endl;
-					break;
-				}
-				
-				rayIgnoreEdge1 = rayIgnoreEdge;
-				rayIgnoreEdge = rcEdge;
-
-				V2d rn = rcEdge->Normal();
-				double d = dot( rn, rayDir );
-				V2d hitPoint = rcEdge->GetPosition( rcQuantity );
-				if( d > 0 )
-				{
-					if( pointList.size() > 0 && pointList.back().second == false )
-					{
-						pointList.pop_back();
-						cout << "goal lines failing here: " << i << " although nothing seems wrong"  
-							<< endl;
-						//assert( 0 );
-					}
-					else
-					{
-						//pointList.pop_back
-						pointList.push_back( pair<V2d,bool>( hitPoint, false ) ); //not facing the ray, so im inside
-						//cout << "adding false: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
-					}
-				}
-				else if( d < 0 )
-				{
-					if( pointList.size() > 0 && pointList.back().second == true)
-					{
-						pointList.pop_back();
-						//cout << "failing here111 " << i << endl;
-						//assert( 0 ); //commented out this assert for testing
-					}
-					else
-					{
-						
-						pointList.push_back( pair<V2d,bool>( hitPoint, true ) ); // facing the ray, so im outside
-						//cout << "adding true: " << hitPoint.x << ", " << hitPoint.y << "    " << pointList.size() << endl;
-					}
-				}
-				else
-				{
-
-				}
-				//rayPoint = rcEdge->GetPoint( rcQuantity );	
-				//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
-				rayStart = hitPoint;
-				rayEnd = hitPoint + rayDir * rayLen;
-
-				
-					
-				//currStartInner = rcEdge->GetPoint( rcQuantity );
-				//realHeight0 = length( currStartInner - currStartOuter );
-			
-			}
-			else
-			{
-				rayStart = rayEnd;
-				rayEnd = rayStart + rayDir * rayLen;
-			}
-
-			double oldRayCheck = rayCheck;
-			rayCheck = length((goalPos + rayDir * startRadius) - rayEnd);
-
-			if (rayCheck == oldRayCheck)
-			{
-				rayOkay = false;
-			}
-			else
-			{
-				rayOkay = rayCheck <= 10000;
-			}
-			//cout << "rayLen: " << rayLen << endl;
-			
-			//rayOkay = rayEnd.x >= leftBounds && rayEnd.y >= topBounds && rayEnd.x <= leftBounds + boundsWidth 
-			//	&& rayEnd.y <= topBounds + boundsHeight;
-		}
-
-		if( pointList.size() > 0 )
-		{
-			if( pointList.front().second == false )
-			{
-			//	cout << "adding to front!" << endl;
-				//pointList.pop_front();
-				pointList.push_front( pair<V2d,bool>( goalPos + rayDir * startRadius, true ) );
-			}
-			if( pointList.back().second == true )
-			{
-				//pointList.pop_back();
-			//	cout << "popping from back!" << endl;
-				pointList.push_back( pair<V2d,bool>( rayEnd, false ) );
-			}
-		}
-
-		assert( pointList.size() % 2 == 0 );
-
-		//true then false
-
-		//always an even number of them
-	}
-
-	if( allInfo.empty() )
-	{
-		return;
-	}
-
-	goalFlow = new GoalFlow(Vector2f(goalPos), allInfo);
-}
 
 sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset *ts )
 {
@@ -4564,21 +4344,6 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 		}
 		}
 		else
-		{
-			rcEdge = edge;
-			rcQuantity = edgeQuantity;
-		}
-	}
-	else if( rayMode == "energy_flow" )
-	{
-		if( edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE )
-		{
-			return;
-		}
-
-		if( edge != rayIgnoreEdge && edge != rayIgnoreEdge1 
-			&& ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - rayStart ) < 
-			length( rcEdge->GetPosition( rcQuantity ) - rayStart ) ) )
 		{
 			rcEdge = edge;
 			rcQuantity = edgeQuantity;

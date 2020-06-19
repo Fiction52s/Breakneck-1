@@ -82,7 +82,6 @@ struct Level;
 struct MainMenu;
 
 struct GoalPulse;
-struct GoalFlow;
 struct PauseMenu;
 struct Sequence;
 struct EnterNexus1Seq;
@@ -336,12 +335,9 @@ struct GameSession : RayCastHandler, Session
 	RaceFight *raceFight;
 	
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
-	GoalPulse *goalPulse;
-	GoalFlow *goalFlow;
-	bool hasGoal;
-	sf::Vector2<double> goalPos;
-	sf::Vector2<double> goalNodePos;
-	sf::Vector2<double> goalNodePosFinal;
+	
+	
+	
 	std::list<RailPtr> allRails;
 	int totalRails;
 	
@@ -350,12 +346,7 @@ struct GameSession : RayCastHandler, Session
 	//for queries
 
 	//raycast temps
-	sf::Vector2<double> rayStart;
-	sf::Vector2<double> rayEnd;
-	Edge *rcEdge;
-	double rcQuantity;
-	Edge *rayIgnoreEdge;
-	Edge *rayIgnoreEdge1;
+	
 	
 	ShapeEmitter *testEmit;
 	std::list<DecorDraw*> decor[EffectLayer::Count];
@@ -398,7 +389,7 @@ struct GameSession : RayCastHandler, Session
 
 	Rain *rain;
 	bool shadersLoaded;//to prevent reloading of shaders
-	std::string rayMode;
+	
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	std::list<DecorLayer*> DecorLayers;
 	bool drawInversePoly;
@@ -499,11 +490,10 @@ struct GameSession : RayCastHandler, Session
 	void SetupScoreDisplay();
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
-	void SetupGoalPulse();
 	
 	void SetupPauseMenu();
 	void SetupRecGhost();
-	void SetupGoalFlow();
+	
 	sf::VertexArray *SetupBushes(int bgLayer,
 		Edge *startEdge, Tileset *ts);
 	sf::VertexArray * SetupPlants(Edge *start, Tileset *ts);
@@ -528,27 +518,18 @@ struct GameSession : RayCastHandler, Session
 	
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts();
-
-	
-
 	void UpdateDebugModifiers();
-	
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
 	bool IsShardCaptured(int sType);
 	void SetOriginalMusic();
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
-	void UpdateGoalFlow();
 	void UnlockPower(int pType);
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
-	
-	
-	void UpdateEnemiesPrePhysics();
-	void UpdatePhysics();
-	void UpdateEnemiesPostPhysics();
+
 	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
 	void ResetEnemies();

@@ -21,6 +21,7 @@ struct Goal : Enemy
 
 	Goal(ActorParams *ap);
 	~Goal();
+	void SetMapGoalPos();
 	//static Enemy *Create(std::ifstream &is);
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);

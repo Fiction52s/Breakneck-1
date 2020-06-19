@@ -171,18 +171,17 @@ void FlowerPod::ActionEnded()
 			sprite.setTexture(*ts_flower->texture);
 			action = BROADCAST;
 			frame = 0;
-			if( game != NULL )
-				game->currBroadcast = broadcast;
-			//owner->currStorySequence = storySeq;
+			/*if( game != NULL )
+				game->currBroadcast = broadcast;*/
 			break;
 		case BROADCAST:
 			
 			frame = 0;
-			if (game != NULL && game->currBroadcast == NULL)
+			/*if (game != NULL && game->currBroadcast == NULL)
 			{
 				action = HIDE;
 				sprite.setTexture(*ts_rise->texture);
-			}
+			}*/
 		
 			break;
 		case HIDE:

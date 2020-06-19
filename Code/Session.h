@@ -71,12 +71,23 @@ struct ShapeEmitter;
 struct TopClouds;
 struct PoiParams;
 struct StorySequence;
+struct GoalFlow;
+struct Session;
+struct GoalPulse;
 
 #define TIMESTEP (1.0 / 60.0)
+
+
 
 struct Session : TilesetManager, QuadTreeCollider
 {
 	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
+
+	struct FlowHandler : RayCastHandler
+	{
+		Session *sess;
+		void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
+	};
 
 	enum SessionType
 	{
@@ -246,8 +257,26 @@ struct Session : TilesetManager, QuadTreeCollider
 	TopClouds *topClouds;
 
 	StorySequence *currStorySequence;
+	GoalFlow *goalFlow;
+	GoalPulse *goalPulse;
 
 	ShapeEmitter *emitterLists[EffectLayer::Count];
+
+	bool hasGoal;
+	V2d goalPos;
+	V2d goalNodePos;
+	V2d goalNodePosFinal;
+
+	std::string rayMode;
+	V2d rayStart;
+	V2d rayEnd;
+	Edge *rcEdge;
+	double rcQuantity;
+	Edge *rayIgnoreEdge;
+	Edge *rayIgnoreEdge1;
+
+	FlowHandler flowHandler;
+
 
 	static Session *GetSession();
 
@@ -552,6 +581,13 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawGateMarkers(sf::RenderTarget *target);
 	virtual void DrawDecor(EffectLayer ef, sf::RenderTarget *target) = 0;
 	void LayeredDraw(EffectLayer ef, sf::RenderTarget *target);
+	void SetupGoalFlow();
+	void CleanupGoalFlow();
+	void CleanupGoalPulse();
+	void DrawGoalFlow(sf::RenderTarget *target);
+	void UpdateGoalFlow();
+	void UpdateGoalPulse();
+	void SetupGoalPulse();
 };
 
 #endif
