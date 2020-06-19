@@ -31,6 +31,7 @@
 #include "InputVisualizer.h"
 //#include "Enemy_Shard.h"
 #include "EnvEffects.h"
+#include "MusicPlayer.h"
 
 //enemy stuff:
 #include "SoundManager.h"
@@ -4881,16 +4882,22 @@ void Session::UpdateEnemiesPostPhysics()
 
 void Session::QuerySpecialTerrainTree(sf::Rect<double>&rect)
 {
-	specialPieceList = NULL;
-	queryMode = QUERY_SPECIALTERRAIN;
-	specialTerrainTree->Query(this, screenRect);
+	if (specialTerrainTree != NULL)
+	{
+		specialPieceList = NULL;
+		queryMode = QUERY_SPECIALTERRAIN;
+		specialTerrainTree->Query(this, screenRect);
+	}
 }
 
 void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
 {
-	flyTerrainList = NULL;
-	queryMode = QUERY_FLYTERRAIN;
-	flyTerrainTree->Query(this, screenRect);
+	if (flyTerrainTree != NULL)
+	{
+		flyTerrainList = NULL;
+		queryMode = QUERY_FLYTERRAIN;
+		flyTerrainTree->Query(this, screenRect);
+	}
 }
 
 void Session::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
@@ -5468,4 +5475,159 @@ void Session::ActiveStorySequenceUpdate()
 		{
 		}
 	}
+}
+
+bool Session::RunGameModeUpdate()
+{
+	collider.ClearDebug();
+
+	while (accumulator >= TIMESTEP)
+	{
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
+
+		if (!RunPreUpdate())
+			break;
+
+		if (pauseFrames > 0)
+		{
+			HitlagUpdate(); //the full update while in hitlag
+			continue;
+		}
+
+		UpdateControllers();
+
+		RepPlayerUpdateInput();
+
+		RecPlayerRecordFrame();
+
+		UpdateAllPlayersInput();
+
+		ActiveSequenceUpdate();
+		if (switchGameState)
+			break;
+
+		UpdatePlayersPrePhysics();
+
+		TryToActivateBonus();
+
+		ActiveStorySequenceUpdate();
+
+		UpdateInputVis();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPrePhysics();
+
+			UpdatePhysics();
+		}
+
+		//RecordReplayEnemies();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdatePlayersPostPhysics();
+		}
+
+		RecGhostRecordFrame();
+
+		UpdateReplayGhostSprites();
+
+		if (!RunPostUpdate())
+		{
+			break;
+		}
+
+		UpdatePlayerWireQuads();
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPostPhysics();
+		}
+
+		UpdateGates();
+
+		absorbParticles->Update();
+		absorbDarkParticles->Update();
+		absorbShardParticles->Update();
+
+		UpdateEffects();
+		UpdateEmitters();
+
+		mainMenu->musicPlayer->Update();
+
+		UpdateHUD();
+
+		UpdateScoreDisplay();
+
+		UpdateSoundNodeLists();
+
+		UpdateGoalPulse();
+
+		UpdateRain();
+
+		UpdateBarriers();
+
+		UpdateCamera();
+
+		if (gateMarkers != NULL)
+			gateMarkers->Update(&cam);
+
+		fader->Update();
+		swiper->Update();
+		background->Update(view.getCenter());
+		UpdateTopClouds();
+
+		mainMenu->UpdateEffects();
+
+		UpdateRaceFightScore();
+
+		UpdateGoalFlow();
+
+		QueryToSpawnEnemies();
+
+		UpdateEnvPlants();
+
+		QueryBorderTree(screenRect);
+
+		QuerySpecialTerrainTree(screenRect);
+
+		QueryFlyTerrainTree(screenRect);
+
+		UpdateDecorSprites();
+		UpdateDecorLayers();
+
+		if (UpdateRunModeBackAndStartButtons())
+		{
+
+		}
+
+		UpdateZones();
+
+		UpdateEnvShaders(); //havent tested at this position. should work fine.
+
+		accumulator -= TIMESTEP;
+		totalGameFrames++;
+
+		//if (debugScreenRecorder != NULL)
+		//{
+		//	break; //for recording stuff
+		//}
+	}
+
+	if (switchGameState && gameState != FROZEN)
+	{
+		return false;
+	}
+
+	//if (debugScreenRecorder != NULL)
+	//	if (IsKeyPressed(Keyboard::R))
+	//	{
+	//		debugScreenRecorder->StartRecording();
+	//		//player->maxFallSpeedSlo += maxFallSpeedFactor;
+	//		//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
+	//	}
+	return true;
 }

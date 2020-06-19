@@ -652,6 +652,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void RepPlayerUpdateInput() {}
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
+	bool RunGameModeUpdate();
 };
 
 #endif
