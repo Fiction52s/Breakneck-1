@@ -1588,6 +1588,8 @@ Session::~Session()
 	CleanupGoalPulse();
 
 	CleanupRain();
+
+	CleanupGateMarkers();
 }
 
 void Session::UpdateDecorLayers()
@@ -3498,11 +3500,7 @@ void Session::SetupGateMarkers()
 {
 	//doesnt care about parentGame
 
-	if (gateMarkers != NULL)
-	{
-		delete gateMarkers;
-		gateMarkers = NULL;
-	}
+	CleanupGateMarkers();
 
 	int maxGates = 0;
 	int numGatesInZone;
@@ -5705,4 +5703,13 @@ bool Session::SequenceGameModeUpdate()
 	}
 
 	return true;
+}
+
+void Session::CleanupGateMarkers()
+{
+	if (gateMarkers != NULL)
+	{
+		delete gateMarkers;
+		gateMarkers = NULL;
+	}
 }

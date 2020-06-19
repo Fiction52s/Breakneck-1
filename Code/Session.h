@@ -657,6 +657,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool SequenceGameModeUpdate();
 	void DrawGameSequence(sf::RenderTarget *target);
 	virtual void SequenceGameModeRespondToGoalDestroyed() = 0;
+	void CleanupGateMarkers();
 };
 
 #endif

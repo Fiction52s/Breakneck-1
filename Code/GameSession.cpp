@@ -611,14 +611,6 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}
 
-	
-
-	if (gateMarkers != NULL)
-	{
-		delete gateMarkers;
-		gateMarkers = NULL;
-	}
-
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
 		delete allPolysVec[i];
