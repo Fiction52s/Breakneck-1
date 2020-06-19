@@ -653,6 +653,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
 	bool RunGameModeUpdate();
+	bool FrozenGameModeUpdate();
+	bool SequenceGameModeUpdate();
+	void DrawGameSequence(sf::RenderTarget *target);
+	virtual void SequenceGameModeRespondToGoalDestroyed() = 0;
 };
 
 #endif

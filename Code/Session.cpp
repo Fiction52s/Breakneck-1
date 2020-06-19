@@ -5631,3 +5631,78 @@ bool Session::RunGameModeUpdate()
 	//	}
 	return true;
 }
+
+bool Session::FrozenGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateControllers();
+
+		ActiveSequenceUpdate();
+
+		if (gameState != FROZEN)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+	}
+
+	if (gameState != FROZEN)
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void Session::DrawGameSequence(sf::RenderTarget *target)
+{
+	if (activeSequence != NULL)
+	{
+		//preScreenTex->setView(uiView);
+		activeSequence->Draw(preScreenTex);
+	}
+
+	preScreenTex->setView(uiView);
+
+
+	fader->Draw(preScreenTex);
+	swiper->Draw(preScreenTex);
+
+	mainMenu->DrawEffects(preScreenTex);
+
+	DrawFrameRate(preScreenTex);
+}
+
+bool Session::SequenceGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		UpdateControllers();
+
+		ActiveSequenceUpdate();
+
+		mainMenu->musicPlayer->Update();
+
+		fader->Update();
+		swiper->Update();
+		mainMenu->UpdateEffects();
+		UpdateEmitters();
+
+		accumulator -= TIMESTEP;
+
+		if (goalDestroyed)
+		{
+			SequenceGameModeRespondToGoalDestroyed();
+			break;
+		}
+	}
+
+	if (switchGameState)
+	{
+		return false;
+	}
+
+	return true;
+}

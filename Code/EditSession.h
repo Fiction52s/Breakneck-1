@@ -773,11 +773,10 @@ struct EditSession : GUIHandler, Session
 	void InitDecorPanel();
 	void SetupGates();
 	bool IsShardCaptured(int sType);
-	bool FrozenGameModeUpdate();
-	bool SequenceGameModeUpdate();
 	bool UpdateRunModeBackAndStartButtons();
 	void UpdateCamera();
 	bool RunPostUpdate();
+	void SequenceGameModeRespondToGoalDestroyed();
 };
 
 

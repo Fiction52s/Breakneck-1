@@ -299,124 +299,9 @@ bool EditSession::RunPostUpdate()
 	return true;
 }
 
-bool EditSession::FrozenGameModeUpdate()
+void EditSession::SequenceGameModeRespondToGoalDestroyed()
 {
-	while (accumulator >= TIMESTEP)
-	{
-		UpdateControllers();
-
-		ActiveSequenceUpdate();
-
-		if (gameState != FROZEN)
-		{
-			break;
-		}
-
-		accumulator -= TIMESTEP;
-	}
-
-	if (gameState != FROZEN)
-	{
-		return false;
-	}
-
-	Sprite preTexSprite;
-	preTexSprite.setTexture(preScreenTex->getTexture());
-	preTexSprite.setPosition(-960 / 2, -540 / 2);
-	preTexSprite.setScale(.5, .5);
-	window->draw(preTexSprite);
-
-	return true;
-}
-
-bool EditSession::SequenceGameModeUpdate()
-{
-	sf::Event ev;
-	while (window->pollEvent(ev))
-	{
-		/*if( ev.type == sf::Event::KeyPressed )
-		{
-		if( ev.key.code = Keyboard::O )
-		{
-		state = RUN;
-		soundNodeList->Pause( false );
-		break;
-		}
-		}*/
-		if (ev.type == sf::Event::GainedFocus)
-		{
-			//state = RUN;
-			//soundNodeList->Pause( false );
-			//break;
-		}
-		else if (ev.type == sf::Event::KeyPressed)
-		{
-			//if( ev.key.code == Keyboard::
-		}
-	}
-
-	window->clear();
-	//window->setView(v);
-	preScreenTex->clear();
-
-	Sprite preTexSprite;
-	while (accumulator >= TIMESTEP)
-	{
-		UpdateControllers();
-
-		ActiveSequenceUpdate();
-
-		mainMenu->musicPlayer->Update();
-
-		fader->Update();
-		swiper->Update();
-
-		mainMenu->UpdateEffects();
-		UpdateEmitters();
-
-		accumulator -= TIMESTEP;
-
-		if (goalDestroyed)
-		{
-			EndTestMode();
-
-			//quit = true;
-
-			//returnVal = GR_WIN;
-			//returnVal = resType;
-			break;
-		}
-	}
-
-	if (switchGameState)
-	{
-		return false;
-	}
-
-	if (activeSequence != NULL)
-	{
-		//preScreenTex->setView(uiView);
-		activeSequence->Draw(preScreenTex);
-	}
-
-	preScreenTex->setView(uiView);
-
-
-	fader->Draw(preScreenTex);
-	swiper->Draw(preScreenTex);
-
-	mainMenu->DrawEffects(preScreenTex);
-
-	return true;
-	/*if (showFrameRate)
-	{
-		preScreenTex->draw(frameRateText);
-	}*/
-
-	//preTexSprite.setTexture(preScreenTex->getTexture());
-	//preTexSprite.setPosition(-960 / 2, -540 / 2);
-	//preTexSprite.setScale(.5, .5);
-	//window->draw(preTexSprite);
+	EndTestMode();
 }
 
 bool EditSession::TestPlayerModeUpdate()
@@ -1419,14 +1304,28 @@ bool EditSession::IsDrawMode(Emode em)
 
 void EditSession::Draw()
 {
-	preScreenTex->clear();
-
 	if (IsDrawMode(Emode::TEST_PLAYER))
 	{
-		DrawGame(preScreenTex);
+		if (gameState == RUN)
+		{
+			preScreenTex->clear();
+			DrawGame(preScreenTex);
+		}
+		else if (gameState == SEQUENCE)
+		{
+			preScreenTex->clear();
+			DrawGameSequence(preScreenTex);
+		}
+		else if (gameState == FROZEN)
+		{
+			//redraws the previous frame
+		}
+		
 		DrawUI();
 		return;
 	}
+
+	preScreenTex->clear();
 
 	preScreenTex->setView(view);
 
@@ -3217,9 +3116,6 @@ int EditSession::EditRun()
 			break;
 		}
 
-
-		/*if (mode == EDIT || mode == CREATE_ENEMY || mode == PASTE )
-		{*/
 		double newTime = editClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - editCurrentTime;
 		editCurrentTime = newTime;
@@ -3235,12 +3131,6 @@ int EditSession::EditRun()
 			editAccumulator -= mult * TIMESTEP;
 		}
 
-		/*for (int i = 0; i < spriteUpdateFrames; ++i)
-		{
-			mainMenu->fader->Update();
-		}*/
-		//}
-
 		pixelPos = GetPixelPos();
 
 		oldWorldPosTest = worldPos;
@@ -3252,7 +3142,6 @@ int EditSession::EditRun()
 			//worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
 			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
 		}
-
 
 		preScreenTex->setView(uiView);
 		uiMouse = preScreenTex->mapPixelToCoords(pixelPos);
@@ -3327,11 +3216,6 @@ int EditSession::EditRun()
 			if (mode != PAUSED)
 				UpdateMode();
 		}
-
-
-
-
-
 
 		UpdatePanning();
 

@@ -546,10 +546,8 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
-	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	
-	void ActiveStorySequenceUpdate();
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	
@@ -572,5 +570,6 @@ struct GameSession : RayCastHandler, Session
 	void RepPlayerUpdateInput();
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();
+	void SequenceGameModeRespondToGoalDestroyed();
 };
 #endif
