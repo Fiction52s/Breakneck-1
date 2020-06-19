@@ -93,109 +93,6 @@ void EditSession::SetupGates()
 	}
 }
 
-void EditSession::DrawGame(sf::RenderTarget *target)
-{
-	target->setView(view);
-
-	if (background != NULL)
-		background->Draw(target);
-
-	DrawTopClouds(target);
-
-	DrawBlackBorderQuads(target);
-
-	LayeredDraw( EffectLayer::BEHIND_TERRAIN, target);
-
-	DrawZones(target);
-
-	DrawSpecialTerrain(target);
-
-	DrawFlyTerrain(target);
-
-	DrawTerrain(target);
-
-	DrawGoalFlow(target);
-
-	DrawHUD(target);
-
-	DrawGates(target);
-	DrawRails(target);
-
-	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
-	
-	DrawEnemies(target);
-
-	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-
-	//DrawGoalPulse(target);
-	DrawPlayerWires(target);
-
-	DrawHitEnemies(target); //whited out hit enemies
-
-	absorbParticles->Draw(target);
-	absorbDarkParticles->Draw(target);
-
-	DrawPlayers(target);
-
-	absorbShardParticles->Draw(target);
-
-	//DrawReplayGhosts();
-	
-	LayeredDraw(EffectLayer::IN_FRONT, target);
-
-	DrawBullets(target);
-
-	//DrawRain(target);
-
-	//DrawActiveEnvPlants();
-
-	DebugDraw(target);
-
-	//DrawShockwaves(target); //not operational atm
-
-	target->setView(uiView);
-
-	/*if (raceFight != NULL)
-	{
-		raceFight->DrawScore(target);
-	}*/
-
-	//scoreDisplay->Draw(target);
-
-	/*if (showFrameRate)
-	{
-		target->draw(frameRateText);
-	}
-
-	if (showRunningTimer && !scoreDisplay->active)
-	{
-		target->draw(runningTimerText);
-	}
-
-	if (inputVis != NULL)
-		inputVis->Draw(target);*/
-
-	DrawGateMarkers(target);
-
-	target->setView(view);
-
-	DrawDyingPlayers(target);
-
-	//UpdateTimeSlowShader();
-
-	target->setView(uiView);
-
-	LayeredDraw(EffectLayer::UI_FRONT, target);
-
-	fader->Draw(target);
-	swiper->Draw(target);
-
-	mainMenu->DrawEffects(target);
-
-	target->setView(view); //sets it back to normal for any world -> pixel calcs
-	DrawKinOverFader(target);
-}
-
 void EditSession::SetTrackingEnemy(ActorType *type, int level)
 {
 	if (trackingEnemyParams == NULL)
@@ -545,13 +442,6 @@ bool EditSession::RunGameModeUpdate()
 			raceFight->UpdateScore();
 		}*/
 		UpdateGoalFlow();
-		if (gameCam)
-		{
-			//if you aren't using gamecam, the flow is wrong
-			//might be something I can fix later.
-			
-		}
-		
 
 		QueryToSpawnEnemies();
 
@@ -719,6 +609,9 @@ bool EditSession::TestPlayerModeUpdate()
 	}
 	currentTime = newTime;
 
+	frameRateDisplay.Update(frameTime);
+	UpdateRunningTimerText();
+
 	accumulator += frameTime;
 
 	switch (gameState)
@@ -751,6 +644,7 @@ void EditSession::TestPlayerMode()
 	gameState = Session::RUN;
 	cam.Reset();
 	currStorySequence = NULL;
+	frameRateDisplay.Reset();
 
 	soundNodeList->Reset();
 
@@ -770,6 +664,9 @@ void EditSession::TestPlayerMode()
 	accumulator = TIMESTEP + .1;
 
 	activeSequence = NULL;
+
+	totalGameFrames = 0;
+	totalFramesBeforeGoal = -1;
 
 	Actor *p;
 
@@ -795,6 +692,7 @@ void EditSession::TestPlayerMode()
 	{
 		playerTracker->Reset();
 		totalGameFrames = 0;
+		totalFramesBeforeGoal = -1;
 		currentTime = 0;
 		gameClock.restart();
 		//accumulator = TIMESTEP + .1;
@@ -3180,6 +3078,9 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	frameRateDisplay.showFrameRate = true;
+	runningTimerDisplay.showRunningTimer = true;
+
 	saveUpdated = true;
 	reload = false;
 	reloadNew = false;

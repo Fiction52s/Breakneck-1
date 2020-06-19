@@ -17,6 +17,7 @@
 #include "EditorActors.h"
 #include "Enemy_BasicEffect.h"
 #include "BitField.h"
+#include "ScoreDisplay.h"
 
 
 struct SoundManager;
@@ -74,6 +75,9 @@ struct StorySequence;
 struct GoalFlow;
 struct Session;
 struct GoalPulse;
+struct Rain;
+struct ScoreDisplay;
+struct InputVisualizer;
 
 #define TIMESTEP (1.0 / 60.0)
 
@@ -87,6 +91,29 @@ struct Session : TilesetManager, QuadTreeCollider
 	{
 		Session *sess;
 		void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
+	};
+
+	struct FrameRateDisplay
+	{
+		bool showFrameRate;
+		int frameRateCounter;
+		int frameRateCounterWait;
+		double frameRateTimeTotal;
+		sf::Text frameRateText;
+		FrameRateDisplay();
+		void InitText(sf::Font &f);
+		void Reset();
+		void Update(double frameTime);
+	};
+
+	struct RunningTimerDisplay
+	{
+		bool showRunningTimer;
+		sf::Text runningTimerText;
+
+		void InitText(sf::Font &f);
+		RunningTimerDisplay();
+		void Reset();
 	};
 
 	enum SessionType
@@ -276,7 +303,14 @@ struct Session : TilesetManager, QuadTreeCollider
 	Edge *rayIgnoreEdge1;
 
 	FlowHandler flowHandler;
+	Rain *rain;
+	ScoreDisplay *scoreDisplay;
+	InputVisualizer *inputVis;
 
+	
+	FrameRateDisplay frameRateDisplay;
+	RunningTimerDisplay runningTimerDisplay;
+	int totalFramesBeforeGoal;
 
 	static Session *GetSession();
 
@@ -588,6 +622,22 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateGoalFlow();
 	void UpdateGoalPulse();
 	void SetupGoalPulse();
+	void DrawGoalPulse(sf::RenderTarget *target);
+	void CleanupRain();
+	void SetupRain();
+	void UpdateRain();
+	void DrawRain(sf::RenderTarget *target);
+	virtual void DrawRails(sf::RenderTarget *target) = 0;
+	virtual void DrawRaceFightScore(sf::RenderTarget *target) {}
+	virtual void DrawScoreDisplay(sf::RenderTarget *target);
+	void DrawFrameRate(sf::RenderTarget *target);
+	void DrawRunningTimer(sf::RenderTarget *target);
+	void DrawInputVis(sf::RenderTarget *target);
+	void UpdateInputVis();
+	void SetupInputVis();
+	virtual void DrawReplayGhosts(sf::RenderTarget *target) {}
+	void DrawGame(sf::RenderTarget *target);
+	void UpdateRunningTimerText();
 };
 
 #endif

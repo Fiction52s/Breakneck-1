@@ -28,8 +28,9 @@
 #include "StorySequence.h"
 #include "GoalFlow.h"
 #include "GoalExplosion.h"
+#include "InputVisualizer.h"
 //#include "Enemy_Shard.h"
-
+#include "EnvEffects.h"
 
 //enemy stuff:
 #include "SoundManager.h"
@@ -1255,11 +1256,17 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
 
+	frameRateDisplay.InitText(mainMenu->arial);
+	runningTimerDisplay.InitText(mainMenu->arial);
+
 	numGates = 0;
 	drain = true;
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	inputVis = NULL;
+	scoreDisplay = NULL;
+	rain = NULL;
 	goalFlow = NULL;
 	goalPulse = NULL;
 	currStorySequence = NULL;
@@ -1558,6 +1565,12 @@ Session::~Session()
 		deathSeq = NULL;
 	}
 
+	if (parentGame == NULL && inputVis != NULL)
+	{
+		delete inputVis;
+		inputVis = NULL;
+	}
+
 	CleanupShipEntrance();
 	CleanupShipExit();
 
@@ -1572,6 +1585,8 @@ Session::~Session()
 
 	CleanupGoalFlow();
 	CleanupGoalPulse();
+
+	CleanupRain();
 }
 
 void Session::UpdateDecorLayers()
@@ -5155,4 +5170,274 @@ void Session::SetupGoalPulse()
 	}
 
 	goalPulse->SetPosition(Vector2f(goalPos));
+}
+
+
+void Session::DrawGoalPulse(sf::RenderTarget *target)
+{
+	if (goalPulse != NULL)
+	{
+		goalPulse->Draw(target);
+	}
+}
+
+void Session::CleanupRain()
+{
+	if (rain != NULL)
+	{
+		delete rain;
+		rain = NULL;
+	}
+}
+
+void Session::SetupRain()
+{
+	CleanupRain();
+	rain = new Rain;
+}
+void Session::UpdateRain()
+{
+	if (rain != NULL)
+		rain->Update();
+}
+
+void Session::DrawRain(sf::RenderTarget *target)
+{
+	if (rain != NULL)
+		rain->Draw(target);
+}
+
+void Session::DrawFrameRate(sf::RenderTarget *target)
+{
+	if (frameRateDisplay.showFrameRate)
+	{
+		target->draw(frameRateDisplay.frameRateText);
+	}
+}
+
+void Session::DrawRunningTimer(sf::RenderTarget *target)
+{
+	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->active) )
+	{
+		target->draw(runningTimerDisplay.runningTimerText);
+	}
+}
+
+void Session::DrawInputVis(sf::RenderTarget *target)
+{
+	if (inputVis != NULL)
+		inputVis->Draw(target);
+}
+
+void Session::UpdateInputVis()
+{
+	if (inputVis != NULL)
+		inputVis->Update(GetPlayer(0)->currInput);
+}
+
+Session::FrameRateDisplay::FrameRateDisplay()
+{
+	frameRateCounterWait = 20;
+	Reset();
+	showFrameRate = false;
+
+	
+}
+
+void Session::FrameRateDisplay::InitText( sf::Font &f )
+{
+	frameRateText.setFont(f);
+	frameRateText.setString("00");
+	frameRateText.setCharacterSize(30);
+	frameRateText.setFillColor(Color::Red);
+}
+
+
+
+void Session::FrameRateDisplay::Update(double frameTime)
+{
+	if (showFrameRate)
+	{
+		if (frameRateCounter == frameRateCounterWait)
+		{
+			double blah = 1.0 / frameTime;
+			frameRateTimeTotal += blah;
+			frameRateText.setString(to_string(frameRateTimeTotal / (frameRateCounterWait + 1)));
+			frameRateCounter = 0;
+			frameRateTimeTotal = 0;
+		}
+		else
+		{
+			double blah = 1.0 / frameTime;
+			frameRateTimeTotal += blah;
+			++frameRateCounter;
+		}
+	}
+}
+
+void Session::FrameRateDisplay::Reset()
+{
+	frameRateCounter = 0;
+	
+}
+
+void Session::DrawScoreDisplay(sf::RenderTarget *target)
+{
+	if( scoreDisplay != NULL )
+		scoreDisplay->Draw(target);
+}
+
+void Session::SetupInputVis()
+{
+	if (parentGame != NULL)
+	{
+		inputVis = parentGame->inputVis;
+	}
+	else
+	{
+		if (inputVis == NULL)
+		{
+			inputVis = new InputVisualizer;
+		}
+	}
+}
+
+
+//rendertexture? what was that used for?
+void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
+{
+	target->setView(view);
+
+	if (background != NULL)
+		background->Draw(target);
+
+	//UpdateEnvShaders(); //move this into the update loop
+
+	DrawTopClouds(target);
+
+	DrawBlackBorderQuads(target);
+
+	LayeredDraw(EffectLayer::BEHIND_TERRAIN, target);
+
+	DrawZones(target);
+
+	DrawSpecialTerrain(target);
+
+	DrawFlyTerrain(target);
+
+	DrawTerrain(target);
+
+	DrawGoalFlow(target);
+
+	DrawHUD(target);
+
+	DrawGates(target);
+	DrawRails(target);
+
+	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
+
+	DrawEnemies(target);
+
+	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
+
+	DrawGoalPulse(target);
+	DrawPlayerWires(target);
+
+	DrawHitEnemies(target); //whited out hit enemies
+
+	absorbParticles->Draw(target);
+	absorbDarkParticles->Draw(target);
+
+	DrawPlayers(target);
+
+	absorbShardParticles->Draw(target);
+
+	DrawReplayGhosts(target);
+
+	LayeredDraw(EffectLayer::IN_FRONT, target);
+
+	DrawBullets(target);
+
+	DrawRain(target);
+
+	//DrawActiveEnvPlants();
+
+	DebugDraw(target);
+
+	//DrawShockwaves(target); //not operational atm
+
+	target->setView(uiView);
+
+
+	DrawRaceFightScore(target);
+	/*if (adventureHUD != NULL)
+	{
+	adventureHUD->Draw(preScreenTex);
+	}*/
+
+	DrawScoreDisplay(target);
+
+	DrawFrameRate(target);
+
+	DrawRunningTimer(target);
+
+	DrawInputVis(target);
+
+	DrawGateMarkers(target);
+
+	target->setView(view);
+
+	DrawDyingPlayers(target);
+
+	//UpdateTimeSlowShader();
+
+	target->setView(uiView);
+
+	LayeredDraw(EffectLayer::UI_FRONT, target);
+
+	fader->Draw(target);
+	swiper->Draw(target);
+
+	mainMenu->DrawEffects(target);
+
+	target->setView(view); //sets it back to normal for any world -> pixel calcs
+	DrawKinOverFader(target);
+}
+
+
+Session::RunningTimerDisplay::RunningTimerDisplay()
+{
+	showRunningTimer = true;
+	
+}
+
+void Session::RunningTimerDisplay::InitText(sf::Font &f)
+{
+	runningTimerText.setFont(f);
+	runningTimerText.setString("---- : --");
+	runningTimerText.setCharacterSize(30);
+	runningTimerText.setFillColor(Color::Red);
+	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
+		runningTimerText.getLocalBounds().width, 0);
+	runningTimerText.setPosition(1920 - 30, 10);
+}
+
+
+void Session::RunningTimerDisplay::Reset()
+{
+	
+}
+
+void Session::UpdateRunningTimerText()
+{
+	if (runningTimerDisplay.showRunningTimer && (scoreDisplay == NULL || !scoreDisplay->active))
+	{
+		int tFrames = totalGameFrames;
+		if (totalFramesBeforeGoal >= 0)
+		{
+			tFrames = totalFramesBeforeGoal;
+		}
+		runningTimerDisplay.runningTimerText.setString(GetTimeStr(tFrames));
+
+	}
 }

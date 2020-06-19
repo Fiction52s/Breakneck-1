@@ -247,125 +247,17 @@ void GameSession::DrawShockwaves(sf::RenderTarget *target)
 	}*/
 }
 
-void GameSession::DrawGame(sf::RenderTexture *target )//sf::RenderTarget *target)
+
+void GameSession::DrawRaceFightScore(sf::RenderTarget *target)
 {
-	target->setView(view);
-
-	if( background != NULL)
-		background->Draw(target);
-
-	//UpdateEnvShaders(); //move this into the update loop
-
-	DrawTopClouds(target);
-
-	DrawBlackBorderQuads(target);
-
-	LayeredDraw(EffectLayer::BEHIND_TERRAIN, target);
-
-	DrawZones(target);
-
-	DrawSpecialTerrain(target);
-
-	DrawFlyTerrain(target);
-
-	DrawTerrain(target);
-
-	DrawGoalFlow(target);
-
-	DrawHUD(target);
-
-	DrawGates(target);
-	DrawRails(target);
-
-	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
-
-	DrawEnemies(target);
-
-	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
-
-	DrawGoalPulse(target);
-	DrawPlayerWires(target);
-
-	DrawHitEnemies(target); //whited out hit enemies
-
-	absorbParticles->Draw(target);
-	absorbDarkParticles->Draw(target);
-
-	DrawPlayers(target);
-
-	absorbShardParticles->Draw(target);
-
-	DrawReplayGhosts();
-
-	LayeredDraw(EffectLayer::IN_FRONT, target);
-
-	DrawBullets(target);
-
-	DrawRain(target);
-
-	//DrawActiveEnvPlants();
-
-	DebugDraw(target);
-
-	//DrawShockwaves(target); //not operational atm
-
-	target->setView(uiView);
-
 	if (raceFight != NULL)
 	{
 		raceFight->DrawScore(target);
 	}
-
-	/*if (adventureHUD != NULL)
-	{
-	adventureHUD->Draw(preScreenTex);
-	}*/
-
-	scoreDisplay->Draw(target);
-
-	if (showFrameRate)
-	{
-		target->draw(frameRateText);
-	}
-
-	if (showRunningTimer && !scoreDisplay->active)
-	{
-		target->draw(runningTimerText);
-	}
-
-	if (inputVis != NULL)
-		inputVis->Draw(target);
-
-	DrawGateMarkers(target);
-
-	target->setView(view);
-
-	DrawDyingPlayers(target);
-
-	//UpdateTimeSlowShader();
-
-	target->setView(uiView);
-
-	LayeredDraw(EffectLayer::UI_FRONT, target);
-
-	fader->Draw(target);
-	swiper->Draw(target);
-
-	mainMenu->DrawEffects(target);
-
-	target->setView(view); //sets it back to normal for any world -> pixel calcs
-	DrawKinOverFader(target);
 }
 
-void GameSession::DrawRain(sf::RenderTarget *target)
-{
-	rainView.setCenter((int)view.getCenter().x % 64, (int)view.getCenter().y % 64);
-	rainView.setSize(view.getSize());
-	preScreenTex->setView(rainView);
-	if (rain != NULL)
-		rain->Draw(preScreenTex);
-	preScreenTex->setView(view);
-}
+
+
 
 void GameSession::DrawTerrain(sf::RenderTarget *target)
 {
@@ -457,40 +349,7 @@ void GameSession::ActiveStorySequenceUpdate()
 	}
 }
 
-void GameSession::UpdateFrameRateCounterText( double frameTime )
-{
-	if (showFrameRate)
-	{
-		if (frameRateCounter == frameRateCounterWait)
-		{
-			double blah = 1.0 / frameTime;
-			frameRateTimeTotal += blah;
-			frameRateText.setString(to_string(frameRateTimeTotal / (frameRateCounterWait + 1)));
-			frameRateCounter = 0;
-			frameRateTimeTotal = 0;
-		}
-		else
-		{
-			double blah = 1.0 / frameTime;
-			frameRateTimeTotal += blah;
-			++frameRateCounter;
-		}
-	}
-}
 
-void GameSession::UpdateRunningTimerText()
-{
-	if (showRunningTimer && !scoreDisplay->active)
-	{
-		int tFrames = totalGameFrames;
-		if (totalFramesBeforeGoal >= 0)
-		{
-			tFrames = totalFramesBeforeGoal;
-		}
-		runningTimerText.setString(GetTimeStr(tFrames));
-
-	}
-}
 
 void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 {
@@ -552,7 +411,7 @@ bool GameSession::RunGameModeUpdate()
 			gameClock.restart();
 			currentTime = 0;
 			accumulator = TIMESTEP + .1;
-			frameRateCounter = 0;
+			frameRateDisplay.Reset();
 		}
 
 		if (pauseFrames > 0)
@@ -586,8 +445,7 @@ bool GameSession::RunGameModeUpdate()
 
 		ActiveStorySequenceUpdate();
 
-		if (inputVis != NULL)
-			inputVis->Update(GetPlayer(0)->currInput);
+		UpdateInputVis();
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -645,8 +503,7 @@ bool GameSession::RunGameModeUpdate()
 
 		goalPulse->Update();
 
-		if (rain != NULL)
-			rain->Update();
+		UpdateRain();
 
 		UpdateBarriers();
 
@@ -882,10 +739,7 @@ bool GameSession::SequenceGameModeUpdate()
 
 	mainMenu->DrawEffects(preScreenTex);
 
-	if (showFrameRate)
-	{
-		preScreenTex->draw(frameRateText);
-	}
+	DrawFrameRate(preScreenTex);
 
 	preTexSprite.setTexture(preScreenTex->getTexture());
 	preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -2359,8 +2213,8 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 int GameSession::Run()
 {
 	goalDestroyed = false;
-	showFrameRate = true;
-	showRunningTimer = true;
+	frameRateDisplay.showFrameRate = true;
+	runningTimerDisplay.showRunningTimer = true;
 
 	ClearEmitters();
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
@@ -2376,19 +2230,6 @@ int GameSession::Run()
 
 	preScreenTex->setView(view);
 	
-	frameRateText.setString("00");
-	frameRateText.setFont(mainMenu->arial);
-	frameRateText.setCharacterSize(30);
-	frameRateText.setFillColor(Color::Red);
-
-	runningTimerText.setString("---- : --");
-	runningTimerText.setFont(mainMenu->arial);
-	runningTimerText.setCharacterSize(30);
-	runningTimerText.setFillColor(Color::Red);
-	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
-		runningTimerText.getLocalBounds().width, 0 );
-	runningTimerText.setPosition(1920 - 30, 10);
-
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
 
@@ -2435,9 +2276,7 @@ int GameSession::Run()
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
 	
-	frameRateCounter = 0;
-	frameRateCounterWait = 20;
-	frameRateTimeTotal = 0;
+	frameRateDisplay.Reset();
 
 	int flowSize = 64;
 
@@ -2455,10 +2294,6 @@ int GameSession::Run()
 	{
 		gameState = RUN;
 	}
-
-	//Rain rain(this);
-	rainView.setCenter(Vector2f(0, 0));
-	rainView.setSize(Vector2f(1920, 1080));
 
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
@@ -2536,7 +2371,7 @@ int GameSession::Run()
 		//frameTime = 0.167;//0.25;	
         currentTime = newTime;
 
-		UpdateFrameRateCounterText( frameTime );
+		frameRateDisplay.Update(frameTime);
 		UpdateRunningTimerText();
 
 		accumulator += frameTime;
@@ -2818,10 +2653,7 @@ int GameSession::Run()
 
 			mainMenu->DrawEffects(preScreenTex);
 
-			if (showFrameRate)
-			{
-				preScreenTex->draw(frameRateText);
-			}
+			DrawFrameRate(preScreenTex);
 
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);
@@ -2896,7 +2728,7 @@ int GameSession::Run()
 					gameClock.restart();
 					currentTime = 0;
 					accumulator = TIMESTEP + .1;
-					frameRateCounter = 0;
+					frameRateDisplay.Reset();
 					//soundNodeList->Pause( false );
 					//kill sounds on respawn
 					break;
@@ -3251,9 +3083,6 @@ void GameSession::Init()
 	railDrawTree = NULL;
 	terrainBGTree = NULL;
 	scoreDisplay = NULL;
-	
-	rain = NULL;//new Rain(this);//NULL;
-	//rain = new Rain;//NULL;
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
@@ -3576,11 +3405,11 @@ void GameSession::UpdateDebugModifiers()
 	}
 	else if (IsKeyPressed(sf::Keyboard::Num9))
 	{
-		showRunningTimer = true;
+		runningTimerDisplay.showRunningTimer = true;
 	}
 	else if (IsKeyPressed(sf::Keyboard::Num0))
 	{
-		showRunningTimer = false;
+		runningTimerDisplay.showRunningTimer = false;
 	}
 }
 
@@ -3614,11 +3443,11 @@ void GameSession::UpdateDecorSprites()
 	}
 }
 
-void GameSession::DrawReplayGhosts()
+void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
 {
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
-		(*it)->Draw(preScreenTex);
+		(*it)->Draw(target);
 	}
 }
 
@@ -4489,14 +4318,6 @@ void GameSession::rResetEnemies( QNode *node )
 			e->Reset();
 		}
 		
-	}
-}
-
-void GameSession::DrawGoalPulse(sf::RenderTarget *target)
-{
-	if (goalPulse != NULL)
-	{
-		goalPulse->Draw(target);
 	}
 }
 

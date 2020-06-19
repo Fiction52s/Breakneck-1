@@ -78,6 +78,11 @@ void Rain::Update()
 
 void Rain::Draw( RenderTarget *target )
 {
+	sf::View oldView = target->getView();
+	rainView.setCenter((int)oldView.getCenter().x % 64, (int)oldView.getCenter().y % 64);
+	rainView.setSize(oldView.getSize());
+	target->setView(rainView);
 	target->draw( va, ts_rain->texture );
+	target->setView(oldView);
 }
 

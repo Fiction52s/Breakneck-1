@@ -20,6 +20,7 @@ struct Rain
 	int frame;
 	int loopLength;
 	int animFactor;
+	sf::View rainView;
 	//sf::Vector2f basePos;
 
 	const static int TILE_WIDTH;

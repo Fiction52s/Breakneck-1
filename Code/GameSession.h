@@ -92,7 +92,7 @@ struct VictoryScreen;
 struct VictoryScreen2PlayerVS;
 struct UIWindow;
 struct Parallax;
-struct ScoreDisplay;
+
 
 
 struct MusicInfo;
@@ -321,7 +321,7 @@ struct GameSession : RayCastHandler, Session
 	ScreenRecorder *debugScreenRecorder;
 	SaveFile *saveFile;
 	Config *config;
-	ScoreDisplay *scoreDisplay;
+	
 	PauseMenu *pauseMenu;
 
 	//does not change during running
@@ -368,11 +368,11 @@ struct GameSession : RayCastHandler, Session
 	Grass *explodingGravityGrass;
 	bool quit;
 	bool boostIntro;
-	InputVisualizer *inputVis;
+	
 	Level *level;
 	
 	EnvPlant *activeEnvPlants;
-	int totalFramesBeforeGoal;
+	
 	
 	int m_numActivePlayers;
 	sf::Shader timeSlowShader; //actually time slow shader
@@ -387,7 +387,7 @@ struct GameSession : RayCastHandler, Session
 	sf::VertexArray *va;
 	std::list<sf::VertexArray*> polygonBorders;
 
-	Rain *rain;
+	
 	bool shadersLoaded;//to prevent reloading of shaders
 	
 	std::map<DecorType, DecorLayer*> decorLayerMap;
@@ -413,17 +413,11 @@ struct GameSession : RayCastHandler, Session
 	std::list<AirTrigger*> fullAirTriggerList;
 	bool nextFrameRestart;
 	bool showTerrainDecor;
-	bool showRunningTimer;
-	bool showFrameRate;
-	int frameRateCounter;
-	int frameRateCounterWait;
-	double frameRateTimeTotal;
-	sf::Text frameRateText;
-	sf::Text runningTimerText;
+	
 	
 	int returnVal;
-	sf::View rainView;
 
+	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
 	static int IsSlopedGround(sf::Vector2<double> &normal);
 	static int IsSteepGround(sf::Vector2<double> &normal);
@@ -511,13 +505,12 @@ struct GameSession : RayCastHandler, Session
 	//draw
 
 	void DebugDraw(sf::RenderTarget *target);
-	void DrawGoalEnergy(sf::RenderTarget *target);
 	void DrawActiveEnvPlants();
 
-	void DrawGoalPulse(sf::RenderTarget *target);
+	
 	
 	void DrawRails(sf::RenderTarget *target);
-	void DrawReplayGhosts();
+	void DrawReplayGhosts(sf::RenderTarget *target);
 	void UpdateDebugModifiers();
 	void SetStorySeq(StorySequence *storySeq);
 	void SuppressEnemyKeys(Gate *g);
@@ -554,8 +547,6 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinBounds(V2d &p);
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
-	void UpdateFrameRateCounterText( double frameTime );
-	void UpdateRunningTimerText();
 	bool RunGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
@@ -567,8 +558,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawFlyTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);
-	void DrawGame(sf::RenderTexture *target);
-	void DrawRain(sf::RenderTarget *target);
 	void DrawSceneToPostProcess(sf::RenderTexture *tex);
 	void DrawShockwaves(sf::RenderTarget *target);
 	void UpdateCamera();
