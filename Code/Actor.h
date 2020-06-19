@@ -127,6 +127,13 @@ struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
 
+	enum Mode
+	{
+		K_NORMAL,
+		K_SUPER,
+		K_DESPERATION,
+	};
+
 	enum UpgradeType
 	{
 		UPGRADE_POWER_AIRDASH,
@@ -573,6 +580,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_kinFace;
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
+	sf::Shader playerSuperShader;
 	sf::Shader auraTestShader;
 	sf::Sprite kinFace;
 	sf::Sprite kinFaceBG;
@@ -855,9 +863,10 @@ struct Actor : QuadTreeCollider,
 	bool CanRailSlide();
 	bool CanRailGrind();
 	bool IsRailSlideFacingRight();
+	bool IsIntangible();
 
-	void SetDespMode(bool on);
-	void DesperationUpdate();
+	void SetKinMode(Mode m);
+	void KinModeUpdate();
 	void ReverseVerticalInputsWhenOnCeiling();
 	void ProcessReceivedHit();
 	void UpdateDrain();
@@ -1009,6 +1018,7 @@ struct Actor : QuadTreeCollider,
 	//std::map<Action, CollisionBody*> hurtboxMap;
 	bool IntersectMyHurtboxes(CollisionBody *cb,
 		int cbFrame );
+	bool IntersectMyHurtboxes(CollisionBox &cb);
 	bool IntersectMyHitboxes(CollisionBody *cb,
 		int cbFrame);
 	bool IntersectMySlowboxes(CollisionBody *cb,
@@ -1088,6 +1098,8 @@ struct Actor : QuadTreeCollider,
 	double GetFullSprintAccel( bool downSlope,
 		sf::Vector2<double> &gNorm );
 
+	Mode kinMode;
+
 	int maxBBoostCount;
 	int currBBoostCounter;
 
@@ -1107,7 +1119,9 @@ struct Actor : QuadTreeCollider,
 
 	int maxDespFrames;
 	int despCounter;
-	bool desperationMode;
+
+	int maxSuperFrames;
+	int superFrame;
 
 	bool checkValid;
 

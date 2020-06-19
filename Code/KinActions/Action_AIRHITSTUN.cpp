@@ -77,7 +77,7 @@ void Actor::AIRHITSTUN_UpdateSprite()
 
 void Actor::AIRHITSTUN_TransitionToAction(int a)
 {
-	if (desperationMode)
+	if (kinMode == K_DESPERATION)
 	{
 		SetExpr(KinMask::Expr::Expr_DESP);
 	}

@@ -317,7 +317,7 @@ void CrawlerAttackSeq::UpdateState()
 		if (frame == 0)
 		{
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
-			player->desperationMode = false;
+			player->SetKinMode(Actor::K_NORMAL);
 			player->SetAction(Actor::SEQ_LOOKUP);
 		}
 		break;

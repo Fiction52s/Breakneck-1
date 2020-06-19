@@ -790,7 +790,7 @@ void BasicBullet::UpdatePhysics()
 		if (!launcher->skipPlayerCollideForSubstep)
 		{
 			Actor *player = launcher->sess->GetPlayer(0);
-			if (player->hurtBody.Intersects(hitBody) && player->invincibleFrames == 0)
+			if (player->IntersectMyHurtboxes(hitBody))
 			{
 				//cout << "hit??" << endl;
 				HitPlayer();
@@ -1066,7 +1066,7 @@ void SinBullet::UpdatePhysics()
 		hurtBody.globalPosition = position;
 
 		Actor *player = launcher->sess->GetPlayer(0);
-		if (player->hurtBody.Intersects(hitBody))
+		if (player->IntersectMyHurtboxes( hitBody ))
 		{
 			HitPlayer();
 			break;

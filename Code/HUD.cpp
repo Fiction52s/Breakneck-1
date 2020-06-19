@@ -369,7 +369,7 @@ void KinMask::Reset()
 
 void KinMask::Draw(RenderTarget *target)
 {
-	if (actor->desperationMode )
+	if (actor->kinMode == Actor::K_DESPERATION )
 	{
 		target->draw(faceBG, &(actor->despFaceShader));
 	}

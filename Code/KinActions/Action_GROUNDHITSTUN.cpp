@@ -70,7 +70,7 @@ void Actor::GROUNDHITSTUN_UpdateSprite()
 
 void Actor::GROUNDHITSTUN_TransitionToAction(int a)
 {
-	if (desperationMode)
+	if (kinMode == K_DESPERATION)
 	{
 		SetExpr(KinMask::Expr::Expr_DESP);
 	}

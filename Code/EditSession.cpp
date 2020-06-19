@@ -9397,7 +9397,7 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 
 	bool found = false;
 
-	for (int i = EffectLayer::Count; i >= 0; --i)
+	for (int i = EffectLayer::Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 

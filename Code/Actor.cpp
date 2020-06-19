@@ -1694,6 +1694,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	fBubbleFrame = NULL;
 
 
+	kinMode = K_NORMAL;
 	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
 	stunBufferedJump = false;
@@ -1986,6 +1987,14 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		assert(0 && "desp shader not loaded");
 	}
 	playerDespShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+	if (!playerSuperShader.loadFromFile("Resources/Shader/playersuper_shader.frag", sf::Shader::Fragment))
+		//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	{
+		cout << "super player SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "super shader not loaded");
+	}
+	playerSuperShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 	//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
@@ -2052,10 +2061,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currHitboxInfo->freezeDuringStun = true;
 		
 	framesGrinding = 0;
-
-	desperationMode = false;
 	maxDespFrames = 60 * 5;
 	despCounter = 0;
+
+	maxSuperFrames = 60 * 5;
+	
+
+	
 
 		
 
@@ -2391,16 +2403,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	}
 	swordShaders[2].setUniform( "fromColor", ColorGL(Color( 140, 146, 255 )) );
 	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
-
-	//cout << "Start aura" << endl;
-	//sh.setUniform( "u_texture", *tileset[action]->texture ); 
-
-	//LoadAllAuras();
-		
-	//cout << "end aura" << endl;
-
-		
-		
 
 	grindActionLength = 32;
 	//SetAction( SPAWNWAIT );
@@ -3184,7 +3186,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
-	
+	kinMode = K_NORMAL;
 	action = -1;
 	framesStanding = 0;
 	keyExplodeRingGroup->Reset();
@@ -3327,7 +3329,6 @@ void Actor::Respawn()
 	
 	//powerBar.Reset();
 	lastWire = 0;
-	desperationMode = false;
 
 	flashFrames = 0;
 	
@@ -3433,9 +3434,9 @@ void Actor::HandleAirTrigger()
 	}
 }
 
-void Actor::DesperationUpdate()
+void Actor::KinModeUpdate()
 {
-	if( desperationMode )
+	if( kinMode == K_DESPERATION )
 	{
 		
 
@@ -3512,7 +3513,7 @@ void Actor::DesperationUpdate()
 		despCounter++;
 		if( kinRing != NULL && despCounter == maxDespFrames )
 		{
-			SetDespMode(false);
+			SetKinMode(K_NORMAL);
 			if (kinRing->powerRing->IsEmpty())
 			{
 
@@ -3535,6 +3536,24 @@ void Actor::DesperationUpdate()
 			else
 			{
 				kinRing->powerRing->mode == PowerRing::NORMAL;
+			}
+		}
+	}
+	else if (kinMode == K_SUPER)
+	{
+		Color superColor(230, 242, 21, 255);
+		playerSuperShader.setUniform("u_auraColor", ColorGL(superColor));
+		++superFrame;
+
+		if (superFrame == maxSuperFrames)
+		{
+			if (kinRing != NULL && kinRing->powerRing->IsEmpty())
+			{
+				SetKinMode(K_DESPERATION);
+			}
+			else
+			{
+				SetKinMode(K_NORMAL);
 			}
 		}
 	}
@@ -3837,9 +3856,9 @@ void Actor::ProcessReceivedHit()
 			bounceEdge = NULL;
 		}
 
-		if (dmgRet > 0 && !desperationMode)
+		if (dmgRet > 0 && kinMode != K_DESPERATION )
 		{
-			SetDespMode(true);
+			SetKinMode(K_NORMAL);
 			//action = DEATH;
 			//frame = 0;
 		}
@@ -3851,18 +3870,22 @@ void Actor::ProcessReceivedHit()
 	}
 }
 
-void Actor::SetDespMode(bool on)
+void Actor::SetKinMode(Mode m)
 {
-	if (on)
+	kinMode = m;
+	switch (m)
 	{
-		desperationMode = true;
+	case K_NORMAL:
+		SetExpr(KinMask::Expr::Expr_NEUTRAL);
+		break;
+	case K_SUPER:
+		superFrame = 0;
+		SetExpr(KinMask::Expr::Expr_NEUTRAL);
+		break;
+	case K_DESPERATION:
 		despCounter = 0;
 		SetExpr(KinMask::Expr::Expr_DESP);
-	}
-	else
-	{
-		SetExpr(KinMask::Expr::Expr_NEUTRAL);
-		desperationMode = false;
+		break;
 	}
 }
 
@@ -3872,7 +3895,7 @@ void Actor::UpdateDrain()
 	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->adventureHUD->IsShown()
 		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
-		if (sess->drain && !desperationMode
+		if (sess->drain && kinMode == K_NORMAL
 			&& !IsIntroAction(action) && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
 			&& sess->activeSequence == NULL)
 		{
@@ -3883,7 +3906,7 @@ void Actor::UpdateDrain()
 																 //cout << "drain by " << drainAmount << endl;
 				if (res > 0)
 				{
-					SetDespMode(true);
+					SetKinMode(K_DESPERATION);
 				}
 				drainCounter = 0;
 			}
@@ -4445,7 +4468,7 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledThisFrame = 0;
 
 	//kinRing->powerRing->Drain(1000000);
-	DesperationUpdate();
+	//DesperationUpdate();
 
 	ReverseVerticalInputsWhenOnCeiling();
 
@@ -7905,8 +7928,19 @@ Wire * Actor::IntersectMyWireHitboxes(Enemy *e, CollisionBody *cb,
 	return false;
 }
 
+bool Actor::IntersectMyHurtboxes(CollisionBox &cb)
+{
+	if (IsIntangible())
+		return false;
+
+	return cb.Intersects(hurtBody);
+}
+
 bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
 {
+	if (IsIntangible())
+		return false;
+
 	//just for the demo. more detailed hurtboxes later
 	if (cb == NULL)
 		return false;
@@ -11166,7 +11200,7 @@ void Actor::ProcessHitGoal()
 		{
 			owner->totalFramesBeforeGoal = owner->totalGameFrames;
 			SetAction(GOALKILL);
-			SetDespMode(false);
+			SetKinMode(K_NORMAL);
 			hitGoal = false;
 
 			if (owner->parentGame == NULL)
@@ -11190,7 +11224,7 @@ void Actor::ProcessHitGoal()
 			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
 			rightWire->Reset();
 			leftWire->Reset();
-			SetDespMode(false);
+			SetKinMode(K_NORMAL);
 		}
 		else if (editOwner != NULL)
 		{
@@ -11201,7 +11235,7 @@ void Actor::ProcessHitGoal()
 	{
 		owner->totalFramesBeforeGoal = owner->totalGameFrames;
 		SetAction(NEXUSKILL);
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		hitNexus = false;
 		if (owner->parentGame == NULL)
 		{
@@ -11419,7 +11453,7 @@ void Actor::UpdateAttackLightning()
 
 void Actor::UpdatePlayerShader()
 {
-	if (desperationMode)
+	if (kinMode == K_DESPERATION )
 	{
 		//cout << "sending this parameter! "<< endl;
 		sh.setUniform("despFrame", (float)despCounter);
@@ -11553,6 +11587,8 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	KinModeUpdate();
+
 	keyExplodePool->Update();
 	if (!keyExplodeRingGroup->Update())
 	{
@@ -11613,7 +11649,7 @@ void Actor::UpdatePostPhysics()
 		//}
 
 		if( kinMask != NULL)
-			kinMask->Update( speedLevel, desperationMode );
+			kinMask->Update( speedLevel, kinMode == K_DESPERATION );
 
 
 		++frame;
@@ -11662,7 +11698,7 @@ void Actor::UpdatePostPhysics()
 	//pTrail->Update( position );
 
 	if( kinMask != NULL)
-		kinMask->Update(speedLevel, desperationMode);
+		kinMask->Update(speedLevel, kinMode == K_DESPERATION );
 
 	if( ground != NULL ) //doesn't work when grinding or bouncing yet
 	{
@@ -11751,7 +11787,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_HOUSEFAMILY:
 	{
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		SetExpr(KinMask::Expr_NEUTRAL);
 		assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
@@ -11773,7 +11809,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_GETAIRDASH:
 	{
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		SetExpr(KinMask::Expr_NEUTRAL);
 		assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
@@ -11795,7 +11831,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_DESTROYNEXUS1:
 	{
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		//SetExpr(Expr_NEUTRAL);
 		//assert(ground != NULL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
@@ -11820,7 +11856,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_CRAWLERATTACK:
 	{
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
@@ -11838,7 +11874,7 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 	}
 	case TRIGGER_TEXTTEST:
 	{
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		edgeQuantity = trigger->currPosInfo.GetQuant();
 		groundSpeed = 0;
 
@@ -13472,14 +13508,19 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 //	//return rSpeed;
 //}
 
+bool Actor::IsIntangible()
+{
+	return kinMode == K_SUPER || invincibleFrames > 0;
+}
+
 void Actor::ApplyHit( HitboxInfo *info )
 {
 	if (info == NULL)
 		return;
 	//use the first hit you got. no stacking hits for now
-	if( invincibleFrames == 0 )
+	if (invincibleFrames == 0)
 	{
-		if( receivedHit == NULL || info->damage > receivedHit->damage )
+		if (receivedHit == NULL || info->damage > receivedHit->damage)
 		{
 			receivedHit = info;
 		}
@@ -13757,9 +13798,13 @@ void Actor::Draw( sf::RenderTarget *target )
 			flashFrames = owner->pauseFrames;
 		else
 			flashFrames = 0;
-		if (desperationMode)
+		if (kinMode == K_DESPERATION)
 		{
 			target->draw(*sprite, &playerDespShader);
+		}
+		else if (kinMode == K_SUPER)
+		{
+			target->draw(*sprite, &playerSuperShader);
 		}
 		else
 		{
@@ -13945,7 +13990,7 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
 		owner->totalFramesBeforeGoal = owner->totalGameFrames;
-		SetDespMode(false);
+		SetKinMode(K_NORMAL);
 		SetExpr(KinMask::Expr_NEUTRAL);
 		owner->scoreDisplay->Activate();
 		SetAction(WAITFORSHIP);
@@ -14375,7 +14420,10 @@ void Actor::ConfirmHit( Enemy *e )
 	if( kinRing != NULL )
 		kinRing->powerRing->Fill(hitParams.charge);
 	
-	SetDespMode(false);
+	if (kinMode == K_DESPERATION)
+	{
+		SetKinMode(K_NORMAL);
+	}
 	
 	
 	hasDoubleJump = true;
@@ -14577,11 +14625,23 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 
 	float width = ts->texture->getSize().x;
 	float height = ts->texture->getSize().y;
-	sh.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
-		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
-	static float testCounter = 0;
-	sh.setUniform("u_slide", testCounter);
-	testCounter += .01f;
+
+	if (kinMode == K_NORMAL)
+	{
+		sh.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+		static float testCounter = 0;
+		sh.setUniform("u_slide", testCounter);
+		testCounter += .01f;
+	}
+	else if( kinMode == K_SUPER )
+	{
+		playerSuperShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+	}
+
+	
+	
 	/*if (testCounter > 1.f)
 	{
 		testCounter -= 1.f;
@@ -15378,7 +15438,7 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 {
 	Actor *player = owner->GetPlayer( otherPlayerIndex );
 	
-	if( player->invincibleFrames == 0 )
+	if( !player->IsIntangible() )
 	{
 		if( currHitboxes != NULL )
 		{
