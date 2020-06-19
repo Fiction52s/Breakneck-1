@@ -257,9 +257,51 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 	return false;
 }
 
+void EditSession::UpdateCamera()
+{
+	/*if ( != NULL)
+	{
+	cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+	}
+	else*/
+	{
+		cam.Update(GetPlayer(0));
+	}
+
+	Vector2f camPos = cam.GetPos();
+	double camWidth = 960 * cam.GetZoom();
+	double camHeight = 540 * cam.GetZoom();
+	screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+
+	if (gameCam)
+	{
+
+		view.setSize(Vector2f(960 * cam.GetZoom(), 540 * cam.GetZoom()));
+
+		//this is because kin's sprite is 2x size in the game as well as other stuff
+		//lastViewSize = view.getSize();
+		view.setCenter(camPos.x, camPos.y);
+	}
+}
+
+bool EditSession::RunPostUpdate()
+{
+	if (mode != TEST_PLAYER)
+		return false;
+	else
+	{
+		if (totalGameFrames % 3 == 0)
+		{
+			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
+		}
+	}
+
+	return true;
+}
+
 bool EditSession::RunGameModeUpdate()
 {
-	Actor *pTemp = NULL;
+	collider.ClearDebug();
 
 	while (accumulator >= TIMESTEP)
 	{
@@ -268,30 +310,8 @@ bool EditSession::RunGameModeUpdate()
 			break;
 		}
 
-		/*if (IsKeyPressed(sf::Keyboard::Y))
-		{
-			quit = true;
+		if (!RunPreUpdate())
 			break;
-		}
-		*/
-		//UpdateDebugModifiers();
-
-		/*if (goalDestroyed)
-		{
-			quit = true;
-			returnVal = resType;
-			break;
-		}
-
-		if (nextFrameRestart)
-		{
-			gameState = GameSession::RUN;
-			RestartLevel();
-			gameClock.restart();
-			currentTime = 0;
-			accumulator = TIMESTEP + .1;
-			frameRateCounter = 0;
-		}*/
 
 		if (pauseFrames > 0)
 		{
@@ -301,16 +321,9 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateControllers();
 
-		//if (repPlayer != NULL)
-		//{
-		//	//currently only records 1 player replays. fix this later
-		//	repPlayer->UpdateInput(GetCurrInput(0));
-		//}
+		RepPlayerUpdateInput();
 
-		//if (recPlayer != NULL)
-		//{
-		//	recPlayer->RecordFrame();
-		//}
+		RecPlayerRecordFrame();
 
 		UpdateAllPlayersInput();
 
@@ -320,13 +333,11 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdatePlayersPrePhysics();
 
-		/*TryToActivateBonus();
+		TryToActivateBonus();
 
 		ActiveStorySequenceUpdate();
 
-		if (inputVis != NULL)
-			inputVis->Update(GetPlayer(0)->currInput);*/
-
+		UpdateInputVis();
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -342,22 +353,12 @@ bool EditSession::RunGameModeUpdate()
 			UpdatePlayersPostPhysics();
 		}
 
-		//if (recGhost != NULL)
-		//	recGhost->RecordFrame();
+		RecGhostRecordFrame();
 
-		//UpdateReplayGhostSprites();
+		UpdateReplayGhostSprites();
 
-		//if (goalDestroyed)
-		//{
-		//	quit = true;
-		//	returnVal = resType;
-		//	/*recGhost->StopRecording();
-		//	recGhost->WriteToFile( "testghost.bghst" );*/
-		//	break;
-		//}
-
-		if (mode != TEST_PLAYER)
-			return true;
+		if (!RunPostUpdate())
+			break;		
 
 		UpdatePlayerWireQuads();
 
@@ -373,87 +374,46 @@ bool EditSession::RunGameModeUpdate()
 		absorbShardParticles->Update();
 
 		UpdateEffects();
-		//UpdateEmitters();
+		UpdateEmitters();
 
 		mainMenu->musicPlayer->Update();
 
 		UpdateHUD();
 
-		//scoreDisplay->Update();
+		UpdateScoreDisplay();
 
-		soundNodeList->Update();
+		UpdateSoundNodeLists();
 
-		//pauseSoundNodeList->Update();
 		UpdateGoalPulse();
 
-		/*if (rain != NULL)
-			rain->Update();*/
+		UpdateRain();
 
 		UpdateBarriers();
 
-		/*if ( != NULL)
-		{
-		cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-		}
-		else*/
-		{
-			cam.Update(GetPlayer(0));
-		}
+		UpdateCamera();
 
-		Vector2f camPos = cam.GetPos();
-		double camWidth = 960 * cam.GetZoom();
-		double camHeight = 540 * cam.GetZoom();
-		screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
-
-
-
-
-
-		if (totalGameFrames % 3 == 0)
-		{
-			playerTracker->TryAddTrackPoint(GetPlayerPos(0));
-		}
-
-		if (gameCam)
-		{
-
-			view.setSize(Vector2f(960 * cam.GetZoom(), 540 * cam.GetZoom()));
-
-			//this is because kin's sprite is 2x size in the game as well as other stuff
-			//lastViewSize = view.getSize();
-			view.setCenter(camPos.x, camPos.y);
-		}
-
-		//UpdateCamera();
-
-		/*if (gateMarkers != NULL)
-			gateMarkers->Update(&cam);*/
+		if (gateMarkers != NULL)
+			gateMarkers->Update(&cam);
 
 		fader->Update();
 		swiper->Update();
-		//background->Update(cam.GetPos());
-
+		background->Update(cam.GetPos());
 		UpdateTopClouds();
 
 		mainMenu->UpdateEffects();
 
-		/*if (raceFight != NULL)
-		{
-			raceFight->UpdateScore();
-		}*/
+		UpdateRaceFightScore();
 		UpdateGoalFlow();
 
 		QueryToSpawnEnemies();
 
-		//UpdateEnvPlants();
+		UpdateEnvPlants();
 
-		//QueryBorderTree(screenRect);
+		QueryBorderTree(screenRect);
 
-		/*QuerySpecialTerrainTree(screenRect);
+		QuerySpecialTerrainTree(screenRect);
 
-		QueryFlyTerrainTree(screenRect);*/
-
-		//drawInversePoly = ScreenIntersectsInversePoly(screenRect);
+		QueryFlyTerrainTree(screenRect);
 
 		UpdateDecorSprites();
 		UpdateDecorLayers();
@@ -465,6 +425,8 @@ bool EditSession::RunGameModeUpdate()
 
 		UpdateZones();
 
+		UpdateEnvShaders();
+
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
 
@@ -472,6 +434,11 @@ bool EditSession::RunGameModeUpdate()
 		//{
 		//	break; //for recording stuff
 		//}
+	}
+
+	if (switchGameState && gameState != FROZEN)
+	{
+		return false;
 	}
 
 	return true;
@@ -3513,7 +3480,7 @@ int EditSession::EditRun()
 
 		UpdatePanning();
 
-		if (background != NULL)
+		if (background != NULL && (mode != TEST_PLAYER))
 		{
 			background->Update(view.getCenter(), spriteUpdateFrames);
 		}

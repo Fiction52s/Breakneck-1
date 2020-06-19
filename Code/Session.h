@@ -307,7 +307,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	ScoreDisplay *scoreDisplay;
 	InputVisualizer *inputVis;
 
-	
+
 	FrameRateDisplay frameRateDisplay;
 	RunningTimerDisplay runningTimerDisplay;
 	int totalFramesBeforeGoal;
@@ -356,7 +356,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupGateMarkers();
 	void CloseOffLimitZones();
 	void CleanupZones();
-	void DrawZones( sf::RenderTarget *target );
+	void DrawZones(sf::RenderTarget *target);
 	void CreateZones();
 	void SetupZones();
 	void ActivateZone(Zone * z, bool instant = false);
@@ -369,7 +369,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsSessTypeEdit();
 	void SetupEnemyTypes();
 	void SetupEnemyType(ParamsInfo &pi);
-	void AddWorldEnemy(const std::string &name, 
+	void AddWorldEnemy(const std::string &name,
 		int w,
 		EnemyCreator *p_enemyCreator,
 		ParamsCreator *p_paramsCreator,
@@ -490,23 +490,23 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateControllersOneFrameMode();
 	bool IsKeyPressed(int k);
 	bool IsMousePressed(int m);
-	void DrawPlayers(sf::RenderTarget *target );
+	void DrawPlayers(sf::RenderTarget *target);
 	void DrawPlayerWires(sf::RenderTarget *target);
 	void UpdatePlayerWireQuads();
 	bool ReadFile();
 	bool ReadDecorImagesFile();
-	bool ReadDecorInfoFile( int tWorld, int tVar );
-	bool ReadHeader( std::ifstream &is );
+	bool ReadDecorInfoFile(int tWorld, int tVar);
+	bool ReadHeader(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
 	bool ReadPlayerStartPos(std::ifstream &is);
 	bool ReadPlayerOptions(std::ifstream &is);
 	bool ReadTerrain(std::ifstream &is);
-	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly );
+	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly);
 	bool ReadSpecialTerrain(std::ifstream &is);
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
-	void AllocatePolyShaders(int numPolyTypes );
+	void AllocatePolyShaders(int numPolyTypes);
 	bool LoadPolyShader(int index, int matWorld, int matVariation);
 	bool OneFrameModeUpdate();
 	void DebugDrawActors(sf::RenderTarget *target);
@@ -571,7 +571,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RemoveAllEnemies();
 	void FreezePlayerAndEnemies(bool freeze);
 	void SetGlobalBorders();
-	void SetupGlobalBorderQuads( bool *blackBorder, bool &topBorderOn );
+	void SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn);
 	void CleanupGlobalBorders();
 	void CleanupBarriers();
 	void QueryToSpawnEnemies();
@@ -638,6 +638,20 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void DrawReplayGhosts(sf::RenderTarget *target) {}
 	void DrawGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
+	virtual void UpdateRaceFightScore() {}
+	virtual void UpdateEnvPlants() {}
+	virtual void UpdateEnvShaders() {}
+	virtual void UpdateCamera() = 0;
+	virtual void UpdateSoundNodeLists();
+	void UpdateScoreDisplay();
+	bool RunPreUpdate() { return true; }
+	virtual bool RunPostUpdate() { return true; }
+	void ActiveStorySequenceUpdate();
+	virtual void TryToActivateBonus() {}
+	virtual void RecPlayerRecordFrame() {}
+	virtual void RepPlayerUpdateInput() {}
+	virtual void RecGhostRecordFrame() {}
+	virtual void UpdateReplayGhostSprites() {}
 };
 
 #endif

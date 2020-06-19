@@ -392,7 +392,7 @@ struct GameSession : RayCastHandler, Session
 	
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	std::list<DecorLayer*> DecorLayers;
-	bool drawInversePoly;
+	
 	
 	sf::Vector2f lastViewSize;
 	sf::Vector2f lastViewCenter;
@@ -540,7 +540,6 @@ struct GameSession : RayCastHandler, Session
 
 	void CloseGates(int gCat);
 	void KeyboardUpdate( int index );
-	bool ScreenIntersectsInversePoly( sf::Rect<double> &screenRect );
 	void EndLevel();
 
 	
@@ -555,6 +554,7 @@ struct GameSession : RayCastHandler, Session
 	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	
+	
 	void DrawSpecialTerrain(sf::RenderTarget *target);
 	void DrawFlyTerrain(sf::RenderTarget *target);
 	void DrawTerrain(sf::RenderTarget *target);
@@ -565,5 +565,13 @@ struct GameSession : RayCastHandler, Session
 	bool UpdateRunModeBackAndStartButtons();
 	void CleanupDecor();
 	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
+
+	bool RunPreUpdate();
+	void UpdateRaceFightScore();
+	void UpdateSoundNodeLists();
+	void RecPlayerRecordFrame();
+	void RepPlayerUpdateInput();
+	void RecGhostRecordFrame();
+	bool RunPostUpdate();
 };
 #endif

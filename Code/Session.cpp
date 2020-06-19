@@ -5441,3 +5441,31 @@ void Session::UpdateRunningTimerText()
 
 	}
 }
+
+void Session::UpdateSoundNodeLists()
+{
+	soundNodeList->Update();
+}
+
+void Session::UpdateScoreDisplay()
+{
+	if (scoreDisplay != NULL)
+	{
+		scoreDisplay->Update();
+	}
+}
+
+void Session::ActiveStorySequenceUpdate()
+{
+	if (currStorySequence != NULL)
+	{
+		if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+		{
+			currStorySequence->EndSequence();
+			currStorySequence = NULL;
+		}
+		else
+		{
+		}
+	}
+}

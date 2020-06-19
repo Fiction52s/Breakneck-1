@@ -334,20 +334,7 @@ void GameSession::TryToActivateBonus()
 	}
 }
 
-void GameSession::ActiveStorySequenceUpdate()
-{
-	if (currStorySequence != NULL)
-	{
-		if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
-		{
-			currStorySequence->EndSequence();
-			currStorySequence = NULL;
-		}
-		else
-		{
-		}
-	}
-}
+
 
 
 
@@ -359,25 +346,62 @@ void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 	tex->display();
 }
 
+bool GameSession::RunPreUpdate()
+{
+	if (IsKeyPressed(sf::Keyboard::Y))
+	{
+		quit = true;
+		return false;
+	}
+
+	UpdateDebugModifiers();
+
+
+
+	if (goalDestroyed)
+	{
+		quit = true;
+		returnVal = resType;
+		return false;
+	}
+
+	if (nextFrameRestart)
+	{
+		gameState = GameSession::RUN;
+		RestartLevel();
+		gameClock.restart();
+		currentTime = 0;
+		accumulator = TIMESTEP + .1;
+		frameRateDisplay.Reset();
+	}
+
+	return true;
+}
+
+bool GameSession::RunPostUpdate()
+{
+	if (goalDestroyed)
+	{
+		quit = true;
+		returnVal = resType;
+		/*recGhost->StopRecording();
+		recGhost->WriteToFile( "testghost.bghst" );*/
+		return false;
+	}
+
+	return true;
+}
+
+void GameSession::UpdateRaceFightScore()
+{
+	if (raceFight != NULL)
+	{
+		raceFight->UpdateScore();
+	}
+}
+
 bool GameSession::RunGameModeUpdate()
 {
-	Actor *p = NULL;
-	Actor *p0 = GetPlayer(0);
-
-	
-
-	window->clear(Color::Red);
-	preScreenTex->clear(Color::Red);
-	postProcessTex2->clear(Color::Red);
-
-	/*switch (mapHeader->bossFightType)
-	{
-	case 0:
-		break;
-	case 1:
-		break;
-	}*/
-
 	collider.ClearDebug();
 
 	while (accumulator >= TIMESTEP)
@@ -387,32 +411,8 @@ bool GameSession::RunGameModeUpdate()
 			break;
 		}
 
-		if (IsKeyPressed(sf::Keyboard::Y))
-		{
-			quit = true;
+		if (!RunPreUpdate())
 			break;
-		}
-
-		UpdateDebugModifiers();
-
-		
-
-		if (goalDestroyed)
-		{
-			quit = true;
-			returnVal = resType;
-			break;
-		}
-
-		if (nextFrameRestart)
-		{
-			gameState = GameSession::RUN;
-			RestartLevel();
-			gameClock.restart();
-			currentTime = 0;
-			accumulator = TIMESTEP + .1;
-			frameRateDisplay.Reset();
-		}
 
 		if (pauseFrames > 0)
 		{
@@ -422,16 +422,9 @@ bool GameSession::RunGameModeUpdate()
 
 		UpdateControllers();
 
-		if (repPlayer != NULL)
-		{
-			//currently only records 1 player replays. fix this later
-			repPlayer->UpdateInput(GetCurrInput(0));
-		}
+		RepPlayerUpdateInput();
 
-		if (recPlayer != NULL)
-		{
-			recPlayer->RecordFrame();
-		}
+		RecPlayerRecordFrame();
 
 		UpdateAllPlayersInput();
 
@@ -454,24 +447,19 @@ bool GameSession::RunGameModeUpdate()
 			UpdatePhysics();
 		}
 
-		RecordReplayEnemies();
+		//RecordReplayEnemies();
 
 		if (!playerAndEnemiesFrozen)
 		{
 			UpdatePlayersPostPhysics();
 		}
 
-		if (recGhost != NULL)
-			recGhost->RecordFrame();
+		RecGhostRecordFrame();
 
 		UpdateReplayGhostSprites();
 		
-		if (goalDestroyed)
+		if (!RunPostUpdate())
 		{
-			quit = true;
-			returnVal = resType;
-			/*recGhost->StopRecording();
-			recGhost->WriteToFile( "testghost.bghst" );*/
 			break;
 		}
 
@@ -495,13 +483,11 @@ bool GameSession::RunGameModeUpdate()
 
 		UpdateHUD();
 
-		scoreDisplay->Update();
+		UpdateScoreDisplay();
 
-		soundNodeList->Update();
+		UpdateSoundNodeLists();
 
-		pauseSoundNodeList->Update();
-
-		goalPulse->Update();
+		UpdateGoalPulse();
 
 		UpdateRain();
 
@@ -516,14 +502,10 @@ bool GameSession::RunGameModeUpdate()
 		swiper->Update();
 		background->Update(cam.GetPos());
 		UpdateTopClouds();
-		//rain.Update();
 
 		mainMenu->UpdateEffects();
 
-		if (raceFight != NULL)
-		{
-			raceFight->UpdateScore();
-		}
+		UpdateRaceFightScore();
 
 		UpdateGoalFlow();
 
@@ -537,8 +519,6 @@ bool GameSession::RunGameModeUpdate()
 
 		QueryFlyTerrainTree(screenRect);
 
-		drawInversePoly = ScreenIntersectsInversePoly(screenRect);
-
 		UpdateDecorSprites();
 		UpdateDecorLayers();
 
@@ -549,15 +529,15 @@ bool GameSession::RunGameModeUpdate()
 
 		UpdateZones();
 
-		UpdateEnvShaders(); //havent tested
+		UpdateEnvShaders(); //havent tested at this position. should work fine.
 
 		accumulator -= TIMESTEP;
 		totalGameFrames++;
 
-		if (debugScreenRecorder != NULL)
-		{
-			break; //for recording stuff
-		}
+		//if (debugScreenRecorder != NULL)
+		//{
+		//	break; //for recording stuff
+		//}
 	}
 
 	if (switchGameState && gameState != FROZEN)
@@ -565,44 +545,13 @@ bool GameSession::RunGameModeUpdate()
 		return false;
 	}
 
-	if (debugScreenRecorder != NULL)
-		if (IsKeyPressed(Keyboard::R))
-		{
-			debugScreenRecorder->StartRecording();
-			//player->maxFallSpeedSlo += maxFallSpeedFactor;
-			//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
-		}
-
-	sf::Event ev;
-	while (window->pollEvent(ev))
-	{
-		if (ev.type == Event::LostFocus)
-		{
-			if (gameState == RUN)
-				gameState = PAUSE;
-		}
-		else if (ev.type == sf::Event::GainedFocus)
-		{
-			//if( state == PAUSE )
-			//	state = RUN;
-		}
-	}
-
-	DrawGame(preScreenTex);
-
-	preScreenTex->display();
-
-	const Texture &preTex0 = preScreenTex->getTexture();
-	Sprite preTexSprite(preTex0);
-	preTexSprite.setPosition(-960 / 2, -540 / 2);
-	preTexSprite.setScale(.5, .5);
-	preTexSprite.setTexture(preTex0);
-
-	if (debugScreenRecorder != NULL)
-		debugScreenRecorder->Update(preTex0);
-
-	window->draw(preTexSprite);//, &timeSlowShader );
-
+	//if (debugScreenRecorder != NULL)
+	//	if (IsKeyPressed(Keyboard::R))
+	//	{
+	//		debugScreenRecorder->StartRecording();
+	//		//player->maxFallSpeedSlo += maxFallSpeedFactor;
+	//		//cout << "maxFallSpeed : " << player->maxFallSpeed << endl;
+	//	}
 	return true;
 }
 
@@ -2378,10 +2327,44 @@ int GameSession::Run()
 
 		if(gameState == RUN )
 		{
+			window->clear(Color::Red);
+			preScreenTex->clear(Color::Red);
+			postProcessTex2->clear(Color::Red);
+
 			if (!RunGameModeUpdate())
 			{
 				continue;
 			}
+
+			sf::Event ev;
+			while (window->pollEvent(ev))
+			{
+				if (ev.type == Event::LostFocus)
+				{
+					if (gameState == RUN)
+						gameState = PAUSE;
+				}
+				else if (ev.type == sf::Event::GainedFocus)
+				{
+					//if( state == PAUSE )
+					//	state = RUN;
+				}
+			}
+
+			DrawGame(preScreenTex);
+
+			preScreenTex->display();
+
+			const Texture &preTex0 = preScreenTex->getTexture();
+			Sprite preTexSprite(preTex0);
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			preTexSprite.setTexture(preTex0);
+
+			if (debugScreenRecorder != NULL)
+				debugScreenRecorder->Update(preTex0);
+
+			window->draw(preTexSprite);//, &timeSlowShader );
 		}
 		else if(gameState == FROZEN )
 		{
@@ -3111,7 +3094,6 @@ void GameSession::Init()
 	showTerrainDecor = true;
 	cutPlayerInput = false;
 	usePolyShader = true;
-	drawInversePoly = true;
 	showDebugDraw = false;
 	for (int i = 0; i < 6; ++i)
 	{
@@ -3127,32 +3109,6 @@ void GameSession::Init()
 	postProcessTex2->setSmooth(false);
 	ReadDecorImagesFile();
 	testBuf.SetRecOver(false);
-}
-
-bool GameSession::ScreenIntersectsInversePoly( sf::Rect<double> &screenRect )
-{
-	double extra = 32; //for some buffer room
-
-	screenRect.left -= extra;
-	screenRect.top -= extra;
-	screenRect.width += extra * 2;
-	screenRect.height += extra * 2;
-
-	inverseEdgeList = NULL;
-	queryMode = QUERY_INVERSEBORDER;
-	Edge *curr = inverseEdgeList;
-	while( curr != NULL )
-	{
-		if( IsEdgeTouchingBox( curr, screenRect ) )
-		{
-			return true;
-		}
-		curr = (Edge*)curr->info;
-	}
-
-	return false;
-
-	//IsEdgeTouchingBox
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)
@@ -4333,6 +4289,36 @@ void GameSession::CleanupDecor()
 		dList.clear();
 	}
 }
+
+void GameSession::UpdateSoundNodeLists()
+{
+	soundNodeList->Update();
+	pauseSoundNodeList->Update();
+}
+
+void GameSession::RecPlayerRecordFrame()
+{
+	if (recPlayer != NULL)
+	{
+		recPlayer->RecordFrame();
+	}
+}
+
+void GameSession::RepPlayerUpdateInput()
+{
+	if (repPlayer != NULL)
+	{
+		//currently only records 1 player replays. fix this later
+		repPlayer->UpdateInput(GetCurrInput(0));
+	}
+}
+
+void GameSession::RecGhostRecordFrame()
+{
+	if (recGhost != NULL)
+		recGhost->RecordFrame();
+}
+
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),

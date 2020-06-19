@@ -777,6 +777,8 @@ struct EditSession : GUIHandler, Session
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	bool UpdateRunModeBackAndStartButtons();
+	void UpdateCamera();
+	bool RunPostUpdate();
 };
 
 
