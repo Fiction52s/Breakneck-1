@@ -5278,7 +5278,7 @@ void Session::FrameRateDisplay::Update(double frameTime)
 void Session::FrameRateDisplay::Reset()
 {
 	frameRateCounter = 0;
-	
+	frameRateTimeTotal = 0;
 }
 
 void Session::DrawScoreDisplay(sf::RenderTarget *target)
