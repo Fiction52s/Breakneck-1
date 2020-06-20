@@ -271,7 +271,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap; //for sequences to change music? might be useless..
 	bool goalDestroyed;
-	sf::Vertex blackBorderQuads[4 * 4];
+	sf::Vertex blackBorderQuads[4 * 2];
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	Sequence *getShardSeq;

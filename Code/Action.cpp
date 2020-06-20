@@ -1860,29 +1860,77 @@ void GrassAction::Undo()
 	performed = false;
 }
 
-//MovePointsAction::MovePointsAction(Brush *brush, list<GateInfoPtr> gateList,
-//	PointMap &pm)
-//	:Action()
-//{
-//	polyBrush = *brush;
-//	gList = gateList;
-//	pMap = pm;
-//}
-//
-//void MovePointsAction::Perform()
-//{
-//	if (!performed)
-//	{
-//		polyBrush.Deactivate();
-//		newBrush.Activate();
-//	}
-//}
-//
-//void MovePointsAction::Undo()
-//{
-//	if (performed)
-//	{
-//		newBrush.Deactivate();
-//		polyBrush.Activate();
-//	}
-//}
+ModifyBorderAction::ModifyBorderAction(int borderIndex, int p_orig, int p_curr)
+	:orig(p_orig), index( borderIndex), curr( p_curr )
+{
+
+}
+
+void ModifyBorderAction::Perform()
+{
+	assert(!performed);
+	performed = true;
+
+	//0 is top, 1 is left, 2 is right
+
+	EditSession *edit = EditSession::GetSession();
+	switch (index)
+	{
+	case 0:
+	{
+		int bot = edit->mapHeader->topBounds + edit->mapHeader->boundsHeight;
+		edit->mapHeader->topBounds = curr;
+		edit->mapHeader->boundsHeight = bot - curr;
+		break;
+	}
+	case 1:
+	{
+		int right = edit->mapHeader->leftBounds + edit->mapHeader->boundsWidth;
+		edit->mapHeader->leftBounds = curr;
+		edit->mapHeader->boundsWidth = right - curr;
+		break;
+	}
+	case 2:
+	{
+		edit->mapHeader->boundsWidth = curr - edit->mapHeader->leftBounds;
+		break;
+	}
+		
+	}
+
+	edit->UpdateFullBounds();
+}
+
+void ModifyBorderAction::Undo()
+{
+	assert(performed);
+	performed = false;
+
+	EditSession *edit = EditSession::GetSession();
+
+	switch (index)
+	{
+	case 0:
+	{
+		int bot = edit->mapHeader->topBounds + edit->mapHeader->boundsHeight;
+		edit->mapHeader->topBounds = orig;
+		edit->mapHeader->boundsHeight = bot - orig;
+		break;
+	}
+	case 1:
+	{
+		int right = edit->mapHeader->leftBounds + edit->mapHeader->boundsWidth;
+		edit->mapHeader->leftBounds = orig;
+		edit->mapHeader->boundsWidth = right - orig;
+		break;
+	}
+	case 2:
+	{
+		edit->mapHeader->boundsWidth = orig - edit->mapHeader->leftBounds;
+		break;
+	}
+
+	}
+
+	edit->UpdateFullBounds();
+}

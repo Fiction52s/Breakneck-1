@@ -278,6 +278,17 @@ struct ModifyTerrainTypeAction : Action
 	
 };
 
+struct ModifyBorderAction : Action
+{
+	ModifyBorderAction(int borderIndex, int orig, int curr);
+	void Perform();
+	void Undo();
+
+	int orig;
+	int curr;
+	int index;
+};
+
 
 
 #endif

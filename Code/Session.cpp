@@ -4164,7 +4164,7 @@ void Session::SetGlobalBorders()
 	right->v0 = bottomRight;
 	right->v1 = topRight;
 	right->edgeType = Edge::BORDER;
-	cout << "making new edge at x value: " << right->v0.x << endl;
+	//cout << "making new edge at x value: " << right->v0.x << endl;
 
 	Edge *top = new Edge;
 	top->v0 = topRight;
@@ -4237,7 +4237,7 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 		}
 		else
 		{
-			cout << "creating black border at " << (mapHeader->leftBounds + mapHeader->boundsWidth) << endl;
+			//cout << "creating black border at " << (mapHeader->leftBounds + mapHeader->boundsWidth) << endl;
 		}
 	}
 	else
@@ -4353,14 +4353,14 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	SetRectCenter(blackBorderQuads + 4, quadWidth, height, Vector2f(rBound - quadWidth / 2,
 		top + height / 2));
 
-	SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
+	/*SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
 		top + height / 2));
 	SetRectCenter(blackBorderQuads + 12, extra, height, Vector2f(rBound + extra / 2,
-		top + height / 2));
+		top + height / 2));*/
 	SetRectColor(blackBorderQuads, Color(Color::Black));
 	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
-	SetRectColor(blackBorderQuads + 8, Color(Color::Black));
-	SetRectColor(blackBorderQuads + 12, Color(Color::Black));
+	//SetRectColor(blackBorderQuads + 8, Color(Color::Black));
+	//SetRectColor(blackBorderQuads + 12, Color(Color::Black));
 
 	if (blackBorder[0])
 	{
@@ -4370,7 +4370,7 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	else
 	{
 		SetRectColor(blackBorderQuads, Color(Color::Transparent));
-		SetRectColor(blackBorderQuads + 8, Color(Color::Transparent));
+		//SetRectColor(blackBorderQuads + 8, Color(Color::Transparent));
 	}
 	if (blackBorder[1])
 	{
@@ -4380,7 +4380,7 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	else
 	{
 		SetRectColor(blackBorderQuads + 4, Color(Color::Transparent));
-		SetRectColor(blackBorderQuads + 12, Color(Color::Transparent));
+		//SetRectColor(blackBorderQuads + 12, Color(Color::Transparent));
 	}
 }
 
@@ -5577,7 +5577,11 @@ bool Session::RunGameModeUpdate()
 
 		fader->Update();
 		swiper->Update();
-		background->Update(view.getCenter());
+
+		if (IsSessTypeGame())
+		{
+			background->Update(view.getCenter());
+		}
 		UpdateTopClouds();
 
 		mainMenu->UpdateEffects();

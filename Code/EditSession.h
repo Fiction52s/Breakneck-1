@@ -106,6 +106,7 @@ struct EditSession : GUIHandler, Session
 		SET_CAM_ZOOM,
 		TEST_PLAYER,
 		TRANSFORM,
+		MOVE_BORDER,
 		EMODE_Count
 	};
 
@@ -193,7 +194,7 @@ struct EditSession : GUIHandler, Session
 	RailPtr railAttachEnd;
 	bool runToResave;
 	sf::Sprite scaleSprite;
-	sf::VertexArray fullBounds;
+	sf::Vertex fullBounds[4 * 3];
 	std::list<GateInfoPtr> gateInfoList;
 	MainMenu *mainMenu;
 	PositionInfo worldPosRail;
@@ -307,6 +308,7 @@ struct EditSession : GUIHandler, Session
 	ActorPtr grabbedActor;
 	DecorPtr grabbedImage;
 	TerrainPoint *grabbedPoint;
+	int grabbedBorderIndex;
 	sf::Vector2i editMouseGrabPos;
 	sf::Vector2i editMouseOrigPos;
 	V2d circleTopPos;
@@ -355,9 +357,16 @@ struct EditSession : GUIHandler, Session
 	int realBoundsWidth;
 	int realBoundsHeight;
 
+	int origLeftBounds;
+	int origTopBounds;
+	int origBoundsRight;
+	int origBoundsBot;
+
 	EditSession(MainMenu *p_mainMenu,
 		const boost::filesystem::path &p_filePath);
 	~EditSession();
+
+	int GetMouseOnBorderIndex();
 	void ClearActivePanels();
 	void AddActivePanel(Panel *p);
 	void RemoveActivePanel(Panel *p);
@@ -660,6 +669,7 @@ struct EditSession : GUIHandler, Session
 	void SetDirectionModeHandleEvent();
 	void CreateGatesModeHandleEvent();
 	void CreateImagesModeHandleEvent();
+	void MoveBorderModeHandleEvent();
 	void TransformModeHandleEvent();
 	void TestPlayerModeHandleEvent();
 	void CreateTerrainModeUpdate();
@@ -675,6 +685,10 @@ struct EditSession : GUIHandler, Session
 	void CreateGatesModeUpdate();
 	void CreateImagesModeUpdate();
 	void TransformModeUpdate();
+	void MoveBorderModeUpdate();
+
+
+
 	void UndoMostRecentAction();
 	void RedoMostRecentUndoneAction();
 	void RemovePointFromPolygonInProgress();

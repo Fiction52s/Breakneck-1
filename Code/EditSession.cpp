@@ -864,7 +864,7 @@ void EditSession::LoadAllPolyShaders()
 }
 
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
-	:Session( Session::SESS_EDIT, p_filePath ), fullBounds( sf::Quads, 16 ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
+	:Session( Session::SESS_EDIT, p_filePath ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
 	errorBar(p_mainMenu->arial)
 {	
 	currSession = this;
@@ -884,6 +884,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	handleEventFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeHandleEvent;
 	handleEventFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeHandleEvent;
 	handleEventFunctions[TRANSFORM] = &EditSession::TransformModeHandleEvent;
+	handleEventFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeHandleEvent;
 
 	updateModeFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeUpdate;
 	updateModeFunctions[EDIT] = &EditSession::EditModeUpdate;
@@ -900,6 +901,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[SET_CAM_ZOOM] = &EditSession::SetCamZoomModeUpdate;
 	//updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
+	updateModeFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeUpdate;
 
 	int waitFrames[] = { 30, 2 };
 	int waitModeThresh[] = { 1 };
@@ -990,7 +992,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	brushPreviewTex = MainMenu::brushPreviewTexture;
 
 
-	for( int i = 0; i < 16; ++i )
+	for( int i = 0; i < 12; ++i )
 	{
 		fullBounds[i].color = COLOR_ORANGE;
 		fullBounds[i].position = Vector2f( 0, 0 );
@@ -1372,7 +1374,7 @@ void EditSession::Draw()
 		preScreenTex->draw(playerZoomIcon);
 	}
 
-	preScreenTex->draw(fullBounds);
+	preScreenTex->draw(fullBounds, 4*3, sf::Quads);
 
 	if (mode == CREATE_IMAGES)
 	{
@@ -1392,30 +1394,41 @@ void EditSession::UpdateFullBounds()
 	int leftBound = mapHeader->leftBounds;
 	int topBound = mapHeader->topBounds;
 	int boundWidth = mapHeader->boundsWidth;
-	int boundHeight = mapHeader->boundsHeight;
-		//top rect
+
+	int boundsBot = mapHeader->topBounds + mapHeader->boundsHeight;
+
+	if (inversePolygon != NULL)
+	{
+		auto aabb = inversePolygon->GetAABB();
+		boundsBot = aabb.top + aabb.height;
+	}
+
+	//0 top rect
 	fullBounds[0].position = Vector2f( leftBound, topBound - boundRectWidth );
 	fullBounds[1].position = Vector2f( leftBound + boundWidth, topBound - boundRectWidth );
 	fullBounds[2].position = Vector2f( leftBound + boundWidth, topBound + boundRectWidth );
 	fullBounds[3].position = Vector2f( leftBound, topBound + boundRectWidth );
 
-	//right rect
-	fullBounds[4].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound );
-	fullBounds[5].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, topBound );
-	fullBounds[6].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, topBound + boundHeight );
-	fullBounds[7].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound + boundHeight );
+	//1 left rect
+	fullBounds[4].position = Vector2f(leftBound - boundRectWidth, topBound);
+	fullBounds[5].position = Vector2f(leftBound + boundRectWidth, topBound);
+	fullBounds[6].position = Vector2f(leftBound + boundRectWidth, boundsBot);
+	fullBounds[7].position = Vector2f(leftBound - boundRectWidth, boundsBot);
 
-	//bottom rect
-	fullBounds[8].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) - boundRectWidth );
-	fullBounds[9].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) - boundRectWidth );
-	fullBounds[10].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) + boundRectWidth );
-	fullBounds[11].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) + boundRectWidth );
+	//2 right rect
+	fullBounds[8].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, topBound );
+	fullBounds[9].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, topBound );
+	fullBounds[10].position = Vector2f( ( leftBound + boundWidth ) + boundRectWidth, boundsBot);
+	fullBounds[11].position = Vector2f( ( leftBound + boundWidth ) - boundRectWidth, boundsBot);
+
+	////bottom rect
+	//fullBounds[8].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) - boundRectWidth );
+	//fullBounds[9].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) - boundRectWidth );
+	//fullBounds[10].position = Vector2f(0, 0);//Vector2f( leftBound + boundWidth, ( topBound + boundHeight ) + boundRectWidth );
+	//fullBounds[11].position = Vector2f(0, 0);//Vector2f( leftBound, ( topBound + boundHeight ) + boundRectWidth );
 
 	//left rect
-	fullBounds[12].position = Vector2f( leftBound - boundRectWidth, topBound );
-	fullBounds[13].position = Vector2f( leftBound + boundRectWidth, topBound );
-	fullBounds[14].position = Vector2f( leftBound + boundRectWidth, topBound + boundHeight );
-	fullBounds[15].position = Vector2f( leftBound - boundRectWidth, topBound + boundHeight );
+	
 }
 
 bool EditSession::ReadDecor(std::ifstream &is)
@@ -2032,7 +2045,28 @@ void EditSession::WriteFile(string fileName)
 	ofstream of;
 	of.open(tempMap);
 
+	int tempTop = mapHeader->topBounds;
+	int tempLeft = mapHeader->leftBounds;
+	int tempWidth = mapHeader->boundsWidth;
+	int tempHeight = mapHeader->boundsHeight;
+
+	if (mode == TEST_PLAYER)
+	{
+		mapHeader->topBounds = realTopBounds;
+		mapHeader->leftBounds = realLeftBounds;
+		mapHeader->boundsWidth = realBoundsWidth;
+		mapHeader->boundsHeight = realBoundsHeight;
+	}
+
 	WriteMapHeader(of);
+
+	if (mode == TEST_PLAYER)
+	{
+		mapHeader->topBounds = tempTop;
+		mapHeader->leftBounds = tempLeft;
+		mapHeader->boundsWidth = tempWidth;
+		mapHeader->boundsHeight = tempHeight;
+	}
 
 	int pointCount = 0;
 	int bgPlatCount0 = 0;
@@ -3219,11 +3253,12 @@ int EditSession::EditRun()
 
 		UpdatePanning();
 
-		if (background != NULL && (mode != TEST_PLAYER))
+		if (background != NULL )
 		{
 			background->Update(view.getCenter(), spriteUpdateFrames);
 		}
 		
+		UpdateFullBounds();
 
 		UpdatePolyShaders();
 
@@ -12457,6 +12492,16 @@ void EditSession::TransformModeHandleEvent()
 	}
 }
 
+void EditSession::MoveBorderModeHandleEvent()
+{
+
+}
+
+void EditSession::MoveBorderModeUpdate()
+{
+
+}
+
 void EditSession::TestPlayerModeHandleEvent()
 {
 	switch (ev.type)
@@ -12808,12 +12853,44 @@ void EditSession::SelectModeUpdate()
 	}
 }
 
+int EditSession::GetMouseOnBorderIndex()
+{
+	//0 top rect
+	//1 left rect
+	//2 right rectS
+
+	for (int i = 0; i < 3; ++i)
+	{
+		if (QuadContainsPoint(fullBounds + i * 4, Vector2f(worldPos)))
+		{
+			return i;
+		}
+	}
+
+	return -1;
+}
+
 void EditSession::EditModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked() && !mainWindowLostFocus)
 	{
 		if (!editModeUI->IsShowGrassOn() && !(editMouseDownMove || editMouseDownBox))
 		{
+			int borderIndex = GetMouseOnBorderIndex();
+			grabbedBorderIndex = borderIndex;
+
+
+
+			if (grabbedBorderIndex >= 0)
+			{
+				origLeftBounds = mapHeader->leftBounds;
+				origTopBounds = mapHeader->topBounds;
+				origBoundsRight = mapHeader->leftBounds + mapHeader->boundsWidth;
+				origBoundsBot = mapHeader->topBounds + mapHeader->boundsHeight;
+				return;
+			}
+			
+
 			bool emptysp = true;
 			//bool specialMode = GetSpecialTerrainMode() != 0;
 
@@ -12854,6 +12931,7 @@ void EditSession::EditModeUpdate()
 				grabbedActor = NULL;
 				grabbedPoint = NULL;
 				grabbedImage = NULL;
+				grabbedBorderIndex = -1;
 			}
 			else
 			{
@@ -12869,6 +12947,44 @@ void EditSession::EditModeUpdate()
 	}
 	else if (MOUSE.IsMouseLeftReleased() || mainWindowLostFocus)
 	{
+		if (grabbedBorderIndex >= 0)
+		{
+			int curr;
+			int orig;
+			switch (grabbedBorderIndex)
+			{
+			case 0:
+			{
+				curr = mapHeader->topBounds;
+				orig = origTopBounds;	
+				break;
+			}
+			case 1:
+			{
+				curr = mapHeader->leftBounds;
+				orig = origLeftBounds;
+				break;
+			}
+			case 2:
+			{
+				curr = mapHeader->leftBounds + mapHeader->boundsWidth;
+				orig = origBoundsRight;
+				break;
+			}
+				
+			}
+
+			if ( curr != orig )
+			{
+				ModifyBorderAction *mba = new ModifyBorderAction(grabbedBorderIndex,
+					orig, curr);
+				mba->performed = true;
+				AddDoneAction(mba);
+			}
+
+			grabbedBorderIndex = -1;
+		}
+
 		if (editModeUI->IsShowGrassOn())
 		{
 			ChangeGrassAction();
@@ -12903,6 +13019,7 @@ void EditSession::EditModeUpdate()
 		grabbedActor = NULL;
 		grabbedPoint = NULL;
 		grabbedImage = NULL;
+		grabbedBorderIndex = -1;
 
 		UpdateGrass();
 	}
@@ -12942,6 +13059,37 @@ void EditSession::EditModeUpdate()
 		{
 			SnapPointToGraph(worldPos, graph->graphSpacing);
 		}
+	}
+
+	if (grabbedBorderIndex >= 0)
+	{
+		Vector2i wPos(worldPos);
+		switch (grabbedBorderIndex)
+		{
+		case 0:
+			{
+				int bot = mapHeader->topBounds + mapHeader->boundsHeight;
+				mapHeader->topBounds = wPos.y;
+				mapHeader->boundsHeight = bot - wPos.y;
+				break;
+			}
+		case 1:
+		{
+			int right = mapHeader->leftBounds + mapHeader->boundsWidth;
+			mapHeader->leftBounds = wPos.x;
+			mapHeader->boundsWidth = right - wPos.x;
+			break;
+		}
+		case 2:
+		{
+			mapHeader->boundsWidth = wPos.x - mapHeader->leftBounds;
+			break;
+		}
+
+		}
+
+		UpdateFullBounds();
+		
 	}
 		
 	TrySelectedMove();
@@ -13155,6 +13303,7 @@ void EditSession::CreateEnemyModeUpdate()
 		editStartMove = false;
 		grabbedActor = NULL;
 		grabbedImage = NULL;
+
 	}
 
 
