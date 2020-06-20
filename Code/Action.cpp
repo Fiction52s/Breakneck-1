@@ -482,12 +482,23 @@ Brush *Brush::Copy()
 
 	PolyPtr tp;
 	ActorPtr ap;
+	RailPtr rp;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		tp = (*it)->GetAsTerrain();
 		if (tp != NULL)
 		{
 			PolyPtr ptr = tp->Copy();
+			newBrush->AddObject(ptr);
+		}
+	}
+
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		rp = (*it)->GetAsRail();
+		if (rp != NULL)
+		{
+			RailPtr ptr = rp->Copy();
 			newBrush->AddObject(ptr);
 		}
 	}
@@ -769,10 +780,15 @@ void Brush::CreatePreview(const std::string &filePath)
 void Brush::Save(std::ofstream &of)
 {
 	int terrainCounter = 0;
-
-	set<PolyPtr> polys;
+	int railCounter = 0;
 
 	PolyPtr poly;
+	RailPtr rail;
+	
+	set<PolyPtr> polys;
+	set<RailPtr> rails;
+
+	
 	for (auto it = objects.begin(); it != objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
@@ -786,10 +802,26 @@ void Brush::Save(std::ofstream &of)
 		}
 	}
 
+	
+	for (auto it = objects.begin(); it != objects.end(); ++it)
+	{
+		rail = (*it)->GetAsRail();
+		if (rail != NULL)
+		{
+			rail->writeIndex = railCounter;
+			rail->BrushSave(of);
+			++railCounter;
+
+			rails.insert(rail);
+		}
+	}
+
 	Brush freeGroundedActors;
 
 	ActorPtr a;
 	PolyPtr myPoly;
+
+	RailPtr myRail;
 
 	bool freeGrounded = false;
 	for (auto it = objects.begin(); it != objects.end(); ++it)
@@ -800,16 +832,29 @@ void Brush::Save(std::ofstream &of)
 			continue;
 		}
 
+		rail = (*it)->GetAsRail();
+		if (rail != NULL)
+		{
+			continue;
+		}
+
 		a = (*it)->GetAsActor();
 		freeGrounded = false;
 
 		if (a != NULL)
 		{
 			myPoly = a->posInfo.ground;
+			myRail = a->posInfo.railGround;
 
 			if (myPoly != NULL && polys.find(myPoly) == polys.end())
 			{
 				myPoly->writeIndex = -2; //so that it can't show up in the list
+				freeGrounded = true;
+			}
+			else if (myRail != NULL && rails.find(myRail) == rails.end())
+			{
+				//not tested yet
+				myRail->writeIndex = -2;
 				freeGrounded = true;
 			}
 
@@ -854,6 +899,13 @@ bool Brush::Load(std::ifstream &is)
 			poly->Finalize();
 			poly->LoadGrass(is);
 			objects.push_back(poly);
+			break;
+		}
+		case ISelectable::RAIL:
+		{
+			RailPtr rail = new TerrainRail;
+			rail->Load(is); //automatically finalizes
+			objects.push_back(rail);
 			break;
 		}
 		case ISelectable::ACTOR:
@@ -901,8 +953,6 @@ bool Brush::Load(std::ifstream &is)
 		case ISelectable::GATE:
 			break;
 		case ISelectable::IMAGE:
-			break;
-		case ISelectable::RAIL:
 			break;
 		}
 	}

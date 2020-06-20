@@ -23,6 +23,12 @@ TerrainRail::TerrainRail(TerrainRail &r)
 {
 	Init();
 
+	rType = r.rType;
+
+	requirePower = r.requirePower;
+	accelerate = r.accelerate;
+	level = r.level;
+
 	CopyPointsFromRail(&r);
 }
 
@@ -141,12 +147,14 @@ void TerrainRail::Init()
 	coloredNodeCircles = NULL;
 	selected = false;
 	railRadius = 20;
+	
+	rType = NORMAL;
 
 	requirePower = false;
 	accelerate = false;
 	level = 1;
 
-	SetRailType(NORMAL);
+	
 
 	enemyParams = NULL;
 	enemyChain = NULL;
@@ -222,18 +230,19 @@ void TerrainRail::WriteFile(std::ofstream &of)
 	int iRequirePower = (int)requirePower;
 	int iAccelerate = (int)accelerate;
 
-	of << iRequirePower << endl;
-	of << iAccelerate << endl;
-	of << level << endl;
+	of << rType << "\n";
+	of << iRequirePower << "\n";
+	of << iAccelerate << "\n";
+	of << level << "\n";
 
 	int numP = GetNumPoints();
-	of << numP << endl;
+	of << numP << "\n";
 
 	TerrainPoint *curr;
 	for (int i = 0; i < numP; ++i)
 	{
 		curr = GetPoint(i);
-		of << curr->pos.x << " " << curr->pos.y << endl;
+		of << curr->pos.x << " " << curr->pos.y << "\n";
 	}
 }
 
@@ -244,6 +253,8 @@ void TerrainRail::Reserve(int numP)
 
 void TerrainRail::Load(std::ifstream &is)
 {
+	is >> rType;
+
 	int power;
 	is >> power;
 
@@ -1002,13 +1013,20 @@ bool TerrainRail::Intersects(sf::IntRect rect)
 	return false;
 }
 
+void TerrainRail::BrushSave(std::ofstream &of)
+{
+	of << ISelectable::RAIL << "\n";
+
+	WriteFile(of);
+}
+
 void TerrainRail::BrushDraw(sf::RenderTarget *target, bool valid)
 {
-	target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
-	coloredNodeCircles->Draw(target);
+	Draw(target);
+	//target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+	//coloredNodeCircles->Draw(target);
 
-	target->draw(lines, numLineVerts, sf::Lines);
-	//target->draw(lines, GetNumPoints() * 2, sf::Lines);
+	//target->draw(lines, numLineVerts, sf::Lines);
 }
 
 void TerrainRail::MovePoint(int index, sf::Vector2i &delta)

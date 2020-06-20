@@ -60,9 +60,18 @@ int BrushManager::SaveBrush(Brush *b,
 		string filePath = path + "/" + name;
 
 		ofstream of;
-		of.open(filePath + ".bnbrush");
 
 		Brush *newBrush = b->Copy();
+
+		if (newBrush == NULL)
+		{
+			cout << "failed to create brush. newBrush is NULL" << endl;
+			return 0;
+		}
+
+		of.open(filePath + ".bnbrush");
+
+		
 
 		newBrush->Save(of);
 		of.close();

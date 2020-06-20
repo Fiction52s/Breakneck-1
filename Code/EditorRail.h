@@ -159,6 +159,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void WriteFile(std::ofstream &of);
 	void Load(std::ifstream &is);
 
+	void BrushSave(std::ofstream &of);
+
 	TerrainPoint *GetClosePoint(double radius, V2d &pos);
 
 	std::vector<TerrainPoint> pointVector;
