@@ -73,6 +73,7 @@ EditModeUI::EditModeUI()
 
 EditModeUI::~EditModeUI()
 {
+	delete[] bgNameArr;
 	delete bgOptionsPanel;
 	delete mainPanel;
 	delete layerPanel;
@@ -93,6 +94,8 @@ void EditModeUI::CreateMapOptionsPanel()
 	/*GridSelector *bgSel = bgPopup->AddGridSelector(
 	"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
 
+	bgNameArr = new string[8 * 8];
+
 	bgOptionsPanel->ReserveImageRects(8 * 8);
 
 	bgOptionsPanel->SetPosition(Vector2i(960 - bgOptionsPanel->size.x / 2,
@@ -103,22 +106,26 @@ void EditModeUI::CreateMapOptionsPanel()
 	string numStr;
 	string fullName;
 	ImageChooseRect *icr;
+	int index = 0;
 	for (int w = 0; w < 8; ++w)
 	{
 		for (int i = 0; i < 8; ++i)
 		{
+			index = w * 8 + i;
 			numStr = to_string(i + 1);
-			bgName = "w" + to_string(w + 1) + "_0";
-			fullName = "BGInfo/" + bgName + numStr + ".png";
+			bgName = "w" + to_string(w + 1) + "_0" + numStr;
+			fullName = "BGInfo/" + bgName + ".png";
 			bgTS = edit->GetTileset(fullName, 1920, 1080);
 			if (bgTS == NULL)
 			{
 				continue;
 			}
-			icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+			bgNameArr[index] = bgName;
+			icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
 				Vector2f(i * 125, w * 125), bgTS, 0, 125);
 			icr->Init();
 			icr->SetShown(true);
+			icr->SetInfo((void*)index);
 		}
 	}
 }
@@ -152,13 +159,14 @@ void EditModeUI::ToggleKinOptionsPanel()
 {
 	if (kinOptionsPanel == edit->focusedPanel)
 	{
-		edit->RemoveActivePanel(kinOptionsPanel);
-		SaveKinOptions();
+		edit->RemoveActivePanel(bgOptionsPanel);
+		//edit->RemoveActivePanel(kinOptionsPanel);
+		//SaveKinOptions();
 	}
 	else
 	{
-		edit->AddActivePanel(kinOptionsPanel);
-		//edit->AddActivePanel(bgOptionsPanel);
+		//edit->AddActivePanel(kinOptionsPanel);
+		edit->AddActivePanel(bgOptionsPanel);
 	}
 }
 
@@ -487,6 +495,13 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 				edit->SetCurrSelectedShardType(world, localIndex);
 
 				edit->RemoveActivePanel(shardTypePanel);
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_BACKGROUNDLIBRARY)
+			{
+				int ind = (int)icRect->info;
+				string bgName = bgNameArr[ind];
+
+				edit->SetBackground(bgName);
 			}
 		}
 

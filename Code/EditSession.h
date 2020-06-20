@@ -366,6 +366,7 @@ struct EditSession : GUIHandler, Session
 		const boost::filesystem::path &p_filePath);
 	~EditSession();
 
+	void SetBackground(const std::string &bgName);
 	int GetMouseOnBorderIndex();
 	void ClearActivePanels();
 	void AddActivePanel(Panel *p);

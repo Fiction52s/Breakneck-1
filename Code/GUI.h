@@ -185,6 +185,7 @@ struct ChooseRect : PanelMember
 		I_ADVENTURECREATOR_WORLD,
 		I_ADVENTURECREATOR_SECTOR,
 		I_ADVENTURECREATOR_MAP,
+		I_BACKGROUNDLIBRARY,
 	};
 
 	sf::Text nameText;
@@ -828,6 +829,7 @@ struct EditModeUI : GUIHandler
 	Panel *mapOptionsPanel;
 	Panel *bgOptionsPanel;
 	Panel *nameBrushPanel;
+	std::string *bgNameArr;
 
 
 	int labelCharHeight;

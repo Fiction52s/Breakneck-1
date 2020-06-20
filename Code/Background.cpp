@@ -21,6 +21,11 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	extraOffset = Vector2f(0, 0);
 }
 
+ScrollingBackground::~ScrollingBackground()
+{
+
+}
+
 void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 {
 	Vector2f cPos = camPos;
@@ -325,10 +330,13 @@ Background::Background(MainMenu *mm)
 	string paletteFile = bgStr + "_palette.png";
 	string shapeFile = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
 
+	ts_bg = NULL;
 	//Tileset *ts_bg = mm->tilesetManager.GetTileset(bgFile, 1920, 1080);
-	Tileset *ts_shape = mm->tilesetManager.GetTileset(shapeFile, 1920, 1080);
+	ts_shape = mm->tilesetManager.GetTileset(shapeFile, 1920, 1080);
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
+
+	tm = &mm->tilesetManager;
 
 	//background.setTexture(*ts_bg->texture);
 	//background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
@@ -352,8 +360,14 @@ Background::Background(MainMenu *mm)
 
 Background::~Background()
 {
+	if( ts_bg != NULL )
+		tm->DestroyTileset(ts_bg);
+	if( ts_shape != NULL )
+		tm->DestroyTileset(ts_shape);
+
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
+		tm->DestroyTileset((*it)->ts);
 		delete (*it);
 	}
 }

@@ -12,6 +12,7 @@ struct ScrollingBackground
 {
 	ScrollingBackground(Tileset *ts, int index,
 		int depthLevel, float p_scrollSpeedX = 0.f);
+	~ScrollingBackground();
 	void Set(sf::Vector2f &pos, float zoom = 1.f);
 	Tileset *ts;
 	int tsIndex;

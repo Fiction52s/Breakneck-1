@@ -2624,6 +2624,21 @@ void EditSession::ModifySelectedTerrainMat(
 	}*/
 }
 
+void EditSession::SetBackground(const std::string &bgName)
+{
+	if (bgName != mapHeader->envName)
+	{
+		if (background != NULL)
+		{
+			delete background;
+			background = NULL;
+		}
+
+		mapHeader->envName = bgName;
+		background = Background::SetupFullBG(bgName, this);
+	}
+}
+
 void EditSession::SetupTerrainSelectPanel()
 {
 	matTypeRectsCurrLayer = -1;
