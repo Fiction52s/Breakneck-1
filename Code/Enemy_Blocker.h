@@ -64,7 +64,7 @@ struct Blocker : Enemy, QuadTreeEntrant
 
 	
 
-	bool checkCol;
+	//bool checkCol;
 
 	int vaIndex;
 };

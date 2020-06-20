@@ -233,7 +233,7 @@ void TerrainPolygon::GenerateMyFlies()
 				currPos = V2d(backT.transformPoint(Vector2f(rotatedBox.left + x * xGridDist,
 					rotatedBox.top + y * yGridDist)));
 
-				myFlies.push_back(new HealthFly(currPos,
+				myFlies.push_back(new HealthFly( NULL, flyCounter, currPos,
 					flyLevel, flyQuads + flyCounter * 4, ts_fly));
 				//myFlies.push_back(new HealthFly(Vector2i(left + x * xGridDist, top + y * yGridDist),
 				//	flyLevel, flyQuads + flyCounter * 4, ts_fly));

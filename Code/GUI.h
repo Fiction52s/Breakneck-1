@@ -605,6 +605,7 @@ struct Panel
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
+	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -816,6 +817,10 @@ struct EditModeUI : GUIHandler
 	void SaveKinOptions();
 	void CreateKinOptionsPanel();
 	void CreateMapOptionsPanel();
+	void AddKinOption(
+		const std::string &text, 
+		const std::string &toolTipText, 
+		int upgradeIndex);
 	Panel *currEnemyPanel;
 	ActorParams *currParams;
 	TerrainRail *currRail;

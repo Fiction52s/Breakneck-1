@@ -3,6 +3,7 @@
 #include "CircleGroup.h"
 #include "Session.h"
 #include "VectorMath.h"
+#include <iostream>
 
 using namespace std;
 using namespace sf;
@@ -37,7 +38,8 @@ void EnemyChain::AddToWorldTrees()
 {
 	for (int i = 0; i < numEnemies; ++i)
 	{
-		sess->activeItemTree->Insert(enemies[i]);
+		//sess->enemyTree->Insert(enemies[i]);
+		//sess->activeItemTree->Insert(enemies[i]);
 	}
 }
 
@@ -198,6 +200,8 @@ void EnemyChain::CreateEnemies()
 				delete enemies[i];
 			}
 
+			//delete[] checkColArr;
+
 			delete[] enemies;
 			enemies = NULL;
 
@@ -208,6 +212,7 @@ void EnemyChain::CreateEnemies()
 		//numBlockers = pathParam.size();
 
 		enemies = new Enemy*[numEnemies];
+		//checkColArr = new bool[numEnemies];
 		va = new Vertex[numEnemies * 4];
 
 		enemyOffsets.resize(numEnemies);
@@ -419,6 +424,7 @@ EnemyChain::~EnemyChain()
 	{
 		delete enemies[i];
 	}
+	//delete[] checkColArr;
 	delete[] enemies;
 	delete[] va;
 }
@@ -441,16 +447,33 @@ void EnemyChain::SetZone(Zone *p_zone)
 	}
 }
 
-void EnemyChain::UpdatePhysics(int substep)
+void EnemyChain::ResetCheckCollisions()
 {
 	for (int i = 0; i < numEnemies; ++i)
 	{
-		enemies[i]->UpdatePhysics(substep);
+		//checkColArr[i] = false;
 	}
+}
+
+void EnemyChain::UpdatePhysics(int substep)
+{
+	//int updateCount = 0;
+	for (int i = 0; i < numEnemies; ++i)
+	{
+		//if (checkColArr[i])
+		{
+			enemies[i]->UpdatePhysics(substep);
+			//++updateCount;
+		}
+		
+	}
+
+	//cout << "num updating: " << updateCount << endl;
 }
 
 void EnemyChain::UpdatePrePhysics()
 {
+	//ResetCheckCollisions();
 	for (int i = 0; i < numEnemies; ++i)
 	{
 		enemies[i]->UpdatePrePhysics();

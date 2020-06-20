@@ -286,7 +286,7 @@ void SplitComboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		action = S_SPLIT;
 		frame = 0;

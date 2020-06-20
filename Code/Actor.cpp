@@ -1683,6 +1683,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
 
@@ -3186,6 +3187,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	flyCounter = 0;
 	kinMode = K_NORMAL;
 	action = -1;
 	framesStanding = 0;
@@ -6011,8 +6013,15 @@ bool Actor::ResolvePhysics( V2d vel )
 	currBounceBooster = NULL;
 	currModifier = NULL;
 
+	double activeExtra = 500;
+	sf::Rect<double> activeR = r;
+	activeR.left -= activeExtra;
+	activeR.top -= activeExtra;
+	activeR.width += activeExtra * 2;
+	activeR.height += activeExtra * 2;
+
 	queryMode = "activeitem";
-	sess->activeItemTree->Query(this, r);
+	sess->activeItemTree->Query(this, r);//activeR);
 	
 	return col;
 }
@@ -12293,6 +12302,18 @@ void Actor::SeqAfterCrawlerFight()
 	frame = 0;
 }
 
+void Actor::AddToFlyCounter(int count)
+{
+	flyCounter += count;
+	if (flyCounter > 100)
+	{
+		SetKinMode(K_SUPER);
+		flyCounter = flyCounter % 100;
+	}
+
+	sess->adventureHUD->flyCountText.setString("x" + to_string(flyCounter));
+}
+
 void Actor::HandleEntrant( QuadTreeEntrant *qte )
 {
 	
@@ -13244,13 +13265,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 	else if (queryMode == "activeitem")
 	{
 		Enemy *en = (Enemy*)qte;
-		if (en->type == EnemyType::EN_BOOSTER )
+		if (en->type == EnemyType::EN_BOOSTER)
 		{
 			Booster *boost = (Booster*)qte;
-			
+
 			if (currBooster == NULL)
 			{
-				if (boost->hitBody.Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable() )
+				if (boost->hitBody.Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
 				{
 					currBooster = boost;
 				}
@@ -13339,13 +13360,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
 		{
-			HealthFly *hf = (HealthFly*)qte;
-			if (hf->IsCollectible() && hf->hitBody.Intersects(hf->currHitboxFrame, &hurtBody))
+			/*HealthFly *hf = (HealthFly*)qte;
+			if (hf->IsCollectible() &&
+				hf->hitBody.Intersects(hf->currHitboxFrame, &hurtBody ) )
 			{
 				if( kinRing != NULL)
 					kinRing->powerRing->Fill(hf->GetHealAmount());
 				hf->Collect();
-			}
+				AddToFlyCounter(hf->GetCounterAmount());
+				
+			}*/
 		}
 	}
 	else if (queryMode == "airtrigger")
@@ -15671,6 +15695,14 @@ void Actor::UpdateInHitlag()
 	//}
 	return pair<bool, bool>(false,false);
 }
+
+ void Actor::CollectFly(HealthFly *hf)
+ {
+	 if (kinRing != NULL)
+		 kinRing->powerRing->Fill(hf->GetHealAmount());
+	 hf->Collect();
+	 AddToFlyCounter(hf->GetCounterAmount());
+ }
 
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

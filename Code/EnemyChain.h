@@ -43,6 +43,7 @@ struct EnemyChain : Enemy
 	void UpdatePostPhysics();
 	void UpdateEnemyPhysics();
 	void UpdateStartPositions(V2d &pos);
+	void ResetCheckCollisions();
 
 	void UpdateFromPath(ActorParams *ap);
 
@@ -50,6 +51,7 @@ struct EnemyChain : Enemy
 
 	int liveFrames;
 	Enemy **enemies;
+	//bool *checkColArr;
 	int numEnemies;
 
 	Tileset *ts;

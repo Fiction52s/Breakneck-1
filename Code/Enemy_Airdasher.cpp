@@ -168,7 +168,7 @@ void Airdasher::ProcessHit()
 {
 	if ( action == S_DASH && !dead && ReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		action = S_COMBO;
 		frame = 0;
@@ -183,7 +183,7 @@ void Airdasher::ProcessHit()
 		dir = -playerDir;
 		velocity = dir * speed;
 
-		sess->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 	else
 	{

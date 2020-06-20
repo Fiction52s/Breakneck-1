@@ -37,6 +37,7 @@ struct RelEffectInstance;
 struct VertexBuf;
 struct Kin;
 struct MovingGeoGroup;
+struct HealthFly;
 
 struct TerrainRail;
 
@@ -251,7 +252,7 @@ struct Actor : QuadTreeCollider,
 	
 	int numKeysHeld;
 
-	
+	void CollectFly(HealthFly *hf);
 	void SetupActionFunctions();
 	void StartAction();
 	void EndAction();
@@ -998,6 +999,9 @@ struct Actor : QuadTreeCollider,
 	double airDashSpeed0;
 	double airDashSpeed1;
 	double airDashSpeed2;
+
+	int flyCounter;
+	void AddToFlyCounter(int count);
 
 	CollisionBox b;
 	CollisionBox hurtBody;

@@ -137,7 +137,7 @@ void Comboer::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		action = S_SHOT;
 		frame = 0;
@@ -252,7 +252,7 @@ void Comboer::ProcessHit()
 		}*/
 
 
-		sess->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }
 

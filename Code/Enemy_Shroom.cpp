@@ -343,7 +343,7 @@ void ShroomJelly::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		action = SHOT;
 		frame = 0;
@@ -389,7 +389,7 @@ void ShroomJelly::ProcessHit()
 
 		velocity = dir * speed;
 
-		sess->PlayerAddActiveComboObj(comboObj);
+		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }
 

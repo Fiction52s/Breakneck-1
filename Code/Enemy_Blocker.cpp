@@ -201,7 +201,7 @@ void Blocker::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		sess->PlayerConfirmEnemyNoKill(this);
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 
 		if (receivedHit->hType == HitboxInfo::COMBO)
@@ -238,13 +238,11 @@ void Blocker::HandleQuery(QuadTreeCollider * qtc)
 	if (!dead)
 	{
 		if (qtc != NULL)
-			qtc->HandleEntrant(this);
-		else
 		{
-			checkCol = true;
-			if (!bc->checkCol)
-				bc->checkCol = true;
+			qtc->HandleEntrant(this);
 		}
+		
+		//bc->checkColArr[vaIndex] = true;
 	}
 }
 

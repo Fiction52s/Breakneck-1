@@ -25,15 +25,19 @@ struct HealthFly : Enemy, ChainableObject
 		Count
 	};
 
-	HealthFly(V2d &pos, int level, 
+	HealthFly( FlyChain *fc, int index, 
+		V2d &pos, int level,
+		
 		sf::Vertex *p_quad, Tileset *p_ts );
 	HealthFly(HealthFly &hf);
-	void HandleQuery(QuadTreeCollider * qtc);
+	//void HandleQuery(QuadTreeCollider * qtc);
 	void SetLevel(int lev);
 	void AddToWorldTrees();
+	void ProcessHit();
+	//bool IsTouchingBox(const sf::Rect<double> &r);
 	sf::FloatRect GetAABB();
 	void SetStartPosition(V2d &pos);
-
+	void IHitPlayer(int index);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
@@ -43,11 +47,15 @@ struct HealthFly : Enemy, ChainableObject
 	bool IsCollectible(); //depending on type of fly
 	bool Collect();
 
+	FlyChain *chain;
+
+	int index;
 	V2d preTransformPos;
 
 	Tileset *ts;
 	sf::Vertex *quad;
 	int GetHealAmount();
+	int GetCounterAmount();
 };
 
 #endif

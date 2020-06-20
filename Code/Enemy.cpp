@@ -753,6 +753,7 @@ void Enemy::Reset()
 	dead = false;
 	currShield = NULL;
 	receivedHit = NULL;
+	receivedHitPlayer = NULL;
 	pauseFrames = 0;
 	frame = 0;
 
@@ -944,6 +945,7 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
 				receivedHit = player->wireChargeInfo;
+				receivedHitPlayer = player;
 				charge->HitEnemy();
 				return true;
 			}
@@ -965,6 +967,7 @@ bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 			if( charge->hitbox.Intersects( p_hurtBox ) )
 			{
 				receivedHit = player->wireChargeInfo;
+				receivedHitPlayer = player;
 				charge->HitEnemy();
 				return true;
 			}
@@ -1233,6 +1236,11 @@ void Enemy::ProcessShieldHit()
 
 }
 
+int Enemy::GetReceivedHitPlayerIndex()
+{
+	return receivedHitPlayer->actorIndex;
+}
+
 void Enemy::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0 )
@@ -1246,12 +1254,12 @@ void Enemy::ProcessHit()
 				//sess->CollectKey();
 			}
 
-			sess->PlayerConfirmEnemyKill(this);
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 			ConfirmKill();
 		}
 		else
 		{
-			sess->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
 		}
 
@@ -1632,6 +1640,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 	{
 		comboHitEnemy = NULL;
 		receivedHit = IsHit(player);
+		receivedHitPlayer = player;
 		if (receivedHit == NULL)
 			return false;
 

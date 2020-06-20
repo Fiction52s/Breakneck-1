@@ -127,6 +127,8 @@ struct AdventureHUD
 	int frame;
 	State state;
 
+	sf::Text flyCountText;
+
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;
 
@@ -138,6 +140,9 @@ struct AdventureHUD
 
 	CubicBezier showBez;
 	CubicBezier hideBez;
+
+	sf::Vector2f flyCountTextShowPos;
+	sf::Vector2f flyCountTextHidePos;
 	
 	Minimap *mini;
 	KinMask *kinMask;

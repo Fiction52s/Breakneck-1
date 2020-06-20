@@ -8,6 +8,7 @@
 #include "SaveFile.h"
 #include "Actor.h"
 #include "Session.h"
+#include "MainMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -146,6 +147,18 @@ AdventureHUD::AdventureHUD()
 		mini = new Minimap;
 	}*/
 
+	flyCountTextShowPos = Vector2f(1920 - 30, 10);
+	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
+
+	flyCountText.setCharacterSize(40);
+	flyCountText.setFont(sess->mainMenu->arial);
+	flyCountText.setFillColor(Color::White);
+	flyCountText.setString("x100");
+	flyCountText.setOrigin(flyCountText.getLocalBounds().left +
+		flyCountText.getLocalBounds().width, 0);
+	flyCountText.setString("x0");
+	flyCountText.setPosition(flyCountTextShowPos);
+	
 
 	miniShowPos = mini->minimapSprite.getPosition();
 	miniHidePos = Vector2f(-500, miniShowPos.y);
@@ -179,6 +192,7 @@ void AdventureHUD::Hide(int frames)
 		mini->SetCenter(miniHidePos);
 		keyMarker->SetPosition(keyMarkerHidePos);
 		kinMask->SetTopLeft(kinMaskHidePos);
+		flyCountText.setPosition(flyCountTextHidePos);
 	}
 	else
 	{
@@ -197,6 +211,7 @@ void AdventureHUD::Show(int frames)
 		mini->SetCenter(miniShowPos);
 		kinMask->SetTopLeft(kinMaskShowPos);
 		keyMarker->SetPosition(keyMarkerShowPos);
+		flyCountText.setPosition(flyCountTextShowPos);
 	}
 	else
 	{
@@ -231,6 +246,7 @@ void AdventureHUD::Update()
 			mini->SetCenter(miniShowPos);
 			kinMask->SetTopLeft(kinMaskShowPos);
 			keyMarker->SetPosition(keyMarkerShowPos);
+			flyCountText.setPosition(flyCountTextShowPos);
 			//momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
@@ -243,6 +259,8 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
 			keyMarker->SetPosition(neededCenter);
+			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
+			flyCountText.setPosition(countPos);
 		}
 		break;
 	case EXITING:
@@ -253,6 +271,7 @@ void AdventureHUD::Update()
 			mini->SetCenter(miniHidePos);
 			keyMarker->SetPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
+			flyCountText.setPosition(flyCountTextHidePos);
 		}
 		else
 		{
@@ -264,6 +283,8 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
 			keyMarker->SetPosition(neededCenter);
+			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
+			flyCountText.setPosition(countPos);
 		}
 		break;
 	case HIDDEN:
@@ -319,6 +340,8 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 
 		keyMarker->Draw(target);
+
+		target->draw(flyCountText);
 		
 	}
 }

@@ -5,6 +5,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "CircleGroup.h"
+#include "Actor.h"
 
 #include "Enemy_Blocker.h"
 
@@ -45,7 +46,7 @@ Tileset *FlyChain::GetTileset(int variation)
 
 Enemy *FlyChain::CreateEnemy(V2d &pos, int ind)
 {
-	return new HealthFly(pos, level, va + ind * 4, ts);
+	return new HealthFly(this, ind, pos, level, va + ind * 4, ts);
 }
 
 
@@ -57,6 +58,21 @@ void FlyChain::ReadParams(ActorParams *params)
 	paramsSpacing = fParams->spacing;
 }
 
+int HealthFly::GetCounterAmount()
+{
+	switch (level)
+	{
+	case 1:
+		return 1;
+		break;
+	case 2:
+		return 10;
+		break;
+	case 3:
+		return 20;
+		break;
+	}
+}
 
 int HealthFly::GetHealAmount()
 {
@@ -100,13 +116,13 @@ void HealthFly::SetLevel(int lev)
 }
 
 HealthFly::HealthFly(HealthFly &hf)
-	:HealthFly( hf.GetPosition(), hf.level, hf.quad, hf.ts )
+	:HealthFly( hf.chain, hf.index, hf.GetPosition(), hf.level, hf.quad, hf.ts )
 {
 
 }
 
-HealthFly::HealthFly(V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
-	:Enemy(EnemyType::EN_HEALTHFLY, NULL)
+HealthFly::HealthFly( FlyChain *fc, int p_index, V2d &pos, int p_level, sf::Vertex *p_quad, Tileset *p_ts )
+	:Enemy(EnemyType::EN_HEALTHFLY, NULL), chain( fc ), index( p_index )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -144,17 +160,44 @@ void HealthFly::SetStartPosition(V2d &pos)
 	UpdateSprite();
 }
 
+//bool HealthFly::IsTouchingBox(const sf::Rect<double> &r)
+//{
+//	return r.intersects(spawnRect);
+//}
+
 sf::FloatRect HealthFly::GetAABB()
 {
 	return GetQuadAABB(quad);
 }
 
-//making it not heal when its dead!
-void HealthFly::HandleQuery(QuadTreeCollider * qtc)
+void HealthFly::ProcessHit()
 {
-	if (!dead)
+	if (IsCollectible() && ReceivedHit())
 	{
-		qtc->HandleEntrant(this);
+		Collect();
+		receivedHitPlayer->CollectFly(this);
+	}
+}
+
+//making it not heal when its dead!
+//void HealthFly::HandleQuery(QuadTreeCollider * qtc)
+//{
+//	if (!dead)
+//	{
+//		if (qtc != NULL)
+//		{
+//			qtc->HandleEntrant(this);
+//		}
+//	}
+//}
+
+void HealthFly::IHitPlayer(int index)
+{
+	if (IsCollectible())
+	{
+		Actor *p = sess->GetPlayer(index);
+		Collect();
+		p->CollectFly(this);
 	}
 }
 
@@ -173,7 +216,7 @@ bool HealthFly::Collect()
 
 bool HealthFly::IsCollectible()
 {
-	return true;
+	return action == NEUTRAL;
 }
 
 void HealthFly::ResetEnemy()
@@ -185,7 +228,7 @@ void HealthFly::ResetEnemy()
 	receivedHit = NULL;
 
 	SetHitboxes(&hitBody);
-	//SetHurtboxes(&hurtBody);
+	SetHurtboxes(&hurtBody);
 
 	UpdateHitboxes();
 

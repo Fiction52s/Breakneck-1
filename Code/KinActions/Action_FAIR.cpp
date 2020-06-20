@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::FAIR_Start()
 {
-	SetKinMode(K_SUPER);
+	//SetKinMode(K_SUPER);
 }
 
 void Actor::FAIR_End()

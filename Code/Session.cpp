@@ -5255,6 +5255,7 @@ void Session::FrameRateDisplay::InitText( sf::Font &f )
 	frameRateText.setString("00");
 	frameRateText.setCharacterSize(30);
 	frameRateText.setFillColor(Color::Red);
+	frameRateText.setPosition(0, 1040);
 }
 
 
@@ -5422,9 +5423,10 @@ void Session::RunningTimerDisplay::InitText(sf::Font &f)
 	runningTimerText.setString("---- : --");
 	runningTimerText.setCharacterSize(30);
 	runningTimerText.setFillColor(Color::Red);
-	runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
+	runningTimerText.setPosition(0, 0);
+	/*runningTimerText.setOrigin(runningTimerText.getLocalBounds().left +
 		runningTimerText.getLocalBounds().width, 0);
-	runningTimerText.setPosition(1920 - 30, 10);
+	runningTimerText.setPosition(1920 - 30, 10);*/
 }
 
 

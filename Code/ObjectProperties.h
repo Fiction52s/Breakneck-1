@@ -118,6 +118,7 @@ struct HittableObject
 	bool CheckHit(Actor *player, Enemy* e);
 	virtual void ProcessHit() = 0;
 	HitboxInfo *receivedHit;
+	Actor *receivedHitPlayer;
 	Enemy *comboHitEnemy;
 	int numHealth;
 	bool specterProtected;
