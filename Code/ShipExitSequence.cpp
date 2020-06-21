@@ -10,7 +10,6 @@ using namespace std;
 using namespace sf;
 
 ShipExitScene::ShipExitScene()
-	:BasicBossScene(BasicBossScene::APPEAR)
 {
 	enterTime = 60;
 	exitTime = 60 + 60;

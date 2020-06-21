@@ -7,7 +7,6 @@ using namespace sf;
 using namespace std;
 
 ShipEnterScene::ShipEnterScene()
-	:BasicBossScene(BasicBossScene::APPEAR)
 {
 	ts_w1ShipClouds0 = sess->GetTileset("Ship/cloud_w1_a1_960x128.png", 960, 128);
 	ts_w1ShipClouds1 = sess->GetTileset("Ship/cloud_w1_b1_960x320.png", 960, 320);
@@ -19,11 +18,20 @@ ShipEnterScene::ShipEnterScene()
 		shipSprite.getLocalBounds().height / 2);
 }
 
+void ShipEnterScene::AddFlashes()
+{
+	AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+		0, 30, 20, 30, Vector2f(960, 540));
+
+	FlashGroup * group = AddFlashGroup("staregroup");
+	AddSeqFlashToGroup(group, "stare0", 0);
+	group->Init();
+}
+
 void ShipEnterScene::Reset()
 {
-	BasicBossScene::Reset();
+	Sequence::Reset();
 
-	
 	Actor *player = sess->GetPlayer(0);
 	sess->SetDrainOn(false);
 	player->action = Actor::RIDESHIP;
@@ -106,6 +114,7 @@ void ShipEnterScene::UpdateState()
 	if (frame == 0)
 	{
 		sess->adventureHUD->Hide();
+		SetFlashGroup("staregroup");
 	}
 
 	float oldLeft = cloud0[0].position.x;
@@ -178,4 +187,6 @@ void ShipEnterScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 		target->draw(cloudBot0, 4 * 3, sf::Quads, ts_w1ShipClouds0->texture);
 		target->draw(shipSprite);
 	}
+
+	Sequence::Draw(target, layer);
 }

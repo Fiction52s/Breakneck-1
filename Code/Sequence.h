@@ -303,7 +303,7 @@ struct BasicBossScene : Sequence
 		const std::string &n);
 };
 
-struct ShipEnterScene : BasicBossScene
+struct ShipEnterScene : Sequence
 {
 	enum State
 	{
@@ -341,10 +341,11 @@ struct ShipEnterScene : BasicBossScene
 	void UpdateState();
 	void SetupStates();
 	void ReturnToGame();
+	void AddFlashes();
 	//void Draw(sf::RenderTarget *target);
 };
 
-struct ShipExitScene : BasicBossScene
+struct ShipExitScene : Sequence
 {
 	enum State
 	{
