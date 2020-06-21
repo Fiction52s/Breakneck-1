@@ -528,6 +528,7 @@ void EditSession::TestPlayerMode()
 		activeItemTree->Clear();
 		railEdgeTree->Clear();
 		gateTree->Clear();
+		enemyTree->Clear();
 
 		
 
@@ -802,6 +803,7 @@ void EditSession::TestPlayerMode()
 
 void EditSession::EndTestMode()
 {
+	ResetEnemies();
 	SetMode(EDIT);
 }
 
@@ -1225,7 +1227,7 @@ EditSession::~EditSession()
 	{
 		delete createTerrainModeUI;
 	}
-
+	
 	if (createRailModeUI != NULL)
 	{
 		delete createRailModeUI;
@@ -1234,6 +1236,11 @@ EditSession::~EditSession()
 	if (editModeUI != NULL)
 	{
 		delete editModeUI;
+	}
+
+	if (mapOptionsUI != NULL)
+	{
+		delete mapOptionsUI;
 	}
 
 	if (generalUI != NULL)
@@ -2916,6 +2923,8 @@ void EditSession::Init()
 	createRailModeUI = new CreateRailModeUI();
 	createGatesModeUI = new CreateGatesModeUI();
 	editModeUI = new EditModeUI();
+
+	mapOptionsUI = new MapOptionsUI();
 
 
 	polygonInProgress = new TerrainPolygon();

@@ -20,6 +20,7 @@
 #include "ScoreDisplay.h"
 
 
+struct QNode;
 struct SoundManager;
 struct SoundNode;
 
@@ -658,6 +659,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawGameSequence(sf::RenderTarget *target);
 	virtual void SequenceGameModeRespondToGoalDestroyed() = 0;
 	void CleanupGateMarkers();
+	void ResetEnemies();
+	void rResetEnemies(QNode *node);
 };
 
 #endif

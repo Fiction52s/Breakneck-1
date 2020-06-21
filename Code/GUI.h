@@ -607,6 +607,8 @@ struct Panel
 	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
+	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
+		int textBoxLengthLimit, const std::string &initialText, const std::string &labelText );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -761,6 +763,25 @@ struct ConfirmPopup : GUIHandler
 		const std::string &e);
 };
 
+struct MapOptionsUI : GUIHandler
+{
+	Panel *mapOptionsPanel;
+	Panel *bgOptionsPanel;
+	std::string *bgNameArr;
+	EditSession *edit;
+	Button *bgButton;
+	Button *okButton;
+	TextBox* drainTextbox;
+
+	MapOptionsUI();
+	~MapOptionsUI();
+	void CloseMapOptionsPopup();
+	void OpenMapOptionsPopup();
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
+};
+
 struct GeneralUI : GUIHandler
 {
 	GeneralUI();
@@ -817,7 +838,6 @@ struct EditModeUI : GUIHandler
 	void SetCurrRailPanel(TerrainRail *rail);
 	void SaveKinOptions();
 	void CreateKinOptionsPanel();
-	void CreateMapOptionsPanel();
 	void AddKinOption(
 		const std::string &text, 
 		const std::string &toolTipText, 
@@ -829,7 +849,7 @@ struct EditModeUI : GUIHandler
 	Panel *mapOptionsPanel;
 	Panel *bgOptionsPanel;
 	Panel *nameBrushPanel;
-	std::string *bgNameArr;
+	
 
 
 	int labelCharHeight;

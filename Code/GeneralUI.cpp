@@ -123,9 +123,9 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 		case CREATE_IMAGES:
 			edit->SetMode(EditSession::CREATE_IMAGES);
 			break;
-		//case MAP_OPTIONS:
-		//	edit->SetMode(EditSession::MAP_OPT);
-		//	break;
+		case MAP_OPTIONS:
+			edit->mapOptionsUI->OpenMapOptionsPopup();
+			break;
 		}
 	}
 }

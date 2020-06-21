@@ -1,0 +1,146 @@
+#include "GUI.h"
+#include "EditSession.h"
+
+using namespace sf;
+using namespace std;
+
+MapOptionsUI::MapOptionsUI()
+{
+	edit = EditSession::GetSession();
+	mapOptionsPanel = new Panel("mapoptions", 600, 350, this, true);
+
+	mapOptionsPanel->SetPosition(Vector2i(960 - mapOptionsPanel->size.x / 2,
+		540 - mapOptionsPanel->size.y / 2));
+
+	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+
+	mapOptionsPanel->AddLabel("mapnamelabel", Vector2i(0, 0), 28, "Map Name: " + edit->filePath.stem().string());
+	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 50), 200, 10, "", "Time to Drain (seconds): ");
+	drainTextbox->SetNumbersOnly(true);
+	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
+	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 70), Vector2f(60, 30), "OK");
+	mapOptionsPanel->SetConfirmButton(okButton);
+
+	bgOptionsPanel = new Panel("bgoptions", 125 * 8, 125 * 8, this, true);
+
+	/*GridSelector *bgSel = bgPopup->AddGridSelector(
+	"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
+
+	bgNameArr = new string[8 * 8];
+
+	bgOptionsPanel->ReserveImageRects(8 * 8);
+
+	bgOptionsPanel->SetPosition(Vector2i(960 - bgOptionsPanel->size.x / 2,
+		540 - bgOptionsPanel->size.y / 2));
+
+	Tileset *bgTS;
+	string bgName;
+	string numStr;
+	string fullName;
+	ImageChooseRect *icr;
+	int index = 0;
+	for (int w = 0; w < 8; ++w)
+	{
+		for (int i = 0; i < 8; ++i)
+		{
+			index = w * 8 + i;
+			numStr = to_string(i + 1);
+			bgName = "w" + to_string(w + 1) + "_0" + numStr;
+			fullName = "BGInfo/" + bgName + ".png";
+			bgTS = edit->GetTileset(fullName, 1920, 1080);
+			if (bgTS == NULL)
+			{
+				continue;
+			}
+			bgNameArr[index] = bgName;
+			icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
+				Vector2f(i * 125, w * 125), bgTS, 0, 125);
+			icr->Init();
+			icr->SetShown(true);
+			icr->SetInfo((void*)index);
+		}
+	}
+}
+
+MapOptionsUI::~MapOptionsUI()
+{
+	delete[] bgNameArr;
+	delete mapOptionsPanel;
+	delete bgOptionsPanel;
+}
+
+void MapOptionsUI::OpenMapOptionsPopup()
+{
+	drainTextbox->SetString(to_string(edit->mapHeader->drainSeconds));
+	edit->AddActivePanel(mapOptionsPanel);
+}
+
+void MapOptionsUI::CloseMapOptionsPopup()
+{
+	stringstream ss;
+	ss << drainTextbox->GetString();
+	int dSeconds;
+	ss >> dSeconds;
+	if (!ss.fail())
+	{
+		if (dSeconds > 0)
+		{
+			edit->mapHeader->drainSeconds = dSeconds;
+		}
+	}
+
+	edit->RemoveActivePanel(mapOptionsPanel);
+}
+
+void MapOptionsUI::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+	if (eventType == ChooseRect::E_LEFTCLICKED ||
+		eventType == ChooseRect::E_LEFTRELEASED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_BACKGROUNDLIBRARY)
+			{
+				int ind = (int)icRect->info;
+				string bgName = bgNameArr[ind];
+
+				edit->SetBackground(bgName);
+
+				edit->RemoveActivePanel(bgOptionsPanel);
+			}
+		}
+	}
+}
+
+void MapOptionsUI::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b == okButton)
+	{
+		CloseMapOptionsPopup();
+	}
+	else if (b == bgButton)
+	{
+		edit->AddActivePanel(bgOptionsPanel);
+	}
+}
+
+void MapOptionsUI::PanelCallback(Panel *p, const std::string & e)
+{
+	if (e == "leftclickoffpopup")
+	{
+		if (p == mapOptionsPanel)
+		{
+			CloseMapOptionsPopup();
+		}
+		else
+		{
+			edit->RemoveActivePanel(p);
+		}
+		
+		/*if (p == bgOptionsPanel)
+		{
+			edit->RemoveActivePanel(p);
+		}*/
+	}
+}

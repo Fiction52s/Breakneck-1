@@ -67,68 +67,18 @@ EditModeUI::EditModeUI()
 	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
 
 	CreateKinOptionsPanel();
-	CreateMapOptionsPanel();
 }
 
 
 EditModeUI::~EditModeUI()
 {
-	delete[] bgNameArr;
-	delete bgOptionsPanel;
 	delete mainPanel;
 	delete layerPanel;
 	delete lpSlider;
 	delete kinOptionsPanel;
 }
 
-void EditModeUI::CreateMapOptionsPanel()
-{
-	/*mapOptionsPanel = new Panel("mapoptions", 500, 500, this, true);
-	kinOptionsPanel->AddLabel("rwirelabel", Vector2i(0, labelExtra.y), labelCharHeight, "Right Wire:");
-	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE] = kinOptionsPanel->AddCheckBox("rwire", Vector2i(0, 0),
-	edit->playerOptionsField.GetBit(Actor::UPGRADE_POWER_RWIRE));
-	kinCheckboxes[Actor::UPGRADE_POWER_RWIRE]->SetToolTip("Toggle Right Wire Power");*/
 
-	bgOptionsPanel = new Panel("bgoptions", 125 * 8, 125 * 8, this, true);
-
-	/*GridSelector *bgSel = bgPopup->AddGridSelector(
-	"terraintypes", Vector2i(20, 20), 6, 7, 1920 / 8, 1080 / 8, false, true);*/
-
-	bgNameArr = new string[8 * 8];
-
-	bgOptionsPanel->ReserveImageRects(8 * 8);
-
-	bgOptionsPanel->SetPosition(Vector2i(960 - bgOptionsPanel->size.x / 2,
-		540 - bgOptionsPanel->size.y / 2));
-
-	Tileset *bgTS;
-	string bgName;
-	string numStr;
-	string fullName;
-	ImageChooseRect *icr;
-	int index = 0;
-	for (int w = 0; w < 8; ++w)
-	{
-		for (int i = 0; i < 8; ++i)
-		{
-			index = w * 8 + i;
-			numStr = to_string(i + 1);
-			bgName = "w" + to_string(w + 1) + "_0" + numStr;
-			fullName = "BGInfo/" + bgName + ".png";
-			bgTS = edit->GetTileset(fullName, 1920, 1080);
-			if (bgTS == NULL)
-			{
-				continue;
-			}
-			bgNameArr[index] = bgName;
-			icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
-				Vector2f(i * 125, w * 125), bgTS, 0, 125);
-			icr->Init();
-			icr->SetShown(true);
-			icr->SetInfo((void*)index);
-		}
-	}
-}
 
 void EditModeUI::AddKinOption(const std::string &text, const std::string &toolTipText, int upgradeIndex)
 {
@@ -159,14 +109,12 @@ void EditModeUI::ToggleKinOptionsPanel()
 {
 	if (kinOptionsPanel == edit->focusedPanel)
 	{
-		edit->RemoveActivePanel(bgOptionsPanel);
-		//edit->RemoveActivePanel(kinOptionsPanel);
-		//SaveKinOptions();
+		edit->RemoveActivePanel(kinOptionsPanel);
+		SaveKinOptions();
 	}
 	else
 	{
-		//edit->AddActivePanel(kinOptionsPanel);
-		edit->AddActivePanel(bgOptionsPanel);
+		edit->AddActivePanel(kinOptionsPanel);
 	}
 }
 
@@ -495,13 +443,6 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 				edit->SetCurrSelectedShardType(world, localIndex);
 
 				edit->RemoveActivePanel(shardTypePanel);
-			}
-			else if (icRect->rectIdentity == ChooseRect::I_BACKGROUNDLIBRARY)
-			{
-				int ind = (int)icRect->info;
-				string bgName = bgNameArr[ind];
-
-				edit->SetBackground(bgName);
 			}
 		}
 

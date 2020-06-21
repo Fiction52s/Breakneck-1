@@ -5719,3 +5719,62 @@ void Session::CleanupGateMarkers()
 		gateMarkers = NULL;
 	}
 }
+
+void Session::ResetEnemies()
+{
+	rResetEnemies(enemyTree->startNode);
+
+	activeEnemyList = NULL;
+	activeEnemyListTail = NULL;
+
+	ClearEffects();
+}
+
+//please get rid of this soon lol
+void Session::rResetEnemies(QNode *node)
+{
+	if (node->leaf)
+	{
+		LeafNode *n = (LeafNode*)node;
+
+		//cout << "\t\tstarting leaf reset: " << endl;
+		for (int i = 0; i < n->objCount; ++i)
+		{
+			//cout << "\t\t\tresetting enemy " << i << endl;
+			Enemy * e = (Enemy*)(n->entrants[i]);
+
+			if (e->spawned)
+			{
+				e->InitOnRespawn();
+			}
+			e->Reset();
+			//cout << e->type << endl;
+
+			//((Enemy*)node)->Reset();		
+		}
+	}
+	else
+	{
+		//shouldn't this check for box touching box right here??
+		ParentNode *n = (ParentNode*)node;
+		//cout << "start parent reset: " << endl;
+		for (int i = 0; i < 4; ++i)
+		{
+			//	cout << "\tresetting child: " << i << endl;
+			rResetEnemies(n->children[i]);
+		}
+
+		for (list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it)
+		{
+			Enemy * e = (Enemy*)(*it);
+
+			if (e->spawned)
+			{
+				e->InitOnRespawn();
+			}
+
+			e->Reset();
+		}
+
+	}
+}

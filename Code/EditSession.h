@@ -163,6 +163,7 @@ struct EditSession : GUIHandler, Session
 	CreateTerrainModeUI *createTerrainModeUI;
 	CreateRailModeUI *createRailModeUI;
 	CreateGatesModeUI *createGatesModeUI;
+	MapOptionsUI *mapOptionsUI;
 	EditModeUI *editModeUI;
 	GeneralUI *generalUI;
 	V2d oldWorldPosTest;
@@ -579,6 +580,7 @@ struct EditSession : GUIHandler, Session
 	Tileset *GetMatTileset(int tWorld, int tVar);
 	void UpdateCurrTerrainType();
 	void SetupNewMapPanel();
+	
 	void ActivateNewMapPanel();
 	void SetMatTypePanelLayer(int layer);
 	void ModifySelectedTerrainMat(

@@ -525,11 +525,9 @@ struct GameSession : RayCastHandler, Session
 
 	void RecordReplayEnemies();
 	void UpdateEnemiesSprites();
-	void ResetEnemies();
 	
 	void ResetPlants();
 	void ResetInactiveEnemies();
-	void rResetEnemies( QNode *node );
 	void rResetPlants( QNode *node );
 	int CountActiveEnemies();
 	SaveFile *GetCurrentProgress();

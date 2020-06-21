@@ -689,6 +689,19 @@ CheckBox * Panel::AddLabeledCheckBox(
 	return AddCheckBox(name, pos, startChecked);
 }
 
+TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
+	int textBoxLengthLimit, const std::string &initialText, const std::string &labelText)
+{
+	int extraSpacing = 8;
+	Vector2i oldAutoStart = autoStart;
+	Vector2i labelStart = pos;
+	labelStart.y += 6;
+	sf::Text *t = AddLabel(name + "label", labelStart, 28, labelText);
+	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	autoStart = oldAutoStart;
+	return AddTextBox(name, pos, textBoxWidth, textBoxLengthLimit, initialText);
+}
+
 TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText)
 {
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );

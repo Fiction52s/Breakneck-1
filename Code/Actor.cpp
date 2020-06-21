@@ -3187,6 +3187,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	drainCounter = 0;
 	flyCounter = 0;
 	kinMode = K_NORMAL;
 	action = -1;
