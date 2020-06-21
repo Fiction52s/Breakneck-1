@@ -12250,6 +12250,12 @@ void EditSession::CreateEnemyModeHandleEvent()
 	{
 		if (ev.key.code == Keyboard::X || ev.key.code == Keyboard::Delete)
 		{
+			if (trackingEnemyParams != NULL)
+			{
+				delete trackingEnemyParams;
+				trackingEnemyParams = NULL;
+				grabbedActor = NULL;
+			}
 		}
 		else if (ev.key.code == sf::Keyboard::Z && ev.key.control)
 		{

@@ -1080,6 +1080,14 @@ void GameSession::ProcessActor(ActorPtr a)
 		
 			//ResetShipSequence();
 		}
+		else if (typeName == "shippickup")
+		{
+			if (shipExitScene == NULL)
+			{
+				shipExitScene = new ShipExitScene;
+				shipExitScene->Init();
+			}
+		}
 		else if (typeName == "zoneproperties")
 		{
 			ZonePropertiesParams *zp = (ZonePropertiesParams*)a;
