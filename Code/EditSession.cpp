@@ -4677,6 +4677,38 @@ void EditSession::CancelEnemyCreation()
 	delete action;
 }
 
+void EditSession::TryCompleteEnemyCreation()
+{
+	bool validMove = false;
+
+	assert(mode == CREATE_ENEMY);
+
+	ClearMostRecentError();
+	if (trackingEnemyParams->CanApply())
+	{
+		validMove = true;
+	}
+	else
+	{
+		ShowMostRecentError();
+	}
+
+	if (validMove)
+	{
+		ClearUndoneActions();
+		trackingEnemyParams->OnCreate();
+		if (mode == CREATE_ENEMY) //might not be because of OnCreate such as rail enemies
+		{
+			FinishEnemyCreation();
+		}
+		
+	}
+	else
+	{
+		CancelEnemyCreation();
+	}
+}
+
 void EditSession::TryCompleteSelectedMove()
 {
 	bool validMove = false;
@@ -4723,32 +4755,15 @@ void EditSession::TryCompleteSelectedMove()
 	if (validMove)
 	{
 		ClearUndoneActions();
-
-		if (mode == CREATE_ENEMY)
-		{
-			trackingEnemyParams->OnCreate();
-			if (mode == CREATE_ENEMY)
-			{
-				FinishEnemyCreation();
-			}
-		}
-
 	}
 	else
 	{
-		if (mode == CREATE_ENEMY)
-		{
-			CancelEnemyCreation();
-		}
-		else
-		{
-			Action * action = doneActionStack.back();
-			doneActionStack.pop_back();
+		Action * action = doneActionStack.back();
+		doneActionStack.pop_back();
 
-			action->Undo();
+		action->Undo();
 
-			delete action;
-		}
+		delete action;	
 	}
 
 }
@@ -13325,7 +13340,7 @@ void EditSession::CreateEnemyModeUpdate()
 				done = true;
 			}
 
-			TryCompleteSelectedMove();
+			TryCompleteEnemyCreation();
 		}
 
 		editMouseDownBox = false;

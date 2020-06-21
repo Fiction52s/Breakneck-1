@@ -707,6 +707,7 @@ struct EditSession : GUIHandler, Session
 		ClipperIntPointSet &fusedPoints );
 	sf::Vector2i GetPixelPos();
 	void TryCompleteSelectedMove();
+	void TryCompleteEnemyCreation();
 	sf::Vector2i GetCopiedCenter();
 	void UpdateCurrEnemyParamsFromPanel();
 	void RevertMovedPoints(PointMap::iterator it);
