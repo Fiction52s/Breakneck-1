@@ -4842,6 +4842,19 @@ void EditSession::SetDirectionButton( ActorParams *ap )
 	patrolPathLengthSize = 0;
 }
 
+void EditSession::SetZoomButton(ActorParams *ap)
+{
+	if (ap == NULL)
+	{
+		assert(selectedBrush->IsSingleActor());
+		ap = selectedBrush->objects.front()->GetAsActor();
+	}
+
+	SetMode(SET_CAM_ZOOM);
+	CameraShotParams *camShot = (CameraShotParams*)ap;
+	currentCameraShot = camShot;
+}
+
 void EditSession::SelectPoint(PolyPtr poly,
 	TerrainPoint *point)
 {
@@ -13409,9 +13422,9 @@ void EditSession::SetCamZoomModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked())
 	{
-		currentCameraShot->SetZoom(Vector2i(testPoint));
+		currentCameraShot->SetZoom(Vector2i(testPoint),HoldingControl() );
 
-		if (tempActor != NULL)
+		if (tempActor != NULL) //is tempactor still a thing?
 		{
 			SetMode(CREATE_ENEMY);
 		}
@@ -13423,7 +13436,7 @@ void EditSession::SetCamZoomModeUpdate()
 		AddActivePanel(currentCameraShot->type->panel);
 	}
 
-	currentCameraShot->SetZoom(Vector2i(testPoint));
+	currentCameraShot->SetZoom(Vector2i(testPoint), HoldingControl());
 }
 
 void EditSession::SetDirectionModeUpdate()

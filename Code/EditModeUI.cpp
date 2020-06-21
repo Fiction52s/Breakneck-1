@@ -488,6 +488,10 @@ void EditModeUI::ButtonCallback(Button *b, const std::string & e)
 	{
 		edit->SetDirectionButton();
 	}
+	else if (b->name == "setzoom")
+	{
+		edit->SetZoomButton();
+	}
 }
 
 void EditModeUI::TextBoxCallback(TextBox *tb, const std::string & e)

@@ -123,7 +123,8 @@ struct CameraShotParams : public ActorParams
 
 	void Init();
 	void SetZoom(float z);
-	void SetZoom(sf::Vector2i &testPoint);
+	void SetZoom(sf::Vector2i &testPoint,
+		bool ctrl );
 	ActorParams *Copy();
 	void Draw(sf::RenderTarget *target);
 	float zoom;

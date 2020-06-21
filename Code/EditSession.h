@@ -465,6 +465,7 @@ struct EditSession : GUIHandler, Session
 	void CreatePathButton(ActorParams *ap = NULL);
 	void CreateChainButton(ActorParams *ap = NULL);
 	void SetDirectionButton( ActorParams *ap = NULL );
+	void SetZoomButton(ActorParams *ap = NULL);
 	void ButtonCallback( Button *b, const std::string & e );
 	void TextBoxCallback( TextBox *tb, const std::string & e );
 	void GridSelectorCallback( GridSelector *gs, const std::string & e );

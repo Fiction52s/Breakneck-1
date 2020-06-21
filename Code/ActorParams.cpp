@@ -1465,6 +1465,8 @@ void CameraShotParams::Init()
 
 void CameraShotParams::SetZoom(float z)
 {
+	if (z < .25)
+		return;
 	zoom = z;
 	int width = CAMWIDTH * zoom;
 	int height = CAMHEIGHT * zoom;
@@ -1481,7 +1483,7 @@ void CameraShotParams::SetZoom(float z)
 	zoomText.setString( "x" + to_string(zoom));
 }
 
-void CameraShotParams::SetZoom(sf::Vector2i &testPoint)
+void CameraShotParams::SetZoom(sf::Vector2i &testPoint, bool ctrl )
 {
 
 	Vector2f fPos = GetFloatPos();
@@ -1490,7 +1492,16 @@ void CameraShotParams::SetZoom(sf::Vector2i &testPoint)
 	float xProp = xDist / CAMWIDTH;
 	float yProp = yDist / CAMHEIGHT;
 
+	float test = .25f;
+
 	float maxZoom = max(xProp, yProp) * 2;
+
+	if (ctrl)
+	{
+		float mult = floor(maxZoom / test);
+		maxZoom = mult * test;
+	}
+
 	SetZoom(maxZoom);
 }
 
