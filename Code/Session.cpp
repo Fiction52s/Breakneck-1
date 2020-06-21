@@ -240,7 +240,10 @@ void Session::AddGeneralEnemies()
 	AddExtraEnemy("ship", NULL, SetParamsType<BasicAirEnemyParams>, Vector2i(0, 0), Vector2i(864, 400), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Ship/ship_864x400.png"));
 
+	AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 	
+
 	//ignore flowerpods until I figure out how I want to change them.
 
 	/*AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,

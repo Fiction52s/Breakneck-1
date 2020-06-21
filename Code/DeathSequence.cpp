@@ -14,7 +14,7 @@ DeathSequence::DeathSequence()
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
-	stateLength[GET] = 1000000;
+	
 
 	geoGroup = new MovingGeoGroup;
 
@@ -74,28 +74,27 @@ DeathSequence::~DeathSequence()
 	delete geoGroup;
 }
 
-bool DeathSequence::Update()
+
+void DeathSequence::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[DIE] = 1000000;
+}
+
+void DeathSequence::ReturnToGame()
+{
+	sess->cam.EaseOutOfManual(60);
+	sess->cam.StopRumble();
+}
+
+void DeathSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	if (frame == stateLength[state] && state != END)
-	{
-		int s = state;
-		s++;
-		state = (State)s;
-		frame = 0;
-
-		if (state == END)
-		{
-			sess->cam.EaseOutOfManual(60);
-			sess->cam.StopRumble();
-			return false;
-		}
-	}
-
 	switch (state)
 	{
-	case GET:
+	case DIE:
 	{
 		if (frame == 0)
 		{
@@ -133,8 +132,6 @@ bool DeathSequence::Update()
 	++frame;
 
 	//emitter->Update();
-
-	return true;
 }
 
 void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
@@ -142,14 +139,15 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 	sess->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		if (state != END)
+		geoGroup->Draw(target);
+		/*if (state != END)
 		{
-			geoGroup->Draw(target);
-		}
+			
+		}*/
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
-		if (state != END && sess->GetGameSessionState() == Session::FROZEN)
+		if (/*state != END && */sess->GetGameSessionState() == Session::FROZEN)
 		{
 			target->draw(overlayRect, 4, sf::Quads);
 		}
@@ -158,9 +156,10 @@ void DeathSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 void DeathSequence::Reset()
 {
+	Sequence::Reset();
 	Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
 	frame = 0;
-	state = GET;
+	state = DIE;
 	geoGroup->SetBase(pPos);
 	geoGroup->Reset();
 	geoGroup->Start();

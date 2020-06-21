@@ -48,8 +48,8 @@ struct MomentaBroadcast
 	Shard *givenShard;
 };
 
-
-struct FlowerPod : Enemy, RayCastHandler
+struct MomentaScene;
+struct FlowerPod : Enemy//, RayCastHandler
 {
 	enum Action
 	{
@@ -70,23 +70,20 @@ struct FlowerPod : Enemy, RayCastHandler
 		//Edge *ground, double quantity);
 	~FlowerPod();
 
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-
 	//MovingGeoGroup healRingGroup;
 	Ring *healRing;
 	Actor *healingPlayer;
-	MomentaBroadcast *broadcast;
+	MomentaScene *testSeq;
+	//MomentaBroadcast *broadcast;
 	//StorySequence *storySeq;
-	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
-	Edge *rcEdge;
-	V2d rayEnd;
-	V2d rayStart;
-	double rcQuantity;
+	//void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
+	//Edge *rcEdge;
+	//V2d rayEnd;
+	//V2d rayStart;
+	//double rcQuantity;
 
 	V2d camPosition;
 	PodType podType;
-	Action action;
 	
 	void ProcessState();
 	void ActionEnded();
@@ -97,8 +94,8 @@ struct FlowerPod : Enemy, RayCastHandler
 	void DirectKill();
 	void ResetEnemy();
 	void IHitPlayer(int index = 0);
+	void UpdateSpriteFromParams(ActorParams *ap);
 
-	sf::Sprite sprite;
 	Tileset *ts_flower;
 	Tileset *ts_bud;
 	Tileset *ts_rise;

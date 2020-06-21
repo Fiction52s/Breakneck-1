@@ -11,19 +11,19 @@ struct DeathSequence : Sequence
 {
 	enum State
 	{
-		GET,
-		END
+		DIE,
+		Count
 	};
 
 	DeathSequence();
 	~DeathSequence();
-	bool Update();
+	void UpdateState();
+	void SetupStates();
+	void ReturnToGame();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	State state;
-	int stateLength[END];
 	MovingGeoGroup *geoGroup;
 	ShapeEmitter *emitter;
 	Session *sess;

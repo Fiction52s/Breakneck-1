@@ -373,4 +373,21 @@ struct ShipExitScene : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 };
 
+struct MomentaScene : Sequence
+{
+	enum State
+	{
+		BROADCAST,
+		Count
+	};
+
+	MomentaScene();
+	void SetupStates();
+	void ReturnToGame();
+	void AddFlashes();
+	void UpdateState();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+};
+
 #endif 

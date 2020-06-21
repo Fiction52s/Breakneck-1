@@ -10,14 +10,14 @@ struct GetShardSequence : Sequence
 	enum State
 	{
 		GET,
-		END
+		Count
 	};
 
-	State state;
-	int stateLength[END];
 	GetShardSequence();
 	~GetShardSequence();
-	bool Update();
+	void UpdateState();
+	void ReturnToGame();
+	void SetupStates();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();

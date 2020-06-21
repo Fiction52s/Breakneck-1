@@ -11,9 +11,20 @@
 #include "MovingGeo.h"
 #include "Enemy_Shard.h"
 #include "Actor.h"
+#include "Sequence.h"
 
 using namespace std;
 using namespace sf;
+
+void FlowerPod::UpdateSpriteFromParams(ActorParams *ap)
+{
+	if (ap->posInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+	}
+}
 
 FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, double q)
 	:Enemy(EnemyType::EN_FLOWERPOD, ap )//, false, 0, false), ground(g),
@@ -41,23 +52,23 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 
 	sprite.setPosition(startPosInfo.GetPositionF());
 
-	V2d gn = startPosInfo.GetEdge()->Normal();
+	//V2d gn = startPosInfo.GetEdge()->Normal();
 
-	V2d gAlong = startPosInfo.GetEdge()->Along();//normalize(g->v1 - g->v0);
+	//V2d gAlong = startPosInfo.GetEdge()->Along();//normalize(g->v1 - g->v0);
 
-	camPosition = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), ts_flower->tileHeight );
+	//camPosition = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), ts_flower->tileHeight );
 	
 	SetOffGroundHeight(ts_flower->tileHeight / 2.0);
 
 	SetCurrPosInfo(startPosInfo);
 
-	healRing = new Ring(32);
-	healRing->CreatePoints();
+	//healRing = new Ring(32);
+	//healRing->CreatePoints();
 
-	
-
+	testSeq = new MomentaScene;
+	testSeq->Init();
 	//podType = GetType(typeStr);
-	broadcast = new MomentaBroadcast( this, fpParams->typeStr);
+	//broadcast = new MomentaBroadcast( this, fpParams->typeStr);
 	/*switch (podType)
 	{
 	case SEESHARDS:
@@ -73,10 +84,13 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	
 
 	//healRing->Init();
-	healRing->SetColor(Color::Cyan);
-	healRing->Set(currPosInfo.GetPositionF(), 100, 110);
+	//healRing->SetColor(Color::Cyan);
+	//healRing->Set(currPosInfo.GetPositionF(), 100, 110);
 
-	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+	
+
+	SetNumActions(A_Count);
+	SetEditorActions(BROADCAST, BROADCAST, 0);
 
 	actionLength[IDLE] = 12;
 	actionLength[ACTIVATE] = 36;
@@ -91,30 +105,35 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	animFactor[HIDE] = 6;
 	animFactor[DEACTIVATED] = 1;
 
+	BasicCircleHitBodySetup(40);
+	//V2d position = GetPosition();
+	////raycast here to either the terrain above me or a max height
+	//rayStart = position;
+	//rayEnd = position + gn * 2000.0;
+	//rcEdge = NULL;
+	//RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
 
-	V2d position = GetPosition();
-	//raycast here to either the terrain above me or a max height
-	rayStart = position;
-	rayEnd = position + gn * 2000.0;
-	rcEdge = NULL;
-	RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+	//double boxHeight = 1000;
+	//if (rcEdge != NULL)
+	//{
+	//	boxHeight = length(rcEdge->GetPosition(rcQuantity) - startPosInfo.GetPosition());
+	//}
 
-	double boxHeight = 1000;
-	if (rcEdge != NULL)
-	{
-		boxHeight = length(rcEdge->GetPosition(rcQuantity) - startPosInfo.GetPosition());
-	}
+	//double boxHeight = 40;
+	//BasicRectHitBodySetup(100, boxHeight / 2.0, atan2(-gAlong.y, -gAlong.x),
+	//	V2d(0, boxHeight / 2.0 - ts_flower->tileHeight / 2.0), currPosInfo.GetPosition() );
 
-	BasicRectHitBodySetup(100, boxHeight / 2.0, atan2(-gAlong.y, -gAlong.x),
-		V2d(0, boxHeight / 2.0 - ts_flower->tileHeight / 2.0), position);
-
+	
+	
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 FlowerPod::~FlowerPod()
 {
-	delete healRing;
-	delete broadcast;
+	//delete healRing;
+	//delete broadcast;
 }
 
 void FlowerPod::ResetEnemy()
@@ -128,7 +147,8 @@ void FlowerPod::ResetEnemy()
 	UpdateSprite();
 	sprite.setColor(Color::White);
 	//storySeq->Reset();
-	broadcast->Reset();
+	//broadcast->Reset();
+	testSeq->Reset();
 	healingPlayer = NULL;
 }
 
@@ -140,23 +160,22 @@ void FlowerPod::IHitPlayer(int index)
 		frame = 0;
 		sprite.setTexture(*ts_rise->texture);
 		SetHitboxes(NULL, 0);
+		sess->SetActiveSequence(testSeq);
 	}
 }
 
-
-
-void FlowerPod::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
-{
-	V2d dir = normalize(rayEnd - rayStart);
-	V2d pos = edge->GetPosition(edgeQuantity);
-	double along = dot(dir, edge->Normal());
-	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
-		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
-	{
-		rcEdge = edge;
-		rcQuantity = edgeQuantity;
-	}
-}
+//void FlowerPod::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+//{
+//	V2d dir = normalize(rayEnd - rayStart);
+//	V2d pos = edge->GetPosition(edgeQuantity);
+//	double along = dot(dir, edge->Normal());
+//	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
+//		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
+//	{
+//		rcEdge = edge;
+//		rcQuantity = edgeQuantity;
+//	}
+//}
 
 void FlowerPod::ActionEnded()
 {
@@ -201,31 +220,31 @@ void FlowerPod::ProcessState()
 	ActionEnded();
 
 	Actor *player = sess->GetPlayer(0);
-	double dist = length(player->position - GetPosition());
-	float rad = healRing->innerRadius;
+	//double dist = length(player->position - GetPosition());
+	//float rad = healRing->innerRadius;
 	
-	if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
-	{
-		if (!sess->cam.manual)
-			sess->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
-		healingPlayer = player;
-		//enter
-	}
-	else if (  (dist > rad || action != BROADCAST ) && healingPlayer != NULL )
-	{
-		if (sess->cam.manual)
-		{
-			sess->cam.EaseOutOfManual(60);
-		}
-		healingPlayer = NULL;
-		//exit
-	}
+	//if ( action == BROADCAST && dist <= rad && healingPlayer == NULL)
+	//{
+	//	if (!sess->cam.manual)
+	//		sess->cam.Ease(Vector2f(camPosition), .8, 300, CubicBezier());
+	//	healingPlayer = player;
+	//	//enter
+	//}
+	//else if (  (dist > rad || action != BROADCAST ) && healingPlayer != NULL )
+	//{
+	//	if (sess->cam.manual)
+	//	{
+	//		sess->cam.EaseOutOfManual(60);
+	//	}
+	//	healingPlayer = NULL;
+	//	//exit
+	//}
 
-	if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
-	{
-		sess->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
-		//cout << "fill by 2" << endl;
-	}
+	//if (healingPlayer != NULL && healingPlayer->drainCounter == 0)
+	//{
+	//	sess->GetPlayer(0)->kinRing->powerRing->Fill( player->drainAmount + 1 );//powerWheel->Use( 1 );	
+	//	//cout << "fill by 2" << endl;
+	//}
 
 	switch (action)
 	{
@@ -262,7 +281,7 @@ void FlowerPod::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, sprite);
 	if (action == BROADCAST)
 	{
-		healRing->Draw(target);
+		//healRing->Draw(target);
 	}
 }
 
@@ -287,6 +306,9 @@ void FlowerPod::UpdateSprite()
 		break;
 	}
 
+	sprite.setPosition(currPosInfo.GetPositionF());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
 }
 

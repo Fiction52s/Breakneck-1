@@ -15,7 +15,7 @@ GetShardSequence::GetShardSequence()
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
 
-	stateLength[GET] = 1000000;
+	
 
 	for (int i = 0; i < 5; ++i)
 	{
@@ -69,32 +69,31 @@ GetShardSequence::GetShardSequence()
 	SetRectCenter(overlayRect, 1920, 1080, Vector2f(960, 540));
 }
 
+void GetShardSequence::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[GET] = 1000000;
+}
+
+void GetShardSequence::ReturnToGame()
+{
+	Actor *player = sess->GetPlayer(0);
+	sess->cam.EaseOutOfManual(60);
+	player->SetAction(Actor::JUMP);
+	player->frame = 1;
+	sess->cam.StopRumble();
+}
+
+
 GetShardSequence::~GetShardSequence()
 {
 	delete emitter;
 }
 
-bool GetShardSequence::Update()
+void GetShardSequence::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
-
-	if (frame == stateLength[state] && state != END)
-	{
-		int s = state;
-		s++;
-		state = (State)s;
-		frame = 0;
-
-		if (state == END)
-		{
-			sess->cam.EaseOutOfManual(60);
-			player->SetAction(Actor::JUMP);
-			player->frame = 1;
-			sess->cam.StopRumble();
-			return false;
-		}
-	}
-
 	switch (state)
 	{
 	case GET:
@@ -133,7 +132,6 @@ bool GetShardSequence::Update()
 
 	//emitter->Update();
 
-	return true;
 }
 
 void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
@@ -141,14 +139,16 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 	sess->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		if (state != END)
+
+		geoGroup.Draw(target);
+		/*if (state != END)
 		{
-			geoGroup.Draw(target);
-		}
+			
+		}*/
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
-		if (state != END && sess->GetGameSessionState() == GameSession::FROZEN)
+		if( /*(state != END &&*/ sess->GetGameSessionState() == GameSession::FROZEN)
 		{
 			target->draw(overlayRect, 4, sf::Quads);
 			shardPop->Draw(target);
