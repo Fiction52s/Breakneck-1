@@ -713,6 +713,11 @@ void EditSession::TestPlayerMode()
 
 	bool foundShipEnter = false;
 	bool foundShipExit = false;
+
+	CleanupCameraShots();
+	CleanupPoi();
+	CleanupBarriers();
+
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)

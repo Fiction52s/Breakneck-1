@@ -258,7 +258,6 @@ struct Sequence
 	virtual void AddMovies() {}
 	virtual void Reset();
 	bool StateIncrement();
-
 };
 
 struct BasicBossScene : Sequence

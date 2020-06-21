@@ -4987,7 +4987,7 @@ void Session::SetupGoalFlow()
 			//start ray
 			if (rcEdge != NULL)
 			{
-				cout << "point list size: " << pointList.size() << endl;
+				//cout << "point list size: " << pointList.size() << endl;
 				if (rcEdge->IsInvisibleWall() || rcEdge->edgeType == Edge::CLOSED_GATE)
 				{
 					//	cout << "secret break" << endl;
