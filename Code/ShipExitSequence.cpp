@@ -4,6 +4,7 @@
 #include "MusicPlayer.h"
 #include "MainMenu.h"
 #include "EditSession.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -52,6 +53,11 @@ void ShipExitScene::ReturnToGame()
 		EditSession *edit = EditSession::GetSession();
 		edit->EndTestMode();
 		sess->ClearFade();
+	}
+	else
+	{
+		GameSession *game = GameSession::GetSession();
+		game->EndLevel();
 	}
 	//Actor *player = owner->GetPlayer(0);
 
