@@ -58,6 +58,7 @@ void Actor::STEEPCLING_Change()
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
+				groundSpeed = steepClimbBoostStart;
 				if (SteepClimbAttack())
 				{
 
@@ -67,6 +68,7 @@ void Actor::STEEPCLING_Change()
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
+				groundSpeed = -steepClimbBoostStart;
 				if (SteepClimbAttack())
 				{
 
@@ -111,6 +113,7 @@ void Actor::STEEPCLING_Change()
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
+				groundSpeed = steepClimbBoostStart;
 				if (SteepClimbAttack())
 				{
 
@@ -120,6 +123,7 @@ void Actor::STEEPCLING_Change()
 			{
 				SetAction(STEEPCLIMB);
 				frame = 0;
+				groundSpeed = -steepClimbBoostStart;
 				if (SteepClimbAttack())
 				{
 

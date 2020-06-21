@@ -195,8 +195,7 @@ SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 
 void Actor::DeactivateSound(SoundNode *sn)
 {
-	if( owner != NULL )
-		owner->soundNodeList->DeactivateSound(sn);
+	sess->soundNodeList->DeactivateSound(sn);
 }
 
 BasicEffect * Actor::ActivateEffect(
@@ -1708,7 +1707,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	totalHealth = 3600;
 	storedTrigger = NULL;
-	steepClimbBoostStart = 10;
+	steepClimbBoostStart = 5;
 	SetDirtyAura(false);
 	activeComboObjList = NULL;
 
@@ -2445,9 +2444,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	slopeTooSteepLaunchLimitX = .1;
 		
-	steepClimbGravFactor = .6;//.31;
-	steepClimbUpFactor = .31;
-	steepClimbDownFactor = .8;
+	steepClimbGravFactor = .6;//.31;//.6;//.31;
+	steepClimbUpFactor = .4;//.17;//.31;
+	steepClimbDownFactor = steepClimbGravFactor;//.5;
 	steepClingSpeedLimit = 2.0;
 	//steepClimbFastFactor = .7;//.2;
 	framesSinceClimbBoost = 0;
@@ -4700,14 +4699,14 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 	bool pressB = currInput.B && !prevInput.B;
 	if (pressB)
 	{
-		double sp = 13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
+		double sp = steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
-		double extra = 5.0;
+		double extra = 10.0;
 		if (currInput.LUp())
 		{
 			//cout << "boost but better" << endl;
-			extra = 5.5;
+			//extra = 10;//5.5;
 		}
 
 		extra = extra * fac;
@@ -4720,7 +4719,9 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		}
 		else if (gNorm.x < 0)// && currInput.LRight() )
 		{
+			cout << "old groundspeed: " << groundSpeed << " ";
 			groundSpeed = std::max(groundSpeed + extra, sp);
+			cout << "groundSpeed: " << groundSpeed << ", extra: " << extra << endl;
 		}
 
 		framesSinceClimbBoost = 0;
