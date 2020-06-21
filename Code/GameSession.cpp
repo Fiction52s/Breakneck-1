@@ -1027,16 +1027,25 @@ void GameSession::ProcessActor(ActorPtr a)
 {
 	Enemy *enemy = a->GenerateEnemy();
 
+	const string &typeName = a->type->info.name;
 	if (enemy != NULL)
 	{
 		fullEnemyList.push_back(enemy);
 		enemyTree->Insert(enemy);
 
 		enemy->AddToWorldTrees(); //adds static objects etc
+
+		if (typeName == "shippickup")
+		{
+			if (shipExitScene == NULL)
+			{
+				shipExitScene = new ShipExitScene;
+				shipExitScene->Init();
+			}
+		}
 	}
 	else
 	{
-		const string &typeName = a->type->info.name;
 		if (typeName == "xbarrier")
 		{
 			XBarrierParams *xbp = (XBarrierParams*)a;
@@ -1079,14 +1088,6 @@ void GameSession::ProcessActor(ActorPtr a)
 			//hasShipEntrance = true;
 		
 			//ResetShipSequence();
-		}
-		else if (typeName == "shippickup")
-		{
-			if (shipExitScene == NULL)
-			{
-				shipExitScene = new ShipExitScene;
-				shipExitScene->Init();
-			}
 		}
 		else if (typeName == "zoneproperties")
 		{

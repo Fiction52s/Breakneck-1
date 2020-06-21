@@ -712,6 +712,7 @@ void EditSession::TestPlayerMode()
 	hasGoal = false;
 
 	bool foundShipEnter = false;
+	bool foundShipExit = false;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -744,6 +745,15 @@ void EditSession::TestPlayerMode()
 				shipEnterScene->shipEntrancePos = (*enit)->GetPosition();
 
 			}
+			else if (((*enit)->type == types["shippickup"]))
+			{
+				if (shipExitScene == NULL)
+				{
+					shipExitScene = new ShipExitScene;
+					shipExitScene->Init();
+				}
+				foundShipExit = true;
+			}
 			else if ((*enit)->type == types["goal"] && !hasGoal )
 			{
 				Goal *g = (Goal*)((*enit)->myEnemy);
@@ -755,6 +765,11 @@ void EditSession::TestPlayerMode()
 	if (!foundShipEnter && shipEnterScene != NULL)
 	{
 		CleanupShipEntrance();
+	}
+
+	if (!foundShipExit && shipExitScene != NULL)
+	{
+		CleanupShipExit();
 	}
 
 	//an issue right now is that these load tilesets that do not get deleted

@@ -4490,10 +4490,10 @@ void Actor::UpdatePrePhysics()
 		{ 
 			HandleWaitingScoreDisplay();
 
-			if (!owner->scoreDisplay->active && owner->activeSequence == NULL)
+			if ( (sess->scoreDisplay == NULL || !sess->scoreDisplay->active) && sess->activeSequence == NULL)
 			{
-				owner->SetActiveSequence(owner->shipExitScene);
-				owner->shipExitScene->Reset();
+				sess->SetActiveSequence(sess->shipExitScene);
+				sess->shipExitScene->Reset();
 				//owner->SetActiveSequence(owner->shipExitSeq);
 				//owner->shipExitSeq->Reset();
 			}
@@ -5516,16 +5516,16 @@ void Actor::ReverseSteepSlideJump()
 
 void Actor::HandleWaitingScoreDisplay()
 {
-	if (owner->scoreDisplay->waiting)
+	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
 	{
-		ControllerState &unfilteredCurr = owner->GetCurrInputUnfiltered(0);
-		ControllerState &unfiltetedPrev = owner->GetPrevInputUnfiltered(0);
+		ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
+		ControllerState &unfiltetedPrev = sess->GetPrevInputUnfiltered(0);
 		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
 		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
 		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
 		if (a || x)
 		{
-			SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+			SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
 			bool levValid = owner->level != NULL && !currFile->IsLevelLastInSector( owner->level );
 			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 			{
@@ -5536,7 +5536,7 @@ void Actor::HandleWaitingScoreDisplay()
 				owner->resType = GameSession::GameResultType::GR_WIN;
 			}
 
-			owner->scoreDisplay->Deactivate();
+			sess->scoreDisplay->Deactivate();
 		}
 		else if (b)
 		{
@@ -14015,10 +14015,14 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
 	{
-		owner->totalFramesBeforeGoal = owner->totalGameFrames;
+		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetKinMode(K_NORMAL);
 		SetExpr(KinMask::Expr_NEUTRAL);
-		owner->scoreDisplay->Activate();
+		if (sess->scoreDisplay != NULL)
+		{
+			sess->scoreDisplay->Activate();
+		}
+		
 		SetAction(WAITFORSHIP);
 		frame = 0;
 		assert( ground != NULL );

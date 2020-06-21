@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "MusicPlayer.h"
 #include "MainMenu.h"
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
@@ -46,6 +47,12 @@ void ShipExitScene::AddFlashes()
 
 void ShipExitScene::ReturnToGame()
 {
+	if (sess->IsSessTypeEdit())
+	{
+		EditSession *edit = EditSession::GetSession();
+		edit->EndTestMode();
+		sess->ClearFade();
+	}
 	//Actor *player = owner->GetPlayer(0);
 
 	//BasicBossScene::ReturnToGame();

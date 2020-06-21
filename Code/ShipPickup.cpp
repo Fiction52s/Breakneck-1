@@ -18,6 +18,16 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void ShipPickup::UpdateSpriteFromParams(ActorParams *ap)
+{
+	if (ap->posInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+	}
+}
+
 ShipPickup::ShipPickup(ActorParams * ap)
 		:Enemy( EnemyType::EN_SHIPPICKUP, ap)
 {
@@ -29,14 +39,11 @@ ShipPickup::ShipPickup(ActorParams * ap)
 	
 	SetOffGroundHeight(ts->tileHeight / 2.0 - 10);
 
-	SetCurrPosInfo(startPosInfo);
-
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);// / 2 );
-	sprite.setPosition( startPosInfo.GetPositionF() );
-	sprite.setRotation( startPosInfo.GetEdge()->GetNormalAngleDegrees() );
-
+	//SetCurrPosInfo(startPosInfo);
+	
 	SetNumActions(Count);
+	SetEditorActions(IDLE, IDLE, 0);
+
 
 	actionLength[IDLE] = 20;
 	actionLength[FOUND] = 6;
@@ -45,13 +52,19 @@ ShipPickup::ShipPickup(ActorParams * ap)
 	animFactor[FOUND] = 3;
 
 	ResetEnemy();
+
+	SetSpawnRect();
 }
 
 void ShipPickup::ResetEnemy()
 {
+	SetCurrPosInfo(startPosInfo);
+
 	frame = 0;
 	dead = false;
 	action = IDLE;
+
+	UpdateSprite();
 }
 
 void ShipPickup::ProcessState()
@@ -132,6 +145,9 @@ void ShipPickup::UpdateSprite()
 		break;
 	}
 	sprite.setTextureRect( ts->GetSubRect( f ) );
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);// / 2 );
+	sprite.setPosition(currPosInfo.GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	//sprite.setPosition( position.x, position.y );
 }
 

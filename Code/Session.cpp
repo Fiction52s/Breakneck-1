@@ -41,6 +41,7 @@
 
 #include "ActorParams.h"
 
+#include "ShipPickup.h"
 #include "EnemiesW1.h"
 
 
@@ -226,13 +227,12 @@ void Session::AddGeneralEnemies()
 	AddExtraEnemy("xbarrier", NULL, SetParamsType<XBarrierParams>,Vector2i(0, 0), Vector2i(64, 64),false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
 
-	AddExtraEnemy("shippickup", NULL, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1,
-		GetSizedTileset("Ship/shipleave_128x128.png"));
+	AddExtraEnemy("shippickup", CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 
 	AddExtraEnemy("nexus", NULL, SetParamsType<NexusParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false );
 
-	AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
-		GetSizedTileset("Ship/shipleave_128x128.png" ));
+	//AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
+	//	GetSizedTileset("Ship/shipleave_128x128.png" ));
 
 	AddExtraEnemy("airtrigger", NULL, SetParamsType<AirTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/jayshield_128x128.png"));

@@ -20,10 +20,9 @@ struct ShipPickup : Enemy
 	void DrawMinimap( sf::RenderTarget *target);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
+	void UpdateSpriteFromParams(ActorParams *ap);
 
 	void ResetEnemy();
-
-	sf::Sprite sprite;
 	Tileset *ts;
 
 };
