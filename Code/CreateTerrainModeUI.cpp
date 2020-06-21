@@ -49,8 +49,8 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	minEdgeLenTextbox = mainPanel->AddLabeledTextBox("minedge", Vector2i(0, 0),
 		100, 4, "", "Min Draw Edge Length:");
 	minEdgeLenTextbox->SetNumbersOnly(true);
-	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons\nIf zoomed out, it uses screen pixels,"
-		"\nand if zoomed in, uses world pixels");
+	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons.\nIf zoomed out, it uses screen pixels,"
+		"\nand if zoomed in, it uses world pixels");
 	
 	std::vector<string> drawOptions = { "Draw", "Box", "Brush" };
 	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
