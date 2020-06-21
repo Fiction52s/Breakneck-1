@@ -1125,6 +1125,7 @@ struct CreateTerrainModeUI : GUIHandler
 	CheckBox *gridCheckbox;
 	CheckBox *snapPointsCheckbox;
 	TextBox *gridSizeTextbox;
+	TextBox *minEdgeLenTextbox;
 	Button *completeButton;
 	Button *removePointButton;
 	Button *removeAllPointsButton;

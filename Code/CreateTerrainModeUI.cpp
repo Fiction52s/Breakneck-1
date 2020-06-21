@@ -45,6 +45,12 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	gridSizeTextbox = mainPanel->AddTextBox("gridsize", Vector2i(0, 0), 50, 5, "");
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
+
+	minEdgeLenTextbox = mainPanel->AddLabeledTextBox("minedge", Vector2i(0, 0),
+		100, 4, "", "Min Draw Edge Length:");
+	minEdgeLenTextbox->SetNumbersOnly(true);
+	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons\nIf zoomed out, it uses screen pixels,"
+		"\nand if zoomed in, uses world pixels");
 	
 	std::vector<string> drawOptions = { "Draw", "Box", "Brush" };
 	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
@@ -268,10 +274,13 @@ void CreateTerrainModeUI::SetShown(bool s)
 	if (show)
 	{
 		edit->AddActivePanel(mainPanel);
+		minEdgeLenTextbox->SetString(to_string((int)edit->minimumEdgeLength));
 	}
 	else
 	{
 		edit->RemoveActivePanel(mainPanel);
+
+
 	}
 }
 
@@ -332,9 +341,21 @@ void CreateTerrainModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
 		ss << str;
 		int spacing;
 		ss >> spacing;
-		if (!ss.fail())
+		if (!ss.fail() && spacing > 0 )
 		{
 			edit->graph->SetSpacing(spacing);
+		}
+	}
+	else if (tb == minEdgeLenTextbox)
+	{
+		string str = tb->GetString();
+		stringstream ss;
+		ss << str;
+		int minLen;
+		ss >> minLen;
+		if (!ss.fail() && minLen > 0 )
+		{
+			edit->minimumEdgeLength = minLen;
 		}
 	}
 }
