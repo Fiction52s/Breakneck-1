@@ -44,6 +44,500 @@ using namespace std;
 
 #define TIMESTEP (1.0 / 60.0)
 
+Sequence::Sequence()
+	:frameCount(-1),frame(0),nextSeq(NULL)
+{
+	sess = Session::GetSession();
+	currConvGroup = NULL;
+	state = 0;
+	numStates = 0;
+	stateLength = NULL;
+}
+
+Sequence::~Sequence()
+{
+	if (nextSeq != NULL)
+		delete nextSeq;
+
+	if (stateLength != NULL)
+		delete[] stateLength;
+
+	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
+	for (auto it = movies.begin(); it != movies.end(); ++it)
+	{
+		delete (*it).second;
+	}
+}
+
+FlashGroup * Sequence::AddFlashGroup(const std::string &n)
+{
+	assert(flashGroups.count(n) == 0);
+
+	FlashGroup *fg = new FlashGroup();
+	flashGroups[n] = fg;
+	return fg;
+}
+
+void Sequence::Reset()
+{
+	state = 0;
+	frame = 0;
+	cIndex = 0;
+	currMovie = NULL;
+	currFlashGroup = NULL;
+
+	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
+
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
+
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		(*it).second->Reset();
+	}
+
+	for (auto it = movies.begin(); it != movies.end(); ++it)
+	{
+		(*it).second->stop();
+	}
+}
+
+void Sequence::SetFlashGroup(const std::string & n)
+{
+	currFlashGroup = flashGroups[n];
+}
+
+void Sequence::UpdateFlashGroup()
+{
+	if (currFlashGroup == NULL)
+	{
+		return;
+	}
+
+	(*currFlashGroup).Update();
+
+	if ((*currFlashGroup).IsDone())
+	{
+		currFlashGroup = NULL;
+	}
+}
+
+void Sequence::UpdateFlashes()
+{
+	for (auto it = flashes.begin(); it != flashes.end(); ++it)
+	{
+		(*it).second->Update();
+	}
+}
+
+void Sequence::UpdateMovie()
+{
+	assert(currMovie != NULL);
+
+	sfe::Status movStatus = currMovie->getStatus();
+	if (frame == 0)
+	{
+		currMovie->setVolume(sess->mainMenu->config->GetData().musicVolume);
+		currMovie->setPlayingOffset(sf::Time::Zero);
+		currMovie->play();
+	}
+	else
+	{
+		if (movieStopFrame == -1)
+		{
+			currMovie->update();
+
+			if (sess->GetCurrInput(0).A)
+			{
+				currMovie->pause();
+			}
+		}
+
+		if (movieStopFrame == -1 && (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
+			|| movStatus == sfe::Status::Paused))
+		{
+			movieStopFrame = frame;
+			if (movieFadeFrames == 0)
+			{
+				EndCurrState();
+			}
+			else
+			{
+				frame = stateLength[state] - movieFadeFrames;
+				sess->Fade(false, movieFadeFrames, movieFadeColor);
+			}
+		}
+
+		if (frame == stateLength[state] - 1)
+		{
+			if (sess->originalMusic != NULL)
+			{
+				MainMenu *mm = sess->mainMenu;
+				mm->musicPlayer->TransitionMusic(sess->originalMusic, 60);
+			}
+		}
+	}
+}
+
+void Sequence::AddEnemy(const std::string &enName, Enemy *e)
+{
+	assert(enemies.count(enName) == 0);
+
+	sess->fullEnemyList.push_back(e);
+	enemies[enName] = e;
+}
+
+void Sequence::SetConvGroup(const std::string &groupName)
+{
+	assert(groups.count(groupName) == 1);
+	currConvGroup = groups[groupName];
+	cIndex = 0;
+}
+
+FlashedImage * Sequence::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
+	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
+{
+	assert(flashes.count(imageName) == 0);
+
+	FlashedImage *fi = new FlashedImage(ts, tileIndex, appearFrames, holdFrames, disappearFrames, pos);
+	flashes[imageName] = fi;
+	flashList.push_back(fi);
+
+	return fi;
+}
+
+void Sequence::AddGroup(const std::string &groupName, const std::string &fileName)
+{
+	ConversationGroup *cg = new ConversationGroup;
+	cg->Load(fileName);
+
+	assert(groups.count(groupName) == 0);
+
+	groups[groupName] = cg;
+}
+
+void Sequence::AddShot(const std::string &shotName)
+{
+	shots[shotName] = sess->cameraShotMap[shotName];
+}
+
+void Sequence::AddPoint(const std::string &poiName)
+{
+	points[poiName] = sess->poiMap[poiName];
+}
+
+void Sequence::AddMovie(const std::string &movieName)
+{
+	string path = "Resources/Movie/";
+	string fileType = ".ogv";
+	string fullName = path + movieName + fileType;
+
+	assert(movies.count(movieName) == 0);
+
+	sfe::Movie *mov = new sfe::Movie;
+	if (!mov->openFromFile(fullName))
+	{
+		cout << "movie not loaded: " << fullName << endl;
+		assert(false);
+	}
+	mov->fit(sf::FloatRect(0, 0, 1920, 1080));
+
+	movies[movieName] = mov;
+}
+
+void Sequence::ConvUpdate()
+{
+	Conversation *conv = GetCurrentConv();
+	if (frame == 0)
+	{
+		conv->Show();
+	}
+
+	if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
+	{
+		conv->NextSection();
+	}
+	if (sess->GetCurrInput(0).B)
+	{
+		conv->SetRate(1, 5);
+	}
+	else
+	{
+		conv->SetRate(1, 1);
+	}
+
+	if (!conv->Update())
+	{
+		if (cIndex < currConvGroup->numConvs - 1)
+		{
+			++cIndex;
+
+			Conversation *newconv = currConvGroup->GetConv(cIndex);
+
+			newconv->Show();
+		}
+		else
+		{
+			EndCurrState();
+		}
+	}
+}
+
+SceneBG * Sequence::AddBG(const std::string &bgName, std::list<Tileset*> &anim,
+	int animFactor)
+{
+	SceneBG *sbg = new SceneBG(bgName, anim, animFactor);
+
+	assert(bgs.count(bgName) == 0);
+
+	bgs[bgName] = sbg;
+
+	return sbg;
+}
+
+SceneBG *Sequence::GetBG(const std::string &name)
+{
+	assert(bgs.count(name) > 0);
+	return bgs[name];
+}
+
+void Sequence::SetCameraShot(const std::string &n)
+{
+	CameraShot *shot = shots[n];
+	sess->cam.Set(shot->centerPos, shot->zoom, sess->cam.zoomLevel);
+}
+
+bool Sequence::IsLastFrame()
+{
+	int sLen = stateLength[state];
+
+	return frame == (sLen - 1);
+}
+
+bool Sequence::IsCamMoving()
+{
+	return sess->cam.easing;
+}
+
+void Sequence::BasicFlashUpdateState(const std::string &flashName)
+{
+	FlashedImage *fi = flashes[flashName];
+	if (frame == 0)
+	{
+		Conversation *c = GetCurrentConv();
+		if (c != NULL)
+			c->Hide();
+
+		fi->Flash();
+	}
+	else if (fi->IsDone())
+	{
+		frame = stateLength[state] - 1;
+	}
+}
+
+void Sequence::EaseShot(const std::string &shotName, int frames,
+	CubicBezier bez)
+{
+	assert(shots.count(shotName) == 1);
+
+	CameraShot *shot = shots[shotName];
+	sess->cam.Ease(Vector2f(shot->centerPos), shot->zoom, frames, bez);
+}
+
+void Sequence::EasePoint(const std::string &pointName, float targetZoom,
+	int frames, CubicBezier bez)
+{
+	assert(points.count(pointName) == 1);
+
+	PoiInfo *pi = points[pointName];
+	sess->cam.Ease(Vector2f(pi->pos), targetZoom, frames, bez);
+}
+
+void Sequence::Flash(const std::string &flashName)
+{
+	assert(flashes.count(flashName) == 1);
+
+	flashes[flashName]->Flash();
+}
+
+void Sequence::EndCurrState()
+{
+	int sLen = stateLength[state];
+	frame = sLen - 1;
+}
+
+Conversation *Sequence::GetCurrentConv()
+{
+	if (currConvGroup != NULL)
+	{
+		return currConvGroup->GetConv(cIndex);
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+void Sequence::SetCurrMovie(const std::string &name, int movFadeFrames, Color movFadeColor)
+{
+	assert(movies.count(name) == 1);
+	currMovie = movies[name];
+	movieFadeFrames = movFadeFrames;
+	movieFadeColor = movFadeColor;
+	movieStopFrame = -1;
+}
+
+void Sequence::AddSeqFlashToGroup(FlashGroup *fGroup,
+	const std::string &n, int delayedStart)
+{
+	assert(flashes.count(n) == 1);
+
+	fGroup->AddSeqFlash(flashes[n], delayedStart);
+}
+
+void Sequence::AddSimulFlashToGroup(FlashGroup *fGroup,
+	const std::string &n, int waitFrames)
+{
+	assert(flashes.count(n) == 1);
+	fGroup->AddSimulFlash(flashes[n], waitFrames);
+}
+
+void Sequence::Rumble(int x, int y, int duration)
+{
+	sess->cam.SetRumble(x, y, duration);
+}
+
+void Sequence::RumbleDuringState(int x, int y)
+{
+	if (frame == 0)
+	{
+		Rumble(x, y, stateLength[state]);
+	}
+}
+
+void Sequence::SetNumStates(int count)
+{
+	numStates = count;
+	stateLength = new int[numStates];
+}
+
+void Sequence::DrawFlashes(sf::RenderTarget *target)
+{
+	for (auto it = flashList.begin(); it != flashList.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+}
+
+void Sequence::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	View v = target->getView();
+	target->setView(sess->uiView);
+
+	//temporarily have this here, eventually move the BGs as another thing you can have a bunch of in a sequence.
+	if (currFlashGroup != NULL)
+	{
+		(*currFlashGroup).DrawBG(target);
+	}
+
+	DrawFlashes(target);
+
+	if (currConvGroup != NULL)
+	{
+		Conversation *conv = currConvGroup->GetConv(cIndex);
+		conv->Draw(target);
+	}
+
+	target->setView(v);
+
+	if (currMovie != NULL)
+	{
+		target->draw(*currMovie);
+	}
+}
+
+void Sequence::Init()
+{
+	AddShots();
+	AddPoints();
+
+	AddFlashes();
+	AddEnemies();
+	AddGroups();
+	AddMovies();
+
+	Reset();
+	SetupStates();
+
+	SpecialInit();
+}
+
+bool Sequence::StateIncrement()
+{
+	if (frame == stateLength[state] && state != numStates)
+	{
+		++state;
+		frame = 0;
+
+		if (currMovie != NULL)
+			currMovie = NULL;
+	}
+
+	if (state == numStates)
+	{
+		ReturnToGame();
+		return false;
+	}
+
+	return true;
+}
+
+bool Sequence::Update()
+{
+	if (!StateIncrement())
+		return false;
+
+	UpdateFlashes();
+
+	UpdateFlashGroup();
+
+	UpdateState();
+
+	++frame;
+
+	return true;
+}
+
 BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 {
 	BasicBossScene *bScene = NULL;
@@ -135,10 +629,199 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	return bScene;
 }
 
-Sequence::~Sequence()
+BasicBossScene::BasicBossScene(
+	EntranceType et )
 {
-	if (nextSeq != NULL)
-		delete nextSeq;
+	entranceType = et;
+	fadeFrames = 60;
+	entranceIndex = 0;
+}
+
+BasicBossScene::~BasicBossScene()
+{
+}
+
+void BasicBossScene::StartRunning()
+{
+	sess->SetPlayerInputOn(false);
+}
+
+void BasicBossScene::StartEntranceRun(bool fr,
+	double maxSpeed, const std::string &n0,
+	const std::string &n1)
+{
+	PoiInfo *kinStart = points[n0];
+	PoiInfo *kinStop = points[n1];
+	sess->GetPlayer(0)->SetStoryRun(fr, maxSpeed, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
+		kinStop->edgeQuantity);
+}
+
+void BasicBossScene::StartEntranceStand(bool fr,
+	const std::string &n)
+{
+	PoiInfo *kinStand = points[n];
+	assert(kinStand->edge != NULL);
+	Actor *player = sess->GetPlayer(0);
+	player->facingRight = fr;
+	player->SetGroundedPos(kinStand->edge, kinStand->edgeQuantity);
+	player->StandInPlace();
+}
+
+void BasicBossScene::SetEntranceRun()
+{
+	string entranceIndexStr = to_string(entranceIndex);
+	string startStr = "kinstart" + entranceIndexStr;
+	string endStr = "kinstop" + entranceIndexStr;
+
+	StartEntranceRun(true, 10.0, startStr, endStr);
+}
+
+void BasicBossScene::SetEntranceIndex(int ind)
+{
+	entranceIndex = ind;
+}
+
+void BasicBossScene::SetEntranceStand()
+{
+	string standString = "kinstand" + to_string(entranceIndex);
+
+	StartEntranceStand(true, standString);
+}
+
+void BasicBossScene::AddStartPoint()
+{
+	string startStr = "kinstart" + to_string(entranceIndex);
+	AddPoint(startStr);
+}
+
+void BasicBossScene::AddStopPoint()
+{
+	string stopStr = "kinstop" + to_string(entranceIndex);
+	AddPoint(stopStr);
+}
+
+void BasicBossScene::AddStandPoint()
+{
+	string standStr = "kinstand" + to_string(entranceIndex);
+	AddPoint(standStr);
+}
+
+void BasicBossScene::AddStartAndStopPoints()
+{
+	AddStartPoint();
+	AddStopPoint();
+}
+
+void BasicBossScene::SetEntranceShot()
+{
+	//if (shots.count("scenecam") == 1)
+	{
+		SetCameraShot("scenecam");
+	}
+	//else
+	{
+		//assert(0);
+	}
+}
+
+void BasicBossScene::EntranceUpdate()
+{
+	Actor *player = sess->GetPlayer(0);
+
+	if (entranceType == RUN)
+	{
+		if (frame == 0)
+		{
+			sess->Fade(false, fadeFrames, Color::Black);
+			sess->adventureHUD->Hide(fadeFrames);
+			player->Wait();
+			sess->cam.SetManual(true);
+		}
+		else if (frame == fadeFrames)
+		{
+			barrier->Trigger();
+			sess->RemoveAllEnemies();
+			sess->Fade(true, fadeFrames, Color::Black);
+			SetEntranceShot();
+			SetEntranceRun();
+		}
+	}
+	else if( entranceType == APPEAR)
+	{
+		//owner->adventureHUD->Hide(fadeFrames);
+	}
+}
+
+void BasicBossScene::SetPlayerStandPoint(const std::string &n,
+	bool fr)
+{
+	assert(points.count(n) == 1);
+
+	PoiInfo *pi = points[n];
+	Actor *player = sess->GetPlayer(0);
+	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
+}
+
+void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
+{
+	string standStr = "kinstand" + to_string(entranceIndex);
+	SetPlayerStandPoint(standStr, fr);
+}
+
+void BasicBossScene::ReturnToGame()
+{
+	sess->SetPlayerInputOn(true);
+	sess->adventureHUD->Show(60);
+	sess->cam.EaseOutOfManual(60);
+}
+
+bool BasicBossScene::IsAutoRunState()
+{
+	if (entranceType == RUN)
+	{
+		return state == 0;
+	}
+	else
+	{
+		return false;
+	}
+	
+}
+
+void BasicBossScene::Wait()
+{
+	state = 1;
+	frame = 0;
+}
+
+bool BasicBossScene::Update()
+{
+	Actor *player = sess->GetPlayer(0);
+
+	if (!StateIncrement())
+		return false;
+
+	if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
+	{
+		state++;
+		frame = 0;
+		//Wait();
+	}
+
+	UpdateFlashes();
+
+	UpdateFlashGroup();
+
+	UpdateState();
+
+	++frame;
+
+	return true;
+}
+
+void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	Sequence::Draw(target, layer);
 }
 
 FlashGroup::FlashGroup()
@@ -251,7 +934,7 @@ void FlashGroup::Init()
 					counter += (*it)->image->GetNumFrames();
 				}
 			}
-			
+
 		}
 
 		FlashInfo *lastFlash = fList.back();
@@ -269,9 +952,9 @@ void FlashGroup::Init()
 	}
 }
 
-void FlashGroup::AddSimulFlash(FlashedImage *fi, int delayedFrames )
+void FlashGroup::AddSimulFlash(FlashedImage *fi, int delayedFrames)
 {
-	fList.push_back(new FlashInfo(fi, delayedFrames, true ));
+	fList.push_back(new FlashInfo(fi, delayedFrames, true));
 }
 
 bool FlashGroup::IsDone()
@@ -353,7 +1036,7 @@ FlashedImage::FlashedImage(Tileset *ts,
 	hFrames = holdFrames;
 	dFrames = disappearFrames;
 
-	
+
 	//splitShader.setUniform("texture", *ts_image->texture);
 
 	//splitShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
@@ -368,7 +1051,7 @@ FlashedImage::~FlashedImage()
 	{
 		delete (*it);
 	}
-	
+
 	if (splitShader != NULL)
 		delete splitShader;
 
@@ -421,7 +1104,7 @@ void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS, int tileIndex, sf::V
 		SetRectSubRect(splitBorder, borderTS->GetSubRect(tileIndex));
 		SetRectCenter(splitBorder, ts->tileWidth, ts->tileHeight, pos);
 	}
-	
+
 
 	SetRectSubRectGL(spr, ts->GetSubRect(tileIndex), Vector2f(ts->texture->getSize()));
 
@@ -430,7 +1113,7 @@ void FlashedImage::SetSplit(Tileset *ts, Tileset *borderTS, int tileIndex, sf::V
 	SetRectCenter(split, ts->tileWidth, ts->tileHeight, pos);
 
 	splitShader = new Shader;
-	
+
 
 	if (!splitShader->loadFromFile("Resources/Shader/split_shader.frag", sf::Shader::Fragment))
 	{
@@ -468,7 +1151,7 @@ void FlashedImage::Reset()
 void FlashedImage::AddPan(sf::Vector2f &diff,
 	int startFrame, int frameLength)
 {
-	panList.push_back(new PanInfo( position, diff, startFrame, frameLength));
+	panList.push_back(new PanInfo(position, diff, startFrame, frameLength));
 }
 
 void FlashedImage::AddPanX(float xDiff,
@@ -480,7 +1163,7 @@ void FlashedImage::AddPanX(float xDiff,
 void FlashedImage::AddPanY(float yDiff,
 	int startFrame, int frameLength)
 {
-	panList.push_back(new PanInfo(position, Vector2f( 0, yDiff), startFrame, frameLength));
+	panList.push_back(new PanInfo(position, Vector2f(0, yDiff), startFrame, frameLength));
 }
 
 void FlashedImage::Flash()
@@ -488,7 +1171,7 @@ void FlashedImage::Flash()
 	flashing = true;
 	frame = 0;
 	SetRectColor(spr, Color(255, 255, 255, 0));
-	if( splitShader != NULL )
+	if (splitShader != NULL)
 		splitShader->setUniform("currAlpha", 0.f);
 }
 
@@ -553,7 +1236,7 @@ void FlashedImage::Update()
 		float aColor = a / 255.f;
 		splitShader->setUniform("currAlpha", aColor);
 	}
-		
+
 
 	if (frame == aFrames + hFrames + dFrames)
 	{
@@ -578,7 +1261,7 @@ void FlashedImage::Update()
 			{
 				Vector2f offset = position - origPos;
 
-				
+
 				offset.x /= splitSize.x;
 				offset.y /= splitSize.y;
 
@@ -588,7 +1271,7 @@ void FlashedImage::Update()
 	}
 
 	UpdateBG();
-	
+
 
 	++frame;
 }
@@ -611,7 +1294,7 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 {
 	if (flashing)
 	{
-		if (ts_split != NULL )
+		if (ts_split != NULL)
 		{
 			if (bg != NULL)
 			{
@@ -621,7 +1304,7 @@ void FlashedImage::Draw(sf::RenderTarget *target)
 			{
 				target->draw(split, 4, sf::Quads, ts_split->texture);
 			}
-			
+
 			target->draw(spr, 4, sf::Quads, splitShader);
 
 			if (ts_splitBorder != NULL)
@@ -653,7 +1336,7 @@ SceneBG::SceneBG(const std::string &p_name, list<Tileset*> &p_tilesets, int p_an
 Tileset * SceneBG::GetCurrTileset(int frame)
 {
 	int numBG = tilesets.size();
-	if (numBG > 1 )
+	if (numBG > 1)
 	{
 		int f = (frame / animFactor) % numBG;
 		return tilesets[f];
@@ -664,697 +1347,4 @@ Tileset * SceneBG::GetCurrTileset(int frame)
 		return tilesets[0];
 	}
 }
-
-//void SceneBG::Draw(sf::RenderTarget *target)
-//{
-//
-//}
-
-BasicBossScene::BasicBossScene(
-	EntranceType et )
-{
-	sess = Session::GetSession();
-	entranceType = et;
-	barrier = NULL;
-	currConvGroup = NULL;
-	fadeFrames = 60;
-	state = 0;
-	numStates = 0;
-	stateLength = NULL;
-	entranceIndex = 0;
-}
-
-void BasicBossScene::Reset()
-{
-	state = 0;
-	frame = 0;
-	for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		(*it).second->Reset();
-	}
-
-	for (auto it = flashes.begin(); it != flashes.end(); ++it)
-	{
-		(*it).second->Reset();
-	}
-
-	for (auto it = enemies.begin(); it != enemies.end(); ++it)
-	{
-		(*it).second->Reset();
-	}
-
-	for (auto it = movies.begin(); it != movies.end(); ++it)
-	{
-		(*it).second->stop();
-	}
-
-	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
-	{
-		(*it).second->Reset();
-	}
-	cIndex = 0;
-	currMovie = NULL;
-
-	currFlashGroup = NULL;
-}
-
-BasicBossScene::~BasicBossScene()
-{
-	for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	for (auto it = flashes.begin(); it != flashes.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	for (auto it = movies.begin(); it != movies.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	for (auto it = flashGroups.begin(); it != flashGroups.end(); ++it)
-	{
-		delete (*it).second;
-	}
-
-	if (stateLength != NULL)
-		delete[] stateLength;
-}
-
-void BasicBossScene::Init()
-{
-	AddShots();
-	AddPoints();
-
-	AddFlashes();
-	AddEnemies();
-	AddGroups();
-	AddMovies();
-
-	Reset();
-	SetupStates();
-
-	SpecialInit();
-}
-
-SceneBG * BasicBossScene::AddBG( const std::string &bgName, std::list<Tileset*> &anim,
-	int animFactor)
-{
-	SceneBG *sbg = new SceneBG(bgName, anim, animFactor);
-	
-	assert(bgs.count(bgName) == 0);
-
-	bgs[bgName] = sbg;
-
-	return sbg;
-}
-
-SceneBG *BasicBossScene::GetBG(const std::string &name)
-{
-	assert(bgs.count(name) > 0);
-	return bgs[name];
-}
-
-void BasicBossScene::AddMovie(const std::string &movieName)
-{
-	string path = "Resources/Movie/";
-	string fileType = ".ogv";
-	string fullName = path + movieName + fileType;
-
-	assert(movies.count(movieName) == 0);
-
-	sfe::Movie *mov = new sfe::Movie;
-	if (!mov->openFromFile(fullName))
-	{
-		cout << "movie not loaded: " << fullName << endl;
-		assert(false);
-	}
-	mov->fit(sf::FloatRect(0, 0, 1920, 1080));
-
-	movies[movieName] = mov;
-}
-
-void BasicBossScene::UpdateFlashes()
-{
-	for (auto it = flashes.begin(); it != flashes.end(); ++it)
-	{
-		(*it).second->Update();
-	}
-}
-
-void BasicBossScene::UpdateMovie()
-{
-	assert(currMovie != NULL);
-
-	sfe::Status movStatus = currMovie->getStatus();
-	if (frame == 0)
-	{
-		currMovie->setVolume(sess->mainMenu->config->GetData().musicVolume);
-		currMovie->setPlayingOffset(sf::Time::Zero);
-		currMovie->play();
-	}
-	else
-	{
-		if (movieStopFrame == -1 )
-		{
-			currMovie->update();
-
-			if (sess->GetCurrInput(0).A)
-			{
-				currMovie->pause();
-			}
-		}
-
-		if (movieStopFrame == -1 && (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
-			|| movStatus == sfe::Status::Paused ))
-		{
-			movieStopFrame = frame;
-			if (movieFadeFrames == 0)
-			{
-				EndCurrState();
-			}
-			else
-			{
-				frame = stateLength[state] - movieFadeFrames;
-				sess->Fade(false, movieFadeFrames, movieFadeColor);
-			}
-		}
-
-		if (frame == stateLength[state] - 1)
-		{
-			if (sess->originalMusic != NULL)
-			{
-				MainMenu *mm = sess->mainMenu;
-				mm->musicPlayer->TransitionMusic(sess->originalMusic, 60);
-			}
-		}
-	}
-}
-
-void BasicBossScene::AddEnemy(const std::string &enName, Enemy *e)
-{
-	assert(enemies.count(enName) == 0);
-
-	sess->fullEnemyList.push_back(e);
-	enemies[enName] = e;
-}
-
-void BasicBossScene::SetConvGroup(const std::string &groupName)
-{
-	assert(groups.count(groupName) == 1);
-	currConvGroup = groups[groupName];
-	cIndex = 0;
-}
-
-FlashedImage * BasicBossScene::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
-	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
-{
-	assert(flashes.count(imageName) == 0);
-
-	FlashedImage *fi = new FlashedImage(ts, tileIndex, appearFrames, holdFrames, disappearFrames, pos);
-	flashes[imageName] = fi;
-	flashList.push_back(fi);
-
-	return fi;
-}
-
-void BasicBossScene::AddGroup(const std::string &groupName, const std::string &fileName)
-{
-	ConversationGroup *cg = new ConversationGroup;
-	cg->Load(fileName);
-
-	assert(groups.count(groupName) == 0);
-
-	groups[groupName] = cg;
-}
-
-void BasicBossScene::AddShot(const std::string &shotName)
-{
-	shots[shotName] = sess->cameraShotMap[shotName];
-}
-
-void BasicBossScene::AddPoint(const std::string &poiName)
-{
-	points[poiName] = sess->poiMap[poiName];
-}
-
-void BasicBossScene::ConvUpdate()
-{
-	Conversation *conv = GetCurrentConv();
-	if (frame == 0)
-	{
-		conv->Show();
-	}
-
-	if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
-	{
-		conv->NextSection();
-	}
-	if (sess->GetCurrInput(0).B)
-	{
-		conv->SetRate(1, 5);
-	}
-	else
-	{
-		conv->SetRate(1, 1);
-	}
-
-	if (!conv->Update())
-	{
-		if (cIndex < currConvGroup->numConvs - 1)
-		{
-			++cIndex;
-
-			Conversation *newconv = currConvGroup->GetConv(cIndex);
-
-			newconv->Show();
-		}
-		else
-		{
-			EndCurrState();
-		}
-	}
-}
-
-void BasicBossScene::StartRunning()
-{
-	sess->SetPlayerInputOn(false);
-}
-
-void BasicBossScene::StartEntranceRun(bool fr,
-	double maxSpeed, const std::string &n0,
-	const std::string &n1)
-{
-	PoiInfo *kinStart = points[n0];
-	PoiInfo *kinStop = points[n1];
-	sess->GetPlayer(0)->SetStoryRun(fr, maxSpeed, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
-		kinStop->edgeQuantity);
-}
-
-void BasicBossScene::StartEntranceStand(bool fr,
-	const std::string &n)
-{
-	PoiInfo *kinStand = points[n];
-	assert(kinStand->edge != NULL);
-	Actor *player = sess->GetPlayer(0);
-	player->facingRight = fr;
-	player->SetGroundedPos(kinStand->edge, kinStand->edgeQuantity);
-	player->StandInPlace();
-}
-
-void BasicBossScene::SetCameraShot(const std::string &n)
-{
-	CameraShot *shot = shots[n];
-	sess->cam.Set(shot->centerPos, shot->zoom, sess->cam.zoomLevel);
-}
-
-void BasicBossScene::SetEntranceRun()
-{
-	string entranceIndexStr = to_string(entranceIndex);
-	string startStr = "kinstart" + entranceIndexStr;
-	string endStr = "kinstop" + entranceIndexStr;
-
-	StartEntranceRun(true, 10.0, startStr, endStr);
-}
-
-void BasicBossScene::SetEntranceIndex(int ind)
-{
-	entranceIndex = ind;
-}
-
-void BasicBossScene::SetEntranceStand()
-{
-	string standString = "kinstand" + to_string(entranceIndex);
-
-	StartEntranceStand(true, standString);
-}
-
-void BasicBossScene::AddStartPoint()
-{
-	string startStr = "kinstart" + to_string(entranceIndex);
-	AddPoint(startStr);
-}
-
-void BasicBossScene::AddStopPoint()
-{
-	string stopStr = "kinstop" + to_string(entranceIndex);
-	AddPoint(stopStr);
-}
-
-void BasicBossScene::AddStandPoint()
-{
-	string standStr = "kinstand" + to_string(entranceIndex);
-	AddPoint(standStr);
-}
-
-void BasicBossScene::AddStartAndStopPoints()
-{
-	AddStartPoint();
-	AddStopPoint();
-}
-
-void BasicBossScene::SetEntranceShot()
-{
-	//if (shots.count("scenecam") == 1)
-	{
-		SetCameraShot("scenecam");
-	}
-	//else
-	{
-		//assert(0);
-	}
-}
-
-
-void BasicBossScene::EntranceUpdate()
-{
-	Actor *player = sess->GetPlayer(0);
-
-	if (entranceType == RUN)
-	{
-		if (frame == 0)
-		{
-			sess->Fade(false, fadeFrames, Color::Black);
-			sess->adventureHUD->Hide(fadeFrames);
-			player->Wait();
-			sess->cam.SetManual(true);
-		}
-		else if (frame == fadeFrames)
-		{
-			barrier->Trigger();
-			sess->RemoveAllEnemies();
-			sess->Fade(true, fadeFrames, Color::Black);
-			SetEntranceShot();
-			SetEntranceRun();
-		}
-	}
-	else if( entranceType == APPEAR)
-	{
-		//owner->adventureHUD->Hide(fadeFrames);
-	}
-}
-
-void BasicBossScene::SetPlayerStandPoint(const std::string &n,
-	bool fr)
-{
-	assert(points.count(n) == 1);
-
-	PoiInfo *pi = points[n];
-	Actor *player = sess->GetPlayer(0);
-	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
-}
-
-void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
-{
-	string standStr = "kinstand" + to_string(entranceIndex);
-	SetPlayerStandPoint(standStr, fr);
-}
-
-void BasicBossScene::ReturnToGame()
-{
-	sess->SetPlayerInputOn(true);
-	sess->adventureHUD->Show(60);
-	sess->cam.EaseOutOfManual(60);
-}
-
-bool BasicBossScene::IsAutoRunState()
-{
-	if (entranceType == RUN)
-	{
-		return state == 0;
-	}
-	else
-	{
-		return false;
-	}
-	
-}
-
-void BasicBossScene::Wait()
-{
-	state = 1;
-	frame = 0;
-}
-
-Conversation *BasicBossScene::GetCurrentConv()
-{
-	if (currConvGroup != NULL)
-	{
-		return currConvGroup->GetConv(cIndex);
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-void BasicBossScene::SetCurrMovie(const std::string &name, int movFadeFrames, Color movFadeColor )
-{
-	assert(movies.count(name) == 1);
-	currMovie = movies[name];
-	movieFadeFrames = movFadeFrames;
-	movieFadeColor = movFadeColor;
-	movieStopFrame = -1;
-}
-
-bool BasicBossScene::Update()
-{
-	Actor *player = sess->GetPlayer(0);
-
-	if (frame == stateLength[state] && state != numStates)
-	{
-		++state;
-		frame = 0;
-
-		if (currMovie != NULL)
-			currMovie = NULL;
-	}
-
-	if (state == numStates)
-	{
-		ReturnToGame();
-		return false;
-	}
-
-	if (IsAutoRunState() && !player->IsAutoRunning() && frame > 60)
-	{
-		state++;
-		frame = 0;
-		//Wait();
-	}
-
-	UpdateFlashes();
-
-	UpdateFlashGroup();
-
-	UpdateState();
-
-	++frame;
-
-	return true;
-}
-
-void BasicBossScene::BasicFlashUpdateState( const std::string &flashName )
-{
-	FlashedImage *fi = flashes[flashName];
-	if (frame == 0)
-	{
-		Conversation *c = GetCurrentConv();
-		if (c != NULL)
-			c->Hide();
-
-		fi->Flash();
-	}
-	else if (fi->IsDone())
-	{
-		frame = stateLength[state] - 1;
-	}
-}
-
-void BasicBossScene::EaseShot(const std::string &shotName, int frames,
-	CubicBezier bez )
-{
-	assert(shots.count(shotName) == 1);
-
-	CameraShot *shot = shots[shotName];
-	sess->cam.Ease(Vector2f(shot->centerPos), shot->zoom, frames, bez);
-}
-
-void BasicBossScene::EasePoint(const std::string &pointName, float targetZoom, 
-	int frames, CubicBezier bez)
-{
-	assert(points.count(pointName) == 1);
-
-	PoiInfo *pi = points[pointName];
-	sess->cam.Ease(Vector2f(pi->pos), targetZoom, frames, bez);
-}
-
-void BasicBossScene::Flash(const std::string &flashName)
-{
-	assert(flashes.count(flashName) == 1);
-
-	flashes[flashName]->Flash();
-}
-
-void BasicBossScene::SetFlashGroup( const std::string & n )
-{
-	currFlashGroup = flashGroups[n];
-
-
-	//(*currFlashGroup->currFlash)->image->Flash();
-}
-
-void BasicBossScene::UpdateFlashGroup()
-{
-	if (currFlashGroup == NULL)
-	{
-		return;
-	}
-
-	(*currFlashGroup).Update();
-
-	if ((*currFlashGroup).IsDone())
-	{
-		currFlashGroup = NULL;
-	}
-	//FlashedImage *fg = (*currFlashGroup->currFlash)->image;
-	//int earlyEnd = (*currFlashGroup->currFlash)->earlyEnd;
-
-	////cout << "updating" << endl;
-
-	//bool startNext = false;
-	//if (fg->GetFramesUntilDone() <= earlyEnd)
-	//{
-	//	startNext = true;
-	//}
-
-	//if (startNext)
-	//{
-	//	currFlashGroup->currFlash++;
-	//	if (currFlashGroup->currFlash == currFlashGroup->fList.end())
-	//	{
-	//		currFlashGroup->done = true;
-	//		currFlashGroup = NULL;
-	//	}
-	//	else
-	//	{
-	//		(*currFlashGroup->currFlash)->image->Flash();
-	//	}
-	//}
-}
-
-void BasicBossScene::EndCurrState()
-{
-	int sLen = stateLength[state];
-	frame = sLen - 1;
-	/*if (sLen == -1)
-	{
-		frame = -2;
-	}
-	else
-	{
-		frame = stateLength[state] - 1;
-	}*/
-}
-
-bool BasicBossScene::IsLastFrame()
-{
-	int sLen = stateLength[state];
-
-	return frame == (sLen - 1);
-}
-
-bool BasicBossScene::IsCamMoving()
-{
-	return sess->cam.easing;
-}
-
-FlashGroup * BasicBossScene::AddFlashGroup(const std::string &n)
-{
-	assert(flashGroups.count(n) == 0);
-
-	FlashGroup *fg = new FlashGroup();
-	flashGroups[n] = fg;
-	return fg;
-}
-
-void BasicBossScene::AddSeqFlashToGroup(FlashGroup *fGroup,
-	const std::string &n, int delayedStart )
-{
-	assert(flashes.count(n) == 1);
-
-	fGroup->AddSeqFlash(flashes[n], delayedStart);
-}
-
-void BasicBossScene::AddSimulFlashToGroup(FlashGroup *fGroup,
-	const std::string &n, int waitFrames )
-{
-	assert(flashes.count(n) == 1);
-	fGroup->AddSimulFlash(flashes[n], waitFrames);
-}
-
-void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
-{
-	if (layer != EffectLayer::IN_FRONT)
-	{
-		return;
-	}
-
-	View v = target->getView();
-	target->setView(sess->uiView);
-
-	//temporarily have this here, eventually move the BGs as another thing you can have a bunch of in a sequence.
-	if (currFlashGroup != NULL)
-	{
-		(*currFlashGroup).DrawBG(target);
-	}
-
-	
-
-	DrawFlashes(target);
-
-	if (currConvGroup != NULL)
-	{
-		Conversation *conv = currConvGroup->GetConv(cIndex);
-		conv->Draw(target);
-	}
-	
-	target->setView(v);
-
-	if (currMovie != NULL)
-	{
-		target->draw(*currMovie);
-	}
-}
-
-void BasicBossScene::DrawFlashes(sf::RenderTarget *target)
-{
-	for (auto it = flashList.begin(); it != flashList.end(); ++it)
-	{
-		(*it)->Draw(target);
-	}
-}
-
-void BasicBossScene::Rumble(int x, int y, int duration)
-{
-	sess->cam.SetRumble(x, y, duration);
-}
-
-void BasicBossScene::RumbleDuringState(int x, int y)
-{
-	if (frame == 0)
-	{
-		Rumble(x, y, stateLength[state]);
-	}
-}
-
-void BasicBossScene::SetNumStates(int count)
-{
-	numStates = count;
-	stateLength = new int[numStates];
-}
-
 

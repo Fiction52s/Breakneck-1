@@ -104,31 +104,6 @@ struct FlashedImage
 	int infiniteHoldEarlyEnd;
 };
 
-struct Sequence
-{
-	//Sequence *next;
-	//Sequence *prev;
-	Sequence()
-		:frameCount(-1),frame(0),
-		nextSeq( NULL )
-	{
-
-	}
-	int frameCount;
-	int frame;
-	Sequence *nextSeq;
-	virtual ~Sequence();
-	virtual void StartRunning(){}
-	virtual bool Update() = 0;
-	virtual void Reset() = 0;
-	virtual void Draw( sf::RenderTarget *target, 
-		EffectLayer layer = EffectLayer::IN_FRONT ) = 0;
-};
-
-
-
-//typedef std::list<FlashedImage*> FlashGroup;
-
 struct FlashInfo
 {
 	FlashInfo(FlashedImage *fi,
@@ -189,6 +164,103 @@ struct SceneBG
 	Tileset * GetCurrTileset(int frame);
 };
 
+
+struct Sequence
+{
+	int frameCount;
+	int frame;
+	Sequence *nextSeq;
+
+	std::map <std::string, FlashGroup*> flashGroups;
+	FlashGroup *currFlashGroup;
+	std::map<std::string, FlashedImage*> flashes;
+	std::map<std::string, sfe::Movie*> movies;
+	std::map<std::string, Enemy *> enemies;
+	std::map<std::string, ConversationGroup*> groups;
+	std::map<std::string, CameraShot*> shots;
+	std::map<std::string, PoiInfo*> points;
+	std::list<FlashedImage*> flashList;
+	std::map<std::string, SceneBG*> bgs;
+	sfe::Movie *currMovie;
+	ConversationGroup *currConvGroup;
+	int cIndex;
+	int movieFadeFrames;
+	sf::Color movieFadeColor;
+	int movieStopFrame;
+	Session *sess;
+	int state;
+	int *stateLength;
+	int numStates;
+
+	Sequence();
+	virtual ~Sequence();
+	virtual void StartRunning() {}
+	virtual bool Update();
+	void UpdateFlashes();
+	void Init();
+	virtual void UpdateState() {}
+	virtual void SetupStates() {}
+	virtual void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+	FlashGroup * AddFlashGroup(const std::string &n);
+	void SetFlashGroup(const std::string & n);
+	void UpdateFlashGroup();
+	void AddGroup(const std::string &fileName,
+		const std::string &groupName);
+	void AddShot(const std::string &shotName);
+	void AddPoint(const std::string &poiName);
+	void AddMovie(const std::string &movieName);
+	void AddEnemy(const std::string &enName,
+		Enemy *e);
+	FlashedImage * AddFlashedImage(const std::string &imageName,
+		Tileset *ts, int tileIndex,
+		int appearFrames,
+		int holdFrames,
+		int disappearFrames,
+		sf::Vector2f &pos);
+	void SetNumStates(int count);
+	void UpdateMovie();
+	void SetConvGroup(const std::string &n);
+	Conversation *GetCurrentConv();
+	void SetCurrMovie(const std::string &name,
+		int movFadeFrames = 0,
+		sf::Color movFadeColor = sf::Color::Black);
+	void SetCameraShot(const std::string &n);
+	void AddSeqFlashToGroup(FlashGroup *,
+		const std::string &n, int delayedStart = 0);
+	void AddSimulFlashToGroup(FlashGroup *,
+		const std::string &n, int delayedStart = 0);
+	void EndCurrState();
+	void BasicFlashUpdateState(
+		const std::string &flashName);
+	void RumbleDuringState(int x, int y);
+	void Rumble(int x, int y, int duration);
+	virtual void ConvUpdate();
+	SceneBG * AddBG(const std::string &name, std::list<Tileset*> &anim,
+		int animFactor);
+	SceneBG *GetBG(const std::string &name);
+	bool IsCamMoving();
+	bool IsLastFrame();
+	void EaseShot(const std::string &shotName,
+		int frames, CubicBezier bez = CubicBezier());
+	void EasePoint(const std::string &pointName,
+		float targetZoom, int frames,
+		CubicBezier bez = CubicBezier());
+	void Flash(const std::string &flashName);
+	virtual void ReturnToGame() {}
+	virtual void DrawFlashes(sf::RenderTarget *target);
+	virtual void SpecialInit() {}
+	virtual void AddShots() {}
+	virtual void AddPoints() {}
+	virtual void AddFlashes() {}
+	virtual void AddEnemies() {}
+	virtual void AddGroups() {}
+	virtual void AddMovies() {}
+	virtual void Reset();
+	bool StateIncrement();
+
+};
+
 struct BasicBossScene : Sequence
 {
 	enum EntranceType
@@ -197,54 +269,18 @@ struct BasicBossScene : Sequence
 		APPEAR,
 	};
 
-	std::list<FlashedImage*> flashList;
-	std::map<std::string, Enemy *> enemies;
-	std::map<std::string, sfe::Movie*> movies;
-	FlashGroup *currFlashGroup;
-	sfe::Movie *currMovie;
-	ConversationGroup *currConvGroup;
-	int cIndex;
 	Barrier *barrier;
-	Session *sess;
 	EntranceType entranceType;
-	int movieFadeFrames;
-	sf::Color movieFadeColor;
-	int movieStopFrame;
 	int fadeFrames;
-	int state;
-	int *stateLength;//[Count];
-	int numStates;
 	int entranceIndex;
-	std::map<std::string, SceneBG*> bgs;
-	std::map<std::string, ConversationGroup*> groups;
-	std::map<std::string, CameraShot*> shots;
-	std::map<std::string, PoiInfo*> points;
-	std::map<std::string, FlashedImage*> flashes;
-	std::map <std::string, FlashGroup*> flashGroups;
 	
+	virtual bool Update();
 	static BasicBossScene *CreateScene(const std::string &name);
-
 	BasicBossScene(EntranceType et );
 	virtual ~BasicBossScene();
-
-	virtual void UpdateState() = 0;
-	virtual void SetupStates() = 0;
-
 	virtual void StartRunning();
-	virtual bool Update();
-	void SetNumStates(int count);
-	virtual void Reset();
-	virtual void AddShots(){}
-	virtual void AddPoints(){}
-	virtual void AddFlashes(){}
-	virtual void AddEnemies(){}
-	virtual void AddGroups(){}
-	virtual void AddMovies() {}
-	virtual void SpecialInit(){}
-	virtual void ConvUpdate();
 	virtual void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
-	virtual void DrawFlashes(sf::RenderTarget *target);
 	virtual void EntranceUpdate();
 	virtual bool IsAutoRunState();
 	virtual void ReturnToGame();
@@ -252,65 +288,19 @@ struct BasicBossScene : Sequence
 	virtual void SetEntranceRun();
 	virtual void SetEntranceStand();
 	virtual void SetEntranceShot();
-
-	void Init();
-	void EndCurrState();
 	void SetPlayerStandPoint(const std::string &n,
 		bool fr);
-	bool IsCamMoving();
-	bool IsLastFrame();
-	SceneBG * AddBG(const std::string &name, std::list<Tileset*> &anim,
-		int animFactor);
-	SceneBG *GetBG(const std::string &name);
-	void EaseShot(const std::string &shotName,
-		int frames, CubicBezier bez = CubicBezier());
-	void EasePoint(const std::string &pointName,
-		float targetZoom, int frames,
-		CubicBezier bez = CubicBezier());
-	void Flash(const std::string &flashName);
-	void Rumble(int x, int y, int duration);
-	void RumbleDuringState(int x, int y);
-	void BasicFlashUpdateState(
-	const std::string &flashName );
-	void AddGroup(const std::string &fileName,
-		const std::string &groupName);
-	void AddShot(const std::string &shotName);
-	void AddPoint(const std::string &poiName);
 	void SetEntranceIndex(int ind);
 	void AddStartPoint();
 	void AddStopPoint();
 	void AddStandPoint();
 	void AddStartAndStopPoints();
 	void SetPlayerStandDefaultPoint(bool fr);
-	FlashedImage * AddFlashedImage(const std::string &imageName,
-		Tileset *ts, int tileIndex,
-		int appearFrames,
-		int holdFrames,
-		int disappearFrames,
-		sf::Vector2f &pos);
-	void AddMovie(const std::string &movieName);
-	void AddEnemy( const std::string &enName,
-		Enemy *e);
-	void UpdateFlashes();
-	void UpdateMovie();
-	void SetConvGroup(const std::string &n);
-	Conversation *GetCurrentConv();
-	void SetCurrMovie(const std::string &name,
-		int movFadeFrames = 0,
-		sf::Color movFadeColor = sf::Color::Black );
 	void StartEntranceRun(bool fr,
 		double maxSpeed, const std::string &n0,
 		const std::string &n1);
 	void StartEntranceStand(bool fr,
 		const std::string &n);
-	void SetCameraShot(const std::string &n);
-	FlashGroup * AddFlashGroup(const std::string &n);
-	void AddSeqFlashToGroup(FlashGroup *,
-		const std::string &n, int delayedStart = 0);
-	void AddSimulFlashToGroup(FlashGroup *,
-		const std::string &n, int delayedStart = 0);
-	void UpdateFlashGroup();
-	void SetFlashGroup( const std::string &n);
 };
 
 struct ShipEnterScene : BasicBossScene

@@ -1381,7 +1381,7 @@ void EditSession::Draw()
 
 	DrawMode();
 
-	
+	DebugDraw(preScreenTex);
 
 	preScreenTex->setView(view);
 

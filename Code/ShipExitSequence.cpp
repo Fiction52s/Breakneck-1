@@ -59,9 +59,6 @@ void ShipExitScene::ReturnToGame()
 		GameSession *game = GameSession::GetSession();
 		game->EndLevel();
 	}
-	//Actor *player = owner->GetPlayer(0);
-
-	//BasicBossScene::ReturnToGame();
 }
 
 void ShipExitScene::UpdateState()
