@@ -4624,6 +4624,7 @@ void Session::SetupDeathSequence()
 	else if (deathSeq == NULL)
 	{
 		deathSeq = new DeathSequence;
+		deathSeq->Init();
 	}
 }
 
