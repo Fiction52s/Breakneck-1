@@ -801,6 +801,11 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 	}
 }
 
+void Enemy::Setup()
+{
+	SetupBodies();
+}
+
 void Enemy::BasicCircleHurtBodySetup(double radius)
 {
 	BasicCircleHurtBodySetup(radius, 0, V2d(), GetPosition());
@@ -871,7 +876,19 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
 }
-	
+
+void Enemy::UpdateSpriteFromParams(ActorParams *ap)
+{
+	//editparams always exists here
+	if (ap->posInfo.IsAerial() && ap->type->CanBeGrounded())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(editParams->GetFloatPos());
+		sprite.setRotation(0);
+	}
+}
+
+
 void Enemy::DirectKill()
 {
 	if (!dead)

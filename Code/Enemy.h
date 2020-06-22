@@ -63,7 +63,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool keyShaderLoaded;
 	void SetKey();
 	bool IsGoalType();
-	virtual void UpdateSpriteFromParams(ActorParams *ap) {}
+	virtual void SetupBodies() {}
+	virtual void UpdateSpriteFromParams(ActorParams *ap);
 	virtual void AddToWorldTrees() {}
 
 	virtual void UpdateFromParams(ActorParams *ap,
@@ -218,7 +219,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void ResetEnemy() = 0;
 	virtual V2d TurretSetup();//return finals pos
 	virtual void Init(){};
-	virtual void Setup() {};
+	virtual void Setup();
 	virtual void ProcessHit();
 	virtual void ProcessShieldHit();
 	virtual void ConfirmHitNoKill();

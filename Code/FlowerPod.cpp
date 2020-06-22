@@ -132,6 +132,7 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 
 FlowerPod::~FlowerPod()
 {
+	delete testSeq;
 	//delete healRing;
 	//delete broadcast;
 }

@@ -11,26 +11,7 @@
 using namespace std;
 using namespace sf;
 
-void Goal::UpdateSpriteFromParams( ActorParams *ap )
-{
-	//editparams always exists here
-	if (ap->posInfo.IsAerial())
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(editParams->GetFloatPos());
-		sprite.setRotation(0);
-	}
-}
 
-void Goal::UpdateOnPlacement( ActorParams *params )
-{
-	Enemy::UpdateOnPlacement(params);
-
-	if (!params->posInfo.IsAerial())
-	{
-		BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
-	}
-}
 
 Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
@@ -68,9 +49,8 @@ Goal::Goal( ActorParams *ap )
 		break;
 	}
 
-
 	SetOffGroundHeight(height / 2.0);
-	UpdateOnPlacement(ap);
+	//UpdateOnPlacement(ap);
 
 	frame = 0;
 	animationFactor = 7;
@@ -125,6 +105,11 @@ Goal::~Goal()
 {
 }
 
+void Goal::SetupBodies()
+{
+	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
+}
+
 void Goal::SetMapGoalPos()
 {
 	sess->hasGoal = true;
@@ -139,7 +124,6 @@ void Goal::SetMapGoalPos()
 void Goal::ConfirmKill()
 {
 	dead = true;
-	//owner->absorbParticles->Activate(owner->GetPlayer(0), 64, position);
 	HandleNoHealth();
 }
 

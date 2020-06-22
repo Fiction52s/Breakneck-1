@@ -532,14 +532,17 @@ void EditSession::TestPlayerMode()
 
 		
 
+		Enemy *currEnemy;
 		for (auto it = groups.begin(); it != groups.end(); ++it)
 		{
-			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); 
+				++enit)
 			{
-				if ((*enit)->myEnemy != NULL)
+				currEnemy = (*enit)->myEnemy;
+				if ( currEnemy != NULL)
 				{
-					(*enit)->myEnemy->Reset();
-					RemoveEnemy((*enit)->myEnemy);
+					currEnemy->Reset();
+					RemoveEnemy(currEnemy);
 				}
 			}
 		}
@@ -658,6 +661,7 @@ void EditSession::TestPlayerMode()
 			if (currEnemy != NULL)
 			{
 				currEnemy->Setup();
+				
 			}
 		}
 	}
@@ -666,7 +670,9 @@ void EditSession::TestPlayerMode()
 	{
 		if ((*it)->enemyChain != NULL)
 		{
+			//(*it)->enemyChain->Reset();
 			(*it)->enemyChain->Setup();
+			
 		}
 	}
 

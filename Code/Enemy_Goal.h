@@ -16,13 +16,12 @@ struct Goal : Enemy
 		A_Count
 	};
 
-	void UpdateSpriteFromParams(ActorParams *ap);
-	void UpdateOnPlacement(ActorParams *ap);
-
 	Goal(ActorParams *ap);
 	~Goal();
+
+	void SetupBodies();
 	void SetMapGoalPos();
-	//static Enemy *Create(std::ifstream &is);
+
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -30,8 +29,8 @@ struct Goal : Enemy
 	void HandleNoHealth();
 	void ProcessState();
 	void ConfirmKill();
-	int explosionLength;
 
+	int explosionLength;
 	int explosionAnimFactor;
 	int explosionYOffset;
 	int initialYOffset;
@@ -44,8 +43,6 @@ struct Goal : Enemy
 	float goalKillStartZoom;
 	sf::Vector2f goalKillStartPos;
 
-
-	//int frame;
 	int deathFrame;
 	int animationFactor;
 	bool dead;
