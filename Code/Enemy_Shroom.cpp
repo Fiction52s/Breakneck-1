@@ -17,16 +17,81 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void Shroom::UpdateSpriteFromParams(ActorParams *ap)
+
+Shroom::Shroom(ActorParams *ap )
+	:Enemy(EnemyType::EN_SHROOM, ap )
 {
-	if (ap->posInfo.IsAerial())
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(editParams->GetFloatPos());
-		sprite.setRotation(0);
-		SyncSpriteInfo(auraSprite, sprite);
-	}
+	SetNumActions(A_Count);
+	SetEditorActions(LATENT, LATENT, 0);
+
+	SetLevel(ap->GetLevel());
+
+	double height = 192;
+	ts = sess->GetTileset("Enemies/shroom_192x192.png", 192, 192);
+	ts_aura = sess->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
+	sprite.setTexture(*ts->texture);
+	auraSprite.setTexture(*ts_aura->texture);
+
+	SetOffGroundHeight(40 * scale);
+
+	hitSound = sess->GetSound("Enemies/shroom_spark");
+
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setScale(scale, scale);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 3*60;
+	hitboxInfo->drainX = .5;
+	hitboxInfo->drainY = .5;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 5;
+	hitboxInfo->knockback = 0;
+
+	jelly = new ShroomJelly( this );
+	jelly->Reset();
+
+	actionLength[LATENT] = 18;
+	actionLength[HITTING] = 11;
+
+	animFactor[LATENT] = 2;
+	animFactor[HITTING] = 2;
+
+	cutObject->Setup(ts, 29, 30, scale);
+	cutObject->SetRotation(sprite.getRotation());
+
+	ResetEnemy();
 }
+
+Shroom::~Shroom()
+{
+	delete jelly;
+}
+
+void Shroom::SetupBodies()
+{
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
+	hitBody.hitboxInfo = hitboxInfo;
+}
+
+void Shroom::ResetEnemy()
+{
+	SetCurrPosInfo(startPosInfo);
+
+	jelly->Reset();
+	action = LATENT;
+	frame = 0;
+	dead = false;
+	receivedHit = NULL;
+	slowCounter = 1;
+	jellySpawnable = true;
+	slowMultiple = 1;
+
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+}
+
+
 
 void Shroom::SetLevel(int lev)
 {
@@ -45,80 +110,6 @@ void Shroom::SetLevel(int lev)
 		maxHealth += 5;
 		break;
 	}
-}
-
-Shroom::Shroom(ActorParams *ap )//bool p_hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(EnemyType::EN_SHROOM, ap )//p_hasMonitor, 1), ground(g), edgeQuantity(q)
-{
-	SetNumActions(A_Count);
-	SetEditorActions(LATENT, LATENT, 0);
-
-	SetLevel(ap->GetLevel());
-
-	double height = 192;
-	ts = sess->GetTileset("Enemies/shroom_192x192.png", 192, 192);
-	ts_aura = sess->GetTileset("Enemies/shroom_aura_192x192.png", 192, 192);
-	sprite.setTexture(*ts->texture);
-	auraSprite.setTexture(*ts_aura->texture);
-
-	SetOffGroundHeight(40 * scale);
-
-	
-
-	hitSound = sess->GetSound("Enemies/shroom_spark");
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setScale(scale, scale);
-
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3*60;
-	hitboxInfo->drainX = .5;
-	hitboxInfo->drainY = .5;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 5;
-	hitboxInfo->knockback = 0;
-	hitBody.hitboxInfo = hitboxInfo;
-
-	jelly = new ShroomJelly( this );
-	jelly->Reset();
-
-	actionLength[LATENT] = 18;
-	actionLength[HITTING] = 11;
-
-	animFactor[LATENT] = 2;
-	animFactor[HITTING] = 2;
-
-	cutObject->Setup(ts, 29, 30, scale);
-	cutObject->SetRotation(sprite.getRotation());
-
-	ResetEnemy();
-
-	SetSpawnRect();
-}
-
-Shroom::~Shroom()
-{
-	delete jelly;
-}
-
-void Shroom::ResetEnemy()
-{
-	SetCurrPosInfo(startPosInfo);
-
-	jelly->Reset();
-	action = LATENT;
-	frame = 0;
-	dead = false;
-	receivedHit = NULL;
-	slowCounter = 1;
-	jellySpawnable = true;
-	slowMultiple = 1;
-
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
 }
 
 void Shroom::ProcessState()

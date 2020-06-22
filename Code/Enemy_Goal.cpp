@@ -97,8 +97,6 @@ Goal::Goal( ActorParams *ap )
 	}
 
 	ResetEnemy();
-
-	SetSpawnRect();
 }
 
 Goal::~Goal()

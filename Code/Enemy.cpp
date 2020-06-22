@@ -804,6 +804,7 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 void Enemy::Setup()
 {
 	SetupBodies();
+	SetSpawnRect();
 }
 
 void Enemy::BasicCircleHurtBodySetup(double radius)
@@ -885,6 +886,11 @@ void Enemy::UpdateSpriteFromParams(ActorParams *ap)
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		sprite.setPosition(editParams->GetFloatPos());
 		sprite.setRotation(0);
+
+		if (auraSprite.getTexture() != NULL)
+		{
+			SyncSpriteInfo(auraSprite, sprite);
+		}
 	}
 }
 

@@ -388,6 +388,7 @@ struct EditSession : GUIHandler, Session
 		sf::Vector2f &size);
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
+	void CleanupTestPlayerMode();
 	void Load();
 	void Init();
 	void DefaultInit();

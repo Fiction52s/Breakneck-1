@@ -16,8 +16,7 @@ struct Shroom : Enemy
 
 	Shroom(ActorParams * ap);
 	~Shroom();
-	void UpdateSpriteFromParams(ActorParams *ap);
-	//void UpdateOnPlacement(ActorParams *ap);
+	
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -25,6 +24,7 @@ struct Shroom : Enemy
 	void DirectKill();
 	void ResetEnemy();
 	void ProcessState();
+	void SetupBodies();
 
 	void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);

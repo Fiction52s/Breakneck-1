@@ -829,7 +829,6 @@ void EditSession::TestPlayerMode()
 
 void EditSession::EndTestMode()
 {
-	ResetEnemies();
 	SetMode(EDIT);
 }
 
@@ -1392,7 +1391,7 @@ void EditSession::Draw()
 
 	DrawMode();
 
-	DebugDraw(preScreenTex);
+	//DebugDraw(preScreenTex);
 
 	preScreenTex->setView(view);
 
@@ -9781,6 +9780,29 @@ void EditSession::RemoveActivePanel(Panel *p)
 	}
 }
 
+void EditSession::CleanupTestPlayerMode()
+{
+	ResetEnemies();
+
+	Enemy *curr = activeEnemyList;
+	while (curr != NULL)
+	{
+		Enemy *next = curr->next;
+		RemoveEnemy(curr);
+		curr = next;
+	}
+
+	CleanupGoalFlow();
+	CleanupGoalPulse();
+
+	playerTracker->HideAll();
+
+	mapHeader->leftBounds = realLeftBounds;
+	mapHeader->topBounds = realTopBounds;
+	mapHeader->boundsWidth = realBoundsWidth;
+	mapHeader->boundsHeight = realBoundsHeight;
+}
+
 void EditSession::SetMode(Emode m)
 {
 	Emode oldMode = mode;
@@ -9814,25 +9836,11 @@ void EditSession::SetMode(Emode m)
 	case CREATE_TERRAIN:
 		break;
 	case TEST_PLAYER:
-		for (auto it = groups.begin(); it != groups.end(); ++it)
-		{
-			for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
-			{
-				if ((*enit)->myEnemy != NULL)
-				{
-					(*enit)->myEnemy->Reset();
-					//AddEnemy((*enit)->myEnemy);
-				}
-			}
-		}
-		playerTracker->HideAll();
-
-		mapHeader->leftBounds = realLeftBounds;
-		mapHeader->topBounds = realTopBounds;
-		mapHeader->boundsWidth = realBoundsWidth;
-		mapHeader->boundsHeight = realBoundsHeight;
+	{
+		CleanupTestPlayerMode();
 		//playerTracker->SetOn(false);
 		break;
+	}
 	case CREATE_GATES:
 	{
 		createGatesModeUI->CompleteEditingGate();
