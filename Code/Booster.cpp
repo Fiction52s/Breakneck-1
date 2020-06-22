@@ -19,30 +19,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void Booster::SetLevel(int lev)
-{
-	level = lev;
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
-}
-
-void Booster::AddToWorldTrees()
-{
-	sess->activeItemTree->Insert(this);
-}
 
 Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
@@ -86,6 +63,31 @@ void Booster::ResetEnemy()
 
 	sprite.setTexture(*ts->texture);
 	UpdateSprite();
+}
+
+void Booster::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
+
+void Booster::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
 }
 
 bool Booster::Boost()

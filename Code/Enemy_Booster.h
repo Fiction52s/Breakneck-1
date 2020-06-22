@@ -14,6 +14,7 @@ struct Booster : Enemy
 	};
 
 	Booster(ActorParams *ap);//sf::Vector2i &pos, int level);
+
 	void ProcessState();
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);

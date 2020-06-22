@@ -39,6 +39,18 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, S_FLOAT, 0);
 
+	actionLength[S_FLOAT] = 11;
+	actionLength[S_DASH] = 30;
+	actionLength[S_RETURN] = 60;
+	actionLength[S_OUT] = 20;
+	actionLength[S_COMBO] = 40;
+
+	animFactor[S_FLOAT] = 4;
+	animFactor[S_DASH] = 1;
+	animFactor[S_RETURN] = 1;
+	animFactor[S_OUT] = 1;
+	animFactor[S_COMBO] = 1;
+
 	SetLevel(ap->GetLevel());
 
 	speed = 20;
@@ -49,15 +61,11 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 
 	ts = sess->GetTileset("Enemies/dasher_208x144.png", 208, 144);
 	ts_aura = sess->GetTileset("Enemies/dasher_aura_208x144.png", 208, 144);
-	auraSprite.setTexture(*ts_aura->texture);
-
-	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	
+	sprite.setTexture(*ts->texture);	
 	sprite.setScale(scale, scale);
-	sprite.setPosition(GetPositionF());
 
-	auraSprite.setScale(scale, scale);
+	auraSprite.setTexture(*ts_aura->texture);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -66,11 +74,6 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
-
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-
-	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 
@@ -101,22 +104,6 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	comboObj->enemyHitBody.AddCollisionBox(1, exBox);
 	comboObj->enemyHitboxFrame = 0;
 
-	facingRight = true;
-
-	actionLength[S_FLOAT] = 11;
-	actionLength[S_DASH] = 30;
-	actionLength[S_RETURN] = 60;
-	actionLength[S_OUT] = 20;
-	actionLength[S_COMBO] = 40;
-
-	animFactor[S_FLOAT] = 4;
-	animFactor[S_DASH] = 1;
-	animFactor[S_RETURN] = 1;
-	animFactor[S_OUT] = 1;
-	animFactor[S_COMBO] = 1;
-
-	
-
 	maxCharge = 15;
 
 	cutObject->SetTileset(ts);
@@ -125,12 +112,40 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	cutObject->SetScale(scale);
 
 	ResetEnemy();
-
-	SetSpawnRect();
 }
 
 Airdasher::~Airdasher()
 {
+}
+
+void Airdasher::Setup()
+{
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+
+	hitBody.hitboxInfo = hitboxInfo;
+
+	SetSpawnRect();
+}
+
+void Airdasher::ResetEnemy()
+{
+	SetCurrPosInfo(startPosInfo);
+
+	hitFrame = -1;
+	currHits = 0;
+	currOrig = startPosInfo.GetPosition();
+	action = S_FLOAT;
+	frame = 0;
+	comboObj->Reset();
+	sprite.setRotation(0);
+	facingRight = true;
+
+	SetHitboxes(&hitBody, 0);
+	SetHurtboxes(&hurtBody, 0);
+
+	UpdateHitboxes();
+	UpdateSprite();
 }
 
 void Airdasher::ComboHit()
@@ -145,24 +160,7 @@ void Airdasher::ComboHit()
 	}
 }
 
-void Airdasher::ResetEnemy()
-{
-	SetCurrPosInfo(startPosInfo);
 
-	hitFrame = -1;
-	currHits = 0;
-	currOrig = startPosInfo.GetPosition();
-	action = S_FLOAT;
-	frame = 0;
-	comboObj->Reset();
-	sprite.setRotation(0);
-
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
-
-	UpdateHitboxes();
-	UpdateSprite();
-}
 
 void Airdasher::ProcessHit()
 {
@@ -403,8 +401,6 @@ void Airdasher::FrameIncrement()
 
 void Airdasher::UpdateSprite()
 {
-	sprite.setPosition(GetPositionF());
-
 	int tIndex = 0;
 
 	
@@ -438,6 +434,8 @@ void Airdasher::UpdateSprite()
 		ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
 	}
 	sprite.setTextureRect(ir);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 
 	SyncSpriteInfo(auraSprite, sprite);
 

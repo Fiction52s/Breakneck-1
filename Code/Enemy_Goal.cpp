@@ -12,10 +12,12 @@ using namespace std;
 using namespace sf;
 
 
-
 Goal::Goal( ActorParams *ap )
 	:Enemy( EnemyType::EN_GOAL, ap )
 {
+	SetNumActions(A_Count);
+	SetEditorActions(A_SITTING, A_SITTING, 0);
+
 	double width;
 	double height;
 
@@ -49,16 +51,12 @@ Goal::Goal( ActorParams *ap )
 		break;
 	}
 
+	
+
 	SetOffGroundHeight(height / 2.0);
-	//UpdateOnPlacement(ap);
 
 	frame = 0;
 	animationFactor = 7;
-
-	action = A_SITTING;
-
-	SetNumActions(A_Count);
-	SetEditorActions(A_SITTING, A_SITTING, 0);
 
 	//clean this up 
 	if (sess->IsSessTypeGame())
@@ -103,9 +101,11 @@ Goal::~Goal()
 {
 }
 
-void Goal::SetupBodies()
+void Goal::Setup()
 {
 	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
+
+	SetSpawnRect();
 }
 
 void Goal::SetMapGoalPos()
@@ -119,18 +119,18 @@ void Goal::SetMapGoalPos()
 	sess->goalNodePosFinal = V2d(sess->goalNodePos.x, sess->goalNodePos.y - space);
 }
 
-void Goal::ConfirmKill()
-{
-	dead = true;
-	HandleNoHealth();
-}
-
 void Goal::ResetEnemy()
 {
 	frame = 0;
 	action = A_SITTING;
 	SetHurtboxes(&hurtBody, 0);
 	UpdateSprite();
+}
+
+void Goal::ConfirmKill()
+{
+	dead = true;
+	HandleNoHealth();
 }
 
 void Goal::ProcessState()
@@ -205,16 +205,6 @@ void Goal::HandleNoHealth()
 	}
 }
 
-void Goal::EnemyDraw(sf::RenderTarget *target )
-{
-	target->draw( sprite );
-}
-
-void Goal::DrawMinimap( sf::RenderTarget *target )
-{
-	target->draw( miniSprite );
-}
-
 void Goal::UpdateSprite()
 {
 	int trueFrame = 0;
@@ -226,15 +216,15 @@ void Goal::UpdateSprite()
 	}
 	else  if (action == A_KINKILLING)
 	{
-		if( frame / 2 < 12 )
+		if (frame / 2 < 12)
 		{
 			trueFrame = 1;
 		}
-		else if( frame / 2 < 18 )
+		else if (frame / 2 < 18)
 		{
 			trueFrame = 2;
 		}
-		else if( frame / 2 < 30 )
+		else if (frame / 2 < 30)
 		{
 			trueFrame = 3;
 		}
@@ -242,11 +232,11 @@ void Goal::UpdateSprite()
 		{
 			trueFrame = 4;
 		}
-		sprite.setTexture( *ts->texture );
-		sprite.setTextureRect( ts->GetSubRect( trueFrame ) );
+		sprite.setTexture(*ts->texture);
+		sprite.setTextureRect(ts->GetSubRect(trueFrame));
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
 	}
-	else if( action == A_EXPLODING )
+	else if (action == A_EXPLODING)
 	{
 		trueFrame = frame / explosionAnimFactor;
 		int numTiles = ts_explosion->GetNumTiles();
@@ -263,11 +253,11 @@ void Goal::UpdateSprite()
 		}
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
-	else if( action == A_DESTROYED )
+	else if (action == A_DESTROYED)
 	{
-		trueFrame = explosionLength-1;
+		trueFrame = explosionLength - 1;
 		int numTiles = ts_explosion->GetNumTiles();
-		if (trueFrame >= numTiles )
+		if (trueFrame >= numTiles)
 		{
 			trueFrame -= numTiles;
 			sprite.setTexture(*ts_explosion1->texture);
@@ -278,10 +268,20 @@ void Goal::UpdateSprite()
 			sprite.setTexture(*ts_explosion->texture);
 			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 		}
-		
+
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
-	
+
 	sprite.setPosition(startPosInfo.GetPositionF());
 	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+}
+
+void Goal::EnemyDraw(sf::RenderTarget *target )
+{
+	target->draw( sprite );
+}
+
+void Goal::DrawMinimap( sf::RenderTarget *target )
+{
+	target->draw( miniSprite );
 }

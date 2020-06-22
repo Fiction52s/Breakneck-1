@@ -16,12 +16,12 @@ struct BasicTurret : Enemy, LauncherEnemy
 		A_Count
 	};
 
-	void UpdateSpriteFromParams(ActorParams *ap);
-
-	void UpdateOnPlacement(ActorParams *ap);
+	
 
 	BasicTurret(ActorParams *ap);
+
 	void SetLevel(int lev);
+	void UpdateOnPlacement(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

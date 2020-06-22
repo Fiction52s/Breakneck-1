@@ -33,18 +33,6 @@ void BasicTurret::UpdateOnPlacement(ActorParams *ap)
 	}
 
 	testShield->SetPosition(GetPosition());
-	//cutObject->rotateAngle = sprite.getRotation();
-}
-
-void BasicTurret::UpdateSpriteFromParams(ActorParams *ap)
-{
-	if (ap->posInfo.IsAerial())
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(editParams->GetFloatPos());
-		sprite.setRotation(0);
-		SyncSpriteInfo(auraSprite, sprite);
-	}
 }
 
 void BasicTurret::SetLevel(int lev)
@@ -96,8 +84,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	SetOffGroundHeight(height / 2.f - 30 * scale);
 
-	SetCurrPosInfo(ap->posInfo);
-	//SetCurrPosInfo(startPosInfo);
+	//SetCurrPosInfo(ap->posInfo);
 	
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 	//testShield->SetPosition(GetPosition());
@@ -105,15 +92,13 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	auraSprite.setTexture(*ts_aura->texture);
 
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
 	
 	
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
 	
-	BasicCircleHurtBodySetup(64);
-	BasicCircleHitBodySetup(64);
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -122,7 +107,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
-	hitBody.hitboxInfo = hitboxInfo;
 
 	animationFactor = 4;
 
@@ -139,25 +123,13 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::BASIC_TURRET, 16, 1, launchPos, gn, 0, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
-	launchers[0]->hitboxInfo->damage = 18;
-
-	/*launchers[1] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos + along * 20.0 , along, 0, 300);
-	launchers[1]->SetBulletSpeed(bulletSpeed);
-	launchers[1]->hitboxInfo->damage = 18;
-
-	launchers[2] = new Launcher(this, BasicBullet::BASIC_TURRET, owner, 16, 1, launchPos - along * 20.0, -along, 0, 300);
-	launchers[2]->SetBulletSpeed(bulletSpeed);
-	launchers[2]->hitboxInfo->damage = 18;*/
-	//launcher->Reset();
-	
+	launchers[0]->hitboxInfo->damage = 18;	
 
 	cutObject->Setup(ts, 12, 11, scale, 0);
 	
 	testShield->SetPosition(GetPosition());
 
 	ResetEnemy();
-
-	SetSpawnRect();
 }
 
 void BasicTurret::ResetEnemy()
@@ -310,36 +282,18 @@ void BasicTurret::SetupPreCollision()
 
 void BasicTurret::Setup()
 {
+	Edge *ground = startPosInfo.GetEdge();
+	V2d gn(0, -1);
+	V2d launchPos = GetPosition();
+
+	gn = ground->Normal();
+	launchPos = ground->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
+
+	launchers[0]->position = launchPos;
+	launchers[0]->facingDir = gn;
+
 	for (int li = 0; li < 1; ++li)
 	{
-		/*launchers[li]->Reset();
-		launchers[li]->Fire();
-		BasicBullet *bb = launchers[li]->activeBullets;
-		V2d finalPos;
-		bool collide = true;
-		while (launchers[li]->GetActiveCount() > 0)
-		{
-			launchers[li]->UpdatePrePhysics();
-			launchers[li]->UpdatePhysics(0, true);
-
-			if (bb->framesToLive == 0)
-			{
-				finalPos = bb->position;
-				collide = false;
-			}
-
-			launchers[li]->UpdatePostPhysics();
-		}
-
-		if (collide)
-		{
-			finalPos = launchers[li]->def_pos;
-		}
-
-		launchers[li]->interactWithTerrain = false;*/
-
-		
-
 		V2d finalPos = TurretSetup();
 
 		double rad = Launcher::GetRadius(launchers[li]->bulletType);
@@ -364,4 +318,12 @@ void BasicTurret::Setup()
 		
 		prelimBox[li].globalPosition = (finalPos + launchers[li]->position) / 2.0;
 	}
+
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
+	hitBody.hitboxInfo = hitboxInfo;
+
+	cutObject->SetRotation(sprite.getRotation());
+
+	SetSpawnRect();
 }

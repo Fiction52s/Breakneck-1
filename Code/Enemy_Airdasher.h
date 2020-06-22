@@ -19,6 +19,7 @@ struct Airdasher : Enemy
 	Airdasher(ActorParams *ap);
 	~Airdasher();
 	void ProcessState();
+	void Setup();
 
 	void SetLevel(int lev);
 	void ProcessHit();

@@ -803,7 +803,6 @@ void Enemy::BasicCircleHitBodySetup(double radius, double angle, V2d &offset, V2
 
 void Enemy::Setup()
 {
-	SetupBodies();
 	SetSpawnRect();
 }
 
