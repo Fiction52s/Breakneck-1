@@ -44,6 +44,10 @@ Shroom::Shroom(ActorParams *ap )
 
 	hitSound = sess->GetSound("Enemies/shroom_spark");
 
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
+	hitBody.hitboxInfo = hitboxInfo;
+
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
 	hitboxInfo->drainX = .5;
@@ -63,17 +67,6 @@ Shroom::Shroom(ActorParams *ap )
 Shroom::~Shroom()
 {
 	delete jelly;
-}
-
-void Shroom::Setup()
-{
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
-	hitBody.hitboxInfo = hitboxInfo;
-
-	cutObject->SetRotation(sprite.getRotation());
-
-	SetSpawnRect();
 }
 
 void Shroom::ResetEnemy()

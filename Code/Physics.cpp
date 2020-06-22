@@ -2126,6 +2126,28 @@ Edge * Edge::GetNextEdge()
 	return edge1;
 }
 
+bool Edge::IsFlatGround()
+{
+	return (Normal().x == 0);
+}
+
+bool Edge::IsSlopedGround()
+{
+	V2d normal = Normal();
+	return (abs(normal.y) > GetSteepThresh() && normal.x != 0);
+}
+
+bool Edge::IsSteepGround()
+{
+	V2d normal = Normal();
+	return (abs(normal.y) <= GetSteepThresh() && abs(normal.x) < 1.0);
+}
+
+bool Edge::IsWall()
+{
+	return Normal().y == 0;
+}
+
 sf::Rect<double> CollisionBox::GetAABB()
 {
 	if (isCircle)
@@ -2179,7 +2201,6 @@ void CollisionBody::ResetFrames()
 		collisionBoxVectors[i].clear(); //keeps capacity the same
 	}
 }
-
 
 void CollisionBody::SetupNumFrames(int p_numFrames)
 {
@@ -2254,7 +2275,6 @@ void CollisionBody::BasicSetup() //one frame and one hitbox
 	SetupNumBoxesOnFrame(0, 1);
 }
 
-
 void CollisionBody::AddBasicCircle( int frame, double radius, double angle,
 	V2d &offset )
 {
@@ -2280,8 +2300,6 @@ void CollisionBody::AddBasicRect( int frame, double hw, double hh,
 	box.rh = hh;
 	AddCollisionBox(frame, box);
 }
-
-
 
 void CollisionBody::BasicCircleSetup( double radius, double angle, V2d &offset ) //one frame and one hitbox
 {
@@ -2320,8 +2338,9 @@ void CollisionBody::SetBasicPos(V2d &pos)
 
 void CollisionBody::SetBasicPos(V2d &pos, double angle )
 {
-	collisionBoxVectors[0][0].globalPosition = pos;
-	collisionBoxVectors[0][0].globalAngle = angle;
+	auto &box = collisionBoxVectors[0][0];
+	box.globalAngle = angle;
+	box.globalPosition = pos;
 }
 
 void CollisionBody::SetBasicPos(int frame, V2d &pos, double angle)

@@ -18,8 +18,6 @@ struct Goal : Enemy
 
 	Goal(ActorParams *ap);
 	~Goal();
-
-	void Setup();
 	void SetMapGoalPos();
 
 	void DrawMinimap(sf::RenderTarget *target);

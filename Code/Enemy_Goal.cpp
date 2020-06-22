@@ -51,9 +51,9 @@ Goal::Goal( ActorParams *ap )
 		break;
 	}
 
-	
-
 	SetOffGroundHeight(height / 2.0);
+
+	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
 
 	frame = 0;
 	animationFactor = 7;
@@ -99,13 +99,6 @@ Goal::Goal( ActorParams *ap )
 
 Goal::~Goal()
 {
-}
-
-void Goal::Setup()
-{
-	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
-
-	SetSpawnRect();
 }
 
 void Goal::SetMapGoalPos()

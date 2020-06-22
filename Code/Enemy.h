@@ -115,6 +115,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	GroundMover *groundMover;
 	void CreateSurfaceMover(PositionInfo &pi,
 		double rad, SurfaceMoverHandler *handler);
+	void CreateGroundMover(PositionInfo &pi,
+		double rad, bool steeps,
+		GroundMoverHandler *handler);
+	double GetGroundedAngleRadians();
 
 	void SetNumActions( int num );
 	int GetEditIdleLength();
@@ -136,6 +140,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void DefaultHurtboxesOn(int hFrame = 0);
 	void HurtboxesOff();
 	void HitboxesOff();
+
+	virtual void SyncCutObject();
 
 
 

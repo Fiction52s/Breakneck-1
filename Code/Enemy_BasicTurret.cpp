@@ -65,9 +65,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
-	
-	
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
 	hitboxInfo->drainX = 0;
@@ -75,6 +72,10 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	animationFactor = 4;
 
@@ -144,7 +145,7 @@ void BasicTurret::ResetEnemy()
 	SetHurtboxes(&hurtBody, 0);
 	SetHitboxes(&hitBody, 0);
 
-	cutObject->rotateAngle = sprite.getRotation();
+	//cutObject->SetRotation(sprite.getRotation());
 
 	currShield = testShield;
 	testShield->Reset();
@@ -320,10 +321,6 @@ void BasicTurret::Setup()
 		
 		prelimBox[li].globalPosition = (finalPos + launchers[li]->position) / 2.0;
 	}
-
-	BasicCircleHurtBodySetup(64);
-	BasicCircleHitBodySetup(64);
-	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetRotation(sprite.getRotation());
 

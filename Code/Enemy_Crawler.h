@@ -19,7 +19,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	};
 
 	void SetLevel(int p_level);
-	void UpdateSpriteFromParams(ActorParams *ap);
 
 	Crawler(ActorParams *ap);
 	~Crawler();
@@ -28,7 +27,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void ProcessState();
 	void PlayDeathSound();
 	bool TryDash();
-	void HandleNoHealth();
+	//void HandleNoHealth();
 	void DecideMovement();
 	void FrameIncrement();
 	bool IsPlayerChasingMe();

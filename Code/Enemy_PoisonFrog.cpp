@@ -18,12 +18,9 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
-
-PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-	:Enemy( p_owner, EnemyType::EN_POISONFROG, p_hasMonitor, 2 )
+void PoisonFrog::SetLevel(int lev)
 {
-	level = p_level;
+	level = lev;
 
 	switch (level)
 	{
@@ -39,12 +36,16 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 		maxHealth += 5;
 		break;
 	}
+}
 
-	gravityFactor = 30;
-	jumpFramesWait = 60;
-	jumpStrength = V2d(5, 12);
+PoisonFrog::PoisonFrog( ActorParams *ap )
+	:Enemy( EnemyType::EN_POISONFROG, ap )
+{
+	SetLevel(ap->GetLevel());
 
-	maxFallSpeed = 25;
+	SetNumActions(Count);
+	SetEditorActions(STAND, STAND, 0);
+	
 	actionLength[STAND] = 10;
 	actionLength[JUMPSQUAT] = 2;
 	actionLength[JUMP] = 2;
@@ -59,16 +60,24 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	animFactor[STEEPJUMP] = 1;
 	animFactor[WALLCLING] = 1;
 
+	gravityFactor = 30;
+	jumpFramesWait = 60;
+	jumpStrength = V2d(5, 12);
+
+	maxFallSpeed = 25;
+
 	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
-	ts_test = owner->GetTileset( "Enemies/frog_80x80.png", width, height );
+	ts_test = sess->GetTileset( "Enemies/frog_80x80.png", width, height );
 
 	//jumpStrength = 10;
 	xSpeed = 8;
 
-	mover = new GroundMover( p_owner, g, q, 30, true, this );
-	mover->SetSpeed( 0 );
+	sprite.setTexture(*ts_test->texture);
+
+	CreateGroundMover(startPosInfo, 30, true, this);
+	groundMover->SetSpeed( 0 );
 	
 	//cout << "creating the boss crawler" << endl;
 	action = STAND;
@@ -76,25 +85,27 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	facingRight = false;
 	receivedHit = NULL;
 
-	
-	dead = false;
 	//sprite.setTexture( *ts_walk->texture );
 	//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
 	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	V2d gPoint = g->GetPoint( q );
+	//V2d gPoint = g->GetPoint( q );
 
 	sprite.setTexture( *ts_test->texture );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-
-
-
-	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setScale(scale, scale);
+	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 
 
-	double size = max( width * 5, height * 5 );
-	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
+
+	//sprite.setPosition( gPoint.x, gPoint.y );
+	
+
+
+	//double size = max( width * 5, height * 5 );
+	//spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
+
+	BasicCircleHurtBodySetup(30);
+	BasicCircleHitBodySetup(30);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -104,21 +115,14 @@ PoisonFrog::PoisonFrog( GameSession *p_owner, bool p_hasMonitor, Edge *g, double
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
+	hitBody.hitboxInfo = hitboxInfo;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(30);
-	AddBasicHitCircle(30);
-	hitBody->hitboxInfo = hitboxInfo;
+	cutObject->Setup(ts_test, 10, 9, scale);
 
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-	position = mover->physBody.globalPosition;//gPoint + ground->Normal() * physBody.rh; //16.0;
-
-	cutObject->SetTileset(ts_test);
-	cutObject->SetSubRectFront(10);
-	cutObject->SetSubRectBack(9);
-	cutObject->SetScale(scale);
+	//cutObject->SetTileset(ts_test);
+	//cutObject->SetSubRectFront(10);
+	//cutObject->SetSubRectBack(9);
+	//cutObject->SetScale(scale);
 
 	ResetEnemy();
 }
@@ -131,49 +135,16 @@ void PoisonFrog::HandleNoHealth()
 
 void PoisonFrog::ResetEnemy()
 {
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
+
 	invincibleFrames = 0;
-	//ground = startGround;
-	//edgeQuantity = startQuant;
 	hasDoubleJump = true;
 
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed( 0 );
+	groundMover->Set(startPosInfo);
+	groundMover->SetSpeed(0);
 
-	position = mover->physBody.globalPosition;
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-
-	V2d gPoint = mover->ground->GetPoint( mover->edgeQuantity );
-
-	sprite.setTexture( *ts_test->texture );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-
-	sprite.setPosition( gPoint.x, gPoint.y );
-
-	V2d gn = mover->ground->Normal();
 	dead = false;
-
-	//----update the sprite
-	//double angle = 0;
-
-
-
-	//position = gPoint + gn * physBody.rh;//16.0;
-	angle = atan2( gn.x, -gn.y );
-		
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setTextureRect( ts_walk->GetSubRect( frame / crawlAnimationFactor ) );
-	//V2d pp = ground->GetPoint( edgeQuantity );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( gPoint.x, gPoint.y );
-
-	
-	//----
 
 	UpdateHitboxes();
 
@@ -183,42 +154,38 @@ void PoisonFrog::ResetEnemy()
 	facingRight = false;
 
 	UpdateSprite();
-	//groundSpeed = 0;
 }
 
 void PoisonFrog::UpdateHitboxes()
 {
-	Edge *ground = mover->ground;
-	if( ground != NULL )
-	{
-		V2d gn = ground->Normal();
-		
-		V2d knockbackDir( 1, -1 );
-		knockbackDir = normalize( knockbackDir );
-		if( mover->groundSpeed > 0 )
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = 15;
-		}
-		//hitBody.globalAngle = angle;
-		//hurtBody.globalAngle = angle;
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
+	BasicUpdateHitboxes();
 
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-
-	hurtBody->GetCollisionBoxes(0)->front().globalPosition = position;
-	hitBody->GetCollisionBoxes(0)->front().globalPosition = position;
+	//this isnt figured out yet. probably automate this at some point to make it simpler
+	//Edge *ground = groundMover->ground;
+	//if( ground != NULL )
+	//{
+	//	V2d gn = ground->Normal();
+	//	
+	//	V2d knockbackDir( 1, -1 );
+	//	knockbackDir = normalize( knockbackDir );
+	//	if(groundMover->groundSpeed > 0 )
+	//	{
+	//		hitboxInfo->kbDir = knockbackDir;
+	//		hitboxInfo->knockback = 15;
+	//	}
+	//	else
+	//	{
+	//		hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
+	//		hitboxInfo->knockback = 15;
+	//	}
+	//	//hitBody.globalAngle = angle;
+	//	//hurtBody.globalAngle = angle;
+	//}
+	//else
+	//{
+	//	//hitBody.globalAngle = 0;
+	//	//hurtBody.globalAngle = 0;
+	//}
 }
 
 void PoisonFrog::ActionEnded()
@@ -257,15 +224,12 @@ void PoisonFrog::ActionEnded()
 
 				if( facingRight )
 				{
-					mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+					groundMover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
 				}
 				else
 				{
-					mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+					groundMover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
 				}
-				
-
-				//frame = 0;
 			}
 			break;
 		}
@@ -276,15 +240,15 @@ void PoisonFrog::ProcessState()
 {
 	ActionEnded();
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	V2d jumpVel;
 	V2d gAlong;
 	V2d gn;
-	if( mover->ground != NULL )
+	if(groundMover->ground != NULL )
 	{
-		gAlong = normalize( mover->ground->v1 - mover->ground->v0 );
-		gn = mover->ground->Normal();
+		gAlong = normalize(groundMover->ground->v1 - groundMover->ground->v0 );
+		gn = groundMover->ground->Normal();
 	}
 	
 	switch( action )
@@ -292,11 +256,11 @@ void PoisonFrog::ProcessState()
 	case STAND:
 		{
 			//cout << "frame: " << frame << endl;
-			if(playerPos.x < position.x )
+			if(playerPos.x < GetPosition().x )
 			{
 				facingRight = false;
 			}
-			else if(playerPos.x > position.x )
+			else if(playerPos.x > GetPosition().x )
 			{
 				facingRight = true;
 			}
@@ -318,11 +282,11 @@ void PoisonFrog::ProcessState()
 					if( cross( normalize( V2d( jumpStrength.x, -jumpStrength.y )), gAlong ) < 0 )
 					{
 						gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
-						mover->Jump( gAlong * jumpStrength.y );
+						groundMover->Jump( gAlong * jumpStrength.y );
 					}
 					else
 					{
-						mover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
+						groundMover->Jump( V2d( jumpStrength.x, -jumpStrength.y ) );
 					}
 					
 				}
@@ -332,11 +296,11 @@ void PoisonFrog::ProcessState()
 					//if( gn.x > 0 )
 					{
 						gAlong = (-gAlong + V2d( 0, -1 )) / 2.0;
-						mover->Jump( gAlong * jumpStrength.y );
+						groundMover->Jump( gAlong * jumpStrength.y );
 					}
 					else
 					{
-						mover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
+						groundMover->Jump( V2d( -jumpStrength.x, -jumpStrength.y ) );
 					}
 				}				
 			}
@@ -345,11 +309,11 @@ void PoisonFrog::ProcessState()
 				if (hasDoubleJump )
 				{
 					//cout << "vel: " << velocity.y << endl;
-					V2d diff = playerPos - position;
-					if (mover->velocity.y > 3  && length(diff) < 300 && diff.y < 0)
+					V2d diff = playerPos - GetPosition();
+					if (groundMover->velocity.y > 3  && length(diff) < 300 && diff.y < 0)
 					{
 						hasDoubleJump = false;
-						mover->velocity.y = -jumpStrength.y;
+						groundMover->velocity.y = -jumpStrength.y;
 					}
 				}
 
@@ -360,22 +324,22 @@ void PoisonFrog::ProcessState()
 		break;
 	case STEEPJUMP:
 		{
-			if(playerPos.x < position.x )
+			if(playerPos.x < GetPosition().x )
 			{
 				facingRight = false;
 			}
-			else if(playerPos.x > position.x )
+			else if(playerPos.x > GetPosition().x )
 			{
 				facingRight = true;
 			}
 
 			if( facingRight )
 			{
-				mover->SetSpeed( 5 );
+				groundMover->SetSpeed( 5 );
 			}
 			else
 			{
-				mover->SetSpeed( -5 );
+				groundMover->SetSpeed( -5 );
 			}
 		}
 		break;
@@ -393,126 +357,101 @@ void PoisonFrog::ProcessState()
 
 void PoisonFrog::UpdateEnemyPhysics()
 {
-	//if (health == 0)
-	//	return;
-
-	if( mover->ground != NULL )
+	if (numHealth > 0)
 	{
-	}
-	else
-	{
-		double grav = gravity;
-		if( action == WALLCLING )
+		if (groundMover->ground == NULL)
 		{
-			grav = 0;//.1 * grav;
-		}
-		mover->velocity.y += grav / (numPhysSteps * slowMultiple);
+			double grav = gravity;
+			if (action == WALLCLING)
+			{
+				grav = 0;//.1 * grav;
+			}
+			groundMover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
-		if( mover->velocity.y >= maxFallSpeed )
-		{
-			mover->velocity.y = maxFallSpeed;
+			if (groundMover->velocity.y >= maxFallSpeed)
+			{
+				groundMover->velocity.y = maxFallSpeed;
+			}
 		}
+
+		Enemy::UpdateEnemyPhysics();
 	}
-
-
-	mover->Move( slowMultiple, numPhysSteps );
-
-	position = mover->physBody.globalPosition;
 }
-
-
 
 void PoisonFrog::EnemyDraw(sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite, auraSprite);
 }
 
 void PoisonFrog::UpdateSprite()
 {
-	Edge *ground = mover->ground;
-	double edgeQuantity = mover->edgeQuantity;
+	Edge *ground = groundMover->ground;
+	double edgeQuantity = groundMover->edgeQuantity;
 	V2d pp;
 	
 	if( ground != NULL )
 	{
-		pp = ground->GetPoint( edgeQuantity );
+		pp = ground->GetPosition( edgeQuantity );
 	}
 	
-	if( hasMonitor && !suppressMonitor )
-	{
-		keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 2 ) );
-		keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-			keySprite->getLocalBounds().height / 2 );
-		keySprite->setPosition( position.x, position.y );
-	}
-
-	sprite.setTexture( *ts_test->texture );
-		
+	
+	
+	int currTile = 0;
 	switch( action )
 	{
 	case STAND:
 		{
-			sprite.setTextureRect( ts_test->GetSubRect( 0 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+			currTile = 0;
 		}
 		break;
 	case JUMPSQUAT:
 		{
-			sprite.setTextureRect( ts_test->GetSubRect( ( frame / animFactor[JUMPSQUAT] ) + 1 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+		currTile = frame / animFactor[JUMPSQUAT] + 1;
 		}
 		break;
 	case JUMP:
 		{
 			int window = 6;
-			if( mover->velocity.y < -window )
+			if( groundMover->velocity.y < -window )
 			{
-				sprite.setTextureRect( ts_test->GetSubRect( 3 ) );
+				currTile = 3;
 			}
-			else if( mover->velocity.y > window )
+			else if(groundMover->velocity.y > window )
 			{
-				sprite.setTextureRect( ts_test->GetSubRect( 5 ) );
+				currTile = 5;
 			}
 			else
 			{
-				sprite.setTextureRect( ts_test->GetSubRect( 4 ) );
+				currTile = 4;
 			}
-			//sprite.setTextureRect( ts_test->GetSubRect( frame ) );
-				
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setPosition( position.x, position.y );
-			sprite.setRotation( 0 );
 		}
 		break;
 	case LAND:
 		{
-			sprite.setTextureRect( ts_test->GetSubRect( (frame / animFactor[LAND]) + 6 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation( angle / PI * 180 );
-			sprite.setPosition( pp.x, pp.y );
+		currTile = frame / animFactor[LAND] + 6;
 		}
 		break;
 	case WALLCLING:
 		{
-			sprite.setTextureRect( ts_test->GetSubRect( 8 ) );
-			sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			sprite.setRotation( 0 );//angle / PI * 180 );
-			sprite.setPosition( position.x, position.y );
+		currTile = 8;
+			
 		}
 		break;
 	}
 
-	if( !facingRight)
+	ts_test->SetSubRect(sprite, currTile, facingRight);
+	if (action == STAND || action == JUMPSQUAT || action == LAND)
 	{
-		sf::IntRect r = sprite.getTextureRect();
-		sprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
+		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
+		sprite.setPosition(surfaceMover->GetGroundPointF());
 	}
-
-	//cout << "action: " << action << endl;
+	else
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setRotation(0);
+		sprite.setPosition(GetPositionF());
+	}
 }
 
 void PoisonFrog::HitTerrain( double &q )
@@ -527,10 +466,10 @@ bool PoisonFrog::StartRoll()
 
 void PoisonFrog::FinishedRoll()
 {
-	if( owner->IsSteepGround( mover->ground->Normal() ) == -1 )
+	if( groundMover->ground->IsSteepGround() )
 	{
 		action = JUMPSQUAT;
-		mover->SetSpeed( 0 );
+		groundMover->SetSpeed( 0 );
 		frame = 0;
 	}
 }
@@ -544,7 +483,7 @@ void PoisonFrog::ReachCliff()
 	//if( owner->IsSteepGround( mover->ground->Normal() ) == -1 )
 	{
 		action = JUMPSQUAT;
-		mover->SetSpeed( 0 );
+		groundMover->SetSpeed( 0 );
 		frame = 0;
 	}
 }
@@ -552,7 +491,7 @@ void PoisonFrog::ReachCliff()
 void PoisonFrog::HitOtherAerial( Edge *e )
 {
 	V2d norm = e->Normal();
-	if( owner->IsWall( norm ) > 0 )
+	if( e->IsWall() )
 	{
 		//if( action != WALLCLING )
 		//{
@@ -568,7 +507,7 @@ void PoisonFrog::HitOtherAerial( Edge *e )
 			//{
 			//	mover->velocity = V2d( .1, 0 );
 			//}
-			mover->velocity = V2d( 0, 0 );
+			groundMover->velocity = V2d( 0, 0 );
 
 		
 			facingRight = !facingRight;
@@ -582,6 +521,6 @@ void PoisonFrog::Land()
 	action = LAND;
 	frame = 0;
 	hasDoubleJump = true;
-	V2d gn = mover->ground->Normal();
+	V2d gn = groundMover->ground->Normal();
 	angle = atan2(gn.x, -gn.y);
 }

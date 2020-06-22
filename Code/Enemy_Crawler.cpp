@@ -449,11 +449,11 @@ bool Crawler::TryDashAndAttack()
 	return TryDash();
 }
 
-void Crawler::HandleNoHealth()
-{
-	cutObject->SetFlipHoriz(!facingRight);
-	cutObject->SetRotation(sprite.getRotation());
-}
+//void Crawler::HandleNoHealth()
+//{
+//	//cutObject->SetFlipHoriz(!facingRight);
+//	//cutObject->SetRotation(sprite.getRotation());
+//}
 
 void Crawler::UpdateSprite()
 {

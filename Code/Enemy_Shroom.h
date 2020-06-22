@@ -25,7 +25,6 @@ struct Shroom : Enemy
 	void DirectKill();
 	void ResetEnemy();
 	void ProcessState();
-	void Setup();
 
 	void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);

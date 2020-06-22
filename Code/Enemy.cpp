@@ -45,6 +45,13 @@ void Enemy::CreateSurfaceMover(PositionInfo &pi,
 	surfaceMover->surfaceHandler = handler;
 }
 
+void Enemy::CreateGroundMover(PositionInfo &pi,
+	double rad, bool steeps, GroundMoverHandler *handler)
+{
+	assert(groundMover == NULL && surfaceMover == NULL);
+	groundMover = new GroundMover(pi.GetEdge(), pi.GetQuant(), rad * scale, steeps, handler );
+}
+
 void Enemy::SetCurrPosInfo(PositionInfo &pi)
 {
 	currPosInfo = pi;
@@ -304,6 +311,8 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	groundMover = NULL;
 	surfaceMover = NULL;
 
+	currShield = NULL;
+
 	if (ap != NULL)
 	{
 		world = ap->GetWorld();
@@ -358,7 +367,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	launchers = NULL;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
-	currShield = NULL;
+	
 	ResetSlow();
 
 	if (SetHitParams())
@@ -1327,7 +1336,14 @@ void Enemy::ConfirmHitNoKill()
 
 void Enemy::HandleNoHealth()
 {
-	PlayDeathSound();
+}
+
+void Enemy::SyncCutObject()
+{
+	cutObject->SetCutRootPos(GetPositionF());
+	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->SetScale(scale);
+	cutObject->SetRotation(sprite.getRotation());
 }
 
 void Enemy::ConfirmKill()
@@ -1369,16 +1385,13 @@ void Enemy::ConfirmKill()
 
 	dead = true;
 
-	HandleNoHealth();
-	PlayDeathSound();
-
 	if (cutObject != NULL)
 	{
-		cutObject->SetCutRootPos(GetPositionF());
-
+		SyncCutObject();
 	}
 
-	
+	HandleNoHealth();
+	PlayDeathSound();
 }
 
 void Enemy::ComboHit()
@@ -1493,18 +1506,36 @@ void Enemy::UpdateHitboxes()
 	BasicUpdateHitboxInfo();
 }
 
+double Enemy::GetGroundedAngleRadians()
+{
+	if (surfaceMover != NULL && surfaceMover->ground != NULL )
+	{
+		return surfaceMover->GetAngleRadians();
+	}
+	else if (groundMover != NULL && groundMover->ground != NULL )
+	{
+		return groundMover->GetAngleRadians();
+	}
+	else
+	{
+		return currPosInfo.GetGroundAngleRadians();
+	}
+}
+
 void Enemy::BasicUpdateHitboxes()
 {
 	V2d position = GetPosition();
+	
+	double ang = GetGroundedAngleRadians();
 	//can update this with a universal angle at some point
 	if (!hurtBody.Empty())
 	{
-		hurtBody.SetBasicPos(position);
+		hurtBody.SetBasicPos(position, ang);
 	}
 
 	if (!hitBody.Empty())
 	{
-		hitBody.SetBasicPos(position);
+		hitBody.SetBasicPos(position, ang);
 	}
 
 	auto comboBoxes = GetComboHitboxes();

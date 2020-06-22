@@ -39,6 +39,11 @@ struct Edge : QuadTreeEntrant
 	double GetDistAlongNormal(sf::Vector2<double> &p);
 	double GetNormalAngleRadians();
 	double GetNormalAngleDegrees();
+	bool IsFlatGround();
+	bool IsSlopedGround();
+	bool IsSteepGround();
+	bool IsWall();
+	static double GetSteepThresh() { return .4; }
 	//double GetNormalAngleRadians();
 	//double GetNormalAngleDegrees();
 
