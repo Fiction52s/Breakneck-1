@@ -43,6 +43,7 @@
 
 #include "ShipPickup.h"
 #include "EnemiesW1.h"
+#include "EnemiesW2.h"
 
 
 
@@ -405,8 +406,7 @@ void Session::AddW2Enemies()
 	//AddBasicGroundWorldEnemy("curveturret", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/curveturret_144x96.png", 144, 96));
 
-	//AddBasicGroundWorldEnemy("poisonfrog", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/frog_80x80.png", 80, 80));
+	AddBasicGroundWorldEnemy("poisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	//AddBasicGroundWorldEnemy("stagbeetle", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/stag_idle_256x176.png", 256, 176));

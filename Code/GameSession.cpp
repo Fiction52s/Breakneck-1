@@ -1380,6 +1380,11 @@ bool GameSession::Load()
 
 	AddGeneralEnemies();
 	AddW1Enemies();
+	AddW2Enemies();
+	AddW3Enemies();
+	AddW4Enemies();
+	AddW5Enemies();
+	AddW6Enemies();
 	SetupEnemyTypes();
 
 	SetupHitboxManager();

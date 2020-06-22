@@ -394,8 +394,6 @@ void PoisonFrog::UpdateSprite()
 		pp = ground->GetPosition( edgeQuantity );
 	}
 	
-	
-	
 	int currTile = 0;
 	switch( action )
 	{
@@ -439,12 +437,12 @@ void PoisonFrog::UpdateSprite()
 		break;
 	}
 
-	ts_test->SetSubRect(sprite, currTile, facingRight);
+	ts_test->SetSubRect(sprite, currTile, !facingRight);
 	if (action == STAND || action == JUMPSQUAT || action == LAND)
 	{
-		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		sprite.setRotation(groundMover->GetAngleDegrees());
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-		sprite.setPosition(surfaceMover->GetGroundPointF());
+		sprite.setPosition(groundMover->GetGroundPointF());
 	}
 	else
 	{

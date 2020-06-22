@@ -242,7 +242,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	}
 
 	int counter;
-	for (int w = 0; w < 2; ++w)
+	for (int w = 0; w < 8; ++w)
 	{
 		counter = 0;
 		for (int i = 0; i < allEnemyRects.size(); ++i)
@@ -258,7 +258,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int row, col;
 	int maxCol = 9;
 	EnemyChooseRect *ecRect;
-	for (int w = 0; w < 2; ++w)
+	for (int w = 0; w < 8; ++w)
 	{
 		counter = 0;
 		for (int i = 0; i < allEnemyRects.size(); ++i)
