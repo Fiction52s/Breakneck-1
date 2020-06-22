@@ -94,7 +94,6 @@ struct FlowerPod : Enemy//, RayCastHandler
 	void DirectKill();
 	void ResetEnemy();
 	void IHitPlayer(int index = 0);
-	void UpdateSpriteFromParams(ActorParams *ap);
 
 	Tileset *ts_flower;
 	Tileset *ts_bud;

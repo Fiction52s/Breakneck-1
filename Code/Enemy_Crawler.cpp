@@ -18,16 +18,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void Crawler::UpdateSpriteFromParams( ActorParams *ap )
-{
-	if (ap->posInfo.IsAerial())
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(editParams->GetFloatPos());
-		sprite.setRotation(0);
-		SyncSpriteInfo(auraSprite, sprite);
-	}
-}
 
 void Crawler::SetLevel(int p_level)
 {

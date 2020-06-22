@@ -22,38 +22,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void BasicTurret::UpdateOnPlacement(ActorParams *ap)
-{
-	Enemy::UpdateOnPlacement(ap);
-
-	if (startPosInfo.ground != NULL)
-	{
-		launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
-		launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
-	}
-
-	testShield->SetPosition(GetPosition());
-}
-
-void BasicTurret::SetLevel(int lev)
-{
-	level = lev;
-
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
-}
 
 BasicTurret::BasicTurret(ActorParams *ap )
 		:Enemy( EnemyType::EN_BASICTURRET, ap )
@@ -131,6 +99,40 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	ResetEnemy();
 }
+
+void BasicTurret::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	if (startPosInfo.ground != NULL)
+	{
+		launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
+		launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
+	}
+
+	//testShield->SetPosition(GetPosition());
+}
+
+void BasicTurret::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
+
 
 void BasicTurret::ResetEnemy()
 {

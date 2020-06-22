@@ -13,38 +13,6 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-
-void Comboer::SetLevel(int lev)
-{
-	level = lev;
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
-}
-
-void Comboer::UpdateOnPlacement(ActorParams *ap)
-{
-	Enemy::UpdateOnPlacement(ap);
-
-	pathFollower.SetParams(ap);
-}
-
-void Comboer::UpdatePath()
-{
-	pathFollower.SetParams(editParams);
-}
-
 Comboer::Comboer(ActorParams *ap )
 	:Enemy(EnemyType::EN_COMBOER, ap )//, false, 1, false)
 {
@@ -61,9 +29,8 @@ Comboer::Comboer(ActorParams *ap )
 	
 	ts = sess->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
-	
+
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
 
@@ -110,9 +77,39 @@ Comboer::Comboer(ActorParams *ap )
 	ResetEnemy();
 }
 
-
 Comboer::~Comboer()
 {
+}
+
+void Comboer::SetLevel(int lev)
+{
+	level = lev;
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
+
+void Comboer::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	pathFollower.SetParams(ap);
+}
+
+void Comboer::UpdatePath()
+{
+	pathFollower.SetParams(editParams);
 }
 
 void Comboer::ResetEnemy()

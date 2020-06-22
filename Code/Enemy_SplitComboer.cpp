@@ -37,6 +37,12 @@ SplitPiece::SplitPiece( SplitComboer *splitComb )
 {
 	SetNumActions(S_Count);
 
+	actionLength[S_FLY] = 120;
+	actionLength[S_EXPLODE] = 20;
+
+	animFactor[S_FLY] = 1;
+	animFactor[S_EXPLODE] = 1;
+
 	sc = splitComb;
 	SetLevel(sc->level);
 	
@@ -64,12 +70,6 @@ SplitPiece::SplitPiece( SplitComboer *splitComb )
 	comboObj->enemyHitboxFrame = 0;
 
 	facingRight = true;
-
-	actionLength[S_FLY] = 120;
-	actionLength[S_EXPLODE] = 20;
-
-	animFactor[S_FLY] = 1;
-	animFactor[S_EXPLODE] = 1;
 
 	hitLimit = 6;
 

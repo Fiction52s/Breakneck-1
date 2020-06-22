@@ -67,6 +67,10 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 
 	auraSprite.setTexture(*ts_aura->texture);
 
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+
+	
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
@@ -74,6 +78,7 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 
@@ -116,16 +121,6 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 
 Airdasher::~Airdasher()
 {
-}
-
-void Airdasher::Setup()
-{
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-
-	hitBody.hitboxInfo = hitboxInfo;
-
-	SetSpawnRect();
 }
 
 void Airdasher::ResetEnemy()

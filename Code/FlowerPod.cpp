@@ -16,16 +16,6 @@
 using namespace std;
 using namespace sf;
 
-void FlowerPod::UpdateSpriteFromParams(ActorParams *ap)
-{
-	if (ap->posInfo.IsAerial())
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(editParams->GetFloatPos());
-		sprite.setRotation(0);
-	}
-}
-
 FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, double q)
 	:Enemy(EnemyType::EN_FLOWERPOD, ap )//, false, 0, false), ground(g),
 	//edgeQuantity(q)

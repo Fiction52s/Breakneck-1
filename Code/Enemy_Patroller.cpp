@@ -14,6 +14,69 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
 
+
+
+Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
+	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLAP, S_FLAP, 0);
+
+	SetLevel(ap->GetLevel());
+
+	pathFollower.SetParams(ap);
+
+	ts = sess->GetTileset("Enemies/patroller_256x256.png", 256, 256);
+	ts_aura = sess->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
+	shootSound = sess->GetSound("Enemies/patroller_shoot");
+
+	eye = new PatrollerEye(this);
+	eye->SetPosition(GetPositionF());
+	
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 3*60;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+	
+	BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+	BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
+	hitBody.hitboxInfo = hitboxInfo;
+
+	cutObject->Setup(ts, 37, 38, scale);
+
+	origFacingRight = true;
+
+	actionLength[S_FLAP] = 18;
+	actionLength[S_BEAKOPEN] = 3;
+	actionLength[S_BEAKHOLDOPEN] = 20;
+	actionLength[S_BEAKCLOSE] = 3;
+
+	animFactor[S_FLAP] = 2;
+	animFactor[S_BEAKOPEN] = 6;
+	animFactor[S_BEAKHOLDOPEN] = 1;
+	animFactor[S_BEAKCLOSE] = 6;
+
+	turnAnimFactor = 4;
+	maxAimingFrames = 35;
+	speed = 3;
+	beakTurnSpeed = .13;
+
+	SetNumLaunchers(1);
+	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
+	launchers[0]->SetBulletSpeed(5);//70);
+	launchers[0]->hitboxInfo->damage = 18;
+	
+	ResetEnemy();
+}
+
+Patroller::~Patroller()
+{
+	delete eye;
+}
+
 void Patroller::UpdateOnPlacement(ActorParams *ap)
 {
 	Enemy::UpdateOnPlacement(ap);
@@ -43,71 +106,6 @@ void Patroller::SetLevel(int lev)
 		maxHealth += 5;
 		break;
 	}
-}
-
-Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vector2i> &pathParam, bool loopP, int p_level )
-	:Enemy( EnemyType::EN_PATROLLER, ap )//, p_hasMonitor, 1 )
-{
-	SetNumActions(S_Count);
-	SetEditorActions(S_FLAP, S_FLAP, 0);
-
-	SetLevel(ap->GetLevel());
-
-	pathFollower.SetParams(ap);
-
-	ts = sess->GetTileset("Enemies/patroller_256x256.png", 256, 256);
-	ts_aura = sess->GetTileset("Enemies/patroller_aura_256x256.png", 256, 256);
-	shootSound = sess->GetSound("Enemies/patroller_shoot");
-
-	eye = new PatrollerEye(this);
-	eye->SetPosition(GetPositionF());
-	
-	
-	BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
-	BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3*60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-	hitBody.hitboxInfo = hitboxInfo;
-
-	cutObject->Setup(ts, 37, 38, scale);
-
-	origFacingRight = true;
-
-	actionLength[S_FLAP] = 18;
-	actionLength[S_BEAKOPEN] = 3;
-	actionLength[S_BEAKHOLDOPEN] = 20;
-	actionLength[S_BEAKCLOSE] = 3;
-
-	animFactor[S_FLAP] = 2;
-	animFactor[S_BEAKOPEN] = 6;
-	animFactor[S_BEAKHOLDOPEN] = 1;
-	animFactor[S_BEAKCLOSE] = 6;
-
-	turnAnimFactor = 4;
-	maxAimingFrames = 35;
-	speed = 3;
-	beakTurnSpeed = .13;
-
-	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
-	launchers[0]->SetBulletSpeed(5);//70);
-	launchers[0]->hitboxInfo->damage = 18;
-	
-
-	ResetEnemy();
-
-	SetSpawnRect();
-}
-
-Patroller::~Patroller()
-{
-	delete eye;
 }
 
 void Patroller::ResetEnemy()
@@ -141,6 +139,8 @@ void Patroller::ResetEnemy()
 	targetAngle = 0;
 	currentAngle = targetAngle;
 }
+
+
 
 void Patroller::ProcessState()
 {
