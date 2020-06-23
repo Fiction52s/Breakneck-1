@@ -4,5 +4,7 @@
 #include "Enemy_PoisonFrog.h"
 #include "Enemy_Bat.h"
 #include "Enemy_CurveTurret.h"
+#include "Enemy_GravityFaller.h"
+#include "Enemy_StagBeetle.h"
 
 #endif

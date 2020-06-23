@@ -18,29 +18,12 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
-
-GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(p_owner, EnemyType::EN_GRAVITYFALLER, p_hasMonitor, 2)
+GravityFaller::GravityFaller(ActorParams *ap)
+	:Enemy(EnemyType::EN_GRAVITYFALLER, ap)
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, 0, 0);
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
-
-	maxFallSpeed = 25;
 	actionLength[IDLE] = 10;
 	actionLength[DOWNCHARGE] = 10;
 	actionLength[FALLDOWN] = 10;
@@ -58,37 +41,18 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	animFactor[REVERSEUPTODOWN] = 1;
 	animFactor[REVERSEDOWNTOUP] = 1;
 
+	maxFallSpeed = 25;
+
 	double width = 128;
 	double height = 128;
-	ts = owner->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
+	ts = sess->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
 
-	
-	mover = new SurfaceMover(p_owner, g, q, 30 * scale);
-	mover->surfaceHandler = this;
-	mover->SetSpeed(0);
+	CreateSurfaceMover(startPosInfo, 30, this);
 
-	//cout << "creating the boss crawler" << endl;
-	action = IDLE;
 	gravity = gravityFactor / 64.0;
-	facingRight = false;
-	receivedHit = NULL;
-
-
-	dead = false;
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	V2d gPoint = g->GetPoint(q);
 
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(gPoint.x, gPoint.y);
-
-
-	double size = max(width * 5, height * 5);
-	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -98,60 +62,57 @@ GravityFaller::GravityFaller(GameSession *p_owner, bool p_hasMonitor, Edge *g, d
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(40);
-	AddBasicHitCircle(40);
-	hitBody->hitboxInfo = hitboxInfo;
-
-
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-	position = mover->physBody.globalPosition;//gPoint + ground->Normal() * physBody.rh; //16.0;
-
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(6);
-	cutObject->SetSubRectBack(5);
-	cutObject->SetScale(scale);
-
-	ResetEnemy();
+	BasicCircleHurtBodySetup(40);
+	BasicCircleHitBodySetup(40);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	chargeLength = 20;
+
+	cutObject->Setup(ts, 6, 5, scale);
+
+	ResetEnemy();
+}
+
+void GravityFaller::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void GravityFaller::ResetEnemy()
 {
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
-
-	fallFrames = 0;
-	position = mover->physBody.globalPosition;
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-	dead = false;
-
-	chargeFrame = 0;
-
-	mover->ClearAirForces();
-
-	//----
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
-	UpdateHitboxes();
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
+	surfaceMover->ClearAirForces();
 
 	action = IDLE;
 	frame = 0;
+	fallFrames = 0;
+
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
+	
+	chargeFrame = 0;
 
 	facingRight = false;
 
+	UpdateHitboxes();
+
 	UpdateSprite();
-	//groundSpeed = 0;
 }
 
 void GravityFaller::FrameIncrement()
@@ -168,31 +129,31 @@ void GravityFaller::FrameIncrement()
 
 void GravityFaller::UpdateHitboxes()
 {
-	Edge *ground = mover->ground;
-	if (ground != NULL)
-	{
-		V2d gn = ground->Normal();
+	Edge *ground = surfaceMover->ground;
+	//if (ground != NULL)
+	//{
+	//	V2d gn = ground->Normal();
 
-		V2d knockbackDir(1, -1);
-		knockbackDir = normalize(knockbackDir);
-		if (mover->groundSpeed > 0)
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
-			hitboxInfo->knockback = 15;
-		}
-		//hitBody.globalAngle = angle;
-		//hurtBody.globalAngle = angle;
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
+	//	V2d knockbackDir(1, -1);
+	//	knockbackDir = normalize(knockbackDir);
+	//	if (surfaceMover->groundSpeed > 0)
+	//	{
+	//		hitboxInfo->kbDir = knockbackDir;
+	//		hitboxInfo->knockback = 15;
+	//	}
+	//	else
+	//	{
+	//		hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
+	//		hitboxInfo->knockback = 15;
+	//	}
+	//	//hitBody.globalAngle = angle;
+	//	//hurtBody.globalAngle = angle;
+	//}
+	//else
+	//{
+	//	//hitBody.globalAngle = 0;
+	//	//hurtBody.globalAngle = 0;
+	//}
 	BasicUpdateHitboxes();
 }
 
@@ -210,12 +171,12 @@ void GravityFaller::ProcessState()
 
 	//Actor *player = owner->GetPlayer(0);
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == IDLE)
 	{
-		if (length(playerPos - position) < 500)
+		if (length(playerPos - GetPosition()) < 500)
 		{
-			if (mover->ground->Normal().y < 0)
+			if (surfaceMover->ground->Normal().y < 0)
 			{
 				action = UPCHARGE;
 				frame = 0;
@@ -232,38 +193,38 @@ void GravityFaller::ProcessState()
 
 	if (chargeFrame == chargeLength && ( action == DOWNCHARGE || action == UPCHARGE))
 	{
-		mover->ClearAirForces();
+		surfaceMover->ClearAirForces();
 		if (action == DOWNCHARGE)
 		{
 			action = FALLDOWN;
 			frame = 0;
-			mover->Jump(V2d(0, 0));
-			mover->AddAirForce(V2d(0, 1));
+			surfaceMover->Jump(V2d(0, 0));
+			surfaceMover->AddAirForce(V2d(0, 1));
 			fallFrames = 0;
 		}
 		else if (action == UPCHARGE)
 		{
 			action = FALLUP;
 			frame = 0;
-			mover->Jump(V2d(0, 0));
-			mover->AddAirForce(V2d(0, -1));
+			surfaceMover->Jump(V2d(0, 0));
+			surfaceMover->AddAirForce(V2d(0, -1));
 			fallFrames = 0;
 		}
 	}
 	else if ((action == FALLDOWN || action == FALLUP) && fallFrames == 40)
 	{
-		mover->ClearAirForces();
+		surfaceMover->ClearAirForces();
 		if (action == FALLDOWN)
 		{
 			action = REVERSEDOWNTOUP;
 			frame = 0;
-			mover->AddAirForce(V2d(0, -1));
+			surfaceMover->AddAirForce(V2d(0, -1));
 		}
 		else if (action == FALLUP)
 		{
 			action = REVERSEUPTODOWN;
 			frame = 0;
-			mover->AddAirForce(V2d(0, 1));
+			surfaceMover->AddAirForce(V2d(0, 1));
 		}
 		
 	}
@@ -285,7 +246,7 @@ void GravityFaller::ProcessState()
 
 void GravityFaller::UpdateEnemyPhysics()
 {
-	if (mover->ground != NULL)
+	if (surfaceMover->ground != NULL)
 	{
 	}
 	else
@@ -297,49 +258,28 @@ void GravityFaller::UpdateEnemyPhysics()
 		////}
 		//mover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
-		if (mover->velocity.y >= maxFallSpeed)
+		if (surfaceMover->velocity.y >= maxFallSpeed)
 		{
-			mover->velocity.y = maxFallSpeed;
+			surfaceMover->velocity.y = maxFallSpeed;
 		}
-		else if (mover->velocity.y <= -maxFallSpeed)
+		else if (surfaceMover->velocity.y <= -maxFallSpeed)
 		{
-			mover->velocity.y = -maxFallSpeed;
+			surfaceMover->velocity.y = -maxFallSpeed;
 		}
 	}
 
-	mover->Move(slowMultiple, numPhysSteps);
-
-	position = mover->physBody.globalPosition;
+	Enemy::UpdateEnemyPhysics();
 }
 
 
 
 void GravityFaller::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void GravityFaller::UpdateSprite()
 {
-	Edge *ground = mover->ground;
-	double edgeQuantity = mover->edgeQuantity;
-	V2d pp;
-
-	if (ground != NULL)
-	{
-		pp = ground->GetPoint(edgeQuantity);
-	}
-
-	if (hasMonitor && !suppressMonitor)
-	{
-		keySprite->setTextureRect(ts_key->GetSubRect(owner->keyFrame / 2));
-		keySprite->setOrigin(keySprite->getLocalBounds().width / 2,
-			keySprite->getLocalBounds().height / 2);
-		keySprite->setPosition(position.x, position.y);
-	}
-
-	sprite.setTexture(*ts->texture);
-
 	int tIndex = 0;
 	switch (action)
 	{
@@ -365,16 +305,7 @@ void GravityFaller::UpdateSprite()
 	sprite.setTextureRect(ts->GetSubRect(tIndex));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setRotation(0);
-	sprite.setPosition(position.x, position.y);
-
-
-
-
-	/*if (!facingRight)
-	{
-		sf::IntRect r = sprite.getTextureRect();
-		sprite.setTextureRect(sf::IntRect(r.left + r.width, r.top, -r.width, r.height));
-	}*/
+	sprite.setPosition(GetPositionF());
 }
 
 void GravityFaller::HitTerrainAerial(Edge * e, double quant)

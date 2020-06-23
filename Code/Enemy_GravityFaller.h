@@ -17,11 +17,9 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
-	GravityFaller(GameSession *owner,
-		bool hasMonitor,
-		Edge *ground, double quantity,
-		int level );
+	GravityFaller(ActorParams *ap);
 
+	void SetLevel(int lev);
 	int actionLength[A_Count];
 	int animFactor[A_Count];
 	void UpdateEnemyPhysics();
@@ -30,12 +28,9 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 
 	int fallFrames;
 
-	Action action;
-	bool facingRight;
 	double gravity;
 	sf::Vector2<double> velocity;
 	double gravityFactor;
-	SurfaceMover *mover;
 	int chargeLength;
 	int chargeFrame;
 
@@ -48,14 +43,10 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 
 	void HitTerrainAerial(Edge *e, double quant);
 
-	sf::Sprite sprite;
 	Tileset *ts_walk;
 	Tileset *ts_roll;
 
 	double maxFallSpeed;
-
-	Edge *startGround;
-	double startQuant;
 };
 
 #endif

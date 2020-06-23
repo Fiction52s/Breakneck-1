@@ -39,7 +39,17 @@ SurfaceMover::SurfaceMover(Edge *startGround,
 void SurfaceMover::Set(PositionInfo &pi)
 {
 	ground = pi.GetEdge();
-	edgeQuantity = pi.GetQuant();
+
+	if (ground == NULL)
+	{
+		physBody.globalPosition = pi.GetPosition();
+		edgeQuantity = 0;
+	}
+	else
+	{
+		edgeQuantity = pi.GetQuant();
+	}
+	
 	roll = false;
 	UpdateGroundPos();
 }

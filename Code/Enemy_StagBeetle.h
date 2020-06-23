@@ -10,13 +10,11 @@ struct StagBeetle : Enemy, GroundMoverHandler
 		IDLE,
 		RUN,
 		JUMP,
-		//ATTACK,
 		LAND,
 		Count
 	};
 
-	StagBeetle(GameSession *owner, bool hasMonitor,
-		Edge *ground, double q, int level );
+	StagBeetle(ActorParams *ap);
 	void HandleNoHealth();
 	void ActionEnded();
 	void ProcessState();
@@ -33,10 +31,9 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void HitTerrain(double &q);
 	bool StartRoll();
 	void FinishedRoll();
+	void SetLevel(int lev);
 
 	Shield *shield;
-
-	sf::Sprite sprite;
 
 	Tileset *ts_death;
 	Tileset *ts_hop;
@@ -51,9 +48,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	Tileset *ts_sweepAura;
 	Tileset *ts_walkAura;
 
-	Action action;
-	bool facingRight;
-
 	CubicBezier moveBezTest;
 	int bezFrame;
 	int bezLength;
@@ -64,27 +58,16 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;
 
-
-	int actionLength[Action::Count];
 	int attackFrame;
 	int attackMult;
-
-	
-	Edge *startGround;
-	double startQuant;
-	
-	double angle;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
-
-	sf::Sprite auraSprite;
 };
 
 #endif

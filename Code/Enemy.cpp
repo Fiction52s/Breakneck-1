@@ -576,11 +576,9 @@ void Enemy::UpdateOnPlacement( ActorParams *ap )
 		SetCurrPosInfo(ap->posInfo);
 	}
 
-	SetSpawnRect();
-
 	if (currShield != NULL)
 	{
-		currShield->SetPosition(currPosInfo.GetPosition());
+		currShield->SetPosition(GetPosition());
 	}
 
 }
@@ -602,6 +600,13 @@ void Enemy::UpdateFromParams( ActorParams *ap, int numFrames )
 	UpdateKeySprite();
 	UpdateSprite();
 	UpdateSpriteFromParams(ap);
+
+	if (currShield != NULL)
+	{
+		currShield->UpdateSprite();
+	}
+
+	SetSpawnRect();
 }
 
 void Enemy::SetNumActions( int num )

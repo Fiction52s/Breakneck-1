@@ -123,8 +123,6 @@ void Crawler::ResetEnemy()
 
 	frame = 0;
 
-	dead = false;
-
 	action = UNBURROW;
 	frame = 15 * 4;
 
