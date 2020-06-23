@@ -10,14 +10,14 @@ struct CurveTurret : Enemy, LauncherEnemy
 	{
 		WAIT,
 		ATTACK,
+		Count
 	};
 
-	Action action;
-	CurveTurret(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity, int level);
+	CurveTurret(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
 	void Setup();
+	void SetLevel(int lev);
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void DirectKill();
@@ -29,7 +29,6 @@ struct CurveTurret : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);
 
-	sf::Sprite sprite;
 	Tileset *ts;
 	Tileset *ts_bulletExplode;
 	const static int maxBullets = 16;
@@ -37,8 +36,6 @@ struct CurveTurret : Enemy, LauncherEnemy
 	int framesWait;
 	int firingCounter;
 	int realWait;
-	Edge *ground;
-	double edgeQuantity;
 
 	double spins[16];
 	int startBulletIndex;
@@ -50,7 +47,6 @@ struct CurveTurret : Enemy, LauncherEnemy
 	sf::Vector2<double> gravity;
 
 	int animationFactor;
-	sf::Vector2<double> gn;
 	double bulletSpeed;
 
 	int turnFactor;

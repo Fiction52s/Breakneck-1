@@ -2,5 +2,7 @@
 #define __ENEMIES_W2_H__
 
 #include "Enemy_PoisonFrog.h"
+#include "Enemy_Bat.h"
+#include "Enemy_CurveTurret.h"
 
 #endif

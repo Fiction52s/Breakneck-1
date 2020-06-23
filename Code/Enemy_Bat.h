@@ -11,6 +11,7 @@ struct Bat : Enemy, LauncherEnemy
 		FLY,
 		RETREAT,
 		RETURN,
+		A_Count
 	};
 
 	enum Visual
@@ -25,7 +26,6 @@ struct Bat : Enemy, LauncherEnemy
 	int visualMult[V_Count];
 	int visFrame;
 
-	Action action;
 	MovementSequence testSeq;
 	MovementSequence retreatSeq;
 	MovementSequence returnSeq;
@@ -33,10 +33,10 @@ struct Bat : Enemy, LauncherEnemy
 	LineMovement *returnMove;
 	WaitMovement *retreatWait;
 	int framesSinceBothered;
-	Bat(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, std::list<sf::Vector2i> &path,
-		bool loop,
-		int level);
+	Bat(ActorParams *ap );
+
+	void SetActionEditLoop();
+	void SetLevel(int lev);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
@@ -54,16 +54,12 @@ struct Bat : Enemy, LauncherEnemy
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	int bulletSpeed;
-	//int nodeDistance;
 	int framesBetween;
+
+	BasicPathFollower pathFollower;
 
 	Tileset *ts_bulletExplode;
 
-	sf::Vector2i *path; //global
-	int pathLength;
-	bool loop;
-	int frame;
-	V2d startPos;
 	V2d currBasePos;
 	V2d retreatPos;
 	V2d startRetreatPos;
@@ -72,8 +68,6 @@ struct Bat : Enemy, LauncherEnemy
 
 	double acceleration;
 	double speed;
-	int nodeWaitFrames;
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	int hitlagFrames;
@@ -82,7 +76,6 @@ struct Bat : Enemy, LauncherEnemy
 	bool facingRight;
 
 	Tileset *ts_aura;
-	sf::Sprite auraSprite;
 };
 
 #endif

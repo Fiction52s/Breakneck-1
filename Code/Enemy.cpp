@@ -874,6 +874,8 @@ bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
 void Enemy::CheckTouchingSpecterField(SpecterArea *sa)
 {
 	specterProtected = IsTouchingSpecterField(sa);
+	if (currShield != NULL)
+		currShield->specterProtected = specterProtected;
 }
 
 bool Enemy::CanTouchSpecter()
@@ -1057,6 +1059,8 @@ void Enemy::RecordEnemy()
 void Enemy::CheckSpecters()
 {
 	specterProtected = false;
+	if (currShield != NULL)
+		currShield->specterProtected = specterProtected;
 	/*if (CanTouchSpecter())
 	{
 		assert(specterTester != NULL);
@@ -1270,11 +1274,6 @@ void Enemy::CheckedZoneUpdate(sf::FloatRect &rect)
 void Enemy::ProcessShieldHit()
 {
 
-}
-
-int Enemy::GetReceivedHitPlayerIndex()
-{
-	return receivedHitPlayer->actorIndex;
 }
 
 void Enemy::ProcessHit()
@@ -1690,6 +1689,11 @@ int Enemy::SetLaunchersStartIndex(int ind)
 	}
 
 	return currIndex;
+}
+
+int HittableObject::GetReceivedHitPlayerIndex()
+{
+	return receivedHitPlayer->actorIndex;
 }
 
 bool HittableObject::CheckHit( Actor *player, Enemy *e )

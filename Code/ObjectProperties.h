@@ -116,6 +116,7 @@ struct HittableObject
 	virtual HitboxInfo * IsHit(Actor *player) = 0;
 	const bool ReceivedHit() { return receivedHit; }
 	bool CheckHit(Actor *player, Enemy* e);
+	int GetReceivedHitPlayerIndex();
 	virtual void ProcessHit() = 0;
 	HitboxInfo *receivedHit;
 	Actor *receivedHitPlayer;

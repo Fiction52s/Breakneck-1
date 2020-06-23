@@ -19,12 +19,84 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos, 
-	list<Vector2i> &pathParam,bool p_loop, int p_level )
-	:Enemy( owner, EnemyType::EN_BAT, p_hasMonitor, 2 )
+Bat::Bat( ActorParams *ap )
+	:Enemy( EnemyType::EN_BAT, ap )
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(FLY, 0, 0);
 
+	SetLevel(ap->GetLevel());
+
+	pathFollower.SetParams(ap);
+
+	bulletSpeed = 10;
+	framesBetween = 60;
+
+	numLaunchers = 1;
+	launchers = new Launcher*[numLaunchers];
+	launchers[0] = new Launcher( this, BasicBullet::BAT, 16, 1, GetPosition(), 
+		V2d( 1, 0 ), 0, 120, false );
+	launchers[0]->SetBulletSpeed( bulletSpeed );	
+	launchers[0]->hitboxInfo->damage = 18;
+
+	int pSize = pathFollower.path.size();
+	for( int i = 0; i < pSize - 1; ++i )
+	{
+		V2d A( pathFollower.path[i].x, pathFollower.path[i].y );
+		V2d B(pathFollower.path[i+1].x, pathFollower.path[i+1].y );
+		double len = length(A - B);
+		double speed = 4;
+		int fra = ceil( len / speed);
+		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), fra * 10 );
+	}
+	if( pSize == 1 )
+	{
+		testSeq.AddMovement( new WaitMovement( 60 * 10 ) );
+	}
+	testSeq.InitMovementDebug();
+	testSeq.Reset();
+	
+	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60 * 10);	
+	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20 * 10);
+
+	frame = 0;
+
+	animationFactor = 5;
+
+	ts = sess->GetSizedTileset("Enemies/bat_208x272.png");
+	ts_aura = sess->GetSizedTileset("Enemies/bat_aura_208x272.png");
+	auraSprite.setTexture(*ts_aura->texture);
+	sprite.setTexture( *ts->texture );
+	sprite.setScale(scale, scale);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+
+	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(16);
+	hitBody.hitboxInfo = hitboxInfo;
+
+	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
+
+	cutObject->Setup(ts, 53, 52, scale);
+
+	visualLength[FLAP] = 23;
+	visualLength[KICK] = 29;
+
+	visualMult[FLAP] = 2;
+	visualMult[KICK] = 1;
+
+	ResetEnemy();
+}
+
+void Bat::SetLevel(int lev)
+{
+	level = lev;
 	switch (level)
 	{
 	case 1:
@@ -39,157 +111,14 @@ Bat::Bat( GameSession *owner, bool p_hasMonitor, Vector2i pos,
 		maxHealth += 5;
 		break;
 	}
-
-	loop = p_loop;
-	//loop = false; //no looping on bat for now
-
-	fireCounter = 0;
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-	bulletSpeed = 10;
-	//nodeDistance = p_nodeDistance;
-	framesBetween = 60;
-
-	startPos = V2d(pos);
-
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::BAT, owner, 16, 1, position, V2d( 1, 0 ), 0, 120, false );
-	launchers[0]->SetBulletSpeed( bulletSpeed );	
-	launchers[0]->hitboxInfo->damage = 18;
-
-	spawnRect = sf::Rect<double>( pos.x - 16 * scale, pos.y - 16 * scale, 16 * 2 * scale, 16 * 2 * scale);
-	
-	pathLength = pathParam.size() + 1;
-	if( loop )
-	{
-		//not implemented right maybe??
-	}
-	else
-	{
-		//the road back
-		if( pathParam.size() > 0 )
-		{
-			pathLength += pathParam.size();
-		}
-	}
-	
-	path = new Vector2i[pathLength];
-	path[0] = Vector2i( 0, 0 );
-	path[pathLength-1] = Vector2i( 0, 0 );
-
-	int index = 1;
-	for( list<Vector2i>::iterator it = pathParam.begin(); it != pathParam.end(); ++it )
-	{
-		path[index] = (*it);// +pos;
-		++index;
-	}
-
-	if( pathLength == 1 )
-	{
-
-	}
-	else
-	{
-		list<Vector2i>::reverse_iterator rit = pathParam.rbegin();
-		++rit; //start at second item
-		
-		for(  ;rit != pathParam.rend(); ++rit )
-		{
-			path[index] = (*rit);// +pos;
-			++index;
-		}
-	}
-
-	V2d sqTest0 = position;
-	V2d sqTest1 = position + V2d( 0, -150 );
-	V2d sqTest2 = position + V2d( 150, -150 );
-	V2d sqTest3 = position + V2d( 300, -150 );
-	V2d sqTest4 = position + V2d( 300, 0 );
-
-	for( int i = 0; i < pathLength - 1; ++i )
-	{
-		V2d A( path[i].x, path[i].y );
-		V2d B( path[i+1].x, path[i+1].y );
-		double len = length(A - B);
-		double speed = 4;
-		int fra = ceil( len / speed);
-		//A += position;
-		//B += position;
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), fra * 10 );
-	}
-	if( pathLength == 1 )
-	{
-		testSeq.AddMovement( new WaitMovement( 60 * 10 ) );
-	}
-	testSeq.InitMovementDebug();
-	testSeq.Reset();
-	
-	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60 * 10);
-	//retreatWait = new WaitMovement(60 * 10);
-	//retreatSeq.AddMovement(retreatWait);
-	
-	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20 * 10);
-
-
-	frame = 0;
-
-	animationFactor = 5;
-
-	//ts = owner->GetTileset( "Bat.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/bat_208x272.png", 208, 272 );
-	ts_aura = owner->GetTileset("Enemies/bat_aura_208x272.png", 208, 272);
-	auraSprite.setTexture(*ts_aura->texture);
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
-	sprite.setScale(scale, scale);
-	//position.x = 0;
-	//position.y = 0;
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(16);
-	AddBasicHitCircle(16);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
-
-	facingRight = true;
-	
-	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
-
-	UpdateHitboxes();
-
-	spawnRect = sf::Rect<double>( position.x - 200, position.y - 200,
-		400, 400 );
-
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(53);
-	cutObject->SetSubRectBack(52);
-	cutObject->SetScale(scale);
-
-
-	visualLength[FLAP] = 23;
-	visualLength[KICK] = 29;
-
-	visualMult[FLAP] = 2;
-	visualMult[KICK] = 1;
-
-	ResetEnemy();
 }
 
+void Bat::SetActionEditLoop()
+{
+	Enemy::SetActionEditLoop();
+	currVisual = FLAP;
+	visFrame = 0;
+}
 
 void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 {
@@ -198,7 +127,7 @@ void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
 
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
+	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -209,8 +138,8 @@ void Bat::BulletHitPlayer(BasicBullet *b )
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->PlayerApplyHit( b->launcher->hitboxInfo );
+	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+	sess->PlayerApplyHit( b->launcher->hitboxInfo );
 	b->launcher->DeactivateBullet( b );
 }
 
@@ -225,19 +154,15 @@ void Bat::ResetEnemy()
 	retreatSeq.Reset();
 	returnSeq.Reset();
 	dead = false;
+	facingRight = true;
 	
-	currBasePos = startPos;
-
-	position = startPos;
-	receivedHit = NULL;
+	currBasePos = startPosInfo.GetPosition();
 
 	action = FLY;
 	frame = 0;
 
-	currBasePos = startPos;
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 
 	UpdateHitboxes();
 
@@ -256,7 +181,7 @@ void Bat::DirectKill()
 		{
 			BasicBullet *next = b->next;
 			double angle = atan2(b->velocity.y, -b->velocity.x);
-			owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
 			b->launcher->DeactivateBullet(b);
 
 			b = next;
@@ -264,7 +189,6 @@ void Bat::DirectKill()
 	}
 	receivedHit = NULL;
 }
-
 
 void Bat::FrameIncrement()
 {
@@ -292,8 +216,11 @@ void Bat::ProcessState()
 	double detectRange = 300;
 	double dodgeRange = 250;
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
+	V2d position = GetPosition();
 	V2d diff = playerPos - position;
+	
+	V2d startPos = startPosInfo.GetPosition();
 	V2d pDir = normalize(diff);
 	if (action == FLY)
 	{
@@ -391,8 +318,8 @@ void Bat::IHitPlayer(int index)
 	currVisual = KICK;
 	visFrame = 0;
 	//Actor *p = owner->GetPlayer(index);
-	V2d playerPos = owner->GetPlayerPos(index);
-	if (playerPos.x > position.x)
+	V2d playerPos = sess->GetPlayerPos(index);
+	if (playerPos.x > GetPosition().x)
 	{
 		facingRight = true;
 	}
@@ -428,7 +355,7 @@ void Bat::UpdateEnemyPhysics()
 		ms->Update(slowMultiple);
 	}
 
-	position = currBasePos + ms->position;
+	currPosInfo.SetPosition(currBasePos + ms->position);
 	//cout << "basePos: " << currBasePos.x << ", " << currBasePos.y << "   ms: " << ms->position.x << ", " << ms->position.y << endl;
 }
 
@@ -445,24 +372,15 @@ void Bat::UpdateSprite()
 		break;
 	}
 	sprite.setTextureRect( ts->GetSubRect( trueFrame) );
-	sprite.setPosition( position.x, position.y );
-
-	if( hasMonitor && !suppressMonitor )
-	{
-		//keySprite.setTexture( *ts_key->texture );
-		keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-		keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-			keySprite->getLocalBounds().height / 2 );
-		keySprite->setPosition( position.x, position.y );
-	}
+	sprite.setPosition( GetPositionF() );
+	sprite.setOrigin(sprite.getLocalBounds().width/2, sprite.getLocalBounds().height / 2);
 
 	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Bat::EnemyDraw( sf::RenderTarget *target )
 {
-	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite, auraSprite);
 }
 
 void Bat::HandleHitAndSurvive()
