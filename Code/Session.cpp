@@ -416,9 +416,7 @@ void Session::AddW2Enemies()
 	//AddBasicAerialWorldEnemy("gravitydecreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/grav_decrease_256x256.png", 256, 256));
 
-	//AddWorldEnemy("gravityspring", 2, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+	AddWorldEnemy("glidespring", 2, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	//AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
 	//	Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
@@ -436,9 +434,8 @@ void Session::AddW3Enemies()
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 	//	GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
-	//AddWorldEnemy("bouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+	AddWorldEnemy("bouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
+	//AddWorldEnemy("airbouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	//AddWorldEnemy("airbouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -494,9 +491,7 @@ void Session::AddW4Enemies()
 	////AddBasicAerialWorldEnemy("teleporter", 4, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	////	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
-	//AddWorldEnemy("teleporter", 4, LoadParams<TeleporterParams>, NULL, MakeParamsAerial<TeleporterParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
+	AddBasicAerialWorldEnemy("teleporter", 4, CreateEnemy<Spring>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 
 	//AddWorldEnemy("onewayteleporter", 4, LoadParams<TeleporterParams>, NULL, MakeParamsAerial<TeleporterParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,

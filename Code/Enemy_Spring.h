@@ -50,6 +50,7 @@ struct Spring : Enemy
 	sf::Vector2<double> dir;
 	int speed;
 	int stunFrames;
+	double dist;
 
 	sf::Vertex debugLine[2];
 	sf::Text debugSpeed;

@@ -21,7 +21,12 @@ using namespace sf;
 
 void Spring::UpdateParamsSettings()
 {
-
+	if (springType != TELEPORT)
+	{
+		SpringParams *sParams = (SpringParams*)editParams;
+		speed = sParams->speed;
+		stunFrames = ceil(dist / speed);
+	}
 }
 
 void Spring::SetLevel(int lev)
@@ -52,11 +57,9 @@ void Spring::UpdateOnPlacement(ActorParams *ap)
 
 void Spring::UpdatePath()
 {
-	SpringParams *sParams = (SpringParams*)editParams;
-
 	Vector2i other = Vector2i(0, -10);
-	if( sParams->localPath.size() > 0 )
-		other = sParams->GetLocalPathPos(0);
+	if(editParams->localPath.size() > 0 )
+		other = editParams->GetLocalPathPos(0);
 
 	dest = GetPosition() + V2d(other);
 
@@ -66,7 +69,7 @@ void Spring::UpdatePath()
 	double angle = atan2(springVec.x, -springVec.y);
 	sprite.setRotation(angle / PI * 180.0);
 
-	double dist = length(V2d(other));
+	dist = length(V2d(other));
 
 	if (springType == TELEPORT)
 	{
@@ -75,8 +78,7 @@ void Spring::UpdatePath()
 	}
 	else
 	{
-		speed = sParams->speed;
-		stunFrames = ceil(dist / speed);
+		UpdateParamsSettings();
 	}
 
 	dir = springVec;
@@ -122,7 +124,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	{
 		springType = BLUE;
 	}
-	else if (typeName == "gravityspring")
+	else if (typeName == "glidespring")
 	{
 		springType = GREEN;
 	}

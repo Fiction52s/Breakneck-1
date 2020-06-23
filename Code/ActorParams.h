@@ -9,6 +9,7 @@
 #include "ActorParamsBase.h"
 #include "ShardInfo.h"
 
+
 struct TerrainPolygon;
 
 struct BasicGroundEnemyParams : public ActorParams
@@ -357,8 +358,6 @@ struct SpringParams : public ActorParams
 	void SetPanelInfo();
 
 	int speed;
-
-	bool CanBeAerial() { return true; }
 };
 
 struct JugglerParams : public BasicAirEnemyParams

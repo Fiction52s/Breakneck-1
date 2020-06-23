@@ -492,6 +492,11 @@ void EditModeUI::ButtonCallback(Button *b, const std::string & e)
 	{
 		edit->SetZoomButton();
 	}
+
+	/*if (currParams != NULL)
+	{
+		currParams->ButtonCallback(b, e);
+	}*/
 }
 
 void EditModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
@@ -580,10 +585,20 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 			edit->showGraph = cb->checked;
 		}
 	}
+
+	/*if (currParams != NULL)
+	{
+		currParams->CheckBoxCallback(cb, e);
+	}*/
 }
 
 void EditModeUI::SliderCallback(Slider *slider)
 {
+	/*if (currParams != NULL)
+	{
+		currParams->SliderCallback(slider, e);
+	}*/
+
 	if (currEnemyPanel != NULL && slider->panel == currEnemyPanel)
 	{
 		if (currRail)
@@ -596,6 +611,8 @@ void EditModeUI::SliderCallback(Slider *slider)
 			edit->UpdateCurrEnemyParamsFromPanel();
 		}
 	}
+
+	
 }
 
 void EditModeUI::DropdownCallback(Dropdown *dropdown, const std::string & e)

@@ -6559,6 +6559,7 @@ void EditSession::SetEnemyEditPanel()
 	string name = type->info.name;
 
 	Panel *p = type->panel;
+	p->handler = ap;
 
 	ap->SetPanelInfo();
 
@@ -9909,6 +9910,10 @@ void EditSession::UpdateCurrEnemyParamsFromPanel()
 	assert(selectedBrush->IsSingleActor());
 	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
 	a->SetParams();
+	if (a->myEnemy != NULL)
+	{
+		a->myEnemy->UpdateParamsSettings();
+	}
 }
 
 bool EditSession::IsOnlyPlayerSelected()

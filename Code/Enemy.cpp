@@ -434,22 +434,24 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	SetKey();
 
 
+	int fxWorld = min(world, 2);
+
 	stringstream ss;
-	ss << "FX/hit_spack_" << world << "_128x128.png";
+	ss << "FX/hit_spack_" << fxWorld << "_128x128.png";
 
 	ts_hitSpack = sess->GetTileset( ss.str(), 128, 128 );
 
 	ss.clear();
 	ss.str("");
 
-	ss << "FX/w" << world << "_kill_fx_512x512.png";
+	ss << "FX/w" << fxWorld << "_kill_fx_512x512.png";
 
 	ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
 	assert(ts_killSpack != NULL);
 	ss.clear();
 	ss.str("");
 
-	ss << "FX/fx_blood_" << world << "_256x256.png";
+	ss << "FX/fx_blood_" << fxWorld << "_256x256.png";
 
 	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
 
