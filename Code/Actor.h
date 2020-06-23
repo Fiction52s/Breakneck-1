@@ -386,6 +386,7 @@ struct Actor : QuadTreeCollider,
 	std::map<int, std::list<CollisionBox>> & GetHitboxList(
 		const std::string & str);
 
+	bool IsGroundAttack(int a);
 
 	GameController &GetController(int index);
 
@@ -1042,6 +1043,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f diagUpSwordOffset[3];
 	sf::Vector2f diagDownSwordOffset[3];
 	sf::Vector2f standSwordOffset[3];
+	sf::Vector2f dashAttackSwordOffset[3];
 	sf::Vector2f slideAttackOffset[3];
 	sf::Vector2f climbAttackOffset[3];
 

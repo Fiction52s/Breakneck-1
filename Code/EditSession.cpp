@@ -6559,7 +6559,7 @@ void EditSession::SetEnemyEditPanel()
 	string name = type->info.name;
 
 	Panel *p = type->panel;
-	p->handler = ap;
+	//p->handler = ap;
 
 	ap->SetPanelInfo();
 

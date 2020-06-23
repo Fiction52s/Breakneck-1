@@ -396,6 +396,11 @@ void Actor::SetupSwordTilesets()
 	ts_diagDownSword[0] = sess->GetSizedTileset(folder, "airdash_sword_128x208.png", swordSkin);
 	ts_diagDownSword[1] = sess->GetSizedTileset(folder, "airdash_sword_b_224x240.png", swordSkin);
 	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
+
+	ts_dashAttackSword[0] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
+	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
+	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
+
 }
 
 void Actor::SetupExtraTilesets()
@@ -9969,13 +9974,18 @@ bool Actor::CheckRightStickSwing()
 	return rightStickSwing;
 }
 
+bool Actor::IsGroundAttack(int a)
+{
+	return a == Action::STANDN || a == Action::DASHATTACK;
+}
+
 bool Actor::TryGroundAttack()
 {
 	bool normalSwing = CheckNormalSwing();
 	bool rightStickSwing = false;//CheckRightStickSwing();
 
-	if ( normalSwing || rightStickSwing || pauseBufferedAttack == Action::STANDN
-		|| stunBufferedAttack == Action::STANDN )
+	if ( normalSwing || rightStickSwing || IsGroundAttack(pauseBufferedAttack)
+		|| IsGroundAttack(stunBufferedAttack))
 	{
 		
 		if (!rightStickSwing)
@@ -10002,7 +10012,7 @@ bool Actor::TryGroundAttack()
 			}
 		}
 
-		if (stunBufferedAttack == Action::STANDN)
+		if (IsGroundAttack(stunBufferedAttack))
 		{
 			V2d gn = ground->Normal();
 			if (TerrainPolygon::IsSteepGround(gn) )
@@ -10037,7 +10047,15 @@ bool Actor::TryGroundAttack()
 		}
 		else
 		{
-			SetAction(STANDN);
+			if (action == DASH)
+			{
+				SetAction(DASHATTACK);
+			}
+			else
+			{
+				SetAction(STANDN);
+			}
+			
 			frame = 0;
 		}
 		
@@ -13881,6 +13899,17 @@ void Actor::Draw( sf::RenderTarget *target )
 				}
 				else
 					target->draw(standingNSword);
+				break;
+			}
+			case DASHATTACK:
+			{
+				if (flashFrames > 0)
+				{
+					target->draw(dashAttackSword, &swordSh);
+					//cout << "Standn" << endl;
+				}
+				else
+					target->draw(dashAttackSword);
 				break;
 			}
 			case WALLATTACK:
