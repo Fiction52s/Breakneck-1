@@ -162,7 +162,7 @@ void BounceJuggler::Return()
 
 void BounceJuggler::Pop()
 {
-	sess->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -219,7 +219,7 @@ void BounceJuggler::ProcessHit()
 					suppressMonitor = true;
 				}
 
-				sess->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -236,7 +236,7 @@ void BounceJuggler::ProcessHit()
 		}
 		else
 		{
-			sess->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
 		}
 	}

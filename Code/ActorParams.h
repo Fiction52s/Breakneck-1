@@ -431,6 +431,7 @@ struct BatParams : public ActorParams
 	//int speed;
 };
 
+
 struct GravityFallerParams : public ActorParams
 {
 	GravityFallerParams(ActorType *at,
@@ -548,25 +549,20 @@ struct CurveTurretParams : public ActorParams
 	int curveFactor;
 };
 
+
 struct GravityModifierParams : public ActorParams
 {
-	GravityModifierParams(ActorType *at,
-		sf::Vector2i &pos, int strength);
-	GravityModifierParams(ActorType *at,
-		sf::Vector2i &pos);
+	GravityModifierParams(ActorType *at, int level);
 	GravityModifierParams(ActorType *at,
 		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
-
-	void SetParams();
-	void SetPanelInfo();
-
 
 	ActorParams *Copy();
-
-	int strength;
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	int durationInSeconds;
+	float gravFactor;
 };
-
 
 struct BossBirdParams : public ActorParams
 {

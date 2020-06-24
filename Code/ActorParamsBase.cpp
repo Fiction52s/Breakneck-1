@@ -693,6 +693,11 @@ Vector2i ActorParams::GetLocalPathPos(int index)
 	return localPath[index];
 }
 
+const std::string &ActorParams::GetTypeName()
+{
+	return type->info.name;
+}
+
 sf::FloatRect ActorParams::GetAABB()
 {
 	//return GetGrabAABB();

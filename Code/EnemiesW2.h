@@ -7,5 +7,6 @@
 #include "Enemy_GravityFaller.h"
 #include "Enemy_StagBeetle.h"
 #include "Enemy_GravityJuggler.h"
+#include "Enemy_GravityModifier.h"
 
 #endif

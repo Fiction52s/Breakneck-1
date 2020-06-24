@@ -247,6 +247,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_OWL:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_BALL:
+		hitParams.Set(5, 0, 60, 1, false);
+		break;
 	case EnemyType::EN_ROADRUNNER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

@@ -1016,59 +1016,34 @@ void GravitySpringParams::Draw(sf::RenderTarget *target)
 	ActorParams::Draw(target);
 }
 
-GravityModifierParams::GravityModifierParams(ActorType *at, sf::Vector2i &pos, int p_strength)
-	:ActorParams(at), strength(p_strength)
-{
-	PlaceAerial(pos);
-}
-
-
 GravityModifierParams::GravityModifierParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadAerial(is);
-
-	is >> strength;
-}
-
-GravityModifierParams::GravityModifierParams(ActorType *at, sf::Vector2i &pos)
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-
-	strength = 50;;
-}
-
-void GravityModifierParams::WriteParamFile(std::ofstream &of)
-{
-	of << strength << "\n";
-}
-
-void GravityModifierParams::SetParams()
-{
-	Panel *p = type->panel;
-
-	string strengthStr = p->textBoxes["strength"]->text.getString().toAnsiString();
-
-	stringstream ss;
-	ss << strengthStr;
-
-	int t_strength;
-	ss >> t_strength;
-
-	if (!ss.fail())
-	{
-		strength = t_strength;
-	}
-	//hasMonitor = p->checkBoxes["monitor"]->checked;
+	is >> durationInSeconds;
+	is >> gravFactor;
 }
 
 void GravityModifierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
-	p->textBoxes["strength"]->text.setString(boost::lexical_cast<string>(strength));
-	//p->checkBoxes["monitor"]->checked = hasMonitor;
+	p->sliders["duration"]->SetCurrValue(durationInSeconds);
+	p->sliders["gravfactor"]->SetCurrValueF(gravFactor);
+}
+
+void GravityModifierParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	durationInSeconds = p->sliders["duration"]->GetCurrValue();
+	gravFactor = p->sliders["gravfactor"]->GetCurrValueF();
+}
+
+void GravityModifierParams::WriteParamFile(ofstream &of)
+{
+	of << durationInSeconds << "\n";
+	of << gravFactor << "\n";
 }
 
 ActorParams *GravityModifierParams::Copy()

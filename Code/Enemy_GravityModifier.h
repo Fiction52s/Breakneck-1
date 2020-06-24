@@ -14,12 +14,10 @@ struct GravityModifier : Enemy
 	};
 
 	Action action;
-	GravityModifier(GameSession *owner,
-		sf::Vector2i &pos, int level,
-		bool increaser);
+	GravityModifier(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
+	//void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	bool Modify();
@@ -30,6 +28,8 @@ struct GravityModifier : Enemy
 	Tileset *ts_refresh;
 
 	double gravFactor;
+
+	bool increaser;
 	int duration;
 
 	int actionLength[Count];

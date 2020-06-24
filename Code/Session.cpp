@@ -414,6 +414,8 @@ void Session::AddW2Enemies()
 
 	AddBasicGroundWorldEnemy("gravityfaller", 2, CreateEnemy<GravityFaller>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddWorldEnemy("gravityincreaser", 2, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+	AddWorldEnemy("gravitydecreaser", 2, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
 	//AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/grav_increase_256x256.png", 256, 256));
 
@@ -433,7 +435,7 @@ void Session::AddW3Enemies()
 
 	///*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
-
+	AddBasicAerialWorldEnemy("ball", 3, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddWorldEnemy("bouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 	//AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
