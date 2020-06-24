@@ -16,12 +16,9 @@ struct GravityJuggler : Enemy
 		S_Count
 	};
 
-	GravityJuggler(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, 
-		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps, bool reverse );
+	GravityJuggler(ActorParams *ap );
 	~GravityJuggler();
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -38,13 +35,7 @@ struct GravityJuggler : Enemy
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
-
-
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	V2d origPos;
+	void SetLevel(int lev);
 
 	V2d velocity;
 
@@ -57,7 +48,6 @@ struct GravityJuggler : Enemy
 	int hitLimit;
 	int currHits;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	bool reversed;

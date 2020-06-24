@@ -661,6 +661,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupGateMarkers();
 	void ResetEnemies();
 	void rResetEnemies(QNode *node);
+	bool PlayerIsMovingLeft(int index = 0);
+	bool PlayerIsMovingRight(int index = 0);
+	bool PlayerIsFacingRight(int index = 0);
 };
 
 #endif

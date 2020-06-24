@@ -498,9 +498,7 @@ struct GameSession : RayCastHandler, Session
 	void PlayerRestoreDoubleJump(int index = 0);
 	void PlayerRestoreAirDash(int index = 0);
 	int GetPlayerHitstunFrames(int index = 0);
-	bool PlayerIsMovingLeft(int index = 0);
-	bool PlayerIsMovingRight(int index = 0);
-	bool PlayerIsFacingRight(int index = 0);
+	
 
 	//draw
 

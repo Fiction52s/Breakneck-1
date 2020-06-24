@@ -19,6 +19,15 @@ Comboer::Comboer(ActorParams *ap )
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, S_FLOAT, 0);
 
+	actionLength[S_FLOAT] = 18;
+	actionLength[S_SHOT] = 3;
+	actionLength[S_EXPLODE] = 20;
+
+	animFactor[S_FLOAT] = 2;
+	animFactor[S_SHOT] = 6;
+	animFactor[S_EXPLODE] = 1;
+
+
 	SetLevel(ap->GetLevel());
 
 	pathFollower.SetParams(ap);
@@ -26,13 +35,14 @@ Comboer::Comboer(ActorParams *ap )
 	SetCurrPosInfo(startPosInfo);
 	
 	speed = 15;
-	
+	shootLimit = 120;
+	hitLimit = 6;
+	facingRight = true;
+
 	ts = sess->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -42,6 +52,8 @@ Comboer::Comboer(ActorParams *ap )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);	
@@ -59,20 +71,6 @@ Comboer::Comboer(ActorParams *ap )
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
 	comboObj->enemyHitboxFrame = 0;
-
-	facingRight = true;
-
-	actionLength[S_FLOAT] = 18;
-	actionLength[S_SHOT] = 3;
-	actionLength[S_EXPLODE] = 20;
-
-	animFactor[S_FLOAT] = 2;
-	animFactor[S_SHOT] = 6;
-	animFactor[S_EXPLODE] = 1;
-
-
-	shootLimit = 120;
-	hitLimit = 6;
 
 	ResetEnemy();
 }
@@ -119,8 +117,9 @@ void Comboer::ResetEnemy()
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
+	
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	pathFollower.Reset();

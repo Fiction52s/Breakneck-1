@@ -119,7 +119,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 
 	//potentially temporary
-	string typeName = ap->type->info.name;
+	string &typeName = ap->type->info.name;
 	if (typeName == "spring")
 	{
 		springType = BLUE;

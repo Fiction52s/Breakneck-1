@@ -6,5 +6,6 @@
 #include "Enemy_CurveTurret.h"
 #include "Enemy_GravityFaller.h"
 #include "Enemy_StagBeetle.h"
+#include "Enemy_GravityJuggler.h"
 
 #endif

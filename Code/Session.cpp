@@ -382,9 +382,9 @@ void Session::AddW2Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
-	//AddWorldEnemy("downgravityjuggler", 2, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
-	//	GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+	AddWorldEnemy("downgravityjuggler", 2, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3 );
+
+	AddWorldEnemy("upgravityjuggler", 2, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//AddWorldEnemy("upgravityjuggler", 2, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
@@ -5771,5 +5771,45 @@ void Session::rResetEnemies(QNode *node)
 			e->Reset();
 		}
 
+	}
+}
+
+
+bool Session::PlayerIsMovingLeft(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		return p->IsMovingLeft();
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Session::PlayerIsMovingRight(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		return p->IsMovingRight();
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool Session::PlayerIsFacingRight(int index)
+{
+	Actor *p = GetPlayer(index);
+	if (p != NULL)
+	{
+		return p->facingRight;
+	}
+	else
+	{
+		return false;
 	}
 }

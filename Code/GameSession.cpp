@@ -1192,45 +1192,6 @@ int GameSession::GetPlayerTeamIndex(int index)
 	}
 }
 
-bool GameSession::PlayerIsMovingLeft(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->IsMovingLeft();
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool GameSession::PlayerIsMovingRight(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->IsMovingRight();
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool GameSession::PlayerIsFacingRight(int index)
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->facingRight;
-	}
-	else
-	{
-		return false;
-	}
-}
-
 void GameSession::KeyboardUpdate( int index )
 {
 	bool up = IsKeyPressed( Keyboard::Up );// || IsKeyPressed( Keyboard::W );
