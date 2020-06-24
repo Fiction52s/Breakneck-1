@@ -16,15 +16,11 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
-	BounceJuggler(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos,
-		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps );
+	BounceJuggler(ActorParams *ap);
 	~BounceJuggler();
+	void SetLevel(int lev);
 	void HitTerrainAerial(Edge * edge, double quant);
-	//void HitTerrainAerial(Edge *, double);
-
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -35,7 +31,6 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
-	void Move();
 	void Return();
 	void Pop();
 	void PopThrow();
@@ -45,20 +40,9 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	double flySpeed;
 
-
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-
-	V2d origPos;
-
-	V2d velocity;
-
 	int hitLimit;
 	int currHits;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	int juggleReps;
@@ -68,8 +52,6 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 
 	int waitFrame;
 	int maxWaitFrames;
-
-	SurfaceMover *mover;
 };
 
 #endif

@@ -15,11 +15,15 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	list<Vector2i> &path, int p_level, int jReps)
-	:Enemy(owner, EnemyType::EN_BOUNCEJUGGLER, p_hasMonitor, 1, false)
+void BounceJuggler::UpdateParamsSettings()
 {
-	level = p_level;
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+}
+
+void BounceJuggler::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -35,62 +39,32 @@ BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos
 		maxHealth += 5;
 		break;
 	}
+}
+
+BounceJuggler::BounceJuggler(ActorParams *ap)
+	:Enemy(EnemyType::EN_BOUNCEJUGGLER, ap)
+{
+	SetLevel(ap->GetLevel());
+
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLOAT, 0, 0);
 
 	flySpeed = 14;
-
 	maxWaitFrames = 180;
 
-	juggleReps = path.size();
+	UpdateParamsSettings();
 
-	mover = new SurfaceMover(owner, NULL, 0, 64 * scale);
-	mover->surfaceHandler = this;
+	CreateSurfaceMover(startPosInfo, 64, this);
 
 	guidedDir = NULL;
-	if (juggleReps > 0)
-	{
-		Vector2i prev(0, 0);
-		guidedDir = new V2d[juggleReps];
-		int ind = 0;
-		for (auto it = path.begin(); it != path.end(); ++it)
-		{
-			if (it != path.begin())
-			{
-				it--;
-				prev = (*it);
-				it++;
-			}
-
-			guidedDir[ind] = normalize(V2d((*it) - prev));
-
-			++ind;
-		}
-	}
-
-	if (guidedDir == NULL)
-		juggleReps = jReps;
-
-
-
-	position.x = pos.x;
-	position.y = pos.y;
-	origPos = position;
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
 	hitLimit = -1;
 
-
-
-
-
 	action = S_FLOAT;
 
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
 
 
 
@@ -102,13 +76,9 @@ BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -121,8 +91,7 @@ BounceJuggler::BounceJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_FLOAT] = 18;
@@ -142,35 +111,27 @@ BounceJuggler::~BounceJuggler()
 {
 	if (guidedDir != NULL)
 		delete[] guidedDir;
-
-	delete mover;
 }
 
 void BounceJuggler::ResetEnemy()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 	currHits = 0;
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
-	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	dead = false;
+	surfaceMover->velocity = V2d(0, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	receivedHit = NULL;
-	position = origPos;
+	currJuggle = 0;
 
-	mover->velocity = V2d(0, 0);
-	mover->ground = NULL;
-	mover->physBody.globalPosition = position;
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
+	surfaceMover->ClearAirForces();
 
 	UpdateHitboxes();
-
-	
-
-	currJuggle = 0;
 
 	UpdateSprite();
 }
@@ -179,17 +140,17 @@ void BounceJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	surfaceMover->velocity = vel;
 }
 
 void BounceJuggler::Throw(V2d vel)
 {
-	velocity = vel;
+	surfaceMover->velocity = vel;
 }
 
 void BounceJuggler::Return()
 {
-	owner->PlayerRemoveActiveComboer(comboObj);
+	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -201,7 +162,7 @@ void BounceJuggler::Return()
 
 void BounceJuggler::Pop()
 {
-	owner->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -220,7 +181,7 @@ void BounceJuggler::PopThrow()
 		//cout << "dir: " << dir.x << "," << dir.y << endl;
 		if (dir.x == 0 && dir.y == 0)
 		{
-			dir = -normalize(velocity);
+			dir = -normalize(surfaceMover->velocity);
 			assert(dir.x != 0 || dir.y != 0);
 			action = S_BOUNCE;
 			frame = 0;
@@ -237,7 +198,7 @@ void BounceJuggler::PopThrow()
 
 	Throw(hit);
 
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 void BounceJuggler::ProcessHit()
@@ -254,11 +215,11 @@ void BounceJuggler::ProcessHit()
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					owner->keyMarker->CollectKey();
+					sess->CollectKey();
 					suppressMonitor = true;
 				}
 
-				owner->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -275,7 +236,7 @@ void BounceJuggler::ProcessHit()
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -290,10 +251,9 @@ void BounceJuggler::ProcessState()
 		switch (action)
 		{
 		case S_RETURN:
-			position = origPos;
-			mover->physBody.globalPosition = position;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			surfaceMover->Set(startPosInfo);
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -326,12 +286,12 @@ void BounceJuggler::HandleNoHealth()
 
 }
 
-void BounceJuggler::Move()
-{
-	mover->velocity = velocity;
-	mover->Move(slowMultiple, numPhysSteps);
-	position = mover->physBody.globalPosition;
-}
+//void BounceJuggler::Move()
+//{
+//	mover->velocity = velocity;
+//	mover->Move(slowMultiple, numPhysSteps);
+//	position = mover->physBody.globalPosition;
+//}
 
 void BounceJuggler::UpdateEnemyPhysics()
 {
@@ -340,12 +300,12 @@ void BounceJuggler::UpdateEnemyPhysics()
 	case S_FLY:
 	case S_BOUNCE:
 	{
-		Move();
+		Enemy::UpdateEnemyPhysics();
 		break;
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(surfaceMover->velocity);
 }
 
 void BounceJuggler::FrameIncrement()
@@ -361,23 +321,6 @@ void BounceJuggler::FrameIncrement()
 		else
 		{
 			waitFrame++;
-		}
-	}
-}
-
-void BounceJuggler::HandleEntrant(QuadTreeEntrant *qte)
-{
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
-
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
 		}
 	}
 }
@@ -398,19 +341,17 @@ void BounceJuggler::ComboKill(Enemy *e)
 {
 	if (level == 2)
 	{
-		V2d playerDir = normalize(owner->GetPlayerPos(0) - position);
+		V2d playerDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 		Throw(playerDir * flySpeed);
 
 		action = S_BOUNCE;
 		frame = 0;
-		SetHurtboxes(hurtBody, 0);
+		DefaultHurtboxesOn();
 	}
 }
 
 void BounceJuggler::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
-
 	int tile = 0;
 	switch (action)
 	{
@@ -419,16 +360,19 @@ void BounceJuggler::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 }
 
 void BounceJuggler::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 {
-	V2d pos = edge->GetPoint(quant);
+	V2d pos = edge->GetPosition(quant);
 	/*if (b->bounceCount == 2)
 	{
 	V2d norm = edge->Normal();
@@ -441,20 +385,20 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 		V2d en = edge->Normal();
 		if (pos == edge->v0)
 		{
-			en = normalize(position - pos);
+			en = normalize(GetPosition() - pos);
 		}
 		else if (pos == edge->v1)
 		{
-			en = normalize(position - pos);
+			en = normalize(GetPosition() - pos);
 		}
-		double d = dot(velocity, en);
-		V2d ref = velocity - (2.0 * d * en);
-		velocity = ref;
-		mover->ground = NULL;
+		double d = dot(surfaceMover->velocity, en);
+		V2d ref = surfaceMover->velocity - (2.0 * d * en);
+		surfaceMover->velocity = ref;
+		surfaceMover->ground = NULL;
 	}
 
 	action = S_BOUNCE;
 	frame = 0;
 	//SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHurtboxesOn();
 }

@@ -69,6 +69,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap )
 		reversedGrav = true;
 	}
 
+	UpdateParamsSettings();
 	maxWaitFrames = 180;
 
 	guidedDir = NULL;

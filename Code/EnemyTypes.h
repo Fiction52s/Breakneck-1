@@ -87,6 +87,7 @@ enum EnemyType
 	EN_FLOWERPOD,
 	EN_HEALTHFLY,
 	EN_FLYCHAIN,
+	EN_BALL,
 	EN_Count
 };
 

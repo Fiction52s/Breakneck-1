@@ -44,6 +44,10 @@
 #include "ShipPickup.h"
 #include "EnemiesW1.h"
 #include "EnemiesW2.h"
+#include "EnemiesW3.h"
+#include "EnemiesW4.h"
+#include "EnemiesW5.h"
+#include "EnemiesW6.h"
 
 
 
@@ -430,6 +434,8 @@ void Session::AddW3Enemies()
 	///*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
+
+	AddWorldEnemy("bouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 	//AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 	//	GetTileset("Enemies/jayshield_128x128.png", 128, 128));
