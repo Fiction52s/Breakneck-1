@@ -249,7 +249,6 @@ Collider &Actor::GetCollider()
 void Actor::SetupFXTilesets()
 {
 	string folder = "Kin/FX/";
-
 	ts_fairSwordLightning[0] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
 	ts_fairSwordLightning[1] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
 	ts_fairSwordLightning[2] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png", swordSkin);
@@ -416,10 +415,7 @@ void Actor::SetupExtraTilesets()
 	ts_scorpDash = sess->GetSizedTileset( folder, "scorp_dash_192x80.png");
 	ts_scorpSprint = sess->GetSizedTileset( folder, "scorp_sprint_192x96.png");
 	ts_scorpClimb = sess->GetSizedTileset( folder, "scorp_climb_256x128.png");
-	ts_bubble = sess->GetSizedTileset( folder, "time_bubble_128x128.png");
-
-	ts_airBounceFlame = sess->GetSizedTileset( folder, "bouncejumpflame_128x128.png", skin);
-	ts_runBounceFlame = sess->GetSizedTileset( folder, "bouncerunflame_128x96.png", skin);
+	ts_bubble = sess->GetSizedTileset(folder, "time_bubble_128x128.png");
 
 	ts_dodecaSmall = sess->GetSizedTileset( folder, "dodecasmall_180x180.png", skin);
 	ts_dodecaBig = sess->GetSizedTileset( folder, "dodecabig_360x360.png", skin);
@@ -2369,9 +2365,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	BounceFlameOff();
 
-
-	airBounceFlameFrames = 20 * 3;
-	runBounceFlameFrames = 21 * 3;
 	maxBBoostCount = GetActionLength(DASH);
 		 	
 
@@ -3928,8 +3921,6 @@ void Actor::ProcessGravityGrass()
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
 		//before they fall
-		if (bounceFlameOn)
-			airBounceFrame = 13 * 3;
 		//so you dont jump straight up on a nearly vertical edge
 		double blah = .5;
 
@@ -5932,9 +5923,6 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	
 	sess->barrierTree->Query(this, r);
-
-
-	testr = false;
 
 	if( col )
 	{
@@ -10318,7 +10306,6 @@ void Actor::PhysicsResponse()
 				{
 					//cout << "land: " << abs(storedBounceVel.y) << endl;
 					BounceFlameOn();
-					runBounceFrame = 4 * 3;
 					
 					SetAction(LAND);
 					frame = 0;
@@ -11579,23 +11566,6 @@ void Actor::UpdateBounceFlameCounters()
 {
 	if (bounceFlameOn)
 	{
-		if (ground == NULL)
-		{
-			airBounceFrame++;
-			if (airBounceFrame == airBounceFlameFrames)
-			{
-				airBounceFrame = 13 * 3;
-			}
-		}
-		else
-		{
-			runBounceFrame++;
-			if (runBounceFrame == runBounceFlameFrames)
-			{
-				runBounceFrame = 8 * 3;
-			}
-		}
-
 		++framesFlameOn;
 	}
 }
@@ -11703,8 +11673,6 @@ void Actor::UpdatePostPhysics()
 
 	UpdatePlayerShader();
 
-	rotaryAngle = sprite->getRotation() / 180 * PI;
-
 	UpdateDashBooster();
 
 	SlowDependentFrameIncrement();
@@ -11745,8 +11713,6 @@ void Actor::BounceFlameOn()
 	framesFlameOn = 0;
 	bounceFlameOn = true;
 	scorpOn = true;
-	runBounceFrame = 0;
-	airBounceFrame = 0;
 }
 
 void Actor::BounceFlameOff()
@@ -14350,45 +14316,6 @@ void Actor::UpdateSprite()
 		{
 		}
 	}
-
-	if( false )//bounceFlameOn )
-	{
-		if( ground == NULL )
-		{
-			bounceFlameSprite.setTexture( *ts_airBounceFlame->texture );
-			bounceFlameSprite.setTextureRect( ts_airBounceFlame->GetSubRect( airBounceFrame / 3 ) );
-
-			//double angle = 0;
-			//angle = atan2( velocity.y, velocity.x );
-
-			if( velocity.x < 0  )
-			{
-				sf::IntRect r = bounceFlameSprite.getTextureRect();
-				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-
-			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height / 2 );
-			bounceFlameSprite.setPosition( sprite->getPosition() );
-			
-			//bounceFlameSprite.setRotation( angle / PI * 180 );
-			bounceFlameSprite.setRotation( 0 );
-		}
-		else
-		{
-			bounceFlameSprite.setTexture( *ts_runBounceFlame->texture );
-			bounceFlameSprite.setTextureRect( ts_runBounceFlame->GetSubRect( runBounceFrame / 3 ) );
-			if( ( groundSpeed < 0 && !reversed ) || ( groundSpeed > 0 && reversed ) )
-			{
-				sf::IntRect r = bounceFlameSprite.getTextureRect();
-				bounceFlameSprite.setTextureRect( sf::IntRect( r.left + r.width, r.top, -r.width, r.height ) );
-			}
-			bounceFlameSprite.setOrigin( bounceFlameSprite.getLocalBounds().width / 2, bounceFlameSprite.getLocalBounds().height );
-			bounceFlameSprite.setPosition( sprite->getPosition() );
-			bounceFlameSprite.setRotation( sprite->getRotation() );
-			
-		}
-	}
-
 }
 
 void Actor::ConfirmEnemyKill( Enemy *e )

@@ -28,7 +28,6 @@ void Actor::BOUNCEAIR_Change()
 	{
 		BounceFlameOn();
 		//bounceFlameOn = true;
-		airBounceFrame = 13 * 3;
 	}
 }
 

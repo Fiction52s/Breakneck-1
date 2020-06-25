@@ -76,20 +76,8 @@ struct KinMask
 		Expr_NONE
 	};
 
-	KinMask( Actor *a);
-	~KinMask();
-	void Update( int speedLevel,
-		bool desp );
-	void Draw(sf::RenderTarget *target);
-	void SetTopLeft(sf::Vector2f &pos);
-	sf::Vector2f GetTopLeft();
-
-	void Reset();
-
-	void SetExpr(Expr ex);
 	int frame;
 	Expr expr;
-
 	Actor *actor;
 	Tileset *ts_face;
 	sf::Sprite face;
@@ -97,9 +85,19 @@ struct KinMask
 	Session *sess;
 	MomentumBar *momentumBar;
 	KinRing *kinRing;
-
 	Tileset *ts_newShardMarker;
 	sf::Sprite shardMarker;
+
+	KinMask( Actor *a);
+	~KinMask();
+	void Update( int speedLevel,
+		bool desp );
+	void Draw(sf::RenderTarget *target);
+	void SetTopLeft(sf::Vector2f &pos);
+	sf::Vector2f GetTopLeft();
+	void Reset();
+	void SetExpr(Expr ex);
+	
 };
 
 struct AdventureHUD

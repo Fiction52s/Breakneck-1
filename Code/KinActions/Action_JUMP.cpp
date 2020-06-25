@@ -36,8 +36,6 @@ void Actor::JUMP_Update()
 
 			if (reversed)
 			{
-				if (bounceFlameOn)
-					airBounceFrame = 13 * 3;
 				//so you dont jump straight up on a nearly vertical edge
 				double blah = .5;
 
@@ -61,9 +59,6 @@ void Actor::JUMP_Update()
 			else
 			{
 				double dSpeed = GetDashSpeed();
-
-				if (bounceFlameOn)
-					airBounceFrame = 13 * 3;
 
 				double blah = .25;
 
@@ -174,9 +169,6 @@ void Actor::JUMP_Update()
 			}*/
 
 			double dSpeed = GetDashSpeed();
-
-			if (bounceFlameOn)
-				airBounceFrame = 13 * 3;
 
 			double blah = .25;
 

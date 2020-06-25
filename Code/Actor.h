@@ -122,8 +122,6 @@ struct BasicEffect;
 
 struct Wire;
 
-
-
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -307,31 +305,22 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
+	//values that dont need to be stored
+	//at least in this first pass
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
-	sf::Sprite exitAuraSprite;
 	Tileset *ts_exitAura;
-	bool showExitAura;	
-	sf::Sprite dirtyAuraSprite;//for when you're absorbing a power
 	Tileset *ts_dirtyAura;
-	BitField bHasUpgradeField;
-	BitField bStartHasUpgradeField;
-	int numKeysHeld;
-	bool canStandUp;
-	V2d currNormal;
-	//EffectPool *testPool;
-	KinMask *kinMask;
-	Tileset *ts_kinFace;
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
 	sf::Shader auraTestShader;
-	sf::Sprite kinFace;
-	sf::Sprite kinFaceBG;
-	sf::Sprite kinUnderOutline;
-	sf::Sprite kinTealOutline;
-	sf::Sprite kinBlueOutline;
-	sf::Sprite kinPurpleOutline;
-	sf::Color currentDespColor;
+	bool showExitAura;
+	BitField bStartHasUpgradeField;
+	bool canStandUp;
+	V2d currNormal;
+	Tileset *ts_kinFace;
+	sf::Sprite dirtyAuraSprite;//for when you're absorbing a power
+	sf::Sprite exitAuraSprite;
 	std::vector<void(Actor::*)()> startActionFuncs;
 	std::vector<void(Actor::*)()> endActionFuncs;
 	std::vector<void(Actor::*)()> changeActionFuncs;
@@ -342,124 +331,20 @@ struct Actor : QuadTreeCollider,
 	std::vector<void(Actor::*)()> timeDepFrameIncFuncs;
 	std::vector<int(Actor::*)()> getActionLengthFuncs;
 	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
-
-	//ShapeEmitter *glideEmitter;
 	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
 	EffectPool *keyExplodePool;
 	KeyExplodeUpdater *keyExplodeUpdater;
-	void CreateKeyExplosion();
-	void CreateGateExplosion();
 	Tileset *ts_keyExplode;
 	Tileset *ts_key;
 	MovingGeoGroup *keyExplodeRingGroup;
-	KinRing *kinRing;
 	EffectPool *dustParticles;
 	RisingParticleUpdater *rpu;
 	GroundTrigger *storedTrigger;
 	AirTrigger *currAirTrigger;
 	bool showDirtyAura;
 	AirTriggerBehavior airTrigBehavior;
-
-	void CollectFly(HealthFly *hf);
-	void SetupActionFunctions();
-	void StartAction();
-	void EndAction();
-	void ChangeAction();
-	void UpdateAction();
-	void UpdateActionSprite();
-	void HandleTouchedGate();
-	void SetGroundedSpritePos( Edge * e, double angle );
-	void SetGroundedSpriteTransform();
-	void SetGroundedSpriteTransform(Edge * e, double angle );
-	void TransitionAction(int a);
-	void ActionTimeIndFrameInc();
-	void ActionTimeDepFrameInc();
-	int GetActionLength(int a);
-	void SetupFuncsForAction(int a,
-		void(Actor::*)(),
-		void(Actor::*)(),
-		void(Actor::*)(),
-		void(Actor::*)(),
-		void(Actor::*)(),
-		void(Actor::*)(int),
-		void(Actor::*)(),
-		void(Actor::*)(),
-		int(Actor::*)(),
-		Tileset*(Actor::*)());
-	void SetupDrain();
-	void SetupTimeBubbles();
-	void SetGameMode();
-	SoundNode * ActivateSound(SoundType st, bool loop = false);
-	BasicEffect * ActivateEffect(
-		EffectLayer layer,
-		Tileset *ts,
-		sf::Vector2<double> pos,
-		bool pauseImmune,
-		double angle,
-		int frameCount,
-		int animationFactor,
-		bool right,
-		int startFrame = 0,
-		float depth = 1.f);
-	void DeactivateSound(SoundNode *sn);
-	void SetToOriginalPos();
-	void UpdatePowersMenu();
-	void SetSession(Session *sess,
-		GameSession *game,
-		EditSession *edit);
-	void ReverseSteepSlideJump();
-	void UpdateWireQuads();
-	void DrawWires(sf::RenderTarget *target);
-	QuadTree *GetTerrainTree();
-	QuadTree *GetSpecialTerrainTree();
-	QuadTree *GetRailEdgeTree();
-	QuadTree *GetBarrierTree();
-	QuadTree *GetBorderTree();
-	int GetTotalGameFrames();
-	Collider &GetCollider();
-	sf::SoundBuffer * GetSound(const std::string &name);
-	std::map<int, std::list<CollisionBox>> & GetHitboxList(
-		const std::string & str);
-	bool IsGroundAttack(int a);
-	GameController &GetController(int index);
-	void HandleGroundTrigger(GroundTrigger *trigger);
-	void CheckForAirTrigger();
-	void HandleAirTrigger();
-	void UpdateCanStandUp();
-	void UpdateBounceFlameOn();
-	void HitstunBufferedChangeAction();
-	void ProcessBooster();
-	void UpdateWireStates();
-	void ProcessBoostGrass();
-	void LimitMaxSpeeds();
-	void UpdateBubbles();
-	void UpdateRegrindOffCounter();
-	void UpdateKnockbackDirectionAndHitboxType();
-	void UpdateSmallLightning();
-	void UpdateRisingAura();
-	void UpdateLockedFX();
-	void ProcessSpecialTerrain();
-	void SetDirtyAura(bool on);
-	void TurnFace();
-	void StandInPlace();
-	void WaitInPlace();
-	void Wait();
-	bool IsGoalKillAction(int a);
-	bool IsIntroAction(int a);
-	bool IsExitAction(int a);
-	bool IsSequenceAction(int a);
-	void StartSeqKinThrown( V2d &pos, V2d &vel );
-	void SeqKneel();
-	void SeqMeditateMaskOn();
-	void SeqMaskOffMeditate();
-	void SeqGetAirdash();
-	void CreateAttackLightning();
-	bool CanShootWire();
-	bool CanCreateTimeBubble();
-	void UnlockGate(Gate *g);
-
 	EffectPool *fairLightningPool[4];
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
@@ -471,25 +356,15 @@ struct Actor : QuadTreeCollider,
 	bool flipTileX;
 	bool flipTileY;
 	sf::Vector2<double> spriteCenter;
-	bool dairBoostedDouble;
-	bool aerialHitCancelDouble;
-	int cancelAttack;
 	double dairBoostVel;
-	bool standNDashBoost;
 	double standNDashBoostQuant;
 	int standNDashBoostCooldown;
-	int standNDashBoostCurr;
-	bool hasFairAirDashBoost;
 	double fairAirDashBoostQuant;
 	//these are for the wire boost particles 
 	sf::Vector2<double> leftWireBoostDir;
 	sf::Vector2<double> rightWireBoostDir;
 	sf::Vector2<double> doubleWireBoostDir;
-	int framesStanding;
-	int framesSinceRightWireBoost;
 	int singleWireBoostTiming;
-	int framesSinceLeftWireBoost;
-	int framesSinceDoubleWireBoost;
 	int doubleWireBoostTiming;
 	bool leftWireBoost;
 	bool rightWireBoost;
@@ -497,8 +372,6 @@ struct Actor : QuadTreeCollider,
 	Skin *skin;
 	Skin *swordSkin;
 	std::string actionFolder;
-	sf::Vector2<double> movingPlatExtra;
-	bool testr;
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
@@ -508,141 +381,40 @@ struct Actor : QuadTreeCollider,
 	HitboxInfo *wireChargeInfo;
 	bool hitGoal;
 	bool hitNexus;
-	int enemiesKilledThisFrame;
-	int enemiesKilledLastFrame;
-
-	
-
-
-
-	
-
-	Actor( GameSession *owner, 
-		EditSession *editOwner, int actorIndex );
-	~Actor();
-	void Init();
-
-	void WireMovement();
-	int GetDoubleJump();
-	bool CanDoubleJump();
-	void ExecuteDoubleJump();
-	void ExecuteWallJump();
-	bool IsSingleWirePulling();
-	bool IsDoubleWirePulling();
-	bool TryDoubleJump();
-	bool TryGrind();
-	bool TryDash();
-	bool TryJumpSquat();
-	bool TrySlideBrakeOrStand();
-	bool TrySprintOrRun(V2d &gNorm);
-	void SetSprintStartFrame();
-	bool TryAirDash();
-	bool TryGlide();
-	bool ExitGrind(bool jump);
-	void SetSpriteTexture(int a);
-	void SetSpriteTile(int tileIndex, bool noFlipX = true, bool noFlipY = true);
-	void SetSpriteTile(sf::Sprite *spr,
-		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true);
-	void SetExpr(int ex);
-	void SetAction(int a);
-	void SetupTilesets();
-	void SetupFXTilesets();
-	void SetupSwordTilesets();
-	void SetupExtraTilesets();
-	void SetupActionTilesets();
-	void RailGrindMovement();
-	bool AirAttack();
-	void EnterNexus(int nexusIndex, sf::Vector2<double> &pos);
-	void SetFakeCurrInput(
-		ControllerState &state);
-	float GetSpeedBarPart();
-	Tileset *GetActionTileset(const std::string &fn);
-	float totalHealth;
-	int actorIndex;
-	void UpdateSprite();
-	void ConfirmEnemyNoKill( Enemy *e );
-	void ConfirmHit(Enemy * e);
-	void ActionEnded();
-	void HandleEntrant( QuadTreeEntrant *qte );
-	void UpdatePrePhysics();
-	void ApplyHit( HitboxInfo *info );
-	bool ResolvePhysics( sf::Vector2<double> vel );
-	void UpdatePhysics();
-	void PhysicsResponse();
-	bool TryGroundAttack();
-	bool SteepSlideAttack();
-	bool SteepClimbAttack();
-	void ConfirmEnemyKill( Enemy *e );
-	bool IHitPlayer( int otherPlayerIndex );
-	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
-	void ShipPickupPoint( double eq,
-		bool facingRight );
-	void GrabShipWire();
-	bool physicsOver;
-	void UpdatePostPhysics();
-	bool CheckWall( bool right );
-	bool TryWallJump();
-	bool CheckStandUp();
-	void CheckBounceFlame();
-	bool BasicAirAction();
-	bool GlideAction();
-	bool BasicGroundAction( V2d &gNorm);
-	bool BasicSteepAction(V2d &gNorm);
-	bool BasicAirAttackAction();
-	sf::Vector2<double> UpdateReversePhysics();
-	void Draw( sf::RenderTarget *target );
-	void MiniDraw(sf::RenderTarget *target);
-	void DeathDraw(sf::RenderTarget *target);
-	void DebugDraw( sf::RenderTarget *target );
-	void DrawMapWires(sf::RenderTarget *target);
-	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
-	void UpdateHitboxes();
-	void AirMovement();
-	double GroundedAngle();
-	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
-	sf::Vector2i GetWireOffset();
-	void RunMovement();
-	void BrakeMovement();
-	void SetAutoRun( bool fr, double maxAutoRun );
-	void SetAirPos(V2d &pos, bool facingRight);
-	void SetGroundedPos(Edge *g, double q);
-	void SetGroundedPos(Edge *g, double q, double xoff);
-	void SetStandInPlacePos(Edge *g, double q,
-		bool fr);
-	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
-		double q, Edge *end, double endQ );
-	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
-		double q);
-	void SetAutoRunStopper(Edge *g, double q);
-	bool IsAutoRunning();
-	Edge *autoRunStopEdge;
-	double autoRunStopQuant;
-	double maxAutoRunSpeed;
-	void AttackMovement();
-	void DodecaLateDraw(sf::RenderTarget *target);
-	void SetActionGrind();
-	bool CanUnlockGate( Gate *g );
-	void HandleWaitingScoreDisplay();
-	void EndLevelWithoutGoal();
-	void CheckHoldJump();
-	void Respawn();
-	void BounceFlameOff();
-	void BounceFlameOn();
-	void SetupAction(int a);
-
-	bool justToggledBounce;
 	sf::Sprite dodecaSprite;
-	// 0 is not started, 1 is right, 2 is
-	//left
-	bool airDashStall;
 	Edge *gateTouched;
 	double level1SpeedThresh;
 	double level2SpeedThresh;
 	double speedChangeUp;
 	double speedChangeDown;
+	//EffectPool *testPool;
+	//ShapeEmitter *glideEmitter;
+
+	BitField bHasUpgradeField;
+	int numKeysHeld;	
+	KinMask *kinMask;
+	sf::Color currentDespColor;
+	KinRing *kinRing;
+	bool dairBoostedDouble;
+	bool aerialHitCancelDouble;
+	int cancelAttack;
+	bool standNDashBoost;
+	int standNDashBoostCurr;
+	bool hasFairAirDashBoost;
+	int framesStanding;
+	int framesSinceRightWireBoost;
+	int framesSinceLeftWireBoost;
+	int framesSinceDoubleWireBoost;
+	int enemiesKilledThisFrame;
+	int enemiesKilledLastFrame;
+	bool justToggledBounce;
+	// 0 is not started, 1 is right, 2 is
+	//left
+	bool airDashStall;
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
-	double rotaryAngle;
+	bool scorpOn;
+
 	//unsaved vars
 	int possibleEdgeCount;
 	GameSession *owner;
@@ -702,12 +474,6 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_diagUpSword[3];
 	sf::Sprite diagDownAttackSword;
 	Tileset *ts_diagDownSword[3];
-	int runBounceFlameFrames;
-	int runBounceFrame;
-	Tileset *ts_runBounceFlame;
-	int airBounceFlameFrames;
-	int airBounceFrame;
-	Tileset *ts_airBounceFlame;
 	int framesFlameOn;
 	bool bounceFlameOn;
 	sf::Sprite bounceFlameSprite;
@@ -715,7 +481,7 @@ struct Actor : QuadTreeCollider,
 	double bounceFlameAccel1;
 	double bounceFlameAccel2;
 	Tileset *ts_bounceBoost;
-	bool scorpOn;
+	
 	bool scorpSet;
 	Spring *currSpring;
 	Teleporter *currTeleporter;
@@ -744,51 +510,6 @@ struct Actor : QuadTreeCollider,
 	double scorpAdditionalAccel;
 	double maxVelocity;
 	bool highAccuracyHitboxes;
-
-
-	
-
-
-	void SetBoostVelocity();
-	void SetBounceBoostVelocity();
-	double GetNumSteps();
-	double CalcLandingSpeed( sf::Vector2<double> &testVel,
-		sf::Vector2<double> &alongVel, 
-		sf::Vector2<double> &gNorm, bool rail = false );
-	bool CanRailSlide();
-	bool CanRailGrind();
-	bool IsRailSlideFacingRight();
-	bool IsIntangible();
-	void SetKinMode(Mode m);
-	void KinModeUpdate();
-	void ReverseVerticalInputsWhenOnCeiling();
-	void ProcessReceivedHit();
-	void UpdateDrain();
-	void ProcessGravityGrass();
-	void UpdateScorpCap();
-	void ProcessHitGoal();
-	void UpdateWirePhysics();
-	void UpdateGrindPhysics(double movement);
-	void HandleBounceGrass();
-	bool UpdateGrindRailPhysics(double movement);
-	bool TryUnlockOnTransfer( Edge *e );
-	void LeaveGroundTransfer(bool right, V2d leaveExtra = V2d());
-	bool UpdateAutoRunPhysics( double q, double m );
-	void UpdateSpeedBar();
-	bool CareAboutSpeedAction();
-	void UpdateMotionGhosts();
-	void UpdateSpeedParticles();
-	void UpdateAttackLightning();
-	void UpdatePlayerShader();
-	void TryEndLevel();
-	void UpdateDashBooster();
-	void SlowDependentFrameIncrement();
-	void UpdateBounceFlameCounters();
-	void SetAerialScorpSprite();
-	int GetJumpFrame();
-	void QueryTouchGrass();
-
-	//physics variables:
 	V2d movementVec;
 	double extra;
 	int framesExtendingAirdash;
@@ -843,68 +564,28 @@ struct Actor : QuadTreeCollider,
 	int numMotionGhosts;
 	int motionGhostSpacing;
 	int ghostSpacingCounter;
-
-	void GroundExtraAccel();
-	double GetBounceFlameAccel();
-
 	double holdDashAccel;
 	double wallThresh;
-
 	double bounceBoostSpeed;
 	double steepSlideGravFactor;
 	double steepSlideFastGravFactor;
 	double storedReverseSpeed;
-
 	double steepClimbGravFactor;
 	double steepClimbUpFactor;
 	double steepClimbDownFactor;
 	double steepClingSpeedLimit;
-
-	double GetDashSpeed();
-	double GetAirDashSpeed();
 	double airDashSpeed;
-
 	double airDashSpeed0;
 	double airDashSpeed1;
 	double airDashSpeed2;
-
 	int flyCounter;
-	void AddToFlyCounter(int count);
-
 	CollisionBox b;
 	CollisionBox hurtBody;
 	CollisionBody *currHitboxes;
 	int currHitboxFrame;
-	void SetCurrHitboxes(CollisionBody *cBody,
-		int p_frame);
 	ComboObject *activeComboObjList;
-	void AddActiveComboObj(ComboObject *c);
-	void RemoveActiveComboObj(ComboObject *c);
-	void DebugDrawComboObj(sf::RenderTarget *target);
-	bool IsMovingRight();
-	bool IsMovingLeft();
-	//int numCurrHitboxes;
-
 	CollisionBody *currHurtboxes;
 	int currHurtboxFrame;
-	//std::map<Action, CollisionBody*> hurtboxMap;
-	bool IntersectMyHurtboxes(CollisionBody *cb,
-		int cbFrame );
-	bool IntersectMyHurtboxes(CollisionBox &cb);
-	bool IntersectMyHitboxes(CollisionBody *cb,
-		int cbFrame);
-	bool IntersectMySlowboxes(CollisionBody *cb,
-		int cbFrame );
-	ComboObject * IntersectMyComboHitboxes(
-		Enemy *e, CollisionBody *cb,
-		int cbFrame);
-	Wire * IntersectMyWireHitboxes( Enemy *e,
-		CollisionBody *cb,
-		int cbFrame);
-	bool EnemyIsFar(V2d &enemyPos);
-
-	void SeqAfterCrawlerFight();
-
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
 	sf::Vector2f diagUpSwordOffset[3];
@@ -913,7 +594,6 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f dashAttackSwordOffset[3];
 	sf::Vector2f slideAttackOffset[3];
 	sf::Vector2f climbAttackOffset[3];
-
 	HitboxInfo *currHitboxInfo;
 	CollisionBody *fairHitboxes[3];
 	CollisionBody *uairHitboxes[3];
@@ -927,50 +607,33 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *diagDownHitboxes[3];
 	CollisionBody *shockwaveHitboxes;
 	CollisionBody *grindHitboxes[3];
-	//CollisionBox grindHitbox;
-
-
-
 	double steepThresh;
-
 	int wallJumpMovementLimit;
-
-	
-
 	double dashHeight;
 	double normalHeight;
 	double doubleJumpHeight;
 	double sprintHeight;
-
 	double airSlow;
-
 	double slopeLaunchMinSpeed;
 	double maxRunInit;
 	double maxGroundSpeed;
 	double runAccelInit;
 	double sprintAccel;
-
 	double maxNormalRun;
 	double runAccel;
 	double maxFallSpeedSlow;
 	double maxFallSpeedFast;
 	double gravity;
 	double extraGravityModifier;
-	//double fastFallGravity;
-
 	double jumpStrength;
 	double airAccel;
 	double maxAirXSpeed;
 	double maxAirXControl;
 	double dashSpeed;
-	
 	double dashSpeed0;
 	double dashSpeed1;
 	double dashSpeed2;
 	double slideGravFactor;
-	double GetFullSprintAccel( bool downSlope,
-		sf::Vector2<double> &gNorm );
-
 	Mode kinMode;
 	int maxBBoostCount;
 	int currBBoostCounter;
@@ -997,7 +660,7 @@ struct Actor : QuadTreeCollider,
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
 	int framesInAir;
-	int trueFramesInAir; 
+	int trueFramesInAir;
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	int framesGrinding;
@@ -1123,33 +786,300 @@ struct Actor : QuadTreeCollider,
 	int drainAmount;
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
+	
+	Actor( GameSession *owner, 
+		EditSession *editOwner, int actorIndex );
+	~Actor();
+	void Init();
+
+	void CreateKeyExplosion();
+	void CreateGateExplosion();
+	void CollectFly(HealthFly *hf);
+	void SetupActionFunctions();
+	void StartAction();
+	void EndAction();
+	void ChangeAction();
+	void UpdateAction();
+	void UpdateActionSprite();
+	void HandleTouchedGate();
+	void SetGroundedSpritePos(Edge * e, double angle);
+	void SetGroundedSpriteTransform();
+	void SetGroundedSpriteTransform(Edge * e, double angle);
+	void TransitionAction(int a);
+	void ActionTimeIndFrameInc();
+	void ActionTimeDepFrameInc();
+	int GetActionLength(int a);
+	void SetupFuncsForAction(int a,
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		void(Actor::*)(int),
+		void(Actor::*)(),
+		void(Actor::*)(),
+		int(Actor::*)(),
+		Tileset*(Actor::*)());
+	void SetupDrain();
+	void SetupTimeBubbles();
+	void SetGameMode();
+	SoundNode * ActivateSound(SoundType st, bool loop = false);
+	BasicEffect * ActivateEffect(
+		EffectLayer layer,
+		Tileset *ts,
+		sf::Vector2<double> pos,
+		bool pauseImmune,
+		double angle,
+		int frameCount,
+		int animationFactor,
+		bool right,
+		int startFrame = 0,
+		float depth = 1.f);
+	void DeactivateSound(SoundNode *sn);
+	void SetToOriginalPos();
+	void UpdatePowersMenu();
+	void SetSession(Session *sess,
+		GameSession *game,
+		EditSession *edit);
+	void ReverseSteepSlideJump();
+	void UpdateWireQuads();
+	void DrawWires(sf::RenderTarget *target);
+	QuadTree *GetTerrainTree();
+	QuadTree *GetSpecialTerrainTree();
+	QuadTree *GetRailEdgeTree();
+	QuadTree *GetBarrierTree();
+	QuadTree *GetBorderTree();
+	int GetTotalGameFrames();
+	Collider &GetCollider();
+	sf::SoundBuffer * GetSound(const std::string &name);
+	std::map<int, std::list<CollisionBox>> & GetHitboxList(
+		const std::string & str);
+	bool IsGroundAttack(int a);
+	GameController &GetController(int index);
+	void HandleGroundTrigger(GroundTrigger *trigger);
+	void CheckForAirTrigger();
+	void HandleAirTrigger();
+	void UpdateCanStandUp();
+	void UpdateBounceFlameOn();
+	void HitstunBufferedChangeAction();
+	void ProcessBooster();
+	void UpdateWireStates();
+	void ProcessBoostGrass();
+	void LimitMaxSpeeds();
+	void UpdateBubbles();
+	void UpdateRegrindOffCounter();
+	void UpdateKnockbackDirectionAndHitboxType();
+	void UpdateSmallLightning();
+	void UpdateRisingAura();
+	void UpdateLockedFX();
+	void ProcessSpecialTerrain();
+	void SetDirtyAura(bool on);
+	void TurnFace();
+	void StandInPlace();
+	void WaitInPlace();
+	void Wait();
+	bool IsGoalKillAction(int a);
+	bool IsIntroAction(int a);
+	bool IsExitAction(int a);
+	bool IsSequenceAction(int a);
+	void StartSeqKinThrown(V2d &pos, V2d &vel);
+	void SeqKneel();
+	void SeqMeditateMaskOn();
+	void SeqMaskOffMeditate();
+	void SeqGetAirdash();
+	void CreateAttackLightning();
+	bool CanShootWire();
+	bool CanCreateTimeBubble();
+	void UnlockGate(Gate *g);
+	void WireMovement();
+	int GetDoubleJump();
+	bool CanDoubleJump();
+	void ExecuteDoubleJump();
+	void ExecuteWallJump();
+	bool IsSingleWirePulling();
+	bool IsDoubleWirePulling();
+	bool TryDoubleJump();
+	bool TryGrind();
+	bool TryDash();
+	bool TryJumpSquat();
+	bool TrySlideBrakeOrStand();
+	bool TrySprintOrRun(V2d &gNorm);
+	void SetSprintStartFrame();
+	bool TryAirDash();
+	bool TryGlide();
+	bool ExitGrind(bool jump);
+	void SetSpriteTexture(int a);
+	void SetSpriteTile(int tileIndex, bool noFlipX = true, bool noFlipY = true);
+	void SetSpriteTile(sf::Sprite *spr,
+		Tileset *t, int tileIndex, bool noFlipX = true, bool noFlipY = true);
+	void SetExpr(int ex);
+	void SetAction(int a);
+	void SetupTilesets();
+	void SetupFXTilesets();
+	void SetupSwordTilesets();
+	void SetupExtraTilesets();
+	void SetupActionTilesets();
+	void RailGrindMovement();
+	bool AirAttack();
+	void EnterNexus(int nexusIndex, sf::Vector2<double> &pos);
+	void SetFakeCurrInput(
+		ControllerState &state);
+	float GetSpeedBarPart();
+	Tileset *GetActionTileset(const std::string &fn);
+	float totalHealth;
+	int actorIndex;
+	void UpdateSprite();
+	void ConfirmEnemyNoKill( Enemy *e );
+	void ConfirmHit(Enemy * e);
+	void ActionEnded();
+	void HandleEntrant( QuadTreeEntrant *qte );
+	void UpdatePrePhysics();
+	void ApplyHit( HitboxInfo *info );
+	bool ResolvePhysics( sf::Vector2<double> vel );
+	void UpdatePhysics();
+	void PhysicsResponse();
+	bool TryGroundAttack();
+	bool SteepSlideAttack();
+	bool SteepClimbAttack();
+	void ConfirmEnemyKill( Enemy *e );
+	bool IHitPlayer( int otherPlayerIndex );
+	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
+	void ShipPickupPoint( double eq,
+		bool facingRight );
+	void GrabShipWire();
+	bool physicsOver;
+	void UpdatePostPhysics();
+	bool CheckWall( bool right );
+	bool TryWallJump();
+	bool CheckStandUp();
+	void CheckBounceFlame();
+	bool BasicAirAction();
+	bool GlideAction();
+	bool BasicGroundAction( V2d &gNorm);
+	bool BasicSteepAction(V2d &gNorm);
+	bool BasicAirAttackAction();
+	sf::Vector2<double> UpdateReversePhysics();
+	void Draw( sf::RenderTarget *target );
+	void MiniDraw(sf::RenderTarget *target);
+	void DeathDraw(sf::RenderTarget *target);
+	void DebugDraw( sf::RenderTarget *target );
+	void DrawMapWires(sf::RenderTarget *target);
+	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
+	void UpdateHitboxes();
+	void AirMovement();
+	double GroundedAngle();
+	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
+	sf::Vector2i GetWireOffset();
+	void RunMovement();
+	void BrakeMovement();
+	void SetAutoRun( bool fr, double maxAutoRun );
+	void SetAirPos(V2d &pos, bool facingRight);
+	void SetGroundedPos(Edge *g, double q);
+	void SetGroundedPos(Edge *g, double q, double xoff);
+	void SetStandInPlacePos(Edge *g, double q,
+		bool fr);
+	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+		double q, Edge *end, double endQ );
+	void SetStoryRun(bool fr, double maxAutoRun, Edge * g,
+		double q);
+	void SetAutoRunStopper(Edge *g, double q);
+	bool IsAutoRunning();
+	Edge *autoRunStopEdge;
+	double autoRunStopQuant;
+	double maxAutoRunSpeed;
+	void AttackMovement();
+	void DodecaLateDraw(sf::RenderTarget *target);
+	void SetActionGrind();
+	bool CanUnlockGate( Gate *g );
+	void HandleWaitingScoreDisplay();
+	void EndLevelWithoutGoal();
+	void CheckHoldJump();
+	void Respawn();
+	void BounceFlameOff();
+	void BounceFlameOn();
+	void SetupAction(int a);
+	void SetBoostVelocity();
+	void SetBounceBoostVelocity();
+	double GetNumSteps();
+	double CalcLandingSpeed( sf::Vector2<double> &testVel,
+		sf::Vector2<double> &alongVel, 
+		sf::Vector2<double> &gNorm, bool rail = false );
+	bool CanRailSlide();
+	bool CanRailGrind();
+	bool IsRailSlideFacingRight();
+	bool IsIntangible();
+	void SetKinMode(Mode m);
+	void KinModeUpdate();
+	void ReverseVerticalInputsWhenOnCeiling();
+	void ProcessReceivedHit();
+	void UpdateDrain();
+	void ProcessGravityGrass();
+	void UpdateScorpCap();
+	void ProcessHitGoal();
+	void UpdateWirePhysics();
+	void UpdateGrindPhysics(double movement);
+	void HandleBounceGrass();
+	bool UpdateGrindRailPhysics(double movement);
+	bool TryUnlockOnTransfer( Edge *e );
+	void LeaveGroundTransfer(bool right, V2d leaveExtra = V2d());
+	bool UpdateAutoRunPhysics( double q, double m );
+	void UpdateSpeedBar();
+	bool CareAboutSpeedAction();
+	void UpdateMotionGhosts();
+	void UpdateSpeedParticles();
+	void UpdateAttackLightning();
+	void UpdatePlayerShader();
+	void TryEndLevel();
+	void UpdateDashBooster();
+	void SlowDependentFrameIncrement();
+	void UpdateBounceFlameCounters();
+	void SetAerialScorpSprite();
+	int GetJumpFrame();
+	void QueryTouchGrass();
+	double GetBounceFlameAccel();
+	void GroundExtraAccel();
+	double GetDashSpeed();
+	double GetAirDashSpeed();
+	void AddToFlyCounter(int count);
+	void SetCurrHitboxes(CollisionBody *cBody,
+		int p_frame);
+	void AddActiveComboObj(ComboObject *c);
+	void RemoveActiveComboObj(ComboObject *c);
+	void DebugDrawComboObj(sf::RenderTarget *target);
+	bool IsMovingRight();
+	bool IsMovingLeft();
+	bool IntersectMyHurtboxes(CollisionBody *cb,
+		int cbFrame );
+	bool IntersectMyHurtboxes(CollisionBox &cb);
+	bool IntersectMyHitboxes(CollisionBody *cb,
+		int cbFrame);
+	bool IntersectMySlowboxes(CollisionBody *cb,
+		int cbFrame );
+	ComboObject * IntersectMyComboHitboxes(
+		Enemy *e, CollisionBody *cb,
+		int cbFrame);
+	Wire * IntersectMyWireHitboxes( Enemy *e,
+		CollisionBody *cb,
+		int cbFrame);
+	bool EnemyIsFar(V2d &enemyPos);
+	void SeqAfterCrawlerFight();
+	double GetFullSprintAccel(bool downSlope,
+		sf::Vector2<double> &gNorm);
 	double GetMinRailGrindSpeed();
-
-
-
 	sf::Vector2<double> AddGravity(sf::Vector2<double> vel);
 	double GetGravity();
 	void ClearSpecialTerrainCounts();
-	
 	void HandleSpecialTerrain();
 	void HandleSpecialTerrain(int stType);
-
-	
 	V2d GetTrueVel();
 	void RestoreDoubleJump();
 	void RestoreAirDash();
-	//CollisionBox *physBox;
-
 	int GetBubbleRadius();
 	bool IsBeingSlowed();
-
 	void SetAllUpgrades(BitField &b);
 	bool HasUpgrade(int index);
 	void SetUpgrade(int upgrade, bool on);
 	void SetStartUpgrade(int upgrade, bool on);
-
-
-
 	bool SpringLaunch();
 	bool TeleporterLaunch();
 	bool SwingLaunch();
@@ -1159,9 +1089,6 @@ struct Actor : QuadTreeCollider,
 	bool CheckRightStickSwing();
 	bool CheckRightStickSwingHeld();
 	bool CheckSwingHeld();
-
-
-	
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
 	bool IsAttackAction( int a );
@@ -1171,12 +1098,6 @@ struct Actor : QuadTreeCollider,
 	bool IsInHistunAction( int a );
 
 	V2d GetKnockbackDirFromVel();
-
-
-
-	
-
-
 
 	//kin action functions
 	void AIRDASH_Start();
