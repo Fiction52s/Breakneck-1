@@ -415,6 +415,7 @@ struct GameSession : RayCastHandler, Session
 	bool showTerrainDecor;
 	
 	
+	
 	int returnVal;
 
 	void DrawRaceFightScore(sf::RenderTarget *target);
@@ -427,6 +428,10 @@ struct GameSession : RayCastHandler, Session
 		const boost::filesystem::path &p_filePath);
 	~GameSession();
 
+	SaveGameState currSaveState;
+	bool SaveState(unsigned char **buffer,
+		int *len, int *checksum, int frame);
+	bool LoadState(unsigned char *buffer, int len);
 	//process reading file
 	void ProcessHeader();
 	void ProcessDecorSpr(const std::string &name,

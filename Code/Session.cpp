@@ -1258,6 +1258,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	postProcessTex2 = MainMenu::postProcessTexture2;
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
+	ggpo = NULL;
 
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
@@ -5478,6 +5479,149 @@ void Session::ActiveStorySequenceUpdate()
 		{
 		}
 	}
+}
+
+void Session::AdvanceFrameGGPO(int inputs[])
+{
+
+	//ggpo_synchronize_input(ggpo, (void *)inputs, sizeof(int) * MAX_SHIPS, &disconnect_flags);
+}
+
+void Session::AdvanceFrame()
+{
+	if (!OneFrameModeUpdate())
+	{
+		return;
+	}
+
+	if (!RunPreUpdate())
+		return;
+
+	if (pauseFrames > 0)
+	{
+		HitlagUpdate(); //the full update while in hitlag
+		return;
+	}
+
+	//UpdateControllers();
+
+	RepPlayerUpdateInput();
+
+	RecPlayerRecordFrame();
+
+	UpdateAllPlayersInput();
+
+	ActiveSequenceUpdate();
+	if (switchGameState)
+		return;
+
+	UpdatePlayersPrePhysics();
+
+	TryToActivateBonus();
+
+	ActiveStorySequenceUpdate();
+
+	UpdateInputVis();
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdateEnemiesPrePhysics();
+
+		UpdatePhysics();
+	}
+
+	//RecordReplayEnemies();
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdatePlayersPostPhysics();
+	}
+
+	RecGhostRecordFrame();
+
+	UpdateReplayGhostSprites();
+
+	if (!RunPostUpdate())
+	{
+		return;
+	}
+
+	UpdatePlayerWireQuads();
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdateEnemiesPostPhysics();
+	}
+
+	UpdateGates();
+
+	absorbParticles->Update();
+	absorbDarkParticles->Update();
+	absorbShardParticles->Update();
+
+	UpdateEffects();
+	UpdateEmitters();
+
+	mainMenu->musicPlayer->Update();
+
+	UpdateHUD();
+
+	UpdateScoreDisplay();
+
+	UpdateSoundNodeLists();
+
+	UpdateGoalPulse();
+
+	UpdateRain();
+
+	UpdateBarriers();
+
+	UpdateCamera();
+
+	if (gateMarkers != NULL)
+		gateMarkers->Update(&cam);
+
+	fader->Update();
+	swiper->Update();
+
+	if (IsSessTypeGame())
+	{
+		background->Update(view.getCenter());
+	}
+	UpdateTopClouds();
+
+	mainMenu->UpdateEffects();
+
+	UpdateRaceFightScore();
+
+	UpdateGoalFlow();
+
+	QueryToSpawnEnemies();
+
+	UpdateEnvPlants();
+
+	QueryBorderTree(screenRect);
+
+	QuerySpecialTerrainTree(screenRect);
+
+	QueryFlyTerrainTree(screenRect);
+
+	UpdateDecorSprites();
+	UpdateDecorLayers();
+
+	if (UpdateRunModeBackAndStartButtons())
+	{
+
+	}
+
+	UpdateZones();
+
+	UpdateEnvShaders(); //havent tested at this position. should work fine.
+
+
+	totalGameFrames++;
+
+	ggpo_advance_frame(ggpo);
 }
 
 bool Session::RunGameModeUpdate()

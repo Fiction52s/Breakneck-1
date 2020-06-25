@@ -599,7 +599,6 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 	:Session( Session::SESS_GAME, p_filePath), saveFile( sf )
 {
 	currSession = this;
-
 	Init();
 }
 
@@ -1837,6 +1836,34 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 	}
 }
 
+bool GameSession::SaveState(unsigned char **buffer,
+	int *len, int *checksum, int frame)
+{
+	players[0]->PopulateState(&currSaveState.states[0]);
+	players[1]->PopulateState(&currSaveState.states[1]);
+	currSaveState.totalGameFrames = totalGameFrames;
+
+	*len = sizeof(SaveGameState);
+	*buffer = (unsigned char *)malloc(*len);
+	if (!*buffer) {
+		return false;
+	}
+	memcpy(*buffer, &currSaveState, *len);
+	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
+	return true;
+}
+
+bool GameSession::LoadState(unsigned char *buffer, int len)
+{
+	memcpy(&currSaveState, buffer, len);
+
+	totalGameFrames = currSaveState.totalGameFrames;
+	players[0]->PopulateFromState(&currSaveState.states[0]);
+	players[1]->PopulateFromState(&currSaveState.states[1]);
+
+	return true;
+}
+
 int GameSession::Run()
 {
 	goalDestroyed = false;
@@ -1983,6 +2010,8 @@ int GameSession::Run()
 			}
 		}
 	}
+	
+	
 	
 
 	while( !quit )

@@ -18,6 +18,7 @@
 #include "Enemy_BasicEffect.h"
 #include "BitField.h"
 #include "ScoreDisplay.h"
+#include "GGPO.h"
 
 
 struct QNode;
@@ -312,6 +313,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	FrameRateDisplay frameRateDisplay;
 	RunningTimerDisplay runningTimerDisplay;
 	int totalFramesBeforeGoal;
+
+	GGPOSession *ggpo;
 
 	static Session *GetSession();
 
@@ -664,6 +667,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool PlayerIsMovingLeft(int index = 0);
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
+	void AdvanceFrame();
+	void AdvanceFrameGGPO( int inputs[] );
 };
 
 #endif

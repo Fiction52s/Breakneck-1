@@ -46,6 +46,8 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 
+#include "GGPO.h"
+
 using namespace sf;
 using namespace std;
 
@@ -68,6 +70,27 @@ void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 }
 
 //#define cout std::cout
+
+void Actor::PopulateState(PState *ps)
+{
+	ps->position = position;
+	ps->velocity = velocity;
+	ps->action = action;
+	ps->frame = frame;
+	ps->facingRight = facingRight;
+	ps->groundSpeed = groundSpeed;
+}
+
+void Actor::PopulateFromState(PState *ps)
+{
+	position = ps->position;
+	velocity = ps->velocity;
+	action = ps->action;
+	frame = ps->frame;
+	facingRight = ps->facingRight;
+	groundSpeed = ps->groundSpeed;
+}
+
 
 void Actor::SetSession(Session *p_sess,
 	GameSession *game,
@@ -15666,6 +15689,7 @@ void Actor::UpdateInHitlag()
 	 AddToFlyCounter(hf->GetCounterAmount());
  }
 
+ 
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )

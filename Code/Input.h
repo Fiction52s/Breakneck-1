@@ -24,6 +24,8 @@ struct ControllerState
 {
 	ControllerState();
 	void Set( const ControllerState &state );
+	int GetCompressedState();
+	void SetFromCompressedState(int s);
 	double leftStickMagnitude; // 0 - 1.0
 	double leftStickRadians;
 	double rightStickMagnitude; // 0 - 1.0
@@ -66,7 +68,6 @@ struct ControllerState
 	bool PRight();
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
-
 	
 };
 

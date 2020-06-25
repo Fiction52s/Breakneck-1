@@ -49,6 +49,58 @@ void ControllerState::Set( const ControllerState &state )
 //	altPad = state.altPad;
 }
 
+int ControllerState::GetCompressedState()
+{
+	int s = 0;
+	int bit = 0;
+	s |= LUp() << bit++;
+	s |= LDown() << bit++;
+	s |= LLeft() << bit++;
+	s |= LRight() << bit++;
+	s |= A << bit++;
+	s |= B << bit++;
+	s |= X << bit++;
+	s |= Y << bit++;
+}
+
+void ControllerState::SetFromCompressedState(int s)
+{
+	leftStickPad = 0;
+	
+	int bit = 0;
+	bool lup = s & (1 << bit++);
+	bool ldown = s & (1 << bit++);
+	bool lleft = s & (1 << bit++);
+	bool lright = s & (1 << bit++);
+	bool sa = s & (1 << bit++);
+	bool sb = s & (1 << bit++);
+	bool sx = s & (1 << bit++);
+	bool sy = s & (1 << bit++);
+
+	if (lright)
+	{
+		leftStickPad += 1 << 3;
+	}
+	else if (lleft)
+	{
+		leftStickPad += 1 << 2;
+	}
+
+	if (lup)
+	{
+		leftStickPad += 1 << 1;
+	}
+	else if( ldown )
+	{
+		leftStickPad += 1;
+	}
+
+	A = sa;
+	B = sb;
+	X = sx;
+	Y = sy;
+}
+
 bool ControllerState::PUp()
 {
 	return pad & 1;

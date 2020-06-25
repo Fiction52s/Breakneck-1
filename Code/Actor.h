@@ -17,6 +17,8 @@
 #include "EffectLayer.h"
 #include "BitField.h"
 
+struct PState;
+
 struct EditSession;
 
 struct Session;
@@ -792,6 +794,8 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 
+	void PopulateState(PState *ps);
+	void PopulateFromState(PState *ps);
 	void CreateKeyExplosion();
 	void CreateGateExplosion();
 	void CollectFly(HealthFly *hf);
