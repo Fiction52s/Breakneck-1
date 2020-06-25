@@ -1024,6 +1024,16 @@ GravityModifierParams::GravityModifierParams(ActorType *at, ifstream &is)
 	is >> gravFactor;
 }
 
+GravityModifierParams::GravityModifierParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	gravFactor = at->panel->sliders["gravfactor"]->GetCurrValueF();
+	durationInSeconds = at->panel->sliders["duration"]->GetCurrValue();
+	PlaceAerial(Vector2i(0, 0));
+}
+
+//GravityModifierParams(ActorType *at, int level);
+
 void GravityModifierParams::SetPanelInfo()
 {
 	Panel *p = type->panel;

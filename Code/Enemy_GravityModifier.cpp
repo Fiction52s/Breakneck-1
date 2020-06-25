@@ -20,7 +20,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 GravityModifier::GravityModifier(ActorParams *ap )
-	:Enemy(EnemyType::EN_GRAVITYMODIFIER ), gravFactor(1.0), duration( 300 )
+	:Enemy(EnemyType::EN_GRAVITYMODIFIER, ap), gravFactor(1.0), duration( 300 )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, 0, 0);

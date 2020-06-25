@@ -5485,7 +5485,7 @@ bool Session::RunGameModeUpdate()
 	collider.ClearDebug();
 
 	while (accumulator >= TIMESTEP)
-	{
+	{	
 		if (!OneFrameModeUpdate())
 		{
 			break;
@@ -5615,8 +5615,11 @@ bool Session::RunGameModeUpdate()
 
 		UpdateEnvShaders(); //havent tested at this position. should work fine.
 
-		accumulator -= TIMESTEP;
+
 		totalGameFrames++;
+
+		accumulator -= TIMESTEP;
+		
 
 		//if (debugScreenRecorder != NULL)
 		//{
