@@ -1409,6 +1409,7 @@ CameraShotParams::CameraShotParams(ActorType *at, int level)
 	SetZoom(1);
 
 	nameIndex = type->GetSelectedSpecialDropIndex();
+	//cout << "test here" << endl;
 	SetText(type->GetSelectedSpecialDropStr());
 }
 

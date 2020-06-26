@@ -29,6 +29,10 @@ void ActorType::CreateDefaultEnemy()
 	for (int i = 0; i < info.numLevels; ++i)
 	{
 		defaultParamsVec[i] = info.pMaker(this, i+1);
+		/*if (info.name == "camerashot")
+		{
+			cout << "mad it here." << endl;
+		}*/
 		defaultParamsVec[i]->CreateMyEnemy();
 		if (defaultParamsVec[i]->myEnemy != NULL)
 		{

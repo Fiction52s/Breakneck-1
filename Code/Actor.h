@@ -661,8 +661,7 @@ struct Actor : QuadTreeCollider,
 	ControllerState prevInput;
 	ControllerState currInput;
 	sf::Vector2<double> oldVelocity;
-	int framesInAir;
-	int trueFramesInAir;
+	
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	int framesGrinding;
@@ -673,7 +672,7 @@ struct Actor : QuadTreeCollider,
 	bool canRailSlide;
 	double minRailGrindSpeed[3];
 	sf::RectangleShape railTest;
-	Edge *ground;
+	
 	TerrainRail * prevRail;
 	bool hasAirDash;
 	bool hasGravReverse;
@@ -689,15 +688,10 @@ struct Actor : QuadTreeCollider,
 	double grindSpeed;
 	double slopeTooSteepLaunchLimitX;
 	bool reversed;
-	double edgeQuantity;
-	double groundOffsetX;
-	double offsetX;
+	
+	
 	bool bounceGrounded;
-	bool holdJump;
-	int wallJumpFrameCounter;
-	double groundSpeed;
-	bool facingRight;
-	bool hasDoubleJump;
+	
 	int slowMultiple;
 	int slowCounter;
 	int baseSlowMultiple;
@@ -713,12 +707,7 @@ struct Actor : QuadTreeCollider,
 	double jumpGrassExtra;
 	bool extraDoubleJump;
 	int specialTerrainCount[SPECIAL_TERRAIN_Count];
-	int action;
-	int steepClimbBoostStart;
-	bool TryClimbBoost(V2d &gNorm);
-	int frame;
-	sf::Vector2<double> position;
-	sf::Vector2<double> velocity;
+	
 	int hitlagFrames;
 	int hitstunFrames;
 	int setHitstunFrames;
@@ -750,8 +739,8 @@ struct Actor : QuadTreeCollider,
 	int bubbleRadius2;
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
-	const static int MAX_BUBBLES = 5;
-	CollisionBody * GetBubbleHitbox(int index);
+	
+	
 	sf::Vector2<double> *bubblePos;//[maxBubbles];
 	int *bubbleFramesToLive;//[maxBubbles];
 	int *bubbleRadiusSize;//[maxBubbles];
@@ -762,15 +751,13 @@ struct Actor : QuadTreeCollider,
 	int currBubble;
 	int lastWire;
 	bool dead;
-	int framesSinceClimbBoost;
-	int climbBoostLimit;
-	bool longWallJump;
+	
+	
 	int oldAction;
 	bool currAttackHit;
 	bool bounceAttackHit;
-	double storedGroundSpeed;
-	bool holdDouble;
-	int framesSinceDouble;
+	
+	
 	sf::Shader swordShaders[3];
 	sf::Color flashColor;
 	int flashFrames;
@@ -784,11 +771,36 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedDash;
 	int stunBufferedAttack;
 	int drainCounter;
-	int drainCounterMax;
-	int drainAmount;
+	int steepClimbBoostStart;
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
 	
+	//definitely do change per frame
+	double offsetX;
+	int framesSinceClimbBoost;
+	bool holdDouble;
+	int frame;
+	int action;
+	
+	sf::Vector2<double> position;
+	sf::Vector2<double> velocity;
+	bool holdJump;
+	int wallJumpFrameCounter;
+	double groundSpeed;
+	bool facingRight;
+	bool hasDoubleJump;
+	Edge *ground;
+	double edgeQuantity;
+	int framesInAir;
+
+	//definitely do not change per frame
+	const static int MAX_BUBBLES = 5;
+	int drainCounterMax;
+	int drainAmount;
+	int climbBoostLimit;
+	double storedGroundSpeed;
+
+
 	Actor( GameSession *owner, 
 		EditSession *editOwner, int actorIndex );
 	~Actor();
@@ -796,6 +808,9 @@ struct Actor : QuadTreeCollider,
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
+	bool TryClimbBoost(V2d &gNorm);
+	CollisionBody * GetBubbleHitbox(int index);
+
 	void CreateKeyExplosion();
 	void CreateGateExplosion();
 	void CollectFly(HealthFly *hf);

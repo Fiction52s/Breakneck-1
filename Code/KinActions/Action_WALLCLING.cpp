@@ -18,16 +18,6 @@ void Actor::WALLCLING_Change()
 	{
 		SetAction(WALLJUMP);
 		frame = 0;
-
-		/*if( currInput.A )
-		{
-		longWallJump = true;
-		}
-		else
-		{
-		longWallJump = false;
-		}*/
-		//facingRight = !facingRight;
 	}
 	else if (TryDoubleJump())
 	{

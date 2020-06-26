@@ -90,6 +90,13 @@ struct PState
 	Edge *ground;
 	double quant;
 	double xOffset;
+
+	bool holdDouble;
+	int framesSinceClimbBoost;
+	bool holdJump;
+	int wallJumpFrameCounter;
+	bool hasDoubleJump;
+	int framesInAir;
 };
 
 struct SaveGameState

@@ -85,6 +85,12 @@ void Actor::PopulateState(PState *ps)
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
+	ps->holdDouble = holdDouble;
+	ps->framesSinceClimbBoost = framesSinceClimbBoost;
+	ps->holdJump = holdJump;
+	ps->wallJumpFrameCounter = wallJumpFrameCounter;
+	ps->hasDoubleJump = hasDoubleJump;
+	ps->framesInAir = framesInAir;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -102,6 +108,13 @@ void Actor::PopulateFromState(PState *ps)
 	ground = ps->ground;
 	edgeQuantity = ps->quant;
 	offsetX = ps->xOffset;
+
+	holdDouble = ps->holdDouble;
+	framesSinceClimbBoost = ps->framesSinceClimbBoost;
+	holdJump = ps->holdJump;
+	wallJumpFrameCounter = ps->wallJumpFrameCounter;
+	hasDoubleJump = ps->hasDoubleJump;
+	framesInAir = ps->framesInAir;
 }
 
 
@@ -2548,8 +2561,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	maxAirXControl = 6;//maxRunInit;
 	airSlow = .3;//.7;//.3;
 
-	groundOffsetX = 0;
-
 	grindEdge = NULL;
 	grindQuantity = 0;
 	grindSpeed = 0;
@@ -4498,10 +4509,10 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	if (actorIndex == 0)
+	/*if (actorIndex == 0)
 	{
 		cout << "prev:" << (int)prevInput.A << ", curr:" << (int)currInput.A << "\n";
-	}
+	}*/
 	
 
 	ProcessGravityGrass();
@@ -8609,7 +8620,6 @@ void Actor::UpdatePhysics()
 
 	do
 	{
-		trueFramesInAir = framesInAir;
 		if( ground != NULL )
 		{
 			double steal = 0;
@@ -9515,8 +9525,6 @@ void Actor::UpdatePhysics()
 			}
 
 			bool bounceOkay = true;
-			
-			trueFramesInAir = framesInAir;
 
 			//note: when reversed you won't cancel on a jump onto a small ceiling. i hope this mechanic is okay
 			//also theres a jump && false condition that would need to be changed back
@@ -9661,7 +9669,6 @@ void Actor::UpdatePhysics()
 						{
 							cout << "bounce ground" << endl;
 						}
-						cout << "stopped it here! framesinair: " << trueFramesInAir << endl;
 						bounceEdge = NULL;
 						oldBounceEdge = NULL;
 						SetAction( JUMP );
@@ -9747,7 +9754,6 @@ void Actor::UpdatePhysics()
 				//{
 				//	minContact.edge = minContact.edge->edge0;
 				//}
-				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 				framesSinceGrindAttempt = maxFramesSinceGrindAttempt; //turn off grind attempter
 				
@@ -9863,7 +9869,6 @@ void Actor::UpdatePhysics()
 				reversed = true;
 				lastWire = 0;
 
-				groundOffsetX = ( (position.x + b.offset.x ) - minContact.position.x) / 2; //halfway?
 				ground = minContact.edge;
 
 				edgeQuantity = minContact.edge->GetQuantity( minContact.position );
@@ -10490,10 +10495,9 @@ void Actor::PhysicsResponse()
 				}
 				else
 				{
-					if( reversed )//&& trueFramesInAir > 1 )
+					if( reversed )
 					{
 						//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-						//cout << "trueframes in air: " << trueFramesInAir << endl;
 						//cout << "THIS GRAV REVERSE" << endl;
 						//cout << "frames in air: " << framesInAir << endl;
 						//cout << "frame: " << frame << endl;
@@ -11553,7 +11557,6 @@ void Actor::SlowDependentFrameIncrement()
 			wallJumpFrameCounter++;
 		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
 		framesInAir++;
-		framesSinceDouble++;
 
 		if (gravResetFrames > 0)
 		{
@@ -15223,8 +15226,6 @@ void Actor::SetExpr( int ex )
 
 void Actor::ExecuteDoubleJump()
 {
-	framesSinceDouble = 0;
-
 	//add direction later
 	ActivateEffect(EffectLayer::IN_FRONT, ts_fx_double,
 		V2d(position.x, position.y - 20), false, 0, 14, 2, facingRight);

@@ -399,6 +399,14 @@ void EditSession::InitGGPO()
 		otherPort = 7000;
 	}
 
+	int frameDelay = 0;
+	string ipStr;// = "127.0.0.1";
+
+	ifstream is;
+	is.open("Resources/ggpotest.txt");
+	is >> frameDelay;
+	is >> ipStr;
+
 	//int offset = 1, local_player = 0;
 	int num_players = 2;
 	ngs->num_players = num_players;
@@ -427,7 +435,7 @@ void EditSession::InitGGPO()
 	ggpoPlayers[myIndex].type = GGPO_PLAYERTYPE_LOCAL;
 	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
 //	local_player = myIndex;
-	string ipStr = "127.0.0.1";
+	
 	int ipLen = ipStr.length();
 	for (int i = 0; i < ipLen; ++i)
 	{
@@ -438,7 +446,7 @@ void EditSession::InitGGPO()
 	//ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
-	int frameDelay = 2;
+	
 
 	int i;
 	for (i = 0; i < num_players; i++) {
@@ -3051,6 +3059,7 @@ void EditSession::Init()
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{
+		//cout << "creating default for: " << (*it).first << endl;
 		(*it).second->CreateDefaultEnemy();
 	}
 
