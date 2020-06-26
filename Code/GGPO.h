@@ -25,7 +25,7 @@ struct PlayerConnectionInfo {
 	int                  disconnect_start;
 };
 
-struct GGPOState
+struct GGPONonGameState
 {
 	struct ChecksumInfo {
 		int framenumber;
@@ -94,5 +94,26 @@ struct SaveGameState
 
 int fletcher32_checksum(short *data, 
 	size_t len);
+
+bool __cdecl
+begin_game_callback(const char *);
+
+bool __cdecl
+on_event_callback(GGPOEvent *info);
+
+bool __cdecl
+advance_frame_callback(int flags);
+
+bool __cdecl
+load_game_state_callback(unsigned char *buffer, int len);
+
+bool __cdecl
+save_game_state_callback(unsigned char **buffer, int *len, int *checksum, int frame);
+
+bool __cdecl
+log_game_state(char *filename, unsigned char *buffer, int);
+
+void __cdecl
+free_buffer(void *buffer);
 
 #endif

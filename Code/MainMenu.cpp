@@ -423,13 +423,14 @@ MainMenu::MainMenu()
 void MainMenu::SetupWindow()
 {
 	window = NULL;
-
+	windowWidth = 960;
+	windowHeight = 540;
 	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);
 
-	mouseGrabbed = true;
-	mouseVisible = false;
+	mouseGrabbed = false;//true;
+	mouseVisible = true;//false;
 
 	SetMouseGrabbed(mouseGrabbed);
 	SetMouseVisible(mouseVisible);
@@ -1083,6 +1084,13 @@ void MainMenu::CustomMapsOption()
 	SetMouseGrabbed(true);
 	SetMouseVisible(false);
 	//preScreenTexture->setView(oldPreView);
+}
+
+void MainMenu::GGPOOption()
+{
+	EditSession *edit = new EditSession(this, "Resources\\Maps\\W2\\gateblank91.brknk");
+	edit->Run();
+	delete edit;
 }
 
 
@@ -2308,6 +2316,10 @@ void MainMenu::TitleMenuModeUpdate()
 			{
 				CustomMapsOption();
 				//WorldSelectMenu();
+			}
+			else if (ev.key.code == Keyboard::P)
+			{
+				GGPOOption();
 			}
 			else if (ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space)
 			{

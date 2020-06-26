@@ -5481,148 +5481,6 @@ void Session::ActiveStorySequenceUpdate()
 	}
 }
 
-void Session::AdvanceFrameGGPO(int inputs[])
-{
-
-	//ggpo_synchronize_input(ggpo, (void *)inputs, sizeof(int) * MAX_SHIPS, &disconnect_flags);
-}
-
-void Session::AdvanceFrame()
-{
-	if (!OneFrameModeUpdate())
-	{
-		return;
-	}
-
-	if (!RunPreUpdate())
-		return;
-
-	if (pauseFrames > 0)
-	{
-		HitlagUpdate(); //the full update while in hitlag
-		return;
-	}
-
-	//UpdateControllers();
-
-	RepPlayerUpdateInput();
-
-	RecPlayerRecordFrame();
-
-	UpdateAllPlayersInput();
-
-	ActiveSequenceUpdate();
-	if (switchGameState)
-		return;
-
-	UpdatePlayersPrePhysics();
-
-	TryToActivateBonus();
-
-	ActiveStorySequenceUpdate();
-
-	UpdateInputVis();
-
-	if (!playerAndEnemiesFrozen)
-	{
-		UpdateEnemiesPrePhysics();
-
-		UpdatePhysics();
-	}
-
-	//RecordReplayEnemies();
-
-	if (!playerAndEnemiesFrozen)
-	{
-		UpdatePlayersPostPhysics();
-	}
-
-	RecGhostRecordFrame();
-
-	UpdateReplayGhostSprites();
-
-	if (!RunPostUpdate())
-	{
-		return;
-	}
-
-	UpdatePlayerWireQuads();
-
-	if (!playerAndEnemiesFrozen)
-	{
-		UpdateEnemiesPostPhysics();
-	}
-
-	UpdateGates();
-
-	absorbParticles->Update();
-	absorbDarkParticles->Update();
-	absorbShardParticles->Update();
-
-	UpdateEffects();
-	UpdateEmitters();
-
-	mainMenu->musicPlayer->Update();
-
-	UpdateHUD();
-
-	UpdateScoreDisplay();
-
-	UpdateSoundNodeLists();
-
-	UpdateGoalPulse();
-
-	UpdateRain();
-
-	UpdateBarriers();
-
-	UpdateCamera();
-
-	if (gateMarkers != NULL)
-		gateMarkers->Update(&cam);
-
-	fader->Update();
-	swiper->Update();
-
-	if (IsSessTypeGame())
-	{
-		background->Update(view.getCenter());
-	}
-	UpdateTopClouds();
-
-	mainMenu->UpdateEffects();
-
-	UpdateRaceFightScore();
-
-	UpdateGoalFlow();
-
-	QueryToSpawnEnemies();
-
-	UpdateEnvPlants();
-
-	QueryBorderTree(screenRect);
-
-	QuerySpecialTerrainTree(screenRect);
-
-	QueryFlyTerrainTree(screenRect);
-
-	UpdateDecorSprites();
-	UpdateDecorLayers();
-
-	if (UpdateRunModeBackAndStartButtons())
-	{
-
-	}
-
-	UpdateZones();
-
-	UpdateEnvShaders(); //havent tested at this position. should work fine.
-
-
-	totalGameFrames++;
-
-	ggpo_advance_frame(ggpo);
-}
 
 bool Session::RunGameModeUpdate()
 {
@@ -5967,4 +5825,197 @@ bool Session::PlayerIsFacingRight(int index)
 	{
 		return false;
 	}
+}
+
+bool Session::GGPORunGameModeUpdate()
+{
+	collider.ClearDebug();
+
+	if (!OneFrameModeUpdate())
+	{
+		return true;
+	}
+
+	if (!RunPreUpdate())
+		return true;
+
+	if (pauseFrames > 0)
+	{
+		HitlagUpdate(); //the full update while in hitlag
+		return true;
+	}
+
+	RepPlayerUpdateInput();
+
+	RecPlayerRecordFrame();
+
+	UpdateAllPlayersInput();
+
+	ActiveSequenceUpdate();
+	if (switchGameState)
+		return true;
+
+	UpdatePlayersPrePhysics();
+
+	TryToActivateBonus();
+
+	ActiveStorySequenceUpdate();
+
+	UpdateInputVis();
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdateEnemiesPrePhysics();
+
+		UpdatePhysics();
+	}
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdatePlayersPostPhysics();
+	}
+
+	RecGhostRecordFrame();
+
+	UpdateReplayGhostSprites();
+
+	if (!RunPostUpdate())
+	{
+		return true;
+	}
+
+	UpdatePlayerWireQuads();
+
+	if (!playerAndEnemiesFrozen)
+	{
+		UpdateEnemiesPostPhysics();
+	}
+
+	UpdateGates();
+
+	absorbParticles->Update();
+	absorbDarkParticles->Update();
+	absorbShardParticles->Update();
+
+	UpdateEffects();
+	UpdateEmitters();
+
+	mainMenu->musicPlayer->Update();
+
+	UpdateHUD();
+
+	UpdateScoreDisplay();
+
+	UpdateSoundNodeLists();
+
+	UpdateGoalPulse();
+
+	UpdateRain();
+
+	UpdateBarriers();
+
+	UpdateCamera();
+
+	if (gateMarkers != NULL)
+		gateMarkers->Update(&cam);
+
+	fader->Update();
+	swiper->Update();
+
+	if (IsSessTypeGame())
+	{
+		background->Update(view.getCenter());
+	}
+	UpdateTopClouds();
+
+	mainMenu->UpdateEffects();
+
+	UpdateRaceFightScore();
+
+	UpdateGoalFlow();
+
+	QueryToSpawnEnemies();
+
+	UpdateEnvPlants();
+
+	QueryBorderTree(screenRect);
+
+	QuerySpecialTerrainTree(screenRect);
+
+	QueryFlyTerrainTree(screenRect);
+
+	UpdateDecorSprites();
+	UpdateDecorLayers();
+
+	if (UpdateRunModeBackAndStartButtons())
+	{
+
+	}
+
+	UpdateZones();
+
+	UpdateEnvShaders(); //havent tested at this position. should work fine.
+
+	totalGameFrames++;
+
+	ggpo_advance_frame(ggpo);
+
+	return true;
+}
+
+
+void Session::GGPORunFrame()
+{
+	int disconnect_flags;
+	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
+
+	UpdateControllers();
+
+	assert(ngs.local_player_handle != GGPO_INVALID_HANDLE);
+	int input = GetCurrInput(0).GetCompressedState();
+	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs.local_player_handle, &input, sizeof(input));
+
+	if (GGPO_SUCCEEDED(result))
+	{
+		result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
+		if (GGPO_SUCCEEDED(result))
+		{
+			for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
+			{
+				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+			}
+			GGPORunGameModeUpdate();
+		}
+		
+	}
+
+	//draw after then loop again
+}
+
+bool Session::SaveState(unsigned char **buffer,
+	int *len, int *checksum, int frame)
+{
+	players[0]->PopulateState(&currSaveState.states[0]);
+	players[1]->PopulateState(&currSaveState.states[1]);
+	currSaveState.totalGameFrames = totalGameFrames;
+
+	*len = sizeof(SaveGameState);
+	*buffer = (unsigned char *)malloc(*len);
+	if (!*buffer) {
+		return false;
+	}
+	memcpy(*buffer, &currSaveState, *len);
+	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
+	return true;
+}
+
+bool Session::LoadState(unsigned char *buffer, int len)
+{
+	memcpy(&currSaveState, buffer, len);
+
+	totalGameFrames = currSaveState.totalGameFrames;
+	players[0]->PopulateFromState(&currSaveState.states[0]);
+	players[1]->PopulateFromState(&currSaveState.states[1]);
+
+	return true;
 }

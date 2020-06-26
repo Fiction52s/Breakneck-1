@@ -573,6 +573,7 @@ struct MainMenu
 	void GameEditLoop( const std::string &fileName );
 	void GameEditLoop2( const std::string &filename);
 	void CustomMapsOption();
+	void GGPOOption();
 	void SetModeLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 

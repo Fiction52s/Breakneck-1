@@ -304,6 +304,28 @@ void EditSession::SequenceGameModeRespondToGoalDestroyed()
 	EndTestMode();
 }
 
+bool EditSession::GGPOTestPlayerModeUpdate()
+{
+	switchGameState = false;
+	double newTime = gameClock.getElapsedTime().asSeconds();
+	double frameTime = newTime - currentTime;
+	if (frameTime < TIMESTEP)
+	{
+		int fTime = (TIMESTEP - frameTime);
+		ggpo_idle(ggpo, fTime);
+	}
+
+	currentTime = newTime;
+
+	frameRateDisplay.Update(frameTime);
+	UpdateRunningTimerText();
+
+	GGPORunFrame();
+	//GGPORunGameModeUpdate();
+
+	return true;
+}
+
 bool EditSession::TestPlayerModeUpdate()
 {
 	switchGameState = false;
@@ -346,8 +368,95 @@ bool EditSession::TestPlayerModeUpdate()
 	return true;
 }
 
+void EditSession::InitGGPO()
+{
+	WSADATA wd = { 0 };
+	WSAStartup(MAKEWORD(2, 2), &wd);
+
+	GGPOSessionCallbacks cb = { 0 };
+	cb.begin_game = begin_game_callback;
+	cb.advance_frame = advance_frame_callback;
+	cb.load_game_state = load_game_state_callback;
+	cb.save_game_state = save_game_state_callback;
+	cb.free_buffer = free_buffer;
+	cb.on_event = on_event_callback;
+	cb.log_game_state = log_game_state;
+
+	GGPOErrorCode result;
+
+	unsigned short localPort = 7000;
+	unsigned short otherPort = 7001;
+
+	bool shift = HoldingShift();
+	if (shift)
+	{
+		localPort = 7001;
+		otherPort = 7000;
+	}
+
+	//int offset = 1, local_player = 0;
+	int num_players = 2;
+	ngs.num_players = num_players;
+
+	result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
+		sizeof(int), localPort);
+
+	ggpo_log(ggpo, "test\n");
+
+	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
+	ggpo_set_disconnect_timeout(ggpo, 0); //3000
+	ggpo_set_disconnect_notify_start(ggpo, 1000);
+
+	int myIndex = 0;
+	int otherIndex = 1;
+	if (shift)
+	{
+		myIndex = 1;
+		otherIndex = 0;
+	}
+
+	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
+	ggpoPlayers[myIndex].player_num = myIndex + 1;
+	ggpoPlayers[otherIndex].size = sizeof(ggpoPlayers[otherIndex]);
+	ggpoPlayers[otherIndex].player_num = otherIndex + 1;
+	ggpoPlayers[myIndex].type = GGPO_PLAYERTYPE_LOCAL;
+	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
+//	local_player = myIndex;
+	string ipStr = "127.0.0.1";
+	int ipLen = ipStr.length();
+	for (int i = 0; i < ipLen; ++i)
+	{
+		ggpoPlayers[otherIndex].u.remote.ip_address[i] = ipStr[i];
+	}
+	ggpoPlayers[otherIndex].u.remote.ip_address[ipLen] = '\0';
+
+	//ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
+	ggpoPlayers[otherIndex].u.remote.port = otherPort;
+
+	int i;
+	for (i = 0; i < num_players; i++) {
+		GGPOPlayerHandle handle;
+		result = ggpo_add_player(ggpo, ggpoPlayers + i, &handle);
+		ngs.playerInfo[i].handle = handle;
+		ngs.playerInfo[i].type = ggpoPlayers[i].type;
+		if (ggpoPlayers[i].type == GGPO_PLAYERTYPE_LOCAL) {
+			ngs.playerInfo[i].connect_progress = 100;
+			ngs.local_player_handle = handle;
+			ngs.SetConnectState(handle, Connecting);
+			ggpo_set_frame_delay(ggpo, handle, FRAME_DELAY);
+		}
+		else {
+			ngs.playerInfo[i].connect_progress = 0;
+		}
+	}
+
+}
+
 void EditSession::TestPlayerMode()
 {
+	InitGGPO();
+	//----------------------------------------
+
 	gameState = Session::RUN;
 	cam.Reset();
 	currStorySequence = NULL;
@@ -865,8 +974,13 @@ void EditSession::UpdateModeFunc(int m)
 	{
 		while (true )
 		{
-			if (TestPlayerModeUpdate())
+			//if (TestPlayerModeUpdate())
+			//	break;
+
+			if (GGPOTestPlayerModeUpdate())
+			{
 				break;
+			}
 		}
 		return;
 	}
@@ -2916,7 +3030,11 @@ void EditSession::Init()
 	SetupShardsCapturedField();
 
 	if (players[0] == NULL)
+	{
 		players[0] = new Actor(NULL, this, 0);
+		players[1] = new Actor(NULL, this, 1);
+	}
+		
 
 	SetupEnemyTypes();
 
@@ -3122,14 +3240,15 @@ int EditSession::EditRun()
 	mapStartBrush->AddObject(player);
 
 	players[0]->SetGameMode();
-	for (int i = 1; i < MAX_PLAYERS; ++i)
+	players[1]->SetGameMode();
+	/*for (int i = 1; i < MAX_PLAYERS; ++i)
 	{
 		if (GetController(i).IsConnected())
 		{
 			players[i] = new Actor(NULL, this, i);
 			players[i]->SetGameMode();
 		}
-	}
+	}*/
 
 	cam.Init(GetPlayerPos(0));
 
@@ -9802,6 +9921,14 @@ void EditSession::CleanupTestPlayerMode()
 	mapHeader->topBounds = realTopBounds;
 	mapHeader->boundsWidth = realBoundsWidth;
 	mapHeader->boundsHeight = realBoundsHeight;
+
+	if (ggpo != NULL)
+	{
+		ggpo_close_session(ggpo);
+		ggpo = NULL;
+
+		WSACleanup();
+	}
 }
 
 void EditSession::SetMode(Emode m)
@@ -11690,17 +11817,17 @@ void EditSession::GeneralEventHandler()
 		}
 		case Event::LostFocus:
 		{
-			stored = mode;
-			mode = PAUSED;
+			//turning off temporarily for netplay testing
+			//stored = mode;
+			//mode = PAUSED;
 			break;
 		}
 		case Event::GainedFocus:
 		{
-			mode = stored;
+			/*mode = stored;
 			double newTime = editClock.getElapsedTime().asSeconds();
 			editCurrentTime = newTime;
-			editAccumulator = 0;
-			//SetMode(stored);
+			editAccumulator = 0;*/
 			break;
 		}
 		}

@@ -797,6 +797,9 @@ struct EditSession : GUIHandler, Session
 	void UpdateCamera();
 	bool RunPostUpdate();
 	void SequenceGameModeRespondToGoalDestroyed();
+
+	bool GGPOTestPlayerModeUpdate();
+	void InitGGPO();
 };
 
 

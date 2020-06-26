@@ -667,8 +667,15 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool PlayerIsMovingLeft(int index = 0);
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
-	void AdvanceFrame();
-	void AdvanceFrameGGPO( int inputs[] );
+	
+	GGPONonGameState ngs;
+	SaveGameState currSaveState;
+	GGPOPlayer ggpoPlayers[GGPO_MAX_PLAYERS];
+	bool GGPORunGameModeUpdate();
+	void GGPORunFrame();
+	bool SaveState(unsigned char **buffer,
+		int *len, int *checksum, int frame);
+	bool LoadState(unsigned char *buffer, int len);
 };
 
 #endif

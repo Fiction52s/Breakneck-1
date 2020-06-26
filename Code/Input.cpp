@@ -61,6 +61,8 @@ int ControllerState::GetCompressedState()
 	s |= B << bit++;
 	s |= X << bit++;
 	s |= Y << bit++;
+
+	return s;
 }
 
 void ControllerState::SetFromCompressedState(int s)

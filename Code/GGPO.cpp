@@ -1,8 +1,9 @@
 #include "GGPO.h"
 #include <windows.h>
-#include "GameSession.h"
+#include "Session.h"
+#include <iostream>
 
-
+using namespace std;
 
 int fletcher32_checksum(short *data, size_t len)
 {
@@ -47,34 +48,43 @@ begin_game_callback(const char *)
 bool __cdecl
 on_event_callback(GGPOEvent *info)
 {
+	Session *sess = Session::GetSession();
 	int progress;
 	switch (info->code) {
 	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
-		//ngs.SetConnectState(info->u.connected.player, Synchronizing);
+		cout << "connected to peer" << endl;
+		sess->ngs.SetConnectState(info->u.connected.player, Synchronizing);
 		break;
 	case GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
-		//progress = 100 * info->u.synchronizing.count / info->u.synchronizing.total;
-		//ngs.UpdateConnectProgress(info->u.synchronizing.player, progress);
+		cout << "synchronizing to peer" << endl;
+		progress = 100 * info->u.synchronizing.count / info->u.synchronizing.total;
+		sess->ngs.UpdateConnectProgress(info->u.synchronizing.player, progress);
 		break;
 	case GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
-		//ngs.UpdateConnectProgress(info->u.synchronized.player, 100);
+		cout << "synchronized with peer" << endl;
+		sess->ngs.UpdateConnectProgress(info->u.synchronized.player, 100);
 		break;
 	case GGPO_EVENTCODE_RUNNING:
-		//ngs.SetConnectState(Running);
+		cout << "running" << endl;
+		sess->ngs.SetConnectState(Running);
 		//renderer->SetStatusText("");
 		break;
 	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
-		//ngs.SetDisconnectTimeout(info->u.connection_interrupted.player,
-		//	timeGetTime(),
-		//	info->u.connection_interrupted.disconnect_timeout);
+		cout << "connection interrupted" << endl;
+		sess->ngs.SetDisconnectTimeout(info->u.connection_interrupted.player,
+			timeGetTime(),
+			info->u.connection_interrupted.disconnect_timeout);
 		break;
 	case GGPO_EVENTCODE_CONNECTION_RESUMED:
-		//ngs.SetConnectState(info->u.connection_resumed.player, Running);
+		cout << "connection resumed" << endl;
+		sess->ngs.SetConnectState(info->u.connection_resumed.player, Running);
 		break;
 	case GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
-		//ngs.SetConnectState(info->u.disconnected.player, Disconnected);
+		cout << "disconnected from peer" << endl;
+		sess->ngs.SetConnectState(info->u.disconnected.player, Disconnected);
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
+		//cout << "timesync" << endl;
 		Sleep(1000 * info->u.timesync.frames_ahead / 60);
 		break;
 	}
@@ -91,23 +101,19 @@ on_event_callback(GGPOEvent *info)
 bool __cdecl
 advance_frame_callback(int flags)
 {
-	int compressedInputs[4] = { 0 };
+	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
 	int disconnect_flags;
 
-	GameSession *game = GameSession::GetSession();
+	Session *sess = Session::GetSession();
 
-	//// Make sure we fetch new inputs from GGPO and use those to update
-	//// the game state instead of reading from the keyboard.
-	ggpo_synchronize_input(game->ggpo, (void *)compressedInputs, sizeof(int) * 4, 
+	ggpo_synchronize_input(sess->ggpo, (void *)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS,
 		&disconnect_flags);
 	for (int i = 0; i < 2; ++i)
 	{
-		game->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 	}
 
-	game->AdvanceFrame();
-
-	//VectorWar_AdvanceFrame(inputs, disconnect_flags);
+	sess->GGPORunGameModeUpdate();
 	return true;
 }
 
@@ -119,8 +125,8 @@ advance_frame_callback(int flags)
 bool __cdecl
 load_game_state_callback(unsigned char *buffer, int len)
 {
-	GameSession *game = GameSession::GetSession();
-	return game->LoadState(buffer, len);
+	Session *sess = Session::GetSession();
+	return sess->LoadState(buffer, len);
 }
 
 /*
@@ -132,8 +138,8 @@ load_game_state_callback(unsigned char *buffer, int len)
 bool __cdecl
 save_game_state_callback(unsigned char **buffer, int *len, int *checksum, int frame)
 {
-	GameSession *game = GameSession::GetSession();
-	return game->SaveState(buffer, len, checksum, frame);
+	Session *sess = Session::GetSession();
+	return sess->SaveState(buffer, len, checksum, frame);
 }
 
 bool __cdecl
@@ -178,11 +184,4 @@ void __cdecl
 free_buffer(void *buffer)
 {
 	free(buffer);
-}
-
-void GGPOInit()
-{
-	GGPOErrorCode result;
-
-
 }
