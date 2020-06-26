@@ -18,8 +18,12 @@
 #include "Enemy_BasicEffect.h"
 #include "BitField.h"
 #include "ScoreDisplay.h"
-#include "GGPO.h"
 
+
+struct GGPONonGameState;
+struct SaveGameState;
+struct GGPOSession;
+struct GGPOPlayer;
 
 struct QNode;
 struct SoundManager;
@@ -668,9 +672,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
 	
-	GGPONonGameState ngs;
-	SaveGameState currSaveState;
-	GGPOPlayer ggpoPlayers[GGPO_MAX_PLAYERS];
+	GGPONonGameState *ngs;
+	SaveGameState *currSaveState;
+	GGPOPlayer *ggpoPlayers;
 	bool GGPORunGameModeUpdate();
 	void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,

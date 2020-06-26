@@ -53,35 +53,35 @@ on_event_callback(GGPOEvent *info)
 	switch (info->code) {
 	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
 		cout << "connected to peer" << endl;
-		sess->ngs.SetConnectState(info->u.connected.player, Synchronizing);
+		sess->ngs->SetConnectState(info->u.connected.player, Synchronizing);
 		break;
 	case GGPO_EVENTCODE_SYNCHRONIZING_WITH_PEER:
 		cout << "synchronizing to peer" << endl;
 		progress = 100 * info->u.synchronizing.count / info->u.synchronizing.total;
-		sess->ngs.UpdateConnectProgress(info->u.synchronizing.player, progress);
+		sess->ngs->UpdateConnectProgress(info->u.synchronizing.player, progress);
 		break;
 	case GGPO_EVENTCODE_SYNCHRONIZED_WITH_PEER:
 		cout << "synchronized with peer" << endl;
-		sess->ngs.UpdateConnectProgress(info->u.synchronized.player, 100);
+		sess->ngs->UpdateConnectProgress(info->u.synchronized.player, 100);
 		break;
 	case GGPO_EVENTCODE_RUNNING:
 		cout << "running" << endl;
-		sess->ngs.SetConnectState(Running);
+		sess->ngs->SetConnectState(Running);
 		//renderer->SetStatusText("");
 		break;
 	case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
 		cout << "connection interrupted" << endl;
-		sess->ngs.SetDisconnectTimeout(info->u.connection_interrupted.player,
+		sess->ngs->SetDisconnectTimeout(info->u.connection_interrupted.player,
 			timeGetTime(),
 			info->u.connection_interrupted.disconnect_timeout);
 		break;
 	case GGPO_EVENTCODE_CONNECTION_RESUMED:
 		cout << "connection resumed" << endl;
-		sess->ngs.SetConnectState(info->u.connection_resumed.player, Running);
+		sess->ngs->SetConnectState(info->u.connection_resumed.player, Running);
 		break;
 	case GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
 		cout << "disconnected from peer" << endl;
-		sess->ngs.SetConnectState(info->u.disconnected.player, Disconnected);
+		sess->ngs->SetConnectState(info->u.disconnected.player, Disconnected);
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
 		//cout << "timesync" << endl;

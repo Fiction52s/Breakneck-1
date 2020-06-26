@@ -3,10 +3,11 @@
 
 #include "VectorMath.h"
 #include "ggponet.h"
+#include "Physics.h"
 #pragma comment(lib, "wsock32.lib")
-#define FRAME_DELAY 2
 
 
+//struct Edge;
 
 enum PlayerConnectState {
 	Connecting = 0,
@@ -84,6 +85,10 @@ struct PState
 	int frame;
 	bool facingRight;
 	double groundSpeed;
+	int prevInput;
+	Edge *ground;
+	double quant;
+	double xOffset;
 };
 
 struct SaveGameState

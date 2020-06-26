@@ -47,6 +47,7 @@
 #include "Barrier.h"
 #include "TopClouds.h"
 #include "Enemy_Goal.h"
+#include "GGPO.h"
 
 using namespace std;
 using namespace sf;
@@ -382,6 +383,10 @@ void EditSession::InitGGPO()
 	cb.on_event = on_event_callback;
 	cb.log_game_state = log_game_state;
 
+	currSaveState = new SaveGameState;
+	ngs = new GGPONonGameState;
+	ggpoPlayers = new GGPOPlayer[4];
+
 	GGPOErrorCode result;
 
 	unsigned short localPort = 7000;
@@ -396,7 +401,7 @@ void EditSession::InitGGPO()
 
 	//int offset = 1, local_player = 0;
 	int num_players = 2;
-	ngs.num_players = num_players;
+	ngs->num_players = num_players;
 
 	result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
 		sizeof(int), localPort);
@@ -433,20 +438,22 @@ void EditSession::InitGGPO()
 	//ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
+	int frameDelay = 2;
+
 	int i;
 	for (i = 0; i < num_players; i++) {
 		GGPOPlayerHandle handle;
 		result = ggpo_add_player(ggpo, ggpoPlayers + i, &handle);
-		ngs.playerInfo[i].handle = handle;
-		ngs.playerInfo[i].type = ggpoPlayers[i].type;
+		ngs->playerInfo[i].handle = handle;
+		ngs->playerInfo[i].type = ggpoPlayers[i].type;
 		if (ggpoPlayers[i].type == GGPO_PLAYERTYPE_LOCAL) {
-			ngs.playerInfo[i].connect_progress = 100;
-			ngs.local_player_handle = handle;
-			ngs.SetConnectState(handle, Connecting);
-			ggpo_set_frame_delay(ggpo, handle, FRAME_DELAY);
+			ngs->playerInfo[i].connect_progress = 100;
+			ngs->local_player_handle = handle;
+			ngs->SetConnectState(handle, Connecting);
+			ggpo_set_frame_delay(ggpo, handle, frameDelay);
 		}
 		else {
-			ngs.playerInfo[i].connect_progress = 0;
+			ngs->playerInfo[i].connect_progress = 0;
 		}
 	}
 
@@ -9924,10 +9931,16 @@ void EditSession::CleanupTestPlayerMode()
 
 	if (ggpo != NULL)
 	{
+
+
 		ggpo_close_session(ggpo);
 		ggpo = NULL;
 
 		WSACleanup();
+
+		delete currSaveState;
+		delete ngs;
+		delete[] ggpoPlayers;
 	}
 }
 

@@ -79,6 +79,10 @@ void Actor::PopulateState(PState *ps)
 	ps->frame = frame;
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
+	ps->prevInput = prevInput.GetCompressedState();
+	ps->ground = ground;
+	ps->quant = edgeQuantity;
+	ps->xOffset = offsetX;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -89,6 +93,10 @@ void Actor::PopulateFromState(PState *ps)
 	frame = ps->frame;
 	facingRight = ps->facingRight;
 	groundSpeed = ps->groundSpeed;
+	prevInput.SetFromCompressedState(ps->prevInput);
+	ground = ps->ground;
+	edgeQuantity = ps->quant;
+	offsetX = ps->xOffset;
 }
 
 

@@ -35,7 +35,7 @@
 
 //enemy stuff:
 #include "SoundManager.h"
-
+#include "GGPO.h"
 
 
 
@@ -5971,9 +5971,9 @@ void Session::GGPORunFrame()
 
 	UpdateControllers();
 
-	assert(ngs.local_player_handle != GGPO_INVALID_HANDLE);
+	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
 	int input = GetCurrInput(0).GetCompressedState();
-	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs.local_player_handle, &input, sizeof(input));
+	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
 
 	if (GGPO_SUCCEEDED(result))
 	{
@@ -5995,27 +5995,27 @@ void Session::GGPORunFrame()
 bool Session::SaveState(unsigned char **buffer,
 	int *len, int *checksum, int frame)
 {
-	players[0]->PopulateState(&currSaveState.states[0]);
-	players[1]->PopulateState(&currSaveState.states[1]);
-	currSaveState.totalGameFrames = totalGameFrames;
+	players[0]->PopulateState(&currSaveState->states[0]);
+	players[1]->PopulateState(&currSaveState->states[1]);
+	currSaveState->totalGameFrames = totalGameFrames;
 
 	*len = sizeof(SaveGameState);
 	*buffer = (unsigned char *)malloc(*len);
 	if (!*buffer) {
 		return false;
 	}
-	memcpy(*buffer, &currSaveState, *len);
+	memcpy(*buffer, currSaveState, *len);
 	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	return true;
 }
 
 bool Session::LoadState(unsigned char *buffer, int len)
 {
-	memcpy(&currSaveState, buffer, len);
+	memcpy(currSaveState, buffer, len);
 
-	totalGameFrames = currSaveState.totalGameFrames;
-	players[0]->PopulateFromState(&currSaveState.states[0]);
-	players[1]->PopulateFromState(&currSaveState.states[1]);
+	totalGameFrames = currSaveState->totalGameFrames;
+	players[0]->PopulateFromState(&currSaveState->states[0]);
+	players[1]->PopulateFromState(&currSaveState->states[1]);
 
 	return true;
 }
