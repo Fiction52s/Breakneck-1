@@ -2301,14 +2301,14 @@ void Session::UpdateControllers()
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
 
-		if (!cutPlayerInput)
+		/*if (!cutPlayerInput)
 		{
 			p = GetPlayer(i);
 			if (p != NULL)
 			{
 				p->prevInput = GetCurrInput(i);
 			}
-		}
+		}*/
 
 		GameController &con = GetController(i);
 		if (gccEnabled)
@@ -2343,6 +2343,7 @@ void Session::UpdatePlayerInput(int index)
 	else
 	{
 		player->currInput = currInput;
+		player->prevInput = prevInput;
 
 		if (controller.keySettings.toggleBounce)
 		{
@@ -5845,11 +5846,11 @@ bool Session::GGPORunGameModeUpdate()
 		return true;
 	}
 
-	RepPlayerUpdateInput();
+	//RepPlayerUpdateInput();
 
-	RecPlayerRecordFrame();
+	//RecPlayerRecordFrame();
 
-	UpdateAllPlayersInput();
+	
 
 	ActiveSequenceUpdate();
 	if (switchGameState)
@@ -5969,21 +5970,66 @@ void Session::GGPORunFrame()
 	int disconnect_flags;
 	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
 
-	UpdateControllers();
+	//UpdateControllers();
+
+	bool gccEnabled = mainMenu->gccDriverEnabled;
+
+	if (gccEnabled)
+		gcControllers = mainMenu->gccDriver->getState();
+
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		//GetPrevInput(i) = GetCurrInput(i);
+		//GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+
+		/*if (!cutPlayerInput)
+		{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+		p->prevInput = GetCurrInput(i);
+		}
+		}*/
+
+		GameController &con = GetController(i);
+		if (gccEnabled)
+			con.gcController = gcControllers[i];
+
+		con.UpdateState();
+
+		GetCurrInput(i) = con.GetState();
+		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+	}
+	
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
 	int input = GetCurrInput(0).GetCompressedState();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
+
+	static ControllerState lastCurr;
 
 	if (GGPO_SUCCEEDED(result))
 	{
 		result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
 		if (GGPO_SUCCEEDED(result))
 		{
+			GetPrevInput(1) = lastCurr;
+			
+			/*for (int i = 0; i < 4; ++i)
+			{
+				GetPrevInput(i) = GetCurrInput(i);
+				GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+			}*/
+
 			for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 			{
 				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 			}
+			lastCurr = GetCurrInput(1);
+
+			UpdateAllPlayersInput();
 			GGPORunGameModeUpdate();
 		}
 		

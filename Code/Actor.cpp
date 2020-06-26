@@ -79,7 +79,9 @@ void Actor::PopulateState(PState *ps)
 	ps->frame = frame;
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
+	//sess->GetPrevInput().GetCompressedState();
 	ps->prevInput = prevInput.GetCompressedState();
+	//ps->currInput = currInput.GetCompressedState();
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
@@ -93,7 +95,10 @@ void Actor::PopulateFromState(PState *ps)
 	frame = ps->frame;
 	facingRight = ps->facingRight;
 	groundSpeed = ps->groundSpeed;
+	//sess->GetPrevInput(0).SetFromCompressedState(ps->prevInput);
+	//sess->GetCurrInput(0).SetFromCompressedState(ps->prevInput);
 	prevInput.SetFromCompressedState(ps->prevInput);
+	//currInput.SetFromCompressedState(ps->currInput);
 	ground = ps->ground;
 	edgeQuantity = ps->quant;
 	offsetX = ps->xOffset;
@@ -1845,7 +1850,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		
 	team = (Team)actorIndex; //debug
 
+	if( actorIndex == 1 )
+		skin = new Skin(startChanges, endChanges, 9, 1);
+
 	SetupTilesets();
+
+	if( actorIndex == 1)
+		delete skin;
 
 	/*if (actorIndex == 0)
 	{
@@ -4487,6 +4498,12 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	if (actorIndex == 0)
+	{
+		cout << "prev:" << (int)prevInput.A << ", curr:" << (int)currInput.A << "\n";
+	}
+	
+
 	ProcessGravityGrass();
 	CheckForAirTrigger();
 	HandleAirTrigger();

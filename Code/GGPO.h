@@ -86,6 +86,7 @@ struct PState
 	bool facingRight;
 	double groundSpeed;
 	int prevInput;
+	int currInput;
 	Edge *ground;
 	double quant;
 	double xOffset;
