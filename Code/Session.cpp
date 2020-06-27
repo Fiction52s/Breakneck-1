@@ -2342,8 +2342,9 @@ void Session::UpdatePlayerInput(int index)
 	}
 	else
 	{
+		player->prevInput = player->currInput;
 		player->currInput = currInput;
-		player->prevInput = prevInput;
+		//player->prevInput = prevInput;
 
 		if (controller.keySettings.toggleBounce)
 		{
@@ -5830,6 +5831,12 @@ bool Session::PlayerIsFacingRight(int index)
 
 bool Session::GGPORunGameModeUpdate()
 {
+	if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
+	{
+		cout << "p0:: L: " << (int)players[0]->currInput.LLeft() << ", R: " << (int)players[0]->currInput.LRight() << ", p1:: L: " << (int)players[1]->currInput.LLeft() << ", " << (int)players[1]->currInput.LRight() << endl;
+		cout << "different inputs" << endl;
+	}
+
 	collider.ClearDebug();
 
 	if (!OneFrameModeUpdate())
@@ -5981,18 +5988,6 @@ void Session::GGPORunFrame()
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
-		//GetPrevInput(i) = GetCurrInput(i);
-		//GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-
-		/*if (!cutPlayerInput)
-		{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-		p->prevInput = GetCurrInput(i);
-		}
-		}*/
-
 		GameController &con = GetController(i);
 		if (gccEnabled)
 			con.gcController = gcControllers[i];
@@ -6008,32 +6003,30 @@ void Session::GGPORunFrame()
 	int input = GetCurrInput(0).GetCompressedState();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
 
-	static ControllerState lastCurr;
+	//static ControllerState lastCurr;
 
 	if (GGPO_SUCCEEDED(result))
 	{
 		result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
 		if (GGPO_SUCCEEDED(result))
 		{
-			GetPrevInput(1) = lastCurr;
+			//GetPrevInput(1) = lastCurr;
 			
-			/*for (int i = 0; i < 4; ++i)
-			{
-				GetPrevInput(i) = GetCurrInput(i);
-				GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-			}*/
-
 			for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 			{
-				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+				GetCurrInput(i).SetFromCompressedState(compressedInputs[1]);
 			}
-			lastCurr = GetCurrInput(1);
+			//lastCurr = GetCurrInput(1);
 
 			UpdateAllPlayersInput();
 			GGPORunGameModeUpdate();
+			//accumulator -= TIMESTEP;
+			
 		}
 		
 	}
+
+	
 
 	//draw after then loop again
 }

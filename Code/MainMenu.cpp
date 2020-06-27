@@ -1252,6 +1252,9 @@ void MainMenu::Run()
 #endif
 	while( !quit )
 	{
+		GGPOOption();
+		continue;
+
 		double newTime = gameClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - currentTime;
 

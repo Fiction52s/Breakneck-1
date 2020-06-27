@@ -313,7 +313,7 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	if (frameTime < TIMESTEP)
 	{
 		int fTime = (TIMESTEP - frameTime);
-		ggpo_idle(ggpo, fTime);
+		ggpo_idle(ggpo, fTime- .001);
 	}
 
 	currentTime = newTime;
@@ -321,7 +321,12 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	frameRateDisplay.Update(frameTime);
 	UpdateRunningTimerText();
 
-	GGPORunFrame();
+	//accumulator += frameTime;
+	//while (accumulator >= frameTime)
+	{
+		GGPORunFrame();
+	}
+	
 	//GGPORunGameModeUpdate();
 
 	return true;
@@ -3325,6 +3330,11 @@ int EditSession::EditRun()
 	Vector2f uiMouse;
 
 	editClock.restart();
+
+	while (window->pollEvent(ev))
+	{
+	}
+
 	while (!quit)
 	{
 		if (runToResave)

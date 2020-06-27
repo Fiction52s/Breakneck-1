@@ -423,7 +423,6 @@ struct Actor : QuadTreeCollider,
 	EditSession *editOwner;
 	double steepClimbSpeedThresh;
 	Contact minContact;
-	Contact storedContact;
 	sf::Shader sh;
 	sf::Shader timeSlowShader;
 	bool collision;

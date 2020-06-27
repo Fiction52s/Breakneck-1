@@ -84,7 +84,7 @@ on_event_callback(GGPOEvent *info)
 		sess->ngs->SetConnectState(info->u.disconnected.player, Disconnected);
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
-		//cout << "timesync" << endl;
+		cout << "timesync" << endl;
 		Sleep(1000 * info->u.timesync.frames_ahead / 60);
 		break;
 	}
@@ -108,11 +108,11 @@ advance_frame_callback(int flags)
 
 	ggpo_synchronize_input(sess->ggpo, (void *)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS,
 		&disconnect_flags);
-	for (int i = 0; i < 2; ++i)
+	for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 	{
-		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[1]);
 	}
-
+	sess->UpdateAllPlayersInput();
 	sess->GGPORunGameModeUpdate();
 	return true;
 }

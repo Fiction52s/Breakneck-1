@@ -79,9 +79,8 @@ void Actor::PopulateState(PState *ps)
 	ps->frame = frame;
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
-	//sess->GetPrevInput().GetCompressedState();
-	ps->prevInput = prevInput.GetCompressedState();
-	//ps->currInput = currInput.GetCompressedState();
+	//ps->prevInput = prevInput.GetCompressedState();
+	ps->currInput = currInput.GetCompressedState();
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
@@ -103,8 +102,8 @@ void Actor::PopulateFromState(PState *ps)
 	groundSpeed = ps->groundSpeed;
 	//sess->GetPrevInput(0).SetFromCompressedState(ps->prevInput);
 	//sess->GetCurrInput(0).SetFromCompressedState(ps->prevInput);
-	prevInput.SetFromCompressedState(ps->prevInput);
-	//currInput.SetFromCompressedState(ps->currInput);
+	//prevInput.SetFromCompressedState(ps->prevInput);
+	currInput.SetFromCompressedState(ps->currInput);
 	ground = ps->ground;
 	edgeQuantity = ps->quant;
 	offsetX = ps->xOffset;
@@ -5985,7 +5984,6 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if( col )
 	{
-		storedContact = minContact;
 		/*if( minContact.movingPlat != NULL )
 		{
 			velocity += minContact.movingPlat->vel;
