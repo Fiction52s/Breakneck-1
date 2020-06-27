@@ -110,7 +110,7 @@ advance_frame_callback(int flags)
 		&disconnect_flags);
 	for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 	{
-		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[1]);
+		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 	}
 	sess->UpdateAllPlayersInput();
 	sess->GGPORunGameModeUpdate();
@@ -125,6 +125,7 @@ advance_frame_callback(int flags)
 bool __cdecl
 load_game_state_callback(unsigned char *buffer, int len)
 {
+	//cout << "rollback" << "\n";
 	Session *sess = Session::GetSession();
 	return sess->LoadState(buffer, len);
 }
@@ -138,6 +139,7 @@ load_game_state_callback(unsigned char *buffer, int len)
 bool __cdecl
 save_game_state_callback(unsigned char **buffer, int *len, int *checksum, int frame)
 {
+	//cout << "save state" << "\n";
 	Session *sess = Session::GetSession();
 	return sess->SaveState(buffer, len, checksum, frame);
 }
@@ -145,10 +147,11 @@ save_game_state_callback(unsigned char **buffer, int *len, int *checksum, int fr
 bool __cdecl
 log_game_state(char *filename, unsigned char *buffer, int)
 {
-	/*FILE* fp = nullptr;
+	FILE* fp = nullptr;
 	fopen_s(&fp, filename, "w");
 	if (fp) {
-		GameState *gamestate = (GameState *)buffer;
+		fprintf(fp, "test\n");
+		/*GameState *gamestate = (GameState *)buffer;
 		fprintf(fp, "GameState object.\n");
 		fprintf(fp, "  bounds: %d,%d x %d,%d.\n", gamestate->_bounds.left, gamestate->_bounds.top,
 			gamestate->_bounds.right, gamestate->_bounds.bottom);
@@ -169,9 +172,9 @@ log_game_state(char *filename, unsigned char *buffer, int)
 					bullet->position.x, bullet->position.y,
 					bullet->velocity.dx, bullet->velocity.dy);
 			}
-		}
+		}*/
 		fclose(fp);
-	}*/
+	}
 	return true;
 }
 

@@ -310,10 +310,12 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	switchGameState = false;
 	double newTime = gameClock.getElapsedTime().asSeconds();
 	double frameTime = newTime - currentTime;
-	if (frameTime < TIMESTEP)
+	
+	//if (frameTime < TIMESTEP)
 	{
-		int fTime = (TIMESTEP - frameTime);
-		ggpo_idle(ggpo, fTime- .001);
+		ggpo_idle(ggpo, 5);
+		//int fTime = (TIMESTEP - frameTime);
+		//ggpo_idle(ggpo, fTime- .001);
 	}
 
 	currentTime = newTime;
@@ -321,10 +323,25 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	frameRateDisplay.Update(frameTime);
 	UpdateRunningTimerText();
 
+	accumulator += frameTime;
+
+	while (accumulator >= frameTime)
+	{
+		GGPORunFrame();
+		accumulator -= TIMESTEP;
+	}
+
+	//now = timeGetTime();
+	//ggpo_idle(ggpo, 5);//max(0, next - now - 1));
+	//if (now >= next)
+	{
+		//GGPORunFrame();
+		//next = now + (1000 / 60);
+	}
 	//accumulator += frameTime;
 	//while (accumulator >= frameTime)
 	{
-		GGPORunFrame();
+		
 	}
 	
 	//GGPORunGameModeUpdate();
@@ -376,6 +393,8 @@ bool EditSession::TestPlayerModeUpdate()
 
 void EditSession::InitGGPO()
 {
+
+	srand(time(0));
 	WSADATA wd = { 0 };
 	WSAStartup(MAKEWORD(2, 2), &wd);
 
@@ -416,10 +435,12 @@ void EditSession::InitGGPO()
 	int num_players = 2;
 	ngs->num_players = num_players;
 
-	result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
-		sizeof(int), localPort);
+	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
+	//	sizeof(int), localPort);
+	result = ggpo_start_synctest(&ggpo, &cb, "bn", num_players,
+		sizeof(int), 1);
 
-	ggpo_log(ggpo, "test\n");
+	//ggpo_log(ggpo, "test\n");
 
 	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
 	ggpo_set_disconnect_timeout(ggpo, 0); //3000
@@ -469,7 +490,6 @@ void EditSession::InitGGPO()
 			ngs->playerInfo[i].connect_progress = 0;
 		}
 	}
-
 }
 
 void EditSession::TestPlayerMode()
@@ -494,6 +514,7 @@ void EditSession::TestPlayerMode()
 	ResetAbsorbParticles();
 
 	SetPlayerOptionField(0);
+	SetPlayerOptionField(1);
 	skipped = false;
 	oneFrameMode = false;
 
@@ -954,6 +975,8 @@ void EditSession::TestPlayerMode()
 		shipEnterScene->Reset();
 		SetActiveSequence(shipEnterScene);
 	}
+
+	start = next = now = timeGetTime();
 }
 
 void EditSession::EndTestMode()

@@ -180,7 +180,7 @@ void Session::SetParentGame(GameSession *game)
 
 void Session::SetPlayerOptionField(int pIndex)
 {
-	GetPlayer(0)->SetAllUpgrades(playerOptionsField);
+	GetPlayer(pIndex)->SetAllUpgrades(playerOptionsField);
 }
 
 void Session::SetupHitboxManager()
@@ -5831,11 +5831,11 @@ bool Session::PlayerIsFacingRight(int index)
 
 bool Session::GGPORunGameModeUpdate()
 {
-	if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
-	{
-		cout << "p0:: L: " << (int)players[0]->currInput.LLeft() << ", R: " << (int)players[0]->currInput.LRight() << ", p1:: L: " << (int)players[1]->currInput.LLeft() << ", " << (int)players[1]->currInput.LRight() << endl;
-		cout << "different inputs" << endl;
-	}
+	//if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
+	//{
+	//	cout << "p0:: L: " << (int)players[0]->currInput.LLeft() << ", R: " << (int)players[0]->currInput.LRight() << ", p1:: L: " << (int)players[1]->currInput.LLeft() << ", " << (int)players[1]->currInput.LRight() << endl;
+	//	cout << "different inputs" << endl;
+	//}
 
 	collider.ClearDebug();
 
@@ -6000,8 +6000,11 @@ void Session::GGPORunFrame()
 	
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
-	int input = GetCurrInput(0).GetCompressedState();
+	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
+	int input = GetCurrInput(ngs->local_player_handle-1).GetCompressedState();
+	input = rand();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
+	//cout << "local player handle: " << ngs->local_player_handle << "\n";
 
 	//static ControllerState lastCurr;
 
@@ -6014,8 +6017,9 @@ void Session::GGPORunFrame()
 			
 			for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
 			{
-				GetCurrInput(i).SetFromCompressedState(compressedInputs[1]);
+				GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 			}
+
 			//lastCurr = GetCurrInput(1);
 
 			UpdateAllPlayersInput();
@@ -6044,7 +6048,7 @@ bool Session::SaveState(unsigned char **buffer,
 		return false;
 	}
 	memcpy(*buffer, currSaveState, *len);
-	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
+	*checksum = currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
 	return true;
 }
 
@@ -6052,6 +6056,7 @@ bool Session::LoadState(unsigned char *buffer, int len)
 {
 	memcpy(currSaveState, buffer, len);
 
+	//cout << "rollback. setting frame to: " << currSaveState->totalGameFrames << " from " << totalGameFrames << "\n";
 	totalGameFrames = currSaveState->totalGameFrames;
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);

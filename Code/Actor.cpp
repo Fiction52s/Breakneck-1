@@ -79,7 +79,6 @@ void Actor::PopulateState(PState *ps)
 	ps->frame = frame;
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
-	//ps->prevInput = prevInput.GetCompressedState();
 	ps->currInput = currInput.GetCompressedState();
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
@@ -90,6 +89,9 @@ void Actor::PopulateState(PState *ps)
 	ps->wallJumpFrameCounter = wallJumpFrameCounter;
 	ps->hasDoubleJump = hasDoubleJump;
 	ps->framesInAir = framesInAir;
+
+	//ps->brh = b.rh;
+	//ps->byoffset = b.offset.y;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -100,9 +102,6 @@ void Actor::PopulateFromState(PState *ps)
 	frame = ps->frame;
 	facingRight = ps->facingRight;
 	groundSpeed = ps->groundSpeed;
-	//sess->GetPrevInput(0).SetFromCompressedState(ps->prevInput);
-	//sess->GetCurrInput(0).SetFromCompressedState(ps->prevInput);
-	//prevInput.SetFromCompressedState(ps->prevInput);
 	currInput.SetFromCompressedState(ps->currInput);
 	ground = ps->ground;
 	edgeQuantity = ps->quant;
@@ -114,6 +113,10 @@ void Actor::PopulateFromState(PState *ps)
 	wallJumpFrameCounter = ps->wallJumpFrameCounter;
 	hasDoubleJump = ps->hasDoubleJump;
 	framesInAir = ps->framesInAir;
+
+	//b.rh = ps->brh;
+	//b.offset.y = ps->byoffset;
+	//b.globalPosition = position + b.offset;
 }
 
 
@@ -4508,10 +4511,18 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	/*if (actorIndex == 0)
+	//hasDoubleJump = true;
+	//b.globalPosition = position;
+	//b.rh = normalHeight;
+
+	if (actorIndex == 0 )//sess->ngs->local_player_handle - 1)
 	{
-		cout << "prev:" << (int)prevInput.A << ", curr:" << (int)currInput.A << "\n";
-	}*/
+		//cout << "update pre" << endl;
+		if (currInput.LRight())
+		{
+			//cout << sess->totalGameFrames << " right" << "\n";
+		}
+	}
 	
 
 	ProcessGravityGrass();
@@ -15383,6 +15394,7 @@ int Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
+	//return false;
 	//cout << "prevInput.A: " << (int)(prevInput.A) << endl;
 	return ( (hasDoubleJump || extraDoubleJump ) && 
 		((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
@@ -15397,7 +15409,6 @@ bool Actor::TryDoubleJump()
 {
 	if( CanDoubleJump() )
 	{
-		
 		aerialHitCancelDouble = IsAttackAction(action);
 		if (aerialHitCancelDouble)
 		{

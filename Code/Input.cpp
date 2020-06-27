@@ -58,9 +58,9 @@ int ControllerState::GetCompressedState()
 	s |= LLeft() << bit++;
 	s |= LRight() << bit++;
 	s |= A << bit++;
-	s |= B << bit++;
+	/*s |= B << bit++;
 	s |= X << bit++;
-	s |= Y << bit++;
+	s |= Y << bit++;*/
 
 	return s;
 }
@@ -98,9 +98,9 @@ void ControllerState::SetFromCompressedState(int s)
 	}
 
 	A = sa;
-	B = sb;
+	/*B = sb;
 	X = sx;
-	Y = sy;
+	Y = sy;*/
 }
 
 bool ControllerState::PUp()
@@ -553,7 +553,7 @@ bool GameController::UpdateState()
 		}
 	}
 
-	if( m_index == 0 && result != ERROR_SUCCESS )
+	if( m_index == 1 && result != ERROR_SUCCESS )
 	{
 		controllerType = ControllerType::CTYPE_PS4;
 		//cout << "updating controller state keyboard " << m_index << endl;

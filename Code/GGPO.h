@@ -90,6 +90,8 @@ struct PState
 	Edge *ground;
 	double quant;
 	double xOffset;
+	double brh;
+	double byoffset;
 
 	bool holdDouble;
 	int framesSinceClimbBoost;

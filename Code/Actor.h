@@ -307,6 +307,24 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
+	//definitely do change per frame
+	double offsetX;
+	int framesSinceClimbBoost;
+	bool holdDouble;
+	int frame;
+	int action;
+	sf::Vector2<double> position;
+	sf::Vector2<double> velocity;
+	bool holdJump;
+	int wallJumpFrameCounter;
+	double groundSpeed;
+	bool facingRight;
+	bool hasDoubleJump;
+	Edge *ground;
+	double edgeQuantity;
+	int framesInAir;
+	CollisionBox b;
+
 	//values that dont need to be stored
 	//at least in this first pass
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -580,7 +598,6 @@ struct Actor : QuadTreeCollider,
 	double airDashSpeed1;
 	double airDashSpeed2;
 	int flyCounter;
-	CollisionBox b;
 	CollisionBox hurtBody;
 	CollisionBody *currHitboxes;
 	int currHitboxFrame;
@@ -774,23 +791,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
 	
-	//definitely do change per frame
-	double offsetX;
-	int framesSinceClimbBoost;
-	bool holdDouble;
-	int frame;
-	int action;
 	
-	sf::Vector2<double> position;
-	sf::Vector2<double> velocity;
-	bool holdJump;
-	int wallJumpFrameCounter;
-	double groundSpeed;
-	bool facingRight;
-	bool hasDoubleJump;
-	Edge *ground;
-	double edgeQuantity;
-	int framesInAir;
 
 	//definitely do not change per frame
 	const static int MAX_BUBBLES = 5;

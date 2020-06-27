@@ -32,7 +32,7 @@ void Actor::DOUBLE_Update()
 {
 	if (action == DOUBLE)
 	{
-		b.rh = doubleJumpHeight;
+		//b.rh = doubleJumpHeight;
 	}
 
 	//	b.offset.y = -5;
