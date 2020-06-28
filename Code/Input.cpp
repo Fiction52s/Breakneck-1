@@ -76,7 +76,7 @@ int ControllerState::GetCompressedState()
 	s |= LDown() << bit++;
 	s |= LLeft() << bit++;
 	s |= LRight() << bit++;
-	//s |= A << bit++;
+	s |= A << bit++;
 	s |= B << bit++;
 	
 	//s |= X << bit++;
@@ -94,7 +94,7 @@ void ControllerState::SetFromCompressedState(int s)
 	bool ldown = s & (1 << bit++);
 	bool lleft = s & (1 << bit++);
 	bool lright = s & (1 << bit++);
-	//A = s & (1 << bit++);
+	A = s & (1 << bit++);
 	B = s & (1 << bit++);
 	//X = s & (1 << bit++);
 	//Y = s & (1 << bit++);

@@ -93,12 +93,20 @@ void Actor::PopulateState(PState *ps)
 	ps->brh = b.rh;
 	ps->byoffset = b.offset.y;
 	ps->bpos = b.globalPosition;
-	ps->hasAirDash = hasAirDash;
+	ps->hasAirDash = hasAirDash;//true;//
 	ps->storedGroundSpeed = storedGroundSpeed;
 	ps->currBBoostCounter = currBBoostCounter;
 	ps->steepJump = steepJump;
 	ps->currentSpeedBar = currentSpeedBar;
 	ps->speedLevel = speedLevel;
+
+	ps->airDashStall = airDashStall;
+	ps->startAirDashVel = startAirDashVel;
+	ps->extraAirDashY = extraAirDashY;
+	ps->oldAction = oldAction;
+	ps->drainCounter = drainCounter;
+
+	ps->oldVelocity = oldVelocity;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -130,6 +138,15 @@ void Actor::PopulateFromState(PState *ps)
 	steepJump = ps->steepJump;
 	currentSpeedBar = ps->currentSpeedBar;
 	speedLevel = ps->speedLevel;
+
+	airDashStall = ps->airDashStall;
+	startAirDashVel = ps->startAirDashVel;
+	extraAirDashY = ps->extraAirDashY;
+
+	oldAction = ps->oldAction;
+	drainCounter = ps->drainCounter;
+
+	oldVelocity = ps->oldVelocity;
 }
 
 
@@ -1758,7 +1775,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	fBubbleRadiusSize = NULL;
 	fBubbleFrame = NULL;
 
-
+	standNDashBoost = false;
 	kinMode = K_NORMAL;
 	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
@@ -3252,6 +3269,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	standNDashBoost = false;
 	drainCounter = 0;
 	flyCounter = 0;
 	kinMode = K_NORMAL;
@@ -3371,8 +3389,8 @@ void Actor::Respawn()
 	b.rh = normalHeight;
 	facingRight = true;
 	offsetX = 0;
-	prevInput = ControllerState();
-	currInput = ControllerState();
+	prevInput.Clear();// = ControllerState();
+	currInput.Clear();// = ControllerState();
 	ground = NULL;
 	grindEdge = NULL;
 	bounceEdge = NULL;
@@ -5685,6 +5703,7 @@ void Actor::SetAirPos(V2d &pos, bool fr)
 	frame = 1;
 	position = pos;
 	facingRight = fr;
+	offsetX = 0;
 }
 
 void Actor::SetGroundedPos(Edge *g, double q)
@@ -9917,17 +9936,6 @@ void Actor::UpdatePhysics()
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
-
-				if( ground->Normal().x > 0 && offsetX < b.rw && !approxEquals( offsetX, b.rw ) )					
-				{
-				//	cout << "super secret fix offsetx122: " << offsetX << endl;
-				//	offsetX = b.rw;
-				}
-				if( ground->Normal().x < 0 && offsetX > -b.rw && !approxEquals( offsetX, -b.rw ) ) 
-				{
-				//	cout << "super secret fix offsetx222: " << offsetX << endl;
-				//	offsetX = -b.rw;
-				}
 
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );

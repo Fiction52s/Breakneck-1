@@ -79,21 +79,22 @@ struct GGPONonGameState
 
 struct PState
 {
+	double xOffset;
 	V2d position;
 	V2d velocity;
 	int action;
 	int frame;
-	bool facingRight;
 	double groundSpeed;
 	int prevInput;
 	int currInput;
 	Edge *ground;
 	double quant;
-	double xOffset;
+	
 	double brh;
 	double byoffset;
 	V2d bpos;
 
+	bool facingRight;
 	bool holdDouble;
 	int framesSinceClimbBoost;
 	bool holdJump;
@@ -106,6 +107,12 @@ struct PState
 	bool steepJump;
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
+	bool airDashStall;
+	sf::Vector2<double> startAirDashVel;
+	double extraAirDashY;
+	int oldAction;
+	int drainCounter;
+	sf::Vector2<double> oldVelocity;
 };
 
 struct SaveGameState

@@ -330,6 +330,14 @@ struct Actor : QuadTreeCollider,
 	double storedGroundSpeed;
 	int currBBoostCounter;
 	bool steepJump;
+	// 0 is not started, 1 is right, 2 is
+	//left
+	bool airDashStall;
+	sf::Vector2<double> startAirDashVel;
+	double extraAirDashY;
+	int oldAction;
+	int drainCounter;
+	sf::Vector2<double> oldVelocity;
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -434,9 +442,7 @@ struct Actor : QuadTreeCollider,
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
 	bool justToggledBounce;
-	// 0 is not started, 1 is right, 2 is
-	//left
-	bool airDashStall;
+	
 	bool scorpOn;
 
 	//unsaved vars
@@ -680,10 +686,9 @@ struct Actor : QuadTreeCollider,
 	double grindActionCurrent;
 	ControllerState prevInput;
 	ControllerState currInput;
-	sf::Vector2<double> oldVelocity;
 	
-	sf::Vector2<double> startAirDashVel;
-	double extraAirDashY;
+	
+	
 	int framesGrinding;
 	int framesNotGrinding;
 	int framesSinceGrindAttempt;
@@ -773,7 +778,7 @@ struct Actor : QuadTreeCollider,
 	bool dead;
 	
 	
-	int oldAction;
+	
 	bool currAttackHit;
 	bool bounceAttackHit;
 	
@@ -790,7 +795,7 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedJump;
 	bool stunBufferedDash;
 	int stunBufferedAttack;
-	int drainCounter;
+	
 	int steepClimbBoostStart;
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;

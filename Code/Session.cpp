@@ -5732,7 +5732,11 @@ void Session::CleanupGateMarkers()
 
 void Session::ResetEnemies()
 {
-	rResetEnemies(enemyTree->startNode);
+	if (enemyTree != NULL)
+	{
+		rResetEnemies(enemyTree->startNode);
+	}
+	
 
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
@@ -5999,9 +6003,46 @@ void Session::GGPORunFrame()
 	}
 	
 
+
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
 	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
 	int input = GetCurrInput(0).GetCompressedState();
+
+	static int frameCC = 0;
+
+	int r = rand();
+	if (r % 2 == 0)
+	{
+		input = 41;
+	}
+	else
+	{
+		input = 0;
+	}
+
+	if (frameCC < 20)
+	{
+
+		input = -1;
+		switch (frameCC)
+		{
+		case 0:
+		case 1:
+		case 8:
+		case 11:
+		case 12:
+		case 14:
+		case 16:
+		case 17:
+			input = 0;
+			break;
+
+		}
+
+		if (input == -1)
+			input = 41;
+	}
+
 	//input = rand();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
 	//cout << "local player handle: " << ngs->local_player_handle << "\n";
@@ -6024,6 +6065,7 @@ void Session::GGPORunFrame()
 
 			UpdateAllPlayersInput();
 			GGPORunGameModeUpdate();
+			frameCC++;
 			//accumulator -= TIMESTEP;
 			
 		}
@@ -6041,14 +6083,17 @@ bool Session::SaveState(unsigned char **buffer,
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
-
 	*len = sizeof(SaveGameState);
 	*buffer = (unsigned char *)malloc(*len);
 	if (!*buffer) {
 		return false;
 	}
 	memcpy(*buffer, currSaveState, *len);
-	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);//currSaveState->states[0].position.y;//currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
+	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
+	int pSize = sizeof(PState);
+	int offset = 0;
+	int fletchLen = *len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
 	return true;
 }
 

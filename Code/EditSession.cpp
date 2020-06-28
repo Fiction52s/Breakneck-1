@@ -393,8 +393,8 @@ bool EditSession::TestPlayerModeUpdate()
 
 void EditSession::InitGGPO()
 {
-	srand(400);
-	//srand(time(0));
+	//srand(400);
+	srand(time(0));
 	WSADATA wd = { 0 };
 	WSAStartup(MAKEWORD(2, 2), &wd);
 
