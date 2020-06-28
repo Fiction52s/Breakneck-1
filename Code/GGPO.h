@@ -113,6 +113,8 @@ struct PState
 	int oldAction;
 	int drainCounter;
 	sf::Vector2<double> oldVelocity;
+	bool reversed;
+	double storedReverseSpeed;
 };
 
 struct SaveGameState

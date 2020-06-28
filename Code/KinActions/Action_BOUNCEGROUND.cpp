@@ -381,7 +381,6 @@ void Actor::BOUNCEGROUND_Change()
 
 			//if( gNorm.y <= -steepThresh )
 			{
-				hasGravReverse = true;
 				hasAirDash = true;
 				hasDoubleJump = true;
 				lastWire = 0;

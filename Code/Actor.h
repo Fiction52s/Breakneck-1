@@ -338,6 +338,8 @@ struct Actor : QuadTreeCollider,
 	int oldAction;
 	int drainCounter;
 	sf::Vector2<double> oldVelocity;
+	bool reversed;
+	double storedReverseSpeed;
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -598,7 +600,6 @@ struct Actor : QuadTreeCollider,
 	double bounceBoostSpeed;
 	double steepSlideGravFactor;
 	double steepSlideFastGravFactor;
-	double storedReverseSpeed;
 	double steepClimbGravFactor;
 	double steepClimbUpFactor;
 	double steepClimbDownFactor;
@@ -699,8 +700,6 @@ struct Actor : QuadTreeCollider,
 	sf::RectangleShape railTest;
 	
 	TerrainRail * prevRail;
-	
-	bool hasGravReverse;
 	Edge *grindEdge;
 	bool railGrind;
 	int regrindOffCount;
@@ -712,7 +711,7 @@ struct Actor : QuadTreeCollider,
 	double grindQuantity;
 	double grindSpeed;
 	double slopeTooSteepLaunchLimitX;
-	bool reversed;
+	
 	
 	
 	bool bounceGrounded;

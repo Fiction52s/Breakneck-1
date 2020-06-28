@@ -163,7 +163,6 @@ void ShipEnterScene::UpdateState()
 		state = Count;
 		player->hasDoubleJump = false;
 		player->hasAirDash = false;
-		player->hasGravReverse = false;
 		sess->SetDrainOn(true);
 	}
 }

@@ -107,6 +107,9 @@ void Actor::PopulateState(PState *ps)
 	ps->drainCounter = drainCounter;
 
 	ps->oldVelocity = oldVelocity;
+
+	ps->reversed = reversed;
+	ps->storedReverseSpeed = storedReverseSpeed;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -147,6 +150,9 @@ void Actor::PopulateFromState(PState *ps)
 	drainCounter = ps->drainCounter;
 
 	oldVelocity = ps->oldVelocity;
+
+	reversed = ps->reversed;
+	storedReverseSpeed = ps->storedReverseSpeed;
 }
 
 
@@ -2621,7 +2627,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	sprintHeight = 16;
 
 	hasAirDash = true;
-	hasGravReverse = true;
 
 	//CollisionBox b;
 	b.isCircle = false;
@@ -3420,7 +3425,6 @@ void Actor::Respawn()
 	
 	hasDoubleJump = true;
 	hasAirDash = true;
-	hasGravReverse = true;
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -3739,7 +3743,6 @@ void Actor::ProcessReceivedHit()
 					{
 						framesNotGrinding = 0;
 						hasAirDash = true;
-						hasGravReverse = true;
 						hasDoubleJump = true;
 						lastWire = 0;
 						ground = grindEdge;
@@ -3801,7 +3804,7 @@ void Actor::ProcessReceivedHit()
 					{
 						//abs( e0n.x ) < wallThresh )
 
-						if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh || !hasGravReverse) || grindEdge->IsInvisibleWall())
+						if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 						{
 							framesNotGrinding = 0;
 							if (reversed)
@@ -3858,7 +3861,6 @@ void Actor::ProcessReceivedHit()
 							}
 
 							hasAirDash = true;
-							hasGravReverse = true;
 							hasDoubleJump = true;
 							lastWire = 0;
 
@@ -3868,7 +3870,6 @@ void Actor::ProcessReceivedHit()
 							edgeQuantity = grindQuantity;
 							grindEdge = NULL;
 							reversed = true;
-							hasGravReverse = false;
 
 							hurtBody.isCircle = false;
 							hurtBody.rw = 7;
@@ -4542,22 +4543,6 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	//hasDoubleJump = true;
-	//b.globalPosition = position;
-	//b.rh = normalHeight;
-
-	if (actorIndex == 0 )//sess->ngs->local_player_handle - 1)
-	{
-		cout << "dash: " << (int)currInput.B << ", dir: " 
-			<< (int)currInput.leftStickPad << "\n";
-		//cout << "update pre" << endl;
-		if (currInput.LRight())
-		{
-			//cout << sess->totalGameFrames << " right" << "\n";
-		}
-	}
-	
-
 	ProcessGravityGrass();
 	CheckForAirTrigger();
 	HandleAirTrigger();
@@ -7416,7 +7401,6 @@ bool Actor::ExitGrind(bool jump)
 
 			framesNotGrinding = 0;
 			hasAirDash = true;
-			hasGravReverse = true;
 			hasDoubleJump = true;
 			lastWire = 0;
 
@@ -7480,7 +7464,7 @@ bool Actor::ExitGrind(bool jump)
 		}
 		else
 		{
-			if (!HasUpgrade( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+			if (!HasUpgrade( UPGRADE_POWER_GRAV ) || (abs(grindNorm.x) >= wallThresh) || jump || grindEdge->IsInvisibleWall())
 			{
 				if (grindSpeed < 0)
 				{
@@ -7533,7 +7517,6 @@ bool Actor::ExitGrind(bool jump)
 				}
 
 				hasAirDash = true;
-				hasGravReverse = true;
 				hasDoubleJump = true;
 				lastWire = 0;
 
@@ -8255,7 +8238,6 @@ void Actor::UpdateGrindPhysics(double movement)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
-						hasGravReverse = true;
 						lastWire = 0;
 					}
 				}
@@ -8323,7 +8305,6 @@ void Actor::UpdateGrindPhysics(double movement)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
-						hasGravReverse = true;
 						lastWire = 0;
 					}
 				}
@@ -9834,7 +9815,6 @@ void Actor::UpdatePhysics()
 
 				//if( gNorm.y <= -steepThresh )
 				{
-					hasGravReverse = true;
 					hasAirDash = true;
 					hasDoubleJump = true;
 					lastWire = 0;
@@ -9906,7 +9886,6 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				hasGravReverse = false;
 				hasAirDash = true;
 				hasDoubleJump = true;
 				reversed = true;
@@ -10357,7 +10336,6 @@ void Actor::PhysicsResponse()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				hasGravReverse = true;
 				hasDoubleJump = true;
 				hasAirDash = true;
 				lastWire = 0;
@@ -10381,7 +10359,6 @@ void Actor::PhysicsResponse()
 			}
 			else if( bn.y < 0 )
 			{
-				hasGravReverse = true;
 				hasDoubleJump = true;
 				hasAirDash = true;
 				lastWire = 0;

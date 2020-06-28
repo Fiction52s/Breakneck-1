@@ -62,7 +62,6 @@ void Actor::GRINDBALL_Change()
 
 				framesNotGrinding = 0;
 				hasAirDash = true;
-				hasGravReverse = true;
 				hasDoubleJump = true;
 				lastWire = 0;
 
@@ -126,7 +125,7 @@ void Actor::GRINDBALL_Change()
 			}
 			else
 			{
-				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || j || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || j || grindEdge->IsInvisibleWall())
 				{
 					if (grindSpeed < 0)
 					{
@@ -179,7 +178,6 @@ void Actor::GRINDBALL_Change()
 					}
 
 					hasAirDash = true;
-					hasGravReverse = true;
 					hasDoubleJump = true;
 					lastWire = 0;
 

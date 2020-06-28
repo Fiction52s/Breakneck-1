@@ -60,7 +60,6 @@ void Actor::GRINDATTACK_Change()
 
 				framesNotGrinding = 0;
 				hasAirDash = true;
-				hasGravReverse = true;
 				hasDoubleJump = true;
 				lastWire = 0;
 				ground = grindEdge;
@@ -118,7 +117,7 @@ void Actor::GRINDATTACK_Change()
 			{
 				//abs( e0n.x ) < wallThresh )
 
-				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())//|| !hasGravReverse ) )
+				if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 				{
 					if (grindSpeed < 0)
 					{
@@ -173,7 +172,6 @@ void Actor::GRINDATTACK_Change()
 					}
 
 					hasAirDash = true;
-					hasGravReverse = true;
 					hasDoubleJump = true;
 					lastWire = 0;
 
@@ -183,7 +181,6 @@ void Actor::GRINDATTACK_Change()
 					edgeQuantity = grindQuantity;
 					grindEdge = NULL;
 					reversed = true;
-					//hasGravReverse = false;
 
 
 					if (currInput.LRight())
