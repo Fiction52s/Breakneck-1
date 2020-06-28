@@ -6048,7 +6048,7 @@ bool Session::SaveState(unsigned char **buffer,
 		return false;
 	}
 	memcpy(*buffer, currSaveState, *len);
-	*checksum = currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
+	*checksum = currSaveState->states[0].position.y;//currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
 	return true;
 }
 
