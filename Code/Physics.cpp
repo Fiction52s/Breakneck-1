@@ -2186,6 +2186,12 @@ sf::Rect<double> CollisionBox::GetAABB()
 	}
 }
 
+CollisionBody::CollisionBody()
+	:hitboxInfo( NULL ), numFrames( 0 ), boxType( CollisionBox::Hit )
+{
+
+}
+
 CollisionBody::CollisionBody(CollisionBox::BoxType bType)
 	:hitboxInfo(NULL), numFrames(0)
 {

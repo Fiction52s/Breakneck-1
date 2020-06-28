@@ -77,8 +77,11 @@ struct GGPONonGameState
 	ChecksumInfo         periodic;
 };
 
+
 struct PState
 {
+	const static int MAX_BUBBLES = 5;
+
 	double xOffset;
 	V2d position;
 	V2d velocity;
@@ -115,6 +118,25 @@ struct PState
 	sf::Vector2<double> oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
+
+	double grindActionCurrent;
+	int framesGrinding;
+	int framesNotGrinding;
+	int framesSinceGrindAttempt;
+	int maxFramesSinceGrindAttempt;
+	Edge *grindEdge;
+	double grindQuantity;
+	double grindSpeed;
+
+	int slowMultiple;
+	int slowCounter;
+	bool inBubble;
+	bool oldInBubble;
+
+	sf::Vector2<double> bubblePos[MAX_BUBBLES];
+	int bubbleFramesToLive[MAX_BUBBLES];
+	int bubbleRadiusSize[MAX_BUBBLES];
+	int currBubble;
 };
 
 struct SaveGameState

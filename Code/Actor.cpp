@@ -110,6 +110,29 @@ void Actor::PopulateState(PState *ps)
 
 	ps->reversed = reversed;
 	ps->storedReverseSpeed = storedReverseSpeed;
+
+	ps->grindActionCurrent = grindActionCurrent;
+	ps->framesGrinding = framesGrinding;
+	ps->framesNotGrinding = framesNotGrinding;
+	ps->framesSinceGrindAttempt = framesSinceGrindAttempt;
+	ps->maxFramesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+	ps->grindEdge = grindEdge;
+	ps->grindQuantity = grindQuantity;
+	ps->grindSpeed = grindSpeed;
+
+	ps->slowMultiple = slowMultiple;
+	ps->slowCounter = slowCounter;
+	ps->inBubble = inBubble;
+	ps->oldInBubble = oldInBubble;
+
+	ps->currBubble = currBubble;
+	
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		ps->bubblePos[i] = bubblePos[i];
+		ps->bubbleFramesToLive[i] = bubbleFramesToLive[i];
+		ps->bubbleRadiusSize[i] = bubbleRadiusSize[i];
+	}
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -153,6 +176,29 @@ void Actor::PopulateFromState(PState *ps)
 
 	reversed = ps->reversed;
 	storedReverseSpeed = ps->storedReverseSpeed;
+
+	grindActionCurrent = ps->grindActionCurrent;
+	framesGrinding = ps->framesGrinding;
+	framesNotGrinding = ps->framesNotGrinding;
+	framesSinceGrindAttempt = ps->framesSinceGrindAttempt;
+	maxFramesSinceGrindAttempt = ps->maxFramesSinceGrindAttempt;
+	grindEdge = ps->grindEdge;
+	grindQuantity = ps->grindQuantity;
+	grindSpeed = ps->grindSpeed;
+
+	slowMultiple = ps->slowMultiple;
+	slowCounter = ps->slowCounter;
+	inBubble = ps->inBubble;
+	oldInBubble = ps->oldInBubble;
+
+	currBubble = ps->currBubble;
+
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		bubblePos[i] = ps->bubblePos[i];
+		bubbleFramesToLive[i] = ps->bubbleFramesToLive[i];
+		bubbleRadiusSize[i] = ps->bubbleRadiusSize[i];
+	}
 }
 
 
@@ -1777,10 +1823,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
 
-	fBubblePos = NULL;
-	fBubbleRadiusSize = NULL;
-	fBubbleFrame = NULL;
-
 	standNDashBoost = false;
 	kinMode = K_NORMAL;
 	autoRunStopEdge = NULL;
@@ -2810,20 +2852,6 @@ Actor::~Actor()
 		delete rightWire;
 	if (leftWire != NULL)
 		delete leftWire;
-
-	delete[] bubblePos;
-	
-	delete[] bubbleFramesToLive;
-	delete[] bubbleRadiusSize;
-	
-
-	for (int i = 0; i < maxBubbles; ++i)
-	{
-		delete bubbleHitboxes[i];
-	}
-	delete[] bubbleHitboxes;
-
-	//eventually delete everything here lol
 }
 
 void Actor::SetGameMode()
@@ -2851,33 +2879,35 @@ void Actor::SetGameMode()
 	}
 }
 
+void Actor::SetFBubbleFrame(int i, float val)
+{
+	sess->fBubbleFrame[MAX_BUBBLES * actorIndex + i] = val;
+}
+void Actor::SetFBubblePos(int i, Vector2f &pos)
+{
+	sess->fBubblePos[MAX_BUBBLES * actorIndex + i] = pos;
+}
+void Actor::SetFBubbleRadiusSize(int i, float rad)
+{
+	sess->fBubbleRadiusSize[MAX_BUBBLES * actorIndex + i] = rad;
+}
+
 void Actor::SetupTimeBubbles()
 {
 	maxBubbles = MAX_BUBBLES;
-
-	bubbleHitboxes = new CollisionBody*[MAX_BUBBLES];
-
 	CollisionBox genericBox;
 	genericBox.isCircle = true;
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
-		bubbleHitboxes[i] = new CollisionBody(CollisionBox::Hit);
-		bubbleHitboxes[i]->BasicSetup();
-		bubbleHitboxes[i]->AddCollisionBox(0, genericBox);
+		bubbleHitboxes[i].boxType = CollisionBox::Hit;
+		bubbleHitboxes[i].BasicSetup();
+		bubbleHitboxes[i].AddCollisionBox(0, genericBox);
 	}
-
-	bubblePos = new V2d[MAX_BUBBLES];
-	bubbleFramesToLive = new int[MAX_BUBBLES];
-	bubbleRadiusSize = new int[MAX_BUBBLES];
 
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
 		bubbleFramesToLive[i] = 0;
-
-		if (fBubblePos != NULL)
-		{
-			fBubbleFrame[i] = 0;
-		}
+		SetFBubbleFrame(i, 0);
 	}
 }
 
@@ -3432,12 +3462,9 @@ void Actor::Respawn()
 		
 	}
 
-	if (fBubblePos != NULL)
+	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
-		for (int i = 0; i < 5; ++i)
-		{
-			fBubbleFrame[i] = 0;
-		}
+		SetFBubbleFrame(i, 0);
 	}
 	
 
@@ -4267,10 +4294,7 @@ void Actor::UpdateBubbles()
 		if (bubbleFramesToLive[i] > 0)
 		{
 			bubbleFramesToLive[i]--;
-			if (fBubblePos != NULL)
-			{
-				fBubbleFrame[i] = bubbleFramesToLive[i];
-			}
+			SetFBubbleFrame(i, bubbleFramesToLive[i]);
 		}
 	}
 
@@ -4332,24 +4356,11 @@ void Actor::UpdateBubbles()
 
 				bubbleRadiusSize[currBubble] = GetBubbleRadius();
 
-				if (fBubblePos != NULL)
-				{
-					fBubbleFrame[currBubble] = bubbleLifeSpan;
-					fBubbleRadiusSize[currBubble] = bubbleRadiusSize[currBubble];
-				}
+				SetFBubbleFrame(currBubble, bubbleLifeSpan);
+				SetFBubbleRadiusSize(currBubble, bubbleRadiusSize[currBubble]);
 
 				bubblePos[currBubble] = position;
-
-				CollisionBox &bHitbox = bubbleHitboxes[currBubble]->GetCollisionBoxes(0).front();
-				bHitbox.globalPosition = position;
-				bHitbox.rw = bubbleRadiusSize[currBubble];
-				bHitbox.rh = bHitbox.rw;
-
-				if (fBubblePos != NULL)
-				{
-					fBubblePos[currBubble].x = position.x;
-					fBubblePos[currBubble].y = position.y;
-				}
+				SetFBubblePos(currBubble, Vector2f(position));
 
 				++currBubble;
 				if (currBubble == maxBubbles)
@@ -4387,6 +4398,17 @@ void Actor::UpdateBubbles()
 		//changed when doing editor stuff. before it would always set to one
 		if (slowCounter > baseSlowMultiple)
 			slowCounter = 1;
+	}
+
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		if (bubbleFramesToLive[i] > 0)
+		{
+			CollisionBox &bHitbox = bubbleHitboxes[i].GetCollisionBoxes(0).front();
+			bHitbox.globalPosition = bubblePos[i];
+			bHitbox.rw = bubbleRadiusSize[i];
+			bHitbox.rh = bHitbox.rw;
+		}
 	}
 
 	if (isBeingSlowed && !isInOwnBubble)
@@ -13600,7 +13622,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 {
 	if (bubbleFramesToLive[index] > 0)
 	{
-		return bubbleHitboxes[index];
+		return &bubbleHitboxes[index];
 	}
 	return NULL;
 }

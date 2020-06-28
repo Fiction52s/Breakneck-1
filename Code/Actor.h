@@ -307,6 +307,8 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
+	const static int MAX_BUBBLES = 5;
+
 	//definitely do change per frame
 	double offsetX;
 	int framesSinceClimbBoost;
@@ -340,6 +342,33 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
+
+	double grindActionCurrent;
+	int framesGrinding;
+	int framesNotGrinding;
+	int framesSinceGrindAttempt;
+	int maxFramesSinceGrindAttempt;
+	Edge *grindEdge;
+	double grindQuantity;
+	double grindSpeed;
+
+	int slowMultiple;
+	int slowCounter;
+	bool inBubble;
+	bool oldInBubble;
+
+	sf::Vector2<double> bubblePos[MAX_BUBBLES];
+	int bubbleFramesToLive[MAX_BUBBLES];
+	int bubbleRadiusSize[MAX_BUBBLES];
+	CollisionBody bubbleHitboxes[MAX_BUBBLES];
+	int currBubble;
+
+
+	void SetFBubbleFrame(int i, float val);
+	void SetFBubblePos(int i, sf::Vector2f &pos);
+	void SetFBubbleRadiusSize(int i, float rad);
+
+
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -684,23 +713,20 @@ struct Actor : QuadTreeCollider,
 	double rcQuantity;
 	std::string rayCastMode;
 	bool leftGround;
-	double grindActionCurrent;
+	
 	ControllerState prevInput;
 	ControllerState currInput;
 	
 	
 	
-	int framesGrinding;
-	int framesNotGrinding;
-	int framesSinceGrindAttempt;
-	int maxFramesSinceGrindAttempt;
+	
 	bool canRailGrind;
 	bool canRailSlide;
 	double minRailGrindSpeed[3];
 	sf::RectangleShape railTest;
 	
 	TerrainRail * prevRail;
-	Edge *grindEdge;
+
 	bool railGrind;
 	int regrindOffCount;
 	int regrindOffMax;
@@ -708,16 +734,12 @@ struct Actor : QuadTreeCollider,
 	double grindLungeSpeed0;
 	double grindLungeSpeed1;
 	double grindLungeSpeed2;
-	double grindQuantity;
-	double grindSpeed;
+
 	double slopeTooSteepLaunchLimitX;
 	
 	
 	
 	bool bounceGrounded;
-	
-	int slowMultiple;
-	int slowCounter;
 	int baseSlowMultiple;
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
@@ -737,8 +759,6 @@ struct Actor : QuadTreeCollider,
 	int setHitstunFrames;
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
-	bool inBubble;
-	bool oldInBubble;
 	sf::Vector2<double> storedBounceVel;
 	sf::Vector2<double> bounceNorm;
 	sf::Vector2<double> oldBounceNorm;
@@ -765,14 +785,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite bubbleSprite;
 	
 	
-	sf::Vector2<double> *bubblePos;//[maxBubbles];
-	int *bubbleFramesToLive;//[maxBubbles];
-	int *bubbleRadiusSize;//[maxBubbles];
-	float *fBubbleRadiusSize;
-	sf::Vector2f *fBubblePos;
-	CollisionBody **bubbleHitboxes;
-	float *fBubbleFrame;
-	int currBubble;
+
 	int lastWire;
 	bool dead;
 	
@@ -802,7 +815,7 @@ struct Actor : QuadTreeCollider,
 	
 
 	//definitely do not change per frame
-	const static int MAX_BUBBLES = 5;
+	
 	int drainCounterMax;
 	int drainAmount;
 	int climbBoostLimit;

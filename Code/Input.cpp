@@ -80,7 +80,8 @@ int ControllerState::GetCompressedState()
 	s |= B << bit++;
 	
 	//s |= X << bit++;
-	//s |= Y << bit++;
+	s |= Y << bit++;
+	s |= leftShoulder << bit++;
 
 	return s;
 }
@@ -97,7 +98,8 @@ void ControllerState::SetFromCompressedState(int s)
 	A = s & (1 << bit++);
 	B = s & (1 << bit++);
 	//X = s & (1 << bit++);
-	//Y = s & (1 << bit++);
+	Y = s & (1 << bit++);
+	leftShoulder = s & (1 << bit++);
 
 	if (lright)
 	{

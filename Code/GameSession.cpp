@@ -616,17 +616,6 @@ void GameSession::Cleanup()
 	}
 	allPolysVec.clear();
 
-	if ( parentGame == NULL && fBubblePos != NULL)
-	{
-		delete[] fBubblePos;
-		delete[] fBubbleRadiusSize;
-		delete[] fBubbleFrame;
-
-		fBubblePos = NULL;
-		fBubbleRadiusSize = NULL;
-		fBubbleFrame = NULL;
-	}
-
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
 		delete (*it);
@@ -2753,9 +2742,6 @@ void GameSession::Init()
 	bonusGame = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;
-	fBubblePos = NULL;
-	fBubbleRadiusSize = NULL;
-	fBubbleFrame = NULL;
 	
 	postLevelScene = NULL;
 	shardsCapturedField = NULL;

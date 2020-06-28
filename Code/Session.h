@@ -92,6 +92,9 @@ struct InputVisualizer;
 struct Session : TilesetManager, QuadTreeCollider
 {
 	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
+	const static int MAX_PLAYERS = 4;
+	const static int MAX_BUBBLES = 5;
+	const static int MAX_TOTAL_BUBBLES = MAX_PLAYERS * MAX_BUBBLES;
 
 	struct FlowHandler : RayCastHandler
 	{
@@ -185,9 +188,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::list<ZonePropertiesObj*> zoneObjects;
 	BitField playerOptionsField;
 	//timeslow stuff
-	float *fBubbleRadiusSize;
-	sf::Vector2f *fBubblePos;
-	float *fBubbleFrame;
+	float fBubbleRadiusSize[MAX_TOTAL_BUBBLES];
+	sf::Vector2f fBubblePos[MAX_TOTAL_BUBBLES];
+	float fBubbleFrame[MAX_TOTAL_BUBBLES];
 	SessionType sessType;
 	std::map<std::string, ActorGroup*> groups;
 	std::map<std::string, ActorType*> types;
@@ -219,7 +222,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	MainMenu *mainMenu;
 	std::vector<GCC::GCController> gcControllers;
 	std::vector<Actor*> players;
-	const static int MAX_PLAYERS = 4;
+	
 	HitboxManager *hitboxManager;
 	Background *background;
 	QuadTree * terrainTree;

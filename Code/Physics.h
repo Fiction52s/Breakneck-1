@@ -163,6 +163,7 @@ struct CollisionBox
 
 struct CollisionBody
 {
+	CollisionBody();
 	CollisionBody(CollisionBox::BoxType bType );
 	CollisionBody(int p_numFrames, std::map<int, 
 		std::list<CollisionBox>> & hList,

@@ -104,38 +104,38 @@ void Session::SetupEnemyTypes()
 
 void Session::SetupTimeBubbles()
 {
-	if (fBubbleFrame != NULL)
-		return;
+	//if (fBubbleFrame != NULL)
+	//	return;
 
-	if (parentGame != NULL)
-	{
-		fBubbleFrame = parentGame->fBubbleFrame;
-		fBubblePos = parentGame->fBubblePos;
-		fBubbleRadiusSize = parentGame->fBubbleRadiusSize;
-		return;
-	}
+	//if (parentGame != NULL)
+	//{
+	//	fBubbleFrame = parentGame->fBubbleFrame;
+	//	fBubblePos = parentGame->fBubblePos;
+	//	fBubbleRadiusSize = parentGame->fBubbleRadiusSize;
+	//	return;
+	//}
 
-	int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
-	fBubbleFrame = new float[numBubbleInfo];
-	for (int i = 0; i < numBubbleInfo; ++i)
-	{
-		fBubbleFrame[i] = 0;
-	}
-	fBubblePos = new sf::Vector2f[numBubbleInfo];
-	fBubbleRadiusSize = new float[numBubbleInfo];
+	//int numBubbleInfo = Actor::MAX_BUBBLES * MAX_PLAYERS;
+	//fBubbleFrame = new float[numBubbleInfo];
+	//for (int i = 0; i < MAX_TOTAL_BUBBLES; ++i)
+	//{
+	//	fBubbleFrame[i] = 0;
+	//}
+	//fBubblePos = new sf::Vector2f[numBubbleInfo];
+	//fBubbleRadiusSize = new float[numBubbleInfo];
 
-	//int count = 0;
-	Actor *tempPlayer = NULL;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (tempPlayer = GetPlayer(i))
-		{
-			tempPlayer->fBubbleFrame = (fBubbleFrame + i * Actor::MAX_BUBBLES);
-			tempPlayer->fBubblePos = (fBubblePos + i * Actor::MAX_BUBBLES);
-			tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * Actor::MAX_BUBBLES);
-			//++count;
-		}
-	}
+	////int count = 0;
+	//Actor *tempPlayer = NULL;
+	//for (int i = 0; i < MAX_PLAYERS; ++i)
+	//{
+	//	if (tempPlayer = GetPlayer(i))
+	//	{
+	//		tempPlayer->fBubbleFrame = (fBubbleFrame + i * Actor::MAX_BUBBLES);
+	//		tempPlayer->fBubblePos = (fBubblePos + i * Actor::MAX_BUBBLES);
+	//		tempPlayer->fBubbleRadiusSize = (fBubbleRadiusSize + i * Actor::MAX_BUBBLES);
+	//		//++count;
+	//	}
+	//}
 }
 
 void Session::SetupSoundLists()
