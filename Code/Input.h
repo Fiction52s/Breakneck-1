@@ -35,6 +35,7 @@ struct ControllerState
 	bool LeftTriggerPressed();
 	bool RightTriggerPressed();
 	BYTE triggerThresh;
+	void Clear();
 	//bool leftTriggerPress;
 	//bool rightTriggerPress;
 	bool start;

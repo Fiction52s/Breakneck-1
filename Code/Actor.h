@@ -324,6 +324,11 @@ struct Actor : QuadTreeCollider,
 	double edgeQuantity;
 	int framesInAir;
 	CollisionBox b;
+	bool hasAirDash;
+	int speedLevel; //0,1,2
+	double currentSpeedBar;
+	double storedGroundSpeed;
+	int currBBoostCounter;
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -431,8 +436,6 @@ struct Actor : QuadTreeCollider,
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
-	int speedLevel; //0,1,2
-	double currentSpeedBar;
 	bool scorpOn;
 
 	//unsaved vars
@@ -654,7 +657,7 @@ struct Actor : QuadTreeCollider,
 	double slideGravFactor;
 	Mode kinMode;
 	int maxBBoostCount;
-	int currBBoostCounter;
+	
 	double doubleJumpStrength;
 	double backDoubleJumpStrength;
 	int timeSlowStrength;
@@ -690,7 +693,7 @@ struct Actor : QuadTreeCollider,
 	sf::RectangleShape railTest;
 	
 	TerrainRail * prevRail;
-	bool hasAirDash;
+	
 	bool hasGravReverse;
 	Edge *grindEdge;
 	bool railGrind;
@@ -798,7 +801,7 @@ struct Actor : QuadTreeCollider,
 	int drainCounterMax;
 	int drainAmount;
 	int climbBoostLimit;
-	double storedGroundSpeed;
+	
 
 
 	Actor( GameSession *owner, 

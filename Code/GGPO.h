@@ -92,6 +92,7 @@ struct PState
 	double xOffset;
 	double brh;
 	double byoffset;
+	V2d bpos;
 
 	bool holdDouble;
 	int framesSinceClimbBoost;
@@ -99,6 +100,11 @@ struct PState
 	int wallJumpFrameCounter;
 	bool hasDoubleJump;
 	int framesInAir;
+	bool hasAirDash;
+	double storedGroundSpeed;
+	int currBBoostCounter;
+	//int speedLevel; //0,1,2
+	//double currentSpeedBar;
 };
 
 struct SaveGameState

@@ -90,8 +90,14 @@ void Actor::PopulateState(PState *ps)
 	ps->hasDoubleJump = hasDoubleJump;
 	ps->framesInAir = framesInAir;
 
-	//ps->brh = b.rh;
-	//ps->byoffset = b.offset.y;
+	ps->brh = b.rh;
+	ps->byoffset = b.offset.y;
+	ps->bpos = b.globalPosition;
+	ps->hasAirDash = hasAirDash;
+	ps->storedGroundSpeed = storedGroundSpeed;
+	ps->currBBoostCounter = currBBoostCounter;
+	//ps->currentSpeedBar = currentSpeedBar;
+	//ps->speedLevel = speedLevel;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -114,9 +120,16 @@ void Actor::PopulateFromState(PState *ps)
 	hasDoubleJump = ps->hasDoubleJump;
 	framesInAir = ps->framesInAir;
 
-	//b.rh = ps->brh;
-	//b.offset.y = ps->byoffset;
-	//b.globalPosition = position + b.offset;
+	b.rh = ps->brh;
+	b.offset.y = ps->byoffset;
+	b.globalPosition = ps->bpos;
+	hasAirDash = ps->hasAirDash;
+	storedGroundSpeed = ps->storedGroundSpeed;
+	currBBoostCounter = ps->currBBoostCounter;
+	//currentSpeedBar = ps->currentSpeedBar;
+	//speedLevel = ps->speedLevel;
+	
+	//b.globalPosition = position + V2d(-offsetX, 0);// , b.offset.y);
 }
 
 
@@ -11391,7 +11404,6 @@ void Actor::UpdateSpeedBar()
 		{
 			speedLevel = 0;
 		}
-
 	}
 }
 
@@ -15394,8 +15406,6 @@ int Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	//return false;
-	//cout << "prevInput.A: " << (int)(prevInput.A) << endl;
 	return ( (hasDoubleJump || extraDoubleJump ) && 
 		((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
 }

@@ -6001,8 +6001,8 @@ void Session::GGPORunFrame()
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
 	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
-	int input = GetCurrInput(ngs->local_player_handle-1).GetCompressedState();
-	input = rand();
+	int input = GetCurrInput(0).GetCompressedState();
+	//input = rand();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
 	//cout << "local player handle: " << ngs->local_player_handle << "\n";
 
@@ -6048,7 +6048,7 @@ bool Session::SaveState(unsigned char **buffer,
 		return false;
 	}
 	memcpy(*buffer, currSaveState, *len);
-	*checksum = currSaveState->states[0].position.y;//currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
+	*checksum = fletcher32_checksum((short *)*buffer, *len / 2);//currSaveState->states[0].position.y;//currSaveState->states[0].position.y;//fletcher32_checksum((short *)*buffer, *len / 2);
 	return true;
 }
 

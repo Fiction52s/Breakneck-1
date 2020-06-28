@@ -15,14 +15,33 @@ const double GameController::GC_LEFT_STICK_DEADZONE = .1;
 const double GameController::GC_RIGHT_STICK_DEADZONE = .1;
 
 ControllerState::ControllerState()
-	:leftStickMagnitude( 0 ), leftStickRadians( 0 ), rightStickMagnitude( 0 ), 
-	rightStickRadians( 0 ), leftTrigger( 0 ), rightTrigger( 0 ), start( false ), 
-	back( false ), leftShoulder( false ), rightShoulder( false ), A( false ), B( false ), 
-	X( false ), Y( false ), pad( 0 ), leftStickPad( 0 ), rightStickPad( 0 ), 
-	leftPress( false ), rightPress( false ), triggerThresh( 200 )
+	:triggerThresh( 200 )
 {
-
+	Clear();
 	
+}
+
+void ControllerState::Clear()
+{
+	leftStickMagnitude = 0;
+	leftStickRadians = 0;
+	rightStickMagnitude = 0;
+	rightStickRadians = 0;
+	leftTrigger = 0;
+	rightTrigger = 0;
+	start = false;
+	back = false;
+	leftShoulder = false;
+	rightShoulder = false;
+	A = false;
+	B = false;
+	X = false;
+	Y = false;
+	pad = 0;
+	leftStickPad = 0;
+	rightStickPad = 0;
+	leftPress = false;
+	rightPress = false;
 }
 
 void ControllerState::Set( const ControllerState &state )
@@ -58,26 +77,27 @@ int ControllerState::GetCompressedState()
 	s |= LLeft() << bit++;
 	s |= LRight() << bit++;
 	s |= A << bit++;
-	/*s |= B << bit++;
-	s |= X << bit++;
-	s |= Y << bit++;*/
+	s |= B << bit++;
+	
+	//s |= X << bit++;
+	//s |= Y << bit++;
 
 	return s;
 }
 
 void ControllerState::SetFromCompressedState(int s)
 {
-	leftStickPad = 0;
+	Clear();
 	
 	int bit = 0;
 	bool lup = s & (1 << bit++);
 	bool ldown = s & (1 << bit++);
 	bool lleft = s & (1 << bit++);
 	bool lright = s & (1 << bit++);
-	bool sa = s & (1 << bit++);
-	bool sb = s & (1 << bit++);
-	bool sx = s & (1 << bit++);
-	bool sy = s & (1 << bit++);
+	A = s & (1 << bit++);
+	B = s & (1 << bit++);
+	//X = s & (1 << bit++);
+	//Y = s & (1 << bit++);
 
 	if (lright)
 	{
@@ -96,11 +116,6 @@ void ControllerState::SetFromCompressedState(int s)
 	{
 		leftStickPad += 1;
 	}
-
-	A = sa;
-	/*B = sb;
-	X = sx;
-	Y = sy;*/
 }
 
 bool ControllerState::PUp()

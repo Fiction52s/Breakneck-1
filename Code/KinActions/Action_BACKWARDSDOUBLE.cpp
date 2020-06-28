@@ -30,11 +30,6 @@ void Actor::BACKWARDSDOUBLE_Change()
 
 void Actor::BACKWARDSDOUBLE_Update()
 {
-	if (action == DOUBLE)
-	{
-		b.rh = doubleJumpHeight;
-	}
-
 	//	b.offset.y = -5;
 	if (frame == 0)
 	{
