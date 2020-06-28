@@ -329,6 +329,7 @@ struct Actor : QuadTreeCollider,
 	double currentSpeedBar;
 	double storedGroundSpeed;
 	int currBBoostCounter;
+	bool steepJump;
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -575,7 +576,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_gateEnter;
 	int speedParticleCounter;
 	int speedParticleRate;
-	bool steepJump;
+	
 	bool hitEnemyDuringPhyiscs;
 	double offSlopeByWallThresh;
 	VertexBuf *motionGhostBuffer;

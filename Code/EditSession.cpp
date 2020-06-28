@@ -393,8 +393,8 @@ bool EditSession::TestPlayerModeUpdate()
 
 void EditSession::InitGGPO()
 {
-
-	srand(time(0));
+	srand(400);
+	//srand(time(0));
 	WSADATA wd = { 0 };
 	WSAStartup(MAKEWORD(2, 2), &wd);
 
@@ -431,14 +431,26 @@ void EditSession::InitGGPO()
 	is >> frameDelay;
 	is >> ipStr;
 
+	int sync;
+	is >> sync;
+
+
 	//int offset = 1, local_player = 0;
 	int num_players = 2;
 	ngs->num_players = num_players;
 
-	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
-	//	sizeof(int), localPort);
-	result = ggpo_start_synctest(&ggpo, &cb, "bn", num_players,
-		sizeof(int), 1);
+	
+	if (sync)
+	{
+		result = ggpo_start_synctest(&ggpo, &cb, "bn", num_players,
+			sizeof(int), 1);
+	}
+	else
+	{
+		result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
+			sizeof(int), localPort);
+	}
+	
 
 	//ggpo_log(ggpo, "test\n");
 

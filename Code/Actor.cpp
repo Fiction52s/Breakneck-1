@@ -96,8 +96,9 @@ void Actor::PopulateState(PState *ps)
 	ps->hasAirDash = hasAirDash;
 	ps->storedGroundSpeed = storedGroundSpeed;
 	ps->currBBoostCounter = currBBoostCounter;
-	//ps->currentSpeedBar = currentSpeedBar;
-	//ps->speedLevel = speedLevel;
+	ps->steepJump = steepJump;
+	ps->currentSpeedBar = currentSpeedBar;
+	ps->speedLevel = speedLevel;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -126,10 +127,9 @@ void Actor::PopulateFromState(PState *ps)
 	hasAirDash = ps->hasAirDash;
 	storedGroundSpeed = ps->storedGroundSpeed;
 	currBBoostCounter = ps->currBBoostCounter;
-	//currentSpeedBar = ps->currentSpeedBar;
-	//speedLevel = ps->speedLevel;
-	
-	//b.globalPosition = position + V2d(-offsetX, 0);// , b.offset.y);
+	steepJump = ps->steepJump;
+	currentSpeedBar = ps->currentSpeedBar;
+	speedLevel = ps->speedLevel;
 }
 
 
@@ -4530,6 +4530,8 @@ void Actor::UpdatePrePhysics()
 
 	if (actorIndex == 0 )//sess->ngs->local_player_handle - 1)
 	{
+		cout << "dash: " << (int)currInput.B << ", dir: " 
+			<< (int)currInput.leftStickPad << "\n";
 		//cout << "update pre" << endl;
 		if (currInput.LRight())
 		{
