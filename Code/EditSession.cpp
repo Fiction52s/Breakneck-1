@@ -1323,6 +1323,11 @@ RailPtr EditSession::GetRail(int index)
 
 void EditSession::CleanupForReload()
 {
+	if (mode == TEST_PLAYER)
+	{
+		CleanupTestPlayerMode();
+	}
+
 	for (auto it = doneActionStack.begin(); it != doneActionStack.end(); ++it)
 	{
 		delete (*it);
@@ -3240,6 +3245,7 @@ int EditSession::EditRun()
 
 	currentFile = filePath.string();
 
+	mode = EDIT;
 	SetMode(EDIT);
 	stored = mode;
 

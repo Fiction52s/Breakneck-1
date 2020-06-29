@@ -82,6 +82,7 @@ struct PState
 {
 	const static int MAX_BUBBLES = 5;
 
+	//sf::Vector2<double> bubblePos[5];
 	double xOffset;
 	V2d position;
 	V2d velocity;
@@ -134,9 +135,21 @@ struct PState
 	bool oldInBubble;
 
 	sf::Vector2<double> bubblePos[MAX_BUBBLES];
-	int bubbleFramesToLive[MAX_BUBBLES];
 	int bubbleRadiusSize[MAX_BUBBLES];
+	int bubbleFramesToLive[MAX_BUBBLES];
 	int currBubble;
+	bool currAttackHit;
+	bool bounceAttackHit;
+	int flashFrames;
+	int bufferedAttack;
+	int doubleJumpBufferedAttack;
+	int wallJumpBufferedAttack;
+	int pauseBufferedAttack;
+	bool pauseBufferedJump;
+	bool pauseBufferedDash;
+	bool stunBufferedJump;
+	bool stunBufferedDash;
+	int stunBufferedAttack;
 };
 
 struct SaveGameState

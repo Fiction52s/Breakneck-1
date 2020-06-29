@@ -125,7 +125,6 @@ void Actor::PopulateState(PState *ps)
 	ps->inBubble = inBubble;
 	ps->oldInBubble = oldInBubble;
 
-	ps->currBubble = currBubble;
 	
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
@@ -133,6 +132,25 @@ void Actor::PopulateState(PState *ps)
 		ps->bubbleFramesToLive[i] = bubbleFramesToLive[i];
 		ps->bubbleRadiusSize[i] = bubbleRadiusSize[i];
 	}
+
+	ps->currBubble = currBubble;
+
+
+	
+	ps->currAttackHit = currAttackHit;
+	ps->bounceAttackHit = bounceAttackHit;
+	ps->flashFrames = flashFrames;
+	ps->bufferedAttack = bufferedAttack;
+	ps->doubleJumpBufferedAttack = doubleJumpBufferedAttack;
+	ps->wallJumpBufferedAttack = wallJumpBufferedAttack;
+	ps->pauseBufferedAttack = pauseBufferedAttack;
+	ps->pauseBufferedJump = pauseBufferedJump;
+	ps->pauseBufferedDash = pauseBufferedDash;
+	ps->stunBufferedJump = stunBufferedJump;
+	ps->stunBufferedDash = stunBufferedDash;
+	ps->stunBufferedAttack = stunBufferedAttack;
+
+	
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -191,7 +209,7 @@ void Actor::PopulateFromState(PState *ps)
 	inBubble = ps->inBubble;
 	oldInBubble = ps->oldInBubble;
 
-	currBubble = ps->currBubble;
+	
 
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
@@ -199,6 +217,21 @@ void Actor::PopulateFromState(PState *ps)
 		bubbleFramesToLive[i] = ps->bubbleFramesToLive[i];
 		bubbleRadiusSize[i] = ps->bubbleRadiusSize[i];
 	}
+
+	currBubble = ps->currBubble;
+
+	currAttackHit = ps->currAttackHit;
+	bounceAttackHit = ps->bounceAttackHit;
+	flashFrames = ps->flashFrames;
+	bufferedAttack = ps->bufferedAttack;
+	doubleJumpBufferedAttack = ps->doubleJumpBufferedAttack;
+	wallJumpBufferedAttack = ps->wallJumpBufferedAttack;
+	pauseBufferedAttack = ps->pauseBufferedAttack;
+	pauseBufferedJump = ps->pauseBufferedJump;
+	pauseBufferedDash = ps->pauseBufferedDash;
+	stunBufferedJump = ps->stunBufferedJump;
+	stunBufferedDash = ps->stunBufferedDash;
+	stunBufferedAttack = ps->stunBufferedAttack;
 }
 
 
@@ -3483,6 +3516,23 @@ void Actor::Respawn()
 
 	if( kinRing != NULL && kinRing->powerRing != NULL )
 		kinRing->powerRing->ResetFull(); //only means anything for single player
+
+	currAttackHit = false;
+	bounceAttackHit = false;
+	flashFrames = 0;
+	bufferedAttack = JUMP;
+	doubleJumpBufferedAttack = DOUBLE;
+	wallJumpBufferedAttack = WALLJUMP;
+	pauseBufferedAttack = Action::Count;
+	pauseBufferedJump = false;
+	pauseBufferedDash = false;
+	stunBufferedJump = false;
+	stunBufferedDash = false;
+	stunBufferedAttack = Action::Count;
+
+
+	//some v
+	//doubleJumpBufferedAttack
 }
 
 double Actor::GetBounceFlameAccel()
@@ -5239,12 +5289,7 @@ void Actor::WireMovement()
 
 			V2d future = wPos + velocity;
 
-			//if (rightWire->anchor.enemy != NULL)
-			//{
-			//	future += rightWire->anchorVel;
-				//velocity += rightWire->anchorVel;
-			//}
-
+			
 			V2d seg = wirePoint - wPos;
 			double segLength = length(seg);
 			V2d diff = wirePoint - future;

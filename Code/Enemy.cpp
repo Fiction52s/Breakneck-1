@@ -987,7 +987,7 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 	Actor *player = sess->GetPlayer(0);
 	if( player->HasUpgrade(Actor::UPGRADE_POWER_RWIRE))
 	{
-		Wire::WireCharge *charge = player->rightWire->activeChargeList;
+		WireCharge *charge = player->rightWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )
@@ -1009,7 +1009,7 @@ bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 	Actor *player = sess->GetPlayer(0);
 	if(player->HasUpgrade(Actor::UPGRADE_POWER_LWIRE))
 	{
-		Wire::WireCharge *charge = player->leftWire->activeChargeList;
+		WireCharge *charge = player->leftWire->activeChargeList;
 		while( charge != NULL )
 		{
 			if( charge->hitbox.Intersects( p_hurtBox ) )

@@ -363,6 +363,19 @@ struct Actor : QuadTreeCollider,
 	CollisionBody bubbleHitboxes[MAX_BUBBLES];
 	int currBubble;
 
+	bool currAttackHit;
+	bool bounceAttackHit;
+	int flashFrames;
+	int bufferedAttack;
+	int doubleJumpBufferedAttack;
+	int wallJumpBufferedAttack;
+	int pauseBufferedAttack;
+	bool pauseBufferedJump;
+	bool pauseBufferedDash;
+	bool stunBufferedJump;
+	bool stunBufferedDash;
+	int stunBufferedAttack;
+
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
@@ -791,22 +804,11 @@ struct Actor : QuadTreeCollider,
 	
 	
 	
-	bool currAttackHit;
-	bool bounceAttackHit;
 	
 	
 	sf::Shader swordShaders[3];
 	sf::Color flashColor;
-	int flashFrames;
-	int bufferedAttack;
-	int doubleJumpBufferedAttack;
-	int wallJumpBufferedAttack;
-	int pauseBufferedAttack;
-	bool pauseBufferedJump;
-	bool pauseBufferedDash;
-	bool stunBufferedJump;
-	bool stunBufferedDash;
-	int stunBufferedAttack;
+	
 	
 	int steepClimbBoostStart;
 	sf::Vector2<double> dWireAirDash;

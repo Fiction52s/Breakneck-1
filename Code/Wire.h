@@ -7,6 +7,59 @@
 #include "Tileset.h"
 #include <SFML/System/Clock.hpp>
 #include "EnemyTracker.h"
+#include "VectorMath.h"
+
+struct WirePoint
+{
+	V2d pos;
+	V2d edgeEnd;
+	V2d test;
+	double angleDiff;
+	double quantity;
+	double sortingAngleDist;
+	Edge *e;
+	Enemy *enemy;
+	int enemyPosIndex;
+	bool start;
+	bool clockwise;
+
+	WirePoint()
+	{
+		e = NULL;
+		enemy = NULL;
+	}
+};
+
+
+struct Wire;
+struct WireCharge
+{
+	enum Action
+	{
+		INACTIVE,
+		RETRACTING,
+		//EXPLODING
+	};
+
+	WireCharge *next;
+	WireCharge *prev;
+	Action action;
+	Wire *wire;
+	V2d position;
+	int edgeIndex;
+	double edgeQuantity;
+	CollisionBox hitbox;
+	int vaIndex;
+
+	WireCharge(Wire *w, int vIndex);
+	void Reset();
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void UpdatePostPhysics();
+	void UpdateSprite();
+	void ClearSprite();
+	void HitEnemy();
+};
 
 struct Actor;
 struct Wire : RayCastHandler, QuadTreeCollider,
@@ -23,13 +76,117 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 		HITENEMY,
 	};
 
-	sf::Clock wireTestClock;
-	//sf::Vector2<double> 
+	const static int MAX_POINTS = 64;
+	const static int MAX_CHARGES = 16;
+
+	bool foundPoint;
+	WirePoint anchor;
+	WirePoint points[MAX_POINTS];
+	WireState state;
+
+
+	V2d hitEnemyDelta;
+	V2d closestPoint;
+	V2d realAnchor;
+	V2d oldPos;
+	V2d storedPlayerPos;
+	V2d retractPlayerPos;
+	V2d currOffset;
+	V2d fireDir;
+	V2d anchorVel;
+	V2d quadOldPosA;
+	V2d quadOldWirePosB;
+	V2d quadWirePosC;
+	V2d quadPlayerPosD;
+
+	double closestDiff;
+	double retractSpeed;
+	double fuseQuantity;
+	bool canRetractGround;
+	double maxTotalLength;
+	double maxFireLength;
+	double quadHalfWidth;
+	double fireRate;
+	double minSideOther;
+	double minSideAlong;
+	double totalLength;
+	double segmentLength;
+	double minSegmentLength;
+	double pullStrength;
+	double pullAccel;
+	double maxPullStrength;
+	double startPullStrength;
+	double dragStrength;
+	double dragAccel;
+	double maxDragStrength;
+	double startDragStrength;
+	double grassCheckRadius;
+	double rcCancelDist;
+	double rcQuant;
+
+	int hitEnemyFrame;
+	int hitEnemyFramesTotal;
+	int extraBuffer; //when swinging around edges sometimes the wire
+					 //stretches some. This is attemping to hole up that problem. if it happens
+					 //too much then I can go into it and solve the real problems.
+	int numAnimFrames;
+	int firingTakingUp;
+	int addedPoints;
+	int numVisibleIndexes;
+	int fusePointIndex;
+	int newWirePoints;
+	int numTotalCharges;
+	int frame;
+	int animFactor;
+	int numPoints;
+	int aimingPrimaryAngleRange;
+	int numQuadVertices;
+	int numMinimapQuads;
+	int framesFiring;
+	int triggerThresh;
+	int hitStallFrames;
+	int hitStallCounter;
+	int antiWireGrassCount;
+	
+	CollisionBox movingHitbox;
+	sf::Vector2i offset;
+	
+	bool right;
+	bool clockwise;
+	bool triggerDown;
+	bool prevTriggerDown;
+
+	WireCharge *activeChargeList;
+	WireCharge *inactiveChargeList;
+
+	sf::Sprite wireTip;
+	sf::Sprite fuseSprite;
+	
+	Tileset *ts_wireTip;
+	Tileset *ts_wire;
+	Tileset *ts_miniHit;
+	Tileset *ts_wireCharge;
+	
+	sf::VertexArray chargeVA;
+
+	CollisionBox testHitbox;
+	HitboxInfo *tipHitboxInfo;
+	sf::Vertex *quads;
+	sf::Vertex *minimapQuads;
+	
+	Edge *minSideEdge;
+	Edge *rcEdge;
+	Actor *player;
+
+	sf::Rect<double> grassQueryBox;
+	std::string queryMode;
+	std::list<sf::Drawable*> progressDraw;
+
 	Wire( Actor *player, bool right );
 	~Wire();
-	void UpdateAnchors( sf::Vector2<double> vel );
-	void UpdateAnchors2( sf::Vector2<double> vel );
-	void SetFireDirection( sf::Vector2<double> dir );
+	void UpdateAnchors( V2d vel );
+	void UpdateAnchors2( V2d vel );
+	void SetFireDirection( V2d dir );
 	void UpdateEnemyAnchor();
 	bool TryFire();
 	void Check();
@@ -46,112 +203,13 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateQuads();
 	void Reset();
 	bool IsValidTrackEnemy(Enemy *e);
-
 	sf::Vector2<double> GetOriginPos( bool test );
 	void UpdateFuse();
 	double GetSegmentLength();
 	sf::Vector2<double> GetPlayerPos();
-	sf::Vector2<double> currOffset;
-
 	double GetCurrentTotalLength();
-
 	void HitEnemy(V2d &pos);
-	int hitEnemyFrame;
-	int hitEnemyFramesTotal;
-	V2d hitEnemyDelta;
-	
-	int extraBuffer; //when swinging around edges sometimes the wire
-	//stretches some. This is attemping to hole up that problem. if it happens
-	//too much then I can go into it and solve the real problems.
-	int numAnimFrames;
-	bool foundPoint;
-	sf::Vector2<double> closestPoint;
-	Tileset *ts_wire;
-	Tileset *ts_miniHit;
-	int firingTakingUp;
-	//Tileset *ts_redWire;
-	//double closestInfo;
-	double closestDiff;
-	sf::Vector2<double> realAnchor;
-	sf::Vector2<double> oldPos;
-	bool clockwise;
-	sf::Vector2<double> storedPlayerPos;
-
-	CollisionBox movingHitbox;
-
-
-	sf::Vector2i offset;
-	int addedPoints;
-	bool right;
-	WireState state;
-
-	sf::Vector2<double> retractPlayerPos;
-	double retractSpeed;
-	int fusePointIndex;
-	double fuseQuantity;
-	sf::Sprite fuseSprite;
-	bool canRetractGround;
-
-	bool triggerDown;
-	bool prevTriggerDown;
-
-	int numVisibleIndexes;
-
-	struct WirePoint
-	{
-		WirePoint()
-		{
-			e = NULL;
-			enemy = NULL;
-		}
-		Edge *e;
-		double quantity;
-		bool start;
-		sf::Vector2<double> pos;
-		sf::Vector2<double> edgeEnd;
-		sf::Vector2<double> test;
-		bool clockwise;
-		double angleDiff;
-
-		Enemy *enemy;
-		int enemyPosIndex;
-
-		double sortingAngleDist;
-	};
-
-	const static int MAX_CHARGES = 16;
-	struct WireCharge
-	{
-		enum Action
-		{
-			INACTIVE,
-			RETRACTING,
-			//EXPLODING
-		};
-
-		WireCharge( Wire *w, int vIndex );
-		void Reset();
-		void UpdatePrePhysics();
-		void UpdatePhysics();
-		void UpdatePostPhysics();
-		void UpdateSprite();
-		void ClearSprite();
-
-		void HitEnemy();
-		WireCharge *next;
-		WireCharge *prev;
-		Action action;
-		Wire *wire;
-		sf::Vector2<double> position;
-		int edgeIndex;
-		double edgeQuantity;
-		CollisionBox hitbox;
-		int vaIndex;
-	};
-
 	void DrawWireCharges( sf::RenderTarget *target );
-	WireCharge *activeChargeList;
-	WireCharge *inactiveChargeList;
 	void CreateWireCharge();
 	void DeactivateWireCharge( WireCharge *wc );
 	WireCharge * GetWireCharge();
@@ -163,104 +221,17 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateChargesSprites();
 	void UpdateChargesPrePhysics();
 	void UpdateChargesPostPhysics();
-
 	void CheckAntiWireGrass();
-
 	void TestPoint2( Edge *e );
-	int newWirePoints;
 	double GetTestPointAngle( Edge *e );
-
-	Tileset *ts_wireTip;
-	sf::Sprite wireTip;
-
 	int CountActiveCharges();
 	int CountInactiveCharges();
-	Tileset *ts_wireCharge;
-	
-	int numTotalCharges;
-	sf::VertexArray chargeVA;
-
-
-	double maxTotalLength;
-	double maxFireLength;
-
-	int frame;
-	int animFactor;
-	double quadHalfWidth;
-	int numPoints;
-	const static int MAX_POINTS = 64;
-
-	int aimingPrimaryAngleRange;
-
-	CollisionBox *GetTipHitbox();
-	HitboxInfo *tipHitboxInfo;
-
-	//sf::Vector2<double> points[16];
-	WirePoint points[MAX_POINTS];
-
-	void SortNewPoints( );
-	//sf::VertexArray quads;
-	sf::Vertex *quads;
-	int numQuadVertices;
-	//sf::VertexArray minimapQuads;
-	sf::Vertex *minimapQuads;
-	int numMinimapQuads;
-	int framesFiring;
-	double fireRate;
-	Edge *minSideEdge;
-	//Enemy *testEnemy;
-	//std::string queryType;
-	double minSideOther;
-	double minSideAlong;
-	sf::Vector2<double> fireDir;
-	WirePoint anchor;
-	V2d anchorVel;
-
 	void ActivateCharges();
 	void Retract();
-
-	int triggerThresh;
-	int hitStallFrames;
-	int hitStallCounter;
-
-	double totalLength;
-	//double minTotalLength;
-	double segmentLength;
-	double minSegmentLength;
-	double pullStrength;
-	double pullAccel;
-	double maxPullStrength;
-	double startPullStrength;
-
-	double dragStrength;
-	double dragAccel;
-	double maxDragStrength;
-	double startDragStrength;
-
-	double grassCheckRadius;
-
-	Actor *player;
-
-	double rcCancelDist;
-	Edge *rcEdge;
-	double rcQuant;
-
-	int antiWireGrassCount;
-
-	sf::Rect<double> grassQueryBox;
-	std::string queryMode;
-
-	sf::Vector2<double> quadOldPosA;
-	sf::Vector2<double> quadOldWirePosB;
-	sf::Vector2<double> quadWirePosC;
-	sf::Vector2<double> quadPlayerPosD;
-	sf::Vector2<double> minPoint;
+	CollisionBox *GetTipHitbox();
+	void SortNewPoints();
 
 
-	std::list<sf::Drawable*> progressDraw;
-
-
-	CollisionBox testHitbox;
 };
 
 #endif

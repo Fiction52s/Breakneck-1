@@ -5841,6 +5841,9 @@ bool Session::GGPORunGameModeUpdate()
 	//	cout << "different inputs" << endl;
 	//}
 
+	cout << "Start update\n";
+
+
 	collider.ClearDebug();
 
 	if (!OneFrameModeUpdate())
@@ -5874,7 +5877,7 @@ bool Session::GGPORunGameModeUpdate()
 	ActiveStorySequenceUpdate();
 
 	UpdateInputVis();
-
+	cout << "update 0\n";
 	if (!playerAndEnemiesFrozen)
 	{
 		UpdateEnemiesPrePhysics();
@@ -5896,6 +5899,8 @@ bool Session::GGPORunGameModeUpdate()
 		return true;
 	}
 
+	cout << "update 1\n";
+
 	UpdatePlayerWireQuads();
 
 	if (!playerAndEnemiesFrozen)
@@ -5916,6 +5921,7 @@ bool Session::GGPORunGameModeUpdate()
 
 	UpdateHUD();
 
+	cout << "update 2\n";
 	UpdateScoreDisplay();
 
 	UpdateSoundNodeLists();
@@ -5970,8 +5976,11 @@ bool Session::GGPORunGameModeUpdate()
 
 	totalGameFrames++;
 
+	cout << "end update\n";
+
 	ggpo_advance_frame(ggpo);
 
+	cout << "after advance\n";
 	return true;
 }
 
@@ -6082,6 +6091,7 @@ bool Session::SaveState(unsigned char **buffer,
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
 	*len = sizeof(SaveGameState);
+	cout << "*len: " << (*len) << "\n";
 	*buffer = (unsigned char *)malloc(*len);
 	if (!*buffer) {
 		return false;
