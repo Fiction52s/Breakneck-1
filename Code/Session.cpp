@@ -6082,7 +6082,6 @@ bool Session::SaveState(unsigned char **buffer,
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
 	*len = sizeof(SaveGameState);
-	cout << "*len: " << (*len) << "\n";
 	*buffer = (unsigned char *)malloc(*len);
 	if (!*buffer) {
 		return false;
