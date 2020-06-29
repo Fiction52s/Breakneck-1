@@ -5841,8 +5841,6 @@ bool Session::GGPORunGameModeUpdate()
 	//	cout << "different inputs" << endl;
 	//}
 
-	cout << "Start update\n";
-
 
 	collider.ClearDebug();
 
@@ -5877,7 +5875,6 @@ bool Session::GGPORunGameModeUpdate()
 	ActiveStorySequenceUpdate();
 
 	UpdateInputVis();
-	cout << "update 0\n";
 	if (!playerAndEnemiesFrozen)
 	{
 		UpdateEnemiesPrePhysics();
@@ -5899,8 +5896,6 @@ bool Session::GGPORunGameModeUpdate()
 		return true;
 	}
 
-	cout << "update 1\n";
-
 	UpdatePlayerWireQuads();
 
 	if (!playerAndEnemiesFrozen)
@@ -5921,7 +5916,6 @@ bool Session::GGPORunGameModeUpdate()
 
 	UpdateHUD();
 
-	cout << "update 2\n";
 	UpdateScoreDisplay();
 
 	UpdateSoundNodeLists();
@@ -5976,11 +5970,8 @@ bool Session::GGPORunGameModeUpdate()
 
 	totalGameFrames++;
 
-	cout << "end update\n";
-
 	ggpo_advance_frame(ggpo);
 
-	cout << "after advance\n";
 	return true;
 }
 
