@@ -376,12 +376,24 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedDash;
 	int stunBufferedAttack;
 
+	int hitlagFrames;
+	int hitstunFrames;
+	int setHitstunFrames;
+	int invincibleFrames;
+	HitboxInfo *receivedHit;
+
+	CollisionBody *currHitboxes;
+	int currHitboxFrame;
+	int cancelAttack;
+
+	bool dairBoostedDouble;
+	bool aerialHitCancelDouble;
+
+	CollisionBox hurtBody;
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);
-
-
 
 	//values that dont need to be stored
 	//at least in this first pass
@@ -473,9 +485,8 @@ struct Actor : QuadTreeCollider,
 	KinMask *kinMask;
 	sf::Color currentDespColor;
 	KinRing *kinRing;
-	bool dairBoostedDouble;
-	bool aerialHitCancelDouble;
-	int cancelAttack;
+	
+	
 	bool standNDashBoost;
 	int standNDashBoostCurr;
 	bool hasFairAirDashBoost;
@@ -651,9 +662,7 @@ struct Actor : QuadTreeCollider,
 	double airDashSpeed1;
 	double airDashSpeed2;
 	int flyCounter;
-	CollisionBox hurtBody;
-	CollisionBody *currHitboxes;
-	int currHitboxFrame;
+	
 	ComboObject *activeComboObjList;
 	CollisionBody *currHurtboxes;
 	int currHurtboxFrame;
@@ -666,6 +675,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f slideAttackOffset[3];
 	sf::Vector2f climbAttackOffset[3];
 	HitboxInfo *currHitboxInfo;
+	HitboxInfo *currVSHitboxInfo;
 	CollisionBody *fairHitboxes[3];
 	CollisionBody *uairHitboxes[3];
 	CollisionBody *dairHitboxes[3];
@@ -707,7 +717,6 @@ struct Actor : QuadTreeCollider,
 	double slideGravFactor;
 	Mode kinMode;
 	int maxBBoostCount;
-	
 	double doubleJumpStrength;
 	double backDoubleJumpStrength;
 	int timeSlowStrength;
@@ -726,20 +735,13 @@ struct Actor : QuadTreeCollider,
 	double rcQuantity;
 	std::string rayCastMode;
 	bool leftGround;
-	
 	ControllerState prevInput;
 	ControllerState currInput;
-	
-	
-	
-	
 	bool canRailGrind;
 	bool canRailSlide;
 	double minRailGrindSpeed[3];
 	sf::RectangleShape railTest;
-	
 	TerrainRail * prevRail;
-
 	bool railGrind;
 	int regrindOffCount;
 	int regrindOffMax;
@@ -747,11 +749,7 @@ struct Actor : QuadTreeCollider,
 	double grindLungeSpeed0;
 	double grindLungeSpeed1;
 	double grindLungeSpeed2;
-
 	double slopeTooSteepLaunchLimitX;
-	
-	
-	
 	bool bounceGrounded;
 	int baseSlowMultiple;
 	sf::Vector2<double> wallNormal;
@@ -766,12 +764,6 @@ struct Actor : QuadTreeCollider,
 	double jumpGrassExtra;
 	bool extraDoubleJump;
 	int specialTerrainCount[SPECIAL_TERRAIN_Count];
-	
-	int hitlagFrames;
-	int hitstunFrames;
-	int setHitstunFrames;
-	int invincibleFrames;
-	HitboxInfo *receivedHit;
 	sf::Vector2<double> storedBounceVel;
 	sf::Vector2<double> bounceNorm;
 	sf::Vector2<double> oldBounceNorm;
@@ -796,28 +788,13 @@ struct Actor : QuadTreeCollider,
 	int bubbleRadius2;
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
-	
-	
-
 	int lastWire;
 	bool dead;
-	
-	
-	
-	
-	
 	sf::Shader swordShaders[3];
 	sf::Color flashColor;
-	
-	
 	int steepClimbBoostStart;
 	sf::Vector2<double> dWireAirDash;
 	sf::Vector2<double> dWireAirDashOld;
-	
-	
-
-	//definitely do not change per frame
-	
 	int drainCounterMax;
 	int drainAmount;
 	int climbBoostLimit;

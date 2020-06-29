@@ -82,6 +82,7 @@ struct PState
 {
 	const static int MAX_BUBBLES = 5;
 
+	HitboxInfo *receivedHit;
 	//sf::Vector2<double> bubblePos[5];
 	double xOffset;
 	V2d position;
@@ -150,6 +151,25 @@ struct PState
 	bool stunBufferedJump;
 	bool stunBufferedDash;
 	int stunBufferedAttack;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int setHitstunFrames;
+	int invincibleFrames;
+	
+
+	CollisionBody *currHitboxes;
+	int currHitboxFrame;
+	int cancelAttack;
+
+	int currRing;
+	int prevRingValue[3]; //3 fillringsections as part of KinRing
+	int currRingValue[3];
+
+	bool dairBoostedDouble;
+	bool aerialHitCancelDouble;
+
+	CollisionBox hurtBody;
 };
 
 struct SaveGameState

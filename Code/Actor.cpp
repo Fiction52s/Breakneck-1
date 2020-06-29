@@ -135,8 +135,6 @@ void Actor::PopulateState(PState *ps)
 
 	ps->currBubble = currBubble;
 
-
-	
 	ps->currAttackHit = currAttackHit;
 	ps->bounceAttackHit = bounceAttackHit;
 	ps->flashFrames = flashFrames;
@@ -150,7 +148,25 @@ void Actor::PopulateState(PState *ps)
 	ps->stunBufferedDash = stunBufferedDash;
 	ps->stunBufferedAttack = stunBufferedAttack;
 
+	ps->hitlagFrames = hitlagFrames;
+	ps->hitstunFrames = hitstunFrames;
+	ps->setHitstunFrames = setHitstunFrames;
+	ps->invincibleFrames = invincibleFrames;
+	ps->receivedHit = receivedHit;
+
+	ps->currHitboxes = currHitboxes;
+	ps->currHitboxFrame = currHitboxFrame;
+
+	ps->cancelAttack = cancelAttack;
 	
+	kinRing->GetData(&ps->currRing, ps->prevRingValue,
+		ps->currRingValue);
+
+	ps->dairBoostedDouble = dairBoostedDouble;
+	ps->aerialHitCancelDouble = aerialHitCancelDouble;
+
+	ps->hurtBody = hurtBody;
+
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -232,6 +248,24 @@ void Actor::PopulateFromState(PState *ps)
 	stunBufferedJump = ps->stunBufferedJump;
 	stunBufferedDash = ps->stunBufferedDash;
 	stunBufferedAttack = ps->stunBufferedAttack;
+
+	hitlagFrames = ps->hitlagFrames;
+	hitstunFrames = ps->hitstunFrames;
+	setHitstunFrames = ps->setHitstunFrames;
+	invincibleFrames = ps->invincibleFrames;
+	receivedHit = ps->receivedHit;
+
+	currHitboxes = ps->currHitboxes;
+	currHitboxFrame = ps->currHitboxFrame;
+
+	cancelAttack = ps->cancelAttack;
+
+	kinRing->Set(ps->currRing, ps->prevRingValue, ps->currRingValue);
+
+	dairBoostedDouble = ps->dairBoostedDouble;
+	aerialHitCancelDouble = ps->aerialHitCancelDouble;
+
+	hurtBody = ps->hurtBody;
 }
 
 
@@ -2228,6 +2262,18 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currHitboxInfo->hitstunFrames = 30;
 	currHitboxInfo->knockback = 0;
 	currHitboxInfo->freezeDuringStun = true;
+
+
+	currVSHitboxInfo = new HitboxInfo();
+	currVSHitboxInfo->damage = 0;//20;
+	currVSHitboxInfo->drainX = .5;
+	currVSHitboxInfo->drainY = .5;
+	currVSHitboxInfo->hitlagFrames = 0;
+	currVSHitboxInfo->hitstunFrames = 30;
+	currVSHitboxInfo->knockback = 0;
+	currVSHitboxInfo->freezeDuringStun = true;
+	currVSHitboxInfo->invincibleFrames = 16;
+	
 		
 	framesGrinding = 0;
 	maxDespFrames = 60 * 5;
@@ -2854,6 +2900,7 @@ Actor::~Actor()
 	delete motionGhostBufferPurple;
 
 	delete currHitboxInfo;
+	delete currVSHitboxInfo;
 
 	/*if (owner != NULL)*/
 	{
@@ -3750,7 +3797,15 @@ void Actor::ProcessReceivedHit()
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
-		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+		if (invincibleFrames == -1)
+		{
+			invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+		}
+		else
+		{
+			invincibleFrames = receivedHit->invincibleFrames;
+		}
+		
 
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
 		sess->Pause(hitlagFrames);
@@ -10822,7 +10877,8 @@ void Actor::PhysicsResponse()
 		HandleTouchedGate();
 	}
 	
-	if( owner != NULL && owner->raceFight != NULL )
+	//multiplayer
+	//if( owner != NULL )//&& owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;
@@ -10834,15 +10890,37 @@ void Actor::PhysicsResponse()
 		{
 			target = 0;
 		}
-		pTarget = owner->GetPlayer( target );
+		pTarget = sess->GetPlayer( target );
 
-		if( IHitPlayer( target ) )
+
+		if( pTarget != NULL && IHitPlayer( target ) )
 		{
-			pTarget->ApplyHit( currHitboxInfo );
-			//ConfirmHit( ,2, 5, .8, 6 );
+			switch (action)
+			{
+			case FAIR:
+				currVSHitboxInfo->kbDir = normalize(V2d(1, -1));
+				break;
+			case DAIR:
+				currVSHitboxInfo->kbDir = normalize(V2d(0, 1));
+				break;
+			case UAIR:
+				currVSHitboxInfo->kbDir = normalize(V2d(0, -1));
+				break;
+			case STANDN:
+				currVSHitboxInfo->kbDir = normalize(V2d(1, -2));
+				break;
+			case DASHATTACK:
+				currVSHitboxInfo->kbDir = normalize(V2d(1, -1));
+				break;
+			}
 
-			if( owner->raceFight != NULL )
-				owner->raceFight->PlayerHitByPlayer( actorIndex, target );
+			if (!facingRight)
+				currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
+			
+			currVSHitboxInfo->knockback = 15;
+
+			pTarget->ApplyHit( currVSHitboxInfo );
+			//owner->raceFight->PlayerHitByPlayer( actorIndex, target );
 		}
 	}
 }
@@ -11854,36 +11932,34 @@ void Actor::BounceFlameOff()
 
 bool Actor::IsBeingSlowed()
 {
-	if( owner != NULL && owner->raceFight != NULL )
-	{
-		Actor *other;
-		if( actorIndex == 0 )
-		{
-			other = owner->GetPlayer( 1 );
-		}
-		else
-		{
-			other = owner->GetPlayer( 0 );
-		}
+	//multiplayer
 
-		bool found = false;
-		for( int i = 0; i < other->maxBubbles; ++i )
-		{
-			if( other->bubbleFramesToLive[i] > 0 )
-			{
-				if( length( position - other->bubblePos[i] ) <= other->bubbleRadius )
-				{
-					return true;
-				}
-			}
-		}
-		return false;
+	Actor *other;
+	if( actorIndex == 0 )
+	{
+		other = sess->GetPlayer( 1 );
 	}
 	else
 	{
-		//except for gator fight
-		return false;
+		other = sess->GetPlayer( 0 );
 	}
+		
+	if (other == NULL)
+		return false;
+
+
+	bool found = false;
+	for( int i = 0; i < other->maxBubbles; ++i )
+	{
+		if( other->bubbleFramesToLive[i] > 0 )
+		{
+			if( length( position - other->bubblePos[i] ) <= other->bubbleRadius )
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
 
 bool Actor::CanShootWire()
@@ -12043,6 +12119,11 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 	if (wallClimbGravityOn)
 	{
 		normalGravity *= wallClimbGravityFactor;
+	}
+
+	if (action == AIRHITSTUN)
+	{
+		normalGravity = gravity * 0.5 / slowMultiple;
 	}
 
 	normalGravity *= extraGravityModifier;
@@ -15544,7 +15625,7 @@ bool Actor::IsSingleWirePulling()
 
 bool Actor::IHitPlayer( int otherPlayerIndex )
 {
-	Actor *player = owner->GetPlayer( otherPlayerIndex );
+	Actor *player = sess->GetPlayer( otherPlayerIndex );
 	
 	if( !player->IsIntangible() )
 	{
@@ -15565,27 +15646,9 @@ bool Actor::IHitPlayer( int otherPlayerIndex )
 
 			if( hit )
 			{
-				//receivedHit = player->currHitboxInfo;
 				return true;
 			}
 		}
-		//if( player->position.x < position.x )
-		//{
-		//	hitboxInfo->kbDir.x = -abs( hitboxInfo->kbDir.x );
-		//	//cout << "left" << endl;
-		//}
-		//else if( player->position.x > position.x )
-		//{
-		//	//cout << "right" << endl;
-		//	hitboxInfo->kbDir.x = abs( hitboxInfo->kbDir.x );
-		//}
-		//else
-		//{
-		//	//dont change it
-		//}
-		//attackFrame = 0;
-		//player->ApplyHit( hitboxInfo );
-		//return true;
 	}
 	
 	return false;
@@ -15725,58 +15788,17 @@ void Actor::UpdateInHitlag()
 	switch( otherPlayerIndex )
 	{
 	case 0:
-		player = owner->GetPlayer( 0 );
+		player = sess->GetPlayer( 0 );
 		break;
 	case 1:
-		player = owner->GetPlayer( 0 );
+		player = sess->GetPlayer( 1 );
 		break;
 	}
 
 	if( player->currHitboxes != NULL )
 	{
-		bool hit = false;
-
-
-		/*for( list<CollisionBox>::iterator it = player->currHitboxes->begin(); it != player->currHitboxes->end(); ++it )
-		{
-			if( hurtBody.Intersects( (*it) ) )
-			{
-				hit = true;
-				break;
-			}
-		}*/
-		
-		//receivedHit = player->currHitboxInfo;
 		return pair<bool, bool>(true,false);
 	}
-
-	//for( int i = 0; i < player->recordedGhosts; ++i )
-	//{
-	//	if( player->ghostFrame < player->ghosts[i]->totalRecorded )
-	//	{
-	//		if( player->ghosts[i]->currHitboxes != NULL )
-	//		{
-	//			bool hit = false;
-	//			
-	//			for( list<CollisionBox>::iterator it = player->ghosts[i]->currHitboxes->begin(); it != player->ghosts[i]->currHitboxes->end(); ++it )
-	//			{
-	//				if( hurtBody.Intersects( (*it) ) )
-	//				{
-	//					hit = true;
-	//					break;
-	//				}
-	//			}
-	//	
-
-	//			if( hit )
-	//			{
-	//				receivedHit = player->currHitboxInfo;
-	//				return pair<bool, bool>(true,true);
-	//			}
-	//		}
-	//		//player->ghosts[i]->curhi
-	//	}
-	//}
 	return pair<bool, bool>(false,false);
 }
 

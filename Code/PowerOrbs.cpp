@@ -97,6 +97,12 @@ void FillRingSection::UpdateSprite()
 	
 }
 
+void FillRingSection::Set(int p_prevPower, int p_currPower)
+{
+	prevPower = p_prevPower;
+	currPower = p_currPower;
+}
+
 int FillRingSection::Drain(int dmg)
 {
 	prevPower = currPower;
@@ -182,6 +188,26 @@ bool FillRingSection::IsFull()
 bool FillRingSection::IsEmpty()
 {
 	return (currPower == 0);
+}
+
+void FillRing::Set(int p_currRing, int *prevArr, int *currArr)
+{
+	currRing = p_currRing;
+	for (int i = 0; i < numRings; ++i)
+	{
+		rings[i]->Set(prevArr[i], currArr[i]);
+	}
+}
+
+void FillRing::GetData(int *p_currRing, int *prevArr,
+	int *currArr)
+{
+	*p_currRing = currRing;
+	for (int i = 0; i < numRings; ++i)
+	{
+		prevArr[i] = rings[i]->prevPower;
+		currArr[i] = rings[i]->currPower;
+	}
 }
 
 void FillRing::SetPosition(sf::Vector2f &pos)
@@ -386,6 +412,18 @@ KinRing::KinRing( Actor *actor )
 
 	ts_powerOrb = actor->sess->GetSizedTileset("HUD/power_ring_86x86.png");
 }
+
+void KinRing::GetData(int *currRing, int *prevArr,
+	int *currArr)
+{
+	powerRing->GetData(currRing, prevArr, currArr);
+}
+
+void KinRing::Set(int currRing, int *prevArr, int *currArr)
+{
+	powerRing->Set(currRing, prevArr, currArr);
+}
+
 
 sf::Vector2f KinRing::GetCenter()
 {

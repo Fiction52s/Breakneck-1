@@ -6090,7 +6090,7 @@ bool Session::SaveState(unsigned char **buffer,
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
 	int offset = 0;
-	int fletchLen = *len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	int fletchLen = *len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
 	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
 	return true;
 }
