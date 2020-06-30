@@ -10912,27 +10912,44 @@ void Actor::PhysicsResponse()
 
 		if( pTarget != NULL && IHitPlayer( target ) )
 		{
+			V2d kbDir;
 			switch (action)
 			{
 			case FAIR:
-				currVSHitboxInfo->kbDir = normalize(V2d(1, -1));
+				kbDir = normalize(V2d(1, -1));
 				break;
 			case DAIR:
-				currVSHitboxInfo->kbDir = normalize(V2d(0, 1));
+				kbDir = normalize(V2d(0, 1));
 				break;
 			case UAIR:
-				currVSHitboxInfo->kbDir = normalize(V2d(0, -1));
+				kbDir = normalize(V2d(0, -1));
 				break;
 			case STANDN:
-				currVSHitboxInfo->kbDir = normalize(V2d(1, -2));
+				kbDir = normalize(V2d(1, -2));
 				break;
 			case DASHATTACK:
-				currVSHitboxInfo->kbDir = normalize(V2d(1, -1));
+				kbDir = normalize(V2d(1, -1.5));
 				break;
 			case STEEPSLIDEATTACK:
-				currVSHitboxInfo->kbDir = normalize(V2d(0, -1));
+				kbDir = normalize(V2d(0, -1));
+				break;
+			case STEEPCLIMBATTACK:
+				kbDir = normalize(V2d(0, -1));
+				break;
+			case WALLATTACK:
+				kbDir = normalize(V2d(0, -1));
+				break;
+			case DIAGDOWNATTACK:
+				kbDir = normalize(V2d(1, 1));
+				break;
+			case DIAGUPATTACK:
+				kbDir = normalize(V2d(1, -2));
+			default:
+				kbDir = V2d(0, -1);
 				break;
 			}
+
+			currVSHitboxInfo->kbDir = kbDir;
 
 			if (!facingRight)
 				currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
@@ -11122,7 +11139,6 @@ void Actor::UpdateHitboxes()
 			}
 
 			(*it).globalPosition = pos;
-		
 		}
 	}
 	
