@@ -10944,6 +10944,7 @@ void Actor::PhysicsResponse()
 				break;
 			case DIAGUPATTACK:
 				kbDir = normalize(V2d(1, -2));
+				break;
 			default:
 				kbDir = V2d(0, -1);
 				break;
@@ -10957,6 +10958,11 @@ void Actor::PhysicsResponse()
 			currVSHitboxInfo->knockback = 15;
 
 			pTarget->ApplyHit( currVSHitboxInfo );
+
+			//need to work these in later for hitlag, they are only here for testing for now.
+			currAttackHit = true;
+			hasDoubleJump = true;
+			hasAirDash = true;
 			//owner->raceFight->PlayerHitByPlayer( actorIndex, target );
 		}
 	}
