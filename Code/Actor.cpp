@@ -154,10 +154,10 @@ void Actor::PopulateState(PState *ps)
 	ps->invincibleFrames = invincibleFrames;
 	ps->receivedHit = receivedHit;
 
-	ps->currHitboxes = currHitboxes;
-	ps->currHitboxFrame = currHitboxFrame;
+	//ps->currHitboxes = currHitboxes;
+	//ps->currHitboxFrame = currHitboxFrame;
 
-	if (currHitboxes != NULL)
+	/*if (currHitboxes != NULL)
 	{
 		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
 		if (cList != NULL && !cList->empty())
@@ -173,7 +173,7 @@ void Actor::PopulateState(PState *ps)
 			ps->hitboxesAngle = 0;
 			ps->hitboxesPos = V2d(0, 0);
 		}
-	}
+	}*/
 		
 
 	
@@ -276,10 +276,10 @@ void Actor::PopulateFromState(PState *ps)
 	invincibleFrames = ps->invincibleFrames;
 	receivedHit = ps->receivedHit;
 
-	currHitboxes = ps->currHitboxes;
-	currHitboxFrame = ps->currHitboxFrame;
+	//currHitboxes = ps->currHitboxes;
+	//currHitboxFrame = ps->currHitboxFrame;
 
-	if (currHitboxes != NULL)
+	/*if (currHitboxes != NULL)
 	{
 		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
 		if (cList != NULL && !cList->empty())
@@ -292,7 +292,7 @@ void Actor::PopulateFromState(PState *ps)
 				cBox.globalPosition = ps->hitboxesPos;
 			}
 		}
-	}
+	}*/
 
 	cancelAttack = ps->cancelAttack;
 
@@ -2350,6 +2350,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	/*diagDownSwordOffset[0] = Vector2f(32, 24);
 	diagDownSwordOffset[1] = Vector2f(32, 24);
 	diagDownSwordOffset[2] = Vector2f(32, 24);*/
+
 	diagDownSwordOffset[0] = Vector2f(32, 24);
 	diagDownSwordOffset[1] = Vector2f(16, 32);
 	diagDownSwordOffset[2] = Vector2f(16, 64);
@@ -4706,6 +4707,8 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	SetCurrHitboxes(NULL, 0);
+
 	ProcessGravityGrass();
 	CheckForAirTrigger();
 	HandleAirTrigger();
@@ -4850,6 +4853,8 @@ void Actor::UpdatePrePhysics()
 	wallNormal.x = 0;
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
+
+	UpdateHitboxes();
 }
 
 double Actor::GetNumSteps()
@@ -10983,6 +10988,42 @@ void Actor::SetGroundedSpriteTransform( Edge * e, double angle )
 		sprite->setPosition(Vector2f(groundP) + testOffset);
 }
 
+V2d Actor::GetGroundAnchor()
+{
+	double angle = GroundedAngle();
+	Edge *e = ground;
+	V2d groundP = e->GetPosition(edgeQuantity);
+
+	double factor;
+	if (reversed)
+	{
+		if (angle < 0)
+			angle += 2 * PI;
+		factor = 1.0 - abs(((angle - PI) / (PI / 6)));
+	}
+	else
+	{
+		factor = 1.0 - abs((angle / (PI / 6)));
+	}
+
+	//aligns based on slopes
+	V2d along = e->Along();
+	if (reversed)
+	{
+		along = -along;
+	}
+	V2d testOffset(along * offsetX * factor);
+
+	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
+	{
+		return V2d(groundP.x + offsetX, groundP.y);
+	}
+	else
+	{
+		return groundP + testOffset;
+	}
+}
+
 void Actor::SetGroundedSpritePos( Edge * e, double angle )
 {
 	V2d groundP = e->GetPosition(edgeQuantity);
@@ -11077,7 +11118,7 @@ void Actor::UpdateHitboxes()
 			}
 			else if( ground != NULL )
 			{
-				pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
+				pos = GetGroundAnchor();//position;//V2d( sprite->getPosition().x, sprite->getPosition().y );
 			}
 
 			(*it).globalPosition = pos;
@@ -11860,8 +11901,8 @@ void Actor::UpdatePostPhysics()
 
 	UpdateBounceFlameCounters();
 	
-
-	UpdateHitboxes();
+	UpdateHitboxes(); //just for debug draw
+	
 
 	//pTrail->Update( position );
 

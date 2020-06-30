@@ -395,6 +395,15 @@ struct Actor : QuadTreeCollider,
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);
 
+	sf::Vector2f fairSwordOffset[3];
+	sf::Vector2f dairSwordOffset[3];
+	sf::Vector2f diagUpSwordOffset[3];
+	sf::Vector2f diagDownSwordOffset[3];
+	sf::Vector2f standSwordOffset[3];
+	sf::Vector2f dashAttackSwordOffset[3];
+	sf::Vector2f slideAttackOffset[3];
+	sf::Vector2f climbAttackOffset[3];
+
 	//values that dont need to be stored
 	//at least in this first pass
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -666,14 +675,7 @@ struct Actor : QuadTreeCollider,
 	ComboObject *activeComboObjList;
 	CollisionBody *currHurtboxes;
 	int currHurtboxFrame;
-	sf::Vector2f fairSwordOffset[3];
-	sf::Vector2f dairSwordOffset[3];
-	sf::Vector2f diagUpSwordOffset[3];
-	sf::Vector2f diagDownSwordOffset[3];
-	sf::Vector2f standSwordOffset[3];
-	sf::Vector2f dashAttackSwordOffset[3];
-	sf::Vector2f slideAttackOffset[3];
-	sf::Vector2f climbAttackOffset[3];
+
 	HitboxInfo *currHitboxInfo;
 	HitboxInfo *currVSHitboxInfo;
 	CollisionBody *fairHitboxes[3];
@@ -805,6 +807,7 @@ struct Actor : QuadTreeCollider,
 		EditSession *editOwner, int actorIndex );
 	~Actor();
 	void Init();
+	V2d GetGroundAnchor();
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
