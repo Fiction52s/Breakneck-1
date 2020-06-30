@@ -383,7 +383,6 @@ void Actor::BOUNCEGROUND_Change()
 			{
 				hasAirDash = true;
 				hasDoubleJump = true;
-				lastWire = 0;
 			}
 
 			if (testVel.x < 0 && currNormal.y <= -steepThresh)

@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include "ggponet.h"
 #include "Physics.h"
+#include "Wire.h"
 #pragma comment(lib, "wsock32.lib")
 
 
@@ -77,6 +78,19 @@ struct GGPONonGameState
 	ChecksumInfo         periodic;
 };
 
+
+struct SaveWireInfo
+{
+	bool foundPoint;
+	WirePoint anchor;
+	WirePoint points[Wire::MAX_POINTS];
+	Wire::WireState state;
+	sf::Vector2i offset;
+	V2d fireDir;
+	int framesFiring;
+	int frame;
+	int numPoints;
+};
 
 struct PState
 {
@@ -170,6 +184,16 @@ struct PState
 	bool aerialHitCancelDouble;
 
 	CollisionBox hurtBody;
+
+	bool touchEdgeWithLeftWire;
+	bool touchEdgeWithRightWire;
+	V2d dWireAirDash;
+	V2d dWireAirDashOld;
+
+	SaveWireInfo leftWireInfo;
+	SaveWireInfo rightWireInfo;
+
+
 };
 
 struct SaveGameState

@@ -12,7 +12,6 @@
 struct WirePoint
 {
 	V2d pos;
-	V2d edgeEnd;
 	V2d test;
 	double angleDiff;
 	double quantity;
@@ -61,6 +60,7 @@ struct WireCharge
 	void HitEnemy();
 };
 
+struct SaveWireInfo;
 struct Actor;
 struct Wire : RayCastHandler, QuadTreeCollider,
 	EnemyTracker
@@ -83,6 +83,11 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	WirePoint anchor;
 	WirePoint points[MAX_POINTS];
 	WireState state;
+	sf::Vector2i offset;
+	V2d fireDir;
+	int framesFiring;
+	int frame;
+	int numPoints;
 
 
 	V2d hitEnemyDelta;
@@ -92,7 +97,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	V2d storedPlayerPos;
 	V2d retractPlayerPos;
 	V2d currOffset;
-	V2d fireDir;
+	
 	V2d anchorVel;
 	V2d quadOldPosA;
 	V2d quadOldWirePosB;
@@ -136,20 +141,20 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	int fusePointIndex;
 	int newWirePoints;
 	int numTotalCharges;
-	int frame;
-	int animFactor;
-	int numPoints;
+	
+	
+	
 	int aimingPrimaryAngleRange;
-	int numQuadVertices;
-	int numMinimapQuads;
-	int framesFiring;
-	int triggerThresh;
+	
+	
+	
+	
 	int hitStallFrames;
 	int hitStallCounter;
 	int antiWireGrassCount;
 	
 	CollisionBox movingHitbox;
-	sf::Vector2i offset;
+	
 	
 	bool right;
 	bool clockwise;
@@ -158,18 +163,13 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 
 	WireCharge *activeChargeList;
 	WireCharge *inactiveChargeList;
-
 	sf::Sprite wireTip;
 	sf::Sprite fuseSprite;
-	
 	Tileset *ts_wireTip;
 	Tileset *ts_wire;
 	Tileset *ts_miniHit;
 	Tileset *ts_wireCharge;
-	
 	sf::VertexArray chargeVA;
-
-	CollisionBox testHitbox;
 	HitboxInfo *tipHitboxInfo;
 	sf::Vertex *quads;
 	sf::Vertex *minimapQuads;
@@ -182,15 +182,21 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	std::string queryMode;
 	std::list<sf::Drawable*> progressDraw;
 
+
+	int numMinimapQuads;
+	int triggerThresh;
+	int numQuadVertices;
+	int animFactor;
+
 	Wire( Actor *player, bool right );
 	~Wire();
+	void PopulateWireInfo(
+		SaveWireInfo *wi);
+	void PopulateFromWireInfo(
+	SaveWireInfo *wi );
 	void UpdateAnchors( V2d vel );
-	void UpdateAnchors2( V2d vel );
-	void SetFireDirection( V2d dir );
 	void UpdateEnemyAnchor();
 	bool TryFire();
-	void Check();
-	void UpdateMinimapQuads( sf::View &uiView );
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateState( bool touchEdgeWithWire );
 	void Draw( sf::RenderTarget *target );
@@ -209,7 +215,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	sf::Vector2<double> GetPlayerPos();
 	double GetCurrentTotalLength();
 	void HitEnemy(V2d &pos);
-	void DrawWireCharges( sf::RenderTarget *target );
+	//void DrawWireCharges( sf::RenderTarget *target );
 	void CreateWireCharge();
 	void DeactivateWireCharge( WireCharge *wc );
 	WireCharge * GetWireCharge();

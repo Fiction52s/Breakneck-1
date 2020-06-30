@@ -16,6 +16,7 @@
 #include "SpecialTerrainTypes.h"
 #include "EffectLayer.h"
 #include "BitField.h"
+#include "VectorMath.h"
 
 struct PState;
 
@@ -390,6 +391,11 @@ struct Actor : QuadTreeCollider,
 	bool aerialHitCancelDouble;
 
 	CollisionBox hurtBody;
+
+	bool touchEdgeWithLeftWire;
+	bool touchEdgeWithRightWire;
+	V2d dWireAirDash;
+	V2d dWireAirDashOld;
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
@@ -772,8 +778,6 @@ struct Actor : QuadTreeCollider,
 	double storedBounceGroundSpeed;
 	Wire *leftWire;
 	Wire *rightWire;
-	bool touchEdgeWithLeftWire;
-	bool touchEdgeWithRightWire;
 	Edge *bounceEdge;
 	double bounceQuant;
 	Edge *oldBounceEdge;
@@ -790,13 +794,11 @@ struct Actor : QuadTreeCollider,
 	int bubbleRadius2;
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
-	int lastWire;
 	bool dead;
 	sf::Shader swordShaders[3];
 	sf::Color flashColor;
 	int steepClimbBoostStart;
-	sf::Vector2<double> dWireAirDash;
-	sf::Vector2<double> dWireAirDashOld;
+	
 	int drainCounterMax;
 	int drainAmount;
 	int climbBoostLimit;

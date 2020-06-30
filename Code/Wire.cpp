@@ -5,10 +5,37 @@
 #include <assert.h>
 #include "Enemy.h"
 #include "Grass.h"
+#include "GGPO.h"
 
 using namespace sf;
 using namespace std;
 
+
+void Wire::PopulateWireInfo( SaveWireInfo *wi)
+{
+	wi->foundPoint = foundPoint;
+	wi->anchor = anchor;
+	memcpy(&wi->points, &points, sizeof(WirePoint) * MAX_POINTS);
+	wi->state = state;
+	wi->offset = offset;
+	wi->fireDir = fireDir;
+	wi->framesFiring= framesFiring;
+	wi->frame = frame;
+	wi->numPoints = numPoints;
+}
+
+void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
+{
+	foundPoint = wi->foundPoint;
+	anchor = wi->anchor;
+	memcpy(&points, &wi->points, sizeof(WirePoint) * MAX_POINTS);
+	state = wi->state;
+	offset = wi->offset;
+	fireDir = wi->fireDir;
+	framesFiring = wi->framesFiring;
+	frame = wi->frame;
+	numPoints = wi->numPoints;
+}
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
@@ -770,15 +797,6 @@ bool Wire::TryFire()
 		}
 
 
-		if (right)
-		{
-			player->lastWire = 1;
-		}
-		else
-		{
-			player->lastWire = 2;
-		}
-
 		fireDir = normalize(fireDir);
 
 		float angle = atan2(fireDir.y, fireDir.x);
@@ -833,25 +851,30 @@ CollisionBox * Wire::GetTipHitbox()
 	}
 }
 
-void Wire::UpdateAnchors2( V2d vel )
+bool Wire::IsValidTrackEnemy(Enemy *e)
+{
+	return e->CanBeAnchoredByWire(right);
+}
+
+void Wire::UpdateAnchors( V2d vel )
 {
 	V2d playerPos = GetPlayerPos();//GetOriginPos(true);
 
-	if( (state == HIT || state == PULLING) && anchor.enemy == NULL )
+	if ((state == HIT || state == PULLING) && anchor.enemy == NULL)
 	{
 		//UpdateEnemyAnchor();
 
 
-		if( oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y )
+		if (oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y)
 		{
 			//return;
 		}
-		
+
 		oldPos = storedPlayerPos;
 
-		double radius = length( realAnchor - playerPos ); //new position after moving
+		double radius = length(realAnchor - playerPos); //new position after moving
 
-		if( numPoints == 0 )
+		if (numPoints == 0)
 		{
 			//line->append( sf::Vertex(sf::Vector2f(anchor.pos.x, anchor.pos.y), Color::Black) );
 			realAnchor = anchor.pos;
@@ -859,13 +882,13 @@ void Wire::UpdateAnchors2( V2d vel )
 		else
 		{
 			//line->append( sf::Vertex(sf::Vector2f(points[numPoints - 1].pos.x, points[numPoints - 1].pos.y), Color::Black) );
-			realAnchor = points[numPoints-1].pos;
+			realAnchor = points[numPoints - 1].pos;
 		}
 
-		if( vel.x == 0 && vel.y == 0 )
+		if (vel.x == 0 && vel.y == 0)
 		{
 			//cout << "skipping" << endl;
-		//	return;
+			//	return;
 		}
 
 		int counter = 0;
@@ -878,44 +901,44 @@ void Wire::UpdateAnchors2( V2d vel )
 		double ex = 1;
 		Rect<double> r;
 
-		
 
-		if( counter > 1 )
+
+		if (counter > 1)
 		{
 			//cout << "COUNTER: " << counter << endl;
 		}
 
 		a = realAnchor - oldPos;
 		b = realAnchor - playerPos;
-		len = max( length( a ), length( b ) );
+		len = max(length(a), length(b));
 
 		oldDir = oldPos - realAnchor;
 		dir = playerPos - realAnchor;
 
-		left = min( min( realAnchor.x, oldPos.x ), playerPos.x );
-		top = min( min( realAnchor.y, oldPos.y ), playerPos.y );
-		right = max( max( realAnchor.x, oldPos.x ), playerPos.x );
-		bottom = max( max( realAnchor.y, oldPos.y ), playerPos.y );
+		left = min(min(realAnchor.x, oldPos.x), playerPos.x);
+		top = min(min(realAnchor.y, oldPos.y), playerPos.y);
+		right = max(max(realAnchor.x, oldPos.x), playerPos.x);
+		bottom = max(max(realAnchor.y, oldPos.y), playerPos.y);
 
 		r.left = left - ex;
 		r.top = top - ex;
 		r.width = (right - left) + ex * 2;
 		r.height = (bottom - top) + ex * 2;
-			
+
 		foundPoint = false;
 		newWirePoints = 0; //number of points added
 
-		V2d normalizedA = normalize( a );
-		V2d otherA( normalizedA.y, -normalizedA.x );
-		if( dot( normalize( playerPos - oldPos ), otherA ) > 0 )
+		V2d normalizedA = normalize(a);
+		V2d otherA(normalizedA.y, -normalizedA.x);
+		if (dot(normalize(playerPos - oldPos), otherA) > 0)
 			clockwise = true;
 		else
 			clockwise = false;
 
 		queryMode = "terrain";
-		player->GetTerrainTree()->Query( this, r );
+		player->GetTerrainTree()->Query(this, r);
 		//player->owner->barrierTree->Query(this, r);
-		if( state == RELEASED )
+		if (state == RELEASED)
 		{
 			cout << "went too many points" << endl;
 			//should cut the wire when you go over the point count
@@ -936,10 +959,10 @@ void Wire::UpdateAnchors2( V2d vel )
 		SortNewPoints();
 
 		//remove points as need be
-		for( int i = numPoints - 1; i >= 0; --i )
-		{ 
-			double result = cross( playerPos - points[numPoints-1].pos, points[i].test );
-			if( result > 0 )
+		for (int i = numPoints - 1; i >= 0; --i)
+		{
+			double result = cross(playerPos - points[numPoints - 1].pos, points[i].test);
+			if (result > 0)
 			{
 				//V2d along = 
 				//cout << "removing along: " << 
@@ -952,14 +975,14 @@ void Wire::UpdateAnchors2( V2d vel )
 			}
 		}
 	}
-	else if( state == FIRING )
+	else if (state == FIRING)
 	{
 		oldPos = storedPlayerPos;
-		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1 );
-		
+		V2d wireVec = fireDir * fireRate * (double)(framesFiring + 1);
+
 		V2d diff = playerPos - oldPos;
-		
-		V2d wirePos = playerPos + wireVec; 
+
+		V2d wirePos = playerPos + wireVec;
 		V2d oldWirePos = oldPos + wireVec;
 
 		quadOldPosA = oldPos;
@@ -969,7 +992,7 @@ void Wire::UpdateAnchors2( V2d vel )
 
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if ( player->owner != NULL && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		if (player->owner != NULL && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;
@@ -995,32 +1018,32 @@ void Wire::UpdateAnchors2( V2d vel )
 		}
 
 		//for grabbing onto points
-		double top = min( quadOldPosA.y, min( quadOldWirePosB.y, min( quadWirePosC.y, quadPlayerPosD.y ) ) );
-		double bot = max( quadOldPosA.y, max( quadOldWirePosB.y, max( quadWirePosC.y, quadPlayerPosD.y ) ) );
-		double left = min( quadOldPosA.x, min( quadOldWirePosB.x, min( quadWirePosC.x, quadPlayerPosD.x ) ) );
-		double right = max( quadOldPosA.x, max( quadOldWirePosB.x, max( quadWirePosC.x, quadPlayerPosD.x ) ) );
+		double top = min(quadOldPosA.y, min(quadOldWirePosB.y, min(quadWirePosC.y, quadPlayerPosD.y)));
+		double bot = max(quadOldPosA.y, max(quadOldWirePosB.y, max(quadWirePosC.y, quadPlayerPosD.y)));
+		double left = min(quadOldPosA.x, min(quadOldWirePosB.x, min(quadWirePosC.x, quadPlayerPosD.x)));
+		double right = max(quadOldPosA.x, max(quadOldWirePosB.x, max(quadWirePosC.x, quadPlayerPosD.x)));
 
 		double ex = 1;
-		sf::Rect<double> r( left - ex, top - ex, (right - left) + ex * 2, ( bot - top ) + ex * 2 );
+		sf::Rect<double> r(left - ex, top - ex, (right - left) + ex * 2, (bot - top) + ex * 2);
 
-		if( r.width == 0 || r.height == 0 )
+		if (r.width == 0 || r.height == 0)
 		{
 
 		}
 		else
 		{
-			
+
 			//queryType = "terrain";
 			minSideEdge = NULL;
 			queryMode = "terrain";
-			player->GetTerrainTree()->Query( this, r );
+			player->GetTerrainTree()->Query(this, r);
 			player->GetRailEdgeTree()->Query(this, r);
 			player->GetBarrierTree()->Query(this, r);
-			if( minSideEdge != NULL )
+			if (minSideEdge != NULL)
 			{
 				storedPlayerPos = playerPos;
 				state = HIT;
-				if( !triggerDown )
+				if (!triggerDown)
 				{
 					canRetractGround = true;
 				}
@@ -1032,22 +1055,12 @@ void Wire::UpdateAnchors2( V2d vel )
 				anchor.pos = minSideEdge->v0;
 				anchor.quantity = 0;
 				anchor.e = minSideEdge;
-				UpdateAnchors( V2d( 0, 0 ) );
+				UpdateAnchors(V2d(0, 0));
 			}
 		}
 	}
-	
+
 	storedPlayerPos = playerPos;
-}
-
-bool Wire::IsValidTrackEnemy(Enemy *e)
-{
-	return e->CanBeAnchoredByWire(right);
-}
-
-void Wire::UpdateAnchors( V2d vel )
-{
-	UpdateAnchors2( vel );
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )

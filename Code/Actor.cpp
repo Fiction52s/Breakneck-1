@@ -154,30 +154,6 @@ void Actor::PopulateState(PState *ps)
 	ps->invincibleFrames = invincibleFrames;
 	ps->receivedHit = receivedHit;
 
-	//ps->currHitboxes = currHitboxes;
-	//ps->currHitboxFrame = currHitboxFrame;
-
-	/*if (currHitboxes != NULL)
-	{
-		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
-		if (cList != NULL && !cList->empty())
-		{
-			auto & cBox = cList->front();
-			ps->flipHitboxesHorizontal = cBox.flipHorizontal;
-			ps->hitboxesAngle = cBox.globalAngle;
-			ps->hitboxesPos = cBox.globalPosition;
-		}
-		else
-		{
-			ps->flipHitboxesHorizontal = false;
-			ps->hitboxesAngle = 0;
-			ps->hitboxesPos = V2d(0, 0);
-		}
-	}*/
-		
-
-	
-
 	ps->cancelAttack = cancelAttack;
 	
 	kinRing->GetData(&ps->currRing, ps->prevRingValue,
@@ -187,6 +163,14 @@ void Actor::PopulateState(PState *ps)
 	ps->aerialHitCancelDouble = aerialHitCancelDouble;
 
 	ps->hurtBody = hurtBody;
+
+	ps->touchEdgeWithLeftWire = touchEdgeWithLeftWire;
+	ps->touchEdgeWithRightWire = touchEdgeWithRightWire;
+	ps->dWireAirDash = dWireAirDash;
+	ps->dWireAirDashOld = dWireAirDashOld;
+
+	leftWire->PopulateWireInfo(&ps->leftWireInfo);
+	rightWire->PopulateWireInfo(&ps->rightWireInfo);
 
 }
 
@@ -276,24 +260,7 @@ void Actor::PopulateFromState(PState *ps)
 	invincibleFrames = ps->invincibleFrames;
 	receivedHit = ps->receivedHit;
 
-	//currHitboxes = ps->currHitboxes;
-	//currHitboxFrame = ps->currHitboxFrame;
-
-	/*if (currHitboxes != NULL)
-	{
-		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
-		if (cList != NULL && !cList->empty())
-		{
-			for (auto it = cList->begin(); it != cList->end(); ++it)
-			{
-				auto & cBox = (*it);
-				cBox.flipHorizontal = ps->flipHitboxesHorizontal;
-				cBox.globalAngle = ps->hitboxesAngle;
-				cBox.globalPosition = ps->hitboxesPos;
-			}
-		}
-	}*/
-
+	
 	cancelAttack = ps->cancelAttack;
 
 	kinRing->Set(ps->currRing, ps->prevRingValue, ps->currRingValue);
@@ -302,6 +269,14 @@ void Actor::PopulateFromState(PState *ps)
 	aerialHitCancelDouble = ps->aerialHitCancelDouble;
 
 	hurtBody = ps->hurtBody;
+
+	touchEdgeWithLeftWire = ps->touchEdgeWithLeftWire;
+	touchEdgeWithRightWire = ps->touchEdgeWithRightWire;
+	dWireAirDash = ps->dWireAirDash;
+	dWireAirDashOld = ps->dWireAirDashOld;
+
+	leftWire->PopulateFromWireInfo(&ps->leftWireInfo);
+	rightWire->PopulateFromWireInfo(&ps->rightWireInfo);
 }
 
 
@@ -2167,7 +2142,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	flashFrames = 0;
 	hitEnemyDuringPhyiscs = false;
 
-	lastWire = 0;
 	inBubble = false;
 	oldInBubble = false;
 		
@@ -3566,7 +3540,6 @@ void Actor::Respawn()
 	}
 	
 	//powerBar.Reset();
-	lastWire = 0;
 
 	flashFrames = 0;
 	
@@ -3913,7 +3886,6 @@ void Actor::ProcessReceivedHit()
 						framesNotGrinding = 0;
 						hasAirDash = true;
 						hasDoubleJump = true;
-						lastWire = 0;
 						ground = grindEdge;
 						edgeQuantity = grindQuantity;
 						groundSpeed = grindSpeed;
@@ -4031,7 +4003,6 @@ void Actor::ProcessReceivedHit()
 
 							hasAirDash = true;
 							hasDoubleJump = true;
-							lastWire = 0;
 
 
 							ground = grindEdge;
@@ -4320,8 +4291,7 @@ void Actor::UpdateWireStates()
 	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
 	{
 		leftWire->ClearDebug();
-		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();//leftWire->GetOriginPos(true);
-																						 //leftWire->UpdateAnchors2( V2d( 0, 0 ) );
+		leftWire->storedPlayerPos = leftWire->storedPlayerPos = leftWire->GetPlayerPos();
 		leftWire->UpdateState(touchEdgeWithLeftWire);
 	}
 
@@ -5005,7 +4975,6 @@ void Actor::WireMovement()
 				framesSinceDoubleWireBoost = 0;
 			}
 
-			lastWire = 0;
 			V2d rwPos = rightWire->storedPlayerPos;
 			V2d lwPos = rightWire->storedPlayerPos;
 			V2d newVel1, newVel2;
@@ -5235,8 +5204,6 @@ void Actor::WireMovement()
 		}
 		else if (rightWire->state == Wire::PULLING)
 		{
-
-			//lastWire = 1;
 			V2d wPos = rightWire->storedPlayerPos;
 			if (position != rightWire->storedPlayerPos)
 			{
@@ -5412,7 +5379,6 @@ void Actor::WireMovement()
 		}
 		else if (leftWire->state == Wire::PULLING)
 		{
-			//lastWire = 2;
 			wire = leftWire;
 			V2d wPos = leftWire->storedPlayerPos;
 			V2d wirePoint = wire->anchor.pos;
@@ -5557,11 +5523,6 @@ void Actor::WireMovement()
 				velocity = future - wPos;
 			}
 		}
-	}
-
-	if (ground != NULL)
-	{
-		lastWire = 0;
 	}
 }
 
@@ -7565,7 +7526,6 @@ bool Actor::ExitGrind(bool jump)
 			framesNotGrinding = 0;
 			hasAirDash = true;
 			hasDoubleJump = true;
-			lastWire = 0;
 
 			if (!jump)
 			{
@@ -7681,7 +7641,6 @@ bool Actor::ExitGrind(bool jump)
 
 				hasAirDash = true;
 				hasDoubleJump = true;
-				lastWire = 0;
 
 				ground = grindEdge;
 				groundSpeed = -grindSpeed;
@@ -8401,7 +8360,6 @@ void Actor::UpdateGrindPhysics(double movement)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
-						lastWire = 0;
 					}
 				}
 				q = 0;
@@ -8468,7 +8426,6 @@ void Actor::UpdateGrindPhysics(double movement)
 					{
 						hasDoubleJump = true;
 						hasAirDash = true;
-						lastWire = 0;
 					}
 				}
 			}
@@ -9980,7 +9937,6 @@ void Actor::UpdatePhysics()
 				{
 					hasAirDash = true;
 					hasDoubleJump = true;
-					lastWire = 0;
 				}
 
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
@@ -10052,7 +10008,6 @@ void Actor::UpdatePhysics()
 				hasAirDash = true;
 				hasDoubleJump = true;
 				reversed = true;
-				lastWire = 0;
 
 				ground = minContact.edge;
 
@@ -10477,7 +10432,6 @@ void Actor::PhysicsResponse()
 			{
 				hasDoubleJump = true;
 				hasAirDash = true;
-				lastWire = 0;
 				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
 					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
@@ -10500,7 +10454,6 @@ void Actor::PhysicsResponse()
 			{
 				hasDoubleJump = true;
 				hasAirDash = true;
-				lastWire = 0;
 
 
 				if( abs( storedBounceVel.y ) < 10 )

@@ -61,7 +61,6 @@ void Actor::GRINDATTACK_Change()
 				framesNotGrinding = 0;
 				hasAirDash = true;
 				hasDoubleJump = true;
-				lastWire = 0;
 				ground = grindEdge;
 				edgeQuantity = grindQuantity;
 				SetAction(LAND);
@@ -173,7 +172,6 @@ void Actor::GRINDATTACK_Change()
 
 					hasAirDash = true;
 					hasDoubleJump = true;
-					lastWire = 0;
 
 
 					ground = grindEdge;

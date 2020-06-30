@@ -63,7 +63,6 @@ void Actor::GRINDBALL_Change()
 				framesNotGrinding = 0;
 				hasAirDash = true;
 				hasDoubleJump = true;
-				lastWire = 0;
 
 				if (!j)
 				{
@@ -179,7 +178,6 @@ void Actor::GRINDBALL_Change()
 
 					hasAirDash = true;
 					hasDoubleJump = true;
-					lastWire = 0;
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;
