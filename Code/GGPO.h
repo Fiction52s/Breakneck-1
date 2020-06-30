@@ -169,6 +169,10 @@ struct PState
 	bool dairBoostedDouble;
 	bool aerialHitCancelDouble;
 
+	bool flipHitboxesHorizontal;
+	double hitboxesAngle;
+	V2d hitboxesPos;
+
 	CollisionBox hurtBody;
 };
 

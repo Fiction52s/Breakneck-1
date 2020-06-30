@@ -157,6 +157,27 @@ void Actor::PopulateState(PState *ps)
 	ps->currHitboxes = currHitboxes;
 	ps->currHitboxFrame = currHitboxFrame;
 
+	if (currHitboxes != NULL)
+	{
+		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
+		if (cList != NULL && !cList->empty())
+		{
+			auto & cBox = cList->front();
+			ps->flipHitboxesHorizontal = cBox.flipHorizontal;
+			ps->hitboxesAngle = cBox.globalAngle;
+			ps->hitboxesPos = cBox.globalPosition;
+		}
+		else
+		{
+			ps->flipHitboxesHorizontal = false;
+			ps->hitboxesAngle = 0;
+			ps->hitboxesPos = V2d(0, 0);
+		}
+	}
+		
+
+	
+
 	ps->cancelAttack = cancelAttack;
 	
 	kinRing->GetData(&ps->currRing, ps->prevRingValue,
@@ -257,6 +278,21 @@ void Actor::PopulateFromState(PState *ps)
 
 	currHitboxes = ps->currHitboxes;
 	currHitboxFrame = ps->currHitboxFrame;
+
+	if (currHitboxes != NULL)
+	{
+		vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
+		if (cList != NULL && !cList->empty())
+		{
+			for (auto it = cList->begin(); it != cList->end(); ++it)
+			{
+				auto & cBox = (*it);
+				cBox.flipHorizontal = ps->flipHitboxesHorizontal;
+				cBox.globalAngle = ps->hitboxesAngle;
+				cBox.globalPosition = ps->hitboxesPos;
+			}
+		}
+	}
 
 	cancelAttack = ps->cancelAttack;
 
@@ -2268,7 +2304,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currVSHitboxInfo->damage = 0;//20;
 	currVSHitboxInfo->drainX = .5;
 	currVSHitboxInfo->drainY = .5;
-	currVSHitboxInfo->hitlagFrames = 0;
+	currVSHitboxInfo->hitlagFrames = 0;//6;
 	currVSHitboxInfo->hitstunFrames = 30;
 	currVSHitboxInfo->knockback = 0;
 	currVSHitboxInfo->freezeDuringStun = true;
@@ -3797,7 +3833,7 @@ void Actor::ProcessReceivedHit()
 		hitlagFrames = receivedHit->hitlagFrames;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
-		if (invincibleFrames == -1)
+		if (receivedHit->invincibleFrames == -1)
 		{
 			invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
 		}
@@ -3808,7 +3844,7 @@ void Actor::ProcessReceivedHit()
 		
 
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
-		sess->Pause(hitlagFrames);
+		//sess->Pause(hitlagFrames);
 
 		ActivateSound(S_HURT);
 
@@ -10087,30 +10123,6 @@ void Actor::UpdatePhysics()
 
 
 	PhysicsResponse();
-
-	//cout << "post vel: " << velocity.x << ", " << velocity.y << endl;
-
-	if ( reversed && ( action == STANDN || action == STEEPCLIMBATTACK || action == STEEPSLIDEATTACK ) && currHitboxes != NULL)
-	{
-		//auto it = currHitboxes->begin();
-		//sf::IntRect aabb;
-		//aabb.left = (*it).
-		//for ( it != currHitboxes->end(); ++it)
-		//{
-		//	
-		//	/*Grass *g = owner->explodingGravityGrass;
-		//	while (g != NULL)
-		//	{
-		//		if ( g->visible && !g->exploding )
-		//		{
-		//			
-		//		}
-		//	}*/
-		//}
-
-		//queryMode = "gravitygrass";
-		//owner->grassTree->Query( this, )
-	}
 }
 
 bool Actor::CheckSwing()
@@ -10912,6 +10924,9 @@ void Actor::PhysicsResponse()
 			case DASHATTACK:
 				currVSHitboxInfo->kbDir = normalize(V2d(1, -1));
 				break;
+			case STEEPSLIDEATTACK:
+				currVSHitboxInfo->kbDir = normalize(V2d(0, -1));
+				break;
 			}
 
 			if (!facingRight)
@@ -11004,7 +11019,7 @@ void Actor::UpdateHitboxes()
 {
 	double angle = 0;
 	V2d gn;
-	V2d gd; 
+	V2d gd;
 
 	if( grindEdge != NULL )
 	{
@@ -11052,16 +11067,8 @@ void Actor::UpdateHitboxes()
 				(*it).globalAngle = 0;
 			}
 
-			double offX = (*it).offset.x;
-			double offY = (*it).offset.y;
-
 			(*it).flipHorizontal = ((!facingRight && !reversed) 
 				|| (facingRight && reversed));
-				
-				//offX = -offX;
-
-			//if( reversed )
-			//	offY = -offY;
 
 			V2d pos = position;
 			if( grindEdge != NULL )
@@ -11070,23 +11077,10 @@ void Actor::UpdateHitboxes()
 			}
 			else if( ground != NULL )
 			{
-			//	V2d gn = ground->Normal();
 				pos = V2d( sprite->getPosition().x, sprite->getPosition().y );
-
-				//pos = position;
-				//pos += gd * offX + gn * -offY + gn * (double)sprite->getLocalBounds().height / 2.0;
-				//pos += gd * offX + gn * -offY; //+ V2d( offsetX, 0 );
-			}
-			else
-			{
-				//pos += V2d( offX, offY );// + V2d( offsetX, 0 );
 			}
 
 			(*it).globalPosition = pos;
-			//(*it).globalPosition = position + V2d( offX * cos( (*it).globalAngle ) + offY * sin( (*it).globalAngle ), 
-			//	offX * -sin( (*it).globalAngle ) + offY * cos( (*it).globalAngle ) );
-
-			//(*it).globalPosition = position + (*it).offset;
 		
 		}
 	}
@@ -11209,35 +11203,8 @@ void Actor::UpdateHitboxes()
 		hurtBody.globalAngle = angle;
 	}
 	
-
-	
-	
-	
-	//cout << "hurtbody offset: " << hurtBody.offset.x << ", " << hurtBody.offset.y << endl;
-	
-	//if( ground != NULL )
-	//{
-	//	hurtBody.globalPosition = ground->GetPosition( edgeQuantity ) + gn * (double)( b.rh + 5 );
-	//	if( angle == 0 || approxEquals( angle, PI ) )
-	//	{
-	//	//	hurtBody.globalPosition.x += offsetX;
-	//	}
-	//	hurtBody.globalAngle = angle;
-	//}
-	//else
-	//{
-	//	hurtBody.globalPosition = position;
-	//	hurtBody.globalAngle = 0;
-	//}
-
-	
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), 
-	//			hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	//hurtBody.globalPosition = position;
-
 	b.globalPosition = position + b.offset;
-	b.globalAngle = 0;
-		
+	b.globalAngle = 0;	
 }
 
 void Actor::ClearSpecialTerrainCounts()

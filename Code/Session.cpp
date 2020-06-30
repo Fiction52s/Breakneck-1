@@ -6089,9 +6089,9 @@ bool Session::SaveState(unsigned char **buffer,
 	memcpy(*buffer, currSaveState, *len);
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
-	int offset = 0;
-	int fletchLen = *len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
-	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
+	int offset = pSize;
+	int fletchLen = 4;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	*checksum = (int)currSaveState->states[1].receivedHit;//fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
 	return true;
 }
 
