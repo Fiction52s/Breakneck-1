@@ -397,6 +397,22 @@ struct Actor : QuadTreeCollider,
 	V2d dWireAirDash;
 	V2d dWireAirDashOld;
 
+	bool scorpOn;
+	int framesFlameOn;
+	bool bounceFlameOn;
+	sf::Vector2<double> storedBounceVel;
+	sf::Vector2<double> bounceNorm;
+	sf::Vector2<double> oldBounceNorm;
+	Edge *bounceEdge;
+	double storedBounceGroundSpeed;
+	double bounceQuant;
+	Edge *oldBounceEdge;
+	int framesSinceBounce;
+	bool groundedWallBounce;
+	bool boostBounce;
+	bool bounceGrounded;
+	bool justToggledBounce;
+
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);
@@ -511,9 +527,9 @@ struct Actor : QuadTreeCollider,
 	int framesSinceDoubleWireBoost;
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
-	bool justToggledBounce;
 	
-	bool scorpOn;
+	
+	
 
 	//unsaved vars
 	int possibleEdgeCount;
@@ -573,8 +589,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_diagUpSword[3];
 	sf::Sprite diagDownAttackSword;
 	Tileset *ts_diagDownSword[3];
-	int framesFlameOn;
-	bool bounceFlameOn;
+	
 	sf::Sprite bounceFlameSprite;
 	double bounceFlameAccel0;
 	double bounceFlameAccel1;
@@ -758,7 +773,7 @@ struct Actor : QuadTreeCollider,
 	double grindLungeSpeed1;
 	double grindLungeSpeed2;
 	double slopeTooSteepLaunchLimitX;
-	bool bounceGrounded;
+	
 	int baseSlowMultiple;
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
@@ -772,18 +787,11 @@ struct Actor : QuadTreeCollider,
 	double jumpGrassExtra;
 	bool extraDoubleJump;
 	int specialTerrainCount[SPECIAL_TERRAIN_Count];
-	sf::Vector2<double> storedBounceVel;
-	sf::Vector2<double> bounceNorm;
-	sf::Vector2<double> oldBounceNorm;
-	double storedBounceGroundSpeed;
+	
+	
 	Wire *leftWire;
 	Wire *rightWire;
-	Edge *bounceEdge;
-	double bounceQuant;
-	Edge *oldBounceEdge;
-	int framesSinceBounce;
-	bool groundedWallBounce;
-	bool boostBounce;
+	
 	bool wallClimbGravityFactor;
 	bool wallClimbGravityOn;
 	int maxBubbles;

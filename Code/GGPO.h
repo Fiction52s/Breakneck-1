@@ -231,7 +231,21 @@ struct PState
 	SaveWireInfo leftWireInfo;
 	SaveWireInfo rightWireInfo;
 
-
+	bool scorpOn;
+	int framesFlameOn;
+	bool bounceFlameOn;
+	sf::Vector2<double> storedBounceVel;
+	sf::Vector2<double> bounceNorm;
+	sf::Vector2<double> oldBounceNorm;
+	Edge *bounceEdge;
+	double storedBounceGroundSpeed;
+	double bounceQuant;
+	Edge *oldBounceEdge;
+	int framesSinceBounce;
+	bool groundedWallBounce;
+	bool boostBounce;
+	bool bounceGrounded;
+	bool justToggledBounce;
 };
 
 struct SaveGameState

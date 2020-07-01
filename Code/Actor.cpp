@@ -172,6 +172,22 @@ void Actor::PopulateState(PState *ps)
 	leftWire->PopulateWireInfo(&ps->leftWireInfo);
 	rightWire->PopulateWireInfo(&ps->rightWireInfo);
 
+	ps->scorpOn = scorpOn;
+	ps->framesFlameOn = framesFlameOn;
+	ps->bounceFlameOn = bounceFlameOn;
+	ps->storedBounceVel = storedBounceVel;
+	ps->bounceNorm = bounceNorm;
+	ps->oldBounceNorm = oldBounceNorm;
+	ps->bounceEdge = bounceEdge;
+	ps->storedBounceGroundSpeed = storedBounceGroundSpeed;
+	ps->bounceQuant = bounceQuant;
+	ps->oldBounceEdge = oldBounceEdge;
+	ps->framesSinceBounce = framesSinceBounce;
+	ps->groundedWallBounce = groundedWallBounce;
+	ps->boostBounce = boostBounce;
+	ps->bounceGrounded = bounceGrounded;
+	ps->justToggledBounce = justToggledBounce;
+
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -277,6 +293,22 @@ void Actor::PopulateFromState(PState *ps)
 
 	leftWire->PopulateFromWireInfo(&ps->leftWireInfo);
 	rightWire->PopulateFromWireInfo(&ps->rightWireInfo);
+
+	scorpOn = ps->scorpOn;
+	framesFlameOn = ps->framesFlameOn;
+	bounceFlameOn = ps->bounceFlameOn;
+	storedBounceVel = ps->storedBounceVel;
+	bounceNorm = ps->bounceNorm;
+	oldBounceNorm = ps->oldBounceNorm;
+	bounceEdge = ps->bounceEdge;
+	storedBounceGroundSpeed = ps->storedBounceGroundSpeed;
+	bounceQuant = ps->bounceQuant;
+	oldBounceEdge = ps->oldBounceEdge;
+	framesSinceBounce = ps->framesSinceBounce;
+	groundedWallBounce = ps->groundedWallBounce;
+	boostBounce = ps->boostBounce;
+	bounceGrounded = ps->bounceGrounded;
+	justToggledBounce = ps->justToggledBounce;
 }
 
 
