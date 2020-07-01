@@ -484,8 +484,6 @@ void EditSession::InitGGPO()
 	//ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
-	
-
 	int i;
 	for (i = 0; i < num_players; i++) {
 		GGPOPlayerHandle handle;

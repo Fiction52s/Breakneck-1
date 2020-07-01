@@ -433,7 +433,11 @@ SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 	if (sb == NULL)
 		return NULL;
 
-	return sess->soundNodeList->ActivateSound(sb, loop);
+	//for multiplayer testing
+	//if (hitlagFrames == 0)
+	//{
+		return sess->soundNodeList->ActivateSound(sb, loop);
+	//}
 }
 
 void Actor::DeactivateSound(SoundNode *sn)
@@ -2310,7 +2314,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currVSHitboxInfo->damage = 0;//20;
 	currVSHitboxInfo->drainX = .5;
 	currVSHitboxInfo->drainY = .5;
-	currVSHitboxInfo->hitlagFrames = 0;//6;
+	currVSHitboxInfo->hitlagFrames = 6;//6;
 	currVSHitboxInfo->hitstunFrames = 30;
 	currVSHitboxInfo->knockback = 0;
 	currVSHitboxInfo->freezeDuringStun = true;
@@ -4709,6 +4713,11 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	if (hitlagFrames > 0)
+	{
+		return;
+	}
+
 	SetCurrHitboxes(NULL, 0);
 
 	ProcessGravityGrass();
@@ -8706,6 +8715,11 @@ bool Actor::UpdateAutoRunPhysics( double q, double m )
 
 void Actor::UpdatePhysics()
 {
+	if (hitlagFrames > 0)
+	{
+		return;
+	}
+
 	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
@@ -10942,6 +10956,8 @@ void Actor::PhysicsResponse()
 			
 			currVSHitboxInfo->knockback = 15;
 
+			hitlagFrames = currVSHitboxInfo->hitlagFrames;
+
 			pTarget->ApplyHit( currVSHitboxInfo );
 
 			//need to work these in later for hitlag, they are only here for testing for now.
@@ -11805,6 +11821,17 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	if (hitlagFrames > 0)
+	{
+		--hitlagFrames;
+
+		if (hitlagFrames > 0)
+		{
+			UpdateSprite();
+			return;
+		}
+	}
+
 	KinModeUpdate();
 
 	keyExplodePool->Update();
