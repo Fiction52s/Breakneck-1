@@ -423,8 +423,8 @@ MainMenu::MainMenu()
 void MainMenu::SetupWindow()
 {
 	window = NULL;
-	windowWidth = 960;
-	windowHeight = 540;
+	/*windowWidth = 960;
+	windowHeight = 540;*/
 	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);

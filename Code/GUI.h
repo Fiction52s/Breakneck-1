@@ -840,7 +840,7 @@ struct EditModeUI : GUIHandler
 	void CreateKinOptionsPanel();
 	void AddKinOption(
 		const std::string &text, 
-		const std::string &toolTipText, 
+		const std::string &toolTipText,
 		int upgradeIndex);
 	Panel *currEnemyPanel;
 	ActorParams *currParams;

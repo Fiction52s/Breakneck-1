@@ -22,6 +22,48 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->framesFiring= framesFiring;
 	wi->frame = frame;
 	wi->numPoints = numPoints;
+	wi->realAnchor = realAnchor;
+	wi->canRetractGround = canRetractGround;
+	wi->closestPoint = closestPoint;
+	wi->closestDiff = closestDiff;
+	wi->fusePointIndex = fusePointIndex;
+	wi->oldPos = oldPos;
+	wi->storedPlayerPos = storedPlayerPos;
+	wi->retractPlayerPos = retractPlayerPos;
+	wi->currOffset = currOffset;
+	wi->hitEnemyDelta = hitEnemyDelta;
+	wi->anchorVel = anchorVel;
+	wi->quadOldPosA	= quadOldPosA;
+	wi->quadOldWirePosB	= quadOldWirePosB;
+	wi->quadWirePosC = quadWirePosC;
+	wi->quadPlayerPosD = quadPlayerPosD;
+	wi->fuseQuantity = fuseQuantity;
+	wi->minSideOther = minSideOther;
+	wi->minSideAlong = minSideAlong;
+	wi->totalLength = totalLength;
+	wi->segmentLength = segmentLength;
+	wi->minSegmentLength = minSegmentLength;
+	wi->pullStrength = pullStrength;
+	wi->dragStrength = dragStrength;
+	wi->hitEnemyFrame = hitEnemyFrame;
+	wi->hitEnemyFramesTotal = hitEnemyFramesTotal;
+	wi->firingTakingUp = firingTakingUp;
+	wi->numVisibleIndexes = numVisibleIndexes;
+	wi->newWirePoints = newWirePoints;
+	wi->numTotalCharges = numTotalCharges;
+	wi->aimingPrimaryAngleRange = aimingPrimaryAngleRange;
+	wi->hitStallFrames = hitStallFrames;
+	wi->hitStallCounter	= hitStallCounter;
+	wi->antiWireGrassCount = antiWireGrassCount;
+	wi->movingHitbox = movingHitbox;
+	wi->clockwise = clockwise;
+	wi->rcEdge = rcEdge;
+	wi->rcCancelDist = rcCancelDist;
+	wi->rcQuant = rcQuant;
+	/*wi->activeChargeList = activeChargeList;
+	wi->inactiveChargeList = inactiveChargeList;
+	wi->minSideEdge	= minSideEdge;
+	*/
 }
 
 void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
@@ -35,6 +77,48 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	framesFiring = wi->framesFiring;
 	frame = wi->frame;
 	numPoints = wi->numPoints;
+	realAnchor = wi->realAnchor;
+	canRetractGround = wi->canRetractGround;
+	closestPoint = wi->closestPoint;
+	closestDiff = wi->closestDiff;
+	fusePointIndex = wi->fusePointIndex;
+	oldPos = wi->oldPos;
+	storedPlayerPos = wi->storedPlayerPos;
+	retractPlayerPos = wi->retractPlayerPos;
+	currOffset = wi->currOffset;
+	hitEnemyDelta = wi->hitEnemyDelta;
+	anchorVel = wi->anchorVel;
+	quadOldPosA = wi->quadOldPosA;
+	quadOldWirePosB = wi->quadOldWirePosB;
+	quadWirePosC = wi->quadWirePosC;
+	quadPlayerPosD = wi->quadPlayerPosD;
+	fuseQuantity = wi->fuseQuantity;
+	minSideOther = wi->minSideOther;
+	minSideAlong = wi->minSideAlong;
+	totalLength = wi->totalLength;
+	segmentLength = wi->segmentLength;
+	minSegmentLength = wi->minSegmentLength;
+	pullStrength = wi->pullStrength;
+	dragStrength = wi->dragStrength;
+	hitEnemyFrame = wi->hitEnemyFrame;
+	hitEnemyFramesTotal = wi->hitEnemyFramesTotal;
+	firingTakingUp = wi->firingTakingUp;
+	numVisibleIndexes = wi->numVisibleIndexes;
+	newWirePoints = wi->newWirePoints;
+	numTotalCharges = wi->numTotalCharges;
+	aimingPrimaryAngleRange = wi->aimingPrimaryAngleRange;
+	hitStallFrames = wi->hitStallFrames;
+	hitStallCounter = wi->hitStallCounter;
+	antiWireGrassCount = wi->antiWireGrassCount;
+	movingHitbox = wi->movingHitbox;
+	clockwise = wi->clockwise;
+	rcEdge = wi->rcEdge;
+	rcCancelDist = wi->rcCancelDist;
+	rcQuant = wi->rcQuant;
+	/*activeChargeList = wi->activeChargeList;
+	inactiveChargeList = wi->inactiveChargeList;
+	minSideEdge = wi->minSideEdge;
+	rcEdge = wi->rcEdge;*/
 }
 
 Wire::Wire( Actor *p, bool r)
@@ -736,46 +820,50 @@ bool Wire::TryFire()
 		}
 		else
 		{
-			if (currInput.leftStickMagnitude > 0)
+			if( currInput.leftStickDirection < 65 )
+			//if (currInput.leftStickMagnitude > 0)
 			{
-				double angle = currInput.leftStickRadians;
-
-				double degs = angle / PI * 180.0;
-				double sec = 360.0 / 64.0;
-				int mult = floor((degs / sec) + .5);
-
-				if (mult < 0)
-				{
-					mult += 64;
-				}
-
-				int test;
-				int bigger, smaller;
-				for (int i = 0; i < aimingPrimaryAngleRange; ++i)
-				{
-					test = i + 1;
-					for (int j = 0; j < 64; j += 16)
-					{
-						bigger = mult + test;
-						smaller = mult - test;
-						if (smaller < 0)
-							smaller += 64;
-						if (bigger >= 64)
-							bigger -= 64;
-
-						if (bigger == j || smaller == j)
-						{
-							mult = j;
-						}
-					}
-				}
-
-				angle = (PI / 32.0) * mult;
-
-				//cout << "mult: " << mult << endl;
-
+				double angle = (PI / 32.0) * currInput.leftStickDirection;
 				fireDir.x = cos(angle);
 				fireDir.y = -sin(angle);
+				//double angle = currInput.leftStickRadians;
+
+				//double degs = angle / PI * 180.0;
+				//double sec = 360.0 / 64.0;
+				//int mult = floor((degs / sec) + .5);
+
+				//if (mult < 0)
+				//{
+				//	mult += 64;
+				//}
+
+				//int test;
+				//int bigger, smaller;
+				//for (int i = 0; i < aimingPrimaryAngleRange; ++i)
+				//{
+				//	test = i + 1;
+				//	for (int j = 0; j < 64; j += 16)
+				//	{
+				//		bigger = mult + test;
+				//		smaller = mult - test;
+				//		if (smaller < 0)
+				//			smaller += 64;
+				//		if (bigger >= 64)
+				//			bigger -= 64;
+
+				//		if (bigger == j || smaller == j)
+				//		{
+				//			mult = j;
+				//		}
+				//	}
+				//}
+
+				//angle = (PI / 32.0) * mult;
+
+				////cout << "mult: " << mult << endl;
+
+				//fireDir.x = cos(angle);
+				//fireDir.y = -sin(angle);
 			}
 			else
 			{

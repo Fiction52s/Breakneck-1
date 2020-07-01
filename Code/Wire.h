@@ -88,81 +88,76 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	int framesFiring;
 	int frame;
 	int numPoints;
-
-
-	V2d hitEnemyDelta;
-	V2d closestPoint;
 	V2d realAnchor;
+	bool canRetractGround;
+	V2d closestPoint;
+	double closestDiff;
+	int fusePointIndex;
 	V2d oldPos;
 	V2d storedPlayerPos;
 	V2d retractPlayerPos;
 	V2d currOffset;
-	
+	V2d hitEnemyDelta;
 	V2d anchorVel;
 	V2d quadOldPosA;
 	V2d quadOldWirePosB;
 	V2d quadWirePosC;
 	V2d quadPlayerPosD;
-
-	double closestDiff;
-	double retractSpeed;
 	double fuseQuantity;
-	bool canRetractGround;
-	double maxTotalLength;
-	double maxFireLength;
-	double quadHalfWidth;
-	double fireRate;
 	double minSideOther;
 	double minSideAlong;
 	double totalLength;
 	double segmentLength;
 	double minSegmentLength;
 	double pullStrength;
+	double dragStrength;
+	int hitEnemyFrame;
+	int hitEnemyFramesTotal;
+	int firingTakingUp;
+	int numVisibleIndexes;
+	int newWirePoints;
+	int numTotalCharges;
+	int aimingPrimaryAngleRange;
+	int hitStallFrames;
+	int hitStallCounter;
+	int antiWireGrassCount;
+	CollisionBox movingHitbox;
+	bool clockwise;
+	Edge *rcEdge;
+	double rcCancelDist;
+	double rcQuant;
+
+	
+	Edge *minSideEdge;
+	
+	Actor *player;
+	WireCharge *activeChargeList;
+	WireCharge *inactiveChargeList;
+	double retractSpeed;
+	double maxTotalLength;
+	double maxFireLength;
+	double quadHalfWidth;
+	double fireRate;
 	double pullAccel;
 	double maxPullStrength;
 	double startPullStrength;
-	double dragStrength;
 	double dragAccel;
 	double maxDragStrength;
 	double startDragStrength;
 	double grassCheckRadius;
-	double rcCancelDist;
-	double rcQuant;
-
-	int hitEnemyFrame;
-	int hitEnemyFramesTotal;
+	
 	int extraBuffer; //when swinging around edges sometimes the wire
 					 //stretches some. This is attemping to hole up that problem. if it happens
 					 //too much then I can go into it and solve the real problems.
 	int numAnimFrames;
-	int firingTakingUp;
-	int addedPoints;
-	int numVisibleIndexes;
-	int fusePointIndex;
-	int newWirePoints;
-	int numTotalCharges;
-	
-	
-	
-	int aimingPrimaryAngleRange;
-	
-	
-	
-	
-	int hitStallFrames;
-	int hitStallCounter;
-	int antiWireGrassCount;
-	
-	CollisionBox movingHitbox;
-	
-	
 	bool right;
-	bool clockwise;
 	bool triggerDown;
 	bool prevTriggerDown;
-
-	WireCharge *activeChargeList;
-	WireCharge *inactiveChargeList;
+	std::string queryMode;
+	std::list<sf::Drawable*> progressDraw;
+	int numMinimapQuads;
+	int numQuadVertices;
+	int animFactor;
 	sf::Sprite wireTip;
 	sf::Sprite fuseSprite;
 	Tileset *ts_wireTip;
@@ -173,20 +168,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	HitboxInfo *tipHitboxInfo;
 	sf::Vertex *quads;
 	sf::Vertex *minimapQuads;
-	
-	Edge *minSideEdge;
-	Edge *rcEdge;
-	Actor *player;
-
-	sf::Rect<double> grassQueryBox;
-	std::string queryMode;
-	std::list<sf::Drawable*> progressDraw;
-
-
-	int numMinimapQuads;
-	int triggerThresh;
-	int numQuadVertices;
-	int animFactor;
 
 	Wire( Actor *player, bool right );
 	~Wire();

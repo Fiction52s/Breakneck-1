@@ -83,6 +83,11 @@ int ControllerState::GetCompressedState()
 	s |= Y << bit++;
 	s |= leftShoulder << bit++;
 	s |= rightShoulder << bit++;
+	s |= LeftTriggerPressed() << bit++;
+	s |= RightTriggerPressed() << bit++;
+
+	int leftStickDir = leftStickDirection;
+	s |= (leftStickDir << 16);
 
 	return s;
 }
@@ -90,7 +95,7 @@ int ControllerState::GetCompressedState()
 void ControllerState::SetFromCompressedState(int s)
 {
 	Clear();
-	
+
 	int bit = 0;
 	bool lup = s & (1 << bit++);
 	bool ldown = s & (1 << bit++);
@@ -102,6 +107,14 @@ void ControllerState::SetFromCompressedState(int s)
 	Y = s & (1 << bit++);
 	leftShoulder = s & (1 << bit++);
 	rightShoulder = s & (1 << bit++);
+	if (s & (1 << bit++))
+	{
+		leftTrigger = 255;
+	}
+	if (s & (1 << bit++))
+	{
+		rightTrigger = 255;
+	}
 
 	if (lright)
 	{
@@ -116,11 +129,67 @@ void ControllerState::SetFromCompressedState(int s)
 	{
 		leftStickPad += 1;
 	}
-	else if( ldown )
+	else if (ldown)
 	{
 		leftStickPad += 1 << 1;
 	}
+
+	int leftDir = (s >> 16);
+	leftStickDirection = leftDir;
 }
+
+void ControllerState::SetLeftDirection()
+{
+	int aimingPrimaryAngleRange = 2;
+	if (leftStickMagnitude > 0)
+	{
+		double angle = leftStickRadians;
+
+		double degs = angle / PI * 180.0;
+		double sec = 360.0 / 64.0;
+		int mult = floor((degs / sec) + .5);
+
+		if (mult < 0)
+		{
+			mult += 64;
+		}
+
+		int test;
+		int bigger, smaller;
+		for (int i = 0; i < aimingPrimaryAngleRange; ++i)
+		{
+			test = i + 1;
+			for (int j = 0; j < 64; j += 16)
+			{
+				bigger = mult + test;
+				smaller = mult - test;
+				if (smaller < 0)
+					smaller += 64;
+				if (bigger >= 64)
+					bigger -= 64;
+
+				if (bigger == j || smaller == j)
+				{
+					mult = j;
+				}
+			}
+		}
+
+		leftStickDirection = mult;
+		//angle = (PI / 32.0) * mult;
+
+		//cout << "mult: " << mult << endl;
+
+		//fireDir.x = cos(angle);
+		//fireDir.y = -sin(angle);
+	}
+	else
+	{
+		leftStickDirection = 65;
+	}
+}
+
+
 
 bool ControllerState::PUp()
 {
@@ -431,6 +500,8 @@ bool GameController::UpdateState()
 		tempState.start = Pressed(filter[ControllerSettings::PAUSE]);
 
 		m_state = tempState;
+
+		m_state.SetLeftDirection();
 	}
 	else
 	{
@@ -569,6 +640,8 @@ bool GameController::UpdateState()
 			tempState.start = Pressed(filter[ControllerSettings::PAUSE]);
 
 			m_state = tempState;
+
+			m_state.SetLeftDirection();
 		}
 	}
 
@@ -700,6 +773,8 @@ bool GameController::UpdateState()
 		//	if( y < -stickThresh )
 		//		m_state.rightStickPad += 1 << 1;
 		//}
+
+		//m_state.SetLeftDirection();
 
 		result = ERROR_SUCCESS;
 	}
