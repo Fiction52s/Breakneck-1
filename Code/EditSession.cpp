@@ -504,7 +504,7 @@ void EditSession::InitGGPO()
 
 void EditSession::TestPlayerMode()
 {
-	InitGGPO();
+	//InitGGPO();
 	//----------------------------------------
 
 	gameState = Session::RUN;
@@ -1027,13 +1027,13 @@ void EditSession::UpdateModeFunc(int m)
 	{
 		while (true )
 		{
-			//if (TestPlayerModeUpdate())
-			//	break;
+			if (TestPlayerModeUpdate())
+				break;
 
-			if (GGPOTestPlayerModeUpdate())
+			/*if (GGPOTestPlayerModeUpdate())
 			{
 				break;
-			}
+			}*/
 		}
 		return;
 	}

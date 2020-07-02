@@ -429,8 +429,8 @@ void MainMenu::SetupWindow()
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);
 
-	mouseGrabbed = false;//true;
-	mouseVisible = true;//false;
+	mouseGrabbed = true;//false;//true;
+	mouseVisible = true;//false;//true;//false;
 
 	SetMouseGrabbed(mouseGrabbed);
 	SetMouseVisible(mouseVisible);
@@ -1252,8 +1252,8 @@ void MainMenu::Run()
 #endif
 	while( !quit )
 	{
-		GGPOOption();
-		continue;
+		//GGPOOption();
+		//continue;
 
 		double newTime = gameClock.getElapsedTime().asSeconds();
 		double frameTime = newTime - currentTime;
