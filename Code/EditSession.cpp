@@ -507,6 +507,9 @@ void EditSession::TestPlayerMode()
 	//InitGGPO();
 	//----------------------------------------
 
+	
+	
+
 	gameState = Session::RUN;
 	cam.Reset();
 	currStorySequence = NULL;
@@ -583,7 +586,12 @@ void EditSession::TestPlayerMode()
 	}
 
 	if (mode == TEST_PLAYER)
-	{		
+	{	
+		for (auto it = barriers.begin(); it != barriers.end(); ++it)
+		{
+			(*it)->Reset();
+		}
+
 		//GetPlayer(0)->Respawn();
 		Actor *p;
 		//gameClock.restart();
@@ -661,7 +669,11 @@ void EditSession::TestPlayerMode()
 			}
 		}
 
-		if (shipEnterScene != NULL)
+		if (preLevelScene != NULL)
+		{
+			SetActiveSequence(preLevelScene);
+		}
+		else if (shipEnterScene != NULL)
 		{
 			shipEnterScene->Reset();
 			SetActiveSequence(shipEnterScene);
@@ -933,6 +945,19 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	if (mapHeader->preLevelSceneName != "NONE")
+	{
+		if (preLevelSceneName != mapHeader->preLevelSceneName)
+		{
+			CleanupPreLevelScene();
+			preLevelScene = BasicBossScene::CreateScene(mapHeader->preLevelSceneName);
+		}
+	}
+	else
+	{
+		CleanupPreLevelScene();
+	}
+
 	if (!foundShipEnter && shipEnterScene != NULL)
 	{
 		CleanupShipEntrance();
@@ -979,8 +1004,11 @@ void EditSession::TestPlayerMode()
 	GetPlayer(0)->SetupDrain();
 
 	
-
-	if (shipEnterScene != NULL)
+	if (preLevelScene != NULL)
+	{
+		SetActiveSequence(preLevelScene);
+	}
+	else if (shipEnterScene != NULL)
 	{
 		shipEnterScene->Reset();
 		SetActiveSequence(shipEnterScene);
@@ -1966,7 +1994,7 @@ void EditSession::ProcessHeader()
 void EditSession::WriteMapHeader(ofstream &of)
 {
 	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 1;
+	mapHeader->ver2 = 2;
 
 	ShardParams *sp = NULL;
 
@@ -2250,6 +2278,25 @@ void EditSession::WriteFile(string fileName)
 	ofstream of;
 	of.open(tempMap);
 
+
+	int pointCount = 0;
+	int bgPlatCount0 = 0;
+
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		if ((*it)->layer == 0)
+		{
+			pointCount += (*it)->GetNumPoints();
+		}
+		else if ((*it)->layer == 1)
+		{
+			bgPlatCount0++;
+		}
+	}
+	of << pointCount << endl;
+	mapHeader->numVertices = pointCount;
+
+
 	int tempTop = mapHeader->topBounds;
 	int tempLeft = mapHeader->leftBounds;
 	int tempWidth = mapHeader->boundsWidth;
@@ -2273,21 +2320,6 @@ void EditSession::WriteFile(string fileName)
 		mapHeader->boundsHeight = tempHeight;
 	}
 
-	int pointCount = 0;
-	int bgPlatCount0 = 0;
-
-	for( list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it )
-	{
-		if ((*it)->layer == 0)
-		{
-			pointCount += (*it)->GetNumPoints();
-		}
-		else if ((*it)->layer == 1)
-		{
-			bgPlatCount0++;
-		}
-	}
-	of << pointCount << endl;
 
 	WriteDecor(of);
 
@@ -3526,6 +3558,7 @@ int EditSession::EditRun()
 
 int EditSession::Run()
 {
+	soundNodeList->SetSoundVolume(10);
 	int result;
 	while( true )
 	{
@@ -11889,17 +11922,16 @@ void EditSession::GeneralEventHandler()
 		}
 		case Event::LostFocus:
 		{
-			//turning off temporarily for netplay testing
-			//stored = mode;
-			//mode = PAUSED;
+			stored = mode;
+			mode = PAUSED;
 			break;
 		}
 		case Event::GainedFocus:
 		{
-			/*mode = stored;
+			mode = stored;
 			double newTime = editClock.getElapsedTime().asSeconds();
 			editCurrentTime = newTime;
-			editAccumulator = 0;*/
+			editAccumulator = 0;
 			break;
 		}
 		}

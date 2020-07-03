@@ -188,6 +188,9 @@ void Actor::PopulateState(PState *ps)
 	ps->bounceGrounded = bounceGrounded;
 	ps->justToggledBounce = justToggledBounce;
 
+	ps->attackLevel = attackLevel;
+	ps->framesSinceAttack = framesSinceAttack;
+
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -309,6 +312,9 @@ void Actor::PopulateFromState(PState *ps)
 	boostBounce = ps->boostBounce;
 	bounceGrounded = ps->bounceGrounded;
 	justToggledBounce = ps->justToggledBounce;
+
+	attackLevel = ps->attackLevel;
+	framesSinceAttack = ps->framesSinceAttack;
 }
 
 
@@ -483,8 +489,15 @@ void Actor::SetCurrHitboxes(CollisionBody *cBody,
 {
 	if (cBody != NULL)
 	{
-		currHitboxes = cBody;
-		currHitboxFrame = p_frame;
+		if (cBody->GetNumFrames() <= p_frame)
+		{
+			SetCurrHitboxes(NULL, 0);
+		}
+		else
+		{
+			currHitboxes = cBody;
+			currHitboxFrame = p_frame;
+		}
 	}
 }
 
@@ -643,9 +656,19 @@ void Actor::SetupSwordTilesets()
 	ts_diagDownSword[1] = sess->GetSizedTileset(folder, "airdash_sword_b_224x240.png", swordSkin);
 	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
 
-	ts_dashAttackSword[0] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
-	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
-	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_256x64.png", swordSkin);
+	ts_dashAttackSword[0] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
+	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
+	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
+
+	ts_dashAttackSword2[0] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
+	ts_dashAttackSword2[1] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
+	ts_dashAttackSword2[2] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
+
+	ts_dashAttackSword3[0] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
+	ts_dashAttackSword3[1] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
+	ts_dashAttackSword3[2] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
+
+	
 
 }
 
@@ -924,6 +947,30 @@ void Actor::SetupActionFunctions()
 		&Actor::DASHATTACK_TimeDepFrameInc,
 		&Actor::DASHATTACK_GetActionLength,
 		&Actor::DASHATTACK_GetTileset);
+
+	SetupFuncsForAction(DASHATTACK2,
+		&Actor::DASHATTACK2_Start,
+		&Actor::DASHATTACK2_End,
+		&Actor::DASHATTACK2_Change,
+		&Actor::DASHATTACK2_Update,
+		&Actor::DASHATTACK2_UpdateSprite,
+		&Actor::DASHATTACK2_TransitionToAction,
+		&Actor::DASHATTACK2_TimeIndFrameInc,
+		&Actor::DASHATTACK2_TimeDepFrameInc,
+		&Actor::DASHATTACK2_GetActionLength,
+		&Actor::DASHATTACK2_GetTileset);
+
+	SetupFuncsForAction(DASHATTACK3,
+		&Actor::DASHATTACK3_Start,
+		&Actor::DASHATTACK3_End,
+		&Actor::DASHATTACK3_Change,
+		&Actor::DASHATTACK3_Update,
+		&Actor::DASHATTACK3_UpdateSprite,
+		&Actor::DASHATTACK3_TransitionToAction,
+		&Actor::DASHATTACK3_TimeIndFrameInc,
+		&Actor::DASHATTACK3_TimeDepFrameInc,
+		&Actor::DASHATTACK3_GetActionLength,
+		&Actor::DASHATTACK3_GetTileset);
 
 	SetupFuncsForAction(DEATH,
 		&Actor::DEATH_Start,
@@ -1930,6 +1977,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+	attackLevel = 0;
+	framesSinceAttack = 0;
+	comboCounterResetFrames = 60;
+
 	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2703,13 +2754,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	slopeTooSteepLaunchLimitX = .1;
 		
-	steepClimbGravFactor = .6;//.31;//.6;//.31;
-	steepClimbUpFactor = .4;//.17;//.31;
+	steepClimbGravFactor = .4;//.6;//.31;//.6;//.31;
+	steepClimbUpFactor = .31;//.17;//.4;//.17;//.31;
 	steepClimbDownFactor = steepClimbGravFactor;//.5;
 	steepClingSpeedLimit = 2.0;
 	//steepClimbFastFactor = .7;//.2;
 	framesSinceClimbBoost = 0;
-	climbBoostLimit = 25;//22;//15;
+	climbBoostLimit = 30;//25;//22;//15;
 		
 
 		
@@ -3431,6 +3482,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	attackLevel = 0;
+	framesSinceAttack = 0;
 	standNDashBoost = false;
 	drainCounter = 0;
 	flyCounter = 0;
@@ -4715,6 +4768,7 @@ void Actor::UpdatePrePhysics()
 {
 	if (hitlagFrames > 0)
 	{
+		UpdateInHitlag();
 		return;
 	}
 
@@ -10168,7 +10222,9 @@ bool Actor::CheckRightStickSwing()
 
 bool Actor::IsGroundAttack(int a)
 {
-	return a == Action::STANDN || a == Action::DASHATTACK;
+	return a == Action::STANDN || a == Action::DASHATTACK
+		|| a == Action::DASHATTACK2 
+		|| a == Action::DASHATTACK3;
 }
 
 bool Actor::TryGroundAttack()
@@ -10239,9 +10295,27 @@ bool Actor::TryGroundAttack()
 		}
 		else
 		{
-			if (action == DASH)
+			if (action == DASH || ((action == DASHATTACK
+				|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B 
+				&& (currInput.LLeft() || currInput.LRight())) )
 			{
-				SetAction(DASHATTACK);
+				switch (attackLevel)
+				{
+				case 0:
+					SetAction(DASHATTACK);
+					break;
+				case 1:
+					SetAction(DASHATTACK2);
+					break;
+				case 2:
+					SetAction(DASHATTACK3);
+				}
+				/*case 2:
+					SetAction(DASHATTACK3);
+					break;
+				}*/
+				//SetAction(DASHATTACK2);
+				
 			}
 			else
 			{
@@ -10251,6 +10325,10 @@ bool Actor::TryGroundAttack()
 			frame = 0;
 		}
 		
+		framesSinceAttack = 0;
+		attackLevel++;
+		if (attackLevel == 3)
+			attackLevel = 0;
 
 		return true;
 	}
@@ -10957,6 +11035,7 @@ void Actor::PhysicsResponse()
 			currVSHitboxInfo->knockback = 15;
 
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;
+
 
 			pTarget->ApplyHit( currVSHitboxInfo );
 
@@ -11774,7 +11853,12 @@ void Actor::SlowDependentFrameIncrement()
 
 		++frame;
 
-
+		if (framesSinceAttack < comboCounterResetFrames)
+			framesSinceAttack++;
+		else
+		{
+			attackLevel = 0;
+		}
 
 		if (springStunFrames > 0)
 			--springStunFrames;
@@ -14117,6 +14201,8 @@ void Actor::Draw( sf::RenderTarget *target )
 				break;
 			}
 			case DASHATTACK:
+			case DASHATTACK2:
+			case DASHATTACK3:
 			{
 				if (flashFrames > 0)
 				{

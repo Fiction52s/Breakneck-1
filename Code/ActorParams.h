@@ -142,6 +142,8 @@ struct CameraShotParams : public ActorParams
 	sf::RectangleShape camRect;
 	sf::Text nameText;
 	sf::Text zoomText;
+
+	std::string name; //for gamesession
 };
 
 struct NexusParams : public ActorParams

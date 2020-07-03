@@ -246,6 +246,9 @@ struct PState
 	bool boostBounce;
 	bool bounceGrounded;
 	bool justToggledBounce;
+
+	int attackLevel;
+	int framesSinceAttack;
 };
 
 struct SaveGameState

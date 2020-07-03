@@ -3,89 +3,24 @@
 using namespace sf;
 using namespace std;
 
-void Actor::DASHATTACK_Start()
+void Actor::DASHATTACK3_Start()
 {
+	DASHATTACK_Start();
 }
 
-void Actor::DASHATTACK_End()
+void Actor::DASHATTACK3_End()
 {
-	if (currInput.LLeft() || currInput.LRight())
-	{
-		if (currInput.B)
-		{
-			SetAction(DASH);
-			//action = DASH;
-			//re->Reset();
-			//re1->Reset();
-		}
-		else
-		{
-			SetAction(RUN);
-		}
-		facingRight = currInput.LRight();
-	}
-	else
-	{
-		SetAction(BRAKE);
-		//SetAction(STAND);
-	}
-	frame = 0;
+	DASHATTACK_End();
 }
 
-void Actor::DASHATTACK_Change()
+void Actor::DASHATTACK3_Change()
 {
-	if (currAttackHit || frame > 14)//&& frame > 0 )
-	{
-		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-		{
-			BounceFlameOn();
-		}
-		else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-		{
-			//bounceGrounded = false;
-			BounceFlameOff();
-		}
-
-		if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-		{
-			BounceFlameOff();
-			SetActionGrind();
-			//dashStartSound.setLoop( false );
-			////runTappingSound.stop();
-			return;
-		}
-
-		if ((currInput.A && !prevInput.A) || pauseBufferedJump)
-		{
-			SetAction(JUMPSQUAT);
-			frame = 0;
-			return;
-		}
-
-		if (TryGroundAttack())
-		{
-			return;
-		}
-
-		if (pauseBufferedDash || (currInput.B && !prevInput.B))
-		{
-			if (currAttackHit)
-			{
-				if (standNDashBoostCurr == 0)
-				{
-					standNDashBoost = true;
-					standNDashBoostCurr = standNDashBoostCooldown;
-				}
-			}
-			SetAction(DASH);
-			frame = 0;
-			return;
-		}
-	}
+	DASHATTACK_Change();
 }
 
-void Actor::DASHATTACK_Update()
+void Actor::DASHATTACK3_Update()
 {
+	//change this to dash attack 2 hitboxes soon
 	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
@@ -97,14 +32,14 @@ void Actor::DASHATTACK_Update()
 	AttackMovement();
 }
 
-void Actor::DASHATTACK_UpdateSprite()
+void Actor::DASHATTACK3_UpdateSprite()
 {
 	int startFrame = 0;
 	showSword = true;
 
-	Tileset *curr_ts = ts_dashAttackSword[speedLevel];
+	Tileset *curr_ts = ts_dashAttackSword3[speedLevel];
 
-	if (frame >= 8 * 2)
+	if (frame >= 12 * 2)
 		showSword = false;
 
 	if (showSword)
@@ -159,27 +94,27 @@ void Actor::DASHATTACK_UpdateSprite()
 	dashAttackSword.setPosition(pos.x, pos.y);
 }
 
-void Actor::DASHATTACK_TransitionToAction(int a)
+void Actor::DASHATTACK3_TransitionToAction(int a)
 {
 
 }
 
-void Actor::DASHATTACK_TimeIndFrameInc()
+void Actor::DASHATTACK3_TimeIndFrameInc()
 {
 
 }
 
-void Actor::DASHATTACK_TimeDepFrameInc()
+void Actor::DASHATTACK3_TimeDepFrameInc()
 {
 
 }
 
-int Actor::DASHATTACK_GetActionLength()
+int Actor::DASHATTACK3_GetActionLength()
 {
-	return 14 * 2;
+	return 16 * 2;
 }
 
-Tileset * Actor::DASHATTACK_GetTileset()
+Tileset * Actor::DASHATTACK3_GetTileset()
 {
-	return GetActionTileset("dash_att_01_128x64.png");
+	return GetActionTileset("dash_att_03_128x64.png");
 }

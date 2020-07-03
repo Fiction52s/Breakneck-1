@@ -1575,6 +1575,9 @@ Session::~Session()
 		inputVis = NULL;
 	}
 
+	CleanupPreLevelScene();
+	CleanupPostLevelScene();
+
 	CleanupShipEntrance();
 	CleanupShipExit();
 
@@ -6105,4 +6108,22 @@ bool Session::LoadState(unsigned char *buffer, int len)
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 
 	return true;
+}
+
+void Session::CleanupPreLevelScene()
+{
+	if (preLevelScene != NULL)
+	{
+		delete preLevelScene;
+		preLevelScene = NULL;
+	}
+}
+
+void Session::CleanupPostLevelScene()
+{
+	if (postLevelScene != NULL)
+	{
+		delete postLevelScene;
+		postLevelScene = NULL;
+	}
 }

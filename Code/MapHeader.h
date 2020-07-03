@@ -21,7 +21,8 @@ struct MapHeader
 		leftBounds(0), topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards(0),
 		drainSeconds(60), bossFightType(0), envName("w1_01"),
-		envWorldType(0)
+		envWorldType(0), preLevelSceneName("NONE"),
+		postLevelSceneName("NONE")
 	{
 
 	}
@@ -48,6 +49,8 @@ struct MapHeader
 	int numShards;
 	int bossFightType;
 	std::vector<ShardInfo> shardInfoVec;
+	std::string preLevelSceneName;
+	std::string postLevelSceneName;
 
 	std::map < std::string, int > songLevels;
 

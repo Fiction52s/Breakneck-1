@@ -1039,19 +1039,19 @@ void GameSession::ProcessActor(ActorPtr a)
 			XBarrierParams *xbp = (XBarrierParams*)a;
 			AddBarrier(xbp);
 		}
-		else if (typeName == "extrascene")
-		{
-			ExtraSceneParams *xp = (ExtraSceneParams*)a;
-			BasicBossScene *scene = BasicBossScene::CreateScene(xp->GetName());
-			if (xp->extraSceneType == 0)//prelevel
-			{
-				preLevelScene = scene;
-			}
-			else if (xp->extraSceneType == 1)//postlevel
-			{
-				postLevelScene = scene;
-			}
-		}
+		//else if (typeName == "extrascene")
+		//{
+		//	ExtraSceneParams *xp = (ExtraSceneParams*)a;
+		//	BasicBossScene *scene = BasicBossScene::CreateScene(xp->GetName());
+		//	if (xp->extraSceneType == 0)//prelevel
+		//	{
+		//		preLevelScene = scene;
+		//	}
+		//	else if (xp->extraSceneType == 1)//postlevel
+		//	{
+		//		postLevelScene = scene;
+		//	}
+		//}
 		else if (typeName == "camerashot")
 		{
 			CameraShotParams *csp = (CameraShotParams*)a;
@@ -1102,6 +1102,11 @@ void GameSession::ProcessAllActors()
 	if (raceFight != NULL)
 	{
 		raceFight->Init();
+	}
+
+	if (mapHeader->preLevelSceneName != "NONE")
+	{
+		preLevelScene = BasicBossScene::CreateScene(mapHeader->preLevelSceneName);
 	}
 
 	//create sequences for the barriers after all enemies have already been loaded
@@ -3242,7 +3247,8 @@ void GameSession::RestartLevel()
 		LoadState();
 	}*/
 
-	goalPulse->Reset();
+	if( goalPulse != NULL )
+		goalPulse->Reset();
 	//f->Reset();
 
 

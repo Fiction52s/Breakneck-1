@@ -470,6 +470,8 @@ struct Dropdown : PanelMember
 	bool MouseUpdate();
 	void Deactivate();
 	void SetSelectedIndex(int ind);
+	bool SetSelectedText(
+		const std::string &text);
 	const std::string &GetSelectedText();
 	sf::Vector2i pos;
 	sf::Vector2f size;
@@ -772,6 +774,8 @@ struct MapOptionsUI : GUIHandler
 	Button *bgButton;
 	Button *okButton;
 	TextBox* drainTextbox;
+	Dropdown *preDropdown;
+	Dropdown *postDropdown;
 
 	MapOptionsUI();
 	~MapOptionsUI();

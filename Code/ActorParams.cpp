@@ -1419,27 +1419,39 @@ CameraShotParams::CameraShotParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
-	Init();
+	
 
 	string n;
 	is >> n;
 	
 	nameIndex = type->GetSpecialOptionsIndex(n);
-	assert(nameIndex >= 0);
-	SetText(n);
+	//assert(nameIndex >= 0);
+	if (nameIndex >= 0)
+	{
+		Init();
+		SetText(n);
+	}
+	else
+	{
+		name = n;
+	}
 	
-
 	float z;
 	is >> z;
-
-	
 
 	SetZoom(z);
 }
 
 const std::string &CameraShotParams::GetName()
 {
-	return type->specialTypeOptions[nameIndex];
+	if (nameIndex >= 0)
+	{
+		return type->specialTypeOptions[nameIndex];
+	}
+	else
+	{
+		return name;
+	}
 }
 
 void CameraShotParams::SetText(const std::string &n)

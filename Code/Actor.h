@@ -165,6 +165,8 @@ struct Actor : QuadTreeCollider,
 		SPRINT,
 		STAND,
 		DASHATTACK,
+		DASHATTACK2,
+		DASHATTACK3,
 		WALLATTACK,
 		STEEPCLIMBATTACK,
 		STEEPSLIDEATTACK,
@@ -413,9 +415,10 @@ struct Actor : QuadTreeCollider,
 	bool bounceGrounded;
 	bool justToggledBounce;
 
-	void SetFBubbleFrame(int i, float val);
-	void SetFBubblePos(int i, sf::Vector2f &pos);
-	void SetFBubbleRadiusSize(int i, float rad);
+	int attackLevel;
+	int framesSinceAttack;
+	int comboCounterResetFrames;
+
 
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
@@ -579,6 +582,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_standingNSword[3];
 	sf::Sprite dashAttackSword;
 	Tileset *ts_dashAttackSword[3];
+	Tileset *ts_dashAttackSword2[3];
+	Tileset *ts_dashAttackSword3[3];
 	sf::Sprite wallAttackSword;
 	Tileset *ts_wallAttackSword[3];
 	sf::Sprite steepSlideAttackSword;
@@ -818,6 +823,10 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 	V2d GetGroundAnchor();
+
+	void SetFBubbleFrame(int i, float val);
+	void SetFBubblePos(int i, sf::Vector2f &pos);
+	void SetFBubbleRadiusSize(int i, float rad);
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
@@ -1253,6 +1262,28 @@ struct Actor : QuadTreeCollider,
 	void DASHATTACK_TimeDepFrameInc();
 	int DASHATTACK_GetActionLength();
 	Tileset * DASHATTACK_GetTileset();
+
+	void DASHATTACK2_Start();
+	void DASHATTACK2_End();
+	void DASHATTACK2_Change();
+	void DASHATTACK2_Update();
+	void DASHATTACK2_UpdateSprite();
+	void DASHATTACK2_TransitionToAction(int a);
+	void DASHATTACK2_TimeIndFrameInc();
+	void DASHATTACK2_TimeDepFrameInc();
+	int DASHATTACK2_GetActionLength();
+	Tileset * DASHATTACK2_GetTileset();
+
+	void DASHATTACK3_Start();
+	void DASHATTACK3_End();
+	void DASHATTACK3_Change();
+	void DASHATTACK3_Update();
+	void DASHATTACK3_UpdateSprite();
+	void DASHATTACK3_TransitionToAction(int a);
+	void DASHATTACK3_TimeIndFrameInc();
+	void DASHATTACK3_TimeDepFrameInc();
+	int DASHATTACK3_GetActionLength();
+	Tileset * DASHATTACK3_GetTileset();
 
 	void DEATH_Start();
 	void DEATH_End();

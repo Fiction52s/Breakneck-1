@@ -225,8 +225,11 @@ void BirdCrawlerAllianceScene::SetupStates()
 
 void BirdCrawlerAllianceScene::ReturnToGame()
 {
-	//owner->SetPlayerInputOn(true);
-	//owner->adventureHUD->Show(60);
+	sess->SetPlayerInputOn(true);
+	sess->adventureHUD->Show();
+	sess->cam.SetManual(false);
+	sess->Fade(true, 60, Color::Black);
+	
 	//owner->cam.EaseOutOfManual(60);
 	//owner->cam.EaseOutOfManual(60);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);

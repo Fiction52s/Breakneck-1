@@ -674,6 +674,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool PlayerIsMovingLeft(int index = 0);
 	bool PlayerIsMovingRight(int index = 0);
 	bool PlayerIsFacingRight(int index = 0);
+	void CleanupPreLevelScene();
+	void CleanupPostLevelScene();
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;

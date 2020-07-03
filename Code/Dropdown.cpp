@@ -148,6 +148,27 @@ void Dropdown::SetSelectedIndex(int ind)
 	}
 }
 
+bool Dropdown::SetSelectedText(
+	const std::string &text)
+{
+	int numOptions = options.size();
+	for (int i = 0; i < numOptions; ++i)
+	{
+		if (options[i] == text)
+		{
+			if (selectedIndex != i)
+			{
+				selectedIndex = i;
+				selectedText.setString(options[i]);
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
 const std::string &Dropdown::GetSelectedText()
 {
 	return options[selectedIndex];

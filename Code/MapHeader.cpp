@@ -103,6 +103,9 @@ bool MapHeader::Load(std::ifstream &is)
 		assert(0);
 	}
 
+	ver1 = part1Num;
+	ver2 = part2Num;
+
 	int p_gameMode;
 	is >> p_gameMode;
 	is >> envWorldType;
@@ -115,9 +118,14 @@ bool MapHeader::Load(std::ifstream &is)
 	is >> bossFightType;
 	is >> numVertices;
 
+	if (ver1 >= 2 && ver2 >= 2)
+	{
+		is >> preLevelSceneName;
+		is >> postLevelSceneName;
+	}
+
 	collectionName = collectionName;
-	ver1 = part1Num;
-	ver2 = part2Num;
+	
 	description = ss.str();
 
 	gameMode = (MapHeader::MapType)p_gameMode;
@@ -154,7 +162,12 @@ void MapHeader::Save(std::ofstream &of)
 	of << drainSeconds << endl;
 
 	of << bossFightType << endl;
-	//of << numVertices << endl;
+
+	of << numVertices << "\n";
+
+	of << preLevelSceneName << "\n";
+
+	of << postLevelSceneName << "\n";
 }
 
 int MapHeader::GetLeft()

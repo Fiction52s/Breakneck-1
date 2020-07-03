@@ -803,6 +803,8 @@ struct EditSession : GUIHandler, Session
 	int start;
 	int next;
 	int now;
+
+	std::string preLevelSceneName;
 };
 
 

@@ -31,6 +31,10 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new CrawlerAttackSeq;
 	}
+	else if (name == "crawlerscene2")
+	{
+		bScene = new CrawlerPreFight2Scene;
+	}
 	else if (name == "birdcrawleralliance")
 	{
 		bScene = new BirdCrawlerAllianceScene;
@@ -50,10 +54,6 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	else if (name == "coyotescene2")
 	{
 		bScene = new CoyoteAndSkeletonScene;
-	}
-	else if (name == "crawlerscene2")
-	{
-		bScene = new CrawlerPreFight2Scene;
 	}
 	else if (name == "tigerscene0")
 	{
