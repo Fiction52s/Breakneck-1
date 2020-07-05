@@ -4,7 +4,7 @@
 #include "SFML/Graphics.hpp"
 
 struct Tileset;
-struct GameSession;
+struct Session;
 
 struct ScoreDisplay;
 
@@ -40,8 +40,7 @@ struct ScoreBar
 
 struct ScoreDisplay
 {
-	ScoreDisplay(GameSession *owner,
-		sf::Vector2f &position,
+	ScoreDisplay(sf::Vector2f &position,
 		sf::Font & testFont);
 	~ScoreDisplay();
 	sf::Sprite score;
@@ -64,7 +63,7 @@ struct ScoreDisplay
 	static const int NUM_BARS = 3;
 	ScoreBar *bars[NUM_BARS+1];
 
-	GameSession *owner;
+	Session *sess;
 	Tileset *ts_scoreBar;
 	Tileset *ts_scoreSheet;
 	Tileset *ts_scoreSymbols;

@@ -483,7 +483,7 @@ struct GameSession : RayCastHandler, Session
 	void SetupPlayers();
 	void SetupShaders();
 	void SetupBackground();
-	void SetupScoreDisplay();
+	
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
 	
@@ -538,7 +538,6 @@ struct GameSession : RayCastHandler, Session
 
 	void CloseGates(int gCat);
 	void KeyboardUpdate( int index );
-	void EndLevel();
 
 	
 	bool IsWithinBounds(V2d &p);

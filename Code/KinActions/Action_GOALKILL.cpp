@@ -19,7 +19,7 @@ void Actor::GOALKILL_End()
 	facingRight = true;
 	SetAction(GOALKILLWAIT);
 	frame = 0;
-	owner->scoreDisplay->Activate();
+	sess->scoreDisplay->Activate();
 }
 
 void Actor::GOALKILL_Change()
@@ -92,9 +92,9 @@ void Actor::GOALKILL_UpdateSprite()
 
 									   //cb.GetValue()
 
-		V2d start = owner->goalNodePos;
+		V2d start = sess->goalNodePos;
 
-		V2d end = owner->goalNodePosFinal;
+		V2d end = sess->goalNodePosFinal;
 		int st = 48 * 2;
 		if (frame >= st)
 		{

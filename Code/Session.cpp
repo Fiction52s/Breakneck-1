@@ -49,6 +49,7 @@
 #include "EnemiesW5.h"
 #include "EnemiesW6.h"
 
+#include "ScoreDisplay.h"
 
 
 using namespace sf;
@@ -1596,6 +1597,8 @@ Session::~Session()
 	CleanupRain();
 
 	CleanupGateMarkers();
+
+	CleanupScoreDisplay();
 }
 
 void Session::UpdateDecorLayers()
@@ -6125,5 +6128,49 @@ void Session::CleanupPostLevelScene()
 	{
 		delete postLevelScene;
 		postLevelScene = NULL;
+	}
+}
+
+void Session::SetupScoreDisplay()
+{
+	if (parentGame != NULL)
+	{
+		scoreDisplay = parentGame->scoreDisplay;
+		scoreDisplay->Reset();
+	}
+	else if (scoreDisplay == NULL)
+		scoreDisplay = new ScoreDisplay(Vector2f(1920, 0), mainMenu->arial);
+	else
+	{
+		scoreDisplay->Reset();
+	}
+}
+
+void Session::CleanupScoreDisplay()
+{
+	if (parentGame == NULL && scoreDisplay != NULL)
+	{
+		delete scoreDisplay;
+		scoreDisplay = NULL;
+	}
+}
+
+void Session::EndLevel()
+{
+	if (postLevelScene != NULL)
+	{
+		SetActiveSequence(postLevelScene);
+	}
+	else
+	{
+		if (IsSessTypeGame())
+		{
+			goalDestroyed = true;
+		}
+		else
+		{
+			EditSession *edit = EditSession::GetSession();
+			edit->EndTestMode();
+		}
 	}
 }

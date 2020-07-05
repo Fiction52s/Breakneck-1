@@ -800,9 +800,6 @@ struct EditSession : GUIHandler, Session
 
 	bool GGPOTestPlayerModeUpdate();
 	void InitGGPO();
-	int start;
-	int next;
-	int now;
 
 	std::string preLevelSceneName;
 };

@@ -4845,12 +4845,9 @@ void Actor::UpdatePrePhysics()
 	{
 		HandleWaitingScoreDisplay();
 		
-		if( !owner->scoreDisplay->active )
+		if( !sess->scoreDisplay->active )
 		{
-			
-			//SetAction(EXIT);
-
-			if (owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
+			if (owner != NULL && owner->resType == GameSession::GameResultType::GR_WINCONTINUE)
 			{
 				SetAction(EXITBOOST);
 				owner->Fade(false, 30, Color::Black, true);
@@ -4858,10 +4855,8 @@ void Actor::UpdatePrePhysics()
 			else
 			{
 				SetAction(EXIT);
-				owner->Fade(false, 30, Color::Black, true);
+				sess->Fade(false, 30, Color::Black, true);
 			}
-
-			//position = V2d(owner->goalNodePos.x, owner->goalNodePos.y -80.f);
 			frame = 0;
 		}
 		return;
@@ -5827,28 +5822,38 @@ void Actor::HandleWaitingScoreDisplay()
 		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
 		if (a || x)
 		{
-			SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
-			bool levValid = owner->level != NULL && !currFile->IsLevelLastInSector( owner->level );
-			if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+			if (owner != NULL)
 			{
-				owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
-			}
-			else if (x)
-			{
-				owner->resType = GameSession::GameResultType::GR_WIN;
+				SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
+				bool levValid = owner->level != NULL && !currFile->IsLevelLastInSector(owner->level);
+				if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
+				{
+					owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+				}
+				else if (x)
+				{
+					owner->resType = GameSession::GameResultType::GR_WIN;
+				}
 			}
 
 			sess->scoreDisplay->Deactivate();
 		}
 		else if (b)
 		{
-			if ( owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+			if (owner != NULL)
 			{
-				SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
-				owner->mainMenu->worldMap->CompleteCurrentMap( owner->level, owner->totalFramesBeforeGoal);
-				currFile->Save();
+				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				{
+					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
+					currFile->Save();
+				}
+				owner->NextFrameRestartLevel();
 			}
-			owner->NextFrameRestartLevel();
+			else
+			{
+				editOwner->TestPlayerMode();
+			}
 			return;
 		}
 	}
@@ -5856,17 +5861,11 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
-	if (owner != NULL)
-	{
-		owner->scoreDisplay->Activate();
-		SetAction(Actor::GOALKILLWAIT);
-		frame = 0;
-	}
-	else
-	{
-		editOwner->EndTestMode();
-	}
-	
+	sess->scoreDisplay->Activate();
+	SetAction(Actor::GOALKILLWAIT);
+	frame = 0;
+
+	//endtestmode
 }
 
 void Actor::SetStandInPlacePos(Edge *g, double q,
@@ -11528,40 +11527,39 @@ void Actor::ProcessHitGoal()
 {
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
-		if (owner != NULL)
+		
+		sess->totalFramesBeforeGoal = sess->totalGameFrames;
+		SetAction(GOALKILL);
+		SetKinMode(K_NORMAL);
+		hitGoal = false;
+
+		if (owner != NULL && owner->parentGame == NULL)
 		{
-			owner->totalFramesBeforeGoal = owner->totalGameFrames;
-			SetAction(GOALKILL);
-			SetKinMode(K_NORMAL);
-			hitGoal = false;
-
-			if (owner->parentGame == NULL)
+			if (owner->recPlayer != NULL)
 			{
-				if (owner->recPlayer != NULL)
-				{
-					owner->recPlayer->RecordFrame();
-					owner->recPlayer->StopRecording();
-					owner->recPlayer->WriteToFile("testreplay.brep");
-				}
-
-				if (owner->recGhost != NULL)
-				{
-					owner->recGhost->StopRecording();
-					owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
-				}
+				owner->recPlayer->RecordFrame();
+				owner->recPlayer->StopRecording();
+				owner->recPlayer->WriteToFile("testreplay.brep");
 			}
 
-			frame = 0;
-			position = owner->goalNodePos;
-			owner->cam.Ease(Vector2f(owner->goalNodePosFinal), 1, 60, CubicBezier());
-			rightWire->Reset();
-			leftWire->Reset();
-			SetKinMode(K_NORMAL);
+			if (owner->recGhost != NULL)
+			{
+				owner->recGhost->StopRecording();
+				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+			}
 		}
-		else if (editOwner != NULL)
+
+		frame = 0;
+		position = sess->goalNodePos;
+		sess->cam.Ease(Vector2f(sess->goalNodePosFinal), 1, 60, CubicBezier());
+		rightWire->Reset();
+		leftWire->Reset();
+		SetKinMode(K_NORMAL);
+		
+		/*else if (editOwner != NULL)
 		{
 			editOwner->EndTestMode();
-		}
+		}*/
 	}
 	else if (hitNexus)
 	{
@@ -11893,7 +11891,7 @@ void Actor::TryEndLevel()
 {
 	if (action == EXITWAIT && frame == GetActionLength(EXITWAIT))
 	{
-		owner->EndLevel();
+		sess->EndLevel();
 		//owner->goalDestroyed = true;	
 	}
 	else if (action == EXITBOOST && frame == GetActionLength(EXITBOOST))

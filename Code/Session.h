@@ -676,6 +676,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool PlayerIsFacingRight(int index = 0);
 	void CleanupPreLevelScene();
 	void CleanupPostLevelScene();
+	void SetupScoreDisplay();
+	void CleanupScoreDisplay();
+	void EndLevel();
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;

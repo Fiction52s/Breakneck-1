@@ -506,9 +506,8 @@ void EditSession::TestPlayerMode()
 {
 	//InitGGPO();
 	//----------------------------------------
-
 	
-	
+	scoreDisplay->Reset();
 
 	gameState = Session::RUN;
 	cam.Reset();
@@ -558,19 +557,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	if (!continueTracking)
-	{
-		playerTracker->Reset();
-		totalGameFrames = 0;
-		totalFramesBeforeGoal = -1;
-		currentTime = 0;
-		gameClock.restart();
-		//accumulator = TIMESTEP + .1;
-	}
-	else
-	{
-		int x = 5;
-	}
+	
 
 	
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -1014,11 +1001,24 @@ void EditSession::TestPlayerMode()
 		SetActiveSequence(shipEnterScene);
 	}
 
-	start = next = now = timeGetTime();
+	if (!continueTracking)
+	{
+		playerTracker->Reset();
+		totalGameFrames = 0;
+		totalFramesBeforeGoal = -1;
+		currentTime = 0;
+		gameClock.restart();
+		//accumulator = TIMESTEP + .1;
+	}
+	else
+	{
+		int x = 5;
+	}
 }
 
 void EditSession::EndTestMode()
 {
+	
 	SetMode(EDIT);
 }
 
@@ -1180,6 +1180,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	inversePolygon = NULL;
 	
+	SetupScoreDisplay();
 
 	minZoom = .25 / 16.0;//.25;
 	maxZoom = 65536;
@@ -10001,6 +10002,9 @@ void EditSession::RemoveActivePanel(Panel *p)
 
 void EditSession::CleanupTestPlayerMode()
 {
+	fader->Reset();
+	swiper->Reset();
+
 	ResetEnemies();
 
 	Enemy *curr = activeEnemyList;
@@ -10038,6 +10042,8 @@ void EditSession::CleanupTestPlayerMode()
 
 void EditSession::SetMode(Emode m)
 {
+
+
 	Emode oldMode = mode;
 	if (oldMode == SELECT_MODE)
 	{

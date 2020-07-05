@@ -698,12 +698,6 @@ void GameSession::Cleanup()
 		railDrawTree = NULL;
 	}
 
-	if ( parentGame == NULL && scoreDisplay != NULL)
-	{
-		delete scoreDisplay;
-		scoreDisplay = NULL;
-	}
-
 	if (activeEnemyItemTree != NULL)
 	{
 		delete activeEnemyItemTree;
@@ -1683,20 +1677,7 @@ void GameSession::SetupBackground()
 	background = Background::SetupFullBG(mapHeader->envName, this);
 }
 
-void GameSession::SetupScoreDisplay()
-{
-	if (parentGame != NULL)
-	{
-		scoreDisplay = parentGame->scoreDisplay;
-		scoreDisplay->Reset();
-	}
-	else if( scoreDisplay == NULL )
-		scoreDisplay = new ScoreDisplay(this, Vector2f(1920, 0), mainMenu->arial);
-	else
-	{
-		scoreDisplay->Reset();
-	}
-}
+
 
 void GameSession::SetupQuadTrees()
 {
@@ -2901,17 +2882,7 @@ void GameSession::UpdateTimeSlowShader()
 
 
 
-void GameSession::EndLevel()
-{
-	if (postLevelScene != NULL)
-	{
-		SetActiveSequence(postLevelScene);
-	}
-	else
-	{
-		goalDestroyed = true;
-	}
-}
+
 
 void GameSession::SuppressEnemyKeys( Gate *g )
 {

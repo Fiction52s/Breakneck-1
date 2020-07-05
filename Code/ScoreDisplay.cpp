@@ -1,20 +1,20 @@
 #include "ScoreDisplay.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "Tileset.h"
 #include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
 
-ScoreDisplay::ScoreDisplay(GameSession *p_owner, Vector2f &position,
+ScoreDisplay::ScoreDisplay(Vector2f &position,
 	sf::Font &testFont)
 	:scoreBarVA(sf::Quads, 4 * (NUM_BARS+1)), scoreSymbolsVA(sf::Quads, 4 * NUM_BARS), scoreSheetVA(sf::Quads, 4 * NUM_BARS), font(testFont)
 {
+	sess = Session::GetSession();
 	basePos = position;
-	owner = p_owner;
-	ts_scoreBar = owner->GetTileset("HUD/score_bar_384x80.png", 384, 80);
-	ts_scoreSheet = owner->GetTileset("HUD/score_sheet_384x80.png", 384, 80);
-	ts_scoreSymbols = owner->GetTileset("HUD/score_symbol_384x80.png", 384, 80);
+	ts_scoreBar = sess->GetTileset("HUD/score_bar_384x80.png", 384, 80);
+	ts_scoreSheet = sess->GetTileset("HUD/score_sheet_384x80.png", 384, 80);
+	ts_scoreSymbols = sess->GetTileset("HUD/score_symbol_384x80.png", 384, 80);
 
 	scoreContinue.setOrigin(scoreContinue.getLocalBounds().width, 0);
 	scoreContinue.setPosition(1920, 400);
@@ -141,10 +141,10 @@ void ScoreDisplay::Activate()
 
 	stringstream ss;
 
-	time.setString(GetTimeStr( owner->totalFramesBeforeGoal));
+	time.setString(GetTimeStr(sess->totalFramesBeforeGoal));
 	
 	ss.str("");
-	ss << owner->numKeysCollected << " / " << owner->numTotalKeys;
+	//ss << sess->numKeysCollected << " / " << sess->numTotalKeys;
 	keys.setString(ss.str());
 
 	//time.setString("HERE I AM BUDDY");
