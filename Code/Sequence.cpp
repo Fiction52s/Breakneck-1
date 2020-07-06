@@ -16,7 +16,6 @@
 #include "Flow.h"
 #include "Boss.h"
 #include "PowerOrbs.h"
-#include "Sequence.h"
 #include "SoundManager.h"
 #include "BarrierReactions.h"
 #include "EnvEffects.h"
@@ -30,8 +29,112 @@
 #include "ButtonHolder.h"
 #include "Config.h"
 
+#include "Sequence.h"
+#include "SequenceW1.h"
+#include "SequenceW2.h"
+#include "SequenceW3.h"
+#include "SequenceW4.h"
+#include "SequenceW5.h"
+#include "SequenceW6.h"
+#include "SequenceW7.h"
+
 using namespace sf;
 using namespace std;
+
+Sequence *Sequence::CreateScene(const std::string &name)
+{
+	Sequence *bScene = NULL;
+	if (name == "kinhouse")
+	{
+		bScene = new StoryScene(name);
+	}
+	else if (name == "birdscene0")
+	{
+		bScene = new BirdPreFightScene;
+	}
+	else  if (name == "birdscene1")
+	{
+		bScene = new BirdPreFight2Scene;
+	}
+	else if (name == "crawlerscene0")
+	{
+		bScene = new CrawlerAttackSeq;
+	}
+	else if (name == "crawlerscene2")
+	{
+		bScene = new CrawlerPreFight2Scene;
+	}
+	else if (name == "birdcrawleralliance")
+	{
+		bScene = new BirdCrawlerAllianceScene;
+	}
+	else if (name == "birdtigerapproach")
+	{
+		bScene = new BirdTigerApproachScene;
+	}
+	else if (name == "coyotescene0")
+	{
+		bScene = new CoyoteSleepScene;
+	}
+	else if (name == "coyotescene1")
+	{
+		bScene = new CoyotePreFightScene;
+	}
+	else if (name == "coyotescene2")
+	{
+		bScene = new CoyoteAndSkeletonScene;
+	}
+	else if (name == "tigerscene0")
+	{
+		bScene = new TigerPreFightScene;
+	}
+	else if (name == "birdtigervsscene")
+	{
+		bScene = new BirdVSTigerScene;
+	}
+	else if (name == "gatorscene0")
+	{
+		bScene = new GatorPreFightScene;
+	}
+	else if (name == "birdchase")
+	{
+		bScene = new BirdChaseScene;
+	}
+	else if (name == "birdfinalfight")
+	{
+		bScene = new BirdPreFight3Scene;
+
+	}
+	else if (name == "finalskeletonfight")
+	{
+		bScene = new FinalSkeletonPreFightScene;
+	}
+	else if (name == "enterfortress")
+	{
+		bScene = new TigerAndBirdTunnelScene;
+	}
+	else if (name == "tigerbirdtunnel")
+	{
+		bScene = new TigerAndBirdTunnelScene;
+	}
+	else if (name == "skeletonfight")
+	{
+		bScene = new SkeletonPreFightScene;
+	}
+	else if (name == "tigerfight2")
+	{
+		bScene = new TigerPreFight2Scene;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	if (bScene != NULL)
+		bScene->Init();
+
+	return bScene;
+}
 
 Sequence::Sequence()
 	:frameCount(-1),frame(0),nextSeq(NULL)
@@ -530,4 +633,50 @@ bool Sequence::Update()
 	++frame;
 
 	return true;
+}
+
+
+#include "StorySequence.h"
+StoryScene::StoryScene(const std::string &name)
+{
+	story = new StorySequence;
+	story->Load(name);
+}
+
+StoryScene::~StoryScene()
+{
+	delete story;
+}
+
+void StoryScene::Reset()
+{
+	Sequence::Reset();
+	story->Reset();
+}
+
+void StoryScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[SHOWSTORY] = 999999;
+}
+
+void StoryScene::ReturnToGame()
+{
+	sess->SetGameSessionState(GameSession::RUN);
+}
+
+void StoryScene::UpdateState()
+{
+	story->Update(sess->GetPrevInput(0), sess->GetCurrInput(0));
+
+	if (frame == 0)
+	{
+		sess->SetGameSessionState(GameSession::SEQUENCE);
+	}
+}
+
+void StoryScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	story->DrawLayer(target, layer);
 }

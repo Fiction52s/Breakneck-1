@@ -70,18 +70,10 @@ void StoryText::Draw(sf::RenderTarget *target)
 	target->draw(text);
 }
 
-//eventually make this the font manager
-StorySequence::StorySequence(sf::Font &font, TilesetManager *p_tm)
-	:tm(p_tm), myFont(&font)
-{
-	
-}
-
 StorySequence::StorySequence()
 {
 	sess = Session::GetSession();
 	tm = sess;
-	myFont = &sess->mainMenu->arial;
 }
 
 void StorySequence::EndSequence()

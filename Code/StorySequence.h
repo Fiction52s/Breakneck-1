@@ -87,7 +87,6 @@ struct StoryPart
 struct Session;
 struct StorySequence
 {
-	StorySequence( sf::Font &font, TilesetManager *tm);
 	StorySequence();
 	bool Load( const std::string &sequenceName );
 	void Reset();

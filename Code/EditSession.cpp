@@ -937,7 +937,7 @@ void EditSession::TestPlayerMode()
 		if (preLevelSceneName != mapHeader->preLevelSceneName)
 		{
 			CleanupPreLevelScene();
-			preLevelScene = BasicBossScene::CreateScene(mapHeader->preLevelSceneName);
+			preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
 		}
 	}
 	else
@@ -9923,8 +9923,6 @@ void EditSession::TryBoxSelect()
 		//if( selectedBrush->issingl)
 	}
 }
-
-
 
 double EditSession::GetZoomedMinEdgeLength()
 {

@@ -88,7 +88,7 @@ int Barrier::GetCamPos()
 
 void Barrier::SetScene()
 {
-	BasicBossScene *seq = BasicBossScene::CreateScene(name);
+	Sequence *seq = Sequence::CreateScene(name);
 
 	if (seq != NULL)
 	{

@@ -1100,7 +1100,7 @@ void GameSession::ProcessAllActors()
 
 	if (mapHeader->preLevelSceneName != "NONE")
 	{
-		preLevelScene = BasicBossScene::CreateScene(mapHeader->preLevelSceneName);
+		preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
 	}
 
 	//create sequences for the barriers after all enemies have already been loaded

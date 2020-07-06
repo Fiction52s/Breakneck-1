@@ -1604,6 +1604,12 @@ void TerrainPolygon::GenerateBorderMesh()
 		return;
 	}
 
+	if (borderQuads != NULL)
+	{
+		delete[] borderQuads;
+		borderQuads = NULL;
+	}
+
 	borderQuads = new Vertex[totalNumBorderQuads * 4];
 
 	int totalsPerType[EDGE_WALL + 1] = { 0 };

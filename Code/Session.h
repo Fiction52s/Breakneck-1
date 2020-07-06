@@ -288,8 +288,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	BitField *shardsCapturedField;
 
 	Sequence *activeSequence;
-	BasicBossScene *preLevelScene;
-	BasicBossScene *postLevelScene;
+	Sequence *preLevelScene;
+	Sequence *postLevelScene;
 	TopClouds *topClouds;
 
 	StorySequence *currStorySequence;

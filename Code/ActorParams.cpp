@@ -106,7 +106,7 @@ PoiParams::PoiParams(ActorType *at,
 	std::ifstream &is)
 	:ActorParams(at)
 {
-	EditSession *edit = EditSession::GetSession();
+	Session *sess = Session::GetSession();
 
 	int air = 0;
 	int ground = 1;
@@ -131,7 +131,7 @@ PoiParams::PoiParams(ActorType *at,
 
 
 		name = pname;
-		if (type->GetSpecialOptionsIndex(name) < 0)
+		if ( sess->IsSessTypeEdit() && type->GetSpecialOptionsIndex(name) < 0)
 		{
 			assert(0);
 		}
@@ -148,7 +148,7 @@ PoiParams::PoiParams(ActorType *at,
 		nameText.setFillColor(Color::White);
 
 		name = pname;
-		if (type->GetSpecialOptionsIndex(name) < 0)
+		if ( sess->IsSessTypeEdit() && type->GetSpecialOptionsIndex(name) < 0)
 		{
 			assert(0);
 		}

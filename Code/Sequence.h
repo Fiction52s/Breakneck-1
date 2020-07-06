@@ -191,7 +191,9 @@ struct Sequence
 	int state;
 	int *stateLength;
 	int numStates;
+	Barrier *barrier;
 
+	static Sequence *CreateScene(const std::string &name);
 	Sequence();
 	virtual ~Sequence();
 	virtual void StartRunning() {}
@@ -268,7 +270,7 @@ struct BasicBossScene : Sequence
 		APPEAR,
 	};
 
-	Barrier *barrier;
+	
 	EntranceType entranceType;
 	int fadeFrames;
 	int entranceIndex;
@@ -385,6 +387,27 @@ struct MomentaScene : Sequence
 	void SetupStates();
 	void ReturnToGame();
 	void AddFlashes();
+	void UpdateState();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+};
+
+struct StorySequence;
+struct StoryScene : Sequence
+{
+	enum State
+	{
+		SHOWSTORY,
+		Count
+	};
+
+	StorySequence *story;
+
+	StoryScene( const std::string &name );
+	void Reset();
+	~StoryScene();
+	void SetupStates();
+	void ReturnToGame();
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);

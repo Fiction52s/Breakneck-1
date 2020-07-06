@@ -380,6 +380,7 @@ void Session::AddW1Enemies()
 
 void Session::AddW2Enemies()
 {
+	AddBasicGroundWorldEnemy("greengoal", 2, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 	//AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
 

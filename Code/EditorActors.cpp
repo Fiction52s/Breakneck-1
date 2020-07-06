@@ -192,7 +192,8 @@ Panel *ActorType::CreatePanel()
 	//extra
 
 
-	if (name == "shard" || name == "player" || name == "goal" )
+	if (name == "shard" || name == "player" || name == "goal" 
+		|| name == "greengoal" )
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
