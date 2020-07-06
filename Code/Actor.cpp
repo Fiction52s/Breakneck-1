@@ -46,6 +46,7 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 
+
 #include "GGPO.h"
 
 using namespace sf;
@@ -1977,6 +1978,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	LoadHitboxes();
+
 	attackLevel = 0;
 	framesSinceAttack = 0;
 	comboCounterResetFrames = 60;
@@ -2363,8 +2367,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	currVSHitboxInfo = new HitboxInfo();
 	currVSHitboxInfo->damage = 0;//20;
-	currVSHitboxInfo->drainX = .5;
-	currVSHitboxInfo->drainY = .5;
+	currVSHitboxInfo->drainX = 0;//.5;
+	currVSHitboxInfo->drainY = 0;//.5;
 	currVSHitboxInfo->hitlagFrames = 6;//6;
 	currVSHitboxInfo->hitstunFrames = 30;
 	currVSHitboxInfo->knockback = 0;
@@ -3087,6 +3091,45 @@ void Actor::SetupTimeBubbles()
 		bubbleFramesToLive[i] = 0;
 		SetFBubbleFrame(i, 0);
 	}
+}
+
+void Actor::LoadHitboxes()
+{
+	ifstream is;
+	is.open("Resources/Kin/Info/hitboxes.json");
+
+	assert(is.is_open());
+
+	json j;
+	is >> j;
+
+	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
+	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
+	SetupHitboxInfo(j, "uair", hitboxInfos[UAIR]);
+	SetupHitboxInfo(j, "standn", hitboxInfos[STANDN]);
+	SetupHitboxInfo(j, "dashattack", hitboxInfos[DASHATTACK]);
+	SetupHitboxInfo(j, "dashattack2", hitboxInfos[DASHATTACK2]);
+	SetupHitboxInfo(j, "dashattack3", hitboxInfos[DASHATTACK3]);
+	SetupHitboxInfo(j, "wallattack", hitboxInfos[WALLATTACK]);
+	SetupHitboxInfo(j, "diagupattack", hitboxInfos[DIAGUPATTACK]);
+	SetupHitboxInfo(j, "diagdownattack", hitboxInfos[DIAGDOWNATTACK]);
+
+	is.close();
+}
+
+void Actor::SetupHitboxInfo( json &j, const std::string &name,
+	HitboxInfo &hi)
+{
+	auto &myj = j[name];
+
+	hi.damage = myj["damage"];
+	hi.hitlagFrames = myj["hitlag"];
+	hi.hitstunFrames = myj["hitstun"];
+	hi.knockback = myj["knockback"];
+	double kbAngle = myj["knockbackangle"];
+	kbAngle = kbAngle / 180.0 * PI;
+	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
+	hi.invincibleFrames = myj["invincibleframes"];
 }
 
 void Actor::ActionEnded()
@@ -10988,53 +11031,12 @@ void Actor::PhysicsResponse()
 
 		if( pTarget != NULL && IHitPlayer( target ) )
 		{
-			V2d kbDir;
-			switch (action)
-			{
-			case FAIR:
-				kbDir = normalize(V2d(1, -1));
-				break;
-			case DAIR:
-				kbDir = normalize(V2d(0, 1));
-				break;
-			case UAIR:
-				kbDir = normalize(V2d(0, -1));
-				break;
-			case STANDN:
-				kbDir = normalize(V2d(1, -2));
-				break;
-			case DASHATTACK:
-				kbDir = normalize(V2d(1, -1.5));
-				break;
-			case STEEPSLIDEATTACK:
-				kbDir = normalize(V2d(0, -1));
-				break;
-			case STEEPCLIMBATTACK:
-				kbDir = normalize(V2d(0, -1));
-				break;
-			case WALLATTACK:
-				kbDir = normalize(V2d(0, -1));
-				break;
-			case DIAGDOWNATTACK:
-				kbDir = normalize(V2d(1, 1));
-				break;
-			case DIAGUPATTACK:
-				kbDir = normalize(V2d(1, -2));
-				break;
-			default:
-				kbDir = V2d(0, -1);
-				break;
-			}
+			HitboxInfo &hi = hitboxInfos[action];
 
-			currVSHitboxInfo->kbDir = kbDir;
+			*currVSHitboxInfo = hi;
 
 			if (!facingRight)
 				currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
-			
-			currVSHitboxInfo->knockback = 15;
-
-			hitlagFrames = currVSHitboxInfo->hitlagFrames;
-
 
 			pTarget->ApplyHit( currVSHitboxInfo );
 

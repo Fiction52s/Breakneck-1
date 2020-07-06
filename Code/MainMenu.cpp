@@ -2300,10 +2300,12 @@ MapCollection::~MapCollection()
 	}
 }
 
+
 void MainMenu::TitleMenuModeUpdate()
 {
 	titleScreen->Update();
 
+	
 	sf::Event ev;
 	while (window->pollEvent(ev))
 	{

@@ -17,6 +17,8 @@
 #include "EffectLayer.h"
 #include "BitField.h"
 #include "VectorMath.h"
+#include <unordered_map>
+#include "nlohmann\json.hpp"
 
 struct PState;
 
@@ -125,6 +127,8 @@ struct BasicEffect;
 
 struct Wire;
 
+using json = nlohmann::json;
+
 struct Actor : QuadTreeCollider,
 	RayCastHandler
 {
@@ -175,6 +179,7 @@ struct Actor : QuadTreeCollider,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
+		GROUNDTECHSIDEWAYS,
 		STEEPSLIDE,
 		GRAVREVERSE,
 		GRINDBALL,
@@ -703,6 +708,7 @@ struct Actor : QuadTreeCollider,
 	int currHurtboxFrame;
 
 	HitboxInfo *currHitboxInfo;
+	std::unordered_map<int, HitboxInfo> hitboxInfos;
 	HitboxInfo *currVSHitboxInfo;
 	CollisionBody *fairHitboxes[3];
 	CollisionBody *uairHitboxes[3];
@@ -823,6 +829,11 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 	V2d GetGroundAnchor();
+
+	void LoadHitboxes();
+	void SetupHitboxInfo(
+		json &j, const std::string &name,
+		HitboxInfo &hi);
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
@@ -1551,6 +1562,17 @@ struct Actor : QuadTreeCollider,
 	int GROUNDHITSTUN_GetActionLength();
 	Tileset * GROUNDHITSTUN_GetTileset();
 
+	void GROUNDTECHSIDEWAYS_Start();
+	void GROUNDTECHSIDEWAYS_End();
+	void GROUNDTECHSIDEWAYS_Change();
+	void GROUNDTECHSIDEWAYS_Update();
+	void GROUNDTECHSIDEWAYS_UpdateSprite();
+	void GROUNDTECHSIDEWAYS_TransitionToAction(int a);
+	void GROUNDTECHSIDEWAYS_TimeIndFrameInc();
+	void GROUNDTECHSIDEWAYS_TimeDepFrameInc();
+	int GROUNDTECHSIDEWAYS_GetActionLength();
+	Tileset * GROUNDTECHSIDEWAYS_GetTileset();
+
 	void INTRO_Start();
 	void INTRO_End();
 	void INTRO_Change();
@@ -2166,6 +2188,7 @@ struct Actor : QuadTreeCollider,
 	void WALLJUMP_TimeDepFrameInc();
 	int WALLJUMP_GetActionLength();
 	Tileset * WALLJUMP_GetTileset();
+
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();
