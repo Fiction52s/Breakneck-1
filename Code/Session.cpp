@@ -51,6 +51,8 @@
 
 #include "ScoreDisplay.h"
 
+#include "GameMode.h"
+
 
 using namespace sf;
 using namespace std;
@@ -5544,6 +5546,12 @@ bool Session::RunGameModeUpdate()
 		{
 			UpdatePlayersPostPhysics();
 		}
+
+		if (gameMode->CheckVictoryConditions())
+		{
+			gameMode->EndGame();
+		}
+		
 
 		RecGhostRecordFrame();
 

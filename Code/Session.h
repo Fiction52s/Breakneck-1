@@ -85,6 +85,8 @@ struct Rain;
 struct ScoreDisplay;
 struct InputVisualizer;
 
+struct GameMode;
+
 #define TIMESTEP (1.0 / 60.0)
 
 
@@ -157,7 +159,13 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	enum GameModeType
+	{
+		BASIC,
+		REACH_ENEMY_BASE,
+	};
 
+	GameMode *gameMode;
 	bool switchGameState;
 	ShipEnterScene *shipEnterScene;
 	ShipExitScene *shipExitScene;
