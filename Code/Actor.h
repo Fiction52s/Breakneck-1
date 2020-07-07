@@ -180,6 +180,7 @@ struct Actor : QuadTreeCollider,
 		WALLCLING,
 		WALLJUMP,
 		GROUNDTECHSIDEWAYS,
+		WALLTECH,
 		STEEPSLIDE,
 		GRAVREVERSE,
 		GRINDBALL,
@@ -422,9 +423,10 @@ struct Actor : QuadTreeCollider,
 
 	int attackLevel;
 	int framesSinceAttack;
+	
+	int lastDashPressFrame;
+
 	int comboCounterResetFrames;
-
-
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
 	sf::Vector2f diagUpSwordOffset[3];
@@ -844,6 +846,7 @@ struct Actor : QuadTreeCollider,
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
+	bool CanTech();
 	void CreateKeyExplosion();
 	void CreateGateExplosion();
 	void CollectFly(HealthFly *hf);
@@ -2189,6 +2192,16 @@ struct Actor : QuadTreeCollider,
 	int WALLJUMP_GetActionLength();
 	Tileset * WALLJUMP_GetTileset();
 
+	void WALLTECH_Start();
+	void WALLTECH_End();
+	void WALLTECH_Change();
+	void WALLTECH_Update();
+	void WALLTECH_UpdateSprite();
+	void WALLTECH_TransitionToAction(int a);
+	void WALLTECH_TimeIndFrameInc();
+	void WALLTECH_TimeDepFrameInc();
+	int WALLTECH_GetActionLength();
+	Tileset * WALLTECH_GetTileset();
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();

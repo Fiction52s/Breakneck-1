@@ -108,12 +108,19 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	SetCurrPosInfo(startPosInfo);
 	
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 60;
+	/*hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 10;
+	hitboxInfo->knockback = 10;*/
+
+	hitboxInfo->damage = 0;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 60;
+	hitboxInfo->knockback = 20;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

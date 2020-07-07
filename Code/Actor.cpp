@@ -192,6 +192,8 @@ void Actor::PopulateState(PState *ps)
 	ps->attackLevel = attackLevel;
 	ps->framesSinceAttack = framesSinceAttack;
 
+	ps->lastDashPressFrame = lastDashPressFrame;
+
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -316,6 +318,8 @@ void Actor::PopulateFromState(PState *ps)
 
 	attackLevel = ps->attackLevel;
 	framesSinceAttack = ps->framesSinceAttack;
+
+	lastDashPressFrame = ps->lastDashPressFrame;
 }
 
 
@@ -1237,6 +1241,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDHITSTUN_GetActionLength,
 		&Actor::GROUNDHITSTUN_GetTileset);
 
+	SetupFuncsForAction(GROUNDTECHSIDEWAYS,
+		&Actor::GROUNDTECHSIDEWAYS_Start,
+		&Actor::GROUNDTECHSIDEWAYS_End,
+		&Actor::GROUNDTECHSIDEWAYS_Change,
+		&Actor::GROUNDTECHSIDEWAYS_Update,
+		&Actor::GROUNDTECHSIDEWAYS_UpdateSprite,
+		&Actor::GROUNDTECHSIDEWAYS_TransitionToAction,
+		&Actor::GROUNDTECHSIDEWAYS_TimeIndFrameInc,
+		&Actor::GROUNDTECHSIDEWAYS_TimeDepFrameInc,
+		&Actor::GROUNDTECHSIDEWAYS_GetActionLength,
+		&Actor::GROUNDTECHSIDEWAYS_GetTileset);
+
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
 		&Actor::INTRO_End,
@@ -1921,6 +1937,18 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLJUMP_GetActionLength,
 		&Actor::WALLJUMP_GetTileset);
 
+	SetupFuncsForAction(WALLTECH,
+		&Actor::WALLTECH_Start,
+		&Actor::WALLTECH_End,
+		&Actor::WALLTECH_Change,
+		&Actor::WALLTECH_Update,
+		&Actor::WALLTECH_UpdateSprite,
+		&Actor::WALLTECH_TransitionToAction,
+		&Actor::WALLTECH_TimeIndFrameInc,
+		&Actor::WALLTECH_TimeDepFrameInc,
+		&Actor::WALLTECH_GetActionLength,
+		&Actor::WALLTECH_GetTileset);
+
 	SetupFuncsForAction(WIREHOLD,
 		&Actor::WIREHOLD_Start,
 		&Actor::WIREHOLD_End,
@@ -1981,6 +2009,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
+
+	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
 	comboCounterResetFrames = 60;
@@ -3525,6 +3555,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
 	standNDashBoost = false;
@@ -4809,6 +4840,11 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	if (currInput.B && !prevInput.B)
+	{
+		lastDashPressFrame = sess->totalGameFrames;
+	}
+
 	if (hitlagFrames > 0)
 	{
 		UpdateInHitlag();
@@ -10536,6 +10572,11 @@ void Actor::HandleTouchedGate()
 	}
 }
 
+bool Actor::CanTech()
+{
+	return (lastDashPressFrame >= 0 && sess->totalGameFrames - lastDashPressFrame < 20);
+}
+
 void Actor::PhysicsResponse()
 {
 	V2d gn;
@@ -10717,14 +10758,6 @@ void Actor::PhysicsResponse()
 
 			}
 		}
-		/*if( ground->edgeType == Edge::OPEN_GATE )
-		{
-			cout << "SETTING TO JUMP" << endl;
-			action = JUMP;
-			frame = 1;
-			ground = NULL;
-			framesInAir = 0;
-		}*/
 
 		if( !leaveGround )
 		{
@@ -10734,40 +10767,35 @@ void Actor::PhysicsResponse()
 		{
 			if( action == AIRHITSTUN )
 			{
-				//cout << "setting to ground hitstun!!!" << endl;
-				SetAction(GROUNDHITSTUN);
-				frame = 0;
+				if (CanTech())
+				{
+					SetAction(GROUNDTECHSIDEWAYS);
+					frame = 0;
+					physicsOver = true;
+				}
+				else
+				{
+					SetAction(GROUNDHITSTUN);
+					frame = 0;
+					physicsOver = true;
+				}
 			}
-			/*else if (action == SEQ_KINFALL)
-			{
-				SetAction(SEQ_KINSTAND);
-				frame = 0;
-				groundSpeed = 0;
-				physicsOver = true;
-			}*/
 			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
 				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 				&& action != SEQ_CRAWLERFIGHT_LAND 
 				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
 				&& action != JUMPSQUAT )
 			{
-			//	cout << "Action: " << action << endl;
 				if( currInput.LLeft() || currInput.LRight() )
 				{
 					SetAction(LAND2);
 					ActivateSound(S_LAND);
-					//rightWire->UpdateAnchors(V2d( 0, 0 ));
-					//leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
 				}
 				else
 				{
 					if( reversed )
 					{
-						//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
-						//cout << "THIS GRAV REVERSE" << endl;
-						//cout << "frames in air: " << framesInAir << endl;
-						//cout << "frame: " << frame << endl;
 						SetAction(GRAVREVERSE);
 
 						if( currInput.LLeft() || currInput.LRight() )
@@ -10777,31 +10805,14 @@ void Actor::PhysicsResponse()
 						else
 						{
 							storedReverseSpeed = -groundSpeed;
-						}
-							
-						//if( groundSpeed != 0 )
-						//{
-						//storedReverseSpeed = -groundSpeed;
-						//}
-						//groundSpeed = 0;
-							
+						}	
 					}
 					else
 					{
 						SetAction(LAND);
 						ActivateSound(S_LAND);
 					}
-					//rightWire->UpdateAnchors(V2d( 0, 0 ));
-					//leftWire->UpdateAnchors(V2d( 0, 0 ));
 					frame = 0;
-					//cout << "blahaaa" << endl;
-					//cout << "blahbbb" << endl;
-					//cout << "l" << endl;
-					//cout << "action = 5" << endl;
-					//if( framesInAir > 0 )
-					//{
-						
-					//}
 				}
 			}
 			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
@@ -10875,9 +10886,16 @@ void Actor::PhysicsResponse()
 			frame = 0;
 		}
 
-		
-
-		if( action != AIRHITSTUN && action != AIRDASH )
+		if (action == AIRHITSTUN)
+		{
+			if (collision && length(wallNormal) > 0 && CanTech())
+			{
+				SetAction(WALLTECH);
+				frame = 0;
+				physicsOver = true;
+			}
+		}
+		else if( action != AIRHITSTUN && action != AIRDASH )
 		{
 			//oldAction = action;
 			if( collision && action != WALLATTACK && action != WALLCLING )

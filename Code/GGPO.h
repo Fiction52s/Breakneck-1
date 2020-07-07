@@ -249,6 +249,8 @@ struct PState
 
 	int attackLevel;
 	int framesSinceAttack;
+
+	int lastDashPressFrame;
 };
 
 struct SaveGameState
