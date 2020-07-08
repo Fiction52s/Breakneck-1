@@ -37,8 +37,8 @@ void ShipEnterScene::Reset()
 	player->action = Actor::RIDESHIP;
 	player->frame = 0;
 	player->position = shipEntrancePos;
-	sess->playerOrigPos = Vector2i(player->position);
-	shipSprite.setPosition(sess->playerOrigPos.x - 13, sess->playerOrigPos.y - 124);
+	sess->playerOrigPos[0] = Vector2i(player->position);
+	shipSprite.setPosition(sess->playerOrigPos[0].x - 13, sess->playerOrigPos[0].y - 124);
 	shipSequence = true;
 	//shipSeqFrame = 0;
 	shipStartPos = shipSprite.getPosition();
@@ -53,7 +53,7 @@ void ShipEnterScene::Reset()
 	IntRect sub0 = ts_w1ShipClouds0->GetSubRect(0);
 	IntRect sub1 = ts_w1ShipClouds1->GetSubRect(0);
 
-	Vector2f bottomLeft = Vector2f(sess->playerOrigPos.x, sess->playerOrigPos.y) + Vector2f(-480, 270);
+	Vector2f bottomLeft = Vector2f(sess->playerOrigPos[0].x, sess->playerOrigPos[0].y) + Vector2f(-480, 270);
 	for (int i = 0; i < 3; ++i)
 	{
 		Vector2f xExtra(480 * i, 0);
@@ -98,7 +98,7 @@ void ShipEnterScene::Reset()
 		cloudBot1[i * 4 + 3].texCoords = Vector2f(sub1.width, sub1.height);
 	}
 
-	middleClouds.setPosition(sess->playerOrigPos.x - 480, sess->playerOrigPos.y + 270);
+	middleClouds.setPosition(sess->playerOrigPos[0].x - 480, sess->playerOrigPos[0].y + 270);
 }
 
 void ShipEnterScene::ReturnToGame()

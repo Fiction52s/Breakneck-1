@@ -170,6 +170,19 @@ void MapHeader::Save(std::ofstream &of)
 	of << postLevelSceneName << "\n";
 }
 
+int MapHeader::GetNumPlayers()
+{
+	switch (gameMode)
+	{
+	case T_BASIC:
+		return 1;
+	case T_REACHENEMYBASE:
+		return 2;
+	default:
+		return 1;
+	}
+}
+
 int MapHeader::GetLeft()
 {
 	return leftBounds;

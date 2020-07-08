@@ -612,7 +612,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			{
 
 				MapSelectionItem *item = allItems[pIndex].second.item;
-				if (item->headerInfo->gameMode == MapHeader::T_RACEFIGHT)
+				if (item->headerInfo->gameMode == MapHeader::T_REACHENEMYBASE)
 				{
 					//mainMenu->multiLoadingScreen->Reset(item->path);
 					//mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
@@ -1205,12 +1205,12 @@ void MapSelectionMenu::UpdateItemText()
 			MapSelectionItem *item = p.second.item;
 			switch (item->headerInfo->gameMode)
 			{
-			case MapHeader::T_STANDARD:
+			case MapHeader::T_BASIC:
 			{
 				col = Color::Cyan;
 				break;
 			}
-			case MapHeader::T_RACEFIGHT:
+			case MapHeader::T_REACHENEMYBASE:
 			{
 				col = Color::White;
 				break;

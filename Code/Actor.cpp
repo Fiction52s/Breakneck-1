@@ -429,11 +429,11 @@ void Actor::SetToOriginalPos()
 {
 	if (owner != NULL)
 	{
-		position = V2d(owner->playerOrigPos);
+		position = V2d(owner->playerOrigPos[0]);
 	}
 	else if (editOwner != NULL)
 	{
-		position = editOwner->GetPlayerSpawnPos();
+		position = editOwner->GetPlayerSpawnPos(actorIndex);
 	}
 }
 
@@ -3072,19 +3072,19 @@ void Actor::SetGameMode()
 	if (sess->mapHeader == NULL)
 	{
 		//blank editor files only:
-		mapType = MapHeader::MapType::T_STANDARD;
+		mapType = MapHeader::MapType::T_BASIC;
 	}
 	else
 	{
 		mapType = sess->mapHeader->gameMode;
 	}
 
-	if (mapType == MapHeader::MapType::T_RACEFIGHT)
+	/*if (mapType == MapHeader::MapType::T_)
 	{
 		maxBubbles = 2;
 		invincibleFrames = 180;
 	}
-	else
+	else*/
 	{
 		maxBubbles = MAX_BUBBLES;
 		invincibleFrames = 0;

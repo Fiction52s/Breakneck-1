@@ -1921,12 +1921,15 @@ bool Session::ReadDecor(std::ifstream &is)
 	return true;
 }
 
-bool Session::ReadPlayerStartPos(std::ifstream &is)
+bool Session::ReadPlayersStartPos(std::ifstream &is)
 {
-	is >> playerOrigPos.x;
-	is >> playerOrigPos.y;
+	int numPlayers = mapHeader->GetNumPlayers();
 
-	ProcessPlayerStartPos();
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		is >> playerOrigPos[i].x;
+		is >> playerOrigPos[i].y;
+	}
 
 	return true;
 }
@@ -2206,7 +2209,7 @@ bool Session::ReadFile()
 
 		ReadDecor(is);
 
-		ReadPlayerStartPos(is);
+		ReadPlayersStartPos(is);
 
 		ReadPlayerOptions(is);
 
@@ -3891,7 +3894,7 @@ void Session::SetupHUD()
 	{
 		adventureHUD = parentGame->adventureHUD;
 	}
-	else if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && adventureHUD == NULL)
+	else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && adventureHUD == NULL)
 		adventureHUD = new AdventureHUD;
 }
 
@@ -5429,7 +5432,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 Session::RunningTimerDisplay::RunningTimerDisplay()
 {
 	showRunningTimer = true;
-	
 }
 
 void Session::RunningTimerDisplay::InitText(sf::Font &f)
@@ -5547,15 +5549,15 @@ bool Session::RunGameModeUpdate()
 			UpdatePlayersPostPhysics();
 		}
 
-		if (gameMode->CheckVictoryConditions())
-		{
-			gameMode->EndGame();
-		}
-		
-
 		RecGhostRecordFrame();
 
 		UpdateReplayGhostSprites();
+
+		if (gameMode->CheckVictoryConditions())
+		{
+			gameMode->EndGame();
+			break;
+		}
 
 		if (!RunPostUpdate())
 		{

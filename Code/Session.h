@@ -159,12 +159,6 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-	enum GameModeType
-	{
-		BASIC,
-		REACH_ENEMY_BASE,
-	};
-
 	GameMode *gameMode;
 	bool switchGameState;
 	ShipEnterScene *shipEnterScene;
@@ -255,7 +249,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	MapHeader *mapHeader;
 	std::map<std::string, Tileset*> decorTSMap;
 	sf::RenderWindow *window;
-	sf::Vector2i playerOrigPos;
+	sf::Vector2i playerOrigPos[MAX_PLAYERS];
 	int numPolyShaders;
 	sf::Shader *polyShaders;
 	std::vector<Tileset*> ts_polyShaders;
@@ -348,7 +342,6 @@ struct Session : TilesetManager, QuadTreeCollider
 		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale) {}
 	virtual void ProcessAllDecorSpr() {}
-	virtual void ProcessPlayerStartPos() {}
 	virtual void ProcessPlayerOptions() {}
 	virtual void ProcessTerrain(PolyPtr poly) {}
 	virtual void ProcessAllTerrain() {}
@@ -517,7 +510,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadDecorInfoFile(int tWorld, int tVar);
 	bool ReadHeader(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
-	bool ReadPlayerStartPos(std::ifstream &is);
+	bool ReadPlayersStartPos(std::ifstream &is);
 	bool ReadPlayerOptions(std::ifstream &is);
 	bool ReadTerrain(std::ifstream &is);
 	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly);

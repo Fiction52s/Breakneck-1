@@ -48,6 +48,7 @@
 #include "TopClouds.h"
 #include "Enemy_Goal.h"
 #include "GGPO.h"
+#include "GameMode.h"
 
 using namespace std;
 using namespace sf;
@@ -178,15 +179,22 @@ void EditSession::UpdateDecorSprites()
 	}
 }
 
-V2d EditSession::GetPlayerSpawnPos()
+V2d EditSession::GetPlayerSpawnPos( int i )
 {
-	if (HoldingControl())
+	if (mapHeader == NULL || mapHeader->GetNumPlayers() == 1)
 	{
-		return worldPos;
+		if (HoldingControl())
+		{
+			return worldPos;
+		}
+		else
+		{
+			return playerMarkers[0]->GetPosition();
+		}
 	}
 	else
 	{
-		return player->GetPosition();
+		return playerMarkers[i]->GetPosition();
 	}
 }
 
@@ -525,8 +533,13 @@ void EditSession::TestPlayerMode()
 	ClearEffects();
 	ResetAbsorbParticles();
 
-	SetPlayerOptionField(0);
-	SetPlayerOptionField(1);
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (GetPlayer(i) != NULL)
+		{
+			SetPlayerOptionField(i);
+		}
+	}
 	skipped = false;
 	oneFrameMode = false;
 
@@ -571,6 +584,8 @@ void EditSession::TestPlayerMode()
 			}
 		}
 	}
+
+	
 
 	if (mode == TEST_PLAYER)
 	{	
@@ -666,6 +681,7 @@ void EditSession::TestPlayerMode()
 			SetActiveSequence(shipEnterScene);
 		}
 
+		gameMode->StartGame();
 		
 		return;
 	}
@@ -1001,6 +1017,8 @@ void EditSession::TestPlayerMode()
 		SetActiveSequence(shipEnterScene);
 	}
 
+	gameMode->StartGame();
+
 	if (!continueTracking)
 	{
 		playerTracker->Reset();
@@ -1014,6 +1032,8 @@ void EditSession::TestPlayerMode()
 	{
 		int x = 5;
 	}
+
+	
 }
 
 void EditSession::EndTestMode()
@@ -1090,6 +1110,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	errorBar(p_mainMenu->arial)
 {	
 	currSession = this;
+
+	gameMode = new BasicMode;
 
 	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
 	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
@@ -1603,7 +1625,7 @@ void EditSession::Draw()
 
 	if (zoomMultiple > 7 && (!gameCam || mode != TEST_PLAYER))
 	{
-		playerZoomIcon.setPosition(player->GetFloatPos());
+		playerZoomIcon.setPosition(playerMarkers[0]->GetFloatPos());
 		playerZoomIcon.setScale(zoomMultiple * 1.8, zoomMultiple * 1.8);
 		preScreenTex->draw(playerZoomIcon);
 	}
@@ -1979,11 +2001,6 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 	mapStartBrush->AddObject(gi);
 }
 
-void EditSession::ProcessPlayerStartPos()
-{
-	
-}
-
 void EditSession::ProcessHeader()
 {
 	background = Background::SetupFullBG(mapHeader->envName, this);
@@ -2324,8 +2341,14 @@ void EditSession::WriteFile(string fileName)
 
 	WriteDecor(of);
 
-	Vector2i playerIntPos(player->GetIntPos());
-	of << playerIntPos.x << " " << playerIntPos.y << endl;
+	int numPlayers = mapHeader->GetNumPlayers();
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		Vector2i playerIntPos(playerMarkers[i]->GetIntPos());
+		of << playerIntPos.x << " " << playerIntPos.y << endl;
+	}
+	
+	
 
 	WritePlayerOptions(of);
 
@@ -3121,12 +3144,8 @@ void EditSession::Init()
 
 	SetupShardsCapturedField();
 
-	if (players[0] == NULL)
-	{
-		players[0] = new Actor(NULL, this, 0);
-		players[1] = new Actor(NULL, this, 1);
-	}
-		
+	assert(players[0] == NULL);
+	players[0] = new Actor(NULL, this, 0);
 
 	SetupEnemyTypes();
 
@@ -3207,7 +3226,7 @@ void EditSession::DefaultInit()
 	mapHeader = new MapHeader;
 	mapHeader->description = "no description";
 	mapHeader->collectionName = "default";
-	mapHeader->gameMode = MapHeader::T_STANDARD;
+	mapHeader->gameMode = MapHeader::T_BASIC;
 
 	mapHeader->envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
 
@@ -3224,11 +3243,39 @@ void EditSession::DefaultInit()
 
 	mapHeader->bossFightType = 0;
 
-	playerOrigPos = Vector2i(0, 0);
+	for (int i = 0; i < 4; ++i)
+	{
+		playerOrigPos[i] = Vector2i(0, 0);
+	}
+	
 
 	UpdateFullBounds();
 
 	currentFile = "";
+}
+
+void EditSession::UpdateNumPlayers()
+{
+	int numPlayers = mapHeader->GetNumPlayers();
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (players[i] != NULL)
+		{
+			if (i >= numPlayers)
+			{
+				delete players[i];
+				players[i] = NULL;
+			}
+		}
+		else
+		{
+			if (i < numPlayers)
+			{
+				players[i] = new Actor(NULL, this, i);
+			}
+		}
+
+	}
 }
 
 int EditSession::EditRun()
@@ -3301,6 +3348,8 @@ int EditSession::EditRun()
 		ReadFile();
 	}
 
+	UpdateNumPlayers();
+
 	reloadNew = false;
 
 	SetupHUD();
@@ -3321,35 +3370,37 @@ int EditSession::EditRun()
 	}
 
 	//need to make a new one each time because they get destroyed when I load actors in session
-	player = new PlayerParams(playerType, Vector2i(0, 0));
+	PlayerParams *currPlayerMarker;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		currPlayerMarker = new PlayerParams(playerType, Vector2i(0, 0));
+		groups["player"]->actors.push_back(currPlayerMarker);
+		currPlayerMarker->SetPosition(playerOrigPos[i]);
+		currPlayerMarker->image.setPosition(currPlayerMarker->GetFloatPos());
+		currPlayerMarker->SetBoundingQuad();
+		mapStartBrush->AddObject(currPlayerMarker);
+
+		playerMarkers[i] = currPlayerMarker;
+	}
 	
-	groups["player"]->actors.push_back(player);
+	
+	
 	//-------------------------
 
-
-	player->SetPosition(playerOrigPos);
-	player->image.setPosition(player->GetFloatPos());
-	player->SetBoundingQuad();
-
-	mapStartBrush->AddObject(player);
-
-	players[0]->SetGameMode();
-	players[1]->SetGameMode();
-	/*for (int i = 1; i < MAX_PLAYERS; ++i)
+	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		if (GetController(i).IsConnected())
+		if (players[i] != NULL)
 		{
-			players[i] = new Actor(NULL, this, i);
 			players[i]->SetGameMode();
 		}
-	}*/
+	}
 
 	cam.Init(GetPlayerPos(0));
 
 	if (!initialViewSet)
 	{
 		view.setSize(1920, 1080);
-		view.setCenter(player->GetFloatPos());
+		view.setCenter(playerMarkers[0]->GetFloatPos());
 	}
 
 	quit = false;
@@ -7220,7 +7271,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 		//(*it).second->DrawPreview( mapPreviewTex );
 	}
 
-	cs.setPosition(player->GetFloatPos());
+	cs.setPosition(playerMarkers[0]->GetFloatPos());
 	cs.setFillColor(Color::Green);
 	mapPreviewTex->draw(cs);
 
@@ -9329,7 +9380,7 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			//this is to handle when more than 1 inverse is created and its ambiguous
 			//go with the one the player is inside. if the player isn't in any of them, ignore the operation
 			playerInsideIndex = -1;
-			Vector2i playerIntPos(player->GetIntPos());
+			Vector2i playerIntPos(playerMarkers[i]->GetIntPos());
 			ClipperLib::IntPoint clipperPlayerIntPos(playerIntPos.x, playerIntPos.y);
 			for (i = 0; i < numInverseSolutions; ++i)
 			{
@@ -10156,7 +10207,7 @@ bool EditSession::IsOnlyPlayerSelected()
 {
 	if (selectedBrush->objects.size() == 1)
 	{
-		if (player == selectedBrush->objects.front())
+		if (playerMarkers[0] == selectedBrush->objects.front())
 		{
 			return true;
 		}

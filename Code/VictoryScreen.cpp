@@ -289,7 +289,7 @@ void ResultsScreen::SetupColumns()
 	int currPlace;
 	switch (owner->mapHeader->gameMode)
 	{
-	case MapHeader::T_RACEFIGHT:
+	case MapHeader::T_REACHENEMYBASE:
 	{
 		for (int i = 0; i < 4; ++i)
 		{
@@ -329,7 +329,7 @@ void ResultsScreen::Update()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				if (owner->mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				if (owner->mapHeader->gameMode == MapHeader::MapType::T_REACHENEMYBASE)
 				{
 					if (owner->raceFight->place[i] == 1 && frame <= slideInFrames[0])
 					{
@@ -403,7 +403,7 @@ void ResultsScreen::Update()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				if (owner->mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
+				if (owner->mapHeader->gameMode == MapHeader::MapType::T_REACHENEMYBASE)
 				{
 					double f = (double)frame / slideOutFrames;
 					double a = slideOutBez.GetValue(f);
@@ -479,7 +479,7 @@ void ResultsScreen::Draw(RenderTarget *target)
 {
 	switch (owner->mapHeader->gameMode)
 	{
-	case MapHeader::T_RACEFIGHT:
+	case MapHeader::T_REACHENEMYBASE:
 	{
 		for (int i = 0; i < 4; ++i)
 		{

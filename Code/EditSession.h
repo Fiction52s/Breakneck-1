@@ -326,7 +326,7 @@ struct EditSession : GUIHandler, Session
 	V2d menuDownPos;
 	Emode menuDownStored;
 	Emode stored;
-	ActorPtr player;
+	ActorPtr playerMarkers[MAX_PLAYERS];
 	ActorType *playerType;
 	int gatePoints;
 	bool quit;
@@ -403,7 +403,6 @@ struct EditSession : GUIHandler, Session
 	void ProcessDecorSpr(const std::string &name,
 		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale);
-	void ProcessPlayerStartPos();
 	void ProcessTerrain( PolyPtr poly );
 	void ProcessSpecialTerrain(PolyPtr poly);
 	void ProcessBGTerrain(PolyPtr poly);
@@ -714,7 +713,7 @@ struct EditSession : GUIHandler, Session
 	void UpdateCurrEnemyParamsFromPanel();
 	void RevertMovedPoints(PointMap::iterator it);
 	void RevertMovedPoints(RailPointMap::iterator it);
-	V2d GetPlayerSpawnPos();
+	V2d GetPlayerSpawnPos( int i );
 	void ClearMostRecentError();
 	void ShowMostRecentError();
 	void CreateError(ErrorType);
@@ -802,6 +801,8 @@ struct EditSession : GUIHandler, Session
 	void InitGGPO();
 
 	std::string preLevelSceneName;
+
+	void UpdateNumPlayers();
 };
 
 

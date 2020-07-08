@@ -11,13 +11,13 @@ struct MapHeader
 {
 	enum MapType
 	{
-		T_RACEFIGHT,
-		T_STANDARD,
+		T_BASIC,
+		T_REACHENEMYBASE,
 	};
 
 	MapHeader()
 		:ver1(0), ver2(0), collectionName("nothing"),
-		description("no description"), gameMode(T_STANDARD),
+		description("no description"), gameMode(T_BASIC),
 		leftBounds(0), topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards(0),
 		drainSeconds(60), bossFightType(0), envName("w1_01"),
@@ -33,6 +33,7 @@ struct MapHeader
 	int GetTop();
 	int GetRight();
 	int GetBot();
+	int GetNumPlayers();
 	int ver1;
 	int ver2;
 	std::string collectionName;

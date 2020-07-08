@@ -435,7 +435,6 @@ struct GameSession : RayCastHandler, Session
 		Tileset *d_ts, int dTile, int dLayer, sf::Vector2f &centerPos,
 		float rotation, sf::Vector2f &scale);
 	void ProcessAllDecorSpr();
-	void ProcessPlayerStartPos();
 	void ProcessTerrain(PolyPtr poly);
 	void ProcessAllTerrain();
 	void ProcessActor(ActorPtr a);

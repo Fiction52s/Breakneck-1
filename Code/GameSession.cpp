@@ -358,12 +358,12 @@ bool GameSession::RunPreUpdate()
 
 
 
-	if (goalDestroyed)
+	/*if (goalDestroyed)
 	{
 		quit = true;
 		returnVal = resType;
 		return false;
-	}
+	}*/
 
 	if (nextFrameRestart)
 	{
@@ -886,11 +886,11 @@ void GameSession::ProcessRail(RailPtr rail)
 
 void GameSession::ProcessHeader()
 {
-	if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
+	/*if (mapHeader->gameMode == MapHeader::MapType::T_RACEFIGHT)
 	{
 		assert(raceFight == NULL);
 		raceFight = new RaceFight(this, 180);
-	}
+	}*/
 }
 
 void GameSession::ProcessDecorSpr(const std::string &name,
@@ -948,15 +948,6 @@ void GameSession::ProcessAllDecorSpr()
 	}
 
 	decorListMap.clear();
-}
-
-void GameSession::ProcessPlayerStartPos()
-{
-	Actor *p0 = GetPlayer(0);
-	if (parentGame == NULL)
-	{
-		p0->position = V2d(playerOrigPos);
-	}
 }
 
 void GameSession::ProcessTerrain(PolyPtr poly)
@@ -1461,6 +1452,11 @@ bool GameSession::Load()
 
 	ReadFile();
 
+	Actor *p0 = GetPlayer(0);
+	if (parentGame == NULL)
+	{
+		p0->position = V2d(playerOrigPos[0]);
+	}
 
 	SetupHUD();
 
@@ -1751,7 +1747,7 @@ void GameSession::SetupRecGhost()
 	{
 		recGhost = parentGame->recGhost;
 	}
-	else if (mapHeader->gameMode == MapHeader::MapType::T_STANDARD && recGhost == NULL)
+	else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
 	{
 		recGhost = new RecordGhost(GetPlayer(0));
 	}
@@ -2141,7 +2137,7 @@ int GameSession::Run()
 
 			mapTex->setView( vv );			
 
-			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f(playerOrigPos.x, playerOrigPos.y ) );
+			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f(playerOrigPos[0].x, playerOrigPos[0].y ) );
 
 			mapTex->setView( vuiView );
 
@@ -2541,7 +2537,7 @@ int GameSession::Run()
 
 				mapTex->setView(vv);
 
-				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos.x, playerOrigPos.y));
+				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos[0].x, playerOrigPos[0].y));
 
 				mapTex->setView(vuiView);
 

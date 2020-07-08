@@ -5,13 +5,14 @@ struct Session;
 
 struct GameMode
 {
-
 	GameMode();
 	Session *sess;
+	bool done;
 
 	virtual void StartGame() = 0;
 	virtual bool CheckVictoryConditions() = 0;
 	virtual void EndGame() = 0;
+	bool IsDone() { return done; }
 };
 
 struct BasicMode : GameMode
