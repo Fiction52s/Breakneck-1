@@ -1111,8 +1111,6 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 {	
 	currSession = this;
 
-	gameMode = new BasicMode;
-
 	handleEventFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeHandleEvent;
 	handleEventFunctions[EDIT] = &EditSession::EditModeHandleEvent;
 	handleEventFunctions[SELECT_MODE] = &EditSession::SelectModeHandleEvent;
@@ -1416,6 +1414,11 @@ void EditSession::CleanupForReload()
 
 EditSession::~EditSession()
 {
+	for (int i = 0; i < 4; ++i)
+	{
+		players[i] = allPlayers[i];
+	}
+
 	delete removeProgressPointWaiter;
 
 	delete variationSelector;
@@ -3145,7 +3148,14 @@ void EditSession::Init()
 	SetupShardsCapturedField();
 
 	assert(players[0] == NULL);
+
 	players[0] = new Actor(NULL, this, 0);
+	allPlayers[0] = players[0];
+	for (int i = 1; i < MAX_PLAYERS; ++i)
+	{
+		players[i] = new Actor(NULL, this, i);
+		allPlayers[i] = players[i];
+	}
 
 	SetupEnemyTypes();
 
@@ -3263,7 +3273,7 @@ void EditSession::UpdateNumPlayers()
 		{
 			if (i >= numPlayers)
 			{
-				delete players[i];
+				playerMarkers[i]->Deactivate();
 				players[i] = NULL;
 			}
 		}
@@ -3271,11 +3281,56 @@ void EditSession::UpdateNumPlayers()
 		{
 			if (i < numPlayers)
 			{
-				players[i] = new Actor(NULL, this, i);
+				players[i] = allPlayers[i];
+				playerMarkers[i]->Activate();
+
+				if (i == 1)
+				{	
+					playerMarkers[i]->MoveTo(
+						playerMarkers[0]->GetIntPos() + Vector2i(100, 0));
+				}
+				else if (i == 2)
+				{
+					playerMarkers[i]->MoveTo(
+						playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
+				}
+				else if (i == 3)
+				{
+					playerMarkers[i]->MoveTo(
+						playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
+				}
+				
 			}
 		}
 
 	}
+}
+
+void EditSession::SetGameMode(int newMode)
+{
+	if (newMode == mapHeader->gameMode)
+	{
+		return;
+	}
+
+	if (gameMode != NULL)
+	{
+		delete gameMode;
+		gameMode = NULL;
+	}
+	
+	switch (newMode)
+	{
+	case MapHeader::T_BASIC:
+		gameMode = new BasicMode;
+		break;
+	case MapHeader::T_REACHENEMYBASE:
+		gameMode = new ReachEnemyBaseMode;
+		break;
+	}
+
+	mapHeader->gameMode = newMode;
+	UpdateNumPlayers();
 }
 
 int EditSession::EditRun()
@@ -3348,11 +3403,7 @@ int EditSession::EditRun()
 		ReadFile();
 	}
 
-	UpdateNumPlayers();
-
-	reloadNew = false;
-
-	SetupHUD();
+	
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 
@@ -3374,6 +3425,8 @@ int EditSession::EditRun()
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		currPlayerMarker = new PlayerParams(playerType, Vector2i(0, 0));
+		currPlayerMarker->group = groups["player"];
+		//if( )
 		groups["player"]->actors.push_back(currPlayerMarker);
 		currPlayerMarker->SetPosition(playerOrigPos[i]);
 		currPlayerMarker->image.setPosition(currPlayerMarker->GetFloatPos());
@@ -3381,7 +3434,23 @@ int EditSession::EditRun()
 		mapStartBrush->AddObject(currPlayerMarker);
 
 		playerMarkers[i] = currPlayerMarker;
+		if (i == 0)
+		{
+			playerMarkers[i]->Activate();
+		}
 	}
+
+	int gm = mapHeader->gameMode;
+	mapHeader->gameMode = -1;
+	SetGameMode(gm);
+
+	//UpdateNumPlayers();
+
+	reloadNew = false;
+
+	SetupHUD();
+
+	
 	
 	
 	

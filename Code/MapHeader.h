@@ -38,7 +38,7 @@ struct MapHeader
 	int ver2;
 	std::string collectionName;
 	std::string description;
-	MapType gameMode;
+	int gameMode;
 	int drainSeconds;
 	std::string envName;
 	int envWorldType;

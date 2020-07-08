@@ -55,9 +55,9 @@ struct PlayerParams : public ActorParams
 		std::ifstream &is );
 
 	bool CanApply();
-	void Deactivate();
+	//void Deactivate();
 	ActorParams *Copy();
-	void Activate();
+	//void Activate();
 	void SetParams();
 	void SetPanelInfo();
 };

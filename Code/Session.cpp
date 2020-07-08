@@ -1264,6 +1264,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
 
+	gameMode = NULL;
+
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
 
@@ -1602,6 +1604,12 @@ Session::~Session()
 	CleanupGateMarkers();
 
 	CleanupScoreDisplay();
+
+	if (gameMode != NULL)
+	{
+		delete gameMode;
+		gameMode = NULL;
+	}
 }
 
 void Session::UpdateDecorLayers()
@@ -3894,8 +3902,12 @@ void Session::SetupHUD()
 	{
 		adventureHUD = parentGame->adventureHUD;
 	}
-	else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && adventureHUD == NULL)
+	else if(adventureHUD == NULL )
+	{
 		adventureHUD = new AdventureHUD;
+	}
+	/*else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && adventureHUD == NULL)
+		adventureHUD = new AdventureHUD;*/
 }
 
 void Session::DrawHUD(sf::RenderTarget *target)

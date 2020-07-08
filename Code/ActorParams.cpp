@@ -60,15 +60,15 @@ bool PlayerParams::CanApply()
 	return true;
 }
 
-void PlayerParams::Deactivate()
-{
-	//nothing
-}
-
-void PlayerParams::Activate()
-{
-	//nothing
-}
+//void PlayerParams::Deactivate()
+//{
+//	//nothing
+//}
+//
+//void PlayerParams::Activate()
+//{
+//	//nothing
+//}
 
 void PlayerParams::SetParams()
 {

@@ -106,8 +106,7 @@ bool MapHeader::Load(std::ifstream &is)
 	ver1 = part1Num;
 	ver2 = part2Num;
 
-	int p_gameMode;
-	is >> p_gameMode;
+	is >> gameMode;
 	is >> envWorldType;
 	is >> envName;
 	is >> leftBounds;
@@ -127,8 +126,6 @@ bool MapHeader::Load(std::ifstream &is)
 	collectionName = collectionName;
 	
 	description = ss.str();
-
-	gameMode = (MapHeader::MapType)p_gameMode;
 
 	return true;
 }

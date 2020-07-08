@@ -776,6 +776,7 @@ struct MapOptionsUI : GUIHandler
 	TextBox* drainTextbox;
 	Dropdown *preDropdown;
 	Dropdown *postDropdown;
+	Dropdown *gameModeDropdown;
 
 	MapOptionsUI();
 	~MapOptionsUI();

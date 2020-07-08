@@ -802,7 +802,10 @@ struct EditSession : GUIHandler, Session
 
 	std::string preLevelSceneName;
 
+	void SetGameMode(int gm);
 	void UpdateNumPlayers();
+
+	Actor *allPlayers[MAX_PLAYERS];
 };
 
 
