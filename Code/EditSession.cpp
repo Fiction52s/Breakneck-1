@@ -3204,6 +3204,11 @@ void EditSession::Init()
 	}
 }
 
+void EditSession::RestartGame()
+{
+	TestPlayerMode();
+}
+
 void EditSession::ReloadNew()
 {
 	reload = true;

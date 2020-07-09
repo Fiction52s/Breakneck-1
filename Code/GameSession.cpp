@@ -3176,6 +3176,11 @@ void GameSession::NextFrameRestartLevel()
 }
 
 
+void GameSession::RestartGame()
+{
+	NextFrameRestartLevel();
+}
+
 void GameSession::RestartLevel()
 {
 	if( gateMarkers != NULL)

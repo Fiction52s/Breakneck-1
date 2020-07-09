@@ -44,6 +44,17 @@ ReachEnemyBaseMode::ReachEnemyBaseMode()
 	ap1->CreateMyEnemy();//new MultiplayerBase(ap1);
 	p0Base = (MultiplayerBase*)ap0->myEnemy;
 	p1Base = (MultiplayerBase*)ap1->myEnemy;
+
+	p0Base->actorIndex = 0;
+	p1Base->actorIndex = 1;
+}
+
+ReachEnemyBaseMode::~ReachEnemyBaseMode()
+{
+	//delete p0Base;
+	//delete p1Base;
+	delete ap0;
+	delete ap1;
 }
 
 void ReachEnemyBaseMode::StartGame()
@@ -67,14 +78,44 @@ void ReachEnemyBaseMode::StartGame()
 
 	sess->AddEnemy(p0Base);
 	sess->AddEnemy(p1Base);
+
+	p0Score = 0;
+	p1Score = 0;
 }
 
 bool ReachEnemyBaseMode::CheckVictoryConditions()
 {
+	if (p0Base->dead || p1Base->dead )
+	{
+		return true;
+	}
 	return false;
 }
 
 void ReachEnemyBaseMode::EndGame()
 {
+	if (p0Base->dead)
+	{
+		p1Score++;
+	}
+	else if (p1Base->dead)
+	{
+		p0Score++;
+	}
 
+	if (p0Score == 3 || p1Score == 3 )
+	{
+		sess->EndLevel();
+	}
+	else
+	{
+		int tempP0Score = p0Score;
+		int tempP1Score = p1Score;
+		sess->RestartGame();
+
+		p0Score = tempP0Score;
+		p1Score = tempP1Score;
+	}
+
+	//sess->EndLevel();
 }

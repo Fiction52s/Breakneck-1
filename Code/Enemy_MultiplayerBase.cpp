@@ -33,6 +33,8 @@ MultiplayerBase::MultiplayerBase(ActorParams *ap)
 	BasicCircleHurtBodySetup(48);
 
 	ResetEnemy();
+
+	actorIndex = -1;
 }
 
 MultiplayerBase::~MultiplayerBase()
@@ -71,6 +73,33 @@ void MultiplayerBase::ProcessState()
 void MultiplayerBase::HandleNoHealth()
 {
 	dead = true;
+}
+
+void MultiplayerBase::ProcessHit()
+{
+	int receivedHitIndex = GetReceivedHitPlayerIndex();
+	if (!dead && ReceivedHit() && numHealth > 0 && receivedHitIndex != actorIndex )
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, receivedHitIndex);
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, receivedHitIndex);
+			ConfirmHitNoKill();
+		}
+
+		//receivedHit = NULL;
+	}
 }
 
 void MultiplayerBase::UpdateSprite()

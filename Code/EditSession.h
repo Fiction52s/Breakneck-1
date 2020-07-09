@@ -806,6 +806,8 @@ struct EditSession : GUIHandler, Session
 	void UpdateNumPlayers();
 
 	Actor *allPlayers[MAX_PLAYERS];
+
+	void RestartGame();
 };
 
 

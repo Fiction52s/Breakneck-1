@@ -474,6 +474,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdatePolyShaders(sf::Vector2f &botLeft,
 		sf::Vector2f &playertest);
 	
+	void RestartGame();
 	void RestartLevel();
 	void NextFrameRestartLevel();
 	

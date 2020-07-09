@@ -8,6 +8,7 @@ struct BasicAirEnemyParams;
 struct GameMode
 {
 	GameMode();
+	virtual ~GameMode() {}
 	Session *sess;
 	bool done;
 
@@ -31,8 +32,11 @@ struct ReachEnemyBaseMode : GameMode
 	BasicAirEnemyParams *ap1;
 	MultiplayerBase *p0Base;
 	MultiplayerBase *p1Base;
+	int p0Score;
+	int p1Score;
 
 	ReachEnemyBaseMode();
+	~ReachEnemyBaseMode();
 	void StartGame();
 	bool CheckVictoryConditions();
 	void EndGame();

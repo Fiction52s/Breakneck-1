@@ -12,16 +12,20 @@ struct MultiplayerBase : Enemy
 		S_Count
 	};
 
+	Tileset *ts;
+	int actorIndex;
+
 	MultiplayerBase(ActorParams * ap);
 	~MultiplayerBase();
 
+	void ProcessHit();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
 
-	Tileset *ts;
+	
 };
 
 #endif
