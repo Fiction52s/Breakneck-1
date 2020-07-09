@@ -771,7 +771,6 @@ void Enemy::Reset()
 	spawned = false;
 	prev = NULL;
 	next = NULL;
-	spawnedByClone = false;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	dead = false;
