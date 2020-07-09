@@ -2,6 +2,8 @@
 #define __GAMEMODE_H__
 
 struct Session;
+struct MultiplayerBase;
+struct BasicAirEnemyParams;
 
 struct GameMode
 {
@@ -25,6 +27,10 @@ struct BasicMode : GameMode
 
 struct ReachEnemyBaseMode : GameMode
 {
+	BasicAirEnemyParams *ap0;
+	BasicAirEnemyParams *ap1;
+	MultiplayerBase *p0Base;
+	MultiplayerBase *p1Base;
 
 	ReachEnemyBaseMode();
 	void StartGame();

@@ -2314,7 +2314,7 @@ void EditSession::WriteFile(string fileName)
 			bgPlatCount0++;
 		}
 	}
-	of << pointCount << endl;
+	//of << pointCount << endl;
 	mapHeader->numVertices = pointCount;
 
 
@@ -2341,7 +2341,6 @@ void EditSession::WriteFile(string fileName)
 		mapHeader->boundsHeight = tempHeight;
 	}
 
-
 	WriteDecor(of);
 
 	int numPlayers = mapHeader->GetNumPlayers();
@@ -2350,8 +2349,6 @@ void EditSession::WriteFile(string fileName)
 		Vector2i playerIntPos(playerMarkers[i]->GetIntPos());
 		of << playerIntPos.x << " " << playerIntPos.y << endl;
 	}
-	
-	
 
 	WritePlayerOptions(of);
 
@@ -3439,6 +3436,11 @@ int EditSession::EditRun()
 			playerMarkers[i]->Activate();
 		}
 	}
+
+	
+
+	
+
 
 	int gm = mapHeader->gameMode;
 	mapHeader->gameMode = -1;

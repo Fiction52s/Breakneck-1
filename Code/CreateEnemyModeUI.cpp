@@ -201,7 +201,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		int i = 0;
 		for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
 		{
-			if ((*it).first == "player")
+			if ((*it).first == "player" || (*it).first == "multiplayerbase")
 			{
 				continue;
 			}

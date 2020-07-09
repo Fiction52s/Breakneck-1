@@ -1,6 +1,7 @@
 #include "Session.h"
 #include "GameMode.h"
 #include "Actor.h"
+#include "Enemy_MultiplayerBase.h"
 
 using namespace std;
 using namespace sf;
@@ -37,7 +38,12 @@ void BasicMode::EndGame()
 
 ReachEnemyBaseMode::ReachEnemyBaseMode()
 {
-
+	ap0 = new BasicAirEnemyParams(sess->types["multiplayerbase"], 1);
+	ap1 = new BasicAirEnemyParams(sess->types["multiplayerbase"], 1);
+	ap0->CreateMyEnemy();//new MultiplayerBase(ap0);
+	ap1->CreateMyEnemy();//new MultiplayerBase(ap1);
+	p0Base = (MultiplayerBase*)ap0->myEnemy;
+	p1Base = (MultiplayerBase*)ap1->myEnemy;
 }
 
 void ReachEnemyBaseMode::StartGame()
@@ -52,6 +58,15 @@ void ReachEnemyBaseMode::StartGame()
 	{
 		sess->GetPlayer(0)->facingRight = false;
 	}
+
+	p0Base->startPosInfo.SetPosition(p0);
+	p1Base->startPosInfo.SetPosition(p1);
+
+	p0Base->Reset();
+	p1Base->Reset();
+
+	sess->AddEnemy(p0Base);
+	sess->AddEnemy(p1Base);
 }
 
 bool ReachEnemyBaseMode::CheckVictoryConditions()

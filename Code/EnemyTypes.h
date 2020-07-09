@@ -88,6 +88,7 @@ enum EnemyType
 	EN_HEALTHFLY,
 	EN_FLYCHAIN,
 	EN_BALL,
+	EN_MULTIPLAYERBASE,
 	EN_Count
 };
 

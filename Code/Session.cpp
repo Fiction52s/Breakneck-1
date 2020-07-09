@@ -52,6 +52,7 @@
 #include "ScoreDisplay.h"
 
 #include "GameMode.h"
+#include "Enemy_MultiplayerBase.h"
 
 
 using namespace sf;
@@ -213,6 +214,12 @@ void Session::SetupEnemyType(ParamsInfo &pi)
 
 void Session::AddGeneralEnemies()
 {
+	ParamsInfo basePI("multiplayerbase", CreateEnemy<MultiplayerBase>, NULL,
+		Vector2i(), Vector2i(32, 32), false, false, false, false, true,
+		false, false, 1, 1);
+
+	types["multiplayerbase"] = new ActorType(basePI);
+
 	AddExtraEnemy("zoneproperties", NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
 		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Editor/zoneproperties_128x128.png"));
