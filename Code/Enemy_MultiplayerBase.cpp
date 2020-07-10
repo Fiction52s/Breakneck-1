@@ -20,13 +20,15 @@ int MultiplayerBase::GetNumStoredBytes()
 void MultiplayerBase::StoreBytes(unsigned char *bytes)
 {
 	BaseData bd;
+	memset(&bd, 0, sizeof(BaseData));
 	bd.dead = dead;
 	bd.receivedHit = receivedHit;
-	bd.receivedHitPlayer = receivedHitPlayer;
-	bd.numHealth = numHealth;
 	bd.pauseFrames = pauseFrames;
+	bd.numHealth = numHealth;
 	bd.prev = prev;
 	bd.next = next;
+	bd.receivedHitPlayer = receivedHitPlayer;
+	//memset(&bd.pad, 0, 3 * sizeof(char));
 	memcpy(bytes, &bd, sizeof( BaseData ));
 }
 
@@ -37,11 +39,12 @@ void MultiplayerBase::SetFromBuffer(unsigned char *buf)
 
 	dead = bd.dead;
 	receivedHit = bd.receivedHit;
-	receivedHitPlayer = bd.receivedHitPlayer;
-	pauseFrames = bd.pauseFrames;
 	numHealth = bd.numHealth;
+	pauseFrames = bd.pauseFrames;
 	prev = bd.prev;
 	next = bd.next;
+	
+	receivedHitPlayer = bd.receivedHitPlayer;
 }
 
 MultiplayerBase::MultiplayerBase(ActorParams *ap)
@@ -65,8 +68,6 @@ MultiplayerBase::MultiplayerBase(ActorParams *ap)
 	BasicCircleHurtBodySetup(48);
 
 	ResetEnemy();
-
-	actorIndex = -1;
 }
 
 MultiplayerBase::~MultiplayerBase()
@@ -107,32 +108,32 @@ void MultiplayerBase::HandleNoHealth()
 	dead = true;
 }
 
-void MultiplayerBase::ProcessHit()
-{
-	int receivedHitIndex = GetReceivedHitPlayerIndex();
-	if (!dead && ReceivedHit() && numHealth > 0 && receivedHitIndex != actorIndex )
-	{
-		numHealth -= 1;
-
-		if (numHealth <= 0)
-		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				//sess->CollectKey();
-			}
-
-			sess->PlayerConfirmEnemyKill(this, receivedHitIndex);
-			ConfirmKill();
-		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, receivedHitIndex);
-			ConfirmHitNoKill();
-		}
-
-		receivedHit = NULL;
-	}
-}
+//void MultiplayerBase::ProcessHit()
+//{
+//	int receivedHitIndex = GetReceivedHitPlayerIndex();
+//	if (!dead && ReceivedHit() && numHealth > 0 && receivedHitIndex != actorIndex )
+//	{
+//		numHealth -= 1;
+//
+//		if (numHealth <= 0)
+//		{
+//			if (hasMonitor && !suppressMonitor)
+//			{
+//				//sess->CollectKey();
+//			}
+//
+//			sess->PlayerConfirmEnemyKill(this, receivedHitIndex);
+//			ConfirmKill();
+//		}
+//		else
+//		{
+//			sess->PlayerConfirmEnemyNoKill(this, receivedHitIndex);
+//			ConfirmHitNoKill();
+//		}
+//
+//		receivedHit = NULL;
+//	}
+//}
 
 void MultiplayerBase::UpdateSprite()
 {

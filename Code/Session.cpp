@@ -5927,6 +5927,14 @@ bool Session::GGPORunGameModeUpdate()
 
 	UpdateReplayGhostSprites();
 
+	if (gameMode->CheckVictoryConditions())
+	{
+		ggpo_advance_frame(ggpo);
+		gameMode->EndGame();
+
+		return true;
+	}
+
 	if (!RunPostUpdate())
 	{
 		return true;
@@ -6139,10 +6147,12 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->inactiveEnemyList = inactiveEnemyList;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
+	memset(*buffer, 0, *len);
+
 	if (!*buffer) {
 		return false;
 	}
-	memcpy(*buffer, currSaveState, *len);
+	memcpy(*buffer, currSaveState, sizeof(SaveGameState));
 
 	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
 	{
@@ -6150,10 +6160,12 @@ bool Session::SaveState(unsigned char **buffer,
 		tempBuf += sizeof(SaveGameState);
 		gameMode->StoreBytes(tempBuf);
 	}
+	
+	ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
-	int offset = 0;//64;//sizeof(SaveGameState);
-	int fletchLen = 16;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	int offset = 0;//sizeof(SaveGameState) + sizeof(ReachEnemyBaseMode::ReachEnemyBaseModeData);//64;//sizeof(SaveGameState);
+	int fletchLen = *len;//sizeof(BaseData); //*len;//sizeof(SaveGameState);//*len;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
 	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);// currSaveState->states[1].hitlagFrames;//
 	return true;
 }

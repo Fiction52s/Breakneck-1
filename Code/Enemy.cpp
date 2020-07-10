@@ -310,6 +310,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	suppressMonitor(false), ts_hitSpack(NULL),
 	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	playerIndex = -1; //can be affected by all players
 	keyShaderLoaded = false;
 	origFacingRight = true;
 	facingRight = true;
@@ -1711,7 +1712,8 @@ int HittableObject::GetReceivedHitPlayerIndex()
 
 bool HittableObject::CheckHit( Actor *player, Enemy *e )
 {
-	if (receivedHit == NULL && !specterProtected )
+	if (receivedHit == NULL && !specterProtected &&
+		( e->playerIndex < 0 || e->playerIndex == player->actorIndex) )
 	{
 		comboHitEnemy = NULL;
 		receivedHit = IsHit(player);

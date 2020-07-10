@@ -45,8 +45,8 @@ ReachEnemyBaseMode::ReachEnemyBaseMode()
 	p0Base = (MultiplayerBase*)ap0->myEnemy;
 	p1Base = (MultiplayerBase*)ap1->myEnemy;
 
-	p0Base->actorIndex = 0;
-	p1Base->actorIndex = 1;
+	p0Base->playerIndex = 1;
+	p1Base->playerIndex = 0;
 }
 
 ReachEnemyBaseMode::~ReachEnemyBaseMode()
@@ -116,13 +116,11 @@ void ReachEnemyBaseMode::EndGame()
 		p0Score = tempP0Score;
 		p1Score = tempP1Score;
 	}
-
-	//sess->EndLevel();
 }
 
 int ReachEnemyBaseMode::GetNumStoredBytes()
 {
-	return sizeof(ReachEnemyBaseModeData) + (p0Base->GetNumStoredBytes() * 2);
+	return sizeof(ReachEnemyBaseModeData) + p0Base->GetNumStoredBytes() * 2;//(p0Base->GetNumStoredBytes() * 2);
 }
 
 void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)

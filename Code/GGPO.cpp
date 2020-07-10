@@ -85,7 +85,7 @@ on_event_callback(GGPOEvent *info)
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
 		cout << "timesync" << endl;
-		Sleep(1000 * info->u.timesync.frames_ahead / 60);
+		Sleep(1000 * info->u.timesync.frames_ahead / 60 ); //buggy
 		break;
 	}
 	return true;

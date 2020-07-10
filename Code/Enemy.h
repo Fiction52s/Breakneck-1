@@ -148,7 +148,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	double scale;
 	int maxHealth;
 	std::string name;
-
+	int playerIndex; //-1 for all players
 	
 
 	Enemy(EnemyType t, ActorParams *ap);

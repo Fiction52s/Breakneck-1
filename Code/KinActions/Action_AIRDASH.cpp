@@ -45,7 +45,19 @@ void Actor::AIRDASH_End()
 			V2d velDir = normalize(velocity);
 			if (velLen < bboostSpeed)
 			{
-				velocity = velDir * bboostSpeed;
+				if (velDir.y < 0)
+				{
+					velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
+				}
+				else if (velDir.y > 0)
+				{
+					velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed);
+				}
+				else
+				{
+					velocity = velDir * bboostSpeed;
+				}
+				
 			}
 			else
 			{

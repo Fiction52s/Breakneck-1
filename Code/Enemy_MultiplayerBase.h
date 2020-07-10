@@ -5,13 +5,13 @@
 
 struct BaseData
 {
-	bool dead;
 	HitboxInfo *receivedHit;
+	Enemy *prev;
+	Enemy *next;
 	Actor *receivedHitPlayer;
 	int numHealth;
 	int pauseFrames;
-	Enemy *prev;
-	Enemy *next;
+	bool dead;
 };
 
 struct MultiplayerBase : Enemy
@@ -24,9 +24,6 @@ struct MultiplayerBase : Enemy
 	};
 
 	Tileset *ts;
-	int actorIndex;
-
-
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBuffer(unsigned char *buf);
@@ -34,7 +31,7 @@ struct MultiplayerBase : Enemy
 	MultiplayerBase(ActorParams * ap);
 	~MultiplayerBase();
 
-	void ProcessHit();
+	//void ProcessHit();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
