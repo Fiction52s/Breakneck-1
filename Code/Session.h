@@ -220,6 +220,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool skipped;
 	bool oneFrameMode;
 	bool showDebugDraw;
+	bool showNetStats;
 	bool cutPlayerInput;
 	MainMenu *mainMenu;
 	std::vector<GCC::GCController> gcControllers;

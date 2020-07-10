@@ -280,7 +280,10 @@ void EditSession::UpdateCamera()
 		}
 		else
 		{
-			cam.Update(GetPlayer(ngs->local_player_handle - 1));
+			int handle = ngs->local_player_handle - 1;
+			if (handle < 0)
+				handle = 0; //sync test
+			cam.Update(GetPlayer(handle));
 		}
 	}
 
@@ -343,6 +346,7 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	while (accumulator >= frameTime)
 	{
 		GGPORunFrame();
+		UpdateNetworkStats();
 		accumulator -= TIMESTEP;
 	}
 
@@ -404,6 +408,44 @@ bool EditSession::TestPlayerModeUpdate()
 	}
 
 	return true;
+}
+
+void EditSession::SetupGGPOStatsPanel()
+{
+	ggpoStatsPanel = new Panel("stats", 500, 300, this, false);
+
+	ggpoStatsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+	ggpoStatsPanel->AddLabel("kbps_sent", Vector2i(), 28, "kbps_sent:");
+	ggpoStatsPanel->AddLabel("ping", Vector2i(), 28, "ping:");
+	ggpoStatsPanel->AddLabel("recv", Vector2i(), 28, "recv_queue_len:");
+	ggpoStatsPanel->AddLabel("send", Vector2i(), 28, "send_queue_len:");
+	ggpoStatsPanel->AddLabel("local", Vector2i(), 28, "local_frames_behind:");
+	ggpoStatsPanel->AddLabel("remote", Vector2i(), 28, "remote_frames_behind:");
+}
+
+void EditSession::UpdateNetworkStats()
+{
+	if (ggpo != NULL)
+	{
+		int remoteIndex = 0;
+		if( ngs->local_player_handle == 1 )
+		{ 
+			remoteIndex = 1;
+		}
+		else if (ngs->local_player_handle == 2)
+		{
+			remoteIndex = 0;
+		}
+		GGPONetworkStats ns;
+		ggpo_get_network_stats(ggpo, ngs->playerInfo[remoteIndex].handle, &ns);
+
+		ggpoStatsPanel->labels["kbps_sent"]->setString( "kbps_sent: " + to_string(ns.network.kbps_sent));
+		ggpoStatsPanel->labels["ping"]->setString( "ping: " + to_string(ns.network.ping));
+		ggpoStatsPanel->labels["recv"]->setString( "recv_queue_len: " + to_string(ns.network.recv_queue_len));
+		ggpoStatsPanel->labels["send"]->setString( "send_queue_len: " + to_string(ns.network.send_queue_len));
+		ggpoStatsPanel->labels["local"]->setString( "local_frames_behind: " + to_string(ns.timesync.local_frames_behind));
+		ggpoStatsPanel->labels["remote"]->setString("remote_frames_behind: " + to_string(ns.timesync.remote_frames_behind));
+	}
 }
 
 void EditSession::InitGGPO()
@@ -472,13 +514,12 @@ void EditSession::InitGGPO()
 			sizeof(int), localPort);
 	}
 	
+	
 
 	//ggpo_log(ggpo, "test\n");
-
 	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
 	ggpo_set_disconnect_timeout(ggpo, 0); //3000
 	ggpo_set_disconnect_notify_start(ggpo, 1000);
-
 	int myIndex = 0;
 	int otherIndex = 1;
 	if (shift)
@@ -1162,6 +1203,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 	updateModeFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeUpdate;
 
+	ggpoStatsPanel = NULL;
+
 	int waitFrames[] = { 30, 2 };
 	int waitModeThresh[] = { 1 };
 	removeProgressPointWaiter = new FrameWaiter(2, waitFrames, 1, waitModeThresh );
@@ -1531,6 +1574,9 @@ EditSession::~EditSession()
 		delete (*it);
 	}
 
+	if (ggpoStatsPanel != NULL)
+		delete ggpoStatsPanel;
+
 	currSession = NULL;
 }
 
@@ -1600,6 +1646,13 @@ void EditSession::Draw()
 		}
 		
 		DrawUI();
+
+		if (ggpo != NULL && showNetStats)
+		{
+			preScreenTex->setView(uiView);
+			ggpoStatsPanel->Draw(preScreenTex);
+		}
+
 		return;
 	}
 
@@ -3185,6 +3238,7 @@ void EditSession::Init()
 
 	ReadDecorImagesFile();
 
+	SetupGGPOStatsPanel();
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
 	SetupBrushPanels();
@@ -12996,6 +13050,10 @@ void EditSession::TestPlayerModeHandleEvent()
 		else if (ev.key.code == sf::Keyboard::Num2)
 		{
 			showDebugDraw = !showDebugDraw;
+		}
+		else if (ev.key.code == sf::Keyboard::Num3)
+		{
+			showNetStats = !showNetStats;
 		}
 	}
 	}

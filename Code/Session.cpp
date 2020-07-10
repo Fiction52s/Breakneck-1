@@ -1367,6 +1367,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	mapHeader = NULL;
 
 	showDebugDraw = false;
+	showNetStats = false;
 }
 
 

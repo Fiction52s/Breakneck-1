@@ -806,6 +806,9 @@ struct EditSession : GUIHandler, Session
 	void UpdateNumPlayers();
 
 	Actor *allPlayers[MAX_PLAYERS];
+	Panel *ggpoStatsPanel;
+	void SetupGGPOStatsPanel();
+	void UpdateNetworkStats();
 
 	void RestartGame();
 };

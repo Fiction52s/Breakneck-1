@@ -1584,6 +1584,23 @@ void Enemy::UpdateEnemyPhysics()
 	}
 }
 
+void Enemy::CheckPlayerInteractions( int i )
+{
+	SlowCheck(i);
+
+	if (currShield != NULL)
+	{
+		if (currShield->pauseFrames == 0)
+			currShield->CheckHit(sess->GetPlayer(i), this);
+	}
+	else
+	{
+		CheckHit(sess->GetPlayer(i), this);
+	}
+
+	CheckHitPlayer(i);
+}
+
 void Enemy::UpdatePhysics( int substep )
 {
 	if (pauseFrames > 0)
@@ -1610,20 +1627,21 @@ void Enemy::UpdatePhysics( int substep )
 
 	UpdateHitboxes();
 
-	SlowCheck(0);
-
-	if (currShield != NULL)
+	if (playerIndex == -1)
 	{
-		if( currShield->pauseFrames == 0 )
-			currShield->CheckHit(sess->GetPlayer(0), this);
+		Actor *a;
+		for (int i = 0; i < Session::MAX_PLAYERS; ++i)
+		{
+			a = sess->GetPlayer(i);
+			if (a != NULL)
+			{
+				CheckPlayerInteractions(i);
+			}
+		}
 	}
 	else
 	{
-		CheckHit(sess->GetPlayer(0), this);
-	}
-
-	if (CheckHitPlayer(0))
-	{
+		CheckPlayerInteractions(playerIndex);
 	}
 }
 
@@ -1674,6 +1692,9 @@ HitboxInfo * Enemy::IsHit(Actor *player)
 bool Enemy::CheckHitPlayer(int index)
 {
 	Actor *player = sess->GetPlayer(index);
+
+	if (player == NULL)
+		return false;
 
 	if (currHitboxes != NULL)
 	{

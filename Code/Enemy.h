@@ -153,6 +153,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	Enemy(EnemyType t, ActorParams *ap);
 	virtual ~Enemy();
+	void CheckPlayerInteractions( int i );
 	void UpdateKeySprite();
 	void SetKey();
 	bool IsGoalType();
