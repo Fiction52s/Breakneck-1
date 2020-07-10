@@ -1053,15 +1053,12 @@ void Camera::Init(V2d &p_pos)
 	}
 
 	Reset();
-	pos.x = p_pos.x;//owner->GetPlayer(0)->position.x;
-	pos.y = p_pos.y;//owner->GetPlayer(0)->position.y;
+	pos.x = p_pos.x;
+	pos.y = p_pos.y;
 }
 
 void Camera::Update( Actor *player )
 {
-	//if( owner == NULL )
-	//	owner = player->owner;
-
 	slowMultiple = player->slowMultiple;
 
 	if (manual)

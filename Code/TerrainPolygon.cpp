@@ -5059,7 +5059,11 @@ void TerrainPolygon::SoftReset()
 		delete [] grassVA;
 
 	if (borderQuads != NULL)
+	{
 		delete[] borderQuads;
+		borderQuads = NULL;
+	}
+		
 
 	lines = NULL;
 	va = NULL;

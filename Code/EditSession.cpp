@@ -274,7 +274,14 @@ void EditSession::UpdateCamera()
 	}
 	else*/
 	{
-		cam.Update(GetPlayer(0));
+		if (ggpo == NULL)
+		{
+			cam.Update(GetPlayer(0));
+		}
+		else
+		{
+			cam.Update(GetPlayer(ngs->local_player_handle - 1));
+		}
 	}
 
 	Vector2f camPos = cam.GetPos();
@@ -518,7 +525,11 @@ void EditSession::InitGGPO()
 
 void EditSession::TestPlayerMode()
 {
-	InitGGPO();
+	if (mode != TEST_PLAYER)
+	{
+		InitGGPO();
+	}
+	
 	//----------------------------------------
 	
 	scoreDisplay->Reset();
@@ -3349,6 +3360,7 @@ int EditSession::EditRun()
 	totalGameFrames = 0;
 	grassChanges = NULL;
 	focusedPanel = NULL;
+	grabbedBorderIndex = -1;
 
 	oldShaderZoom = -1;
 	complexPaste = NULL;

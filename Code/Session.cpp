@@ -5927,13 +5927,13 @@ bool Session::GGPORunGameModeUpdate()
 
 	UpdateReplayGhostSprites();
 
-	if (gameMode->CheckVictoryConditions())
+	/*if (gameMode->CheckVictoryConditions())
 	{
 		ggpo_advance_frame(ggpo);
 		gameMode->EndGame();
 
 		return true;
-	}
+	}*/
 
 	if (!RunPostUpdate())
 	{
@@ -6014,7 +6014,17 @@ bool Session::GGPORunGameModeUpdate()
 
 	totalGameFrames++;
 
+	if (gameMode->CheckVictoryConditions())
+	{
+		//ggpo_advance_frame(ggpo);
+		gameMode->EndGame();
+
+		//return true;
+	}
+
 	ggpo_advance_frame(ggpo);
+
+	
 
 	return true;
 }
