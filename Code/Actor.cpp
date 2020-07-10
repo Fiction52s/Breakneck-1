@@ -97,6 +97,7 @@ void Actor::PopulateState(PState *ps)
 	ps->hasAirDash = hasAirDash;//true;//
 	ps->storedGroundSpeed = storedGroundSpeed;
 	ps->currBBoostCounter = currBBoostCounter;
+	ps->currAirdashBoostCounter = currAirdashBoostCounter;
 	ps->steepJump = steepJump;
 	ps->currentSpeedBar = currentSpeedBar;
 	ps->speedLevel = speedLevel;
@@ -194,6 +195,8 @@ void Actor::PopulateState(PState *ps)
 
 	ps->lastDashPressFrame = lastDashPressFrame;
 
+	//ps->currVSHitboxInfo = *currVSHitboxInfo;
+
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -222,6 +225,7 @@ void Actor::PopulateFromState(PState *ps)
 	hasAirDash = ps->hasAirDash;
 	storedGroundSpeed = ps->storedGroundSpeed;
 	currBBoostCounter = ps->currBBoostCounter;
+	currAirdashBoostCounter = ps->currAirdashBoostCounter;
 	steepJump = ps->steepJump;
 	currentSpeedBar = ps->currentSpeedBar;
 	speedLevel = ps->speedLevel;
@@ -320,6 +324,8 @@ void Actor::PopulateFromState(PState *ps)
 	framesSinceAttack = ps->framesSinceAttack;
 
 	lastDashPressFrame = ps->lastDashPressFrame;
+
+	//*currVSHitboxInfo = ps->currVSHitboxInfo;
 }
 
 
@@ -2712,6 +2718,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	BounceFlameOff();
 
 	maxBBoostCount = GetActionLength(DASH);
+	maxAirdashBoostCount = GetActionLength(AIRDASH);
 		 	
 
 	gsdodeca.setTexture( *tsgsdodeca->texture);
@@ -3685,6 +3692,9 @@ void Actor::Respawn()
 	bounceEdge = NULL;
 	dead = false;
 
+	hitlagFrames = 0;
+	hitstunFrames = 0;
+	invincibleFrames = 0;
 	receivedHit = NULL;
 	speedParticleCounter = 1;
 	speedLevel = 0;
@@ -4862,7 +4872,7 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
-	//kinRing->powerRing->Drain(1000000);
+	//kinRing->powerRing->DraenemiesKilledThisFramein(1000000);
 	//DesperationUpdate();
 
 	ReverseVerticalInputsWhenOnCeiling();
@@ -11058,6 +11068,7 @@ void Actor::PhysicsResponse()
 
 			pTarget->ApplyHit( currVSHitboxInfo );
 
+			//hitlagFrames = currVSHitboxInfo->hitlagFrames;
 			//need to work these in later for hitlag, they are only here for testing for now.
 			currAttackHit = true;
 			hasDoubleJump = true;
@@ -11812,8 +11823,6 @@ void Actor::UpdatePlayerShader()
 
 		sh.setUniform("despFrame", (float)-1);
 	}
-
-	
 }
 
 void Actor::UpdateDashBooster()
@@ -11824,6 +11833,13 @@ void Actor::UpdateDashBooster()
 		if (currBBoostCounter < maxBBoostCount)
 		{
 			currBBoostCounter++;
+		}
+	}
+	else if (action == AIRDASH)
+	{
+		if (currAirdashBoostCounter < maxAirdashBoostCount)
+		{
+			currAirdashBoostCounter++;
 		}
 	}
 }
@@ -15925,7 +15941,12 @@ void Actor::UpdateInHitlag()
 		}
 	}	
 
-	--flashFrames;
+	//if (flashFrames > 0)
+	//{
+	//	//not having the >0 thing caused a desync here at some point and I don't know why
+	//	//but at least its fixed for now...so weird.
+	//	--flashFrames;
+	//}
 }
 
  pair<bool, bool> Actor::PlayerHitMe( int otherPlayerIndex )

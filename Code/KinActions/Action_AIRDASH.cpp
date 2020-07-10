@@ -10,6 +10,7 @@ void Actor::AIRDASH_Start()
 	framesExtendingAirdash = 0;
 	BounceFlameOff();
 	airDashStall = false;
+	currAirdashBoostCounter = 0;
 
 	//special unlimited airdash
 	if (inBubble && !hasAirDash)
@@ -33,6 +34,26 @@ void Actor::AIRDASH_End()
 	}
 	else
 	{
+		if ( currInput.B && 
+			(currInput.LLeft() || currInput.LUp()
+				|| currInput.LRight() || currInput.LDown() ) )
+		{
+			double dashFactor = 1.85;//1.5;
+			double bboostSpeed = GetDashSpeed() * dashFactor;
+			double velLen = length(velocity);
+			double highSpeedBoost = 5;
+			V2d velDir = normalize(velocity);
+			if (velLen < bboostSpeed)
+			{
+				velocity = velDir * bboostSpeed;
+			}
+			else
+			{
+				velocity = velDir * (velLen + highSpeedBoost);
+			}
+		}
+
+
 		SetAction(JUMP);
 		frame = 1;
 		holdJump = false;

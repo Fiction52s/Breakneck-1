@@ -46,7 +46,6 @@ struct Movable : QuadTreeCollider
 	//static GameSession *owner;
 };
 
-
 struct ChainableObject
 {
 	virtual void SetStartPosition(V2d &pos) = 0;
@@ -62,7 +61,6 @@ struct SlowableObject
 	{
 		isSlowable = true;
 	}
-
 	void SetSlowable(bool slowable)
 	{
 		isSlowable = slowable;

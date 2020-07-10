@@ -53,36 +53,60 @@ struct HitParams
 };
 
 
+struct StoredEnemyData
+{
+	//SlowableObject
+	int slowMultiple;
+	int slowCounter;
+	bool isSlowable;
 
+	//HittableObject
+	HitboxInfo *receivedHit;
+	Actor *receivedHitPlayer;
+	Enemy *comboHitEnemy;
+	int numHealth;
+	bool specterProtected;
 
+	//Enemy
+	bool facingRight;
+	V2d pos;
+	Edge *ground;
+	double quant;
+	int action;
+};
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
+	virtual int GetNumStoredBytes() { return 0; }
+	virtual void StoreBytes(unsigned char *bytes) {
+		assert(0);
+	}
+	virtual void SetFromBuffer(unsigned char *buf) {}
+
 	bool facingRight;
 	PositionInfo currPosInfo;
 	int action;
-	CuttableObject *cutObject;
+	int pauseFrames;
+	int frame;
+	bool dead;
+
+	CollisionBody *currHurtboxes;
+	int currHitboxFrame;
+	int currHurtboxFrame;
 	Launcher **launchers;
+	CuttableObject *cutObject;
 	HitboxInfo *hitboxInfo;
 	sf::SoundBuffer *genericDeathSound;
-	int currHitboxFrame;
-	bool highResPhysics;
-	int currHurtboxFrame;
 	CollisionBody hurtBody;
 	CollisionBody hitBody;
-	CollisionBody *currHurtboxes;
-	CollisionBox *physicsBox;
 	int numLaunchers;
 	sf::Sprite zonedSprite;
 	SurfaceMover *surfaceMover;
 	GroundMover *groundMover;
 	Shield *currShield;
-	int pauseFrames;
-	int frame;
-	bool dead;
 	ComboObject *comboObj;
-	
+	bool highResPhysics;
 	V2d groundOffset;
 	bool origFacingRight;
 	ActorParams *editParams;
@@ -124,6 +148,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	double scale;
 	int maxHealth;
 	std::string name;
+
+	
 
 	Enemy(EnemyType t, ActorParams *ap);
 	virtual ~Enemy();

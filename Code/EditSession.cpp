@@ -415,6 +415,12 @@ void EditSession::InitGGPO()
 	cb.on_event = on_event_callback;
 	cb.log_game_state = log_game_state;
 
+	/*for (int i = 0; i < 10; ++i)
+	{
+		saveStates[i] = new SaveGameState;
+		usedSaveState[i] = false;
+	}*/
+
 	currSaveState = new SaveGameState;
 	ngs = new GGPONonGameState;
 	ggpoPlayers = new GGPOPlayer[4];

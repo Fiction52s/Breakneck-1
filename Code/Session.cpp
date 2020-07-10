@@ -6111,32 +6111,67 @@ void Session::GGPORunFrame()
 	//draw after then loop again
 }
 
+int Session::GetSaveDataSize()
+{
+	int totalSize = sizeof(SaveGameState);
+
+	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
+	{
+		totalSize += gameMode->GetNumStoredBytes();
+	}
+
+	return totalSize;
+}
+
 bool Session::SaveState(unsigned char **buffer,
 	int *len, int *checksum, int frame)
 {
+	/*int unusedState = 0;
+	for (int i = 0; i < 10; ++i)
+	{
+
+	}*/
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
-	*len = sizeof(SaveGameState);
+	currSaveState->activeEnemyList = activeEnemyList;
+	currSaveState->activeEnemyListTail = activeEnemyListTail;
+	currSaveState->inactiveEnemyList = inactiveEnemyList;
+	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	if (!*buffer) {
 		return false;
 	}
 	memcpy(*buffer, currSaveState, *len);
+
+	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
+	{
+		unsigned char *tempBuf = *buffer;
+		tempBuf += sizeof(SaveGameState);
+		gameMode->StoreBytes(tempBuf);
+	}
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
-	int offset = 0;
-	int fletchLen = *len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
-	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
+	int offset = 0;//64;//sizeof(SaveGameState);
+	int fletchLen = 16;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);// currSaveState->states[1].hitlagFrames;//
 	return true;
 }
 
 bool Session::LoadState(unsigned char *buffer, int len)
 {
-	memcpy(currSaveState, buffer, len);
-
+	int saveSize = sizeof(SaveGameState);
+	memcpy(currSaveState, buffer, saveSize);
+	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
+	{
+		buffer += saveSize;
+		gameMode->SetFromBuffer(buffer);
+	}
 	//cout << "rollback. setting frame to: " << currSaveState->totalGameFrames << " from " << totalGameFrames << "\n";
 	totalGameFrames = currSaveState->totalGameFrames;
+	activeEnemyList = currSaveState->activeEnemyList;
+	inactiveEnemyList = currSaveState->inactiveEnemyList;
+	activeEnemyListTail = currSaveState->activeEnemyListTail;
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 

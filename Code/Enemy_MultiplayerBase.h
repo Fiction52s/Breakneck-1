@@ -3,6 +3,17 @@
 
 #include "Enemy.h"
 
+struct BaseData
+{
+	bool dead;
+	HitboxInfo *receivedHit;
+	Actor *receivedHitPlayer;
+	int numHealth;
+	int pauseFrames;
+	Enemy *prev;
+	Enemy *next;
+};
+
 struct MultiplayerBase : Enemy
 {
 	enum Action
@@ -14,6 +25,11 @@ struct MultiplayerBase : Enemy
 
 	Tileset *ts;
 	int actorIndex;
+
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBuffer(unsigned char *buf);
 
 	MultiplayerBase(ActorParams * ap);
 	~MultiplayerBase();

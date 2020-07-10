@@ -340,6 +340,7 @@ struct Actor : QuadTreeCollider,
 	double currentSpeedBar;
 	double storedGroundSpeed;
 	int currBBoostCounter;
+	int currAirdashBoostCounter;
 	bool steepJump;
 	// 0 is not started, 1 is right, 2 is
 	//left
@@ -753,6 +754,7 @@ struct Actor : QuadTreeCollider,
 	double slideGravFactor;
 	Mode kinMode;
 	int maxBBoostCount;
+	int maxAirdashBoostCount;
 	double doubleJumpStrength;
 	double backDoubleJumpStrength;
 	int timeSlowStrength;

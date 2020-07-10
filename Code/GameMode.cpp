@@ -119,3 +119,40 @@ void ReachEnemyBaseMode::EndGame()
 
 	//sess->EndLevel();
 }
+
+int ReachEnemyBaseMode::GetNumStoredBytes()
+{
+	return sizeof(ReachEnemyBaseModeData) + (p0Base->GetNumStoredBytes() * 2);
+}
+
+void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)
+{
+	int dataSize = sizeof(ReachEnemyBaseModeData);
+
+	ReachEnemyBaseModeData rd;
+	rd.p0Score = p0Score;
+	rd.p1Score = p1Score;
+
+	memcpy(bytes, &rd, dataSize);
+	bytes += dataSize;
+
+	p0Base->StoreBytes(bytes);
+	bytes += p0Base->GetNumStoredBytes();
+	p1Base->StoreBytes(bytes);
+}
+
+void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
+{
+	int dataSize = sizeof(ReachEnemyBaseModeData);
+	ReachEnemyBaseModeData rd;
+	memcpy(&rd, buf, dataSize);
+
+	p0Score = rd.p0Score;
+	p1Score = rd.p1Score;
+
+	buf += dataSize;
+	p0Base->SetFromBuffer(buf);
+	buf += p0Base->GetNumStoredBytes();
+	p1Base->SetFromBuffer(buf);
+}
+

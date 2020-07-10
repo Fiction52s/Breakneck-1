@@ -42,7 +42,7 @@ void Actor::DASH_Change()
 	{
 		if (!currInput.B)
 		{
-			if (currBBoostCounter >= 20)//maxBBoostCount - 15 )
+			if (currBBoostCounter >= maxBBoostCount - 15 )//maxBBoostCount - 15 )
 			{
 				double dashFactor = 1.85;//1.5;
 				double bboostSpeed = GetDashSpeed() * dashFactor;
@@ -56,6 +56,18 @@ void Actor::DASH_Change()
 					else
 					{
 						groundSpeed = -bboostSpeed;
+					}
+				}
+				else
+				{
+					double highSpeedBoost = 5;
+					if (groundSpeed > 0)
+					{
+						groundSpeed += highSpeedBoost;
+					}
+					else
+					{
+						groundSpeed -= highSpeedBoost;
 					}
 				}
 
@@ -302,7 +314,7 @@ void Actor::DASH_TimeDepFrameInc()
 
 int Actor::DASH_GetActionLength()
 {
-	return 40;
+	return 33;
 }
 
 Tileset * Actor::DASH_GetTileset()

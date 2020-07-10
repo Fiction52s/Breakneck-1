@@ -134,11 +134,26 @@ struct PState
 {
 	const static int MAX_BUBBLES = 5;
 
+	V2d position;
+	V2d velocity;
+	int flashFrames;
+	int bufferedAttack;
+	int doubleJumpBufferedAttack;
+	int wallJumpBufferedAttack;
+	int pauseBufferedAttack;
+	bool pauseBufferedJump;
+	bool pauseBufferedDash;
+	bool stunBufferedJump;
+	bool stunBufferedDash;
+	int stunBufferedAttack;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int setHitstunFrames;
+	int invincibleFrames;
 	HitboxInfo *receivedHit;
 	//sf::Vector2<double> bubblePos[5];
 	double xOffset;
-	V2d position;
-	V2d velocity;
 	int action;
 	int frame;
 	double groundSpeed;
@@ -161,6 +176,7 @@ struct PState
 	bool hasAirDash;
 	double storedGroundSpeed;
 	int currBBoostCounter;
+	int currAirdashBoostCounter;
 	bool steepJump;
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
@@ -193,21 +209,9 @@ struct PState
 	int currBubble;
 	bool currAttackHit;
 	bool bounceAttackHit;
-	int flashFrames;
-	int bufferedAttack;
-	int doubleJumpBufferedAttack;
-	int wallJumpBufferedAttack;
-	int pauseBufferedAttack;
-	bool pauseBufferedJump;
-	bool pauseBufferedDash;
-	bool stunBufferedJump;
-	bool stunBufferedDash;
-	int stunBufferedAttack;
+	//flashframes
 
-	int hitlagFrames;
-	int hitstunFrames;
-	int setHitstunFrames;
-	int invincibleFrames;
+	
 	
 
 	//CollisionBody *currHitboxes;
@@ -251,12 +255,17 @@ struct PState
 	int framesSinceAttack;
 
 	int lastDashPressFrame;
+
+	//HitboxInfo currVSHitboxInfo;
 };
 
 struct SaveGameState
 {
 	PState states[2];
 	int totalGameFrames;
+	Enemy *activeEnemyList;
+	Enemy *activeEnemyListTail;
+	Enemy *inactiveEnemyList;
 };
 
 int fletcher32_checksum(short *data, 

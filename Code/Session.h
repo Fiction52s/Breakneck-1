@@ -683,6 +683,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
+
+	int GetSaveDataSize();
+	//SaveGameState *saveStates[10];
+	//bool usedSaveState[10];
 	GGPOPlayer *ggpoPlayers;
 	bool GGPORunGameModeUpdate();
 	void GGPORunFrame();

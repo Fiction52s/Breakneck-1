@@ -157,6 +157,11 @@ bool Enemy::SetHitParams()
 {
 	switch (type)
 	{
+	case EnemyType::EN_MULTIPLAYERBASE:
+	{
+		hitParams.Set(5, .8, (3 * 60) / 1, 1, false);
+		break;
+	}
 	case EnemyType::EN_CRAWLER:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
@@ -1307,7 +1312,7 @@ void Enemy::ProcessHit()
 			ConfirmHitNoKill();
 		}
 
-		//receivedHit = NULL;
+		receivedHit = NULL;
 	}
 }
 void Enemy::MovePos(V2d &vel,
@@ -1334,8 +1339,9 @@ void Enemy::ConfirmHitNoKill()
 	}
 	else
 	{
-		sess->Pause(5);
-		pauseFrames = 0;
+		//sess->Pause(5);
+		//pauseFrames = 0;
+		pauseFrames = 5;
 	}
 	
 	HandleHitAndSurvive();
@@ -1370,10 +1376,10 @@ void Enemy::ConfirmKill()
 	}
 	else
 	{
-		sess->Pause(7);
-		pauseFrames = 0;
+		pauseFrames = 7;
+		//sess->Pause(7);
+		//pauseFrames = 0;
 	}
-
 
 	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 5, true);
 	sess->cam.SetRumble(1.5, 1.5, 7);
@@ -1382,14 +1388,12 @@ void Enemy::ConfirmKill()
 	{
 		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
 			sess->GetPlayer(0), 1, GetPosition());
-		
 	}
 	else
 	{
 		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
 			sess->GetPlayer(0), 6, GetPosition());
 	}
-	
 
 	dead = true;
 

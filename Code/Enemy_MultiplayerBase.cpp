@@ -12,6 +12,38 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
+int MultiplayerBase::GetNumStoredBytes()
+{
+	return sizeof(BaseData);
+}
+
+void MultiplayerBase::StoreBytes(unsigned char *bytes)
+{
+	BaseData bd;
+	bd.dead = dead;
+	bd.receivedHit = receivedHit;
+	bd.receivedHitPlayer = receivedHitPlayer;
+	bd.numHealth = numHealth;
+	bd.pauseFrames = pauseFrames;
+	bd.prev = prev;
+	bd.next = next;
+	memcpy(bytes, &bd, sizeof( BaseData ));
+}
+
+void MultiplayerBase::SetFromBuffer(unsigned char *buf)
+{
+	BaseData bd;
+	memcpy(&bd, buf, sizeof(BaseData));
+
+	dead = bd.dead;
+	receivedHit = bd.receivedHit;
+	receivedHitPlayer = bd.receivedHitPlayer;
+	pauseFrames = bd.pauseFrames;
+	numHealth = bd.numHealth;
+	prev = bd.prev;
+	next = bd.next;
+}
+
 MultiplayerBase::MultiplayerBase(ActorParams *ap)
 	:Enemy(EnemyType::EN_MULTIPLAYERBASE, ap)//, false, 1, false)
 {
@@ -98,7 +130,7 @@ void MultiplayerBase::ProcessHit()
 			ConfirmHitNoKill();
 		}
 
-		//receivedHit = NULL;
+		receivedHit = NULL;
 	}
 }
 
