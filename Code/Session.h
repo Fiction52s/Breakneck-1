@@ -159,6 +159,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	int timeSyncFrames;
 	GameMode *gameMode;
 	bool switchGameState;
 	ShipEnterScene *shipEnterScene;

@@ -343,11 +343,19 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 
 	accumulator += frameTime;
 
-	while (accumulator >= frameTime)
+	if ( accumulator >= TIMESTEP && timeSyncFrames > 0)
 	{
-		GGPORunFrame();
-		UpdateNetworkStats();
+		--timeSyncFrames;
 		accumulator -= TIMESTEP;
+	}
+	else
+	{
+		while (accumulator >= TIMESTEP)
+		{
+			GGPORunFrame();
+			UpdateNetworkStats();
+			accumulator -= TIMESTEP;
+		}
 	}
 
 	//now = timeGetTime();
@@ -450,6 +458,7 @@ void EditSession::UpdateNetworkStats()
 
 void EditSession::InitGGPO()
 {
+	timeSyncFrames = 0;
 	//srand(400);
 	srand(time(0));
 	WSADATA wd = { 0 };

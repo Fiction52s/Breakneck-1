@@ -128,6 +128,7 @@ void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)
 	int dataSize = sizeof(ReachEnemyBaseModeData);
 
 	ReachEnemyBaseModeData rd;
+	memset(&rd, 0, dataSize);
 	rd.p0Score = p0Score;
 	rd.p1Score = p1Score;
 

@@ -1273,6 +1273,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	gameMode = NULL;
 
+	timeSyncFrames = 0;
+
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
 
