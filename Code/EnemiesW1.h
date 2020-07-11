@@ -23,5 +23,8 @@
 //#include "Enemy_Juggler.h"
 #include "FlowerPod.h"
 
+#include "Enemy_MultiplayerBase.h"
+#include "Enemy_MultiplayerProgressTarget.h"
+
 
 #endif

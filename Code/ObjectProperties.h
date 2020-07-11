@@ -111,7 +111,7 @@ private:
 struct HittableObject
 {
 	HittableObject() :receivedHit(NULL) {}
-	virtual HitboxInfo * IsHit(Actor *player) = 0;
+	virtual HitboxInfo * IsHit(int pIndex) = 0;
 	const bool ReceivedHit() { return receivedHit; }
 	bool CheckHit(Actor *player, Enemy* e);
 	int GetReceivedHitPlayerIndex();

@@ -141,7 +141,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void DecideAction();
 	void DecideNextAction( );
 	//void ProcessHit();
-	HitboxInfo *IsHit(Actor *player);
+	HitboxInfo *IsHit(int pIndex);
 	int totalInvincFramesOnHit;
 	int currInvincFramesOnHit;
 	int invincHitThresh;

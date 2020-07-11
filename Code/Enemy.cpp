@@ -162,6 +162,11 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 1, 3, false);
 		break;
 	}
+	case EnemyType::EN_MULTIPLAYERPROGRESSTARGET:
+	{
+		hitParams.Set(5, .8, (3 * 60) / 1, 3, false);
+		break;
+	}
 	case EnemyType::EN_CRAWLER:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
@@ -401,6 +406,14 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 		cutObject = NULL;
 	}
 
+	if (!hurtShader.loadFromFile("Resources/Shader/enemyhurt_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "couldnt load enemy enemyhurt shader" << endl;
+		assert(false);
+	}
+	hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
+	hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
+
 	if( world == 0 )
 	{
 		ts_hitSpack = NULL;
@@ -464,13 +477,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 
 	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
 
-	if( !hurtShader.loadFromFile( "Resources/Shader/enemyhurt_shader.frag", sf::Shader::Fragment ) )
-	{
-		cout << "couldnt load enemy enemyhurt shader" << endl;
-		assert( false );
-	}
-	hurtShader.setUniform( "toColor", Glsl::Vec4( Color::White.r, Color::White.g, Color::White.b, Color::White.a ));
-	hurtShader.setUniform( "auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a ) );
+	
 }
 
 void Enemy::SetKey()
@@ -1651,10 +1658,12 @@ bool Enemy::IsSlowed( int index )
 	return (player->IntersectMySlowboxes(currHurtboxes, currHurtboxFrame));
 }
 
-HitboxInfo * Enemy::IsHit(Actor *player)
+HitboxInfo * Enemy::IsHit(int pIndex )
 {
 	if (currHurtboxes == NULL)
 		return NULL;
+
+	Actor *player = sess->GetPlayer(pIndex);
 
 	if (CanBeHitByPlayer())
 	{
@@ -1737,7 +1746,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 		( e->playerIndex < 0 || e->playerIndex == player->actorIndex) )
 	{
 		comboHitEnemy = NULL;
-		receivedHit = IsHit(player);
+		receivedHit = IsHit(player->actorIndex);
 		receivedHitPlayer = player;
 		if (receivedHit == NULL)
 			return false;

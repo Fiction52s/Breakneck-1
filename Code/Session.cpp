@@ -52,7 +52,7 @@
 #include "ScoreDisplay.h"
 
 #include "GameMode.h"
-#include "Enemy_MultiplayerBase.h"
+
 
 
 using namespace sf;
@@ -219,6 +219,11 @@ void Session::AddGeneralEnemies()
 		false, false, 1, 1);
 
 	types["multiplayerbase"] = new ActorType(basePI);
+
+	AddExtraEnemy("multiplayerprogresstarget", CreateEnemy<MultiplayerProgressTarget>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(), Vector2i(32, 32), false, false, false, false, true, 
+		false, false, 1);
+
 
 	AddExtraEnemy("zoneproperties", NULL, SetParamsType<ZonePropertiesParams>, Vector2i(0, 0),
 		Vector2i(128, 128), false, false, false, false, true, false, false, 1,
@@ -6266,3 +6271,7 @@ void Session::EndLevel()
 	}
 }
 
+int Session::GetGameMode()
+{
+	return mapHeader->gameMode;
+}

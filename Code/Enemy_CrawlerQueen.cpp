@@ -344,8 +344,10 @@ void CrawlerQueen::UpdateHitboxes()
 	}
 }
 
-HitboxInfo *CrawlerQueen::IsHit(Actor *player)
+HitboxInfo *CrawlerQueen::IsHit(int pIndex)
 {
+	Actor *player = sess->GetPlayer(pIndex);
+
 	if (player->IntersectMyHitboxes(currHurtboxes, currHurtboxFrame))
 	{
 		if (!invinc)

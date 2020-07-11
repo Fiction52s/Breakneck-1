@@ -3,10 +3,10 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_MultiplayerBase.h"
-#include "MapHeader.h"
+#include "Enemy_MultiplayerProgressTarget.h"
 #include "Actor.h"
 #include "GameMode.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
@@ -15,12 +15,12 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-int MultiplayerBase::GetNumStoredBytes()
+int MultiplayerProgressTarget::GetNumStoredBytes()
 {
 	return sizeof(MyData);
 }
 
-void MultiplayerBase::StoreBytes(unsigned char *bytes)
+void MultiplayerProgressTarget::StoreBytes(unsigned char *bytes)
 {
 	MyData md;
 	memset(&md, 0, sizeof(MyData));
@@ -31,11 +31,11 @@ void MultiplayerBase::StoreBytes(unsigned char *bytes)
 	md.prev = prev;
 	md.next = next;
 	md.receivedHitPlayer = receivedHitPlayer;
-	//memset(&bd.pad, 0, 3 * sizeof(char));
+	memcpy(md.hitBy, hitBy, sizeof(hitBy));
 	memcpy(bytes, &md, sizeof(MyData));
 }
 
-void MultiplayerBase::SetFromBuffer(unsigned char *buf)
+void MultiplayerProgressTarget::SetFromBuffer(unsigned char *buf)
 {
 	MyData md;
 	memcpy(&md, buf, sizeof(MyData));
@@ -46,12 +46,13 @@ void MultiplayerBase::SetFromBuffer(unsigned char *buf)
 	pauseFrames = md.pauseFrames;
 	prev = md.prev;
 	next = md.next;
-	
+	memcpy(hitBy, md.hitBy, sizeof(hitBy));
+
 	receivedHitPlayer = md.receivedHitPlayer;
 }
 
-MultiplayerBase::MultiplayerBase(ActorParams *ap)
-	:Enemy(EnemyType::EN_MULTIPLAYERBASE, ap)//, false, 1, false)
+MultiplayerProgressTarget::MultiplayerProgressTarget(ActorParams *ap)
+	:Enemy(EnemyType::EN_MULTIPLAYERPROGRESSTARGET, ap)//, false, 1, false)
 {
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, S_FLOAT, 0);
@@ -67,17 +68,18 @@ MultiplayerBase::MultiplayerBase(ActorParams *ap)
 	ts = sess->GetTileset("Enemies/comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
+	
 
 	BasicCircleHurtBodySetup(48);
 
 	ResetEnemy();
 }
 
-MultiplayerBase::~MultiplayerBase()
+MultiplayerProgressTarget::~MultiplayerProgressTarget()
 {
 }
 
-void MultiplayerBase::ResetEnemy()
+void MultiplayerProgressTarget::ResetEnemy()
 {
 	DefaultHurtboxesOn();
 	action = S_FLOAT;
@@ -86,9 +88,13 @@ void MultiplayerBase::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+
+	memset(hitBy, 0, sizeof(hitBy));
+
+	
 }
 
-void MultiplayerBase::ProcessState()
+void MultiplayerProgressTarget::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -97,46 +103,72 @@ void MultiplayerBase::ProcessState()
 		/*switch (action)
 		{
 		case S_EXPLODE:
-			numHealth = 0;
-			dead = true;
-			break;
+		numHealth = 0;
+		dead = true;
+		break;
 		}*/
 	}
 
 	//V2d playerPos = owner->GetPlayer(0)->position;
 }
 
-HitboxInfo *MultiplayerBase::IsHit(int pIndex)
+void MultiplayerProgressTarget::HandleNoHealth()
 {
-	if (sess->GetGameMode() == MapHeader::T_REACHENEMYBASE)
-	{
-		ReachEnemyBaseMode *rbm = (ReachEnemyBaseMode*)sess->gameMode;
-		if (pIndex == 0)
-		{
-			if (rbm->p0HitTargets == rbm->totalProgressTargets)
-			{
-				return Enemy::IsHit(pIndex);
-			}
-		}
-		else if (pIndex == 1)
-		{
-			if (rbm->p1HitTargets == rbm->totalProgressTargets)
-			{
-				return Enemy::IsHit(pIndex);
-			}
-		}
-	}
+	//dead = true; //can never happen
+}
 
+HitboxInfo * MultiplayerProgressTarget::IsHit(int pIndex)
+{
+	if (!hitBy[pIndex])
+	{
+		return Enemy::IsHit(pIndex);
+	}
 	return NULL;
 }
 
-void MultiplayerBase::HandleNoHealth()
+void MultiplayerProgressTarget::ProcessHit()
 {
-	dead = true;
+	int receivedHitIndex = GetReceivedHitPlayerIndex();
+	if (!dead && ReceivedHit() && numHealth > 0 && !hitBy[receivedHitIndex])
+	{
+		sess->PlayerConfirmEnemyNoKill(this, receivedHitIndex);
+		ConfirmHitNoKill();
+		hitBy[receivedHitIndex] = true;
+		receivedHit = NULL;
+
+		if (sess->GetGameMode() == MapHeader::T_REACHENEMYBASE)
+		{
+			ReachEnemyBaseMode *rbm = (ReachEnemyBaseMode*)sess->gameMode;
+			if (receivedHitIndex == 0)
+				rbm->p0HitTargets++;
+			else if (receivedHitIndex == 1)
+			{
+				rbm->p1HitTargets++;
+			}
+		}
+	}
 }
 
-void MultiplayerBase::UpdateSprite()
+void MultiplayerProgressTarget::UpdateSprite()
 {
+	if (!hitBy[0] && !hitBy[1])
+	{
+		sprite.setColor(Color::Cyan);
+	}
+	else if (hitBy[0] && !hitBy[1])
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else if (!hitBy[0] && hitBy[1])
+	{
+		sprite.setColor(Color::Red);
+	}
+	else
+	{
+		sprite.setColor(Color::Black);
+	}
+	
+
 	sprite.setPosition(GetPositionF());
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
@@ -156,7 +188,7 @@ void MultiplayerBase::UpdateSprite()
 	sprite.setTextureRect(ts->GetSubRect(frame));*/
 }
 
-void MultiplayerBase::EnemyDraw(sf::RenderTarget *target)
+void MultiplayerProgressTarget::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 }

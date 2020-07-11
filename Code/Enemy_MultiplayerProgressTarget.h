@@ -1,11 +1,11 @@
-#ifndef __ENEMY_MULTIPLAYERBASE_H__
-#define __ENEMY_MULTIPLAYERBASE_H__
+#ifndef __ENEMY_MULTIPLAYERPROGRESSTARGET_H__
+#define __ENEMY_MULTIPLAYERPROGRESSTARGET_H__
 
 #include "Enemy.h"
 
 
 
-struct MultiplayerBase : Enemy
+struct MultiplayerProgressTarget : Enemy
 {
 	enum Action
 	{
@@ -23,16 +23,20 @@ struct MultiplayerBase : Enemy
 		int numHealth;
 		int pauseFrames;
 		bool dead;
+		bool hitBy[4];
 	};
 
+	bool hitBy[4];
 	Tileset *ts;
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBuffer(unsigned char *buf);
-	HitboxInfo *IsHit(int pIndex);
 
-	MultiplayerBase(ActorParams * ap);
-	~MultiplayerBase();
+	HitboxInfo *IsHit(int pIndex);
+	void ProcessHit();
+
+	MultiplayerProgressTarget(ActorParams * ap);
+	~MultiplayerProgressTarget();
 
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

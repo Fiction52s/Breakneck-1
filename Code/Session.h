@@ -696,6 +696,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int *len, int *checksum, int frame);
 	bool LoadState(unsigned char *buffer, int len);
 	virtual void RestartGame() = 0;
+	int GetGameMode();
 };
 
 #endif

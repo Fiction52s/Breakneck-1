@@ -150,12 +150,14 @@ void Shield::ProcessHit()
 	}*/
 }
 
-HitboxInfo * Shield::IsHit(Actor *player)
+HitboxInfo * Shield::IsHit(int pIndex )
 {
 	if (action == S_BREAK)
 	{
 		return NULL;
 	}
+
+	Actor *player = parent->sess->GetPlayer(pIndex);
 
 	if (player->IntersectMyHitboxes(&body, 0))
 	{

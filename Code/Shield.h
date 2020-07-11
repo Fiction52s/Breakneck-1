@@ -36,7 +36,7 @@ struct Shield : HittableObject
 
 	Enemy *parent;
 
-	HitboxInfo * IsHit(Actor *player);
+	HitboxInfo * IsHit(int pIndex);
 	void ProcessHit();
 	int pauseFrames;
 

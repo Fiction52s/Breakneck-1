@@ -57,6 +57,39 @@ ReachEnemyBaseMode::~ReachEnemyBaseMode()
 	delete ap1;
 }
 
+void ReachEnemyBaseMode::Setup()
+{
+	auto eParamsList = sess->groups["--"]->actors;
+	enemies.clear();
+	enemies.reserve(enemies.size() + 2);
+
+	enemies.push_back(p0Base);
+	enemies.push_back(p1Base);
+
+	totalProgressTargets = 0;
+
+	for (auto it = eParamsList.begin(); it != eParamsList.end(); ++it)
+	{
+		if ((*it)->myEnemy != NULL)
+		{
+			enemies.push_back((*it)->myEnemy);
+
+			if ((*it)->GetTypeName() == "multiplayerprogresstarget")
+			{
+				++totalProgressTargets;
+			}
+		}
+	}
+
+	int extraBytes = 0;
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		extraBytes += (*it)->GetNumStoredBytes();
+	}
+
+	totalStoredBytes = sizeof(ReachEnemyBaseModeData) + extraBytes;
+}
+
 void ReachEnemyBaseMode::StartGame()
 {
 	V2d p0 = sess->GetPlayerPos(0);
@@ -76,11 +109,21 @@ void ReachEnemyBaseMode::StartGame()
 	p0Base->Reset();
 	p1Base->Reset();
 
-	sess->AddEnemy(p0Base);
-	sess->AddEnemy(p1Base);
+	//sess->AddEnemy(p0Base);
+	//sess->AddEnemy(p1Base);
 
 	p0Score = 0;
 	p1Score = 0;
+
+	p0HitTargets = 0;
+	p1HitTargets = 1;
+
+	//if I don't do this I get a desync probably caused by spawned variable
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		//(*it)->Reset();
+		sess->AddEnemy((*it));
+	}
 }
 
 bool ReachEnemyBaseMode::CheckVictoryConditions()
@@ -120,7 +163,7 @@ void ReachEnemyBaseMode::EndGame()
 
 int ReachEnemyBaseMode::GetNumStoredBytes()
 {
-	return sizeof(ReachEnemyBaseModeData) + p0Base->GetNumStoredBytes() * 2;//(p0Base->GetNumStoredBytes() * 2);
+	return totalStoredBytes;
 }
 
 void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)
@@ -131,13 +174,17 @@ void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)
 	memset(&rd, 0, dataSize);
 	rd.p0Score = p0Score;
 	rd.p1Score = p1Score;
+	rd.p0HitTargets = p0HitTargets;
+	rd.p1HitTargets = p1HitTargets;
 
 	memcpy(bytes, &rd, dataSize);
 	bytes += dataSize;
 
-	p0Base->StoreBytes(bytes);
-	bytes += p0Base->GetNumStoredBytes();
-	p1Base->StoreBytes(bytes);
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
 }
 
 void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
@@ -149,9 +196,15 @@ void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
 	p0Score = rd.p0Score;
 	p1Score = rd.p1Score;
 
+	p0HitTargets = rd.p0HitTargets;
+	p1HitTargets = rd.p1HitTargets;
+
 	buf += dataSize;
-	p0Base->SetFromBuffer(buf);
-	buf += p0Base->GetNumStoredBytes();
-	p1Base->SetFromBuffer(buf);
+
+	for (auto it = enemies.begin(); it != enemies.end(); ++it)
+	{
+		(*it)->SetFromBuffer(buf);
+		buf += (*it)->GetNumStoredBytes();
+	}
 }
 

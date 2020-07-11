@@ -4,6 +4,7 @@
 struct Session;
 struct MultiplayerBase;
 struct BasicAirEnemyParams;
+struct Enemy;
 
 struct GameMode
 {
@@ -15,6 +16,7 @@ struct GameMode
 	virtual void StartGame() = 0;
 	virtual bool CheckVictoryConditions() = 0;
 	virtual void EndGame() = 0;
+	virtual void Setup() {}
 	bool IsDone() { return done; }
 	virtual int GetNumStoredBytes() { return 0; }
 	virtual void StoreBytes(unsigned char *bytes) {}
@@ -37,6 +39,8 @@ struct ReachEnemyBaseMode : GameMode
 	{
 		int p0Score;
 		int p1Score;
+		int p0HitTargets;
+		int p1HitTargets;
 	};
 
 	BasicAirEnemyParams *ap0;
@@ -45,6 +49,11 @@ struct ReachEnemyBaseMode : GameMode
 	MultiplayerBase *p1Base;
 	int p0Score;
 	int p1Score;
+	std::vector<Enemy*> enemies;
+	int totalStoredBytes;
+	int totalProgressTargets;
+	int p0HitTargets;
+	int p1HitTargets;
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -52,6 +61,8 @@ struct ReachEnemyBaseMode : GameMode
 
 	ReachEnemyBaseMode();
 	~ReachEnemyBaseMode();
+
+	void Setup();
 	void StartGame();
 	bool CheckVictoryConditions();
 	void EndGame();

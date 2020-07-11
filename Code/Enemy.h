@@ -243,7 +243,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void UpdatePhysics( int substep );
 	virtual bool LaunchersAreDone();
 	virtual bool IsSlowed( int index );
-	virtual HitboxInfo * IsHit(Actor *player);
+	virtual HitboxInfo * IsHit(int pIndex );
 	virtual void HandleNoHealth();
 	virtual void HandleRemove() {}
 	virtual void ProcessState() = 0;
