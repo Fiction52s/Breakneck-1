@@ -1948,6 +1948,7 @@ bool Session::ReadPlayersStartPos(std::ifstream &is)
 		is >> playerOrigPos[i].x;
 		is >> playerOrigPos[i].y;
 	}
+	
 
 	return true;
 }

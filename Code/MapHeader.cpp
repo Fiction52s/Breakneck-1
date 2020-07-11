@@ -127,6 +127,11 @@ bool MapHeader::Load(std::ifstream &is)
 	
 	description = ss.str();
 
+	if (ver1 <= 2 && ver2 < 3)
+	{
+		gameMode = T_BASIC;
+	}
+
 	return true;
 }
 
