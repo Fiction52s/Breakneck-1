@@ -1142,8 +1142,10 @@ void EditSession::UpdateModeFunc(int m)
 	{
 		while (true )
 		{
-			//if (TestPlayerModeUpdate())
-			//	break;
+			/*if (TestPlayerModeUpdate())
+			{
+				break;
+			}*/
 
 			if (GGPOTestPlayerModeUpdate())
 			{

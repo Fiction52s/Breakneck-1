@@ -427,6 +427,18 @@ struct Actor : QuadTreeCollider,
 	
 	int lastDashPressFrame;
 
+	bool standNDashBoost;
+	int standNDashBoostCurr;
+	bool hasFairAirDashBoost;
+	int framesStanding;
+	int framesSinceRightWireBoost;
+	int framesSinceLeftWireBoost;
+	int framesSinceDoubleWireBoost;
+	int enemiesKilledThisFrame;
+	int enemiesKilledLastFrame;
+
+	double hitstunGravMultiplier;
+
 	int comboCounterResetFrames;
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
@@ -529,15 +541,7 @@ struct Actor : QuadTreeCollider,
 	KinRing *kinRing;
 	
 	
-	bool standNDashBoost;
-	int standNDashBoostCurr;
-	bool hasFairAirDashBoost;
-	int framesStanding;
-	int framesSinceRightWireBoost;
-	int framesSinceLeftWireBoost;
-	int framesSinceDoubleWireBoost;
-	int enemiesKilledThisFrame;
-	int enemiesKilledLastFrame;
+	
 	
 	
 	

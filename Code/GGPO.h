@@ -256,6 +256,18 @@ struct PState
 
 	int lastDashPressFrame;
 
+	bool standNDashBoost;
+	int standNDashBoostCurr;
+	bool hasFairAirDashBoost;
+	int framesStanding;
+	int framesSinceRightWireBoost;
+	int framesSinceLeftWireBoost;
+	int framesSinceDoubleWireBoost;
+	int enemiesKilledThisFrame;
+	int enemiesKilledLastFrame;
+
+	double hitstunGravMultiplier;
+
 	//HitboxInfo currVSHitboxInfo;
 };
 

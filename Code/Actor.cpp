@@ -195,8 +195,17 @@ void Actor::PopulateState(PState *ps)
 
 	ps->lastDashPressFrame = lastDashPressFrame;
 
-	//ps->currVSHitboxInfo = *currVSHitboxInfo;
+	ps->standNDashBoost = standNDashBoost;
+	ps->standNDashBoostCurr = standNDashBoostCurr;
+	ps->hasFairAirDashBoost = hasFairAirDashBoost;
+	ps->framesStanding = framesStanding;
+	ps->framesSinceRightWireBoost = framesSinceRightWireBoost;
+	ps->framesSinceLeftWireBoost = framesSinceLeftWireBoost;
+	ps->framesSinceDoubleWireBoost = framesSinceDoubleWireBoost;
+	ps->enemiesKilledThisFrame = enemiesKilledThisFrame;
+	ps->enemiesKilledLastFrame = enemiesKilledLastFrame;
 
+	ps->hitstunGravMultiplier = hitstunGravMultiplier;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -325,7 +334,17 @@ void Actor::PopulateFromState(PState *ps)
 
 	lastDashPressFrame = ps->lastDashPressFrame;
 
-	//*currVSHitboxInfo = ps->currVSHitboxInfo;
+	standNDashBoost = ps->standNDashBoost;
+	standNDashBoostCurr = ps->standNDashBoostCurr;
+	hasFairAirDashBoost = ps->hasFairAirDashBoost;
+	framesStanding = ps->framesStanding;
+	framesSinceRightWireBoost = ps->framesSinceRightWireBoost;
+	framesSinceLeftWireBoost = ps->framesSinceLeftWireBoost;
+	framesSinceDoubleWireBoost = ps->framesSinceDoubleWireBoost;
+	enemiesKilledThisFrame = ps->enemiesKilledThisFrame;
+	enemiesKilledLastFrame = ps->enemiesKilledLastFrame;
+
+	hitstunGravMultiplier = ps->hitstunGravMultiplier;
 }
 
 
@@ -2395,7 +2414,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currHitboxInfo->damage = 20;
 	currHitboxInfo->drainX = .5;
 	currHitboxInfo->drainY = .5;
-	currHitboxInfo->hitlagFrames = 0;
+	currHitboxInfo->hitlagFrames = 6;
 	currHitboxInfo->hitstunFrames = 30;
 	currHitboxInfo->knockback = 0;
 	currHitboxInfo->freezeDuringStun = true;
@@ -3167,6 +3186,9 @@ void Actor::SetupHitboxInfo( json &j, const std::string &name,
 	kbAngle = kbAngle / 180.0 * PI;
 	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
 	hi.invincibleFrames = myj["invincibleframes"];
+	double gravMult = myj["gravmultiplier"];
+	hi.gravMultiplier = gravMult;
+	hi.extraDefenderHitlag = myj["extradefenderhitlag"];
 }
 
 void Actor::ActionEnded()
@@ -3977,9 +3999,10 @@ void Actor::ProcessReceivedHit()
 	{
 		assert(action != DEATH);
 
-		hitlagFrames = receivedHit->hitlagFrames;
+		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
+		hitstunGravMultiplier = receivedHit->gravMultiplier;
 		if (receivedHit->invincibleFrames == -1)
 		{
 			invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
@@ -10320,8 +10343,8 @@ bool Actor::TryGroundAttack()
 	bool normalSwing = CheckNormalSwing();
 	bool rightStickSwing = false;//CheckRightStickSwing();
 
-	if ( normalSwing || rightStickSwing || IsGroundAttack(pauseBufferedAttack)
-		|| IsGroundAttack(stunBufferedAttack))
+	if ( normalSwing || rightStickSwing || IsGroundAttackAction(pauseBufferedAttack)
+		|| IsGroundAttackAction(stunBufferedAttack))
 	{
 		
 		if (!rightStickSwing)
@@ -10348,7 +10371,7 @@ bool Actor::TryGroundAttack()
 			}
 		}
 
-		if (IsGroundAttack(stunBufferedAttack))
+		if (IsGroundAttackAction(stunBufferedAttack))
 		{
 			V2d gn = ground->Normal();
 			if (TerrainPolygon::IsSteepGround(gn) )
@@ -11068,7 +11091,7 @@ void Actor::PhysicsResponse()
 
 			pTarget->ApplyHit( currVSHitboxInfo );
 
-			//hitlagFrames = currVSHitboxInfo->hitlagFrames;
+			hitlagFrames = currVSHitboxInfo->hitlagFrames;
 			//need to work these in later for hitlag, they are only here for testing for now.
 			currAttackHit = true;
 			hasDoubleJump = true;
@@ -12283,7 +12306,7 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 
 	if (action == AIRHITSTUN)
 	{
-		normalGravity = gravity * 0.5 / slowMultiple;
+		normalGravity = gravity * hitstunGravMultiplier / slowMultiple;
 	}
 
 	normalGravity *= extraGravityModifier;
@@ -14762,6 +14785,8 @@ void Actor::ConfirmHit( Enemy *e )
 		bounceAttackHit = false;
 	}
 
+	hitlagFrames = currHitboxInfo->hitlagFrames;
+
 
 	flashColor = c;	
 	//flashFrames = hitParams->flashFrames + 1;
@@ -15825,13 +15850,14 @@ void Actor::ClearPauseBufferedActions()
 
 bool Actor::IsAttackAction( int a )
 {
-	return (a == FAIR || a == DAIR || a == UAIR || a == STANDN || a == DIAGDOWNATTACK
-		|| a == DIAGUPATTACK || a == WALLATTACK || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK );
+	return (a == FAIR || a == DAIR || a == UAIR || a == DIAGDOWNATTACK
+		|| a == DIAGUPATTACK || a == WALLATTACK || IsGroundAttackAction(a));
 }
 
 bool Actor::IsGroundAttackAction(int a)
 {
-	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK);
+	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK
+		|| a == DASHATTACK || a == DASHATTACK2 || a == DASHATTACK3 );
 }
 
 bool Actor::IsSpringAction(int a)

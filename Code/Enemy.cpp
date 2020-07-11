@@ -159,7 +159,7 @@ bool Enemy::SetHitParams()
 	{
 	case EnemyType::EN_MULTIPLAYERBASE:
 	{
-		hitParams.Set(5, .8, (3 * 60) / 1, 1, false);
+		hitParams.Set(5, .8, (3 * 60) / 1, 3, false);
 		break;
 	}
 	case EnemyType::EN_CRAWLER:

@@ -87,7 +87,8 @@ struct HitboxInfo
 		:knockback(0), kbDir(0, 0),
 		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
 		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true),
-		invincibleFrames( -1 )
+		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
+		extraDefenderHitlag( 0 )
 	{
 	};
 
@@ -104,7 +105,8 @@ struct HitboxInfo
 	bool freezeDuringStun;
 	bool hitToSidePlayerIsOn;
 	int invincibleFrames;
-
+	double gravMultiplier;
+	int extraDefenderHitlag;
 };
 
 struct CollisionBox
