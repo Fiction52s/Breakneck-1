@@ -836,6 +836,8 @@ struct Actor : QuadTreeCollider,
 		EditSession *editOwner, int actorIndex );
 	~Actor();
 	void Init();
+
+	V2d GetKnockbackDir(const V2d &kbDir);
 	V2d GetGroundAnchor();
 
 	void LoadHitboxes();

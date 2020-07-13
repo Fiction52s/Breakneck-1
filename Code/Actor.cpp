@@ -3993,6 +3993,37 @@ void Actor::ReverseVerticalInputsWhenOnCeiling()
 	}
 }
 
+V2d Actor::GetKnockbackDir(const V2d &kbDir)
+{
+	V2d newDir = kbDir;
+	V2d modDir(0, 0);
+	if (currInput.LUp())
+	{
+		modDir.y = -1;
+	}
+	if (currInput.LDown())
+	{
+		modDir.y = 1;
+	}
+	if (currInput.LLeft())
+	{
+		modDir.x = -1;
+	}
+	if (currInput.LRight())
+	{
+		modDir.x = 1;
+	}
+
+	double currDIFactor = .5;
+	if (modDir.x != 0 || modDir.y != 0)
+	{
+		modDir = normalize(modDir) * currDIFactor;
+		newDir = kbDir + modDir;
+	}	
+
+	return newDir;
+}
+
 void Actor::ProcessReceivedHit()
 {
 	if (receivedHit != NULL)
@@ -4159,7 +4190,8 @@ void Actor::ProcessReceivedHit()
 							frame = 0;
 							if (receivedHit->knockback > 0)
 							{
-								velocity = receivedHit->knockback * receivedHit->kbDir;
+								velocity = receivedHit->knockback 
+									* GetKnockbackDir(receivedHit->kbDir);
 							}
 							else
 							{
@@ -4251,7 +4283,9 @@ void Actor::ProcessReceivedHit()
 				frame = 0;
 				if (receivedHit->knockback > 0)
 				{
-					velocity = receivedHit->knockback * receivedHit->kbDir;
+					velocity = receivedHit->knockback
+						* GetKnockbackDir(receivedHit->kbDir);
+					//velocity = receivedHit->knockback * receivedHit->kbDir;
 				}
 				else
 				{
@@ -15884,7 +15918,15 @@ V2d Actor::GetKnockbackDirFromVel()
 	}
 	else
 	{
-		return normalize(-velocity);
+		if (velocity.x > 0)
+		{
+			return V2d(-1, 0);
+		}
+		else
+		{
+			return V2d(1, 0);
+		}
+		//return normalize(-velocity);
 	}
 }
 
