@@ -1873,6 +1873,88 @@ void ModifyTerrainTypeAction::Undo()
 	performed = false;
 }
 
+ModifyTerrainGrassTypeAction::ModifyTerrainGrassTypeAction(Brush *brush,
+	int p_newGrassType)
+	:newGrassType(p_newGrassType)
+{
+	terrainBrush = *brush;
+
+	PolyPtr tp;
+	for (SelectList::iterator it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
+		{
+			grassTypeMap[tp] = tp->grassType;
+		}
+	}
+}
+
+void ModifyTerrainGrassTypeAction::Perform()
+{
+	assert(!performed);
+
+	EditSession *edit = EditSession::GetSession();
+
+	PolyPtr poly;
+	for (auto it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Deactivate();
+	}
+
+	for (auto it = grassTypeMap.begin();
+		it != grassTypeMap.end(); ++it)
+	{
+		(*it).first->SetGrassType(newGrassType);
+	}
+
+	for (auto it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Activate();
+	}
+
+	performed = true;
+}
+
+void ModifyTerrainGrassTypeAction::Undo()
+{
+	assert(performed);
+
+	EditSession *edit = EditSession::GetSession();
+
+	PolyPtr poly;
+	for (auto it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Deactivate();
+	}
+
+	for (auto it = grassTypeMap.begin();
+		it != grassTypeMap.end(); ++it)
+	{
+		(*it).first->SetGrassType((*it).second);
+	}
+
+	for (auto it = terrainBrush.objects.begin();
+		it != terrainBrush.objects.end(); ++it)
+	{
+		poly = (*it)->GetAsTerrain();
+		if (poly != NULL)
+			poly->Activate();
+	}
+
+	performed = false;
+}
+
 GrassAction::GrassAction(GrassDiff *p_gDiffs, int p_numDiffs )
 	:gDiffs(p_gDiffs), numDiffs( p_numDiffs )
 {

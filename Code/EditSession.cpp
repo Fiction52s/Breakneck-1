@@ -50,6 +50,8 @@
 #include "GGPO.h"
 #include "GameMode.h"
 
+//#define GGPO_ON
+
 using namespace std;
 using namespace sf;
 
@@ -577,7 +579,10 @@ void EditSession::TestPlayerMode()
 {
 	if (mode != TEST_PLAYER)
 	{
-		//InitGGPO();
+#ifdef GGPO_ON
+		InitGGPO();
+#endif
+		
 		gameMode->Setup();
 	}
 	
@@ -1143,15 +1148,20 @@ void EditSession::UpdateModeFunc(int m)
 	{
 		while (true )
 		{
+
+#ifdef GGPO_ON
+			if (GGPOTestPlayerModeUpdate())
+			{
+				break;
+			}
+#else
 			if (TestPlayerModeUpdate())
 			{
 				break;
 			}
+#endif
 
-			/*if (GGPOTestPlayerModeUpdate())
-			{
-				break;
-			}*/
+			
 		}
 		return;
 	}
@@ -1572,6 +1582,7 @@ EditSession::~EditSession()
 		delete generalUI;
 	}
 
+	delete grassTypePanel;
 	delete matTypePanel;
 	delete shardTypePanel;
 	delete nameBrushPanel;
@@ -2956,15 +2967,35 @@ void EditSession::ModifySelectedTerrainMat(
 	modifyAction->Perform();
 
 	AddDoneAction(modifyAction);
-	/*PolyPtr poly;
+}
+
+void EditSession::ModifySelectedTerrainGrassType(
+	int gIndex)
+{
+	PolyPtr tp;
+	bool grassAlreadySetToThisType = true;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
-		poly = (*it)->GetAsTerrain();
-		if (poly != NULL)
+		tp = (*it)->GetAsTerrain();
+		if (tp != NULL)
 		{
-			poly->SetMaterialType(world, var);
+			if (tp->grassType != gIndex)
+			{
+				grassAlreadySetToThisType = false;
+				break;
+			}
 		}
-	}*/
+	}
+
+	if (grassAlreadySetToThisType)
+	{
+		return;
+	}
+
+	Action *modifyAction = new ModifyTerrainGrassTypeAction(selectedBrush, gIndex);
+	modifyAction->Perform();
+
+	AddDoneAction(modifyAction);
 }
 
 void EditSession::SetBackground(const std::string &bgName)
@@ -2980,6 +3011,34 @@ void EditSession::SetBackground(const std::string &bgName)
 		mapHeader->envName = bgName;
 		background = Background::SetupFullBG(bgName, this);
 	}
+}
+
+void EditSession::SetupGrassSelectPanel()
+{
+	grassTypePanel = new Panel("grasstype", 600, 600, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+	grassTypePanel->SetColor(c);
+
+	int numGrassRects = Grass::GrassType::Count;
+
+	grassTypePanel->ReserveImageRects(numGrassRects);
+
+	int rectSize = 64;
+
+	Tileset *ts_grass = GetTileset("Env/grass_128x128.png", 128, 128);
+
+	ImageChooseRect *ic;
+	for (int i = 0; i < Grass::GrassType::Count; ++i)
+	{
+		ic = grassTypePanel->AddImageRect(
+			ChooseRect::ChooseRectIdentity::I_GRASSLIBRARY,
+			Vector2f( i * rectSize, 0), ts_grass, 0, rectSize);
+		ic->SetInfo((void*)i);
+		ic->SetShown(true);
+	}
+
+	grassTypePanel->SetCenterPos(Vector2i(960, 540));
 }
 
 void EditSession::SetupTerrainSelectPanel()
@@ -3250,6 +3309,7 @@ void EditSession::Init()
 
 	ReadDecorImagesFile();
 
+	SetupGrassSelectPanel();
 	SetupGGPOStatsPanel();
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
@@ -3366,25 +3426,27 @@ void EditSession::UpdateNumPlayers()
 		{
 			if (i < numPlayers)
 			{
-				players[i] = allPlayers[i];
-				playerMarkers[i]->Activate();
+				if (players[i] == NULL)
+				{
+					players[i] = allPlayers[i];
+					playerMarkers[i]->Activate();
 
-				if (i == 1)
-				{	
-					playerMarkers[i]->MoveTo(
-						playerMarkers[0]->GetIntPos() + Vector2i(100, 0));
+					if (i == 1)
+					{
+						playerMarkers[i]->MoveTo(
+							playerMarkers[0]->GetIntPos() + Vector2i(100, 0));
+					}
+					else if (i == 2)
+					{
+						playerMarkers[i]->MoveTo(
+							playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
+					}
+					else if (i == 3)
+					{
+						playerMarkers[i]->MoveTo(
+							playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
+					}
 				}
-				else if (i == 2)
-				{
-					playerMarkers[i]->MoveTo(
-						playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
-				}
-				else if (i == 3)
-				{
-					playerMarkers[i]->MoveTo(
-						playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
-				}
-				
 			}
 		}
 
@@ -3520,10 +3582,10 @@ int EditSession::EditRun()
 		mapStartBrush->AddObject(currPlayerMarker);
 
 		playerMarkers[i] = currPlayerMarker;
-		if (i == 0)
+		/*if (i == 0)
 		{
 			playerMarkers[i]->Activate();
-		}
+		}*/
 	}
 
 	
@@ -12633,6 +12695,24 @@ void EditSession::EditModeHandleEvent()
 				}
 			}
 			
+		}
+		else if (ev.key.code == Keyboard::W)
+		{
+			if (selectedBrush->GetNumTerrain() > 0)
+			{
+				int layer = selectedBrush->GetTerrainLayer();
+
+				ClearMostRecentError();
+				if (layer < 0)
+				{
+					CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
+					ShowMostRecentError();
+				}
+				else
+				{
+					editModeUI->ExpandGrassLibrary();
+				}
+			}
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

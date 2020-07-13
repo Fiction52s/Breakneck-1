@@ -278,6 +278,23 @@ struct ModifyTerrainTypeAction : Action
 	
 };
 
+struct ModifyTerrainGrassTypeAction : Action
+{
+	ModifyTerrainGrassTypeAction(Brush *brush,
+		int newGrassType);
+	void Perform();
+	void Undo();
+
+	int newGrassType;
+
+	std::map<PolyPtr, int>
+		grassTypeMap;
+	Brush terrainBrush;
+	//also has other stuff
+	//in it possibly
+
+};
+
 struct ModifyBorderAction : Action
 {
 	ModifyBorderAction(int borderIndex, int orig, int curr);

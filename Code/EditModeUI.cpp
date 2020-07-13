@@ -19,6 +19,7 @@ EditModeUI::EditModeUI()
 	nameBrushPanel = edit->nameBrushPanel;
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
+	grassTypePanel = edit->grassTypePanel;
 
 	shardTypePanel = edit->shardTypePanel;
 
@@ -131,6 +132,19 @@ void EditModeUI::ExpandTerrainLibrary( int layer )
 		matTypePanel->handler = this;
 
 		edit->AddActivePanel(matTypePanel);
+	}
+}
+
+void EditModeUI::ExpandGrassLibrary()
+{
+	if (grassTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(grassTypePanel);
+	}
+	else
+	{
+		grassTypePanel->handler = this;
+		edit->AddActivePanel(grassTypePanel);
 	}
 }
 
@@ -443,6 +457,16 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 				edit->SetCurrSelectedShardType(world, localIndex);
 
 				edit->RemoveActivePanel(shardTypePanel);
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_GRASSLIBRARY)
+			{
+				int index = (int)icRect->info;
+
+				edit->ModifySelectedTerrainGrassType(index);
+
+				edit->RemoveActivePanel(grassTypePanel);
+
+				edit->justCompletedPolyWithClick = true;
 			}
 		}
 

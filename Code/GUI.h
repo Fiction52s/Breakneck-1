@@ -173,6 +173,7 @@ struct ChooseRect : PanelMember
 		I_DECORLIBRARY,
 		I_TERRAINSEARCH,
 		I_TERRAINLIBRARY,
+		I_GRASSLIBRARY,
 		I_GATESEARCH,
 		I_SHARDLIBRARY,
 		I_GATEBOSSLIBRARY,
@@ -880,6 +881,7 @@ struct EditModeUI : GUIHandler
 	void SetGridSize(int gs);
 	void ExpandTerrainLibrary(int layer);
 	void ExpandShardLibrary();
+	void ExpandGrassLibrary();
 	void ChooseMatType(ImageChooseRect *icRect);
 	void ButtonCallback(Button *b, const std::string & e);
 	void TextBoxCallback(TextBox *tb, const std::string & e);
@@ -905,6 +907,7 @@ struct EditModeUI : GUIHandler
 
 	int terrainGridSize;
 	Panel *matTypePanel;
+	Panel *grassTypePanel;
 	Panel *shardTypePanel;
 	//std::vector<ImageChooseRect*> *matTypeRects;
 	sf::Vector2i matPanelPos;

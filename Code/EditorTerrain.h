@@ -218,6 +218,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
 
+	int grassType;
+
 	sf::Vector2f flyTransScale;
 	float flyTransRotate;
 	void GenerateMyFlies();
@@ -334,7 +336,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void SetBorderTileset();
 	void UpdateGrassType();
-	Grass::GrassType gType;
 	static sf::IntRect GetBorderSubRect(int tileWidth, EdgeAngleType et, int var);
 
 	sf::Vertex *borderQuads;
@@ -399,7 +400,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetGrassFromAction(int gIndex, int state,
 		bool show );
 	void SetGrassState(int gIndex, int state);
-	Grass::GrassType GetGrassType();
+	Grass::GrassType GetDefaultGrassType();
 	V2d GetGrassCenter(int gIndex);
 	void CopyMyGrass(PolyPtr other);
 
@@ -439,6 +440,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation);
+	void SetGrassType(int gType);
 	void UpdateMaterialType();
 	void RemoveSlivers();
 	

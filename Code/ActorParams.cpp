@@ -45,15 +45,15 @@ PlayerParams::PlayerParams(ActorType *at, ifstream &is)
 
 bool PlayerParams::CanApply()
 {
-	EditSession *session = EditSession::GetSession();
+	EditSession *edit = EditSession::GetSession();
 	Vector2i intPos = GetIntPos();
 	sf::IntRect me(intPos.x - image.getLocalBounds().width / 2, intPos.y - image.getLocalBounds().height / 2,
 		image.getLocalBounds().width, image.getLocalBounds().height);
-	for (list<PolyPtr>::iterator it = session->polygons.begin(); it != session->polygons.end(); ++it)
+	for (list<PolyPtr>::iterator it = edit->polygons.begin(); it != edit->polygons.end(); ++it)
 	{
 		if ((*it)->Intersects(me))
 		{
-			session->CreateError(ERR_PLAYER_INTERSECTS_POLY);
+			edit->CreateError(ERR_PLAYER_INTERSECTS_POLY);
 			return false;
 		}
 	}

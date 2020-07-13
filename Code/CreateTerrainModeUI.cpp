@@ -19,7 +19,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
 
-	mainPanel = new Panel("createterrain", 1280, 120, this, false);
+	mainPanel = new Panel("createterrain", 1920, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 
 

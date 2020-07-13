@@ -1151,6 +1151,7 @@ TerrainPolygon::TerrainPolygon()
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
 	ts_grass = NULL;
+	grassType = -1;
 	pointVector.resize(2);
 
 	if (sess != NULL)
@@ -1184,6 +1185,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	ts_grass = poly.ts_grass;
 	ts_border = poly.ts_border;
 	renderMode = poly.renderMode;
+	grassType = -1;
 
 	grassSize = 128;
 	grassSpacing = -60;
@@ -3040,7 +3042,6 @@ void TerrainPolygon::SetTerrainColor(sf::Color c)
 void TerrainPolygon::UpdateGrassType()
 {
 	//this does get called twice on init but I'm pretty sure setmaterial type does too. we will figure it out eventually
-	gType = GetGrassType();
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
 		ts_grass->SetQuadSubRect(grassVA + i * 4, 0);//terrainWorldType);
@@ -3065,16 +3066,27 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 	{
 		//optimize this later
 		UpdateMaterialType();
-		UpdateGrassType();
+
+		int defaultGrass = GetDefaultGrassType();
+		if (grassType != defaultGrass)
+		{
+			grassType = defaultGrass;
+			UpdateGrassType();
+		}
 
 		SetupTouchGrass();
 		GenerateDecor();
 
 		GenerateBorderMesh();
 
-
 		GenerateMyFlies();
 	}
+}
+
+void TerrainPolygon::SetGrassType(int gType)
+{
+	grassType = gType;
+	UpdateGrassType();
 }
 
 int TerrainPolygon::GetNumGrass(int i, bool &rem)
@@ -3159,7 +3171,7 @@ void TerrainPolygon::AddGrassToQuadTree(QuadTree *tree)
 	{
 		if (grassStateVec[i] == G_ON)
 		{
-			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, gType));
+			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassType));
 		}
 	}
 	
@@ -3375,9 +3387,18 @@ void TerrainPolygon::Finalize()
 	UpdateLinePositions();
 	UpdateLineColors();
 
+	if (grassType == -1)
+	{
+		grassType = GetDefaultGrassType();
+	}
+
 	SetupGrass();
 
-	SetMaterialType( terrainWorldType, terrainVariation );
+	SetMaterialType(terrainWorldType, terrainVariation);
+
+	
+
+	
 
 	//SetupTouchGrass();
 	//GenerateDecor();
@@ -3512,7 +3533,7 @@ void TerrainPolygon::SetupGrass()
 	UpdateGrassType(); //this might get accidentally called twice when creating.
 }
 
-Grass::GrassType TerrainPolygon::GetGrassType()
+Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 {
 	Grass::GrassType gt;
 	if (terrainWorldType == 0)
@@ -3623,9 +3644,9 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 	//should always be true atm?
 	if (sess->IsSessTypeGame())
 	{
-		gType = GetGrassType();
+		//grassType = GetDefaultGrassType();
 		GameSession *game = GameSession::GetSession();
-		game->hasGrass[gType] = true;
+		game->hasGrass[grassType] = true;
 		game->hasAnyGrass = true;
 	}
 
@@ -3683,7 +3704,7 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 				grassVA[(j + totalGrass) * 4 + 2].position = bottomRight;
 				grassVA[(j + totalGrass) * 4 + 3].position = topRight;*/
 
-				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, gType));
+				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)grassType));
 				//Grass * g = new Grass(ts_grass, totalGrassIndex, posd, this, gType);
 				sess->grassTree->Insert(&activeGrass.back());
 
