@@ -2163,7 +2163,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 
 	//of << grassType << "\n";
 
-	of << edgesWithSegments << endl;
+	of << edgesWithSegments << "\n";
 
 	for (list<list<GrassSeg>>::iterator it = grassListList.begin(); it != grassListList.end(); ++it)
 	{
@@ -2172,11 +2172,11 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 		if (numSegments > 0)
 		{
 			int edgeIndex = (*it).front().edgeIndex;
-			of << edgeIndex << " " << numSegments << endl;
+			of << edgeIndex << " " << numSegments << "\n";
 
 			for (list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2)
 			{
-				of << (*it2).index << " " << (*it2).reps <<  (*it2).gType << endl;
+				of << (*it2).index << " " << (*it2).reps << " " << (*it2).gType << "\n";
 			}
 		}
 	}
@@ -3544,6 +3544,13 @@ void TerrainPolygon::SetupGrass()
 
 	grassStateVec.resize(numGrassTotal);
 	grassStateVecBackup.reserve(numGrassTotal);
+
+	int defaultGrassType = GetDefaultGrassType();
+	for (int i = 0; i < numGrassTotal; ++i)
+	{
+		grassStateVec[i].gState = G_OFF_DONT_SHOW;
+		grassStateVec[i].gType = defaultGrassType;
+	}
 
 	int numP = GetNumPoints();
 	TerrainPoint *curr;

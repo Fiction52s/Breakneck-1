@@ -2108,7 +2108,7 @@ void EditSession::ProcessHeader()
 void EditSession::WriteMapHeader(ofstream &of)
 {
 	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 5;
+	mapHeader->ver2 = 6;
 
 	ShardParams *sp = NULL;
 
