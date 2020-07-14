@@ -42,7 +42,7 @@ struct Edge : QuadTreeEntrant
 	bool IsFlatGround();
 	bool IsSlopedGround();
 	bool IsSteepGround();
-	bool IsWall();
+	bool IsWall(); 
 	static double GetSteepThresh() { return .4; }
 	//double GetNormalAngleRadians();
 	//double GetNormalAngleDegrees();

@@ -10696,7 +10696,7 @@ void Actor::HitWallWhileInAirHitstun()
 		if ((wallNormal.x > 0 && oldVelocity.x < 0)
 			|| (wallNormal.x < 0 && oldVelocity.x > 0))
 		{
-			velocity = -oldVelocity;
+			velocity.x = -oldVelocity.x;
 			physicsOver = true;
 		}
 	}
@@ -10712,12 +10712,30 @@ void Actor::HitGroundWhileInAirHitstun()
 	}
 	else
 	{
-		velocity.y = -velocity.y;
-		ground = NULL;
-		physicsOver = true;
-		/*SetAction(GROUNDHITSTUN);
-		frame = 0;
-		physicsOver = true;*/
+		V2d gNormal = ground->Normal();
+
+
+		double angle = GroundedAngle();
+
+		if (angle == 0)
+		{
+			gNormal = V2d(0, -1);
+		}
+
+		if (velocity.y < 10)
+		{
+			SetAction(GROUNDHITSTUN);
+			frame = 0;
+			physicsOver = true;
+		}
+		else
+		{
+			double d = dot(velocity, gNormal);
+			velocity = velocity - (2.0 * d * gNormal);
+			//velocity.y = -velocity.y;
+			ground = NULL;
+			physicsOver = true;
+		}
 	}
 }
 
