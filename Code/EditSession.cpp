@@ -2108,7 +2108,7 @@ void EditSession::ProcessHeader()
 void EditSession::WriteMapHeader(ofstream &of)
 {
 	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 3;
+	mapHeader->ver2 = 5;
 
 	ShardParams *sp = NULL;
 
@@ -2972,7 +2972,7 @@ void EditSession::ModifySelectedTerrainMat(
 void EditSession::ModifySelectedTerrainGrassType(
 	int gIndex)
 {
-	PolyPtr tp;
+	/*PolyPtr tp;
 	bool grassAlreadySetToThisType = true;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
@@ -2990,12 +2990,12 @@ void EditSession::ModifySelectedTerrainGrassType(
 	if (grassAlreadySetToThisType)
 	{
 		return;
-	}
+	}*/
 
-	Action *modifyAction = new ModifyTerrainGrassTypeAction(selectedBrush, gIndex);
+	/*Action *modifyAction = new ModifyTerrainGrassTypeAction(selectedBrush, gIndex);
 	modifyAction->Perform();
 
-	AddDoneAction(modifyAction);
+	AddDoneAction(modifyAction);*/
 }
 
 void EditSession::SetBackground(const std::string &bgName)

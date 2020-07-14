@@ -69,6 +69,8 @@ struct GrassDiff
 	int index;
 	int newValue;
 	int oldValue;
+	int oldType;
+	int newType;
 };
 
 enum TerrainLayers : int

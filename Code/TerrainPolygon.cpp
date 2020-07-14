@@ -1151,7 +1151,6 @@ TerrainPolygon::TerrainPolygon()
 	terrainWorldType = MOUNTAIN;
 	terrainVariation = 0;
 	ts_grass = NULL;
-	grassType = -1;
 	pointVector.resize(2);
 
 	if (sess != NULL)
@@ -1185,7 +1184,6 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	ts_grass = poly.ts_grass;
 	ts_border = poly.ts_border;
 	renderMode = poly.renderMode;
-	grassType = -1;
 
 	grassSize = 128;
 	grassSpacing = -60;
@@ -2124,17 +2122,25 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 			bool hasGrass = false;
 			for (int j = 0; j < num; ++j)
 			{
-				if (grassStateVec[index] == G_ON )//|| grassStateVec[index] == G_ON_EDITED )//grassVa[index * 4].color.a == 255 || grassVa[index * 4].color.a == 254)
+				if (grassStateVec[index].gState == G_ON )//|| grassStateVec[index] == G_ON_EDITED )//grassVa[index * 4].color.a == 255 || grassVa[index * 4].color.a == 254)
 				{
 					hasGrass = true;
 					if (gPtr == NULL)
 					{
-						grassList.push_back(GrassSeg(edgeIndex, j, 0));
+						grassList.push_back(GrassSeg(edgeIndex, j, 0, grassStateVec[index].gType));
 						gPtr = &grassList.back();
 					}
 					else
 					{
-						grassList.back().reps++;
+						if (grassStateVec[index].gType == gPtr->gType)
+						{
+							grassList.back().reps++;
+						}
+						else
+						{
+							grassList.push_back(GrassSeg(edgeIndex, j, 0, grassStateVec[index].gType));
+							gPtr = &grassList.back();
+						}
 					}
 				}
 				else
@@ -2152,9 +2158,10 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 			}
 
 			++edgeIndex;
-
 		}
 	}
+
+	//of << grassType << "\n";
 
 	of << edgesWithSegments << endl;
 
@@ -2169,7 +2176,7 @@ void TerrainPolygon::WriteGrass(std::ofstream &of)
 
 			for (list<GrassSeg>::iterator it2 = (*it).begin(); it2 != (*it).end(); ++it2)
 			{
-				of << (*it2).index << " " << (*it2).reps << endl;
+				of << (*it2).index << " " << (*it2).reps <<  (*it2).gType << endl;
 			}
 		}
 	}
@@ -3041,9 +3048,26 @@ void TerrainPolygon::SetTerrainColor(sf::Color c)
 
 void TerrainPolygon::UpdateGrassType()
 {
+	/*Color c;
+	switch (grassType)
+	{
+	case Grass::JUMP:
+		c = Color::White;
+		break;
+	case Grass::BOUNCE:
+		c = Color::Red;
+		break;
+	default:
+		c = Color::Blue;
+		break;
+	}*/
+
+
 	//this does get called twice on init but I'm pretty sure setmaterial type does too. we will figure it out eventually
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
+		//c.a = (grassVA + i * 4)->color.a;
+		//SetRectColor(grassVA + i * 4, c);
 		ts_grass->SetQuadSubRect(grassVA + i * 4, 0);//terrainWorldType);
 		//set this up with right terrain type when alex gives me a tilesheet with all of them
 	}
@@ -3068,11 +3092,11 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		UpdateMaterialType();
 
 		int defaultGrass = GetDefaultGrassType();
-		if (grassType != defaultGrass)
-		{
-			grassType = defaultGrass;
-			UpdateGrassType();
-		}
+		//if (grassType != defaultGrass)
+		//{
+		//	grassType = defaultGrass;
+		UpdateGrassType();
+		//}
 
 		SetupTouchGrass();
 		GenerateDecor();
@@ -3085,7 +3109,7 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 
 void TerrainPolygon::SetGrassType(int gType)
 {
-	grassType = gType;
+	//grassType = gType;
 	UpdateGrassType();
 }
 
@@ -3125,7 +3149,7 @@ void TerrainPolygon::CopyMyGrass(PolyPtr other)
 {
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		if (grassStateVec[i] == G_ON)
+		if (grassStateVec[i].gState == G_ON)
 		{
 			other->SwitchGrass(GetGrassCenter(i), true);
 		}
@@ -3159,7 +3183,7 @@ void TerrainPolygon::AddGrassToQuadTree(QuadTree *tree)
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
 		//activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, gType));
-		if (grassStateVec[i] == G_ON)
+		if (grassStateVec[i].gState == G_ON)
 		{
 			++activeCounter;
 		}
@@ -3169,9 +3193,9 @@ void TerrainPolygon::AddGrassToQuadTree(QuadTree *tree)
 	activeGrass.reserve(activeCounter);
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		if (grassStateVec[i] == G_ON)
+		if (grassStateVec[i].gState == G_ON)
 		{
-			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassType));
+			activeGrass.push_back(Grass(ts_grass, i, GetGrassCenter(i), this, (Grass::GrassType)grassStateVec[i].gType));
 		}
 	}
 	
@@ -3387,10 +3411,10 @@ void TerrainPolygon::Finalize()
 	UpdateLinePositions();
 	UpdateLineColors();
 
-	if (grassType == -1)
+	/*if (grassType == -1)
 	{
 		grassType = GetDefaultGrassType();
-	}
+	}*/
 
 	SetupGrass();
 
@@ -3491,7 +3515,8 @@ int TerrainPolygon::NumGrassChanged()
 	int counter = 0;
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		if (grassStateVecBackup[i] != grassStateVec[i])
+		if (grassStateVecBackup[i].gState != grassStateVec[i].gState
+			|| grassStateVecBackup[i].gType != grassStateVec[i].gType)
 		{
 			counter++;
 		}
@@ -3563,7 +3588,7 @@ Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 	return gt;
 }
 
-void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<int> &gVec)
+void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<GrassInfo> &gVec)
 {
 	bool rem;
 	int numGrass = GetNumGrass(point->index, rem);
@@ -3573,7 +3598,7 @@ void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<int> &gVec)
 	int numOn = 0;
 	for (int i = 0; i < numGrass; ++i)
 	{
-		if (grassStateVec[i + point->grassStartIndex] == TerrainPolygon::G_ON)
+		if (grassStateVec[i + point->grassStartIndex].gState == TerrainPolygon::G_ON)
 		{
 			numOn++;
 		}
@@ -3582,9 +3607,11 @@ void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<int> &gVec)
 	gVec.reserve(numOn);
 	for (int i = 0; i < numGrass; ++i)
 	{
-		if (grassStateVec[i + point->grassStartIndex] == TerrainPolygon::G_ON)
+		if (grassStateVec[i + point->grassStartIndex].gState == TerrainPolygon::G_ON)
 		{
-			gVec.push_back(i);
+			gVec.push_back(GrassInfo( TerrainPolygon::G_ON, 
+				grassStateVec[i + point->grassStartIndex].gType,
+				i ));
 		}
 	}
 }
@@ -3605,23 +3632,23 @@ void TerrainPolygon::SetGrassFromPointMoveInfoVectors(
 }
 
 void TerrainPolygon::SetGrassVecOn(
-	int pointIndex, std::vector<int> &gVec)
+	int pointIndex, std::vector<GrassInfo> &gVec)
 {
 	if (gVec.empty())
 		return;
 
 	TerrainPoint *p = GetPoint(pointIndex);
 
-	cout << "glist of size: " << gVec.size() << endl;
+	//cout << "glist of size: " << gVec.size() << endl;
 	bool rem;
 	int numGrass = GetNumGrass(pointIndex, rem);
 	int startIndex = p->grassStartIndex;
 	for (auto it = gVec.begin(); it != gVec.end(); ++it)
 	{
-		if ((*it) < numGrass)
+		if ((*it).index < numGrass)
 		{
-			cout << "index: " << (*it) << endl;
-			SetGrassState(startIndex + (*it), G_ON);
+			//cout << "index: " << (*it) << endl;
+			SetGrassState(startIndex + (*it).index, G_ON, (*it).gType);
 		}
 	}
 }
@@ -3644,9 +3671,8 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 	//should always be true atm?
 	if (sess->IsSessTypeGame())
 	{
-		//grassType = GetDefaultGrassType();
 		GameSession *game = GameSession::GetSession();
-		game->hasGrass[grassType] = true;
+		//game->hasGrass[grassType] = true;
 		game->hasAnyGrass = true;
 	}
 
@@ -3704,7 +3730,7 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 				grassVA[(j + totalGrass) * 4 + 2].position = bottomRight;
 				grassVA[(j + totalGrass) * 4 + 3].position = topRight;*/
 
-				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)grassType));
+				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)(*it).gType));
 				//Grass * g = new Grass(ts_grass, totalGrassIndex, posd, this, gType);
 				sess->grassTree->Insert(&activeGrass.back());
 
@@ -3746,7 +3772,8 @@ void TerrainPolygon::ProcessGrass(list<GrassSeg> &segments)
 			itReps = (*it).reps;
 			for (int extra = 0; extra <= itReps; ++extra)
 			{
-				grassStateVec[vaIndex + (*it).index + extra] = G_ON;
+				grassStateVec[vaIndex + (*it).index + extra].gState = G_ON;
+				grassStateVec[vaIndex + (*it).index + extra].gType = (*it).gType;
 				grassVA[(vaIndex + (*it).index + extra) * 4].color.a = 255;
 				grassVA[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
 				grassVA[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
@@ -3770,7 +3797,7 @@ V2d TerrainPolygon::GetGrassCenter(int gIndex)
 		+ grassVA[gIndex * 4 + 3].position) / 4.f);
 }
 
-void TerrainPolygon::SetGrassState(int index, int state)
+void TerrainPolygon::SetGrassState(int index, int state, int gType )
 {
 	Color c = Color::White;
 	switch (state)
@@ -3788,25 +3815,27 @@ void TerrainPolygon::SetGrassState(int index, int state)
 		assert(0);
 	}
 
-	grassStateVec[index] = state;
+	grassStateVec[index].gState = state;
+	grassStateVec[index].gType = gType;
 	SetRectColor(grassVA + index * 4, c);
 }
 
 void TerrainPolygon::SetGrassOn(int gIndex, bool on)
 {
-	if ( on && (grassStateVec[gIndex] == G_OFF || grassStateVec[gIndex] == G_OFF_DONT_SHOW ) )//(grassVa[gIndex * 4].color.a == 50)
+	if ( on && (grassStateVec[gIndex].gState == G_OFF 
+		|| grassStateVec[gIndex].gState == G_OFF_DONT_SHOW ) )//(grassVa[gIndex * 4].color.a == 50)
 	{
 		if (!grassChanged)
 			grassChanged = true;
 
-		SetGrassState(gIndex, G_ON);
+		SetGrassState(gIndex, G_ON, grassStateVec[gIndex].gType);
 	}
-	else if (!on && grassStateVec[gIndex] == G_ON)
+	else if (!on && grassStateVec[gIndex].gState == G_ON)
 	{
 		if (!grassChanged)
 			grassChanged = true;
 
-		SetGrassState(gIndex, G_OFF);
+		SetGrassState(gIndex, G_OFF, grassStateVec[gIndex].gType);
 	}
 }
 
@@ -5093,7 +5122,8 @@ void TerrainPolygon::SoftReset()
 
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		grassStateVec[i] = 0;
+		grassStateVec[i].gState = 0;
+		grassStateVec[i].gType = GetDefaultGrassType();
 	}
 	//myTerrainTree->Clear();
 
@@ -5336,15 +5366,18 @@ int TerrainPolygon::AddGrassChanges(GrassDiff* gDiffArray)
 		return 0;
 	}
 
+	//this might not account for grass types
 	int counter = 0;
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		if (grassStateVec[i] != grassStateVecBackup[i])
+		if (grassStateVec[i].gState != grassStateVecBackup[i].gState)
 		{
 			GrassDiff& gDiff = gDiffArray[counter];
 			gDiff.poly = this;
-			gDiff.newValue = grassStateVec[i];
-			gDiff.oldValue = grassStateVecBackup[i];
+			gDiff.newValue = grassStateVec[i].gState;
+			gDiff.oldValue = grassStateVecBackup[i].gState;
+			gDiff.newType = grassStateVec[i].gType;
+			gDiff.oldType = grassStateVecBackup[i].gType;
 			gDiff.index = i;
 			++counter;
 		}
@@ -5353,7 +5386,7 @@ int TerrainPolygon::AddGrassChanges(GrassDiff* gDiffArray)
 	return counter;
 }
 
-void TerrainPolygon::SetGrassFromAction(int gIndex, int state,
+void TerrainPolygon::SetGrassFromAction(int gIndex, int state, int gType,
 	bool show)
 {
 	if (show && state == G_OFF_DONT_SHOW )
@@ -5364,7 +5397,7 @@ void TerrainPolygon::SetGrassFromAction(int gIndex, int state,
 	{
 		state = G_OFF_DONT_SHOW;
 	}
-	SetGrassState(gIndex, state);
+	SetGrassState(gIndex, state, gType );
 }
 
 int TerrainPolygon::GetNumGrassChanges()
@@ -5378,8 +5411,8 @@ int TerrainPolygon::GetNumGrassChanges()
 	bool backupGrassOn;
 	for (int i = 0; i < numGrassTotal; ++i)
 	{
-		currGrassOn = grassStateVec[i] == GrassState::G_ON;
-		backupGrassOn = grassStateVecBackup[i] == GrassState::G_ON;
+		currGrassOn = grassStateVec[i].gState == GrassState::G_ON;
+		backupGrassOn = grassStateVecBackup[i].gState == GrassState::G_ON;
 		if (currGrassOn != backupGrassOn )//grassStateVec[i]  != grassStateVecBackup[i])
 		{
 			++counter;
@@ -5401,9 +5434,9 @@ void TerrainPolygon::ShowGrass( bool show )
 		//BackupGrass();
 		for (int i = 0; i < numGrassTotal; ++i)
 		{
-			if (grassStateVec[i] == G_OFF_DONT_SHOW)
+			if (grassStateVec[i].gState == G_OFF_DONT_SHOW)
 			{
-				SetGrassState(i, G_OFF);
+				SetGrassState(i, G_OFF, grassStateVec[i].gType);
 			}
 		}
 	}
@@ -5411,9 +5444,9 @@ void TerrainPolygon::ShowGrass( bool show )
 	{
 		for (int i = 0; i < numGrassTotal; ++i)
 		{
-			if (grassStateVec[i] == G_OFF)
+			if (grassStateVec[i].gState == G_OFF)
 			{
-				SetGrassState(i, G_OFF_DONT_SHOW);
+				SetGrassState(i, G_OFF_DONT_SHOW, grassStateVec[i].gType);
 			}
 		}
 	}
@@ -5782,13 +5815,21 @@ bool TerrainPolygon::LoadGrass(std::ifstream &is)
 		int numSegments;
 		is >> numSegments;
 
+		int index;
+		int reps;
+		int gType;
 		for (int j = 0; j < numSegments; ++j)
 		{
-			int index;
+			
 			is >> index;
-			int reps;
 			is >> reps;
-			segments.push_back(GrassSeg(edgeIndex, index, reps));
+
+			gType = 0;
+			if (sess->IsMapVersionNewerThanOrEqualTo(2, 6))
+			{
+				is >> gType;
+			}
+			segments.push_back(GrassSeg(edgeIndex, index, reps, gType));
 		}
 	}
 

@@ -1972,36 +1972,6 @@ bool Session::ReadPlayerOptions(std::ifstream &is)
 	return true;
 }
 
-bool Session::ReadTerrainGrass(std::ifstream &is, PolyPtr poly)
-{
-	int edgesWithSegments;
-	is >> edgesWithSegments;
-
-	list<GrassSeg> segments;
-	for (int i = 0; i < edgesWithSegments; ++i)
-	{
-		int edgeIndex;
-		is >> edgeIndex;
-
-		int numSegments;
-		is >> numSegments;
-
-		for (int j = 0; j < numSegments; ++j)
-		{
-			int index;
-			is >> index;
-			int reps;
-			is >> reps;
-			segments.push_back(GrassSeg(edgeIndex, index, reps));
-
-		}
-	}
-
-	poly->ProcessGrass(segments);
-
-	return true;
-}
-
 bool Session::ReadTerrain(std::ifstream &is)
 {
 	string hasBorderPolyStr;
@@ -6274,4 +6244,9 @@ void Session::EndLevel()
 int Session::GetGameMode()
 {
 	return mapHeader->gameMode;
+}
+
+bool Session::IsMapVersionNewerThanOrEqualTo(int ver1, int ver2)
+{
+	return (mapHeader->ver1 >= ver1 && mapHeader->ver2 >= ver2);
 }

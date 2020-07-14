@@ -68,4 +68,21 @@ struct ReachEnemyBaseMode : GameMode
 	void EndGame();
 };
 
+struct FightMode : GameMode
+{
+	struct MyData
+	{
+
+	};
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBuffer(unsigned char *buf);
+
+	void Setup();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
+
 #endif

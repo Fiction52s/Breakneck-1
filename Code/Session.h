@@ -515,7 +515,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadPlayersStartPos(std::ifstream &is);
 	bool ReadPlayerOptions(std::ifstream &is);
 	bool ReadTerrain(std::ifstream &is);
-	bool ReadTerrainGrass(std::ifstream &is, PolyPtr poly);
 	bool ReadSpecialTerrain(std::ifstream &is);
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
@@ -697,6 +696,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool LoadState(unsigned char *buffer, int len);
 	virtual void RestartGame() = 0;
 	int GetGameMode();
+	bool IsMapVersionNewerThanOrEqualTo(int ver1, int ver2);
 };
 
 #endif

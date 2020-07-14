@@ -35,18 +35,36 @@ struct TransformTools;
 
 typedef std::set<std::pair<__int64,__int64>> ClipperIntPointSet;
 
+struct GrassInfo
+{
+	GrassInfo()
+		:gState(-1),gType(-1),index(-1)
+	{
 
+	}
+	GrassInfo(int s, int t, int i)
+		:gState(s), gType(t), index( i )
+	{
+
+	}
+
+	int index;
+	int gState;
+	int gType;
+};
 
 struct GrassSeg
 {
 	//CollisionBox explosion; this might have some use in gamesession
-	GrassSeg(int edgeI, int grassIndex, int rep)
+	GrassSeg(int edgeI, int grassIndex, int rep,
+		int p_gType)
 		:edgeIndex(edgeI), index(grassIndex),
-		reps(rep)
+		reps(rep), gType( p_gType )
 	{}
 	int edgeIndex;
 	int index;
 	int reps;
+	int gType;
 };
 
 struct TerrainPoint
@@ -88,8 +106,8 @@ struct PointMoveInfo
 	sf::Vector2i newPos;
 	sf::Vector2i origPos;
 	sf::Vector2i oldPos; //used for moving
-	std::vector<int> grassVec;
-	std::vector<int> prevGrassVec;
+	std::vector<GrassInfo> grassVec;
+	std::vector<GrassInfo> prevGrassVec;
 };
 
 struct BorderInfo
@@ -212,13 +230,13 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
+
+
 	void MakeGlobalPath(
 		V2d &startPos,
 		std::vector<sf::Vector2i> &path);
 
 	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
-
-	int grassType;
 
 	sf::Vector2f flyTransScale;
 	float flyTransRotate;
@@ -260,10 +278,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	
 
 	void SetGrassVecOn(
-		int pointIndex, std::vector<int> &gList);
+		int pointIndex, std::vector<GrassInfo> &gList);
 	void SetGrassFromPointMoveInfoVectors(std::vector<PointMoveInfo> &pMoveVec);
 	void FillGrassVec(TerrainPoint *point,
-		std::vector<int> &gVec );
+		std::vector<GrassInfo> &gVec );
 	//trying to get decor working
 
 	static DecorType GetDecorType(const std::string &dStr);
@@ -397,9 +415,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetupGrass(std::list<GrassSeg> &segments);
 	void AddGrassToQuadTree(QuadTree *tree );
 	void SetGrassOn(int gIndex, bool on);
-	void SetGrassFromAction(int gIndex, int state,
+	void SetGrassFromAction(int gIndex, int state, int gType,
 		bool show );
-	void SetGrassState(int gIndex, int state);
+	void SetGrassState(int gIndex, int state,
+		int gType );
 	Grass::GrassType GetDefaultGrassType();
 	V2d GetGrassCenter(int gIndex);
 	void CopyMyGrass(PolyPtr other);
@@ -578,7 +597,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		//G_ON_EDITED,
 		G_ON
 	};
-	std::vector<int> grassStateVec;
+
+	
+	std::vector<GrassInfo> grassStateVec;
 	//0 is off and not showing
 	//1 is off and showing
 	//2 is on and showing
@@ -602,7 +623,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	bool isGrassBackedUp;
 	int NumGrassChanged();
 	bool grassChanged;
-	std::vector<int> grassStateVecBackup;
+	std::vector<GrassInfo> grassStateVecBackup;
 
 	
 	int writeIndex;
