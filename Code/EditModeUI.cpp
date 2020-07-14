@@ -462,7 +462,8 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				int index = (int)icRect->info;
 
-				edit->ModifySelectedTerrainGrassType(index);
+				edit->currGrassType = index;
+				//edit->ModifySelectedTerrainGrassType(index);
 
 				edit->RemoveActivePanel(grassTypePanel);
 

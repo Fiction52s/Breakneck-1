@@ -1226,6 +1226,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	updateModeFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeUpdate;
 
 	ggpoStatsPanel = NULL;
+	currGrassType = 0;
 
 	int waitFrames[] = { 30, 2 };
 	int waitModeThresh[] = { 1 };
@@ -10226,7 +10227,7 @@ void EditSession::ModifyGrass()
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
-			(*it)->SwitchGrass(worldPos, !HoldingShift(), true);
+			(*it)->SwitchGrass(worldPos, !HoldingShift(), true, currGrassType );
 		}
 	}
 }
@@ -12698,7 +12699,9 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::W)
 		{
-			if (selectedBrush->GetNumTerrain() > 0)
+			editModeUI->ExpandGrassLibrary();
+
+			/*if (selectedBrush->GetNumTerrain() > 0)
 			{
 				int layer = selectedBrush->GetTerrainLayer();
 
@@ -12712,7 +12715,7 @@ void EditSession::EditModeHandleEvent()
 				{
 					editModeUI->ExpandGrassLibrary();
 				}
-			}
+			}*/
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

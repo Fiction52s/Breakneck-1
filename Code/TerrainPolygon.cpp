@@ -3151,7 +3151,7 @@ void TerrainPolygon::CopyMyGrass(PolyPtr other)
 	{
 		if (grassStateVec[i].gState == G_ON)
 		{
-			other->SwitchGrass(GetGrassCenter(i), true);
+			other->SwitchGrass(GetGrassCenter(i), true, false, grassStateVec[i].gType);
 		}
 	}
 }
@@ -3779,12 +3779,7 @@ void TerrainPolygon::ProcessGrass(list<GrassSeg> &segments)
 			itReps = (*it).reps;
 			for (int extra = 0; extra <= itReps; ++extra)
 			{
-				grassStateVec[vaIndex + (*it).index + extra].gState = G_ON;
-				grassStateVec[vaIndex + (*it).index + extra].gType = (*it).gType;
-				grassVA[(vaIndex + (*it).index + extra) * 4].color.a = 255;
-				grassVA[(vaIndex + (*it).index + extra) * 4 + 1].color.a = 255;
-				grassVA[(vaIndex + (*it).index + extra) * 4 + 2].color.a = 255;
-				grassVA[(vaIndex + (*it).index + extra) * 4 + 3].color.a = 255;
+				SetGrassState(vaIndex + (*it).index + extra, G_ON, (*it).gType);
 			}
 		}
 
@@ -3807,6 +3802,17 @@ V2d TerrainPolygon::GetGrassCenter(int gIndex)
 void TerrainPolygon::SetGrassState(int index, int state, int gType )
 {
 	Color c = Color::White;
+	switch (gType)
+	{
+	case Grass::JUMP:
+		c = Color::White;
+		break;
+	case Grass::BOUNCE:
+		c = Color::Red;
+		break;
+	}
+
+	
 	switch (state)
 	{
 	case G_OFF_DONT_SHOW:
@@ -3827,7 +3833,7 @@ void TerrainPolygon::SetGrassState(int index, int state, int gType )
 	SetRectColor(grassVA + index * 4, c);
 }
 
-void TerrainPolygon::SetGrassOn(int gIndex, bool on)
+void TerrainPolygon::SetGrassOn(int gIndex, bool on, int gType )
 {
 	if ( on && (grassStateVec[gIndex].gState == G_OFF 
 		|| grassStateVec[gIndex].gState == G_OFF_DONT_SHOW ) )//(grassVa[gIndex * 4].color.a == 50)
@@ -3835,18 +3841,19 @@ void TerrainPolygon::SetGrassOn(int gIndex, bool on)
 		if (!grassChanged)
 			grassChanged = true;
 
-		SetGrassState(gIndex, G_ON, grassStateVec[gIndex].gType);
+		SetGrassState(gIndex, G_ON, gType);
 	}
 	else if (!on && grassStateVec[gIndex].gState == G_ON)
 	{
 		if (!grassChanged)
 			grassChanged = true;
 
-		SetGrassState(gIndex, G_OFF, grassStateVec[gIndex].gType);
+		SetGrassState(gIndex, G_OFF, gType);
 	}
 }
 
-void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on, bool sessionIsCaller)
+void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on, bool sessionIsCaller,
+	int gType )
 {
 	if (!sess->IsSessTypeEdit())
 	{
@@ -3881,7 +3888,7 @@ void TerrainPolygon::SwitchGrass( V2d &mousePos, bool on, bool sessionIsCaller)
 				BackupGrass();
 			}
 
-			SetGrassOn(i, on);
+			SetGrassOn(i, on, gType );
 		}
 	}
 }

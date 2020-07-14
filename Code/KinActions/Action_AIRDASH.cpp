@@ -11,6 +11,8 @@ void Actor::AIRDASH_Start()
 	BounceFlameOff();
 	airDashStall = false;
 	currAirdashBoostCounter = 0;
+	holdJump = false;
+	holdDouble = false;
 
 	//special unlimited airdash
 	if (inBubble && !hasAirDash)

@@ -146,6 +146,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	int currGrassType;
 	FrameWaiter *removeProgressPointWaiter;
 	std::list<Panel*> activePanels;
 	Panel *focusedPanel;

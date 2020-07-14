@@ -16,6 +16,8 @@ struct Grass : QuadTreeEntrant
 		BOUNCE,
 		BOOST,
 		ANTIWIRE,
+		UNTECHABLE,
+		KILL,
 		Count
 	};
 
