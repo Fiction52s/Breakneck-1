@@ -208,3 +208,4 @@ void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
 	}
 }
 
+

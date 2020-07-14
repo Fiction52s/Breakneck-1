@@ -5,6 +5,7 @@
 #include "ggponet.h"
 #include "Physics.h"
 #include "Wire.h"
+#include "Grass.h"
 #pragma comment(lib, "wsock32.lib")
 
 
@@ -266,7 +267,11 @@ struct PState
 	int enemiesKilledThisFrame;
 	int enemiesKilledLastFrame;
 
+	bool touchedGrass[Grass::GrassType::Count];
+
 	double hitstunGravMultiplier;
+
+	
 
 	//HitboxInfo currVSHitboxInfo;
 };

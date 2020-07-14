@@ -13,6 +13,7 @@ struct MapHeader
 	{
 		T_BASIC,
 		T_REACHENEMYBASE,
+		T_FIGHT,
 	};
 
 	MapHeader()

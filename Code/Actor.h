@@ -19,6 +19,7 @@
 #include "VectorMath.h"
 #include <unordered_map>
 #include "nlohmann\json.hpp"
+#include "Grass.h"
 
 struct PState;
 
@@ -796,13 +797,10 @@ struct Actor : QuadTreeCollider,
 	int baseSlowMultiple;
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
-	int gravityGrassCount;
-	int bounceGrassCount;
-	int boostGrassCount;
-	bool grassBoosted;
+	int grassCount[Grass::GrassType::Count];
+	bool touchedGrass[Grass::GrassType::Count];
+	void ResetGrassCounters();
 	double boostGrassAccel;
-	int jumpGrassCount;
-	bool touchedJumpGrass;
 	double jumpGrassExtra;
 	bool extraDoubleJump;
 	int specialTerrainCount[SPECIAL_TERRAIN_Count];
@@ -1161,6 +1159,16 @@ struct Actor : QuadTreeCollider,
 	bool IsInHistunAction( int a );
 
 	V2d GetKnockbackDirFromVel();
+
+
+	void HitOutOfCeilingGrindAndReverse();
+	void HitOutOfCeilingGrindIntoAir();
+	void HitOutOfGrind();
+	void HitWhileGrounded();
+	void HitWhileAerial();
+	void SlideOffWhileInGroundHitstun();
+	void HitGroundWhileInAirHitstun();
+	void HitWallWhileInAirHitstun();
 
 	//kin action functions
 	void AIRDASH_Start();

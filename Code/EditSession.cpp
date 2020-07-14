@@ -3475,6 +3475,9 @@ void EditSession::SetGameMode(int newMode)
 	case MapHeader::T_REACHENEMYBASE:
 		gameMode = new ReachEnemyBaseMode;
 		break;
+	case MapHeader::T_FIGHT:
+		gameMode = new FightMode;
+		break;
 	}
 
 	mapHeader->gameMode = newMode;

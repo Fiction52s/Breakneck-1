@@ -3810,6 +3810,12 @@ void TerrainPolygon::SetGrassState(int index, int state, int gType )
 	case Grass::BOUNCE:
 		c = Color::Red;
 		break;
+	case Grass::GrassType::UNTECHABLE:
+		c = Color::Yellow;
+		break;
+	case Grass::GrassType::KILL:
+		c = Color::Black;
+		break;
 	}
 
 	

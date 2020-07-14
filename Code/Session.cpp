@@ -6112,10 +6112,7 @@ int Session::GetSaveDataSize()
 {
 	int totalSize = sizeof(SaveGameState);
 
-	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
-	{
-		totalSize += gameMode->GetNumStoredBytes();
-	}
+	totalSize += gameMode->GetNumStoredBytes();
 
 	return totalSize;
 }
@@ -6143,12 +6140,10 @@ bool Session::SaveState(unsigned char **buffer,
 	}
 	memcpy(*buffer, currSaveState, sizeof(SaveGameState));
 
-	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
-	{
-		unsigned char *tempBuf = *buffer;
-		tempBuf += sizeof(SaveGameState);
-		gameMode->StoreBytes(tempBuf);
-	}
+
+	unsigned char *tempBuf = *buffer;
+	tempBuf += sizeof(SaveGameState);
+	gameMode->StoreBytes(tempBuf);
 	
 	ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
@@ -6163,11 +6158,10 @@ bool Session::LoadState(unsigned char *buffer, int len)
 {
 	int saveSize = sizeof(SaveGameState);
 	memcpy(currSaveState, buffer, saveSize);
-	if (mapHeader->gameMode == MapHeader::T_REACHENEMYBASE)
-	{
-		buffer += saveSize;
-		gameMode->SetFromBuffer(buffer);
-	}
+
+	buffer += saveSize;
+	gameMode->SetFromBuffer(buffer);
+
 	//cout << "rollback. setting frame to: " << currSaveState->totalGameFrames << " from " << totalGameFrames << "\n";
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;

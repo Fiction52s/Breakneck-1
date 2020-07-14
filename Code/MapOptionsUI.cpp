@@ -59,7 +59,7 @@ MapOptionsUI::MapOptionsUI()
 	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
 
 
-	vector<string> gameModeOptions = { "basic", "base" };
+	vector<string> gameModeOptions = { "basic", "base", "fight" };
 	gameModeDropdown = mapOptionsPanel->AddDropdown("gamemode", 
 		Vector2i(0, 0), Vector2i(250, 28), gameModeOptions , 0);
 

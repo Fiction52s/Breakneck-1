@@ -206,6 +206,8 @@ void Actor::PopulateState(PState *ps)
 	ps->enemiesKilledLastFrame = enemiesKilledLastFrame;
 
 	ps->hitstunGravMultiplier = hitstunGravMultiplier;
+
+	memcpy(ps->touchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -345,6 +347,8 @@ void Actor::PopulateFromState(PState *ps)
 	enemiesKilledLastFrame = ps->enemiesKilledLastFrame;
 
 	hitstunGravMultiplier = ps->hitstunGravMultiplier;
+
+	memcpy(touchedGrass, ps->touchedGrass, sizeof(bool) * Grass::Count);
 }
 
 
@@ -2220,10 +2224,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//dirtyAuraSprite.setOrigin( )
 
 	//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	jumpGrassCount = 0;
-	gravityGrassCount = 0;
-	bounceGrassCount = 0;
-	boostGrassCount = 0;
+	ResetGrassCounters();
 
 	scorpOn = false;
 	framesSinceRightWireBoost = 0;
@@ -3584,6 +3585,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	ResetGrassCounters();
 	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
@@ -3657,10 +3659,6 @@ void Actor::Respawn()
 
 	gateBlackFXPool->Reset();
 
-	jumpGrassCount = 0;
-	gravityGrassCount = 0;
-	bounceGrassCount = 0;
-	boostGrassCount = 0;
 	regrindOffCount = 3;
 	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
@@ -4110,36 +4108,7 @@ void Actor::ProcessReceivedHit()
 					}
 					else
 					{
-						framesNotGrinding = 0;
-						hasAirDash = true;
-						hasDoubleJump = true;
-						ground = grindEdge;
-						edgeQuantity = grindQuantity;
-						groundSpeed = grindSpeed;
-
-						hurtBody.isCircle = false;
-						hurtBody.rw = 7;
-						hurtBody.rh = normalHeight;
-
-						SetAction(GROUNDHITSTUN);
-						frame = 0;
-
-						if (receivedHit->knockback > 0)
-						{
-							groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-						}
-						else
-						{
-							groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
-						}
-
-						if (toggleGrindInput)
-						{
-							currInput.Y = false;
-						}
-
-						grindEdge = NULL;
-						reversed = false;
+						HitOutOfGrind();
 					}
 
 				}
@@ -4174,101 +4143,11 @@ void Actor::ProcessReceivedHit()
 
 						if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
 						{
-							framesNotGrinding = 0;
-							if (reversed)
-							{
-								velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
-							}
-							else
-							{
-								velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
-							}
-
-
-							//SetAction( JUMP );
-							SetAction(AIRHITSTUN);
-							frame = 0;
-							if (receivedHit->knockback > 0)
-							{
-								velocity = receivedHit->knockback 
-									* GetKnockbackDir(receivedHit->kbDir);
-							}
-							else
-							{
-								velocity.x *= (1 - receivedHit->drainX);
-								velocity.y *= (1 - receivedHit->drainY);
-							}
-
-							if (toggleGrindInput)
-							{
-								currInput.Y = false;
-							}
-
-							hurtBody.isCircle = false;
-							hurtBody.rw = 7;
-							hurtBody.rh = normalHeight;
-
-							//	frame = 0;
-							ground = NULL;
-							grindEdge = NULL;
-							reversed = false;
+							HitOutOfCeilingGrindIntoAir();
 						}
 						else
 						{
-							//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
-							if (grindNorm.x > 0)
-							{
-								offsetX = b.rw;
-							}
-							else if (grindNorm.x < 0)
-							{
-								offsetX = -b.rw;
-							}
-							else
-							{
-								offsetX = 0;
-							}
-
-							hasAirDash = true;
-							hasDoubleJump = true;
-
-
-							ground = grindEdge;
-							groundSpeed = -grindSpeed;
-							edgeQuantity = grindQuantity;
-							grindEdge = NULL;
-							reversed = true;
-
-							hurtBody.isCircle = false;
-							hurtBody.rw = 7;
-							hurtBody.rh = normalHeight;
-
-							SetAction(GROUNDHITSTUN);
-							frame = 0;
-
-							if (toggleGrindInput)
-							{
-								currInput.Y = false;
-							}
-
-							if (receivedHit->knockback > 0)
-							{
-								groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-							}
-							else
-							{
-								groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
-							}
-
-							frame = 0;
-							framesNotGrinding = 0;
-
-							double angle = GroundedAngle();
-
-
-
-							ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-							ActivateSound(S_GRAVREVERSE);
+							HitOutOfCeilingGrindAndReverse();
 						}
 					}
 				}
@@ -4276,39 +4155,12 @@ void Actor::ProcessReceivedHit()
 			}
 			else if (ground == NULL || onRail)
 			{
-				ground = NULL;
-				grindEdge = NULL;
-				bounceEdge = NULL;
-				SetAction(AIRHITSTUN);
-				frame = 0;
-				if (receivedHit->knockback > 0)
-				{
-					velocity = receivedHit->knockback
-						* GetKnockbackDir(receivedHit->kbDir);
-					//velocity = receivedHit->knockback * receivedHit->kbDir;
-				}
-				else
-				{
-					velocity.x *= (1 - receivedHit->drainX);
-					velocity.y *= (1 - receivedHit->drainY);
-				}
+				HitWhileAerial();
 
 			}
 			else
 			{
-				SetAction(GROUNDHITSTUN);
-				frame = 0;
-
-				if (receivedHit->knockback > 0)
-				{
-					groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
-				}
-				else
-				{
-					groundSpeed *= (1 - receivedHit->drainX) * abs(currNormal.y) + (1 - receivedHit->drainY) * abs(currNormal.x);
-				}
-
-				//dot( receivedHit->kbDir, normalize( ground->v1 - ground->v0 ) ) * receivedHit->knockback;
+				HitWhileGrounded();
 			}
 			bounceEdge = NULL;
 		}
@@ -4373,7 +4225,7 @@ void Actor::UpdateDrain()
 
 void Actor::ProcessGravityGrass()
 {
-	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && gravityGrassCount == 0)
+	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && grassCount[Grass::GRAVITY] == 0)
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
@@ -4576,7 +4428,7 @@ void Actor::ProcessBooster()
 
 void Actor::ProcessBoostGrass()
 {
-	if (ground != NULL && grassBoosted)
+	if (ground != NULL && touchedGrass[Grass::BOOST])
 	{
 		if (groundSpeed > 0)
 		{
@@ -5043,8 +4895,7 @@ void Actor::UpdatePrePhysics()
 
 	ClearPauseBufferedActions();
 
-	touchedJumpGrass = false;
-	grassBoosted = false;
+	memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
 	touchEdgeWithLeftWire = false;
@@ -6420,10 +6271,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	if ( (owner != NULL && owner->hasAnyGrass) || editOwner != NULL )
 	{
 		queryMode = "grass";
-		jumpGrassCount = 0;
-		gravityGrassCount = 0;
-		bounceGrassCount = 0;
-		boostGrassCount = 0;
+		memset(grassCount, 0, sizeof(int) * Grass::GrassType::Count);
 		sess->grassTree->Query(this, r);
 	}
 
@@ -9968,7 +9816,7 @@ void Actor::UpdatePhysics()
 			}
 
 			
-			if (tempCollision && bounceGrassCount > 0)
+			if (tempCollision && grassCount[Grass::BOUNCE] > 0)
 			{
 				HandleBounceGrass();
 			}
@@ -10225,7 +10073,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( (HasUpgrade(UPGRADE_POWER_GRAV) || gravityGrassCount > 0 )
+			else if( (HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
 				&& tempCollision && ((currInput.B && currInput.LUp())|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y ))
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
@@ -10641,7 +10489,236 @@ void Actor::HandleTouchedGate()
 
 bool Actor::CanTech()
 {
-	return (lastDashPressFrame >= 0 && sess->totalGameFrames - lastDashPressFrame < 20);
+	return (lastDashPressFrame >= 0 && sess->totalGameFrames - lastDashPressFrame < 20
+		&& !touchedGrass[Grass::UNTECHABLE]);
+}
+
+
+
+void Actor::HitOutOfCeilingGrindAndReverse()
+{
+	V2d grindNorm = grindEdge->Normal();
+	//	velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
+	if (grindNorm.x > 0)
+	{
+		offsetX = b.rw;
+	}
+	else if (grindNorm.x < 0)
+	{
+		offsetX = -b.rw;
+	}
+	else
+	{
+		offsetX = 0;
+	}
+
+	hasAirDash = true;
+	hasDoubleJump = true;
+
+
+	ground = grindEdge;
+	groundSpeed = -grindSpeed;
+	edgeQuantity = grindQuantity;
+	grindEdge = NULL;
+	reversed = true;
+
+	hurtBody.isCircle = false;
+	hurtBody.rw = 7;
+	hurtBody.rh = normalHeight;
+
+	SetAction(GROUNDHITSTUN);
+	frame = 0;
+
+	if (toggleGrindInput)
+	{
+		currInput.Y = false;
+	}
+
+	if (receivedHit->knockback > 0)
+	{
+		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+	}
+	else
+	{
+		groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+	}
+
+	frame = 0;
+	framesNotGrinding = 0;
+
+	double angle = GroundedAngle();
+
+
+
+	ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+	ActivateSound(S_GRAVREVERSE);
+}
+
+void Actor::HitOutOfCeilingGrindIntoAir()
+{
+	framesNotGrinding = 0;
+	if (reversed)
+	{
+		velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
+	}
+	else
+	{
+		velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+	}
+
+
+	//SetAction( JUMP );
+	SetAction(AIRHITSTUN);
+	frame = 0;
+	if (receivedHit->knockback > 0)
+	{
+		velocity = receivedHit->knockback
+			* GetKnockbackDir(receivedHit->kbDir);
+	}
+	else
+	{
+		velocity.x *= (1 - receivedHit->drainX);
+		velocity.y *= (1 - receivedHit->drainY);
+	}
+
+	if (toggleGrindInput)
+	{
+		currInput.Y = false;
+	}
+
+	hurtBody.isCircle = false;
+	hurtBody.rw = 7;
+	hurtBody.rh = normalHeight;
+
+	//	frame = 0;
+	ground = NULL;
+	grindEdge = NULL;
+	reversed = false;
+}
+
+void Actor::HitOutOfGrind()
+{
+	V2d grindNorm = grindEdge->Normal();
+
+	framesNotGrinding = 0;
+	hasAirDash = true;
+	hasDoubleJump = true;
+	ground = grindEdge;
+	edgeQuantity = grindQuantity;
+	groundSpeed = grindSpeed;
+
+	hurtBody.isCircle = false;
+	hurtBody.rw = 7;
+	hurtBody.rh = normalHeight;
+
+	SetAction(GROUNDHITSTUN);
+	frame = 0;
+
+	if (receivedHit->knockback > 0)
+	{
+		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+	}
+	else
+	{
+		groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+	}
+
+	if (toggleGrindInput)
+	{
+		currInput.Y = false;
+	}
+
+	grindEdge = NULL;
+	reversed = false;
+}
+
+void Actor::HitWhileGrounded()
+{
+	V2d kbDir = receivedHit->kbDir;
+
+	if (kbDir.y > 0)
+	{
+
+	}
+	else
+	{
+
+	}
+	SetAction(GROUNDHITSTUN);
+	frame = 0;
+
+	if (receivedHit->knockback > 0)
+	{
+		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+	}
+	else
+	{
+		groundSpeed *= (1 - receivedHit->drainX) * abs(currNormal.y) + (1 - receivedHit->drainY) * abs(currNormal.x);
+	}
+}
+
+void Actor::HitWhileAerial()
+{
+	ground = NULL;
+	grindEdge = NULL;
+	bounceEdge = NULL;
+	SetAction(AIRHITSTUN);
+	frame = 0;
+	if (receivedHit->knockback > 0)
+	{
+		velocity = receivedHit->knockback
+			* GetKnockbackDir(receivedHit->kbDir);
+		//velocity = receivedHit->knockback * receivedHit->kbDir;
+	}
+	else
+	{
+		velocity.x *= (1 - receivedHit->drainX);
+		velocity.y *= (1 - receivedHit->drainY);
+	}
+}
+
+void Actor::SlideOffWhileInGroundHitstun()
+{
+	SetAction(AIRHITSTUN);
+	frame = 0;
+}
+
+void Actor::HitWallWhileInAirHitstun()
+{
+	if (CanTech())
+	{
+		SetAction(WALLTECH);
+		frame = 0;
+		physicsOver = true;
+	}
+	else
+	{
+		if ((wallNormal.x > 0 && oldVelocity.x < 0)
+			|| (wallNormal.x < 0 && oldVelocity.x > 0))
+		{
+			velocity = -oldVelocity;
+			physicsOver = true;
+		}
+	}
+}
+
+void Actor::HitGroundWhileInAirHitstun()
+{
+	if (CanTech())
+	{
+		SetAction(GROUNDTECHSIDEWAYS);
+		frame = 0;
+		physicsOver = true;
+	}
+	else
+	{
+		velocity.y = -velocity.y;
+		ground = NULL;
+		physicsOver = true;
+		/*SetAction(GROUNDHITSTUN);
+		frame = 0;
+		physicsOver = true;*/
+	}
 }
 
 void Actor::PhysicsResponse()
@@ -10826,116 +10903,112 @@ void Actor::PhysicsResponse()
 			}
 		}
 
-		if( !leaveGround )
+		if (!leaveGround)
 		{
-		
-		gn = ground->Normal();
-		if( collision )
-		{
-			if( action == AIRHITSTUN )
-			{
-				if (CanTech())
-				{
-					SetAction(GROUNDTECHSIDEWAYS);
-					frame = 0;
-					physicsOver = true;
-				}
-				else
-				{
-					SetAction(GROUNDHITSTUN);
-					frame = 0;
-					physicsOver = true;
-				}
-			}
-			else if( action != GROUNDHITSTUN && action != LAND2 && action != LAND 
-				&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
-				&& action != SEQ_CRAWLERFIGHT_LAND 
-				&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
-				&& action != JUMPSQUAT )
-			{
-				if( currInput.LLeft() || currInput.LRight() )
-				{
-					SetAction(LAND2);
-					ActivateSound(S_LAND);
-					frame = 0;
-				}
-				else
-				{
-					if( reversed )
-					{
-						SetAction(GRAVREVERSE);
 
-						if( currInput.LLeft() || currInput.LRight() )
-						{
-							storedReverseSpeed = 0;
-						}
-						else
-						{
-							storedReverseSpeed = -groundSpeed;
-						}	
+			gn = ground->Normal();
+			if (collision)
+			{
+				if (action == AIRHITSTUN)
+				{
+					HitGroundWhileInAirHitstun();
+				}
+				else if (action != GROUNDHITSTUN && action != LAND2 && action != LAND
+					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
+					&& action != SEQ_CRAWLERFIGHT_LAND
+					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
+					&& action != JUMPSQUAT)
+				{
+					if (currInput.LLeft() || currInput.LRight())
+					{
+						SetAction(LAND2);
+						ActivateSound(S_LAND);
+						frame = 0;
 					}
 					else
 					{
-						SetAction(LAND);
-						ActivateSound(S_LAND);
+						if (reversed)
+						{
+							SetAction(GRAVREVERSE);
+
+							if (currInput.LLeft() || currInput.LRight())
+							{
+								storedReverseSpeed = 0;
+							}
+							else
+							{
+								storedReverseSpeed = -groundSpeed;
+							}
+						}
+						else
+						{
+							SetAction(LAND);
+							ActivateSound(S_LAND);
+						}
+						frame = 0;
 					}
+				}
+				else if (action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK)
+				{
+					//cout << "action = 41" << endl;
+					SetAction(SEQ_CRAWLERFIGHT_LAND);
 					frame = 0;
+					groundSpeed = 0;
 				}
 			}
-			else if( action == SEQ_CRAWLERFIGHT_STRAIGHTFALL || action == SEQ_CRAWLERFIGHT_DODGEBACK )
-			{
-				//cout << "action = 41" << endl;
-				SetAction(SEQ_CRAWLERFIGHT_LAND);
-				frame = 0;
-				groundSpeed = 0;
-			}
-		}
-		framesInAir = 0;
-		
-		Vector2<double> groundPoint = ground->GetPosition( edgeQuantity );
-		
-		position = groundPoint;
-		
-		position.x += offsetX + b.offset.x;
+			framesInAir = 0;
 
-		if( reversed )
-		{
-			if( gn.y > 0 || abs( offsetX ) != b.rw )
-			{
-				position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-			}
-		}
-		else
-		{
-			if( gn.y < 0 || abs( offsetX ) != b.rw )
-			{
-				position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
-			}
-		}
-
-		if( reversed )
-		{
-			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (-gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
-			{
-				SetAction(LAND2);
-				frame = 0;
-			}
-		}
-		else
-		{
-			
-			if( ( action == STEEPCLIMB || action == STEEPSLIDE ) && (gn.y <= -steepThresh || !approxEquals( abs( offsetX ), b.rw ) ) )
-			{
-				//cout << "here no: " << action << ", " << offsetX << endl;
-				SetAction(LAND2);
-				frame = 0;
-			}
-			else
+			//need to check this again because it might bounce off the ground 
+			//while in hitstun, etc
+			if (ground != NULL)
 			{
 
-			}
-		}
 
+				Vector2<double> groundPoint = ground->GetPosition(edgeQuantity);
+
+				position = groundPoint;
+
+				position.x += offsetX + b.offset.x;
+
+				if (reversed)
+				{
+					if (gn.y > 0 || abs(offsetX) != b.rw)
+					{
+						position.y += normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+				else
+				{
+					if (gn.y < 0 || abs(offsetX) != b.rw)
+					{
+						position.y += -normalHeight; //could do the math here but this is what i want //-b.rh - b.offset.y;// * 2;		
+					}
+				}
+
+				if (reversed)
+				{
+					if ((action == STEEPCLIMB || action == STEEPSLIDE) && (-gn.y <= -steepThresh || !approxEquals(abs(offsetX), b.rw)))
+					{
+						SetAction(LAND2);
+						frame = 0;
+					}
+				}
+				else
+				{
+
+					if ((action == STEEPCLIMB || action == STEEPSLIDE) && (gn.y <= -steepThresh || !approxEquals(abs(offsetX), b.rw)))
+					{
+						//cout << "here no: " << action << ", " << offsetX << endl;
+						SetAction(LAND2);
+						frame = 0;
+					}
+					else
+					{
+
+					}
+				}
+
+			}
 		}
 		
 	}
@@ -10949,17 +11022,14 @@ void Actor::PhysicsResponse()
 
 		if( action == GROUNDHITSTUN )
 		{
-			SetAction(AIRHITSTUN);
-			frame = 0;
+			SlideOffWhileInGroundHitstun();
 		}
 
 		if (action == AIRHITSTUN)
 		{
-			if (collision && length(wallNormal) > 0 && CanTech())
+			if (collision && length(wallNormal) > 0)
 			{
-				SetAction(WALLTECH);
-				frame = 0;
-				physicsOver = true;
+				HitWallWhileInAirHitstun();
 			}
 		}
 		else if( action != AIRHITSTUN && action != AIRDASH )
@@ -13488,25 +13558,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 		if( g->IsTouchingBox( r ) )
 		{
-			if (g->grassType == Grass::JUMP)
-			{
-				++jumpGrassCount;
-				touchedJumpGrass = true;
-			}
-			else if (g->grassType == Grass::GRAVITY)
-			{
-				++gravityGrassCount; //if gravity type
-			}
-			else if( g->grassType == Grass::BOUNCE )
-			{
-				++bounceGrassCount;
-			}
-			else if (g->grassType == Grass::BOOST)
-			{
-				++boostGrassCount;
-				grassBoosted = true;
-			}
-			
+			touchedGrass[g->grassType] = true;
+			grassCount[g->grassType]++;
 		}
 	}
 	else if( queryMode == "envplant" )
@@ -14404,6 +14457,12 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	keyExplodeRingGroup->Draw(target);
 	keyExplodePool->Draw(target);
+}
+
+void Actor::ResetGrassCounters()
+{
+	memset(grassCount, 0, sizeof(int) * Grass::Count);
+	memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
 }
 
 void Actor::DeathDraw(sf::RenderTarget *target)
@@ -15697,7 +15756,7 @@ void Actor::ExecuteWallJump()
 	double strengthX = wallJumpStrength.x;
 	double strengthY = wallJumpStrength.y;
 
-	if (touchedJumpGrass)
+	if (touchedGrass[Grass::JUMP])
 	{
 		strengthY += 10;
 	}

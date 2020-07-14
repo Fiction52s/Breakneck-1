@@ -180,6 +180,8 @@ int MapHeader::GetNumPlayers()
 		return 1;
 	case T_REACHENEMYBASE:
 		return 2;
+	case T_FIGHT:
+		return 2;
 	default:
 		return 1;
 	}

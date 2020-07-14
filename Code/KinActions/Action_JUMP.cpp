@@ -148,7 +148,7 @@ void Actor::JUMP_Update()
 
 				framesInAir = 0;
 
-				if (touchedJumpGrass)
+				if (touchedGrass[Grass::JUMP])
 				{
 					velocity.y -= jumpGrassExtra;
 				}
