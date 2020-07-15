@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::STANDN_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::STANDN_End()

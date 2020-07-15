@@ -6,6 +6,7 @@ using namespace std;
 
 void Actor::STEEPSLIDEATTACK_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::STEEPSLIDEATTACK_End()

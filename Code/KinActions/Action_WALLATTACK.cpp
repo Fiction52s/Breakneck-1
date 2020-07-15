@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::WALLATTACK_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::WALLATTACK_End()

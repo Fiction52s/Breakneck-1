@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::DAIR_Start()
 {
-
+	SetActionSuperLevel();
 }
 
 void Actor::DAIR_End()

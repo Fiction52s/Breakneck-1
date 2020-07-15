@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::STEEPCLIMBATTACK_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::STEEPCLIMBATTACK_End()

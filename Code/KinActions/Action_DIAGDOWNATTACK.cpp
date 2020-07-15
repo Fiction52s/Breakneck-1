@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::DIAGDOWNATTACK_Start()
 {
-
+	SetActionSuperLevel();
 }
 
 void Actor::DIAGDOWNATTACK_End()

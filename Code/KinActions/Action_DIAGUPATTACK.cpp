@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::DIAGUPATTACK_Start()
 {
-
+	SetActionSuperLevel();
 }
 
 void Actor::DIAGUPATTACK_End()

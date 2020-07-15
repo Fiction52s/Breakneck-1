@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::DASHATTACK_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::DASHATTACK_End()

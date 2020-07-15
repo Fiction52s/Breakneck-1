@@ -271,6 +271,10 @@ struct PState
 
 	double hitstunGravMultiplier;
 
+	int lastSuperPressFrame;
+	int superLevelCounter;
+	int currActionSuperLevel;
+
 	
 
 	//HitboxInfo currVSHitboxInfo;

@@ -440,6 +440,12 @@ struct Actor : QuadTreeCollider,
 
 	double hitstunGravMultiplier;
 
+	int lastSuperPressFrame;
+	int superLevelCounter;
+	int currActionSuperLevel;
+
+	//---end of saved vars
+	int superActiveLimit;
 	int comboCounterResetFrames;
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
@@ -852,6 +858,7 @@ struct Actor : QuadTreeCollider,
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
+	void SetActionSuperLevel();
 	bool CanTech();
 	void CreateKeyExplosion();
 	void CreateGateExplosion();
@@ -1093,6 +1100,7 @@ struct Actor : QuadTreeCollider,
 	void TryEndLevel();
 	void UpdateDashBooster();
 	void SlowDependentFrameIncrement();
+	void SlowIndependentFrameIncrement();
 	void UpdateBounceFlameCounters();
 	void SetAerialScorpSprite();
 	int GetJumpFrame();

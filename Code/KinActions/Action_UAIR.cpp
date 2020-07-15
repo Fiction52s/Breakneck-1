@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::UAIR_Start()
 {
+	SetActionSuperLevel();
 }
 
 void Actor::UAIR_End()

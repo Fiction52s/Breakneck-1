@@ -208,6 +208,10 @@ void Actor::PopulateState(PState *ps)
 	ps->hitstunGravMultiplier = hitstunGravMultiplier;
 
 	memcpy(ps->touchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
+
+	ps->lastSuperPressFrame = lastSuperPressFrame;
+	ps->superLevelCounter = superLevelCounter;
+	ps->currActionSuperLevel = currActionSuperLevel;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -349,6 +353,10 @@ void Actor::PopulateFromState(PState *ps)
 	hitstunGravMultiplier = ps->hitstunGravMultiplier;
 
 	memcpy(touchedGrass, ps->touchedGrass, sizeof(bool) * Grass::Count);
+
+	lastSuperPressFrame = ps->lastSuperPressFrame;
+	superLevelCounter = ps->superLevelCounter;
+	currActionSuperLevel = ps->currActionSuperLevel;
 }
 
 
@@ -2038,7 +2046,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
-
+	superActiveLimit = 30;
 	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
@@ -3298,10 +3306,10 @@ bool Actor::AirAttack()
 	}
 
 	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
-	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
+	bool rightStickSwing = false;/* (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
 		|| (currInput.RUp() && !prevInput.RUp())
-		|| (currInput.RRight() && !prevInput.RRight());
+		|| (currInput.RRight() && !prevInput.RRight());*/
 
 
 	if( normalSwing || rightStickSwing )
@@ -3392,7 +3400,7 @@ bool Actor::AirAttack()
 		}
 		else
 		{
-			if ((currInput.RUp()) )
+			/*if ((currInput.RUp()) )
 			{
 				if (action == UAIR)
 				{
@@ -3430,9 +3438,13 @@ bool Actor::AirAttack()
 				}
 				SetAction(FAIR);
 				frame = 0;
-			}
+			}*/
 
 		}
+
+
+		currAttackSuperLevel = superLevelCounter;
+		superLevelCounter = 0;
 		
 		return true;
 	}
@@ -3586,6 +3598,11 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn()
 {
 	ResetGrassCounters();
+
+	
+	superLevelCounter = 0;
+	
+	lastSuperPressFrame = -1;
 	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
@@ -4762,6 +4779,21 @@ void Actor::UpdatePrePhysics()
 	if (currInput.B && !prevInput.B)
 	{
 		lastDashPressFrame = sess->totalGameFrames;
+	}
+
+	if (currInput.leftShoulder && !prevInput.leftShoulder)
+	{
+		if (superLevelCounter == 0)
+		{
+			superLevelCounter = 1;
+			lastSuperPressFrame = sess->totalGameFrames;
+		}
+	}
+
+	if ( superLevelCounter > 0 && lastSuperPressFrame >= 0 
+		&& sess->totalGameFrames - lastSuperPressFrame >= superActiveLimit)
+	{
+		superLevelCounter = 0;
 	}
 
 	if (hitlagFrames > 0)
@@ -10213,6 +10245,12 @@ bool Actor::CheckRightStickSwing()
 	return rightStickSwing;
 }
 
+void Actor::SetActionSuperLevel()
+{
+	currActionSuperLevel = superLevelCounter;
+	superLevelCounter = 0;
+}
+
 bool Actor::IsGroundAttack(int a)
 {
 	return a == Action::STANDN || a == Action::DASHATTACK
@@ -10322,6 +10360,9 @@ bool Actor::TryGroundAttack()
 		attackLevel++;
 		if (attackLevel == 3)
 			attackLevel = 0;
+
+
+		
 
 		return true;
 	}
@@ -12060,6 +12101,11 @@ void Actor::SlowDependentFrameIncrement()
 		slowCounter++;
 }
 
+void Actor::SlowIndependentFrameIncrement()
+{
+
+}
+
 void Actor::UpdateBounceFlameCounters()
 {
 	if (bounceFlameOn)
@@ -12185,6 +12231,8 @@ void Actor::UpdatePostPhysics()
 	UpdateDashBooster();
 
 	SlowDependentFrameIncrement();
+
+	SlowIndependentFrameIncrement(); //empty atm
 
 	ActionTimeIndFrameInc();
 
