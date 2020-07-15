@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::RUN_Start()
 {
+	int x = 5;
 }
 
 void Actor::RUN_End()

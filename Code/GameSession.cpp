@@ -216,11 +216,12 @@ void GameSession::UpdateCamera()
 
 	if (raceFight != NULL)
 	{
-		cam.UpdateVS(GetPlayer(0), GetPlayer(1));
+		//cam.UpdateVS(GetPlayer(0), GetPlayer(1));
 	}
 	else
 	{
-		cam.Update(GetPlayer(0));
+		cam.playerIndex = 0;
+		cam.Update();
 	}
 
 	Vector2f camPos = cam.GetPos();

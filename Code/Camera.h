@@ -23,7 +23,16 @@ struct Session;
 
 struct Camera
 {
+	enum CamType
+	{
+		BASIC,
+		FIGHTING,
+	};
+
+	CamType camType;
+
 	Camera();
+	void SetCamType(CamType c);
 	float GetZoom();
 	void Set( sf::Vector2f &pos, float zFactor,
 		int zLevel );
@@ -56,6 +65,7 @@ struct Camera
 	float sequenceStartZoom;
 
 	sf::Vector2f moveFrames;
+	int playerIndex;
 
 
 	int easeOutCount;
@@ -102,7 +112,11 @@ struct Camera
 	//int bType;
 
 	double GetEnemyZoomTarget( Actor *a );
-	void Update( Actor *a );
+	void Update();
+	void UpdateBasicMode();
+	void UpdateFightingMode();
+
+
 	void UpdateBossFight(int bossFightType);
 	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);

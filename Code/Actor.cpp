@@ -2046,7 +2046,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
-	superActiveLimit = 30;
+	superActiveLimit = 180;
 	lastDashPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
@@ -3183,21 +3183,42 @@ void Actor::LoadHitboxes()
 }
 
 void Actor::SetupHitboxInfo( json &j, const std::string &name,
-	HitboxInfo &hi)
+	HitboxInfo *hi)
 {
 	auto &myj = j[name];
 
-	hi.damage = myj["damage"];
-	hi.hitlagFrames = myj["hitlag"];
-	hi.hitstunFrames = myj["hitstun"];
-	hi.knockback = myj["knockback"];
-	double kbAngle = myj["knockbackangle"];
+	auto &myNormalHitboxInfo = j[name]["normal"];
+	auto &myLevel1HitboxInfo = j[name]["level1"];
+
+	SetupHitboxLevelInfo(myNormalHitboxInfo, hi[0]);
+	SetupHitboxLevelInfo(myLevel1HitboxInfo, hi[1]);
+	/*hi[0].damage = myNormalHitboxInfo["damage"];
+	hi.hitlagFrames = myNormalHitboxInfo["hitlag"];
+	hi.hitstunFrames = myNormalHitboxInfo["hitstun"];
+	hi.knockback = myNormalHitboxInfo["knockback"];
+	double kbAngle = myNormalHitboxInfo["knockbackangle"];
 	kbAngle = kbAngle / 180.0 * PI;
 	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
 	hi.invincibleFrames = myj["invincibleframes"];
 	double gravMult = myj["gravmultiplier"];
 	hi.gravMultiplier = gravMult;
-	hi.extraDefenderHitlag = myj["extradefenderhitlag"];
+	hi.extraDefenderHitlag = myj["extradefenderhitlag"];*/
+}
+
+void Actor::SetupHitboxLevelInfo(
+	json &j, HitboxInfo &hi)
+{
+	hi.damage = j["damage"];
+	hi.hitlagFrames = j["hitlag"];
+	hi.hitstunFrames = j["hitstun"];
+	hi.knockback = j["knockback"];
+	double kbAngle = j["knockbackangle"];
+	kbAngle = kbAngle / 180.0 * PI;
+	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
+	hi.invincibleFrames = j["invincibleframes"];
+	double gravMult = j["gravmultiplier"];
+	hi.gravMultiplier = gravMult;
+	hi.extraDefenderHitlag = j["extradefenderhitlag"];
 }
 
 void Actor::ActionEnded()
@@ -3441,10 +3462,6 @@ bool Actor::AirAttack()
 			}*/
 
 		}
-
-
-		currAttackSuperLevel = superLevelCounter;
-		superLevelCounter = 0;
 		
 		return true;
 	}
@@ -7915,6 +7932,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 	bool isLandingAction = action == LAND || action == LAND2;
 	if (currInput.LLeft())
 	{
+		facingRight = false;
 		if ((currInput.LDown() && gNorm.x < 0) || (currInput.LUp() && gNorm.x > 0))
 		{
 			if (action != SPRINT)
@@ -7932,18 +7950,24 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 			}
 		}
 
-		if (facingRight )
+		if (groundSpeed > 0)
+		{
+			groundSpeed = 0;
+		}
+
+		/*if (facingRight )
 		{
 			if (!isLandingAction)
 			{
 				groundSpeed = 0;
 			}
-			facingRight = false;
-		}
+			
+		}*/
 		return true;
 	}
 	else if (currInput.LRight())
 	{
+		facingRight = true;
 		if ((currInput.LDown() && gNorm.x > 0) || (currInput.LUp() && gNorm.x < 0))
 		{
 			if (action != SPRINT)
@@ -7961,7 +7985,12 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 			}
 		}
 
-		if (!facingRight)
+		if (groundSpeed < 0)
+		{
+			groundSpeed = 0;
+		}
+
+		/*if (!facingRight)
 		{
 			if (!isLandingAction)
 			{
@@ -7969,7 +7998,7 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 			}
 
 			facingRight = true;
-		}
+		}*/
 
 		return true;
 	}
@@ -11245,7 +11274,7 @@ void Actor::PhysicsResponse()
 
 		if( pTarget != NULL && IHitPlayer( target ) )
 		{
-			HitboxInfo &hi = hitboxInfos[action];
+			HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
 
 			*currVSHitboxInfo = hi;
 

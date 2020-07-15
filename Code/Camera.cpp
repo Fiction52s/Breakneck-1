@@ -19,8 +19,14 @@ CameraShot::CameraShot( const string &p_name, Vector2f &pos, float z)
 }
 
 
+void Camera::SetCamType(CamType c)
+{
+	camType = c;
+}
+
 Camera::Camera()
 {
+	playerIndex = 0;
 	sess = NULL;
 	zoomFactor = 1;
 	zoomOutRate = 1;
@@ -1057,13 +1063,15 @@ void Camera::Init(V2d &p_pos)
 	pos.y = p_pos.y;
 }
 
-void Camera::Update( Actor *player )
+void Camera::UpdateBasicMode()
 {
+	Actor *player = sess->GetPlayer(playerIndex);
+
 	slowMultiple = player->slowMultiple;
 
 	if (manual)
 	{
-		ManualUpdate( player );
+		ManualUpdate(player);
 		return;
 	}
 
@@ -1071,7 +1079,7 @@ void Camera::Update( Actor *player )
 
 	V2d playerPos = player->position;
 
-	if( player->action == Actor::RIDESHIP || player->action == Actor::SKYDIVE )
+	if (player->action == Actor::RIDESHIP || player->action == Actor::SKYDIVE)
 	{
 		zoomFactor = 1;
 		pos.x = playerPos.x;
@@ -1079,35 +1087,35 @@ void Camera::Update( Actor *player )
 		return;
 	}
 
-	if( sess->pauseFrames > 0 )
+	if (sess->pauseFrames > 0)
 	{
 		pos.x = playerPos.x + offset.x;
 		pos.y = playerPos.y + offset.y;
 	}
-	
+
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
 	UpdateZoomLevel(con, prevcon);
 
 	V2d pVel = GetPlayerVel(player);
 
-	if( pVel.y > 0 )
+	if (pVel.y > 0)
 	{
-		if( framesFalling < 60 )
+		if (framesFalling < 60)
 			framesFalling++;
 	}
-	else 
+	else
 	{
-		if( framesFalling > 0 )
+		if (framesFalling > 0)
 			framesFalling--;
 	}
 
 	pos.x = playerPos.x;
 	pos.y = playerPos.y;
-	
+
 	Vector2f currOffset;
 
-	if ( game != NULL && game->debugScreenRecorder != NULL)
+	if (game != NULL && game->debugScreenRecorder != NULL)
 	{
 		offset.x = 0;
 		offset.y = 0;
@@ -1123,7 +1131,7 @@ void Camera::Update( Actor *player )
 	double oldZoomFactor = zoomFactor;
 
 	double nextMovementZoom = GetNextMovementZoom(moveZoom);
-	
+
 	zoomFactor = nextMovementZoom;
 
 	pos += currOffset;// *GetZoom();
@@ -1132,26 +1140,26 @@ void Camera::Update( Actor *player )
 
 	Vector2f oldOffset = offset;
 	offset = currOffset;
-	double enemyZoom = GetEnemyZoomTarget( player );
+	double enemyZoom = GetEnemyZoomTarget(player);
 	offset = oldOffset;
 
 	//if( numActive > 0 )
-	if (enemyZoom > zoomFactor && numActive > 0 )
+	if (enemyZoom > zoomFactor && numActive > 0)
 	{
 		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
 		zoomFactor = nextEnemyZoom;
-		
-		
+
+
 		//UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
 		/*zoomFactor = oldZoomFactor;
 		double nextEnemyZoom = GetNextEnemyZoom(enemyZoom);
 		if (nextEnemyZoom > nextMovementZoom)
 		{
-			zoomFactor = nextEnemyZoom;
+		zoomFactor = nextEnemyZoom;
 		}
 		else
 		{
-			zoomFactor = nextMovementZoom;
+		zoomFactor = nextMovementZoom;
 		}*/
 
 		pos.x = playerPos.x;
@@ -1167,7 +1175,7 @@ void Camera::Update( Actor *player )
 	{
 		//cout << "enemy zoom: " << enemyZoom << " ";
 	}
-	
+
 	//cout << "num enemies : " << numActive << endl;
 
 	offset = currOffset;
@@ -1180,7 +1188,7 @@ void Camera::Update( Actor *player )
 		cout << "zfactor: " << moveZoom << endl;
 		if (enemyZoom > moveZoom)
 		{
-			
+
 		}
 		else if (enemyZoom <= moveZoom)
 		{
@@ -1194,9 +1202,9 @@ void Camera::Update( Actor *player )
 
 	}
 
-	
 
-	
+
+
 
 	UpdateEaseOut();
 
@@ -1210,6 +1218,29 @@ void Camera::Update( Actor *player )
 
 	//cout << GetPos().x << ", " << GetPos().y << endl;
 	//cout << "zoom: " << GetZoom() << endl;
+}
+
+void Camera::UpdateFightingMode()
+{
+	UpdateVS(sess->GetPlayer(0), sess->GetPlayer(1));
+}
+
+void Camera::Update()
+{
+	switch (camType)
+	{
+	case BASIC:
+	{
+		UpdateBasicMode();
+		break;
+	}
+	case FIGHTING:
+	{
+		UpdateFightingMode();
+		break;
+	}
+
+	}
 }
 
 void Camera::UpdateEaseOut()
@@ -1241,28 +1272,32 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	V2d center = (a->position + a2->position) / 2.0;
 
 	Vector2f res( 1920 / 2, 1080 / 2 );
-	double distx = abs( a->position.x - a2->position.x );
-	double disty = abs( a->position.y - a2->position.y );
+
+	float xExtra = 600;
+	float yExtra = 400;
+
+	double distx = abs( a->position.x - a2->position.x ) + xExtra * 2;
+	double disty = abs(a->position.y - a2->position.y) + yExtra * 2;
 
 	double zx = distx / res.x;
 	double zy = disty / res.y;
 	
 	double maxDist = max( zx, zy );
-
+	
 	if( zx == maxDist )
 	{
 		targetZoomFactor = zx;// / 2.0;
 
-		double adistx = distx + max( 200.f * targetZoomFactor, 200.f );
-		double azx = adistx / res.x;
+		//double adistx = distx + max(xExtra * targetZoomFactor, xExtra);
+		double azx = distx / res.x;
 		targetZoomFactor = azx;
 	}
 	else if( zy == maxDist )
 	{
 		targetZoomFactor = zy;// / 2.0;
 
-		double adisty = disty + max( 200.f * targetZoomFactor, 200.f );
-		double azy = adisty / res.y;
+		//double adisty = disty + max( yExtra * targetZoomFactor, yExtra);
+		double azy = disty / res.y;
 		targetZoomFactor = azy;
 	}
 	
@@ -1279,7 +1314,7 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	
 	//zoomFactor += 200 / res.x;
 
-	double minZoom = .6;//1.0;
+	double minZoom = 1.0;//1.0;
 	double maxZoom = 8;
 	if( targetZoomFactor < minZoom )
 		targetZoomFactor = minZoom;

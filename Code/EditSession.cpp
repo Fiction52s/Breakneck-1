@@ -270,24 +270,44 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 
 void EditSession::UpdateCamera()
 {
+	switch (mapHeader->gameMode)
+	{
+	case MapHeader::T_BASIC:
+	{
+		cam.SetCamType(Camera::CamType::BASIC);
+		cam.playerIndex = 0;
+		cam.Update();
+		break;
+	}
+	case MapHeader::T_FIGHT:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		break;
+	}
+	}
 	/*if ( != NULL)
 	{
 	cam.UpdateVS(GetPlayer(0), GetPlayer(1));
 	}
 	else*/
-	{
-		if (ggpo == NULL)
-		{
-			cam.Update(GetPlayer(0));
-		}
-		else
-		{
-			int handle = ngs->local_player_handle - 1;
-			if (handle < 0)
-				handle = 0; //sync test
-			cam.Update(GetPlayer(handle));
-		}
-	}
+	//{
+	//	if (ggpo == NULL)
+	//	{
+	//		cam.SetCamType(Camera::CamType::BASIC);
+	//		cam.playerIndex = 0;
+	//		cam.Update();
+	//	}
+	//	else
+	//	{
+	//		cam.SetCamType(Camera::CamType::FIGHTING);
+	//		int handle = ngs->local_player_handle - 1;
+	//		if (handle < 0)
+	//			handle = 0; //sync test
+	//		cam.playerIndex = handle;
+	//		cam.Update();
+	//	}
+	//}
 
 	Vector2f camPos = cam.GetPos();
 	double camWidth = 960 * cam.GetZoom();

@@ -722,7 +722,7 @@ struct Actor : QuadTreeCollider,
 	int currHurtboxFrame;
 
 	HitboxInfo *currHitboxInfo;
-	std::unordered_map<int, HitboxInfo> hitboxInfos;
+	std::unordered_map<int, HitboxInfo[2]> hitboxInfos;
 	HitboxInfo *currVSHitboxInfo;
 	CollisionBody *fairHitboxes[3];
 	CollisionBody *uairHitboxes[3];
@@ -847,7 +847,9 @@ struct Actor : QuadTreeCollider,
 	void LoadHitboxes();
 	void SetupHitboxInfo(
 		json &j, const std::string &name,
-		HitboxInfo &hi);
+		HitboxInfo *hi);
+	void SetupHitboxLevelInfo(
+		json &j, HitboxInfo &hi);
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
