@@ -26,23 +26,23 @@ void FightHUD::Update()
 
 	Color p0Color = Color::Green;
 	float mh = fm->maxHealth;
-	if (fm->data.p0Health < mh * .67)
-	{
-		p0Color = Color::Yellow;
-	}
-	else if (fm->data.p0Health < mh / 3)
+	if (fm->data.p0Health < mh * 33)
 	{
 		p0Color = Color::Red;
 	}
+	else if (fm->data.p0Health < mh * .67)
+	{
+		p0Color = Color::Yellow;
+	}
 
 	Color p1Color = Color::Green;
-	if (fm->data.p1Health < mh * .67)
-	{
-		p1Color = Color::Yellow;
-	}
-	else if (fm->data.p1Health < mh / 3)
+	if (fm->data.p1Health < mh * .33)
 	{
 		p1Color = Color::Red;
+	}
+	else if (fm->data.p1Health < mh * .67)
+	{
+		p1Color = Color::Yellow;
 	}
 	
 	p0HealthRect.setSize(Vector2f(700 * (fm->data.p0Health / mh), 30));

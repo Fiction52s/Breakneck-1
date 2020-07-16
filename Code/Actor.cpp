@@ -4087,10 +4087,16 @@ void Actor::ProcessReceivedHit()
 			if (actorIndex == 0)
 			{
 				fm->data.p0Health -= receivedHit->damage;
+				if (fm->data.p0Health < 0)
+				{
+					fm->data.p0Health = 0;
+				}
 			}
 			else if (actorIndex == 1)
 			{
 				fm->data.p1Health -= receivedHit->damage;
+				if (fm->data.p1Health < 0)
+					fm->data.p1Health = 0;
 			}
 		}
 		else if (kinRing != NULL)
