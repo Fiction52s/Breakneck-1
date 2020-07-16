@@ -4065,7 +4065,7 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 
 	if (DIChangesMagnitude)
 	{
-		cout << "mod: " << modDir.x << ", " << modDir.y << "\n";
+		//cout << "mod: " << modDir.x << ", " << modDir.y << "\n";
 		return kbVec + modDir;
 	}
 	else
