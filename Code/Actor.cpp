@@ -151,7 +151,6 @@ void Actor::PopulateState(PState *ps)
 	ps->stunBufferedDash = stunBufferedDash;
 	ps->stunBufferedAttack = stunBufferedAttack;
 
-	ps->attackingHitlag = attackingHitlag;
 	ps->hitlagFrames = hitlagFrames;
 	ps->hitstunFrames = hitstunFrames;
 	ps->setHitstunFrames = setHitstunFrames;
@@ -297,7 +296,6 @@ void Actor::PopulateFromState(PState *ps)
 	stunBufferedDash = ps->stunBufferedDash;
 	stunBufferedAttack = ps->stunBufferedAttack;
 
-	attackingHitlag = ps->attackingHitlag;
 	hitlagFrames = ps->hitlagFrames;
 	hitstunFrames = ps->hitstunFrames;
 	setHitstunFrames = ps->setHitstunFrames;
@@ -3172,8 +3170,6 @@ void Actor::LoadHitboxes()
 	is >> j;
 
 	DIFactor = j["DIFactor"];
-	//DIChangesMagnitude = j["DIChangesMagnitude"];
-	DIChangesMagnitude = true;
 
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
 	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
@@ -4057,14 +4053,7 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 	modDir = normalize(modDir);
 	modDir *= len * DIFactor;
 
-	if (DIChangesMagnitude)
-	{
-		return kbVec + modDir;
-	}
-	else
-	{
-		return normalize(kbVec + modDir) * len;
-	}
+	return kbVec + modDir;
 }
 
 void Actor::ProcessReceivedHit()
@@ -4073,7 +4062,6 @@ void Actor::ProcessReceivedHit()
 	{
 		assert(action != DEATH);
 
-		attackingHitlag = false;
 		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
@@ -12209,7 +12197,7 @@ void Actor::UpdatePostPhysics()
 			UpdateSprite();
 			return;
 		}
-		else if( !attackingHitlag ) //defender DI only
+		else
 		{
 			velocity = GetAdjustedKnockback(velocity);
 		}
@@ -15020,7 +15008,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 
 	hitlagFrames = currHitboxInfo->hitlagFrames;
-	attackingHitlag = true;
+
 
 	flashColor = c;	
 	//flashFrames = hitParams->flashFrames + 1;
