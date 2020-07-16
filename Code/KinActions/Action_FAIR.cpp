@@ -89,7 +89,7 @@ void Actor::FAIR_UpdateSprite()
 
 void Actor::FAIR_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::FAIR_TimeIndFrameInc()

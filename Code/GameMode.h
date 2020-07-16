@@ -6,6 +6,7 @@ struct MultiplayerBase;
 struct BasicAirEnemyParams;
 struct Enemy;
 struct HUD;
+struct Gator;
 
 struct GameMode
 {
@@ -86,10 +87,15 @@ struct FightMode : GameMode
 
 	MyData data;
 
+	BasicAirEnemyParams *gatorParams;
+	Gator *testGator;
+
 	int maxHealth;
 	int meterSection;
 	int numMeterSections;
 
+	FightMode();
+	~FightMode();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBuffer(unsigned char *buf);

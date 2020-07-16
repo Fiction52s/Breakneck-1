@@ -160,7 +160,7 @@ void Actor::STANDN_UpdateSprite()
 
 void Actor::STANDN_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::STANDN_TimeIndFrameInc()

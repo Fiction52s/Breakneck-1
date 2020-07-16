@@ -46,9 +46,12 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 
+
 #include "GameMode.h"
 
 #include "GGPO.h"
+
+#include "Enemy_Gator.h"
 
 using namespace sf;
 using namespace std;
@@ -749,11 +752,6 @@ void Actor::SetupExtraTilesets()
 		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
 	}
-
-	ts_testLevel2Super = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
-	testLevel2Super.setTexture(*ts_testLevel2Super->texture);
-	testLevel2Super.setOrigin(testLevel2Super.getLocalBounds().width / 2,
-		testLevel2Super.getLocalBounds().height / 2);
 }
 
 int Actor::GetActionLength(int a)
@@ -1924,6 +1922,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SWINGSTUN_GetActionLength,
 		&Actor::SWINGSTUN_GetTileset);
 
+	SetupFuncsForAction(TESTSUPER,
+		&Actor::TESTSUPER_Start,
+		&Actor::TESTSUPER_End,
+		&Actor::TESTSUPER_Change,
+		&Actor::TESTSUPER_Update,
+		&Actor::TESTSUPER_UpdateSprite,
+		&Actor::TESTSUPER_TransitionToAction,
+		&Actor::TESTSUPER_TimeIndFrameInc,
+		&Actor::TESTSUPER_TimeDepFrameInc,
+		&Actor::TESTSUPER_GetActionLength,
+		&Actor::TESTSUPER_GetTileset);
+
 	SetupFuncsForAction(UAIR,
 		&Actor::UAIR_Start,
 		&Actor::UAIR_End,
@@ -2053,7 +2063,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
 	LoadHitboxes();
 
 	superActiveLimit = 180;
@@ -4844,9 +4853,9 @@ void Actor::UpdatePrePhysics()
 
 	if (currInput.leftShoulder && !prevInput.leftShoulder)
 	{
-		if (superLevelCounter == 0)
+		if (superLevelCounter < 2 )
 		{
-			superLevelCounter = 1;
+			superLevelCounter++;
 			lastSuperPressFrame = sess->totalGameFrames;
 		}
 	}
@@ -10318,10 +10327,14 @@ bool Actor::CheckRightStickSwing()
 	return rightStickSwing;
 }
 
+void Actor::ResetSuperLevel()
+{
+	superLevelCounter = 0;
+}
+
 void Actor::SetActionSuperLevel()
 {
 	currActionSuperLevel = superLevelCounter;
-	superLevelCounter = 0;
 }
 
 bool Actor::IsGroundAttack(int a)

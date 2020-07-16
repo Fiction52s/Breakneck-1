@@ -6,6 +6,10 @@ using namespace std;
 void Actor::UAIR_Start()
 {
 	SetActionSuperLevel();
+	if (currActionSuperLevel == 2)
+	{
+		SetAction(TESTSUPER);
+	}
 }
 
 void Actor::UAIR_End()
@@ -87,7 +91,7 @@ void Actor::UAIR_UpdateSprite()
 
 void Actor::UAIR_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::UAIR_TimeIndFrameInc()

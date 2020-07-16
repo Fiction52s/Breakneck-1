@@ -159,7 +159,7 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 
 void Actor::STEEPCLIMBATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::STEEPCLIMBATTACK_TimeIndFrameInc()

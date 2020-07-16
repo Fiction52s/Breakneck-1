@@ -1449,6 +1449,11 @@ void Enemy::Draw(sf::RenderTarget *target)
 			currShield->Draw(target);
 		}
 	}
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->Draw(target);
+	}
 }
 
 void Enemy::UpdateZoneSprite()
@@ -1728,8 +1733,11 @@ int Enemy::SetLaunchersStartIndex(int ind)
 	int currIndex = ind;
 	for (int i = 0; i < numLaunchers; ++i)
 	{
-		launchers[i]->SetStartIndex(currIndex);
-		currIndex += launchers[i]->totalBullets;
+		if (!launchers[i]->drawOwnBullets)
+		{
+			launchers[i]->SetStartIndex(currIndex);
+			currIndex += launchers[i]->totalBullets;
+		}
 	}
 
 	return currIndex;

@@ -137,6 +137,7 @@ struct CopycatBullet : BasicBullet
 
 struct Launcher
 {
+	int playerIndex;
 	int bulletTilesetIndex;
 	BasicBullet::BType bulletType;
 	Launcher(LauncherEnemy *handler,
@@ -149,7 +150,8 @@ struct Launcher
 		int maxFramesToLive,
 		bool hitTerrain = true,
 		int wavelength = 0,
-		double amplitude = 0.0);
+		double amplitude = 0.0,
+		Tileset *ts_myTileset = NULL );
 	Launcher(LauncherEnemy *handler,
 		int maxFramesToLive);
 	~Launcher();
@@ -179,8 +181,12 @@ struct Launcher
 		BasicBullet *&list);
 	void SetGravity(sf::Vector2<double> &grav);
 	void SetBulletSpeed(double speed);
-	LauncherEnemy *handler;
+	void Draw(sf::RenderTarget *target);
+	sf::Vertex *bulletVA;
 
+	LauncherEnemy *handler;
+	Tileset *ts_bullet;
+	bool drawOwnBullets;
 	Session *sess;
 	int totalBullets;
 	int perShot;

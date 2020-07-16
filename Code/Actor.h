@@ -21,6 +21,7 @@
 #include "nlohmann\json.hpp"
 #include "Grass.h"
 
+
 struct PState;
 
 struct EditSession;
@@ -254,6 +255,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_FADE_INTO_NEXUS,
 		SEQ_TURNFACE,
 		GETSHARD,
+		TESTSUPER,
 		Count
 	};
 
@@ -387,7 +389,7 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedDash;
 	int stunBufferedAttack;
 
-	bool moretest;
+	//bool moretest;
 	bool attackingHitlag; //sometimes causes memory problems
 	//some kind of earlier memory problem.
 	int hitlagFrames;
@@ -840,8 +842,7 @@ struct Actor : QuadTreeCollider,
 	double DIFactor;
 	bool DIChangesMagnitude;
 
-	Tileset *ts_testLevel2Super;
-	sf::Sprite testLevel2Super;
+
 	
 
 	Actor( GameSession *owner, 
@@ -869,6 +870,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody * GetBubbleHitbox(int index);
 
 	void SetActionSuperLevel();
+	void ResetSuperLevel();
 	bool CanTech();
 	void CreateKeyExplosion();
 	void CreateGateExplosion();
@@ -2170,6 +2172,17 @@ struct Actor : QuadTreeCollider,
 	void SWINGSTUN_TimeDepFrameInc();
 	int SWINGSTUN_GetActionLength();
 	Tileset * SWINGSTUN_GetTileset();
+
+	void TESTSUPER_Start();
+	void TESTSUPER_End();
+	void TESTSUPER_Change();
+	void TESTSUPER_Update();
+	void TESTSUPER_UpdateSprite();
+	void TESTSUPER_TransitionToAction(int a);
+	void TESTSUPER_TimeIndFrameInc();
+	void TESTSUPER_TimeDepFrameInc();
+	int TESTSUPER_GetActionLength();
+	Tileset * TESTSUPER_GetTileset();
 
 	void UAIR_Start();
 	void UAIR_End();

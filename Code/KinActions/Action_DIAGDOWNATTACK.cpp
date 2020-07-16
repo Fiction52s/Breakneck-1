@@ -96,7 +96,7 @@ void Actor::DIAGDOWNATTACK_UpdateSprite()
 
 void Actor::DIAGDOWNATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::DIAGDOWNATTACK_TimeIndFrameInc()

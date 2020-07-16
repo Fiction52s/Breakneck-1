@@ -179,7 +179,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 
 void Actor::STEEPSLIDEATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::STEEPSLIDEATTACK_TimeIndFrameInc()

@@ -2,9 +2,22 @@
 #include "GameMode.h"
 #include "Actor.h"
 #include "HUD.h"
+#include "Enemy_Gator.h"
 
 using namespace std;
 using namespace sf;
+
+FightMode::FightMode()
+{
+	gatorParams = new BasicAirEnemyParams(sess->types["gator"], 1);
+	gatorParams->CreateMyEnemy();
+	testGator = (Gator*)gatorParams->myEnemy;
+}
+
+FightMode::~FightMode()
+{
+	delete gatorParams;
+}
 
 int FightMode::GetNumStoredBytes()
 {
@@ -23,7 +36,6 @@ void FightMode::SetFromBuffer(unsigned char *buf)
 	memcpy(&data, buf, sizeof(MyData));
 }
 
-
 void FightMode::Setup()
 {
 	maxHealth = 100;
@@ -33,6 +45,8 @@ void FightMode::Setup()
 
 void FightMode::StartGame()
 {
+	testGator->Reset();
+
 	data.p0Health = maxHealth;
 	data.p1Health = maxHealth;
 	data.p0Meter = 0;

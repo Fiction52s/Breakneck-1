@@ -93,7 +93,7 @@ void Actor::DIAGUPATTACK_UpdateSprite()
 
 void Actor::DIAGUPATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::DIAGUPATTACK_TimeIndFrameInc()

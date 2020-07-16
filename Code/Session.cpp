@@ -565,6 +565,8 @@ void Session::AddW4Enemies()
 
 void Session::AddW5Enemies()
 {
+	AddBasicAerialWorldEnemy("gator", 5, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
 	//AddWorldEnemy("hungrycomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 	//	GetTileset("Enemies/comboer_128x128.png", 128, 128));

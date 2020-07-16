@@ -32,14 +32,29 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	int p_maxFramesToLive,
 	bool hitTerrain,
 	int p_wavelength,
-	double p_amplitude)
+	double p_amplitude,
+	Tileset *ts )
 	:totalBullets(numTotalBullets), perShot(bulletsPerShot),
 	facingDir(direction), angleSpread(p_angleSpread),
 	position(p_position), handler(p_handler),
 	def_e(NULL)
 {
-
+	playerIndex = 0;
 	sess = Session::GetSession();
+
+	ts_bullet = ts;
+	if (ts_bullet != NULL)
+	{
+		drawOwnBullets = true;
+	}
+	else
+	{
+		ts_bullet = sess->ts_basicBullets;
+		drawOwnBullets = false;
+	}
+
+	bulletVA = NULL;
+	
 
 	skipPlayerCollideForSubstep = false;
 	bulletType = p_bulletType;
@@ -52,8 +67,12 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	//increment the global counter
 	//+= numTotalBullets;
 	int startIndex = 0;
-
-	startIndex = sess->totalNumberBullets;
+	
+	if (!drawOwnBullets)
+	{
+		startIndex = sess->totalNumberBullets;
+	}
+	
 
 	activeBullets = NULL;
 
@@ -137,9 +156,14 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		inactiveBullets = temp;
 	}
 	
-	if (sess->IsSessTypeGame())
+	if (sess->IsSessTypeGame() && !drawOwnBullets )
 	{
 		sess->totalNumberBullets = startIndex;
+	}
+
+	if (drawOwnBullets)
+	{
+		bulletVA = new Vertex[numTotalBullets];
 	}
 
 	hitboxInfo = new HitboxInfo;
@@ -160,6 +184,14 @@ void Launcher::SetStartIndex(int ind)
 		curr->SetIndex(currIndex);
 		curr = curr->next;
 		++currIndex;
+	}
+}
+
+void Launcher::Draw(sf::RenderTarget *target)
+{
+	if (drawOwnBullets)
+	{
+		target->draw(bulletVA, 4 * totalBullets, sf::Quads, ts_bullet->texture);
 	}
 }
 
@@ -222,6 +254,9 @@ Launcher::~Launcher()
 		curr = cn;
 	}
 	delete hitboxInfo;
+
+	if (bulletVA != NULL)
+		delete[] bulletVA;
 }
 
 void Launcher::DeactivateAllBullets()
@@ -548,13 +583,21 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	slowCounter = 1;
 	bounceCount = 0;
 
-	Vertex *bva = launcher->sess->bigBulletVA;
+	Vertex *bva;
+	if (launcher->drawOwnBullets)
+	{
+		bva = launcher->bulletVA;
+	}
+	else
+	{
+		bva = launcher->sess->bigBulletVA;
+	}
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
 	bva[index * 4 + 3].position = Vector2f(0, 0);
 
-	double len = length(pos - launcher->sess->GetPlayerPos(0));
+	double len = length(pos - launcher->sess->GetPlayerPos(launcher->playerIndex));
 	if (len > MAX_VELOCITY * 2)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -562,7 +605,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		launcher->sess->GetPlayer(0)->highAccuracyHitboxes = true;
+		launcher->sess->GetPlayer(launcher->playerIndex)->highAccuracyHitboxes = true;
 	}
 	//transform.
 }
@@ -622,7 +665,15 @@ void BasicBullet::DebugDraw(sf::RenderTarget *target)
 void BasicBullet::ResetSprite()
 {
 	frame = 0;
-	Vertex *bva = launcher->sess->bigBulletVA;
+	Vertex *bva;
+	if (launcher->drawOwnBullets)
+	{
+		bva = launcher->bulletVA;
+	}
+	else
+	{
+		bva = launcher->sess->bigBulletVA;
+	}
 	bva[index * 4 + 0].position = Vector2f(0, 0);
 	bva[index * 4 + 1].position = Vector2f(0, 0);
 	bva[index * 4 + 2].position = Vector2f(0, 0);
@@ -631,7 +682,7 @@ void BasicBullet::ResetSprite()
 
 bool BasicBullet::PlayerSlowingMe()
 {
-	Actor *player = launcher->sess->GetPlayer(0);
+	Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 	for (int i = 0; i < player->maxBubbles; ++i)
 	{
 		if (player->bubbleFramesToLive[i] > 0)
@@ -662,7 +713,7 @@ void BasicBullet::UpdatePrePhysics()
 	}
 
 	velocity += gravity / (double)slowMultiple;
-	V2d playerPos = launcher->sess->GetPlayerPos(0);
+	V2d playerPos = launcher->sess->GetPlayerPos(launcher->playerIndex);
 
 	if (launcher->handler != NULL)
 	{
@@ -700,7 +751,7 @@ void BasicBullet::UpdatePrePhysics()
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		launcher->sess->GetPlayer(0)->highAccuracyHitboxes = true;
+		launcher->sess->GetPlayer(launcher->playerIndex)->highAccuracyHitboxes = true;
 	}
 }
 
@@ -789,7 +840,7 @@ void BasicBullet::UpdatePhysics()
 
 		if (!launcher->skipPlayerCollideForSubstep)
 		{
-			Actor *player = launcher->sess->GetPlayer(0);
+			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 			if (player->IntersectMyHurtboxes(hitBody))
 			{
 				//cout << "hit??" << endl;
@@ -900,7 +951,15 @@ void BasicBullet::HandleEntrant(QuadTreeEntrant *qte)
 
 void BasicBullet::UpdateSprite()
 {
-	sf::Vertex *VA = launcher->sess->bigBulletVA;
+	sf::Vertex *VA;
+	if (launcher->drawOwnBullets)
+	{
+		VA = launcher->bulletVA;
+	}
+	else
+	{
+		VA = launcher->sess->bigBulletVA;
+	}
 	//IntRect ir = ts->GetSubRect( (maxFramesToLive - framesToLive) % 5 );
 	Vector2f dims(32, 32);
 
@@ -967,12 +1026,12 @@ void BasicBullet::UpdateSprite()
 
 	int ind = 6 * launcher->bulletTilesetIndex + ((frame / animFactor) % 6);
 	//cout << "index: " << ind << ", frame: " << frame << endl;
-	IntRect sub = launcher->sess->ts_basicBullets->GetSubRect(ind);
+	IntRect sub = launcher->ts_bullet->GetSubRect(ind);
 	/*VA[index*4+0].color = Color::Red;
 	VA[index*4+1].color = Color::Red;
 	VA[index*4+2].color = Color::Red;
 	VA[index*4+3].color = Color::Red;*/
-
+	SetRectColor(VA + index * 4, Color::White);
 	VA[index * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
 	VA[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
 	VA[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
@@ -1065,7 +1124,7 @@ void SinBullet::UpdatePhysics()
 		hitBody.globalPosition = position;
 		hurtBody.globalPosition = position;
 
-		Actor *player = launcher->sess->GetPlayer(0);
+		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 		if (player->IntersectMyHurtboxes( hitBody ))
 		{
 			HitPlayer();

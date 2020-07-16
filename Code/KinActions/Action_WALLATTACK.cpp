@@ -127,7 +127,7 @@ void Actor::WALLATTACK_UpdateSprite()
 
 void Actor::WALLATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::WALLATTACK_TimeIndFrameInc()

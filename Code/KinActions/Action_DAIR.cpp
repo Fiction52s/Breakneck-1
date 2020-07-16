@@ -101,7 +101,7 @@ void Actor::DAIR_UpdateSprite()
 
 void Actor::DAIR_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::DAIR_TimeIndFrameInc()

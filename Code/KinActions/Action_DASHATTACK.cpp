@@ -162,7 +162,7 @@ void Actor::DASHATTACK_UpdateSprite()
 
 void Actor::DASHATTACK_TransitionToAction(int a)
 {
-
+	ResetSuperLevel();
 }
 
 void Actor::DASHATTACK_TimeIndFrameInc()
