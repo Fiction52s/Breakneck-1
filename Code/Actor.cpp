@@ -3170,6 +3170,7 @@ void Actor::LoadHitboxes()
 	is >> j;
 
 	DIFactor = j["DIFactor"];
+	DIChangesMagnitude = true;
 
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
 	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
@@ -4053,7 +4054,15 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 	modDir = normalize(modDir);
 	modDir *= len * DIFactor;
 
-	return kbVec + modDir;
+	if (DIChangesMagnitude)
+	{
+		return kbVec + modDir;
+	}
+	else
+	{
+		return normalize(kbVec + modDir) * len;
+	}
+	
 }
 
 void Actor::ProcessReceivedHit()
@@ -4062,6 +4071,7 @@ void Actor::ProcessReceivedHit()
 	{
 		assert(action != DEATH);
 
+		attackingHitlag = false;
 		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
 		hitstunFrames = receivedHit->hitstunFrames;
 		setHitstunFrames = hitstunFrames;
@@ -12199,7 +12209,10 @@ void Actor::UpdatePostPhysics()
 		}
 		else
 		{
-			velocity = GetAdjustedKnockback(velocity);
+			if (!attackingHitlag)
+			{
+				velocity = GetAdjustedKnockback(velocity);
+			}
 		}
 	}
 
@@ -15008,7 +15021,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 
 	hitlagFrames = currHitboxInfo->hitlagFrames;
-
+	attackingHitlag = true;
 
 	flashColor = c;	
 	//flashFrames = hitParams->flashFrames + 1;
