@@ -387,7 +387,9 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedDash;
 	int stunBufferedAttack;
 
-	//bool attackingHitlag;
+	bool moretest;
+	bool attackingHitlag; //sometimes causes memory problems
+	//some kind of earlier memory problem.
 	int hitlagFrames;
 	int hitstunFrames;
 	int setHitstunFrames;
@@ -837,7 +839,10 @@ struct Actor : QuadTreeCollider,
 	
 	double DIFactor;
 	bool DIChangesMagnitude;
-	bool attackingHitlag;
+
+	Tileset *ts_testLevel2Super;
+	sf::Sprite testLevel2Super;
+	
 
 	Actor( GameSession *owner, 
 		EditSession *editOwner, int actorIndex );

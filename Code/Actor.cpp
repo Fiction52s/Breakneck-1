@@ -213,6 +213,8 @@ void Actor::PopulateState(PState *ps)
 	ps->lastSuperPressFrame = lastSuperPressFrame;
 	ps->superLevelCounter = superLevelCounter;
 	ps->currActionSuperLevel = currActionSuperLevel;
+
+	ps->attackingHitlag = attackingHitlag;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -358,6 +360,8 @@ void Actor::PopulateFromState(PState *ps)
 	lastSuperPressFrame = ps->lastSuperPressFrame;
 	superLevelCounter = ps->superLevelCounter;
 	currActionSuperLevel = ps->currActionSuperLevel;
+
+	attackingHitlag = ps->attackingHitlag;
 }
 
 
@@ -745,6 +749,11 @@ void Actor::SetupExtraTilesets()
 		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
 	}
+
+	ts_testLevel2Super = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	testLevel2Super.setTexture(*ts_testLevel2Super->texture);
+	testLevel2Super.setOrigin(testLevel2Super.getLocalBounds().width / 2,
+		testLevel2Super.getLocalBounds().height / 2);
 }
 
 int Actor::GetActionLength(int a)
@@ -4056,6 +4065,7 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 
 	if (DIChangesMagnitude)
 	{
+		cout << "mod: " << modDir.x << ", " << modDir.y << "\n";
 		return kbVec + modDir;
 	}
 	else
@@ -11319,6 +11329,7 @@ void Actor::PhysicsResponse()
 
 			pTarget->ApplyHit( currVSHitboxInfo );
 
+			attackingHitlag = true;
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;
 			//need to work these in later for hitlag, they are only here for testing for now.
 			currAttackHit = true;
