@@ -26,7 +26,7 @@ void FightHUD::Update()
 
 	Color p0Color = Color::Green;
 	float mh = fm->maxHealth;
-	if (fm->data.p0Health < mh * 33)
+	if (fm->data.p0Health < mh * .33)
 	{
 		p0Color = Color::Red;
 	}

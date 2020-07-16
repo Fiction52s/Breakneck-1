@@ -387,6 +387,7 @@ struct Actor : QuadTreeCollider,
 	bool stunBufferedDash;
 	int stunBufferedAttack;
 
+	bool attackingHitlag;
 	int hitlagFrames;
 	int hitstunFrames;
 	int setHitstunFrames;
@@ -835,6 +836,7 @@ struct Actor : QuadTreeCollider,
 	int climbBoostLimit;
 	
 	double DIFactor;
+	bool DIChangesMagnitude;
 
 
 	Actor( GameSession *owner, 
