@@ -4025,9 +4025,11 @@ void Actor::ReverseVerticalInputsWhenOnCeiling()
 	}
 }
 
-V2d Actor::GetKnockbackDir(const V2d &kbDir)
+V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 {
-	V2d newDir = kbDir;
+	double len = length(kbVec);
+	double DIFactor = .3;
+
 	V2d modDir(0, 0);
 	if (currInput.LUp())
 	{
@@ -4046,14 +4048,10 @@ V2d Actor::GetKnockbackDir(const V2d &kbDir)
 		modDir.x = 1;
 	}
 
-	double currDIFactor = .5;
-	if (modDir.x != 0 || modDir.y != 0)
-	{
-		modDir = normalize(modDir) * currDIFactor;
-		newDir = kbDir + modDir;
-	}	
+	modDir = normalize(modDir);
+	modDir *= len * DIFactor;
 
-	return newDir;
+	return kbVec + modDir;
 }
 
 void Actor::ProcessReceivedHit()
@@ -10651,8 +10649,7 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 	frame = 0;
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->knockback
-			* GetKnockbackDir(receivedHit->kbDir);
+		velocity = receivedHit->knockback * receivedHit->kbDir;
 	}
 	else
 	{
@@ -10745,8 +10742,7 @@ void Actor::HitWhileAerial()
 	frame = 0;
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->knockback
-			* GetKnockbackDir(receivedHit->kbDir);
+		velocity = receivedHit->knockback + receivedHit->kbDir;
 		//velocity = receivedHit->knockback * receivedHit->kbDir;
 	}
 	else
@@ -12179,6 +12175,10 @@ void Actor::UpdatePostPhysics()
 		{
 			UpdateSprite();
 			return;
+		}
+		else
+		{
+			velocity = GetAdjustedKnockback(velocity);
 		}
 	}
 

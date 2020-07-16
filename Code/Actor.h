@@ -841,7 +841,7 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 
-	V2d GetKnockbackDir(const V2d &kbDir);
+	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
 
 	void LoadHitboxes();
