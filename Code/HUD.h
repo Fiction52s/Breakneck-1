@@ -126,6 +126,11 @@ struct HUD
 
 struct FightHUD : HUD
 {
+	sf::RectangleShape p0HealthRect;
+	sf::RectangleShape p1HealthRect;
+	sf::RectangleShape p0MeterRect[6];
+	sf::RectangleShape p1MeterRect[6];
+
 	FightHUD();
 	~FightHUD();
 	void Draw(sf::RenderTarget *target);

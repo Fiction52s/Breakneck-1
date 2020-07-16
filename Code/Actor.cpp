@@ -46,6 +46,7 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 
+#include "GameMode.h"
 
 #include "GGPO.h"
 
@@ -3168,6 +3169,8 @@ void Actor::LoadHitboxes()
 	json j;
 	is >> j;
 
+	DIFactor = j["DIFactor"];
+
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
 	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
 	SetupHitboxInfo(j, "uair", hitboxInfos[UAIR]);
@@ -4028,7 +4031,6 @@ void Actor::ReverseVerticalInputsWhenOnCeiling()
 V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 {
 	double len = length(kbVec);
-	double DIFactor = .3;
 
 	V2d modDir(0, 0);
 	if (currInput.LUp())
@@ -4079,8 +4081,21 @@ void Actor::ProcessReceivedHit()
 
 		ActivateSound(S_HURT);
 
-		if (kinRing != NULL)
+		if (sess->GetGameMode() == MapHeader::T_FIGHT)
+		{
+			FightMode *fm = (FightMode*)sess->gameMode;
+			if (actorIndex == 0)
+			{
+				fm->data.p0Health -= receivedHit->damage;
+			}
+			else if (actorIndex == 1)
+			{
+				fm->data.p1Health -= receivedHit->damage;
+			}
+		}
+		else if (kinRing != NULL)
 			kinRing->powerRing->Drain(receivedHit->damage);
+		
 
 		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
 					   //bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
@@ -10742,7 +10757,7 @@ void Actor::HitWhileAerial()
 	frame = 0;
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->knockback + receivedHit->kbDir;
+		velocity = receivedHit->knockback * receivedHit->kbDir;
 		//velocity = receivedHit->knockback * receivedHit->kbDir;
 	}
 	else

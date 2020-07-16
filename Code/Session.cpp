@@ -5634,7 +5634,6 @@ bool Session::RunGameModeUpdate()
 
 		UpdateEnvShaders(); //havent tested at this position. should work fine.
 
-
 		totalGameFrames++;
 
 		accumulator -= TIMESTEP;

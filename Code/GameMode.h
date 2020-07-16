@@ -78,8 +78,17 @@ struct FightMode : GameMode
 {
 	struct MyData
 	{
-
+		int p0Health;
+		int p1Health;
+		int p0Meter;
+		int p1Meter;
 	};
+
+	MyData data;
+
+	int maxHealth;
+	int meterSection;
+	int numMeterSections;
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

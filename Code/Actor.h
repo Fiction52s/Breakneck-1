@@ -834,6 +834,7 @@ struct Actor : QuadTreeCollider,
 	int drainAmount;
 	int climbBoostLimit;
 	
+	double DIFactor;
 
 
 	Actor( GameSession *owner, 
