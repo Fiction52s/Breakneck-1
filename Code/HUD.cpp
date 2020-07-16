@@ -13,6 +13,17 @@
 using namespace sf;
 using namespace std;
 
+HUD::HUD()
+{
+	sess = Session::GetSession();
+	mini = new Minimap;
+}
+
+HUD::~HUD()
+{
+	delete mini;
+}
+
 RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 	:raceFight( rf )
 {
@@ -134,18 +145,7 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 
 AdventureHUD::AdventureHUD()
 {
-	sess = Session::GetSession();
-
-	mini = new Minimap; //adventureHUD itself follows the rule of parentGame
 	keyMarker = new KeyMarker;
-	/*if (sess->parentGame != NULL)
-	{
-		mini = sess->parentGame->adventureHUD->mini;
-	}
-	else
-	{
-		mini = new Minimap;
-	}*/
 
 	flyCountTextShowPos = Vector2f(1920 - 30, 10);
 	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);

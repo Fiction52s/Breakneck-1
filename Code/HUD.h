@@ -100,7 +100,40 @@ struct KinMask
 	
 };
 
-struct AdventureHUD
+struct HUD
+{
+	enum HUDType
+	{
+		ADVENTURE,
+		FIGHT,
+		Count
+	};
+
+	Session *sess;
+	HUDType hType;
+	Minimap *mini;
+
+	HUD();
+	virtual ~HUD();
+	virtual void Hide(int frames = 0) {}
+	virtual void Show(int frames = 0) {}
+	virtual void Draw(sf::RenderTarget *target) {}
+	virtual void Update() {}
+	virtual void Reset() {}
+	virtual bool IsHidden() { return false; }
+	virtual bool IsShown() { return true; }
+};
+
+struct FightHUD : HUD
+{
+	FightHUD();
+	~FightHUD();
+	void Draw(sf::RenderTarget *target);
+	void Update();
+	void Reset();
+};
+
+struct AdventureHUD : HUD
 {
 	enum State
 	{
@@ -109,16 +142,6 @@ struct AdventureHUD
 		EXITING,
 		HIDDEN
 	};
-
-	AdventureHUD();
-	~AdventureHUD();
-	void Hide(int frames = 0);
-	void Show(int frames = 0);
-	void Draw(sf::RenderTarget *target);
-	void Update();
-	void Reset();
-	bool IsHidden();
-	bool IsShown();
 
 	int processFrames;
 	bool show;
@@ -141,12 +164,23 @@ struct AdventureHUD
 
 	sf::Vector2f flyCountTextShowPos;
 	sf::Vector2f flyCountTextHidePos;
-	
+
 	Minimap *mini;
 	KinMask *kinMask;
 	KeyMarker *keyMarker;
 
-	Session *sess;
+	
+
+	AdventureHUD();
+	~AdventureHUD();
+	
+	void Hide(int frames = 0);
+	void Show(int frames = 0);
+	void Draw(sf::RenderTarget *target);
+	void Update();
+	void Reset();
+	bool IsHidden();
+	bool IsShown();
 };
 
 #endif

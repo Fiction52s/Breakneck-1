@@ -344,7 +344,7 @@ void CoyotePostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				//player->Wait();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;

@@ -145,7 +145,7 @@ void BirdPostFight2Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);
@@ -232,7 +232,7 @@ void BirdTigerApproachScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->Fade(true, 60, Color::Black);
@@ -260,7 +260,7 @@ void BirdTigerApproachScene::UpdateState()
 		if (IsLastFrame())
 		{
 			sess->cam.SetManual(false);
-			sess->adventureHUD->Show();
+			sess->hud->Show();
 		}
 		break;
 	}
@@ -412,7 +412,7 @@ void GatorPostFightScene::UpdateState()
 			}
 			else if (frame == 10)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				SetCameraShot("gatordeathcam");
 			}

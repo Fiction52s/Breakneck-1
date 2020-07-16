@@ -3874,7 +3874,7 @@ void Actor::HandleAirTrigger()
 		{
 			if (ground != NULL)
 			{
-				owner->adventureHUD->Hide(60);
+				owner->hud->Hide(60);
 				SetAction(AUTORUN);
 				frame = 0;
 				maxAutoRunSpeed = 25;
@@ -4234,8 +4234,13 @@ void Actor::SetKinMode(Mode m)
 
 void Actor::UpdateDrain()
 {
+	if (sess->GetGameMode() != MapHeader::T_BASIC)
+	{
+		return;
+	}
+
 	//change this soon. just so i can get the minimap running
-	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->adventureHUD->IsShown()
+	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->hud->IsShown()
 		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
 		if (sess->drain && kinMode == K_NORMAL
@@ -10511,7 +10516,11 @@ void Actor::HandleTouchedGate()
 						oldZone->ReformAllGates(g);
 					}
 
-					sess->adventureHUD->keyMarker->Reset();
+					if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+					{
+						AdventureHUD *ah = (AdventureHUD*)sess->hud;
+						ah->keyMarker->Reset();
+					}
 				}
 				sess->ActivateZone(newZone);
 				
@@ -12030,13 +12039,16 @@ void Actor::UpdatePlayerShader()
 {
 	if (kinMode == K_DESPERATION )
 	{
-		//cout << "sending this parameter! "<< endl;
 		sh.setUniform("despFrame", (float)despCounter);
 	}
 	else
 	{
+		float invinc = min(invincibleFrames, 1);
+		sh.setUniform("u_invincible", invinc);
 
-		sh.setUniform("despFrame", (float)-1);
+		float super = superLevelCounter;
+		sh.setUniform("u_super", super);
+		sh.setUniform("despFrame", -1.f);
 	}
 }
 
@@ -12886,7 +12898,8 @@ void Actor::AddToFlyCounter(int count)
 		flyCounter = flyCounter % 100;
 	}
 
-	sess->adventureHUD->flyCountText.setString("x" + to_string(flyCounter));
+	AdventureHUD *ah = sess->GetAdventureHUD();
+	if( ah != NULL ) ah->flyCountText.setString("x" + to_string(flyCounter));
 }
 
 void Actor::HandleEntrant( QuadTreeEntrant *qte )

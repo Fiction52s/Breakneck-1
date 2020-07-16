@@ -59,6 +59,7 @@ struct AbsorbParticles;
 
 struct Fader;
 struct Swiper;
+struct HUD;
 struct AdventureHUD;
 struct Barrier;
 
@@ -165,7 +166,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	ShipEnterScene *shipEnterScene;
 	ShipExitScene *shipExitScene;
 	GameState gameState;
-	AdventureHUD *adventureHUD;
+	HUD *hud;
 
 	Fader *fader;
 	Swiper *swiper;
@@ -697,6 +698,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void RestartGame() = 0;
 	int GetGameMode();
 	bool IsMapVersionNewerThanOrEqualTo(int ver1, int ver2);
+	AdventureHUD *GetAdventureHUD();
 };
 
 #endif

@@ -146,7 +146,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->Fade(true, 60, Color::Black);
@@ -170,7 +170,7 @@ void TigerAndBirdTunnelScene::UpdateState()
 		if (IsLastFrame())
 		{
 			sess->cam.SetManual(false);
-			sess->adventureHUD->Show();
+			sess->hud->Show();
 		}
 		break;
 	}
@@ -336,7 +336,7 @@ void SkeletonPostFightScene::UpdateState()
 			}
 			else if (IsLastFrame())
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				
 			}
@@ -562,7 +562,7 @@ void TigerPostFight2Scene::UpdateState()
 			}
 			else if (frame == 10)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				SetPlayerStandPoint("kinstand0", true);
 				SetCameraShot("tigerdeathcam");
 			}

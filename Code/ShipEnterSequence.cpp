@@ -104,7 +104,7 @@ void ShipEnterScene::Reset()
 void ShipEnterScene::ReturnToGame()
 {
 	sess->SetPlayerInputOn(true);
-	sess->adventureHUD->Show(60);
+	sess->hud->Show(60);
 	sess->cam.SetManual(false);
 	//owner->cam.EaseOutOfManual(5);
 }
@@ -113,7 +113,7 @@ void ShipEnterScene::UpdateState()
 {
 	if (frame == 0)
 	{
-		sess->adventureHUD->Hide();
+		sess->hud->Hide();
 		SetFlashGroup("staregroup");
 	}
 

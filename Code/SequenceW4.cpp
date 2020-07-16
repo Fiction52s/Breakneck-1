@@ -167,7 +167,7 @@ void CrawlerPostFight2Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);
@@ -405,7 +405,7 @@ void TigerPostFightScene::UpdateState()
 			}
 			else if (frame == 10)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				SetPlayerStandPoint("kinstand1", true);
 				SetCameraShot("birdrescuecam");
 			}
@@ -484,7 +484,7 @@ void BirdTigerAllianceScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->Fade(true, 60, Color::Black);
@@ -588,7 +588,7 @@ void BirdVSTigerScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->Fade(true, 60, Color::Black);
@@ -620,7 +620,7 @@ void BirdVSTigerScene::UpdateState()
 		if (IsLastFrame())
 		{
 			sess->cam.SetManual(false);
-			sess->adventureHUD->Show();
+			sess->hud->Show();
 		}
 		break;
 	}

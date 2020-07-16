@@ -1303,7 +1303,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	shipExitScene = NULL;
 
 	originalMusic = NULL;
-	adventureHUD = NULL;
+	hud = NULL;
 	gateMarkers = NULL;
 	topClouds = NULL;
 
@@ -1424,16 +1424,11 @@ Session::~Session()
 	}
 
 
-	if (parentGame == NULL && adventureHUD != NULL)
+	if (parentGame == NULL && hud != NULL)
 	{
-		delete adventureHUD;
-		adventureHUD = NULL;
+		delete hud;
+		hud = NULL;
 	}
-	/*if (parentGame == NULL && mini != NULL)
-	{
-		delete mini;
-		mini = NULL;
-	}*/
 
 	//---------------
 
@@ -3252,7 +3247,11 @@ void Session::SetupZones()
 	{
 		//cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
-		adventureHUD->keyMarker->Reset();
+
+		AdventureHUD *ah = GetAdventureHUD();
+		if( ah != NULL ) ah->keyMarker->Reset();
+		
+		
 	}
 
 
@@ -3886,31 +3885,32 @@ void Session::SetupHUD()
 {
 	if (parentGame != NULL)
 	{
-		adventureHUD = parentGame->adventureHUD;
+		hud = parentGame->hud;
 	}
-	else if(adventureHUD == NULL )
+	else
 	{
-		adventureHUD = new AdventureHUD;
+		if (hud == NULL)
+		{
+			hud = gameMode->CreateHUD();
+		}
 	}
-	/*else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && adventureHUD == NULL)
-		adventureHUD = new AdventureHUD;*/
 }
 
 void Session::DrawHUD(sf::RenderTarget *target)
 {
-	if (adventureHUD != NULL)
+	if (hud != NULL)
 	{
 		sf::View oldView = target->getView();
 		target->setView(uiView);
-		adventureHUD->Draw(target);
+		hud->Draw(target);
 		target->setView(oldView);
 	}
 }
 
 void Session::UpdateHUD()
 {
-	if (adventureHUD != NULL)
-		adventureHUD->Update();
+	if (hud != NULL)
+		hud->Update();
 }
 
 void Session::HitlagUpdate()
@@ -3969,7 +3969,11 @@ void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 void Session::CollectKey()
 {
 	GetPlayer(0)->numKeysHeld++;
-	adventureHUD->keyMarker->UpdateKeyNumbers();
+	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	{
+		AdventureHUD *ah = (AdventureHUD*)hud;
+		ah->keyMarker->UpdateKeyNumbers();
+	}
 }
 
 void Session::ResetAbsorbParticles()
@@ -5392,10 +5396,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 
 	DrawRaceFightScore(target);
-	/*if (adventureHUD != NULL)
-	{
-	adventureHUD->Draw(preScreenTex);
-	}*/
 
 	DrawScoreDisplay(target);
 
@@ -6243,4 +6243,14 @@ int Session::GetGameMode()
 bool Session::IsMapVersionNewerThanOrEqualTo(int ver1, int ver2)
 {
 	return (mapHeader->ver1 >= ver1 && mapHeader->ver2 >= ver2);
+}
+
+AdventureHUD *Session::GetAdventureHUD()
+{
+	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	{
+		return (AdventureHUD*)hud;
+	}
+
+	return NULL;
 }

@@ -5,6 +5,7 @@ struct Session;
 struct MultiplayerBase;
 struct BasicAirEnemyParams;
 struct Enemy;
+struct HUD;
 
 struct GameMode
 {
@@ -13,6 +14,7 @@ struct GameMode
 	Session *sess;
 	bool done;
 
+	virtual HUD *CreateHUD() { return NULL; }
 	virtual void StartGame() = 0;
 	virtual bool CheckVictoryConditions() = 0;
 	virtual void EndGame() = 0;
@@ -25,7 +27,11 @@ struct GameMode
 
 struct BasicMode : GameMode
 {
+
+
 	BasicMode();
+
+	HUD *CreateHUD();
 	void StartGame();
 	bool CheckVictoryConditions();
 	void EndGame();
@@ -78,7 +84,7 @@ struct FightMode : GameMode
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBuffer(unsigned char *buf);
-
+	HUD *CreateHUD();
 	void Setup();
 	void StartGame();
 	bool CheckVictoryConditions();

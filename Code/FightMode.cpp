@@ -1,6 +1,7 @@
 #include "Session.h"
 #include "GameMode.h"
 #include "Actor.h"
+#include "HUD.h"
 
 using namespace std;
 using namespace sf;
@@ -26,6 +27,11 @@ void FightMode::Setup()
 }
 void FightMode::StartGame()
 {
+}
+
+HUD *FightMode::CreateHUD()
+{
+	return new FightHUD;
 }
 
 bool FightMode::CheckVictoryConditions()

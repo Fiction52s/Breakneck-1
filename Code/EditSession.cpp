@@ -728,7 +728,10 @@ void EditSession::TestPlayerMode()
 			currentZoneNode = zoneTree;
 			ActivateZone(originalZone, true);
 			//gateMarkers->SetToZone(currentZone);
-			adventureHUD->keyMarker->Reset();
+			
+			AdventureHUD *ah = GetAdventureHUD();
+			if( ah != NULL ) ah->keyMarker->Reset();
+			
 		}
 
 		/*for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -1095,7 +1098,9 @@ void EditSession::TestPlayerMode()
 		SetupGoalPulse();
 	}
 
-	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+
+	if( hud != NULL )
+		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
 	GetPlayer(0)->SetupDrain();
 
@@ -3501,6 +3506,16 @@ void EditSession::SetGameMode(int newMode)
 	}
 
 	mapHeader->gameMode = newMode;
+
+	if (hud != NULL)
+	{
+		delete hud;
+		hud = NULL;
+	}
+
+	SetupHUD();
+
+
 	UpdateNumPlayers();
 }
 
@@ -3612,10 +3627,6 @@ int EditSession::EditRun()
 		}*/
 	}
 
-	
-
-	
-
 
 	int gm = mapHeader->gameMode;
 	mapHeader->gameMode = -1;
@@ -3625,7 +3636,7 @@ int EditSession::EditRun()
 
 	reloadNew = false;
 
-	SetupHUD();
+	//SetupHUD();
 
 	
 	

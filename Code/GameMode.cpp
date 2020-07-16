@@ -2,6 +2,8 @@
 #include "GameMode.h"
 #include "Actor.h"
 #include "Enemy_MultiplayerBase.h"
+#include "HUD.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
@@ -34,6 +36,11 @@ bool BasicMode::CheckVictoryConditions()
 void BasicMode::EndGame()
 {
 	sess->EndLevel();
+}
+
+HUD *BasicMode::CreateHUD()
+{
+	return new AdventureHUD;
 }
 
 ReachEnemyBaseMode::ReachEnemyBaseMode()

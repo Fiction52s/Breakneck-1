@@ -189,7 +189,7 @@ void BirdPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				//player->Wait();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
@@ -226,7 +226,7 @@ void BirdCrawlerAllianceScene::SetupStates()
 void BirdCrawlerAllianceScene::ReturnToGame()
 {
 	sess->SetPlayerInputOn(true);
-	sess->adventureHUD->Show();
+	sess->hud->Show();
 	sess->cam.SetManual(false);
 	sess->Fade(true, 60, Color::Black);
 	
@@ -272,7 +272,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide();
+				sess->hud->Hide();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->Fade(true, 60, Color::Black);

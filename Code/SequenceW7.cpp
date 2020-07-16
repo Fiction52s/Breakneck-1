@@ -214,7 +214,7 @@ void BirdPostFight3Scene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);
@@ -374,7 +374,7 @@ void FinalSkeletonPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->adventureHUD->Hide(fadeFrames);
+				sess->hud->Hide(fadeFrames);
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);

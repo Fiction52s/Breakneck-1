@@ -1464,11 +1464,11 @@ bool GameSession::Load()
 	bool blackBorder[2];
 	bool topBorderOn = false;
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
-	adventureHUD->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+	hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
 
-	kinMapSpawnIcon.setTexture(*adventureHUD->mini->ts_miniIcons->texture);
-	kinMapSpawnIcon.setTextureRect(adventureHUD->mini->ts_miniIcons->GetSubRect(1));
+	kinMapSpawnIcon.setTexture(*hud->mini->ts_miniIcons->texture);
+	kinMapSpawnIcon.setTextureRect(hud->mini->ts_miniIcons->GetSubRect(1));
 	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
 		kinMapSpawnIcon.getLocalBounds().height / 2);
 
@@ -3228,9 +3228,9 @@ void GameSession::RestartLevel()
 	fader->Reset();
 	numKeysCollected = 0;
 
-	if (adventureHUD != NULL)
+	if (hud != NULL)
 	{
-		adventureHUD->Reset();
+		hud->Reset();
 	}
 
 	//crawlerFightSeq->Reset();
@@ -3310,8 +3310,9 @@ void GameSession::RestartLevel()
 		currentZoneNode = zoneTree;
 		ActivateZone(originalZone, true);
 		gateMarkers->SetToZone(currentZone);
-		adventureHUD->keyMarker->Reset();
-		
+
+		AdventureHUD *ah = GetAdventureHUD();
+		if (ah != NULL) ah->keyMarker->Reset();
 	}
 	//	originalZone->active = true;
 	//

@@ -211,7 +211,7 @@ void BasicBossScene::EntranceUpdate()
 		if (frame == 0)
 		{
 			sess->Fade(false, fadeFrames, Color::Black);
-			sess->adventureHUD->Hide(fadeFrames);
+			sess->hud->Hide(fadeFrames);
 			player->Wait();
 			sess->cam.SetManual(true);
 		}
@@ -226,7 +226,7 @@ void BasicBossScene::EntranceUpdate()
 	}
 	else if (entranceType == APPEAR)
 	{
-		//owner->adventureHUD->Hide(fadeFrames);
+		//owner->hud->Hide(fadeFrames);
 	}
 }
 
@@ -249,7 +249,7 @@ void BasicBossScene::SetPlayerStandDefaultPoint(bool fr)
 void BasicBossScene::ReturnToGame()
 {
 	sess->SetPlayerInputOn(true);
-	sess->adventureHUD->Show(60);
+	sess->hud->Show(60);
 	sess->cam.EaseOutOfManual(60);
 }
 

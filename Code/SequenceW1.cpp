@@ -112,7 +112,7 @@ bool TextTestSeq::Update()
 	{
 		player->SetAction(Actor::STAND);
 		player->frame = 0;
-		sess->adventureHUD->Show(60);
+		sess->hud->Show(60);
 		sess->cam.EaseOutOfManual(60);
 		//player->set
 		return false;
@@ -127,7 +127,7 @@ bool TextTestSeq::Update()
 		{
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30, CubicBezier());
 			conv->Show();
-			sess->adventureHUD->Hide(60);
+			sess->hud->Hide(60);
 		}
 
 		if (sess->GetCurrInput(0).A && !sess->GetPrevInput(0).A)
@@ -619,7 +619,7 @@ void GetAirdashPowerScene::UpdateState()
 		{
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->Fade(true, 60, Color::Black, true);
-			sess->adventureHUD->Show(60);
+			sess->hud->Show(60);
 			SaveFile *sf = sess->mainMenu->GetCurrentProgress();
 			if (sf != NULL)
 			{
