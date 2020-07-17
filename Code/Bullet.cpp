@@ -64,6 +64,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	maxFramesToLive = p_maxFramesToLive;
 	wavelength = p_wavelength;
 	amplitude = p_amplitude;
+	allBullets.resize(totalBullets);
 	//increment the global counter
 	//+= numTotalBullets;
 	int startIndex = 0;
@@ -130,6 +131,8 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		}
 	}
 
+	allBullets[0] = inactiveBullets;
+
 
 	for (int i = 1; i < numTotalBullets; ++i)
 	{
@@ -150,7 +153,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 			}
 		}
 
-
+		allBullets[i] = temp;
 		temp->next = inactiveBullets;
 		inactiveBullets->prev = temp;
 		inactiveBullets = temp;
@@ -173,6 +176,8 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+
+	bytesStoredPerBullet = inactiveBullets->GetNumStoredBytes();
 }
 
 void Launcher::SetStartIndex(int ind)
@@ -257,6 +262,44 @@ Launcher::~Launcher()
 
 	if (bulletVA != NULL)
 		delete[] bulletVA;
+}
+
+int Launcher::GetNumStoredBytes()
+{
+	return sizeof(MyData) + bytesStoredPerBullet * totalBullets;
+}
+
+void Launcher::StoreBytes(unsigned char *bytes)
+{
+	MyData d;
+	memset(&d, 0, sizeof(MyData));
+	d.inactiveBullets = inactiveBullets;
+	d.activeBullets = activeBullets;
+
+	memcpy(bytes, &d, sizeof(MyData));
+
+
+	bytes += sizeof(MyData);
+	for (int i = 0; i < totalBullets; ++i)
+	{
+		allBullets[i]->StoreBytes(bytes);
+		bytes += bytesStoredPerBullet;
+	}
+}
+void Launcher::SetFromBytes(unsigned char *bytes)
+{
+	MyData d;
+	memcpy(&d, bytes, sizeof(MyData));
+
+	inactiveBullets = d.inactiveBullets;
+	activeBullets = d.activeBullets;
+
+	bytes += sizeof(MyData);
+	for (int i = 0; i < totalBullets; ++i)
+	{
+		allBullets[i]->SetFromBytes(bytes);
+		bytes += bytesStoredPerBullet;
+	}
 }
 
 void Launcher::DeactivateAllBullets()
@@ -655,6 +698,48 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 void BasicBullet::SetIndex(int ind)
 {
 	index = ind;
+}
+
+int BasicBullet::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+void BasicBullet::StoreBytes(unsigned char *bytes)
+{
+	MyData d;
+	memset(&d, 0, sizeof(MyData));
+	d.prev = prev;
+	d.next = next;
+	d.gravity = gravity;
+	d.position = position;
+	d.velocity = velocity;
+	d.slowCounter = slowCounter;
+	d.active = active;
+	d.slowMultiple = slowMultiple;
+	d.framesToLive = framesToLive;
+	d.frame = frame;
+	d.transform = transform;
+	d.bounceCount = bounceCount;
+
+	memcpy(bytes, &d, sizeof(MyData));
+}
+
+void BasicBullet::SetFromBytes(unsigned char *bytes)
+{
+	MyData d;
+	memcpy(&d, bytes, sizeof(MyData));
+	prev = d.prev;
+	next = d.next;
+	gravity = gravity;
+	position = d.position;
+	velocity = d.velocity;
+	slowCounter = d.slowCounter;
+	active = d.active;
+	slowMultiple = d.slowMultiple;
+	framesToLive = d.framesToLive;
+	frame = d.frame;
+	transform = d.transform;
+	bounceCount = d.bounceCount;
 }
 
 void BasicBullet::DebugDraw(sf::RenderTarget *target)

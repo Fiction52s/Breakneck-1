@@ -3,6 +3,7 @@
 #include "MapHeader.h"
 #include "GameMode.h"
 #include "Enemy_Gator.h"
+#include <iostream>
 
 using namespace sf;
 using namespace std;
@@ -26,6 +27,7 @@ void Actor::TESTSUPER_Update()
 {
 	if (frame == 0 && slowCounter == 1)
 	{
+		//cout << "pausing for 30" << endl;
 		sess->Pause(30);
 		if (sess->GetGameMode() == MapHeader::T_FIGHT)
 		{

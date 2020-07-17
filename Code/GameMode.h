@@ -23,7 +23,7 @@ struct GameMode
 	bool IsDone() { return done; }
 	virtual int GetNumStoredBytes() { return 0; }
 	virtual void StoreBytes(unsigned char *bytes) {}
-	virtual void SetFromBuffer(unsigned char *buf) {}
+	virtual void SetFromBytes(unsigned char *bytes) {}
 };
 
 struct BasicMode : GameMode
@@ -64,7 +64,7 @@ struct ReachEnemyBaseMode : GameMode
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
-	void SetFromBuffer(unsigned char *buf);
+	void SetFromBytes(unsigned char *bytes);
 
 	ReachEnemyBaseMode();
 	~ReachEnemyBaseMode();
@@ -98,7 +98,7 @@ struct FightMode : GameMode
 	~FightMode();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
-	void SetFromBuffer(unsigned char *buf);
+	void SetFromBytes(unsigned char *bytes);
 	HUD *CreateHUD();
 	void Setup();
 	void StartGame();

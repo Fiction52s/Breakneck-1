@@ -277,8 +277,6 @@ void Actor::PopulateFromState(PState *ps)
 	inBubble = ps->inBubble;
 	oldInBubble = ps->oldInBubble;
 
-	
-
 	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
 		bubblePos[i] = ps->bubblePos[i];

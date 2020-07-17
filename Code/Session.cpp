@@ -3917,10 +3917,10 @@ void Session::UpdateHUD()
 
 void Session::HitlagUpdate()
 {
-	UpdateControllers();
-	UpdateAllPlayersInput();
+	//UpdateControllers();
+	//UpdateAllPlayersInput();
 
-	UpdatePlayersInHitlag();
+	//UpdatePlayersInHitlag();
 
 	UpdateEffects(true);
 
@@ -3932,7 +3932,9 @@ void Session::HitlagUpdate()
 
 	pauseFrames--;
 
-	accumulator -= TIMESTEP;
+	//cout << "hitlag update. pause frames is now: " << pauseFrames << endl;
+
+	
 }
 
 void Session::SetupAbsorbParticles()
@@ -5512,6 +5514,7 @@ bool Session::RunGameModeUpdate()
 		if (pauseFrames > 0)
 		{
 			HitlagUpdate(); //the full update while in hitlag
+			accumulator -= TIMESTEP;
 			continue;
 		}
 
@@ -5871,6 +5874,7 @@ bool Session::GGPORunGameModeUpdate()
 	if (pauseFrames > 0)
 	{
 		HitlagUpdate(); //the full update while in hitlag
+		ggpo_advance_frame(ggpo);
 		return true;
 	}
 
@@ -6132,6 +6136,7 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->activeEnemyList = activeEnemyList;
 	currSaveState->activeEnemyListTail = activeEnemyListTail;
 	currSaveState->inactiveEnemyList = inactiveEnemyList;
+	currSaveState->pauseFrames = pauseFrames;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -6155,19 +6160,20 @@ bool Session::SaveState(unsigned char **buffer,
 	return true;
 }
 
-bool Session::LoadState(unsigned char *buffer, int len)
+bool Session::LoadState(unsigned char *bytes, int len)
 {
 	int saveSize = sizeof(SaveGameState);
-	memcpy(currSaveState, buffer, saveSize);
+	memcpy(currSaveState, bytes, saveSize);
 
-	buffer += saveSize;
-	gameMode->SetFromBuffer(buffer);
+	bytes += saveSize;
+	gameMode->SetFromBytes(bytes);
 
 	//cout << "rollback. setting frame to: " << currSaveState->totalGameFrames << " from " << totalGameFrames << "\n";
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;
 	inactiveEnemyList = currSaveState->inactiveEnemyList;
 	activeEnemyListTail = currSaveState->activeEnemyListTail;
+	pauseFrames = currSaveState->pauseFrames;
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 

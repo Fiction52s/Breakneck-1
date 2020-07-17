@@ -19,10 +19,10 @@ struct MultiplayerProgressTarget : Enemy
 		HitboxInfo *receivedHit;
 		Enemy *prev;
 		Enemy *next;
-		Actor *receivedHitPlayer;
-		int numHealth;
 		int pauseFrames;
 		bool dead;
+		Actor *receivedHitPlayer;
+		int numHealth;
 		bool hitBy[4];
 	};
 
@@ -30,7 +30,7 @@ struct MultiplayerProgressTarget : Enemy
 	Tileset *ts;
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
-	void SetFromBuffer(unsigned char *buf);
+	void SetFromBytes(unsigned char *bytes);
 
 	HitboxInfo *IsHit(int pIndex);
 	void ProcessHit();

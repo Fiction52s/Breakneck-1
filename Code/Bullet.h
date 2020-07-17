@@ -47,56 +47,68 @@ struct BasicBullet : QuadTreeCollider
 		Count
 	};
 
-	BasicBullet(int indexVA, BType bType, Launcher *launcher);
-	void SetIndex(int ind);
-	BType bulletType;
+	struct MyData
+	{
+		BasicBullet *prev;
+		BasicBullet *next;
+		sf::Vector2<double> gravity;
+		sf::Vector2<double> position;
+		sf::Vector2<double> velocity;
+		int slowCounter;
+		bool active;
+		int slowMultiple;
+		int framesToLive;
+		int frame;
+		sf::Transform transform;
+		int bounceCount;
+	};
+
 	BasicBullet *prev;
 	BasicBullet *next;
+	sf::Vector2<double> gravity;
 	sf::Vector2<double> position;
-	//CollisionBox hurtBody;
+	sf::Vector2<double> velocity;
+	int slowCounter;
+	bool active;
+	int slowMultiple;
+	int framesToLive;
+	int frame;
+	sf::Transform transform;
+	int bounceCount;
+	
+	BType bulletType;
 	CollisionBox physBody;
 	CollisionBox hitBody;
+	Tileset *ts;
+	int index;
+	double numPhysSteps;
+	bool col;
+	Contact minContact;
+	sf::Vector2<double> tempVel;
+	Launcher *launcher;
+	
 
+	BasicBullet(int indexVA, BType bType, Launcher *launcher);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+
+	void SetIndex(int ind);
 	virtual void HandleEntrant(QuadTreeEntrant *qte);
 	virtual void UpdatePrePhysics();
-	virtual void Reset(
-		sf::Vector2<double> &pos,
-		sf::Vector2<double> &vel);
+	virtual void Reset(V2d &pos,V2d &vel);
 
 	void DebugDraw(sf::RenderTarget *target);
-
 	virtual void UpdatePhysics();
 	virtual void UpdateSprite();
 	virtual void UpdatePostPhysics();
 	virtual void ResetSprite();
 	bool ResolvePhysics(
-		sf::Vector2<double> vel);
+		V2d vel);
 	bool PlayerSlowingMe();
 	virtual bool HitTerrain();
 	void HitPlayer();
-	//CollisionBox physBody;
-	sf::Vector2<double> velocity;
-	int slowCounter;
-	bool active;
-	int slowMultiple;
-	//int maxFramesToLive;
-	int framesToLive;
-	//sf::VertexArray *va;
-	sf::Transform transform;
-	Tileset *ts;
-	int index;
-	int frame;
-	int bounceCount;
-
-	double numPhysSteps;
-	//sf::Vector2<double> tempadd;
-
-	bool col;
-	Contact minContact;
-	sf::Vector2<double> gravity;
-	//bool gravTowardsPlayer;
-	sf::Vector2<double> tempVel;
-	Launcher *launcher;
 };
 
 struct SinBullet : BasicBullet
@@ -137,9 +149,44 @@ struct CopycatBullet : BasicBullet
 
 struct Launcher
 {
+	struct MyData
+	{
+		BasicBullet *inactiveBullets;
+		BasicBullet *activeBullets;
+		//sf::Vector2<double> position;
+		//sf::Vector2<double> facingDir;
+	};
+
+	BasicBullet *inactiveBullets;
+	BasicBullet *activeBullets;
+	sf::Vector2<double> position;
+	sf::Vector2<double> facingDir;
+	
+	int bytesStoredPerBullet;
 	int playerIndex;
 	int bulletTilesetIndex;
+	bool interactWithTerrain;
+	sf::Vertex *bulletVA;
 	BasicBullet::BType bulletType;
+	LauncherEnemy *handler;
+	Tileset *ts_bullet;
+	bool drawOwnBullets;
+	Session *sess;
+	int totalBullets;
+	int perShot;
+	HitboxInfo *hitboxInfo;
+	double bulletSpeed;
+	double angleSpread;
+	double amplitude;
+	int wavelength;
+	int maxFramesToLive;
+	double maxBulletSpeed;
+	int def_framesToLive;
+	bool skipPlayerCollideForSubstep;
+	Edge* def_e;
+	sf::Vector2<double> def_pos;
+	std::vector<BasicBullet*> allBullets;
+
 	Launcher(LauncherEnemy *handler,
 		BasicBullet::BType bulletType,
 		int numTotalBullets,
@@ -155,15 +202,14 @@ struct Launcher
 	Launcher(LauncherEnemy *handler,
 		int maxFramesToLive);
 	~Launcher();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	int GetNumStoredBytes();
 	static double GetRadius(BasicBullet::BType bt);
 	static sf::Vector2f GetOffset(BasicBullet::BType bt);
-	void SetStartIndex(int ind);
-	//Launcher( LauncherEnemy *handler,
-	bool interactWithTerrain;
+	void SetStartIndex(int ind);	
 	void CapBulletVel(double speed);
 	void Reset();
-	BasicBullet *inactiveBullets;
-	BasicBullet *activeBullets;
 	void DeactivateBullet(BasicBullet *b);
 	void DeactivateAllBullets();
 	void UpdatePrePhysics();
@@ -171,7 +217,6 @@ struct Launcher
 		bool lowRes = false);
 	void UpdatePostPhysics();
 	void UpdateSprites();
-
 	BasicBullet * ActivateBullet();
 	int GetActiveCount();
 	void Fire();
@@ -182,84 +227,10 @@ struct Launcher
 	void SetGravity(sf::Vector2<double> &grav);
 	void SetBulletSpeed(double speed);
 	void Draw(sf::RenderTarget *target);
-	sf::Vertex *bulletVA;
-
-	LauncherEnemy *handler;
-	Tileset *ts_bullet;
-	bool drawOwnBullets;
-	Session *sess;
-	int totalBullets;
-	int perShot;
-	HitboxInfo *hitboxInfo;
-	double bulletSpeed;
-	sf::Vector2<double> position;
-	double angleSpread;
-	sf::Vector2<double> facingDir;
-	double amplitude;
-	int wavelength;
-	int maxFramesToLive;
-	double maxBulletSpeed;
-
 	void DebugDraw(sf::RenderTarget *target);
-
 	void SetDefaultCollision(int framesToLive,
 		Edge *e, sf::Vector2<double> &pos);
-	int def_framesToLive;
-	Edge* def_e;
-	bool skipPlayerCollideForSubstep;
-	sf::Vector2<double> def_pos;
-	//Launcher *next;
 };
 
-//struct Bullet : QuadTreeCollider
-//{
-//	Bullet(int indexVA, Launcher *launcher,
-//		double radius);
-//
-//	virtual void HandleEntrant(QuadTreeEntrant *qte);
-//	virtual void UpdatePrePhysics();
-//	virtual void Reset(
-//		sf::Vector2<double> &pos,
-//		sf::Vector2<double> &vel);
-//	virtual void UpdatePhysics();
-//	virtual void UpdateSprite();
-//	virtual void UpdatePostPhysics();
-//	virtual void ResetSprite();
-//	bool ResolvePhysics(
-//		sf::Vector2<double> vel);
-//	virtual bool HitTerrain();
-//	void HitPlayer();
-//
-//
-//	CollisionBox physBody;
-//	CollisionBox hitBody;
-//	CollisionBox hurtBody;
-//	Bullet *prev;
-//	Bullet *next;
-//	sf::Vector2<double> position;
-//	sf::Vector2<double> velocity;
-//	int slowCounter;
-//	int slowMultiple;
-//	int framesToLive;
-//	sf::Transform transform;
-//	Tileset *ts;
-//	int index;
-//	bool col;
-//	Contact minContact;
-//	sf::Vector2<double> tempVel;
-//	Launcher *launcher;
-//};
-//
-//namespace BulletType
-//{
-//	enum Type
-//	{
-//		NORMAL,
-//		SIN,
-//		BIRDBOSS,
-//		Count
-//	};
-//}
-//Bullet* CreateBullet(BulletType::Type type, int vaIndex, Launcher *launcher);
 
 #endif

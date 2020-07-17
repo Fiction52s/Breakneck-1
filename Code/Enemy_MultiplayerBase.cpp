@@ -35,10 +35,10 @@ void MultiplayerBase::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &md, sizeof(MyData));
 }
 
-void MultiplayerBase::SetFromBuffer(unsigned char *buf)
+void MultiplayerBase::SetFromBytes(unsigned char *bytes )
 {
 	MyData md;
-	memcpy(&md, buf, sizeof(MyData));
+	memcpy(&md, bytes, sizeof(MyData));
 
 	dead = md.dead;
 	receivedHit = md.receivedHit;

@@ -28,7 +28,7 @@ struct MultiplayerBase : Enemy
 	Tileset *ts;
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
-	void SetFromBuffer(unsigned char *buf);
+	void SetFromBytes(unsigned char *bytes);
 	HitboxInfo *IsHit(int pIndex);
 
 	MultiplayerBase(ActorParams * ap);

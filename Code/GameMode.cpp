@@ -194,11 +194,11 @@ void ReachEnemyBaseMode::StoreBytes(unsigned char *bytes)
 	}
 }
 
-void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
+void ReachEnemyBaseMode::SetFromBytes(unsigned char *bytes)
 {
 	int dataSize = sizeof(ReachEnemyBaseModeData);
 	ReachEnemyBaseModeData rd;
-	memcpy(&rd, buf, dataSize);
+	memcpy(&rd, bytes, dataSize);
 
 	p0Score = rd.p0Score;
 	p1Score = rd.p1Score;
@@ -206,12 +206,12 @@ void ReachEnemyBaseMode::SetFromBuffer(unsigned char *buf)
 	p0HitTargets = rd.p0HitTargets;
 	p1HitTargets = rd.p1HitTargets;
 
-	buf += dataSize;
+	bytes += dataSize;
 
 	for (auto it = enemies.begin(); it != enemies.end(); ++it)
 	{
-		(*it)->SetFromBuffer(buf);
-		buf += (*it)->GetNumStoredBytes();
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
 	}
 }
 

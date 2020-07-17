@@ -12,13 +12,31 @@ struct Gator : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
+
+	int fireCounter;
+	
+	Tileset *ts;
+	Tileset *ts_bulletExplode;
+	Tileset *ts_aura;
+	int animationFactor;
+	int bulletSpeed;
+	int framesBetween;
+
 	Gator(ActorParams *ap);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
 	void BulletHitPlayer(BasicBullet *b);
 	void ProcessState();
-	bool physicsOver;
+	
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 
@@ -27,21 +45,6 @@ struct Gator : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-
-	int bulletSpeed;
-	int framesBetween;
-
-	BasicPathFollower pathFollower;
-
-	Tileset *ts_bulletExplode;
-
-	int fireCounter;
-
-	Tileset *ts;
-
-	int animationFactor;
-
-	Tileset *ts_aura;
 };
 
 #endif

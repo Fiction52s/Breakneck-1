@@ -58,21 +58,24 @@ struct StoredEnemyData
 	//SlowableObject
 	int slowMultiple;
 	int slowCounter;
-	bool isSlowable;
 
 	//HittableObject
 	HitboxInfo *receivedHit;
 	Actor *receivedHitPlayer;
 	Enemy *comboHitEnemy;
 	int numHealth;
-	bool specterProtected;
 
 	//Enemy
+	PositionInfo currPosInfo;
 	bool facingRight;
-	V2d pos;
-	Edge *ground;
-	double quant;
 	int action;
+	int frame;
+
+	Enemy *prev;
+	Enemy *next;
+	int pauseFrames;
+	bool dead;
+	bool spawned;
 };
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
@@ -82,7 +85,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void StoreBytes(unsigned char *bytes) {
 		assert(0);
 	}
-	virtual void SetFromBuffer(unsigned char *buf) {}
+	virtual void SetFromBytes(unsigned char *bytes) {}
+	void StoreBasicEnemyData(StoredEnemyData &ed);
+	void SetBasicEnemyData(StoredEnemyData &ed);
 
 	bool facingRight;
 	PositionInfo currPosInfo;

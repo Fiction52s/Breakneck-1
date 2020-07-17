@@ -21,7 +21,7 @@ FightMode::~FightMode()
 
 int FightMode::GetNumStoredBytes()
 {
-	return sizeof(MyData);
+	return sizeof(MyData) + testGator->GetNumStoredBytes();
 }
 
 void FightMode::StoreBytes(unsigned char *bytes)
@@ -29,11 +29,16 @@ void FightMode::StoreBytes(unsigned char *bytes)
 	int dataSize = sizeof(MyData);
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
+
+	testGator->StoreBytes(bytes);
 }
 
-void FightMode::SetFromBuffer(unsigned char *buf)
+void FightMode::SetFromBytes(unsigned char *bytes)
 {
-	memcpy(&data, buf, sizeof(MyData));
+	memcpy(&data, bytes, sizeof(MyData));
+
+	bytes += sizeof(MyData);
+	testGator->SetFromBytes(bytes);
 }
 
 void FightMode::Setup()

@@ -1573,6 +1573,45 @@ void Enemy::BasicUpdateHitboxes()
 	}
 }
 
+void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
+{
+	ed.slowMultiple = slowMultiple;
+	ed.slowCounter = slowCounter;
+	ed.receivedHit = receivedHit;
+	ed.receivedHitPlayer = receivedHitPlayer;
+	ed.comboHitEnemy = comboHitEnemy;
+	ed.numHealth = numHealth;
+	ed.currPosInfo = currPosInfo;
+	ed.facingRight = facingRight;
+	ed.action = action;
+	ed.frame = frame;
+
+	ed.prev = prev;
+	ed.next = next;
+	ed.pauseFrames = pauseFrames;
+	ed.dead = dead;
+	ed.spawned = spawned;
+}
+void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
+{
+	slowMultiple = ed.slowMultiple;
+	slowCounter = ed.slowCounter;
+	receivedHit = ed.receivedHit;
+	receivedHitPlayer = ed.receivedHitPlayer;
+	comboHitEnemy = ed.comboHitEnemy;
+	numHealth = ed.numHealth;
+	currPosInfo = ed.currPosInfo;
+	facingRight = ed.facingRight;
+	action = ed.action;
+	frame = ed.frame;
+
+	prev = ed.prev;
+	next = ed.next;
+	pauseFrames = ed.pauseFrames;
+	dead = ed.dead;
+	spawned = ed.spawned;
+}
+
 void Enemy::BasicUpdateHitboxInfo()
 {
 	if (hitboxInfo != NULL)

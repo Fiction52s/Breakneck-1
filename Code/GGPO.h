@@ -288,6 +288,7 @@ struct SaveGameState
 	Enemy *activeEnemyList;
 	Enemy *activeEnemyListTail;
 	Enemy *inactiveEnemyList;
+	int pauseFrames;
 };
 
 int fletcher32_checksum(short *data, 

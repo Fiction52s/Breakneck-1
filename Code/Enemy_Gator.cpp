@@ -63,6 +63,39 @@ Gator::Gator(ActorParams *ap)
 	ResetEnemy();
 }
 
+int Gator::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Gator::StoreBytes(unsigned char *bytes)
+{
+	MyData d;
+	memset(&d, 0, sizeof(MyData));
+	StoreBasicEnemyData(d);
+	d.fireCounter = fireCounter;
+
+	memcpy(bytes, &d, sizeof(MyData));
+
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+}
+
+void Gator::SetFromBytes(unsigned char *bytes)
+{
+	MyData d;
+	memcpy(&d, bytes, sizeof(MyData));
+
+	SetBasicEnemyData(d);
+
+	fireCounter = d.fireCounter;
+
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+}
+
 void Gator::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 {
 	//V2d vel = b->velocity;
