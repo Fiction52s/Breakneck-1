@@ -413,4 +413,27 @@ struct StoryScene : Sequence
 		EffectLayer layer = EffectLayer::IN_FRONT);
 };
 
+struct SuperSequence : Sequence
+{
+	enum State
+	{
+		LIGHTNING,
+		Count
+	};
+
+	Tileset *ts_superLightning;
+	sf::Sprite superLightningSpr;
+	sf::Vertex blackQuad[4];
+
+	SuperSequence();
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddFlashes();
+	void AddEnemies();
+	void UpdateState();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+};
+
 #endif 

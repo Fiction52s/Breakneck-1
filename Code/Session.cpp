@@ -1290,6 +1290,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	superSequence = NULL;
 	inputVis = NULL;
 	scoreDisplay = NULL;
 	rain = NULL;
@@ -1622,6 +1623,8 @@ Session::~Session()
 		delete gameMode;
 		gameMode = NULL;
 	}
+
+	CleanupSuperSequence();
 }
 
 void Session::UpdateDecorLayers()
@@ -3921,6 +3924,11 @@ void Session::HitlagUpdate()
 	//UpdateAllPlayersInput();
 
 	//UpdatePlayersInHitlag();
+
+	if (activeSequence == superSequence)
+	{
+		ActiveSequenceUpdate();
+	}
 
 	UpdateEffects(true);
 
@@ -6260,4 +6268,22 @@ AdventureHUD *Session::GetAdventureHUD()
 	}
 
 	return NULL;
+}
+
+void Session::SetupSuperSequence()
+{
+	if (superSequence == NULL)
+	{
+		superSequence = new SuperSequence;
+		superSequence->Init();
+	}
+}
+
+void Session::CleanupSuperSequence()
+{
+	if (superSequence != NULL)
+	{
+		delete superSequence;
+		superSequence = NULL;
+	}
 }

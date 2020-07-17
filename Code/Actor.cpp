@@ -2061,6 +2061,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	
+
 	LoadHitboxes();
 
 	superActiveLimit = 180;
@@ -2075,6 +2078,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
+
+	
 
 	standNDashBoost = false;
 	kinMode = K_NORMAL;

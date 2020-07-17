@@ -70,6 +70,7 @@ struct MusicInfo;
 struct ShardPopup;
 struct DeathSequece;
 
+struct SuperSequence;
 struct BasicBossScene;
 struct Sequence;
 struct ShipEnterScene;
@@ -327,6 +328,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	int totalFramesBeforeGoal;
 
 	GGPOSession *ggpo;
+
+	SuperSequence *superSequence;
 
 	static Session *GetSession();
 
@@ -699,6 +702,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetGameMode();
 	bool IsMapVersionNewerThanOrEqualTo(int ver1, int ver2);
 	AdventureHUD *GetAdventureHUD();
+	void SetupSuperSequence();
+	void CleanupSuperSequence();
 };
 
 #endif

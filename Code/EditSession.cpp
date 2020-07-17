@@ -50,7 +50,7 @@
 #include "GGPO.h"
 #include "GameMode.h"
 
-#define GGPO_ON
+//#define GGPO_ON
 
 using namespace std;
 using namespace sf;
@@ -3304,6 +3304,8 @@ void EditSession::Init()
 
 	currTerrainWorld[TERRAINLAYER_FLY] = 9;
 	currTerrainVar[TERRAINLAYER_FLY] = 0;
+
+	SetupSuperSequence();
 
 	SetupHitboxManager();
 	SetupSoundManager();

@@ -16,7 +16,8 @@ void Actor::AIRHITSTUN_End()
 
 void Actor::AIRHITSTUN_Change()
 {
-	if (stunBufferedAttack == Action::Count)
+	//stun buffered inputs are not good.
+	/*if (stunBufferedAttack == Action::Count)
 	{
 		if (currInput.rightShoulder && !prevInput.rightShoulder)
 		{
@@ -43,7 +44,7 @@ void Actor::AIRHITSTUN_Change()
 	if (!stunBufferedDash && currInput.B && !prevInput.B)
 	{
 		stunBufferedDash = true;
-	}
+	}*/
 
 
 	frame = 0;
