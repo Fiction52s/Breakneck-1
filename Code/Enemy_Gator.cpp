@@ -33,8 +33,7 @@ Gator::Gator(ActorParams *ap)
 
 	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
 
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
+	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 16, 1, GetPosition(),
 		V2d(1, 0), 0, 120, false, 0, 0, ts_basicBullets );
 	launchers[0]->SetBulletSpeed(bulletSpeed);
@@ -54,7 +53,7 @@ Gator::Gator(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(16);
+	//BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -128,7 +127,7 @@ void Gator::ResetEnemy()
 	action = DOMINATION;
 	frame = 0;
 
-	DefaultHurtboxesOn();
+	//DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
 	UpdateHitboxes();

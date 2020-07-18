@@ -11,13 +11,12 @@ using namespace std;
 
 void Actor::TESTSUPER_Start()
 {
-	
 	if (sess->superSequence != NULL)
 	{
 		sess->superSequence->Reset();
 		sess->SetActiveSequence(sess->superSequence);
 
-		sess->Pause(4 * 16);
+		sess->Pause(3 * 16);
 		if (sess->GetGameMode() == MapHeader::T_FIGHT)
 		{
 			FightMode *fm = (FightMode*)sess->gameMode;

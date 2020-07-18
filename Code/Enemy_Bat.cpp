@@ -32,8 +32,7 @@ Bat::Bat( ActorParams *ap )
 	bulletSpeed = 10;
 	framesBetween = 60;
 
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
+	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::BAT, 16, 1, GetPosition(), 
 		V2d( 1, 0 ), 0, 120, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	

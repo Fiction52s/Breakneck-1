@@ -65,8 +65,6 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	wavelength = p_wavelength;
 	amplitude = p_amplitude;
 	allBullets.resize(totalBullets);
-	//increment the global counter
-	//+= numTotalBullets;
 	int startIndex = 0;
 	
 	if (!drawOwnBullets)
@@ -166,7 +164,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 
 	if (drawOwnBullets)
 	{
-		bulletVA = new Vertex[numTotalBullets];
+		bulletVA = new Vertex[numTotalBullets*4];
 	}
 
 	hitboxInfo = new HitboxInfo;
@@ -397,7 +395,6 @@ void Launcher::Fire()
 {
 
 	V2d dir = facingDir;
-	//cout << "shooting dir: " << dir.x << ", " << dir.y << endl;
 	double dirAngle = atan2(facingDir.x, -facingDir.y);
 	if (dirAngle < 0)
 	{
@@ -407,12 +404,9 @@ void Launcher::Fire()
 	for (int i = 0; i < perShot; ++i)
 	{
 		dir = V2d(cos(dirAngle - PI / 2.0), sin(dirAngle - PI / 2.0));
-		//cout << "trying to activate bullet" << endl;
 		BasicBullet * b = ActivateBullet();
-		//cout << "bullet done activating" << endl;
 		if (b != NULL)
 		{
-			//cout << "FIRE" << endl;
 			b->Reset(position, dir * bulletSpeed);
 		}
 
@@ -422,7 +416,6 @@ void Launcher::Fire()
 		}
 
 		dirAngle += angleSpread / (perShot);
-		//dir = V2d( cos( dirAngle - PI / 2.0 ), sin( dirAngle - PI / 2.0 ) );
 	}
 }
 
@@ -476,7 +469,6 @@ void Launcher::AddToList(BasicBullet *b, BasicBullet *&list)
 	{
 		list->prev = b;
 	}
-	//cout << "list is: " << b << endl;
 	list = b;
 }
 
@@ -504,19 +496,15 @@ BasicBullet * Launcher::ActivateBullet()
 {
 	if (inactiveBullets == NULL)
 	{
-
 		return RanOutOfBullets();
 	}
 	else
 	{
-		//cout << "b" << endl;
 		BasicBullet *temp = inactiveBullets->next;
 		AddToList(inactiveBullets, activeBullets);
-		//cout << "activeBullets: " << activeBullets << endl;
 		inactiveBullets = temp;
 		if (inactiveBullets != NULL)
 			inactiveBullets->prev = NULL;
-		//cout << "c" << endl;
 		activeBullets->active = true;
 		return activeBullets;
 	}
@@ -668,7 +656,6 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 	case CURVE_TURRET:
 		break;
 	}
-	//framesToLive = maxFram
 	double rad = Launcher::GetRadius(bType);
 	bounceCount = 0;
 	/*hurtBody.isCircle = true;
@@ -759,10 +746,8 @@ void BasicBullet::ResetSprite()
 	{
 		bva = launcher->sess->bigBulletVA;
 	}
-	bva[index * 4 + 0].position = Vector2f(0, 0);
-	bva[index * 4 + 1].position = Vector2f(0, 0);
-	bva[index * 4 + 2].position = Vector2f(0, 0);
-	bva[index * 4 + 3].position = Vector2f(0, 0);
+
+	SetRectCenter(bva + index * 4, 0, 0, Vector2f());
 }
 
 bool BasicBullet::PlayerSlowingMe()
@@ -1103,24 +1088,10 @@ void BasicBullet::UpdateSprite()
 	VA[index * 4 + 2].position = center + transform.transformPoint(botRight);
 	VA[index * 4 + 3].position = center + transform.transformPoint(botLeft);
 
-	/*VA[index*4+0].texCoords = Vector2f( ir.left, ir.top );
-	VA[index*4+1].texCoords = Vector2f( ir.left + ir.width, ir.top );
-	VA[index*4+2].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	VA[index*4+3].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
-
-
 	int ind = 6 * launcher->bulletTilesetIndex + ((frame / animFactor) % 6);
-	//cout << "index: " << ind << ", frame: " << frame << endl;
 	IntRect sub = launcher->ts_bullet->GetSubRect(ind);
-	/*VA[index*4+0].color = Color::Red;
-	VA[index*4+1].color = Color::Red;
-	VA[index*4+2].color = Color::Red;
-	VA[index*4+3].color = Color::Red;*/
-	SetRectColor(VA + index * 4, Color::White);
-	VA[index * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
-	VA[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
-	VA[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-	VA[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	//SetRectColor(VA + index * 4, Color::White);
+	SetRectSubRect(VA + index * 4, sub);
 }
 
 SinBullet::SinBullet(int indexVA, Launcher *launcher)

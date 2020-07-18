@@ -99,7 +99,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	CollisionBody *currHurtboxes;
 	int currHitboxFrame;
 	int currHurtboxFrame;
-	Launcher **launchers;
+	std::vector<Launcher*> launchers;
 	CuttableObject *cutObject;
 	HitboxInfo *hitboxInfo;
 	sf::SoundBuffer *genericDeathSound;

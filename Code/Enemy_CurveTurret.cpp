@@ -72,8 +72,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode2_64x64.png", 64, 64 );
 
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
+	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, 32, 1, GetPosition(), V2d( 0,-1), 
 		0, 90, false, 30, 50 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );

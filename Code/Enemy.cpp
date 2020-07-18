@@ -378,7 +378,6 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 
 	highResPhysics = false;
 	numLaunchers = 0;
-	launchers = NULL;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
 	
@@ -573,7 +572,7 @@ void Enemy::HitboxesOff()
 void Enemy::SetNumLaunchers(int num)
 {
 	numLaunchers = num;
-	launchers = new Launcher*[numLaunchers];
+	launchers.resize(num);
 }
 
 void Enemy::UpdateOnPlacement( ActorParams *ap )
@@ -655,7 +654,8 @@ Enemy::~Enemy()
 		{
 			delete launchers[i];
 		}
-		delete[] launchers;
+
+		//launchers.clear();
 	}
 
 	if (cutObject != NULL)

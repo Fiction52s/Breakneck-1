@@ -417,13 +417,20 @@ struct SuperSequence : Sequence
 {
 	enum State
 	{
-		LIGHTNING,
+		SPARK1,
+		SPARK2,
+		LIT1,
+		LIT2,
 		Count
 	};
 
-	Tileset *ts_superLightning;
+	Tileset *ts_lit1;
+	Tileset *ts_lit2;
+	Tileset *ts_spark1;
+	Tileset *ts_spark2;
 	sf::Sprite superLightningSpr;
 	sf::Vertex blackQuad[4];
+	int animFactor;
 
 	SuperSequence();
 	void SetupStates();
