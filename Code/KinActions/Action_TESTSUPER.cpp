@@ -11,13 +11,13 @@ using namespace std;
 
 void Actor::TESTSUPER_Start()
 {
-	//Tileset *ts = sess->GetSizedTileset("Bosses/Gator/super_lightning_960x540.png");
+	
 	if (sess->superSequence != NULL)
 	{
 		sess->superSequence->Reset();
 		sess->SetActiveSequence(sess->superSequence);
 
-		sess->Pause(30);
+		sess->Pause(4 * 16);
 		if (sess->GetGameMode() == MapHeader::T_FIGHT)
 		{
 			FightMode *fm = (FightMode*)sess->gameMode;
