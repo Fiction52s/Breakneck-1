@@ -6,6 +6,8 @@ using namespace std;
 void Actor::STEEPCLIMBATTACK_Start()
 {
 	SetActionSuperLevel();
+
+	ResetAttackHit();
 }
 
 void Actor::STEEPCLIMBATTACK_End()
@@ -16,7 +18,7 @@ void Actor::STEEPCLIMBATTACK_End()
 
 void Actor::STEEPCLIMBATTACK_Change()
 {
-	if (currAttackHit)//&& frame > 0 )
+	if (CanCancelAttack())//&& frame > 0 )
 	{
 		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 		{
@@ -54,7 +56,6 @@ void Actor::STEEPCLIMBATTACK_Update()
 
 	if (frame == 0)
 	{
-		currAttackHit = false;
 	}
 
 

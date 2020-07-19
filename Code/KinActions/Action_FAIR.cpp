@@ -6,6 +6,8 @@ using namespace std;
 void Actor::FAIR_Start()
 {
 	SetActionSuperLevel();
+	ActivateSound(S_FAIR1);
+	ResetAttackHit();
 }
 
 void Actor::FAIR_End()
@@ -28,8 +30,7 @@ void Actor::FAIR_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_FAIR1);
-		currAttackHit = false;
+		
 		//fairSound.play();
 	}
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)

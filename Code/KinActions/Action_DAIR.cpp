@@ -6,6 +6,9 @@ using namespace std;
 void Actor::DAIR_Start()
 {
 	SetActionSuperLevel();
+
+	ActivateSound(S_DAIR);
+	ResetAttackHit();
 }
 
 void Actor::DAIR_End()
@@ -24,23 +27,6 @@ void Actor::DAIR_Update()
 	CheckHoldJump();
 
 	SetCurrHitboxes(dairHitboxes[speedLevel], frame);
-
-	if (frame == 0 && slowCounter == 1)
-	{
-
-		ActivateSound(S_DAIR);
-		if (speedLevel == 0)
-		{
-
-		}
-		/*else if (speedLevel == 1)
-		{
-		ActivateSound(soundBuffers[S_DAIR_B]);
-		}*/
-
-		currAttackHit = false;
-	}
-
 
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)
 	{

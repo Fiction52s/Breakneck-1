@@ -25,8 +25,6 @@ void Actor::DASHATTACK3_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_STANDATTACK);
-		currAttackHit = false;
 	}
 
 	AttackMovement();

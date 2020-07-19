@@ -256,6 +256,8 @@ struct Actor : QuadTreeCollider,
 		SEQ_TURNFACE,
 		GETSHARD,
 		TESTSUPER,
+		GROUNDBLOCK,
+		AIRBLOCK,
 		Count
 	};
 
@@ -319,6 +321,13 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
+	enum HitResult
+	{
+		MISS,
+		HIT,
+		BLOCK,
+	};
+
 	const static int MAX_BUBBLES = 5;
 
 	//definitely do change per frame
@@ -377,6 +386,7 @@ struct Actor : QuadTreeCollider,
 	int currBubble;
 
 	bool currAttackHit;
+	
 	bool bounceAttackHit;
 	int flashFrames;
 	int bufferedAttack;
@@ -397,6 +407,8 @@ struct Actor : QuadTreeCollider,
 	int setHitstunFrames;
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
+	
+	
 
 	CollisionBody *currHitboxes;
 	int currHitboxFrame;
@@ -448,6 +460,11 @@ struct Actor : QuadTreeCollider,
 	int lastSuperPressFrame;
 	int superLevelCounter;
 	int currActionSuperLevel;
+
+	int blockstunFrames;
+	int currAttackHitBlock[4];
+	Actor *receivedHitPlayer;
+	int numWallJumps;
 
 	//---end of saved vars
 	int superActiveLimit;
@@ -842,6 +859,7 @@ struct Actor : QuadTreeCollider,
 	double DIFactor;
 	bool DIChangesMagnitude;
 
+	
 
 	
 
@@ -850,9 +868,12 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 
+	bool CanCancelAttack();
+	int MostRecentFrameCurrAttackBlocked();
 	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
 
+	void ResetAttackHit();
 	void LoadHitboxes();
 	void SetupHitboxInfo(
 		json &j, const std::string &name,
@@ -979,6 +1000,8 @@ struct Actor : QuadTreeCollider,
 	bool IsSingleWirePulling();
 	bool IsDoubleWirePulling();
 	bool TryDoubleJump();
+	bool TryGroundBlock();
+	bool TryAirBlock();
 	bool TryGrind();
 	bool TryDash();
 	bool TryJumpSquat();
@@ -1022,7 +1045,7 @@ struct Actor : QuadTreeCollider,
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
-	bool IHitPlayer( int otherPlayerIndex );
+	HitResult CheckHitByPlayer(int pIndex);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,
 		bool facingRight );
@@ -1180,17 +1203,29 @@ struct Actor : QuadTreeCollider,
 
 	V2d GetKnockbackDirFromVel();
 
-
 	void HitOutOfCeilingGrindAndReverse();
 	void HitOutOfCeilingGrindIntoAir();
 	void HitOutOfGrind();
 	void HitWhileGrounded();
 	void HitWhileAerial();
+	void ReactToBeingHit();
 	void SlideOffWhileInGroundHitstun();
 	void HitGroundWhileInAirHitstun();
 	void HitWallWhileInAirHitstun();
 
 	//kin action functions
+
+	void AIRBLOCK_Start();
+	void AIRBLOCK_End();
+	void AIRBLOCK_Change();
+	void AIRBLOCK_Update();
+	void AIRBLOCK_UpdateSprite();
+	void AIRBLOCK_TransitionToAction(int a);
+	void AIRBLOCK_TimeIndFrameInc();
+	void AIRBLOCK_TimeDepFrameInc();
+	int AIRBLOCK_GetActionLength();
+	Tileset * AIRBLOCK_GetTileset();
+
 	void AIRDASH_Start();
 	void AIRDASH_End();
 	void AIRDASH_Change();
@@ -1589,6 +1624,17 @@ struct Actor : QuadTreeCollider,
 	void GRINDSLASH_TimeDepFrameInc();
 	int GRINDSLASH_GetActionLength();
 	Tileset * GRINDSLASH_GetTileset();
+
+	void GROUNDBLOCK_Start();
+	void GROUNDBLOCK_End();
+	void GROUNDBLOCK_Change();
+	void GROUNDBLOCK_Update();
+	void GROUNDBLOCK_UpdateSprite();
+	void GROUNDBLOCK_TransitionToAction(int a);
+	void GROUNDBLOCK_TimeIndFrameInc();
+	void GROUNDBLOCK_TimeDepFrameInc();
+	int GROUNDBLOCK_GetActionLength();
+	Tileset * GROUNDBLOCK_GetTileset();
 
 	void GROUNDHITSTUN_Start();
 	void GROUNDHITSTUN_End();

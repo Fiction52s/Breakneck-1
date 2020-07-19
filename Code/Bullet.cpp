@@ -638,7 +638,6 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 		numPhysSteps = NUM_MAX_STEPS;
 		launcher->sess->GetPlayer(launcher->playerIndex)->highAccuracyHitboxes = true;
 	}
-	//transform.
 }
 
 BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)

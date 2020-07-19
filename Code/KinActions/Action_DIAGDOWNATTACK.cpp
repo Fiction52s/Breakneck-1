@@ -6,6 +6,8 @@ using namespace std;
 void Actor::DIAGDOWNATTACK_Start()
 {
 	SetActionSuperLevel();
+	ActivateSound(S_DIAGDOWNATTACK);
+	ResetAttackHit();
 }
 
 void Actor::DIAGDOWNATTACK_End()
@@ -25,8 +27,8 @@ void Actor::DIAGDOWNATTACK_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_DIAGDOWNATTACK);
-		currAttackHit = false;
+		
+		
 		//fairSound.play();
 	}
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)

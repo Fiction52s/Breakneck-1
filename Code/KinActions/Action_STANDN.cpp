@@ -6,6 +6,9 @@ using namespace std;
 void Actor::STANDN_Start()
 {
 	SetActionSuperLevel();
+
+	ActivateSound(S_STANDATTACK);
+	ResetAttackHit();
 }
 
 void Actor::STANDN_End()
@@ -35,7 +38,7 @@ void Actor::STANDN_End()
 
 void Actor::STANDN_Change()
 {
-	if (currAttackHit)//&& frame > 0 )
+	if (CanCancelAttack())
 	{
 		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 		{
@@ -88,8 +91,6 @@ void Actor::STANDN_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_STANDATTACK);
-		currAttackHit = false;
 	}
 
 	AttackMovement();

@@ -10,6 +10,11 @@ void Actor::UAIR_Start()
 	{
 		SetAction(TESTSUPER);
 	}
+	else
+	{
+		ActivateSound(S_UAIR);
+		ResetAttackHit();
+	}
 }
 
 void Actor::UAIR_End()
@@ -31,8 +36,7 @@ void Actor::UAIR_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_UAIR);
-		currAttackHit = false;
+		
 	}
 
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)

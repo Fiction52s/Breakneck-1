@@ -218,6 +218,10 @@ void Actor::PopulateState(PState *ps)
 	ps->currActionSuperLevel = currActionSuperLevel;
 
 	ps->attackingHitlag = attackingHitlag;
+
+	ps->blockstunFrames = blockstunFrames;
+	memcpy(ps->currAttackHitBlock, currAttackHitBlock, sizeof(int) * 4);
+	ps->receivedHitPlayer = receivedHitPlayer;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -363,6 +367,10 @@ void Actor::PopulateFromState(PState *ps)
 	currActionSuperLevel = ps->currActionSuperLevel;
 
 	attackingHitlag = ps->attackingHitlag;
+
+	blockstunFrames = ps->blockstunFrames;
+	memcpy(currAttackHitBlock, ps->currAttackHitBlock, sizeof(int) * 4);
+	receivedHitPlayer = ps->receivedHitPlayer;
 }
 
 
@@ -864,6 +872,18 @@ void Actor::SetupActionFunctions()
 	getActionLengthFuncs.resize(Count);
 	getTilesetFuncs.resize(Count);
 
+	SetupFuncsForAction(AIRBLOCK,
+		&Actor::AIRBLOCK_Start,
+		&Actor::AIRBLOCK_End,
+		&Actor::AIRBLOCK_Change,
+		&Actor::AIRBLOCK_Update,
+		&Actor::AIRBLOCK_UpdateSprite,
+		&Actor::AIRBLOCK_TransitionToAction,
+		&Actor::AIRBLOCK_TimeIndFrameInc,
+		&Actor::AIRBLOCK_TimeDepFrameInc,
+		&Actor::AIRBLOCK_GetActionLength,
+		&Actor::AIRBLOCK_GetTileset);
+
 	SetupFuncsForAction(AIRDASH,
 		&Actor::AIRDASH_Start,
 		&Actor::AIRDASH_End,
@@ -1271,6 +1291,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDSLASH_TimeDepFrameInc,
 		&Actor::GRINDSLASH_GetActionLength,
 		&Actor::GRINDSLASH_GetTileset);
+
+	SetupFuncsForAction(GROUNDBLOCK,
+		&Actor::GROUNDBLOCK_Start,
+		&Actor::GROUNDBLOCK_End,
+		&Actor::GROUNDBLOCK_Change,
+		&Actor::GROUNDBLOCK_Update,
+		&Actor::GROUNDBLOCK_UpdateSprite,
+		&Actor::GROUNDBLOCK_TransitionToAction,
+		&Actor::GROUNDBLOCK_TimeIndFrameInc,
+		&Actor::GROUNDBLOCK_TimeDepFrameInc,
+		&Actor::GROUNDBLOCK_GetActionLength,
+		&Actor::GROUNDBLOCK_GetTileset);
 
 	SetupFuncsForAction(GROUNDHITSTUN,
 		&Actor::GROUNDHITSTUN_Start,
@@ -2061,8 +2093,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
-	
 
 	LoadHitboxes();
 
@@ -3180,6 +3210,19 @@ void Actor::SetupTimeBubbles()
 	}
 }
 
+bool Actor::CanCancelAttack()
+{
+	int mostRecentBlocked = MostRecentFrameCurrAttackBlocked();
+	HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
+	if (currAttackHit || 
+		(mostRecentBlocked >= 0 && frame - mostRecentBlocked >= hi.hitBlockCancelDelay ) )
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void Actor::LoadHitboxes()
 {
 	ifstream is;
@@ -3190,7 +3233,7 @@ void Actor::LoadHitboxes()
 	json j;
 	is >> j;
 
-	DIFactor = j["DIFactor"];
+	DIFactor = j["difactor"];
 	DIChangesMagnitude = true;
 
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
@@ -3244,6 +3287,8 @@ void Actor::SetupHitboxLevelInfo(
 	double gravMult = j["gravmultiplier"];
 	hi.gravMultiplier = gravMult;
 	hi.extraDefenderHitlag = j["extradefenderhitlag"];
+	hi.hitBlockCancelDelay = j["hitblockcanceldelay"];
+
 }
 
 void Actor::ActionEnded()
@@ -3640,8 +3685,9 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn()
 {
 	ResetGrassCounters();
-
+	ResetAttackHit();
 	
+	blockstunFrames = 0;
 	superLevelCounter = 0;
 	
 	lastSuperPressFrame = -1;
@@ -3826,7 +3872,7 @@ void Actor::Respawn()
 	if( kinRing != NULL && kinRing->powerRing != NULL )
 		kinRing->powerRing->ResetFull(); //only means anything for single player
 
-	currAttackHit = false;
+	ResetAttackHit();
 	bounceAttackHit = false;
 	flashFrames = 0;
 	bufferedAttack = JUMP;
@@ -3842,6 +3888,15 @@ void Actor::Respawn()
 
 	//some v
 	//doubleJumpBufferedAttack
+}
+
+void Actor::ResetAttackHit()
+{
+	currAttackHit = false;
+	for (int i = 0; i < 4; ++i)
+	{
+		currAttackHitBlock[i] = -1;
+	}
 }
 
 double Actor::GetBounceFlameAccel()
@@ -4095,173 +4150,205 @@ void Actor::ProcessReceivedHit()
 
 		attackingHitlag = false;
 		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
-		hitstunFrames = receivedHit->hitstunFrames;
-		setHitstunFrames = hitstunFrames;
-		hitstunGravMultiplier = receivedHit->gravMultiplier;
-		if (receivedHit->invincibleFrames == -1)
-		{
-			invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
-		}
-		else
-		{
-			invincibleFrames = receivedHit->invincibleFrames;
-		}
+		
 		
 
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
-		//sess->Pause(hitlagFrames);
 
-		ActivateSound(S_HURT);
-
-		if (sess->GetGameMode() == MapHeader::T_FIGHT)
+		if (action == GROUNDBLOCK)
 		{
-			FightMode *fm = (FightMode*)sess->gameMode;
-			if (actorIndex == 0)
+			blockstunFrames = receivedHit->hitstunFrames / 2;
+			invincibleFrames = 0;
+
+			if (receivedHitPlayer != NULL)
 			{
-				fm->data.p0Health -= receivedHit->damage;
-				if (fm->data.p0Health < 0)
+				V2d otherPos = receivedHitPlayer->position;
+				if (otherPos.x < position.x)
 				{
-					fm->data.p0Health = 0;
-				}
-			}
-			else if (actorIndex == 1)
-			{
-				fm->data.p1Health -= receivedHit->damage;
-				if (fm->data.p1Health < 0)
-					fm->data.p1Health = 0;
-			}
-		}
-		else if (kinRing != NULL)
-			kinRing->powerRing->Drain(receivedHit->damage);
-		
-
-		int dmgRet = 0;//owner->powerRing->Drain(receivedHit->damage);
-					   //bool dmgSuccess = owner->powerWheel->Damage( receivedHit->damage );
-
-		if (ground != NULL)
-		{
-			if (reversed)
-				reversed = false;
-			ground = NULL;
-			SetAction(JUMP);
-			frame = 1;
-		}
-
-		if (true)
-		{
-			bool onRail = IsOnRailAction(action) || (grindEdge != NULL && action == JUMPSQUAT);
-			if (grindEdge != NULL && !onRail)
-			{
-				//do something different for grind ball? you don't wanna be hit out at a sensitive moment
-				//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
-				//grindSpeed *= .8;
-
-				V2d op = position;
-
-				V2d grindNorm = grindEdge->Normal();
-
-				if (grindNorm.y < 0)
-				{
-					double extra = 0;
-					if (grindNorm.x > 0)
-					{
-						offsetX = b.rw;
-						extra = .1;
-					}
-					else if (grindNorm.x < 0)
-					{
-						offsetX = -b.rw;
-						extra = -.1;
-					}
-					else
-					{
-						offsetX = 0;
-					}
-
-					position.x += offsetX + extra;
-
-					position.y -= normalHeight + .1;
-
-					if (!CheckStandUp())
-					{
-						position = op;
-
-						if (kinRing != NULL)
-							kinRing->powerRing->Drain(receivedHit->damage);
-
-						//apply extra damage since you cant stand up
-					}
-					else
-					{
-						HitOutOfGrind();
-					}
-
+					groundSpeed += 2;
 				}
 				else
 				{
+					groundSpeed -= 2;
+				}
+			}
 
-					if (grindNorm.x > 0)
-					{
-						position.x += b.rw + .1;
-					}
-					else if (grindNorm.x < 0)
-					{
-						position.x += -b.rw - .1;
-					}
+		}
+		else if (action == AIRBLOCK)
+		{
+			blockstunFrames = receivedHit->hitstunFrames / 2;
+			invincibleFrames = 0;
 
-					if (grindNorm.y > 0)
-						position.y += normalHeight + .1;
+			if (receivedHitPlayer != NULL)
+			{
+				V2d otherPos = receivedHitPlayer->position;
+				velocity += 2.0 * normalize(position - otherPos);
+			}
+		}
+		else
+		{
+			ReactToBeingHit();
+		}
 
-					if (!CheckStandUp())
-					{
-						position = op;
+		receivedHit = NULL;
+	}
+}
 
-						//owner->powerWheel->Damage( receivedHit->damage );
-						if (kinRing != NULL)
-							kinRing->powerRing->Drain(receivedHit->damage);
+void Actor::ReactToBeingHit()
+{
+	hitstunFrames = receivedHit->hitstunFrames;
+	setHitstunFrames = hitstunFrames;
+	hitstunGravMultiplier = receivedHit->gravMultiplier;
+	if (receivedHit->invincibleFrames == -1)
+	{
+		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+	}
+	else
+	{
+		invincibleFrames = receivedHit->invincibleFrames;
+	}
 
-						//apply extra damage since you cant stand up
-					}
-					else
-					{
-						//abs( e0n.x ) < wallThresh )
+	ActivateSound(S_HURT);
 
-						if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
-						{
-							HitOutOfCeilingGrindIntoAir();
-						}
-						else
-						{
-							HitOutOfCeilingGrindAndReverse();
-						}
-					}
+	if (sess->GetGameMode() == MapHeader::T_FIGHT)
+	{
+		FightMode *fm = (FightMode*)sess->gameMode;
+		if (actorIndex == 0)
+		{
+			fm->data.p0Health -= receivedHit->damage;
+			if (fm->data.p0Health < 0)
+			{
+				fm->data.p0Health = 0;
+			}
+		}
+		else if (actorIndex == 1)
+		{
+			fm->data.p1Health -= receivedHit->damage;
+			if (fm->data.p1Health < 0)
+				fm->data.p1Health = 0;
+		}
+	}
+	else if (kinRing != NULL)
+		kinRing->powerRing->Drain(receivedHit->damage);
+
+	if (ground != NULL)
+	{
+		if (reversed)
+			reversed = false;
+		ground = NULL;
+		SetAction(JUMP);
+		frame = 1;
+	}
+
+	if (true)
+	{
+		bool onRail = IsOnRailAction(action) || (grindEdge != NULL && action == JUMPSQUAT);
+		if (grindEdge != NULL && !onRail)
+		{
+			//do something different for grind ball? you don't wanna be hit out at a sensitive moment
+			//owner->powerWheel->Damage( receivedHit->damage ); //double damage for now bleh
+			//grindSpeed *= .8;
+
+			V2d op = position;
+
+			V2d grindNorm = grindEdge->Normal();
+
+			if (grindNorm.y < 0)
+			{
+				double extra = 0;
+				if (grindNorm.x > 0)
+				{
+					offsetX = b.rw;
+					extra = .1;
+				}
+				else if (grindNorm.x < 0)
+				{
+					offsetX = -b.rw;
+					extra = -.1;
+				}
+				else
+				{
+					offsetX = 0;
 				}
 
-			}
-			else if (ground == NULL || onRail)
-			{
-				HitWhileAerial();
+				position.x += offsetX + extra;
+
+				position.y -= normalHeight + .1;
+
+				if (!CheckStandUp())
+				{
+					position = op;
+
+					if (kinRing != NULL)
+						kinRing->powerRing->Drain(receivedHit->damage);
+
+					//apply extra damage since you cant stand up
+				}
+				else
+				{
+					HitOutOfGrind();
+				}
 
 			}
 			else
 			{
-				HitWhileGrounded();
+
+				if (grindNorm.x > 0)
+				{
+					position.x += b.rw + .1;
+				}
+				else if (grindNorm.x < 0)
+				{
+					position.x += -b.rw - .1;
+				}
+
+				if (grindNorm.y > 0)
+					position.y += normalHeight + .1;
+
+				if (!CheckStandUp())
+				{
+					position = op;
+
+					//owner->powerWheel->Damage( receivedHit->damage );
+					if (kinRing != NULL)
+						kinRing->powerRing->Drain(receivedHit->damage);
+
+					//apply extra damage since you cant stand up
+				}
+				else
+				{
+					//abs( e0n.x ) < wallThresh )
+
+					if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+					{
+						HitOutOfCeilingGrindIntoAir();
+					}
+					else
+					{
+						HitOutOfCeilingGrindAndReverse();
+					}
+				}
 			}
-			bounceEdge = NULL;
-		}
 
-		if (dmgRet > 0 && kinMode != K_DESPERATION )
+		}
+		else if (ground == NULL || onRail)
 		{
-			SetKinMode(K_NORMAL);
-			//action = DEATH;
-			//frame = 0;
+			HitWhileAerial();
+
 		}
-
-
-
-
-		receivedHit = NULL;
+		else
+		{
+			HitWhileGrounded();
+		}
+		bounceEdge = NULL;
 	}
+
+	//if (dmgRet > 0 && kinMode != K_DESPERATION)
+	//{
+	//	SetKinMode(K_NORMAL);
+	//	//action = DEATH;
+	//	//frame = 0;
+	//}
 }
 
 void Actor::SetKinMode(Mode m)
@@ -4849,6 +4936,11 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	/*if (actorIndex == 1)
+	{
+		currInput.Y = true;
+	}*/
+
 	if (currInput.B && !prevInput.B)
 	{
 		lastDashPressFrame = sess->totalGameFrames;
@@ -8122,11 +8214,37 @@ bool Actor::TryDash()
 	return false;
 }
 
+bool Actor::TryGroundBlock()
+{
+	if (currInput.Y)
+	{
+		SetAction(GROUNDBLOCK);
+		frame = 0;
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::TryAirBlock()
+{
+	if (currInput.Y)
+	{
+		SetAction(AIRBLOCK);
+		frame = 0;
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::BasicGroundAction( V2d &gNorm)
 {
 	CheckBounceFlame();
 
 	//button-based inputs
+
+	if (TryGroundBlock()) return true;
 
 	if (TryGrind()) return true;
 
@@ -8151,6 +8269,8 @@ bool Actor::BasicGroundAction( V2d &gNorm)
 
 bool Actor::BasicAirAction()
 {
+	if( TryAirBlock() ) return true;
+
 	CheckBounceFlame();
 
 	if (TryDoubleJump()) return true;
@@ -8198,7 +8318,7 @@ bool Actor::BasicAirAttackAction()
 {
 	CheckBounceFlame();
 
-	if (currAttackHit)
+	if (CanCancelAttack())
 	{
 		if (TryAirDash()) return true;
 
@@ -10627,7 +10747,17 @@ bool Actor::CanTech()
 		&& !touchedGrass[Grass::UNTECHABLE]);
 }
 
+int Actor::MostRecentFrameCurrAttackBlocked()
+{
+	int maxFrame = -1;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (currAttackHitBlock[i] >= maxFrame)
+			maxFrame = currAttackHitBlock[i];
+	}
 
+	return maxFrame;
+}
 
 void Actor::HitOutOfCeilingGrindAndReverse()
 {
@@ -11333,8 +11463,15 @@ void Actor::PhysicsResponse()
 		}
 		pTarget = sess->GetPlayer( target );
 
+		HitResult checkHit = HitResult::MISS;
 
-		if( pTarget != NULL && IHitPlayer( target ) )
+
+		if (pTarget != NULL)
+		{
+			checkHit = pTarget->CheckHitByPlayer(actorIndex);
+		}
+
+		if (checkHit != HitResult::MISS )
 		{
 			HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
 
@@ -11343,16 +11480,28 @@ void Actor::PhysicsResponse()
 			if (!facingRight)
 				currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
 
-			pTarget->ApplyHit( currVSHitboxInfo );
-
 			attackingHitlag = true;
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;
-			//need to work these in later for hitlag, they are only here for testing for now.
-			currAttackHit = true;
-			hasDoubleJump = true;
-			hasAirDash = true;
-			//owner->raceFight->PlayerHitByPlayer( actorIndex, target );
+			pTarget->ApplyHit(currVSHitboxInfo);
+			pTarget->receivedHitPlayer = this;
+
+			if (checkHit == HitResult::HIT)
+			{
+				//need to work these in later for hitlag, they are only here for testing for now.
+				currAttackHit = true;
+				hasDoubleJump = true;
+				hasAirDash = true;
+			}
+			else if (checkHit == HitResult::BLOCK)
+			{
+				currAttackHitBlock[target] = true;
+			}
 		}
+		else
+		{
+
+		}
+		
 	}
 }
 
@@ -14169,6 +14318,7 @@ bool Actor::IsIntangible()
 	return kinMode == K_SUPER || invincibleFrames > 0;
 }
 
+
 void Actor::ApplyHit( HitboxInfo *info )
 {
 	if (info == NULL)
@@ -14179,6 +14329,7 @@ void Actor::ApplyHit( HitboxInfo *info )
 		if (receivedHit == NULL || info->damage > receivedHit->damage)
 		{
 			receivedHit = info;
+			receivedHitPlayer = NULL;
 		}
 	}
 }
@@ -16072,35 +16223,49 @@ bool Actor::IsSingleWirePulling()
 		&& !IsDoubleWirePulling() );
 }
 
-bool Actor::IHitPlayer( int otherPlayerIndex )
+Actor::HitResult Actor::CheckHitByPlayer(int pIndex)
 {
-	Actor *player = sess->GetPlayer( otherPlayerIndex );
-	
-	if( !player->IsIntangible() )
-	{
-		if( currHitboxes != NULL )
-		{
-			bool hit = false;
+	Actor *otherPlayer = sess->GetPlayer(pIndex);
 
-			vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
-			if( cList != NULL )
-			for( auto it = cList->begin(); it != cList->end(); ++it )
+	if (IsIntangible())
+	{
+		return HitResult::MISS;
+	}
+
+	bool intersects = false;
+
+	if (otherPlayer->currHitboxes != NULL && otherPlayer->currAttackHitBlock[actorIndex] < 0 )
+	{
+		vector<CollisionBox> *cList =
+			&(otherPlayer->currHitboxes->GetCollisionBoxes(otherPlayer->currHitboxFrame));
+		if (cList != NULL)
+		{
+			for (auto it = cList->begin(); it != cList->end(); ++it)
 			{
-				if( player->hurtBody.Intersects( (*it) ) )
+				if (hurtBody.Intersects((*it)))
 				{
-					hit = true;
+					intersects = true;
 					break;
 				}
 			}
-
-			if( hit )
-			{
-				return true;
-			}
 		}
 	}
-	
-	return false;
+
+	if (intersects)
+	{
+		if (action == GROUNDBLOCK || action == AIRBLOCK )
+		{
+			return HitResult::BLOCK;
+			//add more detail to this later
+		}
+		else
+		{
+			return HitResult::HIT;
+		}
+	}
+		
+
+	return HitResult::MISS;
 }
 
 void Actor::ClearPauseBufferedActions()

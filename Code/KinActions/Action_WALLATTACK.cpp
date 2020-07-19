@@ -6,6 +6,8 @@ using namespace std;
 void Actor::WALLATTACK_Start()
 {
 	SetActionSuperLevel();
+	ActivateSound(S_WALLATTACK);
+	ResetAttackHit();
 }
 
 void Actor::WALLATTACK_End()
@@ -59,8 +61,7 @@ void Actor::WALLATTACK_Update()
 
 	if (frame == 0)
 	{
-		currAttackHit = false;
-		ActivateSound(S_WALLATTACK);
+		
 		//	fairSound.play();
 	}
 

@@ -276,7 +276,9 @@ struct PState
 	int superLevelCounter;
 	int currActionSuperLevel;
 
-	
+	int blockstunFrames;
+	int currAttackHitBlock[4];
+	Actor *receivedHitPlayer;
 
 	//HitboxInfo currVSHitboxInfo;
 };

@@ -7,6 +7,8 @@ using namespace std;
 void Actor::STEEPSLIDEATTACK_Start()
 {
 	SetActionSuperLevel();
+	ActivateSound(S_STANDATTACK);
+	ResetAttackHit();
 }
 
 void Actor::STEEPSLIDEATTACK_End()
@@ -17,7 +19,7 @@ void Actor::STEEPSLIDEATTACK_End()
 
 void Actor::STEEPSLIDEATTACK_Change()
 {
-	if (currAttackHit)//&& frame > 0 )
+	if (CanCancelAttack())//&& frame > 0 )
 	{
 		if (HasUpgrade( UPGRADE_POWER_BOUNCE ) && currInput.X && !bounceFlameOn)
 		{
@@ -77,7 +79,6 @@ void Actor::STEEPSLIDEATTACK_Update()
 
 	if (frame == 0)
 	{
-		currAttackHit = false;
 	}
 
 	double fac = GetGravity() * steepSlideGravFactor;//gravity * 2.0 / 3.0;

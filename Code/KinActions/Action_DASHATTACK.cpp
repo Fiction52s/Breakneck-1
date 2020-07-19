@@ -6,6 +6,8 @@ using namespace std;
 void Actor::DASHATTACK_Start()
 {
 	SetActionSuperLevel();
+	ActivateSound(S_STANDATTACK);
+	ResetAttackHit();
 }
 
 void Actor::DASHATTACK_End()
@@ -35,7 +37,7 @@ void Actor::DASHATTACK_End()
 
 void Actor::DASHATTACK_Change()
 {
-	if (currAttackHit || frame > 14)//&& frame > 0 )
+	if (CanCancelAttack() || frame > 14)//&& frame > 0 )
 	{
 		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 		{
@@ -88,12 +90,6 @@ void Actor::DASHATTACK_Change()
 void Actor::DASHATTACK_Update()
 {
 	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
-
-	if (frame == 0 && slowCounter == 1)
-	{
-		ActivateSound(S_STANDATTACK);
-		currAttackHit = false;
-	}
 
 	AttackMovement();
 }
