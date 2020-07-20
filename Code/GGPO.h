@@ -279,7 +279,15 @@ struct PState
 	int blockstunFrames;
 	int currAttackHitBlock[4];
 	Actor *receivedHitPlayer;
-	bool hasWallJumpRecharge;
+	int receivedHitReaction;
+
+	bool hasWallJumpRechargeDoubleJump;
+	bool hasWallJumpRechargeAirDash;
+	bool hasHitRechargeDoubleJump;
+	bool hasHitRechargeAirDash;
+
+	int framesBlocking;
+	int receivedHitAction;
 
 	//HitboxInfo currVSHitboxInfo;
 };

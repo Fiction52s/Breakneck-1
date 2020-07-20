@@ -326,7 +326,7 @@ struct Actor : QuadTreeCollider,
 		T_PURPLE
 	};
 
-	enum HitResult
+	enum HitResult : int
 	{
 		MISS,
 		HIT,

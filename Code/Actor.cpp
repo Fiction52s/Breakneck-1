@@ -223,6 +223,15 @@ void Actor::PopulateState(PState *ps)
 	memcpy(ps->currAttackHitBlock, currAttackHitBlock, sizeof(int) * 4);
 	ps->receivedHitPlayer = receivedHitPlayer;
 
+	ps->receivedHitReaction = receivedHitReaction;
+
+	ps->hasWallJumpRechargeDoubleJump = hasWallJumpRechargeDoubleJump;
+	ps->hasWallJumpRechargeAirDash = hasWallJumpRechargeAirDash;
+	ps->hasHitRechargeDoubleJump = hasHitRechargeDoubleJump;
+	ps->hasHitRechargeAirDash = hasHitRechargeAirDash;
+
+	ps->framesBlocking = framesBlocking;
+	ps->receivedHitAction = receivedHitAction;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -374,7 +383,13 @@ void Actor::PopulateFromState(PState *ps)
 	memcpy(currAttackHitBlock, ps->currAttackHitBlock, sizeof(int) * 4);
 	receivedHitPlayer = ps->receivedHitPlayer;
 
-	//hasWallJumpRecharge = ps->hasWallJumpRecharge;
+	receivedHitReaction = (HitResult)ps->receivedHitReaction;
+	hasWallJumpRechargeDoubleJump = ps->hasWallJumpRechargeDoubleJump;
+	hasWallJumpRechargeAirDash = ps->hasWallJumpRechargeAirDash;
+	hasHitRechargeDoubleJump = ps->hasHitRechargeDoubleJump;
+	hasHitRechargeAirDash = ps->hasHitRechargeAirDash;
+	framesBlocking = ps->framesBlocking;
+	receivedHitAction = ps->receivedHitAction;
 }
 
 
@@ -2160,6 +2175,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
+
+	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
 	lastDashPressFrame = -1;
 	attackLevel = 0;
@@ -3750,6 +3767,8 @@ void Actor::Respawn()
 {
 	ResetGrassCounters();
 	ResetAttackHit();
+	
+	
 	
 	blockstunFrames = 0;
 	superLevelCounter = 0;
@@ -16359,7 +16378,9 @@ bool Actor::CanBlock(Actor *p, int action)
 	{
 		if (IsActionGroundBlockable(action))
 		{
-			return true;
+			if( (facingRight && position.x - p->position.x >= 0 )
+				|| ( !facingRight && position.x - p->position.x <= 0 ) )
+				return true;
 		}
 	}
 	else if (action == GROUNDBLOCKLOW)
