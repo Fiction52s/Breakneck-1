@@ -5,7 +5,7 @@ using namespace std;
 
 void Actor::GROUNDBLOCK_Start()
 {
-	if (oldAction != AIRBLOCK)
+	if (!IsBlockAction(oldAction) )
 	{
 		framesBlocking = 0;
 	}
@@ -22,6 +22,23 @@ void Actor::GROUNDBLOCK_Change()
 	{
 		SetAction(STAND);
 		frame = 0;
+	}
+	else
+	{
+		if (currInput.LDown())
+		{
+			SetAction(GROUNDBLOCKLOW);
+			frame = 0;
+		}
+	}
+
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
 	}
 	//BasicGroundAction(currNormal);
 }

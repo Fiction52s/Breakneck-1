@@ -259,6 +259,7 @@ struct Actor : QuadTreeCollider,
 		GETSHARD,
 		TESTSUPER,
 		GROUNDBLOCK,
+		GROUNDBLOCKLOW,
 		AIRBLOCK,
 		GROUNDPARRY,
 		GROUNDPARRYLOW,
@@ -330,6 +331,7 @@ struct Actor : QuadTreeCollider,
 		MISS,
 		HIT,
 		BLOCK,
+		PARRY,
 	};
 
 	const static int MAX_BUBBLES = 5;
@@ -468,6 +470,8 @@ struct Actor : QuadTreeCollider,
 	int blockstunFrames;
 	int currAttackHitBlock[4];
 	Actor *receivedHitPlayer;
+	HitResult receivedHitReaction;
+	
 	
 	bool hasWallJumpRechargeDoubleJump;
 	bool hasWallJumpRechargeAirDash;
@@ -475,6 +479,7 @@ struct Actor : QuadTreeCollider,
 	bool hasHitRechargeAirDash;
 
 	int framesBlocking;
+	int receivedHitAction;
 	//int pastCompressedInputs[60];
 
 	//---end of saved vars
@@ -880,6 +885,9 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 
+
+	bool CanParry(Actor *p, int action);
+	bool CanBlock(Actor *p, int action);
 	void RechargeAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
@@ -1208,11 +1216,15 @@ struct Actor : QuadTreeCollider,
 	bool CheckSwingHeld();
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
+	bool IsBlockAction(int a);
 	bool IsAttackAction( int a );
 	bool IsGroundAttackAction(int a);
 	bool IsSpringAction(int a);
 	bool IsOnRailAction(int a);
 	bool IsInHistunAction( int a );
+	bool IsActionGroundBlock(int a);
+	bool IsActionGroundBlockable( int a );
+	bool IsActionGroundLowBlockable( int a);
 
 	V2d GetKnockbackDirFromVel();
 
@@ -1648,6 +1660,17 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCK_TimeDepFrameInc();
 	int GROUNDBLOCK_GetActionLength();
 	Tileset * GROUNDBLOCK_GetTileset();
+
+	void GROUNDBLOCKLOW_Start();
+	void GROUNDBLOCKLOW_End();
+	void GROUNDBLOCKLOW_Change();
+	void GROUNDBLOCKLOW_Update();
+	void GROUNDBLOCKLOW_UpdateSprite();
+	void GROUNDBLOCKLOW_TransitionToAction(int a);
+	void GROUNDBLOCKLOW_TimeIndFrameInc();
+	void GROUNDBLOCKLOW_TimeDepFrameInc();
+	int GROUNDBLOCKLOW_GetActionLength();
+	Tileset * GROUNDBLOCKLOW_GetTileset();
 
 	void GROUNDHITSTUN_Start();
 	void GROUNDHITSTUN_End();

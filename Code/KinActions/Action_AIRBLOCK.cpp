@@ -6,7 +6,7 @@ using namespace std;
 
 void Actor::AIRBLOCK_Start()
 {
-	if (oldAction != GROUNDBLOCK)
+	if (!IsBlockAction(oldAction))
 	{
 		framesBlocking = 0;
 	}
@@ -23,6 +23,15 @@ void Actor::AIRBLOCK_Change()
 	{
 		SetAction(JUMP);
 		frame = 1;
+	}
+
+	if (currInput.LLeft())
+	{
+		facingRight = false;
+	}
+	else if (currInput.LRight())
+	{
+		facingRight = true;
 	}
 }
 
@@ -87,5 +96,5 @@ int Actor::AIRBLOCK_GetActionLength()
 
 Tileset * Actor::AIRBLOCK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("block_air_f_64x64.png");
 }

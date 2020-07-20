@@ -58,22 +58,9 @@ void Actor::GROUNDPARRYLOW_UpdateSprite()
 	SetSpriteTexture(action);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(1, r);
+	SetSpriteTile(0, r);
 
 	SetGroundedSpriteTransform();
-
-	/*if (scorpOn)
-	{
-	scorpSprite.setTexture(*ts_scorpSlide->texture);
-
-	SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
-
-	scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-	scorpSprite.getLocalBounds().height / 2 + 15);
-	scorpSprite.setPosition(position.x, position.y);
-	scorpSprite.setRotation(sprite->getRotation());
-	scorpSet = true;
-	}*/
 }
 
 void Actor::GROUNDPARRYLOW_TransitionToAction(int a)
@@ -97,5 +84,5 @@ int Actor::GROUNDPARRYLOW_GetActionLength()
 
 Tileset * Actor::GROUNDPARRYLOW_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("parry_low_64x64.png");
 }

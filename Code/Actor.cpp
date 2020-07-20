@@ -1308,6 +1308,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCK_GetActionLength,
 		&Actor::GROUNDBLOCK_GetTileset);
 
+	SetupFuncsForAction(GROUNDBLOCKLOW,
+		&Actor::GROUNDBLOCKLOW_Start,
+		&Actor::GROUNDBLOCKLOW_End,
+		&Actor::GROUNDBLOCKLOW_Change,
+		&Actor::GROUNDBLOCKLOW_Update,
+		&Actor::GROUNDBLOCKLOW_UpdateSprite,
+		&Actor::GROUNDBLOCKLOW_TransitionToAction,
+		&Actor::GROUNDBLOCKLOW_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKLOW_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKLOW_GetActionLength,
+		&Actor::GROUNDBLOCKLOW_GetTileset);
+
 	SetupFuncsForAction(GROUNDHITSTUN,
 		&Actor::GROUNDHITSTUN_Start,
 		&Actor::GROUNDHITSTUN_End,
@@ -4193,6 +4205,21 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 	
 }
 
+bool Actor::IsActionGroundBlockable( int a)
+{
+	return IsAttackAction(a);
+}
+
+bool Actor::IsActionGroundLowBlockable( int a)
+{
+	return IsGroundAttackAction(a);
+}
+
+bool Actor::IsActionGroundBlock(int a)
+{
+	return action == GROUNDBLOCK || action == GROUNDBLOCKLOW;
+}
+
 void Actor::ProcessReceivedHit()
 {
 	if (receivedHit != NULL)
@@ -4204,54 +4231,69 @@ void Actor::ProcessReceivedHit()
 		
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
 
-		if (action == GROUNDBLOCK)
+		switch (receivedHitReaction)
 		{
-			if (framesBlocking < 5)
-			{
-				SetAction(GROUNDPARRY);
-				frame = 0;
-				groundSpeed = 0;
-				invincibleFrames = 10;
-			}
-			else
+		case HitResult::BLOCK:
+		{
+			if (IsActionGroundBlock(action))
 			{
 				blockstunFrames = receivedHit->hitstunFrames / 2;
 				invincibleFrames = 0;
-			}
 
-			if (receivedHitPlayer != NULL)
+				if (receivedHitPlayer != NULL)
+				{
+					V2d otherPos = receivedHitPlayer->position;
+					if (otherPos.x < position.x)
+					{
+						groundSpeed += 2;
+					}
+					else
+					{
+						groundSpeed -= 2;
+					}
+				}
+			}
+			else if (action == AIRBLOCK)
 			{
-				V2d otherPos = receivedHitPlayer->position;
-				if (otherPos.x < position.x)
+				if (framesBlocking < 5)
 				{
-					groundSpeed += 2;
+					cout << "air parry" << endl;
 				}
-				else
+
+				blockstunFrames = receivedHit->hitstunFrames / 2;
+				invincibleFrames = 0;
+
+				if (receivedHitPlayer != NULL)
 				{
-					groundSpeed -= 2;
+					V2d otherPos = receivedHitPlayer->position;
+					velocity += 2.0 * normalize(position - otherPos);
 				}
 			}
-
+			
+			break;
 		}
-		else if (action == AIRBLOCK)
+		case HitResult::PARRY:
 		{
-			if (framesBlocking < 5)
+			if (action == GROUNDBLOCK)
 			{
-				cout << "air parry" << endl;
+				SetAction(GROUNDPARRY);
+			}
+			else if (action == GROUNDBLOCKLOW)
+			{
+				SetAction(GROUNDPARRYLOW);
 			}
 
-			blockstunFrames = receivedHit->hitstunFrames / 2;
-			invincibleFrames = 0;
+			frame = 0;
+			groundSpeed = 0;
+			invincibleFrames = 10;
 
-			if (receivedHitPlayer != NULL)
-			{
-				V2d otherPos = receivedHitPlayer->position;
-				velocity += 2.0 * normalize(position - otherPos);
-			}
-		}
-		else
+			break;
+		}			
+		case HitResult::HIT:
 		{
 			ReactToBeingHit();
+			break;
+		}
 		}
 
 		receivedHit = NULL;
@@ -11566,6 +11608,8 @@ void Actor::PhysicsResponse()
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;
 			pTarget->ApplyHit(currVSHitboxInfo);
 			pTarget->receivedHitPlayer = this;
+			pTarget->receivedHitAction = action;
+			pTarget->receivedHitReaction = checkHit;
 
 			if (checkHit == HitResult::HIT)
 			{
@@ -11583,7 +11627,7 @@ void Actor::PhysicsResponse()
 
 				currAttackHit = true;
 			}
-			else if (checkHit == HitResult::BLOCK)
+			else if (checkHit == HitResult::BLOCK )
 			{
 				currAttackHitBlock[target] = true;
 			}
@@ -16307,6 +16351,37 @@ bool Actor::IsSingleWirePulling()
 		&& !IsDoubleWirePulling() );
 }
 
+
+
+bool Actor::CanBlock(Actor *p, int action)
+{
+	if (action == GROUNDBLOCK)
+	{
+		if (IsActionGroundBlockable(action))
+		{
+			return true;
+		}
+	}
+	else if (action == GROUNDBLOCKLOW)
+	{
+		if (IsActionGroundLowBlockable(action))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+bool Actor::CanParry(Actor *p, int action)
+{
+	if (CanBlock(p, action) && framesBlocking < 10)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 Actor::HitResult Actor::CheckHitByPlayer(int pIndex)
 {
 	Actor *otherPlayer = sess->GetPlayer(pIndex);
@@ -16337,10 +16412,13 @@ Actor::HitResult Actor::CheckHitByPlayer(int pIndex)
 
 	if (intersects)
 	{
-		if (action == GROUNDBLOCK || action == AIRBLOCK )
+		if (otherPlayer->CanParry(this, action))
+		{
+			return HitResult::PARRY;
+		}
+		else if (otherPlayer->CanBlock(this, action))
 		{
 			return HitResult::BLOCK;
-			//add more detail to this later
 		}
 		else
 		{
@@ -16357,6 +16435,11 @@ void Actor::ClearPauseBufferedActions()
 	pauseBufferedJump = false;
 	pauseBufferedAttack = Action::Count;
 	pauseBufferedDash = false;
+}
+
+bool Actor::IsBlockAction(int a)
+{
+	return (a == AIRBLOCK || a == GROUNDBLOCK || a == GROUNDBLOCKLOW);
 }
 
 bool Actor::IsAttackAction( int a )

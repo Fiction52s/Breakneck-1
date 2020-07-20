@@ -19,6 +19,9 @@ void Actor::GROUNDPARRY_Change()
 		SetAction(STAND);
 		frame = 0;
 	}
+
+	//else if( BasicGroundAction)
+
 }
 
 void Actor::GROUNDPARRY_Update()

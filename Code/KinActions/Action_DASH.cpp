@@ -17,11 +17,13 @@ void Actor::DASH_End()
 
 void Actor::DASH_Change()
 {
+	if (TryGroundBlock()) return;
+
 	CheckBounceFlame();
 
 	if (TryGrind())return;
 
-
+	
 
 	if (currInput.A && !prevInput.A)
 	{
