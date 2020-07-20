@@ -181,7 +181,8 @@ struct Actor : QuadTreeCollider,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
-		GROUNDTECHSIDEWAYS,
+		GROUNDTECHBACK,
+		GROUNDTECHFORWARD,
 		WALLTECH,
 		STEEPSLIDE,
 		GRAVREVERSE,
@@ -1650,16 +1651,27 @@ struct Actor : QuadTreeCollider,
 	int GROUNDHITSTUN_GetActionLength();
 	Tileset * GROUNDHITSTUN_GetTileset();
 
-	void GROUNDTECHSIDEWAYS_Start();
-	void GROUNDTECHSIDEWAYS_End();
-	void GROUNDTECHSIDEWAYS_Change();
-	void GROUNDTECHSIDEWAYS_Update();
-	void GROUNDTECHSIDEWAYS_UpdateSprite();
-	void GROUNDTECHSIDEWAYS_TransitionToAction(int a);
-	void GROUNDTECHSIDEWAYS_TimeIndFrameInc();
-	void GROUNDTECHSIDEWAYS_TimeDepFrameInc();
-	int GROUNDTECHSIDEWAYS_GetActionLength();
-	Tileset * GROUNDTECHSIDEWAYS_GetTileset();
+	void GROUNDTECHBACK_Start();
+	void GROUNDTECHBACK_End();
+	void GROUNDTECHBACK_Change();
+	void GROUNDTECHBACK_Update();
+	void GROUNDTECHBACK_UpdateSprite();
+	void GROUNDTECHBACK_TransitionToAction(int a);
+	void GROUNDTECHBACK_TimeIndFrameInc();
+	void GROUNDTECHBACK_TimeDepFrameInc();
+	int GROUNDTECHBACK_GetActionLength();
+	Tileset * GROUNDTECHBACK_GetTileset();
+
+	void GROUNDTECHFORWARD_Start();
+	void GROUNDTECHFORWARD_End();
+	void GROUNDTECHFORWARD_Change();
+	void GROUNDTECHFORWARD_Update();
+	void GROUNDTECHFORWARD_UpdateSprite();
+	void GROUNDTECHFORWARD_TransitionToAction(int a);
+	void GROUNDTECHFORWARD_TimeIndFrameInc();
+	void GROUNDTECHFORWARD_TimeDepFrameInc();
+	int GROUNDTECHFORWARD_GetActionLength();
+	Tileset * GROUNDTECHFORWARD_GetTileset();
 
 	void INTRO_Start();
 	void INTRO_End();

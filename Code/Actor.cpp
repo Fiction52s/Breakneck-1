@@ -1320,17 +1320,29 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDHITSTUN_GetActionLength,
 		&Actor::GROUNDHITSTUN_GetTileset);
 
-	SetupFuncsForAction(GROUNDTECHSIDEWAYS,
-		&Actor::GROUNDTECHSIDEWAYS_Start,
-		&Actor::GROUNDTECHSIDEWAYS_End,
-		&Actor::GROUNDTECHSIDEWAYS_Change,
-		&Actor::GROUNDTECHSIDEWAYS_Update,
-		&Actor::GROUNDTECHSIDEWAYS_UpdateSprite,
-		&Actor::GROUNDTECHSIDEWAYS_TransitionToAction,
-		&Actor::GROUNDTECHSIDEWAYS_TimeIndFrameInc,
-		&Actor::GROUNDTECHSIDEWAYS_TimeDepFrameInc,
-		&Actor::GROUNDTECHSIDEWAYS_GetActionLength,
-		&Actor::GROUNDTECHSIDEWAYS_GetTileset);
+	SetupFuncsForAction(GROUNDTECHBACK,
+		&Actor::GROUNDTECHBACK_Start,
+		&Actor::GROUNDTECHBACK_End,
+		&Actor::GROUNDTECHBACK_Change,
+		&Actor::GROUNDTECHBACK_Update,
+		&Actor::GROUNDTECHBACK_UpdateSprite,
+		&Actor::GROUNDTECHBACK_TransitionToAction,
+		&Actor::GROUNDTECHBACK_TimeIndFrameInc,
+		&Actor::GROUNDTECHBACK_TimeDepFrameInc,
+		&Actor::GROUNDTECHBACK_GetActionLength,
+		&Actor::GROUNDTECHBACK_GetTileset);
+
+	SetupFuncsForAction(GROUNDTECHFORWARD,
+		&Actor::GROUNDTECHFORWARD_Start,
+		&Actor::GROUNDTECHFORWARD_End,
+		&Actor::GROUNDTECHFORWARD_Change,
+		&Actor::GROUNDTECHFORWARD_Update,
+		&Actor::GROUNDTECHFORWARD_UpdateSprite,
+		&Actor::GROUNDTECHFORWARD_TransitionToAction,
+		&Actor::GROUNDTECHFORWARD_TimeIndFrameInc,
+		&Actor::GROUNDTECHFORWARD_TimeDepFrameInc,
+		&Actor::GROUNDTECHFORWARD_GetActionLength,
+		&Actor::GROUNDTECHFORWARD_GetTileset);
 
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
@@ -4226,10 +4238,6 @@ void Actor::ReactToBeingHit()
 		}
 		else if (actorIndex == 1)
 		{
-			if (receivedHit->damage > 0)
-			{
-				int xx = 5;
-			}
 			fm->data.p1Health -= receivedHit->damage;
 			if (fm->data.p1Health < 0)
 				fm->data.p1Health = 0;
@@ -5076,8 +5084,6 @@ void Actor::UpdatePrePhysics()
 	HitstunBufferedChangeAction();
 	
 	ChangeAction();
-	
-	currHitboxes = NULL;
 
 	UpdateAction();
 
@@ -5191,6 +5197,7 @@ void Actor::SetAction( int a )
 
 	action = a;
 	frame = 0;
+	currHitboxes = NULL;
 
 	if (repeatingSound != NULL)
 	{

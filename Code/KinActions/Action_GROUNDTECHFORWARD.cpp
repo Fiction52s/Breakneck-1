@@ -4,7 +4,7 @@
 using namespace sf;
 using namespace std;
 
-void Actor::GROUNDTECHSIDEWAYS_Start()
+void Actor::GROUNDTECHFORWARD_Start()
 {
 	if (currInput.LLeft())
 	{
@@ -26,22 +26,22 @@ void Actor::GROUNDTECHSIDEWAYS_Start()
 	}
 }
 
-void Actor::GROUNDTECHSIDEWAYS_End()
+void Actor::GROUNDTECHFORWARD_End()
 {
 	SetAction(STAND);
 	frame = 0;
 }
 
-void Actor::GROUNDTECHSIDEWAYS_Change()
+void Actor::GROUNDTECHFORWARD_Change()
 {
 
 }
 
-void Actor::GROUNDTECHSIDEWAYS_Update()
+void Actor::GROUNDTECHFORWARD_Update()
 {
 }
 
-void Actor::GROUNDTECHSIDEWAYS_UpdateSprite()
+void Actor::GROUNDTECHFORWARD_UpdateSprite()
 {
 	SetSpriteTexture(action);
 
@@ -52,37 +52,29 @@ void Actor::GROUNDTECHSIDEWAYS_UpdateSprite()
 	SetGroundedSpriteTransform();
 }
 
-void Actor::GROUNDTECHSIDEWAYS_TransitionToAction(int a)
+void Actor::GROUNDTECHFORWARD_TransitionToAction(int a)
 {
-	if (kinMode == K_DESPERATION)
-	{
-		SetExpr(KinMask::Expr::Expr_DESP);
-	}
-	else
-	{
-		SetExpr(KinMask::Expr::Expr_NEUTRAL);
-	}
 	stunBufferedJump = false;
 	stunBufferedDash = false;
 	stunBufferedAttack = Action::Count;
 }
 
-void Actor::GROUNDTECHSIDEWAYS_TimeIndFrameInc()
+void Actor::GROUNDTECHFORWARD_TimeIndFrameInc()
 {
 
 }
 
-void Actor::GROUNDTECHSIDEWAYS_TimeDepFrameInc()
+void Actor::GROUNDTECHFORWARD_TimeDepFrameInc()
 {
 
 }
 
-int Actor::GROUNDTECHSIDEWAYS_GetActionLength()
+int Actor::GROUNDTECHFORWARD_GetActionLength()
 {
 	return 20;
 }
 
-Tileset * Actor::GROUNDTECHSIDEWAYS_GetTileset()
+Tileset * Actor::GROUNDTECHFORWARD_GetTileset()
 {
 	return GetActionTileset("jump_64x64.png");
 }
