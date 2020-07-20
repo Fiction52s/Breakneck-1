@@ -61,8 +61,7 @@ void Actor::GRINDBALL_Change()
 				}
 
 				framesNotGrinding = 0;
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 
 				if (!j)
 				{
@@ -176,8 +175,7 @@ void Actor::GRINDBALL_Change()
 						facingRight = false;
 					}
 
-					hasAirDash = true;
-					hasDoubleJump = true;
+					RechargeAirOptions();
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;

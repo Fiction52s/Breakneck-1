@@ -59,8 +59,7 @@ void Actor::GRINDATTACK_Change()
 				}
 
 				framesNotGrinding = 0;
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 				ground = grindEdge;
 				edgeQuantity = grindQuantity;
 				SetAction(LAND);
@@ -170,8 +169,7 @@ void Actor::GRINDATTACK_Change()
 						facingRight = false;
 					}
 
-					hasAirDash = true;
-					hasDoubleJump = true;
+					RechargeAirOptions();
 
 
 					ground = grindEdge;

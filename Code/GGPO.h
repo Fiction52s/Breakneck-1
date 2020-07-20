@@ -279,6 +279,7 @@ struct PState
 	int blockstunFrames;
 	int currAttackHitBlock[4];
 	Actor *receivedHitPlayer;
+	bool hasWallJumpRecharge;
 
 	//HitboxInfo currVSHitboxInfo;
 };

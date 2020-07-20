@@ -222,6 +222,8 @@ void Actor::PopulateState(PState *ps)
 	ps->blockstunFrames = blockstunFrames;
 	memcpy(ps->currAttackHitBlock, currAttackHitBlock, sizeof(int) * 4);
 	ps->receivedHitPlayer = receivedHitPlayer;
+
+	ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -371,6 +373,8 @@ void Actor::PopulateFromState(PState *ps)
 	blockstunFrames = ps->blockstunFrames;
 	memcpy(currAttackHitBlock, ps->currAttackHitBlock, sizeof(int) * 4);
 	receivedHitPlayer = ps->receivedHitPlayer;
+
+	hasWallJumpRecharge = ps->hasWallJumpRecharge;
 }
 
 
@@ -3841,8 +3845,7 @@ void Actor::Respawn()
 
 	flashFrames = 0;
 	
-	hasDoubleJump = true;
-	hasAirDash = true;
+	RechargeAirOptions();
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -4223,6 +4226,10 @@ void Actor::ReactToBeingHit()
 		}
 		else if (actorIndex == 1)
 		{
+			if (receivedHit->damage > 0)
+			{
+				int xx = 5;
+			}
 			fm->data.p1Health -= receivedHit->damage;
 			if (fm->data.p1Health < 0)
 				fm->data.p1Health = 0;
@@ -6075,8 +6082,7 @@ void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 	ground = g;
 	edgeQuantity = q;
 
-	hasDoubleJump = true;
-	hasAirDash = true;
+	RechargeAirOptions();
 	
 	offsetX = xoff;
 
@@ -6108,8 +6114,7 @@ void Actor::SetGroundedPos(Edge *g, double q)
 	ground = g;
 	edgeQuantity = q;
 
-	hasDoubleJump = true;
-	hasAirDash = true;
+	RechargeAirOptions();
 
 	V2d norm = ground->Normal();
 	if (norm.x > 0)
@@ -7809,8 +7814,7 @@ bool Actor::ExitGrind(bool jump)
 			}
 
 			framesNotGrinding = 0;
-			hasAirDash = true;
-			hasDoubleJump = true;
+			RechargeAirOptions();
 
 			if (!jump)
 			{
@@ -7924,8 +7928,7 @@ bool Actor::ExitGrind(bool jump)
 					facingRight = false;
 				}
 
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 
 				ground = grindEdge;
 				groundSpeed = -grindSpeed;
@@ -8683,8 +8686,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				{
 					if (HasUpgrade( UPGRADE_POWER_GRAV ) || grindEdge->Normal().y < 0)
 					{
-						hasDoubleJump = true;
-						hasAirDash = true;
+						RechargeAirOptions();
 					}
 				}
 				q = 0;
@@ -8749,8 +8751,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				{
 					if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
 					{
-						hasDoubleJump = true;
-						hasAirDash = true;
+						RechargeAirOptions();
 					}
 				}
 			}
@@ -8777,8 +8778,7 @@ void Actor::HandleBounceGrass()
 		velocity.y = 25;
 	}
 
-	hasDoubleJump = true;
-	hasAirDash = true;
+	RechargeAirOptions();
 
 	if (action == AIRDASH || IsSpringAction(action))
 	{
@@ -8995,6 +8995,15 @@ bool Actor::UpdateAutoRunPhysics( double q, double m )
 	}
 
 	return false;
+}
+
+void Actor::RechargeAirOptions()
+{
+	hasDoubleJump = true;
+	hasAirDash = true;
+	hasWallJumpRecharge = true;
+	hasHitRechargeDoubleJump = true;
+	hasHitRechargeAirDash = true;
 }
 
 void Actor::UpdatePhysics()
@@ -10265,8 +10274,7 @@ void Actor::UpdatePhysics()
 
 				//if( gNorm.y <= -steepThresh )
 				{
-					hasAirDash = true;
-					hasDoubleJump = true;
+					RechargeAirOptions();
 				}
 
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
@@ -10335,8 +10343,7 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 				reversed = true;
 
 				ground = minContact.edge;
@@ -10776,8 +10783,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 		offsetX = 0;
 	}
 
-	hasAirDash = true;
-	hasDoubleJump = true;
+	RechargeAirOptions();
 
 
 	ground = grindEdge;
@@ -10864,8 +10870,7 @@ void Actor::HitOutOfGrind()
 	V2d grindNorm = grindEdge->Normal();
 
 	framesNotGrinding = 0;
-	hasAirDash = true;
-	hasDoubleJump = true;
+	RechargeAirOptions();
 	ground = grindEdge;
 	edgeQuantity = grindQuantity;
 	groundSpeed = grindSpeed;
@@ -11061,8 +11066,7 @@ void Actor::PhysicsResponse()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				hasDoubleJump = true;
-				hasAirDash = true;
+				RechargeAirOptions();
 				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
 					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
@@ -11083,8 +11087,7 @@ void Actor::PhysicsResponse()
 			}
 			else if( bn.y < 0 )
 			{
-				hasDoubleJump = true;
-				hasAirDash = true;
+				RechargeAirOptions();
 
 
 				if( abs( storedBounceVel.y ) < 10 )
@@ -11312,9 +11315,8 @@ void Actor::PhysicsResponse()
 				HitWallWhileInAirHitstun();
 			}
 		}
-		else if( action != AIRHITSTUN && action != AIRDASH )
+		else if( action != AIRHITSTUN && action != AIRDASH && action != AIRBLOCK )
 		{
-			//oldAction = action;
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
 				if( length( wallNormal ) > 0 
@@ -11488,9 +11490,18 @@ void Actor::PhysicsResponse()
 			if (checkHit == HitResult::HIT)
 			{
 				//need to work these in later for hitlag, they are only here for testing for now.
+				if (hasHitRechargeDoubleJump && !hasDoubleJump)
+				{
+					hasDoubleJump = true;
+					hasHitRechargeDoubleJump = false;
+				}
+				if (hasHitRechargeAirDash && !hasAirDash)
+				{
+					hasAirDash = true;
+					hasHitRechargeAirDash = false;
+				}
+
 				currAttackHit = true;
-				hasDoubleJump = true;
-				hasAirDash = true;
 			}
 			else if (checkHit == HitResult::BLOCK)
 			{
@@ -11862,8 +11873,7 @@ void Actor::HandleSpecialTerrain(int stType)
 			action = SPRINGSTUNGLIDE;
 			holdJump = false;
 			holdDouble = false;
-			hasDoubleJump = true;
-			hasAirDash = true;
+			RechargeAirOptions();
 			rightWire->Reset();
 			leftWire->Reset();
 			frame = 0;
@@ -12796,8 +12806,7 @@ bool Actor::SwingLaunch()
 
 		holdJump = false;
 		holdDouble = false;
-		hasDoubleJump = true;
-		hasAirDash = true;
+		RechargeAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -12845,8 +12854,7 @@ bool Actor::TeleporterLaunch()
 
 		holdJump = false;
 		holdDouble = false;
-		hasDoubleJump = true;
-		hasAirDash = true;
+		RechargeAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -12992,8 +13000,7 @@ bool Actor::SpringLaunch()
 		
 		holdJump = false;
 		holdDouble = false;
-		hasDoubleJump = true;
-		hasAirDash = true;
+		RechargeAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -14012,8 +14019,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					SetAction(RAILSLIDE);
 				}
 
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 				frame = 0;
 				framesGrinding = 0;
 				grindEdge = e;
@@ -15219,8 +15225,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 	
 	
-	hasDoubleJump = true;
-	hasAirDash = true;
+	RechargeAirOptions();
 	/*switch (action)
 	{
 	case UAIR:

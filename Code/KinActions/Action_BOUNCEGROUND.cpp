@@ -381,8 +381,7 @@ void Actor::BOUNCEGROUND_Change()
 
 			//if( gNorm.y <= -steepThresh )
 			{
-				hasAirDash = true;
-				hasDoubleJump = true;
+				RechargeAirOptions();
 			}
 
 			if (testVel.x < 0 && currNormal.y <= -steepThresh)

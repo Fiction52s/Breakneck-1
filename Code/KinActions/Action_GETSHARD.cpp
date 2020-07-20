@@ -24,8 +24,7 @@ void Actor::GETSHARD_Update()
 		{
 			ground = NULL;
 			framesInAir = 0;
-			hasAirDash = true;
-			hasDoubleJump = true;
+			RechargeAirOptions();
 		}
 	}
 

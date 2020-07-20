@@ -464,7 +464,9 @@ struct Actor : QuadTreeCollider,
 	int blockstunFrames;
 	int currAttackHitBlock[4];
 	Actor *receivedHitPlayer;
-	int numWallJumps;
+	bool hasWallJumpRecharge;
+	bool hasHitRechargeDoubleJump;
+	bool hasHitRechargeAirDash;
 
 	//---end of saved vars
 	int superActiveLimit;
@@ -868,6 +870,7 @@ struct Actor : QuadTreeCollider,
 	~Actor();
 	void Init();
 
+	void RechargeAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
 	V2d GetAdjustedKnockback(const V2d &kbDir);

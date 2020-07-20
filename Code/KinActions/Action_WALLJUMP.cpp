@@ -5,6 +5,13 @@ using namespace std;
 
 void Actor::WALLJUMP_Start()
 {
+	if (hasWallJumpRecharge)
+	{
+		hasDoubleJump = true;
+		hasAirDash = true;
+		hasWallJumpRecharge = false;
+	}
+
 	if (currInput.rightShoulder && !prevInput.rightShoulder)
 	{
 		if (currInput.LUp())
