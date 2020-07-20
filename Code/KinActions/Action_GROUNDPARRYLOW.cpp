@@ -3,7 +3,7 @@
 using namespace sf;
 using namespace std;
 
-void Actor::GROUNDBLOCK_Start()
+void Actor::GROUNDPARRYLOW_Start()
 {
 	if (oldAction != AIRBLOCK)
 	{
@@ -11,14 +11,14 @@ void Actor::GROUNDBLOCK_Start()
 	}
 }
 
-void Actor::GROUNDBLOCK_End()
+void Actor::GROUNDPARRYLOW_End()
 {
 	frame = 0;
 }
 
-void Actor::GROUNDBLOCK_Change()
+void Actor::GROUNDPARRYLOW_Change()
 {
-	if (!currInput.Y && blockstunFrames == 0 )
+	if (!currInput.Y && blockstunFrames == 0)
 	{
 		SetAction(STAND);
 		frame = 0;
@@ -26,7 +26,7 @@ void Actor::GROUNDBLOCK_Change()
 	//BasicGroundAction(currNormal);
 }
 
-void Actor::GROUNDBLOCK_Update()
+void Actor::GROUNDPARRYLOW_Update()
 {
 	//double gAngle = GroundedAngle();
 	////double fac = gravity * 2.0 / 3;
@@ -53,7 +53,7 @@ void Actor::GROUNDBLOCK_Update()
 	}
 }
 
-void Actor::GROUNDBLOCK_UpdateSprite()
+void Actor::GROUNDPARRYLOW_UpdateSprite()
 {
 	SetSpriteTexture(action);
 
@@ -64,38 +64,38 @@ void Actor::GROUNDBLOCK_UpdateSprite()
 
 	/*if (scorpOn)
 	{
-		scorpSprite.setTexture(*ts_scorpSlide->texture);
+	scorpSprite.setTexture(*ts_scorpSlide->texture);
 
-		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
+	SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
 
-		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-			scorpSprite.getLocalBounds().height / 2 + 15);
-		scorpSprite.setPosition(position.x, position.y);
-		scorpSprite.setRotation(sprite->getRotation());
-		scorpSet = true;
+	scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+	scorpSprite.getLocalBounds().height / 2 + 15);
+	scorpSprite.setPosition(position.x, position.y);
+	scorpSprite.setRotation(sprite->getRotation());
+	scorpSet = true;
 	}*/
 }
 
-void Actor::GROUNDBLOCK_TransitionToAction(int a)
+void Actor::GROUNDPARRYLOW_TransitionToAction(int a)
 {
 }
 
-void Actor::GROUNDBLOCK_TimeIndFrameInc()
-{
-
-}
-
-void Actor::GROUNDBLOCK_TimeDepFrameInc()
+void Actor::GROUNDPARRYLOW_TimeIndFrameInc()
 {
 
 }
 
-int Actor::GROUNDBLOCK_GetActionLength()
+void Actor::GROUNDPARRYLOW_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GROUNDPARRYLOW_GetActionLength()
 {
 	return 1;
 }
 
-Tileset * Actor::GROUNDBLOCK_GetTileset()
+Tileset * Actor::GROUNDPARRYLOW_GetTileset()
 {
 	return GetActionTileset("hurt_64x64.png");
 }

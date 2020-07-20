@@ -1245,6 +1245,7 @@ void Session::CreateBulletQuads()
 {
 	if (totalNumberBullets > 0)
 	{
+		cout << "making big bullet VA" << endl;
 		bigBulletVA = new Vertex[totalNumberBullets * 4];
 		for (int i = 0; i < totalNumberBullets * 4; ++i)
 		{
@@ -1260,7 +1261,7 @@ void Session::CreateBulletQuads()
 
 void Session::DrawBullets(sf::RenderTarget *target)
 {
-	if (ts_basicBullets != NULL)
+	if (totalNumberBullets > 0 )
 	{
 		target->draw(bigBulletVA, totalNumberBullets * 4, sf::Quads, ts_basicBullets->texture);
 	}
@@ -1406,6 +1407,7 @@ Session::~Session()
 	if (bigBulletVA != NULL)
 	{
 		delete [] bigBulletVA;
+		bigBulletVA = NULL;
 	}
 
 	if (parentGame == NULL && absorbParticles != NULL)

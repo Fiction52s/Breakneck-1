@@ -6,6 +6,10 @@ using namespace std;
 
 void Actor::AIRBLOCK_Start()
 {
+	if (oldAction != GROUNDBLOCK)
+	{
+		framesBlocking = 0;
+	}
 }
 
 void Actor::AIRBLOCK_End()
@@ -24,6 +28,8 @@ void Actor::AIRBLOCK_Change()
 
 void Actor::AIRBLOCK_Update()
 {
+	++framesBlocking;
+
 	if (blockstunFrames > 0)
 	{
 		blockstunFrames--;

@@ -223,7 +223,7 @@ void Actor::PopulateState(PState *ps)
 	memcpy(ps->currAttackHitBlock, currAttackHitBlock, sizeof(int) * 4);
 	ps->receivedHitPlayer = receivedHitPlayer;
 
-	ps->hasWallJumpRecharge = hasWallJumpRecharge;
+	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
 void Actor::PopulateFromState(PState *ps)
@@ -374,7 +374,7 @@ void Actor::PopulateFromState(PState *ps)
 	memcpy(currAttackHitBlock, ps->currAttackHitBlock, sizeof(int) * 4);
 	receivedHitPlayer = ps->receivedHitPlayer;
 
-	hasWallJumpRecharge = ps->hasWallJumpRecharge;
+	//hasWallJumpRecharge = ps->hasWallJumpRecharge;
 }
 
 
@@ -1320,6 +1320,30 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDHITSTUN_GetActionLength,
 		&Actor::GROUNDHITSTUN_GetTileset);
 
+	SetupFuncsForAction(GROUNDPARRY,
+		&Actor::GROUNDPARRY_Start,
+		&Actor::GROUNDPARRY_End,
+		&Actor::GROUNDPARRY_Change,
+		&Actor::GROUNDPARRY_Update,
+		&Actor::GROUNDPARRY_UpdateSprite,
+		&Actor::GROUNDPARRY_TransitionToAction,
+		&Actor::GROUNDPARRY_TimeIndFrameInc,
+		&Actor::GROUNDPARRY_TimeDepFrameInc,
+		&Actor::GROUNDPARRY_GetActionLength,
+		&Actor::GROUNDPARRY_GetTileset);
+
+	SetupFuncsForAction(GROUNDPARRYLOW,
+		&Actor::GROUNDPARRYLOW_Start,
+		&Actor::GROUNDPARRYLOW_End,
+		&Actor::GROUNDPARRYLOW_Change,
+		&Actor::GROUNDPARRYLOW_Update,
+		&Actor::GROUNDPARRYLOW_UpdateSprite,
+		&Actor::GROUNDPARRYLOW_TransitionToAction,
+		&Actor::GROUNDPARRYLOW_TimeIndFrameInc,
+		&Actor::GROUNDPARRYLOW_TimeDepFrameInc,
+		&Actor::GROUNDPARRYLOW_GetActionLength,
+		&Actor::GROUNDPARRYLOW_GetTileset);
+
 	SetupFuncsForAction(GROUNDTECHBACK,
 		&Actor::GROUNDTECHBACK_Start,
 		&Actor::GROUNDTECHBACK_End,
@@ -1343,6 +1367,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHFORWARD_TimeDepFrameInc,
 		&Actor::GROUNDTECHFORWARD_GetActionLength,
 		&Actor::GROUNDTECHFORWARD_GetTileset);
+
+	SetupFuncsForAction(GROUNDTECHINPLACE,
+		&Actor::GROUNDTECHINPLACE_Start,
+		&Actor::GROUNDTECHINPLACE_End,
+		&Actor::GROUNDTECHINPLACE_Change,
+		&Actor::GROUNDTECHINPLACE_Update,
+		&Actor::GROUNDTECHINPLACE_UpdateSprite,
+		&Actor::GROUNDTECHINPLACE_TransitionToAction,
+		&Actor::GROUNDTECHINPLACE_TimeIndFrameInc,
+		&Actor::GROUNDTECHINPLACE_TimeDepFrameInc,
+		&Actor::GROUNDTECHINPLACE_GetActionLength,
+		&Actor::GROUNDTECHINPLACE_GetTileset);
 
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
@@ -4166,14 +4202,22 @@ void Actor::ProcessReceivedHit()
 		attackingHitlag = false;
 		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
 		
-		
-
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
 
 		if (action == GROUNDBLOCK)
 		{
-			blockstunFrames = receivedHit->hitstunFrames / 2;
-			invincibleFrames = 0;
+			if (framesBlocking < 5)
+			{
+				SetAction(GROUNDPARRY);
+				frame = 0;
+				groundSpeed = 0;
+				invincibleFrames = 10;
+			}
+			else
+			{
+				blockstunFrames = receivedHit->hitstunFrames / 2;
+				invincibleFrames = 0;
+			}
 
 			if (receivedHitPlayer != NULL)
 			{
@@ -4191,6 +4235,11 @@ void Actor::ProcessReceivedHit()
 		}
 		else if (action == AIRBLOCK)
 		{
+			if (framesBlocking < 5)
+			{
+				cout << "air parry" << endl;
+			}
+
 			blockstunFrames = receivedHit->hitstunFrames / 2;
 			invincibleFrames = 0;
 
@@ -4955,6 +5004,11 @@ void Actor::UpdatePrePhysics()
 	{
 		currInput.Y = true;
 	}*/
+	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
+	{
+		pastCompressedInputs[i+1] = pastCompressedInputs[i];
+	}
+	pastCompressedInputs[0] = currInput.GetCompressedState();*/
 
 	if (currInput.B && !prevInput.B)
 	{
@@ -9008,7 +9062,8 @@ void Actor::RechargeAirOptions()
 {
 	hasDoubleJump = true;
 	hasAirDash = true;
-	hasWallJumpRecharge = true;
+	hasWallJumpRechargeDoubleJump = true;
+	hasWallJumpRechargeAirDash = true;
 	hasHitRechargeDoubleJump = true;
 	hasHitRechargeAirDash = true;
 }
@@ -10980,7 +11035,25 @@ void Actor::HitGroundWhileInAirHitstun()
 {
 	if (CanTech())
 	{
-		SetAction(GROUNDTECHSIDEWAYS);
+		bool forward = (facingRight && currInput.LRight())
+			|| (!facingRight && currInput.LLeft());
+		//bool inplace = (!currInput.LRight() && !currInput.LLeft());
+		bool back = (facingRight && currInput.LLeft()) ||
+			(!facingRight && currInput.LRight());
+
+		if (forward)
+		{
+			SetAction(GROUNDTECHFORWARD);
+		}
+		else if (back)
+		{
+			SetAction(GROUNDTECHBACK);
+		}
+		else
+		{
+			SetAction(GROUNDTECHINPLACE);
+		}
+
 		frame = 0;
 		physicsOver = true;
 	}
@@ -12364,7 +12437,6 @@ void Actor::SlowDependentFrameIncrement()
 
 void Actor::SlowIndependentFrameIncrement()
 {
-
 }
 
 void Actor::UpdateBounceFlameCounters()

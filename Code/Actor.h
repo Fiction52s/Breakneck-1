@@ -183,6 +183,7 @@ struct Actor : QuadTreeCollider,
 		WALLJUMP,
 		GROUNDTECHBACK,
 		GROUNDTECHFORWARD,
+		GROUNDTECHINPLACE,
 		WALLTECH,
 		STEEPSLIDE,
 		GRAVREVERSE,
@@ -259,6 +260,8 @@ struct Actor : QuadTreeCollider,
 		TESTSUPER,
 		GROUNDBLOCK,
 		AIRBLOCK,
+		GROUNDPARRY,
+		GROUNDPARRYLOW,
 		Count
 	};
 
@@ -465,11 +468,17 @@ struct Actor : QuadTreeCollider,
 	int blockstunFrames;
 	int currAttackHitBlock[4];
 	Actor *receivedHitPlayer;
-	bool hasWallJumpRecharge;
+	
+	bool hasWallJumpRechargeDoubleJump;
+	bool hasWallJumpRechargeAirDash;
 	bool hasHitRechargeDoubleJump;
 	bool hasHitRechargeAirDash;
 
+	int framesBlocking;
+	//int pastCompressedInputs[60];
+
 	//---end of saved vars
+	//const static int NUM_PAST_INPUTS = 60;
 	int superActiveLimit;
 	int comboCounterResetFrames;
 	sf::Vector2f fairSwordOffset[3];
@@ -1651,6 +1660,28 @@ struct Actor : QuadTreeCollider,
 	int GROUNDHITSTUN_GetActionLength();
 	Tileset * GROUNDHITSTUN_GetTileset();
 
+	void GROUNDPARRY_Start();
+	void GROUNDPARRY_End();
+	void GROUNDPARRY_Change();
+	void GROUNDPARRY_Update();
+	void GROUNDPARRY_UpdateSprite();
+	void GROUNDPARRY_TransitionToAction(int a);
+	void GROUNDPARRY_TimeIndFrameInc();
+	void GROUNDPARRY_TimeDepFrameInc();
+	int GROUNDPARRY_GetActionLength();
+	Tileset * GROUNDPARRY_GetTileset();
+
+	void GROUNDPARRYLOW_Start();
+	void GROUNDPARRYLOW_End();
+	void GROUNDPARRYLOW_Change();
+	void GROUNDPARRYLOW_Update();
+	void GROUNDPARRYLOW_UpdateSprite();
+	void GROUNDPARRYLOW_TransitionToAction(int a);
+	void GROUNDPARRYLOW_TimeIndFrameInc();
+	void GROUNDPARRYLOW_TimeDepFrameInc();
+	int GROUNDPARRYLOW_GetActionLength();
+	Tileset * GROUNDPARRYLOW_GetTileset();
+
 	void GROUNDTECHBACK_Start();
 	void GROUNDTECHBACK_End();
 	void GROUNDTECHBACK_Change();
@@ -1672,6 +1703,19 @@ struct Actor : QuadTreeCollider,
 	void GROUNDTECHFORWARD_TimeDepFrameInc();
 	int GROUNDTECHFORWARD_GetActionLength();
 	Tileset * GROUNDTECHFORWARD_GetTileset();
+
+	void GROUNDTECHINPLACE_Start();
+	void GROUNDTECHINPLACE_End();
+	void GROUNDTECHINPLACE_Change();
+	void GROUNDTECHINPLACE_Update();
+	void GROUNDTECHINPLACE_UpdateSprite();
+	void GROUNDTECHINPLACE_TransitionToAction(int a);
+	void GROUNDTECHINPLACE_TimeIndFrameInc();
+	void GROUNDTECHINPLACE_TimeDepFrameInc();
+	int GROUNDTECHINPLACE_GetActionLength();
+	Tileset * GROUNDTECHINPLACE_GetTileset();
+
+	
 
 	void INTRO_Start();
 	void INTRO_End();

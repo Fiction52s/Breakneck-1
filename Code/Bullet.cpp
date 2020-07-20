@@ -377,6 +377,10 @@ void Launcher::UpdatePhysics(int substep, bool lowRes)
 
 void Launcher::UpdateSprites()
 {
+	if (ts_bullet == NULL)
+	{
+		ts_bullet = sess->ts_basicBullets;
+	}
 	BasicBullet *curr = activeBullets;
 	while (curr != NULL)
 	{

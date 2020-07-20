@@ -864,6 +864,7 @@ void EditSession::TestPlayerMode()
 		delete[] bigBulletVA;
 	}
 
+	totalNumberBullets = 0;
 	Enemy *currEnemy;
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -878,7 +879,17 @@ void EditSession::TestPlayerMode()
 	}
 
 	CreateBulletQuads();
-
+	/*for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				totalNumberBullets = currEnemy->SetLaunchersStartIndex(totalNumberBullets);
+			}
+		}
+	}*/
 	
 	
 

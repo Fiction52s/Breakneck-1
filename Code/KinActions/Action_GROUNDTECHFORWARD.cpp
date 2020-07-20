@@ -46,7 +46,7 @@ void Actor::GROUNDTECHFORWARD_UpdateSprite()
 	SetSpriteTexture(action);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(9, r);
+	SetSpriteTile(frame/3, r);
 
 
 	SetGroundedSpriteTransform();
@@ -71,10 +71,10 @@ void Actor::GROUNDTECHFORWARD_TimeDepFrameInc()
 
 int Actor::GROUNDTECHFORWARD_GetActionLength()
 {
-	return 20;
+	return 12 * 3;
 }
 
 Tileset * Actor::GROUNDTECHFORWARD_GetTileset()
 {
-	return GetActionTileset("jump_64x64.png");
+	return GetActionTileset("tech_forward_80x80.png");
 }

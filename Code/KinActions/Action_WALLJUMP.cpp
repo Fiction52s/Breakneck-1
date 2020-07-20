@@ -5,11 +5,15 @@ using namespace std;
 
 void Actor::WALLJUMP_Start()
 {
-	if (hasWallJumpRecharge)
+	if (hasWallJumpRechargeAirDash && !hasAirDash)
+	{
+		hasAirDash = true;
+		hasWallJumpRechargeAirDash = false;
+	}
+	if (hasWallJumpRechargeDoubleJump && !hasDoubleJump)
 	{
 		hasDoubleJump = true;
-		hasAirDash = true;
-		hasWallJumpRecharge = false;
+		hasWallJumpRechargeDoubleJump = false;
 	}
 
 	if (currInput.rightShoulder && !prevInput.rightShoulder)
