@@ -50,7 +50,7 @@
 #include "GGPO.h"
 #include "GameMode.h"
 
-#define GGPO_ON
+//#define GGPO_ON
 
 using namespace std;
 using namespace sf;

@@ -106,7 +106,7 @@ void Gator::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 	b->launcher->DeactivateBullet(b);
 }
 
-void Gator::BulletHitPlayer(BasicBullet *b)
+void Gator::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	//if you dont deactivate the bullet it will hit constantly and make weird fx
 
@@ -114,7 +114,7 @@ void Gator::BulletHitPlayer(BasicBullet *b)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	sess->PlayerApplyHit(b->launcher->hitboxInfo, b->launcher->playerIndex );
+	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
 	b->launcher->DeactivateBullet(b);
 }
 

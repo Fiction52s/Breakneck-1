@@ -15,7 +15,9 @@ struct LauncherEnemy
 {
 	virtual void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,V2d &pos) {};
-	virtual void BulletHitPlayer(BasicBullet *b) {};
+	virtual void BulletHitPlayer(
+		int playerIndex, BasicBullet *b,
+		int hitResult ) {};
 	virtual void BulletHitTarget(BasicBullet *b) {};
 	virtual void BulletTTLDeath(BasicBullet *b) {};
 	virtual int GetAttackIndex() { return -1; };
@@ -108,7 +110,8 @@ struct BasicBullet : QuadTreeCollider
 		V2d vel);
 	bool PlayerSlowingMe();
 	virtual bool HitTerrain();
-	void HitPlayer();
+	void HitPlayer( int pIndex, 
+		int hitResult );
 };
 
 struct SinBullet : BasicBullet

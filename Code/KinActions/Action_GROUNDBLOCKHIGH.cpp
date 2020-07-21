@@ -3,22 +3,22 @@
 using namespace sf;
 using namespace std;
 
-void Actor::GROUNDBLOCKLOW_Start()
+void Actor::GROUNDBLOCKHIGH_Start()
 {
 	if (!IsBlockAction(oldAction))
 	{
 		framesBlocking = 0;
 	}
 
-	ts_groundBlockLowShield->SetSpriteTexture(shieldSprite);
+	ts_groundBlockHighShield->SetSpriteTexture(shieldSprite);
 }
 
-void Actor::GROUNDBLOCKLOW_End()
+void Actor::GROUNDBLOCKHIGH_End()
 {
 	frame = 0;
 }
 
-void Actor::GROUNDBLOCKLOW_Change()
+void Actor::GROUNDBLOCKHIGH_Change()
 {
 	if (!currInput.Y && blockstunFrames == 0)
 	{
@@ -27,22 +27,23 @@ void Actor::GROUNDBLOCKLOW_Change()
 	}
 	else
 	{
+
 		if (TryJumpSquat()) return;
 
 		if (TryGroundAttack()) return;
 
-		if (!currInput.LDown())
+		if (!currInput.LUp())
 		{
-			if (currInput.LUp())
+			if (currInput.LDown())
 			{
-				SetAction(GROUNDBLOCKHIGH);
+				SetAction(GROUNDBLOCKLOW);
 			}
 			else
 			{
 				SetAction(GROUNDBLOCK);
 			}
-			frame = 0;
 			
+			frame = 0;
 		}
 	}
 
@@ -56,7 +57,7 @@ void Actor::GROUNDBLOCKLOW_Change()
 	}
 }
 
-void Actor::GROUNDBLOCKLOW_Update()
+void Actor::GROUNDBLOCKHIGH_Update()
 {
 	framesBlocking++;
 
@@ -66,7 +67,7 @@ void Actor::GROUNDBLOCKLOW_Update()
 	}
 }
 
-void Actor::GROUNDBLOCKLOW_UpdateSprite()
+void Actor::GROUNDBLOCKHIGH_UpdateSprite()
 {
 	SetSpriteTexture(action);
 
@@ -77,30 +78,30 @@ void Actor::GROUNDBLOCKLOW_UpdateSprite()
 
 	shieldSprite.setOrigin(sprite->getOrigin());
 	shieldSprite.setPosition(sprite->getPosition());
-	ts_groundBlockLowShield->SetSubRect(shieldSprite, 0, !r, reversed);
+	ts_groundBlockHighShield->SetSubRect(shieldSprite, 0, !r, reversed);
 	shieldSprite.setRotation(sprite->getRotation());
 }
 
-void Actor::GROUNDBLOCKLOW_TransitionToAction(int a)
+void Actor::GROUNDBLOCKHIGH_TransitionToAction(int a)
 {
 }
 
-void Actor::GROUNDBLOCKLOW_TimeIndFrameInc()
-{
-
-}
-
-void Actor::GROUNDBLOCKLOW_TimeDepFrameInc()
+void Actor::GROUNDBLOCKHIGH_TimeIndFrameInc()
 {
 
 }
 
-int Actor::GROUNDBLOCKLOW_GetActionLength()
+void Actor::GROUNDBLOCKHIGH_TimeDepFrameInc()
+{
+
+}
+
+int Actor::GROUNDBLOCKHIGH_GetActionLength()
 {
 	return 1;
 }
 
-Tileset * Actor::GROUNDBLOCKLOW_GetTileset()
+Tileset * Actor::GROUNDBLOCKHIGH_GetTileset()
 {
-	return GetActionTileset("block_low_64x64.png");
+	return GetActionTileset("block_high_64x64.png");
 }

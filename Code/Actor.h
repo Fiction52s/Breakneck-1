@@ -260,6 +260,7 @@ struct Actor : QuadTreeCollider,
 		TESTSUPER,
 		GROUNDBLOCK,
 		GROUNDBLOCKLOW,
+		GROUNDBLOCKHIGH,
 		AIRBLOCK,
 		GROUNDPARRY,
 		GROUNDPARRYLOW,
@@ -479,7 +480,7 @@ struct Actor : QuadTreeCollider,
 	bool hasHitRechargeAirDash;
 
 	int framesBlocking;
-	int receivedHitAction;
+	V2d receivedHitPosition;
 	//int pastCompressedInputs[60];
 
 	//---end of saved vars
@@ -495,8 +496,10 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f slideAttackOffset[3];
 	sf::Vector2f climbAttackOffset[3];
 
-	//values that dont need to be stored
-	//at least in this first pass
+	sf::Sprite shieldSprite;
+	Tileset *ts_groundBlockShield;
+	Tileset *ts_groundBlockLowShield;
+	Tileset *ts_groundBlockHighShield;
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
@@ -884,10 +887,11 @@ struct Actor : QuadTreeCollider,
 		EditSession *editOwner, int actorIndex );
 	~Actor();
 	void Init();
-
-
-	bool CanParry(Actor *p, int action);
-	bool CanBlock(Actor *p, int action);
+	void DrawShield(sf::RenderTarget *target);
+	bool CanParry(HitboxInfo::HitPosType hpt,
+		V2d &hitPos);
+	bool CanBlock(HitboxInfo::HitPosType hpt,
+		V2d &hitPos);
 	void RechargeAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
@@ -1058,7 +1062,9 @@ struct Actor : QuadTreeCollider,
 	void ActionEnded();
 	void HandleEntrant( QuadTreeEntrant *qte );
 	void UpdatePrePhysics();
-	void ApplyHit( HitboxInfo *info );
+	void ApplyHit( HitboxInfo *info,
+		Actor *receivedHitPlayer,
+		HitResult res, V2d &pos );
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void UpdatePhysics();
 	void PhysicsResponse();
@@ -1066,7 +1072,14 @@ struct Actor : QuadTreeCollider,
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
-	HitResult CheckHitByPlayer(int pIndex);
+	HitResult CheckIfImHit(CollisionBody *hitBody,
+		int hitFrame,
+		HitboxInfo::HitPosType hpt,
+		V2d &hitPos );
+	HitResult CheckIfImHit(CollisionBox &cb,
+		HitboxInfo::HitPosType hpt,
+		V2d &hitPos);
+	HitResult CheckHitByEnemy(Enemy *e);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,
 		bool facingRight );
@@ -1223,8 +1236,6 @@ struct Actor : QuadTreeCollider,
 	bool IsOnRailAction(int a);
 	bool IsInHistunAction( int a );
 	bool IsActionGroundBlock(int a);
-	bool IsActionGroundBlockable( int a );
-	bool IsActionGroundLowBlockable( int a);
 
 	V2d GetKnockbackDirFromVel();
 
@@ -1660,6 +1671,18 @@ struct Actor : QuadTreeCollider,
 	void GROUNDBLOCK_TimeDepFrameInc();
 	int GROUNDBLOCK_GetActionLength();
 	Tileset * GROUNDBLOCK_GetTileset();
+
+	
+	void GROUNDBLOCKHIGH_Start();
+	void GROUNDBLOCKHIGH_End();
+	void GROUNDBLOCKHIGH_Change();
+	void GROUNDBLOCKHIGH_Update();
+	void GROUNDBLOCKHIGH_UpdateSprite();
+	void GROUNDBLOCKHIGH_TransitionToAction(int a);
+	void GROUNDBLOCKHIGH_TimeIndFrameInc();
+	void GROUNDBLOCKHIGH_TimeDepFrameInc();
+	int GROUNDBLOCKHIGH_GetActionLength();
+	Tileset * GROUNDBLOCKHIGH_GetTileset();
 
 	void GROUNDBLOCKLOW_Start();
 	void GROUNDBLOCKLOW_End();

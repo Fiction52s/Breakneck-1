@@ -40,7 +40,10 @@ struct Bat : Enemy, LauncherEnemy
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
-	void BulletHitPlayer(BasicBullet *b);
+	void BulletHitPlayer(
+		int playerIndex, 
+		BasicBullet *b,
+		int hitResult);
 	void ProcessState();
 	bool physicsOver;
 	void EnemyDraw(sf::RenderTarget *target);

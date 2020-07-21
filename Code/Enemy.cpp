@@ -1751,16 +1751,21 @@ bool Enemy::CheckHitPlayer(int index)
 
 	if (currHitboxes != NULL)
 	{
-		//!player->IsSequenceAction(player->action) &&
-		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
+		if (currHitboxes != NULL)
 		{
-			IHitPlayer(index);
-			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+			HitboxInfo::HitPosType hpt = HitboxInfo::HitPosType::AIR;
+			Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+				GetPosition());
+
+			if (hitResult != Actor::HitResult::MISS)
 			{
-				player->ApplyHit(currHitboxes->hitboxInfo);
+				IHitPlayer(index);
+				if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+				{
+					player->ApplyHit(currHitboxes->hitboxInfo,
+						NULL, hitResult, GetPosition() );
+				}
 			}
-			
-			return true;
 		}
 	}
 

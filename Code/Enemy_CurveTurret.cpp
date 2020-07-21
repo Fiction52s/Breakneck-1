@@ -208,16 +208,15 @@ void CurveTurret::BulletHitTerrain(BasicBullet *b,
 	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
 }
 
-void CurveTurret::BulletHitPlayer(BasicBullet *b )
+void CurveTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	sess->PlayerApplyHit( b->launcher->hitboxInfo );
+	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
 	b->launcher->DeactivateBullet( b );
 	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 }
-
 
 
 void CurveTurret::ProcessState()

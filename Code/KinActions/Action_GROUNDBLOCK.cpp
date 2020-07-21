@@ -9,6 +9,7 @@ void Actor::GROUNDBLOCK_Start()
 	{
 		framesBlocking = 0;
 	}
+	ts_groundBlockShield->SetSpriteTexture(shieldSprite);
 }
 
 void Actor::GROUNDBLOCK_End()
@@ -25,9 +26,18 @@ void Actor::GROUNDBLOCK_Change()
 	}
 	else
 	{
+		if (TryJumpSquat()) return;
+
+		if (TryGroundAttack()) return;
+
 		if (currInput.LDown())
 		{
 			SetAction(GROUNDBLOCKLOW);
+			frame = 0;
+		}
+		else if (currInput.LUp())
+		{
+			SetAction(GROUNDBLOCKHIGH);
 			frame = 0;
 		}
 	}
@@ -75,22 +85,14 @@ void Actor::GROUNDBLOCK_UpdateSprite()
 	SetSpriteTexture(action);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(1, r);
+	SetSpriteTile(0, r);
 
 	SetGroundedSpriteTransform();
 
-	/*if (scorpOn)
-	{
-		scorpSprite.setTexture(*ts_scorpSlide->texture);
-
-		SetSpriteTile(&scorpSprite, ts_scorpSlide, 0, r);
-
-		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
-			scorpSprite.getLocalBounds().height / 2 + 15);
-		scorpSprite.setPosition(position.x, position.y);
-		scorpSprite.setRotation(sprite->getRotation());
-		scorpSet = true;
-	}*/
+	shieldSprite.setOrigin(sprite->getOrigin());
+	shieldSprite.setPosition(sprite->getPosition());
+	ts_groundBlockShield->SetSubRect(shieldSprite, 0, !r, reversed);
+	shieldSprite.setRotation(sprite->getRotation());
 }
 
 void Actor::GROUNDBLOCK_TransitionToAction(int a)
@@ -114,5 +116,5 @@ int Actor::GROUNDBLOCK_GetActionLength()
 
 Tileset * Actor::GROUNDBLOCK_GetTileset()
 {
-	return GetActionTileset("hurt_64x64.png");
+	return GetActionTileset("block_slide_64x64.png");
 }

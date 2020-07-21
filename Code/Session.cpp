@@ -1069,12 +1069,12 @@ V2d Session::GetPlayerPos(int index)
 	}
 }
 
-void Session::PlayerApplyHit(HitboxInfo *hi, int index)
+void Session::PlayerApplyHit( int index, HitboxInfo *hi, Actor *attacker, int res, V2d &pos )
 {
 	Actor *p = GetPlayer(index);
 	if (p != NULL)
 	{
-		p->ApplyHit(hi);
+		p->ApplyHit(hi, attacker, (Actor::HitResult)res, pos );
 	}
 }
 
@@ -5390,6 +5390,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawPlayers(target);
 
+	DrawPlayerShields(target);
+
 	absorbShardParticles->Draw(target);
 
 	DrawReplayGhosts(target);
@@ -6287,5 +6289,18 @@ void Session::CleanupSuperSequence()
 	{
 		delete superSequence;
 		superSequence = NULL;
+	}
+}
+
+void Session::DrawPlayerShields(sf::RenderTarget *target)
+{
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(0);
+		if (p != NULL)
+		{
+			p->DrawShield(target);
+		}
 	}
 }

@@ -231,7 +231,6 @@ void Actor::PopulateState(PState *ps)
 	ps->hasHitRechargeAirDash = hasHitRechargeAirDash;
 
 	ps->framesBlocking = framesBlocking;
-	ps->receivedHitAction = receivedHitAction;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -389,7 +388,6 @@ void Actor::PopulateFromState(PState *ps)
 	hasHitRechargeDoubleJump = ps->hasHitRechargeDoubleJump;
 	hasHitRechargeAirDash = ps->hasHitRechargeAirDash;
 	framesBlocking = ps->framesBlocking;
-	receivedHitAction = ps->receivedHitAction;
 }
 
 
@@ -771,6 +769,10 @@ void Actor::SetupExtraTilesets()
 	tsgstrioran = sess->GetSizedTileset( folder, "trioran_128x128.png");
 	tsgstripurp = sess->GetSizedTileset( folder, "tripurp_128x128.png");
 	tsgstrirgb = sess->GetSizedTileset( folder, "trirgb_128x128.png");
+
+	ts_groundBlockShield = sess->GetSizedTileset(folder, "block_slide_sheild_64x64.png");
+	ts_groundBlockLowShield = sess->GetSizedTileset(folder, "block_low_sheild_64x64.png");
+	ts_groundBlockHighShield = sess->GetSizedTileset(folder, "block_high_sheild_64x64.png");
 
 	if (owner != NULL)
 	{
@@ -1322,6 +1324,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDBLOCK_TimeDepFrameInc,
 		&Actor::GROUNDBLOCK_GetActionLength,
 		&Actor::GROUNDBLOCK_GetTileset);
+
+	SetupFuncsForAction(GROUNDBLOCKHIGH,
+		&Actor::GROUNDBLOCKHIGH_Start,
+		&Actor::GROUNDBLOCKHIGH_End,
+		&Actor::GROUNDBLOCKHIGH_Change,
+		&Actor::GROUNDBLOCKHIGH_Update,
+		&Actor::GROUNDBLOCKHIGH_UpdateSprite,
+		&Actor::GROUNDBLOCKHIGH_TransitionToAction,
+		&Actor::GROUNDBLOCKHIGH_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKHIGH_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKHIGH_GetActionLength,
+		&Actor::GROUNDBLOCKHIGH_GetTileset);
 
 	SetupFuncsForAction(GROUNDBLOCKLOW,
 		&Actor::GROUNDBLOCKLOW_Start,
@@ -3370,6 +3384,26 @@ void Actor::SetupHitboxLevelInfo(
 	hi.extraDefenderHitlag = j["extradefenderhitlag"];
 	hi.hitBlockCancelDelay = j["hitblockcanceldelay"];
 
+	string posTypeStr = j["postype"];
+
+	if (posTypeStr == "air")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIR;
+	}
+	else if (posTypeStr == "ground")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUND;
+	}
+	else if (posTypeStr == "groundlow")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUNDLOW;
+	}
+	else
+	{
+		cout << "postypestr is wrong:" << posTypeStr << endl;
+		assert(0);
+	}
+
 }
 
 void Actor::ActionEnded()
@@ -4224,19 +4258,10 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 	
 }
 
-bool Actor::IsActionGroundBlockable( int a)
-{
-	return IsAttackAction(a);
-}
-
-bool Actor::IsActionGroundLowBlockable( int a)
-{
-	return IsGroundAttackAction(a);
-}
-
 bool Actor::IsActionGroundBlock(int a)
 {
-	return action == GROUNDBLOCK || action == GROUNDBLOCKLOW;
+	return action == GROUNDBLOCK || action == GROUNDBLOCKLOW
+		|| action == GROUNDBLOCKHIGH;
 }
 
 void Actor::ProcessReceivedHit()
@@ -4259,17 +4284,14 @@ void Actor::ProcessReceivedHit()
 				blockstunFrames = receivedHit->hitstunFrames / 2;
 				invincibleFrames = 0;
 
-				if (receivedHitPlayer != NULL)
+				V2d otherPos = receivedHitPosition;
+				if (otherPos.x < position.x)
 				{
-					V2d otherPos = receivedHitPlayer->position;
-					if (otherPos.x < position.x)
-					{
-						groundSpeed += 2;
-					}
-					else
-					{
-						groundSpeed -= 2;
-					}
+					groundSpeed += 2;
+				}
+				else
+				{
+					groundSpeed -= 2;
 				}
 			}
 			else if (action == AIRBLOCK)
@@ -4282,11 +4304,9 @@ void Actor::ProcessReceivedHit()
 				blockstunFrames = receivedHit->hitstunFrames / 2;
 				invincibleFrames = 0;
 
-				if (receivedHitPlayer != NULL)
-				{
-					V2d otherPos = receivedHitPlayer->position;
-					velocity += 2.0 * normalize(position - otherPos);
-				}
+				V2d otherPos = receivedHitPosition;
+				velocity += 2.0 * normalize(position - otherPos);
+				
 			}
 			
 			break;
@@ -5061,10 +5081,10 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	/*if (actorIndex == 1)
+	if (actorIndex == 1)
 	{
 		currInput.Y = true;
-	}*/
+	}
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -8599,10 +8619,6 @@ bool Actor::IntersectMyHurtboxes(CollisionBox &cb)
 
 bool Actor::IntersectMyHurtboxes(CollisionBody *cb, int cbFrame )
 {
-	if (IsIntangible())
-		return false;
-
-	//just for the demo. more detailed hurtboxes later
 	if (cb == NULL)
 		return false;
 
@@ -11592,7 +11608,7 @@ void Actor::PhysicsResponse()
 	}
 	
 	//multiplayer
-	//if( owner != NULL )//&& owner->raceFight != NULL )
+	if( currHitboxes != NULL )//&& owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;
@@ -11608,16 +11624,19 @@ void Actor::PhysicsResponse()
 
 		HitResult checkHit = HitResult::MISS;
 
+		HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
 
-		if (pTarget != NULL)
+		if (currAttackHitBlock[target] < 0)
 		{
-			checkHit = pTarget->CheckHitByPlayer(actorIndex);
+			if (pTarget != NULL)
+			{
+				checkHit = pTarget->CheckIfImHit(currHitboxes, currHitboxFrame,
+					hi.hitPosType, position);
+			}
 		}
 
 		if (checkHit != HitResult::MISS )
 		{
-			HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
-
 			*currVSHitboxInfo = hi;
 
 			if (!facingRight)
@@ -11625,10 +11644,7 @@ void Actor::PhysicsResponse()
 
 			attackingHitlag = true;
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;
-			pTarget->ApplyHit(currVSHitboxInfo);
-			pTarget->receivedHitPlayer = this;
-			pTarget->receivedHitAction = action;
-			pTarget->receivedHitReaction = checkHit;
+			pTarget->ApplyHit(currVSHitboxInfo, this, checkHit, position );
 
 			if (checkHit == HitResult::HIT)
 			{
@@ -11648,7 +11664,7 @@ void Actor::PhysicsResponse()
 			}
 			else if (checkHit == HitResult::BLOCK )
 			{
-				currAttackHitBlock[target] = true;
+				currAttackHitBlock[target] = frame;
 			}
 		}
 		else
@@ -14467,7 +14483,8 @@ bool Actor::IsIntangible()
 }
 
 
-void Actor::ApplyHit( HitboxInfo *info )
+void Actor::ApplyHit( HitboxInfo *info,
+	Actor *attackingPlayer, HitResult res, V2d &pos )
 {
 	if (info == NULL)
 		return;
@@ -14477,7 +14494,9 @@ void Actor::ApplyHit( HitboxInfo *info )
 		if (receivedHit == NULL || info->damage > receivedHit->damage)
 		{
 			receivedHit = info;
-			receivedHitPlayer = NULL;
+			receivedHitPlayer = attackingPlayer;
+			receivedHitReaction = res;
+			receivedHitPosition = pos;
 		}
 	}
 }
@@ -14925,6 +14944,14 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	keyExplodeRingGroup->Draw(target);
 	keyExplodePool->Draw(target);
+}
+
+void Actor::DrawShield(sf::RenderTarget *target)
+{
+	if (IsActionGroundBlock(action))
+	{
+		target->draw(shieldSprite);
+	}
 }
 
 void Actor::ResetGrassCounters()
@@ -16372,30 +16399,49 @@ bool Actor::IsSingleWirePulling()
 
 
 
-bool Actor::CanBlock(Actor *p, int action)
+bool Actor::CanBlock(HitboxInfo::HitPosType hpt, V2d &hitPos)
 {
 	if (action == GROUNDBLOCK)
 	{
-		if (IsActionGroundBlockable(action))
+		if (hpt == HitboxInfo::HitPosType::GROUND
+			|| hpt == HitboxInfo::HitPosType::AIR )
 		{
-			if( (facingRight && position.x - p->position.x >= 0 )
-				|| ( !facingRight && position.x - p->position.x <= 0 ) )
+			if( (facingRight && position.x - hitPos.x <= 0 )
+				|| ( !facingRight && position.x - hitPos.x >= 0 ) )
 				return true;
 		}
 	}
 	else if (action == GROUNDBLOCKLOW)
 	{
-		if (IsActionGroundLowBlockable(action))
+		if (hpt == HitboxInfo::HitPosType::GROUND
+			|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
 		{
+			return true;
+		}
+	}
+	else if (action == GROUNDBLOCKHIGH)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIR )
+		{
+			return true;
+		}
+	}
+	else if (action == AIRBLOCK)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIR || hpt == HitboxInfo::HitPosType::GROUND)
+		{
+			if ((facingRight && position.x - hitPos.x <= 0)
+				|| (!facingRight && position.x - hitPos.x >= 0))
+				return true;
 			return true;
 		}
 	}
 
 	return false;
 }
-bool Actor::CanParry(Actor *p, int action)
+bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos)
 {
-	if (CanBlock(p, action) && framesBlocking < 10)
+	if (CanBlock(hpt, hitPos) && framesBlocking < 10)
 	{
 		return true;
 	}
@@ -16403,41 +16449,21 @@ bool Actor::CanParry(Actor *p, int action)
 	return false;
 }
 
-Actor::HitResult Actor::CheckHitByPlayer(int pIndex)
+Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
+	 HitboxInfo::HitPosType hpt, V2d &hitPos )
 {
-	Actor *otherPlayer = sess->GetPlayer(pIndex);
-
 	if (IsIntangible())
 	{
 		return HitResult::MISS;
 	}
 
-	bool intersects = false;
-
-	if (otherPlayer->currHitboxes != NULL && otherPlayer->currAttackHitBlock[actorIndex] < 0 )
+	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		vector<CollisionBox> *cList =
-			&(otherPlayer->currHitboxes->GetCollisionBoxes(otherPlayer->currHitboxFrame));
-		if (cList != NULL)
-		{
-			for (auto it = cList->begin(); it != cList->end(); ++it)
-			{
-				if (hurtBody.Intersects((*it)))
-				{
-					intersects = true;
-					break;
-				}
-			}
-		}
-	}
-
-	if (intersects)
-	{
-		if (otherPlayer->CanParry(this, action))
+		if (CanParry(hpt, hitPos))
 		{
 			return HitResult::PARRY;
 		}
-		else if (otherPlayer->CanBlock(this, action))
+		else if (CanBlock(hpt, hitPos))
 		{
 			return HitResult::BLOCK;
 		}
@@ -16446,7 +16472,33 @@ Actor::HitResult Actor::CheckHitByPlayer(int pIndex)
 			return HitResult::HIT;
 		}
 	}
-		
+
+	return HitResult::MISS;
+}
+
+Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb,HitboxInfo::HitPosType hpt,
+	V2d &hitPos)
+{
+	if (IsIntangible())
+	{
+		return HitResult::MISS;
+	}
+
+	if (IntersectMyHurtboxes(cb))
+	{
+		if (CanParry(hpt, hitPos))
+		{
+			return HitResult::PARRY;
+		}
+		else if (CanBlock(hpt, hitPos))
+		{
+			return HitResult::BLOCK;
+		}
+		else
+		{
+			return HitResult::HIT;
+		}
+	}
 
 	return HitResult::MISS;
 }

@@ -29,7 +29,10 @@ struct Patroller : Enemy, LauncherEnemy
 	sf::FloatRect GetAABB();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
-	void BulletHitPlayer(BasicBullet *b);
+	void BulletHitPlayer(
+		int playerIndex, 
+		BasicBullet *b,
+		int hitResult);
 	void ProcessState();
 	void HandleHitAndSurvive();
 	void UpdateEnemyPhysics();

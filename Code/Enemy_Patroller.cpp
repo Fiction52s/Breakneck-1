@@ -441,7 +441,7 @@ void Patroller::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 	b->launcher->DeactivateBullet(b);
 }
 
-void Patroller::BulletHitPlayer(BasicBullet *b)
+void Patroller::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	//if you dont deactivate the bullet it will hit constantly and make weird fx
 
@@ -449,7 +449,7 @@ void Patroller::BulletHitPlayer(BasicBullet *b)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	sess->PlayerApplyHit(b->launcher->hitboxInfo);
+	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
 	b->launcher->DeactivateBullet(b);
 }
 

@@ -914,10 +914,14 @@ void BasicBullet::UpdatePhysics()
 		if (!launcher->skipPlayerCollideForSubstep)
 		{
 			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
-			if (player->IntersectMyHurtboxes(hitBody))
+
+			Actor::HitResult res = player->CheckIfImHit(hitBody, HitboxInfo::HitPosType::AIR,
+				position);
+
+			if (res != Actor::HitResult::MISS )
 			{
 				//cout << "hit??" << endl;
-				HitPlayer();
+				HitPlayer( player->actorIndex, res );
 				break;
 			}
 		}
@@ -941,9 +945,9 @@ bool BasicBullet::HitTerrain()
 	return true;
 }
 
-void BasicBullet::HitPlayer()
+void BasicBullet::HitPlayer( int pIndex, int hitResult )
 {
-	launcher->handler->BulletHitPlayer(this);
+	launcher->handler->BulletHitPlayer( pIndex, this, hitResult );
 	//launcher->DeactivateBullet( this );
 }
 
@@ -1184,11 +1188,16 @@ void SinBullet::UpdatePhysics()
 		hurtBody.globalPosition = position;
 
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
-		if (player->IntersectMyHurtboxes( hitBody ))
+		//player->CheckIfImHit( )
+
+		Actor::HitResult res = player->CheckIfImHit(hitBody, HitboxInfo::HitPosType::AIR,
+			position);
+
+		if (res != Actor::HitResult::MISS)
 		{
-			HitPlayer();
-			break;
+			HitPlayer( player->actorIndex, res );
 		}
+		
 	}
 }
 

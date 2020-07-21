@@ -166,7 +166,7 @@ void BasicTurret::BulletHitTerrain( BasicBullet *b,
 		b->launcher->SetDefaultCollision(b->framesToLive, edge, pos);
 }
 
-void BasicTurret::BulletHitPlayer( BasicBullet *b )
+void BasicTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	//if you dont deactivate the bullet it will hit constantly and make weird fx
 
@@ -174,7 +174,23 @@ void BasicTurret::BulletHitPlayer( BasicBullet *b )
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
 	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	sess->PlayerApplyHit( b->launcher->hitboxInfo );
+	sess->PlayerApplyHit( playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position );
+
+	//HitboxInfo::HitPosType hpt = HitboxInfo::HitPosType::AIR;
+	//Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, 
+	//	currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+	//	GetPosition());
+
+	//if (hitResult != Actor::HitResult::MISS)
+	//{
+	//	IHitPlayer(index);
+	//	if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+	//	{
+	//		player->ApplyHit(currHitboxes->hitboxInfo,
+	//			NULL, hitResult, GetPosition());
+	//	}
+	//}
+
 	b->launcher->DeactivateBullet( b );
 }
 

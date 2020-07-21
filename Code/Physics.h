@@ -83,13 +83,21 @@ struct HitboxInfo
 		Count
 	};
 
+	enum HitPosType
+	{
+		GROUND,
+		GROUNDLOW,
+		AIR,
+	};
+
 	HitboxInfo()
 		:knockback(0), kbDir(0, 0),
 		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
 		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true),
 		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
 		extraDefenderHitlag( 0 ),
-		hitBlockCancelDelay( 0 )
+		hitBlockCancelDelay( 0 ),
+		hitPosType( AIR )
 	{
 	};
 
@@ -109,6 +117,7 @@ struct HitboxInfo
 	double gravMultiplier;
 	int extraDefenderHitlag;
 	int hitBlockCancelDelay;
+	HitPosType hitPosType;
 };
 
 struct CollisionBox

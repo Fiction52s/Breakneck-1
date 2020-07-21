@@ -19,12 +19,6 @@ void Actor::AIRBLOCK_End()
 
 void Actor::AIRBLOCK_Change()
 {
-	if (!currInput.Y && blockstunFrames == 0)
-	{
-		SetAction(JUMP);
-		frame = 1;
-	}
-
 	if (currInput.LLeft())
 	{
 		facingRight = false;
@@ -32,6 +26,18 @@ void Actor::AIRBLOCK_Change()
 	else if (currInput.LRight())
 	{
 		facingRight = true;
+	}
+
+	if (!currInput.Y && blockstunFrames == 0)
+	{
+		SetAction(JUMP);
+		frame = 1;
+	}
+	else
+	{
+		if (TryDoubleJump()) return;
+
+		if (AirAttack()) return;
 	}
 }
 

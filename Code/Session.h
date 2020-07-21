@@ -482,7 +482,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void Pause(int frames);
 	void PlayerConfirmEnemyNoKill(Enemy *, int index = 0);
 	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
-	void PlayerApplyHit(HitboxInfo *hi, int index = 0);
+	void PlayerApplyHit(int index, HitboxInfo *hi, 
+		Actor *attacker, int res, V2d &pos );
 	void PlayerHitNexus(int index = 0);
 	void PlayerHitGoal(int index = 0);
 	void SetPlayersGameMode();
@@ -704,6 +705,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	AdventureHUD *GetAdventureHUD();
 	void SetupSuperSequence();
 	void CleanupSuperSequence();
+	void DrawPlayerShields(sf::RenderTarget *target);
 };
 
 #endif

@@ -32,7 +32,9 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, sf::Vector2<double> &pos);
-	void BulletHitPlayer(BasicBullet *b);
+	void BulletHitPlayer( int playerIndex,
+		BasicBullet *b,
+		int hitResult );
 	sf::SoundBuffer *fireSound;
 	CollisionBox prelimBox[3];
 
