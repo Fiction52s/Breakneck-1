@@ -138,7 +138,8 @@ void Shield::ProcessHit()
 			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
 			{
 				action = S_REFLECT;
-				parent->sess->PlayerApplyHit(hitboxInfo, GetReceivedHitPlayerIndex());
+				parent->sess->PlayerApplyHit(GetReceivedHitPlayerIndex(),
+					hitboxInfo, NULL, Actor::HitResult::HIT, GetPosition() );
 			}
 			frame = 0;
 		}

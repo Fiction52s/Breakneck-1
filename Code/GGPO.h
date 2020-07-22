@@ -256,7 +256,7 @@ struct PState
 	int attackLevel;
 	int framesSinceAttack;
 
-	int lastDashPressFrame;
+	int lastBlockPressFrame;
 
 	bool standNDashBoost;
 	int standNDashBoostCurr;

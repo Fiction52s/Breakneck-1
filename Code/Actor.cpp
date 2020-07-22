@@ -197,7 +197,7 @@ void Actor::PopulateState(PState *ps)
 	ps->attackLevel = attackLevel;
 	ps->framesSinceAttack = framesSinceAttack;
 
-	ps->lastDashPressFrame = lastDashPressFrame;
+	ps->lastBlockPressFrame = lastBlockPressFrame;
 
 	ps->standNDashBoost = standNDashBoost;
 	ps->standNDashBoostCurr = standNDashBoostCurr;
@@ -356,7 +356,7 @@ void Actor::PopulateFromState(PState *ps)
 	attackLevel = ps->attackLevel;
 	framesSinceAttack = ps->framesSinceAttack;
 
-	lastDashPressFrame = ps->lastDashPressFrame;
+	lastBlockPressFrame = ps->lastBlockPressFrame;
 
 	standNDashBoost = ps->standNDashBoost;
 	standNDashBoostCurr = ps->standNDashBoostCurr;
@@ -2192,7 +2192,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
-	lastDashPressFrame = -1;
+	lastBlockPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
 	comboCounterResetFrames = 60;
@@ -3808,7 +3808,7 @@ void Actor::Respawn()
 	superLevelCounter = 0;
 	
 	lastSuperPressFrame = -1;
-	lastDashPressFrame = -1;
+	lastBlockPressFrame = -1;
 	attackLevel = 0;
 	framesSinceAttack = 0;
 	standNDashBoost = false;
@@ -5091,9 +5091,9 @@ void Actor::UpdatePrePhysics()
 	}
 	pastCompressedInputs[0] = currInput.GetCompressedState();*/
 
-	if (currInput.B && !prevInput.B)
+	if (currInput.Y && !prevInput.Y)
 	{
-		lastDashPressFrame = sess->totalGameFrames;
+		lastBlockPressFrame = sess->totalGameFrames;
 	}
 
 	if (currInput.leftShoulder && !prevInput.leftShoulder)
@@ -10889,7 +10889,7 @@ void Actor::HandleTouchedGate()
 
 bool Actor::CanTech()
 {
-	return (lastDashPressFrame >= 0 && sess->totalGameFrames - lastDashPressFrame < 20
+	return (lastBlockPressFrame >= 0 && sess->totalGameFrames - lastBlockPressFrame < 20
 		&& !touchedGrass[Grass::UNTECHABLE]);
 }
 
@@ -12420,6 +12420,15 @@ void Actor::UpdatePlayerShader()
 
 		float super = superLevelCounter;
 		sh.setUniform("u_super", super);
+		if (IsBlockAction(action))
+		{
+			sh.setUniform("u_blockStun", (float)blockstunFrames);
+		}
+		else
+		{
+			sh.setUniform("u_blockStun", 0.f);
+		}
+		
 		sh.setUniform("despFrame", -1.f);
 	}
 }
@@ -12509,6 +12518,8 @@ void Actor::SlowDependentFrameIncrement()
 
 		if (flashFrames > 0)
 			--flashFrames;
+
+
 	}
 	else
 		slowCounter++;
@@ -16512,7 +16523,8 @@ void Actor::ClearPauseBufferedActions()
 
 bool Actor::IsBlockAction(int a)
 {
-	return (a == AIRBLOCK || a == GROUNDBLOCK || a == GROUNDBLOCKLOW);
+	return (a == AIRBLOCK || a == GROUNDBLOCK || a == GROUNDBLOCKLOW
+		|| a == GROUNDBLOCKHIGH );
 }
 
 bool Actor::IsAttackAction( int a )

@@ -43,6 +43,8 @@ void Actor::AIRBLOCK_Change()
 
 void Actor::AIRBLOCK_Update()
 {
+	CheckHoldJump();
+
 	++framesBlocking;
 
 	if (blockstunFrames > 0)

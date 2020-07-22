@@ -450,7 +450,7 @@ struct Actor : QuadTreeCollider,
 	int attackLevel;
 	int framesSinceAttack;
 	
-	int lastDashPressFrame;
+	int lastBlockPressFrame;
 
 	bool standNDashBoost;
 	int standNDashBoostCurr;

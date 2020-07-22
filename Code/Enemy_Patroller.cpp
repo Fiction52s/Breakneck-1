@@ -68,6 +68,9 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	launchers[0] = new Launcher(this, BasicBullet::PATROLLER, 16, 1, GetPosition(), V2d(1, 0), 0, 200, false);
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->hitstunFrames = 20;
+
+
 	
 	ResetEnemy();
 }
@@ -448,6 +451,9 @@ void Patroller::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 	//cout << "hit player??" << endl;
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
+
+	launchers[0]->hitboxInfo->kbDir = normalize( b->velocity );
+	launchers[0]->hitboxInfo->knockback = 10;
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
 	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
 	b->launcher->DeactivateBullet(b);
