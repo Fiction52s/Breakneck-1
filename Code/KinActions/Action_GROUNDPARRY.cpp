@@ -9,16 +9,73 @@ void Actor::GROUNDPARRY_Start()
 
 void Actor::GROUNDPARRY_End()
 {
-	frame = 0;
-}
+	if (currInput.Y)
+	{
+		if (currInput.LLeft())
+		{
+			facingRight = false;
+		}
+		else if (currInput.LRight())
+		{
+			facingRight = true;
+		}
 
-void Actor::GROUNDPARRY_Change()
-{
-	if (!currInput.Y && blockstunFrames == 0)
+		if (currInput.LUp())
+		{
+			SetAction(GROUNDBLOCKHIGH);
+		}
+		else if (currInput.LDown())
+		{
+			SetAction(GROUNDBLOCKLOW);
+		}
+		else
+		{
+			SetAction(GROUNDBLOCK);
+		}
+
+		frame = 0;
+	}
+	else
 	{
 		SetAction(STAND);
 		frame = 0;
 	}
+}
+
+void Actor::GROUNDPARRY_Change()
+{
+	if (frame > 0)
+	{
+		if (currInput.Y && !prevInput.Y)
+		{
+			if (currInput.LLeft())
+			{
+				facingRight = false;
+			}
+			else if (currInput.LRight())
+			{
+				facingRight = true;
+			}
+
+			if (currInput.LUp())
+			{
+				SetAction(GROUNDBLOCKHIGH);
+			}
+			else if (currInput.LDown())
+			{
+				SetAction(GROUNDBLOCKLOW);
+			}
+			else
+			{
+				SetAction(GROUNDBLOCK);
+			}
+		}
+	}
+	/*if (!currInput.Y && blockstunFrames == 0)
+	{
+		SetAction(STAND);
+		frame = 0;
+	}*/
 
 	//else if( BasicGroundAction)
 
@@ -54,7 +111,7 @@ void Actor::GROUNDPARRY_TimeDepFrameInc()
 
 int Actor::GROUNDPARRY_GetActionLength()
 {
-	return 1;
+	return 15;
 }
 
 Tileset * Actor::GROUNDPARRY_GetTileset()

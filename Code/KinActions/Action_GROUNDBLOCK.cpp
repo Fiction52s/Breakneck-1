@@ -19,29 +19,6 @@ void Actor::GROUNDBLOCK_End()
 
 void Actor::GROUNDBLOCK_Change()
 {
-	if (!currInput.Y && blockstunFrames == 0 )
-	{
-		SetAction(STAND);
-		frame = 0;
-	}
-	else
-	{
-		if (TryJumpSquat()) return;
-
-		if (TryGroundAttack()) return;
-
-		if (currInput.LDown())
-		{
-			SetAction(GROUNDBLOCKLOW);
-			frame = 0;
-		}
-		else if (currInput.LUp())
-		{
-			SetAction(GROUNDBLOCKHIGH);
-			frame = 0;
-		}
-	}
-
 	if (currInput.LLeft())
 	{
 		facingRight = false;
@@ -50,7 +27,34 @@ void Actor::GROUNDBLOCK_Change()
 	{
 		facingRight = true;
 	}
-	//BasicGroundAction(currNormal);
+
+	if (blockstunFrames == 0)
+	{
+		if (!currInput.Y )
+		{
+			SetAction(STAND);
+			frame = 0;
+			return;
+		}
+		else
+		{
+			if (TryJumpSquat()) return;
+
+			if (TryGroundAttack()) return;
+
+		}
+	}
+
+	if (currInput.LDown())
+	{
+		SetAction(GROUNDBLOCKLOW);
+		frame = 0;
+	}
+	else if (currInput.LUp())
+	{
+		SetAction(GROUNDBLOCKHIGH);
+		frame = 0;
+	}
 }
 
 void Actor::GROUNDBLOCK_Update()

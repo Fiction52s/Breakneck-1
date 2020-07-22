@@ -4341,6 +4341,7 @@ void Actor::ProcessReceivedHit()
 
 void Actor::ReactToBeingHit()
 {
+	blockstunFrames = 0;
 	hitstunFrames = receivedHit->hitstunFrames;
 	setHitstunFrames = hitstunFrames;
 	hitstunGravMultiplier = receivedHit->gravMultiplier;
@@ -12420,14 +12421,8 @@ void Actor::UpdatePlayerShader()
 
 		float super = superLevelCounter;
 		sh.setUniform("u_super", super);
-		if (IsBlockAction(action))
-		{
-			sh.setUniform("u_blockStun", (float)blockstunFrames);
-		}
-		else
-		{
-			sh.setUniform("u_blockStun", 0.f);
-		}
+
+		sh.setUniform("u_blockStun", (float)blockstunFrames);
 		
 		sh.setUniform("despFrame", -1.f);
 	}
