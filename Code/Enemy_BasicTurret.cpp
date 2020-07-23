@@ -176,21 +176,6 @@ void BasicTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult
 	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 	sess->PlayerApplyHit( playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position );
 
-	//HitboxInfo::HitPosType hpt = HitboxInfo::HitPosType::AIR;
-	//Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, 
-	//	currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
-	//	GetPosition());
-
-	//if (hitResult != Actor::HitResult::MISS)
-	//{
-	//	IHitPlayer(index);
-	//	if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
-	//	{
-	//		player->ApplyHit(currHitboxes->hitboxInfo,
-	//			NULL, hitResult, GetPosition());
-	//	}
-	//}
-
 	b->launcher->DeactivateBullet( b );
 }
 

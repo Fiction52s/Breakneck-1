@@ -3504,21 +3504,10 @@ void EditSession::SetGameMode(int newMode)
 		delete gameMode;
 		gameMode = NULL;
 	}
-	
-	switch (newMode)
-	{
-	case MapHeader::T_BASIC:
-		gameMode = new BasicMode;
-		break;
-	case MapHeader::T_REACHENEMYBASE:
-		gameMode = new ReachEnemyBaseMode;
-		break;
-	case MapHeader::T_FIGHT:
-		gameMode = new FightMode;
-		break;
-	}
 
 	mapHeader->gameMode = newMode;
+
+	SetupGameMode();
 
 	if (hud != NULL)
 	{

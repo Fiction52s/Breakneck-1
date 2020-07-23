@@ -231,6 +231,7 @@ void Actor::PopulateState(PState *ps)
 	ps->hasHitRechargeAirDash = hasHitRechargeAirDash;
 
 	ps->framesBlocking = framesBlocking;
+	ps->receivedHitPosition = receivedHitPosition;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -388,6 +389,7 @@ void Actor::PopulateFromState(PState *ps)
 	hasHitRechargeDoubleJump = ps->hasHitRechargeDoubleJump;
 	hasHitRechargeAirDash = ps->hasHitRechargeAirDash;
 	framesBlocking = ps->framesBlocking;
+	receivedHitPosition = ps->receivedHitPosition;
 }
 
 
@@ -770,15 +772,45 @@ void Actor::SetupExtraTilesets()
 	tsgstripurp = sess->GetSizedTileset( folder, "tripurp_128x128.png");
 	tsgstrirgb = sess->GetSizedTileset( folder, "trirgb_128x128.png");
 
-	ts_groundBlockShield = sess->GetSizedTileset(folder, "block_slide_sheild_64x64.png");
-	ts_groundBlockLowShield = sess->GetSizedTileset(folder, "block_low_sheild_64x64.png");
-	ts_groundBlockHighShield = sess->GetSizedTileset(folder, "block_high_sheild_64x64.png");
+	ts_blockShield = sess->GetSizedTileset(folder, "block_sheild_64x64.png");
+	ts_blockShield->SetSpriteTexture(shieldSprite);
 
 	if (owner != NULL)
 	{
 		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
 	}
+}
+
+void Actor::UpdateGroundedShieldSprite( int tile)
+{
+	SetSpriteTexture(action);
+	bool r = (facingRight && !reversed) || (!facingRight && reversed);
+	SetSpriteTile(tile, r);
+
+	SetGroundedSpriteTransform();
+
+	shieldSprite.setOrigin(sprite->getOrigin());
+	shieldSprite.setPosition(sprite->getPosition());
+	ts_blockShield->SetSubRect(shieldSprite, tile, !r, reversed);
+	shieldSprite.setRotation(sprite->getRotation());
+}
+
+
+void Actor::UpdateAerialShieldSprite(int tile)
+{
+	SetSpriteTexture(action);
+	SetSpriteTile(tile, facingRight);
+
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	sprite->setPosition(position.x, position.y);
+	sprite->setRotation(0);
+
+	shieldSprite.setRotation(0);
+	shieldSprite.setOrigin(sprite->getOrigin());
+	shieldSprite.setPosition(sprite->getPosition());
+	ts_blockShield->SetSubRect(shieldSprite, tile, !facingRight);
+
 }
 
 int Actor::GetActionLength(int a)
@@ -893,17 +925,65 @@ void Actor::SetupActionFunctions()
 	getActionLengthFuncs.resize(Count);
 	getTilesetFuncs.resize(Count);
 
-	SetupFuncsForAction(AIRBLOCK,
-		&Actor::AIRBLOCK_Start,
-		&Actor::AIRBLOCK_End,
-		&Actor::AIRBLOCK_Change,
-		&Actor::AIRBLOCK_Update,
-		&Actor::AIRBLOCK_UpdateSprite,
-		&Actor::AIRBLOCK_TransitionToAction,
-		&Actor::AIRBLOCK_TimeIndFrameInc,
-		&Actor::AIRBLOCK_TimeDepFrameInc,
-		&Actor::AIRBLOCK_GetActionLength,
-		&Actor::AIRBLOCK_GetTileset);
+	SetupFuncsForAction(AIRBLOCKUP,
+		&Actor::AIRBLOCKUP_Start,
+		&Actor::AIRBLOCKUP_End,
+		&Actor::AIRBLOCKUP_Change,
+		&Actor::AIRBLOCKUP_Update,
+		&Actor::AIRBLOCKUP_UpdateSprite,
+		&Actor::AIRBLOCKUP_TransitionToAction,
+		&Actor::AIRBLOCKUP_TimeIndFrameInc,
+		&Actor::AIRBLOCKUP_TimeDepFrameInc,
+		&Actor::AIRBLOCKUP_GetActionLength,
+		&Actor::AIRBLOCKUP_GetTileset);
+
+	SetupFuncsForAction(AIRBLOCKUPFORWARD,
+		&Actor::AIRBLOCKUPFORWARD_Start,
+		&Actor::AIRBLOCKUPFORWARD_End,
+		&Actor::AIRBLOCKUPFORWARD_Change,
+		&Actor::AIRBLOCKUPFORWARD_Update,
+		&Actor::AIRBLOCKUPFORWARD_UpdateSprite,
+		&Actor::AIRBLOCKUPFORWARD_TransitionToAction,
+		&Actor::AIRBLOCKUPFORWARD_TimeIndFrameInc,
+		&Actor::AIRBLOCKUPFORWARD_TimeDepFrameInc,
+		&Actor::AIRBLOCKUPFORWARD_GetActionLength,
+		&Actor::AIRBLOCKUPFORWARD_GetTileset);
+
+	SetupFuncsForAction(AIRBLOCKFORWARD,
+		&Actor::AIRBLOCKFORWARD_Start,
+		&Actor::AIRBLOCKFORWARD_End,
+		&Actor::AIRBLOCKFORWARD_Change,
+		&Actor::AIRBLOCKFORWARD_Update,
+		&Actor::AIRBLOCKFORWARD_UpdateSprite,
+		&Actor::AIRBLOCKFORWARD_TransitionToAction,
+		&Actor::AIRBLOCKFORWARD_TimeIndFrameInc,
+		&Actor::AIRBLOCKFORWARD_TimeDepFrameInc,
+		&Actor::AIRBLOCKFORWARD_GetActionLength,
+		&Actor::AIRBLOCKFORWARD_GetTileset);
+
+	SetupFuncsForAction(AIRBLOCKDOWNFORWARD,
+		&Actor::AIRBLOCKDOWNFORWARD_Start,
+		&Actor::AIRBLOCKDOWNFORWARD_End,
+		&Actor::AIRBLOCKDOWNFORWARD_Change,
+		&Actor::AIRBLOCKDOWNFORWARD_Update,
+		&Actor::AIRBLOCKDOWNFORWARD_UpdateSprite,
+		&Actor::AIRBLOCKDOWNFORWARD_TransitionToAction,
+		&Actor::AIRBLOCKDOWNFORWARD_TimeIndFrameInc,
+		&Actor::AIRBLOCKDOWNFORWARD_TimeDepFrameInc,
+		&Actor::AIRBLOCKDOWNFORWARD_GetActionLength,
+		&Actor::AIRBLOCKDOWNFORWARD_GetTileset);
+
+	SetupFuncsForAction(AIRBLOCKDOWN,
+		&Actor::AIRBLOCKDOWN_Start,
+		&Actor::AIRBLOCKDOWN_End,
+		&Actor::AIRBLOCKDOWN_Change,
+		&Actor::AIRBLOCKDOWN_Update,
+		&Actor::AIRBLOCKDOWN_UpdateSprite,
+		&Actor::AIRBLOCKDOWN_TransitionToAction,
+		&Actor::AIRBLOCKDOWN_TimeIndFrameInc,
+		&Actor::AIRBLOCKDOWN_TimeDepFrameInc,
+		&Actor::AIRBLOCKDOWN_GetActionLength,
+		&Actor::AIRBLOCKDOWN_GetTileset);
 
 	SetupFuncsForAction(AIRDASH,
 		&Actor::AIRDASH_Start,
@@ -1313,41 +1393,65 @@ void Actor::SetupActionFunctions()
 		&Actor::GRINDSLASH_GetActionLength,
 		&Actor::GRINDSLASH_GetTileset);
 
-	SetupFuncsForAction(GROUNDBLOCK,
-		&Actor::GROUNDBLOCK_Start,
-		&Actor::GROUNDBLOCK_End,
-		&Actor::GROUNDBLOCK_Change,
-		&Actor::GROUNDBLOCK_Update,
-		&Actor::GROUNDBLOCK_UpdateSprite,
-		&Actor::GROUNDBLOCK_TransitionToAction,
-		&Actor::GROUNDBLOCK_TimeIndFrameInc,
-		&Actor::GROUNDBLOCK_TimeDepFrameInc,
-		&Actor::GROUNDBLOCK_GetActionLength,
-		&Actor::GROUNDBLOCK_GetTileset);
+	SetupFuncsForAction(GROUNDBLOCKDOWN,
+		&Actor::GROUNDBLOCKDOWN_Start,
+		&Actor::GROUNDBLOCKDOWN_End,
+		&Actor::GROUNDBLOCKDOWN_Change,
+		&Actor::GROUNDBLOCKDOWN_Update,
+		&Actor::GROUNDBLOCKDOWN_UpdateSprite,
+		&Actor::GROUNDBLOCKDOWN_TransitionToAction,
+		&Actor::GROUNDBLOCKDOWN_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKDOWN_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKDOWN_GetActionLength,
+		&Actor::GROUNDBLOCKDOWN_GetTileset);
 
-	SetupFuncsForAction(GROUNDBLOCKHIGH,
-		&Actor::GROUNDBLOCKHIGH_Start,
-		&Actor::GROUNDBLOCKHIGH_End,
-		&Actor::GROUNDBLOCKHIGH_Change,
-		&Actor::GROUNDBLOCKHIGH_Update,
-		&Actor::GROUNDBLOCKHIGH_UpdateSprite,
-		&Actor::GROUNDBLOCKHIGH_TransitionToAction,
-		&Actor::GROUNDBLOCKHIGH_TimeIndFrameInc,
-		&Actor::GROUNDBLOCKHIGH_TimeDepFrameInc,
-		&Actor::GROUNDBLOCKHIGH_GetActionLength,
-		&Actor::GROUNDBLOCKHIGH_GetTileset);
+	SetupFuncsForAction(GROUNDBLOCKDOWNFORWARD,
+		&Actor::GROUNDBLOCKDOWNFORWARD_Start,
+		&Actor::GROUNDBLOCKDOWNFORWARD_End,
+		&Actor::GROUNDBLOCKDOWNFORWARD_Change,
+		&Actor::GROUNDBLOCKDOWNFORWARD_Update,
+		&Actor::GROUNDBLOCKDOWNFORWARD_UpdateSprite,
+		&Actor::GROUNDBLOCKDOWNFORWARD_TransitionToAction,
+		&Actor::GROUNDBLOCKDOWNFORWARD_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKDOWNFORWARD_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKDOWNFORWARD_GetActionLength,
+		&Actor::GROUNDBLOCKDOWNFORWARD_GetTileset);
 
-	SetupFuncsForAction(GROUNDBLOCKLOW,
-		&Actor::GROUNDBLOCKLOW_Start,
-		&Actor::GROUNDBLOCKLOW_End,
-		&Actor::GROUNDBLOCKLOW_Change,
-		&Actor::GROUNDBLOCKLOW_Update,
-		&Actor::GROUNDBLOCKLOW_UpdateSprite,
-		&Actor::GROUNDBLOCKLOW_TransitionToAction,
-		&Actor::GROUNDBLOCKLOW_TimeIndFrameInc,
-		&Actor::GROUNDBLOCKLOW_TimeDepFrameInc,
-		&Actor::GROUNDBLOCKLOW_GetActionLength,
-		&Actor::GROUNDBLOCKLOW_GetTileset);
+	SetupFuncsForAction(GROUNDBLOCKFORWARD,
+		&Actor::GROUNDBLOCKFORWARD_Start,
+		&Actor::GROUNDBLOCKFORWARD_End,
+		&Actor::GROUNDBLOCKFORWARD_Change,
+		&Actor::GROUNDBLOCKFORWARD_Update,
+		&Actor::GROUNDBLOCKFORWARD_UpdateSprite,
+		&Actor::GROUNDBLOCKFORWARD_TransitionToAction,
+		&Actor::GROUNDBLOCKFORWARD_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKFORWARD_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKFORWARD_GetActionLength,
+		&Actor::GROUNDBLOCKFORWARD_GetTileset);
+
+	SetupFuncsForAction(GROUNDBLOCKUPFORWARD,
+		&Actor::GROUNDBLOCKUPFORWARD_Start,
+		&Actor::GROUNDBLOCKUPFORWARD_End,
+		&Actor::GROUNDBLOCKUPFORWARD_Change,
+		&Actor::GROUNDBLOCKUPFORWARD_Update,
+		&Actor::GROUNDBLOCKUPFORWARD_UpdateSprite,
+		&Actor::GROUNDBLOCKUPFORWARD_TransitionToAction,
+		&Actor::GROUNDBLOCKUPFORWARD_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKUPFORWARD_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKUPFORWARD_GetActionLength,
+		&Actor::GROUNDBLOCKUPFORWARD_GetTileset);
+
+	SetupFuncsForAction(GROUNDBLOCKUP,
+		&Actor::GROUNDBLOCKUP_Start,
+		&Actor::GROUNDBLOCKUP_End,
+		&Actor::GROUNDBLOCKUP_Change,
+		&Actor::GROUNDBLOCKUP_Update,
+		&Actor::GROUNDBLOCKUP_UpdateSprite,
+		&Actor::GROUNDBLOCKUP_TransitionToAction,
+		&Actor::GROUNDBLOCKUP_TimeIndFrameInc,
+		&Actor::GROUNDBLOCKUP_TimeDepFrameInc,
+		&Actor::GROUNDBLOCKUP_GetActionLength,
+		&Actor::GROUNDBLOCKUP_GetTileset);
 
 	SetupFuncsForAction(GROUNDHITSTUN,
 		&Actor::GROUNDHITSTUN_Start,
@@ -2189,7 +2293,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
-
+	
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
 	lastBlockPressFrame = -1;
@@ -3329,6 +3433,7 @@ void Actor::LoadHitboxes()
 	is >> j;
 
 	DIFactor = j["difactor"];
+	blockstunFactor = j["blockstunfactor"];
 	DIChangesMagnitude = true;
 
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
@@ -3386,9 +3491,25 @@ void Actor::SetupHitboxLevelInfo(
 
 	string posTypeStr = j["postype"];
 
-	if (posTypeStr == "air")
+	if (posTypeStr == "airup")
 	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIR;
+		hi.hitPosType = HitboxInfo::HitPosType::AIRUP;
+	}
+	else if (posTypeStr == "airupforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRUPFORWARD;
+	}
+	else if (posTypeStr == "airforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRFORWARD;
+	}
+	else if (posTypeStr == "airdownforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWNFORWARD;
+	}
+	else if (posTypeStr == "airdown")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWN;
 	}
 	else if (posTypeStr == "ground")
 	{
@@ -3397,6 +3518,10 @@ void Actor::SetupHitboxLevelInfo(
 	else if (posTypeStr == "groundlow")
 	{
 		hi.hitPosType = HitboxInfo::HitPosType::GROUNDLOW;
+	}
+	else if (posTypeStr == "groundhigh")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUNDHIGH;
 	}
 	else
 	{
@@ -4260,8 +4385,15 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 
 bool Actor::IsActionGroundBlock(int a)
 {
-	return action == GROUNDBLOCK || action == GROUNDBLOCKLOW
-		|| action == GROUNDBLOCKHIGH;
+	return action == GROUNDBLOCKDOWN || action == GROUNDBLOCKDOWNFORWARD
+		|| action == GROUNDBLOCKFORWARD || action == GROUNDBLOCKUPFORWARD
+		|| action == GROUNDBLOCKUP;
+}
+
+bool Actor::IsActionAirBlock(int a)
+{
+	return action == AIRBLOCKDOWN || action == AIRBLOCKDOWNFORWARD
+		|| action == AIRBLOCKFORWARD || action == AIRBLOCKUPFORWARD || action == AIRBLOCKUP;
 }
 
 void Actor::ProcessReceivedHit()
@@ -4277,11 +4409,12 @@ void Actor::ProcessReceivedHit()
 
 		switch (receivedHitReaction)
 		{
-		case HitResult::BLOCK:
+		case HitResult::FULLBLOCK:
+		case HitResult::HALFBLOCK:
 		{
 			if (IsActionGroundBlock(action))
 			{
-				blockstunFrames = receivedHit->hitstunFrames / 2;
+				blockstunFrames = receivedHit->hitstunFrames * blockstunFactor;
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
@@ -4294,32 +4427,31 @@ void Actor::ProcessReceivedHit()
 					groundSpeed -= 2;
 				}
 			}
-			else if (action == AIRBLOCK)
+			else if (IsActionAirBlock(action))
 			{
-				if (framesBlocking < 5)
-				{
-					cout << "air parry" << endl;
-				}
-
 				blockstunFrames = receivedHit->hitstunFrames / 2;
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
 				velocity += 2.0 * normalize(position - otherPos);
-				
 			}
 			
 			break;
 		}
 		case HitResult::PARRY:
 		{
-			if (action == GROUNDBLOCK)
+			if (action == GROUNDBLOCKFORWARD)
 			{
 				SetAction(GROUNDPARRY);
 			}
-			else if (action == GROUNDBLOCKLOW)
+			else if (action == GROUNDBLOCKDOWNFORWARD)
 			{
 				SetAction(GROUNDPARRYLOW);
+			}
+			else
+			{
+				//until implemented everything
+				SetAction(GROUNDPARRY);
 			}
 
 			frame = 0;
@@ -5082,10 +5214,10 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	if (actorIndex == 1)
+	/*if (actorIndex == 1)
 	{
 		currInput.Y = true;
-	}
+	}*/
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -8364,8 +8496,7 @@ bool Actor::TryGroundBlock()
 {
 	if (currInput.Y)
 	{
-		SetAction(GROUNDBLOCK);
-		frame = 0;
+		SetGroundBlockAction();
 		return true;
 	}
 
@@ -8376,8 +8507,7 @@ bool Actor::TryAirBlock()
 {
 	if (currInput.Y)
 	{
-		SetAction(AIRBLOCK);
-		frame = 0;
+		SetAirBlockAction();
 		return true;
 	}
 
@@ -11473,7 +11603,7 @@ void Actor::PhysicsResponse()
 				HitWallWhileInAirHitstun();
 			}
 		}
-		else if( action != AIRHITSTUN && action != AIRDASH && action != AIRBLOCK )
+		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ))
 		{
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
@@ -11632,7 +11762,7 @@ void Actor::PhysicsResponse()
 			if (pTarget != NULL)
 			{
 				checkHit = pTarget->CheckIfImHit(currHitboxes, currHitboxFrame,
-					hi.hitPosType, position);
+					hi.hitPosType, position, facingRight );
 			}
 		}
 
@@ -11663,7 +11793,8 @@ void Actor::PhysicsResponse()
 
 				currAttackHit = true;
 			}
-			else if (checkHit == HitResult::BLOCK )
+			else if (checkHit == HitResult::FULLBLOCK 
+				|| checkHit == HitResult::HALFBLOCK)
 			{
 				currAttackHitBlock[target] = frame;
 			}
@@ -14954,7 +15085,7 @@ void Actor::Draw( sf::RenderTarget *target )
 
 void Actor::DrawShield(sf::RenderTarget *target)
 {
-	if (IsActionGroundBlock(action))
+	if (IsBlockAction(action))
 	{
 		target->draw(shieldSprite);
 	}
@@ -16405,49 +16536,175 @@ bool Actor::IsSingleWirePulling()
 
 
 
-bool Actor::CanBlock(HitboxInfo::HitPosType hpt, V2d &hitPos)
+
+bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
-	if (action == GROUNDBLOCK)
+	bool facingHitbox = (facingRight && position.x - hitPos.x <= 0)
+		|| (!facingRight && position.x - hitPos.x >= 0);
+
+	bool opposingFacing = facingRight != attackFacingRight;
+
+	if (action == GROUNDBLOCKDOWN)
 	{
-		if (hpt == HitboxInfo::HitPosType::GROUND
-			|| hpt == HitboxInfo::HitPosType::AIR )
-		{
-			if( (facingRight && position.x - hitPos.x <= 0 )
-				|| ( !facingRight && position.x - hitPos.x >= 0 ) )
-				return true;
-		}
-	}
-	else if (action == GROUNDBLOCKLOW)
-	{
-		if (hpt == HitboxInfo::HitPosType::GROUND
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
 			|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
-		{
 			return true;
-		}
 	}
-	else if (action == GROUNDBLOCKHIGH)
+	else if (action == GROUNDBLOCKDOWNFORWARD)
 	{
-		if (hpt == HitboxInfo::HitPosType::AIR )
-		{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| ( facingHitbox && 
+				(hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUND
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW ) ) )
 			return true;
-		}
 	}
-	else if (action == AIRBLOCK)
+	else if (action == GROUNDBLOCKFORWARD)
 	{
-		if (hpt == HitboxInfo::HitPosType::AIR || hpt == HitboxInfo::HitPosType::GROUND)
-		{
-			if ((facingRight && position.x - hitPos.x <= 0)
-				|| (!facingRight && position.x - hitPos.x >= 0))
-				return true;
+		if ( facingHitbox &&
+				( hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUND ) )
 			return true;
-		}
+	}
+	else if (action == GROUNDBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWNFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKUPFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN)
+			return true;
 	}
 
 	return false;
 }
-bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos)
+
+bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
-	if (CanBlock(hpt, hitPos) && framesBlocking < 10)
+	bool facingHitbox = (facingRight && position.x - hitPos.x <= 0)
+		|| (!facingRight && position.x - hitPos.x >= 0);
+
+	bool opposingFacing = facingRight != attackFacingRight;
+
+	double posAngle = GetVectorAngleCCW(normalize( position - hitPos));
+	if (posAngle < 0)
+	{
+		posAngle += 2.0 * PI;
+	}
+	int angleMult = posAngle / (PI / 4.0);
+
+
+	if (action == GROUNDBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::GROUND)
+			return true;
+	}
+	else if (action == GROUNDBLOCKDOWNFORWARD)
+	{
+		if ( !facingHitbox && (
+			hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDLOW ) )
+			return true;
+	}
+	else if (action == GROUNDBLOCKFORWARD)
+	{
+		if (facingHitbox)
+		{
+			if (hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+				return true;
+		}
+	}
+	else if (action == GROUNDBLOCKUPFORWARD)
+	{
+		if (facingHitbox)
+		{
+			if (hpt == HitboxInfo::HitPosType::GROUND)
+				return true;
+		}
+		else
+		{
+			if (hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)
+				return true;
+		}
+	}
+	else if (action == GROUNDBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUND)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWNFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKUPFORWARD)
+	{
+		if (opposingFacing && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN)
+			return true;
+	}
+
+	return false;
+}
+
+bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
+{
+	if ((CanFullBlock(hpt, hitPos, attackFacingRight)
+		|| CanHalfBlock(hpt, hitPos, attackFacingRight))
+		&& framesBlocking < 10)
 	{
 		return true;
 	}
@@ -16456,7 +16713,7 @@ bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos)
 }
 
 Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
-	 HitboxInfo::HitPosType hpt, V2d &hitPos )
+	 HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
 	if (IsIntangible())
 	{
@@ -16465,13 +16722,17 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		if (CanParry(hpt, hitPos))
+		if (CanParry(hpt, hitPos, attackFacingRight ))
 		{
 			return HitResult::PARRY;
 		}
-		else if (CanBlock(hpt, hitPos))
+		else if (CanFullBlock(hpt, hitPos, attackFacingRight))
 		{
-			return HitResult::BLOCK;
+			return HitResult::FULLBLOCK;
+		}
+		else if (CanHalfBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::HALFBLOCK;
 		}
 		else
 		{
@@ -16483,7 +16744,7 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 }
 
 Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb,HitboxInfo::HitPosType hpt,
-	V2d &hitPos)
+	V2d &hitPos, bool attackFacingRight)
 {
 	if (IsIntangible())
 	{
@@ -16492,13 +16753,17 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb,HitboxInfo::HitPosType hpt
 
 	if (IntersectMyHurtboxes(cb))
 	{
-		if (CanParry(hpt, hitPos))
+		if (CanParry(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::PARRY;
 		}
-		else if (CanBlock(hpt, hitPos))
+		else if (CanFullBlock(hpt, hitPos, attackFacingRight))
 		{
-			return HitResult::BLOCK;
+			return HitResult::FULLBLOCK;
+		}
+		else if (CanHalfBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::HALFBLOCK;
 		}
 		else
 		{
@@ -16518,8 +16783,7 @@ void Actor::ClearPauseBufferedActions()
 
 bool Actor::IsBlockAction(int a)
 {
-	return (a == AIRBLOCK || a == GROUNDBLOCK || a == GROUNDBLOCKLOW
-		|| a == GROUNDBLOCKHIGH );
+	return IsActionAirBlock(a) || IsActionGroundBlock(a);
 }
 
 bool Actor::IsAttackAction( int a )
@@ -16685,7 +16949,143 @@ void Actor::UpdateInHitlag()
 	 AddToFlyCounter(hf->GetCounterAmount());
  }
 
- 
+ void Actor::SetAirBlockAction()
+ {
+	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
+
+	 if (currInput.LUp())
+	 {
+		 if (forwardHeld)
+		 {
+			 if (action != AIRBLOCKUPFORWARD)
+				SetAction(AIRBLOCKUPFORWARD);
+		 }
+		 else
+		 {
+			 if (action != AIRBLOCKUP)
+			 SetAction(AIRBLOCKUP);
+		 }
+	 }
+	 else if (currInput.LDown())
+	 {
+		 if (forwardHeld)
+		 {
+			 if (action != AIRBLOCKDOWNFORWARD)
+				SetAction(AIRBLOCKDOWNFORWARD);
+		 }
+		 else
+		 {
+			 if (action != AIRBLOCKDOWN)
+				SetAction(AIRBLOCKDOWN);
+		 }
+	 }
+	 else
+	 {
+		 if (action != AIRBLOCKFORWARD)
+			 SetAction(AIRBLOCKFORWARD);
+	 }
+ }
+
+ void Actor::SetGroundBlockAction()
+ {
+	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
+
+	 if (currInput.LUp())
+	 {
+		 if (forwardHeld)
+		 {
+			 if (action != GROUNDBLOCKUPFORWARD)
+				 SetAction(GROUNDBLOCKUPFORWARD);
+		 }
+		 else
+		 {
+			 if (action != GROUNDBLOCKUP)
+				 SetAction(GROUNDBLOCKUP);
+		 }
+	 }
+	 else if (currInput.LDown())
+	 {
+		 if (forwardHeld)
+		 {
+			 if (action != GROUNDBLOCKDOWNFORWARD)
+				 SetAction(GROUNDBLOCKDOWNFORWARD);
+		 }
+		 else
+		 {
+			 if (action != GROUNDBLOCKDOWN)
+				 SetAction(GROUNDBLOCKDOWN);
+		 }
+	 }
+	 else
+	 {
+		 if (action != GROUNDBLOCKFORWARD)
+			 SetAction(GROUNDBLOCKFORWARD);
+	 }
+ }
+
+ void Actor::TryResetBlockCounter()
+ {
+	 if (!IsBlockAction(oldAction) )
+	 {
+		 framesBlocking = 0;
+	 }
+ }
+
+ void Actor::AirBlockChange()
+ {
+	 if (currInput.LLeft())
+	 {
+		 facingRight = false;
+	 }
+	 else if (currInput.LRight())
+	 {
+		 facingRight = true;
+	 }
+
+	 if (!currInput.Y && blockstunFrames == 0)
+	 {
+		 SetAction(JUMP);
+		 frame = 1;
+	 }
+	 else
+	 {
+		 if (TryDoubleJump()) return;
+
+		 if (AirAttack()) return;
+
+		 SetAirBlockAction();
+	 }
+ }
+
+ void Actor::GroundBlockChange()
+ {
+	 if (currInput.LLeft())
+	 {
+		 facingRight = false;
+	 }
+	 else if (currInput.LRight())
+	 {
+		 facingRight = true;
+	 }
+
+	 if (blockstunFrames == 0)
+	 {
+		 if (!currInput.Y)
+		 {
+			 SetAction(STAND);
+			 frame = 0;
+			 return;
+		 }
+		 else
+		 {
+			 if (TryJumpSquat()) return;
+
+			 if (TryGroundAttack()) return;
+		 }
+	 }
+
+	 SetGroundBlockAction();
+ }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )

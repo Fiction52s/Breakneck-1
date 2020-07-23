@@ -11,27 +11,7 @@ void Actor::GROUNDPARRY_End()
 {
 	if (currInput.Y)
 	{
-		if (currInput.LLeft())
-		{
-			facingRight = false;
-		}
-		else if (currInput.LRight())
-		{
-			facingRight = true;
-		}
-
-		if (currInput.LUp())
-		{
-			SetAction(GROUNDBLOCKHIGH);
-		}
-		else if (currInput.LDown())
-		{
-			SetAction(GROUNDBLOCKLOW);
-		}
-		else
-		{
-			SetAction(GROUNDBLOCK);
-		}
+		SetGroundBlockAction();
 
 		frame = 0;
 	}
@@ -46,30 +26,7 @@ void Actor::GROUNDPARRY_Change()
 {
 	if (frame > 0)
 	{
-		if (currInput.Y && !prevInput.Y)
-		{
-			if (currInput.LLeft())
-			{
-				facingRight = false;
-			}
-			else if (currInput.LRight())
-			{
-				facingRight = true;
-			}
-
-			if (currInput.LUp())
-			{
-				SetAction(GROUNDBLOCKHIGH);
-			}
-			else if (currInput.LDown())
-			{
-				SetAction(GROUNDBLOCKLOW);
-			}
-			else
-			{
-				SetAction(GROUNDBLOCK);
-			}
-		}
+		SetGroundBlockAction();
 	}
 	/*if (!currInput.Y && blockstunFrames == 0)
 	{

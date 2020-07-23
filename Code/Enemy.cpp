@@ -1753,9 +1753,8 @@ bool Enemy::CheckHitPlayer(int index)
 	{
 		if (currHitboxes != NULL)
 		{
-			HitboxInfo::HitPosType hpt = HitboxInfo::HitPosType::AIR;
 			Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
-				GetPosition());
+				GetPosition(), facingRight );
 
 			if (hitResult != Actor::HitResult::MISS)
 			{

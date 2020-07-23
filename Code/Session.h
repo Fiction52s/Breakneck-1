@@ -706,6 +706,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupSuperSequence();
 	void CleanupSuperSequence();
 	void DrawPlayerShields(sf::RenderTarget *target);
+	void SetupGameMode();
 };
 
 #endif

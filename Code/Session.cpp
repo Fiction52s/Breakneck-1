@@ -6297,10 +6297,26 @@ void Session::DrawPlayerShields(sf::RenderTarget *target)
 	Actor *p;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		p = GetPlayer(0);
+		p = GetPlayer(i);
 		if (p != NULL)
 		{
 			p->DrawShield(target);
 		}
+	}
+}
+
+void Session::SetupGameMode()
+{
+	switch (mapHeader->gameMode)
+	{
+	case MapHeader::T_BASIC:
+		gameMode = new BasicMode;
+		break;
+	case MapHeader::T_REACHENEMYBASE:
+		gameMode = new ReachEnemyBaseMode;
+		break;
+	case MapHeader::T_FIGHT:
+		gameMode = new FightMode;
+		break;
 	}
 }

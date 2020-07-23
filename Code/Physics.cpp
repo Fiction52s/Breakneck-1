@@ -9,6 +9,48 @@ using namespace sf;
 using namespace std;
 
 
+bool HitboxInfo::IsAirType(HitPosType hpt)
+{
+	return hpt == AIRDOWN || hpt == AIRDOWNFORWARD || hpt == AIRFORWARD
+		|| hpt == AIRUPFORWARD || hpt == AIRUP;
+}
+
+HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &dir)
+{
+	bool forward = false;
+	if (abs( dir.x ) > 0 )
+	{
+		forward = true;
+	}
+
+	if (dir.y < 0)
+	{
+		if (forward)
+		{
+			return AIRUPFORWARD;
+		}
+		else
+		{
+			return AIRUP;
+		}
+	}
+	else if (dir.y > 0)
+	{
+		if (forward)
+		{
+			return AIRDOWNFORWARD;
+		}
+		else
+		{
+			return AIRDOWN;
+		}
+	}
+	else
+	{
+		return AIRFORWARD;
+	}
+}
+
 //EDGE FUNCTIONS
 Edge::Edge()
 {

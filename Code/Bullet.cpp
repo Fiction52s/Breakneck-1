@@ -915,8 +915,9 @@ void BasicBullet::UpdatePhysics()
 		{
 			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 
-			Actor::HitResult res = player->CheckIfImHit(hitBody, HitboxInfo::HitPosType::AIR,
-				position);
+			Actor::HitResult res = player->CheckIfImHit(hitBody, 
+				HitboxInfo::GetAirType( velocity ),
+				position, velocity.x >= 0 );
 
 			if (res != Actor::HitResult::MISS )
 			{
@@ -1190,8 +1191,9 @@ void SinBullet::UpdatePhysics()
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 		//player->CheckIfImHit( )
 
-		Actor::HitResult res = player->CheckIfImHit(hitBody, HitboxInfo::HitPosType::AIR,
-			position);
+		Actor::HitResult res = player->CheckIfImHit(hitBody, 
+			HitboxInfo::GetAirType( velocity ),
+			position, velocity.x >= 0);
 
 		if (res != Actor::HitResult::MISS)
 		{

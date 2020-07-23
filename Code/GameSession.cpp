@@ -1442,8 +1442,6 @@ bool GameSession::Load()
 			players[0] = new Actor(this, NULL, 0);
 	}
 	
-
-	
 	cout << "about to open file" << endl;
 	
 	if (progressDisplay != NULL)
@@ -1457,6 +1455,13 @@ bool GameSession::Load()
 	if (parentGame == NULL)
 	{
 		p0->position = V2d(playerOrigPos[0]);
+	}
+
+	SetupGameMode();
+
+	for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
+	{
+		players[i] = new Actor(this, NULL, i);
 	}
 
 	SetupHUD();

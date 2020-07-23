@@ -258,10 +258,16 @@ struct Actor : QuadTreeCollider,
 		SEQ_TURNFACE,
 		GETSHARD,
 		TESTSUPER,
-		GROUNDBLOCK,
-		GROUNDBLOCKLOW,
-		GROUNDBLOCKHIGH,
-		AIRBLOCK,
+		GROUNDBLOCKDOWN,
+		GROUNDBLOCKDOWNFORWARD,
+		GROUNDBLOCKFORWARD,
+		GROUNDBLOCKUPFORWARD,
+		GROUNDBLOCKUP,
+		AIRBLOCKUP,
+		AIRBLOCKUPFORWARD,
+		AIRBLOCKFORWARD,
+		AIRBLOCKDOWNFORWARD,
+		AIRBLOCKDOWN,
 		GROUNDPARRY,
 		GROUNDPARRYLOW,
 		Count
@@ -331,7 +337,8 @@ struct Actor : QuadTreeCollider,
 	{
 		MISS,
 		HIT,
-		BLOCK,
+		FULLBLOCK,
+		HALFBLOCK,
 		PARRY,
 	};
 
@@ -497,9 +504,8 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f climbAttackOffset[3];
 
 	sf::Sprite shieldSprite;
-	Tileset *ts_groundBlockShield;
-	Tileset *ts_groundBlockLowShield;
-	Tileset *ts_groundBlockHighShield;
+	Tileset *ts_blockShield;
+	
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
@@ -877,6 +883,7 @@ struct Actor : QuadTreeCollider,
 	int climbBoostLimit;
 	
 	double DIFactor;
+	double blockstunFactor;
 	bool DIChangesMagnitude;
 
 	
@@ -889,9 +896,14 @@ struct Actor : QuadTreeCollider,
 	void Init();
 	void DrawShield(sf::RenderTarget *target);
 	bool CanParry(HitboxInfo::HitPosType hpt,
-		V2d &hitPos);
-	bool CanBlock(HitboxInfo::HitPosType hpt,
-		V2d &hitPos);
+		V2d &hitPos,
+		bool attackFacingRight );
+	bool CanFullBlock(HitboxInfo::HitPosType hpt,
+		V2d &hitPos,
+		bool attackFacingRight );
+	bool CanHalfBlock(HitboxInfo::HitPosType hpt,
+		V2d &hitPos,
+		bool attackFacingRight);
 	void RechargeAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
@@ -1075,10 +1087,12 @@ struct Actor : QuadTreeCollider,
 	HitResult CheckIfImHit(CollisionBody *hitBody,
 		int hitFrame,
 		HitboxInfo::HitPosType hpt,
-		V2d &hitPos );
+		V2d &hitPos, 
+		bool attackFacingRight);
 	HitResult CheckIfImHit(CollisionBox &cb,
 		HitboxInfo::HitPosType hpt,
-		V2d &hitPos);
+		V2d &hitPos,
+		bool attackFacingRight);
 	HitResult CheckHitByEnemy(Enemy *e);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,
@@ -1236,6 +1250,7 @@ struct Actor : QuadTreeCollider,
 	bool IsOnRailAction(int a);
 	bool IsInHistunAction( int a );
 	bool IsActionGroundBlock(int a);
+	bool IsActionAirBlock(int a);
 
 	V2d GetKnockbackDirFromVel();
 
@@ -1249,18 +1264,70 @@ struct Actor : QuadTreeCollider,
 	void HitGroundWhileInAirHitstun();
 	void HitWallWhileInAirHitstun();
 
+	void SetGroundBlockAction();
+	void SetAirBlockAction();
+	void TryResetBlockCounter();
+	void AirBlockChange();
+	void GroundBlockChange();
+	void UpdateGroundedShieldSprite(int tile);
+	void UpdateAerialShieldSprite(int tile);
+
 	//kin action functions
 
-	void AIRBLOCK_Start();
-	void AIRBLOCK_End();
-	void AIRBLOCK_Change();
-	void AIRBLOCK_Update();
-	void AIRBLOCK_UpdateSprite();
-	void AIRBLOCK_TransitionToAction(int a);
-	void AIRBLOCK_TimeIndFrameInc();
-	void AIRBLOCK_TimeDepFrameInc();
-	int AIRBLOCK_GetActionLength();
-	Tileset * AIRBLOCK_GetTileset();
+	void AIRBLOCKUP_Start();
+	void AIRBLOCKUP_End();
+	void AIRBLOCKUP_Change();
+	void AIRBLOCKUP_Update();
+	void AIRBLOCKUP_UpdateSprite();
+	void AIRBLOCKUP_TransitionToAction(int a);
+	void AIRBLOCKUP_TimeIndFrameInc();
+	void AIRBLOCKUP_TimeDepFrameInc();
+	int AIRBLOCKUP_GetActionLength();
+	Tileset * AIRBLOCKUP_GetTileset();
+
+	void AIRBLOCKUPFORWARD_Start();
+	void AIRBLOCKUPFORWARD_End();
+	void AIRBLOCKUPFORWARD_Change();
+	void AIRBLOCKUPFORWARD_Update();
+	void AIRBLOCKUPFORWARD_UpdateSprite();
+	void AIRBLOCKUPFORWARD_TransitionToAction(int a);
+	void AIRBLOCKUPFORWARD_TimeIndFrameInc();
+	void AIRBLOCKUPFORWARD_TimeDepFrameInc();
+	int AIRBLOCKUPFORWARD_GetActionLength();
+	Tileset * AIRBLOCKUPFORWARD_GetTileset();
+
+	void AIRBLOCKFORWARD_Start();
+	void AIRBLOCKFORWARD_End();
+	void AIRBLOCKFORWARD_Change();
+	void AIRBLOCKFORWARD_Update();
+	void AIRBLOCKFORWARD_UpdateSprite();
+	void AIRBLOCKFORWARD_TransitionToAction(int a);
+	void AIRBLOCKFORWARD_TimeIndFrameInc();
+	void AIRBLOCKFORWARD_TimeDepFrameInc();
+	int AIRBLOCKFORWARD_GetActionLength();
+	Tileset * AIRBLOCKFORWARD_GetTileset();
+
+	void AIRBLOCKDOWNFORWARD_Start();
+	void AIRBLOCKDOWNFORWARD_End();
+	void AIRBLOCKDOWNFORWARD_Change();
+	void AIRBLOCKDOWNFORWARD_Update();
+	void AIRBLOCKDOWNFORWARD_UpdateSprite();
+	void AIRBLOCKDOWNFORWARD_TransitionToAction(int a);
+	void AIRBLOCKDOWNFORWARD_TimeIndFrameInc();
+	void AIRBLOCKDOWNFORWARD_TimeDepFrameInc();
+	int AIRBLOCKDOWNFORWARD_GetActionLength();
+	Tileset * AIRBLOCKDOWNFORWARD_GetTileset();
+
+	void AIRBLOCKDOWN_Start();
+	void AIRBLOCKDOWN_End();
+	void AIRBLOCKDOWN_Change();
+	void AIRBLOCKDOWN_Update();
+	void AIRBLOCKDOWN_UpdateSprite();
+	void AIRBLOCKDOWN_TransitionToAction(int a);
+	void AIRBLOCKDOWN_TimeIndFrameInc();
+	void AIRBLOCKDOWN_TimeDepFrameInc();
+	int AIRBLOCKDOWN_GetActionLength();
+	Tileset * AIRBLOCKDOWN_GetTileset();
 
 	void AIRDASH_Start();
 	void AIRDASH_End();
@@ -1661,39 +1728,60 @@ struct Actor : QuadTreeCollider,
 	int GRINDSLASH_GetActionLength();
 	Tileset * GRINDSLASH_GetTileset();
 
-	void GROUNDBLOCK_Start();
-	void GROUNDBLOCK_End();
-	void GROUNDBLOCK_Change();
-	void GROUNDBLOCK_Update();
-	void GROUNDBLOCK_UpdateSprite();
-	void GROUNDBLOCK_TransitionToAction(int a);
-	void GROUNDBLOCK_TimeIndFrameInc();
-	void GROUNDBLOCK_TimeDepFrameInc();
-	int GROUNDBLOCK_GetActionLength();
-	Tileset * GROUNDBLOCK_GetTileset();
+	void GROUNDBLOCKDOWN_Start();
+	void GROUNDBLOCKDOWN_End();
+	void GROUNDBLOCKDOWN_Change();
+	void GROUNDBLOCKDOWN_Update();
+	void GROUNDBLOCKDOWN_UpdateSprite();
+	void GROUNDBLOCKDOWN_TransitionToAction(int a);
+	void GROUNDBLOCKDOWN_TimeIndFrameInc();
+	void GROUNDBLOCKDOWN_TimeDepFrameInc();
+	int GROUNDBLOCKDOWN_GetActionLength();
+	Tileset * GROUNDBLOCKDOWN_GetTileset();
 
-	
-	void GROUNDBLOCKHIGH_Start();
-	void GROUNDBLOCKHIGH_End();
-	void GROUNDBLOCKHIGH_Change();
-	void GROUNDBLOCKHIGH_Update();
-	void GROUNDBLOCKHIGH_UpdateSprite();
-	void GROUNDBLOCKHIGH_TransitionToAction(int a);
-	void GROUNDBLOCKHIGH_TimeIndFrameInc();
-	void GROUNDBLOCKHIGH_TimeDepFrameInc();
-	int GROUNDBLOCKHIGH_GetActionLength();
-	Tileset * GROUNDBLOCKHIGH_GetTileset();
+	void GROUNDBLOCKDOWNFORWARD_Start();
+	void GROUNDBLOCKDOWNFORWARD_End();
+	void GROUNDBLOCKDOWNFORWARD_Change();
+	void GROUNDBLOCKDOWNFORWARD_Update();
+	void GROUNDBLOCKDOWNFORWARD_UpdateSprite();
+	void GROUNDBLOCKDOWNFORWARD_TransitionToAction(int a);
+	void GROUNDBLOCKDOWNFORWARD_TimeIndFrameInc();
+	void GROUNDBLOCKDOWNFORWARD_TimeDepFrameInc();
+	int GROUNDBLOCKDOWNFORWARD_GetActionLength();
+	Tileset * GROUNDBLOCKDOWNFORWARD_GetTileset();
 
-	void GROUNDBLOCKLOW_Start();
-	void GROUNDBLOCKLOW_End();
-	void GROUNDBLOCKLOW_Change();
-	void GROUNDBLOCKLOW_Update();
-	void GROUNDBLOCKLOW_UpdateSprite();
-	void GROUNDBLOCKLOW_TransitionToAction(int a);
-	void GROUNDBLOCKLOW_TimeIndFrameInc();
-	void GROUNDBLOCKLOW_TimeDepFrameInc();
-	int GROUNDBLOCKLOW_GetActionLength();
-	Tileset * GROUNDBLOCKLOW_GetTileset();
+	void GROUNDBLOCKFORWARD_Start();
+	void GROUNDBLOCKFORWARD_End();
+	void GROUNDBLOCKFORWARD_Change();
+	void GROUNDBLOCKFORWARD_Update();
+	void GROUNDBLOCKFORWARD_UpdateSprite();
+	void GROUNDBLOCKFORWARD_TransitionToAction(int a);
+	void GROUNDBLOCKFORWARD_TimeIndFrameInc();
+	void GROUNDBLOCKFORWARD_TimeDepFrameInc();
+	int GROUNDBLOCKFORWARD_GetActionLength();
+	Tileset * GROUNDBLOCKFORWARD_GetTileset();
+
+	void GROUNDBLOCKUPFORWARD_Start();
+	void GROUNDBLOCKUPFORWARD_End();
+	void GROUNDBLOCKUPFORWARD_Change();
+	void GROUNDBLOCKUPFORWARD_Update();
+	void GROUNDBLOCKUPFORWARD_UpdateSprite();
+	void GROUNDBLOCKUPFORWARD_TransitionToAction(int a);
+	void GROUNDBLOCKUPFORWARD_TimeIndFrameInc();
+	void GROUNDBLOCKUPFORWARD_TimeDepFrameInc();
+	int GROUNDBLOCKUPFORWARD_GetActionLength();
+	Tileset * GROUNDBLOCKUPFORWARD_GetTileset();
+
+	void GROUNDBLOCKUP_Start();
+	void GROUNDBLOCKUP_End();
+	void GROUNDBLOCKUP_Change();
+	void GROUNDBLOCKUP_Update();
+	void GROUNDBLOCKUP_UpdateSprite();
+	void GROUNDBLOCKUP_TransitionToAction(int a);
+	void GROUNDBLOCKUP_TimeIndFrameInc();
+	void GROUNDBLOCKUP_TimeDepFrameInc();
+	int GROUNDBLOCKUP_GetActionLength();
+	Tileset * GROUNDBLOCKUP_GetTileset();
 
 	void GROUNDHITSTUN_Start();
 	void GROUNDHITSTUN_End();

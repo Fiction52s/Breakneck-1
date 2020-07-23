@@ -6,6 +6,7 @@ using namespace std;
 void Actor::LAND2_Start()
 {
 	currBBoostCounter = 0;
+	if (TryGroundBlock()) return;
 }
 
 void Actor::LAND2_End()
@@ -15,6 +16,8 @@ void Actor::LAND2_End()
 
 void Actor::LAND2_Change()
 {
+	if (TryGroundBlock()) return;
+
 	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y)//&& !prevInput.Y )
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.

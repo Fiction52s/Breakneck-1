@@ -87,7 +87,12 @@ struct HitboxInfo
 	{
 		GROUND,
 		GROUNDLOW,
-		AIR,
+		GROUNDHIGH,
+		AIRDOWN,
+		AIRDOWNFORWARD,
+		AIRFORWARD,
+		AIRUPFORWARD,
+		AIRUP,
 	};
 
 	HitboxInfo()
@@ -97,10 +102,12 @@ struct HitboxInfo
 		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
 		extraDefenderHitlag( 0 ),
 		hitBlockCancelDelay( 0 ),
-		hitPosType( AIR )
+		hitPosType( AIRFORWARD )
 	{
 	};
 
+	static bool IsAirType(HitPosType hpt);
+	static HitPosType GetAirType(V2d &dir);
 	sf::Vector2<double> hDir;
 	HitboxType hType;
 	double knockback; //0+

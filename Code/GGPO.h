@@ -287,6 +287,7 @@ struct PState
 	bool hasHitRechargeAirDash;
 
 	int framesBlocking;
+	V2d receivedHitPosition;
 
 	//HitboxInfo currVSHitboxInfo;
 };

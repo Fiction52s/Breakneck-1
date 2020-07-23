@@ -5,10 +5,10 @@ using namespace std;
 
 void Actor::GROUNDPARRYLOW_Start()
 {
-	if (oldAction != AIRBLOCK)
+	/*if (oldAction != AIRBLOCK)
 	{
 		framesBlocking = 0;
-	}
+	}*/
 }
 
 void Actor::GROUNDPARRYLOW_End()
