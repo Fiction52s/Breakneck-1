@@ -67,6 +67,7 @@
 #include "DeathSequence.h"
 #include "GoalFlow.h"
 
+#include "GameMode.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -214,15 +215,24 @@ void GameSession::UpdateCamera()
 
 	oldView = view;
 
-	if (raceFight != NULL)
+	switch (mapHeader->gameMode)
 	{
-		//cam.UpdateVS(GetPlayer(0), GetPlayer(1));
-	}
-	else
+	case MapHeader::T_BASIC:
 	{
+		cam.SetCamType(Camera::CamType::BASIC);
 		cam.playerIndex = 0;
 		cam.Update();
+		break;
 	}
+	case MapHeader::T_FIGHT:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		//cam.playerIndex = 0;
+		break;
+	}
+	}
+	
 
 	Vector2f camPos = cam.GetPos();
 	double camWidth = 960 * cam.GetZoom();
@@ -984,6 +994,7 @@ void GameSession::ProcessAllTerrain()
 		poly = (*it);
 		poly->Finalize();
 		poly->AddEdgesToQuadTree(terrainTree);
+		//poly->AddGrassToQuadTree(grassTree);
 
 		if (poly->inverse)
 		{
@@ -1451,18 +1462,20 @@ bool GameSession::Load()
 
 	ReadFile();
 
-	Actor *p0 = GetPlayer(0);
-	if (parentGame == NULL)
-	{
-		p0->position = V2d(playerOrigPos[0]);
-	}
+	SetupPlayers();
+
+	
+
+	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
+	//{
+	//	players[i] = new Actor(this, NULL, i);
+	//}
+	//m_numActivePlayers = mapHeader->GetNumPlayers(); //not really used
 
 	SetupGameMode();
+	gameMode->Setup();
 
-	for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
-	{
-		players[i] = new Actor(this, NULL, i);
-	}
+	
 
 	SetupHUD();
 
@@ -1500,9 +1513,9 @@ bool GameSession::Load()
 	//still too far
 
 
-	cout << "done opening file" << endl;
+	//cout << "done opening file" << endl;
 
-	SetupPlayers();
+	//SetupPlayers();
 
 	
 	SetupTimeBubbles();
@@ -1592,7 +1605,7 @@ void GameSession::SetupPlayers()
 {
 	if (parentGame != NULL)
 	{
-		for (int i = 0; i < MAX_PLAYERS; ++i)
+		for (int i = 1; i < MAX_PLAYERS; ++i)
 		{
 			players[i] = parentGame->players[i];
 			//if( players[i] != NULL )
@@ -1602,9 +1615,27 @@ void GameSession::SetupPlayers()
 		m_numActivePlayers = parentGame->m_numActivePlayers;
 		return;
 	}
+	else
+	{
+		for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
+		{
+			players[i] = new Actor(this, NULL, i);
+			//if( players[i] != NULL )
+			//	players[i]->Respawn(); //need a special bonus respawn later
+		}
+	}
 
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->position = V2d(playerOrigPos[i]);
+		}
+	}
 
-	if (raceFight != NULL)
+	/*if (raceFight != NULL)
 	{
 		if( players[1] == NULL )
 			players[1] = new Actor(this, NULL, 1);
@@ -1625,9 +1656,9 @@ void GameSession::SetupPlayers()
 		{
 			tempP->position = GetPlayer(0)->position;
 		}
-	}
+	}*/
 
-	m_numActivePlayers = 0;
+	/*m_numActivePlayers = 0;
 	Actor *activePlayer = NULL;
 	Actor *tempPlayer = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -1641,7 +1672,7 @@ void GameSession::SetupPlayers()
 			++m_numActivePlayers;
 		}
 	}
-	assert(activePlayer);
+	assert(activePlayer);*/
 }
 
 void GameSession::SetupShaders()
@@ -1950,9 +1981,17 @@ int GameSession::Run()
 		SetActiveSequence(shipEnterScene);
 	}
 
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		if (GetPlayer(i) != NULL)
+		{
+			SetPlayerOptionField(i);
+		}
+	}
+
 	if (parentGame != NULL)
 	{
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < MAX_PLAYERS; ++i)
 		{
 			p = GetPlayer(i);
 			if (p != NULL)
@@ -1962,7 +2001,7 @@ int GameSession::Run()
 		}
 	}
 	
-	
+	gameMode->StartGame();
 	
 
 	while( !quit )
@@ -3184,6 +3223,7 @@ void GameSession::NextFrameRestartLevel()
 
 void GameSession::RestartGame()
 {
+	//RestartLevel(); //not sure why i need to do this. fix this soon
 	NextFrameRestartLevel();
 }
 
@@ -3194,6 +3234,7 @@ void GameSession::RestartLevel()
 	//OpenGates(Gate::CRAWLER_UNLOCK);
 
 	ClearEmitters();
+
 	//AddEmitter(testEmit, EffectLayer::IN_FRONT);
 	//testEmit->Reset();
 
@@ -3280,6 +3321,17 @@ void GameSession::RestartLevel()
 
 	cutPlayerInput = false;
 
+
+	Actor *p;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->position = V2d(playerOrigPos[i]);
+		}
+	}
+
 	for (int i = 0; i < 4; ++i)
 	{
 		Actor *player = GetPlayer(i);
@@ -3337,6 +3389,8 @@ void GameSession::RestartLevel()
 		shipEnterScene->Reset();
 		SetActiveSequence(shipEnterScene);
 	}
+
+	gameMode->StartGame();
 	//later can have a setting for this if needed
 	/*if (preLevelScene != NULL)
 	{

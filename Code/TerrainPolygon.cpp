@@ -3687,17 +3687,13 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 	if (numGrassTotal > 0)
 	{
 
-		grassVA = new Vertex[numGrassTotal * 4];//new VertexArray(sf::Quads, numGrassTotal * 4);
-
-		//cout << "num grass total: " << numGrassTotal << endl;
-		//VertexArray &grassVa = *grassVA;//*va;
+		grassVA = new Vertex[numGrassTotal * 4];
 
 		int segIndex = 0;
 		int totalGrass = 0;
 		for (auto it = segments.begin(); it != segments.end(); ++it)
 		{
-			//Edge *segEdge = GetEdge((*it).edgeIndex);//owner->GetEdge(startEdgeIndex + (*it).edgeIndex);
-			V2d v0(GetPoint((*it).edgeIndex)->pos);//segEdge->v0;
+			V2d v0(GetPoint((*it).edgeIndex)->pos);
 			V2d v1(GetNextPoint((*it).edgeIndex)->pos);
 
 			int start = (*it).index;
@@ -3732,13 +3728,10 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
 				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
 				SetRectCenter(grassVA + (j + totalGrass) * 4, grassSize, grassSize, pos);
-				/*grassVA[(j + totalGrass) * 4].position = topLeft;
-				grassVA[(j + totalGrass) * 4 + 1].position = bottomLeft;
-				grassVA[(j + totalGrass) * 4 + 2].position = bottomRight;
-				grassVA[(j + totalGrass) * 4 + 3].position = topRight;*/
+				Color c = Grass::GetColor((*it).gType);
+				SetRectColor(grassVA + (j + totalGrass) * 4, c);
 
 				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)(*it).gType));
-				//Grass * g = new Grass(ts_grass, totalGrassIndex, posd, this, gType);
 				sess->grassTree->Insert(&activeGrass.back());
 
 				++totalGrassIndex;
@@ -3801,22 +3794,7 @@ V2d TerrainPolygon::GetGrassCenter(int gIndex)
 
 void TerrainPolygon::SetGrassState(int index, int state, int gType )
 {
-	Color c = Color::White;
-	switch (gType)
-	{
-	case Grass::JUMP:
-		c = Color::White;
-		break;
-	case Grass::BOUNCE:
-		c = Color::Red;
-		break;
-	case Grass::GrassType::UNTECHABLE:
-		c = Color::Yellow;
-		break;
-	case Grass::GrassType::KILL:
-		c = Color::Black;
-		break;
-	}
+	Color c = Grass::GetColor(gType);
 
 	
 	switch (state)

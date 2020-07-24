@@ -65,8 +65,9 @@ HUD *FightMode::CreateHUD()
 
 bool FightMode::CheckVictoryConditions()
 {
-	if (sess->GetPlayer(0)->touchedGrass[Grass::KILL]
-		|| sess->GetPlayer(1)->touchedGrass[Grass::KILL]
+	bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::KILL];
+	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::KILL];
+	if (p0TouchedKillGrass || p1TouchedKillGrass 
 		|| data.p0Health == 0 || data.p1Health == 0 )
 	{
 		return true;

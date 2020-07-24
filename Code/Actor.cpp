@@ -499,7 +499,7 @@ void Actor::SetToOriginalPos()
 {
 	if (owner != NULL)
 	{
-		position = V2d(owner->playerOrigPos[0]);
+		position = V2d(owner->playerOrigPos[actorIndex]);
 	}
 	else if (editOwner != NULL)
 	{
@@ -2293,7 +2293,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
-	
+	currActionSuperLevel = 0;
+	superLevelCounter = 0;
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
 	lastBlockPressFrame = -1;
@@ -3924,11 +3925,11 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+
 	ResetGrassCounters();
 	ResetAttackHit();
-	
-	
-	
+
+	currActionSuperLevel = 0;
 	blockstunFrames = 0;
 	superLevelCounter = 0;
 	

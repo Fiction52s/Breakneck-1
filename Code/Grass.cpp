@@ -5,6 +5,28 @@
 using namespace std;
 using namespace sf;
 
+sf::Color Grass::GetColor( int gType )
+{
+	Color c = Color::White;
+	switch (gType)
+	{
+	case Grass::JUMP:
+		c = Color::White;
+		break;
+	case Grass::BOUNCE:
+		c = Color::Red;
+		break;
+	case Grass::GrassType::UNTECHABLE:
+		c = Color::Yellow;
+		break;
+	case Grass::GrassType::KILL:
+		c = Color::Black;
+		break;
+	}
+
+	return c;
+}
+
 Grass::Grass(Tileset *p_ts_grass, int p_tileIndex,
 	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),

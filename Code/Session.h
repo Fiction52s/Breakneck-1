@@ -662,7 +662,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void UpdateCamera() = 0;
 	virtual void UpdateSoundNodeLists();
 	void UpdateScoreDisplay();
-	bool RunPreUpdate() { return true; }
+	virtual bool RunPreUpdate() { return true; }
 	virtual bool RunPostUpdate() { return true; }
 	void ActiveStorySequenceUpdate();
 	virtual void TryToActivateBonus() {}

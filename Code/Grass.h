@@ -26,7 +26,7 @@ struct Grass : QuadTreeEntrant
 		int p_tileIndex,
 		V2d &pos,
 		TerrainPolygon *poly, GrassType gType);
-
+	static sf::Color GetColor( int gType ); //temp
 	void Reset();
 	V2d pos;
 	double radius;
