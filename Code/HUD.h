@@ -170,7 +170,6 @@ struct AdventureHUD : HUD
 	sf::Vector2f flyCountTextShowPos;
 	sf::Vector2f flyCountTextHidePos;
 
-	Minimap *mini;
 	KinMask *kinMask;
 	KeyMarker *keyMarker;
 
