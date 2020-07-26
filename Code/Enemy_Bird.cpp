@@ -170,7 +170,7 @@ void Bird::UpdatePreFrameCalculations()
 	if (predict && action == FOLLOWUPPUNCH && frame == 1)
 	{
 		CalcTargetAfterHit();
-		move->duration = (hitboxInfo->hitstunFrames - 1) * 10;
+		move->duration = (hitboxInfo->hitstunFrames - 1) * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
 		move->end = targetPos;
 		ms.Reset();

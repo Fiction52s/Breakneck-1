@@ -1130,7 +1130,6 @@ void Enemy::UpdatePrePhysics()
 
 	Actor *player = sess->GetPlayer(0);
 	bool isFar = player->EnemyIsFar(GetPosition());
-	isFar = false;
 	if (isFar)
 	{
 		numPhysSteps = NUM_STEPS;
