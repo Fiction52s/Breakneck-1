@@ -6,8 +6,15 @@ using namespace std;
 void Actor::FAIR_Start()
 {
 	SetActionSuperLevel();
-	ActivateSound(S_FAIR1);
-	ResetAttackHit();
+	if (currActionSuperLevel == 2)
+	{
+		SetAction(SUPERBIRD);
+	}
+	else
+	{
+		ActivateSound(S_FAIR1);
+		ResetAttackHit();
+	}
 }
 
 void Actor::FAIR_End()

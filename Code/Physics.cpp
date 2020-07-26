@@ -7,12 +7,71 @@
 
 using namespace sf;
 using namespace std;
+using json = nlohmann::json;
 
 
 bool HitboxInfo::IsAirType(HitPosType hpt)
 {
 	return hpt == AIRDOWN || hpt == AIRDOWNFORWARD || hpt == AIRFORWARD
 		|| hpt == AIRUPFORWARD || hpt == AIRUP;
+}
+
+void HitboxInfo::SetupHitboxLevelInfo(
+	json &j, HitboxInfo &hi)
+{
+	hi.damage = j["damage"];
+	hi.hitlagFrames = j["hitlag"];
+	hi.hitstunFrames = j["hitstun"];
+	hi.knockback = j["knockback"];
+	double kbAngle = j["knockbackangle"];
+	kbAngle = kbAngle / 180.0 * PI;
+	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
+	hi.invincibleFrames = j["invincibleframes"];
+	double gravMult = j["gravmultiplier"];
+	hi.gravMultiplier = gravMult;
+	hi.extraDefenderHitlag = j["extradefenderhitlag"];
+	hi.hitBlockCancelDelay = j["hitblockcanceldelay"];
+
+	string posTypeStr = j["postype"];
+
+	if (posTypeStr == "airup")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRUP;
+	}
+	else if (posTypeStr == "airupforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRUPFORWARD;
+	}
+	else if (posTypeStr == "airforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRFORWARD;
+	}
+	else if (posTypeStr == "airdownforward")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWNFORWARD;
+	}
+	else if (posTypeStr == "airdown")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWN;
+	}
+	else if (posTypeStr == "ground")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUND;
+	}
+	else if (posTypeStr == "groundlow")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUNDLOW;
+	}
+	else if (posTypeStr == "groundhigh")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::GROUNDHIGH;
+	}
+	else
+	{
+		cout << "postypestr is wrong:" << posTypeStr << endl;
+		assert(0);
+	}
+
 }
 
 HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &dir)

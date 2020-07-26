@@ -2149,6 +2149,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SWINGSTUN_GetActionLength,
 		&Actor::SWINGSTUN_GetTileset);
 
+	SetupFuncsForAction(SUPERBIRD,
+		&Actor::SUPERBIRD_Start,
+		&Actor::SUPERBIRD_End,
+		&Actor::SUPERBIRD_Change,
+		&Actor::SUPERBIRD_Update,
+		&Actor::SUPERBIRD_UpdateSprite,
+		&Actor::SUPERBIRD_TransitionToAction,
+		&Actor::SUPERBIRD_TimeIndFrameInc,
+		&Actor::SUPERBIRD_TimeDepFrameInc,
+		&Actor::SUPERBIRD_GetActionLength,
+		&Actor::SUPERBIRD_GetTileset);
+
 	SetupFuncsForAction(TESTSUPER,
 		&Actor::TESTSUPER_Start,
 		&Actor::TESTSUPER_End,
@@ -2293,6 +2305,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	LoadHitboxes();
 
+	simulationMode = false;
 	currActionSuperLevel = 0;
 	superLevelCounter = 0;
 	receivedHitReaction = HitResult::MISS;
@@ -3459,77 +3472,8 @@ void Actor::SetupHitboxInfo( json &j, const std::string &name,
 	auto &myNormalHitboxInfo = j[name]["normal"];
 	auto &myLevel1HitboxInfo = j[name]["level1"];
 
-	SetupHitboxLevelInfo(myNormalHitboxInfo, hi[0]);
-	SetupHitboxLevelInfo(myLevel1HitboxInfo, hi[1]);
-	/*hi[0].damage = myNormalHitboxInfo["damage"];
-	hi.hitlagFrames = myNormalHitboxInfo["hitlag"];
-	hi.hitstunFrames = myNormalHitboxInfo["hitstun"];
-	hi.knockback = myNormalHitboxInfo["knockback"];
-	double kbAngle = myNormalHitboxInfo["knockbackangle"];
-	kbAngle = kbAngle / 180.0 * PI;
-	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
-	hi.invincibleFrames = myj["invincibleframes"];
-	double gravMult = myj["gravmultiplier"];
-	hi.gravMultiplier = gravMult;
-	hi.extraDefenderHitlag = myj["extradefenderhitlag"];*/
-}
-
-void Actor::SetupHitboxLevelInfo(
-	json &j, HitboxInfo &hi)
-{
-	hi.damage = j["damage"];
-	hi.hitlagFrames = j["hitlag"];
-	hi.hitstunFrames = j["hitstun"];
-	hi.knockback = j["knockback"];
-	double kbAngle = j["knockbackangle"];
-	kbAngle = kbAngle / 180.0 * PI;
-	hi.kbDir = V2d(cos(kbAngle), -sin(kbAngle));
-	hi.invincibleFrames = j["invincibleframes"];
-	double gravMult = j["gravmultiplier"];
-	hi.gravMultiplier = gravMult;
-	hi.extraDefenderHitlag = j["extradefenderhitlag"];
-	hi.hitBlockCancelDelay = j["hitblockcanceldelay"];
-
-	string posTypeStr = j["postype"];
-
-	if (posTypeStr == "airup")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIRUP;
-	}
-	else if (posTypeStr == "airupforward")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIRUPFORWARD;
-	}
-	else if (posTypeStr == "airforward")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIRFORWARD;
-	}
-	else if (posTypeStr == "airdownforward")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWNFORWARD;
-	}
-	else if (posTypeStr == "airdown")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::AIRDOWN;
-	}
-	else if (posTypeStr == "ground")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::GROUND;
-	}
-	else if (posTypeStr == "groundlow")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::GROUNDLOW;
-	}
-	else if (posTypeStr == "groundhigh")
-	{
-		hi.hitPosType = HitboxInfo::HitPosType::GROUNDHIGH;
-	}
-	else
-	{
-		cout << "postypestr is wrong:" << posTypeStr << endl;
-		assert(0);
-	}
-
+	HitboxInfo::SetupHitboxLevelInfo(myNormalHitboxInfo, hi[0]);
+	HitboxInfo::SetupHitboxLevelInfo(myLevel1HitboxInfo, hi[1]);
 }
 
 void Actor::ActionEnded()
@@ -5215,10 +5159,11 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	/*if (actorIndex == 1)
-	{
-		currInput.Y = true;
-	}*/
+	//if (actorIndex == 1)
+	//{
+	//	currInput.leftStickPad |= 1;
+	//	//currInput.Y = true;
+	//}
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -11246,7 +11191,6 @@ void Actor::HitGroundWhileInAirHitstun()
 	{
 		bool forward = (facingRight && currInput.LRight())
 			|| (!facingRight && currInput.LLeft());
-		//bool inplace = (!currInput.LRight() && !currInput.LLeft());
 		bool back = (facingRight && currInput.LLeft()) ||
 			(!facingRight && currInput.LRight());
 
@@ -11286,6 +11230,7 @@ void Actor::HitGroundWhileInAirHitstun()
 		}
 		else
 		{
+			cout << "bouncing off ground \n";
 			double d = dot(velocity, gNormal);
 			velocity = velocity - (2.0 * d * gNormal);
 			//velocity.y = -velocity.y;
@@ -11740,7 +11685,7 @@ void Actor::PhysicsResponse()
 	}
 	
 	//multiplayer
-	if( currHitboxes != NULL )//&& owner->raceFight != NULL )
+	if( currHitboxes != NULL && !simulationMode )//&& owner->raceFight != NULL )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;

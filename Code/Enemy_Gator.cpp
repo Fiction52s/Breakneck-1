@@ -20,7 +20,7 @@ using namespace sf;
 
 
 Gator::Gator(ActorParams *ap)
-	:Enemy(EnemyType::EN_GATOR, ap)
+	:Enemy(EnemyType::EN_GATORBOSS, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(DOMINATION, 0, 0);

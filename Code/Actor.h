@@ -257,6 +257,7 @@ struct Actor : QuadTreeCollider,
 		SEQ_FADE_INTO_NEXUS,
 		SEQ_TURNFACE,
 		GETSHARD,
+		SUPERBIRD,
 		TESTSUPER,
 		GROUNDBLOCKDOWN,
 		GROUNDBLOCKDOWNFORWARD,
@@ -602,6 +603,7 @@ struct Actor : QuadTreeCollider,
 	
 
 	//unsaved vars
+	bool simulationMode;
 	int possibleEdgeCount;
 	GameSession *owner;
 	EditSession *editOwner;
@@ -915,8 +917,6 @@ struct Actor : QuadTreeCollider,
 	void SetupHitboxInfo(
 		json &j, const std::string &name,
 		HitboxInfo *hi);
-	void SetupHitboxLevelInfo(
-		json &j, HitboxInfo &hi);
 
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
@@ -2422,6 +2422,17 @@ struct Actor : QuadTreeCollider,
 	void TESTSUPER_TimeDepFrameInc();
 	int TESTSUPER_GetActionLength();
 	Tileset * TESTSUPER_GetTileset();
+
+	void SUPERBIRD_Start();
+	void SUPERBIRD_End();
+	void SUPERBIRD_Change();
+	void SUPERBIRD_Update();
+	void SUPERBIRD_UpdateSprite();
+	void SUPERBIRD_TransitionToAction(int a);
+	void SUPERBIRD_TimeIndFrameInc();
+	void SUPERBIRD_TimeDepFrameInc();
+	int SUPERBIRD_GetActionLength();
+	Tileset * SUPERBIRD_GetTileset();
 
 	void UAIR_Start();
 	void UAIR_End();

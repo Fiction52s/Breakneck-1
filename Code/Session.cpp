@@ -394,6 +394,8 @@ void Session::AddW1Enemies()
 
 void Session::AddW2Enemies()
 {
+	AddBasicAerialWorldEnemy("bird", 5, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
 	AddBasicGroundWorldEnemy("greengoal", 2, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 	//AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Goal/goal_w02_a_288x256.png", 288, 256));
@@ -1279,6 +1281,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
 
+	playerSimState = new PState;
+
 	gameMode = NULL;
 
 	timeSyncFrames = 0;
@@ -1385,6 +1389,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 Session::~Session()
 {
+	delete playerSimState;
 	//new stuff
 	if ( parentGame == NULL && soundManager != NULL)
 	{
@@ -4830,6 +4835,16 @@ void Session::UpdateEnemiesPrePhysics()
 	}
 }
 
+void Session::UpdateEnemiesPreFrameCalculations()
+{
+	Enemy *current = activeEnemyList;
+	while (current != NULL)
+	{
+		current->UpdatePreFrameCalculations();
+		current = current->next;
+	}
+}
+
 void Session::UpdatePhysics()
 {
 	Actor *p = NULL;
@@ -5390,6 +5405,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawPlayers(target);
 
+	
+
 	DrawPlayerShields(target);
 
 	absorbShardParticles->Draw(target);
@@ -5405,6 +5422,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 	//DrawActiveEnvPlants();
 
 	DebugDraw(target);
+
+	//target->draw(testSimCircle);
 
 	//DrawShockwaves(target); //not operational atm
 
@@ -5528,6 +5547,19 @@ bool Session::RunGameModeUpdate()
 			HitlagUpdate(); //the full update while in hitlag
 			accumulator -= TIMESTEP;
 			continue;
+		}
+
+		//int pIndex = 0;
+		//ForwardSimulatePlayer(pIndex, 30);//GetPlayer(pIndex)->hitstunFrames);
+		//testSimCircle.setFillColor(Color::Red);
+		//testSimCircle.setRadius(20);
+		//testSimCircle.setOrigin(testSimCircle.getLocalBounds().width / 2, testSimCircle.getLocalBounds().height / 2);
+		//testSimCircle.setPosition(Vector2f(GetPlayer(pIndex)->position));
+		//RevertSimulatedPlayer(pIndex);
+
+		if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPreFrameCalculations();
 		}
 
 		UpdateControllers();
@@ -6319,4 +6351,34 @@ void Session::SetupGameMode()
 		gameMode = new FightMode;
 		break;
 	}
+}
+
+void Session::ForwardSimulatePlayer(int index, int frames)
+{
+	Actor *p = GetPlayer(index);
+	assert(p != NULL);
+
+	p->PopulateState(playerSimState);
+	p->simulationMode = true;
+	for (int i = 0; i < frames; ++i)
+	{
+		p->UpdatePrePhysics();
+		p->physicsOver = false;
+		for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
+		{
+			if (substep == 0 || p->highAccuracyHitboxes)
+				p->UpdatePhysics();
+		}
+		p->UpdatePostPhysics();
+		UpdatePlayerInput(index);
+	}
+	p->simulationMode = false;
+}
+
+void Session::RevertSimulatedPlayer(int index)
+{
+	Actor *p = GetPlayer(index);
+	assert(p != NULL);
+
+	p->PopulateFromState(playerSimState);
 }

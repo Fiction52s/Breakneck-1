@@ -86,7 +86,7 @@ struct GoalPulse;
 struct Rain;
 struct ScoreDisplay;
 struct InputVisualizer;
-
+struct PState;
 struct GameMode;
 
 #define TIMESTEP (1.0 / 60.0)
@@ -330,6 +330,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPOSession *ggpo;
 
 	SuperSequence *superSequence;
+
+	PState *playerSimState;
 
 	static Session *GetSession();
 
@@ -622,6 +624,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateTopClouds();
 	void CleanupShipEntrance();
 	void CleanupShipExit();
+	void UpdateEnemiesPreFrameCalculations();
 	void UpdateEnemiesPrePhysics();
 	void UpdatePhysics();
 	void UpdateEnemiesPostPhysics();
@@ -707,6 +710,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupSuperSequence();
 	void DrawPlayerShields(sf::RenderTarget *target);
 	void SetupGameMode();
+	void ForwardSimulatePlayer(int index, int frames);
+	void RevertSimulatedPlayer(int index);
+	sf::CircleShape testSimCircle;
 };
 
 #endif

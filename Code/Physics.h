@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include "QuadTree.h"
 #include <list>
+#include "nlohmann\json.hpp"
 
 #ifndef __EDGE_H__
 #define __EDGE_H__
@@ -107,6 +108,9 @@ struct HitboxInfo
 	};
 
 	static bool IsAirType(HitPosType hpt);
+	static void SetupHitboxLevelInfo(
+		nlohmann::json &j, 
+		HitboxInfo &hi);
 	static HitPosType GetAirType(V2d &dir);
 	sf::Vector2<double> hDir;
 	HitboxType hType;
@@ -125,6 +129,7 @@ struct HitboxInfo
 	int extraDefenderHitlag;
 	int hitBlockCancelDelay;
 	HitPosType hitPosType;
+	
 };
 
 struct CollisionBox

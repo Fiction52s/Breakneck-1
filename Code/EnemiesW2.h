@@ -8,5 +8,6 @@
 #include "Enemy_StagBeetle.h"
 #include "Enemy_GravityJuggler.h"
 #include "Enemy_GravityModifier.h"
+#include "Enemy_Bird.h"
 
 #endif

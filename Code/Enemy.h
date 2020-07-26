@@ -158,6 +158,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	Enemy(EnemyType t, ActorParams *ap);
 	virtual ~Enemy();
+	virtual void UpdatePreFrameCalculations() {}
 	void CheckPlayerInteractions( int i );
 	void UpdateKeySprite();
 	void SetKey();
