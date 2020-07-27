@@ -1750,24 +1750,23 @@ bool Enemy::CheckHitPlayer(int index)
 	if (player == NULL)
 		return false;
 
-	if (currHitboxes != NULL)
+	
+	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL )
 	{
-		if (currHitboxes != NULL)
-		{
-			Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
-				GetPosition(), facingRight );
+		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+			GetPosition(), facingRight );
 
-			if (hitResult != Actor::HitResult::MISS)
+		if (hitResult != Actor::HitResult::MISS)
+		{
+			IHitPlayer(index);
+			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
 			{
-				IHitPlayer(index);
-				if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
-				{
-					player->ApplyHit(currHitboxes->hitboxInfo,
-						NULL, hitResult, GetPosition() );
-				}
+				player->ApplyHit(currHitboxes->hitboxInfo,
+					NULL, hitResult, GetPosition() );
 			}
 		}
 	}
+	
 
 	return false;
 }
