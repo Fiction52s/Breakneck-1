@@ -9453,10 +9453,7 @@ void Actor::UpdatePhysics()
 				TryUnlockOnTransfer(e0);
 
 				Edge *next = ground->edge0;
-				double yDist = abs( gNormal.x ) * groundSpeed;
-				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh 
-					&& !(currInput.LUp() && gNormal.x > 0 
-						&& yDist < -slopeLaunchMinSpeed && next->Normal().x <= 0 ) )
+				if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh )
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
@@ -9482,7 +9479,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x < 0 )
 							{
-								if( gNormal.x >= -slopeTooSteepLaunchLimitX )
+								if( gNormal.x >= 0 )
 								{
 									LeaveGroundTransfer(false);
 								}
@@ -9529,12 +9526,9 @@ void Actor::UpdatePhysics()
 			{
 				TryUnlockOnTransfer(e1);
 
-				double yDist = abs( gNormal.x ) * groundSpeed;
 				Edge *next = ground->edge1;
 				V2d nextNorm = next->Normal();
-				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh 
-					&& !(currInput.LUp() && gNormal.x < 0 
-					&& yDist > slopeLaunchMinSpeed && nextNorm.x >= 0 ) )
+				if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh )
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
@@ -9561,7 +9555,7 @@ void Actor::UpdatePhysics()
 						{
 							if( e1n.x > 0 )
 							{
-								if( gNormal.x <= slopeTooSteepLaunchLimitX )
+								if( gNormal.x <= 0 )
 								{
 									LeaveGroundTransfer(true);
 								}
@@ -9734,62 +9728,29 @@ void Actor::UpdatePhysics()
 					{
 
 						//cout << "checking for airborne" << endl;
-						
-						
-						double yDist = abs( gNormal.x ) * groundSpeed;
-						if( gNormal.x < 0 
-							&& e1n.y < 0 
-							&& abs( e1n.x ) < wallThresh 
-							&& e1n.x >= 0 
-							&& yDist > slopeLaunchMinSpeed
-							&& currInput.LUp() )
+						if (gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0
+							&& abs(e1n.x) < wallThresh && groundSpeed > 5)
 						{
 							LeaveGroundTransfer(true, V2d(0, -gravity * 2));
 							break;
 						}
 						else
 						{
-							if( gNormal.x < 0 && gNormal.y > -steepThresh && e1n.x >= 0
-								&& abs( e1n.x ) < wallThresh && groundSpeed > 5 )
-							{
-								LeaveGroundTransfer(true, V2d(0, -gravity * 2));
-								break;
-							}
-							else
-							{
-								q = groundLength;
-							}
-							
+							q = groundLength;
 						}
 						//here is where i really lift off
 					}
 					else
 					{
-						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if( gNormal.x > 0 
-							&& e0n.y < 0 
-							&& abs( e0n.x ) < wallThresh 
-							&& e0n.x <= 0 
-							&& yDist > slopeLaunchMinSpeed 
-							&& currInput.LUp() )
+						if (gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
+							&& abs(e0n.x) < wallThresh && groundSpeed < -5)
 						{
 							LeaveGroundTransfer(false, V2d(0, -gravity * 2));
 							break;
 						}
 						else
 						{
-							if( gNormal.x > 0 && gNormal.y > -steepThresh && e0n.x <= 0
-								&& abs( e0n.x ) < wallThresh && groundSpeed < -5 )
-							{
-								LeaveGroundTransfer(false, V2d(0, -gravity * 2));
-								break;
-							}
-							else
-							{
-								q = 0;
-							}
-							
-							
+							q = 0;
 						}
 						
 					}
