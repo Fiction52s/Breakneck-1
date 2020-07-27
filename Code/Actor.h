@@ -463,7 +463,7 @@ struct Actor : QuadTreeCollider,
 	int framesSinceDashAttack;
 	int framesSinceStandAttack;
 	
-	int lastBlockPressFrame;
+	
 
 	bool standNDashBoost;
 	int standNDashBoostCurr;
@@ -477,7 +477,8 @@ struct Actor : QuadTreeCollider,
 
 	double hitstunGravMultiplier;
 
-	int lastSuperPressFrame;
+	int framesSinceBlockPress;
+	int framesSinceSuperPress;
 	int superLevelCounter;
 	int currActionSuperLevel;
 
@@ -510,6 +511,9 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2f slideAttackOffset[3];
 	sf::Vector2f climbAttackOffset[3];
 
+	sf::Color fullBlockShieldColor;
+	sf::Color halfBlockShieldColor;
+	sf::Shader shieldShader;
 	sf::Sprite shieldSprite;
 	Tileset *ts_blockShield;
 	
@@ -998,7 +1002,6 @@ struct Actor : QuadTreeCollider,
 	QuadTree *GetRailEdgeTree();
 	QuadTree *GetBarrierTree();
 	QuadTree *GetBorderTree();
-	int GetTotalGameFrames();
 	Collider &GetCollider();
 	sf::SoundBuffer * GetSound(const std::string &name);
 	std::map<int, std::list<CollisionBox>> & GetHitboxList(

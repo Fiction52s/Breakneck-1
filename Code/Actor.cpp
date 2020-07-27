@@ -199,7 +199,8 @@ void Actor::PopulateState(PState *ps)
 	ps->framesSinceDashAttack = framesSinceDashAttack;
 	ps->framesSinceStandAttack = framesSinceStandAttack;
 
-	ps->lastBlockPressFrame = lastBlockPressFrame;
+	ps->framesSinceBlockPress = framesSinceBlockPress;
+	ps->framesSinceSuperPress = framesSinceSuperPress;
 
 	ps->standNDashBoost = standNDashBoost;
 	ps->standNDashBoostCurr = standNDashBoostCurr;
@@ -215,7 +216,7 @@ void Actor::PopulateState(PState *ps)
 
 	memcpy(ps->touchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
 
-	ps->lastSuperPressFrame = lastSuperPressFrame;
+	
 	ps->superLevelCounter = superLevelCounter;
 	ps->currActionSuperLevel = currActionSuperLevel;
 
@@ -362,7 +363,8 @@ void Actor::PopulateFromState(PState *ps)
 	framesSinceDashAttack = ps->framesSinceDashAttack;
 	framesSinceStandAttack = ps->framesSinceStandAttack;
 
-	lastBlockPressFrame = ps->lastBlockPressFrame;
+	framesSinceBlockPress = ps->framesSinceBlockPress;
+	framesSinceSuperPress = ps->framesSinceSuperPress;
 
 	standNDashBoost = ps->standNDashBoost;
 	standNDashBoostCurr = ps->standNDashBoostCurr;
@@ -378,7 +380,7 @@ void Actor::PopulateFromState(PState *ps)
 
 	memcpy(touchedGrass, ps->touchedGrass, sizeof(bool) * Grass::Count);
 
-	lastSuperPressFrame = ps->lastSuperPressFrame;
+	
 	superLevelCounter = ps->superLevelCounter;
 	currActionSuperLevel = ps->currActionSuperLevel;
 
@@ -489,15 +491,6 @@ QuadTree *Actor::GetBorderTree()
 	{
 		return editOwner->borderTree;
 	}*/
-}
-
-int Actor::GetTotalGameFrames()
-{
-	return sess->totalGameFrames;
-	/*if (owner != NULL)
-		return owner->totalGameFrames;
-	else
-		return editOwner->totalGameFrames;*/
 }
 
 void Actor::SetToOriginalPos()
@@ -2361,7 +2354,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	superLevelCounter = 0;
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
-	lastBlockPressFrame = -1;
+
+	framesSinceBlockPress = -1;
+	framesSinceSuperPress = -1;
+
 	dashAttackLevel = 0;
 	standAttackLevel = 0;
 	framesSinceDashAttack = 0;
@@ -2376,7 +2372,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
-
 	
 
 	standNDashBoost = false;
@@ -2643,6 +2638,19 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	ts_auraTest->texture->setRepeated(true);
 	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
 	sh.setUniform("u_auraTex2", *(ts_auraTest2->texture));
+
+	if (!shieldShader.loadFromFile("Resources/Shader/shield_shader.frag", sf::Shader::Fragment))
+
+	{
+		cout << "SHIELD SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "shield shader not loaded");
+	}
+	shieldShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	
+	fullBlockShieldColor = Color( 237, 29, 36 );
+	halfBlockShieldColor = Color(255, 201, 14);
+
+	
 
 	if (!despFaceShader.loadFromFile("Resources/Shader/colorswap_shader.frag", sf::Shader::Fragment))
 	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
@@ -3309,6 +3317,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bHasUpgradeField.Reset();
 	bStartHasUpgradeField.Reset();
 
+	oldAction = action;
+
 	bool isCampaign = false;
 	if (owner != NULL)
 	{
@@ -3935,8 +3945,8 @@ void Actor::Respawn()
 	blockstunFrames = 0;
 	superLevelCounter = 0;
 	
-	lastSuperPressFrame = -1;
-	lastBlockPressFrame = -1;
+	framesSinceBlockPress = -1;
+	framesSinceSuperPress = -1;
 	dashAttackLevel = 0;
 	standAttackLevel = 0;
 	framesSinceDashAttack = 0;
@@ -4130,6 +4140,8 @@ void Actor::Respawn()
 	stunBufferedJump = false;
 	stunBufferedDash = false;
 	stunBufferedAttack = Action::Count;
+
+	oldAction = action;
 
 
 	//some v
@@ -4390,15 +4402,15 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 
 bool Actor::IsActionGroundBlock(int a)
 {
-	return action == GROUNDBLOCKDOWN || action == GROUNDBLOCKDOWNFORWARD
-		|| action == GROUNDBLOCKFORWARD || action == GROUNDBLOCKUPFORWARD
-		|| action == GROUNDBLOCKUP;
+	return a == GROUNDBLOCKDOWN || a == GROUNDBLOCKDOWNFORWARD
+		|| a == GROUNDBLOCKFORWARD || a == GROUNDBLOCKUPFORWARD
+		|| a == GROUNDBLOCKUP;
 }
 
 bool Actor::IsActionAirBlock(int a)
 {
-	return action == AIRBLOCKDOWN || action == AIRBLOCKDOWNFORWARD
-		|| action == AIRBLOCKFORWARD || action == AIRBLOCKUPFORWARD || action == AIRBLOCKUP;
+	return a == AIRBLOCKDOWN || a == AIRBLOCKDOWNFORWARD
+		|| a == AIRBLOCKFORWARD || a == AIRBLOCKUPFORWARD || a == AIRBLOCKUP;
 }
 
 void Actor::ProcessReceivedHit()
@@ -4439,6 +4451,15 @@ void Actor::ProcessReceivedHit()
 
 				V2d otherPos = receivedHitPosition;
 				velocity += 2.0 * normalize(position - otherPos);
+			}
+
+			if (receivedHitReaction == FULLBLOCK)
+			{
+				shieldShader.setUniform("toColor", ColorGL(fullBlockShieldColor));
+			}
+			else
+			{
+				shieldShader.setUniform("toColor", ColorGL(halfBlockShieldColor));
 			}
 			
 			break;
@@ -5222,11 +5243,11 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
-	//if (actorIndex == 1)
-	//{
-	//	currInput.leftStickPad |= 1;
-	//	//currInput.Y = true;
-	//}
+	if (actorIndex == 1)
+	{
+		//currInput.leftStickPad |= 1;
+		currInput.Y = true;
+	}
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -5235,7 +5256,7 @@ void Actor::UpdatePrePhysics()
 
 	if (currInput.Y && !prevInput.Y)
 	{
-		lastBlockPressFrame = sess->totalGameFrames;
+		framesSinceBlockPress = 0;
 	}
 
 	if (currInput.leftShoulder && !prevInput.leftShoulder)
@@ -5243,12 +5264,11 @@ void Actor::UpdatePrePhysics()
 		if (superLevelCounter < 2 )
 		{
 			superLevelCounter++;
-			lastSuperPressFrame = sess->totalGameFrames;
+			framesSinceSuperPress = 0;
 		}
 	}
 
-	if ( superLevelCounter > 0 && lastSuperPressFrame >= 0 
-		&& sess->totalGameFrames - lastSuperPressFrame >= superActiveLimit)
+	if ( superLevelCounter > 0 && framesSinceSuperPress >= superActiveLimit)
 	{
 		superLevelCounter = 0;
 	}
@@ -10970,7 +10990,7 @@ void Actor::HandleTouchedGate()
 
 bool Actor::CanTech()
 {
-	return (lastBlockPressFrame >= 0 && sess->totalGameFrames - lastBlockPressFrame < 20
+	return (framesSinceBlockPress >= 0 && framesSinceBlockPress < 20
 		&& !touchedGrass[Grass::UNTECHABLE]);
 }
 
@@ -12149,7 +12169,7 @@ void Actor::UpdateSmallLightning()
 	bool dontActivateLightningAction = action == SEQ_MEDITATE_MASKON ||
 		action == SEQ_MASKOFF || action == SEQ_MEDITATE;
 
-	if (!IsIntroAction(action) && GetTotalGameFrames() % smallLightningCounter == 0
+	if (!IsIntroAction(action) && sess->totalGameFrames % smallLightningCounter == 0
 		&& !dontActivateLightningAction)
 	{
 		RelEffectInstance params;
@@ -12174,7 +12194,7 @@ void Actor::UpdateSmallLightning()
 void Actor::UpdateRisingAura()
 {
 	//this is turned off atm
-	if (!IsIntroAction(action) && GetTotalGameFrames() % 30 == 0)
+	if (!IsIntroAction(action) && sess->totalGameFrames % 30 == 0)
 	{
 		RelEffectInstance params;
 		//EffectInstance params;
@@ -12502,8 +12522,6 @@ void Actor::UpdatePlayerShader()
 
 		float super = superLevelCounter;
 		sh.setUniform("u_super", super);
-
-		sh.setUniform("u_blockStun", (float)blockstunFrames);
 		
 		sh.setUniform("despFrame", -1.f);
 	}
@@ -12610,6 +12628,14 @@ void Actor::SlowDependentFrameIncrement()
 
 void Actor::SlowIndependentFrameIncrement()
 {
+	if (framesSinceSuperPress >= 0)
+	{
+		framesSinceSuperPress++;
+	}
+	if (framesSinceBlockPress >= 0)
+	{
+		framesSinceBlockPress++;
+	}
 }
 
 void Actor::UpdateBounceFlameCounters()
@@ -15046,7 +15072,14 @@ void Actor::DrawShield(sf::RenderTarget *target)
 {
 	if (IsBlockAction(action))
 	{
-		target->draw(shieldSprite);
+		if (blockstunFrames > 0)
+		{
+			target->draw(shieldSprite, &shieldShader);
+		}
+		else
+		{
+			target->draw(shieldSprite);
+		}
 	}
 }
 

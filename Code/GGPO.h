@@ -258,7 +258,8 @@ struct PState
 	int framesSinceDashAttack;
 	int framesSinceStandAttack;
 
-	int lastBlockPressFrame;
+	int framesSinceBlockPress;
+	int framesSinceSuperPress;
 
 	bool standNDashBoost;
 	int standNDashBoostCurr;
@@ -274,7 +275,7 @@ struct PState
 
 	double hitstunGravMultiplier;
 
-	int lastSuperPressFrame;
+	
 	int superLevelCounter;
 	int currActionSuperLevel;
 

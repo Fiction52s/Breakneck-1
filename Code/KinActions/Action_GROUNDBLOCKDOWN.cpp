@@ -5,10 +5,7 @@ using namespace std;
 
 void Actor::GROUNDBLOCKDOWN_Start()
 {
-	if (!IsBlockAction(oldAction))
-	{
-		framesBlocking = 0;
-	}
+	TryResetBlockCounter();
 }
 
 void Actor::GROUNDBLOCKDOWN_End()
