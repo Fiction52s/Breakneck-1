@@ -9,8 +9,9 @@ struct Bird : Enemy, LauncherEnemy
 {
 	enum Action
 	{
+		MOVE,
 		PUNCH,
-		FOLLOWUPPUNCH,
+		KICK,
 		A_Count
 	};
 
@@ -26,16 +27,31 @@ struct Bird : Enemy, LauncherEnemy
 	int animationFactor;
 	int bulletSpeed;
 	int framesBetween;
+	int moveFrames;
+	sf::CircleShape predictCircle;
+
+	int reachPointOnFrame[A_Count];
 
 	bool hitPlayer;
 	bool predict;
+
+	int actionQueue[3];
+	int actionQueueIndex;
 
 	int targetPlayerIndex;
 	LineMovement *move;
 	MovementSequence ms;
 
-	HitboxInfo punchHitboxInfo;
-	HitboxInfo kickHitboxInfo;
+	HitboxInfo hitboxInfos[A_Count];
+
+	Tileset *ts_punch;
+	Tileset *ts_kick;
+	Tileset *ts_move;
+
+	int counterTillAttack;
+
+	V2d targetPos;
+	int framesToArrive;
 
 	Bird(ActorParams *ap);
 
@@ -64,10 +80,7 @@ struct Bird : Enemy, LauncherEnemy
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 
-	Tileset *ts_punch;
-
-	V2d targetPos;
-	int framesToArrive;
+	
 };
 
 #endif

@@ -194,8 +194,10 @@ void Actor::PopulateState(PState *ps)
 	ps->bounceGrounded = bounceGrounded;
 	ps->justToggledBounce = justToggledBounce;
 
-	ps->attackLevel = attackLevel;
-	ps->framesSinceAttack = framesSinceAttack;
+	ps->dashAttackLevel = dashAttackLevel;
+	ps->standAttackLevel = standAttackLevel;
+	ps->framesSinceDashAttack = framesSinceDashAttack;
+	ps->framesSinceStandAttack = framesSinceStandAttack;
 
 	ps->lastBlockPressFrame = lastBlockPressFrame;
 
@@ -354,8 +356,11 @@ void Actor::PopulateFromState(PState *ps)
 	bounceGrounded = ps->bounceGrounded;
 	justToggledBounce = ps->justToggledBounce;
 
-	attackLevel = ps->attackLevel;
-	framesSinceAttack = ps->framesSinceAttack;
+	dashAttackLevel = ps->dashAttackLevel;
+	standAttackLevel = ps->standAttackLevel;
+
+	framesSinceDashAttack = ps->framesSinceDashAttack;
+	framesSinceStandAttack = ps->framesSinceStandAttack;
 
 	lastBlockPressFrame = ps->lastBlockPressFrame;
 
@@ -707,10 +712,6 @@ void Actor::SetupSwordTilesets()
 	ts_grindLungeSword[1] = sess->GetSizedTileset(folder, "grind_lunge_swordb_192x192.png", swordSkin);
 	ts_grindLungeSword[2] = sess->GetSizedTileset(folder, "grind_lunge_swordc_224x208.png", swordSkin);
 
-	ts_standingNSword[0] = sess->GetSizedTileset(folder, "stand_sworda_208x208.png", swordSkin);
-	ts_standingNSword[1] = sess->GetSizedTileset(folder, "stand_swordb_304x176.png", swordSkin);
-	ts_standingNSword[2] = sess->GetSizedTileset(folder, "stand_swordc_304x192.png", swordSkin);
-
 	ts_wallAttackSword[0] = sess->GetSizedTileset(folder, "wall_sworda_144x256.png", swordSkin);
 	ts_wallAttackSword[1] = sess->GetSizedTileset(folder, "wall_swordb_240x352.png", swordSkin);
 	ts_wallAttackSword[2] = sess->GetSizedTileset(folder, "wall_swordc_298x400.png", swordSkin);
@@ -743,7 +744,21 @@ void Actor::SetupSwordTilesets()
 	ts_dashAttackSword3[1] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
 	ts_dashAttackSword3[2] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
 
-	
+	ts_standAttackSword[0] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
+	ts_standAttackSword[1] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
+	ts_standAttackSword[2] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
+
+	ts_standAttackSword2[0] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
+	ts_standAttackSword2[1] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
+	ts_standAttackSword2[2] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
+
+	ts_standAttackSword3[0] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
+	ts_standAttackSword3[1] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
+	ts_standAttackSword3[2] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
+
+	ts_standAttackSword4[0] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
+	ts_standAttackSword4[1] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
+	ts_standAttackSword4[2] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
 
 }
 
@@ -2065,17 +2080,53 @@ void Actor::SetupActionFunctions()
 		&Actor::STAND_GetActionLength,
 		&Actor::STAND_GetTileset);
 
-	SetupFuncsForAction(STANDN,
-		&Actor::STANDN_Start,
-		&Actor::STANDN_End,
-		&Actor::STANDN_Change,
-		&Actor::STANDN_Update,
-		&Actor::STANDN_UpdateSprite,
-		&Actor::STANDN_TransitionToAction,
-		&Actor::STANDN_TimeIndFrameInc,
-		&Actor::STANDN_TimeDepFrameInc,
-		&Actor::STANDN_GetActionLength,
-		&Actor::STANDN_GetTileset);
+	SetupFuncsForAction(STANDATTACK1,
+		&Actor::STANDATTACK1_Start,
+		&Actor::STANDATTACK1_End,
+		&Actor::STANDATTACK1_Change,
+		&Actor::STANDATTACK1_Update,
+		&Actor::STANDATTACK1_UpdateSprite,
+		&Actor::STANDATTACK1_TransitionToAction,
+		&Actor::STANDATTACK1_TimeIndFrameInc,
+		&Actor::STANDATTACK1_TimeDepFrameInc,
+		&Actor::STANDATTACK1_GetActionLength,
+		&Actor::STANDATTACK1_GetTileset);
+
+	SetupFuncsForAction(STANDATTACK2,
+		&Actor::STANDATTACK2_Start,
+		&Actor::STANDATTACK2_End,
+		&Actor::STANDATTACK2_Change,
+		&Actor::STANDATTACK2_Update,
+		&Actor::STANDATTACK2_UpdateSprite,
+		&Actor::STANDATTACK2_TransitionToAction,
+		&Actor::STANDATTACK2_TimeIndFrameInc,
+		&Actor::STANDATTACK2_TimeDepFrameInc,
+		&Actor::STANDATTACK2_GetActionLength,
+		&Actor::STANDATTACK2_GetTileset);
+
+	SetupFuncsForAction(STANDATTACK3,
+		&Actor::STANDATTACK3_Start,
+		&Actor::STANDATTACK3_End,
+		&Actor::STANDATTACK3_Change,
+		&Actor::STANDATTACK3_Update,
+		&Actor::STANDATTACK3_UpdateSprite,
+		&Actor::STANDATTACK3_TransitionToAction,
+		&Actor::STANDATTACK3_TimeIndFrameInc,
+		&Actor::STANDATTACK3_TimeDepFrameInc,
+		&Actor::STANDATTACK3_GetActionLength,
+		&Actor::STANDATTACK3_GetTileset);
+
+	SetupFuncsForAction(STANDATTACK4,
+		&Actor::STANDATTACK4_Start,
+		&Actor::STANDATTACK4_End,
+		&Actor::STANDATTACK4_Change,
+		&Actor::STANDATTACK4_Update,
+		&Actor::STANDATTACK4_UpdateSprite,
+		&Actor::STANDATTACK4_TransitionToAction,
+		&Actor::STANDATTACK4_TimeIndFrameInc,
+		&Actor::STANDATTACK4_TimeDepFrameInc,
+		&Actor::STANDATTACK4_GetActionLength,
+		&Actor::STANDATTACK4_GetTileset);
 
 	SetupFuncsForAction(STEEPCLIMB,
 		&Actor::STEEPCLIMB_Start,
@@ -2311,9 +2362,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
 	lastBlockPressFrame = -1;
-	attackLevel = 0;
-	framesSinceAttack = 0;
-	comboCounterResetFrames = 60;
+	dashAttackLevel = 0;
+	standAttackLevel = 0;
+	framesSinceDashAttack = 0;
+	framesSinceStandAttack = 0;
+
+	dashAttackLevelCounterLimit = 60;
+	standAttackLevelCounterLimit = 60;
 
 	flyCounter = 0;
 	action = -1; //for init
@@ -2765,9 +2820,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	/*offsets[1] = Vector2i(16, -40);
 	offsets[2] = Vector2i(32, -48);*/
 
-	standSwordOffset[0] = Vector2f(64, 64);//Vector2f(0, -64);
-	standSwordOffset[1] = Vector2f(64, 32);//Vector2f(0, -64);
-	standSwordOffset[2] = Vector2f(64, 16);//Vector2f(0, -64);
+	standSwordOffset[0] = Vector2f(0, 0);//Vector2f(64, 64);//Vector2f(0, -64);
+	standSwordOffset[1] = Vector2f(0, 0);//Vector2f(64, 32);//Vector2f(0, -64);
+	standSwordOffset[2] = Vector2f(0, 0);//Vector2f(64, 16);//Vector2f(0, -64);
 
 	climbAttackOffset[0] = Vector2f(0, -32);
 	climbAttackOffset[1] = Vector2f(0, -128);
@@ -2919,7 +2974,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		for (int i = 0; i < 3; ++i)
 		{
 			Vector2f testOffset = standSwordOffset[i];
-			testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
+			//testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
 			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
 			standHitboxes[i]->OffsetAllFrames(testOffset);
 		}
@@ -3453,7 +3508,10 @@ void Actor::LoadHitboxes()
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
 	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
 	SetupHitboxInfo(j, "uair", hitboxInfos[UAIR]);
-	SetupHitboxInfo(j, "standn", hitboxInfos[STANDN]);
+	SetupHitboxInfo(j, "standattack1", hitboxInfos[STANDATTACK1]);
+	SetupHitboxInfo(j, "standattack2", hitboxInfos[STANDATTACK2]);
+	SetupHitboxInfo(j, "standattack3", hitboxInfos[STANDATTACK3]);
+	SetupHitboxInfo(j, "standattack4", hitboxInfos[STANDATTACK4]);
 	SetupHitboxInfo(j, "dashattack", hitboxInfos[DASHATTACK]);
 	SetupHitboxInfo(j, "dashattack2", hitboxInfos[DASHATTACK2]);
 	SetupHitboxInfo(j, "dashattack3", hitboxInfos[DASHATTACK3]);
@@ -3879,8 +3937,10 @@ void Actor::Respawn()
 	
 	lastSuperPressFrame = -1;
 	lastBlockPressFrame = -1;
-	attackLevel = 0;
-	framesSinceAttack = 0;
+	dashAttackLevel = 0;
+	standAttackLevel = 0;
+	framesSinceDashAttack = 0;
+	framesSinceStandAttack = 0;
 	standNDashBoost = false;
 	drainCounter = 0;
 	flyCounter = 0;
@@ -5061,7 +5121,10 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 	case UAIR:
 		currHitboxInfo->hDir = V2d(0, -1);
 		break;
-	case STANDN:
+	case STANDATTACK1:
+	case STANDATTACK2:
+	case STANDATTACK3:
+	case STANDATTACK4:
 		if ((!reversed && facingRight) || (reversed && !facingRight))
 		{
 			currHitboxInfo->hDir = along;
@@ -10685,7 +10748,11 @@ void Actor::SetActionSuperLevel()
 
 bool Actor::IsGroundAttack(int a)
 {
-	return a == Action::STANDN || a == Action::DASHATTACK
+	return a == Action::STANDATTACK1
+		|| a == Action::STANDATTACK2
+		|| a == Action::STANDATTACK3
+		|| a == Action::STANDATTACK4
+		|| a == Action::DASHATTACK
 		|| a == Action::DASHATTACK2 
 		|| a == Action::DASHATTACK3;
 }
@@ -10759,42 +10826,18 @@ bool Actor::TryGroundAttack()
 		else
 		{
 			if (action == DASH || ((action == DASHATTACK
-				|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B 
-				&& (currInput.LLeft() || currInput.LRight())) )
+				|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B
+				&& (currInput.LLeft() || currInput.LRight())))
 			{
-				switch (attackLevel)
-				{
-				case 0:
-					SetAction(DASHATTACK);
-					break;
-				case 1:
-					SetAction(DASHATTACK2);
-					break;
-				case 2:
-					SetAction(DASHATTACK3);
-				}
-				/*case 2:
-					SetAction(DASHATTACK3);
-					break;
-				}*/
-				//SetAction(DASHATTACK2);
-				
+				SetAction(GetCurrDashAttack());
 			}
 			else
 			{
-				SetAction(STANDN);
+				SetAction(GetCurrStandAttack());
 			}
-			
+
 			frame = 0;
 		}
-		
-		framesSinceAttack = 0;
-		attackLevel++;
-		if (attackLevel == 3)
-			attackLevel = 0;
-
-
-		
 
 		return true;
 	}
@@ -12567,11 +12610,18 @@ void Actor::SlowDependentFrameIncrement()
 
 		++frame;
 
-		if (framesSinceAttack < comboCounterResetFrames)
-			framesSinceAttack++;
+		if (framesSinceDashAttack < dashAttackLevelCounterLimit)
+			framesSinceDashAttack++;
 		else
 		{
-			attackLevel = 0;
+			dashAttackLevel = 0;
+		}
+
+		if (framesSinceStandAttack < standAttackLevelCounterLimit)
+			framesSinceStandAttack++;
+		else
+		{
+			standAttackLevel = 0;
 		}
 
 		if (springStunFrames > 0)
@@ -14903,15 +14953,17 @@ void Actor::Draw( sf::RenderTarget *target )
 					target->draw(uairSword);
 				break;
 			}
-			case STANDN:
+			case STANDATTACK1:
+			case STANDATTACK2:
+			case STANDATTACK3:
+			case STANDATTACK4:
 			{
 				if (flashFrames > 0)
 				{
-					target->draw(standingNSword, &swordSh);
-					//cout << "Standn" << endl;
+					target->draw(standAttackSword, &swordSh);
 				}
 				else
-					target->draw(standingNSword);
+					target->draw(standAttackSword);
 				break;
 			}
 			case DASHATTACK:
@@ -16740,7 +16792,11 @@ bool Actor::IsAttackAction( int a )
 
 bool Actor::IsGroundAttackAction(int a)
 {
-	return (a == STANDN || a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK
+	return (a == STANDATTACK1
+		|| a == STANDATTACK2
+		|| a == STANDATTACK3
+		|| a == STANDATTACK4
+		|| a == STEEPCLIMBATTACK || a == STEEPSLIDEATTACK
 		|| a == DASHATTACK || a == DASHATTACK2 || a == DASHATTACK3 );
 }
 
@@ -16808,6 +16864,66 @@ void Actor::RestoreAirDash()
 	hasAirDash = true;
 }
 
+
+int Actor::GetCurrStandAttack()
+{
+	int a = -1;
+	switch (standAttackLevel)
+	{
+	case 0:
+		a = STANDATTACK1;
+		break;
+	case 1:
+		a = STANDATTACK2;
+		break;
+	case 2:
+		a = STANDATTACK3;
+		break;
+	case 3:
+		a = STANDATTACK4;
+		break;
+	}
+
+	return a;
+}
+
+int Actor::GetCurrDashAttack()
+{
+	int a = -1;
+	switch (dashAttackLevel)
+	{
+	case 0:
+		a = DASHATTACK;
+		break;
+	case 1:
+		a = DASHATTACK2;
+		break;
+	case 2:
+		a = DASHATTACK3;
+		break;
+	}
+
+	return a;
+}
+
+void Actor::StartStandAttack()
+{
+	standAttackLevel++;
+	if (standAttackLevel == 4)
+		standAttackLevel = 0;
+
+	framesSinceStandAttack = 0;
+}
+
+void Actor::StartDashAttack()
+{
+	dashAttackLevel++;
+	if (dashAttackLevel == 3)
+		dashAttackLevel = 0;
+
+	framesSinceDashAttack = 0;
+}
+
 void Actor::UpdateInHitlag()
 {
 	if (IsAttackAction(action) && currAttackHit )
@@ -16841,7 +16957,7 @@ void Actor::UpdateInHitlag()
 					}
 					else
 					{
-						pauseBufferedAttack = STANDN;
+						pauseBufferedAttack = GetCurrStandAttack();
 					}
 				}
 			}

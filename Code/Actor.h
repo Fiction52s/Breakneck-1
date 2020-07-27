@@ -177,7 +177,10 @@ struct Actor : QuadTreeCollider,
 		STEEPCLIMBATTACK,
 		STEEPSLIDEATTACK,
 		STEEPCLING,
-		STANDN,
+		STANDATTACK1,
+		STANDATTACK2,
+		STANDATTACK3,
+		STANDATTACK4,
 		UAIR,
 		WALLCLING,
 		WALLJUMP,
@@ -455,8 +458,10 @@ struct Actor : QuadTreeCollider,
 	bool bounceGrounded;
 	bool justToggledBounce;
 
-	int attackLevel;
-	int framesSinceAttack;
+	int dashAttackLevel;
+	int standAttackLevel;
+	int framesSinceDashAttack;
+	int framesSinceStandAttack;
 	
 	int lastBlockPressFrame;
 
@@ -494,7 +499,8 @@ struct Actor : QuadTreeCollider,
 	//---end of saved vars
 	//const static int NUM_PAST_INPUTS = 60;
 	int superActiveLimit;
-	int comboCounterResetFrames;
+	int dashAttackLevelCounterLimit;
+	int standAttackLevelCounterLimit;
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
 	sf::Vector2f diagUpSwordOffset[3];
@@ -647,8 +653,13 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite uairSword;
 	Tileset *ts_uairSword[3];
 	Tileset *ts_uairSwordLightning[3];
-	sf::Sprite standingNSword;
-	Tileset *ts_standingNSword[3];
+	sf::Sprite standAttackSword;
+
+	Tileset *ts_standAttackSword[3];
+	Tileset *ts_standAttackSword2[3];
+	Tileset *ts_standAttackSword3[3];
+	Tileset *ts_standAttackSword4[3];
+
 	sf::Sprite dashAttackSword;
 	Tileset *ts_dashAttackSword[3];
 	Tileset *ts_dashAttackSword2[3];
@@ -1271,6 +1282,11 @@ struct Actor : QuadTreeCollider,
 	void GroundBlockChange();
 	void UpdateGroundedShieldSprite(int tile);
 	void UpdateAerialShieldSprite(int tile);
+	void StartStandAttack();
+	void StartDashAttack();
+
+	int GetCurrStandAttack();
+	int GetCurrDashAttack();
 
 	//kin action functions
 
@@ -2335,16 +2351,49 @@ struct Actor : QuadTreeCollider,
 	int STAND_GetActionLength();
 	Tileset * STAND_GetTileset();
 
-	void STANDN_Start();
-	void STANDN_End();
-	void STANDN_Change();
-	void STANDN_Update();
-	void STANDN_UpdateSprite();
-	void STANDN_TransitionToAction(int a);
-	void STANDN_TimeIndFrameInc();
-	void STANDN_TimeDepFrameInc();
-	int STANDN_GetActionLength();
-	Tileset * STANDN_GetTileset();
+	void STANDATTACK1_Start();
+	void STANDATTACK1_End();
+	void STANDATTACK1_Change();
+	void STANDATTACK1_Update();
+	void STANDATTACK1_UpdateSprite();
+	void STANDATTACK1_TransitionToAction(int a);
+	void STANDATTACK1_TimeIndFrameInc();
+	void STANDATTACK1_TimeDepFrameInc();
+	int STANDATTACK1_GetActionLength();
+	Tileset * STANDATTACK1_GetTileset();
+
+	void STANDATTACK2_Start();
+	void STANDATTACK2_End();
+	void STANDATTACK2_Change();
+	void STANDATTACK2_Update();
+	void STANDATTACK2_UpdateSprite();
+	void STANDATTACK2_TransitionToAction(int a);
+	void STANDATTACK2_TimeIndFrameInc();
+	void STANDATTACK2_TimeDepFrameInc();
+	int STANDATTACK2_GetActionLength();
+	Tileset * STANDATTACK2_GetTileset();
+
+	void STANDATTACK3_Start();
+	void STANDATTACK3_End();
+	void STANDATTACK3_Change();
+	void STANDATTACK3_Update();
+	void STANDATTACK3_UpdateSprite();
+	void STANDATTACK3_TransitionToAction(int a);
+	void STANDATTACK3_TimeIndFrameInc();
+	void STANDATTACK3_TimeDepFrameInc();
+	int STANDATTACK3_GetActionLength();
+	Tileset * STANDATTACK3_GetTileset();
+
+	void STANDATTACK4_Start();
+	void STANDATTACK4_End();
+	void STANDATTACK4_Change();
+	void STANDATTACK4_Update();
+	void STANDATTACK4_UpdateSprite();
+	void STANDATTACK4_TransitionToAction(int a);
+	void STANDATTACK4_TimeIndFrameInc();
+	void STANDATTACK4_TimeDepFrameInc();
+	int STANDATTACK4_GetActionLength();
+	Tileset * STANDATTACK4_GetTileset();
 
 	void STEEPCLIMB_Start();
 	void STEEPCLIMB_End();

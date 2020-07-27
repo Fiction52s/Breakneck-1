@@ -253,8 +253,10 @@ struct PState
 	bool bounceGrounded;
 	bool justToggledBounce;
 
-	int attackLevel;
-	int framesSinceAttack;
+	int dashAttackLevel;
+	int standAttackLevel;
+	int framesSinceDashAttack;
+	int framesSinceStandAttack;
 
 	int lastBlockPressFrame;
 

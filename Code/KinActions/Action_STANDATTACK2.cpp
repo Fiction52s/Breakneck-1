@@ -3,24 +3,22 @@
 using namespace sf;
 using namespace std;
 
-void Actor::STANDN_Start()
+void Actor::STANDATTACK2_Start()
 {
 	SetActionSuperLevel();
 
 	ActivateSound(S_STANDATTACK);
 	ResetAttackHit();
+	StartStandAttack();
 }
 
-void Actor::STANDN_End()
+void Actor::STANDATTACK2_End()
 {
 	if (currInput.LLeft() || currInput.LRight())
 	{
 		if (currInput.B)
 		{
 			SetAction(DASH);
-			//action = DASH;
-			//re->Reset();
-			//re1->Reset();
 		}
 		else
 		{
@@ -31,14 +29,13 @@ void Actor::STANDN_End()
 	else
 	{
 		SetAction(BRAKE);
-		//SetAction(STAND);
 	}
 	frame = 0;
 }
 
-void Actor::STANDN_Change()
+void Actor::STANDATTACK2_Change()
 {
-	if (CanCancelAttack())
+	if (CanCancelAttack() || frame > 14)
 	{
 		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
 		{
@@ -85,7 +82,7 @@ void Actor::STANDN_Change()
 	}
 }
 
-void Actor::STANDN_Update()
+void Actor::STANDATTACK2_Update()
 {
 	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
 
@@ -96,21 +93,23 @@ void Actor::STANDN_Update()
 	AttackMovement();
 }
 
-void Actor::STANDN_UpdateSprite()
+void Actor::STANDATTACK2_UpdateSprite()
 {
 	int startFrame = 0;
+
 	showSword = true;
 
-	Tileset *curr_ts = ts_standingNSword[speedLevel];
+	if (frame >= 10 * 2)
+		showSword = false;
+	
+
+	Tileset *curr_ts = ts_standAttackSword2[speedLevel];
 
 	if (showSword)
 	{
-		standingNSword.setTexture(*curr_ts->texture);
+		standAttackSword.setTexture(*curr_ts->texture);
 	}
-	//Vector2i offset( 24, -16 );
-	//Vector2i offset( 24, 0 );
-	//Vector2i offset( 32, 0 );
-	//Vector2i offset( 0, -16 );
+
 	Vector2f offset = standSwordOffset[speedLevel];
 
 	SetSpriteTexture(action);
@@ -122,12 +121,12 @@ void Actor::STANDN_UpdateSprite()
 	{
 		if (r)
 		{
-			standingNSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			standAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
-			standingNSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			standAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
@@ -140,46 +139,44 @@ void Actor::STANDN_UpdateSprite()
 
 	if (showSword)
 	{
-		standingNSword.setOrigin(standingNSword.getLocalBounds().width / 2, standingNSword.getLocalBounds().height);
-		standingNSword.setRotation(angle / PI * 180);
-		//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
+		standAttackSword.setOrigin(standAttackSword.getLocalBounds().width / 2, 
+			standAttackSword.getLocalBounds().height/2);
+		standAttackSword.setRotation(angle / PI * 180);
 	}
 
 	SetGroundedSpriteTransform();
 
-	//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
-	//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
 	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
-	V2d truDir(-trueNormal.y, trueNormal.x);//normalize( ground->v1 - ground->v0 );
+	V2d truDir(-trueNormal.y, trueNormal.x);
 
 	pos += truDir * (double)offset.x;
-	pos += -trueNormal * (double)offset.y;
+	pos += -trueNormal * (double)(offset.y - sprite->getLocalBounds().height / 2);
 
 
-	standingNSword.setPosition(pos.x, pos.y);
+	standAttackSword.setPosition(pos.x, pos.y);
 }
 
-void Actor::STANDN_TransitionToAction(int a)
+void Actor::STANDATTACK2_TransitionToAction(int a)
 {
 	ResetSuperLevel();
 }
 
-void Actor::STANDN_TimeIndFrameInc()
+void Actor::STANDATTACK2_TimeIndFrameInc()
 {
 
 }
 
-void Actor::STANDN_TimeDepFrameInc()
+void Actor::STANDATTACK2_TimeDepFrameInc()
 {
 
 }
 
-int Actor::STANDN_GetActionLength()
+int Actor::STANDATTACK2_GetActionLength()
 {
-	return 8 * 2;
+	return 16 * 2;
 }
 
-Tileset * Actor::STANDN_GetTileset()
+Tileset * Actor::STANDATTACK2_GetTileset()
 {
-	return GetActionTileset("standn_96x64.png");
+	return GetActionTileset("stand_att_02_64x64.png");
 }

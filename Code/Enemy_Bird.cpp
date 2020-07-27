@@ -28,9 +28,17 @@ Bird::Bird(ActorParams *ap)
 
 	actionLength[PUNCH] = 14;
 	animFactor[PUNCH] = 3;
+	reachPointOnFrame[PUNCH] = 0;
 
-	actionLength[FOLLOWUPPUNCH] = 14;
-	animFactor[FOLLOWUPPUNCH] = 3;
+	actionLength[KICK] = 10;
+	animFactor[KICK] = 3;
+	reachPointOnFrame[KICK] = 0;
+
+	actionLength[MOVE] = 2;
+	animFactor[MOVE] = 1;
+	reachPointOnFrame[MOVE] = 0;
+
+
 
 	bulletSpeed = 10;
 	framesBetween = 60;
@@ -46,10 +54,14 @@ Bird::Bird(ActorParams *ap)
 
 	animationFactor = 5;
 
-	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
-	sprite.setTexture(*ts_punch->texture);
+	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
-	hitboxInfo = new HitboxInfo;
+	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
+	
+
+	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
+
+	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
@@ -58,18 +70,22 @@ Bird::Bird(ActorParams *ap)
 	hitboxInfo->knockback = 50;
 	hitboxInfo->kbDir = normalize(V2d(1, -2));
 	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;
+	hitboxInfo->invincibleFrames = 15;*/
 
-	//LoadParams();
+	LoadParams();
 
 	//BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
-	hitBody.hitboxInfo = hitboxInfo;
+	
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	move = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), 0);
 
+	predictCircle.setFillColor(Color::Red);
+	predictCircle.setRadius(20);
+	predictCircle.setOrigin(predictCircle.getLocalBounds().width / 2,
+		predictCircle.getLocalBounds().height / 2);
 
 	ResetEnemy();
 }
@@ -84,8 +100,8 @@ void Bird::LoadParams()
 	json j;
 	is >> j;
 
-	HitboxInfo::SetupHitboxLevelInfo(j, punchHitboxInfo);
-	HitboxInfo::SetupHitboxLevelInfo(j, kickHitboxInfo);
+	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
+	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
 }
 
 void Bird::UpdateHitboxes()
@@ -100,12 +116,24 @@ void Bird::ResetEnemy()
 
 	action = PUNCH;
 	frame = 0;
+	hitBody.hitboxInfo = &hitboxInfos[PUNCH];
+	
 
 	predict = false;
 	hitPlayer = false;
+	moveFrames = 0;
+
+	ms.currMovement = NULL;
+
+	actionQueue[0] = PUNCH;
+	actionQueue[1] = KICK;
+	actionQueue[2] = PUNCH;
+	actionQueueIndex = 0;
+
 
 	//DefaultHurtboxesOn();
 	DefaultHitboxesOn();
+	
 
 	UpdateHitboxes();
 
@@ -117,6 +145,8 @@ void Bird::CalcTargetAfterHit()
 	sess->ForwardSimulatePlayer(targetPlayerIndex, sess->GetPlayer(targetPlayerIndex)->hitstunFrames);
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
 	sess->RevertSimulatedPlayer(targetPlayerIndex);
+	predictCircle.setPosition(Vector2f(targetPos));
+	
 }
 
 void Bird::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
@@ -163,18 +193,30 @@ void Bird::DirectKill()
 void Bird::FrameIncrement()
 {
 	++fireCounter;
+
+	if (moveFrames > 0)
+	{
+		--moveFrames;
+	}
 }
 
 void Bird::UpdatePreFrameCalculations()
 {
-	if (predict && action == FOLLOWUPPUNCH && frame == 1)
+	if (predict)
 	{
 		CalcTargetAfterHit();
-		move->duration = (hitboxInfo->hitstunFrames - 1) * NUM_MAX_STEPS * 5;
+		moveFrames = (hitBody.hitboxInfo->hitstunFrames - 1);
+		counterTillAttack = moveFrames - 10;
+		move->duration = moveFrames * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
 		move->end = targetPos;
 		ms.Reset();
 		predict = false;
+		int nextAction = actionQueue[actionQueueIndex];
+		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+		//++moveFrames;
+		
+		hitBody.hitboxInfo = NULL;
 	}
 }
 
@@ -187,17 +229,49 @@ void Bird::ProcessState()
 		case PUNCH:
 			frame = 0;
 			break;
-		case FOLLOWUPPUNCH:
+		case MOVE:
+			frame = 0;
+			break;
+		case KICK:
 			frame = 0;
 			break;
 		}
 	}
 
+	if (action == MOVE)
+	{
+		if (moveFrames == 0)
+		{
+			action = actionQueue[actionQueueIndex];
+			hitBody.hitboxInfo = &hitboxInfos[action];
+			++actionQueueIndex;
+			if (actionQueueIndex == 3)
+				actionQueueIndex = 0;
+		}
+		/*if (counterTillAttack > 1)
+		{
+			--counterTillAttack;
+		}
+		else
+		{
+			action = actionQueue[actionQueueIndex];
+			hitBody.hitboxInfo = &hitboxInfos[action];
+			++actionQueueIndex;
+			if (actionQueueIndex == 3)
+				actionQueueIndex = 0;
+		}*/
+	}
+
+	
+
 	if (hitPlayer)
 	{
-		action = FOLLOWUPPUNCH;
+		action = MOVE;
 		frame = 0;
+		predict = true;
 	}
+
+
 
 
 
@@ -221,8 +295,7 @@ void Bird::ProcessState()
 void Bird::IHitPlayer(int index)
 {
 	hitPlayer = true;
-	predict = true;
-	pauseFrames = hitboxInfo->hitlagFrames;
+	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
 	/*V2d playerPos = sess->GetPlayerPos(index);
 	if (playerPos.x > GetPosition().x)
 	{
@@ -236,7 +309,7 @@ void Bird::IHitPlayer(int index)
 
 void Bird::UpdateEnemyPhysics()
 {
-	if (action == FOLLOWUPPUNCH && !predict)
+	if (ms.currMovement != NULL)
 	{
 		if (numPhysSteps == 1)
 		{
@@ -249,12 +322,26 @@ void Bird::UpdateEnemyPhysics()
 
 		currPosInfo.SetPosition(ms.position);
 	}
-	
 }
 
 void Bird::UpdateSprite()
 {
-	ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
+	switch (action)
+	{
+	case MOVE:
+		sprite.setTexture(*ts_move->texture);
+		ts_move->SetSubRect(sprite, 2, !facingRight);
+		break;
+	case PUNCH:
+		sprite.setTexture(*ts_punch->texture);
+		ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
+		break;
+	case KICK:
+		sprite.setTexture(*ts_kick->texture);
+		ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
+		break;
+	}
+	
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
@@ -262,6 +349,8 @@ void Bird::UpdateSprite()
 void Bird::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	target->draw(predictCircle);
 }
 
 void Bird::HandleHitAndSurvive()

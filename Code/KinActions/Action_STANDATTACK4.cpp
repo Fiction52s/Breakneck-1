@@ -3,24 +3,23 @@
 using namespace sf;
 using namespace std;
 
-void Actor::DASHATTACK_Start()
+void Actor::STANDATTACK4_Start()
 {
 	SetActionSuperLevel();
+
 	ActivateSound(S_STANDATTACK);
 	ResetAttackHit();
-	StartDashAttack();
+
+	StartStandAttack();
 }
 
-void Actor::DASHATTACK_End()
+void Actor::STANDATTACK4_End()
 {
 	if (currInput.LLeft() || currInput.LRight())
 	{
 		if (currInput.B)
 		{
 			SetAction(DASH);
-			//action = DASH;
-			//re->Reset();
-			//re1->Reset();
 		}
 		else
 		{
@@ -31,12 +30,11 @@ void Actor::DASHATTACK_End()
 	else
 	{
 		SetAction(BRAKE);
-		//SetAction(STAND);
 	}
 	frame = 0;
 }
 
-void Actor::DASHATTACK_Change()
+void Actor::STANDATTACK4_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
@@ -73,13 +71,10 @@ void Actor::DASHATTACK_Change()
 
 		if (pauseBufferedDash || (currInput.B && !prevInput.B))
 		{
-			if (currAttackHit)
+			if (standNDashBoostCurr == 0)
 			{
-				if (standNDashBoostCurr == 0)
-				{
-					standNDashBoost = true;
-					standNDashBoostCurr = standNDashBoostCooldown;
-				}
+				standNDashBoost = true;
+				standNDashBoostCurr = standNDashBoostCooldown;
 			}
 			SetAction(DASH);
 			frame = 0;
@@ -88,44 +83,50 @@ void Actor::DASHATTACK_Change()
 	}
 }
 
-void Actor::DASHATTACK_Update()
+void Actor::STANDATTACK4_Update()
 {
 	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
+
+	if (frame == 0 && slowCounter == 1)
+	{
+	}
 
 	AttackMovement();
 }
 
-void Actor::DASHATTACK_UpdateSprite()
+void Actor::STANDATTACK4_UpdateSprite()
 {
 	int startFrame = 0;
+
 	showSword = true;
 
-	Tileset *curr_ts = ts_dashAttackSword[speedLevel];
-
-	if (frame >= 8 * 2)
+	if (frame >= 18 * 2)
 		showSword = false;
+
+	Tileset *curr_ts = ts_standAttackSword4[speedLevel];
 
 	if (showSword)
 	{
-		dashAttackSword.setTexture(*curr_ts->texture);
+		standAttackSword.setTexture(*curr_ts->texture);
 	}
-	Vector2f offset = dashAttackSwordOffset[speedLevel];
+
+	Vector2f offset = standSwordOffset[speedLevel];
 
 	SetSpriteTexture(action);
 
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(frame/2, r);
+	SetSpriteTile(frame / 2, r);
 
 	if (showSword)
 	{
 		if (r)
 		{
-			dashAttackSword.setTextureRect(curr_ts->GetSubRect(frame/2 - startFrame));
+			standAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
-			sf::IntRect irSword = curr_ts->GetSubRect(frame/2 - startFrame);
-			dashAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
+			standAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
@@ -138,46 +139,45 @@ void Actor::DASHATTACK_UpdateSprite()
 
 	if (showSword)
 	{
-		dashAttackSword.setOrigin(dashAttackSword.getLocalBounds().width / 2, dashAttackSword.getLocalBounds().height/2);
-		dashAttackSword.setRotation(angle / PI * 180);
-		//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
+		standAttackSword.setOrigin(standAttackSword.getLocalBounds().width / 2, 
+			standAttackSword.getLocalBounds().height / 2);
+		standAttackSword.setRotation(angle / PI * 180);
 	}
 
 	SetGroundedSpriteTransform();
 
-	//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
-	//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
 	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
-	V2d truDir(-trueNormal.y, trueNormal.x);//normalize( ground->v1 - ground->v0 );
+	V2d truDir(-trueNormal.y, trueNormal.x);
 
 	pos += truDir * (double)offset.x;
-	pos += -trueNormal * (double)( offset.y - sprite->getLocalBounds().height / 2);
+	//divides by 4 because tileset is 128 and it shouldnt be
+	pos += -trueNormal * (double)(offset.y - sprite->getLocalBounds().height / 4);
 
 
-	dashAttackSword.setPosition(pos.x, pos.y);
+	standAttackSword.setPosition(pos.x, pos.y);
 }
 
-void Actor::DASHATTACK_TransitionToAction(int a)
+void Actor::STANDATTACK4_TransitionToAction(int a)
 {
 	ResetSuperLevel();
 }
 
-void Actor::DASHATTACK_TimeIndFrameInc()
+void Actor::STANDATTACK4_TimeIndFrameInc()
 {
 
 }
 
-void Actor::DASHATTACK_TimeDepFrameInc()
+void Actor::STANDATTACK4_TimeDepFrameInc()
 {
 
 }
 
-int Actor::DASHATTACK_GetActionLength()
+int Actor::STANDATTACK4_GetActionLength()
 {
-	return 14 * 2;
+	return 23 * 2;
 }
 
-Tileset * Actor::DASHATTACK_GetTileset()
+Tileset * Actor::STANDATTACK4_GetTileset()
 {
-	return GetActionTileset("dash_att_01_128x64.png");
+	return GetActionTileset("stand_att_04_128x128.png");
 }
