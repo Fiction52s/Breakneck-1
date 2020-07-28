@@ -16,6 +16,14 @@ void Actor::AIRHITSTUN_End()
 
 void Actor::AIRHITSTUN_Change()
 {
+	if (hitstunFrames == 0)
+	{
+		SetAction(JUMP);
+		frame = 1;
+
+		BasicAirAction();
+	}
+
 	frame = 0;
 	if (hitstunFrames <= setHitstunFrames / 2)
 	{

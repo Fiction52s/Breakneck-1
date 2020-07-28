@@ -15,7 +15,10 @@ void Actor::GROUNDHITSTUN_End()
 
 void Actor::GROUNDHITSTUN_Change()
 {
-	
+	if (hitstunFrames == 0)
+	{
+		BasicGroundAction(currNormal);
+	}
 }
 
 void Actor::GROUNDHITSTUN_Update()
