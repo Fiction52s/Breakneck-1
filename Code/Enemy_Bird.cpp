@@ -222,6 +222,12 @@ void Bird::UpdatePreFrameCalculations()
 {
 	if (predict)
 	{
+		if (actionQueueIndex == 3)
+		{
+			dead = true;
+			sess->RemoveEnemy(this);
+			return;
+		}
 		CalcTargetAfterHit();
 		moveFrames = (hitBody.hitboxInfo->hitstunFrames - 1);
 		counterTillAttack = moveFrames - 10;
@@ -268,8 +274,11 @@ void Bird::ProcessState()
 			DefaultHitboxesOn();
 
 			++actionQueueIndex;
-			if (actionQueueIndex == 3)
+			/*if (actionQueueIndex == 3)
+			{
 				actionQueueIndex = 0;
+			}*/
+				
 		}
 		/*if (counterTillAttack > 1)
 		{
