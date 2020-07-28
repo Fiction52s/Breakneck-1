@@ -10362,6 +10362,24 @@ void Actor::UpdatePhysics()
 			{
 				HandleBounceGrass();
 			}
+			/*else if (tempCollision && grassCount[Grass::UNTECHABLE] > 0) 
+			{
+				//just a test.
+				//needs an animation/lag frames after bouncing if you want to use this.
+				//would be interesting in some contexts though. 
+				//might use the bounce grass for this.
+
+				if (velocity.x > 0)
+				{
+					velocity.x += 10;
+				}
+				else if (velocity.x < 0)
+				{
+					velocity.x -= 10;
+				}
+
+				velocity.x = -velocity.x;
+			}*/
 			else if (tempCollision && action == SPRINGSTUNBOUNCE)
 			{
 				V2d norm = minContact.normal;
