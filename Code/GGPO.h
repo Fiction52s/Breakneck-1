@@ -144,9 +144,6 @@ struct PState
 	int pauseBufferedAttack;
 	bool pauseBufferedJump;
 	bool pauseBufferedDash;
-	bool stunBufferedJump;
-	bool stunBufferedDash;
-	int stunBufferedAttack;
 
 	bool attackingHitlag;
 	int hitlagFrames;

@@ -180,9 +180,6 @@ void Actor::PopulateState(PState *ps)
 	ps->pauseBufferedAttack = pauseBufferedAttack;
 	ps->pauseBufferedJump = pauseBufferedJump;
 	ps->pauseBufferedDash = pauseBufferedDash;
-	ps->stunBufferedJump = stunBufferedJump;
-	ps->stunBufferedDash = stunBufferedDash;
-	ps->stunBufferedAttack = stunBufferedAttack;
 
 	ps->hitlagFrames = hitlagFrames;
 	ps->hitstunFrames = hitstunFrames;
@@ -343,9 +340,6 @@ void Actor::PopulateFromState(PState *ps)
 	pauseBufferedAttack = ps->pauseBufferedAttack;
 	pauseBufferedJump = ps->pauseBufferedJump;
 	pauseBufferedDash = ps->pauseBufferedDash;
-	stunBufferedJump = ps->stunBufferedJump;
-	stunBufferedDash = ps->stunBufferedDash;
-	stunBufferedAttack = ps->stunBufferedAttack;
 
 	hitlagFrames = ps->hitlagFrames;
 	hitstunFrames = ps->hitstunFrames;
@@ -2259,6 +2253,43 @@ void Actor::SetupActionFunctions()
 		&Actor::UAIR_GetActionLength,
 		&Actor::UAIR_GetTileset);
 
+	SetupFuncsForAction(UPTILT1,
+		&Actor::UPTILT1_Start,
+		&Actor::UPTILT1_End,
+		&Actor::UPTILT1_Change,
+		&Actor::UPTILT1_Update,
+		&Actor::UPTILT1_UpdateSprite,
+		&Actor::UPTILT1_TransitionToAction,
+		&Actor::UPTILT1_TimeIndFrameInc,
+		&Actor::UPTILT1_TimeDepFrameInc,
+		&Actor::UPTILT1_GetActionLength,
+		&Actor::UPTILT1_GetTileset);
+
+	SetupFuncsForAction(UPTILT2,
+		&Actor::UPTILT2_Start,
+		&Actor::UPTILT2_End,
+		&Actor::UPTILT2_Change,
+		&Actor::UPTILT2_Update,
+		&Actor::UPTILT2_UpdateSprite,
+		&Actor::UPTILT2_TransitionToAction,
+		&Actor::UPTILT2_TimeIndFrameInc,
+		&Actor::UPTILT2_TimeDepFrameInc,
+		&Actor::UPTILT2_GetActionLength,
+		&Actor::UPTILT2_GetTileset);
+
+	SetupFuncsForAction(UPTILT3,
+		&Actor::UPTILT3_Start,
+		&Actor::UPTILT3_End,
+		&Actor::UPTILT3_Change,
+		&Actor::UPTILT3_Update,
+		&Actor::UPTILT3_UpdateSprite,
+		&Actor::UPTILT3_TransitionToAction,
+		&Actor::UPTILT3_TimeIndFrameInc,
+		&Actor::UPTILT3_TimeDepFrameInc,
+		&Actor::UPTILT3_GetActionLength,
+		&Actor::UPTILT3_GetTileset);
+	
+
 	SetupFuncsForAction(WAITFORSHIP,
 		&Actor::WAITFORSHIP_Start,
 		&Actor::WAITFORSHIP_End,
@@ -2399,8 +2430,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	framesSinceDashAttack = 0;
 	framesSinceStandAttack = 0;
 
-	dashAttackLevelCounterLimit = 60;
-	standAttackLevelCounterLimit = 60;
+	attackLevelCounterLimit = 60;
 
 	flyCounter = 0;
 	action = -1; //for init
@@ -2414,9 +2444,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	kinMode = K_NORMAL;
 	autoRunStopEdge = NULL;
 	extraDoubleJump = false;
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 
 	extraGravityModifier = 1.0;
 	airTrigBehavior = AT_NONE;
@@ -3564,6 +3591,9 @@ void Actor::LoadHitboxes()
 	SetupHitboxInfo(j, "wallattack", hitboxInfos[WALLATTACK]);
 	SetupHitboxInfo(j, "diagupattack", hitboxInfos[DIAGUPATTACK]);
 	SetupHitboxInfo(j, "diagdownattack", hitboxInfos[DIAGDOWNATTACK]);
+	SetupHitboxInfo(j, "uptilt1", hitboxInfos[UPTILT1]);
+	SetupHitboxInfo(j, "uptilt2", hitboxInfos[UPTILT2]);
+	SetupHitboxInfo(j, "uptilt3", hitboxInfos[UPTILT3]);
 
 	is.close();
 }
@@ -3674,13 +3704,6 @@ bool Actor::AirAttack()
 	if (pauseBufferedAttack != Action::Count)
 	{
 		SetAction(pauseBufferedAttack);
-		frame = 0;
-		return true;
-	}
-
-	if (stunBufferedAttack != Action::Count)
-	{
-		SetAction(stunBufferedAttack);
 		frame = 0;
 		return true;
 	}
@@ -3998,9 +4021,6 @@ void Actor::Respawn()
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 	autoRunStopEdge = NULL;
-	stunBufferedJump = false;
-	stunBufferedAttack = Action::Count;
-	stunBufferedDash = false;
 	extraDoubleJump = false;
 
 	if( kinMask != NULL )
@@ -4173,9 +4193,6 @@ void Actor::Respawn()
 	pauseBufferedAttack = Action::Count;
 	pauseBufferedJump = false;
 	pauseBufferedDash = false;
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 
 	oldAction = action;
 
@@ -4812,79 +4829,6 @@ void Actor::UpdateBounceFlameOn()
 	}
 }
 
-void Actor::HitstunBufferedChangeAction()
-{
-	if (action == AIRHITSTUN)
-	{
-		if (hitstunFrames == 0)
-		{
-			if (!TryDoubleJump())
-			{
-				if (!AirAttack())
-				{
-					if (!TryAirDash())
-					{
-						SetAction(JUMP);
-						frame = 1;
-						holdJump = false;
-					}
-				}
-			}
-		}
-
-	}
-	else if (action == GROUNDHITSTUN)
-	{
-		if (hitstunFrames == 0)
-		{
-			if (stunBufferedJump)
-			{
-				if (stunBufferedAttack != Action::Count)
-				{
-					SetAction(JUMPSQUAT);
-					frame = 0;
-
-					if (currInput.LUp())
-					{
-						bufferedAttack = UAIR;
-					}
-					else if (currInput.LDown())
-					{
-						bufferedAttack = DAIR;
-					}
-					else
-					{
-						bufferedAttack = FAIR;
-					}
-				}
-				else
-				{
-					SetAction(JUMPSQUAT);
-					frame = 0;
-				}
-
-			}
-			else if (!TryGroundAttack())
-			{
-				if (stunBufferedDash)
-				{
-					SetAction(DASH);
-					frame = 0;
-				}
-				else
-				{
-					SetAction(LAND);
-					frame = 0;
-				}
-				//if( !)
-			}
-
-			//prevInput = ControllerState();
-		}
-
-	}
-}
-
 void Actor::UpdateWireStates()
 {
 	if (HasUpgrade(UPGRADE_POWER_LWIRE) && ((action != GRINDBALL && action != GRINDATTACK) || leftWire->state == Wire::RETRACTING))
@@ -5182,6 +5126,12 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 	case STANDATTACK2:
 	case STANDATTACK3:
 	case STANDATTACK4:
+	case DASHATTACK:
+	case DASHATTACK2:
+	case DASHATTACK3:
+	case UPTILT1:
+	case UPTILT2:
+	case UPTILT3:
 		if ((!reversed && facingRight) || (reversed && !facingRight))
 		{
 			currHitboxInfo->hDir = along;
@@ -5414,8 +5364,6 @@ void Actor::UpdatePrePhysics()
 
 	UpdateBounceFlameOn();
 	
-	HitstunBufferedChangeAction();
-	
 	ChangeAction();
 
 	UpdateAction();
@@ -5517,15 +5465,6 @@ void Actor::TransitionAction(int a)
 
 void Actor::SetAction( int a )
 {
-	//standNDashBoost = (action == STANDN && a == DASH && currAttackHit );
-
-	/*if (action == AIRHITSTUN || action == GROUNDHITSTUN )
-	{
-		stunBufferedJump = false;
-		stunBufferedDash = false;
-		stunBufferedAttack = Action::Count;
-	}*/
-
 	TransitionAction(a);
 
 	action = a;
@@ -10789,7 +10728,10 @@ bool Actor::IsGroundAttack(int a)
 		|| a == Action::STANDATTACK4
 		|| a == Action::DASHATTACK
 		|| a == Action::DASHATTACK2 
-		|| a == Action::DASHATTACK3;
+		|| a == Action::DASHATTACK3
+		|| a == Action::UPTILT1
+		|| a == Action::UPTILT2
+		|| a == Action::UPTILT3;
 }
 
 bool Actor::TryGroundAttack()
@@ -10797,8 +10739,7 @@ bool Actor::TryGroundAttack()
 	bool normalSwing = CheckNormalSwing();
 	bool rightStickSwing = false;//CheckRightStickSwing();
 
-	if ( normalSwing || rightStickSwing || IsGroundAttackAction(pauseBufferedAttack)
-		|| IsGroundAttackAction(stunBufferedAttack))
+	if ( normalSwing || rightStickSwing || IsGroundAttackAction(pauseBufferedAttack) )
 	{
 		
 		if (!rightStickSwing)
@@ -10825,54 +10766,21 @@ bool Actor::TryGroundAttack()
 			}
 		}
 
-		if (IsGroundAttackAction(stunBufferedAttack))
+		
+		
+		if (action == DASH || ((action == DASHATTACK
+			|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B
+			&& (currInput.LLeft() || currInput.LRight())))
 		{
-			V2d gn = ground->Normal();
-			if (TerrainPolygon::IsSteepGround(gn) )
-			{
-				if (facingRight)
-				{
-					if (gn.x > 0)
-					{
-						stunBufferedAttack = Action::STEEPSLIDEATTACK;
-					}
-					else
-					{
-						stunBufferedAttack = Action::STEEPCLIMBATTACK;
-					}
-				}
-				else
-				{
-					if (gn.x > 0)
-					{
-						stunBufferedAttack = Action::STEEPCLIMBATTACK;
-					}
-					else
-					{
-						stunBufferedAttack = Action::STEEPSLIDEATTACK;
-					}
-				}
-				
-			}
-
-			SetAction(stunBufferedAttack);
-			frame = 0;
+			SetAction(GetCurrDashAttack());
 		}
 		else
 		{
-			if (action == DASH || ((action == DASHATTACK
-				|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B
-				&& (currInput.LLeft() || currInput.LRight())))
-			{
-				SetAction(GetCurrDashAttack());
-			}
-			else
-			{
-				SetAction(GetCurrStandAttack());
-			}
-
-			frame = 0;
+			SetAction(GetCurrStandAttack());
 		}
+
+		frame = 0;
+		
 
 		return true;
 	}
@@ -14962,123 +14870,16 @@ void Actor::Draw( sf::RenderTarget *target )
 		if (showSword)
 		{
 			sf::Shader &swordSh = swordShaders[speedLevel];
-			//swordShader.setUniform( "isTealAlready", 1 );
-			switch (action)
-			{
-			case FAIR:
-			{
-				if (flashFrames > 0)
-				{
-					target->draw(fairSword, &swordSh);
-					//cout << "shader!" << endl;
-				}
-				else
-				{
-					target->draw(fairSword);
-				}
-				break;
-			}
-			case DAIR:
-			{
-				if (flashFrames > 0)
-					target->draw(dairSword, &swordSh);
-				else
-					target->draw(dairSword);
-				break;
-			}
-			case UAIR:
-			{
-				if (flashFrames > 0)
-					target->draw(uairSword, &swordSh);
-				else
-					target->draw(uairSword);
-				break;
-			}
-			case STANDATTACK1:
-			case STANDATTACK2:
-			case STANDATTACK3:
-			case STANDATTACK4:
-			{
-				if (flashFrames > 0)
-				{
-					target->draw(standAttackSword, &swordSh);
-				}
-				else
-					target->draw(standAttackSword);
-				break;
-			}
-			case DASHATTACK:
-			case DASHATTACK2:
-			case DASHATTACK3:
-			{
-				if (flashFrames > 0)
-				{
-					target->draw(dashAttackSword, &swordSh);
-					//cout << "Standn" << endl;
-				}
-				else
-					target->draw(dashAttackSword);
-				break;
-			}
-			case WALLATTACK:
-				if (flashFrames > 0)
-					target->draw(wallAttackSword, &swordSh);
-				else
-					target->draw(wallAttackSword);
-				break;
-				break;
-			case STEEPCLIMBATTACK:
-				if (flashFrames > 0)
-					target->draw(steepClimbAttackSword, &swordSh);
-				else
-					target->draw(steepClimbAttackSword);
-				break;
-				break;
-			case STEEPSLIDEATTACK:
-				if (flashFrames > 0)
-					target->draw(steepSlideAttackSword, &swordSh);
-				else
-					target->draw(steepSlideAttackSword);
-				break;
-				break;
-			case GRINDSLASH:
-			{
 
-				if (flashFrames > 0)
-					target->draw(grindLungeSword, &swordSh);
-				else
-					target->draw(grindLungeSword);
-				break;
+			if (flashFrames > 0)
+			{
+				target->draw(swordSprite, &swordSh);
+			}
+			else
+			{
+				target->draw(swordSprite);
+			}
 
-			}
-			case DIAGUPATTACK:
-			{
-				if (flashFrames > 0)
-				{
-					target->draw(diagUpAttackSword, &swordSh);
-					//cout << "shader!" << endl;
-				}
-				else
-				{
-					target->draw(diagUpAttackSword);
-				}
-				break;
-			}
-			case DIAGDOWNATTACK:
-			{
-				if (flashFrames > 0)
-				{
-					target->draw(diagDownAttackSword, &swordSh);
-					//cout << "shader!" << endl;
-				}
-				else
-				{
-					target->draw(diagDownAttackSword);
-				}
-				break;
-			}
-			break;
-			}
 		}
 	}
 	
@@ -16499,7 +16300,7 @@ int Actor::GetDoubleJump()
 bool Actor::CanDoubleJump()
 {
 	return ( (hasDoubleJump || extraDoubleJump ) && 
-		((currInput.A && !prevInput.A) || pauseBufferedJump || stunBufferedJump )  && !IsSingleWirePulling() );
+		((currInput.A && !prevInput.A) || pauseBufferedJump )  && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -16519,7 +16320,7 @@ bool Actor::TryDoubleJump()
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetAction( GetDoubleJump() );
 
-		if (currInput.rightShoulder && !pauseBufferedJump && !stunBufferedJump)
+		if (currInput.rightShoulder && !pauseBufferedJump)
 		{
 			if (currInput.LUp())
 			{
@@ -16549,8 +16350,7 @@ bool Actor::TryAirDash()
 {
 	if (HasUpgrade(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
 	{
-		if ((hasAirDash || inBubble) && ((!prevInput.B && currInput.B) || pauseBufferedDash
-			|| stunBufferedDash ))
+		if ((hasAirDash || inBubble) && ((!prevInput.B && currInput.B) || pauseBufferedDash))
 		{
 			hasFairAirDashBoost = (action == FAIR);
 			SetAction( AIRDASH );
@@ -16600,17 +16400,16 @@ bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	else if (action == GROUNDBLOCKDOWNFORWARD)
 	{
 		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| ( opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
 			|| ( facingHitbox && 
-				(hpt == HitboxInfo::HitPosType::AIRUPFORWARD
-				|| hpt == HitboxInfo::HitPosType::GROUND
+				(hpt == HitboxInfo::HitPosType::GROUND
 				|| hpt == HitboxInfo::HitPosType::GROUNDLOW ) ) )
 			return true;
 	}
 	else if (action == GROUNDBLOCKFORWARD)
 	{
-		if ( facingHitbox &&
-				( hpt == HitboxInfo::HitPosType::AIRFORWARD
-				|| hpt == HitboxInfo::HitPosType::GROUND ) )
+		if ( (opposingFacing && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::GROUND ) )
 			return true;
 	}
 	else if (action == GROUNDBLOCKUPFORWARD)
@@ -16954,6 +16753,30 @@ int Actor::GetCurrDashAttack()
 	return a;
 }
 
+int Actor::GetCurrUpTilt()
+{
+	int a = -1;
+	switch (upTiltLevel)
+	{
+	case 0:
+		a = UPTILT1;
+		break;
+	case 1:
+		a = UPTILT2;
+		break;
+	case 2:
+		a = UPTILT3;
+		break;
+	}
+
+	return a;
+}
+
+int Actor::GetCurrDownTilt()
+{
+	return -1;
+}
+
 void Actor::StartStandAttack()
 {
 	standAttackLevel++;
@@ -16970,6 +16793,24 @@ void Actor::StartDashAttack()
 		dashAttackLevel = 0;
 
 	framesSinceDashAttack = 0;
+}
+
+void Actor::StartUpTilt()
+{
+	upTiltLevel++;
+	if (upTiltLevel == 3)
+		upTiltLevel = 0;
+
+	framesSinceUpTilt = 0;
+}
+
+void Actor::StartDownTilt()
+{
+	downTiltLevel++;
+	if (downTiltLevel == 3)
+		downTiltLevel = 0;
+
+	framesSinceDownTilt = 0;
 }
 
 void Actor::UpdateInHitlag()
@@ -17195,6 +17036,66 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 SetGroundBlockAction();
+ }
+
+ void Actor::UpdateGroundedSwordSprite( Tileset *ts, int startFrame, int endFrame, int animMult,
+	 Vector2f &offset )
+ {
+	 showSword = true;
+
+	 if ( frame < startFrame * animMult || frame >= endFrame * animMult)
+		 showSword = false;
+
+	 if (showSword)
+	 {
+		 swordSprite.setTexture(*ts->texture);
+	 }
+
+	 bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+	 if (showSword)
+	 {
+		 if (r)
+		 {
+			 swordSprite.setTextureRect(ts->GetSubRect(frame / 2 - startFrame));
+		 }
+		 else
+		 {
+			 sf::IntRect irSword = ts->GetSubRect(frame / 2 - startFrame);
+			 swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+				 irSword.top, -irSword.width, irSword.height));
+
+			 offset.x = -offset.x;
+		 }
+	 }
+
+	 V2d trueNormal;
+	 double angle = GroundedAngleAttack(trueNormal);
+
+	 if (showSword)
+	 {
+		 swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2,
+			 swordSprite.getLocalBounds().height / 2);
+		 swordSprite.setRotation(angle / PI * 180);
+	 }
+
+	 V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
+	 V2d truDir(-trueNormal.y, trueNormal.x);
+
+	 pos += truDir * (double)offset.x;
+	 pos += -trueNormal * (double)(offset.y - 32);//sprite->getLocalBounds().height / 2);
+
+	 swordSprite.setPosition(pos.x, pos.y);
+ }
+
+ void Actor::UpdateGroundedAttackSprite(
+	 int a, Tileset *ts_sword, int startSword, int endSword, int animMult, Vector2f &swordOffset)
+ {
+	 SetSpriteTexture(a);
+	 bool r = (facingRight && !reversed) || (!facingRight && reversed);
+	 SetSpriteTile(frame / animMult, r);
+	 SetGroundedSpriteTransform();
+	 UpdateGroundedSwordSprite(ts_sword, startSword, endSword, animMult, swordOffset );
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

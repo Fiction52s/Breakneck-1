@@ -107,7 +107,7 @@ void Actor::STANDATTACK4_UpdateSprite()
 
 	if (showSword)
 	{
-		standAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	Vector2f offset = standSwordOffset[speedLevel];
@@ -121,12 +121,12 @@ void Actor::STANDATTACK4_UpdateSprite()
 	{
 		if (r)
 		{
-			standAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
-			standAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;

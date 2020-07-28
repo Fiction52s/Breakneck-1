@@ -43,7 +43,7 @@ void Actor::DASHATTACK2_UpdateSprite()
 
 	if (showSword)
 	{
-		dashAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 	Vector2f offset = dashAttackSwordOffset[speedLevel];
 
@@ -56,12 +56,12 @@ void Actor::DASHATTACK2_UpdateSprite()
 	{
 		if (r)
 		{
-			dashAttackSword.setTextureRect(curr_ts->GetSubRect(frame/2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame/2 - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame/2 - startFrame);
-			dashAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
@@ -74,8 +74,8 @@ void Actor::DASHATTACK2_UpdateSprite()
 
 	if (showSword)
 	{
-		dashAttackSword.setOrigin(dashAttackSword.getLocalBounds().width / 2, dashAttackSword.getLocalBounds().height / 2);
-		dashAttackSword.setRotation(angle / PI * 180);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setRotation(angle / PI * 180);
 		//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
 	}
 
@@ -90,7 +90,7 @@ void Actor::DASHATTACK2_UpdateSprite()
 	pos += -trueNormal * (double)( offset.y - sprite->getLocalBounds().height / 2 );
 
 
-	dashAttackSword.setPosition(pos.x, pos.y);
+	swordSprite.setPosition(pos.x, pos.y);
 }
 
 void Actor::DASHATTACK2_TransitionToAction(int a)

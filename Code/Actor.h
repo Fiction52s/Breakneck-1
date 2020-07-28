@@ -276,6 +276,9 @@ struct Actor : QuadTreeCollider,
 		AIRBLOCKDOWN,
 		GROUNDPARRY,
 		GROUNDPARRYLOW,
+		UPTILT1,
+		UPTILT2,
+		UPTILT3,
 		Count
 	};
 
@@ -415,9 +418,6 @@ struct Actor : QuadTreeCollider,
 	int pauseBufferedAttack;
 	bool pauseBufferedJump;
 	bool pauseBufferedDash;
-	bool stunBufferedJump;
-	bool stunBufferedDash;
-	int stunBufferedAttack;
 
 	//bool moretest;
 	bool attackingHitlag; //sometimes causes memory problems
@@ -462,8 +462,12 @@ struct Actor : QuadTreeCollider,
 
 	int dashAttackLevel;
 	int standAttackLevel;
+	int upTiltLevel;
+	int downTiltLevel;
 	int framesSinceDashAttack;
 	int framesSinceStandAttack;
+	int framesSinceUpTilt;
+	int framesSinceDownTilt;
 	
 	
 
@@ -507,8 +511,7 @@ struct Actor : QuadTreeCollider,
 	//---end of saved vars
 	//const static int NUM_PAST_INPUTS = 60;
 	int superActiveLimit;
-	int dashAttackLevelCounterLimit;
-	int standAttackLevelCounterLimit;
+	int attackLevelCounterLimit;
 	sf::Vector2f fairSwordOffset[3];
 	sf::Vector2f dairSwordOffset[3];
 	sf::Vector2f diagUpSwordOffset[3];
@@ -656,34 +659,36 @@ struct Actor : QuadTreeCollider,
 	RelEffectInstance *currLockedUairFX;
 	RelEffectInstance *gateBlackFX;
 	bool showSword;
-	sf::Sprite grindLungeSword;
+	
+	sf::Sprite swordSprite;
+
 	Tileset *ts_grindLungeSword[3];
-	sf::Sprite dairSword;
+	
 	Tileset *ts_dairSword[3];
 	Tileset *ts_dairSwordLightning[3];
-	sf::Sprite uairSword;
+	
 	Tileset *ts_uairSword[3];
 	Tileset *ts_uairSwordLightning[3];
-	sf::Sprite standAttackSword;
+	
 
 	Tileset *ts_standAttackSword[3];
 	Tileset *ts_standAttackSword2[3];
 	Tileset *ts_standAttackSword3[3];
 	Tileset *ts_standAttackSword4[3];
 
-	sf::Sprite dashAttackSword;
+	
 	Tileset *ts_dashAttackSword[3];
 	Tileset *ts_dashAttackSword2[3];
 	Tileset *ts_dashAttackSword3[3];
-	sf::Sprite wallAttackSword;
+	
 	Tileset *ts_wallAttackSword[3];
-	sf::Sprite steepSlideAttackSword;
+	
 	Tileset *ts_steepSlideAttackSword[3];
-	sf::Sprite steepClimbAttackSword;
+	
 	Tileset *ts_steepClimbAttackSword[3];
-	sf::Sprite diagUpAttackSword;
+	
 	Tileset *ts_diagUpSword[3];
-	sf::Sprite diagDownAttackSword;
+	
 	Tileset *ts_diagDownSword[3];
 	
 	sf::Sprite bounceFlameSprite;
@@ -1022,7 +1027,6 @@ struct Actor : QuadTreeCollider,
 	void HandleAirTrigger();
 	void UpdateCanStandUp();
 	void UpdateBounceFlameOn();
-	void HitstunBufferedChangeAction();
 	void ProcessBooster();
 	void UpdateWireStates();
 	void ProcessBoostGrass();
@@ -1296,9 +1300,26 @@ struct Actor : QuadTreeCollider,
 	void UpdateAerialShieldSprite(int tile);
 	void StartStandAttack();
 	void StartDashAttack();
+	void StartUpTilt();
+	void StartDownTilt();
 
 	int GetCurrStandAttack();
 	int GetCurrDashAttack();
+	int GetCurrUpTilt();
+	int GetCurrDownTilt();
+
+	void UpdateGroundedSwordSprite(
+		Tileset *ts,
+		int startFrame,
+		int endFrame,
+		int animMult,
+		Vector2f &offset );
+	void UpdateGroundedAttackSprite(
+		int a, Tileset *ts_sword,
+		int startSword,
+		int endSword,
+		int animMult,
+		Vector2f &swordOffset );
 
 	//kin action functions
 
@@ -2505,6 +2526,39 @@ struct Actor : QuadTreeCollider,
 	void UAIR_TimeDepFrameInc();
 	int UAIR_GetActionLength();
 	Tileset * UAIR_GetTileset();
+
+	void UPTILT1_Start();
+	void UPTILT1_End();
+	void UPTILT1_Change();
+	void UPTILT1_Update();
+	void UPTILT1_UpdateSprite();
+	void UPTILT1_TransitionToAction(int a);
+	void UPTILT1_TimeIndFrameInc();
+	void UPTILT1_TimeDepFrameInc();
+	int UPTILT1_GetActionLength();
+	Tileset * UPTILT1_GetTileset();
+
+	void UPTILT2_Start();
+	void UPTILT2_End();
+	void UPTILT2_Change();
+	void UPTILT2_Update();
+	void UPTILT2_UpdateSprite();
+	void UPTILT2_TransitionToAction(int a);
+	void UPTILT2_TimeIndFrameInc();
+	void UPTILT2_TimeDepFrameInc();
+	int UPTILT2_GetActionLength();
+	Tileset * UPTILT2_GetTileset();
+
+	void UPTILT3_Start();
+	void UPTILT3_End();
+	void UPTILT3_Change();
+	void UPTILT3_Update();
+	void UPTILT3_UpdateSprite();
+	void UPTILT3_TransitionToAction(int a);
+	void UPTILT3_TimeIndFrameInc();
+	void UPTILT3_TimeDepFrameInc();
+	int UPTILT3_GetActionLength();
+	Tileset * UPTILT3_GetTileset();
 
 	void WAITFORSHIP_Start();
 	void WAITFORSHIP_End();

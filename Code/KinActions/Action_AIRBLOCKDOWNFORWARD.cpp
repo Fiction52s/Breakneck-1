@@ -39,9 +39,6 @@ void Actor::AIRBLOCKDOWNFORWARD_UpdateSprite()
 
 void Actor::AIRBLOCKDOWNFORWARD_TransitionToAction(int a)
 {
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::AIRBLOCKDOWNFORWARD_TimeIndFrameInc()

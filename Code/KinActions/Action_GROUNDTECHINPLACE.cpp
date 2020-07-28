@@ -55,9 +55,6 @@ void Actor::GROUNDTECHINPLACE_UpdateSprite()
 
 void Actor::GROUNDTECHINPLACE_TransitionToAction(int a)
 {
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::GROUNDTECHINPLACE_TimeIndFrameInc()

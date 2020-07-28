@@ -29,7 +29,7 @@ void Actor::SUPERBIRD_Start()
 			sess->currSuperPlayer = this;
 			currBirdCommandIndex = 0;
 			
-			int pIndex = 0;
+			int pIndex = 1;
 			fm->testBird->playerIndex = pIndex;
 
 			birdCommands[0]->action = 0;

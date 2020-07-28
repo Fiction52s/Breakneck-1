@@ -16,37 +16,6 @@ void Actor::AIRHITSTUN_End()
 
 void Actor::AIRHITSTUN_Change()
 {
-	//stun buffered inputs are not good.
-	/*if (stunBufferedAttack == Action::Count)
-	{
-		if (currInput.rightShoulder && !prevInput.rightShoulder)
-		{
-			if (currInput.LUp())
-			{
-				stunBufferedAttack = UAIR;
-			}
-			else if (currInput.LDown())
-			{
-				stunBufferedAttack = DAIR;
-			}
-			else
-			{
-				stunBufferedAttack = FAIR;
-			}
-		}
-	}
-
-	if (!stunBufferedJump && currInput.A && !prevInput.A)
-	{
-		stunBufferedJump = true;
-	}
-
-	if (!stunBufferedDash && currInput.B && !prevInput.B)
-	{
-		stunBufferedDash = true;
-	}*/
-
-
 	frame = 0;
 	if (hitstunFrames <= setHitstunFrames / 2)
 	{

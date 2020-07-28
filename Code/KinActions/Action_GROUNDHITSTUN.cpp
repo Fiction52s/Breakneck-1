@@ -11,24 +11,6 @@ void Actor::GROUNDHITSTUN_Start()
 
 void Actor::GROUNDHITSTUN_End()
 {
-	//stun buffered stuff is bad
-	/*if (stunBufferedAttack == Action::Count)
-	{
-		if (currInput.rightShoulder && !prevInput.rightShoulder)
-		{
-			stunBufferedAttack = STANDN;
-		}
-	}
-
-	if (!stunBufferedJump && currInput.A && !prevInput.A)
-	{
-		stunBufferedJump = true;
-	}
-
-	if (!stunBufferedDash && currInput.B && !prevInput.B)
-	{
-		stunBufferedDash = true;
-	}*/
 }
 
 void Actor::GROUNDHITSTUN_Change()

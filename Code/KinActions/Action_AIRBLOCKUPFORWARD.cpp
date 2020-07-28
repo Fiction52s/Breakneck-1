@@ -38,9 +38,6 @@ void Actor::AIRBLOCKUPFORWARD_UpdateSprite()
 
 void Actor::AIRBLOCKUPFORWARD_TransitionToAction(int a)
 {
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::AIRBLOCKUPFORWARD_TimeIndFrameInc()

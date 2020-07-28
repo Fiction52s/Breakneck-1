@@ -54,9 +54,6 @@ void Actor::GROUNDTECHBACK_UpdateSprite()
 
 void Actor::GROUNDTECHBACK_TransitionToAction(int a)
 {
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::GROUNDTECHBACK_TimeIndFrameInc()
