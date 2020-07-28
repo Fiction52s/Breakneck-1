@@ -26,9 +26,25 @@ void Actor::SUPERBIRD_Start()
 				sess->RemoveEnemy(fm->testBird);
 			}
 
+			sess->currSuperPlayer = this;
+			currBirdCommandIndex = 0;
 			
 			int pIndex = 0;
 			fm->testBird->playerIndex = pIndex;
+
+			birdCommands[0]->action = 0;
+			birdCommands[0]->facingRight = true;
+
+			birdCommands[1]->action = 0;
+			birdCommands[1]->facingRight = false;
+
+			birdCommands[2]->action = 0;
+			birdCommands[2]->facingRight = true;
+
+			for (int i = 0; i < 3; ++i)
+			{
+				fm->testBird->SetCommand(i, *birdCommands[i]);
+			}
 
 			fm->testBird->targetPlayerIndex = pIndex;
 			fm->testBird->startPosInfo.position = sess->GetPlayerPos(pIndex);

@@ -61,6 +61,7 @@ Bird::Bird(ActorParams *ap)
 
 	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
 
+	hitboxInfo = new HitboxInfo;
 	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
@@ -107,6 +108,15 @@ void Bird::LoadParams()
 void Bird::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
+
+	if (facingRight)
+	{
+		hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;	
+	}
+	else
+	{
+		hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+	}
 }
 
 void Bird::ResetEnemy()
@@ -116,8 +126,8 @@ void Bird::ResetEnemy()
 
 	action = PUNCH;
 	frame = 0;
-	hitBody.hitboxInfo = &hitboxInfos[PUNCH];
 	
+	SetHitboxInfo(PUNCH);
 
 	predict = false;
 	hitPlayer = false;
@@ -125,19 +135,27 @@ void Bird::ResetEnemy()
 
 	ms.currMovement = NULL;
 
-	actionQueue[0] = PUNCH;
-	actionQueue[1] = KICK;
-	actionQueue[2] = PUNCH;
+	//actionQueue[0] = ;
+	//actionQueue[1] = KICK;
+	//actionQueue[2] = PUNCH;
 	actionQueueIndex = 0;
 
 
 	//DefaultHurtboxesOn();
 	DefaultHitboxesOn();
-	
-
-	UpdateHitboxes();
 
 	UpdateSprite();
+}
+
+void Bird::SetHitboxInfo(int a)
+{
+	*hitboxInfo = hitboxInfos[a];
+	hitBody.hitboxInfo = hitboxInfo;
+}
+
+void Bird::SetCommand(int index, BirdCommand &bc)
+{
+	actionQueue[index] = bc;
 }
 
 void Bird::CalcTargetAfterHit()
@@ -212,11 +230,12 @@ void Bird::UpdatePreFrameCalculations()
 		move->end = targetPos;
 		ms.Reset();
 		predict = false;
-		int nextAction = actionQueue[actionQueueIndex];
+		int nextAction = actionQueue[actionQueueIndex].action + 1;
 		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+
+		SetHitboxes(NULL, 0);
 		//++moveFrames;
 		
-		hitBody.hitboxInfo = NULL;
 	}
 }
 
@@ -242,8 +261,12 @@ void Bird::ProcessState()
 	{
 		if (moveFrames == 0)
 		{
-			action = actionQueue[actionQueueIndex];
-			hitBody.hitboxInfo = &hitboxInfos[action];
+			action = actionQueue[actionQueueIndex].action + 1;
+			facingRight = actionQueue[actionQueueIndex].facingRight;
+			SetHitboxInfo(action);
+			//SetHitboxes(NULL, 0);
+			DefaultHitboxesOn();
+
 			++actionQueueIndex;
 			if (actionQueueIndex == 3)
 				actionQueueIndex = 0;

@@ -1295,6 +1295,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
 
+	currSuperPlayer = NULL;
 	superSequence = NULL;
 	inputVis = NULL;
 	scoreDisplay = NULL;
@@ -3935,6 +3936,7 @@ void Session::HitlagUpdate()
 	if (activeSequence == superSequence)
 	{
 		ActiveSequenceUpdate();
+		currSuperPlayer->CheckBirdCommands();
 	}
 
 	UpdateEffects(true);
@@ -5542,20 +5544,6 @@ bool Session::RunGameModeUpdate()
 		if (!RunPreUpdate())
 			break;
 
-		if (pauseFrames > 0)
-		{
-			HitlagUpdate(); //the full update while in hitlag
-			accumulator -= TIMESTEP;
-			continue;
-		}
-
-		//int pIndex = 0;
-		//ForwardSimulatePlayer(pIndex, 30);//GetPlayer(pIndex)->hitstunFrames);
-		//testSimCircle.setFillColor(Color::Red);
-		//testSimCircle.setRadius(20);
-		//testSimCircle.setOrigin(testSimCircle.getLocalBounds().width / 2, testSimCircle.getLocalBounds().height / 2);
-		//testSimCircle.setPosition(Vector2f(GetPlayer(pIndex)->position));
-		//RevertSimulatedPlayer(pIndex);
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -5569,6 +5557,38 @@ bool Session::RunGameModeUpdate()
 		RecPlayerRecordFrame();
 
 		UpdateAllPlayersInput();
+
+		if (pauseFrames > 0)
+		{
+			HitlagUpdate(); //the full update while in hitlag
+			accumulator -= TIMESTEP;
+			if (pauseFrames == 0)
+			{
+				currSuperPlayer = NULL;
+			}
+			continue;
+		}
+
+		//int pIndex = 0;
+		//ForwardSimulatePlayer(pIndex, 30);//GetPlayer(pIndex)->hitstunFrames);
+		//testSimCircle.setFillColor(Color::Red);
+		//testSimCircle.setRadius(20);
+		//testSimCircle.setOrigin(testSimCircle.getLocalBounds().width / 2, testSimCircle.getLocalBounds().height / 2);
+		//testSimCircle.setPosition(Vector2f(GetPlayer(pIndex)->position));
+		//RevertSimulatedPlayer(pIndex);
+
+		/*if (!playerAndEnemiesFrozen)
+		{
+			UpdateEnemiesPreFrameCalculations();
+		}
+
+		UpdateControllers();
+
+		RepPlayerUpdateInput();
+
+		RecPlayerRecordFrame();
+
+		UpdateAllPlayersInput();*/
 
 		ActiveSequenceUpdate();
 		if (switchGameState)
@@ -6181,6 +6201,7 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->activeEnemyListTail = activeEnemyListTail;
 	currSaveState->inactiveEnemyList = inactiveEnemyList;
 	currSaveState->pauseFrames = pauseFrames;
+	currSaveState->currSuperPlayer = currSuperPlayer;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -6218,6 +6239,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	inactiveEnemyList = currSaveState->inactiveEnemyList;
 	activeEnemyListTail = currSaveState->activeEnemyListTail;
 	pauseFrames = currSaveState->pauseFrames;
+	currSuperPlayer = currSaveState->currSuperPlayer;
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 

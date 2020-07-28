@@ -52,6 +52,9 @@
 #include "GGPO.h"
 
 #include "Enemy_Gator.h"
+#include "Enemy_Bird.h"
+
+#include "SuperCommands.h"
 
 using namespace sf;
 using namespace std;
@@ -72,6 +75,33 @@ void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 {
 	actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		actor->ts_keyExplode, V2d(ei->pos), true, 0, 6, 3, true);
+}
+
+void Actor::CheckBirdCommands()
+{
+	if (currBirdCommandIndex >= 3)
+	{
+		return;
+	}
+	if (currInput.A && !prevInput.A)
+	{
+		FightMode *fm = (FightMode*)sess->gameMode;
+		birdCommands[currBirdCommandIndex]->action = 1;
+
+		bool fr = facingRight;
+		if (currInput.LRight())
+		{
+			fr = true;
+		}
+		else if( currInput.LLeft() )
+		{
+			fr = false;
+		}
+		birdCommands[currBirdCommandIndex]->facingRight = fr;
+
+		fm->testBird->SetCommand(currBirdCommandIndex, *birdCommands[currBirdCommandIndex]);
+		currBirdCommandIndex++;
+	}
 }
 
 //#define cout std::cout
@@ -2346,6 +2376,12 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	birdCommands.resize(3);
+	for (int i = 0; i < 3; ++i)
+	{
+		birdCommands[i] = new BirdCommand;
+	}
 
 	LoadHitboxes();
 

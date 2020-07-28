@@ -2002,7 +2002,7 @@ int GameSession::Run()
 	}
 	
 	gameMode->StartGame();
-	
+	currSuperPlayer = NULL;
 
 	while( !quit )
 	{
@@ -3250,6 +3250,7 @@ void GameSession::RestartLevel()
 	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;
 	currStorySequence = NULL;
+	currSuperPlayer = NULL;
 
 	if( raceFight != NULL )
 		raceFight->Reset();

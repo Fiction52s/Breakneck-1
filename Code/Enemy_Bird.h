@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "Bullet.h"
 #include "Movement.h"
+#include "SuperCommands.h"
 
 struct Bird : Enemy, LauncherEnemy
 {
@@ -35,7 +36,7 @@ struct Bird : Enemy, LauncherEnemy
 	bool hitPlayer;
 	bool predict;
 
-	int actionQueue[3];
+	BirdCommand actionQueue[3];
 	int actionQueueIndex;
 
 	int targetPlayerIndex;
@@ -66,6 +67,7 @@ struct Bird : Enemy, LauncherEnemy
 		int playerIndex,
 		BasicBullet *b,
 		int hitResult);
+	void SetCommand(int index, BirdCommand &bc );
 	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void CalcTargetAfterHit();
@@ -79,6 +81,8 @@ struct Bird : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
+
+	void SetHitboxInfo(int a);
 
 	
 };

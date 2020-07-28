@@ -129,6 +129,8 @@ struct BasicEffect;
 
 struct Wire;
 
+struct BirdCommand;
+
 using json = nlohmann::json;
 
 struct Actor : QuadTreeCollider,
@@ -495,6 +497,11 @@ struct Actor : QuadTreeCollider,
 
 	int framesBlocking;
 	V2d receivedHitPosition;
+
+	std::vector<BirdCommand*> birdCommands;
+	int currBirdCommandIndex;
+
+
 	//int pastCompressedInputs[60];
 
 	//---end of saved vars
@@ -903,6 +910,7 @@ struct Actor : QuadTreeCollider,
 	double blockstunFactor;
 	bool DIChangesMagnitude;
 
+
 	
 
 	
@@ -942,6 +950,7 @@ struct Actor : QuadTreeCollider,
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
+	void CheckBirdCommands();
 	void SetActionSuperLevel();
 	void ResetSuperLevel();
 	bool CanTech();

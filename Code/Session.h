@@ -332,6 +332,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	SuperSequence *superSequence;
 
 	PState *playerSimState;
+	Actor *currSuperPlayer;
 
 	static Session *GetSession();
 

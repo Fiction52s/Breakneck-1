@@ -614,7 +614,7 @@ void EditSession::TestPlayerMode()
 	cam.Reset();
 	currStorySequence = NULL;
 	frameRateDisplay.Reset();
-
+	currSuperPlayer = NULL;
 	soundNodeList->Reset();
 
 	SetPlayerInputOn(true);
