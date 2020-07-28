@@ -252,8 +252,12 @@ struct PState
 
 	int dashAttackLevel;
 	int standAttackLevel;
+	int upTiltLevel;
+	int downTiltLevel;
 	int framesSinceDashAttack;
 	int framesSinceStandAttack;
+	int framesSinceUpTilt;
+	int framesSinceDownTilt;
 
 	int framesSinceBlockPress;
 	int framesSinceSuperPress;

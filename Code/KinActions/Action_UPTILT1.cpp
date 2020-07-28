@@ -9,7 +9,7 @@ void Actor::UPTILT1_Start()
 
 	ActivateSound(S_UAIR);
 	ResetAttackHit();
-	StartStandAttack();
+	StartUpTilt();
 }
 
 void Actor::UPTILT1_End()

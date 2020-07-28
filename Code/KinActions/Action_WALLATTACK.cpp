@@ -117,6 +117,7 @@ void Actor::WALLATTACK_UpdateSprite()
 				irSword.top, -irSword.width, irSword.height));
 		}
 
+		swordSprite.setRotation(0);
 		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
 		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 	}

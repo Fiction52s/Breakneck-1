@@ -223,8 +223,12 @@ void Actor::PopulateState(PState *ps)
 
 	ps->dashAttackLevel = dashAttackLevel;
 	ps->standAttackLevel = standAttackLevel;
+	ps->upTiltLevel = upTiltLevel;
+	ps->downTiltLevel = downTiltLevel;
 	ps->framesSinceDashAttack = framesSinceDashAttack;
 	ps->framesSinceStandAttack = framesSinceStandAttack;
+	ps->framesSinceUpTilt = framesSinceUpTilt;
+	ps->framesSinceDownTilt = framesSinceDownTilt;
 
 	ps->framesSinceBlockPress = framesSinceBlockPress;
 	ps->framesSinceSuperPress = framesSinceSuperPress;
@@ -383,9 +387,13 @@ void Actor::PopulateFromState(PState *ps)
 
 	dashAttackLevel = ps->dashAttackLevel;
 	standAttackLevel = ps->standAttackLevel;
+	upTiltLevel = ps->upTiltLevel;
+	downTiltLevel = ps->downTiltLevel;
 
 	framesSinceDashAttack = ps->framesSinceDashAttack;
 	framesSinceStandAttack = ps->framesSinceStandAttack;
+	framesSinceUpTilt = ps->framesSinceUpTilt;
+	framesSinceDownTilt = ps->framesSinceDownTilt;
 
 	framesSinceBlockPress = ps->framesSinceBlockPress;
 	framesSinceSuperPress = ps->framesSinceSuperPress;
@@ -2427,8 +2435,12 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	dashAttackLevel = 0;
 	standAttackLevel = 0;
+	upTiltLevel = 0;
+	downTiltLevel = 0;
 	framesSinceDashAttack = 0;
 	framesSinceStandAttack = 0;
+	framesSinceUpTilt = 0;
+	framesSinceDownTilt = 0;
 
 	attackLevelCounterLimit = 60;
 
@@ -3996,7 +4008,6 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
-
 	ResetGrassCounters();
 	ResetAttackHit();
 
@@ -4006,10 +4017,16 @@ void Actor::Respawn()
 	
 	framesSinceBlockPress = -1;
 	framesSinceSuperPress = -1;
+	
 	dashAttackLevel = 0;
 	standAttackLevel = 0;
+	upTiltLevel = 0;
+	downTiltLevel = 0;
 	framesSinceDashAttack = 0;
 	framesSinceStandAttack = 0;
+	framesSinceUpTilt = 0;
+	framesSinceDownTilt = 0;
+
 	standNDashBoost = false;
 	drainCounter = 0;
 	flyCounter = 0;
@@ -10775,6 +10792,10 @@ bool Actor::TryGroundAttack()
 		{
 			SetAction(GetCurrDashAttack());
 		}
+		else if (currInput.LUp())
+		{
+			SetAction(GetCurrUpTilt());
+		}
 		else
 		{
 			SetAction(GetCurrStandAttack());
@@ -16858,6 +16879,10 @@ void Actor::UpdateInHitlag()
 					else if (action == STEEPSLIDEATTACK)
 					{
 						pauseBufferedAttack = STEEPSLIDEATTACK;
+					}
+					else if (currInput.LUp())
+					{
+						pauseBufferedAttack = GetCurrUpTilt();
 					}
 					else
 					{
