@@ -91,7 +91,7 @@ void Actor::WALLATTACK_UpdateSprite()
 
 	if (showSword)
 	{
-		wallAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	SetSpriteTexture(action);
@@ -105,7 +105,7 @@ void Actor::WALLATTACK_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			wallAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
@@ -113,12 +113,12 @@ void Actor::WALLATTACK_UpdateSprite()
 
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
 			//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
-			wallAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
 
-		wallAttackSword.setOrigin(wallAttackSword.getLocalBounds().width / 2, wallAttackSword.getLocalBounds().height / 2);
-		wallAttackSword.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

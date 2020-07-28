@@ -49,7 +49,7 @@ void Actor::DIAGUPATTACK_UpdateSprite()
 
 	if (showSword)
 	{
-		diagUpAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 
@@ -71,19 +71,19 @@ void Actor::DIAGUPATTACK_UpdateSprite()
 
 		if (facingRight)
 		{
-			diagUpAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
 			offset.x = -offset.x;
 
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
-			diagUpAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
 
-		diagUpAttackSword.setOrigin(diagUpAttackSword.getLocalBounds().width / 2, diagUpAttackSword.getLocalBounds().height / 2);
-		diagUpAttackSword.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

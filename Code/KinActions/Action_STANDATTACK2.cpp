@@ -153,7 +153,7 @@ void Actor::STANDATTACK2_UpdateSprite()
 	pos += -trueNormal * (double)(offset.y - sprite->getLocalBounds().height / 2);
 
 
-	standAttackSword.setPosition(pos.x, pos.y);
+	swordSprite.setPosition(pos.x, pos.y);
 }
 
 void Actor::STANDATTACK2_TransitionToAction(int a)

@@ -5401,6 +5401,7 @@ void Actor::UpdatePrePhysics()
 	wallNormal.x = 0;
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
+	showSword = false;
 
 	UpdateHitboxes();
 }
@@ -12551,18 +12552,32 @@ void Actor::SlowDependentFrameIncrement()
 
 		++frame;
 
-		if (framesSinceDashAttack < dashAttackLevelCounterLimit)
+		if (framesSinceDashAttack < attackLevelCounterLimit)
 			framesSinceDashAttack++;
 		else
 		{
 			dashAttackLevel = 0;
 		}
 
-		if (framesSinceStandAttack < standAttackLevelCounterLimit)
+		if (framesSinceStandAttack < attackLevelCounterLimit)
 			framesSinceStandAttack++;
 		else
 		{
 			standAttackLevel = 0;
+		}
+
+		if (framesSinceUpTilt < attackLevelCounterLimit)
+			framesSinceUpTilt++;
+		else
+		{
+			upTiltLevel = 0;
+		}
+
+		if (framesSinceDownTilt < attackLevelCounterLimit)
+			framesSinceDownTilt++;
+		else
+		{
+			downTiltLevel = 0;
 		}
 
 		if (springStunFrames > 0)

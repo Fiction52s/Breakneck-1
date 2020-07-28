@@ -32,7 +32,7 @@ void Actor::GRINDSLASH_UpdateSprite()
 
 	if (showSword)
 	{
-		grindLungeSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	SetSpriteTexture(GRINDSLASH);
@@ -56,21 +56,21 @@ void Actor::GRINDSLASH_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			grindLungeSword.setTextureRect(curr_ts->GetSubRect(frame / 3 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 3 - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 3 - startFrame);
-			grindLungeSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 
 			offset.x = -offset.x;
 		}
 
-		grindLungeSword.setOrigin(grindLungeSword.getLocalBounds().width / 2, grindLungeSword.getLocalBounds().height / 2);
-		grindLungeSword.setPosition(position.x + offset.x, position.y + offset.y);
-		grindLungeSword.setRotation(sprite->getRotation());
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setRotation(sprite->getRotation());
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

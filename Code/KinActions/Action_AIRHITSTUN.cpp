@@ -55,10 +55,6 @@ void Actor::AIRHITSTUN_TransitionToAction(int a)
 	{
 		SetExpr(KinMask::Expr::Expr_NEUTRAL);
 	}
-	
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::AIRHITSTUN_TimeIndFrameInc()

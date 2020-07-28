@@ -54,7 +54,7 @@ void Actor::UAIR_UpdateSprite()
 
 	if (showSword)
 	{
-		uairSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	SetSpriteTexture(action);
@@ -69,20 +69,20 @@ void Actor::UAIR_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			uairSword.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
-			uairSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
 		}
 
-		uairSword.setOrigin(uairSword.getLocalBounds().width / 2, uairSword.getLocalBounds().height / 2);
-		uairSword.setPosition(position.x + offset.x, position.y + offset.y);
-		uairSword.setRotation(0);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setRotation(0);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

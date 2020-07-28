@@ -91,7 +91,7 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 
 	if (showSword)
 	{
-		steepClimbAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	SetSpriteTexture(action);
@@ -109,21 +109,21 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 	{
 		if (r)
 		{
-			steepClimbAttackSword.setTextureRect(curr_ts->GetSubRect(frame / animFactor - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / animFactor - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / animFactor - startFrame);
-			steepClimbAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
 
 		}
 
-		steepClimbAttackSword.setTexture(*curr_ts->texture);
-		steepClimbAttackSword.setOrigin(steepClimbAttackSword.getLocalBounds().width / 2, steepClimbAttackSword.getLocalBounds().height);
-		steepClimbAttackSword.setRotation(angle / PI * 180);
+		swordSprite.setTexture(*curr_ts->texture);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height);
+		swordSprite.setRotation(angle / PI * 180);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
@@ -142,7 +142,7 @@ void Actor::STEEPCLIMBATTACK_UpdateSprite()
 	pos += trueNormal * (double)offset.y;
 	pos += truDir * (double)offset.x;
 
-	steepClimbAttackSword.setPosition(pos.x, pos.y);
+	swordSprite.setPosition(pos.x, pos.y);
 
 	if (scorpOn)
 	{

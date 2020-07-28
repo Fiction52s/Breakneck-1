@@ -110,7 +110,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 
 	if (showSword)
 	{
-		steepSlideAttackSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	SetSpriteTexture(action);
@@ -128,20 +128,20 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 	{
 		if (r)
 		{
-			steepSlideAttackSword.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame / 3 - startFrame);
-			steepSlideAttackSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 
 			offset.x = -offset.x;
 		}
 
-		steepSlideAttackSword.setTexture(*curr_ts->texture);
-		steepSlideAttackSword.setOrigin(steepSlideAttackSword.getLocalBounds().width / 2, steepSlideAttackSword.getLocalBounds().height);
-		steepSlideAttackSword.setRotation(angle / PI * 180);
+		swordSprite.setTexture(*curr_ts->texture);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height);
+		swordSprite.setRotation(angle / PI * 180);
 	}
 
 
@@ -153,7 +153,7 @@ void Actor::STEEPSLIDEATTACK_UpdateSprite()
 	pos += trueNormal * (double)offset.y;
 	pos += truDir * (double)offset.x;
 
-	steepSlideAttackSword.setPosition(pos.x, pos.y);
+	swordSprite.setPosition(pos.x, pos.y);
 
 	if (scorpOn)
 	{

@@ -139,9 +139,9 @@ void Actor::STANDATTACK4_UpdateSprite()
 
 	if (showSword)
 	{
-		standAttackSword.setOrigin(standAttackSword.getLocalBounds().width / 2, 
-			standAttackSword.getLocalBounds().height / 2);
-		standAttackSword.setRotation(angle / PI * 180);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2,
+			swordSprite.getLocalBounds().height / 2);
+		swordSprite.setRotation(angle / PI * 180);
 	}
 
 	SetGroundedSpriteTransform();
@@ -154,7 +154,7 @@ void Actor::STANDATTACK4_UpdateSprite()
 	pos += -trueNormal * (double)(offset.y - sprite->getLocalBounds().height / 4);
 
 
-	standAttackSword.setPosition(pos.x, pos.y);
+	swordSprite.setPosition(pos.x, pos.y);
 }
 
 void Actor::STANDATTACK4_TransitionToAction(int a)

@@ -61,9 +61,6 @@ void Actor::GROUNDHITSTUN_TransitionToAction(int a)
 	{
 		SetExpr(KinMask::Expr::Expr_NEUTRAL);
 	}
-	stunBufferedJump = false;
-	stunBufferedDash = false;
-	stunBufferedAttack = Action::Count;
 }
 
 void Actor::GROUNDHITSTUN_TimeIndFrameInc()

@@ -57,7 +57,7 @@ void Actor::FAIR_UpdateSprite()
 
 	if (showSword)
 	{
-		fairSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	//Vector2i offset( 32, -16 );
@@ -71,7 +71,7 @@ void Actor::FAIR_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			fairSword.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
 		}
 		else
 		{
@@ -79,12 +79,12 @@ void Actor::FAIR_UpdateSprite()
 
 			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
 			//sf::IntRect irSword = ts_fairSword1->GetSubRect( frame - startFrame );
-			fairSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
 
-		fairSword.setOrigin(fairSword.getLocalBounds().width / 2, fairSword.getLocalBounds().height / 2);
-		fairSword.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

@@ -1313,13 +1313,13 @@ struct Actor : QuadTreeCollider,
 		int startFrame,
 		int endFrame,
 		int animMult,
-		Vector2f &offset );
+		sf::Vector2f &offset );
 	void UpdateGroundedAttackSprite(
 		int a, Tileset *ts_sword,
 		int startSword,
 		int endSword,
 		int animMult,
-		Vector2f &swordOffset );
+		sf::Vector2f &swordOffset );
 
 	//kin action functions
 

@@ -43,7 +43,7 @@ void Actor::DAIR_UpdateSprite()
 
 	if (showSword)
 	{
-		dairSword.setTexture(*curr_ts->texture);
+		swordSprite.setTexture(*curr_ts->texture);
 	}
 
 	Vector2i offsetArr[3];
@@ -61,20 +61,20 @@ void Actor::DAIR_UpdateSprite()
 	{
 		if (facingRight)
 		{
-			dairSword.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
+			swordSprite.setTextureRect(curr_ts->GetSubRect(frame - startFrame));
 		}
 		else
 		{
 			sf::IntRect irSword = curr_ts->GetSubRect(frame - startFrame);
-			dairSword.setTextureRect(sf::IntRect(irSword.left + irSword.width,
+			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
 				irSword.top, -irSword.width, irSword.height));
 		}
 	}
 
 	if (showSword)
 	{
-		dairSword.setOrigin(dairSword.getLocalBounds().width / 2, dairSword.getLocalBounds().height / 2);
-		dairSword.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
+		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
