@@ -33,64 +33,8 @@ void Actor::DASHATTACK2_Update()
 
 void Actor::DASHATTACK2_UpdateSprite()
 {
-	int startFrame = 0;
-	showSword = true;
-
-	Tileset *curr_ts = ts_dashAttackSword2[speedLevel];
-
-	if (frame >= 13 * 2)
-		showSword = false;
-
-	if (showSword)
-	{
-		swordSprite.setTexture(*curr_ts->texture);
-	}
-	Vector2f offset = dashAttackSwordOffset[speedLevel];
-
-	SetSpriteTexture(action);
-
-	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(frame/2, r);
-
-	if (showSword)
-	{
-		if (r)
-		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame/2 - startFrame));
-		}
-		else
-		{
-			sf::IntRect irSword = curr_ts->GetSubRect(frame/2 - startFrame);
-			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
-				irSword.top, -irSword.width, irSword.height));
-
-			offset.x = -offset.x;
-		}
-	}
-
-
-	V2d trueNormal;
-	double angle = GroundedAngleAttack(trueNormal);
-
-	if (showSword)
-	{
-		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
-		swordSprite.setRotation(angle / PI * 180);
-		//standingNSword1.setPosition( position.x + offset.x, position.y + offset.y );
-	}
-
-	SetGroundedSpriteTransform();
-
-	//V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y ) + V2d( offset.x * cos( angle ) + offset.y * sin( angle ), 
-	//offset.x * -sin( angle ) +  offset.y * cos( angle ) );
-	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
-	V2d truDir(-trueNormal.y, trueNormal.x);//normalize( ground->v1 - ground->v0 );
-
-	pos += truDir * (double)offset.x;
-	pos += -trueNormal * (double)( offset.y - sprite->getLocalBounds().height / 2 );
-
-
-	swordSprite.setPosition(pos.x, pos.y);
+	UpdateGroundedAttackSprite(action, ts_dashAttackSword2[speedLevel],
+		0, 13, 2, Vector2f(0, 0));
 }
 
 void Actor::DASHATTACK2_TransitionToAction(int a)

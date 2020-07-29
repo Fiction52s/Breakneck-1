@@ -96,65 +96,8 @@ void Actor::STANDATTACK4_Update()
 
 void Actor::STANDATTACK4_UpdateSprite()
 {
-	int startFrame = 0;
-
-	showSword = true;
-
-	if (frame >= 18 * 2)
-		showSword = false;
-
-	Tileset *curr_ts = ts_standAttackSword4[speedLevel];
-
-	if (showSword)
-	{
-		swordSprite.setTexture(*curr_ts->texture);
-	}
-
-	Vector2f offset = standSwordOffset[speedLevel];
-
-	SetSpriteTexture(action);
-
-	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(frame / 2, r);
-
-	if (showSword)
-	{
-		if (r)
-		{
-			swordSprite.setTextureRect(curr_ts->GetSubRect(frame / 2 - startFrame));
-		}
-		else
-		{
-			sf::IntRect irSword = curr_ts->GetSubRect(frame / 2 - startFrame);
-			swordSprite.setTextureRect(sf::IntRect(irSword.left + irSword.width,
-				irSword.top, -irSword.width, irSword.height));
-
-			offset.x = -offset.x;
-		}
-	}
-
-
-	V2d trueNormal;
-	double angle = GroundedAngleAttack(trueNormal);
-
-	if (showSword)
-	{
-		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2,
-			swordSprite.getLocalBounds().height / 2);
-		swordSprite.setRotation(angle / PI * 180);
-	}
-
-	SetGroundedSpriteTransform();
-
-	V2d pos = V2d(sprite->getPosition().x, sprite->getPosition().y);
-	V2d truDir(-trueNormal.y, trueNormal.x);
-
-	pos += truDir * (double)offset.x;
-	//divides by 4 because tileset is 128 and it shouldnt be
-	pos += -trueNormal * (double)(offset.y - sprite->getLocalBounds().height / 4);
-
-
-	swordSprite.setPosition(pos.x, pos.y);
+	UpdateGroundedAttackSprite(action, ts_standAttackSword4[speedLevel],
+		0, 18, 2, Vector2f(0, 0));
 }
 
 void Actor::STANDATTACK4_TransitionToAction(int a)

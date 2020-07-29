@@ -17083,7 +17083,7 @@ void Actor::UpdateInHitlag()
  {
 	 showSword = true;
 
-	 if ( frame < startFrame * animMult || frame >= endFrame * animMult)
+	 if ( frame < startFrame * animMult || ( endFrame >= 0 && frame >= endFrame * animMult) )
 		 showSword = false;
 
 	 if (showSword)
