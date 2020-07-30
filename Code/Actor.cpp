@@ -4569,6 +4569,11 @@ void Actor::ProcessReceivedHit()
 
 void Actor::ReactToBeingHit()
 {
+	if (action == GROUNDHITSTUN || action == AIRHITSTUN)
+	{
+		hitOutOfHitstunLastFrame = true;
+	}
+
 	blockstunFrames = 0;
 	hitstunFrames = receivedHit->hitstunFrames;
 	setHitstunFrames = hitstunFrames;
@@ -4776,7 +4781,9 @@ void Actor::UpdateDrain()
 
 void Actor::ProcessGravityGrass()
 {
-	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && grassCount[Grass::GRAVITY] == 0)
+	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && grassCount[Grass::GRAVITY] == 0
+		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
+		&& action != GROUNDTECHINPLACE )
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
@@ -5246,6 +5253,7 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 
 void Actor::UpdatePrePhysics()
 {
+	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)
 	{
 		//currInput.leftStickPad |= 1;
@@ -5419,6 +5427,7 @@ void Actor::UpdatePrePhysics()
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
 	showSword = false;
+	
 
 	UpdateHitboxes();
 }
@@ -10589,13 +10598,19 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if( (HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
-				&& tempCollision && ((currInput.B && currInput.LUp())|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y ))
+			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
+				&& tempCollision 
+				&& ((currInput.B && currInput.LUp())|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
+				|| ( action == AIRHITSTUN && CanTech() ) )
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
 				&& !minContact.edge->IsInvisibleWall() )
 			{
+				
+
+
+
 				prevRail = NULL;
 
 				if( b.rh < normalHeight )
@@ -11552,9 +11567,16 @@ void Actor::PhysicsResponse()
 
 		if (action == AIRHITSTUN)
 		{
-			if (collision && length(wallNormal) > 0)
+			if (collision)
 			{
-				HitWallWhileInAirHitstun();
+				if (length(wallNormal) > 0)
+				{
+					HitWallWhileInAirHitstun();
+				}
+				else if (gn.y > 0 && ground != NULL)
+				{
+					
+				}
 			}
 		}
 		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ))

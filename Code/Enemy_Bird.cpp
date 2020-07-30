@@ -220,7 +220,8 @@ void Bird::FrameIncrement()
 
 void Bird::UpdatePreFrameCalculations()
 {
-	if (predict)
+	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+	if (predict || targetPlayer->hitOutOfHitstunLastFrame)
 	{
 		if (actionQueueIndex == 3)
 		{
@@ -229,7 +230,7 @@ void Bird::UpdatePreFrameCalculations()
 			return;
 		}
 		CalcTargetAfterHit();
-		moveFrames = (hitBody.hitboxInfo->hitstunFrames - 1);
+		moveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
 		counterTillAttack = moveFrames - 10;
 		move->duration = moveFrames * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
@@ -238,8 +239,15 @@ void Bird::UpdatePreFrameCalculations()
 		predict = false;
 		int nextAction = actionQueue[actionQueueIndex].action + 1;
 		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+		if (moveFrames < 0)
+		{
+			moveFrames = 0;
+		}
 
 		SetHitboxes(NULL, 0);
+
+		action = MOVE;
+		frame = 0;
 		//++moveFrames;
 		
 	}
@@ -271,9 +279,9 @@ void Bird::ProcessState()
 			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
 			//SetHitboxes(NULL, 0);
-			DefaultHitboxesOn();
+			
 
-			++actionQueueIndex;
+			
 			/*if (actionQueueIndex == 3)
 			{
 				actionQueueIndex = 0;
@@ -296,11 +304,12 @@ void Bird::ProcessState()
 
 	
 
-	if (hitPlayer)
+	if (hitPlayer )
 	{
 		action = MOVE;
 		frame = 0;
 		predict = true;
+		++actionQueueIndex;
 	}
 
 
@@ -353,6 +362,11 @@ void Bird::UpdateEnemyPhysics()
 		}
 
 		currPosInfo.SetPosition(ms.position);
+
+		if (ms.currMovement == NULL)
+		{
+			DefaultHitboxesOn();
+		}
 	}
 }
 

@@ -3316,11 +3316,14 @@ void EditSession::Init()
 	currTerrainWorld[TERRAINLAYER_FLY] = 9;
 	currTerrainVar[TERRAINLAYER_FLY] = 0;
 
+	SetupSoundManager();
+	SetupSoundLists();
+
 	SetupSuperSequence();
 
 	SetupHitboxManager();
-	SetupSoundManager();
-	SetupSoundLists();
+	
+	
 
 	SetupShardsCapturedField();
 

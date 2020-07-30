@@ -14,6 +14,7 @@ void Actor::SUPERBIRD_Start()
 	if (sess->superSequence != NULL)
 	{
 		sess->superSequence->Reset();
+		sess->superSequence->SetSuperType(SuperSequence::SuperType::BIRD);
 		sess->SetActiveSequence(sess->superSequence);
 
 		sess->Pause(3 * 16);

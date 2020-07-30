@@ -10,6 +10,7 @@
 #include "EffectLayer.h"
 #include "MovingGeo.h"
 #include "VectorMath.h"
+#include <SFML/Audio.hpp>
 
 struct Edge;
 struct MovementSequence;
@@ -424,6 +425,13 @@ struct SuperSequence : Sequence
 		Count
 	};
 
+	enum SuperType
+	{
+		BIRD,
+		GATOR,
+		ST_Count
+	};
+
 	Tileset *ts_lit1;
 	Tileset *ts_lit2;
 	Tileset *ts_spark1;
@@ -432,13 +440,26 @@ struct SuperSequence : Sequence
 	sf::Vertex blackQuad[4];
 	int animFactor;
 
+	Tileset *ts_birdPortrait;
+	sf::Sprite portraitSprite;
+	SuperType sType;
+	sf::Vector2f portraitLeftStart;
+	sf::Vector2f portraitLeftEnd;
+	CubicBezier portraitBez;
+	int portraitFrame;
+
+	int portraitEnterFrames;
+	sf::SoundBuffer *birdSound;
+
 	SuperSequence();
+	void Reset();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();
 	void AddFlashes();
 	void AddEnemies();
 	void UpdateState();
+	void SetSuperType(int sType);
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 };

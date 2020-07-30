@@ -505,6 +505,7 @@ struct Actor : QuadTreeCollider,
 	std::vector<BirdCommand*> birdCommands;
 	int currBirdCommandIndex;
 
+	bool hitOutOfHitstunLastFrame;
 
 	//int pastCompressedInputs[60];
 

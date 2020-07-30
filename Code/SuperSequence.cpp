@@ -1,5 +1,6 @@
 #include "Sequence.h"
 #include "Session.h"
+#include "SoundManager.h"
 
 using namespace std;
 using namespace sf;
@@ -14,7 +15,16 @@ SuperSequence::SuperSequence()
 	ts_spark1 = sess->GetSizedTileset("FX/spark_01_960x540.png");
 	ts_spark2 = sess->GetSizedTileset("FX/spark_01_960x540.png");
 
+	ts_birdPortrait = sess->GetTileset("Bosses/Bird/Bird_Super_01b.png", 1920, 1080);
+
 	animFactor = 3;
+
+	birdSound = sess->soundManager->GetSound("Bosses/bird_super_01");
+
+	portraitLeftStart = Vector2f(-500, 0);
+	portraitLeftEnd = Vector2f(0, 0);
+	portraitEnterFrames = 20;
+	portraitFrame = 0;
 
 	//superLightningSpr.setTexture(*ts_superLightning->texture);
 	superLightningSpr.setScale(2, 2);
@@ -29,6 +39,24 @@ void SuperSequence::SetupStates()
 	stateLength[SPARK2] = 4 * animFactor;
 	stateLength[LIT1] = 4 * animFactor;
 	stateLength[LIT2] = 4 * animFactor;
+}
+
+void SuperSequence::Reset()
+{
+	Sequence::Reset();
+	portraitFrame = 0;
+	portraitSprite.setPosition(portraitLeftStart);
+}
+
+void SuperSequence::SetSuperType(int p_sType)
+{
+	sType = (SuperType)p_sType;
+	switch (sType)
+	{
+
+	}
+	
+	ts_birdPortrait->SetSpriteTexture(portraitSprite);
 }
 
 void SuperSequence::ReturnToGame()
@@ -69,6 +97,7 @@ void SuperSequence::UpdateState()
 			superLightningSpr.setTexture(*ts_lit2->texture);
 			break;
 		}
+		
 	}
 
 	superLightningSpr.setTextureRect(ts_spark1->GetSubRect(frame / animFactor));
@@ -76,7 +105,24 @@ void SuperSequence::UpdateState()
 		superLightningSpr.getLocalBounds().height / 2);
 
 	
+	float portion = portraitFrame / (float)portraitEnterFrames;
+	float fac = portraitBez.GetValue(portion);
 
+	if (portraitFrame == 0)
+	{
+		sess->ActivateSound(birdSound);
+	}
+
+	if (fac <= 1.f)
+	{
+		Vector2f portraitPos = portraitLeftStart * (1.f - fac) + portraitLeftEnd * fac;
+		portraitSprite.setPosition(portraitPos);
+	}
+	
+
+	
+
+	++portraitFrame;
 	
 }
 
@@ -90,6 +136,8 @@ void SuperSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 		sf::View oldView = target->getView();
 		target->setView(sess->uiView);
 		target->draw(blackQuad, 4, sf::Quads);
+
+		target->draw(portraitSprite);
 
 		//V2d( 960, 540 ) + (sess->GetPlayerPos(0) - V2d(sess->cam.GetPos()));
 
@@ -107,6 +155,8 @@ void SuperSequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 		}
 
 		target->draw(superLightningSpr);
+
+		
 
 		target->setView(oldView);
 	}
