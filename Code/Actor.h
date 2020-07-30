@@ -1321,6 +1321,7 @@ struct Actor : QuadTreeCollider,
 		int endSword,
 		int animMult,
 		sf::Vector2f &swordOffset );
+	void ApplyBlockFriction();
 
 	//kin action functions
 

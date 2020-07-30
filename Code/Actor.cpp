@@ -4505,13 +4505,14 @@ void Actor::ProcessReceivedHit()
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
+				double kbImpulse = 6;
 				if (otherPos.x < position.x)
 				{
-					groundSpeed += 2;
+					groundSpeed += kbImpulse;
 				}
 				else
 				{
-					groundSpeed -= 2;
+					groundSpeed -= kbImpulse;
 				}
 			}
 			else if (IsActionAirBlock(action))
@@ -11183,6 +11184,23 @@ void Actor::HitWhileAerial()
 	}
 }
 
+void Actor::ApplyBlockFriction()
+{
+	double friction = .5;
+	if (groundSpeed > 0)
+	{
+		groundSpeed -= friction;
+		if (groundSpeed < 0)
+			groundSpeed = 0;
+	}
+	else if( groundSpeed < 0 )
+	{
+		groundSpeed += friction;
+		if (groundSpeed > 0)
+			groundSpeed = 0;
+	}
+}
+
 void Actor::SlideOffWhileInGroundHitstun()
 {
 	SetAction(AIRHITSTUN);
@@ -11245,7 +11263,8 @@ void Actor::HitGroundWhileInAirHitstun()
 			gNormal = V2d(0, -1);
 		}
 
-		if (velocity.y < 10)
+		//guessing this will apply to reversed but havent tested.
+		if ( (!reversed && velocity.y < 10) || (reversed && velocity.y > -10 ))
 		{
 			SetAction(GROUNDHITSTUN);
 			frame = 0;

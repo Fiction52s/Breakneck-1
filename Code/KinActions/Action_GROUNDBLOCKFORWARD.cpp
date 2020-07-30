@@ -26,6 +26,8 @@ void Actor::GROUNDBLOCKFORWARD_Update()
 	{
 		blockstunFrames--;
 	}
+
+	ApplyBlockFriction();
 }
 
 void Actor::GROUNDBLOCKFORWARD_UpdateSprite()
