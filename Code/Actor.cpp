@@ -2415,7 +2415,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
+	shieldPushbackFrames = 0;
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
 	{
@@ -4011,6 +4011,7 @@ void Actor::Respawn()
 	ResetGrassCounters();
 	ResetAttackHit();
 
+	shieldPushbackFrames = 0;
 	currActionSuperLevel = 0;
 	blockstunFrames = 0;
 	superLevelCounter = 0;
@@ -11791,6 +11792,16 @@ void Actor::PhysicsResponse()
 			else if (checkHit == HitResult::FULLBLOCK 
 				|| checkHit == HitResult::HALFBLOCK)
 			{
+				shieldPushbackFrames = 30;
+				if (pTarget->position.x >= position.x)
+				{
+					shieldPushbackRight = false;
+				}
+				else
+				{
+					shieldPushbackRight = true;
+				}
+				
 				currAttackHitBlock[target] = frame;
 			}
 		}
@@ -16054,6 +16065,8 @@ void Actor::RunMovement()
 
 void Actor::AttackMovement()
 {
+	
+
 	double dSpeed = GetDashSpeed();
 	if( currInput.LLeft() )
 	{
@@ -16126,6 +16139,27 @@ void Actor::AttackMovement()
 	else
 	{
 		groundSpeed = 0;
+	}
+
+	if (shieldPushbackFrames > 0)
+	{
+		/*if (shieldPushbackRight)
+		{
+			if (groundSpeed < 0)
+			{
+				groundSpeed *= .2;
+			}
+		}
+		else
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed *= .2;
+			}
+		}*/
+
+
+		shieldPushbackFrames--;
 	}
 }
 
@@ -16467,6 +16501,9 @@ bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 
 	bool opposingFacing = facingRight != attackFacingRight;
 
+	bool frontalAttack = opposingFacing || facingHitbox;
+
+
 	if (action == GROUNDBLOCKDOWN)
 	{
 		if (hpt == HitboxInfo::HitPosType::AIRUP
@@ -16478,7 +16515,7 @@ bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	{
 		if (hpt == HitboxInfo::HitPosType::AIRUP
 			|| ( opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
-			|| ( facingHitbox && 
+			|| (frontalAttack &&
 				(hpt == HitboxInfo::HitPosType::GROUND
 				|| hpt == HitboxInfo::HitPosType::GROUNDLOW ) ) )
 			return true;
@@ -16486,13 +16523,13 @@ bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	else if (action == GROUNDBLOCKFORWARD)
 	{
 		if ( (opposingFacing && hpt == HitboxInfo::HitPosType::AIRFORWARD)
-			|| (facingHitbox && hpt == HitboxInfo::HitPosType::GROUND ) )
+			|| (frontalAttack && hpt == HitboxInfo::HitPosType::GROUND ) )
 			return true;
 	}
 	else if (action == GROUNDBLOCKUPFORWARD)
 	{
 		if (hpt == HitboxInfo::HitPosType::AIRDOWN
-			|| (facingHitbox &&
+			|| (frontalAttack &&
 			(hpt == HitboxInfo::HitPosType::AIRFORWARD
 				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
 				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)))
@@ -16541,6 +16578,8 @@ bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 
 	bool opposingFacing = facingRight != attackFacingRight;
 
+	bool frontalAttack = opposingFacing || facingHitbox;
+
 	double posAngle = GetVectorAngleCCW(normalize( position - hitPos));
 	if (posAngle < 0)
 	{
@@ -16556,25 +16595,28 @@ bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	}
 	else if (action == GROUNDBLOCKDOWNFORWARD)
 	{
-		if ( !facingHitbox && (
-			hpt == HitboxInfo::HitPosType::AIRUPFORWARD
-			|| hpt == HitboxInfo::HitPosType::GROUNDLOW ) )
+		if( (!opposingFacing && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			|| (!frontalAttack && hpt == HitboxInfo::HitPosType::GROUNDLOW) )
 			return true;
 	}
 	else if (action == GROUNDBLOCKFORWARD)
 	{
-		if (facingHitbox)
+		if (frontalAttack)
+		{
+			if (hpt == HitboxInfo::HitPosType::GROUNDHIGH
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+				return true;
+		}
+		if (opposingFacing)
 		{
 			if (hpt == HitboxInfo::HitPosType::AIRUPFORWARD
-				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
-				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH
-				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
 				return true;
 		}
 	}
 	else if (action == GROUNDBLOCKUPFORWARD)
 	{
-		if (facingHitbox)
+		if (frontalAttack)
 		{
 			if (hpt == HitboxInfo::HitPosType::GROUND)
 				return true;
