@@ -539,10 +539,17 @@ void Actor::SetToOriginalPos()
 
 SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 {
+	if (simulationMode)
+	{
+		return NULL;
+	}
+
 	SoundBuffer *sb = soundBuffers[st];
 
 	if (sb == NULL)
 		return NULL;
+
+	
 
 	//for multiplayer testing
 	//if (hitlagFrames == 0)
@@ -553,6 +560,8 @@ SoundNode * Actor::ActivateSound(SoundType st, bool loop )
 
 void Actor::DeactivateSound(SoundNode *sn)
 {
+	if (simulationMode)
+		return;
 	sess->soundNodeList->DeactivateSound(sn);
 }
 
@@ -568,6 +577,11 @@ BasicEffect * Actor::ActivateEffect(
 	int startFrame,
 	float depth)
 {
+	if (simulationMode)
+	{
+		return NULL;
+	}
+	
 	return sess->ActivateEffect(layer, ts, pos, pauseImmune, angle, frameCount, animationFactor,
 		right, startFrame, depth);
 }
@@ -12731,17 +12745,7 @@ void Actor::UpdatePostPhysics()
 	}
 
 	KinModeUpdate();
-
-	keyExplodePool->Update();
-	if (!keyExplodeRingGroup->Update())
-	{
-		//keyExplodeRingGroup->Reset();
-	}
-
-	UpdateSmallLightning();
-	UpdateRisingAura();
-
-	UpdateLockedFX();	
+	
 	QueryTouchGrass();
 
 	ProcessSpecialTerrain();
@@ -12803,8 +12807,7 @@ void Actor::UpdatePostPhysics()
 
 	
 	UpdateSprite();
-	
-	//risingAuraPool->Update();
+
 	UpdateAttackLightning();
 	
 	gateBlackFXPool->Update();
@@ -15268,6 +15271,22 @@ void Actor::SetDirtyAura(bool on)
 
 void Actor::UpdateSprite()
 {
+	if (simulationMode)
+	{
+		return;
+	}
+
+	keyExplodePool->Update();
+	if (!keyExplodeRingGroup->Update())
+	{
+		//keyExplodeRingGroup->Reset();
+	}
+
+	UpdateSmallLightning();
+	UpdateRisingAura();
+
+	UpdateLockedFX();
+
 	scorpSet = false;
 	showExitAura = false;
 

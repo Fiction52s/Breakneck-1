@@ -26,5 +26,7 @@
 #include "Enemy_MultiplayerBase.h"
 #include "Enemy_MultiplayerProgressTarget.h"
 
+#include "Enemy_MovementTester.h"
+
 
 #endif

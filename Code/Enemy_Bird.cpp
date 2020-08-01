@@ -135,13 +135,8 @@ void Bird::ResetEnemy()
 
 	ms.currMovement = NULL;
 
-	//actionQueue[0] = ;
-	//actionQueue[1] = KICK;
-	//actionQueue[2] = PUNCH;
 	actionQueueIndex = 0;
 
-
-	//DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
 	UpdateSprite();
@@ -169,8 +164,6 @@ void Bird::CalcTargetAfterHit()
 
 void Bird::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
 {
-	//V2d vel = b->velocity;
-	//double angle = atan2( vel.y, vel.x );
 	V2d norm = edge->Normal();
 	double angle = atan2(norm.y, -norm.x);
 
@@ -278,38 +271,17 @@ void Bird::ProcessState()
 			action = actionQueue[actionQueueIndex].action + 1;
 			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
-			//SetHitboxes(NULL, 0);
-			
+		}
 
-			
-			/*if (actionQueueIndex == 3)
-			{
-				actionQueueIndex = 0;
-			}*/
-				
-		}
-		/*if (counterTillAttack > 1)
+
+
+		if (hitPlayer)
 		{
-			--counterTillAttack;
-		}
-		else
-		{
-			action = actionQueue[actionQueueIndex];
-			hitBody.hitboxInfo = &hitboxInfos[action];
+			action = MOVE;
+			frame = 0;
+			predict = true;
 			++actionQueueIndex;
-			if (actionQueueIndex == 3)
-				actionQueueIndex = 0;
-		}*/
-	}
-
-	
-
-	if (hitPlayer )
-	{
-		action = MOVE;
-		frame = 0;
-		predict = true;
-		++actionQueueIndex;
+		}
 	}
 
 

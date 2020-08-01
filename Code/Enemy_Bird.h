@@ -20,6 +20,7 @@ struct Bird : Enemy, LauncherEnemy
 	{
 		int fireCounter;
 	};
+	
 
 	int fireCounter;
 
