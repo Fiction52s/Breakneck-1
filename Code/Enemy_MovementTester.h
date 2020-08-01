@@ -35,6 +35,7 @@ struct MovementTester : Enemy
 
 	sf::FloatRect GetAABB();
 
+	void CalcMovement();
 	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void CalcTargetAfterHit();

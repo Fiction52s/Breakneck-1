@@ -73,23 +73,58 @@ void MovementTester::UpdateHitboxes()
 }
 
 
+void MovementTester::CalcMovement()
+{
+	targetPos = sess->GetPlayerPos(targetPlayerIndex);
+	moveFrames = 60;
+	move->duration = moveFrames * NUM_MAX_STEPS * 5;
+	move->start = GetPosition();
+	move->end = targetPos;
+	ms.Reset();
+}
+
 void MovementTester::ResetEnemy()
 {
 	facingRight = true;
 
 	action = WAIT;
+	waitFrames = maxWaitFrames;
 	frame = 0;
 
 	predict = false;
 
 	moveFrames = 0;
-	waitFrames = 0;
 
 	ms.currMovement = NULL;
 
 	//DefaultHitboxesOn();
 
 	UpdateSprite();
+}
+
+void MovementTester::ProcessState()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+	}
+
+	if (action == MOVE)
+	{
+		if (moveFrames == 0)
+		{
+			action = WAIT;
+			waitFrames = maxWaitFrames;
+		}
+	}
+	else if (action == WAIT)
+	{
+		if (waitFrames == 0)
+		{
+			action = MOVE;
+			CalcMovement();
+		}
+	}
 }
 
 sf::FloatRect MovementTester::GetAABB()
@@ -153,29 +188,7 @@ void MovementTester::UpdatePreFrameCalculations()
 	}
 }
 
-void MovementTester::ProcessState()
-{
-	if (frame == actionLength[action] * animFactor[action])
-	{
-		frame = 0;
-		/*switch (action)
-		{
-		case PUNCH:
-			frame = 0;
-			break;
-		case MOVE:
-			frame = 0;
-			break;
-		case KICK:
-			frame = 0;
-			break;
-		}*/
-	}
 
-	if (action == MOVE)
-	{
-	}
-}
 
 void MovementTester::IHitPlayer(int index)
 {
