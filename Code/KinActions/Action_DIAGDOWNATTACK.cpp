@@ -86,6 +86,7 @@ void Actor::DIAGDOWNATTACK_UpdateSprite()
 
 		swordSprite.setOrigin(swordSprite.getLocalBounds().width / 2, swordSprite.getLocalBounds().height / 2);
 		swordSprite.setPosition(position.x + offset.x, position.y + offset.y);
+		swordSprite.setRotation(0);
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);

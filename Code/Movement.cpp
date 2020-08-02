@@ -108,49 +108,61 @@ double CubicBezier::GetY( double t )
 }
 
 Movement::Movement( CubicBezier &p_bez, int dur, Types type )
-	:next( NULL ), duration( dur * NUM_MAX_STEPS * 5 ), vertices( NULL ), bez( p_bez ), moveType( type )
+	:next( NULL ), duration( dur * NUM_MAX_STEPS * 5 ), circles( NULL ), bez( p_bez ), moveType( type )
 
 {
 }
 
 Movement::~Movement()
 {
-	if( vertices != NULL )
+	if( circles != NULL )
 	{
-		delete [] vertices;
+		delete circles;
 	}
+}
+
+void Movement::SetFrameDuration(int f)
+{
+	//5 is the current slow factor used by time slow bubbles
+	duration = f * NUM_MAX_STEPS * 5;
 }
 
 void Movement::InitDebugDraw()
 {
+	if (circles == NULL)
+	{
+		circles = new CircleGroup(20, 8, Color::White, 6);
+	}
 
-	//for debugdraw
-	vertices = new Vertex[20 * 4];
-	Color col = COLOR_BLUE;
-	
+	circles->ShowAll();
+
 	double x = 0;
-
-	int hSize = 4;
 
 	for(int i = 0; i < 20; ++i )
 	{
-		vertices[i*4+0].color = col;
-		vertices[i*4+1].color = col;
-		vertices[i*4+2].color = col;
-		vertices[i*4+3].color = col;
-
 		V2d pos = GetPosition( (int)(x * duration) );
-		vertices[i*4+0].position = Vector2f( pos.x - hSize, pos.y - hSize );
-		vertices[i*4+1].position = Vector2f( pos.x + hSize, pos.y - hSize );
-		vertices[i*4+2].position = Vector2f( pos.x + hSize, pos.y + hSize );
-		vertices[i*4+3].position = Vector2f( pos.x - hSize, pos.y + hSize );
+		circles->SetPosition(i, Vector2f(pos));
 		x += 1 / 20.0;
 	}
 }
 
+V2d Movement::GetEndVelocity()
+{
+	int numFrames = duration / (NUM_MAX_STEPS * 5);
+
+	return GetFrameVelocity(numFrames - 1);
+}
+
+V2d Movement::GetFrameVelocity(int f)
+{
+	assert(f > 0);
+	return (GetPosition((f) * NUM_MAX_STEPS * 5)
+		- GetPosition((f - 1) * NUM_MAX_STEPS * 5));
+}
+
 void Movement::DebugDraw( sf::RenderTarget *target )
 {
-	target->draw( vertices, 80, sf::Quads );	
+	circles->Draw(target);
 }
 
 LineMovement::LineMovement( sf::Vector2<double> &a,
@@ -169,6 +181,53 @@ V2d LineMovement::GetPosition( int t )
 	//cout << "Start get position" << endl;
 	double v = bez.GetValue( t / (double)duration );
 	return start + ( end - start ) * v;
+}
+
+QuadraticMovement::QuadraticMovement(sf::Vector2<double> &a,
+	sf::Vector2<double> &b, sf::Vector2<double> &c,CubicBezier &bez,
+	int duration)
+	:Movement(bez, duration, Types::QUADRATIC), A(a), B(b), C(c)
+{
+	start = a;
+	end = c;
+}
+
+
+
+V2d QuadraticMovement::GetPosition(int t)
+{
+	double v = bez.GetValue(t / (double)duration);
+	double rv = (1 - v);
+	return rv * (rv * A + v * B) + v * (rv * B + v * C);
+}
+
+double QuadraticMovement::GetArcLength()
+{
+	V2d a, b;
+	a.x = A.x - 2 * B.x + C.x;
+	a.y = A.y - 2 * B.y + C.y;
+	b.x = 2 * B.x - 2 * A.x;
+	b.y = 2 * B.y - 2 * A.y;
+
+	double E = 4 * (a.x*a.x + a.y*a.y);
+	double F = 4 * (a.x*b.x + a.y*b.y);
+	double G = b.x*b.x + b.y*b.y;
+
+	if (abs(E) < 0.0000001 )
+	{
+		return length(C - A);
+	}
+
+	double Sabc = 2 * sqrt(E + F + G);
+	double E_2 = sqrt(E);
+	double E_32 = 2 * E*E_2;
+	double G_2 = 2 * sqrt(G);
+	double FE = F / E_2;
+
+	return (E_32*Sabc +
+		E_2*F*(Sabc - G_2) +
+		(4 * G*E - F*F)*log((2 * E_2 + FE + Sabc) / (FE + G_2))
+		) / (4 * E_32);
 }
 
 CubicMovement::CubicMovement( sf::Vector2<double> &a,
@@ -192,6 +251,8 @@ V2d CubicMovement::GetPosition( int t )
 		+ 3 * rv * v * v * C
 		+ pow( v, 3 ) * D;
 }
+
+
 		
 RadialMovement::RadialMovement( V2d &circleBase, double p_radius, 
 		double p_startAngle, 
@@ -317,6 +378,15 @@ LineMovement * MovementSequence::AddLineMovement( sf::Vector2<double> &A,
 	LineMovement *lm = new LineMovement(A, B, bez, duration);
 	AddMovement( lm );
 	return lm;
+}
+
+QuadraticMovement * MovementSequence::AddQuadraticMovement(
+	V2d &A, V2d &B, V2d &C, CubicBezier &bez,
+	int duration)
+{
+	QuadraticMovement * qm = new QuadraticMovement(A, B, C, bez, duration);
+	AddMovement(qm);
+	return qm;
 }
 
 CubicMovement * MovementSequence::AddCubicMovement( sf::Vector2<double> &A,

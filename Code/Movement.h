@@ -2,6 +2,8 @@
 #define __MOVEMENT_H__
 
 #include <SFML\Graphics.hpp>
+#include "VectorMath.h"
+#include "CircleGroup.h"
 
 sf::Vector2<double> GetQuadraticValue( 
 	sf::Vector2<double> &p0,
@@ -70,6 +72,7 @@ struct Movement
 	enum Types
 	{
 		WAIT,
+		QUADRATIC,
 		CUBIC,
 		RADIAL,
 		LINE,
@@ -79,13 +82,17 @@ struct Movement
 	Movement( CubicBezier &bez, int duration,
 		Types moveType );
 	virtual ~Movement();
+	void SetFrameDuration(int f);
 	void InitDebugDraw();
+	V2d GetEndVelocity();
+	V2d GetFrameVelocity( int f );
 	CubicBezier bez;
-	virtual sf::Vector2<double> GetPosition( int t ) = 0;
+	virtual V2d GetPosition( int t ) = 0;
 	int duration;
 	void DebugDraw( sf::RenderTarget *target );
 	Movement *next;
-	sf::Vertex *vertices;//debugdraw
+
+	CircleGroup *circles;
 	sf::Vector2<double> start;
 	sf::Vector2<double> end;
 	Types moveType;
@@ -98,6 +105,21 @@ struct WaitMovement : Movement
 	WaitMovement( int duration );
 	sf::Vector2<double> GetPosition( int t );
 	sf::Vector2<double> pos;
+};
+
+struct QuadraticMovement : Movement
+{
+	QuadraticMovement(V2d &A,V2d &B,
+		V2d &C, CubicBezier &bez,
+		int duration);
+	double GetArcLength();
+
+	V2d A;
+	V2d B;
+	V2d C;
+	V2d D;
+
+	V2d GetPosition(int t);
 };
 
 struct CubicMovement : Movement
@@ -167,6 +189,9 @@ struct MovementSequence
 	void MovementDebugDraw( sf::RenderTarget *target );
 	LineMovement * AddLineMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, CubicBezier&, int duration );
+	QuadraticMovement * AddQuadraticMovement(
+		V2d &A, V2d &B, V2d &C, CubicBezier &cb,
+		int duration);
 	CubicMovement * AddCubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, sf::Vector2<double> &C,
 		sf::Vector2<double> &D, CubicBezier&, int duration );

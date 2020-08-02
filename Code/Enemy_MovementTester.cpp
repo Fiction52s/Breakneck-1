@@ -20,6 +20,9 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
+
+
+
 MovementTester::MovementTester(ActorParams *ap)
 	:Enemy(EnemyType::EN_MOVEMENTTESTER, ap)
 {
@@ -43,6 +46,9 @@ MovementTester::MovementTester(ActorParams *ap)
 	//BasicCircleHitBodySetup(16);
 
 	move = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), 0);
+	qCurve = curveMovement.AddQuadraticMovement(V2d(), V2d(), V2d(), CubicBezier(), 0);
+
+	
 
 	predictCircle.setFillColor(Color::Red);
 	predictCircle.setRadius(20);
@@ -55,9 +61,41 @@ MovementTester::MovementTester(ActorParams *ap)
 		myCircle.getLocalBounds().height / 2);
 
 	targetPlayerIndex = 0;
+	accel = .8;
+	maxSpeed = 15;
 
 	ResetEnemy();
 }
+
+MovementTester::~MovementTester()
+{
+}
+
+void MovementTester::ResetEnemy()
+{
+	facingRight = true;
+
+	action = WAIT;
+	waitFrames = maxWaitFrames;
+	frame = 0;
+
+	predict = false;
+
+	moveFrames = 0;
+
+	ms.currMovement = NULL;
+
+	curveMovement.currMovement = NULL;
+
+	//DefaultHitboxesOn();
+
+	velocity = V2d();
+
+	moveType = MoveType::HOMING;
+
+	UpdateSprite();
+}
+
 void MovementTester::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
@@ -76,31 +114,41 @@ void MovementTester::UpdateHitboxes()
 void MovementTester::CalcMovement()
 {
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
-	moveFrames = 60;
-	move->duration = moveFrames * NUM_MAX_STEPS * 5;
-	move->start = GetPosition();
-	move->end = targetPos;
-	ms.Reset();
+	moveFrames = 30;
+	startMovePlayerPos = targetPos;
+
+	if (false)
+	{
+		move->SetFrameDuration(moveFrames);
+		move->start = GetPosition();
+		move->end = targetPos;
+		ms.Reset();
+	}
+	else
+	{
+		
+		V2d dir = normalize(targetPos - GetPosition());
+		V2d other(dir.y, -dir.x);
+
+		//V2d startMove(10, 0);
+
+		qCurve->A = GetPosition();
+		//qCurve->B = GetPosition() + startMove * 40.0;//other * 200.0;
+		/*curve->C = targetPos + other * 200.0;*/
+		qCurve->C = targetPos;
+
+		double arcLength = qCurve->GetArcLength();
+		moveFrames = arcLength / 10.0;
+		startMoveFrames = moveFrames;
+
+		qCurve->SetFrameDuration(moveFrames);
+		
+		curveMovement.Reset();
+		curveMovement.InitMovementDebug();
+	}
 }
 
-void MovementTester::ResetEnemy()
-{
-	facingRight = true;
 
-	action = WAIT;
-	waitFrames = maxWaitFrames;
-	frame = 0;
-
-	predict = false;
-
-	moveFrames = 0;
-
-	ms.currMovement = NULL;
-
-	//DefaultHitboxesOn();
-
-	UpdateSprite();
-}
 
 void MovementTester::ProcessState()
 {
@@ -109,22 +157,78 @@ void MovementTester::ProcessState()
 		frame = 0;
 	}
 
-	if (action == MOVE)
+	V2d playerPos = sess->GetPlayerPos(targetPlayerIndex);
+
+	switch (moveType)
 	{
-		if (moveFrames == 0)
-		{
-			action = WAIT;
-			waitFrames = maxWaitFrames;
-		}
-	}
-	else if (action == WAIT)
+	case CURVE:
 	{
-		if (waitFrames == 0)
+		if (action == MOVE)
 		{
-			action = MOVE;
-			CalcMovement();
+			double testLen = length(playerPos - startMovePlayerPos);
+			if (testLen > 100 && moveFrames < startMoveFrames - 10)
+			{
+				action = MOVE;
+				V2d vel = qCurve->GetFrameVelocity(startMoveFrames - moveFrames);
+				cout << "vel: " << vel.x << ", " << vel.y << "\n";
+				vel = normalize(vel);
+				vel *= 10.0;
+				qCurve->B = GetPosition() + vel * 30.0;
+				CalcMovement();
+			}
+
+			//if (moveFrames == 0)
+			//{
+			//	action = MOVE;
+
+			//	//V2d vel = normalize( qCurve->GetPosition(1.0) - qCurve->GetPosition(.99) ) * 10.0;
+			//	//moveFrames = 60;
+			//	V2d vel = qCurve->GetEndVelocity();
+			//	cout << "vel: " << vel.x << ", " << vel.y << "\n";
+			//	vel = normalize(vel);
+			//	vel *= 10.0;
+			//	qCurve->B = GetPosition() + vel * 30.0;
+			//	CalcMovement();
+			//	//action = WAIT;
+			//	//waitFrames = maxWaitFrames;
+			//}
 		}
+		else if (action == WAIT)
+		{
+			if (waitFrames == 0)
+			{
+				action = MOVE;
+				qCurve->B = (GetPosition() + playerPos) / 2.0;
+				CalcMovement();
+			}
+		}
+		break;
 	}
+	case HOMING:
+	{
+		targetPos = playerPos + V2d(50, 0);
+		V2d diff = targetPos - GetPosition();
+		V2d pDir = normalize(diff);
+
+		
+
+		velocity += pDir * 10.0;
+		double velLen = length(velocity);
+		if (velLen > maxSpeed)
+		{
+			velocity = normalize(velocity) * maxSpeed;
+		}
+
+		if (length(diff) < maxSpeed)
+		{
+			currPosInfo.position = targetPos;
+			velocity = V2d(0, 0);
+		}
+		break;
+	}
+
+	}
+	
 }
 
 sf::FloatRect MovementTester::GetAABB()
@@ -146,6 +250,14 @@ void MovementTester::CalcTargetAfterHit()
 	predictCircle.setPosition(Vector2f(targetPos));
 }
 
+void MovementTester::CalcPlayerFuturePos(int frames)
+{
+	sess->ForwardSimulatePlayer(targetPlayerIndex, frames);
+	targetPos = sess->GetPlayerPos(targetPlayerIndex);
+	sess->RevertSimulatedPlayer(targetPlayerIndex);
+	predictCircle.setPosition(Vector2f(targetPos));
+}
+
 void MovementTester::FrameIncrement()
 {
 	if (moveFrames > 0)
@@ -157,6 +269,12 @@ void MovementTester::FrameIncrement()
 	{
 		--waitFrames;
 	}
+}
+
+void MovementTester::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	curveMovement.MovementDebugDraw(target);
 }
 
 void MovementTester::UpdatePreFrameCalculations()
@@ -186,6 +304,11 @@ void MovementTester::UpdatePreFrameCalculations()
 		//++moveFrames;
 
 	}
+
+	if (moveType == HOMING)
+	{
+		//CalcPlayerFuturePos(30);
+	}
 }
 
 
@@ -198,24 +321,51 @@ void MovementTester::IHitPlayer(int index)
 
 void MovementTester::UpdateEnemyPhysics()
 {
-	if (ms.currMovement != NULL)
+	switch (moveType)
 	{
-		if (numPhysSteps == 1)
+	case CURVE:
+	{
+		MovementSequence *currSeq = NULL;
+		if (ms.currMovement != NULL)
 		{
-			ms.Update(slowMultiple, 10);
+			currSeq = &ms;
 		}
-		else
+		else if (curveMovement.currMovement != NULL)
 		{
-			ms.Update(slowMultiple);
+			currSeq = &curveMovement;
 		}
 
-		currPosInfo.SetPosition(ms.position);
 
-		if (ms.currMovement == NULL)
+		if (currSeq != NULL)
 		{
+			if (numPhysSteps == 1)
+			{
+				currSeq->Update(slowMultiple, 10);
+			}
+			else
+			{
+				currSeq->Update(slowMultiple);
+			}
+
+			currPosInfo.SetPosition(currSeq->position);
+
+			/*if (ms.currMovement == NULL)
+			{
 			DefaultHitboxesOn();
+			}*/
 		}
+		break;
 	}
+	case HOMING:
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		currPosInfo.position += movementVec;
+		break;
+	}
+	}
+	
 }
 
 void MovementTester::UpdateSprite()

@@ -1826,6 +1826,8 @@ bool SpaceMover::Update()
 			stateOver = true;
 		}
 		V2d pos = curve.GetPosition(currentT);
+
+		cout << "currentT: " << currentT << ", pos: " << pos.x << ", " << pos.y << "\n";
 		position = pos;
 
 		if (frame == 0)
