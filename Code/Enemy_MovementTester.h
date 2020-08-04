@@ -19,9 +19,22 @@ struct MovementTester : Enemy
 
 	enum MoveType
 	{
+		CHASE,
+		APPROACH,
+		NODE_LINEAR,
+		NODE_QUADRATIC,
+		NODE_CUBIC,
 		CURVE,
-		HOMING,
 	};
+
+	double approachStartDist;
+	CubicBezier approachBez;
+	
+
+	V2d *chaseTarget;
+	V2d chaseOffset;
+	double chaseMaxVel;
+	double chaseAccel;
 
 	V2d velocity;
 	double accel;
@@ -55,6 +68,9 @@ struct MovementTester : Enemy
 
 	sf::FloatRect GetAABB();
 
+	void SetModeChase(V2d *chasePos,
+		V2d &chaseOffset, double maxVel,
+		double accel);
 	void DebugDraw(sf::RenderTarget *target);
 	void CalcMovement();
 	void UpdatePreFrameCalculations();

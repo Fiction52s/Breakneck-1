@@ -91,9 +91,21 @@ void MovementTester::ResetEnemy()
 
 	velocity = V2d();
 
-	moveType = MoveType::HOMING;
+	SetModeChase(&(sess->GetPlayer(targetPlayerIndex)->position), V2d(50, 0), 100, 20.0);
+
+	approachStartDist = -1;
 
 	UpdateSprite();
+}
+
+void MovementTester::SetModeChase(V2d *target, V2d &offset, double maxVel,
+	double accel)
+{
+	chaseTarget = target;
+	chaseOffset = offset;
+	chaseMaxVel = maxVel;
+	chaseAccel = accel;
+	moveType = CHASE;
 }
 
 void MovementTester::UpdateHitboxes()
@@ -166,7 +178,7 @@ void MovementTester::ProcessState()
 		if (action == MOVE)
 		{
 			double testLen = length(playerPos - startMovePlayerPos);
-			if (testLen > 100 && moveFrames < startMoveFrames - 10)
+			if (moveFrames == 0 )
 			{
 				action = MOVE;
 				V2d vel = qCurve->GetFrameVelocity(startMoveFrames - moveFrames);
@@ -204,26 +216,70 @@ void MovementTester::ProcessState()
 		}
 		break;
 	}
-	case HOMING:
+	case CHASE:
 	{
-		targetPos = playerPos + V2d(50, 0);
+		targetPos = *chaseTarget + chaseOffset;//playerPos + V2d(50, 0);
 		V2d diff = targetPos - GetPosition();
 		V2d pDir = normalize(diff);
 
-		
-
-		velocity += pDir * 10.0;
+		velocity += pDir * chaseAccel;
 		double velLen = length(velocity);
-		if (velLen > maxSpeed)
+		if (velLen > chaseMaxVel )
 		{
-			velocity = normalize(velocity) * maxSpeed;
+			velocity = normalize(velocity) * chaseMaxVel;
 		}
 
-		if (length(diff) < maxSpeed)
+		if (length(diff) < chaseMaxVel)
 		{
 			currPosInfo.position = targetPos;
 			velocity = V2d(0, 0);
 		}
+		break;
+	}
+	case APPROACH:
+	{
+		targetPos = playerPos + V2d(50, 0);
+		V2d diff = targetPos - GetPosition();
+		double dist = length(diff);
+
+		if (action == WAIT)
+		{
+			if (waitFrames == 0)
+			{
+				action = MOVE;
+				approachStartDist = dist;
+				moveFrames = 60;
+			}
+			currPosInfo.position = targetPos;
+		}
+		else if( action == MOVE )
+		{
+			if (moveFrames == 0)
+			{
+				action = WAIT;
+				waitFrames = 60;
+				velocity = V2d(0, 0);
+				currPosInfo.position = targetPos;
+			}
+			else
+			{
+
+
+				V2d pDir = normalize(diff);
+
+				double f = moveFrames / 60.0;
+
+				V2d destPos = targetPos - pDir * approachStartDist * f;
+				velocity = destPos - GetPosition();
+				//int f = (60 - moveFrames) / 60;
+
+
+				//double f = approachBez.GetValue( 1.0 - (moveFrames / 60.0));
+
+				//double distPortion = approachStartDist * f;
+			}
+		}
+		
 		break;
 	}
 
@@ -305,7 +361,7 @@ void MovementTester::UpdatePreFrameCalculations()
 
 	}
 
-	if (moveType == HOMING)
+	if (moveType == CHASE)
 	{
 		//CalcPlayerFuturePos(30);
 	}
@@ -356,7 +412,15 @@ void MovementTester::UpdateEnemyPhysics()
 		}
 		break;
 	}
-	case HOMING:
+	case CHASE:
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		currPosInfo.position += movementVec;
+		break;
+	}
+	case APPROACH:
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
