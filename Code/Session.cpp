@@ -419,6 +419,9 @@ void Session::AddW2Enemies()
 	//AddBasicAerialWorldEnemy("airdashjuggler", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, false, 3,
 	//	GetTileset("Enemies/comboer_128x128.png", 128, 128));
 
+	AddWorldEnemy("birdnode", 2, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/birdnode_32x32.png"));
+
 	///*AddBasicAerialWorldEnemy("gravdowncomboer", 2, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 
@@ -1283,6 +1286,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
+
+	bossNodeMap.resize(8);
 
 	playerSimState = new PState;
 
@@ -4774,6 +4779,32 @@ void Session::AddPoi(PoiParams *pp)
 
 	}
 	poiMap[pp->name] = pi;
+}
+
+void Session::AddBossNode(PoiParams *pp)
+{
+	PoiInfo *pi = NULL;
+	if (pp->posInfo.IsAerial())
+	{
+		pi = new PoiInfo(pp->name, pp->GetIntPos());
+	}
+	else
+	{
+		pi = new PoiInfo(pp->name, pp->GetGroundEdge(), pp->posInfo.GetQuant());
+	}
+	bossNodeMap[pp->GetWorld()-1][pp->name] = pi;
+}
+
+std::map<std::string, PoiInfo*> & Session::GetBossNodeMap( int w)
+{
+	return bossNodeMap[w-1];
+}
+
+PoiInfo *Session::GetBossNode(int w, const std::string &name)
+{
+	auto &m = GetBossNodeMap(w);
+	assert(m.count(name) > 0);
+	return m[name];
 }
 
 void Session::CleanupPoi()

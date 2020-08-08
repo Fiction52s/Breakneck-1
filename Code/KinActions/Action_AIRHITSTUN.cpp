@@ -22,6 +22,7 @@ void Actor::AIRHITSTUN_Change()
 		frame = 1;
 
 		BasicAirAction();
+		return;
 	}
 
 	frame = 0;

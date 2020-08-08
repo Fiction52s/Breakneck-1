@@ -4,6 +4,7 @@
 #include "Enemy.h"
 #include "Bullet.h"
 #include "Movement.h"
+#include "Enemy_BirdShuriken.h"
 
 //struct SpaceMover;
 
@@ -27,10 +28,11 @@ struct MovementTester : Enemy
 		CURVE,
 	};
 
+	BirdShurikenPool shurPool;
+
 	double approachStartDist;
 	CubicBezier approachBez;
 	
-
 	V2d *chaseTarget;
 	V2d chaseOffset;
 	double chaseMaxVel;
@@ -68,6 +70,15 @@ struct MovementTester : Enemy
 
 	sf::FloatRect GetAABB();
 
+	void SetModeNodeLinear(
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration );
+	void SetModeNodeQuadratic(
+		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration);
 	void SetModeChase(V2d *chasePos,
 		V2d &chaseOffset, double maxVel,
 		double accel);

@@ -281,6 +281,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool playerAndEnemiesFrozen;
 
 	std::map<std::string, PoiInfo*> poiMap;
+	std::vector<std::map<std::string, PoiInfo*>> bossNodeMap;
 	std::map<std::string, CameraShot*> cameraShotMap;
 	sf::View view;
 	MusicInfo *originalMusic;
@@ -619,6 +620,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupCameraShots();
 	void AddCameraShot(CameraShotParams *csp);
 	void AddPoi(PoiParams *pp);
+	void AddBossNode(PoiParams *pp);
+	std::map<std::string, PoiInfo*> & GetBossNodeMap( int w );
+	PoiInfo *GetBossNode(int w, const std::string &name);
 	void CleanupPoi();
 	void CleanupTopClouds();
 	void DrawTopClouds(sf::RenderTarget *target);

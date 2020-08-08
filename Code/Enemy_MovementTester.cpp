@@ -91,11 +91,14 @@ void MovementTester::ResetEnemy()
 
 	velocity = V2d();
 
-	SetModeChase(&(sess->GetPlayer(targetPlayerIndex)->position), V2d(50, 0), 100, 20.0);
+	//SetModeChase(&(sess->GetPlayer(targetPlayerIndex)->position), V2d(50, 0), 30, 3);
+	moveType = NODE_QUADRATIC;
 
 	approachStartDist = -1;
 
 	UpdateSprite();
+
+	shurPool.Reset();
 }
 
 void MovementTester::SetModeChase(V2d *target, V2d &offset, double maxVel,
@@ -106,6 +109,24 @@ void MovementTester::SetModeChase(V2d *target, V2d &offset, double maxVel,
 	chaseMaxVel = maxVel;
 	chaseAccel = accel;
 	moveType = CHASE;
+}
+
+void MovementTester::SetModeNodeLinear(V2d &nodePos, CubicBezier &cb, int frameDuration)
+{
+	move->SetFrameDuration(frameDuration);
+	move->start = GetPosition();
+	move->end = nodePos;
+	ms.Reset();
+}
+
+void MovementTester::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
+	CubicBezier &cb, int frameDuration)
+{
+	qCurve->SetFrameDuration(frameDuration);
+	qCurve->A = GetPosition();
+	qCurve->B = controlPoint0;
+	qCurve->end = nodePos;
+	curveMovement.Reset();
 }
 
 void MovementTester::UpdateHitboxes()
@@ -218,6 +239,28 @@ void MovementTester::ProcessState()
 	}
 	case CHASE:
 	{
+		if (sess->totalGameFrames % 60 == 0)
+		{
+			V2d pDir = normalize(playerPos - GetPosition() );
+			shurPool.Throw(GetPosition(), pDir);
+			int r = rand() % 4;
+			switch (r)
+			{
+			case 0:
+				chaseOffset = V2d(200, 0);
+				break;
+			case 1:
+				chaseOffset = V2d(0, -200);
+				break;
+			case 2:
+				chaseOffset = V2d(-200, 0);
+				break;
+			case 3:
+				chaseOffset = V2d(0, 200);
+				break;
+			}
+		}
+		//chaseOffset = V2d((rand() % 200) -100 , (rand() % 200) - 100);
 		targetPos = *chaseTarget + chaseOffset;//playerPos + V2d(50, 0);
 		V2d diff = targetPos - GetPosition();
 		V2d pDir = normalize(diff);
@@ -231,8 +274,8 @@ void MovementTester::ProcessState()
 
 		if (length(diff) < chaseMaxVel)
 		{
-			currPosInfo.position = targetPos;
-			velocity = V2d(0, 0);
+			//currPosInfo.position = targetPos;
+			//velocity = V2d(0, 0);
 		}
 		break;
 	}
@@ -282,7 +325,62 @@ void MovementTester::ProcessState()
 		
 		break;
 	}
+	case NODE_LINEAR:
+	{
+		if ( action == WAIT && waitFrames == 0)
+		{
+			action = MOVE;
+			int r = rand() % 3;
 
+			string checkStr = "A";
+			if (r == 1)
+			{
+				checkStr = "B";
+			}
+			else if (r == 2)
+			{
+				checkStr = "C";
+			}
+			SetModeNodeLinear(sess->GetBossNode(2, checkStr )->pos,
+				CubicBezier(), 60);
+		}
+		else if (action == MOVE && ms.currMovement == NULL)
+		{
+			action = WAIT;
+			waitFrames = maxWaitFrames;
+		}
+		break;
+	}
+	case NODE_QUADRATIC:
+	{
+		if (action == WAIT && waitFrames == 0)
+		{
+			action = MOVE;
+			int r = rand() % 3;
+
+			string checkStr = "A";
+			if (r == 1)
+			{
+				checkStr = "B";
+			}
+			else if (r == 2)
+			{
+				checkStr = "C";
+			}
+			V2d nodePos = sess->GetBossNode(2, checkStr)->pos;
+			V2d controlPos = normalize(nodePos - GetPosition());
+			controlPos = V2d(controlPos.y, -controlPos.x);
+			controlPos = nodePos + controlPos * 100.0;
+			SetModeNodeQuadratic(nodePos, controlPos,
+				CubicBezier(), 60);
+		}
+		else if (action == MOVE && ms.currMovement == NULL)
+		{
+			action = WAIT;
+			waitFrames = maxWaitFrames;
+		}
+		break;
+	}
 	}
 	
 }
@@ -414,10 +512,10 @@ void MovementTester::UpdateEnemyPhysics()
 	}
 	case CHASE:
 	{
-		V2d movementVec = velocity;
+		/*V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
-		currPosInfo.position += movementVec;
+		currPosInfo.position += movementVec;*/
 		break;
 	}
 	case APPROACH:
@@ -428,6 +526,35 @@ void MovementTester::UpdateEnemyPhysics()
 		currPosInfo.position += movementVec;
 		break;
 	}
+	case NODE_LINEAR:
+	{
+		MovementSequence *currSeq = NULL;
+		if (ms.currMovement != NULL)
+		{
+			currSeq = &ms;
+		}
+		else if (curveMovement.currMovement != NULL)
+		{
+			currSeq = &curveMovement;
+		}
+
+
+		if (currSeq != NULL)
+		{
+			if (numPhysSteps == 1)
+			{
+				currSeq->Update(slowMultiple, 10);
+			}
+			else
+			{
+				currSeq->Update(slowMultiple);
+			}
+
+			currPosInfo.SetPosition(currSeq->position);
+		}
+		break;
+	}
+		
 	}
 	
 }
@@ -440,5 +567,6 @@ void MovementTester::UpdateSprite()
 void MovementTester::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(myCircle);
+	shurPool.Draw(target);
 	//target->draw(predictCircle);
 }

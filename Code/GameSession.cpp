@@ -1060,6 +1060,11 @@ void GameSession::ProcessActor(ActorPtr a)
 			AddPoi(pp);
 			
 		}
+		else if (typeName == "birdnode")
+		{
+			PoiParams *pp = (PoiParams*)a;
+			AddBossNode(pp);
+		}
 		else if (typeName == "ship")
 		{
 			if (shipEnterScene == NULL)

@@ -1027,6 +1027,11 @@ void EditSession::TestPlayerMode()
 				//tempPoiParams.push_back(pp);
 				AddPoi(pp);
 			}
+			else if ((*enit)->type == types["birdnode"])
+			{
+				PoiParams *pp = (PoiParams*)(*enit);
+				AddBossNode(pp);
+			}
 			else if ((*enit)->type == types["ship"])
 			{
 				if (shipEnterScene == NULL)

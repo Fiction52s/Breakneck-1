@@ -179,7 +179,6 @@ AdventureHUD::AdventureHUD()
 
 AdventureHUD::~AdventureHUD()
 {
-	delete mini;
 	delete keyMarker;
 }
 

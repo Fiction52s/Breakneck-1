@@ -95,7 +95,7 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 	Sprite s = GetSprite();
 	if (grounded)
 	{
-		if (info.name != "poi")
+		if (info.name != "poi" && info.name != "birdnode" )
 			s.setOrigin(s.getLocalBounds().width / 2 + info.offset.x, s.getLocalBounds().height + info.offset.y);
 		else
 		{
@@ -205,6 +205,11 @@ Panel *ActorType::CreatePanel()
 		p->AddFloatSlider("drainfactor", Vector2i(0, 0), 200, 0.f, 5.f, 1.f, .25);
 	}
 	else if (name == "poi")
+	{
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+	}
+	else if (name == "birdnode")
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
