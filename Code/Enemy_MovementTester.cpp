@@ -19,12 +19,163 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+EnemyMover::EnemyMover(Enemy *e)
+{
+	myEnemy = e;
 
+	linearMove = linearMovementSeq.AddLineMovement(V2d(), V2d(), CubicBezier(), 0);
+	quadraticMove = quadraticMovementSeq.AddQuadraticMovement(V2d(), V2d(), V2d(), CubicBezier(), 0);
+	cubicMove = cubicMovementSeq.AddCubicMovement(V2d(), V2d(), V2d(), V2d(), CubicBezier(), 0);
 
+	Reset();
+}
+
+void EnemyMover::Reset()
+{
+	predict = false;
+	linearMovementSeq.currMovement = NULL;
+	quadraticMovementSeq.currMovement = NULL;
+	cubicMovementSeq.currMovement = NULL;
+	moveType = NONE;
+
+	linearMove->SetFrameDuration(0);
+	quadraticMove->SetFrameDuration(0);
+	cubicMove->SetFrameDuration(0);
+}
+
+void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
+	double accel)
+{
+	chaseTarget = target;
+	chaseOffset = offset;
+	chaseMaxVel = maxVel;
+	chaseAccel = accel;
+	moveType = CHASE;
+}
+
+void EnemyMover::SetModeNodeLinear( V2d &nodePos, CubicBezier &cb, int frameDuration)
+{
+	moveType = NODE_LINEAR;
+	linearMove->SetFrameDuration(frameDuration);
+	linearMove->start = myEnemy->GetPosition();
+	linearMove->end = nodePos;
+	linearMove->InitDebugDraw();
+	linearMovementSeq.Reset();
+}
+
+void EnemyMover::SetModeNodeQuadratic( V2d &controlPoint0, V2d &nodePos,
+	CubicBezier &cb, int frameDuration)
+{
+	moveType = NODE_QUADRATIC;
+	quadraticMove->SetFrameDuration(frameDuration);
+	quadraticMove->A = myEnemy->GetPosition();
+	quadraticMove->B = controlPoint0;
+	quadraticMove->C = nodePos;
+	quadraticMove->start = quadraticMove->A;
+	quadraticMove->end = quadraticMove->C;
+	quadraticMove->InitDebugDraw();
+	quadraticMovementSeq.Reset();
+}
+
+V2d EnemyMover::UpdatePhysics()
+{
+
+	V2d result(0, 0);
+
+	int numPhysSteps = myEnemy->numPhysSteps;
+	int slowMultiple = myEnemy->slowMultiple;
+
+	switch (moveType)
+	{
+	case CHASE:
+	{
+		V2d movementVec = chaseVelocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		result = V2d(myEnemy->GetPosition() + movementVec);
+		break;
+	}
+	case NODE_LINEAR:
+	case NODE_QUADRATIC:
+	{
+		MovementSequence *currSeq = NULL;
+		if (linearMovementSeq.currMovement != NULL)
+		{
+			currSeq = &linearMovementSeq;
+		}
+		else if (quadraticMovementSeq.currMovement != NULL)
+		{
+			currSeq = &quadraticMovementSeq;
+		}
+		else if (cubicMovementSeq.currMovement != NULL)
+		{
+			currSeq = &cubicMovementSeq;
+		}
+
+		if (currSeq != NULL)
+		{
+			if (numPhysSteps == 1)
+			{
+				currSeq->Update(slowMultiple, 10);
+			}
+			else
+			{
+				currSeq->Update(slowMultiple);
+			}
+
+			result = currSeq->position;
+
+			if (currSeq->currMovement == NULL)
+			{
+				moveType = NONE;
+			}
+		}
+
+		break;
+	}
+
+	}
+
+	return result;
+}
+
+void EnemyMover::DebugDraw(sf::RenderTarget *target)
+{
+	switch (moveType)
+	{
+	case CHASE:
+	{
+		break;
+	}
+	case NODE_LINEAR:
+	case NODE_QUADRATIC:
+	case NODE_CUBIC:
+	{
+		MovementSequence *currSeq = NULL;
+		if (linearMovementSeq.currMovement != NULL)
+		{
+			currSeq = &linearMovementSeq;
+		}
+		else if (quadraticMovementSeq.currMovement != NULL)
+		{
+			currSeq = &quadraticMovementSeq;
+		}
+		else if (cubicMovementSeq.currMovement != NULL)
+		{
+			currSeq = &cubicMovementSeq;
+		}
+
+		currSeq->MovementDebugDraw(target);
+		break;
+	}
+
+	}
+}
 
 
 MovementTester::MovementTester(ActorParams *ap)
-	:Enemy(EnemyType::EN_MOVEMENTTESTER, ap)
+	:Enemy(EnemyType::EN_MOVEMENTTESTER, ap),
+	enemyMover(this)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -91,14 +242,21 @@ void MovementTester::ResetEnemy()
 
 	velocity = V2d();
 
+	enemyMover.Reset();
 	//SetModeChase(&(sess->GetPlayer(targetPlayerIndex)->position), V2d(50, 0), 30, 3);
 	moveType = NODE_QUADRATIC;
+	//enemyMover.moveType = EnemyMover::MoveType::NODE_QUADRATIC;
+	
+
+	qCurve->SetFrameDuration(0);
 
 	approachStartDist = -1;
 
 	UpdateSprite();
 
 	shurPool.Reset();
+
+	testCheck = 0;
 }
 
 void MovementTester::SetModeChase(V2d *target, V2d &offset, double maxVel,
@@ -116,6 +274,7 @@ void MovementTester::SetModeNodeLinear(V2d &nodePos, CubicBezier &cb, int frameD
 	move->SetFrameDuration(frameDuration);
 	move->start = GetPosition();
 	move->end = nodePos;
+	move->InitDebugDraw();
 	ms.Reset();
 }
 
@@ -125,7 +284,10 @@ void MovementTester::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
 	qCurve->SetFrameDuration(frameDuration);
 	qCurve->A = GetPosition();
 	qCurve->B = controlPoint0;
-	qCurve->end = nodePos;
+	qCurve->C = nodePos;
+	qCurve->start = qCurve->A;
+	qCurve->end = qCurve->C;
+	qCurve->InitDebugDraw();
 	curveMovement.Reset();
 }
 
@@ -330,7 +492,10 @@ void MovementTester::ProcessState()
 		if ( action == WAIT && waitFrames == 0)
 		{
 			action = MOVE;
-			int r = rand() % 3;
+			int r = testCheck;
+			++testCheck;
+			if (testCheck == 3)
+				testCheck = 0;
 
 			string checkStr = "A";
 			if (r == 1)
@@ -370,11 +535,13 @@ void MovementTester::ProcessState()
 			V2d nodePos = sess->GetBossNode(2, checkStr)->pos;
 			V2d controlPos = normalize(nodePos - GetPosition());
 			controlPos = V2d(controlPos.y, -controlPos.x);
-			controlPos = nodePos + controlPos * 100.0;
-			SetModeNodeQuadratic(nodePos, controlPos,
+			double len = length(nodePos - GetPosition());
+			controlPos = sess->GetPlayerPos(targetPlayerIndex);
+			
+			enemyMover.SetModeNodeQuadratic(controlPos, nodePos,
 				CubicBezier(), 60);
 		}
-		else if (action == MOVE && ms.currMovement == NULL)
+		else if (action == MOVE && enemyMover.quadraticMovementSeq.currMovement == NULL)
 		{
 			action = WAIT;
 			waitFrames = maxWaitFrames;
@@ -475,6 +642,12 @@ void MovementTester::IHitPlayer(int index)
 
 void MovementTester::UpdateEnemyPhysics()
 {
+	if (enemyMover.moveType != EnemyMover::NONE)
+	{
+		currPosInfo.SetPosition(enemyMover.UpdatePhysics());
+	}
+	
+	return;
 	switch (moveType)
 	{
 	case CURVE:
@@ -527,6 +700,7 @@ void MovementTester::UpdateEnemyPhysics()
 		break;
 	}
 	case NODE_LINEAR:
+	case NODE_QUADRATIC:
 	{
 		MovementSequence *currSeq = NULL;
 		if (ms.currMovement != NULL)

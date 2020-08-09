@@ -8,6 +8,58 @@
 
 //struct SpaceMover;
 
+struct EnemyMover
+{
+	enum MoveType
+	{
+		NONE,
+		CHASE,
+		APPROACH,
+		NODE_LINEAR,
+		NODE_QUADRATIC,
+		NODE_CUBIC,
+	};
+
+	MoveType moveType;
+
+	LineMovement *linearMove;
+	QuadraticMovement *quadraticMove;
+	CubicMovement *cubicMove;
+
+	MovementSequence linearMovementSeq;
+	MovementSequence quadraticMovementSeq;
+	MovementSequence cubicMovementSeq;
+
+	
+
+	V2d *chaseTarget;
+	V2d chaseOffset;
+	double chaseMaxVel;
+	double chaseAccel;
+	V2d chaseVelocity;
+
+	bool predict;
+
+	Enemy *myEnemy;
+	
+	EnemyMover( Enemy *e );
+	void Reset();
+	void SetModeNodeLinear(
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration);
+	void SetModeNodeQuadratic(
+		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration);
+	void SetModeChase(V2d *chasePos,
+		V2d &chaseOffset, double maxVel,
+		double accel);
+	V2d UpdatePhysics();
+	void DebugDraw(sf::RenderTarget *target);
+};
+
 struct MovementTester : Enemy
 {
 	enum Action
@@ -27,6 +79,7 @@ struct MovementTester : Enemy
 		NODE_CUBIC,
 		CURVE,
 	};
+	EnemyMover enemyMover;
 
 	BirdShurikenPool shurPool;
 
@@ -60,6 +113,8 @@ struct MovementTester : Enemy
 	MovementSequence curveMovement;
 	//CubicMovement *curve;
 	QuadraticMovement *qCurve;
+
+	int testCheck;
 
 	HitboxInfo hitboxInfos[A_Count];
 

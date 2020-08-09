@@ -129,20 +129,22 @@ void Movement::SetFrameDuration(int f)
 
 void Movement::InitDebugDraw()
 {
+	int numCircles = 20;
+	double div = 1.0 / numCircles;
 	if (circles == NULL)
 	{
-		circles = new CircleGroup(20, 8, Color::White, 6);
+		circles = new CircleGroup(numCircles, 8, Color::White, 6);
 	}
 
 	circles->ShowAll();
 
-	double x = 0;
+	double x = div;
 
-	for(int i = 0; i < 20; ++i )
+	for(int i = 0; i < numCircles; ++i )
 	{
 		V2d pos = GetPosition( (int)(x * duration) );
 		circles->SetPosition(i, Vector2f(pos));
-		x += 1 / 20.0;
+		x += div;
 	}
 }
 
