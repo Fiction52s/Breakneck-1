@@ -79,63 +79,63 @@ struct Movement
 		Count
 	};
 
+	CubicBezier bez;
+	int duration;
+	Movement *next;
+	sf::Vector2<double> start;
+	sf::Vector2<double> end;
+	Types moveType;
+	CircleGroup *circles;
+	CircleGroup *controlPointCircles;
+
 	Movement( CubicBezier &bez, int duration,
 		Types moveType );
 	virtual ~Movement();
 	void SetFrameDuration(int f);
 	void InitDebugDraw();
+	virtual void SetDebugControlPoints() {}
 	V2d GetEndVelocity();
 	V2d GetFrameVelocity( int f );
-	CubicBezier bez;
 	virtual V2d GetPosition( int t ) = 0;
-	int duration;
 	void DebugDraw( sf::RenderTarget *target );
-	Movement *next;
-
-	CircleGroup *circles;
-	sf::Vector2<double> start;
-	sf::Vector2<double> end;
-	Types moveType;
-
-	//Launcher *launcher;
 };
 
 struct WaitMovement : Movement
 {
+	sf::Vector2<double> pos;
+
 	WaitMovement( int duration );
 	sf::Vector2<double> GetPosition( int t );
-	sf::Vector2<double> pos;
 };
 
 struct QuadraticMovement : Movement
 {
+	V2d A;
+	V2d B;
+	V2d C;
+
 	QuadraticMovement(V2d &A,V2d &B,
 		V2d &C, CubicBezier &bez,
 		int duration);
 	double GetArcLength();
-
-	V2d A;
-	V2d B;
-	V2d C;
-	V2d D;
-
+	void SetDebugControlPoints();
 	V2d GetPosition(int t);
 };
 
 struct CubicMovement : Movement
 {
+	sf::Vector2<double> A;
+	sf::Vector2<double> B;
+	sf::Vector2<double> C;
+	sf::Vector2<double> D;
+
 	CubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B,
 		sf::Vector2<double> &C,
 		sf::Vector2<double> &D,
 		CubicBezier &bez,
 		int duration );
-	 
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D;
-
+	void SetDebugControlPoints();
 	sf::Vector2<double> GetPosition( int t );
 };
 

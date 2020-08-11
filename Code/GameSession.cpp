@@ -1063,7 +1063,7 @@ void GameSession::ProcessActor(ActorPtr a)
 		else if (typeName == "birdnode")
 		{
 			PoiParams *pp = (PoiParams*)a;
-			AddBossNode(pp);
+			AddBossNode( typeName, pp);
 		}
 		else if (typeName == "ship")
 		{

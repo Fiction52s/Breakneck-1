@@ -8,6 +8,22 @@
 
 //struct SpaceMover;
 
+//figure out the comboer later
+//when you need to generalize it for other bosses.
+
+//struct PlayerComboer
+//{
+//	Enemy *myEnemy;
+//	V2d targetPos;
+//	sf::CircleShape predictCircle;
+//	bool predict;
+//
+//	PlayerComboer(Enemy *e);
+//	void PredictNextFrame();
+//	void CalcTargetAfterHit(int pIndex);
+//	void UpdatePreFrameCalculations( int pIndex );
+//};
+
 struct EnemyMover
 {
 	enum MoveType
@@ -30,14 +46,14 @@ struct EnemyMover
 	MovementSequence quadraticMovementSeq;
 	MovementSequence cubicMovementSeq;
 
-	
-
 	V2d *chaseTarget;
 	V2d chaseOffset;
 	double chaseMaxVel;
 	double chaseAccel;
 	V2d chaseVelocity;
 
+
+	
 	bool predict;
 
 	Enemy *myEnemy;
@@ -50,6 +66,12 @@ struct EnemyMover
 		int frameDuration);
 	void SetModeNodeQuadratic(
 		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration);
+	void SetModeNodeCubic(
+		V2d &controlPoint0,
+		V2d &controlPoint1,
 		V2d &nodePos,
 		CubicBezier &cb,
 		int frameDuration);

@@ -1287,7 +1287,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
 
-	bossNodeMap.resize(8);
+	bossNodeVectorMap.resize(BossFightType_Count);
 
 	playerSimState = new PState;
 
@@ -1621,6 +1621,7 @@ Session::~Session()
 
 	CleanupCameraShots();
 	CleanupPoi();
+	CleanupBossNodes();
 	CleanupBarriers();
 
 	CleanupTopClouds();
@@ -4781,7 +4782,7 @@ void Session::AddPoi(PoiParams *pp)
 	poiMap[pp->name] = pi;
 }
 
-void Session::AddBossNode(PoiParams *pp)
+void Session::AddBossNode( const std::string &nodeTypeName, PoiParams *pp)
 {
 	PoiInfo *pi = NULL;
 	if (pp->posInfo.IsAerial())
@@ -4792,20 +4793,45 @@ void Session::AddBossNode(PoiParams *pp)
 	{
 		pi = new PoiInfo(pp->name, pp->GetGroundEdge(), pp->posInfo.GetQuant());
 	}
-	bossNodeMap[pp->GetWorld()-1][pp->name] = pi;
+
+	int ftIndex = -1;
+	if (nodeTypeName == "birdnode")
+	{
+		ftIndex = FT_BIRD;
+	}
+
+	bossNodeVectorMap[ftIndex][pp->name].push_back(pi);
 }
 
-std::map<std::string, PoiInfo*> & Session::GetBossNodeMap( int w)
+std::map<std::string, std::vector<PoiInfo*>> & Session::GetBossNodeVectorMap( int i)
 {
-	return bossNodeMap[w-1];
+	return bossNodeVectorMap[i];
 }
 
-PoiInfo *Session::GetBossNode(int w, const std::string &name)
+std::vector<PoiInfo*> & Session::GetBossNodeVector(int i, const std::string &name)
 {
-	auto &m = GetBossNodeMap(w);
+	auto &m = GetBossNodeVectorMap(i);
 	assert(m.count(name) > 0);
 	return m[name];
 }
+
+void Session::CleanupBossNodes()
+{
+	for (auto vit = bossNodeVectorMap.begin(); vit != bossNodeVectorMap.end(); ++vit)
+	{
+		for (auto mit = (*vit).begin(); mit != (*vit).end(); ++mit)
+		{
+			auto &poiVec = (*mit).second;
+			for (auto pit = poiVec.begin(); pit != poiVec.end(); ++pit)
+			{
+				delete (*pit);
+			}
+		}
+		(*vit).clear();
+	}
+	//bossNodeVectorMap.clear();
+}
+
 
 void Session::CleanupPoi()
 {

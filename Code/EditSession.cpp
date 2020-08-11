@@ -991,12 +991,6 @@ void EditSession::TestPlayerMode()
 
 	SetupGateMarkers();
 
-	
-	CleanupCameraShots();
-	CleanupPoi();
-
-	//CleanupShipExit();
-
 	hasGoal = false;
 
 	bool foundShipEnter = false;
@@ -1004,6 +998,7 @@ void EditSession::TestPlayerMode()
 
 	CleanupCameraShots();
 	CleanupPoi();
+	CleanupBossNodes();
 	CleanupBarriers();
 
 	for (auto it = groups.begin(); it != groups.end(); ++it)
@@ -1030,7 +1025,7 @@ void EditSession::TestPlayerMode()
 			else if ((*enit)->type == types["birdnode"])
 			{
 				PoiParams *pp = (PoiParams*)(*enit);
-				AddBossNode(pp);
+				AddBossNode((*enit)->GetTypeName(), pp);
 			}
 			else if ((*enit)->type == types["ship"])
 			{

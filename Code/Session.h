@@ -91,7 +91,22 @@ struct GameMode;
 
 #define TIMESTEP (1.0 / 60.0)
 
-
+enum BossFightType
+{
+	FT_CRAWLER,
+	FT_BIRD,
+	FT_COYOTE,
+	FT_CRAWLER2,
+	FT_TIGER,
+	FT_BIRD2,
+	FT_GATOR,
+	FT_SKELETON,
+	FT_TIGER2,
+	FT_BIRDCHASE,
+	FT_BIRD3,
+	FT_SKELETON2,
+	BossFightType_Count
+};
 
 struct Session : TilesetManager, QuadTreeCollider
 {
@@ -134,6 +149,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		SESS_GAME,
 		SESS_EDIT,
 	};
+
+
 
 	//mark these with GAME soon, since they are the queries for the game, not the editor
 	enum QueryMode : int
@@ -281,7 +298,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool playerAndEnemiesFrozen;
 
 	std::map<std::string, PoiInfo*> poiMap;
-	std::vector<std::map<std::string, PoiInfo*>> bossNodeMap;
+	std::vector<std::map<std::string, std::vector<PoiInfo*>>> bossNodeVectorMap;
 	std::map<std::string, CameraShot*> cameraShotMap;
 	sf::View view;
 	MusicInfo *originalMusic;
@@ -620,9 +637,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupCameraShots();
 	void AddCameraShot(CameraShotParams *csp);
 	void AddPoi(PoiParams *pp);
-	void AddBossNode(PoiParams *pp);
-	std::map<std::string, PoiInfo*> & GetBossNodeMap( int w );
-	PoiInfo *GetBossNode(int w, const std::string &name);
+	void AddBossNode(const std::string &nodeTypeName, PoiParams *pp);
+	std::map<std::string, std::vector<PoiInfo*>> & GetBossNodeVectorMap( int w );
+	std::vector<PoiInfo*> & GetBossNodeVector(int w, const std::string &name);
+	void CleanupBossNodes();
 	void CleanupPoi();
 	void CleanupTopClouds();
 	void DrawTopClouds(sf::RenderTarget *target);

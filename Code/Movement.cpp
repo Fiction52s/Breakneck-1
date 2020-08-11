@@ -108,7 +108,8 @@ double CubicBezier::GetY( double t )
 }
 
 Movement::Movement( CubicBezier &p_bez, int dur, Types type )
-	:next( NULL ), duration( dur * NUM_MAX_STEPS * 5 ), circles( NULL ), bez( p_bez ), moveType( type )
+	:next( NULL ), duration( dur * NUM_MAX_STEPS * 5 ), circles( NULL ), 
+	controlPointCircles( NULL ), bez( p_bez ), moveType( type )
 
 {
 }
@@ -118,6 +119,11 @@ Movement::~Movement()
 	if( circles != NULL )
 	{
 		delete circles;
+		
+	}
+	if (controlPointCircles != NULL)
+	{
+		delete controlPointCircles;
 	}
 }
 
@@ -134,9 +140,25 @@ void Movement::InitDebugDraw()
 	if (circles == NULL)
 	{
 		circles = new CircleGroup(numCircles, 8, Color::White, 6);
+		
+		if (moveType == QUADRATIC)
+		{
+			controlPointCircles = new CircleGroup(1, 8, Color::Green, 6);
+			//controlPointCircles->SetPosition
+		}
+		else if (moveType == CUBIC)
+		{
+			controlPointCircles = new CircleGroup(2, 32, Color::Green, 6);
+		}
 	}
 
 	circles->ShowAll();
+
+	if (controlPointCircles != NULL)
+	{
+		controlPointCircles->ShowAll();
+	}
+	
 
 	double x = div;
 
@@ -146,6 +168,8 @@ void Movement::InitDebugDraw()
 		circles->SetPosition(i, Vector2f(pos));
 		x += div;
 	}
+
+	SetDebugControlPoints();
 }
 
 V2d Movement::GetEndVelocity()
@@ -165,6 +189,10 @@ V2d Movement::GetFrameVelocity(int f)
 void Movement::DebugDraw( sf::RenderTarget *target )
 {
 	circles->Draw(target);
+	if (controlPointCircles != NULL)
+	{
+		controlPointCircles->Draw(target);
+	}
 }
 
 LineMovement::LineMovement( sf::Vector2<double> &a,
@@ -232,6 +260,11 @@ double QuadraticMovement::GetArcLength()
 		) / (4 * E_32);
 }
 
+void QuadraticMovement::SetDebugControlPoints()
+{
+	controlPointCircles->SetPosition(0, Vector2f(B));
+}
+
 CubicMovement::CubicMovement( sf::Vector2<double> &a,
 		sf::Vector2<double> &b,
 		sf::Vector2<double> &c,
@@ -254,6 +287,12 @@ V2d CubicMovement::GetPosition( int t )
 		+ pow( v, 3 ) * D;
 }
 
+void CubicMovement::SetDebugControlPoints()
+{
+	controlPointCircles->SetPosition(0, Vector2f(B));
+	controlPointCircles->SetPosition(1, Vector2f(C));
+	controlPointCircles->SetColor(1, Color::Red);
+}
 
 		
 RadialMovement::RadialMovement( V2d &circleBase, double p_radius, 

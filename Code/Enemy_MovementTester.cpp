@@ -19,6 +19,51 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+//PlayerComboer::PlayerComboer(Enemy *e)
+//{
+//	myEnemy = e;
+//}
+//
+//void PlayerComboer::CalcTargetAfterHit(int pIndex)
+//{
+//	Session *sess = myEnemy->sess;
+//	sess->ForwardSimulatePlayer(pIndex, sess->GetPlayer(pIndex)->hitstunFrames);
+//	targetPos = sess->GetPlayerPos(pIndex);
+//	sess->RevertSimulatedPlayer(pIndex);
+//	predictCircle.setPosition(Vector2f(targetPos));
+//}
+//
+//void PlayerComboer::PredictNextFrame()
+//{
+//	predict = true;
+//}
+//
+//void PlayerComboer::UpdatePreFrameCalculations(int pIndex)
+//{
+//	Actor *targetPlayer = myEnemy->sess->GetPlayer(pIndex);
+//	if (predict || targetPlayer->hitOutOfHitstunLastFrame)
+//	{
+//		CalcTargetAfterHit();
+//		moveFrames = targetPlayer->hitstunFrames - 1;
+//		move->duration = moveFrames * NUM_MAX_STEPS * 5;
+//		move->start = GetPosition();
+//		move->end = targetPos;
+//		ms.Reset();
+//		predict = false;
+//		if (moveFrames < 0)
+//		{
+//			moveFrames = 0;
+//		}
+//
+//		SetHitboxes(NULL, 0);
+//
+//		action = MOVE;
+//		frame = 0;
+//		//++moveFrames;
+//
+//	}
+//}
+
 EnemyMover::EnemyMover(Enemy *e)
 {
 	myEnemy = e;
@@ -77,6 +122,21 @@ void EnemyMover::SetModeNodeQuadratic( V2d &controlPoint0, V2d &nodePos,
 	quadraticMovementSeq.Reset();
 }
 
+void EnemyMover::SetModeNodeCubic(V2d &controlPoint0, V2d &controlPoint1,
+	V2d &nodePos, CubicBezier &cb, int frameDuration)
+{
+	moveType = NODE_CUBIC;
+	cubicMove->SetFrameDuration(frameDuration);
+	cubicMove->A = myEnemy->GetPosition();
+	cubicMove->B = controlPoint0;
+	cubicMove->C = controlPoint1;
+	cubicMove->D = nodePos;
+	cubicMove->start = cubicMove->A;
+	cubicMove->end = cubicMove->D;
+	cubicMove->InitDebugDraw();
+	cubicMovementSeq.Reset();
+}
+
 V2d EnemyMover::UpdatePhysics()
 {
 
@@ -97,6 +157,7 @@ V2d EnemyMover::UpdatePhysics()
 	}
 	case NODE_LINEAR:
 	case NODE_QUADRATIC:
+	case NODE_CUBIC:
 	{
 		MovementSequence *currSeq = NULL;
 		if (linearMovementSeq.currMovement != NULL)
@@ -305,7 +366,6 @@ void MovementTester::UpdateHitboxes()
 	}*/
 }
 
-
 void MovementTester::CalcMovement()
 {
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
@@ -342,8 +402,6 @@ void MovementTester::CalcMovement()
 		curveMovement.InitMovementDebug();
 	}
 }
-
-
 
 void MovementTester::ProcessState()
 {
@@ -506,8 +564,8 @@ void MovementTester::ProcessState()
 			{
 				checkStr = "C";
 			}
-			SetModeNodeLinear(sess->GetBossNode(2, checkStr )->pos,
-				CubicBezier(), 60);
+			//SetModeNodeLinear(sess->GetBossNode(2, checkStr )->pos,
+			//	CubicBezier(), 60);
 		}
 		else if (action == MOVE && ms.currMovement == NULL)
 		{
@@ -521,30 +579,54 @@ void MovementTester::ProcessState()
 		if (action == WAIT && waitFrames == 0)
 		{
 			action = MOVE;
-			int r = rand() % 3;
+		
 
 			string checkStr = "A";
-			if (r == 1)
-			{
-				checkStr = "B";
-			}
-			else if (r == 2)
-			{
-				checkStr = "C";
-			}
-			V2d nodePos = sess->GetBossNode(2, checkStr)->pos;
+			auto &nodeVec = sess->GetBossNodeVector( BossFightType::FT_BIRD, checkStr);
+			int vecSize = nodeVec.size();
+
+			int r = rand() % vecSize;
+
+			V2d nodePos = nodeVec[r]->pos;
 			V2d controlPos = normalize(nodePos - GetPosition());
 			controlPos = V2d(controlPos.y, -controlPos.x);
 			double len = length(nodePos - GetPosition());
-			controlPos = sess->GetPlayerPos(targetPlayerIndex);
+			V2d playerPos = sess->GetPlayerPos(targetPlayerIndex);
+			V2d dir = normalize(playerPos - GetPosition());
+			double lenn = length(playerPos - GetPosition());
 			
-			enemyMover.SetModeNodeQuadratic(controlPos, nodePos,
+			controlPos = V2d();
+			if (enemyMover.cubicMove->duration != 0)
+			{
+				controlPos = enemyMover.cubicMove->GetEndVelocity() * 40.0;//normalize(enemyMover.cubicMove->GetEndVelocity()) * 20.0;
+			}
+
+			controlPos = GetPosition() + controlPos;
+
+			V2d controlPos1 = playerPos + dir * 300.0;
+			/*enemyMover.SetModeNodeCubic(controlPos, controlPos1, nodePos,
+				CubicBezier(), 60);*/
+
+			enemyMover.SetModeNodeQuadratic(controlPos1, nodePos,
 				CubicBezier(), 60);
+
+			/*if (enemyMover.cubicMove->duration !=  )
+			{
+				
+			}
+			else
+			{
+				enemyMover.SetModeNodeQuadratic(controlPos, nodePos,
+					CubicBezier(), 60);
+
+			}*/
+			
+			
 		}
 		else if (action == MOVE && enemyMover.quadraticMovementSeq.currMovement == NULL)
 		{
 			action = WAIT;
-			waitFrames = maxWaitFrames;
+			waitFrames = 10;
 		}
 		break;
 	}
@@ -595,6 +677,7 @@ void MovementTester::FrameIncrement()
 void MovementTester::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
+	enemyMover.DebugDraw(target);
 	curveMovement.MovementDebugDraw(target);
 }
 
@@ -605,14 +688,12 @@ void MovementTester::UpdatePreFrameCalculations()
 //	if (predict || targetPlayer->hitOutOfHitstunLastFrame)
 	{
 		CalcTargetAfterHit();
-		moveFrames = targetPlayer->hitstunFrames - 1;//(hitBody.hitboxInfo->hitstunFrames - 1);
+		moveFrames = targetPlayer->hitstunFrames - 1;
 		move->duration = moveFrames * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
 		move->end = targetPos;
 		ms.Reset();
 		predict = false;
-		//int nextAction = actionQueue[actionQueueIndex].action + 1;
-		//moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
 		if (moveFrames < 0)
 		{
 			moveFrames = 0;
