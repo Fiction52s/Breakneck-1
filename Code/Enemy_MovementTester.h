@@ -34,6 +34,8 @@ struct EnemyMover
 		NODE_LINEAR,
 		NODE_QUADRATIC,
 		NODE_CUBIC,
+		NODE_DOUBLE_QUADRATIC,
+		NODE_PROJECTILE,
 	};
 
 	MoveType moveType;
@@ -41,16 +43,28 @@ struct EnemyMover
 	LineMovement *linearMove;
 	QuadraticMovement *quadraticMove;
 	CubicMovement *cubicMove;
+	QuadraticMovement *doubleQuadtraticMove0;
+	QuadraticMovement *doubleQuadtraticMove1;
 
 	MovementSequence linearMovementSeq;
 	MovementSequence quadraticMovementSeq;
 	MovementSequence cubicMovementSeq;
+	MovementSequence doubleQuadraticMovementSeq;
+
+	CircleGroup *nodeCircles;
+	CircleGroup *debugCircles;
 
 	V2d *chaseTarget;
 	V2d chaseOffset;
 	double chaseMaxVel;
 	double chaseAccel;
-	V2d chaseVelocity;
+	
+	int actionFrames;
+
+	V2d lastActionEndVelocity;
+
+	V2d projectileGrav;
+	V2d velocity;
 
 
 	
@@ -59,26 +73,74 @@ struct EnemyMover
 	Enemy *myEnemy;
 	
 	EnemyMover( Enemy *e );
+	~EnemyMover();
+	void InitNodeDebugDraw(int fightType,
+		const std::string &str, 
+		sf::Color c );
 	void Reset();
+	void SetModeNodeProjectile(
+		V2d &nodePos, V2d &grav, double height);
 	void SetModeNodeLinear(
 		V2d &nodePos,
 		CubicBezier &cb,
 		int frameDuration);
+	void SetModeNodeLinearConstantSpeed(
+		V2d &nodePos,
+		CubicBezier &cb,
+		double speed);
 	void SetModeNodeQuadratic(
 		V2d &controlPoint0,
 		V2d &nodePos,
 		CubicBezier &cb,
 		int frameDuration);
+	void SetModeNodeQuadraticConstantSpeed(
+		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		double speed);
 	void SetModeNodeCubic(
 		V2d &controlPoint0,
 		V2d &controlPoint1,
 		V2d &nodePos,
 		CubicBezier &cb,
 		int frameDuration);
+	void SetModeNodeCubicConstantSpeed(
+		V2d &controlPoint0,
+		V2d &controlPoint1,
+		V2d &nodePos,
+		CubicBezier &cb,
+		double speed);
+	void SetModeNodeDoubleQuadratic(
+		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		int frameDuration,
+		double spreadFactor );
+	void SetModeNodeDoubleQuadraticConstantSpeed(
+		V2d &controlPoint0,
+		V2d &nodePos,
+		CubicBezier &cb,
+		double speed,
+		double spreadFactor);
 	void SetModeChase(V2d *chasePos,
 		V2d &chaseOffset, double maxVel,
-		double accel);
+		double accel,
+		int frameDuration = -1);
+	void SetModeNodeJump(
+		V2d &nodePos,
+		double extraHeight);
+	void FrameIncrement();
 	V2d UpdatePhysics();
+	int GetLinearFrameEstimate(double attemptSpeed,
+		V2d &start, V2d &end);
+	int GetQuadraticFrameEstimate(double attemptSpeed,
+		V2d &start, V2d &cp0, V2d &end);
+	int GetCubicFrameEstimate(double attemptSpeed,
+		V2d &start, V2d &cp0, V2d &cp1, V2d &end);
+	int GetDoubleQuadraticFrameEstimate(
+		double attemptSpeed,
+		V2d &start, V2d &cp0, V2d &end,
+		double spreadFactor);
 	void DebugDraw(sf::RenderTarget *target);
 };
 
@@ -91,19 +153,12 @@ struct MovementTester : Enemy
 		A_Count
 	};
 
-
-	enum MoveType
-	{
-		CHASE,
-		APPROACH,
-		NODE_LINEAR,
-		NODE_QUADRATIC,
-		NODE_CUBIC,
-		CURVE,
-	};
 	EnemyMover enemyMover;
 
+	int testCounter;
+
 	BirdShurikenPool shurPool;
+	
 
 	double approachStartDist;
 	CubicBezier approachBez;
@@ -116,7 +171,6 @@ struct MovementTester : Enemy
 	V2d velocity;
 	double accel;
 	double maxSpeed;
-	MoveType moveType;
 	//SpaceMover *sMover;
 	int moveFrames;
 	int startMoveFrames;
@@ -147,18 +201,6 @@ struct MovementTester : Enemy
 
 	sf::FloatRect GetAABB();
 
-	void SetModeNodeLinear(
-		V2d &nodePos,
-		CubicBezier &cb,
-		int frameDuration );
-	void SetModeNodeQuadratic(
-		V2d &controlPoint0,
-		V2d &nodePos,
-		CubicBezier &cb,
-		int frameDuration);
-	void SetModeChase(V2d *chasePos,
-		V2d &chaseOffset, double maxVel,
-		double accel);
 	void DebugDraw(sf::RenderTarget *target);
 	void CalcMovement();
 	void UpdatePreFrameCalculations();

@@ -1816,9 +1816,7 @@ bool SpaceMover::Update()
 		double denom = length(currentT * v1 + v2);
 		double step = curvedSpeed / denom;
 
-		//double denom = (length(v1 * currentT * currentT + v2 * currentT + v3));
-		//double step = curvedSpeed / denom;
-		currentT = currentT + step;//1 / 60.0; //+ step;
+		currentT = currentT + step;
 
 		if (currentT >= 1.0)
 		{
