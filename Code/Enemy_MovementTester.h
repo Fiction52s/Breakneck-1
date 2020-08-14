@@ -36,6 +36,7 @@ struct EnemyMover
 		NODE_CUBIC,
 		NODE_DOUBLE_QUADRATIC,
 		NODE_PROJECTILE,
+		GRIND,
 	};
 
 	MoveType moveType;
@@ -72,15 +73,20 @@ struct EnemyMover
 	PositionInfo currPosInfo;
 	Session *sess;
 
+	double grindSpeed;
+
 	
 	bool predict;
 	
 	EnemyMover();
 	~EnemyMover();
+	void Reset();
+
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str, 
 		sf::Color c );
-	void Reset();
+	void SetModeGrind(
+		double speed, int frames);
 	void SetModeNodeProjectile(
 		V2d &nodePos, V2d &grav, double height);
 	void SetModeNodeProjectile(

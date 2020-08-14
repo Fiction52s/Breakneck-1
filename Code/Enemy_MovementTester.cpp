@@ -166,11 +166,20 @@ void EnemyMover::InitNodeDebugDraw(int fightType,
 	nodeCircles->ShowAll();
 }
 
+void EnemyMover::SetModeGrind( double speed, int frames)
+{
+	moveType = GRIND;
+	actionFrames = frames;
+	grindSpeed = speed;
+}
+
 void EnemyMover::SetModeNodeProjectile(
 	V2d &nodePos, V2d &grav, double height)
 {
-	currPosInfo.ground = NULL;
+	
 	V2d currPos = currPosInfo.GetPosition();
+	currPosInfo.SetAerial(currPos);
+
 	double peak;
 	if (currPos.y < nodePos.y)
 	{
@@ -438,7 +447,69 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 
 		break;
 	}
+	case GRIND:
+	{
+		double factor = slowMultiple * (double)numPhysSteps;
+		double movement = grindSpeed / factor;
 
+		double quant = currPosInfo.GetQuant();
+
+		Edge *grindEdge = currPosInfo.GetEdge();
+		int grindEdgeIndex = currPosInfo.GetEdgeIndex();
+		PolyPtr groundPoly = currPosInfo.ground;
+		int numPoints = groundPoly->GetNumPoints();
+
+		while (!approxEquals(movement, 0))
+		{
+			double gLen = grindEdge->GetLength();
+
+			if (movement > 0)
+			{
+				double extra = quant + movement - gLen;
+
+				if (extra > 0)
+				{
+					movement -= gLen - quant;
+					grindEdge = grindEdge->GetNextEdge();
+					++grindEdgeIndex;
+					if (grindEdgeIndex == numPoints)
+					{
+						grindEdgeIndex = 0;
+					}
+
+					quant = 0;
+				}
+				else
+				{
+					quant += movement;
+					movement = 0;
+				}
+			}
+			else
+			{
+				double extra = quant + movement;
+
+				if (extra < 0)
+				{
+					movement -= movement - extra;
+					grindEdge = grindEdge->GetPrevEdge();
+					--grindEdgeIndex;
+					if (grindEdgeIndex < 0)
+					{
+						grindEdgeIndex = numPoints - 1;
+					}
+					quant = grindEdge->GetLength();
+				}
+				else
+				{
+					quant += movement;
+					movement = 0;
+				}
+			}
+		}
+		currPosInfo.SetGround(groundPoly, grindEdgeIndex, quant);
+		break;
+	}
 	}
 }
 
@@ -540,6 +611,35 @@ void EnemyMover::FrameIncrement()
 					currPosInfo.SetAerial(targetPos);
 				}
 				lastActionEndVelocity = velocity;
+			}
+		}
+	}
+	else if (moveType == GRIND)
+	{
+		if (actionFrames > 0)
+		{
+			--actionFrames;
+			if (actionFrames == 0)
+			{
+				moveType = NONE;
+				/*if (targetPI != NULL)
+				{
+					if (targetPI->edge != NULL)
+					{
+						currPosInfo.SetGround(targetPI->edge->poly, targetPI->edgeIndex,
+							targetPI->edgeQuantity);
+						currPosInfo.position = targetPI->pos;
+					}
+					else
+					{
+						currPosInfo.SetAerial(targetPI->pos);
+					}
+				}
+				else
+				{
+					currPosInfo.SetAerial(targetPos);
+				}*/
+				lastActionEndVelocity = currPosInfo.GetEdge()->Along() * grindSpeed;
 			}
 		}
 	}
@@ -701,9 +801,7 @@ void MovementTester::ProcessState()
 
 	if (action == WAIT && waitFrames == 0)
 	{
-		testCounter++;
-		if (testCounter == 2)
-			testCounter = 0;
+		
 		action = MOVE;
 		string checkStr = "A";
 		auto &nodeVec = sess->GetBossNodeVector( BossFightType::FT_BIRD, checkStr);
@@ -739,7 +837,18 @@ void MovementTester::ProcessState()
 
 		//enemyMover.SetModeNodeJump(nodePos, 200);
 		enemyMover.InitNodeDebugDraw(FT_BIRD, "A", Color::Cyan);
-		enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
+
+		if (!enemyMover.currPosInfo.IsAerial() && testCounter == 0 )
+		{
+			enemyMover.SetModeGrind(20, 60);
+			testCounter = 1;
+		}
+		else
+		{
+			enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
+			testCounter = 0;
+		}
+		
 
 		//if (testCounter == 0)
 		//{
