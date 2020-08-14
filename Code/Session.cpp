@@ -4776,7 +4776,7 @@ void Session::AddPoi(PoiParams *pp)
 	}
 	else
 	{
-		pi = new PoiInfo(pp->name, pp->GetGroundEdge(), pp->posInfo.GetQuant() );
+		pi = new PoiInfo(pp->name, pp->posInfo.GetEdge()->poly, pp->posInfo.GetEdgeIndex(), pp->posInfo.GetQuant() );
 
 	}
 	poiMap[pp->name] = pi;
@@ -4791,7 +4791,7 @@ void Session::AddBossNode( const std::string &nodeTypeName, PoiParams *pp)
 	}
 	else
 	{
-		pi = new PoiInfo(pp->name, pp->GetGroundEdge(), pp->posInfo.GetQuant());
+		pi = new PoiInfo(pp->name, pp->posInfo.GetEdge()->poly, pp->posInfo.GetEdgeIndex(), pp->posInfo.GetQuant());
 	}
 
 	int ftIndex = -1;

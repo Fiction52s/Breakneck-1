@@ -66,13 +66,16 @@ struct EnemyMover
 	V2d projectileGrav;
 	V2d velocity;
 
+	PoiInfo *targetPI;
+	V2d targetPos;
+	
+	PositionInfo currPosInfo;
+	Session *sess;
 
 	
 	bool predict;
-
-	Enemy *myEnemy;
 	
-	EnemyMover( Enemy *e );
+	EnemyMover();
 	~EnemyMover();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str, 
@@ -80,6 +83,8 @@ struct EnemyMover
 	void Reset();
 	void SetModeNodeProjectile(
 		V2d &nodePos, V2d &grav, double height);
+	void SetModeNodeProjectile(
+		PoiInfo *pi, V2d &grav, double height);
 	void SetModeNodeLinear(
 		V2d &nodePos,
 		CubicBezier &cb,
@@ -130,7 +135,8 @@ struct EnemyMover
 		V2d &nodePos,
 		double extraHeight);
 	void FrameIncrement();
-	V2d UpdatePhysics();
+	void UpdatePhysics(int numPhysSteps, 
+		int slowMultiple );
 	int GetLinearFrameEstimate(double attemptSpeed,
 		V2d &start, V2d &end);
 	int GetQuadraticFrameEstimate(double attemptSpeed,
