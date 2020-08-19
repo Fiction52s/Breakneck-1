@@ -80,6 +80,8 @@ EnemyMover::EnemyMover()
 	doubleQuadtraticMove0 = doubleQuadraticMovementSeq.AddQuadraticMovement(V2d(), V2d(), V2d(), CubicBezier(), 0);
 	doubleQuadtraticMove1 = doubleQuadraticMovementSeq.AddQuadraticMovement(V2d(), V2d(), V2d(), CubicBezier(), 0);
 
+	SetRectColor(swingQuad, Color::Red);
+
 	Reset();
 }
 
@@ -108,7 +110,22 @@ void EnemyMover::Reset()
 	debugCircles->HideAll();
 }
 
+void EnemyMover::UpdateSwingDebugDraw()
+{
+	V2d currPos = currPosInfo.GetPosition();
+	V2d other = normalize( swingAnchor - currPos );
+	other = V2d(other.y, -other.x);
+	double width = 20;
+	V2d A = currPos + other * width;
+	V2d B = swingAnchor + other * width;
+	V2d C = swingAnchor - other * width;
+	V2d D = currPos - other * width;
 
+	swingQuad[0].position = Vector2f(A);
+	swingQuad[1].position = Vector2f(B);
+	swingQuad[2].position = Vector2f(C);
+	swingQuad[3].position = Vector2f(D);
+}
 
 int EnemyMover::GetLinearFrameEstimate(double attemptSpeed,
 	V2d &start, V2d &end)
@@ -164,6 +181,22 @@ void EnemyMover::InitNodeDebugDraw(int fightType,
 		nodeCircles->SetPosition(i, Vector2f(a[i]->pos));
 	}
 	nodeCircles->ShowAll();
+}
+
+void EnemyMover::SetModeFall(double grav,int frames)
+{
+	projectileGrav = V2d(0, grav);
+	actionFrames = frames;
+	moveType = FALL;
+}
+
+void EnemyMover::SetModeSwing(V2d &p_swingAnchor, double p_wireLength,
+	int frames )
+{
+	swingAnchor = p_swingAnchor;
+	wireLength = p_wireLength;
+	actionFrames = frames;
+	moveType = SWING;
 }
 
 void EnemyMover::SetModeGrind( double speed, int frames)
@@ -510,6 +543,64 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 		currPosInfo.SetGround(groundPoly, grindEdgeIndex, quant);
 		break;
 	}
+	case SWING:
+	{
+		double factor = slowMultiple * numPhysSteps;
+		//velocity += V2d( 0, 2.0 ) / factor;
+
+		V2d wPos = currPosInfo.GetPosition();
+
+		V2d tes = normalize(wPos - swingAnchor);
+		tes = V2d(tes.y, -tes.x);
+
+		double val = dot(velocity, normalize(swingAnchor - wPos));
+
+		V2d otherTes = val * normalize(swingAnchor - wPos);
+
+		double speed = dot(velocity, tes);
+
+		/*if (speed > 0 && speed < 10)
+		{
+			speed = 10;
+		}
+		else if( speed < 0 && speed > -10 )
+		{
+			speed = -10;
+		}*/
+		//speed = 20.0;
+
+		velocity = speed * tes;
+		velocity += otherTes;
+
+		V2d future = wPos + velocity;
+
+		V2d diff = swingAnchor - future;
+
+		if (length(diff) > wireLength)
+		{
+			double pullVel = length(diff) - wireLength;
+			V2d pullDir = normalize(diff);
+			future += pullDir * pullVel;
+			velocity = future - wPos;
+		}
+
+		V2d movementVec = velocity;
+		movementVec /= factor;
+
+		currPosInfo.position += movementVec;
+		break;
+	}
+	case FALL:
+	{
+		double factor = slowMultiple * (double)numPhysSteps;
+		V2d movementVec = velocity;
+		movementVec /= factor;
+
+		currPosInfo.position += movementVec;
+		velocity += projectileGrav / factor;
+		break;
+	}
+		
 	}
 }
 
@@ -555,7 +646,12 @@ void EnemyMover::DebugDraw(sf::RenderTarget *target)
 		currSeq->MovementDebugDraw(target);
 		break;
 	}
-
+	case SWING:
+	{
+		UpdateSwingDebugDraw();
+		target->draw(swingQuad, 4, sf::Quads);
+		break;
+	}
 	}
 }
 
@@ -622,24 +718,31 @@ void EnemyMover::FrameIncrement()
 			if (actionFrames == 0)
 			{
 				moveType = NONE;
-				/*if (targetPI != NULL)
-				{
-					if (targetPI->edge != NULL)
-					{
-						currPosInfo.SetGround(targetPI->edge->poly, targetPI->edgeIndex,
-							targetPI->edgeQuantity);
-						currPosInfo.position = targetPI->pos;
-					}
-					else
-					{
-						currPosInfo.SetAerial(targetPI->pos);
-					}
-				}
-				else
-				{
-					currPosInfo.SetAerial(targetPos);
-				}*/
 				lastActionEndVelocity = currPosInfo.GetEdge()->Along() * grindSpeed;
+			}
+		}
+	}
+	else if (moveType == SWING)
+	{
+		if (actionFrames > 0)
+		{
+			--actionFrames;
+			if (actionFrames == 0)
+			{
+				moveType = NONE;
+				lastActionEndVelocity = velocity;
+			}
+		}
+	}
+	else if (moveType == FALL)
+	{
+		if (actionFrames > 0)
+		{
+			--actionFrames;
+			if (actionFrames == 0)
+			{
+				moveType = NONE;
+				lastActionEndVelocity = velocity;
 			}
 		}
 	}
@@ -727,6 +830,8 @@ void MovementTester::ResetEnemy()
 	UpdateSprite();
 
 	shurPool.Reset();
+	coyBulletPool.Reset();
+	tigerBulletPool.Reset();
 
 	testCheck = 0;
 }
@@ -838,15 +943,32 @@ void MovementTester::ProcessState()
 		//enemyMover.SetModeNodeJump(nodePos, 200);
 		enemyMover.InitNodeDebugDraw(FT_BIRD, "A", Color::Cyan);
 
-		if (!enemyMover.currPosInfo.IsAerial() && testCounter == 0 )
+		/*if (!enemyMover.currPosInfo.IsAerial() && testCounter == 0 )
 		{
 			enemyMover.SetModeGrind(20, 60);
 			testCounter = 1;
 		}
-		else
+		else*/
+		if( testCounter == 2 )
 		{
+
+
+			tigerBulletPool.Throw(GetPosition(), dir);
 			enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
 			testCounter = 0;
+		}
+		//else if( testCounter == 0 )
+		//{
+		//	//enemyMover.velocity = V2d(0, 0);
+		//	enemyMover.SetModeFall( 2.0, 60 );
+		//	testCounter = 1;
+		//}
+		else if (testCounter == 0)
+		{
+			V2d pos = nodeVec[r]->pos;
+			double dist = length(pos - currPosInfo.GetPosition());
+			enemyMover.SetModeSwing(pos, dist, 300);
+			testCounter = 2;
 		}
 		
 
@@ -1201,7 +1323,7 @@ void MovementTester::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	enemyMover.DebugDraw(target);
-	curveMovement.MovementDebugDraw(target);
+	//curveMovement.MovementDebugDraw(target);
 }
 
 void MovementTester::UpdatePreFrameCalculations()
@@ -1262,5 +1384,7 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(myCircle);
 	shurPool.Draw(target);
+	coyBulletPool.Draw(target);
+	tigerBulletPool.Draw(target);
 	//target->draw(predictCircle);
 }

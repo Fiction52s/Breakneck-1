@@ -73,9 +73,7 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	void UpdateSprite();
 	bool PlayerSlowingMe();
 	void ResetEnemy();
-//	void UpdateEnemyPhysics();
 	void FrameIncrement();
-
 	void HitTerrainAerial(Edge *, double);
 };
 

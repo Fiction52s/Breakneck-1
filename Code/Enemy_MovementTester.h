@@ -5,6 +5,8 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "Enemy_BirdShuriken.h"
+#include "Enemy_CoyoteBullet.h"
+#include "Enemy_TigerGrindBullet.h"
 
 //struct SpaceMover;
 
@@ -37,7 +39,11 @@ struct EnemyMover
 		NODE_DOUBLE_QUADRATIC,
 		NODE_PROJECTILE,
 		GRIND,
+		FALL,
+		SWING,
 	};
+
+	sf::Vertex swingQuad[4];
 
 	MoveType moveType;
 
@@ -75,6 +81,8 @@ struct EnemyMover
 
 	double grindSpeed;
 
+	double wireLength;
+	V2d swingAnchor;
 	
 	bool predict;
 	
@@ -82,9 +90,17 @@ struct EnemyMover
 	~EnemyMover();
 	void Reset();
 
+	void UpdateSwingDebugDraw();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str, 
 		sf::Color c );
+	void SetModeSwing(
+		V2d &swingAnchor,
+		double wireLength,
+		int frames );
+	void SetModeFall(
+		double grav,
+		int frames);
 	void SetModeGrind(
 		double speed, int frames);
 	void SetModeNodeProjectile(
@@ -170,7 +186,8 @@ struct MovementTester : Enemy
 	int testCounter;
 
 	BirdShurikenPool shurPool;
-	
+	CoyoteBulletPool coyBulletPool;
+	TigerGrindBulletPool tigerBulletPool;
 
 	double approachStartDist;
 	CubicBezier approachBez;

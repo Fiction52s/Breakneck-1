@@ -5840,16 +5840,6 @@ void Actor::WireMovement()
 				otherTes = val * normalize(wirePoint - wPos);
 			}
 
-			//otherTes = V2d( 0, 0 );
-
-			V2d old = velocity;
-
-			//if( normalize( wirePoint - wPos ).y > 0 )
-			//{
-			//	V2d g = AddGravity( V2d( 0, 0 ) );
-			//	velocity -= g;//V2d( 0, gravity );
-			//}
-
 
 			double speed = dot(velocity, tes);
 
@@ -5940,11 +5930,7 @@ void Actor::WireMovement()
 						rightWireBoostDir = -rightWireBoostDir;
 					}
 				}
-
-
 			}
-
-
 
 			if (rightWireBoost && framesSinceRightWireBoost >= singleWireBoostTiming && slowCounter == 1)
 			{
@@ -5970,20 +5956,12 @@ void Actor::WireMovement()
 			double segLength = length(seg);
 			V2d diff = wirePoint - future;
 
-
-			//wire->segmentLength -= 10;
-			//cout << "ws: " << wire->segmentLength << ", segg: " << segLength << ", get: " << wire->GetSegmentLength() << endl;
 			if (length(diff) > wire->segmentLength)
 			{
 				double pullVel = length(diff) - wire->segmentLength;
 				V2d pullDir = normalize(diff);
-				//cout << "lengthdiff: " << length( diff ) << ", : seglength: " << wire->segmentLength << endl;
 				future += pullDir * pullVel;
-				//cout << "fut: " << length( future - wirePoint ) << ", seglength: " << wire->segmentLength << endl;
 				velocity = future - wPos;
-
-				//cout << "pullVel: " << pullVel << endl;
-
 			}
 
 			//velocity = V2d( 0, 0 );

@@ -153,6 +153,7 @@ void ControllerState::SetLeftDirection()
 			mult += 64;
 		}
 
+		//dude wtf this is awful LOL fix this when you can
 		int test;
 		int bigger, smaller;
 		for (int i = 0; i < aimingPrimaryAngleRange; ++i)
