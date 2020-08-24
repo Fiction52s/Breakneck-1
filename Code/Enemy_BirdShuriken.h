@@ -12,9 +12,11 @@ struct BirdShurikenPool
 	BirdShurikenPool();
 	~BirdShurikenPool();
 	void Reset();
-	BirdShuriken *Throw(V2d &pos, V2d &dir);
+	BirdShuriken *Throw(V2d &pos, V2d &dir, 
+		int sType );
 	void Draw(sf::RenderTarget *target);
 	std::vector<BirdShuriken*> shurVec;
+	void RethrowAll();
 	sf::Vertex *verts;
 	Tileset *ts;
 	int numShurs;
@@ -27,8 +29,16 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	{
 		THROWN,
 		STICK,
+		RETHROW,
 		TURRET,
 		A_Count
+	};
+
+	enum ShurikenType
+	{
+		UNBLOCKABLE,
+		UNDODGEABLE,
+		MACHINEGUNTURRET,
 	};
 
 	int bulletSpeed;
@@ -52,11 +62,20 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	double thrownSpeed;
 	double accel;
 
+	double startUnDodgeSpeed;
+	double unDodgeAccel;
+	double unDodgeMaxSpeed;
+	double unDodgeSpeed;
+
 	sf::Vertex *quad;
+
+	int shurType;
 
 
 	BirdShuriken(sf::Vertex *quad );
-	void Throw( V2d &pos, V2d &dir);
+	void Throw( V2d &pos, V2d &dir,
+		int shurType );
+	void Rethrow();
 	void SetLevel(int lev);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,

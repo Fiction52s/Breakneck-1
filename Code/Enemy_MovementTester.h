@@ -7,6 +7,7 @@
 #include "Enemy_BirdShuriken.h"
 #include "Enemy_CoyoteBullet.h"
 #include "Enemy_TigerGrindBullet.h"
+#include "Enemy_GatorWaterOrb.h"
 
 //struct SpaceMover;
 
@@ -188,6 +189,8 @@ struct MovementTester : Enemy
 	BirdShurikenPool shurPool;
 	CoyoteBulletPool coyBulletPool;
 	TigerGrindBulletPool tigerBulletPool;
+	GatorWaterOrbPool gatorOrbPool;
+
 
 	double approachStartDist;
 	CubicBezier approachBez;

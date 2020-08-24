@@ -103,7 +103,9 @@ struct HitboxInfo
 		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
 		extraDefenderHitlag( 0 ),
 		hitBlockCancelDelay( 0 ),
-		hitPosType( AIRFORWARD )
+		hitPosType( AIRFORWARD ),
+		canBeBlocked(true),
+		canBeParried(true)
 	{
 	};
 
@@ -129,6 +131,8 @@ struct HitboxInfo
 	int extraDefenderHitlag;
 	int hitBlockCancelDelay;
 	HitPosType hitPosType;
+	bool canBeBlocked;
+	bool canBeParried;
 	
 };
 

@@ -832,6 +832,7 @@ void MovementTester::ResetEnemy()
 	shurPool.Reset();
 	coyBulletPool.Reset();
 	tigerBulletPool.Reset();
+	gatorOrbPool.Reset();
 
 	testCheck = 0;
 }
@@ -949,27 +950,37 @@ void MovementTester::ProcessState()
 			testCounter = 1;
 		}
 		else*/
-		if( testCounter == 2 )
+		//if( testCounter == 2 )
 		{
-
-
-			tigerBulletPool.Throw(GetPosition(), dir);
+			
+			auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNDODGEABLE);
+			if (f == NULL)
+			{
+				shurPool.RethrowAll();
+			}
+			//gatorOrbPool.Throw(GetPosition(), dir);
 			enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
 			testCounter = 0;
 		}
+		/*
+		{
+			V2d pos = nodeVec[r]->pos;
+			double dist = length(pos - currPosInfo.GetPosition());
+			enemyMover.SetModeSwing(pos, dist, 300);
+			testCounter = 2;
+		}*/
+
+
 		//else if( testCounter == 0 )
 		//{
 		//	//enemyMover.velocity = V2d(0, 0);
 		//	enemyMover.SetModeFall( 2.0, 60 );
 		//	testCounter = 1;
 		//}
-		else if (testCounter == 0)
-		{
-			V2d pos = nodeVec[r]->pos;
-			double dist = length(pos - currPosInfo.GetPosition());
-			enemyMover.SetModeSwing(pos, dist, 300);
-			testCounter = 2;
-		}
+
+
+		/*else if (testCounter == 0)
+		
 		
 
 		//if (testCounter == 0)
@@ -1386,5 +1397,6 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 	shurPool.Draw(target);
 	coyBulletPool.Draw(target);
 	tigerBulletPool.Draw(target);
+	gatorOrbPool.Draw(target);
 	//target->draw(predictCircle);
 }

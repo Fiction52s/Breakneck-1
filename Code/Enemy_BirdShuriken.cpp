@@ -52,24 +52,41 @@ void BirdShurikenPool::Reset()
 	}
 }
 
-BirdShuriken * BirdShurikenPool::Throw(V2d &pos, V2d &dir)
+BirdShuriken * BirdShurikenPool::Throw(V2d &pos, V2d &dir,
+	int sType )
 {
 	BirdShuriken *bs = NULL;
+	BirdShuriken *thrownShur = NULL;
 	for (int i = 0; i < numShurs; ++i)
 	{
 		bs = shurVec[i];
 		if ( !bs->spawned )
 		{
-			bs->Throw(pos, dir);
+			bs->Throw(pos, dir, sType );
+			thrownShur = bs;
 			break;
 		}
 	}
-	return bs;
+	return thrownShur;
 }
 
 void BirdShurikenPool::Draw(sf::RenderTarget *target)
 {
 	target->draw(verts, shurVec.size() * 4, sf::Quads, ts->texture);
+}
+
+void BirdShurikenPool::RethrowAll()
+{
+	BirdShuriken *bs = NULL;
+	for (int i = 0; i < numShurs; ++i)
+	{
+		bs = shurVec[i];
+		if (bs->spawned && bs->action == BirdShuriken::STICK )
+		{
+			bs->Rethrow();
+			break;
+		}
+	}
 }
 
 BirdShuriken::BirdShuriken(sf::Vertex *myQuad )
@@ -127,6 +144,10 @@ BirdShuriken::BirdShuriken(sf::Vertex *myQuad )
 	thrownSpeed = 10;
 	accel = .1;
 
+	startUnDodgeSpeed = 10;
+	unDodgeAccel = .15;
+	unDodgeMaxSpeed = 60;
+
 	ResetEnemy();
 }
 
@@ -172,7 +193,7 @@ void BirdShuriken::SetLevel(int lev)
 	}
 }
 
-void BirdShuriken::Throw( V2d &pos, V2d &dir)
+void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 {
 	Reset();
 	sess->AddEnemy(this);
@@ -180,10 +201,46 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir)
 	currPosInfo.ground = NULL;
 
 	surfaceMover->Set(currPosInfo);
+
+	shurType = p_shurType;
+	surfaceMover->collisionOn = true;
+
+	switch (shurType)
+	{
+	case UNDODGEABLE:
+	{
+		//unDodgeSpeed = startUnDodgeSpeed;
+		//surfaceMover->velocity = dir * unDodgeSpeed;
+		break;
+	}
+		
+	}
 	surfaceMover->velocity = dir * thrownSpeed;
 	
 	action = THROWN;
 	frame = 0;
+	
+}
+
+void BirdShuriken::Rethrow()
+{
+	action = RETHROW;
+	frame = 0;
+	
+	V2d pDir = normalize(sess->GetPlayerPos(0) - GetPosition());
+
+	switch (shurType)
+	{
+	case UNDODGEABLE:
+	{
+		surfaceMover->velocity = pDir * startUnDodgeSpeed;
+		unDodgeSpeed = startUnDodgeSpeed;
+		surfaceMover->ground = NULL;
+		surfaceMover->collisionOn = false;
+		break;
+	}
+		
+	}
 }
 
 void BirdShuriken::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
@@ -257,21 +314,23 @@ void BirdShuriken::ProcessState()
 	V2d diff = playerPos - position;
 	V2d pDir = normalize(diff);
 
-	/*V2d extra(0, 0);
-	V2d velDir = normalize(surfaceMover->velocity);
-	double res = cross(pDir, velDir);
-	if ( res > 0)
+	if (action == THROWN)
 	{
-		extra = V2d(velDir.y, -velDir.x) * accel;
+		surfaceMover->velocity += pDir * accel;
+		surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
 	}
-	else if (res < 0)
+	else if (action == RETHROW)
 	{
-		extra = V2d(velDir.y, -velDir.x) * -accel;
+		if( shurType == UNDODGEABLE )
+		{ 
+			surfaceMover->velocity = pDir * unDodgeSpeed;
+			unDodgeSpeed += unDodgeAccel;
+			if (unDodgeSpeed > unDodgeMaxSpeed)
+			{
+				unDodgeSpeed = unDodgeMaxSpeed;
+			}
+		}
 	}
-
-	surfaceMover->velocity += extra;*/
-	surfaceMover->velocity += pDir * accel;
-	surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
 
 	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	if (slowCounter == 1 && action == TURRET )//&& action == FLY )
@@ -289,6 +348,12 @@ void BirdShuriken::ProcessState()
 
 void BirdShuriken::IHitPlayer(int index)
 {
+	if (action == RETHROW && shurType == UNDODGEABLE)
+	{
+		ClearRect(quad);
+		sess->RemoveEnemy(this);
+		spawned = false;
+	}
 }
 
 //void BirdShuriken::UpdateEnemyPhysics()
@@ -317,9 +382,18 @@ void BirdShuriken::HandleHitAndSurvive()
 
 void BirdShuriken::HitTerrainAerial(Edge *e, double q)
 {
-	action = TURRET;
-	frame = 0;
-	fireCounter = 0;
+	if (shurType == MACHINEGUNTURRET)
+	{
+		action = TURRET;
+		frame = 0;
+		fireCounter = 0;
+	}
+	else
+	{
+		action = STICK;
+		frame = 0;
+	}
+	
 	//ClearRect(quad);
 
 
