@@ -190,6 +190,12 @@ void EnemyMover::SetModeFall(double grav,int frames)
 	moveType = FALL;
 }
 
+void EnemyMover::SetModeWait(int frames)
+{
+	moveType = WAIT;
+	actionFrames = frames;
+}
+
 void EnemyMover::SetModeSwing(V2d &p_swingAnchor, double p_wireLength,
 	int frames )
 {
@@ -749,7 +755,7 @@ void EnemyMover::FrameIncrement()
 }
 
 MovementTester::MovementTester(ActorParams *ap)
-	:Enemy(EnemyType::EN_MOVEMENTTESTER, ap)
+	:Enemy(EnemyType::EN_MOVEMENTTESTER, ap), shurPool( this )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -957,9 +963,14 @@ void MovementTester::ProcessState()
 			if (f == NULL)
 			{
 				shurPool.RethrowAll();
+				enemyMover.SetModeWait(120);
+			}
+			else
+			{
+				enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
 			}
 			//gatorOrbPool.Throw(GetPosition(), dir);
-			enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
+			
 			testCounter = 0;
 		}
 		/*

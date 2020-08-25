@@ -349,6 +349,7 @@ struct Actor : QuadTreeCollider,
 		FULLBLOCK,
 		HALFBLOCK,
 		PARRY,
+		INVINCIBLEHIT,
 	};
 
 	const static int MAX_BUBBLES = 5;
@@ -1119,11 +1120,15 @@ struct Actor : QuadTreeCollider,
 		int hitFrame,
 		HitboxInfo::HitPosType hpt,
 		V2d &hitPos, 
-		bool attackFacingRight);
+		bool attackFacingRight,
+		bool canBeParried,
+		bool canBeBlocked);
 	HitResult CheckIfImHit(CollisionBox &cb,
 		HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
-		bool attackFacingRight);
+		bool attackFacingRight,
+		bool canBeParried,
+		bool canBeBlocked);
 	HitResult CheckHitByEnemy(Enemy *e);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,

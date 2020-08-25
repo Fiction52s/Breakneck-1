@@ -9,7 +9,7 @@ struct BirdShuriken;
 
 struct BirdShurikenPool
 {
-	BirdShurikenPool();
+	BirdShurikenPool(Enemy *parentEnemy );
 	~BirdShurikenPool();
 	void Reset();
 	BirdShuriken *Throw(V2d &pos, V2d &dir, 
@@ -20,6 +20,7 @@ struct BirdShurikenPool
 	sf::Vertex *verts;
 	Tileset *ts;
 	int numShurs;
+	Enemy *parentEnemy;
 };
 
 struct BirdShuriken : Enemy, LauncherEnemy,
@@ -36,10 +37,18 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 
 	enum ShurikenType
 	{
-		UNBLOCKABLE,
+		SLIGHTHOMING,
 		UNDODGEABLE,
-		MACHINEGUNTURRET,
+		UNBLOCKABLE,
+		SLIGHTHOMING_STICK,
+		SURFACENORMAL_STICK,
+		UNBLOCKABLE_STICK,
+		UNDODGEABLE_STICK,
+		MACHINEGUNTURRET_STICK,
+		RETURN_STICK,
 	};
+
+	int framesToLive;
 
 	int bulletSpeed;
 	int framesBetween;
@@ -67,12 +76,20 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	double unDodgeMaxSpeed;
 	double unDodgeSpeed;
 
+	double homingSpeed;
+	double homingAccel;
+
+	double linearSpeed;
+
 	sf::Vertex *quad;
 
 	int shurType;
 
+	BirdShurikenPool *pool;
+
 
 	BirdShuriken(sf::Vertex *quad );
+	void Die();
 	void Throw( V2d &pos, V2d &dir,
 		int shurType );
 	void Rethrow();

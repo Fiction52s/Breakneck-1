@@ -917,7 +917,9 @@ void BasicBullet::UpdatePhysics()
 
 			Actor::HitResult res = player->CheckIfImHit(hitBody, 
 				HitboxInfo::GetAirType( velocity ),
-				position, velocity.x >= 0 );
+				position, velocity.x >= 0,
+				launcher->hitboxInfo->canBeParried,
+				launcher->hitboxInfo->canBeBlocked);
 
 			if (res != Actor::HitResult::MISS )
 			{
@@ -1193,7 +1195,9 @@ void SinBullet::UpdatePhysics()
 
 		Actor::HitResult res = player->CheckIfImHit(hitBody, 
 			HitboxInfo::GetAirType( velocity ),
-			position, velocity.x >= 0);
+			position, velocity.x >= 0,
+			launcher->hitboxInfo->canBeParried,
+			launcher->hitboxInfo->canBeBlocked);
 
 		if (res != Actor::HitResult::MISS)
 		{

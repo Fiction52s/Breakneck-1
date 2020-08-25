@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_BirdShuriken.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -18,7 +19,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-BirdShurikenPool::BirdShurikenPool()
+BirdShurikenPool::BirdShurikenPool(Enemy *p_parentEnemy)
 {
 	ts = NULL;
 	numShurs = 10;
@@ -27,9 +28,12 @@ BirdShurikenPool::BirdShurikenPool()
 	for (int i = 0; i < numShurs; ++i)
 	{
 		shurVec[i] = new BirdShuriken(verts + 4 * i);
+		shurVec[i]->pool = this;
 	}
 
 	Session *sess = Session::GetSession();
+
+	parentEnemy = p_parentEnemy;
 
 	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
 }
@@ -84,12 +88,11 @@ void BirdShurikenPool::RethrowAll()
 		if (bs->spawned && bs->action == BirdShuriken::STICK )
 		{
 			bs->Rethrow();
-			break;
 		}
 	}
 }
 
-BirdShuriken::BirdShuriken(sf::Vertex *myQuad )
+BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	:Enemy(EnemyType::EN_BIRDSHURIKEN, NULL)
 {
 	SetNumActions(A_Count);
@@ -103,6 +106,8 @@ BirdShuriken::BirdShuriken(sf::Vertex *myQuad )
 
 	actionLength[TURRET] = 1;
 	animFactor[TURRET] = 1;
+
+	pool = NULL;
 
 	quad = myQuad;
 	//SetLevel(ap->GetLevel());
@@ -147,6 +152,10 @@ BirdShuriken::BirdShuriken(sf::Vertex *myQuad )
 	startUnDodgeSpeed = 10;
 	unDodgeAccel = .15;
 	unDodgeMaxSpeed = 60;
+	
+	linearSpeed = 10;
+	homingSpeed = 10;
+	homingAccel = .8;
 
 	ResetEnemy();
 }
@@ -205,17 +214,30 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 	shurType = p_shurType;
 	surfaceMover->collisionOn = true;
 
+	surfaceMover->velocity = dir * thrownSpeed;
+	framesToLive = 120;
+
 	switch (shurType)
 	{
 	case UNDODGEABLE:
 	{
-		//unDodgeSpeed = startUnDodgeSpeed;
-		//surfaceMover->velocity = dir * unDodgeSpeed;
+		unDodgeSpeed = startUnDodgeSpeed;
+		surfaceMover->collisionOn = false;
+		break;
+	}
+	case UNBLOCKABLE:
+	{
+		surfaceMover->velocity = dir * homingSpeed;
+		surfaceMover->collisionOn = false;
+		break;
+	}
+	case SLIGHTHOMING:
+	{
+		surfaceMover->collisionOn = false;
 		break;
 	}
 		
 	}
-	surfaceMover->velocity = dir * thrownSpeed;
 	
 	action = THROWN;
 	frame = 0;
@@ -224,22 +246,57 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 
 void BirdShuriken::Rethrow()
 {
-	action = RETHROW;
-	frame = 0;
+	
 	
 	V2d pDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 
+	if( shurType != MACHINEGUNTURRET_STICK)
+	{
+		action = RETHROW;
+		frame = 0;
+		surfaceMover->ground = NULL;
+		surfaceMover->collisionOn = false;
+	}
+	
+	framesToLive = 120;
+
 	switch (shurType)
 	{
-	case UNDODGEABLE:
+	case SLIGHTHOMING_STICK:
+	{
+		surfaceMover->velocity = pDir * thrownSpeed;
+		break;
+	}
+	case SURFACENORMAL_STICK:
+	{
+		surfaceMover->velocity = surfaceMover->ground->Normal() * linearSpeed;
+		break;
+	}
+	case UNDODGEABLE_STICK:
 	{
 		surfaceMover->velocity = pDir * startUnDodgeSpeed;
 		unDodgeSpeed = startUnDodgeSpeed;
-		surfaceMover->ground = NULL;
-		surfaceMover->collisionOn = false;
 		break;
 	}
-		
+	case UNBLOCKABLE_STICK:
+	{
+		surfaceMover->velocity = surfaceMover->ground->Normal() * homingSpeed;
+		unDodgeSpeed = startUnDodgeSpeed;
+		break;
+	}
+	case RETURN_STICK:
+	{
+		V2d parentDir = normalize(pool->parentEnemy->GetPosition() - GetPosition());
+		surfaceMover->velocity = parentDir * startUnDodgeSpeed;
+		unDodgeSpeed = startUnDodgeSpeed;
+		break;
+	}	
+	case MACHINEGUNTURRET_STICK:
+	{
+		action = TURRET;
+		frame = 0;
+		break;
+	}
 	}
 }
 
@@ -262,12 +319,14 @@ void BirdShuriken::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResul
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+	
 	b->launcher->DeactivateBullet(b);
 }
-
-
-
 
 void BirdShuriken::DirectKill()
 {
@@ -287,9 +346,42 @@ void BirdShuriken::DirectKill()
 	receivedHit = NULL;
 }
 
+void BirdShuriken::Die()
+{
+	ClearRect(quad);
+	sess->RemoveEnemy(this);
+	spawned = false;
+}
+
 void BirdShuriken::FrameIncrement()
 {
 	++fireCounter;
+
+	if (action == THROWN)
+	{
+		if (shurType == SLIGHTHOMING || shurType == UNBLOCKABLE)
+		{
+			--framesToLive;
+			if (framesToLive == 0)
+			{
+				Die();
+			}
+		}
+	}
+	else if (action == RETHROW)
+	{
+		if (shurType == SLIGHTHOMING_STICK
+			|| shurType == SURFACENORMAL_STICK
+			|| shurType == UNBLOCKABLE_STICK
+			|| shurType == MACHINEGUNTURRET_STICK)
+		{
+			--framesToLive;
+			if (framesToLive == 0)
+			{
+				Die();
+			}
+		}
+	}
 }
 
 void BirdShuriken::ProcessState()
@@ -316,43 +408,124 @@ void BirdShuriken::ProcessState()
 
 	if (action == THROWN)
 	{
-		surfaceMover->velocity += pDir * accel;
-		surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
-	}
-	else if (action == RETHROW)
-	{
-		if( shurType == UNDODGEABLE )
-		{ 
+		switch (shurType)
+		{
+		case SLIGHTHOMING:
+		case SLIGHTHOMING_STICK:
+		case SURFACENORMAL_STICK:
+		case UNBLOCKABLE_STICK:
+		case UNDODGEABLE_STICK:
+		case MACHINEGUNTURRET_STICK:
+		case RETURN_STICK:
+		{
+			surfaceMover->velocity += pDir * accel;
+			surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
+			break;
+		}
+		case UNBLOCKABLE:
+		{
+			surfaceMover->velocity += pDir * homingAccel;
+			if (length(surfaceMover->velocity) > homingSpeed)
+			{
+				surfaceMover->velocity = normalize(surfaceMover->velocity) * homingSpeed;
+			}
+			break;
+		}
+		case UNDODGEABLE:
+		{
 			surfaceMover->velocity = pDir * unDodgeSpeed;
 			unDodgeSpeed += unDodgeAccel;
 			if (unDodgeSpeed > unDodgeMaxSpeed)
 			{
 				unDodgeSpeed = unDodgeMaxSpeed;
 			}
+			break;
+		}
 		}
 	}
-
-	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
-	if (slowCounter == 1 && action == TURRET )//&& action == FLY )
+	else if (action == RETHROW)
 	{
-		int f = fireCounter % 60;
-
-		if (f % 5 == 0 && f >= 25 && f < 50)
+		switch (shurType)
 		{
-			launchers[0]->position = position;
-			launchers[0]->facingDir = pDir;
-			launchers[0]->Fire();
+		case SLIGHTHOMING_STICK:
+		{
+			surfaceMover->velocity += pDir * accel;
+			surfaceMover->velocity = normalize(surfaceMover->velocity) * thrownSpeed;
+			break;
+		}
+		case SURFACENORMAL_STICK:
+		{
+			break;
+		}
+		case UNBLOCKABLE_STICK:
+		{
+			surfaceMover->velocity += pDir * homingAccel;
+			if (length(surfaceMover->velocity) > homingSpeed)
+			{
+				surfaceMover->velocity = normalize(surfaceMover->velocity) * homingSpeed;
+			}
+			break;
+		}
+		case UNDODGEABLE_STICK:
+		{
+			surfaceMover->velocity = pDir * unDodgeSpeed;
+			unDodgeSpeed += unDodgeAccel;
+			if (unDodgeSpeed > unDodgeMaxSpeed)
+			{
+				unDodgeSpeed = unDodgeMaxSpeed;
+			}
+			break;
+		}
+		case MACHINEGUNTURRET_STICK:
+		{
+			//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+			if (slowCounter == 1 && action == TURRET)//&& action == FLY )
+			{
+				int f = fireCounter % 60;
+
+				if (f % 5 == 0 && f >= 25 && f < 50)
+				{
+					launchers[0]->position = position;
+					launchers[0]->facingDir = pDir;
+					launchers[0]->Fire();
+				}
+			}
+			break;
+		}
+		case RETURN_STICK:
+		{
+			V2d parentDir = normalize(pool->parentEnemy->GetPosition() - GetPosition());
+			surfaceMover->velocity = parentDir * unDodgeSpeed;
+			unDodgeSpeed += unDodgeAccel;
+			if (unDodgeSpeed > unDodgeMaxSpeed)
+			{
+				unDodgeSpeed = unDodgeMaxSpeed;
+			}
+			break;
+		}
 		}
 	}
+
+	
 }
 
 void BirdShuriken::IHitPlayer(int index)
 {
-	if (action == RETHROW && shurType == UNDODGEABLE)
+	if (action == THROWN)
 	{
-		ClearRect(quad);
-		sess->RemoveEnemy(this);
-		spawned = false;
+		if (shurType == SLIGHTHOMING || shurType == UNBLOCKABLE || shurType == UNDODGEABLE)
+		{
+			Die();
+		}
+	}
+	else if (action == RETHROW)
+	{
+		if (shurType == SLIGHTHOMING_STICK
+			|| shurType == UNBLOCKABLE_STICK
+			|| shurType == UNDODGEABLE_STICK)
+		{
+			Die();
+		}
 	}
 }
 
@@ -382,7 +555,7 @@ void BirdShuriken::HandleHitAndSurvive()
 
 void BirdShuriken::HitTerrainAerial(Edge *e, double q)
 {
-	if (shurType == MACHINEGUNTURRET)
+	if (shurType == MACHINEGUNTURRET_STICK)
 	{
 		action = TURRET;
 		frame = 0;

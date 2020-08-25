@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Gator.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -114,7 +115,12 @@ void Gator::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
 	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+	
 	b->launcher->DeactivateBullet(b);
 }
 

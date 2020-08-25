@@ -42,6 +42,7 @@ struct EnemyMover
 		GRIND,
 		FALL,
 		SWING,
+		WAIT,
 	};
 
 	sf::Vertex swingQuad[4];
@@ -95,6 +96,7 @@ struct EnemyMover
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str, 
 		sf::Color c );
+	void SetModeWait(int frames);
 	void SetModeSwing(
 		V2d &swingAnchor,
 		double wireLength,

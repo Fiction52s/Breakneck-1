@@ -221,7 +221,9 @@ bool GatorWaterOrb::CheckHitPlayer(int index)
 	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
 	{
 		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
-			GetPosition(), facingRight);
+			GetPosition(), facingRight,
+			currHitboxes->hitboxInfo->canBeParried,
+			currHitboxes->hitboxInfo->canBeBlocked);
 
 		if (hitResult != Actor::HitResult::MISS)
 		{

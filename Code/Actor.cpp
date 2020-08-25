@@ -11750,11 +11750,12 @@ void Actor::PhysicsResponse()
 			if (pTarget != NULL)
 			{
 				checkHit = pTarget->CheckIfImHit(currHitboxes, currHitboxFrame,
-					hi.hitPosType, position, facingRight );
+					hi.hitPosType, position, facingRight,
+					hi.canBeParried, hi.canBeBlocked);
 			}
 		}
 
-		if (checkHit != HitResult::MISS )
+		if (checkHit != HitResult::MISS && checkHit != HitResult::INVINCIBLEHIT)
 		{
 			*currVSHitboxInfo = hi;
 
@@ -16674,24 +16675,25 @@ bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingR
 }
 
 Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
-	 HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
+	 HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
+	bool canBeParried, bool canBeBlocked )
 {
 	if (IsIntangible())
 	{
-		return HitResult::MISS;
+		return HitResult::INVINCIBLEHIT;
 	}
 
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		if (CanParry(hpt, hitPos, attackFacingRight ))
+		if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::PARRY;
 		}
-		else if (CanFullBlock(hpt, hitPos, attackFacingRight))
+		else if (canBeBlocked && CanFullBlock(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::FULLBLOCK;
 		}
-		else if (CanHalfBlock(hpt, hitPos, attackFacingRight))
+		else if (canBeBlocked && CanHalfBlock(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::HALFBLOCK;
 		}
@@ -16704,25 +16706,26 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 	return HitResult::MISS;
 }
 
-Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb,HitboxInfo::HitPosType hpt,
-	V2d &hitPos, bool attackFacingRight)
+Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb, HitboxInfo::HitPosType hpt,
+	V2d &hitPos, bool attackFacingRight,
+	bool canBeParried, bool canBeBlocked)
 {
 	if (IsIntangible())
 	{
-		return HitResult::MISS;
+		return HitResult::INVINCIBLEHIT;
 	}
 
 	if (IntersectMyHurtboxes(cb))
 	{
-		if (CanParry(hpt, hitPos, attackFacingRight))
+		if ( canBeParried && CanParry(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::PARRY;
 		}
-		else if (CanFullBlock(hpt, hitPos, attackFacingRight))
+		else if ( canBeBlocked && CanFullBlock(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::FULLBLOCK;
 		}
-		else if (CanHalfBlock(hpt, hitPos, attackFacingRight))
+		else if ( canBeBlocked && CanHalfBlock(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::HALFBLOCK;
 		}

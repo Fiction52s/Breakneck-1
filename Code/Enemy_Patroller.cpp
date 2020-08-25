@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Patroller.h"
 #include "Eye.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -455,7 +456,12 @@ void Patroller::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 	launchers[0]->hitboxInfo->kbDir = normalize( b->velocity );
 	launchers[0]->hitboxInfo->knockback = 10;
 	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+	
 	b->launcher->DeactivateBullet(b);
 }
 

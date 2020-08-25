@@ -1754,12 +1754,14 @@ bool Enemy::CheckHitPlayer(int index)
 	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL )
 	{
 		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
-			GetPosition(), facingRight );
+			GetPosition(), facingRight,
+			currHitboxes->hitboxInfo->canBeParried,
+			currHitboxes->hitboxInfo->canBeBlocked);
 
 		if (hitResult != Actor::HitResult::MISS)
 		{
 			IHitPlayer(index);
-			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+			if (currHitboxes != NULL && hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
 			{
 				player->ApplyHit(currHitboxes->hitboxInfo,
 					NULL, hitResult, GetPosition() );
