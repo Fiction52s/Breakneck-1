@@ -89,7 +89,9 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 
 
 	BirdShuriken(sf::Vertex *quad );
+	bool IsHitFacingRight();
 	void Die();
+	void ProcessHit();
 	void Throw( V2d &pos, V2d &dir,
 		int shurType );
 	void Rethrow();
@@ -102,7 +104,7 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 		BasicBullet *b,
 		int hitResult);
 	void ProcessState();
-	bool physicsOver;
+	void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 	void IHitPlayer(int index = 0);

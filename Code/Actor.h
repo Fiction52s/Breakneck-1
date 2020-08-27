@@ -202,6 +202,7 @@ struct Actor : QuadTreeCollider,
 		AIRDASH,
 		STEEPCLIMB,
 		AIRHITSTUN,
+		AIRPARRY,
 		GROUNDHITSTUN,
 		WIREHOLD,
 		BOUNCEAIR,
@@ -1410,6 +1411,17 @@ struct Actor : QuadTreeCollider,
 	void AIRHITSTUN_TimeDepFrameInc();
 	int AIRHITSTUN_GetActionLength();
 	Tileset * AIRHITSTUN_GetTileset();
+
+	void AIRPARRY_Start();
+	void AIRPARRY_End();
+	void AIRPARRY_Change();
+	void AIRPARRY_Update();
+	void AIRPARRY_UpdateSprite();
+	void AIRPARRY_TransitionToAction(int a);
+	void AIRPARRY_TimeIndFrameInc();
+	void AIRPARRY_TimeDepFrameInc();
+	int AIRPARRY_GetActionLength();
+	Tileset * AIRPARRY_GetTileset();
 
 	void AUTORUN_Start();
 	void AUTORUN_End();

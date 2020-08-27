@@ -1063,6 +1063,18 @@ void Actor::SetupActionFunctions()
 		&Actor::AIRHITSTUN_GetActionLength,
 		&Actor::AIRHITSTUN_GetTileset);
 
+	SetupFuncsForAction(AIRPARRY,
+		&Actor::AIRPARRY_Start,
+		&Actor::AIRPARRY_End,
+		&Actor::AIRPARRY_Change,
+		&Actor::AIRPARRY_Update,
+		&Actor::AIRPARRY_UpdateSprite,
+		&Actor::AIRPARRY_TransitionToAction,
+		&Actor::AIRPARRY_TimeIndFrameInc,
+		&Actor::AIRPARRY_TimeDepFrameInc,
+		&Actor::AIRPARRY_GetActionLength,
+		&Actor::AIRPARRY_GetTileset);
+
 	SetupFuncsForAction(AUTORUN,
 		&Actor::AUTORUN_Start,
 		&Actor::AUTORUN_End,
@@ -4552,22 +4564,30 @@ void Actor::ProcessReceivedHit()
 		}
 		case HitResult::PARRY:
 		{
-			if (action == GROUNDBLOCKFORWARD)
+			if (IsActionAirBlock(action))
 			{
-				SetAction(GROUNDPARRY);
-			}
-			else if (action == GROUNDBLOCKDOWNFORWARD)
-			{
-				SetAction(GROUNDPARRYLOW);
+				SetAction(AIRPARRY);
+				V2d(0, 0);
 			}
 			else
 			{
-				//until implemented everything
-				SetAction(GROUNDPARRY);
+				if (action == GROUNDBLOCKFORWARD)
+				{
+					SetAction(GROUNDPARRY);
+				}
+				else if (action == GROUNDBLOCKDOWNFORWARD)
+				{
+					SetAction(GROUNDPARRYLOW);
+				}
+				else
+				{
+					//until implemented everything
+					SetAction(GROUNDPARRY);
+				}
+				frame = 0;
+				groundSpeed = 0;
 			}
-
-			frame = 0;
-			groundSpeed = 0;
+			
 			invincibleFrames = 10;
 
 			break;
@@ -16678,14 +16698,15 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 	 HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
 	bool canBeParried, bool canBeBlocked )
 {
-	if (IsIntangible())
-	{
-		return HitResult::INVINCIBLEHIT;
-	}
+	
 
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
+		if (IsIntangible())
+		{
+			return HitResult::INVINCIBLEHIT;
+		}
+		else if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::PARRY;
 		}
@@ -16710,14 +16731,13 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb, HitboxInfo::HitPosType hp
 	V2d &hitPos, bool attackFacingRight,
 	bool canBeParried, bool canBeBlocked)
 {
-	if (IsIntangible())
-	{
-		return HitResult::INVINCIBLEHIT;
-	}
-
 	if (IntersectMyHurtboxes(cb))
 	{
-		if ( canBeParried && CanParry(hpt, hitPos, attackFacingRight))
+		if (IsIntangible())
+		{
+			return HitResult::INVINCIBLEHIT;
+		}
+		else if ( canBeParried && CanParry(hpt, hitPos, attackFacingRight))
 		{
 			return HitResult::PARRY;
 		}

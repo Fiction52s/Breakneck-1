@@ -95,6 +95,7 @@ void BirdShurikenPool::RethrowAll()
 BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	:Enemy(EnemyType::EN_BIRDSHURIKEN, NULL)
 {
+
 	SetNumActions(A_Count);
 	SetEditorActions(THROWN, 0, 0);
 
@@ -138,7 +139,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -202,6 +203,16 @@ void BirdShuriken::SetLevel(int lev)
 	}
 }
 
+void BirdShuriken::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 0)
+	{
+		Die();
+
+		receivedHit = NULL;
+	}
+}
+
 void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 {
 	Reset();
@@ -210,12 +221,15 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 	currPosInfo.ground = NULL;
 
 	surfaceMover->Set(currPosInfo);
+	hitboxInfo->canBeBlocked = true;
 
 	shurType = p_shurType;
 	surfaceMover->collisionOn = true;
 
 	surfaceMover->velocity = dir * thrownSpeed;
 	framesToLive = 120;
+
+	SetHurtboxes(NULL);
 
 	switch (shurType)
 	{
@@ -229,6 +243,8 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 	{
 		surfaceMover->velocity = dir * homingSpeed;
 		surfaceMover->collisionOn = false;
+		hitboxInfo->canBeBlocked = false;
+		DefaultHurtboxesOn();
 		break;
 	}
 	case SLIGHTHOMING:
@@ -246,19 +262,11 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 
 void BirdShuriken::Rethrow()
 {
-	
-	
 	V2d pDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 
-	if( shurType != MACHINEGUNTURRET_STICK)
-	{
-		action = RETHROW;
-		frame = 0;
-		surfaceMover->ground = NULL;
-		surfaceMover->collisionOn = false;
-	}
-	
 	framesToLive = 120;
+
+	SetHurtboxes(NULL);
 
 	switch (shurType)
 	{
@@ -282,6 +290,7 @@ void BirdShuriken::Rethrow()
 	{
 		surfaceMover->velocity = surfaceMover->ground->Normal() * homingSpeed;
 		unDodgeSpeed = startUnDodgeSpeed;
+		DefaultHurtboxesOn();
 		break;
 	}
 	case RETURN_STICK:
@@ -297,6 +306,14 @@ void BirdShuriken::Rethrow()
 		frame = 0;
 		break;
 	}
+	}
+
+	if (shurType != MACHINEGUNTURRET_STICK)
+	{
+		action = RETHROW;
+		frame = 0;
+		surfaceMover->ground = NULL;
+		surfaceMover->collisionOn = false;
 	}
 }
 
@@ -351,6 +368,7 @@ void BirdShuriken::Die()
 	ClearRect(quad);
 	sess->RemoveEnemy(this);
 	spawned = false;
+	dead = true;
 }
 
 void BirdShuriken::FrameIncrement()
@@ -529,13 +547,12 @@ void BirdShuriken::IHitPlayer(int index)
 	}
 }
 
-//void BirdShuriken::UpdateEnemyPhysics()
-//{
-//	V2d movementVec = velocity;
-//	movementVec /= slowMultiple * (double)numPhysSteps;
-//
-//	currPosInfo.position += movementVec;
-//}
+void BirdShuriken::UpdateEnemyPhysics()
+{
+	Enemy::UpdateEnemyPhysics();
+
+	hitboxInfo->hitPosType = HitboxInfo::GetAirType(surfaceMover->velocity);
+}
 
 void BirdShuriken::UpdateSprite()
 {
@@ -551,6 +568,11 @@ void BirdShuriken::EnemyDraw(sf::RenderTarget *target)
 void BirdShuriken::HandleHitAndSurvive()
 {
 	fireCounter = 0;
+}
+
+bool BirdShuriken::IsHitFacingRight()
+{
+	return surfaceMover->velocity.x > 0;
 }
 
 void BirdShuriken::HitTerrainAerial(Edge *e, double q)

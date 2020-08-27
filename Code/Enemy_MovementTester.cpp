@@ -752,6 +752,19 @@ void EnemyMover::FrameIncrement()
 			}
 		}
 	}
+	else if (moveType == WAIT)
+	{
+		if (actionFrames > 0)
+		{
+			--actionFrames;
+			if (actionFrames == 0)
+			{
+				moveType = NONE;
+				lastActionEndVelocity = V2d(0, 0);
+				return;
+			}
+		}
+	}
 }
 
 MovementTester::MovementTester(ActorParams *ap)
@@ -959,7 +972,7 @@ void MovementTester::ProcessState()
 		//if( testCounter == 2 )
 		{
 			
-			auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNDODGEABLE);
+			auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNBLOCKABLE_STICK);
 			if (f == NULL)
 			{
 				shurPool.RethrowAll();
