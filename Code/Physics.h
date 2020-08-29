@@ -154,7 +154,7 @@ struct CollisionBox
 	CollisionBox()
 		:globalAngle( 0 ), rw( 0 ), rh( 0 ), isCircle( true ),
 		flipHorizontal( false ), flipVertical( false )
-		, localAngle( 0 )
+		, localAngle( 0 ), isRing( false ), innerRadius(0)
 	{
 
 	}
@@ -189,6 +189,9 @@ struct CollisionBox
 	bool isCircle;
 	bool flipHorizontal;
 	bool flipVertical;
+
+	bool isRing;
+	double innerRadius;
 	//BoxType type;
 };
 

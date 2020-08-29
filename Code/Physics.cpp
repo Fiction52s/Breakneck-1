@@ -263,7 +263,7 @@ sf::Vector2<double> CollisionBox::GetQuadVertex(int index)
 	{
 		RotateCW(localPos, globalAngle);
 	}
-	
+
 
 	return globalPosition + localPos;
 	//return (globalPosition + V2d(w * cos(globalAngle) + h * -sin(globalAngle), w * sin(globalAngle) + h * cos(globalAngle)));
@@ -311,77 +311,84 @@ V2d CollisionBox::GetTrueCenter()
 	return globalPosition + off;
 }
 
-bool CollisionBox::Intersects( CollisionBox &c )
+bool CollisionBox::Intersects(CollisionBox &c)
 {
 	//first, box with box aabb. can adjust it later
-	if( c.isCircle && this->isCircle )
+	if (c.isCircle && this->isCircle)
 	{
-		double dist = length( GetTrueCenter() - c.GetTrueCenter() );
-		//cout << "dist: " << dist << endl;
-		if( dist <= this->rw + c.rw )
-			return true;
+		V2d otherCenter = c.GetTrueCenter();
+		V2d center = GetTrueCenter();
+		double dist = length(center - otherCenter);
+
+		if (dist <= this->rw + c.rw)
+		{
+			if (this->isRing == c.isRing)
+			{
+				return true;
+			}
+			else if (this->isRing && dist > innerRadius - c.rw)
+			{
+				return true;
+			}
+			else if (c.isRing && dist > c.innerRadius - rw)
+			{
+				return true;
+			}
+
+		}
+
 	}
-	else if( c.isCircle && !this->isCircle )
+	else if (c.isCircle && !this->isCircle)
 	{
 		V2d cCenterPos = c.GetTrueCenter();
-		V2d pA = GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB = GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC = GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD = GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pA = GetQuadVertex(0);
+		V2d pB = GetQuadVertex(1);
+		V2d pC = GetQuadVertex(2);
+		V2d pD = GetQuadVertex(3);
 		bool intersect = (QuadContainsPoint(pA, pB, pC, pD, cCenterPos)
 			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, c.rw)
 			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, c.rw)
 			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, c.rw)
 			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, c.rw));
+
+		if (c.isRing && intersect)
+		{
+			if (length(pA - cCenterPos) < c.innerRadius
+				&& length(pB - cCenterPos) < c.innerRadius
+				&& length(pC - cCenterPos) < c.innerRadius
+				&& length(pD - cCenterPos) < c.innerRadius )
+				{
+					return false;
+				}
+		}
+
 		return intersect;
-		//V2d cCenterPos = c.GetTrueCenter();
-		//V2d pA = GetQuadVertex(0);//globalPosition + V2d( -rw * cos( globalAngle ) + -rh * -sin( globalAngle ), -rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		//V2d pB = GetQuadVertex(1);//globalPosition + V2d( rw * cos( globalAngle ) + -rh * -sin( globalAngle ), rw * sin( globalAngle ) + -rh * cos( globalAngle ) );
-		//V2d pC = GetQuadVertex(2);//globalPosition + V2d( rw * cos( globalAngle ) + rh * -sin( globalAngle ), rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		//V2d pD = GetQuadVertex(3);//globalPosition + V2d( -rw * cos( globalAngle ) + rh * -sin( globalAngle ), -rw * sin( globalAngle ) + rh * cos( globalAngle ) );
-		//
-		//double A = cross(cCenterPos - pA, normalize(pB - pA) );
-		//double B = cross(cCenterPos - pB, normalize(pC - pB) );
-		//double C = cross(cCenterPos - pC, normalize(pD - pC) );
-		//double D = cross(cCenterPos - pD, normalize(pA - pD) );
-
-		//if( A <= c.rw && B <= c.rw && C <= c.rw && D <= c.rw )
-		//{
-		//	return true;
-		//}
-
-
-		//return false;
 	}
 	else if( !c.isCircle && this->isCircle )
 	{
 		V2d cCenterPos = GetTrueCenter();
-		V2d pA = c.GetQuadVertex(0);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pB = c.GetQuadVertex(1);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + -c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + -c.rh * cos( c.globalAngle ) );
-		V2d pC = c.GetQuadVertex(2);//c.globalPosition + V2d( c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
-		V2d pD = c.GetQuadVertex(3);//c.globalPosition + V2d( -c.rw * cos( c.globalAngle ) + c.rh * -sin( c.globalAngle ), -c.rw * sin( c.globalAngle ) + c.rh * cos( c.globalAngle ) );
+		V2d pA = c.GetQuadVertex(0);
+		V2d pB = c.GetQuadVertex(1);
+		V2d pC = c.GetQuadVertex(2);
+		V2d pD = c.GetQuadVertex(3);
 		bool intersect = (QuadContainsPoint(pA, pB, pC, pD, cCenterPos)
 			|| IsEdgeTouchingCircle(pA, pB, cCenterPos, rw)
 			|| IsEdgeTouchingCircle(pB, pC, cCenterPos, rw)
 			|| IsEdgeTouchingCircle(pC, pD, cCenterPos, rw)
 			|| IsEdgeTouchingCircle(pD, pA, cCenterPos, rw));
+
+		if (isRing && intersect)
+		{
+			if (length(pA - cCenterPos) < innerRadius
+				&& length(pB - cCenterPos) < innerRadius
+				&& length(pC - cCenterPos) < innerRadius
+				&& length(pD - cCenterPos) < innerRadius)
+			{
+				return false;
+			}
+		}
+
 		return intersect;
-
-		
-		//double A = cross(cCenterPos - pA, normalize(pB - pA) );
-		//double B = cross(cCenterPos - pB, normalize(pC - pB) );
-		//double C = cross(cCenterPos - pC, normalize(pD - pC) );
-		//double D = cross( cCenterPos - pD, normalize(pA - pD) );
-
-		////cout << "a: " << a << ", b: " << b << ", c: " << c << ", d: " << d << ", rw: " << rw << endl;
-
-		//if( (A <= rw && A >= 0)|| (B <= rw && B >= 0 ) || (C <= rw && C >= 0 )|| (D <= rw && D >= 0 ))
-		//{
-		//	return true;
-		//}
-
-
-		//return false;
 	}
 	else //both are boxes
 	{
@@ -529,7 +536,6 @@ void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *tar
 	if( isCircle )
 	{
 		CircleShape cs;
-		//cs.setFillColor( Color( 255, 0, 0, 255 ) );
 
 		if(bType == Physics )
 		{
@@ -552,6 +558,14 @@ void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *tar
 		cs.setPosition( globalPosition.x, globalPosition.y );
 
 		target->draw( cs );
+
+		if (isRing)
+		{
+			cs.setFillColor(Color(0, 0, 0, 100));
+			cs.setRadius(innerRadius);
+			cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+			target->draw(cs);
+		}
 
 	}
 	else

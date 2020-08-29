@@ -852,6 +852,7 @@ void MovementTester::ResetEnemy()
 	coyBulletPool.Reset();
 	tigerBulletPool.Reset();
 	gatorOrbPool.Reset();
+	coyShockPool.Reset();
 
 	testCheck = 0;
 }
@@ -971,17 +972,17 @@ void MovementTester::ProcessState()
 		else*/
 		//if( testCounter == 2 )
 		{
-			
-			auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNBLOCKABLE_STICK);
-			if (f == NULL)
-			{
-				shurPool.RethrowAll();
-				enemyMover.SetModeWait(120);
-			}
-			else
-			{
-				enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
-			}
+			coyShockPool.Throw(GetPosition(), 100, 400, 50, 60 );
+			//auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNBLOCKABLE_STICK);
+			//if (f == NULL)
+			//{
+			//	shurPool.RethrowAll();
+			//	enemyMover.SetModeWait(120);
+			//}
+			//else
+			//{
+			//	enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
+			//}
 			//gatorOrbPool.Throw(GetPosition(), dir);
 			
 			testCounter = 0;
@@ -1043,272 +1044,6 @@ void MovementTester::ProcessState()
 		action = WAIT;
 		waitFrames = 10;
 	}
-
-	//switch (moveType)
-	//{
-	//case CURVE:
-	//{
-	//	if (action == MOVE)
-	//	{
-	//		double testLen = length(playerPos - startMovePlayerPos);
-	//		if (moveFrames == 0 )
-	//		{
-	//			action = MOVE;
-	//			V2d vel = qCurve->GetFrameVelocity(startMoveFrames - moveFrames);
-	//			cout << "vel: " << vel.x << ", " << vel.y << "\n";
-	//			vel = normalize(vel);
-	//			vel *= 10.0;
-	//			qCurve->B = GetPosition() + vel * 30.0;
-	//			CalcMovement();
-	//		}
-
-	//		//if (moveFrames == 0)
-	//		//{
-	//		//	action = MOVE;
-
-	//		//	//V2d vel = normalize( qCurve->GetPosition(1.0) - qCurve->GetPosition(.99) ) * 10.0;
-	//		//	//moveFrames = 60;
-	//		//	V2d vel = qCurve->GetEndVelocity();
-	//		//	cout << "vel: " << vel.x << ", " << vel.y << "\n";
-	//		//	vel = normalize(vel);
-	//		//	vel *= 10.0;
-	//		//	qCurve->B = GetPosition() + vel * 30.0;
-	//		//	CalcMovement();
-	//		//	//action = WAIT;
-	//		//	//waitFrames = maxWaitFrames;
-	//		//}
-	//	}
-	//	else if (action == WAIT)
-	//	{
-	//		if (waitFrames == 0)
-	//		{
-	//			action = MOVE;
-	//			qCurve->B = (GetPosition() + playerPos) / 2.0;
-	//			CalcMovement();
-	//		}
-	//	}
-	//	break;
-	//}
-	//case CHASE:
-	//{
-	//	if (sess->totalGameFrames % 60 == 0)
-	//	{
-	//		V2d pDir = normalize(playerPos - GetPosition() );
-	//		shurPool.Throw(GetPosition(), pDir);
-	//		int r = rand() % 4;
-	//		switch (r)
-	//		{
-	//		case 0:
-	//			chaseOffset = V2d(200, 0);
-	//			break;
-	//		case 1:
-	//			chaseOffset = V2d(0, -200);
-	//			break;
-	//		case 2:
-	//			chaseOffset = V2d(-200, 0);
-	//			break;
-	//		case 3:
-	//			chaseOffset = V2d(0, 200);
-	//			break;
-	//		}
-	//	}
-	//	//chaseOffset = V2d((rand() % 200) -100 , (rand() % 200) - 100);
-	//	targetPos = *chaseTarget + chaseOffset;//playerPos + V2d(50, 0);
-	//	V2d diff = targetPos - GetPosition();
-	//	V2d pDir = normalize(diff);
-
-	//	velocity += pDir * chaseAccel;
-	//	double velLen = length(velocity);
-	//	if (velLen > chaseMaxVel )
-	//	{
-	//		velocity = normalize(velocity) * chaseMaxVel;
-	//	}
-
-	//	if (length(diff) < chaseMaxVel)
-	//	{
-	//		//currPosInfo.position = targetPos;
-	//		//velocity = V2d(0, 0);
-	//	}
-	//	break;
-	//}
-	//case APPROACH:
-	//{
-	//	targetPos = playerPos + V2d(50, 0);
-	//	V2d diff = targetPos - GetPosition();
-	//	double dist = length(diff);
-
-	//	if (action == WAIT)
-	//	{
-	//		if (waitFrames == 0)
-	//		{
-	//			action = MOVE;
-	//			approachStartDist = dist;
-	//			moveFrames = 60;
-	//		}
-	//		currPosInfo.position = targetPos;
-	//	}
-	//	else if( action == MOVE )
-	//	{
-	//		if (moveFrames == 0)
-	//		{
-	//			action = WAIT;
-	//			waitFrames = 60;
-	//			velocity = V2d(0, 0);
-	//			currPosInfo.position = targetPos;
-	//		}
-	//		else
-	//		{
-
-
-	//			V2d pDir = normalize(diff);
-
-	//			double f = moveFrames / 60.0;
-
-	//			V2d destPos = targetPos - pDir * approachStartDist * f;
-	//			velocity = destPos - GetPosition();
-	//			//int f = (60 - moveFrames) / 60;
-
-
-	//			//double f = approachBez.GetValue( 1.0 - (moveFrames / 60.0));
-
-	//			//double distPortion = approachStartDist * f;
-	//		}
-	//	}
-	//	
-	//	break;
-	//}
-	//case NODE_LINEAR:
-	//{
-	//	if ( action == WAIT && waitFrames == 0)
-	//	{
-	//		action = MOVE;
-	//		int r = testCheck;
-	//		++testCheck;
-	//		if (testCheck == 3)
-	//			testCheck = 0;
-
-	//		string checkStr = "A";
-	//		if (r == 1)
-	//		{
-	//			checkStr = "B";
-	//		}
-	//		else if (r == 2)
-	//		{
-	//			checkStr = "C";
-	//		}
-	//		//SetModeNodeLinear(sess->GetBossNode(2, checkStr )->pos,
-	//		//	CubicBezier(), 60);
-	//	}
-	//	else if (action == MOVE && ms.currMovement == NULL)
-	//	{
-	//		action = WAIT;
-	//		waitFrames = maxWaitFrames;
-	//	}
-	//	break;
-	//}
-	//case NODE_QUADRATIC:
-	//{
-	//	if (action == MOVE && enemyMover.moveType == EnemyMover::NONE)
-	//	{
-	//		action = WAIT;
-	//		waitFrames = 0;
-	//	}
-
-
-	//	if (action == WAIT && waitFrames == 0)
-	//	{
-	//		testCounter++;
-	//		if (testCounter == 2)
-	//			testCounter = 0;
-	//		action = MOVE;
-	//		string checkStr = "A";
-	//		auto &nodeVec = sess->GetBossNodeVector( BossFightType::FT_BIRD, checkStr);
-	//		int vecSize = nodeVec.size();
-
-	//		int r = rand() % vecSize;
-
-	//		V2d nodePos = nodeVec[r]->pos;
-	//		V2d controlPos = normalize(nodePos - GetPosition());
-	//		controlPos = V2d(controlPos.y, -controlPos.x);
-	//		double len = length(nodePos - GetPosition());
-	//		V2d playerPos = sess->GetPlayerPos(targetPlayerIndex);
-	//		V2d dir = normalize(playerPos - GetPosition());
-	//		double lenn = length(playerPos - GetPosition());
-	//		
-	//		controlPos = V2d();
-	//		if (enemyMover.cubicMove->duration != 0)
-	//		{
-	//			controlPos = enemyMover.cubicMove->GetEndVelocity() * 40.0;//normalize(enemyMover.cubicMove->GetEndVelocity()) * 20.0;
-	//		}
-
-	//		controlPos = GetPosition() + controlPos;
-
-	//		V2d controlPos1 = playerPos + dir * 300.0;
-	//		/*enemyMover.SetModeNodeCubic(controlPos, controlPos1, nodePos,
-	//			CubicBezier(), 60);*/
-
-	//		/*enemyMover.SetModeNodeQuadratic(controlPos1, nodePos,
-	//			CubicBezier(), 60);*/
-
-	//		/*enemyMover.SetModeNodeLinear(nodePos,
-	//			CubicBezier(), 60);*/
-
-	//		
-
-	//		if (testCounter == 0)
-	//		{
-	//			enemyMover.SetModeChase(&sess->GetPlayer(targetPlayerIndex)->position,
-	//				V2d(), 20, .8, 60);
-	//			enemyMover.chaseVelocity = enemyMover.lastActionEndVelocity;
-	//		}
-	//		else
-	//		{
-	//			int r1 = rand() % 2;
-	//			if (r1 == 0)
-	//			{
-	//				double lengthEstimate = length(nodePos - controlPos1)
-	//					+ length(controlPos1 - GetPosition());
-	//				double attemptVel = 20.0;
-	//				double frameEstimate = lengthEstimate / attemptVel;
-
-	//				enemyMover.SetModeNodeQuadratic(controlPos1, nodePos,
-	//					CubicBezier(), frameEstimate);
-	//				/*enemyMover.SetModeNodeLinear(nodePos,
-	//				CubicBezier(), 60);*/
-	//			}
-	//			else if (r1 == 1)
-	//			{
-	//				/*enemyMover.SetModeNodeDoubleQuadratic(playerPos,
-	//				nodePos, CubicBezier(), 60, 300.0);*/
-
-	//				enemyMover.SetModeNodeDoubleQuadraticConstantSpeed(playerPos,
-	//					nodePos, CubicBezier(), 20.0, 300.0);
-	//			}
-	//		}
-	//		
-
-	//		/*if (enemyMover.cubicMove->duration !=  )
-	//		{
-	//			
-	//		}
-	//		else
-	//		{
-	//			enemyMover.SetModeNodeQuadratic(controlPos, nodePos,
-	//				CubicBezier(), 60);
-
-	//		}*/
-	//		
-	//		
-	//	}
-	//	else if (action == MOVE && enemyMover.moveType == EnemyMover::NONE )
-	//	{
-	//		action = WAIT;
-	//		waitFrames = 10;
-	//	}
-	//	break;
-	//}
-	//}
-	
 }
 
 sf::FloatRect MovementTester::GetAABB()
@@ -1358,6 +1093,7 @@ void MovementTester::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	enemyMover.DebugDraw(target);
+	coyShockPool.Draw(target);
 	//curveMovement.MovementDebugDraw(target);
 }
 
@@ -1422,5 +1158,6 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 	coyBulletPool.Draw(target);
 	tigerBulletPool.Draw(target);
 	gatorOrbPool.Draw(target);
+	coyShockPool.Draw(target);
 	//target->draw(predictCircle);
 }
