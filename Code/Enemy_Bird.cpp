@@ -38,26 +38,9 @@ Bird::Bird(ActorParams *ap)
 	animFactor[MOVE] = 1;
 	reachPointOnFrame[MOVE] = 0;
 
-
-
-	bulletSpeed = 10;
-	framesBetween = 60;
-
-	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
-
-	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::BAT, 16, 1, GetPosition(),
-		V2d(1, 0), 0, 120, false, 0, 0, ts_basicBullets);
-	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
-	launchers[0]->playerIndex = 1;
-
-	animationFactor = 5;
-
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
 	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
-	
 
 	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
 
@@ -159,32 +142,6 @@ void Bird::CalcTargetAfterHit()
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
 	sess->RevertSimulatedPlayer(targetPlayerIndex);
 	predictCircle.setPosition(Vector2f(targetPos));
-	
-}
-
-void Bird::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
-{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-}
-
-void Bird::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	//if you dont deactivate the bullet it will hit constantly and make weird fx
-
-	//cout << "hit player??" << endl;
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
-	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
-	}
-	
-	b->launcher->DeactivateBullet(b);
 }
 
 void Bird::DirectKill()

@@ -5,8 +5,9 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "SuperCommands.h"
+#include "EnemyMover.h"
 
-struct Bird : Enemy, LauncherEnemy
+struct Bird : Enemy
 {
 	enum Action
 	{
@@ -26,9 +27,6 @@ struct Bird : Enemy, LauncherEnemy
 
 	Tileset *ts_bulletExplode;
 	Tileset *ts_aura;
-	int animationFactor;
-	int bulletSpeed;
-	int framesBetween;
 	int moveFrames;
 	sf::CircleShape predictCircle;
 
@@ -62,12 +60,6 @@ struct Bird : Enemy, LauncherEnemy
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
 	void SetCommand(int index, BirdCommand &bc );
 	void UpdatePreFrameCalculations();
 	void ProcessState();
