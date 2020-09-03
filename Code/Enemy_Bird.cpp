@@ -167,11 +167,8 @@ void Bird::UpdatePreFrameCalculations()
 
 	if (playerComboer.CanPredict(targetPlayerIndex))
 	{
-		//cout << "predicting" << endl;
 		if (actionQueueIndex == 3)
 		{
-			//cout << "dying" << endl;
-			//actionQueueIndex = 0;
 			dead = true;
 			sess->RemoveEnemy(this);
 			return;
@@ -187,7 +184,6 @@ void Bird::UpdatePreFrameCalculations()
 		move->end = targetPos;
 		ms.Reset();
 		int nextAction = actionQueue[actionQueueIndex].action + 1;
-		//moveFrames -= 10;
 		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
 		if (moveFrames < 0)
 		{
@@ -227,8 +223,7 @@ void Bird::ProcessState()
 			action = actionQueue[actionQueueIndex].action + 1;
 			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
-			//DefaultHitboxesOn();
-			//cout << "starting action" << endl;
+			//dont turn on hitboxes here because we do it at the end of the movement.
 		}
 	}
 
@@ -249,44 +244,13 @@ void Bird::ProcessState()
 		}
 	}
 
-
-
-
-
-
-
-	V2d pDir = normalize(sess->GetPlayerPos(1) - GetPosition());
-	////if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
-	//if (slowCounter == 1)//&& action == FLY )
-	//{
-	//	int f = fireCounter % 60;
-
-	//	if (f % 5 == 0 && f >= 25 && f < 50)
-	//	{
-	//		launchers[0]->position = GetPosition();
-	//		launchers[0]->facingDir = pDir;
-	//		//launchers[0]->Fire();
-	//	}
-	//}
-
 	hitPlayer = false;
 }
 
 void Bird::IHitPlayer(int index)
 {
-	//cout << "hitting player" << endl;
 	hitPlayer = true;
 	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
-	//SetHitboxes(NULL);
-	/*V2d playerPos = sess->GetPlayerPos(index);
-	if (playerPos.x > GetPosition().x)
-	{
-	facingRight = true;
-	}
-	else
-	{
-	facingRight = false;
-	}*/
 }
 
 void Bird::UpdateEnemyPhysics()

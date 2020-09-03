@@ -83,7 +83,7 @@ void Actor::CheckBirdCommands()
 	{
 		return;
 	}
-	if (currInput.A && !prevInput.A)
+	if (currInput.rightShoulder && !prevInput.rightShoulder)
 	{
 		FightMode *fm = (FightMode*)sess->gameMode;
 		birdCommands[currBirdCommandIndex]->action = 1;
