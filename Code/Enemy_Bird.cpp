@@ -60,16 +60,12 @@ Bird::Bird(ActorParams *ap)
 
 	//BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
-	
+
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	move = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), 0);
 
-	predictCircle.setFillColor(Color::Red);
-	predictCircle.setRadius(20);
-	predictCircle.setOrigin(predictCircle.getLocalBounds().width / 2,
-		predictCircle.getLocalBounds().height / 2);
 
 	ResetEnemy();
 }
@@ -94,7 +90,7 @@ void Bird::UpdateHitboxes()
 
 	if (facingRight)
 	{
-		hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;	
+		hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
 	}
 	else
 	{
@@ -104,15 +100,16 @@ void Bird::UpdateHitboxes()
 
 void Bird::ResetEnemy()
 {
+	playerComboer.Reset();
+
 	fireCounter = 0;
 	facingRight = true;
 
 	action = PUNCH;
 	frame = 0;
-	
+
 	SetHitboxInfo(PUNCH);
 
-	predict = false;
 	hitPlayer = false;
 	moveFrames = 0;
 
@@ -134,14 +131,6 @@ void Bird::SetHitboxInfo(int a)
 void Bird::SetCommand(int index, BirdCommand &bc)
 {
 	actionQueue[index] = bc;
-}
-
-void Bird::CalcTargetAfterHit()
-{
-	sess->ForwardSimulatePlayer(targetPlayerIndex, sess->GetPlayer(targetPlayerIndex)->hitstunFrames);
-	targetPos = sess->GetPlayerPos(targetPlayerIndex);
-	sess->RevertSimulatedPlayer(targetPlayerIndex);
-	predictCircle.setPosition(Vector2f(targetPos));
 }
 
 void Bird::DirectKill()
@@ -175,23 +164,30 @@ void Bird::FrameIncrement()
 void Bird::UpdatePreFrameCalculations()
 {
 	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-	if (predict || targetPlayer->hitOutOfHitstunLastFrame)
+
+	if (playerComboer.CanPredict(targetPlayerIndex))
 	{
+		//cout << "predicting" << endl;
 		if (actionQueueIndex == 3)
 		{
+			//cout << "dying" << endl;
+			//actionQueueIndex = 0;
 			dead = true;
 			sess->RemoveEnemy(this);
 			return;
 		}
-		CalcTargetAfterHit();
+
+		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
+		targetPos = playerComboer.GetTargetPos();
+
 		moveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
 		counterTillAttack = moveFrames - 10;
 		move->duration = moveFrames * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
 		move->end = targetPos;
 		ms.Reset();
-		predict = false;
 		int nextAction = actionQueue[actionQueueIndex].action + 1;
+		//moveFrames -= 10;
 		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
 		if (moveFrames < 0)
 		{
@@ -202,8 +198,7 @@ void Bird::UpdatePreFrameCalculations()
 
 		action = MOVE;
 		frame = 0;
-		//++moveFrames;
-		
+		hitPlayer = false;
 	}
 }
 
@@ -232,52 +227,65 @@ void Bird::ProcessState()
 			action = actionQueue[actionQueueIndex].action + 1;
 			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
-		}
-
-
-
-		if (hitPlayer)
-		{
-			action = MOVE;
-			frame = 0;
-			predict = true;
-			++actionQueueIndex;
+			//DefaultHitboxesOn();
+			//cout << "starting action" << endl;
 		}
 	}
+
+	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame;
+	if (hitPlayer || comboInterrupted)
+	{
+		action = MOVE;
+		frame = 0;
+		playerComboer.PredictNextFrame();
+		if( !comboInterrupted )
+			++actionQueueIndex;
+		//cout << "telling to predict" << endl;
+		SetHitboxes(NULL, 0);
+
+		if (actionQueueIndex == 3)
+		{
+
+		}
+	}
+
+
 
 
 
 
 
 	V2d pDir = normalize(sess->GetPlayerPos(1) - GetPosition());
-	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
-	if (slowCounter == 1)//&& action == FLY )
-	{
-		int f = fireCounter % 60;
+	////if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
+	//if (slowCounter == 1)//&& action == FLY )
+	//{
+	//	int f = fireCounter % 60;
 
-		if (f % 5 == 0 && f >= 25 && f < 50)
-		{
-			launchers[0]->position = GetPosition();
-			launchers[0]->facingDir = pDir;
-			//launchers[0]->Fire();
-		}
-	}
+	//	if (f % 5 == 0 && f >= 25 && f < 50)
+	//	{
+	//		launchers[0]->position = GetPosition();
+	//		launchers[0]->facingDir = pDir;
+	//		//launchers[0]->Fire();
+	//	}
+	//}
 
 	hitPlayer = false;
 }
 
 void Bird::IHitPlayer(int index)
 {
+	//cout << "hitting player" << endl;
 	hitPlayer = true;
 	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
+	//SetHitboxes(NULL);
 	/*V2d playerPos = sess->GetPlayerPos(index);
 	if (playerPos.x > GetPosition().x)
 	{
-		facingRight = true;
+	facingRight = true;
 	}
 	else
 	{
-		facingRight = false;
+	facingRight = false;
 	}*/
 }
 
@@ -320,7 +328,7 @@ void Bird::UpdateSprite()
 		ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
 		break;
 	}
-	
+
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
@@ -329,7 +337,7 @@ void Bird::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 
-	target->draw(predictCircle);
+	playerComboer.DebugDraw(target);
 }
 
 void Bird::HandleHitAndSurvive()

@@ -8,6 +8,8 @@ struct Session;
 struct PoiInfo;
 
 
+
+
 struct EnemyMover
 {
 	enum MoveType

@@ -6,6 +6,7 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
+#include "PlayerComboer.h"
 
 struct Bird : Enemy
 {
@@ -21,19 +22,18 @@ struct Bird : Enemy
 	{
 		int fireCounter;
 	};
-	
+
+	PlayerComboer playerComboer;
 
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
 	Tileset *ts_aura;
 	int moveFrames;
-	sf::CircleShape predictCircle;
 
 	int reachPointOnFrame[A_Count];
 
 	bool hitPlayer;
-	bool predict;
 
 	BirdCommand actionQueue[3];
 	int actionQueueIndex;
@@ -60,10 +60,9 @@ struct Bird : Enemy
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void SetCommand(int index, BirdCommand &bc );
+	void SetCommand(int index, BirdCommand &bc);
 	void UpdatePreFrameCalculations();
 	void ProcessState();
-	void CalcTargetAfterHit();
 	void UpdateHitboxes();
 
 	void EnemyDraw(sf::RenderTarget *target);
@@ -77,7 +76,7 @@ struct Bird : Enemy
 
 	void SetHitboxInfo(int a);
 
-	
+
 };
 
 #endif

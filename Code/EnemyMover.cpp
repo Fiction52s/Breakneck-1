@@ -4,6 +4,9 @@
 
 using namespace sf;
 
+
+
+
 EnemyMover::EnemyMover()
 {
 	sess = Session::GetSession();

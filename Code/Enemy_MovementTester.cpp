@@ -20,50 +20,7 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-//PlayerComboer::PlayerComboer(Enemy *e)
-//{
-//	myEnemy = e;
-//}
-//
-//void PlayerComboer::CalcTargetAfterHit(int pIndex)
-//{
-//	Session *sess = myEnemy->sess;
-//	sess->ForwardSimulatePlayer(pIndex, sess->GetPlayer(pIndex)->hitstunFrames);
-//	targetPos = sess->GetPlayerPos(pIndex);
-//	sess->RevertSimulatedPlayer(pIndex);
-//	predictCircle.setPosition(Vector2f(targetPos));
-//}
-//
-//void PlayerComboer::PredictNextFrame()
-//{
-//	predict = true;
-//}
-//
-//void PlayerComboer::UpdatePreFrameCalculations(int pIndex)
-//{
-//	Actor *targetPlayer = myEnemy->sess->GetPlayer(pIndex);
-//	if (predict || targetPlayer->hitOutOfHitstunLastFrame)
-//	{
-//		CalcTargetAfterHit();
-//		moveFrames = targetPlayer->hitstunFrames - 1;
-//		move->duration = moveFrames * NUM_MAX_STEPS * 5;
-//		move->start = GetPosition();
-//		move->end = targetPos;
-//		ms.Reset();
-//		predict = false;
-//		if (moveFrames < 0)
-//		{
-//			moveFrames = 0;
-//		}
-//
-//		SetHitboxes(NULL, 0);
-//
-//		action = MOVE;
-//		frame = 0;
-//		//++moveFrames;
-//
-//	}
-//}
+
 
 
 
