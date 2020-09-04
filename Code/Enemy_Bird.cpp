@@ -34,9 +34,9 @@ Bird::Bird(ActorParams *ap)
 	animFactor[KICK] = 3;
 	reachPointOnFrame[KICK] = 0;
 
-	actionLength[MOVE] = 2;
-	animFactor[MOVE] = 1;
-	reachPointOnFrame[MOVE] = 0;
+	actionLength[COMBOMOVE] = 2;
+	animFactor[COMBOMOVE] = 1;
+	reachPointOnFrame[COMBOMOVE] = 0;
 
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
@@ -102,6 +102,8 @@ void Bird::ResetEnemy()
 {
 	playerComboer.Reset();
 
+	enemyMover.Reset();
+
 	fireCounter = 0;
 	facingRight = true;
 
@@ -111,11 +113,12 @@ void Bird::ResetEnemy()
 	SetHitboxInfo(PUNCH);
 
 	hitPlayer = false;
-	moveFrames = 0;
+	comboMoveFrames = 0;
 
 	ms.currMovement = NULL;
 
 	actionQueueIndex = 0;
+	waitFrames = 0;
 
 	DefaultHitboxesOn();
 
@@ -155,10 +158,13 @@ void Bird::FrameIncrement()
 {
 	++fireCounter;
 
-	if (moveFrames > 0)
+	if (comboMoveFrames > 0)
 	{
-		--moveFrames;
+		--comboMoveFrames;
 	}
+
+	enemyMover.FrameIncrement();
+	currPosInfo = enemyMover.currPosInfo;
 }
 
 void Bird::UpdatePreFrameCalculations()
@@ -177,22 +183,22 @@ void Bird::UpdatePreFrameCalculations()
 		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
 		targetPos = playerComboer.GetTargetPos();
 
-		moveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
-		counterTillAttack = moveFrames - 10;
-		move->duration = moveFrames * NUM_MAX_STEPS * 5;
+		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
+		counterTillAttack = comboMoveFrames - 10;
+		move->duration = comboMoveFrames * NUM_MAX_STEPS * 5;
 		move->start = GetPosition();
 		move->end = targetPos;
 		ms.Reset();
 		int nextAction = actionQueue[actionQueueIndex].action + 1;
-		moveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
-		if (moveFrames < 0)
+		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+		if (comboMoveFrames < 0)
 		{
-			moveFrames = 0;
+			comboMoveFrames = 0;
 		}
 
 		SetHitboxes(NULL, 0);
 
-		action = MOVE;
+		action = COMBOMOVE;
 		frame = 0;
 		hitPlayer = false;
 	}
@@ -207,7 +213,7 @@ void Bird::ProcessState()
 		case PUNCH:
 			frame = 0;
 			break;
-		case MOVE:
+		case COMBOMOVE:
 			frame = 0;
 			break;
 		case KICK:
@@ -216,26 +222,41 @@ void Bird::ProcessState()
 		}
 	}
 
-	if (action == MOVE)
+	enemyMover.currPosInfo = currPosInfo;
+
+	if (action == MOVE && enemyMover.IsIdle())
 	{
-		if (moveFrames == 0)
+		action = WAIT;
+		waitFrames = 30;
+	}
+	else if (action == WAIT && waitFrames == 0)
+	{
+		enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
+			10, .5, 60);
+	}
+	else if (action == COMBOMOVE)
+	{
+		if (comboMoveFrames == 0)
 		{
 			action = actionQueue[actionQueueIndex].action + 1;
 			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
-			//dont turn on hitboxes here because we do it at the end of the movement.
+			//only have this on if i dont turn on hitboxes at the end of the movement.
+			DefaultHitboxesOn();
+			
 		}
 	}
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame;
+	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
+		&& comboMoveFrames > 0;
+	//added this combo counter thing
 	if (hitPlayer || comboInterrupted)
 	{
-		action = MOVE;
+		action = COMBOMOVE;
 		frame = 0;
 		playerComboer.PredictNextFrame();
 		if( !comboInterrupted )
 			++actionQueueIndex;
-		//cout << "telling to predict" << endl;
 		SetHitboxes(NULL, 0);
 
 		if (actionQueueIndex == 3)
@@ -255,6 +276,15 @@ void Bird::IHitPlayer(int index)
 
 void Bird::UpdateEnemyPhysics()
 {
+	if (!enemyMover.IsIdle())
+	{
+		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
+		currPosInfo = enemyMover.currPosInfo;
+	}
+
+	return;
+
+
 	if (ms.currMovement != NULL)
 	{
 		if (numPhysSteps == 1)
@@ -270,7 +300,8 @@ void Bird::UpdateEnemyPhysics()
 
 		if (ms.currMovement == NULL)
 		{
-			DefaultHitboxesOn();
+			//turn on here to always hit exactly at the end of the movement.
+			//DefaultHitboxesOn();
 		}
 	}
 }
@@ -279,7 +310,7 @@ void Bird::UpdateSprite()
 {
 	switch (action)
 	{
-	case MOVE:
+	case COMBOMOVE:
 		sprite.setTexture(*ts_move->texture);
 		ts_move->SetSubRect(sprite, 2, !facingRight);
 		break;
@@ -302,6 +333,7 @@ void Bird::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, sprite);
 
 	playerComboer.DebugDraw(target);
+	enemyMover.DebugDraw(target);
 }
 
 void Bird::HandleHitAndSurvive()

@@ -52,6 +52,11 @@ void EnemyMover::Reset()
 	debugCircles->HideAll();
 }
 
+bool EnemyMover::IsIdle()
+{
+	return moveType == EnemyMover::NONE;
+}
+
 void EnemyMover::UpdateSwingDebugDraw()
 {
 	V2d currPos = currPosInfo.GetPosition();

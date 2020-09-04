@@ -75,6 +75,8 @@ struct EnemyMover
 	~EnemyMover();
 	void Reset();
 
+	bool IsIdle();
+
 	void UpdateSwingDebugDraw();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str,

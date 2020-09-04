@@ -175,7 +175,7 @@ void MovementTester::ProcessState()
 
 	V2d playerPos = sess->GetPlayerPos(targetPlayerIndex);
 
-	if (action == MOVE && enemyMover.moveType == EnemyMover::NONE)
+	if (action == MOVE && enemyMover.IsIdle() )
 	{
 		action = WAIT;
 		waitFrames = 2;
@@ -298,7 +298,7 @@ void MovementTester::ProcessState()
 		//	}
 		//}		
 	}
-	else if (action == MOVE && enemyMover.moveType == EnemyMover::NONE )
+	else if (action == MOVE && enemyMover.IsIdle() )
 	{
 		action = WAIT;
 		waitFrames = 10;
@@ -398,7 +398,7 @@ void MovementTester::IHitPlayer(int index)
 
 void MovementTester::UpdateEnemyPhysics()
 {
-	if (enemyMover.moveType != EnemyMover::NONE)
+	if (!enemyMover.IsIdle())
 	{
 		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
 		currPosInfo = enemyMover.currPosInfo;

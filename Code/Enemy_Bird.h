@@ -13,6 +13,8 @@ struct Bird : Enemy
 	enum Action
 	{
 		MOVE,
+		WAIT,
+		COMBOMOVE,
 		PUNCH,
 		KICK,
 		A_Count
@@ -23,13 +25,17 @@ struct Bird : Enemy
 		int fireCounter;
 	};
 
+	int moveFrames;
+	int waitFrames;
+
 	PlayerComboer playerComboer;
+	EnemyMover enemyMover;
 
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
 	Tileset *ts_aura;
-	int moveFrames;
+	int comboMoveFrames;
 
 	int reachPointOnFrame[A_Count];
 
