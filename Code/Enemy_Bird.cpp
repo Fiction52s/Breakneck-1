@@ -26,6 +26,8 @@ Bird::Bird(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
 
+	targetPlayerIndex = 0;
+
 	actionLength[PUNCH] = 14;
 	animFactor[PUNCH] = 3;
 	reachPointOnFrame[PUNCH] = 0;
@@ -88,13 +90,16 @@ void Bird::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 
-	if (facingRight)
+	if (hitBody.hitboxInfo != NULL)
 	{
-		hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
-	}
-	else
-	{
-		hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+		if (facingRight)
+		{
+			hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
+		}
+		else
+		{
+			hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+		}
 	}
 }
 
@@ -107,10 +112,11 @@ void Bird::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	action = PUNCH;
-	frame = 0;
+	action = WAIT;
+	SetHitboxes(NULL);
+	//frame = 0;
 
-	SetHitboxInfo(PUNCH);
+	
 
 	hitPlayer = false;
 	comboMoveFrames = 0;
@@ -118,9 +124,11 @@ void Bird::ResetEnemy()
 	ms.currMovement = NULL;
 
 	actionQueueIndex = 0;
-	waitFrames = 0;
+	waitFrames = 10;
 
-	DefaultHitboxesOn();
+	//action = PUNCH;
+	//SetHitboxInfo(PUNCH);
+	//DefaultHitboxesOn();
 
 	UpdateSprite();
 }
@@ -161,6 +169,16 @@ void Bird::FrameIncrement()
 	if (comboMoveFrames > 0)
 	{
 		--comboMoveFrames;
+	}
+
+	if (moveFrames > 0)
+	{
+		--moveFrames;
+	}
+
+	if (waitFrames > 0)
+	{
+		--waitFrames;
 	}
 
 	enemyMover.FrameIncrement();
@@ -233,6 +251,8 @@ void Bird::ProcessState()
 	{
 		enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 			10, .5, 60);
+		action = MOVE;
+		moveFrames = 60;
 	}
 	else if (action == COMBOMOVE)
 	{
@@ -310,6 +330,8 @@ void Bird::UpdateSprite()
 {
 	switch (action)
 	{
+	case WAIT:
+	case MOVE:
 	case COMBOMOVE:
 		sprite.setTexture(*ts_move->texture);
 		ts_move->SetSubRect(sprite, 2, !facingRight);
