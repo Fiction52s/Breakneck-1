@@ -12,11 +12,11 @@ struct Bird : Enemy
 {
 	enum Action
 	{
-		MOVE,
-		WAIT,
 		COMBOMOVE,
 		PUNCH,
 		KICK,
+		MOVE,
+		WAIT,
 		A_Count
 	};
 
@@ -45,8 +45,6 @@ struct Bird : Enemy
 	int actionQueueIndex;
 
 	int targetPlayerIndex;
-	LineMovement *move;
-	MovementSequence ms;
 
 	HitboxInfo hitboxInfos[A_Count];
 

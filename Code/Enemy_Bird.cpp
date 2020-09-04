@@ -112,11 +112,13 @@ void Bird::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	action = WAIT;
-	SetHitboxes(NULL);
-	//frame = 0;
+	//action = WAIT;
+	//SetHitboxes(NULL);
+	//waitFrames = 10;
 
-	
+	action = PUNCH;
+	SetHitboxInfo(PUNCH);
+	DefaultHitboxesOn();
 
 	hitPlayer = false;
 	comboMoveFrames = 0;
@@ -124,11 +126,11 @@ void Bird::ResetEnemy()
 	ms.currMovement = NULL;
 
 	actionQueueIndex = 0;
-	waitFrames = 10;
+	
 
-	//action = PUNCH;
-	//SetHitboxInfo(PUNCH);
-	//DefaultHitboxesOn();
+	
+
+	frame = 0;
 
 	UpdateSprite();
 }
@@ -169,6 +171,7 @@ void Bird::FrameIncrement()
 	if (comboMoveFrames > 0)
 	{
 		--comboMoveFrames;
+		cout << "combomoveframes: " << comboMoveFrames << endl;
 	}
 
 	if (moveFrames > 0)
@@ -203,12 +206,14 @@ void Bird::UpdatePreFrameCalculations()
 
 		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
 		counterTillAttack = comboMoveFrames - 10;
-		move->duration = comboMoveFrames * NUM_MAX_STEPS * 5;
-		move->start = GetPosition();
-		move->end = targetPos;
-		ms.Reset();
+
+		//enemyMover.SetModeNodeJump(targetPos, 200);
+		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
+		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
+
 		int nextAction = actionQueue[actionQueueIndex].action + 1;
 		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+
 		if (comboMoveFrames < 0)
 		{
 			comboMoveFrames = 0;
@@ -249,12 +254,27 @@ void Bird::ProcessState()
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
-		enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
-			10, .5, 60);
+		int r = rand() % 3;
+
+		if (r == 0)
+		{
+
+		}
+		else if (r == 1)
+		{
+
+		}
+		else if (r == 2)
+		{
+			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
+				10, .5, 60);
+		}
+
+		
 		action = MOVE;
 		moveFrames = 60;
 	}
-	else if (action == COMBOMOVE)
+	else if (action == COMBOMOVE )
 	{
 		if (comboMoveFrames == 0)
 		{
@@ -300,29 +320,6 @@ void Bird::UpdateEnemyPhysics()
 	{
 		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
 		currPosInfo = enemyMover.currPosInfo;
-	}
-
-	return;
-
-
-	if (ms.currMovement != NULL)
-	{
-		if (numPhysSteps == 1)
-		{
-			ms.Update(slowMultiple, 10);
-		}
-		else
-		{
-			ms.Update(slowMultiple);
-		}
-
-		currPosInfo.SetPosition(ms.position);
-
-		if (ms.currMovement == NULL)
-		{
-			//turn on here to always hit exactly at the end of the movement.
-			//DefaultHitboxesOn();
-		}
 	}
 }
 
