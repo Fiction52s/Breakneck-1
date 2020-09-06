@@ -427,7 +427,15 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 			if (currSeq->currMovement == NULL)
 			{
 				moveType = NONE;
-				lastActionEndVelocity = currMovement->GetEndVelocity();
+				if (currMovement->duration == 0)
+				{
+					lastActionEndVelocity = V2d(0, 0);
+				}
+				else
+				{
+					lastActionEndVelocity = currMovement->GetEndVelocity();
+				}
+				
 			}
 		}
 

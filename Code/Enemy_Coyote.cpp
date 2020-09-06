@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_Bird.h"
+#include "Enemy_Coyote.h"
 #include "Actor.h"
 
 using namespace std;
@@ -20,31 +20,19 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Bird::Bird(ActorParams *ap)
-	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool( this )
+Coyote::Coyote(ActorParams *ap)
+	:Enemy(EnemyType::EN_COYOTEBOSS, ap)
 {
 	SetNumActions(A_Count);
-	SetEditorActions(PUNCH, 0, 0);
+	SetEditorActions(MOVE, 0, 0);
 
 	targetPlayerIndex = 0;
-
-	actionLength[PUNCH] = 14;
-	animFactor[PUNCH] = 3;
-	reachPointOnFrame[PUNCH] = 0;
-
-	actionLength[KICK] = 10;
-	animFactor[KICK] = 3;
-	reachPointOnFrame[KICK] = 0;
 
 	actionLength[COMBOMOVE] = 2;
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
-
-	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
-
-	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
+	//ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
 	nodeAStr = "A";
 
@@ -68,12 +56,17 @@ Bird::Bird(ActorParams *ap)
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
+	myCircle.setFillColor(Color::Magenta);
+	myCircle.setRadius(20);
+	myCircle.setOrigin(myCircle.getLocalBounds().width / 2,
+		myCircle.getLocalBounds().height / 2);
+
 	ResetEnemy();
 }
 
-void Bird::LoadParams()
+void Coyote::LoadParams()
 {
-	ifstream is;
+	/*ifstream is;
 	is.open("Resources/Bosses/Bird/birdparams.json");
 
 	assert(is.is_open());
@@ -82,10 +75,10 @@ void Bird::LoadParams()
 	is >> j;
 
 	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
-	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
+	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
-void Bird::UpdateHitboxes()
+void Coyote::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 
@@ -102,10 +95,10 @@ void Bird::UpdateHitboxes()
 	}
 }
 
-void Bird::ResetEnemy()
+void Coyote::ResetEnemy()
 {
 	playerComboer.Reset();
-	shurPool.Reset();
+	stopStartPool.Reset();
 	enemyMover.Reset();
 
 	fireCounter = 0;
@@ -122,34 +115,34 @@ void Bird::ResetEnemy()
 	hitPlayer = false;
 	comboMoveFrames = 0;
 
-	actionQueueIndex = 0;
-	
+	//actionQueueIndex = 0;
 
-	
+
+
 
 	frame = 0;
 
 	UpdateSprite();
 }
 
-void Bird::SetHitboxInfo(int a)
+void Coyote::SetHitboxInfo(int a)
 {
 	*hitboxInfo = hitboxInfos[a];
 	hitBody.hitboxInfo = hitboxInfo;
 }
 
-void Bird::SetCommand(int index, BirdCommand &bc)
-{
-	actionQueue[index] = bc;
-}
+//void Coyote::SetCommand(int index, BirdCommand &bc)
+//{
+//	actionQueue[index] = bc;
+//}
 
-void Bird::DebugDraw(sf::RenderTarget *target)
+void Coyote::DebugDraw(sf::RenderTarget *target)
 {
 	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
 }
 
-void Bird::DirectKill()
+void Coyote::DirectKill()
 {
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -167,7 +160,7 @@ void Bird::DirectKill()
 	receivedHit = NULL;
 }
 
-void Bird::FrameIncrement()
+void Coyote::FrameIncrement()
 {
 	++fireCounter;
 
@@ -190,31 +183,31 @@ void Bird::FrameIncrement()
 	currPosInfo = enemyMover.currPosInfo;
 }
 
-void Bird::UpdatePreFrameCalculations()
+void Coyote::UpdatePreFrameCalculations()
 {
 	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
 
 	if (playerComboer.CanPredict(targetPlayerIndex))
 	{
-		if (actionQueueIndex == 3)
+		/*if (actionQueueIndex == 3)
 		{
 			dead = true;
 			sess->RemoveEnemy(this);
 			return;
-		}
+		}*/
 
 		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
 		targetPos = playerComboer.GetTargetPos();
 
-		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
+		comboMoveFrames = targetPlayer->hitstunFrames - 1;//(hitBody.hitboxInfo->hitstunFrames - 1);
 		counterTillAttack = comboMoveFrames - 10;
 
 		//enemyMover.SetModeNodeJump(targetPos, 200);
 		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
 		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
 
-		int nextAction = actionQueue[actionQueueIndex].action + 1;
-		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+		//int nextAction = //actionQueue[actionQueueIndex].action + 1;
+		//comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
 
 		if (comboMoveFrames < 0)
 		{
@@ -229,19 +222,13 @@ void Bird::UpdatePreFrameCalculations()
 	}
 }
 
-void Bird::ProcessState()
+void Coyote::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
-		case PUNCH:
-			frame = 0;
-			break;
 		case COMBOMOVE:
-			frame = 0;
-			break;
-		case KICK:
 			frame = 0;
 			break;
 		}
@@ -265,45 +252,44 @@ void Bird::ProcessState()
 		V2d nodePos = nodeVec[rNode]->pos;
 
 		V2d pPos = sess->GetPlayerPos(0);
-		V2d pDir = normalize( pPos - GetPosition());
+		V2d pDir = normalize(pPos - GetPosition());
 
-		
 
 		if (r == 0)
 		{
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 1)
 		{
-			enemyMover.SetModeNodeQuadratic( pPos, nodePos, CubicBezier(), 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
+			stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 2)
 		{
 			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 				10, .5, 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 3)
 		{
-			
+
 		}
 
-		
+
 		action = MOVE;
 		moveFrames = 60;
 	}
-	else if (action == COMBOMOVE )
+	else if (action == COMBOMOVE)
 	{
 		if (comboMoveFrames == 0)
 		{
-			action = actionQueue[actionQueueIndex].action + 1;
-			facingRight = actionQueue[actionQueueIndex].facingRight;
+			//action = actionQueue[actionQueueIndex].action + 1;
+			//facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
 			//only have this on if i dont turn on hitboxes at the end of the movement.
 			DefaultHitboxesOn();
-			
+
 		}
 	}
 
@@ -315,11 +301,11 @@ void Bird::ProcessState()
 		action = COMBOMOVE;
 		frame = 0;
 		playerComboer.PredictNextFrame();
-		if( !comboInterrupted )
-			++actionQueueIndex;
+		//if (!comboInterrupted)
+		//	++actionQueueIndex;
 		SetHitboxes(NULL, 0);
 
-		if (actionQueueIndex == 3)
+		//if (actionQueueIndex == 3)
 		{
 
 		}
@@ -328,13 +314,13 @@ void Bird::ProcessState()
 	hitPlayer = false;
 }
 
-void Bird::IHitPlayer(int index)
+void Coyote::IHitPlayer(int index)
 {
 	hitPlayer = true;
 	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
 }
 
-void Bird::UpdateEnemyPhysics()
+void Coyote::UpdateEnemyPhysics()
 {
 	if (!enemyMover.IsIdle())
 	{
@@ -343,9 +329,9 @@ void Bird::UpdateEnemyPhysics()
 	}
 }
 
-void Bird::UpdateSprite()
+void Coyote::UpdateSprite()
 {
-	switch (action)
+	/*switch (action)
 	{
 	case WAIT:
 	case MOVE:
@@ -361,29 +347,32 @@ void Bird::UpdateSprite()
 		sprite.setTexture(*ts_kick->texture);
 		ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
 		break;
-	}
+	}*/
+
+	myCircle.setPosition(GetPositionF());
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void Bird::EnemyDraw(sf::RenderTarget *target)
+void Coyote::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite);
-	shurPool.Draw(target);
+	target->draw(myCircle);
+	//DrawSprite(target, sprite);
+	stopStartPool.Draw(target);
 }
 
-void Bird::HandleHitAndSurvive()
+void Coyote::HandleHitAndSurvive()
 {
 	fireCounter = 0;
 }
 
-int Bird::GetNumStoredBytes()
+int Coyote::GetNumStoredBytes()
 {
 	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
 }
 
-void Bird::StoreBytes(unsigned char *bytes)
+void Coyote::StoreBytes(unsigned char *bytes)
 {
 	MyData d;
 	memset(&d, 0, sizeof(MyData));
@@ -397,7 +386,7 @@ void Bird::StoreBytes(unsigned char *bytes)
 	launchers[0]->StoreBytes(bytes);
 }
 
-void Bird::SetFromBytes(unsigned char *bytes)
+void Coyote::SetFromBytes(unsigned char *bytes)
 {
 	MyData d;
 	memcpy(&d, bytes, sizeof(MyData));
