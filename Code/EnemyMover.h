@@ -76,12 +76,15 @@ struct EnemyMover
 	void Reset();
 
 	bool IsIdle();
+	void FinishTargetedMovement();
 
+	void SetDestNode(PoiInfo *pi);
 	void UpdateSwingDebugDraw();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str,
 		sf::Color c);
 	void SetModeWait(int frames);
+	void SetMoveType(MoveType mt);
 	void SetModeSwing(
 		V2d &swingAnchor,
 		double wireLength,
@@ -93,8 +96,6 @@ struct EnemyMover
 		double speed, int frames);
 	void SetModeNodeProjectile(
 		V2d &nodePos, V2d &grav, double height);
-	void SetModeNodeProjectile(
-		PoiInfo *pi, V2d &grav, double height);
 	void SetModeNodeLinear(
 		V2d &nodePos,
 		CubicBezier &cb,

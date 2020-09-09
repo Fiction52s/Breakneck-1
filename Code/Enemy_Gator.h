@@ -3,12 +3,19 @@
 
 #include "Enemy.h"
 #include "Bullet.h"
+#include "Movement.h"
+#include "SuperCommands.h"
+#include "EnemyMover.h"
+#include "PlayerComboer.h"
+#include "Enemy_BirdShuriken.h"
 
-struct Gator : Enemy, LauncherEnemy
+struct Gator : Enemy
 {
 	enum Action
 	{
-		DOMINATION,
+		COMBOMOVE,
+		MOVE,
+		WAIT,
 		A_Count
 	};
 
@@ -17,29 +24,53 @@ struct Gator : Enemy, LauncherEnemy
 		int fireCounter;
 	};
 
-	int fireCounter;
-	
-	Tileset *ts;
+	int moveFrames;
+	int waitFrames;
+
+	std::string nodeAStr;
+
+	BirdShurikenPool shurPool;
+
+	PlayerComboer playerComboer;
+	EnemyMover enemyMover;
+
 	Tileset *ts_bulletExplode;
 	Tileset *ts_aura;
-	int animationFactor;
-	int bulletSpeed;
-	int framesBetween;
+	int comboMoveFrames;
+
+	int reachPointOnFrame[A_Count];
+
+	bool hitPlayer;
+
+	BirdCommand actionQueue[3];
+	int actionQueueIndex;
+
+	int targetPlayerIndex;
+
+	HitboxInfo hitboxInfos[A_Count];
+
+	Tileset *ts_punch;
+	Tileset *ts_kick;
+	Tileset *ts_move;
+
+	int counterTillAttack;
+
+	V2d targetPos;
+	int framesToArrive;
 
 	Gator(ActorParams *ap);
 
+	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, V2d &pos);
-	void BulletHitPlayer(
-		int playerIndex, 
-		BasicBullet *b,
-		int hitResult);
+	void SetCommand(int index, BirdCommand &bc);
+	void UpdatePreFrameCalculations();
 	void ProcessState();
-	
+	void UpdateHitboxes();
+	void DebugDraw(sf::RenderTarget *target);
+
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 
@@ -48,6 +79,54 @@ struct Gator : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
+
+	void SetHitboxInfo(int a);
 };
+
+//struct Gator : Enemy, LauncherEnemy
+//{
+//	enum Action
+//	{
+//		DOMINATION,
+//		A_Count
+//	};
+//
+//	struct MyData : StoredEnemyData
+//	{
+//		int fireCounter;
+//	};
+//
+//	int fireCounter;
+//	
+//	Tileset *ts;
+//	Tileset *ts_bulletExplode;
+//	Tileset *ts_aura;
+//	int animationFactor;
+//	int bulletSpeed;
+//	int framesBetween;
+//
+//	Gator(ActorParams *ap);
+//
+//	int GetNumStoredBytes();
+//	void StoreBytes(unsigned char *bytes);
+//	void SetFromBytes(unsigned char *bytes);
+//	void DirectKill();
+//	void BulletHitTerrain(BasicBullet *b,
+//		Edge *edge, V2d &pos);
+//	void BulletHitPlayer(
+//		int playerIndex, 
+//		BasicBullet *b,
+//		int hitResult);
+//	void ProcessState();
+//	
+//	void EnemyDraw(sf::RenderTarget *target);
+//	void HandleHitAndSurvive();
+//
+//	void IHitPlayer(int index = 0);
+//	void UpdateSprite();
+//	void ResetEnemy();
+//	void UpdateEnemyPhysics();
+//	void FrameIncrement();
+//};
 
 #endif

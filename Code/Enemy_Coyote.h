@@ -24,10 +24,10 @@ struct Coyote : Enemy
 		int fireCounter;
 	};
 
+	Tileset *ts_move;
+
 	int moveFrames;
 	int waitFrames;
-
-	sf::CircleShape myCircle;
 
 	std::string nodeAStr;
 

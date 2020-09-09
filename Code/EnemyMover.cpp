@@ -42,7 +42,7 @@ void EnemyMover::Reset()
 	quadraticMovementSeq.currMovement = NULL;
 	cubicMovementSeq.currMovement = NULL;
 	doubleQuadraticMovementSeq.currMovement = NULL;
-	moveType = NONE;
+	SetMoveType(NONE);
 	lastActionEndVelocity = V2d(0, 0);
 
 	linearMove->SetFrameDuration(0);
@@ -55,6 +55,11 @@ void EnemyMover::Reset()
 bool EnemyMover::IsIdle()
 {
 	return moveType == EnemyMover::NONE;
+}
+
+void EnemyMover::SetDestNode(PoiInfo *pi)
+{
+	targetPI = pi;
 }
 
 void EnemyMover::UpdateSwingDebugDraw()
@@ -134,12 +139,12 @@ void EnemyMover::SetModeFall(double grav, int frames)
 {
 	projectileGrav = V2d(0, grav);
 	actionFrames = frames;
-	moveType = FALL;
+	SetMoveType(FALL);
 }
 
 void EnemyMover::SetModeWait(int frames)
 {
-	moveType = WAIT;
+	SetMoveType(WAIT);
 	actionFrames = frames;
 }
 
@@ -149,12 +154,12 @@ void EnemyMover::SetModeSwing(V2d &p_swingAnchor, double p_wireLength,
 	swingAnchor = p_swingAnchor;
 	wireLength = p_wireLength;
 	actionFrames = frames;
-	moveType = SWING;
+	SetMoveType(SWING);
 }
 
 void EnemyMover::SetModeGrind(double speed, int frames)
 {
-	moveType = GRIND;
+	SetMoveType(GRIND);
 	actionFrames = frames;
 	grindSpeed = speed;
 }
@@ -191,16 +196,8 @@ void EnemyMover::SetModeNodeProjectile(
 	//debugCircles->SetPosition(0, Vector2f((currPos.x + nodePos.x)/ 2.0, peak));
 	//debugCircles->SetVisible(0, true);
 	actionFrames = totalTime;
-	moveType = NODE_PROJECTILE;
-	targetPI = NULL;
+	SetMoveType(NODE_PROJECTILE);
 	targetPos = nodePos;
-}
-
-void EnemyMover::SetModeNodeProjectile(
-	PoiInfo *pi, V2d &grav, double height)
-{
-	SetModeNodeProjectile(pi->pos, grav, height);
-	targetPI = pi;
 }
 
 void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
@@ -211,7 +208,7 @@ void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
 	chaseMaxVel = maxVel;
 	chaseAccel = accel;
 	velocity = V2d(0, 0);
-	moveType = CHASE;
+	SetMoveType(CHASE);
 	actionFrames = frameDuration;
 }
 
@@ -236,7 +233,7 @@ void EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight)
 
 void EnemyMover::SetModeNodeLinear(V2d &nodePos, CubicBezier &cb, int frameDuration)
 {
-	moveType = NODE_LINEAR;
+	SetMoveType(NODE_LINEAR);
 	linearMove->SetFrameDuration(frameDuration);
 	linearMove->start = currPosInfo.GetPosition();
 	linearMove->end = nodePos;
@@ -257,7 +254,7 @@ void EnemyMover::SetModeNodeLinearConstantSpeed(
 void EnemyMover::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
 	CubicBezier &cb, int frameDuration)
 {
-	moveType = NODE_QUADRATIC;
+	SetMoveType(NODE_QUADRATIC);
 	quadraticMove->SetFrameDuration(frameDuration);
 	quadraticMove->A = currPosInfo.GetPosition();
 	quadraticMove->B = controlPoint0;
@@ -283,7 +280,7 @@ void EnemyMover::SetModeNodeQuadraticConstantSpeed(
 void EnemyMover::SetModeNodeCubic(V2d &controlPoint0, V2d &controlPoint1,
 	V2d &nodePos, CubicBezier &cb, int frameDuration)
 {
-	moveType = NODE_CUBIC;
+	SetMoveType(NODE_CUBIC);
 	cubicMove->SetFrameDuration(frameDuration);
 	cubicMove->A = currPosInfo.GetPosition();
 	cubicMove->B = controlPoint0;
@@ -311,7 +308,7 @@ void EnemyMover::SetModeNodeDoubleQuadratic(
 	int frameDuration,
 	double spreadFactor)
 {
-	moveType = NODE_DOUBLE_QUADRATIC;
+	SetMoveType(NODE_DOUBLE_QUADRATIC);
 	doubleQuadtraticMove0->SetFrameDuration(frameDuration / 2);
 	doubleQuadtraticMove0->A = currPosInfo.GetPosition();
 	doubleQuadtraticMove0->C = controlPoint0;
@@ -426,7 +423,10 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 
 			if (currSeq->currMovement == NULL)
 			{
-				moveType = NONE;
+				targetPos = currPosInfo.position;
+				FinishTargetedMovement();
+				SetMoveType(NONE);
+				
 				if (currMovement->duration == 0)
 				{
 					lastActionEndVelocity = V2d(0, 0);
@@ -616,6 +616,27 @@ void EnemyMover::DebugDraw(sf::RenderTarget *target)
 	}
 }
 
+void EnemyMover::FinishTargetedMovement()
+{
+	if (targetPI != NULL)
+	{
+		if (targetPI->edge != NULL)
+		{
+			currPosInfo.SetGround(targetPI->edge->poly, targetPI->edgeIndex,
+				targetPI->edgeQuantity);
+			currPosInfo.position = targetPI->pos;
+		}
+		else
+		{
+			currPosInfo.SetAerial(targetPI->pos);
+		}
+	}
+	else
+	{
+		currPosInfo.SetAerial(targetPos);
+	}
+}
+
 void EnemyMover::FrameIncrement()
 {
 	if (moveType == CHASE)
@@ -625,7 +646,7 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
+				SetMoveType(NONE);
 				lastActionEndVelocity = velocity;
 				return;
 			}
@@ -649,24 +670,10 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
-				if (targetPI != NULL)
-				{
-					if (targetPI->edge != NULL)
-					{
-						currPosInfo.SetGround(targetPI->edge->poly, targetPI->edgeIndex,
-							targetPI->edgeQuantity);
-						currPosInfo.position = targetPI->pos;
-					}
-					else
-					{
-						currPosInfo.SetAerial(targetPI->pos);
-					}
-				}
-				else
-				{
-					currPosInfo.SetAerial(targetPos);
-				}
+				FinishTargetedMovement();
+				SetMoveType(NONE);
+				
+				
 				lastActionEndVelocity = velocity;
 			}
 		}
@@ -678,7 +685,7 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
+				SetMoveType(NONE);
 				lastActionEndVelocity = currPosInfo.GetEdge()->Along() * grindSpeed;
 			}
 		}
@@ -690,7 +697,7 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
+				SetMoveType(NONE);
 				lastActionEndVelocity = velocity;
 			}
 		}
@@ -702,7 +709,7 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
+				SetMoveType(NONE);
 				lastActionEndVelocity = velocity;
 			}
 		}
@@ -714,10 +721,16 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				moveType = NONE;
+				SetMoveType(NONE);
 				lastActionEndVelocity = V2d(0, 0);
 				return;
 			}
 		}
 	}
+}
+
+void EnemyMover::SetMoveType(MoveType mt)
+{
+	moveType = mt;
+	targetPI = NULL;
 }

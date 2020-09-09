@@ -167,6 +167,7 @@ void PositionInfo::SetAerial(V2d &pos)
 
 void PositionInfo::SetAerial()
 {
+	position = GetPosition();
 	ground = NULL;
 	railGround = NULL;
 }

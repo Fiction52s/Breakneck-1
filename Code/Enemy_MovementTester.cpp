@@ -240,7 +240,8 @@ void MovementTester::ProcessState()
 			//}
 			//else
 			//{
-			enemyMover.SetModeNodeProjectile(nodeVec[r], V2d(0, 2.0), 200);//300);
+			enemyMover.SetModeNodeProjectile(nodeVec[r]->pos, V2d(0, 2.0), 200);//300);
+			enemyMover.SetDestNode(nodeVec[r]);
 			//}
 			//gatorOrbPool.Throw(GetPosition(), dir);
 			

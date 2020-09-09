@@ -395,8 +395,6 @@ void ActorParams::SetBasicPanelInfo()
 	p->checkBoxes["monitor"]->checked = hasMonitor;
 }
 
-
-
 void ActorParams::SetPanelInfo()
 {
 	SetBasicPanelInfo();

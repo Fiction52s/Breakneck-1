@@ -1022,7 +1022,10 @@ void EditSession::TestPlayerMode()
 				//tempPoiParams.push_back(pp);
 				AddPoi(pp);
 			}
-			else if ((*enit)->type == types["birdnode"])
+			else if ((*enit)->type == types["birdnode"]
+				|| (*enit)->type == types["coyotenode"]
+				|| (*enit)->type == types["tigernode"]
+				|| (*enit)->type == types["gatornode"] )
 			{
 				PoiParams *pp = (PoiParams*)(*enit);
 				AddBossNode((*enit)->GetTypeName(), pp);

@@ -1,5 +1,5 @@
-#ifndef __ENEMY_BIRD_H__
-#define __ENEMY_BIRD_H__
+#ifndef __ENEMY_TIGER_H__
+#define __ENEMY_TIGER_H__
 
 #include "Enemy.h"
 #include "Bullet.h"
@@ -7,17 +7,16 @@
 #include "SuperCommands.h"
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
-#include "Enemy_BirdShuriken.h"
+#include "Enemy_CoyoteBullet.h"
 
-struct Bird : Enemy
+struct PoiInfo;
+struct Tiger : Enemy
 {
 	enum Action
 	{
-		COMBOMOVE,
-		PUNCH,
-		KICK,
 		MOVE,
 		WAIT,
+		COMBOMOVE,
 		A_Count
 	};
 
@@ -26,14 +25,16 @@ struct Bird : Enemy
 		int fireCounter;
 	};
 
+	PoiInfo *targetNode;
+
+	Tileset *ts_move;
+
 	int moveFrames;
 	int waitFrames;
 
-	
-
 	std::string nodeAStr;
 
-	BirdShurikenPool shurPool;
+	CoyoteBulletPool stopStartPool;
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
@@ -48,30 +49,23 @@ struct Bird : Enemy
 
 	bool hitPlayer;
 
-	BirdCommand actionQueue[3];
-	int actionQueueIndex;
-
 	int targetPlayerIndex;
 
 	HitboxInfo hitboxInfos[A_Count];
-
-	Tileset *ts_punch;
-	Tileset *ts_kick;
-	Tileset *ts_move;
 
 	int counterTillAttack;
 
 	V2d targetPos;
 	int framesToArrive;
 
-	Bird(ActorParams *ap);
+	Tiger(ActorParams *ap);
 
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void SetCommand(int index, BirdCommand &bc);
+	//void SetCommand(int index, BirdCommand &bc);
 	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();

@@ -457,6 +457,11 @@ void Session::AddW3Enemies()
 	//AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
+	AddBasicGroundWorldEnemy("coyote", 5, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+
+	AddWorldEnemy("coyotenode", 3, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
+
 	///*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
 	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 	AddBasicAerialWorldEnemy("ball", 3, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
@@ -512,6 +517,7 @@ void Session::AddW3Enemies()
 
 void Session::AddW4Enemies()
 {
+	AddBasicGroundWorldEnemy("tiger", 5, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
@@ -522,6 +528,9 @@ void Session::AddW4Enemies()
 
 	////AddBasicAerialWorldEnemy("teleporter", 4, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	////	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
+
+	AddWorldEnemy("tigernode", 4, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
 
 	AddBasicAerialWorldEnemy("teleporter", 4, CreateEnemy<Spring>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 
@@ -573,6 +582,9 @@ void Session::AddW4Enemies()
 
 void Session::AddW5Enemies()
 {
+	AddWorldEnemy("gatornode", 5, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/gatornode_32x32.png"));
+
 	AddBasicAerialWorldEnemy("gator", 5, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 
 	//AddWorldEnemy("hungrycomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
@@ -4798,6 +4810,22 @@ void Session::AddBossNode( const std::string &nodeTypeName, PoiParams *pp)
 	if (nodeTypeName == "birdnode")
 	{
 		ftIndex = FT_BIRD;
+	}
+	else if (nodeTypeName == "coyotenode")
+	{
+		ftIndex = FT_COYOTE;
+	}
+	else if (nodeTypeName == "tigernode")
+	{
+		ftIndex = FT_TIGER;
+	}
+	else if (nodeTypeName == "gatornode")
+	{
+		ftIndex = FT_GATOR;
+	}
+	else if (nodeTypeName == "skeletonnode")
+	{
+		ftIndex = FT_SKELETON;
 	}
 
 	bossNodeVectorMap[ftIndex][pp->name].push_back(pi);

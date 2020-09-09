@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_Coyote.h"
+#include "Enemy_Tiger.h"
 #include "Actor.h"
 
 using namespace std;
@@ -20,8 +20,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Coyote::Coyote(ActorParams *ap)
-	:Enemy(EnemyType::EN_COYOTEBOSS, ap)
+Tiger::Tiger(ActorParams *ap)
+	:Enemy(EnemyType::EN_TIGERBOSS, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -33,6 +33,7 @@ Coyote::Coyote(ActorParams *ap)
 	reachPointOnFrame[COMBOMOVE] = 0;
 
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	sprite.setColor(Color::Red);
 
 	nodeAStr = "A";
 
@@ -59,7 +60,7 @@ Coyote::Coyote(ActorParams *ap)
 	ResetEnemy();
 }
 
-void Coyote::LoadParams()
+void Tiger::LoadParams()
 {
 	/*ifstream is;
 	is.open("Resources/Bosses/Bird/birdparams.json");
@@ -73,7 +74,7 @@ void Coyote::LoadParams()
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
-void Coyote::UpdateHitboxes()
+void Tiger::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 
@@ -90,7 +91,7 @@ void Coyote::UpdateHitboxes()
 	}
 }
 
-void Coyote::ResetEnemy()
+void Tiger::ResetEnemy()
 {
 	playerComboer.Reset();
 	stopStartPool.Reset();
@@ -120,24 +121,24 @@ void Coyote::ResetEnemy()
 	UpdateSprite();
 }
 
-void Coyote::SetHitboxInfo(int a)
+void Tiger::SetHitboxInfo(int a)
 {
 	*hitboxInfo = hitboxInfos[a];
 	hitBody.hitboxInfo = hitboxInfo;
 }
 
-//void Coyote::SetCommand(int index, BirdCommand &bc)
+//void Tiger::SetCommand(int index, BirdCommand &bc)
 //{
 //	actionQueue[index] = bc;
 //}
 
-void Coyote::DebugDraw(sf::RenderTarget *target)
+void Tiger::DebugDraw(sf::RenderTarget *target)
 {
 	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
 }
 
-void Coyote::DirectKill()
+void Tiger::DirectKill()
 {
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -155,7 +156,7 @@ void Coyote::DirectKill()
 	receivedHit = NULL;
 }
 
-void Coyote::FrameIncrement()
+void Tiger::FrameIncrement()
 {
 	++fireCounter;
 
@@ -178,7 +179,7 @@ void Coyote::FrameIncrement()
 	currPosInfo = enemyMover.currPosInfo;
 }
 
-void Coyote::UpdatePreFrameCalculations()
+void Tiger::UpdatePreFrameCalculations()
 {
 	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
 
@@ -186,9 +187,9 @@ void Coyote::UpdatePreFrameCalculations()
 	{
 		/*if (actionQueueIndex == 3)
 		{
-			dead = true;
-			sess->RemoveEnemy(this);
-			return;
+		dead = true;
+		sess->RemoveEnemy(this);
+		return;
 		}*/
 
 		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
@@ -217,7 +218,7 @@ void Coyote::UpdatePreFrameCalculations()
 	}
 }
 
-void Coyote::ProcessState()
+void Tiger::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -235,43 +236,52 @@ void Coyote::ProcessState()
 	{
 		action = WAIT;
 		waitFrames = 1;//10
+		//currPosInfo.SetGround(
+		//	targetNode->poly, targetNode->edgeIndex, targetNode->edgeQuantity);
+		//enemyMover.currPosInfo = currPosInfo;
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
+		
 		int r = rand() % 3;
 
-		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_COYOTE, nodeAStr);
+		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_TIGER, nodeAStr);
 		int vecSize = nodeVec.size();
 		int rNode = rand() % vecSize;
 
-		V2d nodePos = nodeVec[rNode]->pos;
+		targetNode = nodeVec[rNode];
+
+		V2d nodePos = targetNode->pos;
 
 		V2d pPos = sess->GetPlayerPos(0);
 		V2d pDir = normalize(pPos - GetPosition());
 
-		enemyMover.currPosInfo.SetAerial();
-		currPosInfo.SetAerial();
-
 		if (r == 0)
 		{
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+			enemyMover.SetModeGrind(20, 120);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
-			stopStartPool.Throw(GetPosition(), pDir);
+			//stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 1)
 		{
+			enemyMover.currPosInfo.SetAerial();
+			currPosInfo.SetAerial();
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+			enemyMover.SetDestNode(nodeVec[rNode]);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
-			stopStartPool.Throw(GetPosition(), pDir);
+			//stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 2)
 		{
+			enemyMover.currPosInfo.SetAerial();
+			currPosInfo.SetAerial();
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+			enemyMover.SetDestNode(nodeVec[rNode]);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 			//	10, .5, 60);
-			stopStartPool.Throw(GetPosition(), pDir);
+			//stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 3)
 		{
@@ -316,13 +326,13 @@ void Coyote::ProcessState()
 	hitPlayer = false;
 }
 
-void Coyote::IHitPlayer(int index)
+void Tiger::IHitPlayer(int index)
 {
 	hitPlayer = true;
 	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
 }
 
-void Coyote::UpdateEnemyPhysics()
+void Tiger::UpdateEnemyPhysics()
 {
 	if (!enemyMover.IsIdle())
 	{
@@ -331,24 +341,24 @@ void Coyote::UpdateEnemyPhysics()
 	}
 }
 
-void Coyote::UpdateSprite()
+void Tiger::UpdateSprite()
 {
 	/*switch (action)
 	{
 	case WAIT:
 	case MOVE:
 	case COMBOMOVE:
-		sprite.setTexture(*ts_move->texture);
-		ts_move->SetSubRect(sprite, 2, !facingRight);
-		break;
+	sprite.setTexture(*ts_move->texture);
+	ts_move->SetSubRect(sprite, 2, !facingRight);
+	break;
 	case PUNCH:
-		sprite.setTexture(*ts_punch->texture);
-		ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
-		break;
+	sprite.setTexture(*ts_punch->texture);
+	ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
+	break;
 	case KICK:
-		sprite.setTexture(*ts_kick->texture);
-		ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
-		break;
+	sprite.setTexture(*ts_kick->texture);
+	ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
+	break;
 	}*/
 
 	sprite.setTexture(*ts_move->texture);
@@ -358,23 +368,23 @@ void Coyote::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
-void Coyote::EnemyDraw(sf::RenderTarget *target)
+void Tiger::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 	stopStartPool.Draw(target);
 }
 
-void Coyote::HandleHitAndSurvive()
+void Tiger::HandleHitAndSurvive()
 {
 	fireCounter = 0;
 }
 
-int Coyote::GetNumStoredBytes()
+int Tiger::GetNumStoredBytes()
 {
 	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
 }
 
-void Coyote::StoreBytes(unsigned char *bytes)
+void Tiger::StoreBytes(unsigned char *bytes)
 {
 	MyData d;
 	memset(&d, 0, sizeof(MyData));
@@ -388,7 +398,7 @@ void Coyote::StoreBytes(unsigned char *bytes)
 	launchers[0]->StoreBytes(bytes);
 }
 
-void Coyote::SetFromBytes(unsigned char *bytes)
+void Tiger::SetFromBytes(unsigned char *bytes)
 {
 	MyData d;
 	memcpy(&d, bytes, sizeof(MyData));

@@ -3,5 +3,6 @@
 
 #include "Enemy_BounceJuggler.h"
 #include "Ball.h"
+#include "Enemy_Coyote.h"
 
 #endif
