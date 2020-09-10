@@ -21,7 +21,7 @@ using namespace sf;
 
 
 Gator::Gator(ActorParams *ap)
-	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool(this)
+	:Enemy(EnemyType::EN_GATORBOSS, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -93,7 +93,7 @@ void Gator::UpdateHitboxes()
 void Gator::ResetEnemy()
 {
 	playerComboer.Reset();
-	shurPool.Reset();
+	orbPool.Reset();
 	enemyMover.Reset();
 
 	facingRight = true;
@@ -234,7 +234,7 @@ void Gator::ProcessState()
 	{
 		int r = rand() % 3;
 
-		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
+		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_GATOR, nodeAStr);
 		int vecSize = nodeVec.size();
 		int rNode = rand() % vecSize;
 
@@ -248,18 +248,18 @@ void Gator::ProcessState()
 		if (r == 0)
 		{
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::OrbType::NODE_GROW);
 		}
 		else if (r == 1)
 		{
 			enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::OrbType::NODE_GROW);
 		}
 		else if (r == 2)
 		{
 			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 				10, .5, 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::OrbType::NODE_GROW);
 		}
 		else if (r == 3)
 		{
@@ -338,7 +338,7 @@ void Gator::UpdateSprite()
 void Gator::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-	shurPool.Draw(target);
+	orbPool.Draw(target);
 }
 
 void Gator::HandleHitAndSurvive()

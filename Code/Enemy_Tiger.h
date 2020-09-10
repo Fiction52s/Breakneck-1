@@ -7,7 +7,7 @@
 #include "SuperCommands.h"
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
-#include "Enemy_CoyoteBullet.h"
+#include "Enemy_TigerGrindBullet.h"
 
 struct PoiInfo;
 struct Tiger : Enemy
@@ -34,7 +34,7 @@ struct Tiger : Enemy
 
 	std::string nodeAStr;
 
-	CoyoteBulletPool stopStartPool;
+	TigerGrindBulletPool snakePool;
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;

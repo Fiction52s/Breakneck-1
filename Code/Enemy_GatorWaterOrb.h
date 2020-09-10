@@ -11,7 +11,8 @@ struct GatorWaterOrbPool
 	GatorWaterOrbPool();
 	~GatorWaterOrbPool();
 	void Reset();
-	GatorWaterOrb * Throw(V2d &pos, V2d &dir);
+	GatorWaterOrb * Throw(V2d &pos, V2d &dir,
+		int orbType );
 	void Draw(sf::RenderTarget *target);
 	std::vector<GatorWaterOrb*> bulletVec;
 	sf::Vertex *verts;
@@ -21,34 +22,45 @@ struct GatorWaterOrbPool
 
 struct GatorWaterOrb : Enemy
 {
+	enum OrbType
+	{
+		UNDODGEABLE_REFRESH,
+		NODE_GROW,
+	};
+
 	enum Action
 	{
-		UNDODGEABLE,
 		FLYING,
 		A_Count
 	};
 
-	Tileset *ts;
+	int orbType;
 
-	int hitlagFrames;
-	int hitstunFrames;
+	Tileset *ts;
 
 	double flySpeed;
 	double maxFlySpeed;
 	double accel;
 	int framesToLive;
 	int origFramesToLive;
-
 	V2d velocity;
+	double distToTarget;
 
 	sf::Vertex *quad;
 
-	double distToTarget;
+	//for node grow
+	double currRadius;
+	V2d targetPos;
+
+	QuadraticMovement *quadraticMove;
+	MovementSequence quadraticMoveSeq;
+
+	
 
 	GatorWaterOrb(sf::Vertex *quad,
 		GatorWaterOrbPool *pool);
 	void UpdateEnemyPhysics();
-	void Throw(V2d &pos, V2d &dir);
+	void Throw(V2d &pos, V2d &dir, int orbType );
 	void SetLevel(int lev);
 	void ProcessState();
 	bool CheckHitPlayer(int index = 0);

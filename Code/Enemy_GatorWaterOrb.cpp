@@ -43,7 +43,7 @@ void GatorWaterOrbPool::Reset()
 	}
 }
 
-GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir)
+GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir, int orbType )
 {
 	GatorWaterOrb *bs = NULL;
 	for (int i = 0; i < numBullets; ++i)
@@ -51,7 +51,7 @@ GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir)
 		bs = bulletVec[i];
 		if (!bs->spawned)
 		{
-			bs->Throw(pos, dir);
+			bs->Throw(pos, dir, orbType);
 			break;
 		}
 	}
@@ -75,6 +75,12 @@ GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *pool)
 	quad = myQuad;
 
 	ts = pool->ts;
+
+	quadraticMove = quadraticMoveSeq.AddQuadraticMovement(
+		V2d(), V2d(), V2d(), CubicBezier(), 0);
+
+
+
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -103,6 +109,8 @@ void GatorWaterOrb::ResetEnemy()
 	action = FLYING;
 	frame = 0;
 
+	quadraticMoveSeq.Reset();
+
 	DefaultHitboxesOn();
 
 	UpdateHitboxes();
@@ -127,19 +135,38 @@ void GatorWaterOrb::SetLevel(int lev)
 	}
 }
 
-void GatorWaterOrb::Throw(V2d &pos, V2d &dir)
+void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 {
 	Reset();
 	sess->AddEnemy(this);
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
-	distToTarget = length(pos - sess->GetPlayerPos(0));
+	
 
-	action = UNDODGEABLE;
+	action = FLYING;
 	frame = 0;
 	framesToLive = origFramesToLive;
 
+	orbType = p_orbType;
+
 	flySpeed = 10;
+
+	if (orbType == UNDODGEABLE_REFRESH)
+	{
+		distToTarget = length(pos - sess->GetPlayerPos(0));
+	}
+	else if (orbType == NODE_GROW)
+	{
+		quadraticMove->SetFrameDuration(60);
+		quadraticMove->A = pos;
+		quadraticMove->B = sess->GetPlayerPos(0);
+		quadraticMove->C = dir;
+		quadraticMove->start = pos;
+		quadraticMove->end = dir;
+		quadraticMoveSeq.Reset();
+	}
+
+	currRadius = ts->tileWidth;
 
 }
 
@@ -174,12 +201,25 @@ void GatorWaterOrb::ProcessState()
 		spawned = false;
 	}
 
-	if (action == UNDODGEABLE)
+	if (action == FLYING)
 	{
-		velocity = pDir * flySpeed;
-		flySpeed += accel;
-		if (flySpeed > maxFlySpeed)
-			flySpeed = maxFlySpeed;
+		if (orbType == UNDODGEABLE_REFRESH)
+		{
+			velocity = pDir * flySpeed;
+			flySpeed += accel;
+			if (flySpeed > maxFlySpeed)
+				flySpeed = maxFlySpeed;
+		}
+		else if (orbType == NODE_GROW)
+		{
+			currRadius += 1;
+
+			if (length(GetPosition() - targetPos) < flySpeed)
+			{
+				velocity = V2d(0, 0);
+				currPosInfo.position = targetPos;
+			}
+		}
 	}
 	
 }
@@ -190,16 +230,33 @@ void GatorWaterOrb::IHitPlayer(int index)
 
 void GatorWaterOrb::UpdateEnemyPhysics()
 {
-	V2d movementVec = velocity;
-	movementVec /= slowMultiple * (double)numPhysSteps;
+	if (orbType == NODE_GROW)
+	{
+		if (numPhysSteps == 1)
+		{
+			quadraticMoveSeq.Update(slowMultiple, 10);
+		}
+		else
+		{
+			quadraticMoveSeq.Update(slowMultiple, 1);
+		}
 
-	currPosInfo.position += movementVec;
+		currPosInfo.position = quadraticMoveSeq.position;
+	}
+	else
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		currPosInfo.position += movementVec;
+	}
+	
 }
 
 void GatorWaterOrb::UpdateSprite()
 {
 	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
+	SetRectCenter(quad, currRadius, currRadius, GetPositionF());
 }
 
 void GatorWaterOrb::EnemyDraw(sf::RenderTarget *target)

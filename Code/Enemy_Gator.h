@@ -7,7 +7,7 @@
 #include "SuperCommands.h"
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
-#include "Enemy_BirdShuriken.h"
+#include "Enemy_GatorWaterOrb.h"
 
 struct Gator : Enemy
 {
@@ -29,7 +29,7 @@ struct Gator : Enemy
 
 	std::string nodeAStr;
 
-	BirdShurikenPool shurPool;
+	GatorWaterOrbPool orbPool;
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;

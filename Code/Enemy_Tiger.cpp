@@ -93,8 +93,10 @@ void Tiger::UpdateHitboxes()
 
 void Tiger::ResetEnemy()
 {
+	currPosInfo = startPosInfo;
+
 	playerComboer.Reset();
-	stopStartPool.Reset();
+	snakePool.Reset();
 	enemyMover.Reset();
 
 	fireCounter = 0;
@@ -258,7 +260,19 @@ void Tiger::ProcessState()
 
 		if (r == 0)
 		{
-			enemyMover.SetModeGrind(20, 120);
+			int gr = rand() % 2;
+
+			double grindSpeed = 20;
+			if (gr == 0)
+			{
+				enemyMover.SetModeGrind(grindSpeed, 120);
+			}
+			else if (gr == 1)
+			{
+				enemyMover.SetModeGrind(-grindSpeed, 120);
+			}
+
+			snakePool.Throw(GetPosition(), pDir);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//stopStartPool.Throw(GetPosition(), pDir);
 		}
@@ -266,21 +280,26 @@ void Tiger::ProcessState()
 		{
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+
+			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
+			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			enemyMover.SetDestNode(nodeVec[rNode]);
+
+			snakePool.Throw(GetPosition(), pDir);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
-			//stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 2)
 		{
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
+			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			enemyMover.SetDestNode(nodeVec[rNode]);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 			//	10, .5, 60);
+			snakePool.Throw(GetPosition(), pDir);
 			//stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 3)
@@ -371,7 +390,7 @@ void Tiger::UpdateSprite()
 void Tiger::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-	stopStartPool.Draw(target);
+	snakePool.Draw(target);
 }
 
 void Tiger::HandleHitAndSurvive()
