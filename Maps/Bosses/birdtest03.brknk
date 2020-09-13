@@ -8,7 +8,7 @@ nothing
 -4695 245 2522 1969
 9000
 0
-8
+4
 NONE
 NONE
 0
@@ -29,59 +29,14 @@ borderpoly
 -2984 1672
 -4280 1672
 0
-0 0
-4
--3720 2144
--3567 2144
--3567 2215
--3720 2215
-0
 0
 0
 0
 1
--- 22
-birdnode 0 -3650 1824
+-- 3
+movementtester -2843 2804
+birdnode 0 -4036 2152
 A
-birdnode 0 -3073 1820
-A
-birdnode 0 -4160 1802
-A
-movementtester -3637 2586
-birdnode 0 -3652 1999
-A
-birdnode 0 -4141 2527
-A
-birdnode 0 -3095 2540
-A
-birdnode 0 -3943 2096
-A
-birdnode 0 -3350 2089
-A
-birdnode 0 -4034 2306
-A
-birdnode 0 -3215 2318
-A
-birdnode 0 -3739 2293
-A
-birdnode 0 -3536 2294
-A
-birdnode 0 -3637 2462
-A
-birdnode 0 -3904 1745
-A
-birdnode 0 -3344 1739
-A
-birdnode 0 -3478 1906
-A
-birdnode 0 -3805 1900
-A
-birdnode 0 -4049 1969
-A
-birdnode 0 -3167 1972
-A
-birdnode 0 -3356 2456
-A
-birdnode 0 -3908 2443
+birdnode 0 -3222 2174
 A
 0
