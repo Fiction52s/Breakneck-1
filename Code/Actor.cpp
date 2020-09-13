@@ -2448,6 +2448,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		birdCommands[i] = new BirdCommand;
 	}
 
+	touchedCoyoteHelper = false;
+
 	LoadHitboxes();
 
 	simulationMode = false;
@@ -4034,6 +4036,9 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	touchedCoyoteHelper = false;
+	coyoteBoostFrames = 0;
+
 	ResetGrassCounters();
 	ResetAttackHit();
 
@@ -5320,6 +5325,14 @@ void Actor::UpdatePrePhysics()
 		superLevelCounter = 0;
 	}
 
+	if (touchedCoyoteHelper)
+	{
+		ground = false;
+		SetAction(JUMP);
+		frame = 1;
+		velocity.y = -50;
+	}
+
 	if (hitlagFrames > 0)
 	{
 		UpdateInHitlag();
@@ -5463,6 +5476,8 @@ void Actor::UpdatePrePhysics()
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
 	showSword = false;
+
+	touchedCoyoteHelper = false;
 	
 
 	UpdateHitboxes();

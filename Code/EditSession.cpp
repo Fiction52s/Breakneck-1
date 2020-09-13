@@ -1025,7 +1025,8 @@ void EditSession::TestPlayerMode()
 			else if ((*enit)->type == types["birdnode"]
 				|| (*enit)->type == types["coyotenode"]
 				|| (*enit)->type == types["tigernode"]
-				|| (*enit)->type == types["gatornode"] )
+				|| (*enit)->type == types["gatornode"] 
+				|| (*enit)->type == types["skeletonnode"])
 			{
 				PoiParams *pp = (PoiParams*)(*enit);
 				AddBossNode((*enit)->GetTypeName(), pp);

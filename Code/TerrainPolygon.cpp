@@ -3949,6 +3949,8 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 		TerrainPoint *curr;
 		Vector2i temp;
 
+		newPoly->inverse = inverse;
+
 		newPoly->Reserve(numP);
 		for (int i = 0; i < numP; ++i)
 		{
@@ -3962,6 +3964,8 @@ PolyPtr TerrainPolygon::CompleteTransformation(TransformTools *tr)
 		UpdateLinePositions();
 
 		newPoly->SetFlyTransform( this, tr);
+
+		
 
 		newPoly->Finalize();
 

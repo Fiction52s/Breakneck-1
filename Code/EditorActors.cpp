@@ -98,7 +98,8 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 		if (info.name != "poi" && info.name != "birdnode"
 			&& info.name != "coyotenode"
 			&& info.name != "tigernode" 
-			&& info.name != "gatornode" )
+			&& info.name != "gatornode"
+			&& info.name != "skeletonnode" )
 			s.setOrigin(s.getLocalBounds().width / 2 + info.offset.x, s.getLocalBounds().height + info.offset.y);
 		else
 		{
@@ -195,8 +196,8 @@ Panel *ActorType::CreatePanel()
 	//extra
 
 
-	if (name == "shard" || name == "player" || name == "goal" 
-		|| name == "greengoal" )
+	if (name == "shard" || name == "player" || name == "goal"
+		|| name == "greengoal")
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
@@ -212,8 +213,8 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
 	}
-	else if (name == "birdnode" || name == "coyotenode" || name == "tigernode" 
-		|| name == "gatornode" )
+	else if (name == "birdnode" || name == "coyotenode" || name == "tigernode"
+		|| name == "gatornode" || name == "skeletonnode" )
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);

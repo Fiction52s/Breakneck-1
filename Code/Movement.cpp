@@ -188,7 +188,11 @@ V2d Movement::GetFrameVelocity(int f)
 
 void Movement::DebugDraw( sf::RenderTarget *target )
 {
-	circles->Draw(target);
+	if (circles != NULL)
+	{
+		circles->Draw(target);
+	}
+	
 	if (controlPointCircles != NULL)
 	{
 		controlPointCircles->Draw(target);

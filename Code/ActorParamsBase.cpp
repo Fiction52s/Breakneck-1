@@ -392,7 +392,11 @@ void ActorParams::SetBasicPanelInfo()
 	Panel *p = type->panel;
 
 	//p->textBoxes["level"]->text.setString(boost::lexical_cast<string>(enemyLevel));
-	p->checkBoxes["monitor"]->checked = hasMonitor;
+	if (p->checkBoxes.count("monitor") == 1)
+	{
+		p->checkBoxes["monitor"]->checked = hasMonitor;
+	}
+	
 }
 
 void ActorParams::SetPanelInfo()

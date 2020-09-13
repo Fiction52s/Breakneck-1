@@ -178,7 +178,7 @@ void MovementTester::ProcessState()
 	if (action == MOVE && enemyMover.IsIdle() )
 	{
 		action = WAIT;
-		waitFrames = 2;
+		waitFrames = 20;
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -230,7 +230,10 @@ void MovementTester::ProcessState()
 		else*/
 		//if( testCounter == 2 )
 		{
-			tigerSpinTurretPool.Throw(GetPosition(), dir);
+			enemyMover.SetModeSwingJump(nodeVec[0]->pos, nodeVec[1]->pos, 60);
+			//enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 200);
+			//enemyMover.SetModeRadial(nodePos);
+			//tigerSpinTurretPool.Throw(GetPosition(), dir);
 			//coyShockPool.Throw(GetPosition(), 100, 400, 50, 60 );
 			//auto *f = shurPool.Throw(GetPosition(), dir, BirdShuriken::UNBLOCKABLE_STICK);
 			//if (f == NULL)
@@ -240,8 +243,8 @@ void MovementTester::ProcessState()
 			//}
 			//else
 			//{
-			enemyMover.SetModeNodeProjectile(nodeVec[r]->pos, V2d(0, 2.0), 200);//300);
-			enemyMover.SetDestNode(nodeVec[r]);
+			//enemyMover.SetModeNodeProjectile(nodeVec[r]->pos, V2d(0, 2.0), 200);//300);
+			//enemyMover.SetDestNode(nodeVec[r]);
 			//}
 			//gatorOrbPool.Throw(GetPosition(), dir);
 			

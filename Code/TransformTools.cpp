@@ -276,6 +276,8 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 		{
 			other = dot(diff, scaleOther) - extra;
 
+			
+
 			if (scalePoint == 0 || scalePoint == 4)
 			{
 				scale.x = along / origSize.x;
@@ -285,6 +287,18 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 			{
 				scale.x = other / origSize.x;
 				scale.y = along / origSize.y;
+			}
+
+			if (Keyboard::isKeyPressed(Keyboard::LShift))
+			{
+				if (abs( scale.x) > abs( scale.y ) )
+				{
+					scale.y = scale.x;
+				}
+				else
+				{
+					scale.x = scale.y;
+				}
 			}
 		}
 		else

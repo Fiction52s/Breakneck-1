@@ -512,6 +512,9 @@ struct Actor : QuadTreeCollider,
 	int shieldPushbackFrames;
 	bool shieldPushbackRight;
 
+	bool touchedCoyoteHelper;
+	int coyoteBoostFrames;
+
 	//int pastCompressedInputs[60];
 
 	//---end of saved vars

@@ -1067,7 +1067,8 @@ void GameSession::ProcessActor(ActorPtr a)
 			
 		}
 		else if (typeName == "birdnode" || typeName == "coyotenode" 
-			|| typeName == "tigernode" || typeName == "gatornode" )
+			|| typeName == "tigernode" || typeName == "gatornode"
+			|| typeName == "skeletonnode" )
 		{
 			PoiParams *pp = (PoiParams*)a;
 			AddBossNode( typeName, pp);

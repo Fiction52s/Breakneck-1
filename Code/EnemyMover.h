@@ -25,7 +25,9 @@ struct EnemyMover
 		GRIND,
 		FALL,
 		SWING,
+		RADIAL,
 		WAIT,
+		SWINGJUMP,
 	};
 
 	sf::Vertex swingQuad[4];
@@ -37,11 +39,13 @@ struct EnemyMover
 	CubicMovement *cubicMove;
 	QuadraticMovement *doubleQuadtraticMove0;
 	QuadraticMovement *doubleQuadtraticMove1;
+	RadialMovement *radialMove;
 
 	MovementSequence linearMovementSeq;
 	MovementSequence quadraticMovementSeq;
 	MovementSequence cubicMovementSeq;
 	MovementSequence doubleQuadraticMovementSeq;
+	MovementSequence radialMovementSeq;
 
 	CircleGroup *nodeCircles;
 	CircleGroup *debugCircles;
@@ -71,6 +75,9 @@ struct EnemyMover
 
 	bool predict;
 
+	//double radialMovementRadius;
+	//double radialMovementSpeed;
+
 	EnemyMover();
 	~EnemyMover();
 	void Reset();
@@ -79,6 +86,7 @@ struct EnemyMover
 	void FinishTargetedMovement();
 
 	void SetDestNode(PoiInfo *pi);
+	void SetModeRadial( V2d &base );
 	void UpdateSwingDebugDraw();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str,
@@ -88,6 +96,10 @@ struct EnemyMover
 	void SetModeSwing(
 		V2d &swingAnchor,
 		double wireLength,
+		int frames);
+	void SetModeSwingJump(
+		V2d &dest,
+		V2d &swingAnchor,
 		int frames);
 	void SetModeFall(
 		double grav,
