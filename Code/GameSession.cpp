@@ -337,6 +337,8 @@ void GameSession::TryToActivateBonus()
 				if (p != NULL)
 				{
 					p->SetSession(this, this, NULL);
+					
+					//p->SetAirPos(pi->pos, p->facingRight);
 					p->Respawn(); //special respawn for leaving bonus later
 				}
 			}
@@ -2009,7 +2011,9 @@ int GameSession::Run()
 			p = GetPlayer(i);
 			if (p != NULL)
 			{
-				p->Respawn(); //need a special bonus respawn later
+				p->position = V2d(playerOrigPos[i]);
+				//p->SetAirPos(V2d(playerOrigPos[i]), p->facingRight);
+				//p->Respawn(); //need a special bonus respawn later
 			}
 		}
 	}

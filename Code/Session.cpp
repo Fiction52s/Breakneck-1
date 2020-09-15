@@ -637,6 +637,8 @@ void Session::AddW6Enemies()
 	AddWorldEnemy("skeletonnode", 6, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeletonnode_32x32.png"));
 
+	AddBasicAerialWorldEnemy("dimensioneye", 6, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+
 	AddBasicGroundWorldEnemy("skeleton", 6, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	//w6
 	AddBasicGroundWorldEnemy("coyotehelper", 6, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);

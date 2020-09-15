@@ -305,6 +305,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_BIRDSHURIKEN:
 		hitParams.Set(5, 0, 0, 1, false);
 		break;
+	case EnemyType::EN_DIMENSIONEYE:
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		break;
 	default:
 		return false;
 	}
@@ -1816,6 +1819,8 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 			int ff = 0;
 			//assert(0);
 		}
+
+		return true;
 	}
 	return false;
 }

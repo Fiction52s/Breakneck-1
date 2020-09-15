@@ -171,6 +171,7 @@ void Minimap::DrawToTex()
 
 void Minimap::Draw(sf::RenderTarget *target)
 {
+	sess = Session::GetSession();
 	DrawToTex();
 
 	minimapTex->display();
