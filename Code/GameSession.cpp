@@ -124,9 +124,6 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
-
-GameSession * GameSession::currSession = NULL;
-
 bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);

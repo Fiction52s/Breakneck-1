@@ -546,7 +546,6 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
 	
-	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	
 	

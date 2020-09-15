@@ -58,6 +58,7 @@
 using namespace sf;
 using namespace std;
 
+Session * Session::currSession = NULL;
 
 
 

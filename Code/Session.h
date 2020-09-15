@@ -694,7 +694,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual bool RunPreUpdate() { return true; }
 	virtual bool RunPostUpdate() { return true; }
 	void ActiveStorySequenceUpdate();
-	virtual void TryToActivateBonus() {}
+	virtual void TryToActivateBonus();
 	virtual void RecPlayerRecordFrame() {}
 	virtual void RepPlayerUpdateInput() {}
 	virtual void RecGhostRecordFrame() {}

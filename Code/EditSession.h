@@ -815,7 +815,7 @@ struct EditSession : GUIHandler, Session
 	Panel *ggpoStatsPanel;
 	void SetupGGPOStatsPanel();
 	void UpdateNetworkStats();
-
+	//void TryToActivateBonus();
 	void RestartGame();
 };
 
