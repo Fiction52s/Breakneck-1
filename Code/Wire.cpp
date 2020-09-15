@@ -52,7 +52,6 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->newWirePoints = newWirePoints;
 	wi->numTotalCharges = numTotalCharges;
 	wi->aimingPrimaryAngleRange = aimingPrimaryAngleRange;
-	wi->hitStallFrames = hitStallFrames;
 	wi->hitStallCounter	= hitStallCounter;
 	wi->antiWireGrassCount = antiWireGrassCount;
 	wi->movingHitbox = movingHitbox;
@@ -107,7 +106,6 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	newWirePoints = wi->newWirePoints;
 	numTotalCharges = wi->numTotalCharges;
 	aimingPrimaryAngleRange = wi->aimingPrimaryAngleRange;
-	hitStallFrames = wi->hitStallFrames;
 	hitStallCounter = wi->hitStallCounter;
 	antiWireGrassCount = wi->antiWireGrassCount;
 	movingHitbox = wi->movingHitbox;
@@ -120,6 +118,8 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	minSideEdge = wi->minSideEdge;
 	rcEdge = wi->rcEdge;*/
 }
+
+//removed hitstallframes from the wire info
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )

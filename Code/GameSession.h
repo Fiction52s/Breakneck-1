@@ -306,7 +306,6 @@ struct GameSession : RayCastHandler, Session
 	};
 
 	static GameSession *GetSession();
-	static GameSession *currSession;
 
 	//from mainmenu
 
@@ -380,7 +379,7 @@ struct GameSession : RayCastHandler, Session
 	int m_numActivePlayers;
 	sf::Shader timeSlowShader; //actually time slow shader
 	
-	GameSession *bonusGame; //make this a container later
+	
 	
 	
 	Gate *unlockedGateList;

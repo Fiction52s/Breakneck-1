@@ -1163,7 +1163,7 @@ void EditSession::ProcessDecorFromFile(const std::string &name,
 
 EditSession *EditSession::GetSession()
 {
-	return currSession;
+	return (EditSession*)currSession;
 }
 
 void EditSession::HandleEventFunc(int m)

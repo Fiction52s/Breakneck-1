@@ -178,6 +178,9 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	//GameSession *bonusGame; //make this a container later
+	Session *bonusGame; //make this a container later
+	static Session *currSession;
 	int timeSyncFrames;
 	GameMode *gameMode;
 	bool switchGameState;

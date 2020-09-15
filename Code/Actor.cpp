@@ -16525,8 +16525,6 @@ bool Actor::IsSingleWirePulling()
 }
 
 
-
-
 bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
 	bool facingHitbox = (facingRight && position.x - hitPos.x <= 0)

@@ -121,7 +121,6 @@ struct SaveWireInfo
 	int newWirePoints;
 	int numTotalCharges;
 	int aimingPrimaryAngleRange;
-	int hitStallFrames;
 	int hitStallCounter;
 	int antiWireGrassCount;
 	CollisionBox movingHitbox;

@@ -23,6 +23,14 @@ using namespace sf;
 CoyoteHelper::CoyoteHelper(ActorParams *ap)
 	:Enemy(EnemyType::EN_COYOTEHELPER, ap)
 {
+	/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
+	sess->bonusGame = new GameSession(saveFile, p);
+	sess->bonusGame->SetParentGame(this);
+	bonusGame->Load();
+
+	currSession = this;
+	pauseMenu->owner = this;*/
+
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 

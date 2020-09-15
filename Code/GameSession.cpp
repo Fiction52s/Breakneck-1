@@ -308,42 +308,7 @@ void GameSession::UpdateReplayGhostSprites()
 	}
 }
 
-void GameSession::TryToActivateBonus()
-{
-	Actor *p = NULL;
-	if (parentGame == NULL && bonusGame != NULL)
-	{
-		if (GetCurrInputUnfiltered(0).rightShoulder &&
-			!GetPrevInputUnfiltered(0).rightShoulder)
-		{
-			currSession = bonusGame;
-			for (int i = 0; i < MAX_PLAYERS; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					p->SetSession(bonusGame, bonusGame, NULL);
-				}
-			}
-			pauseMenu->owner = bonusGame;
 
-			bonusGame->Run();
-
-			pauseMenu->owner = this;
-			currSession = this;
-			for (int i = 0; i < MAX_PLAYERS; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					p->SetSession(this, this, NULL);
-					p->Respawn(); //special respawn for leaving bonus later
-				}
-			}
-
-		}
-	}
-}
 
 
 
@@ -744,7 +709,7 @@ GameSession::~GameSession()
 
 GameSession *GameSession::GetSession()
 {
-	return currSession;
+	return (GameSession*)currSession;
 }
 
 
