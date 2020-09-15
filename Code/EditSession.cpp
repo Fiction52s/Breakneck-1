@@ -69,7 +69,7 @@ using namespace sf;
 const double EditSession::PRIMARY_LIMIT = .999;
 const double EditSession::SLIVER_LIMIT = PI / 10.0;
 double EditSession::zoomMultiple = 1;
-
+EditSession * EditSession::currSession = NULL;
 
 bool EditSession::IsShardCaptured(int sType)
 {
@@ -1163,7 +1163,7 @@ void EditSession::ProcessDecorFromFile(const std::string &name,
 
 EditSession *EditSession::GetSession()
 {
-	return (EditSession*)currSession;
+	return currSession;
 }
 
 void EditSession::HandleEventFunc(int m)

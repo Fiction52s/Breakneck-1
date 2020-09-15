@@ -9,6 +9,8 @@
 #include "PlayerComboer.h"
 #include "Enemy_CoyoteBullet.h"
 
+struct GameSession;
+
 struct CoyoteHelper : Enemy
 {
 	enum Action
@@ -23,6 +25,9 @@ struct CoyoteHelper : Enemy
 	{
 		int fireCounter;
 	};
+
+	void Setup();
+	GameSession *myBonus;
 
 	Tileset *ts_move;
 
@@ -57,6 +62,7 @@ struct CoyoteHelper : Enemy
 
 	CoyoteHelper(ActorParams *ap);
 
+	
 	bool CheckHitPlayer(int index);
 	void LoadParams();
 	int GetNumStoredBytes();

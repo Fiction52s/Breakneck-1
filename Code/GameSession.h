@@ -306,6 +306,7 @@ struct GameSession : RayCastHandler, Session
 	};
 
 	static GameSession *GetSession();
+	static GameSession *currSession;
 
 	//from mainmenu
 
@@ -379,8 +380,8 @@ struct GameSession : RayCastHandler, Session
 	int m_numActivePlayers;
 	sf::Shader timeSlowShader; //actually time slow shader
 	
-	
-	
+	GameSession *bonusGame; //make this a container later
+	bool activateBonus;
 	
 	Gate *unlockedGateList;
 	sf::Vector2f oldCamBotLeft;
@@ -546,6 +547,7 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
 	
+	void TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	
 	

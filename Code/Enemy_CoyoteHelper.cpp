@@ -6,6 +6,8 @@
 #include "Enemy_CoyoteHelper.h"
 #include "Actor.h"
 
+#include "PauseMenu.h"
+
 using namespace std;
 using namespace sf;
 
@@ -19,18 +21,26 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void CoyoteHelper::Setup()
+{
+	SetSpawnRect();
+	if (sess->IsSessTypeGame())
+	{
+		boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
+		GameSession *game = GameSession::GetSession();
+		
+		myBonus = new GameSession(game->saveFile, p);
+		myBonus->SetParentGame(game);
+		myBonus->Load();
+
+		game->currSession = game;
+		game->pauseMenu->owner = game;
+	}
+}
 
 CoyoteHelper::CoyoteHelper(ActorParams *ap)
 	:Enemy(EnemyType::EN_COYOTEHELPER, ap)
 {
-	/*boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
-	sess->bonusGame = new GameSession(saveFile, p);
-	sess->bonusGame->SetParentGame(this);
-	bonusGame->Load();
-
-	currSession = this;
-	pauseMenu->owner = this;*/
-
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
@@ -440,8 +450,17 @@ bool CoyoteHelper::CheckHitPlayer(int index)
 			IHitPlayer(index);
 			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
 			{
-				player->touchedCoyoteHelper = true;
-				return true;
+				GameSession *game = GameSession::GetSession();
+
+				if (game != NULL)
+				{
+					game->bonusGame = myBonus;
+					game->activateBonus = true;
+					return true;
+				}
+				
+				//player->touchedCoyoteHelper = true;
+				
 				//player->RestoreAirDash();
 				//player->RestoreDoubleJump();
 				//ClearRect(quad);

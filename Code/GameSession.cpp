@@ -124,6 +124,9 @@ using namespace sf;
 #define COLOR_CEILING Color( 0x99, 0xff, 0xff )
 #define COLOR_WALL Color( 0x00, 0x88, 0xcc )
 
+
+GameSession * GameSession::currSession = NULL;
+
 bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
@@ -305,7 +308,42 @@ void GameSession::UpdateReplayGhostSprites()
 	}
 }
 
+void GameSession::TryToActivateBonus()
+{
+	Actor *p = NULL;
+	if (parentGame == NULL && bonusGame != NULL)
+	{
+		if (activateBonus)
+		{
+			activateBonus = false;
+			currSession = bonusGame;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->SetSession(bonusGame, bonusGame, NULL);
+				}
+			}
+			pauseMenu->owner = bonusGame;
 
+			bonusGame->Run();
+
+			pauseMenu->owner = this;
+			currSession = this;
+			for (int i = 0; i < MAX_PLAYERS; ++i)
+			{
+				p = GetPlayer(i);
+				if (p != NULL)
+				{
+					p->SetSession(this, this, NULL);
+					p->Respawn(); //special respawn for leaving bonus later
+				}
+			}
+
+		}
+	}
+}
 
 
 
@@ -706,7 +744,7 @@ GameSession::~GameSession()
 
 GameSession *GameSession::GetSession()
 {
-	return (GameSession*)currSession;
+	return currSession;
 }
 
 
@@ -2741,6 +2779,7 @@ void GameSession::Init()
 	mapTex = mainMenu->mapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
+	activateBonus = false;
 	bonusGame = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;
@@ -3204,6 +3243,8 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	activateBonus = false;
+
 	if( gateMarkers != NULL)
 		gateMarkers->Reset();
 	//OpenGates(Gate::CRAWLER_UNLOCK);

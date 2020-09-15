@@ -144,6 +144,7 @@ struct EditSession : GUIHandler, Session
 	};
 
 	static EditSession *GetSession();
+	static EditSession *currSession;
 
 	int currGrassType;
 	FrameWaiter *removeProgressPointWaiter;
@@ -815,7 +816,7 @@ struct EditSession : GUIHandler, Session
 	Panel *ggpoStatsPanel;
 	void SetupGGPOStatsPanel();
 	void UpdateNetworkStats();
-	//void TryToActivateBonus();
+
 	void RestartGame();
 };
 

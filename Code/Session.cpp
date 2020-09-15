@@ -58,7 +58,6 @@
 using namespace sf;
 using namespace std;
 
-Session * Session::currSession = NULL;
 
 
 
@@ -1244,7 +1243,16 @@ void Session::PlayerHitGoal(int index)
 
 Session *Session::GetSession()
 {
-	return currSession;
+	EditSession *edit = EditSession::GetSession();
+	if (edit != NULL)
+		return edit;
+
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL)
+		return game;
+	//add GameSession in here eventually
+
+	return NULL;
 }
 
 //bool Session::IsSessionTypeEdit()
@@ -5300,7 +5308,7 @@ void Session::UpdateGoalPulse()
 
 void Session::SetupGoalPulse()
 {
-	if (parentGame != NULL)
+	if (parentGame != NULL && parentGame->hasGoal )
 	{
 		goalPulse = parentGame->goalPulse;
 	}
@@ -6487,48 +6495,4 @@ void Session::RevertSimulatedPlayer(int index)
 	assert(p != NULL);
 
 	p->PopulateFromState(playerSimState);
-}
-
-void Session::TryToActivateBonus()
-{
-	Actor *p = NULL;
-	if (parentGame == NULL && bonusGame != NULL)
-	{
-		if (GetCurrInputUnfiltered(0).rightShoulder &&
-			!GetPrevInputUnfiltered(0).rightShoulder)
-		{
-			currSession = bonusGame;
-			for (int i = 0; i < MAX_PLAYERS; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					p->SetSession(bonusGame, (GameSession*)bonusGame, NULL);
-				}
-			}
-
-			if (IsSessTypeGame())
-			{
-				//GameSession *game = (GameSession*)GetSession();
-				//game->pauseMenu->owner = bonusGame;
-			}
-
-			//pauseMenu->owner = bonusGame;
-
-			bonusGame->Run();
-
-			//pauseMenu->owner = this;
-			currSession = this;
-			for (int i = 0; i < MAX_PLAYERS; ++i)
-			{
-				p = GetPlayer(i);
-				if (p != NULL)
-				{
-					p->SetSession(this, GameSession::GetSession(), EditSession::GetSession());
-					p->Respawn(); //special respawn for leaving bonus later
-				}
-			}
-
-		}
-	}
 }
