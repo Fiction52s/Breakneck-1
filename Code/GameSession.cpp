@@ -344,11 +344,12 @@ void GameSession::TryToActivateBonus()
 			}
 
 			assert(parentGame == NULL);
-			cout << "Restarting clock" << "\n";
-			gameClock.restart();
-			currentTime = 0;
+			//cout << "Restarting clock" << "\n";
+			//gameClock.restart();
+			currentTime = gameClock.getElapsedTime().asSeconds();
+			cout << "setting current time to: " << currentTime << "\n";
 
-			cout << "restarted time: " << gameClock.getElapsedTime().asSeconds() << "\n";
+			//cout << "restarted time: " << gameClock.getElapsedTime().asSeconds() << "\n";
 			//accumulator = TIMESTEP + .1;
 
 			//currentTime = gameClock.getElapsedTime().asSeconds();
@@ -1915,12 +1916,10 @@ int GameSession::Run()
 	sf::CircleShape circle(30);
 	circle.setFillColor(Color::Blue);
 
-	sf::Clock gameClock;
-	double currentTime = 0;
+	currentTime = 0;
 	accumulator = TIMESTEP + .1;
 
 	Vector2<double> otherPlayerPos;
-
 	double zoomMultiple = 1;
 
 	Color borderColor = sf::Color::Green;
@@ -2048,6 +2047,7 @@ int GameSession::Run()
 	
 	gameMode->StartGame();
 	currSuperPlayer = NULL;
+	gameClock.restart();
 
 	while( !quit )
 	{
