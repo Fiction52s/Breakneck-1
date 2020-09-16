@@ -26,6 +26,10 @@ void DimensionEye::Setup()
 		game->currSession = game;
 		game->pauseMenu->owner = game;
 	}
+	else
+	{
+		myBonus = NULL;
+	}
 }
 
 DimensionEye::DimensionEye(ActorParams *ap)
@@ -37,6 +41,9 @@ DimensionEye::DimensionEye(ActorParams *ap)
 
 	actionLength[IDLE] = 1;
 	animFactor[IDLE] = 1;
+
+	actionLength[DIE] = 60;
+	animFactor[DIE] = 1;
 	
 
 	ts = sess->GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
@@ -56,11 +63,18 @@ DimensionEye::DimensionEye(ActorParams *ap)
 	BasicCircleHitBodySetup(40);
 	hitBody.hitboxInfo = hitboxInfo;
 
+	myBonus = NULL;
+
 	ResetEnemy();
 }
 
 void DimensionEye::ResetEnemy()
 {
+	if (myBonus != NULL)
+	{
+		myBonus->RestartLevel();
+	}
+
 	facingRight = true;
 
 	action = IDLE;
@@ -82,6 +96,10 @@ void DimensionEye::ProcessState()
 		case IDLE:
 			frame = 0;
 			break;
+		case DIE:
+			dead = true;
+			numHealth = 0;
+			break;
 		}
 	}
 }
@@ -92,24 +110,6 @@ void DimensionEye::UpdateEnemyPhysics()
 
 void DimensionEye::UpdateSprite()
 {
-	/*switch (action)
-	{
-	case WAIT:
-	case MOVE:
-	case COMBOMOVE:
-	sprite.setTexture(*ts_move->texture);
-	ts_move->SetSubRect(sprite, 2, !facingRight);
-	break;
-	case PUNCH:
-	sprite.setTexture(*ts_punch->texture);
-	ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
-	break;
-	case KICK:
-	sprite.setTexture(*ts_kick->texture);
-	ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
-	break;
-	}*/
-
 	sprite.setTexture(*ts->texture);
 	ts->SetSubRect(sprite, 0, !facingRight);
 
@@ -142,7 +142,13 @@ void DimensionEye::ProcessHit()
 		if (game != NULL)
 		{
 			game->bonusGame = myBonus;
-			game->activateBonus = true;
+			game->ActivateBonus(GetPosition());
+			action = DIE;
+			frame = 0;
+			myBonus->cam.offset = sess->cam.offset;
+			myBonus->cam.zoomFactor = sess->cam.zoomFactor;
+			HitboxesOff();
+			HurtboxesOff();
 		}
 		//numHealth -= 1;
 

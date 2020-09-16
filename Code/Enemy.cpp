@@ -308,6 +308,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_DIMENSIONEYE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
+	case EnemyType::EN_DIMENSIONEXIT:
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		break;
 	default:
 		return false;
 	}

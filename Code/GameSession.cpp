@@ -337,9 +337,9 @@ void GameSession::TryToActivateBonus()
 				if (p != NULL)
 				{
 					p->SetSession(this, this, NULL);
-					
+					p->position = bonusReturnPos;
 					//p->SetAirPos(pi->pos, p->facingRight);
-					p->Respawn(); //special respawn for leaving bonus later
+					//p->Respawn(); //special respawn for leaving bonus later
 				}
 			}
 
@@ -347,6 +347,12 @@ void GameSession::TryToActivateBonus()
 	}
 }
 
+
+void GameSession::ActivateBonus(V2d &returnPos)
+{
+	activateBonus = true;
+	bonusReturnPos = returnPos;
+}
 
 
 

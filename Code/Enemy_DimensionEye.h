@@ -11,6 +11,7 @@ struct DimensionEye : Enemy
 	enum Action
 	{
 		IDLE,
+		DIE,
 		A_Count
 	};
 

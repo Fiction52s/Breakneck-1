@@ -381,7 +381,9 @@ struct GameSession : RayCastHandler, Session
 	sf::Shader timeSlowShader; //actually time slow shader
 	
 	GameSession *bonusGame; //make this a container later
+	
 	bool activateBonus;
+	V2d bonusReturnPos;
 	
 	Gate *unlockedGateList;
 	sf::Vector2f oldCamBotLeft;
@@ -421,6 +423,7 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
+	void ActivateBonus(V2d &returnPos);
 	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
 	static int IsSlopedGround(sf::Vector2<double> &normal);
