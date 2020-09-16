@@ -181,10 +181,7 @@ struct EditSession : GUIHandler, Session
 	sf::RenderTexture *brushPreviewTex;
 	std::list<Enemy*> allCurrEnemies;
 	std::list<Panel*> allPopups;
-	const static int TERRAIN_WORLDS = 10;
-	const static int MAX_TERRAINTEX_PER_WORLD = 10;
-	const static int TOTAL_TERRAIN_TEXTURES =
-		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
+	
 	ImageEditTool currImageTool;
 	Tileset *ts_shards[7];
 	int grassSize;

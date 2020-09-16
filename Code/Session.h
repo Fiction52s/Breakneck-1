@@ -115,6 +115,11 @@ struct Session : TilesetManager, QuadTreeCollider
 	const static int MAX_BUBBLES = 5;
 	const static int MAX_TOTAL_BUBBLES = MAX_PLAYERS * MAX_BUBBLES;
 
+	const static int TERRAIN_WORLDS = 10;
+	const static int MAX_TERRAINTEX_PER_WORLD = 10;
+	const static int TOTAL_TERRAIN_TEXTURES =
+		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
+
 	struct FlowHandler : RayCastHandler
 	{
 		Session *sess;

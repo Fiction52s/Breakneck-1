@@ -1210,8 +1210,8 @@ void Camera::UpdateBasicMode()
 
 	UpdateRumble();
 
-	cout << "offset: " << offset.x << ", " << offset.y << "\n";
-	cout << "zoomfactor: " << zoomFactor << "\n";
+	//cout << "offset: " << offset.x << ", " << offset.y << "\n";
+	//cout << "zoomfactor: " << zoomFactor << "\n";
 
 	/*xChangePos = 0;
 	xChangeNeg = 0;

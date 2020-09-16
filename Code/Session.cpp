@@ -5629,6 +5629,13 @@ bool Session::RunGameModeUpdate()
 {
 	collider.ClearDebug();
 
+	double testMult = accumulator / TIMESTEP;
+	if (testMult > 10)
+	{
+		cout << "accumulator mult: " << testMult << "\n";
+	}
+	
+
 	while (accumulator >= TIMESTEP)
 	{	
 		if (!OneFrameModeUpdate())
@@ -5801,7 +5808,6 @@ bool Session::RunGameModeUpdate()
 		totalGameFrames++;
 
 		accumulator -= TIMESTEP;
-		
 
 		//if (debugScreenRecorder != NULL)
 		//{

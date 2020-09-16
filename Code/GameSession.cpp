@@ -343,6 +343,20 @@ void GameSession::TryToActivateBonus()
 				}
 			}
 
+			assert(parentGame == NULL);
+			cout << "Restarting clock" << "\n";
+			gameClock.restart();
+			currentTime = 0;
+
+			cout << "restarted time: " << gameClock.getElapsedTime().asSeconds() << "\n";
+			//accumulator = TIMESTEP + .1;
+
+			//currentTime = gameClock.getElapsedTime().asSeconds();
+			//accumulator = TIMESTEP + .01;
+
+			//GetCurrInput(0) = bonusGame->GetCurrInput(0);
+			//GetPrevInput(0) = bonusGame->GetPrevInput(0);
+
 		}
 	}
 }
@@ -989,7 +1003,9 @@ void GameSession::ProcessAllTerrain()
 	}
 	terrainDecorInfoMap.clear();
 
-	AllocatePolyShaders(matSet.size());
+	int numMats = matSet.size();
+
+	AllocatePolyShaders(numMats);
 
 	int index = 0;
 	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
@@ -998,7 +1014,13 @@ void GameSession::ProcessAllTerrain()
 		{
 			assert(0);
 		}
+
+		int texInd = (*it).first * Session::MAX_TERRAINTEX_PER_WORLD + (*it).second;
+		matIndices[texInd] = index;
+
 		++index;
+
+		
 	}
 
 	PolyPtr poly;
@@ -2035,7 +2057,18 @@ int GameSession::Run()
 
 		if ( frameTime > 0.25 )
 		{
+			if (parentGame != NULL)
+			{
+				cout << "child game" << "\n";
+			}
+			else
+			{
+				cout << "yep thats my clock" << "\n";
+			}
+			cout << "new time: " << newTime << "\n";
+			cout << "big frametime: " << frameTime << "\n";
 			frameTime = 0.25;	
+			
 		}
 		//frameTime = 0.167;//0.25;	
         currentTime = newTime;

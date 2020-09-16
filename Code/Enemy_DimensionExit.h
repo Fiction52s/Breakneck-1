@@ -19,6 +19,7 @@ struct DimensionExit : Enemy
 	DimensionExit(ActorParams *ap);
 	void ProcessState();
 	void HandleNoHealth();
+	void ProcessHit();
 
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

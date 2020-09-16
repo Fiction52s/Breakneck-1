@@ -2977,7 +2977,13 @@ int TerrainPolygon::GetSpecialPolyIndex()
 
 void TerrainPolygon::UpdateMaterialType()
 {
-	int texInd = terrainWorldType * EditSession::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
+	int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		texInd = game->matIndices[texInd];
+	}
 
 	if (texInd < sess->numPolyShaders)
 	{

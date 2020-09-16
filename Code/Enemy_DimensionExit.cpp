@@ -91,6 +91,45 @@ void DimensionExit::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, sprite);
 }
 
+void DimensionExit::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 0)
+	{
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			game->quit = true;
+			game->returnVal = GameSession::GR_EXITLEVEL;
+			GameSession *parentGame = game->parentGame;
+			if (parentGame != NULL)
+			{
+				parentGame->cam.offset = game->cam.offset;
+				parentGame->cam.zoomFactor = game->cam.zoomFactor;
+			}
+		}
+		//numHealth -= 1;
+
+		//if (numHealth <= 0)
+		//{
+		//	if (hasMonitor && !suppressMonitor)
+		//	{
+		//		//sess->CollectKey();
+		//	}
+
+		//	sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+		//	ConfirmKill();
+		//}
+		//else
+		//{
+		//	sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+		//	ConfirmHitNoKill();
+		//}
+
+		receivedHit = NULL;
+	}
+}
+
 void DimensionExit::HandleNoHealth()
 {
 	GameSession *game = GameSession::GetSession();
