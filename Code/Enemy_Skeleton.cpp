@@ -246,13 +246,14 @@ void Skeleton::ProcessState()
 		V2d pPos = sess->GetPlayerPos(0);
 		V2d pDir = normalize(pPos - GetPosition());
 
-		
-
+		r = 0;
 		if (r == 0)
 		{
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
-			enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 60);
+			//enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 60);
+			enemyMover.SetModeRadial(nodePos);
+
 			//enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 			//orbPool.Throw(GetPosition(), nodePos, SkeletonWaterOrb::OrbType::NODE_GROW);

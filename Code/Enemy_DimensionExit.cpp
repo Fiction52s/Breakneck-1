@@ -99,14 +99,7 @@ void DimensionExit::ProcessHit()
 
 		if (game != NULL)
 		{
-			game->quit = true;
-			game->returnVal = GameSession::GR_EXITLEVEL;
-			GameSession *parentGame = game->parentGame;
-			if (parentGame != NULL)
-			{
-				parentGame->cam.offset = game->cam.offset;
-				parentGame->cam.zoomFactor = game->cam.zoomFactor;
-			}
+			game->ReturnFromBonus();
 		}
 		//numHealth -= 1;
 

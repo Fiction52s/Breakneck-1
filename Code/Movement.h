@@ -141,24 +141,24 @@ struct CubicMovement : Movement
 
 struct RadialMovement : Movement
 {
-	RadialMovement( sf::Vector2<double> &base, 
-		double radius, 
-		double startAngle, 
+	RadialMovement( V2d &base, 
+		V2d &startPos,
 		double endAngle, 
-		bool clockwise,
-		sf::Vector2<double> scale,
-		double ellipseAngle,
+		bool clockwise,		
 		CubicBezier &bez,
 		int duration );
+	void Set(V2d &base,
+		V2d &startPos,
+		double endAngle,
+		bool clockwise,
+		CubicBezier &bez,
+		int frameDuration);
 	bool clockwise;
 	double startAngle;
 	double endAngle;
 	double radius;
-	sf::Vector2<double> scale;
-	double ellipseAngle;
 	sf::Vector2<double> basePos;
-	//sf::Transform transform;
-	sf::Vector2<double> GetPosition( int t );
+	V2d GetPosition( int t );
 };
 
 struct LineMovement: Movement
@@ -195,11 +195,9 @@ struct MovementSequence
 	CubicMovement * AddCubicMovement( sf::Vector2<double> &A,
 		sf::Vector2<double> &B, sf::Vector2<double> &C,
 		sf::Vector2<double> &D, CubicBezier&, int duration );
-	RadialMovement * AddRadialMovement( sf::Vector2<double> &base, 
-		double radius, double startAngle,
-		double endAngle, bool clockwise, 
-		sf::Vector2<double> scale,
-		double ellipseAngle,
+	RadialMovement * AddRadialMovement( V2d &base, 
+		V2d &startPos, double endAngle, 
+		bool clockwise, 
 		CubicBezier &bez, int duration );
 		
 

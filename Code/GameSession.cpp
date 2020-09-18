@@ -347,7 +347,7 @@ void GameSession::TryToActivateBonus()
 			//cout << "Restarting clock" << "\n";
 			//gameClock.restart();
 			currentTime = gameClock.getElapsedTime().asSeconds();
-			cout << "setting current time to: " << currentTime << "\n";
+			//cout << "setting current time to: " << currentTime << "\n";
 
 			//cout << "restarted time: " << gameClock.getElapsedTime().asSeconds() << "\n";
 			//accumulator = TIMESTEP + .1;
@@ -369,8 +369,26 @@ void GameSession::ActivateBonus(V2d &returnPos)
 	bonusReturnPos = returnPos;
 }
 
+void GameSession::SetBonus(GameSession *bonus,
+	V2d &returnPos)
+{
+	assert(bonus != NULL);
+	bonusGame = bonus;
+	bonusGame->ActivateBonus(returnPos);
+	bonusGame->cam.offset = cam.offset;
+	bonusGame->cam.zoomFactor = cam.zoomFactor;
+}
 
-
+void GameSession::ReturnFromBonus()
+{
+	if (parentGame != NULL)
+	{
+		quit = true;
+		returnVal = GameSession::GR_EXITLEVEL;
+		parentGame->cam.offset = cam.offset;
+		parentGame->cam.zoomFactor = cam.zoomFactor;
+	}
+}
 
 void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 {
@@ -2057,7 +2075,7 @@ int GameSession::Run()
 
 		if ( frameTime > 0.25 )
 		{
-			if (parentGame != NULL)
+			/*if (parentGame != NULL)
 			{
 				cout << "child game" << "\n";
 			}
@@ -2066,7 +2084,7 @@ int GameSession::Run()
 				cout << "yep thats my clock" << "\n";
 			}
 			cout << "new time: " << newTime << "\n";
-			cout << "big frametime: " << frameTime << "\n";
+			cout << "big frametime: " << frameTime << "\n";*/
 			frameTime = 0.25;	
 			
 		}

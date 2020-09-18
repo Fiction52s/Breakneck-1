@@ -16,8 +16,7 @@ EnemyMover::EnemyMover()
 	linearMove = linearMovementSeq.AddLineMovement(V2d(), V2d(), CubicBezier(), 0);
 	quadraticMove = quadraticMovementSeq.AddQuadraticMovement(V2d(), V2d(), V2d(), CubicBezier(), 0);
 	cubicMove = cubicMovementSeq.AddCubicMovement(V2d(), V2d(), V2d(), V2d(), CubicBezier(), 0);
-	radialMove = radialMovementSeq.AddRadialMovement(V2d(), 0, 0, 0, true, V2d(1,1), 0,
-		CubicBezier(), 0);
+	radialMove = radialMovementSeq.AddRadialMovement(V2d(), V2d(), 0, true, CubicBezier(), 0);
 
 	debugCircles = new CircleGroup(20, 40, Color::Red, 6);
 
@@ -143,15 +142,7 @@ void EnemyMover::SetModeRadial(V2d &base)
 {
 	SetMoveType(RADIAL);
 	actionFrames = 60;
-	radialMove->SetFrameDuration(60);
-	radialMove->basePos = base;
-	radialMove->radius = length(base - currPosInfo.GetPosition());
-	radialMove->clockwise = true;
-	radialMove->ellipseAngle = 0;
-	radialMove->start = currPosInfo.GetPosition();
-	radialMove->startAngle = GetVectorAngleCCW( base - currPosInfo.GetPosition() ) - PI / 2;
-	radialMove->endAngle = 2 * PI;
-	radialMove->end = radialMove->GetPosition(radialMove->duration);
+	radialMove->Set(base, currPosInfo.GetPosition(), 2 * PI, true, CubicBezier(), 60);
 	radialMove->InitDebugDraw();
 	radialMovementSeq.Reset();
 }

@@ -425,6 +425,9 @@ struct GameSession : RayCastHandler, Session
 	int returnVal;
 
 	void ActivateBonus(V2d &returnPos);
+	void SetBonus(GameSession *bonus,
+		V2d &returnPos);
+	void ReturnFromBonus();
 	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
 	static int IsSlopedGround(sf::Vector2<double> &normal);

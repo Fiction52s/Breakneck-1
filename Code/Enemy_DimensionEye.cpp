@@ -141,12 +141,11 @@ void DimensionEye::ProcessHit()
 
 		if (game != NULL)
 		{
-			game->bonusGame = myBonus;
-			game->ActivateBonus(GetPosition());
+			game->SetBonus(myBonus, GetPosition());
+
 			action = DIE;
 			frame = 0;
-			myBonus->cam.offset = sess->cam.offset;
-			myBonus->cam.zoomFactor = sess->cam.zoomFactor;
+
 			HitboxesOff();
 			HurtboxesOff();
 		}

@@ -230,7 +230,8 @@ void MovementTester::ProcessState()
 		else*/
 		//if( testCounter == 2 )
 		{
-			enemyMover.SetModeSwingJump(nodeVec[0]->pos, nodeVec[1]->pos, 60);
+			enemyMover.SetModeRadial(nodeVec[0]->pos);
+			//enemyMover.SetModeSwingJump(nodeVec[0]->pos, nodeVec[1]->pos, 60);
 			//enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 200);
 			//enemyMover.SetModeRadial(nodePos);
 			//tigerSpinTurretPool.Throw(GetPosition(), dir);

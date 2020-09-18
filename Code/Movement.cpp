@@ -298,69 +298,52 @@ void CubicMovement::SetDebugControlPoints()
 	controlPointCircles->SetColor(1, Color::Red);
 }
 
-		
-RadialMovement::RadialMovement( V2d &circleBase, double p_radius, 
-		double p_startAngle, 
+RadialMovement::RadialMovement( V2d &circleBase, V2d &startPos,
 		double p_endAngle, 
 		bool p_clockwise,
-		sf::Vector2<double> p_scale,
-		double p_ellipseAngle,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration, Types::RADIAL ), basePos( circleBase ),
-		startAngle( p_startAngle ),
-		endAngle( p_endAngle ), clockwise( p_clockwise ), radius( p_radius ),
-		ellipseAngle( p_ellipseAngle ), scale( p_scale )
+		:Movement( bez, duration, Types::RADIAL )
 {
-	if( clockwise )
+	Set(circleBase, startPos, p_endAngle, p_clockwise,
+		bez, duration );
+}
+
+void RadialMovement::Set(V2d &base, V2d &startPos, double p_endAngle,
+	bool p_clockwise, CubicBezier &p_bez, int frameDuration)
+{
+	SetFrameDuration(frameDuration);
+	basePos = base;
+	radius = length(base - startPos);
+	startAngle = GetVectorAngleCW(normalize(startPos - base));
+	endAngle = p_endAngle;
+	clockwise = p_clockwise; 
+
+	if (clockwise)
 	{
-		if( startAngle > endAngle )
+		if (startAngle > endAngle)
 		{
 			endAngle += PI * 2;
 		}
 	}
 	else
 	{
-		if( startAngle < endAngle )
+		if (startAngle < endAngle)
 		{
 			startAngle += PI * 2;
 		}
 	}
 
-	double angle = startAngle;
-	Vector2f p( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y);
-	sf::Transform tra;
-	tra.rotate( ellipseAngle );
-
-	Vector2f p0 = tra.transformPoint( p );
-
-	angle = endAngle;
-	p = Vector2f( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y );
-	
-	Vector2f p1 = tra.transformPoint( p );
-
-	start =  V2d( p0.x, p0.y );
-	end = V2d( p1.x, p1.y );
+	start = startPos;
+	end = V2d(radius * cos(endAngle), radius * sin(endAngle)) + basePos;//GetPosition(duration);
 }
 
-sf::Vector2<double> RadialMovement::GetPosition( int t )
+V2d RadialMovement::GetPosition( int t )
 {
-
 	double v = bez.GetValue( t / (double)duration );
-
-	
 	double angle = startAngle + ( endAngle - startAngle ) * v;
-	Vector2f p( radius * cos( angle ) * scale.x, radius * sin( angle ) * scale.y);
-	sf::Transform tra;
-	tra.rotate( ellipseAngle );
-	
-	
-	Vector2f p0 = tra.transformPoint( p );
-	
-	
-	//cout << "pos : " << pos.x << ", " << pos.y << endl;
 
-	return V2d( p0.x, p0.y ) + basePos;//Vector2f( basePos.x, basePos.y );
+	return V2d(radius * cos(angle), radius * sin(angle)) + basePos;
 }
 
 WaitMovement::WaitMovement( int duration )
@@ -443,14 +426,11 @@ CubicMovement * MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
 	return cm;
 }
 
-RadialMovement * MovementSequence::AddRadialMovement( sf::Vector2<double> &base, double radius, double startAngle,
-		double endAngle, bool clockwise, sf::Vector2<double> scale,
-		double ellipseAngle,
-		CubicBezier &bez, int duration )
+RadialMovement * MovementSequence::AddRadialMovement( V2d &base, V2d &startPos,
+		double endAngle, bool clockwise, CubicBezier &bez, int duration )
 {
-	RadialMovement *rm = new RadialMovement(base, radius, startAngle, endAngle, clockwise,
-		scale, ellipseAngle, bez,
-		duration);
+	RadialMovement *rm = new RadialMovement(base, startPos, endAngle, clockwise,
+		bez, duration);
 	AddMovement( rm );
 	return rm;
 }
