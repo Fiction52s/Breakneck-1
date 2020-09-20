@@ -150,6 +150,11 @@ void Movement::InitDebugDraw()
 		{
 			controlPointCircles = new CircleGroup(2, 32, Color::Green, 6);
 		}
+		else if (moveType == RADIAL)
+		{
+			controlPointCircles = new CircleGroup(1, 32, Color::Green, 6);
+		}
+
 	}
 
 	circles->ShowAll();
@@ -319,12 +324,14 @@ void RadialMovement::Set(V2d &base, V2d &startPos, double p_endAngle,
 	endAngle = p_endAngle;
 	clockwise = p_clockwise; 
 
+	double angleDiff;
 	if (clockwise)
 	{
 		if (startAngle > endAngle)
 		{
 			endAngle += PI * 2;
 		}
+		
 	}
 	else
 	{
@@ -338,12 +345,56 @@ void RadialMovement::Set(V2d &base, V2d &startPos, double p_endAngle,
 	end = V2d(radius * cos(endAngle), radius * sin(endAngle)) + basePos;//GetPosition(duration);
 }
 
+void RadialMovement::Set(V2d &base,
+	V2d &startPos,
+	double p_endAngle,
+	double speed)
+{
+	basePos = base;
+	radius = length(base - startPos);
+	startAngle = GetVectorAngleCW(normalize(startPos - base));
+	endAngle = p_endAngle;
+	clockwise = speed >= 0;
+
+	double angleDiff;
+	if (clockwise)
+	{
+		if (startAngle > endAngle)
+		{
+			endAngle += PI * 2;
+		}
+
+	}
+	else
+	{
+		if (startAngle < endAngle)
+		{
+			startAngle += PI * 2;
+		}
+	}
+
+	angleDiff = abs(endAngle - startAngle);
+
+	double arcLength = angleDiff * radius;
+	int frames = arcLength / abs(speed);
+
+	SetFrameDuration(frames);
+
+	start = startPos;
+	end = V2d(radius * cos(endAngle), radius * sin(endAngle)) + basePos;
+}
+
 V2d RadialMovement::GetPosition( int t )
 {
 	double v = bez.GetValue( t / (double)duration );
 	double angle = startAngle + ( endAngle - startAngle ) * v;
 
 	return V2d(radius * cos(angle), radius * sin(angle)) + basePos;
+}
+
+void RadialMovement::SetDebugControlPoints()
+{
+	controlPointCircles->SetPosition(0, Vector2f(basePos));
 }
 
 WaitMovement::WaitMovement( int duration )

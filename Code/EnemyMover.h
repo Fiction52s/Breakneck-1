@@ -28,6 +28,8 @@ struct EnemyMover
 		RADIAL,
 		WAIT,
 		SWINGJUMP,
+		RADIAL_DOUBLE_JUMP,
+		ZIP_AND_FALL,
 	};
 
 	sf::Vertex swingQuad[4];
@@ -75,6 +77,8 @@ struct EnemyMover
 
 	bool predict;
 
+	V2d jumpDest; //radial double jump
+
 	//double radialMovementRadius;
 	//double radialMovementSpeed;
 
@@ -85,8 +89,15 @@ struct EnemyMover
 	bool IsIdle();
 	void FinishTargetedMovement();
 
+	void SetModeZipAndFall(V2d &zipPos,
+		V2d &grav, V2d &dest );
+	//void SetModeRadialDoubleJump( )
 	void SetDestNode(PoiInfo *pi);
-	void SetModeRadial( V2d &base );
+	void SetModeRadial( V2d &base,
+		double speed, V2d &dest );
+	void SetModeRadialDoubleJump(V2d &base,
+		double speed, V2d &jumpStart, 
+		V2d &dest);
 	void UpdateSwingDebugDraw();
 	void InitNodeDebugDraw(int fightType,
 		const std::string &str,
@@ -94,9 +105,8 @@ struct EnemyMover
 	void SetModeWait(int frames);
 	void SetMoveType(MoveType mt);
 	void SetModeSwing(
-		V2d &swingAnchor,
-		double wireLength,
-		int frames);
+		V2d &p_swingAnchor, V2d &startPos,
+		double endAngle, double startSpeed);
 	void SetModeSwingJump(
 		V2d &dest,
 		V2d &swingAnchor,

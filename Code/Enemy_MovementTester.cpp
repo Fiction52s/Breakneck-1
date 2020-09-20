@@ -230,7 +230,40 @@ void MovementTester::ProcessState()
 		else*/
 		//if( testCounter == 2 )
 		{
-			enemyMover.SetModeRadial(nodeVec[0]->pos);
+			//enemyMover.
+
+
+			//V2d dest = nodeVec[0]->pos;
+			//V2d along = dest - GetPosition();
+			//V2d midPoint = GetPosition() + along / 4.0;
+			//V2d centerPoint = (dest + GetPosition()) / 2.0;
+			//along = normalize(along);
+			//
+			//V2d other(along.y, -along.x);
+
+			//rcEdge = NULL;
+			//rayStart = midPoint;
+			//rayEnd = midPoint + other * 5000.0;
+			//RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+
+			//if (rcEdge != NULL)
+			//{
+			//	assert(rcEdge != NULL);
+
+			//	V2d basePos = rcEdge->GetPosition(rcQuantity);
+
+			//	V2d dir = normalize(basePos - GetPosition());
+			//	V2d along(-dir.y, dir.x);
+
+			//	double speed = -20;//dot(startVel, dir);
+
+			//	enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, dest);
+			//}
+
+
+
+
+
 			//enemyMover.SetModeSwingJump(nodeVec[0]->pos, nodeVec[1]->pos, 60);
 			//enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 200);
 			//enemyMover.SetModeRadial(nodePos);
@@ -425,4 +458,18 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 	coyShockPool.Draw(target);
 	tigerSpinTurretPool.Draw(target);
 	//target->draw(predictCircle);
+}
+
+void MovementTester::HandleRayCollision(Edge *edge, double edgeQuantity,
+	double rayPortion)
+{
+	V2d dir = normalize(rayEnd - rayStart);
+	V2d pos = edge->GetPosition(edgeQuantity);
+	double along = dot(dir, edge->Normal());
+	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
+		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
 }

@@ -153,11 +153,16 @@ struct RadialMovement : Movement
 		bool clockwise,
 		CubicBezier &bez,
 		int frameDuration);
+	void Set(V2d &base,
+		V2d &startPos,
+		double endAngle,
+		double speed );
+	void SetDebugControlPoints();
 	bool clockwise;
 	double startAngle;
 	double endAngle;
 	double radius;
-	sf::Vector2<double> basePos;
+	V2d basePos;
 	V2d GetPosition( int t );
 };
 

@@ -9,7 +9,7 @@
 #include "PlayerComboer.h"
 #include "Enemy_GatorWaterOrb.h"
 
-struct Skeleton : Enemy
+struct Skeleton : Enemy, RayCastHandler
 {
 	enum Action
 	{
@@ -59,6 +59,11 @@ struct Skeleton : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	V2d rayEnd;
+	V2d rayStart;
+	Edge *rcEdge;
+	double rcQuantity;
+
 	Skeleton(ActorParams *ap);
 
 	void LoadParams();
@@ -74,6 +79,7 @@ struct Skeleton : Enemy
 
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
+	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();

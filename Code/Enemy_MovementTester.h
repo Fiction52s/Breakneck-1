@@ -31,7 +31,7 @@
 //};
 
 
-struct MovementTester : Enemy
+struct MovementTester : Enemy, RayCastHandler
 {
 	enum Action
 	{
@@ -87,6 +87,11 @@ struct MovementTester : Enemy
 
 	V2d targetPos;
 
+	V2d rayEnd;
+	V2d rayStart;
+	Edge *rcEdge;
+	double rcQuantity;
+
 	MovementTester(ActorParams *ap);
 	~MovementTester();
 
@@ -101,7 +106,7 @@ struct MovementTester : Enemy
 	void UpdateHitboxes();
 
 	void EnemyDraw(sf::RenderTarget *target);
-
+	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();

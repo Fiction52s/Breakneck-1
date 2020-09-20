@@ -243,16 +243,103 @@ void Skeleton::ProcessState()
 
 		V2d nodePos = nodeVec[rNode]->pos;
 
-		V2d pPos = sess->GetPlayerPos(0);
-		V2d pDir = normalize(pPos - GetPosition());
+		//V2d pPos = sess->GetPlayerPos(0);
+		//V2d pDir = normalize(pPos - GetPosition());
 
-		r = 0;
+		V2d nodeDiff = nodePos - GetPosition();
+
+		double absNodeDiffX = abs(nodeDiff.x);
+
+		cout << "absdiffx: " << absNodeDiffX << "\n";
+
+		/*if ()
+		{
+			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
+		}
+		else */
+
+		if (nodeDiff.y < -600)
+		{
+			rcEdge = NULL;
+			rayStart = nodePos + V2d( 0, -10 );
+			rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
+			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+
+			if (rcEdge != NULL)
+			{
+				assert(rcEdge != NULL);
+
+				V2d basePos = rcEdge->GetPosition(rcQuantity);
+
+				enemyMover.currPosInfo.SetAerial();
+				currPosInfo.SetAerial();
+
+				enemyMover.SetModeZipAndFall(basePos, V2d( 0, 2 ), nodePos);
+				//enemyMover.SetModeRadial(basePos, speed, dest);
+				//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
+			}
+			//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
+
+		}
+		else if (absNodeDiffX > 600 )
+		//if( true )
+		{
+			
+			//stuff
+			V2d along = nodePos - GetPosition();
+			V2d midPoint = GetPosition() + along / 4.0;
+			V2d centerPoint = (nodePos + GetPosition()) / 2.0;
+			along = normalize(along);
+
+			V2d other(along.y, -along.x);
+
+			double speed = -40;//dot(startVel, dir);
+
+			if (other.y >= 0)
+			{
+				speed = -speed;
+				other = -other;
+			}
+
+
+			rcEdge = NULL;
+			rayStart = midPoint;
+			rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
+			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+
+			if (rcEdge != NULL)
+			{
+				assert(rcEdge != NULL);
+
+				V2d basePos = rcEdge->GetPosition(rcQuantity);
+
+				//V2d dir = normalize(basePos - GetPosition());
+				//V2d along(-dir.y, dir.x);
+
+
+
+				enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, nodePos);
+				//enemyMover.SetModeRadial(basePos, speed, dest);
+				//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
+			}
+		}
+		else
+		{
+			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
+		}
+
+		
+		//end stuff
+
+
+
+		r = 4;
 		if (r == 0)
 		{
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
 			//enemyMover.SetModeSwing(nodePos, length(nodePos - GetPosition()), 60);
-			enemyMover.SetModeRadial(nodePos);
+			//enemyMover.SetModeRadial(nodePos);
 
 			//enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
@@ -391,4 +478,18 @@ void Skeleton::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 
 	launchers[0]->SetFromBytes(bytes);
+}
+
+void Skeleton::HandleRayCollision(Edge *edge, double edgeQuantity,
+	double rayPortion)
+{
+	V2d dir = normalize(rayEnd - rayStart);
+	V2d pos = edge->GetPosition(edgeQuantity);
+	double along = dot(dir, edge->Normal());
+	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
+		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
+	{
+		rcEdge = edge;
+		rcQuantity = edgeQuantity;
+	}
 }

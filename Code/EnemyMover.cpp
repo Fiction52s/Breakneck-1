@@ -138,13 +138,38 @@ void EnemyMover::InitNodeDebugDraw(int fightType,
 	nodeCircles->ShowAll();
 }
 
-void EnemyMover::SetModeRadial(V2d &base)
+void EnemyMover::SetModeRadial(V2d &base, double speed, V2d &dest)
 {
 	SetMoveType(RADIAL);
-	actionFrames = 60;
-	radialMove->Set(base, currPosInfo.GetPosition(), 2 * PI, true, CubicBezier(), 60);
+
+	double endAngle = GetVectorAngleCW(normalize(dest - base));
+
+	radialMove->Set(base, currPosInfo.GetPosition(), endAngle, speed);
 	radialMove->InitDebugDraw();
 	radialMovementSeq.Reset();
+}
+
+void EnemyMover::SetModeRadialDoubleJump(V2d &base,
+	double speed, V2d &jumpStart, V2d &dest)
+{
+	SetMoveType(RADIAL_DOUBLE_JUMP);
+
+	double endAngle = GetVectorAngleCW(normalize(jumpStart - base));
+
+	jumpDest = dest;
+	swingAnchor = base;
+
+	radialMove->Set(base, currPosInfo.GetPosition(), endAngle, speed);
+	radialMove->InitDebugDraw();
+	radialMovementSeq.Reset();
+}
+
+void EnemyMover::SetModeZipAndFall(V2d &zipPos, V2d &grav, V2d &dest )
+{
+	SetModeNodeLinearConstantSpeed(zipPos, CubicBezier(.8, .23, .83, .67), 40);
+	SetMoveType(ZIP_AND_FALL);
+	jumpDest = dest;
+	swingAnchor = zipPos;
 }
 
 void EnemyMover::SetModeFall(double grav, int frames)
@@ -160,12 +185,12 @@ void EnemyMover::SetModeWait(int frames)
 	actionFrames = frames;
 }
 
-void EnemyMover::SetModeSwing(V2d &p_swingAnchor, double p_wireLength,
-	int frames)
+void EnemyMover::SetModeSwing(V2d &p_swingAnchor, V2d &startPos,
+	double endAngle, double startSpeed )
 {
 	swingAnchor = p_swingAnchor;
-	wireLength = p_wireLength;
-	actionFrames = frames;
+	wireLength = length( swingAnchor - startPos );
+	velocity = V2d(0, 0);
 	SetMoveType(SWING);
 }
 
@@ -178,6 +203,7 @@ void EnemyMover::SetModeSwingJump(
 	swingAnchor = p_swingAnchor;
 	wireLength = length( currPosInfo.GetPosition() - swingAnchor );
 	actionFrames = frames;
+	velocity = V2d(0, 0);
 	SetMoveType(SWINGJUMP);
 }
 
@@ -413,6 +439,8 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 	case NODE_CUBIC:
 	case NODE_DOUBLE_QUADRATIC:
 	case RADIAL:
+	case RADIAL_DOUBLE_JUMP:
+	case ZIP_AND_FALL:
 	{
 		MovementSequence *currSeq = NULL;
 		if (linearMovementSeq.currMovement != NULL)
@@ -454,7 +482,7 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 			{
 				targetPos = currPosInfo.position;
 				FinishTargetedMovement();
-				SetMoveType(NONE);
+				
 				
 				if (currMovement->duration == 0)
 				{
@@ -464,7 +492,19 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 				{
 					lastActionEndVelocity = currMovement->GetEndVelocity();
 				}
-				
+
+				if (moveType == RADIAL_DOUBLE_JUMP)
+				{
+					SetModeNodeProjectile(jumpDest, V2d(0, 2), 200);
+				}
+				else if (moveType == ZIP_AND_FALL)
+				{
+					SetModeNodeProjectile(jumpDest, V2d(0, 2), 10);
+				}
+				else
+				{
+					SetMoveType(NONE);
+				}
 			}
 		}
 
@@ -537,7 +577,7 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 	case SWING:
 	{
 		double factor = slowMultiple * numPhysSteps;
-		//velocity += V2d( 0, 2.0 ) / factor;
+		velocity += V2d( 0, 2.0 ) / factor;
 
 		V2d wPos = currPosInfo.GetPosition();
 
@@ -550,16 +590,16 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 
 		double speed = dot(velocity, tes);
 
-		speed = -20;
+		//speed = -20;
 
-		if (speed > 0 && speed < 10)
+		/*if (speed > 0 && speed < 10)
 		{
 		speed = 10;
 		}
 		else if( speed < 0 && speed > -10 )
 		{
 		speed = -10;
-		}
+		}*/
 		//speed = 20.0;
 
 		velocity = speed * tes;
@@ -618,6 +658,8 @@ void EnemyMover::DebugDraw(sf::RenderTarget *target)
 	case NODE_CUBIC:
 	case NODE_DOUBLE_QUADRATIC:
 	case RADIAL:
+	case RADIAL_DOUBLE_JUMP:
+	case ZIP_AND_FALL:
 	{
 		MovementSequence *currSeq = NULL;
 		if (linearMovementSeq.currMovement != NULL)
@@ -642,6 +684,12 @@ void EnemyMover::DebugDraw(sf::RenderTarget *target)
 		}
 
 		currSeq->MovementDebugDraw(target);
+
+		if (moveType == RADIAL_DOUBLE_JUMP || moveType == ZIP_AND_FALL )
+		{
+			UpdateSwingDebugDraw();
+			target->draw(swingQuad, 4, sf::Quads);
+		}
 		break;
 	}
 	case SWING:
@@ -747,9 +795,10 @@ void EnemyMover::FrameIncrement()
 			--actionFrames;
 			if (actionFrames == 0)
 			{
-				double fac = 40;
-				SetModeNodeCubic(currPosInfo.GetPosition() + velocity * fac,
-					targetPos + V2d(0, -100), targetPos, CubicBezier(), 60);
+				SetModeNodeProjectile(currPosInfo.GetPosition(), V2d(0, 2), 200);
+				//double fac = 40;
+				//SetModeNodeCubic(currPosInfo.GetPosition() + velocity * fac,
+				//	targetPos + V2d(0, -100), targetPos, CubicBezier(), 60);
 			}
 		}
 	}
