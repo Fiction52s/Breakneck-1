@@ -243,8 +243,8 @@ void Skeleton::ProcessState()
 
 		V2d nodePos = nodeVec[rNode]->pos;
 
-		//V2d pPos = sess->GetPlayerPos(0);
-		//V2d pDir = normalize(pPos - GetPosition());
+		V2d pPos = sess->GetPlayerPos(0);
+		V2d pDir = normalize(pPos - GetPosition());
 
 		V2d nodeDiff = nodePos - GetPosition();
 
@@ -252,17 +252,41 @@ void Skeleton::ProcessState()
 
 		cout << "absdiffx: " << absNodeDiffX << "\n";
 
+		
+
 		/*if ()
 		{
 			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
 		}
 		else */
+		if (true)
+		{
+			rcEdge = NULL;
+			rayStart = GetPosition();
+			rayEnd = pPos + pDir * 5000.0;
+			ignorePointsCloserThanPlayer = true;
+			playerDist = length(pPos - GetPosition());
+			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
 
-		if (nodeDiff.y < -600)
+			if (rcEdge != NULL)
+			{
+				assert(rcEdge != NULL);
+
+				V2d basePos = rcEdge->GetPosition(rcQuantity);
+
+				enemyMover.currPosInfo.SetAerial();
+				currPosInfo.SetAerial();
+
+				enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
+				//enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
+			}
+		}
+		else if (nodeDiff.y < -600)
 		{
 			rcEdge = NULL;
 			rayStart = nodePos + V2d( 0, -10 );
 			rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
+			ignorePointsCloserThanPlayer = false;
 			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
 
 			if (rcEdge != NULL)
@@ -486,10 +510,16 @@ void Skeleton::HandleRayCollision(Edge *edge, double edgeQuantity,
 	V2d dir = normalize(rayEnd - rayStart);
 	V2d pos = edge->GetPosition(edgeQuantity);
 	double along = dot(dir, edge->Normal());
+
+	double posDist = length(pos - GetPosition());
+
 	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
 		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
 	{
-		rcEdge = edge;
-		rcQuantity = edgeQuantity;
+		if (!ignorePointsCloserThanPlayer || (ignorePointsCloserThanPlayer && posDist > playerDist))
+		{
+			rcEdge = edge;
+			rcQuantity = edgeQuantity;
+		}
 	}
 }

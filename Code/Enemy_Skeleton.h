@@ -63,6 +63,8 @@ struct Skeleton : Enemy, RayCastHandler
 	V2d rayStart;
 	Edge *rcEdge;
 	double rcQuantity;
+	bool ignorePointsCloserThanPlayer;
+	double playerDist;
 
 	Skeleton(ActorParams *ap);
 
