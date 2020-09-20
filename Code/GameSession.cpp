@@ -372,9 +372,12 @@ void GameSession::ActivateBonus(V2d &returnPos)
 void GameSession::SetBonus(GameSession *bonus,
 	V2d &returnPos)
 {
+
 	assert(bonus != NULL);
+
+	ActivateBonus(returnPos);
+
 	bonusGame = bonus;
-	bonusGame->ActivateBonus(returnPos);
 	bonusGame->cam.offset = cam.offset;
 	bonusGame->cam.zoomFactor = cam.zoomFactor;
 }

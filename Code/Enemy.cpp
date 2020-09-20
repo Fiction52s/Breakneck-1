@@ -570,12 +570,12 @@ void Enemy::DefaultHurtboxesOn( int hFrame )
 
 void Enemy::HurtboxesOff()
 {
-	SetHitboxes(NULL, 0);
+	SetHurtboxes(NULL, 0);
 }
 
 void Enemy::HitboxesOff()
 {
-	SetHurtboxes(NULL, 0);
+	SetHitboxes(NULL, 0);
 }
 
 void Enemy::SetNumLaunchers(int num)

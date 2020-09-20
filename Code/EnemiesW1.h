@@ -27,6 +27,7 @@
 #include "Enemy_MultiplayerProgressTarget.h"
 
 #include "Enemy_MovementTester.h"
+#include "GroundedWarper.h"
 
 
 #endif
