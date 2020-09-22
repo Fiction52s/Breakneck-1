@@ -225,6 +225,11 @@ Panel *ActorType::CreatePanel()
 		AddSpecialOptionDropdown(p);
 		p->AddCheckBox("hasedge", Vector2i(0, 0));
 	}
+	else if (name == "groundedwarper")
+	{
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+	}
 	else if (name == "extrascene")
 	{
 		p = CreateDefaultPanel();

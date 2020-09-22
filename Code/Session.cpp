@@ -263,8 +263,10 @@ void Session::AddGeneralEnemies()
 	AddExtraEnemy("flowerpod", CreateEnemy<FlowerPod>, SetParamsType<FlowerPodParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 	
-	AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<BasicGroundEnemyParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
+	AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
 		true, false );
+	/*AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
+		true, false);*/
 
 	//ignore flowerpods until I figure out how I want to change them.
 

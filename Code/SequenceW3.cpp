@@ -99,36 +99,36 @@ void CoyoteSleepScene::AddFlashes()
 	FlashedImage *testIm5 = AddFlashedImage("break_05", sess->GetTileset("Story/test/break_05.png", 1920, 1080),
 		0, 0, 240, 0, Vector2f(960, 540));
 
-	group->SetBG(bgs["anim1"]);
+	/*group->SetBG(bgs["anim1"]);
 
 	AddSimulFlashToGroup(group, "break_01");
 	AddSimulFlashToGroup(group, "break_02", 90);
 	AddSimulFlashToGroup(group, "break_03", 90);
 	AddSimulFlashToGroup(group, "break_04", 90);
-	AddSimulFlashToGroup(group, "break_05", 90);
+	AddSimulFlashToGroup(group, "break_05", 90);*/
 
 
 
-	/*AddFlashedImage("wake0", owner->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
+	AddFlashedImage("wake0", sess->GetTileset("Bosses/Coyote/Coy_02b.png", 1920, 1080),
 		0, 30, 30, 30, Vector2f(960, 540));
 
-	AddFlashedImage("wake1", owner->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
+	AddFlashedImage("wake1", sess->GetTileset("Bosses/Coyote/Coy_03b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
 
-	AddFlashedImage("wake2", owner->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
+	AddFlashedImage("wake2", sess->GetTileset("Bosses/Coyote/Coy_04b.png", 1920, 1080),
 		0, 30, 10, 30, Vector2f(960, 540));
 
-	AddFlashedImage("wake3", owner->GetTileset("Bosses/Coyote/Coy_05b.png", 1920, 1080),
-		0, 30, 10, 30, Vector2f(960, 540));*/
+	AddFlashedImage("wake3", sess->GetTileset("Bosses/Coyote/Coy_05b.png", 1920, 1080),
+		0, 30, 10, 30, Vector2f(960, 540));
 
 
 	int togetherFrames = 15;
 
-	/*AddSeqFlashToGroup(group, "wake0");
+	AddSeqFlashToGroup(group, "wake0");
 	AddSeqFlashToGroup(group, "wake1", togetherFrames);
 	AddSeqFlashToGroup(group, "wake2", togetherFrames);
-	AddSeqFlashToGroup(group, "wake3", togetherFrames);*/
+	AddSeqFlashToGroup(group, "wake3", togetherFrames);
 
 
 	/*AddSeqFlashToGroup(group, "wake0" );

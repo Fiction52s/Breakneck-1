@@ -1411,6 +1411,102 @@ void XBarrierParams::Draw(sf::RenderTarget *target)
 	target->draw(nameText);
 }
 
+GroundedWarperParams::GroundedWarperParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	Init();
+	PlaceAerial(Vector2i(0, 0));
+	nameIndex = type->GetSelectedSpecialDropIndex();
+
+	SetText(type->GetSelectedSpecialDropStr());
+}
+
+void GroundedWarperParams::SetText(const std::string &n)
+{
+	nameText.setString(n);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		nameText.getLocalBounds().top + nameText.getLocalBounds().height / 2);
+}
+
+const std::string &GroundedWarperParams::GetName()
+{
+	if (nameIndex >= 0)
+	{
+		return type->GetSpecialDropStr(nameIndex);
+	}
+	else
+	{
+		return name;
+	}
+}
+
+GroundedWarperParams::GroundedWarperParams(ActorType *at,
+	ifstream &is)
+	: ActorParams(at)
+{
+	Init();
+	LoadGrounded(is);
+
+	string n;
+	is >> n;
+
+	nameIndex = type->GetSpecialOptionsIndex(n);
+
+	if (nameIndex >= 0)
+	{
+		Init();
+		SetText(n);
+	}
+	else
+	{
+		name = n;
+	}
+}
+
+void GroundedWarperParams::Init()
+{
+	EditSession *session = EditSession::GetSession();
+	nameText.setFont(session->arial);
+	nameText.setCharacterSize(40);
+	nameText.setFillColor(Color::White);
+}
+
+void GroundedWarperParams::WriteParamFile(std::ofstream &of)
+{
+	of << GetName() << endl;
+}
+
+void GroundedWarperParams::SetParams()
+{
+	Panel *p = type->panel;
+	nameIndex = type->GetSelectedSpecialDropIndex();
+	SetText(type->GetSelectedSpecialDropStr());
+}
+
+void GroundedWarperParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	type->SetSpecialDropIndex(nameIndex);
+}
+
+ActorParams *GroundedWarperParams::Copy()
+{
+	GroundedWarperParams *copy = new GroundedWarperParams(*this);
+	return copy;
+}
+
+void GroundedWarperParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	Vector2f fPos = GetFloatPos();
+
+	nameText.setPosition(fPos.x, fPos.y - 100);
+
+	target->draw(nameText);
+}
+
 const float CameraShotParams::CAMWIDTH = 960.f;
 const float CameraShotParams::CAMHEIGHT = 540.f;
 

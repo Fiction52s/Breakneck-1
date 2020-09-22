@@ -330,6 +330,7 @@ int GameSession::TryToActivateBonus()
 			}
 			pauseMenu->owner = bonusGame;
 
+			bonusGame->RestartLevel();
 			bonusGame->Run();
 
 			pauseMenu->owner = this;
@@ -3383,7 +3384,10 @@ void GameSession::RestartLevel()
 
 	background->Reset();
 
-	soundNodeList->Clear();
+	if (parentGame == NULL)
+	{
+		soundNodeList->Clear();
+	}
 
 	totalGameFrames = 0;
 	totalFramesBeforeGoal = -1;
@@ -3398,19 +3402,19 @@ void GameSession::RestartLevel()
 	//f->Reset();
 
 
-	fader->Reset();
+	if (parentGame == NULL)
+	{
+		fader->Reset();
+	}
+	
 	numKeysCollected = 0;
 
 	if (hud != NULL)
 	{
 		hud->Reset();
 	}
-
-	//crawlerFightSeq->Reset();
-	//enterNexus1Seq->Reset();
 	
-
-	soundNodeList->Reset();
+	//soundNodeList->Reset(); //already done using Clear
 	scoreDisplay->Reset();
 	if( recPlayer != NULL )
 	{
@@ -3449,21 +3453,27 @@ void GameSession::RestartLevel()
 	cutPlayerInput = false;
 
 
-	Actor *p;
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	if (parentGame == NULL)
 	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->position = V2d(playerOrigPos[i]);
-		}
-	}
 
-	for (int i = 0; i < 4; ++i)
-	{
-		Actor *player = GetPlayer(i);
-		if (player != NULL)
-			player->Respawn();
+
+		Actor *p;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->position = V2d(playerOrigPos[i]);
+			}
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			Actor *player = GetPlayer(i);
+			if (player != NULL)
+				player->Respawn();
+		}
+
 	}
 
 	scoreDisplay->Reset();

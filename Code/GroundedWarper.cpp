@@ -72,10 +72,10 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 
 void GroundedWarper::ResetEnemy()
 {
-	if (myBonus != NULL)
+	/*if (myBonus != NULL)
 	{
 		myBonus->RestartLevel();
-	}
+	}*/
 
 	facingRight = true;
 

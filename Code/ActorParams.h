@@ -225,6 +225,25 @@ struct XBarrierParams : ActorParams
 	std::string name; //for gamesession
 };
 
+struct GroundedWarperParams : ActorParams
+{
+	GroundedWarperParams(ActorType *at, int level);
+	GroundedWarperParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void SetParams();
+	void SetPanelInfo();
+	void Init();
+	void Draw(sf::RenderTarget *target);
+	ActorParams *Copy();
+	const std::string &GetName();
+	void SetText(const std::string &n);
+
+	int nameIndex;
+	sf::Text nameText;
+	std::string name; //for gamesession
+};
+
 struct ExtraSceneParams : ActorParams
 {
 	ExtraSceneParams(ActorType *at, int level);
