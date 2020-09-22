@@ -222,6 +222,7 @@ struct XBarrierParams : ActorParams
 	int nameIndex;
 	sf::Text nameText;
 	bool hasEdge;
+	std::string name; //for gamesession
 };
 
 struct ExtraSceneParams : ActorParams

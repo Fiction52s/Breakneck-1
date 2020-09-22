@@ -308,9 +308,12 @@ void GameSession::UpdateReplayGhostSprites()
 	}
 }
 
-void GameSession::TryToActivateBonus()
+//returns gameresult of the bonus
+int GameSession::TryToActivateBonus()
 {
 	Actor *p = NULL;
+
+	int bonusReturnVal = GR_BONUS_RETURN;
 	if (parentGame == NULL && bonusGame != NULL)
 	{
 		if (activateBonus)
@@ -347,6 +350,18 @@ void GameSession::TryToActivateBonus()
 			//cout << "Restarting clock" << "\n";
 			//gameClock.restart();
 			currentTime = gameClock.getElapsedTime().asSeconds();
+
+			if (bonusGame->returnVal == GR_BONUS_RESPAWN)
+			{
+				RestartGame();
+				bonusReturnVal = GR_BONUS_RESPAWN;
+			}
+			else if (bonusGame->returnVal == GR_EXITLEVEL)
+			{
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+				bonusReturnVal = GR_EXITLEVEL;
+			}
 			//cout << "setting current time to: " << currentTime << "\n";
 
 			//cout << "restarted time: " << gameClock.getElapsedTime().asSeconds() << "\n";
@@ -360,6 +375,8 @@ void GameSession::TryToActivateBonus()
 
 		}
 	}
+
+	return bonusReturnVal;
 }
 
 
@@ -403,11 +420,11 @@ void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 
 bool GameSession::RunPreUpdate()
 {
-	if (IsKeyPressed(sf::Keyboard::Y))
+	/*if (IsKeyPressed(sf::Keyboard::Y))
 	{
 		quit = true;
 		return false;
-	}
+	}*/
 
 	UpdateDebugModifiers();
 
@@ -422,12 +439,7 @@ bool GameSession::RunPreUpdate()
 
 	if (nextFrameRestart)
 	{
-		gameState = GameSession::RUN;
 		RestartLevel();
-		gameClock.restart();
-		currentTime = 0;
-		accumulator = TIMESTEP + .1;
-		frameRateDisplay.Reset();
 	}
 
 	return true;
@@ -2485,7 +2497,8 @@ int GameSession::Run()
 
 			accumulator += frameTime;
 
-			while (accumulator >= TIMESTEP)
+			bool instantQuitForBonus = false;
+			while (accumulator >= TIMESTEP )
 			{
 				UpdateControllers();
 
@@ -2507,12 +2520,27 @@ int GameSession::Run()
 				}
 				case PauseMenu::R_P_RESPAWN:
 				{
-					gameState = GameSession::RUN;
-					RestartLevel();
-					gameClock.restart();
-					currentTime = 0;
-					accumulator = TIMESTEP + .1;
-					frameRateDisplay.Reset();
+					if (parentGame != NULL)
+					{
+						//parentGame->RestartGame();
+						quit = true;
+						returnVal = GR_BONUS_RESPAWN;
+						break;
+					}
+					else
+					{
+						
+						RestartLevel();
+
+						//moved this stuff into restart level
+						/*gameState = GameSession::RUN;
+						gameClock.restart();
+						currentTime = 0;
+						accumulator = TIMESTEP + .1;
+						frameRateDisplay.Reset();*/
+					}
+
+					
 					//soundNodeList->Pause( false );
 					//kill sounds on respawn
 					break;
@@ -2544,6 +2572,11 @@ int GameSession::Run()
 				}
 
 				accumulator -= TIMESTEP;
+			}
+
+			if (instantQuitForBonus)
+			{
+				continue;
 			}
 
 			if (gameState != PAUSE)
@@ -3295,18 +3328,31 @@ SaveFile *GameSession::GetCurrentProgress()
 
 void GameSession::NextFrameRestartLevel()
 {
-	nextFrameRestart = true;
+	if (parentGame != NULL)
+	{
+		parentGame->nextFrameRestart = true;
+		quit = true;
+	}
+	else
+	{
+		nextFrameRestart = true;
+	}
 }
 
 
 void GameSession::RestartGame()
 {
-	//RestartLevel(); //not sure why i need to do this. fix this soon
-	NextFrameRestartLevel();
+	NextFrameRestartLevel(); //for virtual function
 }
 
 void GameSession::RestartLevel()
 {
+	gameState = GameSession::RUN;
+	gameClock.restart();
+	currentTime = 0;
+	accumulator = TIMESTEP + .1;
+	frameRateDisplay.Reset();
+
 	activateBonus = false;
 
 	if( gateMarkers != NULL)

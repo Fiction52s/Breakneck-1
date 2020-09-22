@@ -3455,6 +3455,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 Actor::~Actor()
 {
+	for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
+	{
+		delete (*it);
+	}
+
 	//delete skin;
 	//delete swordSkin;
 	/*if (glideEmitter != NULL)
@@ -6384,7 +6389,10 @@ void Actor::HandleWaitingScoreDisplay()
 					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 					currFile->Save();
 				}
-				owner->NextFrameRestartLevel();
+
+
+				owner->RestartGame();
+				//owner->NextFrameRestartLevel();
 			}
 			else
 			{

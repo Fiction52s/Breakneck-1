@@ -1315,7 +1315,14 @@ void XBarrierParams::SetText(const std::string &n)
 
 const std::string &XBarrierParams::GetName()
 {
-	return type->GetSpecialDropStr(nameIndex);
+	if (nameIndex >= 0)
+	{
+		return type->GetSpecialDropStr(nameIndex);
+	}
+	else
+	{
+		return name;
+	}
 }
 
 XBarrierParams::XBarrierParams(ActorType *at,
@@ -1329,9 +1336,16 @@ XBarrierParams::XBarrierParams(ActorType *at,
 	is >> n;
 	
 	nameIndex = type->GetSpecialOptionsIndex(n);
-	assert(nameIndex >= 0);
-	SetText(n);
 	
+	if (nameIndex >= 0)
+	{
+		Init();
+		SetText(n);
+	}
+	else
+	{
+		name = n;
+	}
 
 	LoadBool(is, hasEdge);
 }

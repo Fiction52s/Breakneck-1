@@ -41,7 +41,8 @@ void Actor::DEATH_Update()
 	{
 		if (owner != NULL)
 		{
-			owner->NextFrameRestartLevel();	
+			//owner->NextFrameRestartLevel();	
+			owner->RestartGame();
 		}
 		else if (editOwner != NULL)
 		{

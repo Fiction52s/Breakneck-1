@@ -267,11 +267,13 @@ struct GameSession : RayCastHandler, Session
 
 	enum GameResultType
 	{
+		GR_BONUS_RETURN,
 		GR_WIN,
 		GR_WINCONTINUE,
 		GR_EXITLEVEL,
 		GR_EXITTITLE,
-		GR_EXITGAME
+		GR_EXITGAME,
+		GR_BONUS_RESPAWN,
 	};
 
 
@@ -554,7 +556,7 @@ struct GameSession : RayCastHandler, Session
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
 	
-	void TryToActivateBonus();
+	int TryToActivateBonus();
 	void UpdateReplayGhostSprites();
 	
 	

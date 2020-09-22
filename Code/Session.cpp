@@ -5702,7 +5702,16 @@ bool Session::RunGameModeUpdate()
 
 		UpdatePlayersPrePhysics();
 
-		TryToActivateBonus();
+		int bonusRes = TryToActivateBonus();
+		if (bonusRes == GameSession::GR_BONUS_RESPAWN)
+		{
+			return false;
+		}
+		else if (bonusRes == GameSession::GR_EXITLEVEL)
+		{
+			return false;
+		}
+
 
 		ActiveStorySequenceUpdate();
 

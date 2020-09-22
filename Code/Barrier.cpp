@@ -26,12 +26,12 @@ Barrier::Barrier(const std::string &p_name, bool p_x, int p_pos, bool hasEdge, B
 	extraDistance = 50;
 	if (x)
 	{
-		positiveOpen = (sess->GetPlayerPos().x > pos);
+		positiveOpen = (sess->playerOrigPos[0].x > pos);
 		
 	}
 	else
 	{
-		positiveOpen = (sess->GetPlayerPos().y > pos);
+		positiveOpen = (sess->playerOrigPos[0].y > pos);
 	}
 
 	if (!positiveOpen)
