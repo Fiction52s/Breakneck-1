@@ -16,7 +16,8 @@ void GroundedWarper::Setup()
 	SetSpawnRect();
 	if (sess->IsSessTypeGame())
 	{
-		boost::filesystem::path p("Resources/Maps/Bosses/greyw1.brknk");
+		//boost::filesystem::path p("Resources/Maps/Bosses/greyw1.brknk");
+		boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
 		GameSession *game = GameSession::GetSession();
 
 		myBonus = new GameSession(game->saveFile, p);
@@ -47,6 +48,9 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 	actionLength[DISAPPEAR] = 60;
 	animFactor[DISAPPEAR] = 1;
 
+	GroundedWarperParams *gwParams = (GroundedWarperParams*)ap;
+
+	bonusName = gwParams->GetName();
 
 	ts = sess->GetSizedTileset("Enemies/bouncefloater_128x128.png");
 	sprite.setColor(Color::Red);

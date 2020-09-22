@@ -20,7 +20,7 @@ struct GroundedWarper : Enemy
 	Tileset *ts;
 	void Setup();
 	GameSession *myBonus;
-
+	std::string bonusName;
 	GroundedWarper(ActorParams *ap);
 	void ProcessState();
 	void HandleHitAndSurvive();
