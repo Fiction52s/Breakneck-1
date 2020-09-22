@@ -404,7 +404,7 @@ void GameSession::ReturnFromBonus()
 	if (parentGame != NULL)
 	{
 		quit = true;
-		returnVal = GameSession::GR_EXITLEVEL;
+		returnVal = GameSession::GR_BONUS_RETURN;
 		parentGame->cam.offset = cam.offset;
 		parentGame->cam.zoomFactor = cam.zoomFactor;
 	}

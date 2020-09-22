@@ -129,7 +129,7 @@ void DimensionExit::HandleNoHealth()
 	if (game != NULL)
 	{
 		game->quit = true;
-		game->returnVal = GameSession::GR_EXITLEVEL;
+		game->returnVal = GameSession::GR_BONUS_RETURN;
 		GameSession *parentGame = game->parentGame;
 		if (parentGame != NULL)
 		{
