@@ -600,7 +600,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawGates(sf::RenderTarget *target);
 	void ResetGates();
 	void ResetBarriers();
-	void AddBarrier(XBarrierParams *xbp);
+	void AddBarrier(XBarrierParams *xbp, bool warp);
 	void SetGameSessionState(int s);
 	virtual int GetGameSessionState();
 	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);

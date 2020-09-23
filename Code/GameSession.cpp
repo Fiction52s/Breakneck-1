@@ -678,11 +678,11 @@ GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath
 
 void GameSession::Cleanup()
 {
-	if (bonusGame != NULL)
+	/*if (bonusGame != NULL)
 	{
 		delete bonusGame;
 		bonusGame = NULL;
-	}
+	}*/
 
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
@@ -1105,7 +1105,12 @@ void GameSession::ProcessActor(ActorPtr a)
 		if (typeName == "xbarrier")
 		{
 			XBarrierParams *xbp = (XBarrierParams*)a;
-			AddBarrier(xbp);
+			AddBarrier(xbp, false);
+		}
+		else if ( typeName == "xbarrierwarp")
+		{
+			XBarrierParams *xbp = (XBarrierParams*)a;
+			AddBarrier(xbp, true);
 		}
 		//else if (typeName == "extrascene")
 		//{
@@ -1184,8 +1189,8 @@ void GameSession::ProcessAllActors()
 		preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
 	}
 
-	//create sequences for the barriers after all enemies have already been loaded
-	SetupBarrierScenes();
+	////create sequences for the barriers after all enemies have already been loaded
+	//SetupBarrierScenes();
 
 	SetupEnemyZoneSprites();
 	
@@ -1650,6 +1655,10 @@ bool GameSession::Load()
 	{
 		(*it)->Setup();
 	}
+
+	//need this after the whole level is setup in case of warp barriers
+	//create sequences for the barriers after all enemies have already been loaded
+	SetupBarrierScenes();
 	
 	if (parentGame == NULL)
 	{

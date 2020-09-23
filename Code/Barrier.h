@@ -14,7 +14,7 @@ struct Barrier
 {
 	Barrier(const std::string &p_name,
 		bool p_x, int pos, bool hasEdge,
-		BarrierCallback *cb);
+		BarrierCallback *cb, bool hasWarp);
 	~Barrier();
 	bool Update();
 	void SetPositive();
@@ -31,7 +31,7 @@ struct Barrier
 	std::string name;
 	BarrierCallback *callback;
 	Session *sess;
-	
+	GameSession *myBonus;
 	bool x; //false means y
 	bool triggered;
 	bool positiveOpen;
@@ -41,6 +41,7 @@ struct Barrier
 	Sequence *triggerSeq;
 	int extraDistance;
 	int pos;
+	bool hasWarp;
 private:
 	
 };

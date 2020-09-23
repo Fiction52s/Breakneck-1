@@ -22,6 +22,7 @@ struct GroundedWarper : Enemy
 	GameSession *myBonus;
 	std::string bonusName;
 	GroundedWarper(ActorParams *ap);
+	~GroundedWarper();
 	void ProcessState();
 	void HandleHitAndSurvive();
 

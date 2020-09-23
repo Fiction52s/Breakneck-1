@@ -74,6 +74,19 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 	ResetEnemy();
 }
 
+GroundedWarper::~GroundedWarper()
+{
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL)
+	{
+		if (game->bonusGame == myBonus)
+		{
+			game->bonusGame = NULL;
+		}
+		delete myBonus;
+	}
+}
+
 void GroundedWarper::ResetEnemy()
 {
 	/*if (myBonus != NULL)

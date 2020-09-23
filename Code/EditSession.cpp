@@ -1008,7 +1008,12 @@ void EditSession::TestPlayerMode()
 			if ((*enit)->type == types["xbarrier"])
 			{
 				XBarrierParams *xbp = (XBarrierParams*)(*enit);
-				AddBarrier(xbp);
+				AddBarrier(xbp, false);
+			}
+			else if ((*enit)->type == types["xbarrierwarp"])
+			{
+				XBarrierParams *xbp = (XBarrierParams*)(*enit);
+				AddBarrier(xbp, true);
 			}
 			else if ((*enit)->type == types["camerashot"])
 			{

@@ -3,17 +3,22 @@
 #include "BarrierReactions.h"
 #include "MapHeader.h"
 #include "Sequence.h"
+#include "GameSession.h"
+#include "PauseMenu.h"
 
 using namespace std;
 using namespace sf;
 
-Barrier::Barrier(const std::string &p_name, bool p_x, int p_pos, bool hasEdge, BarrierCallback *cb)
+Barrier::Barrier(const std::string &p_name, bool p_x, int p_pos, bool hasEdge, BarrierCallback *cb, bool p_hasWarp )
 {
 	sess = Session::GetSession();
 	name = p_name;
 	callback = cb;
 	x = p_x;
 	pos = p_pos;
+	hasWarp = p_hasWarp;
+
+	myBonus = NULL;
 
 	triggerSeq = NULL;
 
@@ -88,13 +93,32 @@ int Barrier::GetCamPos()
 
 void Barrier::SetScene()
 {
-	Sequence *seq = Sequence::CreateScene(name);
-
-	if (seq != NULL)
+	if (!hasWarp)
 	{
-		seq->Reset();
-		seq->barrier = this;
-		triggerSeq = seq;
+		Sequence *seq = Sequence::CreateScene(name);
+
+		if (seq != NULL)
+		{
+			seq->Reset();
+			seq->barrier = this;
+			triggerSeq = seq;
+		}
+	}
+	else
+	{
+		GameSession *game = GameSession::GetSession();
+		if (game != NULL)
+		{
+			boost::filesystem::path p("Resources/Maps/" + name + ".brknk");
+			GameSession *game = GameSession::GetSession();
+
+			myBonus = new GameSession(game->saveFile, p);
+			myBonus->SetParentGame(game);
+			myBonus->Load();
+
+			game->currSession = game;
+			game->pauseMenu->owner = game;
+		}
 	}
 }
 
@@ -107,6 +131,9 @@ Barrier::~Barrier()
 	{
 		delete triggerSeq;
 	}
+
+	if (myBonus != NULL)
+		delete myBonus;
 }
 
 void Barrier::Reset()
@@ -247,8 +274,23 @@ void Barrier::SetPositive()
 
 void Barrier::Trigger()
 {
-	edgeActive = false;
-	triggered = true;
+	if (triggerSeq != NULL)
+	{
+		sess->SetActiveSequence(triggerSeq);
+	}
+	else if (myBonus != NULL)
+	{
+		GameSession *game = GameSession::GetSession();
+		if (game != NULL)
+		{
+			game->SetBonus(myBonus, V2d( 0, 0 ));
+		}
+	}
+	else
+	{
+		edgeActive = false;
+		triggered = true;
+	}
 }
 
 double Barrier::GetPlayerDist()

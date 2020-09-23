@@ -246,6 +246,8 @@ void Session::AddGeneralEnemies()
 
 	AddExtraEnemy("xbarrier", NULL, SetParamsType<XBarrierParams>,Vector2i(0, 0), Vector2i(64, 64),false, false, false, false, true, false, false, 1,
 		GetSizedTileset("Enemies/blocker_w1_192x192.png"));
+	AddExtraEnemy("xbarrierwarp", NULL, SetParamsType<XBarrierParams>, Vector2i(0, 0), Vector2i(64, 64), false, false, false, false, true, false, false, 1,
+		GetSizedTileset("Enemies/Ball_64x64.png"));
 
 	AddExtraEnemy("shippickup", CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 
@@ -4134,11 +4136,10 @@ void Session::ResetBarriers()
 	}
 }
 
-void Session::AddBarrier(XBarrierParams *xbp)
+void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 {
 	const std::string &xbpName = xbp->GetName();
-	Barrier *b = new Barrier(xbpName, true, xbp->GetIntPos().x, xbp->hasEdge, NULL);
-
+	Barrier *b = new Barrier(xbpName, true, xbp->GetIntPos().x, xbp->hasEdge, NULL, warp );
 	barrierMap[xbpName] = b;
 	barriers.push_back(b);
 }
@@ -4744,14 +4745,16 @@ void Session::UpdateBarriers()
 
 void Session::TriggerBarrier(Barrier *b)
 {
-	if (b->triggerSeq != NULL)
+	b->Trigger();
+
+	/*if (b->triggerSeq != NULL)
 	{
 		SetActiveSequence(b->triggerSeq);
 	}
 	else
 	{
 		b->Trigger();
-	}
+	}*/
 }
 
 void Session::SetupBarrierScenes()

@@ -225,6 +225,12 @@ Panel *ActorType::CreatePanel()
 		AddSpecialOptionDropdown(p);
 		p->AddCheckBox("hasedge", Vector2i(0, 0));
 	}
+	else if (name == "xbarrierwarp")
+	{
+		p = CreateDefaultPanel();
+		AddSpecialOptionDropdown(p);
+		p->AddCheckBox("hasedge", Vector2i(0, 0));
+	}
 	else if (name == "groundedwarper")
 	{
 		p = CreateDefaultPanel();

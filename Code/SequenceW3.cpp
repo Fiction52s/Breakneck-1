@@ -181,15 +181,15 @@ void CoyoteSleepScene::SetEntranceShot()
 CoyotePreFightScene::CoyotePreFightScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
-	SetEntranceIndex(1);
+	SetEntranceIndex(0); //change this to 1 if its the 2nd one in a level again.
 }
 
 void CoyotePreFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[ENTRANCE] = -1;
-	stateLength[WAIT] = 1;
+	//stateLength[ENTRANCE] = -1;
+	//stateLength[WAIT] = 1;
 	stateLength[COYOTECONV] = -1;
 	stateLength[COYOTEFACES] = -1;
 
@@ -251,13 +251,13 @@ void CoyotePreFightScene::UpdateState()
 	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
-	case ENTRANCE:
+	/*case ENTRANCE:
 		if (frame == 0)
 		{
 
 		}
 		EntranceUpdate();
-		break;
+		break;*/
 	
 	case COYOTECONV:
 		ConvUpdate();

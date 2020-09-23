@@ -30,8 +30,6 @@ struct CoyotePreFightScene : BasicBossScene
 {
 	enum State
 	{
-		ENTRANCE,
-		WAIT,
 		COYOTECONV,
 		COYOTEFACES,
 		Count
