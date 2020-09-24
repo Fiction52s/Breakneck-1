@@ -44,7 +44,7 @@ struct Background
 	~Background();
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
 	static Background *SetupFullBG(const std::string &fName,
-		TilesetManager *tm);
+		TilesetManager *tm, bool deleteTilesets );
 
 	void DestroyTilesets();
 	void Update( const sf::Vector2f &camPos,
@@ -72,6 +72,7 @@ struct Background
 	Tileset *ts_bg;
 	Tileset *ts_shape;
 	TilesetManager *tm;
+	bool deleteTilesets;
 
 	std::string name;
 

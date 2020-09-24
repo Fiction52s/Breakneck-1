@@ -173,6 +173,8 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 	show = true;
 
+	deleteTilesets = true;
+
 	Reset();
 }
 
@@ -207,7 +209,7 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 
 
 Background *Background::SetupFullBG(const std::string &fName,
-	TilesetManager *tm)
+	TilesetManager *tm, bool p_deleteTilesets )
 {
 	ifstream is;
 	stringstream fss;
@@ -233,6 +235,8 @@ Background *Background::SetupFullBG(const std::string &fName,
 		is >> bgStr;
 
 		newBG = new Background(tm, bgStr);
+
+		newBG->deleteTilesets = p_deleteTilesets;
 
 		int numPar;
 		is >> numPar;
@@ -360,14 +364,22 @@ Background::Background(MainMenu *mm)
 
 Background::~Background()
 {
-	if( ts_bg != NULL )
-		tm->DestroyTileset(ts_bg);
-	if( ts_shape != NULL )
-		tm->DestroyTileset(ts_shape);
+	if (deleteTilesets)
+	{
+		if (ts_bg != NULL)
+			tm->DestroyTileset(ts_bg);
+		if (ts_shape != NULL)
+			tm->DestroyTileset(ts_shape);
+	}
+	
 
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
-		tm->DestroyTileset((*it)->ts);
+		if (deleteTilesets)
+		{
+			tm->DestroyTileset((*it)->ts);
+		}
+		
 		delete (*it);
 	}
 }

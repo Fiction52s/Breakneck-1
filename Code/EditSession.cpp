@@ -2145,7 +2145,7 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 
 void EditSession::ProcessHeader()
 {
-	background = Background::SetupFullBG(mapHeader->envName, this);
+	background = Background::SetupFullBG(mapHeader->envName, this, true);
 	//background->Hide();
 
 	UpdateFullBounds();
@@ -3055,7 +3055,7 @@ void EditSession::SetBackground(const std::string &bgName)
 		}
 
 		mapHeader->envName = bgName;
-		background = Background::SetupFullBG(bgName, this);
+		background = Background::SetupFullBG(bgName, this, true );
 	}
 }
 
@@ -3445,7 +3445,7 @@ void EditSession::DefaultInit()
 
 	mapHeader->drainSeconds = 60;//newMapInfo.drainSeconds;//60;
 
-	background = Background::SetupFullBG(mapHeader->envName, this);
+	background = Background::SetupFullBG(mapHeader->envName, this, true);
 
 	mapHeader->bossFightType = 0;
 
@@ -3920,7 +3920,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 			{
 				mapHeader->envName = "w1_01";
 				mapHeader->envWorldType = 0;
-				background = Background::SetupFullBG(mapHeader->envName, this);
+				background = Background::SetupFullBG(mapHeader->envName, this, true);
 
 				stringstream ss;
 				ss << newMapPanel->textBoxes["timetolive"]->GetString();

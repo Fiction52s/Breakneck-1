@@ -314,7 +314,7 @@ int GameSession::TryToActivateBonus()
 	Actor *p = NULL;
 
 	int bonusReturnVal = GR_BONUS_RETURN;
-	if (parentGame == NULL && bonusGame != NULL)
+	if (bonusGame != NULL)
 	{
 		if (activateBonus)
 		{
@@ -347,15 +347,26 @@ int GameSession::TryToActivateBonus()
 				}
 			}
 
-			assert(parentGame == NULL);
+			//might have to do recursive resetting here
+
+			//assert(parentGame == NULL);
 			//cout << "Restarting clock" << "\n";
 			//gameClock.restart();
 			currentTime = gameClock.getElapsedTime().asSeconds();
 
 			if (bonusGame->returnVal == GR_BONUS_RESPAWN)
 			{
-				RestartGame();
-				bonusReturnVal = GR_BONUS_RESPAWN;
+				if (parentGame != NULL)
+				{
+					quit = true;
+					returnVal = GR_BONUS_RESPAWN;
+					bonusReturnVal = GR_BONUS_RESPAWN;
+				}
+				else
+				{
+					RestartGame();
+					bonusReturnVal = GR_BONUS_RESPAWN;
+				}
 			}
 			else if (bonusGame->returnVal == GR_EXITLEVEL)
 			{
@@ -1794,7 +1805,22 @@ void GameSession::SetupBackground()
 		background = NULL;
 	}
 
-	background = Background::SetupFullBG(mapHeader->envName, this);
+	//for when you have the same BG as a parent and don't want to 
+	//delete the tilesets on deletion
+	GameSession *currGame = parentGame;
+	bool sameBGNotAlreadyUsedByParents = true;
+	while (currGame != NULL)
+	{
+		if (currGame->background->name == mapHeader->envName)
+		{
+			sameBGNotAlreadyUsedByParents = false;
+			break;
+		}
+		currGame = currGame->parentGame;
+	}
+
+	background = Background::SetupFullBG(mapHeader->envName, this,
+		sameBGNotAlreadyUsedByParents);
 }
 
 

@@ -1584,6 +1584,8 @@ Session::~Session()
 
 	CleanupGlobalBorders();
 
+	CleanupBarriers(); //has to be before background deletion for warp barriers
+
 	if (background != NULL)
 	{
 		delete background;
@@ -1649,7 +1651,7 @@ Session::~Session()
 	CleanupCameraShots();
 	CleanupPoi();
 	CleanupBossNodes();
-	CleanupBarriers();
+	
 
 	CleanupTopClouds();
 

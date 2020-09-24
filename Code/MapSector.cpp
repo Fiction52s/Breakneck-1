@@ -63,7 +63,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	{
 		string secStr = to_string(index + 1);
 		string bgStr = "w" + worldStr + "_0" + secStr;
-		bg = Background::SetupFullBG(bgStr, worldMap);
+		bg = Background::SetupFullBG(bgStr, worldMap, true);
 	}
 
 	stringstream ss;
