@@ -2084,6 +2084,7 @@ int GameSession::Run()
 	
 	if (preLevelScene != NULL)
 	{
+		preLevelScene->Reset();
 		SetActiveSequence(preLevelScene);
 	}
 	else if( shipEnterScene != NULL )

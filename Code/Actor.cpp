@@ -6422,6 +6422,7 @@ void Actor::SetStandInPlacePos(Edge *g, double q,
 
 void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 {
+	
 	ground = g;
 	edgeQuantity = q;
 
@@ -6430,14 +6431,21 @@ void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 	offsetX = xoff;
 
 	V2d norm = ground->Normal();
+
+	position = ground->GetPosition(edgeQuantity);
+
 	if (norm.y <= 0)
 	{
 		reversed = false;
+		position.y -= normalHeight;
 	}
 	else
 	{
 		reversed = true;
+		position.y += normalHeight;
 	}
+
+	position.x += offsetX;
 }
 
 void Actor::SetAirPos(V2d &pos, bool fr)
@@ -6467,20 +6475,27 @@ void Actor::SetGroundedPos(Edge *g, double q)
 	else if (norm.x < 0)
 	{
 		offsetX = -b.rw;
+
 	}
 	else
 	{
 		offsetX = 0;
 	}
 
+	position = ground->GetPosition(edgeQuantity);
+
 	if (norm.y <= 0)
 	{
 		reversed = false;
+		position.y -= normalHeight;
 	}
 	else
 	{
 		reversed = true;
+		position.y += normalHeight;
 	}
+
+	position.x += offsetX;
 }
 
 void Actor::SetStoryRun(bool fr, double maxAutoRun, Edge * g,

@@ -144,6 +144,7 @@ Sequence::Sequence()
 	state = 0;
 	numStates = 0;
 	stateLength = NULL;
+	barrier = NULL;
 }
 
 Sequence::~Sequence()

@@ -224,6 +224,26 @@ void BasicBossScene::EntranceUpdate()
 			SetEntranceRun();
 		}
 	}
+	else if (entranceType == STARTMAP_RUN)
+	{
+		if (frame == 0)
+		{
+
+
+			if (barrier != NULL)
+			{
+				barrier->Trigger();
+			}
+
+			sess->hud->Hide();
+			player->Wait();
+			sess->cam.SetManual(true);
+			//		sess->RemoveAllEnemies();
+			sess->Fade(true, fadeFrames, Color::Black);
+			SetEntranceShot();
+			SetEntranceRun();
+		}
+	}
 	else if (entranceType == APPEAR)
 	{
 		//owner->hud->Hide(fadeFrames);
@@ -255,7 +275,7 @@ void BasicBossScene::ReturnToGame()
 
 bool BasicBossScene::IsAutoRunState()
 {
-	if (entranceType == RUN)
+	if (entranceType == RUN || entranceType == STARTMAP_RUN)
 	{
 		return state == 0;
 	}

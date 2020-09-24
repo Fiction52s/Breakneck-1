@@ -5,6 +5,7 @@
 #include "Sequence.h"
 #include "GameSession.h"
 #include "PauseMenu.h"
+#include "WarpTransitionSequence.h"
 
 using namespace std;
 using namespace sf;
@@ -19,7 +20,7 @@ Barrier::Barrier(const std::string &p_name, bool p_x, int p_pos, bool hasEdge, B
 	hasWarp = p_hasWarp;
 
 	myBonus = NULL;
-
+	warpSeq = NULL;
 	triggerSeq = NULL;
 
 	double top = sess->mapHeader->topBounds;
@@ -118,6 +119,12 @@ void Barrier::SetScene()
 
 			game->currSession = game;
 			game->pauseMenu->owner = game;
+
+			warpSeq = new WarpTransitionSequence;
+			warpSeq->Init();
+
+			warpSeq->bonus = myBonus;
+			warpSeq->barrier = this;
 		}
 	}
 }
@@ -134,6 +141,9 @@ Barrier::~Barrier()
 
 	if (myBonus != NULL)
 		delete myBonus;
+
+	if (warpSeq != NULL)
+		delete warpSeq;
 }
 
 void Barrier::Reset()
@@ -151,6 +161,13 @@ void Barrier::Reset()
 
 	if (triggerSeq != NULL)
 		triggerSeq->Reset();
+}
+
+void Barrier::SetWarpSeq()
+{
+	assert(warpSeq != NULL);
+	warpSeq->Reset();
+	sess->SetActiveSequence(warpSeq);
 }
 
 void Barrier::DeactivateEdge()
@@ -274,23 +291,8 @@ void Barrier::SetPositive()
 
 void Barrier::Trigger()
 {
-	if (triggerSeq != NULL)
-	{
-		sess->SetActiveSequence(triggerSeq);
-	}
-	else if (myBonus != NULL)
-	{
-		GameSession *game = GameSession::GetSession();
-		if (game != NULL)
-		{
-			game->SetBonus(myBonus, V2d( 0, 0 ));
-		}
-	}
-	else
-	{
-		edgeActive = false;
-		triggered = true;
-	}
+	edgeActive = false;
+	triggered = true;
 }
 
 double Barrier::GetPlayerDist()

@@ -4747,7 +4747,31 @@ void Session::UpdateBarriers()
 
 void Session::TriggerBarrier(Barrier *b)
 {
-	b->Trigger();
+	if (b->triggerSeq != NULL)
+	{
+		SetActiveSequence(b->triggerSeq);
+	}
+	else if (b->myBonus != NULL)
+	{
+		if (b->warpSeq != NULL)
+		{
+			b->SetWarpSeq();
+		}
+		else
+		{
+			//curent never happens
+			GameSession *game = GameSession::GetSession();
+			if (game != NULL)
+			{
+				game->SetBonus(b->myBonus, V2d(0, 0));
+			}
+		}
+	}
+	else
+	{
+		b->Trigger();
+	}
+	
 
 	/*if (b->triggerSeq != NULL)
 	{

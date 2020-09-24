@@ -12,7 +12,7 @@ using namespace sf;
 using namespace std;
 
 CoyoteSleepScene::CoyoteSleepScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 
 }
@@ -153,7 +153,10 @@ void CoyoteSleepScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
+			//if pre scene player needs to be unfrozen atm.
 
+			//might make this default
+			sess->FreezePlayerAndEnemies(false);
 		}
 		EntranceUpdate();
 		break;

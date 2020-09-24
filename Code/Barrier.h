@@ -9,6 +9,7 @@ struct BarrierCallback;
 struct Edge;
 struct Sequence;
 struct Session;
+struct WarpTransitionSequence;
 
 struct Barrier
 {
@@ -27,6 +28,7 @@ struct Barrier
 	double GetPlayerDist();
 	void SetScene();
 	int GetCamPos();
+	void SetWarpSeq();
 	//void SetSequence( )
 	std::string name;
 	BarrierCallback *callback;
@@ -42,6 +44,7 @@ struct Barrier
 	int extraDistance;
 	int pos;
 	bool hasWarp;
+	WarpTransitionSequence *warpSeq;
 private:
 	
 };

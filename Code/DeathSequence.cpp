@@ -129,7 +129,7 @@ void DeathSequence::UpdateState()
 			}
 	}
 	}
-	++frame;
+	//++frame;
 
 	//emitter->Update();
 }

@@ -269,6 +269,7 @@ struct BasicBossScene : Sequence
 	{
 		RUN,
 		APPEAR,
+		STARTMAP_RUN,
 	};
 
 	
