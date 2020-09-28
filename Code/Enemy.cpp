@@ -314,6 +314,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_COYOTEBOSS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_BIRDBOSS:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	default:
 		return false;
 	}

@@ -50,6 +50,18 @@ BirdShurikenPool::~BirdShurikenPool()
 
 void BirdShurikenPool::Reset()
 {
+	BirdShuriken *shur = NULL;
+	for (int i = 0; i < numShurs; ++i)
+	{
+		shur = shurVec[i];
+		if (shur->spawned)
+		{
+			shur->Die();
+		}
+
+		shur->Reset();
+	}
+
 	for (int i = 0; i < numShurs; ++i)
 	{
 		shurVec[i]->Reset();

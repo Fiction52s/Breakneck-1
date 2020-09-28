@@ -69,7 +69,7 @@ struct Bird : Enemy
 	int framesToArrive;
 
 	Bird(ActorParams *ap);
-
+	~Bird();
 	void Setup();
 	void Wait();
 	void ProcessHit();

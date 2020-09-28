@@ -42,7 +42,7 @@ void CoyoteBulletPool::Reset()
 		cb = bulletVec[i];
 		if (cb->spawned)
 		{
-			cb->Kill();
+			cb->Die();
 		}
 
 		cb->Reset();
@@ -115,7 +115,7 @@ void CoyoteBullet::ResetEnemy()
 	UpdateHitboxes();
 }
 
-void CoyoteBullet::Kill()
+void CoyoteBullet::Die()
 {
 	ClearRect(quad);
 	sess->RemoveEnemy(this);

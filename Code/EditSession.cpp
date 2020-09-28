@@ -240,6 +240,26 @@ void EditSession::DeselectObjectType(ISelectable::ISelectableType sType)
 	}
 }
 
+void EditSession::DeselectActorType(const std::string &typeName)
+{
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end();)
+	{
+		if ((*it)->selectableType == ISelectable::ACTOR)
+		{
+			ActorPtr a = (*it)->GetAsActor();
+			if (a->GetTypeName() == typeName )
+			{
+				(*it)->SetSelected(false);
+				it = selectedBrush->objects.erase(it);
+			}
+		}
+		else
+		{
+			++it;
+		}
+	}
+}
+
 bool EditSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *pTemp;
@@ -935,28 +955,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	for (auto it = groups.begin(); it != groups.end(); ++it)
-	{
-		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
-		{
-			currEnemy = (*enit)->myEnemy;
-			if (currEnemy != NULL)
-			{
-				currEnemy->Setup();
-				
-			}
-		}
-	}
-
-	for (auto it = rails.begin(); it != rails.end(); ++it)
-	{
-		if ((*it)->enemyChain != NULL)
-		{
-			//(*it)->enemyChain->Reset();
-			(*it)->enemyChain->Setup();
-			
-		}
-	}
+	
 
 	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -1061,6 +1060,29 @@ void EditSession::TestPlayerMode()
 				Goal *g = (Goal*)((*enit)->myEnemy);
 				g->SetMapGoalPos();
 			}
+		}
+	}
+
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				currEnemy->Setup();
+
+			}
+		}
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain != NULL)
+		{
+			//(*it)->enemyChain->Reset();
+			(*it)->enemyChain->Setup();
+
 		}
 	}
 
@@ -1711,6 +1733,8 @@ void EditSession::Draw()
 		}
 		else if (gameState == FROZEN)
 		{
+			preScreenTex->clear();
+			DrawGame(preScreenTex);
 			//redraws the previous frame
 		}
 		

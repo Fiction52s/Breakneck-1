@@ -5,6 +5,7 @@
 
 //struct BirdBoss;
 struct Bird;
+struct GroundedWarper;
 
 struct BirdPreFightScene : BasicBossScene
 {
@@ -52,6 +53,9 @@ struct BirdPostFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	Bird *bird;
+	GroundedWarper *warper;
 };
 
 struct BirdCrawlerAllianceScene : BasicBossScene

@@ -8,6 +8,7 @@
 #include "HUD.h"
 //#include "Enemy_BirdBoss.h"
 #include "Enemy_Bird.h"
+#include "GroundedWarper.h"
 
 using namespace sf;
 using namespace std;
@@ -137,6 +138,8 @@ void BirdPreFightScene::UpdateState()
 BirdPostFightScene::BirdPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	bird = NULL;
+	warper = sess->GetWarper("Bosses/greyw1");
 }
 
 void BirdPostFightScene::SetupStates()
@@ -151,6 +154,7 @@ void BirdPostFightScene::SetupStates()
 
 void BirdPostFightScene::ReturnToGame()
 {
+	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
@@ -163,6 +167,9 @@ void BirdPostFightScene::AddShots()
 
 void BirdPostFightScene::AddPoints()
 {
+	AddStopPoint();
+	//AddStartAndStopPoints();
+
 	//AddPoint("kinstand0");
 }
 
@@ -192,11 +199,19 @@ void BirdPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
+				sess->SetGameSessionState(GameSession::FROZEN);
 				sess->hud->Hide(fadeFrames);
 				//player->Wait();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);
+			}
+			else if (frame == 10)
+			{
+				sess->SetGameSessionState(GameSession::RUN);
+				SetPlayerStandPoint("kinstop0", true);
+				SetCameraShot("scenecam");
+				bird->Wait();
 			}
 		}
 	case WAIT:

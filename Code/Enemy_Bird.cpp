@@ -63,13 +63,18 @@ Bird::Bird(ActorParams *ap)
 
 	LoadParams();
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
+}
+
+Bird::~Bird()
+{
+	delete postFightScene;
 }
 
 void Bird::LoadParams()
@@ -135,6 +140,7 @@ void Bird::Setup()
 {
 	Enemy::Setup();
 	postFightScene = new BirdPostFightScene;
+	postFightScene->bird = this;
 	postFightScene->Init();
 }
 

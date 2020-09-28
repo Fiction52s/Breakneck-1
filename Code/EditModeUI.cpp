@@ -175,6 +175,9 @@ void EditModeUI::CreateLayerPanel()
 	layerMap[LAYER_IMAGE] = "images";
 	layerMap[LAYER_TERRAIN] = "terrain";
 	layerMap[LAYER_WATER] = "water";
+	layerMap[LAYER_CAMERA] = "camera";
+	layerMap[LAYER_POI] = "poi";
+
 
 	terrainEditLayerMap[TERRAINLAYER_NORMAL] = LAYER_TERRAIN;
 	terrainEditLayerMap[TERRAINLAYER_WATER] = LAYER_WATER;
@@ -197,7 +200,7 @@ void EditModeUI::CreateLayerPanel()
 	float floatStart = 0;
 	int numSpaces = (maxFloatValue - floatStep) / floatStep + 1;
 	//Slider *sl = layerPanel->AddSlider("testslider", Vector2i(10, 400), 200, 0, numSpaces, 50);
-	Slider *sl = layerPanel->AddFloatSlider("testslider", Vector2i(10, 400), 200, 0, 5.0, 2.5, .25);
+	//Slider *sl = layerPanel->AddFloatSlider("testslider", Vector2i(10, 400), 200, 0, 5.0, 2.5, .25);
 	//sl->SetDecimalLabeling(floatStart, floatStep);
 
 	int startY = 60 + 100;
@@ -209,6 +212,8 @@ void EditModeUI::CreateLayerPanel()
 	AddLayerToPanel(layerMap[LAYER_IMAGE], 1, startY);
 	AddLayerToPanel(layerMap[LAYER_TERRAIN], 2, startY);
 	AddLayerToPanel(layerMap[LAYER_WATER], 3, startY);
+	AddLayerToPanel(layerMap[LAYER_CAMERA], 4, startY);
+	AddLayerToPanel(layerMap[LAYER_POI], 5, startY);
 
 
 	layerPanel->checkBoxes[GetLayerShowName(LAYER_ACTOR)]->SetLockedStatus(true, true);
@@ -396,12 +401,22 @@ void EditModeUI::UpdateLayerShow(int layer, bool show)
 	}
 	else
 	{
-		switch (layer)
+		UpdateLayerLock(layer, true);
+		/*switch (layer)
 		{
 		case LAYER_ACTOR:
 			edit->DeselectObjectType(ISelectable::ACTOR);
 			break;
+		case LAYER_CAMERA:
+		{
+			edit->DeselectActorType("camerashot");
+			break;
 		}
+		case LAYER_POI:
+			edit->DeselectActorType("poi");
+			break;
+			
+		}*/
 	}
 
 
@@ -416,6 +431,15 @@ void EditModeUI::UpdateLayerLock(int layer, bool lock)
 		case LAYER_ACTOR:
 			edit->DeselectObjectType(ISelectable::ACTOR);
 			break;
+		case LAYER_CAMERA:
+		{
+			edit->DeselectActorType("camerashot");
+			break;
+		}
+		case LAYER_POI:
+			edit->DeselectActorType("poi");
+			break;
+
 		}
 	}
 	else

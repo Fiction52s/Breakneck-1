@@ -236,7 +236,7 @@ void Session::AddGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddExtraEnemy("camerashot", NULL, SetParamsType<CameraShotParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1,
-		GetTileset("Enemies/jayshield_128x128.png", 128, 128));
+		GetTileset("Editor/camera_128x128.png", 128, 128));
 
 	AddExtraEnemy("key", NULL, SetParamsType<KeyParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, false, false, 1, GetSizedTileset("Enemies/bouncefloater_128x128.png"));
@@ -5882,9 +5882,17 @@ bool Session::FrozenGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)
 	{
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
+
 		UpdateControllers();
 
 		ActiveSequenceUpdate();
+
+		fader->Update();
+		swiper->Update();
 
 		if (gameState != FROZEN)
 		{

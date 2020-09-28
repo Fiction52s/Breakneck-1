@@ -87,6 +87,8 @@ enum EditLayer : int
 	LAYER_IMAGE,
 	LAYER_TERRAIN,
 	LAYER_WATER,
+	LAYER_CAMERA,
+	LAYER_POI,
 };
 
 struct EditSession : GUIHandler, Session
@@ -437,6 +439,7 @@ struct EditSession : GUIHandler, Session
 	void SelectObject(SelectPtr sel);
 	void DeselectObject(SelectPtr sel);
 	void DeselectObjectType(ISelectable::ISelectableType sType);
+	void DeselectActorType(const std::string &typeName);
 	void ChooseFileOpen(FileChooser *fc,
 		const std::string &fileName);
 	void ChooseFileSave(FileChooser *fc,
