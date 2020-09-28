@@ -61,6 +61,8 @@ Bird::Bird(ActorParams *ap)
 	hitboxInfo->gravMultiplier = .5;
 	hitboxInfo->invincibleFrames = 15;*/
 
+	postFightScene = NULL;
+
 	LoadParams();
 
 	BasicCircleHurtBodySetup(16);
@@ -74,7 +76,10 @@ Bird::Bird(ActorParams *ap)
 
 Bird::~Bird()
 {
-	delete postFightScene;
+	if (postFightScene != NULL)
+	{
+		delete postFightScene;
+	}
 }
 
 void Bird::LoadParams()
