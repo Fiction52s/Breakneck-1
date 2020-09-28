@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Bird.h"
 #include "Actor.h"
+#include "SequenceW2.h"
 
 using namespace std;
 using namespace sf;
@@ -111,9 +112,9 @@ void Bird::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	action = WAIT;
-	SetHitboxes(NULL);
-	waitFrames = 10;
+	StartFight();
+
+	
 
 	//action = PUNCH;
 	//SetHitboxInfo(PUNCH);
@@ -127,9 +128,14 @@ void Bird::ResetEnemy()
 
 	
 
-	frame = 0;
-
 	UpdateSprite();
+}
+
+void Bird::Setup()
+{
+	Enemy::Setup();
+	postFightScene = new BirdPostFightScene;
+	postFightScene->Init();
 }
 
 void Bird::SetHitboxInfo(int a)
@@ -229,6 +235,29 @@ void Bird::UpdatePreFrameCalculations()
 	}
 }
 
+void Bird::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	shurPool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+//	facingRight = false;
+	enemyMover.Reset();
+	HurtboxesOff();
+	HitboxesOff();
+}
+
+void Bird::StartFight()
+{
+	action = WAIT;
+	//DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+	frame = 0;
+	SetHitboxes(NULL);
+	waitFrames = 10;
+}
+
 void Bird::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -243,6 +272,8 @@ void Bird::ProcessState()
 			break;
 		case KICK:
 			frame = 0;
+			break;
+		case SEQ_WAIT:
 			break;
 		}
 	}
@@ -340,6 +371,38 @@ void Bird::UpdateEnemyPhysics()
 	{
 		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
 		currPosInfo = enemyMover.currPosInfo;
+	}
+}
+
+void Bird::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		if (numHealth == 1)
+		{
+			postFightScene->Reset();
+			sess->SetActiveSequence(postFightScene);
+		}
+
+		receivedHit = NULL;
 	}
 }
 

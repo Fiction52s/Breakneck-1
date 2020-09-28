@@ -26,10 +26,14 @@ struct CoyoteSleepScene : BasicBossScene
 	void SetEntranceShot();
 };
 
+struct Coyote;
+struct GroundedWarper;
+
 struct CoyotePreFightScene : BasicBossScene
 {
 	enum State
 	{
+		ENTRANCE,
 		COYOTECONV,
 		COYOTEFACES,
 		Count
@@ -45,6 +49,10 @@ struct CoyotePreFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+	
+
+	Coyote *coy;
+
 };
 
 struct CoyotePostFightScene : BasicBossScene
@@ -59,6 +67,9 @@ struct CoyotePostFightScene : BasicBossScene
 		COYOTELEAVE,
 		Count
 	};
+
+	Coyote *coy;
+	GroundedWarper *warper;
 
 	CoyotePostFightScene();
 	void SetupStates();

@@ -48,8 +48,12 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 	actionLength[DISAPPEAR] = 60;
 	animFactor[DISAPPEAR] = 1;
 
+	actionLength[DEACTIVATED] = 1;
+	animFactor[DEACTIVATED] = 1;
+
 	GroundedWarperParams *gwParams = (GroundedWarperParams*)ap;
 
+	startActivated = gwParams->startActivated;
 	bonusName = gwParams->GetName();
 
 	ts = sess->GetSizedTileset("Enemies/bouncefloater_128x128.png");
@@ -100,14 +104,31 @@ void GroundedWarper::ResetEnemy()
 
 	facingRight = true;
 
+	if (startActivated)
+	{
+		Activate();
+	}
+	else
+	{
+		Deactivate();
+	}
+	
+
+	UpdateSprite();
+}
+
+void GroundedWarper::Deactivate()
+{
+	action = DEACTIVATED;
+	frame = 0;
+	HitboxesOff();
+}
+
+void GroundedWarper::Activate()
+{
 	action = ACTIVE;
 	frame = 0;
 	DefaultHitboxesOn();
-	//DefaultHurtboxesOn();
-
-	frame = 0;
-
-	UpdateSprite();
 }
 
 void GroundedWarper::ProcessState()
@@ -123,7 +144,7 @@ void GroundedWarper::ProcessState()
 			action = ACTIVE;
 			break;
 		case DISAPPEAR:
-			action = HIDDEN;
+			action = DEACTIVATED;
 		}
 	}
 }
@@ -139,6 +160,15 @@ void GroundedWarper::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+
+	if (action == ACTIVE)
+	{
+		sprite.setColor(Color::Green);
+	}
+	else
+	{
+		sprite.setColor(Color::Red);
+	}
 }
 
 void GroundedWarper::EnemyDraw(sf::RenderTarget *target)

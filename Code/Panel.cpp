@@ -323,7 +323,10 @@ bool Panel::MouseUpdate()
 		{
 			if (MOUSE.IsMouseLeftClicked())
 			{
-				handler->PanelCallback(this, "leftclickoffpopup");
+				if (!IsDropActive() && !IsSlideActive())
+				{
+					handler->PanelCallback(this, "leftclickoffpopup");
+				}
 			}
 
 		}

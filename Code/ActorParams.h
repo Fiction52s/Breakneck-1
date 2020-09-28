@@ -239,6 +239,7 @@ struct GroundedWarperParams : ActorParams
 	const std::string &GetName();
 	void SetText(const std::string &n);
 
+	bool startActivated;
 	int nameIndex;
 	sf::Text nameText;
 	std::string name; //for gamesession

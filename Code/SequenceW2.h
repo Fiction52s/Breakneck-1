@@ -3,7 +3,8 @@
 
 #include "Sequence.h"
 
-struct BirdBoss;
+//struct BirdBoss;
+struct Bird;
 
 struct BirdPreFightScene : BasicBossScene
 {
@@ -28,7 +29,7 @@ struct BirdPreFightScene : BasicBossScene
 	void AddGroups();
 	void UpdateState();
 
-	BirdBoss *bird;
+	Bird *bird;
 };
 
 struct BirdPostFightScene : BasicBossScene

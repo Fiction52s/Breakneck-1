@@ -1418,6 +1418,7 @@ GroundedWarperParams::GroundedWarperParams(ActorType *at, int level)
 	PlaceAerial(Vector2i(0, 0));
 	nameIndex = type->GetSelectedSpecialDropIndex();
 
+	startActivated = true;
 	SetText(type->GetSelectedSpecialDropStr());
 }
 
@@ -1450,6 +1451,8 @@ GroundedWarperParams::GroundedWarperParams(ActorType *at,
 	string n;
 	is >> n;
 
+	LoadBool(is, startActivated);
+
 	nameIndex = type->GetSpecialOptionsIndex(n);
 
 	if (nameIndex >= 0)
@@ -1461,6 +1464,8 @@ GroundedWarperParams::GroundedWarperParams(ActorType *at,
 	{
 		name = n;
 	}
+
+	
 }
 
 void GroundedWarperParams::Init()
@@ -1474,6 +1479,7 @@ void GroundedWarperParams::Init()
 void GroundedWarperParams::WriteParamFile(std::ofstream &of)
 {
 	of << GetName() << endl;
+	WriteBool(of, startActivated);
 }
 
 void GroundedWarperParams::SetParams()
@@ -1481,6 +1487,10 @@ void GroundedWarperParams::SetParams()
 	Panel *p = type->panel;
 	nameIndex = type->GetSelectedSpecialDropIndex();
 	SetText(type->GetSelectedSpecialDropStr());
+
+	startActivated = p->checkBoxes["startactivated"]->checked;
+
+	
 }
 
 void GroundedWarperParams::SetPanelInfo()
@@ -1488,6 +1498,8 @@ void GroundedWarperParams::SetPanelInfo()
 	Panel *p = type->panel;
 
 	type->SetSpecialDropIndex(nameIndex);
+
+	p->checkBoxes["startactivated"]->checked = startActivated;
 }
 
 ActorParams *GroundedWarperParams::Copy()

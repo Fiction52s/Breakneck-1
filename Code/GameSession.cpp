@@ -430,6 +430,12 @@ void GameSession::DrawSceneToPostProcess(sf::RenderTexture *tex)
 	tex->display();
 }
 
+void GameSession::QuitGame()
+{
+	quit = true;
+	returnVal = resType;
+}
+
 bool GameSession::RunPreUpdate()
 {
 	/*if (IsKeyPressed(sf::Keyboard::Y))

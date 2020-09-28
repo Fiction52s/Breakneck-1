@@ -520,7 +520,7 @@ struct GameSession : RayCastHandler, Session
 	void DrawActiveEnvPlants();
 
 	
-	
+	void QuitGame();
 	void DrawRails(sf::RenderTarget *target);
 	void DrawReplayGhosts(sf::RenderTarget *target);
 	void UpdateDebugModifiers();

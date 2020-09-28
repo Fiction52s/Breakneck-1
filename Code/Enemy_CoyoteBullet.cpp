@@ -36,9 +36,16 @@ CoyoteBulletPool::~CoyoteBulletPool()
 
 void CoyoteBulletPool::Reset()
 {
+	CoyoteBullet *cb = NULL;
 	for (int i = 0; i < numBullets; ++i)
 	{
-		bulletVec[i]->Reset();
+		cb = bulletVec[i];
+		if (cb->spawned)
+		{
+			cb->Kill();
+		}
+
+		cb->Reset();
 	}
 }
 
@@ -106,6 +113,14 @@ void CoyoteBullet::ResetEnemy()
 	DefaultHitboxesOn();
 
 	UpdateHitboxes();
+}
+
+void CoyoteBullet::Kill()
+{
+	ClearRect(quad);
+	sess->RemoveEnemy(this);
+	spawned = false;
+	dead = true;
 }
 
 void CoyoteBullet::SetLevel(int lev)

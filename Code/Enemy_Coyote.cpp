@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Coyote.h"
 #include "Actor.h"
+#include "SequenceW3.h"
 
 using namespace std;
 using namespace sf;
@@ -36,8 +37,11 @@ Coyote::Coyote(ActorParams *ap)
 
 	nodeAStr = "A";
 
+	//hitboxInfo = new HitboxInfo;
+
+	postFightScene = NULL;
+
 	hitboxInfo = new HitboxInfo;
-	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
@@ -46,17 +50,33 @@ Coyote::Coyote(ActorParams *ap)
 	hitboxInfo->knockback = 50;
 	hitboxInfo->kbDir = normalize(V2d(1, -2));
 	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
+	hitboxInfo->invincibleFrames = 15;
 
 	LoadParams();
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
+}
+
+Coyote::~Coyote()
+{
+	if (postFightScene != NULL)
+	{
+		delete postFightScene;
+	}
+}
+
+void Coyote::Setup()
+{
+	Enemy::Setup();
+	postFightScene = new CoyotePostFightScene;
+	postFightScene->coy = this;
+	postFightScene->Init();
 }
 
 void Coyote::LoadParams()
@@ -105,7 +125,8 @@ void Coyote::ResetEnemy()
 
 	//action = PUNCH;
 	//SetHitboxInfo(PUNCH);
-	//DefaultHitboxesOn();
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	hitPlayer = false;
 	comboMoveFrames = 0;
@@ -118,6 +139,51 @@ void Coyote::ResetEnemy()
 	frame = 0;
 
 	UpdateSprite();
+}
+
+void Coyote::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		if (numHealth == 1)
+		{
+			postFightScene->Reset();
+			sess->SetActiveSequence(postFightScene);
+		}
+
+		receivedHit = NULL;
+	}
+}
+
+void Coyote::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	stopStartPool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+	facingRight = false;
+	enemyMover.Reset();
+	HurtboxesOff();
+	HitboxesOff();
 }
 
 void Coyote::SetHitboxInfo(int a)
@@ -157,6 +223,9 @@ void Coyote::DirectKill()
 
 void Coyote::FrameIncrement()
 {
+	if (action == SEQ_WAIT)
+		return;
+
 	++fireCounter;
 
 	if (comboMoveFrames > 0)
@@ -217,12 +286,23 @@ void Coyote::UpdatePreFrameCalculations()
 	}
 }
 
+void Coyote::StartFight()
+{
+	action = WAIT;
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+	frame = 0;
+}
+
 void Coyote::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
+		case SEQ_WAIT:
+			frame = 0;
+			break;
 		case COMBOMOVE:
 			frame = 0;
 			break;

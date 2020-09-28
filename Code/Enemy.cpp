@@ -311,6 +311,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_DIMENSIONEXIT:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
+	case EnemyType::EN_COYOTEBOSS:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	default:
 		return false;
 	}

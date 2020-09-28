@@ -9,10 +9,13 @@
 #include "PlayerComboer.h"
 #include "Enemy_CoyoteBullet.h"
 
+struct CoyotePostFightScene;
+
 struct Coyote : Enemy
 {
 	enum Action
 	{
+		SEQ_WAIT,
 		MOVE,
 		WAIT,
 		COMBOMOVE,
@@ -24,7 +27,12 @@ struct Coyote : Enemy
 		int fireCounter;
 	};
 
+
+	CoyotePostFightScene *postFightScene;
+
 	Tileset *ts_move;
+
+
 
 	int moveFrames;
 	int waitFrames;
@@ -35,6 +43,8 @@ struct Coyote : Enemy
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
+
+
 
 	int fireCounter;
 
@@ -56,9 +66,13 @@ struct Coyote : Enemy
 	int framesToArrive;
 
 	Coyote(ActorParams *ap);
-
+	~Coyote();
 	void LoadParams();
+	void ProcessHit();
 	int GetNumStoredBytes();
+	void Setup();
+	void StartFight();
+	void Wait();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();

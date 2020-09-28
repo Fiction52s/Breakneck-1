@@ -13,7 +13,7 @@ struct GroundedWarper : Enemy
 		ACTIVE,
 		APPEAR,
 		DISAPPEAR,
-		HIDDEN,
+		DEACTIVATED,
 		A_Count
 	};
 
@@ -21,8 +21,11 @@ struct GroundedWarper : Enemy
 	void Setup();
 	GameSession *myBonus;
 	std::string bonusName;
+	bool startActivated;
 	GroundedWarper(ActorParams *ap);
 	~GroundedWarper();
+	void Deactivate();
+	void Activate();
 	void ProcessState();
 	void HandleHitAndSurvive();
 

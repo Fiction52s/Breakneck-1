@@ -6,13 +6,14 @@
 #include "MusicPlayer.h"
 #include "ImageText.h"
 #include "HUD.h"
-#include "Enemy_BirdBoss.h"
+//#include "Enemy_BirdBoss.h"
+#include "Enemy_Bird.h"
 
 using namespace sf;
 using namespace std;
 
 BirdPreFightScene::BirdPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 	
 }
@@ -27,10 +28,7 @@ void BirdPreFightScene::SetupStates()
 	stateLength[BIRDFALL] = 60;
 	stateLength[BIRDCONV] = -1;
 
-	BirdPostFightScene *scene = new BirdPostFightScene;
-	scene->Init();
-	nextSeq = scene;
-
+	bird = (Bird*)sess->GetEnemy(EnemyType::EN_BIRDBOSS);
 
 }
 
@@ -97,7 +95,11 @@ void BirdPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->FreezePlayerAndEnemies(false);
+		}
+		else if (frame == 1)
+		{
+			bird->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -125,6 +127,7 @@ void BirdPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			bird->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;

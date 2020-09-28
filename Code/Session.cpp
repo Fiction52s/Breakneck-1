@@ -4812,11 +4812,15 @@ void Session::CleanupCameraShots()
 void Session::AddCameraShot(CameraShotParams *csp)
 {
 	const std::string &cName = csp->GetName();
-	CameraShot *shot = new CameraShot(csp->GetName(), csp->GetFloatPos(), csp->zoom);
+	
 	if (cameraShotMap.count(cName) > 0)
 	{
-		assert(false);
+		//already loaded by another sequence
+		return;
+		//assert(false);
 	}
+
+	CameraShot *shot = new CameraShot(csp->GetName(), csp->GetFloatPos(), csp->zoom);
 
 	cameraShotMap[cName] = shot;
 }
@@ -6443,7 +6447,11 @@ void Session::EndLevel()
 	{
 		if (IsSessTypeGame())
 		{
-			goalDestroyed = true;
+			GameSession *game = GameSession::GetSession();
+			game->QuitGame();
+			/*quit = true;
+			returnVal = resType;*/
+			//goalDestroyed = true;
 		}
 		else
 		{
@@ -6548,4 +6556,33 @@ void Session::RevertSimulatedPlayer(int index)
 	assert(p != NULL);
 
 	p->PopulateFromState(playerSimState);
+}
+
+Enemy * Session::GetEnemy(int enType)
+{
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		if ((*it)->type == enType)
+		{
+			return (*it);
+		}
+	}
+	return NULL;
+}
+
+GroundedWarper *Session::GetWarper(const std::string levelWarp)
+{
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		if ((*it)->type == EN_GROUNDEDWARPER)
+		{
+			GroundedWarper *gw = (GroundedWarper*)(*it);
+			if (levelWarp == gw->bonusName)
+			{
+				return gw;
+			}
+		}
+	}
+
+	return NULL;
 }

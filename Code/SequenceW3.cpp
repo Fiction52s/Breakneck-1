@@ -7,6 +7,8 @@
 #include "ImageText.h"
 #include "HUD.h"
 #include "ScoreDisplay.h"
+#include "Enemy_Coyote.h"
+#include "GroundedWarper.h"
 
 using namespace sf;
 using namespace std;
@@ -182,7 +184,7 @@ void CoyoteSleepScene::SetEntranceShot()
 }
 
 CoyotePreFightScene::CoyotePreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 	SetEntranceIndex(0); //change this to 1 if its the 2nd one in a level again.
 }
@@ -191,14 +193,21 @@ void CoyotePreFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	//stateLength[ENTRANCE] = -1;
+	stateLength[ENTRANCE] = -1;
 	//stateLength[WAIT] = 1;
 	stateLength[COYOTECONV] = -1;
 	stateLength[COYOTEFACES] = -1;
 
-	CoyotePostFightScene *scene = new CoyotePostFightScene;
-	scene->Init();
-	nextSeq = scene;
+	//CoyotePostFightScene *scene = new CoyotePostFightScene;
+	//scene->Init();
+	//nextSeq = scene;
+
+	//attempt to get coy. will work for prelevel scene
+	coy = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
+	if (coy != NULL)
+	{
+
+	}
 }
 
 void CoyotePreFightScene::AddShots()
@@ -254,14 +263,23 @@ void CoyotePreFightScene::UpdateState()
 	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
-	/*case ENTRANCE:
+	case ENTRANCE:
 		if (frame == 0)
 		{
+			sess->FreezePlayerAndEnemies(false);
 
+			/*if (coy == NULL)
+			{
+				coy = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
+				assert(coy != NULL);
+			}*/
+		}
+		else if (frame == 1)
+		{
+			coy->Wait();
 		}
 		EntranceUpdate();
-		break;*/
-	
+		break;
 	case COYOTECONV:
 		ConvUpdate();
 		break;
@@ -281,6 +299,7 @@ void CoyotePreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
+			coy->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -291,6 +310,10 @@ void CoyotePreFightScene::UpdateState()
 CoyotePostFightScene::CoyotePostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	coy = NULL;//set by coyote when he makes this scene
+
+	warper = sess->GetWarper("Story/coyotestory2");
+	//assert(warper != NULL);
 }
 
 void CoyotePostFightScene::SetupStates()
@@ -306,6 +329,7 @@ void CoyotePostFightScene::SetupStates()
 
 void CoyotePostFightScene::ReturnToGame()
 {
+	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 	BasicBossScene::ReturnToGame();
@@ -313,12 +337,13 @@ void CoyotePostFightScene::ReturnToGame()
 
 void CoyotePostFightScene::AddShots()
 {
-	AddShot("convcam");
+	//AddShot("convcam");
+	AddShot("scenecam");
 }
 
 void CoyotePostFightScene::AddPoints()
 {
-
+	AddStopPoint();
 }
 
 void CoyotePostFightScene::AddFlashes()
@@ -347,11 +372,21 @@ void CoyotePostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
+				
+				sess->SetGameSessionState(GameSession::FROZEN);
 				sess->hud->Hide(fadeFrames);
 				//player->Wait();
 				sess->cam.SetManual(true);
 				MainMenu *mm = sess->mainMenu;
 				sess->CrossFade(10, 0, 60, Color::White);
+			}
+			else if (frame == 10)
+			{
+				sess->SetGameSessionState(GameSession::RUN);
+				SetPlayerStandPoint("kinstop0", true);
+				SetCameraShot("scenecam");
+				coy->Wait();
+				
 			}
 		}
 	case WAIT:
@@ -377,9 +412,9 @@ void CoyotePostFightScene::UpdateState()
 }
 
 CoyoteAndSkeletonScene::CoyoteAndSkeletonScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-	SetEntranceIndex(2);
+	SetEntranceIndex(0);
 }
 
 void CoyoteAndSkeletonScene::SetupStates()
@@ -448,7 +483,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->FreezePlayerAndEnemies(false);
 		}
 		EntranceUpdate();
 		break;

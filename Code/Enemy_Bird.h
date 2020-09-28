@@ -9,6 +9,8 @@
 #include "PlayerComboer.h"
 #include "Enemy_BirdShuriken.h"
 
+struct BirdPostFightScene;
+
 struct Bird : Enemy
 {
 	enum Action
@@ -18,6 +20,7 @@ struct Bird : Enemy
 		KICK,
 		MOVE,
 		WAIT,
+		SEQ_WAIT,
 		A_Count
 	};
 
@@ -29,6 +32,7 @@ struct Bird : Enemy
 	int moveFrames;
 	int waitFrames;
 
+	BirdPostFightScene * postFightScene;
 	
 
 	std::string nodeAStr;
@@ -66,6 +70,10 @@ struct Bird : Enemy
 
 	Bird(ActorParams *ap);
 
+	void Setup();
+	void Wait();
+	void ProcessHit();
+	void StartFight();
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

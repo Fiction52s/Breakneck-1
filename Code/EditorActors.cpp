@@ -235,6 +235,7 @@ Panel *ActorType::CreatePanel()
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
+		p->AddCheckBox("startactivated", Vector2i(0, 0));
 	}
 	else if (name == "extrascene")
 	{

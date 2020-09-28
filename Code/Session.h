@@ -19,6 +19,7 @@
 #include "BitField.h"
 #include "ScoreDisplay.h"
 
+struct GroundedWarper;
 
 struct GGPONonGameState;
 struct SaveGameState;
@@ -740,6 +741,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupGameMode();
 	void ForwardSimulatePlayer(int index, int frames);
 	void RevertSimulatedPlayer(int index);
+	Enemy* GetEnemy(int enType);
+	GroundedWarper *GetWarper(const std::string levelWarp);
 	sf::CircleShape testSimCircle;
 };
 

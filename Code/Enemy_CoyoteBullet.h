@@ -41,6 +41,7 @@ struct CoyoteBullet : Enemy
 
 	CoyoteBullet(sf::Vertex *quad, 
 		CoyoteBulletPool *pool );
+	void Kill();
 	V2d GetThrowDir(V2d &dir);
 	void UpdateEnemyPhysics();
 	void Throw(V2d &pos, V2d &dir);
