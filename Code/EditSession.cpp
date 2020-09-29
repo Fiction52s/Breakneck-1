@@ -1082,7 +1082,6 @@ void EditSession::TestPlayerMode()
 		{
 			//(*it)->enemyChain->Reset();
 			(*it)->enemyChain->Setup();
-
 		}
 	}
 

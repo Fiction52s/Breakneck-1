@@ -312,7 +312,7 @@ CoyotePostFightScene::CoyotePostFightScene()
 {
 	coy = NULL;//set by coyote when he makes this scene
 
-	warper = sess->GetWarper("Story/coyotestory2");
+	warper = sess->GetWarper("FinishedScenes/W3/coyoteandskeleton");
 	//assert(warper != NULL);
 }
 

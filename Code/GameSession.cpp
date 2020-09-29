@@ -354,7 +354,11 @@ int GameSession::TryToActivateBonus()
 			//gameClock.restart();
 			currentTime = gameClock.getElapsedTime().asSeconds();
 
-			if (bonusGame->returnVal == GR_BONUS_RESPAWN)
+			if (bonusGame->returnVal == GR_BONUS_RETURN)
+			{
+				bonusReturnVal = GR_BONUS_RETURN;
+			}
+			else if (bonusGame->returnVal == GR_BONUS_RESPAWN)
 			{
 				if (parentGame != NULL)
 				{
@@ -368,10 +372,10 @@ int GameSession::TryToActivateBonus()
 					bonusReturnVal = GR_BONUS_RESPAWN;
 				}
 			}
-			else if (bonusGame->returnVal == GR_EXITLEVEL)
+			else// if (bonusGame->returnVal == GR_EXITLEVEL)
 			{
 				quit = true;
-				returnVal = GR_EXITLEVEL;
+				returnVal = bonusGame->returnVal;//GR_EXITLEVEL;
 				bonusReturnVal = GR_EXITLEVEL;
 			}
 			//cout << "setting current time to: " << currentTime << "\n";
@@ -3375,6 +3379,7 @@ void GameSession::NextFrameRestartLevel()
 	{
 		parentGame->nextFrameRestart = true;
 		quit = true;
+		returnVal = GR_BONUS_RESPAWN;
 	}
 	else
 	{
@@ -3555,7 +3560,7 @@ void GameSession::RestartLevel()
 	//later don't relock gates in a level unless there is a "level reset"
 	
 
-	inactiveEnemyList = NULL;
+	inactiveEnemyList = NULL;`
 
 	ResetBarriers();
 
@@ -3571,7 +3576,7 @@ void GameSession::RestartLevel()
 
 	gameMode->StartGame();
 	//later can have a setting for this if needed
-	/*if (preLevelScene != NULL)
+	if (preLevelScene != NULL)
 	{
 		preLevelScene->Reset();
 		SetActiveSequence(preLevelScene);
@@ -3579,7 +3584,7 @@ void GameSession::RestartLevel()
 	else
 	{
 		activeSequence = NULL;
-	}*/
+	}
 }
 
 void GameSession::AddGravityGrassToExplodeList(Grass *g)

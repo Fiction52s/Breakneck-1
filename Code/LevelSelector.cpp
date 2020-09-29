@@ -226,11 +226,13 @@ void LevelSelector::LeftClick( bool click, sf::Vector2f mousePos )
 					selectedIndex = testIndex;
 					//cout << "selected index: " << selectedIndex << endl;
 					string indexText = text[selectedIndex].getString().toAnsiString();
+					//string localPathTest = localPaths[selectedIndex];
+					string fullPathTest = fullPaths[selectedIndex];
 					Tileset *&currTS = previewTS[indexText];
 
 					if (text[selectedIndex].getFillColor() == Color::Red)
 					{
-						TreeNode *entry = GetEntryByName(indexText);
+						TreeNode *entry = GetEntryByName(fullPathTest);
 						entry->expanded = !entry->expanded;
 						for (int i = 0; i < numTotalEntries; ++i)
 						{
@@ -466,7 +468,10 @@ void LevelSelector::UpdateMapList( TreeNode *parentNode, const std::string &rela
 				newDir->filePath = p;
 
 				assert(entryMap.count(newDir->name) == 0);
-				entryMap[newDir->name] = newDir;
+				string queryTest = string("Resources/") + newDir->GetLocalPath();
+				
+				entryMap[queryTest] = newDir;
+				//entryMap[newDir->name] = newDir;
 
 				copy(directory_iterator(p), directory_iterator(), back_inserter(v));
 
