@@ -3560,7 +3560,7 @@ void GameSession::RestartLevel()
 	//later don't relock gates in a level unless there is a "level reset"
 	
 
-	inactiveEnemyList = NULL;`
+	inactiveEnemyList = NULL;
 
 	ResetBarriers();
 
