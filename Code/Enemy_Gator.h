@@ -9,6 +9,8 @@
 #include "PlayerComboer.h"
 #include "Enemy_GatorWaterOrb.h"
 
+struct GatorPostFightScene;
+
 struct Gator : Enemy
 {
 	enum Action
@@ -16,6 +18,7 @@ struct Gator : Enemy
 		COMBOMOVE,
 		MOVE,
 		WAIT,
+		SEQ_WAIT,
 		A_Count
 	};
 
@@ -58,8 +61,15 @@ struct Gator : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	GatorPostFightScene *postFightScene;
+
 	Gator(ActorParams *ap);
 
+	~Gator();
+	void Wait();
+	void Setup();
+	void ProcessHit();
+	void StartFight();
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

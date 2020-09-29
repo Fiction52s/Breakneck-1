@@ -37,6 +37,18 @@ GatorWaterOrbPool::~GatorWaterOrbPool()
 
 void GatorWaterOrbPool::Reset()
 {
+	GatorWaterOrb *orb = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		orb = bulletVec[i];
+		if (orb->spawned)
+		{
+			orb->Die();
+		}
+
+		orb->Reset();
+	}
+
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bulletVec[i]->Reset();
@@ -265,6 +277,14 @@ void GatorWaterOrb::EnemyDraw(sf::RenderTarget *target)
 
 void GatorWaterOrb::HandleHitAndSurvive()
 {
+}
+
+void GatorWaterOrb::Die()
+{
+	ClearRect(quad);
+	sess->RemoveEnemy(this);
+	spawned = false;
+	dead = true;
 }
 
 bool GatorWaterOrb::CheckHitPlayer(int index)

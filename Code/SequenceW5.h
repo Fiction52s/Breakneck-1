@@ -47,6 +47,7 @@ struct BirdPostFight2Scene : BasicBossScene
 	void UpdateState();
 };
 
+struct Gator;
 
 struct GatorPreFightScene : BasicBossScene
 {
@@ -68,6 +69,8 @@ struct GatorPreFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	Gator *gator;
 };
 
 struct GatorPostFightScene : BasicBossScene
@@ -92,6 +95,8 @@ struct GatorPostFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	Gator *gator;
 };
 
 struct BirdTigerApproachScene : BasicBossScene

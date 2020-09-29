@@ -60,6 +60,7 @@ struct GatorWaterOrb : Enemy
 	GatorWaterOrb(sf::Vertex *quad,
 		GatorWaterOrbPool *pool);
 	void UpdateEnemyPhysics();
+	void Die();
 	void Throw(V2d &pos, V2d &dir, int orbType );
 	void SetLevel(int lev);
 	void ProcessState();

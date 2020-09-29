@@ -7,6 +7,7 @@
 #include "ImageText.h"
 #include "HUD.h"
 #include "ScoreDisplay.h"
+#include "Enemy_Gator.h"
 
 using namespace std;
 using namespace sf;
@@ -272,9 +273,9 @@ void BirdTigerApproachScene::UpdateState()
 
 
 GatorPreFightScene::GatorPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-
+	gator = NULL;
 }
 
 void GatorPreFightScene::SetupStates()
@@ -285,9 +286,7 @@ void GatorPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[GATORCONV] = -1;
 
-	GatorPostFightScene *scene = new GatorPostFightScene;
-	scene->Init();
-	nextSeq = scene;
+	gator = (Gator*)sess->GetEnemy(EnemyType::EN_GATORBOSS);
 }
 
 void GatorPreFightScene::AddShots()
@@ -332,7 +331,11 @@ void GatorPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->FreezePlayerAndEnemies(false);
+		}
+		else if (frame == 1)
+		{
+			gator->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -340,6 +343,7 @@ void GatorPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			gator->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -349,6 +353,7 @@ void GatorPreFightScene::UpdateState()
 GatorPostFightScene::GatorPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	gator = NULL;
 }
 
 void GatorPostFightScene::SetupStates()
@@ -402,20 +407,21 @@ void GatorPostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				sess->hud->Hide();
-				SetPlayerStandPoint("kinstand0", true);
-				SetCameraShot("gatordeathcam");
-			}
+			sess->SetGameSessionState(GameSession::FROZEN);
+			sess->hud->Hide(10);
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->CrossFade(10, 0, 60, Color::White);
+		}
+		else if (frame == 10)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			//sess->hud->Hide();
+			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("gatordeathcam");
+			gator->Wait();
 		}
 	case WAIT:
 		if (frame == 0)

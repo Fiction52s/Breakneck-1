@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Gator.h"
 #include "Actor.h"
+#include "SequenceW5.h"
 
 using namespace std;
 using namespace sf;
@@ -36,27 +37,44 @@ Gator::Gator(ActorParams *ap)
 
 	nodeAStr = "A";
 
+	postFightScene = NULL;
+
+	//hitboxInfo = new HitboxInfo;
 	hitboxInfo = new HitboxInfo;
-	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 6;
 	hitboxInfo->hitstunFrames = 30;
-	hitboxInfo->knockback = 50;
+	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = normalize(V2d(1, -2));
 	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
+	hitboxInfo->invincibleFrames = 15;
 
 	LoadParams();
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
+}
+
+Gator::~Gator()
+{
+	if (postFightScene != NULL)
+		delete postFightScene;
+}
+
+void Gator::Setup()
+{
+	Enemy::Setup();
+
+	postFightScene = new GatorPostFightScene;
+	postFightScene->gator = this;
+	postFightScene->Init();
 }
 
 void Gator::LoadParams()
@@ -114,6 +132,28 @@ void Gator::ResetEnemy()
 	frame = 0;
 
 	UpdateSprite();
+}
+
+void Gator::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	orbPool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+	enemyMover.Reset();
+	HurtboxesOff();
+	HitboxesOff();
+}
+
+void Gator::StartFight()
+{
+	action = WAIT;
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+	frame = 0;
+	SetHitboxes(NULL);
+	waitFrames = 10;
 }
 
 void Gator::SetHitboxInfo(int a)
@@ -302,6 +342,38 @@ void Gator::ProcessState()
 	}
 
 	hitPlayer = false;
+}
+
+void Gator::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		if (numHealth == 1)
+		{
+			postFightScene->Reset();
+			sess->SetActiveSequence(postFightScene);
+		}
+
+		receivedHit = NULL;
+	}
 }
 
 void Gator::IHitPlayer(int index)
