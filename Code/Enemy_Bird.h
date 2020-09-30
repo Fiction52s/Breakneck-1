@@ -10,6 +10,7 @@
 #include "Enemy_BirdShuriken.h"
 
 struct BirdPostFightScene;
+struct BirdPostFight2Scene;
 
 struct Bird : Enemy
 {
@@ -33,6 +34,7 @@ struct Bird : Enemy
 	int waitFrames;
 
 	BirdPostFightScene * postFightScene;
+	BirdPostFight2Scene *postFightScene2;
 	
 
 	std::string nodeAStr;

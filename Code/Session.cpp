@@ -405,7 +405,7 @@ void Session::AddW1Enemies()
 
 void Session::AddW2Enemies()
 {
-	AddBasicAerialWorldEnemy("bird", 5, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicAerialWorldEnemy("bird", 5, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 2);
 
 	AddBasicGroundWorldEnemy("greengoal", 2, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 	//AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,

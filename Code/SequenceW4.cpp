@@ -7,12 +7,13 @@
 #include "ImageText.h"
 #include "HUD.h"
 #include "ScoreDisplay.h"
+#include "GroundedWarper.h"
 
 using namespace sf;
 using namespace std;
 
 CrawlerPreFight2Scene::CrawlerPreFight2Scene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 }
 
@@ -90,10 +91,6 @@ void CrawlerPreFight2Scene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
-		{
-
-		}
 		EntranceUpdate();
 		break;
 
@@ -113,13 +110,14 @@ void CrawlerPreFight2Scene::UpdateState()
 CrawlerPostFight2Scene::CrawlerPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	warper = sess->GetWarper("Bosses/greyw1");
 }
 
 void CrawlerPostFight2Scene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[CONV] = -1;
 	stateLength[CRAWLERLEAVE] = 30;
@@ -127,6 +125,7 @@ void CrawlerPostFight2Scene::SetupStates()
 
 void CrawlerPostFight2Scene::ReturnToGame()
 {
+	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	BasicBossScene::ReturnToGame();
 }
@@ -138,7 +137,7 @@ void CrawlerPostFight2Scene::AddShots()
 
 void CrawlerPostFight2Scene::AddPoints()
 {
-	AddPoint("kinstand0");
+	AddStopPoint();
 }
 
 void CrawlerPostFight2Scene::AddFlashes()
@@ -163,19 +162,16 @@ void CrawlerPostFight2Scene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide(fadeFrames);
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				SetPlayerStandPoint("kinstand0", true);
-			}
+			StartBasicKillFade();
+		}
+		else if (frame == 10)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstop0", true);
+			SetCameraShot("crawlercam");
+			//bird->Wait();
 		}
 	case WAIT:
 		if (frame == 0)

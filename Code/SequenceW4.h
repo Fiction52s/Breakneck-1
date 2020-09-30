@@ -3,6 +3,7 @@
 
 #include "Sequence.h"
 
+struct GroundedWarper;
 
 struct CrawlerPreFight2Scene : BasicBossScene
 {
@@ -25,6 +26,8 @@ struct CrawlerPreFight2Scene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	
 };
 
 struct CrawlerPostFight2Scene : BasicBossScene
@@ -47,6 +50,8 @@ struct CrawlerPostFight2Scene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	GroundedWarper *warper;
 };
 
 

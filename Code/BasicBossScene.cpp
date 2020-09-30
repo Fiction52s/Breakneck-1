@@ -112,6 +112,7 @@ BasicBossScene::BasicBossScene(
 {
 	entranceType = et;
 	fadeFrames = 60;
+	explosionFadeFrames = 10;
 	entranceIndex = 0;
 }
 
@@ -206,6 +207,7 @@ void BasicBossScene::EntranceUpdate()
 {
 	Actor *player = sess->GetPlayer(0);
 
+	sess->FreezePlayerAndEnemies(false);
 	if (entranceType == RUN)
 	{
 		if (frame == 0)
@@ -320,4 +322,13 @@ bool BasicBossScene::Update()
 void BasicBossScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
 	Sequence::Draw(target, layer);
+}
+
+void BasicBossScene::StartBasicKillFade()
+{
+	sess->SetGameSessionState(GameSession::FROZEN);
+	sess->hud->Hide(explosionFadeFrames);
+	sess->cam.SetManual(true);
+	MainMenu *mm = sess->mainMenu;
+	sess->CrossFade(explosionFadeFrames, 0, fadeFrames, Color::White);
 }

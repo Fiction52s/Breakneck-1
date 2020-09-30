@@ -8,13 +8,15 @@
 #include "HUD.h"
 #include "ScoreDisplay.h"
 #include "Enemy_Gator.h"
+#include "GroundedWarper.h"
+#include "Enemy_Bird.h"
 
 using namespace std;
 using namespace sf;
 
 
 BirdPreFight2Scene::BirdPreFight2Scene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 
 }
@@ -27,9 +29,9 @@ void BirdPreFight2Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[BIRDCONV] = -1;
 
-	BirdPostFight2Scene *scene = new BirdPostFight2Scene;
-	scene->Init();
-	nextSeq = scene;
+	
+
+	bird = (Bird*)sess->GetEnemy(EnemyType::EN_BIRDBOSS);
 }
 
 void BirdPreFight2Scene::AddShots()
@@ -74,7 +76,8 @@ void BirdPreFight2Scene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->AddEnemy(bird);
+			bird->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -82,6 +85,7 @@ void BirdPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			bird->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -91,13 +95,15 @@ void BirdPreFight2Scene::UpdateState()
 BirdPostFight2Scene::BirdPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	bird = NULL;
+	warper = sess->GetWarper("Bosses/greyw1");
 }
 
 void BirdPostFight2Scene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[BIRDCONV] = 1000000;
 	stateLength[BIRDLEAVE] = 30;
@@ -105,6 +111,7 @@ void BirdPostFight2Scene::SetupStates()
 
 void BirdPostFight2Scene::ReturnToGame()
 {
+	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
@@ -142,19 +149,16 @@ void BirdPostFight2Scene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide(fadeFrames);
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				SetPlayerStandPoint("kinstop0", true);
-			}
+			StartBasicKillFade();
+		}
+		else if (frame == explosionFadeFrames)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstop0", true);
+			SetCameraShot("scenecam");
+			bird->Wait();
 		}
 	case WAIT:
 		//EntranceUpdate();
@@ -331,10 +335,7 @@ void GatorPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-			sess->FreezePlayerAndEnemies(false);
-		}
-		else if (frame == 1)
-		{
+			sess->AddEnemy(gator);
 			gator->Wait();
 		}
 		EntranceUpdate();
@@ -409,16 +410,11 @@ void GatorPostFightScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
-			sess->SetGameSessionState(GameSession::FROZEN);
-			sess->hud->Hide(10);
-			sess->cam.SetManual(true);
-			MainMenu *mm = sess->mainMenu;
-			sess->CrossFade(10, 0, 60, Color::White);
+			StartBasicKillFade();
 		}
 		else if (frame == 10)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
-			//sess->hud->Hide();
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("gatordeathcam");
 			gator->Wait();

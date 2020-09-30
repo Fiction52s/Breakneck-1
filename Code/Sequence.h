@@ -276,6 +276,7 @@ struct BasicBossScene : Sequence
 	EntranceType entranceType;
 	int fadeFrames;
 	int entranceIndex;
+	int explosionFadeFrames;
 	
 	virtual bool Update();
 	static BasicBossScene *CreateScene(const std::string &name);
@@ -304,6 +305,8 @@ struct BasicBossScene : Sequence
 		const std::string &n1);
 	void StartEntranceStand(bool fr,
 		const std::string &n);
+	void StartBasicKillFade();
+
 };
 
 struct ShipEnterScene : Sequence

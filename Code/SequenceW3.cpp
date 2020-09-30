@@ -153,13 +153,6 @@ void CoyoteSleepScene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
-		{
-			//if pre scene player needs to be unfrozen atm.
-
-			//might make this default
-			sess->FreezePlayerAndEnemies(false);
-		}
 		EntranceUpdate();
 		break;
 	case COYOTEWAKE:
@@ -266,16 +259,7 @@ void CoyotePreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-			sess->FreezePlayerAndEnemies(false);
-
-			/*if (coy == NULL)
-			{
-				coy = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
-				assert(coy != NULL);
-			}*/
-		}
-		else if (frame == 1)
-		{
+			sess->AddEnemy(coy);
 			coy->Wait();
 		}
 		EntranceUpdate();
@@ -320,7 +304,7 @@ void CoyotePostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[COYOTECONV] = -1;
 	stateLength[NEXUSEXPLODE] = 60;
@@ -372,13 +356,7 @@ void CoyotePostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				
-				sess->SetGameSessionState(GameSession::FROZEN);
-				sess->hud->Hide(fadeFrames);
-				//player->Wait();
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
+				StartBasicKillFade();
 			}
 			else if (frame == 10)
 			{
@@ -481,10 +459,6 @@ void CoyoteAndSkeletonScene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
-		if (frame == 0)
-		{
-			sess->FreezePlayerAndEnemies(false);
-		}
 		EntranceUpdate();
 		break;
 	case SHOWIMAGE:

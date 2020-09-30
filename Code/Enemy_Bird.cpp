@@ -6,6 +6,7 @@
 #include "Enemy_Bird.h"
 #include "Actor.h"
 #include "SequenceW2.h"
+#include "SequenceW5.h"
 
 using namespace std;
 using namespace sf;
@@ -20,12 +21,13 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
 Bird::Bird(ActorParams *ap)
 	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool( this )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
+
+	level = ap->GetLevel();
 
 	targetPlayerIndex = 0;
 
@@ -62,6 +64,7 @@ Bird::Bird(ActorParams *ap)
 	hitboxInfo->invincibleFrames = 15;*/
 
 	postFightScene = NULL;
+	postFightScene2 = NULL;
 
 	LoadParams();
 
@@ -79,6 +82,10 @@ Bird::~Bird()
 	if (postFightScene != NULL)
 	{
 		delete postFightScene;
+	}
+	if (postFightScene2 != NULL)
+	{
+		delete postFightScene2;
 	}
 }
 
@@ -124,12 +131,6 @@ void Bird::ResetEnemy()
 
 	StartFight();
 
-	
-
-	//action = PUNCH;
-	//SetHitboxInfo(PUNCH);
-	//DefaultHitboxesOn();
-
 	hitPlayer = false;
 	comboMoveFrames = 0;
 
@@ -144,9 +145,41 @@ void Bird::ResetEnemy()
 void Bird::Setup()
 {
 	Enemy::Setup();
-	postFightScene = new BirdPostFightScene;
-	postFightScene->bird = this;
-	postFightScene->Init();
+
+	if (level == 1 )
+	{
+		if (postFightScene2 != NULL)
+		{
+			delete postFightScene2;
+			postFightScene2 = NULL;
+		}
+
+		if (postFightScene == NULL)
+		{
+			postFightScene = new BirdPostFightScene;
+			postFightScene->bird = this;
+			postFightScene->Init();
+		}
+
+		
+	}
+	else if (level == 2)
+	{
+		if (postFightScene != NULL)
+		{
+			delete postFightScene;
+			postFightScene = NULL;
+		}
+
+		if (postFightScene2 == NULL)
+		{
+			postFightScene2 = new BirdPostFight2Scene;
+			postFightScene2->bird = this;
+			postFightScene2->Init();
+		}
+		
+	}
+	
 }
 
 void Bird::SetHitboxInfo(int a)
@@ -409,8 +442,16 @@ void Bird::ProcessHit()
 
 		if (numHealth == 1)
 		{
-			postFightScene->Reset();
-			sess->SetActiveSequence(postFightScene);
+			if (level == 1)
+			{
+				postFightScene->Reset();
+				sess->SetActiveSequence(postFightScene);
+			}
+			else if (level == 2)
+			{
+				postFightScene2->Reset();
+				sess->SetActiveSequence(postFightScene2);
+			}
 		}
 
 		receivedHit = NULL;

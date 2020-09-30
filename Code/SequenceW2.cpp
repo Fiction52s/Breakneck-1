@@ -96,10 +96,7 @@ void BirdPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-			sess->FreezePlayerAndEnemies(false);
-		}
-		else if (frame == 1)
-		{
+			sess->AddEnemy(bird);
 			bird->Wait();
 		}
 		EntranceUpdate();
@@ -146,7 +143,7 @@ void BirdPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[BIRDCONV] = 1000000;
 	stateLength[BIRDLEAVE] = 30;
@@ -199,12 +196,7 @@ void BirdPostFightScene::UpdateState()
 		{
 			if (frame == 0)
 			{
-				sess->SetGameSessionState(GameSession::FROZEN);
-				sess->hud->Hide(fadeFrames);
-				//player->Wait();
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
+				StartBasicKillFade();
 			}
 			else if (frame == 10)
 			{

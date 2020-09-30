@@ -3,6 +3,9 @@
 
 #include "Sequence.h"
 
+struct Bird;
+struct GroundedWarper;
+
 struct BirdPreFight2Scene : BasicBossScene
 {
 	enum State
@@ -23,6 +26,8 @@ struct BirdPreFight2Scene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	Bird *bird;
 };
 
 struct BirdPostFight2Scene : BasicBossScene
@@ -45,6 +50,9 @@ struct BirdPostFight2Scene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+
+	Bird *bird;
+	GroundedWarper *warper;
 };
 
 struct Gator;
