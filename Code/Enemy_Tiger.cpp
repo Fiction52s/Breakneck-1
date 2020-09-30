@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Tiger.h"
 #include "Actor.h"
+#include "SequenceW4.h"
 
 using namespace std;
 using namespace sf;
@@ -35,6 +36,10 @@ Tiger::Tiger(ActorParams *ap)
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	sprite.setColor(Color::Red);
 
+	postFightScene = NULL;
+
+	level = ap->GetLevel();
+
 	nodeAStr = "A";
 
 	hitboxInfo = new HitboxInfo;
@@ -51,13 +56,21 @@ Tiger::Tiger(ActorParams *ap)
 
 	LoadParams();
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
+}
+
+Tiger::~Tiger()
+{
+	if (postFightScene != NULL)
+	{
+		delete postFightScene;
+	}
 }
 
 void Tiger::LoadParams()
@@ -272,9 +285,7 @@ void Tiger::ProcessState()
 				enemyMover.SetModeGrind(-grindSpeed, 120);
 			}
 
-			snakePool.Throw(GetPosition(), pDir);
-			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
-			//stopStartPool.Throw(GetPosition(), pDir);
+			//snakePool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 1)
 		{
@@ -285,9 +296,7 @@ void Tiger::ProcessState()
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			enemyMover.SetDestNode(nodeVec[rNode]);
 
-			snakePool.Throw(GetPosition(), pDir);
-			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
-			//enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
+			//snakePool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 2)
 		{
@@ -296,11 +305,8 @@ void Tiger::ProcessState()
 			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			enemyMover.SetDestNode(nodeVec[rNode]);
-			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
-			//enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
-			//	10, .5, 60);
-			snakePool.Throw(GetPosition(), pDir);
-			//stopStartPool.Throw(GetPosition(), pDir);
+			//snakePool.Throw(GetPosition(), pDir);
+			
 		}
 		else if (r == 3)
 		{
@@ -343,6 +349,77 @@ void Tiger::ProcessState()
 	}
 
 	hitPlayer = false;
+}
+
+void Tiger::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		if (numHealth == 1)
+		{
+			if (level == 1)
+			{
+				postFightScene->Reset();
+				sess->SetActiveSequence(postFightScene);
+			}
+			/*else if (level == 2)
+			{
+				postFightScene2->Reset();
+				sess->SetActiveSequence(postFightScene2);
+			}*/
+		}
+
+		receivedHit = NULL;
+	}
+}
+
+void Tiger::Setup()
+{
+	Enemy::Setup();
+
+	postFightScene = new TigerPostFightScene;
+	postFightScene->tiger = this;
+	postFightScene->Init();
+}
+
+void Tiger::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	snakePool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+	enemyMover.Reset();
+	HurtboxesOff();
+	HitboxesOff();
+}
+
+void Tiger::StartFight()
+{
+	action = WAIT;
+	//DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+	frame = 0;
+	SetHitboxes(NULL);
+	waitFrames = 10;
 }
 
 void Tiger::IHitPlayer(int index)

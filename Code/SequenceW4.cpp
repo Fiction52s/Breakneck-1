@@ -8,6 +8,7 @@
 #include "HUD.h"
 #include "ScoreDisplay.h"
 #include "GroundedWarper.h"
+#include "Enemy_Tiger.h"
 
 using namespace sf;
 using namespace std;
@@ -110,7 +111,7 @@ void CrawlerPreFight2Scene::UpdateState()
 CrawlerPostFight2Scene::CrawlerPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	warper = sess->GetWarper("Bosses/greyw1");
+	warper = sess->GetWarper("FinishedScenes/W4/tigerfight");
 }
 
 void CrawlerPostFight2Scene::SetupStates()
@@ -191,9 +192,9 @@ void CrawlerPostFight2Scene::UpdateState()
 
 
 TigerPreFightScene::TigerPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-	SetEntranceIndex(1);
+	SetEntranceIndex(0);
 }
 
 void TigerPreFightScene::SetupStates()
@@ -207,10 +208,7 @@ void TigerPreFightScene::SetupStates()
 	stateLength[KINAPPROACH] = -1;
 	stateLength[TIGERKINCONV] = -1;
 
-
-	TigerPostFightScene *scene = new TigerPostFightScene;
-	scene->Init();
-	nextSeq = scene;
+	tiger = (Tiger*)sess->GetEnemy(EnemyType::EN_TIGERBOSS);
 }
 
 void TigerPreFightScene::AddShots()
@@ -280,7 +278,8 @@ void TigerPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->AddEnemy(tiger);
+			tiger->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -314,7 +313,7 @@ void TigerPreFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			StartEntranceRun(true, 10.0, "kinstop1", "kinnext");
+			StartEntranceRun(true, 10.0, "kinstop0", "kinnext");
 		}
 		break;
 	}
@@ -328,6 +327,7 @@ void TigerPreFightScene::UpdateState()
 
 		if (IsLastFrame())
 		{
+			tiger->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -346,7 +346,7 @@ void TigerPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[CONV] = -1;
 	stateLength[BIRDRESCUETIGER] = 60;
@@ -366,7 +366,7 @@ void TigerPostFightScene::AddShots()
 
 void TigerPostFightScene::AddPoints()
 {
-	AddPoint("kinstand1");
+	AddPoint("kinstand0");
 }
 
 void TigerPostFightScene::AddFlashes()
@@ -391,20 +391,16 @@ void TigerPostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				sess->hud->Hide();
-				SetPlayerStandPoint("kinstand1", true);
-				SetCameraShot("birdrescuecam");
-			}
+			StartBasicKillFade();
+		}
+		else if (frame == 10)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("birdrescuecam");
+			tiger->Wait();
 		}
 	case WAIT:
 		if (frame == 0)

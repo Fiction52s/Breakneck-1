@@ -10,6 +10,7 @@
 #include "Enemy_TigerGrindBullet.h"
 
 struct PoiInfo;
+struct TigerPostFightScene;
 struct Tiger : Enemy
 {
 	enum Action
@@ -17,6 +18,7 @@ struct Tiger : Enemy
 		MOVE,
 		WAIT,
 		COMBOMOVE,
+		SEQ_WAIT,
 		A_Count
 	};
 
@@ -24,6 +26,8 @@ struct Tiger : Enemy
 	{
 		int fireCounter;
 	};
+
+	TigerPostFightScene *postFightScene;
 
 	PoiInfo *targetNode;
 
@@ -59,7 +63,11 @@ struct Tiger : Enemy
 	int framesToArrive;
 
 	Tiger(ActorParams *ap);
-
+	~Tiger();
+	void ProcessHit();
+	void Setup();
+	void Wait();
+	void StartFight();
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

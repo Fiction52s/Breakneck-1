@@ -5,6 +5,8 @@
 
 struct GroundedWarper;
 
+struct Tiger;
+
 struct CrawlerPreFight2Scene : BasicBossScene
 {
 	enum State
@@ -68,6 +70,8 @@ struct TigerPreFightScene : BasicBossScene
 		Count
 	};
 
+	Tiger *tiger;
+
 	TigerPreFightScene();
 
 	void SetupStates();
@@ -92,6 +96,8 @@ struct TigerPostFightScene : BasicBossScene
 		BIRDRESCUETIGER,
 		Count
 	};
+
+	Tiger *tiger;
 
 	TigerPostFightScene();
 	void SetupStates();

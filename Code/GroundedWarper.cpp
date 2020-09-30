@@ -126,6 +126,11 @@ void GroundedWarper::Deactivate()
 
 void GroundedWarper::Activate()
 {
+	if (!spawned)
+	{
+		sess->AddEnemy(this);
+	}
+
 	action = ACTIVE;
 	frame = 0;
 	DefaultHitboxesOn();

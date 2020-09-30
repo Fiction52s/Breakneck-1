@@ -320,6 +320,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GATORBOSS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_TIGERBOSS:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	default:
 		return false;
 	}
