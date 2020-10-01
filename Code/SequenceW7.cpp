@@ -7,6 +7,7 @@
 #include "ImageText.h"
 #include "HUD.h"
 #include "ScoreDisplay.h"
+#include "Enemy_Bird.h"
 
 using namespace std;
 using namespace sf;
@@ -82,7 +83,7 @@ void BirdChaseScene::UpdateState()
 
 
 BirdPreFight3Scene::BirdPreFight3Scene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN )
 {
 
 }
@@ -95,9 +96,11 @@ void BirdPreFight3Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELETONCONV] = -1;
 
-	BirdPostFight3Scene *scene = new BirdPostFight3Scene;
+	bird = (Bird*)sess->GetEnemy(EnemyType::EN_BIRDBOSS);
+
+	/*BirdPostFight3Scene *scene = new BirdPostFight3Scene;
 	scene->Init();
-	nextSeq = scene;
+	nextSeq = scene;*/
 }
 
 void BirdPreFight3Scene::AddShots()
@@ -142,7 +145,8 @@ void BirdPreFight3Scene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->AddEnemy(bird);
+			bird->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -150,6 +154,7 @@ void BirdPreFight3Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			bird->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -159,13 +164,14 @@ void BirdPreFight3Scene::UpdateState()
 BirdPostFight3Scene::BirdPostFight3Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	bird = NULL;
 }
 
 void BirdPostFight3Scene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = explosionFadeFrames + fadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[BIRDCONV] = -1;
 	stateLength[BIRDDIES] = 30;
@@ -212,14 +218,14 @@ void BirdPostFight3Scene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
-			sess->hud->Hide(fadeFrames);
-			sess->cam.SetManual(true);
-			MainMenu *mm = sess->mainMenu;
-			sess->CrossFade(10, 0, 60, Color::White);
+			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (frame == explosionFadeFrames)
 		{
+			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("scenecam");
+			bird->Wait();
 		}
 		break;
 	case WAIT:

@@ -3,6 +3,7 @@
 
 #include "Sequence.h"
 
+struct Bird;
 
 struct BirdChaseScene : BasicBossScene
 {
@@ -39,6 +40,8 @@ struct BirdPreFight3Scene : BasicBossScene
 		Count
 	};
 
+	Bird *bird;
+
 	BirdPreFight3Scene();
 
 	void SetupStates();
@@ -61,6 +64,8 @@ struct BirdPostFight3Scene : BasicBossScene
 		BIRDDIES,
 		Count
 	};
+
+	Bird *bird;
 
 	BirdPostFight3Scene();
 	void SetupStates();

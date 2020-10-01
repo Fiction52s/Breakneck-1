@@ -11,6 +11,7 @@
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
+struct BirdPostFight3Scene;
 
 struct Bird : Enemy
 {
@@ -35,6 +36,7 @@ struct Bird : Enemy
 
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
+	BirdPostFight3Scene *postFightScene3;
 	
 
 	std::string nodeAStr;

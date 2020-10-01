@@ -7,6 +7,7 @@
 #include "Actor.h"
 #include "SequenceW2.h"
 #include "SequenceW5.h"
+#include "SequenceW7.h"
 
 using namespace std;
 using namespace sf;
@@ -65,6 +66,7 @@ Bird::Bird(ActorParams *ap)
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
+	postFightScene3 = NULL;
 
 	LoadParams();
 
@@ -87,6 +89,12 @@ Bird::~Bird()
 	{
 		delete postFightScene2;
 	}
+
+	if (postFightScene3 != NULL)
+	{
+		delete postFightScene3;
+	}
+
 }
 
 void Bird::LoadParams()
@@ -154,6 +162,12 @@ void Bird::Setup()
 			postFightScene2 = NULL;
 		}
 
+		if (postFightScene3 != NULL)
+		{
+			delete postFightScene3;
+			postFightScene3 = NULL;
+		}
+
 		if (postFightScene == NULL)
 		{
 			postFightScene = new BirdPostFightScene;
@@ -171,6 +185,12 @@ void Bird::Setup()
 			postFightScene = NULL;
 		}
 
+		if (postFightScene3 != NULL)
+		{
+			delete postFightScene3;
+			postFightScene3 = NULL;
+		}
+
 		if (postFightScene2 == NULL)
 		{
 			postFightScene2 = new BirdPostFight2Scene;
@@ -178,6 +198,27 @@ void Bird::Setup()
 			postFightScene2->Init();
 		}
 		
+	}
+	else if (level == 3)
+	{
+		if (postFightScene != NULL)
+		{
+			delete postFightScene;
+			postFightScene = NULL;
+		}
+
+		if (postFightScene2 != NULL)
+		{
+			delete postFightScene2;
+			postFightScene2 = NULL;
+		}
+
+		if (postFightScene3 == NULL)
+		{
+			postFightScene3 = new BirdPostFight3Scene;
+			postFightScene3->bird = this;
+			postFightScene3->Init();
+		}
 	}
 	
 }
@@ -451,6 +492,11 @@ void Bird::ProcessHit()
 			{
 				postFightScene2->Reset();
 				sess->SetActiveSequence(postFightScene2);
+			}
+			else if (level == 3)
+			{
+				postFightScene3->Reset();
+				sess->SetActiveSequence(postFightScene3);
 			}
 		}
 
