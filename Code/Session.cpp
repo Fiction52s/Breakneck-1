@@ -525,7 +525,7 @@ void Session::AddW3Enemies()
 
 void Session::AddW4Enemies()
 {
-	AddBasicGroundWorldEnemy("tiger", 5, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+	AddBasicGroundWorldEnemy("tiger", 5, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
 	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));

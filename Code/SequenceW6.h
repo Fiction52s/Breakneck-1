@@ -14,6 +14,7 @@
 
 struct CoyoteHelper;
 struct Skeleton;
+struct Tiger;
 
 struct EnterFortressScene : BasicBossScene
 {
@@ -130,6 +131,8 @@ struct TigerPreFight2Scene : BasicBossScene
 		Count
 	};
 
+	Tiger *tiger;
+
 	TigerPreFight2Scene();
 
 	void SetupStates();
@@ -152,6 +155,8 @@ struct TigerPostFight2Scene : BasicBossScene
 		TIGERDEATH,
 		Count
 	};
+
+	Tiger *tiger;
 
 	TigerPostFight2Scene();
 	void SetupStates();

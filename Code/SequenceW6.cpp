@@ -9,6 +9,7 @@
 #include "ScoreDisplay.h"
 #include "Enemy_Skeleton.h"
 #include "Enemy_CoyoteHelper.h"
+#include "Enemy_Tiger.h"
 
 using namespace std;
 using namespace sf;
@@ -144,17 +145,15 @@ void TigerAndBirdTunnelScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide();
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->Fade(true, 60, Color::Black);
-				SetCameraShot("scenecam");
-			}
+			sess->hud->Hide();
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->Fade(true, 60, Color::Black);
+			SetCameraShot("scenecam");
 		}
+		break;
 	case WAIT:
 		break;
 	case CONV:
@@ -340,7 +339,8 @@ void SkeletonPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			skeleton->Wait();
 			coyHelper->Wait();
-		}		
+		}	
+		break;
 	case MOVIE:
 	{
 		if (frame == 0)
@@ -424,9 +424,9 @@ bool SkeletonPostFightScene::IsAutoRunState()
 
 
 TigerPreFight2Scene::TigerPreFight2Scene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-
+	tiger = NULL;
 }
 
 void TigerPreFight2Scene::SetupStates()
@@ -437,9 +437,11 @@ void TigerPreFight2Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[TIGERCONV] = -1;
 
-	TigerPostFight2Scene *scene = new TigerPostFight2Scene;
+	tiger = (Tiger*)sess->GetEnemy(EnemyType::EN_TIGERBOSS);
+
+	/*TigerPostFight2Scene *scene = new TigerPostFight2Scene;
 	scene->Init();
-	nextSeq = scene;
+	nextSeq = scene;*/
 }
 
 void TigerPreFight2Scene::AddShots()
@@ -484,7 +486,8 @@ void TigerPreFight2Scene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->AddEnemy(tiger);
+			tiger->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -492,6 +495,7 @@ void TigerPreFight2Scene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			tiger->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -501,13 +505,14 @@ void TigerPreFight2Scene::UpdateState()
 TigerPostFight2Scene::TigerPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	tiger = NULL;
 }
 
 void TigerPostFight2Scene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 60;
+	stateLength[FADE] = explosionFadeFrames + fadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[CONV] = -1;
 	stateLength[TIGERDEATH] = 60;
@@ -552,21 +557,18 @@ void TigerPostFight2Scene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				sess->hud->Hide();
-				SetPlayerStandPoint("kinstand0", true);
-				SetCameraShot("tigerdeathcam");
-			}
+			StartBasicKillFade();
 		}
+		else if (frame == explosionFadeFrames)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("tigerdeathcam");
+			tiger->Wait();
+		}
+		break;
 	case WAIT:
 		if (frame == 0)
 		{

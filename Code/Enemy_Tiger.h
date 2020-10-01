@@ -11,6 +11,7 @@
 
 struct PoiInfo;
 struct TigerPostFightScene;
+struct TigerPostFight2Scene;
 struct Tiger : Enemy
 {
 	enum Action
@@ -28,6 +29,7 @@ struct Tiger : Enemy
 	};
 
 	TigerPostFightScene *postFightScene;
+	TigerPostFight2Scene *postFightScene2;
 
 	PoiInfo *targetNode;
 

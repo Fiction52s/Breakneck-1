@@ -6,6 +6,7 @@
 #include "Enemy_Tiger.h"
 #include "Actor.h"
 #include "SequenceW4.h"
+#include "SequenceW6.h"
 
 using namespace std;
 using namespace sf;
@@ -37,6 +38,7 @@ Tiger::Tiger(ActorParams *ap)
 	sprite.setColor(Color::Red);
 
 	postFightScene = NULL;
+	postFightScene2 = NULL;
 
 	level = ap->GetLevel();
 
@@ -70,6 +72,11 @@ Tiger::~Tiger()
 	if (postFightScene != NULL)
 	{
 		delete postFightScene;
+	}
+
+	if (postFightScene2 != NULL)
+	{
+		delete postFightScene2;
 	}
 }
 
@@ -257,7 +264,6 @@ void Tiger::ProcessState()
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
-		
 		int r = rand() % 3;
 
 		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_TIGER, nodeAStr);
@@ -380,11 +386,11 @@ void Tiger::ProcessHit()
 				postFightScene->Reset();
 				sess->SetActiveSequence(postFightScene);
 			}
-			/*else if (level == 2)
+			else if (level == 2)
 			{
 				postFightScene2->Reset();
 				sess->SetActiveSequence(postFightScene2);
-			}*/
+			}
 		}
 
 		receivedHit = NULL;
@@ -395,9 +401,36 @@ void Tiger::Setup()
 {
 	Enemy::Setup();
 
-	postFightScene = new TigerPostFightScene;
-	postFightScene->tiger = this;
-	postFightScene->Init();
+	if (level == 1)
+	{
+		if (postFightScene2 != NULL)
+		{
+			delete postFightScene2;
+			postFightScene2 = NULL;
+		}
+
+		if (postFightScene == NULL)
+		{
+			postFightScene = new TigerPostFightScene;
+			postFightScene->tiger = this;
+			postFightScene->Init();
+		}
+	}
+	else if (level == 2)
+	{
+
+		if (postFightScene != NULL)
+		{
+			delete postFightScene;
+			postFightScene = NULL;
+		}
+
+		postFightScene2 = new TigerPostFight2Scene;
+		postFightScene2->tiger = this;
+		postFightScene2->Init();
+	}
+
+	
 }
 
 void Tiger::Wait()

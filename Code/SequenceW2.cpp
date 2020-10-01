@@ -196,20 +196,18 @@ void BirdPostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				StartBasicKillFade();
-			}
-			else if (frame == explosionFadeFrames)
-			{
-				sess->SetGameSessionState(GameSession::RUN);
-				SetPlayerStandPoint("kinstop0", true);
-				SetCameraShot("scenecam");
-				bird->Wait();
-			}
+			StartBasicKillFade();
 		}
+		else if (frame == explosionFadeFrames)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstop0", true);
+			SetCameraShot("scenecam");
+			bird->Wait();
+		}
+		break;
 	case WAIT:
 		//EntranceUpdate();
 		break;
@@ -282,17 +280,15 @@ void BirdCrawlerAllianceScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide();
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->Fade(true, 60, Color::Black);
-				SetCameraShot("alliancecam");
-			}
+			sess->hud->Hide();
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->Fade(true, 60, Color::Black);
+			SetCameraShot("alliancecam");
 		}
+		break;
 	case WAIT:
 		break;
 	case CRAWLERARRIVE:

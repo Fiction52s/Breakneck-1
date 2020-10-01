@@ -356,21 +356,19 @@ void CoyotePostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				StartBasicKillFade();
-			}
-			else if (frame == 10)
-			{
-				sess->SetGameSessionState(GameSession::RUN);
-				SetPlayerStandPoint("kinstop0", true);
-				SetCameraShot("scenecam");
-				coy->Wait();
-				
-			}
+			StartBasicKillFade();
 		}
+		else if (frame == 10)
+		{
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstop0", true);
+			SetCameraShot("scenecam");
+			coy->Wait();
+				
+		}
+		break;
 	case WAIT:
 		if (frame == 0)
 		{

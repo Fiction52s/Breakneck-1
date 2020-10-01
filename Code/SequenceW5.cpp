@@ -164,6 +164,7 @@ void BirdPostFight2Scene::UpdateState()
 			SetCameraShot("scenecam");
 			bird->Wait();
 		}
+		break;
 	case WAIT:
 		//EntranceUpdate();
 		break;
@@ -237,17 +238,15 @@ void BirdTigerApproachScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide();
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->Fade(true, 60, Color::Black);
-				SetCameraShot("scenecam");
-			}
+			sess->hud->Hide();
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->Fade(true, 60, Color::Black);
+			SetCameraShot("scenecam");
 		}
+		break;
 	case WAIT:
 		break;
 	case CONV:
@@ -423,6 +422,7 @@ void GatorPostFightScene::UpdateState()
 			SetCameraShot("gatordeathcam");
 			gator->Wait();
 		}
+		break;
 	case WAIT:
 		if (frame == 0)
 		{

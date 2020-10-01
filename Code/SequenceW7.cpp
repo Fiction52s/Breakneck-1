@@ -210,20 +210,18 @@ void BirdPostFight3Scene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide(fadeFrames);
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				SetPlayerStandPoint("kinstand0", true);
-			}
+			sess->hud->Hide(fadeFrames);
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->CrossFade(10, 0, 60, Color::White);
 		}
+		else if (frame == 10)
+		{
+			SetPlayerStandPoint("kinstand0", true);
+		}
+		break;
 	case WAIT:
 		//EntranceUpdate();
 		break;
@@ -370,20 +368,17 @@ void FinalSkeletonPostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->hud->Hide(fadeFrames);
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-			}
-			else if (frame == 10)
-			{
-				SetPlayerStandPoint("kinstand1", true);
-				SetCameraShot("victorycam");
-			}
+			sess->hud->Hide(fadeFrames);
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->CrossFade(10, 0, 60, Color::White);
+		}
+		else if (frame == 10)
+		{
+			SetPlayerStandPoint("kinstand1", true);
+			SetCameraShot("victorycam");
 		}
 		break;
 	case WAIT:
