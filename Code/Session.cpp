@@ -48,6 +48,8 @@
 #include "EnemiesW4.h"
 #include "EnemiesW5.h"
 #include "EnemiesW6.h"
+#include "EnemiesW7.h"
+#include "EnemiesW8.h"
 
 #include "ScoreDisplay.h"
 
@@ -651,6 +653,11 @@ void Session::AddW6Enemies()
 	AddBasicGroundWorldEnemy("skeleton", 6, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	//w6
 	AddBasicGroundWorldEnemy("coyotehelper", 6, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+
+	AddWorldEnemy("greyskeletonnode", 7, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
+	
+	AddBasicGroundWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	/*AddWorldEnemy("swinglaunchercw", 6, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
@@ -4872,6 +4879,14 @@ void Session::AddBossNode( const std::string &nodeTypeName, PoiParams *pp)
 	else if (nodeTypeName == "skeletonnode")
 	{
 		ftIndex = FT_SKELETON;
+	}
+	else if (nodeTypeName == "greyskeletonnode")
+	{
+		ftIndex = FT_SKELETON2;
+	}
+	else if (nodeTypeName == "bearnode")
+	{
+		ftIndex = FT_BEAR;
 	}
 
 	bossNodeVectorMap[ftIndex][pp->name].push_back(pi);

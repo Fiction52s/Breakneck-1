@@ -3,7 +3,5 @@
 
 #include "Enemy_CoyoteHelper.h"
 #include "Enemy_Skeleton.h"
-#include "Enemy_DimensionEye.h"
-#include "Enemy_DimensionExit.h"
 
 #endif

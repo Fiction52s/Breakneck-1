@@ -241,9 +241,9 @@ void BirdPostFight3Scene::UpdateState()
 
 
 FinalSkeletonPreFightScene::FinalSkeletonPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-	SetEntranceIndex(1);
+	SetEntranceIndex(0);
 }
 
 void FinalSkeletonPreFightScene::SetupStates()
@@ -261,14 +261,14 @@ void FinalSkeletonPreFightScene::SetupStates()
 
 void FinalSkeletonPreFightScene::SetEntranceShot()
 {
-	SetCameraShot("scenecam1");
+	SetCameraShot("scenecam");
 }
 
 void FinalSkeletonPreFightScene::AddShots()
 {
-	AddShot("scenecam1");
+	AddShot("scenecam");
 	//AddShot("victorycam");
-	AddShot("fightcam1");
+	AddShot("fightcam");
 }
 
 void FinalSkeletonPreFightScene::AddPoints()
@@ -296,7 +296,7 @@ void FinalSkeletonPreFightScene::ReturnToGame()
 
 	BasicBossScene::ReturnToGame();
 
-	EaseShot("fightcam1", 60);
+	EaseShot("fightcam", 60);
 }
 
 void FinalSkeletonPreFightScene::UpdateState()

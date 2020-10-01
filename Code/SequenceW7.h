@@ -4,6 +4,7 @@
 #include "Sequence.h"
 
 struct Bird;
+struct GreySkeleton;
 
 struct BirdChaseScene : BasicBossScene
 {
@@ -88,6 +89,8 @@ struct FinalSkeletonPreFightScene : BasicBossScene
 		Count
 	};
 
+	GreySkeleton *greySkeleton;
+
 	FinalSkeletonPreFightScene();
 
 	void SetupStates();
@@ -111,6 +114,8 @@ struct FinalSkeletonPostFightScene : BasicBossScene
 		SKELETONDIES,
 		Count
 	};
+
+	GreySkeleton *greySkeleton;
 
 	FinalSkeletonPostFightScene();
 	void SetupStates();

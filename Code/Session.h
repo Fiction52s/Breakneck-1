@@ -106,6 +106,8 @@ enum BossFightType
 	FT_BIRDCHASE,
 	FT_BIRD3,
 	FT_SKELETON2,
+	FT_BEAR,
+	FT_BEAR2,
 	BossFightType_Count
 };
 
