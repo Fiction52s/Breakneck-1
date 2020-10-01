@@ -151,6 +151,10 @@ void BirdPostFightScene::SetupStates()
 
 void BirdPostFightScene::ReturnToGame()
 {
+	if (!warper->spawned)
+	{
+		sess->AddEnemy(warper);
+	}
 	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
@@ -198,7 +202,7 @@ void BirdPostFightScene::UpdateState()
 			{
 				StartBasicKillFade();
 			}
-			else if (frame == 10)
+			else if (frame == explosionFadeFrames)
 			{
 				sess->SetGameSessionState(GameSession::RUN);
 				SetPlayerStandPoint("kinstop0", true);

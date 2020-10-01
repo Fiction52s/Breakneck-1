@@ -7,6 +7,8 @@
 #include "ImageText.h"
 #include "HUD.h"
 #include "ScoreDisplay.h"
+#include "Enemy_Skeleton.h"
+#include "Enemy_CoyoteHelper.h"
 
 using namespace std;
 using namespace sf;
@@ -180,9 +182,10 @@ void TigerAndBirdTunnelScene::UpdateState()
 
 
 SkeletonPreFightScene::SkeletonPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-
+	skeleton = NULL;
+	coyHelper = NULL;
 }
 
 void SkeletonPreFightScene::SetupStates()
@@ -193,9 +196,8 @@ void SkeletonPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELECONV] = -1;
 
-	SkeletonPostFightScene *scene = new SkeletonPostFightScene;
-	scene->Init();
-	nextSeq = scene;
+	skeleton = (Skeleton*)sess->GetEnemy(EnemyType::EN_SKELETONBOSS);
+	coyHelper = (CoyoteHelper*)sess->GetEnemy(EnemyType::EN_COYOTEHELPER);
 }
 
 void SkeletonPreFightScene::AddShots()
@@ -240,7 +242,11 @@ void SkeletonPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
+			sess->AddEnemy(skeleton);
+			skeleton->Wait();
 
+			sess->AddEnemy(coyHelper);
+			coyHelper->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -248,6 +254,8 @@ void SkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			skeleton->StartFight();
+			coyHelper->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -263,7 +271,7 @@ void SkeletonPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 10;
+	stateLength[FADE] = explosionFadeFrames + fadeFrames;
 	stateLength[MOVIE] = -1;
 	stateLength[TOP3TRANSFORMATIONSTART] = 60;
 	stateLength[TOP3BIRDANDTIGER] = 60;
@@ -271,8 +279,6 @@ void SkeletonPostFightScene::SetupStates()
 	stateLength[SKELETONLEAVES] = -1;
 	stateLength[KINMOVE] = -1;
 	stateLength[COYOTEDEATH] = -1;
-
-
 }
 
 void SkeletonPostFightScene::ReturnToGame()
@@ -280,7 +286,6 @@ void SkeletonPostFightScene::ReturnToGame()
 	Actor *player = sess->GetPlayer(0);
 	player->EndLevelWithoutGoal();
 	sess->SetPlayerInputOn(true);
-	
 }
 
 void SkeletonPostFightScene::AddShots()
@@ -325,22 +330,17 @@ void SkeletonPostFightScene::UpdateState()
 	switch (state)
 	{
 	case FADE:
-		if (state == FADE)
+		if (frame == 0)
 		{
-			if (frame == 0)
-			{
-				sess->cam.SetManual(true);
-				MainMenu *mm = sess->mainMenu;
-				sess->CrossFade(10, 0, 60, Color::White);
-				sess->TotalDissolveGates(Gate::BOSS);
-			}
-			else if (IsLastFrame())
-			{
-				sess->hud->Hide();
-				SetPlayerStandPoint("kinstand0", true);
-				
-			}
+			StartBasicKillFade();
 		}
+		else if (frame == explosionFadeFrames)
+		{
+			SetPlayerStandPoint("kinstand0", true);
+			sess->SetGameSessionState(GameSession::RUN);
+			skeleton->Wait();
+			coyHelper->Wait();
+		}		
 	case MOVIE:
 	{
 		if (frame == 0)

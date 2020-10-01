@@ -9,6 +9,9 @@
 #include "PlayerComboer.h"
 #include "Enemy_GatorWaterOrb.h"
 
+struct SkeletonPostFightScene;
+struct CoyoteHelper;
+
 struct Skeleton : Enemy, RayCastHandler
 {
 	enum Action
@@ -16,6 +19,7 @@ struct Skeleton : Enemy, RayCastHandler
 		COMBOMOVE,
 		MOVE,
 		WAIT,
+		SEQ_WAIT,
 		A_Count
 	};
 
@@ -23,6 +27,9 @@ struct Skeleton : Enemy, RayCastHandler
 	{
 		int fireCounter;
 	};
+
+	SkeletonPostFightScene *postFightScene;
+	CoyoteHelper *coyHelper;
 
 	int moveFrames;
 	int waitFrames;
@@ -67,7 +74,11 @@ struct Skeleton : Enemy, RayCastHandler
 	double playerDist;
 
 	Skeleton(ActorParams *ap);
-
+	~Skeleton();
+	void Setup();
+	void Wait();
+	void StartFight();
+	void ProcessHit();
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

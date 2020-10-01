@@ -126,6 +126,10 @@ void CrawlerPostFight2Scene::SetupStates()
 
 void CrawlerPostFight2Scene::ReturnToGame()
 {
+	if (!warper->spawned)
+	{
+		sess->AddEnemy(warper);
+	}
 	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	BasicBossScene::ReturnToGame();

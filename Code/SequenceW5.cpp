@@ -111,6 +111,10 @@ void BirdPostFight2Scene::SetupStates()
 
 void BirdPostFight2Scene::ReturnToGame()
 {
+	if (!warper->spawned)
+	{
+		sess->AddEnemy(warper);
+	}
 	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);

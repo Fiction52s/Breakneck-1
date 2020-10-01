@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_CoyoteHelper.h"
 #include "Actor.h"
+#include "Enemy_Skeleton.h"
 
 #include "PauseMenu.h"
 
@@ -21,22 +22,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void CoyoteHelper::Setup()
-{
-	SetSpawnRect();
-	if (sess->IsSessTypeGame())
-	{
-		boost::filesystem::path p("Resources/Maps//W2//gateblank9.brknk");
-		GameSession *game = GameSession::GetSession();
-		
-		myBonus = new GameSession(game->saveFile, p);
-		myBonus->SetParentGame(game);
-		myBonus->Load();
-
-		game->currSession = game;
-		game->pauseMenu->owner = game;
-	}
-}
 
 CoyoteHelper::CoyoteHelper(ActorParams *ap)
 	:Enemy(EnemyType::EN_COYOTEHELPER, ap)
@@ -428,6 +413,35 @@ void CoyoteHelper::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 
 	launchers[0]->SetFromBytes(bytes);
+}
+
+void CoyoteHelper::Setup()
+{
+	Enemy::Setup();
+
+	skeleton = (Skeleton*)sess->GetEnemy(EnemyType::EN_SKELETONBOSS);
+}
+
+void CoyoteHelper::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	//snakePool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+	enemyMover.Reset();
+	//HurtboxesOff();
+	HitboxesOff();
+}
+
+void CoyoteHelper::StartFight()
+{
+	action = WAIT;
+	DefaultHitboxesOn();
+	//DefaultHurtboxesOn();
+	frame = 0;
+	//SetHitboxes(NULL);
+	waitFrames = 10;
 }
 
 bool CoyoteHelper::CheckHitPlayer(int index)

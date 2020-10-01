@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Skeleton.h"
 #include "Actor.h"
+#include "SequenceW6.h"
 
 using namespace std;
 using namespace sf;
@@ -28,6 +29,8 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	targetPlayerIndex = 0;
 
+	level = ap->GetLevel();
+
 	actionLength[COMBOMOVE] = 2;
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
@@ -37,10 +40,12 @@ Skeleton::Skeleton(ActorParams *ap)
 	nodeAStr = "A";
 	nodeBStr = "B";
 
+	postFightScene = NULL;
+
 	sprite.setColor(Color::Black);
 
+	//hitboxInfo = new HitboxInfo;
 	hitboxInfo = new HitboxInfo;
-	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
@@ -49,17 +54,23 @@ Skeleton::Skeleton(ActorParams *ap)
 	hitboxInfo->knockback = 50;
 	hitboxInfo->kbDir = normalize(V2d(1, -2));
 	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
+	hitboxInfo->invincibleFrames = 15;
 
 	LoadParams();
 
-	//BasicCircleHurtBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
+}
+
+Skeleton::~Skeleton()
+{
+	if (postFightScene != NULL)
+		delete postFightScene;
 }
 
 void Skeleton::LoadParams()
@@ -80,7 +91,7 @@ void Skeleton::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 
-	if (hitBody.hitboxInfo != NULL)
+	/*if (hitBody.hitboxInfo != NULL)
 	{
 		if (facingRight)
 		{
@@ -90,7 +101,7 @@ void Skeleton::UpdateHitboxes()
 		{
 			hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
 		}
-	}
+	}*/
 }
 
 void Skeleton::ResetEnemy()
@@ -428,6 +439,86 @@ void Skeleton::ProcessState()
 
 	hitPlayer = false;
 }
+
+void Skeleton::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		if (numHealth == 1)
+		{
+			if (level == 1)
+			{
+				postFightScene->Reset();
+				sess->SetActiveSequence(postFightScene);
+			}
+			/*else if (level == 2)
+			{
+			postFightScene2->Reset();
+			sess->SetActiveSequence(postFightScene2);
+			}*/
+		}
+
+		receivedHit = NULL;
+	}
+}
+
+void Skeleton::Setup()
+{
+	Enemy::Setup();
+
+	coyHelper = (CoyoteHelper*)sess->GetEnemy(EnemyType::EN_COYOTEHELPER);
+
+	if (postFightScene == NULL)
+	{
+		postFightScene = new SkeletonPostFightScene;
+		postFightScene->Init();
+	}
+	
+	postFightScene->skeleton = this;
+	postFightScene->coyHelper = coyHelper;
+	
+}
+
+void Skeleton::Wait()
+{
+	action = SEQ_WAIT;
+	frame = 0;
+	//snakePool.Reset();
+	SetCurrPosInfo(startPosInfo);
+	enemyMover.currPosInfo = currPosInfo;
+	enemyMover.Reset();
+	HurtboxesOff();
+	HitboxesOff();
+}
+
+void Skeleton::StartFight()
+{
+	action = WAIT;
+	//DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+	frame = 0;
+	SetHitboxes(NULL);
+	waitFrames = 10;
+}
+
 
 void Skeleton::IHitPlayer(int index)
 {

@@ -12,6 +12,9 @@
 //5. pre tiger fight
 //6. post tiger fight
 
+struct CoyoteHelper;
+struct Skeleton;
+
 struct EnterFortressScene : BasicBossScene
 {
 	enum State
@@ -68,6 +71,9 @@ struct SkeletonPreFightScene : BasicBossScene
 		Count
 	};
 
+	CoyoteHelper *coyHelper;
+	Skeleton *skeleton;
+
 	SkeletonPreFightScene();
 
 	void SetupStates();
@@ -94,6 +100,10 @@ struct SkeletonPostFightScene : BasicBossScene
 		COYOTEDEATH,
 		Count
 	};
+
+	CoyoteHelper *coyHelper;
+	Skeleton *skeleton;
+
 
 	SkeletonPostFightScene();
 	void SetupStates();

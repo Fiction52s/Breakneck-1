@@ -11,6 +11,8 @@
 
 struct GameSession;
 
+struct Skeleton;
+
 struct CoyoteHelper : Enemy
 {
 	enum Action
@@ -18,6 +20,7 @@ struct CoyoteHelper : Enemy
 		MOVE,
 		WAIT,
 		COMBOMOVE,
+		SEQ_WAIT,
 		A_Count
 	};
 
@@ -26,7 +29,7 @@ struct CoyoteHelper : Enemy
 		int fireCounter;
 	};
 
-	void Setup();
+	Skeleton *skeleton;
 	GameSession *myBonus;
 
 	Tileset *ts_move;
@@ -62,7 +65,9 @@ struct CoyoteHelper : Enemy
 
 	CoyoteHelper(ActorParams *ap);
 
-	
+	void Setup();
+	void Wait();
+	void StartFight();
 	bool CheckHitPlayer(int index);
 	void LoadParams();
 	int GetNumStoredBytes();

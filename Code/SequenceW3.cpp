@@ -313,6 +313,10 @@ void CoyotePostFightScene::SetupStates()
 
 void CoyotePostFightScene::ReturnToGame()
 {
+	if (!warper->spawned)
+	{
+		sess->AddEnemy(warper);
+	}
 	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
