@@ -8,6 +8,7 @@
 #include "HUD.h"
 #include "ScoreDisplay.h"
 #include "Enemy_Bird.h"
+#include "Enemy_GreySkeleton.h"
 
 using namespace std;
 using namespace sf;
@@ -254,9 +255,11 @@ void FinalSkeletonPreFightScene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[SKELETONCONV] = -1;
 
-	FinalSkeletonPostFightScene *scene = new FinalSkeletonPostFightScene;
+	greySkeleton = (GreySkeleton*)sess->GetEnemy(EnemyType::EN_GREYSKELETONBOSS);
+
+	/*FinalSkeletonPostFightScene *scene = new FinalSkeletonPostFightScene;
 	scene->Init();
-	nextSeq = scene;
+	nextSeq = scene;*/
 }
 
 void FinalSkeletonPreFightScene::SetEntranceShot()
@@ -307,7 +310,8 @@ void FinalSkeletonPreFightScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			sess->AddEnemy(greySkeleton);
+			greySkeleton->Wait();
 		}
 		EntranceUpdate();
 		break;
@@ -315,6 +319,7 @@ void FinalSkeletonPreFightScene::UpdateState()
 		ConvUpdate();
 		if (IsLastFrame())
 		{
+			greySkeleton->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -324,6 +329,7 @@ void FinalSkeletonPreFightScene::UpdateState()
 FinalSkeletonPostFightScene::FinalSkeletonPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	greySkeleton = NULL;
 }
 
 void FinalSkeletonPostFightScene::SetupStates()
@@ -349,7 +355,7 @@ void FinalSkeletonPostFightScene::AddShots()
 
 void FinalSkeletonPostFightScene::AddPoints()
 {
-	AddPoint("kinstand1");
+	AddPoint("kinstand");
 }
 
 void FinalSkeletonPostFightScene::AddFlashes()
@@ -376,15 +382,14 @@ void FinalSkeletonPostFightScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
-			sess->hud->Hide(fadeFrames);
-			sess->cam.SetManual(true);
-			MainMenu *mm = sess->mainMenu;
-			sess->CrossFade(10, 0, 60, Color::White);
+			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (frame == explosionFadeFrames)
 		{
-			SetPlayerStandPoint("kinstand1", true);
+			sess->SetGameSessionState(GameSession::RUN);
+			SetPlayerStandPoint("kinstand", true);
 			SetCameraShot("victorycam");
+			greySkeleton->Wait();
 		}
 		break;
 	case WAIT:

@@ -73,9 +73,12 @@ void GreySkeleton::Setup()
 {
 	Enemy::Setup();
 
-	postFightScene = new FinalSkeletonPostFightScene;
-	postFightScene->greySkeleton = this;
-	postFightScene->Init();
+	if (postFightScene == NULL)
+	{
+		postFightScene = new FinalSkeletonPostFightScene;
+		postFightScene->greySkeleton = this;
+		postFightScene->Init();
+	}
 }
 
 void GreySkeleton::LoadParams()

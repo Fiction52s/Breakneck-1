@@ -240,6 +240,8 @@ void CrawlerAttackSeq::SetupStates()
 	stateLength[CRAWLERFACE] = 10000;
 	stateLength[CRAWLERTALK] = 10000;
 	stateLength[KINTALK] = 10000;
+
+	queen = (CrawlerQueen*)sess->GetEnemy(EnemyType::EN_CRAWLERQUEEN);
 }
 
 void CrawlerAttackSeq::AddShots()

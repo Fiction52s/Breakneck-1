@@ -352,6 +352,8 @@ void Session::AddW1Enemies()
 	AddBasicGroundWorldEnemy("goal", 1, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("crawler", 1, CreateEnemy<Crawler>, Vector2i(0, 0), Vector2i(100, 100), true, true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("crawlerqueen", 1, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	
 	AddBasicAerialWorldEnemy("booster", 1, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
@@ -657,7 +659,7 @@ void Session::AddW6Enemies()
 	AddWorldEnemy("greyskeletonnode", 7, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
 	
-	AddBasicGroundWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+	AddBasicAerialWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	/*AddWorldEnemy("swinglaunchercw", 6, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));

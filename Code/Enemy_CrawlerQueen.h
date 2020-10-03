@@ -41,6 +41,8 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	void ProcessHit();
 };
 
+struct AfterCrawlerFightSeq;
+
 struct CrawlerQueen : Enemy, SurfaceMoverHandler
 {
 	enum Action
@@ -74,6 +76,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	};
 
 	int maxDecision;
+	AfterCrawlerFightSeq *postFightScene;
+	Tileset *ts[Count];
 
 	struct EdgeInfo //for decisions
 	{
@@ -82,32 +86,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 		int index;
 		//might need roll info?
 	};
-	bool DecideShownAction();
-	//std::list<Gate*> crawlerGates;
-	void ConfirmKill();
-	void Init();
-	void Setup();
-	void StartInitialUnburrow();
-	void StartAngryYelling();
-	void StartFight();
 
-	void InitOnRespawn();
-	//sf::Sprite crawlerFaceSpr;
-	//sf::Sprite kinFaceSpr;
-
-	//StorySequence *storySeq;
-	//sfe::Movie mov;
-	Sequence *seq;
-
-	Tileset *ts[Count];
-	void SetLevel();
-	CrawlerQueen(ActorParams *ap);//Edge *ground, double quantity, bool clockwise);
-	~CrawlerQueen();
-	void HitTerrainAerial(Edge *e, double q);
-	void Boost();
-	void Jump();
-	void DeactivateAllBombs();
-	void Popout();
 	EdgeInfo digInfo;
 	int currDigAttacks;
 	int digAttackCounter;
@@ -117,31 +96,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	double bombSpeed;
 	int animFactor[Count];
 	int actionLength[Count];
-	
-	void ProcessState();
-	void HandleNoHealth();
-	void FrameIncrement();
-	bool GetClockwise(int index);
-	double GetDistanceClockwise(int index);
-	double GetDistanceCCW(int index);
-	void Accelerate(double amount);
-	void SetForwardSpeed(double speed);
-	void TransferEdge(Edge *);
-	bool PlayerInFront();
-	void EnemyDraw(sf::RenderTarget *target);
-	void IHitPlayer(int index = 0);
-	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateHitboxes();
-	void ResetEnemy();
-	void UpdateEnemyPhysics();
-	void DecidePoints();
-	void InitEdgeInfo();
-	void SetDecisions();
-	void DecideAction();
-	void DecideNextAction( );
-	//void ProcessHit();
-	HitboxInfo *IsHit(int pIndex);
+
 	int totalInvincFramesOnHit;
 	int currInvincFramesOnHit;
 	int invincHitThresh;
@@ -171,8 +126,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 
 	double groundSpeed;
 
-	SurfaceMover *mover;
-
 	int decideDelayFrames;
 	int decideIndex;
 	int travelIndex;
@@ -186,8 +139,48 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	int numDecisions;
 
 	EffectPool *decMarkerPool;
-
 	
+	
+	CrawlerQueen(ActorParams *ap);
+	~CrawlerQueen();
+
+	bool DecideShownAction();
+	void ConfirmKill();
+	void Init();
+	void Setup();
+	void StartInitialUnburrow();
+	void StartAngryYelling();
+	void StartFight();
+	void InitOnRespawn();
+	void SetDifficulty(int lev);
+	void HitTerrainAerial(Edge *e, double q);
+	void Boost();
+	void Jump();
+	void DeactivateAllBombs();
+	void Popout();
+	void ProcessState();
+	void HandleNoHealth();
+	void FrameIncrement();
+	bool GetClockwise(int index);
+	double GetDistanceClockwise(int index);
+	double GetDistanceCCW(int index);
+	void Accelerate(double amount);
+	void SetForwardSpeed(double speed);
+	void TransferEdge(Edge *);
+	bool PlayerInFront();
+	void EnemyDraw(sf::RenderTarget *target);
+	void IHitPlayer(int index = 0);
+	void UpdateSprite();
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateHitboxes();
+	void ResetEnemy();
+	void UpdateEnemyPhysics();
+	void DecidePoints();
+	void InitEdgeInfo();
+	void SetDecisions();
+	void DecideAction();
+	void DecideNextAction( );
+	HitboxInfo *IsHit(int pIndex);
 };
 
 struct DecisionMarker : PoolMember

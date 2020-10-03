@@ -28,7 +28,12 @@ using namespace sf;
 CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap )//, false, 1, false), clockwise(cw)
 {
+	SetNumActions(DECIDE);
+	SetEditorActions(DECIDE, DECIDE, 0);
+
 	BossCrawlerParams *cParams = (BossCrawlerParams*)ap;
+
+	SetLevel(ap->enemyLevel);
 
 	if (sess->IsSessTypeGame())
 	{
@@ -63,9 +68,8 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	redecide = false;
 	origFacingRight = false;
 	facingRight = origFacingRight;
-	mover = new SurfaceMover(startPosInfo.GetEdge(), startPosInfo.GetQuant(), 80);
-	mover->surfaceHandler = this;
-	mover->SetSpeed(0);
+
+	CreateSurfaceMover(startPosInfo, 80, this);
 	
 	baseSpeed = 8;
 	numDecisions = 3;
@@ -195,6 +199,8 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 
 
 	ResetEnemy();
+
+	SetSpawnRect();
 	//ResetEnemy();
 	//ResetEnemy();
 	//frame = actionLength[UNDERGROUND];
@@ -278,36 +284,22 @@ void CrawlerQueen::ResetEnemy()
 	currInvincFramesOnHit = 0;
 	invincHitCount = 0;
 	redecide = false;
+	SetDifficulty(0);
 	
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
 	
 	decideIndex = 0;
-	mover->ground = startPosInfo.GetEdge();
-	mover->edgeQuantity = startPosInfo.GetQuant();
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
-
-	//position = mover->physBody.globalPosition;
 
 	frame = 0;
-	V2d gPoint = mover->ground->GetPosition(mover->edgeQuantity);
-	sprite.setPosition(gPoint.x, gPoint.y);
-
-	V2d gn = mover->ground->Normal();
-	dead = false;
-
-	double angle = 0;
-	angle = atan2(gn.x, -gn.y);
 
 	UpdateHitboxes();
 
-	//action = DECIDE;
 	action = INITIALWAIT;
-	SetLevel();
 	frame = 0;
-	
 
 	DeactivateAllBombs();
+
 
 	UpdateSprite();
 }
@@ -316,9 +308,9 @@ void CrawlerQueen::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 	
-	if (mover->ground != NULL)
+	if (surfaceMover->ground != NULL)
 	{
-		V2d gn = mover->ground->Normal();
+		V2d gn = surfaceMover->ground->Normal();
 		double angle = 0;
 
 
@@ -328,15 +320,15 @@ void CrawlerQueen::UpdateHitboxes()
 		knockbackDir = normalize(knockbackDir);
 		double maxExtraKB = 15.0;
 		double baseKB = 8;
-		if (mover->groundSpeed > 0)
+		if (surfaceMover->groundSpeed > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = baseKB + max(abs(mover->groundSpeed), maxExtraKB);
+			hitboxInfo->knockback = baseKB + max(abs(surfaceMover->groundSpeed), maxExtraKB);
 		}
 		else
 		{
 			hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
-			hitboxInfo->knockback = baseKB + max(abs(mover->groundSpeed), maxExtraKB);
+			hitboxInfo->knockback = baseKB + max(abs(surfaceMover->groundSpeed), maxExtraKB);
 		}
 	}
 	else
@@ -429,18 +421,18 @@ void CrawlerQueen::ProcessState()
 			break;
 		case RUMBLE:
 			action = POPOUT;
-			mover->ground = decidePoints[digAttackCounter].edge;
-			mover->edgeQuantity = decidePoints[digAttackCounter].quantity;
-			mover->UpdateGroundPos();
+			//mover->ground = decidePoints[digAttackCounter].edge;
+			//mover->edgeQuantity = decidePoints[digAttackCounter].quantity;
+			//mover->UpdateGroundPos();
 			frame = 0;
 			break;
 		case POPOUT:
 			++digAttackCounter;
 			if (digAttackCounter == numDecisions)
 			{
-				mover->ground = digInfo.edge;
-				mover->edgeQuantity = digInfo.quantity;
-				mover->UpdateGroundPos();
+				//mover->ground = digInfo.edge;
+				//mover->edgeQuantity = digInfo.quantity;
+				//mover->UpdateGroundPos();
 				action = UNBURROW;
 				frame = 0;
 			}
@@ -472,9 +464,9 @@ void CrawlerQueen::ProcessState()
 	if (redecide)
 	{
 		action = DECIDE;
-		SetLevel();
 		SetDecisions();
 		DecidePoints();
+		SetDifficulty(0);
 		frame = 0;
 		decideIndex = 0;
 		mover->SetSpeed(0);
@@ -1023,7 +1015,7 @@ void CrawlerQueen::ConfirmKill()
 	DeactivateAllBombs();
 }
 
-void CrawlerQueen::SetLevel()
+void CrawlerQueen::SetDifficulty( int lev)
 {
 	//max health is 120 
 	if (numHealth > 100)
