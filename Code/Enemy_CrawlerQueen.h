@@ -41,7 +41,7 @@ struct FloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	void ProcessHit();
 };
 
-struct AfterCrawlerFightSeq;
+struct CrawlerPostFightScene;
 
 struct CrawlerQueen : Enemy, SurfaceMoverHandler
 {
@@ -76,7 +76,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	};
 
 	int maxDecision;
-	AfterCrawlerFightSeq *postFightScene;
+	CrawlerPostFightScene *postFightScene;
 	Tileset *ts[Count];
 
 	struct EdgeInfo //for decisions
@@ -176,7 +176,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void DecidePoints();
-	void InitEdgeInfo();
 	void SetDecisions();
 	void DecideAction();
 	void DecideNextAction( );

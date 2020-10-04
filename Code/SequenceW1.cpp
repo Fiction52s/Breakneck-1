@@ -221,12 +221,12 @@ void TextTestSeq::UpdateSceneLabel()
 	sceneLabel.setString(cg->sceneName);
 }
 
-CrawlerAttackSeq::CrawlerAttackSeq()
+CrawlerPreFightScene::CrawlerPreFightScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
 }
 
-void CrawlerAttackSeq::SetupStates()
+void CrawlerPreFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
@@ -244,14 +244,14 @@ void CrawlerAttackSeq::SetupStates()
 	queen = (CrawlerQueen*)sess->GetEnemy(EnemyType::EN_CRAWLERQUEEN);
 }
 
-void CrawlerAttackSeq::AddShots()
+void CrawlerPreFightScene::AddShots()
 {
 	AddShot("scenecam");
 	AddShot("cavecam");
 	AddShot("fightcam");
 }
 
-void CrawlerAttackSeq::AddPoints()
+void CrawlerPreFightScene::AddPoints()
 {
 	AddStartAndStopPoints();
 	AddPoint("crawlerdig1");
@@ -260,13 +260,13 @@ void CrawlerAttackSeq::AddPoints()
 	AddPoint("crawlerthrowkin");
 }
 
-void CrawlerAttackSeq::AddGroups()
+void CrawlerPreFightScene::AddGroups()
 {
 	AddGroup("pre_crawler", "W1/w1_crawler_pre_fight");
 	SetConvGroup("pre_crawler");
 }
 
-void CrawlerAttackSeq::AddEnemies()
+void CrawlerPreFightScene::AddEnemies()
 {
 	PoiInfo *surface = points["crawlersurface"];
 
@@ -278,7 +278,7 @@ void CrawlerAttackSeq::AddEnemies()
 	//AddEnemy("queen", queen);
 }
 
-void CrawlerAttackSeq::AddFlashes()
+void CrawlerPreFightScene::AddFlashes()
 {
 	AddFlashedImage("detailedgrab", sess->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
 		0, 30, 60, 30, Vector2f(1160, 540));
@@ -290,14 +290,14 @@ void CrawlerAttackSeq::AddFlashes()
 		0, 30, 60, 30, Vector2f(625, 325));
 }
 
-void CrawlerAttackSeq::SpecialInit()
+void CrawlerPreFightScene::SpecialInit()
 {
 	ts_queenGrab = sess->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
 	queenGrabSprite.setTexture(*ts_queenGrab->texture);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 }
 
-void CrawlerAttackSeq::ReturnToGame()
+void CrawlerPreFightScene::ReturnToGame()
 {
 	Actor *player = sess->GetPlayer(0);
 
@@ -307,7 +307,7 @@ void CrawlerAttackSeq::ReturnToGame()
 	EaseShot("fightcam", 60);
 }
 
-void CrawlerAttackSeq::UpdateState()
+void CrawlerPreFightScene::UpdateState()
 {
 	Actor *player = sess->GetPlayer(0);
 	switch (state)
@@ -393,7 +393,7 @@ void CrawlerAttackSeq::UpdateState()
 	}
 }
 
-void CrawlerAttackSeq::UpdateCrawlerSwoop()
+void CrawlerPreFightScene::UpdateCrawlerSwoop()
 {
 	Actor *player = sess->GetPlayer(0);
 	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
@@ -407,7 +407,7 @@ void CrawlerAttackSeq::UpdateCrawlerSwoop()
 	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
 }
 
-void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
+void CrawlerPreFightScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
 	if (layer != EffectLayer::IN_FRONT)
 	{
@@ -422,13 +422,13 @@ void CrawlerAttackSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 	BasicBossScene::Draw(target, layer);
 }
 
-AfterCrawlerFightSeq::AfterCrawlerFightSeq()
+CrawlerPostFightScene::CrawlerPostFightScene()
 	:BasicBossScene( BasicBossScene::APPEAR )
 {
 
 }
 
-void AfterCrawlerFightSeq::SetupStates()
+void CrawlerPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
@@ -436,7 +436,7 @@ void AfterCrawlerFightSeq::SetupStates()
 	stateLength[PLAYMOVIE] = 1000000;
 }
 
-void AfterCrawlerFightSeq::ReturnToGame()
+void CrawlerPostFightScene::ReturnToGame()
 {
 	SetPlayerStandDefaultPoint(true);
 	sess->Fade(true, 60, Color::Black);
@@ -444,18 +444,18 @@ void AfterCrawlerFightSeq::ReturnToGame()
 	sess->TotalDissolveGates(Gate::BOSS);
 }
 
-void AfterCrawlerFightSeq::AddPoints()
+void CrawlerPostFightScene::AddPoints()
 {
 	AddStandPoint();
 }
 
-void AfterCrawlerFightSeq::StartRunning()
+void CrawlerPostFightScene::StartRunning()
 {
 	//right now only works in gamesession
 	sess->SetGameSessionState(GameSession::SEQUENCE);
 }
 
-void AfterCrawlerFightSeq::UpdateState()
+void CrawlerPostFightScene::UpdateState()
 {
 	if (state == FADE)
 	{
@@ -478,7 +478,7 @@ void AfterCrawlerFightSeq::UpdateState()
 	}
 }
 
-void AfterCrawlerFightSeq::AddMovies()
+void CrawlerPostFightScene::AddMovies()
 {
 	AddMovie("crawler_slash");
 }

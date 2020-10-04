@@ -66,7 +66,7 @@ GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRi
 		gameSequence = new NexusCore1Seq;
 		break;
 	case TRIGGER_CRAWLERATTACK:
-		gameSequence = new CrawlerAttackSeq;
+		gameSequence = new CrawlerPostFightScene;
 		break;
 	case TRIGGER_TEXTTEST:
 		gameSequence = new TextTestSeq;

@@ -1318,6 +1318,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
 	LoadAllPolyShaders();
 	
+	
 
 	transformTools = new TransformTools();
 
@@ -3632,6 +3633,17 @@ int EditSession::EditRun()
 	
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
+
+	
+	string basicGroupName = "--";
+
+	if (groups[basicGroupName] == NULL)
+	{
+		ActorGroup *basicGroup = new ActorGroup(basicGroupName);
+		groups[basicGroupName] = basicGroup;
+	}
+
+	
 
 	ActorGroup *playerGroup = new ActorGroup("player");
 	groups["player"] = playerGroup;

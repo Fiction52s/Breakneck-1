@@ -12,7 +12,8 @@ struct ConversationGroup;
 struct Nexus;
 struct Session;
 
-struct CrawlerAttackSeq : BasicBossScene
+//BirdPostFightScene
+struct CrawlerPreFightScene : BasicBossScene
 {
 	enum State
 	{
@@ -29,7 +30,7 @@ struct CrawlerAttackSeq : BasicBossScene
 		Count
 	};
 
-	CrawlerAttackSeq();
+	CrawlerPreFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
@@ -51,7 +52,7 @@ struct CrawlerAttackSeq : BasicBossScene
 	sf::Sprite queenGrabSprite;
 };
 
-struct AfterCrawlerFightSeq : BasicBossScene
+struct CrawlerPostFightScene : BasicBossScene
 {
 	enum State
 	{
@@ -60,7 +61,7 @@ struct AfterCrawlerFightSeq : BasicBossScene
 		Count
 	};
 
-	AfterCrawlerFightSeq();
+	CrawlerPostFightScene();
 
 	void SetupStates();
 	void ReturnToGame();

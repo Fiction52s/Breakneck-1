@@ -2147,6 +2147,10 @@ bool Session::ReadActors(std::ifstream &is)
 		is >> numActors;
 
 		ActorGroup *gr = new ActorGroup(groupName);
+		if (groups[groupName] != NULL)
+		{
+			delete groups[groupName]; //because its not getting made in the editor startup too.
+		}
 		groups[groupName] = gr;
 
 		for (int j = 0; j < numActors; ++j)

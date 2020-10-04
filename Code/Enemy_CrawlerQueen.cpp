@@ -28,43 +28,21 @@ using namespace sf;
 CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap )//, false, 1, false), clockwise(cw)
 {
-	SetNumActions(DECIDE);
+	SetNumActions(Count);
 	SetEditorActions(DECIDE, DECIDE, 0);
 
 	BossCrawlerParams *cParams = (BossCrawlerParams*)ap;
 
 	SetLevel(ap->enemyLevel);
 
-	if (sess->IsSessTypeGame())
-	{
-		game = GameSession::GetSession();
-	}
-	else
-	{
-		game = NULL;
-	}
-
 	ts_decideMarker = sess->GetTileset("Bosses/Crawler/crawler_queen_marker_64x64.png", 64, 64);
 
 	decideVA = new Vertex[MAX_DECISIONS * 4 * 3];
-	//ClearDecisionMarkers();
-
-	//memset(decideVA, 0, MAX_DECISIONS * 4);
 	
-	if (game != NULL)
-	{
-		AfterCrawlerFightSeq *acfseq = new AfterCrawlerFightSeq;
-		acfseq->Init();
-		seq = acfseq;
-	}
-	else
-	{
-		seq = NULL;
-	}
+	postFightScene = NULL;
 
 	progressionLevel = 0;
 	
-	highResPhysics = true;
 	redecide = false;
 	origFacingRight = false;
 	facingRight = origFacingRight;
@@ -82,7 +60,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 
 	decMarkerPool = new EffectPool(EffectType::FX_REGULAR, MAX_DECISIONS, 1.f);
 	decideIndex = 0;
-	dead = false;
 
 	actionLength[DECIDE] = 1;
 	actionLength[BOOST] = 1;
@@ -114,8 +91,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	animFactor[UNBURROW] = 2;
 
 	animFactor[SEQ_FINISHINITIALUNBURROW] = 3;
-
-
 	animFactor[INITIALUNBURROW] = 2;
 	animFactor[INITIALWAIT] = 1;
 	animFactor[INITIALIDLE] = 1;
@@ -139,25 +114,12 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 	ts[SEQ_ANGRY0] = ts[UNBURROW];
 	ts[SEQ_FINISHINITIALUNBURROW] = ts[UNBURROW];
 
-	sprite.setTexture(*ts[WAIT]->texture);
-	sprite.setTextureRect(ts[WAIT]->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = mover->ground->GetPosition(startPosInfo.GetQuant());
-	sprite.setPosition(gPoint.x, gPoint.y);
-	V2d gNorm = mover->ground->Normal();
-
 	decideDelayFrames = 20;
 
 	multSpeed = 1;
 
 	SetOffGroundHeight(height / 2.0);
 	SetCurrPosInfo(startPosInfo);
-
-	double angle = atan2(gNorm.x, -gNorm.y);
-	sprite.setRotation(angle / PI * 180.f);
-
-	double size = max(width, height);
-	spawnRect = sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -199,11 +161,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap )//Edge *g, double q, bool cw )
 
 
 	ResetEnemy();
-
-	SetSpawnRect();
-	//ResetEnemy();
-	//ResetEnemy();
-	//frame = actionLength[UNDERGROUND];
 }
 
 void CrawlerQueen::ClearDecisionMarkers()
@@ -216,7 +173,10 @@ void CrawlerQueen::ClearDecisionMarkers()
 
 CrawlerQueen::~CrawlerQueen()
 {
-	delete mover;
+	if (postFightScene != NULL)
+	{
+		delete postFightScene;
+	}
 
 	delete decMarkerPool;
 
@@ -231,40 +191,6 @@ CrawlerQueen::~CrawlerQueen()
 
 	delete decisionPool;
 	delete bombPool;
-	delete seq;
-}
-
-void CrawlerQueen::InitEdgeInfo()
-{
-	assert(edgeRef == NULL);
-
-	numTotalEdges = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
-	Edge *startEdge = curr;
-
-	do
-	{
-		numTotalEdges++;
-
-		curr = curr->edge1;
-	} while (curr != startEdge);
-
-	edgeRef = new Edge*[numTotalEdges];
-
-	
-
-	int edgeIndex = 0;
-	do
-	{
-		edgeRef[edgeIndex] = curr;
-		edgeIndexMap[curr] = edgeIndex;
-		curr = curr->edge1;
-		++edgeIndex;
-	}
-	while (curr != startEdge);
-
-	int f = 0;
 }
 
 void CrawlerQueen::InitOnRespawn()
@@ -275,9 +201,6 @@ void CrawlerQueen::InitOnRespawn()
 
 void CrawlerQueen::ResetEnemy()
 {
-	if( seq != NULL )
-		seq->Reset();
-	//storySeq->Reset();
 	ClearDecisionMarkers();
 	decisionPool->DeactivateAll();
 	invinc = false;
@@ -469,7 +392,7 @@ void CrawlerQueen::ProcessState()
 		SetDifficulty(0);
 		frame = 0;
 		decideIndex = 0;
-		mover->SetSpeed(0);
+		surfaceMover->SetSpeed(0);
 		redecide = false;
 	}
 
@@ -480,7 +403,7 @@ void CrawlerQueen::ProcessState()
 		break;
 	case BOOST:
 	{
-		assert(mover->ground != NULL);
+		assert(surfaceMover->ground != NULL);
 		break;
 	}
 	case DECIDE:
@@ -493,9 +416,9 @@ void CrawlerQueen::ProcessState()
 		{
 			if (decideIndex == numDecisions - 1)
 			{
-				startTravelPoint.edge = mover->ground;
-				startTravelPoint.quantity = mover->edgeQuantity;
-				startTravelPoint.index = edgeIndexMap[mover->ground];
+				startTravelPoint.edge = surfaceMover->ground;
+				startTravelPoint.quantity = surfaceMover->edgeQuantity;
+				startTravelPoint.index = edgeIndexMap[surfaceMover->ground];
 				travelIndex = 0;
 				redecide = false;
 				DecideAction();
@@ -544,7 +467,7 @@ void CrawlerQueen::ProcessState()
 		{
 			FloatingBomb *fb = (FloatingBomb*)bombPool->ActivatePoolMember();
 			assert(fb != NULL);
-			fb->Init(mover->ground->GetPosition(mover->edgeQuantity), mover->ground->Normal() * bombSpeed);
+			fb->Init(surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity), surfaceMover->ground->Normal() * bombSpeed);
 			sess->AddEnemy(fb);
 			cout << "spawning bomb: " << fb << ": " << fb->GetPosition().x << ", " << fb->GetPosition().y << endl;
 		}
@@ -560,7 +483,7 @@ void CrawlerQueen::UpdateEnemyPhysics()
 {
 	if (!dead)
 	{
-		mover->Move(slowMultiple, numPhysSteps);
+		surfaceMover->Move(slowMultiple, numPhysSteps);
 		//position = mover->physBody.globalPosition;
 
 		switch (action)
@@ -571,11 +494,11 @@ void CrawlerQueen::UpdateEnemyPhysics()
 			{
 				int startIndex = edgeIndexMap[startTravelPoint.edge];
 				int destIndex = edgeIndexMap[decidePoints[travelIndex].edge];
-				int groundIndex = edgeIndexMap[mover->ground];
+				int groundIndex = edgeIndexMap[surfaceMover->ground];
 				EdgeInfo &dest = decidePoints[travelIndex];
 				int maxEdge = edgeIndexMap.size() - 1;
 
-				if (!leftInitialEdge && mover->ground != startTravelPoint.edge)
+				if (!leftInitialEdge && surfaceMover->ground != startTravelPoint.edge)
 				{
 					leftInitialEdge = true;
 				}
@@ -602,7 +525,7 @@ void CrawlerQueen::UpdateEnemyPhysics()
 
 					bool a = groundIndex > destIndex;
 					bool b = (destIndex == maxEdge && groundIndex == 0 && completedLoop);
-					bool c = (groundIndex == destIndex && mover->edgeQuantity >= dest.quantity);
+					bool c = (groundIndex == destIndex && surfaceMover->edgeQuantity >= dest.quantity);
 					if (partLoop && ( a || b || c ) )
 					{
 						//cout << a << " " << b << " " << c << ", start: " << startIndex << ", dest: " << destIndex << endl;
@@ -621,7 +544,7 @@ void CrawlerQueen::UpdateEnemyPhysics()
 
 					bool a = groundIndex < destIndex;
 					bool b = (destIndex == 0 && groundIndex == maxEdge && completedLoop );
-					bool c = (groundIndex == destIndex && mover->edgeQuantity <= dest.quantity);
+					bool c = (groundIndex == destIndex && surfaceMover->edgeQuantity <= dest.quantity);
 					if (partLoop && (a || b || c ) )
 					{
 						//cout << a << " " << b << " " << c << ", start: " << startIndex << ", dest: " << destIndex << endl;
@@ -712,13 +635,13 @@ void CrawlerQueen::DeactivateAllBombs()
 
 void CrawlerQueen::HitTerrainAerial(Edge *e, double q)
 {
-	mover->ground = e;
-	mover->edgeQuantity = q;
-	mover->UpdateGroundPos();
+	surfaceMover->ground = e;
+	surfaceMover->edgeQuantity = q;
+	surfaceMover->UpdateGroundPos();
 
-	startTravelPoint.edge = mover->ground;
-	startTravelPoint.index = mover->edgeQuantity;
-	startTravelPoint.index = edgeIndexMap[mover->ground];
+	startTravelPoint.edge = surfaceMover->ground;
+	startTravelPoint.index = surfaceMover->edgeQuantity;
+	startTravelPoint.index = edgeIndexMap[surfaceMover->ground];
 
 	Boost();
 }
@@ -793,8 +716,8 @@ void CrawlerQueen::UpdateSprite()
 
 	ir = currTS->GetSubRect(currTile);
 
-	bool extraFlipCW = facingRight && action == POPOUT && mover->ground->Normal().x < 0;
-	bool extraFlipCCW = !facingRight && action == POPOUT && mover->ground->Normal().x > 0;
+	bool extraFlipCW = facingRight && action == POPOUT && surfaceMover->ground->Normal().x < 0;
+	bool extraFlipCCW = !facingRight && action == POPOUT && surfaceMover->ground->Normal().x > 0;
 	bool flip = !facingRight;
 	if (extraFlipCW || extraFlipCCW)
 	{
@@ -810,15 +733,15 @@ void CrawlerQueen::UpdateSprite()
 	}
 	
 
-	if (mover->ground != NULL)
+	if (surfaceMover->ground != NULL)
 	{
-		V2d gn = mover->ground->Normal();
+		V2d gn = surfaceMover->ground->Normal();
 
-		if (!mover->roll)
+		if (!surfaceMover->roll)
 		{
 			angle = atan2(gn.x, -gn.y);
 
-			V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
+			V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 
 			sprite.setRotation(angle / PI * 180);
@@ -828,24 +751,24 @@ void CrawlerQueen::UpdateSprite()
 		{
 			if (facingRight)
 			{
-				V2d vec = normalize(GetPosition() - mover->ground->v1);
+				V2d vec = normalize(GetPosition() - surfaceMover->ground->v1);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPosition(mover->edgeQuantity);//ground->GetPosition( edgeQuantity );
+				V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);//ground->GetPosition( edgeQuantity );
 				sprite.setPosition(pp.x, pp.y);
 			}
 			else
 			{
-				V2d vec = normalize(GetPosition() - mover->ground->v0);
+				V2d vec = normalize(GetPosition() - surfaceMover->ground->v0);
 				angle = atan2(vec.y, vec.x);
 				angle += PI / 2.0;
 
 				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPosition(mover->edgeQuantity);
+				V2d pp = surfaceMover->ground->GetPosition(surfaceMover->edgeQuantity);
 				sprite.setPosition(pp.x, pp.y);
 			}
 		}
@@ -854,7 +777,7 @@ void CrawlerQueen::UpdateSprite()
 	{
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -extraVert);
 		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(Vector2f(mover->physBody.globalPosition));
+		sprite.setPosition(Vector2f(surfaceMover->physBody.globalPosition));
 	}
 
 	if (DecideShownAction())
@@ -875,7 +798,7 @@ void CrawlerQueen::UpdateSprite()
 				decDebugDraw[i].getLocalBounds().height / 2));
 			decDebugDraw[i].setPosition(
 				Vector2f(decidePoints[i].edge->GetPosition(decidePoints[i].quantity))
-				+ Vector2f(decidePoints[i].edge->Normal() * mover->physBody.rw));
+				+ Vector2f(decidePoints[i].edge->Normal() * surfaceMover->physBody.rw));
 		}
 	}
 
@@ -923,7 +846,7 @@ void CrawlerQueen::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	if (!dead)
-		mover->physBody.DebugDraw(CollisionBox::Physics, target);
+		surfaceMover->physBody.DebugDraw(CollisionBox::Physics, target);
 	
 	for (int i = 0; i < numDecisions; ++i)
 	{
@@ -941,13 +864,13 @@ bool CrawlerQueen::PlayerInFront()
 	V2d dir;
 	if (facingRight)
 	{
-		dir = normalize(mover->ground->v1 - mover->ground->v0);
+		dir = normalize(surfaceMover->ground->v1 - surfaceMover->ground->v0);
 	}
 	else if (!facingRight)
 	{
-		dir = normalize(mover->ground->v0 - mover->ground->v1);
+		dir = normalize(surfaceMover->ground->v0 - surfaceMover->ground->v1);
 	}
-	double alongDist = dot(sess->GetPlayer(0)->position - mover->physBody.globalPosition, dir);
+	double alongDist = dot(sess->GetPlayer(0)->position - surfaceMover->physBody.globalPosition, dir);
 	if (alongDist > -60)
 		return true;
 	else
@@ -966,13 +889,13 @@ void CrawlerQueen::Accelerate(double amount)
 	}
 
 	double max = 35.0;
-	double am = mover->groundSpeed + amount;
+	double am = surfaceMover->groundSpeed + amount;
 	if (am > max)
 		am = max;
 	if (am < -max)
 		am = -max;
 	cout << "speed: " << am << endl;
-	mover->SetSpeed(am);
+	surfaceMover->SetSpeed(am);
 }
 
 void CrawlerQueen::SetForwardSpeed(double speed)
@@ -980,11 +903,11 @@ void CrawlerQueen::SetForwardSpeed(double speed)
 	double aSpeed = abs(speed);
 	if (facingRight)
 	{
-		mover->SetSpeed(aSpeed);
+		surfaceMover->SetSpeed(aSpeed);
 	}
 	else
 	{
-		mover->SetSpeed(-aSpeed);
+		surfaceMover->SetSpeed(-aSpeed);
 	}
 }
 
@@ -1005,10 +928,10 @@ void CrawlerQueen::ConfirmKill()
 	if (game != NULL)
 	{
 		game->SoftenGates(Gate::BOSS);
-		game->SetActiveSequence(seq);
+		game->SetActiveSequence(postFightScene);
 	}
 	
-	mover->groundSpeed = 0;
+	surfaceMover->groundSpeed = 0;
 
 	dead = true;
 
@@ -1078,8 +1001,8 @@ double CrawlerQueen::GetDistanceCCW(int index)
 
 
 	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
+	Edge *curr = surfaceMover->ground;
+	double currQ = surfaceMover->edgeQuantity;
 
 	sum += currQ;
 	curr = curr->edge0;
@@ -1099,8 +1022,8 @@ void CrawlerQueen::Jump()
 {
 	action = JUMP;
 	frame = 0;
-	mover->velocity = mover->ground->Normal() * 10.0;
-	mover->ground = NULL;
+	surfaceMover->velocity = surfaceMover->ground->Normal() * 10.0;
+	surfaceMover->ground = NULL;
 }
 
 void CrawlerQueen::Boost()
@@ -1113,13 +1036,13 @@ void CrawlerQueen::Boost()
 	if (GetClockwise(travelIndex))
 	{
 		facingRight = true;
-		mover->SetSpeed(baseSpeed + travelIndex * multSpeed);
+		surfaceMover->SetSpeed(baseSpeed + travelIndex * multSpeed);
 		//cout << "travel: " << travelIndex << ", clockwise: " << startTravelPoint.index << " to " << decidePoints[travelIndex].index << endl;
 	}
 	else
 	{
 		facingRight = false;
-		mover->SetSpeed(-baseSpeed - travelIndex * multSpeed);
+		surfaceMover->SetSpeed(-baseSpeed - travelIndex * multSpeed);
 		//cout << "travel: " << travelIndex << ", CCW: " << startTravelPoint.index << " to " << decidePoints[travelIndex].index << endl;
 	}
 }
@@ -1149,9 +1072,9 @@ void CrawlerQueen::DecideAction()
 	}
 	case D_DIG:
 	{
-		mover->SetSpeed(0);
-		digInfo.edge = mover->ground;
-		digInfo.quantity = mover->edgeQuantity;
+		surfaceMover->SetSpeed(0);
+		digInfo.edge = surfaceMover->ground;
+		digInfo.quantity = surfaceMover->edgeQuantity;
 		action = BURROW;
 		frame = 0;
 		digAttackCounter = 0;
@@ -1168,8 +1091,8 @@ double CrawlerQueen::GetDistanceClockwise(int index)
 
 
 	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
+	Edge *curr = surfaceMover->ground;
+	double currQ = surfaceMover->edgeQuantity;
 
 	sum += length(curr->v1 - curr->v0) - currQ;
 	curr = curr->edge1;
@@ -1199,9 +1122,9 @@ double CrawlerQueen::GetDistanceClockwise(int index)
 void CrawlerQueen::DecideNextAction()
 {
 	++travelIndex;
-	startTravelPoint.edge = mover->ground;
-	startTravelPoint.index = mover->edgeQuantity;
-	startTravelPoint.index = edgeIndexMap[mover->ground];
+	startTravelPoint.edge = surfaceMover->ground;
+	startTravelPoint.index = surfaceMover->edgeQuantity;
+	startTravelPoint.index = edgeIndexMap[surfaceMover->ground];
 	DecideAction();
 }
 
@@ -1211,8 +1134,8 @@ bool CrawlerQueen::GetClockwise(int index)
 	double q = decidePoints[index].quantity;
 
 	double sum = 0;
-	Edge *curr = mover->ground;
-	double currQ = mover->edgeQuantity;
+	Edge *curr = surfaceMover->ground;
+	double currQ = surfaceMover->edgeQuantity;
 
 	if (curr == e)
 	{
@@ -1254,7 +1177,10 @@ void CrawlerQueen::Init()
 
 void CrawlerQueen::Setup()
 {
-	InitEdgeInfo();	
+	Enemy::Setup();
+
+	postFightScene = new CrawlerPostFightScene;
+	postFightScene->Init();
 
 	ResetEnemy();
 }
