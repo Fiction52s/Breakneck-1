@@ -331,7 +331,7 @@ void AdventureFile::Save(const std::string &p_path,
 	}
 	else
 	{
-		of.open(p_path + "/" + adventureName + ext);
+		of.open("Resources/" + p_path + "/" + adventureName + ext);
 	}
 
 	assert(of.is_open());

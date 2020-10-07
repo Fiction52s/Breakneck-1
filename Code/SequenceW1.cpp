@@ -19,7 +19,7 @@ CrawlerAttackScene::CrawlerAttackScene()
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL)
 	{
-		myBonus = game->CreateBonus("Bosses/queentest01");
+		myBonus = game->CreateBonus("FinishedScenes/W1/crawlerfight1");
 	}
 	else
 	{
