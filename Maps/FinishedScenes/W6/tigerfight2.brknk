@@ -9,7 +9,7 @@ nothing
 9000
 0
 112
-NONE
+tigerfight2
 NONE
 0
 -5875 3717
@@ -162,5 +162,23 @@ borderpoly
 0
 0
 1
--- 0
+-- 8
+poi 1 -1 11 1051.08
+kinstart0
+poi 1 -1 11 1332.88
+kinstop0
+poi 1 -1 0 50.9252
+kinstand0
+camerashot -3667 5077
+tigerdeathcam
+1
+camerashot -3840 5035
+scenecam
+1
+tiger -1 0 261.915
+2
+tigernode 1 3 0 129.097
+A
+tigernode 1 4 0 213.318
+A
 0

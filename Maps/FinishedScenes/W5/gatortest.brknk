@@ -9,7 +9,7 @@ nothing
 9000
 0
 78
-NONE
+gatorscene0
 NONE
 0
 -4785 2954
@@ -137,7 +137,13 @@ borderpoly
 0
 0
 1
--- 10
+-- 16
+poi 1 -1 22 249.865
+kinstart0
+poi 1 -1 24 80.1197
+kinstop0
+poi 1 -1 25 18.8811
+kinstand0
 gatornode 0 -4041 2544
 A
 gatornode 0 -4587 2720
@@ -157,4 +163,13 @@ A
 gatornode 0 -3538 3126
 A
 gator -4009 2960
+camerashot -4103 3585
+scenecam
+1
+camerashot -4041 3337
+fightcam
+1.93333
+camerashot -3826 3515
+gatordeathcam
+1.2625
 0

@@ -9,7 +9,7 @@ nothing
 9000
 0
 130
-NONE
+tigerscene0
 NONE
 0
 -4246 3330
@@ -174,8 +174,15 @@ borderpoly
 0
 0
 1
--- 6
-tiger 4 0 55.4418
+-- 13
+poi 1 -1 17 60.897
+kinstart0
+poi 1 -1 17 298.426
+kinstop0
+poi 1 -1 18 145
+kinnext
+poi 1 4 19 217.696
+kinstand0
 tigernode 1 0 4 173
 A
 tigernode 1 1 3 25.8754
@@ -186,4 +193,15 @@ tigernode 1 3 4 112.773
 A
 tigernode 1 -1 18 83
 A
+camerashot -3687 3629
+scenecam
+1
+camerashot -2965 3611
+crawlerdeathcam
+1.625
+camerashot -3047 2613
+birdrescuecam
+1.375
+tiger 4 0 100.311
+1
 0

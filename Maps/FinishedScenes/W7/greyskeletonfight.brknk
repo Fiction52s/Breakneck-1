@@ -9,7 +9,7 @@ nothing
 9000
 0
 70
-NONE
+finalskeletonfight
 NONE
 0
 -4785 2954
@@ -102,5 +102,27 @@ borderpoly
 0
 0
 1
--- 0
+-- 10
+poi 1 -1 9 289
+kinstart0
+poi 1 -1 9 559
+kinstop0
+poi 1 -1 9 441
+kinstand
+camerashot -3230 2425
+fightcam
+4.11481
+camerashot -3124 2998
+scenecam
+1
+camerashot -3439 2998
+victorycam
+1
+greyskeletonnode 0 -3712 2993
+A
+greyskeletonnode 0 -2788 3019
+A
+greyskeletonnode 0 -3286 2655
+A
+greyskeleton -3318 2209
 0

@@ -9,7 +9,7 @@ nothing
 9000
 0
 40
-NONE
+birdscene1
 NONE
 0
 -3754 1676
@@ -96,5 +96,26 @@ borderpoly
 0
 0
 1
--- 0
+-- 9
+poi 1 -1 3 687.268
+kinstart0
+poi 1 -1 4 105
+kinstop0
+camerashot -3384 2485
+scenecam
+1
+camerashot -3315 2237
+fightcam
+1.93333
+birdnode 0 -3794 1497
+A
+birdnode 0 -3112 1493
+A
+birdnode 0 -3449 2073
+A
+groundedwarper -1 6 108
+Bosses/greyw1
+0
+bird -3474 1820
+2
 0

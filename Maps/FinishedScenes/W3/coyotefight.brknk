@@ -35,7 +35,11 @@ borderpoly
 0
 0
 1
--- 12
+-- 16
+poi 1 -1 2 107.836
+kinstart0
+poi 1 -1 2 267.793
+kinstop0
 coyote -1 3 351.018
 coyotenode 0 -4683 3316
 A
@@ -51,7 +55,7 @@ coyotenode 0 -4002 3727
 A
 coyotenode 0 -4407 3070
 A
-coyotenode 0 -3496 3100
+coyotenode 0 -3522 3076
 A
 coyotenode 0 -4008 3084
 A
@@ -59,4 +63,10 @@ coyotenode 0 -4006 3354
 A
 coyotenode 0 -4006 2770
 A
+camerashot -4088 3488
+scenecam
+1
+groundedwarper -1 4 186
+FinishedScenes/W3/coyoteandskeleton
+0
 0

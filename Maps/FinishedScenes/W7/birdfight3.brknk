@@ -9,7 +9,7 @@ nothing
 9000
 0
 168
-NONE
+birdfinalfight
 NONE
 0
 -3708 2212
@@ -260,5 +260,25 @@ borderpoly
 0
 0
 1
--- 0
+-- 9
+poi 1 -1 54 85.0411
+kinstart0
+poi 1 -1 56 44.3558
+kinstop0
+poi 1 -1 57 94.6721
+kinstand0
+camerashot -3476 2755
+scenecam
+1
+camerashot -3378 2166
+fightcam
+3.90625
+birdnode 0 -3849 2067
+A
+birdnode 0 -2525 2033
+A
+birdnode 0 -3189 2887
+A
+bird -3140 2649
+3
 0

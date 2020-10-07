@@ -5,11 +5,11 @@ This is the beginning of the song<>
 nothing
 0
 0 w1_04
--6172 1253 4070 961
+-6162 1253 4060 961
 9000
 0
 153
-NONE
+crawlerscene3
 NONE
 0
 -4681 2432
@@ -191,5 +191,28 @@ borderpoly
 0
 0
 1
--- 0
+-- 10
+poi 1 -1 14 214.571
+kinstart0
+poi 1 -1 16 66.1286
+kinstop0
+camerashot -4718 3889
+crawlercam
+1
+camerashot -4728 3683
+fightcam
+2.40741
+groundedwarper -1 28 234
+FinishedScenes/W4/tigerfight
+0
+crawlerqueen -1 18 84
+2
+crawlernode 1 0 36 62.4038
+A
+crawlernode 1 2 36 53.9201
+A
+crawlernode 1 1 36 38.4048
+A
+crawlernode 1 -1 17 170
+A
 0
