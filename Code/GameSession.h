@@ -426,6 +426,7 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
+	GameSession * CreateBonus(const std::string &bonusName);
 	void ActivateBonus(V2d &returnPos);
 	void SetBonus(GameSession *bonus,
 		V2d &returnPos);

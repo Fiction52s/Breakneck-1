@@ -110,15 +110,7 @@ void Barrier::SetScene()
 		GameSession *game = GameSession::GetSession();
 		if (game != NULL)
 		{
-			boost::filesystem::path p("Resources/Maps/" + name + ".brknk");
-			GameSession *game = GameSession::GetSession();
-
-			myBonus = new GameSession(game->saveFile, p);
-			myBonus->SetParentGame(game);
-			myBonus->Load();
-
-			game->currSession = game;
-			game->pauseMenu->owner = game;
+			myBonus = game->CreateBonus(name);
 
 			warpSeq = new WarpTransitionSequence;
 			warpSeq->Init();

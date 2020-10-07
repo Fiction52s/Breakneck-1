@@ -402,6 +402,19 @@ void GameSession::ActivateBonus(V2d &returnPos)
 	bonusReturnPos = returnPos;
 }
 
+GameSession * GameSession::CreateBonus(const std::string &bonusName)
+{
+	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
+	
+	GameSession *newBonus = new GameSession(saveFile, p);
+	newBonus->SetParentGame(this);
+	newBonus->Load();
+
+	currSession = this;
+	pauseMenu->owner = this;
+}
+
+
 void GameSession::SetBonus(GameSession *bonus,
 	V2d &returnPos)
 {

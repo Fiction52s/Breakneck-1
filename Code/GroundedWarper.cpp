@@ -14,18 +14,11 @@ using namespace sf;
 void GroundedWarper::Setup()
 {
 	SetSpawnRect();
-	if (sess->IsSessTypeGame())
+
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL )
 	{
-		//boost::filesystem::path p("Resources/Maps/Bosses/greyw1.brknk");
-		boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
-		GameSession *game = GameSession::GetSession();
-
-		myBonus = new GameSession(game->saveFile, p);
-		myBonus->SetParentGame(game);
-		myBonus->Load();
-
-		game->currSession = game;
-		game->pauseMenu->owner = game;
+		myBonus = game->CreateBonus(bonusName);
 	}
 	else
 	{

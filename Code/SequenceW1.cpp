@@ -17,18 +17,13 @@ CrawlerAttackScene::CrawlerAttackScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
 	GameSession *game = GameSession::GetSession();
-	myBonus = NULL;
 	if (game != NULL)
 	{
-		boost::filesystem::path p("Resources/Maps/Bosses/queentest01.brknk");
-		GameSession *game = GameSession::GetSession();
-
-		myBonus = new GameSession(game->saveFile, p);
-		myBonus->SetParentGame(game);
-		myBonus->Load();
-
-		game->currSession = game;
-		game->pauseMenu->owner = game;
+		myBonus = game->CreateBonus("Bosses/queentest01");
+	}
+	else
+	{
+		myBonus = NULL;
 	}
 }
 
