@@ -9,6 +9,7 @@
 #include "ScoreDisplay.h"
 #include "GroundedWarper.h"
 #include "Enemy_Tiger.h"
+#include "Enemy_CrawlerQueen.h"
 
 using namespace sf;
 using namespace std;
@@ -26,9 +27,7 @@ void CrawlerPreFight2Scene::SetupStates()
 	stateLength[WAIT] = 1;
 	stateLength[CONV] = -1;
 
-	CrawlerPostFight2Scene *scene = new CrawlerPostFight2Scene;
-	scene->Init();
-	nextSeq = scene;
+	queen = (CrawlerQueen*)sess->GetEnemy(EnemyType::EN_CRAWLERQUEEN);
 }
 
 void CrawlerPreFight2Scene::AddShots()
@@ -92,6 +91,11 @@ void CrawlerPreFight2Scene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
+		if (frame == 0)
+		{
+			sess->AddEnemy(queen);
+			queen->Wait();
+		}
 		EntranceUpdate();
 		break;
 
@@ -100,6 +104,7 @@ void CrawlerPreFight2Scene::UpdateState()
 
 		if (IsLastFrame())
 		{
+			queen->StartFight();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
 		break;
@@ -111,6 +116,7 @@ void CrawlerPreFight2Scene::UpdateState()
 CrawlerPostFight2Scene::CrawlerPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	queen = NULL;
 	warper = sess->GetWarper("FinishedScenes/W4/tigerfight");
 }
 
@@ -176,7 +182,7 @@ void CrawlerPostFight2Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("crawlercam");
-			//bird->Wait();
+			queen->Wait();
 		}
 		break;
 	case WAIT:

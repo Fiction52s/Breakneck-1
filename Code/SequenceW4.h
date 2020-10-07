@@ -6,6 +6,7 @@
 struct GroundedWarper;
 
 struct Tiger;
+struct CrawlerQueen;
 
 struct CrawlerPreFight2Scene : BasicBossScene
 {
@@ -16,6 +17,8 @@ struct CrawlerPreFight2Scene : BasicBossScene
 		CONV,
 		Count
 	};
+
+	CrawlerQueen *queen;
 
 	CrawlerPreFight2Scene();
 
@@ -53,6 +56,7 @@ struct CrawlerPostFight2Scene : BasicBossScene
 	void AddGroups();
 	void UpdateState();
 
+	CrawlerQueen *queen;
 	GroundedWarper *warper;
 };
 

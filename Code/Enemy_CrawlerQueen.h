@@ -17,7 +17,7 @@ struct EffectPool;
 struct StorySequence;
 
 struct CrawlerPostFightScene;
-//CrawlerPostFight2Scene
+struct CrawlerPostFight2Scene;
 struct QueenFloatingBomb;
 
 struct PoiInfo;
@@ -38,7 +38,8 @@ struct CrawlerQueen : Enemy
 	};
 
 	CrawlerPostFightScene *postFightScene;
-	//CrawlerPostFightScene *postFightScene2;
+
+	CrawlerPostFight2Scene *postFightScene2;
 
 	PoiInfo *targetNode;
 

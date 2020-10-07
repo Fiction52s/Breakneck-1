@@ -37,7 +37,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	ts_move = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_256x256.png");
 
 	postFightScene = NULL;
-	//postFightScene2 = NULL;
+	postFightScene2 = NULL;
 
 	level = ap->GetLevel();
 
@@ -73,10 +73,10 @@ CrawlerQueen::~CrawlerQueen()
 		delete postFightScene;
 	}
 
-	/*if (postFightScene2 != NULL)
+	if (postFightScene2 != NULL)
 	{
 		delete postFightScene2;
-	}*/
+	}
 }
 
 void CrawlerQueen::LoadParams()
@@ -387,8 +387,8 @@ void CrawlerQueen::ProcessHit()
 			}
 			else if (level == 2)
 			{
-				/*postFightScene2->Reset();
-				sess->SetActiveSequence(postFightScene2);*/
+				postFightScene2->Reset();
+				sess->SetActiveSequence(postFightScene2);
 			}
 		}
 
@@ -402,11 +402,11 @@ void CrawlerQueen::Setup()
 
 	if (level == 1)
 	{
-		/*if (postFightScene2 != NULL)
+		if (postFightScene2 != NULL)
 		{
 			delete postFightScene2;
 			postFightScene2 = NULL;
-		}*/
+		}
 
 		if (postFightScene == NULL)
 		{
@@ -424,9 +424,13 @@ void CrawlerQueen::Setup()
 			postFightScene = NULL;
 		}
 
-		/*postFightScene2 = new CrawlerQueenPostFight2Scene;
-		postFightScene2->CrawlerQueen = this;
-		postFightScene2->Init();*/
+		if (postFightScene2 == NULL)
+		{
+			postFightScene2 = new CrawlerPostFight2Scene;
+			postFightScene2->queen = this;
+			postFightScene2->Init();
+		}
+		
 	}
 
 
