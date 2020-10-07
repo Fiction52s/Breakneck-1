@@ -95,7 +95,9 @@ sf::Sprite ActorType::GetSprite(bool grounded)
 	Sprite s = GetSprite();
 	if (grounded)
 	{
-		if (info.name != "poi" && info.name != "birdnode"
+		if (info.name != "poi" 
+			&& info.name != "crawlernode"
+			&& info.name != "birdnode"
 			&& info.name != "coyotenode"
 			&& info.name != "tigernode" 
 			&& info.name != "gatornode"
@@ -215,9 +217,10 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
 	}
-	else if (name == "birdnode" || name == "coyotenode" || name == "tigernode"
-		|| name == "gatornode" || name == "skeletonnode"
-		|| name == "greyskeletonnode" 
+	else if (name == "crawlernode" 
+		|| name == "birdnode" || name == "coyotenode" 
+		|| name == "tigernode" || name == "gatornode" 
+		|| name == "skeletonnode" || name == "greyskeletonnode" 
 		|| name == "bearnode" )
 	{
 		p = CreateDefaultPanel();

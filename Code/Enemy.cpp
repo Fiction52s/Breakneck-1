@@ -200,7 +200,7 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_CRAWLERQUEEN:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
 		break;
-	case EnemyType::EN_FLOATINGBOMB:
+	case EnemyType::EN_QUEENFLOATINGBOMB:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BLOCKER:

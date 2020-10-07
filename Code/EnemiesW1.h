@@ -28,6 +28,7 @@
 
 #include "Enemy_MovementTester.h"
 #include "GroundedWarper.h"
+#include "Nexus.h"
 
 
 #endif

@@ -1157,7 +1157,8 @@ void GameSession::ProcessActor(ActorPtr a)
 			AddPoi(pp);
 			
 		}
-		else if (typeName == "birdnode" || typeName == "coyotenode" 
+		else if (typeName == "crawlernode"
+			|| typeName == "birdnode" || typeName == "coyotenode" 
 			|| typeName == "tigernode" || typeName == "gatornode"
 			|| typeName == "skeletonnode" 
 			|| typeName == "greyskeletonnode"
@@ -2120,7 +2121,18 @@ int GameSession::Run()
 			p = GetPlayer(i);
 			if (p != NULL)
 			{
-				p->position = V2d(playerOrigPos[i]);
+				if (p->ground != NULL)
+				{
+					p->SetAirPos(V2d(playerOrigPos[i]), p->facingRight);
+
+					//doesnt account for bouncing or grinding
+				}
+				else
+				{
+					p->position = V2d(playerOrigPos[i]);
+				}
+
+				
 				//p->SetAirPos(V2d(playerOrigPos[i]), p->facingRight);
 				//p->Respawn(); //need a special bonus respawn later
 			}

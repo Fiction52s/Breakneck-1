@@ -29,9 +29,17 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	}
 	else if (name == "crawlerscene0")
 	{
-		bScene = new CrawlerPostFightScene;
+		bScene = new CrawlerAttackScene;
+	}
+	else if (name == "crawlerscene1")
+	{
+		bScene = new CrawlerPreFightScene;
 	}
 	else if (name == "crawlerscene2")
+	{
+		bScene = new CrawlerPostFightScene;
+	}
+	else if (name == "crawlerscene3")
 	{
 		bScene = new CrawlerPreFight2Scene;
 	}

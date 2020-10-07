@@ -13,7 +13,8 @@ struct Nexus;
 struct Session;
 
 //BirdPostFightScene
-struct CrawlerPreFightScene : BasicBossScene
+
+struct CrawlerAttackScene : BasicBossScene
 {
 	enum State
 	{
@@ -22,6 +23,37 @@ struct CrawlerPreFightScene : BasicBossScene
 		KINSTOP,
 		ROCKSFALL,
 		CRAWLERSWOOP,
+		DIGGINGAROUND,
+		Count
+	};
+
+	CrawlerAttackScene();
+	~CrawlerAttackScene();
+
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void SpecialInit();
+	void UpdateState();
+	void Draw(sf::RenderTarget *target,
+		EffectLayer layer = EffectLayer::IN_FRONT);
+
+	void UpdateCrawlerSwoop();
+
+	Tileset *ts_queenGrab;
+	sf::Sprite queenGrabSprite;
+
+	GameSession *myBonus;
+};
+
+struct CrawlerPreFightScene : BasicBossScene
+{
+	enum State
+	{
 		DIGGINGAROUND,
 		THROWOUT,
 		CRAWLERFACE,
@@ -44,12 +76,7 @@ struct CrawlerPreFightScene : BasicBossScene
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 
-	void UpdateCrawlerSwoop();
-
 	CrawlerQueen *queen;
-
-	Tileset *ts_queenGrab;
-	sf::Sprite queenGrabSprite;
 };
 
 struct CrawlerPostFightScene : BasicBossScene

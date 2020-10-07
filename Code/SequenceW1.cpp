@@ -8,9 +8,207 @@
 #include "HUD.h"
 #include "Enemy_CrawlerQueen.h"
 #include "SaveFile.h"
+#include "PauseMenu.h"
 
 using namespace std;
 using namespace sf;
+
+CrawlerAttackScene::CrawlerAttackScene()
+	:BasicBossScene(BasicBossScene::RUN)
+{
+	GameSession *game = GameSession::GetSession();
+	myBonus = NULL;
+	if (game != NULL)
+	{
+		boost::filesystem::path p("Resources/Maps/Bosses/queentest01.brknk");
+		GameSession *game = GameSession::GetSession();
+
+		myBonus = new GameSession(game->saveFile, p);
+		myBonus->SetParentGame(game);
+		myBonus->Load();
+
+		game->currSession = game;
+		game->pauseMenu->owner = game;
+	}
+}
+
+CrawlerAttackScene::~CrawlerAttackScene()
+{
+	if (myBonus != NULL)
+		delete myBonus;
+}
+
+void CrawlerAttackScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[ENTRANCE] = -1;
+	stateLength[WAIT] = 1;
+	stateLength[KINSTOP] = 30;
+	stateLength[ROCKSFALL] = 30;
+	stateLength[CRAWLERSWOOP] = 9 * 3;
+	stateLength[DIGGINGAROUND] = 180;
+}
+
+void CrawlerAttackScene::AddShots()
+{
+	AddShot("scenecam");
+	//AddShot("cavecam");
+	//AddShot("fightcam");
+}
+
+void CrawlerAttackScene::AddPoints()
+{
+	AddStartAndStopPoints();
+	AddPoint("crawlerdig1");
+	AddPoint("crawlerdig2");
+	AddPoint("crawlerdig3");
+	//AddPoint("crawlersurface");
+	//AddPoint("crawlerthrowkin");
+}
+
+void CrawlerAttackScene::AddGroups()
+{
+	//AddGroup("pre_crawler", "W1/w1_crawler_pre_fight");
+	//SetConvGroup("pre_crawler");
+}
+
+void CrawlerAttackScene::AddEnemies()
+{
+	PoiInfo *surface = points["crawlersurface"];
+
+	//hard to spawn the queen here now...
+
+	//BossCrawlerParams bcParams( owner->types["bosscrawler"], surface->edge)
+
+	//queen = new CrawlerQueen(surface->edge, surface->edgeQuantity, false);
+	//AddEnemy("queen", queen);
+}
+
+void CrawlerAttackScene::AddFlashes()
+{
+	AddFlashedImage("detailedgrab", sess->GetTileset("Story/Crawler_Dig_01_860x830.png", 860, 830),
+		0, 30, 60, 30, Vector2f(1160, 540));
+
+	AddFlashedImage("crawlerface", sess->GetTileset("Story/Crawler_Dig_02_828x875.png", 828, 875),
+		0, 30, 60, 30, Vector2f(1350, 325));
+
+	AddFlashedImage("kinface", sess->GetTileset("Story/Crawler_Dig_03_510x565.png", 510, 565),
+		0, 30, 60, 30, Vector2f(625, 325));
+}
+
+void CrawlerAttackScene::SpecialInit()
+{
+	ts_queenGrab = sess->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
+	queenGrabSprite.setTexture(*ts_queenGrab->texture);
+	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
+}
+
+void CrawlerAttackScene::ReturnToGame()
+{
+	Actor *player = sess->GetPlayer(0);
+
+	//BasicBossScene::ReturnToGame();
+
+	
+	
+
+	//queen->StartFight();
+
+	//EaseShot("fightcam", 60);
+}
+
+void CrawlerAttackScene::UpdateState()
+{
+	Actor *player = sess->GetPlayer(0);
+	switch (state)
+	{
+	case ENTRANCE:
+		EntranceUpdate();
+		break;
+	case KINSTOP:
+		if (frame == 0)
+		{
+			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
+			player->SetKinMode(Actor::K_NORMAL);
+			player->SetAction(Actor::SEQ_LOOKUP);
+		}
+		break;
+	case ROCKSFALL:
+		RumbleDuringState(3, 3);
+		break;
+	case CRAWLERSWOOP:
+	{
+		if (frame == 15)
+		{
+			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
+		}
+
+		UpdateCrawlerSwoop();
+		break;
+	}
+	case DIGGINGAROUND:
+		RumbleDuringState(10, 10);
+		if (frame == 0)
+		{
+			EasePoint("crawlerdig1", 1, 90);
+		}
+		else if (frame == 90)
+		{
+			EasePoint("crawlerdig2", 1, 90);
+		}
+		else if (frame == 150)
+		{
+			GameSession *game = GameSession::GetSession();
+
+			if (game != NULL)
+			{
+				game->SetBonus(myBonus, V2d(0, 0));
+				game->ClearFade();
+			}
+			//sess->Fade(false, 30, Color::Black);
+		}
+		/*else if (frame == 120)
+		{
+			EasePoint("crawlerdig3", 1, 60);
+		}*/
+
+		if (frame == 20)
+		{
+			Flash("detailedgrab");
+		}
+		break;
+	}
+}
+
+void CrawlerAttackScene::UpdateCrawlerSwoop()
+{
+	Actor *player = sess->GetPlayer(0);
+	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
+	queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
+		queenGrabSprite.getLocalBounds().height);
+
+	Edge *ground = player->ground;
+	V2d gPoint = ground->GetPosition(player->edgeQuantity);
+	V2d gNorm = ground->Normal();
+
+	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
+}
+
+void CrawlerAttackScene::Draw(sf::RenderTarget *target, EffectLayer layer)
+{
+	if (layer != EffectLayer::IN_FRONT)
+	{
+		return;
+	}
+
+	if (state == CRAWLERSWOOP)
+	{
+		target->draw(queenGrabSprite);
+	}
+
+	BasicBossScene::Draw(target, layer);
+}
 
 TextTestSeq::TextTestSeq()
 {
@@ -222,7 +420,7 @@ void TextTestSeq::UpdateSceneLabel()
 }
 
 CrawlerPreFightScene::CrawlerPreFightScene()
-	:BasicBossScene(BasicBossScene::RUN)
+	:BasicBossScene(BasicBossScene::APPEAR)
 {
 }
 
@@ -230,12 +428,7 @@ void CrawlerPreFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[ENTRANCE] = -1;
-	stateLength[WAIT] = 1;
-	stateLength[KINSTOP] = 30;
-	stateLength[ROCKSFALL] = 30;
-	stateLength[CRAWLERSWOOP] = 9 * 3;
-	stateLength[DIGGINGAROUND] = 180;
+	stateLength[DIGGINGAROUND] = 150;
 	stateLength[THROWOUT] = 60;
 	stateLength[CRAWLERFACE] = 10000;
 	stateLength[CRAWLERTALK] = 10000;
@@ -246,14 +439,12 @@ void CrawlerPreFightScene::SetupStates()
 
 void CrawlerPreFightScene::AddShots()
 {
-	AddShot("scenecam");
 	AddShot("cavecam");
 	AddShot("fightcam");
 }
 
 void CrawlerPreFightScene::AddPoints()
 {
-	AddStartAndStopPoints();
 	AddPoint("crawlerdig1");
 	AddPoint("crawlerdig2");
 	AddPoint("crawlersurface");
@@ -292,9 +483,6 @@ void CrawlerPreFightScene::AddFlashes()
 
 void CrawlerPreFightScene::SpecialInit()
 {
-	ts_queenGrab = sess->GetTileset("Bosses/Crawler/crawler_queen_grab_320x320.png", 320, 320);
-	queenGrabSprite.setTexture(*ts_queenGrab->texture);
-	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(0));
 }
 
 void CrawlerPreFightScene::ReturnToGame()
@@ -305,6 +493,7 @@ void CrawlerPreFightScene::ReturnToGame()
 	queen->StartFight();
 
 	EaseShot("fightcam", 60);
+	sess->SetPlayerInputOn(true);
 }
 
 void CrawlerPreFightScene::UpdateState()
@@ -312,41 +501,23 @@ void CrawlerPreFightScene::UpdateState()
 	Actor *player = sess->GetPlayer(0);
 	switch (state)
 	{
-	case ENTRANCE:
-		EntranceUpdate();
-		break;
-	case KINSTOP:
-		if (frame == 0)
-		{
-			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 200), 1, 30);
-			player->SetKinMode(Actor::K_NORMAL);
-			player->SetAction(Actor::SEQ_LOOKUP);
-		}
-		break;
-	case ROCKSFALL:
-		RumbleDuringState(3, 3);
-		break;
-	case CRAWLERSWOOP:
-	{
-		if (frame == 15)
-		{
-			player->SetAction(Actor::SEQ_LOOKUPDISAPPEAR);
-		}
-
-		UpdateCrawlerSwoop();
-		break;
-	}
 	case DIGGINGAROUND:
-		RumbleDuringState(10, 10);
+	{
+		//RumbleDuringState(10, 10);
 		if (frame == 0)
 		{
-			EasePoint("crawlerdig1", 1, 60);
+			sess->Fade(true, 60, Color::Black);
+			sess->FreezePlayerAndEnemies(false);
+			sess->AddEnemy(queen);
+			queen->Wait();
+			sess->SetPlayerInputOn(false);
+			sess->cam.SetManual(true);
+			sess->cam.Set(Vector2f(points["crawlerdig1"]->pos), 1.0, 0);
+			EasePoint("crawlerdig2", 1, 90);
+			//EasePoint("crawlerdig1", 1, 60);
+			
 		}
-		else if (frame == 60)
-		{
-			EasePoint("crawlerdig2", 1, 60);
-		}
-		else if (frame == 120)
+		else if (frame == 90)
 		{
 			EaseShot("cavecam", 60);
 		}
@@ -356,16 +527,17 @@ void CrawlerPreFightScene::UpdateState()
 			Flash("detailedgrab");
 		}
 		break;
+	}
+		
 	case THROWOUT:
 		if (frame == 0)
 		{
 			//sess->currentZone->ReformAllGates();
-
+			
 			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
 		}
 		else if (frame == 30)
 		{
-			sess->AddEnemy(queen);
 			queen->StartInitialUnburrow();
 			sess->ReverseDissolveGates(Gate::BOSS);
 		}
@@ -393,32 +565,8 @@ void CrawlerPreFightScene::UpdateState()
 	}
 }
 
-void CrawlerPreFightScene::UpdateCrawlerSwoop()
-{
-	Actor *player = sess->GetPlayer(0);
-	queenGrabSprite.setTextureRect(ts_queenGrab->GetSubRect(frame / 3));
-	queenGrabSprite.setOrigin(queenGrabSprite.getLocalBounds().width / 2,
-		queenGrabSprite.getLocalBounds().height);
-
-	Edge *ground = player->ground;
-	V2d gPoint = ground->GetPosition(player->edgeQuantity);
-	V2d gNorm = ground->Normal();
-
-	queenGrabSprite.setPosition(Vector2f(gPoint - gNorm * 30.0));
-}
-
 void CrawlerPreFightScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
-	if (layer != EffectLayer::IN_FRONT)
-	{
-		return;
-	}
-
-	if (state == CRAWLERSWOOP)
-	{
-		target->draw(queenGrabSprite);
-	}
-
 	BasicBossScene::Draw(target, layer);
 }
 

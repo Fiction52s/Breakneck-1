@@ -1026,7 +1026,8 @@ void EditSession::TestPlayerMode()
 				//tempPoiParams.push_back(pp);
 				AddPoi(pp);
 			}
-			else if ((*enit)->type == types["birdnode"]
+			else if ( (*enit)->type == types["crawlernode"]
+				|| (*enit)->type == types["birdnode"]
 				|| (*enit)->type == types["coyotenode"]
 				|| (*enit)->type == types["tigernode"]
 				|| (*enit)->type == types["gatornode"] 
@@ -3642,8 +3643,6 @@ int EditSession::EditRun()
 		ActorGroup *basicGroup = new ActorGroup(basicGroupName);
 		groups[basicGroupName] = basicGroup;
 	}
-
-	
 
 	ActorGroup *playerGroup = new ActorGroup("player");
 	groups["player"] = playerGroup;

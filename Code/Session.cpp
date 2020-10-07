@@ -253,7 +253,7 @@ void Session::AddGeneralEnemies()
 
 	AddExtraEnemy("shippickup", CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 
-	AddExtraEnemy("nexus", NULL, SetParamsType<NexusParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false );
+	AddExtraEnemy("nexus", CreateEnemy<Nexus>, SetParamsType<NexusParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false );
 
 	//AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
 	//	GetSizedTileset("Ship/shipleave_128x128.png" ));
@@ -345,7 +345,8 @@ void Session::AddGeneralEnemies()
 void Session::AddW1Enemies()
 {
 
-	
+	AddWorldEnemy("crawlernode", 2, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
 
 	AddBasicAerialWorldEnemy("movementtester", 1, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
 
@@ -4866,6 +4867,10 @@ void Session::AddBossNode( const std::string &nodeTypeName, PoiParams *pp)
 	}
 
 	int ftIndex = -1;
+	if (nodeTypeName == "crawlernode")
+	{
+		ftIndex = FT_CRAWLER;
+	}
 	if (nodeTypeName == "birdnode")
 	{
 		ftIndex = FT_BIRD;

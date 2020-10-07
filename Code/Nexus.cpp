@@ -17,7 +17,6 @@ Nexus::Nexus( ActorParams *ap)
 	double width;
 	double height;
 
-	int world = sess->mapHeader->envWorldType;
 	switch (world)
 	{
 	case 0:
@@ -115,16 +114,7 @@ Nexus::Nexus( ActorParams *ap)
 	frame = 0;
 	animationFactor = 7;
 
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		insideSeq = new NexusCore1Seq;
-	}
-	else
-	{
-		insideSeq = NULL;
-	}
-	
+	insideSeq = new NexusCore1Seq;
 
 	action = A_SITTING;
 }
