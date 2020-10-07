@@ -568,7 +568,7 @@ void CrawlerPreFightScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 CrawlerPostFightScene::CrawlerPostFightScene()
 	:BasicBossScene( BasicBossScene::APPEAR )
 {
-
+	queen = NULL;
 }
 
 void CrawlerPostFightScene::SetupStates()
@@ -585,6 +585,7 @@ void CrawlerPostFightScene::ReturnToGame()
 	sess->Fade(true, 60, Color::Black);
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
+	queen->Wait();
 }
 
 void CrawlerPostFightScene::AddPoints()
@@ -663,6 +664,8 @@ void GetAirdashPowerScene::ReturnToGame()
 	sess->Fade(true, 60, Color::Black);
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
+
+	
 
 	sess->mainMenu->musicPlayer->TransitionMusic(sess->originalMusic, 60);
 }

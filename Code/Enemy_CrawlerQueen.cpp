@@ -411,7 +411,7 @@ void CrawlerQueen::Setup()
 		if (postFightScene == NULL)
 		{
 			postFightScene = new CrawlerPostFightScene;
-			//postFightScene->queen = this;
+			postFightScene->queen = this;
 			postFightScene->Init();
 		}
 	}

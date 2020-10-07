@@ -412,6 +412,8 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName)
 
 	currSession = this;
 	pauseMenu->owner = this;
+
+	return newBonus;
 }
 
 

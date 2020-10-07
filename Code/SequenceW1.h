@@ -62,6 +62,8 @@ struct CrawlerPreFightScene : BasicBossScene
 		Count
 	};
 
+	CrawlerQueen *queen;
+
 	CrawlerPreFightScene();
 
 	void SetupStates();
@@ -75,8 +77,6 @@ struct CrawlerPreFightScene : BasicBossScene
 	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
-
-	CrawlerQueen *queen;
 };
 
 struct CrawlerPostFightScene : BasicBossScene
@@ -87,6 +87,8 @@ struct CrawlerPostFightScene : BasicBossScene
 		PLAYMOVIE,
 		Count
 	};
+
+	CrawlerQueen *queen;
 
 	CrawlerPostFightScene();
 
