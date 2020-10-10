@@ -9,7 +9,7 @@
 #include "Enemy_CrawlerQueen.h"
 #include "SaveFile.h"
 #include "PauseMenu.h"
-#include "Enemy_GroundedWarper.h"
+#include "GroundedWarper.h"
 
 using namespace std;
 using namespace sf;
