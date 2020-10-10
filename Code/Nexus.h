@@ -3,8 +3,7 @@
 
 #include "Enemy.h"
 
-
-struct Sequence;
+struct NexusCore1Seq;
 struct Nexus : Enemy
 {
 	enum Action
@@ -14,13 +13,16 @@ struct Nexus : Enemy
 		A_EXPLODING,
 		A_DESTROYED,
 		A_NEXUSDESTROYED,
+		A_Count
 	};
 
 	Nexus(ActorParams *ap);
 	~Nexus();
+	void Setup();
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void FinishDestruction();
+	void StartInsideSeq();
 
 	Tileset *ts_node1;
 	Tileset *ts_node2;
@@ -33,15 +35,13 @@ struct Nexus : Enemy
 	V2d GetKillPos();
 	int explosionLength;
 
-	Sequence *insideSeq;
+	NexusCore1Seq *insideSeq;
 
 	int explosionAnimFactor;
 	int explosionYOffset;
 	int initialYOffset;
-	Action action;
-	sf::Sprite sprite;
 	sf::Sprite miniSprite;
-	sf::Sprite nexSprite;
+	sf::Sprite nodeSprite;
 	//Tileset *ts;
 	Tileset *ts_nexusOpen;
 	Tileset *ts_nexusDestroyed;

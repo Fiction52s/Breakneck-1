@@ -19,6 +19,8 @@
 #include "BitField.h"
 #include "ScoreDisplay.h"
 
+struct Nexus;
+
 struct GroundedWarper;
 
 struct GGPONonGameState;
@@ -513,7 +515,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void PlayerConfirmEnemyKill(Enemy *, int index = 0);
 	void PlayerApplyHit(int index, HitboxInfo *hi, 
 		Actor *attacker, int res, V2d &pos );
-	void PlayerHitNexus(int index = 0);
+	void PlayerHitNexus(Nexus *nex, int index = 0 );
 	void PlayerHitGoal(int index = 0);
 	void SetPlayersGameMode();
 	void KillAllEnemies();

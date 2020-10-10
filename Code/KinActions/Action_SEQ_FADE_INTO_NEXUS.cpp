@@ -12,7 +12,11 @@ void Actor::SEQ_FADE_INTO_NEXUS_Start()
 void Actor::SEQ_FADE_INTO_NEXUS_End()
 {
 	frame = GetActionLength(SEQ_FADE_INTO_NEXUS) - 1;
-	owner->SetActiveSequence(owner->nexus->insideSeq);
+	if (hitNexus != NULL)
+	{
+		hitNexus->StartInsideSeq();
+		hitNexus = NULL;
+	}
 }
 
 void Actor::SEQ_FADE_INTO_NEXUS_Change()

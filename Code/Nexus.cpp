@@ -14,12 +14,15 @@ using namespace sf;
 Nexus::Nexus( ActorParams *ap)
 	:Enemy(EnemyType::EN_NEXUS, ap )
 {
+
+	SetNumActions(A_Count);
+	SetEditorActions(A_SITTING, A_SITTING, 0);
 	double width;
 	double height;
 
 	switch (world)
 	{
-	case 0:
+	case 1:
 		width = 288;
 		height = 320;
 		ts_nexusOpen = sess->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
@@ -34,7 +37,7 @@ Nexus::Nexus( ActorParams *ap)
 		explosionYOffset = 80;
 		initialYOffset = 30;
 		break;
-	case 1:
+	case 2:
 	default:
 		width = 288;
 		height = 256;
@@ -50,12 +53,9 @@ Nexus::Nexus( ActorParams *ap)
 		break;
 	}
 
-	nexSprite.setTexture(*ts_nexusOpen->texture);
-	nexSprite.setTextureRect(ts_nexusOpen->GetSubRect( 0 ));
-	nexSprite.setOrigin(nexSprite.getLocalBounds().width / 2, nexSprite.getLocalBounds().height - 50);
-	//575,550
+	sprite.setTexture(*ts_nexusOpen->texture);
+	sprite.setTextureRect(ts_nexusOpen->GetSubRect( 0 ));
 	
-
 	miniSprite.setTexture(*ts_mini->texture);
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 	miniSprite.setScale(16, 16);
@@ -84,24 +84,21 @@ Nexus::Nexus( ActorParams *ap)
 
 	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
 
-	SetOffGroundHeight(906.0 - 600.0);
-	SetGroundOffset(575.0 - 648.0);
+	SetOffGroundHeight(904 / 2.0);
+	//SetOffGroundHeight(906.0 - 600.0);
+	//SetGroundOffset(575.0 - 648.0);
 
 	SetCurrPosInfo(startPosInfo);
 
-	nexSprite.setPosition(startPosInfo.GetPositionF());
+	
 
 	//miniSprite.setPosition( position.x, position.y );
 	miniSprite.setPosition(startPosInfo.GetPositionF());
 	miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
 
-	sprite.setTexture(*ts_node1->texture);
-	sprite.setTextureRect(ts_node1->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// - initialYOffset);
-	//.setPosition(gPoint.x, gPoint.y);
-	sprite.setPosition(currPosInfo.GetPositionF());
-	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+	nodeSprite.setTexture(*ts_node1->texture);
+	nodeSprite.setTextureRect(ts_node1->GetSubRect(0));
+	nodeSprite.setOrigin(nodeSprite.getLocalBounds().width / 2, nodeSprite.getLocalBounds().height / 2);// - initialYOffset);
 
 	BasicRectHurtBodySetup(80, 100, currPosInfo.GetGroundAngleRadians(), V2d(0, 20), currPosInfo.GetPosition());
 	//currHurtboxes->GetCollisionBoxes(0)->front().globalPosition = position;
@@ -115,8 +112,12 @@ Nexus::Nexus( ActorParams *ap)
 	animationFactor = 7;
 
 	insideSeq = new NexusCore1Seq;
+	insideSeq->nexus = this;
+	insideSeq->Init();
 
 	action = A_SITTING;
+
+	ResetEnemy();
 }
 
 
@@ -137,17 +138,17 @@ void Nexus::ResetEnemy()
 	action = A_SITTING;
 	insideSeq->Reset();
 	SetHurtboxes(&hurtBody, 0);
-	nexSprite.setTexture(*ts_nexusOpen->texture);
+	sprite.setTexture(*ts_nexusOpen->texture);
 
-	sprite.setTexture(*ts_node1->texture);
-	sprite.setTextureRect(ts_node1->GetSubRect(0));
-	//numHealth = 1;
+	nodeSprite.setTexture(*ts_node1->texture);
+	nodeSprite.setTextureRect(ts_node1->GetSubRect(0));
 	UpdateSprite();
-	//sprite.setTexture(*ts_node1->texture);
-	//sprite.setTextureRect(ts_node1->GetSubRect(0));
-	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+}
 
-
+void Nexus::StartInsideSeq()
+{
+	insideSeq->Reset();
+	sess->SetActiveSequence(insideSeq);
 }
 
 void Nexus::ProcessState()
@@ -156,8 +157,7 @@ void Nexus::ProcessState()
 	{
 		if (frame == 1)
 		{
-			sess->cam.manual = true;
-			sess->cam.Ease(GetPositionF(), 1, 60, CubicBezier());
+			sess->cam.Ease(Vector2f(GetKillPos()), 1, 60, CubicBezier());
 		}
 		if (frame == 46 * 2)
 		{
@@ -176,26 +176,36 @@ void Nexus::ProcessState()
 	}
 }
 
+void Nexus::Setup()
+{
+	Enemy::Setup();
+
+	sess->goalNodePos = GetKillPos();
+}
+
 V2d Nexus::GetKillPos()
 {
-	return GetPosition();
+	V2d nodePos = currPosInfo.GetPosition() + V2d(575.0 - 648.0, 150);
+	return nodePos;
 }
 
 void Nexus::HandleNoHealth()
 {
 	sess->KillAllEnemies();
 	frame = 0;
-	sess->PlayerHitNexus(0);
+	sess->PlayerHitNexus( this, 0 );
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
+	numHealth = 1;
+	dead = false;
 }
 
 void Nexus::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(nexSprite);
+	target->draw(sprite);
 	if (action < A_DESTROYED)
 	{
-		target->draw(sprite);
+		target->draw(nodeSprite);
 	}
 }
 
@@ -203,7 +213,7 @@ void Nexus::FinishDestruction()
 {
 	action = A_NEXUSDESTROYED;
 	frame = 0;
-	nexSprite.setTexture(*ts_nexusDestroyed->texture);
+	sprite.setTexture(*ts_nexusDestroyed->texture);
 }
 
 void Nexus::DrawMinimap(sf::RenderTarget *target)
@@ -232,9 +242,9 @@ void Nexus::UpdateSprite()
 		{
 			trueFrame = 3;
 		}
-		sprite.setTexture(*ts_node1->texture);
-		sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		nodeSprite.setTexture(*ts_node1->texture);
+		nodeSprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
+		nodeSprite.setOrigin(nodeSprite.getLocalBounds().width / 2, nodeSprite.getLocalBounds().height / 2);
 
 
 	}
@@ -245,36 +255,26 @@ void Nexus::UpdateSprite()
 		if (trueFrame >= numTiles)
 		{
 			trueFrame -= numTiles;
-			sprite.setTexture(*ts_node2->texture);
-			sprite.setTextureRect(ts_node2->GetSubRect(trueFrame));
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			nodeSprite.setTexture(*ts_node2->texture);
+			nodeSprite.setTextureRect(ts_node2->GetSubRect(trueFrame));
+			nodeSprite.setOrigin(nodeSprite.getLocalBounds().width / 2, nodeSprite.getLocalBounds().height / 2);
 		}
 		else
 		{
-			sprite.setTexture(*ts_node1->texture);
-			sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+			nodeSprite.setTexture(*ts_node1->texture);
+			nodeSprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
+			nodeSprite.setOrigin(nodeSprite.getLocalBounds().width / 2, nodeSprite.getLocalBounds().height / 2);
 		}
 		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
 	}
-	//else if (action == A_DESTROYED)
-	//{
-	//	trueFrame = //explosionLength - 1;
-	//	int numTiles = 16;//ts_explosion->GetNumTiles();
-	//	if (trueFrame >= numTiles)
-	//	{
-	//		trueFrame -= numTiles;
-	//		sprite.setTexture(*ts_node2->texture);
-	//		sprite.setTextureRect(ts_node2->GetSubRect(trueFrame));
-	//	}
-	//	else
-	//	{
-	//		sprite.setTexture(*ts_node1->texture);
-	//		sprite.setTextureRect(ts_node1->GetSubRect(trueFrame));
-	//	}
 
-	//	//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
-	//}
+	nodeSprite.setPosition(Vector2f(GetKillPos() ));
+	nodeSprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 
+	//SetOffGroundHeight(906.0 - 600.0);
+	//SetGroundOffset(575.0 - 648.0);
 
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 - 50);//sprite.getLocalBounds().height - 50);
+	sprite.setPosition(currPosInfo.GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }

@@ -2683,7 +2683,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	speedParticleRate = 10; //20
 	speedParticleCounter = 1;
 	hitGoal = false;
-	hitNexus = false;
+	hitNexus = NULL;
 	ground = NULL;
 	//re = new RotaryParticleEffect( this );
 	//re1 = new RotaryParticleEffect( this );
@@ -4150,7 +4150,7 @@ void Actor::Respawn()
 	//clean up the checkpoint code at some point
 
 	hitGoal = false;
-	hitNexus = false;
+	hitNexus = NULL;
 
 	SetToOriginalPos();
 
@@ -12377,13 +12377,14 @@ void Actor::ProcessHitGoal()
 			editOwner->EndTestMode();
 		}*/
 	}
-	else if (hitNexus)
+	else if (hitNexus != NULL && action != NEXUSKILL && action != SEQ_FLOAT_TO_NEXUS_OPENING
+		&& action != SEQ_FADE_INTO_NEXUS)
 	{
-		owner->totalFramesBeforeGoal = owner->totalGameFrames;
+		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetAction(NEXUSKILL);
 		SetKinMode(K_NORMAL);
-		hitNexus = false;
-		if (owner->parentGame == NULL)
+//		hitNexus = NULL;
+		if (owner != NULL && owner->parentGame == NULL)
 		{
 			if (owner->recPlayer != NULL)
 			{
@@ -12399,7 +12400,7 @@ void Actor::ProcessHitGoal()
 			}
 		}
 		frame = 0;
-		position = owner->goalNodePos;
+		position = sess->goalNodePos;
 		rightWire->Reset();
 		leftWire->Reset();
 	}

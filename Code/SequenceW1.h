@@ -11,6 +11,8 @@ struct Conversation;
 struct ConversationGroup;
 struct Nexus;
 struct Session;
+struct ShapeEmitter;
+struct Nexus;
 
 //BirdPostFightScene
 
@@ -107,26 +109,25 @@ struct NexusCore1Seq : Sequence
 		FADETOBLACK,
 		ENTERCORE,
 		DESTROYCORE,
-		//FADEEXIT,
 		EXITCORE,
-		END,
 		Count
 	};
 
-	State state;
-	int stateLength[Count];
 	NexusCore1Seq();
 	~NexusCore1Seq();
-	bool Update();
+	void ReturnToGame();
+	void SetupStates();
+	void UpdateState();
 	void Draw(sf::RenderTarget *target,
 		EffectLayer layer = EffectLayer::IN_FRONT);
 	void Reset();
 
-	Session *sess;
-
-	sfe::Movie mov;
-
 	sf::Vertex darkQuad[4];
+
+	Nexus *nexus;
+
+	MovingGeoGroup geoGroup;
+	ShapeEmitter *emitter;
 };
 
 struct GetAirdashPowerScene : BasicBossScene

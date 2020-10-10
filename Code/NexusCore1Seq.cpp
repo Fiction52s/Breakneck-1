@@ -25,6 +25,8 @@
 #include "ScoreDisplay.h"
 #include "Enemy_CrawlerQueen.h"
 #include "Nexus.h"
+#include "MovingGeo.h"
+#include "ParticleEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -33,139 +35,102 @@ using namespace std;
 
 NexusCore1Seq::NexusCore1Seq()
 {
-	sess = Session::GetSession();
-
+	nexus = NULL;
 	SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
 	SetRectColor(darkQuad, Color(Color::Black));
 	
-	//state = ENTERCORE;
+	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
+	emitter->CreateParticles();
+	emitter->SetRatePerSecond(120);
 
-	
-
-	stateLength[FADETOBLACK] = 31;
-	stateLength[ENTERCORE] = 30;
-	stateLength[DESTROYCORE] = 1000000;//52 * 2;
-	//stateLength[FADEEXIT] = 60;
-	stateLength[EXITCORE] = 30;
-
-	assert(mov.openFromFile("Resources/Movie/nexus_core.ogv"));
-	mov.fit(sf::FloatRect(0, 0, 1920, 1080));
-	//string base = "Resources/Nexus/nexus_core_1920x1080_";
-	//string num;
-	//string end = ".png";
-	//for (int i = 0; i < 52; ++i)
-	//{
-	//	num = to_string(i+1);
-	//	imageNames[i] = base + num + end;
-	//	//bool succ = coreImages[i].create(1920, 1080,Color::Red);///loadFromFile(base + num + end);
-	//	//coreImages[i].create(1920, 1080, Color::Red);
-	//	//assert(succ);
-	//	
-	//	//ts_core[i] = owner->GetTileset(base + num + end, 1920, 1080);
-	//}
-
-	//ts_firstCore = owner->GetTileset( "Nexus/nexus_core_1920x1080_1.png", 1920, 1080);
-	/*for (int i = 0; i < 5; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
-		coreImages[0].loadFromFile(imageNames[frame]);
-		tex.loadFromImage(coreImages[0]);
-		coreSprite.setTexture(tex);
-	}*/
+		geoGroup.AddGeo(new SpinningTri(0 + i * PI / 2.5), 30);
+	}
+	//geoGroup.AddGeo(new Laser(0));
 
-	
-	//coreImages[0].loadFromFile();
-	//coreSprite.setTexture(*ts_core[->texture);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::White, Color(100, 0, 0, 0), 30), 0);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30));
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0), 30), 10);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Blue, Color(0, 0, 100, 0), 30), 20);
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
+		Color::White, Color(0, 100, 0, 0), 30), 45);
 
-	//ts_core[0] = owner->GetTileset("Nexus/nexus_core_1920x1080_1.png", 1920, 1080);
-	
-	Reset();
-	
+	Color c = Color::White;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(100, 0, 0, 0), 30), 0);
+	c = Color::Cyan;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30));
 
-	//loadThread = new boost::thread(LoadNextTex, this);
+	//c = Color::Red;
+	//c.a = 100;
 
-	/*while (!ShouldLoad())
-	{
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30), 10);
 
-	}*/
-	
-	//Reset();
+	c = Color::Blue;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 0, 100, 0), 30), 20);
+
+	c = Color::White;
+	c.a = 100;
+	geoGroup.AddGeo(new MovingRing(32, 20, 200, 200, 20, Vector2f(0, 0), Vector2f(0, 0),
+		c, Color(0, 100, 0, 0), 30), 45);
+
+	geoGroup.Init();
 }
-
-//void NexusCore1Seq::LoadNextTex( NexusCore1Seq *seq )
-//{
-//	while (!seq->ThreadEnded())
-//	{
-//		if (seq->ShouldLoadNext())
-//		{
-//			//seq->mut1.lock();
-//			//seq->mut.lock();
-//			seq->shouldLoad = false;
-//			//seq->doneLoading = false;
-//			//seq->coreImages[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
-//			
-//			//seq->mut4.lock();
-//			seq->coreTex[seq->ci].loadFromFile(seq->imageNames[seq->loadIndex]);
-//			seq->ci = !seq->ci;
-//			//seq->mut4.unlock();
-//			//seq->coreImages[1].loadFromFile(seq->imageNames[seq->loadIndex+1]);
-//			seq->doneLoading = true;
-//
-//			//seq->mut1.unlock();
-//			//seq->coreImages[1].copy(seq->coreImages[0],0,0);
-//		}
-//	}
-//}
 
 NexusCore1Seq::~NexusCore1Seq()
 {
-	//endThread = true;
-	//loadThread->join();
-	//delete loadThread;
+	delete emitter;
 }
 
-bool NexusCore1Seq::Update()
+void NexusCore1Seq::SetupStates()
 {
+	SetNumStates(Count);
+
+	stateLength[FADETOBLACK] = 31;
+	stateLength[ENTERCORE] = 30;
+	stateLength[DESTROYCORE] = 1000000;
+	stateLength[EXITCORE] = 30;
+}
+
+void NexusCore1Seq::ReturnToGame()
+{
+	sess->Fade(true, 60, sf::Color::White);
+	sess->SetGameSessionState(GameSession::RUN);
 	Actor *player = sess->GetPlayer(0);
-
-	if (frame == stateLength[state] && state != END)
+	player->SetAction(Actor::GOALKILLWAIT);
+	player->frame = 0;
+	
+	if (sess->IsSessTypeGame())
 	{
-		int s = state;
-		s++;
-		state = (State)s;
-		frame = 0;
-
-		if (state == END)
-		{
-		}
+		GameSession *game = GameSession::GetSession();
+		game->scoreDisplay->Activate();
 	}
+}
 
-	if (state == END)
-	{
-		sess->Fade(true, 60, sf::Color::White);
-		sess->SetGameSessionState(GameSession::RUN);
-		player->SetAction(Actor::GOALKILLWAIT);
-		player->frame = 0;
-		if (sess->IsSessTypeGame())
-		{
-			GameSession *game = GameSession::GetSession();
-			game->scoreDisplay->Activate();
-		}
-		return false;
-	}
-
-
-
+void NexusCore1Seq::UpdateState()
+{
 	switch (state)
 	{
 	case FADETOBLACK:
 		if (frame == 0)
 		{
 			sess->Fade(false, 30, sf::Color::Black);
-			//owner->ClearFade();
 		}
 		if (frame == stateLength[FADETOBLACK] - 1)
 		{
 			sess->SetGameSessionState(GameSession::SEQUENCE);
+			
 		}
 		break;
 	case ENTERCORE:
@@ -173,142 +138,67 @@ bool NexusCore1Seq::Update()
 		if (frame == 0)
 		{
 			sess->Fade(true, 30, sf::Color::Black);
-
-			//coreImages[0].loadFromFile(imageNames[0]);
-			
-			//coreSprite.setTexture(tex);
-			//tex.update(coreImages[0]);
-			//tex.loadFromImage(coreImages[0]);
-			
-			
-
-			//tex.loadFromFile(imageNames[0]);
-			//coreSprite.setTexture(tex);
-
-			//owner->ClearFade();
+			//sess->cam.SetManual(true);
+			//sess->cam.Set(Vector2f(960, 540), 1, 1);
 		}
 
 		break;
 	case DESTROYCORE:
 	{
-		sfe::Status movStatus = mov.getStatus();
-		if (frame == 0)
+		//sess->ClearFade();
+		if (!geoGroup.Update())
 		{
-			mov.setPlayingOffset(sf::Time::Zero);
-			mov.play();
+			frame = stateLength[state] - 1;
+			//emitter->SetOn(false);
 		}
-		else
-		{
-			mov.update();
-			float sec = mov.getDuration().asSeconds();
-			float pos = mov.getPlayingOffset().asSeconds();
-			//cout << "len: " << mov.getDuration().asSeconds() << endl;
-			//cout << "mov: " << mov.getPlayingOffset().asSeconds() << endl;
-			if (movStatus == sfe::Status::End || movStatus == sfe::Status::Stopped
-				|| pos > sec - 2.0 )
-			{
-				if (pos > sec - 2.0)
-				{
-					sess->Fade(true, 30, sf::Color::White);
-				}
-				frame = stateLength[DESTROYCORE] - 1;
-
-				//owner->state = GameSession::RUN;
-				//owner->Fade(true, 60, Color::Black, true);
-				/*if (frame == stateLength[MASKOFF] - 1)
-				{
-
-				}*/
-			}
-		}
-		
-
-
-		//if (frame % 2 == 0)
-		//{
-		//	while (!ShouldLoad())
-		//	{
-
-		//	}
-		//	loadIndex = frame / 2;
-		//	doneLoading = false;
-
-		//	shouldLoad = true;
-
-		//	mut4.lock();
-		//	int c = !ci;
-		//	mut4.unlock();
-		//	//loadFromImage(coreImages[c]);
-		//	coreSprite.setTexture(coreTex[c]);
-		//}
-		
-
-		
-
-		
-
-		
-
-		//coreImages[0].loadFromFile(imageNames[frame]);
-		//tex.loadFromImage(coreImages[0]);
-		//tex.loadFromFile(imageNames[frame]);
-		
-		//coreSprite.setTexture(tex);
-		//coreSprite.setTexture(//*ts_core[frame / 4]->texture);
+		//sess->Fade(true, 30, sf::Color::White);
+		//frame = stateLength[DESTROYCORE] - 1;
 		break;
 	}
-	//case FADEEXIT:
-		
-	//	break;
 	case EXITCORE:
 		if (frame == 0)
 		{
 			sess->Fade(false, 30, sf::Color::White);
-			if (sess->IsSessTypeGame())
-			{
-				GameSession *game = GameSession::GetSession();
-				game->nexus->FinishDestruction();
-			}
+			nexus->FinishDestruction();
 		}
 			
 		break;
 	}
-
-	++frame;
-
-	return true;
 }
 void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
-	if (layer != EffectLayer::IN_FRONT)
-	{
-		return;
-	}
-
-	if (state >= ENTERCORE)
+	sf::View oldView = target->getView();
+	sf::View myView;
+	myView.setCenter(960, 540);
+	myView.setSize(1920, 1080);
+	target->setView(myView);
+	if (state >= ENTERCORE && layer == EffectLayer::BEHIND_ENEMIES)
 	{
 		target->draw(darkQuad, 4, sf::Quads);
-		/*if( state <= DESTROYCORE )
-			target->draw(coreSprite);*/
-
-
 	}
-	if (state == DESTROYCORE)
+
+	sess->DrawEmitters(layer, target);
+	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-		target->draw(mov);
+		geoGroup.Draw(target);
 	}
-	
+
+	target->setView(oldView);
 }
 void NexusCore1Seq::Reset()
 {
+	Sequence::Reset();
+
 	state = FADETOBLACK;
 	frame = 0;
-	/*ci = 0;
-	endThread = false;
-	doneLoading = false;
-	loadIndex = 0;
-	shouldLoad = true;
 
-	coreSprite.setTexture(*ts_firstCore->texture);*/
-	//coreSprite.setTexture(coreTex[c]);
+	Vector2f pPos(960, 540);
+
+	geoGroup.SetBase(pPos);
+	geoGroup.Reset();
+	geoGroup.Start();
+
+	//emitter->SetPos(Vector2f(pPos));
+	//emitter->Reset();
+	//sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
 }

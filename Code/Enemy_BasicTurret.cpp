@@ -138,7 +138,6 @@ void BasicTurret::SetLevel(int lev)
 void BasicTurret::ResetEnemy()
 {
 	//launchers[0]->Reset();
-	dead = false;
 	frame = 0;
 
 	action = WAIT;

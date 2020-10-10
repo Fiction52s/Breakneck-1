@@ -26,7 +26,6 @@ struct GetShardSequence : Sequence
 	ShardPopup *shardPop;
 	MovingGeoGroup geoGroup;
 	ShapeEmitter *emitter;
-	Session *sess;
 
 	sf::Vertex overlayRect[4];
 };

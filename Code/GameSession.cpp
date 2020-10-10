@@ -2535,6 +2535,8 @@ int GameSession::Run()
 				continue;
 			}
 
+			DrawGameSequence(preScreenTex);
+
 			Sprite preTexSprite;
 			preTexSprite.setTexture(preScreenTex->getTexture());
 			preTexSprite.setPosition(-960 / 2, -540 / 2);

@@ -47,6 +47,7 @@ struct MovingGeoGroup;
 struct HealthFly;
 
 struct TerrainRail;
+struct Nexus;
 
 struct MotionGhostEffect
 {
@@ -609,7 +610,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_doubleWire;
 	HitboxInfo *wireChargeInfo;
 	bool hitGoal;
-	bool hitNexus;
+	Nexus *hitNexus;
+
 	sf::Sprite dodecaSprite;
 	Edge *gateTouched;
 	double level1SpeedThresh;

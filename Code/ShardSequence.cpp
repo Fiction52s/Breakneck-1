@@ -9,7 +9,7 @@ using namespace std;
 
 GetShardSequence::GetShardSequence()
 {
-	sess = Session::GetSession();
+	//sess = Session::GetSession();
 
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
@@ -128,7 +128,7 @@ void GetShardSequence::UpdateState()
 		}
 	}
 	}
-	++frame;
+//++frame; //i think this skips frames
 
 	//emitter->Update();
 
@@ -139,12 +139,7 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 	sess->DrawEmitters(layer, target);
 	if (layer == EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
-
-		geoGroup.Draw(target);
-		/*if (state != END)
-		{
-			
-		}*/
+		geoGroup.Draw(target);		
 	}
 	else if (layer == EffectLayer::UI_FRONT)
 	{
@@ -158,21 +153,25 @@ void GetShardSequence::Draw(RenderTarget *target, EffectLayer layer)
 
 void GetShardSequence::Reset()
 {
-	Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
-	frame = 0;
-	state = GET;
-	geoGroup.SetBase(pPos);
-	geoGroup.Reset();
-	geoGroup.Start();
+	Sequence::Reset();
+	if (shard != NULL)
+	{
+		Vector2f pPos = Vector2f(sess->GetPlayer(0)->position);
+		frame = 0;
+		state = GET;
+		geoGroup.SetBase(pPos);
+		geoGroup.Reset();
+		geoGroup.Start();
 
-	assert(shard != NULL);
+		assert(shard != NULL);
 
-	shardPop->SetShard(shard->world, shard->localIndex);
-	shardPop->SetCenter(Vector2f(960, 800));
-	shardPop->Reset();
+		shardPop->SetShard(shard->world, shard->localIndex);
+		shardPop->SetCenter(Vector2f(960, 800));
+		shardPop->Reset();
 
-	emitter->SetPos(Vector2f(pPos));
-	emitter->Reset();
-	sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+		emitter->SetPos(Vector2f(pPos));
+		emitter->Reset();
+		sess->AddEmitter(emitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
+	}
 
 }

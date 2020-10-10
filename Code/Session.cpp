@@ -253,7 +253,7 @@ void Session::AddGeneralEnemies()
 
 	AddExtraEnemy("shippickup", CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 
-	AddExtraEnemy("nexus", CreateEnemy<Nexus>, SetParamsType<NexusParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false );
+	
 
 	//AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
 	//	GetSizedTileset("Ship/shipleave_128x128.png" ));
@@ -364,7 +364,7 @@ void Session::AddW1Enemies()
 
 	AddBasicAerialWorldEnemy("patroller", 1, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
 
-	
+	AddBasicGroundWorldEnemy("nexus1", 1, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	//AddBasicAerialWorldEnemy("airdasher", 1, CreateEnemy<Airdasher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
@@ -1244,12 +1244,12 @@ void Session::KillAllEnemies()
 	}
 }
 
-void Session::PlayerHitNexus(int index)
+void Session::PlayerHitNexus( Nexus *nex, int index)
 {
 	Actor *p = GetPlayer(index);
 	if (p != NULL)
 	{
-		p->hitNexus = true;
+		p->hitNexus = nex;
 	}
 }
 
@@ -4532,6 +4532,7 @@ void Session::TryCreateShardResources()
 	if (getShardSeq == NULL)
 	{
 		getShardSeq = new GetShardSequence;
+		getShardSeq->Init();
 	}
 }
 
@@ -5945,7 +5946,10 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 	if (activeSequence != NULL)
 	{
 		//preScreenTex->setView(uiView);
-		activeSequence->Draw(preScreenTex);
+		for (int i = 0; i < EffectLayer::Count; ++i)
+		{
+			activeSequence->Draw(preScreenTex, (EffectLayer)i);
+		}
 	}
 
 	preScreenTex->setView(uiView);
@@ -5963,6 +5967,11 @@ bool Session::SequenceGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)
 	{
+		if (!OneFrameModeUpdate())
+		{
+			return true;
+		}
+
 		UpdateControllers();
 
 		ActiveSequenceUpdate();
