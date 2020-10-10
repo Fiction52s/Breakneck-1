@@ -3,7 +3,7 @@
 
 #include "Enemy.h"
 
-struct NexusCore1Seq;
+struct NexusCoreSeq;
 struct Nexus : Enemy
 {
 	enum Action
@@ -35,7 +35,7 @@ struct Nexus : Enemy
 	V2d GetKillPos();
 	int explosionLength;
 
-	NexusCore1Seq *insideSeq;
+	NexusCoreSeq *insideSeq;
 
 	int explosionAnimFactor;
 	int explosionYOffset;

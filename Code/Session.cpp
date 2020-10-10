@@ -420,6 +420,8 @@ void Session::AddW2Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/blocker_w2_192x192.png", 192, 192));
 
+	AddBasicGroundWorldEnemy("nexus2",2, CreateEnemy<Nexus>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+
 	AddWorldEnemy("downgravityjuggler", 2, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3 );
 
 	AddWorldEnemy("upgravityjuggler", 2, CreateEnemy<GravityJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);

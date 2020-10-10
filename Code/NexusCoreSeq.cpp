@@ -33,12 +33,24 @@ using namespace std;
 
 #define TIMESTEP (1.0 / 60.0)
 
-NexusCore1Seq::NexusCore1Seq()
+NexusCoreSeq::NexusCoreSeq()
 {
 	nexus = NULL;
 	SetRectCenter(darkQuad, 1920, 1080, Vector2f(960, 540));// , Vector2f(pi->pos));
 	SetRectColor(darkQuad, Color(Color::Black));
-	
+}
+
+NexusCoreSeq::~NexusCoreSeq()
+{
+	delete emitter;
+}
+
+void NexusCoreSeq::SpecialInit()
+{
+	//change behavior based on w1 or w2
+
+	int world = nexus->world;
+
 	emitter = new ShapeEmitter(6, 300);// , PI / 2.0, 2 * PI, 1.0, 2.5);
 	emitter->CreateParticles();
 	emitter->SetRatePerSecond(120);
@@ -88,12 +100,7 @@ NexusCore1Seq::NexusCore1Seq()
 	geoGroup.Init();
 }
 
-NexusCore1Seq::~NexusCore1Seq()
-{
-	delete emitter;
-}
-
-void NexusCore1Seq::SetupStates()
+void NexusCoreSeq::SetupStates()
 {
 	SetNumStates(Count);
 
@@ -103,7 +110,7 @@ void NexusCore1Seq::SetupStates()
 	stateLength[EXITCORE] = 30;
 }
 
-void NexusCore1Seq::ReturnToGame()
+void NexusCoreSeq::ReturnToGame()
 {
 	sess->Fade(true, 60, sf::Color::White);
 	sess->SetGameSessionState(GameSession::RUN);
@@ -118,7 +125,7 @@ void NexusCore1Seq::ReturnToGame()
 	}
 }
 
-void NexusCore1Seq::UpdateState()
+void NexusCoreSeq::UpdateState()
 {
 	switch (state)
 	{
@@ -165,7 +172,7 @@ void NexusCore1Seq::UpdateState()
 		break;
 	}
 }
-void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
+void NexusCoreSeq::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
 	sf::View oldView = target->getView();
 	sf::View myView;
@@ -185,7 +192,7 @@ void NexusCore1Seq::Draw(sf::RenderTarget *target, EffectLayer layer)
 
 	target->setView(oldView);
 }
-void NexusCore1Seq::Reset()
+void NexusCoreSeq::Reset()
 {
 	Sequence::Reset();
 

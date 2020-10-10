@@ -62,9 +62,6 @@ GroundTrigger::GroundTrigger(ActorParams*ap)//Edge *g, double q, bool p_facingRi
 		//storySeq = new StorySequence(game);
 		//storySeq->Load("getairdash");
 		break;
-	case TRIGGER_DESTROYNEXUS1:
-		gameSequence = new NexusCore1Seq;
-		break;
 	case TRIGGER_CRAWLERATTACK:
 		gameSequence = new CrawlerPostFightScene;
 		break;

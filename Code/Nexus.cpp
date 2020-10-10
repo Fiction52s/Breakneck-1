@@ -23,6 +23,7 @@ Nexus::Nexus( ActorParams *ap)
 	switch (world)
 	{
 	case 1:
+	case 2:
 		width = 288;
 		height = 320;
 		ts_nexusOpen = sess->GetTileset("Nexus/nexus_open_1296x904.png", 1296, 904);
@@ -37,7 +38,7 @@ Nexus::Nexus( ActorParams *ap)
 		explosionYOffset = 80;
 		initialYOffset = 30;
 		break;
-	case 2:
+	/*case 2:
 	default:
 		width = 288;
 		height = 256;
@@ -50,7 +51,13 @@ Nexus::Nexus( ActorParams *ap)
 		explosionAnimFactor = 2;
 		explosionYOffset = 0;
 		initialYOffset = 0;
-		break;
+		break;*/
+	}
+
+	if (world == 2)
+	{
+		sprite.setColor(Color::Green);
+		nodeSprite.setColor(Color::Green);
 	}
 
 	sprite.setTexture(*ts_nexusOpen->texture);
@@ -111,7 +118,7 @@ Nexus::Nexus( ActorParams *ap)
 	frame = 0;
 	animationFactor = 7;
 
-	insideSeq = new NexusCore1Seq;
+	insideSeq = new NexusCoreSeq;
 	insideSeq->nexus = this;
 	insideSeq->Init();
 

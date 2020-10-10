@@ -9,6 +9,7 @@
 #include "Enemy_CrawlerQueen.h"
 #include "SaveFile.h"
 #include "PauseMenu.h"
+#include "Enemy_GroundedWarper.h"
 
 using namespace std;
 using namespace sf;
@@ -569,6 +570,7 @@ CrawlerPostFightScene::CrawlerPostFightScene()
 	:BasicBossScene( BasicBossScene::APPEAR )
 {
 	queen = NULL;
+	warper = sess->GetWarper("FinishedScenes/W1/nexus1");
 }
 
 void CrawlerPostFightScene::SetupStates()
@@ -581,6 +583,11 @@ void CrawlerPostFightScene::SetupStates()
 
 void CrawlerPostFightScene::ReturnToGame()
 {
+	if (!warper->spawned)
+	{
+		sess->AddEnemy(warper);
+	}
+	warper->Activate();
 	SetPlayerStandDefaultPoint(true);
 	sess->Fade(true, 60, Color::Black);
 	sess->cam.EaseOutOfManual(60);

@@ -13,6 +13,7 @@ struct Nexus;
 struct Session;
 struct ShapeEmitter;
 struct Nexus;
+struct GroundedWarper;
 
 //BirdPostFightScene
 
@@ -91,6 +92,7 @@ struct CrawlerPostFightScene : BasicBossScene
 	};
 
 	CrawlerQueen *queen;
+	GroundedWarper *warper;
 
 	CrawlerPostFightScene();
 
@@ -102,7 +104,7 @@ struct CrawlerPostFightScene : BasicBossScene
 	void UpdateState();
 };
 
-struct NexusCore1Seq : Sequence
+struct NexusCoreSeq : Sequence
 {
 	enum State
 	{
@@ -113,8 +115,9 @@ struct NexusCore1Seq : Sequence
 		Count
 	};
 
-	NexusCore1Seq();
-	~NexusCore1Seq();
+	NexusCoreSeq();
+	~NexusCoreSeq();
+	void SpecialInit();
 	void ReturnToGame();
 	void SetupStates();
 	void UpdateState();
