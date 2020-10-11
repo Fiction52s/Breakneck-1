@@ -9482,6 +9482,46 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 		}
 	}
 
+	bool allSameType = true;
+	int sameWorld = -1;
+	int sameVar = -1;
+	for (auto it = nonInverseInters.begin(); it != nonInverseInters.end(); ++it)
+	{
+		if (sameWorld == -1)
+		{
+			sameWorld = (*it)->terrainWorldType;
+			sameVar = (*it)->terrainVariation;
+		}
+		else
+		{
+			int currWorld = (*it)->terrainWorldType;
+			int currVar = (*it)->terrainVariation;
+			if (currWorld != sameWorld || currVar != sameVar)
+			{
+				allSameType = false;
+				break;
+			}
+		}
+	}
+
+	if (allSameType && intersectsInverse)
+	{
+		if (sameWorld == -1)
+		{
+			sameWorld = inversePolygon->terrainWorldType;
+			sameVar = inversePolygon->terrainVariation;
+		}
+		else
+		{
+			int currWorld = inversePolygon->terrainWorldType;
+			int currVar = inversePolygon->terrainVariation;
+			if (currWorld != sameWorld || currVar != sameVar)
+			{
+				allSameType = false;
+			}
+		}
+	}
+
 	//===NON-INVERSE STEP===//
 	if (nonInverseInters.size() > 0)
 	{
@@ -9583,6 +9623,9 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 		}
 
+		
+		
+
 		for (i = 0; i < checkVecSize; ++i)
 		{
 			if (finalCheckVec[i].second)
@@ -9591,8 +9634,16 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			}
 			else
 			{
-				finalCheckVec[i].first->SetMaterialType(GetCurrTerrainWorld(), GetCurrTerrainVariation());
+				if (allSameType)
+				{
+					finalCheckVec[i].first->SetMaterialType(sameWorld, sameVar);
+				}
+				else
+				{
+					finalCheckVec[i].first->SetMaterialType(GetCurrTerrainWorld(), GetCurrTerrainVariation());
+				}
 				finalCheckVec[i].first->Finalize();
+				
 				resultBrush.AddObject(finalCheckVec[i].first);
 				attachList.push_back(finalCheckVec[i].first);
 			}
@@ -9709,7 +9760,14 @@ bool EditSession::ExecuteTerrainMultiAdd(list<PolyPtr> &brushPolys,
 			//FusePathClusters(inverseSolution[playerInsideIndex], clipperIntersections, fusedPoints);
 			//FixPathSlivers(inverseSolution[playerInsideIndex]);
 
-			
+			if (allSameType)
+			{
+				newInverse->SetMaterialType(sameWorld, sameVar);
+			}
+			else
+			{
+				newInverse->SetMaterialType(GetCurrTerrainWorld(), GetCurrTerrainVariation());
+			}
 
 			newInverse->AddPointsFromClipperPath(inverseSolution[playerInsideIndex], fusedPoints);
 
