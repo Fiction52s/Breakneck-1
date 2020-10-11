@@ -482,7 +482,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	SetKey();
 
 
-	int fxWorld = min(world, 2);
+	int fxWorld = world;
 
 	stringstream ss;
 	ss << "FX/hit_spack_" << fxWorld << "_128x128.png";
@@ -499,7 +499,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	ss.clear();
 	ss.str("");
 
-	ss << "FX/fx_blood_" << fxWorld << "_256x256.png";
+	ss << "FX/Blood/fx_blood_" << fxWorld << "_256x256.png";
 
 	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
 
