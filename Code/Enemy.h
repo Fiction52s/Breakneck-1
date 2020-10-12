@@ -81,6 +81,9 @@ struct StoredEnemyData
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
 	SlowableObject, HittableObject
 {
+	static int bloodLengths[8];
+
+
 	virtual int GetNumStoredBytes() { return 0; }
 	virtual void StoreBytes(unsigned char *bytes) {
 		assert(0);

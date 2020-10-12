@@ -684,10 +684,10 @@ void TerrainPolygon::GenerateDecor()
 	if (tdInfo != NULL)
 	{
 		int numDecors = tdInfo->numDecors;
-		DecorExpression *expr;
+		DecorExpression *expr = NULL;
 		for (int i = 0; i < numDecors; ++i)
 		{
-			expr = CreateDecorExpression(tdInfo->decors[i], 0);
+			//expr = CreateDecorExpression(tdInfo->decors[i], 0);
 			if (expr != NULL)
 				AddDecorExpression(expr);
 		}

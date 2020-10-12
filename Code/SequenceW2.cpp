@@ -136,7 +136,7 @@ BirdPostFightScene::BirdPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
 	bird = NULL;
-	warper = sess->GetWarper("Bosses/greyw1");
+	warper = sess->GetWarper("FinishedScenes/W2/nexus2");
 }
 
 void BirdPostFightScene::SetupStates()

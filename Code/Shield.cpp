@@ -111,7 +111,7 @@ void Shield::ConfirmKill()
 		//cout << "set pause frames 7" << endl;
 	}
 
-	parent->sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
+	//parent->sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
 	parent->sess->cam.SetRumble(1, 1, 7);
 }
 

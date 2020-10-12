@@ -30,6 +30,17 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+
+int Enemy::bloodLengths[8] = {
+	16,
+	16,
+	16,
+	16,
+	13,
+	17,
+	20,
+	9 };
+
 bool Enemy::IsGoalType()
 {
 	return type == EN_GOAL 
@@ -484,26 +495,25 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 
 	int fxWorld = world;
 
+	//stringstream ss;
+	//ss << "FX/hit_spack_" << fxWorld << "_128x128.png";
+
+	ts_hitSpack = NULL;//sess->GetTileset( ss.str(), 128, 128 );
+
+	//ss.clear();
+	//ss.str("");
+
+	//ss << "FX/w" << fxWorld << "_kill_fx_512x512.png";
+
+	//ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
+	//assert(ts_killSpack != NULL);
+	//ss.clear();
+	//ss.str("");
+
 	stringstream ss;
-	ss << "FX/hit_spack_" << fxWorld << "_128x128.png";
-
-	ts_hitSpack = sess->GetTileset( ss.str(), 128, 128 );
-
-	ss.clear();
-	ss.str("");
-
-	ss << "FX/w" << fxWorld << "_kill_fx_512x512.png";
-
-	ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
-	assert(ts_killSpack != NULL);
-	ss.clear();
-	ss.str("");
-
-	ss << "FX/Blood/fx_blood_" << fxWorld << "_256x256.png";
+	ss << "FX/Blood/blood_w" << fxWorld << "_256x256.png";
 
 	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
-
-	
 }
 
 void Enemy::SetKey()
@@ -1417,7 +1427,11 @@ void Enemy::ConfirmKill()
 		//pauseFrames = 0;
 	}
 
-	sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 5, true);
+	if (world >= 1)
+	{
+		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
+	}
+	
 	sess->cam.SetRumble(1.5, 1.5, 7);
 	
 	if (hasMonitor && !suppressMonitor)
