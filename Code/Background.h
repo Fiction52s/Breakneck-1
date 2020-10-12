@@ -32,6 +32,8 @@ struct ScrollingBackground
 	void SetLeftPos(sf::Vector2f &pos);
 	sf::Vector2f extraOffset;
 	float extraZoom;
+
+	std::string tsSource;
 };
 
 
@@ -75,6 +77,9 @@ struct Background
 	bool deleteTilesets;
 
 	std::string name;
+
+	std::string bgSourceName;
+	std::string shapeSourceName;
 
 
 	std::list<ScrollingBackground*> scrollingBackgrounds;

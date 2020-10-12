@@ -461,6 +461,34 @@ void TilesetManager::ClearTilesets()
 	}
 }
 
+//only deletes it if it exists
+void TilesetManager::DestroyTilesetIfExists(const std::string &sourceName,
+	int altIndex)
+{
+	TilesetCategory cat = GetCategory(sourceName);
+
+	auto &currMap = tilesetMaps[cat];
+	auto it = currMap.find(sourceName);
+	if (it != currMap.end())
+	{
+		list<pair<Tileset*, int>> &currList = (*it).second;
+		for (auto lit = currList.begin(); lit != currList.end(); ++lit)
+		{
+			if ((*lit).first->altColorIndex == altIndex)
+			{
+				delete (*lit).first;
+				currList.erase(lit);
+
+				if (currList.empty())
+				{
+					currMap.erase(it);
+				}
+				return;
+			}
+		}
+	}
+}
+
 void TilesetManager::DestroyTileset(Tileset * t)
 {
 	TilesetCategory cat = GetCategory(t->sourceName);
@@ -472,7 +500,7 @@ void TilesetManager::DestroyTileset(Tileset * t)
 		list<pair<Tileset*,int>> &currList = (*it).second;
 		for (auto lit = currList.begin(); lit != currList.end(); ++lit)
 		{
-			if ((*lit).first == t)
+			if ((*lit).first->altColorIndex == t->altColorIndex)
 			{
 				currList.erase(lit);
 				delete t;

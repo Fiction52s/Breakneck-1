@@ -17,6 +17,8 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
+	allUnlocked = true;
+
 	worldSelector = new WorldSelector(p_mainMenu);
 
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -205,6 +207,11 @@ void WorldMap::UpdateColonySelect()
 	worldSelector->SetPosition(Vector2f(colonySpr[selectedColony].getPosition() + Vector2f(960 / 8.f, 540 / 8.f)));
 	//colonySelectSprZoomed.setTexture(*ts_colonySelectZoomed[selectedColony]->texture);
 	//colonySelectSprZoomed.setPosition(colonySpr[selectedColony].getPosition());
+}
+
+bool WorldMap::IsInAllUnlockedMode()
+{
+	return allUnlocked;
 }
 
 void WorldMap::RunSelectedMap()

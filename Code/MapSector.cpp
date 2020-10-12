@@ -124,6 +124,12 @@ MapSector::~MapSector()
 void MapSector::UpdateUnlockedLevelCount()
 {
 	unlockedLevelCount = numLevels;
+
+	if (ms->worldMap->IsInAllUnlockedMode())
+	{
+		return;
+	}
+
 	Level *level;
 	for (int i = 0; i < numLevels - 1; ++i)
 	{
@@ -431,9 +437,8 @@ bool MapSector::Update(ControllerState &curr,
 
 	UpdateNodes();
 
-
-
-	if (state == NORMAL || state == COMPLETE || (state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7))
+	if (state == NORMAL || state == COMPLETE 
+		|| (state == LEVELJUSTCOMPLETE && stateFrame >= 3 * 7))
 	{
 		int old = GetSelectedIndex();
 

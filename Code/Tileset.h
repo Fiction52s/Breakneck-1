@@ -71,6 +71,8 @@ struct TilesetManager
 	Tileset *GetUpdatedTileset(
 		const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
 	void ClearTilesets();
+	void DestroyTilesetIfExists(const std::string &sourceName,
+		int altIndex = 0);
 	void DestroyTileset(Tileset * t);
 	void DestroyTilesetCategory(TilesetCategory tc);
 	void ResetTilesetAccessCount();

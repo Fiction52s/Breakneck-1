@@ -272,6 +272,7 @@ struct WorldMap : TilesetManager
 
 	bool moveDown;
 	bool moveUp;
+	bool allUnlocked;
 
 	WorldMap(MainMenu *mainMenu);
 	void RunSelectedMap();
@@ -293,6 +294,7 @@ struct WorldMap : TilesetManager
 	void SetDefaultSelections();
 	MapSelector *CurrSelector();
 	void InitSelectors();
+	bool IsInAllUnlockedMode();
 };
 
 #endif

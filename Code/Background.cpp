@@ -14,6 +14,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 	depth(p_depthLevel * .01f), tsIndex(index), scrollSpeedX(p_scrollSpeedX)
 {
 	assert(p_ts != NULL);
+	tsSource = ts->sourceName;
 	SetTileIndex(tsIndex);
 	SetLeftPos(Vector2f(0, 0));
 	scrollOffset = 0;
@@ -283,12 +284,12 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 
 	string bgStr = ss.str();
 
-	string bgFile = bgStr + ".png";
+	bgSourceName = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
-	string shapeFile = bgStr + "_shape.png";
+	shapeSourceName = bgStr + "_shape.png";
 
-	ts_bg = tm->GetTileset(bgFile, 1920, 1080);
-	ts_shape = tm->GetTileset(shapeFile, 1920, 1080);
+	ts_bg = tm->GetTileset(bgSourceName, 1920, 1080);
+	ts_shape = tm->GetTileset(shapeSourceName, 1920, 1080);
 
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
@@ -330,13 +331,12 @@ Background::Background(MainMenu *mm)
 
 
 
-	string bgFile = folder + "title_base_1920x1080.png";
+	bgSourceName = folder + "title_base_1920x1080.png";
 	string paletteFile = bgStr + "_palette.png";
-	string shapeFile = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
+	shapeSourceName = folder + "titleshade_1920x1080.png";//bgStr + "_shape.png";
 
 	ts_bg = NULL;
-	//Tileset *ts_bg = mm->tilesetManager.GetTileset(bgFile, 1920, 1080);
-	ts_shape = mm->tilesetManager.GetTileset(shapeFile, 1920, 1080);
+	ts_shape = mm->tilesetManager.GetTileset(shapeSourceName, 1920, 1080);
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
 
@@ -367,17 +367,20 @@ Background::~Background()
 	if (deleteTilesets)
 	{
 		if (ts_bg != NULL)
-			tm->DestroyTileset(ts_bg);
+		{
+			tm->DestroyTilesetIfExists(bgSourceName);
+		}
 		if (ts_shape != NULL)
-			tm->DestroyTileset(ts_shape);
+		{
+			tm->DestroyTilesetIfExists(shapeSourceName);
+		}
 	}
-	
 
 	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
 	{
 		if (deleteTilesets)
 		{
-			tm->DestroyTileset((*it)->ts);
+			tm->DestroyTilesetIfExists((*it)->tsSource);
 		}
 		
 		delete (*it);
