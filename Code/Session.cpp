@@ -493,12 +493,11 @@ void Session::AddW3Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
 
-	//AddBasicAerialWorldEnemy("upbouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/Booster_512x512.png", 512, 512));
+	AddBasicAerialWorldEnemy("upbouncebooster", 3, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 
-	//AddBasicAerialWorldEnemy("omnibouncebooster", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
-	//	GetTileset("Enemies/Booster_512x512.png", 512, 512));
-	///*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
+	AddBasicAerialWorldEnemy("omnibouncebooster", 3, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
+
+	//*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 

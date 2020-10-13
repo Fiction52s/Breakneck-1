@@ -208,6 +208,8 @@ struct WorldMap : TilesetManager
 		START_LEVEL
 	};
 
+	const static int MAX_NUM_WORLDS = 8;
+
 	State state;
 	WorldSelector *worldSelector;
 	MapSelector **selectors;
@@ -225,7 +227,7 @@ struct WorldMap : TilesetManager
 
 	sf::Sprite extraPassSpr;
 	sf::Sprite selectorExtraPass;
-	sf::Sprite colonySpr[7];
+	sf::Sprite colonySpr[MAX_NUM_WORLDS];
 	sf::Sprite planetSpr;
 	sf::Sprite spaceSpr;
 	sf::Sprite colonySelectSpr;
@@ -241,8 +243,8 @@ struct WorldMap : TilesetManager
 	TreeNode *entries;
 
 	sf::Vertex asteroidQuads[4 * 4];
-	sf::Vertex worldActiveQuads[7 * 4];
-	sf::Vertex worldActiveQuadsZoomed[7 * 4];
+	sf::Vertex worldActiveQuads[MAX_NUM_WORLDS * 4];
+	sf::Vertex worldActiveQuadsZoomed[MAX_NUM_WORLDS * 4];
 
 	int frame;
 	int asteroidFrame;
@@ -256,9 +258,9 @@ struct WorldMap : TilesetManager
 	Tileset *ts_space;
 	Tileset *ts_planet;
 	Tileset *ts_asteroids[4];
-	Tileset *ts_colonyActiveZoomed[7];
-	Tileset *ts_colonyActive[7];
-	Tileset *ts_colony[7];
+	Tileset *ts_colonyActiveZoomed[MAX_NUM_WORLDS];
+	Tileset *ts_colonyActive[MAX_NUM_WORLDS];
+	Tileset *ts_colony[MAX_NUM_WORLDS];
 	Tileset *ts_colonySelect;
 
 	sf::Text currLevelTimeText;

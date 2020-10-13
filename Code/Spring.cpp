@@ -199,8 +199,6 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	
 
 	ResetEnemy();
-
-	SetSpawnRect();
 }
 void Spring::DebugDraw(sf::RenderTarget *target)
 {

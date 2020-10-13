@@ -47,6 +47,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	ts_colony[4] = GetTileset("WorldMap/map_w5.png", 1920, 1080);
 	ts_colony[5] = GetTileset("WorldMap/map_w6.png", 1920, 1080);
 	ts_colony[6] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
+	ts_colony[7] = GetTileset("WorldMap/map_w7.png", 1920, 1080);
 	
 	ts_asteroids[0] = GetTileset("WorldMap/asteroid_1_1920x1080.png", 1920, 1080);
 	ts_asteroids[1] = GetTileset("WorldMap/asteroid_2_1920x1080.png", 1920, 1080);
@@ -81,6 +82,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	colonySpr[4].setPosition(595, 331);
 	colonySpr[5].setPosition(841, 189);
 	colonySpr[6].setPosition(841, 473);
+	colonySpr[7].setPosition(841, 600);
 
 	for (int i = 0; i < 2; ++i)
 	{
@@ -90,7 +92,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 		SetRectCenter(worldActiveQuadsZoomed + i * 4, 1920 / 8.f, 1080 / 8.f, Vector2f(colonySpr[i].getPosition() + Vector2f(960/8.f, 540/8.f)));
 	}
 
-	for (int i = 0; i < 7; ++i)
+	for (int i = 0; i < MAX_NUM_WORLDS; ++i)
 	{
 		colonySpr[i].setTexture(*ts_colony[i]->texture);
 		colonySpr[i].setScale(1.f / 8.f, 1.f / 8.f);

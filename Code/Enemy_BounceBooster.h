@@ -14,30 +14,21 @@ struct BounceBooster : Enemy
 		Count
 	};
 
-	Action action;
-	BounceBooster(GameSession *owner,
-		sf::Vector2i &pos, bool upOnly,
-		int level);
-	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-
-	bool Boost();
-	bool IsBoostable();
-
-	sf::Sprite sprite;
 	Tileset *ts;
 	Tileset *ts_refresh;
-
 	int strength;
 	bool upOnly;
 
+	BounceBooster(ActorParams *ap);	
+	void ProcessState();
+	void SetLevel(int lev);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	void AddToWorldTrees();
 
-
-	int actionLength[Count];
-	int animFactor[Count];
+	bool Boost();
+	bool IsBoostable();
 };
 
 #endif

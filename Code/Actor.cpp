@@ -46,7 +46,6 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 
-
 #include "GameMode.h"
 
 #include "GGPO.h"
@@ -4955,6 +4954,12 @@ void Actor::ProcessBooster()
 		//currBooster = NULL;
 		//boostUsed = false;
 	}
+
+	if (currBounceBooster != NULL && oldBounceBooster == NULL && currBounceBooster->Boost())
+	{
+		SetBounceBoostVelocity();
+	}
+
 }
 
 void Actor::ProcessBoostGrass()
@@ -13391,6 +13396,22 @@ void Actor::SetBoostVelocity()
 
 void Actor::SetBounceBoostVelocity()
 {
+	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
+	{
+
+	}
+	else
+	{
+		SetAction(JUMP);
+		frame = 1;
+
+		velocity = GetTrueVel();
+
+		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+	}
+
 	double s = currBounceBooster->strength;
 	//velocity.y = min(s, velocity.y);
 
@@ -14439,19 +14460,19 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_BOUNCEBOOSTER)
 		{
-			//BounceBooster *boost = (BounceBooster*)qte;
+			BounceBooster *boost = (BounceBooster*)qte;
 
-			//if (currBounceBooster == NULL)
-			//{
-			//	if (boost->hitBody->Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
-			//	{
-			//		currBounceBooster = boost;
-			//	}
-			//}
-			//else
-			//{
-			//	//some replacement formula later
-			//}
+			if (currBounceBooster == NULL)
+			{
+				if (boost->hitBody.Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
+				{
+					currBounceBooster = boost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
 		}
 		else if (en->type == EnemyType::EN_GRAVITYMODIFIER)
 		{
@@ -16864,6 +16885,10 @@ V2d Actor::GetTrueVel()
 	if (grindEdge != NULL)
 	{
 		return grindEdge->Along() * grindSpeed;
+	}
+	else if (bounceEdge != NULL)
+	{
+		return storedBounceVel;
 	}
 	else if (ground != NULL)
 	{
