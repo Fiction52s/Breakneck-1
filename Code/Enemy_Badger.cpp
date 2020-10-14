@@ -8,41 +8,17 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_level )
-	:Enemy( owner, EnemyType::EN_BADGER, hasMonitor, 2 ), facingRight( true ),
-	moveBezTest( .22,.85,.3,.91 )
+Badger::Badger(ActorParams *ap)
+	:Enemy( EnemyType::EN_BADGER, ap ), moveBezTest( .22,.85,.3,.91 )
 {
-	level = p_level;
+	SetNumActions(Count);
+	SetEditorActions(RUN, RUN, 0);
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
+	SetLevel(ap->GetLevel());
 
 	maxGroundSpeed = 10;
 	jumpStrength = 5;
 
-	originalFacingRight = facingRight;
 	actionLength[RUN] = 7 * 2;
 	actionLength[LEDGEJUMP] = 2;
 	actionLength[SHORTJUMP] = 2;
@@ -74,47 +50,19 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_le
 
 	double width = 192;
 	double height = 128;
-	
 
-	startGround = g;
-	startQuant = q;
-	frame = 0;
+	CreateGroundMover(startPosInfo, 32, true, this);
+	groundMover->SetSpeed(0);
+	groundMover->AddAirForce(gravity);
 
-	testMover = new GroundMover( owner, g, q, 32, true, this );
-	testMover->AddAirForce(V2d(0, .6));
-	//testMover->gravity = V2d( 0, .5 );
-	testMover->SetSpeed( 0 );
-	//testMover->groundSpeed = s;
-	/*if( !facingRight )
-	{
-		testMover->groundSpeed = -testMover->groundSpeed;
-	}*/
-
-	ts = owner->GetTileset( "Enemies/badger_192x128.png", width, height );
-	ts_aura = owner->GetTileset("Enemies/badger_aura_192x128.png", width, height);
+	ts = sess->GetSizedTileset("Enemies/badger_192x128.png");
+	ts_aura = sess->GetSizedTileset("Enemies/badger_aura_192x128.png");
 
 	auraSprite.setTexture(*ts_aura->texture);
+	auraSprite.setScale(scale, scale);
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
-
-	auraSprite.setScale(scale, scale);
-	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( q );
-	//sprite.setPosition( testMover->physBody.globalPosition.x,
-	//	testMover->physBody.globalPosition.y );
-
-
-	position = testMover->physBody.globalPosition;
-	//roll = false;
-	//position = gPoint + ground->Normal() * height / 2.0;
-	
-
-	receivedHit = NULL;
-
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -124,19 +72,34 @@ Badger::Badger( GameSession *owner, bool hasMonitor, Edge *g, double q, int p_le
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
-	crawlAnimationFactor = 5;
-	rollAnimationFactor = 5;
+	hitBody.hitboxInfo = hitboxInfo;
 
 	bezLength = 60 * NUM_STEPS;
 
 	ResetEnemy();
+}
 
-	//highResPhysics = true;
+void Badger::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void Badger::HandleNoHealth()
@@ -147,26 +110,21 @@ void Badger::HandleNoHealth()
 
 void Badger::ResetEnemy()
 {
-	facingRight = originalFacingRight;
-	testMover->ground = startGround;
-	testMover->edgeQuantity = startQuant;
-	testMover->roll = false;
-	testMover->UpdateGroundPos();
-	testMover->SetSpeed( 0 );
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 
-	position = testMover->physBody.globalPosition;
+	facingRight = true;
+	
+	groundMover->Set(startPosInfo);
+	groundMover->SetSpeed(0);
 
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	bezFrame = 0;
 	attackFrame = -1;
 	
 	frame = 0;
-
-
-	dead = false;
 
 	action = SHORTJUMP;
 	frame = 0;
@@ -177,12 +135,12 @@ void Badger::ResetEnemy()
 
 void Badger::UpdateHitboxes()
 {
-	Edge *ground = testMover->ground;
+	Edge *ground = groundMover->ground;
 	if( ground != NULL )
 	{
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
-		if( testMover->groundSpeed > 0 )
+		if(groundMover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -225,7 +183,7 @@ void Badger::UpdateNextAction()
 		break;
 	}
 
-	if( owner->GetPlayerPos( 0 ).x > position.x )
+	if( sess->GetPlayerPos( 0 ).x > GetPosition().x )
 	{
 		//cout << "facing right" << endl;
 		facingRight = true;
@@ -286,11 +244,11 @@ void Badger::ActionEnded()
 void Badger::Jump( double strengthx, double strengthy )
 {
 	//cout << "jump: " << strengthx << ", " << strengthy << endl;
-	assert( testMover->ground != NULL );
+	assert(groundMover->ground != NULL );
 
 	landedAction = action;
 
-	V2d gAlong = normalize( testMover->ground->v1 - testMover->ground->v0 );
+	V2d gAlong = normalize(groundMover->ground->v1 - groundMover->ground->v0 );
 	if( !facingRight )
 		gAlong = -gAlong;
 
@@ -299,23 +257,23 @@ void Badger::Jump( double strengthx, double strengthy )
 	{
 		gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
 		V2d jumpVec = gAlong * strengthy;
-		testMover->Jump( jumpVec );
+		groundMover->Jump( jumpVec );
 		cout << "jump blend: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 	else
 	{
 		V2d jumpVec = V2d( strengthx, -strengthy );
-		testMover->Jump( jumpVec );
+		groundMover->Jump( jumpVec );
 		//cout << "jump: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 }
 
 void Badger::ProcessState()
 {
-	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
+	//cout << "vel: " << groundMover->velocity.x << ", " << groundMover->velocity.y << endl;
 	//cout << "action: " << (int)action << endl;
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->GetPlayer( 0 );
+	Actor *player = sess->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -354,23 +312,23 @@ void Badger::ProcessState()
 		break;
 	}
 
-	if( testMover->ground == NULL )
+	if(groundMover->ground == NULL )
 	{
 		double airAccel = .5;
 		if( facingRight )
 		{
-			testMover->velocity.x += airAccel;
-			if( testMover->velocity.x > 10 )
+			groundMover->velocity.x += airAccel;
+			if(groundMover->velocity.x > 10 )
 			{
-				testMover->velocity.x = 10;
+				groundMover->velocity.x = 10;
 			}
 			
 		}
 		else
 		{
-			testMover->velocity.x -= airAccel;
-			if( testMover->velocity.x < -10 )
-				testMover->velocity.x = -10;
+			groundMover->velocity.x -= airAccel;
+			if(groundMover->velocity.x < -10 )
+				groundMover->velocity.x = -10;
 			
 		}
 	}
@@ -381,17 +339,17 @@ void Badger::ProcessState()
 	case RUN:
 		if( facingRight )
 		{
-			testMover->SetSpeed( 10 );//testMover->groundSpeed + .3 );
+			groundMover->SetSpeed( 10 );//testMover->groundSpeed + .3 );
 		}
 		else
 		{
-			testMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
+			groundMover->SetSpeed( -10 );//testMover->groundSpeed - .3 );
 		}
 
-		if( testMover->groundSpeed > maxGroundSpeed )
-			testMover->SetSpeed( maxGroundSpeed );
-		else if( testMover->groundSpeed < -maxGroundSpeed )
-			testMover->SetSpeed( -maxGroundSpeed );
+		if(groundMover->groundSpeed > maxGroundSpeed )
+			groundMover->SetSpeed( maxGroundSpeed );
+		else if(groundMover->groundSpeed < -maxGroundSpeed )
+			groundMover->SetSpeed( -maxGroundSpeed );
 		break;
 	case LEDGEJUMP:
 		break;
@@ -423,12 +381,12 @@ void Badger::ProcessState()
 		break;
 	case ATTACK:
 		{
-			testMover->SetSpeed( 0 );
+		groundMover->SetSpeed( 0 );
 		}
 		break;
 	case LAND:
 		{
-			testMover->SetSpeed( 0 );
+		groundMover->SetSpeed( 0 );
 		}
 		break;
 	}
@@ -443,77 +401,44 @@ void Badger::ProcessState()
 
 void Badger::UpdateEnemyPhysics()
 {	
-	testMover->Move(slowMultiple, numPhysSteps);
-
-	if (testMover->ground == NULL)
+	if (numHealth > 0)
 	{
-		if (testMover->velocity.y > maxFallSpeed)
-		{
-			testMover->velocity.y = maxFallSpeed;
-		}
-	}
+		groundMover->Move(slowMultiple, numPhysSteps);
 
-	position = testMover->physBody.globalPosition;
+		if (groundMover->ground == NULL)
+		{
+			if (groundMover->velocity.y > maxFallSpeed)
+			{
+				groundMover->velocity.y = maxFallSpeed;
+			}
+		}
+
+		Enemy::UpdateEnemyPhysics();
+	}
 }
 
 void Badger::EnemyDraw(sf::RenderTarget *target )
 {
-	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite, auraSprite);
 }
 
 
 void Badger::UpdateSprite()
 {
-	double angle = 0;
-
-	V2d p = testMover->physBody.globalPosition;
-	V2d vel = testMover->velocity;
-	
-	double groundSpeed = testMover->groundSpeed;
+	V2d vel = groundMover->velocity;
 	
 	float extraVert = 0;
 
-	if( testMover->ground != NULL )
+	if(groundMover->ground != NULL )
 	{
-		V2d gPoint = testMover->ground->GetPoint( testMover->edgeQuantity );
-		V2d gn = testMover->ground->Normal();
-
-		if (!testMover->roll)
-		{
-			angle = atan2(gn.x, -gn.y);
-			
-		}
-		else
-		{
-			if (facingRight)
-			{
-				V2d vec = normalize(position - testMover->ground->v1);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-			}
-			else
-			{
-				V2d vec = normalize(position - testMover->ground->v0);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-			}
-		}
-
+		sprite.setRotation(groundMover->GetAngleDegrees());
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(gPoint.x, gPoint.y);
+		sprite.setPosition(groundMover->GetGroundPointF());
 	}
 	else
 	{
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(p.x, p.y);
+		sprite.setPosition(GetPositionF());
 		sprite.setRotation(0);
 	}
 
@@ -664,10 +589,10 @@ void Badger::HitOther()
 
 void Badger::ReachCliff()
 {
-	if( facingRight && testMover->groundSpeed < 0 
-		|| !facingRight && testMover->groundSpeed > 0 )
+	if( facingRight && groundMover->groundSpeed < 0 
+		|| !facingRight && groundMover->groundSpeed > 0 )
 	{
-		testMover->SetSpeed( 0 );
+		groundMover->SetSpeed( 0 );
 		return;
 	}
 
@@ -687,10 +612,6 @@ void Badger::ReachCliff()
 	frame = 0;
 
 	Jump( v.x, v.y );
-
-	//testMover->Jump( v );
-	//testMover->groundSpeed = -testMover->groundSpeed;
-	//facingRight = !facingRight;
 }
 
 void Badger::HitOtherAerial( Edge *e )

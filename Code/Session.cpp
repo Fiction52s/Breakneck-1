@@ -511,8 +511,7 @@ void Session::AddW3Enemies()
 
 	//AddBasicAerialWorldEnemy("pulser", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
 
-	//AddBasicGroundWorldEnemy("badger", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/badger_192x128.png", 192, 128));
+	AddBasicGroundWorldEnemy("badger", 3, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
 	//AddBasicGroundWorldEnemy("roadrunner", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/roadrunner_256x256.png", 256, 256));

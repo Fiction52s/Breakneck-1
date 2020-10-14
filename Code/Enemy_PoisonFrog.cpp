@@ -144,8 +144,6 @@ void PoisonFrog::ResetEnemy()
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
 
-	dead = false;
-
 	UpdateHitboxes();
 
 	action = STAND;
@@ -384,16 +382,7 @@ void PoisonFrog::EnemyDraw(sf::RenderTarget *target )
 }
 
 void PoisonFrog::UpdateSprite()
-{
-	Edge *ground = groundMover->ground;
-	double edgeQuantity = groundMover->edgeQuantity;
-	V2d pp;
-	
-	if( ground != NULL )
-	{
-		pp = ground->GetPosition( edgeQuantity );
-	}
-	
+{	
 	int currTile = 0;
 	switch( action )
 	{

@@ -5,5 +5,6 @@
 #include "Ball.h"
 #include "Enemy_Coyote.h"
 #include "Enemy_BounceBooster.h"
+#include "Enemy_Badger.h"
 
 #endif
