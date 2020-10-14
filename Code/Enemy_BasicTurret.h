@@ -31,7 +31,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	int frameTestCounter;
 	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos);
+		Edge *edge, V2d &pos);
 	void BulletHitPlayer( int playerIndex,
 		BasicBullet *b,
 		int hitResult );

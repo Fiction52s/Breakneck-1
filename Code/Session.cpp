@@ -516,7 +516,7 @@ void Session::AddW3Enemies()
 	//AddBasicGroundWorldEnemy("roadrunner", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/roadrunner_256x256.png", 256, 256));
 
-	//AddBasicAerialWorldEnemy("owl", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("owl", 3, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 
 	//AddBasicGroundWorldEnemy("cactus", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);

@@ -69,9 +69,8 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
-	ts_test = sess->GetTileset( "Enemies/frog_80x80.png", width, height );
+	ts_test = sess->GetSizedTileset( "Enemies/frog_80x80.png");
 
-	//jumpStrength = 10;
 	xSpeed = 8;
 
 	sprite.setTexture(*ts_test->texture);
@@ -79,30 +78,10 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	CreateGroundMover(startPosInfo, 30, true, this);
 	groundMover->SetSpeed( 0 );
 	
-	//cout << "creating the boss crawler" << endl;
-	action = STAND;
 	gravity = gravityFactor / 64.0;
-	facingRight = false;
-	receivedHit = NULL;
-
-	//sprite.setTexture( *ts_walk->texture );
-	//sprite.setTextureRect( ts_walk->GetSubRect( 0 ) );
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	//V2d gPoint = g->GetPoint( q );
 
 	sprite.setTexture( *ts_test->texture );
 	sprite.setScale(scale, scale);
-	//sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-
-
-
-	//sprite.setPosition( gPoint.x, gPoint.y );
-	
-
-
-	//double size = max( width * 5, height * 5 );
-	//spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size);
-	//spawnRect = sf::Rect<double>( gPoint.x - 96 / 2, gPoint.y - 96/ 2, 96, 96 );
 
 	BasicCircleHurtBodySetup(30);
 	BasicCircleHitBodySetup(30);

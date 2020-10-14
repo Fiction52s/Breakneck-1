@@ -15,31 +15,12 @@ struct Owl : Enemy, LauncherEnemy
 		A_Count
 	};
 
-	Owl(GameSession *owner,
-		bool hasMonitor,
-		sf::Vector2i &pos,
-		int level);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos);
-	void BulletHitPlayer(BasicBullet *b);
-	void ActionEnded();
-	void ShieldDestroyed(Shield *shield);
-	void ProcessState();
-	void UpdateEnemyPhysics();
-	
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-	
 	double ang;
-	sf::Vector2<double> fireDir;
+	V2d fireDir;
 
+	Shield *shield;
 
 	Tileset *ts_bulletExplode;
-	Action action;
-	int actionLength[A_Count];
-	int animFactor[A_Count];
 
 	int bulletSpeed;
 	int movementRadius;
@@ -50,9 +31,7 @@ struct Owl : Enemy, LauncherEnemy
 
 	CubicBezier flyingBez;
 
-	sf::Vector2i originalPos;
-
-	sf::Vector2<double> velocity;
+	V2d velocity;
 	double flySpeed;
 
 	Tileset *ts_death;
@@ -60,15 +39,26 @@ struct Owl : Enemy, LauncherEnemy
 	Tileset *ts_spin;
 	Tileset *ts_throw;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	int hitlagFrames;
 	int hitstunFrames;
 
-	bool facingRight;
+	Owl(ActorParams *ap);
+	void SetLevel(int lev);
+	void DirectKill();
+	void BulletHitTerrain(BasicBullet *b,
+		Edge *edge, V2d &pos);
+	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
+	void ActionEnded();
+	void ShieldDestroyed(Shield *shield);
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
 
-	Shield *shield;
 };
 
 #endif

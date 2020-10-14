@@ -5,25 +5,79 @@
 #include <assert.h>
 #include "Enemy_Owl.h"
 #include "Shield.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-
-Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
-	:Enemy( owner, EnemyType::EN_OWL, p_hasMonitor, 2 ), flyingBez( 0, 0, 1, 1 )
+Owl::Owl(ActorParams *ap)
+	:Enemy( EnemyType::EN_OWL, ap ), flyingBez( 0, 0, 1, 1 )
 {
-	level = p_level;
+	SetNumActions(Count);
+	SetEditorActions(REST, REST, 0);
+
+	SetLevel(ap->GetLevel());
+
+	ts_death = sess->GetSizedTileset("Enemies/owl_death_160x160.png");
+	ts_flap = sess->GetSizedTileset( "Enemies/owl_flap_160x160.png");
+	ts_spin = sess->GetSizedTileset( "Enemies/owl_spin_160x160.png");
+	ts_throw = sess->GetSizedTileset( "Enemies/owl_throw_160x160.png");
+
+	cutObject->SetTileset(ts_death);
+	cutObject->SetSubRectFront(0);
+	cutObject->SetSubRectBack(1);
+	cutObject->SetScale(scale);
+	
+	retreatRadius = 400;
+	chaseRadius = 600;
+	shotRadius = 800;
+	flySpeed = 5.0;
+
+	actionLength[FIRE] = 10 * 6;
+	actionLength[GUARD] = 120;
+	actionLength[REST] = 60;
+	actionLength[SPIN] = 40;
+
+	bulletSpeed = 10;
+	framesBetween = 60;
+	
+	SetNumLaunchers(2);
+
+	launchers[0] = new Launcher( this, BasicBullet::OWL, 16, 1, GetPosition(), V2d( 1, 0 ), 0, 300 );
+	launchers[0]->SetBulletSpeed( bulletSpeed );
+	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->Reset();
+
+	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, 16, 6, GetPosition(), V2d(0, -1), 2 * PI, 300);
+	launchers[1]->SetBulletSpeed(bulletSpeed);
+	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->Reset();
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+	
+	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(16);
+
+	hitBody.hitboxInfo = hitboxInfo;
+
+	sprite.setScale(scale, scale);
+
+	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
+
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 50, 4, this);
+
+	ResetEnemy();
+}
+
+void Owl::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -39,87 +93,6 @@ Owl::Owl( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
 		maxHealth += 5;
 		break;
 	}
-
-	ts_death = owner->GetTileset( "Enemies/owl_death_160x160.png", 160, 160 );
-	ts_flap = owner->GetTileset( "Enemies/owl_flap_160x160.png", 160, 160 );
-	ts_spin = owner->GetTileset( "Enemies/owl_spin_160x160.png", 160, 160 );
-	ts_throw = owner->GetTileset( "Enemies/owl_throw_160x160.png", 160, 160 );
-
-	cutObject->SetTileset(ts_death);
-	cutObject->SetSubRectFront(0);
-	cutObject->SetSubRectBack(1);
-	cutObject->SetScale(scale);
-	
-	retreatRadius = 400;
-	chaseRadius = 600;
-	shotRadius = 800;
-	flySpeed = 5.0;
-	velocity = V2d( 0, 0 );
-	action = REST;
-	frame = 0;
-	//actionLength[NEUTRAL] = 30;
-	actionLength[FIRE] = 10 * 6;
-	//actionLength[RETREAT] = 30;
-	//actionLength[CHASE] = 30;
-	actionLength[GUARD] = 120;
-	actionLength[REST] = 60;
-	actionLength[SPIN] = 40;
-
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-	originalPos = pos;
-
-	facingRight = true;
-
-	bulletSpeed = 10;
-	framesBetween = 60;
-	
-	numLaunchers = 2;
-	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::OWL, owner, 16, 1, position, V2d( 1, 0 ), 0, 300 );
-	launchers[0]->SetBulletSpeed( bulletSpeed );
-	launchers[0]->hitboxInfo->damage = 18;
-	launchers[0]->Reset();
-
-	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, owner, 16, 6, position, V2d(0, -1), 2 * PI, 300);
-	launchers[1]->SetBulletSpeed(bulletSpeed);
-	launchers[1]->hitboxInfo->damage = 18;
-	launchers[1]->Reset();
-	//launchers[1]->facingDir = V2d(0, -1);
-
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-	
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(16);
-	AddBasicHitCircle(16);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	ts_bulletExplode = owner->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
-
-	//hitboxInfo->kbDir;
-
-	/*guardCircle.setRadius( 50 );
-	guardCircle.setFillColor( Color::White );
-	guardCircle.setOrigin( guardCircle.getLocalBounds().width / 2, guardCircle.getLocalBounds().height / 2 );
-	guardCircle.setPosition( position.x, position.y );*/
-	facingRight = true;
-
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 50, 4, this);
-
-	ResetEnemy();
-
-	sprite.setScale(scale, scale);
 }
 
 void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
@@ -128,7 +101,7 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	{
 		V2d norm = edge->Normal();
 		double angle = atan2( norm.y, -norm.x );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
+		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true );
 		b->launcher->DeactivateBullet( b );
 	}
 	else
@@ -152,25 +125,26 @@ void Owl::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	}
 }
 
-void Owl::BulletHitPlayer(BasicBullet *b )
+
+void Owl::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
-	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
 	V2d vel = b->velocity;
 	double angle = atan2( vel.y, vel.x );
-	owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
-	owner->PlayerApplyHit( b->launcher->hitboxInfo );
+	sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+	
 	b->launcher->DeactivateBullet( b );
 }
 
 void Owl::ResetEnemy()
 {
 	velocity = V2d( 0, 0 );
-	
-	dead = false;
-	frame = 0;
-	position.x = originalPos.x;
-	position.y = originalPos.y;
-	receivedHit = NULL;
+
+	SetCurrPosInfo(startPosInfo);
 	
 	action = REST;
 	frame = 0;
@@ -178,12 +152,13 @@ void Owl::ResetEnemy()
 	currShield = shield;
 	shield->Reset();
 
+
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+
 	UpdateHitboxes();
 
 	UpdateSprite();
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	
 }
 
 void Owl::DirectKill()
@@ -193,7 +168,7 @@ void Owl::DirectKill()
 	{
 		BasicBullet *next = b->next;
 		double angle = atan2( b->velocity.y, -b->velocity.x );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 		b->launcher->DeactivateBullet( b );
 
 		b = next;
@@ -204,8 +179,9 @@ void Owl::DirectKill()
 void Owl::ActionEnded()
 {
 	double dist = 800;
-	V2d playerPos = owner->GetPlayerPos(0);
-	double len = length( playerPos - position );
+	V2d playerPos = sess->GetPlayerPos(0);
+	V2d pos = GetPosition();
+	double len = length( playerPos - pos);
 	if( frame == actionLength[action] )
 	{
 		switch( action )
@@ -218,8 +194,8 @@ void Owl::ActionEnded()
 
 				//V2d dir = normalize( parent->position - position );
 				//double angle = atan2( dir.x, -dir.y );
-				launchers[0]->position = position + fireDir * 40.0;
-				fireDir = normalize(playerPos - position );
+				launchers[0]->position = pos + fireDir * 40.0;
+				fireDir = normalize(playerPos - pos);
 				ang = atan2( fireDir.x, -fireDir.y );
 				//cout << "true ang: " << (ang / PI * 180.0) << endl;
 			}
@@ -229,7 +205,7 @@ void Owl::ActionEnded()
 			frame = 0;
 			break;
 		case FIRE:
-			if( length(playerPos - position ) >= dist )
+			if( length(playerPos - pos) >= dist )
 			{
 				action = REST;
 				frame = 0;
@@ -293,7 +269,7 @@ void Owl::ActionEnded()
 
 void Owl::ShieldDestroyed(Shield *shield)
 {
-	launchers[1]->position = position;
+	launchers[1]->position = GetPosition();
 	//launchers[1]->facingDir = fireDir;//normalize( owner->GetPlayer( 0 )->position - position );
 	launchers[1]->Fire();
 }
@@ -303,10 +279,11 @@ void Owl::ProcessState()
 	ActionEnded();
 
 	
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
+	V2d pos = GetPosition();
 
 	double dist = 600;
-	bool lessThanSize = length(playerPos - position ) < dist;
+	bool lessThanSize = length(playerPos - pos) < dist;
 	
 	switch( action )
 	{
@@ -380,7 +357,7 @@ void Owl::ProcessState()
 
 	if( action == FIRE && frame == 3 * 6 - 1  )// frame == 0 && slowCounter == 1 )
 	{
-		launchers[0]->position = position;
+		launchers[0]->position = pos;
 		launchers[0]->facingDir = fireDir;//normalize( owner->GetPlayer( 0 )->position - position );
 		launchers[0]->Fire();
 	}
@@ -388,7 +365,7 @@ void Owl::ProcessState()
 
 void Owl::UpdateEnemyPhysics()
 {	
-	shield->SetPosition(position);
+	shield->SetPosition(GetPosition());
 }
 
 void Owl::UpdateSprite()
@@ -428,21 +405,11 @@ void Owl::UpdateSprite()
 		}
 		break;
 	}
-	//sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setPosition( position.x, position.y );
 
-	if( hasMonitor && !suppressMonitor )
-	{
-		//keySprite.setTexture( *ts_key->texture );
-		keySprite->setTextureRect( ts_key->GetSubRect( owner->keyFrame / 5 ) );
-		keySprite->setOrigin( keySprite->getLocalBounds().width / 2, 
-			keySprite->getLocalBounds().height / 2 );
-		keySprite->setPosition( position.x, position.y );
-
-	}
+	sprite.setPosition( GetPositionF() );
 }
 
 void Owl::EnemyDraw( sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

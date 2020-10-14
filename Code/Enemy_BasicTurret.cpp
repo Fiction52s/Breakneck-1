@@ -153,7 +153,7 @@ void BasicTurret::ResetEnemy()
 }
 
 void BasicTurret::BulletHitTerrain( BasicBullet *b,
-		Edge *edge, sf::Vector2<double> &pos )
+		Edge *edge, V2d &pos )
 {
 	V2d norm = edge->Normal();
 	double angle = atan2( norm.y, -norm.x );
