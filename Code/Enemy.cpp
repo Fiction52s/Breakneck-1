@@ -1784,34 +1784,35 @@ HitboxInfo * Enemy::IsHit(int pIndex )
 	return NULL;
 }
 
-bool Enemy::CheckHitPlayer(int index)
+bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 {
 	Actor *player = sess->GetPlayer(index);
 
 	if (player == NULL)
 		return false;
 
-	
-	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL )
+	if (body != NULL && body->hitboxInfo != NULL)
 	{
-		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+		Actor::HitResult hitResult = player->CheckIfImHit(body, currHitboxFrame, body->hitboxInfo->hitPosType,
 			GetPosition(), IsHitFacingRight(),
-			currHitboxes->hitboxInfo->canBeParried,
-			currHitboxes->hitboxInfo->canBeBlocked);
+			body->hitboxInfo->canBeParried,
+			body->hitboxInfo->canBeBlocked);
 
 		if (hitResult != Actor::HitResult::MISS)
 		{
 			IHitPlayer(index);
-			if (currHitboxes != NULL && hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
+			if (body != NULL && hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
 			{
-				player->ApplyHit(currHitboxes->hitboxInfo,
-					NULL, hitResult, GetPosition() );
+				player->ApplyHit(body->hitboxInfo,
+					NULL, hitResult, GetPosition());
 			}
 		}
 	}
-	
+}
 
-	return false;
+bool Enemy::CheckHitPlayer(int index)
+{
+	return BasicCheckHitPlayer(currHitboxes, index );
 }
 
 int Enemy::SetLaunchersStartIndex(int ind)

@@ -76,6 +76,7 @@ Cactus::~Cactus()
 {
 	shotgunPool->DestroyAllMembers();
 	delete shotgunPool;
+	delete[] shotgunVA;
 }
 
 void Cactus::ResetEnemy()
@@ -344,8 +345,6 @@ CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
 
 void CactusShotgun::SetParams(V2d &p_position, V2d &dir)
 {
-	
-	
 	ResetEnemy();
 	currPosInfo.position = p_position;
 	velocity = dir * bulletSpeed;

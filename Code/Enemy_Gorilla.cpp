@@ -15,11 +15,9 @@ using namespace sf;
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 
-
-Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
-	:Enemy( owner, EnemyType::EN_GORILLA, p_hasMonitor, 1 ),approachAccelBez( 1,.01,.86,.32 ) 
+void Gorilla::SetLevel(int lev)
 {
-	level = p_level;
+	level = lev;
 
 	switch (level)
 	{
@@ -35,6 +33,14 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 		maxHealth += 5;
 		break;
 	}
+}
+
+Gorilla::Gorilla( ActorParams *ap )
+	:Enemy( EnemyType::EN_GORILLA, ap ),approachAccelBez( 1,.01,.86,.32 ) 
+{
+	SetNumActions(A_Count);
+	SetEditorActions(ATTACK, ATTACK, 0);
+	SetLevel(ap->GetLevel());
 
 	SetSlowable(false);
 
@@ -64,30 +70,16 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	latchedOn = false;
 
 	awakeCap = 60;
-	//offsetPlayer 
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-	origPosition = position;
 
 	approachFrames = 180 * 3;
 	totalFrame = 0;
 
-	spawnRect = sf::Rect<double>( pos.x - 64, pos.y - 64, 64 * 2, 64 * 2 );
-
-	basePos = position;
-
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Gorilla.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/gorilla_320x256.png", 320, 256 );
+	ts = sess->GetSizedTileset( "Enemies/gorilla_320x256.png");
 
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setScale(scale, scale);
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
 	sprite.setScale(scale, scale);
 	
 	//position.x = 0;
@@ -101,10 +93,10 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+
+	hitBody.hitboxInfo = hitboxInfo;
 
 	wallHitboxWidth = wallWidth;
 	wallHitboxHeight = 50;
@@ -117,12 +109,14 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 	wallHitboxInfo->hitstunFrames = 10;
 	wallHitboxInfo->knockback = 4;
 
-	wallHitBody = new CollisionBody(1);
-	wallHitBody->hitboxInfo = wallHitboxInfo;
-	AddBasicHitRect(wallHitBody, wallHitboxWidth, wallHitboxHeight);
+	wallHitBody.SetupNumFrames(1);
+	wallHitBody.SetupNumBoxesOnFrame(0, 1);
+	wallHitBody.AddBasicRect(0, wallHitboxWidth, wallHitboxHeight, 0, V2d());
+	
+	wallHitBody.hitboxInfo = wallHitboxInfo;
 	
 
-	ts_wall = owner->GetTileset( "Enemies/gorillawall_400x50.png", 400, 50 );
+	ts_wall = sess->GetSizedTileset("Enemies/gorillawall_400x50.png");
 	wallSprite.setTexture( *ts_wall->texture );
 	wallSprite.setTextureRect( ts_wall->GetSubRect( 0 ) );
 	wallSprite.setScale(scale * wallWidth / 400.0, scale);
@@ -142,7 +136,6 @@ Gorilla::Gorilla( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_le
 Gorilla::~Gorilla()
 {
 	delete wallHitboxInfo;
-	delete wallHitBody;
 }
 
 void Gorilla::ResetEnemy()
@@ -156,13 +149,12 @@ void Gorilla::ResetEnemy()
 	totalFrame = 0;
 	currWallHitboxes = NULL;
 	
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 
 	dead = false;
 	frame = 0;
-	basePos = origPosition;
-	position = basePos;
+	basePos = startPosInfo.GetPosition();
 	
 	receivedHit = NULL;
 	recoveryCounter = 0;
@@ -172,8 +164,17 @@ void Gorilla::ResetEnemy()
 	
 }
 
+//void Gorilla::UpdateHitboxes()
+//{
+//	Enemy::UpdateHitboxes();
+//	wallHitBody.SetBasicPos(pos, 0);
+//	
+//}
+
 void Gorilla::ActionEnded()
 {
+	V2d playerPos = sess->GetPlayerPos(0);
+
 	if( frame == actionLength[action] * animFactor[action] )
 	{
 		switch( action )
@@ -198,14 +199,13 @@ void Gorilla::ActionEnded()
 			//if( recoveryCounter == recoveryLoops )
 			{
 				latchedOn = true;
-				offsetPlayer = basePos - owner->GetPlayer( 0 )->position;
+				offsetPlayer = basePos - playerPos;
 				origOffset = offsetPlayer;
 				V2d offsetDir = normalize( offsetPlayer );
 
-				basePos = owner->GetPlayer( 0 )->position;
+				basePos = playerPos;
 				currWallHitboxes = NULL;
 
-				V2d playerPos = owner->GetPlayer( 0 )->position;
 				action = ALIGN;
 				double currRadius = length( offsetPlayer );
 				alignMoveFrames = 60;
@@ -214,7 +214,7 @@ void Gorilla::ActionEnded()
 				alignFrames = 0;
 				recoveryCounter = 0;
 
-				if( playerPos.x < position.x )
+				if( playerPos.x < GetPosition().x )
 				{
 					facingRight = false;
 				}
@@ -232,13 +232,14 @@ void Gorilla::ProcessState()
 {
 	ActionEnded();
 
-	V2d playerPos = owner->GetPlayer( 0 )->position;
+	V2d playerPos = sess->GetPlayer( 0 )->position;
+	V2d myPos = GetPosition();
 
 	switch( action )
 	{
 	case WAKEUP:
 		{
-			if( WithinDistance( position, playerPos, 400 ) )
+			if( WithinDistance(myPos, playerPos, 400 ) )
 			{
 				++awakeFrames;
 				if( awakeFrames == awakeCap )
@@ -248,7 +249,7 @@ void Gorilla::ProcessState()
 					alignFrames = 0;
 					frame = 0;
 					physStepIndex = 0;
-					if( playerPos.x < position.x )
+					if( playerPos.x < myPos.x )
 					{
 						facingRight = false;
 					}
@@ -258,11 +259,11 @@ void Gorilla::ProcessState()
 					}
 
 					latchedOn = true;
-					offsetPlayer = basePos - owner->GetPlayer( 0 )->position;
+					offsetPlayer = basePos - playerPos;
 					origOffset = offsetPlayer;
 					V2d offsetDir = normalize(offsetPlayer);
 
-					basePos = owner->GetPlayer( 0 )->position;
+					basePos = playerPos;
 
 					double currRadius = length( offsetPlayer );
 					alignMoveFrames = 60;// *5 * NUM_STEPS;
@@ -300,23 +301,23 @@ void Gorilla::ProcessState()
 		//cout << "attack" << endl;
 		if( frame == createWallFrame )
 		{
-			V2d test = position - playerPos;
+			V2d test = myPos - playerPos;
 	
 			V2d playerDir = -normalize( origOffset );
 
-			CollisionBox &wallHitbox = wallHitBody->GetCollisionBoxes(0)->front();
+			CollisionBox &wallHitbox = wallHitBody.GetCollisionBoxes(0).front();
 
-			wallHitbox.globalPosition = position + playerDir * wallAmountCloser;
+			wallHitbox.globalPosition = myPos + playerDir * wallAmountCloser;
 			wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );
 
 			wallSprite.setPosition( wallHitbox.globalPosition.x, 
 				wallHitbox.globalPosition.y );
 			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
 
-			currWallHitboxes = wallHitBody;
+			currWallHitboxes = &wallHitBody;
 
 			latchedOn = false;
-			basePos = position;
+			basePos = myPos;
 		}
 		break;
 	case RECOVER:
@@ -327,9 +328,10 @@ void Gorilla::ProcessState()
 
 void Gorilla::UpdateEnemyPhysics()
 {
+	V2d playerPos = sess->GetPlayerPos(0);
 	if( latchedOn )
 	{
-		basePos = owner->GetPlayer( 0 )->position;// + offsetPlayer;
+		basePos = playerPos;
 	}
 	else
 	{
@@ -396,7 +398,7 @@ void Gorilla::UpdateEnemyPhysics()
 
 	if( latchedOn )
 	{
-		position = basePos + offsetPlayer;
+		currPosInfo.position = basePos + offsetPlayer;
 	}
 }
 
@@ -405,10 +407,10 @@ void Gorilla::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		position = basePos + offsetPlayer;
+		currPosInfo.position = basePos + offsetPlayer;
 	}
 
-	V2d diff = owner->GetPlayer(0)->position - position;
+	V2d diff = sess->GetPlayerPos(0) - GetPosition();
 	double lenDiff = length(diff);
 	IntRect ir;
 	switch (action)
@@ -436,20 +438,18 @@ void Gorilla::UpdateSprite()
 	}
 
 	sprite.setTextureRect(ir);
-
-	sprite.setPosition(position.x, position.y);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 }
 
 void Gorilla::EnemyDraw( sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 
 	if ((action == ATTACK && frame > createWallFrame) || action == RECOVER)
 	{
 		target->draw(wallSprite);
 	}
-
-
 }
 
 void Gorilla::DebugDraw(sf::RenderTarget *target)
@@ -463,26 +463,5 @@ void Gorilla::DebugDraw(sf::RenderTarget *target)
 
 bool Gorilla::CheckHitPlayer(int index)
 {
-	Actor *player = owner->GetPlayer(index);
-
-	if (currHitboxes != NULL)
-	{
-		if (player->IntersectMyHurtboxes(currHitboxes, currHitboxFrame))
-		{
-			IHitPlayer(index);
-			player->ApplyHit(currHitboxes->hitboxInfo);
-			return true;
-		}
-	}
-
-	if (currWallHitboxes != NULL)
-	{
-		if (player->IntersectMyHurtboxes(currWallHitboxes, 0))
-		{
-			player->ApplyHit(currWallHitboxes->hitboxInfo);
-			return true;
-		}
-	}
-
-	return false;
+	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(currWallHitboxes, index);
 }

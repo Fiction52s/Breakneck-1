@@ -656,6 +656,8 @@ void Session::AddW6Enemies()
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
 	
 	AddBasicAerialWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
+	AddBasicAerialWorldEnemy("gorilla", 6, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	/*AddWorldEnemy("swinglaunchercw", 6, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 		GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));

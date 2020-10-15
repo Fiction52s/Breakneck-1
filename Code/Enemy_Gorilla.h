@@ -12,33 +12,11 @@ struct Gorilla : Enemy
 		FOLLOW,
 		ATTACK,
 		RECOVER,
-		Count
+		A_Count
 	};
-
-	Action action;
-	int actionLength[Count];
-	int animFactor[Count];
 
 	
 	double latchStartAngle;
-
-	Gorilla(GameSession *owner, bool hasMonitor,
-		sf::Vector2i &pos, int level);
-	~Gorilla();
-
-
-	void ProcessState();
-	void UpdateEnemyPhysics();
-
-	void ActionEnded();
-
-	void EnemyDraw(sf::RenderTarget *target);
-	void DebugDraw(sf::RenderTarget *target);
-	
-	void UpdateSprite();
-	void ResetEnemy();
-	bool CheckHitPlayer(int index = 0);
-
 	bool origFacingRight;
 
 	int awakeFrames;
@@ -55,7 +33,7 @@ struct Gorilla : Enemy
 
 	int physStepIndex;
 
-	CollisionBody *wallHitBody;
+	CollisionBody wallHitBody;
 	CollisionBody *currWallHitboxes;
 	HitboxInfo *wallHitboxInfo;
 
@@ -67,7 +45,6 @@ struct Gorilla : Enemy
 	int approachFrames;
 	int totalFrame;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	Tileset *ts_wall;
@@ -88,9 +65,27 @@ struct Gorilla : Enemy
 	CubicBezier approachAccelBez;
 
 	V2d offsetPlayer;
-	V2d origPosition;
 	V2d origOffset;
 	bool latchedOn;
+
+	Gorilla(ActorParams *ap);
+	~Gorilla();
+
+	void SetLevel(int lev);
+	//void UpdateHitboxes();
+	void ProcessState();
+	void UpdateEnemyPhysics();
+
+	void ActionEnded();
+
+	void EnemyDraw(sf::RenderTarget *target);
+	void DebugDraw(sf::RenderTarget *target);
+	
+	void UpdateSprite();
+	void ResetEnemy();
+	bool CheckHitPlayer(int index = 0);
+
+	
 };
 
 #endif
