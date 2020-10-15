@@ -175,7 +175,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void UpdateOnPlacement(ActorParams *ap);
 	void UpdateOnEditPlacement() {UpdateOnPlacement(editParams);}
 	void UpdateFromEditParams(int numFrames){UpdateFromParams(editParams, numFrames);}
-	int SetLaunchersStartIndex(int ind);
+	virtual int SetLaunchersStartIndex(int ind);
 	virtual void UpdatePath() {}
 	void SetNumLaunchers(int num);
 	virtual void AddChildrenToSession( Session *s) {}

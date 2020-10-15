@@ -4172,7 +4172,7 @@ void GameSession::ResetInactiveEnemies()
 
 void GameSession::CleanupDecor()
 {
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		auto &dList = decor[i];
 		for (auto it = dList.begin(); it != dList.end(); ++it)

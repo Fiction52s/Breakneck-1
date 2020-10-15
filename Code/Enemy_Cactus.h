@@ -19,15 +19,13 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 		A_Count,
 	};
 
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-	Action action;
-	CactusShotgun(GameSession *owner, Cactus *parent, 
+	CactusShotgun(Cactus *parent, 
 		ObjectPool *pool, int poolIndex);
 	
 	void ActionEnded();
 	void ClearSprite();
 	void ProcessState();
+	
 	
 	void UpdateEnemyPhysics();
 	void HandleRemove();
@@ -35,18 +33,18 @@ struct CactusShotgun : Enemy, LauncherEnemy, PoolMember
 	void UpdateSprite();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer(BasicBullet *b);
+		V2d &pos);
+	void BulletHitPlayer(int playerIndex, 
+		BasicBullet *b, int hitResult);
 	void DirectKill();
 	void ResetEnemy();
 	void SetParams(V2d &position, V2d &dir);
+
 	sf::Vertex *va;
 
 	Cactus *parent;
 
 	V2d velocity;
-	Edge *ground;
-	double edgeQuantity;
 
 	ObjectPool *myPool;
 	double bulletSpeed;
@@ -62,15 +60,27 @@ struct Cactus : Enemy
 		A_Count,
 	};
 
-	int actionLength[A_Count];
-	int animFactor[A_Count];
+	Shield *shield;
+	const static int MAX_SHOTGUNS = 16;
+	CactusShotgun *shotgunArray[MAX_SHOTGUNS];
+	Tileset *ts;
+	Tileset *ts_shotgun;
+	Tileset *ts_bulletExplode;
+	
+	ObjectPool *shotgunPool;
+	sf::Vertex *shotgunVA;
 
-	Action action;
-	Cactus(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity, int level );
+	int framesWait;
+	int firingCounter;
+	double bulletSpeed;
+
+	Cactus(ActorParams *ap );
+	~Cactus();
+	void SetLevel(int lev);
 	void ProcessState();
 	bool LaunchersAreDone();
 	void ActionEnded();
+	int SetLaunchersStartIndex(int ind);
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	//void EnemyDraw(sf::RenderTarget *target);
@@ -80,23 +90,7 @@ struct Cactus : Enemy
 	void ThrowShotgun();
 	void Draw(sf::RenderTarget *target);
 
-	Shield *shield;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-	Tileset *ts_shotgun;
-	Tileset *ts_bulletExplode;
-	const static int MAX_SHOTGUNS = 16;
-	ObjectPool *shotgunPool;
-	sf::Vertex *shotgunVA;
-
-	int framesWait;
-	int firingCounter;
-	Edge *ground;
-	double edgeQuantity;
-
-
-	double bulletSpeed;
+	
 };
 
 #endif

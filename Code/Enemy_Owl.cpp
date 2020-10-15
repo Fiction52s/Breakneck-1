@@ -13,7 +13,7 @@ using namespace sf;
 Owl::Owl(ActorParams *ap)
 	:Enemy( EnemyType::EN_OWL, ap ), flyingBez( 0, 0, 1, 1 )
 {
-	SetNumActions(Count);
+	SetNumActions(A_Count);
 	SetEditorActions(REST, REST, 0);
 
 	SetLevel(ap->GetLevel());

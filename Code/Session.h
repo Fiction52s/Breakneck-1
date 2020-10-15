@@ -330,7 +330,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	GoalFlow *goalFlow;
 	GoalPulse *goalPulse;
 
-	ShapeEmitter *emitterLists[EffectLayer::Count];
+	ShapeEmitter *emitterLists[EffectLayer::EFFECTLAYER_Count];
 
 	bool hasGoal;
 	V2d goalPos;

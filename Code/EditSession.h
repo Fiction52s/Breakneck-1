@@ -340,7 +340,7 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i gatePoint0;
 	sf::Vector2i gatePoint1;
 	GateInfoPtr modifyGate;
-	std::list<DecorPtr> decorImages[EffectLayer::Count];
+	std::list<DecorPtr> decorImages[EffectLayer::EFFECTLAYER_Count];
 	Panel *decorPanel;
 	Panel *editDecorPanel;
 	std::string currDecorName;

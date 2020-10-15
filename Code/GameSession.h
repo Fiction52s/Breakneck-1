@@ -355,7 +355,7 @@ struct GameSession : RayCastHandler, Session
 	
 	
 	ShapeEmitter *testEmit;
-	std::list<DecorDraw*> decor[EffectLayer::Count];
+	std::list<DecorDraw*> decor[EffectLayer::EFFECTLAYER_Count];
 	
 	int numKeysCollected;
 

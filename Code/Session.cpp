@@ -477,14 +477,9 @@ void Session::AddW3Enemies()
 	AddWorldEnemy("coyotenode", 3, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
 
-	///*AddBasicAerialWorldEnemy("bouncecomboer", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3,
-	//GetTileset("Enemies/comboer_128x128.png", 128, 128));*/
 	AddBasicAerialWorldEnemy("ball", 3, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddWorldEnemy("bouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	//AddWorldEnemy("bouncejuggler", 3, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
-	//	GetTileset("Enemies/jayshield_128x128.png", 128, 128));
 
 	AddWorldEnemy("bouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
 	//AddWorldEnemy("airbouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
@@ -519,7 +514,7 @@ void Session::AddW3Enemies()
 	AddBasicAerialWorldEnemy("owl", 3, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 
-	//AddBasicGroundWorldEnemy("cactus", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	AddBasicGroundWorldEnemy("cactus", 3, CreateEnemy<Cactus>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	///*AddWorldEnemy("cactus", 3, LoadParams<CactusParams>, MakeParamsGrounded<CactusParams>, NULL,
 	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
@@ -955,7 +950,7 @@ SoundNode *Session::ActivatePauseSound(sf::SoundBuffer *buffer, bool loop)
 
 void Session::AllocateEffects()
 {
-	effectListVec.resize(EffectLayer::Count);
+	effectListVec.resize(EffectLayer::EFFECTLAYER_Count);
 
 	allEffectVec.resize(MAX_EFFECTS);
 	BasicEffect *b;
@@ -977,7 +972,7 @@ void Session::AllocateEffects()
 
 void Session::ClearEffects()
 {
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		Enemy *curr = effectListVec[i];
 		while (curr != NULL)
@@ -998,7 +993,7 @@ void Session::UpdateEffects( bool pauseImmuneOnly )
 	Enemy *next;
 
 	BasicEffect *currEffect;
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		curr = NULL;
 		if (!effectListVec.empty())
@@ -4667,7 +4662,7 @@ void Session::UpdateEmitters()
 {
 	ShapeEmitter *prev = NULL;
 	ShapeEmitter *curr;
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		curr = emitterLists[i];
 		prev = NULL;
@@ -4698,7 +4693,7 @@ void Session::UpdateEmitters()
 
 void Session::ClearEmitters()
 {
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		emitterLists[i] = NULL;
 	}
@@ -5946,7 +5941,7 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 	if (activeSequence != NULL)
 	{
 		//preScreenTex->setView(uiView);
-		for (int i = 0; i < EffectLayer::Count; ++i)
+		for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 		{
 			activeSequence->Draw(preScreenTex, (EffectLayer)i);
 		}

@@ -7,5 +7,6 @@
 #include "Enemy_BounceBooster.h"
 #include "Enemy_Badger.h"
 #include "Enemy_Owl.h"
+#include "Enemy_Cactus.h"
 
 #endif

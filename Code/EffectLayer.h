@@ -9,7 +9,7 @@ enum EffectLayer
 	IN_FRONT_1,
 	IN_FRONT_OF_UI,
 	UI_FRONT,
-	Count
+	EFFECTLAYER_Count
 };
 
 EffectLayer StringToEffectLayer(const std::string &str);

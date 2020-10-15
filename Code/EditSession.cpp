@@ -2224,14 +2224,14 @@ void EditSession::WriteDecor(ofstream &of)
 {
 	int totalDecor = 0;
 
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		totalDecor += decorImages[i].size();
 	}
 
 	of << totalDecor << endl;
 
-	for (int i = 0; i < EffectLayer::Count; ++i)
+	for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 	{
 		auto &dList = decorImages[i];
 		for (auto it = dList.begin(); it != dList.end(); ++it)
@@ -5138,7 +5138,7 @@ bool EditSession::PointSelectDecor(V2d &pos)
 		return false;
 	}
 
-	for (int i = EffectLayer::Count - 1; i >= 0; --i)
+	for (int i = EffectLayer::EFFECTLAYER_Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 
@@ -10145,7 +10145,7 @@ bool EditSession::BoxSelectDecor(sf::IntRect &rect)
 
 	bool found = false;
 
-	for (int i = EffectLayer::Count - 1; i >= 0; --i)
+	for (int i = EffectLayer::EFFECTLAYER_Count - 1; i >= 0; --i)
 	{
 		auto &dList = decorImages[i];
 

@@ -5,40 +5,18 @@
 #include <assert.h>
 #include "Enemy_Cactus.h"
 #include "Shield.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-		:Enemy( owner, EnemyType::EN_CACTUS, p_hasMonitor, 2 ), ground( g ),
-		edgeQuantity( q )
+Cactus::Cactus( ActorParams *ap )
+		:Enemy( EnemyType::EN_CACTUS, ap )
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(ACTIVE, ACTIVE, 0);
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
+	SetLevel(ap->GetLevel());
 
 	bulletSpeed = 6;
 	
@@ -47,49 +25,27 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	double width = 144; //112;
 	double height = 96;
 
-	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = owner->GetTileset( "Enemies/curveturret_144x96.png", width, height );
+	ts = sess->GetSizedTileset("Enemies/curveturret_144x96.png");
 	sprite.setTexture( *ts->texture );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height /2 );
-	V2d gPoint = g->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
 	sprite.setScale(scale, scale);
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
-	currShield = shield;
-	shield->Reset();
-	shield->SetPosition(position);
-	
-	int maxShotguns = 10;
 
-	ts_shotgun = owner->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
+	ts_shotgun = sess->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
 
-	shotgunVA = new Vertex[maxShotguns * 4];
+	shotgunVA = new Vertex[MAX_SHOTGUNS * 4];
 
 	shotgunPool = new ObjectPool;
 	
-	for (int i = 0; i < maxShotguns; ++i)
+	for (int i = 0; i < MAX_SHOTGUNS; ++i)
 	{
-		CactusShotgun *cs = new CactusShotgun(owner, this, shotgunPool, i);
+		CactusShotgun *cs = new CactusShotgun( this, shotgunPool, i);
+		shotgunArray[i] = cs;
 		shotgunPool->AddToInactiveList(cs);
 	}
+
+	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 	
-
-	ts_bulletExplode = owner->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
-
-	V2d gn = g->Normal();
-
-	V2d gAlong = normalize( g->v1 - g->v0 );
-
-	position = gPoint + gn * height / 2.0;
-
-	double angle = atan2( gn.x, -gn.y );
-
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height );
-	//V2d gPoint = ground->GetPoint( edgeQuantity );
-	sprite.setPosition( gPoint.x, gPoint.y );
-	sprite.setRotation( angle / PI * 180 );
 
 	actionLength[IDLE] = 1;
 	actionLength[SHOOT] = 20;
@@ -107,15 +63,19 @@ Cactus::Cactus( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size / 2, gPoint.y - size / 2, size, size );
+	hitBody.hitboxInfo = hitboxInfo;
 
 	ResetEnemy();
+}
+
+Cactus::~Cactus()
+{
+	shotgunPool->DestroyAllMembers();
+	delete shotgunPool;
 }
 
 void Cactus::ResetEnemy()
@@ -130,16 +90,36 @@ void Cactus::ResetEnemy()
 	shotgunPool->Reset();
 	action = IDLE;
 	frame = 0;
-	dead = false;
-	frame = 0;
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+
 	UpdateHitboxes();
 	UpdateSprite();
 
 	currShield = shield;
 	shield->Reset();
-	shield->SetPosition(position);
+	shield->SetPosition(GetPosition());
+}
+
+void Cactus::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void Cactus::ActionEnded()
@@ -165,8 +145,8 @@ void Cactus::ProcessState()
 	ActionEnded();
 
 	//Actor *player = owner->GetPlayer(0);
-	V2d playerPos = owner->GetPlayerPos(0);
-	double dist = length(playerPos - position);
+	V2d playerPos = sess->GetPlayerPos(0);
+	double dist = length(playerPos - GetPosition());
 
 	switch (action)
 	{
@@ -217,6 +197,7 @@ void Cactus::UpdateEnemyPhysics()
 	
 }
 
+//this might not be what i want to do. need to go over stuff later.
 void Cactus::Draw(sf::RenderTarget *target)
 {
 	if (cutObject != NULL)
@@ -227,7 +208,7 @@ void Cactus::Draw(sf::RenderTarget *target)
 		}
 		else if (!dead)
 		{
-			DrawSpriteIfExists(target, sprite);
+			DrawSprite(target, sprite);
 			if (currShield != NULL)
 			{
 				currShield->Draw(target);
@@ -243,7 +224,7 @@ void Cactus::Draw(sf::RenderTarget *target)
 		}
 	}
 
-	target->draw(shotgunVA, 10 * 4, sf::Quads, ts_shotgun->texture);
+	target->draw(shotgunVA, MAX_SHOTGUNS * 4, sf::Quads, ts_shotgun->texture);
 }
 
 void Cactus::DirectKill()
@@ -266,15 +247,30 @@ void Cactus::ThrowShotgun()
 
 	//Actor *player = owner->GetPlayer(0);
 
-	V2d playerDir = normalize(owner->GetPlayerPos(0) - position);
+	V2d playerDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 
-	shot->SetParams(position, playerDir);
-	owner->AddEnemy(shot);
+	shot->SetParams(GetPosition(), playerDir);
+	sess->AddEnemy(shot);
+}
+
+int Cactus::SetLaunchersStartIndex(int ind)
+{
+	int currIndex = ind;
+
+	for (int i = 0; i < MAX_SHOTGUNS; ++i)
+	{
+		currIndex = shotgunArray[i]->SetLaunchersStartIndex(currIndex);
+	}
+
+	return currIndex;
 }
 
 void Cactus::UpdateSprite()
 {
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );//frame / animationFactor ) );
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
+	sprite.setPosition(GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
 bool Cactus::LaunchersAreDone()
@@ -289,9 +285,11 @@ bool Cactus::LaunchersAreDone()
 	}
 }
 
-CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, int poolIndex )
-	:Enemy(owner, EnemyType::EN_CACTUSSHOTGUN, false, 2), parent( p ), PoolMember( poolIndex )
+CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
+	:Enemy(EnemyType::EN_CACTUSSHOTGUN, NULL), parent( p ), PoolMember( poolIndex )
 {
+	SetNumActions(A_Count);
+
 	va = parent->shotgunVA + poolIndex * 4;
 	myPool = pool;
 	bulletSpeed = 6;
@@ -307,29 +305,24 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(16);
-	AddBasicHitCircle(16);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(16);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	double size = max(width, height);
 
-	numLaunchers = 4;
-	launchers = new Launcher*[numLaunchers];
-
+	SetNumLaunchers(4);
 	Vector2f dir = normalize(Vector2f(1, 1));
 	sf::Transform t;
 	for (int i = 0; i < 4; ++i)
 	{
-		launchers[i] = new Launcher(this, BasicBullet::CACTUS_SHOTGUN, owner, 3, 3, position, V2d(t.transformPoint(dir)),
+		launchers[i] = new Launcher(this, BasicBullet::CACTUS_SHOTGUN,
+			3, 3, GetPosition(), V2d(t.transformPoint(dir)),
 			PI / 6.0, 90, false);
 		launchers[i]->SetBulletSpeed(bulletSpeed);
 		launchers[i]->hitboxInfo->damage = 18;
 		t.rotate(90);
 	}
-	
-
-	spawnRect = sf::Rect<double>(position.x - size / 2, position.y - size / 2, size, size);
 
 	actionLength[CHASINGPLAYER] = 120;
 	actionLength[BLINKING] = 40;
@@ -351,9 +344,11 @@ CactusShotgun::CactusShotgun(GameSession *owner, Cactus *p, ObjectPool *pool, in
 
 void CactusShotgun::SetParams(V2d &p_position, V2d &dir)
 {
-	position = p_position;
-	velocity = dir * bulletSpeed;
+	
+	
 	ResetEnemy();
+	currPosInfo.position = p_position;
+	velocity = dir * bulletSpeed;
 }
 
 void CactusShotgun::BulletHitTerrain(BasicBullet *b,
@@ -363,12 +358,17 @@ void CactusShotgun::BulletHitTerrain(BasicBullet *b,
 	//never hits terrain
 }
 
-void CactusShotgun::BulletHitPlayer(BasicBullet *b)
+void CactusShotgun::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
-	owner->ActivateEffect(EffectLayer::IN_FRONT, parent->ts_bulletExplode, b->position, true, angle, 6, 2, true);
-	owner->PlayerApplyHit(b->launcher->hitboxInfo);
+	sess->ActivateEffect(EffectLayer::IN_FRONT, parent->ts_bulletExplode, b->position, true, angle, 6, 2, true);
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+
 	b->launcher->DeactivateBullet(b);
 	//might have all the bullets explode/dissipate if one of them hits you.
 }
@@ -378,9 +378,10 @@ void CactusShotgun::ResetEnemy()
 	action = CHASINGPLAYER;
 	dead = false;
 	frame = 0;
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	//UpdateSprite();
+	
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+
 	ClearSprite();
 	UpdateHitboxes();	
 }
@@ -399,12 +400,12 @@ void CactusShotgun::ActionEnded()
 		{
 			action = SHOOTING;
 
-			Vector2f dir(normalize(owner->GetPlayerPos(0) - position));
+			Vector2f dir(normalize(sess->GetPlayerPos(0) - GetPosition()));
 			Transform t;
 			for (int i = 0; i < 4; ++i)
 			{
 				launchers[i]->facingDir = V2d( t.transformPoint( dir ) );
-				launchers[i]->position = position;
+				launchers[i]->position = GetPosition();
 				launchers[i]->Fire();
 				t.rotate(90);
 			}
@@ -457,13 +458,13 @@ void CactusShotgun::ProcessState()
 	
 	ActionEnded();
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	switch (action)
 	{
 	case CHASINGPLAYER:
 	{
-		double dist = length(playerPos - position);
+		double dist = length(playerPos - GetPosition());
 		if (dist < 250)
 		{
 			action = BLINKING;
@@ -484,7 +485,7 @@ void CactusShotgun::ProcessState()
 	case CHASINGPLAYER:
 	{
 		V2d dir = normalize(velocity);
-		dir += normalize(playerPos - position) / 60.0;
+		dir += normalize(playerPos - GetPosition()) / 60.0;
 		dir = normalize(dir);
 		velocity = dir * bulletSpeed;
 		break;
@@ -492,7 +493,7 @@ void CactusShotgun::ProcessState()
 	case BLINKING:
 	{
 		V2d dir = normalize(velocity);
-		dir += normalize(playerPos - position) / 10.0;
+		dir += normalize(playerPos - GetPosition()) / 10.0;
 		dir = normalize(dir);
 		velocity = dir * bulletSpeed;
 		break;
@@ -507,7 +508,7 @@ void CactusShotgun::ProcessState()
 
 void CactusShotgun::UpdateEnemyPhysics()
 {
-	position += velocity / ((double)slowMultiple) / numPhysSteps;
+	currPosInfo.position += velocity / ((double)slowMultiple) / numPhysSteps;
 	//cout << "position: " << position.x << ", " << position.y << endl;
 	//cout << "velocity: " << velocity.x << ", " << velocity.y << endl;
 }
@@ -521,7 +522,8 @@ void CactusShotgun::DirectKill()
 
 void CactusShotgun::UpdateSprite()
 {
-	SetRectCenter(va, parent->ts_shotgun->tileWidth, parent->ts_shotgun->tileHeight, Vector2f(position));
+	SetRectCenter(va, parent->ts_shotgun->tileWidth, parent->ts_shotgun->tileHeight, 
+		GetPositionF());
 	SetRectSubRect(va, parent->ts_shotgun->GetSubRect(1));
 	//sprite.setTextureRect(ts->GetSubRect(0));//frame / animationFactor ) );
 }
