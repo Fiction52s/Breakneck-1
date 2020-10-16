@@ -26,6 +26,12 @@ struct SpecterTester : QuadTreeCollider
 
 struct Specter : Enemy
 {
+	enum Action
+	{
+		IDLE,
+		A_Count
+	};
+
 	SpecterArea *myArea;
 
 	int radius;

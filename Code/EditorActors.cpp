@@ -296,7 +296,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach"
 		|| name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
-		|| name == "wirejuggler")
+		|| name == "wirejuggler" || name == "hungryreturncomboer"
+		|| name == "hungrycomboer")
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);

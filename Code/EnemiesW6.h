@@ -5,5 +5,6 @@
 #include "Enemy_Skeleton.h"
 #include "Enemy_Gorilla.h"
 #include "Enemy_SwingLauncher.h"
+#include "Enemy_Specter.h"
 
 #endif

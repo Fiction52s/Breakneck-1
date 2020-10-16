@@ -11,10 +11,6 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-
 void BounceJuggler::UpdateParamsSettings()
 {
 	JugglerParams *jParams = (JugglerParams*)editParams;

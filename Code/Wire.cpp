@@ -1080,7 +1080,7 @@ void Wire::UpdateAnchors( V2d vel )
 
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if (player->owner != NULL && GetClosestEnemyPos(player->owner, wirePos, 128, foundEnemy, foundIndex))
+		if (GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;

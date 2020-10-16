@@ -65,6 +65,9 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 Specter::Specter( ActorParams *ap )
 	:Enemy( EnemyType::EN_SPECTER, ap )//, myArea( this, pos, 400 )
 {
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, IDLE, 0);
+
 	radius = 1000;
 
 	myArea = new SpecterArea(this, Vector2i(), radius);

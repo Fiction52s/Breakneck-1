@@ -1,11 +1,12 @@
 #include "EnemyTracker.h"
-#include "GameSession.h"
+#include "Session.h"
 #include "Enemy.h"
 
-bool EnemyTracker::GetClosestEnemyPos(GameSession *owner, V2d &pos,
+bool EnemyTracker::GetClosestEnemyPos(V2d &pos,
 	double radius, Enemy *&foundEnemy, int &foundIndex )
 {
-	Enemy *curr = owner->activeEnemyList;
+	Session *sess = Session::GetSession();
+	Enemy *curr = sess->activeEnemyList;
 	double lenSqr;
 	int numPoints;
 	V2d camPoint;

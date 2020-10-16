@@ -11,47 +11,39 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-
-HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	int p_level, int jReps, bool p_returns)
-	:Enemy(owner, EnemyType::EN_HUNGRYCOMBOER, p_hasMonitor, 1, false)
+void HungryComboer::UpdateParamsSettings()
 {
-	level = p_level;
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+}
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
+HungryComboer::HungryComboer(ActorParams *ap)
+	:Enemy(EnemyType::EN_HUNGRYCOMBOER, ap)
+{
+	SetNumActions(A_Count);
+	SetEditorActions(S_FLY, S_FLY, 0);
+
+	SetLevel(ap->GetLevel());
 
 	origScale = scale;
 
-	returnsToPlayer = p_returns;
+	if (ap->GetTypeName() == "hungryreturncomboer")
+	{
+		sprite.setColor(Color::Green);
+		returnsToPlayer = true;
+	}
+	else
+	{
+		returnsToPlayer = false;
+	}
 
 	maxWaitFrames = 180;
 
 	flySpeed = 12;
 
-	numGrowthLevels = 4;
-	
-	juggleReps = jReps;
+	UpdateParamsSettings();
 
-	position.x = pos.x;
-	position.y = pos.y;
-	origPos = position;
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
+	numGrowthLevels = 4;
 
 	hitLimit = -1;
 
@@ -59,24 +51,11 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 
 	gravFactor = 1.0;
 
-	if (returnsToPlayer)
-	{
-		sprite.setColor(Color::Green);
-	}
-	else
-	{
-		//sprite.setColor(Color::Red);
-	}
 	maxFallSpeed = 15;
 
-
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -88,13 +67,10 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 
 	origSize = 48;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(origSize);
-	AddBasicHitCircle(origSize);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(origSize);
+	BasicCircleHitBodySetup(origSize);
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -107,8 +83,7 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(origSize, GetPosition());
 	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_FLOAT] = 18;
@@ -130,10 +105,8 @@ HungryComboer::HungryComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos
 HungryComboer::~HungryComboer()
 {
 }
-
 void HungryComboer::ResetEnemy()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 
 	growthLevel = 0;
@@ -144,20 +117,43 @@ void HungryComboer::ResetEnemy()
 	currHits = 0;
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
+
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	dead = false;
+	
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
-	position = origPos;
-	UpdateHitboxes();
 
+	
 	currJuggle = 0;
 	chaseTarget = NULL;
 
+	UpdateHitboxes();
+
+
 	UpdateSprite();
+}
+
+void HungryComboer::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void HungryComboer::Throw(double a, double strength)
@@ -174,7 +170,7 @@ void HungryComboer::Throw(V2d vel)
 
 void HungryComboer::Return()
 {
-	owner->PlayerRemoveActiveComboer(comboObj);
+	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -189,7 +185,7 @@ void HungryComboer::Return()
 
 void HungryComboer::Pop()
 {
-	owner->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -208,7 +204,7 @@ void HungryComboer::PopThrow()
 
 	Throw(dir * GetFlySpeed());
 
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 void HungryComboer::ProcessHit()
@@ -217,18 +213,18 @@ void HungryComboer::ProcessHit()
 	{
 		numHealth -= 1;
 
-		Actor *player = owner->GetPlayer(0);
+		Actor *player = sess->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					owner->keyMarker->CollectKey();
+					sess->CollectKey();
 					suppressMonitor = true;
 				}
 
-				owner->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -246,7 +242,7 @@ void HungryComboer::ProcessHit()
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -262,12 +258,12 @@ void HungryComboer::ProcessState()
 		{
 		case S_FLY:
 			action = S_TRACKENEMY;
-			SetHurtboxes(hurtBody, 0);
+			DefaultHurtboxesOn();
 			break;
 		case S_RETURN:
-			position = origPos;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			SetCurrPosInfo(startPosInfo);
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 			break;
 		}
 	}
@@ -284,7 +280,7 @@ void HungryComboer::ProcessState()
 		{
 			Enemy *foundEnemy = NULL;
 			int foundIndex = 0;
-			if (GetClosestEnemyPos(owner, position, 1000, foundEnemy, foundIndex))
+			if (GetClosestEnemyPos(GetPosition(), 1000, foundEnemy, foundIndex))
 			{
 				chaseTarget = foundEnemy;
 				chaseIndex = foundIndex;
@@ -296,7 +292,7 @@ void HungryComboer::ProcessState()
 	{
 		double accel = 1;// .5;//.5;
 		V2d trackPos = GetTrackPos();
-		V2d trackDir = normalize(trackPos - position);
+		V2d trackDir = normalize(trackPos - GetPosition());
 		velocity += trackDir * accel;
 		double fSpeed = GetFlySpeed();
 		if (length(velocity) > fSpeed)
@@ -375,7 +371,7 @@ V2d HungryComboer::GetTrackPos()
 	}
 	else
 	{
-		return owner->GetPlayerPos(0);
+		return sess->GetPlayerPos(0);
 	}
 }
 
@@ -390,7 +386,7 @@ void HungryComboer::Move()
 	V2d movementVec = velocity;
 	movementVec /= slowMultiple * numStep;
 
-	position += movementVec;
+	currPosInfo.position += movementVec;
 
 	/*velocity += gDir * (gravFactor / numStep / slowMultiple);
 
@@ -429,10 +425,10 @@ void HungryComboer::UpdateEnemyPhysics()
 void HungryComboer::UpdateScale()
 {
 	sprite.setScale(scale, scale);
-	hitBody->GetCollisionBoxes(0)->front().rw = scale * origSize;
-	hitBody->GetCollisionBoxes(0)->front().rh = scale * origSize;
-	hurtBody->GetCollisionBoxes(0)->front().rw = scale * origSize;
-	hurtBody->GetCollisionBoxes(0)->front().rh = scale * origSize;
+	hitBody.GetCollisionBoxes(0).front().rw = scale * origSize;
+	hitBody.GetCollisionBoxes(0).front().rh = scale * origSize;
+	hurtBody.GetCollisionBoxes(0).front().rw = scale * origSize;
+	hurtBody.GetCollisionBoxes(0).front().rh = scale * origSize;
 }
 
 void HungryComboer::FrameIncrement()
@@ -454,22 +450,22 @@ void HungryComboer::FrameIncrement()
 
 }
 
-void HungryComboer::HandleEntrant(QuadTreeEntrant *qte)
-{
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
-
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
-		}
-	}
-}
+//void HungryComboer::HandleEntrant(QuadTreeEntrant *qte)
+//{
+//	Enemy *en = (Enemy*)qte;
+//	if (en->type == EnemyType::EN_JUGGLERCATCHER)
+//	{
+//		JugglerCatcher *catcher = (JugglerCatcher*)qte;
+//
+//		CollisionBox &hitB = hurtBody.GetCollisionBoxes(0).front();
+//		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
+//		{
+//			//catcher->Catch();
+//			//action = S_EXPLODE;
+//			//frame = 0;
+//		}
+//	}
+//}
 
 void HungryComboer::ComboHit()
 {
@@ -486,8 +482,6 @@ void HungryComboer::ComboHit()
 
 void HungryComboer::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
-
 	int tile = 0;
 	switch (action)
 	{
@@ -496,9 +490,12 @@ void HungryComboer::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setPosition(GetPositionF());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
 void HungryComboer::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

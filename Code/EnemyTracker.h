@@ -7,7 +7,7 @@ struct GameSession;
 struct Enemy;
 struct EnemyTracker
 {
-	bool GetClosestEnemyPos( GameSession *owner, 
+	bool GetClosestEnemyPos(
 		V2d &pos,
 		double radius,
 		Enemy *&foundEnemy,

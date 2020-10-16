@@ -15,15 +15,43 @@ struct HungryComboer : Enemy, EnemyTracker
 		S_TRACKPLAYER,
 		S_TRACKENEMY,
 		S_RETURN,
-		S_Count
+		A_Count
 	};
 
-	HungryComboer(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, int p_level,
-		int juggleReps, bool returnsToPlayer );
+	Enemy *chaseTarget;
+	int chaseIndex;
+
+	V2d velocity;
+
+	double gravFactor;
+	double maxFallSpeed;
+
+	int hitLimit;
+	int currHits;
+
+	Tileset *ts;
+
+	bool returnsToPlayer;
+
+	int growthLevel;
+	int numGrowthLevels;
+	double origScale;
+	double origSize;
+
+	double flySpeed;
+
+	int juggleReps;
+	int currJuggle;
+
+	int waitFrame;
+	int maxWaitFrames;
+
+	HungryComboer(ActorParams *ap);
 	~HungryComboer();
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void SetLevel(int lev);
+	//void HandleEntrant(QuadTreeEntrant *qte);
 	bool IsValidTrackEnemy(Enemy *e);
+	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -38,50 +66,15 @@ struct HungryComboer : Enemy, EnemyTracker
 	void Return();
 	void Pop();
 	void PopThrow();
+	void UpdateScale();
+
+	double GetFlySpeed();
+	V2d GetTrackPos();
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 
-	Enemy *chaseTarget;
-	int chaseIndex;
-
-	V2d GetTrackPos();
-
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	V2d origPos;
-
-	V2d velocity;
-
-	double gravFactor;
-	double maxFallSpeed;
-
-	int hitLimit;
-	int currHits;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	bool returnsToPlayer;
-
-	int growthLevel;
-	int numGrowthLevels;
-	double origScale;
-	double origSize;
-
-	void UpdateScale();
-
-	double GetFlySpeed();
-
-	double flySpeed;
-
-	int juggleReps;
-	int currJuggle;
-
-	int waitFrame;
-	int maxWaitFrames;
+	
 };
 
 #endif
