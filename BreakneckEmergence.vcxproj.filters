@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="poly2tri">
-      <UniqueIdentifier>{6f363457-637e-4afd-a8ec-83682e34ea5f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Enemies">
       <UniqueIdentifier>{07950c5d-dc73-4f8d-a41d-78d513004090}</UniqueIdentifier>
     </Filter>
@@ -37,567 +34,1833 @@
     <Filter Include="Header Files\Enemies">
       <UniqueIdentifier>{9442c911-e14f-4a7e-a0a2-05806e1f6de2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\GCC">
+      <UniqueIdentifier>{ebc6f0b0-3135-4ac7-a6db-161eb0829d46}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GCC">
+      <UniqueIdentifier>{20b4ad10-d07b-4ff8-b399-ea6f789362a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Editor">
+      <UniqueIdentifier>{b3cee350-07ba-41a7-b3bb-cb83ae1270a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Sequence">
+      <UniqueIdentifier>{0781e3a2-64c2-4471-8951-f22c59e4284c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sequence">
+      <UniqueIdentifier>{0cca6c36-4e55-4a83-a50c-447cc79cc10f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\CustomMap">
+      <UniqueIdentifier>{baaa4a4f-ec33-4d3a-8e4c-3bee5af0b558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\CustomMap">
+      <UniqueIdentifier>{9c784ae4-5677-4bab-86f0-301bba0fa24d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{126ea8d0-5067-4df5-9304-2b5e90476328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Menu">
+      <UniqueIdentifier>{866502a8-46f4-4da1-8916-fc244df2f3d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W1">
+      <UniqueIdentifier>{a13d5097-d14f-496c-9654-31223a2b49c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W2">
+      <UniqueIdentifier>{48ddbf12-916b-4f00-aa17-66b097f9ad9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W3">
+      <UniqueIdentifier>{a46db7bf-4ef1-4db6-b0a1-c309e9a8b149}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W4">
+      <UniqueIdentifier>{a80ecca0-808a-4f25-b9a7-0298a542bb5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W5">
+      <UniqueIdentifier>{ee851ab7-9c28-4ff7-89f1-fbc25396373c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W6">
+      <UniqueIdentifier>{7534884e-057b-42a9-b3d6-77d63fd9af6b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W7">
+      <UniqueIdentifier>{ca08c646-9684-4c03-9d09-4cbbd9d5cc7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Enemies\W8">
+      <UniqueIdentifier>{b80cbc8f-a301-41d0-9274-b06ad75c0056}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W1">
+      <UniqueIdentifier>{9b903238-6fbd-4a6c-a9e6-5b6c664ce7d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W2">
+      <UniqueIdentifier>{5eeef5fe-c530-4139-a4ba-dc4e2da0dd51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W3">
+      <UniqueIdentifier>{b3534205-d534-474e-b63e-29a222a53caa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W4">
+      <UniqueIdentifier>{6e67f901-2213-423b-9b42-51d59b0e4b13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W5">
+      <UniqueIdentifier>{784d2b6d-2483-4183-8cec-f6c57be357bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W6">
+      <UniqueIdentifier>{366685f3-1f6b-4dd1-b834-1a49f356b13b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W7">
+      <UniqueIdentifier>{f83e0ace-871a-4b0f-a99e-13b9c418dd95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Enemies\W8">
+      <UniqueIdentifier>{a04c4c65-84d2-4a09-988e-e849c66db768}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Light.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Action.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\main.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Actor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MainMenu.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movable.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movement.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Mover.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Nexus.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Parallax.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams5.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PauseMenu.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParams6.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Physics.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\AirParticles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerChar.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Aura.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PowerOrbs.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Background.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Primitive3D.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Boss.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Buf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CharacterAnimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShipPickup.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ColorShifter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\SurfaceMover.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ControlProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainPolygon.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ControlSettingsMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Tileset.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIButton.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnvEffects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UICheckbox.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Eye.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIControlGrid.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Feedback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIHorizChooser.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\flow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIVerticalControlList.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FPoint.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIWindow.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GameSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VectorMath.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Gate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VictoryScreen.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GoalExplosion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Wire.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GPUFlow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\WorldMap.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GroundTrigger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Zone.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\HitboxManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\shapes.cc">
-      <Filter>poly2tri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\advancing_front.cc">
-      <Filter>poly2tri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\cdt.cc">
-      <Filter>poly2tri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep.cc">
-      <Filter>poly2tri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep_context.cc">
-      <Filter>poly2tri</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MusicSelector.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\HUD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerRecord.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ImageText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Spring.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\InputVisualizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ObjectPool.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\IntroMovie.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\VisualEffects.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ItemSelector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainRender.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Julia.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KeyMarker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardMenu.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\LevelSelector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Light.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MacInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MainMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Movement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Mover.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MusicSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Nexus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ObjectPool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PauseMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Physics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PlayerChar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PlayerRecord.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PowerOrbs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Primitive3D.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\QuadTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SaveFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SaveMenuScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ScoreDisplay.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ScreenRecorder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShaderTester.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShardMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShipPickup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SoundManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SurfaceMover.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TerrainPolygon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Tileset.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TitleScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TopClouds.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UICheckbox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIControlGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIHorizChooser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIVerticalControlList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\VectorMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\VictoryScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\VisualEffects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Wire.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\WorldMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Zone.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Shield.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_BasicEffect.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Blocker.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Blocker.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Goal.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_RaceFightTarget.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_CrawlerQueen.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Shard.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\StorySequence.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinBoostScreen.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FlowerPod.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GetAirdashPowerSeq.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Minimap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MomentumBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MusicPlayer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Fader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ButtonHolder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GCC\GCController.cpp">
+      <Filter>Source Files\GCC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GCC\USBDriver.cpp">
+      <Filter>Source Files\GCC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GCC\VJoyGCController.cpp">
+      <Filter>Source Files\GCC</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TouchGrass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MovingGeo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ParticleEffects.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnemyTracker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorGateInfo.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorActors.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorTerrain.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorRail.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinMenu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Grass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnvPlant.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Sequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW1.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW2.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW3.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW4.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW5.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW6.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW7.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SequenceW8.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShardSequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Barrier.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorGraph.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\clipper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\AbsorbParticles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TransformTools.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CircleGroup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TerrainDecor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Bullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Spring.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\AirTrigger.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ActorParamsBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PositionInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreateDecorModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorDecorInfo.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditorPlayerTracker.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_HealthFly.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CustomMapClient.cpp">
+      <Filter>Source Files\CustomMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CustomMapDisplay.cpp">
+      <Filter>Source Files\CustomMap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnemyChain.cpp">
       <Filter>Source Files\Enemies</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shroom.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreateTerrainModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreateEnemyModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Actor.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreateGatesModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EditModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GeneralUI.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreateRailModeUI.cpp">
+      <Filter>Source Files\Editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRDASH.cpp">
       <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRHITSTUN.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams1.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AUTORUN.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams2.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_BACKWARDSDOUBLE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams3.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_BOUNCEAIR.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams4.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_BOUNCEGROUND.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams5.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_BOUNCEGROUNDEDWALL.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ActorParams6.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_BRAKE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EditSession.cpp">
-      <Filter>Source Files\Editor</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DAIR.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Eye.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DASH.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Action.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DASHATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\CharacterAnimator.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DEATH.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Config.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DIAGDOWNATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Aura.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DIAGUPATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\AirParticles.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DOUBLE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Booster.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_ENTERNEXUS1.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss_Crawler.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_EXIT.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss.cpp">
-      <Filter>Source Files\Enemies</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_EXITBOOST.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Camera.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_EXITWAIT.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Buf.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_FAIR.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GETPOWER_AIRDASH_MEDITATE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GETSHARD.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnemyQuadTree.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GLIDE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ControlProfile.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILL.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILL1.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILL2.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GameSession.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILL3.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Gate.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILL4.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GoalExplosion.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GOALKILLWAIT.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GPUFlow.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRABSHIP.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\GUI.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRAVREVERSE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\HitboxManager.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRINDATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRINDBALL.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRINDLUNGE.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GRINDSLASH.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\InputVisualizer.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDHITSTUN.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_INTRO.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.cpp">
-      <Filter>Source Files\FX</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_INTROBOOST.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_JUMP.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelServer.cpp">
-      <Filter>Source Files\Utility</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_JUMPSQUAT.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\MacInput.cpp">
-      <Filter>Source Files\Game</Filter>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_LAND.cpp">
+      <Filter>Source Files\Kin</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\ScreenRecorder.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_LAND2.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_NEXUSKILL.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_RAILDASH.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_RAILGRIND.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_RAILSLIDE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_RIDESHIP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_RUN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_DODGEBACK.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_LAND.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_STAND.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_STRAIGHTFALL.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_WALKFORWARDSLIGHTLY.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_CRAWLERFIGHT_WATCHANDWAITSURPRISED.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_ENTERCORE1.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_FADE_INTO_NEXUS.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_FLOAT_TO_NEXUS_OPENING.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_KINFALL.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_KINSTAND.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_KINTHROWN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_KNEEL.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_KNEEL_TO_MEDITATE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_LOOKUP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_LOOKUPDISAPPEAR.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_MASKOFF.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_MEDITATE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_MEDITATE_MASKON.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_TURNFACE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SEQ_WAIT.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SKYDIVE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SKYDIVETOFALL.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SLIDE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPAWNWAIT.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINGSTUN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINGSTUNAIRBOUNCE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINGSTUNBOUNCE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINGSTUNGLIDE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINGSTUNTELEPORT.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SPRINT.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STAND.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STEEPCLIMB.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STEEPCLIMBATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STEEPCLING.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STEEPSLIDE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STEEPSLIDEATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SWINGSTUN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_UAIR.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WAITFORSHIP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WALLATTACK.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WALLCLING.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WALLJUMP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WIREHOLD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GETPOWER_AIRDASH_FLIP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GateMarker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shard.cpp">
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\DeathSequence.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\BitField.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MapSector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MapSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\WorldSelector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\BrushManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ToolTip.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PanelSlider.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PanelMember.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ChooseRect.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ImageChooseRect.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnemyChooseRect.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GridSelector.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Slider.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Dropdown.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MenuDropdown.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Panel.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\TextBox.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Button.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CheckBox.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ErrorBar.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\UIMouse.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FileChooser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\AdventureCreator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\AdventureFile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MapHeader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\LoadingMapProgressDisplay.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CreditsMenuScreen.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\OptionsMenuScreen.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MapSelectionMenu.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\CustomMapHandler.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MultiLoadingScreen.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MultiSelectionSection.cpp">
+      <Filter>Source Files\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ConfirmPopup.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Shockwave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShipEnterSequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\ShipExitSequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Movable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GoalFlow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MapOptionsUI.cpp">
+      <Filter>Source Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\BasicBossScene.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FlashedImage.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SceneBG.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FlashGroup.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PanInfo.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\MomentaScene.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GGPO.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\WireCharge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DASHATTACK2.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_DASHATTACK3.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_WALLTECH.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GameMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_MultiplayerBase.cpp">
       <Filter>Source Files\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_MultiplayerProgressTarget.cpp">
+      <Filter>Source Files\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FightMode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\FightHUD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_TESTSUPER.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\SuperSequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDTECHBACK.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDTECHFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDTECHINPLACE.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDPARRY.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDPARRYLOW.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRBLOCKUP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRBLOCKDOWN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRBLOCKDOWNFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRBLOCKFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRBLOCKUPFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDBLOCKDOWN.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDBLOCKDOWNFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDBLOCKFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDBLOCKUP.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_GROUNDBLOCKUPFORWARD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_SUPERBIRD.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STANDATTACK1.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STANDATTACK2.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STANDATTACK3.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_STANDATTACK4.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_UPTILT1.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_UPTILT2.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_UPTILT3.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_MovementTester.cpp">
+      <Filter>Source Files\Enemies</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\KinActions\Action_AIRPARRY.cpp">
+      <Filter>Source Files\Kin</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\EnemyMover.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\PlayerComboer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\GroundedWarper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\WarpTransitionSequence.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\NexusCoreSeq.cpp">
+      <Filter>Source Files\Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Booster.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Airdasher.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Badger.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Ball.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_BasicTurret.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Bat.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Bird.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_BirdShuriken.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_BounceBooster.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_BounceJuggler.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Cactus.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Comboer.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Coyote.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteBullet.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteHelper.cpp">
+      <Filter>Source Files\Enemies\W6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteShockwave.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Crawler.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_CurveTurret.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_CrawlerQueen.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_DimensionExit.cpp">
+      <Filter>Source Files\Enemies\W7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_GatorWaterOrb.cpp">
+      <Filter>Source Files\Enemies\W5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Gator.cpp">
+      <Filter>Source Files\Enemies\W5</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Gorilla.cpp">
+      <Filter>Source Files\Enemies\W6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityFaller.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_DimensionEye.cpp">
+      <Filter>Source Files\Enemies\W7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityJuggler.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_GreySkeleton.cpp">
+      <Filter>Source Files\Enemies\W7</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_QueenFloatingBomb.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Owl.cpp">
+      <Filter>Source Files\Enemies\W3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_PoisonFrog.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Patroller.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Skeleton.cpp">
+      <Filter>Source Files\Enemies\W6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Specter.cpp">
+      <Filter>Source Files\Enemies\W6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Shroom.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_StagBeetle.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_SwingLauncher.cpp">
+      <Filter>Source Files\Enemies\W6</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_Tiger.cpp">
+      <Filter>Source Files\Enemies\W4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_TigerGrindBullet.cpp">
+      <Filter>Source Files\Enemies\W4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_SplitComboer.cpp">
+      <Filter>Source Files\Enemies\W1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_TigerSpinTurret.cpp">
+      <Filter>Source Files\Enemies\W4</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityModifier.cpp">
+      <Filter>Source Files\Enemies\W2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Action.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Action.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Actor.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Actor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\AirParticles.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\AirParticles.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\BarrierReactions.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Aura.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Boss.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Background.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Camera.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\BarrierReactions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Config.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Buf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ControlProfile.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EditSession.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ColorShifter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EnvEffects.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Feedback.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ControlProfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\flow.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ControlSettingsMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GameSession.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EffectLayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Gate.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnvEffects.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GoalExplosion.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Eye.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\GUI.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Feedback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ImageText.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\flow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Input.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\FPoint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelSelector.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GameSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\LevelServer.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Gate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Light.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\globals.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MacInput.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GoalExplosion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MainMenu.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GroundTrigger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Movement.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GUI.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Mover.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\HitboxManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Parallax.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\HUD.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PauseMenu.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ImageText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Physics.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerChar.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\InputVisualizer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PowerOrbs.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\IntroMovie.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Primitive3D.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ItemSelector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\QuadTree.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Julia.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SaveFile.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\KeyMarker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Sequence.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\LevelSelector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SoundManager.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Light.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\SurfaceMover.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MacInput.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Tileset.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MainMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\UIWindow.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Movement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VectorMath.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Mover.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VictoryScreen.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MusicSelector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Wire.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ObjectPool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\WorldMap.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PauseMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Zone.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Physics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\poly2tri.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\shapes.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\common\utils.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\advancing_front.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\cdt.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\poly2tri\sweep\sweep_context.h">
-      <Filter>poly2tri</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ItemSelector.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PlayerChar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\globals.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PlayerRecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\MusicSelector.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\common\shapes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\PlayerRecord.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\common\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Buf.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\poly2tri.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\FPoint.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\sweep\advancing_front.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\HUD.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\sweep\cdt.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Rail.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\sweep\sweep.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Aura.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\poly2tri\sweep\sweep_context.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Julia.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PowerOrbs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ObjectPool.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Primitive3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\VisualEffects.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\QuadTree.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\TerrainRender.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SaveFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\EffectLayer.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SaveMenuScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\HitboxManager.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ScoreDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShaderTester.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ScreenRecorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardMenu.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShaderTester.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\InputVisualizer.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShardMenu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShardTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShipPickup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SoundManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SurfaceMover.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Tileset.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\TitleScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\TopClouds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\UIWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\VectorMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\VictoryScreen.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\VisualEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Wire.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\WorldMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Zone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Shield.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicEffect.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_BasicEffect.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_BasicTurret.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Blocker.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Blocker.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Goal.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Booster.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_RaceFightTarget.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Crawler.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Shard.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_CrawlerQueen.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Spring.h">
       <Filter>Header Files\Enemies</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_FootTrap.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Goal.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Patroller.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_RaceFightTarget.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shroom.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_TrapRoot.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Eye.h">
-      <Filter>Header Files\Enemies</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ScreenRecorder.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\StorySequence.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\ShardTypes.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\KinBoostScreen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Programming\Breakneck-1\Code\Enemy_Shard.h">
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\FlowerPod.h">
       <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Nexus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Minimap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MomentumBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MusicPlayer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Fader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ButtonHolder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MapHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GCC\GCController.h">
+      <Filter>Header Files\GCC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GCC\USBDriver.h">
+      <Filter>Header Files\GCC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GCC\VJoyGCController.h">
+      <Filter>Header Files\GCC</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\TouchGrass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ISelectable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\MovingGeo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ParticleEffects.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\DecorTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemyTracker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditSession.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorGateInfo.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorTerrain.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorActors.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorRail.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\KinMenu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Grass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnvPlant.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SpecialTerrainTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Sequence.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW1.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW2.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW3.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW4.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW5.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW6.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW7.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SequenceW8.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShardSequence.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Barrier.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorGraph.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\clipper.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\earcut.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\AbsorbParticles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Session.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\TransformTools.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\CircleGroup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\TerrainDecor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Bullet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ObjectProperties.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemyTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\AirTrigger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ActorParams.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ActorParamsBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PositionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorDecorInfo.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EditorPlayerTracker.h">
+      <Filter>Header Files\Editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_HealthFly.h">
+      <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\AppClientID.h">
+      <Filter>Header Files\CustomMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\CustomMapClient.h">
+      <Filter>Header Files\CustomMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\CustomMapDisplay.h">
+      <Filter>Header Files\CustomMap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemyChain.h">
+      <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GateMarker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\DeathSequence.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\BitField.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\BrushManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\FileChooser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\AdventureCreator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\ShardInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Shockwave.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GoalFlow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityJuggler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GGPO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GameMode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_MultiplayerBase.h">
+      <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_MultiplayerProgressTarget.h">
+      <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\SuperCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_MovementTester.h">
+      <Filter>Header Files\Enemies</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemyMover.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\PlayerComboer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\GroundedWarper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\WarpTransitionSequence.h">
+      <Filter>Header Files\Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Ball.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW1.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW2.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW3.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW4.h">
+      <Filter>Header Files\Enemies\W4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW5.h">
+      <Filter>Header Files\Enemies\W5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW6.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW7.h">
+      <Filter>Header Files\Enemies\W7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\EnemiesW8.h">
+      <Filter>Header Files\Enemies\W8</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Airdasher.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Badger.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_BasicTurret.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Bat.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Bird.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_BirdShuriken.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Booster.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_BounceBooster.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_BounceJuggler.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Cactus.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Coyote.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Comboer.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteBullet.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteHelper.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_CoyoteShockwave.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_CrawlerQueen.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_CurveLauncher.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_DimensionExit.h">
+      <Filter>Header Files\Enemies\W7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityFaller.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Gorilla.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_DimensionEye.h">
+      <Filter>Header Files\Enemies\W7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Crawler.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Gator.h">
+      <Filter>Header Files\Enemies\W5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_GatorWaterOrb.h">
+      <Filter>Header Files\Enemies\W5</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_GravityModifier.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_GreySkeleton.h">
+      <Filter>Header Files\Enemies\W7</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Owl.h">
+      <Filter>Header Files\Enemies\W3</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Specter.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Shroom.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Skeleton.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Patroller.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_PoisonFrog.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_StagBeetle.h">
+      <Filter>Header Files\Enemies\W2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_SplitComboer.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_Tiger.h">
+      <Filter>Header Files\Enemies\W4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_SwingLauncher.h">
+      <Filter>Header Files\Enemies\W6</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_QueenFloatingBomb.h">
+      <Filter>Header Files\Enemies\W1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_TigerGrindBullet.h">
+      <Filter>Header Files\Enemies\W4</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GitHub\Breakneck-1\Code\Enemy_TigerSpinTurret.h">
+      <Filter>Header Files\Enemies\W4</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
