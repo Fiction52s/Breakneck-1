@@ -4,5 +4,6 @@
 #include "Enemy_CoyoteHelper.h"
 #include "Enemy_Skeleton.h"
 #include "Enemy_Gorilla.h"
+#include "Enemy_SwingLauncher.h"
 
 #endif

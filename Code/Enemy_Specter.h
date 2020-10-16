@@ -26,12 +26,19 @@ struct SpecterTester : QuadTreeCollider
 
 struct Specter : Enemy
 {
-	//MovementSequence testSeq;
-	Specter(GameSession *owner,
-		bool hasMonitor,
-		sf::Vector2i & pos,
-		int p_level );
+	SpecterArea *myArea;
+
+	int radius;
+	Tileset *ts;
+
+	sf::CircleShape radCircle;
+
+	int animationFactor;
+
+	Specter(ActorParams *ap );
 	~Specter();
+	void SetLevel(int lev);
+	void AddToWorldTrees();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 
@@ -42,16 +49,7 @@ struct Specter : Enemy
 
 	void ResetEnemy();
 
-	SpecterArea *myArea;
-
-	int radius;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	sf::CircleShape radCircle;
-
-	int animationFactor;
+	
 };
 
 #endif

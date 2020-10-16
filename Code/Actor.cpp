@@ -13154,13 +13154,13 @@ sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
 
 bool Actor::SwingLaunch()
 {
-	/*if (currSwingLauncher != NULL)
+	if (currSwingLauncher != NULL)
 	{
 		currSwingLauncher->Launch();
 
 		oldSwingLauncher = currSwingLauncher;
 
-		position = currSwingLauncher->position;
+		position = currSwingLauncher->GetPosition();
 		V2d dir = currSwingLauncher->dir;
 
 		double s = currSwingLauncher->speed;
@@ -13190,7 +13190,7 @@ bool Actor::SwingLaunch()
 		velocity = V2d(0, 0);
 		currWall = NULL;
 		return true;
-	}*/
+	}
 
 	return false;
 }
@@ -14526,14 +14526,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_SWINGLAUNCHER)
 		{
-			/*SwingLauncher *sw = (SwingLauncher*)qte;
+			SwingLauncher *sw = (SwingLauncher*)qte;
 			if (currSwingLauncher == NULL)
 			{
-				if (sw->hitBody->Intersects(sw->currHitboxFrame, &hurtBody) && sw->action == SwingLauncher::IDLE)
+				if (sw->hitBody.Intersects(sw->currHitboxFrame, &hurtBody) && sw->action == SwingLauncher::IDLE)
 				{
 					currSwingLauncher = sw;
 				}
-			}*/
+			}
 		}
 		else if (en->type == EnemyType::EN_HEALTHFLY)
 		{

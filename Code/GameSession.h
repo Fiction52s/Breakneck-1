@@ -411,7 +411,6 @@ struct GameSession : RayCastHandler, Session
 	
 	QuadTree *terrainBGTree;
 	QuadTree * itemTree;
-	QuadTree *specterTree;
 	QuadTree *inverseEdgeTree;
 	QuadTree *railDrawTree;
 	QuadTree *activeEnemyItemTree;

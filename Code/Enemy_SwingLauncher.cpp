@@ -10,103 +10,81 @@ using namespace std;
 using namespace sf;
 
 
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-SwingLauncher::SwingLauncher(GameSession *owner, Vector2i &pos, Vector2i &other, int p_speed, bool cw)
-	:Enemy(owner, EnemyType::EN_SWINGLAUNCHER, false, 2, false)
+void SwingLauncher::UpdateParamsSettings()
 {
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
+	SpringParams *sParams = (SpringParams*)editParams;
+	speed = sParams->speed;
+	stunFrames = 600;//ceil(swingRadius / speed);
+}
 
-	launchSoundBuf = owner->soundManager->GetSound("Enemies/spring_launch");
+void SwingLauncher::UpdatePath()
+{
+	Vector2i other = Vector2i(0, -10);
+	if (editParams->localPath.size() > 0)
+		other = editParams->GetLocalPathPos(0);
 
-	debugSpeed.setFont(owner->mainMenu->arial);
-	debugSpeed.setFillColor(Color::White);
-	debugSpeed.setCharacterSize(30);
-
-	clockwiseLaunch = cw;
-
-	stringstream ss;
-	ss << p_speed;
-	debugSpeed.setString(ss.str());
-	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
-	debugSpeed.setPosition(Vector2f(position));
-
-	ts_idle = owner->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
-	ts_recover = owner->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
-	ts_springing = owner->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
-
-	frame = 0;
-
-	animationFactor = 10;
-
-	sprite.setTexture(*ts_idle->texture);
-	sprite.setTextureRect(ts_idle->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(pos.x, pos.y);
-
-	anchor = V2d(other + pos);
-
-	V2d dOther = V2d(other.x, other.y);
+	V2d dOther = V2d(other.y, -other.x); //perpendicular because swinglauncher
 	V2d springVec = normalize(dOther);
 
 	double angle = atan2(springVec.x, -springVec.y);
 	sprite.setRotation(angle / PI * 180.0);
 
-	double dist = length(V2d(other));
+	swingRadius = length(V2d(other));
 
-	swingRadius = dist;
+	UpdateParamsSettings();
 
-	speed = p_speed;
-	stunFrames = 600;//ceil(dist / speed);
-
-	dir = V2d( springVec.y, -springVec.x );
-	if (!clockwiseLaunch)
-	{
+	dir = springVec;
+	if( !clockwiseLaunch)
 		dir = -dir;
+
+	anchor = V2d(other) + GetPosition();
+
+	debugLine[0].color = Color::Red;
+	debugLine[1].color = Color::Red;
+	debugLine[0].position = GetPositionF();
+	debugLine[1].position = Vector2f(anchor);
+
+	stringstream ss;
+	ss << speed;
+	debugSpeed.setString(ss.str());
+	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
+	debugSpeed.setPosition(GetPositionF());
+}
+
+void SwingLauncher::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
+}
+
+SwingLauncher::SwingLauncher(ActorParams *ap)
+	:Enemy(EnemyType::EN_SWINGLAUNCHER, ap)
+{
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, IDLE, 0);
+
+	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
+
+	debugSpeed.setFont(sess->mainMenu->arial);
+	debugSpeed.setFillColor(Color::White);
+	debugSpeed.setCharacterSize(30);
+
+	if (ap->GetTypeName() == "swinglaunchercw")
+	{
+		clockwiseLaunch = true;
+	}
+	else
+	{
+		clockwiseLaunch = false;
 		sprite.setColor(Color::Red);
 	}
-		
 
+	ts_idle = sess->GetSizedTileset("Enemies/spring_idle_256x256.png");
+	ts_recover = sess->GetSizedTileset("Enemies/spring_recover_256x256.png");
+	ts_springing = sess->GetSizedTileset("Enemies/spring_spring_512x576.png");
 
+	animationFactor = 10;
 
-	float hurtboxRadius = 64;
-
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = hurtboxRadius;
-	hurtBox.rh = hurtboxRadius;
-	hurtBox.globalPosition = position;
-	hurtBody->AddCollisionBox(0, hurtBox);
-
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = hurtboxRadius;
-	hitBox.rh = hurtboxRadius;
-	hitBox.globalPosition = position;
-
-	hitBody->AddCollisionBox(0, hitBox);
-
-	spawnRect = sf::Rect<double>(position.x - hurtboxRadius - 10, position.y - hurtboxRadius - 10,
-		hurtboxRadius * 2 + 10, hurtboxRadius * 2 + 10);
+	BasicCircleHitBodySetup(64);
 
 	actionLength[IDLE] = 12;
 	actionLength[SWINGING] = 8;
@@ -116,10 +94,8 @@ SwingLauncher::SwingLauncher(GameSession *owner, Vector2i &pos, Vector2i &other,
 	animFactor[SWINGING] = 4;
 	animFactor[RECOVERING] = 4;
 
-	debugLine[0].color = Color::Red;
-	debugLine[1].color = Color::Red;
-	debugLine[0].position = Vector2f(pos);
-	debugLine[1].position = Vector2f(pos + other);
+	editParams = ap;
+	UpdatePath();
 
 	ResetEnemy();
 }
@@ -137,14 +113,12 @@ void SwingLauncher::DirectKill()
 
 void SwingLauncher::ResetEnemy()
 {
-	dead = false;
-
-	receivedHit = NULL;
 	action = IDLE;
-	sprite.setTexture(*ts_idle->texture);
 	frame = 0;
-	SetHitboxes(hitBody, 0);
-	//SetHurtboxes(hurtBody, 0);
+
+	sprite.setTexture(*ts_idle->texture);
+	
+	DefaultHitboxesOn();
 
 	UpdateHitboxes();
 
@@ -178,7 +152,7 @@ void SwingLauncher::Launch()
 	action = SWINGING;
 	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
-	owner->soundNodeList->ActivateSound(launchSoundBuf);
+	sess->ActivateSound(launchSoundBuf);
 }
 
 void SwingLauncher::ProcessState()
@@ -201,6 +175,7 @@ void SwingLauncher::UpdateSprite()
 		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
 		break;
 	}
+	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 

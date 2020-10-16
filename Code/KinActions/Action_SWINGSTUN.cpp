@@ -45,12 +45,11 @@ void Actor::SWINGSTUN_Update()
 	V2d anchor = oldSwingLauncher->anchor;
 	V2d future = position + normalize(springVel) * speed;//velocity;
 
-														 //V2d seg = wirePoint - rwPos;
-														 //double segLength = length(seg);
 	V2d diff = anchor - future;
 
 	if (length(diff) > rad)
 	{
+		//future = anchor + normalize(diff) * rad;
 		future += normalize(diff) * (length(diff) - rad);
 		springVel = future - position;
 	}

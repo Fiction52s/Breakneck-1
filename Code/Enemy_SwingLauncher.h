@@ -13,16 +13,31 @@ struct SwingLauncher : Enemy
 		A_Count
 	};
 
-	Action action;
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-	//MovementSequence testSeq;
-	SwingLauncher(GameSession *owner,
-		sf::Vector2i &pos, sf::Vector2i &other, int speed,
-		bool cw);
-	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
 	sf::SoundBuffer *launchSoundBuf;
+	Tileset *ts_idle;
+	Tileset *ts_recover;
+	Tileset *ts_springing;
+
+	double swingRadius;
+
+	int animationFactor;
+
+	V2d dir;
+	int speed;
+	int stunFrames;
+
+	sf::Vertex debugLine[2];
+	sf::Text debugSpeed;
+
+	V2d anchor;
+
+	SwingLauncher(ActorParams *ap );
+	void ProcessState();
+	void AddToWorldTrees();
+	void UpdateParamsSettings();
+	void UpdatePath();
+	void EnemyDraw(sf::RenderTarget *target);
+	
 
 	void UpdateSprite();
 	void DirectKill();
@@ -32,27 +47,10 @@ struct SwingLauncher : Enemy
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
-	sf::Sprite sprite;
-	Tileset *ts_idle;
-	Tileset *ts_recover;
-	Tileset *ts_springing;
-	CollisionBody * hurtBody;
-	CollisionBody* hitBody;
+	
 	void DebugDraw(sf::RenderTarget *target);
-	//HitboxInfo *hitboxInfo;
 
-	double swingRadius;
-
-	int animationFactor;
-
-	sf::Vector2<double> dir;
-	int speed;
-	int stunFrames;
-
-	sf::Vertex debugLine[2];
-	sf::Text debugSpeed;
-
-	V2d anchor;
+	
 };
 
 #endif

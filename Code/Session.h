@@ -269,6 +269,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	QuadTree *staticItemTree;
 	QuadTree * gateTree;
 	QuadTree * enemyTree;
+	QuadTree *specterTree;
 	int substep;
 	double currentTime;
 	double accumulator;
@@ -482,13 +483,16 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
-	void AddGeneralEnemies();
-	void AddW1Enemies();
-	void AddW2Enemies();
-	void AddW3Enemies();
-	void AddW4Enemies();
-	void AddW5Enemies();
-	void AddW6Enemies();
+	void RegisterGeneralEnemies();
+	void RegisterW1Enemies();
+	void RegisterW2Enemies();
+	void RegisterW3Enemies();
+	void RegisterW4Enemies();
+	void RegisterW5Enemies();
+	void RegisterW6Enemies();
+	void RegisterW7Enemies();
+	void RegisterW8Enemies();
+	void RegisterAllEnemies();
 	sf::SoundBuffer *GetSound(const std::string &name);
 	SoundNode *ActivateSoundAtPos(V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
 	SoundNode *ActivateSound(sf::SoundBuffer *buffer, bool loop = false);

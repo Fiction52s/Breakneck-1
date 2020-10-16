@@ -217,11 +217,11 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
 	}
-	else if (name == "crawlernode" 
-		|| name == "birdnode" || name == "coyotenode" 
-		|| name == "tigernode" || name == "gatornode" 
-		|| name == "skeletonnode" || name == "greyskeletonnode" 
-		|| name == "bearnode" )
+	else if (name == "crawlernode"
+		|| name == "birdnode" || name == "coyotenode"
+		|| name == "tigernode" || name == "gatornode"
+		|| name == "skeletonnode" || name == "greyskeletonnode"
+		|| name == "bearnode")
 	{
 		p = CreateDefaultPanel();
 		AddSpecialOptionDropdown(p);
@@ -291,7 +291,7 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("name", Vector2i(20, 20), 200, 20, "name_test");
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
-	
+
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach"
@@ -302,7 +302,8 @@ Panel *ActorType::CreatePanel()
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);
 	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
-		|| name == "airbouncespring")
+		|| name == "airbouncespring" || name == "swinglaunchercw"
+		|| name == "swinglauncherccw")
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);

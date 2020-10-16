@@ -1423,13 +1423,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	//monitor,level, path, loop, 
 
-	AddGeneralEnemies();
-	AddW1Enemies();
-	AddW2Enemies();
-	AddW3Enemies();
-	AddW4Enemies();
-	AddW5Enemies();
-	AddW6Enemies();
+	RegisterAllEnemies();
 
 	Init();
 }
