@@ -11,65 +11,46 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-
-GroundedGrindJuggler::GroundedGrindJuggler(GameSession *owner, bool p_hasMonitor, Edge *ground, double q , int p_level, int jReps, bool cw)
-	:Enemy(owner, EnemyType::EN_GROUNDEDGRINDJUGGLER, p_hasMonitor, 1, false)
+void GroundedGrindJuggler::UpdateParamsSettings()
 {
-	level = p_level;
-	clockwise = cw;
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+}
 
-	switch (level)
+GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
+	:Enemy(EnemyType::EN_GROUNDEDGRINDJUGGLER, ap )
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_IDLE, S_IDLE, 0);
+
+	SetLevel(ap->GetLevel());
+
+	if (ap->GetTypeName() == "groundedgrindjugglercw")
 	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
+		clockwise = true;
+	}
+	else
+	{
+		clockwise = false;
 	}
 
 	friction = .4;
-
-	startGround = ground;
-	startQuant = q;
 
 	pushStart = 20;
 
 	maxWaitFrames = 180;
 
-	mover = new SurfaceMover(owner, ground, q, 10 * scale);
-	mover->surfaceHandler = this;
+	CreateSurfaceMover(startPosInfo, 10, this);
 
-	juggleReps = jReps;
-
-	V2d gPoint = ground->GetPoint(q);
-	//sprite.setPosition( testMover->physBody.globalPosition.x,
-	//	testMover->physBody.globalPosition.y );
-
-	position = mover->physBody.globalPosition;
-
-	spawnRect = sf::Rect<double>(position.x - 16, position.y - 16, 16 * 2, 16 * 2);
+	UpdateParamsSettings();
 
 	hitLimit = -1;
 
 	action = S_IDLE;
 
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	//sprite.setPosition(position.x, position.y);
-
 
 
 	hitboxInfo = new HitboxInfo;
@@ -80,13 +61,10 @@ GroundedGrindJuggler::GroundedGrindJuggler(GameSession *owner, bool p_hasMonitor
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(48);
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -99,8 +77,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(GameSession *owner, bool p_hasMonitor
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_IDLE] = 18;
@@ -120,7 +97,26 @@ GroundedGrindJuggler::GroundedGrindJuggler(GameSession *owner, bool p_hasMonitor
 
 GroundedGrindJuggler::~GroundedGrindJuggler()
 {
-	delete mover;
+}
+
+void GroundedGrindJuggler::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void GroundedGrindJuggler::ResetEnemy()
@@ -131,26 +127,18 @@ void GroundedGrindJuggler::ResetEnemy()
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	dead = false;
+
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
+
 	action = S_IDLE;
 	frame = 0;
-	receivedHit = NULL;
-	//position = origPos;
 
-	mover->velocity = V2d(0, 0);
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
-
-	position = mover->physBody.globalPosition;
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
+	surfaceMover->ClearAirForces();
 
 	UpdateHitboxes();
-
-
 
 	currJuggle = 0;
 
@@ -159,7 +147,7 @@ void GroundedGrindJuggler::ResetEnemy()
 
 void GroundedGrindJuggler::Push(double strength)
 {
-	owner->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -167,29 +155,25 @@ void GroundedGrindJuggler::Push(double strength)
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
 
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 
 	if (clockwise)
 	{
-		mover->SetSpeed(strength);
+		surfaceMover->SetSpeed(strength);
 	}
 	else
 	{
-		mover->SetSpeed(-strength);
+		surfaceMover->SetSpeed(-strength);
 	}
 	
 }
 
 void GroundedGrindJuggler::Return()
 {
-	owner->PlayerRemoveActiveComboer(comboObj);
+	sess->PlayerRemoveActiveComboer(comboObj);
 
-	SetHurtboxes(NULL, 0);
-	SetHitboxes(NULL, 0);
-
-	
-
-	//mover->ground = NULL;
+	HitboxesOff();
+	HurtboxesOff();
 
 	currJuggle = 0;
 
@@ -202,18 +186,17 @@ void GroundedGrindJuggler::ProcessHit()
 	{
 		numHealth -= 1;
 
-		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			if (currJuggle == juggleReps)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					owner->keyMarker->CollectKey();
+					sess->CollectKey();
 					suppressMonitor = true;
 				}
 
-				owner->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -230,7 +213,7 @@ void GroundedGrindJuggler::ProcessHit()
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -245,27 +228,13 @@ void GroundedGrindJuggler::ProcessState()
 		switch (action)
 		{
 		case S_RETURN:
-			//position = origPos;
-			//mover->physBody.globalPosition = position;
-
-			mover->ground = startGround;
-			mover->edgeQuantity = startQuant;
-			mover->roll = false;
-			mover->UpdateGroundPos();
-			mover->SetSpeed(0);
-
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			surfaceMover->Set(startPosInfo);
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 			break;
-			/*case S_EXPLODE:
-			numHealth = 0;
-			dead = true;
-			owner->PlayerRemoveActiveComboer(comboObj);
-			break;*/
-
 		case S_GRIND:
 			action = S_SLOW;
-			SetHurtboxes(hurtBody, 0);
+			DefaultHurtboxesOn();
 			break;
 		}
 	}
@@ -295,9 +264,8 @@ void GroundedGrindJuggler::HandleNoHealth()
 
 void GroundedGrindJuggler::Move()
 {
-	mover->velocity = velocity;
-	mover->Move(slowMultiple, numPhysSteps);
-	position = mover->physBody.globalPosition;
+	surfaceMover->velocity = velocity;
+	surfaceMover->Move(slowMultiple, numPhysSteps);
 }
 
 void GroundedGrindJuggler::UpdateEnemyPhysics()
@@ -319,7 +287,7 @@ void GroundedGrindJuggler::FrameIncrement()
 {
 	if (action == S_SLOW)
 	{
-		double speed = mover->groundSpeed;
+		double speed = surfaceMover->groundSpeed;
 		if (speed > 0)
 		{
 			speed -= friction;
@@ -338,7 +306,7 @@ void GroundedGrindJuggler::FrameIncrement()
 			action = S_STOPPED;
 		}
 
-		mover->SetSpeed(speed);
+		surfaceMover->SetSpeed(speed);
 	}
 
 
@@ -353,23 +321,6 @@ void GroundedGrindJuggler::FrameIncrement()
 		else
 		{
 			waitFrame++;
-		}
-	}
-}
-
-void GroundedGrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
-{
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
-
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
 		}
 	}
 }
@@ -427,7 +378,7 @@ void GroundedGrindJuggler::ComboHit()
 
 void GroundedGrindJuggler::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
+	
 
 	int tile = 0;
 	switch (action)
@@ -474,9 +425,12 @@ void GroundedGrindJuggler::UpdateSprite()
 		}
 		
 	}
+
+	sprite.setPosition(GetPositionF());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
 void GroundedGrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

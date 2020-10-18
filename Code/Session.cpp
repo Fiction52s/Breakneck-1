@@ -550,18 +550,9 @@ void Session::RegisterW4Enemies()
 
 	AddWorldEnemy("grindjugglerccw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
+	AddWorldEnemy("groundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, false, true, false, 3);
 
-	//AddWorldEnemy("grindjugglerccw", 4, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-	//	GetTileset("Enemies/comboer_128x128.png", 128, 128));
-
-	//AddWorldEnemy("groundedgrindjugglercw", 4, LoadParams<GroundedJugglerParams>, MakeParamsGrounded<GroundedJugglerParams>, NULL,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
-
-	//AddWorldEnemy("groundedgrindjugglerccw", 4, LoadParams<GroundedJugglerParams>, MakeParamsGrounded<GroundedJugglerParams>, NULL,
-	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
-	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
+	AddWorldEnemy("groundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, false, true, false, 3);
 
 	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/shroom_192x192.png", 192, 192));

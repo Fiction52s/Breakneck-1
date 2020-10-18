@@ -17,16 +17,29 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
-	GroundedGrindJuggler(GameSession *owner, bool hasMonitor,
-		Edge *ground,
-		double quantity,
-		int p_level,
-		int juggleReps,
-		bool cw);
+	V2d velocity;
+
+	int hitLimit;
+	int currHits;
+
+	Tileset *ts;
+
+	int juggleReps;
+	int currJuggle;
+
+	int waitFrame;
+	int maxWaitFrames;
+
+	double friction;
+	double pushStart;
+
+	bool clockwise;
+
+	GroundedGrindJuggler(ActorParams *ap);
 
 	~GroundedGrindJuggler();
-
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void UpdateParamsSettings();
+	void SetLevel(int lev);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -39,43 +52,9 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void HandleNoHealth();
 	void Move();
 	void Return();
-
 	void Push(double strength);
-	//void Pop();
-	//void PopThrow();
-
-	//void Throw(double a, double strength);
-	//void Throw(V2d vel);
 
 
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	//V2d origPos;
-	Edge *startGround;
-	double startQuant;
-
-	V2d velocity;
-
-	int hitLimit;
-	int currHits;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	int juggleReps;
-	int currJuggle;
-
-	int waitFrame;
-	int maxWaitFrames;
-
-	double friction;
-	double pushStart;
-
-	SurfaceMover *mover;
-
-	bool clockwise;
 };
 
 #endif
