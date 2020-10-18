@@ -371,7 +371,6 @@ Enemy::Enemy(EnemyType t, int w)
 void Enemy::OnCreate(ActorParams *ap,
 	int w)
 {
-
 	prev = NULL;
 	next = NULL;
 	zone = NULL;

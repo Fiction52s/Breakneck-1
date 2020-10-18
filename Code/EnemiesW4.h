@@ -2,5 +2,6 @@
 #define __ENEMIES_W4_H__
 
 #include "Enemy_Tiger.h"
+#include "Enemy_GrindJuggler.h"
 
 #endif
