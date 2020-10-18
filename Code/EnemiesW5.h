@@ -3,5 +3,6 @@
 
 #include "Enemy_Gator.h"
 #include "Enemy_HungryComboer.h"
+#include "Enemy_Swarm.h"
 
 #endif

@@ -613,8 +613,7 @@ void Session::RegisterW5Enemies()
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, true, false, 3,
 	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 1);
 
-	//AddBasicAerialWorldEnemy("swarm", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/swarm_pod_128x128.png", 128, 128));
+	AddBasicAerialWorldEnemy("swarm", 5, CreateEnemy<Swarm>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	////AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);

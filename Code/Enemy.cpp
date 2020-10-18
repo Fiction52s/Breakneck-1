@@ -348,11 +348,42 @@ bool Enemy::SetHitParams()
 }
 
 Enemy::Enemy(EnemyType t, ActorParams *ap)
-	:prev(NULL), next(NULL), spawned(false),
-	type(t), zone(NULL), dead(false),
-	suppressMonitor(false), ts_hitSpack(NULL),
-	hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
+	:hurtBody( CollisionBox::BoxType::Hurt ), hitBody(CollisionBox::BoxType::Hit )
 {
+	type = t;
+	if (ap == NULL)
+	{
+		OnCreate(NULL, 0);
+	}
+	else
+	{
+		OnCreate(ap, ap->GetWorld());
+	}
+}
+
+Enemy::Enemy(EnemyType t, int w)
+	:hurtBody(CollisionBox::BoxType::Hurt), hitBody(CollisionBox::BoxType::Hit)
+{
+	type = t;
+	OnCreate(NULL, w);
+}
+
+void Enemy::OnCreate(ActorParams *ap,
+	int w)
+{
+	if ( ap != NULL && ap->GetTypeName() == "crawler")
+	{
+		int x = 5;
+	}
+
+	prev = NULL;
+	next = NULL;
+	zone = NULL;
+	spawned = false;
+	suppressMonitor = false;
+	ts_hitSpack = NULL;
+	dead = false;
+
 	playerIndex = -1; //can be affected by all players
 	keyShaderLoaded = false;
 	origFacingRight = true;
@@ -362,7 +393,6 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 
 	groundMover = NULL;
 	surfaceMover = NULL;
-
 	currShield = NULL;
 
 	if (ap != NULL)
@@ -373,7 +403,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	else
 	{
 		hasMonitor = false;
-		world = 0;
+		world = w;
 	}
 
 	sess = Session::GetSession();
@@ -386,7 +416,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	{
 		editParams = NULL;
 	}
-	
+
 
 	if (CanTouchSpecter())
 	{
@@ -399,7 +429,7 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 
 	scale = 1.f;
-	
+
 	comboObj = NULL;
 	hitboxInfo = NULL;
 
@@ -411,14 +441,14 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	pauseFrames = 0;
 	ts_zoned = sess->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
 	zonedSprite.setTexture(*ts_zoned->texture);
-	
+
 	genericDeathSound = sess->GetSound("Enemies/kill");
 
 	highResPhysics = false;
 	numLaunchers = 0;
 	currHitboxes = NULL;
 	currHurtboxes = NULL;
-	
+
 	ResetSlow();
 
 	if (SetHitParams())
@@ -433,8 +463,8 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	}
 
 	numHealth = maxHealth;
-	
-	if (hitParams.cuttable )
+
+	if (hitParams.cuttable)
 	{
 		cutObject = new CuttableObject;
 	}
@@ -451,42 +481,42 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 	hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
 	hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
 
-	if( world == 0 )
+	if (world == 0)
 	{
 		ts_hitSpack = NULL;
 		ts_blood = NULL;
 		return;
 	}
 
-	auraColor = Color( 0, 0, 0, 0 );
-	switch( t )
+	auraColor = Color(0, 0, 0, 0);
+	switch (type)
 	{
 	case EnemyType::EN_PATROLLER:
-			auraColor = Color( 0x55, 0xbb, 0xff );
-			break;
-		case EnemyType::EN_CRAWLER:
-			auraColor = Color( 0x77, 0xcc, 0xff );
-			break;
-		case EnemyType::EN_BASICTURRET:
-			auraColor = Color( 0x66, 0x99, 0xff );
-			break;
-		case EnemyType::EN_FOOTTRAP:
-			auraColor = Color( 0xaa, 0xcc, 0xff );
-			break;
-		case EnemyType::EN_BAT:
-			auraColor = Color( 0x99, 0xff, 0xcc );
-			break;
-		case EnemyType::EN_STAGBEETLE:
-			auraColor = Color( 0xaa, 0xff, 0x99 );
-			break;
-		case EnemyType::EN_POISONFROG:
-			auraColor = Color( 0x66, 0xff, 0xee );
-			break;
-		case EnemyType::EN_CURVETURRET:
-			auraColor = Color( 0x99, 0xff, 0x99 );
-			break;
-		default:
-			break;
+		auraColor = Color(0x55, 0xbb, 0xff);
+		break;
+	case EnemyType::EN_CRAWLER:
+		auraColor = Color(0x77, 0xcc, 0xff);
+		break;
+	case EnemyType::EN_BASICTURRET:
+		auraColor = Color(0x66, 0x99, 0xff);
+		break;
+	case EnemyType::EN_FOOTTRAP:
+		auraColor = Color(0xaa, 0xcc, 0xff);
+		break;
+	case EnemyType::EN_BAT:
+		auraColor = Color(0x99, 0xff, 0xcc);
+		break;
+	case EnemyType::EN_STAGBEETLE:
+		auraColor = Color(0xaa, 0xff, 0x99);
+		break;
+	case EnemyType::EN_POISONFROG:
+		auraColor = Color(0x66, 0xff, 0xee);
+		break;
+	case EnemyType::EN_CURVETURRET:
+		auraColor = Color(0x99, 0xff, 0x99);
+		break;
+	default:
+		break;
 	}
 
 
@@ -500,20 +530,26 @@ Enemy::Enemy(EnemyType t, ActorParams *ap)
 
 	ts_hitSpack = NULL;//sess->GetTileset( ss.str(), 128, 128 );
 
-	//ss.clear();
-	//ss.str("");
+					   //ss.clear();
+					   //ss.str("");
 
-	//ss << "FX/w" << fxWorld << "_kill_fx_512x512.png";
+					   //ss << "FX/w" << fxWorld << "_kill_fx_512x512.png";
 
-	//ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
-	//assert(ts_killSpack != NULL);
-	//ss.clear();
-	//ss.str("");
+					   //ts_killSpack = sess->GetTileset(ss.str(), 512, 512);
+					   //assert(ts_killSpack != NULL);
+					   //ss.clear();
+					   //ss.str("");
+	if (fxWorld > 0)
+	{
+		stringstream ss;
+		ss << "FX/Blood/blood_w" << fxWorld << "_256x256.png";
 
-	stringstream ss;
-	ss << "FX/Blood/blood_w" << fxWorld << "_256x256.png";
-
-	ts_blood = sess->GetTileset( ss.str(), 256, 256 );
+		ts_blood = sess->GetTileset(ss.str(), 256, 256);
+	}
+	else
+	{
+		ts_blood = NULL;
+	}
 }
 
 void Enemy::SetKey()

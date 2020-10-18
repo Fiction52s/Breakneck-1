@@ -8,28 +8,14 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
 SwarmMember::SwarmMember(Swarm *p_parent, 
 		sf::VertexArray &p_va, int index, V2d &p_targetOffset, 
 		double p_maxSpeed )
-		:Enemy( p_parent->owner, EnemyType::EN_SWARMMEMBER, false, 1, false ), va( p_va ), 
+		:Enemy( EnemyType::EN_SWARMMEMBER, 5 ), va( p_va ), 
 		vaIndex( index ), parent( p_parent ), maxSpeed( p_maxSpeed )
 {
 	framesToLive = parent->liveFrames;
 	targetOffset = p_targetOffset;
-
-	active = true;
-	dead = false;
-
 
 	velocity = V2d( 0, 0 );
 	frame = 0;
@@ -45,10 +31,9 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	ResetEnemy();
 }
@@ -79,6 +64,19 @@ void SwarmMember::FrameIncrement()
 	}
 }
 
+void SwarmMember::Throw( V2d &pos )
+{
+	if (active)
+	{
+		sess->RemoveEnemy(this);
+	}
+
+	sess->AddEnemy(this);
+	active = true;
+	currPosInfo.position = pos + targetOffset;
+	velocity = normalize(targetOffset) * 6.0;
+}
+
 void SwarmMember::ClearSprite()
 {
 	va[vaIndex*4+0].position = Vector2f( 0, 0 );
@@ -90,7 +88,7 @@ void SwarmMember::ClearSprite()
 void SwarmMember::UpdateSprite()
 {
 	IntRect subRect = parent->ts_swarm->GetSubRect( vaIndex * 3 );//frame / animFactor );
-	if( owner->GetPlayerPos( 0 ).x < position.x )
+	if( sess->GetPlayerPos( 0 ).x < GetPosition().x )
 	{
 		subRect.left += subRect.width;
 		subRect.width = -subRect.width;
@@ -106,7 +104,7 @@ void SwarmMember::UpdateSprite()
 	va[vaIndex*4+3].texCoords = Vector2f( subRect.left, 
 		subRect.top + subRect.height );
 
-	Vector2f p( position.x, position.y );
+	Vector2f p( GetPositionF() );
 
 	Vector2f spriteSize = parent->spriteSize;
 	va[vaIndex*4+0].position = p + Vector2f( -spriteSize.x, -spriteSize.y );
@@ -121,10 +119,10 @@ void SwarmMember::UpdateEnemyPhysics()
 	V2d movementVec = velocity;
 	movementVec /= slowMultiple * steps;
 
-	position += movementVec;
+	currPosInfo.position += movementVec;
 
-	V2d pPos = owner->GetPlayerPos(0) + targetOffset;
-	V2d dir(pPos - position);
+	V2d pPos = sess->GetPlayerPos(0) + targetOffset;
+	V2d dir(pPos - GetPosition());
 	dir = normalize(dir);
 	double gFactor = .5;
 	velocity += gFactor * dir / (double)slowMultiple / steps;
@@ -138,26 +136,99 @@ void SwarmMember::UpdateEnemyPhysics()
 void SwarmMember::ResetEnemy()
 {
 	action = FLY;
+	frame = 0;
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	framesToLive = parent->liveFrames;
-	frame = 0;
-	dead = false;
+	
+	
+	active = false;
+
 	velocity = V2d( 0, 0 );
 	slowMultiple = 1;
 	slowCounter = 1;
 	receivedHit = NULL;
+
+	UpdateHitboxes();
 	ClearSprite();
 }
 
 
-Swarm::Swarm( GameSession *owner,
-	sf::Vector2i &pos, bool p_hasMonitor, int p_level )
-	:Enemy( owner, EnemyType::EN_SWARM, p_hasMonitor, 1 ), swarmVA( sf::Quads, 5 * 4 )
+Swarm::Swarm( ActorParams *ap )
+	:Enemy( EnemyType::EN_SWARM, ap), swarmVA( sf::Quads, 5 * 4 )
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(NEUTRAL, NEUTRAL, 0);
+
+	SetLevel(ap->GetLevel());
+	
+	liveFrames = 300;
+
+	actionLength[NEUTRAL] = 10;
+	actionLength[FIRE] = 6;
+	actionLength[USED] = 10;
+	actionLength[REFILL] = 30;
+
+	animFactor[NEUTRAL] = 2;
+	animFactor[FIRE] = 10;
+	animFactor[USED] = 1;
+	animFactor[REFILL] = 1;
+
+	
+	ts = sess->GetSizedTileset("Enemies/swarm_pod_128x128.png");
+	ts_swarm = sess->GetSizedTileset( "Enemies/swarm_64x64.png");
+
+	sprite.setTexture( *ts->texture );
+	
+	int blah = 200;
+	double angle = PI;
+	V2d offset; 
+	double radius = 90;
+	double speed = 12;
+
+	for( int i = 0; i < NUM_SWARM; ++i )
+	{
+		offset = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) ) * radius;
+		//V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
+		members[i] = new SwarmMember( this, swarmVA, i, offset, speed );
+		//members[i]->position = position + offset;
+
+
+		angle += 2 * PI / NUM_SWARM;
+		speed++;
+	}
+
+	spriteSize = Vector2f(24, 24);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 3 * 60;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 10;
+
+	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(48);
+
+	hitBody.hitboxInfo = hitboxInfo;
+
+	ResetEnemy();
+}
+
+Swarm::~Swarm()
+{
+	for (int i = 0; i < NUM_SWARM; ++i)
+	{
+		delete members[i];
+	}
+}
+
+void Swarm::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -173,96 +244,20 @@ Swarm::Swarm( GameSession *owner,
 		maxHealth += 5;
 		break;
 	}
-	
-	liveFrames = 300;;
-
-
-
-	//ts_swarmExplode = owner->GetTileset( "bullet_explode2_64x64.png", 64, 64 );
-
-	actionLength[NEUTRAL] = 10;
-	actionLength[FIRE] = 6;
-	actionLength[USED] = 10;
-	actionLength[REFILL] = 30;
-
-	animFactor[NEUTRAL] = 2;
-	animFactor[FIRE] = 10;
-	animFactor[USED] = 1;
-	animFactor[REFILL] = 1;
-
-	
-	ts = owner->GetTileset( "Enemies/swarm_pod_128x128.png", 128, 128 );
-	ts_swarm = owner->GetTileset( "Enemies/swarm_64x64.png", 64, 64 );
-
-	nestSprite.setTexture( *ts->texture );
-	position = V2d( pos.x, pos.y );
-	origPosition = position;
-	//SwarmMember *mem = new SwarmMember()
-	int blah = 200;
-	double angle = PI;
-	V2d offset; 
-	double radius = 90;
-	double speed = 12;
-	for( int i = 0; i < NUM_SWARM; ++i )
-	{
-		offset = V2d( cos( angle - PI / 2 ), sin( angle - PI / 2 ) ) * radius;
-		//V2d offset( ( rand() % blah ) - blah, (rand() %blah) - blah );
-		members[i] = new SwarmMember( this, swarmVA, i, offset, speed );
-		members[i]->position = position + offset;
-
-
-		angle += 2 * PI / NUM_SWARM;
-		speed++;
-	}
-
-	spawnRect = Rect<double>( pos.x - 50, pos.y - 50, 100, 100 );
-
-	spriteSize = Vector2f( 24, 24 );
-
-	//dead = false;
-	//dying = false;
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 10;
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-
-	hitBody->hitboxInfo = hitboxInfo;
-
-	ResetEnemy();
-}
-
-Swarm::~Swarm()
-{
-	for (int i = 0; i < NUM_SWARM; ++i)
-	{
-		delete members[i];
-	}
 }
 
 void Swarm::Launch()
 {
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
-		members[i]->active = true;
-		members[i]->Reset();
-		members[i]->position = position + members[i]->targetOffset;
-		members[i]->velocity = normalize( members[i]->targetOffset ) * 6.0;
-		owner->AddEnemy(members[i]);
+		members[i]->Throw( GetPosition() );
 	}
 }
 
 void Swarm::ResetEnemy()
 {
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	dead = false;
 	dying = false;
@@ -270,8 +265,8 @@ void Swarm::ResetEnemy()
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
 		members[i]->Reset();
-		members[i]->position = position + members[i]->targetOffset;
-		members[i]->active = false;
+		//members[i]->position = position + members[i]->targetOffset;
+		//members[i]->active = false;
 	}
 
 	action = NEUTRAL;
@@ -348,7 +343,8 @@ void Swarm::ProcessState()
 			}
 			else if (action == NEUTRAL)
 			{
-				double dist = length(owner->GetPlayerPos(0) - position);
+				
+				double dist = DistFromPlayer(0);
 				if (dist < 900)
 				{
 					action = FIRE;
@@ -378,7 +374,7 @@ void Swarm::EnemyDraw(sf::RenderTarget *target )
 {
 	if (!dying)
 	{
-		DrawSpriteIfExists(target, nestSprite);
+		DrawSprite(target, sprite);
 	}
 	target->draw( swarmVA, ts_swarm->texture );
 }
@@ -390,21 +386,21 @@ void Swarm::UpdateSprite()
 		switch( action )
 		{
 		case NEUTRAL:
-			nestSprite.setTextureRect( ts->GetSubRect( 0 ) );
+			sprite.setTextureRect( ts->GetSubRect( 0 ) );
 			break;
 		case FIRE:
-			nestSprite.setTextureRect( ts->GetSubRect( frame / animFactor[FIRE] + 1) );
+			sprite.setTextureRect( ts->GetSubRect( frame / animFactor[FIRE] + 1) );
 			break;
 		case USED:
-			nestSprite.setTextureRect( ts->GetSubRect( 6 ) );
+			sprite.setTextureRect( ts->GetSubRect( 6 ) );
 			break;
 		case REFILL:
-			nestSprite.setTextureRect( ts->GetSubRect( 6 ) );
+			sprite.setTextureRect( ts->GetSubRect( 6 ) );
 			break;
 		}
-		nestSprite.setOrigin( nestSprite.getLocalBounds().width / 2, 
-			nestSprite.getLocalBounds().height / 2 );
-		nestSprite.setPosition( position.x, position.y );
+		sprite.setOrigin(sprite.getLocalBounds().width / 2,
+			sprite.getLocalBounds().height / 2 );
+		sprite.setPosition( GetPositionF() );
 	}
 }
 
