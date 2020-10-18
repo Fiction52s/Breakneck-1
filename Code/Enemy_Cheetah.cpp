@@ -8,21 +8,64 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-Cheetah::Cheetah(GameSession *owner, bool hasMonitor, Edge *g, double q, int p_level)
-	:Enemy(owner, EnemyType::EN_CHEETAH, hasMonitor, 2), facingRight(true),
-	moveBezTest(.22, .85, .3, .91)
+Cheetah::Cheetah(ActorParams *ap)
+	:Enemy(EnemyType::EN_CHEETAH, ap), moveBezTest(.22, .85, .3, .91)
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, IDLE, 0);
+
+	SetLevel(ap->GetLevel());
+
+	maxGroundSpeed = 10;
+	jumpStrength = 5;
+
+	actionLength[IDLE] = 10;
+	actionLength[CHARGE] = 30;
+	actionLength[BOOST] = 60;
+
+	animFactor[IDLE] = 1;
+	animFactor[CHARGE] = 1;
+	animFactor[BOOST] = 1;
+
+	gravity = V2d(0, .6);
+
+	maxFallSpeed = 25;
+
+	attackFrame = -1;
+	attackMult = 10;
+
+	CreateGroundMover(startPosInfo, 32, true, this);
+	groundMover->AddAirForce(V2d(0, .6));
+
+	ts = sess->GetSizedTileset("Enemies/Badger_192x128.png");
+	ts_aura = sess->GetSizedTileset("Enemies/Badger_aura_192x128.png");
+
+	auraSprite.setTexture(*ts_aura->texture);
+	auraSprite.setScale(scale, scale);
+
+	sprite.setTexture(*ts->texture);
+	sprite.setScale(scale, scale);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 0;
+
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
+	hitBody.hitboxInfo = hitboxInfo;
+
+	bezLength = 60 * NUM_STEPS;
+
+	ResetEnemy();
+}
+
+void Cheetah::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -38,84 +81,6 @@ Cheetah::Cheetah(GameSession *owner, bool hasMonitor, Edge *g, double q, int p_l
 		maxHealth += 5;
 		break;
 	}
-
-	maxGroundSpeed = 10;
-	jumpStrength = 5;
-
-	originalFacingRight = facingRight;
-	actionLength[IDLE] = 10;
-	actionLength[CHARGE] = 30;
-	actionLength[BOOST] = 60;
-
-	animFactor[IDLE] = 1;
-	animFactor[CHARGE] = 1;
-	animFactor[BOOST] = 1;
-
-	//jumpStrength = p_jumpStrength;
-	gravity = V2d(0, .6);
-
-	action = IDLE;
-
-	dead = false;
-
-	maxFallSpeed = 25;
-
-	attackFrame = -1;
-	attackMult = 10;
-
-	double width = 192;
-	double height = 128;
-
-
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-
-	mover = new GroundMover(owner, g, q, 32, true, this);
-	mover->AddAirForce(V2d(0, .6));
-	mover->SetSpeed(0);
-
-	ts = owner->GetTileset("Enemies/Badger_192x128.png", width, height);
-	ts_aura = owner->GetTileset("Enemies/Badger_aura_192x128.png", width, height);
-
-	auraSprite.setTexture(*ts_aura->texture);
-
-	sprite.setTexture(*ts->texture);
-	sprite.setScale(scale, scale);
-
-	auraSprite.setScale(scale, scale);
-
-	V2d gPoint = g->GetPoint(q);
-
-
-	position = mover->physBody.globalPosition;
-
-	receivedHit = NULL;
-
-	double size = max(width, height);
-	spawnRect = sf::Rect<double>(gPoint.x - size, gPoint.y - size, size * 2, size * 2);
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	crawlAnimationFactor = 5;
-	rollAnimationFactor = 5;
-
-	bezLength = 60 * NUM_STEPS;
-
-	ResetEnemy();
-
-	//highResPhysics = true;
 }
 
 void Cheetah::HandleNoHealth()
@@ -126,26 +91,16 @@ void Cheetah::HandleNoHealth()
 
 void Cheetah::ResetEnemy()
 {
-	facingRight = originalFacingRight;
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
+	facingRight = true;
+	groundMover->Set(startPosInfo);
+	groundMover->SetSpeed(0);
+	//groundMover->ClearAirForces();
 
-	position = mover->physBody.globalPosition;
-
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 
 	bezFrame = 0;
 	attackFrame = -1;
-
-	frame = 0;
-
-
-	dead = false;
 
 	action = IDLE;
 	frame = 0;
@@ -156,12 +111,12 @@ void Cheetah::ResetEnemy()
 
 void Cheetah::UpdateHitboxes()
 {
-	Edge *ground = mover->ground;
+	Edge *ground = groundMover->ground;
 	if (ground != NULL)
 	{
 		V2d knockbackDir(1, -1);
 		knockbackDir = normalize(knockbackDir);
-		if (mover->groundSpeed > 0)
+		if (groundMover->groundSpeed > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -215,7 +170,7 @@ void Cheetah::ActionEnded()
 void Cheetah::Jump(double strengthx, double strengthy)
 {
 	V2d jumpVec = V2d(strengthx, -strengthy);
-	mover->Jump(jumpVec);
+	groundMover->Jump(jumpVec);
 }
 
 void Cheetah::ProcessState()
@@ -225,15 +180,15 @@ void Cheetah::ProcessState()
 	//testLaunch->UpdatePrePhysics();
 	//Actor *player = owner->GetPlayer(0);
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	if (dead)
 		return;
 
 	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
 
-	double xDiff = playerPos.x - position.x;
-	double dist = length(playerPos - position);
+	double xDiff = playerPos.x - GetPosition().x;
+	double dist = length(playerPos - GetPosition());
 	ActionEnded();
 
 	switch (action)
@@ -252,38 +207,17 @@ void Cheetah::ProcessState()
 		{
 			if (xDiff >= 0)
 			{
-				mover->SetSpeed(100);
+				groundMover->SetSpeed(100);
 				facingRight = true;
 			}
 			else
 			{
-				mover->SetSpeed(-100);
+				groundMover->SetSpeed(-100);
 				facingRight = false;
 			}
 		}
 		break;
 	}
-
-	/*if (mover->ground == NULL)
-	{
-		double airAccel = .5;
-		if (facingRight)
-		{
-			mover->velocity.x += airAccel;
-			if (mover->velocity.x > 10)
-			{
-				mover->velocity.x = 10;
-			}
-
-		}
-		else
-		{
-			mover->velocity.x -= airAccel;
-			if (mover->velocity.x < -10)
-				mover->velocity.x = -10;
-
-		}
-	}*/
 
 	switch (action)
 	{
@@ -293,21 +227,21 @@ void Cheetah::ProcessState()
 
 		break;
 	case BOOST:
-		if (mover->groundSpeed > 0)
+		if (groundMover->groundSpeed > 0)
 		{
 			if (xDiff < -300)
 			{
-				mover->SetSpeed(0);
+				groundMover->SetSpeed(0);
 				facingRight = false;
 				action = IDLE;
 				frame = 0;
 			}
 		}
-		else if (mover->groundSpeed < 0)
+		else if (groundMover->groundSpeed < 0)
 		{
 			if (xDiff > 300)
 			{
-				mover->SetSpeed(0);
+				groundMover->SetSpeed(0);
 				facingRight = true;
 				action = IDLE;
 				frame = 0;
@@ -319,84 +253,28 @@ void Cheetah::ProcessState()
 
 void Cheetah::UpdateEnemyPhysics()
 {
-	mover->Move(slowMultiple, numPhysSteps);
+	groundMover->Move(slowMultiple, numPhysSteps);
 
-	if (mover->ground == NULL)
+	if (groundMover->ground == NULL)
 	{
-		if (mover->velocity.y > maxFallSpeed)
+		if (groundMover->velocity.y > maxFallSpeed)
 		{
-			mover->velocity.y = maxFallSpeed;
+			groundMover->velocity.y = maxFallSpeed;
 		}
 	}
-
-	position = mover->physBody.globalPosition;
 }
 
 void Cheetah::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(auraSprite);
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite, auraSprite);
 }
 
 
 void Cheetah::UpdateSprite()
 {
-	double angle = 0;
-
-	V2d p = mover->physBody.globalPosition;
-	V2d vel = mover->velocity;
-
-	double groundSpeed = mover->groundSpeed;
-
-	float extraVert = 0;
-
-	if (mover->ground != NULL)
-	{
-		V2d gPoint = mover->ground->GetPoint(mover->edgeQuantity);
-		V2d gn = mover->ground->Normal();
-
-		if (!mover->roll)
-		{
-			angle = atan2(gn.x, -gn.y);
-
-		}
-		else
-		{
-			if (facingRight)
-			{
-				V2d vec = normalize(position - mover->ground->v1);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-			}
-			else
-			{
-				V2d vec = normalize(position - mover->ground->v0);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-			}
-		}
-
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(gPoint.x, gPoint.y);
-	}
-	else
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(p.x, p.y);
-		sprite.setRotation(0);
-	}
-
-
 	int airRange = 3;
 	int fallRange = 15;
-	sf::IntRect ir;
+
 	int index = 0;
 	switch (action)
 	{
@@ -411,21 +289,14 @@ void Cheetah::UpdateSprite()
 		break;
 	}
 
-	ir = ts->GetSubRect(index);
+	ts->SetSubRect(sprite, index, !facingRight, false);
 
-	if (!facingRight)
-	{
-		ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
-	}
-	sprite.setTextureRect(ir);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 
 	SyncSpriteInfo(auraSprite, sprite);
 }
-//
-//void Cheetah::HitTerrain( double &q )
-//{
-//	
-//}
 
 bool Cheetah::StartRoll()
 {
@@ -458,10 +329,10 @@ void Cheetah::HitOther()
 void Cheetah::ReachCliff()
 {
 	return;
-	if (facingRight && mover->groundSpeed < 0
-		|| !facingRight && mover->groundSpeed > 0)
+	if (facingRight && groundMover->groundSpeed < 0
+		|| !facingRight && groundMover->groundSpeed > 0)
 	{
-		mover->SetSpeed(0);
+		groundMover->SetSpeed(0);
 		return;
 	}
 
