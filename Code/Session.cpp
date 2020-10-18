@@ -562,6 +562,7 @@ void Session::RegisterW4Enemies()
 	////AddWorldEnemy("spider", 4, LoadParams<SpiderParams>, MakeParamsGrounded<SpiderParams>, NULL,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
+	AddBasicAerialWorldEnemy("turtle", 4, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("turtle", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/turtle_80x64.png", 80, 64));
 

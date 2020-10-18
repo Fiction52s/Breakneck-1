@@ -4,41 +4,18 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Turtle.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-
-Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
-	:Enemy( owner, EnemyType::EN_TURTLE, p_hasMonitor, 2 )
+Turtle::Turtle( ActorParams *ap )
+	:Enemy( EnemyType::EN_TURTLE, ap )
 {
-	level = p_level;
+	SetLevel(ap->GetLevel());
 
-	switch (level)
-	{
-	case 1:
-		scale = 4.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
-
+	SetNumActions(A_Count);
+	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	bulletSpeed = 5;
 
@@ -57,29 +34,14 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level
 	actionLength[INVISIBLE] = 30;
 
 	fireCounter = 0;
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-	originalPos = pos;
 	
-	numLaunchers = 1;
-	launchers = new Launcher*[numLaunchers];
-	launchers[0] = new Launcher( this, BasicBullet::TURTLE, owner, 12, 12, position, V2d( 1, 0 ), 2 * PI, 90, false );
+	SetNumLaunchers(1);
+	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), 2 * PI, 90, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->Reset();
 
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
-	frame = 0;
-
-
-	//ts = owner->GetTileset( "Turtle.png", 80, 80 );
-	ts = owner->GetTileset( "Enemies/turtle_80x64.png", 80, 64 );
+	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
@@ -95,20 +57,14 @@ Turtle::Turtle( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(16);
-	AddBasicHitCircle(16);
+	BasicCircleHitBodySetup(16);
+	BasicCircleHurtBodySetup(16);
 
-	hitBody->hitboxInfo = hitboxInfo;
-	
-	dead = false;
+	hitBody.hitboxInfo = hitboxInfo;
+
+	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	ResetEnemy();
-
-	UpdateHitboxes();
-
-	ts_bulletExplode = owner->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
-	//cout << "finish init" << endl;
 }
 
 void Turtle::HandleNoHealth()
@@ -117,6 +73,25 @@ void Turtle::HandleNoHealth()
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
 
+void Turtle::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 4.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
 
 void Turtle::DirectKill()
 {
@@ -125,7 +100,7 @@ void Turtle::DirectKill()
 	{
 		BasicBullet *next = b->next;
 		double angle = atan2( b->velocity.y, -b->velocity.x );
-		owner->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
+		sess->ActivateEffect( EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true );
 		b->launcher->DeactivateBullet( b );
 
 		b = next;
@@ -139,29 +114,30 @@ void Turtle::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
 	b->launcher->DeactivateBullet( b );
 }
 
-void Turtle::BulletHitPlayer(BasicBullet *b )
+void Turtle::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
-	owner->PlayerApplyHit(b->launcher->hitboxInfo);
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
 }
 
 
 void Turtle::ResetEnemy()
 {
-	if( position.x < owner->playerOrigPos.x )
+	if( GetPosition().x < sess->playerOrigPos[0].x )
 		facingRight = false;
 	else
 		facingRight = true;
 	fireCounter = 0;
 
-	dead = false;
-	frame = 0;
-	position.x = originalPos.x;
-	position.y = originalPos.y;
-	receivedHit = NULL;
 	action = NEUTRAL;
+	frame = 0;
+	
+	
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
 
@@ -172,7 +148,7 @@ void Turtle::ActionEnded()
 {
 	int blah = actionLength[action] * animFactor[action];
 	//cout << "frame: " << frame << ", actionlength: " << blah << endl;
-	V2d playerPos = owner->GetPlayerPos();
+	V2d playerPos = sess->GetPlayerPos();
 
 	if( frame == actionLength[action] * animFactor[action] )
 	{
@@ -186,8 +162,8 @@ void Turtle::ActionEnded()
 		frame = 0;
 		break;
 	case INVISIBLE:
-		position = playerTrackPos;
-		if (playerPos.x < position.x)
+		currPosInfo.position = playerTrackPos;
+		if (playerPos.x < GetPosition().x)
 		{
 			facingRight = false;
 		}
@@ -247,8 +223,8 @@ void Turtle::ProcessState()
 	case FADEIN:
 		if (frame == 5 && slowCounter == 1)
 		{
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 		}
 		break;
 	case FADEOUT:
@@ -257,8 +233,8 @@ void Turtle::ProcessState()
 
 	if (action == FIRE && frame == 1 && slowCounter == 1)// frame == 0 && slowCounter == 1 )
 	{
-		launchers[0]->position = position;
-		launchers[0]->facingDir = normalize(owner->GetPlayerPos() - position);
+		launchers[0]->position = GetPosition();
+		launchers[0]->facingDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 		launchers[0]->Reset();
 		launchers[0]->Fire();
 		fireCounter = 0;
@@ -267,10 +243,10 @@ void Turtle::ProcessState()
 
 void Turtle::UpdateEnemyPhysics()
 {	
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == NEUTRAL)
 	{
-		if (length(playerPos - position) < 600)
+		if (DistFromPlayer( 0 ) <= 600 )
 		{
 			action = FIRE;
 			frame = 0;
@@ -312,11 +288,11 @@ void Turtle::UpdateSprite()
 	sprite.setTextureRect( ir );
 	sprite.setOrigin( sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( position.x, position.y );
+	sprite.setPosition( GetPositionF());
 }
 
 void Turtle::EnemyDraw( sf::RenderTarget *target )
 {
 	if( action != INVISIBLE )
-		DrawSpriteIfExists(target, sprite);
+		DrawSprite(target, sprite);
 }

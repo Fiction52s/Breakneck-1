@@ -340,6 +340,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GREYSKELETONBOSS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_TURTLE:
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		break;
 	default:
 		return false;
 	}
