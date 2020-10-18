@@ -371,10 +371,6 @@ Enemy::Enemy(EnemyType t, int w)
 void Enemy::OnCreate(ActorParams *ap,
 	int w)
 {
-	if ( ap != NULL && ap->GetTypeName() == "crawler")
-	{
-		int x = 5;
-	}
 
 	prev = NULL;
 	next = NULL;
