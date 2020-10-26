@@ -15,34 +15,34 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-RelativeComboer::RelativeComboer(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	list<Vector2i> &path, int p_level, int jReps, bool p_detachOnKill)
-	:Enemy(owner, EnemyType::EN_RELATIVECOMBOER, p_hasMonitor, 1, false)
+void RelativeComboer::UpdateParamsSettings()
 {
-	level = p_level;
+	JugglerParams *jParams = (JugglerParams*)editParams;
+	juggleReps = jParams->numJuggles;
+}
 
-	switch (level)
+RelativeComboer::RelativeComboer(ActorParams *ap )
+	:Enemy(EnemyType::EN_RELATIVECOMBOER, ap )
+{
+	
+	SetLevel(ap->GetLevel());
+
+	if (ap->GetTypeName() == "relativecomboerdetach")
 	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
+		detachOnKill = true;
+	}
+	else
+	{
+		detachOnKill = false;
 	}
 
-	detachOnKill = p_detachOnKill;
+	
 
 	maxWaitFrames = 180;
 
 	flySpeed = 5;
 
-	juggleReps = path.size();
+	/*juggleReps = path.size();
 
 	guidedDir = NULL;
 	if (juggleReps > 0)
@@ -66,27 +66,13 @@ RelativeComboer::RelativeComboer(GameSession *owner, bool p_hasMonitor, Vector2i
 	}
 
 	if (guidedDir == NULL)
-		juggleReps = jReps;
-
-
-	position.x = pos.x;
-	position.y = pos.y;
-	origPos = position;
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
+		juggleReps = jReps;*/
 
 	hitLimit = -1;
 
-	action = S_FLOAT;
-
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
-
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
-
-
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -96,13 +82,9 @@ RelativeComboer::RelativeComboer(GameSession *owner, bool p_hasMonitor, Vector2i
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(48);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -115,8 +97,7 @@ RelativeComboer::RelativeComboer(GameSession *owner, bool p_hasMonitor, Vector2i
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 	comboObj->enemyHitboxFrame = 0;
 
 	maxLatchFrames = 20 * 60;
@@ -154,22 +135,23 @@ void RelativeComboer::ResetEnemy()
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	dead = false;
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
 	
-	UpdateHitboxes();
-
-	basePos = origPos;
+	basePos = startPosInfo.position;
 	latchedOn = false;
-	position = origPos;
 
 	currJuggle = 0;
 
+	UpdateHitboxes();
 	UpdateSprite();
+}
+
+void RelativeComboer::SetLevel(int lev)
+{
+
 }
 
 void RelativeComboer::Throw(double a, double strength)
@@ -186,7 +168,7 @@ void RelativeComboer::Throw(V2d vel)
 
 void RelativeComboer::Return()
 {
-	owner->PlayerRemoveActiveComboer(comboObj);
+	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
@@ -200,7 +182,7 @@ void RelativeComboer::Return()
 
 void RelativeComboer::Pop()
 {
-	owner->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -226,7 +208,7 @@ void RelativeComboer::PopThrow()
 
 	Throw(dir * flySpeed);
 
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 bool RelativeComboer::CanBeHitByComboer()
@@ -246,11 +228,11 @@ void RelativeComboer::ProcessHit()
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					owner->keyMarker->CollectKey();
+					sess->CollectKey();
 					suppressMonitor = true;
 				}
 
-				owner->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -264,13 +246,13 @@ void RelativeComboer::ProcessHit()
 				frame = 0;
 				latchedOn = true;
 				latchFrame = 0;
-				offsetPos = position - owner->GetPlayerPos(0);
+				offsetPos = GetPosition() - sess->GetPlayerPos(0);
 				PopThrow();
 			}
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}
@@ -289,9 +271,9 @@ void RelativeComboer::ProcessState()
 			sprite.setColor(Color::Red);
 			break;
 		case S_RETURN:
-			position = origPos;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			SetCurrPosInfo(startPosInfo);
+			DefaultHurtboxesOn();
+			DefaultHitboxesOn();
 			latchedOn = false;
 			//basePos = origPos;
 			break;
@@ -317,7 +299,7 @@ void RelativeComboer::UpdateEnemyPhysics()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayerPos(0);
+		basePos = sess->GetPlayerPos(0);
 	}
 	else
 	{
@@ -342,7 +324,7 @@ void RelativeComboer::UpdateEnemyPhysics()
 
 	if (latchedOn)
 	{
-		position = offsetPos + basePos;
+		currPosInfo.position = offsetPos + basePos;
 	}
 
 	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
@@ -385,31 +367,13 @@ void RelativeComboer::FrameIncrement()
 
 void RelativeComboer::ComboKill(Enemy *e)
 {
-	//assert(action == S_FLY);
 	action = S_WAIT;
 	frame = 0;
 	latchedOn = false;
-	SetHurtboxes(hurtBody, 0);
+	DefaultHurtboxesOn();
 	sprite.setColor(Color::Blue);
-	owner->PlayerRestoreDoubleJump(0);
-	owner->PlayerRestoreAirDash(0);
-}
-
-void RelativeComboer::HandleEntrant(QuadTreeEntrant *qte)
-{
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
-
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
-		}
-	}
+	sess->PlayerRestoreDoubleJump(0);
+	sess->PlayerRestoreAirDash(0);
 }
 
 void RelativeComboer::ComboHit()
@@ -430,11 +394,12 @@ void RelativeComboer::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayerPos(0);
-		position = basePos + offsetPos;
+		basePos = sess->GetPlayerPos(0);
+		currPosInfo.position = basePos + offsetPos;
 	}
 
-	sprite.setPosition(position.x, position.y);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 
 	int tile = 0;
 	switch (action)
@@ -448,29 +413,5 @@ void RelativeComboer::UpdateSprite()
 
 void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 {
-	bool b = (owner->pauseFrames < 2 && ( pauseFrames < 2 && specialPauseFrames < 2 )) || (receivedHit == NULL && ( pauseFrames < 2 && specialPauseFrames < 2));
-	if (hasMonitor && !suppressMonitor)
-	{
-		if (b)
-		{
-			target->draw(sprite, keyShader);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-		target->draw(*keySprite);
-	}
-	else
-	{
-		//cout << "specialPauseFrames: " << specialPauseFrames << ", b: " << (int)b << endl;
-		if (b)
-		{
-			target->draw(sprite);
-		}
-		else
-		{
-			target->draw(sprite, hurtShader);
-		}
-	}
+	DrawSprite(target, sprite);
 }

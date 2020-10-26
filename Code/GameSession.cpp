@@ -1245,39 +1245,6 @@ bool cmpPairsDesc( pair<double,int> & a, pair<double,int> & b)
 	return a.first > b.first;
 }
 
-
-
-int GameSession::GetPlayerEnemiesKilledLastFrame(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		return p->enemiesKilledLastFrame;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-void GameSession::PlayerRestoreDoubleJump(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->RestoreDoubleJump();
-	}
-}
-
-void GameSession::PlayerRestoreAirDash(int index )
-{
-	Actor *p = players[index];
-	if (p != NULL)
-	{
-		p->RestoreAirDash();
-	}
-}
-
 int GameSession::GetPlayerHitstunFrames(int index)
 {
 	Actor *p = players[index];

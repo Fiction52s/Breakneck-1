@@ -8,31 +8,13 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-
-
-Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level )
-	:Enemy( owner, EnemyType::EN_GHOST, p_hasMonitor, 1 ), approachAccelBez( 1,.01,.86,.32 ) 
+Ghost::Ghost( ActorParams *ap )
+	:Enemy( EnemyType::EN_GHOST, ap), approachAccelBez( 1,.01,.86,.32 ) 
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(BITE, APPROACH, 0);
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
+	SetLevel(ap->GetLevel());
 
 	detectionRadius = 600;
 	approachFrames = 180 * 3;
@@ -49,26 +31,13 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 	animFactor[BITE] = 5;
 	animFactor[EXPLODE] = 7;
 
-	position.x = pos.x;
-	position.y = pos.y;
-
-	origPosition = position;
-
-	V2d playerPos = owner->GetPlayerPos(0);
-	V2d dirFromPlayer = normalize( playerPos  - position );
-	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
-	testSeq.AddRadialMovement( V2d( 0, 0 ), 1, 0, 2 * PI * 3, 
-		true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
+	testSeq.AddRadialMovement(V2d(0, 0), V2d(0, 0), 0, true, CubicBezier(), approachFrames);
+	//	true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
 	
 	testSeq.InitMovementDebug();
 
-	spawnRect = sf::Rect<double>( pos.x - 64, pos.y - 64, 64 * 2, 64 * 2 );
-
-	ts = owner->GetTileset( "Enemies/plasmid_192x192.png", 192, 192 );
+	ts = sess->GetSizedTileset("Enemies/plasmid_192x192.png");
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -79,14 +48,10 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
 
-	facingRight = (playerPos.x - position.x) >= 0;
-
-	origFacingRight = facingRight;
+	hitBody.hitboxInfo = hitboxInfo;
 
 	ResetEnemy();
 }
@@ -94,26 +59,41 @@ Ghost::Ghost( GameSession *owner, bool p_hasMonitor, Vector2i &pos, int p_level 
 void Ghost::ResetEnemy()
 {
 	action = WAKEUP;
-	facingRight = origFacingRight;
 	awakeFrames = 0;
 	latchStartAngle = 0;
 	latchedOn = false;
 	totalFrame = 0;
 	testSeq.Reset();
-
-	dead = false;
 	
+	facingRight = (sess->GetPlayerPos(0).x - GetPosition().x) >= 0;
+
 	frame = 0;
-	basePos = origPosition;
-	position = basePos;
+	basePos = startPosInfo.position;
 
 	sprite.setColor(Color( 255, 255, 255, 100 ));
-	
-	receivedHit = NULL;
 
 	UpdateHitboxes();
 	UpdateSprite();
-	
+}
+
+void Ghost::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void Ghost::Bite()
@@ -122,7 +102,7 @@ void Ghost::Bite()
 	action = BITE;
 	frame = 0;
 	sprite.setColor(Color::White);
-	SetHurtboxes(hurtBody, 0);
+	DefaultHurtboxesOn();
 }
 
 void Ghost::ProcessState()
@@ -135,8 +115,8 @@ void Ghost::ProcessState()
 		if (action == BITE)
 		{
 			action = EXPLODE;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(NULL, 0);
+			DefaultHitboxesOn();
+			HurtboxesOff();
 		}
 		else if( action == EXPLODE )
 		{
@@ -163,10 +143,10 @@ void Ghost::ProcessState()
 		cout << "offsetDist: " << d << endl;
 	}*/
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == WAKEUP)
 	{
-		if( WithinDistance( playerPos, position, 600 ))
+		if( WithinDistance( playerPos, GetPosition(), 600 ))
 		{
 			awakeFrames++;
 
@@ -174,7 +154,7 @@ void Ghost::ProcessState()
 			{
 				action = APPROACH;
 				frame = 0;
-				if (playerPos.x < position.x)
+				if (playerPos.x < GetPosition().x)
 				{
 					facingRight = false;
 				}
@@ -203,7 +183,7 @@ void Ghost::UpdateEnemyPhysics()
 {
 	if (latchedOn)
 	{
-		basePos = owner->GetPlayerPos(0);
+		basePos = sess->GetPlayerPos(0);
 
 		
 		if (action == APPROACH && latchedOn)
@@ -216,16 +196,16 @@ void Ghost::UpdateEnemyPhysics()
 			}
 		}
 
-		position = basePos + offsetPlayer;
+		currPosInfo.position = basePos + offsetPlayer;
 	}
 }
 void Ghost::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		V2d playerPos = owner->GetPlayerPos(0);
+		V2d playerPos = sess->GetPlayerPos(0);
 		basePos = playerPos;
-		position = basePos + offsetPlayer;
+		currPosInfo.position = basePos + offsetPlayer;
 	}
 	
 	double lenDiff = length(offsetPlayer);//owner->GetPlayer(0)->position - position;
@@ -276,14 +256,13 @@ void Ghost::UpdateSprite()
 	}
 
 	sprite.setTextureRect(ir);
-
-
-	sprite.setPosition(position.x, position.y);
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 }
 
 void Ghost::EnemyDraw( sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }
 
 void Ghost::DrawMinimap( sf::RenderTarget *target )

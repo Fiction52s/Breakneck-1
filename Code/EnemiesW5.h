@@ -4,5 +4,7 @@
 #include "Enemy_Gator.h"
 #include "Enemy_HungryComboer.h"
 #include "Enemy_Swarm.h"
+#include "Enemy_GrowingTree.h"
+#include "Enemy_Ghost.h"
 
 #endif

@@ -4,86 +4,34 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Spider.h"
+#include "EditorTerrain.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-	:Enemy( owner, EnemyType::EN_SPIDER, p_hasMonitor, 1 ), facingRight( true )
-	//moveBezTest( .22,.85,.3,.91 )
+Spider::Spider( ActorParams *ap )
+	:Enemy( EnemyType::EN_SPIDER, ap )
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(MOVE, 0, 0);
 
-	switch (level)
-	{
-	case 1:
-		scale = 1.0;
-		break;
-	case 2:
-		scale = 2.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 3.0;
-		maxHealth += 5;
-		break;
-	}
+	SetLevel(ap->GetLevel());
 
-	rcEdge = NULL;
 	gravity = V2d( 0, .6 );
 	maxGroundSpeed = 20;
-	action = MOVE;
-	maxFallSpeed = 25;
 
-	//ts_walk = owner->GetTileset( "crawlerwalk.png", 96, 64 );
-	//ts_roll = owner->GetTileset( "crawlerroll.png", 96, 64 );
+	maxFallSpeed = 25;
 
 	attackFrame = -1;
 	attackMult = 10;
 
-	double height = 160;
-	double width = 160;
+	CreateSurfaceMover(startPosInfo, 32, this);
+	surfaceMover->SetSpeed( 0 );
 
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-
-	mover = new SurfaceMover( owner, g, q, 32 );
-	//mover->gravity = V2d( 0, .5 );
-	mover->SetSpeed( 0 );
-	//mover->groundSpeed = s;
-	/*if( !facingRight )
-	{
-		mover->groundSpeed = -mover->groundSpeed;
-	}*/
-
-	ts = owner->GetTileset( "Enemies/crawler_160x160.png", width, height );
+	ts = sess->GetSizedTileset( "Enemies/crawler_160x160.png");
 	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	V2d gPoint = g->GetPoint( q );
-	sprite.setPosition( mover->physBody.globalPosition.x,
-		mover->physBody.globalPosition.y );
 	sprite.setScale(scale, scale);
-	position = mover->physBody.globalPosition;
-	//roll = false;
-	//position = gPoint + ground->Normal() * height / 2.0;
-	
-
-	receivedHit = NULL;
-
-	double size = max( width, height );
-	spawnRect = sf::Rect<double>( gPoint.x - size, gPoint.y - size, size * 2, size * 2 );
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -93,11 +41,9 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(32);
-	AddBasicHitCircle(32);
-
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(32);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	laserInfo0 = new HitboxInfo;
 	laserInfo0->damage = 6;
@@ -131,9 +77,6 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	laserInfo3->hitstunFrames = 0;
 	laserInfo3->knockback = 0;
 
-	crawlAnimationFactor = 5;
-	rollAnimationFactor = 5;
-
 	bezLength = 60 * NUM_STEPS;
 
 	cutObject->SetTileset(ts);
@@ -144,6 +87,14 @@ Spider::Spider( GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_
 	ResetEnemy();
 }
 
+Spider::~Spider()
+{
+	delete laserInfo0;
+	delete laserInfo1;
+	delete laserInfo2;
+	delete laserInfo3;
+}
+
 void Spider::ResetEnemy()
 {
 	rcEdge = NULL;
@@ -151,42 +102,52 @@ void Spider::ResetEnemy()
 	laserCounter = 0;
 	laserLevel = 0;
 
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed( 0 );
-
-	position = mover->physBody.globalPosition;
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
+	surfaceMover->ClearAirForces();
 
 	bezFrame = 0;
 	attackFrame = -1;
-	V2d gPoint = mover->ground->GetPoint( mover->edgeQuantity );
+	
+	action = MOVE;
 	frame = 0;
 
-	V2d gn = mover->ground->Normal();
-	dead = false;
-
-	double angle = 0;
-	angle = atan2( gn.x, -gn.y );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-	sprite.setRotation( angle / PI * 180 );
-	sprite.setPosition( gPoint.x, gPoint.y );
-
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
+
+	UpdateSprite();
+}
+
+void Spider::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void Spider::SetClosestLeft()
 {
 	double movementPossible = 1000;
-	double testq = mover->edgeQuantity;
+	double testq = surfaceMover->edgeQuantity;
 	V2d testPos;
-	Edge *testEdge = mover->ground;
+	Edge *testEdge = surfaceMover->ground;
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	while( movementPossible > 0 )
 	{
@@ -211,11 +172,11 @@ void Spider::SetClosestLeft()
 void Spider::SetClosestRight()
 {
 	double movementPossible = 1000;
-	double testq = mover->edgeQuantity;
+	double testq = surfaceMover->edgeQuantity;
 	V2d testPos;
-	Edge *testEdge = mover->ground;
+	Edge *testEdge = surfaceMover->ground;
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	while( movementPossible > 0 )
 	{
@@ -281,27 +242,27 @@ void Spider::CheckClosest( Edge * e, V2d &playerPos,
 	}
 	else
 	{
-		possiblePos = e->GetPoint( d );
+		possiblePos = e->GetPosition( d );
 	}
 
 	if( length( playerPos - possiblePos ) 
-		< length( playerPos - closestPos.position ) )
+		< length( playerPos - closestPos) )
 	{
-		closestPos.position = possiblePos;
-		closestPos.e = e;
-		closestPos.q = d;
-		closestPos.clockwiseFromCurrent = right;
+		closestPos = possiblePos;
+		closestEdge = e;
+		closestQuant = d;
+		closestClockwiseFromCurrent = right;
 	}
 }
 
 void Spider::UpdateHitboxes()
 {
-	Edge *ground = mover->ground;
+	Edge *ground = surfaceMover->ground;
 	if( ground != NULL )
 	{
 		V2d knockbackDir( 1, -1 );
 		knockbackDir = normalize( knockbackDir );
-		if( mover->groundSpeed > 0 )
+		if(surfaceMover->groundSpeed > 0 )
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -313,11 +274,7 @@ void Spider::UpdateHitboxes()
 		}
 	}
 
-	//hitBody.globalPosition = position + V2d( hitBody.offset.x * cos( hitBody.globalAngle ) + hitBody.offset.y * sin( hitBody.globalAngle ), hitBody.offset.x * -sin( hitBody.globalAngle ) + hitBody.offset.y * cos( hitBody.globalAngle ) );
-	//hurtBody.globalPosition = position + V2d( hurtBody.offset.x * cos( hurtBody.globalAngle ) + hurtBody.offset.y * sin( hurtBody.globalAngle ), hurtBody.offset.x * -sin( hurtBody.globalAngle ) + hurtBody.offset.y * cos( hurtBody.globalAngle ) );
-	hitBody->GetCollisionBoxes(0)->front().globalPosition = mover->physBody.globalPosition;
-	hurtBody->GetCollisionBoxes(0)->front().globalPosition = mover->physBody.globalPosition;
-	//physBody.globalPosition = position;//+ V2d( -16, 0 );// + //physBody.offset + offset;
+	BasicUpdateHitboxes();
 }
 
 void Spider::ActionEnded()
@@ -344,7 +301,7 @@ void Spider::ActionEnded()
 void Spider::ProcessState()
 {
 	//testLaunch->UpdatePrePhysics();
-	Actor *player = owner->GetPlayer( 0 );
+	Actor *player = sess->GetPlayer( 0 );
 
 	if( dead )
 		return;
@@ -352,33 +309,33 @@ void Spider::ProcessState()
 	ActionEnded();
 
 
-	closestPos.e = mover->ground;
-	closestPos.q = mover->edgeQuantity;
-	closestPos.position = mover->physBody.globalPosition;
+	closestEdge = surfaceMover->ground;
+	closestQuant = surfaceMover->edgeQuantity;
+	closestPos = surfaceMover->physBody.globalPosition;
 
-	V2d playerPos = owner->GetPlayerPos(0);
+	V2d playerPos = sess->GetPlayerPos(0);
 
 	SetClosestLeft();
 	SetClosestRight();
-	CheckClosest( mover->ground, playerPos, true, mover->edgeQuantity );
+	CheckClosest(surfaceMover->ground, playerPos, true, surfaceMover->edgeQuantity );
 
-	double len = length(playerPos - position );
+	double len = length(playerPos - GetPosition() );
 	bool outsideRange = len >= 500 && len < 1500;//1200; //bounds
-	if( outsideRange && length( position - closestPos.position ) > 20
+	if( outsideRange && length( GetPosition() - closestPos ) > 20
 		&& !canSeePlayer )
 	{
-		if( closestPos.clockwiseFromCurrent )
+		if(closestClockwiseFromCurrent)
 		{
-			mover->SetSpeed( 4 );
+			surfaceMover->SetSpeed( 4 );
 		}
 		else
 		{
-			mover->SetSpeed( -4 );
+			surfaceMover->SetSpeed( -4 );
 		}
 	}
 	else
 	{
-		mover->SetSpeed( 0 );
+		surfaceMover->SetSpeed( 0 );
 	}
 
 	switch( action )
@@ -426,8 +383,7 @@ void Spider::UpdateEnemyPhysics()
 {
 	//if (health > 0) //!dead
 	{
-		mover->Move(slowMultiple, numPhysSteps);
-		position = mover->physBody.globalPosition;
+		surfaceMover->Move(slowMultiple, numPhysSteps);
 	}
 }
 
@@ -438,23 +394,36 @@ void Spider::FrameIncrement()
 
 void Spider::UpdatePostPhysics()
 {
+	
 	if( laserCounter == 0 )
 	{
+		HitboxInfo *currLaserInfo = NULL;
 		switch( laserLevel )
 		{
 		case 0:
 			break;
 		case 1:
-			owner->PlayerApplyHit( laserInfo1 );
-			//owner->GetPlayer( 0 )->app
+			currLaserInfo = laserInfo1;
 			break;
 		case 2:
-			owner->PlayerApplyHit( laserInfo2 );
+			currLaserInfo = laserInfo2;
 			break;
 		case 3:
-			owner->PlayerApplyHit( laserInfo3 );
+			currLaserInfo = laserInfo3;
 			break;
 		};
+
+		Actor *player = sess->GetPlayer(0);
+		if (player->IsIntangible())
+		{
+
+		}
+		else
+		{
+			player->ApplyHit(currLaserInfo,
+				NULL, Actor::HitResult::HIT, GetPosition());
+		}
+
 		++laserCounter;
 	}
 	else
@@ -469,21 +438,20 @@ void Spider::UpdatePostPhysics()
 		}
 	}
 
-	V2d playerPos = owner->GetPlayerPos(0);
-	if( length( playerPos - mover->physBody.globalPosition ) < 1200 )
+	V2d playerPos = sess->GetPlayerPos(0);
+	if( length( playerPos - GetPosition() ) < 1200 )
 	{
-		rayStart = mover->physBody.globalPosition;
+		rayStart = GetPosition();
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
-		//rayEnd = rayStart + laserDir * 1000.0;//owner->GetPlayer( 0 )->position;
 		rayEnd = playerPos;
 		rcEdge = NULL;
-		RayCast( this, owner->terrainTree->startNode, rayStart, rayEnd );
+		RayCast( this, sess->terrainTree->startNode, rayStart, rayEnd );
 
 		if( rcEdge != NULL )
 		{
-			V2d rcPoint = rcEdge->GetPoint( rcQuantity );
-			if( length( rcPoint - position ) < length(playerPos - position ) )
+			V2d rcPoint = rcEdge->GetPosition( rcQuantity );
+			if( length( rcPoint - GetPosition() ) < length(playerPos - GetPosition() ) )
 			{
 				canSeePlayer = false;
 			}
@@ -548,15 +516,14 @@ void Spider::UpdatePostPhysics()
 
 void Spider::EnemyDraw(sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 
 	CircleShape cs;
 	cs.setRadius(20);
 	cs.setFillColor(Color::Magenta);
 	cs.setOrigin(cs.getLocalBounds().width / 2,
 		cs.getLocalBounds().height / 2);
-	cs.setPosition(closestPos.position.x,
-		closestPos.position.y);
+	cs.setPosition(Vector2f( closestPos));
 	target->draw(cs);
 
 	Color laserColor;
@@ -581,14 +548,14 @@ void Spider::EnemyDraw(sf::RenderTarget *target )
 		V2d rcPoint;
 		if (rcEdge != NULL)
 		{
-			rcPoint = rcEdge->GetPoint(rcQuantity);
+			rcPoint = rcEdge->GetPosition(rcQuantity);
 		}
 		else
 		{
 			rcPoint = rayEnd;
 		}
 		sf::Vertex line[] = {
-			Vertex(Vector2f(position.x, position.y), laserColor),
+			Vertex(GetPositionF(), laserColor),
 			Vertex(Vector2f(rcPoint.x, rcPoint.y)
 			, laserColor)
 		};
@@ -611,67 +578,11 @@ void Spider::UpdateSprite()
 {
 	IntRect ir = ts->GetSubRect(0);
 
-	//sprite.setTextureRect(ir);
-	/*if( attackFrame >= 0 )
-	{
-		ir = ts->GetSubRect( 28 + attackFrame / attackMult );
-		if( !facingRight )
-		{
-			ir = sf::IntRect( r.left + r.width, r.top, -r.width, r.height );
-		}
-		sprite.setTextureRect( ir );
-	}
-	else
-	{
-		
-	}*/
+	ts->SetSubRect(sprite, 0, !facingRight, false);
 
-	if (!facingRight)
-	{
-		sprite.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
-	}
-	else
-	{
-		sprite.setTextureRect(ir);
-	}
-
-	double angle;
-	V2d gn = mover->ground->Normal();
-
-	if (!mover->roll)
-	{
-		angle = atan2(gn.x, -gn.y);
-
-		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(pp.x, pp.y);
-	}
-	else
-	{
-		if (facingRight)
-		{
-			V2d vec = normalize(position - mover->ground->v1);
-			angle = atan2(vec.y, vec.x);
-			angle += PI / 2.0;
-
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation(angle / PI * 180);
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-			sprite.setPosition(pp.x, pp.y);
-		}
-		else
-		{
-			V2d vec = normalize(position - mover->ground->v0);
-			angle = atan2(vec.y, vec.x);
-			angle += PI / 2.0;
-
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
-			sprite.setRotation(angle / PI * 180);
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
-			sprite.setPosition(pp.x, pp.y);
-		}
-	}
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
 bool Spider::StartRoll()
@@ -691,15 +602,15 @@ void Spider::HitTerrain( double &q )
 void Spider::HitOther()
 {
 	V2d v;
-	if( facingRight && mover->groundSpeed > 0 )
+	if( facingRight && surfaceMover->groundSpeed > 0 )
 	{
 		v = V2d( 10, -10 );
-		mover->Jump( v );
+		surfaceMover->Jump( v );
 	}
-	else if( !facingRight && mover->groundSpeed < 0 )
+	else if( !facingRight && surfaceMover->groundSpeed < 0 )
 	{
 		v = V2d( -10, -10 );
-		mover->Jump( v );
+		surfaceMover->Jump( v );
 	}
 	//cout << "hit other!" << endl;
 	//mover->SetSpeed( 0 );
@@ -708,10 +619,10 @@ void Spider::HitOther()
 
 void Spider::ReachCliff()
 {
-	if( facingRight && mover->groundSpeed < 0 
-		|| !facingRight && mover->groundSpeed > 0 )
+	if( facingRight && surfaceMover->groundSpeed < 0
+		|| !facingRight && surfaceMover->groundSpeed > 0 )
 	{
-		mover->SetSpeed( 0 );
+		surfaceMover->SetSpeed( 0 );
 		return;
 	}
 
@@ -727,7 +638,7 @@ void Spider::ReachCliff()
 		v = V2d( -10, -10 );
 	}
 
-	mover->Jump( v );
+	surfaceMover->Jump( v );
 	//mover->groundSpeed = -mover->groundSpeed;
 	//facingRight = !facingRight;
 }
@@ -750,8 +661,8 @@ void Spider::HandleRayCollision( Edge *edge, double equant, double rayPortion )
 		return;
 	}
 
-	if( rcEdge == NULL || length( edge->GetPoint( equant ) - rayStart ) < 
-		length( rcEdge->GetPoint( rcQuantity ) - rayStart ) )
+	if( rcEdge == NULL || length( edge->GetPosition( equant ) - rayStart ) < 
+		length( rcEdge->GetPosition( rcQuantity ) - rayStart ) )
 	{
 		rcEdge = edge;
 		rcQuantity = equant;

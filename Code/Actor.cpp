@@ -16756,8 +16756,6 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 	 HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
 	bool canBeParried, bool canBeBlocked )
 {
-	
-
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
 		if (IsIntangible())

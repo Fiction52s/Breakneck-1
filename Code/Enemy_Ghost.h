@@ -11,28 +11,14 @@ struct Ghost : Enemy
 		APPROACH,
 		BITE,
 		EXPLODE,
-		Count
+		A_Count
 	};
 
 
 	double detectionRadius;
-	Action action;
-	int actionLength[Count];
-	int animFactor[Count];
-
 	double latchStartAngle;
 	MovementSequence testSeq;
-	Ghost(GameSession *owner, bool hasMonitor,
-		sf::Vector2i &pos, int p_level );
-	void ProcessState();
-	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-	void Bite();
 
-	bool origFacingRight;
 	int awakeFrames;
 	int awakeCap;
 
@@ -42,13 +28,10 @@ struct Ghost : Enemy
 	double acceleration;
 	double speed;
 
-	bool facingRight;
-
 	int approachFrames;
 	int totalFrame;
-	sf::Vector2<double> origOffset;
+	V2d origOffset;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	int hitlagFrames;
@@ -57,8 +40,16 @@ struct Ghost : Enemy
 	CubicBezier approachAccelBez;
 
 	V2d offsetPlayer;
-	V2d origPosition;
-	
+
+	Ghost(ActorParams *ap);
+	void SetLevel(int lev);
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	void EnemyDraw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	void Bite();
 };
 
 #endif

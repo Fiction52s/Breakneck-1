@@ -17,27 +17,29 @@ struct GrowingTree : Enemy, LauncherEnemy
 		LEVEL1TO2,
 		LEVEL2,
 		EXPLODE,
-		Count
+		A_Count
 	};
-	Action action;
 
-	GrowingTree(GameSession *owner, bool hasMonitor,
-		Edge *ground, double quantity, int level );
+	GrowingTree(ActorParams *ap);
 	~GrowingTree();
+	void SetLevel( int lev );
 	void ActionEnded();
 	void ProcessState();
-	//void UpdateEnemyPhysics();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
+	void HandleNoHealth();
 	void Fire();
 	void ResetEnemy();
-	//void HandleNoHealth();
+	void UpdateOnPlacement(ActorParams *ap);
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
-		sf::Vector2<double> &pos);
+		V2d &pos);
 	void DirectKill();
 	void InitRangeMarkerVA();
-	void BulletHitPlayer(BasicBullet *b);
+	void BulletHitPlayer(
+		int playerIndex,
+		BasicBullet *b,
+		int hitResult);
 
 	double pulseRadius;
 	int pulseFrame;
@@ -45,22 +47,11 @@ struct GrowingTree : Enemy, LauncherEnemy
 	int powerLevel;
 	int totalBullets;
 
-	sf::Sprite sprite;
 	Tileset *ts;
 
 	int startPowerLevel;
-	Edge *ground;
 
 	sf::Vertex *rangeMarkerVA;
-	//sf::VertexArray rangeMarkerVA;
-	double edgeQuantity;
-
-	int actionLength[Action::Count];
-	int animFactor[Action::Count];
-
-	double angle;
-
-	sf::Vector2<double> gn;
 };
 
 #endif

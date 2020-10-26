@@ -525,7 +525,7 @@ void Session::RegisterW3Enemies()
 
 void Session::RegisterW4Enemies()
 {
-	AddBasicGroundWorldEnemy("tiger", 5, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
+	AddBasicGroundWorldEnemy("tiger", 4, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
 	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
@@ -533,9 +533,6 @@ void Session::RegisterW4Enemies()
 	//AddWorldEnemy("grindrail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
-
-	////AddBasicAerialWorldEnemy("teleporter", 4, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
-	////	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
 
 	AddWorldEnemy("tigernode", 4, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
@@ -557,19 +554,11 @@ void Session::RegisterW4Enemies()
 	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
-	//AddBasicGroundWorldEnemy("spider", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/crawler_160x160.png", 160, 160));
-	////AddWorldEnemy("spider", 4, LoadParams<SpiderParams>, MakeParamsGrounded<SpiderParams>, NULL,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
+	AddBasicGroundWorldEnemy("spider", 4, CreateEnemy<Spider>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("turtle", 4, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	//AddBasicAerialWorldEnemy("turtle", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/turtle_80x64.png", 80, 64));
 
 	AddBasicGroundWorldEnemy("cheetah", 4, CreateEnemy<Cheetah>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-	////AddWorldEnemy("cheetah", 4, LoadParams<CheetahParams>, MakeParamsGrounded<CheetahParams>, NULL,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
 	//AddWorldEnemy("coral", 4, LoadParams<CoralParams>, NULL, MakeParamsAerial<CoralParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -607,9 +596,6 @@ void Session::RegisterW5Enemies()
 
 	AddBasicAerialWorldEnemy("swarm", 5, CreateEnemy<Swarm>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
-	////AddWorldEnemy("swarm", 5, LoadParams<SwarmParams>, NULL, MakeParamsAerial<SwarmParams>,
-	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
-
 	//AddBasicAerialWorldEnemy("shark", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/shark_circle_256x256.png", 256, 256));
 
@@ -617,14 +603,12 @@ void Session::RegisterW5Enemies()
 	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
 
-	//AddBasicGroundWorldEnemy("growingtree", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/sprout_160x160.png", 160, 160));
+	AddBasicGroundWorldEnemy("growingtree", 5, CreateEnemy<GrowingTree>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	////AddWorldEnemy("overgrowth", 5, LoadParams<OvergrowthParams>, MakeParamsGrounded<OvergrowthParams>, NULL,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
-	//AddBasicAerialWorldEnemy("ghost", 5, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/plasmid_192x192.png", 192, 192));
+	AddBasicAerialWorldEnemy("ghost", 5, CreateEnemy<Ghost>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	////AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -6644,4 +6628,35 @@ GroundedWarper *Session::GetWarper(const std::string levelWarp)
 	}
 
 	return NULL;
+}
+
+int Session::GetPlayerEnemiesKilledLastFrame(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		return p->enemiesKilledLastFrame;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void Session::PlayerRestoreDoubleJump(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RestoreDoubleJump();
+	}
+}
+
+void Session::PlayerRestoreAirDash(int index)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RestoreAirDash();
+	}
 }

@@ -526,6 +526,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	V2d GetPlayerKnockbackDirFromVel(int index = 0);
 	V2d GetPlayerPos(int index = 0);
 	V2d GetPlayerTrueVel(int index = 0);
+	int GetPlayerEnemiesKilledLastFrame(int index = 0);
+	void PlayerRestoreDoubleJump(int index = 0);
+	void PlayerRestoreAirDash(int index = 0);
 	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
 	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
 	void AddEnemy(Enemy *e);

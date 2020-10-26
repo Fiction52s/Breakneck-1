@@ -17,12 +17,44 @@ struct RelativeComboer : Enemy
 		S_Count
 	};
 
-	RelativeComboer(GameSession *owner, bool hasMonitor,
+
+	int latchFrame;
+	int maxLatchFrames;
+
+	int specialPauseFrames;
+
+	V2d velocity;
+
+	int hitLimit;
+	int currHits;
+
+	Tileset *ts;
+
+	bool detachOnKill;
+
+	int juggleReps;
+	int currJuggle;
+
+	V2d *guidedDir;
+
+	int waitFrame;
+	int maxWaitFrames;
+
+	double flySpeed;
+
+	bool latchedOn;
+	V2d basePos;
+
+	V2d offsetPos;
+
+	RelativeComboer(
+		ActorParams *ap);/*GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos,
 		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps, bool detachOnKill);
+		int juggleReps, bool detachOnKill*/
 	~RelativeComboer();
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void SetLevel(int lev);
+	void UpdateParamsSettings();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -43,42 +75,6 @@ struct RelativeComboer : Enemy
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 
-	int latchFrame;
-	int maxLatchFrames;
-
-	int specialPauseFrames;
-
-
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	V2d origPos;
-
-	V2d velocity;
-
-	int hitLimit;
-	int currHits;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	bool detachOnKill;
-
-	int juggleReps;
-	int currJuggle;
-
-	V2d *guidedDir;
-
-	int waitFrame;
-	int maxWaitFrames;
-
-	double flySpeed;
-
-	bool latchedOn;
-	V2d basePos;
-
-	V2d offsetPos;
 };
 
 #endif

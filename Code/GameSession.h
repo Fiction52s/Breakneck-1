@@ -508,9 +508,7 @@ struct GameSession : RayCastHandler, Session
 
 	//player
 	int GetPlayerTeamIndex(int index = 0);
-	int GetPlayerEnemiesKilledLastFrame(int index = 0);
-	void PlayerRestoreDoubleJump(int index = 0);
-	void PlayerRestoreAirDash(int index = 0);
+	
 	int GetPlayerHitstunFrames(int index = 0);
 	
 
