@@ -1048,6 +1048,7 @@ ActorParams *BasicRailEnemyParams::Copy()
 BasicAirEnemyParams::BasicAirEnemyParams(ActorType *at, int level)
 	:ActorParams(at)
 {
+
 	enemyLevel = level;
 	PlaceAerial(Vector2i(0,0));
 }

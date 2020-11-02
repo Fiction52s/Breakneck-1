@@ -29,6 +29,7 @@ struct Tileset
 	void SetQuadSubRect(sf::Vertex *v, int index,
 		bool flipX = false, bool flipY = false);
 	int GetNumTiles();
+	int GetMemoryUsage();
 	sf::Texture * texture;
 	int tileWidth;
 	int tileHeight;
@@ -71,6 +72,7 @@ struct TilesetManager
 	Tileset *GetUpdatedTileset(
 		const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
 	void ClearTilesets();
+	int GetMemoryUsage();
 	void DestroyTilesetIfExists(const std::string &sourceName,
 		int altIndex = 0);
 	void DestroyTileset(Tileset * t);

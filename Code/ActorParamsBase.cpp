@@ -68,6 +68,19 @@ ActorParams::ActorParams(ActorType *at)
 	:ISelectable(ISelectable::ACTOR), boundingQuad(sf::Quads, 4),
 	hasMonitor(false), group(NULL), type(at)
 {
+	//any enemies that default to having a key/monitor
+	if (at->info.name == "bluekeyfly"
+		|| at->info.name == "greenkeyfly"
+		|| at->info.name == "yellowkeyfly"
+		|| at->info.name == "orangekeyfly"
+		|| at->info.name == "redkeyfly"
+		|| at->info.name == "magentakeyfly"
+		|| at->info.name == "greykeyfly"
+		|| at->info.name == "blackkeyfly" )
+	{
+		hasMonitor = true;
+	}
+
 	//partOfTerrain = false;
 	lines = NULL;
 	myEnemy = NULL;

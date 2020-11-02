@@ -90,7 +90,7 @@ void EditModeUI::AddKinOption(const std::string &text, const std::string &toolTi
 
 void EditModeUI::CreateKinOptionsPanel()
 {
-	kinOptionsPanel = new Panel("kinoptions", 400, 800, this, true);
+	kinOptionsPanel = new Panel("kinoptions", 600, 800, this, true);
 	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
 		540 - kinOptionsPanel->size.y / 2));
 	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
@@ -104,6 +104,10 @@ void EditModeUI::CreateKinOptionsPanel()
 	AddKinOption("Time Slow Bubbles ", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
 	AddKinOption("Left Wire: ", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
 	AddKinOption("Right Wire: ", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
+
+	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(300, 10), Vector2i(0, 20));
+	AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_DASH_BOOSTER_1);
+	AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_AIRDASH_BOOSTER_1);
 }
 
 void EditModeUI::ToggleKinOptionsPanel()

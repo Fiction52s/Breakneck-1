@@ -155,6 +155,7 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_POWER_RWIRE,
 		UPGRADE_POWER_LWIRE,
 		UPGRADE_DASH_BOOSTER_1,
+		UPGRADE_AIRDASH_BOOSTER_1,
 		UPGRADE_Count,
 	};
 
@@ -377,6 +378,7 @@ struct Actor : QuadTreeCollider,
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
 	double storedGroundSpeed;
+	
 	int currBBoostCounter;
 	int currAirdashBoostCounter;
 	bool steepJump;
@@ -1145,6 +1147,8 @@ struct Actor : QuadTreeCollider,
 	bool CheckWall( bool right );
 	bool TryWallJump();
 	bool CheckStandUp();
+	void TryDashBoost();
+	void TryAirdashBoost();
 	void CheckBounceFlame();
 	bool BasicAirAction();
 	bool GlideAction();

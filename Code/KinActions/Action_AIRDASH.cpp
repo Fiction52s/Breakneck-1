@@ -36,36 +36,7 @@ void Actor::AIRDASH_End()
 	}
 	else
 	{
-		if ( currInput.B && 
-			(currInput.LLeft() || currInput.LUp()
-				|| currInput.LRight() || currInput.LDown() ) )
-		{
-			double dashFactor = 1.85;//1.5;
-			double bboostSpeed = GetDashSpeed() * dashFactor;
-			double velLen = length(velocity);
-			double highSpeedBoost = 5;
-			V2d velDir = normalize(velocity);
-			if (velLen < bboostSpeed)
-			{
-				if (velDir.y < 0)
-				{
-					velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
-				}
-				else if (velDir.y > 0)
-				{
-					velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed);
-				}
-				else
-				{
-					velocity = velDir * bboostSpeed;
-				}
-				
-			}
-			else
-			{
-				velocity = velDir * (velLen + highSpeedBoost);
-			}
-		}
+		TryAirdashBoost();
 
 
 		SetAction(JUMP);

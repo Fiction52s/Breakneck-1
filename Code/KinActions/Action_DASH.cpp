@@ -44,61 +44,7 @@ void Actor::DASH_Change()
 	{
 		if (!currInput.B)
 		{
-			if (currBBoostCounter >= 20 )//maxBBoostCount - 15 )
-			{
-				double dashFactor = 1.85;//1.5;
-				double bboostSpeed = GetDashSpeed() * dashFactor;
-
-				if (bboostSpeed > abs(groundSpeed))
-				{
-					if (groundSpeed > 0)
-					{
-						groundSpeed = bboostSpeed;
-					}
-					else
-					{
-						groundSpeed = -bboostSpeed;
-					}
-				}
-				else
-				{
-					double highSpeedBoost = 5;
-					if (groundSpeed > 0)
-					{
-						groundSpeed += highSpeedBoost;
-					}
-					else
-					{
-						groundSpeed -= highSpeedBoost;
-					}
-				}
-
-
-
-				/*double dashFactor = 3.0;
-				double ag = abs(groundSpeed);
-
-				if (ag > 30)
-				{
-				dashFactor = 3.0;
-				}
-				else
-				{
-				dashFactor = 2.0;
-				}*/
-
-				//double bboost = GetDashSpeed() / dashFactor;
-
-				/*if (groundSpeed > 0)
-				{
-				groundSpeed += bboost;
-				}
-				else
-				{
-				groundSpeed -= bboost;
-				}*/
-				//currBBoostCounter = 0;
-			}
+			TryDashBoost();
 
 
 

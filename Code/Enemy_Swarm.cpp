@@ -71,6 +71,7 @@ void SwarmMember::Throw( V2d &pos )
 		sess->RemoveEnemy(this);
 	}
 
+	spawned = false;
 	sess->AddEnemy(this);
 	active = true;
 	currPosInfo.position = pos + targetOffset;

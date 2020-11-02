@@ -8744,6 +8744,109 @@ bool Actor::TryWallJump()
 	return false;
 }
 
+void Actor::TryDashBoost()
+{
+	if (!HasUpgrade(UPGRADE_DASH_BOOSTER_1))
+	{
+		return;
+	}
+
+	if (currBBoostCounter >= 20)
+	{
+		double dashFactor = 1.85;//1.5;
+		double bboostSpeed = GetDashSpeed() * dashFactor;
+
+		if (bboostSpeed > abs(groundSpeed))
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed = bboostSpeed;
+			}
+			else
+			{
+				groundSpeed = -bboostSpeed;
+			}
+		}
+		else
+		{
+			double highSpeedBoost = 5;
+			if (groundSpeed > 0)
+			{
+				groundSpeed += highSpeedBoost;
+			}
+			else
+			{
+				groundSpeed -= highSpeedBoost;
+			}
+		}
+
+
+
+		/*double dashFactor = 3.0;
+		double ag = abs(groundSpeed);
+
+		if (ag > 30)
+		{
+		dashFactor = 3.0;
+		}
+		else
+		{
+		dashFactor = 2.0;
+		}*/
+
+		//double bboost = GetDashSpeed() / dashFactor;
+
+		/*if (groundSpeed > 0)
+		{
+		groundSpeed += bboost;
+		}
+		else
+		{
+		groundSpeed -= bboost;
+		}*/
+		//currBBoostCounter = 0;
+	}
+}
+
+void Actor::TryAirdashBoost()
+{
+	if (!HasUpgrade(UPGRADE_AIRDASH_BOOSTER_1))
+	{
+		return;
+	}
+
+	if (currInput.B &&
+		(currInput.LLeft() || currInput.LUp()
+			|| currInput.LRight() || currInput.LDown()))
+	{
+		double dashFactor = 1.85;//1.5;
+		double bboostSpeed = GetDashSpeed() * dashFactor;
+		double velLen = length(velocity);
+		double highSpeedBoost = 5;
+		V2d velDir = normalize(velocity);
+		if (velLen < bboostSpeed)
+		{
+			if (velDir.y < 0)
+			{
+				velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
+			}
+			else if (velDir.y > 0)
+			{
+				velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed);
+			}
+			else
+			{
+				velocity = velDir * bboostSpeed;
+			}
+
+		}
+		else
+		{
+			velocity = velDir * (velLen + highSpeedBoost);
+		}
+	}
+}
+
 bool Actor::EnemyIsFar(V2d &enemyPos)
 {
 	double len = length(position - enemyPos);

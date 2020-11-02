@@ -84,6 +84,11 @@ int Tileset::GetNumTiles()
 	return sx * sy;
 }
 
+int Tileset::GetMemoryUsage()
+{
+	return texture->getSize().x * texture->getSize().y * 4;
+}
+
 TilesetManager::TilesetManager()
 {
 	gameResourcesMode = true;
@@ -138,6 +143,30 @@ void TilesetManager::SetGameResourcesMode(bool on)
 bool TilesetManager::IsResourceMode()
 {
 	return gameResourcesMode;
+}
+
+int TilesetManager::GetMemoryUsage()
+{
+	list<pair<Tileset*, int>>::iterator listIt;
+	list<pair<Tileset*, int>>::iterator listItEnd;
+
+	int counted = 0;
+
+	for (int i = 0; i < C_Count; ++i)
+	{
+		auto & currMap = tilesetMaps[i];
+		for (auto it = currMap.begin(); it != currMap.end(); ++it)
+		{
+			listIt = (*it).second.begin();
+			listItEnd = (*it).second.end();
+			for (; listIt != listItEnd; ++listIt)
+			{
+				counted += (*listIt).first->GetMemoryUsage();
+			}
+		}
+	}
+
+	return counted;
 }
 
 Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight,

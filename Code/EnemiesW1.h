@@ -29,6 +29,7 @@
 #include "Enemy_MovementTester.h"
 #include "GroundedWarper.h"
 #include "Nexus.h"
+#include "Enemy_KeyFly.h"
 
 
 #endif

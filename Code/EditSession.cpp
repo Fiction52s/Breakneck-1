@@ -2166,6 +2166,12 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 
 void EditSession::ProcessHeader()
 {
+	double memD = GetMemoryUsage();
+	double megs = memD / 1000000.0;
+	cout << "memory usage: " << megs << endl;
+	double memDMM = MainMenu::GetInstance()->tilesetManager.GetMemoryUsage();
+	double megsMM = memDMM / 1000000.0;
+	cout << "mm usage: " << megsMM << endl;
 	background = Background::SetupFullBG(mapHeader->envName, this, true);
 	//background->Hide();
 
@@ -12127,7 +12133,7 @@ void EditSession::GeneralMouseUpdate()
 		if (MOUSE.IsMouseRightClicked())
 		{
 			if (mode != PASTE && focusedPanel == NULL)
-			{
+			{ 
 				menuDownStored = mode;
 				mode = SELECT_MODE;
 				menuDownPos = V2d(uiMousePos.x, uiMousePos.y);

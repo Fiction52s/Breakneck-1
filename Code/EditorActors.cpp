@@ -201,7 +201,17 @@ Panel *ActorType::CreatePanel()
 
 
 	if (name == "shard" || name == "player" || name == "goal"
-		|| name == "greengoal")
+		|| name == "greengoal" || name == "yellowgoal"
+		|| name == "orangegoal" || name == "redgoal"
+		|| name == "magentagoal" || name == "greygoal"
+		|| name == "blackgoal" || name == "bluekeyfly"
+		|| name == "greenkeyfly"
+		|| name == "yellowkeyfly"
+		|| name == "orangekeyfly"
+		|| name == "redkeyfly"
+		|| name == "magentakeyfly"
+		|| name == "greykeyfly"
+		|| name == "blackkeyfly" )
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
@@ -455,6 +465,12 @@ bool ActorType::IsGoalType()
 	string &name = info.name;
 	return name == "goal"
 		|| name == "greengoal"
+		|| name == "yellowgoal"
+		|| name == "orangegoal" 
+		|| name == "redgoal"
+		|| name == "magentagoal" 
+		|| name == "greygoal"
+		|| name == "blackgoal"
 		|| name == "shippickup"
 		|| name == "nexus";
 }

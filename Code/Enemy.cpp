@@ -343,6 +343,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_TURTLE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
+	case EnemyType::EN_KEYFLY:
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		break;
 	default:
 		return false;
 	}
@@ -374,6 +377,11 @@ Enemy::Enemy(EnemyType t, int w)
 void Enemy::OnCreate(ActorParams *ap,
 	int w)
 {
+	if (ap != NULL)
+	{
+		name = ap->GetTypeName();
+	}
+
 	prev = NULL;
 	next = NULL;
 	zone = NULL;
@@ -590,8 +598,14 @@ void Enemy::SetKey()
 		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
 		keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
+		int w = world;
+		if (world > 2)
+		{
+			w = 2; //we dont have all the sprites yet
+		}
+
 		stringstream ss;
-		ss << "FX/key_w0" << world << "_1_128x128.png";
+		ss << "FX/key_w0" << w << "_1_128x128.png";
 		ts_key = sess->GetTileset(ss.str(), 128, 128);
 
 		keySprite.setTexture(*ts_key->texture);
@@ -1007,7 +1021,7 @@ void Enemy::DirectKill()
 {
 	if (!dead)
 	{
-		sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
+		//sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
 
 		dead = true;
 

@@ -18,40 +18,30 @@ Goal::Goal( ActorParams *ap )
 	SetNumActions(A_Count);
 	SetEditorActions(A_SITTING, A_SITTING, 0);
 
-	double width;
-	double height;
+	explosionAnimFactor = 3;
+	explosionLength = 16;
+	ts_explosion1 = NULL;
+	ts_mini = sess->GetSizedTileset("HUD/minimap_icons_64x64.png");
+
+	string tsStr = "Goal/goal_w" + to_string(world) + "_a_512x512.png";
+	ts = sess->GetSizedTileset(tsStr);
+	string explosionStr = "Goal/goal_w" + to_string(world) + "_b_512x512.png";
+	ts_explosion = sess->GetSizedTileset(explosionStr);
 
 	switch (world)
 	{
 	case 1:
-		width = 288;
-		height = 320;
-		ts = sess->GetSizedTileset("Goal/goal_w01_a_288x320.png");
-		ts_mini = sess->GetSizedTileset("HUD/minimap_icons_64x64.png");
-		ts_explosion = sess->GetTileset("Goal/goal_w01_b_480x480_0.png", 480, 480);
-		ts_explosion1 = sess->GetTileset("Goal/goal_w01_b_480x480_1.png", 480, 480);
-		explosionLength = 18;
-		explosionAnimFactor = 3;
 		explosionYOffset = 80;
 		initialYOffset = 30;
 		break;
 	case 2:
 	default:
-		width = 288;
-		height = 256;
-		ts = sess->GetTileset("Goal/goal_w02_a_288x256.png", width, height);
-		ts_mini = sess->GetTileset("HUD/minimap_icons_64x64.png", 64, 64);
-		
-		ts_explosion = sess->GetTileset("Goal/goal_w02_b_288x320.png", 288, 320);
-		ts_explosion1 = NULL;
-		explosionLength = 15;
-		explosionAnimFactor = 3;
 		explosionYOffset = 0;
 		initialYOffset = 0;
 		break;
 	}
 
-	SetOffGroundHeight(height / 2.0);
+	SetOffGroundHeight(512 / 2.0);
 
 	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
 
