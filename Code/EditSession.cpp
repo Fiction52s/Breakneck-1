@@ -12602,7 +12602,6 @@ void EditSession::EditModeDelete()
 {
 	if (!editStartMove)
 	{
-
 		if (CountSelectedPoints() > 0)
 		{
 			TryRemoveSelectedPoints();
@@ -13250,6 +13249,22 @@ void EditSession::TransformModeHandleEvent()
 					dec->CancelTransformation();
 				}
 			}
+		}
+		else if (ev.key.code == sf::Keyboard::Num3) //use better buttons for this at some point
+		{
+			transformTools->FlipX();
+		}
+		else if (ev.key.code == sf::Keyboard::Num4)
+		{
+			transformTools->FlipY();
+		}
+		else if (ev.key.code == sf::Keyboard::Num5)
+		{
+			transformTools->CWRotate45();
+		}
+		else if (ev.key.code == sf::Keyboard::Num6)
+		{
+			transformTools->CCWRotate45();
 		}
 		break;
 	}

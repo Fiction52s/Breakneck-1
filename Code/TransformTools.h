@@ -22,6 +22,10 @@ struct TransformTools
 	void Reset(sf::Vector2f &p_center, sf::Vector2f &p_size,float startAngle = 0);
 	void Draw(sf::RenderTarget *target);
 	void Update( sf::Vector2f &worldPos, bool mouseDown );
+	void FlipX();
+	void FlipY();
+	void CWRotate45();
+	void CCWRotate45();
 
 	sf::Vector2f GetTransformedOffset();
 	sf::Vector2f GetScaledOffset();

@@ -343,6 +343,66 @@ void TransformTools::Update( Vector2f &worldPos, bool mouseDown )
 	
 }
 
+void TransformTools::FlipX()
+{
+	scale.x = -scale.x;
+
+	size = Vector2f(origSize.x * scale.x, origSize.y * scale.y);
+	rectSize = size + Vector2f(extra, extra);
+	tRect.setSize(rectSize);
+
+	UpdateScaleOrigin();
+
+	UpdateGrabPoints();
+
+	UpdateRotationAnchor();
+}
+
+void TransformTools::FlipY()
+{
+	scale.y = -scale.y;
+
+	size = Vector2f(origSize.x * scale.x, origSize.y * scale.y);
+	rectSize = size + Vector2f(extra, extra);
+	tRect.setSize(rectSize);
+
+	UpdateScaleOrigin();
+
+	UpdateGrabPoints();
+
+	UpdateRotationAnchor();
+}
+
+void TransformTools::CWRotate45()
+{
+	rotation += 45; //not sure if this is the right direction yet.
+
+	tRect.setRotation(rotation + baseRotation);
+
+	UpdateRotationAnchor();
+
+	Vector2f scaledOffset = GetScaledOffset();
+	tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
+	tRect.setPosition(rotationAnchor);
+
+	UpdateGrabPoints();
+}
+
+void TransformTools::CCWRotate45()
+{
+	rotation -= 45;
+
+	tRect.setRotation(rotation + baseRotation);
+
+	UpdateRotationAnchor();
+
+	Vector2f scaledOffset = GetScaledOffset();
+	tRect.setOrigin(rectSize.x / 2 + scaledOffset.x, rectSize.y / 2 + scaledOffset.y);
+	tRect.setPosition(rotationAnchor);
+
+	UpdateGrabPoints();
+}
+
 sf::Vector2f TransformTools::GetCenter()
 {
 	return Vector2f(GetRectPoint(0) + GetRectPoint(1) + GetRectPoint(2) + GetRectPoint(3)) / 4.f;
