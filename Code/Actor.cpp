@@ -2930,9 +2930,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	/*offsets[1] = Vector2i(16, -40);
 	offsets[2] = Vector2i(32, -48);*/
 
-	standSwordOffset[0] = Vector2f(0, 0);//Vector2f(64, 64);//Vector2f(0, -64);
-	standSwordOffset[1] = Vector2f(0, 0);//Vector2f(64, 32);//Vector2f(0, -64);
-	standSwordOffset[2] = Vector2f(0, 0);//Vector2f(64, 16);//Vector2f(0, -64);
+	standSwordOffset[0] = Vector2f(64, -32);//Vector2f(0, -64);
+	standSwordOffset[1] = Vector2f(64, -32);//Vector2f(64, 32);//Vector2f(0, -64);
+	standSwordOffset[2] = Vector2f(64, -32);//Vector2f(64, 16);//Vector2f(0, -64);
 
 	climbAttackOffset[0] = Vector2f(0, -32);
 	climbAttackOffset[1] = Vector2f(0, -128);
@@ -3084,7 +3084,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		for (int i = 0; i < 3; ++i)
 		{
 			Vector2f testOffset = standSwordOffset[i];
-			//testOffset.y -= ts_standingNSword[i]->tileHeight / 2.0;
+			//testOffset.y -= ts_standAttackSword[i]->tileHeight / 2.0;
 			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
 			standHitboxes[i]->OffsetAllFrames(testOffset);
 		}

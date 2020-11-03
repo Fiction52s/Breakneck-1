@@ -539,16 +539,22 @@ void ActorParams::DrawPreview(sf::RenderTarget *target)
 
 	Vector2f viewCenter = target->getView().getCenter();
 	Vector2f viewSize = target->getView().getSize();
-	if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
-		viewSize.x, viewSize.y)))
+
+	if (myEnemy != NULL)
 	{
-		if (myEnemy != NULL)
+		if (myEnemy->GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+			viewSize.x, viewSize.y)))
+		{
 			myEnemy->Draw(target);
-		else
+		}
+	}
+	else
+	{
+		if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+			viewSize.x, viewSize.y)))
 		{
 			target->draw(image);
 		}
-
 	}
 }
 
