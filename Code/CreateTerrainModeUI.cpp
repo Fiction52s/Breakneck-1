@@ -158,7 +158,7 @@ void CreateTerrainModeUI::ChooseMatType(ImageChooseRect *icRect)
 	int layerIndex = GetTerrainLayer();
 	currMatRects[layerIndex]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
-	int world = icRect->pos.x / terrainGridSize;
+	int world = icRect->pos.x / terrainGridSize + layerIndex * 8;
 	int variation = icRect->pos.y / terrainGridSize;
 
 	edit->currTerrainWorld[layerIndex] = world;

@@ -2967,7 +2967,7 @@ void TerrainPolygon::UpdateBounds()
 
 int TerrainPolygon::GetSpecialPolyIndex()
 {
-	if (terrainWorldType == SPECIAL)
+	if (terrainWorldType >= TerrainPolygon::W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
 		return 1;
 	else if (terrainWorldType == FLY)
 		return 2;
@@ -3360,7 +3360,7 @@ void TerrainPolygon::TryFixPointsTouchingLines()
 void TerrainPolygon::SetupTouchGrass()
 {
 	DestroyTouchGrass();
-	if (terrainWorldType < SPECIAL)
+	if (terrainWorldType < W1_SPECIAL)
 	{
 		AddTouchGrass(TouchGrass::TYPE_NORMAL);
 		AddTouchGrass(TouchGrass::TYPE_TEST);

@@ -211,7 +211,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "redkeyfly"
 		|| name == "magentakeyfly"
 		|| name == "greykeyfly"
-		|| name == "blackkeyfly" )
+		|| name == "blackkeyfly" 
+		|| name == "glidetarget")
 	{
 		p = NULL;//CreateDefaultPanel();
 	}

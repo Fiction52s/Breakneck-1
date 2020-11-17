@@ -14,11 +14,32 @@ void Actor::SPRINGSTUN_End()
 
 void Actor::SPRINGSTUN_Change()
 {
-	if (springStunFrames == 0)
+	if (!GlideAction())
+	{
+		if (springStunFrames == 0)
+		{
+			SetAction(JUMP);
+			frame = 1;
+			if (velocity.x < 0)
+			{
+				facingRight = false;
+			}
+			else if (velocity.x > 0)
+			{
+				facingRight = true;
+			}
+		}
+	}
+	else
+	{
+		springStunFrames = 0;
+	}
+
+	/*if (springStunFrames == 0)
 	{
 		SetAction(JUMP);
 		frame = 1;
-	}
+	}*/
 }
 
 void Actor::SPRINGSTUN_Update()

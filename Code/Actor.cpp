@@ -45,6 +45,7 @@
 #include "EditorRail.h"
 #include "MovingGeo.h"
 #include "GateMarker.h"
+#include "Enemy_GlideTarget.h"
 
 #include "GameMode.h"
 
@@ -2513,10 +2514,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currBounceBooster = NULL;
 	oldBounceBooster = NULL;
 
-	gravResetFrames = 0;
+	gravModifyFrames = 0;
 
-	currModifier = NULL;
-	oldModifier = NULL;
+	currGravModifier = NULL;
 	currWall = NULL;
 	currHurtboxes = NULL;
 	currHitboxes = NULL;
@@ -4090,7 +4090,7 @@ void Actor::Respawn()
 
 	activeComboObjList = NULL;
 
-	gravResetFrames = 0;
+	gravModifyFrames = 0;
 
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
@@ -4103,8 +4103,7 @@ void Actor::Respawn()
 	currBounceBooster = NULL;
 	oldBounceBooster = NULL;
 
-	currModifier = NULL;
-	oldModifier = NULL;
+	currGravModifier = NULL;
 	extraGravityModifier = 1.0;
 	
 	slowMultiple = baseSlowMultiple;
@@ -4915,6 +4914,19 @@ void Actor::UpdateWireStates()
 	}
 }
 
+void Actor::ProcessGravModifier()
+{
+	if (currGravModifier != NULL)
+	{
+		gravModifyFrames = currGravModifier->duration;
+		extraGravityModifier = currGravModifier->gravFactor;
+
+		currGravModifier->Modify();
+
+		currGravModifier = NULL;
+	}
+}
+
 void Actor::ProcessBooster()
 {
 	if (currBooster != NULL && oldBooster == NULL && action != AIRDASH && currBooster->Boost())
@@ -5454,6 +5466,8 @@ void Actor::UpdatePrePhysics()
 
 	UpdateWireStates();
 	
+	ProcessGravModifier();
+
 	ProcessBooster();
 
 	ProcessBoostGrass();
@@ -5479,7 +5493,6 @@ void Actor::UpdatePrePhysics()
 	collision = false;
 	groundedWallBounce = false;
 	oldBooster = currBooster;
-	oldModifier = currModifier;
 	oldBounceBooster = currBounceBooster;
 	highAccuracyHitboxes = true;
 	wallNormal.x = 0;
@@ -6870,7 +6883,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	currBooster = NULL;
 	currBounceBooster = NULL;
-	currModifier = NULL;
+	currGravModifier = NULL;
 
 	double activeExtra = 500;
 	sf::Rect<double> activeR = r;
@@ -10760,7 +10773,7 @@ void Actor::UpdatePhysics()
 			}
 			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
 				&& tempCollision 
-				&& ((currInput.B && currInput.LUp())|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
+				&& (((currInput.B && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
 				|| ( action == AIRHITSTUN && CanTech() ) )
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
@@ -11022,6 +11035,8 @@ void Actor::HandleTouchedGate()
 
 	double thresh = .01;
 	bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
+	cout << "a: " << crossA << ", b: " << crossB << ", c: " << crossC << ", d: " << crossD << "\n";
+
 
 
 	g->SetLocked(true);
@@ -12298,6 +12313,8 @@ void Actor::HandleSpecialTerrain(int stType)
 	switch (stType)
 	{
 	case SPECIAL_TERRAIN_WATER:
+		extraGravityModifier = 2.0;
+		gravModifyFrames = 10;
 		RestoreAirDash();
 		RestoreDoubleJump();
 		break;
@@ -12753,15 +12770,7 @@ void Actor::SlowDependentFrameIncrement()
 		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
 		framesInAir++;
 
-		if (gravResetFrames > 0)
-		{
-			gravResetFrames--;
-			if (gravResetFrames == 0)
-			{
-				extraGravityModifier = 1.0;
-			}
-		}
-
+		UpdateModifiedGravity();
 
 		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 		{
@@ -12820,6 +12829,7 @@ void Actor::SlowDependentFrameIncrement()
 		++framesSinceClimbBoost;
 		++speedParticleCounter;
 
+		
 
 		slowCounter = 1;
 
@@ -13178,6 +13188,18 @@ void Actor::HandleGroundTrigger(GroundTrigger *trigger)
 		//owner->SetStorySeq(trigger->storySeq);
 		break;
 	}
+	}
+}
+
+void Actor::UpdateModifiedGravity()
+{
+	if (gravModifyFrames > 0)
+	{
+		--gravModifyFrames;
+		if (gravModifyFrames == 0)
+		{
+			extraGravityModifier = 1.0;
+		}
 	}
 }
 
@@ -14579,23 +14601,33 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 		else if (en->type == EnemyType::EN_GRAVITYMODIFIER)
 		{
-			//GravityModifier *mod = (GravityModifier*)qte;
+			GravityModifier *mod = (GravityModifier*)qte;
 
-			//if (currModifier == NULL)
-			//{
-			//	if (mod->hitBody->Intersects(mod->currHitboxFrame, &hurtBody) && mod->IsModifiable())
-			//	{
-			//		currModifier = mod;
-			//	}
-			//}
-			//else
-			//{
-			//	//some replacement formula later
-			//}
+			if (currGravModifier == NULL)
+			{
+				if (mod->hitBody.Intersects(mod->currHitboxFrame, &hurtBody) && mod->IsModifiable())
+				{
+					currGravModifier = mod;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
 		}
 		else if (en->type == EnemyType::EN_GRAVITYGRASS)
 		{
 
+		}
+		else if (en->type == EnemyType::EN_GLIDETARGET)
+		{
+			GlideTarget *gTarget = (GlideTarget*)qte;
+
+			if ( !gTarget->dead && action == SPRINGSTUNGLIDE && 
+				gTarget->hitBody.Intersects(gTarget->currHitboxFrame, &hurtBody) )
+			{
+				gTarget->Collect();
+			}
 		}
 		else if (en->type == EnemyType::EN_SPRING)
 		{
@@ -14612,6 +14644,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				//some replacement formula later
 			}
 		}
+
 		else if (en->type == EnemyType::EN_TELEPORTER)
 		{
 			Teleporter *tele = (Teleporter*)qte;

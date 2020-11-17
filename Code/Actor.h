@@ -357,6 +357,8 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_BUBBLES = 5;
 
+	int gravModifyFrames;
+
 	//definitely do change per frame
 	double offsetX;
 	int framesSinceClimbBoost;
@@ -721,9 +723,7 @@ struct Actor : QuadTreeCollider,
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
 	Session *sess;
-	GravityModifier *currModifier;
-	GravityModifier *oldModifier;
-	int gravResetFrames;
+	GravityModifier *currGravModifier;
 	sf::Vector2<double> springVel;
 	sf::Vector2<double> springExtra;
 	int springStunFrames;
@@ -1003,6 +1003,7 @@ struct Actor : QuadTreeCollider,
 	void SetupDrain();
 	void SetupTimeBubbles();
 	void SetGameMode();
+	void UpdateModifiedGravity();
 	SoundNode * ActivateSound(SoundType st, bool loop = false);
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,
@@ -1041,6 +1042,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateCanStandUp();
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
+	void ProcessGravModifier();
 	void UpdateWireStates();
 	void ProcessBoostGrass();
 	void LimitMaxSpeeds();

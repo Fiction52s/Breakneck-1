@@ -76,7 +76,8 @@ ActorParams::ActorParams(ActorType *at)
 		|| at->info.name == "redkeyfly"
 		|| at->info.name == "magentakeyfly"
 		|| at->info.name == "greykeyfly"
-		|| at->info.name == "blackkeyfly" )
+		|| at->info.name == "blackkeyfly" 
+		|| at->info.name == "glidetarget")
 	{
 		hasMonitor = true;
 	}

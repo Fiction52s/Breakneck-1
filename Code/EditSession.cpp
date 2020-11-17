@@ -3127,7 +3127,7 @@ void EditSession::SetupTerrainSelectPanel()
 	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
 	int numTypeRects = 8 * maxTexPerWorld;
 
-	int numWaterTypeRects = 1 * maxTexPerWorld;
+	int numWaterTypeRects = 8 * maxTexPerWorld;
 	int numPickupTypeRects = 1 * maxTexPerWorld;
 
 	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects;
@@ -3160,7 +3160,7 @@ void EditSession::SetupTerrainSelectPanel()
 	matTypeRects[TERRAINLAYER_WATER].resize(numWaterTypeRects);
 
 	int startWorldWater = 8;
-	for (int worldI = startWorldWater; worldI < startWorldWater + 1; ++worldI)
+	for (int worldI = startWorldWater; worldI < startWorldWater + 8; ++worldI)
 	{
 		int ind;
 		int trueWorld = worldI - startWorldWater;
@@ -3184,7 +3184,7 @@ void EditSession::SetupTerrainSelectPanel()
 
 	matTypeRects[TERRAINLAYER_FLY].resize(numPickupTypeRects);
 
-	int startWorldPickup = 9;
+	int startWorldPickup = 16;
 	for (int worldI = startWorldPickup; worldI < startWorldPickup + 1; ++worldI)
 	{
 		int ind;
@@ -4501,13 +4501,13 @@ int EditSession::GetSpecialTerrainMode()
 	}
 	else
 	{
-		if (currTerrainWorld[0] == 9)
-		{
-			return 2;
-		}
-		else if (currTerrainWorld[0] == 8)
+		if (currTerrainWorld[0] >= 8 && currTerrainWorld[0] < 16) //all waters
 		{
 			return 1;
+		}
+		if (currTerrainWorld[0] == 16 ) //all pickups for now adjust later
+		{
+			return 2;
 		}
 		else
 		{

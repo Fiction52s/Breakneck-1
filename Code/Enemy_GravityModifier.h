@@ -13,17 +13,16 @@ struct GravityModifier : Enemy
 		Count
 	};
 
-	Action action;
 	GravityModifier(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
+	void AddToWorldTrees();
 	//void DrawMinimap(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	bool Modify();
 	bool IsModifiable();
 
-	sf::Sprite sprite;
 	Tileset *ts;
 	Tileset *ts_refresh;
 
@@ -31,9 +30,6 @@ struct GravityModifier : Enemy
 
 	bool increaser;
 	int duration;
-
-	int actionLength[Count];
-	int animFactor[Count];
 };
 
 #endif

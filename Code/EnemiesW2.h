@@ -9,5 +9,6 @@
 #include "Enemy_GravityJuggler.h"
 #include "Enemy_GravityModifier.h"
 #include "Enemy_Bird.h"
+#include "Enemy_GlideTarget.h"
 
 #endif

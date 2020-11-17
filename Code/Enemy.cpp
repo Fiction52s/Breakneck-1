@@ -346,6 +346,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_KEYFLY:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
+	case EnemyType::EN_GLIDETARGET:
+		hitParams.Set(5, .8, (3 * 60) / 2, 2);
+		break;
 	default:
 		return false;
 	}
@@ -1456,9 +1459,19 @@ void Enemy::SyncCutObject()
 
 void Enemy::ConfirmKill()
 {
-	assert(receivedHit != NULL);
+	//assert(receivedHit != NULL);
 
-	HitboxInfo::HitboxType hType = receivedHit->hType;
+
+	HitboxInfo::HitboxType hType;
+	
+	if (receivedHit != NULL)
+	{
+		hType = receivedHit->hType;
+	}
+	else
+	{
+		hType = HitboxInfo::HitboxType::NORMAL;
+	}
 	if (hType == HitboxInfo::COMBO )
 	{
 		pauseFrames = 7;
