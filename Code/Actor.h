@@ -192,6 +192,7 @@ struct Actor : QuadTreeCollider,
 		GROUNDTECHFORWARD,
 		GROUNDTECHINPLACE,
 		WALLTECH,
+		WATERGLIDE,
 		STEEPSLIDE,
 		GRAVREVERSE,
 		GRINDBALL,
@@ -267,6 +268,7 @@ struct Actor : QuadTreeCollider,
 		GETSHARD,
 		SUPERBIRD,
 		TESTSUPER,
+		TELEPORTACROSSTERRAIN,
 		GROUNDBLOCKDOWN,
 		GROUNDBLOCKDOWNFORWARD,
 		GROUNDBLOCKFORWARD,
@@ -357,8 +359,15 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_BUBBLES = 5;
 
+	//havent put into rollback yet
 	int gravModifyFrames;
+	bool inRewindWater;
+	bool inTeleportAcrossWater;
+	V2d waterEntrancePosition;
+	V2d waterEntranceVelocity;
 
+
+	//stuff ive put in rollback already
 	//definitely do change per frame
 	double offsetX;
 	int framesSinceClimbBoost;
@@ -899,7 +908,7 @@ struct Actor : QuadTreeCollider,
 	double boostGrassAccel;
 	double jumpGrassExtra;
 	bool extraDoubleJump;
-	int specialTerrainCount[SPECIAL_TERRAIN_Count];
+	int specialTerrainCount[8*8]; //all possible water variations for each world
 	
 	
 	Wire *leftWire;
@@ -1270,7 +1279,14 @@ struct Actor : QuadTreeCollider,
 	double GetGravity();
 	void ClearSpecialTerrainCounts();
 	void HandleSpecialTerrain();
-	void HandleSpecialTerrain(int stType);
+	void HandleSpecialTerrainW1(int stType);
+	void HandleSpecialTerrainW2(int stType);
+	void HandleSpecialTerrainW3(int stType);
+	void HandleSpecialTerrainW4(int stType);
+	void HandleSpecialTerrainW5(int stType);
+	void HandleSpecialTerrainW6(int stType);
+	void HandleSpecialTerrainW7(int stType);
+	void HandleSpecialTerrainW8(int stType);
 	V2d GetTrueVel();
 	void RestoreDoubleJump();
 	void RestoreAirDash();
@@ -2549,6 +2565,17 @@ struct Actor : QuadTreeCollider,
 	int SUPERBIRD_GetActionLength();
 	Tileset * SUPERBIRD_GetTileset();
 
+	void TELEPORTACROSSTERRAIN_Start();
+	void TELEPORTACROSSTERRAIN_End();
+	void TELEPORTACROSSTERRAIN_Change();
+	void TELEPORTACROSSTERRAIN_Update();
+	void TELEPORTACROSSTERRAIN_UpdateSprite();
+	void TELEPORTACROSSTERRAIN_TransitionToAction(int a);
+	void TELEPORTACROSSTERRAIN_TimeIndFrameInc();
+	void TELEPORTACROSSTERRAIN_TimeDepFrameInc();
+	int TELEPORTACROSSTERRAIN_GetActionLength();
+	Tileset * TELEPORTACROSSTERRAIN_GetTileset();
+
 	void UAIR_Start();
 	void UAIR_End();
 	void UAIR_Change();
@@ -2647,6 +2674,17 @@ struct Actor : QuadTreeCollider,
 	void WALLTECH_TimeDepFrameInc();
 	int WALLTECH_GetActionLength();
 	Tileset * WALLTECH_GetTileset();
+
+	void WATERGLIDE_Start();
+	void WATERGLIDE_End();
+	void WATERGLIDE_Change();
+	void WATERGLIDE_Update();
+	void WATERGLIDE_UpdateSprite();
+	void WATERGLIDE_TransitionToAction(int a);
+	void WATERGLIDE_TimeIndFrameInc();
+	void WATERGLIDE_TimeDepFrameInc();
+	int WATERGLIDE_GetActionLength();
+	Tileset * WATERGLIDE_GetTileset();
 
 	void WIREHOLD_Start();
 	void WIREHOLD_End();

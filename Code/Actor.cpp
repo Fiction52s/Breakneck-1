@@ -2263,6 +2263,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SUPERBIRD_GetActionLength,
 		&Actor::SUPERBIRD_GetTileset);
 
+	SetupFuncsForAction(TELEPORTACROSSTERRAIN,
+		&Actor::TELEPORTACROSSTERRAIN_Start,
+		&Actor::TELEPORTACROSSTERRAIN_End,
+		&Actor::TELEPORTACROSSTERRAIN_Change,
+		&Actor::TELEPORTACROSSTERRAIN_Update,
+		&Actor::TELEPORTACROSSTERRAIN_UpdateSprite,
+		&Actor::TELEPORTACROSSTERRAIN_TransitionToAction,
+		&Actor::TELEPORTACROSSTERRAIN_TimeIndFrameInc,
+		&Actor::TELEPORTACROSSTERRAIN_TimeDepFrameInc,
+		&Actor::TELEPORTACROSSTERRAIN_GetActionLength,
+		&Actor::TELEPORTACROSSTERRAIN_GetTileset);
+
 	SetupFuncsForAction(TESTSUPER,
 		&Actor::TESTSUPER_Start,
 		&Actor::TESTSUPER_End,
@@ -2383,6 +2395,18 @@ void Actor::SetupActionFunctions()
 		&Actor::WALLTECH_TimeDepFrameInc,
 		&Actor::WALLTECH_GetActionLength,
 		&Actor::WALLTECH_GetTileset);
+
+	SetupFuncsForAction(WATERGLIDE,
+		&Actor::WATERGLIDE_Start,
+		&Actor::WATERGLIDE_End,
+		&Actor::WATERGLIDE_Change,
+		&Actor::WATERGLIDE_Update,
+		&Actor::WATERGLIDE_UpdateSprite,
+		&Actor::WATERGLIDE_TransitionToAction,
+		&Actor::WATERGLIDE_TimeIndFrameInc,
+		&Actor::WATERGLIDE_TimeDepFrameInc,
+		&Actor::WATERGLIDE_GetActionLength,
+		&Actor::WATERGLIDE_GetTileset);
 
 	SetupFuncsForAction(WIREHOLD,
 		&Actor::WIREHOLD_Start,
@@ -2630,6 +2654,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	regrindOffMax = 3;
 	regrindOffCount = 3;
+
+	inRewindWater = false;
 
 	currSpring = NULL;
 	currBooster = NULL;
@@ -4040,6 +4066,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	inRewindWater = false;
 	touchedCoyoteHelper = false;
 	coyoteBoostFrames = 0;
 
@@ -4613,6 +4640,11 @@ void Actor::ProcessReceivedHit()
 
 void Actor::ReactToBeingHit()
 {
+	if (inRewindWater)
+	{
+		position = waterEntrancePosition;
+	}
+
 	if (action == GROUNDHITSTUN || action == AIRHITSTUN)
 	{
 		hitOutOfHitstunLastFrame = true;
@@ -5006,6 +5038,13 @@ void Actor::LimitMaxSpeeds()
 			velocity = AddGravity(velocity);
 		}
 
+		if (specialTerrainCount[0] > 0 ) //make this into a cleaner function very soon.
+		{
+			//cout << "running wallcling" << endl;
+			if (velocity.y > 4)
+				velocity.y = 4;
+		}
+
 		if (velocity.x > maxReal)
 			velocity.x = maxReal;
 		else if (velocity.x < -maxReal)
@@ -5071,6 +5110,13 @@ void Actor::UpdateBubbles()
 		inBubble = true;
 	}
 
+	bool timeSlowTerrain = false;
+	if (specialTerrainCount[4 * 8] > 0)
+	{
+		timeSlowTerrain = true;
+		inBubble = true;
+	}
+
 	if (toggleTimeSlowInput && !inBubble && oldInBubble)
 	{
 		currInput.leftShoulder = false;
@@ -5086,9 +5132,9 @@ void Actor::UpdateBubbles()
 	}
 
 	int tempSlowCounter = slowCounter;
-	if (CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.leftShoulder)
+	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.leftShoulder) || timeSlowTerrain)
 	{
-		if (!prevInput.leftShoulder && !inBubble)
+		if (!prevInput.leftShoulder && !inBubble && timeSlowTerrain)
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
@@ -12291,7 +12337,7 @@ void Actor::UpdateHitboxes()
 
 void Actor::ClearSpecialTerrainCounts()
 {
-	for (int i = 0; i < SPECIAL_TERRAIN_Count; ++i)
+	for (int i = 0; i < 64; ++i)
 	{
 		specialTerrainCount[i] = 0;
 	}
@@ -12299,28 +12345,66 @@ void Actor::ClearSpecialTerrainCounts()
 
 void Actor::HandleSpecialTerrain()
 {
-	for (int i = 0; i < SPECIAL_TERRAIN_Count; ++i)
+	int world;
+	int variation;
+	for (int i = 0; i < 64; ++i)
 	{
 		if (specialTerrainCount[i] > 0)
 		{
-			HandleSpecialTerrain(i);
+			world = i / 8;
+			variation = i % 8;
+
+			switch (world)
+			{
+			case 0:
+				HandleSpecialTerrainW1(variation);
+				break;
+			case 1:
+				HandleSpecialTerrainW2(variation);
+				break;
+			case 2:
+				HandleSpecialTerrainW3(variation);
+				break;
+			case 3:
+				HandleSpecialTerrainW4(variation);
+				break;
+			case 4:
+				HandleSpecialTerrainW5(variation);
+				break;
+			case 5:
+				HandleSpecialTerrainW6(variation);
+				break;
+			case 6:
+				HandleSpecialTerrainW7(variation);
+				break;
+			case 7:
+				HandleSpecialTerrainW8(variation);
+				break;
+			}
 		}
 	}
 }
 
-void Actor::HandleSpecialTerrain(int stType)
+void Actor::HandleSpecialTerrainW1(int variation)
 {
-	switch (stType)
+	switch (variation)
 	{
-	case SPECIAL_TERRAIN_WATER:
-		extraGravityModifier = 2.0;
-		gravModifyFrames = 10;
+	case W1_SPECIAL_TERRAIN_WATER:
+		extraGravityModifier = .8;
+		gravModifyFrames = 1;
 		RestoreAirDash();
 		RestoreDoubleJump();
 		break;
-	case SPECIAL_TERRAIN_GLIDEWATER:
+	}
+}
+
+void Actor::HandleSpecialTerrainW2(int variation)
+{
+	switch (variation)
 	{
-		if (action != SPRINGSTUNGLIDE)
+	case W2_SPECIAL_TERRAIN_GLIDE:
+	{
+		if (action != WATERGLIDE)
 		{
 			V2d vel = GetTrueVel();
 
@@ -12330,7 +12414,6 @@ void Actor::HandleSpecialTerrain(int stType)
 				framesInAir = 0;
 				vel.y -= 5;
 			}
-
 
 			vel = normalize(vel) * 15.0;
 
@@ -12343,7 +12426,7 @@ void Actor::HandleSpecialTerrain(int stType)
 			else if (vel.x > 0)
 				facingRight = true;
 
-			action = SPRINGSTUNGLIDE;
+			SetAction(WATERGLIDE);
 			holdJump = false;
 			holdDouble = false;
 			RechargeAirOptions();
@@ -12356,10 +12439,85 @@ void Actor::HandleSpecialTerrain(int stType)
 			velocity = V2d(0, 0);
 			currWall = NULL;
 		}
-		springStunFrames = 10;///currSwingLauncher->stunFrames;
+		springStunFrames = 10;
+		break;
+	}
+	case W2_SPECIAL_TERRAIN_HEAVY:
+	{
+		extraGravityModifier = 2.0;
+		gravModifyFrames = 10;
+		//RestoreAirDash();
+		//RestoreDoubleJump();
+		break;
+	}
+	case W2_SPECIAL_TERRAIN_LIGHT:
+	{
+		extraGravityModifier = .5;
+		gravModifyFrames = 10;
+		//RestoreAirDash();
+		//RestoreDoubleJump();
+		break;
+	}
+	case W2_SPECIAL_TERRAIN_REVERSE:
+	{
+		extraGravityModifier = -.5;
+		gravModifyFrames = 10;
 		break;
 	}
 	}
+}
+
+void Actor::HandleSpecialTerrainW3(int variation)
+{
+	extraGravityModifier = 0;//2.0;
+	gravModifyFrames = 10;
+	springStunFrames = 10;
+}
+
+void Actor::HandleSpecialTerrainW4(int variation)
+{
+}
+
+void Actor::HandleSpecialTerrainW5(int variation)
+{
+	switch (variation)
+	{
+	case W5_SPECIAL_TERRAIN_TIMESLOW:
+		
+		RestoreAirDash();
+		RestoreDoubleJump();
+		break;
+	}
+}
+
+void Actor::HandleSpecialTerrainW6(int variation)
+{
+}
+
+void Actor::HandleSpecialTerrainW7(int variation)
+{
+	switch (variation)
+	{
+	case 0:
+		if (!inRewindWater)
+		{
+			waterEntrancePosition = position;
+		}
+		inRewindWater = true;
+		break;
+	case 1:
+		if (!inTeleportAcrossWater)
+		{
+			waterEntrancePosition = position;
+			waterEntranceVelocity = velocity;
+		}
+		inTeleportAcrossWater = true;
+		break;
+	}
+}
+
+void Actor::HandleSpecialTerrainW8(int variation)
+{
 }
 
 void Actor::UpdateSmallLightning()
@@ -12446,6 +12604,16 @@ void Actor::ProcessSpecialTerrain()
 	GetSpecialTerrainTree()->Query(this, r);
 
 	HandleSpecialTerrain();
+
+	if( specialTerrainCount[6 * 8] == 0 )
+	{
+		inRewindWater = false;
+	}
+
+	if (specialTerrainCount[6 * 8 + 1] == 0 )
+	{
+		inTeleportAcrossWater = false;
+	}
 }
 
 void Actor::UpdateScorpCap()
@@ -12905,6 +13073,11 @@ void Actor::UpdatePostPhysics()
 	QueryTouchGrass();
 
 	ProcessSpecialTerrain();
+
+	
+
+
+
 
 	UpdateScorpCap();
 	
@@ -14740,7 +14913,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		{
 			if (poly->IsInsideArea(position))
 			{
-				specialTerrainCount[poly->terrainVariation]++;//stp->specialType]++;
+				//subtract 8 because its water, sub 1 more because it starts at 9
+				specialTerrainCount[(poly->terrainWorldType - 8 ) * 8 + poly->terrainVariation]++;
 			}
 		}
 
@@ -16466,7 +16640,7 @@ void Actor::SetExpr( int ex )
 void Actor::ExecuteDoubleJump()
 {
 	//add direction later
-	ActivateEffect(EffectLayer::IN_FRONT, ts_fx_double,
+	ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_fx_double,
 		V2d(position.x, position.y - 20), false, 0, 14, 2, facingRight);
 
 	//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );

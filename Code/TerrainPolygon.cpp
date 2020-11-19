@@ -2985,12 +2985,13 @@ void TerrainPolygon::UpdateMaterialType()
 		texInd = game->matIndices[texInd];
 	}
 
-	if (texInd < sess->numPolyShaders)
-	{
+	//comenting this out because all textures are valid now, even for water
+	//if (texInd < sess->numPolyShaders)
+	//{
 		pShader = &sess->polyShaders[texInd];
 		fillCol = Color::White;
-	}
-	else
+	//}
+	/*else
 	{
 		switch (terrainVariation)
 		{
@@ -3002,7 +3003,7 @@ void TerrainPolygon::UpdateMaterialType()
 			break;
 		}
 		
-	}
+	}*/
 
 	tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	//assert(tdInfo != NULL);

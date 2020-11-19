@@ -1873,11 +1873,20 @@ bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 		ss << matVariation + 1;
 	}
 
-	ss << "_512x512.png";
+
+	if (matWorld + 1 >= 9)
+	{
+		ss << "_32x32.png";
+	}
+	else
+	{
+		ss << "_512x512.png";
+	}
+	
 
 	string matFile = ss.str();
 
-	Tileset *ts_mat = GetTileset(matFile, 512, 512);
+	Tileset *ts_mat = GetSizedTileset(matFile);
 
 	if (ts_mat == NULL)
 		return false;
