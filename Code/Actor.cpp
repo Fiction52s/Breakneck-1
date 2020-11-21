@@ -1315,6 +1315,18 @@ void Actor::SetupActionFunctions()
 		&Actor::FAIR_GetActionLength,
 		&Actor::FAIR_GetTileset);
 
+	SetupFuncsForAction(FREEFLIGHT,
+		&Actor::FREEFLIGHT_Start,
+		&Actor::FREEFLIGHT_End,
+		&Actor::FREEFLIGHT_Change,
+		&Actor::FREEFLIGHT_Update,
+		&Actor::FREEFLIGHT_UpdateSprite,
+		&Actor::FREEFLIGHT_TransitionToAction,
+		&Actor::FREEFLIGHT_TimeIndFrameInc,
+		&Actor::FREEFLIGHT_TimeDepFrameInc,
+		&Actor::FREEFLIGHT_GetActionLength,
+		&Actor::FREEFLIGHT_GetTileset);
+
 	SetupFuncsForAction(GETPOWER_AIRDASH_FLIP,
 		&Actor::GETPOWER_AIRDASH_FLIP_Start,
 		&Actor::GETPOWER_AIRDASH_FLIP_End,
@@ -5366,8 +5378,14 @@ void Actor::UpdatePrePhysics()
 	if (actorIndex == 1)
 	{
 		//currInput.leftStickPad |= 1;
-		currInput.Y = true;
+		//currInput.Y = true;
 	}
+
+	if (invertInputFrames > 0)
+	{
+		currInput.InvertLeftStick();
+	}
+
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -10547,6 +10565,10 @@ void Actor::UpdatePhysics()
 			{
 				HandleBounceGrass();
 			}
+			else if (tempCollision && action == FREEFLIGHT)
+			{
+				velocity = newVel;
+			}
 			/*else if (tempCollision && grassCount[Grass::UNTECHABLE] > 0) 
 			{
 				//just a test.
@@ -12487,11 +12509,32 @@ void Actor::HandleSpecialTerrainW5(int variation)
 		RestoreAirDash();
 		RestoreDoubleJump();
 		break;
+	case 1:
+		RestoreAirDash();
+		RestoreDoubleJump();
+		modifiedDrainFrames = 10;
+		modifiedDrain = drainAmount * 4;
+		break;
 	}
 }
 
 void Actor::HandleSpecialTerrainW6(int variation)
 {
+	switch (variation)
+	{
+	case 0:
+		SetAction(FREEFLIGHT);
+		springStunFrames = 2;
+		extraGravityModifier = 0;
+		gravModifyFrames = 2;
+		RestoreAirDash();
+		RestoreDoubleJump();
+		break;
+	case 1:
+		invertInputFrames = 20;
+		break;
+	}
+	
 }
 
 void Actor::HandleSpecialTerrainW7(int variation)
@@ -12511,6 +12554,8 @@ void Actor::HandleSpecialTerrainW7(int variation)
 			waterEntrancePosition = position;
 			waterEntranceVelocity = velocity;
 		}
+		springStunFrames = 10;
+		SetAction(TELEPORTACROSSTERRAIN);
 		inTeleportAcrossWater = true;
 		break;
 	}
@@ -12939,6 +12984,11 @@ void Actor::SlowDependentFrameIncrement()
 		framesInAir++;
 
 		UpdateModifiedGravity();
+
+		if (invertInputFrames > 0)
+		{
+			--invertInputFrames;
+		}
 
 		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 		{

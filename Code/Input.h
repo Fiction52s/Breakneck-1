@@ -27,6 +27,7 @@ struct ControllerState
 	void SetLeftDirection();
 	int GetCompressedState();
 	void SetFromCompressedState(int s);
+	void InvertLeftStick();
 	double leftStickMagnitude; // 0 - 1.0
 	double leftStickRadians;
 	double rightStickMagnitude; // 0 - 1.0
@@ -215,6 +216,7 @@ public:
 	int Pressed( XBoxButton b );
 	int GetGCCLeftTrigger();
 	int GetGCCRightTrigger();
+	void UpdateLeftStickPad();
 
 	XBoxButton filter[ControllerSettings::Count];
 	//ControllerState & GetKeyboardState(); //also updates

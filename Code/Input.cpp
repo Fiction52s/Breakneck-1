@@ -271,6 +271,31 @@ bool ControllerState::LeftTriggerPressed()
 	return leftTrigger >= triggerThresh;
 }
 
+void ControllerState::InvertLeftStick()
+{
+	leftStickPad = 0;
+	if (leftStickMagnitude > GameController::stickThresh)
+	{
+		leftStickRadians += PI;
+		if (leftStickRadians >= 2 * PI)
+		{
+			leftStickRadians -= 2 * PI;
+		}
+
+		float x = cos(leftStickRadians);
+		float y = sin(leftStickRadians);
+
+		if (x > GameController::stickThresh)
+			leftStickPad += 1 << 3;
+		if (x < -GameController::stickThresh)
+			leftStickPad += 1 << 2;
+		if (y > GameController::stickThresh)
+			leftStickPad += 1;
+		if (y < -GameController::stickThresh)
+			leftStickPad += 1 << 1;
+	}
+}
+
 bool GameController::IsKeyPressed(int k)
 {
 	Keyboard::Key key = (Keyboard::Key)k;
@@ -319,6 +344,32 @@ int GameController::GetGCCRightTrigger()
 		trueR = 0;
 
 	return trueR;
+}
+
+void GameController::UpdateLeftStickPad()
+{
+	m_state.leftStickPad = 0;
+	if (m_state.leftStickMagnitude > stickThresh)
+	{
+		/*m_state.leftStickRadians += PI;
+		if (m_state.leftStickRadians >= 2 * PI)
+		{
+			m_state.leftStickRadians -= 2 * PI;
+		}*/
+
+		//cout << "left stick radians: " << currInput.leftStickRadians << endl;
+		float x = cos(m_state.leftStickRadians);
+		float y = sin(m_state.leftStickRadians);
+
+		if (x > stickThresh)
+			m_state.leftStickPad += 1 << 3;
+		if (x < -stickThresh)
+			m_state.leftStickPad += 1 << 2;
+		if (y > stickThresh)
+			m_state.leftStickPad += 1;
+		if (y < -stickThresh)
+			m_state.leftStickPad += 1 << 1;
+	}
 }
 
 bool GameController::UpdateState()
@@ -446,24 +497,10 @@ bool GameController::UpdateState()
 
 		//can use analog triggers for the triggers here now.
 
-		m_state.leftStickPad = 0;
+
+		UpdateLeftStickPad();
+
 		m_state.rightStickPad = 0;
-		if (m_state.leftStickMagnitude > stickThresh)
-		{
-			//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-			float x = cos(m_state.leftStickRadians);
-			float y = sin(m_state.leftStickRadians);
-
-			if (x > stickThresh)
-				m_state.leftStickPad += 1 << 3;
-			if (x < -stickThresh)
-				m_state.leftStickPad += 1 << 2;
-			if (y > stickThresh)
-				m_state.leftStickPad += 1;
-			if (y < -stickThresh)
-				m_state.leftStickPad += 1 << 1;
-		}
-
 		if (m_state.rightStickMagnitude > stickThresh)
 		{
 			//cout << "left stick radians: " << m_state.leftStickRadians << endl;
@@ -878,6 +915,7 @@ bool GameController::IsConnected()
 		return false;
 	}
 }
+
 
 DWORD GameController::GetIndex()
 {

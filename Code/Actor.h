@@ -238,6 +238,7 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNBOUNCE,
 		SPRINGSTUNAIRBOUNCE,
 		SPRINGSTUNTELEPORT,
+		FREEFLIGHT,
 		SWINGSTUN,
 		GLIDE,
 		SEQ_ENTERCORE1,
@@ -365,6 +366,10 @@ struct Actor : QuadTreeCollider,
 	bool inTeleportAcrossWater;
 	V2d waterEntrancePosition;
 	V2d waterEntranceVelocity;
+	int modifiedDrainFrames;
+	int modifiedDrain;
+	int invertInputFrames;
+
 
 
 	//stuff ive put in rollback already
@@ -1669,6 +1674,17 @@ struct Actor : QuadTreeCollider,
 	void FAIR_TimeDepFrameInc();
 	int FAIR_GetActionLength();
 	Tileset * FAIR_GetTileset();
+
+	void FREEFLIGHT_Start();
+	void FREEFLIGHT_End();
+	void FREEFLIGHT_Change();
+	void FREEFLIGHT_Update();
+	void FREEFLIGHT_UpdateSprite();
+	void FREEFLIGHT_TransitionToAction(int a);
+	void FREEFLIGHT_TimeIndFrameInc();
+	void FREEFLIGHT_TimeDepFrameInc();
+	int FREEFLIGHT_GetActionLength();
+	Tileset * FREEFLIGHT_GetTileset();
 
 	void GETPOWER_AIRDASH_FLIP_Start();
 	void GETPOWER_AIRDASH_FLIP_End();

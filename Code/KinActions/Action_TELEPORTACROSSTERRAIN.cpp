@@ -16,39 +16,26 @@ void Actor::TELEPORTACROSSTERRAIN_Change()
 {
 	if (springStunFrames == 0)
 	{
-		//oldTeleporter->ReceiveRecover();
 		SetAction(JUMP);
 		frame = 1;
-		position = teleportSpringDest;
-		velocity = teleportSpringVel;
+		velocity = waterEntranceVelocity;
 	}
 }
 
 void Actor::TELEPORTACROSSTERRAIN_Update()
 {
-	velocity = springVel + springExtra;
+	velocity = normalize(waterEntranceVelocity) * 30.0;
 }
 
 void Actor::TELEPORTACROSSTERRAIN_UpdateSprite()
 {
-	SetSpriteTexture(action);
+	SetSpriteTexture(JUMP);
 
-	SetSpriteTile(0, facingRight);
+	SetSpriteTile(1, facingRight);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 	sprite->setPosition(position.x, position.y);
-
-	V2d sVel = springVel + springExtra;
-	if (facingRight)
-	{
-		double a = GetVectorAngleCW(normalize(sVel)) * 180 / PI;
-		sprite->setRotation(a);
-	}
-	else
-	{
-		double a = GetVectorAngleCCW(normalize(sVel)) * 180 / PI;
-		sprite->setRotation(-a + 180);
-	}
+	sprite->setRotation(0);
 
 	if (scorpOn)
 		SetAerialScorpSprite();
