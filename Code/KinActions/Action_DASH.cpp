@@ -21,11 +21,11 @@ void Actor::DASH_Change()
 
 	CheckBounceFlame();
 
-	if (TryGrind())return;
+	if (TryPressGrind()) return;
 
 	
 
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);
 		frame = 0;
@@ -42,7 +42,7 @@ void Actor::DASH_Change()
 
 	if (canStandUp)
 	{
-		if (!currInput.B)
+		if (!DashButtonHeld())
 		{
 			TryDashBoost();
 
@@ -151,7 +151,7 @@ void Actor::DASH_Update()
 
 void Actor::DASH_UpdateSprite()
 {
-	if (frame == 0)//&& currInput.B && !prevInput.B )
+	if (frame == 0)
 	{
 		//dashStartSound.stop();
 		//if( slowMultiple != 1)
@@ -219,7 +219,7 @@ void Actor::DASH_UpdateSprite()
 	bool fr = facingRight;
 	if (reversed)
 		fr = !fr;
-	if (frame == 0 && currInput.B && !prevInput.B)
+	if (frame == 0 && DashButtonPressed() )
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart,
 			pp + currNormal * 64.0 + along * xExtraStart, false, angle, 9, 3, fr);

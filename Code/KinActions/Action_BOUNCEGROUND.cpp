@@ -409,7 +409,7 @@ void Actor::BOUNCEGROUND_Change()
 
 void Actor::BOUNCEGROUND_Update()
 {
-	if (!boostBounce && currInput.A && !prevInput.A)
+	if (!boostBounce && JumpButtonPressed() )
 	{
 		//ActivateSound( soundBuffers[S_BOUNCEJUMP] );
 		boostBounce = true;

@@ -17,7 +17,7 @@ void Actor::GRAVREVERSE_End()
 
 void Actor::GRAVREVERSE_Change()
 {
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y)//&& !prevInput.Y )
+	if (CanBufferGrind())
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
 		if (!reversed || (HasUpgrade(UPGRADE_POWER_GRAV) && reversed))
@@ -61,7 +61,7 @@ void Actor::GRAVREVERSE_Change()
 		else
 		{
 
-			if ((currInput.B && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
+			if ((DashButtonHeld() && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
 			{
 				//cout << "storedreversesddddpeed: " << storedReverseSpeed << endl;
 				groundSpeed = storedReverseSpeed;

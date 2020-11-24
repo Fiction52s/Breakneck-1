@@ -70,6 +70,11 @@ struct ControllerState
 	bool PLeft();
 	bool PRight();
 
+	bool PowerButtonDown();
+	bool JumpButtonDown();
+	bool DashButtonDown();
+	bool AttackButtonDown();
+
 	unsigned char leftStickDirection;
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right

@@ -358,6 +358,15 @@ struct Actor : QuadTreeCollider,
 		INVINCIBLEHIT,
 	};
 
+	enum PowerMode
+	{
+		PMODE_SHIELD,
+		PMODE_BOUNCE,
+		PMODE_GRIND,
+		PMODE_TIMESLOW,
+		PMODE_Count
+	};
+
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
@@ -369,6 +378,9 @@ struct Actor : QuadTreeCollider,
 	int modifiedDrainFrames;
 	int modifiedDrain;
 	int invertInputFrames;
+	int currPowerMode;
+
+	
 
 
 
@@ -1018,6 +1030,16 @@ struct Actor : QuadTreeCollider,
 	void SetupTimeBubbles();
 	void SetGameMode();
 	void UpdateModifiedGravity();
+	bool CanBufferGrind();
+	bool CanPressGrind();
+	bool TryBufferGrind();
+	bool TryPressGrind();
+	bool JumpButtonPressed();
+	bool DashButtonPressed();
+	bool JumpButtonHeld();
+	bool DashButtonHeld();
+	bool AttackButtonPressed();
+	bool AttackButtonHeld();
 	SoundNode * ActivateSound(SoundType st, bool loop = false);
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,
@@ -1095,7 +1117,7 @@ struct Actor : QuadTreeCollider,
 	bool TryDoubleJump();
 	bool TryGroundBlock();
 	bool TryAirBlock();
-	bool TryGrind();
+	void TryChangePowerMode();
 	bool TryDash();
 	bool TryJumpSquat();
 	bool TrySlideBrakeOrStand();

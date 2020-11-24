@@ -15,7 +15,7 @@ void Actor::GRINDBALL_End()
 void Actor::GRINDBALL_Change()
 {
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	bool j = currInput.A && !prevInput.A;
+	bool j = JumpButtonPressed();
 	//bool isntWall = grindEdge->Normal().y != 0;
 	if (!currInput.Y || j)//&& grindEdge->Normal().y < 0 )
 	{
@@ -218,7 +218,7 @@ void Actor::GRINDBALL_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (currInput.B && !prevInput.B)
+	else if (DashButtonPressed())
 	{
 		V2d op = position;
 

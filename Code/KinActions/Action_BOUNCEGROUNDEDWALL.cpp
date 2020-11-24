@@ -16,16 +16,10 @@ void Actor::BOUNCEGROUNDEDWALL_End()
 
 void Actor::BOUNCEGROUNDEDWALL_Change()
 {
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-	{
-		SetActionGrind();
-		BounceFlameOff();
-		//runTappingSound.stop();
-		return;
-	}
+	if (TryPressGrind()) return;
 
 
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		SetAction(JUMP);
 		frame = 0;

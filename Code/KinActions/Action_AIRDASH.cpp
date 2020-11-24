@@ -49,7 +49,7 @@ void Actor::AIRDASH_Change()
 {
 	if (!BasicAirAction())
 	{
-		if (!currInput.B)//|| ( oldInBubble && !inBubble ) )
+		if (!DashButtonHeld())
 		{
 			SetAction(JUMP);
 			frame = 1;

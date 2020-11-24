@@ -17,7 +17,7 @@ void Actor::RAILSLIDE_End()
 void Actor::RAILSLIDE_Change()
 {
 	RailPtr rail = grindEdge->rail;
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 
 		facingRight = IsRailSlideFacingRight();

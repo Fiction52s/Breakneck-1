@@ -2477,6 +2477,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	currPowerMode = PMODE_SHIELD;
+
 	shieldPushbackFrames = 0;
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
@@ -3708,7 +3711,7 @@ void Actor::CheckHoldJump()
 			holdJump = false;
 
 		
-		if( holdJump && ((!steepJump && !currInput.A) || (steepJump && !currInput.LUp() ) ) && framesInAir > 2 )
+		if( holdJump && ((!steepJump && !JumpButtonHeld()) || (steepJump && !currInput.LUp() ) ) && framesInAir > 2 )
 		{
 			if( velocity.y < -8 )
 			{
@@ -3721,7 +3724,7 @@ void Actor::CheckHoldJump()
 		if( holdDouble && velocity.y >= -8 )
 			holdDouble = false;
 
-		if( holdDouble && !currInput.A && framesInAir > 2 )
+		if( holdDouble && !JumpButtonHeld() && framesInAir > 2 )
 		{
 			if( velocity.y < -8 )
 			{
@@ -4078,6 +4081,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	currPowerMode = PMODE_SHIELD;
 	inRewindWater = false;
 	touchedCoyoteHelper = false;
 	coyoteBoostFrames = 0;
@@ -4855,7 +4859,15 @@ void Actor::UpdateDrain()
 			drainCounter++;
 			if (drainCounter == drainCounterMax)
 			{
-				int res = kinRing->powerRing->Drain(drainAmount);//powerWheel->Use( 1 );	
+				int res;
+				if (modifiedDrainFrames > 0)
+				{
+					res = kinRing->powerRing->Drain(modifiedDrain);
+				}
+				else
+				{
+					res = kinRing->powerRing->Drain(drainAmount);
+				}
 																 //cout << "drain by " << drainAmount << endl;
 				if (res > 0)
 				{
@@ -5131,6 +5143,8 @@ void Actor::UpdateBubbles()
 
 	if (toggleTimeSlowInput && !inBubble && oldInBubble)
 	{
+		//get rid of toggle inputs probably
+		//currinput.Y
 		currInput.leftShoulder = false;
 	}
 
@@ -5143,10 +5157,14 @@ void Actor::UpdateBubbles()
 		holdJump = false;
 	}
 
+
+	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
-	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.leftShoulder) || timeSlowTerrain)
+	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.Y
+		&& currPowerMode == PMODE_TIMESLOW )
+		|| timeSlowTerrain)
 	{
-		if (!prevInput.leftShoulder && !inBubble && timeSlowTerrain)
+		if (!prevInput.Y && !inBubble && !timeSlowTerrain)
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
@@ -5522,6 +5540,8 @@ void Actor::UpdatePrePhysics()
 	
 	UpdateCanStandUp();
 
+	TryChangePowerMode();
+
 	UpdateBounceFlameOn();
 	
 	ChangeAction();
@@ -5652,8 +5672,7 @@ void Actor::SetAction( int a )
 
 bool Actor::TryClimbBoost( V2d &gNorm)
 {
-	bool pressB = currInput.B && !prevInput.B;
-	if (pressB)
+	if (DashButtonPressed())
 	{
 		double sp = steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
@@ -8620,21 +8639,9 @@ double Actor::GetDashSpeed()
 	}
 }
 
-bool Actor::TryGrind()
-{
-	if (HasUpgrade( UPGRADE_POWER_GRIND ) && currInput.Y && !prevInput.Y)
-	{
-		SetActionGrind();
-		BounceFlameOff();
-		return true;
-	}
-
-	return false;
-}
-
 bool Actor::TryJumpSquat()
 {
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);
 		frame = 0;
@@ -8647,7 +8654,7 @@ bool Actor::TryJumpSquat()
 bool Actor::TryDash()
 {
 	bool landAction = action == LAND || action == LAND2;
-	if (currInput.B && (!prevInput.B || landAction ))
+	if (DashButtonHeld() && (!prevInput.DashButtonDown() || landAction ))
 	{
 		SetAction(DASH);
 		frame = 0;
@@ -8659,7 +8666,7 @@ bool Actor::TryDash()
 
 bool Actor::TryGroundBlock()
 {
-	if (currInput.Y)
+	if (currInput.Y && currPowerMode == PMODE_SHIELD)
 	{
 		SetGroundBlockAction();
 		return true;
@@ -8670,13 +8677,33 @@ bool Actor::TryGroundBlock()
 
 bool Actor::TryAirBlock()
 {
-	if (currInput.Y)
+	if (currInput.Y && currPowerMode == PMODE_SHIELD)
 	{
 		SetAirBlockAction();
 		return true;
 	}
 
 	return false;
+}
+
+void Actor::TryChangePowerMode()
+{
+	if (currInput.RUp())
+	{
+		currPowerMode = PMODE_SHIELD;
+	}
+	else if (currInput.RDown())
+	{
+		currPowerMode = PMODE_TIMESLOW;
+	}
+	else if (currInput.RRight())
+	{
+		currPowerMode = PMODE_GRIND;
+	}
+	else if (currInput.RLeft())
+	{
+		currPowerMode = PMODE_BOUNCE;
+	}
 }
 
 bool Actor::BasicGroundAction( V2d &gNorm)
@@ -8687,7 +8714,7 @@ bool Actor::BasicGroundAction( V2d &gNorm)
 
 	if (TryGroundBlock()) return true;
 
-	if (TryGrind()) return true;
+	if (TryPressGrind()) return true;
 
 	if (TryJumpSquat()) return true;
 
@@ -8773,14 +8800,16 @@ bool Actor::BasicAirAttackAction()
 
 void Actor::CheckBounceFlame()
 {
-	if (HasUpgrade( UPGRADE_POWER_BOUNCE ) )
+	//currInput.X
+	if ( HasUpgrade( UPGRADE_POWER_BOUNCE ) )
 	{
-		if (currInput.X && !bounceFlameOn && !justToggledBounce)
+		if (currPowerMode == PMODE_BOUNCE 
+			&& currInput.Y && !bounceFlameOn && !justToggledBounce)
 		{
 			BounceFlameOn();
 			oldBounceEdge = NULL;
 		}
-		else if (!currInput.X && bounceFlameOn)
+		else if (!currInput.Y && bounceFlameOn)
 		{
 			BounceFlameOff();
 		}
@@ -8892,7 +8921,7 @@ void Actor::TryAirdashBoost()
 		return;
 	}
 
-	if (currInput.B &&
+	if (DashButtonHeld() &&
 		(currInput.LLeft() || currInput.LUp()
 			|| currInput.LRight() || currInput.LDown()))
 	{
@@ -9130,7 +9159,7 @@ void Actor::GroundExtraAccel()
 		else if( groundSpeed < 0 )
 			groundSpeed -= bounceFlameAccel / slowMultiple;
 	}
-	else if( currInput.B )
+	else if( DashButtonHeld() )
 	{
 		/*if( groundSpeed > 0 )
 			groundSpeed += holdDashAccel / slowMultiple;
@@ -10841,7 +10870,7 @@ void Actor::UpdatePhysics()
 			}
 			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
 				&& tempCollision 
-				&& (((currInput.B && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
+				&& (((DashButtonHeld() && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
 				|| ( action == AIRHITSTUN && CanTech() ) )
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
@@ -10901,7 +10930,7 @@ void Actor::UpdatePhysics()
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
 			}
-			else if( tempCollision && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
+			else if( tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -11043,7 +11072,7 @@ bool Actor::TryGroundAttack()
 		
 		
 		if (action == DASH || ((action == DASHATTACK
-			|| action == DASHATTACK2 || action == DASHATTACK3) && currInput.B
+			|| action == DASHATTACK2 || action == DASHATTACK3) && DashButtonHeld()
 			&& (currInput.LLeft() || currInput.LRight())))
 		{
 			SetAction(GetCurrDashAttack());
@@ -12988,6 +13017,11 @@ void Actor::SlowDependentFrameIncrement()
 		if (invertInputFrames > 0)
 		{
 			--invertInputFrames;
+		}
+
+		if (modifiedDrainFrames > 0)
+		{
+			--modifiedDrainFrames;
 		}
 
 		if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
@@ -16510,7 +16544,7 @@ void Actor::AttackMovement()
 	{
 		if( groundSpeed > 0 )
 		{
-			if( currInput.B )
+			if( DashButtonHeld() )
 			{
 				groundSpeed = -dSpeed;
 			}
@@ -16521,7 +16555,7 @@ void Actor::AttackMovement()
 		}
 		else
 		{
-			if( groundSpeed > -dSpeed && currInput.B )
+			if( groundSpeed > -dSpeed && DashButtonHeld() )
 			{
 				groundSpeed = -dSpeed;
 			}
@@ -16542,7 +16576,7 @@ void Actor::AttackMovement()
 	{
 		if (groundSpeed < 0 )
 		{
-			if( currInput.B )
+			if( DashButtonHeld() )
 			{
 				groundSpeed = dSpeed;
 			}
@@ -16553,7 +16587,7 @@ void Actor::AttackMovement()
 		}
 		else
 		{
-			if( groundSpeed < dSpeed && currInput.B )
+			if( groundSpeed < dSpeed && DashButtonHeld() )
 			{
 				groundSpeed = dSpeed;
 			}
@@ -16600,6 +16634,69 @@ void Actor::AttackMovement()
 		shieldPushbackFrames--;
 	}
 }
+
+bool Actor::CanBufferGrind()
+{
+	return currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y;
+}
+
+bool Actor::CanPressGrind()
+{
+	return CanBufferGrind() && !prevInput.Y;
+}
+
+bool Actor::TryBufferGrind()
+{
+	if (CanBufferGrind())
+	{
+		SetActionGrind();
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::TryPressGrind()
+{
+	if (CanPressGrind())
+	{
+		SetActionGrind();
+		return true;
+	}
+
+	return false;
+}
+
+bool Actor::JumpButtonPressed()
+{
+	return currInput.JumpButtonDown() && !prevInput.JumpButtonDown();
+}
+
+bool Actor::DashButtonPressed()
+{
+	return currInput.DashButtonDown() && !prevInput.DashButtonDown();
+}
+
+bool Actor::JumpButtonHeld()
+{
+	return currInput.JumpButtonDown();
+}
+
+bool Actor::DashButtonHeld()
+{
+	return currInput.DashButtonDown();
+}
+
+bool Actor::AttackButtonPressed()
+{
+	return currInput.AttackButtonDown() && !prevInput.AttackButtonDown();
+}
+
+bool AttackButtonHeld()
+{
+	return currInput.AttackButtonDown();
+}
+
 
 void Actor::SetActionGrind()
 {
@@ -16849,7 +16946,7 @@ int Actor::GetDoubleJump()
 bool Actor::CanDoubleJump()
 {
 	return ( (hasDoubleJump || extraDoubleJump ) && 
-		((currInput.A && !prevInput.A) || pauseBufferedJump )  && !IsSingleWirePulling() );
+		(JumpButtonPressed() || pauseBufferedJump )  && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -16899,7 +16996,7 @@ bool Actor::TryAirDash()
 {
 	if (HasUpgrade(UPGRADE_POWER_AIRDASH) && !IsSingleWirePulling())
 	{
-		if ((hasAirDash || inBubble) && ((!prevInput.B && currInput.B) || pauseBufferedDash))
+		if ((hasAirDash || inBubble) && (DashButtonPressed() || pauseBufferedDash))
 		{
 			hasFairAirDashBoost = (action == FAIR);
 			SetAction( AIRDASH );
@@ -16914,7 +17011,7 @@ bool Actor::TryGlide()
 {
 	bool ad = (HasUpgrade(UPGRADE_POWER_AIRDASH) && !hasAirDash) 
 		|| !HasUpgrade(UPGRADE_POWER_AIRDASH);
-	if (!prevInput.B && currInput.B)
+	if (DashButtonPressed())
 	{
 		SetAction(GLIDE);
 		frame = 0;
@@ -17415,12 +17512,12 @@ void Actor::UpdateInHitlag()
 			}
 		}
 
-		if (!pauseBufferedJump && currInput.A && !prevInput.A )
+		if (!pauseBufferedJump && JumpButtonPressed())
 		{
 			pauseBufferedJump = true;
 		}
 
-		if (!pauseBufferedDash && currInput.B && !prevInput.B)
+		if (!pauseBufferedDash && DashButtonPressed())
 		{
 			if( ground != NULL || ( ground == NULL && hasAirDash ) )
 				pauseBufferedDash = true;

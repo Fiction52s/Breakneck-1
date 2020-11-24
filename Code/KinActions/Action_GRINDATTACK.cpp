@@ -213,7 +213,7 @@ void Actor::GRINDATTACK_Change()
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;
 	}
-	else if (currInput.B && !prevInput.B)
+	else if (DashButtonPressed())
 	{
 		V2d op = position;
 

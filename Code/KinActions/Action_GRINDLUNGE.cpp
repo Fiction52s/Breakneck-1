@@ -20,7 +20,7 @@ void Actor::GRINDLUNGE_Change()
 		SetAction(GRINDSLASH);
 		frame = 0;
 	}
-	else if (!BasicAirAction() && !currInput.B)
+	else if (!BasicAirAction() && !DashButtonHeld())
 	{
 		SetAction(JUMP);
 		frame = 1;

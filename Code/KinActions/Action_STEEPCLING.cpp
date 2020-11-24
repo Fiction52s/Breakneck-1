@@ -25,13 +25,9 @@ void Actor::STEEPCLING_Change()
 	}
 
 
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-	{
-		SetActionGrind();
-		return;
-	}
+	if (TryPressGrind()) return;
 
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);
 		frame = 0;
@@ -52,7 +48,7 @@ void Actor::STEEPCLING_Change()
 			return;
 		}
 
-		if (currInput.B && !prevInput.B)
+		if (DashButtonPressed())
 		{
 			if ((currInput.LRight() || currInput.LUp()) && currNormal.x < 0)
 			{
@@ -107,7 +103,7 @@ void Actor::STEEPCLING_Change()
 		}
 
 
-		if ( currInput.B && !prevInput.B )
+		if (DashButtonPressed())
 		{
 			if ((currInput.LRight() || currInput.LUp()) && currNormal.x < 0)
 			{

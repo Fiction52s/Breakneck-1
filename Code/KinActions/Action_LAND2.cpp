@@ -18,7 +18,7 @@ void Actor::LAND2_Change()
 {
 	if (TryGroundBlock()) return;
 
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y)//&& !prevInput.Y )
+	if (CanBufferGrind())
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
 		if (!reversed || (HasUpgrade(UPGRADE_POWER_GRAV) && reversed))
@@ -94,7 +94,7 @@ void Actor::LAND2_Change()
 		}
 		else
 		{
-			if ((currInput.B && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
+			if ((DashButtonHeld() && !(reversed && (!currInput.LLeft() && !currInput.LRight()))) || !canStandUp)
 			{
 				SetAction(DASH);
 
@@ -163,7 +163,7 @@ void Actor::LAND2_Change()
 		}
 		else
 		{
-			if (currInput.B || !canStandUp)
+			if (DashButtonHeld() || !canStandUp)
 			{
 				if (currInput.LLeft())
 					facingRight = false;

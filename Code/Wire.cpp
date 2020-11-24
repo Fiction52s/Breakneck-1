@@ -660,13 +660,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 
 			shrinkInput = false;
-
-			if( currInput.A )
+			if( player->JumpButtonHeld() )
 			{
 				shrinkInput = true;
 				dragStrength = startDragStrength;
 			}
-			else if( currInput.B )
+			else if( player->DashButtonHeld() )
 			{
 				if( triggerDown && player->ground == NULL )
 				{

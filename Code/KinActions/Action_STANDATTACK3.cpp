@@ -17,7 +17,7 @@ void Actor::STANDATTACK3_End()
 {
 	if (currInput.LLeft() || currInput.LRight())
 	{
-		if (currInput.B)
+		if (DashButtonHeld())
 		{
 			SetAction(DASH);
 		}
@@ -48,16 +48,9 @@ void Actor::STANDATTACK3_Change()
 			BounceFlameOff();
 		}
 
-		if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-		{
-			BounceFlameOff();
-			SetActionGrind();
-			//dashStartSound.setLoop( false );
-			////runTappingSound.stop();
-			return;
-		}
+		if (TryPressGrind()) return;
 
-		if ((currInput.A && !prevInput.A) || pauseBufferedJump)
+		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
 			frame = 0;
@@ -69,7 +62,7 @@ void Actor::STANDATTACK3_Change()
 			return;
 		}
 
-		if (pauseBufferedDash || (currInput.B && !prevInput.B))
+		if (pauseBufferedDash || DashButtonPressed())
 		{
 			if (standNDashBoostCurr == 0)
 			{

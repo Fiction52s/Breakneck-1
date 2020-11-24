@@ -17,7 +17,7 @@ void Actor::RAILGRIND_End()
 void Actor::RAILGRIND_Change()
 {
 	RailPtr rail = grindEdge->rail;
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		if (GameSession::IsWall(grindEdge->Normal()) < 0) //not wall
 		{
@@ -37,7 +37,7 @@ void Actor::RAILGRIND_Change()
 		regrindOffCount = 0;
 		return;
 	}
-	else if (currInput.B && !prevInput.B)
+	else if (DashButtonPressed())
 	{
 		SetAction(RAILDASH);
 		frame = 0;

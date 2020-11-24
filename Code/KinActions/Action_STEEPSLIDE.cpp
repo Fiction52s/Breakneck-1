@@ -25,13 +25,9 @@ void Actor::STEEPSLIDE_Change()
 		BounceFlameOff();
 	}
 
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-	{
-		SetActionGrind();
-		return;
-	}
+	if (TryPressGrind()) return;
 
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		if (reversed)
 		{
@@ -138,8 +134,7 @@ void Actor::STEEPSLIDE_Change()
 		return;
 	}
 
-	if (currInput.B && !prevInput.B)
-		//if( currInput.A && !prevInput.A )
+	if (DashButtonPressed())
 	{
 		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()))
 		{

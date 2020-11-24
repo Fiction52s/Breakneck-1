@@ -31,13 +31,9 @@ void Actor::STEEPSLIDEATTACK_Change()
 			BounceFlameOff();
 		}
 
-		if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-		{
-			SetActionGrind();
-			return;
-		}
+		if (TryPressGrind()) return;
 
-		if (currInput.A && !prevInput.A || pauseBufferedJump)
+		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
 			frame = 0;
@@ -47,8 +43,7 @@ void Actor::STEEPSLIDEATTACK_Change()
 		if (SteepSlideAttack())
 			return;
 
-		if (currInput.B && !prevInput.B)
-			//if( currInput.A && !prevInput.A )
+		if (DashButtonPressed())
 		{
 			if (currNormal.x < 0 && currInput.LRight())
 			{

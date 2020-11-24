@@ -17,7 +17,7 @@ void Actor::RAILDASH_Change()
 {
 	if (!BasicAirAction())
 	{
-		if (!currInput.B)
+		if (!DashButtonHeld())
 		{
 			SetAction(JUMP);
 			frame = 1;

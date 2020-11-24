@@ -25,13 +25,9 @@ void Actor::STEEPCLIMB_Change()
 	}
 
 
-	if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-	{
-		SetActionGrind();
-		return;
-	}
+	if (TryPressGrind()) return;
 
-	if (currInput.A && !prevInput.A)
+	if (JumpButtonPressed())
 	{
 		SetAction(JUMPSQUAT);
 		frame = 0;

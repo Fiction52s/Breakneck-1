@@ -71,7 +71,7 @@ void Actor::JUMP_Update()
 					velocity.y *= .7;
 				}
 
-				if (currInput.B)
+				if (DashButtonHeld())
 				{
 					if (currInput.LRight() && velocity.x < dSpeed)
 					{

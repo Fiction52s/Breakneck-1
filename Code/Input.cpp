@@ -189,7 +189,25 @@ void ControllerState::SetLeftDirection()
 	}
 }
 
+bool ControllerState::PowerButtonDown()
+{
+	return Y;
+}
 
+bool ControllerState::JumpButtonDown()
+{
+	return A;
+}
+
+bool ControllerState::DashButtonDown()
+{
+	return B;
+}
+
+bool ControllerState::AttackButtonDown()
+{
+	return rightShoulder;
+}
 
 bool ControllerState::PUp()
 {

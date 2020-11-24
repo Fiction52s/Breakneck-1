@@ -30,13 +30,9 @@ void Actor::STEEPCLIMBATTACK_Change()
 			BounceFlameOff();
 		}
 
-		if (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y && !prevInput.Y)
-		{
-			SetActionGrind();
-			return;
-		}
+		if (TryPressGrind()) return;
 
-		if (currInput.A && !prevInput.A || pauseBufferedJump)
+		if (JumpButtonPressed() || pauseBufferedJump)
 		{
 			SetAction(JUMPSQUAT);
 			frame = 0;
