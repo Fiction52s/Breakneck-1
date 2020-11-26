@@ -14,17 +14,6 @@ void Actor::STEEPCLING_End()
 
 void Actor::STEEPCLING_Change()
 {
-	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-	{
-		BounceFlameOn();
-	}
-	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-	{
-		//bounceGrounded = false;
-		BounceFlameOff();
-	}
-
-
 	if (TryPressGrind()) return;
 
 	if (JumpButtonPressed())

@@ -21,16 +21,6 @@ void Actor::STEEPSLIDEATTACK_Change()
 {
 	if (CanCancelAttack())//&& frame > 0 )
 	{
-		if (HasUpgrade( UPGRADE_POWER_BOUNCE ) && currInput.X && !bounceFlameOn)
-		{
-			BounceFlameOn();
-		}
-		else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-		{
-			//bounceGrounded = false;
-			BounceFlameOff();
-		}
-
 		if (TryPressGrind()) return;
 
 		if (JumpButtonPressed() || pauseBufferedJump)

@@ -43,7 +43,7 @@ void Actor::RAILGRIND_Change()
 		frame = 0;
 		grindEdge = NULL;
 	}
-	if (currInput.Y && !prevInput.Y && framesGrinding > 1)
+	if (PowerButtonPressed() && framesGrinding > 1)
 	{
 		SetAction(JUMP);
 		grindEdge = NULL;

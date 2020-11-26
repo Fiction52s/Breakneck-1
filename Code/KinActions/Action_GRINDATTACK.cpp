@@ -15,7 +15,7 @@ void Actor::GRINDATTACK_End()
 
 void Actor::GRINDATTACK_Change()
 {
-	if (!currInput.Y)//&& grindEdge->Normal().y < 0 )
+	if (!PowerButtonHeld())//&& grindEdge->Normal().y < 0 )
 	{
 		V2d op = position;
 

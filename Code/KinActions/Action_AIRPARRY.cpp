@@ -10,7 +10,7 @@ void Actor::AIRPARRY_Start()
 
 void Actor::AIRPARRY_End()
 {
-	if (currInput.Y)
+	if (PowerButtonHeld())
 	{
 		SetAirBlockAction();
 		frame = 0;

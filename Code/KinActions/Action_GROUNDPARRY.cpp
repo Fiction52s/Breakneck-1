@@ -9,7 +9,7 @@ void Actor::GROUNDPARRY_Start()
 
 void Actor::GROUNDPARRY_End()
 {
-	if (currInput.Y)
+	if (PowerButtonHeld())
 	{
 		SetGroundBlockAction();
 

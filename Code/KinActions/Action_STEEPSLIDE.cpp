@@ -15,16 +15,6 @@ void Actor::STEEPSLIDE_End()
 
 void Actor::STEEPSLIDE_Change()
 {
-	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-	{
-		BounceFlameOn();
-	}
-	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-	{
-		//bounceGrounded = false;
-		BounceFlameOff();
-	}
-
 	if (TryPressGrind()) return;
 
 	if (JumpButtonPressed())

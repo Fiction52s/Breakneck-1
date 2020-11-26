@@ -4930,27 +4930,72 @@ void Actor::UpdateBounceFlameOn()
 	justToggledBounce = false;
 	if (bounceFlameOn)
 	{
-		if (toggleBounceInput)
+		if (currPowerMode == PMODE_BOUNCE)
 		{
-			if (currInput.X && !prevInput.X)
+			bool turnOffWhileToggleOn = toggleBounceInput 
+				&& currInput.PowerButtonDown() 
+				&& !prevInput.PowerButtonDown();
+			bool turnOffWhileToggleOff = !toggleBounceInput 
+				&& !currInput.PowerButtonDown();
+
+			if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || turnOffWhileToggleOff
+				|| turnOffWhileToggleOn )
 			{
+				if (toggleBounceInput)
+				{
+					justToggledBounce = true;
+				}
+
 				BounceFlameOff();
-				bounceGrounded = false;
-				justToggledBounce = true;
+
+				
 			}
 		}
 		else
 		{
-			//assert( !toggleBounceInput );
-			if (!currInput.X)
-			{
-				bounceFlameOn = false;
-				oldBounceEdge = NULL;
-				bounceGrounded = false;
-				scorpOn = false;
-			}
+			BounceFlameOff();
 		}
 	}
+	else
+	{
+		bool turnOnWhileToggleOn = toggleBounceInput && currInput.PowerButtonDown()
+			&& !prevInput.PowerButtonDown();
+		bool turnOnWhileToggleOff = !toggleBounceInput && currInput.PowerButtonDown();
+
+		if (currPowerMode == PMODE_BOUNCE && HasUpgrade(UPGRADE_POWER_BOUNCE)
+			&& ( turnOnWhileToggleOn || turnOnWhileToggleOff ) )
+		{
+			if (toggleBounceInput)
+			{
+				justToggledBounce = true;
+			}
+
+			BounceFlameOn();
+		}
+	}
+	//if (bounceFlameOn)
+	//{
+	//	if (toggleBounceInput)
+	//	{
+	//		if (currInput.X && !prevInput.X)
+	//		{
+	//			BounceFlameOff();
+	//			bounceGrounded = false;
+	//			justToggledBounce = true;
+	//		}
+	//	}
+	//	else
+	//	{
+	//		//assert( !toggleBounceInput );
+	//		if (!currInput.X)
+	//		{
+	//			bounceFlameOn = false;
+	//			oldBounceEdge = NULL;
+	//			bounceGrounded = false;
+	//			scorpOn = false;
+	//		}
+	//	}
+	//}
 }
 
 void Actor::UpdateWireStates()
@@ -5160,11 +5205,11 @@ void Actor::UpdateBubbles()
 
 	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
-	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && currInput.Y
+	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW )
 		|| timeSlowTerrain)
 	{
-		if (!prevInput.Y && !inBubble && !timeSlowTerrain)
+		if (!prevInput.PowerButtonDown() && !inBubble && !timeSlowTerrain)
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
@@ -5410,7 +5455,7 @@ void Actor::UpdatePrePhysics()
 	}
 	pastCompressedInputs[0] = currInput.GetCompressedState();*/
 
-	if (currInput.Y && !prevInput.Y)
+	if (PowerButtonPressed() && currPowerMode == PMODE_SHIELD)
 	{
 		framesSinceBlockPress = 0;
 	}
@@ -6366,14 +6411,14 @@ bool Actor::CanRailGrind()
 {
 	if (HasUpgrade(UPGRADE_POWER_GRIND))
 	{
-		if (!currInput.Y && prevInput.Y)
+		if (!PowerButtonHeld() && prevInput.PowerButtonDown())
 		{
 			framesSinceGrindAttempt = 0;
 		}
 
 		if (ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH)
 		{
-			if (currInput.Y || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
+			if (PowerButtonHeld() || framesSinceGrindAttempt < maxFramesSinceGrindAttempt)
 			{
 				return true;
 			}
@@ -8666,7 +8711,7 @@ bool Actor::TryDash()
 
 bool Actor::TryGroundBlock()
 {
-	if (currInput.Y && currPowerMode == PMODE_SHIELD)
+	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 	{
 		SetGroundBlockAction();
 		return true;
@@ -8677,7 +8722,7 @@ bool Actor::TryGroundBlock()
 
 bool Actor::TryAirBlock()
 {
-	if (currInput.Y && currPowerMode == PMODE_SHIELD)
+	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
 	{
 		SetAirBlockAction();
 		return true;
@@ -8688,19 +8733,22 @@ bool Actor::TryAirBlock()
 
 void Actor::TryChangePowerMode()
 {
-	if (currInput.RUp())
+	bool noHoriz = !currInput.LLeft() && !currInput.LRight();
+	bool noVert = !currInput.LUp() && !currInput.LDown();
+
+	if (currInput.RUp() && noHoriz)
 	{
 		currPowerMode = PMODE_SHIELD;
 	}
-	else if (currInput.RDown())
+	else if (currInput.RDown() && noHoriz)
 	{
 		currPowerMode = PMODE_TIMESLOW;
 	}
-	else if (currInput.RRight())
+	else if (currInput.RRight() && noVert )
 	{
 		currPowerMode = PMODE_GRIND;
 	}
-	else if (currInput.RLeft())
+	else if (currInput.RLeft() && noVert )
 	{
 		currPowerMode = PMODE_BOUNCE;
 	}
@@ -8804,12 +8852,12 @@ void Actor::CheckBounceFlame()
 	if ( HasUpgrade( UPGRADE_POWER_BOUNCE ) )
 	{
 		if (currPowerMode == PMODE_BOUNCE 
-			&& currInput.Y && !bounceFlameOn && !justToggledBounce)
+			&& PowerButtonHeld() && !bounceFlameOn && !justToggledBounce)
 		{
 			BounceFlameOn();
 			oldBounceEdge = NULL;
 		}
-		else if (!currInput.Y && bounceFlameOn)
+		else if (!PowerButtonHeld() && bounceFlameOn)
 		{
 			BounceFlameOff();
 		}
@@ -10870,7 +10918,7 @@ void Actor::UpdatePhysics()
 			}
 			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
 				&& tempCollision 
-				&& (((DashButtonHeld() && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y )
+				&& (((DashButtonHeld() && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld())
 				|| ( action == AIRHITSTUN && CanTech() ) )
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
@@ -10930,7 +10978,7 @@ void Actor::UpdatePhysics()
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
 			}
-			else if( tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && currInput.Y && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
+			else if( tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && PowerButtonHeld() && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -11312,7 +11360,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 	if (toggleGrindInput)
 	{
-		currInput.Y = false;
+		currInput.Y = false; //need to go over toggling again and make sure it works.
 	}
 
 	if (receivedHit->knockback > 0)
@@ -11595,6 +11643,7 @@ void Actor::PhysicsResponse()
 		//e = bounceEdge;
 		V2d bn = bounceNorm;
 
+		if( action != BOUNCEGROUND ) //added this line for testing
 		if( action == BOUNCEAIR || bounceFlameOn )
 		{
 			physicsOver = true;
@@ -13275,6 +13324,8 @@ void Actor::BounceFlameOn()
 	framesFlameOn = 0;
 	bounceFlameOn = true;
 	scorpOn = true;
+	oldBounceEdge = NULL; //recently added this line
+	//was previously only in the code for LAND action
 }
 
 void Actor::BounceFlameOff()
@@ -16642,7 +16693,7 @@ bool Actor::CanBufferGrind()
 
 bool Actor::CanPressGrind()
 {
-	return CanBufferGrind() && !prevInput.Y;
+	return CanBufferGrind() && !prevInput.PowerButtonDown();
 }
 
 bool Actor::TryBufferGrind()
@@ -16692,9 +16743,19 @@ bool Actor::AttackButtonPressed()
 	return currInput.AttackButtonDown() && !prevInput.AttackButtonDown();
 }
 
-bool AttackButtonHeld()
+bool Actor::AttackButtonHeld()
 {
 	return currInput.AttackButtonDown();
+}
+
+bool Actor::PowerButtonHeld()
+{
+	return currInput.Y;
+}
+
+bool Actor::PowerButtonPressed()
+{
+	return currInput.Y && !prevInput.Y;
 }
 
 
@@ -17653,7 +17714,7 @@ void Actor::UpdateInHitlag()
 		 facingRight = true;
 	 }
 
-	 if (!currInput.Y && blockstunFrames == 0)
+	 if (!PowerButtonHeld() && blockstunFrames == 0)
 	 {
 		 SetAction(JUMP);
 		 frame = 1;
@@ -17681,7 +17742,7 @@ void Actor::UpdateInHitlag()
 
 	 if (blockstunFrames == 0)
 	 {
-		 if (!currInput.Y)
+		 if (!PowerButtonHeld())
 		 {
 			 SetAction(STAND);
 			 frame = 0;

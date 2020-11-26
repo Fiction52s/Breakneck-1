@@ -37,15 +37,6 @@ void Actor::STANDATTACK2_Change()
 {
 	if (CanCancelAttack() || frame > 14)
 	{
-		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-		{
-			BounceFlameOn();
-		}
-		else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-		{
-			//bounceGrounded = false;
-			BounceFlameOff();
-		}
 
 		if (TryPressGrind()) return;
 

@@ -15,7 +15,7 @@ void Actor::BOUNCEGROUND_End()
 
 void Actor::BOUNCEGROUND_Change()
 {
-	if (!currInput.X)
+	if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
 	{
 
 

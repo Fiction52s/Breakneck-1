@@ -15,7 +15,7 @@ void Actor::BOUNCEAIR_End()
 
 void Actor::BOUNCEAIR_Change()
 {
-	if (!currInput.X)
+	if (!currInput.PowerButtonDown() || currPowerMode != PMODE_BOUNCE)
 	{
 		SetAction(JUMP);
 		frame = 1;

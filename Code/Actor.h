@@ -1040,6 +1040,8 @@ struct Actor : QuadTreeCollider,
 	bool DashButtonHeld();
 	bool AttackButtonPressed();
 	bool AttackButtonHeld();
+	bool PowerButtonHeld();
+	bool PowerButtonPressed();
 	SoundNode * ActivateSound(SoundType st, bool loop = false);
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,

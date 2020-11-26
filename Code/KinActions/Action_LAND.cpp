@@ -18,7 +18,7 @@ void Actor::LAND_Change()
 {
 	if (TryGroundBlock()) return;
 
-	if ( CanBufferGrind() )//&& !prevInput.Y )
+	if ( CanBufferGrind() )
 	{
 		//only allow buffered reverse grind ball if you have gravity reverse. might remove it entirely later.
 		if (!reversed || (HasUpgrade(UPGRADE_POWER_GRAV) && reversed))
@@ -26,17 +26,6 @@ void Actor::LAND_Change()
 			SetActionGrind();
 			return;
 		}
-	}
-
-	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-	{
-		//bounceGrounded = true;
-		BounceFlameOn();
-		oldBounceEdge = NULL;
-	}
-	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-	{
-		BounceFlameOff();
 	}
 
 	if (TryJumpSquat()) return;

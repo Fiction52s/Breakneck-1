@@ -14,17 +14,6 @@ void Actor::STEEPCLIMB_End()
 
 void Actor::STEEPCLIMB_Change()
 {
-	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-	{
-		BounceFlameOn();
-	}
-	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-	{
-		//bounceGrounded = false;
-		BounceFlameOff();
-	}
-
-
 	if (TryPressGrind()) return;
 
 	if (JumpButtonPressed())

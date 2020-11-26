@@ -28,18 +28,6 @@ void Actor::LAND2_Change()
 		}
 	}
 
-	if (HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X && !bounceFlameOn)
-	{
-		//bounceGrounded = true;
-		BounceFlameOn();
-		oldBounceEdge = NULL;
-		//break;
-	}
-	else if (!(HasUpgrade(UPGRADE_POWER_BOUNCE) && currInput.X) && bounceFlameOn)
-	{
-		BounceFlameOff();
-	}
-
 	if (TryJumpSquat()) return;
 
 
