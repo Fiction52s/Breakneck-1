@@ -8733,8 +8733,8 @@ bool Actor::TryAirBlock()
 
 void Actor::TryChangePowerMode()
 {
-	bool noHoriz = !currInput.LLeft() && !currInput.LRight();
-	bool noVert = !currInput.LUp() && !currInput.LDown();
+	bool noHoriz = !currInput.RLeft() && !currInput.RRight();
+	bool noVert = !currInput.RUp() && !currInput.RDown();
 
 	if (currInput.RUp() && noHoriz)
 	{
@@ -12569,9 +12569,57 @@ void Actor::HandleSpecialTerrainW2(int variation)
 
 void Actor::HandleSpecialTerrainW3(int variation)
 {
-	extraGravityModifier = 0;//2.0;
-	gravModifyFrames = 10;
-	springStunFrames = 10;
+	switch (variation)
+	{
+	case 0:
+	{
+		extraGravityModifier = 0;//2.0;
+		gravModifyFrames = 10;
+		springStunFrames = 10;
+		break;
+	}
+	case 1:
+	{
+		double accelFactor = .5;
+		if (ground != NULL)
+		{
+			if (groundSpeed > 0)
+			{
+				groundSpeed += accelFactor;
+			}
+			else if( groundSpeed < 0 )
+			{
+				groundSpeed -= accelFactor;
+			}
+		}
+		else
+		{
+			double velLen = length(velocity);
+			
+			if (velLen > 0)
+			{
+				velocity = (velLen + accelFactor) * normalize(velocity);
+			}
+
+			if (action == AIRDASH)
+			{
+				if (velocity.x > 0)
+				{
+					startAirDashVel.x += accelFactor;
+				}
+				else if (velocity.x < 0)
+				{
+					startAirDashVel.x -= accelFactor;
+				}
+				
+			}
+		}
+		
+
+		break;
+	}
+	}
+	
 }
 
 void Actor::HandleSpecialTerrainW4(int variation)

@@ -1,7 +1,9 @@
 #include "Actor.h"
+#include <iostream>
 
-using namespace sf;
 using namespace std;
+using namespace sf;
+
 
 void Actor::BOUNCEGROUND_Start()
 {
@@ -96,9 +98,36 @@ void Actor::BOUNCEGROUND_Change()
 					double reflX = cross(normalize(-storedBounceVel), bn);
 					double reflY = dot(normalize(-storedBounceVel), bn);
 					V2d edgeDir = normalize(bounceEdge->v1 - bounceEdge->v0);
-					//velocity = V2d( abs(storedBounceVel.x), -abs(storedBounceVel.y) );
-					//cout << "reflx: " << reflX <<", refly: " << reflY << endl;
-					velocity = normalize(reflX * edgeDir + reflY * bn) * lenVel;
+					
+					V2d reflectionDir = normalize(reflX * edgeDir + reflY * bn);
+
+					
+
+					double diffCW = GetVectorAngleDiffCW(reflectionDir, edgeDir);
+					//cout << "diff: " << diffCW << endl;
+
+
+					//these next few lines make sure that you cant
+					//run up the steep slope and then bounce at such a shallow angle
+					//that you push through the terrain
+					double thresh = .1; //if the angle is too close to the edgeDir
+					if (diffCW > 0 && diffCW < thresh)
+					{
+						RotateCCW(reflectionDir, thresh - diffCW);
+					}
+
+					double diffCCW = GetVectorAngleDiffCCW(reflectionDir, -edgeDir);
+
+					if (diffCCW > 0 && diffCCW < thresh)
+					{
+						RotateCW(reflectionDir, thresh - diffCCW);
+					}
+
+
+
+					velocity = reflectionDir * lenVel;
+
+				
 					//cout << "set vel: " << velocity.x << ", " << velocity.y << endl;
 				}
 
