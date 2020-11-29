@@ -63,7 +63,6 @@ void Actor::WATERGLIDE_Update()
 		{
 			glideTurnFactor = maxGlideTurnFactor;
 		}
-		//RotateCCW(springVel, glideTurnFactor);
 	}
 	else if (currInput.LDown())
 	{
@@ -76,14 +75,11 @@ void Actor::WATERGLIDE_Update()
 		{
 			glideTurnFactor = -maxGlideTurnFactor;
 		}
-		//RotateCCW(springVel, glideTurnFactor);
-		//grav = AddGravity(V2d(0, 0));
 	}
 	else
 	{
 		glideTurnFactor = 0;
 	}
-
 
 	if (facingRight)
 	{
@@ -94,17 +90,7 @@ void Actor::WATERGLIDE_Update()
 		RotateCCW(springVel, -glideTurnFactor);
 	}
 
-	//springExtra = AddGravity(springExtra);
-	//if (springVel.y > 0)
-	if (false)
-	{
-		double gFac = 1.0;
-		V2d nsv = normalize(springVel);
-		springVel = nsv * (length(springVel) + gFac * nsv.y);//AddGravity(springVel);
-	}
-
-
-	//springExtra = tempVel - springVel;
+	cout << "springVel: " << springVel.x << ", " << springVel.y << endl;
 	velocity = springVel + springExtra;
 }
 

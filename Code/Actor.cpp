@@ -10646,6 +10646,10 @@ void Actor::UpdatePhysics()
 			{
 				velocity = newVel;
 			}
+			else if (tempCollision && action == WATERGLIDE)
+			{
+				velocity = newVel;
+			}
 			/*else if (tempCollision && grassCount[Grass::UNTECHABLE] > 0) 
 			{
 				//just a test.
@@ -11796,7 +11800,7 @@ void Actor::PhysicsResponse()
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 					&& action != SEQ_CRAWLERFIGHT_LAND
 					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
-					&& action != JUMPSQUAT)
+					&& action != JUMPSQUAT && action != WATERGLIDE)
 				{
 					if (currInput.LLeft() || currInput.LRight())
 					{
@@ -12538,14 +12542,16 @@ void Actor::HandleSpecialTerrainW2(int variation)
 			wallNormal = V2d(0, 0);
 			velocity = V2d(0, 0);
 			currWall = NULL;
+			bounceEdge = NULL;
+			grindEdge = NULL;
 		}
-		springStunFrames = 10;
+		springStunFrames = 2;
 		break;
 	}
 	case W2_SPECIAL_TERRAIN_HEAVY:
 	{
 		extraGravityModifier = 2.0;
-		gravModifyFrames = 10;
+		gravModifyFrames = 2;
 		//RestoreAirDash();
 		//RestoreDoubleJump();
 		break;
@@ -12553,15 +12559,15 @@ void Actor::HandleSpecialTerrainW2(int variation)
 	case W2_SPECIAL_TERRAIN_LIGHT:
 	{
 		extraGravityModifier = .5;
-		gravModifyFrames = 10;
+		gravModifyFrames = 2;
 		//RestoreAirDash();
 		//RestoreDoubleJump();
 		break;
 	}
 	case W2_SPECIAL_TERRAIN_REVERSE:
 	{
-		extraGravityModifier = -.5;
-		gravModifyFrames = 10;
+		extraGravityModifier = -.3; //.5
+		gravModifyFrames = 2;
 		break;
 	}
 	}
@@ -12574,8 +12580,8 @@ void Actor::HandleSpecialTerrainW3(int variation)
 	case 0:
 	{
 		extraGravityModifier = 0;//2.0;
-		gravModifyFrames = 10;
-		springStunFrames = 10;
+		gravModifyFrames = 2;
+		springStunFrames = 2;
 		break;
 	}
 	case 1:
@@ -12657,6 +12663,11 @@ void Actor::HandleSpecialTerrainW6(int variation)
 		gravModifyFrames = 2;
 		RestoreAirDash();
 		RestoreDoubleJump();
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		currWall = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
 		break;
 	case 1:
 		invertInputFrames = 20;
