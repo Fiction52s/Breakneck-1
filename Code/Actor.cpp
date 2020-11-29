@@ -4599,7 +4599,19 @@ void Actor::ProcessReceivedHit()
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
-				velocity += 2.0 * normalize(position - otherPos);
+
+				double shieldKBFactor = .5;
+
+				if (receivedHit->knockback > 0)
+				{
+					velocity = receivedHit->knockback * 
+						shieldKBFactor * receivedHit->kbDir;
+				}
+				else
+				{
+					velocity.x *= (1 - receivedHit->drainX);
+					velocity.y *= (1 - receivedHit->drainY);
+				}
 			}
 
 			if (receivedHitReaction == FULLBLOCK)
