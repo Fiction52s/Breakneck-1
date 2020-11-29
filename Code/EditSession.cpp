@@ -7975,7 +7975,8 @@ bool EditSession::ExecuteTerrainCompletion()
 				success = ExecuteTerrainMultiSubtract(inProgress, orig, result, GetSpecialTerrainMode());
 			}
 
-			if (success && (!orig.IsEmpty() || !result.IsEmpty()))
+			bool changesMade = !orig.IsEmpty() || !result.IsEmpty();
+			if (success && changesMade )
 			{
 				ClearUndoneActions(); //critical to have this before the deactivation
 
@@ -7985,6 +7986,14 @@ bool EditSession::ExecuteTerrainCompletion()
 				AddDoneAction(replaceAction);
 
 				polygonInProgress->ClearPoints();
+			}
+			else
+			{
+				if (TOOL_BOX)
+				{
+					cout << "box made no changes" << endl;
+					polygonInProgress->ClearPoints();
+				}
 			}
 		}
 		return true;
@@ -13422,15 +13431,14 @@ void EditSession::CreateTerrainModeUpdate()
 			boxDrawStarted = false;
 			if (testPoint.x - startBoxPos.x != 0 && testPoint.y - startBoxPos.y != 0)
 			{
+				assert(polygonInProgress->GetNumPoints() == 0);
+
 				polygonInProgress->AddPoint(Vector2i(startBoxPos.x, startBoxPos.y), false);
 				polygonInProgress->AddPoint(Vector2i(testPoint.x, startBoxPos.y), false);
 				polygonInProgress->AddPoint(Vector2i(testPoint.x, testPoint.y), false);
 				polygonInProgress->AddPoint(Vector2i(startBoxPos.x, testPoint.y), false);
 
-				if (polygonInProgress->GetNumPoints() == 4)
-				{
-					ExecuteTerrainCompletion();
-				}
+				ExecuteTerrainCompletion();
 			}
 		}
 	}

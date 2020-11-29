@@ -12614,8 +12614,6 @@ void Actor::HandleSpecialTerrainW3(int variation)
 				
 			}
 		}
-		
-
 		break;
 	}
 	}
@@ -12624,6 +12622,10 @@ void Actor::HandleSpecialTerrainW3(int variation)
 
 void Actor::HandleSpecialTerrainW4(int variation)
 {
+	//terrain where if you stay in it for more than a certain number of frames
+	//you start taking damage
+
+
 }
 
 void Actor::HandleSpecialTerrainW5(int variation)
