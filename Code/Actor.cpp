@@ -17304,7 +17304,7 @@ bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	}
 	else if (action == AIRBLOCKDOWN)
 	{
-		if (hpt == HitboxInfo::HitPosType::AIRUP)
+		if (hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
 			return true;
 	}
 	else if (action == AIRBLOCKDOWNFORWARD)
@@ -17324,7 +17324,7 @@ bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	}
 	else if (action == AIRBLOCKUP)
 	{
-		if (hpt == HitboxInfo::HitPosType::AIRDOWN)
+		if (hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD )
 			return true;
 	}
 
@@ -17770,7 +17770,9 @@ void Actor::UpdateInHitlag()
 
  void Actor::TryResetBlockCounter()
  {
-	 if (!IsBlockAction(oldAction) )
+	 //framesSinceBlockPress might break parrying slightly?
+	 //its to prevent buffered parries. we'll have to test it out
+	 if (!IsBlockAction(oldAction) && framesSinceBlockPress >= 0 && framesSinceBlockPress < 10 )
 	 {
 		 framesBlocking = 0;
 	 }

@@ -74,10 +74,67 @@ void HitboxInfo::SetupHitboxLevelInfo(
 
 }
 
-HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &dir)
+HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
 {
-	bool forward = false;
-	if (abs( dir.x ) > 0 )
+	assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?
+
+	V2d dir = normalize(vel);
+
+	/*double angle = GetVectorAngleCCW(dir);
+
+	cout << "angle: " << angle << endl;
+
+	double division = PI / 8;
+
+	if (angle >= 2 * PI - division || angle < division)
+	{
+		return AIRFORWARD;
+	}
+	else if (angle >= division && angle < division * 3)
+	{
+		return AIRUPFORWARD;
+	}
+	else if( angle >= division * 3 && angle < )*/
+
+
+	double primaryThresh = .2;
+
+	if (abs(dir.x) < primaryThresh)
+	{
+		if (dir.y < 0)
+		{
+			return AIRUP;
+		}
+		else
+		{
+			return AIRDOWN;
+		}
+	}
+	else if (abs(dir.y) < primaryThresh)
+	{
+		return AIRFORWARD;
+	}
+	else
+	{
+		if (dir.y < 0)
+		{
+			return AIRUPFORWARD;
+		}
+		else if( dir.y > 0 )
+		{
+			return AIRDOWNFORWARD;
+		}
+		else
+		{
+			cout << " air hit dir: " << dir.x << ", " << dir.y << endl;
+			assert(0); //shouldn't happen
+			return AIRFORWARD;
+		}
+	}
+
+
+	/*bool forward = false;
+	if (abs( dir.x ) > .2 )
 	{
 		forward = true;
 	}
@@ -107,7 +164,7 @@ HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &dir)
 	else
 	{
 		return AIRFORWARD;
-	}
+	}*/
 }
 
 //EDGE FUNCTIONS

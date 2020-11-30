@@ -11478,6 +11478,11 @@ bool EditSession::IsShowingPoints()
 
 void EditSession::DrawSpecialTerrain(sf::RenderTarget *target)
 {
+	if (!editModeUI->IsLayerShowing(LAYER_WATER))
+	{
+		return;
+	}
+
 	bool showPoints = IsShowingPoints();
 
 	auto & currPolyList = GetCorrectPolygonList(1);
@@ -11489,6 +11494,11 @@ void EditSession::DrawSpecialTerrain(sf::RenderTarget *target)
 
 void EditSession::DrawTerrain(sf::RenderTarget *target)
 {
+	if (!editModeUI->IsLayerShowing(LAYER_TERRAIN))
+	{
+		return;
+	}
+
 	bool showPoints = IsShowingPoints();
 
 	if (inversePolygon != NULL)
