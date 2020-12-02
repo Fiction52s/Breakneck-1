@@ -368,6 +368,11 @@ struct Actor : QuadTreeCollider,
 		PMODE_Count
 	};
 
+	enum RayMode
+	{
+		RAYMODE_WATER,
+	};
+
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
@@ -380,7 +385,13 @@ struct Actor : QuadTreeCollider,
 	int modifiedDrain;
 	int invertInputFrames;
 	int currPowerMode;
+	PolyPtr oldSpecialTerrain;
+	PolyPtr currSpecialTerrain;
 
+	//dont sync
+	int rayMode;
+	Edge *rcEdge;
+	double rcQuantity;
 	
 
 
@@ -897,9 +908,7 @@ struct Actor : QuadTreeCollider,
 	int maxSuperFrames;
 	int superFrame;
 	bool checkValid;
-	Edge *rcEdge;
-	double rcQuantity;
-	std::string rayCastMode;
+	
 	bool leftGround;
 	ControllerState prevInput;
 	ControllerState currInput;
@@ -926,7 +935,7 @@ struct Actor : QuadTreeCollider,
 	double boostGrassAccel;
 	double jumpGrassExtra;
 	bool extraDoubleJump;
-	int specialTerrainCount[8*8]; //all possible water variations for each world
+	
 	
 	
 	Wire *leftWire;
@@ -1204,6 +1213,7 @@ struct Actor : QuadTreeCollider,
 	void DrawMapWires(sf::RenderTarget *target);
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
+	bool InSpecialTerrain(int w, int var);
 	void AirMovement();
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
@@ -1307,16 +1317,42 @@ struct Actor : QuadTreeCollider,
 	double GetMinRailGrindSpeed();
 	sf::Vector2<double> AddGravity(sf::Vector2<double> vel);
 	double GetGravity();
-	void ClearSpecialTerrainCounts();
 	void HandleSpecialTerrain();
-	void HandleSpecialTerrainW1(int stType);
-	void HandleSpecialTerrainW2(int stType);
-	void HandleSpecialTerrainW3(int stType);
-	void HandleSpecialTerrainW4(int stType);
-	void HandleSpecialTerrainW5(int stType);
-	void HandleSpecialTerrainW6(int stType);
-	void HandleSpecialTerrainW7(int stType);
-	void HandleSpecialTerrainW8(int stType);
+
+	enum SpecialTerrainSituation
+	{
+		SPECIALT_ENTER,
+		SPECIALT_REMAIN,
+		SPECIALT_EXIT
+	};
+
+	void HandleSpecialTerrainW1(
+	SpecialTerrainSituation sit,
+	int variation);
+	void HandleSpecialTerrainW2(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW3(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW4(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW5(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW6(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW7(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainW8(
+		SpecialTerrainSituation sit,
+		int variation);
+	void HandleSpecialTerrainSituation(
+		int world, int variation,
+		SpecialTerrainSituation sit);
 	V2d GetTrueVel();
 	void RestoreDoubleJump();
 	void RestoreAirDash();
@@ -1357,6 +1393,7 @@ struct Actor : QuadTreeCollider,
 	void SlideOffWhileInGroundHitstun();
 	void HitGroundWhileInAirHitstun();
 	void HitWallWhileInAirHitstun();
+	Edge * RayCastSpecialTerrainExit();
 
 	void SetGroundBlockAction();
 	void SetAirBlockAction();

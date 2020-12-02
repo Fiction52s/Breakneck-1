@@ -237,7 +237,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-
+	bool IsSpecialTerrainType(int w, int var);
 
 	void MakeGlobalPath(
 		V2d &startPos,

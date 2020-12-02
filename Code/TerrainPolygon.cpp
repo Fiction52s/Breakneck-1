@@ -91,6 +91,18 @@ void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &pa
 	}
 }
 
+//w starts at 0
+bool TerrainPolygon::IsSpecialTerrainType(int w, int var)
+{
+	int realW = w + W1_SPECIAL;
+	if (terrainWorldType == realW && terrainVariation == var)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 sf::FloatRect TerrainPolygon::GetAngledAABB(float rotation)
 {
 	//rotation is in degrees
