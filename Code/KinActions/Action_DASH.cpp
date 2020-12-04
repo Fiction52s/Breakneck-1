@@ -78,7 +78,7 @@ void Actor::DASH_Update()
 {
 	double dSpeed = GetDashSpeed();
 	b.rh = dashHeight;
-	b.offset.y = (normalHeight - dashHeight);// / 2;
+	b.offset.y = (normalHeight - dashHeight);
 	if (reversed)
 		b.offset.y = -b.offset.y;
 	if (currInput.LLeft() && facingRight)
@@ -192,12 +192,14 @@ void Actor::DASH_UpdateSprite()
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
 	SetSpriteTile(checkFrame, r);
 
+	SetGroundedSpriteTransform();
+
 
 	double angle = GroundedAngle();
 
 
-	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
-	sprite->setRotation(angle / PI * 180);
+	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height);
+	//sprite->setRotation(angle / PI * 180);
 
 	V2d pp = ground->GetPosition(edgeQuantity);
 
@@ -214,7 +216,7 @@ void Actor::DASH_UpdateSprite()
 	if ((angle == 0 && !reversed) || (approxEquals(angle, PI) && reversed))
 		pp.x += offsetX;
 
-	sprite->setPosition(pp.x, pp.y);
+	//sprite->setPosition(pp.x, pp.y);
 
 	bool fr = facingRight;
 	if (reversed)

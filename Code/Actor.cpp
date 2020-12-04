@@ -6926,6 +6926,9 @@ bool Actor::ResolvePhysics( V2d vel )
 
 //	cout << "vel: " << vel.x << ", " << vel.y << endl;
 	possibleEdgeCount = 0;
+
+	//position = b.globalPosition;
+
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	
 	position += vel;
@@ -12486,8 +12489,8 @@ void Actor::UpdateHitboxes()
 		hurtBody.globalAngle = angle;
 	}
 	
-	b.globalPosition = position + b.offset;
-	b.globalAngle = 0;	
+	b.globalPosition = position;// +b.offset;
+	b.globalAngle = 0;
 }
 
 void Actor::HandleSpecialTerrainSituation(
@@ -14515,7 +14518,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 		}
 
-		Contact *c = GetCollider().collideEdge( position + b.offset , b, e, tempVel, V2d( 0, 0 ) );
+		Contact *c = GetCollider().collideEdge(position + b.offset, b, e, tempVel, V2d(0, 0));
 
 		if( c != NULL )
 		{
