@@ -61,7 +61,7 @@ QuadTree::~QuadTree()
 
 void QuadTree::Query( QuadTreeCollider *qtc, const sf::Rect<double> &r )
 {
-	rQuery( qtc, startNode, r ); 	
+	rQuery( qtc, startNode, r );	
 }
 
 void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double> &r )

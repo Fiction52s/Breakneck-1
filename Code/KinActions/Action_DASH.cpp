@@ -78,7 +78,7 @@ void Actor::DASH_Update()
 {
 	double dSpeed = GetDashSpeed();
 	b.rh = dashHeight;
-	b.offset.y = (normalHeight - dashHeight);
+	b.offset.y = (normalHeight - dashHeight);// / 2;
 	if (reversed)
 		b.offset.y = -b.offset.y;
 	if (currInput.LLeft() && facingRight)

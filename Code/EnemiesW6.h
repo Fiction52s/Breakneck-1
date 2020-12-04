@@ -6,5 +6,6 @@
 #include "Enemy_Gorilla.h"
 #include "Enemy_SwingLauncher.h"
 #include "Enemy_Specter.h"
+#include "Enemy_FreeFlightTarget.h"
 
 #endif

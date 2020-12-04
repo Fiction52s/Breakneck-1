@@ -652,6 +652,8 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("swinglaunchercw", 6, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddWorldEnemy("swinglauncherccw", 6, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
+	AddBasicAerialWorldEnemy("freeflighttarget", 6, CreateEnemy<FreeFlightTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	/*AddBasicAerialWorldEnemy("wiretarget", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,

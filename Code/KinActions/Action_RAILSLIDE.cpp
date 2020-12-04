@@ -16,12 +16,14 @@ void Actor::RAILSLIDE_End()
 
 void Actor::RAILSLIDE_Change()
 {
+	V2d along = grindEdge->Along();
+
 	RailPtr rail = grindEdge->rail;
 	if (JumpButtonPressed())
 	{
 
 		facingRight = IsRailSlideFacingRight();
-
+		velocity = grindSpeed * along;
 		if (GameSession::IsWall(grindEdge->Normal()) < 0) //not wall
 		{
 			SetAction(JUMPSQUAT);
@@ -48,6 +50,7 @@ void Actor::RAILSLIDE_Change()
 	if (TryAirDash())
 	{
 		facingRight = IsRailSlideFacingRight();
+		velocity = grindSpeed * along;
 		grindEdge = NULL;
 		hasDoubleJump = true;
 		return;
@@ -56,6 +59,8 @@ void Actor::RAILSLIDE_Change()
 	if (AirAttack())
 	{
 		facingRight = IsRailSlideFacingRight();
+		
+		velocity = grindSpeed * along;
 		grindEdge = NULL;
 		hasDoubleJump = true;
 		hasAirDash = true;

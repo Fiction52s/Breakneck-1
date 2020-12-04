@@ -1394,6 +1394,7 @@ struct Actor : QuadTreeCollider,
 	void HitGroundWhileInAirHitstun();
 	void HitWallWhileInAirHitstun();
 	Edge * RayCastSpecialTerrainExit();
+	Edge * RayCastSpecialTerrainEnter();
 
 	void SetGroundBlockAction();
 	void SetAirBlockAction();

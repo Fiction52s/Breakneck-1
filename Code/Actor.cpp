@@ -46,6 +46,7 @@
 #include "MovingGeo.h"
 #include "GateMarker.h"
 #include "Enemy_GlideTarget.h"
+#include "Enemy_FreeFlightTarget.h"
 
 #include "GameMode.h"
 
@@ -3713,6 +3714,7 @@ void Actor::CheckHoldJump()
 		if (!JumpButtonHeld())
 		{
 			holdJump = false;
+			holdDouble = false;
 		}
 		return;
 	}
@@ -5135,7 +5137,8 @@ void Actor::LimitMaxSpeeds()
 			velocity = AddGravity(velocity);
 		}
 
-		if (InSpecialTerrain( 0, 0 )) //make this into a cleaner function very soon.
+		if (InSpecialTerrain( 0, 0 )
+			|| InSpecialTerrain( 2, 2 ) )//make this into a cleaner function very soon.
 		{
 			//cout << "running wallcling" << endl;
 			if (velocity.y > 4)
@@ -6383,6 +6386,7 @@ void Actor::RailGrindMovement()
 			ceil = true;
 		}
 
+		double extraAccel = .15;
 		double accel = 0;
 		if (GameSession::IsSteepGround(grn) > 0)
 		{
@@ -6394,6 +6398,15 @@ void Actor::RailGrindMovement()
 		{
 			accel = dot(V2d(0, slideGravFactor * GetGravity()), along) / slowMultiple;
 			//cout << "normal accel: " << accel << endl;
+		}
+
+		if (grindSpeed > 0)
+		{
+			accel += extraAccel;
+		}
+		else if (grindSpeed < 0)
+		{
+			accel -= extraAccel;
 		}
 
 		if (ceil)
@@ -6466,8 +6479,8 @@ bool Actor::IsRailSlideFacingRight()
 
 	V2d grindNorm = grindEdge->Normal();
 	bool r = grindSpeed > 0;
-
-	if ((action == RAILGRIND || action == RAILSLIDE) && grindNorm.y > 0)
+	//(action == RAILGRIND || action == RAILSLIDE) &&
+	if ( grindNorm.y > 0)
 	{
 		grindNorm = -grindNorm;
 		r = !r;
@@ -12766,6 +12779,15 @@ Edge * Actor::RayCastSpecialTerrainExit()
 	return rcEdge;
 }
 
+Edge * Actor::RayCastSpecialTerrainEnter()
+{
+	V2d targetPos = position - normalize(velocity) * 200.0;
+	rayMode = RAYMODE_WATER;
+	rcEdge = NULL;
+	RayCast(this, currSpecialTerrain->myTerrainTree->startNode, position, targetPos);
+	return rcEdge;
+}
+
 void Actor::HandleSpecialTerrainW3(SpecialTerrainSituation sit,
 	int variation)
 {
@@ -12816,14 +12838,63 @@ void Actor::HandleSpecialTerrainW3(SpecialTerrainSituation sit,
 					{
 						startAirDashVel.x -= accelFactor;
 					}
-
 				}
 			}
 		}
 		break;
 	}
+	case 2:
+	{
+		//not sure what to do here for now. this experiment feels bad.
+		/*if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		{
+			extraGravityModifier = .8;
+			gravModifyFrames = 1;
+			RestoreAirDash();
+			RestoreDoubleJump();
+
+			double accelFactor = .5;
+			if (ground != NULL)
+			{
+				if (groundSpeed > 0)
+				{
+					groundSpeed += accelFactor;
+				}
+				else if (groundSpeed < 0)
+				{
+					groundSpeed -= accelFactor;
+				}
+			}
+			else
+			{
+				double velLen = length(velocity);
+
+				if (velocity.x > 0)
+				{
+					velocity.x += accelFactor;
+				}
+				else if (velocity.x < 0)
+				{
+					velocity.x -= accelFactor;
+				}
+
+				if (action == AIRDASH)
+				{
+					if (velocity.x > 0)
+					{
+						startAirDashVel.x += accelFactor;
+					}
+					else if (velocity.x < 0)
+					{
+						startAirDashVel.x -= accelFactor;
+					}
+				}
+			}
+		}*/
+break;
 	}
-	
+	}
+
 }
 
 void Actor::HandleSpecialTerrainW4(SpecialTerrainSituation sit,
@@ -12883,7 +12954,11 @@ void Actor::HandleSpecialTerrainW6(SpecialTerrainSituation sit,
 	case 1:
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			invertInputFrames = 20;
+			invertInputFrames = 2;
+		}
+
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_EXIT)
+		{
 		}
 		
 		break;
@@ -12904,14 +12979,53 @@ void Actor::HandleSpecialTerrainW7(SpecialTerrainSituation sit,
 		inRewindWater = true;
 		break;
 	case 1:
-		if (!inTeleportAcrossWater)
+		if (sit == SPECIALT_ENTER)
+		{
+			Edge *enterEdge = RayCastSpecialTerrainEnter();
+			if (enterEdge != NULL)
+			{
+				V2d norm = -enterEdge->Normal();
+				SetAction(SPRINGSTUN);
+				springStunFrames = 2;
+
+				waterEntranceVelocity = velocity;
+
+				//make into function soon
+				holdJump = false;
+				holdDouble = false;
+				RechargeAirOptions();
+				rightWire->Reset();
+				leftWire->Reset();
+				frame = 0;
+				UpdateHitboxes();
+				ground = NULL;
+				wallNormal = V2d(0, 0);
+				velocity = V2d(0, 0);
+				currWall = NULL;
+				double speed = 30;
+				springVel = norm * speed;
+
+
+			}
+		}
+		else if (sit == SPECIALT_REMAIN)
+		{
+			springStunFrames = 2;
+		}
+		else if (sit == SPECIALT_EXIT)
+		{
+			springStunFrames = 1;
+			velocity = waterEntranceVelocity;
+		}
+		
+		/*if (!inTeleportAcrossWater)
 		{
 			waterEntrancePosition = position;
 			waterEntranceVelocity = velocity;
-		}
-		springStunFrames = 10;
-		SetAction(TELEPORTACROSSTERRAIN);
-		inTeleportAcrossWater = true;
+		}*/
+		
+		//SetAction(TELEPORTACROSSTERRAIN);
+		//inTeleportAcrossWater = true;
 		break;
 	}
 }
@@ -15212,6 +15326,16 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				gTarget->Collect();
 			}
 		}
+		else if (en->type == EnemyType::EN_FREEFLIGHTTARGET)
+		{
+			FreeFlightTarget *ffTarget = (FreeFlightTarget*)qte;
+
+			if( !ffTarget->dead && action == FREEFLIGHT
+				&& ffTarget->hitBody.Intersects(ffTarget->currHitboxFrame, &hurtBody) )
+			{
+				ffTarget->Collect();
+			}
+		}
 		else if (en->type == EnemyType::EN_SPRING)
 		{
 			Spring *spr = (Spring*)qte;
@@ -15917,9 +16041,17 @@ void Actor::DebugDraw( RenderTarget *target )
 		currHitboxes->DebugDraw( currHitboxFrame, target);
 	}
 
+	CircleShape cs;
+	cs.setFillColor(Color::Green);
+	cs.setRadius(2);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	
+	cs.setPosition(Vector2f( b.globalPosition ));
 	//hurtBody.DebugDraw(target)
 
 	b.DebugDraw( CollisionBox::Physics, target);
+
+	target->draw(cs);
 
 	leftWire->DebugDraw( target );
 	rightWire->DebugDraw( target );

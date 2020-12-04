@@ -627,8 +627,6 @@ void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *tar
 	}
 	else
 	{
-		V2d pos = globalPosition;
-		double angle = globalAngle;
 		//cout << "Angle?: " << angle << endl;
 		sf::RectangleShape r;
 		Color col;
@@ -652,6 +650,8 @@ void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *tar
 			quad[i].color = col;
 		}
 		
+		
+
 		/*r.setSize( sf::Vector2f( rw * 2, rh * 2 ) );
 		r.setOrigin( r.getLocalBounds().width / 2, r.getLocalBounds().height / 2 );
 		r.setRotation( angle / PI * 180 );
