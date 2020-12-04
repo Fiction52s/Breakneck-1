@@ -41,6 +41,8 @@ private:
 	void DrawTerrain(
 		sf::Rect<double> &rect,
 		sf::RenderTarget *target);
+	void DrawSpecialTerrain(sf::Rect<double> &rect,
+		sf::RenderTarget *target);
 	void DrawMapBorders(
 		sf::RenderTarget *target);
 	void DrawGates(sf::Rect<double> &rect,

@@ -6923,11 +6923,7 @@ bool Actor::CheckStandUp()
 
 bool Actor::ResolvePhysics( V2d vel )
 {
-
-//	cout << "vel: " << vel.x << ", " << vel.y << endl;
 	possibleEdgeCount = 0;
-
-	//position = b.globalPosition;
 
 	Rect<double> oldR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
 	
@@ -12493,6 +12489,11 @@ void Actor::UpdateHitboxes()
 	b.globalAngle = 0;
 }
 
+V2d Actor::GetTrueCenter()
+{
+	return position + b.offset;
+}
+
 void Actor::HandleSpecialTerrainSituation(
 	int world, int variation,
 	SpecialTerrainSituation sit)
@@ -13119,14 +13120,10 @@ void Actor::ProcessSpecialTerrain()
 	oldSpecialTerrain = currSpecialTerrain;
 	currSpecialTerrain = NULL;
 	queryMode = "specialterrain";
-	Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+	V2d trueCenter = GetTrueCenter();
+	Rect<double> r(trueCenter.x - b.rw, trueCenter.y - b.rh, 2 * b.rw, 2 * b.rh);
 	GetSpecialTerrainTree()->Query(this, r);
-
 	HandleSpecialTerrain();
-
-	
-
-
 }
 
 void Actor::UpdateScorpCap()

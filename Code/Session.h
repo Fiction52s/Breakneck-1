@@ -583,6 +583,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawColoredMapTerrain(
 		sf::RenderTarget *target,
 		sf::Color &c);
+	void DrawSpecialMapTerrain(
+		sf::RenderTarget *target);
 	void EnemiesCheckedMiniDraw(
 		sf::RenderTarget *target,
 		sf::FloatRect &rect);

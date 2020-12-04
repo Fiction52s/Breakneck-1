@@ -5962,7 +5962,23 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 {
 	if (va != NULL)
 	{
-		target->draw(*va);
+		//currently, draw the water w/ texture on minimap
+		if (terrainWorldType >= TerrainWorldType::W1_SPECIAL)
+		{
+			if (pShader != NULL)
+			{
+				target->draw(*va, pShader);
+			}
+			else
+			{
+				target->draw(*va);
+			}
+		}
+		else
+		{
+			target->draw(*va);
+		}
+		
 	}
 }
 

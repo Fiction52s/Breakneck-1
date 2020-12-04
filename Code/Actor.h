@@ -1318,6 +1318,7 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> AddGravity(sf::Vector2<double> vel);
 	double GetGravity();
 	void HandleSpecialTerrain();
+	V2d GetTrueCenter();
 
 	enum SpecialTerrainSituation
 	{

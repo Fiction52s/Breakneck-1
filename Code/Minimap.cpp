@@ -146,6 +146,7 @@ void Minimap::DrawToTex()
 	sf::Rect<double> minimapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 		vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
 
+	DrawSpecialTerrain(minimapRect, minimapTex);
 
 	DrawTerrain(minimapRect, minimapTex);
 
@@ -196,6 +197,12 @@ void Minimap::DrawTerrain( sf::Rect<double> &rect, sf::RenderTarget *target )
 {
 	sess->QueryBorderTree(rect);
 	sess->DrawColoredMapTerrain(target, terrainColor);
+}
+
+void Minimap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)
+{
+	sess->QuerySpecialTerrainTree(rect);
+	sess->DrawSpecialMapTerrain(target);
 }
 
 void Minimap::DrawMapBorders(

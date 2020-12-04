@@ -3958,6 +3958,20 @@ void Session::DrawColoredMapTerrain(sf::RenderTarget *target, sf::Color &c)
 	}
 }
 
+void Session::DrawSpecialMapTerrain(sf::RenderTarget *target)
+{
+	PolyPtr poly = specialPieceList;
+	while (poly != NULL)
+	{
+		//Color oldColor = poly->fillCol;
+		//poly->SetTerrainColor(c);
+		poly->MiniDraw(target);
+		//poly->SetTerrainColor(oldColor);
+
+		poly = poly->queryNext;
+	}
+}
+
 void Session::DrawPlayersMini(sf::RenderTarget *target)
 {
 	Actor *p = NULL;
@@ -5121,7 +5135,7 @@ void Session::QuerySpecialTerrainTree(sf::Rect<double>&rect)
 	{
 		specialPieceList = NULL;
 		queryMode = QUERY_SPECIALTERRAIN;
-		specialTerrainTree->Query(this, screenRect);
+		specialTerrainTree->Query(this, rect);
 	}
 }
 
@@ -5131,7 +5145,7 @@ void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
 	{
 		flyTerrainList = NULL;
 		queryMode = QUERY_FLYTERRAIN;
-		flyTerrainTree->Query(this, screenRect);
+		flyTerrainTree->Query(this, rect);
 	}
 }
 
