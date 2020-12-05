@@ -7787,79 +7787,6 @@ V2d Actor::UpdateReversePhysics()
 					offsetX += m;
 				}
 
-				/*if( approxEquals( m, 0 ) )
-				{
-					cout << "reverse blahh: " << gNormal.x << ", " << gNormal.y << ", " << q << ", " << offsetX <<  endl;	
-					if( groundSpeed > 0 )
-					{
-						//cout << "transfer left "<< endl;
-						Edge *next = ground->edge0;
-						V2d nextNorm = e0n;
-						if( nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && groundSpeed < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
-						{
-							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
-							{
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
-							}
-							else
-							{
-								ground = next;
-								q = length( ground->v1 - ground->v0 );	
-							}
-						}
-						else if( abs( e0n.x ) >= wallThresh )
-						{
-							groundSpeed = 0;
-							break;
-						}
-						else
-						{
-							reversed = false;
-							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-							leftGround = true;
-
-							ground = NULL;
-						}
-					}
-					else if( groundSpeed < 0 )
-					{
-						Edge *next = ground->edge1;
-						V2d nextNorm = e1n;
-						if( nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && groundSpeed > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
-						{
-
-							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
-							{
-								groundSpeed = 0;
-								offsetX = -offsetX;
-								break;
-							}
-							ground = next;
-							q = 0;
-						}
-						else if( abs( e1n.x ) >= wallThresh )
-						{
-							groundSpeed = 0;
-							break;
-						}
-						else
-						{
-							velocity = normalize(ground->v1 - ground->v0 ) * -groundSpeed;
-						
-							movementVec = normalize( ground->v1 - ground->v0 ) * extra;
-						
-							leftGround = true;
-							reversed = false;
-							ground = NULL;
-							//cout << "leaving ground RIGHT!!!!!!!!" << endl;
-						}
-
-					}
-					
-				}*/
 
 				//wire problem could arise later because i dont update anchors when i hit an edge.
 				if(!approxEquals( m, 0 ) )
@@ -7910,7 +7837,7 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else
 							{
-								cout << "c2:" << speedTransfer << endl;
+								//cout << "c2:" << speedTransfer << endl;
 								offsetX -= minContact.resolution.x;
 								groundSpeed = 0;
 								offsetX = -offsetX;
@@ -10400,6 +10327,7 @@ void Actor::UpdatePhysics()
 
 									groundSpeed = 0;
 									edgeQuantity = q;
+									break;
 								}
 							}
 						}
