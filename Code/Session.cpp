@@ -1411,6 +1411,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	soundNodeList = NULL;
 	pauseSoundNodeList = NULL;
 	
+	railDrawTree = NULL;
 	flyTerrainTree = NULL;
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
@@ -1513,6 +1514,11 @@ Session::~Session()
 		}
 	}
 	
+	if (railDrawTree != NULL)
+	{
+		delete railDrawTree;
+		railDrawTree = NULL;
+	}
 
 	if (terrainTree != NULL)
 	{
@@ -3912,6 +3918,13 @@ void Session::QueryBorderTree(sf::Rect<double> &rect)
 	borderTree->Query(this, rect);
 }
 
+void Session::QueryRailDrawTree(sf::Rect<double> &rect)
+{
+	railDrawList = NULL;
+	queryMode = QUERY_RAIL;
+	railDrawTree->Query(this, screenRect);
+}
+
 void Session::QueryGateTree(sf::Rect<double>&rect)
 {
 	testGateCount = 0;
@@ -5909,6 +5922,8 @@ bool Session::RunGameModeUpdate()
 
 		QuerySpecialTerrainTree(screenRect);
 
+		QueryRailDrawTree(screenRect);
+
 		QueryFlyTerrainTree(screenRect);
 
 		UpdateDecorSprites();
@@ -6701,5 +6716,37 @@ void Session::PlayerRestoreAirDash(int index)
 	if (p != NULL)
 	{
 		p->RestoreAirDash();
+	}
+}
+
+void Session::DrawQueriedTerrain(sf::RenderTarget *target)
+{
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
+	{
+		poly->Draw(preScreenTex);
+		poly = poly->queryNext;
+	}
+}
+
+void Session::DrawQueriedSpecialTerrain(sf::RenderTarget *target)
+{
+	PolyPtr sp = specialPieceList;
+	while (sp != NULL)
+	{
+		sp->Draw(preScreenTex);
+		sp = sp->queryNext;
+	}
+}
+
+void Session::DrawQueriedRails(sf::RenderTarget *target)
+{
+	RailPtr r = railDrawList;
+	while (r != NULL)
+	{
+		railDrawList->Draw(target);
+		RailPtr next = railDrawList->queryNext;
+		railDrawList->queryNext = NULL;
+		railDrawList = next;
 	}
 }

@@ -150,6 +150,8 @@ void Minimap::DrawToTex()
 
 	DrawTerrain(minimapRect, minimapTex);
 
+	DrawRails(minimapRect, minimapTex);
+
 	DrawZones( minimapTex );
 
 	DrawMapBorders(minimapTex);
@@ -197,6 +199,13 @@ void Minimap::DrawTerrain( sf::Rect<double> &rect, sf::RenderTarget *target )
 {
 	sess->QueryBorderTree(rect);
 	sess->DrawColoredMapTerrain(target, terrainColor);
+}
+
+void Minimap::DrawRails(sf::Rect<double> &rect,
+	sf::RenderTarget *target)
+{
+	sess->QueryRailDrawTree(rect);
+	sess->DrawQueriedRails(target);
 }
 
 void Minimap::DrawSpecialTerrain(sf::Rect<double> &rect, sf::RenderTarget *target)

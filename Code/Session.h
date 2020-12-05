@@ -264,6 +264,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	QuadTree *railEdgeTree;
 	QuadTree *barrierTree;
 	QuadTree *borderTree;
+	QuadTree *railDrawTree;
 	QuadTree *grassTree;
 	QuadTree *activeItemTree;
 	QuadTree *staticItemTree;
@@ -574,6 +575,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdatePlayersPrePhysics();
 	void UpdatePlayersPostPhysics();
 	void QueryBorderTree(sf::Rect<double>&rect);
+	void QueryRailDrawTree(sf::Rect<double>&rect);
 	void QueryGateTree(sf::Rect<double>&rect);
 	void QuerySpecialTerrainTree(sf::Rect<double>&rect);
 	void QueryFlyTerrainTree(sf::Rect<double>&rect);
@@ -670,6 +672,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateEnemiesPrePhysics();
 	void UpdatePhysics();
 	void UpdateEnemiesPostPhysics();
+	void DrawQueriedTerrain(sf::RenderTarget *target);
+	void DrawQueriedSpecialTerrain(sf::RenderTarget *target);
+	void DrawQueriedRails(sf::RenderTarget *target);
 	virtual bool UpdateRunModeBackAndStartButtons() = 0;
 	virtual void DrawSpecialTerrain(sf::RenderTarget *target) = 0;
 	virtual void DrawTerrain(sf::RenderTarget *target) = 0;

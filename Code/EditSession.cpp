@@ -820,7 +820,7 @@ void EditSession::TestPlayerMode()
 		railEdgeTree->Clear();
 		gateTree->Clear();
 		enemyTree->Clear();
-
+		railDrawTree->Clear();
 		
 
 		Enemy *currEnemy;
@@ -867,6 +867,7 @@ void EditSession::TestPlayerMode()
 
 		enemyTree = new QuadTree(1000000, 1000000);
 
+		railDrawTree = new QuadTree(1000000, 1000000);
 		//Actor *p;
 		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -937,6 +938,7 @@ void EditSession::TestPlayerMode()
 		else
 		{
 			(*it)->AddEdgesToQuadTree(railEdgeTree);
+			railDrawTree->Insert((*it));
 		}
 	}
 

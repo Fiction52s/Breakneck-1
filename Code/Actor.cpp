@@ -15161,7 +15161,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				frame = 0;
 				framesGrinding = 0;
 				grindEdge = e;
-				prevRail = (RailPtr)grindEdge->info;
+				prevRail = grindEdge->rail;//->info;
 				ground = NULL;
 				bounceEdge = NULL;
 

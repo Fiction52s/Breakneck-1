@@ -412,7 +412,6 @@ struct GameSession : RayCastHandler, Session
 	QuadTree *terrainBGTree;
 	QuadTree * itemTree;
 	QuadTree *inverseEdgeTree;
-	QuadTree *railDrawTree;
 	QuadTree *activeEnemyItemTree;
 	QuadTree *envPlantTree;
 	std::list<EnvPlant*> allEnvPlants;

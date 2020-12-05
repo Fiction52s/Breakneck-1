@@ -272,12 +272,7 @@ void GameSession::DrawRaceFightScore(sf::RenderTarget *target)
 
 void GameSession::DrawTerrain(sf::RenderTarget *target)
 {
-	PolyPtr poly = polyQueryList;
-	while (poly != NULL)
-	{
-		poly->Draw(preScreenTex);
-		poly = poly->queryNext;
-	}
+	DrawQueriedTerrain(target);
 }
 
 void GameSession::DrawFlyTerrain(sf::RenderTarget *target)
@@ -292,12 +287,7 @@ void GameSession::DrawFlyTerrain(sf::RenderTarget *target)
 
 void GameSession::DrawSpecialTerrain(sf::RenderTarget *target)
 {
-	PolyPtr sp = specialPieceList;
-	while (sp != NULL)
-	{
-		sp->Draw(preScreenTex);
-		sp = sp->queryNext;
-	}
+	DrawQueriedSpecialTerrain(target);
 }
 
 void GameSession::UpdateReplayGhostSprites()
@@ -800,12 +790,6 @@ void GameSession::Cleanup()
 	{
 		delete terrainBGTree;
 		terrainBGTree = NULL;
-	}
-
-	if (railDrawTree != NULL)
-	{
-		delete railDrawTree;
-		railDrawTree = NULL;
 	}
 
 	if (activeEnemyItemTree != NULL)
@@ -2258,13 +2242,11 @@ int GameSession::Run()
 				(*it)->Draw( mapTex );
 			}
 
-			queryMode = QUERY_BORDER;
-			numBorders = 0;
-			polyQueryList = NULL;
 			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
 
-			borderTree->Query( this, mapRect );
+			QueryBorderTree(mapRect);
+			
 
 			DrawColoredMapTerrain(mapTex, Color(Color::Green));
 
@@ -2669,12 +2651,11 @@ int GameSession::Run()
 					(*it)->Draw(mapTex);
 				}
 
-				queryMode = QUERY_BORDER;
-				numBorders = 0;
+				
 				sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
 					vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
 
-				borderTree->Query(this, mapRect);
+				QueryBorderTree(mapRect);
 
 				
 				DrawColoredMapTerrain(mapTex, Color(Color::Green));
@@ -2934,7 +2915,6 @@ void GameSession::Init()
 	gateTree = NULL;
 	enemyTree = NULL;
 	staticItemTree = NULL;
-	railDrawTree = NULL;
 	terrainBGTree = NULL;
 	scoreDisplay = NULL;
 	va = NULL;
@@ -3173,21 +3153,9 @@ void GameSession::UpdateEnvShaders()
 	}*/
 }
 
-
-
 void GameSession::DrawRails(sf::RenderTarget *target)
 {
-	//put this query within the frame update, not the draw call
-	railDrawList = NULL;
-	queryMode = QUERY_RAIL;
-	railDrawTree->Query(this, screenRect);
-	while (railDrawList != NULL)
-	{
-		railDrawList->Draw(target);
-		RailPtr next = railDrawList->queryNext;
-		railDrawList->queryNext = NULL;
-		railDrawList = next;
-	}
+	DrawQueriedRails(target);
 }
 
 void GameSession::DrawDecor(EffectLayer ef, sf::RenderTarget *target)
