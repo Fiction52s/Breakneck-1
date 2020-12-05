@@ -29,6 +29,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	enum RailType
 	{
 		NORMAL,
+		LOCKED,
 		BLOCKER,
 		FLY,
 	};

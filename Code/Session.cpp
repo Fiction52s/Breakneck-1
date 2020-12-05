@@ -6742,11 +6742,12 @@ void Session::DrawQueriedSpecialTerrain(sf::RenderTarget *target)
 void Session::DrawQueriedRails(sf::RenderTarget *target)
 {
 	RailPtr r = railDrawList;
+	RailPtr next;
 	while (r != NULL)
 	{
-		railDrawList->Draw(target);
-		RailPtr next = railDrawList->queryNext;
-		railDrawList->queryNext = NULL;
-		railDrawList = next;
+		r->Draw(target);
+		next = r->queryNext;
+		r->queryNext = NULL;
+		r = next;
 	}
 }

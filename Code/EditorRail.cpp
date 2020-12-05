@@ -439,10 +439,13 @@ void TerrainRail::UpdateBounds()
 		}
 	}
 
-	aabb.left = left;
-	aabb.top = top;
-	aabb.width = right - left;
-	aabb.height = bottom - top;
+	double padding = 30; //to allow flat rails to have a bounding box for queries
+	//has to do w/ drawing too.
+
+	aabb.left = left - padding;
+	aabb.top = top - padding;
+	aabb.width = (right - left) + padding * 2;
+	aabb.height = (bottom - top) + padding * 2;
 }
 
 void TerrainRail::Finalize()
@@ -702,6 +705,11 @@ void TerrainRail::UpdateLineColor(sf::Vertex *li, int i, int index)
 	//V2d norm = V2d(dir.y, -dir.x);
 
 	Color edgeColor;
+	/*switch (rType)
+	{
+		if( )
+	}*/
+
 	edgeColor = Color::Red;
 
 	lines[index].color = edgeColor;
@@ -1378,6 +1386,7 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	switch (rType)
 	{
 	case NORMAL:
+	case LOCKED:
 	{
 		target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
 		coloredNodeCircles->Draw(target);
