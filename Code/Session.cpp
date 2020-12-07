@@ -3922,7 +3922,7 @@ void Session::QueryRailDrawTree(sf::Rect<double> &rect)
 {
 	railDrawList = NULL;
 	queryMode = QUERY_RAIL;
-	railDrawTree->Query(this, screenRect);
+	railDrawTree->Query(this, rect);
 }
 
 void Session::QueryGateTree(sf::Rect<double>&rect)

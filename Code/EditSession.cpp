@@ -8035,7 +8035,6 @@ void EditSession::ExecuteRailCompletion()
 		{
 			if (railAttachStart == NULL && railAttachEnd == NULL )
 			{
-
 				bool empty = true;
 				//eventually be able to combine rails by putting your start/end points at their starts/ends
 				if (empty)

@@ -1688,6 +1688,18 @@ void Actor::SetupActionFunctions()
 		&Actor::LAND2_GetActionLength,
 		&Actor::LAND2_GetTileset);
 
+	SetupFuncsForAction(LOCKEDRAILSLIDE,
+		&Actor::LOCKEDRAILSLIDE_Start,
+		&Actor::LOCKEDRAILSLIDE_End,
+		&Actor::LOCKEDRAILSLIDE_Change,
+		&Actor::LOCKEDRAILSLIDE_Update,
+		&Actor::LOCKEDRAILSLIDE_UpdateSprite,
+		&Actor::LOCKEDRAILSLIDE_TransitionToAction,
+		&Actor::LOCKEDRAILSLIDE_TimeIndFrameInc,
+		&Actor::LOCKEDRAILSLIDE_TimeDepFrameInc,
+		&Actor::LOCKEDRAILSLIDE_GetActionLength,
+		&Actor::LOCKEDRAILSLIDE_GetTileset);
+
 	SetupFuncsForAction(NEXUSKILL,
 		&Actor::NEXUSKILL_Start,
 		&Actor::NEXUSKILL_End,
@@ -5078,7 +5090,7 @@ void Actor::ProcessBooster()
 				grindSpeed -= currBooster->strength;
 			}
 
-			if (action == RAILGRIND || action == RAILSLIDE)
+			if (IsOnRailAction(action))
 			{
 				velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 			}
@@ -6436,7 +6448,7 @@ bool Actor::CanRailSlide()
 {
 	bool isAttack = IsAttackAction(action);
 	bool aerialRailSlideTest = ground == NULL && grindEdge == NULL && bounceEdge == NULL && action != RAILDASH &&
-		action != RAILSLIDE && velocity.y >= 0 && action != AIRDASH && !isAttack;
+		action != RAILSLIDE && action != LOCKEDRAILSLIDE && velocity.y >= 0 && action != AIRDASH && !isAttack;
 
 	bool groundRailSlideTest = ground != NULL && grindEdge == NULL && action != DASH && !isAttack;
 
@@ -6929,7 +6941,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	
 	position += vel;
 
-	if (action == SPRINGSTUNTELEPORT)
+	if (action == SPRINGSTUNTELEPORT )
 		return false;
 	
 	Rect<double> newR( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
@@ -6968,7 +6980,12 @@ bool Actor::ResolvePhysics( V2d vel )
 //	Query( this, owner->testTree, r );
 
 	//cout << "Start resolve" << endl;
-	GetTerrainTree()->Query( this, r );
+
+	if (action != LOCKEDRAILSLIDE)//change this to be a more general bool later
+	{
+		GetTerrainTree()->Query(this, r);
+	}
+	
 
 	
 	sess->barrierTree->Query(this, r);
@@ -9482,7 +9499,7 @@ bool Actor::UpdateGrindRailPhysics(double movement)
 		}
 	}
 
-	if (action == RAILGRIND || action == RAILSLIDE)
+	if (IsOnRailAction(action))
 	{
 		grindQuantity = q;
 
@@ -9595,12 +9612,12 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	if( IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
+	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
 		|| action == DEATH || hitEnemyDuringPhyiscs)
-		return;	
-	
+		return;
+
 	UpdateWirePhysics();
 
 	double temp_groundSpeed = groundSpeed / slowMultiple;
@@ -9609,24 +9626,24 @@ void Actor::UpdatePhysics()
 
 	leftGround = false;
 	double movement = 0;
-	double maxMovement = min( b.rw, b.rh );
+	double maxMovement = min(b.rw, b.rh);
 	movementVec = V2d(0, 0);
-	V2d lastExtra( 100000, 100000 );
-	
-	if( grindEdge != NULL )
+	V2d lastExtra(100000, 100000);
+
+	if (grindEdge != NULL)
 	{
-		if( reversed )
+		if (reversed)
 		{
 			reversed = false;
 			grindSpeed = -grindSpeed;
 		}
 		movement = temp_grindSpeed / GetNumSteps();
 	}
-	else if( ground != NULL )
+	else if (ground != NULL)
 	{
 
 		movement = temp_groundSpeed / GetNumSteps();
-		if( movement != 0 && abs( movement ) < .00001 )
+		if (movement != 0 && abs(movement) < .00001)
 		{
 			//maybe here I should reduce the groundspeed to 0? 
 			//i seemed to solve the weird teleportation/super fast movement
@@ -9639,32 +9656,32 @@ void Actor::UpdatePhysics()
 			//cout << "what movement: " << movement << ", " << temp_groundSpeed << endl;
 			return;
 		}
-		
+
 	}
 	else
 	{
 		movementVec = temp_velocity / GetNumSteps();
 	}
 
-	if( physicsOver )
+	if (physicsOver)
 	{
 		//still need to do hitbox/hurtbox responses if hes not moving
 		return;
 	}
-	
-	if ( grindEdge == NULL && movement == 0 && movementVec.x == 0 && movementVec.y == 0)
+
+	if (grindEdge == NULL && movement == 0 && movementVec.x == 0 && movementVec.y == 0)
 	{
 		ResolvePhysics(V2d(0, 0));
 		PhysicsResponse();
 		return;
 	}
 
-	if( grindEdge != NULL && ( action == GRINDBALL || action == GRINDATTACK ))
+	if (grindEdge != NULL && (action == GRINDBALL || action == GRINDATTACK))
 	{
 		UpdateGrindPhysics(movement);
 		return;
 	}
-	else if (grindEdge != NULL && ( action == RAILGRIND || action == RAILSLIDE ))
+	else if (grindEdge != NULL && IsOnRailAction(action))
 	{
 		if (UpdateGrindRailPhysics(movement))
 		{
@@ -11590,7 +11607,7 @@ void Actor::PhysicsResponse()
 
 	
 
-	if ((action == RAILGRIND || action == RAILSLIDE ) && collision )
+	if (IsOnRailAction(action) && collision )
 	{
 		grindEdge = NULL;
 		SetAction(JUMP);
@@ -15059,12 +15076,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
 
-		if ((rail->requirePower && !canRailGrind) || IsInHistunAction(action))
+		if ((rail->RequiresPowerToGrind() && !canRailGrind) || IsInHistunAction(action))
 		{
 			return;
 		}
 
-		bool canGrabRail = (rail->requirePower && canRailGrind) || (!rail->requirePower && canRailSlide);
+		bool canGrabRail = (rail->RequiresPowerToGrind() && canRailGrind) 
+			|| (!rail->RequiresPowerToGrind() && canRailSlide);
 
 		if ((rail != prevRail || regrindOffCount == regrindOffMax) && canGrabRail)
 		{
@@ -15148,14 +15166,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 			
 
-				if (canRailGrind)
-				{
-					SetAction(RAILGRIND);
-				}
-				else
-				{
-					SetAction(RAILSLIDE);
-				}
+				
 
 				RechargeAirOptions();
 				frame = 0;
@@ -15173,6 +15184,7 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				}
 				else
 				{
+					cout << "parallel with rail issue" << endl;
 					assert(0);
 				}
 
@@ -15183,6 +15195,15 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				else
 				{
 					grindSpeed = railSpeed;
+				}
+
+				if (canRailGrind)
+				{
+					SetAction(RAILGRIND);
+				}
+				else
+				{
+					SetAction(RAILSLIDE);
 				}
 			}
 		}
@@ -17720,7 +17741,7 @@ bool Actor::IsSpringAction(int a)
 
 bool Actor::IsOnRailAction(int a)
 {
-	return a == RAILGRIND || a == RAILSLIDE;
+	return a == RAILGRIND || a == RAILSLIDE || a == LOCKEDRAILSLIDE;
 }
 
 bool Actor::IsInHistunAction( int a )

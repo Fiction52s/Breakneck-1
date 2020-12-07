@@ -39,6 +39,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	int rType;
 	int GetRailType();
 	void TryCreateEnemyChain();
+	sf::Color GetRailColor();
 	/*enum RenderMode
 	{
 		RENDERMODE_NORMAL,
@@ -57,6 +58,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void Draw(sf::RenderTarget *target);
 
 	void AddEnemyChainToWorldTrees();
+	bool RequiresPowerToGrind();
 
 	ActorParams *enemyParams;
 	EnemyChain *enemyChain;
@@ -198,10 +200,6 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 
 	int writeIndex;
 	bool finalized;
-
-	bool requirePower;
-	bool accelerate;
-	int level;
 
 	const static int MAX_RAIL_LEVEL = 12;
 };

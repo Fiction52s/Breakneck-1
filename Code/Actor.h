@@ -199,6 +199,7 @@ struct Actor : QuadTreeCollider,
 		GRINDBALL,
 		RAILGRIND,
 		RAILSLIDE,
+		LOCKEDRAILSLIDE,
 		RAILDASH,
 		GRINDLUNGE,
 		GRINDSLASH,
@@ -2094,6 +2095,17 @@ struct Actor : QuadTreeCollider,
 	void LAND2_TimeDepFrameInc();
 	int LAND2_GetActionLength();
 	Tileset * LAND2_GetTileset();
+
+	void LOCKEDRAILSLIDE_Start();
+	void LOCKEDRAILSLIDE_End();
+	void LOCKEDRAILSLIDE_Change();
+	void LOCKEDRAILSLIDE_Update();
+	void LOCKEDRAILSLIDE_UpdateSprite();
+	void LOCKEDRAILSLIDE_TransitionToAction(int a);
+	void LOCKEDRAILSLIDE_TimeIndFrameInc();
+	void LOCKEDRAILSLIDE_TimeDepFrameInc();
+	int LOCKEDRAILSLIDE_GetActionLength();
+	Tileset * LOCKEDRAILSLIDE_GetTileset();
 
 	void NEXUSKILL_Start();
 	void NEXUSKILL_End();

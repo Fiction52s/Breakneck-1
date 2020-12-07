@@ -63,6 +63,7 @@ CreateRailModeUI::CreateRailModeUI()
 	currPhysicalTypeRect->Init();
 	
 	currPhysicalTypeRect->SetShown(true);
+	physTypeIndex = 0;
 
 	currEnemyTypeRect = mainPanel->AddEnemyRect(ChooseRect::ChooseRectIdentity::I_RAILSEARCH,
 		currTypeRectPos, NULL, 0);
@@ -70,13 +71,14 @@ CreateRailModeUI::CreateRailModeUI()
 
 	Tileset *ts_physicalTypes = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
 	
-	int numPhysTypes = PhysTypes_Count;
+	int numPhysTypes = TerrainRail::BLOCKER; //phys types come before blocker
 	physicalPanel->ReserveImageRects(numPhysTypes);
 	physRects.resize(numPhysTypes);
 	for (int i = 0; i < numPhysTypes; ++i)
 	{
 		physRects[i] = physicalPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_RAILLIBRARY,
 			Vector2f( 0, i * railTypeGridSize), ts_physicalTypes, i, railTypeGridSize);
+		physRects[i]->SetInfo((void*)i);
 		//physRects[i]->Init();
 		physRects[i]->SetShown(true);
 	}
@@ -86,7 +88,7 @@ CreateRailModeUI::CreateRailModeUI()
 
 	ChoosePhysicalType(physRects[0]);
 
-	int numEnemyTypes = 2;
+	int numEnemyTypes = 2; //can change if i add more enemy rail types
 	enemyPanel->ReserveEnemyRects(numEnemyTypes);
 	enemyRects.resize(numEnemyTypes);
 	std::vector<ActorType*> types;
@@ -185,10 +187,10 @@ void CreateRailModeUI::ChoosePhysicalType(ImageChooseRect *icRect)
 {
 	currPhysicalTypeRect->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
-	int x = icRect->pos.x / railTypeGridSize;
-	int y = icRect->pos.y / railTypeGridSize;
+	//int x = icRect->pos.x / railTypeGridSize;
+	//int y = icRect->pos.y / railTypeGridSize;
 
-	physTypeIndex = y;
+	physTypeIndex = (int)icRect->info;
 	//edit->currTerrainWorld[layerIndex] = world;
 	//edit->currTerrainVar[layerIndex] = variation;
 
@@ -213,7 +215,7 @@ int CreateRailModeUI::GetRailType()
 	int cat = GetRailCategory();
 	if (cat == PHYSICAL)
 	{
-		return TerrainRail::RailType::NORMAL;
+		return physTypeIndex;
 	}
 	else if (cat == ENEMY)
 	{

@@ -392,7 +392,7 @@ void Actor::GRINDBALL_UpdateSprite()
 	V2d grindNorm = grindEdge->Normal();
 	bool r = grindSpeed > 0;
 
-	if ((action == RAILGRIND || action == RAILSLIDE) && grindNorm.y > 0)
+	if (IsOnRailAction(action) && grindNorm.y > 0)
 	{
 		grindNorm = -grindNorm;
 		r = !r;

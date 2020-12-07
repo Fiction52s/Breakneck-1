@@ -25,10 +25,6 @@ TerrainRail::TerrainRail(TerrainRail &r)
 
 	rType = r.rType;
 
-	requirePower = r.requirePower;
-	accelerate = r.accelerate;
-	level = r.level;
-
 	CopyPointsFromRail(&r);
 }
 
@@ -149,11 +145,6 @@ void TerrainRail::Init()
 	railRadius = 20;
 	
 	rType = NORMAL;
-
-	requirePower = false;
-	accelerate = false;
-	level = 1;
-
 	
 
 	enemyParams = NULL;
@@ -227,13 +218,7 @@ void TerrainRail::Activate()
 
 void TerrainRail::WriteFile(std::ofstream &of)
 {
-	int iRequirePower = (int)requirePower;
-	int iAccelerate = (int)accelerate;
-
 	of << rType << "\n";
-	of << iRequirePower << "\n";
-	of << iAccelerate << "\n";
-	of << level << "\n";
 
 	int numP = GetNumPoints();
 	of << numP << "\n";
@@ -255,15 +240,6 @@ void TerrainRail::Load(std::ifstream &is)
 {
 	is >> rType;
 
-	int power;
-	is >> power;
-
-	int accel;
-	is >> accel;
-
-	int lev;
-	is >> lev;
-
 	int numRailPoints;
 	is >> numRailPoints;
 
@@ -276,11 +252,12 @@ void TerrainRail::Load(std::ifstream &is)
 		AddPoint(Vector2i(x, y), false);
 	}
 
-	requirePower = power;
-	accelerate = accel;
-	level = lev;
-
 	Finalize();
+}
+
+bool TerrainRail::RequiresPowerToGrind()
+{
+	return false; //for now
 }
 
 bool TerrainRail::AlignExtremes()
@@ -448,6 +425,21 @@ void TerrainRail::UpdateBounds()
 	aabb.height = (bottom - top) + padding * 2;
 }
 
+sf::Color TerrainRail::GetRailColor()
+{
+	switch (rType)
+	{
+	case NORMAL:
+		return Color::Red;
+		break;
+	case LOCKED:
+		return Color::Green;
+		break;
+	}
+
+	return Color::Red;
+}
+
 void TerrainRail::Finalize()
 {
 	finalized = true;
@@ -458,7 +450,7 @@ void TerrainRail::Finalize()
 
 	coloredQuads = new sf::Vertex[numColoredQuads * 4];
 
-	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, Color::Red, 12);
+	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, GetRailColor(), 12);
 	coloredNodeCircles->ShowAll();
 
 	SetupEdges();
@@ -656,7 +648,7 @@ void TerrainRail::SetSelected(bool select)
 	{
 		for (int i = 0; i < numLineVerts; ++i)
 		{
-			lines[i].color = Color::Red;
+			lines[i].color = GetRailColor();
 		}
 
 		int numP = GetNumPoints();
@@ -704,13 +696,7 @@ void TerrainRail::UpdateLineColor(sf::Vertex *li, int i, int index)
 	//V2d dir = normalize(V2d(diff));
 	//V2d norm = V2d(dir.y, -dir.x);
 
-	Color edgeColor;
-	/*switch (rType)
-	{
-		if( )
-	}*/
-
-	edgeColor = Color::Red;
+	Color edgeColor = GetRailColor();
 
 	lines[index].color = edgeColor;
 	lines[index + 1].color = edgeColor;
@@ -727,7 +713,7 @@ void TerrainRail::UpdateColoredQuads()
 	
 	double dQuadHalfWidth = quadHalfWidth;
 
-	Color quadColor = Color::Red;
+	Color quadColor = GetRailColor();
 
 	for (int i = 0; i < numP - 1; ++i)
 	{
@@ -750,6 +736,7 @@ void TerrainRail::UpdateColoredQuads()
 	for (int i = 0; i < numP; ++i)
 	{
 		coloredNodeCircles->SetPosition(i, Vector2f(GetPoint(i)->pos));
+		coloredNodeCircles->SetColor(i, GetRailColor());
 	}
 }
 
@@ -835,27 +822,11 @@ void TerrainRail::ClearPoints()
 
 void TerrainRail::SetParams(Panel *p)
 {
-	requirePower = p->checkBoxes["requirepower"]->checked;
-	accelerate = p->checkBoxes["accelerate"]->checked;
-	string levelStr = p->textBoxes["level"]->text.getString().toAnsiString();
 
-	stringstream ss;
-	ss << levelStr;
-
-	int lev;
-	ss >> lev;
-
-	if (!ss.fail() && lev > 0 && lev <= MAX_RAIL_LEVEL)
-	{
-		level = lev;
-	}
 }
 
 void TerrainRail::UpdatePanel(Panel *p)
 {
-	p->checkBoxes["requirepower"]->checked = requirePower;
-	p->checkBoxes["accelerate"]->checked = accelerate;
-	p->textBoxes["level"]->text.setString(to_string(level));
 }
 
 //0 means a window came up and they canceled. -1 means no enemies were in danger on that polygon, 1 means that you confirmed to delete the enemies

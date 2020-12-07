@@ -412,7 +412,7 @@ void RailParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	accelerate = p->checkBoxes["accelerate"]->checked;
+	//accelerate = p->checkBoxes["accelerate"]->checked;
 
 	hasMonitor = false;
 }
@@ -420,7 +420,7 @@ void RailParams::SetParams()
 void RailParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->checkBoxes["accelerate"]->checked = accelerate;
+	//p->checkBoxes["accelerate"]->checked = accelerate;
 
 	EditSession *edit = EditSession::GetSession();
 	MakeGlobalPath(edit->patrolPath);

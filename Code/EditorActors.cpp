@@ -340,13 +340,6 @@ Panel *ActorType::CreatePanel()
 		p->AddFloatSlider("gravfactor", Vector2i(0, 0), 200, .125f, .875f, .5f, .125f);
 		p->AddSlider("duration", Vector2i(0, 0), 200, 1, 60, 5);
 	}
-	//w3
-	/*else if (name == "rail" || name == "grindrail")
-	{
-		p = new Panel("rail_options", 200, 500, edit);
-		p->AddCheckBox("accelerate", Vector2i(120, 250));
-		p->AddButton("createrail", Vector2i(20, 300), Vector2f(100, 50), "Create Rail");
-	}*/
 	//w5
 	else if (name == "narwhal")
 	{

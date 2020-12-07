@@ -1,12 +1,25 @@
 #include "Actor.h"
 #include "GameSession.h"
 #include "EditorRail.h"
+#include "Wire.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::RAILSLIDE_Start()
 {
+	RailPtr rail = grindEdge->rail;
+
+	if (rail->GetRailType() == TerrainRail::LOCKED)
+	{
+		SetAction(LOCKEDRAILSLIDE);
+		////should not be able to use wires at all while locked
+		//if (rightWire != NULL)
+		//	rightWire->Retract();
+
+		//if (leftWire != NULL)
+		//	leftWire->Retract();
+	}
 }
 
 void Actor::RAILSLIDE_End()
@@ -16,9 +29,12 @@ void Actor::RAILSLIDE_End()
 
 void Actor::RAILSLIDE_Change()
 {
+	
+
 	V2d along = grindEdge->Along();
 
 	RailPtr rail = grindEdge->rail;
+
 	if (JumpButtonPressed())
 	{
 
