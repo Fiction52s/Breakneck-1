@@ -6997,7 +6997,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		GetTerrainTree()->Query(this, r);
 	}
 	
-	//sess->railEdgeTree->Query(this, r);
+	sess->railEdgeTree->Query(this, r);
 
 	
 	sess->barrierTree->Query(this, r);
@@ -9762,14 +9762,23 @@ void Actor::UpdatePhysics()
 
 			Edge *e0 = ground->edge0;
 			Edge *e1 = ground->edge1;
-			V2d e0n = e0->Normal();
-			V2d e1n = e1->Normal();
 
-			bool transferLeft =  q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh || e0n.x <= 0 )
+			V2d e0n, e1n;
+			if (e0 != NULL)
+			{
+				e0n = e0->Normal();
+			}
+
+			if (e1 != NULL)
+			{
+				e1n = e1->Normal();
+			}
+
+			bool transferLeft = e0 != NULL && q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh || e0n.x <= 0 )
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0)  ) 
 				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ) );
-			bool transferRight = q == groundLength && movement > 0 //(groundSpeed < -steepClimbSpeedThresh || e1n.y <= -steepThresh || e1n.x >= 0 )
+			bool transferRight = e1 != NULL && q == groundLength && movement > 0 //(groundSpeed < -steepClimbSpeedThresh || e1n.y <= -steepThresh || e1n.x >= 0 )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ));
@@ -10106,7 +10115,7 @@ void Actor::UpdatePhysics()
 						
 						Edge *next = ground->edge1;
 						double yDist = abs( gNormal.x ) * groundSpeed;
-						if( next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
+						if( next != NULL && next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
 						{
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -10121,7 +10130,7 @@ void Actor::UpdatePhysics()
 							}
 					
 						}
-						else if( abs( e1n.x ) >= wallThresh )
+						else if(next != NULL && abs( e1n.x ) >= wallThresh )
 						{
 							
 							if (TryUnlockOnTransfer(e1))
@@ -10152,7 +10161,7 @@ void Actor::UpdatePhysics()
 					{
 						double yDist = abs( gNormal.x ) * groundSpeed;
 						Edge *next = ground->edge0;
-						if( next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
+						if(next != NULL && next->Normal().y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && next->Normal().x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
@@ -10191,7 +10200,7 @@ void Actor::UpdatePhysics()
 								break;
 							}
 						}
-						else if( abs( e0n.x ) >= wallThresh )
+						else if(next != NULL && abs( e0n.x ) >= wallThresh )
 						{
 							if (TryUnlockOnTransfer(e0))
 							{
@@ -10414,14 +10423,22 @@ void Actor::UpdatePhysics()
 				V2d en = e->Normal();
 				Edge *e0 = e->edge0;
 				Edge *e1 = e->edge1;
-				V2d e0n = e0->Normal();
-				V2d e1n = e1->Normal();
+				
+				V2d e0n;// = e0->Normal();
+				V2d e1n;// = e1->Normal();
+
+				
+				if( e0 != NULL )
+					e0n = e0->Normal();
+				if( e1 != NULL )
+					e1n = e1->Normal();
+				
 
 				if( minContact.position.y > position.y + b.offset.y + b.rh - 5 && minContact.edge->Normal().y >= 0 )
 				{
 					if( minContact.position == minContact.edge->v0 ) 
 					{
-						if( minContact.edge->edge0->Normal().y <= 0 )
+						if( minContact.edge->edge0 != NULL && minContact.edge->edge0->Normal().y <= 0 )
 						{
 							minContact.edge = minContact.edge->edge0;
 						}
@@ -10437,7 +10454,7 @@ void Actor::UpdatePhysics()
 
 				V2d extraDir =  normalize( minContact.edge->v1 - minContact.edge->v0 );
 
-				if( (minContact.position == e->v0 && en.x < 0 && en.y < 0 ) )
+				if( e0 != NULL && minContact.position == e->v0 && en.x < 0 && en.y < 0 )
 				{
 					V2d te = e0->v0 - e0->v1;
 					if( te.x > 0 )
@@ -10446,7 +10463,7 @@ void Actor::UpdatePhysics()
 						wallNormal = extraDir;
 					}
 				}
-				else if( (minContact.position == e->v1 && en.x < 0 && en.y > 0 ) )
+				else if(e1 != NULL && minContact.position == e->v1 && en.x < 0 && en.y > 0  )
 				{
 					V2d te = e1->v1 - e1->v0;
 					if( te.x > 0 )
@@ -10456,7 +10473,7 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				else if( (minContact.position == e->v1 && en.x < 0 && en.y < 0 ) )
+				else if(e1 != NULL && minContact.position == e->v1 && en.x < 0 && en.y < 0  )
 				{
 					V2d te = e1->v1 - e1->v0;
 					if( te.x < 0 )
@@ -10465,7 +10482,7 @@ void Actor::UpdatePhysics()
 						wallNormal = extraDir;
 					}
 				}
-				else if( (minContact.position == e->v0 && en.x > 0 && en.y < 0 ) )
+				else if(e0 != NULL && minContact.position == e->v0 && en.x > 0 && en.y < 0 )
 				{
 					V2d te = e0->v0 - e0->v1;
 					if( te.x > 0 )
@@ -10474,7 +10491,7 @@ void Actor::UpdatePhysics()
 						wallNormal = extraDir;
 					}
 				}
-				else if( (minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
+				else if( (e1 != NULL && minContact.position == e->v1 && en.x > 0 && en.y < 0 ) )
 				{
 					V2d te = e1->v1 - e1->v0;
 					if( te.x < 0 )
@@ -10483,7 +10500,7 @@ void Actor::UpdatePhysics()
 						wallNormal = V2d( 1, 0 );//extraDir;
 					}
 				}
-				else if( (minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
+				else if( (e0 != NULL && minContact.position == e->v0 && en.x > 0 && en.y > 0 ) )
 				{
 					V2d te = e0->v0 - e0->v1;
 					if( te.x < 0 )
@@ -10496,7 +10513,7 @@ void Actor::UpdatePhysics()
 				
 
 
-				if( (minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
+				if( (e1 != NULL && minContact.position == e->v1 && en.x > 0 && en.y > 0 ) )
 				{
 					V2d te = e1->v1 - e1->v0;
 					if( te.y < 0 )
@@ -10504,7 +10521,7 @@ void Actor::UpdatePhysics()
 						extraDir = V2d( -1, 0 );
 					}
 				}
-				else if( (minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
+				else if( ( e0 != NULL && minContact.position == e->v0 && en.x < 0 && en.y > 0 ) )
 				{
 					V2d te = e0->v0 - e0->v1;
 					if( te.y < 0 )
@@ -14307,10 +14324,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				return;
 			}
 		}
-		/*else if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
+		else if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
 		{
 			return;
-		}*/
+		}
 
 		bool bb = false;
 
@@ -14318,16 +14335,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			V2d gn = ground->Normal();
 			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
+			V2d nextn, prevn;
 
-			V2d nextn = ground->edge1->Normal();
-			V2d prevn = ground->edge0->Normal();
-			bool sup = (groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0);
-			//cout << "sup: " << sup << endl;
+			if (ground->edge1 != NULL)
+			{
+				nextn = ground->edge1->Normal();
+			}
+			if (ground->edge0 != NULL)
+			{
+				prevn = ground->edge0->Normal();
+			}
+
+
 			bool a = false;
 			bool b = false;
 			if (!reversed)
 			{
-				if (groundSpeed > 0)
+				if (groundSpeed > 0 && ground->edge1 != NULL )
 				{
 					if ((ground->edge1 == e
 						&& ((gn.x > 0 && nextn.x > 0 && nextn.y < 0) || (gn.x < 0 && nextn.x < 0 && nextn.y < 0)))
@@ -14336,7 +14360,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						a = true;
 					}
 				}
-				else if (groundSpeed < 0)
+				else if (groundSpeed < 0 && ground->edge0 != NULL )
 				{
 					if ((ground->edge0 == e
 						&& ((gn.x < 0 && prevn.x < 0 && prevn.y < 0) || (gn.x > 0 && prevn.x > 0 && prevn.y < 0)))
@@ -14348,26 +14372,29 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 			else
 			{
-				if (groundSpeed > 0)
+				if (ground->edge0 != NULL && ground->edge1 != NULL)
 				{
-					if ((ground->edge0 == e
-						&& ((gn.x < 0 && prevn.x < 0 && prevn.y > 0) || (gn.x > 0 && prevn.x > 0 && prevn.y > 0)))
-						|| ground->edge1 == e)
+					if (groundSpeed > 0 )
 					{
-						//cout << "one" << endl;
-						b = true;
+						if ((ground->edge0 == e
+							&& ((gn.x < 0 && prevn.x < 0 && prevn.y > 0) || (gn.x > 0 && prevn.x > 0 && prevn.y > 0)))
+							|| ground->edge1 == e)
+						{
+							//cout << "one" << endl;
+							b = true;
+						}
 					}
-				}
-				else if (groundSpeed < 0)
-				{
-					bool c = ground->edge1 == e;
-					bool h = (gn.x > 0 && nextn.x > 0 && nextn.y > 0);
-					bool g = (gn.x < 0 && nextn.x < 0 && nextn.y > 0);
-					bool d = h || g;
-					bool f = ground->edge0 == e;
-					if ((c && d) || f)
+					else if (groundSpeed < 0)
 					{
-						b = true;
+						bool c = ground->edge1 == e;
+						bool h = (gn.x > 0 && nextn.x > 0 && nextn.y > 0);
+						bool g = (gn.x < 0 && nextn.x < 0 && nextn.y > 0);
+						bool d = h || g;
+						bool f = ground->edge0 == e;
+						if ((c && d) || f)
+						{
+							b = true;
+						}
 					}
 				}
 			}
@@ -14420,7 +14447,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			if (groundSpeed > 0)
 			{
-				if (ground->edge0->edgeType == Edge::CLOSED_GATE)
+				if (ground->edge0 != NULL && ground->edge0->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *g = (Gate*)ground->edge0->info;
 					Edge *e0 = ground->edge0;
@@ -14448,7 +14475,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 			else if (groundSpeed < 0)
 			{
-				if (ground->edge1->edgeType == Edge::CLOSED_GATE)
+				if (ground->edge1 != NULL && ground->edge1->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *g = (Gate*)ground->edge1->info;
 					Edge *e1 = ground->edge1;
@@ -14488,7 +14515,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			double len1 = length(c->position - e->v1);
 
 
-			if (e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1)
+			if ( e->edge0 != NULL && e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1)
 			{
 				//cout << "len0: " << len0 << endl;
 				V2d pVec = normalize(position - e->v0);
@@ -14554,7 +14581,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 
 			}
-			else if (e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1)
+			else if ( e->edge1 != NULL && e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1)
 			{
 				//cout << "len1: " << len1 << endl;
 				V2d pVec = normalize(position - e->v1);
@@ -15093,7 +15120,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		RailPtr rail = e->rail;
 
 		if ((rail->RequiresPowerToGrind() && !canRailGrind) || IsInHistunAction(action) || rail->GetRailType() == TerrainRail::WIREONLY
-			|| rail->GetRailType() == TerrainRail::WIREBLOCKING )
+			|| rail->GetRailType() == TerrainRail::WIREBLOCKING 
+			|| rail->GetRailType() == TerrainRail::BOUNCE )
 		{
 			return;
 		}
@@ -16454,25 +16482,36 @@ double Actor::GroundedAngle()
 	
 	if (ground != NULL)
 	{
+		bool a = false, b = false;
 		if (!reversed)
 		{
-			V2d e0n = ground->edge0->Normal();
-			V2d e1n = ground->edge1->Normal();
-			bool a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
-			bool b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
-			extraCase = a || b;
-			//cout << "extra: " << extraCase << endl;
+			if (ground->edge0 != NULL)
+			{
+				V2d e0n = ground->edge0->Normal();
+				a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
+			}
+			
+			if (ground->edge1 != NULL)
+			{
+				V2d e1n = ground->edge1->Normal();
+				b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
+			}
 		}
 		else
 		{
-			V2d e0n = ground->edge0->Normal();
-			V2d e1n = ground->edge1->Normal();
-			bool a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
-			bool b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
-			extraCase = a || b;
-			//cout << "extraCSe : " << a <<", " << b << ", edge: " << edgeQuantity << ", " << length( ground->v1 - ground->v0 )
-			//	 << ", " << approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) << endl;
+			if (ground->edge0 != NULL)
+			{
+				V2d e0n = ground->edge0->Normal();
+				a = (offsetX > 0 && approxEquals(edgeQuantity, 0) && e0n.x < 0);
+			}
+
+			if (ground->edge1 != NULL)
+			{
+				V2d e1n = ground->edge1->Normal();
+				b = (offsetX < 0 && approxEquals(edgeQuantity, length(ground->v1 - ground->v0)) && e1n.x > 0);
+			}
 		}
+		extraCase = a || b;
 	}
 	//bool extraCaseRev = reversed && (( offsetX > 0 && approxEquals( edgeQuantity, 0 ) )
 	//	|| ( offsetX < 0 && approxEquals( edgeQuantity, length( ground->v1 - ground->v0 ) ) ) );

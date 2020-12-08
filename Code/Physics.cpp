@@ -886,7 +886,32 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		double edgeBottom = max( e->v0.y, e->v1.y ); 
 
 		V2d en = e->Normal();
-		V2d prevEn = e->edge0->Normal();
+		V2d prevEn;
+		V2d prevFullAlong;
+		V2d prevReverseAlong;
+		V2d nextFullAlong;
+		if (e->edge0 != NULL)
+		{
+			prevEn = e->edge0->Normal();
+			prevReverseAlong = normalize(e->edge0->v0 - e->v0);	
+			prevFullAlong = e->v0 - e->edge0->v0;
+			
+		}
+		else
+		{
+			prevEn = en;
+			prevReverseAlong = -e->Along();
+			prevFullAlong = e->FullAlong();
+		}
+
+		if (e->edge1 != NULL)
+		{
+			nextFullAlong = e->edge1->FullAlong();
+		}
+		else
+		{
+			nextFullAlong = e->FullAlong();
+		}
 		V2d point = e->v0;
 		//V2d v1 = e->v1;
 		//check for point collisions first
@@ -898,7 +923,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 		bool pointInRect = point.x >= min( left, oldLeft ) - ex  && point.x <= max( right, oldRight ) + ex && point.y >= min( top, oldTop ) - ex && point.y <= max( bottom, oldBottom ) + ex;		
 
 
-		double unPoint = cross( normalize(e->v1 - e->v0), normalize( e->edge0->v0 - e->v0 ) );
+		double unPoint = cross(e->Along(), prevReverseAlong);
+
 		double leftTime = 1, rightTime = 1, bottomTime = 1, topTime = 1; // one whole timestep
 		
 		V2d intersect;
@@ -993,7 +1019,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			topCond0 = topCond1 = topCond2 = false;
 
 			bool topPos = false, botPos = false, leftPos = false, rightPos = false;
-			double aaaa =  dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
+			double aaaa =  dot (-prevFullAlong, normalize( e->v1 - e->v0 ) );
 			if( aaaa > 0 )
 			{
 				bool topRight = prevEn.x < 0 && prevEn.y < 0 && en.x > 0 && en.y > 0;
@@ -1024,7 +1050,6 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}
 			else
 			{
-				//double bbbb = dot (e->edge0->v0 - e->v0, normalize( e->v1 - e->v0 ) );
 				//the equals signs are for straight edges connected to slopes. not sure why i need to test those points but i guess it makes sense
 				bool up = prevEn.x <= 0 && prevEn.y < 0 && en.x >= 0 && en.y < 0;
 				bool r = prevEn.x > 0 && prevEn.y <= 0 && en.x > 0 && en.y >= 0;
@@ -1434,12 +1459,12 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 						double t;
 						if( a )
 						{
-							t = cross( e->v1 - e->v0, normalize(e->edge0->v0 - e->v0) );
+							t = cross( e->v1 - e->v0, prevReverseAlong);
 							intersect = e->v0;
 						}
 						else
 						{
-							t = -cross( e->edge1->v1 - e->v1, normalize(e->v1 - e->v0) ); 
+							t = -cross( nextFullAlong, normalize(e->v1 - e->v0) ); 
 							intersect = e->v1;
 						}
 						
@@ -1497,7 +1522,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			if( point == e->v0 )
 			{
 				Edge *e0 = e->edge0;
-				if( e0->edgeType == Edge::CLOSED_GATE )
+				if( e0 != NULL && e0->edgeType == Edge::CLOSED_GATE )
 				{
 
 					//return NULL;
@@ -1516,7 +1541,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			else if( point == e->v1 )
 			{
 				Edge *e1 = e->edge1;
-				if( e1->edgeType == Edge::CLOSED_GATE )
+				if( e1 != NULL && e1->edgeType == Edge::CLOSED_GATE )
 				{
 				//	return NULL;
 				}
