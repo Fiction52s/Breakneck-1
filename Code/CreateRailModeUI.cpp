@@ -69,7 +69,7 @@ CreateRailModeUI::CreateRailModeUI()
 		currTypeRectPos, NULL, 0);
 	currEnemyTypeRect->Init();
 
-	Tileset *ts_physicalTypes = edit->GetSizedTileset("Editor/gatecategories_128x128.png");
+	Tileset *ts_physicalTypes = edit->GetSizedTileset("Editor/railcategories_128x128.png");
 	
 	int numPhysTypes = TerrainRail::BLOCKER; //phys types come before blocker
 	physicalPanel->ReserveImageRects(numPhysTypes);

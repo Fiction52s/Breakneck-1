@@ -439,6 +439,10 @@ sf::Color TerrainRail::GetRailColor()
 		return Color::Magenta;
 	case WIREBLOCKING:
 		return Color::White;
+	case BOUNCE:
+		return Color::Yellow;
+	case SCORPIONONLY:
+		return Color(255, 127, 39);
 	}
 
 	return Color::Red;
@@ -1365,6 +1369,8 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	case TIMESLOW:
 	case WIREONLY:
 	case WIREBLOCKING:
+	case BOUNCE:
+	case SCORPIONONLY:
 	{
 		target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
 		coloredNodeCircles->Draw(target);

@@ -33,6 +33,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		TIMESLOW,
 		WIREONLY,
 		WIREBLOCKING,
+		BOUNCE,
+		SCORPIONONLY,
 		BLOCKER,
 		FLY,
 	};

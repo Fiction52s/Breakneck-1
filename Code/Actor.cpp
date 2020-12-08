@@ -6997,6 +6997,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		GetTerrainTree()->Query(this, r);
 	}
 	
+	//sess->railEdgeTree->Query(this, r);
 
 	
 	sess->barrierTree->Query(this, r);
@@ -14306,6 +14307,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				return;
 			}
 		}
+		/*else if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
+		{
+			return;
+		}*/
 
 		bool bb = false;
 
