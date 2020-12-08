@@ -5246,13 +5246,24 @@ void Actor::UpdateBubbles()
 	}
 
 
+	bool inTimeSlowTerrain = timeSlowTerrain;
+
+	if (grindEdge != NULL)
+	{
+		if (grindEdge->rail != NULL
+			&& grindEdge->rail->GetRailType() == TerrainRail::TIMESLOW)
+		{
+			inTimeSlowTerrain = false;
+		}
+	}
+
 	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
 	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW )
-		|| timeSlowTerrain)
+		|| inTimeSlowTerrain)
 	{
-		if (!prevInput.PowerButtonDown() && !inBubble && !timeSlowTerrain)
+		if (!prevInput.PowerButtonDown() && !inBubble && !inTimeSlowTerrain)
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
@@ -14274,12 +14285,12 @@ void Actor::AddToFlyCounter(int count)
 	if( ah != NULL ) ah->flyCountText.setString("x" + to_string(flyCounter));
 }
 
-void Actor::HandleEntrant( QuadTreeEntrant *qte )
+void Actor::HandleEntrant(QuadTreeEntrant *qte)
 {
-	
 
-	assert( queryMode != "" );
-	if( queryMode == "resolve" )
+
+	assert(queryMode != "");
+	if (queryMode == "resolve")
 	{
 		Edge *e = (Edge*)qte;
 
@@ -14297,34 +14308,34 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		}
 
 		bool bb = false;
-		
-		if( ground != NULL && groundSpeed != 0 )
+
+		if (ground != NULL && groundSpeed != 0)
 		{
 			V2d gn = ground->Normal();
 			//bb fixes the fact that its easier to hit corners now, so it doesnt happen while you're running
-			
+
 			V2d nextn = ground->edge1->Normal();
 			V2d prevn = ground->edge0->Normal();
-			bool sup = ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 );
+			bool sup = (groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0);
 			//cout << "sup: " << sup << endl;
 			bool a = false;
 			bool b = false;
-			if( !reversed )
+			if (!reversed)
 			{
-				if( groundSpeed > 0 )
+				if (groundSpeed > 0)
 				{
-					if( ( ground->edge1 == e 
-							&& (( gn.x > 0 && nextn.x > 0 && nextn.y < 0 ) || ( gn.x < 0 && nextn.x < 0 && nextn.y < 0 )) )
-						|| ground->edge0 == e )
+					if ((ground->edge1 == e
+						&& ((gn.x > 0 && nextn.x > 0 && nextn.y < 0) || (gn.x < 0 && nextn.x < 0 && nextn.y < 0)))
+						|| ground->edge0 == e)
 					{
 						a = true;
 					}
 				}
-				else if( groundSpeed < 0 )
+				else if (groundSpeed < 0)
 				{
-					if( ( ground->edge0 == e 
-							&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y < 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y < 0 ) ) ) 
-						|| ground->edge1 == e )
+					if ((ground->edge0 == e
+						&& ((gn.x < 0 && prevn.x < 0 && prevn.y < 0) || (gn.x > 0 && prevn.x > 0 && prevn.y < 0)))
+						|| ground->edge1 == e)
 					{
 						a = true;
 					}
@@ -14332,126 +14343,126 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 			else
 			{
-				if( groundSpeed > 0 )
+				if (groundSpeed > 0)
 				{
-					if( ( ground->edge0 == e 
-						&& ( ( gn.x < 0 && prevn.x < 0 && prevn.y > 0 ) || ( gn.x > 0 && prevn.x > 0 && prevn.y > 0 ) ) ) 
-						|| ground->edge1 == e )
+					if ((ground->edge0 == e
+						&& ((gn.x < 0 && prevn.x < 0 && prevn.y > 0) || (gn.x > 0 && prevn.x > 0 && prevn.y > 0)))
+						|| ground->edge1 == e)
 					{
 						//cout << "one" << endl;
 						b = true;
 					}
 				}
-				else if( groundSpeed < 0 )
+				else if (groundSpeed < 0)
 				{
 					bool c = ground->edge1 == e;
-					bool h = ( gn.x > 0 && nextn.x > 0 && nextn.y > 0 );
-					bool g = ( gn.x < 0 && nextn.x < 0 && nextn.y > 0 );
+					bool h = (gn.x > 0 && nextn.x > 0 && nextn.y > 0);
+					bool g = (gn.x < 0 && nextn.x < 0 && nextn.y > 0);
 					bool d = h || g;
 					bool f = ground->edge0 == e;
-					if( (c && d) || f )
+					if ((c && d) || f)
 					{
 						b = true;
 					}
 				}
 			}
-		//	a = false;
-		//	b = false;
-			
-			
-			//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
-			//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
-			//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
-			bb = ( a || b );
+			//	a = false;
+			//	b = false;
+
+
+				//a = !reversed && ((groundSpeed > 0 && gn.x < 0 && nextn.x < 0 && nextn.y < 0) || ( groundSpeed < 0 && gn.x > 0 && prevn.x > 0 && prevn.y < 0 )
+				//	|| ( groundSpeed > 0 && gn.x > 0 && nextn.x > 0 && prevn.y < 0 ) || ( groundSpeed < 0 && gn.x < 0 && prevn.x < 0 && prevn.y < 0 ));
+				//bool b = reversed && (( gn.x < 0 && nextn.x < 0 || ( gn.x > 0 && prevn.x > 0 )));
+			bb = (a || b);
 		}
 
-		
-		
 
-		if( e == ground || bb )
+
+
+		if (e == ground || bb)
 		{
 			return;
 		}
 
 		//so you can run on gates without transfer issues hopefully
-		if( ground != NULL && ground->edgeType == Edge::CLOSED_GATE )
+		if (ground != NULL && ground->edgeType == Edge::CLOSED_GATE)
 		{
 			Gate *g = (Gate*)ground->info;
 			Edge *edgeA = g->edgeA;
 			Edge *edgeB = g->edgeB;
-			if( ground == g->edgeA )
+			if (ground == g->edgeA)
 			{
-				if( e == edgeB->edge0 
+				if (e == edgeB->edge0
 					|| e == edgeB->edge1
-					|| e == edgeB )
+					|| e == edgeB)
 				{
 					return;
 				}
 
-				
+
 			}
-			else if( ground == g->edgeB )
+			else if (ground == g->edgeB)
 			{
-				if( e == edgeA->edge0 
+				if (e == edgeA->edge0
 					|| e == edgeA->edge1
-					|| e == edgeA )
+					|| e == edgeA)
 				{
 					return;
 				}
 			}
 		}
-		else if( ground != NULL )
+		else if (ground != NULL)
 		{
-			if( groundSpeed > 0 )
+			if (groundSpeed > 0)
 			{
-				if( ground->edge0->edgeType == Edge::CLOSED_GATE )
+				if (ground->edge0->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *g = (Gate*)ground->edge0->info;
 					Edge *e0 = ground->edge0;
-					if( e0 == g->edgeA )
+					if (e0 == g->edgeA)
 					{
 						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
+						if (e == edgeB->edge0
 							|| e == edgeB->edge1
-							|| e == edgeB )
+							|| e == edgeB)
 						{
 							return;
 						}
 					}
-					else if( e0 == g->edgeB )
+					else if (e0 == g->edgeB)
 					{
 						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
+						if (e == edgeA->edge0
 							|| e == edgeA->edge1
-							|| e == edgeA )
+							|| e == edgeA)
 						{
 							return;
 						}
 					}
 				}
 			}
-			else if( groundSpeed < 0 )
+			else if (groundSpeed < 0)
 			{
-				if( ground->edge1->edgeType == Edge::CLOSED_GATE )
+				if (ground->edge1->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *g = (Gate*)ground->edge1->info;
 					Edge *e1 = ground->edge1;
-					if( e1 == g->edgeA )
+					if (e1 == g->edgeA)
 					{
 						Edge *edgeB = g->edgeB;
-						if( e == edgeB->edge0 
+						if (e == edgeB->edge0
 							|| e == edgeB->edge1
-							|| e == edgeB )
+							|| e == edgeB)
 						{
 							return;
 						}
 					}
-					else if( e1 == g->edgeB )
+					else if (e1 == g->edgeB)
 					{
 						Edge *edgeA = g->edgeA;
-						if( e == edgeA->edge0 
+						if (e == edgeA->edge0
 							|| e == edgeA->edge1
-							|| e == edgeA )
+							|| e == edgeA)
 						{
 							return;
 						}
@@ -14462,228 +14473,228 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 
 		Contact *c = GetCollider().collideEdge(position + b.offset, b, e, tempVel, V2d(0, 0));
 
-		if( c != NULL )
+		if (c != NULL)
 		{
 			//cout << "c isnt null: " << e->Normal().x << ", " << e->Normal().y << endl;
-		bool surface = ( c->normal.x == 0 && c->normal.y == 0 );
+			bool surface = (c->normal.x == 0 && c->normal.y == 0);
 
-		//these make sure its a point of conention and not the other edge end point
-		double len0 = length( c->position - e->v0 );
-		double len1 = length( c->position - e->v1 );
-		
-		
-		if( e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1 )
-		{
-			//cout << "len0: " << len0 << endl;
-			V2d pVec = normalize( position - e->v0 );
-			double pAngle = atan2( -pVec.y, pVec.x );
+			//these make sure its a point of conention and not the other edge end point
+			double len0 = length(c->position - e->v0);
+			double len1 = length(c->position - e->v1);
 
-			if( pAngle < 0 )
+
+			if (e->edge0->edgeType == Edge::CLOSED_GATE && len0 < 1)
 			{
-				pAngle += 2 * PI;
-			}
+				//cout << "len0: " << len0 << endl;
+				V2d pVec = normalize(position - e->v0);
+				double pAngle = atan2(-pVec.y, pVec.x);
 
-			Edge *e0 = e->edge0;
-			Gate *g = (Gate*)e0->info;
-
-			V2d startVec = normalize( e0->v0 - e->v0 );
-			V2d endVec = normalize( e->v1 - e->v0 );
-
-			double startAngle = atan2( -startVec.y, startVec.x );
-			if( startAngle < 0 )
-			{
-				startAngle += 2 * PI;
-			}
-			double endAngle = atan2( -endVec.y, endVec.x );
-			if( endAngle < 0 )
-			{
-				endAngle += 2 * PI;
-			}
-
-			double temp = startAngle;
-			startAngle = endAngle;
-			endAngle = temp;
-
-			if( endAngle < startAngle )
-			{
-				if( pAngle >= endAngle || pAngle <= startAngle )
+				if (pAngle < 0)
 				{
-					
+					pAngle += 2 * PI;
+				}
+
+				Edge *e0 = e->edge0;
+				Gate *g = (Gate*)e0->info;
+
+				V2d startVec = normalize(e0->v0 - e->v0);
+				V2d endVec = normalize(e->v1 - e->v0);
+
+				double startAngle = atan2(-startVec.y, startVec.x);
+				if (startAngle < 0)
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2(-endVec.y, endVec.x);
+				if (endAngle < 0)
+				{
+					endAngle += 2 * PI;
+				}
+
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
+
+				if (endAngle < startAngle)
+				{
+					if (pAngle >= endAngle || pAngle <= startAngle)
+					{
+
+					}
+					else
+					{
+						//	cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+					}
 				}
 				else
 				{
-				//	cout << "blahblah a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;
+					if (pAngle >= startAngle && pAngle <= endAngle)
+					{
+
+						//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+						//	", p: " << pVec.x << ", " << pVec.y << endl;
+
+					}
+					else
+					{
+						//	cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+						/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+							", p: " << pVec.x << ", " << pVec.y << endl;
+						cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;*/
+					}
 				}
+
+
 			}
-			else
+			else if (e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1)
 			{
-				if( pAngle >= startAngle && pAngle <= endAngle )
+				//cout << "len1: " << len1 << endl;
+				V2d pVec = normalize(position - e->v1);
+				double pAngle = atan2(-pVec.y, pVec.x);
+
+				if (pAngle < 0)
 				{
-					
-					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					
+					pAngle += 2 * PI;
+				}
+
+				Edge *e1 = e->edge1;
+				Gate *g = (Gate*)e1->info;
+
+				V2d startVec = normalize(e->v0 - e->v1);
+				V2d endVec = normalize(e1->v1 - e->v1);
+
+				double startAngle = atan2(-startVec.y, startVec.x);
+				if (startAngle < 0)
+				{
+					startAngle += 2 * PI;
+				}
+				double endAngle = atan2(-endVec.y, endVec.x);
+				if (endAngle < 0)
+				{
+					endAngle += 2 * PI;
+				}
+
+				double temp = startAngle;
+				startAngle = endAngle;
+				endAngle = temp;
+
+				//double temp = startAngle;
+				//startAngle = endAngle;
+				//endAngle = temp;
+
+				if (endAngle < startAngle)
+				{
+					if (pAngle >= endAngle || pAngle <= startAngle)
+					{
+
+					}
+					else
+					{
+						//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+					}
 				}
 				else
 				{
-				//	cout << "blahblah b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;
-					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;*/
+					if (pAngle >= startAngle && pAngle <= endAngle)
+					{
+						//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+						//	", p: " << pVec.x << ", " << pVec.y << endl;
+
+					}
+					else
+					{
+						//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;
+
+						/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
+							", p: " << pVec.x << ", " << pVec.y << endl;
+						cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
+						return;*/
+					}
 				}
 			}
-			
 
-		}
-		else if( e->edge1->edgeType == Edge::CLOSED_GATE && len1 < 1 )
-		{
-			//cout << "len1: " << len1 << endl;
-			V2d pVec = normalize( position - e->v1 );
-			double pAngle = atan2( -pVec.y, pVec.x );
 
-			if( pAngle < 0 )
+			/*if( e->edge0->edgeType == Edge::CLOSED_GATE )
 			{
-				pAngle += 2 * PI;
-			}
-
-			Edge *e1 = e->edge1;
-			Gate *g = (Gate*)e1->info;
-
-			V2d startVec = normalize( e->v0 - e->v1 );
-			V2d endVec = normalize( e1->v1 - e->v1 );
-
-			double startAngle = atan2( -startVec.y, startVec.x );
-			if( startAngle < 0 )
-			{
-				startAngle += 2 * PI;
-			}
-			double endAngle = atan2( -endVec.y, endVec.x );
-			if( endAngle < 0 )
-			{
-				endAngle += 2 * PI;
-			}
-			
-			double temp = startAngle;
-			startAngle = endAngle;
-			endAngle = temp;
-
-			//double temp = startAngle;
-			//startAngle = endAngle;
-			//endAngle = temp;
-
-			if( endAngle < startAngle )
-			{
-				if( pAngle >= endAngle || pAngle <= startAngle )
+				double q =
+				Edge *e0 = e->edge0;
+				Gate *g = (Gate*)e0->info;
+				Edge *ea = g->edgeA;
+				double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
+				if( ca > 0 )
 				{
-					
+					if( e0 == g->edgeB )
+					{
+						return;
+					}
+				}
+				else if( ca < 0 )
+				{
+					if( e0 == g->edgeA )
+					{
+						return;
+					}
 				}
 				else
 				{
-					//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return a. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;
+					assert( 0 && "gate collision stuff" );
 				}
 			}
-			else
+			else if( e->edge1->edgeType == Edge::CLOSED_GATE )
 			{
-				if( pAngle >= startAngle && pAngle <= endAngle )
+				Edge *e1 = e->edge1;
+				Gate *g = (Gate*)e1->info;
+				Edge *ea = g->edgeA;
+				double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
+				if( ca > 0 )
 				{
-					//cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-					//	", p: " << pVec.x << ", " << pVec.y << endl;
-					
+					if( e1 == g->edgeB )
+					{
+						return;
+					}
+				}
+				else if( ca < 0 )
+				{
+					if( e1 == g->edgeA )
+					{
+						return;
+					}
 				}
 				else
 				{
-					//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << ", return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;
+					assert( 0 && "gate collision stuff" );
+				}
+			}*/
 
-					/*cout << "startVec: " << startVec.x << ", " << startVec.y << ", end: " << endVec.x << ", " << endVec.y <<
-						", p: " << pVec.x << ", " << pVec.y << endl;
-					cout << "return b. start: " << startAngle << ", end: " << endAngle << ", p: " << pAngle << endl;
-					return;*/
-				}
-			}
-		}
-		
 
-		/*if( e->edge0->edgeType == Edge::CLOSED_GATE )
-		{
-			double q = 
-			Edge *e0 = e->edge0;
-			Gate *g = (Gate*)e0->info;
-			Edge *ea = g->edgeA;
-			double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
-			if( ca > 0 )
-			{
-				if( e0 == g->edgeB )
-				{
-					return;
-				}
-			}
-			else if( ca < 0 )
-			{
-				if( e0 == g->edgeA )
-				{
-					return;
-				}
-			}
-			else
-			{
-				assert( 0 && "gate collision stuff" );
-			}
-		}
-		else if( e->edge1->edgeType == Edge::CLOSED_GATE )
-		{
-			Edge *e1 = e->edge1;
-			Gate *g = (Gate*)e1->info;
-			Edge *ea = g->edgeA;
-			double ca = cross( position - ea->v0, normalize( ea->v1 - ea->v0 ) );
-			if( ca > 0 )
-			{
-				if( e1 == g->edgeB )
-				{
-					return;
-				}
-			}
-			else if( ca < 0 )
-			{
-				if( e1 == g->edgeA )
-				{
-					return;
-				}
-			}
-			else
-			{
-				assert( 0 && "gate collision stuff" );
-			}
-		}*/
-			
 
-		
-		
-		
-		
-		
 
-		//if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
-		//{
-			if( c->edge->edgeType == Edge::OPEN_GATE )
+
+
+
+
+			//if( c != NULL )	//	|| minContact.collisionPriority < -.001 && c->collisionPriority >= 0 )
+			//{
+			if (c->edge->edgeType == Edge::OPEN_GATE)
 			{
 				//cout << "GATEEEEee" << endl;
 				return;
 			}
-			else if( c->edge->edgeType == Edge::CLOSED_GATE )
+			else if (c->edge->edgeType == Edge::CLOSED_GATE)
 			{
-				
+
 				//c->edge->edgeType = Edge::OPEN_GATE;
 				Gate *g = (Gate*)c->edge->info;//owner->gateMap[c->edge];
-				
-				if( CanUnlockGate( g ) )
+
+				if (CanUnlockGate(g))
 				{
 
-					if( c->edge == g->edgeA )
+					if (c->edge == g->edgeA)
 					{
 						gateTouched = g->edgeB;
 					}
@@ -14692,14 +14703,14 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						gateTouched = g->edgeA;
 					}
 
-					UnlockGate( g );
+					UnlockGate(g);
 
 					return;
 
 				}
 			}
 
-			if( ( c->normal.x == 0 && c->normal.y == 0 ) ) //non point
+			if ((c->normal.x == 0 && c->normal.y == 0)) //non point
 			{
 				//cout << "SURFACE. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << ", pri: " << c->collisionPriority << endl;
 			}
@@ -14708,36 +14719,36 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 				//cout << "POINT. n: " << c->edge->Normal().x << ", " << c->edge->Normal().y << endl;
 			}
 
-			if( c->weirdPoint )
+			if (c->weirdPoint)
 			{
-		//		cout << "weird point " << endl;
-				
+				//		cout << "weird point " << endl;
+
 				Edge *edge = e;
 				Edge *prev = edge->edge0;
 				Edge *next = edge->edge1;
 
 				V2d v0 = edge->v0;
-				V2d v1 = edge->v1;				
+				V2d v1 = edge->v1;
 
 				//note: approxequals could be broken slightly
-				if( approxEquals( c->position.x, e->v0.x ) && approxEquals( c->position.y, e->v0.y ) )
+				if (approxEquals(c->position.x, e->v0.x) && approxEquals(c->position.y, e->v0.y))
 				{
 					V2d pv0 = prev->v0;
 					V2d pv1 = prev->v1;
 
 					V2d pn = prev->Normal();
 					V2d en = e->Normal();
-					
 
-					if( ground == NULL && pn.y >= 0 && en.y < 0 )
+
+					if (ground == NULL && pn.y >= 0 && en.y < 0)
 					{
 						//cout << "bhaehfdf" << endl; //falling off and you dont want to keep hitting the ground
-						assert( !reversed );
+						assert(!reversed);
 						return;
 					}
 
 					//ground != NULL
-					if( pn.y < en.y )
+					if (pn.y < en.y)
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						//cout << "sfdfdsfsdfdsfds" << endl;
@@ -14747,20 +14758,20 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 						//c->normal = V2d( 0, -1 );
 					}
 				}
-				else if( approxEquals( c->position.x, e->v1.x ) && approxEquals( c->position.y, e->v1.y ) )
+				else if (approxEquals(c->position.x, e->v1.x) && approxEquals(c->position.y, e->v1.y))
 				{
 					V2d nn = next->Normal();
 					V2d en = e->Normal();
-					if( ground == NULL && en.y < 0 && nn.y >= 0 )
+					if (ground == NULL && en.y < 0 && nn.y >= 0)
 					{
 						//cout << "bhaehfdf" << endl;
 						//falling off and you dont want to keep hitting the ground
-						assert( !reversed );
+						assert(!reversed);
 						return;
 					}
 
 					//ground != NULL
-					if( nn.y < en.y )
+					if (nn.y < en.y)
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						//cout << "herererere" << endl;
@@ -14773,17 +14784,17 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			}
 
 			bool closedGate = (c->edge->edgeType == Edge::CLOSED_GATE);
-			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE );
+			bool minGate = (minContact.edge != NULL && minContact.edge->edgeType == Edge::CLOSED_GATE);
 
-			if( !col || (minContact.collisionPriority < 0 ) 
-				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0 ) )//|| ( closedGate && !minGate ) )
-			{	
-				if( c->collisionPriority == minContact.collisionPriority )//&& !closedGate )
+			if (!col || (minContact.collisionPriority < 0)
+				|| (c->collisionPriority <= minContact.collisionPriority && c->collisionPriority >= 0))//|| ( closedGate && !minGate ) )
+			{
+				if (c->collisionPriority == minContact.collisionPriority)//&& !closedGate )
 				{
-					if(( c->normal.x == 0 && c->normal.y == 0 ) )//|| minContact.normal.y  0 )
+					if ((c->normal.x == 0 && c->normal.y == 0))//|| minContact.normal.y  0 )
 					//if( length(c->resolution) > length(minContact.resolution) )
 					{
-					//	cout << "now the min" << endl;
+						//	cout << "now the min" << endl;
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
 						minContact.resolution = c->resolution;
@@ -14809,13 +14820,13 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.position = c->position;
 					minContact.normal = c->normal;
 					col = true;
-					
+
 				}
 			}
 		}
-		
+
 	}
-	else if( queryMode == "check" )
+	else if (queryMode == "check")
 	{
 		Edge *e = (Edge*)qte;
 
@@ -14824,194 +14835,194 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 			return;
 		}
 		//cout << "checking: " << e << endl;
-		if( (grindEdge == NULL && ground == e) || grindEdge == e )
+		if ((grindEdge == NULL && ground == e) || grindEdge == e)
 			return;
 
 		//Edge *testEdge = ground;
-		
-			
-		
+
+
+
 
 
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
 		//Rect<double> r( position.x + b.offset.x - b.rw * 2, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight);
-		if ( action != GRINDBALL && action != GRINDATTACK )
+		if (action != GRINDBALL && action != GRINDATTACK)
 		{
 			//cout << "here" << endl;
-			if( ground != NULL )
+			if (ground != NULL)
 			{
 
-				
+
 
 				V2d en = e->Normal();
-				if( reversed )
+				if (reversed)
 				{
-					if( en.y >= 0 )
+					if (en.y >= 0)
 					{
 						return;
 					}
 				}
 				else
 				{
-					if( e == ground->edge1 )
+					if (e == ground->edge1)
 					{
-						double c = cross( normalize(e->v1 - ground->v0),
-							normalize( ground->v1 - ground->v0 ) );
-						if( en.y >= 0 && c < 0 )
+						double c = cross(normalize(e->v1 - ground->v0),
+							normalize(ground->v1 - ground->v0));
+						if (en.y >= 0 && c < 0)
 						{
 							return;
 						}
 					}
-					else if( e == ground->edge0 )
+					else if (e == ground->edge0)
 					{
-						double c = cross( normalize(e->v0 - ground->v1),
-							normalize( ground->v0 - ground->v1 ) );
-						if( en.y >= 0 && c > 0 )
+						double c = cross(normalize(e->v0 - ground->v1),
+							normalize(ground->v0 - ground->v1));
+						if (en.y >= 0 && c > 0)
 						{
 							return;
 						}
 					}
 
-					if( en.y <= 0 )
+					if (en.y <= 0)
 					{
-						
+
 
 
 						return;
 					}
 				}
-				
-				
+
+
 				//for travelling so you don't hit the other side of the gate on accident
-				if( ground->edgeType == Edge::CLOSED_GATE )
+				if (ground->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *g = (Gate*)ground->info;
-					if( ground == g->edgeA )
+					if (ground == g->edgeA)
 					{
-						if( e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1 )
+						if (e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1)
 						{
 							return;
 						}
 					}
 					else
 					{
-						if( e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1 )
+						if (e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1)
 						{
 							return;
 						}
 					}
-					
-					if( e == g->edgeA && ground == g->edgeB
-						|| e == g->edgeB && ground == g->edgeA )//|| e == g->edgeB )
+
+					if (e == g->edgeA && ground == g->edgeB
+						|| e == g->edgeB && ground == g->edgeA)//|| e == g->edgeB )
 					{
-						
+
 						//cout << "returnning early" << endl;
 						return;
 					}
 				}
-				else if( groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE )
+				else if (groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE)
 				{
 					Edge *e1 = ground->edge1;
 					Gate *g = (Gate*)e1->info;
-					if( e == g->edgeA && e1 == g->edgeB 
-						|| e == g->edgeB && e1 == g->edgeA )
+					if (e == g->edgeA && e1 == g->edgeB
+						|| e == g->edgeB && e1 == g->edgeA)
 					{
 						return;
 					}
 				}
-				else if( groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE )
+				else if (groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE)
 				{
 					Edge *e0 = ground->edge0;
 					Gate *g = (Gate*)e0->info;
-					if( e == g->edgeA && e0 == g->edgeB 
-						|| e == g->edgeB && e0 == g->edgeA )
+					if (e == g->edgeA && e0 == g->edgeB
+						|| e == g->edgeB && e0 == g->edgeA)
 					{
 						return;
 					}
 				}
-				
+
 			}
 		}
 		else
 		{
-			if( grindEdge->edgeType == Edge::CLOSED_GATE )
+			if (grindEdge->edgeType == Edge::CLOSED_GATE)
+			{
+				Gate *g = (Gate*)grindEdge->info;
+				if (grindEdge == g->edgeA)
 				{
-					Gate *g = (Gate*)grindEdge->info;
-					if( grindEdge == g->edgeA )
-					{
-						if( e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1 )
-						{
-							return;
-						}
-					}
-					else
-					{
-						if( e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1 )
-						{
-							return;
-						}
-					}
-					
-					if( e == g->edgeA && grindEdge == g->edgeB
-						|| e == g->edgeB && grindEdge == g->edgeA )//|| e == g->edgeB )
-					{
-						
-						//cout << "returnning early" << endl;
-						return;
-					}
-				}
-				else if( grindSpeed > 0 && grindEdge->edge1->edgeType == Edge::CLOSED_GATE )
-				{
-					Edge *e1 = grindEdge->edge1;
-					Gate *g = (Gate*)e1->info;
-					if( e == g->edgeA && e1 == g->edgeB 
-						|| e == g->edgeB && e1 == g->edgeA )
+					if (e == g->edgeB || e == g->edgeB->edge0 || e == g->edgeB->edge1)
 					{
 						return;
 					}
 				}
-				else if( grindSpeed < 0 && grindEdge->edge0->edgeType == Edge::CLOSED_GATE )
+				else
 				{
-					Edge *e0 = grindEdge->edge0;
-					Gate *g = (Gate*)e0->info;
-					if( e == g->edgeA && e0 == g->edgeB 
-						|| e == g->edgeB && e0 == g->edgeA )
+					if (e == g->edgeA || e == g->edgeA->edge0 || e == g->edgeA->edge1)
 					{
 						return;
 					}
 				}
+
+				if (e == g->edgeA && grindEdge == g->edgeB
+					|| e == g->edgeB && grindEdge == g->edgeA)//|| e == g->edgeB )
+				{
+
+					//cout << "returnning early" << endl;
+					return;
+				}
+			}
+			else if (grindSpeed > 0 && grindEdge->edge1->edgeType == Edge::CLOSED_GATE)
+			{
+				Edge *e1 = grindEdge->edge1;
+				Gate *g = (Gate*)e1->info;
+				if (e == g->edgeA && e1 == g->edgeB
+					|| e == g->edgeB && e1 == g->edgeA)
+				{
+					return;
+				}
+			}
+			else if (grindSpeed < 0 && grindEdge->edge0->edgeType == Edge::CLOSED_GATE)
+			{
+				Edge *e0 = grindEdge->edge0;
+				Gate *g = (Gate*)e0->info;
+				if (e == g->edgeA && e0 == g->edgeB
+					|| e == g->edgeB && e0 == g->edgeA)
+				{
+					return;
+				}
+			}
 		}
 
 		//cout << "hit edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 		/*if( grindEdge != NULL && (e == grindEdge->edge0 || e== grindEdge->edge1 ) )
 		{
-			
+
 		}*/
 		//cout << "valid is false" << endl;
 		checkValid = false;
 
 		//}
 	}
-	else if( queryMode == "checkwall" )
+	else if (queryMode == "checkwall")
 	{
 		Edge *e = (Edge*)qte;
-		if( ground == e )
+		if (ground == e)
 			return;
 
-		if( e->edgeType == Edge::OPEN_GATE )
+		if (e->edgeType == Edge::OPEN_GATE)
 		{
 			return;
 		}
 
-		Contact *c = GetCollider().collideEdge( position + tempVel , b, e, tempVel, V2d( 0, 0 ) );
-		
-		if( c != NULL )
-			if( !col || (c->collisionPriority >= -.00001 && ( c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001 ) ) )
-			{	
-				if( c->collisionPriority == minContact.collisionPriority )
+		Contact *c = GetCollider().collideEdge(position + tempVel, b, e, tempVel, V2d(0, 0));
+
+		if (c != NULL)
+			if (!col || (c->collisionPriority >= -.00001 && (c->collisionPriority <= minContact.collisionPriority || minContact.collisionPriority < -.00001)))
+			{
+				if (c->collisionPriority == minContact.collisionPriority)
 				{
-					if( length(c->resolution) > length(minContact.resolution) )
+					if (length(c->resolution) > length(minContact.resolution))
 					{
 						minContact.collisionPriority = c->collisionPriority;
 						minContact.edge = e;
@@ -15027,38 +15038,38 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 					minContact.resolution = c->resolution;
 					minContact.position = c->position;
 					col = true;
-					
+
 				}
 			}
 	}
-	else if( queryMode == "grass" )
+	else if (queryMode == "grass")
 	{
 		//cout << "got some grass in here" << endl;
 		Grass *g = (Grass*)qte;
-		Rect<double> r( position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh );
-		if( g->IsTouchingBox( r ) )
+		Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+		if (g->IsTouchingBox(r))
 		{
 			touchedGrass[g->grassType] = true;
 			grassCount[g->grassType]++;
 		}
 	}
-	else if( queryMode == "envplant" )
+	else if (queryMode == "envplant")
 	{
 		EnvPlant *ev = (EnvPlant*)qte;
-		
-		if( !ev->activated )
+
+		if (!ev->activated)
 		{
 			ev->activated = true;
-			if( ground != NULL )
+			if (ground != NULL)
 			{
 				ev->particle->dir = ground->Normal();//normalize( normalize( ground->v1 - ground->v0 ) * groundSpeed );
 			}
 			else
 			{
-				ev->particle->dir = normalize( velocity );
+				ev->particle->dir = normalize(velocity);
 			}
-			
-			if( owner->activeEnvPlants == NULL )
+
+			if (owner->activeEnvPlants == NULL)
 			{
 				ev->next = NULL;
 				owner->activeEnvPlants = ev;
@@ -15076,7 +15087,8 @@ void Actor::HandleEntrant( QuadTreeEntrant *qte )
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
 
-		if ((rail->RequiresPowerToGrind() && !canRailGrind) || IsInHistunAction(action))
+		if ((rail->RequiresPowerToGrind() && !canRailGrind) || IsInHistunAction(action) || rail->GetRailType() == TerrainRail::WIREONLY
+			|| rail->GetRailType() == TerrainRail::WIREBLOCKING )
 		{
 			return;
 		}

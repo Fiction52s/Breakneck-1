@@ -174,6 +174,7 @@ Edge::Edge()
 	edge1 = NULL;
 	edgeType = EdgeType::REGULAR;
 	poly = NULL;
+	rail = NULL;
 }
 
 V2d Edge::Normal()

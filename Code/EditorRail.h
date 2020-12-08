@@ -30,6 +30,9 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	{
 		NORMAL,
 		LOCKED,
+		TIMESLOW,
+		WIREONLY,
+		WIREBLOCKING,
 		BLOCKER,
 		FLY,
 	};

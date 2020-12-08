@@ -431,10 +431,14 @@ sf::Color TerrainRail::GetRailColor()
 	{
 	case NORMAL:
 		return Color::Red;
-		break;
 	case LOCKED:
 		return Color::Green;
-		break;
+	case TIMESLOW:
+		return Color::Cyan;
+	case WIREONLY:
+		return Color::Magenta;
+	case WIREBLOCKING:
+		return Color::White;
 	}
 
 	return Color::Red;
@@ -1358,6 +1362,9 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	{
 	case NORMAL:
 	case LOCKED:
+	case TIMESLOW:
+	case WIREONLY:
+	case WIREBLOCKING:
 	{
 		target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
 		coloredNodeCircles->Draw(target);

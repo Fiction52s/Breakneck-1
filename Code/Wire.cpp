@@ -6,6 +6,7 @@
 #include "Enemy.h"
 #include "Grass.h"
 #include "GGPO.h"
+#include "EditorRail.h"
 
 using namespace sf;
 using namespace std;
@@ -538,6 +539,14 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					Reset();
 					break;
 				}
+
+				if (rcEdge->rail != NULL 
+					&& rcEdge->rail->GetRailType() == TerrainRail::WIREBLOCKING)
+				{
+					Reset();
+					break;
+				}
+
 
 				//cout << "hit edge!: " << rcEdge->Normal().x << ", " << rcEdge->Normal().y << ", : " << rcEdge << endl;
 				if( rcQuant < 4 )
@@ -1128,21 +1137,28 @@ void Wire::UpdateAnchors( V2d vel )
 			player->GetBarrierTree()->Query(this, r);
 			if (minSideEdge != NULL)
 			{
-				storedPlayerPos = playerPos;
-				state = HIT;
-				if (!triggerDown)
+				if (minSideEdge->rail != NULL && minSideEdge->rail->GetRailType() == TerrainRail::WIREBLOCKING)
 				{
-					canRetractGround = true;
+					//dont connect here/block instead
 				}
 				else
 				{
-					canRetractGround = false;
+					storedPlayerPos = playerPos;
+					state = HIT;
+					if (!triggerDown)
+					{
+						canRetractGround = true;
+					}
+					else
+					{
+						canRetractGround = false;
+					}
+					numPoints = 0;
+					anchor.pos = minSideEdge->v0;
+					anchor.quantity = 0;
+					anchor.e = minSideEdge;
+					UpdateAnchors(V2d(0, 0));
 				}
-				numPoints = 0;
-				anchor.pos = minSideEdge->v0;
-				anchor.quantity = 0;
-				anchor.e = minSideEdge;
-				UpdateAnchors(V2d(0, 0));
 			}
 		}
 	}
@@ -1521,8 +1537,13 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 					if (minSideEdge == NULL
 						|| (minSideEdge != NULL
 							&& (otherQ < minSideOther
-								|| (otherQ == minSideOther && alongQ < minSideAlong))))
+								|| (approxEquals(otherQ,minSideOther) && alongQ < minSideAlong))))
+								//|| (otherQ == minSideOther && alongQ < minSideAlong))))
 					{
+						//the reason for the approxEquals is when you are on a flat edge and you run off
+						//and throw the wire sideways, if you dont use approxEquals it can potentially
+						//latch on to the wrong end of the edge if you use == on a double, even if
+						//the values are incredibly similar down to like 10 decimal places
 						minSideOther = otherQ;
 						minSideAlong = alongQ;
 						minSideEdge = e;
