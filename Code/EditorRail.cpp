@@ -35,7 +35,8 @@ int TerrainRail::GetNumPoints()
 
 Edge *TerrainRail::GetEdge(int index)
 {
-	if (index >= 0 && index < GetNumPoints() - 1)
+	int numEdges = (GetNumPoints() - 1) * 2;
+	if (index >= 0 && index < numEdges)
 	{
 		return &edges[index];
 	}
@@ -48,9 +49,10 @@ Edge *TerrainRail::GetEdge(int index)
 void TerrainRail::SetupEdges()
 {
 	int numP = GetNumPoints();
-	edges.resize(numP - 1);
+	int numEdgesPerSide = numP - 1;
+	edges.resize(numEdgesPerSide * 2);
 	TerrainPoint *curr, *next;
-	for (int i = 0; i < numP - 1; ++i)
+	for (int i = 0; i < numEdgesPerSide; ++i)
 	{
 		curr = GetPoint(i);
 		next = GetPoint(i + 1);
@@ -60,7 +62,7 @@ void TerrainRail::SetupEdges()
 		edges[i].rail = this;
 	}
 
-	for (int i = 0; i < numP - 1; ++i)
+	for (int i = 0; i < numEdgesPerSide; ++i)
 	{
 		if (i > 0)
 		{
@@ -78,6 +80,42 @@ void TerrainRail::SetupEdges()
 		else
 		{
 			edges[i].edge1 = NULL;
+		}
+	}
+
+	//underside
+	int eIndex, pIndex;
+	for (int i = 0; i < numEdgesPerSide; ++i)
+	{
+		eIndex = i + numEdgesPerSide;
+		pIndex = numEdgesPerSide - i;
+		curr = GetPoint(pIndex);
+		next = GetPoint(pIndex - 1);
+
+		edges[eIndex].v0 = V2d(curr->pos);
+		edges[eIndex].v1 = V2d(next->pos);
+		edges[eIndex].rail = this;
+	}
+
+	for (int i = 0; i < numEdgesPerSide; ++i)
+	{
+		eIndex = i + numEdgesPerSide;
+		if (i > 0)
+		{
+			edges[eIndex].edge0 = &edges[eIndex - 1];
+		}
+		else
+		{
+			edges[eIndex].edge0 = NULL;
+		}
+
+		if (i < numEdgesPerSide - 1)
+		{
+			edges[eIndex].edge1 = &edges[eIndex + 1];
+		}
+		else
+		{
+			edges[eIndex].edge1 = NULL;
 		}
 	}
 }
@@ -120,7 +158,8 @@ bool TerrainRail::IsInternallyValid()
 void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 {
 	int numP = GetNumPoints();
-	for (int i = 0; i < numP - 1; ++i)
+	int numEdges = (numP - 1) * 2;
+	for (int i = 0; i < numEdges; ++i)
 	{
 		tree->Insert(GetEdge(i));
 	}
@@ -338,6 +377,8 @@ void TerrainRail::Move(Vector2i move)
 
 			edges[i].v0 += moveD;
 			edges[i].v1 += moveD;
+			edges[i + (numP - 1)].v0 += moveD;
+			edges[i + (numP - 1)].v1 += moveD;
 		}
 
 		coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
@@ -1115,6 +1156,10 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 	
 
 	Edge *edge = GetEdge(index);
+	int numEdges = (GetNumPoints() - 1) * 2;
+	int oppIndex = (numEdges - 1) - index;
+	Edge *oppEdge = GetEdge(oppIndex);
+	//Edge *invEdge = //GetEdge(index + (GetNumPoints() - 1));
 	
 	V2d dPos(curr->pos);
 
@@ -1127,6 +1172,17 @@ void TerrainRail::SetPointPos(int index, sf::Vector2i &p)
 	if (prevEdge != NULL)
 	{
 		prevEdge->v1 = dPos;
+	}
+
+	if (oppEdge != NULL)
+	{
+		oppEdge->v1 = dPos;
+	}
+
+	Edge *oppNext = GetEdge(oppIndex + 1);
+	if (oppNext != NULL)
+	{
+		oppNext->v0 = dPos;
 	}
 }
 

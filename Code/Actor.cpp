@@ -6918,7 +6918,7 @@ bool Actor::CheckStandUp()
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		GetTerrainTree()->Query( this, r );
-
+		sess->railEdgeTree->Query(this, r);
 		
 		sess->barrierTree->Query(this, r);
 
@@ -7150,10 +7150,20 @@ V2d Actor::UpdateReversePhysics()
 			double q = edgeQuantity;
 
 			V2d gNormal = ground->Normal();
+			
 			Edge *e0 = ground->edge0;
 			Edge *e1 = ground->edge1;
-			V2d e0n = e0->Normal();
-			V2d e1n = e1->Normal();
+
+			V2d e0n, e1n;
+			if (e0 != NULL)
+			{
+				e0n = e0->Normal();
+			}
+
+			if (e1 != NULL)
+			{
+				e1n = e1->Normal();
+			}
 
 			gNormal = -gNormal;
 			e0n = -e0n;
@@ -7175,7 +7185,7 @@ V2d Actor::UpdateReversePhysics()
 
 			
 
-			bool transferLeft =  q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh )
+			bool transferLeft =  e0 != NULL && q == 0 && movement < 0 //&& (groundSpeed < -steepClimbSpeedThresh || e0n.y <= -steepThresh )
 				&& ((gNormal.x == 0 && e0n.x == 0 )
 				|| ( offsetX == -b.rw && (e0n.x <= 0 || e0n.y > 0) ) 
 				|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
@@ -7186,7 +7196,7 @@ V2d Actor::UpdateReversePhysics()
 			//	|| (offsetX == b.rw && e0n.x >= 0 && abs( e0n.x ) < wallThresh ));
 
 			
-			bool transferRight = q == groundLength && movement > 0 //&& (groundSpeed > steepClimbSpeedThresh || e1n.y <= -steepThresh )
+			bool transferRight = e1 != NULL && q == groundLength && movement > 0 //&& (groundSpeed > steepClimbSpeedThresh || e1n.y <= -steepThresh )
 				&& ((gNormal.x == 0 && e1n.x == 0 )
 				|| ( offsetX == b.rw && ( e1n.x >= 0 || e1n.y > 0 ))
 				|| (offsetX == -b.rw && e1n.x <= 0 && abs( e1n.x ) < wallThresh ) );
@@ -7948,7 +7958,7 @@ V2d Actor::UpdateReversePhysics()
 						double yDist = abs( gNormal.x ) * -groundSpeed;
 						Edge *next = ground->edge0;
 						V2d nextNorm = e0n;
-						if( !e0->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
+						if( next != NULL && !e0->IsInvisibleWall() && nextNorm.y < 0 && abs( e0n.x ) < wallThresh && !(currInput.LUp() && !currInput.LLeft() && gNormal.x > 0 && yDist < -slopeLaunchMinSpeed && nextNorm.x < gNormal.x ) )
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed <= steepClimbSpeedThresh )
 							{
@@ -7989,7 +7999,7 @@ V2d Actor::UpdateReversePhysics()
 								cout << "possible bug reversed. solved secret??" << endl;
 							}
 						}
-						else if( abs( e0n.x ) >= wallThresh && !e0->IsInvisibleWall())
+						else if(next != NULL && abs( e0n.x ) >= wallThresh && !e0->IsInvisibleWall())
 						{
 							if( e0->edgeType == Edge::CLOSED_GATE )
 							{
@@ -8041,7 +8051,7 @@ V2d Actor::UpdateReversePhysics()
 						Edge *next = ground->edge1;
 						V2d nextNorm = e1n;
 						double yDist = abs( gNormal.x ) * -groundSpeed;
-						if( !e1->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
+						if(next != NULL && !e1->IsInvisibleWall() && nextNorm.y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && nextNorm.x > 0 ) )
 						{
 
 							if( e1n.x < 0 && e1n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
@@ -8084,7 +8094,7 @@ V2d Actor::UpdateReversePhysics()
 								//q = 0;
 							}
 						}
-						else if(!e1->IsInvisibleWall() && abs( e1n.x ) >= wallThresh )
+						else if(next != NULL && !e1->IsInvisibleWall() && abs( e1n.x ) >= wallThresh )
 						{
 							//attemping to fix reverse secret issues on gates
 							if( e1->edgeType == Edge::CLOSED_GATE )
@@ -9822,7 +9832,20 @@ void Actor::UpdatePhysics()
 							{
 								if( gNormal.x >= 0 )
 								{
+									bool isRail = false;
+									if (ground->rail != NULL)
+									{
+										isRail = true;
+									}
 									LeaveGroundTransfer(false);
+
+									//fixes the bug where you land on the rail again 
+									//in the same frame not sure why the bug happens, 
+									//but this fixes it.
+									if (isRail)
+										break; 
+									
+
 								}
 								else
 								{
@@ -9860,7 +9883,18 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
+					bool isRail = false;
+					if (ground->rail != NULL)
+					{
+						isRail = true;
+					}
 					LeaveGroundTransfer(false);
+
+					//fixes the bug where you land on the rail again 
+					//in the same frame not sure why the bug happens, 
+					//but this fixes it.
+					if (isRail)
+						break;
 				}
 			}
 			else if( transferRight )
@@ -9898,7 +9932,18 @@ void Actor::UpdatePhysics()
 							{
 								if( gNormal.x <= 0 )
 								{
+									bool isRail = false;
+									if (ground->rail != NULL)
+									{
+										isRail = true;
+									}
 									LeaveGroundTransfer(true);
+
+									//fixes the bug where you land on the rail again 
+									//in the same frame not sure why the bug happens, 
+									//but this fixes it.
+									if (isRail)
+										break;
 								}
 								else
 								{
@@ -9940,7 +9985,18 @@ void Actor::UpdatePhysics()
 				}
 				else
 				{
+					bool isRail = false;
+					if (ground->rail != NULL)
+					{
+						isRail = true;
+					}
 					LeaveGroundTransfer(true);
+
+					//fixes the bug where you land on the rail again 
+					//in the same frame not sure why the bug happens, 
+					//but this fixes it.
+					if (isRail)
+						break;
 				}
 
 			}
@@ -14305,8 +14361,6 @@ void Actor::AddToFlyCounter(int count)
 
 void Actor::HandleEntrant(QuadTreeEntrant *qte)
 {
-
-
 	assert(queryMode != "");
 	if (queryMode == "resolve")
 	{
@@ -14324,9 +14378,24 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				return;
 			}
 		}
-		else if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
+		else if (e->rail != NULL )
 		{
-			return;
+			int rType = e->rail->GetRailType();
+			if (rType == TerrainRail::BOUNCE )
+				/*|| rType == TerrainRail::TERRAIN
+				|| rType == TerrainRail::FLOOR
+				|| rType == TerrainRail::CEILING )*/
+			{
+				if (e->Normal().y > 0)
+				{
+					return;
+				}
+			}
+			else
+			{
+				return;
+			}
+			
 		}
 
 		bool bb = false;
@@ -14866,6 +14935,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
+		if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
+		{
+			return;
+		}
 		//cout << "checking: " << e << endl;
 		if ((grindEdge == NULL && ground == e) || grindEdge == e)
 			return;
@@ -14873,7 +14946,13 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		//Edge *testEdge = ground;
 
 
-
+		if (ground != NULL && ground->rail != NULL && ground->rail == e->rail)
+		{
+			if (ground->v0 == e->v1 && ground->v1 == e->v0)
+			{
+				return; //this might not cover everything
+			}
+		}
 
 
 		//Rect<double> r( position.x + b.offset.x - b.rw, position.y /*+ b.offset.y*/ - normalHeight, 2 * b.rw, 2 * normalHeight );
@@ -14953,7 +15032,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						return;
 					}
 				}
-				else if (groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE)
+				else if ( ground->edge1 != NULL && groundSpeed > 0 && ground->edge1->edgeType == Edge::CLOSED_GATE)
 				{
 					Edge *e1 = ground->edge1;
 					Gate *g = (Gate*)e1->info;
@@ -14963,7 +15042,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						return;
 					}
 				}
-				else if (groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE)
+				else if (ground->edge0 != NULL &&groundSpeed < 0 && ground->edge0->edgeType == Edge::CLOSED_GATE)
 				{
 					Edge *e0 = ground->edge0;
 					Gate *g = (Gate*)e0->info;
