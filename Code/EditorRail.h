@@ -33,15 +33,17 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		TIMESLOW,
 		WIREONLY,
 		WIREBLOCKING,
-		//TERRAIN,
-		//FLOOR,
-		//CEILING,
+		FLOORANDCEILING,
+		FLOOR,
+		CEILING,
 		BOUNCE,
 		SCORPIONONLY,
 		BLOCKER,
 		FLY,
 	};
 
+	bool IsEdgeActive(Edge *e);
+	bool IsTerrainType();
 	void SetRailType(int r);
 	Session *sess;
 	int rType;

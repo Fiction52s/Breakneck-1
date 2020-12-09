@@ -14380,13 +14380,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		}
 		else if (e->rail != NULL )
 		{
-			int rType = e->rail->GetRailType();
-			if (rType == TerrainRail::BOUNCE )
-				/*|| rType == TerrainRail::TERRAIN
-				|| rType == TerrainRail::FLOOR
-				|| rType == TerrainRail::CEILING )*/
+			if (e->rail->IsTerrainType())
 			{
-				if (e->Normal().y > 0)
+				if (!e->rail->IsEdgeActive(e))
 				{
 					return;
 				}
@@ -14935,7 +14931,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			return;
 		}
-		if (e->rail != NULL && e->rail->GetRailType() != TerrainRail::BOUNCE)
+		if (e->rail != NULL 
+			&& (!e->rail->IsTerrainType() || !e->rail->IsEdgeActive( e )))
 		{
 			return;
 		}
@@ -15198,9 +15195,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
 
-		if ((rail->RequiresPowerToGrind() && !canRailGrind) || IsInHistunAction(action) || rail->GetRailType() == TerrainRail::WIREONLY
+		if ((rail->RequiresPowerToGrind() && !canRailGrind) 
+			|| IsInHistunAction(action) || rail->IsTerrainType()
 			|| rail->GetRailType() == TerrainRail::WIREBLOCKING 
-			|| rail->GetRailType() == TerrainRail::BOUNCE )
+			|| rail->GetRailType() == TerrainRail::WIREONLY )
 		{
 			return;
 		}

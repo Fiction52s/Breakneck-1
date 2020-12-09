@@ -170,6 +170,41 @@ void TerrainRail::SetRailType(int r)
 	rType = r;
 }
 
+bool TerrainRail::IsEdgeActive(Edge *e)
+{
+	switch (rType)
+	{
+	case FLOORANDCEILING:
+		return true;
+	case FLOOR:
+		if (e->Normal().y < 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	case CEILING:
+		if (e->Normal().y > 0)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	return false;
+}
+
+bool TerrainRail::IsTerrainType()
+{
+	return rType == FLOORANDCEILING || rType == FLOOR || rType == CEILING
+		|| rType == BOUNCE;
+}
+
 void TerrainRail::Init()
 {	
 	sess = Session::GetSession();
@@ -473,17 +508,23 @@ sf::Color TerrainRail::GetRailColor()
 	case NORMAL:
 		return Color::Red;
 	case LOCKED:
-		return Color::Green;
+		return Color( 104, 255, 0 );
 	case TIMESLOW:
-		return Color::Cyan;
+		return Color(0, 211, 255);
 	case WIREONLY:
-		return Color::Magenta;
+		return Color(238, 83, 169);
 	case WIREBLOCKING:
 		return Color::White;
+	case FLOORANDCEILING:
+		return Color(155, 173, 183);
+	case FLOOR:
+		return Color(223, 113, 38);
+	case CEILING:
+		return Color(55, 148, 110);
 	case BOUNCE:
-		return Color::Yellow;
+		return Color(251, 242, 54);
 	case SCORPIONONLY:
-		return Color(255, 127, 39);
+		return Color(138, 111, 48);
 	}
 
 	return Color::Red;
@@ -1425,6 +1466,9 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	case TIMESLOW:
 	case WIREONLY:
 	case WIREBLOCKING:
+	case FLOORANDCEILING:
+	case FLOOR:
+	case CEILING:
 	case BOUNCE:
 	case SCORPIONONLY:
 	{
