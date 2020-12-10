@@ -21,6 +21,10 @@ void Actor::DASH_Change()
 
 	CheckBounceFlame();
 
+	if( TryFloorRailDropThrough()) return;
+
+	
+
 	if (TryPressGrind()) return;
 
 	

@@ -42,37 +42,10 @@ void Actor::BOUNCEGROUND_Change()
 		oldBounceNorm = bounceNorm;
 		frame = 0;
 
-
 		int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 
 		bool boostNow = boostBounce && framesSinceBounce > 8;
 
-		//double lenVel = length( storedBounceVel );
-		//double reflX = cross( normalize( -storedBounceVel ), bn );
-		//double reflY = dot( normalize( -storedBounceVel ), bn );
-		//V2d edgeDir = normalize( bounceEdge->v1 - bounceEdge->v0 );
-		//V2d ref = normalize( reflX * edgeDir + reflY * bn ) * lenVel;
-
-		//double c = cos( -currInput.leftStickRadians );
-		//double s = sin( -currInput.leftStickRadians );
-		//V2d left( c, s );
-
-		//double dd = dot( ref, left );
-		//double cc = cross( ref, left );
-
-		////V2d ne( ref.x * c + ref.y * -s, ref.x * s + ref.y * c );
-		//V2d eft = left + V2d( 0, -1 );
-		//eft /= 2.0;
-		//velocity = left * lenVel;
-
-
-
-
-
-		//dot( ref, eft );//dd * edgeDir + cc * bn;
-		//cout << "setting vel: " << velocity.x << ", " << velocity.y << endl;
-		//double dd = dot( 
-		//velocity = normalize( 
 		double extraBUp = .2;
 		double extraBDown = .2;
 		double extraBThresh = .8; //works on almost everything
@@ -158,14 +131,9 @@ void Actor::BOUNCEGROUND_Change()
 				{
 					boostBounce = false;
 				}
-				//if( 
-				//bounceNorm.y = -1;
 			}
 			else
 			{
-				//cout << "DD" << endl;
-
-
 				if (storedBounceVel.x > 0 && currInput.LLeft())
 				{
 					storedBounceVel.x = -dSpeed;
@@ -225,21 +193,9 @@ void Actor::BOUNCEGROUND_Change()
 					V2d edgeDir = normalize(bounceEdge->v1 - bounceEdge->v0);
 					velocity = normalize(reflX * edgeDir + reflY * bn) * lenVel;
 				}
-
-				//if( 
-				//bounceNorm.y = -1;
 			}
 			else
 			{
-				/*if( storedBounceVel.x > 0 && currInput.LLeft() )
-				{
-				storedBounceVel.x = -dashSpeed;
-				}
-				else if( storedBounceVel.x < 0 && currInput.LRight() )
-				{
-				storedBounceVel.x = dashSpeed;
-				}
-				else */
 				if (storedBounceVel.x == 0)
 				{
 					if (currInput.LLeft())

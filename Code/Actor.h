@@ -1129,6 +1129,7 @@ struct Actor : QuadTreeCollider,
 	bool IsDoubleWirePulling();
 	bool TryDoubleJump();
 	bool TryGroundBlock();
+	bool TryFloorRailDropThrough();
 	bool TryAirBlock();
 	void TryChangePowerMode();
 	bool TryDash();
@@ -1268,6 +1269,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateWirePhysics();
 	void UpdateGrindPhysics(double movement);
 	void HandleBounceGrass();
+	void HandleBounceRail();
 	bool UpdateGrindRailPhysics(double movement);
 	bool TryUnlockOnTransfer( Edge *e );
 	void LeaveGroundTransfer(bool right, V2d leaveExtra = V2d());

@@ -194,6 +194,9 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 		{
 			return false;
 		}
+	case BOUNCE:
+	case SCORPIONONLY:
+		return true;
 	}
 
 	return false;
@@ -202,7 +205,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 bool TerrainRail::IsTerrainType()
 {
 	return rType == FLOORANDCEILING || rType == FLOOR || rType == CEILING
-		|| rType == BOUNCE;
+		|| rType == BOUNCE || rType == SCORPIONONLY;
 }
 
 void TerrainRail::Init()

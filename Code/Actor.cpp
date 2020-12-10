@@ -2490,7 +2490,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
+	//fallThroughDuration = 0;
 	currPowerMode = PMODE_SHIELD;
 
 	shieldPushbackFrames = 0;
@@ -4107,6 +4107,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	//fallThroughDuration = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
@@ -5642,6 +5643,23 @@ void Actor::UpdatePrePhysics()
 	TryChangePowerMode();
 
 	UpdateBounceFlameOn();
+
+	//this almost works. try to make a fallthrough algorithm for normal rails
+	//and see if it helps this.
+	if (bounceEdge == NULL || !scorpOn)
+	{
+		if (ground != NULL && ground->rail != NULL
+			&& ground->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+		{
+			SetAction(JUMP);
+			frame = 1;
+			velocity = ground->Along() * groundSpeed;
+			ground = NULL;
+			framesInAir = 0;
+			scorpOn = false; //turns off scorp for one frame to allow dropthrough.
+			//this is a bit hacky, and i probably need to fix it more later
+		}
+	}
 	
 	ChangeAction();
 
@@ -8715,6 +8733,25 @@ bool Actor::TryDash()
 	return false;
 }
 
+bool Actor::TryFloorRailDropThrough()
+{
+	if (currInput.LDown() && !currInput.LLeft() && !currInput.LRight())
+	{
+		if (ground != NULL && ground->rail != NULL
+			&& ground->rail->GetRailType() == TerrainRail::FLOOR)
+		{
+			SetAction(JUMP);
+			frame = 1;
+			velocity = ground->Along() * groundSpeed;
+			ground = NULL;
+			framesInAir = 0;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool Actor::TryGroundBlock()
 {
 	if (PowerButtonHeld() && currPowerMode == PMODE_SHIELD)
@@ -8764,9 +8801,13 @@ bool Actor::BasicGroundAction( V2d &gNorm)
 {
 	CheckBounceFlame();
 
+	
+
 	//button-based inputs
 
 	if (TryGroundBlock()) return true;
+
+	if (TryFloorRailDropThrough()) return true;
 
 	if (TryPressGrind()) return true;
 
@@ -9396,6 +9437,42 @@ void Actor::HandleBounceGrass()
 	else if (minContact.normal.y > 0)
 	{
 		velocity.y = 25;
+	}
+	else if (minContact.normal.x > 0)
+	{
+		velocity.x = 18;
+	}
+	else if (minContact.normal.x < 0)
+	{
+		velocity.x = -18;
+	}
+
+	RechargeAirOptions();
+
+	if (action == AIRDASH || IsSpringAction(action))
+	{
+		SetAction(JUMP);
+		frame = 1;
+	}
+}
+
+void Actor::HandleBounceRail()
+{
+	if (minContact.normal.y < 0)
+	{
+		velocity.y = -25;
+	}
+	else if (minContact.normal.y > 0)
+	{
+		velocity.y = 25;
+	}
+	else if (minContact.normal.x > 0)
+	{
+		velocity.x = 18;
+	}
+	else if (minContact.normal.x < 0)
+	{
+		velocity.x = -18;
 	}
 
 	RechargeAirOptions();
@@ -10706,9 +10783,13 @@ void Actor::UpdatePhysics()
 						bounceOkay = false;
 				}
 			}
-
 			
 			if (tempCollision && grassCount[Grass::BOUNCE] > 0)
+			{
+				HandleBounceGrass();
+			}
+			else if (tempCollision && minContact.edge->rail != NULL
+				&& minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
 			{
 				HandleBounceGrass();
 			}
@@ -10725,6 +10806,7 @@ void Actor::UpdatePhysics()
 				//reverse grav water
 				velocity = newVel;
 			}
+
 			/*else if (tempCollision && grassCount[Grass::UNTECHABLE] > 0) 
 			{
 				//just a test.
@@ -14385,6 +14467,27 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (!e->rail->IsEdgeActive(e))
 				{
 					return;
+				}
+				else if (e->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+				{
+					if (!scorpOn)
+					{
+						return;
+					}
+				}
+				else if (e->rail->GetRailType() == TerrainRail::BOUNCE)
+				{
+					if (scorpOn)
+					{
+						return;
+					}
+				}
+				else if ( ground == NULL && e->rail->GetRailType() == TerrainRail::FLOOR)
+				{
+					if (currInput.LDown() && !IsAttackAction(action) && !currInput.LLeft() && !currInput.LRight())
+					{
+						return;
+					}
 				}
 			}
 			else
