@@ -5644,22 +5644,7 @@ void Actor::UpdatePrePhysics()
 
 	UpdateBounceFlameOn();
 
-	//this almost works. try to make a fallthrough algorithm for normal rails
-	//and see if it helps this.
-	if (bounceEdge == NULL || !scorpOn)
-	{
-		if (ground != NULL && ground->rail != NULL
-			&& ground->rail->GetRailType() == TerrainRail::SCORPIONONLY)
-		{
-			SetAction(JUMP);
-			frame = 1;
-			velocity = ground->Along() * groundSpeed;
-			ground = NULL;
-			framesInAir = 0;
-			scorpOn = false; //turns off scorp for one frame to allow dropthrough.
-			//this is a bit hacky, and i probably need to fix it more later
-		}
-	}
+	TryScorpRailDropThrough();
 	
 	ChangeAction();
 
@@ -8750,6 +8735,26 @@ bool Actor::TryFloorRailDropThrough()
 	}
 
 	return false;
+}
+
+bool Actor::TryScorpRailDropThrough()
+{
+	//this almost works. try to make a fallthrough algorithm for normal rails
+	//and see if it helps this.
+	if (bounceEdge == NULL || !scorpOn)
+	{
+		if (ground != NULL && ground->rail != NULL
+			&& ground->rail->GetRailType() == TerrainRail::SCORPIONONLY)
+		{
+			SetAction(JUMP);
+			frame = 1;
+			velocity = ground->Along() * groundSpeed;
+			ground = NULL;
+			framesInAir = 0;
+			scorpOn = false; //turns off scorp for one frame to allow dropthrough.
+							 //this is a bit hacky, and i probably need to fix it more later
+		}
+	}
 }
 
 bool Actor::TryGroundBlock()

@@ -1130,6 +1130,7 @@ struct Actor : QuadTreeCollider,
 	bool TryDoubleJump();
 	bool TryGroundBlock();
 	bool TryFloorRailDropThrough();
+	bool TryScorpRailDropThrough();
 	bool TryAirBlock();
 	void TryChangePowerMode();
 	bool TryDash();
