@@ -3083,13 +3083,13 @@ void TerrainPolygon::UpdateGrassType()
 
 
 	//this does get called twice on init but I'm pretty sure setmaterial type does too. we will figure it out eventually
-	for (int i = 0; i < numGrassTotal; ++i)
-	{
-		//c.a = (grassVA + i * 4)->color.a;
-		//SetRectColor(grassVA + i * 4, c);
-		ts_grass->SetQuadSubRect(grassVA + i * 4, 0 );//terrainWorldType);
-		//set this up with right terrain type when alex gives me a tilesheet with all of them
-	}
+	//for (int i = 0; i < numGrassTotal; ++i)
+	//{
+	//	//c.a = (grassVA + i * 4)->color.a;
+	//	//SetRectColor(grassVA + i * 4, c);
+	//	ts_grass->SetQuadSubRect(grassVA + i * 4, 0 );//terrainWorldType);
+	//	//set this up with right terrain type when alex gives me a tilesheet with all of them
+	//}
 }
 
 void TerrainPolygon::SetMaterialType(int world, int variation)
@@ -3110,11 +3110,11 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		//optimize this later
 		UpdateMaterialType();
 
-		int defaultGrass = GetDefaultGrassType();
+		//int defaultGrass = GetDefaultGrassType();
 		//if (grassType != defaultGrass)
 		//{
 		//	grassType = defaultGrass;
-		UpdateGrassType();
+		//UpdateGrassType();
 		//}
 
 		SetupTouchGrass();
@@ -3587,7 +3587,11 @@ void TerrainPolygon::SetupGrass()
 Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 {
 	Grass::GrassType gt;
-	if (terrainWorldType == 0)
+
+	gt = Grass::GrassType::JUMP;
+	return gt;
+
+	/*if (terrainWorldType == 0)
 	{
 		gt = Grass::GrassType::JUMP;
 	}
@@ -3611,7 +3615,7 @@ Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 	{
 		gt = Grass::GrassType::JUMP;
 	}
-	return gt;
+	return gt;*/
 }
 
 void TerrainPolygon::FillGrassVec(TerrainPoint *point, std::vector<GrassInfo> &gVec)
@@ -3679,7 +3683,7 @@ void TerrainPolygon::SetGrassVecOn(
 	}
 }
 
-void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
+void TerrainPolygon::SetupGrassAfterGameSessionLoad(std::list<GrassSeg> &segments)
 {
 	numGrassTotal = 0;
 
@@ -3746,9 +3750,11 @@ void TerrainPolygon::SetupGrass(std::list<GrassSeg> &segments)
 				Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
 				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
 				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
-				SetRectCenter(grassVA + (j + totalGrass) * 4, grassSize, grassSize, pos);
-				Color c = Grass::GetColor((*it).gType);
-				SetRectColor(grassVA + (j + totalGrass) * 4, c);
+				Vertex *currGrassRect = grassVA + (j + totalGrass) * 4;
+				SetRectCenter(currGrassRect, grassSize, grassSize, pos);
+				//Color c = Grass::GetColor((*it).gType);
+				//SetRectColor(grassVA + (j + totalGrass) * 4, c);
+				ts_grass->SetQuadSubRect(currGrassRect, (*it).gType);
 
 				activeGrass.push_back(Grass(ts_grass, totalGrassIndex, posd, this, (Grass::GrassType)(*it).gType));
 				sess->grassTree->Insert(&activeGrass.back());
@@ -3799,7 +3805,7 @@ void TerrainPolygon::ProcessGrass(list<GrassSeg> &segments)
 	}
 	else
 	{
-		SetupGrass(segments);
+		SetupGrassAfterGameSessionLoad(segments);
 	}
 }
 

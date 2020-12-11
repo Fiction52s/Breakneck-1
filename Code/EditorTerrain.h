@@ -419,7 +419,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	void SetupGrass(int i, int &grassIndex);
 	void SetupGrass();
-	void SetupGrass(std::list<GrassSeg> &segments);
+	void SetupGrassAfterGameSessionLoad(std::list<GrassSeg> &segments);
 	void AddGrassToQuadTree(QuadTree *tree );
 	void SetGrassOn(int gIndex, bool on,
 		int gType );

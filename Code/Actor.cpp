@@ -4929,7 +4929,7 @@ void Actor::ProcessGravityGrass()
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
 		&& action != GROUNDTECHINPLACE
 		&& ((!HasUpgrade(UPGRADE_POWER_GRAV) 
-		&& touchedGrass[Grass::GRAVREVERSE]) 
+		&& !touchedGrass[Grass::GRAVREVERSE]) 
 		|| touchedGrass[Grass::ANTIGRAVREVERSE]))
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
@@ -9474,10 +9474,6 @@ void Actor::HandleBounceRail()
 	velocity = sess->CalcBounceReflectionVel(minContact.edge, velocity);
 
 	double minVel = 20.0;
-	if (length(velocity) < minVel)
-	{
-		//velocity = normalize(velocity) * minVel;
-	}
 
 	if (minContact.edge->IsFlatGround()
 		|| minContact.edge->IsSlopedGround())
