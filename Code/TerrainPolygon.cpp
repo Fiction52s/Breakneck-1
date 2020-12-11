@@ -1167,7 +1167,7 @@ TerrainPolygon::TerrainPolygon()
 
 	if (sess != NULL)
 	{
-		ts_grass = sess->GetTileset("Env/grass_128x128.png", 128, 128);
+		ts_grass = sess->GetTileset("Env/grass_128x128_2.png", 128, 128);
 	}
 	
 	grassSize = 128;
@@ -3087,7 +3087,7 @@ void TerrainPolygon::UpdateGrassType()
 	{
 		//c.a = (grassVA + i * 4)->color.a;
 		//SetRectColor(grassVA + i * 4, c);
-		ts_grass->SetQuadSubRect(grassVA + i * 4, 0);//terrainWorldType);
+		ts_grass->SetQuadSubRect(grassVA + i * 4, 0 );//terrainWorldType);
 		//set this up with right terrain type when alex gives me a tilesheet with all of them
 	}
 }
@@ -3593,7 +3593,7 @@ Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 	}
 	else if (terrainWorldType == 1)
 	{
-		gt = Grass::GrassType::GRAVITY;
+		gt = Grass::GrassType::GRAVREVERSE;
 	}
 	else if (terrainWorldType == 2)
 	{
@@ -3601,7 +3601,7 @@ Grass::GrassType TerrainPolygon::GetDefaultGrassType()
 	}
 	else if (terrainWorldType == 3)
 	{
-		gt = Grass::GrassType::BOOST;
+		gt = Grass::GrassType::ACCELERATE;
 	}
 	else if (terrainWorldType == 5)
 	{
@@ -3834,6 +3834,17 @@ void TerrainPolygon::SetGrassState(int index, int state, int gType )
 	grassStateVec[index].gState = state;
 	grassStateVec[index].gType = gType;
 	SetRectColor(grassVA + index * 4, c);
+
+	if (state == G_OFF_DONT_SHOW || state == G_OFF)
+	{
+		//use default grass for cleanliness
+		ts_grass->SetQuadSubRect(grassVA + index * 4, 0);
+	}
+	else
+	{
+		ts_grass->SetQuadSubRect(grassVA + index * 4, gType);
+	}
+	
 }
 
 void TerrainPolygon::SetGrassOn(int gIndex, bool on, int gType )

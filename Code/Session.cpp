@@ -6751,3 +6751,32 @@ void Session::DrawQueriedRails(sf::RenderTarget *target)
 		r = next;
 	}
 }
+
+V2d Session::CalcBounceReflectionVel(Edge *e, V2d &vel)
+{
+	double lenVel = length(vel);
+
+	V2d reflectionDir = e->GetReflectionDir(normalize(vel));
+
+	V2d edgeDir = e->Along();
+
+	double diffCW = GetVectorAngleDiffCW(reflectionDir, edgeDir);
+
+	//these next few lines make sure that you cant
+	//run up the steep slope and then bounce at such a shallow angle
+	//that you push through the terrain
+	double thresh = .1; //if the angle is too close to the edgeDir
+	if (diffCW > 0 && diffCW < thresh)
+	{
+		RotateCCW(reflectionDir, thresh - diffCW);
+	}
+
+	double diffCCW = GetVectorAngleDiffCCW(reflectionDir, -edgeDir);
+
+	if (diffCCW > 0 && diffCCW < thresh)
+	{
+		RotateCW(reflectionDir, thresh - diffCCW);
+	}
+
+	return reflectionDir * lenVel;
+}

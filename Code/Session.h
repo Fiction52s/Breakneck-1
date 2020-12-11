@@ -761,6 +761,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RevertSimulatedPlayer(int index);
 	Enemy* GetEnemy(int enType);
 	GroundedWarper *GetWarper(const std::string levelWarp);
+	V2d CalcBounceReflectionVel(Edge *e, V2d &vel);
 	sf::CircleShape testSimCircle;
 };
 

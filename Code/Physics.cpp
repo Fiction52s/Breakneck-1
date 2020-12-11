@@ -198,6 +198,16 @@ V2d Edge::GetPosition( double quantity )
 	return v0 + quantity * Along();
 }
 
+V2d Edge::GetReflectionDir(V2d &dir)
+{
+	V2d norm = Normal();
+	double reflX = cross(-dir, norm);
+	double reflY = dot(-dir, norm);
+	V2d edgeDir = Along();
+
+	return normalize(reflX * edgeDir + reflY * norm);
+}
+
 double Edge::GetQuantity(Vector2<double> &p)
 {
 	//projects the origin of the line to p onto the edge. if the point is on the edge it will just be 

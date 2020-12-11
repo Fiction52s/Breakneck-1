@@ -3099,16 +3099,46 @@ void EditSession::SetupGrassSelectPanel()
 
 	grassTypePanel->ReserveImageRects(numGrassRects);
 
-	int rectSize = 64;
+	int rectSize = 80;
 
-	Tileset *ts_grass = GetTileset("Env/grass_128x128.png", 128, 128);
+	Tileset *ts_grass = GetTileset("Env/grass_128x128_2.png", 128, 128);
 
 	ImageChooseRect *ic;
+	int col = 0;
 	for (int i = 0; i < Grass::GrassType::Count; ++i)
 	{
+		/*if (i <= Grass::DECELERATE)
+		{
+			col = 0;
+		}
+		else if (i <= Grass::ANTIGRAVREVERSE)
+		{
+			col = 1;
+		}
+		else if (i <= Grass::ACCELERATE)
+		{
+			col = 2;
+		}
+		else if (i <= Grass::ANTIGRIND)
+		{
+			col = 3;
+		}
+		else if (i <= Grass::POISON)
+		{
+			col = 4;
+		}
+		else if (i <= Grass::ANTIWIRE)
+		{
+			col = 5;
+		}
+		else
+		{
+			col = 6;
+		}*/
+
 		ic = grassTypePanel->AddImageRect(
 			ChooseRect::ChooseRectIdentity::I_GRASSLIBRARY,
-			Vector2f( i * rectSize, 0), ts_grass, 0, rectSize);
+			Vector2f( i * rectSize , 0), ts_grass, i, rectSize);
 		ic->SetInfo((void*)i);
 		ic->SetShown(true);
 	}
@@ -12829,7 +12859,11 @@ void EditSession::EditModeHandleEvent()
 		}
 		else if (ev.key.code == Keyboard::E)
 		{
-			if (selectedBrush->GetNumTerrain() > 0)
+			if (editModeUI->IsShowGrassOn())
+			{
+				editModeUI->ExpandGrassLibrary();
+			}
+			else if (selectedBrush->GetNumTerrain() > 0)
 			{
 				int layer = selectedBrush->GetTerrainLayer();
 
@@ -12857,26 +12891,6 @@ void EditSession::EditModeHandleEvent()
 				}
 			}
 			
-		}
-		else if (ev.key.code == Keyboard::W)
-		{
-			editModeUI->ExpandGrassLibrary();
-
-			/*if (selectedBrush->GetNumTerrain() > 0)
-			{
-				int layer = selectedBrush->GetTerrainLayer();
-
-				ClearMostRecentError();
-				if (layer < 0)
-				{
-					CreateError(ERR_SELECTED_TERRAIN_MULTIPLE_LAYERS);
-					ShowMostRecentError();
-				}
-				else
-				{
-					editModeUI->ExpandGrassLibrary();
-				}
-			}*/
 		}
 		else if (ev.key.code == Keyboard::I)
 		{

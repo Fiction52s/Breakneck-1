@@ -29,6 +29,7 @@ struct Edge : QuadTreeEntrant
 
 	Edge();
 	bool IsInvisibleWall();
+	V2d GetReflectionDir(V2d &dir);
 	sf::Vector2<double> Normal();
 	sf::Vector2<double> Along();
 	sf::Vector2<double> FullAlong();

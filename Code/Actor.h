@@ -933,7 +933,7 @@ struct Actor : QuadTreeCollider,
 	int grassCount[Grass::GrassType::Count];
 	bool touchedGrass[Grass::GrassType::Count];
 	void ResetGrassCounters();
-	double boostGrassAccel;
+	double accelGrassAccel;
 	double jumpGrassExtra;
 	bool extraDoubleJump;
 	
@@ -1093,7 +1093,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessBooster();
 	void ProcessGravModifier();
 	void UpdateWireStates();
-	void ProcessBoostGrass();
+	void ProcessAccelGrass();
 	void LimitMaxSpeeds();
 	void UpdateBubbles();
 	void UpdateRegrindOffCounter();

@@ -2549,7 +2549,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	SetDirtyAura(false);
 	activeComboObjList = NULL;
 
-	boostGrassAccel = .25;
+	accelGrassAccel = .25;
 	jumpGrassExtra = 15;
 
 	cout << "Start player" << endl;
@@ -4924,9 +4924,13 @@ void Actor::UpdateDrain()
 
 void Actor::ProcessGravityGrass()
 {
-	if (ground != NULL && reversed && !HasUpgrade(UPGRADE_POWER_GRAV) && grassCount[Grass::GRAVITY] == 0
+	//drop out of reverse from gravity grass
+	if (ground != NULL && reversed 
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
-		&& action != GROUNDTECHINPLACE )
+		&& action != GROUNDTECHINPLACE
+		&& ((!HasUpgrade(UPGRADE_POWER_GRAV) 
+		&& touchedGrass[Grass::GRAVREVERSE]) 
+		|| touchedGrass[Grass::ANTIGRAVREVERSE]))
 	{
 		//testgrasscount is from the previous frame. if you're not touching anything in your current spot.
 		//need to delay a frame so that the player can see themselves not being in the grass
@@ -5118,17 +5122,17 @@ void Actor::ProcessBooster()
 
 }
 
-void Actor::ProcessBoostGrass()
+void Actor::ProcessAccelGrass()
 {
-	if (ground != NULL && touchedGrass[Grass::BOOST])
+	if (ground != NULL && touchedGrass[Grass::ACCELERATE])
 	{
 		if (groundSpeed > 0)
 		{
-			groundSpeed += boostGrassAccel;
+			groundSpeed += accelGrassAccel;
 		}
 		else if (groundSpeed < 0)
 		{
-			groundSpeed -= boostGrassAccel;
+			groundSpeed -= accelGrassAccel;
 		}
 	}
 }
@@ -5656,7 +5660,7 @@ void Actor::UpdatePrePhysics()
 
 	ProcessBooster();
 
-	ProcessBoostGrass();
+	ProcessAccelGrass();
 
 	LimitMaxSpeeds();
 
@@ -8753,8 +8757,11 @@ bool Actor::TryScorpRailDropThrough()
 			framesInAir = 0;
 			scorpOn = false; //turns off scorp for one frame to allow dropthrough.
 							 //this is a bit hacky, and i probably need to fix it more later
+			return true;
 		}
 	}
+
+	return false;
 }
 
 bool Actor::TryGroundBlock()
@@ -9463,7 +9470,52 @@ void Actor::HandleBounceGrass()
 
 void Actor::HandleBounceRail()
 {
-	if (minContact.normal.y < 0)
+	//might not work for flat /\ tops of hills like that.
+	velocity = sess->CalcBounceReflectionVel(minContact.edge, velocity);
+
+	double minVel = 20.0;
+	if (length(velocity) < minVel)
+	{
+		//velocity = normalize(velocity) * minVel;
+	}
+
+	if (minContact.edge->IsFlatGround()
+		|| minContact.edge->IsSlopedGround())
+	{
+		if (minContact.normal.y < 0 )
+		{
+			if (velocity.y > -minVel)
+			{
+				velocity.y = -minVel;
+			}
+		}
+		else if (minContact.normal.y > 0)
+		{
+			if (velocity.y < minVel)
+			{
+				velocity.y = minVel;
+			}
+		}
+	}
+	else if (minContact.edge->IsSteepGround())
+	{
+		if (length(velocity) < minVel)
+		{
+			velocity = normalize(velocity) * minVel;
+		}
+	}
+	else if (minContact.edge->IsWall())
+	{
+		if (minContact.normal.x > 0)
+		{
+			velocity.x = minVel;
+		}
+		else if (minContact.normal.x < 0)
+		{
+			velocity.x = -minVel;
+		}
+	}
+	/*if (minContact.normal.y < 0)
 	{
 		velocity.y = -25;
 	}
@@ -9478,7 +9530,7 @@ void Actor::HandleBounceRail()
 	else if (minContact.normal.x < 0)
 	{
 		velocity.x = -18;
-	}
+	}*/
 
 	RechargeAirOptions();
 
@@ -10789,14 +10841,14 @@ void Actor::UpdatePhysics()
 				}
 			}
 			
-			if (tempCollision && grassCount[Grass::BOUNCE] > 0)
+			if (tempCollision && touchedGrass[Grass::BOUNCE])
 			{
 				HandleBounceGrass();
 			}
 			else if (tempCollision && minContact.edge->rail != NULL
 				&& minContact.edge->rail->GetRailType() == TerrainRail::BOUNCE)
 			{
-				HandleBounceGrass();
+				HandleBounceRail();
 			}
 			else if (tempCollision && action == FREEFLIGHT)
 			{
@@ -11082,9 +11134,10 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || grassCount[Grass::GRAVITY] > 0 )
-				&& tempCollision 
-				&& (((DashButtonHeld() && currInput.LUp()) || grassCount[Grass::GRAVITY] > 0)|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld())
+			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[GRAVREVERSE] )
+				&& tempCollision
+				&& !touchedGrass[Grass::ANTIGRAVREVERSE]
+				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld())
 				|| ( action == AIRHITSTUN && CanTech() ) )
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
