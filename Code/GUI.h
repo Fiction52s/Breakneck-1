@@ -173,7 +173,6 @@ struct ChooseRect : PanelMember
 		I_DECORLIBRARY,
 		I_TERRAINSEARCH,
 		I_TERRAINLIBRARY,
-		I_GRASSLIBRARY,
 		I_GATESEARCH,
 		I_SHARDLIBRARY,
 		I_GATEBOSSLIBRARY,
@@ -182,6 +181,8 @@ struct ChooseRect : PanelMember
 		I_RAILLIBRARY,
 		I_FILESELECT,
 		I_BRUSHHOTBAR,
+		I_GRASSSEARCH,
+		I_GRASSLIBRARY,
 		I_ADVENTURECREATOR_WORLD_SEARCH,
 		I_ADVENTURECREATOR_WORLD,
 		I_ADVENTURECREATOR_SECTOR,
@@ -848,6 +849,7 @@ struct EditModeUI : GUIHandler
 		const std::string &text, 
 		const std::string &toolTipText,
 		int upgradeIndex);
+	void SetGrassType(ImageChooseRect *icRect);
 	Panel *currEnemyPanel;
 	ActorParams *currParams;
 	TerrainRail *currRail;
@@ -856,6 +858,10 @@ struct EditModeUI : GUIHandler
 	Panel *bgOptionsPanel;
 	Panel *nameBrushPanel;
 	
+	Panel *grassTypePanel;
+	ImageChooseRect *currGrassTypeRect;
+	std::vector<ImageChooseRect*> grassRects;
+
 
 
 	int labelCharHeight;
@@ -907,7 +913,7 @@ struct EditModeUI : GUIHandler
 
 	int terrainGridSize;
 	Panel *matTypePanel;
-	Panel *grassTypePanel;
+	//Panel *grassTypePanel;
 	Panel *shardTypePanel;
 	//std::vector<ImageChooseRect*> *matTypeRects;
 	sf::Vector2i matPanelPos;

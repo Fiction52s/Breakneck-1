@@ -1649,7 +1649,6 @@ EditSession::~EditSession()
 		delete generalUI;
 	}
 
-	delete grassTypePanel;
 	delete matTypePanel;
 	delete shardTypePanel;
 	delete nameBrushPanel;
@@ -3044,35 +3043,6 @@ void EditSession::ModifySelectedTerrainMat(
 	AddDoneAction(modifyAction);
 }
 
-void EditSession::ModifySelectedTerrainGrassType(
-	int gIndex)
-{
-	/*PolyPtr tp;
-	bool grassAlreadySetToThisType = true;
-	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
-	{
-		tp = (*it)->GetAsTerrain();
-		if (tp != NULL)
-		{
-			if (tp->grassType != gIndex)
-			{
-				grassAlreadySetToThisType = false;
-				break;
-			}
-		}
-	}
-
-	if (grassAlreadySetToThisType)
-	{
-		return;
-	}*/
-
-	/*Action *modifyAction = new ModifyTerrainGrassTypeAction(selectedBrush, gIndex);
-	modifyAction->Perform();
-
-	AddDoneAction(modifyAction);*/
-}
-
 void EditSession::SetBackground(const std::string &bgName)
 {
 	if (bgName != mapHeader->envName)
@@ -3088,63 +3058,7 @@ void EditSession::SetBackground(const std::string &bgName)
 	}
 }
 
-void EditSession::SetupGrassSelectPanel()
-{
-	grassTypePanel = new Panel("grasstype", 600, 600, this, true);
-	Color c(100, 100, 100);
-	c.a = 180;
-	grassTypePanel->SetColor(c);
 
-	int numGrassRects = Grass::GrassType::Count;
-
-	grassTypePanel->ReserveImageRects(numGrassRects);
-
-	int rectSize = 80;
-
-	Tileset *ts_grass = GetTileset("Env/grass_128x128_2.png", 128, 128);
-
-	ImageChooseRect *ic;
-	int col = 0;
-	for (int i = 0; i < Grass::GrassType::Count; ++i)
-	{
-		/*if (i <= Grass::DECELERATE)
-		{
-			col = 0;
-		}
-		else if (i <= Grass::ANTIGRAVREVERSE)
-		{
-			col = 1;
-		}
-		else if (i <= Grass::ACCELERATE)
-		{
-			col = 2;
-		}
-		else if (i <= Grass::ANTIGRIND)
-		{
-			col = 3;
-		}
-		else if (i <= Grass::POISON)
-		{
-			col = 4;
-		}
-		else if (i <= Grass::ANTIWIRE)
-		{
-			col = 5;
-		}
-		else
-		{
-			col = 6;
-		}*/
-
-		ic = grassTypePanel->AddImageRect(
-			ChooseRect::ChooseRectIdentity::I_GRASSLIBRARY,
-			Vector2f( i * rectSize , 0), ts_grass, i, rectSize);
-		ic->SetInfo((void*)i);
-		ic->SetShown(true);
-	}
-
-	grassTypePanel->SetCenterPos(Vector2i(960, 540));
-}
 
 void EditSession::SetupTerrainSelectPanel()
 {
@@ -3419,7 +3333,6 @@ void EditSession::Init()
 
 	ReadDecorImagesFile();
 
-	SetupGrassSelectPanel();
 	SetupGGPOStatsPanel();
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
@@ -10405,7 +10318,8 @@ void EditSession::UpdateGrass()
 
 void EditSession::ModifyGrass()
 {
-	if (editModeUI->IsShowGrassOn() && IsMousePressed(Mouse::Left))
+	if (editModeUI->IsShowGrassOn() && IsMousePressed(Mouse::Left)
+		&& !justCompletedPolyWithClick )
 	{
 		for (auto it = polygons.begin(); it != polygons.end(); ++it)
 		{
@@ -10591,6 +10505,7 @@ void EditSession::SetMode(Emode m)
 		editClock.restart();
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
+		justCompletedPolyWithClick = false;
 		break;
 	}
 		
@@ -10680,15 +10595,18 @@ void EditSession::RemoveSelectedObjects()
 		selectedBrush->AddObject((*it));
 	}
 
-	ClearUndoneActions();
+	if (selectedBrush->objects.size() > 0)
+	{
+		ClearUndoneActions();
 
-	Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush );
+		Action *remove = new RemoveBrushAction(selectedBrush, mapStartBrush);
 
-	remove->Perform();
-	AddDoneAction(remove);
-	
+		remove->Perform();
+		AddDoneAction(remove);
 
-	ClearSelectedBrush();
+
+		ClearSelectedBrush();
+	}
 }
 
 void EditSession::TryRemoveSelectedObjects()
@@ -13692,6 +13610,11 @@ int EditSession::GetMouseOnBorderIndex()
 
 void EditSession::EditModeUpdate()
 {
+	if (MOUSE.IsMouseLeftClicked())
+	{
+		justCompletedPolyWithClick = false;
+	}
+
 	if (MOUSE.IsMouseLeftClicked() && !mainWindowLostFocus)
 	{
 		if (!editModeUI->IsShowGrassOn() && !(editMouseDownMove || editMouseDownBox))

@@ -3819,9 +3819,9 @@ V2d TerrainPolygon::GetGrassCenter(int gIndex)
 
 void TerrainPolygon::SetGrassState(int index, int state, int gType )
 {
-	Color c = Grass::GetColor(gType);
+	//Color c = Grass::GetColor(gType);
 
-	
+	Color c = Color::White;
 	switch (state)
 	{
 	case G_OFF_DONT_SHOW:

@@ -8,7 +8,7 @@ using namespace sf;
 sf::Color Grass::GetColor( int gType )
 {
 	Color c = Color::White;
-	switch (gType)
+	/*switch (gType)
 	{
 	case Grass::JUMP:
 		c = Color::White;
@@ -22,7 +22,7 @@ sf::Color Grass::GetColor( int gType )
 	case Grass::GrassType::KILL:
 		c = Color::Black;
 		break;
-	}
+	}*/
 
 	return c;
 }

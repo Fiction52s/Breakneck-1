@@ -19,13 +19,14 @@ EditModeUI::EditModeUI()
 	nameBrushPanel = edit->nameBrushPanel;
 	terrainGridSize = edit->terrainGridSize;
 	matTypePanel = edit->matTypePanel;
-	grassTypePanel = edit->grassTypePanel;
+	//grassTypePanel = edit->grassTypePanel;
 
 	shardTypePanel = edit->shardTypePanel;
 
-	mainPanel = new Panel("edit", 1310, 50, this, false);
+	mainPanel = new Panel("edit", /*1310*/1500, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(20, 0 ));
+	mainPanel->ReserveImageRects(1);
 
 	CreateLayerPanel();
 
@@ -67,6 +68,33 @@ EditModeUI::EditModeUI()
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
 
+	Vector2f currTypeRectPos = Vector2f(0, 0);
+
+	currGrassTypeRect = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GRASSSEARCH,
+		currTypeRectPos, NULL, 0, 100);
+	currGrassTypeRect->Init();
+
+	currGrassTypeRect->SetShown(true);
+
+	Tileset *ts_grassTypes = edit->GetTileset("Env/grass_128x128_2.png", 128, 128);
+
+	grassTypePanel = new Panel("type", 600, 600, this, true);
+	int numGrassTypes = Grass::Count;
+	grassTypePanel->ReserveImageRects(numGrassTypes);
+	grassRects.resize(numGrassTypes);
+	for (int i = 0; i < numGrassTypes; ++i)
+	{
+		grassRects[i] = grassTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_GRASSLIBRARY,
+			Vector2f(0, i * 80), ts_grassTypes, i, 80);
+		grassRects[i]->SetInfo((void*)i);
+		//physRects[i]->Init();
+		grassRects[i]->SetShown(true);
+	}
+
+	grassTypePanel->SetPosition(Vector2i(currGrassTypeRect->pos) + Vector2i(0, 120));
+
+	SetGrassType(grassRects[0]);
+
 	CreateKinOptionsPanel();
 }
 
@@ -77,8 +105,9 @@ EditModeUI::~EditModeUI()
 	delete layerPanel;
 	delete lpSlider;
 	delete kinOptionsPanel;
-}
 
+	delete grassTypePanel;
+}
 
 
 void EditModeUI::AddKinOption(const std::string &text, const std::string &toolTipText, int upgradeIndex)
@@ -486,21 +515,32 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 				edit->RemoveActivePanel(shardTypePanel);
 			}
+			else if (icRect->rectIdentity == ChooseRect::I_GRASSSEARCH
+				&& eventType == ChooseRect::E_LEFTCLICKED)
+			{
+				ExpandGrassLibrary();
+			}
 			else if (icRect->rectIdentity == ChooseRect::I_GRASSLIBRARY)
 			{
-				int index = (int)icRect->info;
-
-				edit->currGrassType = index;
-				//edit->ModifySelectedTerrainGrassType(index);
-
-				edit->RemoveActivePanel(grassTypePanel);
-
-				edit->justCompletedPolyWithClick = true;
+				SetGrassType(icRect);
 			}
 		}
 
 
 	}
+}
+
+void EditModeUI::SetGrassType(ImageChooseRect *icRect)
+{
+	int index = (int)icRect->info;
+
+	edit->currGrassType = index;
+
+	currGrassTypeRect->SetImage(icRect->ts, icRect->spr.getTextureRect());
+
+	edit->RemoveActivePanel(grassTypePanel);
+
+	edit->justCompletedPolyWithClick = true;
 }
 
 void EditModeUI::ButtonCallback(Button *b, const std::string & e)

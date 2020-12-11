@@ -227,7 +227,6 @@ struct EditSession : GUIHandler, Session
 	Panel *newMapPanel;
 	int terrainGridSize;
 	Panel *matTypePanel;
-	Panel *grassTypePanel;
 	std::vector<ImageChooseRect*> matTypeRects[TERRAINLAYER_Count];
 	int matTypeRectsCurrLayer;
 	Panel *shardTypePanel;
@@ -590,10 +589,7 @@ struct EditSession : GUIHandler, Session
 	void SetMatTypePanelLayer(int layer);
 	void ModifySelectedTerrainMat(
 		int world, int var);
-	void ModifySelectedTerrainGrassType(
-		int gIndex);
 	void SetupTerrainSelectPanel();
-	void SetupGrassSelectPanel();
 	void SetCurrSelectedShardType(int w, int li);
 	void SetupShardSelectPanel();
 	void SetupBrushPanels();
