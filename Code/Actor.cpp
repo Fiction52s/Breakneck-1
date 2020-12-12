@@ -5137,6 +5137,43 @@ void Actor::ProcessAccelGrass()
 	}
 }
 
+void Actor::ProcessDecelGrass()
+{
+	if (ground != NULL && touchedGrass[Grass::DECELERATE])
+	{
+		double dSpeed = GetDashSpeed();
+		double maxGSpeed = 5;
+		double decel = 2.0;
+		double maxSlowSpeed = dSpeed + 5;
+		if (groundSpeed > maxSlowSpeed)
+		{
+			groundSpeed -= decel;
+		}
+		else if (groundSpeed < -maxSlowSpeed)
+		{
+			groundSpeed += decel;
+		}
+		else if (groundSpeed > maxGSpeed)
+		{
+			groundSpeed = maxGSpeed;
+		}
+		else if (groundSpeed < -maxGSpeed)
+		{
+			groundSpeed = -maxGSpeed;
+		}
+	}
+}
+
+void Actor::ProcessPoisonGrass()
+{
+	if (ground != NULL && touchedGrass[Grass::POISON])
+	{
+		modifiedDrainFrames = 10;
+		modifiedDrain = drainAmount * 4;
+		//res = kinRing->powerRing->Drain(modifiedDrain);
+	}
+}
+
 void Actor::LimitMaxSpeeds()
 {
 	double maxReal = maxVelocity + scorpAdditionalCap;
@@ -5508,6 +5545,9 @@ void Actor::UpdatePrePhysics()
 		currInput.InvertLeftStick();
 	}
 
+	
+	TryCheckGrass();
+
 	/*for (int i = 0; i < NUM_PAST_INPUTS-1; ++i)
 	{
 		pastCompressedInputs[i+1] = pastCompressedInputs[i];
@@ -5662,6 +5702,10 @@ void Actor::UpdatePrePhysics()
 
 	ProcessAccelGrass();
 
+	ProcessDecelGrass();
+
+	ProcessPoisonGrass();
+
 	LimitMaxSpeeds();
 
 	WireMovement();
@@ -5674,6 +5718,7 @@ void Actor::UpdatePrePhysics()
 
 	ClearPauseBufferedActions();
 
+	memcpy(oldTouchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
 	memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
@@ -7050,12 +7095,7 @@ bool Actor::ResolvePhysics( V2d vel )
 		}
 	}
 
-	if ( (owner != NULL && owner->hasAnyGrass) || editOwner != NULL )
-	{
-		queryMode = "grass";
-		memset(grassCount, 0, sizeof(int) * Grass::GrassType::Count);
-		sess->grassTree->Query(this, r);
-	}
+//	TryCheckGrass(r);
 
 	
 	
@@ -9057,6 +9097,21 @@ void Actor::TryAirdashBoost()
 		{
 			velocity = velDir * (velLen + highSpeedBoost);
 		}
+	}
+}
+
+void Actor::TryCheckGrass()
+{
+	//this was previously in ResolvePhysics and used the r rect from
+	//there. now im only checking once per frame so
+	//lets hope nothing feels weird.
+	if ((owner != NULL && owner->hasAnyGrass) || editOwner != NULL)
+	{
+		Rect<double> grassR(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
+		//grassR is the same as the rect used in HandleEntrant for "grass"
+		//might need to make a function at some point
+		queryMode = "grass";
+		sess->grassTree->Query(this, grassR);
 	}
 }
 
@@ -11193,7 +11248,7 @@ void Actor::UpdatePhysics()
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
 			}
-			else if( tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && PowerButtonHeld() && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
+			else if(!touchedGrass[Grass::ANTIGRIND] && tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && PowerButtonHeld() && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -15315,7 +15370,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		if (g->IsTouchingBox(r))
 		{
 			touchedGrass[g->grassType] = true;
-			grassCount[g->grassType]++;
 		}
 	}
 	else if (queryMode == "envplant")
@@ -16164,7 +16218,7 @@ void Actor::DrawShield(sf::RenderTarget *target)
 
 void Actor::ResetGrassCounters()
 {
-	memset(grassCount, 0, sizeof(int) * Grass::Count);
+	memset(oldTouchedGrass, 0, sizeof(bool) * Grass::Count);
 	memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
 }
 
@@ -17351,7 +17405,7 @@ void Actor::AttackMovement()
 
 bool Actor::CanBufferGrind()
 {
-	return currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y;
+	return !touchedGrass[Grass::ANTIGRIND] && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y;
 }
 
 bool Actor::CanPressGrind()
@@ -17424,6 +17478,7 @@ bool Actor::PowerButtonPressed()
 
 void Actor::SetActionGrind()
 {
+
 	BounceFlameOff();
 
 	//double gSpeed = groundSpeed;

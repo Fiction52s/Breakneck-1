@@ -388,6 +388,8 @@ struct Actor : QuadTreeCollider,
 	int currPowerMode;
 	PolyPtr oldSpecialTerrain;
 	PolyPtr currSpecialTerrain;
+	//bool oldTouchedGrass[Grass::GrassType::Count];
+	//^this needs to sync too
 
 	//dont sync
 	int rayMode;
@@ -930,8 +932,8 @@ struct Actor : QuadTreeCollider,
 	int baseSlowMultiple;
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
-	int grassCount[Grass::GrassType::Count];
 	bool touchedGrass[Grass::GrassType::Count];
+	bool oldTouchedGrass[Grass::GrassType::Count];
 	void ResetGrassCounters();
 	double accelGrassAccel;
 	double jumpGrassExtra;
@@ -1094,6 +1096,9 @@ struct Actor : QuadTreeCollider,
 	void ProcessGravModifier();
 	void UpdateWireStates();
 	void ProcessAccelGrass();
+	void ProcessDecelGrass();
+	void ProcessPoisonGrass();
+	void TryCheckGrass();
 	void LimitMaxSpeeds();
 	void UpdateBubbles();
 	void UpdateRegrindOffCounter();
