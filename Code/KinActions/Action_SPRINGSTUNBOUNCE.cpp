@@ -14,25 +14,49 @@ void Actor::SPRINGSTUNBOUNCE_End()
 
 void Actor::SPRINGSTUNBOUNCE_Change()
 {
-	if (!GlideAction())
-	{
-		if (springStunFrames == 0)
-		{
-			SetAction(JUMP);
-			frame = 1;
-			if (velocity.x < 0)
-			{
-				facingRight = false;
-			}
-			else if (velocity.x > 0)
-			{
-				facingRight = true;
-			}
-		}
-	}
-	else
+	//doesnt use glide action because you shouldn't be able to walljump
+	CheckBounceFlame();
+
+	if (TryDoubleJump())
 	{
 		springStunFrames = 0;
+		return;
+	}
+
+	if (TryAirDash())
+	{
+		springStunFrames = 0;
+		return;
+	}
+
+	if (AirAttack())
+	{
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+
+		
+		springStunFrames = 0;
+		return;
+	}
+
+	if (springStunFrames == 0)
+	{
+		SetAction(JUMP);
+		frame = 1;
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
 	}
 }
 
@@ -41,32 +65,12 @@ void Actor::SPRINGSTUNBOUNCE_Update()
 	double bounceTurnFactor = .012;
 	if (currInput.LUp())
 	{
-		glideTurnFactor = bounceTurnFactor;
-		/*if (bounceTurnFactor < 0)
-		{
-		bounceTurnFactor = 0;
-		}
-		glideTurnFactor += glideTurnAccel;
-		if (glideTurnFactor > maxGlideTurnFactor)
-		{
-		glideTurnFactor = maxGlideTurnFactor;
-		}*/
-		//RotateCCW(springVel, glideTurnFactor);
+		//glideTurnFactor = bounceTurnFactor;
 	}
 	else if (currInput.LDown())
 	{
-		/*if (glideTurnFactor > 0)
-		{
-		glideTurnFactor = 0;
-		}
-		glideTurnFactor -= glideTurnAccel;
-		if (glideTurnFactor < -maxGlideTurnFactor)
-		{
-		glideTurnFactor = -maxGlideTurnFactor;
-		}*/
-		glideTurnFactor = -bounceTurnFactor;
-		//RotateCCW(springVel, glideTurnFactor);
-		//grav = AddGravity(V2d(0, 0));
+		
+		//glideTurnFactor = -bounceTurnFactor;
 	}
 	else
 	{

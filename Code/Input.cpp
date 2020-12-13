@@ -3,6 +3,7 @@
 #include <fstream>
 #include <assert.h>
 #include <iostream>
+#include "VectorMath.h"
 
 using namespace std;
 using namespace sf;
@@ -287,6 +288,30 @@ bool ControllerState::RightTriggerPressed()
 bool ControllerState::LeftTriggerPressed()
 {
 	return leftTrigger >= triggerThresh;
+}
+
+sf::Vector2<double> ControllerState::GetLeft8Dir()
+{
+	sf::Vector2<double> dir(0, 0);
+	if (LLeft())
+	{
+		dir.x = -1;
+	}
+	else if (LRight())
+	{
+		dir.x = 1;
+	}
+
+	if (LUp())
+	{
+		dir.y = -1;
+	}
+	else if (LDown())
+	{
+		dir.y = 1;
+	}
+
+	return normalize(dir);
 }
 
 void ControllerState::InvertLeftStick()

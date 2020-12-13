@@ -117,6 +117,7 @@ struct Teleporter;
 struct SwingLauncher;
 struct EnemyParams;
 struct SoundNode;
+struct AimLauncher;
 
 struct GroundTrigger;
 
@@ -238,6 +239,8 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUN,
 		SPRINGSTUNGLIDE,
 		SPRINGSTUNBOUNCE,
+		AIMWAIT,
+		SPRINGSTUNAIM,
 		SPRINGSTUNAIRBOUNCE,
 		SPRINGSTUNTELEPORT,
 		FREEFLIGHT,
@@ -755,6 +758,7 @@ struct Actor : QuadTreeCollider,
 	
 	bool scorpSet;
 	Spring *currSpring;
+	AimLauncher *currAimLauncher;
 	Teleporter *currTeleporter;
 	Teleporter *oldTeleporter;
 	Booster *currBooster;
@@ -1374,6 +1378,7 @@ struct Actor : QuadTreeCollider,
 	void SetStartUpgrade(int upgrade, bool on);
 	bool SpringLaunch();
 	bool TeleporterLaunch();
+	bool AimLauncherAim();
 	bool SwingLaunch();
 	bool CheckSwing();
 	bool CheckNormalSwing();
@@ -1438,6 +1443,17 @@ struct Actor : QuadTreeCollider,
 	void ApplyBlockFriction();
 
 	//kin action functions
+
+	void AIMWAIT_Start();
+	void AIMWAIT_End();
+	void AIMWAIT_Change();
+	void AIMWAIT_Update();
+	void AIMWAIT_UpdateSprite();
+	void AIMWAIT_TransitionToAction(int a);
+	void AIMWAIT_TimeIndFrameInc();
+	void AIMWAIT_TimeDepFrameInc();
+	int AIMWAIT_GetActionLength();
+	Tileset * AIMWAIT_GetTileset();
 
 	void AIRBLOCKUP_Start();
 	void AIRBLOCKUP_End();
@@ -2466,6 +2482,17 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUN_TimeDepFrameInc();
 	int SPRINGSTUN_GetActionLength();
 	Tileset * SPRINGSTUN_GetTileset();
+
+	void SPRINGSTUNAIM_Start();
+	void SPRINGSTUNAIM_End();
+	void SPRINGSTUNAIM_Change();
+	void SPRINGSTUNAIM_Update();
+	void SPRINGSTUNAIM_UpdateSprite();
+	void SPRINGSTUNAIM_TransitionToAction(int a);
+	void SPRINGSTUNAIM_TimeIndFrameInc();
+	void SPRINGSTUNAIM_TimeDepFrameInc();
+	int SPRINGSTUNAIM_GetActionLength();
+	Tileset * SPRINGSTUNAIM_GetTileset();
 
 	void SPRINGSTUNAIRBOUNCE_Start();
 	void SPRINGSTUNAIRBOUNCE_End();

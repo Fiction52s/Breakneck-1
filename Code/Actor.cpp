@@ -47,6 +47,7 @@
 #include "GateMarker.h"
 #include "Enemy_GlideTarget.h"
 #include "Enemy_FreeFlightTarget.h"
+#include "Enemy_AimLauncher.h"
 
 #include "GameMode.h"
 
@@ -979,6 +980,18 @@ void Actor::SetupActionFunctions()
 	timeDepFrameIncFuncs.resize(Count);
 	getActionLengthFuncs.resize(Count);
 	getTilesetFuncs.resize(Count);
+
+	SetupFuncsForAction(AIMWAIT,
+		&Actor::AIMWAIT_Start,
+		&Actor::AIMWAIT_End,
+		&Actor::AIMWAIT_Change,
+		&Actor::AIMWAIT_Update,
+		&Actor::AIMWAIT_UpdateSprite,
+		&Actor::AIMWAIT_TransitionToAction,
+		&Actor::AIMWAIT_TimeIndFrameInc,
+		&Actor::AIMWAIT_TimeDepFrameInc,
+		&Actor::AIMWAIT_GetActionLength,
+		&Actor::AIMWAIT_GetTileset);
 
 	SetupFuncsForAction(AIRBLOCKUP,
 		&Actor::AIRBLOCKUP_Start,
@@ -2084,6 +2097,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUN_GetActionLength,
 		&Actor::SPRINGSTUN_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNAIM,
+		&Actor::SPRINGSTUNAIM_Start,
+		&Actor::SPRINGSTUNAIM_End,
+		&Actor::SPRINGSTUNAIM_Change,
+		&Actor::SPRINGSTUNAIM_Update,
+		&Actor::SPRINGSTUNAIM_UpdateSprite,
+		&Actor::SPRINGSTUNAIM_TransitionToAction,
+		&Actor::SPRINGSTUNAIM_TimeIndFrameInc,
+		&Actor::SPRINGSTUNAIM_TimeDepFrameInc,
+		&Actor::SPRINGSTUNAIM_GetActionLength,
+		&Actor::SPRINGSTUNAIM_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNAIRBOUNCE,
 		&Actor::SPRINGSTUNAIRBOUNCE_Start,
 		&Actor::SPRINGSTUNAIRBOUNCE_End,
@@ -2689,6 +2714,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 
 	currSpring = NULL;
+	currAimLauncher = NULL;
 	currBooster = NULL;
 	currTeleporter = NULL;
 	currSwingLauncher = NULL;
@@ -4168,6 +4194,7 @@ void Actor::Respawn()
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currSpring = NULL;
+	currAimLauncher = NULL;
 	currTeleporter = NULL;
 	currSwingLauncher = NULL;
 	oldBooster = NULL;
@@ -5179,12 +5206,13 @@ void Actor::LimitMaxSpeeds()
 	double maxReal = maxVelocity + scorpAdditionalCap;
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL
 		&& action != ENTERNEXUS1
-		&& action != SPRINGSTUN
 		&& action != GLIDE
-		&& action != SPRINGSTUNGLIDE
-		&& action != SPRINGSTUNBOUNCE
-		&& action != SPRINGSTUNAIRBOUNCE
-		&& action != SPRINGSTUNTELEPORT)
+		&& !IsSpringAction( action ) )
+		//&& action != SPRINGSTUN
+		//&& action != SPRINGSTUNGLIDE
+		//&& action != SPRINGSTUNBOUNCE
+		//&& action != SPRINGSTUNAIRBOUNCE
+		//&& action != SPRINGSTUNTELEPORT)
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
 		{
@@ -10935,8 +10963,17 @@ void Actor::UpdatePhysics()
 			}*/
 			else if (tempCollision && action == SPRINGSTUNBOUNCE)
 			{
-				V2d norm = minContact.normal;
-				springVel = norm * length(springVel);
+				//needs work later probably
+				V2d newDir = minContact.edge->GetReflectionDir(normalize(springVel));
+				
+				V2d inputDir = currInput.GetLeft8Dir();
+
+				if (inputDir.x != 0 || inputDir.y != 0)
+				{
+					double inputFactor = .3;
+					newDir = normalize(newDir + inputDir * inputFactor);
+				}
+				springVel = newDir * length(springVel);
 
 				if (springVel.x > 0)
 				{
@@ -10946,6 +10983,10 @@ void Actor::UpdatePhysics()
 				{
 					facingRight = false;
 				}
+
+				velocity = springVel;
+
+				break;
 			}
 			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
@@ -12023,6 +12064,8 @@ void Actor::PhysicsResponse()
 
 		if (SwingLaunch())return;
 
+		if (AimLauncherAim()) return;
+
 		//e = ground;
 		bool leaveGround = false;
 		if( ground->edgeType == Edge::CLOSED_GATE )
@@ -12173,6 +12216,8 @@ void Actor::PhysicsResponse()
 		if (TeleporterLaunch())return;
 
 		if (SwingLaunch())return;
+
+		if (AimLauncherAim()) return;
 
 		if( action == GROUNDHITSTUN )
 		{
@@ -14284,6 +14329,39 @@ bool Actor::TeleporterLaunch()
 	return false;
 }
 
+bool Actor::AimLauncherAim()
+{
+	if (currAimLauncher != NULL && action != AIMWAIT )
+	{
+		currAimLauncher->StartAiming();
+
+		SetAction(AIMWAIT);
+		frame = 0;
+
+		wallNormal = V2d(0, 0);
+		bounceEdge = NULL;
+		grindEdge = NULL;
+		currWall = NULL;
+		ground = NULL;
+		holdJump = false;
+		holdDouble = false;
+		position = currAimLauncher->GetPosition();
+		RechargeAirOptions();
+		rightWire->Reset();
+		leftWire->Reset();
+		
+		velocity = V2d(0, 0);
+
+		scorpOn = false;
+
+		//currAimLauncher = NULL;
+
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::SpringLaunch()
 {
 	if (currSpring != NULL)
@@ -15657,6 +15735,18 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (sw->hitBody.Intersects(sw->currHitboxFrame, &hurtBody) && sw->action == SwingLauncher::IDLE)
 				{
 					currSwingLauncher = sw;
+				}
+			}
+		}
+		else if (en->type == EnemyType::EN_AIMLAUNCHER)
+		{
+			AimLauncher *al = (AimLauncher*)qte;
+
+			if (currAimLauncher == NULL)
+			{
+				if (al->hitBody.Intersects(al->currHitboxFrame, &hurtBody) && al->action == AimLauncher::IDLE)
+				{
+					currAimLauncher = al;
 				}
 			}
 		}
@@ -18081,7 +18171,8 @@ bool Actor::IsGroundAttackAction(int a)
 bool Actor::IsSpringAction(int a)
 {
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
-		|| a == SPRINGSTUNTELEPORT || a == SPRINGSTUNAIRBOUNCE;
+		|| a == SPRINGSTUNTELEPORT
+		|| a == SPRINGSTUNAIM || a == AIMWAIT;
 }
 
 bool Actor::IsOnRailAction(int a)

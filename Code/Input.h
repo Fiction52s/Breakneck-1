@@ -25,6 +25,7 @@ struct ControllerState
 	ControllerState();
 	void Set( const ControllerState &state );
 	void SetLeftDirection();
+	sf::Vector2<double> GetLeft8Dir();
 	int GetCompressedState();
 	void SetFromCompressedState(int s);
 	void InvertLeftStick();

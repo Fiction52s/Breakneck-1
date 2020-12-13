@@ -8,5 +8,6 @@
 #include "Enemy_Badger.h"
 #include "Enemy_Owl.h"
 #include "Enemy_Cactus.h"
+#include "Enemy_AimLauncher.h"
 
 #endif

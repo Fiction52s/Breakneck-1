@@ -316,7 +316,8 @@ Panel *ActorType::CreatePanel()
 	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
 		|| name == "airbouncespring" || name == "swinglaunchercw"
-		|| name == "swinglauncherccw")
+		|| name == "swinglauncherccw"
+		|| name == "aimlauncher")
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);
