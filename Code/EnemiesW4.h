@@ -7,5 +7,6 @@
 #include "Enemy_Turtle.h"
 #include "Enemy_Cheetah.h"
 #include "Enemy_Spider.h"
+#include "Enemy_Teleporter.h"
 
 #endif

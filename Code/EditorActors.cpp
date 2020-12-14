@@ -211,7 +211,7 @@ Panel *ActorType::CreatePanel()
 		|| name == "redkeyfly"
 		|| name == "magentakeyfly"
 		|| name == "greykeyfly"
-		|| name == "blackkeyfly" 
+		|| name == "blackkeyfly"
 		|| name == "glidetarget"
 		|| name == "freeflighttarget")
 	{
@@ -323,7 +323,7 @@ Panel *ActorType::CreatePanel()
 		AddSetDirectionButton(p);
 		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 30);
 	}
-	else if (name == "teleporter")
+	else if (name == "teleporter" || name == "doubleteleporter")
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);

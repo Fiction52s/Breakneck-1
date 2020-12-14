@@ -10988,6 +10988,26 @@ void Actor::UpdatePhysics()
 
 				break;
 			}
+			else if (tempCollision && action == SPRINGSTUNAIM)
+			{
+				//needs work later probably
+				V2d newDir = minContact.edge->GetReflectionDir(normalize(springVel));
+
+				springVel = newDir * length(springVel);
+
+				if (springVel.x > 0)
+				{
+					facingRight = true;
+				}
+				else if (springVel.x < 0)
+				{
+					facingRight = false;
+				}
+
+				velocity = springVel;
+
+				break;
+			}
 			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
 				prevRail = NULL;
@@ -14283,7 +14303,7 @@ bool Actor::SwingLaunch()
 
 bool Actor::TeleporterLaunch()
 {
-	/*if (currTeleporter != NULL)
+	if (currTeleporter != NULL)
 	{
 		if (!currTeleporter->TryTeleport())
 		{
@@ -14292,7 +14312,7 @@ bool Actor::TeleporterLaunch()
 		}
 
 		oldTeleporter = currTeleporter;
-		position = currTeleporter->position;
+		position = currTeleporter->GetPosition();
 		V2d dir = currTeleporter->dir;
 
 		double s = currTeleporter->speed;
@@ -14324,7 +14344,7 @@ bool Actor::TeleporterLaunch()
 		velocity = V2d(0, 0);
 		currWall = NULL;
 		return true;
-	}*/
+	}
 
 	return false;
 }
@@ -15717,7 +15737,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			Teleporter *tele = (Teleporter*)qte;
 			if (currTeleporter == NULL)
 			{
-				if (tele->hitBody->Intersects(tele->currHitboxFrame, &hurtBody) && tele->action == Teleporter::IDLE)
+				if (tele->hitBody.Intersects(tele->currHitboxFrame, &hurtBody) && tele->action == Teleporter::IDLE)
 				{
 					currTeleporter = tele;
 				}

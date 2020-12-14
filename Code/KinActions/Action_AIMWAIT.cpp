@@ -15,17 +15,27 @@ void Actor::AIMWAIT_End()
 
 void Actor::AIMWAIT_Change()
 {
+	V2d dir8 = currInput.GetLeft8Dir();
+
+	if (dir8.x != 0 || dir8.y != 0)
+	{
+		currAimLauncher->SetCurrDir(dir8);
+	}
+	else
+	{
+		currAimLauncher->SetCurrDir(currAimLauncher->origDir);
+	}
+
+
 	if (JumpButtonPressed())
 	{
 		SetAction(SPRINGSTUNAIM);
 		frame = 0;
 		currAimLauncher->Launch();
 
-		V2d dir = currAimLauncher->dir;
-
 		double s = currAimLauncher->speed;
 
-		springVel = currAimLauncher->dir * s;
+		springVel = currAimLauncher->currDir * s;
 
 		springExtra = V2d(0, 0);
 

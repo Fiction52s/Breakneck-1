@@ -1006,6 +1006,13 @@ bool Enemy::IsTouchingBox( const sf::Rect<double> &r )
 	return IsBoxTouchingBox( spawnRect, r );//r.intersects( spawnRect );// 
 }
 
+void Enemy::AddToGame()
+{
+	AddToWorldTrees();
+	sess->enemyTree->Insert(this);
+	sess->fullEnemyList.push_back(this);
+}
+
 void Enemy::UpdateSpriteFromParams(ActorParams *ap)
 {
 	//editparams always exists here

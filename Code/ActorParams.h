@@ -383,6 +383,23 @@ struct SpringParams : public ActorParams
 	int speed;
 };
 
+struct TeleporterParams : public ActorParams
+{
+	TeleporterParams(ActorType *at, int level );
+	TeleporterParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+	void Draw(sf::RenderTarget *target);
+	void SetPath(std::vector<sf::Vector2i> &globalPath);
+	void OnCreate();
+	ActorParams *Copy();
+
+	void SetParams();
+	void SetPanelInfo();
+
+	bool secondary;
+};
+
 struct JugglerParams : public BasicAirEnemyParams
 {
 	JugglerParams(ActorType *at, int level);
@@ -790,25 +807,7 @@ struct BossCoyoteParams : public ActorParams
 //w4
 
 
-struct TeleporterParams : public ActorParams
-{
-	TeleporterParams(ActorType *at,
-		sf::Vector2i &pos,
-		std::vector<sf::Vector2i> &globalPath);
-	TeleporterParams(ActorType *at,
-		sf::Vector2i &pos);
-	TeleporterParams(ActorType *at,
-		std::ifstream &is);
-	void WriteParamFile(std::ofstream &of);
-	void SetPath(
-		std::vector<sf::Vector2i> &globalPath);
-	void Draw(sf::RenderTarget *target);
 
-	ActorParams *Copy();
-
-	void SetParams();
-	void SetPanelInfo();
-};
 
 struct TurtleParams : public ActorParams
 {

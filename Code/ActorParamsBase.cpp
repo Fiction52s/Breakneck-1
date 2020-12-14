@@ -107,6 +107,23 @@ ActorParams::~ActorParams()
 	}
 }
 
+void ActorParams::DeepCopyPathLines()
+{
+	if (lines != NULL)
+	{
+		int numVertices = lines->getVertexCount();
+
+		VertexArray &oldli = *lines;
+		lines = new VertexArray(sf::LinesStrip, numVertices);
+		VertexArray &li = *lines;
+
+		for (int i = 0; i < numVertices; ++i)
+		{
+			li[i] = oldli[i];
+		}
+	}
+}
+
 void ActorParams::CreateMyEnemy()
 {
 	myEnemy = GenerateEnemy();

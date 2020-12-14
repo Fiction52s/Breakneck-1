@@ -465,56 +465,40 @@ ActorParams *RailParams::Copy()
 	return rp;
 }
 
-TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos, std::vector<sf::Vector2i> &globalPath )
-	:ActorParams(at)
-{
-	PlaceAerial(pos);
-
-	lines = NULL;
-
-	SetPath(globalPath);
-}
-
 TeleporterParams::TeleporterParams(ActorType *at, ifstream &is)
 	:ActorParams(at)
 {
 	LoadAerial(is);
 
+	lines = NULL;
+
 	Vector2i other;
 	is >> other.x;
 	is >> other.y;
 
-	lines = NULL;
-
 	vector<Vector2i> globalPath;
-
-	Vector2i intPos = GetIntPos();
-
 	globalPath.reserve(2);
+	Vector2i intPos = GetIntPos();
 	globalPath.push_back(intPos);
 	globalPath.push_back(intPos + other);
 	SetPath(globalPath);
+
+	secondary = false;
 }
 
-TeleporterParams::TeleporterParams(ActorType *at, sf::Vector2i &pos)
+TeleporterParams::TeleporterParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	PlaceAerial(pos);
+	PlaceAerial(Vector2i(0, 0));
 
 	lines = NULL;
+
+	secondary = false;
 }
 
 void TeleporterParams::WriteParamFile(std::ofstream &of)
 {
-	if (localPath.size() == 0)
-	{
-		of << 0 << " " << 0 << endl;
-	}
-	else
-	{
-		of << localPath.front().x << " " << localPath.front().y << endl;
-	}
-
+	of << localPath.front().x << " " << localPath.front().y << endl;
 }
 
 void TeleporterParams::SetPath(std::vector<sf::Vector2i> &globalPath)
@@ -535,20 +519,24 @@ void TeleporterParams::SetParams()
 	Panel *p = type->panel;
 
 	hasMonitor = false;
+
 }
 
 void TeleporterParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-
-	EditSession *edit = EditSession::GetSession();
-	MakeGlobalPath(edit->patrolPath);
 }
-
 ActorParams *TeleporterParams::Copy()
 {
 	TeleporterParams *copy = new TeleporterParams(*this);
+	copy->DeepCopyPathLines();
 	return copy;
+}
+
+void TeleporterParams::OnCreate()
+{
+	EditSession *edit = EditSession::GetSession();
+	edit->SetDirectionButton(this);
 }
 
 void TeleporterParams::Draw(sf::RenderTarget *target)

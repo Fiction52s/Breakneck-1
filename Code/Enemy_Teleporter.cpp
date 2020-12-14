@@ -19,149 +19,230 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Teleporter::Teleporter(GameSession *owner, Vector2i &pos, Vector2i &other, bool bothWays, bool p_secondary )
-	:Enemy(owner, EnemyType::EN_TELEPORTER, false, 2, false)
+//void Teleporter::UpdateParamsSettings()
+//{
+//
+//	if (springType != TELEPORT)
+//	{
+//		SpringParams *sParams = (SpringParams*)editParams;
+//		speed = sParams->speed;
+//		stunFrames = ceil(dist / speed);
+//
+//		stringstream ss;
+//		ss << speed;
+//		debugSpeed.setString(ss.str());
+//		debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
+//	}
+//}
+
+void Teleporter::SetLevel(int lev)
 {
-	secondary = p_secondary;
-	otherTele = NULL;
-
-	goesBothWays = bothWays;
-
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-
-	ts_idle = owner->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
-	ts_recover = owner->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
-	ts_springing = owner->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
-
-	frame = 0;
-
-	animationFactor = 10;
-
-	sprite.setTexture(*ts_idle->texture);
-	sprite.setTextureRect(ts_idle->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(pos.x, pos.y);
-
-	if (secondary)
+	level = lev;
+	switch (level)
 	{
-		if (goesBothWays)
-		{
-			sprite.setColor(Color::Red);
-		}
-		else
-		{
-			sprite.setColor(Color::Magenta);
-		}
-		
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
 	}
+}
 
-	dest = V2d(other + pos);
+void Teleporter::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	if (!goesBothWays || !secondary)
+	{
+		UpdatePath(); //assuming that ap is editparams here
+	}
+}
+
+void Teleporter::UpdatePath()
+{
+	Vector2i other = Vector2i(0, -10);
+	if (editParams->localPath.size() > 0)
+		other = editParams->GetLocalPathPos(0);
+
+	dest = GetPosition() + V2d(other);
 
 	V2d dOther = V2d(other.x, other.y);
-	V2d TeleporterVec = normalize(dOther);
+	V2d springVec = normalize(dOther);
 
-	double angle = atan2(TeleporterVec.x, -TeleporterVec.y);//atan2(-TeleporterVec.x, TeleporterVec.y);
+	double angle = atan2(springVec.x, -springVec.y);
 	sprite.setRotation(angle / PI * 180.0);
 
-	double dist = length(V2d(other));
+	dist = length(V2d(other));
 
 	speed = 200;
 	stunFrames = floor(dist / speed);
 
-	dir = TeleporterVec;
+	dir = springVec;
 
-	float hurtboxRadius = 64;
+	debugLine[0].color = Color::Red;
+	debugLine[1].color = Color::Red;
+	debugLine[0].position = GetPositionF();
+	debugLine[1].position = Vector2f(dest);
 
-	hurtBody = new CollisionBody(1);
-	CollisionBox hurtBox;
-	hurtBox.type = CollisionBox::Hurt;
-	hurtBox.isCircle = true;
-	hurtBox.globalAngle = 0;
-	hurtBox.offset.x = 0;
-	hurtBox.offset.y = 0;
-	hurtBox.rw = hurtboxRadius;
-	hurtBox.rh = hurtboxRadius;
-	hurtBox.globalPosition = position;
-	hurtBody->AddCollisionBox(0, hurtBox);
+	if (goesBothWays && !secondary)
+	{
+		otherParams->SetPosition(dest);
+		otherTele->UpdateOnPlacement(otherParams);
 
-	hitBody = new CollisionBody(1);
-	CollisionBox hitBox;
-	hitBox.type = CollisionBox::Hit;
-	hitBox.isCircle = true;
-	hitBox.globalAngle = 0;
-	hitBox.offset.x = 0;
-	hitBox.offset.y = 0;
-	hitBox.rw = hurtboxRadius;
-	hitBox.rh = hurtboxRadius;
-	hitBox.globalPosition = position;
+		if (otherParams->localPath.size() == 0)
+		{
+			otherParams->localPath.push_back(Vector2i(GetPosition() - dest));
+		}
+		else
+		{
+			otherParams->GetLocalPath()[0] = Vector2i(GetPosition() - dest);
+		}
 
-	hitBody->AddCollisionBox(0, hitBox);
+		otherTele->UpdatePath();
+		otherTele->UpdateSprite();
+		
+	}
+}
 
-	spawnRect = sf::Rect<double>(position.x - hurtboxRadius - 10, position.y - hurtboxRadius - 10,
-		hurtboxRadius * 2 + 10, hurtboxRadius * 2 + 10);
+void Teleporter::AddToWorldTrees()
+{
+	sess->activeItemTree->Insert(this);
+
+	if (goesBothWays && !secondary)
+	{
+		otherTele->AddToWorldTrees();
+	}
+}
+
+Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, int p_speed )
+	:Enemy(EnemyType::EN_TELEPORTER, ap)//false, 2, false ), springType( sp )
+{
+	SetNumActions(A_Count);
+	SetEditorActions(IDLE, IDLE, 0);
+
+	SetLevel(ap->GetLevel());
+
+	otherParams = NULL;
+	otherTele = NULL;
+
+	V2d position = GetPosition();
+	Vector2f positionF(position);
+
+	string &typeName = ap->type->info.name;
+	if (typeName == "teleporter")
+	{
+		goesBothWays = false;
+	}
+	else if (typeName == "doubleteleporter")
+	{
+		goesBothWays = true;
+	}
+
+	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
+
+	ts_idle = sess->GetSizedTileset("Enemies/spring_idle_2_256x256.png");
+	ts_recover = sess->GetSizedTileset("Enemies/spring_recover_2_256x256.png");
+	ts_springing = sess->GetSizedTileset("Enemies/spring_spring_2_512x576.png");
+
+
+	TeleporterParams *tp = (TeleporterParams*)ap;
+
+	secondary = tp->secondary;
+
+	if (secondary)
+	{
+		sprite.setColor(Color::Red);
+	}
+	else
+	{
+		sprite.setColor(Color::Magenta);
+
+		if (goesBothWays)
+		{
+			CreateSecondary(ap);
+		}
+	}
+	
+
+	double radius = 64;
+
+	BasicCircleHitBodySetup(radius);
 
 	actionLength[IDLE] = 12;
 	actionLength[TELEPORTING] = 8;
 	actionLength[RECEIVING] = 8;
-	actionLength[RECEIVERECOVERING] = 8;
+	actionLength[RECEIVE_RECOVERING] = 8;
 	actionLength[RECOVERING] = 8;
 
 	animFactor[IDLE] = 4;
 	animFactor[TELEPORTING] = 4;
 	animFactor[RECEIVING] = 4;
-	animFactor[RECEIVERECOVERING] = 4;
-	animFactor[RECOVERING] = 8;
+	animFactor[RECEIVE_RECOVERING] = 4;
+	animFactor[RECOVERING] = 8; //this was 4 originally.
+
+	animationFactor = 10;
+
+	sprite.setTextureRect(ts_idle->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(positionF);
+
+	
+
+	editParams = ap;
+	UpdatePath();
+
 
 	ResetEnemy();
 }
 
-
-Teleporter *Teleporter::CreateSecondary()
+Teleporter::~Teleporter()
 {
-	assert(otherTele == NULL);
-	if (!secondary)
+	if (!secondary && goesBothWays)
 	{
-		otherTele = new Teleporter(owner, Vector2i(dest), Vector2i(position - dest), goesBothWays, true);
-		otherTele->otherTele = this;
-		return otherTele;
+		//delete otherTele;
+		delete otherParams;
 	}
-	else
+}
+
+void Teleporter::AddToGame()
+{
+	Enemy::AddToGame();
+
+	if (goesBothWays && !secondary)
 	{
-		return NULL;
+		otherTele->AddToGame();
 	}
+}
+
+void Teleporter::DebugDraw(sf::RenderTarget *target)
+{
+	Enemy::DebugDraw(target);
+	target->draw(debugLine, 2, sf::Lines);
 }
 
 void Teleporter::DirectKill()
 {
-
-}
-
-void Teleporter::ReceiveRecover()
-{
-	Teleporter *curr = this;
-	if (!teleportedPlayer)
-	{
-		curr = otherTele;
-	}
-
-	curr->action = RECOVERING;
-	curr->frame = 0;
-	
+	//impossible to direct kill
 }
 
 void Teleporter::ResetEnemy()
 {
 	dead = false;
-	teleportedPlayer = false;
 
+	teleportedPlayer = false;
 	receivedHit = NULL;
 	action = IDLE;
 	sprite.setTexture(*ts_idle->texture);
+
 	frame = 0;
-	SetHitboxes(hitBody, 0);
+	SetHitboxes(&hitBody);
+	//SetHurtboxes(hurtBody, 0);
 
 	UpdateHitboxes();
 
@@ -183,7 +264,7 @@ void Teleporter::ActionEnded()
 			break;
 		case RECEIVING:
 			break;
-		case RECEIVERECOVERING:
+		case RECEIVE_RECOVERING:
 			break;
 		case RECOVERING:
 			action = IDLE;
@@ -194,9 +275,22 @@ void Teleporter::ActionEnded()
 	}
 }
 
+void Teleporter::CreateSecondary(ActorParams *ap)
+{
+	assert(otherTele == NULL);
+	if ( goesBothWays && !secondary)
+	{
+		otherParams = (TeleporterParams*)ap->Copy();
+		otherParams->secondary = true;
+		otherParams->CreateMyEnemy();
+		otherTele = (Teleporter*)otherParams->myEnemy;
+		otherTele->otherTele = this;
+	}
+}
+
 bool Teleporter::TryTeleport()
 {
-	if (otherTele->teleportedPlayer || ( !goesBothWays && secondary ))
+	if (otherTele->teleportedPlayer || (!goesBothWays && secondary))
 	{
 		return false;
 	}
@@ -206,9 +300,21 @@ bool Teleporter::TryTeleport()
 	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
 	teleportedPlayer = true;
+	sess->ActivateSound(launchSoundBuf);
 
 	return true;
-	//owner->soundNodeList->ActivateSound(launchSoundBuf);
+}
+
+void Teleporter::ReceivePlayer()
+{
+	Teleporter *curr = this;
+	if (!teleportedPlayer)
+	{
+		curr = otherTele;
+	}
+
+	curr->action = RECOVERING;
+	curr->frame = 0;
 }
 
 void Teleporter::ProcessState()
@@ -233,14 +339,26 @@ void Teleporter::UpdateSprite()
 	case RECEIVING:
 		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
 		break;
-	case RECEIVERECOVERING:
+	case RECEIVE_RECOVERING:
 		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
 		break;
 	}
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+
+	if (goesBothWays && !secondary)
+	{
+		//otherTele->UpdateSprite(); //only works correctly while editing, 
+		//not while playing. fix this
+	}
 }
 
 void Teleporter::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
+
+	if (goesBothWays && !secondary)
+	{
+		//otherTele->EnemyDraw(target); //also only needed while editing
+	}
 }

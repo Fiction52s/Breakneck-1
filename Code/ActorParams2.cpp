@@ -190,20 +190,7 @@ void BatParams::SetPanelInfo()
 ActorParams *BatParams::Copy()
 {
 	BatParams *copy = new BatParams( *this );
-	if( copy->lines != NULL )
-	{
-		int numVertices = copy->lines->getVertexCount();
-
-		VertexArray &oldli = *copy->lines;
-		copy->lines = new VertexArray( sf::LinesStrip, numVertices );
-		VertexArray &li = *copy->lines;
-		
-
-		for( int i = 0; i < numVertices; ++i )
-		{
-			li[i] = oldli[i];
-		}
-	}
+	copy->DeepCopyPathLines();
 	return copy;
 }
 

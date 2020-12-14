@@ -550,8 +550,11 @@ void Session::RegisterW4Enemies()
 	AddWorldEnemy("tigernode", 4, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
 
-	AddBasicAerialWorldEnemy("teleporter", 4, CreateEnemy<Spring>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	AddWorldEnemy("teleporter", 4, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1);
 
+	AddWorldEnemy("doubleteleporter", 4, CreateEnemy<Teleporter>, SetParamsType<TeleporterParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1);
 	//AddWorldEnemy("onewayteleporter", 4, LoadParams<TeleporterParams>, NULL, MakeParamsAerial<TeleporterParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);

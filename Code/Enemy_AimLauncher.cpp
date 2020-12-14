@@ -53,14 +53,13 @@ void AimLauncher::UpdatePath()
 	V2d dOther = V2d(other.x, other.y);
 	V2d springVec = normalize(dOther);
 
-	double angle = atan2(springVec.x, -springVec.y);
-	sprite.setRotation(angle / PI * 180.0);
+	origDir = springVec;
 
 	dist = length(V2d(other));
 
 	UpdateParamsSettings();
 
-	dir = springVec;
+	SetCurrDir(origDir);
 
 	debugLine[0].color = Color::Red;
 	debugLine[1].color = Color::Red;
@@ -151,6 +150,8 @@ void AimLauncher::ResetEnemy()
 	SetHitboxes(&hitBody);
 	//SetHurtboxes(hurtBody, 0);
 
+	SetCurrDir(origDir);
+
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -177,6 +178,13 @@ void AimLauncher::ActionEnded()
 			break;
 		}
 	}
+}
+
+void AimLauncher::SetCurrDir(V2d &newDir)
+{
+	currDir = newDir;
+	double angle = atan2(currDir.x, -currDir.y);
+	sprite.setRotation(angle / PI * 180.0);
 }
 
 void AimLauncher::StartAiming()

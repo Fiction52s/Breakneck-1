@@ -1106,10 +1106,7 @@ void GameSession::ProcessActor(ActorPtr a)
 	const string &typeName = a->type->info.name;
 	if (enemy != NULL)
 	{
-		fullEnemyList.push_back(enemy);
-		enemyTree->Insert(enemy);
-
-		enemy->AddToWorldTrees(); //adds static objects etc
+		enemy->AddToGame();
 
 		if (typeName == "shippickup")
 		{

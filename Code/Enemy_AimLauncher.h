@@ -19,6 +19,7 @@ struct AimLauncher : Enemy
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);
+	void SetCurrDir(V2d &newDir);
 
 	AimLauncher(ActorParams *ap);
 	void ProcessState();
@@ -39,10 +40,16 @@ struct AimLauncher : Enemy
 
 	int animationFactor;
 
-	sf::Vector2<double> dir;
+	V2d origDir;
+	V2d currDir;
+
 	int speed;
 	int stunFrames;
 	double dist;
+
+	sf::Vertex bounceQuads[3 * 4];
+
+
 
 	sf::Vertex debugLine[2];
 	sf::Text debugSpeed;

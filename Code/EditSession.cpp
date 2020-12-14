@@ -950,9 +950,7 @@ void EditSession::TestPlayerMode()
 			currEnemy = (*enit)->myEnemy;
 			if (currEnemy != NULL)
 			{
-				currEnemy->AddToWorldTrees();
-				enemyTree->Insert(currEnemy);
-				fullEnemyList.push_back(currEnemy);
+				currEnemy->AddToGame();
 			}
 		}
 	}
@@ -1068,7 +1066,13 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	for (auto it = groups.begin(); it != groups.end(); ++it)
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->Setup();
+	}
+
+
+	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
 		{
@@ -1079,7 +1083,7 @@ void EditSession::TestPlayerMode()
 
 			}
 		}
-	}
+	}*/
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{

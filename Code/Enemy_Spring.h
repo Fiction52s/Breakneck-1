@@ -20,6 +20,7 @@ struct Spring : Enemy
 		BOUNCE,
 		AIRBOUNCE,
 		TELEPORT,
+		DOUBLETELEPORT,
 	};
 
 	void UpdateParamsSettings();
@@ -45,9 +46,7 @@ struct Spring : Enemy
 	Tileset *ts_springing;
 	void DebugDraw(sf::RenderTarget *target);
 
-	int animationFactor;
-
-	sf::Vector2<double> dir;
+	V2d dir;
 	int speed;
 	int stunFrames;
 	double dist;

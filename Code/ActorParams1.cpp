@@ -165,6 +165,7 @@ void SpringParams::SetPanelInfo()
 ActorParams *SpringParams::Copy()
 {
 	SpringParams *copy = new SpringParams(*this);
+	copy->DeepCopyPathLines();
 	return copy;
 }
 

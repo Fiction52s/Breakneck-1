@@ -169,6 +169,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void UpdateKeySprite();
 	void SetKey();
 	bool IsGoalType();
+	virtual void AddToGame();
 	virtual bool IsHitFacingRight() { return facingRight; }
 	virtual void UpdateSpriteFromParams(ActorParams *ap);
 	virtual void AddToWorldTrees() {}

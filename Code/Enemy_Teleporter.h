@@ -11,49 +11,54 @@ struct Teleporter : Enemy
 		TELEPORTING,
 		RECOVERING,
 		RECEIVING,
-		RECEIVERECOVERING,
+		RECEIVE_RECOVERING,
 		A_Count
 	};
 
-	Action action;
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-	//MovementSequence testSeq;
-	Teleporter(GameSession *owner,
-		sf::Vector2i &pos, sf::Vector2i &other, bool bothWays,
-		bool secondary = false);
+	void AddToWorldTrees();
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
+	void AddToGame();
+	//void UpdateParamsSettings();
+
+	Teleporter(ActorParams *ap);
+	~Teleporter();
+
+	void CreateSecondary(ActorParams *ap);
+	void ReceivePlayer();
+	bool TryTeleport();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
-	//sf::SoundBuffer *launchSoundBuf;
+	sf::SoundBuffer *launchSoundBuf;
 
 	void UpdateSprite();
 	void DirectKill();
-	Teleporter *CreateSecondary();
 
 	void ResetEnemy();
 	void ActionEnded();
-	bool TryTeleport();
-	void ReceiveRecover();
-	sf::Sprite sprite;
 	Tileset *ts_idle;
 	Tileset *ts_recover;
 	Tileset *ts_springing;
-	CollisionBody * hurtBody;
-	CollisionBody* hitBody;
+	void DebugDraw(sf::RenderTarget *target);
 
 	int animationFactor;
-	bool goesBothWays;
 
-	sf::Vector2<double> dir;
+	V2d dir;
 	int speed;
 	int stunFrames;
+	double dist;
 
+	sf::Vertex debugLine[2];
+
+	bool goesBothWays;
 	bool secondary;
-	Teleporter *otherTele;
-
 	bool teleportedPlayer;
 
 	V2d dest;
+
+	TeleporterParams *otherParams;
+	Teleporter *otherTele;
 };
 
 #endif

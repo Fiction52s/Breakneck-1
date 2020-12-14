@@ -112,6 +112,9 @@ struct ActorParams : ISelectable
 	virtual void DrawPreview(sf::RenderTarget *target);
 	virtual void Deactivate();
 	virtual void Activate();
+	//for copying the lines by allocating more
+	void DeepCopyPathLines(); 
+	
 
 	virtual void DrawQuad(sf::RenderTarget *target);
 
