@@ -291,7 +291,7 @@ void Teleporter::CreateSecondary(ActorParams *ap)
 
 bool Teleporter::TryTeleport()
 {
-	if (otherTele->teleportedPlayer || (!goesBothWays && secondary))
+	if ( action != IDLE || (otherTele != NULL && otherTele->teleportedPlayer) )
 	{
 		return false;
 	}
