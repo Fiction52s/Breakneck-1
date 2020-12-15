@@ -5,6 +5,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "MainMenu.h"
+#include "EditSession.h"
 
 using namespace std;
 using namespace sf;
@@ -178,13 +179,13 @@ Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i 
 	actionLength[TELEPORTING] = 8;
 	actionLength[RECEIVING] = 8;
 	actionLength[RECEIVE_RECOVERING] = 8;
-	actionLength[RECOVERING] = 8;
+	actionLength[RECOVERING] = 4;
 
 	animFactor[IDLE] = 4;
 	animFactor[TELEPORTING] = 4;
 	animFactor[RECEIVING] = 4;
 	animFactor[RECEIVE_RECOVERING] = 4;
-	animFactor[RECOVERING] = 8; //this was 4 originally.
+	animFactor[RECOVERING] = 4; //8
 
 	animationFactor = 10;
 
@@ -348,8 +349,12 @@ void Teleporter::UpdateSprite()
 
 	if (goesBothWays && !secondary)
 	{
-		//otherTele->UpdateSprite(); //only works correctly while editing, 
-		//not while playing. fix this
+		EditSession *edit = EditSession::GetSession();
+
+		if (edit != NULL && edit->mode != EditSession::TEST_PLAYER)
+		{
+			otherTele->UpdateSprite();
+		}
 	}
 }
 
@@ -359,6 +364,11 @@ void Teleporter::EnemyDraw(sf::RenderTarget *target)
 
 	if (goesBothWays && !secondary)
 	{
-		//otherTele->EnemyDraw(target); //also only needed while editing
+		EditSession *edit = EditSession::GetSession();
+
+		if (edit != NULL && edit->mode != EditSession::TEST_PLAYER)
+		{
+			otherTele->EnemyDraw(target);
+		}
 	}
 }
