@@ -38,36 +38,14 @@ void Actor::SPRINGSTUNAIRBOUNCE_Change()
 
 void Actor::SPRINGSTUNAIRBOUNCE_Update()
 {
-	V2d inputDir(0, 0);
-
 	if (frame > 10)
 	{
 
+		V2d dir8 = currInput.GetLeft8Dir();
 
-		if (currInput.LUp())
+		if (dir8.x != 0 || dir8.y != 0)
 		{
-			inputDir.y = -1;
-		}
-		else if (currInput.LDown())
-		{
-			inputDir.y = 1;
-		}
-
-		if (currInput.LRight())
-		{
-			inputDir.x = 1;
-		}
-		else if (currInput.LLeft())
-		{
-			inputDir.x = -1;
-		}
-
-
-		//bool inputSwitch = true;
-		if (inputDir.x != 0 || inputDir.y != 0)
-		{
-			inputDir = normalize(inputDir);
-			springVel = inputDir * length(springVel);
+			springVel = dir8 * length(springVel);
 		}
 	}
 

@@ -135,7 +135,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	}
 	else if (typeName == "airbouncespring")
 	{
-		springType = BOUNCE;
+		springType = AIRBOUNCE;
 	}
 	else if (typeName == "teleporter")
 	{
