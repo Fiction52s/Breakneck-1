@@ -22,6 +22,7 @@ void GravityJuggler::UpdateParamsSettings()
 	{
 		JugglerParams *jParams = (JugglerParams*)editParams;
 		juggleReps = jParams->numJuggles;
+		UpdateJuggleRepsText(juggleReps);
 	}
 }
 
@@ -194,6 +195,18 @@ GravityJuggler::~GravityJuggler()
 		delete[] guidedDir;
 }
 
+void GravityJuggler::UpdateJuggleRepsText( int reps )
+{
+	if (limitedJuggles)
+	{
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+	}
+}
+
 void GravityJuggler::ResetEnemy()
 {
 	hitLimit = -1;
@@ -217,14 +230,7 @@ void GravityJuggler::ResetEnemy()
 
 	currJuggle = 0;
 
-	if (limitedJuggles)
-	{
-		numJugglesText.setString(to_string(juggleReps));
-		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
-			+ numJugglesText.getLocalBounds().width / 2,
-			numJugglesText.getLocalBounds().top
-			+ numJugglesText.getLocalBounds().height / 2);
-	}
+	UpdateJuggleRepsText(juggleReps);
 
 	UpdateSprite();
 }
@@ -264,14 +270,7 @@ void GravityJuggler::Pop()
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
 
-	if (limitedJuggles)
-	{
-		numJugglesText.setString(to_string(juggleReps - currJuggle));
-		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left 
-			+ numJugglesText.getLocalBounds().width / 2,
-			numJugglesText.getLocalBounds().top 
-			+ numJugglesText.getLocalBounds().height / 2);
-	}
+	UpdateJuggleRepsText(juggleReps - currJuggle);
 }
 
 void GravityJuggler::PopThrow()

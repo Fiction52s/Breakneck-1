@@ -1223,7 +1223,7 @@ JugglerParams::JugglerParams(ActorType *at, int level)
 	//enemyLevel = level;
 	//PlaceAerial(pos);
 
-	numJuggles = 100;
+	numJuggles = 3;
 }
 
 JugglerParams::JugglerParams(ActorType *at, ifstream &is)
@@ -1239,12 +1239,12 @@ void JugglerParams::WriteSpecialParams(std::ofstream &of)
 
 void JugglerParams::SetSpecialPanelInfo()
 {
-	numJuggles = type->panel->sliders["numJuggles"]->GetCurrValue();
+	type->panel->sliders["numJuggles"]->SetCurrValue(numJuggles);
 }
 
 void JugglerParams::SetSpecialParams()
 {
-	type->panel->sliders["numJuggles"]->SetCurrValue(numJuggles);
+	numJuggles = type->panel->sliders["numJuggles"]->GetCurrValue();
 }
 
 ActorParams *JugglerParams::Copy()

@@ -86,7 +86,7 @@ void Actor::CheckBirdCommands()
 	{
 		return;
 	}
-	if (currInput.rightShoulder && !prevInput.rightShoulder)
+	if (AttackButtonPressed())
 	{
 		FightMode *fm = (FightMode*)sess->gameMode;
 		birdCommands[currBirdCommandIndex]->action = 1;
@@ -3796,7 +3796,7 @@ bool Actor::SteepSlideAttack()
 		return true;
 	}
 
-	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool normalSwing = AttackButtonPressed();
 	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
 		|| (currInput.RUp() && !prevInput.RUp())
@@ -3821,7 +3821,7 @@ bool Actor::SteepClimbAttack()
 		return true;
 	}
 
-	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool normalSwing = AttackButtonPressed();
 	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
 		|| (currInput.RUp() && !prevInput.RUp())
@@ -3846,7 +3846,7 @@ bool Actor::AirAttack()
 		return true;
 	}
 
-	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
+	bool normalSwing = AttackButtonPressed();
 	bool rightStickSwing = false;/* (currInput.RDown() && !prevInput.RDown())
 		|| (currInput.RLeft() && !prevInput.RLeft())
 		|| (currInput.RUp() && !prevInput.RUp())
@@ -17856,7 +17856,7 @@ bool Actor::TryDoubleJump()
 		dairBoostedDouble = (action == DAIR || action == UAIR || action == DIAGDOWNATTACK || action == DIAGUPATTACK );
 		SetAction( GetDoubleJump() );
 
-		if (currInput.rightShoulder && !pauseBufferedJump)
+		if (AttackButtonPressed() && !pauseBufferedJump)
 		{
 			if (currInput.LUp())
 			{
@@ -18366,7 +18366,7 @@ void Actor::UpdateInHitlag()
 	{
 		if (pauseBufferedAttack == Action::Count)
 		{
-			if (currInput.rightShoulder && !prevInput.rightShoulder)
+			if (AttackButtonPressed())
 			{
 				if (ground == NULL)
 				{
