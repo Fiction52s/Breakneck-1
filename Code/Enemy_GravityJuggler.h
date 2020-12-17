@@ -39,7 +39,9 @@ struct GravityJuggler : Enemy
 
 	V2d velocity;
 
+	sf::Text numJugglesText;
 	bool reversedGrav;
+	bool limitedJuggles;
 
 	double gravFactor;
 	V2d gDir;

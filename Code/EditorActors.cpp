@@ -213,7 +213,13 @@ Panel *ActorType::CreatePanel()
 		|| name == "greykeyfly"
 		|| name == "blackkeyfly"
 		|| name == "glidetarget"
-		|| name == "freeflighttarget")
+		|| name == "freeflighttarget"
+		|| name == "bluecomboertarget"
+		|| name == "greencomboertarget" )
+		//|| name == "yellowcomboertarget"
+		//|| name == "orangecomboertarget"
+		//|| name == "redcomboertarget"
+		//|| name == "magentacomboertarget" )
 	{
 		p = NULL;//CreateDefaultPanel();
 	}
@@ -307,9 +313,11 @@ Panel *ActorType::CreatePanel()
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach"
-		|| name == "downgravityjuggler" || name == "upgravityjuggler" || name == "bouncejuggler"
+		|| name == "bouncejuggler"
 		|| name == "wirejuggler" || name == "hungryreturncomboer"
-		|| name == "hungrycomboer")
+		|| name == "hungrycomboer"
+		|| name == "limiteddowngravityjuggler"
+		|| name == "limitedupgravityjuggler" )
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);

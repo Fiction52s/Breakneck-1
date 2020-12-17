@@ -169,6 +169,7 @@ void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 
 void SplitPiece::Shoot(V2d dir)
 {
+	comboObj->enemyHitboxInfo->hDir = dir;
 	velocity = dir * sc->shootSpeed;
 	sess->PlayerAddActiveComboObj(comboObj);
 }
@@ -295,7 +296,7 @@ void SplitComboer::ProcessHit()
 		//comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
 		V2d dir = normalize(receivedHit->hDir);
-		if (dir.x != 0 && dir.y != 0)
+		/*if (dir.x != 0 && dir.y != 0)
 		{
 			double absX = abs(dir.x);
 			double absY = abs(dir.y);
@@ -307,7 +308,7 @@ void SplitComboer::ProcessHit()
 			{
 				dir.x = 0;
 			}
-		}
+		}*/
 
 		dir = normalize(dir);
 

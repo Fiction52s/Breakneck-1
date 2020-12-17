@@ -30,6 +30,7 @@
 #include "GroundedWarper.h"
 #include "Nexus.h"
 #include "Enemy_KeyFly.h"
+#include "Enemy_ComboerTarget.h"
 
 
 #endif

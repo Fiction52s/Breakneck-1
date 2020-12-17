@@ -349,6 +349,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GLIDETARGET:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
+	case EnemyType::EN_COMBOERTARGET:
+		hitParams.Set(5, .8, (3 * 60) / 2, 2);
+		break;
 	case EnemyType::EN_FREEFLIGHTTARGET:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;
