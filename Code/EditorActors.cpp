@@ -313,11 +313,11 @@ Panel *ActorType::CreatePanel()
 	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
 		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
 		|| name == "relativecomboer" || name == "relativecomboerdetach"
-		|| name == "bouncejuggler"
 		|| name == "wirejuggler" || name == "hungryreturncomboer"
 		|| name == "hungrycomboer"
 		|| name == "limiteddowngravityjuggler"
-		|| name == "limitedupgravityjuggler" )
+		|| name == "limitedupgravityjuggler" 
+		|| name == "limitedbouncejuggler")
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);

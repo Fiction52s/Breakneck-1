@@ -8,6 +8,7 @@
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
 #include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -18,6 +19,7 @@ using namespace sf;
 
 void GravityJuggler::UpdateParamsSettings()
 {
+	Enemy::UpdateParamsSettings();
 	if (limitedJuggles)
 	{
 		JugglerParams *jParams = (JugglerParams*)editParams;
@@ -158,17 +160,17 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	
 
 
-	hitboxInfo = new HitboxInfo;
+	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->knockback = 4;*/
 
 	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-	hitBody.hitboxInfo = hitboxInfo;
+	//BasicCircleHitBodySetup(48);
+	//hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -220,7 +222,7 @@ void GravityJuggler::ResetEnemy()
 	velocity = V2d(0, 0);
 
 	DefaultHurtboxesOn();
-	DefaultHitboxesOn();
+	//DefaultHitboxesOn();
 
 	dead = false;
 	action = S_FLOAT;
@@ -255,6 +257,8 @@ void GravityJuggler::Return()
 	SetHitboxes(NULL, 0);
 
 	currJuggle = 0;
+
+	UpdateJuggleRepsText(0);
 
 	numHealth = maxHealth;
 }
@@ -334,11 +338,13 @@ void GravityJuggler::ProcessHit()
 		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && currJuggle == juggleReps)
+			if ( limitedJuggles && currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->CollectKey();
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
+					//sess->CollectKey();
 					suppressMonitor = true;
 				}
 
@@ -374,9 +380,10 @@ void GravityJuggler::ProcessState()
 		switch (action)
 		{
 		case S_RETURN:
+			UpdateJuggleRepsText(juggleReps);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
-			DefaultHitboxesOn();
+			//DefaultHitboxesOn();
 			break;
 		/*case S_EXPLODE:
 			numHealth = 0;
@@ -480,8 +487,6 @@ void GravityJuggler::ComboHit()
 
 void GravityJuggler::UpdateSprite()
 {
-	
-
 	int tile = 0;
 	switch (action)
 	{

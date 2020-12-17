@@ -34,9 +34,13 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void Return();
 	void Pop();
 	void PopThrow();
+	void UpdateJuggleRepsText(int reps);
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+
+	sf::Text numJugglesText;
+	bool limitedJuggles;
 
 	double flySpeed;
 

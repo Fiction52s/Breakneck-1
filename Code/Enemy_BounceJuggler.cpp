@@ -7,14 +7,21 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
 
 void BounceJuggler::UpdateParamsSettings()
 {
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
+	Enemy::UpdateParamsSettings();
+	if (limitedJuggles)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		juggleReps = jParams->numJuggles;
+		UpdateJuggleRepsText(juggleReps);
+	}
 }
 
 void BounceJuggler::SetLevel(int lev)
@@ -45,8 +52,24 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 
+	numJugglesText.setFont(sess->mainMenu->arial);
+	numJugglesText.setFillColor(Color::White);
+	numJugglesText.setOutlineColor(Color::Black);
+	numJugglesText.setOutlineThickness(3);
+	numJugglesText.setCharacterSize(32);
+
 	flySpeed = 14;
 	maxWaitFrames = 180;
+
+	string &typeName = ap->type->info.name;
+	if (typeName == "bouncejuggler")
+	{
+		limitedJuggles = false;
+	}
+	else if (typeName == "limitedbouncejuggler")
+	{
+		limitedJuggles = true;
+	}
 
 	UpdateParamsSettings();
 
@@ -64,17 +87,17 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 
 
-	hitboxInfo = new HitboxInfo;
+	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->knockback = 4;*/
 
 	BasicCircleHurtBodySetup(48);
-	BasicCircleHitBodySetup(48);
-	hitBody.hitboxInfo = hitboxInfo;
+	//BasicCircleHitBodySetup(48);
+	//hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -109,6 +132,18 @@ BounceJuggler::~BounceJuggler()
 		delete[] guidedDir;
 }
 
+void BounceJuggler::UpdateJuggleRepsText(int reps)
+{
+	if (limitedJuggles)
+	{
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+	}
+}
+
 void BounceJuggler::ResetEnemy()
 {
 	sprite.setRotation(0);
@@ -117,7 +152,7 @@ void BounceJuggler::ResetEnemy()
 	comboObj->enemyHitboxFrame = 0;
 	surfaceMover->velocity = V2d(0, 0);
 	DefaultHurtboxesOn();
-	DefaultHitboxesOn();
+	//DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	receivedHit = NULL;
@@ -128,6 +163,8 @@ void BounceJuggler::ResetEnemy()
 	surfaceMover->ClearAirForces();
 
 	UpdateHitboxes();
+
+	UpdateJuggleRepsText(juggleReps);
 
 	UpdateSprite();
 }
@@ -151,6 +188,8 @@ void BounceJuggler::Return()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
+	UpdateJuggleRepsText(0);
+
 	currJuggle = 0;
 
 	numHealth = maxHealth;
@@ -165,6 +204,8 @@ void BounceJuggler::Pop()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
+
+	UpdateJuggleRepsText(juggleReps - currJuggle);
 }
 
 void BounceJuggler::PopThrow()
@@ -207,11 +248,12 @@ void BounceJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
+			if ( limitedJuggles && currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->CollectKey();
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
 				}
 
@@ -248,8 +290,9 @@ void BounceJuggler::ProcessState()
 		{
 		case S_RETURN:
 			surfaceMover->Set(startPosInfo);
-			DefaultHitboxesOn();
+			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
+			UpdateJuggleRepsText(juggleReps);
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -359,11 +402,21 @@ void BounceJuggler::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (limitedJuggles)
+	{
+		numJugglesText.setPosition(sprite.getPosition());
+	}
 }
 
 void BounceJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedJuggles)
+	{
+		target->draw(numJugglesText);
+	}
 }
 
 void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)

@@ -2324,7 +2324,7 @@ void MainMenu::TitleMenuModeUpdate()
 			}
 			else if (ev.key.code == Keyboard::P)
 			{
-				GGPOOption();
+				//GGPOOption();
 			}
 			else if (ev.key.code == Keyboard::Return || ev.key.code == Keyboard::Space)
 			{
