@@ -11,7 +11,6 @@
 using namespace std;
 using namespace sf;
 
-
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
@@ -24,7 +23,9 @@ void RelativeComboer::UpdateParamsSettings()
 RelativeComboer::RelativeComboer(ActorParams *ap )
 	:Enemy(EnemyType::EN_RELATIVECOMBOER, ap )
 {
-	
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLY, S_FLY, 0);
+
 	SetLevel(ap->GetLevel());
 
 	if (ap->GetTypeName() == "relativecomboerdetach")
@@ -41,32 +42,6 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 	maxWaitFrames = 180;
 
 	flySpeed = 5;
-
-	/*juggleReps = path.size();
-
-	guidedDir = NULL;
-	if (juggleReps > 0)
-	{
-		Vector2i prev(0, 0);
-		guidedDir = new V2d[juggleReps];
-		int ind = 0;
-		for (auto it = path.begin(); it != path.end(); ++it)
-		{
-			if (it != path.begin())
-			{
-				it--;
-				prev = (*it);
-				it++;
-			}
-
-			guidedDir[ind] = normalize(V2d((*it) - prev));
-
-			++ind;
-		}
-	}
-
-	if (guidedDir == NULL)
-		juggleReps = jReps;*/
 
 	hitLimit = -1;
 
@@ -119,8 +94,6 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 
 RelativeComboer::~RelativeComboer()
 {
-	if (guidedDir != NULL)
-		delete[] guidedDir;
 }
 
 void RelativeComboer::ResetEnemy()
@@ -195,14 +168,7 @@ void RelativeComboer::PopThrow()
 {
 	V2d dir;
 
-	if (guidedDir == NULL)
-	{
-		dir = Get8Dir(receivedHit->hDir);
-	}
-	else
-	{
-		dir = guidedDir[currJuggle];
-	}	
+	dir = Get8Dir(receivedHit->hDir);	
 
 	Pop();
 
@@ -228,7 +194,7 @@ void RelativeComboer::ProcessHit()
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->CollectKey();
+					//sess->CollectKey();
 					suppressMonitor = true;
 				}
 
@@ -362,16 +328,19 @@ void RelativeComboer::FrameIncrement()
 			return;
 		}
 	}
-
 }
 
 void RelativeComboer::ComboKill(Enemy *e)
 {
-	action = S_WAIT;
-	frame = 0;
-	latchedOn = false;
-	DefaultHurtboxesOn();
-	sprite.setColor(Color::Blue);
+	if (detachOnKill)
+	{
+		action = S_WAIT;
+		frame = 0;
+		latchedOn = false;
+		DefaultHurtboxesOn();
+		sprite.setColor(Color::Blue);
+	}
+
 	sess->PlayerRestoreDoubleJump(0);
 	sess->PlayerRestoreAirDash(0);
 }

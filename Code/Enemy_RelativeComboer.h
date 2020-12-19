@@ -35,8 +35,6 @@ struct RelativeComboer : Enemy
 	int juggleReps;
 	int currJuggle;
 
-	V2d *guidedDir;
-
 	int waitFrame;
 	int maxWaitFrames;
 

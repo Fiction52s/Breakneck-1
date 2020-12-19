@@ -310,11 +310,15 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
-	else if (name == "grindjugglercw" || name == "grindjugglerccw" || name == "groundedgrindjugglercw"
-		|| name == "groundedgrindjugglerccw" || name == "hungrycomboer" || name == "hungryreturncomboer"
-		|| name == "relativecomboer" || name == "relativecomboerdetach"
-		|| name == "wirejuggler" || name == "hungryreturncomboer"
-		|| name == "hungrycomboer"
+	else if (name == "grindjugglercw" 
+		|| name == "grindjugglerccw" 
+		|| name == "groundedgrindjugglercw"
+		|| name == "groundedgrindjugglerccw" 
+		|| name == "limitedhungrycomboer" 
+		|| name == "limitedhungryreturncomboer"
+		|| name == "relativecomboer" 
+		|| name == "relativecomboerdetach"
+		|| name == "wirejuggler" 		
 		|| name == "limiteddowngravityjuggler"
 		|| name == "limitedupgravityjuggler" 
 		|| name == "limitedbouncejuggler")

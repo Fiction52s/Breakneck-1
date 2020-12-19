@@ -7,14 +7,21 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
 
 void HungryComboer::UpdateParamsSettings()
 {
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
+	Enemy::UpdateParamsSettings();
+	if (limitedEating)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		maxEdible = jParams->numJuggles;
+		UpdateEatenNumberText(maxEdible);
+	}
 }
 
 HungryComboer::HungryComboer(ActorParams *ap)
@@ -27,17 +34,42 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	origScale = scale;
 
-	if (ap->GetTypeName() == "hungryreturncomboer")
+	string typeName = ap->GetTypeName();
+	if (typeName == "hungrycomboer")
+	{
+		returnsToPlayer = false;
+		maxWaitFrames = 180;
+		limitedEating = false;
+	}
+	else if (typeName == "limitedhungrycomboer")
+	{
+		returnsToPlayer = false;
+		maxWaitFrames = 180;
+		limitedEating = true;
+		//not implemented, not sure if want
+	}
+	else if ( typeName == "hungryreturncomboer")
 	{
 		sprite.setColor(Color::Green);
 		returnsToPlayer = true;
+		maxWaitFrames = 360;
+		limitedEating = false;
 	}
-	else
+	else if (typeName == "limitedhungryreturncomboer")
 	{
-		returnsToPlayer = false;
+		sprite.setColor(Color::Green);
+		returnsToPlayer = true;
+		maxWaitFrames = 360;
+		limitedEating = true;
+		//not implemented, not sure if want
 	}
+	
 
-	maxWaitFrames = 180;
+	numEatenText.setFont(sess->mainMenu->arial);
+	numEatenText.setFillColor(Color::White);
+	numEatenText.setOutlineColor(Color::Black);
+	numEatenText.setOutlineThickness(3);
+	numEatenText.setCharacterSize(32);
 
 	flySpeed = 12;
 
@@ -127,7 +159,10 @@ void HungryComboer::ResetEnemy()
 	frame = 0;
 
 	
-	currJuggle = 0;
+	numEaten = 0;
+
+	UpdateEatenNumberText(maxEdible);
+
 	chaseTarget = NULL;
 
 	UpdateHitboxes();
@@ -156,6 +191,18 @@ void HungryComboer::SetLevel(int lev)
 	}
 }
 
+void HungryComboer::UpdateEatenNumberText(int reps)
+{
+	if (limitedEating)
+	{
+		numEatenText.setString(to_string(reps));
+		numEatenText.setOrigin(numEatenText.getLocalBounds().left
+			+ numEatenText.getLocalBounds().width / 2,
+			numEatenText.getLocalBounds().top
+			+ numEatenText.getLocalBounds().height / 2);
+	}
+}
+
 void HungryComboer::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
@@ -177,8 +224,9 @@ void HungryComboer::Return()
 
 	scale = origScale;
 	UpdateScale();
+	UpdateEatenNumberText(0);
 
-	currJuggle = 0;
+	numEaten = 0;
 
 	numHealth = maxHealth;
 }
@@ -188,7 +236,6 @@ void HungryComboer::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
@@ -216,29 +263,10 @@ void HungryComboer::ProcessHit()
 		Actor *player = sess->GetPlayer(0);
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
-			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->CollectKey();
-					suppressMonitor = true;
-				}
-
-				sess->PlayerConfirmEnemyNoKill(this);
-				ConfirmHitNoKill();
-
-				action = S_RETURN;
-				frame = 0;
-
-				Return();
-			}
-			else
-			{
-				action = S_FLY;
-				chaseTarget = NULL;
-				frame = 0;
-				PopThrow();
-			}
+			action = S_FLY;
+			chaseTarget = NULL;
+			frame = 0;
+			PopThrow();
 		}
 		else
 		{
@@ -261,6 +289,7 @@ void HungryComboer::ProcessState()
 			DefaultHurtboxesOn();
 			break;
 		case S_RETURN:
+			UpdateEatenNumberText(maxEdible);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
@@ -338,6 +367,25 @@ void HungryComboer::ComboKill(Enemy *e)
 		frame = 0;
 	}
 
+	++numEaten;
+
+	if (limitedEating && numEaten == maxEdible)
+	{
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+		}
+
+		action = S_RETURN;
+		frame = 0;
+
+		Return();
+
+		return;
+	}
+	UpdateEatenNumberText(maxEdible - numEaten);
 	
 	if (growthLevel < numGrowthLevels)
 	{
@@ -493,9 +541,19 @@ void HungryComboer::UpdateSprite()
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	if (limitedEating)
+	{
+		numEatenText.setPosition(sprite.getPosition());
+	}
 }
 
 void HungryComboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedEating)
+	{
+		target->draw(numEatenText);
+	}
 }

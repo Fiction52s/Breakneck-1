@@ -26,6 +26,9 @@ struct HungryComboer : Enemy, EnemyTracker
 	double gravFactor;
 	double maxFallSpeed;
 
+	bool limitedEating;
+	sf::Text numEatenText;
+
 	int hitLimit;
 	int currHits;
 
@@ -40,11 +43,13 @@ struct HungryComboer : Enemy, EnemyTracker
 
 	double flySpeed;
 
-	int juggleReps;
-	int currJuggle;
+	int maxEdible;
+	int numEaten;
 
 	int waitFrame;
 	int maxWaitFrames;
+
+	
 
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();
@@ -67,6 +72,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	void Pop();
 	void PopThrow();
 	void UpdateScale();
+	void UpdateEatenNumberText(int reps);
 
 	double GetFlySpeed();
 	V2d GetTrackPos();

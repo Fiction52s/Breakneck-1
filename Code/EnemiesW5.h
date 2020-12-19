@@ -6,5 +6,6 @@
 #include "Enemy_Swarm.h"
 #include "Enemy_GrowingTree.h"
 #include "Enemy_Ghost.h"
+#include "Enemy_RelativeComboer.h"
 
 #endif

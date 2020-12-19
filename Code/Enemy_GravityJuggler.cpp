@@ -344,7 +344,6 @@ void GravityJuggler::ProcessHit()
 				{
 					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
 						sess->GetPlayer(0), 1, GetPosition());
-					//sess->CollectKey();
 					suppressMonitor = true;
 				}
 
