@@ -73,7 +73,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	numJugglesText.setCharacterSize(32);
 	
 
-	string &typeName = ap->type->info.name;
+	const string &typeName = ap->GetTypeName();
 	if (typeName == "downgravityjuggler" )
 	{
 		reversedGrav = false;

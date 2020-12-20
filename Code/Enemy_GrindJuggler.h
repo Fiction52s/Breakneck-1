@@ -18,6 +18,9 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 		S_Count
 	};
 
+	bool limitedKills;
+	sf::Text numKilledText;
+
 	Rail *currRail;
 	Edge *railEdge;
 	double railQuant;
@@ -30,8 +33,8 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 
 	Tileset *ts;
 
-	int juggleReps;
-	int currJuggle;
+	int maxKilled;
+	int numKilled;
 
 	double flySpeed;
 	int waitFrame;
@@ -60,6 +63,7 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 	void Pop();
 	void PopThrow();
 	void ExtraQueries(sf::Rect<double> &r);
+	void UpdateKilledNumberText(int reps);
 
 	void LeaveRail();
 	void BoardRail();

@@ -571,13 +571,26 @@ void Session::RegisterW4Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
 
-	AddWorldEnemy("grindjugglercw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("grindjugglercw", 4, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
-	AddWorldEnemy("grindjugglerccw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("limitedgrindjugglercw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
-	AddWorldEnemy("groundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, false, true, false, 3);
+	AddBasicAerialWorldEnemy("grindjugglerccw", 4, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
-	AddWorldEnemy("groundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, false, true, false, 3);
+	AddWorldEnemy("limitedgrindjugglerccw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 
+		true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("groundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+
+	AddWorldEnemy("limitedgroundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), 
+		true, true, false, false, false, true, false, 3);
+
+	AddBasicGroundWorldEnemy("groundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false,3);
+
+	AddWorldEnemy("limitedgroundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 
+		false, true, false, 3);
+
+
 
 	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/shroom_192x192.png", 192, 192));
@@ -618,11 +631,11 @@ void Session::RegisterW5Enemies()
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 2);
 
-	AddWorldEnemy("relativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	AddWorldEnemy("relativecomboerdetach", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("relativecomboer", 5, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+	AddBasicAerialWorldEnemy("relativecomboerdetach", 5, CreateEnemy<RelativeComboer>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
-	//AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
-	//AddWorldEnemy("limitedrelativecomboerdetach", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("limitedrelativecomboer", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddWorldEnemy("limitedrelativecomboerdetach", 5, CreateEnemy<RelativeComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("swarm", 5, CreateEnemy<Swarm>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

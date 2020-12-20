@@ -17,6 +17,9 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	bool limitedJuggles;
+	sf::Text numJugglesText;
+
 	V2d velocity;
 
 	int hitLimit;
@@ -53,6 +56,7 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void Move();
 	void Return();
 	void Push(double strength);
+	void UpdateJuggleRepsText(int reps);
 
 
 };

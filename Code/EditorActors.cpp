@@ -310,21 +310,21 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
-	else if (name == "grindjugglercw" 
-		|| name == "grindjugglerccw" 
-		|| name == "groundedgrindjugglercw"
-		|| name == "groundedgrindjugglerccw" 
+	else if (name == "limitedgrindjugglercw" 
+		|| name == "limitedgrindjugglerccw" 
+		|| name == "limitedgroundedgrindjugglercw"
+		|| name == "limitedgroundedgrindjugglerccw" 
 		|| name == "limitedhungrycomboer" 
 		|| name == "limitedhungryreturncomboer"
-		|| name == "relativecomboer" 
-		|| name == "relativecomboerdetach"
-		|| name == "wirejuggler" 		
+		|| name == "limitedrelativecomboer" 
+		|| name == "limitedrelativecomboerdetach"
+		|| name == "limitedwirejuggler" 		
 		|| name == "limiteddowngravityjuggler"
 		|| name == "limitedupgravityjuggler" 
 		|| name == "limitedbouncejuggler")
 	{
 		p = CreateDefaultPanel();
-		AddLabeledSlider(p, "numJuggles", "required juggles:", 2, 20, 3);
+		AddLabeledSlider(p, "numJuggles", "required juggles:", 1, 9, 3);
 	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
 		|| name == "airbouncespring" || name == "swinglaunchercw"

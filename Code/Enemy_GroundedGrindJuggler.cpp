@@ -7,14 +7,21 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
 
 void GroundedGrindJuggler::UpdateParamsSettings()
 {
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
+	Enemy::UpdateParamsSettings();
+	if (limitedJuggles)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		juggleReps = jParams->numJuggles;
+		UpdateJuggleRepsText(juggleReps);
+	}
 }
 
 GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
@@ -25,14 +32,33 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	if (ap->GetTypeName() == "groundedgrindjugglercw")
+	const string &typeName = ap->GetTypeName();
+	if (typeName == "groundedgrindjugglercw")
 	{
+		limitedJuggles = false;
 		clockwise = true;
 	}
-	else
+	else if (typeName == "limitedgroundedgrindjugglercw")
 	{
+		limitedJuggles = true;
+		clockwise = true;
+	}
+	else if (typeName == "groundedgrindjugglerccw")
+	{
+		limitedJuggles = false;
 		clockwise = false;
 	}
+	else if (typeName == "limitedgroundedgrindjugglerccw")
+	{
+		limitedJuggles = true;
+		clockwise = false;
+	}
+
+	numJugglesText.setFont(sess->mainMenu->arial);
+	numJugglesText.setFillColor(Color::White);
+	numJugglesText.setOutlineColor(Color::Black);
+	numJugglesText.setOutlineThickness(3);
+	numJugglesText.setCharacterSize(32);
 
 	friction = .4;
 
@@ -119,6 +145,18 @@ void GroundedGrindJuggler::SetLevel(int lev)
 	}
 }
 
+void GroundedGrindJuggler::UpdateJuggleRepsText(int reps)
+{
+	if (limitedJuggles)
+	{
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+	}
+}
+
 void GroundedGrindJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
@@ -141,6 +179,8 @@ void GroundedGrindJuggler::ResetEnemy()
 	UpdateHitboxes();
 
 	currJuggle = 0;
+
+	UpdateJuggleRepsText(juggleReps);
 
 	UpdateSprite();
 }
@@ -165,6 +205,8 @@ void GroundedGrindJuggler::Push(double strength)
 	{
 		surfaceMover->SetSpeed(-strength);
 	}
+
+	UpdateJuggleRepsText(juggleReps - currJuggle);
 	
 }
 
@@ -177,6 +219,8 @@ void GroundedGrindJuggler::Return()
 
 	currJuggle = 0;
 
+	UpdateJuggleRepsText(0);
+
 	numHealth = maxHealth;
 }
 
@@ -188,11 +232,12 @@ void GroundedGrindJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
+			if ( limitedJuggles && currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->CollectKey();
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
 				}
 
@@ -228,6 +273,7 @@ void GroundedGrindJuggler::ProcessState()
 		switch (action)
 		{
 		case S_RETURN:
+			UpdateJuggleRepsText(juggleReps);
 			surfaceMover->Set(startPosInfo);
 			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
@@ -428,9 +474,19 @@ void GroundedGrindJuggler::UpdateSprite()
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	if (limitedJuggles)
+	{
+		numJugglesText.setPosition(sprite.getPosition());
+	}
 }
 
 void GroundedGrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedJuggles)
+	{
+		target->draw(numJugglesText);
+	}
 }

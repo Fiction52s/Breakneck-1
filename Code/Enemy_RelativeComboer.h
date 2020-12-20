@@ -17,6 +17,8 @@ struct RelativeComboer : Enemy
 		S_Count
 	};
 
+	bool limitedKills;
+	sf::Text numKilledText;
 
 	int latchFrame;
 	int maxLatchFrames;
@@ -32,8 +34,8 @@ struct RelativeComboer : Enemy
 
 	bool detachOnKill;
 
-	int juggleReps;
-	int currJuggle;
+	int maxKilled;
+	int numKilled;
 
 	int waitFrame;
 	int maxWaitFrames;
@@ -59,6 +61,7 @@ struct RelativeComboer : Enemy
 	void FrameIncrement();
 	void ComboHit();
 	bool CanBeHitByComboer();
+	void UpdateKilledNumberText(int reps);
 
 	void ComboKill(Enemy *e);
 	void EnemyDraw(sf::RenderTarget *target);

@@ -34,7 +34,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	origScale = scale;
 
-	string typeName = ap->GetTypeName();
+	const string &typeName = ap->GetTypeName();
 	if (typeName == "hungrycomboer")
 	{
 		returnsToPlayer = false;
@@ -260,7 +260,6 @@ void HungryComboer::ProcessHit()
 	{
 		numHealth -= 1;
 
-		Actor *player = sess->GetPlayer(0);
 		if (numHealth <= 0)
 		{
 			action = S_FLY;

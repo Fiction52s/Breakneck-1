@@ -7,6 +7,8 @@
 #include "Eye.h"
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -16,8 +18,13 @@ using namespace sf;
 
 void RelativeComboer::UpdateParamsSettings()
 {
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
+	Enemy::UpdateParamsSettings();
+	if (limitedKills)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		maxKilled = jParams->numJuggles;
+		UpdateKilledNumberText(maxKilled);
+	}
 }
 
 RelativeComboer::RelativeComboer(ActorParams *ap )
@@ -28,16 +35,37 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 
 	SetLevel(ap->GetLevel());
 
-	if (ap->GetTypeName() == "relativecomboerdetach")
+	string typeName = ap->GetTypeName();
+
+	if (typeName == "relativecomboer")
 	{
-		detachOnKill = true;
-	}
-	else
-	{
+		limitedKills = false;
 		detachOnKill = false;
 	}
-
+	else if (typeName == "limitedrelativecomboer")
+	{
+		detachOnKill = false;
+		limitedKills = true;
+	}
+	else if (typeName == "relativecomboerdetach")
+	{
+		detachOnKill = true;
+		limitedKills = false;
+	}
+	else if (typeName == "limitedrelativecomboerdetach")
+	{
+		detachOnKill = true;
+		limitedKills = true;
+	}
 	
+
+	numKilledText.setFont(sess->mainMenu->arial);
+	numKilledText.setFillColor(Color::White);
+	numKilledText.setOutlineColor(Color::Black);
+	numKilledText.setOutlineThickness(3);
+	numKilledText.setCharacterSize(32);
+
+	UpdateParamsSettings();
 
 	maxWaitFrames = 180;
 
@@ -116,7 +144,9 @@ void RelativeComboer::ResetEnemy()
 	basePos = startPosInfo.position;
 	latchedOn = false;
 
-	currJuggle = 0;
+	numKilled = 0;
+
+	UpdateKilledNumberText(maxKilled);
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -125,6 +155,18 @@ void RelativeComboer::ResetEnemy()
 void RelativeComboer::SetLevel(int lev)
 {
 
+}
+
+void RelativeComboer::UpdateKilledNumberText(int reps)
+{
+	if (limitedKills)
+	{
+		numKilledText.setString(to_string(reps));
+		numKilledText.setOrigin(numKilledText.getLocalBounds().left
+			+ numKilledText.getLocalBounds().width / 2,
+			numKilledText.getLocalBounds().top
+			+ numKilledText.getLocalBounds().height / 2);
+	}
 }
 
 void RelativeComboer::Throw(double a, double strength)
@@ -146,7 +188,7 @@ void RelativeComboer::Return()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
-	currJuggle = 0;
+	numKilled = 0;
 
 	numHealth = maxHealth;
 
@@ -158,7 +200,6 @@ void RelativeComboer::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
@@ -190,31 +231,12 @@ void RelativeComboer::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
-			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					//sess->CollectKey();
-					suppressMonitor = true;
-				}
-
-				sess->PlayerConfirmEnemyNoKill(this);
-				ConfirmHitNoKill();
-
-				action = S_RETURN;
-				frame = 0;
-
-				Return();
-			}
-			else
-			{
-				action = S_FLY;
-				frame = 0;
-				latchedOn = true;
-				latchFrame = 0;
-				offsetPos = GetPosition() - sess->GetPlayerPos(0);
-				PopThrow();
-			}
+			action = S_FLY;
+			frame = 0;
+			latchedOn = true;
+			latchFrame = 0;
+			offsetPos = GetPosition() - sess->GetPlayerPos(0);
+			PopThrow();
 		}
 		else
 		{
@@ -237,6 +259,7 @@ void RelativeComboer::ProcessState()
 			sprite.setColor(Color::Red);
 			break;
 		case S_RETURN:
+			UpdateKilledNumberText(maxKilled);
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
 			DefaultHitboxesOn();
@@ -341,6 +364,26 @@ void RelativeComboer::ComboKill(Enemy *e)
 		sprite.setColor(Color::Blue);
 	}
 
+	++numKilled;
+
+	if (limitedKills && numKilled == maxKilled)
+	{
+		if (hasMonitor && !suppressMonitor)
+		{
+			sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+				sess->GetPlayer(0), 1, GetPosition());
+			suppressMonitor = true;
+		}
+
+		action = S_RETURN;
+		frame = 0;
+
+		Return();
+
+		return;
+	}
+	UpdateKilledNumberText(maxKilled - numKilled);
+
 	sess->PlayerRestoreDoubleJump(0);
 	sess->PlayerRestoreAirDash(0);
 }
@@ -378,9 +421,19 @@ void RelativeComboer::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	if (limitedKills)
+	{
+		numKilledText.setPosition(sprite.getPosition());
+	}
 }
 
 void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedKills)
+	{
+		target->draw(numKilledText);
+	}
 }

@@ -8,14 +8,21 @@
 #include "KeyMarker.h"
 #include "Enemy_JugglerCatcher.h"
 #include "EditorRail.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
 
 void GrindJuggler::UpdateParamsSettings()
 {
-	JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;
+	Enemy::UpdateParamsSettings();
+	if (limitedKills)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		maxKilled = jParams->numJuggles;
+		UpdateKilledNumberText(maxKilled);
+	}
 }
 
 GrindJuggler::GrindJuggler(ActorParams *ap)
@@ -34,6 +41,35 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 	}
 
 	SetLevel(ap->GetLevel());
+
+	const string &typeName = ap->GetTypeName();
+
+	if (typeName == "grindjugglercw")
+	{
+		limitedKills = false;
+		clockwise = true;
+	}
+	else if (typeName == "limitedgrindjugglercw")
+	{
+		clockwise = true;
+		limitedKills = true;
+	}
+	else if (typeName == "grindjugglerccw")
+	{
+		clockwise = false;
+		limitedKills = false;
+	}
+	else if (typeName == "limitedgrindjugglerccw")
+	{
+		clockwise = false;
+		limitedKills = true;
+	}
+
+	numKilledText.setFont(sess->mainMenu->arial);
+	numKilledText.setFillColor(Color::White);
+	numKilledText.setOutlineColor(Color::Black);
+	numKilledText.setOutlineThickness(3);
+	numKilledText.setCharacterSize(32);
 
 	flySpeed = 10;
 
@@ -156,11 +192,25 @@ void GrindJuggler::ResetEnemy()
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
 
-	currJuggle = 0;
+	numKilled = 0;
+
+	UpdateKilledNumberText(maxKilled);
 
 	UpdateHitboxes();
 
 	UpdateSprite();
+}
+
+void GrindJuggler::UpdateKilledNumberText(int reps)
+{
+	if (limitedKills)
+	{
+		numKilledText.setString(to_string(reps));
+		numKilledText.setOrigin(numKilledText.getLocalBounds().left
+			+ numKilledText.getLocalBounds().width / 2,
+			numKilledText.getLocalBounds().top
+			+ numKilledText.getLocalBounds().height / 2);
+	}
 }
 
 void GrindJuggler::Throw(double a, double strength)
@@ -184,7 +234,7 @@ void GrindJuggler::Return()
 
 	surfaceMover->ground = NULL;
 
-	currJuggle = 0;
+	numKilled = 0;
 
 	numHealth = maxHealth;
 }
@@ -194,7 +244,6 @@ void GrindJuggler::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
 	HurtboxesOff();
 	HitboxesOff();
 	waitFrame = 0;
@@ -234,28 +283,9 @@ void GrindJuggler::ProcessHit()
 		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
-			{
-				if (hasMonitor && !suppressMonitor)
-				{
-					sess->CollectKey();
-					suppressMonitor = true;
-				}
-
-				sess->PlayerConfirmEnemyNoKill(this);
-				ConfirmHitNoKill();
-
-				action = S_RETURN;
-				frame = 0;
-
-				Return();
-			}
-			else
-			{
-				action = S_FLY;
-				frame = 0;
-				PopThrow();
-			}
+			action = S_FLY;
+			frame = 0;
+			PopThrow();
 		}
 		else
 		{
@@ -275,6 +305,7 @@ void GrindJuggler::ProcessState()
 		{
 		case S_RETURN:
 		{
+			UpdateKilledNumberText(maxKilled);
 			surfaceMover->Set(startPosInfo);
 			DefaultHitboxesOn();
 			DefaultHurtboxesOn();
@@ -471,6 +502,25 @@ void GrindJuggler::ComboKill(Enemy *e)
 		surfaceMover->velocity = surfaceMover->ground->Normal() * flySpeed;
 		surfaceMover->ground = NULL;
 
+		++numKilled;
+
+		if (limitedKills && numKilled == maxKilled)
+		{
+			if (hasMonitor && !suppressMonitor)
+			{
+				sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+					sess->GetPlayer(0), 1, GetPosition());
+				suppressMonitor = true;
+			}
+
+			action = S_RETURN;
+			frame = 0;
+
+			Return();
+
+			return;
+		}
+		UpdateKilledNumberText(maxKilled - numKilled);
 
 		DefaultHurtboxesOn();
 
@@ -522,11 +572,21 @@ void GrindJuggler::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (limitedKills)
+	{
+		numKilledText.setPosition(sprite.getPosition());
+	}
 }
 
 void GrindJuggler::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedKills)
+	{
+		target->draw(numKilledText);
+	}
 }
 
 void GrindJuggler::HitTerrainAerial(Edge * edge, double quant)
