@@ -25,12 +25,34 @@ struct WireJuggler : Enemy
 		S_Count
 	};
 
-	WireJuggler(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos,
-		std::list<sf::Vector2i> &path, int p_level,
-		int juggleReps, JuggleType juggleType );
+	JuggleType jType;
+	sf::Text numJugglesText;
+
+	V2d velocity;
+	bool limitedJuggles;
+
+	bool reversedGrav;
+
+	double gravFactor;
+	V2d gDir;
+	double maxFallSpeed;
+
+	int hitLimit;
+	int currHits;
+
+	Tileset *ts;
+
+	bool reversed;
+
+	int juggleReps;
+	int currJuggle;
+
+	int waitFrame;
+	int maxWaitFrames;
+
+	WireJuggler( ActorParams *ap );
 	~WireJuggler();
-	void HandleEntrant(QuadTreeEntrant *qte);
+	void SetLevel(int lev);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -48,42 +70,15 @@ struct WireJuggler : Enemy
 	void HandleWireAnchored(Wire *w);
 	void HandleWireUnanchored(Wire *w);
 	bool CanBeAnchoredByWire(bool red);
+	void UpdateParamsSettings();
+	void UpdateJuggleRepsText(int reps);
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 	bool CanBeHitByWireTip(bool red);
 	bool CanBeHitByComboer();
 
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	JuggleType jType;
-	V2d origPos;
-
-	V2d velocity;
-
-	bool reversedGrav;
-
-	double gravFactor;
-	V2d gDir;
-	double maxFallSpeed;
-
-	int hitLimit;
-	int currHits;
-
-	sf::Sprite sprite;
-	Tileset *ts;
-
-	bool reversed;
-
-	int juggleReps;
-	int currJuggle;
-
-	V2d *guidedDir;
-
-	int waitFrame;
-	int maxWaitFrames;
+	
 };
 
 #endif

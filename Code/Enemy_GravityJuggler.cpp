@@ -100,42 +100,6 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	
 	maxWaitFrames = 180;
 
-	guidedDir = NULL;
-	/*juggleReps = path.size();
-
-	guidedDir = NULL;
-	if (juggleReps > 0)
-	{
-		Vector2i prev(0, 0);
-		guidedDir = new V2d[juggleReps];
-		int ind = 0;
-		for (auto it = path.begin(); it != path.end(); ++it)
-		{
-			if (it != path.begin())
-			{
-				it--;
-				prev = (*it);
-				it++;
-			}
-
-			guidedDir[ind] = normalize(V2d((*it) - prev));
-
-			++ind;
-		}
-	}
-
-	if (guidedDir == NULL)*/
-	//juggleReps = jReps;
-
-
-
-	//position.x = pos.x;
-	//position.y = pos.y;
-	//origPos = position;
-	//spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
-
-	
-
 	gravFactor = 1.0;
 
 	gDir = V2d(0, 1);
@@ -152,7 +116,7 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 
 	reversed = true;
 
-	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));
 	
@@ -193,8 +157,6 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 
 GravityJuggler::~GravityJuggler()
 {
-	if (guidedDir != NULL)
-		delete[] guidedDir;
 }
 
 void GravityJuggler::UpdateJuggleRepsText( int reps )
@@ -281,15 +243,7 @@ void GravityJuggler::PopThrow()
 {
 	V2d dir; 
 
-	if (guidedDir == NULL)
-	{
-		dir = receivedHit->hDir;//normalize(receivedHit->hDir);
-	}
-	else
-	{
-		dir = guidedDir[currJuggle];
-	}
-
+	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
 
 	V2d hit(0, -20);
 

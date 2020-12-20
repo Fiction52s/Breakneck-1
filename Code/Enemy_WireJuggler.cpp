@@ -9,6 +9,8 @@
 #include "Enemy_JugglerCatcher.h"
 #include "Wire.h"
 #include "Actor.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -17,65 +19,61 @@ using namespace sf;
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 
-WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
-	list<Vector2i> &path, int p_level, int jReps, JuggleType juggleType )
-	:Enemy(owner, EnemyType::EN_WIREJUGGLER, p_hasMonitor, 1, false)
+void WireJuggler::UpdateParamsSettings()
 {
-	jType = juggleType;
-
-	level = p_level;
-
-	switch (level)
+	Enemy::UpdateParamsSettings();
+	if (limitedJuggles)
 	{
-	case 1:
-		scale = 2.0;
-		break;
-	case 2:
-		scale = 3.0;
-		maxHealth += 2;
-		break;
-	case 3:
-		scale = 4.0;
-		maxHealth += 5;
-		break;
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		juggleReps = jParams->numJuggles;
+		UpdateJuggleRepsText(juggleReps);
 	}
+}
+
+WireJuggler::WireJuggler( ActorParams *ap )
+	:Enemy(EnemyType::EN_WIREJUGGLER, ap )
+{
+	//jType = juggleType;
+
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLOAT, 0, 0);
+
+	actionLength[S_FLOAT] = 18;
+	actionLength[S_POP] = 10;
+	actionLength[S_JUGGLE] = 10;
+	actionLength[S_RETURN] = 3;
+
+	animFactor[S_FLOAT] = 2;
+	animFactor[S_POP] = 1;
+	animFactor[S_JUGGLE] = 1;
+	animFactor[S_RETURN] = 6;
+
+	SetLevel(ap->GetLevel());
+
+	numJugglesText.setFont(sess->mainMenu->arial);
+	numJugglesText.setFillColor(Color::White);
+	numJugglesText.setOutlineColor(Color::Black);
+	numJugglesText.setOutlineThickness(3);
+	numJugglesText.setCharacterSize(32);
+
+	const string &typeName = ap->GetTypeName();
+
+	if (typeName == "wirejuggler")
+	{
+		jType = T_BLUE;//testing
+		limitedJuggles = false;
+	}
+	else if (typeName == "limitedwirejuggler")
+	{
+		jType = T_BLUE; //testing
+		limitedJuggles = true;
+	}
+
+	UpdateParamsSettings();
 
 	reversedGrav = false;
 
 	maxWaitFrames = 180;
-
-	juggleReps = path.size();
-
-	guidedDir = NULL;
-	if (juggleReps > 0)
-	{
-		Vector2i prev(0, 0);
-		guidedDir = new V2d[juggleReps];
-		int ind = 0;
-		for (auto it = path.begin(); it != path.end(); ++it)
-		{
-			if (it != path.begin())
-			{
-				it--;
-				prev = (*it);
-				it++;
-			}
-
-			guidedDir[ind] = normalize(V2d((*it) - prev));
-
-			++ind;
-		}
-	}
-
-	if (guidedDir == NULL)
-		juggleReps = jReps;
-
-
-
-	position.x = pos.x;
-	position.y = pos.y;
-	origPos = position;
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
 
 	hitLimit = -1;
 
@@ -101,13 +99,10 @@ WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
 
 	reversed = true;
 
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
-
 	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
@@ -117,13 +112,10 @@ WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	hitBody.hitboxInfo = hitboxInfo;
 
 	comboObj = new ComboObject(this);
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -136,44 +128,53 @@ WireJuggler::WireJuggler(GameSession *owner, bool p_hasMonitor, Vector2i pos,
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
-	comboObj->enemyHitBody = new CollisionBody(1);
-	comboObj->enemyHitBody->AddCollisionBox(0, hitBody->GetCollisionBoxes(0)->front());
+	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 	comboObj->enemyHitboxFrame = 0;
-
-	actionLength[S_FLOAT] = 18;
-	actionLength[S_POP] = 10;
-	actionLength[S_JUGGLE] = 10;
-	actionLength[S_RETURN] = 3;
-
-	animFactor[S_FLOAT] = 2;
-	animFactor[S_POP] = 1;
-	animFactor[S_JUGGLE] = 1;
-	animFactor[S_RETURN] = 6;
 
 	ResetEnemy();
 }
 
 WireJuggler::~WireJuggler()
 {
-	if (guidedDir != NULL)
-		delete[] guidedDir;
+}
+
+void WireJuggler::SetLevel(int lev)
+{
+	level = lev;
+
+	switch (level)
+	{
+	case 1:
+		scale = 2.0;
+		break;
+	case 2:
+		scale = 3.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 4.0;
+		maxHealth += 5;
+		break;
+	}
 }
 
 void WireJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
+
 	currHits = 0;
 	comboObj->Reset();
 	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+
+
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
-	position = origPos;
+
 	UpdateHitboxes();
 
 	currJuggle = 0;
@@ -198,7 +199,7 @@ bool WireJuggler::CanBeAnchoredByWire(bool red)
 
 void WireJuggler::HandleWireHit(Wire *w)
 {
-	w->HitEnemy(position);
+	w->HitEnemy(GetPosition());
 	w->player->RestoreAirDash();
 	w->player->RestoreDoubleJump();
 }
@@ -230,19 +231,21 @@ void WireJuggler::Throw(V2d vel)
 
 void WireJuggler::Return()
 {
-	owner->PlayerRemoveActiveComboer(comboObj);
+	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
 	currJuggle = 0;
 
+	UpdateJuggleRepsText(0);
+
 	numHealth = maxHealth;
 }
 
 void WireJuggler::Pop()
 {
-	owner->PlayerConfirmEnemyNoKill(this);
+	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
 	++currJuggle;
@@ -255,15 +258,7 @@ void WireJuggler::PopThrow()
 {
 	V2d dir;
 
-	if (guidedDir == NULL)
-	{
-		dir = receivedHit->hDir;//normalize(receivedHit->hDir);
-	}
-	else
-	{
-		dir = guidedDir[currJuggle];
-	}
-
+	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
 
 	V2d hit(0, -20);
 
@@ -274,7 +269,7 @@ void WireJuggler::PopThrow()
 		hit.x += dir.x * extraX;
 	}
 
-	bool pFacingRight = owner->PlayerIsFacingRight(0);
+	bool pFacingRight = sess->PlayerIsFacingRight(0);
 
 	if (((dir.y == 1 && !reversedGrav) || (dir.y == -1 && reversedGrav))
 		&& dir.x == 0)
@@ -300,7 +295,7 @@ void WireJuggler::PopThrow()
 
 	Throw(hit);
 
-	owner->PlayerAddActiveComboObj(comboObj);
+	sess->PlayerAddActiveComboObj(comboObj);
 }
 
 bool WireJuggler::CanBeHitByWireTip(bool red)
@@ -338,15 +333,16 @@ void WireJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
+			if ( limitedJuggles && currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					owner->keyMarker->CollectKey();
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
 				}
 
-				owner->PlayerConfirmEnemyNoKill(this);
+				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
 				action = S_RETURN;
@@ -378,9 +374,10 @@ void WireJuggler::ProcessState()
 		switch (action)
 		{
 		case S_RETURN:
-			position = origPos;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			UpdateJuggleRepsText(juggleReps);
+			SetCurrPosInfo(startPosInfo);
+			DefaultHurtboxesOn();
+			DefaultHitboxesOn();
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -394,7 +391,7 @@ void WireJuggler::ProcessState()
 	{
 		action = S_JUGGLE;
 		frame = 0;
-		SetHurtboxes(hurtBody, 0);
+		DefaultHurtboxesOn();
 	}
 }
 
@@ -409,7 +406,7 @@ void WireJuggler::Move()
 	V2d movementVec = velocity;
 	movementVec /= slowMultiple * numStep;
 
-	position += movementVec;
+	currPosInfo.position += movementVec;
 
 	velocity += gDir * (gravFactor / numStep / slowMultiple);
 
@@ -462,23 +459,6 @@ void WireJuggler::FrameIncrement()
 
 }
 
-void WireJuggler::HandleEntrant(QuadTreeEntrant *qte)
-{
-	Enemy *en = (Enemy*)qte;
-	if (en->type == EnemyType::EN_JUGGLERCATCHER)
-	{
-		JugglerCatcher *catcher = (JugglerCatcher*)qte;
-
-		CollisionBox &hitB = hurtBody->GetCollisionBoxes(0)->front();
-		if (catcher->CanCatch() && catcher->hurtBody->Intersects(catcher->currHurtboxFrame, &hitB))
-		{
-			//catcher->Catch();
-			//action = S_EXPLODE;
-			//frame = 0;
-		}
-	}
-}
-
 void WireJuggler::ComboHit()
 {
 	pauseFrames = 5;
@@ -493,8 +473,6 @@ void WireJuggler::ComboHit()
 
 void WireJuggler::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
-
 	int tile = 0;
 	switch (action)
 	{
@@ -503,9 +481,22 @@ void WireJuggler::UpdateSprite()
 		sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setPosition(GetPositionF());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	if (limitedJuggles)
+	{
+		numJugglesText.setPosition(sprite.getPosition());
+	}
 }
 
 void WireJuggler::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
+
+	if (limitedJuggles)
+	{
+		target->draw(numJugglesText);
+	}
 }
