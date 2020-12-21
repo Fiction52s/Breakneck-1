@@ -15,9 +15,7 @@ struct BounceFloater : Enemy
 		S_Count
 	};
 
-	BounceFloater(GameSession *owner,
-		sf::Vector2i pos, int p_level);
-	//void HandleEntrant(QuadTreeEntrant *qte);
+	BounceFloater(ActorParams *ap);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -26,14 +24,8 @@ struct BounceFloater : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
+	void SetLevel(int lev);
 
-	V2d origPos;
-
-	Action action;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-
-	sf::Sprite sprite;
 	Tileset *ts;
 };
 

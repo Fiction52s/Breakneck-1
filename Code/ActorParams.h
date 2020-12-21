@@ -295,16 +295,12 @@ struct ShardParams : public ActorParams
 	void SetShard(int world, int li);
 	void SetParams();
 	void SetPanelInfo();
-	
+	int GetTotalIndex();
+	ActorParams *Copy();
 
 	ShardInfo shInfo;
 	int sX;
 	int sY;
-	int GetTotalIndex();
-
-	
-	ActorParams *Copy();
-
 	std::string shardStr;
 };
 

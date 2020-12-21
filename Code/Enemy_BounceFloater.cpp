@@ -11,15 +11,9 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-
-
-BounceFloater::BounceFloater(GameSession *owner, Vector2i pos, int p_level)
-	:Enemy(owner, EnemyType::EN_BOUNCEFLOATER, false, 2, false)
+void BounceFloater::SetLevel(int lev)
 {
-	level = p_level;
+	level = lev;
 
 	switch (level)
 	{
@@ -35,25 +29,28 @@ BounceFloater::BounceFloater(GameSession *owner, Vector2i pos, int p_level)
 		maxHealth += 5;
 		break;
 	}
+}
 
-	action = S_FLOAT;
-	position.x = pos.x;
-	position.y = pos.y;
+BounceFloater::BounceFloater(ActorParams *ap)
+	:Enemy( EnemyType::EN_BOUNCEFLOATER, ap )
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_FLOAT, 0, 0);
 
-	origPos = position;
+	SetLevel(ap->GetLevel());
 
-	spawnRect = sf::Rect<double>(pos.x - 16, pos.y - 16, 16 * 2, 16 * 2);
-
-	frame = 0;
-
-	//ts = owner->GetTileset( "BounceFloater.png", 80, 80 );
-	ts = owner->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(frame));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
-	sprite.setPosition(pos.x, pos.y);
 	sprite.setColor(Color::Red);
+
+	actionLength[S_FLOAT] = 18;
+	actionLength[S_BOUNCE] = 10;
+	actionLength[S_RECOVER] = 10;
+
+	animFactor[S_FLOAT] = 2;
+	animFactor[S_BOUNCE] = 1;
+	animFactor[S_RECOVER] = 1;
 
 
 	hitboxInfo = new HitboxInfo;
@@ -64,39 +61,22 @@ BounceFloater::BounceFloater(GameSession *owner, Vector2i pos, int p_level)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(48);
-	AddBasicHitCircle(48);
-	hitBody->hitboxInfo = hitboxInfo;
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-
-	dead = false;
-
-	actionLength[S_FLOAT] = 18;
-	actionLength[S_BOUNCE] = 10;
-	actionLength[S_RECOVER] = 10;
-
-	animFactor[S_FLOAT] = 2;
-	animFactor[S_BOUNCE] = 1;
-	animFactor[S_RECOVER] = 1;
+	hitBody.hitboxInfo = hitboxInfo;
 
 	ResetEnemy();
 }
 
 void BounceFloater::ResetEnemy()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setRotation(0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
-	dead = false;
 	action = S_FLOAT;
 	frame = 0;
-	receivedHit = NULL;
-	position = origPos;
+
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -106,7 +86,7 @@ void BounceFloater::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0 && action == S_FLOAT )
 	{
-		Actor *player = owner->GetPlayer(0);
+		Actor *player = sess->GetPlayer(0);
 
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
@@ -183,14 +163,13 @@ void BounceFloater::ProcessState()
 			break;
 		case S_RECOVER:
 			action = S_FLOAT;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
 			break;
 		}
 	}
-
-	V2d playerPos = owner->GetPlayer(0)->position;
 }
+
 
 void BounceFloater::HandleNoHealth()
 {
@@ -207,7 +186,6 @@ void BounceFloater::FrameIncrement()
 
 void BounceFloater::UpdateSprite()
 {
-	sprite.setPosition(position.x, position.y);
 
 	int tile = 0;
 	sprite.setTextureRect(ts->GetSubRect(tile));
@@ -217,9 +195,13 @@ void BounceFloater::UpdateSprite()
 	case S_FLOAT:
 		break;
 	}
+
+	sprite.setPosition(GetPositionF());
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setRotation(0);
 }
 
 void BounceFloater::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

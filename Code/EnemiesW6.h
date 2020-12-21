@@ -7,5 +7,6 @@
 #include "Enemy_SwingLauncher.h"
 #include "Enemy_Specter.h"
 #include "Enemy_FreeFlightTarget.h"
+#include "Enemy_WireJuggler.h"
 
 #endif

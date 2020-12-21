@@ -14552,6 +14552,9 @@ void Actor::SetBounceBoostVelocity()
 		grindEdge = NULL;
 	}
 
+	RestoreDoubleJump();
+	RestoreAirDash();
+
 	double s = currBounceBooster->strength;
 	//velocity.y = min(s, velocity.y);
 
@@ -15691,10 +15694,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				//some replacement formula later
 			}
 		}
-		else if (en->type == EnemyType::EN_GRAVITYGRASS)
-		{
-
-		}
 		else if (en->type == EnemyType::EN_GLIDETARGET)
 		{
 			GlideTarget *gTarget = (GlideTarget*)qte;
@@ -15770,19 +15769,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					currAimLauncher = al;
 				}
 			}
-		}
-		else if (en->type == EnemyType::EN_HEALTHFLY)
-		{
-			/*HealthFly *hf = (HealthFly*)qte;
-			if (hf->IsCollectible() &&
-				hf->hitBody.Intersects(hf->currHitboxFrame, &hurtBody ) )
-			{
-				if( kinRing != NULL)
-					kinRing->powerRing->Fill(hf->GetHealAmount());
-				hf->Collect();
-				AddToFlyCounter(hf->GetCounterAmount());
-				
-			}*/
 		}
 	}
 	else if (queryMode == "airtrigger")

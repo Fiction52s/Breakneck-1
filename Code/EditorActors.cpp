@@ -215,7 +215,7 @@ Panel *ActorType::CreatePanel()
 		|| name == "glidetarget"
 		|| name == "freeflighttarget"
 		|| name == "bluecomboertarget"
-		|| name == "greencomboertarget" )
+		|| name == "greencomboertarget")
 		//|| name == "yellowcomboertarget"
 		//|| name == "orangecomboertarget"
 		//|| name == "redcomboertarget"
@@ -310,18 +310,20 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("podtype", Vector2i(20, 150), 200, 20, "0");
 	}
 
-	else if (name == "limitedgrindjugglercw" 
-		|| name == "limitedgrindjugglerccw" 
+	else if (name == "limitedgrindjugglercw"
+		|| name == "limitedgrindjugglerccw"
 		|| name == "limitedgroundedgrindjugglercw"
-		|| name == "limitedgroundedgrindjugglerccw" 
-		|| name == "limitedhungrycomboer" 
+		|| name == "limitedgroundedgrindjugglerccw"
+		|| name == "limitedhungrycomboer"
 		|| name == "limitedhungryreturncomboer"
-		|| name == "limitedrelativecomboer" 
+		|| name == "limitedrelativecomboer"
 		|| name == "limitedrelativecomboerdetach"
-		|| name == "limitedwirejuggler" 		
 		|| name == "limiteddowngravityjuggler"
-		|| name == "limitedupgravityjuggler" 
-		|| name == "limitedbouncejuggler")
+		|| name == "limitedupgravityjuggler"
+		|| name == "limitedbouncejuggler"
+		|| name == "limitedbluewirejuggler"
+		|| name == "limitedredwirejuggler"
+		|| name == "limitedmagentawirejuggler")
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 1, 9, 3);

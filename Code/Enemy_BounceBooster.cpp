@@ -8,16 +8,6 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
 BounceBooster::BounceBooster(ActorParams *ap)
 	:Enemy(EnemyType::EN_BOUNCEBOOSTER, ap)
 {
@@ -26,12 +16,13 @@ BounceBooster::BounceBooster(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	strength = 20;
+	strength = 30;
 
 	upOnly = false; //omni
 	if (ap->GetTypeName() == "upbouncebooster")
 	{
 		upOnly = true;
+		strength = 30;
 	}
 
 	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");

@@ -515,6 +515,7 @@ void Session::RegisterW3Enemies()
 
 	AddBasicAerialWorldEnemy("omnibouncebooster", 3, CreateEnemy<BounceBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 
+	AddBasicAerialWorldEnemy("bouncefloater", 3, CreateEnemy<BounceFloater>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 	//*AddWorldEnemy("redirectspring", 3, LoadParams<BounceSpringParams>, NULL, MakeParamsAerial<BounceSpringParams>,
 	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256));
@@ -683,6 +684,18 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("swinglauncherccw", 6, CreateEnemy<SwingLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	AddBasicAerialWorldEnemy("freeflighttarget", 6, CreateEnemy<FreeFlightTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("bluewirejuggler", 6, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+
+	AddWorldEnemy("limitedbluewirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("redwirejuggler", 6, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+
+	AddWorldEnemy("limitedredwirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("magentawirejuggler", 6, CreateEnemy<WireJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
+
+	AddWorldEnemy("limitedmagentawirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

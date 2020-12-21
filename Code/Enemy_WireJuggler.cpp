@@ -58,15 +58,40 @@ WireJuggler::WireJuggler( ActorParams *ap )
 
 	const string &typeName = ap->GetTypeName();
 
-	if (typeName == "wirejuggler")
+	if (typeName == "bluewirejuggler")
 	{
 		jType = T_BLUE;//testing
 		limitedJuggles = false;
 	}
-	else if (typeName == "limitedwirejuggler")
+	else if (typeName == "limitedbluewirejuggler")
 	{
 		jType = T_BLUE; //testing
 		limitedJuggles = true;
+	}
+	else if (typeName == "redwirejuggler")
+	{
+		jType = T_RED;
+		limitedJuggles = false;
+	}
+	else if (typeName == "limitedredwirejuggler")
+	{
+		jType = T_RED; //testing
+		limitedJuggles = true;
+	}
+	else if (typeName == "magentawirejuggler")
+	{
+		jType = T_MAGENTA;
+		limitedJuggles = false;
+	}
+	else if (typeName == "limitedmagentawirejuggler")
+	{
+		jType = T_MAGENTA; //testing
+		limitedJuggles = true;
+	}
+	else
+	{
+		cout << "invalid typename: " << typeName << endl;
+		assert(0);
 	}
 
 	UpdateParamsSettings();
@@ -83,8 +108,6 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	
 	switch (jType)
 	{
-	case T_WHITE:
-		break;
 	case T_BLUE:
 		sprite.setColor(Color::Blue);
 		break;
@@ -138,6 +161,18 @@ WireJuggler::~WireJuggler()
 {
 }
 
+void WireJuggler::UpdateJuggleRepsText(int reps)
+{
+	if (limitedJuggles)
+	{
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+	}
+}
+
 void WireJuggler::SetLevel(int lev)
 {
 	level = lev;
@@ -184,7 +219,8 @@ void WireJuggler::ResetEnemy()
 
 bool WireJuggler::CanBeAnchoredByWire(bool red)
 {
-	switch (jType)
+	return false;
+	/*switch (jType)
 	{
 	case T_WHITE:
 		return true;
@@ -194,7 +230,7 @@ bool WireJuggler::CanBeAnchoredByWire(bool red)
 		return !red;
 	case T_MAGENTA:
 		return true;
-	}
+	}*/
 }
 
 void WireJuggler::HandleWireHit(Wire *w)
@@ -302,8 +338,6 @@ bool WireJuggler::CanBeHitByWireTip(bool red)
 {
 	switch (jType)
 	{
-	case T_WHITE:
-		return true;
 	case T_BLUE:
 		return !red;
 	case T_RED:
@@ -359,7 +393,7 @@ void WireJuggler::ProcessHit()
 		}
 		else
 		{
-			owner->PlayerConfirmEnemyNoKill(this);
+			sess->PlayerConfirmEnemyNoKill(this);
 			ConfirmHitNoKill();
 		}
 	}

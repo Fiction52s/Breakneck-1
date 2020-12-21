@@ -9,7 +9,6 @@ struct WireJuggler : Enemy
 {
 	enum JuggleType
 	{
-		T_WHITE,
 		T_BLUE,
 		T_RED,
 		T_MAGENTA

@@ -9,5 +9,6 @@
 #include "Enemy_Owl.h"
 #include "Enemy_Cactus.h"
 #include "Enemy_AimLauncher.h"
+#include "Enemy_BounceFloater.h"
 
 #endif
