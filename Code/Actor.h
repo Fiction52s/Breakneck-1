@@ -112,6 +112,8 @@ struct AbsorbParticles;
 struct GravityModifier;
 struct Booster;
 struct BounceBooster;
+struct TimeBooster;
+struct FreeFlightBooster;
 struct Spring;
 struct Teleporter;
 struct SwingLauncher;
@@ -244,6 +246,7 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNAIRBOUNCE,
 		SPRINGSTUNTELEPORT,
 		FREEFLIGHT,
+		FREEFLIGHTSTUN,
 		SWINGSTUN,
 		GLIDE,
 		SEQ_ENTERCORE1,
@@ -391,6 +394,8 @@ struct Actor : QuadTreeCollider,
 	int currPowerMode;
 	PolyPtr oldSpecialTerrain;
 	PolyPtr currSpecialTerrain;
+	int globalTimeSlowFrames;
+	int freeFlightFrames;
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
 
@@ -767,6 +772,8 @@ struct Actor : QuadTreeCollider,
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
+	TimeBooster *currTimeBooster;
+	FreeFlightBooster *currFreeFlightBooster;
 	Session *sess;
 	GravityModifier *currGravModifier;
 	sf::Vector2<double> springVel;
@@ -1097,6 +1104,8 @@ struct Actor : QuadTreeCollider,
 	void UpdateCanStandUp();
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
+	void ProcessTimeBooster();
+	void ProcessFreeFlightBooster();
 	void ProcessGravModifier();
 	void UpdateWireStates();
 	void ProcessAccelGrass();
@@ -1227,6 +1236,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateHitboxes();
 	bool InSpecialTerrain(int w, int var);
 	void AirMovement();
+	void FreeFlightMovement();
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
@@ -1774,6 +1784,17 @@ struct Actor : QuadTreeCollider,
 	void FREEFLIGHT_TimeDepFrameInc();
 	int FREEFLIGHT_GetActionLength();
 	Tileset * FREEFLIGHT_GetTileset();
+
+	void FREEFLIGHTSTUN_Start();
+	void FREEFLIGHTSTUN_End();
+	void FREEFLIGHTSTUN_Change();
+	void FREEFLIGHTSTUN_Update();
+	void FREEFLIGHTSTUN_UpdateSprite();
+	void FREEFLIGHTSTUN_TransitionToAction(int a);
+	void FREEFLIGHTSTUN_TimeIndFrameInc();
+	void FREEFLIGHTSTUN_TimeDepFrameInc();
+	int FREEFLIGHTSTUN_GetActionLength();
+	Tileset * FREEFLIGHTSTUN_GetTileset();
 
 	void GETPOWER_AIRDASH_FLIP_Start();
 	void GETPOWER_AIRDASH_FLIP_End();

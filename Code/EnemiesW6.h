@@ -8,5 +8,6 @@
 #include "Enemy_Specter.h"
 #include "Enemy_FreeFlightTarget.h"
 #include "Enemy_WireJuggler.h"
+#include "Enemy_FreeFlightBooster.h"
 
 #endif

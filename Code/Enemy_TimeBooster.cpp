@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_Booster.h"
+#include "Enemy_TimeBooster.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -19,10 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-
-
-Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
+TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_TIMEBOOSTER, ap)//, false, 1, false), strength( 20 )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -31,10 +29,13 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
-	ts = sess->GetSizedTileset("Enemies/booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
+	strength = 180;
+
+	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");
+	ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
+	sprite.setColor(Color::Magenta);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
@@ -52,7 +53,7 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	SetSpawnRect();
 }
 
-void Booster::ResetEnemy()
+void TimeBooster::ResetEnemy()
 {
 	action = NEUTRAL;
 	frame = 0;
@@ -64,7 +65,7 @@ void Booster::ResetEnemy()
 	UpdateSprite();
 }
 
-void Booster::SetLevel(int lev)
+void TimeBooster::SetLevel(int lev)
 {
 	level = lev;
 
@@ -84,12 +85,12 @@ void Booster::SetLevel(int lev)
 	}
 }
 
-void Booster::AddToWorldTrees()
+void TimeBooster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-bool Booster::Boost()
+bool TimeBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
@@ -100,14 +101,13 @@ bool Booster::Boost()
 	return false;
 }
 
-bool Booster::IsBoostable()
+bool TimeBooster::IsBoostable()
 {
 	return action == NEUTRAL;
 }
 
 
-
-void Booster::ProcessState()
+void TimeBooster::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -136,7 +136,7 @@ void Booster::ProcessState()
 	}
 }
 
-void Booster::UpdateSprite()
+void TimeBooster::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -162,12 +162,12 @@ void Booster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Booster::EnemyDraw(sf::RenderTarget *target)
+void TimeBooster::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
 
-void Booster::DrawMinimap(sf::RenderTarget *target)
+void TimeBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{

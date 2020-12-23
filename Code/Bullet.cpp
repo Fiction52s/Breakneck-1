@@ -756,6 +756,12 @@ void BasicBullet::ResetSprite()
 bool BasicBullet::PlayerSlowingMe()
 {
 	Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
+
+	if (player->globalTimeSlowFrames > 0)
+	{
+		return true;
+	}
+
 	for (int i = 0; i < player->maxBubbles; ++i)
 	{
 		if (player->bubbleFramesToLive[i] > 0)

@@ -10,52 +10,28 @@ void Actor::FREEFLIGHT_Start()
 void Actor::FREEFLIGHT_End()
 {
 	frame = 0;
+	
 }
 
 void Actor::FREEFLIGHT_Change()
 {
-	if (springStunFrames == 0)
+	if (freeFlightFrames == 0)
 	{
 		SetAction(JUMP);
 		frame = 1;
+		gravModifyFrames = 0;
+	}
+	else
+	{
+		if (BasicAirAction())
+		{
+		}
 	}
 }
 
 void Actor::FREEFLIGHT_Update()
 {
-	double driftFactor = 1.0;
-	double maxAccelSpeed = 15;
-
-	if (currInput.LUp())
-	{
-		if (velocity.y > -maxAccelSpeed)
-		{
-			velocity.y -= driftFactor;
-		}
-		
-	}
-	if (currInput.LDown())
-	{
-		if (velocity.y < maxAccelSpeed)
-		{
-			velocity.y += driftFactor;
-		}
-	}
-	if (currInput.LLeft())
-	{
-		if (velocity.x > -maxAccelSpeed)
-		{
-			velocity.x -= driftFactor;
-		}
-		
-	}
-	if (currInput.LRight())
-	{
-		if (velocity.x < maxAccelSpeed)
-		{
-			velocity.x += driftFactor;
-		}
-	}
+	FreeFlightMovement();
 }
 
 void Actor::FREEFLIGHT_UpdateSprite()

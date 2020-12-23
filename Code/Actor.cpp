@@ -49,6 +49,8 @@
 //#include "Enemy_ComboerTarget.h"
 #include "Enemy_FreeFlightTarget.h"
 #include "Enemy_AimLauncher.h"
+#include "Enemy_TimeBooster.h"
+#include "Enemy_FreeFlightBooster.h"
 
 #include "GameMode.h"
 
@@ -1342,6 +1344,18 @@ void Actor::SetupActionFunctions()
 		&Actor::FREEFLIGHT_GetActionLength,
 		&Actor::FREEFLIGHT_GetTileset);
 
+	SetupFuncsForAction(FREEFLIGHTSTUN,
+		&Actor::FREEFLIGHTSTUN_Start,
+		&Actor::FREEFLIGHTSTUN_End,
+		&Actor::FREEFLIGHTSTUN_Change,
+		&Actor::FREEFLIGHTSTUN_Update,
+		&Actor::FREEFLIGHTSTUN_UpdateSprite,
+		&Actor::FREEFLIGHTSTUN_TransitionToAction,
+		&Actor::FREEFLIGHTSTUN_TimeIndFrameInc,
+		&Actor::FREEFLIGHTSTUN_TimeDepFrameInc,
+		&Actor::FREEFLIGHTSTUN_GetActionLength,
+		&Actor::FREEFLIGHTSTUN_GetTileset);
+
 	SetupFuncsForAction(GETPOWER_AIRDASH_FLIP,
 		&Actor::GETPOWER_AIRDASH_FLIP_Start,
 		&Actor::GETPOWER_AIRDASH_FLIP_End,
@@ -2551,7 +2565,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	framesSinceDownTilt = 0;
 
 	attackLevelCounterLimit = 60;
-
+	globalTimeSlowFrames = 0;
+	freeFlightFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2578,7 +2593,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	accelGrassAccel = .25;
 	jumpGrassExtra = 15;
 
-	cout << "Start player" << endl;
+	//cout << "Start player" << endl;
 
 
 	//glideEmitter = new GlideEmitter(owner);
@@ -2589,6 +2604,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	repeatingSound = NULL;
 	currBooster = NULL;
+	currTimeBooster = NULL;
+	currFreeFlightBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -2717,6 +2734,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currBooster = NULL;
+	currTimeBooster = NULL;
+	currFreeFlightBooster = NULL;
 	currTeleporter = NULL;
 	currSwingLauncher = NULL;
 
@@ -4135,6 +4154,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn()
 {
 	//fallThroughDuration = 0;
+	globalTimeSlowFrames = 0;
+	freeFlightFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
@@ -4194,6 +4215,8 @@ void Actor::Respawn()
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
+	currFreeFlightBooster = NULL;
+	currTimeBooster = NULL;
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
@@ -5150,6 +5173,43 @@ void Actor::ProcessBooster()
 
 }
 
+void Actor::ProcessTimeBooster()
+{
+	if (currTimeBooster != NULL && currTimeBooster->IsBoostable() )
+	{
+		currTimeBooster->Boost();
+
+		globalTimeSlowFrames = currTimeBooster->strength;
+
+		currTimeBooster = NULL;
+
+		RechargeAirOptions();
+	}
+}
+
+void Actor::ProcessFreeFlightBooster()
+{
+	if (currFreeFlightBooster != NULL && currFreeFlightBooster->IsBoostable() )
+	{
+		currFreeFlightBooster->Boost();
+
+		SetAction(FREEFLIGHT);
+		freeFlightFrames = currFreeFlightBooster->strength;;
+		extraGravityModifier = 0;
+		gravModifyFrames = freeFlightFrames;
+		RestoreAirDash();
+		RestoreDoubleJump();
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		currWall = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+
+		currFreeFlightBooster = NULL;
+	}
+	
+}
+
 void Actor::ProcessAccelGrass()
 {
 	if (ground != NULL && touchedGrass[Grass::ACCELERATE])
@@ -5208,7 +5268,8 @@ void Actor::LimitMaxSpeeds()
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL
 		&& action != ENTERNEXUS1
 		&& action != GLIDE
-		&& !IsSpringAction( action ) )
+		&& !IsSpringAction( action )
+		&& freeFlightFrames == 0 )
 		//&& action != SPRINGSTUN
 		//&& action != SPRINGSTUNGLIDE
 		//&& action != SPRINGSTUNBOUNCE
@@ -5728,6 +5789,10 @@ void Actor::UpdatePrePhysics()
 	ProcessGravModifier();
 
 	ProcessBooster();
+
+	ProcessTimeBooster();
+
+	ProcessFreeFlightBooster();
 
 	ProcessAccelGrass();
 
@@ -7153,8 +7218,10 @@ bool Actor::ResolvePhysics( V2d vel )
 		sess->railEdgeTree->Query(this, r);
 	}
 
-
+	
 	currBooster = NULL;
+	currTimeBooster = NULL;
+	currFreeFlightBooster = NULL;
 	currBounceBooster = NULL;
 	currGravModifier = NULL;
 
@@ -9259,6 +9326,11 @@ bool Actor::IntersectMyHitboxes(CollisionBody *cb,
 
 bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 {
+	if (globalTimeSlowFrames > 0)
+	{
+		return true;
+	}
+
 	if (cb == NULL )
 		return false;
 
@@ -10930,7 +11002,7 @@ void Actor::UpdatePhysics()
 			{
 				HandleBounceRail();
 			}
-			else if (tempCollision && action == FREEFLIGHT)
+			else if (tempCollision && action == FREEFLIGHTSTUN )
 			{
 				velocity = newVel;
 			}
@@ -13229,7 +13301,7 @@ void Actor::HandleSpecialTerrainW6(SpecialTerrainSituation sit,
 	case 0:
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			SetAction(FREEFLIGHT);
+			SetAction(FREEFLIGHTSTUN);
 			springStunFrames = 2;
 			extraGravityModifier = 0;
 			gravModifyFrames = 2;
@@ -13804,7 +13876,20 @@ void Actor::SlowDependentFrameIncrement()
 		++framesSinceClimbBoost;
 		++speedParticleCounter;
 
-		
+		if( globalTimeSlowFrames > 0 )
+		{
+			--globalTimeSlowFrames;
+		}
+
+		if (freeFlightFrames > 0)
+		{
+			--freeFlightFrames;
+
+			if (freeFlightFrames == 0)
+			{
+				gravModifyFrames = 0;
+			}
+		}
 
 		slowCounter = 1;
 
@@ -15678,6 +15763,38 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				//some replacement formula later
 			}
 		}
+		else if (en->type == EnemyType::EN_TIMEBOOSTER)
+		{
+			TimeBooster *tboost = (TimeBooster*)qte;
+
+			if (currTimeBooster == NULL)
+			{
+				if (tboost->hitBody.Intersects(tboost->currHitboxFrame, &hurtBody) && tboost->IsBoostable())
+				{
+					currTimeBooster = tboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_FREEFLIGHTBOOSTER)
+		{
+			FreeFlightBooster *ffboost = (FreeFlightBooster*)qte;
+
+			if (currFreeFlightBooster == NULL)
+			{
+				if (ffboost->hitBody.Intersects(ffboost->currHitboxFrame, &hurtBody) && ffboost->IsBoostable())
+				{
+					currFreeFlightBooster = ffboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
 		else if (en->type == EnemyType::EN_GRAVITYMODIFIER)
 		{
 			GravityModifier *mod = (GravityModifier*)qte;
@@ -15710,7 +15827,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			FreeFlightTarget *ffTarget = (FreeFlightTarget*)qte;
 
-			if( !ffTarget->dead && action == FREEFLIGHT
+			if (!ffTarget->dead && (action == FREEFLIGHT || action == FREEFLIGHTSTUN )
 				&& ffTarget->hitBody.Intersects(ffTarget->currHitboxFrame, &hurtBody) )
 			{
 				ffTarget->Collect();
@@ -17153,10 +17270,51 @@ void Actor::SetupAction(int a)
 {
 }
 
+void Actor::FreeFlightMovement()
+{
+	double driftFactor = 1.0;
+	double maxAccelSpeed = 15;
+
+	if (currInput.LUp())
+	{
+		if (velocity.y > -maxAccelSpeed)
+		{
+			velocity.y -= driftFactor;
+		}
+
+	}
+	if (currInput.LDown())
+	{
+		if (velocity.y < maxAccelSpeed)
+		{
+			velocity.y += driftFactor;
+		}
+	}
+	if (currInput.LLeft())
+	{
+		if (velocity.x > -maxAccelSpeed)
+		{
+			velocity.x -= driftFactor;
+		}
+
+	}
+	if (currInput.LRight())
+	{
+		if (velocity.x < maxAccelSpeed)
+		{
+			velocity.x += driftFactor;
+		}
+	}
+}
+
 void Actor::AirMovement()
 {
 	if( leftWire->state == Wire::PULLING || rightWire->state == Wire::PULLING )
 	{
+	}
+	else if (freeFlightFrames > 0)
+	{
+		FreeFlightMovement();
 	}
 	else
 	{
