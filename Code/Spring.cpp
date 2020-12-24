@@ -21,17 +21,14 @@ using namespace sf;
 
 void Spring::UpdateParamsSettings()
 {
-	if (springType != TELEPORT)
-	{
-		SpringParams *sParams = (SpringParams*)editParams;
-		speed = sParams->speed;
-		stunFrames = ceil(dist / speed);
+	SpringParams *sParams = (SpringParams*)editParams;
+	speed = sParams->speed;
+	stunFrames = ceil(dist / speed);
 
-		stringstream ss;
-		ss << speed;
-		debugSpeed.setString(ss.str());
-		debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
-	}
+	stringstream ss;
+	ss << speed;
+	debugSpeed.setString(ss.str());
+	debugSpeed.setOrigin(debugSpeed.getLocalBounds().width / 2, debugSpeed.getLocalBounds().height / 2);
 }
 
 void Spring::SetLevel(int lev)
@@ -78,15 +75,7 @@ void Spring::UpdatePath()
 
 	dist = length(V2d(other));
 
-	if (springType == TELEPORT)
-	{
-		speed = 200;
-		stunFrames = floor(dist / speed);
-	}
-	else
-	{
-		UpdateParamsSettings();
-	}
+	UpdateParamsSettings();
 
 	dir = springVec;
 
@@ -137,14 +126,6 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	{
 		springType = AIRBOUNCE;
 	}
-	else if (typeName == "teleporter")
-	{
-		springType = TELEPORT;
-	}
-	else if (typeName == "doubleteleporter")
-	{
-		springType = DOUBLETELEPORT;
-	}
 	
 
 
@@ -168,12 +149,6 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		sprite.setColor(Color::Yellow);
-	case TELEPORT:
-	case DOUBLETELEPORT:
-		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
-		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
-		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
-		sprite.setColor(Color::Red);
 		break;
 	}
 
@@ -285,11 +260,6 @@ void Spring::UpdateSprite()
 	}
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-
-	if (springType == DOUBLETELEPORT)
-	{
-
-	}
 }
 
 void Spring::EnemyDraw(sf::RenderTarget *target)

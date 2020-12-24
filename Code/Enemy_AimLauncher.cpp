@@ -80,6 +80,18 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 
 	SetLevel(ap->GetLevel());
 
+	const string &typeName = ap->GetTypeName();
+
+	if (typeName == "aimlauncher")
+	{
+		aimLauncherType = TYPE_BOUNCE;
+	}
+	else if (typeName == "hominglauncher")
+	{
+		aimLauncherType = TYPE_HOMING;
+		sprite.setColor(Color::Red);
+	}
+
 	V2d position = GetPosition();
 	Vector2f positionF(position);
 

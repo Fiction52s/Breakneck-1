@@ -14,6 +14,14 @@ struct AimLauncher : Enemy
 		A_Count
 	};
 
+	enum AimLauncherType
+	{
+		TYPE_BOUNCE,
+		TYPE_HOMING,
+	};
+
+	AimLauncherType aimLauncherType;
+
 	void UpdateParamsSettings();
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);

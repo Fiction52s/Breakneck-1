@@ -29,7 +29,16 @@ void Actor::AIMWAIT_Change()
 
 	if (JumpButtonPressed())
 	{
-		SetAction(SPRINGSTUNAIM);
+		int aimLauncherType = currAimLauncher->aimLauncherType;
+		if (aimLauncherType == AimLauncher::TYPE_BOUNCE)
+		{
+			SetAction(SPRINGSTUNAIM);
+		}
+		else if (aimLauncherType == AimLauncher::TYPE_HOMING)
+		{
+			SetAction(SPRINGSTUNHOMING);
+		}
+		
 		frame = 0;
 		currAimLauncher->Launch();
 

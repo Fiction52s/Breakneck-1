@@ -21,6 +21,7 @@
 #include "nlohmann\json.hpp"
 #include "Grass.h"
 #include <iostream>
+#include "EnemyTracker.h"
 
 
 struct PState;
@@ -114,6 +115,7 @@ struct Booster;
 struct BounceBooster;
 struct TimeBooster;
 struct FreeFlightBooster;
+struct HomingBooster;
 struct Spring;
 struct Teleporter;
 struct SwingLauncher;
@@ -139,7 +141,7 @@ struct BirdCommand;
 using json = nlohmann::json;
 
 struct Actor : QuadTreeCollider,
-	RayCastHandler
+	RayCastHandler, EnemyTracker
 {
 
 	enum Mode
@@ -245,6 +247,9 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNAIM,
 		SPRINGSTUNAIRBOUNCE,
 		SPRINGSTUNTELEPORT,
+		SPRINGSTUNHOMING,
+		SPRINGSTUNHOMINGATTACK,
+		HOMINGATTACK,
 		FREEFLIGHT,
 		FREEFLIGHTSTUN,
 		SWINGSTUN,
@@ -396,6 +401,10 @@ struct Actor : QuadTreeCollider,
 	PolyPtr currSpecialTerrain;
 	int globalTimeSlowFrames;
 	int freeFlightFrames;
+	int homingFrames;
+	TimeBooster *currTimeBooster;
+	FreeFlightBooster *currFreeFlightBooster;
+	HomingBooster *currHomingBooster;
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
 
@@ -772,8 +781,8 @@ struct Actor : QuadTreeCollider,
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
-	TimeBooster *currTimeBooster;
-	FreeFlightBooster *currFreeFlightBooster;
+	
+
 	Session *sess;
 	GravityModifier *currGravModifier;
 	sf::Vector2<double> springVel;
@@ -878,6 +887,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *diagDownHitboxes[3];
 	CollisionBody *shockwaveHitboxes;
 	CollisionBody *grindHitboxes[3];
+	CollisionBody *homingHitboxes;
 	double steepThresh;
 	int wallJumpMovementLimit;
 	double dashHeight;
@@ -1105,6 +1115,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
 	void ProcessTimeBooster();
+	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();
 	void ProcessGravModifier();
 	void UpdateWireStates();
@@ -1223,6 +1234,7 @@ struct Actor : QuadTreeCollider,
 	void CheckBounceFlame();
 	bool BasicAirAction();
 	bool GlideAction();
+	bool HomingAction();
 	bool BasicGroundAction( V2d &gNorm);
 	bool BasicSteepAction(V2d &gNorm);
 	bool BasicAirAttackAction();
@@ -1237,6 +1249,7 @@ struct Actor : QuadTreeCollider,
 	bool InSpecialTerrain(int w, int var);
 	void AirMovement();
 	void FreeFlightMovement();
+	bool TryHomingMovement();
 	double GroundedAngle();
 	double GroundedAngleAttack( sf::Vector2<double> &trueNormal );
 	sf::Vector2i GetWireOffset();
@@ -1437,6 +1450,8 @@ struct Actor : QuadTreeCollider,
 	int GetCurrDashAttack();
 	int GetCurrUpTilt();
 	int GetCurrDownTilt();
+
+	bool IsValidTrackEnemy(Enemy *e);
 
 	void UpdateGroundedSwordSprite(
 		Tileset *ts,
@@ -2073,7 +2088,16 @@ struct Actor : QuadTreeCollider,
 	int GROUNDTECHINPLACE_GetActionLength();
 	Tileset * GROUNDTECHINPLACE_GetTileset();
 
-	
+	void HOMINGATTACK_Start();
+	void HOMINGATTACK_End();
+	void HOMINGATTACK_Change();
+	void HOMINGATTACK_Update();
+	void HOMINGATTACK_UpdateSprite();
+	void HOMINGATTACK_TransitionToAction(int a);
+	void HOMINGATTACK_TimeIndFrameInc();
+	void HOMINGATTACK_TimeDepFrameInc();
+	int HOMINGATTACK_GetActionLength();
+	Tileset * HOMINGATTACK_GetTileset();
 
 	void INTRO_Start();
 	void INTRO_End();
@@ -2547,6 +2571,29 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNGLIDE_TimeDepFrameInc();
 	int SPRINGSTUNGLIDE_GetActionLength();
 	Tileset * SPRINGSTUNGLIDE_GetTileset();
+
+	void SPRINGSTUNHOMING_Start();
+	void SPRINGSTUNHOMING_End();
+	void SPRINGSTUNHOMING_Change();
+	void SPRINGSTUNHOMING_Update();
+	void SPRINGSTUNHOMING_UpdateSprite();
+	void SPRINGSTUNHOMING_TransitionToAction(int a);
+	void SPRINGSTUNHOMING_TimeIndFrameInc();
+	void SPRINGSTUNHOMING_TimeDepFrameInc();
+	int SPRINGSTUNHOMING_GetActionLength();
+	Tileset * SPRINGSTUNHOMING_GetTileset();
+
+
+	void SPRINGSTUNHOMINGATTACK_Start();
+	void SPRINGSTUNHOMINGATTACK_End();
+	void SPRINGSTUNHOMINGATTACK_Change();
+	void SPRINGSTUNHOMINGATTACK_Update();
+	void SPRINGSTUNHOMINGATTACK_UpdateSprite();
+	void SPRINGSTUNHOMINGATTACK_TransitionToAction(int a);
+	void SPRINGSTUNHOMINGATTACK_TimeIndFrameInc();
+	void SPRINGSTUNHOMINGATTACK_TimeDepFrameInc();
+	int SPRINGSTUNHOMINGATTACK_GetActionLength();
+	Tileset * SPRINGSTUNHOMINGATTACK_GetTileset();
 
 	void SPRINGSTUNTELEPORT_Start();
 	void SPRINGSTUNTELEPORT_End();

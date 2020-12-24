@@ -19,8 +19,6 @@ struct Spring : Enemy
 		GREEN,
 		BOUNCE,
 		AIRBOUNCE,
-		TELEPORT,
-		DOUBLETELEPORT,
 	};
 
 	void UpdateParamsSettings();

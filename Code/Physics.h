@@ -95,6 +95,7 @@ struct HitboxInfo
 		AIRFORWARD,
 		AIRUPFORWARD,
 		AIRUP,
+		OMNI,
 	};
 
 	HitboxInfo()

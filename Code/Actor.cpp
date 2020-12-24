@@ -51,6 +51,7 @@
 #include "Enemy_AimLauncher.h"
 #include "Enemy_TimeBooster.h"
 #include "Enemy_FreeFlightBooster.h"
+#include "Enemy_HomingBooster.h"
 
 #include "GameMode.h"
 
@@ -1632,6 +1633,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHINPLACE_GetActionLength,
 		&Actor::GROUNDTECHINPLACE_GetTileset);
 
+	SetupFuncsForAction(HOMINGATTACK,
+		&Actor::HOMINGATTACK_Start,
+		&Actor::HOMINGATTACK_End,
+		&Actor::HOMINGATTACK_Change,
+		&Actor::HOMINGATTACK_Update,
+		&Actor::HOMINGATTACK_UpdateSprite,
+		&Actor::HOMINGATTACK_TransitionToAction,
+		&Actor::HOMINGATTACK_TimeIndFrameInc,
+		&Actor::HOMINGATTACK_TimeDepFrameInc,
+		&Actor::HOMINGATTACK_GetActionLength,
+		&Actor::HOMINGATTACK_GetTileset);
+
 	SetupFuncsForAction(INTRO,
 		&Actor::INTRO_Start,
 		&Actor::INTRO_End,
@@ -2160,6 +2173,30 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNGLIDE_GetActionLength,
 		&Actor::SPRINGSTUNGLIDE_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNHOMING,
+		&Actor::SPRINGSTUNHOMING_Start,
+		&Actor::SPRINGSTUNHOMING_End,
+		&Actor::SPRINGSTUNHOMING_Change,
+		&Actor::SPRINGSTUNHOMING_Update,
+		&Actor::SPRINGSTUNHOMING_UpdateSprite,
+		&Actor::SPRINGSTUNHOMING_TransitionToAction,
+		&Actor::SPRINGSTUNHOMING_TimeIndFrameInc,
+		&Actor::SPRINGSTUNHOMING_TimeDepFrameInc,
+		&Actor::SPRINGSTUNHOMING_GetActionLength,
+		&Actor::SPRINGSTUNHOMING_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNHOMINGATTACK,
+		&Actor::SPRINGSTUNHOMINGATTACK_Start,
+		&Actor::SPRINGSTUNHOMINGATTACK_End,
+		&Actor::SPRINGSTUNHOMINGATTACK_Change,
+		&Actor::SPRINGSTUNHOMINGATTACK_Update,
+		&Actor::SPRINGSTUNHOMINGATTACK_UpdateSprite,
+		&Actor::SPRINGSTUNHOMINGATTACK_TransitionToAction,
+		&Actor::SPRINGSTUNHOMINGATTACK_TimeIndFrameInc,
+		&Actor::SPRINGSTUNHOMINGATTACK_TimeDepFrameInc,
+		&Actor::SPRINGSTUNHOMINGATTACK_GetActionLength,
+		&Actor::SPRINGSTUNHOMINGATTACK_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNTELEPORT,
 		&Actor::SPRINGSTUNTELEPORT_Start,
 		&Actor::SPRINGSTUNTELEPORT_End,
@@ -2567,6 +2604,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	attackLevelCounterLimit = 60;
 	globalTimeSlowFrames = 0;
 	freeFlightFrames = 0;
+	homingFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2606,6 +2644,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currBooster = NULL;
 	currTimeBooster = NULL;
 	currFreeFlightBooster = NULL;
+	currHomingBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -2737,6 +2776,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currTimeBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currTeleporter = NULL;
+	currHomingBooster = NULL;
 	currSwingLauncher = NULL;
 
 	currBounceBooster = NULL;
@@ -3216,6 +3256,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		grindHitboxes[0] = new CollisionBody( CollisionBox::Hit);
 		grindHitboxes[0]->BasicSetup();
 		grindHitboxes[0]->AddCollisionBox(0, cb);
+
+		homingHitboxes = new CollisionBody(CollisionBox::Hit);
+		homingHitboxes->BasicSetup();
+		homingHitboxes->AddCollisionBox(0, cb);
+		homingHitboxes->hitboxInfo = currHitboxInfo;
 		//up
 	}
 	else
@@ -3629,6 +3674,7 @@ Actor::~Actor()
 		}
 
 		delete grindHitboxes[0];
+		delete homingHitboxes;
 
 	}
 
@@ -3741,6 +3787,8 @@ void Actor::LoadHitboxes()
 	SetupHitboxInfo(j, "uptilt1", hitboxInfos[UPTILT1]);
 	SetupHitboxInfo(j, "uptilt2", hitboxInfos[UPTILT2]);
 	SetupHitboxInfo(j, "uptilt3", hitboxInfos[UPTILT3]);
+	SetupHitboxInfo(j, "homing", hitboxInfos[SPRINGSTUNHOMINGATTACK]);
+
 
 	is.close();
 }
@@ -3858,6 +3906,13 @@ bool Actor::SteepClimbAttack()
 
 bool Actor::AirAttack()
 {
+	if ( AttackButtonHeld() && homingFrames > 0 && HomingMovement())
+	{
+		pauseBufferedAttack = Action::Count;
+		SetAction(HOMINGATTACK);
+		return true;
+	}
+
 	if (pauseBufferedAttack != Action::Count)
 	{
 		SetAction(pauseBufferedAttack);
@@ -4156,6 +4211,7 @@ void Actor::Respawn()
 	//fallThroughDuration = 0;
 	globalTimeSlowFrames = 0;
 	freeFlightFrames = 0;
+	homingFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
@@ -4221,6 +4277,7 @@ void Actor::Respawn()
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
 	currSwingLauncher = NULL;
+	currHomingBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -5187,6 +5244,25 @@ void Actor::ProcessTimeBooster()
 	}
 }
 
+void Actor::ProcessHomingBooster()
+{
+	if (currHomingBooster != NULL && currHomingBooster->IsBoostable())
+	{
+		currHomingBooster->Boost();
+
+		homingFrames = currHomingBooster->strength;
+		RestoreAirDash();
+		RestoreDoubleJump();
+		//ground = NULL;
+		//wallNormal = V2d(0, 0);
+		//currWall = NULL;
+		//bounceEdge = NULL;
+		//grindEdge = NULL;
+
+		currHomingBooster = NULL;
+	}
+}
+
 void Actor::ProcessFreeFlightBooster()
 {
 	if (currFreeFlightBooster != NULL && currFreeFlightBooster->IsBoostable() )
@@ -5269,7 +5345,8 @@ void Actor::LimitMaxSpeeds()
 		&& action != ENTERNEXUS1
 		&& action != GLIDE
 		&& !IsSpringAction( action )
-		&& freeFlightFrames == 0 )
+		&& freeFlightFrames == 0
+		&& action != HOMINGATTACK )
 		//&& action != SPRINGSTUN
 		//&& action != SPRINGSTUNGLIDE
 		//&& action != SPRINGSTUNBOUNCE
@@ -5791,6 +5868,8 @@ void Actor::UpdatePrePhysics()
 	ProcessBooster();
 
 	ProcessTimeBooster();
+
+	ProcessHomingBooster();
 
 	ProcessFreeFlightBooster();
 
@@ -7224,6 +7303,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	currFreeFlightBooster = NULL;
 	currBounceBooster = NULL;
 	currGravModifier = NULL;
+	currHomingBooster = NULL;
 
 	double activeExtra = 500;
 	sf::Rect<double> activeR = r;
@@ -9021,6 +9101,34 @@ bool Actor::GlideAction()
 		}
 		return true;
 	}
+
+	return false;
+}
+
+bool Actor::HomingAction()
+{
+	//CheckBounceFlame();
+
+	if (TryDoubleJump()) return true;
+
+	if (TryAirDash()) return true;
+
+	//if (TryGlide()) return true;
+
+	if (TryWallJump()) return true;
+
+	/*if (AirAttack())
+	{
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		return true;
+	}*/
 
 	return false;
 }
@@ -13887,8 +13995,14 @@ void Actor::SlowDependentFrameIncrement()
 
 			if (freeFlightFrames == 0)
 			{
-				gravModifyFrames = 0;
+				gravModifyFrames = 0; //this might be unnecessary
+				//grav is already turned off for freeflightframes > 0
 			}
+		}
+
+		if (homingFrames > 0)
+		{
+			--homingFrames;
 		}
 
 		slowCounter = 1;
@@ -14492,16 +14606,13 @@ bool Actor::SpringLaunch()
 
 		springExtra = V2d( 0, 0 );
 
-		if (currSpring->springType != Spring::TELEPORT)
+		if (springVel.x > .01)
 		{
-			if (springVel.x > .01)
-			{
-				facingRight = true;
-			}
-			else if (springVel.x < -.01)
-			{
-				facingRight = false;
-			}
+			facingRight = true;
+		}
+		else if (springVel.x < -.01)
+		{
+			facingRight = false;
 		}
 		
 
@@ -14535,17 +14646,7 @@ bool Actor::SpringLaunch()
 		{
 			action = SPRINGSTUNAIRBOUNCE;
 		}
-		else if (currSpring->springType == Spring::TELEPORT)
-		{
-			ground = NULL;
-			bounceEdge = NULL;
-			grindEdge = NULL;
-			action = SPRINGSTUNTELEPORT;
-			teleportSpringDest = currSpring->dest;
-			teleportSpringVel = velocity;
-			//springStunFrames = 0;
-			//position = currSpring->dest;
-		}
+		
 		//else if (currSpring->springType == Spring::REFLECT)
 		//{
 		//	
@@ -15772,6 +15873,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (tboost->hitBody.Intersects(tboost->currHitboxFrame, &hurtBody) && tboost->IsBoostable())
 				{
 					currTimeBooster = tboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_HOMINGBOOSTER)
+		{
+			HomingBooster *hboost = (HomingBooster*)qte;
+
+			if (currHomingBooster == NULL)
+			{
+				if (hboost->hitBody.Intersects(hboost->currHitboxFrame, 
+					&hurtBody) && hboost->IsBoostable())
+				{
+					currHomingBooster = hboost;
 				}
 			}
 			else
@@ -17307,6 +17425,30 @@ void Actor::FreeFlightMovement()
 	}
 }
 
+bool Actor::TryHomingMovement()
+{
+	Enemy *foundEnemy = NULL;
+	int foundIndex;
+
+	if (GetClosestEnemyPos(position, 2000, foundEnemy, foundIndex))
+	{
+		V2d eDir = normalize(foundEnemy->GetPosition() - position);
+
+		velocity += eDir * 5.0;;
+		double limit = 28;
+		if (length(velocity) > limit)
+		{
+			velocity = normalize(velocity) * limit;
+		}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 void Actor::AirMovement()
 {
 	if( leftWire->state == Wire::PULLING || rightWire->state == Wire::PULLING )
@@ -18337,7 +18479,8 @@ bool Actor::IsSpringAction(int a)
 {
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
 		|| a == SPRINGSTUNTELEPORT
-		|| a == SPRINGSTUNAIM || a == AIMWAIT;
+		|| a == SPRINGSTUNAIM || a == AIMWAIT || a == SPRINGSTUNHOMING
+		|| a == SPRINGSTUNHOMINGATTACK;
 }
 
 bool Actor::IsOnRailAction(int a)
@@ -18793,6 +18936,23 @@ void Actor::UpdateInHitlag()
 	 SetSpriteTile(frame / animMult, r);
 	 SetGroundedSpriteTransform();
 	 UpdateGroundedSwordSprite(ts_sword, startSword, endSword, animMult, swordOffset );
+ }
+
+ bool Actor::IsValidTrackEnemy(Enemy *e)
+ {
+	 //need more rules here
+	 if (e->type == EN_SPRING || e->type == EN_AIMLAUNCHER
+		 || e->type == EN_HOMINGBOOSTER )
+	 {
+		 return false;
+		 /*Spring *spr = (Spring*)e;
+		 if (spr->springType == Spring::HOMING)
+		 {
+
+		 }*/
+	 }
+
+	 return EnemyTracker::IsValidTrackEnemy(e);
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

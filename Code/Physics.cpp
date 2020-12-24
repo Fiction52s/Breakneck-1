@@ -66,6 +66,10 @@ void HitboxInfo::SetupHitboxLevelInfo(
 	{
 		hi.hitPosType = HitboxInfo::HitPosType::GROUNDHIGH;
 	}
+	else if (posTypeStr == "omni")
+	{
+		hi.hitPosType = HitboxInfo::HitPosType::OMNI;
+	}
 	else
 	{
 		cout << "postypestr is wrong:" << posTypeStr << endl;

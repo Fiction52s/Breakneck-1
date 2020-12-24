@@ -630,6 +630,9 @@ void Session::RegisterW5Enemies()
 
 	AddBasicAerialWorldEnemy("timebooster", 5, CreateEnemy<TimeBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("homingbooster", 5, CreateEnemy<HomingBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
+	AddWorldEnemy("hominglauncher", 5, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddWorldEnemy("hungryreturncomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
 	//	GetTileset("Enemies/comboer_128x128.png", 128, 128), 2);
