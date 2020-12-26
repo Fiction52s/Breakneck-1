@@ -2161,6 +2161,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNBOUNCE_GetActionLength,
 		&Actor::SPRINGSTUNBOUNCE_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNBOUNCEGROUND,
+		&Actor::SPRINGSTUNBOUNCEGROUND_Start,
+		&Actor::SPRINGSTUNBOUNCEGROUND_End,
+		&Actor::SPRINGSTUNBOUNCEGROUND_Change,
+		&Actor::SPRINGSTUNBOUNCEGROUND_Update,
+		&Actor::SPRINGSTUNBOUNCEGROUND_UpdateSprite,
+		&Actor::SPRINGSTUNBOUNCEGROUND_TransitionToAction,
+		&Actor::SPRINGSTUNBOUNCEGROUND_TimeIndFrameInc,
+		&Actor::SPRINGSTUNBOUNCEGROUND_TimeDepFrameInc,
+		&Actor::SPRINGSTUNBOUNCEGROUND_GetActionLength,
+		&Actor::SPRINGSTUNBOUNCEGROUND_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNGLIDE,
 		&Actor::SPRINGSTUNGLIDE_Start,
 		&Actor::SPRINGSTUNGLIDE_End,
@@ -3906,7 +3918,7 @@ bool Actor::SteepClimbAttack()
 
 bool Actor::AirAttack()
 {
-	if ( AttackButtonHeld() && homingFrames > 0 && HomingMovement())
+	if ( AttackButtonHeld() && homingFrames > 0 && TryHomingMovement())
 	{
 		pauseBufferedAttack = Action::Count;
 		SetAction(HOMINGATTACK);
@@ -11171,6 +11183,27 @@ void Actor::UpdatePhysics()
 			}
 			else if (tempCollision && action == SPRINGSTUNAIM)
 			{
+				SetAction(SPRINGSTUNBOUNCEGROUND);
+
+				bounceEdge = minContact.edge;
+				bounceNorm = minContact.normal;
+				bounceQuant = bounceEdge->GetQuantity(minContact.position);
+
+				framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
+
+				offsetX = (position.x + b.offset.x) - minContact.position.x;
+
+				if (b.rh < normalHeight)
+				{
+					if (minContact.normal.y > 0)
+						b.offset.y = -(normalHeight - b.rh);
+					else if (minContact.normal.y < 0)
+						b.offset.y = (normalHeight - b.rh);
+				}
+				else
+				{
+					b.offset.y = 0;
+				}
 				//needs work later probably
 				V2d newDir = minContact.edge->GetReflectionDir(normalize(springVel));
 
@@ -11187,13 +11220,21 @@ void Actor::UpdatePhysics()
 
 				velocity = springVel;
 
+				V2d alongVel = V2d(-minContact.normal.y, minContact.normal.x);
+
+				V2d bn = bounceEdge->Normal();
+
+				V2d testVel = velocity;
+
+				groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
+
 				break;
 			}
 			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
 				prevRail = NULL;
 				//this condition might only work when not reversed? does it matter?
-				if( bounceEdge == NULL )//|| ( bounceEdge != NULL && minContact.edge->Normal().y < 0 && bounceEdge->Normal().y >= 0 ) )
+				if( bounceEdge == NULL )
 				{
 					bounceEdge = minContact.edge;
 					bounceNorm = minContact.normal;
@@ -11206,11 +11247,6 @@ void Actor::UpdatePhysics()
 					bounceQuant = bounceEdge->GetQuantity( minContact.position );
 
 					offsetX = ( position.x + b.offset.x ) - minContact.position.x;
-					
-					/*if( b.rh == doubleJumpHeight )
-					{
-						b.offset.y = (normalHeight - doubleJumpHeight);
-					}*/
 
 					if( b.rh < normalHeight )
 					{
@@ -11233,20 +11269,9 @@ void Actor::UpdatePhysics()
 					V2d bn = bounceEdge->Normal();
 
 					V2d testVel = velocity;
-
-					
-					/*if (testVel.y > 20)
-					{
-						testVel.y *= .7;
-					}
-					else if (testVel.y < -30)
-					{
-						testVel.y *= .5;
-					}*/
 					
 					groundSpeed = CalcLandingSpeed(testVel, alongVel, bn);
 					break;
-					//cout << "bouncing: " << bounceQuant << endl;
 				}
 				else
 				{
@@ -17088,6 +17113,10 @@ double Actor::GroundedAngle()
 		{
 			gn = -gn;
 		}
+	}
+	else if (bounceEdge != NULL)
+	{
+		gn = bounceEdge->Normal();
 	}
 	else
 	{
