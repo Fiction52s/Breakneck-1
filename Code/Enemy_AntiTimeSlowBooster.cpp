@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_Booster.h"
+#include "Enemy_AntiTimeSlowBooster.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -20,8 +20,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_BOOSTER, ap), strength( 20 )//, false, 1, false), strength( 20 )
+AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
+	:Enemy(EnemyType::EN_ANTITIMESLOWBOOSTER, ap)
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -30,10 +30,13 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
+	strength = 360;
+
 	ts = sess->GetSizedTileset("Enemies/booster_512x512.png");
 	ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
+	sprite.setColor(Color::Red);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
@@ -51,7 +54,7 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 	SetSpawnRect();
 }
 
-void Booster::ResetEnemy()
+void AntiTimeSlowBooster::ResetEnemy()
 {
 	action = NEUTRAL;
 	frame = 0;
@@ -63,7 +66,7 @@ void Booster::ResetEnemy()
 	UpdateSprite();
 }
 
-void Booster::SetLevel(int lev)
+void AntiTimeSlowBooster::SetLevel(int lev)
 {
 	level = lev;
 
@@ -83,12 +86,12 @@ void Booster::SetLevel(int lev)
 	}
 }
 
-void Booster::AddToWorldTrees()
+void AntiTimeSlowBooster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-bool Booster::Boost()
+bool AntiTimeSlowBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
@@ -99,14 +102,14 @@ bool Booster::Boost()
 	return false;
 }
 
-bool Booster::IsBoostable()
+bool AntiTimeSlowBooster::IsBoostable()
 {
 	return action == NEUTRAL;
 }
 
 
 
-void Booster::ProcessState()
+void AntiTimeSlowBooster::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -135,7 +138,7 @@ void Booster::ProcessState()
 	}
 }
 
-void Booster::UpdateSprite()
+void AntiTimeSlowBooster::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -161,12 +164,12 @@ void Booster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void Booster::EnemyDraw(sf::RenderTarget *target)
+void AntiTimeSlowBooster::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
 
-void Booster::DrawMinimap(sf::RenderTarget *target)
+void AntiTimeSlowBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{

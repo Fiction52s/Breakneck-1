@@ -52,6 +52,7 @@
 #include "Enemy_TimeBooster.h"
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_HomingBooster.h"
+#include "Enemy_AntiTimeSlowBooster.h"
 
 #include "GameMode.h"
 
@@ -2616,6 +2617,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	attackLevelCounterLimit = 60;
 	globalTimeSlowFrames = 0;
 	freeFlightFrames = 0;
+	antiTimeSlowFrames = 0;
 	homingFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
@@ -2655,6 +2657,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currTimeBooster = NULL;
+	currAntiTimeSlowBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
@@ -2786,6 +2789,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currAimLauncher = NULL;
 	currBooster = NULL;
 	currTimeBooster = NULL;
+	currAntiTimeSlowBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currTeleporter = NULL;
 	currHomingBooster = NULL;
@@ -4223,6 +4227,7 @@ void Actor::Respawn()
 	//fallThroughDuration = 0;
 	globalTimeSlowFrames = 0;
 	freeFlightFrames = 0;
+	antiTimeSlowFrames = 0;
 	homingFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
@@ -4285,6 +4290,7 @@ void Actor::Respawn()
 	currBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currTimeBooster = NULL;
+	currAntiTimeSlowBooster = NULL;
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
@@ -5256,6 +5262,19 @@ void Actor::ProcessTimeBooster()
 	}
 }
 
+void Actor::ProcessAntiTimeSlowBooster()
+{
+	if (currAntiTimeSlowBooster != NULL && currAntiTimeSlowBooster->IsBoostable())
+	{
+		currAntiTimeSlowBooster->Boost();
+
+		antiTimeSlowFrames = currAntiTimeSlowBooster->strength;
+		currAntiTimeSlowBooster = NULL;
+
+		RechargeAirOptions();
+	}
+}
+
 void Actor::ProcessHomingBooster()
 {
 	if (currHomingBooster != NULL && currHomingBooster->IsBoostable())
@@ -5478,11 +5497,13 @@ void Actor::UpdateBubbles()
 		}
 	}
 
+	bool powerSlow = CanCreateTimeBubble()
+		&& HasUpgrade(UPGRADE_POWER_TIME)
+		&& PowerButtonHeld()
+		&& currPowerMode == PMODE_TIMESLOW;
 	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
-	if ((CanCreateTimeBubble() && HasUpgrade(UPGRADE_POWER_TIME) && PowerButtonHeld()
-		&& currPowerMode == PMODE_TIMESLOW )
-		|| inTimeSlowTerrain)
+	if (antiTimeSlowFrames == 0 && ( powerSlow || inTimeSlowTerrain ) )
 	{
 		if (!prevInput.PowerButtonDown() && !inBubble && !inTimeSlowTerrain)
 		{
@@ -5884,6 +5905,8 @@ void Actor::UpdatePrePhysics()
 	ProcessHomingBooster();
 
 	ProcessFreeFlightBooster();
+
+	ProcessAntiTimeSlowBooster();
 
 	ProcessAccelGrass();
 
@@ -14030,6 +14053,12 @@ void Actor::SlowDependentFrameIncrement()
 			--homingFrames;
 		}
 
+		if (antiTimeSlowFrames > 0)
+		{
+			--antiTimeSlowFrames;
+		}
+		
+
 		slowCounter = 1;
 
 		if (!IsIntroAction(action))
@@ -15931,6 +15960,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (ffboost->hitBody.Intersects(ffboost->currHitboxFrame, &hurtBody) && ffboost->IsBoostable())
 				{
 					currFreeFlightBooster = ffboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_ANTITIMESLOWBOOSTER)
+		{
+			AntiTimeSlowBooster *atsboost = (AntiTimeSlowBooster*)qte;
+
+			if (currAntiTimeSlowBooster == NULL)
+			{
+				if (atsboost->hitBody.Intersects(atsboost->currHitboxFrame,
+					&hurtBody) && atsboost->IsBoostable())
+				{
+					currAntiTimeSlowBooster = atsboost;
 				}
 			}
 			else

@@ -33,6 +33,7 @@ void Actor::AIMWAIT_Change()
 		if (aimLauncherType == AimLauncher::TYPE_BOUNCE)
 		{
 			SetAction(SPRINGSTUNAIM);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
 		}
 		else if (aimLauncherType == AimLauncher::TYPE_HOMING)
 		{

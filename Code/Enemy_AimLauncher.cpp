@@ -118,12 +118,12 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 	BasicCircleHitBodySetup(radius);
 
 	actionLength[IDLE] = 12;
-	actionLength[AIMING] = 2;
+	actionLength[AIMING] = 12;
 	actionLength[LAUNCHING] = 8;
 	actionLength[RECOVERING] = 8;
 
 	animFactor[IDLE] = 4;
-	animFactor[AIMING] = 1;
+	animFactor[AIMING] = 4;
 	animFactor[LAUNCHING] = 4;
 	animFactor[RECOVERING] = 4;
 
@@ -225,6 +225,9 @@ void AimLauncher::UpdateSprite()
 	switch (action)
 	{
 	case IDLE:
+		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
+		break;
+	case AIMING:
 		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
 		break;
 	case LAUNCHING:

@@ -9,5 +9,6 @@
 #include "Enemy_RelativeComboer.h"
 #include "Enemy_TimeBooster.h"
 #include "Enemy_HomingBooster.h"
+#include "Enemy_AntiTimeSlowBooster.h"
 
 #endif

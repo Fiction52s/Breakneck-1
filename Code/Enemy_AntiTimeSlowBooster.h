@@ -1,0 +1,34 @@
+#ifndef __ENEMY_ANTITIMESLOWBOOSTER_H__
+#define __ENEMY_ANTITIMESLOWBOOSTER_H__
+
+#include "Enemy.h"
+
+struct AntiTimeSlowBooster : Enemy
+{
+	enum Action
+	{
+		NEUTRAL,
+		BOOST,
+		REFRESH,
+		Count
+	};
+
+	AntiTimeSlowBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
+
+	void ProcessState();
+	void SetLevel(int lev);
+	void EnemyDraw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	bool Boost();
+	bool IsBoostable();
+	void AddToWorldTrees();
+
+	Tileset *ts;
+	Tileset *ts_refresh;
+
+	int strength;
+};
+
+#endif
