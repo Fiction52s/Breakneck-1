@@ -53,6 +53,7 @@
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_HomingBooster.h"
 #include "Enemy_AntiTimeSlowBooster.h"
+#include "Enemy_OmniDashBooster.h"
 
 #include "GameMode.h"
 
@@ -2658,6 +2659,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
+	currOmniDashBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
@@ -2790,6 +2792,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
+	currOmniDashBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currTeleporter = NULL;
 	currHomingBooster = NULL;
@@ -4291,6 +4294,7 @@ void Actor::Respawn()
 	currFreeFlightBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
+	currOmniDashBooster = NULL;
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
@@ -5275,6 +5279,44 @@ void Actor::ProcessAntiTimeSlowBooster()
 	}
 }
 
+void Actor::ProcessOmniDashBooster()
+{
+	if (currOmniDashBooster != NULL && currOmniDashBooster->IsBoostable())
+	{
+		currOmniDashBooster->Boost();
+
+		antiTimeSlowFrames = currOmniDashBooster->strength;
+		
+		ground = NULL;
+		wallNormal = V2d(0, 0);
+		currWall = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+
+		if (!IsAttackAction(action))
+		{
+			SetAction(JUMP);
+			frame = 1;
+		}
+
+		V2d dir = normalize(currOmniDashBooster->GetPosition() - position);
+		double xVel = 40;
+		double yVel = 40;
+		velocity = dir;
+		velocity.x *= xVel;
+		velocity.y *= yVel;
+
+		/*velocity.x *= .6;
+
+		if (velocity.y > 0)
+			velocity.y *= .5;*/
+
+		currOmniDashBooster = NULL;
+
+		RechargeAirOptions();
+	}
+}
+
 void Actor::ProcessHomingBooster()
 {
 	if (currHomingBooster != NULL && currHomingBooster->IsBoostable())
@@ -5907,6 +5949,8 @@ void Actor::UpdatePrePhysics()
 	ProcessFreeFlightBooster();
 
 	ProcessAntiTimeSlowBooster();
+
+	ProcessOmniDashBooster();
 
 	ProcessAccelGrass();
 
@@ -15977,6 +16021,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					&hurtBody) && atsboost->IsBoostable())
 				{
 					currAntiTimeSlowBooster = atsboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_OMNIDASHBOOSTER)
+		{
+			OmniDashBooster *odboost = (OmniDashBooster*)qte;
+
+			if (currOmniDashBooster == NULL)
+			{
+				if (odboost->hitBody.Intersects(odboost->currHitboxFrame,
+					&hurtBody) && odboost->IsBoostable())
+				{
+					currOmniDashBooster = odboost;
 				}
 			}
 			else

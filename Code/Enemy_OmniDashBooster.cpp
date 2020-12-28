@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_HomingBooster.h"
+#include "Enemy_OmniDashBooster.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -19,15 +19,14 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-HomingBooster::HomingBooster(ActorParams *ap)
-	:Enemy(EnemyType::EN_HOMINGBOOSTER, ap)
+
+OmniDashBooster::OmniDashBooster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_OMNIDASHBOOSTER, ap), strength(20)//, false, 1, false), strength( 20 )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	SetLevel(ap->GetLevel());
-
-	strength = 360;
 
 	SetCurrPosInfo(startPosInfo);
 
@@ -52,7 +51,7 @@ HomingBooster::HomingBooster(ActorParams *ap)
 	SetSpawnRect();
 }
 
-void HomingBooster::ResetEnemy()
+void OmniDashBooster::ResetEnemy()
 {
 	action = NEUTRAL;
 	frame = 0;
@@ -64,7 +63,7 @@ void HomingBooster::ResetEnemy()
 	UpdateSprite();
 }
 
-void HomingBooster::SetLevel(int lev)
+void OmniDashBooster::SetLevel(int lev)
 {
 	level = lev;
 
@@ -84,12 +83,12 @@ void HomingBooster::SetLevel(int lev)
 	}
 }
 
-void HomingBooster::AddToWorldTrees()
+void OmniDashBooster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-bool HomingBooster::Boost()
+bool OmniDashBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
@@ -100,14 +99,14 @@ bool HomingBooster::Boost()
 	return false;
 }
 
-bool HomingBooster::IsBoostable()
+bool OmniDashBooster::IsBoostable()
 {
 	return action == NEUTRAL;
 }
 
 
 
-void HomingBooster::ProcessState()
+void OmniDashBooster::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -136,7 +135,7 @@ void HomingBooster::ProcessState()
 	}
 }
 
-void HomingBooster::UpdateSprite()
+void OmniDashBooster::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -162,12 +161,12 @@ void HomingBooster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void HomingBooster::EnemyDraw(sf::RenderTarget *target)
+void OmniDashBooster::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
 
-void HomingBooster::DrawMinimap(sf::RenderTarget *target)
+void OmniDashBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{

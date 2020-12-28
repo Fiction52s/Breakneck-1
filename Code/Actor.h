@@ -117,6 +117,7 @@ struct TimeBooster;
 struct FreeFlightBooster;
 struct HomingBooster;
 struct AntiTimeSlowBooster;
+struct OmniDashBooster;
 struct Spring;
 struct Teleporter;
 struct SwingLauncher;
@@ -410,6 +411,7 @@ struct Actor : QuadTreeCollider,
 	FreeFlightBooster *currFreeFlightBooster;
 	HomingBooster *currHomingBooster;
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
+	OmniDashBooster *currOmniDashBooster;
 	int aimLauncherStunFrames;
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
@@ -1125,6 +1127,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessAntiTimeSlowBooster();
 	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();
+	void ProcessOmniDashBooster();
 	void ProcessGravModifier();
 	void UpdateWireStates();
 	void ProcessAccelGrass();

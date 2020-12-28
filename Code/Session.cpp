@@ -735,10 +735,17 @@ void Session::RegisterW7Enemies()
 {
 	//AddBasicGroundWorldEnemy("greygoal", 7, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
+	AddBasicAerialWorldEnemy("omnidashbooster", 3, CreateEnemy<OmniDashBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
 	AddWorldEnemy("greyskeletonnode", 7, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
 
 	AddBasicAerialWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
+	AddWorldEnemy("limitedattractjuggler", 7, CreateEnemy<AttractJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("attractjuggler", 7, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+
+
 }
 
 void Session::RegisterW8Enemies()
