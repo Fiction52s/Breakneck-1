@@ -8,6 +8,9 @@
 #include "KeyMarker.h"
 #include "MainMenu.h"
 #include "AbsorbParticles.h"
+#include "Actor.h"
+#include "Wire.h"
+
 
 using namespace std;
 using namespace sf;
@@ -87,7 +90,7 @@ AttractJuggler::AttractJuggler(ActorParams *ap)
 
 	maxWaitFrames = 180;
 
-	gravFactor = 1.0;
+	gravFactor = 1.4;
 
 	sprite.setColor(Color::Red);
 	maxFallSpeed = 25;
@@ -162,6 +165,23 @@ void AttractJuggler::ResetEnemy()
 	UpdateJuggleRepsText(juggleReps);
 
 	UpdateSprite();
+}
+
+void AttractJuggler::HandleWireHit(Wire *w)
+{
+	w->HitEnemy(GetPosition());
+	w->player->RestoreAirDash();
+	w->player->RestoreDoubleJump();
+}
+
+bool AttractJuggler::CanBeHitByWireTip(bool red)
+{
+	return false; //true activates ability to be hit by wire
+}
+
+bool AttractJuggler::CanBeAnchoredByWire(bool red)
+{
+	return false;
 }
 
 void AttractJuggler::Throw(double a, double strength)

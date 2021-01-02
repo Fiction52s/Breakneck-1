@@ -47,17 +47,17 @@ Bat::Bat( ActorParams *ap )
 		double len = length(A - B);
 		double speed = 4;
 		int fra = ceil( len / speed);
-		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), fra * 10 );
+		testSeq.AddLineMovement( A, B, CubicBezier( .42,0,.58,1 ), fra );
 	}
 	if( pSize == 1 )
 	{
-		testSeq.AddMovement( new WaitMovement( 60 * 10 ) );
+		testSeq.AddMovement( new WaitMovement( 60 ) );
 	}
 	testSeq.InitMovementDebug();
 	testSeq.Reset();
 	
-	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60 * 10);	
-	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20 * 10);
+	retreatMove = retreatSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 60);	
+	returnMove = returnSeq.AddLineMovement(V2d(0, 0), V2d(0, 0), CubicBezier(), 20);
 
 	frame = 0;
 
@@ -351,8 +351,7 @@ void Bat::UpdateEnemyPhysics()
 
 	if (numPhysSteps == 1)
 	{
-		for( int i = 0; i < 10; ++i )
-			ms->Update(slowMultiple);
+		ms->Update(slowMultiple, 10);
 	}
 	else
 	{

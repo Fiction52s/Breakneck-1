@@ -232,6 +232,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_GRAVITYJUGGLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
+	case EnemyType::EN_ATTRACTJUGGLER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 1);
+		break;
 	case EnemyType::EN_PRIMARYJUGGLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;

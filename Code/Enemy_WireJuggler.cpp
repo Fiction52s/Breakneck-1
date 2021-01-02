@@ -219,18 +219,12 @@ void WireJuggler::ResetEnemy()
 
 bool WireJuggler::CanBeAnchoredByWire(bool red)
 {
-	return false;
-	/*switch (jType)
+	if ((red && jType == T_BLUE) || (!red && jType == T_RED))
 	{
-	case T_WHITE:
 		return true;
-	case T_BLUE:
-		return red;
-	case T_RED:
-		return !red;
-	case T_MAGENTA:
-		return true;
-	}*/
+	}
+
+	return false;
 }
 
 void WireJuggler::HandleWireHit(Wire *w)

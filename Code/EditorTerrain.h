@@ -237,6 +237,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
+	//Tileset *ts_water1;
+	//Tileset *ts_water2;
+	//sf::Shader waterShader;
+
 	bool IsSpecialTerrainType(int w, int var);
 
 	void MakeGlobalPath(
@@ -490,6 +494,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SoftReset();
 	void Draw(bool showPath, double zoomMultiple, sf::RenderTarget * rt, bool showPoints, TerrainPoint *dontShow);
 	void DrawFlies(sf::RenderTarget *target);
+	void DrawGrass(sf::RenderTarget *target);
 	void FixWinding();
 	void FixWindingInverse();
 	bool IsClockwise();

@@ -33,10 +33,14 @@ struct AttractJuggler : Enemy
 	void Pop();
 	void PopThrow();
 	void UpdateJuggleRepsText(int reps);
+	
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 	void SetLevel(int lev);
+	void HandleWireHit(Wire *w);
+	bool CanBeAnchoredByWire(bool red);
+	bool CanBeHitByWireTip(bool red);
 
 	V2d velocity;
 

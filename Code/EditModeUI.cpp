@@ -76,7 +76,7 @@ EditModeUI::EditModeUI()
 
 	currGrassTypeRect->SetShown(true);
 
-	Tileset *ts_grassTypes = edit->GetTileset("Env/grass_128x128_2.png", 128, 128);
+	Tileset *ts_grassTypes = edit->GetSizedTileset("Env/grass_128x128.png");
 
 	grassTypePanel = new Panel("type", 600, 600, this, true);
 	int numGrassTypes = Grass::Count;

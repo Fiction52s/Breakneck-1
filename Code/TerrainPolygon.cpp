@@ -1137,6 +1137,9 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
+	//ts_water1 = sess->GetSizedTileset("Env/glide_water_1_128x128.png");
+	//ts_water2 = sess->GetSizedTileset("Env/glide_water_2_128x128.png");
+
 	copiedInverse = false;
 	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
@@ -1167,7 +1170,7 @@ TerrainPolygon::TerrainPolygon()
 
 	if (sess != NULL)
 	{
-		ts_grass = sess->GetTileset("Env/grass_128x128_2.png", 128, 128);
+		ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
 	}
 	
 	grassSize = 128;
@@ -2997,6 +3000,7 @@ void TerrainPolygon::UpdateMaterialType()
 		texInd = game->matIndices[texInd];
 	}
 
+
 	//comenting this out because all textures are valid now, even for water
 	//if (texInd < sess->numPolyShaders)
 	//{
@@ -3229,6 +3233,8 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 	if (grassVA == NULL)
 		return;
 
+	Edge *currEdge = GetEdge(i);
+
 	TerrainPoint *curr, *next;
 
 	curr = GetPoint(i);
@@ -3243,6 +3249,10 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 	V2d along = normalize(v1 - v0);
 	V2d realStart = v0 + along * (double)(grassSize + grassSpacing);
 	
+	Vector2f norm(along.y, -along.x);
+	float extraHeight = 0;
+	Vector2f extra = norm * extraHeight;
+
 	for (int j = 0; j < num; ++j)
 	{
 		V2d posd = realStart + along * (double)((grassSize + grassSpacing) * (j - 1));//v0 + normalize(v1 - v0) * ((grassSize + grassSpacing) * (j-1) + );
@@ -3259,6 +3269,9 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 
 		Vector2f pos(posd.x, posd.y);
 
+		pos += extra;
+
+		
 
 		Vector2f topLeft = pos + Vector2f(-grassSize / 2, -grassSize / 2);
 		Vector2f topRight = pos + Vector2f(grassSize / 2, -grassSize / 2);
@@ -3286,6 +3299,15 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 		//borderVa[i*4+3].color.a = 10;
 		grassVA[grassIndex * 4 + 3].color.a = 0;
 		grassVA[grassIndex * 4 + 3].position = bottomLeft;
+
+		int ra = rand() % 360;
+		double rad = ra / 180.0 * PI;
+
+		int flipX = rand() % 2;
+		int flipY = rand() % 2;
+
+		SetRectRotation(grassVA + grassIndex * 4, currEdge->GetNormalAngleRadians() + rad,
+			128, 128, pos, flipX, flipY);
 		//grassVA[grassIndex * 4 + 3].texCoords = Vector2f(grassSize, 0);
 		++grassIndex;
 	}
@@ -4136,6 +4158,14 @@ void TerrainPolygon::DrawFlies(RenderTarget *target)
 	}
 }
 
+void TerrainPolygon::DrawGrass(sf::RenderTarget *target)
+{
+	if (grassVA != NULL)
+	{
+		target->draw(grassVA, numGrassTotal * 4, sf::Quads, ts_grass->texture);
+	}
+}
+
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	int numP = GetNumPoints();
@@ -4207,10 +4237,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	}
 
 
-	if (grassVA != NULL)
-	{
-		rt->draw(grassVA, numGrassTotal * 4, sf::Quads, ts_grass->texture);
-	}
+	DrawGrass(rt);
 
 	if (va != NULL)
 	{

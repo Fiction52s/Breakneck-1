@@ -11,8 +11,8 @@ struct Grass : QuadTreeEntrant
 {
 	enum GrassType
 	{
-		JUMP,
 		DECELERATE,
+		JUMP,
 		GRAVREVERSE,
 		ANTIGRAVREVERSE, 
 		BOUNCE,
@@ -20,8 +20,9 @@ struct Grass : QuadTreeEntrant
 		ANTIGRIND,
 		POISON,
 		ANTIWIRE,
+		SLIPPERY,
+		HIT,
 		UNTECHABLE,
-		KILL,
 		Count
 	};
 
