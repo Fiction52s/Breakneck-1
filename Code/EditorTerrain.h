@@ -237,9 +237,12 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-	//Tileset *ts_water1;
-	//Tileset *ts_water2;
-	//sf::Shader waterShader;
+	Tileset *ts_water1;
+	Tileset *ts_water2;
+	sf::Shader waterShader;
+	float waterShaderCounter;
+
+	//void TestUpdateWaterShader();
 
 	bool IsSpecialTerrainType(int w, int var);
 

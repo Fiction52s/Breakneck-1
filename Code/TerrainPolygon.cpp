@@ -20,6 +20,7 @@
 #include "TouchGrass.h"
 #include "Enemy_HealthFly.h"
 
+
 using namespace std;
 using namespace sf;
 
@@ -1137,8 +1138,44 @@ void BorderSizeInfo::SetWidth(int w)
 TerrainPolygon::TerrainPolygon()
 	:ISelectable( ISelectable::TERRAIN )
 {
-	//ts_water1 = sess->GetSizedTileset("Env/glide_water_1_128x128.png");
-	//ts_water2 = sess->GetSizedTileset("Env/glide_water_2_128x128.png");
+	sess = Session::GetSession();
+
+
+	waterShaderCounter = 0.f;
+
+	ts_water1 = sess->GetSizedTileset("Env/water_128x128.png");
+	//ts_water2 = //sess->GetSizedTileset("Env/freeflight_water_2_128x128.png");
+
+	if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	waterShader.setUniform("u_slide", waterShaderCounter);
+	waterShader.setUniform("u_texture", *ts_water1->texture);
+	waterShader.setUniform("Resolution", Vector2f(1920, 1080));
+	waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	waterShader.setUniform("skyColor", ColorGL(Color::White));
+
+	//Color g = Color::Green;
+	Color g = Color::Magenta;
+	g.a = 50;
+	waterShader.setUniform("u_waterBaseColor", ColorGL(g));
+
+	IntRect ir1 = ts_water1->GetSubRect(2);
+	IntRect ir2 = ts_water1->GetSubRect(3);
+
+	float width = ts_water1->texture->getSize().x;
+	float height = ts_water1->texture->getSize().y;
+
+	waterShader.setUniform("u_quad1", 
+		Glsl::Vec4(ir1.left / width, ir1.top / height,
+		(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
+
+	waterShader.setUniform("u_quad2",
+		Glsl::Vec4(ir2.left / width, ir2.top / height,
+		(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
+	
 
 	copiedInverse = false;
 	isGrassBackedUp = false;
@@ -1149,7 +1186,7 @@ TerrainPolygon::TerrainPolygon()
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
 	tdInfo = NULL;
-	sess = Session::GetSession();
+	
 	numGrassTotal = 0;
 	renderMode = RENDERMODE_NORMAL;
 	totalNumBorderQuads = 0;
@@ -3001,11 +3038,24 @@ void TerrainPolygon::UpdateMaterialType()
 	}
 
 
+	if (terrainWorldType > SECRETCORE)
+	{
+		pShader = &waterShader;
+		fillCol = Color::White;
+	}
+	else
+	{
+		pShader = &sess->polyShaders[texInd];
+		fillCol = Color::White;
+	}
+	
+
+	
+	
 	//comenting this out because all textures are valid now, even for water
 	//if (texInd < sess->numPolyShaders)
 	//{
-		pShader = &sess->polyShaders[texInd];
-		fillCol = Color::White;
+		
 	//}
 	/*else
 	{
@@ -4243,6 +4293,18 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		if (pShader != NULL)
 		{
+			if (terrainWorldType > SECRETCORE)
+			{
+				Vector2f vSize = sess->view.getSize();
+				float zoom = vSize.x / 960;
+				Vector2f botLeft(sess->view.getCenter().x - vSize.x / 2, sess->view.getCenter().y + vSize.y / 2);
+
+				waterShader.setUniform("zoom", zoom);
+				waterShader.setUniform("topLeft", botLeft);
+				waterShader.setUniform("u_slide", waterShaderCounter);
+				waterShaderCounter += .01;
+			}
+
 			rt->draw(*va, pShader);
 		}
 		else
