@@ -1062,6 +1062,8 @@ void GameSession::ProcessAllTerrain()
 
 	AllocatePolyShaders(numMats);
 
+	SetupWaterShaders();
+
 	int index = 0;
 	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
 	{
@@ -3242,6 +3244,12 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 		polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
 		polyShaders[i].setUniform("playertest", playertest);
 		polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
+	}
+
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+	{
+		waterShaders[i].setUniform("zoom", cam.GetZoom());
+		waterShaders[i].setUniform("topLeft", botLeft);
 	}
 }
 

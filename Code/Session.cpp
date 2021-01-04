@@ -1398,6 +1398,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	fader = mainMenu->fader;
 	swiper = mainMenu->swiper;
 	ggpo = NULL;
+	waterShaderCounter = 0.f;
 
 	bossNodeVectorMap.resize(BossFightType_Count);
 
@@ -1486,6 +1487,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	staticItemTree = NULL;
 
 	polyShaders = NULL;
+	waterShaders = NULL;
 	background = NULL;
 	hitboxManager = NULL;
 	inactiveEffects = NULL;
@@ -1662,6 +1664,12 @@ Session::~Session()
 		delete[] polyShaders;
 		polyShaders = NULL;
 	}
+
+	if (waterShaders != NULL)
+	{
+		delete[] waterShaders;
+		waterShaders = NULL;
+	}
 		
 
 	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
@@ -1828,8 +1836,55 @@ void Session::AllocatePolyShaders(int numPolyTypes)
 
 	numPolyShaders = numPolyTypes;
 	polyShaders = new Shader[numPolyShaders];
-	//polyShaders.resize(numPolyTypes);
 	ts_polyShaders.resize(numPolyTypes);
+}
+
+void Session::SetupWaterShaders()
+{
+	if (waterShaders != NULL)
+	{
+		return;
+	}
+
+	ts_water = GetSizedTileset("Env/water_128x128.png");
+	waterShaders = new Shader[TerrainPolygon::WATER_Count];
+
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+	{
+		Shader &waterShader = waterShaders[i];
+		if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+		{
+			cout << "water SHADER NOT LOADING CORRECTLY" << endl;
+		}
+
+		waterShader.setUniform("u_slide", 0.f);
+		waterShader.setUniform("u_texture", *ts_water->texture);
+		waterShader.setUniform("Resolution", Vector2f(1920, 1080));
+		waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+		waterShader.setUniform("skyColor", ColorGL(Color::White));
+
+		//Color g = Color::Green;
+		//Color g = Color::Magenta;
+		Color g = Color::Cyan;
+		g.a = 50;
+		waterShader.setUniform("u_waterBaseColor", ColorGL(g));
+
+		IntRect ir1 = ts_water->GetSubRect(0);
+		IntRect ir2 = ts_water->GetSubRect(1);
+
+		float width = ts_water->texture->getSize().x;
+		float height = ts_water->texture->getSize().y;
+
+		waterShader.setUniform("u_quad1",
+			Glsl::Vec4(ir1.left / width, ir1.top / height,
+			(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
+
+		waterShader.setUniform("u_quad2",
+			Glsl::Vec4(ir2.left / width, ir2.top / height,
+			(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
+	}
+
+	
 }
 
 void Session::DrawPlayerWires( RenderTarget *target )
@@ -1928,10 +1983,12 @@ bool Session::ReadDecorImagesFile()
 
 bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 {
+	int trueWorld = matWorld + 1;
+
 	stringstream ss;
 	ss << "Terrain/terrain_";
 
-	ss << matWorld + 1 << "_";
+	ss << trueWorld << "_";
 	if (matVariation < 10)
 	{
 		ss << "0" << matVariation + 1;
@@ -1941,16 +1998,14 @@ bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 		ss << matVariation + 1;
 	}
 
-
-	if (matWorld + 1 >= 9)
+	/*if (trueWorld >= 9)
 	{
 		ss << "_32x32.png";
 	}
-	else
+	else*/
 	{
 		ss << "_512x512.png";
 	}
-	
 
 	string matFile = ss.str();
 
@@ -1970,6 +2025,7 @@ bool Session::LoadPolyShader(int index, int matWorld, int matVariation)
 	polyShaders[index].setUniform("Resolution", Vector2f(1920, 1080));
 	polyShaders[index].setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
 	polyShaders[index].setUniform("skyColor", ColorGL(Color::White));
+	
 
 	ReadDecorInfoFile(matWorld, matVariation);
 	return true;

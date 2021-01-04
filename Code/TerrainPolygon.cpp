@@ -1140,41 +1140,37 @@ TerrainPolygon::TerrainPolygon()
 {
 	sess = Session::GetSession();
 
+	//ts_water = sess->GetSizedTileset("Env/water_128x128.png");
 
-	waterShaderCounter = 0.f;
+	//if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+	//{
+	//	cout << "water SHADER NOT LOADING CORRECTLY" << endl;
+	//}
 
-	ts_water1 = sess->GetSizedTileset("Env/water_128x128.png");
-	//ts_water2 = //sess->GetSizedTileset("Env/freeflight_water_2_128x128.png");
+	//waterShader.setUniform("u_slide", waterShaderCounter);
+	//waterShader.setUniform("u_texture", *ts_water->texture);
+	//waterShader.setUniform("Resolution", Vector2f(1920, 1080));
+	//waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	//waterShader.setUniform("skyColor", ColorGL(Color::White));
 
-	if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
-	}
+	////Color g = Color::Green;
+	//Color g = Color::Magenta;
+	//g.a = 50;
+	//waterShader.setUniform("u_waterBaseColor", ColorGL(g));
 
-	waterShader.setUniform("u_slide", waterShaderCounter);
-	waterShader.setUniform("u_texture", *ts_water1->texture);
-	waterShader.setUniform("Resolution", Vector2f(1920, 1080));
-	waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-	waterShader.setUniform("skyColor", ColorGL(Color::White));
+	//IntRect ir1 = ts_water->GetSubRect(2);
+	//IntRect ir2 = ts_water->GetSubRect(3);
 
-	//Color g = Color::Green;
-	Color g = Color::Magenta;
-	g.a = 50;
-	waterShader.setUniform("u_waterBaseColor", ColorGL(g));
+	//float width = ts_water->texture->getSize().x;
+	//float height = ts_water->texture->getSize().y;
 
-	IntRect ir1 = ts_water1->GetSubRect(2);
-	IntRect ir2 = ts_water1->GetSubRect(3);
+	//waterShader.setUniform("u_quad1", 
+	//	Glsl::Vec4(ir1.left / width, ir1.top / height,
+	//	(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
 
-	float width = ts_water1->texture->getSize().x;
-	float height = ts_water1->texture->getSize().y;
-
-	waterShader.setUniform("u_quad1", 
-		Glsl::Vec4(ir1.left / width, ir1.top / height,
-		(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
-
-	waterShader.setUniform("u_quad2",
-		Glsl::Vec4(ir2.left / width, ir2.top / height,
-		(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
+	//waterShader.setUniform("u_quad2",
+	//	Glsl::Vec4(ir2.left / width, ir2.top / height,
+	//	(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
 	
 
 	copiedInverse = false;
@@ -3029,81 +3025,34 @@ int TerrainPolygon::GetSpecialPolyIndex()
 
 void TerrainPolygon::UpdateMaterialType()
 {
-	int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
-
-	if (sess->IsSessTypeGame())
+	if (waterType != NOT_WATER)
 	{
-		GameSession *game = GameSession::GetSession();
-		texInd = game->matIndices[texInd];
-	}
-
-
-	if (terrainWorldType > SECRETCORE)
-	{
-		pShader = &waterShader;
-		fillCol = Color::White;
+		pShader = &sess->waterShaders[0];
+		tdInfo = NULL;
 	}
 	else
 	{
-		pShader = &sess->polyShaders[texInd];
-		fillCol = Color::White;
-	}
-	
+		int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
 
-	
-	
-	//comenting this out because all textures are valid now, even for water
-	//if (texInd < sess->numPolyShaders)
-	//{
-		
-	//}
-	/*else
-	{
-		switch (terrainVariation)
+		if (sess->IsSessTypeGame())
 		{
-		case SPECIAL_TERRAIN_WATER:
-			fillCol = Color(255, 0, 0, 50);
-			break;
-		case SPECIAL_TERRAIN_GLIDEWATER:
-			fillCol = Color(0, 255, 0, 50);
-			break;
+			GameSession *game = GameSession::GetSession();
+			texInd = game->matIndices[texInd];
 		}
-		
-	}*/
 
-	tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
-	//assert(tdInfo != NULL);
+		pShader = &sess->polyShaders[texInd];
+		
+		tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
+	}
+
+	fillCol = Color::White;
+	
+	
+
+	
 
 	Color sCol( 0x77, 0xBB, 0xDD );
-	//factor in variation later
-	//Color newColor;
-	/*switch( world )
-	{
-	case 0:
-		fillCol = Color::Blue;
-		break;
-	case 1:
-		fillCol = Color::Green;
-		break;
-	case 2:
-		fillCol = Color::Yellow;
-		break;
-	case 3:
-		fillCol = Color( 100, 200, 200 );
-		break;
-	case 4:
-		fillCol = Color::Red;
-		break;
-	case 5:
-		fillCol = Color::Magenta;
-		break;
-	case 6:
-		fillCol = Color::White;
-		break;
-	}*/
-	
 	selectCol = sCol;
-	//selectCol = 
 
 	SetTerrainColor(fillCol);
 }
@@ -3146,6 +3095,100 @@ void TerrainPolygon::UpdateGrassType()
 	//}
 }
 
+void TerrainPolygon::UpdateWaterType()
+{
+	if (terrainWorldType >= W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
+	{
+		switch (terrainWorldType)
+		{
+		case W1_SPECIAL:
+			if (terrainVariation == 0 )
+			{
+				waterType = WATER_NORMAL;
+			}
+			break;
+		case W2_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_GLIDE;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_HEAVYGRAV;
+			}
+			else if (terrainVariation == 2 )
+			{
+				waterType = WATER_LOWGRAV;
+			}
+			else if (terrainVariation == 3)
+			{
+				waterType = WATER_BUOYANCY;
+			}
+			break;
+		case W3_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_ACCEL;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_ZEROGRAV;
+			}
+			break;
+		case W4_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_LAUNCHER;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_TIMEDREWIND;
+			}
+			break;
+		case W5_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_TIMESLOW;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_POISON;
+			}
+			break;
+		case W6_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_FREEFLIGHT;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_INVERTEDINPUTS;
+			}
+			break;
+		case W7_SPECIAL:
+			if (terrainVariation == 0)
+			{
+				waterType = WATER_REWIND;
+			}
+			else if (terrainVariation == 1)
+			{
+				waterType = WATER_SWORDPROJECTILE;
+			}
+			else if (terrainVariation == 2)
+			{
+				waterType = WATER_SUPER;
+			}
+			break;
+		case W8_SPECIAL:
+			break;
+		}
+	}
+	else
+	{
+		waterType = NOT_WATER;
+	}
+}
+
 void TerrainPolygon::SetMaterialType(int world, int variation)
 {
 	TerrainWorldType newWorldType = (TerrainWorldType)world;
@@ -3158,6 +3201,9 @@ void TerrainPolygon::SetMaterialType(int world, int variation)
 		SetBorderTileset();
 
 	//also redo decor later when you change terrain types.
+
+	UpdateWaterType();
+
 
 	if (finalized)
 	{
@@ -4293,7 +4339,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 	{
 		if (pShader != NULL)
 		{
-			if (terrainWorldType > SECRETCORE)
+			/*if (terrainWorldType > SECRETCORE)
 			{
 				Vector2f vSize = sess->view.getSize();
 				float zoom = vSize.x / 960;
@@ -4303,7 +4349,7 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				waterShader.setUniform("topLeft", botLeft);
 				waterShader.setUniform("u_slide", waterShaderCounter);
 				waterShaderCounter += .01;
-			}
+			}*/
 
 			rt->draw(*va, pShader);
 		}

@@ -85,8 +85,8 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 		currMatRects[i] = mainPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_TERRAINSEARCH,
 			currMatRectPos, NULL, 0, 100);
 		currMatRects[i]->Init();
-		currMatRects[i]->SetImage(edit->GetMatTileset(edit->currTerrainWorld[i],
-			edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));
+		//currMatRects[i]->SetImage(edit->GetMatTileset(edit->currTerrainWorld[i],
+		//	edit->currTerrainVar[i]), IntRect(0, 0, 128, 128));
 	}
 	currMatRects[0]->SetShown(true);
 

@@ -204,6 +204,28 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_FLIES,
 	};
 
+	enum WaterType
+	{
+		NOT_WATER,
+		WATER_NORMAL,
+		WATER_GLIDE,
+		WATER_HEAVYGRAV,
+		WATER_LOWGRAV,
+		WATER_BUOYANCY,
+		WATER_ACCEL,
+		WATER_ZEROGRAV,
+		WATER_LAUNCHER,
+		WATER_TIMEDREWIND,
+		WATER_TIMESLOW,
+		WATER_POISON,
+		WATER_FREEFLIGHT,
+		WATER_INVERTEDINPUTS,
+		WATER_REWIND,
+		WATER_SWORDPROJECTILE,
+		WATER_SUPER,
+		WATER_Count,
+	};
+
 	enum TerrainWorldType : int
 	{
 		MOUNTAIN,
@@ -237,14 +259,15 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-	Tileset *ts_water1;
-	Tileset *ts_water2;
-	sf::Shader waterShader;
-	float waterShaderCounter;
+	WaterType waterType;
+	//Tileset *ts_water;
+	//sf::Shader waterShader;
+	//float waterShaderCounter;
 
 	//void TestUpdateWaterShader();
 
 	bool IsSpecialTerrainType(int w, int var);
+	void UpdateWaterType();
 
 	void MakeGlobalPath(
 		V2d &startPos,

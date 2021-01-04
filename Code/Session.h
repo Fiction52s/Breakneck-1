@@ -120,7 +120,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	const static int MAX_BUBBLES = 5;
 	const static int MAX_TOTAL_BUBBLES = MAX_PLAYERS * MAX_BUBBLES;
 
-	const static int TERRAIN_WORLDS = 17;
+	const static int TERRAIN_WORLDS = 8; //does this work?
 	const static int MAX_TERRAINTEX_PER_WORLD = 10;
 	const static int TOTAL_TERRAIN_TEXTURES =
 		TERRAIN_WORLDS * MAX_TERRAINTEX_PER_WORLD;
@@ -187,6 +187,12 @@ struct Session : TilesetManager, QuadTreeCollider
 		FROZEN,
 		MAP
 	};
+
+
+	float waterShaderCounter;
+	Tileset *ts_water;
+	sf::Shader *waterShaders;
+
 
 	int timeSyncFrames;
 	GameMode *gameMode;
@@ -564,7 +570,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
 	void AllocatePolyShaders(int numPolyTypes);
+	void SetupWaterShaders();
 	bool LoadPolyShader(int index, int matWorld, int matVariation);
+
 	bool OneFrameModeUpdate();
 	void DebugDrawActors(sf::RenderTarget *target);
 	void SetPlayerInputOn(bool on);

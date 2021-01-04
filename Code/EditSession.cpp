@@ -1324,6 +1324,8 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	moveAction = NULL;
 	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
 	LoadAllPolyShaders();
+
+	SetupWaterShaders();
 	
 	
 
@@ -3117,11 +3119,11 @@ void EditSession::SetupTerrainSelectPanel()
 		for (int i = 0; i < maxTexPerWorld; ++i)
 		{
 			ind = trueWorld * maxTexPerWorld + i;
-
+			//GetMatTileset(0, 0), is the line to change to get the right textures
 			matTypeRects[TERRAINLAYER_WATER][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				GetMatTileset(worldI, i),
+				GetMatTileset(0, 0),
 				IntRect(0, 0, 128, 128),
 				terrainGridSize);
 			matTypeRects[TERRAINLAYER_WATER][ind]->Init();
@@ -3146,7 +3148,7 @@ void EditSession::SetupTerrainSelectPanel()
 			matTypeRects[TERRAINLAYER_FLY][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				GetMatTileset(worldI, i),
+				GetMatTileset(0, 0),
 				IntRect(0, 0, 128, 128),
 				terrainGridSize);
 			matTypeRects[TERRAINLAYER_FLY][ind]->Init();
@@ -11339,6 +11341,11 @@ void EditSession::UpdatePolyShaders()
 				polyShaders[i].setUniform("zoom", zoom);
 			}
 		}
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			waterShaders[i].setUniform("zoom", zoom);
+		}
 	}
 
 	if (first || oldShaderBotLeft != botLeft)
@@ -11352,7 +11359,19 @@ void EditSession::UpdatePolyShaders()
 				polyShaders[i].setUniform("topLeft", botLeft);
 			}
 		}
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			waterShaders[i].setUniform("topLeft", botLeft);
+		}
 	}
+
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+	{
+		waterShaders[i].setUniform("u_slide", waterShaderCounter);
+	}
+	waterShaderCounter += .01f;
+	
 	
 }
 
