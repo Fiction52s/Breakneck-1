@@ -1586,7 +1586,7 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 
 	double temp;
 
-	double surfaceTileWidth = 64;
+	double surfaceTileWidth = ts_border->tileWidth;
 
 	totalNumBorderQuads = 0;
 
@@ -1600,9 +1600,11 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 		if (edgeLen <= 0)
 			continue;
 
-		temp = edgeLen / surfaceTileWidth;
-		
-		currNumQuads = temp;
+		currNumQuads = edgeLen / surfaceTileWidth;
+		if (currNumQuads == 0)
+		{
+			currNumQuads = 1;
+		}
 
 		totalNumBorderQuads += currNumQuads;
 	}
@@ -1641,15 +1643,18 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 
 	V2d currStartInner, currStartOuter, currEndInner, currEndOuter;
 
+	double realHeightLeft = ts_border->tileHeight;
+	double realHeightRight = ts_border->tileHeight;
+
 	for (int i = 0; i < numP; ++i)
 	{
 		edge = GetEdge(i);
 		edgeLen = edge->GetLength();
 
 		currEdgeTotalQuads = edgeLen / surfaceTileWidth;
-		//needs to be minimum 1
+
 		if (currEdgeTotalQuads == 0)
-			continue;
+			currEdgeTotalQuads = 1;
 
 		along = edge->Along();
 		norm = edge->Normal();
@@ -1668,15 +1673,14 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 		bool nextAcute = IsAcute(nextEdge);
 		V2d bisector = GetBisector(edge);
 		V2d nextBisector = GetBisector(nextEdge);
-		int currWidth;
+		double currWidth;
 		int currIntersect;
+
+		currWidth = edgeLen / currEdgeTotalQuads;
+		currIntersect = 0;
 
 		for (int j = 0; j < currEdgeTotalQuads; ++j)
 		{
-			currWidth = ts_border->tileWidth;//borderSizes[currChosenSizeIndex].width;
-
-			currIntersect = 0;//GetBorderQuadIntersect(currWidth);
-
 			startAlong -= currIntersect;
 
 			double endAlong = startAlong + currWidth;
@@ -1686,12 +1690,16 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 				startAlong = endAlong - currWidth;
 			}
 
-			if (currEdgeTotalQuads == 1)
-			{
-				startAlong = edgeLen / 2 - currWidth / 2;// +GetBorderQuadIntersect(currWidth);
-				endAlong = edgeLen / 2 + currWidth / 2;
-			}
 			IntRect sub = ts_border->GetSubRect(0);
+
+			realHeightLeft = ts_border->tileHeight;
+			realHeightRight = ts_border->tileHeight;
+
+			/*if (currEdgeTotalQuads == 1)
+			{
+				startAlong = 0;
+				endAlong = edgeLen;
+			}*/
 
 			double trueAlong = startAlong;
 			if (startAlong > 0)
@@ -1704,8 +1712,7 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 			currEndInner = startInner + endAlong * along;
 			currEndOuter = startOuter + endAlong * along;
 
-			double realHeightLeft = ts_border->tileHeight;
-			double realHeightRight = ts_border->tileHeight;
+			
 
 			borderQuads[ start + j * 4 + 0].position = Vector2f(currStartOuter);
 			borderQuads[ start + j * 4 + 1].position = Vector2f(currEndOuter);
