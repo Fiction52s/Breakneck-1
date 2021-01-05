@@ -1464,9 +1464,9 @@ V2d TerrainPolygon::GetBisector(Edge *e)
 
 void TerrainPolygon::SetBorderTileset()
 {
-	if (terrainWorldType >= 8)
+	if (terrainWorldType >= W1_SPECIAL)
 	{
-		ts_border = NULL;
+		ts_border = sess->GetSizedTileset( "Env/water_surface_64x8.png" );
 		return;
 	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
@@ -1570,6 +1570,169 @@ sf::IntRect TerrainPolygon::GetBorderSubRect(int tileWidth, EdgeAngleType angleT
 	return ir;
 }
 
+void TerrainPolygon::GenerateWaterBorderMesh()
+{
+	
+	int firstType;
+	int secondType;
+
+
+	int numP = GetNumPoints();
+	double edgeLen;
+	Edge *edge;
+
+	int currNumQuads;
+	int currSizeLen;
+
+	double temp;
+
+	double surfaceTileWidth = 64;
+
+	totalNumBorderQuads = 0;
+
+	//get the number of different border sizes we need for this edge
+	for (int i = 0; i < numP; ++i)
+	{
+		edge = GetEdge(i);
+		edgeLen = edge->GetLength(); /*+ GetExtraForInward(edge)
+			+ GetExtraForInward(edge->GetNextEdge());*/
+
+		if (edgeLen <= 0)
+			continue;
+
+		temp = edgeLen / surfaceTileWidth;
+		
+		currNumQuads = temp;
+
+		totalNumBorderQuads += currNumQuads;
+	}
+
+	if (totalNumBorderQuads == 0)
+	{
+		/*if (borderQuads != NULL)
+		{
+		delete[] borderQuads;
+		borderQuads = NULL;
+		}*/
+		return;
+	}
+
+	if (borderQuads != NULL)
+	{
+		delete[] borderQuads;
+		borderQuads = NULL;
+	}
+
+	borderQuads = new Vertex[totalNumBorderQuads * 4];
+
+	//setup the starting point for the different edge types
+	int start = 0;
+	double extraLength = 0;
+
+	V2d along, norm, startInner, startOuter;
+
+	double out = ts_border->tileHeight / 2.0;
+	double in = ts_border->tileHeight - out;
+
+	double inwardExtra, nextInwardExtra, startAlong, truEnd;
+
+	int currEdgeTotalQuads;
+
+
+	V2d currStartInner, currStartOuter, currEndInner, currEndOuter;
+
+	for (int i = 0; i < numP; ++i)
+	{
+		edge = GetEdge(i);
+		edgeLen = edge->GetLength();
+
+		currEdgeTotalQuads = edgeLen / surfaceTileWidth;
+		//needs to be minimum 1
+		if (currEdgeTotalQuads == 0)
+			continue;
+
+		along = edge->Along();
+		norm = edge->Normal();
+
+		inwardExtra = 0;//GetExtraForInward(edge);
+		nextInwardExtra = 0;//GetExtraForInward(edge->GetNextEdge());
+
+		startInner = edge->v0 - along * extraLength - norm * in;
+		startOuter = edge->v0 - along * extraLength + norm * out;
+
+		double startAlong = -inwardExtra;
+		double trueEnd = edgeLen + nextInwardExtra;
+
+		Edge *nextEdge = edge->GetNextEdge();
+		bool isAcute = IsAcute(edge);
+		bool nextAcute = IsAcute(nextEdge);
+		V2d bisector = GetBisector(edge);
+		V2d nextBisector = GetBisector(nextEdge);
+		int currWidth;
+		int currIntersect;
+
+		for (int j = 0; j < currEdgeTotalQuads; ++j)
+		{
+			currWidth = ts_border->tileWidth;//borderSizes[currChosenSizeIndex].width;
+
+			currIntersect = 0;//GetBorderQuadIntersect(currWidth);
+
+			startAlong -= currIntersect;
+
+			double endAlong = startAlong + currWidth;
+			if (endAlong > trueEnd)
+			{
+				endAlong = trueEnd;// +currIntersect;
+				startAlong = endAlong - currWidth;
+			}
+
+			if (currEdgeTotalQuads == 1)
+			{
+				startAlong = edgeLen / 2 - currWidth / 2;// +GetBorderQuadIntersect(currWidth);
+				endAlong = edgeLen / 2 + currWidth / 2;
+			}
+			IntRect sub = ts_border->GetSubRect(0);
+
+			double trueAlong = startAlong;
+			if (startAlong > 0)
+			{
+				//trueAlong -= GetBorderQuadIntersect(tw);
+			}
+
+			currStartInner = startInner + trueAlong * along;
+			currStartOuter = startOuter + trueAlong * along;
+			currEndInner = startInner + endAlong * along;
+			currEndOuter = startOuter + endAlong * along;
+
+			double realHeightLeft = ts_border->tileHeight;
+			double realHeightRight = ts_border->tileHeight;
+
+			borderQuads[ start + j * 4 + 0].position = Vector2f(currStartOuter);
+			borderQuads[ start + j * 4 + 1].position = Vector2f(currEndOuter);
+			borderQuads[ start + j * 4 + 2].position = Vector2f(currEndInner);
+			borderQuads[ start + j * 4 + 3].position = Vector2f(currStartInner);
+
+			float outerWidth = length(currEndOuter - currStartOuter);
+			float innerWidth = length(currEndInner - currStartInner);
+			borderQuads[start + j * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+			borderQuads[start + j * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
+			borderQuads[start + j * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + realHeightRight);
+			borderQuads[start + j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
+
+			if (j == 0)
+			{
+				startAlong += currWidth;// -GetBorderQuadIntersect(currWidth);
+			}
+			else
+			{
+				startAlong += currWidth;// -GetBorderQuadIntersect(currWidth);
+			}
+		}
+
+		start += currEdgeTotalQuads * 4;
+	}
+}
+
 void TerrainPolygon::GenerateBorderMesh()
 {
 	if (ts_border == NULL)
@@ -1589,11 +1752,15 @@ void TerrainPolygon::GenerateBorderMesh()
 		return;
 	}
 
+	if (waterType != NOT_WATER)
+	{
+		GenerateWaterBorderMesh();
+		return;
+	}
+
 	BorderInfo totalQuadCounts;
 
 	map<Edge*, BorderInfo> numQuadMap[EDGE_WALL + 1];
-
-	//list<Edge*> transEdges;
 
 	BorderSizeInfo borderSizes[BorderInfo::NUM_BORDER_SIZES];
 	borderSizes[0].SetWidth(128);
@@ -1905,42 +2072,7 @@ void TerrainPolygon::GenerateBorderMesh()
 			currentTypeQuads[j * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
 			currentTypeQuads[j * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
 			currentTypeQuads[j * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + realHeightRight);
-			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);
-
-			/*Color c = Color::White;
-			switch (angleType)
-			{
-			case EDGE_FLAT:
-				c = Color::Red;
-				break;
-			case EDGE_FLATCEILING:
-				c = Color::Magenta;
-				break;
-			case EDGE_SLOPED:
-				break;
-			case EDGE_STEEPSLOPE:
-				break;
-			case EDGE_SLOPEDCEILING:
-				break;
-			case EDGE_STEEPCEILING:
-				break;
-			case EDGE_WALL:
-				c = Color::Blue;
-				break;
-			}
-
-			currentTypeQuads[j * 4 + 0].color = c;
-			currentTypeQuads[j * 4 + 1].color = c;
-			currentTypeQuads[j * 4 + 2].color = c;
-			currentTypeQuads[j * 4 + 3].color = c;*/
-
-			/*currentTypeQuads[i * 4 + 0].color = Color::Red;
-			currentTypeQuads[i * 4 + 1].color = Color::Blue;
-			currentTypeQuads[i * 4 + 2].color = Color::Green;
-			currentTypeQuads[i * 4 + 3].color = Color::Cyan;*/
-
-
-			
+			currentTypeQuads[j * 4 + 3].texCoords = Vector2f(sub.left, sub.top + realHeightLeft);			
 
 			if (j == 0)
 			{

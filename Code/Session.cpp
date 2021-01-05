@@ -1864,13 +1864,13 @@ void Session::SetupWaterShaders()
 		waterShader.setUniform("skyColor", ColorGL(Color::White));
 
 		//Color g = Color::Green;
-		//Color g = Color::Magenta;
-		Color g = Color::Cyan;
-		g.a = 50;
+		Color g = Color::Magenta;
+		//Color g = Color::Cyan;
+		g.a = 200;
 		waterShader.setUniform("u_waterBaseColor", ColorGL(g));
 
-		IntRect ir1 = ts_water->GetSubRect(0);
-		IntRect ir2 = ts_water->GetSubRect(1);
+		IntRect ir1 = ts_water->GetSubRect(2);
+		IntRect ir2 = ts_water->GetSubRect(3);
 
 		float width = ts_water->texture->getSize().x;
 		float height = ts_water->texture->getSize().y;

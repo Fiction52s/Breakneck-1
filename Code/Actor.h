@@ -145,7 +145,6 @@ using json = nlohmann::json;
 struct Actor : QuadTreeCollider,
 	RayCastHandler, EnemyTracker
 {
-
 	enum Mode
 	{
 		K_NORMAL,

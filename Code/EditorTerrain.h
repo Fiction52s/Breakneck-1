@@ -396,6 +396,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	sf::Vertex *borderQuads;
 	int totalNumBorderQuads;
 	void GenerateBorderMesh();
+	void GenerateWaterBorderMesh();
 	Tileset *ts_border;
 
 	static int GetBorderQuadIntersect(int tileWidth);
