@@ -1580,7 +1580,7 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 	int numP = GetNumPoints();
 	double edgeLen;
 	Edge *edge;
-
+	Edge *nextEdge;
 	int currNumQuads;
 	int currSizeLen;
 
@@ -1594,16 +1594,26 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 	for (int i = 0; i < numP; ++i)
 	{
 		edge = GetEdge(i);
-		edgeLen = edge->GetLength(); /*+ GetExtraForInward(edge)
-			+ GetExtraForInward(edge->GetNextEdge());*/
+		edgeLen = edge->GetLength();
+
+		nextEdge = edge->GetNextEdge();
 
 		if (edgeLen <= 0)
+		{
+			assert(0);
 			continue;
+		}
+			
 
 		currNumQuads = edgeLen / surfaceTileWidth;
 		if (currNumQuads == 0)
 		{
 			currNumQuads = 1;
+		}
+
+		if (nextEdge->Normal() != edge->Normal())
+		{
+			currNumQuads++;
 		}
 
 		totalNumBorderQuads += currNumQuads;
@@ -1650,6 +1660,7 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 	{
 		edge = GetEdge(i);
 		edgeLen = edge->GetLength();
+		nextEdge = edge->GetNextEdge();
 
 		currEdgeTotalQuads = edgeLen / surfaceTileWidth;
 
@@ -1668,7 +1679,7 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 		double startAlong = -inwardExtra;
 		double trueEnd = edgeLen + nextInwardExtra;
 
-		Edge *nextEdge = edge->GetNextEdge();
+		
 		bool isAcute = IsAcute(edge);
 		bool nextAcute = IsAcute(nextEdge);
 		V2d bisector = GetBisector(edge);
@@ -1678,6 +1689,8 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 
 		currWidth = edgeLen / currEdgeTotalQuads;
 		currIntersect = 0;
+
+		IntRect sub = ts_border->GetSubRect(0);
 
 		for (int j = 0; j < currEdgeTotalQuads; ++j)
 		{
@@ -1690,16 +1703,10 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 				startAlong = endAlong - currWidth;
 			}
 
-			IntRect sub = ts_border->GetSubRect(0);
+			
 
 			realHeightLeft = ts_border->tileHeight;
 			realHeightRight = ts_border->tileHeight;
-
-			/*if (currEdgeTotalQuads == 1)
-			{
-				startAlong = 0;
-				endAlong = edgeLen;
-			}*/
 
 			double trueAlong = startAlong;
 			if (startAlong > 0)
@@ -1734,6 +1741,54 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 			{
 				startAlong += currWidth;// -GetBorderQuadIntersect(currWidth);
 			}
+		}
+
+		if( nextEdge->Normal() != edge->Normal() )
+		{
+			V2d nextNorm = nextEdge->Normal();
+			
+			V2d centerPoint = edge->v1;
+
+			double c = cross(nextEdge->Along(), along);
+
+			if (c < 0)
+			{
+				V2d outerStart = edge->v1 + norm * out;
+				V2d outerEnd = nextEdge->v0 + nextNorm * out;
+
+
+				borderQuads[start + currEdgeTotalQuads * 4 + 0].position = Vector2f(outerStart);
+				borderQuads[start + currEdgeTotalQuads * 4 + 1].position = Vector2f(outerEnd);
+				borderQuads[start + currEdgeTotalQuads * 4 + 2].position = Vector2f(centerPoint);
+				borderQuads[start + currEdgeTotalQuads * 4 + 3].position = Vector2f(centerPoint);
+
+				float outerWidth = length(outerEnd - outerStart);
+				borderQuads[start + currEdgeTotalQuads * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+				borderQuads[start + currEdgeTotalQuads * 4 + 1].texCoords = Vector2f(sub.left + outerWidth, sub.top);
+				borderQuads[start + currEdgeTotalQuads * 4 + 2].texCoords = Vector2f(sub.left + outerWidth / 2, sub.top + out);
+				borderQuads[start + currEdgeTotalQuads * 4 + 3].texCoords = Vector2f(sub.left + outerWidth / 2, sub.top + out);
+			}
+			else
+			{
+				V2d innerStart = edge->v1 - norm * in;
+				V2d innerEnd = nextEdge->v0 - nextNorm * in;
+
+
+				borderQuads[start + currEdgeTotalQuads * 4 + 0].position = Vector2f(centerPoint);
+				borderQuads[start + currEdgeTotalQuads * 4 + 1].position = Vector2f(centerPoint);
+				borderQuads[start + currEdgeTotalQuads * 4 + 2].position = Vector2f(innerEnd);
+				borderQuads[start + currEdgeTotalQuads * 4 + 3].position = Vector2f(innerStart);
+
+				float innerWidth = length(innerEnd - innerStart);
+				borderQuads[start + currEdgeTotalQuads * 4 + 0].texCoords = Vector2f(sub.left + innerWidth / 2, sub.top + out);
+				borderQuads[start + currEdgeTotalQuads * 4 + 1].texCoords = Vector2f(sub.left + innerWidth / 2, sub.top + out);
+				borderQuads[start + currEdgeTotalQuads * 4 + 2].texCoords = Vector2f(sub.left + innerWidth, sub.top + ts_border->tileHeight);
+				borderQuads[start + currEdgeTotalQuads * 4 + 3].texCoords = Vector2f(sub.left, sub.top + ts_border->tileHeight);
+			}
+			
+
+			currEdgeTotalQuads++;
+
 		}
 
 		start += currEdgeTotalQuads * 4;
