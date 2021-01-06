@@ -581,7 +581,7 @@ struct EditSession : GUIHandler, Session
 	double GetZoomedMinEdgeLength();
 	int GetCurrTerrainWorld();
 	int GetCurrTerrainVariation();
-	Tileset *GetMatTileset(int tWorld, int tVar);
+	sf::IntRect GetMatSubRect(int w, int v);
 	void UpdateCurrTerrainType();
 	void SetupNewMapPanel();
 	
@@ -614,7 +614,6 @@ struct EditSession : GUIHandler, Session
 		const std::string &eName );
 	int IsRemovePointsOkay();
 	int CountSelectedPoints();
-	void LoadAllPolyShaders();
 	void Reload(const boost::filesystem::path &p_filePath);
 	void ReloadNew();
 	void StartSelectedMove();

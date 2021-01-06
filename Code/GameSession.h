@@ -321,7 +321,7 @@ struct GameSession : RayCastHandler, Session
 	boost::mutex continueLoadingLock;
 	LoadingMapProgressDisplay *progressDisplay;
 	std::set<std::pair<int, int>> matSet;
-	std::map<int, int> matIndices;
+	//std::map<int, int> matIndices;
 	std::map<std::string, std::list<DecorInfo>> decorListMap;
 
 	ScreenRecorder *debugScreenRecorder;

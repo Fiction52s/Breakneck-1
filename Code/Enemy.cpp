@@ -497,7 +497,7 @@ void Enemy::OnCreate(ActorParams *ap,
 		assert(false);
 	}
 	hurtShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
-	hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
+	//hurtShader.setUniform("auraColor", Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a));
 
 	if (world == 0)
 	{
@@ -608,7 +608,7 @@ void Enemy::SetKey()
 		}
 
 		keyShader.setUniform("toColor", ColorGL(keyColor));//Glsl::Vec4( keyColor.r, keyColor.g, keyColor.b, keyColor.a ) );
-		keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
+		//keyShader.setUniform("auraColor", ColorGL(auraColor));//Glsl::Vec4(auraColor.r, auraColor.g, auraColor.b, auraColor.a) );
 
 		int w = world;
 		if (world > 2)

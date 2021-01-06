@@ -209,8 +209,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		NOT_WATER,
 		WATER_NORMAL,
 		WATER_GLIDE,
-		WATER_HEAVYGRAV,
 		WATER_LOWGRAV,
+		WATER_HEAVYGRAV,
 		WATER_BUOYANCY,
 		WATER_ACCEL,
 		WATER_ZEROGRAV,
@@ -266,6 +266,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	//void TestUpdateWaterShader();
 
+	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
 	void UpdateWaterType();
 

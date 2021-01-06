@@ -1247,19 +1247,6 @@ void EditSession::UpdateModeFunc(int m)
 	}
 }
 
-void EditSession::LoadAllPolyShaders()
-{
-	int ind;
-	for (int worldI = 0; worldI < TERRAIN_WORLDS; ++worldI)
-	{
-		for (int i = 0; i < MAX_TERRAINTEX_PER_WORLD; ++i)
-		{
-			ind = worldI * MAX_TERRAINTEX_PER_WORLD + i;
-			LoadPolyShader(ind, worldI, i);
-		}
-	}
-}
-
 EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p_filePath)
 	:Session( Session::SESS_EDIT, p_filePath ), mainMenu( p_mainMenu ), arial( p_mainMenu->arial ),
 	errorBar(p_mainMenu->arial)
@@ -1322,8 +1309,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	createTerrainModeUI = NULL;
 	enemyEdgePolygon = NULL;
 	moveAction = NULL;
-	AllocatePolyShaders(TOTAL_TERRAIN_TEXTURES);
-	LoadAllPolyShaders();
+	LoadPolyShader();
 
 	SetupWaterShaders();
 	
@@ -3098,9 +3084,10 @@ void EditSession::SetupTerrainSelectPanel()
 			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				GetMatTileset(worldI, i),
-				IntRect(0, 0, 128, 128),
+				ts_terrain,
+				GetMatSubRect( worldI, i ),
 				terrainGridSize);
+
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
 			if (matTypeRects[TERRAINLAYER_NORMAL][ind]->ts != NULL)
 			{
@@ -7421,16 +7408,19 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Vector2f vSize = pView.getSize();
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
-	for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
-	{
-		if (ts_polyShaders[i] != NULL)
-		{
-			polyShaders[i].setUniform("zoom", zoom);
-			polyShaders[i].setUniform("topLeft", botLeft);
-			//just need to change the name topleft  to botleft eventually
-		}
+	//for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
+	//{
+	//	if (ts_polyShaders[i] != NULL)
+	//	{
+	//		polyShaders[i].setUniform("zoom", zoom);
+	//		polyShaders[i].setUniform("topLeft", botLeft);
+	//		//just need to change the name topleft  to botleft eventually
+	//	}
 
-	}
+	//}
+
+	terrainShader.setUniform("zoom", zoom);
+	terrainShader.setUniform("topLeft", botLeft);
 
 	oldShaderZoom = -1; //updates the shader back to normal after this is over
 
@@ -11270,14 +11260,14 @@ Tileset *EditSession::GetMatTileset(int tWorld, int tVar)
 {
 	int ind = tWorld * MAX_TERRAINTEX_PER_WORLD + tVar;
 
-	return ts_polyShaders[ind];
+	return ts_terrain;
 }
 
 void EditSession::UpdateCurrTerrainType()
 {
 	int ind = currTerrainWorld[TERRAINLAYER_NORMAL] 
 		* MAX_TERRAINTEX_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
-	currTerrainTypeSpr.setTexture(*ts_polyShaders[ind]->texture);
+	currTerrainTypeSpr.setTexture(*ts_terrain->texture);//*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }
 
@@ -11334,13 +11324,16 @@ void EditSession::UpdatePolyShaders()
 	if (first || oldShaderZoom != zoom ) //first run
 	{
 		oldShaderZoom = zoom;
-		for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
+
+		terrainShader.setUniform("zoom", zoom);
+
+		/*for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
 		{
 			if (ts_polyShaders[i] != NULL)
 			{
 				polyShaders[i].setUniform("zoom", zoom);
 			}
-		}
+		}*/
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
@@ -11351,14 +11344,16 @@ void EditSession::UpdatePolyShaders()
 	if (first || oldShaderBotLeft != botLeft)
 	{
 		oldShaderBotLeft = botLeft;
-		for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
-		{
-			if (ts_polyShaders[i] != NULL)
-			{
-				//just need to change the name topleft to botleft in the shader
-				polyShaders[i].setUniform("topLeft", botLeft);
-			}
-		}
+
+		terrainShader.setUniform("topLeft", botLeft);
+		//for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
+		//{
+		//	if (ts_polyShaders[i] != NULL)
+		//	{
+		//		//just need to change the name topleft to botleft in the shader
+		//		polyShaders[i].setUniform("topLeft", botLeft);
+		//	}
+		//}
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{

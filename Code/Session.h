@@ -290,8 +290,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::RenderWindow *window;
 	sf::Vector2i playerOrigPos[MAX_PLAYERS];
 	int numPolyShaders;
-	sf::Shader *polyShaders;
-	std::vector<Tileset*> ts_polyShaders;
+	//sf::Shader *polyShaders;
+	sf::Shader terrainShader;
+	Tileset *ts_terrain;
 	std::map<std::pair<int, int>, TerrainDecorInfo*> terrainDecorInfoMap;
 	std::map<DecorType, DecorLayer*> decorLayerMap;
 	GameSession *parentGame;
@@ -569,9 +570,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadBGTerrain(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
-	void AllocatePolyShaders(int numPolyTypes);
 	void SetupWaterShaders();
-	bool LoadPolyShader(int index, int matWorld, int matVariation);
+	bool LoadPolyShader();
 
 	bool OneFrameModeUpdate();
 	void DebugDrawActors(sf::RenderTarget *target);

@@ -1060,14 +1060,16 @@ void GameSession::ProcessAllTerrain()
 
 	int numMats = matSet.size();
 
-	AllocatePolyShaders(numMats);
-
 	SetupWaterShaders();
+
+	LoadPolyShader();
 
 	int index = 0;
 	for (set<pair<int, int>>::iterator it = matSet.begin(); it != matSet.end(); ++it)
 	{
-		if (!LoadPolyShader(index, (*it).first, (*it).second))
+		//load decor here somehow? matindices might be needed for that?
+
+		/*if (!LoadPolyShader(index, (*it).first, (*it).second))
 		{
 			assert(0);
 		}
@@ -1075,7 +1077,7 @@ void GameSession::ProcessAllTerrain()
 		int texInd = (*it).first * Session::MAX_TERRAINTEX_PER_WORLD + (*it).second;
 		matIndices[texInd] = index;
 
-		++index;
+		++index;*/
 
 		
 	}
@@ -3237,14 +3239,20 @@ void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
 
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
+
+	terrainShader.setUniform("zoom", cam.GetZoom());
+	terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+	terrainShader.setUniform("playertest", playertest);
+	terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+
 	//inefficient. should only update these when they are changed.
-	for (int i = 0; i < numPolyShaders; ++i)
-	{
-		polyShaders[i].setUniform("zoom", cam.GetZoom());
-		polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
-		polyShaders[i].setUniform("playertest", playertest);
-		polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
-	}
+	//for (int i = 0; i < numPolyShaders; ++i)
+	//{
+	//	polyShaders[i].setUniform("zoom", cam.GetZoom());
+	//	polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+	//	polyShaders[i].setUniform("playertest", playertest);
+	//	polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
+	//}
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{

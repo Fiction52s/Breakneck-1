@@ -1756,7 +1756,6 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 				V2d outerStart = edge->v1 + norm * out;
 				V2d outerEnd = nextEdge->v0 + nextNorm * out;
 
-
 				borderQuads[start + currEdgeTotalQuads * 4 + 0].position = Vector2f(outerStart);
 				borderQuads[start + currEdgeTotalQuads * 4 + 1].position = Vector2f(outerEnd);
 				borderQuads[start + currEdgeTotalQuads * 4 + 2].position = Vector2f(centerPoint);
@@ -1772,7 +1771,6 @@ void TerrainPolygon::GenerateWaterBorderMesh()
 			{
 				V2d innerStart = edge->v1 - norm * in;
 				V2d innerEnd = nextEdge->v0 - nextNorm * in;
-
 
 				borderQuads[start + currEdgeTotalQuads * 4 + 0].position = Vector2f(centerPoint);
 				borderQuads[start + currEdgeTotalQuads * 4 + 1].position = Vector2f(centerPoint);
@@ -3223,18 +3221,23 @@ void TerrainPolygon::UpdateMaterialType()
 	{
 		pShader = &sess->waterShaders[0];
 		tdInfo = NULL;
+
+		switch (waterType)
+		{
+
+		}
 	}
 	else
 	{
-		int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
+		//int texInd = terrainWorldType * Session::MAX_TERRAINTEX_PER_WORLD + terrainVariation;
 
-		if (sess->IsSessTypeGame())
+		/*if (sess->IsSessTypeGame())
 		{
 			GameSession *game = GameSession::GetSession();
 			texInd = game->matIndices[texInd];
-		}
+		}*/
 
-		pShader = &sess->polyShaders[texInd];
+		pShader = &sess->terrainShader;//&sess->polyShaders[texInd];
 		
 		tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	}
@@ -3289,6 +3292,46 @@ void TerrainPolygon::UpdateGrassType()
 	//}
 }
 
+sf::Color TerrainPolygon::GetWaterColor(int waterT)
+{
+	switch (waterT)
+	{
+	case WATER_NORMAL:
+		return Color(0x07, 0x19, 0x56);
+		break;
+	case WATER_GLIDE:
+		break;
+	case WATER_LOWGRAV:
+		break;
+	case WATER_HEAVYGRAV:
+		break;
+	case WATER_BUOYANCY:
+		break;
+	case WATER_ACCEL:
+		break;
+	case WATER_ZEROGRAV:
+		break;
+	case WATER_LAUNCHER:
+		break;
+	case WATER_TIMEDREWIND:
+		break;
+	case WATER_TIMESLOW:
+		break;
+	case WATER_POISON:
+		break;
+	case WATER_FREEFLIGHT:
+		break;
+	case WATER_INVERTEDINPUTS:
+		break;
+	case WATER_REWIND:
+		break;
+	case WATER_SWORDPROJECTILE:
+		break;
+	case WATER_SUPER:
+		break;
+	}
+}
+
 void TerrainPolygon::UpdateWaterType()
 {
 	if (terrainWorldType >= W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
@@ -3299,6 +3342,7 @@ void TerrainPolygon::UpdateWaterType()
 			if (terrainVariation == 0 )
 			{
 				waterType = WATER_NORMAL;
+				
 			}
 			break;
 		case W2_SPECIAL:
@@ -3308,11 +3352,11 @@ void TerrainPolygon::UpdateWaterType()
 			}
 			else if (terrainVariation == 1)
 			{
-				waterType = WATER_HEAVYGRAV;
+				waterType = WATER_LOWGRAV;
 			}
 			else if (terrainVariation == 2 )
 			{
-				waterType = WATER_LOWGRAV;
+				waterType = WATER_HEAVYGRAV;
 			}
 			else if (terrainVariation == 3)
 			{
@@ -4544,6 +4588,19 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 				waterShader.setUniform("u_slide", waterShaderCounter);
 				waterShaderCounter += .01;
 			}*/
+
+			if (terrainWorldType <= SECRETCORE)
+			{
+				Tileset *ts = sess->ts_terrain;
+				IntRect ir = ts->GetSubRect(0);
+
+				float width = ts->texture->getSize().x;
+				float height = ts->texture->getSize().y;
+					
+				sess->terrainShader.setUniform("u_quad",
+					Glsl::Vec4(ir.left / width, ir.top / height,
+					(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+			}
 
 			rt->draw(*va, pShader);
 		}
