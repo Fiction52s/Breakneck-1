@@ -3960,31 +3960,7 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 	}
 }
 
-bool GameSession::IsWithinBounds(V2d &p)
-{
-	return (((p.x >= mapHeader->leftBounds)
-		&& (p.y >= mapHeader->topBounds)
-		&& (p.x <= mapHeader->leftBounds + mapHeader->boundsWidth)
-		&& (p.y <= mapHeader->topBounds + mapHeader->boundsHeight)));
-}
 
-bool GameSession::IsWithinBarrierBounds(V2d &p)
-{
-	for (auto it = barriers.begin(); it != barriers.end(); ++it)
-	{
-		if (!(*it)->IsPointWithinBarrier(p))
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-bool GameSession::IsWithinCurrentBounds(V2d &p)
-{
-	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
-}
 
 
 

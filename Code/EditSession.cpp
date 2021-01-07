@@ -3050,8 +3050,6 @@ void EditSession::SetBackground(const std::string &bgName)
 	}
 }
 
-
-
 void EditSession::SetupTerrainSelectPanel()
 {
 	matTypeRectsCurrLayer = -1;
@@ -3062,11 +3060,11 @@ void EditSession::SetupTerrainSelectPanel()
 	matTypePanel->SetColor(c);
 
 	//terrainSelectPanel->SetPosition(Vector2i(currMatRectPos.x, currMatRectPos.y + 100 + 10));
-	int maxTexPerWorld = EditSession::MAX_TERRAINTEX_PER_WORLD;
-	int numTypeRects = 8 * maxTexPerWorld;
+	int maxTerrainVarPerWorld = EditSession::MAX_TERRAIN_VARIATION_PER_WORLD;
+	int numTypeRects = 8 * maxTerrainVarPerWorld;
 
-	int numWaterTypeRects = 8 * maxTexPerWorld;
-	int numPickupTypeRects = 1 * maxTexPerWorld;
+	int numWaterTypeRects = TerrainPolygon::WATER_Count;
+	int numPickupTypeRects = 1 * maxTerrainVarPerWorld;
 
 	int totalRects = numTypeRects + numWaterTypeRects + numPickupTypeRects;
 
@@ -3077,15 +3075,14 @@ void EditSession::SetupTerrainSelectPanel()
 	for (int worldI = 0; worldI < 8; ++worldI)
 	{
 		int ind;
-		for (int i = 0; i < maxTexPerWorld; ++i)
+		for (int i = 0; i < maxTerrainVarPerWorld; ++i)
 		{
-			ind = worldI * maxTexPerWorld + i;
+			ind = worldI * maxTerrainVarPerWorld + i;
 
 			matTypeRects[TERRAINLAYER_NORMAL][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(worldI * terrainGridSize, i * terrainGridSize),
-				ts_terrain,
-				GetMatSubRect( worldI, i ),
+				ts_terrain, ts_terrain->GetSubRect( worldI * maxTerrainVarPerWorld + i ),
 				terrainGridSize);
 
 			matTypeRects[TERRAINLAYER_NORMAL][ind]->Init();
@@ -3098,28 +3095,40 @@ void EditSession::SetupTerrainSelectPanel()
 
 	matTypeRects[TERRAINLAYER_WATER].resize(numWaterTypeRects);
 
-	int startWorldWater = 8;
-	for (int worldI = startWorldWater; worldI < startWorldWater + 8; ++worldI)
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		int ind;
-		int trueWorld = worldI - startWorldWater;
-		for (int i = 0; i < maxTexPerWorld; ++i)
-		{
-			ind = trueWorld * maxTexPerWorld + i;
-			//GetMatTileset(0, 0), is the line to change to get the right textures
-			matTypeRects[TERRAINLAYER_WATER][ind] = matTypePanel->AddImageRect(
-				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
-				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				GetMatTileset(0, 0),
-				IntRect(0, 0, 128, 128),
-				terrainGridSize);
-			matTypeRects[TERRAINLAYER_WATER][ind]->Init();
-			if (matTypeRects[TERRAINLAYER_WATER][ind]->ts != NULL)
-			{
-				//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
-			}
-		}
+		matTypeRects[TERRAINLAYER_WATER][i] = matTypePanel->AddImageRect(
+			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+			Vector2f(TerrainPolygon::GetWaterWorld(i) * terrainGridSize, 
+				TerrainPolygon::GetWaterIndexInWorld(i) * terrainGridSize),
+			ts_water, ts_water->GetSubRect(i * 2),
+			terrainGridSize);
+		matTypeRects[TERRAINLAYER_WATER][i]->Init();
+		//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
 	}
+
+	//int startWorldWater = 8;
+	//for (int worldI = startWorldWater; worldI < startWorldWater + 8; ++worldI)
+	//{
+	//	int ind;
+	//	int trueWorld = worldI - startWorldWater;
+	//	for (int i = 0; i < maxTexPerWorld; ++i)
+	//	{
+	//		ind = trueWorld * maxTexPerWorld + i;
+	//		//GetMatTileset(0, 0), is the line to change to get the right textures
+	//		matTypeRects[TERRAINLAYER_WATER][ind] = matTypePanel->AddImageRect(
+	//			ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
+	//			Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
+	//			ts_water,
+	//			ts_water->GetSubRect( ind * 2 ),
+	//			terrainGridSize);
+	//		matTypeRects[TERRAINLAYER_WATER][ind]->Init();
+	//		if (matTypeRects[TERRAINLAYER_WATER][ind]->ts != NULL)
+	//		{
+	//			//matTypeRects[TERRAINLAYER_WATER][ind]->SetShown(true);
+	//		}
+	//	}
+	//}
 
 	matTypeRects[TERRAINLAYER_FLY].resize(numPickupTypeRects);
 
@@ -3128,14 +3137,14 @@ void EditSession::SetupTerrainSelectPanel()
 	{
 		int ind;
 		int trueWorld = worldI - startWorldPickup;
-		for (int i = 0; i < maxTexPerWorld; ++i)
+		for (int i = 0; i < maxTerrainVarPerWorld; ++i)
 		{
-			ind = trueWorld * maxTexPerWorld + i;
+			ind = trueWorld * maxTerrainVarPerWorld + i;
 
 			matTypeRects[TERRAINLAYER_FLY][ind] = matTypePanel->AddImageRect(
 				ChooseRect::ChooseRectIdentity::I_TERRAINLIBRARY,
 				Vector2f(trueWorld * terrainGridSize, i * terrainGridSize),
-				GetMatTileset(0, 0),
+				ts_terrain,
 				IntRect(0, 0, 128, 128),
 				terrainGridSize);
 			matTypeRects[TERRAINLAYER_FLY][ind]->Init();
@@ -7408,17 +7417,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	Vector2f vSize = pView.getSize();
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(pView.getCenter().x - vSize.x / 2, pView.getCenter().y + vSize.y / 2);
-	//for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
-	//{
-	//	if (ts_polyShaders[i] != NULL)
-	//	{
-	//		polyShaders[i].setUniform("zoom", zoom);
-	//		polyShaders[i].setUniform("topLeft", botLeft);
-	//		//just need to change the name topleft  to botleft eventually
-	//	}
-
-	//}
-
+	
 	terrainShader.setUniform("zoom", zoom);
 	terrainShader.setUniform("topLeft", botLeft);
 
@@ -11254,19 +11253,10 @@ Vector2i EditSession::GetPixelPos()
 	return pPos;
 }
 
-
-
-Tileset *EditSession::GetMatTileset(int tWorld, int tVar)
-{
-	int ind = tWorld * MAX_TERRAINTEX_PER_WORLD + tVar;
-
-	return ts_terrain;
-}
-
 void EditSession::UpdateCurrTerrainType()
 {
 	int ind = currTerrainWorld[TERRAINLAYER_NORMAL] 
-		* MAX_TERRAINTEX_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
+		* MAX_TERRAIN_VARIATION_PER_WORLD + currTerrainVar[TERRAINLAYER_NORMAL];
 	currTerrainTypeSpr.setTexture(*ts_terrain->texture);//*ts_polyShaders[ind]->texture);
 	currTerrainTypeSpr.setTextureRect(IntRect(0, 0, 64, 64));
 }
@@ -11327,14 +11317,6 @@ void EditSession::UpdatePolyShaders()
 
 		terrainShader.setUniform("zoom", zoom);
 
-		/*for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
-		{
-			if (ts_polyShaders[i] != NULL)
-			{
-				polyShaders[i].setUniform("zoom", zoom);
-			}
-		}*/
-
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{
 			waterShaders[i].setUniform("zoom", zoom);
@@ -11346,14 +11328,7 @@ void EditSession::UpdatePolyShaders()
 		oldShaderBotLeft = botLeft;
 
 		terrainShader.setUniform("topLeft", botLeft);
-		//for (int i = 0; i < TOTAL_TERRAIN_TEXTURES; ++i)
-		//{
-		//	if (ts_polyShaders[i] != NULL)
-		//	{
-		//		//just need to change the name topleft to botleft in the shader
-		//		polyShaders[i].setUniform("topLeft", botLeft);
-		//	}
-		//}
+
 
 		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 		{

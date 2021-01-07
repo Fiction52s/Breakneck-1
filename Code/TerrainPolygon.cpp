@@ -1466,7 +1466,7 @@ void TerrainPolygon::SetBorderTileset()
 {
 	if (terrainWorldType >= W1_SPECIAL)
 	{
-		ts_border = sess->GetSizedTileset( "Env/water_surface_64x8.png" );
+		ts_border = sess->GetSizedTileset( "Env/water_surface_64x2.png" );
 		return;
 	}
 	//basically theres a way to make this invisible, but haven't set it up yet.
@@ -1812,7 +1812,7 @@ void TerrainPolygon::GenerateBorderMesh()
 		return;
 	}
 
-	if (waterType != NOT_WATER)
+	if (waterType != -1)
 	{
 		GenerateWaterBorderMesh();
 		return;
@@ -3217,9 +3217,9 @@ int TerrainPolygon::GetSpecialPolyIndex()
 
 void TerrainPolygon::UpdateMaterialType()
 {
-	if (waterType != NOT_WATER)
+	if (waterType != -1)
 	{
-		pShader = &sess->waterShaders[0];
+		pShader = &sess->waterShaders[waterType];
 		tdInfo = NULL;
 
 		switch (waterType)
@@ -3292,43 +3292,162 @@ void TerrainPolygon::UpdateGrassType()
 	//}
 }
 
+int TerrainPolygon::GetWaterWorld(int waterT)
+{
+	//for editor formatting
+	int w = 0;
+	switch (waterT)
+	{
+	case WATER_NORMAL:
+		w = 0;
+		break;
+	case WATER_GLIDE:
+		w = 1;
+		break;
+	case WATER_LOWGRAV:
+		w = 1;
+		break;
+	case WATER_HEAVYGRAV:
+		w = 1;
+		break;
+	case WATER_BUOYANCY:
+		w = 1;
+		break;
+	case WATER_ACCEL:
+		w = 2;
+		break;
+	case WATER_ZEROGRAV:
+		w = 2;
+		break;
+	case WATER_LAUNCHER:
+		w = 3;
+		break;
+	case WATER_TIMEDREWIND:
+		w = 3;
+		break;
+	case WATER_TIMESLOW:
+		w = 4;
+		break;
+	case WATER_POISON:
+		w = 4;
+		break;
+	case WATER_FREEFLIGHT:
+		w = 5;
+		break;
+	case WATER_INVERTEDINPUTS:
+		w = 5;
+		break;
+	case WATER_REWIND:
+		w = 6;
+		break;
+	case WATER_SWORDPROJECTILE:
+		w = 6;
+		break;
+	case WATER_SUPER:
+		w = 7;
+		break;
+	}
+
+	return w;
+}
+
+int TerrainPolygon::GetWaterIndexInWorld(int waterT)
+{
+	//for editor formatting
+	int v = 0;
+	switch (waterT)
+	{
+	case WATER_NORMAL:
+		v = 0;
+		break;
+	case WATER_GLIDE:
+		v = 0;
+		break;
+	case WATER_LOWGRAV:
+		v = 1;
+		break;
+	case WATER_HEAVYGRAV:
+		v = 2;
+		break;
+	case WATER_BUOYANCY:
+		v = 3;
+		break;
+	case WATER_ACCEL:
+		v = 0;
+		break;
+	case WATER_ZEROGRAV:
+		v = 1;
+		break;
+	case WATER_LAUNCHER:
+		v = 0;
+		break;
+	case WATER_TIMEDREWIND:
+		v = 1;
+		break;
+	case WATER_TIMESLOW:
+		v = 0;
+		break;
+	case WATER_POISON:
+		v = 1;
+		break;
+	case WATER_FREEFLIGHT:
+		v = 0;
+		break;
+	case WATER_INVERTEDINPUTS:
+		v = 1;
+		break;
+	case WATER_REWIND:
+		v = 0;
+		break;
+	case WATER_SWORDPROJECTILE:
+		v = 1;
+		break;
+	case WATER_SUPER:
+		v = 0;
+		break;
+	}
+
+	return v;
+}
+
 sf::Color TerrainPolygon::GetWaterColor(int waterT)
 {
 	switch (waterT)
 	{
 	case WATER_NORMAL:
 		return Color(0x07, 0x19, 0x56);
-		break;
 	case WATER_GLIDE:
-		break;
+		return Color(0x00, 0xff, 0x22);
 	case WATER_LOWGRAV:
-		break;
+		return Color(0x55, 0xff, 0xcc);
 	case WATER_HEAVYGRAV:
-		break;
+		return Color(0x22, 0x22, 0x00);
 	case WATER_BUOYANCY:
-		break;
+		return Color(0x0aa, 0xbb, 0x77);
 	case WATER_ACCEL:
-		break;
+		return Color(0xf0, 0xff, 0x00);
 	case WATER_ZEROGRAV:
-		break;
+		return Color(0x22, 0x22, 0x88);
 	case WATER_LAUNCHER:
-		break;
+		return Color(0x77, 0xee, 0x99);
 	case WATER_TIMEDREWIND:
-		break;
+		return Color(0x0a, 0x9a, 0x2a);
 	case WATER_TIMESLOW:
-		break;
+		return Color(0xff, 0x00, 0x00);
 	case WATER_POISON:
-		break;
+		return Color(0xbb, 0x00, 0x44);
 	case WATER_FREEFLIGHT:
-		break;
+		return Color(0xff, 0x88, 0xee);
 	case WATER_INVERTEDINPUTS:
-		break;
+		return Color(0xbb, 0xcc, 0xff);
 	case WATER_REWIND:
-		break;
+		return Color(0xcc, 0xff, 0xee);
 	case WATER_SWORDPROJECTILE:
-		break;
+		return Color(0xbb, 0xff, 0xff);
 	case WATER_SUPER:
-		break;
+		return Color(0x55, 0xff, 0xff);
+	default:
+		return Color(0x07, 0x19, 0x56);
 	}
 }
 
@@ -3342,7 +3461,6 @@ void TerrainPolygon::UpdateWaterType()
 			if (terrainVariation == 0 )
 			{
 				waterType = WATER_NORMAL;
-				
 			}
 			break;
 		case W2_SPECIAL:
@@ -3423,7 +3541,7 @@ void TerrainPolygon::UpdateWaterType()
 	}
 	else
 	{
-		waterType = NOT_WATER;
+		waterType = -1;
 	}
 }
 

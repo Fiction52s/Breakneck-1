@@ -2187,6 +2187,30 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNGLIDE_GetActionLength,
 		&Actor::SPRINGSTUNGLIDE_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNGRIND,
+		&Actor::SPRINGSTUNGRIND_Start,
+		&Actor::SPRINGSTUNGRIND_End,
+		&Actor::SPRINGSTUNGRIND_Change,
+		&Actor::SPRINGSTUNGRIND_Update,
+		&Actor::SPRINGSTUNGRIND_UpdateSprite,
+		&Actor::SPRINGSTUNGRIND_TransitionToAction,
+		&Actor::SPRINGSTUNGRIND_TimeIndFrameInc,
+		&Actor::SPRINGSTUNGRIND_TimeDepFrameInc,
+		&Actor::SPRINGSTUNGRIND_GetActionLength,
+		&Actor::SPRINGSTUNGRIND_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNGRINDFLY,
+		&Actor::SPRINGSTUNGRINDFLY_Start,
+		&Actor::SPRINGSTUNGRINDFLY_End,
+		&Actor::SPRINGSTUNGRINDFLY_Change,
+		&Actor::SPRINGSTUNGRINDFLY_Update,
+		&Actor::SPRINGSTUNGRINDFLY_UpdateSprite,
+		&Actor::SPRINGSTUNGRINDFLY_TransitionToAction,
+		&Actor::SPRINGSTUNGRINDFLY_TimeIndFrameInc,
+		&Actor::SPRINGSTUNGRINDFLY_TimeDepFrameInc,
+		&Actor::SPRINGSTUNGRINDFLY_GetActionLength,
+		&Actor::SPRINGSTUNGRINDFLY_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNHOMING,
 		&Actor::SPRINGSTUNHOMING_Start,
 		&Actor::SPRINGSTUNHOMING_End,
@@ -9655,7 +9679,7 @@ void Actor::UpdateGrindPhysics(double movement)
 		{
 			double extra = q + movement - gLen;
 			V2d gPoint = grindEdge->GetPosition(q + movement);
-			if (owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
+			if (!sess->IsWithinCurrentBounds(gPoint))
 			{
 				grindSpeed = max(-grindSpeed, -hitBorderSpeed);
 				//grindSpeed = -grindSpeed;
@@ -9718,7 +9742,7 @@ void Actor::UpdateGrindPhysics(double movement)
 			double extra = q + movement;
 
 			V2d gPoint = grindEdge->GetPosition(q + movement);
-			if (owner != NULL && !owner->IsWithinCurrentBounds(gPoint))
+			if (!sess->IsWithinCurrentBounds(gPoint))
 			{
 				grindSpeed = min(-grindSpeed, hitBorderSpeed);
 
@@ -10171,7 +10195,7 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	if (grindEdge != NULL && (action == GRINDBALL || action == GRINDATTACK))
+	if (grindEdge != NULL && (action == GRINDBALL || action == GRINDATTACK || action == SPRINGSTUNGRIND))
 	{
 		UpdateGrindPhysics(movement);
 		return;
@@ -11297,6 +11321,40 @@ void Actor::UpdatePhysics()
 
 				break;
 			}
+			else if (tempCollision && action == SPRINGSTUNGRINDFLY)
+			{
+				prevRail = NULL;
+				Edge *e = minContact.edge;
+				V2d mp = minContact.position;
+				double q = e->GetQuantity(mp);
+				ground = e;
+				edgeQuantity = q;
+
+				groundSpeed = dot(velocity, e->Along());
+
+				if (approxEquals(groundSpeed, 0.0))
+				{
+					if (facingRight)
+					{
+						groundSpeed = 1.0;
+					}
+					else
+					{
+						groundSpeed = -1.0;
+					}
+				}
+
+				/*if (e->Normal().x > 0)
+				{
+					groundSpeed = velocity.y;
+				}
+				else
+				{
+					groundSpeed = -velocity.y;
+				}*/
+
+				SetActionGrind();
+			}
 			else if( ( action == BOUNCEAIR || action == BOUNCEGROUND || bounceFlameOn ) && tempCollision && bounceOkay )
 			{
 				prevRail = NULL;
@@ -11582,7 +11640,13 @@ void Actor::UpdatePhysics()
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
 				ActivateSound( S_GRAVREVERSE );
 			}
-			else if(!touchedGrass[Grass::ANTIGRIND] && tempCollision && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) /*&& action == AIRDASH*/ && PowerButtonHeld() && velocity.y != 0 && abs( minContact.normal.x ) >= wallThresh && !minContact.edge->IsInvisibleWall()  )
+			else if(!touchedGrass[Grass::ANTIGRIND] 
+				&& tempCollision && currPowerMode == PMODE_GRIND 
+				&& HasUpgrade(UPGRADE_POWER_GRIND) 
+				&& PowerButtonHeld()
+				&& velocity.y != 0 //remove this soon
+				&& abs( minContact.normal.x ) >= wallThresh 
+				&& !minContact.edge->IsInvisibleWall()  )
 			{
 				prevRail = NULL;
 				Edge *e = minContact.edge;
@@ -14690,7 +14754,7 @@ bool Actor::SpringLaunch()
 		
 		double s = currSpring->speed;
 
-		if (currSpring->springType == Spring::BOUNCE)
+		/*if (currSpring->springType == Spring::BOUNCE)
 		{
 			V2d testVel(velocity.x, velocity.y);
 			double along = dot(testVel, sprDir);
@@ -14698,7 +14762,7 @@ bool Actor::SpringLaunch()
 			{
 				s = along;
 			}
-		}
+		}*/
 
 		springVel = currSpring->dir * s;
 
@@ -14716,79 +14780,14 @@ bool Actor::SpringLaunch()
 
 		springStunFrames = currSpring->stunFrames;
 
-		if (currSpring->springType == Spring::GREEN )
+		if (currSpring->springType == Spring::GLIDE )
 		{
 			action = SPRINGSTUNGLIDE;
-		}
-		//else if (currSpring->springType == Spring::REDIRECT)
-		//{
-		//	//action = SPRINGSTUN;
-		//	//springStunFrames = 15;
-		//	if (ground != NULL)
-		//	{
-		//		//springVel = currSpring->dir * //abs(groundSpeed);
-		//	}
-		//	else
-		//	{
-		//		//springVel = 
-		//		//springVel = currSpring->dir * length(velocity);
-		//	}
-		//	
-		//}
-		else if (currSpring->springType == Spring::BOUNCE)
-		{
-			action = SPRINGSTUNBOUNCE;
-			
 		}
 		else if (currSpring->springType == Spring::AIRBOUNCE)
 		{
 			action = SPRINGSTUNAIRBOUNCE;
 		}
-		
-		//else if (currSpring->springType == Spring::REFLECT)
-		//{
-		//	
-		//	if (ground != NULL)
-		//	{
-
-		//	}
-		//	else
-		//	{
-		//		double len = length(velocity);
-		//		if (len < 25)
-		//		{
-		//			len = 25;
-		//			//springVel = currSpring->dir * len;
-		//		}
-		//		//else
-		//		{
-
-		//			action = SPRINGSTUN;
-		//			springStunFrames = 15;
-
-		//			V2d v = normalize(velocity);
-		//			cout << "v: " << v.x << ", " << v.y << endl;
-		//			v = -v;
-
-		//			V2d dir = currSpring->dir;
-
-		//			if (dot(v, currSpring->dir) > 0 )
-		//			{
-		//				dir = -dir;
-		//			}
-		//			
-
-		//			double a = GetVectorAngleDiffCCW(v, dir);
-		//			//V2d di = currSpring->dir;
-		//			RotateCCW(dir, a);
-		//			//V2d reflectDir = d;//(cross(v, currSpring->dir), dot(v, currSpring->dir) );
-		//			//cout << "v: " << v.x << ", " << v.y << endl;
-		//			//cout << "reflectDir: " << reflectDir.x << ", " << reflectDir.y << endl;
-		//			springVel = dir * len;
-		//		}
-		//	}
-
-		//}
 		else
 		{
 			SetAction(SPRINGSTUN);
@@ -18014,35 +18013,31 @@ void Actor::SetActionGrind()
 
 	BounceFlameOff();
 
-	//double gSpeed = groundSpeed;
-	//if( reversed )
-	//	gSpeed = -gSpeed;
-	//groundSpeed = 10;
-	double dSpeed = GetDashSpeed();
+	double minGrindSpeed = GetDashSpeed();
+
+	if (action == SPRINGSTUNGRINDFLY)
+	{
+		minGrindSpeed = length(springVel);
+	}
+	//doesnt account for reversed?
 	if( groundSpeed == 0 )
 	{
 		if( facingRight )
 		{
-
-			//cout << "dashspeed" << endl;
-			grindSpeed = dSpeed;
-			//if( reversed )
-			//	grindSpeed = -dashSpeed;
+			grindSpeed = minGrindSpeed;
 		}
 		else
 		{
-			grindSpeed = -dSpeed;
-			//if( reversed )
-			//	grindSpeed = dashSpeed;
+			grindSpeed = -minGrindSpeed;
 		}
 	}
 	else if( groundSpeed > 0 )
 	{
-		grindSpeed = std::min( maxGroundSpeed + scorpAdditionalCap, std::max( groundSpeed, dSpeed ) );
+		grindSpeed = std::min( maxGroundSpeed, std::max( groundSpeed, minGrindSpeed) );
 	}
 	else
 	{
-		grindSpeed = std::max( -maxGroundSpeed - scorpAdditionalCap, std::min( groundSpeed, -dSpeed ) );
+		grindSpeed = std::max( -maxGroundSpeed, std::min( groundSpeed, -minGrindSpeed) );
 	}
 	
 
@@ -18055,7 +18050,16 @@ void Actor::SetActionGrind()
 		leftWire->Retract();
 	//rightWire->Reset();
 	//leftWire->Reset();
-	SetAction(GRINDBALL);
+
+	if (action == SPRINGSTUNGRINDFLY)
+	{
+		SetAction(SPRINGSTUNGRIND);
+	}
+	else
+	{
+		SetAction(GRINDBALL);
+	}
+	
 	grindEdge = ground;
 	frame = 0;
 	grindQuantity = edgeQuantity;
@@ -18616,7 +18620,7 @@ bool Actor::IsSpringAction(int a)
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
 		|| a == SPRINGSTUNTELEPORT
 		|| a == SPRINGSTUNAIM || a == AIMWAIT || a == SPRINGSTUNHOMING
-		|| a == SPRINGSTUNHOMINGATTACK;
+		|| a == SPRINGSTUNHOMINGATTACK || a == SPRINGSTUNGRIND || a == SPRINGSTUNGRINDFLY;
 }
 
 bool Actor::IsOnRailAction(int a)

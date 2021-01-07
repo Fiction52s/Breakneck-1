@@ -35,6 +35,10 @@ void Actor::AIMWAIT_Change()
 			SetAction(SPRINGSTUNAIM);
 			aimLauncherStunFrames = currAimLauncher->stunFrames;
 		}
+		else if (aimLauncherType == AimLauncher::TYPE_GRIND)
+		{
+			SetAction(SPRINGSTUNGRINDFLY);
+		}
 		else if (aimLauncherType == AimLauncher::TYPE_HOMING)
 		{
 			SetAction(SPRINGSTUNHOMING);

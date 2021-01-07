@@ -112,15 +112,11 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	string &typeName = ap->type->info.name;
 	if (typeName == "spring")
 	{
-		springType = BLUE;
+		springType = REGULAR;
 	}
 	else if (typeName == "glidespring")
 	{
-		springType = GREEN;
-	}
-	else if (typeName == "bouncespring")
-	{
-		springType = BOUNCE;
+		springType = GLIDE;
 	}
 	else if (typeName == "airbouncespring")
 	{
@@ -133,28 +129,22 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 
 	switch (springType)
 	{
-	case BLUE:
+	case REGULAR:
 		ts_idle = sess->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
 		ts_recover = sess->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
 		break;
-	case GREEN:
+	case GLIDE:
 		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
 		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		break;
-	case BOUNCE:
 	case AIRBOUNCE:
 		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
 		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		sprite.setColor(Color::Yellow);
 		break;
-	}
-
-	if (springType == AIRBOUNCE)
-	{
-		sprite.setColor(Color::Black);
 	}
 
 	double radius = 64;

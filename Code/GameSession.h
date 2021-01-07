@@ -547,11 +547,6 @@ struct GameSession : RayCastHandler, Session
 
 	void CloseGates(int gCat);
 	void KeyboardUpdate( int index );
-
-	
-	bool IsWithinBounds(V2d &p);
-	bool IsWithinBarrierBounds(V2d &p);
-	bool IsWithinCurrentBounds(V2d &p);
 	
 	int TryToActivateBonus();
 	void UpdateReplayGhostSprites();

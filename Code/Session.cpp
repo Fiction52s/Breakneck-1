@@ -501,7 +501,7 @@ void Session::RegisterW3Enemies()
 	AddBasicAerialWorldEnemy("bouncejuggler", 3, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	AddWorldEnemy("limitedbouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
-	AddWorldEnemy("bouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
+	//AddWorldEnemy("bouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
 
 	AddWorldEnemy("aimlauncher", 3, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	
@@ -591,7 +591,7 @@ void Session::RegisterW4Enemies()
 	AddWorldEnemy("limitedgroundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 
 		false, true, false, 3);
 
-
+	AddWorldEnemy("grindlauncher", 4, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	//AddBasicRailWorldEnemy("railtest", 4, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/shroom_192x192.png", 192, 192));
@@ -1836,7 +1836,7 @@ void Session::SetupWaterShaders()
 	ts_water = GetSizedTileset("Env/water_128x128.png");
 	waterShaders = new Shader[TerrainPolygon::WATER_Count];
 
-	for (int i = 0; i < TerrainPolygon::WATER_Count - 1; ++i)
+	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
 		Shader &waterShader = waterShaders[i];
 		if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
@@ -1850,16 +1850,12 @@ void Session::SetupWaterShaders()
 		waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
 		waterShader.setUniform("skyColor", ColorGL(Color::White));
 
-		int waterIndex = i + 1;
-		
-
-		
-		Color wColor = TerrainPolygon::GetWaterColor(waterIndex);
+		Color wColor = TerrainPolygon::GetWaterColor(i);
 		wColor.a = 200;
 		waterShader.setUniform("u_waterBaseColor", ColorGL(wColor));
 
-		IntRect ir1 = ts_water->GetSubRect(waterIndex * 2);
-		IntRect ir2 = ts_water->GetSubRect(waterIndex * 2 + 1);
+		IntRect ir1 = ts_water->GetSubRect(i * 2);
+		IntRect ir2 = ts_water->GetSubRect(i * 2 + 1);
 
 		float width = ts_water->texture->getSize().x;
 		float height = ts_water->texture->getSize().y;
@@ -1872,8 +1868,6 @@ void Session::SetupWaterShaders()
 			Glsl::Vec4(ir2.left / width, ir2.top / height,
 			(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
 	}
-
-	
 }
 
 void Session::DrawPlayerWires( RenderTarget *target )
@@ -6855,4 +6849,30 @@ V2d Session::CalcBounceReflectionVel(Edge *e, V2d &vel)
 	}
 
 	return reflectionDir * lenVel;
+}
+
+bool Session::IsWithinBounds(V2d &p)
+{
+	return (((p.x >= mapHeader->leftBounds)
+		&& (p.y >= mapHeader->topBounds)
+		&& (p.x <= mapHeader->leftBounds + mapHeader->boundsWidth)
+		&& (p.y <= mapHeader->topBounds + mapHeader->boundsHeight)));
+}
+
+bool Session::IsWithinBarrierBounds(V2d &p)
+{
+	for (auto it = barriers.begin(); it != barriers.end(); ++it)
+	{
+		if (!(*it)->IsPointWithinBarrier(p))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Session::IsWithinCurrentBounds(V2d &p)
+{
+	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
 }

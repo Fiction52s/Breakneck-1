@@ -17,6 +17,7 @@ struct AimLauncher : Enemy
 	enum AimLauncherType
 	{
 		TYPE_BOUNCE,
+		TYPE_GRIND,
 		TYPE_HOMING,
 	};
 

@@ -246,6 +246,8 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNBOUNCEGROUND,
 		SPRINGSTUNBOUNCEWALL,
 		SPRINGSTUNBOUNCE,
+		SPRINGSTUNGRIND,
+		SPRINGSTUNGRINDFLY,
 		AIMWAIT,
 		SPRINGSTUNAIM,
 		SPRINGSTUNAIRBOUNCE,
@@ -2592,6 +2594,28 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNGLIDE_TimeDepFrameInc();
 	int SPRINGSTUNGLIDE_GetActionLength();
 	Tileset * SPRINGSTUNGLIDE_GetTileset();
+
+	void SPRINGSTUNGRIND_Start();
+	void SPRINGSTUNGRIND_End();
+	void SPRINGSTUNGRIND_Change();
+	void SPRINGSTUNGRIND_Update();
+	void SPRINGSTUNGRIND_UpdateSprite();
+	void SPRINGSTUNGRIND_TransitionToAction(int a);
+	void SPRINGSTUNGRIND_TimeIndFrameInc();
+	void SPRINGSTUNGRIND_TimeDepFrameInc();
+	int SPRINGSTUNGRIND_GetActionLength();
+	Tileset * SPRINGSTUNGRIND_GetTileset();
+
+	void SPRINGSTUNGRINDFLY_Start();
+	void SPRINGSTUNGRINDFLY_End();
+	void SPRINGSTUNGRINDFLY_Change();
+	void SPRINGSTUNGRINDFLY_Update();
+	void SPRINGSTUNGRINDFLY_UpdateSprite();
+	void SPRINGSTUNGRINDFLY_TransitionToAction(int a);
+	void SPRINGSTUNGRINDFLY_TimeIndFrameInc();
+	void SPRINGSTUNGRINDFLY_TimeDepFrameInc();
+	int SPRINGSTUNGRINDFLY_GetActionLength();
+	Tileset * SPRINGSTUNGRINDFLY_GetTileset();
 
 	void SPRINGSTUNHOMING_Start();
 	void SPRINGSTUNHOMING_End();

@@ -581,7 +581,6 @@ struct EditSession : GUIHandler, Session
 	double GetZoomedMinEdgeLength();
 	int GetCurrTerrainWorld();
 	int GetCurrTerrainVariation();
-	sf::IntRect GetMatSubRect(int w, int v);
 	void UpdateCurrTerrainType();
 	void SetupNewMapPanel();
 	

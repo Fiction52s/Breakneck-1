@@ -15,10 +15,10 @@ struct Spring : Enemy
 
 	enum SpringType
 	{
-		BLUE,
-		GREEN,
-		BOUNCE,
+		REGULAR,
+		GLIDE,
 		AIRBOUNCE,
+
 	};
 
 	void UpdateParamsSettings();

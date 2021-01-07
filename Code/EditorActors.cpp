@@ -332,7 +332,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "airbouncespring" || name == "swinglaunchercw"
 		|| name == "swinglauncherccw"
 		|| name == "aimlauncher"
-		|| name == "hominglauncher")
+		|| name == "hominglauncher"
+		|| name == "grindlauncher")
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);

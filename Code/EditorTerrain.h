@@ -206,7 +206,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 	enum WaterType
 	{
-		NOT_WATER,
 		WATER_NORMAL,
 		WATER_GLIDE,
 		WATER_LOWGRAV,
@@ -259,13 +258,9 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
-	WaterType waterType;
-	//Tileset *ts_water;
-	//sf::Shader waterShader;
-	//float waterShaderCounter;
-
-	//void TestUpdateWaterShader();
-
+	int waterType;
+	static int GetWaterWorld(int waterT);
+	static int GetWaterIndexInWorld(int waterT);
 	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
 	void UpdateWaterType();
