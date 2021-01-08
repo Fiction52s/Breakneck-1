@@ -59,46 +59,14 @@ void Actor::SPRINGSTUNANNIHILATION_Update()
 		facingRight = true;
 	}*/
 
-	if (currInput.LUp())
-	{
-		if (glideTurnFactor < 0)
-		{
-			glideTurnFactor = 0;
-		}
-		glideTurnFactor += glideTurnAccel;
-		if (glideTurnFactor > maxGlideTurnFactor)
-		{
-			glideTurnFactor = maxGlideTurnFactor;
-		}
-		//RotateCCW(springVel, glideTurnFactor);
-	}
-	else if (currInput.LDown())
-	{
-		if (glideTurnFactor > 0)
-		{
-			glideTurnFactor = 0;
-		}
-		glideTurnFactor -= glideTurnAccel;
-		if (glideTurnFactor < -maxGlideTurnFactor)
-		{
-			glideTurnFactor = -maxGlideTurnFactor;
-		}
-		//RotateCCW(springVel, glideTurnFactor);
-		//grav = AddGravity(V2d(0, 0));
-	}
-	else
-	{
-		glideTurnFactor = 0;
-	}
 
-	if (facingRight)
-	{
-		RotateCCW(springVel, glideTurnFactor);
-	}
-	else
-	{
-		RotateCCW(springVel, -glideTurnFactor);
-	}
+	V2d targetDir = currInput.GetLeft8Dir();
+
+	double turnFactor;
+
+	double len = length(springVel);
+	springVel += targetDir * len * .2;
+	springVel = normalize(springVel) * len;
 
 	velocity = springVel + springExtra;
 }
