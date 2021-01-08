@@ -118,9 +118,9 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	{
 		springType = GLIDE;
 	}
-	else if (typeName == "airbouncespring")
+	else if (typeName == "annihilationspring")
 	{
-		springType = AIRBOUNCE;
+		springType = ANNIHILATION_GLIDE;
 	}
 	
 
@@ -139,11 +139,11 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		break;
-	case AIRBOUNCE:
+	case ANNIHILATION_GLIDE:
 		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
 		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
-		sprite.setColor(Color::Yellow);
+		sprite.setColor(Color::Cyan);
 		break;
 	}
 

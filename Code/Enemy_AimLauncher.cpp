@@ -86,6 +86,11 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 	{
 		aimLauncherType = TYPE_BOUNCE;
 	}
+	else if (typeName == "airbouncelauncher")
+	{
+		aimLauncherType = TYPE_AIRBOUNCE;
+		sprite.setColor(Color::Magenta);
+	}
 	else if (typeName == "grindlauncher")
 	{
 		aimLauncherType = TYPE_GRIND;

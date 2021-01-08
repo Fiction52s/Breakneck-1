@@ -119,7 +119,7 @@ SpringParams::SpringParams(ActorType *at, int level)
 {
 	PlaceAerial(Vector2i(0,0));
 
-	speed = 30;
+	speed = at->panel->sliders["speed"]->defaultValue;
 
 	lines = NULL;
 }

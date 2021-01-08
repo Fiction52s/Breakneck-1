@@ -17,8 +17,7 @@ struct Spring : Enemy
 	{
 		REGULAR,
 		GLIDE,
-		AIRBOUNCE,
-
+		ANNIHILATION_GLIDE,
 	};
 
 	void UpdateParamsSettings();

@@ -248,6 +248,8 @@ struct Actor : QuadTreeCollider,
 		SPRINGSTUNBOUNCE,
 		SPRINGSTUNGRIND,
 		SPRINGSTUNGRINDFLY,
+		SPRINGSTUNANNIHILATION,
+		SPRINGSTUNANNIHILATIONATTACK,
 		AIMWAIT,
 		SPRINGSTUNAIM,
 		SPRINGSTUNAIRBOUNCE,
@@ -898,6 +900,7 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *shockwaveHitboxes;
 	CollisionBody *grindHitboxes[3];
 	CollisionBody *homingHitboxes;
+	CollisionBody *annihilationHitboxes;
 	double steepThresh;
 	int wallJumpMovementLimit;
 	double dashHeight;
@@ -1258,7 +1261,7 @@ struct Actor : QuadTreeCollider,
 	void DrawMapWires(sf::RenderTarget *target);
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateHitboxes();
-	bool InSpecialTerrain(int w, int var);
+	bool InWater(int wType );
 	void AirMovement();
 	void FreeFlightMovement();
 	bool TryHomingMovement();
@@ -1375,32 +1378,8 @@ struct Actor : QuadTreeCollider,
 		SPECIALT_EXIT
 	};
 
-	void HandleSpecialTerrainW1(
-	SpecialTerrainSituation sit,
-	int variation);
-	void HandleSpecialTerrainW2(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW3(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW4(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW5(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW6(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW7(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainW8(
-		SpecialTerrainSituation sit,
-		int variation);
-	void HandleSpecialTerrainSituation(
-		int world, int variation,
+	void HandleWaterSituation(
+		int wType,
 		SpecialTerrainSituation sit);
 	V2d GetTrueVel();
 	void RestoreDoubleJump();
@@ -2561,6 +2540,30 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNAIRBOUNCE_TimeDepFrameInc();
 	int SPRINGSTUNAIRBOUNCE_GetActionLength();
 	Tileset * SPRINGSTUNAIRBOUNCE_GetTileset();
+
+	void SPRINGSTUNANNIHILATION_Start();
+	void SPRINGSTUNANNIHILATION_End();
+	void SPRINGSTUNANNIHILATION_Change();
+	void SPRINGSTUNANNIHILATION_Update();
+	void SPRINGSTUNANNIHILATION_UpdateSprite();
+	void SPRINGSTUNANNIHILATION_TransitionToAction(int a);
+	void SPRINGSTUNANNIHILATION_TimeIndFrameInc();
+	void SPRINGSTUNANNIHILATION_TimeDepFrameInc();
+	int SPRINGSTUNANNIHILATION_GetActionLength();
+	Tileset * SPRINGSTUNANNIHILATION_GetTileset();
+
+	void SPRINGSTUNANNIHILATIONATTACK_Start();
+	void SPRINGSTUNANNIHILATIONATTACK_End();
+	void SPRINGSTUNANNIHILATIONATTACK_Change();
+	void SPRINGSTUNANNIHILATIONATTACK_Update();
+	void SPRINGSTUNANNIHILATIONATTACK_UpdateSprite();
+	void SPRINGSTUNANNIHILATIONATTACK_TransitionToAction(int a);
+	void SPRINGSTUNANNIHILATIONATTACK_TimeIndFrameInc();
+	void SPRINGSTUNANNIHILATIONATTACK_TimeDepFrameInc();
+	int SPRINGSTUNANNIHILATIONATTACK_GetActionLength();
+	Tileset * SPRINGSTUNANNIHILATIONATTACK_GetTileset();
+
+	
 
 	void SPRINGSTUNBOUNCE_Start();
 	void SPRINGSTUNBOUNCE_End();

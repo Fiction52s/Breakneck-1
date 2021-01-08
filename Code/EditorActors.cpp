@@ -329,7 +329,7 @@ Panel *ActorType::CreatePanel()
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 1, 9, 3);
 	}
 	else if (name == "spring" || name == "glidespring" || name == "bouncespring"
-		|| name == "airbouncespring" || name == "swinglaunchercw"
+		|| name == "airbouncelauncher" || name == "swinglaunchercw"
 		|| name == "swinglauncherccw"
 		|| name == "aimlauncher"
 		|| name == "hominglauncher"
@@ -338,6 +338,12 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);
 		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 30);
+	}
+	else if (name == "annihilationspring")
+	{
+		p = CreateDefaultPanel();
+		AddSetDirectionButton(p);
+		AddLabeledSlider(p, "speed", "launch speed:", 5, 60, 20);
 	}
 	else if (name == "teleporter" || name == "doubleteleporter")
 	{

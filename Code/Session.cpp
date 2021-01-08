@@ -478,6 +478,8 @@ void Session::RegisterW2Enemies()
 
 	AddWorldEnemy("glidespring", 2, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
+	
+	
 	//AddWorldEnemy("bossbird", 2, LoadParams<BossBirdParams>, NULL, MakeParamsAerial<BossBirdParams>,
 	//	Vector2i(0, 0), Vector2i(64, 64), false, false, false, false);
 }
@@ -505,7 +507,7 @@ void Session::RegisterW3Enemies()
 
 	AddWorldEnemy("aimlauncher", 3, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	
-	AddWorldEnemy("airbouncespring", 3, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+	AddWorldEnemy("airbouncelauncher", 3, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	//AddWorldEnemy("airbouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -735,7 +737,9 @@ void Session::RegisterW7Enemies()
 {
 	//AddBasicGroundWorldEnemy("greygoal", 7, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
-	AddBasicAerialWorldEnemy("omnidashbooster", 3, CreateEnemy<OmniDashBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("annihilationspring", 7, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+
+	AddBasicAerialWorldEnemy("omnidashbooster", 7, CreateEnemy<OmniDashBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddWorldEnemy("greyskeletonnode", 7, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));

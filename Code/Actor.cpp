@@ -2151,6 +2151,30 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNAIRBOUNCE_GetActionLength,
 		&Actor::SPRINGSTUNAIRBOUNCE_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNANNIHILATION,
+		&Actor::SPRINGSTUNANNIHILATION_Start,
+		&Actor::SPRINGSTUNANNIHILATION_End,
+		&Actor::SPRINGSTUNANNIHILATION_Change,
+		&Actor::SPRINGSTUNANNIHILATION_Update,
+		&Actor::SPRINGSTUNANNIHILATION_UpdateSprite,
+		&Actor::SPRINGSTUNANNIHILATION_TransitionToAction,
+		&Actor::SPRINGSTUNANNIHILATION_TimeIndFrameInc,
+		&Actor::SPRINGSTUNANNIHILATION_TimeDepFrameInc,
+		&Actor::SPRINGSTUNANNIHILATION_GetActionLength,
+		&Actor::SPRINGSTUNANNIHILATION_GetTileset);
+
+	SetupFuncsForAction(SPRINGSTUNANNIHILATIONATTACK,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_Start,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_End,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_Change,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_Update,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_UpdateSprite,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_TransitionToAction,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_TimeIndFrameInc,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_TimeDepFrameInc,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_GetActionLength,
+		&Actor::SPRINGSTUNANNIHILATIONATTACK_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNBOUNCE,
 		&Actor::SPRINGSTUNBOUNCE_Start,
 		&Actor::SPRINGSTUNBOUNCE_End,
@@ -3304,6 +3328,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		homingHitboxes->BasicSetup();
 		homingHitboxes->AddCollisionBox(0, cb);
 		homingHitboxes->hitboxInfo = currHitboxInfo;
+
+
+		cb.rw = 500;
+		cb.rh = 500;
+		annihilationHitboxes = new CollisionBody(CollisionBox::Hit);
+		annihilationHitboxes->BasicSetup();
+		annihilationHitboxes->AddCollisionBox(0, cb);
+		annihilationHitboxes->hitboxInfo = currHitboxInfo;
+
+		
 		//up
 	}
 	else
@@ -3718,6 +3752,7 @@ Actor::~Actor()
 
 		delete grindHitboxes[0];
 		delete homingHitboxes;
+		delete annihilationHitboxes;
 
 	}
 
@@ -3858,7 +3893,7 @@ void Actor::ActionEnded()
 
 void Actor::CheckHoldJump()
 {
-	if (InSpecialTerrain( 1, 3))
+	if (InWater( TerrainPolygon::WATER_BUOYANCY) )
 	{
 		if (!JumpButtonHeld())
 		{
@@ -5455,8 +5490,7 @@ void Actor::LimitMaxSpeeds()
 			velocity = AddGravity(velocity);
 		}
 
-		if (InSpecialTerrain( 0, 0 )
-			|| InSpecialTerrain( 2, 2 ) )//make this into a cleaner function very soon.
+		if (InWater( TerrainPolygon::WATER_NORMAL))//make this into a cleaner function very soon.
 		{
 			//cout << "running wallcling" << endl;
 			if (velocity.y > 4)
@@ -5529,7 +5563,7 @@ void Actor::UpdateBubbles()
 	}
 
 	bool timeSlowTerrain = false;
-	if (InSpecialTerrain( 4, 0 ))
+	if (InWater( TerrainPolygon::WATER_TIMESLOW) )
 	{
 		timeSlowTerrain = true;
 		inBubble = true;
@@ -11221,7 +11255,7 @@ void Actor::UpdatePhysics()
 			{
 				velocity = newVel;
 			}
-			else if (tempCollision && InSpecialTerrain( 1, 3 ) && minContact.normal.y <= 0)
+			else if (tempCollision && InWater( TerrainPolygon::WATER_BUOYANCY ) && minContact.normal.y <= 0)
 			{
 				//reverse grav water
 				velocity = newVel;
@@ -11981,9 +12015,9 @@ bool Actor::CanTech()
 		&& !touchedGrass[Grass::UNTECHABLE]);
 }
 
-bool Actor::InSpecialTerrain(int w, int var)
+bool Actor::InWater(int wType)
 {
-	return currSpecialTerrain != NULL && currSpecialTerrain->IsSpecialTerrainType(w, var);
+	return currSpecialTerrain != NULL && wType == currSpecialTerrain->waterType;
 }
 
 int Actor::MostRecentFrameCurrAttackBlocked()
@@ -13117,111 +13151,14 @@ V2d Actor::GetTrueCenter()
 	return position + b.offset;
 }
 
-void Actor::HandleSpecialTerrainSituation(
-	int world, int variation,
+void Actor::HandleWaterSituation(int wType,
 	SpecialTerrainSituation sit)
 {
-	switch (world)
+	switch (wType)
 	{
-	case TerrainPolygon::W1_SPECIAL:
-		HandleSpecialTerrainW1(sit, variation);
-		break;
-	case TerrainPolygon::W2_SPECIAL:
-		HandleSpecialTerrainW2(sit, variation);
-		break;
-	case TerrainPolygon::W3_SPECIAL:
-		HandleSpecialTerrainW3(sit, variation);
-		break;
-	case TerrainPolygon::W4_SPECIAL:
-		HandleSpecialTerrainW4(sit, variation);
-		break;
-	case TerrainPolygon::W5_SPECIAL:
-		HandleSpecialTerrainW5(sit, variation);
-		break;
-	case TerrainPolygon::W6_SPECIAL:
-		HandleSpecialTerrainW6(sit, variation);
-		break;
-	case TerrainPolygon::W7_SPECIAL:
-		HandleSpecialTerrainW7(sit, variation);
-		break;
-	case TerrainPolygon::W8_SPECIAL:
-		HandleSpecialTerrainW8(sit, variation);
-		break;
-	}
-}
-
-void Actor::HandleSpecialTerrain()
-{
-	if (action == DEATH)
+	case TerrainPolygon::WATER_NORMAL:
 	{
-		return;
-	}
-
-	
-
-	int world;
-	int variation;
-
-	if (currSpecialTerrain != NULL )
-	{
-		world = currSpecialTerrain->terrainWorldType;
-		variation = currSpecialTerrain->terrainVariation;
-
-		if (oldSpecialTerrain == NULL )
-		{
-			//enter terrain from no terrain
-			HandleSpecialTerrainSituation(world, variation, SPECIALT_ENTER);
-		}
-		else
-		{
-			int oldWorld = oldSpecialTerrain->terrainWorldType;
-			int oldVariation = oldSpecialTerrain->terrainVariation;
-
-			if (world == oldWorld && variation == oldVariation)
-			{
-				//remain in current terrain
-				HandleSpecialTerrainSituation(world, variation, SPECIALT_REMAIN);
-			}
-			else
-			{
-				//exit old terrain, enter current one
-				HandleSpecialTerrainSituation(oldWorld, oldVariation, SPECIALT_EXIT);
-				HandleSpecialTerrainSituation(world, variation, SPECIALT_ENTER);
-			}
-		}
-	}
-	else
-	{
-		if (oldSpecialTerrain != NULL)
-		{
-			int oldWorld = oldSpecialTerrain->terrainWorldType;
-			int oldVariation = oldSpecialTerrain->terrainVariation;
-
-			HandleSpecialTerrainSituation(oldWorld, oldVariation, SPECIALT_EXIT);
-		}
-	}
-
-
-	//fix these soon
-	if (!InSpecialTerrain(6, 0))
-	{
-		inRewindWater = false;
-	}
-
-	if (!InSpecialTerrain(6, 1))
-	{
-		inTeleportAcrossWater = false;
-	}
-
-}
-
-void Actor::HandleSpecialTerrainW1(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
-	{
-	case W1_SPECIAL_TERRAIN_WATER:
-		if ( sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			extraGravityModifier = .8;
 			gravModifyFrames = 1;
@@ -13229,52 +13166,11 @@ void Actor::HandleSpecialTerrainW1(SpecialTerrainSituation sit,
 			RestoreDoubleJump();
 		}
 		break;
-	case 1:
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			RestoreAirDash();
-			RestoreDoubleJump();
-		}
-		else if (sit == SPECIALT_EXIT)
-		{
-			Edge *exitEdge = RayCastSpecialTerrainExit();
-			if (exitEdge != NULL)
-			{
-				V2d norm = exitEdge->Normal();
-				SetAction(SPRINGSTUN);
-				springStunFrames = 60;
-
-				//make into function soon
-				holdJump = false;
-				holdDouble = false;
-				RechargeAirOptions();
-				rightWire->Reset();
-				leftWire->Reset();
-				frame = 0;
-				UpdateHitboxes();
-				ground = NULL;
-				wallNormal = V2d(0, 0);
-				velocity = V2d(0, 0);
-				currWall = NULL;
-				double speed = 30;
-				springVel = norm * speed;
-			}
-		}
-
-		break;
 	}
-
-}
-
-void Actor::HandleSpecialTerrainW2(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
+	case TerrainPolygon::WATER_GLIDE:
 	{
-	case W2_SPECIAL_TERRAIN_GLIDE:
-	{
-		if( sit == SPECIALT_ENTER )
-		//if (action != WATERGLIDE)
+		if (sit == SPECIALT_ENTER)
+			//if (action != WATERGLIDE)
 		{
 			V2d vel = GetTrueVel();
 
@@ -13311,38 +13207,32 @@ void Actor::HandleSpecialTerrainW2(SpecialTerrainSituation sit,
 			bounceEdge = NULL;
 			grindEdge = NULL;
 		}
-		
+
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			springStunFrames = 2;
 		}
-		
 		break;
 	}
-	case W2_SPECIAL_TERRAIN_HEAVY:
-	{
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			extraGravityModifier = 2.0;
-			gravModifyFrames = 2;
-		}
-		
-		//RestoreAirDash();
-		//RestoreDoubleJump();
-		break;
-	}
-	case W2_SPECIAL_TERRAIN_LIGHT:
+	case TerrainPolygon::WATER_LOWGRAV:
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			extraGravityModifier = .5;
 			gravModifyFrames = 2;
 		}
-		//RestoreAirDash();
-		//RestoreDoubleJump();
 		break;
 	}
-	case W2_SPECIAL_TERRAIN_REVERSE:
+	case TerrainPolygon::WATER_HEAVYGRAV:
+	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		{
+			extraGravityModifier = 2.0;
+			gravModifyFrames = 2;
+		}
+		break;
+	}
+	case TerrainPolygon::WATER_BUOYANCY:
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
@@ -13394,43 +13284,7 @@ void Actor::HandleSpecialTerrainW2(SpecialTerrainSituation sit,
 		}
 		break;
 	}
-	}
-}
-
-Edge * Actor::RayCastSpecialTerrainExit()
-{
-	V2d targetPos = position - normalize(velocity) * 200.0;
-	rayMode = RAYMODE_WATER;
-	rcEdge = NULL;
-	RayCast(this, oldSpecialTerrain->myTerrainTree->startNode, position, targetPos);
-	return rcEdge;
-}
-
-Edge * Actor::RayCastSpecialTerrainEnter()
-{
-	V2d targetPos = position - normalize(velocity) * 200.0;
-	rayMode = RAYMODE_WATER;
-	rcEdge = NULL;
-	RayCast(this, currSpecialTerrain->myTerrainTree->startNode, position, targetPos);
-	return rcEdge;
-}
-
-void Actor::HandleSpecialTerrainW3(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
-	{
-	case 0:
-	{
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			extraGravityModifier = 0;//2.0;
-			gravModifyFrames = 2;
-			springStunFrames = 2;
-		}
-		break;
-	}
-	case 1:
+	case TerrainPolygon::WATER_ACCEL:
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
@@ -13470,152 +13324,31 @@ void Actor::HandleSpecialTerrainW3(SpecialTerrainSituation sit,
 		}
 		break;
 	}
-	case 2:
+	case TerrainPolygon::WATER_ZEROGRAV:
 	{
-		//not sure what to do here for now. this experiment feels bad.
-		/*if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			extraGravityModifier = .8;
-			gravModifyFrames = 1;
-			RestoreAirDash();
-			RestoreDoubleJump();
-
-			double accelFactor = .5;
-			if (ground != NULL)
-			{
-				if (groundSpeed > 0)
-				{
-					groundSpeed += accelFactor;
-				}
-				else if (groundSpeed < 0)
-				{
-					groundSpeed -= accelFactor;
-				}
-			}
-			else
-			{
-				double velLen = length(velocity);
-
-				if (velocity.x > 0)
-				{
-					velocity.x += accelFactor;
-				}
-				else if (velocity.x < 0)
-				{
-					velocity.x -= accelFactor;
-				}
-
-				if (action == AIRDASH)
-				{
-					if (velocity.x > 0)
-					{
-						startAirDashVel.x += accelFactor;
-					}
-					else if (velocity.x < 0)
-					{
-						startAirDashVel.x -= accelFactor;
-					}
-				}
-			}
-		}*/
-break;
-	}
-	}
-
-}
-
-void Actor::HandleSpecialTerrainW4(SpecialTerrainSituation sit,
-	int variation)
-{
-	//terrain where if you stay in it for more than a certain number of frames
-	//you start taking damage
-
-
-}
-
-void Actor::HandleSpecialTerrainW5(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
-	{
-	case W5_SPECIAL_TERRAIN_TIMESLOW:
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RestoreAirDash();
-			RestoreDoubleJump();
-		}
-		break;
-	case 1:
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			RestoreAirDash();
-			RestoreDoubleJump();
-			modifiedDrainFrames = 10;
-			modifiedDrain = drainAmount * 4;
-		}
-		break;
-	}
-}
-
-void Actor::HandleSpecialTerrainW6(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
-	{
-	case 0:
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			SetAction(FREEFLIGHTSTUN);
-			springStunFrames = 2;
-			extraGravityModifier = 0;
+			extraGravityModifier = 0;//2.0;
 			gravModifyFrames = 2;
-			RestoreAirDash();
-			RestoreDoubleJump();
-			ground = NULL;
-			wallNormal = V2d(0, 0);
-			currWall = NULL;
-			bounceEdge = NULL;
-			grindEdge = NULL;
+			//springStunFrames = 2;
 		}
-		break;
-	case 1:
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
-		{
-			invertInputFrames = 2;
-		}
-
-		if (sit == SPECIALT_ENTER || sit == SPECIALT_EXIT)
-		{
-		}
-		
 		break;
 	}
-	
-}
-
-void Actor::HandleSpecialTerrainW7(SpecialTerrainSituation sit,
-	int variation)
-{
-	switch (variation)
+	case TerrainPolygon::WATER_LAUNCHER:
 	{
-	case 0:
-		if (!inRewindWater)
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			waterEntrancePosition = position;
+			RestoreAirDash();
+			RestoreDoubleJump();
 		}
-		inRewindWater = true;
-		break;
-	case 1:
-		if (sit == SPECIALT_ENTER)
+		else if (sit == SPECIALT_EXIT)
 		{
-			Edge *enterEdge = RayCastSpecialTerrainEnter();
-			if (enterEdge != NULL)
+			Edge *exitEdge = RayCastSpecialTerrainExit();
+			if (exitEdge != NULL)
 			{
-				V2d norm = -enterEdge->Normal();
+				V2d norm = exitEdge->Normal();
 				SetAction(SPRINGSTUN);
-				springStunFrames = 2;
-
-				waterEntranceVelocity = velocity;
+				springStunFrames = 60;
 
 				//make into function soon
 				holdJump = false;
@@ -13631,35 +13364,198 @@ void Actor::HandleSpecialTerrainW7(SpecialTerrainSituation sit,
 				currWall = NULL;
 				double speed = 30;
 				springVel = norm * speed;
-
-
 			}
 		}
-		else if (sit == SPECIALT_REMAIN)
+		break;
+	}
+	case TerrainPolygon::WATER_TIMEDREWIND:
+	{
+		break;
+	}
+	case TerrainPolygon::WATER_TIMESLOW:
+	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
+			RestoreAirDash();
+			RestoreDoubleJump();
+		}
+		break;
+	}
+	case TerrainPolygon::WATER_POISON:
+	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		{
+			RestoreAirDash();
+			RestoreDoubleJump();
+			modifiedDrainFrames = 10;
+			modifiedDrain = drainAmount * 4;
+		}
+		break;
+	}
+	case TerrainPolygon::WATER_FREEFLIGHT:
+	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		{
+			SetAction(FREEFLIGHTSTUN);
 			springStunFrames = 2;
+			extraGravityModifier = 0;
+			gravModifyFrames = 2;
+			RestoreAirDash();
+			RestoreDoubleJump();
+			ground = NULL;
+			wallNormal = V2d(0, 0);
+			currWall = NULL;
+			bounceEdge = NULL;
+			grindEdge = NULL;
 		}
-		else if (sit == SPECIALT_EXIT)
+		break;
+	}
+	case TerrainPolygon::WATER_INVERTEDINPUTS:
+	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			springStunFrames = 1;
-			velocity = waterEntranceVelocity;
+			invertInputFrames = 2;
 		}
-		
-		/*if (!inTeleportAcrossWater)
+
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_EXIT)
+		{
+		}
+		break;
+	}
+	case TerrainPolygon::WATER_REWIND:
+	{
+		if (!inRewindWater)
 		{
 			waterEntrancePosition = position;
-			waterEntranceVelocity = velocity;
-		}*/
-		
-		//SetAction(TELEPORTACROSSTERRAIN);
-		//inTeleportAcrossWater = true;
+		}
+		inRewindWater = true;
 		break;
+	}
+	case TerrainPolygon::WATER_SWORDPROJECTILE:
+	{
+		//if (sit == SPECIALT_ENTER)
+		//{
+		//	Edge *enterEdge = RayCastSpecialTerrainEnter();
+		//	if (enterEdge != NULL)
+		//	{
+		//		V2d norm = -enterEdge->Normal();
+		//		SetAction(SPRINGSTUN);
+		//		springStunFrames = 2;
+
+		//		waterEntranceVelocity = velocity;
+
+		//		//make into function soon
+		//		holdJump = false;
+		//		holdDouble = false;
+		//		RechargeAirOptions();
+		//		rightWire->Reset();
+		//		leftWire->Reset();
+		//		frame = 0;
+		//		UpdateHitboxes();
+		//		ground = NULL;
+		//		wallNormal = V2d(0, 0);
+		//		velocity = V2d(0, 0);
+		//		currWall = NULL;
+		//		double speed = 30;
+		//		springVel = norm * speed;
+
+
+		//	}
+		//}
+		//else if (sit == SPECIALT_REMAIN)
+		//{
+		//	springStunFrames = 2;
+		//}
+		//else if (sit == SPECIALT_EXIT)
+		//{
+		//	springStunFrames = 1;
+		//	velocity = waterEntranceVelocity;
+		//}
+		break;
+	}
+	case TerrainPolygon::WATER_SUPER:
+	{
+		break;
+	}
 	}
 }
 
-void Actor::HandleSpecialTerrainW8(SpecialTerrainSituation sit,
-	int variation)
+void Actor::HandleSpecialTerrain()
 {
+	if (action == DEATH)
+	{
+		return;
+	}
+
+	int wType;
+	int oldWType; 
+
+	if (currSpecialTerrain != NULL )
+	{
+		wType = currSpecialTerrain->waterType;
+
+		if (oldSpecialTerrain == NULL )
+		{
+			//enter terrain from no terrain
+			HandleWaterSituation( wType, SPECIALT_ENTER);
+		}
+		else
+		{
+			oldWType = oldSpecialTerrain->waterType;
+
+			if (wType == oldWType)
+			{
+				//remain in current terrain
+				HandleWaterSituation(wType, SPECIALT_REMAIN);
+			}
+			else
+			{
+				//exit old terrain, enter current one
+				HandleWaterSituation(oldWType, SPECIALT_EXIT);
+				HandleWaterSituation(wType, SPECIALT_ENTER);
+			}
+		}
+	}
+	else
+	{
+		if (oldSpecialTerrain != NULL)
+		{
+			oldWType = oldSpecialTerrain->waterType;
+
+			HandleWaterSituation(oldWType, SPECIALT_EXIT);
+		}
+	}
+
+
+	//fix these soon
+	if (!InWater(TerrainPolygon::WATER_REWIND) )
+	{
+		inRewindWater = false;
+	}
+
+	/*if (!InWater( TerrainPolygon::WATER_TEL)
+	{
+		inTeleportAcrossWater = false;
+	}*/
+
+}
+
+Edge * Actor::RayCastSpecialTerrainExit()
+{
+	V2d targetPos = position - normalize(velocity) * 200.0;
+	rayMode = RAYMODE_WATER;
+	rcEdge = NULL;
+	RayCast(this, oldSpecialTerrain->myTerrainTree->startNode, position, targetPos);
+	return rcEdge;
+}
+
+Edge * Actor::RayCastSpecialTerrainEnter()
+{
+	V2d targetPos = position - normalize(velocity) * 200.0;
+	rayMode = RAYMODE_WATER;
+	rcEdge = NULL;
+	RayCast(this, currSpecialTerrain->myTerrainTree->startNode, position, targetPos);
+	return rcEdge;
 }
 
 void Actor::UpdateSmallLightning()
@@ -14133,7 +14029,7 @@ void Actor::SlowDependentFrameIncrement()
 			downTiltLevel = 0;
 		}
 
-		if (springStunFrames > 0)
+		if (springStunFrames > 0 && action != SPRINGSTUNANNIHILATIONATTACK)
 			--springStunFrames;
 		//cout << "frame: " << frame << endl;
 
@@ -14780,13 +14676,14 @@ bool Actor::SpringLaunch()
 
 		springStunFrames = currSpring->stunFrames;
 
-		if (currSpring->springType == Spring::GLIDE )
+		if (currSpring->springType == Spring::GLIDE)
 		{
-			action = SPRINGSTUNGLIDE;
+			SetAction(SPRINGSTUNGLIDE);
 		}
-		else if (currSpring->springType == Spring::AIRBOUNCE)
+		else if (currSpring->springType == Spring::ANNIHILATION_GLIDE)
 		{
-			action = SPRINGSTUNAIRBOUNCE;
+			//action = SPRINGSTUNGLIDE;
+			SetAction( SPRINGSTUNANNIHILATION);
 		}
 		else
 		{
@@ -18620,7 +18517,9 @@ bool Actor::IsSpringAction(int a)
 	return a == SPRINGSTUN || a == SPRINGSTUNGLIDE || a == SPRINGSTUNBOUNCE || a == SPRINGSTUNAIRBOUNCE
 		|| a == SPRINGSTUNTELEPORT
 		|| a == SPRINGSTUNAIM || a == AIMWAIT || a == SPRINGSTUNHOMING
-		|| a == SPRINGSTUNHOMINGATTACK || a == SPRINGSTUNGRIND || a == SPRINGSTUNGRINDFLY;
+		|| a == SPRINGSTUNHOMINGATTACK || a == SPRINGSTUNGRIND 
+		|| a == SPRINGSTUNGRINDFLY || a == SPRINGSTUNANNIHILATION
+		|| a == SPRINGSTUNANNIHILATIONATTACK;
 }
 
 bool Actor::IsOnRailAction(int a)
