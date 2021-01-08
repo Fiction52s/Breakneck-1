@@ -4710,7 +4710,10 @@ void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt,
 			if (terrainWorldType <= SECRETCORE)
 			{
 				Tileset *ts = sess->ts_terrain;
-				IntRect ir = ts->GetSubRect(0);
+				
+
+				int tile = 8 * terrainWorldType + terrainVariation;
+				IntRect ir = ts->GetSubRect(tile);
 
 				float width = ts->texture->getSize().x;
 				float height = ts->texture->getSize().y;
