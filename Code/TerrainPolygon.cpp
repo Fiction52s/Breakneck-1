@@ -3417,7 +3417,7 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 	case WATER_NORMAL:
 		return Color(0x07, 0x19, 0x56);
 	case WATER_GLIDE:
-		return Color(0x00, 0xff, 0x22);
+		return Color(0x00, 0xaa, 0x88);
 	case WATER_LOWGRAV:
 		return Color(0x55, 0xff, 0xcc);
 	case WATER_HEAVYGRAV:
@@ -3427,11 +3427,11 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 	case WATER_ACCEL:
 		return Color(0xf0, 0xff, 0x00);
 	case WATER_ZEROGRAV:
-		return Color(0x22, 0x22, 0x88);
+		return Color(0x00, 0x00, 0x00);
 	case WATER_LAUNCHER:
 		return Color(0x77, 0xee, 0x99);
 	case WATER_TIMEDREWIND:
-		return Color(0x0a, 0x9a, 0x2a);
+		return Color(0x22, 0x66, 0xee);
 	case WATER_TIMESLOW:
 		return Color(0xff, 0x00, 0x00);
 	case WATER_POISON:
@@ -3443,7 +3443,7 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 	case WATER_REWIND:
 		return Color(0xcc, 0xff, 0xee);
 	case WATER_SWORDPROJECTILE:
-		return Color(0xbb, 0xff, 0xff);
+		return Color(0x22, 0xaa, 0xff);
 	case WATER_SUPER:
 		return Color(0x55, 0xff, 0xff);
 	default:
@@ -3530,12 +3530,12 @@ void TerrainPolygon::UpdateWaterType()
 			{
 				waterType = WATER_SWORDPROJECTILE;
 			}
-			else if (terrainVariation == 2)
+			break;
+		case W8_SPECIAL:
+			if (terrainVariation == 0)
 			{
 				waterType = WATER_SUPER;
 			}
-			break;
-		case W8_SPECIAL:
 			break;
 		}
 	}

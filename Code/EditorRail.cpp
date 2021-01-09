@@ -211,6 +211,7 @@ bool TerrainRail::IsTerrainType()
 void TerrainRail::Init()
 {	
 	sess = Session::GetSession();
+	ts_rail = sess->GetSizedTileset("Env/rails_128x64.png");
 	queryNext = NULL;
 	quadHalfWidth = 6;
 	renderMode = RENDERMODE_NORMAL;
@@ -218,6 +219,8 @@ void TerrainRail::Init()
 	lines = NULL;
 	coloredQuads = NULL;
 	coloredNodeCircles = NULL;
+	texturedQuads = NULL;
+	numTexturedQuads = 0;
 	selected = false;
 	railRadius = 20;
 	
@@ -237,6 +240,11 @@ TerrainRail::~TerrainRail()
 	{
 		delete[] coloredQuads;
 		delete coloredNodeCircles;
+	}
+
+	if (texturedQuads != NULL)
+	{
+		delete[] texturedQuads;
 	}
 
 	if (enemyParams != NULL)
@@ -543,10 +551,86 @@ void TerrainRail::Finalize()
 
 	coloredQuads = new sf::Vertex[numColoredQuads * 4];
 
+
+	
+
+
 	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, GetRailColor(), 12);
 	coloredNodeCircles->ShowAll();
 
 	SetupEdges();
+
+	Edge *curr, *next;
+	numTexturedQuads = 0;
+
+	int numQuadsForEdge;
+
+	double railTileWidth = ts_rail->tileWidth;
+	double railTileHeight = ts_rail->tileHeight;
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		curr = GetEdge(i);
+		numTexturedQuads += ceil(curr->GetLength() / railTileWidth);
+	}
+
+	texturedQuads = new Vertex[numTexturedQuads * 4];
+
+	double startQuant = 0;
+	double endQuant = 0;
+	int startIndex = 0;
+	V2d startCenter;
+	V2d endCenter;
+	V2d eNorm;
+	IntRect subRect = ts_rail->GetSubRect(0);
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		curr = GetEdge(i);
+		eNorm = curr->Normal();
+		//next = curr->GetNextEdge();
+
+		numQuadsForEdge = ceil(curr->GetLength() / railTileWidth);
+
+		startQuant = 0;
+
+		for (int j = 0; j < numQuadsForEdge; ++j)
+		{
+			startCenter = curr->GetPosition(startQuant);
+
+			if (j == numQuadsForEdge - 1)
+			{
+				endQuant = curr->GetLength();
+				endCenter = curr->v1;
+			}
+			else
+			{
+				endQuant = startQuant + railTileWidth;
+				endCenter = curr->GetPosition(endQuant);
+			}
+
+			texturedQuads[startIndex + j * 4 + 0].position =
+				Vector2f(startCenter + eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 1].position =
+				Vector2f(endCenter + eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 2].position =
+				Vector2f(endCenter - eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 3].position =
+				Vector2f(startCenter - eNorm * railTileHeight / 2.0);
+			
+			texturedQuads[startIndex + j * 4 + 0].texCoords =
+				Vector2f(subRect.left, subRect.top);
+			texturedQuads[startIndex + j * 4 + 1].texCoords =
+				Vector2f(subRect.left + (endQuant - startQuant), subRect.top);
+			texturedQuads[startIndex + j * 4 + 2].texCoords =
+				Vector2f(subRect.left + (endQuant - startQuant), subRect.top + subRect.height);
+			texturedQuads[startIndex + j * 4 + 3].texCoords =
+				Vector2f(subRect.left, subRect.top + subRect.height);
+			
+
+			startQuant += railTileWidth;
+		}
+
+		startIndex += numQuadsForEdge * 4;
+	}
 
 	UpdateLines();
 
@@ -1336,19 +1420,6 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 
 	TerrainPoint *curr, *next;
 
-	/*for (int i = 0; i < numP - 1; ++i)
-	{
-		curr = GetPoint(i);
-		next = GetPoint(i + 1);
-
-		UpdateLineColor(lines, i, index);
-
-		lines[index].position = sf::Vector2f(curr->pos.x, curr->pos.y);
-		lines[index + 1].position = sf::Vector2f(next->pos.x, next->pos.y);
-		index += 2;
-	}*/
-
-
 	int posInd;
 	for (int i = 0; i < numP; ++i)
 	{
@@ -1394,34 +1465,6 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 			coloredNodeCircles->SetPosition(i+1, end);
 		}
 	}
-
-	/*if (blockerParams != NULL)
-	{
-
-		blockerChain->UpdateParams(blockerParams);
-		blockerChain->UpdateOnEditPlacement();
-		blockerChain->UpdateFromEditParams(0);
-	}*/
-
-	//for (auto it = myFlies.begin(); it != myFlies.end(); ++it)
-	//{
-	//	fCurr = Vector2f((*it)->preTransformPos);//(*it)->GetPositionF();
-	//	fDiff = fCurr - center;
-	//	fDiff = t.transformPoint(fDiff);
-	//	fCurr = fDiff + trCenter;
-	//	(*it)->SetPosition(V2d(fCurr));
-	//}
-
-	//VertexArray & v = *va;
-	//for (int i = 0; i < vaSize; ++i)
-	//{
-	//	fCurr = triBackups[i];
-	//	fDiff = fCurr - center;
-	//	fDiff = t.transformPoint(fDiff);
-	//	fCurr = fDiff + trCenter;
-
-	//	v[i].position = fCurr;
-	//}
 }
 
 void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)
@@ -1465,6 +1508,12 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	switch (rType)
 	{
 	case NORMAL:
+	{
+		target->draw(texturedQuads, numTexturedQuads * 4, 
+			sf::Quads, ts_rail->texture);
+		//coloredNodeCircles->Draw(target);
+		break;
+	}
 	case LOCKED:
 	case TIMESLOW:
 	case WIREONLY:
