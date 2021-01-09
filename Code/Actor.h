@@ -253,6 +253,7 @@ struct Actor : QuadTreeCollider,
 		AIMWAIT,
 		SPRINGSTUNAIM,
 		SPRINGSTUNAIRBOUNCE,
+		SPRINGSTUNAIRBOUNCEPAUSE,
 		SPRINGSTUNTELEPORT,
 		SPRINGSTUNHOMING,
 		SPRINGSTUNHOMINGATTACK,
@@ -416,6 +417,8 @@ struct Actor : QuadTreeCollider,
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
 	OmniDashBooster *currOmniDashBooster;
 	int aimLauncherStunFrames;
+	int airBounceCounter;
+	int airBounceLimit;
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
@@ -2540,6 +2543,17 @@ struct Actor : QuadTreeCollider,
 	void SPRINGSTUNAIRBOUNCE_TimeDepFrameInc();
 	int SPRINGSTUNAIRBOUNCE_GetActionLength();
 	Tileset * SPRINGSTUNAIRBOUNCE_GetTileset();
+
+	void SPRINGSTUNAIRBOUNCEPAUSE_Start();
+	void SPRINGSTUNAIRBOUNCEPAUSE_End();
+	void SPRINGSTUNAIRBOUNCEPAUSE_Change();
+	void SPRINGSTUNAIRBOUNCEPAUSE_Update();
+	void SPRINGSTUNAIRBOUNCEPAUSE_UpdateSprite();
+	void SPRINGSTUNAIRBOUNCEPAUSE_TransitionToAction(int a);
+	void SPRINGSTUNAIRBOUNCEPAUSE_TimeIndFrameInc();
+	void SPRINGSTUNAIRBOUNCEPAUSE_TimeDepFrameInc();
+	int SPRINGSTUNAIRBOUNCEPAUSE_GetActionLength();
+	Tileset * SPRINGSTUNAIRBOUNCEPAUSE_GetTileset();
 
 	void SPRINGSTUNANNIHILATION_Start();
 	void SPRINGSTUNANNIHILATION_End();

@@ -11,6 +11,7 @@ void Actor::SPRINGSTUNANNIHILATIONATTACK_Start()
 
 void Actor::SPRINGSTUNANNIHILATIONATTACK_End()
 {
+	velocity = springVel;
 	SetAction(JUMP);
 	frame = 1;
 }
@@ -19,6 +20,7 @@ void Actor::SPRINGSTUNANNIHILATIONATTACK_Change()
 {
 	if ((!AttackButtonHeld() && frame > 10))
 	{
+		velocity = springVel;
 		SetAction(JUMP);
 		frame = 1;
 	}

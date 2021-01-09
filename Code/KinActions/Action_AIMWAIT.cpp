@@ -37,7 +37,8 @@ void Actor::AIMWAIT_Change()
 		}
 		else if (aimLauncherType == AimLauncher::TYPE_AIRBOUNCE)
 		{
-			action = SPRINGSTUNAIRBOUNCE;
+			SetAction(SPRINGSTUNAIRBOUNCE);
+			
 		}
 		else if (aimLauncherType == AimLauncher::TYPE_GRIND)
 		{

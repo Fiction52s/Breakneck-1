@@ -1,10 +1,13 @@
 #include "Actor.h"
+#include "Session.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::SPRINGSTUNAIRBOUNCE_Start()
 {
+	airBounceCounter = 0;
+	airBounceLimit = 3;
 }
 
 void Actor::SPRINGSTUNAIRBOUNCE_End()
@@ -14,41 +17,80 @@ void Actor::SPRINGSTUNAIRBOUNCE_End()
 
 void Actor::SPRINGSTUNAIRBOUNCE_Change()
 {
-	if (!GlideAction())
+	CheckBounceFlame();
+
+	if (airBounceCounter < airBounceLimit)
 	{
-		if (springStunFrames == 0)
+		if (JumpButtonPressed())
 		{
-			SetAction(JUMP);
-			frame = 1;
-			if (velocity.x < 0)
+			SetAction(SPRINGSTUNAIRBOUNCEPAUSE);
+
+			V2d dir8 = currInput.GetLeft8Dir();
+
+			if (dir8.x != 0 || dir8.y != 0)
 			{
-				facingRight = false;
+				springVel = dir8 * length(springVel);
 			}
-			else if (velocity.x > 0)
-			{
-				facingRight = true;
-			}
+			return;
 		}
 	}
 	else
 	{
-		springStunFrames = 0;
+		if (TryDoubleJump())
+		{
+			springStunFrames = 0;
+			return;
+		}
 	}
+
+	if (TryAirDash()) 
+	{
+		springStunFrames = 0;
+		return;
+	}
+
+	if (TryWallJump())
+	{
+		springStunFrames = 0;
+		return;
+	}
+
+	if (AirAttack())
+	{
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		
+		
+		springStunFrames = 0;
+		return;
+		
+	}
+
+	if (springStunFrames == 0)
+	{
+		SetAction(JUMP);
+		frame = 1;
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+	}
+
+	
 }
 
 void Actor::SPRINGSTUNAIRBOUNCE_Update()
 {
-	if (frame > 10)
-	{
-
-		V2d dir8 = currInput.GetLeft8Dir();
-
-		if (dir8.x != 0 || dir8.y != 0)
-		{
-			springVel = dir8 * length(springVel);
-		}
-	}
-
 
 	velocity = springVel + springExtra;
 

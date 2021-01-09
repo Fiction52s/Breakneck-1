@@ -2151,6 +2151,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SPRINGSTUNAIRBOUNCE_GetActionLength,
 		&Actor::SPRINGSTUNAIRBOUNCE_GetTileset);
 
+	SetupFuncsForAction(SPRINGSTUNAIRBOUNCEPAUSE,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_Start,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_End,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_Change,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_Update,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_UpdateSprite,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_TransitionToAction,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_TimeIndFrameInc,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_TimeDepFrameInc,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetActionLength,
+		&Actor::SPRINGSTUNAIRBOUNCEPAUSE_GetTileset);
+
 	SetupFuncsForAction(SPRINGSTUNANNIHILATION,
 		&Actor::SPRINGSTUNANNIHILATION_Start,
 		&Actor::SPRINGSTUNANNIHILATION_End,
@@ -2629,6 +2641,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	airBounceCounter = 0;
 	//fallThroughDuration = 0;
 	currPowerMode = PMODE_SHIELD;
 
@@ -4286,6 +4300,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	airBounceCounter = 0;
 	//fallThroughDuration = 0;
 	globalTimeSlowFrames = 0;
 	freeFlightFrames = 0;
@@ -14035,6 +14050,7 @@ void Actor::SlowDependentFrameIncrement()
 
 		++framesSinceClimbBoost;
 		++speedParticleCounter;
+
 
 		if( globalTimeSlowFrames > 0 )
 		{
