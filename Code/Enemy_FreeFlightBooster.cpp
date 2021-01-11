@@ -31,11 +31,11 @@ FreeFlightBooster::FreeFlightBooster(ActorParams *ap)//Vector2i &pos, int p_leve
 
 	strength = 360;
 
-	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
-
+	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");//sess->GetSizedTileset("Enemies/Booster_512x512.png");
+	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
+	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
-	sprite.setColor(Color::Magenta);
+	//sprite.setColor(Color::Magenta);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
@@ -61,7 +61,7 @@ void FreeFlightBooster::ResetEnemy()
 	SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 
-	sprite.setTexture(*ts->texture);
+	
 	UpdateSprite();
 }
 
@@ -122,14 +122,14 @@ void FreeFlightBooster::ProcessState()
 		{
 			action = REFRESH;
 			frame = 0;
-			sprite.setTexture(*ts_refresh->texture);
+			//sprite.setTexture(*ts_refresh->texture);
 			break;
 		}
 		case REFRESH:
 		{
 			action = NEUTRAL;
 			frame = 0;
-			sprite.setTexture(*ts->texture);
+			//sprite.setTexture(*ts->texture);
 			break;
 		}
 		}
@@ -144,19 +144,20 @@ void FreeFlightBooster::UpdateSprite()
 	{
 	case NEUTRAL:
 		tile = frame / animFactor[NEUTRAL];
-		ir = ts->GetSubRect(tile);
+		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
 		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
-		ir = ts->GetSubRect(tile);
+		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
 		tile = frame / animFactor[REFRESH];
-		ir = ts_refresh->GetSubRect(tile);
+		//ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
 
-	sprite.setTextureRect(ir);
+	sprite.setTextureRect(ts->GetSubRect(11));
+	//sprite.setTextureRect(ir);
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

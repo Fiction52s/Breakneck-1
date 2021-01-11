@@ -42,7 +42,7 @@ BounceFloater::BounceFloater(ActorParams *ap)
 	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
-	sprite.setColor(Color::Red);
+	//sprite.setColor(Color::Red);
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_BOUNCE] = 10;
@@ -187,7 +187,7 @@ void BounceFloater::FrameIncrement()
 void BounceFloater::UpdateSprite()
 {
 
-	int tile = 0;
+	int tile = 5;
 	sprite.setTextureRect(ts->GetSubRect(tile));
 
 	switch (action)

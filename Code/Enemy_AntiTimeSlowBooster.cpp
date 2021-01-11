@@ -36,7 +36,7 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
-	sprite.setColor(Color::Red);
+	//sprite.setColor(Color::Red);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
