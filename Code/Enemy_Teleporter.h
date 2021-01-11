@@ -15,6 +15,20 @@ struct Teleporter : Enemy
 		A_Count
 	};
 
+	Tileset *ts;
+	Tileset *ts_recover;
+	Tileset *ts_particles;
+	Tileset *ts_boost;
+
+	sf::Sprite particleSprite;
+	sf::Sprite recoverSprite;
+	sf::Sprite boostSprite;
+
+	int tilesetChoice;
+	int startFrame;
+	int recoverTileseChoice;
+	int recoverStartFrame;
+
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
@@ -37,9 +51,6 @@ struct Teleporter : Enemy
 
 	void ResetEnemy();
 	void ActionEnded();
-	Tileset *ts_idle;
-	Tileset *ts_recover;
-	Tileset *ts_springing;
 	void DebugDraw(sf::RenderTarget *target);
 
 	int animationFactor;

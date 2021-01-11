@@ -32,8 +32,8 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 
 	strength = 360;
 
-	ts = sess->GetSizedTileset("Enemies/booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
+	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
 	sprite.setColor(Color::Red);
@@ -124,14 +124,14 @@ void AntiTimeSlowBooster::ProcessState()
 		{
 			action = REFRESH;
 			frame = 0;
-			sprite.setTexture(*ts_refresh->texture);
+			//sprite.setTexture(*ts_refresh->texture);
 			break;
 		}
 		case REFRESH:
 		{
 			action = NEUTRAL;
 			frame = 0;
-			sprite.setTexture(*ts->texture);
+			//sprite.setTexture(*ts->texture);
 			break;
 		}
 		}
@@ -146,19 +146,23 @@ void AntiTimeSlowBooster::UpdateSprite()
 	{
 	case NEUTRAL:
 		tile = frame / animFactor[NEUTRAL];
-		ir = ts->GetSubRect(tile);
+		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
 		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
-		ir = ts->GetSubRect(tile);
+		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
 		tile = frame / animFactor[REFRESH];
-		ir = ts_refresh->GetSubRect(tile);
+		//ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
 
-	sprite.setTextureRect(ir);
+	tile = 0;
+
+
+
+	sprite.setTextureRect(ts->GetSubRect( 9 ) );
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

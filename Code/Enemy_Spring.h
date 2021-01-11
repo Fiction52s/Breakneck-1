@@ -38,9 +38,15 @@ struct Spring : Enemy
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
-	Tileset *ts_idle;
+	Tileset *ts;
 	Tileset *ts_recover;
-	Tileset *ts_springing;
+	Tileset *ts_particles;
+	Tileset *ts_boost;
+
+	
+	//Tileset *ts_idle;
+	//Tileset *ts_recover;
+	//Tileset *ts_springing;
 	void DebugDraw(sf::RenderTarget *target);
 
 	V2d dir;
@@ -50,8 +56,18 @@ struct Spring : Enemy
 
 	sf::Vertex debugLine[2];
 	sf::Text debugSpeed;
-
 	V2d dest;
+
+	sf::Sprite particleSprite;
+	sf::Sprite recoverSprite;
+	sf::Sprite boostSprite;
+
+	int tilesetChoice;
+	int startFrame;
+	int recoverTileseChoice;
+	int recoverStartFrame;
+	
+	int numFrames;
 };
 
 #endif

@@ -71,7 +71,13 @@ void Spring::UpdatePath()
 	V2d springVec = normalize(dOther);
 
 	double angle = atan2(springVec.x, -springVec.y);
-	sprite.setRotation(angle / PI * 180.0);
+
+	double spriteAngle = angle / PI * 180.0;
+
+	sprite.setRotation(spriteAngle);
+	recoverSprite.setRotation(spriteAngle);
+	boostSprite.setRotation(spriteAngle);
+	particleSprite.setRotation(spriteAngle);
 
 	dist = length(V2d(other));
 
@@ -107,27 +113,75 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	debugSpeed.setFillColor(Color::White);
 	debugSpeed.setCharacterSize(30);
 
+	//defaults
+	actionLength[IDLE] = 12;
+	actionLength[SPRINGING] = 8;
+	actionLength[RECOVERING] = 8;
+
+	animFactor[IDLE] = 5;
+	animFactor[SPRINGING] = 5;
+	animFactor[RECOVERING] = 4;
 
 	//potentially temporary
 	string &typeName = ap->type->info.name;
 	if (typeName == "spring")
 	{
 		springType = REGULAR;
+		tilesetChoice = 0;
+		recoverTileseChoice = 0;
+		recoverStartFrame = 0;
+		startFrame = 0;
 	}
 	else if (typeName == "glidespring")
 	{
 		springType = GLIDE;
+		tilesetChoice = 0;
+		recoverTileseChoice = 0;
+		recoverStartFrame = 8;
+		startFrame = 5;
 	}
 	else if (typeName == "annihilationspring")
 	{
 		springType = ANNIHILATION_GLIDE;
+		tilesetChoice = 1;
+		recoverTileseChoice = 2;
+		recoverStartFrame = 16;
+		startFrame = 20;
 	}
 	
+	if (tilesetChoice == 0)
+	{
+		ts = sess->GetSizedTileset("Enemies/launcher_1_384x384.png");
+	}
+	else if (tilesetChoice == 1)
+	{
+		ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
+	}
 
+	if (recoverTileseChoice == 0)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_1_384x384.png");
+	}
+	else if (recoverTileseChoice == 1)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_2_384x384.png");
+	}
+	else if (recoverTileseChoice == 2)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_3_384x384.png");
+	}
 
 	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
-
-	switch (springType)
+	ts_particles = sess->GetSizedTileset("Enemies/launcher_particles_256x256.png");
+	ts_boost = sess->GetSizedTileset("Enemies/launcher_explode_512x512.png");
+	
+	
+	particleSprite.setTexture(*ts_particles->texture);
+	boostSprite.setTexture(*ts_boost->texture);
+	recoverSprite.setTexture(*ts_recover->texture);
+	sprite.setTexture(*ts->texture);
+	//ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
+	/*switch (springType)
 	{
 	case REGULAR:
 		ts_idle = sess->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
@@ -145,23 +199,21 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
 		sprite.setColor(Color::Cyan);
 		break;
-	}
+	}*/
 
 	double radius = 64;
 
 	BasicCircleHitBodySetup(radius);
 
-	actionLength[IDLE] = 12;
-	actionLength[SPRINGING] = 8;
-	actionLength[RECOVERING] = 8;
+	//IDLE = 12 * 4
+	//SPRINGING = 8 * 4
+	//RECOVERING = 8 * 4
 
-	animFactor[IDLE] = 4;
-	animFactor[SPRINGING] = 4;
-	animFactor[RECOVERING] = 4;
+	
 
-	sprite.setTextureRect(ts_idle->GetSubRect(0));
+	/*sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(positionF);
+	sprite.setPosition(positionF);*/
 
 	editParams = ap;
 	UpdatePath();
@@ -187,7 +239,7 @@ void Spring::ResetEnemy()
 
 	receivedHit = NULL;
 	action = IDLE; 
-	sprite.setTexture(*ts_idle->texture);
+	//sprite.setTexture(*ts_idle->texture);
 
 	frame = 0;
 	SetHitboxes(&hitBody);
@@ -209,11 +261,9 @@ void Spring::ActionEnded()
 			break;
 		case SPRINGING:
 			action = RECOVERING;
-			sprite.setTexture(*ts_recover->texture);
 			break;
 		case RECOVERING:
 			action = IDLE;
-			sprite.setTexture(*ts_idle->texture);
 			break;
 		}
 	}
@@ -223,7 +273,6 @@ void Spring::Launch()
 {
 	assert(action == IDLE);
 	action = SPRINGING;
-	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
 	sess->ActivateSound(launchSoundBuf);
 }
@@ -233,21 +282,35 @@ void Spring::ProcessState()
 	ActionEnded();
 }
 
-
 void Spring::UpdateSprite()
 {
 	switch (action)
 	{
 	case IDLE:
-		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
+		sprite.setTextureRect(ts->GetSubRect((frame / animFactor[action])/3 + startFrame));
+		particleSprite.setTextureRect(ts_particles->GetSubRect(frame / animFactor[action]));
 		break;
 	case SPRINGING:
-		sprite.setTextureRect(ts_springing->GetSubRect(frame / animFactor[action]));
+		boostSprite.setTextureRect(ts_boost->GetSubRect(frame / animFactor[action]));
+		sprite.setTextureRect(ts->GetSubRect(4 + startFrame));
 		break;
 	case RECOVERING:
-		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
+		recoverSprite.setTextureRect(ts->GetSubRect(frame / animFactor[action] + recoverStartFrame));
+		sprite.setTextureRect(ts->GetSubRect(4 + startFrame));
 		break;
 	}
+
+	particleSprite.setOrigin(particleSprite.getLocalBounds().width / 2,
+		particleSprite.getLocalBounds().height / 2);
+	particleSprite.setPosition(GetPositionF());
+
+	boostSprite.setOrigin(boostSprite.getLocalBounds().width / 2,
+		boostSprite.getLocalBounds().height / 2);
+	boostSprite.setPosition(GetPositionF());
+
+	recoverSprite.setOrigin(recoverSprite.getLocalBounds().width / 2, recoverSprite.getLocalBounds().height / 2);
+	recoverSprite.setPosition(GetPositionF());
+
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }
@@ -255,4 +318,18 @@ void Spring::UpdateSprite()
 void Spring::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
+
+	if (action == RECOVERING)
+	{
+		target->draw(recoverSprite);
+	}
+	else if (action == IDLE)
+	{
+		target->draw(particleSprite);
+	}
+
+	if (action == SPRINGING)
+	{
+		target->draw(boostSprite);
+	}
 }

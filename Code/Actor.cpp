@@ -50,6 +50,7 @@
 #include "Enemy_FreeFlightTarget.h"
 #include "Enemy_AimLauncher.h"
 #include "Enemy_TimeBooster.h"
+#include "Enemy_PhaseBooster.h"
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_HomingBooster.h"
 #include "Enemy_AntiTimeSlowBooster.h"
@@ -1130,6 +1131,18 @@ void Actor::SetupActionFunctions()
 		&Actor::BOUNCEAIR_TimeDepFrameInc,
 		&Actor::BOUNCEAIR_GetActionLength,
 		&Actor::BOUNCEAIR_GetTileset);
+
+	SetupFuncsForAction(BOOSTERBOUNCE,
+		&Actor::BOOSTERBOUNCE_Start,
+		&Actor::BOOSTERBOUNCE_End,
+		&Actor::BOOSTERBOUNCE_Change,
+		&Actor::BOOSTERBOUNCE_Update,
+		&Actor::BOOSTERBOUNCE_UpdateSprite,
+		&Actor::BOOSTERBOUNCE_TransitionToAction,
+		&Actor::BOOSTERBOUNCE_TimeIndFrameInc,
+		&Actor::BOOSTERBOUNCE_TimeDepFrameInc,
+		&Actor::BOOSTERBOUNCE_GetActionLength,
+		&Actor::BOOSTERBOUNCE_GetTileset);
 
 	SetupFuncsForAction(BOUNCEGROUND,
 		&Actor::BOUNCEGROUND_Start,
@@ -2682,6 +2695,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	freeFlightFrames = 0;
 	antiTimeSlowFrames = 0;
 	homingFrames = 0;
+	phaseFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2724,6 +2738,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currOmniDashBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currHomingBooster = NULL;
+	currPhaseBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -2856,6 +2871,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currAntiTimeSlowBooster = NULL;
 	currOmniDashBooster = NULL;
 	currFreeFlightBooster = NULL;
+	currPhaseBooster = NULL;
 	currTeleporter = NULL;
 	currHomingBooster = NULL;
 	currSwingLauncher = NULL;
@@ -4306,6 +4322,7 @@ void Actor::Respawn()
 	freeFlightFrames = 0;
 	antiTimeSlowFrames = 0;
 	homingFrames = 0;
+	phaseFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
@@ -4372,6 +4389,7 @@ void Actor::Respawn()
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
+	currPhaseBooster = NULL;
 	currSwingLauncher = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
@@ -5315,8 +5333,6 @@ void Actor::ProcessBooster()
 				groundSpeed -= currBooster->strength;
 			}
 		}
-		//currBooster = NULL;
-		//boostUsed = false;
 	}
 
 	if (currBounceBooster != NULL && oldBounceBooster == NULL && currBounceBooster->Boost())
@@ -5335,6 +5351,20 @@ void Actor::ProcessTimeBooster()
 		globalTimeSlowFrames = currTimeBooster->strength;
 
 		currTimeBooster = NULL;
+
+		RechargeAirOptions();
+	}
+}
+
+void Actor::ProcessPhaseBooster()
+{
+	if (currPhaseBooster != NULL && currPhaseBooster->IsBoostable())
+	{
+		currPhaseBooster->Boost();
+
+		phaseFrames = currPhaseBooster->strength;
+
+		currPhaseBooster = NULL;
 
 		RechargeAirOptions();
 	}
@@ -5860,6 +5890,12 @@ void Actor::UpdatePrePhysics()
 		currInput.InvertLeftStick();
 	}
 
+	if (ground != NULL && ground->poly != NULL && ground->poly->IsPhaseType() && phaseFrames == 0 )
+	{
+		velocity = groundSpeed * ground->Along();
+		SetAirPos(position, facingRight);
+	}
+
 	
 	TryCheckGrass();
 
@@ -6016,6 +6052,8 @@ void Actor::UpdatePrePhysics()
 	ProcessBooster();
 
 	ProcessTimeBooster();
+
+	ProcessPhaseBooster();
 
 	ProcessHomingBooster();
 
@@ -14078,6 +14116,10 @@ void Actor::SlowDependentFrameIncrement()
 			--antiTimeSlowFrames;
 		}
 		
+		if (phaseFrames > 0)
+		{
+			--phaseFrames;
+		}
 
 		slowCounter = 1;
 
@@ -14748,6 +14790,9 @@ void Actor::SetBounceBoostVelocity()
 		grindEdge = NULL;
 	}
 
+	SetAction(BOOSTERBOUNCE);
+	frame = 0;
+
 	RestoreDoubleJump();
 	RestoreAirDash();
 
@@ -14855,6 +14900,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	{
 		Edge *e = (Edge*)qte;
 
+		
+
 		if (e->edgeType == Edge::OPEN_GATE)
 		{
 			return;
@@ -14866,6 +14913,14 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			{
 				return;
 			}
+		}
+		else if (e->poly != NULL && e->poly->IsPhaseType() && phaseFrames == 0)
+		{
+			return;
+		}
+		else if (e->poly != NULL && e->poly->IsInversePhaseType() && phaseFrames > 0)
+		{
+			return;
 		}
 		else if (e->rail != NULL )
 		{
@@ -15933,6 +15988,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					&hurtBody) && atsboost->IsBoostable())
 				{
 					currAntiTimeSlowBooster = atsboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_PHASEBOOSTER)
+		{
+			PhaseBooster *pboost = (PhaseBooster*)qte;
+
+			if (currAntiTimeSlowBooster == NULL)
+			{
+				if (pboost->hitBody.Intersects(pboost->currHitboxFrame,
+					&hurtBody) && pboost->IsBoostable())
+				{
+					currPhaseBooster = pboost;
 				}
 			}
 			else

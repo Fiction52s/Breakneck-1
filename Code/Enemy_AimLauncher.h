@@ -24,6 +24,20 @@ struct AimLauncher : Enemy
 
 	AimLauncherType aimLauncherType;
 
+	Tileset *ts;
+	Tileset *ts_recover;
+	Tileset *ts_particles;
+	Tileset *ts_boost;
+
+	sf::Sprite particleSprite;
+	sf::Sprite recoverSprite;
+	sf::Sprite boostSprite;
+
+	int tilesetChoice;
+	int startFrame;
+	int recoverTileseChoice;
+	int recoverStartFrame;
+
 	void UpdateParamsSettings();
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);
@@ -43,9 +57,8 @@ struct AimLauncher : Enemy
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
-	Tileset *ts_idle;
-	Tileset *ts_recover;
-	Tileset *ts_springing;
+	
+
 	void DebugDraw(sf::RenderTarget *target);
 
 	int animationFactor;

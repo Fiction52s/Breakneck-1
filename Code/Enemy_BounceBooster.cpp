@@ -23,22 +23,25 @@ BounceBooster::BounceBooster(ActorParams *ap)
 	{
 		upOnly = true;
 		strength = 30;
+		BasicCircleHitBodySetup(50);
+	}
+	else
+	{
+		BasicCircleHitBodySetup(128);
 	}
 
-	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
+	ts_refresh = ts;//sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 	sprite.setTexture(*ts->texture);
 
-	BasicCircleHitBodySetup(90);
+	
 	//BasicCircleHitBodySetup(90);
 
 	actionLength[NEUTRAL] = 6;
 	actionLength[BOOST] = 8;
-	actionLength[REFRESH] = 7;
 
 	animFactor[NEUTRAL] = 3;
 	animFactor[BOOST] = 2;
-	animFactor[REFRESH] = 2;
 
 	ResetEnemy();
 }
@@ -54,7 +57,7 @@ void BounceBooster::SetLevel(int lev)
 		if (upOnly)
 		{
 			strength = 30;
-			sprite.setColor(Color::Red);
+			//sprite.setColor(Color::Red);
 		}
 		else
 		{
@@ -82,18 +85,15 @@ void BounceBooster::AddToWorldTrees()
 
 bool BounceBooster::Boost()
 {
-	if (action == NEUTRAL)
-	{
-		action = BOOST;
-		frame = 0;
-		return true;
-	}
-	return false;
+	//no refresh
+	action = BOOST;
+	frame = 0;
+	return true;
 }
 
 bool BounceBooster::IsBoostable()
 {
-	return action == NEUTRAL;
+	return true;
 }
 
 void BounceBooster::ResetEnemy()
@@ -126,16 +126,9 @@ void BounceBooster::ProcessState()
 		}
 		case BOOST:
 		{
-			action = REFRESH;
-			frame = 0;
-			sprite.setTexture(*ts_refresh->texture);
-			break;
-		}
-		case REFRESH:
-		{
 			action = NEUTRAL;
 			frame = 0;
-			sprite.setTexture(*ts->texture);
+			//sprite.setTexture(*ts_refresh->texture);
 			break;
 		}
 		}
@@ -145,20 +138,26 @@ void BounceBooster::ProcessState()
 void BounceBooster::UpdateSprite()
 {
 	int tile = 0;
+
+	if (upOnly)
+	{
+		tile = 3;
+	}
+	else
+	{
+		tile = 4;
+	}
+
 	IntRect ir;
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = frame / animFactor[NEUTRAL];
+		//tile = frame / animFactor[NEUTRAL];
 		ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
-		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		//tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
 		ir = ts->GetSubRect(tile);
-		break;
-	case REFRESH:
-		tile = frame / animFactor[REFRESH];
-		ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
 

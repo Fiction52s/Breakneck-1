@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_TimeBooster.h"
+#include "Enemy_PhaseBooster.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -9,18 +9,8 @@
 using namespace std;
 using namespace sf;
 
-
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_TIMEBOOSTER, ap)//, false, 1, false), strength( 20 )
+PhaseBooster::PhaseBooster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_PHASEBOOSTER, ap)//, false, 1, false), strength( 20 )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -29,15 +19,15 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
-	strength = 180;
+	strength = 300;
 
 	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
-
-	sprite.setTexture(*ts->texture);
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
 	//sprite.setColor(Color::Magenta);
+
+	sprite.setTexture(*ts->texture);
 
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
@@ -55,7 +45,7 @@ TimeBooster::TimeBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 	SetSpawnRect();
 }
 
-void TimeBooster::ResetEnemy()
+void PhaseBooster::ResetEnemy()
 {
 	action = NEUTRAL;
 	frame = 0;
@@ -63,11 +53,11 @@ void TimeBooster::ResetEnemy()
 	SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 
-	
+	//sprite.setTexture(*ts->texture);
 	UpdateSprite();
 }
 
-void TimeBooster::SetLevel(int lev)
+void PhaseBooster::SetLevel(int lev)
 {
 	level = lev;
 
@@ -87,12 +77,12 @@ void TimeBooster::SetLevel(int lev)
 	}
 }
 
-void TimeBooster::AddToWorldTrees()
+void PhaseBooster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-bool TimeBooster::Boost()
+bool PhaseBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
@@ -103,13 +93,13 @@ bool TimeBooster::Boost()
 	return false;
 }
 
-bool TimeBooster::IsBoostable()
+bool PhaseBooster::IsBoostable()
 {
 	return action == NEUTRAL;
 }
 
 
-void TimeBooster::ProcessState()
+void PhaseBooster::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -138,7 +128,7 @@ void TimeBooster::ProcessState()
 	}
 }
 
-void TimeBooster::UpdateSprite()
+void PhaseBooster::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -158,23 +148,23 @@ void TimeBooster::UpdateSprite()
 		break;
 	}
 
-	sprite.setTextureRect(ts->GetSubRect( 8 ) );
+	sprite.setTextureRect(ts->GetSubRect(7));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }
 
-void TimeBooster::EnemyDraw(sf::RenderTarget *target)
+void PhaseBooster::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
 
-void TimeBooster::DrawMinimap(sf::RenderTarget *target)
+void PhaseBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{
 		CircleShape enemyCircle;
-		enemyCircle.setFillColor(COLOR_BLUE);
+		enemyCircle.setFillColor(Color::Blue);
 		enemyCircle.setRadius(50);
 		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
 		enemyCircle.setPosition(GetPositionF());

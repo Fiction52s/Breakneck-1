@@ -8,5 +8,6 @@
 #include "Enemy_Cheetah.h"
 #include "Enemy_Spider.h"
 #include "Enemy_Teleporter.h"
+#include "Enemy_PhaseBooster.h"
 
 #endif

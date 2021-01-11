@@ -10,7 +10,6 @@
 using namespace std;
 using namespace sf;
 
-
 #define COLOR_TEAL Color( 0, 0xee, 0xff )
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_GREEN Color( 0, 0xcc, 0x44 )
@@ -77,7 +76,13 @@ void Teleporter::UpdatePath()
 	V2d springVec = normalize(dOther);
 
 	double angle = atan2(springVec.x, -springVec.y);
-	sprite.setRotation(angle / PI * 180.0);
+
+	double spriteAngle = angle / PI * 180.0;
+
+	sprite.setRotation(spriteAngle);
+	recoverSprite.setRotation(spriteAngle);
+	boostSprite.setRotation(spriteAngle);
+	particleSprite.setRotation(spriteAngle);
 
 	dist = length(V2d(other));
 
@@ -145,11 +150,42 @@ Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i 
 		goesBothWays = true;
 	}
 
-	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
+	tilesetChoice = 1;
+	recoverTileseChoice = 1;
+	recoverStartFrame = 16;
+	startFrame = 5;
 
-	ts_idle = sess->GetSizedTileset("Enemies/spring_idle_2_256x256.png");
-	ts_recover = sess->GetSizedTileset("Enemies/spring_recover_2_256x256.png");
-	ts_springing = sess->GetSizedTileset("Enemies/spring_spring_2_512x576.png");
+	if (tilesetChoice == 0)
+	{
+		ts = sess->GetSizedTileset("Enemies/launcher_1_384x384.png");
+	}
+	else if (tilesetChoice == 1)
+	{
+		ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
+	}
+
+	if (recoverTileseChoice == 0)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_1_384x384.png");
+	}
+	else if (recoverTileseChoice == 1)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_2_384x384.png");
+	}
+	else if (recoverTileseChoice == 2)
+	{
+		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_3_384x384.png");
+	}
+
+	ts_particles = sess->GetSizedTileset("Enemies/launcher_particles_256x256.png");
+	ts_boost = sess->GetSizedTileset("Enemies/launcher_explode_512x512.png");
+
+	particleSprite.setTexture(*ts_particles->texture);
+	boostSprite.setTexture(*ts_boost->texture);
+	recoverSprite.setTexture(*ts_recover->texture);
+	sprite.setTexture(*ts->texture);
+
+	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
 
 
 	TeleporterParams *tp = (TeleporterParams*)ap;
@@ -158,11 +194,11 @@ Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i 
 
 	if (secondary)
 	{
-		sprite.setColor(Color::Red);
+		//sprite.setColor(Color::Red);
 	}
 	else
 	{
-		sprite.setColor(Color::Magenta);
+		//sprite.setColor(Color::Magenta);
 
 		if (goesBothWays)
 		{
@@ -179,7 +215,7 @@ Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i 
 	actionLength[TELEPORTING] = 8;
 	actionLength[RECEIVING] = 8;
 	actionLength[RECEIVE_RECOVERING] = 8;
-	actionLength[RECOVERING] = 4;
+	actionLength[RECOVERING] = 8;
 
 	animFactor[IDLE] = 4;
 	animFactor[TELEPORTING] = 4;
@@ -189,10 +225,10 @@ Teleporter::Teleporter(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i 
 
 	animationFactor = 10;
 
-	sprite.setTextureRect(ts_idle->GetSubRect(0));
+	/*sprite.setTextureRect(ts_idle->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(positionF);
-
+*/
 	
 
 	editParams = ap;
@@ -239,7 +275,6 @@ void Teleporter::ResetEnemy()
 	teleportedPlayer = false;
 	receivedHit = NULL;
 	action = IDLE;
-	sprite.setTexture(*ts_idle->texture);
 
 	frame = 0;
 	SetHitboxes(&hitBody);
@@ -261,7 +296,6 @@ void Teleporter::ActionEnded()
 			break;
 		case TELEPORTING:
 			action = RECOVERING;
-			sprite.setTexture(*ts_recover->texture);
 			break;
 		case RECEIVING:
 			break;
@@ -269,7 +303,6 @@ void Teleporter::ActionEnded()
 			break;
 		case RECOVERING:
 			action = IDLE;
-			sprite.setTexture(*ts_idle->texture);
 			teleportedPlayer = false;
 			break;
 		}
@@ -298,7 +331,6 @@ bool Teleporter::TryTeleport()
 
 	assert(action == IDLE);
 	action = TELEPORTING;
-	sprite.setTexture(*ts_springing->texture);
 	frame = 0;
 	teleportedPlayer = true;
 	sess->ActivateSound(launchSoundBuf);
@@ -329,21 +361,30 @@ void Teleporter::UpdateSprite()
 	switch (action)
 	{
 	case IDLE:
-		sprite.setTextureRect(ts_idle->GetSubRect(frame / animFactor[action]));
+		sprite.setTextureRect(ts->GetSubRect((frame / animFactor[action]) / 3 + startFrame));
+		particleSprite.setTextureRect(ts_particles->GetSubRect(frame / animFactor[action]));
 		break;
 	case TELEPORTING:
-		sprite.setTextureRect(ts_springing->GetSubRect(frame / animFactor[action]));
+		boostSprite.setTextureRect(ts_boost->GetSubRect(frame / animFactor[action]));
+		sprite.setTextureRect(ts->GetSubRect(4 + startFrame));
 		break;
 	case RECOVERING:
-		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
-		break;
-	case RECEIVING:
-		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
-		break;
-	case RECEIVE_RECOVERING:
-		sprite.setTextureRect(ts_recover->GetSubRect(frame / animFactor[action]));
+		recoverSprite.setTextureRect(ts->GetSubRect(frame / animFactor[action] + recoverStartFrame));
+		sprite.setTextureRect(ts->GetSubRect(4 + startFrame));
 		break;
 	}
+
+	particleSprite.setOrigin(particleSprite.getLocalBounds().width / 2,
+		particleSprite.getLocalBounds().height / 2);
+	particleSprite.setPosition(GetPositionF());
+
+	boostSprite.setOrigin(boostSprite.getLocalBounds().width / 2,
+		boostSprite.getLocalBounds().height / 2);
+	boostSprite.setPosition(GetPositionF());
+
+	recoverSprite.setOrigin(recoverSprite.getLocalBounds().width / 2, recoverSprite.getLocalBounds().height / 2);
+	recoverSprite.setPosition(GetPositionF());
+
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 
@@ -361,6 +402,20 @@ void Teleporter::UpdateSprite()
 void Teleporter::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
+
+	if (action == RECOVERING)
+	{
+		target->draw(recoverSprite);
+	}
+	else if (action == IDLE)
+	{
+		target->draw(particleSprite);
+	}
+
+	if (action == TELEPORTING)
+	{
+		target->draw(boostSprite);
+	}
 
 	if (goesBothWays && !secondary)
 	{

@@ -264,6 +264,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
 	void UpdateWaterType();
+	bool IsPhaseType();
+	bool IsInversePhaseType();
 
 	void MakeGlobalPath(
 		V2d &startPos,

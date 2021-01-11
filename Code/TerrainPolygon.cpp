@@ -3451,6 +3451,16 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 	}
 }
 
+bool TerrainPolygon::IsPhaseType()
+{
+	return terrainWorldType == 3 && terrainVariation == 0;
+}
+
+bool TerrainPolygon::IsInversePhaseType()
+{
+	return terrainWorldType == 3 && terrainVariation == 1;
+}
+
 void TerrainPolygon::UpdateWaterType()
 {
 	if (terrainWorldType >= W1_SPECIAL && terrainWorldType <= W8_SPECIAL)

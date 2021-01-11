@@ -10,7 +10,6 @@ struct BounceBooster : Enemy
 	{
 		NEUTRAL,
 		BOOST,
-		REFRESH,
 		Count
 	};
 

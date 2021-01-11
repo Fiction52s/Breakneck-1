@@ -117,6 +117,7 @@ struct TimeBooster;
 struct FreeFlightBooster;
 struct HomingBooster;
 struct AntiTimeSlowBooster;
+struct PhaseBooster;
 struct OmniDashBooster;
 struct Spring;
 struct Teleporter;
@@ -212,6 +213,7 @@ struct Actor : QuadTreeCollider,
 		GRINDATTACK,
 		AIRDASH,
 		STEEPCLIMB,
+		BOOSTERBOUNCE,
 		AIRHITSTUN,
 		AIRPARRY,
 		GROUNDHITSTUN,
@@ -416,9 +418,11 @@ struct Actor : QuadTreeCollider,
 	HomingBooster *currHomingBooster;
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
 	OmniDashBooster *currOmniDashBooster;
+	PhaseBooster *currPhaseBooster;
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
+	int phaseFrames;
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
@@ -1131,6 +1135,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
 	void ProcessTimeBooster();
+	void ProcessPhaseBooster();
 	void ProcessAntiTimeSlowBooster();
 	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();
@@ -1595,6 +1600,17 @@ struct Actor : QuadTreeCollider,
 	void BOUNCEAIR_TimeDepFrameInc();
 	int BOUNCEAIR_GetActionLength();
 	Tileset * BOUNCEAIR_GetTileset();
+
+	void BOOSTERBOUNCE_Start();
+	void BOOSTERBOUNCE_End();
+	void BOOSTERBOUNCE_Change();
+	void BOOSTERBOUNCE_Update();
+	void BOOSTERBOUNCE_UpdateSprite();
+	void BOOSTERBOUNCE_TransitionToAction(int a);
+	void BOOSTERBOUNCE_TimeIndFrameInc();
+	void BOOSTERBOUNCE_TimeDepFrameInc();
+	int BOOSTERBOUNCE_GetActionLength();
+	Tileset * BOOSTERBOUNCE_GetTileset();
 
 	void BOUNCEGROUND_Start();
 	void BOUNCEGROUND_End();
