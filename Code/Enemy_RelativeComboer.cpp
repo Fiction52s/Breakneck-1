@@ -73,7 +73,7 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 
 	hitLimit = -1;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -128,7 +128,7 @@ void RelativeComboer::ResetEnemy()
 {
 	latchFrame = 0;
 	
-	sprite.setColor(Color::White);
+	//sprite.setColor(Color::White);
 	specialPauseFrames = 0;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
@@ -192,7 +192,7 @@ void RelativeComboer::Return()
 
 	numHealth = maxHealth;
 
-	sprite.setColor(Color::White);
+	//sprite.setColor(Color::White);
 }
 
 void RelativeComboer::Pop()
@@ -256,7 +256,7 @@ void RelativeComboer::ProcessState()
 		{
 		case S_FLY:
 			action = S_ATTACHEDWAIT;
-			sprite.setColor(Color::Red);
+			//sprite.setColor(Color::Red);
 			break;
 		case S_RETURN:
 			UpdateKilledNumberText(maxKilled);
@@ -361,7 +361,7 @@ void RelativeComboer::ComboKill(Enemy *e)
 		frame = 0;
 		latchedOn = false;
 		DefaultHurtboxesOn();
-		sprite.setColor(Color::Blue);
+		//sprite.setColor(Color::Blue);
 	}
 
 	++numKilled;
@@ -410,17 +410,34 @@ void RelativeComboer::UpdateSprite()
 		currPosInfo.position = basePos + offsetPos;
 	}
 
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setPosition(GetPositionF());
-
 	int tile = 0;
 	switch (action)
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	if (detachOnKill)
+	{
+		sprite.setTextureRect(ts->GetSubRect(10));
+	}
+	else
+	{
+		sprite.setTextureRect(ts->GetSubRect(11));
+	}
+	
+
+
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+
+	
+
+
+
+	
 
 	if (limitedKills)
 	{

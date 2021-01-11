@@ -50,14 +50,14 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	}
 	else if ( typeName == "hungryreturncomboer")
 	{
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 		returnsToPlayer = true;
 		maxWaitFrames = 360;
 		limitedEating = false;
 	}
 	else if (typeName == "limitedhungryreturncomboer")
 	{
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 		returnsToPlayer = true;
 		maxWaitFrames = 360;
 		limitedEating = true;
@@ -85,7 +85,7 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	maxFallSpeed = 15;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -534,9 +534,19 @@ void HungryComboer::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	if (returnsToPlayer)
+	{
+		sprite.setTextureRect(ts->GetSubRect(9));
+	}
+	else
+	{
+		sprite.setTextureRect(ts->GetSubRect(8));
+	}
+	
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

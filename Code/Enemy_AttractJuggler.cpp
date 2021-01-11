@@ -92,12 +92,12 @@ AttractJuggler::AttractJuggler(ActorParams *ap)
 
 	gravFactor = 1.4;
 
-	sprite.setColor(Color::Red);
+	//sprite.setColor(Color::Red);
 	maxFallSpeed = 25;
 
 	reversed = true;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));
 
@@ -384,9 +384,11 @@ void AttractJuggler::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setTextureRect(ts->GetSubRect(15));
 
 
 	sprite.setPosition(GetPositionF());

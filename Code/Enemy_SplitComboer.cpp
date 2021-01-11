@@ -145,7 +145,7 @@ void SplitPiece::ComboHit()
 
 void SplitPiece::UpdateSprite()
 {
-	
+	sprite.setTextureRect(sc->ts->GetSubRect(1));
 	sprite.setPosition(GetPositionF());
 	/*int tIndex = 0;
 	switch (action)
@@ -219,10 +219,8 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 
 	speed = 15;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setScale(scale, scale);
 
 	BasicCircleHurtBodySetup(48);
@@ -268,7 +266,7 @@ void SplitComboer::ResetEnemy()
 	SetCurrPosInfo(startPosInfo);
 	pieces[0]->Reset();
 	pieces[1]->Reset();
-	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setTextureRect(ts->GetSubRect(1));
 	sprite.setRotation(0);
 	velocity = V2d(0, 0);
 	SetHitboxes(&hitBody, 0);
@@ -361,6 +359,7 @@ void SplitComboer::UpdateEnemyPhysics()
 void SplitComboer::UpdateSprite()
 {
 	sprite.setPosition(GetPositionF());
+	sprite.setTextureRect(ts->GetSubRect(1));
 	/*int tIndex = 0;
 	switch (action)
 	{

@@ -60,7 +60,7 @@ Ball::Ball(ActorParams *ap)
 
 	action = S_FLOAT;
 
-	ts = sess->GetSizedTileset("Enemies/Ball_64x64.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -387,9 +387,11 @@ void Ball::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setTextureRect(ts->GetSubRect(4));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

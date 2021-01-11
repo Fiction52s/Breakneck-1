@@ -81,7 +81,7 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	hitLimit = -1;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -566,9 +566,11 @@ void GrindJuggler::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setTextureRect(ts->GetSubRect(6));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

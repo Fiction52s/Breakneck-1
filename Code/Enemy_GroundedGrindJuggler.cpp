@@ -74,7 +74,7 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 
 	action = S_IDLE;
 
-	ts = sess->GetTileset("Enemies/Comboer_128x128.png", 128, 128);
+	ts = sess->GetTileset("Enemies/comboers_128x128.png", 128, 128);
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -431,19 +431,21 @@ void GroundedGrindJuggler::UpdateSprite()
 	{
 	case S_IDLE:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	sprite.setTextureRect(ts->GetSubRect(7));
 
 	if (action == S_SLOW)
 	{
 		if (clockwise)
 		{
-			sprite.setColor(Color::Red);
+			//sprite.setColor(Color::Red);
 		}
 		else
 		{
-			sprite.setColor(Color::Cyan);
+			//sprite.setColor(Color::Cyan);
 		}
 		
 	}
@@ -451,11 +453,11 @@ void GroundedGrindJuggler::UpdateSprite()
 	{
 		if (clockwise)
 		{
-			sprite.setColor(Color::Yellow);
+		//	sprite.setColor(Color::Yellow);
 		}
 		else
 		{
-			sprite.setColor(Color::Cyan);
+			//sprite.setColor(Color::Cyan);
 		}
 		
 	}
@@ -463,11 +465,11 @@ void GroundedGrindJuggler::UpdateSprite()
 	{
 		if (clockwise)
 		{
-			sprite.setColor(Color::White);
+			//sprite.setColor(Color::White);
 		}
 		else
 		{
-			sprite.setColor(Color::Green);
+			//sprite.setColor(Color::Green);
 		}
 		
 	}

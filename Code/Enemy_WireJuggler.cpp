@@ -106,7 +106,7 @@ WireJuggler::WireJuggler( ActorParams *ap )
 
 	gDir = V2d(0, 1);
 	
-	switch (jType)
+	/*switch (jType)
 	{
 	case T_BLUE:
 		sprite.setColor(Color::Blue);
@@ -117,12 +117,12 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	case T_MAGENTA:
 		sprite.setColor(Color::Magenta);
 		break;
-	}
+	}*/
 	maxFallSpeed = 15;
 
 	reversed = true;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
@@ -506,9 +506,23 @@ void WireJuggler::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
 	}
+
+	switch (jType)
+	{
+	case T_BLUE:
+		tile = 12;
+		break;
+	case T_RED:
+		tile = 13;
+		break;
+	case T_MAGENTA:
+		tile = 14;
+		break;
+	}
+	sprite.setTextureRect(ts->GetSubRect(tile));
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

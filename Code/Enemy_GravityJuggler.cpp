@@ -106,20 +106,18 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 	if (reversedGrav)
 	{
 		gDir.y = -gDir.y;
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 	}
 	else
 	{
-		sprite.setColor(Color::Red);
+		//sprite.setColor(Color::Red);
 	}
 	maxFallSpeed = 15;
 
 	reversed = true;
 
-	ts = sess->GetSizedTileset("Enemies/Comboer_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
-	
 	sprite.setScale(scale, scale);
 	
 
@@ -445,8 +443,17 @@ void GravityJuggler::UpdateSprite()
 	{
 	case S_FLOAT:
 		tile = 0;
-		sprite.setTextureRect(ts->GetSubRect(tile));
+		//sprite.setTextureRect(ts->GetSubRect(tile));
 		break;
+	}
+
+	if (reversedGrav)
+	{
+		sprite.setTextureRect(ts->GetSubRect(2));
+	}
+	else
+	{
+		sprite.setTextureRect(ts->GetSubRect(3));
 	}
 
 	
