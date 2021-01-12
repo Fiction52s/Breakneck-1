@@ -7111,6 +7111,7 @@ void Actor::SetAirPos(V2d &pos, bool fr)
 	position = pos;
 	facingRight = fr;
 	offsetX = 0;
+	reversed = false;
 }
 
 void Actor::SetGroundedPos(Edge *g, double q)

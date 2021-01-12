@@ -1237,6 +1237,8 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	grassSize = 128;
 	grassSpacing = -60;
 
+	ResetState();
+
 	pointVector.resize(2);
 
 	if (pointsOnly)
