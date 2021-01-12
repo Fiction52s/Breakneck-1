@@ -5636,7 +5636,7 @@ void Actor::UpdateBubbles()
 	if (grindEdge != NULL)
 	{
 		if (grindEdge->rail != NULL
-			&& grindEdge->rail->GetRailType() == TerrainRail::TIMESLOW)
+			&& grindEdge->rail->GetRailType() == TerrainRail::ANTITIMESLOW)
 		{
 			inTimeSlowTerrain = false;
 		}
@@ -5876,6 +5876,34 @@ void Actor::UpdateKnockbackDirectionAndHitboxType()
 	}
 }
 
+bool Actor::CheckTerrainDisappear(Edge *e)
+{
+	bool disappear = false;
+	if (e != NULL )
+	{
+		if (e->poly != NULL)
+		{
+			if ( !e->poly->IsActive() || (e->poly->IsPhaseType() && phaseFrames == 0)
+				|| (e->poly->IsInversePhaseType() && phaseFrames > 0))
+			{
+				disappear = true;
+			}
+		}
+		else if (e->rail != NULL)
+		{
+			if ((e->rail->GetRailType() == TerrainRail::PHASE
+				&& phaseFrames == 0)
+				|| (e->rail->GetRailType() == TerrainRail::INVERSEPHASE
+					&& phaseFrames > 0))
+			{
+				disappear = true;
+			}
+		}
+	}
+
+	return disappear;
+}
+
 void Actor::UpdatePrePhysics()
 {
 	hitOutOfHitstunLastFrame = false;
@@ -5890,12 +5918,12 @@ void Actor::UpdatePrePhysics()
 		currInput.InvertLeftStick();
 	}
 
-	if (ground != NULL && ground->poly != NULL && ground->poly->IsPhaseType() && phaseFrames == 0 )
+	if (CheckTerrainDisappear(ground) || CheckTerrainDisappear(bounceEdge)
+		|| CheckTerrainDisappear(grindEdge))
 	{
 		velocity = groundSpeed * ground->Along();
 		SetAirPos(position, facingRight);
 	}
-
 	
 	TryCheckGrass();
 
@@ -11053,6 +11081,16 @@ void Actor::UpdatePhysics()
 
 			bool tempCollision = ResolvePhysics( movementVec );
 			
+			if (tempCollision)
+			{
+				if (minContact.edge->poly != NULL
+					&& minContact.edge->poly->IsSometimesActiveType())
+					//&& minContact.edge->poly->IsSometimesActiveType())
+				{
+					minContact.edge->poly->FadeOut();
+				}
+			}
+
 			V2d extraVel(0, 0);
 			if( tempCollision  )
 			{
@@ -14914,6 +14952,10 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				return;
 			}
 		}
+		else if (e->poly != NULL && !e->poly->IsActive())
+		{
+			return;
+		}
 		else if (e->poly != NULL && e->poly->IsPhaseType() && phaseFrames == 0)
 		{
 			return;
@@ -14927,6 +14969,14 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			if (e->rail->IsTerrainType())
 			{
 				if (!e->rail->IsEdgeActive(e))
+				{
+					return;
+				}
+				else if (e->rail->GetRailType() == TerrainRail::PHASE && phaseFrames == 0)
+				{
+					return;
+				}
+				else if (e->rail->GetRailType() == TerrainRail::INVERSEPHASE && phaseFrames > 0)
 				{
 					return;
 				}

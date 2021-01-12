@@ -175,6 +175,8 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 	switch (rType)
 	{
 	case FLOORANDCEILING:
+	case PHASE:
+	case INVERSEPHASE:
 		return true;
 	case FLOOR:
 		if (e->Normal().y < 0)
@@ -205,7 +207,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 bool TerrainRail::IsTerrainType()
 {
 	return rType == FLOORANDCEILING || rType == FLOOR || rType == CEILING
-		|| rType == BOUNCE || rType == SCORPIONONLY;
+		|| rType == BOUNCE || rType == SCORPIONONLY || rType == PHASE || rType == INVERSEPHASE;
 }
 
 void TerrainRail::Init()
@@ -514,13 +516,13 @@ void TerrainRail::UpdateBounds()
 
 sf::Color TerrainRail::GetRailColor()
 {
-	switch (rType)
+	/*switch (rType)
 	{
 	case NORMAL:
 		return Color::Red;
 	case LOCKED:
 		return Color( 104, 255, 0 );
-	case TIMESLOW:
+	case ANTITIMESLOW:
 		return Color(0, 211, 255);
 	case WIREONLY:
 		return Color(238, 83, 169);
@@ -536,9 +538,9 @@ sf::Color TerrainRail::GetRailColor()
 		return Color(251, 242, 54);
 	case SCORPIONONLY:
 		return Color(138, 111, 48);
-	}
+	}*/
 
-	return Color::Red;
+	return Color::White;
 }
 
 void TerrainRail::Finalize()
@@ -550,9 +552,6 @@ void TerrainRail::Finalize()
 	lines = new sf::Vertex[numLineVerts];
 
 	coloredQuads = new sf::Vertex[numColoredQuads * 4];
-
-
-	
 
 
 	coloredNodeCircles = new CircleGroup(numP, quadHalfWidth, GetRailColor(), 12);
@@ -567,10 +566,22 @@ void TerrainRail::Finalize()
 
 	double railTileWidth = ts_rail->tileWidth;
 	double railTileHeight = ts_rail->tileHeight;
+
+	int numSmoothQuads = 3;
+
 	for (int i = 0; i < numP - 1; ++i)
 	{
 		curr = GetEdge(i);
+		next = curr->GetNextEdge();
+
+		
+
 		numTexturedQuads += ceil(curr->GetLength() / railTileWidth);
+
+		if ( next != NULL && next->Normal() != curr->Normal())
+		{
+			numTexturedQuads += numSmoothQuads;
+		}
 	}
 
 	texturedQuads = new Vertex[numTexturedQuads * 4];
@@ -581,10 +592,14 @@ void TerrainRail::Finalize()
 	V2d startCenter;
 	V2d endCenter;
 	V2d eNorm;
-	IntRect subRect = ts_rail->GetSubRect(0);
+	IntRect subRect = ts_rail->GetSubRect(rType);
+
+	double out = ts_rail->tileHeight / 2.0;
+	double in = ts_rail->tileHeight / 2.0;
 	for (int i = 0; i < numP - 1; ++i)
 	{
 		curr = GetEdge(i);
+		next = curr->GetNextEdge();
 		eNorm = curr->Normal();
 		//next = curr->GetNextEdge();
 
@@ -627,6 +642,54 @@ void TerrainRail::Finalize()
 			
 
 			startQuant += railTileWidth;
+		}
+
+		if (next != NULL && next->Normal() != curr->Normal())
+		{
+			V2d nextNorm = next->Normal();
+
+			V2d centerPoint = curr->v1;
+
+			double c = cross(next->Along(), curr->Along());
+
+			int quadIndex = startIndex + numQuadsForEdge * 4;
+
+			V2d startVec, endVec;
+
+			if (c < 0)
+			{
+				startVec = eNorm * out;
+				endVec = nextNorm * out;
+			}
+			else
+			{
+				startVec = -nextNorm * out;
+				endVec = -eNorm * out;
+			}
+
+			V2d nextVec;
+			double angleDiff = GetVectorAngleDiffCW(startVec, endVec);
+			for (int k = 0; k < numSmoothQuads; ++k)
+			{
+				nextVec = startVec;
+				RotateCW(nextVec, angleDiff / numSmoothQuads);
+				texturedQuads[quadIndex + k * 4 + 0].position = Vector2f(curr->v1 + startVec);
+				texturedQuads[quadIndex + k * 4 + 1].position = Vector2f(curr->v1 + nextVec);
+				texturedQuads[quadIndex + k * 4 + 2].position = Vector2f(centerPoint);
+				texturedQuads[quadIndex + k * 4 + 3].position = Vector2f(centerPoint);
+
+				float outerWidth = length(
+					texturedQuads[quadIndex + k * 4 + 1].position -
+					texturedQuads[quadIndex + k * 4 + 0].position);
+				texturedQuads[quadIndex + k * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
+				texturedQuads[quadIndex + k * 4 + 1].texCoords = Vector2f(subRect.left + outerWidth, subRect.top);
+				texturedQuads[quadIndex + k * 4 + 2].texCoords = Vector2f(subRect.left + outerWidth / 2, subRect.top + out);
+				texturedQuads[quadIndex + k * 4 + 3].texCoords = Vector2f(subRect.left + outerWidth / 2, subRect.top + out);
+				startVec = nextVec;
+			}
+
+			numQuadsForEdge += numSmoothQuads;
+
 		}
 
 		startIndex += numQuadsForEdge * 4;
@@ -1507,25 +1570,25 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 
 	switch (rType)
 	{
-	case NORMAL:
-	{
-		target->draw(texturedQuads, numTexturedQuads * 4, 
-			sf::Quads, ts_rail->texture);
-		//coloredNodeCircles->Draw(target);
-		break;
-	}
-	case LOCKED:
-	case TIMESLOW:
-	case WIREONLY:
-	case WIREBLOCKING:
 	case FLOORANDCEILING:
 	case FLOOR:
 	case CEILING:
 	case BOUNCE:
 	case SCORPIONONLY:
+	case NORMAL:
+	case ACCELERATE:
+	case LOCKED:
+	case PHASE:
+	case INVERSEPHASE:
+	case ANTITIMESLOW:
+	case WIREONLY:
+	case WIREBLOCKING:
+	case HIT:
 	{
-		target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
-		coloredNodeCircles->Draw(target);
+		/*target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+		coloredNodeCircles->Draw(target);*/
+		target->draw(texturedQuads, numTexturedQuads * 4,
+			sf::Quads, ts_rail->texture);
 		break;
 	}
 	case FLY:

@@ -1048,6 +1048,7 @@ struct Actor : QuadTreeCollider,
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
+	bool CheckTerrainDisappear(Edge *e);
 	void CheckBirdCommands();
 	void SetActionSuperLevel();
 	void ResetSuperLevel();

@@ -202,6 +202,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		RENDERMODE_MOVING_POINTS,
 		RENDERMODE_TRANSFORM,
 		RENDERMODE_FLIES,
+		RENDERMODE_PHASED,
 	};
 
 	enum WaterType
@@ -258,7 +259,20 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		EDGE_WALL,
 	};
 
+	enum State : int
+	{
+		IDLE,
+		FADINGOUT,
+		INACTIVE,
+		TEMPORARILYINACTIVE,
+		FADINGIN,
+	};
+	int frame;
+	State state;
+	bool active;
+
 	int waterType;
+	void ResetState();
 	static int GetWaterWorld(int waterT);
 	static int GetWaterIndexInWorld(int waterT);
 	static sf::Color GetWaterColor(int waterT);
@@ -266,13 +280,17 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void UpdateWaterType();
 	bool IsPhaseType();
 	bool IsInversePhaseType();
+	bool IsSometimesActiveType();
+	void FadeOut();
+	bool IsActive();
+
 
 	void MakeGlobalPath(
 		V2d &startPos,
 		std::vector<sf::Vector2i> &path);
 
 	void SetFlyTransform( PolyPtr poly, TransformTools *tr);
-
+	void UpdateState();
 	sf::Vector2f flyTransScale;
 	float flyTransRotate;
 	void GenerateMyFlies();

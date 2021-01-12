@@ -5948,6 +5948,8 @@ bool Session::RunGameModeUpdate()
 
 		UpdateGates();
 
+		UpdateTerrainStates();
+
 		absorbParticles->Update();
 		absorbDarkParticles->Update();
 		absorbShardParticles->Update();
@@ -6880,4 +6882,9 @@ bool Session::IsWithinBarrierBounds(V2d &p)
 bool Session::IsWithinCurrentBounds(V2d &p)
 {
 	return (IsWithinBounds(p) && IsWithinBarrierBounds(p));
+}
+
+void Session::UpdateTerrainStates()
+{
+
 }

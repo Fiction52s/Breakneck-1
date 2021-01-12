@@ -691,7 +691,7 @@ struct EditSession : GUIHandler, Session
 	void CreateImagesModeUpdate();
 	void TransformModeUpdate();
 	void MoveBorderModeUpdate();
-
+	
 
 
 	void UndoMostRecentAction();
@@ -805,6 +805,7 @@ struct EditSession : GUIHandler, Session
 
 	void SetGameMode(int gm);
 	void UpdateNumPlayers();
+	void UpdateTerrainStates();
 
 	Actor *allPlayers[MAX_PLAYERS];
 	Panel *ggpoStatsPanel;

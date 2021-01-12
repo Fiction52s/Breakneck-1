@@ -727,6 +727,7 @@ void EditSession::TestPlayerMode()
 		for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 		{
 			(*it)->ResetTouchGrass();
+			(*it)->ResetState();
 		}
 
 		
@@ -912,9 +913,14 @@ void EditSession::TestPlayerMode()
 		}
 	}*/
 	
-	
+	auto testPolys = GetCorrectPolygonList(0);
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->ResetTouchGrass();
+		(*it)->ResetState();
+	}
 
-	auto &testPolys = GetCorrectPolygonList(0);
+	//auto &testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
 		borderTree->Insert((*it));
@@ -1509,6 +1515,16 @@ RailPtr EditSession::GetRail(int index)
 
 	return rail;
 }
+
+void EditSession::UpdateTerrainStates()
+{
+	auto testPolys = GetCorrectPolygonList(0);
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->UpdateState();
+	}
+}
+
 
 void EditSession::CleanupForReload()
 {
@@ -10387,6 +10403,12 @@ void EditSession::CleanupTestPlayerMode()
 	mapHeader->topBounds = realTopBounds;
 	mapHeader->boundsWidth = realBoundsWidth;
 	mapHeader->boundsHeight = realBoundsHeight;
+
+	auto testPolys = GetCorrectPolygonList(0);
+	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->ResetState();
+	}
 
 	if (ggpo != NULL)
 	{

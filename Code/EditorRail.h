@@ -26,9 +26,27 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	};
 	RenderMode renderMode;
 
+	
+
 	enum RailType
 	{
+		FLOORANDCEILING,
+		FLOOR,
+		CEILING,
+		BOUNCE,
+		SCORPIONONLY,
 		NORMAL,
+		PHASE,
+		INVERSEPHASE,
+		ACCELERATE,
+		LOCKED,
+		ANTITIMESLOW,
+		WIREONLY,
+		WIREBLOCKING,
+		HIT,
+		BLOCKER,
+		FLY,
+		/*NORMAL,
 		LOCKED,
 		TIMESLOW,
 		WIREONLY,
@@ -39,7 +57,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		BOUNCE,
 		SCORPIONONLY,
 		BLOCKER,
-		FLY,
+		FLY,*/
 	};
 
 	Session *sess;

@@ -69,15 +69,20 @@ CreateRailModeUI::CreateRailModeUI()
 		currTypeRectPos, NULL, 0);
 	currEnemyTypeRect->Init();
 
-	Tileset *ts_physicalTypes = edit->GetSizedTileset("Editor/railcategories_128x128.png");
+	Tileset *ts_rails = edit->GetSizedTileset("Env/rails_128x64.png");
 	
 	int numPhysTypes = TerrainRail::BLOCKER; //phys types come before blocker
 	physicalPanel->ReserveImageRects(numPhysTypes);
 	physRects.resize(numPhysTypes);
+
+	IntRect currSubRect;
+
 	for (int i = 0; i < numPhysTypes; ++i)
 	{
+		currSubRect = ts_rails->GetSubRect(i);
+		currSubRect.width = currSubRect.height;
 		physRects[i] = physicalPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_RAILLIBRARY,
-			Vector2f( 0, i * railTypeGridSize), ts_physicalTypes, i, railTypeGridSize);
+			Vector2f( (i % 4) * railTypeGridSize, (i/4) * railTypeGridSize), ts_rails, currSubRect, railTypeGridSize);
 		physRects[i]->SetInfo((void*)i);
 		//physRects[i]->Init();
 		physRects[i]->SetShown(true);

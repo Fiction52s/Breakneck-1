@@ -571,5 +571,6 @@ struct GameSession : RayCastHandler, Session
 	void RecGhostRecordFrame();
 	bool RunPostUpdate();
 	void SequenceGameModeRespondToGoalDestroyed();
+	void UpdateTerrainStates();
 };
 #endif

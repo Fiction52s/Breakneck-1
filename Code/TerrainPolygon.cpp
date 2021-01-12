@@ -1171,7 +1171,6 @@ TerrainPolygon::TerrainPolygon()
 	//waterShader.setUniform("u_quad2",
 	//	Glsl::Vec4(ir2.left / width, ir2.top / height,
 	//	(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
-	
 
 	copiedInverse = false;
 	isGrassBackedUp = false;
@@ -1208,6 +1207,8 @@ TerrainPolygon::TerrainPolygon()
 	
 	grassSize = 128;
 	grassSpacing = -60;
+
+	ResetState();
 }
 
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
@@ -3461,6 +3462,11 @@ bool TerrainPolygon::IsInversePhaseType()
 	return terrainWorldType == 3 && terrainVariation == 1;
 }
 
+bool TerrainPolygon::IsSometimesActiveType()
+{
+	return terrainWorldType == 3 && terrainVariation == 2;
+}
+
 void TerrainPolygon::UpdateWaterType()
 {
 	if (terrainWorldType >= W1_SPECIAL && terrainWorldType <= W8_SPECIAL)
@@ -4403,6 +4409,61 @@ void TerrainPolygon::UpdateGrass()
 		return;
 }
 
+void TerrainPolygon::FadeOut()
+{
+	if (state == IDLE)
+	{
+		state = FADINGOUT;
+		frame = 0;
+	}
+}
+
+bool TerrainPolygon::IsActive()
+{
+	return state == IDLE || state == FADINGOUT;
+}
+
+void TerrainPolygon::ResetState()
+{
+	state = IDLE;
+	frame = 0;
+}
+
+void TerrainPolygon::UpdateState()
+{
+	if (state == IDLE || state == INACTIVE)
+	{
+		return;
+	}
+	else
+	{
+		if (state == FADINGOUT && frame == 60)
+		{
+			if (IsSometimesActiveType())
+			{
+				state = TEMPORARILYINACTIVE;
+			}
+			else
+			{
+				state = INACTIVE;
+			}
+			frame = 0;
+		}
+		else if (state == FADINGIN && frame == 60)
+		{
+			state = IDLE;
+			frame = 0;
+		}
+		else if (state == TEMPORARILYINACTIVE && frame == 120)
+		{
+			state = FADINGIN;
+			frame = 0;
+		}
+	}
+
+	++frame;
+}
+
 void TerrainPolygon::SetRenderMode(RenderMode rm)
 {
 	if (renderMode != RENDERMODE_TRANSFORM && rm == RENDERMODE_TRANSFORM)
@@ -4631,6 +4692,13 @@ void TerrainPolygon::DrawGrass(sf::RenderTarget *target)
 void TerrainPolygon::Draw( bool showPath, double zoomMultiple, RenderTarget *rt, bool showPoints, TerrainPoint *dontShow )
 {
 	int numP = GetNumPoints();
+
+	if (!IsActive())
+	{
+		rt->draw(lines, numP * 2, sf::Lines);
+		return;
+	}
+	
 	if( renderMode == RENDERMODE_MOVING_POINTS )
 	{
 		DrawPoints(rt, zoomMultiple, dontShow);

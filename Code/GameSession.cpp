@@ -3388,6 +3388,7 @@ void GameSession::RestartLevel()
 	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
 	{
 		(*it)->ResetTouchGrass();
+		(*it)->ResetState();
 	}
 
 	SetDrainOn(true);
@@ -3960,9 +3961,13 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 	}
 }
 
-
-
-
+void GameSession::UpdateTerrainStates()
+{
+	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
+	{
+		(*it)->UpdateState();
+	}
+}
 
 void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
 {
