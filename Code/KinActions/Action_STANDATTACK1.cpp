@@ -72,6 +72,9 @@ void Actor::STANDATTACK1_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
+		
+		TryThrowSwordProjectileBasic();
+		
 	}
 
 	AttackMovement();

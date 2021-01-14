@@ -740,7 +740,9 @@ void Session::RegisterW7Enemies()
 
 	AddWorldEnemy("annihilationspring", 7, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
-	AddBasicAerialWorldEnemy("omnidashbooster", 7, CreateEnemy<OmniDashBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddBasicAerialWorldEnemy("swordprojectilebooster", 7, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("enemyswordprojectilebooster", 7, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddWorldEnemy("greyskeletonnode", 7, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeleton2node_32x32.png"));
@@ -6784,6 +6786,15 @@ void Session::PlayerRestoreDoubleJump(int index)
 	if (p != NULL)
 	{
 		p->RestoreDoubleJump();
+	}
+}
+
+void Session::PlayerRestoreAirOptions(int index = 0)
+{
+	Actor *p = players[index];
+	if (p != NULL)
+	{
+		p->RechargeAirOptions();
 	}
 }
 

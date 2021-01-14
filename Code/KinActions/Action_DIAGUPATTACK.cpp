@@ -29,6 +29,8 @@ void Actor::DIAGUPATTACK_Update()
 	{
 		
 		
+		TryThrowSwordProjectileBasic();
+		
 		
 		//fairSound.play();
 	}

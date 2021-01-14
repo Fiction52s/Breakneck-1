@@ -54,8 +54,8 @@
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_HomingBooster.h"
 #include "Enemy_AntiTimeSlowBooster.h"
-#include "Enemy_OmniDashBooster.h"
-
+#include "Enemy_SwordProjectileBooster.h"
+#include "Enemy_SwordProjectile.h"
 #include "GameMode.h"
 
 #include "GGPO.h"
@@ -2654,7 +2654,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
 	currPowerMode = PMODE_SHIELD;
@@ -2664,6 +2663,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	for (int i = 0; i < 3; ++i)
 	{
 		birdCommands[i] = new BirdCommand;
+	}
+
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		swordProjectiles[i] = new SwordProjectile;
 	}
 
 	touchedCoyoteHelper = false;
@@ -2695,6 +2699,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	freeFlightFrames = 0;
 	antiTimeSlowFrames = 0;
 	homingFrames = 0;
+	projectileSwordFrames = 0;
+	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
@@ -2735,7 +2741,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
-	currOmniDashBooster = NULL;
+	currSwordProjectileBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currHomingBooster = NULL;
 	currPhaseBooster = NULL;
@@ -2861,15 +2867,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	regrindOffMax = 3;
 	regrindOffCount = 3;
 
-	inRewindWater = false;
-
 
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
-	currOmniDashBooster = NULL;
+	currSwordProjectileBooster = NULL;
 	currFreeFlightBooster = NULL;
 	currPhaseBooster = NULL;
 	currTeleporter = NULL;
@@ -3714,6 +3718,11 @@ Actor::~Actor()
 		delete (*it);
 	}
 
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		delete swordProjectiles[i];
+	}
+
 	//delete skin;
 	//delete swordSkin;
 	/*if (glideEmitter != NULL)
@@ -4322,13 +4331,19 @@ void Actor::Respawn()
 	freeFlightFrames = 0;
 	antiTimeSlowFrames = 0;
 	homingFrames = 0;
+	projectileSwordFrames = 0;
+	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
-	inRewindWater = false;
 	touchedCoyoteHelper = false;
 	coyoteBoostFrames = 0;
+
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		swordProjectiles[i]->Reset();
+	}
 
 	ResetGrassCounters();
 	ResetAttackHit();
@@ -4385,7 +4400,7 @@ void Actor::Respawn()
 	currFreeFlightBooster = NULL;
 	currTimeBooster = NULL;
 	currAntiTimeSlowBooster = NULL;
-	currOmniDashBooster = NULL;
+	currSwordProjectileBooster = NULL;
 	currSpring = NULL;
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
@@ -4921,11 +4936,6 @@ void Actor::ProcessReceivedHit()
 
 void Actor::ReactToBeingHit()
 {
-	if (inRewindWater)
-	{
-		position = waterEntrancePosition;
-	}
-
 	if (action == GROUNDHITSTUN || action == AIRHITSTUN)
 	{
 		hitOutOfHitstunLastFrame = true;
@@ -5383,39 +5393,22 @@ void Actor::ProcessAntiTimeSlowBooster()
 	}
 }
 
-void Actor::ProcessOmniDashBooster()
+void Actor::ProcessSwordProjectileBooster()
 {
-	if (currOmniDashBooster != NULL && currOmniDashBooster->IsBoostable())
+	if (currSwordProjectileBooster != NULL && currSwordProjectileBooster->IsBoostable())
 	{
-		currOmniDashBooster->Boost();
+		currSwordProjectileBooster->Boost();
 
-		antiTimeSlowFrames = currOmniDashBooster->strength;
-		
-		ground = NULL;
-		wallNormal = V2d(0, 0);
-		currWall = NULL;
-		bounceEdge = NULL;
-		grindEdge = NULL;
-
-		if (!IsAttackAction(action))
+		if (currSwordProjectileBooster->enemyProjectile)
 		{
-			SetAction(JUMP);
-			frame = 1;
+			enemyProjectileSwordFrames = currSwordProjectileBooster->strength;
+		}
+		else
+		{
+			projectileSwordFrames = currSwordProjectileBooster->strength;
 		}
 
-		V2d dir = normalize(currOmniDashBooster->GetPosition() - position);
-		double xVel = 40;
-		double yVel = 40;
-		velocity = dir;
-		velocity.x *= xVel;
-		velocity.y *= yVel;
-
-		/*velocity.x *= .6;
-
-		if (velocity.y > 0)
-			velocity.y *= .5;*/
-
-		currOmniDashBooster = NULL;
+		currSwordProjectileBooster = NULL;
 
 		RechargeAirOptions();
 	}
@@ -5428,8 +5421,7 @@ void Actor::ProcessHomingBooster()
 		currHomingBooster->Boost();
 
 		homingFrames = currHomingBooster->strength;
-		RestoreAirDash();
-		RestoreDoubleJump();
+		RechargeAirOptions();
 		//ground = NULL;
 		//wallNormal = V2d(0, 0);
 		//currWall = NULL;
@@ -5450,8 +5442,7 @@ void Actor::ProcessFreeFlightBooster()
 		freeFlightFrames = currFreeFlightBooster->strength;;
 		extraGravityModifier = 0;
 		gravModifyFrames = freeFlightFrames;
-		RestoreAirDash();
-		RestoreDoubleJump();
+		RechargeAirOptions();
 		ground = NULL;
 		wallNormal = V2d(0, 0);
 		currWall = NULL;
@@ -6089,7 +6080,7 @@ void Actor::UpdatePrePhysics()
 
 	ProcessAntiTimeSlowBooster();
 
-	ProcessOmniDashBooster();
+	ProcessSwordProjectileBooster();
 
 	ProcessAccelGrass();
 
@@ -6109,8 +6100,7 @@ void Actor::UpdatePrePhysics()
 
 	ClearPauseBufferedActions();
 
-	memcpy(oldTouchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
-	memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
+	
 	oldVelocity.x = velocity.x;
 	oldVelocity.y = velocity.y;
 	touchEdgeWithLeftWire = false;
@@ -9530,6 +9520,9 @@ void Actor::TryCheckGrass()
 	//lets hope nothing feels weird.
 	if ((owner != NULL && owner->hasAnyGrass) || editOwner != NULL)
 	{
+		memcpy(oldTouchedGrass, touchedGrass, sizeof(bool) * Grass::Count);
+		memset(touchedGrass, 0, sizeof(bool) * Grass::Count);
+
 		Rect<double> grassR(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 		//grassR is the same as the rect used in HandleEntrant for "grass"
 		//might need to make a function at some point
@@ -12070,8 +12063,7 @@ void Actor::HandleTouchedGate()
 					CreateGateExplosion();
 				}
 
-				RestoreAirDash();
-				RestoreDoubleJump();
+				RechargeAirOptions();
 			}
 		}
 
@@ -12288,8 +12280,28 @@ void Actor::HitWhileAerial()
 	ground = NULL;
 	grindEdge = NULL;
 	bounceEdge = NULL;
+
+
+	if (InWater(TerrainPolygon::WATER_REWIND))
+	{
+		RechargeAirOptions();
+
+		SetAction(JUMP);
+		frame = 1;
+		invincibleFrames = 0;
+		receivedHit = NULL;
+		position = waterEntrancePosition;
+		velocity = V2d(0, 0);
+		return;
+	}
+
 	SetAction(AIRHITSTUN);
 	frame = 0;
+
+
+	
+	
+
 	if (receivedHit->knockback > 0)
 	{
 		velocity = receivedHit->knockback * receivedHit->kbDir;
@@ -13254,8 +13266,7 @@ void Actor::HandleWaterSituation(int wType,
 		{
 			extraGravityModifier = .8;
 			gravModifyFrames = 1;
-			RestoreAirDash();
-			RestoreDoubleJump();
+			RechargeAirOptions();
 		}
 		break;
 	}
@@ -13468,8 +13479,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RestoreAirDash();
-			RestoreDoubleJump();
+			RechargeAirOptions();
 		}
 		break;
 	}
@@ -13477,8 +13487,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RestoreAirDash();
-			RestoreDoubleJump();
+			RechargeAirOptions();
 			modifiedDrainFrames = 10;
 			modifiedDrain = drainAmount * 4;
 		}
@@ -13492,8 +13501,7 @@ void Actor::HandleWaterSituation(int wType,
 			springStunFrames = 2;
 			extraGravityModifier = 0;
 			gravModifyFrames = 2;
-			RestoreAirDash();
-			RestoreDoubleJump();
+			RechargeAirOptions();
 			ground = NULL;
 			wallNormal = V2d(0, 0);
 			currWall = NULL;
@@ -13516,53 +13524,15 @@ void Actor::HandleWaterSituation(int wType,
 	}
 	case TerrainPolygon::WATER_REWIND:
 	{
-		if (!inRewindWater)
+		if (sit == SPECIALT_ENTER )
 		{
 			waterEntrancePosition = position;
 		}
-		inRewindWater = true;
 		break;
 	}
 	case TerrainPolygon::WATER_SWORDPROJECTILE:
 	{
-		//if (sit == SPECIALT_ENTER)
-		//{
-		//	Edge *enterEdge = RayCastSpecialTerrainEnter();
-		//	if (enterEdge != NULL)
-		//	{
-		//		V2d norm = -enterEdge->Normal();
-		//		SetAction(SPRINGSTUN);
-		//		springStunFrames = 2;
-
-		//		waterEntranceVelocity = velocity;
-
-		//		//make into function soon
-		//		holdJump = false;
-		//		holdDouble = false;
-		//		RechargeAirOptions();
-		//		rightWire->Reset();
-		//		leftWire->Reset();
-		//		frame = 0;
-		//		UpdateHitboxes();
-		//		ground = NULL;
-		//		wallNormal = V2d(0, 0);
-		//		velocity = V2d(0, 0);
-		//		currWall = NULL;
-		//		double speed = 30;
-		//		springVel = norm * speed;
-
-
-		//	}
-		//}
-		//else if (sit == SPECIALT_REMAIN)
-		//{
-		//	springStunFrames = 2;
-		//}
-		//else if (sit == SPECIALT_EXIT)
-		//{
-		//	springStunFrames = 1;
-		//	velocity = waterEntranceVelocity;
-		//}
+		projectileSwordFrames = 2;
 		break;
 	}
 	case TerrainPolygon::WATER_SUPER:
@@ -13618,12 +13588,6 @@ void Actor::HandleSpecialTerrain()
 		}
 	}
 
-
-	//fix these soon
-	if (!InWater(TerrainPolygon::WATER_REWIND) )
-	{
-		inRewindWater = false;
-	}
 
 	/*if (!InWater( TerrainPolygon::WATER_TEL)
 	{
@@ -13824,6 +13788,42 @@ bool Actor::CareAboutSpeedAction()
 {
 	return action != DEATH && action != EXIT && !IsGoalKillAction(action) && action != RIDESHIP && action != GRINDBALL
 		&& action != GRINDATTACK;
+}
+
+bool Actor::TryThrowSwordProjectile(V2d &offset, V2d &dir)
+{
+	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
+	{
+		if (!swordProjectiles[i]->IsActive())
+		{
+			swordProjectiles[i]->Throw(actorIndex, position + offset, dir);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Actor::TryThrowEnemySwordProjectileBasic()
+{
+	if (enemyProjectileSwordFrames > 0)
+	{
+		UpdateKnockbackDirectionAndHitboxType();
+		return TryThrowSwordProjectile(V2d(0, 0), currHitboxInfo->hDir);
+	}
+
+	return false;
+}
+
+bool Actor::TryThrowSwordProjectileBasic()
+{
+	if (projectileSwordFrames > 0)
+	{
+		UpdateKnockbackDirectionAndHitboxType();
+		return TryThrowSwordProjectile(V2d(0, 0), currHitboxInfo->hDir);
+	}
+	
+	return false;
 }
 
 void Actor::UpdateSpeedBar()
@@ -14158,6 +14158,16 @@ void Actor::SlowDependentFrameIncrement()
 		if (phaseFrames > 0)
 		{
 			--phaseFrames;
+		}
+
+		if (projectileSwordFrames > 0)
+		{
+			--projectileSwordFrames;
+		}
+
+		if (enemyProjectileSwordFrames > 0)
+		{
+			--enemyProjectileSwordFrames;
 		}
 
 		slowCounter = 1;
@@ -14832,8 +14842,7 @@ void Actor::SetBounceBoostVelocity()
 	SetAction(BOOSTERBOUNCE);
 	frame = 0;
 
-	RestoreDoubleJump();
-	RestoreAirDash();
+	RechargeAirOptions();
 
 	double s = currBounceBooster->strength;
 	//velocity.y = min(s, velocity.y);
@@ -16063,16 +16072,16 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				//some replacement formula later
 			}
 		}
-		else if (en->type == EnemyType::EN_OMNIDASHBOOSTER)
+		else if (en->type == EnemyType::EN_SWORDPROJECTILEBOOSTER)
 		{
-			OmniDashBooster *odboost = (OmniDashBooster*)qte;
+			SwordProjectileBooster *spboost = (SwordProjectileBooster*)qte;
 
-			if (currOmniDashBooster == NULL)
+			if (currSwordProjectileBooster == NULL)
 			{
-				if (odboost->hitBody.Intersects(odboost->currHitboxFrame,
-					&hurtBody) && odboost->IsBoostable())
+				if (spboost->hitBody.Intersects(spboost->currHitboxFrame,
+					&hurtBody) && spboost->IsBoostable())
 				{
-					currOmniDashBooster = odboost;
+					currSwordProjectileBooster = spboost;
 				}
 			}
 			else
@@ -17095,6 +17104,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	}*/
 	enemiesKilledThisFrame++;
 
+	TryThrowEnemySwordProjectileBasic();
 
 	//for the growing tree
 	//wrong
@@ -17108,7 +17118,6 @@ void Actor::ConfirmEnemyNoKill( Enemy *e )
 
 void Actor::ConfirmHit( Enemy *e )
 {
-
 	HitParams &hitParams = e->hitParams;
 	//owner->cam.SetRumble(3, 3, 5);
 

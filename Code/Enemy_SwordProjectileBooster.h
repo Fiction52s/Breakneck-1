@@ -1,9 +1,9 @@
-#ifndef __ENEMY_OMNIDASHBOOSTER_H__
-#define __ENEMY_OMNIDASHBOOSTER_H__
+#ifndef __ENEMY_SWORDPROJECTILEBOOSTER_H__
+#define __ENEMY_SWORDPROJECTILEBOOSTER_H__
 
 #include "Enemy.h"
 
-struct OmniDashBooster : Enemy
+struct SwordProjectileBooster : Enemy
 {
 	enum Action
 	{
@@ -13,7 +13,7 @@ struct OmniDashBooster : Enemy
 		Count
 	};
 
-	OmniDashBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
+	SwordProjectileBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 
 	void ProcessState();
 	void SetLevel(int lev);
@@ -24,6 +24,8 @@ struct OmniDashBooster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
+
+	bool enemyProjectile;
 
 	Tileset *ts;
 	Tileset *ts_refresh;

@@ -36,7 +36,7 @@ void Actor::UAIR_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		
+		TryThrowSwordProjectileBasic();
 	}
 
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)

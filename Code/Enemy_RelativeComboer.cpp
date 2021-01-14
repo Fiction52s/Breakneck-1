@@ -384,8 +384,7 @@ void RelativeComboer::ComboKill(Enemy *e)
 	}
 	UpdateKilledNumberText(maxKilled - numKilled);
 
-	sess->PlayerRestoreDoubleJump(0);
-	sess->PlayerRestoreAirDash(0);
+	sess->PlayerRestoreAirOptions(0);
 }
 
 void RelativeComboer::ComboHit()

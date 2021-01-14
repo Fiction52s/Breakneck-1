@@ -170,8 +170,7 @@ void AttractJuggler::ResetEnemy()
 void AttractJuggler::HandleWireHit(Wire *w)
 {
 	w->HitEnemy(GetPosition());
-	w->player->RestoreAirDash();
-	w->player->RestoreDoubleJump();
+	w->player->RechargeAirOptions();
 }
 
 bool AttractJuggler::CanBeHitByWireTip(bool red)

@@ -12956,6 +12956,7 @@ void EditSession::CreateEnemyModeHandleEvent()
 		{
 			if (trackingEnemyParams != NULL)
 			{
+				ClearSelectedBrush();
 				delete trackingEnemyParams;
 				trackingEnemyParams = NULL;
 				grabbedActor = NULL;

@@ -5,6 +5,7 @@ using namespace std;
 
 void Actor::FAIR_Start()
 {
+	
 	SetActionSuperLevel();
 	if (currActionSuperLevel == 2)
 	{
@@ -37,8 +38,7 @@ void Actor::FAIR_Update()
 
 	if (frame == 0 && slowCounter == 1)
 	{
-		
-		//fairSound.play();
+		TryThrowSwordProjectileBasic();
 	}
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)
 	{

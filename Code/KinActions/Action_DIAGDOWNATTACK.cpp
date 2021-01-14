@@ -28,6 +28,8 @@ void Actor::DIAGDOWNATTACK_Update()
 	if (frame == 0 && slowCounter == 1)
 	{
 		
+		TryThrowSwordProjectileBasic();
+		
 		
 		//fairSound.play();
 	}

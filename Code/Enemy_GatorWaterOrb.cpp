@@ -307,8 +307,7 @@ bool GatorWaterOrb::CheckHitPlayer(int index)
 			IHitPlayer(index);
 			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
 			{
-				player->RestoreAirDash();
-				player->RestoreDoubleJump();
+				player->RechargeAirOptions();
 				ClearRect(quad);
 				spawned = false;
 				sess->RemoveEnemy(this);

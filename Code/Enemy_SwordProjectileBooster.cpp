@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Enemy_OmniDashBooster.h"
+#include "Enemy_SwordProjectileBooster.h"
 #include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
@@ -20,8 +20,8 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
-OmniDashBooster::OmniDashBooster(ActorParams *ap)//Vector2i &pos, int p_level)
-	:Enemy(EnemyType::EN_OMNIDASHBOOSTER, ap), strength(20)//, false, 1, false), strength( 20 )
+SwordProjectileBooster::SwordProjectileBooster(ActorParams *ap)//Vector2i &pos, int p_level)
+	:Enemy(EnemyType::EN_SWORDPROJECTILEBOOSTER, ap)//, false, 1, false), strength( 20 )
 {
 	SetNumActions(Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
@@ -29,6 +29,21 @@ OmniDashBooster::OmniDashBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 	SetLevel(ap->GetLevel());
 
 	SetCurrPosInfo(startPosInfo);
+
+	const string &name = ap->GetTypeName();
+
+	if (name == "swordprojectilebooster")
+	{
+		enemyProjectile = false;
+		sprite.setColor(Color::Yellow);
+	}
+	else if (name == "enemyswordprojectilebooster")
+	{
+		enemyProjectile = true;
+		sprite.setColor(Color::Red);
+	}
+	
+	strength = 300;
 
 	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");
 	ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
@@ -51,7 +66,7 @@ OmniDashBooster::OmniDashBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 	SetSpawnRect();
 }
 
-void OmniDashBooster::ResetEnemy()
+void SwordProjectileBooster::ResetEnemy()
 {
 	action = NEUTRAL;
 	frame = 0;
@@ -63,7 +78,7 @@ void OmniDashBooster::ResetEnemy()
 	UpdateSprite();
 }
 
-void OmniDashBooster::SetLevel(int lev)
+void SwordProjectileBooster::SetLevel(int lev)
 {
 	level = lev;
 
@@ -83,12 +98,12 @@ void OmniDashBooster::SetLevel(int lev)
 	}
 }
 
-void OmniDashBooster::AddToWorldTrees()
+void SwordProjectileBooster::AddToWorldTrees()
 {
 	sess->activeItemTree->Insert(this);
 }
 
-bool OmniDashBooster::Boost()
+bool SwordProjectileBooster::Boost()
 {
 	if (action == NEUTRAL)
 	{
@@ -99,14 +114,14 @@ bool OmniDashBooster::Boost()
 	return false;
 }
 
-bool OmniDashBooster::IsBoostable()
+bool SwordProjectileBooster::IsBoostable()
 {
 	return action == NEUTRAL;
 }
 
 
 
-void OmniDashBooster::ProcessState()
+void SwordProjectileBooster::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -135,7 +150,7 @@ void OmniDashBooster::ProcessState()
 	}
 }
 
-void OmniDashBooster::UpdateSprite()
+void SwordProjectileBooster::UpdateSprite()
 {
 	int tile = 0;
 	IntRect ir;
@@ -161,12 +176,12 @@ void OmniDashBooster::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 }
 
-void OmniDashBooster::EnemyDraw(sf::RenderTarget *target)
+void SwordProjectileBooster::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
 
-void OmniDashBooster::DrawMinimap(sf::RenderTarget *target)
+void SwordProjectileBooster::DrawMinimap(sf::RenderTarget *target)
 {
 	if (!dead)
 	{

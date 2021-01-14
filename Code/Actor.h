@@ -23,6 +23,7 @@
 #include <iostream>
 #include "EnemyTracker.h"
 
+struct SwordProjectile;
 
 struct PState;
 
@@ -118,7 +119,7 @@ struct FreeFlightBooster;
 struct HomingBooster;
 struct AntiTimeSlowBooster;
 struct PhaseBooster;
-struct OmniDashBooster;
+struct SwordProjectileBooster;
 struct Spring;
 struct Teleporter;
 struct SwingLauncher;
@@ -398,8 +399,12 @@ struct Actor : QuadTreeCollider,
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
+
+	const static int NUM_SWORD_PROJECTILES = 6;
+	SwordProjectile *swordProjectiles[NUM_SWORD_PROJECTILES];
+	int projectileSwordFrames;
+	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
-	bool inRewindWater;
 	bool inTeleportAcrossWater;
 	V2d waterEntrancePosition;
 	V2d waterEntranceVelocity;
@@ -417,12 +422,13 @@ struct Actor : QuadTreeCollider,
 	FreeFlightBooster *currFreeFlightBooster;
 	HomingBooster *currHomingBooster;
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
-	OmniDashBooster *currOmniDashBooster;
+	SwordProjectileBooster *currSwordProjectileBooster;
 	PhaseBooster *currPhaseBooster;
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
 	int phaseFrames;
+	
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
@@ -1033,6 +1039,9 @@ struct Actor : QuadTreeCollider,
 	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
 
+	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
+	bool TryThrowSwordProjectileBasic();
+	bool TryThrowEnemySwordProjectileBasic();
 	void ResetAttackHit();
 	void LoadHitboxes();
 	void SetupHitboxInfo(
@@ -1140,7 +1149,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessAntiTimeSlowBooster();
 	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();
-	void ProcessOmniDashBooster();
+	void ProcessSwordProjectileBooster();
 	void ProcessGravModifier();
 	void UpdateWireStates();
 	void ProcessAccelGrass();

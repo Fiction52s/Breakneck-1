@@ -28,6 +28,11 @@ void Actor::DAIR_Update()
 
 	SetCurrHitboxes(dairHitboxes[speedLevel], frame);
 
+	if (frame == 0 && slowCounter == 1)
+	{
+		TryThrowSwordProjectileBasic();
+	}
+
 	if (wallJumpFrameCounter >= wallJumpMovementLimit)
 	{
 		AirMovement();
