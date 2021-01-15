@@ -61,7 +61,7 @@ void Actor::GRINDBALL_Change()
 				}
 
 				framesNotGrinding = 0;
-				RechargeAirOptions();
+				RestoreAirOptions();
 
 				if (!j)
 				{
@@ -175,7 +175,7 @@ void Actor::GRINDBALL_Change()
 						facingRight = false;
 					}
 
-					RechargeAirOptions();
+					RestoreAirOptions();
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;

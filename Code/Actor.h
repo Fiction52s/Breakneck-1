@@ -407,6 +407,17 @@ struct Actor : QuadTreeCollider,
 	int gravModifyFrames;
 	bool inTeleportAcrossWater;
 	V2d waterEntrancePosition;
+	Edge *waterEntranceGround;
+	Edge *waterEntranceGrindEdge;
+	double waterEntranceQuantity;
+	double waterEntranceXOffset;
+	double waterEntrancePhysHeight;
+	bool waterEntranceFacingRight;
+	double waterEntranceGrindSpeed;
+	bool waterEntranceReversed;
+
+
+
 	V2d waterEntranceVelocity;
 	int modifiedDrainFrames;
 	int modifiedDrain;
@@ -1033,7 +1044,7 @@ struct Actor : QuadTreeCollider,
 	bool CanHalfBlock(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
 		bool attackFacingRight);
-	void RechargeAirOptions();
+	void RestoreAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
 	V2d GetAdjustedKnockback(const V2d &kbDir);
@@ -1048,6 +1059,7 @@ struct Actor : QuadTreeCollider,
 		json &j, const std::string &name,
 		HitboxInfo *hi);
 
+	bool TryHandleHitInRewind();
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);

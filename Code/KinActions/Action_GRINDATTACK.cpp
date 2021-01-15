@@ -59,7 +59,7 @@ void Actor::GRINDATTACK_Change()
 				}
 
 				framesNotGrinding = 0;
-				RechargeAirOptions();
+				RestoreAirOptions();
 				ground = grindEdge;
 				edgeQuantity = grindQuantity;
 				SetAction(LAND);
@@ -169,7 +169,7 @@ void Actor::GRINDATTACK_Change()
 						facingRight = false;
 					}
 
-					RechargeAirOptions();
+					RestoreAirOptions();
 
 
 					ground = grindEdge;

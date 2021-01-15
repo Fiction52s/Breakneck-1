@@ -333,7 +333,7 @@ void Actor::BOUNCEGROUND_Change()
 
 			//if( gNorm.y <= -steepThresh )
 			{
-				RechargeAirOptions();
+				RestoreAirOptions();
 			}
 
 			if (testVel.x < 0 && currNormal.y <= -steepThresh)

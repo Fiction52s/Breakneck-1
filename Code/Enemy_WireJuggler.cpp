@@ -230,7 +230,7 @@ bool WireJuggler::CanBeAnchoredByWire(bool red)
 void WireJuggler::HandleWireHit(Wire *w)
 {
 	w->HitEnemy(GetPosition());
-	w->player->RechargeAirOptions();
+	w->player->RestoreAirOptions();
 }
 
 void WireJuggler::HandleWireUnanchored(Wire *w)

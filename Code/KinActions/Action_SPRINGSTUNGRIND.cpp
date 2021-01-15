@@ -61,7 +61,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 				}
 
 				framesNotGrinding = 0;
-				RechargeAirOptions();
+				RestoreAirOptions();
 
 				if (!j)
 				{
@@ -183,7 +183,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 						facingRight = false;
 					}
 
-					RechargeAirOptions();
+					RestoreAirOptions();
 
 					ground = grindEdge;
 					groundSpeed = -grindSpeed;

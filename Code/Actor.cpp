@@ -4515,7 +4515,7 @@ void Actor::Respawn()
 
 	flashFrames = 0;
 	
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 	for( int i = 0; i < maxBubbles; ++i )
 	{
@@ -5362,7 +5362,7 @@ void Actor::ProcessTimeBooster()
 
 		currTimeBooster = NULL;
 
-		RechargeAirOptions();
+		RestoreAirOptions();
 	}
 }
 
@@ -5376,7 +5376,7 @@ void Actor::ProcessPhaseBooster()
 
 		currPhaseBooster = NULL;
 
-		RechargeAirOptions();
+		RestoreAirOptions();
 	}
 }
 
@@ -5389,7 +5389,7 @@ void Actor::ProcessAntiTimeSlowBooster()
 		antiTimeSlowFrames = currAntiTimeSlowBooster->strength;
 		currAntiTimeSlowBooster = NULL;
 
-		RechargeAirOptions();
+		RestoreAirOptions();
 	}
 }
 
@@ -5410,7 +5410,7 @@ void Actor::ProcessSwordProjectileBooster()
 
 		currSwordProjectileBooster = NULL;
 
-		RechargeAirOptions();
+		RestoreAirOptions();
 	}
 }
 
@@ -5421,7 +5421,7 @@ void Actor::ProcessHomingBooster()
 		currHomingBooster->Boost();
 
 		homingFrames = currHomingBooster->strength;
-		RechargeAirOptions();
+		RestoreAirOptions();
 		//ground = NULL;
 		//wallNormal = V2d(0, 0);
 		//currWall = NULL;
@@ -5442,7 +5442,7 @@ void Actor::ProcessFreeFlightBooster()
 		freeFlightFrames = currFreeFlightBooster->strength;;
 		extraGravityModifier = 0;
 		gravModifyFrames = freeFlightFrames;
-		RechargeAirOptions();
+		RestoreAirOptions();
 		ground = NULL;
 		wallNormal = V2d(0, 0);
 		currWall = NULL;
@@ -7069,7 +7069,7 @@ void Actor::SetGroundedPos(Edge *g, double q, double xoff)
 	ground = g;
 	edgeQuantity = q;
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 	
 	offsetX = xoff;
 
@@ -7109,7 +7109,7 @@ void Actor::SetGroundedPos(Edge *g, double q)
 	ground = g;
 	edgeQuantity = q;
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 	V2d norm = ground->Normal();
 	if (norm.x > 0)
@@ -8756,7 +8756,7 @@ bool Actor::ExitGrind(bool jump)
 			}
 
 			framesNotGrinding = 0;
-			RechargeAirOptions();
+			RestoreAirOptions();
 
 			if (!jump)
 			{
@@ -8870,7 +8870,7 @@ bool Actor::ExitGrind(bool jump)
 					facingRight = false;
 				}
 
-				RechargeAirOptions();
+				RestoreAirOptions();
 
 				ground = grindEdge;
 				groundSpeed = -grindSpeed;
@@ -9835,7 +9835,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				{
 					if (HasUpgrade( UPGRADE_POWER_GRAV ) || grindEdge->Normal().y < 0)
 					{
-						RechargeAirOptions();
+						RestoreAirOptions();
 					}
 				}
 				q = 0;
@@ -9900,7 +9900,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				{
 					if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
 					{
-						RechargeAirOptions();
+						RestoreAirOptions();
 					}
 				}
 			}
@@ -9935,7 +9935,7 @@ void Actor::HandleBounceGrass()
 		velocity.x = -18;
 	}
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 	if (action == AIRDASH || IsSpringAction(action))
 	{
@@ -10004,7 +10004,7 @@ void Actor::HandleBounceRail()
 		velocity.x = -18;
 	}*/
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 	if (action == AIRDASH || IsSpringAction(action))
 	{
@@ -10223,7 +10223,7 @@ bool Actor::UpdateAutoRunPhysics( double q, double m )
 	return false;
 }
 
-void Actor::RechargeAirOptions()
+void Actor::RestoreAirOptions()
 {
 	hasDoubleJump = true;
 	hasAirDash = true;
@@ -11652,7 +11652,7 @@ void Actor::UpdatePhysics()
 
 				//if( gNorm.y <= -steepThresh )
 				{
-					RechargeAirOptions();
+					RestoreAirOptions();
 				}
 
 				if( velocity.x < 0 && gNorm.y <= -steepThresh )
@@ -11728,7 +11728,7 @@ void Actor::UpdatePhysics()
 					}
 				}
 
-				RechargeAirOptions();
+				RestoreAirOptions();
 				reversed = true;
 
 				ground = minContact.edge;
@@ -12063,7 +12063,7 @@ void Actor::HandleTouchedGate()
 					CreateGateExplosion();
 				}
 
-				RechargeAirOptions();
+				RestoreAirOptions();
 			}
 		}
 
@@ -12133,7 +12133,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 		offsetX = 0;
 	}
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 
 	ground = grindEdge;
@@ -12215,12 +12215,71 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 	reversed = false;
 }
 
+bool Actor::TryHandleHitInRewind()
+{
+	reversed = false;
+	ground = NULL;
+	grindEdge = NULL;
+	bounceEdge = NULL;
+	groundSpeed = 0;
+	velocity = V2d(0, 0);
+	position = waterEntrancePosition;
+	b.rh = waterEntrancePhysHeight;
+	invincibleFrames = 0;
+	receivedHit = NULL;
+	rightWire->Reset();
+	leftWire->Reset();
+
+	if (InWater(TerrainPolygon::WATER_REWIND))
+	{
+		if (waterEntranceGrindEdge != NULL)
+		{
+			//a little buggy but not in any major ways
+			facingRight = waterEntranceFacingRight;
+
+			V2d grNormal = waterEntranceGrindEdge->Normal();
+			if (grNormal.y == 0 && grNormal.x < 0)
+			{
+				facingRight = !facingRight;
+			}
+
+			ground = waterEntranceGrindEdge;
+			edgeQuantity = waterEntranceQuantity;
+			position = waterEntrancePosition;
+			SetActionGrind();
+		}
+		else if (waterEntranceGround != NULL)
+		{
+			reversed = waterEntranceReversed;
+			SetAction(STAND);
+			frame = 0;
+
+			facingRight = waterEntranceFacingRight;
+			SetGroundedPos(waterEntranceGround, waterEntranceQuantity, waterEntranceXOffset);
+		}
+		else
+		{
+			SetAction(JUMP);
+			frame = 1;
+			RestoreAirOptions();
+
+			velocity = V2d(0, 0);
+		}
+		return true;
+	}
+
+	return false;
+}
+
 void Actor::HitOutOfGrind()
 {
+	if (TryHandleHitInRewind())
+		return;
+
 	V2d grindNorm = grindEdge->Normal();
 
 	framesNotGrinding = 0;
-	RechargeAirOptions();
+	RestoreAirOptions();
 	ground = grindEdge;
 	edgeQuantity = grindQuantity;
 	groundSpeed = grindSpeed;
@@ -12250,8 +12309,14 @@ void Actor::HitOutOfGrind()
 	reversed = false;
 }
 
+
+
+
 void Actor::HitWhileGrounded()
 {
+	if (TryHandleHitInRewind())
+		return;
+
 	V2d kbDir = receivedHit->kbDir;
 
 	if (kbDir.y > 0)
@@ -12275,25 +12340,13 @@ void Actor::HitWhileGrounded()
 	}
 }
 
+
+
 void Actor::HitWhileAerial()
 {
-	ground = NULL;
-	grindEdge = NULL;
-	bounceEdge = NULL;
-
-
-	if (InWater(TerrainPolygon::WATER_REWIND))
-	{
-		RechargeAirOptions();
-
-		SetAction(JUMP);
-		frame = 1;
-		invincibleFrames = 0;
-		receivedHit = NULL;
-		position = waterEntrancePosition;
-		velocity = V2d(0, 0);
+	if (TryHandleHitInRewind())
 		return;
-	}
+	
 
 	SetAction(AIRHITSTUN);
 	frame = 0;
@@ -12473,7 +12526,7 @@ void Actor::PhysicsResponse()
 
 			if( bn.y <= 0 && bn.y > -steepThresh )
 			{
-				RechargeAirOptions();
+				RestoreAirOptions();
 				if( storedBounceVel.x > 0 && bn.x < 0 && facingRight 
 					|| storedBounceVel.x < 0 && bn.x > 0 && !facingRight )
 				{
@@ -12494,7 +12547,7 @@ void Actor::PhysicsResponse()
 			}
 			else if( bn.y < 0 )
 			{
-				RechargeAirOptions();
+				RestoreAirOptions();
 
 
 				if( abs( storedBounceVel.y ) < 10 )
@@ -13266,7 +13319,7 @@ void Actor::HandleWaterSituation(int wType,
 		{
 			extraGravityModifier = .8;
 			gravModifyFrames = 1;
-			RechargeAirOptions();
+			RestoreAirOptions();
 		}
 		break;
 	}
@@ -13298,7 +13351,7 @@ void Actor::HandleWaterSituation(int wType,
 			SetAction(WATERGLIDE);
 			holdJump = false;
 			holdDouble = false;
-			RechargeAirOptions();
+			RestoreAirOptions();
 			rightWire->Reset();
 			leftWire->Reset();
 			frame = 0;
@@ -13456,7 +13509,7 @@ void Actor::HandleWaterSituation(int wType,
 				//make into function soon
 				holdJump = false;
 				holdDouble = false;
-				RechargeAirOptions();
+				RestoreAirOptions();
 				rightWire->Reset();
 				leftWire->Reset();
 				frame = 0;
@@ -13479,7 +13532,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RechargeAirOptions();
+			RestoreAirOptions();
 		}
 		break;
 	}
@@ -13487,7 +13540,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RechargeAirOptions();
+			RestoreAirOptions();
 			modifiedDrainFrames = 10;
 			modifiedDrain = drainAmount * 4;
 		}
@@ -13501,7 +13554,7 @@ void Actor::HandleWaterSituation(int wType,
 			springStunFrames = 2;
 			extraGravityModifier = 0;
 			gravModifyFrames = 2;
-			RechargeAirOptions();
+			RestoreAirOptions();
 			ground = NULL;
 			wallNormal = V2d(0, 0);
 			currWall = NULL;
@@ -13526,6 +13579,24 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER )
 		{
+			
+
+			waterEntranceGround = ground;
+			waterEntranceXOffset = offsetX;
+			waterEntrancePhysHeight = b.rh;
+			waterEntranceFacingRight = facingRight;
+			waterEntranceGrindEdge = grindEdge;
+
+			if (grindEdge != NULL )
+			{
+				waterEntranceQuantity = grindQuantity;
+			}
+			if (ground != NULL)
+			{
+				waterEntranceQuantity = edgeQuantity;
+				waterEntranceReversed = reversed;
+			}
+
 			waterEntrancePosition = position;
 		}
 		break;
@@ -14651,7 +14722,7 @@ bool Actor::SwingLaunch()
 
 		holdJump = false;
 		holdDouble = false;
-		RechargeAirOptions();
+		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -14699,7 +14770,7 @@ bool Actor::TeleporterLaunch()
 
 		holdJump = false;
 		holdDouble = false;
-		RechargeAirOptions();
+		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -14731,7 +14802,7 @@ bool Actor::AimLauncherAim()
 		holdJump = false;
 		holdDouble = false;
 		position = currAimLauncher->GetPosition();
-		RechargeAirOptions();
+		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		
@@ -14801,7 +14872,7 @@ bool Actor::SpringLaunch()
 		
 		holdJump = false;
 		holdDouble = false;
-		RechargeAirOptions();
+		RestoreAirOptions();
 		rightWire->Reset();
 		leftWire->Reset();
 		frame = 0;
@@ -14842,7 +14913,7 @@ void Actor::SetBounceBoostVelocity()
 	SetAction(BOOSTERBOUNCE);
 	frame = 0;
 
-	RechargeAirOptions();
+	RestoreAirOptions();
 
 	double s = currBounceBooster->strength;
 	//velocity.y = min(s, velocity.y);
@@ -15914,7 +15985,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 				
 
-				RechargeAirOptions();
+				RestoreAirOptions();
 				frame = 0;
 				framesGrinding = 0;
 				grindEdge = e;
@@ -17188,7 +17259,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 	
 	
-	RechargeAirOptions();
+	RestoreAirOptions();
 	/*switch (action)
 	{
 	case UAIR:
@@ -17816,6 +17887,22 @@ void Actor::RunMovement()
 			facingRight = false;
 		else if (currInput.LRight())
 			facingRight = true;
+	}
+
+	if (touchedGrass[Grass::SLIPPERY])
+	{
+		double slipAccel = .01;
+		if (currInput.LLeft())
+		{
+			groundSpeed -= slipAccel;
+
+		}
+		else if (currInput.LRight())
+		{
+			groundSpeed += slipAccel;
+		}
+
+		return;
 	}
 	
 

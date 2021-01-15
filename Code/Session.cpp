@@ -6789,12 +6789,12 @@ void Session::PlayerRestoreDoubleJump(int index)
 	}
 }
 
-void Session::PlayerRestoreAirOptions(int index = 0)
+void Session::PlayerRestoreAirOptions(int index)
 {
 	Actor *p = players[index];
 	if (p != NULL)
 	{
-		p->RechargeAirOptions();
+		p->RestoreAirOptions();
 	}
 }
 
