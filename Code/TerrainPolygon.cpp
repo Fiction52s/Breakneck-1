@@ -3325,7 +3325,7 @@ int TerrainPolygon::GetWaterWorld(int waterT)
 	case WATER_LAUNCHER:
 		w = 3;
 		break;
-	case WATER_TIMEDREWIND:
+	case WATER_MOMENTUM:
 		w = 3;
 		break;
 	case WATER_TIMESLOW:
@@ -3384,7 +3384,7 @@ int TerrainPolygon::GetWaterIndexInWorld(int waterT)
 	case WATER_LAUNCHER:
 		v = 0;
 		break;
-	case WATER_TIMEDREWIND:
+	case WATER_MOMENTUM:
 		v = 1;
 		break;
 	case WATER_TIMESLOW:
@@ -3433,7 +3433,7 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 		return Color(0x00, 0x00, 0x00);
 	case WATER_LAUNCHER:
 		return Color(0x77, 0xee, 0x99);
-	case WATER_TIMEDREWIND:
+	case WATER_MOMENTUM:
 		return Color(0x22, 0x66, 0xee);
 	case WATER_TIMESLOW:
 		return Color(0xff, 0x00, 0x00);
@@ -3516,7 +3516,7 @@ void TerrainPolygon::UpdateWaterType()
 			}
 			else if (terrainVariation == 1)
 			{
-				waterType = WATER_TIMEDREWIND;
+				waterType = WATER_MOMENTUM;
 			}
 			break;
 		case W5_SPECIAL:

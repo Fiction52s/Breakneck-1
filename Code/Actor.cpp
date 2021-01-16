@@ -13537,8 +13537,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			RestoreAirDash();
-			RestoreDoubleJump();
+			RestoreAirOptions();
 		}
 		else if (sit == SPECIALT_EXIT)
 		{
@@ -13567,8 +13566,16 @@ void Actor::HandleWaterSituation(int wType,
 		}
 		break;
 	}
-	case TerrainPolygon::WATER_TIMEDREWIND:
+	case TerrainPolygon::WATER_MOMENTUM:
 	{
+		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+		{
+			momentumBoostFrames = 2;
+			RestoreAirOptions();
+			extraGravityModifier = .65;
+			gravModifyFrames = 2;
+		}
+		
 		break;
 	}
 	case TerrainPolygon::WATER_TIMESLOW:
