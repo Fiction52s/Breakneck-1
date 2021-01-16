@@ -3391,6 +3391,11 @@ void GameSession::RestartLevel()
 		(*it)->ResetState();
 	}
 
+	for (auto it = allRails.begin(); it != allRails.end(); ++it)
+	{
+		(*it)->ResetState();
+	}
+
 	SetDrainOn(true);
 
 	shardsCapturedField->Reset();
@@ -3964,6 +3969,14 @@ int GameSession::IsWall( sf::Vector2<double> &normal )
 void GameSession::UpdateTerrainStates()
 {
 	for (auto it = allPolysVec.begin(); it != allPolysVec.end(); ++it)
+	{
+		(*it)->UpdateState();
+	}
+}
+
+void GameSession::UpdateRailStates()
+{
+	for (auto it = allRails.begin(); it != allRails.end(); ++it)
 	{
 		(*it)->UpdateState();
 	}

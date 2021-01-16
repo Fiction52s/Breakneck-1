@@ -786,6 +786,10 @@ void EditSession::TestPlayerMode()
 				(*it)->enemyChain->Reset();
 				//AddEnemy((*it)->enemyChain);
 			}
+			else
+			{
+				(*it)->ResetState();
+			}
 		}
 
 		if (preLevelScene != NULL)
@@ -936,6 +940,7 @@ void EditSession::TestPlayerMode()
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
+		
 		if ((*it)->enemyChain != NULL)
 		{
 			(*it)->AddEnemyChainToWorldTrees();
@@ -943,6 +948,7 @@ void EditSession::TestPlayerMode()
 		}
 		else
 		{
+			(*it)->ResetState();
 			(*it)->AddEdgesToQuadTree(railEdgeTree);
 			railDrawTree->Insert((*it));
 		}
@@ -1522,6 +1528,17 @@ void EditSession::UpdateTerrainStates()
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
 	{
 		(*it)->UpdateState();
+	}
+}
+
+void EditSession::UpdateRailStates()
+{
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->enemyChain == NULL)
+		{
+			(*it)->UpdateState();
+		}
 	}
 }
 
@@ -10406,6 +10423,11 @@ void EditSession::CleanupTestPlayerMode()
 
 	auto testPolys = GetCorrectPolygonList(0);
 	for (auto it = testPolys.begin(); it != testPolys.end(); ++it)
+	{
+		(*it)->ResetState();
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
 		(*it)->ResetState();
 	}

@@ -269,7 +269,6 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	};
 	int frame;
 	State state;
-	bool active;
 
 	int waterType;
 	void ResetState();

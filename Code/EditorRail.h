@@ -35,10 +35,11 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		CEILING,
 		BOUNCE,
 		SCORPIONONLY,
-		NORMAL,
+		GRIND,
 		PHASE,
 		INVERSEPHASE,
 		ACCELERATE,
+		FADE,
 		LOCKED,
 		ANTITIMESLOW,
 		WIREONLY,
@@ -59,6 +60,19 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		BLOCKER,
 		FLY,*/
 	};
+
+
+	enum State : int
+	{
+		IDLE,
+		FADINGOUT,
+		INACTIVE,
+		TEMPORARILYINACTIVE,
+		FADINGIN,
+	};
+
+	int frame;
+	State state;
 
 	Session *sess;
 	int rType;
@@ -108,6 +122,10 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
 	int GetRailType();
+	void ResetState();
+	void UpdateState();
+	void FadeOut();
+	bool IsActive();
 	void TryCreateEnemyChain();
 	sf::Color GetRailColor();
 	void SetRailToActorType(ActorParams *ap);

@@ -4309,12 +4309,12 @@ V2d TerrainPolygon::GetGrassCenter(int gIndex)
 		+ grassVA[gIndex * 4 + 3].position) / 4.f);
 }
 
-void TerrainPolygon::SetGrassState(int index, int state, int gType )
+void TerrainPolygon::SetGrassState(int index, int gState, int gType )
 {
 	//Color c = Grass::GetColor(gType);
 
 	Color c = Color::White;
-	switch (state)
+	switch (gState)
 	{
 	case G_OFF_DONT_SHOW:
 		c.a = 0;
@@ -4329,11 +4329,11 @@ void TerrainPolygon::SetGrassState(int index, int state, int gType )
 		assert(0);
 	}
 
-	grassStateVec[index].gState = state;
+	grassStateVec[index].gState = gState;
 	grassStateVec[index].gType = gType;
 	SetRectColor(grassVA + index * 4, c);
 
-	if (state == G_OFF_DONT_SHOW || state == G_OFF)
+	if (gState == G_OFF_DONT_SHOW || gState == G_OFF)
 	{
 		//use default grass for cleanliness
 		ts_grass->SetQuadSubRect(grassVA + index * 4, 0);

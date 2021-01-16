@@ -112,6 +112,7 @@ struct MotionGhostEffect
 
 struct AbsorbParticles;
 struct GravityModifier;
+struct MomentumBooster;
 struct Booster;
 struct BounceBooster;
 struct TimeBooster;
@@ -435,10 +436,12 @@ struct Actor : QuadTreeCollider,
 	AntiTimeSlowBooster *currAntiTimeSlowBooster;
 	SwordProjectileBooster *currSwordProjectileBooster;
 	PhaseBooster *currPhaseBooster;
+	MomentumBooster *currMomentumBooster;
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
 	int phaseFrames;
+	int momentumBoostFrames;
 	
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
@@ -528,6 +531,7 @@ struct Actor : QuadTreeCollider,
 	int setHitstunFrames;
 	int invincibleFrames;
 	HitboxInfo *receivedHit;
+	HitboxInfo hitGrassHitInfo;
 	
 	
 
@@ -1158,6 +1162,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessBooster();
 	void ProcessTimeBooster();
 	void ProcessPhaseBooster();
+	void ProcessMomentumBooster();
 	void ProcessAntiTimeSlowBooster();
 	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();
@@ -1166,6 +1171,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateWireStates();
 	void ProcessAccelGrass();
 	void ProcessDecelGrass();
+	void ProcessHitGrass();
 	void ProcessPoisonGrass();
 	void TryCheckGrass();
 	void LimitMaxSpeeds();

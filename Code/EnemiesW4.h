@@ -9,5 +9,6 @@
 #include "Enemy_Spider.h"
 #include "Enemy_Teleporter.h"
 #include "Enemy_PhaseBooster.h"
+#include "Enemy_MomentumBooster.h"
 
 #endif

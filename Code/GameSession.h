@@ -343,8 +343,7 @@ struct GameSession : RayCastHandler, Session
 	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
 	
 	
-	
-	std::list<RailPtr> allRails;
+	std::vector<RailPtr> allRails;
 	int totalRails;
 	
 	std::list<boost::filesystem::path> bonusPaths;
@@ -572,5 +571,6 @@ struct GameSession : RayCastHandler, Session
 	bool RunPostUpdate();
 	void SequenceGameModeRespondToGoalDestroyed();
 	void UpdateTerrainStates();
+	void UpdateRailStates();
 };
 #endif

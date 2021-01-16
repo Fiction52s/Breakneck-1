@@ -50,9 +50,6 @@ void Actor::DASH_Change()
 		{
 			TryDashBoost();
 
-
-
-
 			if (currInput.LLeft() || currInput.LRight())
 			{
 				SetAction(RUN);

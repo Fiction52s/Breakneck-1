@@ -806,6 +806,7 @@ struct EditSession : GUIHandler, Session
 	void SetGameMode(int gm);
 	void UpdateNumPlayers();
 	void UpdateTerrainStates();
+	void UpdateRailStates();
 
 	Actor *allPlayers[MAX_PLAYERS];
 	Panel *ggpoStatsPanel;

@@ -176,6 +176,7 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 	{
 	case FLOORANDCEILING:
 	case PHASE:
+	case FADE:
 	case INVERSEPHASE:
 		return true;
 	case FLOOR:
@@ -207,7 +208,8 @@ bool TerrainRail::IsEdgeActive(Edge *e)
 bool TerrainRail::IsTerrainType()
 {
 	return rType == FLOORANDCEILING || rType == FLOOR || rType == CEILING
-		|| rType == BOUNCE || rType == SCORPIONONLY || rType == PHASE || rType == INVERSEPHASE;
+		|| rType == BOUNCE || rType == SCORPIONONLY || rType == PHASE 
+		|| rType == INVERSEPHASE || rType == FADE;
 }
 
 void TerrainRail::Init()
@@ -226,11 +228,13 @@ void TerrainRail::Init()
 	selected = false;
 	railRadius = 20;
 	
-	rType = NORMAL;
+	rType = FLOORANDCEILING;
 	
 
 	enemyParams = NULL;
 	enemyChain = NULL;
+
+	ResetState();
 }
 
 TerrainRail::~TerrainRail()
@@ -1530,6 +1534,61 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 	}
 }
 
+void TerrainRail::ResetState()
+{
+	state = IDLE;
+	frame = 0;
+}
+
+void TerrainRail::FadeOut()
+{
+	if (state == IDLE)
+	{
+		state = FADINGOUT;
+		frame = 0;
+	}
+}
+
+bool TerrainRail::IsActive()
+{
+	return state == IDLE || state == FADINGOUT;
+}
+
+void TerrainRail::UpdateState()
+{
+	if (state == IDLE || state == INACTIVE)
+	{
+		return;
+	}
+	else
+	{
+		if (state == FADINGOUT && frame == 60)
+		{
+			if (rType == FADE)
+			{
+				state = TEMPORARILYINACTIVE;
+			}
+			else
+			{
+				state = INACTIVE;
+			}
+			frame = 0;
+		}
+		else if (state == FADINGIN && frame == 60)
+		{
+			state = IDLE;
+			frame = 0;
+		}
+		else if (state == TEMPORARILYINACTIVE && frame == 120)
+		{
+			state = FADINGIN;
+			frame = 0;
+		}
+	}
+
+	++frame;
+}
+
 void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionInfo>>&b)
 {
 	int totalEnemies = 0;
@@ -1568,6 +1627,12 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 {
 	int numP = GetNumPoints();
 
+	if (!IsActive())
+	{
+		target->draw(lines, numLineVerts, sf::Lines);
+		return;
+	}
+
 	switch (rType)
 	{
 	case FLOORANDCEILING:
@@ -1575,8 +1640,9 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 	case CEILING:
 	case BOUNCE:
 	case SCORPIONONLY:
-	case NORMAL:
+	case GRIND:
 	case ACCELERATE:
+	case FADE:
 	case LOCKED:
 	case PHASE:
 	case INVERSEPHASE:

@@ -773,6 +773,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsWithinBarrierBounds(V2d &p);
 	bool IsWithinCurrentBounds(V2d &p);
 	virtual void UpdateTerrainStates();
+	virtual void UpdateRailStates();
 	sf::CircleShape testSimCircle;
 };
 

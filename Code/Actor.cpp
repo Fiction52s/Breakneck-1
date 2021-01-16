@@ -56,6 +56,7 @@
 #include "Enemy_AntiTimeSlowBooster.h"
 #include "Enemy_SwordProjectileBooster.h"
 #include "Enemy_SwordProjectile.h"
+#include "Enemy_MomentumBooster.h"
 #include "GameMode.h"
 
 #include "GGPO.h"
@@ -2654,6 +2655,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+
+	hitGrassHitInfo.damage = 60;//3 * 60;
+	hitGrassHitInfo.drainX = 1.0;
+	hitGrassHitInfo.drainY = 1.0;
+	hitGrassHitInfo.hitlagFrames = 0;
+	hitGrassHitInfo.hitstunFrames = 20;
+	hitGrassHitInfo.knockback = 0;
+	hitGrassHitInfo.gravMultiplier = 0.0;
+	
+
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
 	currPowerMode = PMODE_SHIELD;
@@ -2702,6 +2713,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	projectileSwordFrames = 0;
 	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
+	momentumBoostFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
 	SetupActionFunctions();
@@ -2745,6 +2757,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currFreeFlightBooster = NULL;
 	currHomingBooster = NULL;
 	currPhaseBooster = NULL;
+	currMomentumBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -2877,6 +2890,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currFreeFlightBooster = NULL;
 	currPhaseBooster = NULL;
 	currTeleporter = NULL;
+	currMomentumBooster = NULL;
 	currHomingBooster = NULL;
 	currSwingLauncher = NULL;
 
@@ -4334,6 +4348,7 @@ void Actor::Respawn()
 	projectileSwordFrames = 0;
 	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
+	momentumBoostFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
 	currPowerMode = PMODE_SHIELD;
@@ -4405,6 +4420,7 @@ void Actor::Respawn()
 	currAimLauncher = NULL;
 	currTeleporter = NULL;
 	currPhaseBooster = NULL;
+	currMomentumBooster = NULL;
 	currSwingLauncher = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
@@ -4977,7 +4993,10 @@ void Actor::ReactToBeingHit()
 	else if (kinRing != NULL)
 		kinRing->powerRing->Drain(receivedHit->damage);
 
-	if (ground != NULL)
+	//makes being hit always make you aerial
+	//its very useful in multiplayer
+	//might need to tune/figure out how to use for singleplayer
+	if (ground != NULL )
 	{
 		if (reversed)
 			reversed = false;
@@ -5380,6 +5399,20 @@ void Actor::ProcessPhaseBooster()
 	}
 }
 
+void Actor::ProcessMomentumBooster()
+{
+	if (currMomentumBooster != NULL && currMomentumBooster->IsBoostable())
+	{
+		currMomentumBooster->Boost();
+
+		momentumBoostFrames = currMomentumBooster->strength;
+
+		currMomentumBooster = NULL;
+
+		RestoreAirOptions();
+	}
+}
+
 void Actor::ProcessAntiTimeSlowBooster()
 {
 	if (currAntiTimeSlowBooster != NULL && currAntiTimeSlowBooster->IsBoostable())
@@ -5503,6 +5536,20 @@ void Actor::ProcessPoisonGrass()
 		modifiedDrainFrames = 10;
 		modifiedDrain = drainAmount * 4;
 		//res = kinRing->powerRing->Drain(modifiedDrain);
+	}
+}
+
+void Actor::ProcessHitGrass()
+{
+	if (touchedGrass[Grass::HIT])
+	{
+		if (invincibleFrames == 0)
+		{
+			receivedHit = &hitGrassHitInfo;
+			ReactToBeingHit();
+			invincibleFrames += 30;
+			receivedHit = NULL;
+		}
 	}
 }
 
@@ -5882,7 +5929,7 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 		}
 		else if (e->rail != NULL)
 		{
-			if ((e->rail->GetRailType() == TerrainRail::PHASE
+			if ( !e->rail->IsActive() || (e->rail->GetRailType() == TerrainRail::PHASE
 				&& phaseFrames == 0)
 				|| (e->rail->GetRailType() == TerrainRail::INVERSEPHASE
 					&& phaseFrames > 0))
@@ -5912,7 +5959,12 @@ void Actor::UpdatePrePhysics()
 	if (CheckTerrainDisappear(ground) || CheckTerrainDisappear(bounceEdge)
 		|| CheckTerrainDisappear(grindEdge))
 	{
-		velocity = groundSpeed * ground->Along();
+		V2d along = ground->Along();
+		if (reversed)
+		{
+			along = -along;
+		}
+		velocity = groundSpeed * along;
 		SetAirPos(position, facingRight);
 	}
 	
@@ -6080,6 +6132,8 @@ void Actor::UpdatePrePhysics()
 
 	ProcessAntiTimeSlowBooster();
 
+	ProcessMomentumBooster();
+
 	ProcessSwordProjectileBooster();
 
 	ProcessAccelGrass();
@@ -6087,6 +6141,8 @@ void Actor::UpdatePrePhysics()
 	ProcessDecelGrass();
 
 	ProcessPoisonGrass();
+
+	ProcessHitGrass();
 
 	LimitMaxSpeeds();
 
@@ -9047,15 +9103,6 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			groundSpeed = 0;
 		}
-
-		/*if (facingRight )
-		{
-			if (!isLandingAction)
-			{
-				groundSpeed = 0;
-			}
-			
-		}*/
 		return true;
 	}
 	else if (currInput.LRight())
@@ -9082,16 +9129,6 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 		{
 			groundSpeed = 0;
 		}
-
-		/*if (!facingRight)
-		{
-			if (!isLandingAction)
-			{
-				groundSpeed = 0;
-			}
-
-			facingRight = true;
-		}*/
 
 		return true;
 	}
@@ -11083,6 +11120,11 @@ void Actor::UpdatePhysics()
 				{
 					minContact.edge->poly->FadeOut();
 				}
+				else if (minContact.edge->rail != NULL
+					&& minContact.edge->rail->rType == TerrainRail::FADE)
+				{
+					minContact.edge->rail->FadeOut();
+				}
 			}
 
 			V2d extraVel(0, 0);
@@ -11322,6 +11364,7 @@ void Actor::UpdatePhysics()
 						bounceOkay = false;
 				}
 			}
+			
 			
 			if (tempCollision && touchedGrass[Grass::BOUNCE])
 			{
@@ -12217,21 +12260,21 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 
 bool Actor::TryHandleHitInRewind()
 {
-	reversed = false;
-	ground = NULL;
-	grindEdge = NULL;
-	bounceEdge = NULL;
-	groundSpeed = 0;
-	velocity = V2d(0, 0);
-	position = waterEntrancePosition;
-	b.rh = waterEntrancePhysHeight;
-	invincibleFrames = 0;
-	receivedHit = NULL;
-	rightWire->Reset();
-	leftWire->Reset();
-
 	if (InWater(TerrainPolygon::WATER_REWIND))
 	{
+		reversed = false;
+		ground = NULL;
+		grindEdge = NULL;
+		bounceEdge = NULL;
+		groundSpeed = 0;
+		velocity = V2d(0, 0);
+		position = waterEntrancePosition;
+		b.rh = waterEntrancePhysHeight;
+		invincibleFrames = 0;
+		receivedHit = NULL;
+		rightWire->Reset();
+		leftWire->Reset();
+
 		if (waterEntranceGrindEdge != NULL)
 		{
 			//a little buggy but not in any major ways
@@ -13916,6 +13959,11 @@ void Actor::UpdateSpeedBar()
 
 	speed = length(trueVel);
 
+	if (momentumBoostFrames > 0)
+	{
+		speed = maxGroundSpeed;
+	}
+
 	if (CareAboutSpeedAction())
 	{
 		if (speed > currentSpeedBar)
@@ -14229,6 +14277,11 @@ void Actor::SlowDependentFrameIncrement()
 		if (phaseFrames > 0)
 		{
 			--phaseFrames;
+		}
+
+		if (momentumBoostFrames > 0)
+		{
+			--momentumBoostFrames;
 		}
 
 		if (projectileSwordFrames > 0)
@@ -15047,7 +15100,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		}
 		else if (e->rail != NULL )
 		{
-			if (e->rail->IsTerrainType())
+			if (!e->rail->IsActive())
+			{
+				return;
+			}
+			else if (e->rail->IsTerrainType())
 			{
 				if (!e->rail->IsEdgeActive(e))
 				{
@@ -16153,6 +16210,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					&hurtBody) && spboost->IsBoostable())
 				{
 					currSwordProjectileBooster = spboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_MOMENTUMBOOSTER)
+		{
+			MomentumBooster *mboost = (MomentumBooster*)qte;
+
+			if (currMomentumBooster == NULL)
+			{
+				if (mboost->hitBody.Intersects(mboost->currHitboxFrame,
+					&hurtBody) && mboost->IsBoostable())
+				{
+					currMomentumBooster = mboost;
 				}
 			}
 			else
@@ -17888,23 +17962,6 @@ void Actor::RunMovement()
 		else if (currInput.LRight())
 			facingRight = true;
 	}
-
-	if (touchedGrass[Grass::SLIPPERY])
-	{
-		double slipAccel = .01;
-		if (currInput.LLeft())
-		{
-			groundSpeed -= slipAccel;
-
-		}
-		else if (currInput.LRight())
-		{
-			groundSpeed += slipAccel;
-		}
-
-		return;
-	}
-	
 
 	if( !facingRight )
 	{
