@@ -115,5 +115,6 @@ int Actor::UAIR_GetActionLength()
 
 Tileset * Actor::UAIR_GetTileset()
 {
-	return GetActionTileset("uair_96x96.png");
+	//return GetActionTileset("uair_96x96.png");
+	return GetActionTileset("Paletted/uair_r_96x96.png");
 }

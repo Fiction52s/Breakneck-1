@@ -109,5 +109,6 @@ int Actor::DAIR_GetActionLength()
 
 Tileset * Actor::DAIR_GetTileset()
 {
-	return GetActionTileset("dair_80x80.png");
+	//return GetActionTileset("dair_80x80.png");
+	return GetActionTileset("Paletted/dair_r_80x80.png");
 }

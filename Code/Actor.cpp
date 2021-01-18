@@ -816,33 +816,35 @@ void Actor::SetupExtraTilesets()
 {
 	string folder = "Kin/";
 
-	ts_scorpRun = sess->GetSizedTileset( folder, "scorp_run_192x128.png");
-	ts_scorpSlide = sess->GetSizedTileset( folder, "scorp_slide_160x96.png");
-	ts_scorpSteepSlide = sess->GetSizedTileset( folder, "scorp_steep_slide_224x128.png");
-	ts_scorpStart = sess->GetSizedTileset( folder, "scorp_start_256x256.png");
-	ts_scorpStand = sess->GetSizedTileset( folder, "scorp_stand_224x128.png");
-	ts_scorpJump = sess->GetSizedTileset( folder, "scorp_jump_192x144.png");
-	ts_scorpDash = sess->GetSizedTileset( folder, "scorp_dash_192x80.png");
-	ts_scorpSprint = sess->GetSizedTileset( folder, "scorp_sprint_192x96.png");
-	ts_scorpClimb = sess->GetSizedTileset( folder, "scorp_climb_256x128.png");
-	ts_bubble = sess->GetSizedTileset(folder, "time_bubble_128x128.png");
+	string powerFolder = folder + "Powers/";
 
-	ts_dodecaSmall = sess->GetSizedTileset( folder, "dodecasmall_180x180.png", skin);
-	ts_dodecaBig = sess->GetSizedTileset( folder, "dodecabig_360x360.png", skin);
-	tsgsdodeca = sess->GetSizedTileset( folder, "dodeca_64x64.png");
-	tsgstriblue = sess->GetSizedTileset( folder, "triblue_64x64.png");
-	tsgstricym = sess->GetSizedTileset( folder, "tricym_128x128.png");
-	tsgstrigreen = sess->GetSizedTileset( folder, "trigreen_64x64.png");
-	tsgstrioran = sess->GetSizedTileset( folder, "trioran_128x128.png");
-	tsgstripurp = sess->GetSizedTileset( folder, "tripurp_128x128.png");
-	tsgstrirgb = sess->GetSizedTileset( folder, "trirgb_128x128.png");
+	ts_scorpRun = sess->GetSizedTileset(powerFolder, "scorp_run_192x128.png");
+	ts_scorpSlide = sess->GetSizedTileset(powerFolder, "scorp_slide_160x96.png");
+	ts_scorpSteepSlide = sess->GetSizedTileset(powerFolder, "scorp_steep_slide_224x128.png");
+	ts_scorpStart = sess->GetSizedTileset(powerFolder, "scorp_start_256x256.png");
+	ts_scorpStand = sess->GetSizedTileset(powerFolder, "scorp_stand_224x128.png");
+	ts_scorpJump = sess->GetSizedTileset(powerFolder, "scorp_jump_192x144.png");
+	ts_scorpDash = sess->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
+	ts_scorpSprint = sess->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
+	ts_scorpClimb = sess->GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
+	
+	ts_bubble = sess->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
+	ts_dodecaSmall = sess->GetSizedTileset(powerFolder, "dodecasmall_180x180.png", skin);
+	ts_dodecaBig = sess->GetSizedTileset(powerFolder, "dodecabig_360x360.png", skin);
+	tsgsdodeca = sess->GetSizedTileset(powerFolder, "dodeca_64x64.png");
+	tsgstriblue = sess->GetSizedTileset(powerFolder, "triblue_64x64.png");
+	tsgstricym = sess->GetSizedTileset(powerFolder, "tricym_128x128.png");
+	tsgstrigreen = sess->GetSizedTileset(powerFolder, "trigreen_64x64.png");
+	tsgstrioran = sess->GetSizedTileset(powerFolder, "trioran_128x128.png");
+	tsgstripurp = sess->GetSizedTileset(powerFolder, "tripurp_128x128.png");
+	tsgstrirgb = sess->GetSizedTileset(powerFolder, "trirgb_128x128.png");
 
-	ts_blockShield = sess->GetSizedTileset(folder, "block_sheild_64x64.png");
+	ts_blockShield = sess->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
 
 	if (owner != NULL)
 	{
-		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
+		ts_exitAura = owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
 		exitAuraSprite.setTexture(*ts_exitAura->texture);
 	}
 }
@@ -2815,7 +2817,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		
 
 	//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
-	//risingAuraPool->ts = GetTileset("Kin/rising_8x8.png", 8, 8);
+	//risingAuraPool->ts = GetTileset("Kin/FX/rising_8x8.png", 8, 8);
 
 	maxMotionGhosts = 80;
 	memset(tileset, 0, sizeof(tileset));
@@ -2847,6 +2849,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionFolder = "Kin/";
 		
 	team = (Team)actorIndex; //debug
+
+	LoadPalette();
+
+	
 
 	if( actorIndex == 1 )
 		skin = new Skin(startChanges, endChanges, 9, 1);
@@ -2905,7 +2911,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-	ts_dirtyAura = sess->GetTileset("Kin/dark_aura_w1_384x384.png", 384, 384);
+	ts_dirtyAura = sess->GetTileset("Kin/FX/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
 	//dirtyAuraSprite.setpo
 	//dirtyAuraSprite.setOrigin( )
@@ -3003,6 +3009,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
 	sh.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
+
+	SetSkin(0);
+
+
 	if (!shieldShader.loadFromFile("Resources/Shader/shield_shader.frag", sf::Shader::Fragment))
 
 	{
@@ -3056,7 +3066,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	}
 	playerSuperShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 	//swordShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-
+	
 	/*if( !timeSlowShader.loadFromFile( "Shader/timeslow_shader.frag", sf::Shader::Fragment ) )
 	{
 		cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
@@ -4491,7 +4501,7 @@ void Actor::Respawn()
 	{
 		SetAction(INTROBOOST);
 		frame = 0;
-		//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
+		//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/FX/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
 	else if (owner == NULL && editOwner != NULL)
 	{
@@ -5966,6 +5976,14 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 void Actor::UpdatePrePhysics()
 {
+	static int skinTest = 0;
+	SetSkin(skinTest / 3);
+	++skinTest;
+	if (skinTest == 4 * 3)
+	{
+		skinTest = 0;
+	}
+
 	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)
 	{
@@ -6083,15 +6101,15 @@ void Actor::UpdatePrePhysics()
 		{
 			if (frame == 0)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 2)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}
 			else if (frame == 6 * 4)
 			{
-				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
+				ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/exitenergy_2_512x512.png", 512, 512), spriteCenter, false, 0, 6, 2, true);
 			}	
 		}
 		else if (action == SEQ_KINFALL)
@@ -19362,6 +19380,27 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 return EnemyTracker::IsValidTrackEnemy(e);
+ }
+
+ bool Actor::LoadPalette()
+ {
+	 return skinPaletteImage.loadFromFile("Resources/Kin/Paletted/kin_palette_23x4.png");
+ }
+
+ void Actor::FillPaletteArray(int skinIndex)
+ {
+	 for (int i = 0; i < NUM_PALETTE_COLORS; ++i)
+	 {
+		 paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
+	 }
+ }
+
+ void Actor::SetSkin(int skinIndex)
+ {
+	 currSkinIndex = skinIndex;
+	 FillPaletteArray(currSkinIndex);
+
+	 sh.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

@@ -140,7 +140,7 @@ Wire::Wire( Actor *p, bool r)
 	hitEnemyFramesTotal = 5;
 
 	int tipIndex = 0;
-	ts_wire = player->sess->GetTileset( "Kin/wires_16x16.png", 16, 16 );
+	ts_wire = player->sess->GetTileset( "Kin/Powers/wires_16x16.png", 16, 16 );
 	if( r )
 	{
 		ts_miniHit = player->sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
@@ -152,7 +152,7 @@ Wire::Wire( Actor *p, bool r)
 		ts_miniHit = player->sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
 	}
 
-	ts_wireTip = player->sess->GetTileset( "Kin/wire_tips_16x16.png", 16, 16 );
+	ts_wireTip = player->sess->GetTileset( "Kin/Powers/wire_tips_16x16.png", 16, 16 );
 
 	grassCheckRadius = 20;
 
@@ -161,7 +161,7 @@ Wire::Wire( Actor *p, bool r)
 	wireTip.setOrigin( wireTip.getLocalBounds().width / 2, wireTip.getLocalBounds().height / 2 );
 
 
-	ts_wireCharge = player->sess->GetTileset( "Kin/wirecharge_32x32.png", 32, 32 );
+	ts_wireCharge = player->sess->GetTileset( "Kin/Powers/wirecharge_32x32.png", 32, 32 );
 
 
 	tipHitboxInfo = new HitboxInfo();

@@ -27,7 +27,7 @@ void Actor::INTROBOOST_UpdateSprite()
 	if (frame == 0 && slowCounter == 1)
 	{
 		ActivateEffect(EffectLayer::IN_FRONT, ts_exitAura, position, false, 0, 8, 2, true, 55);
-		ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
+		ActivateEffect(EffectLayer::IN_FRONT, sess->GetTileset("Kin/FX/enter_fx_320x320.png", 320, 320), position, false, 0, 19, 2, true);
 		//owner->cam.SetManual(true);
 	}
 	else if (frame == 20)

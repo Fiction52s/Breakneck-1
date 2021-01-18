@@ -21,7 +21,7 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 	ts_stars[3] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
 	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/exit_96x128.png", 96, 128);
-	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/exitaura_256x256.png", 256, 256);
+	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
 	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));

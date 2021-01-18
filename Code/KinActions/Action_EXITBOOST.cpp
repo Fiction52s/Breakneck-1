@@ -45,12 +45,12 @@ void Actor::EXITBOOST_UpdateSprite()
 	if (frame == 59 * 2)
 	{
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->tilesetManager.GetTileset("Kin/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
+			owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
 	}
 	else if (frame == 63 * 2)
 	{
 		owner->mainMenu->ActivateIndEffect(
-			owner->mainMenu->tilesetManager.GetTileset("Kin/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
+			owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitenergy_1_512x512.png", 512, 512), V2d(960, 540), false, 0, 6, 2, true);
 	}
 }
 

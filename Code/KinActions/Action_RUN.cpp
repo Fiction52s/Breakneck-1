@@ -154,5 +154,6 @@ int Actor::RUN_GetActionLength()
 
 Tileset * Actor::RUN_GetTileset()
 {
-	return GetActionTileset("run_64x64.png");
+	//return GetActionTileset("run_64x64.png");
+	return GetActionTileset("Paletted/run_r_64x64.png");
 }

@@ -419,6 +419,7 @@ struct Actor : QuadTreeCollider,
 	bool waterEntranceReversed;
 	V2d rewindBoosterPos;
 	int rewindOnHitFrames;
+	int currSkinIndex;
 
 
 
@@ -626,6 +627,11 @@ struct Actor : QuadTreeCollider,
 
 	//---end of saved vars
 	//const static int NUM_PAST_INPUTS = 60;
+
+	const static int NUM_PALETTE_COLORS = 23;
+	sf::Glsl::Vec4 paletteArray[NUM_PALETTE_COLORS];
+	sf::Image skinPaletteImage;
+
 	int superActiveLimit;
 	int attackLevelCounterLimit;
 	sf::Vector2f fairSwordOffset[3];
@@ -1035,7 +1041,9 @@ struct Actor : QuadTreeCollider,
 	bool DIChangesMagnitude;
 
 
-	
+	Edge *autoRunStopEdge;
+	double autoRunStopQuant;
+	double maxAutoRunSpeed;
 
 	
 
@@ -1325,9 +1333,6 @@ struct Actor : QuadTreeCollider,
 		double q);
 	void SetAutoRunStopper(Edge *g, double q);
 	bool IsAutoRunning();
-	Edge *autoRunStopEdge;
-	double autoRunStopQuant;
-	double maxAutoRunSpeed;
 	void AttackMovement();
 	void DodecaLateDraw(sf::RenderTarget *target);
 	void SetActionGrind();
@@ -1453,6 +1458,10 @@ struct Actor : QuadTreeCollider,
 	bool IsInHistunAction( int a );
 	bool IsActionGroundBlock(int a);
 	bool IsActionAirBlock(int a);
+
+	void FillPaletteArray(int skinIndex);
+	bool LoadPalette();
+	void SetSkin(int skinIndex);
 
 	V2d GetKnockbackDirFromVel();
 
