@@ -6,5 +6,6 @@
 #include "Enemy_DimensionExit.h"
 #include "Enemy_SwordProjectileBooster.h"
 #include "Enemy_AttractJuggler.h"
+#include "Enemy_RewindBooster.h"
 
 #endif

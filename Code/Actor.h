@@ -119,6 +119,7 @@ struct TimeBooster;
 struct FreeFlightBooster;
 struct HomingBooster;
 struct AntiTimeSlowBooster;
+struct RewindBooster;
 struct PhaseBooster;
 struct SwordProjectileBooster;
 struct Spring;
@@ -416,6 +417,8 @@ struct Actor : QuadTreeCollider,
 	bool waterEntranceFacingRight;
 	double waterEntranceGrindSpeed;
 	bool waterEntranceReversed;
+	V2d rewindBoosterPos;
+	int rewindOnHitFrames;
 
 
 
@@ -437,6 +440,7 @@ struct Actor : QuadTreeCollider,
 	SwordProjectileBooster *currSwordProjectileBooster;
 	PhaseBooster *currPhaseBooster;
 	MomentumBooster *currMomentumBooster;
+	RewindBooster *currRewindBooster;
 	int aimLauncherStunFrames;
 	int airBounceCounter;
 	int airBounceLimit;
@@ -821,6 +825,7 @@ struct Actor : QuadTreeCollider,
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
+
 	
 
 	Session *sess;
@@ -1063,7 +1068,8 @@ struct Actor : QuadTreeCollider,
 		json &j, const std::string &name,
 		HitboxInfo *hi);
 
-	bool TryHandleHitInRewind();
+	bool TryHandleHitInRewindWater();
+	bool TryHandleHitWhileRewindBoosted();
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);
@@ -1163,6 +1169,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessTimeBooster();
 	void ProcessPhaseBooster();
 	void ProcessMomentumBooster();
+	void ProcessRewindBooster();
 	void ProcessAntiTimeSlowBooster();
 	void ProcessHomingBooster();
 	void ProcessFreeFlightBooster();

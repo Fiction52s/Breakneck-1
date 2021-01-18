@@ -58,6 +58,7 @@
 #include "Enemy_SwordProjectile.h"
 #include "Enemy_MomentumBooster.h"
 #include "GameMode.h"
+#include "Enemy_RewindBooster.h"
 
 #include "GGPO.h"
 
@@ -2713,6 +2714,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	projectileSwordFrames = 0;
 	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
+	rewindOnHitFrames = 0;
 	momentumBoostFrames = 0;
 	flyCounter = 0;
 	action = -1; //for init
@@ -2758,6 +2760,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currHomingBooster = NULL;
 	currPhaseBooster = NULL;
 	currMomentumBooster = NULL;
+	currRewindBooster = NULL;
 	oldBooster = NULL;
 
 	currBounceBooster = NULL;
@@ -2892,6 +2895,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currTeleporter = NULL;
 	currMomentumBooster = NULL;
 	currHomingBooster = NULL;
+	currRewindBooster = NULL;
 	currSwingLauncher = NULL;
 
 	currBounceBooster = NULL;
@@ -4348,6 +4352,7 @@ void Actor::Respawn()
 	projectileSwordFrames = 0;
 	enemyProjectileSwordFrames = 0;
 	phaseFrames = 0;
+	rewindOnHitFrames = 0;
 	momentumBoostFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
@@ -4422,6 +4427,7 @@ void Actor::Respawn()
 	currPhaseBooster = NULL;
 	currMomentumBooster = NULL;
 	currSwingLauncher = NULL;
+	currRewindBooster = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
 
@@ -5176,7 +5182,7 @@ void Actor::UpdateDrain()
 void Actor::ProcessGravityGrass()
 {
 	//drop out of reverse from gravity grass
-	if (ground != NULL && reversed 
+	if (ground != NULL && reversed
 		&& action != GROUNDTECHBACK && action != GROUNDTECHFORWARD
 		&& action != GROUNDTECHINPLACE
 		&& ((!HasUpgrade(UPGRADE_POWER_GRAV) 
@@ -5408,6 +5414,22 @@ void Actor::ProcessMomentumBooster()
 		momentumBoostFrames = currMomentumBooster->strength;
 
 		currMomentumBooster = NULL;
+
+		RestoreAirOptions();
+	}
+}
+
+void Actor::ProcessRewindBooster()
+{
+	if (currRewindBooster != NULL && currRewindBooster->IsBoostable())
+	{
+		currRewindBooster->Boost();
+
+		rewindOnHitFrames = currRewindBooster->strength;
+
+		rewindBoosterPos = currRewindBooster->GetPosition();
+
+		currRewindBooster = NULL;
 
 		RestoreAirOptions();
 	}
@@ -6133,6 +6155,8 @@ void Actor::UpdatePrePhysics()
 	ProcessAntiTimeSlowBooster();
 
 	ProcessMomentumBooster();
+
+	ProcessRewindBooster();
 
 	ProcessSwordProjectileBooster();
 
@@ -12258,7 +12282,23 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 	reversed = false;
 }
 
-bool Actor::TryHandleHitInRewind()
+bool Actor::TryHandleHitWhileRewindBoosted()
+{
+	if (rewindOnHitFrames > 0)
+	{
+		SetAirPos(rewindBoosterPos, facingRight);
+		receivedHit = NULL;
+		invincibleFrames = 0;
+		rightWire->Reset();
+		leftWire->Reset();
+		return true;
+	}
+
+	return false;
+}
+
+
+bool Actor::TryHandleHitInRewindWater()
 {
 	if (InWater(TerrainPolygon::WATER_REWIND))
 	{
@@ -12316,7 +12356,10 @@ bool Actor::TryHandleHitInRewind()
 
 void Actor::HitOutOfGrind()
 {
-	if (TryHandleHitInRewind())
+	if (TryHandleHitInRewindWater())
+		return;
+
+	if (TryHandleHitWhileRewindBoosted())
 		return;
 
 	V2d grindNorm = grindEdge->Normal();
@@ -12357,7 +12400,10 @@ void Actor::HitOutOfGrind()
 
 void Actor::HitWhileGrounded()
 {
-	if (TryHandleHitInRewind())
+	if (TryHandleHitInRewindWater())
+		return;
+
+	if (TryHandleHitWhileRewindBoosted())
 		return;
 
 	V2d kbDir = receivedHit->kbDir;
@@ -12387,9 +12433,11 @@ void Actor::HitWhileGrounded()
 
 void Actor::HitWhileAerial()
 {
-	if (TryHandleHitInRewind())
+	if (TryHandleHitInRewindWater())
 		return;
 	
+	if (TryHandleHitWhileRewindBoosted())
+		return;
 
 	SetAction(AIRHITSTUN);
 	frame = 0;
@@ -14284,6 +14332,11 @@ void Actor::SlowDependentFrameIncrement()
 		if (phaseFrames > 0)
 		{
 			--phaseFrames;
+		}
+
+		if (rewindOnHitFrames > 0)
+		{
+			--rewindOnHitFrames;
 		}
 
 		if (momentumBoostFrames > 0)
@@ -16234,6 +16287,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					&hurtBody) && mboost->IsBoostable())
 				{
 					currMomentumBooster = mboost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_REWINDBOOSTER)
+		{
+			RewindBooster *rboost = (RewindBooster*)qte;
+
+			if (currRewindBooster == NULL)
+			{
+				if (rboost->hitBody.Intersects(rboost->currHitboxFrame,
+					&hurtBody) && rboost->IsBoostable())
+				{
+					currRewindBooster = rboost;
 				}
 			}
 			else

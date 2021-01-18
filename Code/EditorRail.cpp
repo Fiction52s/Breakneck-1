@@ -436,6 +436,14 @@ void TerrainRail::Move(Vector2i move)
 		coloredNodeCircles->SetPosition(i, coloredNodeCircles->GetPosition(i) + moveF);
 	}
 
+	for (int i = 0; i < numTexturedQuads; ++i)
+	{
+		texturedQuads[i * 4 + 0].position += moveF;
+		texturedQuads[i * 4 + 1].position += moveF;
+		texturedQuads[i * 4 + 2].position += moveF;
+		texturedQuads[i * 4 + 3].position += moveF;
+	}
+
 	for (auto it = enemies.begin(); it != enemies.end(); ++it)
 	{
 		list<ActorPtr> &actorList = (*it).second;

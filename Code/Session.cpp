@@ -751,6 +751,8 @@ void Session::RegisterW7Enemies()
 
 	AddBasicAerialWorldEnemy("greyskeleton", 7, CreateEnemy<GreySkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 
+	AddBasicAerialWorldEnemy("rewindbooster", 7, CreateEnemy<RewindBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
 	AddWorldEnemy("limitedattractjuggler", 7, CreateEnemy<AttractJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("attractjuggler", 7, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
