@@ -13577,6 +13577,7 @@ void Actor::HandleWaterSituation(int wType,
 		{
 			extraGravityModifier = 0;//2.0;
 			gravModifyFrames = 2;
+			RestoreAirOptions();
 			//springStunFrames = 2;
 		}
 		break;
