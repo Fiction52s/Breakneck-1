@@ -6,6 +6,7 @@ uniform sampler2D u_pattern;
 uniform vec4 skyColor;
 uniform vec2 topLeft;
 uniform float zoom;
+uniform vec4 u_quad;
 
 uniform vec2 Resolution;      //resolution of screen
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
@@ -21,13 +22,19 @@ void main()
 	fc = fc * vec2( 960, 540 ) / Resolution;
 	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );	
 	
-	vec2 pos = mod( topLeft + pixelPos, size) / vec2( size );
+	ivec2 texSize = textureSize(u_texture, 0);
+	
+	vec2 pos = mod( topLeft + pixelPos, size) / texSize;
+	
+	vec2 tileLimit = vec2( size ) / texSize;
 	
 	vec4 finalfinal = vec4( 0.0, 0.0, 0.0, 0.0 );
 	
 	vec4 DiffuseColor;
 	
-	DiffuseColor = texture2D(u_texture, pos );
+	DiffuseColor = texture2D( u_texture, mod( pos, tileLimit ) + u_quad.xy);
+	
+	//DiffuseColor = texture2D(u_texture, pos );
 	
 	vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
 	vec3 Intensity = Ambient;//.000001;

@@ -7,6 +7,7 @@ uniform vec4 u_quad;
 uniform float u_slide;
 uniform float u_invincible;
 uniform float u_super;
+uniform vec4 u_palette[23];
 
 bool found;
 vec2 texelSize;
@@ -18,6 +19,11 @@ void main()
 {
 	int dist = 2;
     vec4 pixel = texture2D(u_texture, gl_TexCoord[0].xy);
+	
+	//these 2 lines do the palette stuff
+	int paletteTexIndex = int(pixel.r * 255.0);
+	pixel = vec4( u_palette[paletteTexIndex].rgb, pixel.a);
+	
 	ivec2 size = textureSize(u_texture, 0);
 	texelSize.x = float(size.x);
 	texelSize.y = float(size.y);
