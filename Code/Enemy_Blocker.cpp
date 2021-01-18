@@ -18,6 +18,33 @@ using namespace sf;
 BlockerChain::BlockerChain(ActorParams *ap)
 	:EnemyChain(ap, EN_BLOCKERCHAIN)
 {
+	if (!blockerShader.loadFromFile("Resources/Shader/blocker_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "couldnt load blocker shader" << endl;
+		assert(false);
+	}
+
+	sf::Image paletteImage;
+	paletteImage.loadFromFile("Resources/Enemies/blocker_palette.png");
+	
+	int skinIndex = 0;
+	for (int i = 0; i < 9; ++i)
+	{	
+		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel( i, skinIndex));
+	}
+
+	/*for (int i = 0; i < 9; ++i)
+	{
+		paletteArray[i] = sf::Glsl::Vec4(Color::Magenta);
+	}*/
+
+	blockerShader.setUniformArray("u_palette", paletteArray, 9);
+
+	
+	
+	//blockerShader.setUniform("toColor", Glsl::Vec4(Color::White.r, Color::White.g, Color::White.b, Color::White.a));
+
+
 	BlockerParams *bParams = (BlockerParams*)ap;
 
 	SetLevel(ap->GetLevel());
@@ -32,6 +59,12 @@ void BlockerChain::UpdateStartPosition(int ind, V2d &pos)
 	((Blocker*)enemies[ind])->SetStartPosition(pos);
 }
 
+void BlockerChain::EnemyDraw(sf::RenderTarget *target)
+{
+	blockerShader.setUniform("u_texture", *ts->texture);
+	target->draw(va, numEnemies * 4, sf::Quads, &blockerShader);
+}
+
 Tileset *BlockerChain::GetTileset(int variation)
 {
 	switch (variation)
@@ -43,22 +76,22 @@ Tileset *BlockerChain::GetTileset(int variation)
 		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::GREEN:											 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::YELLOW:											 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::ORANGE:											 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
-		break;														 
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		break;						 
 	case Blocker::RED:												 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::MAGENTA:											 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::BLACK:											 
-		return sess->GetSizedTileset("Enemies/blocker_w2_192x192.png");
+		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;
 	}
 }
@@ -365,7 +398,8 @@ void Blocker::UpdateSprite()
 			int xx = 5;
 		}
 		IntRect subRect = bc->ts->GetSubRect(f);
-		SetRectSubRect(bc->va + vaIndex * 4, subRect);
+		SetRectSubRectGL(bc->va + vaIndex * 4, subRect, Vector2f(bc->ts->texture->getSize() ));
+		//SetRectSubRect(bc->va + vaIndex * 4, subRect);
 	}
 }
 

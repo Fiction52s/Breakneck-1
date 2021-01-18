@@ -17,6 +17,9 @@ struct BlockerChain : EnemyChain
 	Tileset *GetTileset(int variation);
 	Enemy *CreateEnemy(V2d &pos, int ind);
 	void UpdateStartPosition(int ind, V2d &pos);
+	void EnemyDraw(sf::RenderTarget *target);
+	sf::Shader blockerShader;
+	sf::Glsl::Vec4 paletteArray[9];
 };
 
 

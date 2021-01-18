@@ -32,7 +32,7 @@ struct EnemyChain : Enemy
 	EnemyChain(ActorParams *ap, EnemyType at);
 	~EnemyChain();
 	void DrawMinimap(sf::RenderTarget *target);
-	void EnemyDraw(sf::RenderTarget *target);
+	virtual void EnemyDraw(sf::RenderTarget *target);
 	void SetZone(Zone *p_zone);
 	int GetNumCamPoints();
 	V2d GetCamPoint(int index);
