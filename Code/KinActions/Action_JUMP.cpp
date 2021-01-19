@@ -295,6 +295,5 @@ int Actor::JUMP_GetActionLength()
 
 Tileset * Actor::JUMP_GetTileset()
 {
-	//return GetActionTileset("jump_64x64.png");
-	return GetActionTileset("Paletted/jump_r_64x64.png");
+	return GetActionTileset("jump_64x64.png");
 }

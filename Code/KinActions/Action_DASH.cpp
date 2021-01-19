@@ -270,6 +270,5 @@ int Actor::DASH_GetActionLength()
 
 Tileset * Actor::DASH_GetTileset()
 {
-	//return GetActionTileset("dash_96x48.png");
-	return GetActionTileset("Paletted/dash_r_96x48.png");
+	return GetActionTileset("dash_96x48.png");
 }

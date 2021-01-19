@@ -94,5 +94,5 @@ int Actor::STAND_GetActionLength()
 
 Tileset * Actor::STAND_GetTileset()
 {
-	return GetActionTileset("Paletted/stand_r_64x64.png");
+	return GetActionTileset("stand_64x64.png");
 }

@@ -118,6 +118,5 @@ int Actor::FAIR_GetActionLength()
 
 Tileset * Actor::FAIR_GetTileset()
 {
-	//return GetActionTileset("fair_80x80.png");
-	return GetActionTileset("Paletted/fair_r_80x80.png");
+	return GetActionTileset("fair_80x80.png");
 }

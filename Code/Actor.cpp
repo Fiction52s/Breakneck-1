@@ -19384,7 +19384,7 @@ void Actor::UpdateInHitlag()
 
  bool Actor::LoadPalette()
  {
-	 return skinPaletteImage.loadFromFile("Resources/Kin/Paletted/kin_palette_23x4.png");
+	 return skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
  }
 
  void Actor::FillPaletteArray(int skinIndex)
