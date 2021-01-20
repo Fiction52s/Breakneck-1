@@ -460,7 +460,13 @@ void Session::RegisterW2Enemies()
 
 	AddBasicAerialWorldEnemy("bat", 2, CreateEnemy<Bat>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3);
 
-	AddBasicGroundWorldEnemy("curveturret", 2, CreateEnemy<CurveTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+	//AddBasicGroundWorldEnemy("curveturret", 2, CreateEnemy<CurveTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+
+
+	AddBasicGroundWorldEnemy("lobturret", 2, CreateEnemy<LobTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("reverselobturret", 2, CreateEnemy<LobTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("poisonfrog", 2, CreateEnemy<PoisonFrog>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

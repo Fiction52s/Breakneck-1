@@ -174,7 +174,7 @@ void Actor::DASH_UpdateSprite()
 
 
 	//3-8 is the cycle
-	sf::IntRect ir;
+	/*sf::IntRect ir;
 	int checkFrame = -1;
 
 	if (frame / 2 < 1)
@@ -188,10 +188,26 @@ void Actor::DASH_UpdateSprite()
 	else
 	{
 		checkFrame = 6;
+	}*/
+
+	int tile = 0;
+
+	if (frame / 2 < 5)
+	{
+		tile = frame / 2;
+	}
+	else if(frame >= GetActionLength(DASH) - 2)
+	{
+		tile = 6;
+	}
+	else
+	{
+		tile = 5; //loop frame
 	}
 
+
 	bool r = (facingRight && !reversed) || (!facingRight && reversed);
-	SetSpriteTile(checkFrame, r);
+	SetSpriteTile(tile, r);
 
 	SetGroundedSpriteTransform();
 
@@ -238,7 +254,8 @@ void Actor::DASH_UpdateSprite()
 	{
 		scorpSprite.setTexture(*ts_scorpDash->texture);
 
-		SetSpriteTile(&scorpSprite, ts_scorpDash, checkFrame, r);
+		//used checkFrame
+		SetSpriteTile(&scorpSprite, ts_scorpDash, tile, r);
 
 		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
 			scorpSprite.getLocalBounds().height / 2 + 10);

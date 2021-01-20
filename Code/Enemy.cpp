@@ -123,6 +123,16 @@ double Enemy::DistFromPlayerSqr(int index)
 	return lengthSqr(GetPosition() - sess->GetPlayerPos(index));
 }
 
+double Enemy::DistFromPlayerX(int index)
+{
+	return sess->GetPlayerPos(index).x - GetPosition().x;
+}
+
+double Enemy::DistFromPlayerY(int index)
+{
+	return sess->GetPlayerPos(index).y - GetPosition().y;
+}
+
 V2d Enemy::AlongGroundDir()
 {
 	if (surfaceMover != NULL)
@@ -249,6 +259,9 @@ bool Enemy::SetHitParams()
 		break;
 	case EnemyType::EN_CURVETURRET:
 		hitParams.Set( 5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_LOBTURRET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_STAGBEETLE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);

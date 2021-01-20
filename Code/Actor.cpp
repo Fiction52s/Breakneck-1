@@ -5976,13 +5976,13 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 void Actor::UpdatePrePhysics()
 {
-	static int skinTest = 0;
+	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
 	++skinTest;
 	if (skinTest == 4 * 3)
 	{
 		skinTest = 0;
-	}
+	}*/
 
 	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)

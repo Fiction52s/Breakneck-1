@@ -89,6 +89,10 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::CURVE_TURRET:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::LOB_TURRET:
+		bulletTilesetIndex = 1;
+		break;
+		
 	case BasicBullet::CACTUS_SHOTGUN:
 		bulletTilesetIndex = 1;
 		break;
@@ -218,6 +222,8 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 		return 44;
 	case BasicBullet::CURVE_TURRET:
 		return 20;
+	case BasicBullet::LOB_TURRET:
+		return 20;
 	}
 
 	return 10;
@@ -226,6 +232,10 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 {
 	if (bt == BasicBullet::CURVE_TURRET)
+	{
+		return Vector2f(0, 0);
+	}
+	else if (bt == BasicBullet::LOB_TURRET)
 	{
 		return Vector2f(0, 0);
 	}
@@ -591,6 +601,11 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case BIG_OWL:
 		transform.rotate(angle);
 		break;
+	case LOB_TURRET:
+	{
+		transform.rotate(angle);
+		break;
+	}
 	case CURVE_TURRET:
 	{
 		double gangle = atan2(gravity.y, gravity.x);
@@ -1079,6 +1094,14 @@ void BasicBullet::UpdateSprite()
 		transform = transform.Identity;
 		transform.rotate(angle);
 		animFactor = 4;
+		break;
+	}
+	case LOB_TURRET:
+	{
+		double angle = atan2(velocity.y, velocity.x);
+		angle = angle * 180 / PI;
+		transform = transform.Identity;
+		transform.rotate(angle);
 		break;
 	}
 	/*case CURVE_TURRET:

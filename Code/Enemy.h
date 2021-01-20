@@ -168,6 +168,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void CheckPlayerInteractions( int i );
 	void UpdateKeySprite();
 	void SetKey();
+	double DistFromPlayerX( int index = 0);
+	double DistFromPlayerY( int index = 0);
+	double DistFromPlayer(int index = 0);
+	double DistFromPlayerSqr(int index = 0);
+	
 	bool IsGoalType();
 	virtual void AddToGame();
 	virtual bool IsHitFacingRight() { return facingRight; }
@@ -192,8 +197,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool SetHitParams();
 	void SetOffGroundHeight(double h);
 	void SetGroundOffset(double x);
-	double DistFromPlayer(int index = 0);
-	double DistFromPlayerSqr(int index = 0);
+	
 	V2d AlongGroundDir();
 	void CreateSurfaceMover(PositionInfo &pi,
 		double rad, SurfaceMoverHandler *handler);
