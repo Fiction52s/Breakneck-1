@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <cstdlib>
 #include "Enemy_GravityFaller.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -47,9 +48,12 @@ GravityFaller::GravityFaller(ActorParams *ap)
 	double height = 128;
 	ts = sess->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
 
+
+	//shield = new Shield(Shield::ShieldType::T_BLOCK, 64 * scale, 3, this);
+
 	CreateSurfaceMover(startPosInfo, 30, this);
 
-	gravity = gravityFactor / 64.0;
+	gravity = 1.0;//gravityFactor / 64.0;
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -110,7 +114,25 @@ void GravityFaller::ResetEnemy()
 
 	facingRight = false;
 
+	Edge *startEdge = startPosInfo.GetEdge();
+	if ( startEdge != NULL)
+	{
+		startNormal = startEdge->Normal();
+	}
+	
+
 	UpdateHitboxes();
+
+	//shield->Reset();
+
+	/*if (!hasMonitor)
+	{
+		currShield = shield;
+		
+	}
+
+	shield->SetPosition(GetPosition());*/
+	
 
 	UpdateSprite();
 }
@@ -169,14 +191,17 @@ void GravityFaller::ProcessState()
 {
 	ActionEnded();
 
+	
 	//Actor *player = owner->GetPlayer(0);
+
+	double distY = DistFromPlayerY();
 
 	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == IDLE)
 	{
-		if (length(playerPos - GetPosition()) < 500)
+		if (DistFromPlayer() < 1000 )
 		{
-			if (surfaceMover->ground->Normal().y < 0)
+			if (surfaceMover->ground->Normal() == startNormal)
 			{
 				action = UPCHARGE;
 				frame = 0;
@@ -199,7 +224,7 @@ void GravityFaller::ProcessState()
 			action = FALLDOWN;
 			frame = 0;
 			surfaceMover->Jump(V2d(0, 0));
-			surfaceMover->AddAirForce(V2d(0, 1));
+			surfaceMover->AddAirForce(startNormal * -gravity);
 			fallFrames = 0;
 		}
 		else if (action == UPCHARGE)
@@ -207,12 +232,33 @@ void GravityFaller::ProcessState()
 			action = FALLUP;
 			frame = 0;
 			surfaceMover->Jump(V2d(0, 0));
-			surfaceMover->AddAirForce(V2d(0, -1));
+			surfaceMover->AddAirForce(startNormal * gravity);
 			fallFrames = 0;
 		}
 	}
-	else if ((action == FALLDOWN || action == FALLUP) && fallFrames == 40)
+	else if (((action == FALLDOWN || action == FALLUP) && fallFrames == 30))
+		/*|| ( action == FALLDOWN && distY < 0 ) 
+		|| (action == FALLUP && distY > 0 ) )*/
 	{
+		surfaceMover->ClearAirForces();
+		if (action == FALLDOWN)
+		{
+			action = REVERSEDOWNTOUP;
+			frame = 0;
+			surfaceMover->AddAirForce(startNormal * gravity);
+		}
+		else if (action == FALLUP)
+		{
+			action = REVERSEUPTODOWN;
+			frame = 0;
+			surfaceMover->AddAirForce(startNormal * -gravity);
+		}
+		
+	}
+	/*else if ((action == FALLDOWN && distY < -80)
+		|| (action == FALLUP && distY > 80))
+	{
+		surfaceMover->velocity = surfaceMover->velocity / 4.0;
 		surfaceMover->ClearAirForces();
 		if (action == FALLDOWN)
 		{
@@ -226,8 +272,10 @@ void GravityFaller::ProcessState()
 			frame = 0;
 			surfaceMover->AddAirForce(V2d(0, 1));
 		}
-		
-	}
+	}*/
+	/*else if (action == FALLUP && distY > 0)
+	{
+	}*/
 	/*else if (action == REVERSEUPTODOWN && mover->velocity.y > 0)
 	{
 		action = FALLDOWN;
@@ -258,15 +306,16 @@ void GravityFaller::UpdateEnemyPhysics()
 		////}
 		//mover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
-		if (surfaceMover->velocity.y >= maxFallSpeed)
+		double velLen = length(surfaceMover->velocity);
+		V2d velDir = normalize(surfaceMover->velocity);
+
+		if ( velLen >= maxFallSpeed)
 		{
-			surfaceMover->velocity.y = maxFallSpeed;
-		}
-		else if (surfaceMover->velocity.y <= -maxFallSpeed)
-		{
-			surfaceMover->velocity.y = -maxFallSpeed;
+			surfaceMover->velocity = velDir * maxFallSpeed;
 		}
 	}
+
+	//shield->SetPosition(GetPosition());
 
 	Enemy::UpdateEnemyPhysics();
 }
@@ -301,10 +350,13 @@ void GravityFaller::UpdateSprite()
 		tIndex = 2;
 		break;
 	}
+	
+
+	float angle = GetVectorAngleCW(startNormal) / PI * 180;
 
 	sprite.setTextureRect(ts->GetSubRect(tIndex));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-	sprite.setRotation(0);
+	sprite.setRotation(angle + 90);
 	sprite.setPosition(GetPositionF());
 }
 

@@ -267,7 +267,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_GRAVITYFALLER:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(4, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_SPIDER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);

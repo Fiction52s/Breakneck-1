@@ -26,6 +26,8 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 	void FrameIncrement();
 	Tileset *ts;
 
+	//Shield *shield;
+
 	int fallFrames;
 
 	double gravity;
@@ -47,6 +49,8 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 	Tileset *ts_roll;
 
 	double maxFallSpeed;
+
+	V2d startNormal;
 };
 
 #endif
