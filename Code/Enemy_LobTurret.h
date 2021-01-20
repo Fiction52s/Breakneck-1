@@ -23,6 +23,7 @@ struct LobTurret : Enemy, LauncherEnemy
 	int lobTypeCounter;
 	V2d lobDirs[NUM_LOB_TYPES];
 	double lobSpeeds[NUM_LOB_TYPES];
+	bool reverse;
 
 	//Shield *shield;
 

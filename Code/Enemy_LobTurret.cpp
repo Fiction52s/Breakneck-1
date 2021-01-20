@@ -82,6 +82,11 @@ LobTurret::LobTurret(ActorParams *ap)
 	{
 		gravity.y = -gravity.y;
 		sprite.setColor(Color::Blue);
+		reverse = true;
+	}
+	else
+	{
+		reverse = false;
 	}
 
 
@@ -94,11 +99,17 @@ LobTurret::LobTurret(ActorParams *ap)
 
 	UpdateOnPlacement(ap);
 
-	turnFactor = 500;
-
 	lobDirs[0] = normalize(V2d(2, -1));
 	lobDirs[1] = normalize(V2d(1.7, -3));
 	lobDirs[2] = normalize(V2d(.3, -6));
+
+	if (reverse)
+	{
+		for (int i = 0; i < NUM_LOB_TYPES; ++i)
+		{
+			lobDirs[i].y = -lobDirs[i].y;
+		}
+	}
 
 	lobSpeeds[0] = 7;
 	lobSpeeds[1] = 11;
