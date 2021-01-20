@@ -43,7 +43,7 @@ LobTurret::LobTurret(ActorParams *ap)
 	width *= scale;
 	height *= scale;
 
-	SetOffGroundHeight(height / 2.f /*- 30 * scale*/);
+	SetOffGroundHeight(height / 2.f);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -63,9 +63,6 @@ LobTurret::LobTurret(ActorParams *ap)
 	hitBody.hitboxInfo = hitboxInfo;
 
 	bulletSpeed = 7;
-
-	double size = 400;//max( width, height );
-
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode2_64x64.png", 64, 64);
 
