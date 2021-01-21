@@ -32,6 +32,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	bool StartRoll();
 	void FinishedRoll();
 	void SetLevel(int lev);
+	bool IsFacingTrueRight();
 
 	Shield *shield;
 
@@ -58,8 +59,10 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
+	bool reverse;
+
 	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
+	double gravity;
 
 	int attackFrame;
 	int attackMult;

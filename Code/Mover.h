@@ -138,8 +138,10 @@ struct GroundMover : SurfaceMover
 		GroundMoverHandler *handler);
 	bool steeps;
 	void HitTerrain( double &q );
+	bool IsEdgeViableGround( V2d &en );
 	
 	GroundMoverHandler *handler;
+	bool reverse;
 	//bool startRoll;
 	//bool finishedRoll;
 

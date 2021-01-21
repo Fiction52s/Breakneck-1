@@ -1036,9 +1036,21 @@ void SurfaceMover::SetHandler(SurfaceMoverHandler *h)
 GroundMover::GroundMover( Edge *startGround, double startQuantity, 
 	double radius, bool p_steeps, GroundMoverHandler *p_handler )
 	:SurfaceMover( startGround, startQuantity, radius ), steeps( p_steeps )
-	,handler( p_handler )
+	,handler( p_handler ), reverse( false )
 {
 
+}
+
+bool GroundMover::IsEdgeViableGround(V2d &en)
+{
+	if (reverse)
+	{
+		return en.y > 0 && !TerrainPolygon::IsWall(en) && (steeps || !TerrainPolygon::IsSteepGround(en));
+	}
+	else
+	{
+		return en.y < 0 && !TerrainPolygon::IsWall(en) && (steeps || !TerrainPolygon::IsSteepGround(en));
+	}
 }
 
 void GroundMover::HitTerrain( double &q )
@@ -1051,8 +1063,11 @@ void GroundMover::HitTerrain( double &q )
 		en = normalize( physBody.globalPosition - minContact.position );
 	}
 
-	if( en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || TerrainPolygon::IsSlopedGround( en ) >= 0
-		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
+	
+
+	//if( en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || TerrainPolygon::IsSlopedGround( en ) >= 0
+		//|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
+	if(IsEdgeViableGround( en ))
 	{
 		ground = minContact.edge;
 		if( corner )
@@ -1093,9 +1108,7 @@ void GroundMover::HitTerrainAerial()
 
 	
 	//I had this as framesInAir > 100 before. why?
-	if( framesInAir > 10 && en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || 
-		TerrainPolygon::IsSlopedGround( en ) >= 0
-		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
+	if( framesInAir > 10 && IsEdgeViableGround( en ))
 	{
 		ground = minContact.edge;
 		if( corner )
@@ -1171,8 +1184,7 @@ bool GroundMover::StartRoll()
 		en = ground->edge0->Normal();
 	}
 
-	if( en.y < 0 && (TerrainPolygon::IsFlatGround( en ) >= 0 || TerrainPolygon::IsSlopedGround( en ) >= 0
-		|| ( steeps && TerrainPolygon::IsSteepGround( en ) >= 0 ) ) )
+	if( IsEdgeViableGround( en ) )
 	{
 		roll = true;
 		return false;

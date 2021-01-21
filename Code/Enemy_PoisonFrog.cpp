@@ -96,6 +96,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	{
 		gravity = -gravity;
 		jumpStrength.y = -jumpStrength.y;
+		groundMover->reverse = true;
 	}
 
 	sprite.setTexture( *ts_test->texture );
@@ -247,9 +248,15 @@ void PoisonFrog::ProcessState()
 				if( facingRight )
 				{
 					//if( gn.x < 0 )
-					if( cross( normalize( V2d( jumpStrength.x, -jumpStrength.y )), gAlong ) < 0 )
+					double crossTest = cross(normalize(V2d(jumpStrength.x, -jumpStrength.y)), gAlong);
+					if( (crossTest < 0 && !reverse) || (crossTest > 0 && reverse ))
 					{
-						gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
+						V2d up(0, -1);
+						if (reverse)
+						{
+							up.y = -up.y;
+						}
+						gAlong = (gAlong + up) / 2.0;
 						groundMover->Jump( gAlong * jumpStrength.y );
 					}
 					else
@@ -260,10 +267,15 @@ void PoisonFrog::ProcessState()
 				}
 				else
 				{
-					if( cross( normalize( V2d( -jumpStrength.x, -jumpStrength.y )), gAlong ) < 0 )
-					//if( gn.x > 0 )
+					double crossTest = cross(normalize(V2d(-jumpStrength.x, -jumpStrength.y)), gAlong);
+					if ((crossTest < 0 && !reverse) || (crossTest > 0 && reverse))
 					{
-						gAlong = (-gAlong + V2d( 0, -1 )) / 2.0;
+						V2d up(0, -1);
+						if (reverse)
+						{
+							up.y = -up.y;
+						}
+						gAlong = (-gAlong + up) / 2.0;
 						groundMover->Jump( gAlong * jumpStrength.y );
 					}
 					else
@@ -278,11 +290,23 @@ void PoisonFrog::ProcessState()
 				{
 					//cout << "vel: " << velocity.y << endl;
 					V2d diff = playerPos - GetPosition();
-					if (groundMover->velocity.y > 3  && length(diff) < 300 && diff.y < 0)
+					if (reverse)
 					{
-						hasDoubleJump = false;
-						groundMover->velocity.y = -jumpStrength.y;
+						if (groundMover->velocity.y < -3 && length(diff) < 300 && diff.y > 0)
+						{
+							hasDoubleJump = false;
+							groundMover->velocity.y = -jumpStrength.y;
+						}
 					}
+					else
+					{
+						if (groundMover->velocity.y > 3 && length(diff) < 300 && diff.y < 0)
+						{
+							hasDoubleJump = false;
+							groundMover->velocity.y = -jumpStrength.y;
+						}
+					}
+					
 				}
 
 
@@ -361,23 +385,40 @@ void PoisonFrog::UpdateSprite()
 	switch( action )
 	{
 	case STAND:
-		{
-			currTile = 0;
-		}
+	{
+		currTile = 0;
 		break;
+	}
 	case JUMPSQUAT:
-		{
+	{
 		currTile = frame / animFactor[JUMPSQUAT] + 1;
-		}
 		break;
+	}
 	case JUMP:
+	{
+		int window = 6;
+		if (reverse)
 		{
-			int window = 6;
-			if( groundMover->velocity.y < -window )
+			if (groundMover->velocity.y > window)
 			{
 				currTile = 3;
 			}
-			else if(groundMover->velocity.y > window )
+			else if (groundMover->velocity.y < -window)
+			{
+				currTile = 5;
+			}
+			else
+			{
+				currTile = 4;
+			}
+		}
+		else
+		{
+			if (groundMover->velocity.y < -window)
+			{
+				currTile = 3;
+			}
+			else if (groundMover->velocity.y > window)
 			{
 				currTile = 5;
 			}
@@ -387,17 +428,18 @@ void PoisonFrog::UpdateSprite()
 			}
 		}
 		break;
+	}
 	case LAND:
-		{
+	{
 		currTile = frame / animFactor[LAND] + 6;
-		}
 		break;
+	}
 	case WALLCLING:
-		{
+	{
 		currTile = 8;
-			
-		}
 		break;
+	}
+	
 	}
 
 	
@@ -415,7 +457,7 @@ void PoisonFrog::UpdateSprite()
 	}
 	else
 	{
-		ts_test->SetSubRect(sprite, currTile, !facingRight);
+		ts_test->SetSubRect(sprite, currTile, !facingRight, reverse);
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		sprite.setRotation(0);
 		sprite.setPosition(GetPositionF());
@@ -490,5 +532,5 @@ void PoisonFrog::Land()
 	frame = 0;
 	hasDoubleJump = true;
 	V2d gn = groundMover->ground->Normal();
-	angle = atan2(gn.x, -gn.y);
+	//angle = atan2(gn.x, -gn.y);
 }

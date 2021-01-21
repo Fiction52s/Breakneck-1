@@ -888,6 +888,7 @@ void EditSession::TestPlayerMode()
 	if (bigBulletVA != NULL)
 	{
 		delete[] bigBulletVA;
+		bigBulletVA = NULL;
 	}
 
 	totalNumberBullets = 0;

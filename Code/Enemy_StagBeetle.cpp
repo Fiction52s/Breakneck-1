@@ -33,10 +33,23 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	actionLength[JUMP] = 2;
 	actionLength[RUN] = 9 * 4;
 	
-	gravity = V2d( 0, .6 );
+	gravity = .5;
 	maxGroundSpeed = 10;
 	maxFallSpeed = 40;
 
+
+	const string &typeName = ap->GetTypeName();
+	if (typeName == "reversestagbeetle")
+	{
+		reverse = true;
+		sprite.setColor(Color::Blue);
+		gravity = -gravity;
+	}
+	else
+	{
+		reverse = false;
+		
+	}
 	
 	attackMult = 3;
 
@@ -44,8 +57,13 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	//SetOffGroundHeight(200 * scale);
 
 	CreateGroundMover(startPosInfo, 40, true, this);
-	groundMover->AddAirForce(V2d(0, .5));
+	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed( 0 );
+
+	if (reverse)
+	{
+		groundMover->reverse = true;
+	}
 
 	ts_death = sess->GetTileset( "Enemies/stag_death_256x176.png", 256, 176 );
 	ts_hop = sess->GetTileset( "Enemies/stag_hop_256x256.png", 256, 256 );
@@ -196,6 +214,11 @@ void StagBeetle::ActionEnded()
 	}
 }
 
+bool StagBeetle::IsFacingTrueRight()
+{
+	return (facingRight && !reverse) || (!facingRight && reverse );
+}
+
 void StagBeetle::ProcessState()
 {
 	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
@@ -250,22 +273,22 @@ void StagBeetle::ProcessState()
 		break;
 	case RUN:
 		//cout << "run: " << frame << endl;
-		if( facingRight )
+		if(IsFacingTrueRight())
 		{
 			if(playerPos.x < position.x - 50 )
 			{
-				facingRight = false;
+				facingRight = !facingRight;
 			}
 		}
 		else
 		{
 			if(playerPos.x > position.x + 50)
 			{
-				facingRight = true;
+				facingRight = !facingRight;
 			}
 		}
 
-		if( facingRight )
+		if(facingRight) //clockwise
 		{
 			groundMover->SetSpeed(groundMover->groundSpeed + .3 );
 		}
@@ -311,6 +334,10 @@ void StagBeetle::UpdateEnemyPhysics()
 			{
 				groundMover->velocity.y = maxFallSpeed;
 			}
+			else if (groundMover->velocity.y < -maxFallSpeed)
+			{
+				groundMover->velocity.y = -maxFallSpeed;
+			}
 		}
 
 
@@ -345,7 +372,6 @@ void StagBeetle::UpdateSprite()
 	IntRect r;
 	
 	int attackOriginHeight = ts_sweep->tileHeight - ( 48 );
-
 	//if( attackFrame >= 0 )
 	//{
 	//	sprite.setTexture( *ts_sweep->texture );
@@ -412,63 +438,27 @@ void StagBeetle::UpdateSprite()
 			break;
 		}
 
-		if (!facingRight)
+		if (( !facingRight && !reverse ) 
+			|| ( reverse && groundMover->ground == NULL ) 
+			|| ( reverse && !facingRight && groundMover->ground != NULL ) )
 		{
 			r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);
 		}
+
+		if (reverse && groundMover->ground == NULL)
+		{
+			r = sf::IntRect(r.left, r.top + r.height, r.width, -r.height);
+		}
+
 		sprite.setTextureRect(r);
 
 		float extraVert = 20 * scale;//8 * scale;
-		//if (testMover->ground != NULL)
-		//{
-		//	if (!testMover->roll)
-		//	{
-		//		angle = atan2(gn.x, -gn.y);
-
-		//		V2d pp = testMover->ground->GetPoint(testMover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-		//		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		//		sprite.setRotation(angle / PI * 180);
-		//		sprite.setPosition(pp.x, pp.y);
-		//	}
-		//	else
-		//	{
-		//		if (testMover->groundSpeed > 0 )//facingRight)
-		//		{
-		//			V2d vec = normalize(position - testMover->ground->v1);
-		//			angle = atan2(vec.y, vec.x);
-		//			angle += PI / 2.0;
-
-		//			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		//			sprite.setRotation(angle / PI * 180);
-		//			V2d pp = testMover->ground->GetPoint(testMover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-		//			sprite.setPosition(pp.x, pp.y);
-		//		}
-		//		else if( testMover->groundSpeed < 0 )
-		//		{
-		//			V2d vec = normalize(position - testMover->ground->v0);
-		//			angle = atan2(vec.y, vec.x);
-		//			angle += PI / 2.0;
-
-		//			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		//			sprite.setRotation(angle / PI * 180);
-		//			V2d pp = testMover->ground->GetPoint(testMover->edgeQuantity);
-		//			sprite.setPosition(pp.x, pp.y);
-		//		}
-		//	}
-		//}
-		//else
-		//{
-		//	sprite.setOrigin(sprite.getLocalBounds().width / 2, originHeight);
-		//	sprite.setRotation(0);
-		//	sprite.setPosition(gPoint.x, gPoint.y);
-		//}
 
 		int originHeight = 144 - (48);
 
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 + extraVert);
 		sprite.setPosition(GetPositionF());
-		sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-		//sprite.setOrigin(sprite.getLocalBounds().width / 2, originHeight);
+		sprite.setRotation(groundMover->GetAngleDegrees());
 	}
 
 	SyncSpriteInfo(auraSprite, sprite);
@@ -534,14 +524,18 @@ void StagBeetle::ReachCliff()
 	//cout << "reach cliff!" << endl;
 	//ground = NULL;
 
+	double jumpStrength = -10;
+	if (reverse)
+		jumpStrength = -jumpStrength;
+
 	V2d v;
-	if( facingRight )
+	if(IsFacingTrueRight() )
 	{
-		v = V2d( maxGroundSpeed, -10 );
+		v = V2d( maxGroundSpeed, jumpStrength);
 	}
 	else
 	{
-		v = V2d( -maxGroundSpeed, -10 );
+		v = V2d( -maxGroundSpeed, jumpStrength);
 	}
 
 	groundMover->Jump( v );
