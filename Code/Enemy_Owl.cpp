@@ -43,7 +43,7 @@ Owl::Owl(ActorParams *ap)
 	
 	SetNumLaunchers(2);
 
-	launchers[0] = new Launcher( this, BasicBullet::OWL, 16, 1, GetPosition(), V2d( 1, 0 ), 0, 300 );
+	launchers[0] = new Launcher( this, BasicBullet::OWL, 16, 3, GetPosition(), V2d( 1, 0 ), PI / 12, 300 );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->hitboxInfo->damage = 18;
 	launchers[0]->Reset();
@@ -70,7 +70,7 @@ Owl::Owl(ActorParams *ap)
 
 	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
 
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 50, 4, this);
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 70, 4, this);
 
 	ResetEnemy();
 }
