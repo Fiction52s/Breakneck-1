@@ -75,9 +75,16 @@ Badger::Badger(ActorParams *ap)
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
 
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(33);
+	cutObject->SetSubRectBack(34);
+	cutObject->SetScale(scale);
+
 	hitBody.hitboxInfo = hitboxInfo;
 
 	bezLength = 60 * NUM_STEPS;
+
+
 
 	ResetEnemy();
 }
@@ -104,7 +111,7 @@ void Badger::SetLevel(int lev)
 
 void Badger::HandleNoHealth()
 {
-	cutObject->SetFlipHoriz(facingRight);
+	cutObject->SetFlipHoriz(!facingRight);
 	cutObject->rotateAngle = sprite.getRotation();
 }
 
@@ -126,7 +133,7 @@ void Badger::ResetEnemy()
 	
 	frame = 0;
 
-	action = SHORTJUMP;
+	action = RUN;
 	frame = 0;
 
 	UpdateSprite();
@@ -413,7 +420,7 @@ void Badger::UpdateEnemyPhysics()
 			}
 		}
 
-		Enemy::UpdateEnemyPhysics();
+		//Enemy::UpdateEnemyPhysics();
 	}
 }
 
@@ -429,18 +436,7 @@ void Badger::UpdateSprite()
 	
 	float extraVert = 0;
 
-	if(groundMover->ground != NULL )
-	{
-		sprite.setRotation(groundMover->GetAngleDegrees());
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setPosition(groundMover->GetGroundPointF());
-	}
-	else
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-		sprite.setPosition(GetPositionF());
-		sprite.setRotation(0);
-	}
+	
 
 
 	int airRange = 3;
@@ -550,6 +546,20 @@ void Badger::UpdateSprite()
 		ir = sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height );
 	}
 	sprite.setTextureRect( ir );
+
+	if (groundMover->ground != NULL)
+	{
+		sprite.setRotation(groundMover->GetAngleDegrees());
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+		Vector2f spritePos = groundMover->GetGroundPointF();
+		sprite.setPosition(spritePos);
+	}
+	else
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+		sprite.setPosition(GetPositionF());
+		sprite.setRotation(0);
+	}
 
 	SyncSpriteInfo(auraSprite, sprite);
 }

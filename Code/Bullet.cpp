@@ -223,7 +223,7 @@ double Launcher::GetRadius(BasicBullet::BType bt)
 	case BasicBullet::CURVE_TURRET:
 		return 20;
 	case BasicBullet::LOB_TURRET:
-		return 20;
+		return 16;
 	}
 
 	return 10;
@@ -1071,6 +1071,9 @@ void BasicBullet::UpdateSprite()
 		break;
 	case BIG_OWL:
 		dims = Vector2f(48, 48);
+		break;
+	case LOB_TURRET:
+		dims = Vector2f(42,42 );
 	}
 	//Vector2f dims = Vector2f( ir.width / 2, ir.height / 2 );
 	Vector2f offset = Launcher::GetOffset(bulletType);

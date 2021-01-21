@@ -249,7 +249,7 @@ void StagBeetle::ProcessState()
 	case RUN:
 		{
 			double dist = length(playerPos - position );
-			if( dist >= 900 )
+			if( dist >= 1200 )
 			{
 				action = IDLE;
 				frame = 0;
