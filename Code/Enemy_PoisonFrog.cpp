@@ -60,7 +60,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	animFactor[STEEPJUMP] = 1;
 	animFactor[WALLCLING] = 1;
 
-	gravityFactor = 30;
+	
 	jumpFramesWait = 60;
 	jumpStrength = V2d(5, 12);
 
@@ -71,6 +71,18 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	double height = 80;
 	ts_test = sess->GetSizedTileset( "Enemies/frog_80x80.png");
 
+	const string &typeName = ap->GetTypeName();
+
+	if (typeName == "reversepoisonfrog")
+	{
+		reverse = true;
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		reverse = false;
+	}
+
 	xSpeed = 8;
 
 	sprite.setTexture(*ts_test->texture);
@@ -78,7 +90,13 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	CreateGroundMover(startPosInfo, 30, true, this);
 	groundMover->SetSpeed( 0 );
 	
-	gravity = gravityFactor / 64.0;
+	gravity = .47;
+
+	if (reverse)
+	{
+		gravity = -gravity;
+		jumpStrength.y = -jumpStrength.y;
+	}
 
 	sprite.setTexture( *ts_test->texture );
 	sprite.setScale(scale, scale);
@@ -97,11 +115,6 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	hitBody.hitboxInfo = hitboxInfo;
 
 	cutObject->Setup(ts_test, 10, 9, scale);
-
-	//cutObject->SetTileset(ts_test);
-	//cutObject->SetSubRectFront(10);
-	//cutObject->SetSubRectBack(9);
-	//cutObject->SetScale(scale);
 
 	ResetEnemy();
 }
@@ -136,33 +149,6 @@ void PoisonFrog::ResetEnemy()
 void PoisonFrog::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
-
-	//this isnt figured out yet. probably automate this at some point to make it simpler
-	//Edge *ground = groundMover->ground;
-	//if( ground != NULL )
-	//{
-	//	V2d gn = ground->Normal();
-	//	
-	//	V2d knockbackDir( 1, -1 );
-	//	knockbackDir = normalize( knockbackDir );
-	//	if(groundMover->groundSpeed > 0 )
-	//	{
-	//		hitboxInfo->kbDir = knockbackDir;
-	//		hitboxInfo->knockback = 15;
-	//	}
-	//	else
-	//	{
-	//		hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-	//		hitboxInfo->knockback = 15;
-	//	}
-	//	//hitBody.globalAngle = angle;
-	//	//hurtBody.globalAngle = angle;
-	//}
-	//else
-	//{
-	//	//hitBody.globalAngle = 0;
-	//	//hurtBody.globalAngle = 0;
-	//}
 }
 
 void PoisonFrog::ActionEnded()
@@ -225,7 +211,14 @@ void PoisonFrog::ProcessState()
 	if(groundMover->ground != NULL )
 	{
 		gAlong = normalize(groundMover->ground->v1 - groundMover->ground->v0 );
+
+		
 		gn = groundMover->ground->Normal();
+
+		if (gn.y > 0)
+		{
+			gAlong = -gAlong;
+		}
 	}
 	
 	switch( action )
@@ -251,8 +244,6 @@ void PoisonFrog::ProcessState()
 		{
 			if( frame == 0 )
 			{
-				//jumpVel = 
-				//cout << "jumping" << endl;
 				if( facingRight )
 				{
 					//if( gn.x < 0 )
@@ -341,13 +332,17 @@ void PoisonFrog::UpdateEnemyPhysics()
 			double grav = gravity;
 			if (action == WALLCLING)
 			{
-				grav = 0;//.1 * grav;
+				grav = 0;
 			}
 			groundMover->velocity.y += grav / (numPhysSteps * slowMultiple);
 
 			if (groundMover->velocity.y >= maxFallSpeed)
 			{
 				groundMover->velocity.y = maxFallSpeed;
+			}
+			else if (groundMover->velocity.y <= -maxFallSpeed)
+			{
+				groundMover->velocity.y = -maxFallSpeed;
 			}
 		}
 
@@ -405,15 +400,22 @@ void PoisonFrog::UpdateSprite()
 		break;
 	}
 
-	ts_test->SetSubRect(sprite, currTile, !facingRight);
+	
 	if (action == STAND || action == JUMPSQUAT || action == LAND)
 	{
+		bool fr = facingRight;
+		if ( groundMover->ground != NULL && groundMover->ground->Normal().y > 0)
+		{
+			fr = !fr;
+		}
+		ts_test->SetSubRect(sprite, currTile, !fr);
 		sprite.setRotation(groundMover->GetAngleDegrees());
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height);
 		sprite.setPosition(groundMover->GetGroundPointF());
 	}
 	else
 	{
+		ts_test->SetSubRect(sprite, currTile, !facingRight);
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		sprite.setRotation(0);
 		sprite.setPosition(GetPositionF());

@@ -18,14 +18,10 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 		Count
 	};
 
-	PoisonFrog(ActorParams *ap);
-	void UpdateEnemyPhysics();
-	void SetLevel(int lev);
-	void UpdateHitboxes();
-
+	bool reverse;
 	Tileset *ts_test;
 	double gravity;
-	sf::Vector2<double> velocity;
+	V2d velocity;
 	double angle;
 
 	int hitsBeforeHurt;
@@ -34,31 +30,33 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 
 	double xSpeed;
 	int jumpFramesWait;
-	double gravityFactor;
 	bool steepJump;
-	sf::Vector2<double> jumpStrength;
-
-	void ProcessState();
-	void ActionEnded();
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-
-	void HitTerrain(double &q);
-	bool StartRoll();
-	void FinishedRoll();
-
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial(Edge *e);
-	void Land();
-	void HandleNoHealth();
+	V2d jumpStrength;
 
 	Tileset *ts_walk;
 	Tileset *ts_roll;
 	bool hasDoubleJump;
 
 	double maxFallSpeed;
+
+	PoisonFrog(ActorParams *ap);
+	void UpdateEnemyPhysics();
+	void SetLevel(int lev);
+	void UpdateHitboxes();
+
+	void ProcessState();
+	void ActionEnded();
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	void HitTerrain(double &q);
+	bool StartRoll();
+	void FinishedRoll();
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial(Edge *e);
+	void Land();
+	void HandleNoHealth();
 };
 
 #endif

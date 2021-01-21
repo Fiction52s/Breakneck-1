@@ -205,10 +205,20 @@ void Shield::Draw(sf::RenderTarget *target)
 {
 	V2d pos = body.GetBasicPos();
 	sf::CircleShape test;
-	test.setFillColor(Color( 255, 0, 0, 40));
+
+	if (pauseFrames > 0)
+	{
+		test.setFillColor(Color( 255, 255, 255, 80 ));
+	}
+	else
+	{
+		test.setFillColor(Color(255, 0, 0, 40));
+	}
+	
 	test.setRadius(radius);
 	test.setOrigin(test.getLocalBounds().width / 2, test.getLocalBounds().height / 2);
 	test.setPosition(pos.x, pos.y);
+
 	target->draw(test);
 }
 
