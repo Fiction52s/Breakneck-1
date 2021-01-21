@@ -252,14 +252,14 @@ void StagBeetle::ProcessState()
 		//cout << "run: " << frame << endl;
 		if( facingRight )
 		{
-			if(playerPos.x < position.x )
+			if(playerPos.x < position.x - 50 )
 			{
 				facingRight = false;
 			}
 		}
 		else
 		{
-			if(playerPos.x > position.x )
+			if(playerPos.x > position.x + 50)
 			{
 				facingRight = true;
 			}

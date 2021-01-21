@@ -78,14 +78,16 @@ void Shield::ConfirmHitNoKill()
 
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
-		parent->sess->Pause(5);
-		pauseFrames = 0;
+		//parent->sess->Pause(5);
+		pauseFrames = 5;
 	}
 	else
 	{
 		//cout << "set pause frames 5" << endl;
 		pauseFrames = 5;
 	}
+
+	parent->pauseFrames = pauseFrames;
 
 	parent->sess->cam.SetRumble(.5, .5, 5);
 }
@@ -102,14 +104,16 @@ void Shield::ConfirmKill()
 
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
-		parent->sess->Pause(7);
-		pauseFrames = 0;
+		//parent->sess->Pause(7);
+		pauseFrames = 7;
 	}
 	else
 	{
 		pauseFrames = 7;
 		//cout << "set pause frames 7" << endl;
 	}
+
+	parent->pauseFrames = pauseFrames;
 
 	//parent->sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
 	parent->sess->cam.SetRumble(1, 1, 7);

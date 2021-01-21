@@ -851,28 +851,32 @@ void Enemy::DrawSprite(
 
 void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 {
-	bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2) || ( receivedHit == NULL && pauseFrames < 2 );
+	bool drawHurtShader = pauseFrames >= 2 && currShield == NULL;
+		//(pauseFrames < 2 || currShield != NULL);
+		//(sess->GetPauseFrames() < 2 && pauseFrames < 2) 
+		//|| ( receivedHit == NULL && pauseFrames < 2 );
+
 	if (hasMonitor && !suppressMonitor)
 	{
-		if ( b )
+		if (drawHurtShader)
 		{
-			target->draw(spr, &keyShader);
+			target->draw(spr, &hurtShader);
 		}
 		else
 		{
-			target->draw(spr, &hurtShader);
+			target->draw(spr, &keyShader);
 		}
 		target->draw(keySprite);
 	}
 	else
 	{
-		if( b )
+		if(drawHurtShader)
 		{
-			target->draw(spr);
+			target->draw(spr, &hurtShader);
 		}
 		else
 		{
-			target->draw(spr, &hurtShader);
+			target->draw(spr);
 		}
 	}
 }
@@ -1217,7 +1221,7 @@ void Enemy::CheckSpecters()
 
 void Enemy::UpdatePrePhysics()
 {
-	if (pauseFrames > 0)
+	if (pauseFrames > 0 )
 	{
 		return;
 	}
@@ -1786,7 +1790,7 @@ void Enemy::CheckPlayerInteractions( int i )
 
 void Enemy::UpdatePhysics( int substep )
 {
-	if (pauseFrames > 0)
+	if (pauseFrames > 0 )
 		return;
 	
 	bool validSubstep = (substep < numPhysSteps);

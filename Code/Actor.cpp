@@ -17408,6 +17408,7 @@ void Actor::ConfirmHit( Enemy *e )
 		bounceAttackHit = false;
 	}
 
+	//replacement for pausing in hitlag
 	hitlagFrames = currHitboxInfo->hitlagFrames;
 	attackingHitlag = true;
 
