@@ -765,6 +765,10 @@ void Session::RegisterW7Enemies()
 	AddWorldEnemy("limitedattractjuggler", 7, CreateEnemy<AttractJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 	AddBasicAerialWorldEnemy("attractjuggler", 7, CreateEnemy<AttractJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("remotecomboer", 7, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("explodingbarrel", 7, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+
 
 }
 

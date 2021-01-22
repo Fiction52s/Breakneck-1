@@ -7,5 +7,7 @@
 #include "Enemy_SwordProjectileBooster.h"
 #include "Enemy_AttractJuggler.h"
 #include "Enemy_RewindBooster.h"
+#include "Enemy_RemoteComboer.h"
+#include "Enemy_ExplodingBarrel.h"
 
 #endif

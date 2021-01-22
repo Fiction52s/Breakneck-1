@@ -1,0 +1,209 @@
+#include "Enemy.h"
+#include "GameSession.h"
+#include <iostream>
+#include "VectorMath.h"
+#include <assert.h>
+#include "Enemy_ExplodingBarrel.h"
+#include "Eye.h"
+
+using namespace std;
+using namespace sf;
+
+
+#define COLOR_TEAL Color( 0, 0xee, 0xff )
+#define COLOR_BLUE Color( 0, 0x66, 0xcc )
+
+ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
+	:Enemy(EnemyType::EN_EXPLODINGBARREL, ap)//, false, 1, false)
+{
+	SetNumActions(S_Count);
+	SetEditorActions(S_IDLE, S_IDLE, 0);
+
+	actionLength[S_IDLE] = 1;
+	actionLength[S_EXPLODE] = 20;
+
+	animFactor[S_IDLE] = 1;
+	animFactor[S_EXPLODE] = 1;
+
+
+	SetLevel(ap->GetLevel());
+
+	SetCurrPosInfo(startPosInfo);
+
+	facingRight = true;
+
+	ts = sess->GetSizedTileset("Enemies/explodingbarrel_128x128.png");
+	sprite.setTexture(*ts->texture);
+	sprite.setScale(scale, scale);
+
+	SetOffGroundHeight(ts->tileHeight / 2.0);
+
+
+	
+
+	
+
+
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 3 * 60;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+	hitBody.hitboxInfo = hitboxInfo;
+
+	comboObj = new ComboObject(this);
+
+	double explosionRadius = 300;
+
+	//explosion.ResetFrames();
+	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
+	explosion.hitboxInfo = hitboxInfo;
+
+	comboObj->enemyHitboxInfo = new HitboxInfo;
+	comboObj->enemyHitboxInfo->damage = 20;
+	comboObj->enemyHitboxInfo->drainX = .5;
+	comboObj->enemyHitboxInfo->drainY = .5;
+	comboObj->enemyHitboxInfo->hitlagFrames = 0;
+	comboObj->enemyHitboxInfo->hitstunFrames = 30;
+	comboObj->enemyHitboxInfo->knockback = 0;
+	comboObj->enemyHitboxInfo->freezeDuringStun = true;
+	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
+	comboObj->enemyHitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
+
+	Color exploColor = Color::Red;
+	exploColor.a = 100;
+	testCircle.setFillColor(exploColor);
+	testCircle.setRadius(explosionRadius);
+	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
+		testCircle.getLocalBounds().height / 2);
+	//comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+
+	comboObj->enemyHitBody.BasicCircleSetup(explosionRadius, GetPosition());
+
+	comboObj->enemyHitboxFrame = 0;
+
+	ResetEnemy();
+}
+
+ExplodingBarrel::~ExplodingBarrel()
+{
+}
+
+void ExplodingBarrel::SetLevel(int lev)
+{
+	level = lev;
+	switch (level)
+	{
+	case 1:
+		scale = 1.0;
+		break;
+	case 2:
+		scale = 2.0;
+		maxHealth += 2;
+		break;
+	case 3:
+		scale = 3.0;
+		maxHealth += 5;
+		break;
+	}
+}
+
+void ExplodingBarrel::ResetEnemy()
+{
+	comboObj->Reset();
+	comboObj->enemyHitboxFrame = 0;
+
+	testCircle.setPosition(GetPositionF());
+
+	explosion.SetBasicPos(GetPosition());
+
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
+	action = S_IDLE;
+	frame = 0;
+
+	UpdateHitboxes();
+
+	UpdateSprite();
+}
+
+void ExplodingBarrel::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 0)
+	{
+		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+		ConfirmHitNoKill();
+		action = S_EXPLODE;
+		frame = 0;
+		SetHitboxes(&explosion, 0);
+		SetHurtboxes(NULL, 0);
+		
+
+		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+	}
+}
+
+void ExplodingBarrel::ProcessState()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+
+		switch (action)
+		{
+		case S_EXPLODE:
+			numHealth = 0;
+			dead = true;
+			sess->PlayerRemoveActiveComboer(comboObj);
+			break;
+		}
+	}
+}
+
+void ExplodingBarrel::HandleNoHealth()
+{
+
+}
+
+void ExplodingBarrel::UpdateEnemyPhysics()
+{
+}
+
+void ExplodingBarrel::FrameIncrement()
+{
+}
+
+void ExplodingBarrel::ComboHit()
+{
+	pauseFrames = 5;
+	/*++currHits;
+	if (currHits >= hitLimit)
+	{
+		action = S_EXPLODE;
+		frame = 0;
+	}*/
+}
+
+void ExplodingBarrel::UpdateSprite()
+{
+	sprite.setPosition(GetPositionF());
+	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+}
+
+void ExplodingBarrel::EnemyDraw(sf::RenderTarget *target)
+{
+	DrawSprite(target, sprite);
+
+	if (action == S_EXPLODE)
+	{
+		target->draw(testCircle);
+	}
+}
