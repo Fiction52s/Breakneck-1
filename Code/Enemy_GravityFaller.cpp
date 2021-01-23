@@ -194,12 +194,12 @@ void GravityFaller::ProcessState()
 	
 	//Actor *player = owner->GetPlayer(0);
 
-	double distY = DistFromPlayerY();
+	double distY = PlayerDistY();
 
 	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == IDLE)
 	{
-		if (DistFromPlayer() < 1000 )
+		if (PlayerDist() < 1000 )
 		{
 			if (surfaceMover->ground->Normal() == startNormal)
 			{

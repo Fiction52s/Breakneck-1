@@ -113,24 +113,29 @@ void Enemy::SetSpawnRect()
 	spawnRect = sf::Rect<double>(GetAABB());//sf::Rect<double>(gPoint.x - size / 2, gPoint.y - size / 2, size, size);
 }
 
-double Enemy::DistFromPlayer(int index)
+double Enemy::PlayerDist(int index)
 {
 	return length(GetPosition() - sess->GetPlayerPos(index));
 }
 
-double Enemy::DistFromPlayerSqr(int index)
+double Enemy::PlayerDistSqr(int index)
 {
 	return lengthSqr(GetPosition() - sess->GetPlayerPos(index));
 }
 
-double Enemy::DistFromPlayerX(int index)
+double Enemy::PlayerDistX(int index)
 {
 	return sess->GetPlayerPos(index).x - GetPosition().x;
 }
 
-double Enemy::DistFromPlayerY(int index)
+double Enemy::PlayerDistY(int index)
 {
 	return sess->GetPlayerPos(index).y - GetPosition().y;
+}
+
+V2d Enemy::PlayerDir(int index)
+{
+	return normalize( sess->GetPlayerPos(index) - GetPosition() );
 }
 
 V2d Enemy::AlongGroundDir()

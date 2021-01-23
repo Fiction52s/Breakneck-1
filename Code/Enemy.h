@@ -168,10 +168,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void CheckPlayerInteractions( int i );
 	void UpdateKeySprite();
 	void SetKey();
-	double DistFromPlayerX( int index = 0);
-	double DistFromPlayerY( int index = 0);
-	double DistFromPlayer(int index = 0);
-	double DistFromPlayerSqr(int index = 0);
+	double PlayerDistX( int index = 0);
+	double PlayerDistY( int index = 0);
+	double PlayerDist(int index = 0);
+	double PlayerDistSqr(int index = 0);
+	V2d PlayerDir(int index = 0);
 	
 	bool IsGoalType();
 	virtual void AddToGame();

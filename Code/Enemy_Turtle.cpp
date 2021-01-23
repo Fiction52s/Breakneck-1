@@ -246,7 +246,7 @@ void Turtle::UpdateEnemyPhysics()
 	V2d playerPos = sess->GetPlayerPos(0);
 	if (action == NEUTRAL)
 	{
-		if (DistFromPlayer( 0 ) <= 600 )
+		if (PlayerDist( 0 ) <= 600 )
 		{
 			action = FIRE;
 			frame = 0;

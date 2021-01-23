@@ -92,8 +92,10 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::LOB_TURRET:
 		bulletTilesetIndex = 1;
 		break;
-		
 	case BasicBullet::CACTUS_SHOTGUN:
+		bulletTilesetIndex = 1;
+		break;
+	case BasicBullet::SHOTGUN:
 		bulletTilesetIndex = 1;
 		break;
 	case BasicBullet::OWL:
@@ -239,6 +241,10 @@ Vector2f Launcher::GetOffset(BasicBullet::BType bt)
 	{
 		return Vector2f(0, 0);
 	}
+	/*else if (bt == BasicBullet::LOB_TURRET)
+	{
+		return Vector2f(0, 0);
+	}*/
 	else
 	{
 		return Vector2f(-20, 0);
@@ -599,9 +605,8 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case PATROLLER:
 	case BAT:
 	case BIG_OWL:
-		transform.rotate(angle);
-		break;
 	case LOB_TURRET:
+	case SHOTGUN:
 	{
 		transform.rotate(angle);
 		break;

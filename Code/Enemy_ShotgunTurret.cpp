@@ -3,7 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_LobTurret.h"
+#include "Enemy_ShotgunTurret.h"
 #include "Shield.h"
 #include "Actor.h"
 
@@ -22,8 +22,8 @@ using namespace sf;
 
 
 
-LobTurret::LobTurret(ActorParams *ap)
-	:Enemy(EnemyType::EN_LOBTURRET, ap)
+ShotgunTurret::ShotgunTurret(ActorParams *ap)
+	:Enemy(EnemyType::EN_SHOTGUNTURRET, ap)
 {
 	SetNumActions(Count);
 	SetEditorActions(ATTACK, 0, 0);
@@ -68,26 +68,11 @@ LobTurret::LobTurret(ActorParams *ap)
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
-		BasicBullet::LOB_TURRET, 32, 1, GetPosition(), V2d(0, -1),
-		0, 180, true);
+		BasicBullet::SHOTGUN, 32, 4, GetPosition(), V2d(0, -1),
+		PI / 2, 180, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
 
-	V2d gravity(0, .3);
-	const string &typeName = ap->GetTypeName();
-	if (typeName == "reverselobturret")
-	{
-		gravity.y = -gravity.y;
-		sprite.setColor(Color::Blue);
-		reverse = true;
-	}
-	else
-	{
-		reverse = false;
-	}
-
-
-	launchers[0]->SetGravity(gravity);
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
 	cutObject->SetSubRectBack(11);
@@ -96,27 +81,11 @@ LobTurret::LobTurret(ActorParams *ap)
 
 	UpdateOnPlacement(ap);
 
-	lobDirs[0] = normalize(V2d(2, -1));
-	lobDirs[1] = normalize(V2d(1.7, -3));
-	lobDirs[2] = normalize(V2d(.3, -6));
-
-	if (reverse)
-	{
-		for (int i = 0; i < NUM_LOB_TYPES; ++i)
-		{
-			lobDirs[i].y = -lobDirs[i].y;
-		}
-	}
-
-	lobSpeeds[0] = 7;
-	lobSpeeds[1] = 11;
-	lobSpeeds[2] = 13;
-
 
 	ResetEnemy();
 }
 
-void LobTurret::UpdateOnPlacement(ActorParams *ap)
+void ShotgunTurret::UpdateOnPlacement(ActorParams *ap)
 {
 	Enemy::UpdateOnPlacement(ap);
 
@@ -129,9 +98,8 @@ void LobTurret::UpdateOnPlacement(ActorParams *ap)
 	//testShield->SetPosition(GetPosition());
 }
 
-void LobTurret::ResetEnemy()
+void ShotgunTurret::ResetEnemy()
 {
-	lobTypeCounter = 0;
 	action = WAIT;
 	frame = 0;
 	DefaultHurtboxesOn();
@@ -143,7 +111,7 @@ void LobTurret::ResetEnemy()
 	UpdateSprite();
 }
 
-void LobTurret::SetLevel(int lev)
+void ShotgunTurret::SetLevel(int lev)
 {
 	level = lev;
 
@@ -164,26 +132,26 @@ void LobTurret::SetLevel(int lev)
 
 }
 
-void LobTurret::Setup()
+void ShotgunTurret::Setup()
 {
 	Enemy::Setup();
 
 	//launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
 	//launchers[0]->position = GetPosition();
 
-	
+
 	//TurretSetup();
 }
 
-void LobTurret::FireResponse(BasicBullet *b)
+void ShotgunTurret::FireResponse(BasicBullet *b)
 {
 }
 
-void LobTurret::UpdateBullet(BasicBullet *b)
+void ShotgunTurret::UpdateBullet(BasicBullet *b)
 {
 }
 
-void LobTurret::BulletHitTerrain(BasicBullet *b,
+void ShotgunTurret::BulletHitTerrain(BasicBullet *b,
 	Edge *edge,
 	sf::Vector2<double> &pos)
 {
@@ -196,7 +164,7 @@ void LobTurret::BulletHitTerrain(BasicBullet *b,
 	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
 }
 
-void LobTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
+void ShotgunTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 {
 	V2d vel = b->velocity;
 	double angle = atan2(vel.y, vel.x);
@@ -212,7 +180,7 @@ void LobTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 }
 
 
-void LobTurret::ProcessState()
+void ShotgunTurret::ProcessState()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
@@ -238,26 +206,10 @@ void LobTurret::ProcessState()
 				frame = 0;
 			}
 		}
-		//else if (frame >= 4 * animationFactor && frame <= 4 * animationFactor + 10 && slowCounter == 1)
 		else if (frame == 4 * animationFactor && slowCounter == 1)
 		{
-			V2d currLobDir = lobDirs[lobTypeCounter];
-			double currLobSpeed = lobSpeeds[lobTypeCounter];
-			//launchers[0]
-
-			launchers[0]->bulletSpeed = currLobSpeed;
-			if (PlayerDistX() < 0)
-			{
-				currLobDir.x = -currLobDir.x;
-			}
-			launchers[0]->facingDir = currLobDir;//normalize(playerPos - position);
+			launchers[0]->facingDir = PlayerDir();
 			launchers[0]->Fire();
-
-			++lobTypeCounter;
-			if (lobTypeCounter == NUM_LOB_TYPES)
-			{
-				lobTypeCounter = 0;
-			}
 		}
 		break;
 	}
@@ -265,13 +217,13 @@ void LobTurret::ProcessState()
 
 }
 
-void LobTurret::EnemyDraw(sf::RenderTarget *target)
+void ShotgunTurret::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite, auraSprite);
 }
 
 
-void LobTurret::DirectKill()
+void ShotgunTurret::DirectKill()
 {
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -289,7 +241,7 @@ void LobTurret::DirectKill()
 	receivedHit = NULL;
 }
 
-void LobTurret::UpdateSprite()
+void ShotgunTurret::UpdateSprite()
 {
 	if (action == WAIT)
 	{
@@ -314,7 +266,7 @@ void LobTurret::UpdateSprite()
 	SyncSpriteInfo(auraSprite, sprite);
 }
 
-void LobTurret::DebugDraw(sf::RenderTarget *target)
+void ShotgunTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 }
