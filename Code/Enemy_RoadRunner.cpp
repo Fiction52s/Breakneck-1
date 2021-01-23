@@ -3,7 +3,8 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_RoadRunner.h"
+#include "Enemy_Roadrunner.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -18,15 +19,68 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q, int p_level )
-	:Enemy(owner, EnemyType::EN_ROADRUNNER, p_hasMonitor, 2), facingRight(true)
+Roadrunner::Roadrunner(ActorParams *ap)
+	:Enemy(EnemyType::EN_ROADRUNNER, ap)
 {
-	level = p_level;
+	SetLevel(ap->GetLevel());
+
+	SetNumActions(Count);
+	SetEditorActions(IDLE, 0, 0);
+
+	actionLength[IDLE] = 11 * 5;
+	actionLength[LAND] = 1;
+	actionLength[JUMP] = 2;
+	actionLength[RUN] = 9 * 4;
+	actionLength[WAKEUP] = 30;
+
+	gravity = .5;
+	maxGroundSpeed = 30;
+	maxFallSpeed = 20;
+	runAccel = 1.0;
+	runDecel = runAccel * 3.0;
+
+	attentionRadius = 800;//800;
+	ignoreRadius = 2000;
+
+	CreateGroundMover(startPosInfo, 40, true, this);
+	groundMover->AddAirForce(V2d(0, gravity));
+	groundMover->SetSpeed(0);
+
+	ts = sess->GetSizedTileset("Enemies/roadrunner_256x256.png");
+
+	SetOffGroundHeight(128 / 2);
+
+	sprite.setTexture(*ts->texture);
+	sprite.setScale(scale, scale);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 18;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 0;
+
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+	hitBody.hitboxInfo = hitboxInfo;
+
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(0);
+	cutObject->SetSubRectBack(0);
+	cutObject->SetScale(scale);
+
+	ResetEnemy();
+}
+
+void Roadrunner::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = .5;
 		break;
 	case 2:
 		scale = 2.0;
@@ -37,127 +91,42 @@ RoadRunner::RoadRunner(GameSession *owner, bool p_hasMonitor, Edge *g, double q,
 		maxHealth += 5;
 		break;
 	}
-
-	//gravity = V2d(0, .6);
-	maxGroundSpeed = 70;
-	action = IDLE;
-	dead = false;
-
-	maxFallSpeed = 40;
-
-	double height = 128;
-	double width = 128;
-
-	startGround = g;
-	startQuant = q;
-	frame = 0;
-
-	mover = new GroundMover(owner, g, q, 40, true, this);
-	mover->AddAirForce(V2d(0, .5));
-	
-	mover->SetSpeed(0);
-
-	ts = owner->GetTileset("Enemies/roadrunner_256x256.png", 256, 256);
-	sprite.setScale(scale, scale);
-	sprite.setTexture(*ts->texture);
-
-	actionLength[IDLE] = 1;
-	actionLength[BURROW] = 10;
-	actionLength[UNBURROW] = 20;
-	actionLength[RUN] = 1;
-	actionLength[HOP] = 1;
-	//actionLength[STALK] = 30;
-	//actionLength[RUSH] = 1;
-
-
-	animFactor[IDLE] = 1;
-	animFactor[BURROW] = 1;
-	animFactor[UNBURROW] = 1;
-	animFactor[RUN] = 1;
-	animFactor[HOP] = 1;
-	//animFactor[STALK] = 1;
-	//animFactor[RUSH] = 1;
-
-	position = mover->physBody.globalPosition;
-	V2d gPoint = g->GetPoint(q);
-
-	receivedHit = NULL;
-
-	double size = max(width, height);
-	spawnRect = sf::Rect<double>(gPoint.x - size, gPoint.y - size, size * 2, size * 2);
-
-	int hurtRad = 40;
-	int hitRad = 40;
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(hurtRad);
-	AddBasicHitCircle(hitRad);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	crawlAnimationFactor = 5;
-	rollAnimationFactor = 5;
-
-	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(0);
-	cutObject->SetSubRectBack(1);
-
-	ResetEnemy();
 }
 
-RoadRunner::~RoadRunner()
-{
-	delete mover;
-}
-
-void RoadRunner::DebugDraw(RenderTarget *target)
+void Roadrunner::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
+	//if (!dead)
+	//testMover->physBody.DebugDraw(target);
 }
 
-void RoadRunner::ResetEnemy()
+void Roadrunner::ResetEnemy()
 {
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
+	groundMover->Set(startPosInfo);
+	groundMover->SetSpeed(0);
 
 	action = IDLE;
-	mover->ground = startGround;
-	mover->edgeQuantity = startQuant;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
 
-	position = mover->physBody.globalPosition;
+	facingRight = true;
+
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 
 	frame = 0;
-
-	dead = false;
-
-	receivedHit = NULL;
-
-	SetHitboxes(hitBody, 0);
-	SetHurtboxes(hurtBody, 0);
 
 	UpdateSprite();
 	UpdateHitboxes();
 }
 
-void RoadRunner::UpdateHitboxes()
+void Roadrunner::UpdateHitboxes()
 {
-	Edge *ground = mover->ground;
+	Edge *ground = groundMover->ground;
 	if (ground != NULL)
 	{
 
 		V2d knockbackDir(1, -1);
 		knockbackDir = normalize(knockbackDir);
-		if (mover->groundSpeed > 0)
+		if (groundMover->groundSpeed > 0)
 		{
 			hitboxInfo->kbDir = knockbackDir;
 			hitboxInfo->knockback = 15;
@@ -174,503 +143,283 @@ void RoadRunner::UpdateHitboxes()
 		//hurtBody.globalAngle = 0;
 	}
 
-	CollisionBox &hitBox = hitBody->GetCollisionBoxes(0)->front();
-	CollisionBox &hurtBox = hurtBody->GetCollisionBoxes(0)->front();
-	hitBox.globalPosition = mover->physBody.globalPosition;
-	hurtBox.globalPosition = mover->physBody.globalPosition;
+	BasicUpdateHitboxes();
 }
 
-void RoadRunner::ActionEnded()
+void Roadrunner::ActionEnded()
 {
 	if (frame == actionLength[action])
 	{
-		frame = 0;
 		switch (action)
 		{
 		case IDLE:
-			break;
-		case BURROW:
-			action = UNDERGROUND;
-			break;
-		case UNBURROW:
-			action = RUN;
-			break;
-		case RUN:
-			break;
-		/*case STALK:
-			action = RUSH;
 			frame = 0;
 			break;
-		case RUSH:
-			break;*/
+		case WAKEUP:
+			action = RUN;
+			frame = 0;
+			break;
+		case RUN:
+			frame = 0;
+			break;
+		case JUMP:
+			frame = 1;
+			break;
+		case LAND:
+			action = RUN;
+			frame = 0;
+			break;
 		}
 	}
 }
 
-void RoadRunner::FrameIncrement()
+void Roadrunner::ProcessState()
 {
-	Actor *player = owner->GetPlayer(0);
-	//if (action == RUN || action == UNBURROW )
-	//{
-	//	if (player->IsMovingLeft())
-	//	{
-	//		playerNotMovingLeftCounter = 0;
-	//	}
-	//	else
-	//	{
-	//		++playerNotMovingLeftCounter;
-	//	}
-
-	//	if (player->IsMovingRight())
-	//	{
-	//		playerNotMovingRightCounter = 0;
-	//	}
-	//	else
-	//	{
-
-	//	}
-	//	//can check number of frames that you arent moving right/left
-	//}
-	
-}
-
-void RoadRunner::ProcessState()
-{
-	V2d playerPos = owner->GetPlayerPos(0);
+	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
+	//Actor *player = owner->GetPlayer( 0 );
+	V2d playerPos = sess->GetPlayerPos(0);
+	V2d position = GetPosition();
 
 	ActionEnded();
-
-	double playerDist = length(playerPos - position);
 
 	switch (action)
 	{
 	case IDLE:
-		if (playerDist < 300 )
-		{
-			action = BURROW;
-			frame = 0;
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
-		}
-		break;
-	case BURROW:
-		if (frame == 5 && slowCounter == 1)
-		{
-			SetHitboxes(NULL, 0);
-			SetHurtboxes(NULL, 0);
-		}
-		break;
-	case UNDERGROUND:
 	{
-		bool uleft = playerPos.x < position.x - 300 && owner->PlayerIsMovingLeft();
-		bool uright = playerPos.x > position.x + 300 && owner->PlayerIsMovingRight();
-		if( uleft || uright )
+		double dist = length(playerPos - position);
+		if (dist < attentionRadius)
 		{
-			if (uleft)
+			action = RUN;
+			frame = 0;
+		}
+	}
+	break;
+	case RUN:
+	{
+		double dist = length(playerPos - position);
+		if (dist >= ignoreRadius)
+		{
+			action = IDLE;
+			frame = 0;
+		}
+	}
+	break;
+	case JUMP:
+		break;
+		//case ATTACK:
+		//	break;
+	case LAND:
+		break;
+	}
+
+	switch (action)
+	{
+	case IDLE:
+		groundMover->SetSpeed(0);
+		//cout << "idle: " << frame << endl;
+		break;
+	case RUN:
+		//cout << "run: " << frame << endl;
+		if (facingRight)
+		{
+			if (playerPos.x < position.x - 50)
+			{
 				facingRight = false;
-			else
+			}
+		}
+		else
+		{
+			if (playerPos.x > position.x + 50)
 			{
 				facingRight = true;
 			}
-			action = UNBURROW;
-			frame = 0;
 		}
-		break;
-	}
-	case UNBURROW:
-		if(frame == 10 && slowCounter == 1)
+
+		if (facingRight) //clockwise
 		{
-			SetHitboxes(hitBody, 0);
-			SetHurtboxes(hurtBody, 0);
-		}
-		break;
-	case RUN:
-		if (facingRight)
-		{
-			if (playerPos.x < position.x - 200 )//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
+			double accelFactor = runAccel;
+			if (groundMover->groundSpeed < 0)
 			{
-				action = BURROW;
-				frame = 0;
-				mover->SetSpeed(0);
-				break;
+				accelFactor = runDecel;
 			}
+			groundMover->SetSpeed(groundMover->groundSpeed + accelFactor);
 		}
 		else
 		{
-			if (playerPos.x > position.x + 200 )// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
+			double accelFactor = runAccel;
+			if (groundMover->groundSpeed > 0)
 			{
-				action = BURROW;
-				frame = 0;
-				mover->SetSpeed(0);
-				break;
+				accelFactor = runDecel;
 			}
+			groundMover->SetSpeed(groundMover->groundSpeed - accelFactor);
 		}
 
-		double accel = .5;//.5;
-		if (facingRight)
-		{
-			//mover->SetSpeed(15);
-			mover->SetSpeed(mover->groundSpeed + accel);
-		}
-		else
-		{
-			//mover->SetSpeed(-15);
-			mover->SetSpeed(mover->groundSpeed - accel);
-		}
-
-		if (mover->groundSpeed > maxGroundSpeed)
-			mover->SetSpeed(maxGroundSpeed);
-		else if (mover->groundSpeed < -maxGroundSpeed)
-			mover->SetSpeed(-maxGroundSpeed);
-
-
-		/*if (playerDist < 200)
-		{
-			if (action == RUN)
-				action = STALK;
-
-			if (action == STALK)
-			{
-				if (player->ground != NULL && player->action != Actor::JUMPSQUAT)
-				{
-					mover->SetSpeed(player->groundSpeed);
-				}
-			}
-		}*/
+		if (groundMover->groundSpeed > maxGroundSpeed)
+			groundMover->SetSpeed(maxGroundSpeed);
+		else if (groundMover->groundSpeed < -maxGroundSpeed)
+			groundMover->SetSpeed(-maxGroundSpeed);
+		break;
+	case JUMP:
+		//cout << "jump: " << frame << endl;
+		break;
+		//	case ATTACK:
+		//	{
+		//		testMover->SetSpeed( 0 );
+		//	}
+		//	break;
+	case LAND:
+	{
+		//	cout << "land: " << frame << endl;
+		//testMover->SetSpeed( 0 );
+	}
+	break;
+	default:
+		//cout << "WAATATET" << endl;
 		break;
 	}
-
-	//cout << "moverspeed: " << mover->groundSpeed << endl;
 }
 
-//void RoadRunner::ProcessState()
-//{
-//	Actor *player = owner->GetPlayer(0);
-//
-//	ActionEnded();
-//
-//	double playerDist = length(player->position - position);
-//
-//	switch (action)
-//	{
-//	case IDLE:
-//		if (playerDist < 300)
-//		{
-//			action = BURROW;
-//			frame = 0;
-//			SetHitboxes(hitBody, 0);
-//			SetHurtboxes(hurtBody, 0);
-//		}
-//		break;
-//	case BURROW:
-//		if (frame == 5 && slowCounter == 1)
-//		{
-//			SetHitboxes(NULL, 0);
-//			SetHurtboxes(NULL, 0);
-//		}
-//		break;
-//	case UNDERGROUND:
-//	{
-//		bool uleft = player->position.x < position.x - 300 && player->IsMovingLeft();
-//		bool uright = player->position.x > position.x + 300 && player->IsMovingRight();
-//		if (uleft || uright)
-//		{
-//			if (uleft)
-//				facingRight = false;
-//			else
-//			{
-//				facingRight = true;
-//			}
-//			action = UNBURROW;
-//			frame = 0;
-//		}
-//		break;
-//	}
-//	case UNBURROW:
-//		if (frame == 10 && slowCounter == 1)
-//		{
-//			SetHitboxes(hitBody, 0);
-//			SetHurtboxes(hurtBody, 0);
-//		}
-//		break;
-//	case RUN:
-//	case STALK:
-//	case RUSH:
-//		if (facingRight)
-//		{
-//			if (player->position.x < position.x - 200)//|| ( !player->IsMovingRight() && player->action != Actor::JUMPSQUAT ))
-//			{
-//				action = BURROW;
-//				frame = 0;
-//				mover->SetSpeed(0);
-//				break;
-//			}
-//		}
-//		else
-//		{
-//			if (player->position.x > position.x + 200)// || (!player->IsMovingLeft() && player->action != Actor::JUMPSQUAT))
-//			{
-//				action = BURROW;
-//				frame = 0;
-//				mover->SetSpeed(0);
-//				break;
-//			}
-//		}
-//
-//		double accel = 4;//.5;
-//		if (facingRight)
-//		{
-//			//mover->SetSpeed(15);
-//			mover->SetSpeed(mover->groundSpeed + accel);
-//		}
-//		else
-//		{
-//			//mover->SetSpeed(-15);
-//			mover->SetSpeed(mover->groundSpeed - accel);
-//		}
-//
-//		if (mover->groundSpeed > maxGroundSpeed)
-//			mover->SetSpeed(maxGroundSpeed);
-//		else if (mover->groundSpeed < -maxGroundSpeed)
-//			mover->SetSpeed(-maxGroundSpeed);
-//
-//
-//		if (playerDist < 200)
-//		{
-//			if (action == RUN)
-//				action = STALK;
-//
-//			if (action == STALK)
-//			{
-//				if (player->ground != NULL && player->action != Actor::JUMPSQUAT)
-//				{
-//					mover->SetSpeed(player->groundSpeed);
-//				}
-//			}
-//		}
-//		break;
-//	}
-//
-//	//cout << "moverspeed: " << mover->groundSpeed << endl;
-//}
-
-void RoadRunner::UpdateEnemyPhysics()
+void Roadrunner::UpdateEnemyPhysics()
 {
 	if (numHealth > 0) //!dead
 	{
-		mover->Move(slowMultiple, numPhysSteps);
+		groundMover->Move(slowMultiple, numPhysSteps);
 
-		if (mover->ground == NULL)
+		if (groundMover->ground == NULL)
 		{
-			if (mover->velocity.y > maxFallSpeed)
+			if (groundMover->velocity.y > maxFallSpeed)
 			{
-				mover->velocity.y = maxFallSpeed;
+				groundMover->velocity.y = maxFallSpeed;
+			}
+			else if (groundMover->velocity.y < -maxFallSpeed)
+			{
+				groundMover->velocity.y = -maxFallSpeed;
 			}
 		}
 
-		position = mover->physBody.globalPosition;
+
+		V2d gn(0, -1);
+		if (groundMover->ground != NULL)
+		{
+			gn = groundMover->ground->Normal();
+		}
 	}
 }
 
-void RoadRunner::EnemyDraw(sf::RenderTarget *target)
+
+void Roadrunner::HandleNoHealth()
 {
-	DrawSpriteIfExists(target, sprite);
+	cutObject->SetFlipHoriz(!facingRight);
+	cutObject->rotateAngle = sprite.getRotation();
 }
 
-void RoadRunner::UpdateSprite()
+
+void Roadrunner::EnemyDraw(sf::RenderTarget *target)
 {
-	Edge *ground = mover->ground;
-	double edgeQuantity = mover->edgeQuantity;
-	V2d gn;
-
-	V2d gPoint;
-	if (ground != NULL)
-	{
-		gPoint = position;//ground->GetPoint( edgeQuantity );
-		gn = ground->Normal();
-	}
-	else
-	{
-
-		gPoint = position;
-	}
+	DrawSprite(target, sprite);
+}
 
 
-	int originHeight = sprite.getLocalBounds().height / 2;
 
-	IntRect r;
-	r = ts->GetSubRect(0);
+void Roadrunner::UpdateSprite()
+{
 
-	if (!facingRight)
+	IntRect r = ts->GetSubRect(0);
+	if (!facingRight )
 	{
 		r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);
 	}
+
 	sprite.setTextureRect(r);
 
-	float extraVert = 0;
-	
-	double angle;
 
-	angle = 0;
+	int extraVert = 64;
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+	sprite.setPosition(GetPositionF());
+	sprite.setRotation(groundMover->GetAngleDegrees());
 
-	if (ground != NULL)
-	{
-		V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setRotation(angle / PI * 180);
-		sprite.setPosition(pp.x, pp.y);
-	}
-	else
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-		sprite.setRotation(0);
-		sprite.setPosition(gPoint.x, gPoint.y);
-	}
-	
 
-	return;
-
-	if (mover->ground != NULL)
-	{
-		if (!mover->roll)
-		{
-			angle = atan2(gn.x, -gn.y);
-
-			V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-			sprite.setRotation(angle / PI * 180);
-			sprite.setPosition(pp.x, pp.y);
-		}
-		else
-		{
-			if (mover->groundSpeed > 0)//facingRight)
-			{
-				V2d vec = normalize(position - mover->ground->v1);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);//ground->GetPoint( edgeQuantity );
-				sprite.setPosition(pp.x, pp.y);
-			}
-			else
-			//else if (mover->groundSpeed < 0)
-			{
-				V2d vec = normalize(position - mover->ground->v0);
-				angle = atan2(vec.y, vec.x);
-				angle += PI / 2.0;
-
-				sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
-				sprite.setRotation(angle / PI * 180);
-				V2d pp = mover->ground->GetPoint(mover->edgeQuantity);
-				sprite.setPosition(pp.x, pp.y);
-			}
-		}
-	}
-	else
-	{
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, originHeight);
-		sprite.setRotation(0);
-		sprite.setPosition(gPoint.x, gPoint.y);
-	}
+	SyncSpriteInfo(auraSprite, sprite);
 }
 
-void RoadRunner::HitTerrain(double &q)
+void Roadrunner::HitTerrain(double &q)
 {
 	//cout << "hit terrain? " << endl;
 }
 
-bool RoadRunner::StartRoll()
+bool Roadrunner::StartRoll()
 {
 	return false;
 }
 
-void RoadRunner::FinishedRoll()
+void Roadrunner::FinishedRoll()
 {
 
 }
 
-void RoadRunner::HitOther()
+void Roadrunner::HitOther()
 {
 	//cout << "hit other" << endl;
 
-	/*if (action == RUN)
+	if (action == RUN)
 	{
-		if ((facingRight && testMover->groundSpeed < 0)
-			|| (!facingRight && testMover->groundSpeed > 0))
+		if ((facingRight && groundMover->groundSpeed < 0)
+			|| (!facingRight && groundMover->groundSpeed > 0))
 		{
-			cout << "here" << endl;
-			testMover->SetSpeed(0);
+			//cout << "here" << endl;
+			groundMover->SetSpeed(0);
 		}
-		else if (facingRight && testMover->groundSpeed > 0)
+		else if (facingRight && groundMover->groundSpeed > 0)
 		{
 			V2d v = V2d(maxGroundSpeed, -10);
-			testMover->Jump(v);
+			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
 		}
-		else if (!facingRight && testMover->groundSpeed < 0)
+		else if (!facingRight && groundMover->groundSpeed < 0)
 		{
 			V2d v = V2d(-maxGroundSpeed, -10);
-			testMover->Jump(v);
+			groundMover->Jump(v);
 			action = JUMP;
 			frame = 0;
 		}
 	}
-*/
-	//cout << "hit other!" << endl;
-	//testMover->SetSpeed( 0 );
-	//facingRight = !facingRight;
 }
 
-void RoadRunner::ReachCliff()
+void Roadrunner::ReachCliff()
 {
+	if ((facingRight && groundMover->groundSpeed < 0)
+		|| (!facingRight && groundMover->groundSpeed > 0))
+	{
+		groundMover->SetSpeed(0);
+		return;
+	}
+
+	double jumpStrength = -10;
+
+	V2d v;
 	if (facingRight)
 	{
-		mover->Jump(V2d(15, -10));
+		v = V2d(maxGroundSpeed, jumpStrength);
 	}
 	else
 	{
-		mover->Jump(V2d(-15, -10));
+		v = V2d(-maxGroundSpeed, jumpStrength);
 	}
 
-	action = HOP;
+	groundMover->Jump(v);
+
+	action = JUMP;
 	frame = 0;
-	
-	//if ((facingRight && testMover->groundSpeed < 0)
-	//	|| (!facingRight && testMover->groundSpeed > 0))
-	//{
-	//	testMover->SetSpeed(0);
-	//	return;
-	//}
-
-	////cout << "reach cliff!" << endl;
-	////ground = NULL;
-
-	//V2d v;
-	//if (facingRight)
-	//{
-	//	v = V2d(maxGroundSpeed, -10);
-	//}
-	//else
-	//{
-	//	v = V2d(-maxGroundSpeed, -10);
-	//}
-
-	//testMover->Jump(v);
-
-	//action = JUMP;
-	//frame = 0;
 }
 
-void RoadRunner::HitOtherAerial(Edge *e)
+void Roadrunner::HitOtherAerial(Edge *e)
 {
 	//cout << "hit edge" << endl;
 }
 
-void RoadRunner::Land()
+void Roadrunner::Land()
 {
-	action = IDLE;
+	action = LAND;
 	frame = 0;
 }

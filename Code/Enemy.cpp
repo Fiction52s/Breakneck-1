@@ -268,6 +268,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_LOBTURRET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_SHOTGUNTURRET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_STAGBEETLE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
@@ -1226,14 +1229,14 @@ void Enemy::CheckSpecters()
 
 void Enemy::UpdatePrePhysics()
 {
-	if (pauseFrames > 0 )
-	{
-		return;
-	}
-		
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePrePhysics();
+	}
+
+	if (pauseFrames > 0)
+	{
+		return;
 	}
 
 	if ( dead )
@@ -1795,9 +1798,6 @@ void Enemy::CheckPlayerInteractions( int i )
 
 void Enemy::UpdatePhysics( int substep )
 {
-	if (pauseFrames > 0 )
-		return;
-	
 	bool validSubstep = (substep < numPhysSteps);
 
 	if (validSubstep)
@@ -1814,6 +1814,9 @@ void Enemy::UpdatePhysics( int substep )
 	{
 		return;
 	}
+
+	if (pauseFrames > 0)
+		return;
 
 	UpdateEnemyPhysics();
 

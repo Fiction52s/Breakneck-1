@@ -10,5 +10,7 @@
 #include "Enemy_Cactus.h"
 #include "Enemy_AimLauncher.h"
 #include "Enemy_BounceFloater.h"
+#include "Enemy_ShotgunTurret.h"
+#include "Enemy_Roadrunner.h"
 
 #endif

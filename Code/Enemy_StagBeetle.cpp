@@ -418,7 +418,9 @@ void StagBeetle::UpdateSprite()
 			}
 			else
 			{
-				if(groundMover->velocity.y < 0 )
+				
+				if( (!reverse && groundMover->velocity.y < 0) || 
+					(reverse && groundMover->velocity.y > 0 ))
 				{
 					tFrame = 1;
 				}
@@ -439,7 +441,7 @@ void StagBeetle::UpdateSprite()
 		}
 
 		if (( !facingRight && !reverse ) 
-			|| ( reverse && groundMover->ground == NULL ) 
+			|| ( reverse && facingRight && groundMover->ground == NULL ) 
 			|| ( reverse && !facingRight && groundMover->ground != NULL ) )
 		{
 			r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);

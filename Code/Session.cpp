@@ -518,6 +518,8 @@ void Session::RegisterW3Enemies()
 	
 	AddWorldEnemy("airbouncelauncher", 3, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
+	AddBasicGroundWorldEnemy("shotgunturret", 3, CreateEnemy<ShotgunTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	//AddWorldEnemy("airbouncespring", 3, LoadParams<GravitySpringParams>, NULL, MakeParamsAerial<GravitySpringParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
@@ -543,6 +545,7 @@ void Session::RegisterW3Enemies()
 
 	AddBasicGroundWorldEnemy("badger", 3, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
+	AddBasicGroundWorldEnemy("roadrunner", 3, CreateEnemy<Roadrunner>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("roadrunner", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 	//	GetTileset("Enemies/roadrunner_256x256.png", 256, 256));
 
