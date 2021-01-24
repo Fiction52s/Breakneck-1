@@ -14,11 +14,16 @@ struct ExplodingBarrel : Enemy
 		S_Count
 	};
 
-	void SetLevel(int lev);
+	sf::CircleShape testCircle;
+	Tileset *ts;
+	CollisionBody explosion;
+
+	
 
 	ExplodingBarrel(ActorParams * ap);
 	~ExplodingBarrel();
 
+	void SetLevel(int lev);
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();
@@ -29,9 +34,7 @@ struct ExplodingBarrel : Enemy
 	void ResetEnemy();
 	void HandleNoHealth();
 
-	sf::CircleShape testCircle;
-	Tileset *ts;
-	CollisionBody explosion;
+	
 };
 
 #endif

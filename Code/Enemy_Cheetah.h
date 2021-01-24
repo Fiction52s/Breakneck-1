@@ -8,10 +8,22 @@ struct Cheetah : Enemy, GroundMoverHandler
 	enum Action
 	{
 		IDLE,
+		RUN,
 		CHARGE,
 		BOOST,
 		A_Count
 	};
+
+	double attentionRadius;
+	double ignoreRadius;
+	int preChargeFrames;
+	int preChargeLimit;
+	double boostSpeed;
+
+	double runAccel;
+	double runDecel;
+	double turnaroundDist;
+	double boostPastDist;
 
 	Action landedAction;
 	Action nextAction;
@@ -36,6 +48,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 	Tileset *ts_aura;
 
 	Cheetah(ActorParams *ap);
+	void RunMovement();
 	void ActionEnded();
 	void ProcessState();
 	void SetLevel(int lev);

@@ -283,6 +283,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_PULSER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_FIREFLY:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_BADGER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

@@ -16,12 +16,19 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	maxGroundSpeed = 10;
+	maxGroundSpeed = 20;
 	jumpStrength = 5;
+
+	preChargeLimit = 40;
+
+	turnaroundDist = 100;
+	boostPastDist = 400;
+	boostSpeed = 100;
 
 	actionLength[IDLE] = 10;
 	actionLength[CHARGE] = 30;
 	actionLength[BOOST] = 60;
+	actionLength[RUN] = 5;
 
 	animFactor[IDLE] = 1;
 	animFactor[CHARGE] = 1;
@@ -31,8 +38,13 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	maxFallSpeed = 25;
 
-	attackFrame = -1;
-	attackMult = 10;
+	attentionRadius = 800;
+	ignoreRadius = 2000;
+
+	
+
+	runAccel = 1.0;
+	runDecel = 1.0;//runAccel * 3.0;
 
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->AddAirForce(V2d(0, .6));
@@ -94,7 +106,6 @@ void Cheetah::ResetEnemy()
 	facingRight = true;
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
-	//groundMover->ClearAirForces();
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -136,17 +147,6 @@ void Cheetah::UpdateHitboxes()
 	BasicUpdateHitboxes();
 }
 
-//if (owner->GetPlayer(0)->position.x > position.x)
-//{
-//	//cout << "facing right" << endl;
-//	facingRight = true;
-//}
-//else
-//{
-//	//cout << "facing left" << endl;
-//	facingRight = false;
-//}
-
 void Cheetah::ActionEnded()
 {
 	if (frame == animFactor[action] * actionLength[action])
@@ -160,7 +160,8 @@ void Cheetah::ActionEnded()
 			action = BOOST;
 			break;
 		case BOOST:
-			action = IDLE;
+			action = RUN;
+			preChargeFrames = 0;
 			frame = 0;
 			break;
 		}
@@ -175,46 +176,68 @@ void Cheetah::Jump(double strengthx, double strengthy)
 
 void Cheetah::ProcessState()
 {
-	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
-	//cout << "action: " << (int)action << endl;
-	//testLaunch->UpdatePrePhysics();
-	//Actor *player = owner->GetPlayer(0);
 
 	V2d playerPos = sess->GetPlayerPos(0);
+	V2d position = GetPosition();
+
+	double xDiff = PlayerDistX();
+	double dist = PlayerDist();
 
 	if (dead)
 		return;
-
-	//cout << "vel: " << mover->velocity.x << ", " << mover->velocity.y << endl;
-
-	double xDiff = playerPos.x - GetPosition().x;
-	double dist = length(playerPos - GetPosition());
+	
 	ActionEnded();
 
 	switch (action)
 	{
-	case IDLE:		
-		if (dist < 500)
+	case IDLE:
+		if (dist < attentionRadius)
 		{
-			action = CHARGE;
+			action = RUN;
 			frame = 0;
+			preChargeFrames = 0;
 		}
 		break;
+	case RUN:
+	{
+		if (dist >= ignoreRadius)
+		{
+			action = IDLE;
+			frame = 0;
+		}
+		else
+		{
+			if (preChargeFrames == preChargeLimit)
+			{
+				action = CHARGE;
+				frame = 0;
+			}
+		}
+		break;
+	}
 	case CHARGE:
 		break;
 	case BOOST:
 		if (frame == 0)
 		{
-			if (xDiff >= 0)
+			if (facingRight)
 			{
-				groundMover->SetSpeed(100);
+				groundMover->SetSpeed(boostSpeed);
+			}
+			else
+			{
+				groundMover->SetSpeed(-boostSpeed);
+			}
+			/*if (xDiff >= 0)
+			{
+				groundMover->SetSpeed(boostSpeed);
 				facingRight = true;
 			}
 			else
 			{
-				groundMover->SetSpeed(-100);
+				groundMover->SetSpeed(-boostSpeed);
 				facingRight = false;
-			}
+			}*/
 		}
 		break;
 	}
@@ -222,16 +245,24 @@ void Cheetah::ProcessState()
 	switch (action)
 	{
 	case IDLE:
+		groundMover->SetSpeed(0);
 		break;
-	case CHARGE:
+	case RUN:
+	{
+		RunMovement();
 
+		++preChargeFrames;
+		break;
+	}
+	case CHARGE:
+		RunMovement();
 		break;
 	case BOOST:
 		if (groundMover->groundSpeed > 0)
 		{
-			if (xDiff < -300)
+			if (xDiff < -boostPastDist)
 			{
-				groundMover->SetSpeed(0);
+				groundMover->SetSpeed(maxGroundSpeed);
 				facingRight = false;
 				action = IDLE;
 				frame = 0;
@@ -239,9 +270,9 @@ void Cheetah::ProcessState()
 		}
 		else if (groundMover->groundSpeed < 0)
 		{
-			if (xDiff > 300)
+			if (xDiff > boostPastDist)
 			{
-				groundMover->SetSpeed(0);
+				groundMover->SetSpeed(-maxGroundSpeed);
 				facingRight = true;
 				action = IDLE;
 				frame = 0;
@@ -249,6 +280,48 @@ void Cheetah::ProcessState()
 		}
 		break;
 	}
+}
+
+void Cheetah::RunMovement()
+{
+	if (facingRight)
+	{
+		if (PlayerDistX() < -turnaroundDist)
+		{
+			facingRight = false;
+		}
+	}
+	else
+	{
+		if (PlayerDistX() > turnaroundDist)
+		{
+			facingRight = true;
+		}
+	}
+
+	if (facingRight) //clockwise
+	{
+		double accelFactor = runAccel;
+		if (groundMover->groundSpeed < 0)
+		{
+			accelFactor = runDecel;
+		}
+		groundMover->SetSpeed(groundMover->groundSpeed + accelFactor);
+	}
+	else
+	{
+		double accelFactor = runAccel;
+		if (groundMover->groundSpeed > 0)
+		{
+			accelFactor = runDecel;
+		}
+		groundMover->SetSpeed(groundMover->groundSpeed - accelFactor);
+	}
+
+	if (groundMover->groundSpeed > maxGroundSpeed)
+		groundMover->SetSpeed(maxGroundSpeed);
+	else if (groundMover->groundSpeed < -maxGroundSpeed)
+		groundMover->SetSpeed(-maxGroundSpeed);
 }
 
 void Cheetah::UpdateEnemyPhysics()

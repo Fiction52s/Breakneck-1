@@ -180,20 +180,22 @@ void Roadrunner::ProcessState()
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
 
+	double dist = PlayerDist();
+
 	ActionEnded();
 
 	switch (action)
 	{
 	case IDLE:
 	{
-		double dist = length(playerPos - position);
 		if (dist < attentionRadius)
 		{
 			action = RUN;
 			frame = 0;
 		}
+		break;
 	}
-	break;
+	
 	case RUN:
 	{
 		double dist = length(playerPos - position);
@@ -202,8 +204,9 @@ void Roadrunner::ProcessState()
 			action = IDLE;
 			frame = 0;
 		}
+		break;
 	}
-	break;
+	
 	case JUMP:
 		break;
 		//case ATTACK:
@@ -219,7 +222,6 @@ void Roadrunner::ProcessState()
 		//cout << "idle: " << frame << endl;
 		break;
 	case RUN:
-		//cout << "run: " << frame << endl;
 		if (facingRight)
 		{
 			if (playerPos.x < position.x - 50)

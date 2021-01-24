@@ -19,6 +19,8 @@ sf::Vector2f normalize(sf::Vector2f v);
 double dot( sf::Vector2<double> a, sf::Vector2<double> b );
 float dot(sf::Vector2<float> &a, sf::Vector2<float> &b);
 
+void CapVectorLength(sf::Vector2<double> &v, double maxLength);
+
 double GetVectorAngleCW(sf::Vector2<double> &a);
 double GetVectorAngleCCW(sf::Vector2<double> &a);
 double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b);

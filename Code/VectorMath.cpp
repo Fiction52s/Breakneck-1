@@ -90,6 +90,14 @@ bool approxEquals( double a, double b )
 	return abs( a - b ) < .0001;
 }
 
+void CapVectorLength(sf::Vector2<double> &v, double maxLength)
+{
+	if (length(v) > maxLength)
+	{
+		v = normalize(v) * maxLength;
+	}
+}
+
 double GetVectorAngleCW(sf::Vector2<double> &a)
 {
 	double angleA = atan2(a.y, a.x);
