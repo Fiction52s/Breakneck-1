@@ -588,6 +588,7 @@ void Session::RegisterW4Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
 	//	GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256), 1);
 
+
 	AddBasicAerialWorldEnemy("grindjugglercw", 4, CreateEnemy<GrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
 	AddWorldEnemy("limitedgrindjugglercw", 4, CreateEnemy<GrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
@@ -620,6 +621,10 @@ void Session::RegisterW4Enemies()
 	AddBasicAerialWorldEnemy("turtle", 4, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("cheetah", 4, CreateEnemy<Cheetah>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("palmturret", 4, CreateEnemy<PalmTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("falcon", 4, CreateEnemy<Falcon>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	//AddWorldEnemy("coral", 4, LoadParams<CoralParams>, NULL, MakeParamsAerial<CoralParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);

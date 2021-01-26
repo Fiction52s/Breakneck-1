@@ -10,5 +10,7 @@
 #include "Enemy_Teleporter.h"
 #include "Enemy_PhaseBooster.h"
 #include "Enemy_MomentumBooster.h"
+#include "Enemy_PalmTurret.h"
+#include "Enemy_Falcon.h"
 
 #endif

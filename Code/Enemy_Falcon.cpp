@@ -3,14 +3,14 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_Firefly.h"
+#include "Enemy_Falcon.h"
 #include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-Firefly::Firefly(ActorParams *ap)
-	:Enemy(EnemyType::EN_FIREFLY, ap)
+Falcon::Falcon(ActorParams *ap)
+	:Enemy(EnemyType::EN_FALCON, ap)
 {
 	SetLevel(ap->GetLevel());
 
@@ -18,25 +18,18 @@ Firefly::Firefly(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 1;
-	actionLength[APPROACH] = 2;
-	actionLength[CHARGE] = 40;
-	actionLength[PULSE] = 20;
-	actionLength[RECOVER] = 30;
+	actionLength[FLY] = 2;
 
 	animFactor[NEUTRAL] = 1;
-	animFactor[APPROACH] = 1;
-	animFactor[PULSE] = 1;
-	animFactor[RECOVER] = 1;
+	animFactor[FLY] = 1;
 
-	pulseRadius = 150;
+
 	attentionRadius = 800;
 	ignoreRadius = 2000;
 
-	accel = .1;
+	accel = 1.0;
 
-	maxSpeed = 5;
-
-	activatePulseRadius = 300;
+	maxSpeed = 30;
 
 	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
@@ -55,31 +48,21 @@ Firefly::Firefly(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	pulseBody.BasicCircleSetup(pulseRadius * scale, 0, V2d());
-	pulseBody.hitboxInfo = hitboxInfo;
-
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	Color circleColor = Color::Red;
-	circleColor.a = 100;
-	testCircle.setFillColor(circleColor);
-	testCircle.setRadius(pulseRadius);
-	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
-		testCircle.getLocalBounds().height / 2);
-
 	ResetEnemy();
 }
 
-void Firefly::HandleNoHealth()
+void Falcon::HandleNoHealth()
 {
 	cutObject->SetFlipHoriz(facingRight);
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
 
-void Firefly::SetLevel(int lev)
+void Falcon::SetLevel(int lev)
 {
 	level = lev;
 
@@ -99,7 +82,7 @@ void Firefly::SetLevel(int lev)
 	}
 }
 
-void Firefly::ApproachMovement()
+void Falcon::FlyMovement()
 {
 	if (PlayerDist() < 100)
 	{
@@ -107,16 +90,13 @@ void Firefly::ApproachMovement()
 	}
 	else
 	{
-		velocity = PlayerDir() * maxSpeed;
+		velocity += PlayerDir() * accel;
+		CapVectorLength(velocity, maxSpeed);
 	}
 }
 
-void Firefly::ResetEnemy()
+void Falcon::ResetEnemy()
 {
-	/*if (GetPosition().x < sess->playerOrigPos[0].x)
-		facingRight = false;
-	else
-		facingRight = true;*/
 
 	action = NEUTRAL;
 	frame = 0;
@@ -129,7 +109,7 @@ void Firefly::ResetEnemy()
 	UpdateSprite();
 }
 
-void Firefly::ActionEnded()
+void Falcon::ActionEnded()
 {
 	V2d playerPos = sess->GetPlayerPos();
 
@@ -140,25 +120,13 @@ void Firefly::ActionEnded()
 		{
 		case NEUTRAL:
 			break;
-		case APPROACH:
-			break;
-		case CHARGE:
-			action = PULSE;
-			SetHitboxes(&pulseBody, 0);
-			break;
-		case PULSE:
-			DefaultHitboxesOn();
-			action = RECOVER;
-			break;
-		case RECOVER:
-			action = APPROACH;
-			frame = 0;
+		case FLY:
 			break;
 		}
 	}
 }
 
-void Firefly::ProcessState()
+void Falcon::ProcessState()
 {
 	ActionEnded();
 
@@ -170,27 +138,16 @@ void Firefly::ProcessState()
 	case NEUTRAL:
 		if (dist < attentionRadius)
 		{
-			action = APPROACH;
+			action = FLY;
 			frame = 0;
 		}
 		break;
-	case APPROACH:
-		if (dist < activatePulseRadius)
-		{
-			action = CHARGE;
-			frame = 0;
-		}
-		else if(dist > ignoreRadius)
+	case FLY:
+		if (dist > ignoreRadius)
 		{
 			action = NEUTRAL;
 			frame = 0;
 		}
-		break;
-	case CHARGE:
-		break;
-	case PULSE:
-		break;
-	case RECOVER:
 		break;
 	}
 
@@ -199,35 +156,24 @@ void Firefly::ProcessState()
 	case NEUTRAL:
 		velocity = V2d(0, 0);
 		break;
-	case APPROACH:
-		ApproachMovement();
-		break;
-	case CHARGE:
-		ApproachMovement();
-		break;
-	case PULSE:
-		ApproachMovement();
-		break;
-	case RECOVER:
-		ApproachMovement();
+	case FLY:
+		FlyMovement();
 		break;
 	}
 }
 
-void Firefly::UpdateEnemyPhysics()
+void Falcon::UpdateEnemyPhysics()
 {
-	if (action == APPROACH || action == CHARGE || action == PULSE || action == RECOVER)
+	if (action == FLY )
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
-
-		pulseBody.SetBasicPos(currPosInfo.position);
 	}
 }
 
-void Firefly::UpdateSprite()
+void Falcon::UpdateSprite()
 {
 	int trueFrame;
 	switch (action)
@@ -235,17 +181,6 @@ void Firefly::UpdateSprite()
 	case NEUTRAL:
 		sprite.setColor(Color::White);
 		break;
-	case APPROACH:
-		sprite.setColor(Color::White);
-		break;
-	case CHARGE:
-		sprite.setColor(Color::Green);
-		break;
-	case PULSE:
-		sprite.setColor(Color::White);
-		break;
-	case RECOVER:
-		sprite.setColor(Color::Blue);
 
 		break;
 	}
@@ -254,17 +189,9 @@ void Firefly::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-
-
-	testCircle.setPosition(GetPositionF());
 }
 
-void Firefly::EnemyDraw(sf::RenderTarget *target)
+void Falcon::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-
-	if (action == PULSE)
-	{
-		target->draw(testCircle);
-	}
 }

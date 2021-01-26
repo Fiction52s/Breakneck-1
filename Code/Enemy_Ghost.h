@@ -10,7 +10,7 @@ struct Ghost : Enemy
 		WAKEUP,
 		APPROACH,
 		BITE,
-		EXPLODE,
+		RETURN,
 		A_Count
 	};
 
@@ -18,6 +18,8 @@ struct Ghost : Enemy
 	double detectionRadius;
 	double latchStartAngle;
 	MovementSequence testSeq;
+
+	double biteRadius;
 
 	int awakeFrames;
 	int awakeCap;

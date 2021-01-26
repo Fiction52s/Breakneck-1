@@ -20,16 +20,19 @@ Ghost::Ghost( ActorParams *ap )
 	approachFrames = 180 * 3;
 	speed = 1;
 	awakeCap = 60;
+	biteRadius = 100;
 
 	actionLength[WAKEUP] = 60;
 	actionLength[APPROACH] = 2;
 	actionLength[BITE] = 4;
-	actionLength[EXPLODE] = 9;
+	//actionLength[EXPLODE] = 9;
+	actionLength[RETURN] = 60;
 
 	animFactor[WAKEUP] = 1;
 	animFactor[APPROACH] = 20;
-	animFactor[BITE] = 5;
-	animFactor[EXPLODE] = 7;
+	animFactor[BITE] = 10;//5;
+	animFactor[RETURN] = 1;
+	//animFactor[EXPLODE] = 7;
 
 	testSeq.AddRadialMovement(V2d(0, 0), V2d(0, 0), 0, true, CubicBezier(), approachFrames);
 	//	true, V2d( 1, 1 ), 0, CubicBezier( 0, 0, 1, 1), approachFrames );
@@ -98,11 +101,12 @@ void Ghost::SetLevel(int lev)
 
 void Ghost::Bite()
 {
-	offsetPlayer = V2d(0, 0);
+	//offsetPlayer = V2d(0, 0);
 	action = BITE;
 	frame = 0;
 	sprite.setColor(Color::White);
 	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 }
 
 void Ghost::ProcessState()
@@ -114,28 +118,35 @@ void Ghost::ProcessState()
 
 		if (action == BITE)
 		{
-			action = EXPLODE;
-			DefaultHitboxesOn();
+			action = RETURN;
+			offsetPlayer = origOffset;
+			sprite.setColor(Color(255, 255, 255, 100));
+
 			HurtboxesOff();
+			HitboxesOff();
 		}
-		else if( action == EXPLODE )
+		else if (action == RETURN)
+		{
+			action = APPROACH;
+		}
+		/*else if( action == EXPLODE )
 		{
 			numHealth = 0;
 			dead = true;
-		}
+		}*/
 		
 	}
 
-	if (action == EXPLODE && frame == 1 && slowCounter == 1)
+	/*if (action == EXPLODE && frame == 1 && slowCounter == 1)
 	{
 		SetHitboxes(NULL, 0);
-	}
+	}*/
 
-	if( action == APPROACH && offsetPlayer.x == 0 && offsetPlayer.y == 0 )
-	{
-		assert(0); //should this even bit hit?
-		Bite();
-	}
+	//if( action == APPROACH && offsetPlayer.x == 0 && offsetPlayer.y == 0 )
+	//{
+	//	assert(0); //should this even bit hit?
+	//	Bite();
+	//}
 
 	/*if (action == APPROACH)
 	{
@@ -186,13 +197,17 @@ void Ghost::UpdateEnemyPhysics()
 		basePos = sess->GetPlayerPos(0);
 
 		
-		if (action == APPROACH && latchedOn)
+		if ((action == APPROACH || action == BITE) && latchedOn)
 		{
 			offsetPlayer += -normalize(offsetPlayer) * 1.0 / numPhysSteps;
 
-			if (length(offsetPlayer) < 1.0)
+			if ( action == APPROACH && length(offsetPlayer) < biteRadius)
 			{
 				Bite();
+			}
+			else if (action == BITE && length(offsetPlayer) < 1.0)
+			{
+				offsetPlayer = V2d(0,0);
 			}
 		}
 
@@ -245,8 +260,11 @@ void Ghost::UpdateSprite()
 	case BITE:
 		ir = ts->GetSubRect((frame / animFactor[BITE]) + 6);
 		break;
-	case EXPLODE:
+	/*case EXPLODE:
 		ir = ts->GetSubRect(frame / animFactor[EXPLODE] + 10);
+		break;*/
+	case RETURN:
+		ir = ts->GetSubRect(0);
 		break;
 	}
 

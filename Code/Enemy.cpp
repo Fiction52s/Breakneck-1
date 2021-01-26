@@ -271,6 +271,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_SHOTGUNTURRET:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_PALMTURRET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_STAGBEETLE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
@@ -284,6 +287,9 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FIREFLY:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_FALCON:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BADGER:
