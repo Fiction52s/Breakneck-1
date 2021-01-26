@@ -10,6 +10,7 @@ struct Falcon : Enemy
 	{
 		NEUTRAL,
 		FLY,
+		RUSH,
 		A_Count
 	};
 
@@ -18,11 +19,15 @@ struct Falcon : Enemy
 
 	Tileset *ts;
 	V2d velocity;
-	double maxSpeed;
-	double accel;
+	V2d maxSpeed;
+	V2d accel;
+	double rushSpeed;
+	int recoverFrame;
+	int recoverDuration;
 
 	Falcon(ActorParams *ap);
 
+	void FrameIncrement();
 	void FlyMovement();
 	void HandleNoHealth();
 	void ProcessState();

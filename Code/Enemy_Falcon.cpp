@@ -17,19 +17,25 @@ Falcon::Falcon(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 1;
+	actionLength[NEUTRAL] = 2;
 	actionLength[FLY] = 2;
+	actionLength[RUSH] = 15;
+
+	recoverDuration = 60;
 
 	animFactor[NEUTRAL] = 1;
 	animFactor[FLY] = 1;
 
-
+	rushSpeed = 30;
 	attentionRadius = 800;
-	ignoreRadius = 2000;
+	ignoreRadius = 3000;
 
-	accel = 1.0;
 
-	maxSpeed = 30;
+	accel.x = 1.0;//.6;
+	accel.y = 2.0;//.7;//.3;
+
+	maxSpeed.x = 20;
+	maxSpeed.y = 10;
 
 	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
@@ -84,14 +90,33 @@ void Falcon::SetLevel(int lev)
 
 void Falcon::FlyMovement()
 {
-	if (PlayerDist() < 100)
+	if (false)//(PlayerDist() < 100)
 	{
 		velocity = V2d(0, 0);
 	}
 	else
 	{
-		velocity += PlayerDir() * accel;
-		CapVectorLength(velocity, maxSpeed);
+		V2d playerDir = PlayerDir();
+		velocity.x += playerDir.x * accel.x;
+		velocity.y += playerDir.y * accel.y;
+
+		if (velocity.x > maxSpeed.x )
+		{
+			velocity.x = maxSpeed.x;
+		}
+		else if (velocity.x < -maxSpeed.x)
+		{
+			velocity.x = -maxSpeed.x;
+		}
+
+		if (velocity.y > maxSpeed.y)
+		{
+			velocity.y = maxSpeed.y;
+		}
+		else if (velocity.y < -maxSpeed.y)
+		{
+			velocity.y = -maxSpeed.y;
+		}
 	}
 }
 
@@ -122,7 +147,19 @@ void Falcon::ActionEnded()
 			break;
 		case FLY:
 			break;
+		case RUSH:
+			action = FLY;
+			recoverFrame = 0;
+			break;
 		}
+	}
+}
+
+void Falcon::FrameIncrement()
+{
+	if (action == FLY)
+	{
+		++recoverFrame;
 	}
 }
 
@@ -139,6 +176,7 @@ void Falcon::ProcessState()
 		if (dist < attentionRadius)
 		{
 			action = FLY;
+			recoverFrame = 0;
 			frame = 0;
 		}
 		break;
@@ -148,6 +186,17 @@ void Falcon::ProcessState()
 			action = NEUTRAL;
 			frame = 0;
 		}
+		else if (recoverFrame == recoverDuration )
+		{
+			action = RUSH;
+			frame = 0;
+			velocity = dir * rushSpeed;
+		}
+		break;
+	case RUSH:
+		
+			
+		
 		break;
 	}
 
@@ -159,12 +208,14 @@ void Falcon::ProcessState()
 	case FLY:
 		FlyMovement();
 		break;
+	case RUSH:
+		break;
 	}
 }
 
 void Falcon::UpdateEnemyPhysics()
 {
-	if (action == FLY )
+	if (action == FLY || action == RUSH )
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;

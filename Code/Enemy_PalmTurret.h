@@ -4,43 +4,47 @@
 #include "Enemy.h"
 #include "Bullet.h"
 
-struct PalmTurret : Enemy, LauncherEnemy
+struct PalmTurret : Enemy
 {
 	enum Action
 	{
-		WAIT,
-		ATTACK,
+		IDLE,
+		CHARGE,
+		FIRE,
+		RECOVER,
 		Count
 	};
 
 	Tileset *ts;
-	Tileset *ts_bulletExplode;
 
-	int framesWait;
+	double attentionRadius;
+	double ignoreRadius;
+
 	int firingCounter;
 
 	int animationFactor;
 	double bulletSpeed;
 
+	sf::Vertex laserQuad[4];
+	double laserAngle;
+	V2d laserCenter;
+	double finalLaserWidth;
+	double currLaserWidth;
+	double laserLength;
+	void UpdateLaserWidth(double w);
+	bool CheckHitPlayer(int index = 0);
+
+	CollisionBody laserBody;
+
 	PalmTurret(ActorParams *ap);
-	void UpdateOnPlacement(ActorParams *ap);
+
+	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
-	void Setup();
 	void SetLevel(int lev);
 	void UpdateSprite();
-	void DebugDraw(sf::RenderTarget *target);
-	void DirectKill();
-	void BulletHitTerrain(BasicBullet *b,
-		Edge *edge,
-		sf::Vector2<double> &pos);
-	void BulletHitPlayer(
-		int playerIndex,
-		BasicBullet *b,
-		int hitResult);
-	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
-	void FireResponse(BasicBullet *b);
+	void StartCharge();
 };
 
 #endif

@@ -26,14 +26,19 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	:Enemy(EnemyType::EN_PALMTURRET, ap)
 {
 	SetNumActions(Count);
-	SetEditorActions(ATTACK, 0, 0);
+	SetEditorActions(IDLE, 0, 0);
+
+	actionLength[IDLE] = 2;
+	actionLength[CHARGE] = 60;
+	actionLength[FIRE] = 30;
+	actionLength[RECOVER] = 60;
 
 	SetLevel(ap->GetLevel());
 
-	framesWait = 60;
 	bulletSpeed = 10;
 	animationFactor = 3;
-	assert(framesWait > 13 * animationFactor);
+	finalLaserWidth = 100;
+	laserLength = 3000;
 
 	ts = sess->GetSizedTileset("Enemies/curveturret_144x96.png");
 
@@ -47,6 +52,11 @@ PalmTurret::PalmTurret(ActorParams *ap)
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
+
+	attentionRadius = 2000;
+	ignoreRadius = 3000;
+
+	
 
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
@@ -62,16 +72,9 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	bulletSpeed = 7;
 
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode2_64x64.png", 64, 64);
-
-	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this,
-		BasicBullet::SHOTGUN, 32, 3, GetPosition(), V2d(0, -1),
-		PI / 6, 180, false);
-	launchers[0]->SetBulletSpeed(bulletSpeed);
-	launchers[0]->hitboxInfo->damage = 18;
+	laserBody.BasicRectSetup( laserLength/2, finalLaserWidth/2, 0, V2d());
+	laserBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(12);
@@ -85,27 +88,12 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	ResetEnemy();
 }
 
-void PalmTurret::UpdateOnPlacement(ActorParams *ap)
-{
-	Enemy::UpdateOnPlacement(ap);
-
-	if (startPosInfo.ground != NULL)
-	{
-		launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
-		launchers[0]->facingDir = startPosInfo.GetEdge()->Normal();
-	}
-
-	//testShield->SetPosition(GetPosition());
-}
-
 void PalmTurret::ResetEnemy()
 {
-	action = WAIT;
+	action = IDLE;
 	frame = 0;
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
-	//currShield = shield;
-	//shield->Reset();
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -132,141 +120,153 @@ void PalmTurret::SetLevel(int lev)
 
 }
 
-void PalmTurret::Setup()
+void PalmTurret::StartCharge()
 {
-	Enemy::Setup();
+	V2d playerPos = sess->GetPlayerPos(0);
+	V2d position = GetPosition();
+	action = CHARGE;
+	frame = 0;
 
-	//launchers[0]->position = startPosInfo.GetEdge()->GetRaisedPosition(startPosInfo.GetQuant(), 80.0 * (double)scale);
-	//launchers[0]->position = GetPosition();
+	currLaserWidth = 10;
 
+	V2d laserDir = normalize(playerPos - position);
+	laserAngle = GetVectorAngleCW(laserDir);
+	laserCenter = position + laserDir * laserLength/2.0;
+	
+	laserBody.SetBasicPos(0, laserCenter, laserAngle);
 
-	//TurretSetup();
+	UpdateLaserWidth(currLaserWidth);
+
+	SetRectColor(laserQuad, Color::White);
 }
 
-void PalmTurret::FireResponse(BasicBullet *b)
+bool PalmTurret::CheckHitPlayer(int index)
 {
-}
-
-void PalmTurret::UpdateBullet(BasicBullet *b)
-{
-}
-
-void PalmTurret::BulletHitTerrain(BasicBullet *b,
-	Edge *edge,
-	sf::Vector2<double> &pos)
-{
-	V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);
-
-	//if (b->launcher->def_e == NULL)
-	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
-}
-
-void PalmTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	if (action == FIRE)
 	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+		BasicCheckHitPlayer(&laserBody, index);
 	}
 
-	b->launcher->DeactivateBullet(b);
-	//owner->GetPlayer( 0 )->ApplyHit( b->launcher->hitboxInfo );
+	return BasicCheckHitPlayer(currHitboxes, index);
 }
 
+void PalmTurret::UpdateLaserWidth(double w)
+{
+	SetRectRotation(laserQuad, laserAngle, laserLength, w, Vector2f(laserCenter));
+}
+
+void PalmTurret::ActionEnded()
+{
+	if (frame == actionLength[action] * animFactor[action])
+	{
+		frame = 0;
+		switch (action)
+		{
+		case IDLE:
+		{
+			break;
+		}
+		case CHARGE:
+		{
+			action = FIRE;
+			currLaserWidth = finalLaserWidth;
+			UpdateLaserWidth(currLaserWidth);
+			SetRectColor(laserQuad, Color::Red);
+			break;
+		}
+		case FIRE:
+		{
+			action = RECOVER;
+			break;
+		}
+		case RECOVER:
+		{
+			StartCharge();
+			break;
+		}
+		}
+	}
+}
 
 void PalmTurret::ProcessState()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
+
+	ActionEnded();
+	
+
 	switch (action)
 	{
-	case WAIT:
+	case IDLE:
 	{
-		if (length(playerPos - position) < 1000)
+		if (length(playerPos - position) < attentionRadius)
 		{
-			action = ATTACK;
-			frame = 0;
+			StartCharge();
 		}
 		break;
 	}
-	case ATTACK:
+	case CHARGE:
 	{
-		if (frame == 13 * animationFactor)
-		{
-			frame = 0;
-			if (length(playerPos - position) >= 500)
-			{
-				action = WAIT;
-				frame = 0;
-			}
-		}
-		else if (frame == 4 * animationFactor && slowCounter == 1)
-		{
-			launchers[0]->facingDir = PlayerDir();
-			launchers[0]->Fire();
-		}
 		break;
 	}
+	case FIRE:
+	{
+		break;
+	}
+	case RECOVER:
+	{
+		break;
+	}
+
+	}
+
+	switch (action)
+	{
+	case IDLE:
+	{
+		
+		break;
+	}
+	case CHARGE:
+	{	
+		currLaserWidth += 3.0;
+		if (currLaserWidth > finalLaserWidth)
+		{
+			currLaserWidth = finalLaserWidth;
+		}
+		UpdateLaserWidth(currLaserWidth);
+		break;
+	}
+	case FIRE:
+	{
+		
+		break;
+	}
+	case RECOVER:
+	{
+		break;
+	}
+		
 	}
 
 }
 
 void PalmTurret::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite, auraSprite);
-}
+	DrawSprite(target, sprite);
 
-
-void PalmTurret::DirectKill()
-{
-	for (int i = 0; i < numLaunchers; ++i)
+	if (action == CHARGE || action == FIRE)
 	{
-		BasicBullet *b = launchers[i]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
+		target->draw(laserQuad, 4, sf::Quads);
 	}
-	receivedHit = NULL;
 }
 
 void PalmTurret::UpdateSprite()
 {
-	if (action == WAIT)
-	{
-		sprite.setTextureRect(ts->GetSubRect(0));
-	}
-	else
-	{
-		if (frame / animationFactor > 12)
-		{
-			sprite.setTextureRect(ts->GetSubRect(0));
-		}
-		else
-		{
-			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
-		}
-	}
+	sprite.setTextureRect(ts->GetSubRect(0));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-
-	SyncSpriteInfo(auraSprite, sprite);
-}
-
-void PalmTurret::DebugDraw(sf::RenderTarget *target)
-{
-	Enemy::DebugDraw(target);
 }
