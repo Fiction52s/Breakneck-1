@@ -53,6 +53,7 @@ struct Edge : QuadTreeEntrant
 	bool IsTouchingBox( const sf::Rect<double> &r );
 	double GetLength();
 	double GetLengthSqr();
+	void CalcAABB();
 
 	sf::Vector2<double> v0;
 	sf::Vector2<double> v1;
@@ -63,6 +64,7 @@ struct Edge : QuadTreeEntrant
 	EdgeType edgeType;
 	TerrainPolygon *poly;
 	TerrainRail *rail;
+	sf::Rect<double> aabb;
 
 	void *info;
 };

@@ -38,7 +38,7 @@ struct ParentNode : QNode
 	ParentNode( const sf::Vector2<double> &pos, double rw, double rh );
 	QNode *children[4];
 	~ParentNode();
-	std::list<QuadTreeEntrant*> extraChildren;
+	std::vector<QuadTreeEntrant*> extraChildren;
 	// 0    |     1
 	//--------------
 	// 2    |     3

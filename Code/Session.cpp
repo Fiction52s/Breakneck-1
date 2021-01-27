@@ -731,6 +731,8 @@ void Session::RegisterW6Enemies()
 
 	AddWorldEnemy("limitedmagentawirejuggler", 6, CreateEnemy<WireJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("chess", 6, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	/*AddBasicAerialWorldEnemy("wiretarget", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
@@ -5180,19 +5182,22 @@ void Session::UpdatePhysics()
 			p->physicsOver = false;
 	}
 
+	int numSteps;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			numSteps = p->GetNumSteps();
+			for (substep = 0; substep < numSteps; ++substep)
+			{
+				p->UpdatePhysics();
+			}		
+		}
+	}
 
 	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
 	{
-		for (int i = 0; i < 4; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				if (substep == 0 || p->highAccuracyHitboxes)
-					p->UpdatePhysics();
-			}
-		}
-
 		Enemy *current = activeEnemyList;
 		while (current != NULL)
 		{
@@ -6218,9 +6223,10 @@ void Session::rResetEnemies(QNode *node)
 			rResetEnemies(n->children[i]);
 		}
 
-		for (list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it)
+		int extraChildrenSize = n->extraChildren.size();
+		for (int i = 0; i < extraChildrenSize; ++i )
 		{
-			Enemy * e = (Enemy*)(*it);
+			Enemy * e = (Enemy*)(n->extraChildren[i]);
 
 			if (e->spawned)
 			{
@@ -6743,14 +6749,17 @@ void Session::ForwardSimulatePlayer(int index, int frames)
 
 	p->PopulateState(playerSimState);
 	p->simulationMode = true;
+	
+	int numSteps;
 	for (int i = 0; i < frames; ++i)
 	{
 		p->UpdatePrePhysics();
 		p->physicsOver = false;
-		for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
+		p->highAccuracyHitboxes = false;
+		int numSteps = p->GetNumSteps();
+		for (substep = 0; substep < numSteps; ++substep)
 		{
-			if (substep == 0 || p->highAccuracyHitboxes)
-				p->UpdatePhysics();
+			p->UpdatePhysics();
 		}
 		p->UpdatePostPhysics();
 		UpdatePlayerInput(index);

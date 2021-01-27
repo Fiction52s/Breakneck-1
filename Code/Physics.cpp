@@ -276,6 +276,15 @@ double Edge::GetLengthSqr()
 	return lengthSqr(v1 - v0);
 }
 
+void Edge::CalcAABB()
+{
+	double left = min(v0.x, v1.x);
+	double right = max(v0.x, v1.x);
+	double top = min(v0.y, v1.y);
+	double bottom = max(v0.y, v1.y);
+	aabb = sf::Rect<double>(left, top, right - left, bottom - top);
+}
+
 bool Edge::IsTouchingBox( const sf::Rect<double> &r )
 {
 	return IsEdgeTouchingBox( this, r );
@@ -752,7 +761,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			}*/
 			if( lineQuantity >= 0 && lineQuantity <= edgeLength ) //point is on the circle in the dir of the ege normal
 			{
-				LineIntersection li = lineIntersection( oldPosition + radius * -edgeNormal, position
+				LineIntersection li;
+				lineIntersection( li, oldPosition + radius * -edgeNormal, position
 					+ radius * -edgeNormal, e->v0, e->v1 );
 
 
@@ -1430,7 +1440,8 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 			{
 				
 				//cout << "normal: " << e->Normal().x << ", " << e->Normal().y << endl;
-				LineIntersection li = lineIntersection( corner, corner - (vel), e->v0, e->v1 );
+				LineIntersection li;
+				lineIntersection( li, corner, corner - (vel), e->v0, e->v1);
 				double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 				if( li.parallel || abs( testing ) == 1 )
 				{
@@ -1675,63 +1686,105 @@ sf::Rect<double> GetEdgeBox( Edge *e )
 	return sf::Rect<double>( left, top, right - left, bottom - top );	
 }
 
+//to prevent creating these every function call
+V2d as[4];
+V2d bs[4];
+LineIntersection eli;
 bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 {
-	sf::Rect<double> er = GetEdgeBox( e );
+	sf::Rect<double>& er = e->aabb;
 
-	V2d as[4];
-	V2d bs[4];
-	as[0] = V2d( ir.left, ir.top );
-	bs[0] = V2d( ir.left + ir.width, ir.top );
+	if (er.left >= ir.left 
+		&& (er.left + er.width ) <= ir.left + ir.width 
+		&& er.top >= ir.top 
+		&& ( er.top + er.height ) <= ir.top + ir.height)
+		return true;
 
-	as[1] =  V2d( ir.left, ir.top + ir.height );
-	bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[0].x = ir.left;
+	as[0].y = ir.top;
 
-	as[2] = V2d( ir.left, ir.top );
-	bs[2] = V2d( ir.left, ir.top + ir.height);
+	bs[0].x = ir.left + ir.width;
+	bs[0].y = ir.top;
 
-	as[3] = V2d( ir.left + ir.width, ir.top );
-	bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
+	as[1].x = ir.left;
+	as[1].y = ir.top + ir.height;
+
+	bs[1].x = ir.left + ir.width;
+	bs[1].y = ir.top + ir.height;
+
+	as[2].x = ir.left;
+	as[2].y = ir.top;
+
+	bs[2].x = ir.left;
+	bs[2].y = ir.top + ir.height;
+	
+	as[3].x = ir.left + ir.width;
+	as[3].y = ir.top;
+
+	bs[3].x = ir.left + ir.width;
+	bs[3].y = ir.top + ir.height;
+
+	//as[0] = V2d( ir.left, ir.top );
+	//bs[0] = V2d( ir.left + ir.width, ir.top );
+
+	//as[1] =  V2d( ir.left, ir.top + ir.height );
+	//bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
+
+	//as[2] = V2d( ir.left, ir.top );
+	//bs[2] = V2d( ir.left, ir.top + ir.height);
+
+	//as[3] = V2d( ir.left + ir.width, ir.top );
+	//bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
 
 	double erLeft = er.left;
 	double erRight = er.left + er.width;
 	double erTop = er.top;
 	double erBottom = er.top + er.height;
 
-	if( erLeft >= ir.left && erRight <= ir.left + ir.width && erTop >= ir.top && erBottom <= ir.top + ir.height )
-		return true;
+	
 	//else
 	//	return false;
 	
 	
 	for( int i = 0; i < 4; ++i )
 	{
-		LineIntersection li = lineIntersection( as[i], bs[i], e->v0, e->v1 );
+		
+		lineIntersection(eli, as[i], bs[i], e->v0, e->v1);
 
-		if( !li.parallel )
+		if( !eli.parallel )
 		{
-			
-				V2d a = as[i];
-				V2d b = bs[i];
-				double e1Left = min( a.x, b.x );
-				double e1Right = max( a.x, b.x );
-				double e1Top = min( a.y, b.y );
-				double e1Bottom = max( a.y, b.y );
+			V2d &a = as[i];
+			V2d &b = bs[i];
+			double e1Left = a.x;
+			double e1Right = b.x;
 
-				
-			//cout << "compares: " << e1Left << ", " << erRight << " .. " << e1Right << ", " << erLeft << endl;
-			//cout << "compares y: " << e1Top << " <= " << erBottom << " && " << e1Bottom << " >= " << erTop << endl;
+			if (b.x < a.x)
+			{
+				e1Left = b.x;
+				e1Right = a.x;
+			}
+
+			double e1Top = a.y;
+			double e1Bottom = b.y;
+
+			if (b.y < a.y)
+			{
+				e1Top = b.y;
+				e1Bottom = a.y;
+			}
+
 			if( e1Left <= erRight && e1Right >= erLeft && e1Top <= erBottom && e1Bottom >= erTop )
 			{
-			//	cout << "---!!!!!!" << endl;
-				if( (li.position.x < e1Right || approxEquals(li.position.x, e1Right) ) && ( li.position.x > e1Left || approxEquals(li.position.x, e1Left ) ) && ( li.position.y > e1Top || approxEquals( li.position.y, e1Top ) )&& ( li.position.y < e1Bottom || approxEquals( li.position.y, e1Bottom ) ) )
+				if( (eli.position.x < e1Right || approxEquals(eli.position.x, e1Right) ) 
+					&& (eli.position.x > e1Left || approxEquals(eli.position.x, e1Left ) ) 
+					&& (eli.position.y > e1Top || approxEquals(eli.position.y, e1Top ) )
+					&& (eli.position.y < e1Bottom || approxEquals(eli.position.y, e1Bottom ) ) )
 				{
-				//	cout << "pos: " << li.position.x << ", " << li.position.y << endl;
-				//	cout << "erlrud: " << erLeft << ", " << erRight << ", " << erTop << ", " << erBottom << endl;
-					if( ( li.position.x < erRight || approxEquals( li.position.x, erRight )) && ( li.position.x > erLeft || approxEquals( li.position.x, erLeft ) ) && ( li.position.y > erTop || approxEquals( li.position.y, erTop ) ) && ( li.position.y < erBottom || approxEquals( li.position.y, erBottom ) ) )
+					if( (eli.position.x < erRight || approxEquals(eli.position.x, erRight )) 
+						&& (eli.position.x > erLeft || approxEquals(eli.position.x, erLeft ) ) 
+						&& (eli.position.y > erTop || approxEquals(eli.position.y, erTop ) ) 
+						&& (eli.position.y < erBottom || approxEquals(eli.position.y, erBottom ) ) )
 					{
-				//		cout << "seg intersect!!!!!!" << endl;
-					//	assert( 0 );
 						return true;
 					}
 				}
@@ -1744,7 +1797,7 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 
 bool IsBoxTouchingBox( const sf::Rect<double> & r0, const sf::Rect<double> & r1 )
 {
-	bool test = r0.intersects( r1 );
+	//bool test = r0.intersects( r1 );
 	bool test2 =r0.left <= r1.left + r1.width 
 		&& r0.left + r0.width >= r1.left 
 		&& r0.top <= r1.top + r1.height
@@ -2256,15 +2309,18 @@ void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint
 
 		if( IsEdgeTouchingBox( &e, nodeBox ) )
 		{
-		for (list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it)
-		{
-			LineIntersection li = SegmentIntersect(startPoint, endPoint, ((Edge*)(*it))->v0, ((Edge*)(*it))->v1);
-			if (!li.parallel)
+			int extraChildrenSize = n->extraChildren.size();
+			Edge *currEdge;
+			for (int i = 0; i < extraChildrenSize; ++i )
 			{
-				handler->HandleRayCollision(((Edge*)(*it)), ((Edge*)(*it))->GetQuantity(li.position),
-					dot(V2d(li.position - startPoint), normalize(endPoint - startPoint)));
+				currEdge = (Edge*)(n->extraChildren[i]);
+				LineIntersection li = SegmentIntersect(startPoint, endPoint, currEdge->v0, (currEdge->v1));
+				if (!li.parallel)
+				{
+					handler->HandleRayCollision(currEdge, currEdge->GetQuantity(li.position),
+						dot(V2d(li.position - startPoint), normalize(endPoint - startPoint)));
+				}
 			}
-		}
 
 		for (int i = 0; i < 4; ++i)
 		{

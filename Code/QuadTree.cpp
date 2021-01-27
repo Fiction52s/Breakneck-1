@@ -22,10 +22,6 @@ ParentNode::ParentNode( const V2d &poss, double rww, double rhh )
 
 ParentNode::~ParentNode()
 {
-	/*for (auto it = extraChildren.begin(); it != extraChildren.end(); ++it)
-	{
-		delete (*it);
-	}*/
 }
 
 LeafNode::LeafNode( const V2d &poss, double rww, double rhh )
@@ -92,12 +88,15 @@ void QuadTree::rQuery( QuadTreeCollider *qtc, QNode *node, const sf::Rect<double
 		sf::Rect<double> r2;
 		if( IsBoxTouchingBox( r, nodeBox ) )
 		{
-			for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+			QuadTreeEntrant *qe;
+			int extraChildrenSize = n->extraChildren.size();
+			for( int i = 0; i < extraChildrenSize; ++i )
 			{
+				qe = n->extraChildren[i];
 				r2 = r;
-				if( (*it)->IsTouchingBox( r2 ) )
+				if(qe->IsTouchingBox( r2 ) )
 				{
-					(*it)->HandleQuery( qtc );
+					qe->HandleQuery( qtc );
 				}
 			}
 

@@ -3,39 +3,34 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_Falcon.h"
+#include "Enemy_Chess.h"
 #include "Actor.h"
 
 using namespace std;
 using namespace sf;
 
-Falcon::Falcon(ActorParams *ap)
-	:Enemy(EnemyType::EN_FALCON, ap)
+Chess::Chess(ActorParams *ap)
+	:Enemy(EnemyType::EN_CHESS, ap)
 {
 	SetLevel(ap->GetLevel());
 
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 2;
-	actionLength[FLY] = 2;
-	actionLength[RUSH] = 15;
+	actionLength[NEUTRAL] = 1;
+	actionLength[RUSH] = 2;
 
-	recoverDuration = 60;
+	/*animFactor[NEUTRAL] = 1;
+	animFactor[APPROACH] = 1;
+	animFactor[PULSE] = 1;
+	animFactor[RECOVER] = 1;*/
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[FLY] = 1;
-
-	rushSpeed = 30;
 	attentionRadius = 800;
-	ignoreRadius = 3000;
+	ignoreRadius = 2000;
 
+	accel = .1;
 
-	accel.x = 1.0;//.6;
-	accel.y = 2.0;//.7;//.3;
-
-	maxSpeed.x = 20;
-	maxSpeed.y = 10;
+	maxSpeed = 5;
 
 	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
@@ -59,16 +54,37 @@ Falcon::Falcon(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
+	Color circleColor = Color::Red;
+	circleColor.a = 100;
+	testCircle.setFillColor(circleColor);
+	testCircle.setRadius(50);
+	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
+		testCircle.getLocalBounds().height / 2);
+
 	ResetEnemy();
 }
 
-void Falcon::HandleNoHealth()
+void Chess::UpdatePreFrameCalculations()
+{
+	Actor *targetPlayer = sess->GetPlayer(0);
+
+	sess->ForwardSimulatePlayer(0, 30);
+	testCircle.setPosition(Vector2f(sess->GetPlayerPos(0)));
+	//targetPos = sess->GetPlayerPos(pIndex);
+	sess->RevertSimulatedPlayer(0);
+	
+	//predictCircle.setPosition(Vector2f(targetPos));
+	//hasPredictedPos = true;
+
+}
+
+void Chess::HandleNoHealth()
 {
 	cutObject->SetFlipHoriz(facingRight);
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
 
-void Falcon::SetLevel(int lev)
+void Chess::SetLevel(int lev)
 {
 	level = lev;
 
@@ -88,41 +104,8 @@ void Falcon::SetLevel(int lev)
 	}
 }
 
-void Falcon::FlyMovement()
+void Chess::ResetEnemy()
 {
-	if (false)//(PlayerDist() < 100)
-	{
-		velocity = V2d(0, 0);
-	}
-	else
-	{
-		V2d playerDir = PlayerDir(V2d(), testOffsetDir * 100.0);
-		velocity.x += playerDir.x * accel.x;
-		velocity.y += playerDir.y * accel.y;
-
-		if (velocity.x > maxSpeed.x )
-		{
-			velocity.x = maxSpeed.x;
-		}
-		else if (velocity.x < -maxSpeed.x)
-		{
-			velocity.x = -maxSpeed.x;
-		}
-
-		if (velocity.y > maxSpeed.y)
-		{
-			velocity.y = maxSpeed.y;
-		}
-		else if (velocity.y < -maxSpeed.y)
-		{
-			velocity.y = -maxSpeed.y;
-		}
-	}
-}
-
-void Falcon::ResetEnemy()
-{
-
 	action = NEUTRAL;
 	frame = 0;
 
@@ -134,7 +117,7 @@ void Falcon::ResetEnemy()
 	UpdateSprite();
 }
 
-void Falcon::ActionEnded()
+void Chess::ActionEnded()
 {
 	V2d playerPos = sess->GetPlayerPos();
 
@@ -145,25 +128,14 @@ void Falcon::ActionEnded()
 		{
 		case NEUTRAL:
 			break;
-		case FLY:
-			break;
 		case RUSH:
-			action = FLY;
-			recoverFrame = 0;
+			action = NEUTRAL;
 			break;
 		}
 	}
 }
 
-void Falcon::FrameIncrement()
-{
-	if (action == FLY)
-	{
-		++recoverFrame;
-	}
-}
-
-void Falcon::ProcessState()
+void Chess::ProcessState()
 {
 	ActionEnded();
 
@@ -175,29 +147,16 @@ void Falcon::ProcessState()
 	case NEUTRAL:
 		if (dist < attentionRadius)
 		{
-			action = FLY;
-			recoverFrame = 0;
+			action = NEUTRAL;
 			frame = 0;
-			testOffsetDir = -dir;
 		}
 		break;
-	case FLY:
+	case RUSH:
 		if (dist > ignoreRadius)
 		{
 			action = NEUTRAL;
 			frame = 0;
 		}
-		else if (recoverFrame == recoverDuration )
-		{
-			action = RUSH;
-			frame = 0;
-			velocity = dir * rushSpeed;
-		}
-		break;
-	case RUSH:
-		
-			
-		
 		break;
 	}
 
@@ -206,17 +165,14 @@ void Falcon::ProcessState()
 	case NEUTRAL:
 		velocity = V2d(0, 0);
 		break;
-	case FLY:
-		FlyMovement();
-		break;
 	case RUSH:
 		break;
 	}
 }
 
-void Falcon::UpdateEnemyPhysics()
+void Chess::UpdateEnemyPhysics()
 {
-	if (action == FLY || action == RUSH )
+	if (action == RUSH )
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
@@ -225,7 +181,7 @@ void Falcon::UpdateEnemyPhysics()
 	}
 }
 
-void Falcon::UpdateSprite()
+void Chess::UpdateSprite()
 {
 	int trueFrame;
 	switch (action)
@@ -233,7 +189,8 @@ void Falcon::UpdateSprite()
 	case NEUTRAL:
 		sprite.setColor(Color::White);
 		break;
-
+	case RUSH:
+		sprite.setColor(Color::Green);
 		break;
 	}
 
@@ -241,9 +198,14 @@ void Falcon::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+
+	//testCircle.setPosition(GetPositionF());
 }
 
-void Falcon::EnemyDraw(sf::RenderTarget *target)
+void Chess::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	target->draw(testCircle);
 }

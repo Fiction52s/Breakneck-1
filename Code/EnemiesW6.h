@@ -9,5 +9,6 @@
 #include "Enemy_FreeFlightTarget.h"
 #include "Enemy_WireJuggler.h"
 #include "Enemy_FreeFlightBooster.h"
+#include "Enemy_Chess.h"
 
 #endif

@@ -14073,6 +14073,8 @@ void Actor::UpdateSpeedBar()
 
 void Actor::UpdateMotionGhosts()
 {
+	if (simulationMode)
+		return;
 	//shouldn't be max motion ghosts cuz thats not efficient
 	for (int i = 0; i < maxMotionGhosts; ++i)
 	{
@@ -14206,6 +14208,9 @@ void Actor::UpdateAttackLightning()
 
 void Actor::UpdatePlayerShader()
 {
+	if (simulationMode)
+		return;
+
 	if (kinMode == K_DESPERATION )
 	{
 		sh.setUniform("despFrame", (float)despCounter);
@@ -14554,7 +14559,7 @@ void Actor::UpdatePostPhysics()
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
 
-	if (kinRing != NULL)
+	if (kinRing != NULL && !simulationMode)
 		kinRing->Update();
 
 	TryEndLevel();
@@ -15074,6 +15079,9 @@ bool Actor::IsGoalKillAction(int a)
 
 void Actor::QueryTouchGrass()
 {
+	if (simulationMode)
+		return;
+
 	Rect<double> queryR = hurtBody.GetAABB();//(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
 	Rect<double> queryRExtended;
 	if (currHitboxes != NULL)
@@ -16128,8 +16136,8 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				prevRail = grindEdge->rail;//->info;
 				ground = NULL;
 				bounceEdge = NULL;
-
-				LineIntersection li = lineIntersection(position, position - tempVel, grindEdge->v0, grindEdge->v1);
+				LineIntersection li;
+				lineIntersection( li, position, position - tempVel, grindEdge->v0, grindEdge->v1);
 				if (!li.parallel)
 				{
 					V2d p = li.position;

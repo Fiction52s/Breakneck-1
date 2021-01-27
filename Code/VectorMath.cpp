@@ -287,40 +287,39 @@ LineIntersection::LineIntersection(const sf::Vector2<double> &pos, bool p )
 }
 
 
-LineIntersection lineIntersection( sf::Vector2<double> a, Vector2<double> b, Vector2<double> c, Vector2<double> d )
+void lineIntersection( LineIntersection &li, 
+	sf::Vector2<double> &a, 
+	Vector2<double> &b, 
+	Vector2<double> &c, 
+	Vector2<double> &d )
 {
-	double ax = a.x;
-	double ay = a.y;
-	double bx = b.x;
-	double by = b.y;
-	double cx = c.x;
-	double cy = c.y;
-	double dx = d.x;
-	double dy = d.y;
-
 	double x= 0,y = 0;
 	bool parallel = false;
 	//if( abs((ax-bx)*(cy - dy) - (ay - by) * (cx - dx )) < .0000001 ) //equals 0
-	if ((ax - bx)*(cy - dy) - (ay - by) * (cx - dx) == 0) //equals 0
+
+	if ((a.x - b.x) * (c.y - d.y) - (a.y - b.y) * (c.x - d.x) == 0) //equals 0
 	{
 		parallel = true;
 	}
 	else
 	{
-		x = ((ax * by - ay * bx ) * ( cx - dx ) - (ax - bx ) * ( cx * dy - cy * dx ))
-			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
-		y = ((ax * by - ay * bx ) * ( cy - dy ) - (ay - by ) * ( cx * dy - cy * dx ))
-			/ ( (ax-bx)*(cy - dy) - (ay - by) * (cx - dx ) );
+		x = ((a.x * b.y - a.y * b.x ) * ( c.x - d.x ) - (a.x - b.x ) * ( c.x * d.y - c.y * d.x ))
+			/ ( (a.x-b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x ) );
+		y = ((a.x * b.y - a.y * b.x ) * ( c.y - d.y ) - (a.y - b.y ) * ( c.x * d.y - c.y * d.x ))
+			/ ( (a.x-b.x)*(c.y - d.y) - (a.y - b.y) * (c.x - d.x ) );
 	}
 
-	return LineIntersection( sf::Vector2<double>(x,y), parallel );
+	li.position.x = x;
+	li.position.y = y;
+	li.parallel = parallel;
 }
 
 LineIntersection SegmentIntersect( sf::Vector2<double> a, 
 	sf::Vector2<double> b, sf::Vector2<double> c, 
 	sf::Vector2<double> d )
 {
-	LineIntersection li = lineIntersection( sf::Vector2<double>( a.x, a.y ), sf::Vector2<double>( b.x, b.y ), 
+	LineIntersection li; 
+	lineIntersection( li, sf::Vector2<double>(a.x, a.y), sf::Vector2<double>(b.x, b.y),
 				sf::Vector2<double>( c.x, c.y ), sf::Vector2<double>( d.x, d.y ) );
 	if( !li.parallel )
 	{

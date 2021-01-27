@@ -1328,7 +1328,8 @@ void SurfaceRailMover::HandleEntrant(QuadTreeEntrant *qte)
 			//prevRail = (Rail*)grindEdge->info;
 
 
-			LineIntersection li = lineIntersection(pos, pos - tempVel, ground->v0, ground->v1);
+			LineIntersection li;
+			lineIntersection( li, pos, pos - tempVel, ground->v0, ground->v1);
 			if (!li.parallel)
 			{
 				V2d p = li.position;

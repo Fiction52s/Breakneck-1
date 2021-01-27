@@ -49,7 +49,12 @@ struct LineIntersection
 
 bool approxEquals( double a, double b );
 
-LineIntersection lineIntersection( sf::Vector2<double> a, sf::Vector2<double> b, sf::Vector2<double> c, sf::Vector2<double> d );
+void lineIntersection( 
+	LineIntersection &li,
+	sf::Vector2<double> &a, 
+	sf::Vector2<double> &b, 
+	sf::Vector2<double> &c, 
+	sf::Vector2<double> &d );
 
 LineIntersection SegmentIntersect( sf::Vector2<double> a, 
 	sf::Vector2<double> b, sf::Vector2<double> c, 

@@ -2041,7 +2041,8 @@ void TerrainPolygon::GenerateBorderMesh()
 			
 			if (isAcute)
 			{
-				LineIntersection li = lineIntersection(currStartInner,
+				LineIntersection li;
+				lineIntersection( li, currStartInner,
 					currStartOuter, edge->v0, edge->v0 + bisector);
 				assert(!li.parallel);
 				if (!li.parallel)
@@ -2056,7 +2057,7 @@ void TerrainPolygon::GenerateBorderMesh()
 					}
 				}
 
-				li = lineIntersection(currEndInner,
+				lineIntersection( li, currEndInner,
 					currEndOuter, edge->v0, edge->v0 + bisector);
 				assert(!li.parallel);
 				if (!li.parallel)
@@ -2074,7 +2075,8 @@ void TerrainPolygon::GenerateBorderMesh()
 			if (nextAcute)
 			{
 				bool middleSplit = false;
-				LineIntersection liMiddle = lineIntersection(currStartInner,
+				LineIntersection liMiddle;
+				lineIntersection( liMiddle, currStartInner,
 					currEndInner, edge->v1, edge->v1 + nextBisector);//te->edge1->v1);
 				if (!liMiddle.parallel)
 				{
@@ -2090,7 +2092,8 @@ void TerrainPolygon::GenerateBorderMesh()
 
 				if (!middleSplit)
 				{
-					LineIntersection li = lineIntersection(currStartInner,
+					LineIntersection li;
+					lineIntersection( li, currStartInner,
 						currStartOuter, edge->v1, edge->v1 + nextBisector);//te->edge1->v1);
 					assert(!li.parallel);
 					if (!li.parallel)
@@ -2107,7 +2110,7 @@ void TerrainPolygon::GenerateBorderMesh()
 						}
 					}
 
-					li = lineIntersection(currEndInner,
+					lineIntersection( li, currEndInner,
 						currEndOuter, edge->v1, edge->v1 + nextBisector);//te->edge1->v1 );
 					assert(!li.parallel);
 					if (!li.parallel)
@@ -2203,10 +2206,20 @@ void TerrainPolygon::GenerateBorderMesh()
 
 void TerrainPolygon::AddEdgesToQuadTree(QuadTree *tree)
 {
+	CalcEdgeAABBs();
 	int numP = GetNumPoints();
 	for (int i = 0; i < numP; ++i)
 	{
 		tree->Insert(&edges[i]);
+	}
+}
+
+void TerrainPolygon::CalcEdgeAABBs()
+{
+	int numP = GetNumPoints();
+	for (int i = 0; i < numP; ++i)
+	{
+		edges[i].CalcAABB();
 	}
 }
 
@@ -5393,7 +5406,8 @@ sf::Vector2i TerrainPolygon::TrimSliverPos(sf::Vector2<double> &prevPos,
 	V2d aEnd = aStart + dA * 100.0;
 	V2d bEnd = bStart + dB * 100.0;
 
-	LineIntersection li = lineIntersection(aStart, aEnd, bStart, bEnd);
+	LineIntersection li;
+	lineIntersection( li, aStart, aEnd, bStart, bEnd);
 	if (!li.parallel)
 	{
 

@@ -440,7 +440,8 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 		//prevRail = (Rail*)grindEdge->info;
 
 		V2d myPos = GetPosition();
-		LineIntersection li = lineIntersection(myPos, myPos - tempVel, 
+		LineIntersection li;
+		lineIntersection( li, myPos, myPos - tempVel, 
 			railEdge->v0, railEdge->v1);
 		if (!li.parallel)
 		{

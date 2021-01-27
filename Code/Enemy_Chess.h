@@ -1,15 +1,14 @@
-#ifndef __ENEMY_FALCON_H__
-#define __ENEMY_FALCON_H__
+#ifndef __ENEMY_CHESS_H__
+#define __ENEMY_CHESS_H__
 
 #include "Enemy.h"
 #include "Bullet.h"
 
-struct Falcon : Enemy
+struct Chess : Enemy
 {
 	enum Action
 	{
 		NEUTRAL,
-		FLY,
 		RUSH,
 		A_Count
 	};
@@ -19,17 +18,14 @@ struct Falcon : Enemy
 
 	Tileset *ts;
 	V2d velocity;
-	V2d maxSpeed;
-	V2d accel;
-	double rushSpeed;
-	int recoverFrame;
-	int recoverDuration;
-	V2d testOffsetDir;
+	double maxSpeed;
+	double accel;
+	sf::CircleShape testCircle;
 
-	Falcon(ActorParams *ap);
 
-	void FrameIncrement();
-	void FlyMovement();
+	Chess(ActorParams *ap);
+
+	void UpdatePreFrameCalculations();
 	void HandleNoHealth();
 	void ProcessState();
 	void UpdateEnemyPhysics();

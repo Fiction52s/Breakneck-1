@@ -133,9 +133,11 @@ double Enemy::PlayerDistY(int index)
 	return sess->GetPlayerPos(index).y - GetPosition().y;
 }
 
-V2d Enemy::PlayerDir(int index)
+V2d Enemy::PlayerDir( V2d myOffset, V2d playerOffset, int index)
 {
-	return normalize( sess->GetPlayerPos(index) - GetPosition() );
+	return normalize( 
+		( sess->GetPlayerPos(index) + playerOffset) 
+		- ( GetPosition() + myOffset ));
 }
 
 V2d Enemy::AlongGroundDir()
@@ -287,6 +289,9 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FIREFLY:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_CHESS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FALCON:

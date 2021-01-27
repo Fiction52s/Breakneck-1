@@ -2905,7 +2905,8 @@ bool IsWithinOne(sf::Vector2i &a, sf::Vector2i &b)
 
 LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d )
 {
-	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+	LineIntersection li;
+	lineIntersection( li, V2d(a.x, a.y), V2d(b.x, b.y),
 				V2d( c.x, c.y ), V2d( d.x, d.y ) );
 	if( !li.parallel )
 	{
@@ -2964,7 +2965,8 @@ LineIntersection EditSession::SegmentIntersect( Vector2i a, Vector2i b, Vector2i
 
 LineIntersection EditSession::LimitSegmentIntersect( Vector2i a, Vector2i b, Vector2i c, Vector2i d, bool firstLimitOnly )
 {
-	LineIntersection li = lineIntersection( V2d( a.x, a.y ), V2d( b.x, b.y ), 
+	LineIntersection li;
+	lineIntersection( li, V2d(a.x, a.y), V2d(b.x, b.y),
 				V2d( c.x, c.y ), V2d( d.x, d.y ) );
 	if( !li.parallel )
 	{

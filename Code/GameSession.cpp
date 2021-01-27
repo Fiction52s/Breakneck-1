@@ -4077,9 +4077,10 @@ void GameSession::rResetPlants( QNode *node )
 			rResetPlants( n->children[i] );
 		}
 
-		for( list<QuadTreeEntrant*>::iterator it = n->extraChildren.begin(); it != n->extraChildren.end(); ++it )
+		int extraChildrenSize = n->extraChildren.size();
+		for( int i = 0; i < extraChildrenSize; ++i )
 		{
-			EnvPlant *ev = (EnvPlant *)(*it);
+			EnvPlant *ev = (EnvPlant *)(n->extraChildren[i]);
 			//cout << "reset2" << endl;
 			ev->Reset();
 		}
