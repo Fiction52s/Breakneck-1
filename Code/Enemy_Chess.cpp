@@ -18,7 +18,9 @@ Chess::Chess(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 1;
-	actionLength[RUSH] = 2;
+	actionLength[RUSH] = 60;
+	actionLength[RECOVER] = 60;
+	actionLength[CHASE] = 2;
 
 	/*animFactor[NEUTRAL] = 1;
 	animFactor[APPROACH] = 1;
@@ -28,9 +30,9 @@ Chess::Chess(ActorParams *ap)
 	attentionRadius = 800;
 	ignoreRadius = 2000;
 
-	accel = .1;
+	accel = 1.0;
 
-	maxSpeed = 5;
+	maxSpeed = 20;
 
 	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
@@ -62,20 +64,6 @@ Chess::Chess(ActorParams *ap)
 		testCircle.getLocalBounds().height / 2);
 
 	ResetEnemy();
-}
-
-void Chess::UpdatePreFrameCalculations()
-{
-	Actor *targetPlayer = sess->GetPlayer(0);
-
-	sess->ForwardSimulatePlayer(0, 30);
-	testCircle.setPosition(Vector2f(sess->GetPlayerPos(0)));
-	//targetPos = sess->GetPlayerPos(pIndex);
-	sess->RevertSimulatedPlayer(0);
-	
-	//predictCircle.setPosition(Vector2f(targetPos));
-	//hasPredictedPos = true;
-
 }
 
 void Chess::HandleNoHealth()
@@ -129,15 +117,43 @@ void Chess::ActionEnded()
 		case NEUTRAL:
 			break;
 		case RUSH:
-			action = NEUTRAL;
+			StartRush();
+			//action = RECOVER;
+			break;
+		case RECOVER:
+			//StartRush();
 			break;
 		}
 	}
 }
 
+void Chess::StartRush()
+{
+	action = RUSH;
+	frame = 0;
+
+	int predictFrame = 30;
+	V2d futurePos = sess->GetFuturePlayerPos(predictFrame);
+
+	V2d rushDir = normalize(futurePos - GetPosition());
+
+	double rushDist = length(futurePos - GetPosition());
+	double speed = rushDist / predictFrame;
+	double time = rushDist / speed;
+	actionLength[RUSH] = time + 1;//time * 1.5;
+
+	testCircle.setPosition(Vector2f(futurePos));
+
+	velocity = rushDir * speed;
+}
+
 void Chess::ProcessState()
 {
 	ActionEnded();
+
+
+	
+	
 
 	double dist = PlayerDist();
 	V2d dir = PlayerDir();
@@ -147,16 +163,17 @@ void Chess::ProcessState()
 	case NEUTRAL:
 		if (dist < attentionRadius)
 		{
-			action = NEUTRAL;
+			action = CHASE;
 			frame = 0;
+			//StartRush();
 		}
 		break;
 	case RUSH:
-		if (dist > ignoreRadius)
+		/*if (dist > ignoreRadius)
 		{
 			action = NEUTRAL;
 			frame = 0;
-		}
+		}*/
 		break;
 	}
 
@@ -167,12 +184,28 @@ void Chess::ProcessState()
 		break;
 	case RUSH:
 		break;
+	case CHASE:
+	{
+		V2d futurePos = sess->GetFuturePlayerPos(20);
+		V2d newPos;
+		newPos.x = GetPosition().x;
+		newPos.y = futurePos.y;
+		testCircle.setPosition(Vector2f(newPos));
+
+		currPosInfo.position = newPos;
+		velocity = V2d();
+		//V2d futureDir = normalize(futurePos - GetPosition());
+		//velocity = 20.0 * futureDir;//+= futureDir * accel;
+		//CapVectorLength(velocity, maxSpeed);
+		break;
+	}
+		
 	}
 }
 
 void Chess::UpdateEnemyPhysics()
 {
-	if (action == RUSH )
+	if (action == RUSH || action == CHASE)
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
@@ -191,6 +224,9 @@ void Chess::UpdateSprite()
 		break;
 	case RUSH:
 		sprite.setColor(Color::Green);
+		break;
+	case RECOVER:
+		sprite.setColor(Color::Black);
 		break;
 	}
 

@@ -12564,7 +12564,7 @@ void Actor::HitGroundWhileInAirHitstun()
 		}
 		else
 		{
-			cout << "bouncing off ground \n";
+			//cout << "bouncing off ground \n";
 			double d = dot(velocity, gNormal);
 			velocity = velocity - (2.0 * d * gNormal);
 			//velocity.y = -velocity.y;

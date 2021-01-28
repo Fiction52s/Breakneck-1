@@ -38,6 +38,7 @@ struct BasicBullet : QuadTreeCollider
 		CURVE_TURRET,
 		LOB_TURRET,
 		SHOTGUN,
+		PREDICT,
 		BOSS_CRAWLER,
 		BOSS_BIRD,
 		CACTUS_SHOTGUN,

@@ -10,5 +10,6 @@
 #include "Enemy_WireJuggler.h"
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_Chess.h"
+#include "Enemy_PredictTurret.h"
 
 #endif

@@ -733,6 +733,8 @@ void Session::RegisterW6Enemies()
 
 	AddBasicAerialWorldEnemy("chess", 6, CreateEnemy<Chess>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicGroundWorldEnemy("predictturret", 6, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	/*AddBasicAerialWorldEnemy("wiretarget", 6, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
@@ -5166,6 +5168,13 @@ void Session::UpdateEnemiesPreFrameCalculations()
 	}
 }
 
+void Session::UpdatePreFrameCalculations()
+{
+	numCalculatedFuturePositions = 0;
+	ForwardSimulatePlayer(0, 120, true);
+	RevertSimulatedPlayer(0);
+}
+
 void Session::UpdatePhysics()
 {
 	Actor *p = NULL;
@@ -5876,6 +5885,7 @@ bool Session::RunGameModeUpdate()
 
 		if (!playerAndEnemiesFrozen)
 		{
+			UpdatePreFrameCalculations();
 			UpdateEnemiesPreFrameCalculations();
 		}
 
@@ -6742,14 +6752,23 @@ void Session::SetupGameMode()
 	}
 }
 
-void Session::ForwardSimulatePlayer(int index, int frames)
+V2d Session::GetFuturePlayerPos(int futureFrames)
 {
+	assert(futureFrames > 0 && futureFrames < numCalculatedFuturePositions - 1);
+	return futurePlayerPos[futureFrames - 1];
+}
+
+void Session::ForwardSimulatePlayer(int index, int frames, bool storePositions)
+{
+	assert(frames <= MAX_SIMULATED_FUTURE_PLAYER_FRAMES);
 	Actor *p = GetPlayer(index);
 	assert(p != NULL);
 
 	p->PopulateState(playerSimState);
 	p->simulationMode = true;
 	
+	numCalculatedFuturePositions = frames;
+
 	int numSteps;
 	for (int i = 0; i < frames; ++i)
 	{
@@ -6763,6 +6782,11 @@ void Session::ForwardSimulatePlayer(int index, int frames)
 		}
 		p->UpdatePostPhysics();
 		UpdatePlayerInput(index);
+
+		if (storePositions)
+		{
+			futurePlayerPos[i] = p->position;
+		}
 	}
 	p->simulationMode = false;
 }

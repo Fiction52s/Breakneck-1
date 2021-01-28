@@ -10,6 +10,8 @@ struct Chess : Enemy
 	{
 		NEUTRAL,
 		RUSH,
+		RECOVER,
+		CHASE,
 		A_Count
 	};
 
@@ -24,8 +26,7 @@ struct Chess : Enemy
 
 
 	Chess(ActorParams *ap);
-
-	void UpdatePreFrameCalculations();
+	void StartRush();
 	void HandleNoHealth();
 	void ProcessState();
 	void UpdateEnemyPhysics();

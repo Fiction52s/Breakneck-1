@@ -92,6 +92,9 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::LOB_TURRET:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::PREDICT:
+		bulletTilesetIndex = 1;
+		break;
 	case BasicBullet::CACTUS_SHOTGUN:
 		bulletTilesetIndex = 1;
 		break;
@@ -606,6 +609,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case BAT:
 	case BIG_OWL:
 	case LOB_TURRET:
+	case PREDICT:
 	case SHOTGUN:
 	{
 		transform.rotate(angle);

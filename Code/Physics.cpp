@@ -1748,9 +1748,7 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 	
 	for( int i = 0; i < 4; ++i )
 	{
-		
 		lineIntersection(eli, as[i], bs[i], e->v0, e->v1);
-
 		if( !eli.parallel )
 		{
 			V2d &a = as[i];
