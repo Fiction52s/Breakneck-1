@@ -202,6 +202,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	int numCalculatedFuturePositions;
 	const static int MAX_SIMULATED_FUTURE_PLAYER_FRAMES = 120;
 	V2d futurePlayerPos[MAX_SIMULATED_FUTURE_PLAYER_FRAMES];
+	const static int PAST_PLAYER_FRAMES = 120;
+	V2d pastPlayerPos[PAST_PLAYER_FRAMES];
 
 	Fader *fader;
 	Swiper *swiper;

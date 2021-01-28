@@ -49,17 +49,18 @@ Gorilla::Gorilla( ActorParams *ap )
 	idealRadius = 500;//300;
 	wallAmountCloser = 200;
 
-	recoveryLoops = 1;
 	wallWidth = 600;//400;
 	
-
-	actionLength[WAKEUP] = 60;
+	actionLength[NEUTRAL] = 2;
+	actionLength[WAKEUP] = 20;
 	actionLength[ALIGN] = 60;
 	actionLength[FOLLOW] = followFrames;
 	actionLength[ATTACK] = 4;//60;
 	actionLength[RECOVER] = 2;//60;
 
-	actionLength[WAKEUP] = 1;
+
+	animFactor[NEUTRAL] = 1;
+	animFactor[WAKEUP] = 1;
 	animFactor[ALIGN] = 1;
 	animFactor[FOLLOW] = 1;
 	animFactor[ATTACK] = 15;
@@ -68,8 +69,6 @@ Gorilla::Gorilla( ActorParams *ap )
 	action = WAKEUP;
 
 	latchedOn = false;
-
-	awakeCap = 60;
 
 	approachFrames = 180 * 3;
 	totalFrame = 0;
@@ -81,9 +80,7 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
-	
-	//position.x = 0;
-	//position.y = 0;
+
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -111,7 +108,7 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	wallHitBody.SetupNumFrames(1);
 	wallHitBody.SetupNumBoxesOnFrame(0, 1);
-	wallHitBody.AddBasicRect(0, wallHitboxWidth, wallHitboxHeight, 0, V2d());
+	wallHitBody.AddBasicRect(0, wallHitboxWidth/2, wallHitboxHeight/2, 0, V2d());
 	
 	wallHitBody.hitboxInfo = wallHitboxInfo;
 	
@@ -131,6 +128,8 @@ Gorilla::Gorilla( ActorParams *ap )
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectBack(9);
 	cutObject->SetSubRectFront(8);
+
+	ResetEnemy();
 }
 
 Gorilla::~Gorilla()
@@ -143,7 +142,6 @@ void Gorilla::ResetEnemy()
 	action = WAKEUP;
 	facingRight = origFacingRight;
 
-	awakeFrames = 0;
 	latchStartAngle = 0;
 	latchedOn = false;
 	totalFrame = 0;
@@ -157,7 +155,6 @@ void Gorilla::ResetEnemy()
 	basePos = startPosInfo.GetPosition();
 	
 	receivedHit = NULL;
-	recoveryCounter = 0;
 
 	UpdateHitboxes();
 	UpdateSprite();
@@ -180,8 +177,31 @@ void Gorilla::ActionEnded()
 		switch( action )
 		{
 		case WAKEUP:
+		{
+			action = ALIGN;
+			alignFrames = 0;
 			frame = 0;
+			physStepIndex = 0;
+			if (playerPos.x < GetPosition().x)
+			{
+				facingRight = false;
+			}
+			else
+			{
+				facingRight = true;
+			}
+
+			latchedOn = true;
+			offsetPlayer = basePos - playerPos;
+			origOffset = offsetPlayer;
+			V2d offsetDir = normalize(offsetPlayer);
+
+			basePos = playerPos;
+
+			double currRadius = length(offsetPlayer);
+			alignMoveFrames = 60;// *5 * NUM_STEPS;
 			break;
+		}
 		case ALIGN:
 			frame = 0;
 			break;
@@ -190,13 +210,10 @@ void Gorilla::ActionEnded()
 			frame = 0;
 			break;
 		case ATTACK:
-			recoveryCounter = 0;
 			action = RECOVER;
 			frame = 0;
 			break;
 		case RECOVER:
-			++recoveryCounter;
-			//if( recoveryCounter == recoveryLoops )
 			{
 				latchedOn = true;
 				offsetPlayer = basePos - playerPos;
@@ -212,7 +229,6 @@ void Gorilla::ActionEnded()
 				frame = 0;
 				physStepIndex = 0;
 				alignFrames = 0;
-				recoveryCounter = 0;
 
 				if( playerPos.x < GetPosition().x )
 				{
@@ -222,8 +238,10 @@ void Gorilla::ActionEnded()
 				{
 					facingRight = true;
 				}
+
+				break;
 			}
-			break;
+			
 		}
 	}
 }
@@ -237,45 +255,15 @@ void Gorilla::ProcessState()
 
 	switch( action )
 	{
+	case NEUTRAL:
+		if (PlayerDist() < 800)
+		{
+			action = WAKEUP;
+			frame = 0;
+		}
+		break;
 	case WAKEUP:
 		{
-			if( WithinDistance(myPos, playerPos, 400 ) )
-			{
-				++awakeFrames;
-				if( awakeFrames == awakeCap )
-				{
-					//awake = true;
-					action = ALIGN;
-					alignFrames = 0;
-					frame = 0;
-					physStepIndex = 0;
-					if( playerPos.x < myPos.x )
-					{
-						facingRight = false;
-					}
-					else
-					{
-						facingRight = true;
-					}
-
-					latchedOn = true;
-					offsetPlayer = basePos - playerPos;
-					origOffset = offsetPlayer;
-					V2d offsetDir = normalize(offsetPlayer);
-
-					basePos = playerPos;
-
-					double currRadius = length( offsetPlayer );
-					alignMoveFrames = 60;// *5 * NUM_STEPS;
-					
-				}
-			}
-			else
-			{
-				awakeFrames--;
-				if( awakeFrames < 0 )
-					awakeFrames = 0;
-			}
 		}
 		break;
 	case ALIGN:

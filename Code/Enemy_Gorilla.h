@@ -7,6 +7,7 @@ struct Gorilla : Enemy
 {
 	enum Action
 	{
+		NEUTRAL,
 		WAKEUP,
 		ALIGN,
 		FOLLOW,
@@ -19,17 +20,12 @@ struct Gorilla : Enemy
 	double latchStartAngle;
 	bool origFacingRight;
 
-	int awakeFrames;
-	int awakeCap;
-
 	V2d basePos;
 
 	int alignMoveFrames;
 	int createWallFrame;
 	int alignFrames;
 	int followFrames;
-	int recoveryLoops;
-	int recoveryCounter;
 
 	int physStepIndex;
 
