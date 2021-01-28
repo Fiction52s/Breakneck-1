@@ -384,6 +384,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_TURTLE:
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
+	case EnemyType::EN_FUTURECHECKER:
+		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		break;
 	case EnemyType::EN_KEYFLY:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);
 		break;

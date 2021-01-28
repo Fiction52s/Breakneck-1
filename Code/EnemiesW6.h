@@ -11,5 +11,6 @@
 #include "Enemy_FreeFlightBooster.h"
 #include "Enemy_Chess.h"
 #include "Enemy_PredictTurret.h"
+#include "Enemy_FutureChecker.h"
 
 #endif

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_Chess.h"
 #include "Actor.h"
+#include "Shield.h"
 
 using namespace std;
 using namespace sf;
@@ -27,12 +28,40 @@ Chess::Chess(ActorParams *ap)
 	animFactor[PULSE] = 1;
 	animFactor[RECOVER] = 1;*/
 
+	const string &typeName = ap->GetTypeName();
+	if (typeName == "chessx")
+	{
+		chessType = HORIZ;
+	}
+	else if( typeName == "chessy")
+	{
+		chessType = VERT;
+		sprite.setColor(Color::Black);
+	}
+	else if (typeName == "chessdiagdownright")
+	{
+		chessType = DIAGDOWNRIGHT;
+		sprite.setColor(Color::Red);
+	}
+	else if (typeName == "chessdiagupright")
+	{
+		chessType = DIAGUPRIGHT;
+		sprite.setColor(Color::Cyan);
+	}
+	else
+	{
+		chessType = HORIZ;
+		assert(0);
+	}
+
+	shield = new Shield(Shield::ShieldType::T_BLOCK, 16 * scale, 3, this);
+
 	attentionRadius = 800;
 	ignoreRadius = 2000;
 
-	accel = 1.0;
+	accel = 2.0;//3.0;//1.0;
 
-	maxSpeed = 20;
+	maxSpeed = 30;//20;
 
 	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
@@ -72,6 +101,12 @@ void Chess::HandleNoHealth()
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
 
+Chess::~Chess()
+{
+	currShield = NULL;
+	delete shield;
+}
+
 void Chess::SetLevel(int lev)
 {
 	level = lev;
@@ -79,7 +114,7 @@ void Chess::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 1.0;
+		scale = 2.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -103,6 +138,10 @@ void Chess::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+
+	shield->Reset();
+	shield->SetPosition(GetPosition());
+	currShield = shield;
 }
 
 void Chess::ActionEnded()
@@ -186,14 +225,71 @@ void Chess::ProcessState()
 		break;
 	case CHASE:
 	{
-		V2d futurePos = sess->GetFuturePlayerPos(20);
-		V2d newPos;
-		newPos.x = GetPosition().x;
-		newPos.y = futurePos.y;
-		testCircle.setPosition(Vector2f(newPos));
-
-		currPosInfo.position = newPos;
-		velocity = V2d();
+		//V2d futurePos = sess->GetFuturePlayerPos(20);
+		//V2d newPos;
+		//newPos.x = GetPosition().x;
+		//newPos.y = futurePos.y;
+		//testCircle.setPosition(Vector2f(newPos));
+		
+		if (chessType == HORIZ)
+		{
+			if (dir.x > 0)
+			{
+				velocity.x += accel;//V2d(0, 10);
+				CapVectorLength(velocity, maxSpeed);
+			}
+			else if (dir.x < 0)
+			{
+				velocity.x += -accel;//V2d(0, 10);
+				CapVectorLength(velocity, maxSpeed);
+			}
+		}
+		else if( chessType == VERT )
+		{
+			if (dir.y > 0)
+			{
+				velocity.y += accel;//V2d(0, 10);
+				CapVectorLength(velocity, maxSpeed);
+			}
+			else if (dir.y < 0)
+			{
+				velocity.y += -accel;//V2d(0, 10);
+				CapVectorLength(velocity, maxSpeed);
+			}
+		}
+		else if (chessType == DIAGDOWNRIGHT)
+		{
+			V2d downRight = normalize(V2d(1, 1));
+			double d = dot(dir, downRight);
+			if (d > 0)
+			{
+				velocity += downRight * accel;
+				CapVectorLength(velocity, maxSpeed);
+			}
+			else if (d < 0)
+			{
+				velocity += downRight * -accel;
+				CapVectorLength(velocity, maxSpeed);
+			}
+		}
+		else if (chessType == DIAGUPRIGHT)
+		{
+			V2d upRight = normalize(V2d(1, -1));
+			double d = dot(dir, upRight);
+			if (d > 0)
+			{
+				velocity += upRight * accel;
+				CapVectorLength(velocity, maxSpeed);
+			}
+			else if (d < 0)
+			{
+				velocity += upRight * -accel;
+				CapVectorLength(velocity, maxSpeed);
+			}
+		}
+		
+		//currPosInfo.position = newPos;
+		//velocity = V2d();
 		//V2d futureDir = normalize(futurePos - GetPosition());
 		//velocity = 20.0 * futureDir;//+= futureDir * accel;
 		//CapVectorLength(velocity, maxSpeed);
@@ -211,6 +307,7 @@ void Chess::UpdateEnemyPhysics()
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
+		shield->SetPosition(GetPosition());
 	}
 }
 
@@ -220,13 +317,13 @@ void Chess::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		sprite.setColor(Color::White);
+		//sprite.setColor(Color::White);
 		break;
 	case RUSH:
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 		break;
 	case RECOVER:
-		sprite.setColor(Color::Black);
+		//sprite.setColor(Color::Black);
 		break;
 	}
 

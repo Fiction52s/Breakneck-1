@@ -15,6 +15,15 @@ struct Chess : Enemy
 		A_Count
 	};
 
+	enum ChessType
+	{
+		HORIZ,
+		VERT,
+		DIAGDOWNRIGHT,
+		DIAGUPRIGHT,
+	};
+
+	int chessType;
 	double attentionRadius;
 	double ignoreRadius;
 
@@ -23,9 +32,11 @@ struct Chess : Enemy
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
+	Shield *shield;
 
 
 	Chess(ActorParams *ap);
+	~Chess();
 	void StartRush();
 	void HandleNoHealth();
 	void ProcessState();
