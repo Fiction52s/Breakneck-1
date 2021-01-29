@@ -678,6 +678,7 @@ void Session::RegisterW5Enemies()
 	///*AddWorldEnemy("shark", 5, LoadParams<SharkParams>, NULL, MakeParamsAerial<SharkParams>,
 	//Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);*/
 
+	AddBasicAerialWorldEnemy("shark", 5, CreateEnemy<Shark>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("growingtree", 5, CreateEnemy<GrowingTree>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

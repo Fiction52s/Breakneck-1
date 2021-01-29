@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Shark.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -13,10 +14,72 @@ using namespace sf;
 #define COLOR_BLUE Color( 0, 0x66, 0xcc )
 #define COLOR_RED Color( 0xff, 0x22, 0 )
 
-Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
-	:Enemy( owner, EnemyType::EN_SHARK, p_hasMonitor, 1 ), approachAccelBez( 1,.01,.86,.32 ) 
+Shark::Shark( ActorParams *ap )
+	:Enemy( EnemyType::EN_SHARK, ap), approachAccelBez( 1,.01,.86,.32 ) 
 {
-	level = p_level;
+	SetNumActions(A_Count);
+	SetEditorActions(APPROACH, APPROACH, 0);
+
+	circleFrames = 120;
+	wakeCap = 45;
+
+	SetLevel(ap->GetLevel());
+	actionLength[NEUTRAL] = 2;
+	actionLength[WAKEUP] = 30;
+	actionLength[APPROACH] = 2;
+	actionLength[CIRCLE] = circleFrames;
+	actionLength[RUSH] = 7;
+	actionLength[FINALCIRCLE] = circleFrames;
+
+	animFactor[WAKEUP] = 1;
+	animFactor[FINALCIRCLE] = 1;
+	animFactor[APPROACH] = 1;
+	animFactor[CIRCLE] = 1;
+	animFactor[RUSH] = 5;	
+
+	
+
+	//V2d dirFromPlayer = normalize( owner->GetPlayerPos( 0 ) - position );
+	//double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
+
+	circleSeq.AddRadialMovement(V2d(0, 0), V2d(0, 0), 0, true, 
+		CubicBezier(.57, .3, .53, .97), circleFrames);
+	circleSeq.InitMovementDebug();
+
+
+	rushSeq.AddLineMovement( V2d( 0, 0 ), 
+		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] * animFactor[RUSH] );
+	
+	speed = 20;
+
+	ts_circle = sess->GetSizedTileset( "Enemies/shark_circle_256x256.png");
+	ts_bite = sess->GetSizedTileset( "Enemies/shark_bite_256x256.png");
+	ts_death = sess->GetSizedTileset( "Enemies/shark_death_256x256.png");
+
+	sprite.setTexture( *ts_circle->texture );
+	sprite.setScale(scale, scale);
+
+	hitboxInfo = new HitboxInfo;
+	hitboxInfo->damage = 60;
+	hitboxInfo->drainX = 0;
+	hitboxInfo->drainY = 0;
+	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 4;
+
+	BasicCircleHurtBodySetup(48);
+	BasicCircleHitBodySetup(48);
+
+	hitBody.hitboxInfo = hitboxInfo;
+
+	UpdateHitboxes();
+
+	ResetEnemy();
+}
+
+void Shark::SetLevel(int lev)
+{
+	level = lev;
 
 	switch (level)
 	{
@@ -32,69 +95,6 @@ Shark::Shark( GameSession *owner, bool p_hasMonitor, Vector2i pos, int p_level )
 		maxHealth += 5;
 		break;
 	}
-
-	actionLength[WAKEUP] = 30;
-	actionLength[APPROACH] = 2;
-	actionLength[CIRCLE] = 2;
-	actionLength[RUSH] = 7;
-	actionLength[FINALCIRCLE] = 2;
-
-	animFactor[WAKEUP] = 1;
-	animFactor[FINALCIRCLE] = 1;
-	animFactor[APPROACH] = 1;
-	animFactor[CIRCLE] = 1;
-	animFactor[RUSH] = 5;
-
-	//offsetPlayer 
-	receivedHit = NULL;
-	position.x = pos.x;
-	position.y = pos.y;
-
-	origPosition = position;
-
-	circleFrames = 120;
-	wakeCap = 45;
-
-	V2d dirFromPlayer = normalize( owner->GetPlayerPos( 0 ) - position );
-	double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
-
-	circleSeq.AddRadialMovement(V2d(0, 0), 1, 0, 2 * PI,
-		true, V2d(1, 1), 0, CubicBezier(.57, .3, .53, .97), circleFrames);
-	
-	circleSeq.InitMovementDebug();
-
-
-	rushSeq.AddLineMovement( V2d( 0, 0 ), 
-		V2d( 1, 0 ), CubicBezier( 0, 0, 1, 1 ), actionLength[RUSH] * animFactor[RUSH] );
-
-	spawnRect = sf::Rect<double>( pos.x - 16, pos.y - 16, 16 * 2, 16 * 2 );
-	
-	speed = 20;
-
-	ts_circle = owner->GetTileset( "Enemies/shark_circle_256x256.png", 256, 256 );
-	ts_bite = owner->GetTileset( "Enemies/shark_bite_256x256.png", 256, 256 );
-	ts_death = owner->GetTileset( "Enemies/shark_death_256x256.png", 256, 256 );
-	sprite.setTexture( *ts_circle->texture );
-	sprite.setTextureRect( ts_circle->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-	sprite.setPosition( pos.x, pos.y );
-
-	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 60;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
-
-	SetupBodies(1, 1);
-	AddBasicHurtCircle(16);
-	AddBasicHitCircle(16);
-	hitBody->hitboxInfo = hitboxInfo;
-
-	facingRight = true;
-
-	UpdateHitboxes();
 }
 
 void Shark::ResetEnemy()
@@ -105,19 +105,16 @@ void Shark::ResetEnemy()
 	latchStartAngle = 0;
 	latchedOn = false;
 	circleSeq.Reset();
-	dead = false;
-	frame = 0;
-	basePos = origPosition;
-	position = basePos;
 
-	receivedHit = NULL;
+	basePos = GetPosition();
+
+	frame = 0;
 	
-	SetHurtboxes(hurtBody, 0);
-	SetHitboxes(hitBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
 	UpdateSprite();
-	
 }
 
 void Shark::ProcessState()
@@ -129,75 +126,95 @@ void Shark::ProcessState()
 		circleSeq.position.y * sn, 
 		circleSeq.position.x * sn + circleSeq.position.y * cs );
 	truePosOffset *= length( offsetPlayer );
+	V2d playerPos = sess->GetPlayerPos();
 
-	V2d playerPos = owner->GetPlayerPos(0);
-
-	if( action == WAKEUP )
+	if (frame == actionLength[action] * animFactor[action])
 	{
-		if( WithinDistance( position, playerPos, 400))
-		{
-			wakeCounter++;
-			if( wakeCounter == wakeCap )
-			{
-				circleCounter = 0;
-				action = CIRCLE;
-				frame = 0;
-				latchedOn = true;
-				offsetPlayer = basePos - playerPos;
-				origOffset = offsetPlayer;
-				V2d offsetDir = normalize( offsetPlayer );
-				latchStartAngle = atan2( offsetDir.y, offsetDir.x );
-				
-
-				//testing
-
-				circleSeq.Update( slowMultiple );
-				basePos = playerPos;
-			}
-		}
-		else
-		{
-			wakeCounter--;
-			if( wakeCounter < 0 )
-				wakeCounter = 0;
-		}	
-	}
-	else if( action == CIRCLE )
-	{	
-		if( owner->GetPlayerHitstunFrames( 0 ) > 0  )
-		{
-			action = FINALCIRCLE;
-			attackOffset = truePosOffset;
-
-		}
 		frame = 0;
-	}
-	else if( action == FINALCIRCLE && frame == circleFrames )
-	{
-		action = RUSH;
-		frame = 0;
-		rushSeq.Reset();
-		rushSeq.currMovement->start = truePosOffset;
-		rushSeq.currMovement->end = -truePosOffset;
-		rushSeq.Update( slowMultiple );
-	}
-	else if( action == RUSH )
-	{
-		if( rushSeq.currMovement == NULL )
+		switch (action)
 		{
+		case NEUTRAL:
+			
+			break;
+		case WAKEUP:
+		{
+			circleCounter = 0;
+			action = CIRCLE;
+			frame = 0;
+			latchedOn = true;
+			offsetPlayer = basePos - playerPos;
+			origOffset = offsetPlayer;
+			V2d offsetDir = normalize(offsetPlayer);
+			latchStartAngle = atan2(offsetDir.y, offsetDir.x);
+
+
+			//testing
+
+			circleSeq.Update(slowMultiple);
+			basePos = playerPos;
+			break;
+		}
+		case APPROACH:
+			break;
+		case CIRCLE:
+			circleSeq.Reset();
+			circleSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+			++circleCounter;
+			break;
+		case FINALCIRCLE:
+		{
+			action = RUSH;
+			frame = 0;
+			rushSeq.Reset();
+			rushSeq.currMovement->start = truePosOffset;
+			rushSeq.currMovement->end = -truePosOffset;
+			rushSeq.Update(slowMultiple);
+			break;
+		}
+		case RUSH:
+		{
+			assert(rushSeq.currMovement == NULL);
 			action = CIRCLE;
 			circleCounter = 0;
 			truePosOffset = -truePosOffset;
 			offsetPlayer = truePosOffset;
-			V2d offsetDir = normalize( truePosOffset );
-			latchStartAngle = atan2( offsetDir.y, offsetDir.x );
+			V2d offsetDir = normalize(truePosOffset);
+			latchStartAngle = atan2(offsetDir.y, offsetDir.x);
 			circleSeq.Reset();
-			circleSeq.Update( slowMultiple );
+			circleSeq.Update(slowMultiple);
+		}
+			break;
 		}
 	}
-		
 
-	if( circleCounter == 10 )
+	switch (action)
+	{
+	case NEUTRAL:
+		if (PlayerDist() < 1000)
+		{
+			action = WAKEUP;
+			frame = 0;
+		}
+		break;
+	case WAKEUP:
+		break;
+	case APPROACH:
+		break;
+	case CIRCLE:
+		if (sess->GetPlayer(0)->hitstunFrames > 0)
+		{
+			action = FINALCIRCLE;
+			frame = 0;
+			attackOffset = truePosOffset;
+		}
+		break;
+	case FINALCIRCLE:
+		break;
+	case RUSH:
+		break;
+	}
+
+	/*if( circleCounter == 10 )
 	{
 		wakeCounter = 0;
 		action = WAKEUP;
@@ -207,7 +224,7 @@ void Shark::ProcessState()
 		basePos = position;
 		circleCounter = 0;
 		frame = 0;
-	}
+	}*/
 }
 
 V2d Shark::GetCircleOffset()
@@ -233,19 +250,30 @@ void Shark::UpdateEnemyPhysics()
 
 	if( (action == CIRCLE || action == FINALCIRCLE) && latchedOn )
 	{
-		position = basePos + truePosOffset * length( offsetPlayer );
+		currPosInfo.position = basePos + truePosOffset * length( offsetPlayer );
 
-		circleSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps );
-		if( circleSeq.currMovement == NULL )
-		{
-			circleSeq.Reset();
-			circleSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-			++circleCounter;
-		}
+		circleSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+
+		//if (numPhysSteps == 1)
+		//{
+		//	circleSeq.Update(slowMultiple, 10);
+		//}
+		//else
+		//{
+		//	circleSeq.Update(slowMultiple);
+		//}
+
+		////circleSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps );
+		//if( circleSeq.currMovement == NULL )
+		//{
+		//	circleSeq.Reset();
+		//	circleSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+		//	++circleCounter;
+		//}
 	}
 	else if( action == RUSH )
 	{
-		position = basePos + rushSeq.position;
+		currPosInfo.position = basePos + rushSeq.position;
 		rushSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 	}
 }
@@ -254,20 +282,26 @@ void Shark::UpdateSprite()
 {
 	if (latchedOn)
 	{
-		V2d playerPos = owner->GetPlayerPos(0);
+		V2d playerPos = sess->GetPlayerPos(0);
 		basePos = playerPos;
 		if ((action == CIRCLE || action == FINALCIRCLE))
 		{
-			position = basePos + GetCircleOffset() * length(offsetPlayer);
+			currPosInfo.position = basePos + GetCircleOffset() * length(offsetPlayer);
 		}
 		else if (action == RUSH)
 		{
-			position = basePos + rushSeq.position;
+			currPosInfo.position = basePos + rushSeq.position;
 		}
 	}
 
 	switch( action )
 	{
+	case NEUTRAL:
+		sprite.setRotation(0);
+		sprite.setTextureRect(ts_circle->GetSubRect(0));
+		sprite.setOrigin(sprite.getLocalBounds().width / 2,
+			sprite.getLocalBounds().height / 2);
+		break;
 	case WAKEUP:
 		{
 		sprite.setTexture( *ts_circle->texture );
@@ -364,10 +398,10 @@ void Shark::UpdateSprite()
 		break;
 	}
 
-	sprite.setPosition( position.x, position.y );
+	sprite.setPosition( GetPositionF() );
 }
 
 void Shark::EnemyDraw( sf::RenderTarget *target )
 {
-	DrawSpriteIfExists(target, sprite);
+	DrawSprite(target, sprite);
 }

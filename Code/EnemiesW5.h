@@ -10,5 +10,6 @@
 #include "Enemy_TimeBooster.h"
 #include "Enemy_HomingBooster.h"
 #include "Enemy_AntiTimeSlowBooster.h"
+#include "Enemy_Shark.h"
 
 #endif

@@ -7,14 +7,14 @@ struct Shark : Enemy
 {
 	enum Action
 	{
+		NEUTRAL,
 		WAKEUP,
 		APPROACH,
 		CIRCLE,
 		FINALCIRCLE,
 		RUSH,
-		Count
+		A_Count
 	};
-	Action action;
 
 	int circleCounter;
 
@@ -24,34 +24,17 @@ struct Shark : Enemy
 	int circleFrames;
 	double attackAngle;
 
-	int actionLength[Count];
-	int animFactor[Count];
-
 	double latchStartAngle;
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;
-	Shark(GameSession *owner, bool hasMonitor,
-		sf::Vector2i pos, int p_level );
 
-	void ProcessState();
-	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-
-	sf::Vector2<double> basePos;
-
-	V2d GetCircleOffset();
-
+	V2d basePos;
 	sf::Color testColor; //for temp anim
-
 	double acceleration;
 	double speed;
-
 	V2d origOffset;
 	V2d attackOffset;
 
-	sf::Sprite sprite;
 	Tileset *ts_circle;
 	Tileset *ts_bite;
 	Tileset *ts_death;
@@ -61,8 +44,16 @@ struct Shark : Enemy
 	CubicBezier approachAccelBez;
 
 	V2d offsetPlayer;
-	V2d origPosition;
 	bool latchedOn;
+
+	Shark( ActorParams *ap );
+	void SetLevel(int lev);
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	V2d GetCircleOffset();
 };
 
 

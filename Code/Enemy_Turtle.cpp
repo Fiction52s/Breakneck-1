@@ -36,7 +36,7 @@ Turtle::Turtle( ActorParams *ap )
 	fireCounter = 0;
 	
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), 2 * PI, 90, false );
+	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), 3.0/4.0 * PI, 90, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->Reset();
 
