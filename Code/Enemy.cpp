@@ -294,6 +294,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_FIREFLY:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_TETHEREDRUSHER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_CHESS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
@@ -313,6 +316,9 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, 0, 60, 1, false);
 		break;
 	case EnemyType::EN_ROADRUNNER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_LIZARD:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CACTUS:
@@ -1085,6 +1091,7 @@ void Enemy::DirectKill()
 {
 	if (!dead)
 	{
+
 		//sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_killSpack, GetPosition(), true, 0, 10, 4, true);
 
 		dead = true;

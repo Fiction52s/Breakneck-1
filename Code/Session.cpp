@@ -687,6 +687,8 @@ void Session::RegisterW5Enemies()
 
 	AddBasicAerialWorldEnemy("ghost", 5, CreateEnemy<Ghost>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicGroundWorldEnemy("lizard", 5, CreateEnemy<Lizard>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	////AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
 
@@ -743,7 +745,10 @@ void Session::RegisterW6Enemies()
 
 	AddBasicAerialWorldEnemy("futurechecker", 6, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("tetheredrusher", 6, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	AddBasicGroundWorldEnemy("predictturret", 6, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

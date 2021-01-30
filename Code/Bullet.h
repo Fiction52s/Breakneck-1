@@ -44,6 +44,7 @@ struct BasicBullet : QuadTreeCollider
 		CACTUS_SHOTGUN,
 		OWL,
 		BIG_OWL,
+		LIZARD,
 		BOSS_COYOTE,
 		TURTLE,
 		BOSS_TIGER,
@@ -95,6 +96,7 @@ struct BasicBullet : QuadTreeCollider
 
 	BasicBullet(int indexVA, BType bType, Launcher *launcher);
 
+	virtual bool CanInteractWithTerrain();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
@@ -131,6 +133,27 @@ struct SinBullet : BasicBullet
 	//int slowCounter;
 	CollisionBox hurtBody;
 	sf::Vector2<double> tempadd;
+};
+
+struct GrindBullet : BasicBullet
+{
+	GrindBullet(int indexVA, Launcher *launcher);
+	void UpdatePrePhysics();
+	void UpdatePhysics();
+	void Reset(V2d &pos,
+		V2d &vel);
+	bool HitTerrain();
+	bool CanInteractWithTerrain();
+	
+	double grindSpeed;
+	Edge *grindEdge;
+	double edgeQuantity;
+
+	//SinBullet *prev;
+	//SinBullet *next;
+	//int slowCounter;
+	//CollisionBox hurtBody;
+	//sf::Vector2<double> tempadd;
 };
 
 struct CopycatBullet : BasicBullet

@@ -101,6 +101,9 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	case BasicBullet::SHOTGUN:
 		bulletTilesetIndex = 1;
 		break;
+	case BasicBullet::LIZARD:
+		bulletTilesetIndex = 1;
+		break;
 	case BasicBullet::OWL:
 	case BasicBullet::BIG_OWL:
 		bulletTilesetIndex = 1;
@@ -125,6 +128,10 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	{
 		inactiveBullets = new CopycatBullet(startIndex++, this);
 	}
+	else if (bulletType == BasicBullet::LIZARD)
+	{
+		inactiveBullets = new GrindBullet(startIndex++, this);
+	}
 	else
 	{
 		if (wavelength > 0)
@@ -147,6 +154,10 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 		if (bulletType == BasicBullet::COPYCAT)
 		{
 			temp = new CopycatBullet(startIndex++, this);
+		}
+		else if (bulletType == BasicBullet::LIZARD)
+		{
+			temp = new GrindBullet(startIndex++, this);
 		}
 		else
 		{
@@ -611,6 +622,7 @@ void BasicBullet::Reset(V2d &pos, V2d &vel)
 	case LOB_TURRET:
 	case PREDICT:
 	case SHOTGUN:
+	case LIZARD:
 	{
 		transform.rotate(angle);
 		break;
@@ -984,9 +996,14 @@ void BasicBullet::HitPlayer( int pIndex, int hitResult )
 	//launcher->DeactivateBullet( this );
 }
 
+bool BasicBullet::CanInteractWithTerrain()
+{
+	return launcher->interactWithTerrain;
+}
+
 bool BasicBullet::ResolvePhysics(V2d vel)
 {
-	if (launcher->interactWithTerrain && !col)
+	if ( CanInteractWithTerrain() && !col)
 	{
 		Rect<double> oldR(position.x - physBody.rw, position.y - physBody.rw,
 			2 * physBody.rw, 2 * physBody.rw);
@@ -1108,6 +1125,7 @@ void BasicBullet::UpdateSprite()
 		animFactor = 4;
 		break;
 	}
+	case LIZARD:
 	case LOB_TURRET:
 	{
 		double angle = atan2(velocity.y, velocity.x);
@@ -1253,6 +1271,113 @@ void SinBullet::Reset(sf::Vector2<double> &pos,
 {
 	BasicBullet::Reset(pos, vel);
 	tempadd = V2d(0, 0);
+}
+
+GrindBullet::GrindBullet(int indexVA, Launcher *launcher)
+	:BasicBullet(indexVA, BasicBullet::LIZARD, launcher)
+{
+
+}
+
+bool GrindBullet::CanInteractWithTerrain()
+{
+	return launcher->interactWithTerrain && grindEdge == NULL;
+}
+
+void GrindBullet::UpdatePrePhysics()
+{
+
+}
+
+bool GrindBullet::HitTerrain()
+{
+	launcher->handler->BulletHitTerrain(this,
+		minContact.edge, minContact.position);
+	grindEdge = minContact.edge;
+	edgeQuantity = grindEdge->GetQuantity(minContact.position);
+	grindSpeed = launcher->bulletSpeed;
+
+	
+
+	return true;
+}
+
+void GrindBullet::UpdatePhysics()
+{
+	if (grindEdge != NULL)
+	{
+		double factor = slowMultiple * (double)numPhysSteps;
+		double movement = grindSpeed / factor;
+
+		//int grindEdgeIndex = edge->//currPosInfo.GetEdgeIndex();
+		//PolyPtr groundPoly = currPosInfo.ground;
+		//int numPoints = groundPoly->GetNumPoints();
+
+		while (!approxEquals(movement, 0))
+		{
+			double gLen = grindEdge->GetLength();
+
+			if (movement > 0)
+			{
+				double extra = edgeQuantity + movement - gLen;
+
+				if (extra > 0)
+				{
+					movement -= gLen - edgeQuantity;
+					grindEdge = grindEdge->GetNextEdge();
+					//++grindEdgeIndex;
+					//if (grindEdgeIndex == numPoints)
+					//{
+					//	grindEdgeIndex = 0;
+				//	}
+
+					edgeQuantity = 0;
+				}
+				else
+				{
+					edgeQuantity += movement;
+					movement = 0;
+				}
+			}
+			else
+			{
+				double extra = edgeQuantity + movement;
+
+				if (extra < 0)
+				{
+					movement -= movement - extra;
+					grindEdge = grindEdge->GetPrevEdge();
+					//--grindEdgeIndex;
+					//if (grindEdgeIndex < 0)
+				//	{
+				//		grindEdgeIndex = numPoints - 1;
+				//	}
+					edgeQuantity = grindEdge->GetLength();
+				}
+				else
+				{
+					edgeQuantity += movement;
+					movement = 0;
+				}
+			}
+		}
+
+		velocity = grindEdge->Along() * grindSpeed;
+		position = grindEdge->GetPosition(edgeQuantity);
+		hitBody.globalPosition = position;
+	}
+	else
+	{
+		BasicBullet::UpdatePhysics();
+	}
+}
+
+void GrindBullet::Reset(V2d &pos,
+	V2d &vel)
+{
+	BasicBullet::Reset(pos, vel);
+	grindEdge = NULL;
+	edgeQuantity = -1;
 }
 
 
