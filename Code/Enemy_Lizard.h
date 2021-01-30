@@ -19,6 +19,7 @@ struct Lizard : Enemy, GroundMoverHandler,
 
 	int fireWaitCounter;
 	int fireWaitDuration;
+	bool bulletClockwise;
 
 	Tileset *ts_bulletExplode;
 	Tileset *ts;
@@ -58,6 +59,7 @@ struct Lizard : Enemy, GroundMoverHandler,
 		BasicBullet *b,
 		int hitResult);
 	void UpdateBullet(BasicBullet *b);
+	void FireResponse(BasicBullet *b);
 	void DirectKill();
 };
 

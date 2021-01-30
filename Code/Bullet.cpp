@@ -1296,6 +1296,10 @@ bool GrindBullet::HitTerrain()
 	grindEdge = minContact.edge;
 	edgeQuantity = grindEdge->GetQuantity(minContact.position);
 	grindSpeed = launcher->bulletSpeed;
+	if (!clockwise)
+	{
+		grindSpeed = -grindSpeed;
+	}
 
 	
 
@@ -1365,6 +1369,22 @@ void GrindBullet::UpdatePhysics()
 		velocity = grindEdge->Along() * grindSpeed;
 		position = grindEdge->GetPosition(edgeQuantity);
 		hitBody.globalPosition = position;
+
+		if (!launcher->skipPlayerCollideForSubstep)
+		{
+			Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
+
+			Actor::HitResult res = player->CheckIfImHit(hitBody,
+				HitboxInfo::GetAirType(velocity),
+				position, velocity.x >= 0,
+				launcher->hitboxInfo->canBeParried,
+				launcher->hitboxInfo->canBeBlocked);
+
+			if (res != Actor::HitResult::MISS)
+			{
+				HitPlayer(player->actorIndex, res);
+			}
+		}
 	}
 	else
 	{
@@ -1378,6 +1398,7 @@ void GrindBullet::Reset(V2d &pos,
 	BasicBullet::Reset(pos, vel);
 	grindEdge = NULL;
 	edgeQuantity = -1;
+	clockwise = true;
 }
 
 

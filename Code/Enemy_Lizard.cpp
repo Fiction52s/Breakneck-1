@@ -40,6 +40,7 @@ Lizard::Lizard(ActorParams *ap)
 	runAccel = 1.0;
 	runDecel = runAccel * 3.0;
 	fireWaitDuration = 60;
+	bulletClockwise = true;
 
 	attentionRadius = 800;//800;
 	ignoreRadius = 2000;
@@ -297,6 +298,9 @@ void Lizard::ProcessState()
 		launchers[0]->position = GetPosition();
 		V2d norm = groundMover->ground->Normal();
 		launchers[0]->facingDir = -norm;//PlayerDir();
+		bulletClockwise = true;
+		launchers[0]->Fire();
+		bulletClockwise = false;
 		launchers[0]->Fire();
 	}
 }
@@ -326,6 +330,12 @@ void Lizard::UpdateEnemyPhysics()
 			gn = groundMover->ground->Normal();
 		}
 	}
+}
+
+void Lizard::FireResponse( BasicBullet *b )
+{
+	GrindBullet *gb = (GrindBullet*)b;
+	gb->clockwise = bulletClockwise;
 }
 
 void Lizard::FrameIncrement()

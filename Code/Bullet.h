@@ -146,6 +146,7 @@ struct GrindBullet : BasicBullet
 	bool CanInteractWithTerrain();
 	
 	double grindSpeed;
+	bool clockwise;
 	Edge *grindEdge;
 	double edgeQuantity;
 
