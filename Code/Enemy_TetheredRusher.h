@@ -24,8 +24,17 @@ struct TetheredRusher : Enemy
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
+	sf::CircleShape anchorCircle;
 
 	MovementSequence ms;
+	LineMovement *attackMovement;
+	LineMovement *retreatMovement;
+	V2d anchorPos;
+	double anchorRadius;
+
+
+	const static int NUM_SEGMENTS = 10;
+	sf::Vertex segmentQuads[NUM_SEGMENTS * 4];
 
 	TetheredRusher(ActorParams *ap);
 
@@ -33,6 +42,8 @@ struct TetheredRusher : Enemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void ActionEnded();
+	void UpdateHitboxes();
+	bool IsSlowed(int index = 0);
 	void EnemyDraw(sf::RenderTarget *target);
 
 	void SetLevel(int lev);

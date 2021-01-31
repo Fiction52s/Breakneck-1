@@ -18,8 +18,8 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 1;
-	actionLength[RUSH] = 30;
-	actionLength[RECOVER] = 30;
+	actionLength[RUSH] = 10;
+	actionLength[RECOVER] = 40;
 
 	animFactor[NEUTRAL] = 1;
 	animFactor[RUSH] = 1;
@@ -32,15 +32,15 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 
 	maxSpeed = 50;
 
-	chainRadius = 400;
+	chainRadius = 500;
 
-	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/tetheredrusher_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(36);
-	cutObject->SetSubRectBack(37);
+	cutObject->SetSubRectFront(0);
+	cutObject->SetSubRectBack(0);
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -51,10 +51,14 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	anchorRadius = 30;
+
+	BasicCircleHitBodySetup(48);
+	BasicCircleHurtBodySetup(anchorRadius);
 
 	hitBody.hitboxInfo = hitboxInfo;
+
+	
 
 	Color circleColor = Color::Red;
 	circleColor.a = 40;
@@ -63,8 +67,22 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
 		testCircle.getLocalBounds().height / 2);
 
-	ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
-	ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER]);
+	circleColor = Color::Black;
+	anchorCircle.setOutlineColor(Color::Red);
+	anchorCircle.setOutlineThickness(5);
+	anchorCircle.setFillColor(circleColor);
+	anchorCircle.setRadius(anchorRadius);
+	anchorCircle.setOrigin(anchorCircle.getLocalBounds().width / 2,
+		anchorCircle.getLocalBounds().height / 2);
+
+
+	for (int i = 0; i < NUM_SEGMENTS; ++i)
+	{
+		ts->SetQuadSubRect(segmentQuads + i * 4, 1);
+	}
+
+	attackMovement= ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
+	retreatMovement = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER]);
 
 	ResetEnemy();
 }
@@ -95,6 +113,42 @@ void TetheredRusher::SetLevel(int lev)
 	}
 }
 
+bool TetheredRusher::IsSlowed(int index)
+{
+	//needs to use the hitboxes because of the head,
+	//the anchor should not slow the head down.
+	Actor *player = sess->GetPlayer(index);
+	return (player->IntersectMySlowboxes(currHitboxes, currHitboxFrame));
+}
+
+void TetheredRusher::UpdateHitboxes()
+{
+	V2d position = GetPosition();
+
+	double ang = GetGroundedAngleRadians();
+	//can update this with a universal angle at some point
+	if (!hurtBody.Empty())
+	{
+		hurtBody.SetBasicPos(anchorPos, ang);
+	}
+
+	if (!hitBody.Empty())
+	{
+		hitBody.SetBasicPos(position, ang);
+	}
+
+	auto comboBoxes = GetComboHitboxes();
+	if (comboBoxes != NULL)
+	{
+		for (auto it = comboBoxes->begin(); it != comboBoxes->end(); ++it)
+		{
+			(*it).globalPosition = position;
+		}
+	}
+
+	BasicUpdateHitboxInfo();
+}
+
 void TetheredRusher::ResetEnemy()
 {
 	/*if (GetPosition().x < sess->playerOrigPos[0].x)
@@ -102,8 +156,14 @@ void TetheredRusher::ResetEnemy()
 	else
 	facingRight = true;*/
 
+	anchorPos = GetPosition();
+
+	anchorCircle.setPosition(Vector2f(anchorPos));
+
 	action = NEUTRAL;
 	frame = 0;
+
+	testCircle.setPosition(Vector2f(anchorPos));
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -148,6 +208,12 @@ void TetheredRusher::ProcessState()
 		{
 			action = RUSH;
 			frame = 0;
+
+			attackMovement->start = GetPosition();
+			attackMovement->end = GetPosition() + dir * chainRadius;
+
+			retreatMovement->start = attackMovement->end;
+			retreatMovement->end = attackMovement->start;
 			ms.Reset();
 		}
 		break;
@@ -174,6 +240,7 @@ void TetheredRusher::UpdateEnemyPhysics()
 	if (action == RUSH || action == RECOVER)
 	{
 		ms.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+		currPosInfo.position = ms.position;
 	}
 }
 
@@ -193,18 +260,56 @@ void TetheredRusher::UpdateSprite()
 		break;
 	}
 
+	if (action == RUSH || action == RECOVER)
+	{
+		if (ms.currMovement != NULL)
+		{
+			int t = 0;
+			for (int i = 0; i < NUM_SEGMENTS; ++i)
+			{
+				int currTime = ms.currTime - ms.currMovementStartTime;
+
+				if (ms.currMovement == attackMovement)
+				{
+					t = currTime * (i / (double)(NUM_SEGMENTS));
+				}
+				else if ( ms.currMovement == retreatMovement )
+				{
+					t = ms.currMovement->duration - 
+						(ms.currMovement->duration - currTime) 
+						* (i / (double)(NUM_SEGMENTS));
+				}
+
+				SetRectCenter(segmentQuads + i * 4,
+					ts->tileWidth, ts->tileHeight,
+					Vector2f(ms.currMovement->GetPosition(t)));
+			}
+		}
+		else
+		{
+			//assert(false);
+		}
+
+	}
+	
+
 	ts->SetSubRect(sprite, 0, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-
-
-	testCircle.setPosition(GetPositionF());
 }
 
 void TetheredRusher::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(testCircle);
+	//target->draw(testCircle);
+
+
+	target->draw(anchorCircle);
+
+	if (action == RUSH || action == RECOVER)
+	{
+		target->draw(segmentQuads, NUM_SEGMENTS * 4, sf::Quads, ts->texture);
+	}
 
 	DrawSprite(target, sprite);
 

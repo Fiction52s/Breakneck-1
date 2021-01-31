@@ -1348,10 +1348,13 @@ void Enemy::UpdatePostPhysics()
 	{
 		if (UpdateAccountingForSlow())
 		{
-			--pauseFrames;
+			
 		}
+		--pauseFrames;
 		return;
 	}
+
+	SlowCheck(0); //moved here from physics for speed?
 	
 	if (currShield != NULL)
 	{
@@ -1811,8 +1814,8 @@ void Enemy::UpdateEnemyPhysics()
 
 void Enemy::CheckPlayerInteractions( int i )
 {
-	SlowCheck(i);
 
+	//SlowCheck(i);
 	if (currShield != NULL)
 	{
 		if (currShield->pauseFrames == 0)
