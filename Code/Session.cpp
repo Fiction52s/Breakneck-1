@@ -1642,6 +1642,12 @@ Session::~Session()
 		delete terrainTree;
 		terrainTree = NULL;
 	}
+
+	if (specterTree != NULL)
+	{
+		delete specterTree;
+		specterTree = NULL;
+	}
 	
 	if (enemyTree!= NULL)
 	{

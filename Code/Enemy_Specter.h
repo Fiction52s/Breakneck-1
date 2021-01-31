@@ -6,14 +6,16 @@
 struct Specter;
 struct SpecterArea : QuadTreeEntrant
 {
-	SpecterArea(Specter *sp, sf::Vector2i &pos, int rad);
+	SpecterArea(Specter *sp);
 	void HandleQuery(QuadTreeCollider * qtc);
 	bool IsTouchingBox(const sf::Rect<double> &r);
+	void SetRadius(int rad);
 	int radius;
 	V2d position;
 	sf::Rect<double> testRect;
 	//CollisionBox barrier;
 	Specter *specter;
+	void UpdatePosition();
 };
 
 struct SpecterTester : QuadTreeCollider
@@ -32,7 +34,7 @@ struct Specter : Enemy
 		A_Count
 	};
 
-	SpecterArea *myArea;
+	SpecterArea myArea;
 
 	int radius;
 	Tileset *ts;

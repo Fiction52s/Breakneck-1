@@ -488,8 +488,8 @@ void Enemy::OnCreate(ActorParams *ap,
 
 	if (CanTouchSpecter())
 	{
-		specterTester = NULL;
-		//specterTester = new SpecterTester(this);
+		//specterTester = NULL;
+		specterTester = new SpecterTester(this);
 	}
 	else
 	{
@@ -1047,6 +1047,7 @@ bool Enemy::IsTouchingSpecterField( SpecterArea *sa )
 void Enemy::CheckTouchingSpecterField(SpecterArea *sa)
 {
 	specterProtected = IsTouchingSpecterField(sa);
+
 	if (currShield != NULL)
 		currShield->specterProtected = specterProtected;
 }
@@ -1242,19 +1243,21 @@ void Enemy::CheckSpecters()
 	specterProtected = false;
 	if (currShield != NULL)
 		currShield->specterProtected = specterProtected;
-	/*if (CanTouchSpecter())
+
+	if (CanTouchSpecter())
 	{
 		assert(specterTester != NULL);
 
 		double extra = 5;
 		sf::Rect<double> r;
-		r.left = position.x - extra;
-		r.top = position.y - extra;
+		V2d pos = GetPosition();
+		r.left = pos.x - extra;
+		r.top = pos.y - extra;
 		r.width = extra * 2;
 		r.height = extra * 2;
 
 		specterTester->Query(r);
-	}*/
+	}
 }
 
 void Enemy::UpdatePrePhysics()
@@ -1977,6 +1980,7 @@ bool HittableObject::CheckHit( Actor *player, Enemy *e )
 	{
 		comboHitEnemy = NULL;
 		receivedHit = IsHit(player->actorIndex);
+
 		receivedHitPlayer = player;
 		if (receivedHit == NULL)
 			return false;

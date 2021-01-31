@@ -23,26 +23,33 @@ void SpecterTester::HandleEntrant(QuadTreeEntrant *qte)
 	}
 }
 
+
+
 void SpecterTester::Query( Rect<double> &r )
 {
 	enemy->sess->specterTree->Query(this, r);
 }
 
-SpecterArea::SpecterArea( Specter *sp, sf::Vector2i &pos, int rad )
-	:radius( rad ), specter( sp )
+SpecterArea::SpecterArea( Specter *sp )
+	:specter(sp)
+{
+	UpdatePosition();
+	SetRadius(1000);
+}
+
+void SpecterArea::SetRadius(int rad)
+{
+	radius = rad;
+}
+
+void SpecterArea::UpdatePosition()
 {
 	double extra = 5;
-	testRect.left = pos.x - rad - extra;
-	testRect.top = pos.y - rad - extra;
-	testRect.width = rad * 2 + extra * 2;
-	testRect.height = rad * 2 + extra * 2;
-
-	position = V2d(pos);
-
-	//barrier.globalPosition = V2d( pos.x, pos.y );
-	//barrier.isCircle = true;
-	//barrier.rw = rad;
-	//barrier.type 
+	position = specter->GetPosition();
+	testRect.left = position.x - radius - extra;
+	testRect.top = position.y - radius - extra;
+	testRect.width = radius * 2 + extra * 2;
+	testRect.height = radius * 2 + extra * 2;
 }
 
 void SpecterArea::HandleQuery( QuadTreeCollider * qtc )
@@ -59,19 +66,18 @@ bool SpecterArea::IsTouchingBox( const sf::Rect<double> &r )
 	b.rh = r.height / 2;
 	b.globalPosition = V2d( r.left + b.rw, r.top + b.rh );*/
 
-	return r.intersects( testRect );//barrier.Intersects( b );//
+	return IsBoxTouchingBox(r, testRect);//r.intersects( testRect );//barrier.Intersects( b );//
 }
 
 Specter::Specter( ActorParams *ap )
-	:Enemy( EnemyType::EN_SPECTER, ap )//, myArea( this, pos, 400 )
+	:Enemy( EnemyType::EN_SPECTER, ap ), myArea( this )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, IDLE, 0);
 
 	radius = 1000;
 
-	myArea = new SpecterArea(this, Vector2i(), radius);
-
+	myArea.SetRadius(radius);
 	//hopefully this doesnt cause deletion bugs
 
 	animationFactor = 10;
@@ -106,7 +112,6 @@ Specter::Specter( ActorParams *ap )
 
 Specter::~Specter()
 {
-	delete myArea;
 }
 
 void Specter::SetLevel(int lev)
@@ -131,8 +136,9 @@ void Specter::SetLevel(int lev)
 
 void Specter::AddToWorldTrees()
 {
-	myArea->position = GetPosition();
-	sess->specterTree->Insert(myArea);
+	myArea.UpdatePosition();
+	myArea.position = GetPosition();
+	sess->specterTree->Insert(&myArea);
 }
 
 void Specter::ResetEnemy()

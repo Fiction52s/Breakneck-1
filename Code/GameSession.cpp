@@ -762,12 +762,6 @@ void GameSession::Cleanup()
 
 	CleanupGoalPulse();
 
-	if (specterTree != NULL)
-	{
-		delete specterTree;
-		specterTree = NULL;
-	}
-
 	if (envPlantTree != NULL)
 	{
 		delete envPlantTree;

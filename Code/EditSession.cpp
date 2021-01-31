@@ -826,6 +826,7 @@ void EditSession::TestPlayerMode()
 		gateTree->Clear();
 		enemyTree->Clear();
 		railDrawTree->Clear();
+		specterTree->Clear();
 		
 
 		Enemy *currEnemy;
@@ -873,6 +874,8 @@ void EditSession::TestPlayerMode()
 		enemyTree = new QuadTree(1000000, 1000000);
 
 		railDrawTree = new QuadTree(1000000, 1000000);
+
+		specterTree = new QuadTree(1000000, 1000000);
 		//Actor *p;
 		
 		/*for (int i = 0; i < MAX_PLAYERS; ++i)

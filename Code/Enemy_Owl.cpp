@@ -149,6 +149,7 @@ void Owl::ResetEnemy()
 	action = REST;
 	frame = 0;
 
+	shield->SetPosition(GetPosition());
 	currShield = shield;
 	shield->Reset();
 
@@ -365,7 +366,7 @@ void Owl::ProcessState()
 
 void Owl::UpdateEnemyPhysics()
 {	
-	shield->SetPosition(GetPosition());
+	
 }
 
 void Owl::UpdateSprite()
