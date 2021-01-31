@@ -318,6 +318,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_ROADRUNNER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_SKUNK:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_LIZARD:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

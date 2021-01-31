@@ -3,9 +3,8 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
-#include "Enemy_Lizard.h"
+#include "Enemy_Skunk.h"
 #include "Shield.h"
-#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -20,8 +19,8 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-Lizard::Lizard(ActorParams *ap)
-	:Enemy(EnemyType::EN_LIZARD, ap)
+Skunk::Skunk(ActorParams *ap)
+	:Enemy(EnemyType::EN_SKUNK, ap)
 {
 	SetLevel(ap->GetLevel());
 
@@ -30,17 +29,19 @@ Lizard::Lizard(ActorParams *ap)
 
 	actionLength[IDLE] = 11 * 5;
 	actionLength[LAND] = 1;
-	actionLength[JUMP] = 2;
-	actionLength[RUN] = 9 * 4;
+	actionLength[HOP] = 2;
+	actionLength[WALK] = 60;
 	actionLength[WAKEUP] = 30;
+	actionLength[EXPLODE] = 60;
 
-	gravity = .5;
-	maxGroundSpeed = 5;
+	gravity = .8;
+	maxGroundSpeed = 3;
 	maxFallSpeed = 20;
 	runAccel = 1.0;
 	runDecel = runAccel * 3.0;
-	fireWaitDuration = 60;
-	bulletClockwise = true;
+
+	explosionRadius = 300;
+
 
 	attentionRadius = 800;//800;
 	ignoreRadius = 2000;
@@ -49,14 +50,9 @@ Lizard::Lizard(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = sess->GetSizedTileset("Enemies/Roadrunner_256x256.png");
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
+	
 
-	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this,
-		BasicBullet::LIZARD, 32, 1, GetPosition(), V2d(0, -1), 0, 180, true);
-	launchers[0]->SetBulletSpeed(10);
-	launchers[0]->hitboxInfo->damage = 18;
+	ts = sess->GetSizedTileset("Enemies/skunk_128x128.png");
 
 	SetOffGroundHeight(128 / 2);
 
@@ -75,22 +71,43 @@ Lizard::Lizard(ActorParams *ap)
 	BasicCircleHitBodySetup(48);
 	hitBody.hitboxInfo = hitboxInfo;
 
+	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
+	explosion.hitboxInfo = hitboxInfo;
+
+	explosionHitboxInfo.damage = 18;
+	explosionHitboxInfo.drainX = 0;
+	explosionHitboxInfo.drainY = 0;
+	explosionHitboxInfo.hitlagFrames = 0;
+	explosionHitboxInfo.hitstunFrames = 30;
+	explosionHitboxInfo.knockback = 20;
+	explosionHitboxInfo.hitPosType = HitboxInfo::HitPosType::OMNI;
+	
+	explosion.hitboxInfo = &explosionHitboxInfo;
+	
+
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(0);
 	cutObject->SetScale(scale);
 
+	Color exploColor = Color::Red;
+	exploColor.a = 100;
+	testCircle.setFillColor(exploColor);
+	testCircle.setRadius(explosionRadius);
+	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
+		testCircle.getLocalBounds().height / 2);
+
 	ResetEnemy();
 }
 
-void Lizard::SetLevel(int lev)
+void Skunk::SetLevel(int lev)
 {
 	level = lev;
 
 	switch (level)
 	{
 	case 1:
-		scale = .5;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -103,14 +120,14 @@ void Lizard::SetLevel(int lev)
 	}
 }
 
-void Lizard::DebugDraw(RenderTarget *target)
+void Skunk::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	//if (!dead)
 	//testMover->physBody.DebugDraw(target);
 }
 
-void Lizard::ResetEnemy()
+void Skunk::ResetEnemy()
 {
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
@@ -122,15 +139,13 @@ void Lizard::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	fireWaitCounter = 0;
-
 	frame = 0;
 
 	UpdateSprite();
 	UpdateHitboxes();
 }
 
-void Lizard::UpdateHitboxes()
+void Skunk::UpdateHitboxes()
 {
 	Edge *ground = groundMover->ground;
 	if (ground != NULL)
@@ -158,7 +173,7 @@ void Lizard::UpdateHitboxes()
 	BasicUpdateHitboxes();
 }
 
-void Lizard::ActionEnded()
+void Skunk::ActionEnded()
 {
 	if (frame == actionLength[action])
 	{
@@ -168,24 +183,39 @@ void Lizard::ActionEnded()
 			frame = 0;
 			break;
 		case WAKEUP:
-			action = RUN;
+			action = WALK;
 			frame = 0;
 			break;
-		case RUN:
+		case WALK:
+			action = HOP;
 			frame = 0;
+			if (facingRight)
+			{
+				groundMover->Jump(V2d(maxGroundSpeed, -10));
+			}
+			else
+			{
+				groundMover->Jump(V2d(-maxGroundSpeed, -10));
+			}
 			break;
-		case JUMP:
+		case HOP:
 			frame = 1;
 			break;
 		case LAND:
-			action = RUN;
+			action = WALK;
+			frame = 0;
+			break;
+		case EXPLODE:
+			DefaultHurtboxesOn();
+			DefaultHitboxesOn();
+			action = WALK;
 			frame = 0;
 			break;
 		}
 	}
 }
 
-void Lizard::ProcessState()
+void Skunk::ProcessState()
 {
 	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
 	//Actor *player = owner->GetPlayer( 0 );
@@ -202,13 +232,13 @@ void Lizard::ProcessState()
 	{
 		if (dist < attentionRadius)
 		{
-			action = RUN;
+			action = WALK;
 			frame = 0;
 		}
 		break;
 	}
 
-	case RUN:
+	case WALK:
 	{
 		double dist = length(playerPos - position);
 		if (dist >= ignoreRadius)
@@ -219,7 +249,7 @@ void Lizard::ProcessState()
 		break;
 	}
 
-	case JUMP:
+	case HOP:
 		break;
 		//case ATTACK:
 		//	break;
@@ -233,7 +263,7 @@ void Lizard::ProcessState()
 		groundMover->SetSpeed(0);
 		//cout << "idle: " << frame << endl;
 		break;
-	case RUN:
+	case WALK:
 		if (facingRight)
 		{
 			if (playerPos.x < position.x - 50)
@@ -273,7 +303,7 @@ void Lizard::ProcessState()
 		else if (groundMover->groundSpeed < -maxGroundSpeed)
 			groundMover->SetSpeed(-maxGroundSpeed);
 		break;
-	case JUMP:
+	case HOP:
 		//cout << "jump: " << frame << endl;
 		break;
 		//	case ATTACK:
@@ -287,34 +317,15 @@ void Lizard::ProcessState()
 		//testMover->SetSpeed( 0 );
 	}
 	break;
+	case EXPLODE:
+		break;
 	default:
 		//cout << "WAATATET" << endl;
 		break;
 	}
-
-	if (action != IDLE && fireWaitCounter == 0 && slowCounter == 1)
-	{
-		//ground has to be not null.
-		launchers[0]->position = GetPosition();
-
-		
-		if (groundMover->ground != NULL)
-		{
-			launchers[0]->facingDir = -groundMover->ground->Normal();
-		}
-		else
-		{
-			launchers[0]->facingDir = V2d(0, 1);
-		}
-		
-		bulletClockwise = true;
-		launchers[0]->Fire();
-		bulletClockwise = false;
-		launchers[0]->Fire();
-	}
 }
 
-void Lizard::UpdateEnemyPhysics()
+void Skunk::UpdateEnemyPhysics()
 {
 	if (numHealth > 0) //!dead
 	{
@@ -341,39 +352,121 @@ void Lizard::UpdateEnemyPhysics()
 	}
 }
 
-void Lizard::FireResponse( BasicBullet *b )
+void Skunk::ProcessHit()
 {
-	GrindBullet *gb = (GrindBullet*)b;
-	gb->clockwise = bulletClockwise;
-}
-
-void Lizard::FrameIncrement()
-{
-	if (action != IDLE)
+	if (!dead && ReceivedHit() && numHealth > 0)
 	{
-		fireWaitCounter++;
-		if (fireWaitCounter == fireWaitDuration)
+		numHealth -= 1;
+
+		if (numHealth <= 0)
 		{
-			fireWaitCounter = 0;
+			if (hasMonitor && !suppressMonitor)
+			{
+				//sess->CollectKey();
+			}
+
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
 		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+
+			action = EXPLODE;
+
+			if (groundMover->ground != NULL)
+			{
+				groundMover->SetSpeed(0);
+			}
+			frame = 0;
+			explosion.SetBasicPos(GetPosition());
+			SetHitboxes(&explosion, 0);
+			HurtboxesOff();
+			//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+
+		}
+
+		
+
+		receivedHit = NULL;
 	}
+
+	//if (action != EXPLODE && !dead && ReceivedHit() && numHealth > 0)
+	//{
+	//	sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+	//	ConfirmHitNoKill();
+	//	action = EXPLODE;
+	//	frame = 0;
+	//	SetHitboxes(NULL, 0);
+	//	SetHurtboxes(NULL, 0);
+
+	//	V2d dir;
+
+	//	facingRight = !facingRight;
+
+	//	comboObj->enemyHitboxInfo->hDir = -playerDir;//receivedHit->hDir;
+	//	dir = -playerDir;
+	//	velocity = dir * speed;
+
+	//	sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+	//}
+	//else
+	//{
+	//	Enemy::ProcessHit();
+	//}
+
+	//might add more later to return
 }
 
-void Lizard::HandleNoHealth()
+
+void Skunk::HandleNoHealth()
 {
 	cutObject->SetFlipHoriz(!facingRight);
 	cutObject->rotateAngle = sprite.getRotation();
 }
 
 
-void Lizard::EnemyDraw(sf::RenderTarget *target)
+void Skunk::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (action == EXPLODE)
+	{
+		target->draw(testCircle);
+	}
 }
 
+void Skunk::IHitPlayer(int index)
+{
+	if (action == EXPLODE)
+	{
+		explosionHitboxInfo.kbDir = normalize(V2d(2, -1));//PlayerDir();
 
+		if (PlayerDir().x < 0)
+		{
+			explosionHitboxInfo.kbDir.x = -explosionHitboxInfo.kbDir.x;
+		}
+		if (explosionHitboxInfo.kbDir.x == 0 && explosionHitboxInfo.kbDir.y == 0)
+		{
+			explosionHitboxInfo.kbDir = normalize(V2d(1, -1));
+		}
+	}
+	
+	/*V2d playerPos = sess->GetPlayerPos(index);
+	if (dot(normalize(playerPos - GetPosition()), hitboxInfo->kbDir) < 0)
+	{
+		hitboxInfo->kbDir = -hitboxInfo->kbDir;
+	}*/
 
-void Lizard::UpdateSprite()
+	/*if (action != WAIT)
+	{
+		action = HITTING;
+		frame = 0;
+	}*/
+}
+
+void Skunk::UpdateSprite()
 {
 
 	IntRect r = ts->GetSubRect(0);
@@ -385,35 +478,36 @@ void Lizard::UpdateSprite()
 	sprite.setTextureRect(r);
 
 
-	int extraVert = 64;
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
+	int extraVert = 50;
+	sprite.setOrigin(sprite.getLocalBounds().width / 2,
+		sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(groundMover->GetAngleDegrees());
 
+	testCircle.setPosition(GetPositionF());
 
 	SyncSpriteInfo(auraSprite, sprite);
 }
 
-void Lizard::HitTerrain(double &q)
+void Skunk::HitTerrain(double &q)
 {
 	//cout << "hit terrain? " << endl;
 }
 
-bool Lizard::StartRoll()
+bool Skunk::StartRoll()
 {
 	return false;
 }
 
-void Lizard::FinishedRoll()
+void Skunk::FinishedRoll()
 {
 
 }
 
-void Lizard::HitOther()
+void Skunk::HitOther()
 {
 	//cout << "hit other" << endl;
-
-	if (action == RUN)
+	if (action == WALK)
 	{
 		if ((facingRight && groundMover->groundSpeed < 0)
 			|| (!facingRight && groundMover->groundSpeed > 0))
@@ -421,32 +515,15 @@ void Lizard::HitOther()
 			//cout << "here" << endl;
 			groundMover->SetSpeed(0);
 		}
-		else if (facingRight && groundMover->groundSpeed > 0)
+		else
 		{
-			V2d v = V2d(maxGroundSpeed, -10);
-			groundMover->Jump(v);
-			action = JUMP;
-			frame = 0;
-		}
-		else if (!facingRight && groundMover->groundSpeed < 0)
-		{
-			V2d v = V2d(-maxGroundSpeed, -10);
-			groundMover->Jump(v);
-			action = JUMP;
-			frame = 0;
+			Hop();
 		}
 	}
 }
 
-void Lizard::ReachCliff()
+void Skunk::Hop()
 {
-	if ((facingRight && groundMover->groundSpeed < 0)
-		|| (!facingRight && groundMover->groundSpeed > 0))
-	{
-		groundMover->SetSpeed(0);
-		return;
-	}
-
 	double jumpStrength = -10;
 
 	V2d v;
@@ -461,54 +538,32 @@ void Lizard::ReachCliff()
 
 	groundMover->Jump(v);
 
-	action = JUMP;
+	action = HOP;
 	frame = 0;
 }
 
-void Lizard::HitOtherAerial(Edge *e)
+void Skunk::ReachCliff()
+{
+	if ((facingRight && groundMover->groundSpeed < 0)
+		|| (!facingRight && groundMover->groundSpeed > 0))
+	{
+		groundMover->SetSpeed(0);
+		return;
+	}
+
+	Hop();
+}
+
+void Skunk::HitOtherAerial(Edge *e)
 {
 	//cout << "hit edge" << endl;
 }
 
-void Lizard::Land()
+void Skunk::Land()
 {
-	action = LAND;
-	frame = 0;
-}
-
-void Lizard::BulletHitTerrain(BasicBullet *b,
-	Edge *edge,
-	sf::Vector2<double> &pos)
-{
-	/*V2d norm = edge->Normal();
-	double angle = atan2(norm.y, -norm.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	b->launcher->DeactivateBullet(b);*/
-}
-
-void Lizard::BulletHitPlayer(
-	int playerIndex,
-	BasicBullet *b,
-	int hitResult)
-{
-	V2d vel = b->velocity;
-	double angle = atan2(vel.y, vel.x);
-	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-
-	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	if (action != EXPLODE)
 	{
-		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+		action = LAND;
+		frame = 0;
 	}
-
-	b->launcher->DeactivateBullet(b);
-}
-
-void Lizard::UpdateBullet(BasicBullet *b)
-{
-
-}
-
-void Lizard::DirectKill()
-{
-
 }

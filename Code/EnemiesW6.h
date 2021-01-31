@@ -13,5 +13,6 @@
 #include "Enemy_PredictTurret.h"
 #include "Enemy_FutureChecker.h"
 #include "Enemy_TetheredRusher.h"
+#include "Enemy_Skunk.h"
 
 #endif

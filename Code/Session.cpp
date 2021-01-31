@@ -749,6 +749,8 @@ void Session::RegisterW6Enemies()
 
 	AddBasicGroundWorldEnemy("predictturret", 6, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicGroundWorldEnemy("skunk", 6, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

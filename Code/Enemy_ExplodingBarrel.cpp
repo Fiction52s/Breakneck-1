@@ -142,7 +142,7 @@ void ExplodingBarrel::ProcessHit()
 		action = S_EXPLODE;
 		frame = 0;
 		SetHitboxes(&explosion, 0);
-		SetHurtboxes(NULL, 0);
+		HurtboxesOff();
 		
 
 		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
