@@ -295,4 +295,3 @@ ActorParams *BossSkeletonParams::Copy()
 	BossSkeletonParams *copy = new BossSkeletonParams( *this );
 	return copy;
 }
-

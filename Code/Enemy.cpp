@@ -294,6 +294,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_FIREFLY:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_LASERJAYS:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_TETHEREDRUSHER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

@@ -14,5 +14,6 @@
 #include "Enemy_FutureChecker.h"
 #include "Enemy_TetheredRusher.h"
 #include "Enemy_Skunk.h"
+#include "Enemy_LaserJays.h"
 
 #endif

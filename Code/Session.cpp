@@ -745,6 +745,8 @@ void Session::RegisterW6Enemies()
 
 	AddBasicAerialWorldEnemy("futurechecker", 6, CreateEnemy<FutureChecker>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicAerialWorldEnemy("laserjays", 6, CreateEnemy<LaserJays>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	AddBasicAerialWorldEnemy("tetheredrusher", 6, CreateEnemy<TetheredRusher>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("predictturret", 6, CreateEnemy<PredictTurret>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -1531,6 +1533,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	flyTerrainTree = NULL;
 	terrainTree = NULL;
 	specialTerrainTree = NULL;
+	specterTree = NULL;
 	railEdgeTree = NULL;
 	barrierTree = NULL;
 	borderTree = NULL;
