@@ -44,9 +44,9 @@ void LaserJays::Construct(ActorParams *ap)
 	attentionRadius = 800;
 	ignoreRadius = 2000;
 
-	accel = .1;
+	accel = 1.0;//.3;//.1;
 
-	maxSpeed = 5;
+	maxSpeed = 20;//5;
 
 	activatePulseRadius = 300;
 
@@ -156,11 +156,14 @@ void LaserJays::ApproachMovement()
 	}
 	else
 	{
-		velocity = PlayerDir() * maxSpeed;
+		V2d offset(0, -300);
 		if (secondary)
 		{
-			velocity = -velocity;
+			offset.y = -offset.y;
 		}
+		V2d targetDir = PlayerDir(V2d(), V2d(offset));
+		velocity += targetDir * accel;
+		CapVectorLength(velocity, maxSpeed);
 	}
 }
 
@@ -318,9 +321,26 @@ void LaserJays::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (!secondary)
+	{
+		V2d diff = otherJay->GetPosition() - GetPosition();
+		V2d laserDir = normalize(diff);
+		double laserAngle = GetVectorAngleCW(laserDir);
+
+		SetRectRotation(laserQuad, laserAngle, length(diff), 10, 
+			Vector2f(GetPosition() + diff / 2.0));
+		SetRectColor(laserQuad, Color::Magenta);
+	}
+	
 }
 
 void LaserJays::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (!secondary)
+	{
+		target->draw(laserQuad, 4, sf::Quads);
+	}
 }

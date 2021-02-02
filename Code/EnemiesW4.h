@@ -12,5 +12,6 @@
 #include "Enemy_MomentumBooster.h"
 #include "Enemy_PalmTurret.h"
 #include "Enemy_Falcon.h"
+#include "Enemy_Pufferfish.h"
 
 #endif

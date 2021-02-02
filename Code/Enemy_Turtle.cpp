@@ -36,7 +36,7 @@ Turtle::Turtle( ActorParams *ap )
 	fireCounter = 0;
 	
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), 3.0/4.0 * PI, 90, false );
+	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), PI * .5, 90, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->Reset();
 
@@ -196,6 +196,11 @@ void Turtle::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
+		if (PlayerDist(0) <= 600)
+		{
+			action = FIRE;
+			frame = 0;
+		}
 		//cout << "NEUTRAL";
 		break;
 	case FIRE:
@@ -243,15 +248,6 @@ void Turtle::ProcessState()
 
 void Turtle::UpdateEnemyPhysics()
 {	
-	V2d playerPos = sess->GetPlayerPos(0);
-	if (action == NEUTRAL)
-	{
-		if (PlayerDist( 0 ) <= 600 )
-		{
-			action = FIRE;
-			frame = 0;
-		}
-	}
 }
 
 void Turtle::UpdateSprite()

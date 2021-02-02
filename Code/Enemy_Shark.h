@@ -28,6 +28,8 @@ struct Shark : Enemy
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;
 
+	RadialMovement *circleMovement;
+
 	V2d basePos;
 	sf::Color testColor; //for temp anim
 	double acceleration;

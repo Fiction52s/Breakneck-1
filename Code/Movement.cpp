@@ -323,6 +323,7 @@ void RadialMovement::Set(V2d &base, V2d &startPos, double p_endAngle,
 	startAngle = GetVectorAngleCW(normalize(startPos - base));
 	endAngle = p_endAngle;
 	clockwise = p_clockwise; 
+	bez = p_bez;
 
 	double angleDiff;
 	if (clockwise)

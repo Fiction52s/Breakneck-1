@@ -30,6 +30,8 @@ struct LaserJays : Enemy
 	LaserJays *otherJay;
 	ActorParams *otherParams;
 
+	sf::Vertex laserQuad[4];
+
 	LaserJays(ActorParams *ap);
 	LaserJays(ActorParams *ap, bool secondary);
 	~LaserJays();

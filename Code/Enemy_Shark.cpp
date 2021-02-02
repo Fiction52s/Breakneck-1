@@ -35,15 +35,17 @@ Shark::Shark( ActorParams *ap )
 	animFactor[FINALCIRCLE] = 1;
 	animFactor[APPROACH] = 1;
 	animFactor[CIRCLE] = 1;
-	animFactor[RUSH] = 5;	
+	animFactor[RUSH] = 5;
 
 	
 
 	//V2d dirFromPlayer = normalize( owner->GetPlayerPos( 0 ) - position );
 	//double fromPlayerAngle =  atan2( dirFromPlayer.y, dirFromPlayer.x ) + PI;
 
-	circleSeq.AddRadialMovement(V2d(0, 0), V2d(0, 0), 0, true, 
+	circleMovement = circleSeq.AddRadialMovement(V2d(0, 0), V2d(1, 0), 2 * PI, true,
 		CubicBezier(.57, .3, .53, .97), circleFrames);
+
+	//circleMovement->Set(V2d(), V2d(1, 0), 2 * PI, true, CubicBezier(), circleFrames);
 	circleSeq.InitMovementDebug();
 
 
@@ -145,9 +147,14 @@ void Shark::ProcessState()
 			offsetPlayer = basePos - playerPos;
 			origOffset = offsetPlayer;
 			V2d offsetDir = normalize(offsetPlayer);
-			latchStartAngle = atan2(offsetDir.y, offsetDir.x);
+			latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
 
+			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), circleFrames );
+			circleMovement->InitDebugDraw();
+			circleSeq.Reset();
 
+			//circleMovement->radius = 1;//length(origOffset);
+			//circleMovement->start = offsetDir;
 			//testing
 
 			circleSeq.Update(slowMultiple);
@@ -384,10 +391,14 @@ void Shark::UpdateSprite()
 			}
 			sprite.setTextureRect( ir );
 
-			V2d normOffset = normalize( -attackOffset );
-			double angle = atan2( normOffset.y, normOffset.x );//atan2( normOffset.x, -normOffset.y );
-			if( angle < 0 )
-				angle += PI * 2;
+
+			//GetVectorAngleCW(-attackOffset);
+			//V2d normOffset = normalize( -attackOffset );
+			//double angle = atan2( normOffset.y, normOffset.x );//atan2( normOffset.x, -normOffset.y );
+			//if( angle < 0 )
+		//		angle += PI * 2;
+
+			double angle = GetVectorAngleCW(attackOffset);
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, 
 				sprite.getLocalBounds().height / 2 );
 			sprite.setRotation( angle / PI * 180.0 );
