@@ -8,17 +8,28 @@ struct GrowingTree : Enemy, LauncherEnemy
 {
 	enum Action
 	{
-		RECOVER0,
-		RECOVER1,
-		RECOVER2,
-		LEVEL0,
+		NEUTRAL0,
+		NEUTRAL1,
+		NEUTRAL2,
+		ATTACK0,
 		LEVEL0TO1,
-		LEVEL1,
+		ATTACK1,
 		LEVEL1TO2,
-		LEVEL2,
-		EXPLODE,
+		ATTACK2,
 		A_Count
 	};
+
+	double pulseRadius;
+	int pulseFrame;
+	Tileset *ts_bulletExplode;
+	int powerLevel;
+	int totalBullets;
+	Tileset *ts;
+	int startPowerLevel;
+	double attentionRadius;
+	double ignoreRadius;
+	int repCounter;
+	int repsToLevelUp;
 
 	GrowingTree(ActorParams *ap);
 	~GrowingTree();
@@ -30,28 +41,16 @@ struct GrowingTree : Enemy, LauncherEnemy
 	void HandleNoHealth();
 	void Fire();
 	void ResetEnemy();
-	void UpdateOnPlacement(ActorParams *ap);
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge,
 		V2d &pos);
 	void DirectKill();
-	void InitRangeMarkerVA();
 	void BulletHitPlayer(
 		int playerIndex,
 		BasicBullet *b,
 		int hitResult);
 
-	double pulseRadius;
-	int pulseFrame;
-	Tileset *ts_bulletExplode;
-	int powerLevel;
-	int totalBullets;
-
-	Tileset *ts;
-
-	int startPowerLevel;
-
-	sf::Vertex *rangeMarkerVA;
+	
 };
 
 #endif

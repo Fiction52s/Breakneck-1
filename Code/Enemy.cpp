@@ -73,11 +73,13 @@ void Enemy::SetCurrPosInfo(PositionInfo &pi)
 void Enemy::SetOffGroundHeight(double h)
 {
 	groundOffset.y = h;
+	currPosInfo.SetGroundHeight(groundOffset.y);
 }
 
 void Enemy::SetGroundOffset(double x)
 {
 	groundOffset.x = x;
+	currPosInfo.SetGroundOffset(groundOffset.x);
 }
 
 V2d Enemy::GetPosition()
