@@ -13,5 +13,6 @@
 #include "Enemy_PalmTurret.h"
 #include "Enemy_Falcon.h"
 #include "Enemy_Pufferfish.h"
+#include "Enemy_Widow.h"
 
 #endif

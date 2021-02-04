@@ -9,5 +9,7 @@
 #include "Enemy_RewindBooster.h"
 #include "Enemy_RemoteComboer.h"
 #include "Enemy_ExplodingBarrel.h"
+#include "Enemy_Copycat.h"
+#include "Enemy_Trailer.h"
 
 #endif

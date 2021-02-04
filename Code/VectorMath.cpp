@@ -98,6 +98,18 @@ void CapVectorLength(sf::Vector2<double> &v, double maxLength)
 	}
 }
 
+void CapQuantityAbs(double &q, double limit)
+{
+	if (q > limit)
+	{
+		q = limit;
+	}
+	else if (q < -limit)
+	{
+		q = -limit;
+	}
+}
+
 double GetVectorAngleCW(sf::Vector2<double> &a)
 {
 	double angleA = atan2(a.y, a.x);

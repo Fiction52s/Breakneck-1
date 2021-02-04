@@ -2667,6 +2667,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
+	invertInputFrames = 0;
 
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
@@ -4353,6 +4354,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	invertInputFrames = 0;
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
 	globalTimeSlowFrames = 0;
@@ -7496,10 +7498,29 @@ bool Actor::ResolvePhysics( V2d vel )
 	double oldBottom = oldR.top + oldR.height;
 	double bottom = newR.top + newR.height;
 
-	double maxRight = max( right, oldRight );
-	double maxBottom = max( oldBottom, bottom );
-	double minLeft = min( oldR.left, newR.left );
-	double minTop = min( oldR.top, newR.top );
+	double maxRight = right;
+	if (oldRight > maxRight)
+	{
+		maxRight = oldRight;
+	}
+
+	double maxBottom = bottom;
+	if (oldBottom > maxBottom)
+	{
+		maxBottom = oldBottom;
+	}
+
+	double minLeft = newR.left;
+	if (oldR.left < minLeft)
+	{
+		minLeft = oldR.left;
+	}
+
+	double minTop = newR.top;
+	if (oldR.top < minTop)
+	{
+		minTop = oldR.top;
+	}
 	//Rect<double> r( minLeft - 5 , minTop - 5, maxRight - minLeft + 5, maxBottom - minTop + 5 );
 	
 

@@ -1724,28 +1724,16 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 	bs[3].x = ir.left + ir.width;
 	bs[3].y = ir.top + ir.height;
 
-	//as[0] = V2d( ir.left, ir.top );
-	//bs[0] = V2d( ir.left + ir.width, ir.top );
-
-	//as[1] =  V2d( ir.left, ir.top + ir.height );
-	//bs[1] = V2d( ir.left + ir.width, ir.top + ir.height );
-
-	//as[2] = V2d( ir.left, ir.top );
-	//bs[2] = V2d( ir.left, ir.top + ir.height);
-
-	//as[3] = V2d( ir.left + ir.width, ir.top );
-	//bs[3] = V2d( ir.left + ir.width, ir.top + ir.height );
-
 	double erLeft = er.left;
 	double erRight = er.left + er.width;
 	double erTop = er.top;
 	double erBottom = er.top + er.height;
 
 	
-	//else
-	//	return false;
-	
-	
+	double e1Left;
+	double e1Right;
+	double e1Top;
+	double e1Bottom;
 	for( int i = 0; i < 4; ++i )
 	{
 		lineIntersection(eli, as[i], bs[i], e->v0, e->v1);
@@ -1753,8 +1741,8 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 		{
 			V2d &a = as[i];
 			V2d &b = bs[i];
-			double e1Left = a.x;
-			double e1Right = b.x;
+			e1Left = a.x;
+			e1Right = b.x;
 
 			if (b.x < a.x)
 			{
@@ -1762,8 +1750,8 @@ bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir )
 				e1Right = a.x;
 			}
 
-			double e1Top = a.y;
-			double e1Bottom = b.y;
+			e1Top = a.y;
+			e1Bottom = b.y;
 
 			if (b.y < a.y)
 			{

@@ -12,5 +12,6 @@
 #include "Enemy_AntiTimeSlowBooster.h"
 #include "Enemy_Shark.h"
 #include "Enemy_Lizard.h"
+#include "Enemy_Parrot.h"
 
 #endif

@@ -618,6 +618,8 @@ void Session::RegisterW4Enemies()
 
 	AddBasicGroundWorldEnemy("spider", 4, CreateEnemy<Spider>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicGroundWorldEnemy("widow", 4, CreateEnemy<Widow>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 	AddBasicAerialWorldEnemy("turtle", 4, CreateEnemy<Turtle>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("pufferfish", 4, CreateEnemy<Pufferfish>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -661,6 +663,7 @@ void Session::RegisterW5Enemies()
 	AddBasicAerialWorldEnemy("antitimeslowbooster", 5, CreateEnemy<AntiTimeSlowBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 
+
 	AddWorldEnemy("hominglauncher", 5, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddWorldEnemy("hungryreturncomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
 	//	Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3,
@@ -690,6 +693,8 @@ void Session::RegisterW5Enemies()
 	AddBasicAerialWorldEnemy("ghost", 5, CreateEnemy<Ghost>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("lizard", 5, CreateEnemy<Lizard>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("parrot", 5, CreateEnemy<Parrot>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 	////AddWorldEnemy("ghost", 5, LoadParams<GhostParams>, NULL, MakeParamsAerial<GhostParams>,
 	////	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false);
@@ -755,6 +760,8 @@ void Session::RegisterW6Enemies()
 
 	AddBasicGroundWorldEnemy("skunk", 6, CreateEnemy<Skunk>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddBasicGroundWorldEnemy("copycat", 6, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
 
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
@@ -803,6 +810,8 @@ void Session::RegisterW7Enemies()
 	AddBasicAerialWorldEnemy("remotecomboer", 7, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("explodingbarrel", 7, CreateEnemy<ExplodingBarrel>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
+
+	AddBasicAerialWorldEnemy("trailer", 7, CreateEnemy<Trailer>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
 
 }

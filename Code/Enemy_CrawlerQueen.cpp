@@ -121,23 +121,20 @@ void CrawlerQueen::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	action = WAIT;
-	SetHitboxes(NULL);
-	waitFrames = 10;
+	if (sess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = sess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 1);
+		}
+	}
+	
 
-	//action = PUNCH;
-	//SetHitboxInfo(PUNCH);
-	//DefaultHitboxesOn();
+	StartFight();
 
 	hitPlayer = false;
 	comboMoveFrames = 0;
-
-	//actionQueueIndex = 0;
-
-
-
-
-	frame = 0;
 
 	UpdateSprite();
 }

@@ -290,10 +290,19 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_SPIDER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_WIDOW:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_PARROT:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_PULSER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_FIREFLY:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_TRAILER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_LASERJAYS:
@@ -309,6 +318,9 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BADGER:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
+	case EnemyType::EN_COPYCAT:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BOUNCEFLOATER:

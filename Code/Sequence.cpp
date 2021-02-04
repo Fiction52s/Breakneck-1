@@ -619,7 +619,13 @@ bool Sequence::StateIncrement()
 			currMovie = NULL;
 	}
 
-	if (state == numStates)
+	/*if (sess->GetCurrInput(0).PUp())
+	{
+		state = numStates;
+		frame = stateLength[state];
+	}*/
+
+	if ( state == numStates)
 	{
 		ReturnToGame();
 		return false;
