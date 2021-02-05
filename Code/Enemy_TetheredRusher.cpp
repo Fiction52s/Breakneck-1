@@ -34,7 +34,7 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 
 	chainRadius = 500;
 
-	ts = sess->GetSizedTileset("Enemies/tetheredrusher_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/rusher_160x160.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -214,6 +214,15 @@ void TetheredRusher::ProcessState()
 
 			retreatMovement->start = attackMovement->end;
 			retreatMovement->end = attackMovement->start;
+
+			if (attackMovement->start.x - attackMovement->end.x <= 0)
+			{
+				facingRight = true;
+			}
+			else
+			{
+				facingRight = false;
+			}
 			ms.Reset();
 		}
 		break;
@@ -247,7 +256,7 @@ void TetheredRusher::UpdateEnemyPhysics()
 void TetheredRusher::UpdateSprite()
 {
 	int trueFrame;
-	switch (action)
+	/*switch (action)
 	{
 	case NEUTRAL:
 		sprite.setColor(Color::White);
@@ -258,7 +267,7 @@ void TetheredRusher::UpdateSprite()
 	case RECOVER:
 		sprite.setColor(Color::Blue);
 		break;
-	}
+	}*/
 
 	if (action == RUSH || action == RECOVER)
 	{
@@ -297,6 +306,18 @@ void TetheredRusher::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+	if (action == RUSH)
+	{
+		V2d attackDir = normalize(attackMovement->end - attackMovement->start);
+		double ang = GetVectorAngleCW(attackDir);
+		ang = ang / PI * 180.0;
+		if (!facingRight)
+		{
+			ang = -ang + 90;
+		}
+		sprite.setRotation(ang);
+	}
+
 }
 
 void TetheredRusher::EnemyDraw(sf::RenderTarget *target)

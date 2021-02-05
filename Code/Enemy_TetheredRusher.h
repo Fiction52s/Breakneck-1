@@ -33,7 +33,7 @@ struct TetheredRusher : Enemy
 	double anchorRadius;
 
 
-	const static int NUM_SEGMENTS = 10;
+	const static int NUM_SEGMENTS = 6;
 	sf::Vertex segmentQuads[NUM_SEGMENTS * 4];
 
 	TetheredRusher(ActorParams *ap);

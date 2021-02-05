@@ -41,7 +41,13 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	level = ap->GetLevel();
 
+	enemyMover.handler = this;
+
 	nodeAStr = "A";
+
+	CreateSurfaceMover(startPosInfo, 30, this);
+
+	SetOffGroundHeight(128);
 
 	hitboxInfo = new HitboxInfo;
 	/*hitboxInfo = new HitboxInfo;
@@ -114,12 +120,17 @@ void CrawlerQueen::ResetEnemy()
 {
 	currPosInfo = startPosInfo;
 
+	wasAerial = false;
+
 	playerComboer.Reset();
 	snakePool.Reset();
 	enemyMover.Reset();
 
 	fireCounter = 0;
 	facingRight = true;
+
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
 
 	if (sess->preLevelScene == NULL) //fight testing
 	{
@@ -145,6 +156,11 @@ void CrawlerQueen::SetHitboxInfo(int a)
 	hitBody.hitboxInfo = hitboxInfo;
 }
 
+void CrawlerQueen::HandleFinishTargetedMovement()
+{
+	surfaceMover->Set(enemyMover.currPosInfo);
+}
+
 //void CrawlerQueen::SetCommand(int index, BirdCommand &bc)
 //{
 //	actionQueue[index] = bc;
@@ -152,8 +168,11 @@ void CrawlerQueen::SetHitboxInfo(int a)
 
 void CrawlerQueen::DebugDraw(sf::RenderTarget *target)
 {
-	playerComboer.DebugDraw(target);
-	enemyMover.DebugDraw(target);
+	//playerComboer.DebugDraw(target);
+	//enemyMover.DebugDraw(target);
+	//Enemy::DebugDraw(target);
+
+	surfaceMover->physBody.DebugDraw( CollisionBox::Physics, target);
 }
 
 void CrawlerQueen::DirectKill()
@@ -197,45 +216,6 @@ void CrawlerQueen::FrameIncrement()
 	currPosInfo = enemyMover.currPosInfo;
 }
 
-void CrawlerQueen::UpdatePreFrameCalculations()
-{
-	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-
-	if (playerComboer.CanPredict(targetPlayerIndex))
-	{
-		/*if (actionQueueIndex == 3)
-		{
-		dead = true;
-		sess->RemoveEnemy(this);
-		return;
-		}*/
-
-		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
-		targetPos = playerComboer.GetTargetPos();
-
-		comboMoveFrames = targetPlayer->hitstunFrames - 1;//(hitBody.hitboxInfo->hitstunFrames - 1);
-		counterTillAttack = comboMoveFrames - 10;
-
-		//enemyMover.SetModeNodeJump(targetPos, 200);
-		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
-		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
-
-		//int nextAction = //actionQueue[actionQueueIndex].action + 1;
-		//comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
-
-		if (comboMoveFrames < 0)
-		{
-			comboMoveFrames = 0;
-		}
-
-		SetHitboxes(NULL, 0);
-
-		action = COMBOMOVE;
-		frame = 0;
-		hitPlayer = false;
-	}
-}
-
 void CrawlerQueen::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -250,16 +230,19 @@ void CrawlerQueen::ProcessState()
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if (action == MOVE && enemyMover.IsIdle())
+	if (action == MOVE && moveFrames == 0)//enemyMover.IsIdle())
 	{
 		action = WAIT;
-		waitFrames = 1;//10
+		waitFrames = 30;//10
 					   //currPosInfo.SetGround(
 					   //	targetNode->poly, targetNode->edgeIndex, targetNode->edgeQuantity);
 					   //enemyMover.currPosInfo = currPosInfo;
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
+		action = MOVE;
+		moveFrames = 60;
+
 		int r = rand() % 3;
 
 		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
@@ -273,18 +256,21 @@ void CrawlerQueen::ProcessState()
 		V2d pPos = sess->GetPlayerPos(0);
 		V2d pDir = normalize(pPos - GetPosition());
 
+		r = 0;
 		if (r == 0)
 		{
 			int gr = rand() % 2;
 
-			double grindSpeed = 20;
+			moveFrames = 120;
+			double moveSpeed = 20;
 			if (gr == 0)
 			{
-				enemyMover.SetModeGrind(grindSpeed, 120);
+				surfaceMover->SetSpeed(moveSpeed);
+				//enemyMover.SetModeGrind(grindSpeed, 120);
 			}
 			else if (gr == 1)
 			{
-				enemyMover.SetModeGrind(-grindSpeed, 120);
+				surfaceMover->SetSpeed(-moveSpeed);
 			}
 
 			//snakePool.Throw(GetPosition(), pDir);
@@ -316,8 +302,7 @@ void CrawlerQueen::ProcessState()
 		}
 
 
-		action = MOVE;
-		moveFrames = 60;
+		
 	}
 	else if (action == COMBOMOVE)
 	{
@@ -332,23 +317,7 @@ void CrawlerQueen::ProcessState()
 		}
 	}
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
-		&& comboMoveFrames > 0;
-	//added this combo counter thing
-	if (hitPlayer || comboInterrupted)
-	{
-		action = COMBOMOVE;
-		frame = 0;
-		playerComboer.PredictNextFrame();
-		//if (!comboInterrupted)
-		//	++actionQueueIndex;
-		SetHitboxes(NULL, 0);
-
-		//if (actionQueueIndex == 3)
-		{
-
-		}
-	}
+	
 
 	hitPlayer = false;
 }
@@ -467,7 +436,7 @@ void CrawlerQueen::StartFight()
 
 void CrawlerQueen::IHitPlayer(int index)
 {
-	hitPlayer = true;
+	//hitPlayer = true;
 	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
 }
 
@@ -476,35 +445,154 @@ void CrawlerQueen::UpdateEnemyPhysics()
 	if (!enemyMover.IsIdle())
 	{
 		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
-		currPosInfo = enemyMover.currPosInfo;
+		//currPosInfo = enemyMover.currPosInfo;
+	}
+	else
+	{
+		Enemy::UpdateEnemyPhysics();
 	}
 }
 
 void CrawlerQueen::UpdateSprite()
 {
-	/*switch (action)
+	bool isAerial = enemyMover.currPosInfo.IsAerial();
+	if (!isAerial)
 	{
-	case WAIT:
-	case MOVE:
-	case COMBOMOVE:
-	sprite.setTexture(*ts_move->texture);
-	ts_move->SetSubRect(sprite, 2, !facingRight);
-	break;
-	case PUNCH:
-	sprite.setTexture(*ts_punch->texture);
-	ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
-	break;
-	case KICK:
-	sprite.setTexture(*ts_kick->texture);
-	ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
-	break;
-	}*/
+		if (enemyMover.grindSpeed > 0)
+		{
+			facingRight = true;
+		}
+		else if (enemyMover.grindSpeed < 0)
+		{
+			facingRight = false;
+		}
+
+	}
 
 	sprite.setTexture(*ts_move->texture);
 	ts_move->SetSubRect(sprite, 0, !facingRight);
 
 	sprite.setPosition(GetPositionF());
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	int extraHeight = -35;
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
+
+	wasAerial = false;
+
+	float angleD = enemyMover.currPosInfo.GetGroundAngleDegrees();
+	if ( !isAerial )
+	{
+		double distForward = 70;
+		if (enemyMover.grindSpeed > 0)
+		{
+			angleD = enemyMover.CheckGround(distForward).GetGroundAngleDegrees();
+		}
+		else if (enemyMover.grindSpeed < 0)
+		{
+			angleD = enemyMover.CheckGround(-distForward).GetGroundAngleDegrees();
+		}
+		
+	}
+
+	if ( isAerial )
+	{
+		sprite.setRotation(0);
+		wasAerial = true;
+	}
+	else if (wasAerial)
+	{
+		sprite.setRotation(enemyMover.currPosInfo.GetGroundAngleDegrees());
+	}
+	else
+	{
+		Edge *e = currPosInfo.GetEdge();
+		Edge *prevEdge;
+		Edge *nextEdge;
+		V2d currAlong = e->Along();
+		V2d nextAlong;// = currPosInfo.GetEdge()->GetNextEdge()->Along();
+		V2d prevAlong;
+		if (enemyMover.grindSpeed > 0)
+		{
+			prevEdge = e->GetPrevEdge();
+			prevAlong = prevEdge->Along();
+
+			nextEdge = e->GetNextEdge();
+			nextAlong = nextEdge->Along();
+			
+			double distToNext = e->GetLength() - currPosInfo.GetQuant();
+			double nextFactor = 0.0;
+			double test = 64.0;
+
+			V2d realAlong;
+
+			if (distToNext <= test)
+			{
+				nextFactor = 1.0 - distToNext / test;
+				//realAlong = currAlong * (1.0 - factor) + nextAlong * (1.0 - factor);
+			}
+
+			double distToPrev = currPosInfo.GetQuant();
+			double prevFactor = 0.0;
+			if (distToPrev < test)
+			{
+				prevFactor = distToPrev / test;
+			}
+
+			if (nextFactor > 0)
+			{
+				realAlong = currAlong * (1.0 - nextFactor) + nextAlong * nextFactor;
+			}
+			else if (prevFactor > 0)
+			{
+				realAlong = currAlong * (1.0 - prevFactor) + prevAlong * prevFactor;
+			}
+			else
+			{
+				realAlong = currAlong;
+			}
+			
+			
+			/*if (nextFactor > 0)
+			{
+				realAlong = currAlong * (1.0 - nextFactor) + nextAlong * nextFactor;
+			}
+			
+
+			V2d realAlong = currAlong * factor + nextAlong * ( 1.0 - factor);*/
+			realAlong = normalize(realAlong);
+			double realAng = GetVectorAngleCW(realAlong);
+			double realAngD = realAng / PI * 180.0;
+
+			sprite.setRotation(realAngD);
+
+		}
+		/*float rotateVel = 2;
+		float ang = sprite.getRotation();
+		if (angleD > ang)
+		{
+			ang += rotateVel;
+			if (ang > angleD)
+				ang = angleD;
+		}
+		else if (angleD < ang)
+		{
+			ang += -rotateVel;
+			if (ang < angleD)
+				ang = angleD;
+		}
+		sprite.setRotation(ang);*/
+	}
+
+	sprite.setRotation(0);
+	/*if (enemyMover.currPosInfo.IsAerial())
+	{
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
+	}
+	else
+	{
+		
+	}*/
+	
 }
 
 void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)

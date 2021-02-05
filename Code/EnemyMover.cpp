@@ -25,6 +25,8 @@ EnemyMover::EnemyMover()
 
 	SetRectColor(swingQuad, Color::Red);
 
+	handler = NULL;
+
 	Reset();
 }
 
@@ -411,6 +413,81 @@ void EnemyMover::SetModeNodeDoubleQuadraticConstantSpeed(
 	doubleQuadtraticMove1->InitDebugDraw();
 }
 
+PositionInfo EnemyMover::CheckGround(double dist)
+{
+	PositionInfo info;
+	Edge *g = currPosInfo.GetEdge();
+
+	if (g == NULL)
+		return info;
+
+	assert(g != NULL);
+
+	//double factor = slowMultiple * (double)numPhysSteps;
+	double movement = dist;
+
+	int edgeIndex = currPosInfo.GetEdgeIndex();
+	double quant = currPosInfo.GetQuant();
+	PolyPtr groundPoly = currPosInfo.ground;
+	int numPoints = groundPoly->GetNumPoints();
+
+	while (!approxEquals(movement, 0))
+	{
+		double gLen = g->GetLength();
+
+		if (movement > 0)
+		{
+			double extra = quant + movement - gLen;
+
+			if (extra > 0)
+			{
+				movement -= gLen - quant;
+				g = g->GetNextEdge();
+				++edgeIndex;
+				if (edgeIndex == numPoints)
+				{
+					edgeIndex = 0;
+				}
+
+				quant = 0;
+			}
+			else
+			{
+				quant += movement;
+				movement = 0;
+			}
+		}
+		else
+		{
+			double extra = quant + movement;
+
+			if (extra < 0)
+			{
+				movement -= movement - extra;
+				g = g->GetPrevEdge();
+				quant = g->GetLength();
+
+				--edgeIndex;
+				if (edgeIndex < 0)
+				{
+					edgeIndex = numPoints - 1;
+				}
+			}
+			else
+			{
+				quant += movement;
+				movement = 0;
+			}
+		}
+	}
+
+	//V2d finalPos = g->GetPosition(quant);
+
+	info.SetGround(groundPoly, edgeIndex, quant);
+
+	return info;
+}
+
 void EnemyMover::UpdatePhysics(int numPhysSteps,
 	int slowMultiple)
 {
@@ -720,6 +797,11 @@ void EnemyMover::FinishTargetedMovement()
 	else
 	{
 		currPosInfo.SetAerial(targetPos);
+	}
+
+	if (handler != NULL)
+	{
+		handler->HandleFinishTargetedMovement();
 	}
 }
 

@@ -21,7 +21,8 @@ struct CrawlerPostFight2Scene;
 struct QueenFloatingBomb;
 
 struct PoiInfo;
-struct CrawlerQueen : Enemy
+struct CrawlerQueen : Enemy, SurfaceMoverHandler,
+	EnemyMoverHandler
 {
 	enum Action
 	{
@@ -36,6 +37,9 @@ struct CrawlerQueen : Enemy
 	{
 		int fireCounter;
 	};
+
+	int spriteGoalAngle;
+	bool wasAerial;
 
 	CrawlerPostFightScene *postFightScene;
 
@@ -74,6 +78,8 @@ struct CrawlerQueen : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	//double moveSpeed;
+
 	void StartAngryYelling();
 	void StartInitialUnburrow();
 
@@ -89,8 +95,6 @@ struct CrawlerQueen : Enemy
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	//void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
@@ -105,6 +109,9 @@ struct CrawlerQueen : Enemy
 	void FrameIncrement();
 
 	void SetHitboxInfo(int a);
+
+
+	void HandleFinishTargetedMovement();
 
 
 };

@@ -7,7 +7,10 @@
 struct Session;
 struct PoiInfo;
 
-
+struct EnemyMoverHandler
+{
+	virtual void HandleFinishTargetedMovement() {}
+};
 
 
 struct EnemyMover
@@ -34,6 +37,7 @@ struct EnemyMover
 
 	sf::Vertex swingQuad[4];
 
+	EnemyMoverHandler * handler;
 	MoveType moveType;
 
 	LineMovement *linearMove;
@@ -85,6 +89,8 @@ struct EnemyMover
 	EnemyMover();
 	~EnemyMover();
 	void Reset();
+
+	PositionInfo CheckGround(double dist);
 
 	bool IsIdle();
 	void FinishTargetedMovement();
