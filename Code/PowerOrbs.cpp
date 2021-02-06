@@ -361,7 +361,7 @@ int FillRing::Drain(int drain)
 	if (res > 0 && currRing > 0)
 	{
 		--currRing;
-		return Drain(res);
+		res = Drain(res);
 	}
 
 	return res;

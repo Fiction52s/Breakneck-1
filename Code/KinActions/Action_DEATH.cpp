@@ -37,7 +37,7 @@ void Actor::DEATH_Update()
 	}
 	
 
-	if (frame == myActionLength - 1)
+	if (frame == myActionLength - 1 )
 	{
 		if (owner != NULL)
 		{

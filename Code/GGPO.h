@@ -292,6 +292,10 @@ struct PState
 	int framesBlocking;
 	V2d receivedHitPosition;
 
+	int despCounter;
+	int superFrame;
+
+	int kinMode;
 	//HitboxInfo currVSHitboxInfo;
 };
 

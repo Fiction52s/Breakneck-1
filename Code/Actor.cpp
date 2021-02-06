@@ -277,6 +277,10 @@ void Actor::PopulateState(PState *ps)
 
 	ps->framesBlocking = framesBlocking;
 	ps->receivedHitPosition = receivedHitPosition;
+
+	ps->despCounter = despCounter;
+	ps->superFrame = superFrame;
+	ps->kinMode = kinMode;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -440,6 +444,10 @@ void Actor::PopulateFromState(PState *ps)
 	hasHitRechargeAirDash = ps->hasHitRechargeAirDash;
 	framesBlocking = ps->framesBlocking;
 	receivedHitPosition = ps->receivedHitPosition;
+
+	despCounter = ps->despCounter;
+	superFrame = ps->superFrame;
+	kinMode = (Mode)ps->kinMode;
 }
 
 
@@ -2667,6 +2675,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
+	modifiedDrainFrames = 0;
 	invertInputFrames = 0;
 
 	airBounceCounter = 0;
@@ -4354,6 +4363,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	modifiedDrainFrames = 0;
 	invertInputFrames = 0;
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
@@ -4673,7 +4683,7 @@ void Actor::HandleAirTrigger()
 
 void Actor::KinModeUpdate()
 {
-	if( kinMode == K_DESPERATION )
+	if( kinMode == K_DESPERATION && !simulationMode )
 	{
 		
 
@@ -5158,6 +5168,11 @@ void Actor::UpdateDrain()
 	if (sess->GetGameMode() != MapHeader::T_BASIC)
 	{
 		return;
+	}
+
+	if (simulationMode)
+	{
+		return; //dont drain while simulating player for now
 	}
 
 	//change this soon. just so i can get the minimap running
@@ -5978,6 +5993,8 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 void Actor::UpdatePrePhysics()
 {
+	if (action == DEATH && simulationMode)
+		return;
 	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
 	++skinTest;
@@ -14450,6 +14467,11 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	if (action == DEATH && simulationMode)
+	{
+		return;
+	}
+
 	if (hitlagFrames > 0)
 	{
 		--hitlagFrames;
@@ -17689,9 +17711,10 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	float height = ts->texture->getSize().y;
 
 	if (kinMode == K_NORMAL)
-	{
+	{		
 		sh.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+			
 		static float testCounter = 0;
 		sh.setUniform("u_slide", testCounter);
 		testCounter += .01f;
@@ -18409,7 +18432,7 @@ bool Actor::CanUnlockGate( Gate *g )
 
 void Actor::SetExpr( int ex )
 {
-	if (kinMask != NULL)
+	if (kinMask != NULL && !simulationMode)
 	{
 		kinMask->SetExpr((KinMask::Expr)ex);
 	}

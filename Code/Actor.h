@@ -421,8 +421,6 @@ struct Actor : QuadTreeCollider,
 	int rewindOnHitFrames;
 	int currSkinIndex;
 
-
-
 	V2d waterEntranceVelocity;
 	int modifiedDrainFrames;
 	int modifiedDrain;
@@ -447,6 +445,10 @@ struct Actor : QuadTreeCollider,
 	int airBounceLimit;
 	int phaseFrames;
 	int momentumBoostFrames;
+
+	Mode kinMode;
+	int despCounter;
+	int superFrame;
 	
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
@@ -967,7 +969,7 @@ struct Actor : QuadTreeCollider,
 	double dashSpeed1;
 	double dashSpeed2;
 	double slideGravFactor;
-	Mode kinMode;
+	
 	int maxBBoostCount;
 	int maxAirdashBoostCount;
 	double doubleJumpStrength;
@@ -980,9 +982,9 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> tempVel;
 	std::string queryMode;
 	int maxDespFrames;
-	int despCounter;
+	
 	int maxSuperFrames;
-	int superFrame;
+	
 	bool checkValid;
 	
 	bool leftGround;
