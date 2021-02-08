@@ -9,6 +9,7 @@
 #include "SequenceW4.h"
 #include "Enemy_Crawler.h"
 #include "Enemy_QueenFloatingBomb.h"
+#include <algorithm>
 
 using namespace std;
 using namespace sf;
@@ -24,6 +25,85 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 //boost, dig, summon
+
+RandomPicker::RandomPicker()
+{
+	numMaxOptions = 0;
+	options = NULL;
+}
+
+RandomPicker::~RandomPicker()
+{
+	if (options != NULL)
+		delete[] options;
+}
+
+void RandomPicker::SetMaxOptions(int m)
+{
+	if (numMaxOptions != m)
+	{
+		numMaxOptions = m;
+		if (options != NULL)
+		{
+			delete[] options;
+		}
+		else
+		{
+			if (numMaxOptions > 0)
+			{
+				options = new int[numMaxOptions];
+			}
+			else
+			{
+				options = NULL;
+			}
+		}
+	}
+}
+
+void RandomPicker::Reset()
+{
+	numActiveOptions = 0;
+}
+
+void RandomPicker::AddActiveOption(int a, int reps)
+{
+	assert(reps > 0);
+	assert(numActiveOptions + reps <= numMaxOptions);
+	for (int i = 0; i < reps; ++i)
+	{
+		options[numActiveOptions] = a;
+		++numActiveOptions;
+	}
+}
+
+void RandomPicker::ShuffleActiveOptions()
+{
+	int val;
+	int index;
+	for (int i = numActiveOptions-1; i >= 1; --i)
+	{
+		index = rand() % (i+1);
+		val = options[index];
+		options[index] = options[i];
+		options[i] = val;
+	}
+	currActiveIndex = 0;
+}
+
+int RandomPicker::GetNextOption()
+{
+	if (currActiveIndex >= numActiveOptions)
+	{
+		return -1;
+	}
+	else
+	{
+		int val = options[currActiveIndex];
+		++currActiveIndex;
+		return val;
+	}
+}
 
 CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap)
@@ -174,9 +254,9 @@ void CrawlerQueen::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	currMaxActiveCrawlers = NUM_CRAWLERS;
+	currMaxActiveCrawlers = 4;//NUM_CRAWLERS;
 	currMaxActiveBombs = NUM_BOMBS;
-	numCrawlersToSummonAtOnce = 1;
+	numCrawlersToSummonAtOnce = 3;
 
 	numActiveCrawlers = 0;
 
@@ -464,7 +544,7 @@ void CrawlerQueen::ProcessState()
 
 bool CrawlerQueen::CanSummonCrawler()
 {
-	return (numActiveCrawlers == currMaxActiveCrawlers);
+	return numActiveCrawlers < currMaxActiveCrawlers;
 }
 
 void CrawlerQueen::ProcessHit()

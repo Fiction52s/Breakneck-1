@@ -22,6 +22,24 @@ struct CrawlerPostFightScene;
 struct CrawlerPostFight2Scene;
 struct QueenFloatingBomb;
 
+struct RandomPicker
+{
+	RandomPicker();
+	~RandomPicker();
+	void SetMaxOptions(int m);
+	void AddActiveOption(int a, int reps = 1);
+	void Reset();
+	void ShuffleActiveOptions();
+	int GetNextOption();
+	int *options;
+	int numMaxOptions;
+
+	int numActiveOptions;
+
+	int currActiveIndex;
+	
+};
+
 struct PoiInfo;
 struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	EnemyMoverHandler
