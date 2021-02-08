@@ -126,8 +126,8 @@ int EnemyMover::GetDoubleQuadraticFrameEstimate(
 void EnemyMover::InitNodeDebugDraw(int fightType,
 	const std::string &str, sf::Color c)
 {
-	auto &a = sess->GetBossNodeVector(fightType, str);
-	int numNodes = a.size();
+	auto *a = sess->GetBossNodeVector(fightType, str);
+	int numNodes = a->size();
 
 	if (nodeCircles != NULL)
 		delete nodeCircles;
@@ -135,7 +135,7 @@ void EnemyMover::InitNodeDebugDraw(int fightType,
 	nodeCircles = new CircleGroup(numNodes, 20, c, 6);
 	for (int i = 0; i < numNodes; ++i)
 	{
-		nodeCircles->SetPosition(i, Vector2f(a[i]->pos));
+		nodeCircles->SetPosition(i, Vector2f(a->at(i)->pos));
 	}
 	nodeCircles->ShowAll();
 }

@@ -5106,11 +5106,17 @@ std::map<std::string, std::vector<PoiInfo*>> & Session::GetBossNodeVectorMap( in
 	return bossNodeVectorMap[i];
 }
 
-std::vector<PoiInfo*> & Session::GetBossNodeVector(int i, const std::string &name)
+std::vector<PoiInfo*> * Session::GetBossNodeVector(int i, const std::string &name)
 {
 	auto &m = GetBossNodeVectorMap(i);
-	assert(m.count(name) > 0);
-	return m[name];
+	if (m.count(name) > 0)
+	{
+		return &(m[name]);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void Session::CleanupBossNodes()

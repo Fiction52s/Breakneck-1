@@ -672,7 +672,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AddPoi(PoiParams *pp);
 	void AddBossNode(const std::string &nodeTypeName, PoiParams *pp);
 	std::map<std::string, std::vector<PoiInfo*>> & GetBossNodeVectorMap( int w );
-	std::vector<PoiInfo*> & GetBossNodeVector(int w, const std::string &name);
+	std::vector<PoiInfo*> * GetBossNodeVector(int w, const std::string &name);
 	void CleanupBossNodes();
 	void CleanupPoi();
 	void CleanupTopClouds();

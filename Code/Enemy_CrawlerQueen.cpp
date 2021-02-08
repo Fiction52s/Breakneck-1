@@ -26,84 +26,7 @@ using namespace sf;
 
 //boost, dig, summon
 
-RandomPicker::RandomPicker()
-{
-	numMaxOptions = 0;
-	options = NULL;
-}
 
-RandomPicker::~RandomPicker()
-{
-	if (options != NULL)
-		delete[] options;
-}
-
-void RandomPicker::SetMaxOptions(int m)
-{
-	if (numMaxOptions != m)
-	{
-		numMaxOptions = m;
-		if (options != NULL)
-		{
-			delete[] options;
-		}
-		else
-		{
-			if (numMaxOptions > 0)
-			{
-				options = new int[numMaxOptions];
-			}
-			else
-			{
-				options = NULL;
-			}
-		}
-	}
-}
-
-void RandomPicker::Reset()
-{
-	numActiveOptions = 0;
-}
-
-void RandomPicker::AddActiveOption(int a, int reps)
-{
-	assert(reps > 0);
-	assert(numActiveOptions + reps <= numMaxOptions);
-	for (int i = 0; i < reps; ++i)
-	{
-		options[numActiveOptions] = a;
-		++numActiveOptions;
-	}
-}
-
-void RandomPicker::ShuffleActiveOptions()
-{
-	int val;
-	int index;
-	for (int i = numActiveOptions-1; i >= 1; --i)
-	{
-		index = rand() % (i+1);
-		val = options[index];
-		options[index] = options[i];
-		options[i] = val;
-	}
-	currActiveIndex = 0;
-}
-
-int RandomPicker::GetNextOption()
-{
-	if (currActiveIndex >= numActiveOptions)
-	{
-		return -1;
-	}
-	else
-	{
-		int val = options[currActiveIndex];
-		++currActiveIndex;
-		return val;
-	}
-}
 
 CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap)
@@ -122,6 +45,8 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	actionLength[SUMMON] = 60;
 	animFactor[SLASH] =4;
 
+	
+
 	crawlerParams = new BasicGroundEnemyParams(sess->types["crawler"], 1);
 	for (int i = 0; i < NUM_CRAWLERS; ++i)
 	{
@@ -135,6 +60,17 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 		bombs[i] = new QueenFloatingBomb;
 	}
 
+	//decidePicker.Reset();
+	decidePicker.AddActiveOption(CHOOSE_MOVE, 2);
+	decidePicker.AddActiveOption(CHOOSE_SUMMON, 2);
+	decidePicker.AddActiveOption(CHOOSE_SLASH, 2);
+
+	nodePicker.ReserveNumOptions(8);
+	for (int i = 0; i < 8; ++i)
+	{
+		nodePicker.AddActiveOption(i);
+	}
+	
 
 	//testCrawler = new Crawler( )
 
@@ -247,6 +183,25 @@ void CrawlerQueen::ResetEnemy()
 
 	wasAerial = false;
 
+	//decidePicker.ReserveNumOptions(A_Count * 3); //just a decent number to try. 3 reps
+
+	/*auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
+	if (nodeVec != NULL)
+	{
+		int numNodes = nodeVec->size();
+		
+
+		nodePicker.Reset();
+
+		
+	}
+	*/
+	
+	
+	//decidePicker.AddActiveOption(DIG, 3);
+	
+
+
 	playerComboer.Reset();
 	snakePool.Reset();
 	enemyMover.Reset();
@@ -254,7 +209,7 @@ void CrawlerQueen::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
-	currMaxActiveCrawlers = 4;//NUM_CRAWLERS;
+	currMaxActiveCrawlers = NUM_CRAWLERS;
 	currMaxActiveBombs = NUM_BOMBS;
 	numCrawlersToSummonAtOnce = 3;
 
@@ -399,20 +354,20 @@ void CrawlerQueen::ProcessState()
 	{
 		if (frame == actionLength[DECIDE] * animFactor[DECIDE])
 		{
-			int r = rand() % 3;
+			int r = decidePicker.AlwaysGetNextOption();//rand() % 3;
 
-			auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
-			int vecSize = nodeVec.size();
+			auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
+			int vecSize = nodeVec->size();
 			int rNode = rand() % vecSize;
 
-			targetNode = nodeVec[rNode];
+			targetNode = nodeVec->at(rNode);
 
 			V2d nodePos = targetNode->pos;
 
 			V2d pPos = sess->GetPlayerPos(0);
 			V2d pDir = normalize(pPos - GetPosition());
 
-			if (r == 0)
+			if (r == CHOOSE_MOVE)
 			{
 				int gr = rand() % 2;
 				action = MOVE;
@@ -440,18 +395,19 @@ void CrawlerQueen::ProcessState()
 
 				//snakePool.Throw(GetPosition(), pDir);
 			}
-			else if (r == 1)
-			{
-				action = SLASH;
-				frame = 0;
-				surfaceMover->SetSpeed(0);
-			}
-			else if (r == 2)
+			else if (r == CHOOSE_SUMMON)
 			{
 				action = SUMMON;
 				frame = 0;
 				surfaceMover->SetSpeed(0);
 			}
+			else if (r == CHOOSE_SLASH)
+			{
+				action = SLASH;
+				frame = 0;
+				surfaceMover->SetSpeed(0);
+			}
+			
 		}
 		break;
 	}
@@ -492,13 +448,17 @@ void CrawlerQueen::ProcessState()
 		if (frame == 20 && slowCounter == 1)
 		{
 			int currSummoned = 0;
+			PoiInfo *summonNode;
 			for (int i = 0; i < NUM_CRAWLERS; ++i)
 			{
-				if (!crawlers[i]->spawned || !crawlers[i]->dead )
+				if (!crawlers[i]->spawned || crawlers[i]->dead )
 				{
+					auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
+					summonNode = nodeVec->at(nodePicker.AlwaysGetNextOption());
+
 					crawlers[i]->spawned = false;
-					crawlers[i]->startPosInfo.SetGround(targetNode->poly,
-						targetNode->edgeIndex, targetNode->edgeQuantity);
+					crawlers[i]->startPosInfo.SetGround(summonNode->poly,
+						summonNode->edgeIndex, summonNode->edgeQuantity);
 
 					sess->AddEnemy(crawlers[i]);
 					++numActiveCrawlers;

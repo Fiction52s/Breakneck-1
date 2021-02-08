@@ -188,12 +188,12 @@ void MovementTester::ProcessState()
 		
 		action = MOVE;
 		string checkStr = "A";
-		auto &nodeVec = sess->GetBossNodeVector( BossFightType::FT_BIRD, checkStr);
-		int vecSize = nodeVec.size();
+		auto *nodeVec = sess->GetBossNodeVector( BossFightType::FT_BIRD, checkStr);
+		int vecSize = nodeVec->size();
 
 		int r = rand() % vecSize;
 
-		V2d nodePos = nodeVec[r]->pos;
+		V2d nodePos = nodeVec->at(r)->pos;
 		V2d controlPos = normalize(nodePos - GetPosition());
 		controlPos = V2d(controlPos.y, -controlPos.x);
 		double len = length(nodePos - GetPosition());

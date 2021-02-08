@@ -278,11 +278,11 @@ void GreySkeleton::ProcessState()
 	{
 		int r = rand() % 3;
 
-		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_SKELETON2, nodeAStr);
-		int vecSize = nodeVec.size();
+		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_SKELETON2, nodeAStr);
+		int vecSize = nodeVec->size();
 		int rNode = rand() % vecSize;
 
-		V2d nodePos = nodeVec[rNode]->pos;
+		V2d nodePos = nodeVec->at(rNode)->pos;
 
 		V2d pPos = sess->GetPlayerPos(0);
 		V2d pDir = normalize(pPos - GetPosition());

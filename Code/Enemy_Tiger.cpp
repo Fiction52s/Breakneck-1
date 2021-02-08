@@ -266,11 +266,11 @@ void Tiger::ProcessState()
 	{
 		int r = rand() % 3;
 
-		auto &nodeVec = sess->GetBossNodeVector(BossFightType::FT_TIGER, nodeAStr);
-		int vecSize = nodeVec.size();
+		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_TIGER, nodeAStr);
+		int vecSize = nodeVec->size();
 		int rNode = rand() % vecSize;
 
-		targetNode = nodeVec[rNode];
+		targetNode = nodeVec->at(rNode);
 
 		V2d nodePos = targetNode->pos;
 
@@ -300,7 +300,7 @@ void Tiger::ProcessState()
 
 			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
-			enemyMover.SetDestNode(nodeVec[rNode]);
+			enemyMover.SetDestNode(nodeVec->at(rNode));
 
 			//snakePool.Throw(GetPosition(), pDir);
 		}
@@ -310,7 +310,7 @@ void Tiger::ProcessState()
 			currPosInfo.SetAerial();
 			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
-			enemyMover.SetDestNode(nodeVec[rNode]);
+			enemyMover.SetDestNode(nodeVec->at(rNode));
 			//snakePool.Throw(GetPosition(), pDir);
 			
 		}

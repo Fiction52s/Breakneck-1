@@ -11,6 +11,7 @@
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
 #include "Enemy_TigerGrindBullet.h"
+#include "RandomPicker.h"
 
 struct Crawler;
 
@@ -22,23 +23,7 @@ struct CrawlerPostFightScene;
 struct CrawlerPostFight2Scene;
 struct QueenFloatingBomb;
 
-struct RandomPicker
-{
-	RandomPicker();
-	~RandomPicker();
-	void SetMaxOptions(int m);
-	void AddActiveOption(int a, int reps = 1);
-	void Reset();
-	void ShuffleActiveOptions();
-	int GetNextOption();
-	int *options;
-	int numMaxOptions;
 
-	int numActiveOptions;
-
-	int currActiveIndex;
-	
-};
 
 struct PoiInfo;
 struct CrawlerQueen : Enemy, SurfaceMoverHandler,
@@ -56,10 +41,20 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 		A_Count
 	};
 
+	enum Decisions
+	{
+		CHOOSE_MOVE,
+		CHOOSE_SUMMON,
+		CHOOSE_SLASH,
+	};
+
 	struct MyData : StoredEnemyData
 	{
 		int fireCounter;
 	};
+
+	RandomPicker decidePicker;
+	RandomPicker nodePicker;
 
 	double currDashSpeed;
 	double currDashAccel;
