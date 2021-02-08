@@ -92,6 +92,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
 
+	bool summonOnAdd;
+	int summonFrame;
+	const static int summonDuration;
+
+
 	bool facingRight;
 	PositionInfo currPosInfo;
 	int action;
@@ -163,6 +168,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, int w);
 	void OnCreate( ActorParams *ap,
 		int w );
+	void SetSummon(bool s);
+	bool IsSummoning();
 	virtual ~Enemy();
 	virtual void UpdatePreFrameCalculations() {}
 	void CheckPlayerInteractions( int i );

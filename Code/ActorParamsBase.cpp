@@ -126,9 +126,10 @@ void ActorParams::DeepCopyPathLines()
 	}
 }
 
-void ActorParams::CreateMyEnemy()
+Enemy * ActorParams::CreateMyEnemy()
 {
 	myEnemy = GenerateEnemy();
+	return myEnemy;
 }
 
 void ActorParams::WriteLevel(std::ofstream &of)

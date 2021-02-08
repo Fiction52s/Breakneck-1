@@ -35,4 +35,25 @@ struct ObjectPool
 	int numInactiveMembers;
 };
 
+//struct ObjectPoolArray
+//{
+//	ObjectPoolArray();
+//	virtual void Reset() { ResetPool(); }
+//	void ResetPool();
+//	PoolMember *activeListStart;
+//	PoolMember *activeListEnd;
+//	PoolMember *inactiveListStart;
+//
+//	PoolMember *ActivatePoolMember(bool front = true);
+//	void DeactivatePoolMember(PoolMember *pm);
+//	void AddToInactiveList(PoolMember *pm);
+//	void DeactivateAll();
+//	void DestroyAllMembers();
+//	virtual void DeactivateMember(PoolMember *pm) {}
+//
+//	//int numMembersTotal;
+//	int numActiveMembers;
+//	int numInactiveMembers;
+//};
+
 #endif

@@ -12,6 +12,8 @@
 #include "PlayerComboer.h"
 #include "Enemy_TigerGrindBullet.h"
 
+struct Crawler;
+
 struct Actor;
 struct EffectPool;
 struct StorySequence;
@@ -26,9 +28,12 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 {
 	enum Action
 	{
+		DECIDE,
 		MOVE,
-		WAIT,
 		COMBOMOVE,
+		SUMMON,
+		DIG,
+		SLASH,
 		SEQ_WAIT,
 		A_Count
 	};
@@ -37,6 +42,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	{
 		int fireCounter;
 	};
+
+	double currDashSpeed;
+	double currDashAccel;
 
 	int spriteGoalAngle;
 	bool wasAerial;
@@ -48,9 +56,12 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	PoiInfo *targetNode;
 
 	Tileset *ts_move;
+	Tileset *ts_slash;
 
 	int moveFrames;
 	int waitFrames;
+
+	int numActiveCrawlers;
 
 	std::string nodeAStr;
 
@@ -78,15 +89,28 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	V2d targetPos;
 	int framesToArrive;
 
-	//double moveSpeed;
+	ActorParams *crawlerParams;
+
+	const static int NUM_CRAWLERS = 5;
+	Crawler *crawlers[NUM_CRAWLERS];
+	int currMaxActiveCrawlers;
+	int numCrawlersToSummonAtOnce;
+
+
+	const static int NUM_BOMBS = 5;
+	QueenFloatingBomb *bombs[NUM_BOMBS];
+	int currMaxActiveBombs;
 
 	void StartAngryYelling();
 	void StartInitialUnburrow();
 
 
+
+
 	CrawlerQueen(ActorParams *ap);
 	~CrawlerQueen();
 	void ProcessHit();
+	void Decide(int numFrames);
 	void Setup();
 	void Wait();
 	void StartFight();
@@ -98,7 +122,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
-
+	void HandleCrawlerDeath();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 
@@ -107,6 +131,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
+
+	bool CanSummonCrawler();
 
 	void SetHitboxInfo(int a);
 

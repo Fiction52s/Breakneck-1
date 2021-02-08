@@ -33,7 +33,7 @@ struct ActorParams : ISelectable
 
 	Enemy *GenerateEnemy();
 	Enemy *myEnemy;
-	void CreateMyEnemy();
+	Enemy * CreateMyEnemy();
 
 	sf::Vector2i GetGlobalPathPos(int index);
 	sf::Vector2i GetLocalPathPos(int index);

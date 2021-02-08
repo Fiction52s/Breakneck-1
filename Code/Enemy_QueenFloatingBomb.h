@@ -2,27 +2,22 @@
 #define __ENEMY_QUEENFLOATINGBOMB_H__
 
 #include "Enemy.h"
-#include "ObjectPool.h"
 
-struct QueenFloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
+struct QueenFloatingBomb : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
 		FLOATING,
 		EXPLODING,
 		COMBO,
-		Count
+		A_Count
 	};
 
 	Action action;
-	QueenFloatingBomb(ActorParams *ap, ObjectPool *myPool, int index);
+	QueenFloatingBomb(/*ActorParams *ap*/);
 	~QueenFloatingBomb();
-	int actionLength[Count];
-	int animFactor[Count];
-	SurfaceMover *mover;
+
 	Tileset *ts;
-	sf::Sprite sprite;
-	ObjectPool *myPool;
 	void Init(V2d pos, V2d vel);
 	void ProcessState();
 	void HandleNoHealth();
@@ -33,7 +28,6 @@ struct QueenFloatingBomb : Enemy, SurfaceMoverHandler, PoolMember
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void ResetEnemy();
-	void UpdateEnemyPhysics();
 	void ProcessHit();
 };
 

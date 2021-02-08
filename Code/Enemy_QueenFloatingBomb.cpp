@@ -1,16 +1,15 @@
 #include "Enemy_QueenFloatingBomb.h"
 #include "Session.h"
 
-QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap, ObjectPool *p_myPool, int index)
-	:Enemy(EnemyType::EN_QUEENFLOATINGBOMB, ap),//, false, 1, false),
-	PoolMember(index), myPool(p_myPool)
+QueenFloatingBomb::QueenFloatingBomb(/*ActorParams *ap*/)
+	:Enemy(EnemyType::EN_QUEENFLOATINGBOMB, NULL)
 {
+	SetNumActions(A_Count);
+	SetEditorActions(FLOATING, 0, 0);
 	//preload
 	sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512);
 
-	mover = new SurfaceMover(NULL, 0, 32);
-	mover->surfaceHandler = this;
-	mover->SetSpeed(0);
+	CreateSurfaceMover(startPosInfo, 32, this);
 
 	ts = sess->GetTileset("Enemies/bomb_128x160.png", 128, 160);
 	sprite.setTexture(*ts->texture);
@@ -41,16 +40,16 @@ QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap, ObjectPool *p_myPool, int 
 
 void QueenFloatingBomb::Init(V2d pos, V2d vel)
 {
-	currPosInfo.position = pos;
-	mover->velocity = vel;
+	//currPosInfo.position = pos;
+	surfaceMover->physBody.globalPosition = pos;
+	surfaceMover->velocity = vel;
 	action = FLOATING;
 	frame = 0;
-	mover->physBody.globalPosition = GetPosition();
+	
 }
 
 QueenFloatingBomb::~QueenFloatingBomb()
 {
-	delete mover;
 }
 
 void QueenFloatingBomb::ProcessState()
@@ -65,6 +64,7 @@ void QueenFloatingBomb::ProcessState()
 		case EXPLODING:
 			numHealth = 0;
 			dead = true;
+			spawned = false;
 			sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512),
 				GetPosition(), false, 0, 10, 3, true);
@@ -135,14 +135,14 @@ void QueenFloatingBomb::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 	if (!dead)
-		mover->physBody.DebugDraw(CollisionBox::Physics, target);
+		surfaceMover->physBody.DebugDraw(CollisionBox::Physics, target);
 }
 
 void QueenFloatingBomb::HitTerrainAerial(Edge * e, double q)
 {
 	if (action == FLOATING)
 	{
-		mover->velocity = V2d(0, 0);
+		surfaceMover->velocity = V2d(0, 0);
 		action = EXPLODING;
 		frame = 0;
 	}
@@ -150,24 +150,13 @@ void QueenFloatingBomb::HitTerrainAerial(Edge * e, double q)
 
 void QueenFloatingBomb::ResetEnemy()
 {
-	mover->ground = NULL;
-	mover->edgeQuantity = 0;
-	mover->roll = false;
-	mover->UpdateGroundPos();
-	mover->SetSpeed(0);
+	surfaceMover->Set(startPosInfo);
+	surfaceMover->SetSpeed(0);
+	surfaceMover->velocity = V2d();
 	action = FLOATING;
 	frame = 0;
 	SetHurtboxes(&hurtBody, 0);
 	SetHitboxes(&hitBody, 0);
-}
-
-void QueenFloatingBomb::UpdateEnemyPhysics()
-{
-	if (!dead)
-	{
-		mover->Move(slowMultiple, numPhysSteps);
-		//position = mover->physBody.globalPosition;
-	}
 }
 
 void QueenFloatingBomb::ProcessHit()

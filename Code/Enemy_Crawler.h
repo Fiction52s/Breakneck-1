@@ -3,6 +3,7 @@
 
 #include "Enemy.h"
 
+struct CrawlerQueen;
 struct Crawler : Enemy, SurfaceMoverHandler
 {
 	enum Action : int
@@ -17,6 +18,19 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		UNDERGROUND,
 		A_Count
 	};
+
+	sf::SoundBuffer *deathSound;
+	double totalDistBeforeBurrow;
+	double currDistTravelled;
+	Tileset *ts;
+	Tileset *ts_aura;
+
+	int maxFramesUntilBurrow;
+	int framesUntilBurrow;
+
+	double groundSpeed;
+	CrawlerQueen *queen;
+
 
 	void SetLevel(int p_level);
 
@@ -39,6 +53,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void Accelerate(double amount);
 	void SetForwardSpeed( double speed );
 	void TransferEdge(Edge *);
+	void HandleRemove();
 
 	bool ShouldDash();
 	bool PlayerInFront();
@@ -50,16 +65,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void ResetEnemy();
 	//void UpdateEnemyPhysics();
 
-	sf::SoundBuffer *deathSound;
-	double totalDistBeforeBurrow;
-	double currDistTravelled;
-	Tileset *ts;
-	Tileset *ts_aura;
-
-	int maxFramesUntilBurrow;
-	int framesUntilBurrow;
-
-	double groundSpeed;
+	
 };
 
 #endif

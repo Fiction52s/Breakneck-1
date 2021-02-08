@@ -41,6 +41,8 @@ int Enemy::bloodLengths[8] = {
 	20,
 	9 };
 
+const int Enemy::summonDuration = 60;
+
 bool Enemy::IsGoalType()
 {
 	return type == EN_GOAL 
@@ -464,6 +466,7 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
+	summonOnAdd = false;
 	prev = NULL;
 	next = NULL;
 	zone = NULL;
@@ -472,6 +475,7 @@ void Enemy::OnCreate(ActorParams *ap,
 	ts_hitSpack = NULL;
 	dead = false;
 
+	summonFrame = 0;
 	playerIndex = -1; //can be affected by all players
 	keyShaderLoaded = false;
 	origFacingRight = true;
@@ -963,6 +967,7 @@ void Enemy::Reset()
 	receivedHitPlayer = NULL;
 	pauseFrames = 0;
 	frame = 0;
+	summonFrame = 0;
 
 	SetCurrPosInfo(startPosInfo);
 
@@ -974,6 +979,16 @@ void Enemy::Reset()
 	ResetEnemy();
 
 	UpdateHitboxes();
+}
+
+void Enemy::SetSummon(bool s)
+{
+	summonOnAdd = s;
+}
+
+bool Enemy::IsSummoning()
+{
+	return (summonOnAdd && summonFrame < summonDuration);
 }
 
 void Enemy::SetHitboxes(CollisionBody *cb, int frame)
@@ -1282,6 +1297,11 @@ void Enemy::CheckSpecters()
 
 void Enemy::UpdatePrePhysics()
 {
+	if (IsSummoning())
+	{
+		return;
+	}
+
 	for (int i = 0; i < numLaunchers; ++i)
 	{
 		launchers[i]->UpdatePrePhysics();
@@ -1343,7 +1363,12 @@ bool Enemy::LaunchersAreDone()
 
 void Enemy::UpdatePostPhysics()
 {
-	
+	if (IsSummoning())
+	{
+		++summonFrame;
+		UpdateSprite();
+		return;
+	}
 	//cout << "suppress: " << (int)suppressMonitor << endl;
 	for (int i = 0; i < numLaunchers; ++i)
 	{
@@ -1854,6 +1879,11 @@ void Enemy::CheckPlayerInteractions( int i )
 
 void Enemy::UpdatePhysics( int substep )
 {
+	if (IsSummoning())
+	{
+		return;
+	}
+
 	bool validSubstep = (substep < numPhysSteps);
 
 	if (validSubstep)

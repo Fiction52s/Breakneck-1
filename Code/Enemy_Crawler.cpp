@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Crawler.h"
+#include "Enemy_CrawlerQueen.h"
 
 using namespace std;
 using namespace sf;
@@ -65,6 +66,8 @@ Crawler::Crawler(ActorParams *ap )
 	sprite.setScale(scale, scale);
 	
 	cutObject->Setup(ts, 86, 87, scale);
+
+	queen = NULL;
 
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35;
@@ -487,7 +490,16 @@ void Crawler::UpdateSprite()
 	sprite.setRotation(surfaceMover->GetAngleDegrees());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(surfaceMover->GetGroundPointF());
-	
+
+	if (IsSummoning())
+	{
+		sprite.setColor(Color(255, 255, 255, 30));
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
 	SyncSpriteInfo(auraSprite, sprite);
 }
 
@@ -661,5 +673,13 @@ void Crawler::AttemptRunAwayBoost()
 	if (IsPlayerChasingMe())
 	{
 		Accelerate(.05);
+	}
+}
+
+void Crawler::HandleRemove()
+{
+	if (queen != NULL)
+	{
+
 	}
 }
