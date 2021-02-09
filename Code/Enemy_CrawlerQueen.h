@@ -35,17 +35,13 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 		MOVE,
 		COMBOMOVE,
 		SUMMON,
-		DIG,
+		DIG_IN,
+		UNDERGROUND,
+		LUNGE,
+		DIG_OUT,
 		SLASH,
 		SEQ_WAIT,
 		A_Count
-	};
-
-	enum Decisions
-	{
-		CHOOSE_MOVE,
-		CHOOSE_SUMMON,
-		CHOOSE_SLASH,
 	};
 
 	struct MyData : StoredEnemyData
@@ -53,11 +49,17 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 		int fireCounter;
 	};
 
+	std::vector<PoiInfo*> *nodeVecA;
+
 	RandomPicker decidePicker;
+	RandomPicker digDecidePicker;
 	RandomPicker nodePicker;
+	RandomPicker undergroundNodePicker;
 
 	double currDashSpeed;
 	double currDashAccel;
+
+	double lungeSpeed;
 
 	int spriteGoalAngle;
 	bool wasAerial;
@@ -70,6 +72,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 
 	Tileset *ts_move;
 	Tileset *ts_slash;
+	Tileset *ts_dig_in;
+	Tileset *ts_dig_out;
+	Tileset *ts_jump;
 
 	int moveFrames;
 	int waitFrames;
@@ -77,8 +82,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	int numActiveCrawlers;
 
 	std::string nodeAStr;
-
-	TigerGrindBulletPool snakePool;
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
@@ -124,6 +127,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	~CrawlerQueen();
 	void ProcessHit();
 	void Decide(int numFrames);
+	void GoUnderground(int numFrames);
 	void Setup();
 	void Wait();
 	void StartFight();
@@ -135,9 +139,9 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
-	void HandleCrawlerDeath();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
+	void HandleSummonedChildRemoval(Enemy *e);
 
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
@@ -148,6 +152,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	bool CanSummonCrawler();
 
 	void SetHitboxInfo(int a);
+	void HitTerrainAerial(Edge *, double);
 
 
 	void HandleFinishTargetedMovement();

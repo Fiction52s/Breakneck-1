@@ -37,22 +37,29 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	targetPlayerIndex = 0;
 
 	actionLength[COMBOMOVE] = 2;
-	animFactor[COMBOMOVE] = 1;
+	
 
-	actionLength[DIG] = 30;
+	actionLength[DIG_IN] = 21;
+	actionLength[DIG_OUT] = 12;
 	actionLength[SLASH] = 26;
+	actionLength[UNDERGROUND] = 60;
 
 	actionLength[SUMMON] = 60;
-	animFactor[SLASH] =4;
 
-	
+	animFactor[COMBOMOVE] = 1;
+	animFactor[SLASH] =4;
+	animFactor[DIG_IN] = 4;
+	animFactor[DIG_OUT] = 4;
+
+	nodeVecA = NULL;
+
+	lungeSpeed = 20;
 
 	crawlerParams = new BasicGroundEnemyParams(sess->types["crawler"], 1);
 	for (int i = 0; i < NUM_CRAWLERS; ++i)
 	{
 		crawlers[i] = (Crawler*)crawlerParams->GenerateEnemy();
-		crawlers[i]->queen = this;
-		crawlers[i]->SetSummon(true);
+		crawlers[i]->SetSummoner(this);
 	}
 
 	for (int i = 0; i < NUM_BOMBS; ++i)
@@ -60,24 +67,32 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 		bombs[i] = new QueenFloatingBomb;
 	}
 
-	//decidePicker.Reset();
-	decidePicker.AddActiveOption(CHOOSE_MOVE, 2);
-	decidePicker.AddActiveOption(CHOOSE_SUMMON, 2);
-	decidePicker.AddActiveOption(CHOOSE_SLASH, 2);
+	decidePicker.AddActiveOption(MOVE, 2);
+	decidePicker.AddActiveOption(SUMMON, 2);
+	decidePicker.AddActiveOption(DIG_IN, 2);
 
 	nodePicker.ReserveNumOptions(8);
 	for (int i = 0; i < 8; ++i)
 	{
 		nodePicker.AddActiveOption(i);
 	}
+
+	undergroundNodePicker.ReserveNumOptions(8);
+
+	digDecidePicker.AddActiveOption(DIG_OUT, 2);
+	digDecidePicker.AddActiveOption(LUNGE, 2);
+	digDecidePicker.AddActiveOption(SLASH, 2);
 	
 
 	//testCrawler = new Crawler( )
 
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	ts_move = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_256x256.png");
+	ts_move = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dash_320x320.png");
 	ts_slash = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_slash_320x320.png");
+	ts_dig_in = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
+	ts_dig_out = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts_jump = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -153,7 +168,7 @@ void CrawlerQueen::LoadParams()
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
-void CrawlerQueen::HandleCrawlerDeath()
+void CrawlerQueen::HandleSummonedChildRemoval(Enemy *e)
 {
 	numActiveCrawlers--;
 
@@ -183,6 +198,11 @@ void CrawlerQueen::ResetEnemy()
 
 	wasAerial = false;
 
+	if (nodeVecA == NULL)
+	{
+		nodeVecA = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
+	}
+
 	//decidePicker.ReserveNumOptions(A_Count * 3); //just a decent number to try. 3 reps
 
 	/*auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
@@ -203,7 +223,6 @@ void CrawlerQueen::ResetEnemy()
 
 
 	playerComboer.Reset();
-	snakePool.Reset();
 	enemyMover.Reset();
 
 	fireCounter = 0;
@@ -322,6 +341,13 @@ void CrawlerQueen::Decide(int numFrames)
 	actionLength[DECIDE] = numFrames;
 }
 
+void CrawlerQueen::GoUnderground(int numFrames)
+{
+	action = UNDERGROUND;
+	frame = 0;
+	actionLength[UNDERGROUND] = numFrames;
+}
+
 void CrawlerQueen::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -335,9 +361,15 @@ void CrawlerQueen::ProcessState()
 			Decide(0);
 			break;
 		case SLASH:
-			Decide(0);
+			GoUnderground(15);
 			break;
 		case MOVE:
+			Decide(0);
+			break;
+		case DIG_IN:
+			GoUnderground(60);
+			break;
+		case DIG_OUT:
 			Decide(0);
 			break;
 		}
@@ -356,18 +388,17 @@ void CrawlerQueen::ProcessState()
 		{
 			int r = decidePicker.AlwaysGetNextOption();//rand() % 3;
 
-			auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
-			int vecSize = nodeVec->size();
+			int vecSize = nodeVecA->size();
 			int rNode = rand() % vecSize;
 
-			targetNode = nodeVec->at(rNode);
+			targetNode = nodeVecA->at(rNode);
 
 			V2d nodePos = targetNode->pos;
 
 			V2d pPos = sess->GetPlayerPos(0);
 			V2d pDir = normalize(pPos - GetPosition());
 
-			if (r == CHOOSE_MOVE)
+			if (r == MOVE)
 			{
 				int gr = rand() % 2;
 				action = MOVE;
@@ -395,28 +426,44 @@ void CrawlerQueen::ProcessState()
 
 				//snakePool.Throw(GetPosition(), pDir);
 			}
-			else if (r == CHOOSE_SUMMON)
+			else if (r == SUMMON)
 			{
 				action = SUMMON;
 				frame = 0;
 				surfaceMover->SetSpeed(0);
 			}
-			else if (r == CHOOSE_SLASH)
+			else if (r == SLASH)
 			{
 				action = SLASH;
 				frame = 0;
 				surfaceMover->SetSpeed(0);
 			}
-			
+			else if (r == DIG_IN)
+			{
+				action = DIG_IN;
+				frame = 0;
+				surfaceMover->groundSpeed = 0;
+			}
 		}
 		break;
 	}
-		
+	case UNDERGROUND:
+		if (frame == actionLength[UNDERGROUND] * animFactor[UNDERGROUND])
+		{
+			int nodeChoice = nodePicker.AlwaysGetNextOption();
+			PositionInfo nodePosInfo;
+			PoiInfo *node = nodeVecA->at(nodeChoice);
+			nodePosInfo.SetGround(node->poly, node->edgeIndex, node->edgeQuantity);
+			surfaceMover->Set(nodePosInfo);
+
+			int digChoice = digDecidePicker.AlwaysGetNextOption();
+			action = digChoice;
+			frame = 0;
+		}
+		break;
 	case MOVE:
 		break;
 	case SUMMON:
-		break;
-	case DIG:
 		break;
 	case SLASH:
 		break;
@@ -476,8 +523,6 @@ void CrawlerQueen::ProcessState()
 			}
 		}
 		break;
-	case DIG:
-		break;
 	case SLASH:
 		if (frame == 11 * animFactor[SLASH] && slowCounter == 1)
 		{
@@ -487,12 +532,31 @@ void CrawlerQueen::ProcessState()
 				{
 					V2d gn = surfaceMover->ground->Normal();
 					sess->AddEnemy(bombs[i]);
-					bombs[i]->Init(GetPosition() + gn * 80.0, gn * 5.0);
+					bombs[i]->Init(GetPosition() + gn * 80.0, gn * 2.0);
 					break;
 				}
 			}
 		}
 		break;
+	case LUNGE:
+	{
+		if (frame == 0 && slowCounter == 1)
+		{
+			V2d gn = surfaceMover->ground->Normal();
+			V2d lungeVel = gn * lungeSpeed;
+			surfaceMover->Jump(lungeVel);
+			if (lungeVel.x > 0)
+			{
+				facingRight = true;
+			}
+			else if (lungeVel.x < 0)
+			{
+				facingRight = false;
+			}
+
+
+		}
+	}
 	}
 
 	//enemyMover.currPosInfo = currPosInfo;
@@ -601,7 +665,6 @@ void CrawlerQueen::Wait()
 {
 	action = SEQ_WAIT;
 	frame = 0;
-	snakePool.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
@@ -648,7 +711,7 @@ void CrawlerQueen::UpdateSprite()
 
 	}
 
-	int extraHeight = -35;
+	int extraHeight = -80;
 
 	switch (action)
 	{
@@ -732,6 +795,32 @@ void CrawlerQueen::UpdateSprite()
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
 		sprite.setRotation(surfaceMover->GetAngleDegrees());
 		
+		break;
+	}
+	case DIG_IN:
+	{
+		sprite.setTexture(*ts_dig_in->texture);
+		ts_dig_in->SetSubRect(sprite, frame / animFactor[DIG_IN], !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - 80);
+		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		break;
+	}
+	case DIG_OUT:
+	{
+		sprite.setTexture(*ts_dig_out->texture);
+		ts_dig_out->SetSubRect(sprite, frame / animFactor[DIG_OUT], !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
+		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		break;
+	}
+	case LUNGE:
+	{
+		V2d vel = surfaceMover->velocity;
+		double ang = RadiansToDegrees(GetVectorAngleCCW(normalize(vel)));
+		sprite.setTexture(*ts_jump->texture);
+		ts_jump->SetSubRect(sprite, 1, !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
+		sprite.setRotation(ang);
 		break;
 	}
 		
@@ -867,8 +956,10 @@ void CrawlerQueen::UpdateSprite()
 
 void CrawlerQueen::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite);
-	snakePool.Draw(target);
+	if (action != UNDERGROUND)
+	{
+		DrawSprite(target, sprite);
+	}
 }
 
 void CrawlerQueen::HandleHitAndSurvive()
@@ -909,3 +1000,8 @@ void CrawlerQueen::SetFromBytes(unsigned char *bytes)
 	launchers[0]->SetFromBytes(bytes);
 }
 
+
+void CrawlerQueen::HitTerrainAerial(Edge *e, double quant)
+{
+	Decide(0);
+}

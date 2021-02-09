@@ -67,8 +67,6 @@ Crawler::Crawler(ActorParams *ap )
 	
 	cutObject->Setup(ts, 86, 87, scale);
 
-	queen = NULL;
-
 	actionLength[UNBURROW] = 20;
 	actionLength[CRAWL] = 35;
 	actionLength[ROLL] = 5;
@@ -673,13 +671,5 @@ void Crawler::AttemptRunAwayBoost()
 	if (IsPlayerChasingMe())
 	{
 		Accelerate(.05);
-	}
-}
-
-void Crawler::HandleRemove()
-{
-	if (queen != NULL)
-	{
-
 	}
 }

@@ -22,6 +22,7 @@ float dot(sf::Vector2<float> &a, sf::Vector2<float> &b);
 void CapVectorLength(sf::Vector2<double> &v, double maxLength);
 void CapQuantityAbs(double &q, double limit);
 
+double RadiansToDegrees(double a);
 double GetVectorAngleCW(sf::Vector2<double> &a);
 double GetVectorAngleCCW(sf::Vector2<double> &a);
 double GetVectorAngleDiffCW(sf::Vector2<double> &a, sf::Vector2<double> &b);

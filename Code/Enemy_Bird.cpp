@@ -8,6 +8,7 @@
 #include "SequenceW2.h"
 #include "SequenceW5.h"
 #include "SequenceW7.h"
+#include "Enemy_Bat.h"
 
 using namespace std;
 using namespace sf;
@@ -30,11 +31,15 @@ Bird::Bird(ActorParams *ap)
 
 	level = ap->GetLevel();
 
+	nodeDebugCircles = NULL;
+	nodeAVec = NULL;
 	targetPlayerIndex = 0;
 
 	actionLength[PUNCH] = 14;
 	animFactor[PUNCH] = 3;
 	reachPointOnFrame[PUNCH] = 0;
+
+	actionLength[SUMMON] = 60;
 
 	actionLength[KICK] = 10;
 	animFactor[KICK] = 3;
@@ -43,6 +48,8 @@ Bird::Bird(ActorParams *ap)
 	actionLength[COMBOMOVE] = 2;
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
+
+	
 
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
@@ -74,6 +81,13 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHitBodySetup(16);
 
 
+	batParams = new BasicAirEnemyParams(sess->types["bat"], 1);
+	for (int i = 0; i < NUM_BATS; ++i)
+	{
+		bats[i] = (Bat*)batParams->GenerateEnemy();
+		bats[i]->SetSummoner(this);
+	}
+
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
@@ -95,7 +109,18 @@ Bird::~Bird()
 		delete postFightScene3;
 	}
 
+	if (nodeDebugCircles != NULL)
+	{
+		delete nodeDebugCircles;
+	}
+
+	for (int i = 0; i < NUM_BATS; ++i)
+	{
+		delete bats[i];
+	}
 }
+
+
 
 void Bird::LoadParams()
 {
@@ -137,6 +162,10 @@ void Bird::ResetEnemy()
 	fireCounter = 0;
 	facingRight = true;
 
+	currMaxActiveBats = NUM_BATS;
+	numBatsToSummonAtOnce = 1;
+	numActiveBats = 0;
+
 	StartFight();
 
 	hitPlayer = false;
@@ -144,8 +173,10 @@ void Bird::ResetEnemy()
 
 	actionQueueIndex = 0;
 	
-
-	
+	for (int i = 0; i < NUM_BATS; ++i)
+	{
+		bats[i]->Reset();
+	}
 
 	UpdateSprite();
 }
@@ -220,7 +251,28 @@ void Bird::Setup()
 			postFightScene3->Init();
 		}
 	}
-	
+
+	if (nodeAVec == NULL)
+	{
+		nodeAVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
+		assert(nodeAVec != NULL);
+
+		int numNodes = nodeAVec->size();
+		nodeDebugCircles = new CircleGroup(numNodes, 10, Color::Magenta, 6);
+
+		nodePicker.ReserveNumOptions(numNodes);
+		for (int i = 0; i < numNodes; ++i)
+		{
+			nodePicker.AddActiveOption(i);
+			nodeDebugCircles->SetPosition(i, Vector2f(nodeAVec->at(i)->pos));
+			
+		}
+
+		nodeDebugCircles->ShowAll();
+		
+	}
+
+
 }
 
 void Bird::SetHitboxInfo(int a)
@@ -234,10 +286,22 @@ void Bird::SetCommand(int index, BirdCommand &bc)
 	actionQueue[index] = bc;
 }
 
+int Bird::SetLaunchersStartIndex(int ind)
+{
+	int currIndex = Enemy::SetLaunchersStartIndex( ind );
+
+	for (int i = 0; i < NUM_BATS; ++i)
+	{
+		currIndex = bats[i]->SetLaunchersStartIndex(currIndex);
+	}
+	return currIndex;
+}
+
 void Bird::DebugDraw(sf::RenderTarget *target)
 {
 	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
+	nodeDebugCircles->Draw(target);
 }
 
 void Bird::DirectKill()
@@ -279,6 +343,13 @@ void Bird::FrameIncrement()
 
 	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
+}
+
+void Bird::HandleSummonedChildRemoval(Enemy *e)
+{
+	numActiveBats--;
+
+	assert(numActiveBats >= 0);
 }
 
 void Bird::UpdatePreFrameCalculations()
@@ -358,6 +429,10 @@ void Bird::ProcessState()
 		case KICK:
 			frame = 0;
 			break;
+		case SUMMON:
+			action = WAIT;
+			waitFrames = 0;
+			break;
 		case SEQ_WAIT:
 			break;
 		}
@@ -372,7 +447,7 @@ void Bird::ProcessState()
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
-		int r = rand() % 3;
+		int r = rand() % 4;
 
 		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
 		int vecSize = nodeVec->size();
@@ -387,28 +462,34 @@ void Bird::ProcessState()
 
 		if (r == 0)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
 		}
 		else if (r == 1)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeNodeQuadratic( pPos, nodePos, CubicBezier(), 60);
 			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
 		}
 		else if (r == 2)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 				10, .5, 60);
 			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
 		}
 		else if (r == 3)
 		{
-			
+			action = SUMMON;
+			frame = 0;
 		}
 
 		
-		action = MOVE;
-		moveFrames = 60;
+		
 	}
 	else if (action == COMBOMOVE )
 	{
@@ -420,6 +501,38 @@ void Bird::ProcessState()
 			//only have this on if i dont turn on hitboxes at the end of the movement.
 			DefaultHitboxesOn();
 			
+		}
+	}
+
+	if (action == SUMMON && frame == 20 && slowCounter == 1)
+	{
+		if (frame == 20 && slowCounter == 1)
+		{
+			int currSummoned = 0;
+			PoiInfo *summonNode;
+			for (int i = 0; i < NUM_BATS; ++i)
+			{
+				if (!bats[i]->active)
+				{
+					summonNode = nodeAVec->at(nodePicker.AlwaysGetNextOption());
+
+					bats[i]->spawned = false;
+					bats[i]->startPosInfo.SetAerial(summonNode->pos);
+
+					sess->AddEnemy(bats[i]);
+					++numActiveBats;
+					++currSummoned;
+
+					if (!CanSummonBat())
+					{
+						break;
+					}
+					else if (currSummoned == numBatsToSummonAtOnce)
+					{
+						break;
+					}
+				}
+			}
 		}
 	}
 
@@ -442,6 +555,11 @@ void Bird::ProcessState()
 	}
 
 	hitPlayer = false;
+}
+
+bool Bird::CanSummonBat()
+{
+	return numActiveBats < currMaxActiveBats;
 }
 
 void Bird::IHitPlayer(int index)
@@ -510,6 +628,7 @@ void Bird::UpdateSprite()
 	{
 	case WAIT:
 	case MOVE:
+	case SUMMON:
 	case COMBOMOVE:
 		sprite.setTexture(*ts_move->texture);
 		ts_move->SetSubRect(sprite, 2, !facingRight);

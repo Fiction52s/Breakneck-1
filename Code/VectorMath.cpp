@@ -110,6 +110,11 @@ void CapQuantityAbs(double &q, double limit)
 	}
 }
 
+double RadiansToDegrees(double a)
+{
+	return a / PI * 180.0;
+}
+
 double GetVectorAngleCW(sf::Vector2<double> &a)
 {
 	double angleA = atan2(a.y, a.x);

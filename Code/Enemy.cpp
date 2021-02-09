@@ -466,7 +466,8 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
-	summonOnAdd = false;
+	active = false;
+	summoner = NULL;
 	prev = NULL;
 	next = NULL;
 	zone = NULL;
@@ -968,6 +969,7 @@ void Enemy::Reset()
 	pauseFrames = 0;
 	frame = 0;
 	summonFrame = 0;
+	active = false;
 
 	SetCurrPosInfo(startPosInfo);
 
@@ -981,14 +983,14 @@ void Enemy::Reset()
 	UpdateHitboxes();
 }
 
-void Enemy::SetSummon(bool s)
+void Enemy::SetSummoner(Enemy *p_summoner )
 {
-	summonOnAdd = s;
+	summoner = p_summoner;
 }
 
 bool Enemy::IsSummoning()
 {
-	return (summonOnAdd && summonFrame < summonDuration);
+	return (summoner != NULL && summonFrame < summonDuration);
 }
 
 void Enemy::SetHitboxes(CollisionBody *cb, int frame)
@@ -1541,6 +1543,14 @@ void Enemy::MovePos(V2d &vel,
 	V2d movementVec = vel;
 	movementVec /= slowMultiple * (double)numPhysSteps;
 	currPosInfo.position += movementVec;
+}
+
+void Enemy::HandleRemove()
+{
+	if (summoner != NULL)
+	{
+		summoner->HandleSummonedChildRemoval( this );
+	}
 }
 
 void Enemy::ConfirmHitNoKill()

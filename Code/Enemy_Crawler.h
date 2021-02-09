@@ -3,7 +3,6 @@
 
 #include "Enemy.h"
 
-struct CrawlerQueen;
 struct Crawler : Enemy, SurfaceMoverHandler
 {
 	enum Action : int
@@ -29,7 +28,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	int framesUntilBurrow;
 
 	double groundSpeed;
-	CrawlerQueen *queen;
 
 
 	void SetLevel(int p_level);
@@ -53,7 +51,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void Accelerate(double amount);
 	void SetForwardSpeed( double speed );
 	void TransferEdge(Edge *);
-	void HandleRemove();
 
 	bool ShouldDash();
 	bool PlayerInFront();

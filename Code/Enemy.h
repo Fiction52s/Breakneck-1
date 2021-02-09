@@ -92,7 +92,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
 
-	bool summonOnAdd;
 	int summonFrame;
 	const static int summonDuration;
 
@@ -104,7 +103,9 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int frame;
 	bool dead;
 
+	bool active;
 	CollisionBody *currHurtboxes;
+	Enemy *summoner;
 	int currHitboxFrame;
 	int currHurtboxFrame;
 	std::vector<Launcher*> launchers;
@@ -168,7 +169,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, int w);
 	void OnCreate( ActorParams *ap,
 		int w );
-	void SetSummon(bool s);
+	void SetSummoner(Enemy *summoner);
 	bool IsSummoning();
 	virtual ~Enemy();
 	virtual void UpdatePreFrameCalculations() {}
@@ -273,7 +274,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool IsSlowed( int index );
 	virtual HitboxInfo * IsHit(int pIndex );
 	virtual void HandleNoHealth();
-	virtual void HandleRemove() {}
+	virtual void HandleRemove();
+	virtual void HandleSummonedChildRemoval( Enemy *e) {}
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes();

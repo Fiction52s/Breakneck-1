@@ -1297,6 +1297,7 @@ void Session::AddEnemy(Enemy *e)
 
 	e->Reset();
 	e->spawned = true;
+	e->active = true;
 	e->Init();
 
 	//^^note remove this later
@@ -1329,6 +1330,8 @@ void Session::RemoveEnemy(Enemy *e)
 	{
 		return;
 	}
+
+	e->active = false;
 
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;

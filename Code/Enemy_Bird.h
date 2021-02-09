@@ -8,10 +8,13 @@
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
 #include "Enemy_BirdShuriken.h"
+#include "RandomPicker.h"
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
 struct BirdPostFight3Scene;
+
+struct Bat;
 
 struct Bird : Enemy
 {
@@ -21,6 +24,7 @@ struct Bird : Enemy
 		PUNCH,
 		KICK,
 		MOVE,
+		SUMMON,
 		WAIT,
 		SEQ_WAIT,
 		A_Count
@@ -34,10 +38,21 @@ struct Bird : Enemy
 	int moveFrames;
 	int waitFrames;
 
+	RandomPicker nodePicker;
+	std::vector<PoiInfo*> *nodeAVec;
+
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
 	BirdPostFight3Scene *postFightScene3;
+
+	CircleGroup *nodeDebugCircles;
 	
+	BasicAirEnemyParams *batParams;
+	const static int NUM_BATS = 5;
+	Bat *bats[NUM_BATS];
+	int numActiveBats;
+	int currMaxActiveBats;
+	int numBatsToSummonAtOnce;
 
 	std::string nodeAStr;
 
@@ -75,9 +90,11 @@ struct Bird : Enemy
 	Bird(ActorParams *ap);
 	~Bird();
 	void Setup();
+	int SetLaunchersStartIndex(int ind);
 	void Wait();
 	void ProcessHit();
 	void StartFight();
+	void HandleSummonedChildRemoval(Enemy *e);
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -88,7 +105,7 @@ struct Bird : Enemy
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
-
+	bool CanSummonBat();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 
