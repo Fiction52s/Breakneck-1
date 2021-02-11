@@ -9,28 +9,13 @@
 #include "PlayerComboer.h"
 #include "Enemy_BirdShuriken.h"
 #include "RandomPicker.h"
+#include "BossStageManager.h"
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
 struct BirdPostFight3Scene;
 
 struct Bat;
-
-struct BossStageManager
-{
-	int totalHealth;
-	std::vector<int> stageHits;	
-	int currStage;
-	int currStageHealth;
-	int numStages;
-
-	BossStageManager();
-	void Reset();
-	void AddBossStage(int numHits);
-	int GetCurrStage();
-	int GetTotalHealth();
-	bool TakeHit();
-};
 
 struct Bird : Enemy
 {
