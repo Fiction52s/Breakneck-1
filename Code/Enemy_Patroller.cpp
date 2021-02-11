@@ -393,16 +393,18 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		{
 			rs.shader = &keyShader;
 			//target->draw( sprite, keyShader );
-			eye->Draw(target, &keyShader);
+			
 			target->draw(bodyVA, 8, sf::Quads, rs);
+			eye->Draw(target, &keyShader);
 			
 		}
 		else
 		{
 			rs.shader = &hurtShader;
 			//target->draw( sprite, hurtShader );
-			eye->Draw(target, &hurtShader);
+			
 			target->draw(bodyVA, 8, sf::Quads, rs);
+			eye->Draw(target, &hurtShader);
 			
 		}
 		target->draw( keySprite );
@@ -412,16 +414,18 @@ void Patroller::EnemyDraw( sf::RenderTarget *target )
 		if( b )
 		{
 			//target->draw( sprite );
-			eye->Draw(target);
+			
 			target->draw(bodyVA, 8, sf::Quads, rs);
+			eye->Draw(target);
 			
 		}
 		else
 		{
 			rs.shader = &hurtShader;
 			//target->draw( sprite, hurtShader );
-			eye->Draw(target, &hurtShader);
+			
 			target->draw(bodyVA, 8, sf::Quads, rs);
+			eye->Draw(target, &hurtShader);
 
 		}		
 	}	

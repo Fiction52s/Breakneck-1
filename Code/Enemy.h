@@ -255,9 +255,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void DrawSprite( 
 		sf::RenderTarget *target,
 		sf::Sprite &spr );
-	void DrawSprite(
-		sf::RenderTarget *target,
-		sf::Sprite &spr);
 	virtual void UpdateEnemyPhysics();
 	virtual void HandleHitAndSurvive() {}
 	virtual void CheckedMiniDraw(sf::RenderTarget *target,

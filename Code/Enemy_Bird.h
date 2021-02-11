@@ -16,6 +16,22 @@ struct BirdPostFight3Scene;
 
 struct Bat;
 
+struct BossStageManager
+{
+	int totalHealth;
+	std::vector<int> stageHits;	
+	int currStage;
+	int currStageHealth;
+	int numStages;
+
+	BossStageManager();
+	void Reset();
+	void AddBossStage(int numHits);
+	int GetCurrStage();
+	int GetTotalHealth();
+	bool TakeHit();
+};
+
 struct Bird : Enemy
 {
 	enum Action
@@ -42,8 +58,11 @@ struct Bird : Enemy
 	};
 
 	int moveFrames;
+	void NextStage();
 
-	RandomPicker decidePicker;
+	BossStageManager stageMgr;
+
+	RandomPicker *decidePickers;
 
 	RandomPicker nodePicker;
 	std::vector<PoiInfo*> *nodeAVec;

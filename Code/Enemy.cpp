@@ -581,36 +581,6 @@ void Enemy::OnCreate(ActorParams *ap,
 		return;
 	}
 
-	auraColor = Color(0, 0, 0, 0);
-	switch (type)
-	{
-	case EnemyType::EN_PATROLLER:
-		auraColor = Color(0x55, 0xbb, 0xff);
-		break;
-	case EnemyType::EN_CRAWLER:
-		auraColor = Color(0x77, 0xcc, 0xff);
-		break;
-	case EnemyType::EN_BASICTURRET:
-		auraColor = Color(0x66, 0x99, 0xff);
-		break;
-	case EnemyType::EN_FOOTTRAP:
-		auraColor = Color(0xaa, 0xcc, 0xff);
-		break;
-	case EnemyType::EN_BAT:
-		auraColor = Color(0x99, 0xff, 0xcc);
-		break;
-	case EnemyType::EN_STAGBEETLE:
-		auraColor = Color(0xaa, 0xff, 0x99);
-		break;
-	case EnemyType::EN_POISONFROG:
-		auraColor = Color(0x66, 0xff, 0xee);
-		break;
-	case EnemyType::EN_CURVETURRET:
-		auraColor = Color(0x99, 0xff, 0x99);
-		break;
-	default:
-		break;
-	}
 
 
 	SetKey();
@@ -901,14 +871,6 @@ std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 	}
 
 	return NULL;
-}
-
-void Enemy::DrawSprite(
-	sf::RenderTarget *target,
-	sf::Sprite &spr, sf::Sprite &auraSpr)
-{
-	target->draw(auraSpr);
-	DrawSprite(target, spr);
 }
 
 void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )

@@ -23,9 +23,68 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+BossStageManager::BossStageManager()
+{
+	totalHealth = 0;
+	currStageHealth = 0;
+	numStages = 0;
+}
+
+void BossStageManager::AddBossStage(int numHits)
+{
+	stageHits.push_back(numHits);
+	++numStages;
+	totalHealth += numHits;
+}
+
+void BossStageManager::Reset()
+{
+	currStageHealth = stageHits[0];
+}
+
+int BossStageManager::GetCurrStage()
+{
+	return currStage;
+}
+
+//return true if remain in same stage, return false if next stage
+bool BossStageManager::TakeHit()
+{
+	--currStageHealth;
+	if (currStageHealth == 0)
+	{
+		++currStage;
+		if (currStage == numStages)
+		{
+			//should never happen
+			currStage = 0;
+			assert(0);
+		}
+		
+		currStageHealth = stageHits[currStage];
+		return false;
+	}
+
+	return true;
+}
+
+int BossStageManager::GetTotalHealth()
+{
+	return totalHealth;
+}
+
+
 Bird::Bird(ActorParams *ap)
 	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool( this )
 {
+	//NUM_STAGES
+	stageMgr.AddBossStage(4);
+	stageMgr.AddBossStage(4);
+
+	decidePickers = new RandomPicker[stageMgr.numStages];
+
+	maxHealth = 3 * stageMgr.GetTotalHealth();
+
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
 
@@ -51,12 +110,19 @@ Bird::Bird(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	decidePicker.AddActiveOption(MOVE_NODE_LINEAR, 2);
-	decidePicker.AddActiveOption(MOVE_NODE_QUADRATIC, 2);
-	decidePicker.AddActiveOption(MOVE_CHASE, 2);
-	decidePicker.AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
-	decidePicker.AddActiveOption(SHURIKEN_SHOTGUN, 2);
-	decidePicker.AddActiveOption(SUMMON, 2);
+	decidePickers[0].AddActiveOption(MOVE_NODE_LINEAR, 2);
+	decidePickers[0].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
+	decidePickers[0].AddActiveOption(MOVE_CHASE, 2);
+	//decidePicker[0].AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
+	//decidePicker[0].AddActiveOption(SHURIKEN_SHOTGUN, 2);
+	//decidePicker[0].AddActiveOption(SUMMON, 2);
+
+	decidePickers[1].AddActiveOption(MOVE_NODE_LINEAR, 2);
+	decidePickers[1].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
+	decidePickers[1].AddActiveOption(MOVE_CHASE, 2);
+	decidePickers[1].AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
+	decidePickers[1].AddActiveOption(SHURIKEN_SHOTGUN, 2);
+	//decidePicker[1].AddActiveOption(SUMMON, 2);
 
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
@@ -86,7 +152,6 @@ Bird::Bird(ActorParams *ap)
 
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
-
 
 	batParams = new BasicAirEnemyParams(sess->types["bat"], 1);
 	for (int i = 0; i < NUM_BATS; ++i)
@@ -126,6 +191,8 @@ Bird::~Bird()
 	{
 		delete bats[i];
 	}
+
+	delete[] decidePickers;
 }
 
 
@@ -169,6 +236,8 @@ void Bird::ResetEnemy()
 
 	fireCounter = 0;
 	facingRight = true;
+
+	stageMgr.Reset();
 
 	invincibleFrames = 0;
 
@@ -434,6 +503,18 @@ void Bird::StartFight()
 	SetHitboxes(NULL);
 }
 
+void Bird::NextStage()
+{
+	switch (stageMgr.GetCurrStage())
+	{
+	case 1:
+
+		break;
+	case 2:
+		break;
+	}
+}
+
 void Bird::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -484,7 +565,7 @@ void Bird::ProcessState()
 	{
 		if (frame == actionLength[DECIDE] * animFactor[DECIDE])
 		{
-			int d = decidePicker.AlwaysGetNextOption();
+			int d = decidePickers[stageMgr.GetCurrStage()].AlwaysGetNextOption();
 			action = d;
 			frame = 0;
 		}
@@ -502,7 +583,8 @@ void Bird::ProcessState()
 			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
 
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
+
+			
 		}
 		break;
 	case MOVE_NODE_QUADRATIC:
@@ -511,7 +593,6 @@ void Bird::ProcessState()
 			int nodeIndex = nodePicker.AlwaysGetNextOption();
 			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
 			enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos( 0 ), nodePos, CubicBezier(), 60);
-			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
 		}
 		break;
 	case MOVE_CHASE:
@@ -519,7 +600,6 @@ void Bird::ProcessState()
 		{
 			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 				10, .5, 60);
-			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
 		}
 		break;
 	case SUMMON:
@@ -599,6 +679,16 @@ void Bird::ProcessState()
 		break;
 	}
 
+	if (stageMgr.GetCurrStage() == 0)
+	{
+		if ((action == MOVE_NODE_LINEAR || action == MOVE_NODE_QUADRATIC
+			|| action == MOVE_CHASE) && frame == 0 && slowCounter == 1)
+		{
+			shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
+		}
+	}
+	
+
 	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
 		&& comboMoveFrames > 0;
 	//added this combo counter thing
@@ -613,7 +703,7 @@ void Bird::ProcessState()
 
 		if (actionQueueIndex == 3)
 		{
-
+			
 		}
 	}
 
@@ -686,8 +776,14 @@ void Bird::ProcessHit()
 			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
 
+
+
 			if (numHealth % 3 == 0)
 			{
+				if (!stageMgr.TakeHit())
+				{
+					NextStage();
+				}
 				invincibleFrames = 60;
 			}
 		}

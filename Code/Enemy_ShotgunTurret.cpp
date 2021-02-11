@@ -35,7 +35,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	animationFactor = 3;
 	assert(framesWait > 13 * animationFactor);
 
-	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W3/cactus_160x160.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
@@ -74,8 +74,8 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	launchers[0]->hitboxInfo->damage = 18;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(12);
-	cutObject->SetSubRectBack(11);
+	cutObject->SetSubRectFront(1);
+	cutObject->SetSubRectBack(2);
 	cutObject->SetScale(scale);
 	cutObject->rotateAngle = sprite.getRotation();
 
@@ -255,7 +255,8 @@ void ShotgunTurret::UpdateSprite()
 		}
 		else
 		{
-			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
+			sprite.setTextureRect(ts->GetSubRect(0));
+			//sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
 		}
 	}
 
