@@ -64,7 +64,6 @@ struct Patroller : Enemy, LauncherEnemy
 	sf::Vertex bodyVA[4 * 2];
 	//sf::Vertex bodyAuraVA[4 * 2];
 	Tileset *ts;
-	Tileset *ts_aura;
 	bool facingRight;
 };
 

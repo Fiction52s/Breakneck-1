@@ -45,8 +45,6 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	double jumpStrength;
 
-	Tileset *ts_aura;
-
 	Cheetah(ActorParams *ap);
 	void RunMovement();
 	void ActionEnded();

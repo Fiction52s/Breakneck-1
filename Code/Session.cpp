@@ -389,11 +389,6 @@ void Session::RegisterW1Enemies()
 	/*AddWorldEnemy("shard", 1, CreateEnemy<Shard>, SetParamsType<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);*/
 
-	/*
-
-	/*AddBasicAerialWorldEnemy("jugglercatcher", 1, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	GetTileset("Enemies/jugglercatcher_128x128.png", 128, 128));*/
-
 	/*AddBasicGroundWorldEnemy("shroom", 1, NULL, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
 		GetTileset("Enemies/shroom_192x192.png", 192, 192));
 
@@ -546,8 +541,6 @@ void Session::RegisterW3Enemies()
 	AddBasicGroundWorldEnemy("badger", 3, CreateEnemy<Badger>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3 );
 
 	AddBasicGroundWorldEnemy("roadrunner", 3, CreateEnemy<Roadrunner>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-	//AddBasicGroundWorldEnemy("roadrunner", 3, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3,
-	//	GetTileset("Enemies/roadrunner_256x256.png", 256, 256));
 
 	AddBasicAerialWorldEnemy("owl", 3, CreateEnemy<Owl>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
@@ -572,9 +565,6 @@ void Session::RegisterW4Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
-	//AddWorldEnemy("grindrail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
-	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
-	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
 	AddWorldEnemy("tigernode", 4, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));

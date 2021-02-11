@@ -37,7 +37,6 @@ struct Badger : Enemy, GroundMoverHandler
 
 	double jumpStrength;
 
-	Tileset *ts_aura;
 
 	Badger(ActorParams *ap);
 	void ResetEnemy();

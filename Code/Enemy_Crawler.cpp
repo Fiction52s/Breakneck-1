@@ -56,10 +56,8 @@ Crawler::Crawler(ActorParams *ap )
 	CreateSurfaceMover(startPosInfo, 32, this);
 
 	deathSound = sess->GetSound("Enemies/crawler_death");
-	ts = sess->GetSizedTileset("Enemies/crawler_160x160.png");
-	ts_aura = sess->GetSizedTileset("Enemies/crawler_aura_160x160.png");
+	ts = sess->GetSizedTileset("Enemies/W1/crawler_160x160.png");
 
-	auraSprite.setTexture(*ts_aura->texture);
 	sprite.setTexture( *ts->texture );
 
 	sprite.setTextureRect( ts->GetSubRect( 0 ) );
@@ -408,7 +406,7 @@ void Crawler::EnemyDraw(sf::RenderTarget *target )
 	if (action == UNDERGROUND)
 		return; 
 
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 void Crawler::IHitPlayer( int index )
@@ -497,8 +495,6 @@ void Crawler::UpdateSprite()
 	{
 		sprite.setColor(Color::White);
 	}
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Crawler::DebugDraw(RenderTarget *target)

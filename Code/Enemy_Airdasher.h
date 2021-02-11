@@ -12,7 +12,6 @@ struct Airdasher : Enemy
 		S_DASH,
 		S_OUT,
 		S_RETURN,
-		S_COMBO,
 		S_Count
 	};
 
@@ -21,7 +20,6 @@ struct Airdasher : Enemy
 	void ProcessState();
 
 	void SetLevel(int lev);
-	void ProcessHit();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -29,7 +27,6 @@ struct Airdasher : Enemy
 	void ResetEnemy();
 	double SetFacingPlayerAngle();
 	void SetFacingSide( V2d pDir );
-	void ComboHit();
 	void IHitPlayer(int index = 0);
 
 	int hitLimit;
@@ -54,7 +51,6 @@ struct Airdasher : Enemy
 	double speed;
 
 	Tileset *ts;
-	Tileset *ts_aura;
 };
 
 #endif

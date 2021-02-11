@@ -35,7 +35,7 @@ LobTurret::LobTurret(ActorParams *ap)
 	animationFactor = 3;
 	assert(framesWait > 13 * animationFactor);
 
-	ts = sess->GetSizedTileset("Enemies/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
@@ -267,7 +267,7 @@ void LobTurret::ProcessState()
 
 void LobTurret::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 
@@ -310,8 +310,6 @@ void LobTurret::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void LobTurret::DebugDraw(sf::RenderTarget *target)

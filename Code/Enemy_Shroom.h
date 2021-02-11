@@ -33,7 +33,6 @@ struct Shroom : Enemy
 	sf::SoundBuffer *hitSound;
 
 	Tileset *ts;
-	Tileset *ts_aura;
 
 	bool jellySpawnable;
 
@@ -67,7 +66,6 @@ struct ShroomJelly : Enemy
 	void ComboHit();
 
 	Tileset *ts;
-	Tileset *ts_aura;
 	
 	sf::SoundBuffer *floatSound;
 

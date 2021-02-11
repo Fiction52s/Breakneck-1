@@ -46,7 +46,7 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = sess->GetSizedTileset("Enemies/roadrunner_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/W3/roadrunner_256x256.png");
 
 	SetOffGroundHeight(128 / 2);
 
@@ -339,9 +339,6 @@ void Roadrunner::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(groundMover->GetAngleDegrees());
-
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Roadrunner::HitTerrain(double &q)

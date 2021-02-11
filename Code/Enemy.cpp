@@ -230,7 +230,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_CRAWLERQUEEN:
-		hitParams.Set(5, .8, (3 * 60) / 3, 3);//40);//40);// 120);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3 * 8);//40);//40);// 120);
 		break;
 	case EnemyType::EN_QUEENFLOATINGBOMB:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
@@ -395,7 +395,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_BIRDBOSS:
-		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3 * 8);
 		break;
 	case EnemyType::EN_GATORBOSS:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
@@ -1119,11 +1119,6 @@ void Enemy::UpdateSpriteFromParams(ActorParams *ap)
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 		sprite.setPosition(editParams->GetFloatPos());
 		sprite.setRotation(0);
-
-		if (auraSprite.getTexture() != NULL)
-		{
-			SyncSpriteInfo(auraSprite, sprite);
-		}
 	}
 }
 

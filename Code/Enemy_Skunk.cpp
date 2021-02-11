@@ -52,7 +52,7 @@ Skunk::Skunk(ActorParams *ap)
 
 	
 
-	ts = sess->GetSizedTileset("Enemies/skunk_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/W6/skunk_128x128.png");
 
 	SetOffGroundHeight(128 / 2);
 
@@ -485,8 +485,6 @@ void Skunk::UpdateSprite()
 	sprite.setRotation(groundMover->GetAngleDegrees());
 
 	testCircle.setPosition(GetPositionF());
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Skunk::HitTerrain(double &q)

@@ -52,8 +52,7 @@ Copycat::Copycat(ActorParams *ap)
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->AddAirForce(V2d(0, .6));
 
-	ts = sess->GetSizedTileset("Enemies/Badger_192x128.png");
-	ts_aura = sess->GetSizedTileset("Enemies/Badger_aura_192x128.png");
+	ts = sess->GetSizedTileset("Enemies/W3/Badger_192x128.png");
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);

@@ -138,7 +138,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy *prev;
 	Enemy *next;
 	bool spawned;
-	sf::Color auraColor;
 	sf::Rect<double> spawnRect;
 	EnemyType type;
 	Zone *zone;
@@ -148,7 +147,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	sf::Shader hurtShader;
 	sf::Sprite keySprite;
 	sf::Sprite sprite;
-	sf::Sprite auraSprite;
 	Tileset *ts_hitSpack;
 	Tileset *ts_killSpack;
 	Tileset *ts_blood;
@@ -259,7 +257,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		sf::Sprite &spr );
 	void DrawSprite(
 		sf::RenderTarget *target,
-		sf::Sprite &spr, sf::Sprite &auraSpr );
+		sf::Sprite &spr);
 	virtual void UpdateEnemyPhysics();
 	virtual void HandleHitAndSurvive() {}
 	virtual void CheckedMiniDraw(sf::RenderTarget *target,

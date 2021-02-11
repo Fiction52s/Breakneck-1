@@ -50,7 +50,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	powerLevel = 0;
 	repsToLevelUp = 3;
 
-	ts = sess->GetSizedTileset("Enemies/sprout_160x160.png");
+	ts = sess->GetSizedTileset("Enemies/W5/sprout_160x160.png");
 	sprite.setTexture( *ts->texture );
 
 	double height = 160 * scale;

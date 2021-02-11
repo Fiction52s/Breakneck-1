@@ -20,12 +20,18 @@ struct Bird : Enemy
 {
 	enum Action
 	{
+		DECIDE,
 		COMBOMOVE,
 		PUNCH,
 		KICK,
+		MOVE_NODE_LINEAR,
+		MOVE_NODE_QUADRATIC,
+		MOVE_CHASE,
+		RUSH,
 		MOVE,
+		SHURIKEN_SHOTGUN,
+		UNDODGEABLE_SHURIKEN,
 		SUMMON,
-		WAIT,
 		SEQ_WAIT,
 		A_Count
 	};
@@ -36,7 +42,8 @@ struct Bird : Enemy
 	};
 
 	int moveFrames;
-	int waitFrames;
+
+	RandomPicker decidePicker;
 
 	RandomPicker nodePicker;
 	std::vector<PoiInfo*> *nodeAVec;
@@ -44,6 +51,8 @@ struct Bird : Enemy
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
 	BirdPostFight3Scene *postFightScene3;
+
+	int invincibleFrames;
 
 	CircleGroup *nodeDebugCircles;
 	
@@ -64,7 +73,6 @@ struct Bird : Enemy
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
-	Tileset *ts_aura;
 	int comboMoveFrames;
 
 	int reachPointOnFrame[A_Count];
@@ -92,6 +100,7 @@ struct Bird : Enemy
 	void Setup();
 	int SetLaunchersStartIndex(int ind);
 	void Wait();
+	void Decide(int frames);
 	void ProcessHit();
 	void StartFight();
 	void HandleSummonedChildRemoval(Enemy *e);
@@ -108,7 +117,7 @@ struct Bird : Enemy
 	bool CanSummonBat();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
-
+	bool CanBeHitByPlayer();
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void ResetEnemy();

@@ -43,12 +43,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	Tileset *ts_sweep;
 	Tileset *ts_walk;
 
-	Tileset *ts_hopAura;
-	Tileset *ts_idleAura;
-	Tileset *ts_runAura;
-	Tileset *ts_sweepAura;
-	Tileset *ts_walkAura;
-
 	CubicBezier moveBezTest;
 	int bezFrame;
 	int bezLength;

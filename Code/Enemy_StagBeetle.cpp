@@ -65,19 +65,12 @@ StagBeetle::StagBeetle( ActorParams *ap )
 		groundMover->reverse = true;
 	}
 
-	ts_death = sess->GetTileset( "Enemies/stag_death_256x176.png", 256, 176 );
-	ts_hop = sess->GetTileset( "Enemies/stag_hop_256x256.png", 256, 256 );
-	ts_idle = sess->GetTileset( "Enemies/stag_idle_256x176.png", 256, 176 );
-	ts_run = sess->GetTileset( "Enemies/stag_run_256x176.png", 256, 176);
-	ts_sweep = sess->GetTileset( "Enemies/stag_sweep_256x298.png", 256, 298);
-	ts_walk = sess->GetTileset( "Enemies/stag_walk_256x176.png", 256, 176 );
-
-	ts_hopAura = sess->GetTileset("Enemies/stag_hop_aura_256x256.png", 256, 256);
-	ts_idleAura = sess->GetTileset("Enemies/stag_idle_aura_256x176.png", 256, 176);
-	ts_runAura = sess->GetTileset("Enemies/stag_run_aura_256x176.png", 256, 176);
-	ts_sweepAura = sess->GetTileset("Enemies/stag_sweep_aura_256x298.png", 256, 298);
-	ts_walkAura = sess->GetTileset("Enemies/stag_walk_aura_256x176.png", 256, 176);
-
+	ts_death = sess->GetSizedTileset("Enemies/W2/stag_death_256x176.png");
+	ts_hop = sess->GetSizedTileset( "Enemies/W2/stag_hop_256x256.png");
+	ts_idle = sess->GetSizedTileset( "Enemies/W2/stag_idle_256x176.png");
+	ts_run = sess->GetSizedTileset( "Enemies/W2/stag_run_256x176.png");
+	ts_sweep = sess->GetSizedTileset( "Enemies/W2/stag_sweep_256x298.png");
+	ts_walk = sess->GetSizedTileset( "Enemies/W2/stag_walk_256x176.png");
 	
 	
 	sprite.setTexture( *ts_idle->texture );
@@ -361,8 +354,7 @@ void StagBeetle::HandleNoHealth()
 
 void StagBeetle::EnemyDraw(sf::RenderTarget *target )
 {
-	//target->draw(auraSprite);
-	DrawSprite(target, sprite);// , auraSprite );
+	DrawSprite(target, sprite);
 }
 
 
@@ -394,7 +386,6 @@ void StagBeetle::UpdateSprite()
 		//	cout << "idle angle: " << angle << endl;
 			//sprite.setTextureRect( *ts_idle->texture );
 			sprite.setTexture( *ts_idle->texture );
-			auraSprite.setTexture(*ts_idleAura->texture);
 			r = ts_idle->GetSubRect( frame / 5 );
 
 			break;
@@ -402,14 +393,12 @@ void StagBeetle::UpdateSprite()
 			//cout << "run angle: " << angle << endl;
 			//sprite.setTexture( *ts_run->texture );
 			sprite.setTexture( *ts_run->texture );
-			auraSprite.setTexture(*ts_runAura->texture);
 			r = ts_run->GetSubRect( frame / 4 );
 			break;
 		case JUMP:
 			{
 				int tFrame = 0;
 			sprite.setTexture( *ts_hop->texture );
-			auraSprite.setTexture(*ts_hopAura->texture);
 			//cout << "jump angle: " << angle << endl;
 
 			if( frame == 0 )
@@ -434,7 +423,6 @@ void StagBeetle::UpdateSprite()
 			}
 		case LAND:
 			sprite.setTexture( *ts_hop->texture );
-			auraSprite.setTexture(*ts_hopAura->texture);
 			r = ts_hop->GetSubRect( 3 );
 
 			break;
@@ -462,8 +450,6 @@ void StagBeetle::UpdateSprite()
 		sprite.setPosition(GetPositionF());
 		sprite.setRotation(groundMover->GetAngleDegrees());
 	}
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void StagBeetle::HitTerrain( double &q )

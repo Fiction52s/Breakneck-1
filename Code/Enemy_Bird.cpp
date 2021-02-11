@@ -40,6 +40,8 @@ Bird::Bird(ActorParams *ap)
 	reachPointOnFrame[PUNCH] = 0;
 
 	actionLength[SUMMON] = 60;
+	actionLength[SHURIKEN_SHOTGUN] = 60;
+	actionLength[UNDODGEABLE_SHURIKEN] = 60;
 
 	actionLength[KICK] = 10;
 	animFactor[KICK] = 3;
@@ -49,7 +51,12 @@ Bird::Bird(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	
+	decidePicker.AddActiveOption(MOVE_NODE_LINEAR, 2);
+	decidePicker.AddActiveOption(MOVE_NODE_QUADRATIC, 2);
+	decidePicker.AddActiveOption(MOVE_CHASE, 2);
+	decidePicker.AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
+	decidePicker.AddActiveOption(SHURIKEN_SHOTGUN, 2);
+	decidePicker.AddActiveOption(SUMMON, 2);
 
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
 
@@ -114,6 +121,7 @@ Bird::~Bird()
 		delete nodeDebugCircles;
 	}
 
+	delete batParams;
 	for (int i = 0; i < NUM_BATS; ++i)
 	{
 		delete bats[i];
@@ -161,6 +169,8 @@ void Bird::ResetEnemy()
 
 	fireCounter = 0;
 	facingRight = true;
+
+	invincibleFrames = 0;
 
 	currMaxActiveBats = NUM_BATS;
 	numBatsToSummonAtOnce = 1;
@@ -252,25 +262,37 @@ void Bird::Setup()
 		}
 	}
 
-	if (nodeAVec == NULL)
+	
+	nodeAVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
+	assert(nodeAVec != NULL);
+
+	int numNodes = nodeAVec->size();
+
+	if (nodeDebugCircles != NULL)
 	{
-		nodeAVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
-		assert(nodeAVec != NULL);
-
-		int numNodes = nodeAVec->size();
-		nodeDebugCircles = new CircleGroup(numNodes, 10, Color::Magenta, 6);
-
-		nodePicker.ReserveNumOptions(numNodes);
-		for (int i = 0; i < numNodes; ++i)
+		if (nodeDebugCircles->numCircles != numNodes)
 		{
-			nodePicker.AddActiveOption(i);
-			nodeDebugCircles->SetPosition(i, Vector2f(nodeAVec->at(i)->pos));
-			
+			delete nodeDebugCircles;
+			nodeDebugCircles = NULL;
 		}
-
-		nodeDebugCircles->ShowAll();
-		
 	}
+
+	if (nodeDebugCircles == NULL)
+	{
+		nodeDebugCircles = new CircleGroup(numNodes, 10, Color::Magenta, 6);
+			
+	}
+
+	nodePicker.ReserveNumOptions(numNodes);
+	nodePicker.Reset();
+
+	for (int i = 0; i < numNodes; ++i)
+	{
+		nodePicker.AddActiveOption(i);
+		nodeDebugCircles->SetPosition(i, Vector2f(nodeAVec->at(i)->pos));	
+	}
+
+	nodeDebugCircles->ShowAll();
 
 
 }
@@ -336,9 +358,9 @@ void Bird::FrameIncrement()
 		--moveFrames;
 	}
 
-	if (waitFrames > 0)
+	if (invincibleFrames > 0)
 	{
-		--waitFrames;
+		--invincibleFrames;
 	}
 
 	enemyMover.FrameIncrement();
@@ -406,12 +428,10 @@ void Bird::Wait()
 
 void Bird::StartFight()
 {
-	action = WAIT;
+	Decide(30);
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
-	frame = 0;
 	SetHitboxes(NULL);
-	waitFrames = 10;
 }
 
 void Bird::ProcessState()
@@ -430,82 +450,79 @@ void Bird::ProcessState()
 			frame = 0;
 			break;
 		case SUMMON:
-			action = WAIT;
-			waitFrames = 0;
+			Decide(0);
 			break;
 		case SEQ_WAIT:
+			break;
+		case UNDODGEABLE_SHURIKEN:
+		case SHURIKEN_SHOTGUN:
+			Decide(0);
 			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if (action == MOVE && enemyMover.IsIdle())
+	if ((action == MOVE_NODE_LINEAR || action == MOVE_NODE_QUADRATIC
+		|| action == MOVE_CHASE || action == RUSH ))
 	{
-		action = WAIT;
-		waitFrames = 10;
-	}
-	else if (action == WAIT && waitFrames == 0)
-	{
-		int r = rand() % 4;
-
-		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, nodeAStr);
-		int vecSize = nodeVec->size();
-		int rNode = rand() % vecSize;
-
-		V2d nodePos = nodeVec->at(rNode)->pos;
-
-		V2d pPos = sess->GetPlayerPos(0);
-		V2d pDir = normalize( pPos - GetPosition());
-
-		
-
-		if (r == 0)
+		if (enemyMover.IsIdle())
 		{
-			action = MOVE;
-			moveFrames = 60;
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			Decide(0);
 		}
-		else if (r == 1)
+		else if ( action == MOVE_CHASE && enemyMover.GetActionProgress() > .5 
+			&& PlayerDist() < 200)
 		{
-			action = MOVE;
-			moveFrames = 60;
-			enemyMover.SetModeNodeQuadratic( pPos, nodePos, CubicBezier(), 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
-		}
-		else if (r == 2)
-		{
-			action = MOVE;
-			moveFrames = 60;
-			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
-				10, .5, 60);
-			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
-		}
-		else if (r == 3)
-		{
-			action = SUMMON;
+			action = RUSH;
 			frame = 0;
 		}
-
-		
-		
 	}
-	else if (action == COMBOMOVE )
+
+	switch (action)
 	{
-		if (comboMoveFrames == 0)
+	case DECIDE:
+	{
+		if (frame == actionLength[DECIDE] * animFactor[DECIDE])
 		{
-			action = actionQueue[actionQueueIndex].action + 1;
-			facingRight = actionQueue[actionQueueIndex].facingRight;
-			SetHitboxInfo(action);
-			//only have this on if i dont turn on hitboxes at the end of the movement.
-			DefaultHitboxesOn();
-			
+			int d = decidePicker.AlwaysGetNextOption();
+			action = d;
+			frame = 0;
 		}
+		break;
+	}
+		
 	}
 
-	if (action == SUMMON && frame == 20 && slowCounter == 1)
+	switch (action)
 	{
+	case MOVE_NODE_LINEAR:
+		if (frame == 0 && slowCounter == 1)
+		{
+			int nodeIndex = nodePicker.AlwaysGetNextOption();
+			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
+
+			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
+			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
+		}
+		break;
+	case MOVE_NODE_QUADRATIC:
+		if (frame == 0 && slowCounter == 1)
+		{
+			int nodeIndex = nodePicker.AlwaysGetNextOption();
+			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
+			enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos( 0 ), nodePos, CubicBezier(), 60);
+			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
+		}
+		break;
+	case MOVE_CHASE:
+		if (frame == 0 && slowCounter == 1)
+		{
+			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
+				10, .5, 60);
+			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::RETURN_STICK);
+		}
+		break;
+	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
 			int currSummoned = 0;
@@ -534,6 +551,52 @@ void Bird::ProcessState()
 				}
 			}
 		}
+		break;
+	case RUSH:
+		if (frame == 0 && slowCounter == 1)
+		{
+			enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * 600.0, CubicBezier(), 20);
+		}
+		break;
+	case SHURIKEN_SHOTGUN:
+	{
+		if ((frame == 20 || frame == 50) && slowCounter == 1)
+		{
+			V2d pDir = PlayerDir();
+			double spread = PI / 8.0;
+			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			RotateCW(pDir, spread);
+			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			RotateCCW(pDir, spread * 2);
+			shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+		}
+		break;
+	}
+	case UNDODGEABLE_SHURIKEN:
+	{
+		if (frame == 30 && slowCounter == 1)
+		{
+			//V2d pDir = PlayerDir();
+			//double spread = PI / 8.0;
+			shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::UNDODGEABLE);
+			//RotateCW(pDir, spread);
+			//shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+			//RotateCCW(pDir, spread * 2);
+			//shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
+		}
+		break;
+	}
+	case COMBOMOVE:
+		if (comboMoveFrames == 0)
+		{
+			action = actionQueue[actionQueueIndex].action + 1;
+			facingRight = actionQueue[actionQueueIndex].facingRight;
+			SetHitboxInfo(action);
+			//only have this on if i dont turn on hitboxes at the end of the movement.
+			DefaultHitboxesOn();
+
+		}
+		break;
 	}
 
 	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
@@ -555,6 +618,13 @@ void Bird::ProcessState()
 	}
 
 	hitPlayer = false;
+}
+
+void Bird::Decide(int numFrames )
+{
+	action = DECIDE;
+	frame = 0;
+	actionLength[DECIDE] = numFrames;
 }
 
 bool Bird::CanSummonBat()
@@ -593,14 +663,8 @@ void Bird::ProcessHit()
 			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 			ConfirmKill();
 		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-			ConfirmHitNoKill();
-		}
-
-		if (numHealth == 1)
-		{
+		else if (numHealth == 1)
+		{	
 			if (level == 1)
 			{
 				postFightScene->Reset();
@@ -617,16 +681,31 @@ void Bird::ProcessHit()
 				sess->SetActiveSequence(postFightScene3);
 			}
 		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+
+			if (numHealth % 3 == 0)
+			{
+				invincibleFrames = 60;
+			}
+		}
 
 		receivedHit = NULL;
 	}
+}
+
+bool Bird::CanBeHitByPlayer()
+{
+	return invincibleFrames == 0;
 }
 
 void Bird::UpdateSprite()
 {
 	switch (action)
 	{
-	case WAIT:
+	case DECIDE:
 	case MOVE:
 	case SUMMON:
 	case COMBOMOVE:
@@ -641,6 +720,15 @@ void Bird::UpdateSprite()
 		sprite.setTexture(*ts_kick->texture);
 		ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
 		break;
+	}
+
+	if (invincibleFrames == 0)
+	{
+		sprite.setColor(Color::White);
+	}
+	else
+	{
+		sprite.setColor(Color::Red);
 	}
 
 	sprite.setPosition(GetPositionF());

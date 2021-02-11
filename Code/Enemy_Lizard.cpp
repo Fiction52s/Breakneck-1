@@ -49,7 +49,7 @@ Lizard::Lizard(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = sess->GetSizedTileset("Enemies/Roadrunner_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/W3/Roadrunner_256x256.png");
 	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
@@ -389,9 +389,6 @@ void Lizard::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - extraVert);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(groundMover->GetAngleDegrees());
-
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Lizard::HitTerrain(double &q)

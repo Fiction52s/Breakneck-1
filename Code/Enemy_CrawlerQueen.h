@@ -77,7 +77,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	Tileset *ts_jump;
 
 	int moveFrames;
-	int waitFrames;
 
 	int numActiveCrawlers;
 
@@ -89,7 +88,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
-	Tileset *ts_aura;
 	int comboMoveFrames;
 
 	int reachPointOnFrame[A_Count];
@@ -104,6 +102,8 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 
 	V2d targetPos;
 	int framesToArrive;
+
+	int invincibleFrames;
 
 	ActorParams *crawlerParams;
 
@@ -150,6 +150,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	void FrameIncrement();
 
 	bool CanSummonCrawler();
+	bool CanBeHitByPlayer();
 
 	void SetHitboxInfo(int a);
 	void HitTerrainAerial(Edge *, double);

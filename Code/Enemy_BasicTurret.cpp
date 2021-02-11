@@ -42,8 +42,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	fireSound = sess->GetSound("Enemies/turret_shoot");
 
-	ts = sess->GetTileset("Enemies/turret_208x176.png", width, height);//"basicturret_128x80.png", width, height );
-	ts_aura = sess->GetTileset("Enemies/turret_aura_208x176.png", width, height);
+	ts = sess->GetTileset("Enemies/W1/turret_208x176.png", width, height);
 
 	width *= scale;
 	height *= scale;
@@ -56,8 +55,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	
 	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 	//testShield->SetPosition(GetPosition());
-
-	auraSprite.setTexture(*ts_aura->texture);
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
@@ -261,7 +258,6 @@ void BasicTurret::DirectKill()
 
 void BasicTurret::EnemyDraw(sf::RenderTarget *target )
 {
-	target->draw(auraSprite);
 	DrawSprite(target, sprite);
 }
 
@@ -279,8 +275,6 @@ void BasicTurret::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-	
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void BasicTurret::SetupPreCollision()

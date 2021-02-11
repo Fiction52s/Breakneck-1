@@ -69,7 +69,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
-	ts_test = sess->GetSizedTileset( "Enemies/frog_80x80.png");
+	ts_test = sess->GetSizedTileset( "Enemies/W2/frog_80x80.png");
 
 	const string &typeName = ap->GetTypeName();
 
@@ -376,7 +376,7 @@ void PoisonFrog::UpdateEnemyPhysics()
 
 void PoisonFrog::EnemyDraw(sf::RenderTarget *target )
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 void PoisonFrog::UpdateSprite()

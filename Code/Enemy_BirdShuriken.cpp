@@ -22,7 +22,7 @@ using namespace sf;
 BirdShurikenPool::BirdShurikenPool(Enemy *p_parentEnemy)
 {
 	ts = NULL;
-	numShurs = 10;
+	numShurs = 20;
 	shurVec.resize(numShurs);
 	verts = new Vertex[numShurs * 4];
 	for (int i = 0; i < numShurs; ++i)
@@ -151,16 +151,16 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(16);
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	//cutObject->Setup(ts, 53, 52, scale);
 
-	thrownSpeed = 10;
-	accel = .1;
+	thrownSpeed = 15;
+	accel = .15;
 
 	startUnDodgeSpeed = 10;
 	unDodgeAccel = .15;
@@ -274,7 +274,7 @@ void BirdShuriken::Throw( V2d &pos, V2d &dir, int p_shurType)
 
 void BirdShuriken::Rethrow()
 {
-	V2d pDir = normalize(sess->GetPlayerPos(0) - GetPosition());
+	V2d pDir = PlayerDir();
 
 	framesToLive = 120;
 
@@ -570,6 +570,15 @@ void BirdShuriken::UpdateSprite()
 {
 	ts->SetQuadSubRect(quad, 0);
 	SetRectCenter(quad, 128, 128, GetPositionF());
+
+	if (shurType == UNDODGEABLE)
+	{
+		SetRectColor(quad, Color::Red);
+	}
+	else
+	{
+		SetRectColor(quad, Color::White);
+	}
 }
 
 void BirdShuriken::EnemyDraw(sf::RenderTarget *target)

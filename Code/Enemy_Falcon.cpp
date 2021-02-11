@@ -37,7 +37,7 @@ Falcon::Falcon(ActorParams *ap)
 	maxSpeed.x = 20;
 	maxSpeed.y = 10;
 
-	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

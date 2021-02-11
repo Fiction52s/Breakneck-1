@@ -38,7 +38,6 @@ struct Gator : Enemy
 	EnemyMover enemyMover;
 
 	Tileset *ts_bulletExplode;
-	Tileset *ts_aura;
 	int comboMoveFrames;
 
 	int reachPointOnFrame[A_Count];

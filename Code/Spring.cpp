@@ -151,55 +151,35 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	
 	if (tilesetChoice == 0)
 	{
-		ts = sess->GetSizedTileset("Enemies/launcher_1_384x384.png");
+		ts = sess->GetSizedTileset("Enemies/Launchers/launcher_1_384x384.png");
 	}
 	else if (tilesetChoice == 1)
 	{
-		ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
+		ts = sess->GetSizedTileset("Enemies/Launchers/launcher_2_384x384.png");
 	}
 
 	if (recoverTileseChoice == 0)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_1_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_1_384x384.png");
 	}
 	else if (recoverTileseChoice == 1)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_2_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_2_384x384.png");
 	}
 	else if (recoverTileseChoice == 2)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_3_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_3_384x384.png");
 	}
 
 	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
-	ts_particles = sess->GetSizedTileset("Enemies/launcher_particles_256x256.png");
-	ts_boost = sess->GetSizedTileset("Enemies/launcher_explode_512x512.png");
+	ts_particles = sess->GetSizedTileset("Enemies/Launchers/launcher_particles_256x256.png");
+	ts_boost = sess->GetSizedTileset("Enemies/Launchers/launcher_explode_512x512.png");
 	
 	
 	particleSprite.setTexture(*ts_particles->texture);
 	boostSprite.setTexture(*ts_boost->texture);
 	recoverSprite.setTexture(*ts_recover->texture);
 	sprite.setTexture(*ts->texture);
-	//ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
-	/*switch (springType)
-	{
-	case REGULAR:
-		ts_idle = sess->GetTileset("Enemies/spring_idle_256x256.png", 256, 256);
-		ts_recover = sess->GetTileset("Enemies/spring_recover_256x256.png", 256, 256);
-		ts_springing = sess->GetTileset("Enemies/spring_spring_512x576.png", 512, 576);
-		break;
-	case GLIDE:
-		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
-		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
-		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
-		break;
-	case ANNIHILATION_GLIDE:
-		ts_idle = sess->GetTileset("Enemies/spring_idle_2_256x256.png", 256, 256);
-		ts_recover = sess->GetTileset("Enemies/spring_recover_2_256x256.png", 256, 256);
-		ts_springing = sess->GetTileset("Enemies/spring_spring_2_512x576.png", 512, 576);
-		sprite.setColor(Color::Cyan);
-		break;
-	}*/
 
 	double radius = 64;
 

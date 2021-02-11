@@ -48,6 +48,8 @@ void EnemyMover::Reset()
 	radialMovementSeq.currMovement = NULL;
 	SetMoveType(NONE);
 	lastActionEndVelocity = V2d(0, 0);
+	actionFrame = 0;
+	actionTotalDuration = 0;
 
 	linearMove->SetFrameDuration(0);
 	quadraticMove->SetFrameDuration(0);
@@ -149,6 +151,7 @@ void EnemyMover::SetModeRadial(V2d &base, double speed, V2d &dest)
 	radialMove->Set(base, currPosInfo.GetPosition(), endAngle, speed);
 	radialMove->InitDebugDraw();
 	radialMovementSeq.Reset();
+	actionTotalDuration = radialMove->GetFrameDuration();
 }
 
 void EnemyMover::SetModeRadialDoubleJump(V2d &base,
@@ -164,6 +167,7 @@ void EnemyMover::SetModeRadialDoubleJump(V2d &base,
 	radialMove->Set(base, currPosInfo.GetPosition(), endAngle, speed);
 	radialMove->InitDebugDraw();
 	radialMovementSeq.Reset();
+	actionTotalDuration = radialMove->GetFrameDuration();
 }
 
 void EnemyMover::SetModeZipAndFall(V2d &zipPos, V2d &grav, V2d &dest )
@@ -177,14 +181,14 @@ void EnemyMover::SetModeZipAndFall(V2d &zipPos, V2d &grav, V2d &dest )
 void EnemyMover::SetModeFall(double grav, int frames)
 {
 	projectileGrav = V2d(0, grav);
-	actionFrames = frames;
+	actionTotalDuration = frames;
 	SetMoveType(FALL);
 }
 
 void EnemyMover::SetModeWait(int frames)
 {
 	SetMoveType(WAIT);
-	actionFrames = frames;
+	actionTotalDuration = frames;
 }
 
 void EnemyMover::SetModeSwing(V2d &p_swingAnchor, V2d &startPos,
@@ -194,6 +198,7 @@ void EnemyMover::SetModeSwing(V2d &p_swingAnchor, V2d &startPos,
 	wireLength = length( swingAnchor - startPos );
 	velocity = V2d(0, 0);
 	SetMoveType(SWING);
+	actionTotalDuration = 0; //unknown
 }
 
 void EnemyMover::SetModeSwingJump(
@@ -204,7 +209,7 @@ void EnemyMover::SetModeSwingJump(
 	targetPos = dest;
 	swingAnchor = p_swingAnchor;
 	wireLength = length( currPosInfo.GetPosition() - swingAnchor );
-	actionFrames = frames;
+	actionTotalDuration = frames;
 	velocity = V2d(0, 0);
 	SetMoveType(SWINGJUMP);
 }
@@ -212,7 +217,7 @@ void EnemyMover::SetModeSwingJump(
 void EnemyMover::SetModeGrind(double speed, int frames)
 {
 	SetMoveType(GRIND);
-	actionFrames = frames;
+	actionTotalDuration = frames;
 	grindSpeed = speed;
 }
 
@@ -245,9 +250,7 @@ void EnemyMover::SetModeNodeProjectile(
 	double xVel = xDist / totalTime;
 	velocity = V2d(xVel, yVelStart);
 	projectileGrav = grav;
-	//debugCircles->SetPosition(0, Vector2f((currPos.x + nodePos.x)/ 2.0, peak));
-	//debugCircles->SetVisible(0, true);
-	actionFrames = totalTime;
+	actionTotalDuration = totalTime;
 	SetMoveType(NODE_PROJECTILE);
 	targetPos = nodePos;
 }
@@ -261,7 +264,7 @@ void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
 	chaseAccel = accel;
 	velocity = V2d(0, 0);
 	SetMoveType(CHASE);
-	actionFrames = frameDuration;
+	actionTotalDuration = frameDuration;
 }
 
 void EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight)
@@ -291,6 +294,9 @@ void EnemyMover::SetModeNodeLinear(V2d &nodePos, CubicBezier &cb, int frameDurat
 	linearMove->end = nodePos;
 	linearMove->InitDebugDraw();
 	linearMovementSeq.Reset();
+	actionTotalDuration = frameDuration;
+	
+
 }
 
 void EnemyMover::SetModeNodeLinearConstantSpeed(
@@ -315,6 +321,7 @@ void EnemyMover::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
 	quadraticMove->end = quadraticMove->C;
 	quadraticMove->InitDebugDraw();
 	quadraticMovementSeq.Reset();
+	actionTotalDuration = frameDuration;
 }
 
 void EnemyMover::SetModeNodeQuadraticConstantSpeed(
@@ -342,6 +349,8 @@ void EnemyMover::SetModeNodeCubic(V2d &controlPoint0, V2d &controlPoint1,
 	cubicMove->end = cubicMove->D;
 	cubicMove->InitDebugDraw();
 	cubicMovementSeq.Reset();
+
+	actionTotalDuration = frameDuration;
 }
 
 void EnemyMover::SetModeNodeCubicConstantSpeed(V2d &controlPoint0, V2d &controlPoint1,
@@ -392,6 +401,8 @@ void EnemyMover::SetModeNodeDoubleQuadratic(
 	doubleQuadtraticMove1->InitDebugDraw();
 
 	doubleQuadraticMovementSeq.Reset();
+
+	actionTotalDuration = frameDuration;
 }
 
 void EnemyMover::SetModeNodeDoubleQuadraticConstantSpeed(
@@ -411,6 +422,7 @@ void EnemyMover::SetModeNodeDoubleQuadraticConstantSpeed(
 	doubleQuadtraticMove1->SetFrameDuration(f1);
 	doubleQuadtraticMove0->InitDebugDraw();
 	doubleQuadtraticMove1->InitDebugDraw();
+	actionTotalDuration = f0 + f1;
 }
 
 PositionInfo EnemyMover::CheckGround(double dist)
@@ -805,19 +817,32 @@ void EnemyMover::FinishTargetedMovement()
 	}
 }
 
+double EnemyMover::GetActionProgress()
+{
+	if (actionTotalDuration > 0)
+	{
+		return actionFrame / (double)actionTotalDuration;
+	}
+	else
+	{
+		return 0;
+	}
+	
+}
+
 void EnemyMover::FrameIncrement()
 {
+	++actionFrame;
+
+	bool done = actionFrame == actionTotalDuration;
+
 	if (moveType == CHASE)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetMoveType(NONE);
-				lastActionEndVelocity = velocity;
-				return;
-			}
+			SetMoveType(NONE);
+			lastActionEndVelocity = velocity;
+			return;
 		}
 
 		V2d tPos = *chaseTarget + chaseOffset;//playerPos + V2d(50, 0);
@@ -833,80 +858,51 @@ void EnemyMover::FrameIncrement()
 	}
 	else if (moveType == NODE_PROJECTILE)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				FinishTargetedMovement();
-				SetMoveType(NONE);
-				
-				
-				lastActionEndVelocity = velocity;
-			}
+			FinishTargetedMovement();
+			SetMoveType(NONE);
+
+			lastActionEndVelocity = velocity;
 		}
 	}
 	else if (moveType == GRIND)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetMoveType(NONE);
-				lastActionEndVelocity = currPosInfo.GetEdge()->Along() * grindSpeed;
-			}
+			SetMoveType(NONE);
+			lastActionEndVelocity = currPosInfo.GetEdge()->Along() * grindSpeed;
 		}
 	}
 	else if (moveType == SWING)
 	{
-		if (actionFrames > 0)
+		if( done )
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetMoveType(NONE);
-				lastActionEndVelocity = velocity;
-			}
+			SetMoveType(NONE);
+			lastActionEndVelocity = velocity;
 		}
 	}
 	else if (moveType == SWINGJUMP)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetModeNodeProjectile(currPosInfo.GetPosition(), V2d(0, 2), 200);
-				//double fac = 40;
-				//SetModeNodeCubic(currPosInfo.GetPosition() + velocity * fac,
-				//	targetPos + V2d(0, -100), targetPos, CubicBezier(), 60);
-			}
+			SetModeNodeProjectile(currPosInfo.GetPosition(), V2d(0, 2), 200);
 		}
 	}
 	else if (moveType == FALL)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetMoveType(NONE);
-				lastActionEndVelocity = velocity;
-			}
+			SetMoveType(NONE);
+			lastActionEndVelocity = velocity;
 		}
 	}
 	else if (moveType == WAIT)
 	{
-		if (actionFrames > 0)
+		if (done)
 		{
-			--actionFrames;
-			if (actionFrames == 0)
-			{
-				SetMoveType(NONE);
-				lastActionEndVelocity = V2d(0, 0);
-				return;
-			}
+			SetMoveType(NONE);
+			lastActionEndVelocity = V2d(0, 0);
 		}
 	}
 }
@@ -914,5 +910,6 @@ void EnemyMover::FrameIncrement()
 void EnemyMover::SetMoveType(MoveType mt)
 {
 	moveType = mt;
+	actionFrame = 0;
 	targetPI = NULL;
 }

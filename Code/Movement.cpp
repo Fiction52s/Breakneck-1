@@ -133,6 +133,11 @@ void Movement::SetFrameDuration(int f)
 	duration = f * NUM_MAX_STEPS * 5;
 }
 
+int Movement::GetFrameDuration()
+{
+	return duration / (NUM_MAX_STEPS * 5);
+}
+
 void Movement::InitDebugDraw()
 {
 	int numCircles = 20;

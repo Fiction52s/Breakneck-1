@@ -22,7 +22,6 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
 	Tileset *ts;
-	Tileset *ts_aura;
 
 	int maxFramesUntilBurrow;
 	int framesUntilBurrow;

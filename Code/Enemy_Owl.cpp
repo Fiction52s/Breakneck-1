@@ -18,10 +18,10 @@ Owl::Owl(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	ts_death = sess->GetSizedTileset("Enemies/owl_death_160x160.png");
-	ts_flap = sess->GetSizedTileset( "Enemies/owl_flap_160x160.png");
-	ts_spin = sess->GetSizedTileset( "Enemies/owl_spin_160x160.png");
-	ts_throw = sess->GetSizedTileset( "Enemies/owl_throw_160x160.png");
+	ts_death = sess->GetSizedTileset("Enemies/W3/owl_death_160x160.png");
+	ts_flap = sess->GetSizedTileset( "Enemies/W3/owl_flap_160x160.png");
+	ts_spin = sess->GetSizedTileset( "Enemies/W3/owl_spin_160x160.png");
+	ts_throw = sess->GetSizedTileset( "Enemies/W3/owl_throw_160x160.png");
 
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);

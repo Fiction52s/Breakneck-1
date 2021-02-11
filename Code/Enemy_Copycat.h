@@ -54,8 +54,6 @@ struct Copycat : Enemy, GroundMoverHandler,
 	bool hasDoubleJump;
 	double jumpStrength;
 
-	Tileset *ts_aura;
-
 	Actor *player;
 
 	Copycat(ActorParams *ap);

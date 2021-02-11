@@ -46,7 +46,7 @@ GravityFaller::GravityFaller(ActorParams *ap)
 
 	double width = 128;
 	double height = 128;
-	ts = sess->GetTileset("Enemies/gravity_faller_128x128.png", width, height);
+	ts = sess->GetTileset("Enemies/W2/gravity_faller_128x128.png", width, height);
 
 
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 64 * scale, 3, this);

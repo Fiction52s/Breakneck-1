@@ -63,9 +63,7 @@ Bat::Bat( ActorParams *ap )
 
 	animationFactor = 5;
 
-	ts = sess->GetSizedTileset("Enemies/bat_208x272.png");
-	ts_aura = sess->GetSizedTileset("Enemies/bat_aura_208x272.png");
-	auraSprite.setTexture(*ts_aura->texture);
+	ts = sess->GetSizedTileset("Enemies/W2/bat_208x272.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 
@@ -377,13 +375,11 @@ void Bat::UpdateSprite()
 	sprite.setTextureRect( ts->GetSubRect( trueFrame) );
 	sprite.setPosition( GetPositionF() );
 	sprite.setOrigin(sprite.getLocalBounds().width/2, sprite.getLocalBounds().height / 2);
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void Bat::EnemyDraw( sf::RenderTarget *target )
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 void Bat::HandleHitAndSurvive()

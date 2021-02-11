@@ -76,9 +76,6 @@ struct Bat : Enemy, LauncherEnemy
 	int hitlagFrames;
 	int hitstunFrames;
 	int animationFactor;
-	bool facingRight;
-
-	Tileset *ts_aura;
 };
 
 #endif

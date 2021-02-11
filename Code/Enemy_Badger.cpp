@@ -55,11 +55,7 @@ Badger::Badger(ActorParams *ap)
 	groundMover->SetSpeed(0);
 	groundMover->AddAirForce(gravity);
 
-	ts = sess->GetSizedTileset("Enemies/badger_192x128.png");
-	ts_aura = sess->GetSizedTileset("Enemies/badger_aura_192x128.png");
-
-	auraSprite.setTexture(*ts_aura->texture);
-	auraSprite.setScale(scale, scale);
+	ts = sess->GetSizedTileset("Enemies/W3/badger_192x128.png");
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
@@ -426,7 +422,7 @@ void Badger::UpdateEnemyPhysics()
 
 void Badger::EnemyDraw(sf::RenderTarget *target )
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 
@@ -560,8 +556,6 @@ void Badger::UpdateSprite()
 		sprite.setPosition(GetPositionF());
 		sprite.setRotation(0);
 	}
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 //
 //void Badger::HitTerrain( double &q )

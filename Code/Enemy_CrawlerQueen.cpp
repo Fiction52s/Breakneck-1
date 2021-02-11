@@ -38,6 +38,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	actionLength[COMBOMOVE] = 2;
 	
+	
 
 	actionLength[DIG_IN] = 21;
 	actionLength[DIG_OUT] = 12;
@@ -198,30 +199,10 @@ void CrawlerQueen::ResetEnemy()
 
 	wasAerial = false;
 
-	if (nodeVecA == NULL)
-	{
-		nodeVecA = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
-	}
-
-	//decidePicker.ReserveNumOptions(A_Count * 3); //just a decent number to try. 3 reps
-
-	/*auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
-	if (nodeVec != NULL)
-	{
-		int numNodes = nodeVec->size();
-		
-
-		nodePicker.Reset();
-
-		
-	}
-	*/
-	
-	
-	//decidePicker.AddActiveOption(DIG, 3);
 	
 
-
+	invincibleFrames = 0;
+	
 	playerComboer.Reset();
 	enemyMover.Reset();
 
@@ -230,7 +211,7 @@ void CrawlerQueen::ResetEnemy()
 
 	currMaxActiveCrawlers = NUM_CRAWLERS;
 	currMaxActiveBombs = NUM_BOMBS;
-	numCrawlersToSummonAtOnce = 3;
+	numCrawlersToSummonAtOnce = 1;//3;
 
 	numActiveCrawlers = 0;
 
@@ -325,9 +306,9 @@ void CrawlerQueen::FrameIncrement()
 		--moveFrames;
 	}
 
-	if (waitFrames > 0)
+	if (invincibleFrames > 0)
 	{
-		--waitFrames;
+		--invincibleFrames;
 	}
 
 	enemyMover.FrameIncrement();
@@ -571,13 +552,18 @@ bool CrawlerQueen::CanSummonCrawler()
 	return numActiveCrawlers < currMaxActiveCrawlers;
 }
 
+bool CrawlerQueen::CanBeHitByPlayer()
+{
+	return invincibleFrames == 0;
+}
+
 void CrawlerQueen::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 1)
 	{
 		numHealth -= 1;
 
-		if (numHealth <= 0)
+		if (numHealth <= 0) //useful later for editor
 		{
 			if (hasMonitor && !suppressMonitor)
 			{
@@ -587,13 +573,7 @@ void CrawlerQueen::ProcessHit()
 			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 			ConfirmKill();
 		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-			ConfirmHitNoKill();
-		}
-
-		if (numHealth == 1)
+		else if (numHealth == 1)
 		{
 			if (level == 1)
 			{
@@ -606,6 +586,19 @@ void CrawlerQueen::ProcessHit()
 				sess->SetActiveSequence(postFightScene2);
 			}
 		}
+		else
+		{
+			if (numHealth % 3 == 0)
+			{
+				invincibleFrames = 60;
+			}
+
+
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+		}
+
+		
 
 		receivedHit = NULL;
 	}
@@ -648,7 +641,10 @@ void CrawlerQueen::Setup()
 		
 	}
 
-
+	if (nodeVecA == NULL)
+	{
+		nodeVecA = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
+	}
 }
 
 void CrawlerQueen::StartAngryYelling()
@@ -678,9 +674,7 @@ void CrawlerQueen::StartFight()
 	//action = WAIT;
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
-	frame = 0;
 	SetHitboxes(NULL);
-	waitFrames = 10;
 }
 
 void CrawlerQueen::IHitPlayer(int index)
@@ -832,7 +826,14 @@ void CrawlerQueen::UpdateSprite()
 	sprite.setPosition(GetPositionF());
 
 	
-	
+	if (invincibleFrames > 0)
+	{
+		sprite.setColor(Color::Red);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
 
 	
 

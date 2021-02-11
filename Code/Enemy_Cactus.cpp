@@ -25,13 +25,13 @@ Cactus::Cactus( ActorParams *ap )
 	double width = 144; //112;
 	double height = 96;
 
-	ts = sess->GetSizedTileset("Enemies/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
-	ts_shotgun = sess->GetTileset("Enemies/shroom_jelly_160x160.png", 160, 160);
+	ts_shotgun = sess->GetTileset("Enemies/W1/shroom_jelly_160x160.png", 160, 160);
 
 	shotgunVA = new Vertex[MAX_SHOTGUNS * 4];
 

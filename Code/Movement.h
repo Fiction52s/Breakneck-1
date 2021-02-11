@@ -92,6 +92,7 @@ struct Movement
 		Types moveType );
 	virtual ~Movement();
 	void SetFrameDuration(int f);
+	int GetFrameDuration();
 	void InitDebugDraw();
 	virtual void SetDebugControlPoints() {}
 	V2d GetEndVelocity();

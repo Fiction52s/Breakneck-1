@@ -76,7 +76,7 @@ Gorilla::Gorilla( ActorParams *ap )
 	animationFactor = 5;
 
 	//ts = owner->GetTileset( "Gorilla.png", 80, 80 );
-	ts = sess->GetSizedTileset( "Enemies/gorilla_320x256.png");
+	ts = sess->GetSizedTileset( "Enemies/W6/gorilla_320x256.png");
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
@@ -113,7 +113,7 @@ Gorilla::Gorilla( ActorParams *ap )
 	wallHitBody.hitboxInfo = wallHitboxInfo;
 	
 
-	ts_wall = sess->GetSizedTileset("Enemies/gorillawall_400x50.png");
+	ts_wall = sess->GetSizedTileset("Enemies/W6/gorillawall_400x50.png");
 	wallSprite.setTexture( *ts_wall->texture );
 	wallSprite.setTextureRect( ts_wall->GetSubRect( 0 ) );
 	wallSprite.setScale(scale * wallWidth / 400.0, scale);

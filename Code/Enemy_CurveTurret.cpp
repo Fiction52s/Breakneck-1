@@ -41,7 +41,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = sess->GetTileset( "Enemies/curveturret_144x96.png", width, height );
+	ts = sess->GetTileset( "Enemies/W2/curveturret_144x96.png", width, height );
 
 	width *= scale;
 	height *= scale;
@@ -264,7 +264,7 @@ void CurveTurret::ProcessState()
 
 void CurveTurret::EnemyDraw(sf::RenderTarget *target )
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 
@@ -307,8 +307,6 @@ void CurveTurret::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 void CurveTurret::DebugDraw(sf::RenderTarget *target)

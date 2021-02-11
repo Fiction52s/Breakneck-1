@@ -120,28 +120,28 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 
 	if (tilesetChoice == 0)
 	{
-		ts = sess->GetSizedTileset("Enemies/launcher_1_384x384.png");
+		ts = sess->GetSizedTileset("Enemies/Launchers/launcher_1_384x384.png");
 	}
 	else if (tilesetChoice == 1)
 	{
-		ts = sess->GetSizedTileset("Enemies/launcher_2_384x384.png");
+		ts = sess->GetSizedTileset("Enemies/Launchers/launcher_2_384x384.png");
 	}
 
 	if (recoverTileseChoice == 0)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_1_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_1_384x384.png");
 	}
 	else if (recoverTileseChoice == 1)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_2_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_2_384x384.png");
 	}
 	else if (recoverTileseChoice == 2)
 	{
-		ts_recover = sess->GetSizedTileset("Enemies/launcher_recover_3_384x384.png");
+		ts_recover = sess->GetSizedTileset("Enemies/Launchers/launcher_recover_3_384x384.png");
 	}
 
-	ts_particles = sess->GetSizedTileset("Enemies/launcher_particles_256x256.png");
-	ts_boost = sess->GetSizedTileset("Enemies/launcher_explode_512x512.png");
+	ts_particles = sess->GetSizedTileset("Enemies/Launchers/launcher_particles_256x256.png");
+	ts_boost = sess->GetSizedTileset("Enemies/Launchers/launcher_explode_512x512.png");
 
 	particleSprite.setTexture(*ts_particles->texture);
 	boostSprite.setTexture(*ts_boost->texture);

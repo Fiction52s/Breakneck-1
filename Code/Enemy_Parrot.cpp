@@ -30,7 +30,7 @@ Parrot::Parrot(ActorParams *ap)
 
 	maxSpeed = 15;
 
-	ts = sess->GetSizedTileset("Enemies/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

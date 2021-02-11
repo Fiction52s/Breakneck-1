@@ -49,11 +49,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->AddAirForce(V2d(0, .6));
 
-	ts = sess->GetSizedTileset("Enemies/Badger_192x128.png");
-	ts_aura = sess->GetSizedTileset("Enemies/Badger_aura_192x128.png");
-
-	auraSprite.setTexture(*ts_aura->texture);
-	auraSprite.setScale(scale, scale);
+	ts = sess->GetSizedTileset("Enemies/W3/Badger_192x128.png");
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -339,7 +335,7 @@ void Cheetah::UpdateEnemyPhysics()
 
 void Cheetah::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite, auraSprite);
+	DrawSprite(target, sprite);
 }
 
 
@@ -367,8 +363,6 @@ void Cheetah::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
-
-	SyncSpriteInfo(auraSprite, sprite);
 }
 
 bool Cheetah::StartRoll()

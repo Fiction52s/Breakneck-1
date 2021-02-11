@@ -40,7 +40,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	finalLaserWidth = 100;
 	laserLength = 3000;
 
-	ts = sess->GetSizedTileset("Enemies/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;

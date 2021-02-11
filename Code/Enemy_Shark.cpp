@@ -54,9 +54,9 @@ Shark::Shark( ActorParams *ap )
 	
 	speed = 20;
 
-	ts_circle = sess->GetSizedTileset( "Enemies/shark_circle_256x256.png");
-	ts_bite = sess->GetSizedTileset( "Enemies/shark_bite_256x256.png");
-	ts_death = sess->GetSizedTileset( "Enemies/shark_death_256x256.png");
+	ts_circle = sess->GetSizedTileset( "Enemies/W5/shark_circle_256x256.png");
+	ts_bite = sess->GetSizedTileset( "Enemies/W5/shark_bite_256x256.png");
+	ts_death = sess->GetSizedTileset( "Enemies/W5/shark_death_256x256.png");
 
 	sprite.setTexture( *ts_circle->texture );
 	sprite.setScale(scale, scale);

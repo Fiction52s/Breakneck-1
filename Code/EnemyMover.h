@@ -61,7 +61,8 @@ struct EnemyMover
 	double chaseMaxVel;
 	double chaseAccel;
 
-	int actionFrames;
+	int actionFrame;
+	int actionTotalDuration;
 
 	V2d lastActionEndVelocity;
 
@@ -89,6 +90,7 @@ struct EnemyMover
 	EnemyMover();
 	~EnemyMover();
 	void Reset();
+	double GetActionProgress();
 
 	PositionInfo CheckGround(double dist);
 
