@@ -28,6 +28,7 @@ struct Bird : Enemy
 		MOVE_NODE_LINEAR,
 		MOVE_NODE_QUADRATIC,
 		MOVE_CHASE,
+		ATTEMPT_PUNCH,
 		RUSH,
 		MOVE,
 		SHURIKEN_SHOTGUN,
@@ -44,13 +45,16 @@ struct Bird : Enemy
 
 	int moveFrames;
 	void NextStage();
+	bool stageChanged;
 
 	BossStageManager stageMgr;
 
 	RandomPicker *decidePickers;
 
 	RandomPicker nodePicker;
+	RandomPicker nodePickerB;
 	std::vector<PoiInfo*> *nodeAVec;
+	std::vector<PoiInfo*> *nodeBVec;
 
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
@@ -98,10 +102,14 @@ struct Bird : Enemy
 
 	V2d targetPos;
 	int framesToArrive;
+	int oldAction;
 
 	Bird(ActorParams *ap);
 	~Bird();
 	void Setup();
+	bool IsDecisionValid(int d);
+	void ChooseNextAction();
+	bool IsMovementAction(int a);
 	int SetLaunchersStartIndex(int ind);
 	void Wait();
 	void Decide(int frames);

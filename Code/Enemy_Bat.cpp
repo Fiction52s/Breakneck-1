@@ -291,7 +291,7 @@ void Bat::ProcessState()
 	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	if( slowCounter == 1 )//&& action == FLY )
 	{
-		int f = fireCounter % 60;
+		int f = fireCounter % 90;
 
 		if (f % 5 == 0 && f >= 25 && f < 50)
 		{

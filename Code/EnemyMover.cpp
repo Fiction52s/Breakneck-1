@@ -267,6 +267,13 @@ void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
 	actionTotalDuration = frameDuration;
 }
 
+void EnemyMover::SetModeApproach(V2d *approachPos,
+	V2d &approachOffset, int framesToLock,
+	int framesWhileLocked)
+{
+
+}
+
 void EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight)
 {
 	V2d start = currPosInfo.GetPosition();

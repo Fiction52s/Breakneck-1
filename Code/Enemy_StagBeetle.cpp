@@ -65,7 +65,7 @@ StagBeetle::StagBeetle( ActorParams *ap )
 		groundMover->reverse = true;
 	}
 
-	ts_death = sess->GetSizedTileset("Enemies/W2/stag_death_256x176.png");
+	ts_death = sess->GetSizedTileset("Enemies/W2/stag_death_192x176.png");
 	ts_hop = sess->GetSizedTileset( "Enemies/W2/stag_hop_256x256.png");
 	ts_idle = sess->GetSizedTileset( "Enemies/W2/stag_idle_256x176.png");
 	ts_run = sess->GetSizedTileset( "Enemies/W2/stag_run_256x176.png");

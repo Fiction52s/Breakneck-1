@@ -172,6 +172,9 @@ struct EnemyMover
 		V2d &chaseOffset, double maxVel,
 		double accel,
 		int frameDuration = -1);
+	void SetModeApproach(V2d *approachPos,
+		V2d &approachOffset, int framesToLock,
+		int framesWhileLocked);
 	void SetModeNodeJump(
 		V2d &nodePos,
 		double extraHeight);

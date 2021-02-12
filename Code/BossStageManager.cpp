@@ -18,6 +18,7 @@ void BossStageManager::AddBossStage(int numHits)
 void BossStageManager::Reset()
 {
 	currStageHealth = stageHits[0];
+	currStage = 0;
 }
 
 int BossStageManager::GetCurrStage()

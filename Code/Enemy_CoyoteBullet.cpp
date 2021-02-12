@@ -85,6 +85,8 @@ CoyoteBullet::CoyoteBullet(sf::Vertex *myQuad, CoyoteBulletPool *pool)
 
 	ts = pool->ts;
 
+	
+
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
@@ -109,6 +111,8 @@ void CoyoteBullet::ResetEnemy()
 
 	action = DASHING;
 	frame = 0;
+
+	timeToLive = 140;
 
 	DefaultHitboxesOn();
 
@@ -180,6 +184,11 @@ void CoyoteBullet::Throw(V2d &pos, V2d &dir)
 
 void CoyoteBullet::FrameIncrement()
 {
+	--timeToLive;
+	if (timeToLive == 0)
+	{
+		Die();
+	}
 }
 
 void CoyoteBullet::ProcessState()

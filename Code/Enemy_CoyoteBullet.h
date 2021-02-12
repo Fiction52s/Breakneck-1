@@ -37,6 +37,8 @@ struct CoyoteBullet : Enemy
 
 	V2d velocity;
 
+	int timeToLive;
+
 	sf::Vertex *quad;
 
 	CoyoteBullet(sf::Vertex *quad, 

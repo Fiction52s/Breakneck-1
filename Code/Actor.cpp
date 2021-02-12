@@ -7657,8 +7657,12 @@ bool Actor::ResolvePhysics( V2d vel )
 	activeR.width += activeExtra * 2;
 	activeR.height += activeExtra * 2;
 
-	queryMode = "activeitem";
-	sess->activeItemTree->Query(this, r);//activeR);
+	if (!simulationMode)
+	{
+		queryMode = "activeitem";
+		sess->activeItemTree->Query(this, r);//activeR);
+	}
+	
 	
 	return col;
 }
