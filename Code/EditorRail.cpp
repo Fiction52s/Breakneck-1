@@ -46,6 +46,16 @@ Edge *TerrainRail::GetEdge(int index)
 	}
 }
 
+void TerrainRail::CalcEdgeAABBs()
+{
+	int numP = GetNumPoints();
+	int numEdges = (numP - 1) * 2;
+	for (int i = 0; i < numEdges; ++i)
+	{
+		edges[i].CalcAABB();
+	}
+}
+
 void TerrainRail::SetupEdges()
 {
 	int numP = GetNumPoints();
@@ -157,6 +167,7 @@ bool TerrainRail::IsInternallyValid()
 
 void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 {
+	CalcEdgeAABBs();
 	int numP = GetNumPoints();
 	int numEdges = (numP - 1) * 2;
 	for (int i = 0; i < numEdges; ++i)

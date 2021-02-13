@@ -145,6 +145,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		std::vector<int> &selectedIndexes);
 	void SetupEdges();
 	void AddEdgesToQuadTree(QuadTree *tree);
+	void CalcEdgeAABBs();
 	void BackupEnemyPositions();
 	void Init();
 	bool ContainsPoint(sf::Vector2f test);
