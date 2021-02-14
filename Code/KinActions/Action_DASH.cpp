@@ -248,6 +248,12 @@ void Actor::DASH_UpdateSprite()
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashRepeat,
 			pp + currNormal * 32.0 + along * xExtraRepeat, false, angle, 12, 3, fr);
+		
+		if (reversed)
+		{
+			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+		}
+		
 	}
 
 	if (scorpOn)

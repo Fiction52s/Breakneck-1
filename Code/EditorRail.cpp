@@ -12,6 +12,23 @@
 using namespace std;
 using namespace sf;
 
+const std::string TerrainRail::railTypeNames[] = { 
+"Terrain",
+"Floor",
+"Ceiling",
+"Bounce",
+"ScorpionOnly",
+"Grind",
+"Phase",
+"InversePhase",
+"Accelerate",
+"Fade",
+"Locked",
+"Anti-Timeslow",
+"WireOnly",
+"WireBlocking",
+"Hit" };
+
 TerrainRail::TerrainRail()
 	:ISelectable(ISelectable::RAIL)
 {
@@ -728,6 +745,11 @@ void TerrainRail::Finalize()
 int TerrainRail::GetRailType()
 {
 	return rType; 
+}
+
+const std::string &TerrainRail::GetRailTypeName()
+{
+	return railTypeNames[rType];
 }
 
 void TerrainRail::AddEnemyChainToWorldTrees()

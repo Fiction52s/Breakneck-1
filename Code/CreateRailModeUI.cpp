@@ -86,6 +86,7 @@ CreateRailModeUI::CreateRailModeUI()
 		physRects[i]->SetInfo((void*)i);
 		//physRects[i]->Init();
 		physRects[i]->SetShown(true);
+		physRects[i]->SetName(TerrainRail::railTypeNames[i]);
 	}
 
 	physicalPanel->SetPosition(Vector2i(currPhysicalTypeRect->pos) + Vector2i(0, 120));

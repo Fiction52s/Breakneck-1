@@ -71,6 +71,8 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		FADINGIN,
 	};
 
+
+	const static std::string railTypeNames[];
 	int frame;
 	State state;
 
@@ -122,6 +124,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
 	int GetRailType();
+	const std::string &GetRailTypeName();
 	void ResetState();
 	void UpdateState();
 	void FadeOut();

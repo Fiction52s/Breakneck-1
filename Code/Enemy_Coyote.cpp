@@ -332,6 +332,7 @@ void Coyote::ProcessState()
 		enemyMover.currPosInfo.SetAerial();
 		currPosInfo.SetAerial();
 
+		r = 3; //to shoot nothing
 		if (r == 0)
 		{
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);

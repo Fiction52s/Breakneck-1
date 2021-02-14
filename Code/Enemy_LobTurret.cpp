@@ -28,14 +28,18 @@ LobTurret::LobTurret(ActorParams *ap)
 	SetNumActions(Count);
 	SetEditorActions(ATTACK, 0, 0);
 
+	actionLength[ATTACK] = 39;
+
+	animFactor[ATTACK] = 1;
+
 	SetLevel(ap->GetLevel());
 
 	framesWait = 60;
 	bulletSpeed = 10;
-	animationFactor = 3;
+	animationFactor = 1;
 	assert(framesWait > 13 * animationFactor);
 
-	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W2/curve_288x192.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
@@ -89,8 +93,8 @@ LobTurret::LobTurret(ActorParams *ap)
 
 	launchers[0]->SetGravity(gravity);
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(12);
-	cutObject->SetSubRectBack(11);
+	cutObject->SetSubRectFront(40);
+	cutObject->SetSubRectBack(39);
 	cutObject->SetScale(scale);
 	cutObject->rotateAngle = sprite.getRotation();
 
@@ -229,7 +233,7 @@ void LobTurret::ProcessState()
 	}
 	case ATTACK:
 	{
-		if (frame == 13 * animationFactor)
+		if (frame == actionLength[ATTACK] * animFactor[ATTACK])
 		{
 			frame = 0;
 			if (length(playerPos - position) >= 500)
@@ -239,7 +243,7 @@ void LobTurret::ProcessState()
 			}
 		}
 		//else if (frame >= 4 * animationFactor && frame <= 4 * animationFactor + 10 && slowCounter == 1)
-		else if (frame == 4 * animationFactor && slowCounter == 1)
+		else if (frame == 6 * animFactor[ATTACK] && slowCounter == 1)
 		{
 			V2d currLobDir = lobDirs[lobTypeCounter];
 			double currLobSpeed = lobSpeeds[lobTypeCounter];
@@ -297,13 +301,13 @@ void LobTurret::UpdateSprite()
 	}
 	else
 	{
-		if (frame / animationFactor > 12)
+		/*if (frame / animationFactor > 12)
 		{
 			sprite.setTextureRect(ts->GetSubRect(0));
 		}
-		else
+		else*/
 		{
-			sprite.setTextureRect(ts->GetSubRect(frame / animationFactor));//frame / animationFactor ) );
+			sprite.setTextureRect(ts->GetSubRect(frame / animFactor[ATTACK]));//frame / animationFactor ) );
 		}
 	}
 

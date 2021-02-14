@@ -1872,11 +1872,6 @@ void Session::DebugDraw(sf::RenderTarget *target)
 	{
 		DebugDrawActors(target);
 	}
-
-	if ( activeItemTree != NULL)
-	{
-		activeItemTree->DebugDraw(target);
-	}
 	
 }
 
@@ -5214,6 +5209,7 @@ void Session::UpdatePreFrameCalculations()
 {
 	numCalculatedFuturePositions = 0;
 	//ForwardSimulatePlayer(0, 120, true);
+	//ForwardSimulatePlayer(0, 10, true);
 	//RevertSimulatedPlayer(0);
 }
 

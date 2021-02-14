@@ -281,6 +281,56 @@ void Actor::PopulateState(PState *ps)
 	ps->despCounter = despCounter;
 	ps->superFrame = superFrame;
 	ps->kinMode = kinMode;
+
+	//new stuff
+	ps->projectileSwordFrames = projectileSwordFrames;
+	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
+	ps->gravModifyFrames = gravModifyFrames;
+	ps->waterEntrancePosition = waterEntrancePosition;
+	ps->waterEntranceGround = waterEntranceGround;
+	ps->waterEntranceGrindEdge = waterEntranceGrindEdge;
+	ps->waterEntranceQuantity = waterEntranceQuantity;
+	ps->waterEntranceXOffset = waterEntranceXOffset;
+	ps->waterEntrancePhysHeight = waterEntrancePhysHeight;
+	ps->waterEntranceFacingRight = waterEntranceFacingRight;
+	ps->waterEntranceGrindSpeed = waterEntranceGrindSpeed;
+	ps->waterEntranceReversed = waterEntranceReversed;
+	ps->rewindBoosterPos = rewindBoosterPos;
+	ps->rewindOnHitFrames = rewindOnHitFrames;
+	ps->currSkinIndex = currSkinIndex;
+	ps->waterEntranceVelocity = waterEntranceVelocity;
+	ps->modifiedDrainFrames = modifiedDrainFrames;
+	ps->modifiedDrain = modifiedDrain;
+	ps->invertInputFrames = invertInputFrames;
+	ps->currPowerMode = currPowerMode;
+	ps->oldSpecialTerrain = oldSpecialTerrain;
+	ps->currSpecialTerrain = currSpecialTerrain;
+	ps->globalTimeSlowFrames = globalTimeSlowFrames;
+	ps->freeFlightFrames = freeFlightFrames;
+	ps->homingFrames = homingFrames;
+	ps->antiTimeSlowFrames = antiTimeSlowFrames;
+	ps->currTimeBooster = currTimeBooster;
+	ps->currFreeFlightBooster = currFreeFlightBooster;
+	ps->currHomingBooster = currHomingBooster;
+	ps->currAntiTimeSlowBooster = currAntiTimeSlowBooster;
+	ps->currSwordProjectileBooster = currSwordProjectileBooster;
+	ps->currPhaseBooster = currPhaseBooster;
+	ps->currMomentumBooster = currMomentumBooster;
+	ps->currRewindBooster = currRewindBooster;
+	ps->aimLauncherStunFrames = aimLauncherStunFrames;
+	ps->airBounceCounter = airBounceCounter;
+	ps->airBounceLimit = airBounceLimit;
+	ps->phaseFrames = phaseFrames;
+	ps->momentumBoostFrames = momentumBoostFrames;
+	ps->currAimLauncher = currAimLauncher;
+	ps->currTeleporter = currTeleporter;
+	ps->oldTeleporter = oldTeleporter;
+	ps->currBooster = currBooster;
+	ps->oldBooster = oldBooster;
+	ps->currSwingLauncher = currSwingLauncher;
+	ps->oldSwingLauncher = oldSwingLauncher;
+	ps->currBounceBooster = currBounceBooster;
+	ps->oldBounceBooster = oldBounceBooster;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -448,6 +498,56 @@ void Actor::PopulateFromState(PState *ps)
 	despCounter = ps->despCounter;
 	superFrame = ps->superFrame;
 	kinMode = (Mode)ps->kinMode;
+
+	//new stuff
+	projectileSwordFrames = ps->projectileSwordFrames;
+	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
+	gravModifyFrames = ps->gravModifyFrames;
+	waterEntrancePosition = ps->waterEntrancePosition;
+	waterEntranceGround = ps->waterEntranceGround;
+	waterEntranceGrindEdge = ps->waterEntranceGrindEdge;
+	waterEntranceQuantity = ps->waterEntranceQuantity;
+	waterEntranceXOffset = ps->waterEntranceXOffset;
+	waterEntrancePhysHeight = ps->waterEntrancePhysHeight;
+	waterEntranceFacingRight = ps->waterEntranceFacingRight;
+	waterEntranceGrindSpeed = ps->waterEntranceGrindSpeed;
+	waterEntranceReversed = ps->waterEntranceReversed;
+	rewindBoosterPos = ps->rewindBoosterPos;
+	rewindOnHitFrames = ps->rewindOnHitFrames;
+	currSkinIndex = ps->currSkinIndex;
+	waterEntranceVelocity = ps->waterEntranceVelocity;
+	modifiedDrainFrames = ps->modifiedDrainFrames;
+	modifiedDrain = ps->modifiedDrain;
+	invertInputFrames = ps->invertInputFrames;
+	currPowerMode = ps->currPowerMode;
+	oldSpecialTerrain = ps->oldSpecialTerrain;
+	currSpecialTerrain = ps->currSpecialTerrain;
+	globalTimeSlowFrames = ps->globalTimeSlowFrames;
+	freeFlightFrames = ps->freeFlightFrames;
+	homingFrames = ps->homingFrames;
+	antiTimeSlowFrames = ps->antiTimeSlowFrames;
+	currTimeBooster = ps->currTimeBooster;
+	currFreeFlightBooster = ps->currFreeFlightBooster;
+	currHomingBooster = ps->currHomingBooster;
+	currAntiTimeSlowBooster = ps->currAntiTimeSlowBooster;
+	currSwordProjectileBooster = ps->currSwordProjectileBooster;
+	currPhaseBooster = ps->currPhaseBooster;
+	currMomentumBooster = ps->currMomentumBooster;
+	currRewindBooster = ps->currRewindBooster;
+	aimLauncherStunFrames = ps->aimLauncherStunFrames;
+	airBounceCounter = ps->airBounceCounter;
+	airBounceLimit = ps->airBounceLimit;
+	phaseFrames = ps->phaseFrames;
+	momentumBoostFrames = ps->momentumBoostFrames;
+	currAimLauncher = ps->currAimLauncher;
+	currTeleporter = ps->currTeleporter;
+	oldTeleporter = ps->oldTeleporter;
+	currBooster = ps->currBooster;
+	oldBooster = ps->oldBooster;
+	currSwingLauncher = ps->currSwingLauncher;
+	oldSwingLauncher = ps->oldSwingLauncher;
+	currBounceBooster = ps->currBounceBooster;
+	oldBounceBooster = ps->oldBounceBooster;
 }
 
 
@@ -1155,6 +1255,18 @@ void Actor::SetupActionFunctions()
 		&Actor::BOOSTERBOUNCE_TimeDepFrameInc,
 		&Actor::BOOSTERBOUNCE_GetActionLength,
 		&Actor::BOOSTERBOUNCE_GetTileset);
+
+	SetupFuncsForAction(BOOSTERBOUNCEGROUND,
+		&Actor::BOOSTERBOUNCEGROUND_Start,
+		&Actor::BOOSTERBOUNCEGROUND_End,
+		&Actor::BOOSTERBOUNCEGROUND_Change,
+		&Actor::BOOSTERBOUNCEGROUND_Update,
+		&Actor::BOOSTERBOUNCEGROUND_UpdateSprite,
+		&Actor::BOOSTERBOUNCEGROUND_TransitionToAction,
+		&Actor::BOOSTERBOUNCEGROUND_TimeIndFrameInc,
+		&Actor::BOOSTERBOUNCEGROUND_TimeDepFrameInc,
+		&Actor::BOOSTERBOUNCEGROUND_GetActionLength,
+		&Actor::BOOSTERBOUNCEGROUND_GetTileset);
 
 	SetupFuncsForAction(BOUNCEGROUND,
 		&Actor::BOUNCEGROUND_Start,
@@ -6177,25 +6289,30 @@ void Actor::UpdatePrePhysics()
 
 	UpdateWireStates();
 	
+
 	ProcessGravModifier();
 
-	ProcessBooster();
+	if (!simulationMode)
+	{
+		ProcessBooster();
 
-	ProcessTimeBooster();
+		ProcessTimeBooster();
 
-	ProcessPhaseBooster();
+		ProcessPhaseBooster();
 
-	ProcessHomingBooster();
+		ProcessHomingBooster();
 
-	ProcessFreeFlightBooster();
+		ProcessFreeFlightBooster();
 
-	ProcessAntiTimeSlowBooster();
+		ProcessAntiTimeSlowBooster();
 
-	ProcessMomentumBooster();
+		ProcessMomentumBooster();
 
-	ProcessRewindBooster();
+		ProcessRewindBooster();
 
-	ProcessSwordProjectileBooster();
+		ProcessSwordProjectileBooster();
+	}
+	
 
 	ProcessAccelGrass();
 
@@ -8806,7 +8923,49 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else
 							{
-								if (bounceFlameOn && abs(groundSpeed) > 1)
+								V2d testVel = normalize(ground->v1 - ground->v0) * -groundSpeed;
+								//maybe want to do this on some ceilings but its hard for now. do i need it?
+								//if( currInput.LUp() && testVel.y < -offSlopeByWallThresh && eNorm.y == 0 )
+
+								//might cause some weird stuff w/ bounce but i can figure it out later
+								if (testVel.y > offSlopeByWallThresh && eNorm.y == 0 && !bounceFlameOn && !minContact.edge->IsInvisibleWall())
+								{
+									assert(abs(eNorm.x) > wallThresh);
+									//		cout << "testVel: " << testVel.x << ", " << testVel.y << endl;
+									velocity = testVel;
+
+									movementVec = normalize(ground->v1 - ground->v0) * -extra;
+
+									leftGround = true;
+									ground = NULL;
+									SetAction(JUMP);
+									holdJump = false;
+									frame = 1;
+									reversed = false;
+									//rightWire->UpdateAnchors( V2d( 0, 0 ) );
+									//leftWire->UpdateAnchors( V2d( 0, 0 ) );
+								}
+								else
+								{
+									if (bounceFlameOn && abs(groundSpeed) > 1)
+									{
+										if (action != STEEPCLIMB)
+										{
+											storedBounceGroundSpeed = groundSpeed * slowMultiple;
+											groundedWallBounce = true;
+										}
+									}
+
+
+									q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
+
+									groundSpeed = 0;
+									edgeQuantity = q;
+									offsetX = -offsetX;
+									break;
+								}
+
+								/*if (bounceFlameOn && abs(groundSpeed) > 1)
 								{
 									storedBounceGroundSpeed = groundSpeed * slowMultiple;
 									groundedWallBounce = true;
@@ -8814,7 +8973,7 @@ V2d Actor::UpdateReversePhysics()
 								q = ground->GetQuantity(ground->GetPosition(q) + minContact.resolution);
 								groundSpeed = 0;
 								offsetX = -offsetX;
-								edgeQuantity = q;
+								edgeQuantity = q;*/
 								break;
 							}
 						}
@@ -11196,7 +11355,7 @@ void Actor::UpdatePhysics()
 
 			bool tempCollision = ResolvePhysics( movementVec );
 			
-			if (tempCollision)
+			if (tempCollision && !simulationMode)
 			{
 				if (minContact.edge->poly != NULL
 					&& minContact.edge->poly->IsSometimesActiveType())
@@ -11448,8 +11607,7 @@ void Actor::UpdatePhysics()
 						bounceOkay = false;
 				}
 			}
-			
-			
+
 			if (tempCollision && touchedGrass[Grass::BOUNCE])
 			{
 				HandleBounceGrass();
@@ -11823,7 +11981,7 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[GRAVREVERSE] )
+			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] )
 				&& tempCollision
 				&& !touchedGrass[Grass::ANTIGRAVREVERSE]
 				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld())
@@ -12808,6 +12966,17 @@ void Actor::PhysicsResponse()
 				if (action == AIRHITSTUN)
 				{
 					HitGroundWhileInAirHitstun();
+				}
+				else if (action == BOOSTERBOUNCE)
+				{
+					int currFrame = frame;
+					SetAction(BOOSTERBOUNCEGROUND);
+					physicsOver = true;
+					//current frame of boosterbounce stays the same, 
+					//just transition the action
+					frame = currFrame;
+					
+					//frame = 0;
 				}
 				else if (action != GROUNDHITSTUN && action != LAND2 && action != LAND
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
@@ -15080,7 +15249,8 @@ void Actor::SetBounceBoostVelocity()
 {
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)
 	{
-
+		//SetAction(BOOSTERBOUNCE);
+		//frame = 0;
 	}
 	else
 	{
@@ -15092,10 +15262,14 @@ void Actor::SetBounceBoostVelocity()
 		ground = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
+
+		//SetAction(BOOSTERBOUNCE);
 	}
 
 	SetAction(BOOSTERBOUNCE);
 	frame = 0;
+
+	
 
 	RestoreAirOptions();
 

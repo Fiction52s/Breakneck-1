@@ -217,6 +217,7 @@ struct Actor : QuadTreeCollider,
 		AIRDASH,
 		STEEPCLIMB,
 		BOOSTERBOUNCE,
+		BOOSTERBOUNCEGROUND,
 		AIRHITSTUN,
 		AIRPARRY,
 		GROUNDHITSTUN,
@@ -407,7 +408,6 @@ struct Actor : QuadTreeCollider,
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
-	bool inTeleportAcrossWater;
 	V2d waterEntrancePosition;
 	Edge *waterEntranceGround;
 	Edge *waterEntranceGrindEdge;
@@ -446,13 +446,28 @@ struct Actor : QuadTreeCollider,
 	int phaseFrames;
 	int momentumBoostFrames;
 
-	Mode kinMode;
-	int despCounter;
-	int superFrame;
+	Spring *currSpring;
+	AimLauncher *currAimLauncher;
+	Teleporter *currTeleporter;
+	Teleporter *oldTeleporter;
+	Booster *currBooster;
+	Booster *oldBooster;
+	SwingLauncher *currSwingLauncher;
+	SwingLauncher *oldSwingLauncher;
+	BounceBooster *currBounceBooster;
+	BounceBooster *oldBounceBooster;
+
+	
+	
 	
 	
 	//bool oldTouchedGrass[Grass::GrassType::Count];
 	//^this needs to sync too
+
+	//new but synced
+	Mode kinMode;
+	int despCounter;
+	int superFrame;
 
 	//dont sync
 	int rayMode;
@@ -464,6 +479,7 @@ struct Actor : QuadTreeCollider,
 
 	//stuff ive put in rollback already
 	//definitely do change per frame
+	
 	double offsetX;
 	int framesSinceClimbBoost;
 	bool holdDouble;
@@ -823,16 +839,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_bounceBoost;
 	
 	bool scorpSet;
-	Spring *currSpring;
-	AimLauncher *currAimLauncher;
-	Teleporter *currTeleporter;
-	Teleporter *oldTeleporter;
-	Booster *currBooster;
-	Booster *oldBooster;
-	SwingLauncher *currSwingLauncher;
-	SwingLauncher *oldSwingLauncher;
-	BounceBooster *currBounceBooster;
-	BounceBooster *oldBounceBooster;
+
 
 	
 
@@ -1657,6 +1664,17 @@ struct Actor : QuadTreeCollider,
 	void BOOSTERBOUNCE_TimeDepFrameInc();
 	int BOOSTERBOUNCE_GetActionLength();
 	Tileset * BOOSTERBOUNCE_GetTileset();
+
+	void BOOSTERBOUNCEGROUND_Start();
+	void BOOSTERBOUNCEGROUND_End();
+	void BOOSTERBOUNCEGROUND_Change();
+	void BOOSTERBOUNCEGROUND_Update();
+	void BOOSTERBOUNCEGROUND_UpdateSprite();
+	void BOOSTERBOUNCEGROUND_TransitionToAction(int a);
+	void BOOSTERBOUNCEGROUND_TimeIndFrameInc();
+	void BOOSTERBOUNCEGROUND_TimeDepFrameInc();
+	int BOOSTERBOUNCEGROUND_GetActionLength();
+	Tileset * BOOSTERBOUNCEGROUND_GetTileset();
 
 	void BOUNCEGROUND_Start();
 	void BOUNCEGROUND_End();

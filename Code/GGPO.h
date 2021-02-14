@@ -6,6 +6,7 @@
 #include "Physics.h"
 #include "Wire.h"
 #include "Grass.h"
+#include "Actor.h"
 #pragma comment(lib, "wsock32.lib")
 
 
@@ -296,6 +297,64 @@ struct PState
 	int superFrame;
 
 	int kinMode;
+
+	//new stuff I added recently
+	int projectileSwordFrames;
+	int enemyProjectileSwordFrames;
+	int gravModifyFrames;
+	V2d waterEntrancePosition;
+	Edge *waterEntranceGround;
+	Edge *waterEntranceGrindEdge;
+	double waterEntranceQuantity;
+	double waterEntranceXOffset;
+	double waterEntrancePhysHeight;
+	bool waterEntranceFacingRight;
+	double waterEntranceGrindSpeed;
+	bool waterEntranceReversed;
+	V2d rewindBoosterPos;
+	int rewindOnHitFrames;
+	int currSkinIndex;
+
+	V2d waterEntranceVelocity;
+	int modifiedDrainFrames;
+	int modifiedDrain;
+	int invertInputFrames;
+	int currPowerMode;
+	PolyPtr oldSpecialTerrain;
+	PolyPtr currSpecialTerrain;
+	int globalTimeSlowFrames;
+	int freeFlightFrames;
+	int homingFrames;
+	int antiTimeSlowFrames;
+	TimeBooster *currTimeBooster;
+	FreeFlightBooster *currFreeFlightBooster;
+	HomingBooster *currHomingBooster;
+	AntiTimeSlowBooster *currAntiTimeSlowBooster;
+	SwordProjectileBooster *currSwordProjectileBooster;
+	PhaseBooster *currPhaseBooster;
+	MomentumBooster *currMomentumBooster;
+	RewindBooster *currRewindBooster;
+	int aimLauncherStunFrames;
+	int airBounceCounter;
+	int airBounceLimit;
+	int phaseFrames;
+	int momentumBoostFrames;
+
+	Spring *currSpring;
+	AimLauncher *currAimLauncher;
+	Teleporter *currTeleporter;
+	Teleporter *oldTeleporter;
+	Booster *currBooster;
+	Booster *oldBooster;
+	SwingLauncher *currSwingLauncher;
+	SwingLauncher *oldSwingLauncher;
+	BounceBooster *currBounceBooster;
+	BounceBooster *oldBounceBooster;
+
+	
+
+
+
 	//HitboxInfo currVSHitboxInfo;
 };
 

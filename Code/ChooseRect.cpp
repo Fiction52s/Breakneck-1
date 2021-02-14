@@ -66,7 +66,7 @@ void ChooseRect::Init()
 
 void ChooseRect::UpdateTextPosition()
 {
-	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y + boxSize + 2));
+	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));// +boxSize + 2));
 }
 
 void ChooseRect::SetPosition(sf::Vector2f &p_pos)

@@ -52,30 +52,18 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons.\nIf zoomed out, it uses screen pixels,"
 		"\nand if zoomed in, it uses world pixels");
 	
-	std::vector<string> drawOptions = { "Draw", "Box", "Brush" };
-	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
-	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)\nBrush (R)");
-
-	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
-	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), actionOptions, 0);
-	terrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
-
 	std::vector<string> layerOptions = { "Terrain", "Water", "Pickup" };
 	terrainLayerDropdown = mainPanel->AddDropdown("layerdrop", Vector2i(0, 0), Vector2i(200, 28), layerOptions, 0);
 	terrainLayerDropdown->SetToolTip("Choose polygon layer\n(E to choose material)");
 
+	Vector2f currMatRectPos = Vector2f(0, 0);//Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
+											 //+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
+
+	mainPanel->PauseAutoSpacing();
+
 	int numTerrainLayers = TERRAINLAYER_Count;
 	currMatRects.resize(numTerrainLayers);
 	mainPanel->ReserveImageRects(numTerrainLayers);
-
-	//SetAutoSpacing( false)
-	Vector2i storedAutoStart = mainPanel->autoStart;
-	
-
-	Vector2f currMatRectPos = Vector2f(0, 0);//Vector2f(20, 0);//Vector2f(terrainLayerDropdown->pos)
-		//+ Vector2f(terrainLayerDropdown->size.x + 20, 0);
-
-	mainPanel->PauseAutoSpacing();
 
 	for (int i = 0; i < numTerrainLayers; ++i)
 	{
@@ -90,8 +78,23 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	}
 	currMatRects[0]->SetShown(true);
 
-	
+	std::vector<string> drawOptions = { "Draw", "Box", "Brush" };
+	drawModeDropdown = mainPanel->AddDropdown("drawmodedrop", Vector2i(0, 0), Vector2i(200, 28), drawOptions, 0);
+	drawModeDropdown->SetToolTip("Choose creation tool\nDraw (D)\nBox (B)\nBrush (R)");
+
+	std::vector<string> actionOptions = { "Add", "Subtract", "Set Inverse Poly" };
+	terrainActionDropdown = mainPanel->AddDropdown("actiondrop", Vector2i(0, 0), Vector2i(200, 28), actionOptions, 0);
+	terrainActionDropdown->SetToolTip("Choose polygon action\nAdd (A)\nSubtract (S)\nSet Inverse Poly (I)");
+
 	mainPanel->SetAutoSpacing(true, false, Vector2i(10, 70), Vector2i(20, 0));
+
+
+
+	//SetAutoSpacing( false)
+	//Vector2i storedAutoStart = mainPanel->autoStart;
+	
+
+	
 	
 
 	completeButton = mainPanel->AddButton("complete", Vector2i(0, 0), Vector2f(200, 28 + 4), "complete");

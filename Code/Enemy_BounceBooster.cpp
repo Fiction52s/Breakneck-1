@@ -22,7 +22,7 @@ BounceBooster::BounceBooster(ActorParams *ap)
 	if (ap->GetTypeName() == "upbouncebooster")
 	{
 		upOnly = true;
-		strength = 30;
+		strength = 40;
 		BasicCircleHitBodySetup(50);
 	}
 	else
