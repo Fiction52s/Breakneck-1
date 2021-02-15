@@ -4470,6 +4470,11 @@ void Session::SetGlobalBorders()
 	bot->edge0 = left;
 	bot->edge1 = right;
 
+	left->CalcAABB();
+	right->CalcAABB();
+	top->CalcAABB();
+	bot->CalcAABB();
+
 	terrainTree->Insert(left);
 	terrainTree->Insert(right);
 	terrainTree->Insert(top);

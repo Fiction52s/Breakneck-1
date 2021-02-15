@@ -5731,7 +5731,7 @@ void Actor::LimitMaxSpeeds()
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
 		{
-			velocity = AddGravity(velocity);
+			velocity = AddAerialGravity(velocity);
 		}
 
 		if (InWater( TerrainPolygon::WATER_NORMAL))//make this into a cleaner function very soon.
@@ -6245,7 +6245,7 @@ void Actor::UpdatePrePhysics()
 		}
 		else if (action == SEQ_KINFALL)
 		{
-			velocity = AddGravity(velocity);
+			velocity = AddAerialGravity(velocity);
 		}
 		return;
 	}
@@ -6703,7 +6703,7 @@ void Actor::WireMovement()
 			{
 				//totalVelDir
 				if (dot(wireDir1, wireDir2) > .99)
-					velocity = (velocity + AddGravity(velocity)) / 2.0;
+					velocity = (velocity + AddAerialGravity(velocity)) / 2.0;
 			}
 			//removing the max velocity cap now that it doesnt pull you in a straight direction
 			//double afterAlongAmount = dot( velocity, totalVelDir );
@@ -14975,10 +14975,17 @@ void Actor::UpdateModifiedGravity()
 
 double Actor::GetGravity()
 {
+	if ( ground != NULL && freeFlightFrames > 0 )
+	{
+		//when you use a freeflight booster, gravity should be normal
+		//while moving on the ground
+		return gravity;	
+	}
+
 	return gravity * extraGravityModifier;
 }
 
-sf::Vector2<double> Actor::AddGravity( sf::Vector2<double> vel )
+sf::Vector2<double> Actor::AddAerialGravity( sf::Vector2<double> vel )
 {
 	double normalGravity;
 	if( vel.y >= maxFallSpeedSlow )
@@ -15379,8 +15386,6 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	if (queryMode == "resolve")
 	{
 		Edge *e = (Edge*)qte;
-
-		
 
 		if (e->edgeType == Edge::OPEN_GATE)
 		{

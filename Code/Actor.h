@@ -1423,7 +1423,7 @@ struct Actor : QuadTreeCollider,
 	double GetFullSprintAccel(bool downSlope,
 		sf::Vector2<double> &gNorm);
 	double GetMinRailGrindSpeed();
-	sf::Vector2<double> AddGravity(sf::Vector2<double> vel);
+	sf::Vector2<double> AddAerialGravity(sf::Vector2<double> vel);
 	double GetGravity();
 	void HandleSpecialTerrain();
 	V2d GetTrueCenter();

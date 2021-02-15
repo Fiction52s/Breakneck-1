@@ -43,6 +43,16 @@ void PositionInfo::SetPosition(V2d &pos)
 	position = pos;
 }
 
+void PositionInfo::SetWithoutChangingOffset(PositionInfo &posInfo)
+{
+	position = posInfo.position;
+	edgeIndex = posInfo.edgeIndex;
+	groundQuantity = posInfo.groundQuantity;
+	ground = posInfo.ground;
+	railGround = posInfo.railGround;
+	//doesnt change offset
+}
+
 int PositionInfo::GetEdgeIndex()
 {
 	return edgeIndex;

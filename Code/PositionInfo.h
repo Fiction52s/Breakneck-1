@@ -26,6 +26,7 @@ struct PositionInfo
 	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
 	V2d GetPosition();
+	void SetWithoutChangingOffset(PositionInfo &posInfo);
 	sf::Vector2f GetPositionF();
 	void SetPosition(V2d &pos);
 	void SetGroundHeight(double raised);

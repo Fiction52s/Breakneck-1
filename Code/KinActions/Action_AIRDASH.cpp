@@ -193,7 +193,7 @@ void Actor::AIRDASH_Update()
 
 				if (extraAirDashY < 0)
 				{
-					extraAirDashY = AddGravity(V2d(0, extraAirDashY)).y;
+					extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
 					//extraAirDashY += gravity / slowMultiple;
 					if (extraAirDashY > 0)
 						extraAirDashY = 0;
@@ -214,7 +214,7 @@ void Actor::AIRDASH_Update()
 
 				if (extraAirDashY > 0)
 				{
-					extraAirDashY = AddGravity(V2d(0, extraAirDashY)).y;
+					extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
 					//extraAirDashY += gravity / slowMultiple;
 				}
 			}
@@ -262,7 +262,7 @@ void Actor::AIRDASH_Update()
 				{
 					startAirDashVel = V2d(0, 0);
 					extraAirDashY = 0;
-					velocity = AddGravity(velocity);
+					velocity = AddAerialGravity(velocity);
 				}
 
 			}

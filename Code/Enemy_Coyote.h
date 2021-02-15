@@ -8,8 +8,14 @@
 #include "EnemyMover.h"
 #include "PlayerComboer.h"
 #include "Enemy_CoyoteBullet.h"
+#include "BossStageManager.h"
+#include "RandomPicker.h"
+
+struct Firefly;
 
 struct CoyotePostFightScene;
+
+
 
 struct Coyote : Enemy
 {
@@ -29,6 +35,18 @@ struct Coyote : Enemy
 
 
 	CoyotePostFightScene *postFightScene;
+
+	BasicAirEnemyParams *fireflyParams;
+	const static int NUM_FIREFLIES = 5;
+	Firefly *fireflies[NUM_FIREFLIES];
+	int numActiveFireflies;
+	int currMaxActiveFireflies;
+	int numFirefliesToSummonAtOnce;
+
+	int invincibleFrames;
+
+	BossStageManager stageMgr;
+	RandomPicker *decidePickers;
 
 	Tileset *ts_move;
 

@@ -6,6 +6,7 @@
 #include "Enemy_Coyote.h"
 #include "Actor.h"
 #include "SequenceW3.h"
+#include "Enemy_Firefly.h"
 
 using namespace std;
 using namespace sf;
@@ -26,6 +27,15 @@ Coyote::Coyote(ActorParams *ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
+
+	stageMgr.AddBossStage(4);
+	stageMgr.AddBossStage(4);
+	stageMgr.AddBossStage(4);
+	stageMgr.AddBossStage(4);
+
+	decidePickers = new RandomPicker[stageMgr.numStages];
+
+	maxHealth = 3 * stageMgr.GetTotalHealth();
 
 	targetPlayerIndex = 0;
 
@@ -57,6 +67,12 @@ Coyote::Coyote(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
+	fireflyParams = new BasicAirEnemyParams(sess->types["firefly"], 1);
+	for (int i = 0; i < NUM_FIREFLIES; ++i)
+	{
+		fireflies[i] = (Firefly*)fireflyParams->GenerateEnemy();
+		fireflies[i]->SetSummoner(this);
+	}
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
@@ -69,6 +85,8 @@ Coyote::~Coyote()
 	{
 		delete postFightScene;
 	}
+
+	delete[] decidePickers;
 }
 
 void Coyote::Setup()
@@ -115,13 +133,22 @@ void Coyote::ResetEnemy()
 	playerComboer.Reset();
 	stopStartPool.Reset();
 	enemyMover.Reset();
+	stageMgr.Reset();
 
 	fireCounter = 0;
 	facingRight = true;
 
+	invincibleFrames = 0;
+
+	currMaxActiveFireflies = 1;
+	numFirefliesToSummonAtOnce = 1;
+	numActiveFireflies = 0;
+
 	action = WAIT;
 	SetHitboxes(NULL);
 	waitFrames = 10;
+
+	StartFight();
 
 	//action = PUNCH;
 	//SetHitboxInfo(PUNCH);
@@ -134,7 +161,10 @@ void Coyote::ResetEnemy()
 	//actionQueueIndex = 0;
 
 
-
+	for (int i = 0; i < NUM_FIREFLIES; ++i)
+	{
+		fireflies[i]->Reset();
+	}
 
 	frame = 0;
 
@@ -332,7 +362,7 @@ void Coyote::ProcessState()
 		enemyMover.currPosInfo.SetAerial();
 		currPosInfo.SetAerial();
 
-		r = 3; //to shoot nothing
+		//r = 3; //to shoot nothing
 		if (r == 0)
 		{
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
