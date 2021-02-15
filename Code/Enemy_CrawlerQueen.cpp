@@ -29,7 +29,10 @@ using namespace sf;
 
 
 CrawlerQueen::CrawlerQueen(ActorParams *ap)
-	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap)
+	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap),
+	crawlerSummonGroup(this, 
+		new BasicGroundEnemyParams(sess->types["crawler"], 1),
+		5, 5, 1)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -55,13 +58,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	nodeVecA = NULL;
 
 	lungeSpeed = 20;
-
-	crawlerParams = new BasicGroundEnemyParams(sess->types["crawler"], 1);
-	for (int i = 0; i < NUM_CRAWLERS; ++i)
-	{
-		crawlers[i] = (Crawler*)crawlerParams->GenerateEnemy();
-		//crawlers[i]->SetSummoner(this);
-	}
 
 	for (int i = 0; i < NUM_BOMBS; ++i)
 	{
@@ -143,12 +139,6 @@ CrawlerQueen::~CrawlerQueen()
 		delete postFightScene2;
 	}
 
-	delete crawlerParams;
-	for (int i = 0; i < NUM_CRAWLERS; ++i)
-	{
-		delete crawlers[i];
-	}
-
 	for (int i = 0; i < NUM_BOMBS; ++i)
 	{
 		delete bombs[i];
@@ -167,13 +157,6 @@ void CrawlerQueen::LoadParams()
 
 	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
-}
-
-void CrawlerQueen::HandleSummonedChildRemoval(Enemy *e)
-{
-	numActiveCrawlers--;
-
-	assert(numActiveCrawlers >= 0);
 }
 
 void CrawlerQueen::UpdateHitboxes()
@@ -205,15 +188,10 @@ void CrawlerQueen::ResetEnemy()
 	
 	playerComboer.Reset();
 	enemyMover.Reset();
+	crawlerSummonGroup.Reset();
 
 	fireCounter = 0;
 	facingRight = true;
-
-	currMaxActiveCrawlers = NUM_CRAWLERS;
-	currMaxActiveBombs = NUM_BOMBS;
-	numCrawlersToSummonAtOnce = 1;//3;
-
-	numActiveCrawlers = 0;
 
 	currDashSpeed = 20;
 	currDashAccel = 1.0;
@@ -237,11 +215,6 @@ void CrawlerQueen::ResetEnemy()
 	comboMoveFrames = 0;
 
 	UpdateSprite();
-
-	for (int i = 0; i < NUM_CRAWLERS; ++i)
-	{
-		crawlers[i]->Reset();
-	}
 
 	for (int i = 0; i < NUM_BOMBS; ++i)
 	{
@@ -475,33 +448,7 @@ void CrawlerQueen::ProcessState()
 	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
-			int currSummoned = 0;
-			PoiInfo *summonNode;
-			for (int i = 0; i < NUM_CRAWLERS; ++i)
-			{
-				if (!crawlers[i]->spawned || crawlers[i]->dead )
-				{
-					auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_CRAWLER, nodeAStr);
-					summonNode = nodeVec->at(nodePicker.AlwaysGetNextOption());
-
-					crawlers[i]->spawned = false;
-					crawlers[i]->startPosInfo.SetGround(summonNode->poly,
-						summonNode->edgeIndex, summonNode->edgeQuantity);
-
-					sess->AddEnemy(crawlers[i]);
-					++numActiveCrawlers;
-					++currSummoned;
-
-					if (!CanSummonCrawler())
-					{
-						break;
-					}
-					else if (currSummoned == numCrawlersToSummonAtOnce)
-					{
-						break;
-					}
-				}
-			}
+			crawlerSummonGroup.Summon();
 		}
 		break;
 	case SLASH:
@@ -545,11 +492,6 @@ void CrawlerQueen::ProcessState()
 	
 
 	//hitPlayer = false;
-}
-
-bool CrawlerQueen::CanSummonCrawler()
-{
-	return numActiveCrawlers < currMaxActiveCrawlers;
 }
 
 bool CrawlerQueen::CanBeHitByPlayer()
@@ -968,6 +910,16 @@ void CrawlerQueen::HandleHitAndSurvive()
 	fireCounter = 0;
 }
 
+bool CrawlerQueen::IsDecisionValid(int d)
+{
+	/*if (d == SUMMON && !crawlerSummonGroup.CanSummon())
+	{
+		return false;
+	}*/
+
+	return true;
+}
+
 int CrawlerQueen::GetNumStoredBytes()
 {
 	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
@@ -1005,4 +957,17 @@ void CrawlerQueen::SetFromBytes(unsigned char *bytes)
 void CrawlerQueen::HitTerrainAerial(Edge *e, double quant)
 {
 	Decide(0);
+}
+
+void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
+	Enemy *e)
+{
+	if (group == &crawlerSummonGroup)
+	{
+		PoiInfo *summonNode;
+
+		summonNode = nodeVecA->at(nodePicker.AlwaysGetNextOption());
+		e->startPosInfo.SetGround(summonNode->poly,
+			summonNode->edgeIndex, summonNode->edgeQuantity);
+	}
 }

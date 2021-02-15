@@ -12,6 +12,7 @@
 #include "PlayerComboer.h"
 #include "Enemy_TigerGrindBullet.h"
 #include "RandomPicker.h"
+#include "SummonGroup.h"
 
 struct Crawler;
 
@@ -27,7 +28,7 @@ struct QueenFloatingBomb;
 
 struct PoiInfo;
 struct CrawlerQueen : Enemy, SurfaceMoverHandler,
-	EnemyMoverHandler
+	EnemyMoverHandler, Summoner
 {
 	enum Action
 	{
@@ -78,12 +79,12 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 
 	int moveFrames;
 
-	int numActiveCrawlers;
-
 	std::string nodeAStr;
 
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
+
+	SummonGroup crawlerSummonGroup;
 
 	int fireCounter;
 
@@ -104,14 +105,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	int framesToArrive;
 
 	int invincibleFrames;
-
-	ActorParams *crawlerParams;
-
-	const static int NUM_CRAWLERS = 5;
-	Crawler *crawlers[NUM_CRAWLERS];
-	int currMaxActiveCrawlers;
-	int numCrawlersToSummonAtOnce;
-
 
 	const static int NUM_BOMBS = 5;
 	QueenFloatingBomb *bombs[NUM_BOMBS];
@@ -141,22 +134,23 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	void DebugDraw(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
-	void HandleSummonedChildRemoval(Enemy *e);
 
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-
-	bool CanSummonCrawler();
 	bool CanBeHitByPlayer();
+	bool IsDecisionValid(int d);
 
 	void SetHitboxInfo(int a);
 	void HitTerrainAerial(Edge *, double);
 
 
 	void HandleFinishTargetedMovement();
+	void InitEnemyForSummon(
+		SummonGroup *group,
+		Enemy *e);
 
 
 };

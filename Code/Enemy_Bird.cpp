@@ -646,36 +646,7 @@ void Bird::ProcessState()
 	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
-			//int currSummoned = 0;
-			//PoiInfo *summonNode;
-
-			//batSummonGroup.Summon
-
 			batSummonGroup.Summon();
-
-			/*for (int i = 0; i < NUM_BATS; ++i)
-			{
-				if (!bats[i]->active)
-				{
-					summonNode = nodeBVec->at(nodePickerB.AlwaysGetNextOption());
-
-					bats[i]->spawned = false;
-					bats[i]->startPosInfo.SetAerial(summonNode->pos);
-
-					sess->AddEnemy(bats[i]);
-					++numActiveBats;
-					++currSummoned;
-
-					if (!CanSummonBat())
-					{
-						break;
-					}
-					else if (currSummoned == numBatsToSummonAtOnce)
-					{
-						break;
-					}
-				}
-			}*/
 		}
 		break;
 	case RUSH:

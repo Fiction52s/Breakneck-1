@@ -21,7 +21,8 @@ struct SummonGroup
 		ActorParams *enemyParams,
 		int maxEnemies,
 		int startMaxActive,
-		int startSummonAtOnce);
+		int startSummonAtOnce,
+		int p_instantSummon = false);
 	void Reset();
 	~SummonGroup();
 	void Summon();
@@ -38,6 +39,7 @@ struct SummonGroup
 	int startMaxActive;
 	int startSummonAtOnce;
 	Session *sess;
+	bool instantSummon;
 };
 
 #endif

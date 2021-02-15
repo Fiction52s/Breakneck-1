@@ -4,7 +4,8 @@
 
 SummonGroup::SummonGroup( Summoner *p_summoner, 
 	ActorParams *p_enemyParams,
-	int maxEnemies, int p_startMaxActive, int p_startSummonAtOnce)
+	int maxEnemies, int p_startMaxActive, int p_startSummonAtOnce,
+	bool p_instantSummon)
 {
 	sess = Session::GetSession();
 
@@ -14,6 +15,7 @@ SummonGroup::SummonGroup( Summoner *p_summoner,
 	startMaxActive = p_startMaxActive;
 	startSummonAtOnce = p_startSummonAtOnce;
 	summoner = p_summoner;
+	instantSummon = p_instantSummon;
 
 	for (int i = 0; i < numTotalEnemies; ++i)
 	{
