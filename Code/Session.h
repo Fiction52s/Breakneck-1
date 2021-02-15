@@ -429,7 +429,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsSessTypeGame();
 	bool IsSessTypeEdit();
 	void SetupEnemyTypes();
-	void SetupEnemyType(ParamsInfo &pi);
+	void SetupEnemyType(ParamsInfo &pi, bool unlisted = false);
+	void AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCreator);
 	void AddWorldEnemy(const std::string &name,
 		int w,
 		EnemyCreator *p_enemyCreator,

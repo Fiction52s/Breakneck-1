@@ -32,7 +32,9 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	:Enemy(EnemyType::EN_CRAWLERQUEEN, ap),
 	crawlerSummonGroup(this, 
 		new BasicGroundEnemyParams(sess->types["crawler"], 1),
-		5, 5, 1)
+		5, 5, 1),
+	bombSummonGroup( this, new ActorParams( sess->types["queenfloatingbomb"]),
+		10, 10, 1, true )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -58,11 +60,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	nodeVecA = NULL;
 
 	lungeSpeed = 20;
-
-	for (int i = 0; i < NUM_BOMBS; ++i)
-	{
-		bombs[i] = new QueenFloatingBomb;
-	}
 
 	decidePicker.AddActiveOption(MOVE, 2);
 	decidePicker.AddActiveOption(SUMMON, 2);
@@ -138,11 +135,6 @@ CrawlerQueen::~CrawlerQueen()
 	{
 		delete postFightScene2;
 	}
-
-	for (int i = 0; i < NUM_BOMBS; ++i)
-	{
-		delete bombs[i];
-	}
 }
 
 void CrawlerQueen::LoadParams()
@@ -189,6 +181,7 @@ void CrawlerQueen::ResetEnemy()
 	playerComboer.Reset();
 	enemyMover.Reset();
 	crawlerSummonGroup.Reset();
+	bombSummonGroup.Reset();
 
 	fireCounter = 0;
 	facingRight = true;
@@ -215,11 +208,6 @@ void CrawlerQueen::ResetEnemy()
 	comboMoveFrames = 0;
 
 	UpdateSprite();
-
-	for (int i = 0; i < NUM_BOMBS; ++i)
-	{
-		bombs[i]->Reset();
-	}
 }
 
 void CrawlerQueen::SetHitboxInfo(int a)
@@ -366,7 +354,6 @@ void CrawlerQueen::ProcessState()
 					}
 					
 					facingRight = true;
-					//enemyMover.SetModeGrind(grindSpeed, 120);
 				}
 				else if (gr == 1)
 				{
@@ -377,8 +364,6 @@ void CrawlerQueen::ProcessState()
 					
 					facingRight = false;
 				}
-
-				//snakePool.Throw(GetPosition(), pDir);
 			}
 			else if (r == SUMMON)
 			{
@@ -454,16 +439,7 @@ void CrawlerQueen::ProcessState()
 	case SLASH:
 		if (frame == 11 * animFactor[SLASH] && slowCounter == 1)
 		{
-			for (int i = 0; i < NUM_BOMBS; ++i)
-			{
-				if (!bombs[i]->spawned)
-				{
-					V2d gn = surfaceMover->ground->Normal();
-					sess->AddEnemy(bombs[i]);
-					bombs[i]->Init(GetPosition() + gn * 80.0, gn * 2.0);
-					break;
-				}
-			}
+			bombSummonGroup.Summon();
 		}
 		break;
 	case LUNGE:
@@ -969,5 +945,12 @@ void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
 		summonNode = nodeVecA->at(nodePicker.AlwaysGetNextOption());
 		e->startPosInfo.SetGround(summonNode->poly,
 			summonNode->edgeIndex, summonNode->edgeQuantity);
+	}
+	else if (group == &bombSummonGroup)
+	{
+		QueenFloatingBomb *bomb = (QueenFloatingBomb*)e;
+
+		V2d gn = surfaceMover->ground->Normal();
+		bomb->Init(GetPosition() + gn * 80.0, gn * 2.0);
 	}
 }

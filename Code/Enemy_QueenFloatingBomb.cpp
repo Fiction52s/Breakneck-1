@@ -1,17 +1,18 @@
 #include "Enemy_QueenFloatingBomb.h"
 #include "Session.h"
 
-QueenFloatingBomb::QueenFloatingBomb(/*ActorParams *ap*/)
+QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	:Enemy(EnemyType::EN_QUEENFLOATINGBOMB, NULL)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(FLOATING, 0, 0);
 	//preload
-	sess->GetTileset("Bosses/Crawler/bombexplode_512x512.png", 512, 512);
+	ts_explosion = sess->GetSizedTileset(
+		"Bosses/Crawler/bombexplode_512x512.png");
 
 	CreateSurfaceMover(startPosInfo, 32, this);
 
-	ts = sess->GetTileset("Bosses/Crawler/bomb_128x160.png", 128, 160);
+	ts = sess->GetSizedTileset("Bosses/Crawler/bomb_128x160.png");
 	sprite.setTexture(*ts->texture);
 
 	action = FLOATING;
@@ -38,14 +39,10 @@ QueenFloatingBomb::QueenFloatingBomb(/*ActorParams *ap*/)
 	ResetEnemy();
 }
 
-void QueenFloatingBomb::Init(V2d pos, V2d vel)
+void QueenFloatingBomb::Init(V2d &pos, V2d &vel)
 {
-	//currPosInfo.position = pos;
-	surfaceMover->physBody.globalPosition = pos;
-	surfaceMover->velocity = vel;
-	action = FLOATING;
-	frame = 0;
-	
+	startPosInfo.position = pos;
+	initVel = vel;
 }
 
 QueenFloatingBomb::~QueenFloatingBomb()
@@ -66,8 +63,7 @@ void QueenFloatingBomb::ProcessState()
 			dead = true;
 			spawned = false;
 			sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				sess->GetTileset("Enemies/bombexplode_512x512.png", 512, 512),
-				GetPosition(), false, 0, 10, 3, true);
+				ts_explosion, GetPosition(), false, 0, 10, 3, true);
 			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);
 			break;
@@ -152,11 +148,11 @@ void QueenFloatingBomb::ResetEnemy()
 {
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
-	surfaceMover->velocity = V2d();
+	surfaceMover->velocity = initVel;
 	action = FLOATING;
 	frame = 0;
-	SetHurtboxes(&hurtBody, 0);
-	SetHitboxes(&hitBody, 0);
+	DefaultHurtboxesOn();
+	DefaultHitboxesOn();
 }
 
 void QueenFloatingBomb::ProcessHit()

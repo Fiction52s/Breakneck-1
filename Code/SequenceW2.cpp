@@ -97,7 +97,7 @@ void BirdPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(bird);
-			bird->Wait();
+			bird->SequenceWait();
 		}
 		EntranceUpdate();
 		break;
@@ -205,7 +205,7 @@ void BirdPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			bird->Wait();
+			bird->SequenceWait();
 		}
 		break;
 	case WAIT:

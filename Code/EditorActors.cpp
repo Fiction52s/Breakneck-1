@@ -6,11 +6,13 @@
 using namespace std;
 using namespace sf;
 
-ActorType::ActorType(ParamsInfo &pi)
+ActorType::ActorType(ParamsInfo &pi, bool p_unlisted)
 	:info(pi)
 {
 	panel = CreatePanel();
 	Session *sess = Session::GetSession();
+
+	unlisted = p_unlisted;
 
 	if (info.ts == NULL)
 	{

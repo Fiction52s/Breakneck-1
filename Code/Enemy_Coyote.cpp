@@ -23,7 +23,10 @@ using namespace sf;
 
 
 Coyote::Coyote(ActorParams *ap)
-	:Enemy(EnemyType::EN_COYOTEBOSS, ap)
+	:Enemy(EnemyType::EN_COYOTEBOSS, ap),
+	fireflySummonGroup( this, 
+		new BasicAirEnemyParams(sess->types["firefly"], 1),
+		5, 2, 1 )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -43,7 +46,11 @@ Coyote::Coyote(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
+	actionLength[SUMMON] = 60;
+
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+
+	nodeAVec = NULL;
 
 	nodeAStr = "A";
 
@@ -67,13 +74,6 @@ Coyote::Coyote(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
-	fireflyParams = new BasicAirEnemyParams(sess->types["firefly"], 1);
-	for (int i = 0; i < NUM_FIREFLIES; ++i)
-	{
-		fireflies[i] = (Firefly*)fireflyParams->GenerateEnemy();
-		//fireflies[i]->SetSummoner(this);
-	}
-
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
@@ -92,9 +92,24 @@ Coyote::~Coyote()
 void Coyote::Setup()
 {
 	Enemy::Setup();
-	postFightScene = new CoyotePostFightScene;
-	postFightScene->coy = this;
-	postFightScene->Init();
+	if (postFightScene != NULL)
+	{
+		postFightScene = new CoyotePostFightScene;
+		postFightScene->coy = this;
+		postFightScene->Init();
+	}
+	
+	nodeAVec = sess->GetBossNodeVector(BossFightType::FT_COYOTE, "A");
+	assert(nodeAVec != NULL);
+
+	int numNodes = nodeAVec->size();
+	nodePicker.ReserveNumOptions(numNodes);
+	nodePicker.Reset();
+
+	for (int i = 0; i < numNodes; ++i)
+	{
+		nodePicker.AddActiveOption(i);
+	}
 }
 
 void Coyote::LoadParams()
@@ -134,15 +149,12 @@ void Coyote::ResetEnemy()
 	stopStartPool.Reset();
 	enemyMover.Reset();
 	stageMgr.Reset();
+	fireflySummonGroup.Reset();
 
 	fireCounter = 0;
 	facingRight = true;
 
 	invincibleFrames = 0;
-
-	currMaxActiveFireflies = 1;
-	numFirefliesToSummonAtOnce = 1;
-	numActiveFireflies = 0;
 
 	action = WAIT;
 	SetHitboxes(NULL);
@@ -150,21 +162,11 @@ void Coyote::ResetEnemy()
 
 	StartFight();
 
-	//action = PUNCH;
-	//SetHitboxInfo(PUNCH);
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	hitPlayer = false;
 	comboMoveFrames = 0;
-
-	//actionQueueIndex = 0;
-
-
-	for (int i = 0; i < NUM_FIREFLIES; ++i)
-	{
-		fireflies[i]->Reset();
-	}
 
 	frame = 0;
 
@@ -179,27 +181,45 @@ void Coyote::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				//sess->CollectKey();
-			}
-
 			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 			ConfirmKill();
+		}
+		else if (numHealth == 1)
+		{
+			postFightScene->Reset();
+			sess->SetActiveSequence(postFightScene);
 		}
 		else
 		{
 			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
+
+			if (numHealth % 3 == 0)
+			{
+				if (!stageMgr.TakeHit())
+				{
+					NextStage();
+				}
+				invincibleFrames = 60;
+			}
 		}
 
-		if (numHealth == 1)
-		{
-			postFightScene->Reset();
-			sess->SetActiveSequence(postFightScene);
-		}
+		
 
 		receivedHit = NULL;
+	}
+}
+
+void Coyote::NextStage()
+{
+	stageChanged = true;
+	switch (stageMgr.GetCurrStage())
+	{
+	case 1:
+		break;
+	case 2:
+
+		break;
 	}
 }
 
@@ -221,11 +241,6 @@ void Coyote::SetHitboxInfo(int a)
 	*hitboxInfo = hitboxInfos[a];
 	hitBody.hitboxInfo = hitboxInfo;
 }
-
-//void Coyote::SetCommand(int index, BirdCommand &bc)
-//{
-//	actionQueue[index] = bc;
-//}
 
 void Coyote::DebugDraw(sf::RenderTarget *target)
 {
@@ -348,7 +363,7 @@ void Coyote::ProcessState()
 	}
 	else if (action == WAIT && waitFrames == 0)
 	{
-		int r = rand() % 3;
+		int r = rand() % 4;
 
 		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_COYOTE, nodeAStr);
 		int vecSize = nodeVec->size();
@@ -365,12 +380,16 @@ void Coyote::ProcessState()
 		//r = 3; //to shoot nothing
 		if (r == 0)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			stopStartPool.Throw(GetPosition(), pDir);
 		}
 		else if (r == 1)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeNodeQuadratic(pPos, nodePos, CubicBezier(), 60);
@@ -378,6 +397,8 @@ void Coyote::ProcessState()
 		}
 		else if (r == 2)
 		{
+			action = MOVE;
+			moveFrames = 60;
 			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
 			//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 			//enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
@@ -386,12 +407,12 @@ void Coyote::ProcessState()
 		}
 		else if (r == 3)
 		{
-
+			action = SUMMON;
+			frame = 0;
 		}
 
 
-		action = MOVE;
-		moveFrames = 60;
+		
 	}
 	else if (action == COMBOMOVE)
 	{
@@ -404,6 +425,10 @@ void Coyote::ProcessState()
 			DefaultHitboxesOn();
 
 		}
+	}
+	else if (action == SUMMON && frame == 20 && slowCounter == 1)
+	{
+		fireflySummonGroup.Summon();
 	}
 
 	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
@@ -425,6 +450,31 @@ void Coyote::ProcessState()
 	}
 
 	hitPlayer = false;
+}
+
+bool Coyote::IsDecisionValid(int d)
+{
+	if (d == SUMMON && !fireflySummonGroup.CanSummon())
+	{
+		return false;
+	}
+
+	return true;
+}
+
+void Coyote::ChooseNextAction()
+{
+	int currStage = stageMgr.GetCurrStage();
+	int d;
+
+	do
+	{
+		d = decidePickers[currStage].AlwaysGetNextOption();
+	} while (!IsDecisionValid(d));
+
+
+	action = d;
+	frame = 0;
 }
 
 void Coyote::IHitPlayer(int index)
@@ -511,4 +561,17 @@ void Coyote::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 
 	launchers[0]->SetFromBytes(bytes);
+}
+
+void Coyote::InitEnemyForSummon(SummonGroup *group,
+	Enemy *e)
+{
+	if (group == &fireflySummonGroup)
+	{
+		PoiInfo *summonNode;
+
+		summonNode = nodeAVec->at(nodePicker.AlwaysGetNextOption());
+
+		e->startPosInfo.SetAerial(summonNode->pos);
+	}
 }

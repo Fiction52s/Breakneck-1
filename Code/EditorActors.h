@@ -97,7 +97,7 @@ typedef std::map<TerrainPoint*, std::list<ActorPtr>> EnemyMap;
 
 struct ActorType
 {
-	ActorType(ParamsInfo &pi);
+	ActorType(ParamsInfo &pi, bool unlisted = false );
 	~ActorType();
 	
 	void CreateDefaultEnemy();
@@ -125,6 +125,8 @@ struct ActorType
 		int maxValue, int defaultValue);
 
 	Panel *panel;
+
+	bool unlisted; //whether you can make it in the editor
 
 	std::vector<ActorPtr> defaultParamsVec;
 	std::vector<std::string> specialTypeOptions;

@@ -206,21 +206,21 @@ void Session::SetupHitboxManager()
 	//hitboxManager->
 }
 
-void Session::SetupEnemyType(ParamsInfo &pi)
+void Session::SetupEnemyType(ParamsInfo &pi, bool unlisted )
 {
 	if (types[pi.name] == NULL)
 	{
-		types[pi.name] = new ActorType(pi);
+		types[pi.name] = new ActorType(pi, unlisted );
 	}
 }
 
 void Session::RegisterGeneralEnemies()
 {
-	ParamsInfo basePI("multiplayerbase", CreateEnemy<MultiplayerBase>, NULL,
+	/*ParamsInfo basePI("multiplayerbase", CreateEnemy<MultiplayerBase>, NULL,
 		Vector2i(), Vector2i(32, 32), false, false, false, false, true,
 		false, false, 1, 1);
 
-	types["multiplayerbase"] = new ActorType(basePI);
+	types["multiplayerbase"] = new ActorType(basePI);*/
 
 	AddExtraEnemy("multiplayerprogresstarget", CreateEnemy<MultiplayerProgressTarget>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(), Vector2i(32, 32), false, false, false, false, true, 
@@ -348,6 +348,7 @@ void Session::RegisterGeneralEnemies()
 
 void Session::RegisterW1Enemies()
 {
+	AddUnlistedEnemy("queenfloatingbomb", CreateEnemy<QueenFloatingBomb>);
 
 	AddWorldEnemy("crawlernode", 2, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
@@ -822,6 +823,15 @@ void Session::RegisterAllEnemies()
 	RegisterW6Enemies();
 	RegisterW7Enemies();
 	RegisterW8Enemies();
+}
+
+void Session::AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCreator)
+{
+	ParamsInfo testPI(name, p_enemyCreator, NULL,
+		Vector2i(), Vector2i(), false, false, false, false, false,
+		false, false);
+
+	SetupEnemyType(testPI, true);
 }
 
 void Session::AddBasicGroundWorldEnemy(const std::string &name, int w, EnemyCreator *p_enemyCreator,

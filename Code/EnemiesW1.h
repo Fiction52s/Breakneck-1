@@ -31,6 +31,7 @@
 #include "Nexus.h"
 #include "Enemy_KeyFly.h"
 #include "Enemy_ComboerTarget.h"
+#include "Enemy_QueenFloatingBomb.h"
 
 
 #endif

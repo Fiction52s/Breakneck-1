@@ -953,7 +953,7 @@ void Enemy::SetSummonGroup(SummonGroup *p_summonGroup )
 
 bool Enemy::IsSummoning()
 {
-	return (summonGroup != NULL && summonFrame < summonDuration);
+	return (summonGroup != NULL && !summonGroup->instantSummon && summonFrame < summonDuration);
 }
 
 void Enemy::SetHitboxes(CollisionBody *cb, int frame)

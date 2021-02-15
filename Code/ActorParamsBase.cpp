@@ -109,6 +109,11 @@ ActorParams::~ActorParams()
 	}
 }
 
+ActorParams *ActorParams::Copy()
+{
+	return new ActorParams(*this);
+}
+
 void ActorParams::DeepCopyPathLines()
 {
 	if (lines != NULL)

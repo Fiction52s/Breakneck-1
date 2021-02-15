@@ -159,10 +159,12 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 	int enemyCounter = 0;
 	for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
 	{
-		if ((*it).first == "player")
+		if ((*it).second->unlisted)
+			continue;
+		/*if ((*it).first == "player")
 		{
 			continue;
-		}
+		}*/
 		enemyCounter++;//= (*it).second->info.numLevels;
 	}
 
@@ -201,10 +203,12 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 		int i = 0;
 		for (auto it = edit->types.begin(); it != edit->types.end(); ++it)
 		{
-			if ((*it).first == "player" || (*it).first == "multiplayerbase")
+			if ((*it).second->unlisted)
+				continue;
+			/*if ((*it).first == "player" || (*it).first == "multiplayerbase")
 			{
 				continue;
-			}
+			}*/
 
 			allEnemyRects.push_back(libPanel->AddEnemyRect(
 				ChooseRect::I_ENEMYLIBRARY, Vector2f(0, 0), (*it).second, 1));

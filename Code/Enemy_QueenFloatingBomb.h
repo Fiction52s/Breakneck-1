@@ -14,11 +14,14 @@ struct QueenFloatingBomb : Enemy, SurfaceMoverHandler
 	};
 
 	Action action;
-	QueenFloatingBomb(/*ActorParams *ap*/);
+	QueenFloatingBomb(ActorParams *ap);
 	~QueenFloatingBomb();
 
 	Tileset *ts;
-	void Init(V2d pos, V2d vel);
+	Tileset *ts_explosion;
+	V2d initVel;
+	V2d initPos;
+	void Init(V2d &pos, V2d &vel);
 	void ProcessState();
 	void HandleNoHealth();
 	void HitTerrainAerial(Edge *, double);

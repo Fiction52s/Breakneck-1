@@ -41,7 +41,7 @@ struct ActorParams : ISelectable
 	sf::FloatRect GetAABB();
 	sf::FloatRect GetGrabAABB();
 	sf::Vector2f GetGrabAABBCenter();
-	virtual ActorParams *Copy() = 0;
+	virtual ActorParams *Copy();
 	const std::string &GetTypeName();
 	
 	bool SetLevel(int lev);

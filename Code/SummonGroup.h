@@ -22,7 +22,7 @@ struct SummonGroup
 		int maxEnemies,
 		int startMaxActive,
 		int startSummonAtOnce,
-		int p_instantSummon = false);
+		bool p_instantSummon = false);
 	void Reset();
 	~SummonGroup();
 	void Summon();

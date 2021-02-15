@@ -23,6 +23,7 @@ struct Bird : Enemy, Summoner
 	enum Action
 	{
 		DECIDE,
+		WAIT,
 		COMBOMOVE,
 		PUNCH,
 		KICK,
@@ -102,13 +103,16 @@ struct Bird : Enemy, Summoner
 
 	Bird(ActorParams *ap);
 	~Bird();
+
+	void Wait(int numFrames);
+
 	void Setup();
 	bool IsDecisionValid(int d);
 	void ChooseNextAction();
 	bool IsMovementAction(int a);
 	int SetLaunchersStartIndex(int ind);
-	void Wait();
-	void Decide(int frames);
+	void SequenceWait();
+	void Decide();
 	void ProcessHit();
 	void StartFight();
 	void LoadParams();
@@ -117,7 +121,7 @@ struct Bird : Enemy, Summoner
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
+	//void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

@@ -85,6 +85,7 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	EnemyMover enemyMover;
 
 	SummonGroup crawlerSummonGroup;
+	SummonGroup bombSummonGroup;
 
 	int fireCounter;
 
@@ -105,10 +106,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 	int framesToArrive;
 
 	int invincibleFrames;
-
-	const static int NUM_BOMBS = 5;
-	QueenFloatingBomb *bombs[NUM_BOMBS];
-	int currMaxActiveBombs;
 
 	void StartAngryYelling();
 	void StartInitialUnburrow();

@@ -396,61 +396,68 @@ void Bird::FrameIncrement()
 	currPosInfo = enemyMover.currPosInfo;
 }
 
-void Bird::UpdatePreFrameCalculations()
-{
-	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+//void Bird::UpdatePreFrameCalculations()
+//{
+//	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+//
+//	if (playerComboer.CanPredict(targetPlayerIndex))
+//	{
+//		if (actionQueueIndex == 3)
+//		{
+//			dead = true;
+//			sess->RemoveEnemy(this);
+//			return;
+//		}
+//
+//		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
+//		targetPos = playerComboer.GetTargetPos();
+//
+//		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
+//		counterTillAttack = comboMoveFrames - 10;
+//
+//		//enemyMover.SetModeNodeJump(targetPos, 200);
+//		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
+//		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
+//
+//		int nextAction = actionQueue[actionQueueIndex].action + 1;
+//		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
+//
+//		if (comboMoveFrames < 0)
+//		{
+//			comboMoveFrames = 0;
+//		}
+//
+//		SetHitboxes(NULL, 0);
+//
+//		action = COMBOMOVE;
+//		frame = 0;
+//		hitPlayer = false;
+//	}
+//}
 
-	if (playerComboer.CanPredict(targetPlayerIndex))
-	{
-		if (actionQueueIndex == 3)
-		{
-			dead = true;
-			sess->RemoveEnemy(this);
-			return;
-		}
-
-		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
-		targetPos = playerComboer.GetTargetPos();
-
-		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
-		counterTillAttack = comboMoveFrames - 10;
-
-		//enemyMover.SetModeNodeJump(targetPos, 200);
-		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
-		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
-
-		int nextAction = actionQueue[actionQueueIndex].action + 1;
-		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
-
-		if (comboMoveFrames < 0)
-		{
-			comboMoveFrames = 0;
-		}
-
-		SetHitboxes(NULL, 0);
-
-		action = COMBOMOVE;
-		frame = 0;
-		hitPlayer = false;
-	}
-}
-
-void Bird::Wait()
+void Bird::SequenceWait()
 {
 	action = SEQ_WAIT;
 	frame = 0;
 	shurPool.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
-//	facingRight = false;
 	enemyMover.Reset();
 	HurtboxesOff();
 	HitboxesOff();
 }
 
+void Bird::Wait(int numFrames)
+{
+	action = WAIT;
+	frame = 0;
+	assert(numFrames > 0);
+	actionLength[WAIT] = numFrames;
+}
+
 void Bird::StartFight()
 {
-	Decide(30);
+	Wait(30);
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 	SetHitboxes(NULL);
@@ -506,11 +513,15 @@ void Bird::ProcessState()
 	{
 		switch (action)
 		{
+		case SUMMON:
+		case ATTEMPT_PUNCH:
+		case WAIT:
+		case UNDODGEABLE_SHURIKEN:
+		case SHURIKEN_SHOTGUN:
+			Decide();
+			break;
 		case PUNCH:
 			frame = 0;
-			break;
-		case ATTEMPT_PUNCH:
-			Decide(0);
 			break;
 		case COMBOMOVE:
 			frame = 0;
@@ -518,14 +529,7 @@ void Bird::ProcessState()
 		case KICK:
 			frame = 0;
 			break;
-		case SUMMON:
-			Decide(0);
-			break;
 		case SEQ_WAIT:
-			break;
-		case UNDODGEABLE_SHURIKEN:
-		case SHURIKEN_SHOTGUN:
-			Decide(0);
 			break;
 		}
 	}
@@ -537,7 +541,7 @@ void Bird::ProcessState()
 	{
 		if (enemyMover.IsIdle())
 		{
-			Decide(0);
+			Decide();
 		}
 		else if ( action == MOVE_CHASE && enemyMover.GetActionProgress() > .5 
 			&& PlayerDist() < 400)
@@ -566,7 +570,7 @@ void Bird::ProcessState()
 
 	if (stageChanged)
 	{
-		Decide(0);
+		Decide();
 	}
 
 	switch (action)
@@ -673,13 +677,7 @@ void Bird::ProcessState()
 	{
 		if (frame == 30 && slowCounter == 1)
 		{
-			//V2d pDir = PlayerDir();
-			//double spread = PI / 8.0;
 			shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::UNDODGEABLE);
-			//RotateCW(pDir, spread);
-			//shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
-			//RotateCCW(pDir, spread * 2);
-			//shurPool.Throw(GetPosition(), pDir, BirdShuriken::ShurikenType::SLIGHTHOMING);
 		}
 		break;
 	}
@@ -702,46 +700,35 @@ void Bird::ProcessState()
 		break;
 	}
 	}
-
-	/*if (stageMgr.GetCurrStage() == 0 && fireCounter >= 60 && slowCounter == 1)
-	{
-		if ((action == MOVE_NODE_LINEAR || action == MOVE_NODE_QUADRATIC
-			|| action == MOVE_CHASE) && frame == 0 && slowCounter == 1)
-		{
-			fireCounter = 0;
-			shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
-		}
-	}*/
 	
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
-		&& comboMoveFrames > 0;
-	//added this combo counter thing
-	if (hitPlayer || comboInterrupted)
-	{
-		action = COMBOMOVE;
-		frame = 0;
-		playerComboer.PredictNextFrame();
-		if( !comboInterrupted )
-			++actionQueueIndex;
-		SetHitboxes(NULL, 0);
+	//bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
+	//	&& comboMoveFrames > 0;
+	////added this combo counter thing
+	//if (hitPlayer || comboInterrupted)
+	//{
+	//	action = COMBOMOVE;
+	//	frame = 0;
+	//	playerComboer.PredictNextFrame();
+	//	if( !comboInterrupted )
+	//		++actionQueueIndex;
+	//	SetHitboxes(NULL, 0);
 
-		if (actionQueueIndex == 3)
-		{
-			
-		}
-	}
+	//	if (actionQueueIndex == 3)
+	//	{
+	//		
+	//	}
+	//}
 
-	hitPlayer = false;
+	//hitPlayer = false;
 	stageChanged = false;
 }
 
-void Bird::Decide(int numFrames )
+void Bird::Decide()
 {
 	oldAction = action;
 	action = DECIDE;
 	frame = 0;
-	actionLength[DECIDE] = numFrames;
 }
 
 void Bird::IHitPlayer(int index)
@@ -868,6 +855,19 @@ void Bird::HandleHitAndSurvive()
 	fireCounter = 0;
 }
 
+void Bird::InitEnemyForSummon(SummonGroup *group,
+	Enemy *e)
+{
+	if (group == &batSummonGroup)
+	{
+		PoiInfo *summonNode;
+
+		summonNode = nodeBVec->at(nodePickerB.AlwaysGetNextOption());
+
+		e->startPosInfo.SetAerial(summonNode->pos);
+	}
+}
+
 int Bird::GetNumStoredBytes()
 {
 	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
@@ -901,15 +901,3 @@ void Bird::SetFromBytes(unsigned char *bytes)
 	launchers[0]->SetFromBytes(bytes);
 }
 
-void Bird::InitEnemyForSummon(SummonGroup *group,
-	Enemy *e)
-{
-	if (group == &batSummonGroup)
-	{
-		PoiInfo *summonNode;
-
-		summonNode = nodeBVec->at(nodePickerB.AlwaysGetNextOption());
-
-		e->startPosInfo.SetAerial(summonNode->pos);
-	}
-}

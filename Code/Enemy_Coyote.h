@@ -10,20 +10,20 @@
 #include "Enemy_CoyoteBullet.h"
 #include "BossStageManager.h"
 #include "RandomPicker.h"
-
-struct Firefly;
+#include "SummonGroup.h"
 
 struct CoyotePostFightScene;
 
 
 
-struct Coyote : Enemy
+struct Coyote : Enemy, Summoner
 {
 	enum Action
 	{
 		SEQ_WAIT,
 		MOVE,
 		WAIT,
+		SUMMON,
 		COMBOMOVE,
 		A_Count
 	};
@@ -33,15 +33,12 @@ struct Coyote : Enemy
 		int fireCounter;
 	};
 
+	std::vector<PoiInfo*> *nodeAVec;
+
+	RandomPicker nodePicker;
+	SummonGroup fireflySummonGroup;
 
 	CoyotePostFightScene *postFightScene;
-
-	BasicAirEnemyParams *fireflyParams;
-	const static int NUM_FIREFLIES = 5;
-	Firefly *fireflies[NUM_FIREFLIES];
-	int numActiveFireflies;
-	int currMaxActiveFireflies;
-	int numFirefliesToSummonAtOnce;
 
 	int invincibleFrames;
 
@@ -62,7 +59,8 @@ struct Coyote : Enemy
 	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
-
+	void NextStage();
+	bool stageChanged;
 
 	int fireCounter;
 
@@ -90,6 +88,8 @@ struct Coyote : Enemy
 	void Setup();
 	void StartFight();
 	void Wait();
+	bool IsDecisionValid(int d);
+	void ChooseNextAction();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
@@ -101,6 +101,8 @@ struct Coyote : Enemy
 
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
+
+	void InitEnemyForSummon(SummonGroup *group, Enemy *e);
 
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
