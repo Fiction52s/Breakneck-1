@@ -26,7 +26,9 @@ using namespace sf;
 
 
 Bird::Bird(ActorParams *ap)
-	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool( this )
+	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool(this),
+	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 
+		2, 1, 1)
 {
 	//NUM_STAGES
 	stageMgr.AddBossStage(4);
@@ -121,13 +123,6 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
 
-	batParams = new BasicAirEnemyParams(sess->types["bat"], 1);
-	for (int i = 0; i < NUM_BATS; ++i)
-	{
-		bats[i] = (Bat*)batParams->GenerateEnemy();
-		bats[i]->SetSummoner(this);
-	}
-
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
@@ -152,12 +147,6 @@ Bird::~Bird()
 	if (nodeDebugCircles != NULL)
 	{
 		delete nodeDebugCircles;
-	}
-
-	delete batParams;
-	for (int i = 0; i < NUM_BATS; ++i)
-	{
-		delete bats[i];
 	}
 
 	delete[] decidePickers;
@@ -202,6 +191,8 @@ void Bird::ResetEnemy()
 	shurPool.Reset();
 	enemyMover.Reset();
 
+	batSummonGroup.Reset();
+
 	fireCounter = 1000; //fire a shot when first starting
 	facingRight = true;
 
@@ -213,10 +204,6 @@ void Bird::ResetEnemy()
 
 	invincibleFrames = 0;
 
-	currMaxActiveBats = 1;
-	numBatsToSummonAtOnce = 1;
-	numActiveBats = 0;
-
 	StartFight();
 
 	hitPlayer = false;
@@ -224,10 +211,6 @@ void Bird::ResetEnemy()
 
 	actionQueueIndex = 0;
 	
-	for (int i = 0; i < NUM_BATS; ++i)
-	{
-		bats[i]->Reset();
-	}
 
 	UpdateSprite();
 }
@@ -360,10 +343,8 @@ int Bird::SetLaunchersStartIndex(int ind)
 {
 	int currIndex = Enemy::SetLaunchersStartIndex( ind );
 
-	for (int i = 0; i < NUM_BATS; ++i)
-	{
-		currIndex = bats[i]->SetLaunchersStartIndex(currIndex);
-	}
+	currIndex = batSummonGroup.SetLaunchersStartIndex(currIndex);
+
 	return currIndex;
 }
 
@@ -413,13 +394,6 @@ void Bird::FrameIncrement()
 
 	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
-}
-
-void Bird::HandleSummonedChildRemoval(Enemy *e)
-{
-	numActiveBats--;
-
-	assert(numActiveBats >= 0);
 }
 
 void Bird::UpdatePreFrameCalculations()
@@ -497,7 +471,7 @@ void Bird::NextStage()
 
 bool Bird::IsDecisionValid(int d)
 {
-	if (d == SUMMON && !CanSummonBat())
+	if (d == SUMMON && !batSummonGroup.CanSummon())
 	{
 		return false;
 	}
@@ -672,9 +646,14 @@ void Bird::ProcessState()
 	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
-			int currSummoned = 0;
-			PoiInfo *summonNode;
-			for (int i = 0; i < NUM_BATS; ++i)
+			//int currSummoned = 0;
+			//PoiInfo *summonNode;
+
+			//batSummonGroup.Summon
+
+			batSummonGroup.Summon();
+
+			/*for (int i = 0; i < NUM_BATS; ++i)
 			{
 				if (!bats[i]->active)
 				{
@@ -696,7 +675,7 @@ void Bird::ProcessState()
 						break;
 					}
 				}
-			}
+			}*/
 		}
 		break;
 	case RUSH:
@@ -792,11 +771,6 @@ void Bird::Decide(int numFrames )
 	action = DECIDE;
 	frame = 0;
 	actionLength[DECIDE] = numFrames;
-}
-
-bool Bird::CanSummonBat()
-{
-	return numActiveBats < currMaxActiveBats;
 }
 
 void Bird::IHitPlayer(int index)
@@ -954,4 +928,17 @@ void Bird::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 
 	launchers[0]->SetFromBytes(bytes);
+}
+
+void Bird::InitEnemyForSummon(SummonGroup *group,
+	Enemy *e)
+{
+	if (group == &batSummonGroup)
+	{
+		PoiInfo *summonNode;
+
+		summonNode = nodeBVec->at(nodePickerB.AlwaysGetNextOption());
+
+		e->startPosInfo.SetAerial(summonNode->pos);
+	}
 }

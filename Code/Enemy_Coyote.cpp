@@ -71,7 +71,7 @@ Coyote::Coyote(ActorParams *ap)
 	for (int i = 0; i < NUM_FIREFLIES; ++i)
 	{
 		fireflies[i] = (Firefly*)fireflyParams->GenerateEnemy();
-		fireflies[i]->SetSummoner(this);
+		//fireflies[i]->SetSummoner(this);
 	}
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);

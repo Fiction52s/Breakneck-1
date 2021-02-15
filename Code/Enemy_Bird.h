@@ -10,6 +10,7 @@
 #include "Enemy_BirdShuriken.h"
 #include "RandomPicker.h"
 #include "BossStageManager.h"
+#include "SummonGroup.h"
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
@@ -17,7 +18,7 @@ struct BirdPostFight3Scene;
 
 struct Bat;
 
-struct Bird : Enemy
+struct Bird : Enemy, Summoner
 {
 	enum Action
 	{
@@ -51,6 +52,8 @@ struct Bird : Enemy
 
 	RandomPicker *decidePickers;
 
+	SummonGroup batSummonGroup;
+
 	RandomPicker nodePicker;
 	RandomPicker nodePickerB;
 	std::vector<PoiInfo*> *nodeAVec;
@@ -63,13 +66,6 @@ struct Bird : Enemy
 	int invincibleFrames;
 
 	CircleGroup *nodeDebugCircles;
-	
-	BasicAirEnemyParams *batParams;
-	const static int NUM_BATS = 5;
-	Bat *bats[NUM_BATS];
-	int numActiveBats;
-	int currMaxActiveBats;
-	int numBatsToSummonAtOnce;
 
 	std::string nodeAStr;
 
@@ -115,7 +111,6 @@ struct Bird : Enemy
 	void Decide(int frames);
 	void ProcessHit();
 	void StartFight();
-	void HandleSummonedChildRemoval(Enemy *e);
 	void LoadParams();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -126,7 +121,6 @@ struct Bird : Enemy
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
-	bool CanSummonBat();
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 	bool CanBeHitByPlayer();
@@ -137,6 +131,8 @@ struct Bird : Enemy
 	void FrameIncrement();
 
 	void SetHitboxInfo(int a);
+	void InitEnemyForSummon(SummonGroup *group,
+		Enemy *e);
 
 
 };

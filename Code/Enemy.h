@@ -18,6 +18,7 @@ struct Shield;
 struct SpecterArea;
 struct SpecterTester;
 struct Session;
+struct SummonGroup;
 
 struct ActorParams;
 
@@ -105,7 +106,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	bool active;
 	CollisionBody *currHurtboxes;
-	Enemy *summoner;
+	SummonGroup *summonGroup;
 	int currHitboxFrame;
 	int currHurtboxFrame;
 	std::vector<Launcher*> launchers;
@@ -167,7 +168,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, int w);
 	void OnCreate( ActorParams *ap,
 		int w );
-	void SetSummoner(Enemy *summoner);
+	void SetSummonGroup(SummonGroup *p_summonGroup);
 	bool IsSummoning();
 	virtual ~Enemy();
 	virtual void UpdatePreFrameCalculations() {}
@@ -270,7 +271,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual HitboxInfo * IsHit(int pIndex );
 	virtual void HandleNoHealth();
 	virtual void HandleRemove();
-	virtual void HandleSummonedChildRemoval( Enemy *e) {}
 	virtual void ProcessState() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateHitboxes();

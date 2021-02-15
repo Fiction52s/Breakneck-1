@@ -6,20 +6,31 @@
 struct ActorParams;
 struct Enemy;
 struct Session;
+struct SummonGroup;
+
+struct Summoner
+{
+	virtual void InitEnemyForSummon(SummonGroup *group,
+		Enemy *e) {}
+	virtual void HandleSummonedChildRemoval(Enemy *e) {}
+};
 
 struct SummonGroup
 {
-	SummonGroup( Enemy *summoner,
-		int maxEnemies,
+	SummonGroup(Summoner *summoner,
 		ActorParams *enemyParams,
+		int maxEnemies,
 		int startMaxActive,
 		int startSummonAtOnce);
 	void Reset();
 	~SummonGroup();
-	void Summon( PositionInfo &posInfo );
+	void Summon();
 	bool CanSummon();
+	int SetLaunchersStartIndex(int ind);
+	void HandleSummonedEnemyRemoval(Enemy *e);
 	ActorParams *enemyParams;
 	int numTotalEnemies;
+	Summoner *summoner;
 	Enemy **enemies;
 	int numActiveEnemies;
 	int currMaxActiveEnemies;

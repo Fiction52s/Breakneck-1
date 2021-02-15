@@ -16,6 +16,7 @@
 #include "Actor.h"
 #include "AbsorbParticles.h"
 #include "Bullet.h"
+#include "SummonGroup.h"
 
 using namespace std;
 using namespace sf;
@@ -467,7 +468,7 @@ void Enemy::OnCreate(ActorParams *ap,
 	}
 
 	active = false;
-	summoner = NULL;
+	summonGroup = NULL;
 	prev = NULL;
 	next = NULL;
 	zone = NULL;
@@ -945,14 +946,14 @@ void Enemy::Reset()
 	UpdateHitboxes();
 }
 
-void Enemy::SetSummoner(Enemy *p_summoner )
+void Enemy::SetSummonGroup(SummonGroup *p_summonGroup )
 {
-	summoner = p_summoner;
+	summonGroup = p_summonGroup;
 }
 
 bool Enemy::IsSummoning()
 {
-	return (summoner != NULL && summonFrame < summonDuration);
+	return (summonGroup != NULL && summonFrame < summonDuration);
 }
 
 void Enemy::SetHitboxes(CollisionBody *cb, int frame)
@@ -1504,9 +1505,9 @@ void Enemy::MovePos(V2d &vel,
 
 void Enemy::HandleRemove()
 {
-	if (summoner != NULL)
+	if (summonGroup != NULL)
 	{
-		summoner->HandleSummonedChildRemoval( this );
+		summonGroup->HandleSummonedEnemyRemoval( this );
 	}
 }
 

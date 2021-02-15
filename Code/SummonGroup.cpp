@@ -2,9 +2,9 @@
 #include "Enemy.h"
 #include "Session.h"
 
-SummonGroup::SummonGroup( Enemy *summoner, 
-	int maxEnemies, ActorParams *p_enemyParams,
-	int p_startMaxActive, int p_startSummonAtOnce)
+SummonGroup::SummonGroup( Summoner *p_summoner, 
+	ActorParams *p_enemyParams,
+	int maxEnemies, int p_startMaxActive, int p_startSummonAtOnce)
 {
 	sess = Session::GetSession();
 
@@ -13,11 +13,12 @@ SummonGroup::SummonGroup( Enemy *summoner,
 	enemies = new Enemy*[numTotalEnemies];
 	startMaxActive = p_startMaxActive;
 	startSummonAtOnce = p_startSummonAtOnce;
+	summoner = p_summoner;
 
 	for (int i = 0; i < numTotalEnemies; ++i)
 	{
 		enemies[i] = enemyParams->GenerateEnemy();
-		enemies[i]->SetSummoner(summoner);
+		enemies[i]->SetSummonGroup(this);
 	}
 }
 
@@ -46,10 +47,10 @@ void SummonGroup::Reset()
 
 bool SummonGroup::CanSummon()
 {
-	numActiveEnemies < currMaxActiveEnemies;
+	return numActiveEnemies < currMaxActiveEnemies;
 }
 
-void SummonGroup::Summon( PositionInfo &posInfo )
+void SummonGroup::Summon()
 {
 	int currSummoned = 0;
 	for (int i = 0; i < numTotalEnemies; ++i)
@@ -57,13 +58,15 @@ void SummonGroup::Summon( PositionInfo &posInfo )
 		if (!enemies[i]->active)
 		{
 			enemies[i]->spawned = false;
-			enemies[i]->startPosInfo.SetWithoutChangingOffset(posInfo);
+
+			summoner->InitEnemyForSummon(this, enemies[i]);
+			//enemies[i]->startPosInfo.SetWithoutChangingOffset(posInfo);
 
 			sess->AddEnemy(enemies[i]);
 			++numActiveEnemies;
 			++currSummoned;
 
-			if ( !CanSummon() )
+			if (!CanSummon())
 			{
 				break;
 			}
@@ -73,4 +76,23 @@ void SummonGroup::Summon( PositionInfo &posInfo )
 			}
 		}
 	}
+}
+
+//only need this if the enemy shoots bullets
+int SummonGroup::SetLaunchersStartIndex(int ind)
+{
+	for (int i = 0; i < numTotalEnemies; ++i)
+	{
+		ind = enemies[i]->SetLaunchersStartIndex(ind);
+	}
+	return ind;
+}
+
+void SummonGroup::HandleSummonedEnemyRemoval(Enemy *e)
+{
+	numActiveEnemies--;
+
+	assert(numActiveEnemies >= 0);
+
+	summoner->HandleSummonedChildRemoval(e);
 }

@@ -60,7 +60,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	for (int i = 0; i < NUM_CRAWLERS; ++i)
 	{
 		crawlers[i] = (Crawler*)crawlerParams->GenerateEnemy();
-		crawlers[i]->SetSummoner(this);
+		//crawlers[i]->SetSummoner(this);
 	}
 
 	for (int i = 0; i < NUM_BOMBS; ++i)
