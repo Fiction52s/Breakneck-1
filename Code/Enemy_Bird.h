@@ -81,6 +81,8 @@ struct Bird : Enemy, Summoner
 
 	int reachPointOnFrame[A_Count];
 
+	std::map<int, int> hitboxStartFrame;
+
 	bool hitPlayer;
 
 	BirdCommand actionQueue[3];

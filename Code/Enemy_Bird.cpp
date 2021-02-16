@@ -68,6 +68,8 @@ Bird::Bird(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
+	hitboxStartFrame[PUNCH] = 7;
+
 	//decidePickers[0].AddActiveOption(MOVE_NODE_LINEAR, 2);
 	//decidePickers[0].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
 	decidePickers[0].AddActiveOption(MOVE_CHASE, 2);
@@ -523,7 +525,8 @@ void Bird::ProcessState()
 			Decide();
 			break;
 		case PUNCH:
-			frame = 0;
+			HitboxesOff();
+			Decide();
 			break;
 		case COMBOMOVE:
 			frame = 0;
@@ -538,20 +541,33 @@ void Bird::ProcessState()
 
 	if (hitPlayer)
 	{
-		//comboMoveFrames = targetPlayer->hitstunFrames - 1;
-		Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
-		action = COMBOMOVE;
-		frame = 0;
-		HitboxesOff();
+		if (actionQueueIndex < 3)
+		{
 
-		
 
-		int moveDuration = targetPlayer->hitstunFrames - 4;
+			Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+			targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+			action = COMBOMOVE;
+			frame = 0;
+			HitboxesOff();
+			int moveDuration = targetPlayer->hitstunFrames - 4;
 
-		comboMoveFrames = moveDuration - (7 * animFactor[PUNCH] - 1);//( animFactor[PUNCH] ) );
+			BirdCommand nextAction = actionQueue[actionQueueIndex];
 
-		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration );
+			comboMoveFrames = moveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
+
+			facingRight = nextAction.facingRight;
+
+			++actionQueueIndex;
+
+			enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration);
+		}
+		else
+		{
+			HitboxesOff();
+			Wait(60);
+			//Decide();
+		}
 		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
 	}
 
@@ -581,13 +597,21 @@ void Bird::ProcessState()
 			{
 				facingRight = false;
 			}
-			//V2d offset(-20, -20);
-			V2d offset;
+			V2d offset(0, 0);
 			action = PUNCH;
 			frame = 0;
 
-			//DefaultHitboxesOn();
-			//SetHitboxInfo(PUNCH);
+			BirdCommand bc;
+			bc.action = PUNCH;
+			bc.facingRight = true;
+
+			actionQueueIndex = 0;
+
+			SetCommand(0, bc);
+
+			bc.facingRight = false;
+			SetCommand(1, bc);
+			SetCommand(2, bc);
 
 			double chaseSpeed = 15;
 			double accel = 2.0;//.8;
