@@ -5223,9 +5223,9 @@ void Session::UpdateEnemiesPreFrameCalculations()
 void Session::UpdatePreFrameCalculations()
 {
 	numCalculatedFuturePositions = 0;
-	//ForwardSimulatePlayer(0, 120, true);
+	ForwardSimulatePlayer(0, 120, true);
 	//ForwardSimulatePlayer(0, 10, true);
-	//RevertSimulatedPlayer(0);
+	RevertSimulatedPlayer(0);
 }
 
 void Session::UpdatePhysics()

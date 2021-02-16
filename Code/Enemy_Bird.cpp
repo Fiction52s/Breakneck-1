@@ -50,12 +50,11 @@ Bird::Bird(ActorParams *ap)
 	nodeBVec = NULL;
 	targetPlayerIndex = 0;
 
+	actionLength[DECIDE] = 0;
+
 	actionLength[PUNCH] = 14;
 	animFactor[PUNCH] = 3;
 	reachPointOnFrame[PUNCH] = 0;
-
-	actionLength[ATTEMPT_PUNCH] = 14;
-	animFactor[ATTEMPT_PUNCH] = 3;
 
 	actionLength[SUMMON] = 60;
 	actionLength[SHURIKEN_SHOTGUN] = 60;
@@ -69,9 +68,11 @@ Bird::Bird(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	decidePickers[0].AddActiveOption(MOVE_NODE_LINEAR, 2);
-	decidePickers[0].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
+	//decidePickers[0].AddActiveOption(MOVE_NODE_LINEAR, 2);
+	//decidePickers[0].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
 	decidePickers[0].AddActiveOption(MOVE_CHASE, 2);
+
+
 	//decidePicker[0].AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
 	//decidePicker[0].AddActiveOption(SHURIKEN_SHOTGUN, 2);
 	//decidePicker[0].AddActiveOption(SUMMON, 2);
@@ -121,7 +122,7 @@ Bird::Bird(ActorParams *ap)
 	LoadParams();
 
 	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(16);
+	BasicCircleHitBodySetup(8);
 
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
@@ -165,6 +166,7 @@ void Bird::LoadParams()
 	is >> j;
 
 	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
+	//HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
 }
 
@@ -350,6 +352,7 @@ int Bird::SetLaunchersStartIndex(int ind)
 
 void Bird::DebugDraw(sf::RenderTarget *target)
 {
+	Enemy::DebugDraw(target);
 	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
 	nodeDebugCircles->Draw(target);
@@ -514,7 +517,6 @@ void Bird::ProcessState()
 		switch (action)
 		{
 		case SUMMON:
-		case ATTEMPT_PUNCH:
 		case WAIT:
 		case UNDODGEABLE_SHURIKEN:
 		case SHURIKEN_SHOTGUN:
@@ -532,6 +534,28 @@ void Bird::ProcessState()
 		case SEQ_WAIT:
 			break;
 		}
+	}
+
+	if (hitPlayer)
+	{
+		//comboMoveFrames = targetPlayer->hitstunFrames - 1;
+		Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+		action = COMBOMOVE;
+		frame = 0;
+		HitboxesOff();
+
+		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), targetPlayer->hitstunFrames - 4);
+		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
+	}
+
+	if (action == COMBOMOVE && enemyMover.IsIdle())
+	{
+		action = PUNCH;
+		frame = 0;
+
+		DefaultHitboxesOn();
+		SetHitboxInfo(PUNCH);
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -556,14 +580,17 @@ void Bird::ProcessState()
 			}
 			//V2d offset(-20, -20);
 			V2d offset;
-			action = ATTEMPT_PUNCH;
+			action = PUNCH;
 			frame = 0;
+
+			DefaultHitboxesOn();
+			SetHitboxInfo(PUNCH);
 
 			double chaseSpeed = 15;
 			double accel = 2.0;//.8;
 
 			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, offset,
-				chaseSpeed, accel, actionLength[ATTEMPT_PUNCH] * animFactor[ATTEMPT_PUNCH] - 10);
+				chaseSpeed, accel, actionLength[PUNCH] * animFactor[PUNCH] - 10);
 			enemyMover.velocity = PlayerDir() * chaseSpeed;
 		}
 	}
@@ -611,7 +638,7 @@ void Bird::ProcessState()
 					|| currStage == 0) )
 				{
 					fireCounter = 0;
-					shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
+					//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
 				}
 			}
 		}
@@ -683,44 +710,33 @@ void Bird::ProcessState()
 	}
 	case COMBOMOVE:
 	{
-		if (comboMoveFrames == 0)
-		{
-			action = actionQueue[actionQueueIndex].action + 1;
-			facingRight = actionQueue[actionQueueIndex].facingRight;
-			SetHitboxInfo(action);
-			//only have this on if i dont turn on hitboxes at the end of the movement.
-			DefaultHitboxesOn();
+		//if (comboMoveFrames == 0)
+		//{
+		//	action = actionQueue[actionQueueIndex].action + 1;
+		//	facingRight = actionQueue[actionQueueIndex].facingRight;
+		//	SetHitboxInfo(action);
+		//	//only have this on if i dont turn on hitboxes at the end of the movement.
+		//	DefaultHitboxesOn();
 
-		}
-		break;
-	}
-	case ATTEMPT_PUNCH:
-	{
-		
+		//}
 		break;
 	}
 	}
 	
 
-	//bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
-	//	&& comboMoveFrames > 0;
+	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame 
+		&& comboMoveFrames > 0;
 	////added this combo counter thing
-	//if (hitPlayer || comboInterrupted)
-	//{
-	//	action = COMBOMOVE;
-	//	frame = 0;
-	//	playerComboer.PredictNextFrame();
-	//	if( !comboInterrupted )
-	//		++actionQueueIndex;
-	//	SetHitboxes(NULL, 0);
+	if (hitPlayer || comboInterrupted)
+	{
+		action = COMBOMOVE;
+		frame = 0;
+		if( !comboInterrupted )
+			++actionQueueIndex;
+		SetHitboxes(NULL, 0);	
+		}
 
-	//	if (actionQueueIndex == 3)
-	//	{
-	//		
-	//	}
-	//}
-
-	//hitPlayer = false;
+	hitPlayer = false;
 	stageChanged = false;
 }
 
@@ -734,7 +750,7 @@ void Bird::Decide()
 void Bird::IHitPlayer(int index)
 {
 	hitPlayer = true;
-	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
+	pauseFrames = hitBody.hitboxInfo->hitlagFrames + 1;
 }
 
 void Bird::UpdateEnemyPhysics()
@@ -817,10 +833,10 @@ void Bird::UpdateSprite()
 	case MOVE_NODE_LINEAR:
 	case MOVE_NODE_QUADRATIC:
 	case MOVE_CHASE:
+	case WAIT:
 		sprite.setTexture(*ts_move->texture);
 		ts_move->SetSubRect(sprite, 2, !facingRight);
 		break;
-	case ATTEMPT_PUNCH:
 	case PUNCH:
 		sprite.setTexture(*ts_punch->texture);
 		ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
