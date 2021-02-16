@@ -545,17 +545,20 @@ void Bird::ProcessState()
 		frame = 0;
 		HitboxesOff();
 
-		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), targetPlayer->hitstunFrames - 4);
+		
+
+		int moveDuration = targetPlayer->hitstunFrames - 4;
+
+		comboMoveFrames = moveDuration - (7 * animFactor[PUNCH] - 1);//( animFactor[PUNCH] ) );
+
+		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration );
 		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
 	}
 
-	if (action == COMBOMOVE && enemyMover.IsIdle())
+	if (action == COMBOMOVE && comboMoveFrames == 0 )//enemyMover.IsIdle())
 	{
 		action = PUNCH;
 		frame = 0;
-
-		DefaultHitboxesOn();
-		SetHitboxInfo(PUNCH);
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -583,8 +586,8 @@ void Bird::ProcessState()
 			action = PUNCH;
 			frame = 0;
 
-			DefaultHitboxesOn();
-			SetHitboxInfo(PUNCH);
+			//DefaultHitboxesOn();
+			//SetHitboxInfo(PUNCH);
 
 			double chaseSpeed = 15;
 			double accel = 2.0;//.8;
@@ -721,20 +724,28 @@ void Bird::ProcessState()
 		//}
 		break;
 	}
+	case PUNCH:
+	{
+		if (frame == 7 * animFactor[PUNCH] && slowCounter == 1)
+		{
+			DefaultHitboxesOn();
+			SetHitboxInfo(PUNCH);
+		}
+	}
 	}
 	
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame 
-		&& comboMoveFrames > 0;
-	////added this combo counter thing
-	if (hitPlayer || comboInterrupted)
-	{
-		action = COMBOMOVE;
-		frame = 0;
-		if( !comboInterrupted )
-			++actionQueueIndex;
-		SetHitboxes(NULL, 0);	
-		}
+	//bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame 
+	//	&& comboMoveFrames > 0;
+	//////added this combo counter thing
+	//if (hitPlayer || comboInterrupted)
+	//{
+	//	action = COMBOMOVE;
+	//	frame = 0;
+	//	if( !comboInterrupted )
+	//		++actionQueueIndex;
+	//	SetHitboxes(NULL, 0);	
+	//	}
 
 	hitPlayer = false;
 	stageChanged = false;

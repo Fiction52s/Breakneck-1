@@ -6827,7 +6827,7 @@ void Session::ForwardSimulatePlayer(int index, int frames, bool storePositions)
 	{
 		p->UpdatePrePhysics();
 		p->physicsOver = false;
-		p->highAccuracyHitboxes = false;
+		//p->highAccuracyHitboxes = false;
 		int numSteps = p->GetNumSteps();
 		for (substep = 0; substep < numSteps; ++substep)
 		{
