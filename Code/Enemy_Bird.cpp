@@ -28,16 +28,9 @@ using namespace sf;
 Bird::Bird(ActorParams *ap)
 	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool(this),
 	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 
-		2, 1, 1)
+		2, 1, 1), nodeGroupA( Color::Magenta ), nodeGroupB( Color::Yellow )
 {
-	//NUM_STAGES
-	stageMgr.AddBossStage(4);
-	stageMgr.AddBossStage(4);
-	stageMgr.AddBossStage(4);
-	stageMgr.AddBossStage(4);
-
-	decidePickers = new RandomPicker[stageMgr.numStages];
-
+	stageMgr.Setup(4, 4);
 	maxHealth = 3 * stageMgr.GetTotalHealth();
 
 	SetNumActions(A_Count);
@@ -45,88 +38,54 @@ Bird::Bird(ActorParams *ap)
 
 	level = ap->GetLevel();
 
-	nodeDebugCircles = NULL;
-	nodeAVec = NULL;
-	nodeBVec = NULL;
 	targetPlayerIndex = 0;
 
 	actionLength[DECIDE] = 0;
-
 	actionLength[PUNCH] = 14;
-	animFactor[PUNCH] = 3;
-	reachPointOnFrame[PUNCH] = 0;
-
 	actionLength[SUMMON] = 60;
 	actionLength[SHURIKEN_SHOTGUN] = 60;
 	actionLength[UNDODGEABLE_SHURIKEN] = 60;
-
 	actionLength[KICK] = 10;
-	animFactor[KICK] = 3;
-	reachPointOnFrame[KICK] = 0;
 
-	actionLength[COMBOMOVE] = 2;
-	animFactor[COMBOMOVE] = 1;
-	reachPointOnFrame[COMBOMOVE] = 0;
+	animFactor[PUNCH] = 3;
+	animFactor[KICK] = 3;
 
 	hitboxStartFrame[PUNCH] = 7;
+	
+	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 
-	//decidePickers[0].AddActiveOption(MOVE_NODE_LINEAR, 2);
-	//decidePickers[0].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
-	decidePickers[0].AddActiveOption(MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
+	stageMgr.AddActiveOption(1, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(1, SUMMON, 2);
 
+	stageMgr.AddActiveOption(2, MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(2, MOVE_NODE_LINEAR, 2);
+	stageMgr.AddActiveOption(2, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(2, SUMMON, 2);
+	stageMgr.AddActiveOption(2, SHURIKEN_SHOTGUN, 2);
 
-	//decidePicker[0].AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
-	//decidePicker[0].AddActiveOption(SHURIKEN_SHOTGUN, 2);
-	//decidePicker[0].AddActiveOption(SUMMON, 2);
-
-	decidePickers[1].AddActiveOption(MOVE_NODE_LINEAR, 2);
-	decidePickers[1].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
-	decidePickers[1].AddActiveOption(MOVE_CHASE, 2);
-	decidePickers[1].AddActiveOption(SUMMON, 2);
-
-	decidePickers[2].AddActiveOption(MOVE_NODE_LINEAR, 2);
-	decidePickers[2].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
-	decidePickers[2].AddActiveOption(MOVE_CHASE, 2);
-	decidePickers[2].AddActiveOption(SHURIKEN_SHOTGUN, 2);
-	decidePickers[2].AddActiveOption(SUMMON, 2);
-
-	decidePickers[3].AddActiveOption(MOVE_NODE_LINEAR, 2);
-	decidePickers[3].AddActiveOption(MOVE_NODE_QUADRATIC, 2);
-	decidePickers[3].AddActiveOption(MOVE_CHASE, 2);
-	decidePickers[3].AddActiveOption(UNDODGEABLE_SHURIKEN, 2);
-	decidePickers[3].AddActiveOption(SHURIKEN_SHOTGUN, 2);
-	decidePickers[3].AddActiveOption(SUMMON, 2);
+	stageMgr.AddActiveOption(3, MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(3, MOVE_NODE_LINEAR, 2);
+	stageMgr.AddActiveOption(3, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(3, SUMMON, 2);
+	stageMgr.AddActiveOption(3, SHURIKEN_SHOTGUN, 2);
+	stageMgr.AddActiveOption(3, UNDODGEABLE_SHURIKEN, 2);
 
 	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
-
 	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
-
 	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
+	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
-	nodeAStr = "A";
+	BasicCircleHurtBodySetup(16);
+	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	hitboxInfo = new HitboxInfo;
-	/*hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 0;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 6;
-	hitboxInfo->hitstunFrames = 30;
-	hitboxInfo->knockback = 50;
-	hitboxInfo->kbDir = normalize(V2d(1, -2));
-	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
+	LoadParams();
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
 	postFightScene3 = NULL;
-
-	LoadParams();
-
-	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(8);
-
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
 }
@@ -141,18 +100,10 @@ Bird::~Bird()
 	{
 		delete postFightScene2;
 	}
-
 	if (postFightScene3 != NULL)
 	{
 		delete postFightScene3;
 	}
-
-	if (nodeDebugCircles != NULL)
-	{
-		delete nodeDebugCircles;
-	}
-
-	delete[] decidePickers;
 }
 
 
@@ -168,7 +119,6 @@ void Bird::LoadParams()
 	is >> j;
 
 	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
-	//HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
 }
 
@@ -191,7 +141,6 @@ void Bird::UpdateHitboxes()
 
 void Bird::ResetEnemy()
 {
-	playerComboer.Reset();
 	shurPool.Reset();
 	enemyMover.Reset();
 
@@ -243,8 +192,6 @@ void Bird::Setup()
 			postFightScene->bird = this;
 			postFightScene->Init();
 		}
-
-		
 	}
 	else if (level == 2)
 	{
@@ -290,46 +237,8 @@ void Bird::Setup()
 		}
 	}
 
-	
-	nodeAVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, "A");
-	nodeBVec = sess->GetBossNodeVector(BossFightType::FT_BIRD, "B");
-	assert(nodeAVec != NULL);
-
-	int numNodes = nodeAVec->size();
-
-	if (nodeDebugCircles != NULL)
-	{
-		if (nodeDebugCircles->numCircles != numNodes)
-		{
-			delete nodeDebugCircles;
-			nodeDebugCircles = NULL;
-		}
-	}
-
-	if (nodeDebugCircles == NULL)
-	{
-		nodeDebugCircles = new CircleGroup(numNodes, 10, Color::Magenta, 6);
-			
-	}
-
-	nodePicker.ReserveNumOptions(numNodes);
-	nodePicker.Reset();
-
-	for (int i = 0; i < numNodes; ++i)
-	{
-		nodePicker.AddActiveOption(i);
-		nodeDebugCircles->SetPosition(i, Vector2f(nodeAVec->at(i)->pos));	
-	}
-
-	nodeDebugCircles->ShowAll();
-
-	int numBNodes = nodeBVec->size();
-	for (int i = 0; i < numBNodes; ++i)
-	{
-		nodePickerB.AddActiveOption(i);
-	}
-
-
+	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "A"));
+	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "B"));
 }
 
 void Bird::SetHitboxInfo(int a)
@@ -355,9 +264,8 @@ int Bird::SetLaunchersStartIndex(int ind)
 void Bird::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
-	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
-	nodeDebugCircles->Draw(target);
+	nodeGroupA.Draw(target);
 }
 
 void Bird::DirectKill()
@@ -400,45 +308,6 @@ void Bird::FrameIncrement()
 	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
 }
-
-//void Bird::UpdatePreFrameCalculations()
-//{
-//	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-//
-//	if (playerComboer.CanPredict(targetPlayerIndex))
-//	{
-//		if (actionQueueIndex == 3)
-//		{
-//			dead = true;
-//			sess->RemoveEnemy(this);
-//			return;
-//		}
-//
-//		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
-//		targetPos = playerComboer.GetTargetPos();
-//
-//		comboMoveFrames = targetPlayer->hitstunFrames-1;//(hitBody.hitboxInfo->hitstunFrames - 1);
-//		counterTillAttack = comboMoveFrames - 10;
-//
-//		//enemyMover.SetModeNodeJump(targetPos, 200);
-//		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
-//		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
-//
-//		int nextAction = actionQueue[actionQueueIndex].action + 1;
-//		comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
-//
-//		if (comboMoveFrames < 0)
-//		{
-//			comboMoveFrames = 0;
-//		}
-//
-//		SetHitboxes(NULL, 0);
-//
-//		action = COMBOMOVE;
-//		frame = 0;
-//		hitPlayer = false;
-//	}
-//}
 
 void Bird::SequenceWait()
 {
@@ -499,14 +368,11 @@ bool Bird::IsMovementAction(int a)
 
 void Bird::ChooseNextAction()
 {
-	int currStage = stageMgr.GetCurrStage();
 	int d;
-
 	do
 	{
-		d = decidePickers[currStage].AlwaysGetNextOption();
+		d = stageMgr.AlwaysGetNextOption();
 	} while (!IsDecisionValid(d));
-
 
 	action = d;
 	frame = 0;
@@ -543,16 +409,21 @@ void Bird::ProcessState()
 	{
 		if (actionQueueIndex < 3)
 		{
-
+			BirdCommand nextAction = actionQueue[actionQueueIndex];
 
 			Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-			targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+			V2d offset(-100, 0);
+			if (!nextAction.facingRight)
+			{
+				offset.x = -offset.x;
+			}
+			targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
 			action = COMBOMOVE;
 			frame = 0;
 			HitboxesOff();
 			int moveDuration = targetPlayer->hitstunFrames - 4;
 
-			BirdCommand nextAction = actionQueue[actionQueueIndex];
+			//actionLength[COMBOMOVE]
 
 			comboMoveFrames = moveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
 
@@ -597,7 +468,11 @@ void Bird::ProcessState()
 			{
 				facingRight = false;
 			}
-			V2d offset(0, 0);
+			V2d offset(-100, 0);
+			if (!facingRight)
+			{
+				offset.x = -offset.x;
+			}
 			action = PUNCH;
 			frame = 0;
 
@@ -679,8 +554,8 @@ void Bird::ProcessState()
 	case MOVE_NODE_LINEAR:
 		if (frame == 0 && slowCounter == 1)
 		{
-			int nodeIndex = nodePicker.AlwaysGetNextOption();
-			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
+			int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
+			V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
 
 			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 			enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
@@ -689,8 +564,8 @@ void Bird::ProcessState()
 	case MOVE_NODE_QUADRATIC:
 		if (frame == 0 && slowCounter == 1)
 		{
-			int nodeIndex = nodePicker.AlwaysGetNextOption();
-			V2d nodePos = nodeAVec->at(nodeIndex)->pos;
+			int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
+			V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
 			enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos(0), nodePos, CubicBezier(), 60);
 		}
 		break;
@@ -750,7 +625,7 @@ void Bird::ProcessState()
 	}
 	case PUNCH:
 	{
-		if (frame == 7 * animFactor[PUNCH] && slowCounter == 1)
+		if (frame == hitboxStartFrame[PUNCH] * animFactor[PUNCH] && slowCounter == 1)
 		{
 			DefaultHitboxesOn();
 			SetHitboxInfo(PUNCH);
@@ -913,7 +788,7 @@ void Bird::InitEnemyForSummon(SummonGroup *group,
 	{
 		PoiInfo *summonNode;
 
-		summonNode = nodeBVec->at(nodePickerB.AlwaysGetNextOption());
+		summonNode = nodeGroupB.AlwaysGetNextNode();
 
 		e->startPosInfo.SetAerial(summonNode->pos);
 	}

@@ -11,7 +11,7 @@ struct RandomPicker
 	void AddActiveOption(int a, int reps = 1);
 	void Reset();
 	void ShuffleActiveOptions();
-	int GetNextOption();
+	int TryGetNextOption();
 	int AlwaysGetNextOption();
 	std::vector<int> options;
 	//int numMaxOptions;

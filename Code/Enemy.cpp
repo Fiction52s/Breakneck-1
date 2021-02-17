@@ -1749,11 +1749,13 @@ void Enemy::BasicUpdateHitboxes()
 	if (!hurtBody.Empty())
 	{
 		hurtBody.SetBasicPos(position, ang);
+		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
 	}
 
 	if (!hitBody.Empty())
 	{
 		hitBody.SetBasicPos(position, ang);
+		hitBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
 	}
 
 	auto comboBoxes = GetComboHitboxes();

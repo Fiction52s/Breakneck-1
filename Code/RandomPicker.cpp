@@ -44,7 +44,7 @@ void RandomPicker::ShuffleActiveOptions()
 	currActiveIndex = 0;
 }
 
-int RandomPicker::GetNextOption()
+int RandomPicker::TryGetNextOption()
 {
 	if (currActiveIndex >= options.size())
 	{
@@ -60,11 +60,11 @@ int RandomPicker::GetNextOption()
 
 int RandomPicker::AlwaysGetNextOption()
 {
-	int r = GetNextOption();
+	int r = TryGetNextOption();
 	if (r == -1)
 	{
 		ShuffleActiveOptions();
-		r = GetNextOption();
+		r = TryGetNextOption();
 	}
 	return r;
 }

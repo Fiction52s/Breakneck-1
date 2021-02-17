@@ -6,7 +6,6 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 #include "Enemy_CoyoteBullet.h"
 #include "BossStageManager.h"
 #include "RandomPicker.h"
@@ -56,7 +55,6 @@ struct Coyote : Enemy, Summoner
 
 	CoyoteBulletPool stopStartPool;
 
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	void NextStage();
@@ -94,7 +92,6 @@ struct Coyote : Enemy, Summoner
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	//void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

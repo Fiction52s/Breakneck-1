@@ -12,24 +12,6 @@
 #include "Enemy_TigerSpinTurret.h"
 #include "EnemyMover.h"
 
-//struct SpaceMover;
-
-//figure out the comboer later
-//when you need to generalize it for other bosses.
-
-//struct PlayerComboer
-//{
-//	Enemy *myEnemy;
-//	V2d targetPos;
-//	sf::CircleShape predictCircle;
-//	bool predict;
-//
-//	PlayerComboer(Enemy *e);
-//	void PredictNextFrame();
-//	void CalcTargetAfterHit(int pIndex);
-//	void UpdatePreFrameCalculations( int pIndex );
-//};
-
 
 struct MovementTester : Enemy, RayCastHandler
 {

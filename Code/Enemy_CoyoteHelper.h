@@ -6,7 +6,6 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 #include "Enemy_CoyoteBullet.h"
 
 struct GameSession;
@@ -41,7 +40,6 @@ struct CoyoteHelper : Enemy
 
 	CoyoteBulletPool stopStartPool;
 
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	int fireCounter;
@@ -74,7 +72,6 @@ struct CoyoteHelper : Enemy
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	//void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

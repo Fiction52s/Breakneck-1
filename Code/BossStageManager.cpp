@@ -8,9 +8,27 @@ BossStageManager::BossStageManager()
 	numStages = 0;
 }
 
+void BossStageManager::Setup(int p_numStages, int hitsPerStage)
+{
+	numStages = p_numStages;
+	stageHits.resize(numStages);
+	for (int i = 0; i < numStages; ++i)
+	{
+		stageHits[i] = hitsPerStage;
+	}
+	totalHealth = numStages * hitsPerStage;
+	decisionPickers.resize(numStages);
+}
+
+void BossStageManager::AddActiveOption(int stageIndex, int option, int reps)
+{
+	decisionPickers[stageIndex].AddActiveOption(option, reps);
+}
+
 void BossStageManager::AddBossStage(int numHits)
 {
 	stageHits.push_back(numHits);
+	decisionPickers.push_back(RandomPicker());
 	++numStages;
 	totalHealth += numHits;
 }
@@ -19,6 +37,20 @@ void BossStageManager::Reset()
 {
 	currStageHealth = stageHits[0];
 	currStage = 0;
+	for (int i = 0; i < numStages; ++i)
+	{
+		decisionPickers[i].ShuffleActiveOptions();
+	}
+}
+
+int BossStageManager::AlwaysGetNextOption()
+{
+	return decisionPickers[currStage].AlwaysGetNextOption();
+}
+
+int BossStageManager::TryGetNextOption()
+{
+	return decisionPickers[currStage].TryGetNextOption();
 }
 
 int BossStageManager::GetCurrStage()

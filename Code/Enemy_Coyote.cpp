@@ -145,7 +145,6 @@ void Coyote::UpdateHitboxes()
 
 void Coyote::ResetEnemy()
 {
-	playerComboer.Reset();
 	stopStartPool.Reset();
 	enemyMover.Reset();
 	stageMgr.Reset();
@@ -244,7 +243,6 @@ void Coyote::SetHitboxInfo(int a)
 
 void Coyote::DebugDraw(sf::RenderTarget *target)
 {
-	playerComboer.DebugDraw(target);
 	enemyMover.DebugDraw(target);
 }
 
@@ -290,45 +288,6 @@ void Coyote::FrameIncrement()
 
 	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
-}
-
-void Coyote::UpdatePreFrameCalculations()
-{
-	Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-
-	if (playerComboer.CanPredict(targetPlayerIndex))
-	{
-		/*if (actionQueueIndex == 3)
-		{
-			dead = true;
-			sess->RemoveEnemy(this);
-			return;
-		}*/
-
-		playerComboer.UpdatePreFrameCalculations(targetPlayerIndex);
-		targetPos = playerComboer.GetTargetPos();
-
-		comboMoveFrames = targetPlayer->hitstunFrames - 1;//(hitBody.hitboxInfo->hitstunFrames - 1);
-		counterTillAttack = comboMoveFrames - 10;
-
-		//enemyMover.SetModeNodeJump(targetPos, 200);
-		enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
-		//enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), comboMoveFrames);
-
-		//int nextAction = //actionQueue[actionQueueIndex].action + 1;
-		//comboMoveFrames -= actionLength[nextAction] * animFactor[nextAction] - 10;
-
-		if (comboMoveFrames < 0)
-		{
-			comboMoveFrames = 0;
-		}
-
-		SetHitboxes(NULL, 0);
-
-		action = COMBOMOVE;
-		frame = 0;
-		hitPlayer = false;
-	}
 }
 
 void Coyote::StartFight()
@@ -438,7 +397,6 @@ void Coyote::ProcessState()
 	{
 		action = COMBOMOVE;
 		frame = 0;
-		playerComboer.PredictNextFrame();
 		//if (!comboInterrupted)
 		//	++actionQueueIndex;
 		SetHitboxes(NULL, 0);

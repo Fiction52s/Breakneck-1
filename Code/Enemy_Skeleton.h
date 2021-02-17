@@ -6,7 +6,6 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 #include "Enemy_GatorWaterOrb.h"
 
 struct SkeletonPostFightScene;
@@ -39,7 +38,6 @@ struct Skeleton : Enemy, RayCastHandler
 
 	GatorWaterOrbPool orbPool;
 
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	Tileset *ts_bulletExplode;
@@ -84,7 +82,6 @@ struct Skeleton : Enemy, RayCastHandler
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

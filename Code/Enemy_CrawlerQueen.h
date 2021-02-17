@@ -9,7 +9,6 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 #include "Enemy_TigerGrindBullet.h"
 #include "RandomPicker.h"
 #include "SummonGroup.h"
@@ -81,7 +80,6 @@ struct CrawlerQueen : Enemy, SurfaceMoverHandler,
 
 	std::string nodeAStr;
 
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	SummonGroup crawlerSummonGroup;

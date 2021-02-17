@@ -6,7 +6,6 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 
 struct FinalSkeletonPostFightScene;
 
@@ -31,7 +30,6 @@ struct GreySkeleton : Enemy
 
 	std::string nodeAStr;
 
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	Tileset *ts_bulletExplode;
@@ -72,7 +70,6 @@ struct GreySkeleton : Enemy
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
 	void SetCommand(int index, BirdCommand &bc);
-	void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

@@ -178,7 +178,6 @@ void CrawlerQueen::ResetEnemy()
 
 	invincibleFrames = 0;
 	
-	playerComboer.Reset();
 	enemyMover.Reset();
 	crawlerSummonGroup.Reset();
 	bombSummonGroup.Reset();
@@ -228,7 +227,6 @@ void CrawlerQueen::HandleFinishTargetedMovement()
 
 void CrawlerQueen::DebugDraw(sf::RenderTarget *target)
 {
-	//playerComboer.DebugDraw(target);
 	//enemyMover.DebugDraw(target);
 	//Enemy::DebugDraw(target);
 

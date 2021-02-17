@@ -6,17 +6,19 @@
 #include "Movement.h"
 #include "SuperCommands.h"
 #include "EnemyMover.h"
-#include "PlayerComboer.h"
 #include "Enemy_BirdShuriken.h"
 #include "RandomPicker.h"
 #include "BossStageManager.h"
 #include "SummonGroup.h"
+#include "NodeGroup.h"
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
 struct BirdPostFight3Scene;
 
 struct Bat;
+
+
 
 struct Bird : Enemy, Summoner
 {
@@ -50,14 +52,10 @@ struct Bird : Enemy, Summoner
 
 	BossStageManager stageMgr;
 
-	RandomPicker *decidePickers;
-
 	SummonGroup batSummonGroup;
 
-	RandomPicker nodePicker;
-	RandomPicker nodePickerB;
-	std::vector<PoiInfo*> *nodeAVec;
-	std::vector<PoiInfo*> *nodeBVec;
+	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
 
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
@@ -65,21 +63,13 @@ struct Bird : Enemy, Summoner
 
 	int invincibleFrames;
 
-	CircleGroup *nodeDebugCircles;
-
-	std::string nodeAStr;
-
 	BirdShurikenPool shurPool;
-
-	PlayerComboer playerComboer;
 	EnemyMover enemyMover;
 
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
 	int comboMoveFrames;
-
-	int reachPointOnFrame[A_Count];
 
 	std::map<int, int> hitboxStartFrame;
 

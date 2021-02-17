@@ -566,27 +566,7 @@ EdgeAngleType GetEdgeAngleType(V2d &normal)
 	}
 }
 
-PoiInfo::PoiInfo( const std::string &pname, Vector2i &p )
-{
-	name = pname;
-	pos.x = p.x;
-	pos.y = p.y;
-	edge = NULL;
-	poly = NULL;
-	edgeIndex = -1;
-}
 
-PoiInfo::PoiInfo( const std::string &pname, PolyPtr p, int eIndex, double q )
-{
-	poly = p;
-	name = pname;
-	edgeIndex = eIndex;
-	edgeQuantity = q;
-	edge = p->GetEdge(eIndex);
-
-	pos = edge->GetPosition( edgeQuantity );
-	
-}
 
 void GameSession::Reload(const boost::filesystem::path &p_filePath)
 {
