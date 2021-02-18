@@ -414,7 +414,7 @@ void Spider::UpdatePostPhysics()
 		};
 
 		Actor *player = sess->GetPlayer(0);
-		if (player->IsIntangible())
+		if (player->IsInvincible())
 		{
 
 		}

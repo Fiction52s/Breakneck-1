@@ -1362,7 +1362,7 @@ struct Actor : QuadTreeCollider,
 	bool CanRailSlide();
 	bool CanRailGrind();
 	bool IsRailSlideFacingRight();
-	bool IsIntangible();
+	bool IsInvincible();
 	void SetKinMode(Mode m);
 	void KinModeUpdate();
 	void ReverseVerticalInputsWhenOnCeiling();

@@ -99,6 +99,7 @@ struct Bird : Enemy, Summoner
 
 	void Setup();
 	bool IsDecisionValid(int d);
+	void MoveToCombo();
 	void ChooseNextAction();
 	bool IsMovementAction(int a);
 	int SetLaunchersStartIndex(int ind);

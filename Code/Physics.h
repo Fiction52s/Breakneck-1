@@ -109,7 +109,8 @@ struct HitboxInfo
 		hitBlockCancelDelay( 0 ),
 		hitPosType( AIRFORWARD ),
 		canBeBlocked(true),
-		canBeParried(true)
+		canBeParried(true),
+		hitsThroughInvincibility(false)
 	{
 	};
 
@@ -137,6 +138,7 @@ struct HitboxInfo
 	HitPosType hitPosType;
 	bool canBeBlocked;
 	bool canBeParried;
+	bool hitsThroughInvincibility;
 	
 };
 

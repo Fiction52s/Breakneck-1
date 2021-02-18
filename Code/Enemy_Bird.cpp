@@ -53,6 +53,8 @@ Bird::Bird(ActorParams *ap)
 	hitboxStartFrame[PUNCH] = 7;
 	
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
+	//stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
@@ -244,6 +246,7 @@ void Bird::Setup()
 void Bird::SetHitboxInfo(int a)
 {
 	*hitboxInfo = hitboxInfos[a];
+	hitboxInfo->hitsThroughInvincibility = true;
 	hitBody.hitboxInfo = hitboxInfo;
 }
 
@@ -289,11 +292,6 @@ void Bird::DirectKill()
 void Bird::FrameIncrement()
 {
 	++fireCounter;
-
-	if (comboMoveFrames > 0)
-	{
-		--comboMoveFrames;
-	}
 
 	if (moveFrames > 0)
 	{
@@ -378,6 +376,43 @@ void Bird::ChooseNextAction()
 	frame = 0;
 }
 
+void Bird::MoveToCombo()
+{
+	if (actionQueueIndex < 3)
+	{
+		BirdCommand nextAction = actionQueue[actionQueueIndex];
+
+		Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
+		V2d offset(-100, 0);
+		if (!nextAction.facingRight)
+		{
+			offset.x = -offset.x;
+		}
+
+		if (targetPlayer->hitstunFrames == 0)
+		{
+			int x = 5;
+		}
+
+		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
+		action = COMBOMOVE;
+		frame = 0;
+		HitboxesOff();
+		int moveDuration = targetPlayer->hitstunFrames - 4;
+
+		actionLength[COMBOMOVE] = moveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
+
+		facingRight = nextAction.facingRight;
+
+		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration);
+	}
+	else
+	{
+		HitboxesOff();
+		Wait(60);
+	}
+}
+
 void Bird::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
@@ -395,8 +430,13 @@ void Bird::ProcessState()
 			Decide();
 			break;
 		case COMBOMOVE:
+		{
+			BirdCommand nextAction = actionQueue[actionQueueIndex];
+			action = nextAction.action;
 			frame = 0;
+			++actionQueueIndex;
 			break;
+		}
 		case KICK:
 			frame = 0;
 			break;
@@ -405,47 +445,16 @@ void Bird::ProcessState()
 		}
 	}
 
-	if (hitPlayer)
+	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame;
+	if ( hitPlayer || (action == COMBOMOVE && comboInterrupted))
 	{
-		if (actionQueueIndex < 3)
-		{
-			BirdCommand nextAction = actionQueue[actionQueueIndex];
-
-			Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
-			V2d offset(-100, 0);
-			if (!nextAction.facingRight)
-			{
-				offset.x = -offset.x;
-			}
-			targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
-			action = COMBOMOVE;
-			frame = 0;
-			HitboxesOff();
-			int moveDuration = targetPlayer->hitstunFrames - 4;
-
-			//actionLength[COMBOMOVE]
-
-			comboMoveFrames = moveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
-
-			facingRight = nextAction.facingRight;
-
-			++actionQueueIndex;
-
-			enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration);
-		}
-		else
-		{
-			HitboxesOff();
-			Wait(60);
-			//Decide();
-		}
-		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
+		MoveToCombo();
 	}
 
-	if (action == COMBOMOVE && comboMoveFrames == 0 )//enemyMover.IsIdle())
+	//if (hitPlayer)
 	{
-		action = PUNCH;
-		frame = 0;
+		
+		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -612,15 +621,6 @@ void Bird::ProcessState()
 	}
 	case COMBOMOVE:
 	{
-		//if (comboMoveFrames == 0)
-		//{
-		//	action = actionQueue[actionQueueIndex].action + 1;
-		//	facingRight = actionQueue[actionQueueIndex].facingRight;
-		//	SetHitboxInfo(action);
-		//	//only have this on if i dont turn on hitboxes at the end of the movement.
-		//	DefaultHitboxesOn();
-
-		//}
 		break;
 	}
 	case PUNCH:
@@ -630,6 +630,7 @@ void Bird::ProcessState()
 			DefaultHitboxesOn();
 			SetHitboxInfo(PUNCH);
 		}
+		break;
 	}
 	}
 	

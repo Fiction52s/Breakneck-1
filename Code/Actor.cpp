@@ -9897,7 +9897,7 @@ Wire * Actor::IntersectMyWireHitboxes(Enemy *e, CollisionBody *cb,
 
 bool Actor::IntersectMyHurtboxes(CollisionBox &cb)
 {
-	if (IsIntangible())
+	if (IsInvincible())
 		return false;
 
 	return cb.Intersects(hurtBody);
@@ -16820,7 +16820,7 @@ double Actor::CalcLandingSpeed( V2d &testVel,
 //	//return rSpeed;
 //}
 
-bool Actor::IsIntangible()
+bool Actor::IsInvincible()
 {
 	return kinMode == K_SUPER || invincibleFrames > 0;
 }
@@ -16831,8 +16831,15 @@ void Actor::ApplyHit( HitboxInfo *info,
 {
 	if (info == NULL)
 		return;
+
+	//removed the below line because we already
+	//check for invinc when getting hit.
+	//this is redundant and ruins the boss moves 
+	//hitting through invinc..might change later
+
 	//use the first hit you got. no stacking hits for now
-	if (invincibleFrames == 0)
+	//if (invincibleFrames == 0)
+	
 	{
 		if (receivedHit == NULL || info->damage > receivedHit->damage)
 		{
@@ -19052,7 +19059,9 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
 {
 	if (IntersectMyHurtboxes(hitBody, hitFrame))
 	{
-		if (IsIntangible())
+		if (IsInvincible() 
+			&& (hitBody->hitboxInfo == NULL 
+			|| !hitBody->hitboxInfo->hitsThroughInvincibility))
 		{
 			return HitResult::INVINCIBLEHIT;
 		}
@@ -19083,7 +19092,7 @@ Actor::HitResult Actor::CheckIfImHit(CollisionBox &cb, HitboxInfo::HitPosType hp
 {
 	if (IntersectMyHurtboxes(cb))
 	{
-		if (IsIntangible())
+		if (IsInvincible() )
 		{
 			return HitResult::INVINCIBLEHIT;
 		}
