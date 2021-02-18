@@ -170,6 +170,21 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_Count,
 	};
 
+	enum QueryType
+	{
+		Q_RESOLVE,
+		Q_CHECK,
+		Q_CHECKWALL,
+		Q_GRASS,
+		Q_ENVPLANT,
+		Q_RAIL,
+		Q_ACTIVEITEM,
+		Q_AIRTRIGGER,
+		Q_TOUCHGRASS,
+		Q_TOUCHGRASSPOLY,
+		Q_SPECIALTERRAIN,
+	};
+
 	enum Action
 	{
 		DAIR,
@@ -987,7 +1002,7 @@ struct Actor : QuadTreeCollider,
 	double clingSpeed;
 	bool col;
 	sf::Vector2<double> tempVel;
-	std::string queryMode;
+	QueryType queryType;
 	int maxDespFrames;
 	
 	int maxSuperFrames;

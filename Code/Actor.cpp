@@ -3574,9 +3574,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		
 	//grindHitboxes[0] = new list<CollisionBox>;
 	//grindHitboxes[0]->push_back( cb );
-		
-
-	queryMode = "";
 	wallThresh = .9999;
 	//tileset setup
 		
@@ -4758,7 +4755,7 @@ void Actor::CheckForAirTrigger()
 		return;
 
 	currAirTrigger = NULL;
-	queryMode = "airtrigger";
+	queryType = Q_AIRTRIGGER;
 	Rect<double> r(position.x - b.rw + b.offset.x, position.y - b.rh + b.offset.y, 2 * b.rw, 2 * b.rh);
 	owner->airTriggerTree->Query(this, r);
 	if (currAirTrigger != NULL)
@@ -7455,7 +7452,7 @@ bool Actor::CheckWall( bool right )
 	minContact.edge = NULL;
 	minContact.resolution = V2d( 0, 0 );
 	col = false;
-	queryMode = "checkwall";
+	queryType = Q_CHECKWALL;
 	tempVel = vel;
 
 	//sf::Rect<double> r( 
@@ -7582,7 +7579,7 @@ bool Actor::CheckStandUp()
 		//	}
 		//}
 
-		queryMode = "check";
+		queryType = Q_CHECK;
 		checkValid = true;
 	//	Query( this, owner->testTree, r );
 		GetTerrainTree()->Query( this, r );
@@ -7668,7 +7665,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	minContact.edge = NULL;
 
 	//cout << "---STARTING QUERY--- vel: " << vel.x << ", " << vel.y << endl;
-	queryMode = "resolve";
+	queryType = Q_RESOLVE;
 
 	Edge *oldGround = ground;
 	//double oldQuant = edgeQuantity;
@@ -7740,7 +7737,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	
 	if (owner != NULL)
 	{
-		queryMode = "envplant";
+		queryType = Q_ENVPLANT;
 		owner->envPlantTree->Query(this, r);
 
 		Rect<double> staticItemRect(position.x - 400, position.y - 400, 800, 800);//arbitrary decent sized area around kin
@@ -7755,7 +7752,7 @@ bool Actor::ResolvePhysics( V2d vel )
 	//if( owner != NULL && owner->totalRails > 0 && (canRailGrind || canRailSlide) )
 	if( canRailGrind || canRailSlide )
 	{
-		queryMode = "rail";
+		queryType = Q_RAIL;
 		sess->railEdgeTree->Query(this, r);
 	}
 
@@ -7776,7 +7773,7 @@ bool Actor::ResolvePhysics( V2d vel )
 
 	if (!simulationMode)
 	{
-		queryMode = "activeitem";
+		queryType = Q_ACTIVEITEM;
 		sess->activeItemTree->Query(this, r);//activeR);
 	}
 	
@@ -9806,7 +9803,7 @@ void Actor::TryCheckGrass()
 		Rect<double> grassR(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 		//grassR is the same as the rect used in HandleEntrant for "grass"
 		//might need to make a function at some point
-		queryMode = "grass";
+		queryType = Q_GRASS;
 		sess->grassTree->Query(this, grassR);
 	}
 }
@@ -14093,7 +14090,7 @@ void Actor::ProcessSpecialTerrain()
 {
 	oldSpecialTerrain = currSpecialTerrain;
 	currSpecialTerrain = NULL;
-	queryMode = "specialterrain";
+	queryType = Q_SPECIALTERRAIN;
 	V2d trueCenter = GetTrueCenter();
 	Rect<double> r(trueCenter.x - b.rw, trueCenter.y - b.rh, 2 * b.rw, 2 * b.rh);
 	GetSpecialTerrainTree()->Query(this, r);
@@ -15327,10 +15324,10 @@ void Actor::QueryTouchGrass()
 	possibleEdgeCount = 0;
 
 	polyQueryList = NULL;
-	queryMode = "touchgrasspoly";
+	queryType = Q_TOUCHGRASSPOLY;
 	GetBorderTree()->Query(this, queryRExtended);
 
-	queryMode = "touchgrass";
+	queryType = Q_TOUCHGRASS;
 	PolyPtr tempT = polyQueryList;
 	while (tempT != NULL)
 	{
@@ -15382,8 +15379,7 @@ void Actor::AddToFlyCounter(int count)
 
 void Actor::HandleEntrant(QuadTreeEntrant *qte)
 {
-	assert(queryMode != "");
-	if (queryMode == "resolve")
+	if (queryType == Q_RESOLVE)
 	{
 		Edge *e = (Edge*)qte;
 
@@ -15989,7 +15985,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		}
 
 	}
-	else if (queryMode == "check")
+	else if (queryType == Q_CHECK)
 	{
 		Edge *e = (Edge*)qte;
 
@@ -16178,7 +16174,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 		//}
 	}
-	else if (queryMode == "checkwall")
+	else if (queryType == Q_CHECKWALL)
 	{
 		Edge *e = (Edge*)qte;
 		if (ground == e)
@@ -16216,7 +16212,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				}
 			}
 	}
-	else if (queryMode == "grass")
+	else if (queryType == Q_GRASS)
 	{
 		//cout << "got some grass in here" << endl;
 		Grass *g = (Grass*)qte;
@@ -16226,7 +16222,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			touchedGrass[g->grassType] = true;
 		}
 	}
-	else if (queryMode == "envplant")
+	else if (queryType == Q_ENVPLANT)
 	{
 		EnvPlant *ev = (EnvPlant*)qte;
 
@@ -16255,7 +16251,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			ev->frame = 0;
 		}
 	}
-	else if (queryMode == "rail")
+	else if (queryType == Q_RAIL)
 	{
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
@@ -16395,7 +16391,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 		}
 	}
-	else if (queryMode == "activeitem")
+	else if (queryType == Q_ACTIVEITEM)
 	{
 		Enemy *en = (Enemy*)qte;
 		if (en->type == EnemyType::EN_BOOSTER)
@@ -16657,12 +16653,12 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 		}
 	}
-	else if (queryMode == "airtrigger")
+	else if (queryType == Q_AIRTRIGGER)
 	{
 		AirTrigger *at = (AirTrigger*)qte;
 		currAirTrigger = at;
 	}
-	else if (queryMode == "touchgrass")
+	else if (queryType == Q_TOUCHGRASS)
 	{
 		TouchGrass *tGrass = (TouchGrass*)qte;
 		if (currHitboxes != NULL)
@@ -16680,7 +16676,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			}
 		}
 	}
-	else if (queryMode == "touchgrasspoly")
+	else if (queryType == Q_TOUCHGRASSPOLY)
 	{
 		PolyPtr poly = (PolyPtr)qte;
 		poly->queryNext = NULL;
@@ -16705,7 +16701,7 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 			polyQueryList = tPiece;
 		}*/
 	}
-	else if (queryMode == "specialterrain")
+	else if (queryType == Q_SPECIALTERRAIN)
 	{
 		if (currSpecialTerrain == NULL)
 		{
