@@ -35,6 +35,7 @@ void BossStageManager::AddBossStage(int numHits)
 
 void BossStageManager::Reset()
 {
+	stageChanged = false;
 	currStageHealth = stageHits[0];
 	currStage = 0;
 	for (int i = 0; i < numStages; ++i)
@@ -59,7 +60,7 @@ int BossStageManager::GetCurrStage()
 }
 
 //return true if remain in same stage, return false if next stage
-bool BossStageManager::TakeHit()
+void BossStageManager::TakeHit()
 {
 	--currStageHealth;
 	if (currStageHealth == 0)
@@ -73,10 +74,8 @@ bool BossStageManager::TakeHit()
 		}
 
 		currStageHealth = stageHits[currStage];
-		return false;
+		stageChanged = true;
 	}
-
-	return true;
 }
 
 int BossStageManager::GetTotalHealth()

@@ -43,6 +43,10 @@ void SummonGroup::Reset()
 
 	for (int i = 0; i < numTotalEnemies; ++i)
 	{
+		if (enemies[i]->active)
+		{
+			sess->RemoveEnemy(enemies[i]);
+		}
 		enemies[i]->Reset();
 	}
 }

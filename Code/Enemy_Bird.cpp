@@ -23,7 +23,22 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
+void Boss::BossReset()
+{
+	hitPlayer = false;
+	stageMgr.Reset();
+}
 
+int Boss::ChooseNextAction()
+{
+	int d;
+	do
+	{
+		d = stageMgr.AlwaysGetNextOption();
+	} while (!IsDecisionValid(d));
+
+	return d;
+}
 
 Bird::Bird(ActorParams *ap)
 	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool(this),
@@ -31,7 +46,7 @@ Bird::Bird(ActorParams *ap)
 		2, 1, 1), nodeGroupA( Color::Magenta ), nodeGroupB( Color::Yellow )
 {
 	stageMgr.Setup(4, 4);
-	maxHealth = 3 * stageMgr.GetTotalHealth();
+	maxHealth = HITS_PER_BOSS_DAMAGE * stageMgr.GetTotalHealth();
 
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
@@ -153,16 +168,15 @@ void Bird::ResetEnemy()
 
 	oldAction = DECIDE;
 
-	stageChanged = false;
-
-	stageMgr.Reset();
+	
+	BossReset();
+	
 
 	invincibleFrames = 0;
 
 	StartFight();
 
-	hitPlayer = false;
-	comboMoveFrames = 0;
+	
 
 	actionQueueIndex = 0;
 	
@@ -312,6 +326,7 @@ void Bird::SequenceWait()
 	action = SEQ_WAIT;
 	frame = 0;
 	shurPool.Reset();
+	batSummonGroup.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
@@ -335,19 +350,6 @@ void Bird::StartFight()
 	SetHitboxes(NULL);
 }
 
-void Bird::NextStage()
-{
-	stageChanged = true;
-	switch (stageMgr.GetCurrStage())
-	{
-	case 1:
-		break;
-	case 2:
-
-		break;
-	}
-}
-
 bool Bird::IsDecisionValid(int d)
 {
 	if (d == SUMMON && !batSummonGroup.CanSummon())
@@ -364,18 +366,6 @@ bool Bird::IsMovementAction(int a)
 		|| a == MOVE_CHASE;
 }
 
-void Bird::ChooseNextAction()
-{
-	int d;
-	do
-	{
-		d = stageMgr.AlwaysGetNextOption();
-	} while (!IsDecisionValid(d));
-
-	action = d;
-	frame = 0;
-}
-
 void Bird::MoveToCombo()
 {
 	if (actionQueueIndex < 3)
@@ -389,10 +379,7 @@ void Bird::MoveToCombo()
 			offset.x = -offset.x;
 		}
 
-		if (targetPlayer->hitstunFrames == 0)
-		{
-			int x = 5;
-		}
+		assert(targetPlayer->hitstunFrames > 2);
 
 		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
 		action = COMBOMOVE;
@@ -410,6 +397,25 @@ void Bird::MoveToCombo()
 	{
 		HitboxesOff();
 		Wait(60);
+	}
+}
+
+int Bird::ChooseActionAfterStageChange()
+{
+	switch (stageMgr.currStage)
+	{
+	case 1:
+		action = SUMMON;
+		frame = 0;
+		break;
+	case 2:
+		action = SHURIKEN_SHOTGUN;
+		frame = 0;
+		break;
+	case 3:
+		action = UNDODGEABLE_SHURIKEN;
+		frame = 0;
+		break;
 	}
 }
 
@@ -449,12 +455,6 @@ void Bird::ProcessState()
 	if ( hitPlayer || (action == COMBOMOVE && comboInterrupted))
 	{
 		MoveToCombo();
-	}
-
-	//if (hitPlayer)
-	{
-		
-		//enemyMover.SetModeNodeProjectile(targetPos, V2d(0, 1.0), 200);
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -506,56 +506,35 @@ void Bird::ProcessState()
 		}
 	}
 
-	if (stageChanged)
+	/*if (stageMgr.stageChanged)
 	{
 		Decide();
-	}
+	}*/
 
-	switch (action)
+	if (action == DECIDE)
 	{
-	case DECIDE:
-	{
-		if (frame == actionLength[DECIDE] * animFactor[DECIDE])
+		if (stageMgr.stageChanged)
 		{
-			if (stageChanged)
-			{
-				switch (stageMgr.currStage)
-				{
-				case 1:
-					action = SUMMON;
-					frame = 0;
-					break;
-				case 2:
-					action = SHURIKEN_SHOTGUN;
-					frame = 0;
-					break;
-				case 3:
-					action = UNDODGEABLE_SHURIKEN;
-					frame = 0;
-					break;
-				}
-			}
-			else
-			{
-				ChooseNextAction();
-			}
-			
+			ChooseActionAfterStageChange();
+			stageMgr.stageChanged = false;
+		}
+		else
+		{
+			action = ChooseNextAction();
+			frame = 0;
+		}
 
-			if ( IsMovementAction(action))
+		if (IsMovementAction(action))
+		{
+			int currStage = stageMgr.GetCurrStage();
+			if (fireCounter >= 60
+				&& ((IsMovementAction(oldAction) && currStage > 0)
+					|| currStage == 0))
 			{
-				int currStage = stageMgr.GetCurrStage();
-				if ( fireCounter >= 60 
-					&& ((IsMovementAction(oldAction) && currStage > 0 )
-					|| currStage == 0) )
-				{
-					fireCounter = 0;
-					//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
-				}
+				fireCounter = 0;
+				//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
 			}
 		}
-		break;
-	}
-		
 	}
 
 	switch (action)
@@ -633,22 +612,9 @@ void Bird::ProcessState()
 		break;
 	}
 	}
-	
-
-	//bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame 
-	//	&& comboMoveFrames > 0;
-	//////added this combo counter thing
-	//if (hitPlayer || comboInterrupted)
-	//{
-	//	action = COMBOMOVE;
-	//	frame = 0;
-	//	if( !comboInterrupted )
-	//		++actionQueueIndex;
-	//	SetHitboxes(NULL, 0);	
-	//	}
 
 	hitPlayer = false;
-	stageChanged = false;
+	//stageMgr.stageChanged = false;
 }
 
 void Bird::Decide()
@@ -681,50 +647,46 @@ void Bird::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				//sess->CollectKey();
-			}
-
+			//currently cant be reached. adjust when bosses are needed in boss rush/levels later
 			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
 			ConfirmKill();
 		}
 		else if (numHealth == 1)
 		{	
-			if (level == 1)
-			{
-				postFightScene->Reset();
-				sess->SetActiveSequence(postFightScene);
-			}
-			else if (level == 2)
-			{
-				postFightScene2->Reset();
-				sess->SetActiveSequence(postFightScene2);
-			}
-			else if (level == 3)
-			{
-				postFightScene3->Reset();
-				sess->SetActiveSequence(postFightScene3);
-			}
+			ActivatePostFightScene();
 		}
 		else
 		{
 			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 			ConfirmHitNoKill();
 
-
-
-			if (numHealth % 3 == 0)
+			if (numHealth % HITS_PER_BOSS_DAMAGE == 0)
 			{
-				if (!stageMgr.TakeHit())
-				{
-					NextStage();
-				}
+				stageMgr.TakeHit();
 				invincibleFrames = 60;
 			}
 		}
 
 		receivedHit = NULL;
+	}
+}
+
+void Bird::ActivatePostFightScene()
+{
+	if (level == 1)
+	{
+		postFightScene->Reset();
+		sess->SetActiveSequence(postFightScene);
+	}
+	else if (level == 2)
+	{
+		postFightScene2->Reset();
+		sess->SetActiveSequence(postFightScene2);
+	}
+	else if (level == 3)
+	{
+		postFightScene3->Reset();
+		sess->SetActiveSequence(postFightScene3);
 	}
 }
 

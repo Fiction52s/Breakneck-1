@@ -12,6 +12,7 @@ struct BossStageManager
 	int currStage;
 	int currStageHealth;
 	int numStages;
+	bool stageChanged;
 
 	BossStageManager();
 	void AddActiveOption(int stageIndex, int option, int reps = 1);
@@ -22,7 +23,7 @@ struct BossStageManager
 	int TryGetNextOption();
 	int GetCurrStage();
 	int GetTotalHealth();
-	bool TakeHit();
+	void TakeHit();
 };
 
 #endif

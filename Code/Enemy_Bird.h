@@ -18,9 +18,20 @@ struct BirdPostFight3Scene;
 
 struct Bat;
 
+struct Boss : Enemy
+{
+	BossStageManager stageMgr;
+	const static int HITS_PER_BOSS_DAMAGE = 3;
+	bool hitPlayer;
 
+	void BossReset();
+	virtual int ChooseActionAfterStageChange() {}
+	virtual bool IsDecisionValid(int d) { return true; }
+	int ChooseNextAction();
+	virtual void ActivatePostFightScene() {}
+};
 
-struct Bird : Enemy, Summoner
+struct Bird : Enemy, Summoner, Boss
 {
 	enum Action
 	{
@@ -47,10 +58,6 @@ struct Bird : Enemy, Summoner
 	};
 
 	int moveFrames;
-	void NextStage();
-	bool stageChanged;
-
-	BossStageManager stageMgr;
 
 	SummonGroup batSummonGroup;
 
@@ -69,7 +76,6 @@ struct Bird : Enemy, Summoner
 	int fireCounter;
 
 	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
 
 	std::map<int, int> hitboxStartFrame;
 
@@ -96,11 +102,11 @@ struct Bird : Enemy, Summoner
 	~Bird();
 
 	void Wait(int numFrames);
-
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
 	void Setup();
 	bool IsDecisionValid(int d);
 	void MoveToCombo();
-	void ChooseNextAction();
 	bool IsMovementAction(int a);
 	int SetLaunchersStartIndex(int ind);
 	void SequenceWait();
