@@ -1,16 +1,11 @@
 #ifndef __ENEMY_BIRD_H__
 #define __ENEMY_BIRD_H__
 
-#include "Enemy.h"
 #include "Bullet.h"
 #include "Movement.h"
 #include "SuperCommands.h"
-#include "EnemyMover.h"
 #include "Enemy_BirdShuriken.h"
-#include "RandomPicker.h"
-#include "BossStageManager.h"
-#include "SummonGroup.h"
-#include "NodeGroup.h"
+#include "Boss.h"
 
 struct BirdPostFightScene;
 struct BirdPostFight2Scene;
@@ -18,24 +13,12 @@ struct BirdPostFight3Scene;
 
 struct Bat;
 
-struct Boss : Enemy
-{
-	BossStageManager stageMgr;
-	const static int HITS_PER_BOSS_DAMAGE = 3;
-	bool hitPlayer;
 
-	void BossReset();
-	virtual int ChooseActionAfterStageChange() {}
-	virtual bool IsDecisionValid(int d) { return true; }
-	int ChooseNextAction();
-	virtual void ActivatePostFightScene() {}
-};
 
-struct Bird : Enemy, Summoner, Boss
+struct Bird : Summoner, Boss
 {
 	enum Action
 	{
-		DECIDE,
 		WAIT,
 		COMBOMOVE,
 		PUNCH,
@@ -57,8 +40,6 @@ struct Bird : Enemy, Summoner, Boss
 		int fireCounter;
 	};
 
-	int moveFrames;
-
 	SummonGroup batSummonGroup;
 
 	NodeGroup nodeGroupA;
@@ -68,10 +49,8 @@ struct Bird : Enemy, Summoner, Boss
 	BirdPostFight2Scene *postFightScene2;
 	BirdPostFight3Scene *postFightScene3;
 
-	int invincibleFrames;
-
 	BirdShurikenPool shurPool;
-	EnemyMover enemyMover;
+	
 
 	int fireCounter;
 
@@ -79,12 +58,8 @@ struct Bird : Enemy, Summoner, Boss
 
 	std::map<int, int> hitboxStartFrame;
 
-	bool hitPlayer;
-
 	BirdCommand actionQueue[3];
 	int actionQueueIndex;
-
-	int targetPlayerIndex;
 
 	HitboxInfo hitboxInfos[A_Count];
 
@@ -92,26 +67,30 @@ struct Bird : Enemy, Summoner, Boss
 	Tileset *ts_kick;
 	Tileset *ts_move;
 
-	int counterTillAttack;
-
 	V2d targetPos;
 	int framesToArrive;
-	int oldAction;
 
 	Bird(ActorParams *ap);
 	~Bird();
 
-	void Wait(int numFrames);
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();
-	void Setup();
+
+	
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+
 	bool IsDecisionValid(int d);
+
+	bool IsEnemyMoverAction( int a);
+
+	void Wait(int numFrames);
+	
+	
 	void MoveToCombo();
-	bool IsMovementAction(int a);
 	int SetLaunchersStartIndex(int ind);
 	void SequenceWait();
-	void Decide();
-	void ProcessHit();
 	void StartFight();
 	void LoadParams();
 	int GetNumStoredBytes();
@@ -122,14 +101,14 @@ struct Bird : Enemy, Summoner, Boss
 	//void UpdatePreFrameCalculations();
 	void ProcessState();
 	void UpdateHitboxes();
+
 	void DebugDraw(sf::RenderTarget *target);
+
 	void EnemyDraw(sf::RenderTarget *target);
+
 	void HandleHitAndSurvive();
-	bool CanBeHitByPlayer();
-	void IHitPlayer(int index = 0);
 	void UpdateSprite();
 	void ResetEnemy();
-	void UpdateEnemyPhysics();
 	void FrameIncrement();
 
 	void SetHitboxInfo(int a);

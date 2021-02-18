@@ -600,23 +600,6 @@ struct GravityModifierParams : public ActorParams
 	float gravFactor;
 };
 
-struct BossBirdParams : public ActorParams
-{
-	BossBirdParams(ActorType *at,
-
-		sf::Vector2i &pos);
-	BossBirdParams(ActorType *at,
-		std::ifstream &is);
-	//CrawlerParams( EditSession *edit );
-	ActorParams *Copy();
-	
-	void Draw(sf::RenderTarget *target);
-	sf::VertexArray debugLines;
-	void CreateFormation();
-	int width;
-	int height;
-};
-
 struct GravitySpringParams: public ActorParams
 {
 	GravitySpringParams(ActorType *at,

@@ -197,7 +197,7 @@ void Session::SetupHitboxManager()
 	}
 	else if (hitboxManager == NULL)
 	{
-		hitboxManager = new HitboxManager;
+		hitboxManager = new HitboxManager( "Kin/Hitboxes" );
 	}
 		
 
@@ -1997,14 +1997,6 @@ void Session::UpdatePlayerWireQuads()
 		}
 	}
 }
-
-//void Session::TestLoad()
-//{
-//	hitboxManager = new HitboxManager;
-//	soundManager = new SoundManager;
-//	soundNodeList = new SoundNodeList(10);
-//	pauseSoundNodeList = new SoundNodeList(10);
-//}
 
 bool Session::ReadDecorImagesFile()
 {

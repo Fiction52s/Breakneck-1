@@ -12,7 +12,7 @@ std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string &
 		std::map<int, list<CollisionBox>> & myMap = hitboxMap[str];
 		ifstream is;
 		stringstream ss;
-		ss << "Resources/Hitboxes/" << str << ".hit";
+		ss << "Resources/" + folder + "/" << str << ".hit";
 		is.open(ss.str());
 		if (is.is_open())
 		{

@@ -734,62 +734,6 @@ ActorParams *CurveTurretParams::Copy()
 	return copy;
 }
 
-BossBirdParams::BossBirdParams(ActorType *at, Vector2i &pos )
-	:ActorParams( at), debugLines( sf::Lines, 4 * 2 )
-{
-	PlaceAerial(pos);
-
-	width = Boss_Bird::GRID_SIZE_X * 160;
-	height = Boss_Bird::GRID_SIZE_Y * 80;
-}
-
-BossBirdParams::BossBirdParams(ActorType *at, ifstream &is)
-	:ActorParams(at), debugLines(sf::Lines, 4 * 2)
-{
-	LoadAerial(is);
-
-	width = Boss_Bird::GRID_SIZE_X * 160;
-	height = Boss_Bird::GRID_SIZE_Y * 80;
-}
-
-
-ActorParams *BossBirdParams::Copy()
-{
-	BossBirdParams *copy = new BossBirdParams( *this );
-	return copy;
-}
-
-void BossBirdParams::Draw( sf::RenderTarget *target )
-{
-	ActorParams::Draw( target );
-
-	//target->draw( debugLines );
-}
-
-void BossBirdParams::CreateFormation()
-{
-	//depreciated
-	sf::Vector2f center = GetFloatPos();
-	sf::Vector2f origin( center.x - width / 2.f, center.y - height / 2.f );
-
-	debugLines[0].position = origin;
-	debugLines[1].position = Vector2f( origin.x + width, origin.y );
-
-	debugLines[2].position = Vector2f( origin.x + width, origin.y );
-	debugLines[3].position = Vector2f( origin.x + width, origin.y + height );
-
-	debugLines[4].position = Vector2f( origin.x + width, origin.y + height );
-	debugLines[5].position = Vector2f( origin.x, origin.y + height );
-
-	debugLines[6].position = Vector2f( origin.x, origin.y + height );
-	debugLines[7].position = origin;
-
-	for( int i = 0; i < 4 * 2; ++i )
-	{
-		debugLines[i].color = Color::Green;
-	}
-}
-
 GravityFallerParams::GravityFallerParams(ActorType *at, PolyPtr p_edgePolygon,
 	int p_edgeIndex, double p_edgeQuantity)//, bool p_clockwise, float p_speed )
 	:ActorParams(at)

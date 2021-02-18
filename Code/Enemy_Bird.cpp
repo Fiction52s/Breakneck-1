@@ -23,39 +23,22 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-void Boss::BossReset()
-{
-	hitPlayer = false;
-	stageMgr.Reset();
-}
 
-int Boss::ChooseNextAction()
-{
-	int d;
-	do
-	{
-		d = stageMgr.AlwaysGetNextOption();
-	} while (!IsDecisionValid(d));
-
-	return d;
-}
 
 Bird::Bird(ActorParams *ap)
-	:Enemy(EnemyType::EN_BIRDBOSS, ap), shurPool(this),
-	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 
-		2, 1, 1), nodeGroupA( Color::Magenta ), nodeGroupB( Color::Yellow )
+	:Boss(EnemyType::EN_BIRDBOSS, ap), 
+	shurPool(this),
+	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 2, 1, 1), 
+	nodeGroupA( Color::Magenta ), 
+	nodeGroupB( Color::Yellow )
 {
-	stageMgr.Setup(4, 4);
-	maxHealth = HITS_PER_BOSS_DAMAGE * stageMgr.GetTotalHealth();
+	StageSetup(4, 4);
 
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
 
 	level = ap->GetLevel();
 
-	targetPlayerIndex = 0;
-
-	actionLength[DECIDE] = 0;
 	actionLength[PUNCH] = 14;
 	actionLength[SUMMON] = 60;
 	actionLength[SHURIKEN_SHOTGUN] = 60;
@@ -64,6 +47,8 @@ Bird::Bird(ActorParams *ap)
 
 	animFactor[PUNCH] = 3;
 	animFactor[KICK] = 3;
+
+	actionTargetOffsets[PUNCH] = V2d(100, 0);
 
 	hitboxStartFrame[PUNCH] = 7;
 	
@@ -97,7 +82,6 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
-	hitboxInfo = new HitboxInfo;
 	LoadParams();
 
 	postFightScene = NULL;
@@ -122,8 +106,6 @@ Bird::~Bird()
 		delete postFightScene3;
 	}
 }
-
-
 
 void Bird::LoadParams()
 {
@@ -159,36 +141,23 @@ void Bird::UpdateHitboxes()
 void Bird::ResetEnemy()
 {
 	shurPool.Reset();
-	enemyMover.Reset();
-
 	batSummonGroup.Reset();
 
 	fireCounter = 1000; //fire a shot when first starting
 	facingRight = true;
 
-	oldAction = DECIDE;
-
-	
 	BossReset();
-	
-
-	invincibleFrames = 0;
 
 	StartFight();
 
-	
-
 	actionQueueIndex = 0;
 	
-
 	UpdateSprite();
 }
 
-void Bird::Setup()
+void Bird::SetupPostFightScenes()
 {
-	Enemy::Setup();
-
-	if (level == 1 )
+	if (level == 1)
 	{
 		if (postFightScene2 != NULL)
 		{
@@ -229,7 +198,7 @@ void Bird::Setup()
 			postFightScene2->bird = this;
 			postFightScene2->Init();
 		}
-		
+
 	}
 	else if (level == 3)
 	{
@@ -252,7 +221,10 @@ void Bird::Setup()
 			postFightScene3->Init();
 		}
 	}
+}
 
+void Bird::SetupNodeVectors()
+{
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "B"));
 }
@@ -305,26 +277,15 @@ void Bird::DirectKill()
 
 void Bird::FrameIncrement()
 {
+	Boss::FrameIncrement();
+
 	++fireCounter;
-
-	if (moveFrames > 0)
-	{
-		--moveFrames;
-	}
-
-	if (invincibleFrames > 0)
-	{
-		--invincibleFrames;
-	}
-
-	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
 }
 
 void Bird::SequenceWait()
 {
-	action = SEQ_WAIT;
-	frame = 0;
+	SetAction(SEQ_WAIT);
 	shurPool.Reset();
 	batSummonGroup.Reset();
 	SetCurrPosInfo(startPosInfo);
@@ -336,8 +297,7 @@ void Bird::SequenceWait()
 
 void Bird::Wait(int numFrames)
 {
-	action = WAIT;
-	frame = 0;
+	SetAction(WAIT);
 	assert(numFrames > 0);
 	actionLength[WAIT] = numFrames;
 }
@@ -347,7 +307,7 @@ void Bird::StartFight()
 	Wait(30);
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
-	SetHitboxes(NULL);
+	HitboxesOff();
 }
 
 bool Bird::IsDecisionValid(int d)
@@ -360,19 +320,12 @@ bool Bird::IsDecisionValid(int d)
 	return true;
 }
 
-bool Bird::IsMovementAction(int a)
-{
-	return a == MOVE_NODE_LINEAR || a == MOVE_NODE_QUADRATIC
-		|| a == MOVE_CHASE;
-}
-
 void Bird::MoveToCombo()
 {
 	if (actionQueueIndex < 3)
 	{
 		BirdCommand nextAction = actionQueue[actionQueueIndex];
 
-		Actor *targetPlayer = sess->GetPlayer(targetPlayerIndex);
 		V2d offset(-100, 0);
 		if (!nextAction.facingRight)
 		{
@@ -382,8 +335,7 @@ void Bird::MoveToCombo()
 		assert(targetPlayer->hitstunFrames > 2);
 
 		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
-		action = COMBOMOVE;
-		frame = 0;
+		SetAction(COMBOMOVE);
 		HitboxesOff();
 		int moveDuration = targetPlayer->hitstunFrames - 4;
 
@@ -405,17 +357,60 @@ int Bird::ChooseActionAfterStageChange()
 	switch (stageMgr.currStage)
 	{
 	case 1:
-		action = SUMMON;
-		frame = 0;
-		break;
+		return SUMMON;
 	case 2:
-		action = SHURIKEN_SHOTGUN;
-		frame = 0;
-		break;
+		return SHURIKEN_SHOTGUN;
 	case 3:
-		action = UNDODGEABLE_SHURIKEN;
-		frame = 0;
+		return UNDODGEABLE_SHURIKEN;
+	}
+
+	return -1;
+}
+
+void Bird::StartAction()
+{
+	switch (action)
+	{
+	case MOVE_NODE_LINEAR:
+	{
+		int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
+		V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
+
+		//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
+		enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 		break;
+	}
+	case MOVE_NODE_QUADRATIC:
+	{
+		int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
+		V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
+		enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos(0), nodePos, CubicBezier(), 60);
+		break;
+	}
+
+	case MOVE_CHASE:
+	{
+		enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
+			10, .5, 60);
+		break;
+	}
+	case RUSH:
+	{
+		enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * 600.0, CubicBezier(), 20);
+		break;
+	}
+	}
+
+	if (IsEnemyMoverAction(action))
+	{
+		int currStage = stageMgr.GetCurrStage();
+		if (fireCounter >= 60
+			&& ((IsEnemyMoverAction(prevAction) && currStage > 0)
+				|| currStage == 0))
+		{
+			fireCounter = 0;
+			//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
+		}
 	}
 }
 
@@ -438,8 +433,7 @@ void Bird::ProcessState()
 		case COMBOMOVE:
 		{
 			BirdCommand nextAction = actionQueue[actionQueueIndex];
-			action = nextAction.action;
-			frame = 0;
+			SetAction(nextAction.action);
 			++actionQueueIndex;
 			break;
 		}
@@ -451,23 +445,27 @@ void Bird::ProcessState()
 		}
 	}
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame;
+	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
 	if ( hitPlayer || (action == COMBOMOVE && comboInterrupted))
 	{
 		MoveToCombo();
 	}
 
-	enemyMover.currPosInfo = currPosInfo;
 
-	if ((action == MOVE_NODE_LINEAR || action == MOVE_NODE_QUADRATIC
-		|| action == MOVE_CHASE || action == RUSH ))
+	if (IsEnemyMoverAction(action))
 	{
 		if (enemyMover.IsIdle())
 		{
 			Decide();
 		}
-		else if ( action == MOVE_CHASE && enemyMover.GetActionProgress() > .5 
-			&& PlayerDist() < 400)
+	}
+
+	TryExecuteDecision();
+	
+	switch (action)
+	{
+	case MOVE_CHASE:
+		if( enemyMover.GetActionProgress() > .5 && PlayerDist() < 400)
 		{
 			if (PlayerDir().x > 0)
 			{
@@ -477,13 +475,14 @@ void Bird::ProcessState()
 			{
 				facingRight = false;
 			}
+
 			V2d offset(-100, 0);
 			if (!facingRight)
 			{
 				offset.x = -offset.x;
 			}
-			action = PUNCH;
-			frame = 0;
+			
+			SetAction(PUNCH);
 
 			BirdCommand bc;
 			bc.action = PUNCH;
@@ -504,76 +503,11 @@ void Bird::ProcessState()
 				chaseSpeed, accel, actionLength[PUNCH] * animFactor[PUNCH] - 10);
 			enemyMover.velocity = PlayerDir() * chaseSpeed;
 		}
-	}
-
-	/*if (stageMgr.stageChanged)
-	{
-		Decide();
-	}*/
-
-	if (action == DECIDE)
-	{
-		if (stageMgr.stageChanged)
-		{
-			ChooseActionAfterStageChange();
-			stageMgr.stageChanged = false;
-		}
-		else
-		{
-			action = ChooseNextAction();
-			frame = 0;
-		}
-
-		if (IsMovementAction(action))
-		{
-			int currStage = stageMgr.GetCurrStage();
-			if (fireCounter >= 60
-				&& ((IsMovementAction(oldAction) && currStage > 0)
-					|| currStage == 0))
-			{
-				fireCounter = 0;
-				//shurPool.Throw(GetPosition(), PlayerDir(), BirdShuriken::ShurikenType::SLIGHTHOMING);
-			}
-		}
-	}
-
-	switch (action)
-	{
-	case MOVE_NODE_LINEAR:
-		if (frame == 0 && slowCounter == 1)
-		{
-			int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
-			V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
-
-			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-			enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
-		}
-		break;
-	case MOVE_NODE_QUADRATIC:
-		if (frame == 0 && slowCounter == 1)
-		{
-			int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
-			V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
-			enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos(0), nodePos, CubicBezier(), 60);
-		}
-		break;
-	case MOVE_CHASE:
-		if (frame == 0 && slowCounter == 1)
-		{
-			enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
-				10, .5, 60);
-		}
 		break;
 	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
 			batSummonGroup.Summon();
-		}
-		break;
-	case RUSH:
-		if (frame == 0 && slowCounter == 1)
-		{
-			enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * 600.0, CubicBezier(), 20);
 		}
 		break;
 	case SHURIKEN_SHOTGUN:
@@ -614,62 +548,16 @@ void Bird::ProcessState()
 	}
 
 	hitPlayer = false;
-	//stageMgr.stageChanged = false;
+	enemyMover.currPosInfo = currPosInfo;
 }
 
-void Bird::Decide()
+bool Bird::IsEnemyMoverAction( int a)
 {
-	oldAction = action;
-	action = DECIDE;
-	frame = 0;
+	return a == MOVE_NODE_LINEAR || a == MOVE_NODE_QUADRATIC
+		|| a == MOVE_CHASE;
 }
 
-void Bird::IHitPlayer(int index)
-{
-	hitPlayer = true;
-	pauseFrames = hitBody.hitboxInfo->hitlagFrames + 1;
-}
 
-void Bird::UpdateEnemyPhysics()
-{
-	if (!enemyMover.IsIdle())
-	{
-		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
-		currPosInfo = enemyMover.currPosInfo;
-	}
-}
-
-void Bird::ProcessHit()
-{
-	if (!dead && ReceivedHit() && numHealth > 1)
-	{
-		numHealth -= 1;
-
-		if (numHealth <= 0)
-		{
-			//currently cant be reached. adjust when bosses are needed in boss rush/levels later
-			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-			ConfirmKill();
-		}
-		else if (numHealth == 1)
-		{	
-			ActivatePostFightScene();
-		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-			ConfirmHitNoKill();
-
-			if (numHealth % HITS_PER_BOSS_DAMAGE == 0)
-			{
-				stageMgr.TakeHit();
-				invincibleFrames = 60;
-			}
-		}
-
-		receivedHit = NULL;
-	}
-}
 
 void Bird::ActivatePostFightScene()
 {
@@ -690,16 +578,12 @@ void Bird::ActivatePostFightScene()
 	}
 }
 
-bool Bird::CanBeHitByPlayer()
-{
-	return invincibleFrames == 0;
-}
+
 
 void Bird::UpdateSprite()
 {
 	switch (action)
 	{
-	case DECIDE:
 	case MOVE:
 	case SUMMON:
 	case COMBOMOVE:

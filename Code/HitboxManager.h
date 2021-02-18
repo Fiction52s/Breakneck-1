@@ -13,6 +13,12 @@ struct HitboxManager
 		SH_CIRCLE
 	};
 
+	HitboxManager(const std::string &f)
+		:folder(f)
+	{
+
+	}
+	std::string folder;
 	std::map<std::string, std::map<int,std::list<CollisionBox>>> hitboxMap;
 	std::map<int, std::list<CollisionBox>> & GetHitboxList( const std::string & str );
 

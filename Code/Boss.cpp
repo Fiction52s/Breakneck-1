@@ -1,339 +1,162 @@
 #include "Boss.h"
-#include <iostream>
-#include <assert.h>
-#include "GameSession.h"
+#include "Session.h"
+#include "Actor.h"
 
-using namespace std;
-using namespace sf;
-
-
-
-PortraitBox::PortraitBox()
-	:state( CLOSED ), frame( 0 ), scaleMultiple( 1 )
+Boss::Boss(EnemyType et, ActorParams *ap)
+	:Enemy(et, ap)
 {
-	openLength = 30;
-	closeLength = 30;
+	SetTargetPlayerIndex(0);
+	hitboxInfo = new HitboxInfo;
+	hitboxManager = NULL;
 }
 
-void PortraitBox::Reset()
+Boss::~Boss()
 {
-	//scaleMultiple = 1;
+	if (hitboxManager != NULL)
+	{
+		delete hitboxManager;
+	}
+}
+
+void Boss::CreateHitboxManager(const std::string &folder)
+{
+	assert(hitboxManager == NULL);
+
+	hitboxManager = new HitboxManager(folder);
+}
+
+void Boss::BossReset()
+{
+	hitPlayer = false;
+	decide = false;
+	invincibleFrames = 0;
+	stageMgr.Reset();
+	enemyMover.Reset();
+	prevAction = -1;
+}
+
+void Boss::StageSetup(int numStages, int hitsPerStage)
+{
+	stageMgr.Setup(numStages, hitsPerStage);
+	maxHealth = HITS_PER_BOSS_DAMAGE * stageMgr.GetTotalHealth();
+}
+
+void Boss::Decide()
+{
+	decide = true;
+}
+
+void Boss::SetAction(int a)
+{
+	prevAction = action;
+	action = a;
 	frame = 0;
-	state = CLOSED;
+	StartAction();
 }
 
-void PortraitBox::Open()
+void Boss::TryExecuteDecision()
 {
-	assert( state == CLOSED );
-	frame = 0;
-	state = OPENING;
-}
-
-void PortraitBox::Close()
-{
-	assert( state == OPEN );
-	frame = 0;
-	state = CLOSING;
-}
-
-void PortraitBox::Draw( sf::RenderTarget *target )
-{
-	if( state != CLOSED )
+	if (decide)
 	{
-		target->draw( sprite );
-	}
-}
-
-void PortraitBox::SetSprite( Tileset *ts, int frame )
-{
-	sprite.setTexture( *ts->texture );
-	sprite.setTextureRect( ts->GetSubRect( frame ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, 
-		sprite.getLocalBounds().height / 2 );
-}
-
-void PortraitBox::Update()
-{
-	switch( state )
-	{
-	case OPENING:
-		if( frame == openLength )
+		if (stageMgr.stageChanged)
 		{
-			state = OPEN;
-			frame = 0;
-		}
-		break;
-	case OPEN:
-		return;
-		//frame = 0;
-		break;
-	case CLOSING:
-		if( frame == closeLength )
-		{
-			state = CLOSED;
-			frame = 0;
-		}
-		break;
-	case CLOSED:
-		return;
-		//frame = 0;
-		break;
-	}
-
-	switch( state )
-	{
-	case OPENING:
-		{
-			CubicBezier bez( .71,.14,.83,.67 );
-			//CubicBezier bez( 0,0,1,1 );
-			double v = bez.GetValue( frame / (double)(openLength-1) );
-			float r = v;
-			float yScale = .1 * (1-r) + 1 * (r);
-			yScale *= scaleMultiple;
-			sprite.setScale( scaleMultiple, yScale );
-			//cout << "yscale: " << yScale << endl;
-		}
-		break;
-	case OPEN:
-		break;
-	case CLOSING:
-		{
-			CubicBezier bez( 0, 0, 1, 1 );
-			double v = bez.GetValue( frame / (double)(closeLength-1) );
-			float r = v;
-			float yScale = .1 * (r) + 1 * (1-r);
-			yScale *= scaleMultiple;
-			sprite.setScale( scaleMultiple, yScale );
-		}
-		break;
-	case CLOSED:
-		break;
-	}
-
-	++frame;
-}
-
-void PortraitBox::SetPosition( float x, float y )
-{
-	sprite.setPosition( x, y );
-}
-
-void PortraitBox::SetPosition( Vector2f &p )
-{
-	sprite.setPosition( p );
-}
-
-//make the symbol on top a pixel shader so the HOLDING animation can affect the image?
-
-DialogueBox::DialogueBox( GameSession *owner, Type t )
-	:state( CLOSED ), frame( 0 )
-{
-	ts_dialog = NULL;
-	type = t;
-	switch( type )
-	{
-	case CRAWLER:
-		//ts_dialog = owner->GetTileset
-		break;
-	case BIRD:
-		ts_dialog = owner->GetTileset( "Bosses/Dialogue/02_Bird_Dialogue_256x256.png", 256, 256 );
-		break;
-	case COYOTE:
-		break;
-	case TIGER:
-		break;
-	case GATOR:
-		break;
-	case SKELETON:
-		break;
-	default:
-		assert( false );
-		break;
-	}
-
-	assert( ts_dialog != NULL );
-
-	sprite.setTexture( *ts_dialog->texture );
-	sprite.setTextureRect( ts_dialog->GetSubRect( 0 ) );
-	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
-
-	openingLength = 12;
-	closingLength = 12;
-	openLength = 1;
-
-	openingFactor = 2;
-	closingFactor = 2;
-	openFactor = 1;
-
-	symbols = NULL;
-
-	//ts_dialog = owner->GetTileset( 
-}
-
-void DialogueBox::SetSymbols( list<SymbolInfo> *sList ) //Tileset *ts, int frame )
-{
-	symbols = sList;
-	numSymbols = symbols->size();
-	
-	currSymbol = 0;
-	symbolFrame = 0;
-
-	sit = symbols->begin();
-	//symbolSprite.setTexture( *ts->texture );
-	//symbolSprite.setTextureRect( ts->GetSubRect( frame ) );
-	//symbolSprite.setOrigin( symbolSprite.getLocalBounds().width / 2, 
-	//	symbolSprite.getLocalBounds().height / 2 );
-}
-
-void DialogueBox::SetPosition( float x, float y )
-{
-	sprite.setPosition( x, y );
-	sprite.setScale( .5, .5 );
-	symbolSprite.setPosition( x, y );
-	symbolSprite.setScale( .5, .5 );
-}
-
-void DialogueBox::SetPosition( sf::Vector2f &p )
-{
-	sprite.setPosition( p );
-	sprite.setScale( .5, .5 );
-	symbolSprite.setPosition( p );
-	symbolSprite.setScale( .5, .5 );
-}
-
-void DialogueBox::UpdateSymbol()
-{
-	if( symbols == NULL )
-	{
-		return;
-	}
-
-	if( symbolFrame == (*sit).framesHold )
-	{
-		symbolFrame = 0;
-		++currSymbol;
-		if( currSymbol == numSymbols )
-		{
-			currSymbol = 0;
-			sit = symbols->begin();
+			SetAction(ChooseActionAfterStageChange());
+			stageMgr.stageChanged = false;
 		}
 		else
 		{
-			++sit;
+			SetAction(ChooseNextAction());
 		}
+		decide = false;
 	}
-
-	//cout << "symbolframe: " << symbolFrame << endl;
-	symbolSprite.setTexture( *(*sit).ts->texture );
-	symbolSprite.setTextureRect( (*sit).ts->GetSubRect( (*sit).frame ) );
-	symbolSprite.setOrigin( symbolSprite.getLocalBounds().width / 2, 
-		symbolSprite.getLocalBounds().height / 2 );
-	
-	++symbolFrame;
 }
 
-void DialogueBox::Draw( sf::RenderTarget *target )
+void Boss::Setup()
 {
-	if( state != CLOSED )
-	{
-		target->draw( sprite );		
-	}
+	Enemy::Setup();
 
-	if( state == OPEN )
-	{
-		target->draw( symbolSprite );
-	}
+	SetupPostFightScenes();
+	SetupNodeVectors();
 }
 
-void DialogueBox::Open()
+void Boss::SetTargetPlayerIndex(int ind)
 {
-	assert( state == CLOSED );
-	state = OPENING;
-	frame = 0;
+	targetPlayerIndex = ind;
+	targetPlayer = sess->GetPlayer(targetPlayerIndex);
 }
 
-void DialogueBox::Close()
+void Boss::IHitPlayer(int index)
 {
-	assert( state == OPEN );
-	state = CLOSING;
-	frame = 0;
+	hitPlayer = true;
+	pauseFrames = hitBody.hitboxInfo->hitlagFrames + 1;
 }
 
-void DialogueBox::Update()
+void Boss::UpdateEnemyPhysics()
 {
-	switch( state )
+	if (!enemyMover.IsIdle())
 	{
-	case OPENING:
-		if( frame == openingLength * openingFactor )
-		{
-			state = OPEN;
-			frame = 0;
-		}
-		break;
-	case OPEN:
-		if( frame == openLength )
-		{
-			frame = 0;
-		}
-		//frame = 0;
-		break;
-	case CLOSING:
-		if( frame == closingLength * closingFactor )
-		{
-			state = CLOSED;
-			frame = 0;
-		}
-		break;
-	case CLOSED:
-		return;
-		//frame = 0;
-		break;
+		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
+		currPosInfo = enemyMover.currPosInfo;
 	}
-
-	switch( state )
+	else
 	{
-	case OPENING:
-		{
-			sprite.setTextureRect( ts_dialog->GetSubRect( frame / openingFactor ) );
-			//cout << "frame" << endl;
-			//CubicBezier bez( .71,.14,.83,.67 );
-			////CubicBezier bez( 0,0,1,1 );
-			//double v = bez.GetValue( frame / (double)(openLength-1) );
-			//float r = v;
-			//float yScale = .1 * (1-r) + 1 * (r);
-			//yScale *= scaleMultiple;
-			//sprite.setScale( scaleMultiple, yScale );
-			////cout << "yscale: " << yScale << endl;
-		}
-		break;
-	case OPEN:
-		{
-			sprite.setTextureRect( ts_dialog->GetSubRect( 13 ) ); 
-		}
-		break;
-	case CLOSING:
-		{
-			sprite.setTextureRect( ts_dialog->GetSubRect( (13 * openingFactor - frame) / openingFactor ) ); 
-			/*CubicBezier bez( 0, 0, 1, 1 );
-			double v = bez.GetValue( frame / (double)(closeLength-1) );
-			float r = v;
-			float yScale = .1 * (r) + 1 * (1-r);
-			yScale *= scaleMultiple;
-			sprite.setScale( scaleMultiple, yScale );*/
-		}
-		break;
-	case CLOSED:
-		break;
+		Enemy::UpdateEnemyPhysics();
 	}
-
-	
-
-	if( state == OPEN )
-	{
-		UpdateSymbol();
-	//	//symbolFrame++;
-	}
-
-	++frame;
 }
 
+bool Boss::CanBeHitByPlayer()
+{
+	return invincibleFrames == 0;
+}
+
+void Boss::FrameIncrement()
+{
+	enemyMover.FrameIncrement();
+	if (invincibleFrames > 0)
+	{
+		--invincibleFrames;
+	}
+}
+
+int Boss::ChooseNextAction()
+{
+	int d;
+	do
+	{
+		d = stageMgr.AlwaysGetNextOption();
+	} while (!IsDecisionValid(d));
+
+	return d;
+}
+
+void Boss::ProcessHit()
+{
+	if (!dead && ReceivedHit() && numHealth > 1)
+	{
+		numHealth -= 1;
+
+		if (numHealth <= 0)
+		{
+			//currently cant be reached. adjust when bosses are needed in boss rush/levels later
+			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
+			ConfirmKill();
+		}
+		else if (numHealth == 1)
+		{
+			ActivatePostFightScene();
+		}
+		else
+		{
+			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+			ConfirmHitNoKill();
+
+			if (numHealth % HITS_PER_BOSS_DAMAGE == 0)
+			{
+				stageMgr.TakeHit();
+				invincibleFrames = 60;
+			}
+		}
+
+		receivedHit = NULL;
+	}
+}

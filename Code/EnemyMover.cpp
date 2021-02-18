@@ -4,9 +4,6 @@
 
 using namespace sf;
 
-
-
-
 EnemyMover::EnemyMover()
 {
 	sess = Session::GetSession();
@@ -839,6 +836,11 @@ double EnemyMover::GetActionProgress()
 
 void EnemyMover::FrameIncrement()
 {
+	if (moveType == MoveType::NONE)
+	{
+		return;
+	}
+
 	++actionFrame;
 
 	bool done = actionFrame == actionTotalDuration;

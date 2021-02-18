@@ -195,10 +195,10 @@ void Coyote::ProcessHit()
 
 			if (numHealth % 3 == 0)
 			{
-				if (!stageMgr.TakeHit())
+				/*if (!stageMgr.TakeHit())
 				{
 					NextStage();
-				}
+				}*/
 				invincibleFrames = 60;
 			}
 		}
