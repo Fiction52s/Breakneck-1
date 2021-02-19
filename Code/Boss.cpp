@@ -34,6 +34,7 @@ void Boss::BossReset()
 	enemyMover.Reset();
 	prevAction = -1;
 	movingToCombo = false;
+	actionHitPlayer = false;
 }
 
 void Boss::StageSetup(int numStages, int hitsPerStage)
@@ -129,8 +130,9 @@ void Boss::SetTargetPlayerIndex(int ind)
 void Boss::IHitPlayer(int index)
 {
 	hitPlayer = true;
+	actionHitPlayer = true;
 	UpdateSprite(); //because paused will not show the correct frame
-	pauseFrames = currHitboxes->hitboxInfo->hitlagFrames + 1;
+	pauseFrames = currHitboxes->hitboxInfo->hitlagFrames + 1; //+1 so you can wait until the player has chosen DI before predicting
 }
 
 void Boss::UpdateEnemyPhysics()

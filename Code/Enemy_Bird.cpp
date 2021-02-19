@@ -50,7 +50,7 @@ Bird::Bird(ActorParams *ap)
 
 	actionTargetOffsets[PUNCH] = V2d(100, 0);
 
-	hitboxStartFrame[PUNCH] = 7;
+	hitboxStartFrame[PUNCH] = 6;
 
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
@@ -87,7 +87,9 @@ Bird::Bird(ActorParams *ap)
 
 	LoadParams();
 
-	//punchBody->hitboxInfo->hitsThroughInvincibility = true;
+	punchBody->hitboxInfo->hitsThroughInvincibility = true;
+
+	hitBody.hitboxInfo = punchBody->hitboxInfo;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -163,7 +165,7 @@ void Bird::UpdateHitboxes()
 	{
 		BasicUpdateHitboxes();
 
-		if (hitBody.hitboxInfo != NULL)
+		/*if (hitBody.hitboxInfo != NULL)
 		{
 			if (facingRight)
 			{
@@ -173,7 +175,7 @@ void Bird::UpdateHitboxes()
 			{
 				hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
 			}
-		}
+		}*/
 	}
 }
 
@@ -188,6 +190,7 @@ void Bird::ResetEnemy()
 	BossReset();
 
 	StartFight();
+	nextAction = -1;
 
 	actionQueueIndex = 0;
 	
@@ -268,14 +271,14 @@ void Bird::SetupNodeVectors()
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "B"));
 }
 
-void Bird::SetHitboxInfo(int a)
-{
-	*hitboxInfo = hitboxInfos[a];
-	hitboxInfo->hitsThroughInvincibility = true;
-
-	//hitboxInfo->flipHorizontalKB = !facingRight;
-	//hitBody.hitboxInfo = hitboxInfo;
-}
+//void Bird::SetHitboxInfo(int a)
+//{
+//	*hitboxInfo = hitboxInfos[a];
+//	hitboxInfo->hitsThroughInvincibility = true;
+//
+//	//hitboxInfo->flipHorizontalKB = !facingRight;
+//	//hitBody.hitboxInfo = hitboxInfo;
+//}
 
 void Bird::SetCommand(int index, BirdCommand &bc)
 {
@@ -427,22 +430,25 @@ bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
 {
 	if (actionQueueIndex < 3)
 	{
-		BirdCommand nextAction = actionQueue[actionQueueIndex];
+		BirdCommand nextComboAction = actionQueue[actionQueueIndex];
 
 		V2d offset(-100, 0);
-		if (!nextAction.facingRight)
+		if (!nextComboAction.facingRight)
 		{
 			offset.x = -offset.x;
 		}
 
+		//nextAction = COMBOMOVE;
 		SetAction(COMBOMOVE);
 		HitboxesOff();
 
-		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
+		int framesRemaining = 0;//(actionLength[action] * animFactor[action] + 1) - frame;
 
-		facingRight = nextAction.facingRight;
+		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
 
 		enemyMover.SetModeNodeLinear(comboPos + offset, CubicBezier(), comboMoveDuration);
+
+		facingRight = nextComboAction.facingRight;
 
 		return true;
 	}
@@ -468,13 +474,23 @@ void Bird::ActionEnded()
 			Decide();
 			break;
 		case PUNCH:
-			HitboxesOff();
-			Decide();
+			if (nextAction == COMBOMOVE)
+			{
+				SetAction(COMBOMOVE);
+				nextAction = -1;
+
+				BirdCommand nextComboAction = actionQueue[actionQueueIndex];
+				facingRight = nextComboAction.facingRight;
+			}
+			else
+			{
+				Decide();
+			}
 			break;
 		case COMBOMOVE:
 		{
-			BirdCommand nextAction = actionQueue[actionQueueIndex];
-			SetAction(nextAction.action);
+			BirdCommand nextComboAction = actionQueue[actionQueueIndex];
+			SetAction(nextComboAction.action);
 			++actionQueueIndex;
 			break;
 		}
@@ -566,10 +582,19 @@ void Bird::HandleAction()
 	}
 	case PUNCH:
 	{
-		if (!actionHitPlayer)
+
+		if (frame == hitboxStartFrame[action] * animFactor[action] && slowCounter == 1)
+		{
+			if (!actionHitPlayer)
+			{
+				DefaultHitboxesOn();
+			}
+		}
+
+		/*if (!actionHitPlayer)
 		{
 			SetHitboxes(punchBody, frame / animFactor[PUNCH]);
-		}
+		}*/
 		
 		break;
 	}

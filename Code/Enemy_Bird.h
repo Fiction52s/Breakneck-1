@@ -62,6 +62,8 @@ struct Bird : Summoner, Boss
 
 	CollisionBody *punchBody;
 
+	int nextAction;
+
 	Bird(ActorParams *ap);
 	~Bird();
 
@@ -98,7 +100,6 @@ struct Bird : Summoner, Boss
 	void StartFight();
 	void LoadParams();
 	void SetCommand(int index, BirdCommand &bc);
-	void SetHitboxInfo(int a);
 	
 	//Rollback functions
 	struct MyData : StoredEnemyData
