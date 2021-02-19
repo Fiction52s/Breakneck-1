@@ -584,7 +584,7 @@ sf::SoundBuffer * Actor::GetSound(const std::string &name)
 
 CollisionBody *Actor::CreateCollisionBody(const std::string &str)
 {
-	return sess->hitboxManager->CreateBody(str);
+	return sess->hitboxManager->CreateBody(str, currHitboxInfo);
 }
 
 void Actor::UpdatePowersMenu()

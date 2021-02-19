@@ -99,10 +99,11 @@ CollisionBox HitboxManager::LoadHitShape(std::ifstream &is)
 	}
 }
 
-CollisionBody *HitboxManager::CreateBody(const std::string & str)
+CollisionBody *HitboxManager::CreateBody(const std::string & str, 
+	HitboxInfo *hi)
 {
 	auto &collection = GetHitboxCollection(str);
 
-	CollisionBody *body = new CollisionBody(collection.numFrames, collection.hitboxMap, NULL);
+	CollisionBody *body = new CollisionBody(collection.numFrames, collection.hitboxMap, hi);
 	return body;
 }

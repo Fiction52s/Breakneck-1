@@ -110,7 +110,9 @@ struct HitboxInfo
 		hitPosType( AIRFORWARD ),
 		canBeBlocked(true),
 		canBeParried(true),
-		hitsThroughInvincibility(false)
+		hitsThroughInvincibility(false),
+		flipHorizontalKB( false ),
+		flipVerticalKB( false )
 	{
 	};
 
@@ -122,6 +124,7 @@ struct HitboxInfo
 	sf::Vector2<double> hDir;
 	HitboxType hType;
 	double knockback; //0+
+	V2d GetKnockbackDir();
 	sf::Vector2<double> kbDir;
 	//double drain; //0-1
 	double drainX;
@@ -139,6 +142,8 @@ struct HitboxInfo
 	bool canBeBlocked;
 	bool canBeParried;
 	bool hitsThroughInvincibility;
+	bool flipHorizontalKB;
+	bool flipVerticalKB;
 	
 };
 

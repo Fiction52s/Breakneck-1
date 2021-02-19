@@ -78,6 +78,21 @@ void HitboxInfo::SetupHitboxLevelInfo(
 
 }
 
+V2d HitboxInfo::GetKnockbackDir()
+{
+	V2d kb = kbDir;
+	if (flipHorizontalKB)
+	{
+		kb.x = -kb.x;
+	}
+	if (flipVerticalKB)
+	{
+		kb.y = -kb.y;
+	}
+
+	return kb;
+}
+
 HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
 {
 	assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?

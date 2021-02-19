@@ -28,7 +28,7 @@ struct HitboxManager
 	std::string folder;
 	std::map<std::string, HitboxCollection> collectionMap;
 	HitboxCollection & GetHitboxCollection( const std::string & str );
-	CollisionBody *CreateBody(const std::string & str);
+	CollisionBody *CreateBody(const std::string & str, HitboxInfo *hi = NULL);
 
 private:
 	CollisionBox LoadHitShape(std::ifstream &is);

@@ -83,14 +83,11 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	CreateHitboxManager("Bosses/Bird");
-	punchBody = hitboxManager->CreateBody("punch");
-	//hitboxManager->GetHitboxList("testhitboxes");
-	//testHitboxes = new CollisionBody( )
+	punchBody = hitboxManager->CreateBody("punch", hitboxInfo);
 
 	LoadParams();
 
-	punchBody->hitboxInfo = &hitboxInfos[PUNCH];
-	punchBody->hitboxInfo->hitsThroughInvincibility = true;
+	//punchBody->hitboxInfo->hitsThroughInvincibility = true;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -158,7 +155,17 @@ void Bird::UpdateHitboxes()
 					(*it).globalPosition = pos;
 				}
 		}
-		//currHitboxes[currHitboxFrame].
+
+		*hitboxInfo = hitboxInfos[action];
+		if (facingRight)
+		{
+			hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
+		}
+		else
+		{
+			hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+		}
+		hitboxInfo->hitsThroughInvincibility = true;
 	}
 	else
 	{
@@ -273,7 +280,17 @@ void Bird::SetHitboxInfo(int a)
 {
 	*hitboxInfo = hitboxInfos[a];
 	hitboxInfo->hitsThroughInvincibility = true;
-	hitBody.hitboxInfo = hitboxInfo;
+
+
+	if (facingRight)
+	{
+		hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
+	}
+	else
+	{
+		hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+	}
+	//hitBody.hitboxInfo = hitboxInfo;
 }
 
 void Bird::SetCommand(int index, BirdCommand &bc)
@@ -567,8 +584,9 @@ void Bird::HandleAction()
 		//if (frame == hitboxStartFrame[PUNCH] * animFactor[PUNCH] && slowCounter == 1)
 		//{
 		//	//DefaultHitboxesOn();
-		//	SetHitboxInfo(PUNCH);
+		SetHitboxInfo(PUNCH);
 		//}
+		//SetHitboxInfo(PUNCH);
 		SetHitboxes(punchBody, frame / animFactor[PUNCH]);
 		break;
 	}
