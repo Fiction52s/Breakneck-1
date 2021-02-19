@@ -35,11 +35,6 @@ struct Bird : Summoner, Boss
 		A_Count
 	};
 
-	struct MyData : StoredEnemyData
-	{
-		int fireCounter;
-	};
-
 	SummonGroup batSummonGroup;
 
 	NodeGroup nodeGroupA;
@@ -51,10 +46,7 @@ struct Bird : Summoner, Boss
 
 	BirdShurikenPool shurPool;
 	
-
 	int fireCounter;
-
-	Tileset *ts_bulletExplode;
 
 	std::map<int, int> hitboxStartFrame;
 
@@ -66,55 +58,57 @@ struct Bird : Summoner, Boss
 	Tileset *ts_punch;
 	Tileset *ts_kick;
 	Tileset *ts_move;
+	Tileset *ts_bulletExplode;
 
-	V2d targetPos;
-	int framesToArrive;
+	CollisionBody *testHitboxes;
 
 	Bird(ActorParams *ap);
 	~Bird();
 
-	int ChooseActionAfterStageChange();
-	void ActivatePostFightScene();
+	//Summoner functions
+	void InitEnemyForSummon(SummonGroup *group,
+		Enemy *e);
 
-	
-	void StartAction();
-	void SetupPostFightScenes();
-	void SetupNodeVectors();
-
-	bool IsDecisionValid(int d);
-
-	bool IsEnemyMoverAction( int a);
-
-	void Wait(int numFrames);
-	
-	
-	void MoveToCombo();
+	//Enemy functions
 	int SetLaunchersStartIndex(int ind);
-	void SequenceWait();
-	void StartFight();
-	void LoadParams();
-	int GetNumStoredBytes();
-	void StoreBytes(unsigned char *bytes);
-	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void SetCommand(int index, BirdCommand &bc);
-	//void UpdatePreFrameCalculations();
-	void ProcessState();
 	void UpdateHitboxes();
-
 	void DebugDraw(sf::RenderTarget *target);
-
 	void EnemyDraw(sf::RenderTarget *target);
-
 	void HandleHitAndSurvive();
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
 
-	void SetHitboxInfo(int a);
-	void InitEnemyForSummon(SummonGroup *group,
-		Enemy *e);
+	//Boss functions
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration);
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
+	void ActionEnded();
+	void HandleAction();
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+	bool IsDecisionValid(int d);
+	bool IsEnemyMoverAction( int a);
 
+	//My functions
+	void Wait(int numFrames);
+	void SequenceWait();
+	void StartFight();
+	void LoadParams();
+	void SetCommand(int index, BirdCommand &bc);
+	void SetHitboxInfo(int a);
+	
+	//Rollback functions
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 };
 

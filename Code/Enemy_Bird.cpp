@@ -82,6 +82,10 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
+	CreateHitboxManager("Bosses/Bird");
+	hitboxManager->GetHitboxList("testhitboxes");
+	testHitboxes = new CollisionBody( )
+
 	LoadParams();
 
 	postFightScene = NULL;
@@ -280,7 +284,6 @@ void Bird::FrameIncrement()
 	Boss::FrameIncrement();
 
 	++fireCounter;
-	currPosInfo = enemyMover.currPosInfo;
 }
 
 void Bird::SequenceWait()
@@ -318,38 +321,6 @@ bool Bird::IsDecisionValid(int d)
 	}
 
 	return true;
-}
-
-void Bird::MoveToCombo()
-{
-	if (actionQueueIndex < 3)
-	{
-		BirdCommand nextAction = actionQueue[actionQueueIndex];
-
-		V2d offset(-100, 0);
-		if (!nextAction.facingRight)
-		{
-			offset.x = -offset.x;
-		}
-
-		assert(targetPlayer->hitstunFrames > 2);
-
-		targetPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2) + offset;
-		SetAction(COMBOMOVE);
-		HitboxesOff();
-		int moveDuration = targetPlayer->hitstunFrames - 4;
-
-		actionLength[COMBOMOVE] = moveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
-
-		facingRight = nextAction.facingRight;
-
-		enemyMover.SetModeNodeLinear(targetPos, CubicBezier(), moveDuration);
-	}
-	else
-	{
-		HitboxesOff();
-		Wait(60);
-	}
 }
 
 int Bird::ChooseActionAfterStageChange()
@@ -394,11 +365,11 @@ void Bird::StartAction()
 			10, .5, 60);
 		break;
 	}
-	case RUSH:
+	/*case RUSH:
 	{
 		enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * 600.0, CubicBezier(), 20);
 		break;
-	}
+	}*/
 	}
 
 	if (IsEnemyMoverAction(action))
@@ -414,7 +385,40 @@ void Bird::StartAction()
 	}
 }
 
-void Bird::ProcessState()
+//returns true if comboing
+bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
+{
+	if (actionQueueIndex < 3)
+	{
+		BirdCommand nextAction = actionQueue[actionQueueIndex];
+
+		V2d offset(-100, 0);
+		if (!nextAction.facingRight)
+		{
+			offset.x = -offset.x;
+		}
+
+		SetAction(COMBOMOVE);
+		HitboxesOff();
+
+		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextAction.action] * animFactor[nextAction.action] - 1);
+
+		facingRight = nextAction.facingRight;
+
+		enemyMover.SetModeNodeLinear(comboPos + offset, CubicBezier(), comboMoveDuration);
+
+		return true;
+	}
+	else
+	{
+		HitboxesOff();
+		Wait(60);
+
+		return false;
+	}
+}
+
+void Bird::ActionEnded()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
@@ -444,28 +448,14 @@ void Bird::ProcessState()
 			break;
 		}
 	}
+}
 
-	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
-	if ( hitPlayer || (action == COMBOMOVE && comboInterrupted))
-	{
-		MoveToCombo();
-	}
-
-
-	if (IsEnemyMoverAction(action))
-	{
-		if (enemyMover.IsIdle())
-		{
-			Decide();
-		}
-	}
-
-	TryExecuteDecision();
-	
+void Bird::HandleAction()
+{
 	switch (action)
 	{
 	case MOVE_CHASE:
-		if( enemyMover.GetActionProgress() > .5 && PlayerDist() < 400)
+		if (enemyMover.GetActionProgress() > .5 && PlayerDist() < 400)
 		{
 			if (PlayerDir().x > 0)
 			{
@@ -481,7 +471,7 @@ void Bird::ProcessState()
 			{
 				offset.x = -offset.x;
 			}
-			
+
 			SetAction(PUNCH);
 
 			BirdCommand bc;
@@ -546,9 +536,6 @@ void Bird::ProcessState()
 		break;
 	}
 	}
-
-	hitPlayer = false;
-	enemyMover.currPosInfo = currPosInfo;
 }
 
 bool Bird::IsEnemyMoverAction( int a)
@@ -556,8 +543,6 @@ bool Bird::IsEnemyMoverAction( int a)
 	return a == MOVE_NODE_LINEAR || a == MOVE_NODE_QUADRATIC
 		|| a == MOVE_CHASE;
 }
-
-
 
 void Bird::ActivatePostFightScene()
 {
@@ -577,8 +562,6 @@ void Bird::ActivatePostFightScene()
 		sess->SetActiveSequence(postFightScene3);
 	}
 }
-
-
 
 void Bird::UpdateSprite()
 {
@@ -641,6 +624,8 @@ void Bird::InitEnemyForSummon(SummonGroup *group,
 	}
 }
 
+
+//Rollback functions
 int Bird::GetNumStoredBytes()
 {
 	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();

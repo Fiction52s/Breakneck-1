@@ -1188,8 +1188,7 @@ struct Actor : QuadTreeCollider,
 	QuadTree *GetBorderTree();
 	Collider &GetCollider();
 	sf::SoundBuffer * GetSound(const std::string &name);
-	std::map<int, std::list<CollisionBox>> & GetHitboxList(
-		const std::string & str);
+	CollisionBody *CreateCollisionBody(const std::string &str);
 	bool IsGroundAttack(int a);
 	GameController &GetController(int index);
 	void HandleGroundTrigger(GroundTrigger *trigger);

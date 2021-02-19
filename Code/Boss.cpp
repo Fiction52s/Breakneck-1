@@ -33,6 +33,7 @@ void Boss::BossReset()
 	stageMgr.Reset();
 	enemyMover.Reset();
 	prevAction = -1;
+	movingToCombo = false;
 }
 
 void Boss::StageSetup(int numStages, int hitsPerStage)
@@ -52,6 +53,45 @@ void Boss::SetAction(int a)
 	action = a;
 	frame = 0;
 	StartAction();
+}
+
+void Boss::ProcessState()
+{
+	ActionEnded();
+	TryCombo();
+	CheckEnemyMoverActionsOver();
+	TryExecuteDecision();
+	HandleAction();
+	EndProcessState();
+}
+
+void Boss::CheckEnemyMoverActionsOver()
+{
+	if (IsEnemyMoverAction(action))
+	{
+		if (enemyMover.IsIdle())
+		{
+			Decide();
+		}
+	}
+}
+
+void Boss::TryCombo()
+{
+	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
+	if (hitPlayer || (movingToCombo && comboInterrupted))
+	{
+		assert(targetPlayer->hitstunFrames > 2);
+		V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+		int moveDuration = targetPlayer->hitstunFrames - 4;
+		movingToCombo = TryComboMove(tPos, moveDuration);
+	}
+}
+
+void Boss::EndProcessState()
+{
+	hitPlayer = false;
+	enemyMover.currPosInfo = currPosInfo;
 }
 
 void Boss::TryExecuteDecision()
@@ -112,6 +152,8 @@ bool Boss::CanBeHitByPlayer()
 void Boss::FrameIncrement()
 {
 	enemyMover.FrameIncrement();
+	currPosInfo = enemyMover.currPosInfo;
+
 	if (invincibleFrames > 0)
 	{
 		--invincibleFrames;

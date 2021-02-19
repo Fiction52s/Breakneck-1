@@ -30,6 +30,7 @@ struct Boss : Enemy
 	bool decide;
 	int prevAction;
 	HitboxManager *hitboxManager;
+	bool movingToCombo;
 
 	std::map<int, V2d> actionTargetOffsets;
 
@@ -42,16 +43,26 @@ struct Boss : Enemy
 	void SetAction(int a);
 	void Setup();
 	void Decide();
+	void TryCombo();
 	void TryExecuteDecision();
 	virtual void StartAction() {}
 	void StageSetup(int numStages,
 		int hitsPerStage);
+	void EndProcessState();
 	virtual void SetupPostFightScenes() {}
 	virtual void SetupNodeVectors() {}
 	void SetTargetPlayerIndex(int ind);
+	void CheckEnemyMoverActionsOver();
+	virtual void ActionEnded() {}
+	virtual void HandleAction() {}
+	virtual void ProcessState();
 	virtual	bool IsEnemyMoverAction(int a) { return false; }
+	virtual bool TryComboMove(V2d &comboPos, 
+		int comboMoveDuration) {return false;}
 
 	virtual void FrameIncrement();
+
+	//virtual void MovementEnded();
 
 	void IHitPlayer(int index = 0);
 	void BossReset();

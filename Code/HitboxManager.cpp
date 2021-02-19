@@ -5,11 +5,11 @@
 
 using namespace std;
 
-std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string & str )
+HitboxCollection & HitboxManager::GetHitboxCollection( const string & str )
 {
-	if (hitboxMap.count(str) == 0)
+	if (collectionMap.count(str) == 0)
 	{
-		std::map<int, list<CollisionBox>> & myMap = hitboxMap[str];
+		auto &myCollection = collectionMap[str];
 		ifstream is;
 		stringstream ss;
 		ss << "Resources/" + folder + "/" << str << ".hit";
@@ -18,6 +18,9 @@ std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string &
 		{
 			string tilesetName;
 			getline(is, tilesetName);
+
+			is >> myCollection.minFrame;
+			is >> myCollection.numFrames;
 
 			int numPopulatedFrames;
 			is >> numPopulatedFrames;
@@ -30,11 +33,11 @@ std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string &
 				for (int h = 0; h < numHitboxes; ++h)
 				{
 					CollisionBox tempCB = LoadHitShape(is);
-					myMap[frameIndex].push_back( tempCB );
+					myCollection.hitboxMap[frameIndex].push_back( tempCB );
 				}
 			}
 
-			return myMap;
+			return myCollection;
 		}
 		else
 		{
@@ -44,7 +47,7 @@ std::map<int, list<CollisionBox>> & HitboxManager::GetHitboxList( const string &
 	}
 	else
 	{
-		return hitboxMap[str];
+		return collectionMap[str];
 	}
 }
 
@@ -94,4 +97,12 @@ CollisionBox HitboxManager::LoadHitShape(std::ifstream &is)
 		break;
 		}
 	}
+}
+
+CollisionBody *HitboxManager::CreateBody(const std::string & str)
+{
+	auto &collection = GetHitboxCollection(str);
+
+	CollisionBody *body = new CollisionBody(collection.numFrames, collection.hitboxMap, NULL);
+	return body;
 }

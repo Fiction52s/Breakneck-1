@@ -4,6 +4,13 @@
 #include "Physics.h"
 #include <string>
 
+struct HitboxCollection
+{
+	std::map<int, std::list<CollisionBox>> hitboxMap;
+	int minFrame;
+	int numFrames;
+};
+
 struct HitboxManager
 {
 	enum HitShapeType
@@ -19,8 +26,9 @@ struct HitboxManager
 
 	}
 	std::string folder;
-	std::map<std::string, std::map<int,std::list<CollisionBox>>> hitboxMap;
-	std::map<int, std::list<CollisionBox>> & GetHitboxList( const std::string & str );
+	std::map<std::string, HitboxCollection> collectionMap;
+	HitboxCollection & GetHitboxCollection( const std::string & str );
+	CollisionBody *CreateBody(const std::string & str);
 
 private:
 	CollisionBox LoadHitShape(std::ifstream &is);
