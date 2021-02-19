@@ -583,18 +583,18 @@ void Bird::HandleAction()
 	case PUNCH:
 	{
 
-		if (frame == hitboxStartFrame[action] * animFactor[action] && slowCounter == 1)
+		/*if (frame == hitboxStartFrame[action] * animFactor[action] && slowCounter == 1)
 		{
 			if (!actionHitPlayer)
 			{
 				DefaultHitboxesOn();
 			}
-		}
+		}*/
 
-		/*if (!actionHitPlayer)
+		if (!actionHitPlayer)
 		{
 			SetHitboxes(punchBody, frame / animFactor[PUNCH]);
-		}*/
+		}
 		
 		break;
 	}
