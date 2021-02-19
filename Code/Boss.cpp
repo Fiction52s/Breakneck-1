@@ -52,6 +52,7 @@ void Boss::SetAction(int a)
 	prevAction = action;
 	action = a;
 	frame = 0;
+	actionHitPlayer = false;
 	StartAction();
 }
 

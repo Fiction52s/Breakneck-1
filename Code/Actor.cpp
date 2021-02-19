@@ -4932,8 +4932,8 @@ void Actor::ProcessReceivedHit()
 
 				if (receivedHit->knockback > 0)
 				{
-					velocity = receivedHit->knockback * 
-						shieldKBFactor * receivedHit->kbDir;
+					velocity = receivedHit->GetKnockbackVector() 
+						* shieldKBFactor;
 				}
 				else
 				{
@@ -12345,7 +12345,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 	if (receivedHit->knockback > 0)
 	{
-		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+		groundSpeed = receivedHit->GetKnockbackVector().x;
 	}
 	else
 	{
@@ -12381,7 +12381,7 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 	frame = 0;
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->knockback * receivedHit->kbDir;
+		velocity = receivedHit->GetKnockbackVector();
 	}
 	else
 	{
@@ -12501,7 +12501,7 @@ void Actor::HitOutOfGrind()
 
 	if (receivedHit->knockback > 0)
 	{
-		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+		groundSpeed = receivedHit->GetKnockbackVector().x;
 	}
 	else
 	{
@@ -12528,22 +12528,12 @@ void Actor::HitWhileGrounded()
 	if (TryHandleHitWhileRewindBoosted())
 		return;
 
-	V2d kbDir = receivedHit->kbDir;
-
-	if (kbDir.y > 0)
-	{
-
-	}
-	else
-	{
-
-	}
 	SetAction(GROUNDHITSTUN);
 	frame = 0;
 
 	if (receivedHit->knockback > 0)
 	{
-		groundSpeed = receivedHit->kbDir.x * receivedHit->knockback;
+		groundSpeed = receivedHit->GetKnockbackVector().x;
 	}
 	else
 	{
@@ -12570,7 +12560,7 @@ void Actor::HitWhileAerial()
 
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->knockback * receivedHit->kbDir;
+		velocity = receivedHit->GetKnockbackVector();
 		//velocity = receivedHit->knockback * receivedHit->kbDir;
 	}
 	else
@@ -13178,8 +13168,9 @@ void Actor::PhysicsResponse()
 		{
 			*currVSHitboxInfo = hi;
 
-			if (!facingRight)
-				currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
+			currVSHitboxInfo->flipHorizontalKB = !facingRight;
+			//if (!facingRight)
+			//	currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
 
 			attackingHitlag = true;
 			hitlagFrames = currVSHitboxInfo->hitlagFrames;

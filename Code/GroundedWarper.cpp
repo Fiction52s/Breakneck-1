@@ -51,16 +51,6 @@ GroundedWarper::GroundedWarper(ActorParams *ap)
 
 	ts = sess->GetSizedTileset("Enemies/bouncefloater_128x128.png");
 	sprite.setColor(Color::Red);
-	/*hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 0;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 6;
-	hitboxInfo->hitstunFrames = 30;
-	hitboxInfo->knockback = 50;
-	hitboxInfo->kbDir = normalize(V2d(1, -2));
-	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
 
 	//BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(40);

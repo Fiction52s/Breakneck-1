@@ -31,6 +31,7 @@ struct Boss : Enemy
 	int prevAction;
 	HitboxManager *hitboxManager;
 	bool movingToCombo;
+	bool actionHitPlayer;
 
 	std::map<int, V2d> actionTargetOffsets;
 

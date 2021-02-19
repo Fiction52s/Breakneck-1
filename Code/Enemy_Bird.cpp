@@ -26,11 +26,11 @@ using namespace sf;
 
 
 Bird::Bird(ActorParams *ap)
-	:Boss(EnemyType::EN_BIRDBOSS, ap), 
+	:Boss(EnemyType::EN_BIRDBOSS, ap),
 	shurPool(this),
-	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 2, 1, 1), 
-	nodeGroupA( Color::Magenta ), 
-	nodeGroupB( Color::Yellow )
+	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 2, 1, 1),
+	nodeGroupA(Color::Magenta),
+	nodeGroupB(Color::Yellow)
 {
 	StageSetup(4, 4);
 
@@ -51,7 +51,7 @@ Bird::Bird(ActorParams *ap)
 	actionTargetOffsets[PUNCH] = V2d(100, 0);
 
 	hitboxStartFrame[PUNCH] = 7;
-	
+
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
@@ -83,7 +83,7 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	CreateHitboxManager("Bosses/Bird");
-	punchBody = hitboxManager->CreateBody("punch", hitboxInfo);
+	punchBody = hitboxManager->CreateBody("punch", &hitboxInfos[PUNCH]);
 
 	LoadParams();
 
@@ -156,16 +156,8 @@ void Bird::UpdateHitboxes()
 				}
 		}
 
-		*hitboxInfo = hitboxInfos[action];
-		if (facingRight)
-		{
-			hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
-		}
-		else
-		{
-			hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
-		}
-		hitboxInfo->hitsThroughInvincibility = true;
+		hitboxInfos[action].flipHorizontalKB = !facingRight;
+		//hitboxInfo->flipHorizontalKB = !facingRight;
 	}
 	else
 	{
@@ -281,15 +273,7 @@ void Bird::SetHitboxInfo(int a)
 	*hitboxInfo = hitboxInfos[a];
 	hitboxInfo->hitsThroughInvincibility = true;
 
-
-	if (facingRight)
-	{
-		hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
-	}
-	else
-	{
-		hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
-	}
+	//hitboxInfo->flipHorizontalKB = !facingRight;
 	//hitBody.hitboxInfo = hitboxInfo;
 }
 
@@ -505,6 +489,7 @@ void Bird::ActionEnded()
 
 void Bird::HandleAction()
 {
+	HitboxesOff();
 	switch (action)
 	{
 	case MOVE_CHASE:
@@ -581,13 +566,11 @@ void Bird::HandleAction()
 	}
 	case PUNCH:
 	{
-		//if (frame == hitboxStartFrame[PUNCH] * animFactor[PUNCH] && slowCounter == 1)
-		//{
-		//	//DefaultHitboxesOn();
-		SetHitboxInfo(PUNCH);
-		//}
-		//SetHitboxInfo(PUNCH);
-		SetHitboxes(punchBody, frame / animFactor[PUNCH]);
+		if (!actionHitPlayer)
+		{
+			SetHitboxes(punchBody, frame / animFactor[PUNCH]);
+		}
+		
 		break;
 	}
 	}

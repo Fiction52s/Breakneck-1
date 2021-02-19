@@ -125,6 +125,7 @@ struct HitboxInfo
 	HitboxType hType;
 	double knockback; //0+
 	V2d GetKnockbackDir();
+	V2d GetKnockbackVector();
 	sf::Vector2<double> kbDir;
 	//double drain; //0-1
 	double drainX;
