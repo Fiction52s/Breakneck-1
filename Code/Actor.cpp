@@ -3338,134 +3338,41 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	if (true)
 	{
+		fairHitboxes[0] = CreateCollisionBody("fairahitboxes"); 
+		fairHitboxes[1] = CreateCollisionBody("fairbhitboxes");
+		fairHitboxes[2] = CreateCollisionBody("fairchitboxes");
 
+		uairHitboxes[0] = CreateCollisionBody("uairahitboxes");
+		uairHitboxes[1] = CreateCollisionBody("uairbhitboxes");
+		uairHitboxes[2] = CreateCollisionBody("uairchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & fairAList =
-			GetHitboxList("fairahitboxes");
+		dairHitboxes[0] = CreateCollisionBody("dairahitboxes");
+		dairHitboxes[1] = CreateCollisionBody("dairbhitboxes");
+		dairHitboxes[2] = CreateCollisionBody("dairchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & fairBList =
-			GetHitboxList("fairbhitboxes");
+		standHitboxes[0] = CreateCollisionBody("standahitboxes"); 
+		standHitboxes[1] = CreateCollisionBody("standbhitboxes");
+		standHitboxes[2] = CreateCollisionBody("standchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & fairCList =
-			GetHitboxList("fairchitboxes");
+		wallHitboxes[0] = CreateCollisionBody("wallahitboxes");
+		wallHitboxes[1] = CreateCollisionBody("wallbhitboxes");
+		wallHitboxes[2] = CreateCollisionBody("wallchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & dairAList =
-			GetHitboxList("dairahitboxes");
+		steepClimbHitboxes[0] = CreateCollisionBody("climbahitboxes");
+		steepClimbHitboxes[1] = CreateCollisionBody("climbbhitboxes");
+		steepClimbHitboxes[2] = CreateCollisionBody("climbchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & dairBList =
-			GetHitboxList("dairbhitboxes");
+		steepSlideHitboxes[0] = CreateCollisionBody("slideahitboxes");
+		steepSlideHitboxes[1] = CreateCollisionBody("slidebhitboxes");
+		steepSlideHitboxes[2] = CreateCollisionBody("slidechitboxes");
 
-		std::map<int, std::list<CollisionBox>> & dairCList =
-			GetHitboxList("dairchitboxes");
+		diagUpHitboxes[0] = CreateCollisionBody("airdashupahitboxes");
+		diagUpHitboxes[1] = CreateCollisionBody("airdashupbhitboxes");
+		diagUpHitboxes[2] = CreateCollisionBody("airdashupchitboxes");
 
-		std::map<int, std::list<CollisionBox>> & uairAList =
-			GetHitboxList("uairahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & uairBList =
-			GetHitboxList("uairbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & uairCList =
-			GetHitboxList("uairchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpAList =
-			GetHitboxList("airdashupahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpBList =
-			GetHitboxList("airdashupbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adUpCList =
-			GetHitboxList("airdashupchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownAList =
-			GetHitboxList("airdashdownahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownBList =
-			GetHitboxList("airdashdownbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & adDownCList =
-			GetHitboxList("airdashdownchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standAList =
-			GetHitboxList("standahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standBList =
-			GetHitboxList("standbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & standCList =
-			GetHitboxList("standchitboxes");
-
-
-
-		std::map<int, std::list<CollisionBox>> & wallAList =
-			GetHitboxList("wallahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & wallBList =
-			GetHitboxList("wallbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & wallCList =
-			GetHitboxList("wallchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbAList =
-			GetHitboxList("climbahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbBList =
-			GetHitboxList("climbbhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & climbCList =
-			GetHitboxList("climbchitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideAList =
-			GetHitboxList("slideahitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideBList =
-			GetHitboxList("slidebhitboxes");
-
-		std::map<int, std::list<CollisionBox>> & slideCList =
-			GetHitboxList("slidechitboxes");
-
-
-
-		fairHitboxes[0] = new CollisionBody(16, fairAList, currHitboxInfo);
-		uairHitboxes[0] = new CollisionBody(16, uairAList, currHitboxInfo);
-		dairHitboxes[0] = new CollisionBody(16, dairAList, currHitboxInfo);
-
-		fairHitboxes[1] = new CollisionBody(16, fairBList, currHitboxInfo);
-		uairHitboxes[1] = new CollisionBody(16, uairBList, currHitboxInfo);
-		dairHitboxes[1] = new CollisionBody(16, dairBList, currHitboxInfo);
-
-		fairHitboxes[2] = new CollisionBody(16, fairCList, currHitboxInfo);
-		uairHitboxes[2] = new CollisionBody(16, uairCList, currHitboxInfo);
-		dairHitboxes[2] = new CollisionBody(16, dairCList, currHitboxInfo);
-
-
-		standHitboxes[0] = new CollisionBody(8, standAList, currHitboxInfo);
-		standHitboxes[1] = new CollisionBody(8, standBList, currHitboxInfo);
-		standHitboxes[2] = new CollisionBody(8, standCList, currHitboxInfo);
-
-		////dashHitboxes[0] = NULL;
-		wallHitboxes[0] = new CollisionBody(8, wallAList, currHitboxInfo);
-
-		wallHitboxes[1] = new CollisionBody(8, wallBList, currHitboxInfo);
-
-		wallHitboxes[2] = new CollisionBody(8, wallCList, currHitboxInfo);
-
-
-		steepClimbHitboxes[0] = new CollisionBody(8, climbAList, currHitboxInfo);
-		steepClimbHitboxes[1] = new CollisionBody(8, climbBList, currHitboxInfo);
-		steepClimbHitboxes[2] = new CollisionBody(8, climbCList, currHitboxInfo);
-
-		steepSlideHitboxes[0] = new CollisionBody(8, slideAList, currHitboxInfo);
-		steepSlideHitboxes[1] = new CollisionBody(8, slideBList, currHitboxInfo);
-		steepSlideHitboxes[2] = new CollisionBody(8, slideCList, currHitboxInfo);
-
-		diagUpHitboxes[0] = new CollisionBody(12, adUpAList, currHitboxInfo);
-		diagDownHitboxes[0] = new CollisionBody(12, adDownAList, currHitboxInfo);
-
-		diagUpHitboxes[1] = new CollisionBody(12, adUpBList, currHitboxInfo);
-		diagDownHitboxes[1] = new CollisionBody(12, adDownBList, currHitboxInfo);
-
-		diagUpHitboxes[2] = new CollisionBody(12, adUpCList, currHitboxInfo);
-		diagDownHitboxes[2] = new CollisionBody(12, adDownCList, currHitboxInfo);
+		diagDownHitboxes[0] = CreateCollisionBody("airdashdownahitboxes");
+		diagDownHitboxes[1] = CreateCollisionBody("airdashdownbhitboxes");
+		diagDownHitboxes[2] = CreateCollisionBody("airdashdownchitboxes");
 
 
 

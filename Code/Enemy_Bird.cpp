@@ -83,8 +83,8 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	CreateHitboxManager("Bosses/Bird");
-	hitboxManager->GetHitboxList("testhitboxes");
-	testHitboxes = new CollisionBody( )
+	//hitboxManager->GetHitboxList("testhitboxes");
+	//testHitboxes = new CollisionBody( )
 
 	LoadParams();
 
