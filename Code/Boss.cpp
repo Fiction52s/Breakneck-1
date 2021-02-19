@@ -16,6 +16,11 @@ Boss::~Boss()
 	{
 		delete hitboxManager;
 	}
+
+	for (auto it = hitBodies.begin(); it != hitBodies.end(); ++it)
+	{
+		delete (*it).second;
+	}
 }
 
 void Boss::CreateHitboxManager(const std::string &folder)
@@ -88,6 +93,20 @@ void Boss::TryCombo()
 		int moveDuration = targetPlayer->hitstunFrames - 4;
 		movingToCombo = TryComboMove(tPos, moveDuration);
 	}
+}
+
+void Boss::SetBasicActiveHitbox()
+{
+	if (!actionHitPlayer)
+	{
+		SetHitboxes(hitBodies[action], frame / animFactor[action]);
+	}
+}
+
+void Boss::SetupHitboxes(int a, const std::string &name)
+{
+	hitBodies[a] = hitboxManager->CreateBody(name, &hitboxInfos[a]);
+	hitBodies[a]->hitboxInfo->hitsThroughInvincibility = true;
 }
 
 void Boss::EndProcessState()

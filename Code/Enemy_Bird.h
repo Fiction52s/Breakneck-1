@@ -53,14 +53,10 @@ struct Bird : Summoner, Boss
 	BirdCommand actionQueue[3];
 	int actionQueueIndex;
 
-	HitboxInfo hitboxInfos[A_Count];
-
 	Tileset *ts_punch;
 	Tileset *ts_kick;
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
-
-	CollisionBody *punchBody;
 
 	int nextAction;
 

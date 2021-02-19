@@ -33,6 +33,9 @@ struct Boss : Enemy
 	bool movingToCombo;
 	bool actionHitPlayer;
 
+	std::map<int, CollisionBody*> hitBodies;
+	std::map<int, HitboxInfo> hitboxInfos;
+
 	std::map<int, V2d> actionTargetOffsets;
 
 	//std::vector<BossCommand> 
@@ -62,6 +65,8 @@ struct Boss : Enemy
 		int comboMoveDuration) {return false;}
 
 	virtual void FrameIncrement();
+	void SetBasicActiveHitbox();
+	void SetupHitboxes(int a, const std::string &name);
 
 	//virtual void MovementEnded();
 

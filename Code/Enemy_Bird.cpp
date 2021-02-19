@@ -82,14 +82,12 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
-	CreateHitboxManager("Bosses/Bird");
-	punchBody = hitboxManager->CreateBody("punch", &hitboxInfos[PUNCH]);
-
 	LoadParams();
 
-	punchBody->hitboxInfo->hitsThroughInvincibility = true;
+	CreateHitboxManager("Bosses/Bird");
+	SetupHitboxes(PUNCH, "punch");
 
-	hitBody.hitboxInfo = punchBody->hitboxInfo;
+	//hitBody.hitboxInfo = punchBody->hitboxInfo;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -112,8 +110,6 @@ Bird::~Bird()
 	{
 		delete postFightScene3;
 	}
-
-	delete punchBody;
 }
 
 void Bird::LoadParams()
@@ -270,15 +266,6 @@ void Bird::SetupNodeVectors()
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "B"));
 }
-
-//void Bird::SetHitboxInfo(int a)
-//{
-//	*hitboxInfo = hitboxInfos[a];
-//	hitboxInfo->hitsThroughInvincibility = true;
-//
-//	//hitboxInfo->flipHorizontalKB = !facingRight;
-//	//hitBody.hitboxInfo = hitboxInfo;
-//}
 
 void Bird::SetCommand(int index, BirdCommand &bc)
 {
@@ -439,17 +426,12 @@ bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
 		}
 
 		nextAction = COMBOMOVE;
-		//SetAction(COMBOMOVE);
-		//HitboxesOff();
 
 		int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
 
 		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
 
 		enemyMover.SetModeNodeLinear(comboPos + offset, CubicBezier(), comboMoveDuration);
-
-		//facingRight = nextComboAction.facingRight;
-
 		return true;
 	}
 	else
@@ -591,10 +573,7 @@ void Bird::HandleAction()
 			}
 		}*/
 
-		if (!actionHitPlayer)
-		{
-			SetHitboxes(punchBody, frame / animFactor[PUNCH]);
-		}
+		SetBasicActiveHitbox();
 		
 		break;
 	}
