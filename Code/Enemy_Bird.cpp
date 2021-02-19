@@ -83,10 +83,14 @@ Bird::Bird(ActorParams *ap)
 	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	CreateHitboxManager("Bosses/Bird");
+	punchBody = hitboxManager->CreateBody("punch");
 	//hitboxManager->GetHitboxList("testhitboxes");
 	//testHitboxes = new CollisionBody( )
 
 	LoadParams();
+
+	punchBody->hitboxInfo = &hitboxInfos[PUNCH];
+	punchBody->hitboxInfo->hitsThroughInvincibility = true;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -109,6 +113,8 @@ Bird::~Bird()
 	{
 		delete postFightScene3;
 	}
+
+	delete punchBody;
 }
 
 void Bird::LoadParams()
@@ -127,17 +133,47 @@ void Bird::LoadParams()
 
 void Bird::UpdateHitboxes()
 {
-	BasicUpdateHitboxes();
-
-	if (hitBody.hitboxInfo != NULL)
+	if (action == PUNCH)
 	{
-		if (facingRight)
+		BasicUpdateHitboxes(); //for hurtboxes
+		if (currHitboxes != NULL)
 		{
-			hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
+			vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
+			if (cList != NULL)
+				for (auto it = cList->begin(); it != cList->end(); ++it)
+				{
+					/*if (ground != NULL)
+					{
+						(*it).globalAngle = angle;
+					}
+					else
+					{
+						(*it).globalAngle = 0;
+					}*/
+
+					(*it).flipHorizontal = !facingRight;
+
+					V2d pos = GetPosition();
+
+					(*it).globalPosition = pos;
+				}
 		}
-		else
+		//currHitboxes[currHitboxFrame].
+	}
+	else
+	{
+		BasicUpdateHitboxes();
+
+		if (hitBody.hitboxInfo != NULL)
 		{
-			hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+			if (facingRight)
+			{
+				hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
+			}
+			else
+			{
+				hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
+			}
 		}
 	}
 }
@@ -528,11 +564,12 @@ void Bird::HandleAction()
 	}
 	case PUNCH:
 	{
-		if (frame == hitboxStartFrame[PUNCH] * animFactor[PUNCH] && slowCounter == 1)
-		{
-			DefaultHitboxesOn();
-			SetHitboxInfo(PUNCH);
-		}
+		//if (frame == hitboxStartFrame[PUNCH] * animFactor[PUNCH] && slowCounter == 1)
+		//{
+		//	//DefaultHitboxesOn();
+		//	SetHitboxInfo(PUNCH);
+		//}
+		SetHitboxes(punchBody, frame / animFactor[PUNCH]);
 		break;
 	}
 	}

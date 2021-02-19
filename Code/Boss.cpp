@@ -128,7 +128,8 @@ void Boss::SetTargetPlayerIndex(int ind)
 void Boss::IHitPlayer(int index)
 {
 	hitPlayer = true;
-	pauseFrames = hitBody.hitboxInfo->hitlagFrames + 1;
+	UpdateSprite(); //because paused will not show the correct frame
+	pauseFrames = currHitboxes->hitboxInfo->hitlagFrames + 1;
 }
 
 void Boss::UpdateEnemyPhysics()

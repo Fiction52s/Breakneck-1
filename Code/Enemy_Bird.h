@@ -60,7 +60,7 @@ struct Bird : Summoner, Boss
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
 
-	CollisionBody *testHitboxes;
+	CollisionBody *punchBody;
 
 	Bird(ActorParams *ap);
 	~Bird();
