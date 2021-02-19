@@ -438,17 +438,17 @@ bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
 			offset.x = -offset.x;
 		}
 
-		//nextAction = COMBOMOVE;
-		SetAction(COMBOMOVE);
-		HitboxesOff();
+		nextAction = COMBOMOVE;
+		//SetAction(COMBOMOVE);
+		//HitboxesOff();
 
-		int framesRemaining = 0;//(actionLength[action] * animFactor[action] + 1) - frame;
+		int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
 
 		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
 
 		enemyMover.SetModeNodeLinear(comboPos + offset, CubicBezier(), comboMoveDuration);
 
-		facingRight = nextComboAction.facingRight;
+		//facingRight = nextComboAction.facingRight;
 
 		return true;
 	}
