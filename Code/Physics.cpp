@@ -2562,6 +2562,18 @@ V2d CollisionBody::GetBasicPos()
 	return collisionBoxVectors[0][0].globalPosition;
 }
 
+int CollisionBody::GetFirstNonEmptyFrame()
+{
+	int size = collisionBoxVectors.size();
+	for (int i = 0; i < size; ++i)
+	{
+		if (!collisionBoxVectors[i].empty())
+		{
+			return i;
+		}
+	}
+}
+
 void CollisionBody::SetBasicPos(V2d &pos)
 {
 	collisionBoxVectors[0][0].globalPosition = pos;

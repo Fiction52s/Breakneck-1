@@ -48,9 +48,9 @@ Bird::Bird(ActorParams *ap)
 	animFactor[PUNCH] = 3;
 	animFactor[KICK] = 3;
 
-	actionTargetOffsets[PUNCH] = V2d(100, 0);
+	hitOffsetMap[PUNCH] = V2d(100, 0);
 
-	hitboxStartFrame[PUNCH] = 6;
+	//hitboxStartFrame[PUNCH] = 6;
 
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
@@ -186,7 +186,6 @@ void Bird::ResetEnemy()
 	BossReset();
 
 	StartFight();
-	nextAction = -1;
 	
 	UpdateSprite();
 }
@@ -406,34 +405,14 @@ void Bird::StartAction()
 }
 
 //returns true if comboing
-bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
+bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration, int moveDurationBeforeStartNextAction, V2d &comboOffset )
 {
-	if (currCommandIndex < 3)
-	{
-		BossCommand nextComboAction = commandQueue[currCommandIndex];
+	nextAction = COMBOMOVE;
+	actionLength[COMBOMOVE] = moveDurationBeforeStartNextAction;
 
-		V2d offset(-100, 0);
-		if (!nextComboAction.facingRight)
-		{
-			offset.x = -offset.x;
-		}
+	enemyMover.SetModeNodeLinear(comboPos + comboOffset, CubicBezier(), comboMoveDuration);
 
-		nextAction = COMBOMOVE;
-
-		int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
-
-		actionLength[COMBOMOVE] = comboMoveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
-
-		enemyMover.SetModeNodeLinear(comboPos + offset, CubicBezier(), comboMoveDuration);
-		return true;
-	}
-	else
-	{
-		HitboxesOff();
-		Wait(60);
-
-		return false;
-	}
+	return true;
 }
 
 void Bird::ActionEnded()
@@ -449,13 +428,9 @@ void Bird::ActionEnded()
 			Decide();
 			break;
 		case PUNCH:
-			if (nextAction == COMBOMOVE)
+			if (TrySetActionToNextAction())
 			{
-				SetAction(COMBOMOVE);
-				nextAction = -1;
-
-				BossCommand nextComboAction = commandQueue[currCommandIndex];
-				facingRight = nextComboAction.facingRight;
+				facingRight = GetCurrCommand().facingRight;
 			}
 			else
 			{
@@ -464,9 +439,7 @@ void Bird::ActionEnded()
 			break;
 		case COMBOMOVE:
 		{
-			BossCommand nextComboAction = commandQueue[currCommandIndex];
-			SetAction(nextComboAction.action);
-			++currCommandIndex;
+			SetNextComboAction();
 			break;
 		}
 		case KICK:

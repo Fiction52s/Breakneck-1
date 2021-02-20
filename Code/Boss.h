@@ -27,13 +27,16 @@ struct Boss : Enemy
 	bool movingToCombo;
 	bool actionHitPlayer;
 
+	int nextAction;
+
 	std::vector<BossCommand> commandQueue;
 	int currCommandIndex;
 
 	std::map<int, CollisionBody*> hitBodies;
 	std::map<int, HitboxInfo> hitboxInfos;
 
-	std::map<int, V2d> actionTargetOffsets;
+	std::map<int, V2d> hitOffsetMap;
+	std::map<int, int> hitboxStartFrame;
 
 	//std::vector<BossCommand> 
 
@@ -43,6 +46,9 @@ struct Boss : Enemy
 	void QueueCommand(BossCommand &cm);
 	void ProcessHit();
 	void SetAction(int a);
+	bool TrySetActionToNextAction();
+	BossCommand &GetCurrCommand();
+	void SetNextComboAction();
 	void ResetCommands();
 	void SetCombo( std::vector<BossCommand> &commandVec );
 	void Setup();
@@ -62,7 +68,8 @@ struct Boss : Enemy
 	virtual void ProcessState();
 	virtual	bool IsEnemyMoverAction(int a) { return false; }
 	virtual bool TryComboMove(V2d &comboPos,
-		int comboMoveDuration) {return false;}
+		int comboMoveDuration, int moveDurationBeforeStartNextAction,
+		V2d &comboOffset ) {return false;}
 
 	virtual void FrameIncrement();
 	void SetBasicActiveHitbox();

@@ -47,7 +47,7 @@ struct Bird : Summoner, Boss
 	
 	int fireCounter;
 
-	std::map<int, int> hitboxStartFrame;
+	
 
 	//BirdCommand actionQueue[3];
 	//int actionQueueIndex;
@@ -56,8 +56,6 @@ struct Bird : Summoner, Boss
 	Tileset *ts_kick;
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
-
-	int nextAction;
 
 	Bird(ActorParams *ap);
 	~Bird();
@@ -78,7 +76,9 @@ struct Bird : Summoner, Boss
 	void FrameIncrement();
 
 	//Boss functions
-	bool TryComboMove(V2d &comboPos, int comboMoveDuration);
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
+		int moveDurationBeforeStartNextAction,
+		V2d &comboOffset );
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();
 	void ActionEnded();

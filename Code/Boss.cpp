@@ -43,6 +43,7 @@ void Boss::BossReset()
 	actionHitPlayer = false;
 	commandQueue.clear();
 	currCommandIndex = 0;
+	nextAction = -1;
 }
 
 void Boss::QueueCommand(BossCommand &cm)
@@ -80,6 +81,33 @@ void Boss::SetAction(int a)
 	StartAction();
 }
 
+BossCommand &Boss::GetCurrCommand()
+{
+	return commandQueue[currCommandIndex];
+}
+
+void Boss::SetNextComboAction()
+{
+	BossCommand nextComboAction = commandQueue[currCommandIndex];
+	SetAction(nextComboAction.action);
+	++currCommandIndex;
+}
+
+bool Boss::TrySetActionToNextAction()
+{
+	if (nextAction == -1)
+	{
+		return false;
+	}
+	else
+	{
+		int n = nextAction;
+		nextAction = -1;
+		SetAction(n);
+		return true;
+	}
+}
+
 void Boss::ProcessState()
 {
 	ActionEnded();
@@ -103,13 +131,30 @@ void Boss::CheckEnemyMoverActionsOver()
 
 void Boss::TryCombo()
 {
-	bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
-	if (hitPlayer || (movingToCombo && comboInterrupted))
+	if (currCommandIndex < commandQueue.size())
 	{
-		assert(targetPlayer->hitstunFrames > 2);
-		V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
-		int moveDuration = targetPlayer->hitstunFrames - 4;
-		movingToCombo = TryComboMove(tPos, moveDuration);
+		bool comboInterrupted = targetPlayer->hitOutOfHitstunLastFrame;
+		if (hitPlayer || (movingToCombo && comboInterrupted))
+		{
+			assert(targetPlayer->hitstunFrames > 2);
+			V2d tPos = sess->GetFuturePlayerPos(targetPlayer->hitstunFrames - 2);
+			int moveDuration = targetPlayer->hitstunFrames - 4;
+
+			BossCommand nextComboAction = commandQueue[currCommandIndex];
+
+			int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
+			int durationBeforeNextAction = 
+				moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
+
+			V2d offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
+			if (!nextComboAction.facingRight)
+			{
+				offset.x = -offset.x;
+			}
+
+			movingToCombo = TryComboMove(tPos, moveDuration,
+				durationBeforeNextAction, offset );
+		}
 	}
 }
 
@@ -123,8 +168,12 @@ void Boss::SetBasicActiveHitbox()
 
 void Boss::SetupHitboxes(int a, const std::string &name)
 {
-	hitBodies[a] = hitboxManager->CreateBody(name, &hitboxInfos[a]);
-	hitBodies[a]->hitboxInfo->hitsThroughInvincibility = true;
+	CollisionBody *hBody = hitboxManager->CreateBody(name, &hitboxInfos[a]);
+	hBody->hitboxInfo->hitsThroughInvincibility = true;
+
+	hitBodies[a] = hBody;
+	
+	hitboxStartFrame[a] = hBody->GetFirstNonEmptyFrame();
 }
 
 void Boss::EndProcessState()
@@ -141,6 +190,10 @@ void Boss::TryExecuteDecision()
 		{
 			SetAction(ChooseActionAfterStageChange());
 			stageMgr.stageChanged = false;
+		}
+		else if (nextAction != -1)
+		{
+			SetAction(nextAction);
 		}
 		else
 		{
