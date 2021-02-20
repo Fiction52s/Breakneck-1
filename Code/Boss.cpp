@@ -50,6 +50,16 @@ void Boss::QueueCommand(BossCommand &cm)
 	commandQueue.push_back(cm);
 }
 
+void Boss::SetCombo(std::vector<BossCommand> &commandVec)
+{
+	ResetCommands();
+	int size = commandVec.size();
+	for (int i = 0; i < size; ++i)
+	{
+		QueueCommand(commandVec[i]);
+	}
+}
+
 void Boss::StageSetup(int numStages, int hitsPerStage)
 {
 	stageMgr.Setup(numStages, hitsPerStage);
@@ -146,6 +156,12 @@ void Boss::Setup()
 
 	SetupPostFightScenes();
 	SetupNodeVectors();
+}
+
+void Boss::ResetCommands()
+{
+	commandQueue.clear();
+	currCommandIndex = 0;
 }
 
 void Boss::SetTargetPlayerIndex(int ind)

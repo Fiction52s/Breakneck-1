@@ -43,6 +43,8 @@ struct Boss : Enemy
 	void QueueCommand(BossCommand &cm);
 	void ProcessHit();
 	void SetAction(int a);
+	void ResetCommands();
+	void SetCombo( std::vector<BossCommand> &commandVec );
 	void Setup();
 	void Decide();
 	void TryCombo();

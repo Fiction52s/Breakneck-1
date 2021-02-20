@@ -507,8 +507,9 @@ void Bird::HandleAction()
 			bc.action = PUNCH;
 			bc.facingRight = true;
 
-			currCommandIndex = 0;
-
+			ResetCommands();
+			
+			
 			QueueCommand(bc);
 
 			bc.facingRight = false;
