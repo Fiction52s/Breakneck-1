@@ -142,7 +142,7 @@ struct BasicEffect;
 
 struct Wire;
 
-struct BirdCommand;
+struct BossCommand;
 
 using json = nlohmann::json;
 
@@ -645,7 +645,7 @@ struct Actor : QuadTreeCollider,
 	int framesBlocking;
 	V2d receivedHitPosition;
 
-	std::vector<BirdCommand*> birdCommands;
+	std::vector<BossCommand*> birdCommands;
 	int currBirdCommandIndex;
 
 	bool hitOutOfHitstunLastFrame;

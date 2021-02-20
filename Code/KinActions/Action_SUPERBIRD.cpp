@@ -44,7 +44,7 @@ void Actor::SUPERBIRD_Start()
 
 			for (int i = 0; i < 3; ++i)
 			{
-				fm->testBird->SetCommand(i, *birdCommands[i]);
+				//fm->testBird->SetCommand(i, *birdCommands[i]);
 			}
 
 			fm->testBird->targetPlayerIndex = pIndex;

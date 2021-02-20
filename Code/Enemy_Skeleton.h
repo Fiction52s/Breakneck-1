@@ -4,7 +4,6 @@
 #include "Enemy.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "SuperCommands.h"
 #include "EnemyMover.h"
 #include "Enemy_GatorWaterOrb.h"
 
@@ -47,9 +46,6 @@ struct Skeleton : Enemy, RayCastHandler
 
 	bool hitPlayer;
 
-	BirdCommand actionQueue[3];
-	int actionQueueIndex;
-
 	int targetPlayerIndex;
 
 	HitboxInfo hitboxInfos[A_Count];
@@ -81,7 +77,6 @@ struct Skeleton : Enemy, RayCastHandler
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void DirectKill();
-	void SetCommand(int index, BirdCommand &bc);
 	void ProcessState();
 	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);

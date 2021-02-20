@@ -8,15 +8,9 @@
 #include "SummonGroup.h"
 #include "NodeGroup.h"
 #include "HitboxManager.h"
+#include "BossCommand.h"
 
-struct BossCommand
-{
-	BossCommand()
-		:action(0), facingRight(true)
-	{}
-	int action;
-	bool facingRight;
-};
+
 
 struct Boss : Enemy
 {
@@ -33,6 +27,9 @@ struct Boss : Enemy
 	bool movingToCombo;
 	bool actionHitPlayer;
 
+	std::vector<BossCommand> commandQueue;
+	int currCommandIndex;
+
 	std::map<int, CollisionBody*> hitBodies;
 	std::map<int, HitboxInfo> hitboxInfos;
 
@@ -43,6 +40,7 @@ struct Boss : Enemy
 	Boss(EnemyType et, ActorParams *ap);
 	virtual ~Boss();
 	void CreateHitboxManager(const std::string &folder);
+	void QueueCommand(BossCommand &cm);
 	void ProcessHit();
 	void SetAction(int a);
 	void Setup();

@@ -187,8 +187,6 @@ void Bird::ResetEnemy()
 
 	StartFight();
 	nextAction = -1;
-
-	actionQueueIndex = 0;
 	
 	UpdateSprite();
 }
@@ -265,11 +263,6 @@ void Bird::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_BIRD, "B"));
-}
-
-void Bird::SetCommand(int index, BirdCommand &bc)
-{
-	actionQueue[index] = bc;
 }
 
 int Bird::SetLaunchersStartIndex(int ind)
@@ -415,9 +408,9 @@ void Bird::StartAction()
 //returns true if comboing
 bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration)
 {
-	if (actionQueueIndex < 3)
+	if (currCommandIndex < 3)
 	{
-		BirdCommand nextComboAction = actionQueue[actionQueueIndex];
+		BossCommand nextComboAction = commandQueue[currCommandIndex];
 
 		V2d offset(-100, 0);
 		if (!nextComboAction.facingRight)
@@ -461,7 +454,7 @@ void Bird::ActionEnded()
 				SetAction(COMBOMOVE);
 				nextAction = -1;
 
-				BirdCommand nextComboAction = actionQueue[actionQueueIndex];
+				BossCommand nextComboAction = commandQueue[currCommandIndex];
 				facingRight = nextComboAction.facingRight;
 			}
 			else
@@ -471,9 +464,9 @@ void Bird::ActionEnded()
 			break;
 		case COMBOMOVE:
 		{
-			BirdCommand nextComboAction = actionQueue[actionQueueIndex];
+			BossCommand nextComboAction = commandQueue[currCommandIndex];
 			SetAction(nextComboAction.action);
-			++actionQueueIndex;
+			++currCommandIndex;
 			break;
 		}
 		case KICK:
@@ -510,17 +503,17 @@ void Bird::HandleAction()
 
 			SetAction(PUNCH);
 
-			BirdCommand bc;
+			BossCommand bc;
 			bc.action = PUNCH;
 			bc.facingRight = true;
 
-			actionQueueIndex = 0;
+			currCommandIndex = 0;
 
-			SetCommand(0, bc);
+			QueueCommand(bc);
 
 			bc.facingRight = false;
-			SetCommand(1, bc);
-			SetCommand(2, bc);
+			QueueCommand(bc);
+			QueueCommand(bc);
 
 			double chaseSpeed = 15;
 			double accel = 2.0;//.8;

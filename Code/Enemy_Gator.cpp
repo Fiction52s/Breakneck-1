@@ -126,8 +126,6 @@ void Gator::ResetEnemy()
 	hitPlayer = false;
 	comboMoveFrames = 0;
 
-	actionQueueIndex = 0;
-
 	frame = 0;
 
 	UpdateSprite();
@@ -159,11 +157,6 @@ void Gator::SetHitboxInfo(int a)
 {
 	*hitboxInfo = hitboxInfos[a];
 	hitBody.hitboxInfo = hitboxInfo;
-}
-
-void Gator::SetCommand(int index, BirdCommand &bc)
-{
-	actionQueue[index] = bc;
 }
 
 void Gator::DebugDraw(sf::RenderTarget *target)
@@ -273,8 +266,6 @@ void Gator::ProcessState()
 	{
 		if (comboMoveFrames == 0)
 		{
-			action = actionQueue[actionQueueIndex].action + 1;
-			facingRight = actionQueue[actionQueueIndex].facingRight;
 			SetHitboxInfo(action);
 			//only have this on if i dont turn on hitboxes at the end of the movement.
 			DefaultHitboxesOn();
@@ -282,22 +273,6 @@ void Gator::ProcessState()
 		}
 	}
 
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
-		&& comboMoveFrames > 0;
-	//added this combo counter thing
-	if (hitPlayer || comboInterrupted)
-	{
-		action = COMBOMOVE;
-		frame = 0;
-		if (!comboInterrupted)
-			++actionQueueIndex;
-		SetHitboxes(NULL, 0);
-
-		if (actionQueueIndex == 3)
-		{
-
-		}
-	}
 
 	hitPlayer = false;
 }

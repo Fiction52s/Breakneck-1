@@ -65,7 +65,7 @@
 #include "Enemy_Gator.h"
 #include "Enemy_Bird.h"
 
-#include "SuperCommands.h"
+#include "BossCommand.h"
 
 using namespace sf;
 using namespace std;
@@ -110,7 +110,7 @@ void Actor::CheckBirdCommands()
 		}
 		birdCommands[currBirdCommandIndex]->facingRight = fr;
 
-		fm->testBird->SetCommand(currBirdCommandIndex, *birdCommands[currBirdCommandIndex]);
+		fm->testBird->QueueCommand(*birdCommands[currBirdCommandIndex]);
 		currBirdCommandIndex++;
 	}
 }
@@ -2798,7 +2798,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
 	{
-		birdCommands[i] = new BirdCommand;
+		//birdCommands[i] = new BirdCommand;
 	}
 
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
@@ -3767,10 +3767,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 Actor::~Actor()
 {
-	for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
+	/*for (auto it = birdCommands.begin(); it != birdCommands.end(); ++it)
 	{
 		delete (*it);
-	}
+	}*/
 
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
 	{

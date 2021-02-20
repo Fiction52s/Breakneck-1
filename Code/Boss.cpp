@@ -8,6 +8,7 @@ Boss::Boss(EnemyType et, ActorParams *ap)
 	SetTargetPlayerIndex(0);
 	hitboxInfo = new HitboxInfo;
 	hitboxManager = NULL;
+	commandQueue.reserve(10);
 }
 
 Boss::~Boss()
@@ -40,6 +41,13 @@ void Boss::BossReset()
 	prevAction = -1;
 	movingToCombo = false;
 	actionHitPlayer = false;
+	commandQueue.clear();
+	currCommandIndex = 0;
+}
+
+void Boss::QueueCommand(BossCommand &cm)
+{
+	commandQueue.push_back(cm);
 }
 
 void Boss::StageSetup(int numStages, int hitsPerStage)

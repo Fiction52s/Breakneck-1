@@ -3,7 +3,6 @@
 
 #include "Bullet.h"
 #include "Movement.h"
-#include "SuperCommands.h"
 #include "Enemy_BirdShuriken.h"
 #include "Boss.h"
 
@@ -50,8 +49,8 @@ struct Bird : Summoner, Boss
 
 	std::map<int, int> hitboxStartFrame;
 
-	BirdCommand actionQueue[3];
-	int actionQueueIndex;
+	//BirdCommand actionQueue[3];
+	//int actionQueueIndex;
 
 	Tileset *ts_punch;
 	Tileset *ts_kick;
@@ -95,7 +94,6 @@ struct Bird : Summoner, Boss
 	void SequenceWait();
 	void StartFight();
 	void LoadParams();
-	void SetCommand(int index, BirdCommand &bc);
 	
 	//Rollback functions
 	struct MyData : StoredEnemyData
