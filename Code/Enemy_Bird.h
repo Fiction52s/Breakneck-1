@@ -67,7 +67,6 @@ struct Bird : Summoner, Boss
 	//Enemy functions
 	int SetLaunchersStartIndex(int ind);
 	void DirectKill();
-	void UpdateHitboxes();
 	void DebugDraw(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();

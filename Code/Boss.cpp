@@ -158,6 +158,44 @@ void Boss::TryCombo()
 	}
 }
 
+void Boss::UpdateHitboxes()
+{
+	V2d position = GetPosition();
+
+	double ang = GetGroundedAngleRadians();
+	//can update this with a universal angle at some point
+	if (!hurtBody.Empty())
+	{
+		hurtBody.SetBasicPos(position, ang);
+		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
+	}
+
+	if (currHitboxes != NULL)
+	{
+		std::vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
+		if (cList != NULL)
+			for (auto it = cList->begin(); it != cList->end(); ++it)
+			{
+				/*if (ground != NULL)
+				{
+				(*it).globalAngle = angle;
+				}
+				else
+				{
+				(*it).globalAngle = 0;
+				}*/
+
+				(*it).flipHorizontal = !facingRight;
+
+				V2d pos = GetPosition();
+
+				(*it).globalPosition = pos;
+			}
+
+		hitboxInfos[action].flipHorizontalKB = !facingRight;
+	}
+}
+
 void Boss::SetBasicActiveHitbox()
 {
 	if (!actionHitPlayer)

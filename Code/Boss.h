@@ -44,6 +44,7 @@ struct Boss : Enemy
 	virtual ~Boss();
 	void CreateHitboxManager(const std::string &folder);
 	void QueueCommand(BossCommand &cm);
+	void UpdateHitboxes();
 	void ProcessHit();
 	void SetAction(int a);
 	bool TrySetActionToNextAction();

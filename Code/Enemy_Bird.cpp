@@ -50,8 +50,6 @@ Bird::Bird(ActorParams *ap)
 
 	hitOffsetMap[PUNCH] = V2d(100, 0);
 
-	//hitboxStartFrame[PUNCH] = 6;
-
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 	//stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
@@ -80,7 +78,7 @@ Bird::Bird(ActorParams *ap)
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
+	//BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());
 
 	LoadParams();
 
@@ -124,55 +122,6 @@ void Bird::LoadParams()
 
 	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
-}
-
-void Bird::UpdateHitboxes()
-{
-	if (action == PUNCH)
-	{
-		BasicUpdateHitboxes(); //for hurtboxes
-		if (currHitboxes != NULL)
-		{
-			vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
-			if (cList != NULL)
-				for (auto it = cList->begin(); it != cList->end(); ++it)
-				{
-					/*if (ground != NULL)
-					{
-						(*it).globalAngle = angle;
-					}
-					else
-					{
-						(*it).globalAngle = 0;
-					}*/
-
-					(*it).flipHorizontal = !facingRight;
-
-					V2d pos = GetPosition();
-
-					(*it).globalPosition = pos;
-				}
-		}
-
-		hitboxInfos[action].flipHorizontalKB = !facingRight;
-		//hitboxInfo->flipHorizontalKB = !facingRight;
-	}
-	else
-	{
-		BasicUpdateHitboxes();
-
-		/*if (hitBody.hitboxInfo != NULL)
-		{
-			if (facingRight)
-			{
-				hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
-			}
-			else
-			{
-				hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
-			}
-		}*/
-	}
 }
 
 void Bird::ResetEnemy()
