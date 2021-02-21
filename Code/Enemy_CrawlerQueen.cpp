@@ -57,10 +57,6 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	stageMgr.AddActiveOption(3, SUMMON, 2);
 	stageMgr.AddActiveOption(3, DIG_IN, 2);
 
-	decidePicker.AddActiveOption(MOVE, 2);
-	decidePicker.AddActiveOption(SUMMON, 2);
-	decidePicker.AddActiveOption(DIG_IN, 2);
-
 	digDecidePicker.AddActiveOption(DIG_OUT, 2);
 	digDecidePicker.AddActiveOption(LUNGE, 2);
 	digDecidePicker.AddActiveOption(SLASH, 2);

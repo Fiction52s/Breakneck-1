@@ -39,7 +39,6 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 		A_Count
 	};
 
-	RandomPicker decidePicker;
 	RandomPicker digDecidePicker;
 	RandomPicker clockwisePicker;
 
@@ -52,7 +51,6 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	bool wasAerial;
 
 	CrawlerPostFightScene *postFightScene;
-
 	CrawlerPostFight2Scene *postFightScene2;
 
 	PoiInfo *targetNode;
@@ -62,27 +60,10 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	Tileset *ts_dig_in;
 	Tileset *ts_dig_out;
 	Tileset *ts_jump;
-
-	EnemyMover enemyMover;
+	Tileset *ts_bulletExplode;
 
 	SummonGroup crawlerSummonGroup;
 	SummonGroup bombSummonGroup;
-
-	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
-
-	bool hitPlayer;
-
-	int targetPlayerIndex;
-
-	HitboxInfo hitboxInfos[A_Count];
-
-	int counterTillAttack;
-
-	V2d targetPos;
-	int framesToArrive;
-
-	int invincibleFrames;
 
 	void StartAngryYelling();
 	void StartInitialUnburrow();
