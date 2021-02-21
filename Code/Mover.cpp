@@ -1033,6 +1033,12 @@ void SurfaceMover::SetHandler(SurfaceMoverHandler *h)
 	surfaceHandler = h;
 }
 
+void SurfaceMover::DebugDraw(RenderTarget *target)
+{
+	physBody.DebugDraw(CollisionBox::Physics, target);
+}
+
+
 GroundMover::GroundMover( Edge *startGround, double startQuantity, 
 	double radius, bool p_steeps, GroundMoverHandler *p_handler )
 	:SurfaceMover( startGround, startQuantity, radius ), steeps( p_steeps )

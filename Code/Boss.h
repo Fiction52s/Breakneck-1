@@ -80,7 +80,7 @@ struct Boss : Enemy
 
 	void IHitPlayer(int index = 0);
 	void BossReset();
-	virtual int ChooseActionAfterStageChange() = 0;
+	virtual int ChooseActionAfterStageChange();
 	virtual bool IsDecisionValid(int d) { return true; }
 	int ChooseNextAction();
 	virtual void ActivatePostFightScene() {}

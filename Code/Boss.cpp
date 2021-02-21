@@ -146,10 +146,14 @@ void Boss::TryCombo()
 			int durationBeforeNextAction = 
 				moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
 
-			V2d offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
-			if (!nextComboAction.facingRight)
+			V2d offset;
+			if (hitOffsetMap.find(nextComboAction.action) != hitOffsetMap.end() )
 			{
-				offset.x = -offset.x;
+				offset = -hitOffsetMap[nextComboAction.action];//(-100, 0);
+				if (!nextComboAction.facingRight)
+				{
+					offset.x = -offset.x;
+				}
 			}
 
 			movingToCombo = TryComboMove(tPos, moveDuration,
@@ -239,6 +243,11 @@ void Boss::TryExecuteDecision()
 		}
 		decide = false;
 	}
+}
+
+int Boss::ChooseActionAfterStageChange()
+{
+	return ChooseNextAction();
 }
 
 void Boss::Setup()

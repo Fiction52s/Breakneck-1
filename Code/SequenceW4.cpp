@@ -94,7 +94,7 @@ void CrawlerPreFight2Scene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(queen);
-			queen->Wait();
+			queen->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -182,7 +182,7 @@ void CrawlerPostFight2Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("crawlercam");
-			queen->Wait();
+			queen->SeqWait();
 		}
 		break;
 	case WAIT:

@@ -32,10 +32,10 @@ Bird::Bird(ActorParams *ap)
 	nodeGroupA(Color::Magenta),
 	nodeGroupB(Color::Yellow)
 {
-	StageSetup(4, 4);
-
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);
+
+	StageSetup(4, 4);
 
 	level = ap->GetLevel();
 
@@ -84,8 +84,6 @@ Bird::Bird(ActorParams *ap)
 
 	CreateHitboxManager("Bosses/Bird");
 	SetupHitboxes(PUNCH, "punch");
-
-	//hitBody.hitboxInfo = punchBody->hitboxInfo;
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;
@@ -312,8 +310,9 @@ void Bird::StartAction()
 	{
 	case MOVE_NODE_LINEAR:
 	{
-		int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
-		V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
+		V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
+
+		
 
 		//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 		enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
@@ -321,8 +320,7 @@ void Bird::StartAction()
 	}
 	case MOVE_NODE_QUADRATIC:
 	{
-		int nodeIndex = nodeGroupA.picker.AlwaysGetNextOption();
-		V2d nodePos = nodeGroupA.nodeVec->at(nodeIndex)->pos;
+		V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
 		enemyMover.SetModeNodeQuadratic(sess->GetPlayerPos(0), nodePos, CubicBezier(), 60);
 		break;
 	}

@@ -505,7 +505,7 @@ void CrawlerPreFightScene::UpdateState()
 			sess->Fade(true, 60, Color::Black);
 			sess->FreezePlayerAndEnemies(false);
 			sess->AddEnemy(queen);
-			queen->Wait();
+			queen->SeqWait();
 			sess->SetPlayerInputOn(false);
 			sess->cam.SetManual(true);
 			sess->cam.Set(Vector2f(points["crawlerdig1"]->pos), 1.0, 0);
@@ -592,7 +592,7 @@ void CrawlerPostFightScene::ReturnToGame()
 	sess->Fade(true, 60, Color::Black);
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
-	queen->Wait();
+	queen->SeqWait();
 }
 
 void CrawlerPostFightScene::AddPoints()

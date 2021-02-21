@@ -63,7 +63,7 @@ struct SurfaceMover : QuadTreeCollider
 	double GetAngleDegrees();
 	V2d GetGroundPoint();
 	sf::Vector2f GetGroundPointF();
-
+	void DebugDraw(sf::RenderTarget *target);
 	virtual bool ResolvePhysics( 
 		sf::Vector2<double> &vel );
 	bool MoveAlongEdge( double &movement, 
