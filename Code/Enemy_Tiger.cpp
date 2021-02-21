@@ -1,5 +1,4 @@
-#include "Enemy.h"
-#include "GameSession.h"
+#include "Session.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
@@ -23,46 +22,37 @@ using namespace sf;
 
 
 Tiger::Tiger(ActorParams *ap)
-	:Enemy(EnemyType::EN_TIGERBOSS, ap)
+	:Boss(EnemyType::EN_TIGERBOSS, ap)
 {
 	SetNumActions(A_Count);
-	SetEditorActions(MOVE, 0, 0);
+	SetEditorActions(MOVE_GRIND, 0, 0);
 
-	targetPlayerIndex = 0;
+	StageSetup(4, 4);
 
-	actionLength[COMBOMOVE] = 2;
-	animFactor[COMBOMOVE] = 1;
-	reachPointOnFrame[COMBOMOVE] = 0;
+	level = ap->GetLevel();
 
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	sprite.setColor(Color::Red);
 
+	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
+
+	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(1, MOVE_JUMP, 2);
+
+	stageMgr.AddActiveOption(2, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(2, MOVE_JUMP, 2);
+
+	stageMgr.AddActiveOption(3, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(3, MOVE_JUMP, 2);
+
 	postFightScene = NULL;
 	postFightScene2 = NULL;
-
-	level = ap->GetLevel();
-
-	nodeAStr = "A";
-
-	hitboxInfo = new HitboxInfo;
-	/*hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 0;
-	hitboxInfo->drainX = 0;
-	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 6;
-	hitboxInfo->hitstunFrames = 30;
-	hitboxInfo->knockback = 50;
-	hitboxInfo->kbDir = normalize(V2d(1, -2));
-	hitboxInfo->gravMultiplier = .5;
-	hitboxInfo->invincibleFrames = 15;*/
 
 	LoadParams();
 
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
-
-
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	ResetEnemy();
 }
@@ -94,270 +84,106 @@ void Tiger::LoadParams()
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
-void Tiger::UpdateHitboxes()
-{
-	BasicUpdateHitboxes();
-
-	if (hitBody.hitboxInfo != NULL)
-	{
-		if (facingRight)
-		{
-			hitBody.hitboxInfo->kbDir.x = hitboxInfos[action].kbDir.x;
-		}
-		else
-		{
-			hitBody.hitboxInfo->kbDir.x = -hitboxInfos[action].kbDir.x;
-		}
-	}
-}
-
 void Tiger::ResetEnemy()
 {
-	currPosInfo = startPosInfo;
 	snakePool.Reset();
-	enemyMover.Reset();
 
-	fireCounter = 0;
+	BossReset();
+
 	facingRight = true;
 
-	action = WAIT;
-	SetHitboxes(NULL);
-	waitFrames = 10;
+	HitboxesOff();
 
-	//action = PUNCH;
-	//SetHitboxInfo(PUNCH);
-	//DefaultHitboxesOn();
-
-	hitPlayer = false;
-	comboMoveFrames = 0;
-
-	//actionQueueIndex = 0;
-
-
-
-
-	frame = 0;
+	StartFight();
 
 	UpdateSprite();
 }
-
-void Tiger::SetHitboxInfo(int a)
-{
-	*hitboxInfo = hitboxInfos[a];
-	hitBody.hitboxInfo = hitboxInfo;
-}
-
-//void Tiger::SetCommand(int index, BirdCommand &bc)
-//{
-//	actionQueue[index] = bc;
-//}
 
 void Tiger::DebugDraw(sf::RenderTarget *target)
 {
 	enemyMover.DebugDraw(target);
 }
 
-void Tiger::DirectKill()
+bool Tiger::TryComboMove(V2d &comboPos, int comboMoveDuration,
+	int moveDurationBeforeStartNextAction,
+	V2d &comboOffset)
 {
-	for (int i = 0; i < numLaunchers; ++i)
-	{
-		BasicBullet *b = launchers[0]->activeBullets;
-		while (b != NULL)
-		{
-			BasicBullet *next = b->next;
-			double angle = atan2(b->velocity.y, -b->velocity.x);
-			sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
-			b->launcher->DeactivateBullet(b);
-
-			b = next;
-		}
-	}
-	receivedHit = NULL;
+	return false;
 }
 
-void Tiger::FrameIncrement()
+int Tiger::ChooseActionAfterStageChange()
 {
-	++fireCounter;
-
-	if (comboMoveFrames > 0)
-	{
-		--comboMoveFrames;
-	}
-
-	if (moveFrames > 0)
-	{
-		--moveFrames;
-	}
-
-	if (waitFrames > 0)
-	{
-		--waitFrames;
-	}
-
-	enemyMover.FrameIncrement();
-	currPosInfo = enemyMover.currPosInfo;
+	return Boss::ChooseActionAfterStageChange();
 }
 
-void Tiger::ProcessState()
+void Tiger::ActivatePostFightScene()
 {
-	if (frame == actionLength[action] * animFactor[action])
+	if (level == 1)
 	{
-		switch (action)
-		{
-		case COMBOMOVE:
-			frame = 0;
-			break;
-		}
+		postFightScene->Reset();
+		sess->SetActiveSequence(postFightScene);
 	}
-
-	enemyMover.currPosInfo = currPosInfo;
-
-	if (action == MOVE && enemyMover.IsIdle())
+	else if (level == 2)
 	{
-		action = WAIT;
-		waitFrames = 1;//10
-		//currPosInfo.SetGround(
-		//	targetNode->poly, targetNode->edgeIndex, targetNode->edgeQuantity);
-		//enemyMover.currPosInfo = currPosInfo;
-	}
-	else if (action == WAIT && waitFrames == 0)
-	{
-		int r = rand() % 3;
-
-		auto *nodeVec = sess->GetBossNodeVector(BossFightType::FT_TIGER, nodeAStr);
-		int vecSize = nodeVec->size();
-		int rNode = rand() % vecSize;
-
-		targetNode = nodeVec->at(rNode);
-
-		V2d nodePos = targetNode->pos;
-
-		V2d pPos = sess->GetPlayerPos(0);
-		V2d pDir = normalize(pPos - GetPosition());
-
-		if (r == 0)
-		{
-			int gr = rand() % 2;
-
-			double grindSpeed = 20;
-			if (gr == 0)
-			{
-				enemyMover.SetModeGrind(grindSpeed, 120);
-			}
-			else if (gr == 1)
-			{
-				enemyMover.SetModeGrind(-grindSpeed, 120);
-			}
-
-			//snakePool.Throw(GetPosition(), pDir);
-		}
-		else if (r == 1)
-		{
-			enemyMover.currPosInfo.SetAerial();
-			currPosInfo.SetAerial();
-
-			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
-			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
-			enemyMover.SetDestNode(nodeVec->at(rNode));
-
-			//snakePool.Throw(GetPosition(), pDir);
-		}
-		else if (r == 2)
-		{
-			enemyMover.currPosInfo.SetAerial();
-			currPosInfo.SetAerial();
-			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 1.5), 200);
-			//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
-			enemyMover.SetDestNode(nodeVec->at(rNode));
-			//snakePool.Throw(GetPosition(), pDir);
-			
-		}
-		else if (r == 3)
-		{
-
-		}
-
-
-		action = MOVE;
-		moveFrames = 60;
-	}
-	else if (action == COMBOMOVE)
-	{
-		if (comboMoveFrames == 0)
-		{
-			//action = actionQueue[actionQueueIndex].action + 1;
-			//facingRight = actionQueue[actionQueueIndex].facingRight;
-			SetHitboxInfo(action);
-			//only have this on if i dont turn on hitboxes at the end of the movement.
-			DefaultHitboxesOn();
-
-		}
-	}
-
-	bool comboInterrupted = sess->GetPlayer(targetPlayerIndex)->hitOutOfHitstunLastFrame
-		&& comboMoveFrames > 0;
-	//added this combo counter thing
-	if (hitPlayer || comboInterrupted)
-	{
-		action = COMBOMOVE;
-		frame = 0;
-		//if (!comboInterrupted)
-		//	++actionQueueIndex;
-		SetHitboxes(NULL, 0);
-
-		//if (actionQueueIndex == 3)
-		{
-
-		}
-	}
-
-	hitPlayer = false;
-}
-
-void Tiger::ProcessHit()
-{
-	if (!dead && ReceivedHit() && numHealth > 1)
-	{
-		numHealth -= 1;
-
-		if (numHealth <= 0)
-		{
-			if (hasMonitor && !suppressMonitor)
-			{
-				//sess->CollectKey();
-			}
-
-			sess->PlayerConfirmEnemyKill(this, GetReceivedHitPlayerIndex());
-			ConfirmKill();
-		}
-		else
-		{
-			sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-			ConfirmHitNoKill();
-		}
-
-		if (numHealth == 1)
-		{
-			if (level == 1)
-			{
-				postFightScene->Reset();
-				sess->SetActiveSequence(postFightScene);
-			}
-			else if (level == 2)
-			{
-				postFightScene2->Reset();
-				sess->SetActiveSequence(postFightScene2);
-			}
-		}
-
-		receivedHit = NULL;
+		postFightScene2->Reset();
+		sess->SetActiveSequence(postFightScene2);
 	}
 }
 
-void Tiger::Setup()
+void Tiger::ActionEnded()
 {
-	Enemy::Setup();
+	switch (action)
+	{
+	case WAIT:
+	case MOVE_GRIND:
+	case MOVE_JUMP:
+		Decide();
+		break;
+	case COMBOMOVE:
+		SetNextComboAction();
+		break;
+	}
+}
 
+void Tiger::HandleAction()
+{
+
+}
+
+void Tiger::StartAction()
+{
+	switch (action)
+	{
+	case MOVE_GRIND:
+	{
+		int gr = rand() % 2;
+
+		double grindSpeed = 20;
+		if (gr == 0)
+		{
+			enemyMover.SetModeGrind(grindSpeed, 120);
+		}
+		else if (gr == 1)
+		{
+			enemyMover.SetModeGrind(-grindSpeed, 120);
+		}
+		break;
+	}
+	case MOVE_JUMP:
+	{
+		enemyMover.currPosInfo.SetAerial();
+		currPosInfo.SetAerial();
+		PoiInfo *node = nodeGroupA.AlwaysGetNextNode();
+		enemyMover.SetModeNodeProjectile(node->pos, V2d(0, 1.5), 200);
+		enemyMover.SetDestNode(node);
+		break;
+	}
+		
+	}
+}
+
+void Tiger::SetupPostFightScenes()
+{
 	if (level == 1)
 	{
 		if (postFightScene2 != NULL)
@@ -386,11 +212,24 @@ void Tiger::Setup()
 		postFightScene2->tiger = this;
 		postFightScene2->Init();
 	}
-
-	
 }
 
-void Tiger::Wait()
+void Tiger::SetupNodeVectors()
+{
+	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
+}
+
+bool Tiger::IsDecisionValid(int d)
+{
+	return true;
+}
+
+bool Tiger::IsEnemyMoverAction(int a)
+{
+	return a == MOVE_GRIND || a == MOVE_JUMP ;
+}
+
+void Tiger::SeqWait()
 {
 	action = SEQ_WAIT;
 	frame = 0;
@@ -404,49 +243,15 @@ void Tiger::Wait()
 
 void Tiger::StartFight()
 {
-	action = WAIT;
+	Wait(10);
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 	frame = 0;
-	SetHitboxes(NULL);
-	waitFrames = 10;
-}
-
-void Tiger::IHitPlayer(int index)
-{
-	hitPlayer = true;
-	pauseFrames = hitBody.hitboxInfo->hitlagFrames;
-}
-
-void Tiger::UpdateEnemyPhysics()
-{
-	if (!enemyMover.IsIdle())
-	{
-		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
-		currPosInfo = enemyMover.currPosInfo;
-	}
+	HitboxesOff();
 }
 
 void Tiger::UpdateSprite()
 {
-	/*switch (action)
-	{
-	case WAIT:
-	case MOVE:
-	case COMBOMOVE:
-	sprite.setTexture(*ts_move->texture);
-	ts_move->SetSubRect(sprite, 2, !facingRight);
-	break;
-	case PUNCH:
-	sprite.setTexture(*ts_punch->texture);
-	ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
-	break;
-	case KICK:
-	sprite.setTexture(*ts_kick->texture);
-	ts_kick->SetSubRect(sprite, frame / animFactor[action] + 6, !facingRight);
-	break;
-	}*/
-
 	sprite.setTexture(*ts_move->texture);
 	ts_move->SetSubRect(sprite, 0, !facingRight);
 
@@ -460,14 +265,9 @@ void Tiger::EnemyDraw(sf::RenderTarget *target)
 	snakePool.Draw(target);
 }
 
-void Tiger::HandleHitAndSurvive()
-{
-	fireCounter = 0;
-}
-
 int Tiger::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData);
 }
 
 void Tiger::StoreBytes(unsigned char *bytes)
@@ -475,13 +275,10 @@ void Tiger::StoreBytes(unsigned char *bytes)
 	MyData d;
 	memset(&d, 0, sizeof(MyData));
 	StoreBasicEnemyData(d);
-	d.fireCounter = fireCounter;
 
 	memcpy(bytes, &d, sizeof(MyData));
 
 	bytes += sizeof(MyData);
-
-	launchers[0]->StoreBytes(bytes);
 }
 
 void Tiger::SetFromBytes(unsigned char *bytes)
@@ -491,9 +288,6 @@ void Tiger::SetFromBytes(unsigned char *bytes)
 
 	SetBasicEnemyData(d);
 
-	fireCounter = d.fireCounter;
 
 	bytes += sizeof(MyData);
-
-	launchers[0]->SetFromBytes(bytes);
 }

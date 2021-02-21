@@ -110,23 +110,22 @@ bool Boss::TrySetActionToNextAction()
 
 void Boss::ProcessState()
 {
-	ActionEnded();
-	TryCombo();
-	CheckEnemyMoverActionsOver();
-	TryExecuteDecision();
-	HandleAction();
-	EndProcessState();
-}
-
-void Boss::CheckEnemyMoverActionsOver()
-{
 	if (IsEnemyMoverAction(action))
 	{
 		if (enemyMover.IsIdle())
 		{
-			Decide();
+			ActionEnded();
 		}
 	}
+	else if(frame == actionLength[action] * animFactor[action])
+	{
+		ActionEnded();
+	}
+
+	TryCombo();
+	TryExecuteDecision();
+	HandleAction();
+	EndProcessState();
 }
 
 void Boss::TryCombo()
@@ -160,6 +159,13 @@ void Boss::TryCombo()
 				durationBeforeNextAction, offset );
 		}
 	}
+}
+
+void Boss::Wait( int numFrames )
+{
+	SetAction(0);
+	assert(numFrames > 0);
+	actionLength[0] = numFrames;
 }
 
 void Boss::UpdateHitboxes()

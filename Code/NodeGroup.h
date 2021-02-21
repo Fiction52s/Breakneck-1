@@ -4,13 +4,13 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include "RandomPicker.h"
+#include "PoiInfo.h"
 
-struct PoiInfo;
 struct CircleGroup;
 
 struct NodeGroup
 {
-	NodeGroup(sf::Color c);
+	NodeGroup(sf::Color c = sf::Color::Magenta);
 	~NodeGroup();
 	void Draw(sf::RenderTarget *target);
 	void SetNodeVec(std::vector<PoiInfo*> *nv);

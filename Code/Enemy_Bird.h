@@ -47,11 +47,6 @@ struct Bird : Summoner, Boss
 	
 	int fireCounter;
 
-	
-
-	//BirdCommand actionQueue[3];
-	//int actionQueueIndex;
-
 	Tileset *ts_punch;
 	Tileset *ts_kick;
 	Tileset *ts_move;
@@ -89,12 +84,11 @@ struct Bird : Summoner, Boss
 	bool IsEnemyMoverAction( int a);
 
 	//My functions
-	void Wait(int numFrames);
-	void SequenceWait();
+	void SeqWait();
 	void StartFight();
 	void LoadParams();
 	
-	//Rollback functions
+	//Rollback
 	struct MyData : StoredEnemyData
 	{
 		int fireCounter;

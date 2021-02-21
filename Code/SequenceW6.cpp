@@ -487,7 +487,7 @@ void TigerPreFight2Scene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(tiger);
-			tiger->Wait();
+			tiger->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -566,7 +566,7 @@ void TigerPostFight2Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("tigerdeathcam");
-			tiger->Wait();
+			tiger->SeqWait();
 		}
 		break;
 	case WAIT:

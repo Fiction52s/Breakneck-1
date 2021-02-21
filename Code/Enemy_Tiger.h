@@ -1,92 +1,73 @@
 #ifndef __ENEMY_TIGER_H__
 #define __ENEMY_TIGER_H__
 
-#include "Enemy.h"
+#include "Boss.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "EnemyMover.h"
 #include "Enemy_TigerGrindBullet.h"
 
-struct PoiInfo;
 struct TigerPostFightScene;
 struct TigerPostFight2Scene;
-struct Tiger : Enemy
+
+struct Tiger : Boss
 {
 	enum Action
 	{
-		MOVE,
 		WAIT,
+		MOVE_GRIND,
+		MOVE_JUMP,
 		COMBOMOVE,
 		SEQ_WAIT,
 		A_Count
 	};
 
-	struct MyData : StoredEnemyData
-	{
-		int fireCounter;
-	};
+	
 
 	TigerPostFightScene *postFightScene;
 	TigerPostFight2Scene *postFightScene2;
 
-	PoiInfo *targetNode;
-
 	Tileset *ts_move;
-
-	int moveFrames;
-	int waitFrames;
-
-	std::string nodeAStr;
 
 	TigerGrindBulletPool snakePool;
 
-	EnemyMover enemyMover;
-
-	int fireCounter;
-
-	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
-
-	int reachPointOnFrame[A_Count];
-
-	bool hitPlayer;
-
-	int targetPlayerIndex;
-
-	HitboxInfo hitboxInfos[A_Count];
-
-	int counterTillAttack;
-
-	V2d targetPos;
-	int framesToArrive;
+	NodeGroup nodeGroupA;
 
 	Tiger(ActorParams *ap);
 	~Tiger();
-	void ProcessHit();
-	void Setup();
-	void Wait();
+
+	//Enemy functions
+	void DebugDraw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+
+	//Boss functions
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
+		int moveDurationBeforeStartNextAction,
+		V2d &comboOffset);
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
+	void ActionEnded();
+	void HandleAction();
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+	bool IsDecisionValid(int d);
+	bool IsEnemyMoverAction(int a);
+
+	//My functions
+	void SeqWait();
 	void StartFight();
 	void LoadParams();
+
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-	void DirectKill();
-	//void SetCommand(int index, BirdCommand &bc);
-	void ProcessState();
-	void UpdateHitboxes();
-	void DebugDraw(sf::RenderTarget *target);
-
-	void EnemyDraw(sf::RenderTarget *target);
-	void HandleHitAndSurvive();
-
-	void IHitPlayer(int index = 0);
-	void UpdateSprite();
-	void ResetEnemy();
-	void UpdateEnemyPhysics();
-	void FrameIncrement();
-
-	void SetHitboxInfo(int a);
-
 
 };
 

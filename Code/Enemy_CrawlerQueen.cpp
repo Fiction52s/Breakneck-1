@@ -20,8 +20,7 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 		new BasicGroundEnemyParams(sess->types["crawler"], 1),
 		5, 5, 1),
 	bombSummonGroup( this, new ActorParams( sess->types["queenfloatingbomb"]),
-		10, 10, 1, true ),
-	nodeGroupA(Color::Magenta)
+		10, 10, 1, true )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -117,11 +116,9 @@ void CrawlerQueen::LoadParams()
 
 void CrawlerQueen::ResetEnemy()
 {
-	currPosInfo = startPosInfo;
+	//currPosInfo = startPosInfo;
 
 	wasAerial = false;
-
-	invincibleFrames = 0;
 	
 	BossReset();
 
@@ -148,9 +145,6 @@ void CrawlerQueen::ResetEnemy()
 
 	StartFight();
 
-	hitPlayer = false;
-	comboMoveFrames = 0;
-
 	UpdateSprite();
 }
 
@@ -173,43 +167,40 @@ void CrawlerQueen::GoUnderground(int numFrames)
 
 void CrawlerQueen::ActionEnded()
 {
-	if (frame == actionLength[action] * animFactor[action])
+	switch (action)
 	{
-		switch (action)
-		{
-		case COMBOMOVE:
-			frame = 0;
-			break;
-		case WAIT:
-			Decide();
-			break;
-		case SUMMON:
-			Decide();
-			break;
-		case SLASH:
-			GoUnderground(15);
-			break;
-		case MOVE:
-			Decide();
-			break;
-		case DIG_IN:
-			GoUnderground(60);
-			break;
-		case DIG_OUT:
-			Decide();
-			break;
-		case UNDERGROUND:
-		{
-			PoiInfo *node = nodeGroupA.AlwaysGetNextNode();
-			PositionInfo nodePosInfo;
-			nodePosInfo.SetGround(node->poly, node->edgeIndex, node->edgeQuantity);
-			surfaceMover->Set(nodePosInfo);
+	case COMBOMOVE:
+		frame = 0;
+		break;
+	case WAIT:
+		Decide();
+		break;
+	case SUMMON:
+		Decide();
+		break;
+	case SLASH:
+		GoUnderground(15);
+		break;
+	case MOVE:
+		Decide();
+		break;
+	case DIG_IN:
+		GoUnderground(60);
+		break;
+	case DIG_OUT:
+		Decide();
+		break;
+	case UNDERGROUND:
+	{
+		PoiInfo *node = nodeGroupA.AlwaysGetNextNode();
+		PositionInfo nodePosInfo;
+		nodePosInfo.SetGround(node->poly, node->edgeIndex, node->edgeQuantity);
+		surfaceMover->Set(nodePosInfo);
 
-			int digChoice = digDecidePicker.AlwaysGetNextOption();
-			SetAction(digChoice);
-			break;
-		}
-		}
+		int digChoice = digDecidePicker.AlwaysGetNextOption();
+		SetAction(digChoice);
+		break;
+	}
 	}
 }
 
@@ -398,16 +389,23 @@ void CrawlerQueen::StartFight()
 	HitboxesOff();
 }
 
-void CrawlerQueen::Wait(int numFrames)
-{
-	SetAction(WAIT);
-	assert(numFrames > 0);
-	actionLength[WAIT] = numFrames;
-}
-
 int CrawlerQueen::ChooseActionAfterStageChange()
 {
 	return ChooseNextAction();//will add stages to crawler later
+}
+
+void CrawlerQueen::ActivatePostFightScene()
+{
+	if (level == 1)
+	{
+		postFightScene->Reset();
+		sess->SetActiveSequence(postFightScene);
+	}
+	else if (level == 2)
+	{
+		postFightScene2->Reset();
+		sess->SetActiveSequence(postFightScene2);
+	}
 }
 
 

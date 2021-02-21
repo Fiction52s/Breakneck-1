@@ -65,10 +65,10 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	SummonGroup crawlerSummonGroup;
 	SummonGroup bombSummonGroup;
 
-	void StartAngryYelling();
-	void StartInitialUnburrow();
-
 	NodeGroup nodeGroupA;
+
+	CrawlerQueen(ActorParams *ap);
+	~CrawlerQueen();
 
 	//Summoner functions
 	void InitEnemyForSummon(
@@ -89,15 +89,16 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void HandleAction();
 	void StartAction();
 	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
 
 	//My functions
-	CrawlerQueen(ActorParams *ap);
-	~CrawlerQueen();
+
 	void GoUnderground(int numFrames);
 	void SeqWait();
 	void StartFight();
 	void LoadParams();
-	void Wait(int numFrames);
+	void StartAngryYelling();
+	void StartInitialUnburrow();
 
 	//SurfaceMover functions
 	void HitTerrainAerial(Edge *, double);

@@ -260,7 +260,7 @@ void CoyotePreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(coy);
-			coy->Wait();
+			coy->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -365,7 +365,7 @@ void CoyotePostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			coy->Wait();
+			coy->SeqWait();
 				
 		}
 		break;

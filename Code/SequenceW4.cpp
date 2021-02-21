@@ -290,7 +290,7 @@ void TigerPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(tiger);
-			tiger->Wait();
+			tiger->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -411,7 +411,7 @@ void TigerPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("birdrescuecam");
-			tiger->Wait();
+			tiger->SeqWait();
 		}
 		break;
 	case WAIT:

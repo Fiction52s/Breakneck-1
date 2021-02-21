@@ -63,7 +63,6 @@ struct Boss : Enemy
 	virtual void SetupPostFightScenes() {}
 	virtual void SetupNodeVectors() {}
 	void SetTargetPlayerIndex(int ind);
-	void CheckEnemyMoverActionsOver();
 	virtual void ActionEnded() {}
 	virtual void HandleAction() {}
 	virtual void ProcessState();
@@ -75,6 +74,7 @@ struct Boss : Enemy
 	virtual void FrameIncrement();
 	void SetBasicActiveHitbox();
 	void SetupHitboxes(int a, const std::string &name);
+	void Wait(int numFrames);
 
 	//virtual void MovementEnded();
 

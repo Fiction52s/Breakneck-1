@@ -77,7 +77,7 @@ void BirdPreFight2Scene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(bird);
-			bird->SequenceWait();
+			bird->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -162,7 +162,7 @@ void BirdPostFight2Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			bird->SequenceWait();
+			bird->SeqWait();
 		}
 		break;
 	case WAIT:
@@ -339,7 +339,7 @@ void GatorPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(gator);
-			gator->Wait();
+			gator->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -420,7 +420,7 @@ void GatorPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("gatordeathcam");
-			gator->Wait();
+			gator->SeqWait();
 		}
 		break;
 	case WAIT:

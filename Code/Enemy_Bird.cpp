@@ -252,7 +252,7 @@ void Bird::FrameIncrement()
 	++fireCounter;
 }
 
-void Bird::SequenceWait()
+void Bird::SeqWait()
 {
 	SetAction(SEQ_WAIT);
 	shurPool.Reset();
@@ -262,13 +262,6 @@ void Bird::SequenceWait()
 	enemyMover.Reset();
 	HurtboxesOff();
 	HitboxesOff();
-}
-
-void Bird::Wait(int numFrames)
-{
-	SetAction(WAIT);
-	assert(numFrames > 0);
-	actionLength[WAIT] = numFrames;
 }
 
 void Bird::StartFight()
@@ -364,37 +357,37 @@ bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration, int moveDurationBe
 
 void Bird::ActionEnded()
 {
-	if (frame == actionLength[action] * animFactor[action])
+	switch (action)
 	{
-		switch (action)
+	case SUMMON:
+	case WAIT:
+	case UNDODGEABLE_SHURIKEN:
+	case SHURIKEN_SHOTGUN:
+	case MOVE_CHASE:
+	case MOVE_NODE_LINEAR:
+	case MOVE_NODE_QUADRATIC:
+		Decide();
+		break;
+	case PUNCH:
+		if (TrySetActionToNextAction())
 		{
-		case SUMMON:
-		case WAIT:
-		case UNDODGEABLE_SHURIKEN:
-		case SHURIKEN_SHOTGUN:
+			facingRight = GetCurrCommand().facingRight;
+		}
+		else
+		{
 			Decide();
-			break;
-		case PUNCH:
-			if (TrySetActionToNextAction())
-			{
-				facingRight = GetCurrCommand().facingRight;
-			}
-			else
-			{
-				Decide();
-			}
-			break;
-		case COMBOMOVE:
-		{
-			SetNextComboAction();
-			break;
 		}
-		case KICK:
-			frame = 0;
-			break;
-		case SEQ_WAIT:
-			break;
-		}
+		break;
+	case COMBOMOVE:
+	{
+		SetNextComboAction();
+		break;
+	}
+	case KICK:
+		frame = 0;
+		break;
+	case SEQ_WAIT:
+		break;
 	}
 }
 

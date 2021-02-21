@@ -1,114 +1,78 @@
 #ifndef __ENEMY_COYOTE__
 #define __ENEMY_COYOTE__
 
-#include "Enemy.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "EnemyMover.h"
 #include "Enemy_CoyoteBullet.h"
-#include "BossStageManager.h"
-#include "RandomPicker.h"
 #include "SummonGroup.h"
+#include "Boss.h"
 
 struct CoyotePostFightScene;
 
 
 
-struct Coyote : Enemy, Summoner
+struct Coyote : Boss, Summoner
 {
 	enum Action
 	{
+		WAIT,
 		SEQ_WAIT,
 		MOVE,
-		WAIT,
 		SUMMON,
 		COMBOMOVE,
 		A_Count
 	};
+	
+	NodeGroup nodeGroupA;
 
-	struct MyData : StoredEnemyData
-	{
-		int fireCounter;
-	};
-
-	std::vector<PoiInfo*> *nodeAVec;
-
-	RandomPicker nodePicker;
 	SummonGroup fireflySummonGroup;
 
 	CoyotePostFightScene *postFightScene;
 
-	int invincibleFrames;
-
-	BossStageManager stageMgr;
-	RandomPicker *decidePickers;
-
 	Tileset *ts_move;
-
-
-
-	int moveFrames;
-	int waitFrames;
-
-	std::string nodeAStr;
 
 	CoyoteBulletPool stopStartPool;
 
-	EnemyMover enemyMover;
-
-	void NextStage();
-	bool stageChanged;
-
-	int fireCounter;
-
-	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
-
-	int reachPointOnFrame[A_Count];
-
-	bool hitPlayer;
-
-	int targetPlayerIndex;
-
-	HitboxInfo hitboxInfos[A_Count];
-
-	int counterTillAttack;
-
-	V2d targetPos;
-	int framesToArrive;
-
 	Coyote(ActorParams *ap);
 	~Coyote();
-	void LoadParams();
-	void ProcessHit();
-	int GetNumStoredBytes();
-	void Setup();
-	void StartFight();
-	void Wait();
-	bool IsDecisionValid(int d);
-	void ChooseNextAction();
-	void StoreBytes(unsigned char *bytes);
-	void SetFromBytes(unsigned char *bytes);
-	void DirectKill();
-	//void SetCommand(int index, BirdCommand &bc);
-	void ProcessState();
-	void UpdateHitboxes();
-	void DebugDraw(sf::RenderTarget *target);
 
-	void EnemyDraw(sf::RenderTarget *target);
-	void HandleHitAndSurvive();
-
+	//summoner functions
 	void InitEnemyForSummon(SummonGroup *group, Enemy *e);
 
-	void IHitPlayer(int index = 0);
+	//enemy functions
+	void DebugDraw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
-	void UpdateEnemyPhysics();
-	void FrameIncrement();
 
-	void SetHitboxInfo(int a);
+	//boss functions
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
+		int moveDurationBeforeStartNextAction,
+		V2d &comboOffset);
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
+	void ActionEnded();
+	void HandleAction();
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+	bool IsDecisionValid(int d);
+	bool IsEnemyMoverAction(int a);
 
+	//my functions
+	void LoadParams();
+	void StartFight();
+	void SeqWait();
+	
 
+	//rollback functions
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
