@@ -311,7 +311,7 @@ void FinalSkeletonPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(greySkeleton);
-			greySkeleton->Wait();
+			greySkeleton->SeqWait();
 		}
 		EntranceUpdate();
 		break;
@@ -389,7 +389,7 @@ void FinalSkeletonPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand", true);
 			SetCameraShot("victorycam");
-			greySkeleton->Wait();
+			greySkeleton->SeqWait();
 		}
 		break;
 	case WAIT:

@@ -1,84 +1,67 @@
 #ifndef __ENEMY_GREYSKELETON_H__
 #define __ENEMY_GREYSKELETON_H__
 
-#include "Enemy.h"
+#include "Boss.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "EnemyMover.h"
 
 struct FinalSkeletonPostFightScene;
 
-struct GreySkeleton : Enemy
+struct GreySkeleton : Boss
 {
 	enum Action
 	{
+		WAIT,
 		COMBOMOVE,
 		MOVE,
-		WAIT,
 		SEQ_WAIT,
 		A_Count
 	};
 
-	struct MyData : StoredEnemyData
-	{
-		int fireCounter;
-	};
+	NodeGroup nodeGroupA;
 
-	int moveFrames;
-	int waitFrames;
-
-	std::string nodeAStr;
-
-	EnemyMover enemyMover;
-
-	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
-
-	int reachPointOnFrame[A_Count];
-
-	bool hitPlayer;
-
-	int targetPlayerIndex;
-
-	HitboxInfo hitboxInfos[A_Count];
-
-	Tileset *ts_punch;
-	Tileset *ts_kick;
 	Tileset *ts_move;
-
-	int counterTillAttack;
-
-	V2d targetPos;
-	int framesToArrive;
 
 	FinalSkeletonPostFightScene *postFightScene;
 
 	GreySkeleton(ActorParams *ap);
 
 	~GreySkeleton();
-	void Wait();
-	void Setup();
-	void ProcessHit();
+
+	//Enemy functions
+	void DebugDraw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+
+	//Boss functions
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
+		int moveDurationBeforeStartNextAction,
+		V2d &comboOffset);
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
+	void ActionEnded();
+	void HandleAction();
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+	bool IsDecisionValid(int d);
+	bool IsEnemyMoverAction(int a);
+
+
+	//My functions
+	void SeqWait();
 	void StartFight();
 	void LoadParams();
+
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-	void DirectKill();
-	void ProcessState();
-	void UpdateHitboxes();
-	void DebugDraw(sf::RenderTarget *target);
-
-	void EnemyDraw(sf::RenderTarget *target);
-	void HandleHitAndSurvive();
-
-	void IHitPlayer(int index = 0);
-	void UpdateSprite();
-	void ResetEnemy();
-	void UpdateEnemyPhysics();
-	void FrameIncrement();
-
-	void SetHitboxInfo(int a);
 };
 
 #endif
