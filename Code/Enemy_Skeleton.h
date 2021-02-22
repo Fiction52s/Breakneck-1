@@ -24,7 +24,6 @@ struct Skeleton : Boss, RayCastHandler
 
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
-	CircleGroup testGroup;
 
 	SkeletonPostFightScene *postFightScene;
 	CoyoteHelper *coyHelper;

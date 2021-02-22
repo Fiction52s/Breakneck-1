@@ -1,5 +1,4 @@
-#include "Enemy.h"
-#include "GameSession.h"
+#include "Session.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
@@ -11,20 +10,8 @@ using namespace std;
 using namespace sf;
 
 
-#define COLOR_TEAL Color( 0, 0xee, 0xff )
-#define COLOR_BLUE Color( 0, 0x66, 0xcc )
-#define COLOR_GREEN Color( 0, 0xcc, 0x44 )
-#define COLOR_YELLOW Color( 0xff, 0xf0, 0 )
-#define COLOR_ORANGE Color( 0xff, 0xbb, 0 )
-#define COLOR_RED Color( 0xff, 0x22, 0 )
-#define COLOR_MAGENTA Color( 0xff, 0, 0xff )
-#define COLOR_WHITE Color( 0xff, 0xff, 0xff )
-
-
 Skeleton::Skeleton(ActorParams *ap)
-	:Boss(EnemyType::EN_SKELETONBOSS, ap),
-	testGroup(2, 20, Color::Red, 6)
-	//testGroup2(1, 18, Color::Cyan, 6)
+	:Boss(EnemyType::EN_SKELETONBOSS, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -139,32 +126,22 @@ void Skeleton::StartAction()
 		playerDist = PlayerDist(targetPlayerIndex);
 		RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
 
-		//testGroup.HideAll();
-		//testGroup2.HideAll();
-		
-		
-		
-
 		if (rcEdge != NULL)
 		{
 			assert(rcEdge != NULL);
 
 			V2d basePos = rcEdge->GetPosition(rcQuantity);
 
-			//testGroup.SetPosition(0, Vector2f(rcEdge->v0));
-			//testGroup.SetPosition(1, Vector2f(rcEdge->v1));
-
-			//testGroup2.SetPosition(0, Vector2f(basePos));
-
-			//testGroup.ShowAll();
-			//testGroup2.ShowAll();
-
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
-
-			enemyMover.SetModeNodeLinear(basePos, CubicBezier(), 60);
-			//enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
+			//enemyMover.SetModeNodeLinear(basePos, CubicBezier(), 60);
+			enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
 			//enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
+		}
+		else
+		{
+			Wait(1);
+			assert(0);
 		}
 		break;
 	}
@@ -172,11 +149,9 @@ void Skeleton::StartAction()
 	{
 		V2d nodePos = nodeGroupB.AlwaysGetNextNode()->pos;
 
-		
-		testGroup.SetPosition(0, Vector2f(nodePos));
-		testGroup.ShowAll();
-
 		V2d nodeDiff = nodePos - GetPosition();
+		double absNodeDiffX = abs(nodeDiff.x);
+
 		if (nodeDiff.y < -600)
 		{
 			rcEdge = NULL;
@@ -204,108 +179,54 @@ void Skeleton::StartAction()
 			//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
 
 		}
+		else if (absNodeDiffX > 600)
+		{
+
+			//stuff
+			V2d along = nodePos - GetPosition();
+			V2d midPoint = GetPosition() + along / 4.0;
+			V2d centerPoint = (nodePos + GetPosition()) / 2.0;
+			along = normalize(along);
+
+			V2d other(along.y, -along.x);
+
+			double speed = -40;//dot(startVel, dir);
+
+			if (other.y >= 0)
+			{
+				speed = -speed;
+				other = -other;
+			}
+
+
+			rcEdge = NULL;
+			rayStart = midPoint;
+			rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
+			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+
+			if (rcEdge != NULL)
+			{
+				assert(rcEdge != NULL);
+
+				V2d basePos = rcEdge->GetPosition(rcQuantity);
+
+				//V2d dir = normalize(basePos - GetPosition());
+				//V2d along(-dir.y, dir.x);
+
+
+
+				enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, nodePos);
+				//enemyMover.SetModeRadial(basePos, speed, dest);
+				//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
+			}
+		}
 		else
 		{
-			cout << "cancel: " << nodeDiff.y << endl;
+			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
 		}
 		break;
 	}
 		
-	}
-
-	{
-		//if (true)
-		//{
-		//	rcEdge = NULL;
-		//	rayStart = GetPosition();
-		//	rayEnd = pPos + pDir * 5000.0;
-		//	ignorePointsCloserThanPlayer = true;
-		//	playerDist = length(pPos - GetPosition());
-		//	RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
-
-		//	if (rcEdge != NULL)
-		//	{
-		//		assert(rcEdge != NULL);
-
-		//		V2d basePos = rcEdge->GetPosition(rcQuantity);
-
-		//		enemyMover.currPosInfo.SetAerial();
-		//		currPosInfo.SetAerial();
-
-		//		enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
-		//		//enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
-		//	}
-		//}
-		//else if (nodeDiff.y < -600)
-		//{
-		//	rcEdge = NULL;
-		//	rayStart = nodePos + V2d(0, -10);
-		//	rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
-		//	ignorePointsCloserThanPlayer = false;
-		//	RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
-
-		//	if (rcEdge != NULL)
-		//	{
-		//		assert(rcEdge != NULL);
-
-		//		V2d basePos = rcEdge->GetPosition(rcQuantity);
-
-		//		enemyMover.currPosInfo.SetAerial();
-		//		currPosInfo.SetAerial();
-
-		//		enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
-		//		//enemyMover.SetModeRadial(basePos, speed, dest);
-		//		//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
-		//	}
-		//	//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
-
-		//}
-		//else if (absNodeDiffX > 600)
-		//	//if( true )
-		//{
-
-		//	//stuff
-		//	V2d along = nodePos - GetPosition();
-		//	V2d midPoint = GetPosition() + along / 4.0;
-		//	V2d centerPoint = (nodePos + GetPosition()) / 2.0;
-		//	along = normalize(along);
-
-		//	V2d other(along.y, -along.x);
-
-		//	double speed = -40;//dot(startVel, dir);
-
-		//	if (other.y >= 0)
-		//	{
-		//		speed = -speed;
-		//		other = -other;
-		//	}
-
-
-		//	rcEdge = NULL;
-		//	rayStart = midPoint;
-		//	rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
-		//	RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
-
-		//	if (rcEdge != NULL)
-		//	{
-		//		assert(rcEdge != NULL);
-
-		//		V2d basePos = rcEdge->GetPosition(rcQuantity);
-
-		//		//V2d dir = normalize(basePos - GetPosition());
-		//		//V2d along(-dir.y, dir.x);
-
-
-
-		//		enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, nodePos);
-		//		//enemyMover.SetModeRadial(basePos, speed, dest);
-		//		//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
-		//	}
-		//}
-		//else
-		//{
-		//	enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
-		//}
 	}
 }
 
@@ -339,9 +260,6 @@ bool Skeleton::IsEnemyMoverAction(int a)
 void Skeleton::DebugDraw(sf::RenderTarget *target)
 {
 	enemyMover.DebugDraw(target);
-	testGroup.Draw(target);
-	//testGroup.Draw(target);
-	//testGroup2.Draw(target);
 }
 
 void Skeleton::SeqWait()
