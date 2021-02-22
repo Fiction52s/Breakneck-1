@@ -145,6 +145,11 @@ V2d Enemy::PlayerDir( V2d myOffset, V2d playerOffset, int index)
 		- ( GetPosition() + myOffset ));
 }
 
+V2d Enemy::PlayerDir(int index)
+{
+	return normalize(sess->GetPlayerPos(index)- GetPosition());
+}
+
 V2d Enemy::AlongGroundDir()
 {
 	if (surfaceMover != NULL)

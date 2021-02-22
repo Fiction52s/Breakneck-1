@@ -1,63 +1,42 @@
 #ifndef __ENEMY_SKELETON_H__
 #define __ENEMY_SKELETON_H__
 
-#include "Enemy.h"
+#include "Boss.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "EnemyMover.h"
 #include "Enemy_GatorWaterOrb.h"
 
 struct SkeletonPostFightScene;
 struct CoyoteHelper;
 
-struct Skeleton : Enemy, RayCastHandler
+struct Skeleton : Boss, RayCastHandler
 {
 	enum Action
 	{
+		WAIT,
+		MOVE_WIRE_DASH,
+		MOVE_OTHER,
 		COMBOMOVE,
 		MOVE,
-		WAIT,
 		SEQ_WAIT,
 		A_Count
 	};
 
-	struct MyData : StoredEnemyData
-	{
-		int fireCounter;
-	};
+	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
+	CircleGroup testGroup;
 
 	SkeletonPostFightScene *postFightScene;
 	CoyoteHelper *coyHelper;
 
-	int moveFrames;
-	int waitFrames;
-
-	std::string nodeAStr;
-	std::string nodeBStr;
-
 	GatorWaterOrbPool orbPool;
 
-	EnemyMover enemyMover;
-
-	Tileset *ts_bulletExplode;
-	int comboMoveFrames;
-
-	int reachPointOnFrame[A_Count];
-
-	bool hitPlayer;
-
-	int targetPlayerIndex;
-
-	HitboxInfo hitboxInfos[A_Count];
+	//CircleGroup testGroup;
+	//CircleGroup testGroup2;
 
 	Tileset *ts_punch;
 	Tileset *ts_kick;
 	Tileset *ts_move;
-
-	int counterTillAttack;
-
-	V2d targetPos;
-	int framesToArrive;
 
 	V2d rayEnd;
 	V2d rayStart;
@@ -68,30 +47,44 @@ struct Skeleton : Enemy, RayCastHandler
 
 	Skeleton(ActorParams *ap);
 	~Skeleton();
-	void Setup();
-	void Wait();
+
+	//Enemy functions
+	void DebugDraw(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+
+	//Boss functions
+	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
+		int moveDurationBeforeStartNextAction,
+		V2d &comboOffset);
+	int ChooseActionAfterStageChange();
+	void ActivatePostFightScene();
+	void ActionEnded();
+	void HandleAction();
+	void StartAction();
+	void SetupPostFightScenes();
+	void SetupNodeVectors();
+	bool IsDecisionValid(int d);
+	bool IsEnemyMoverAction(int a);
+
+	//My functions
+	void SeqWait();
 	void StartFight();
-	void ProcessHit();
 	void LoadParams();
+	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
+	
+
+	
+
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
-	void DirectKill();
-	void ProcessState();
-	void UpdateHitboxes();
-	void DebugDraw(sf::RenderTarget *target);
-
-	void EnemyDraw(sf::RenderTarget *target);
-	void HandleHitAndSurvive();
-	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
-
-	void IHitPlayer(int index = 0);
-	void UpdateSprite();
-	void ResetEnemy();
-	void UpdateEnemyPhysics();
-	void FrameIncrement();
-
-	void SetHitboxInfo(int a);
 };
 
 #endif

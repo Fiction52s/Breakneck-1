@@ -179,9 +179,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	double PlayerDistY( int index = 0);
 	double PlayerDist(int index = 0);
 	double PlayerDistSqr(int index = 0);
-	V2d PlayerDir( V2d myOffset = V2d(),
-		V2d playerOffset = V2d(),
+	V2d PlayerDir( V2d myOffset,
+		V2d playerOffset,
 		int index = 0);
+	V2d PlayerDir(int index = 0);
 	
 	bool IsGoalType();
 	virtual void AddToGame();

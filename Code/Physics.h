@@ -350,8 +350,12 @@ struct RayCastHandler
 
 void RayCast( RayCastHandler *handler, 
 	QNode *node, 
-	V2d startPoint, 
-	V2d endPoint );
+	V2d &startPoint, 
+	V2d &endPoint );
+
+void RayCast(RayCastHandler *handler,
+	QNode *node,
+	Edge &e);
 
 bool IsBoxTouchingBox( const sf::Rect<double> & r0, 
 	const sf::Rect<double> & r1 );

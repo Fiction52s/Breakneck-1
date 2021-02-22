@@ -2,8 +2,10 @@
 #include <assert.h>
 #include "CircleGroup.h"
 #include "PoiInfo.h"
+#include <iostream>
 
 using namespace sf;
+using namespace std;
 
 NodeGroup::NodeGroup(sf::Color c)
 {
@@ -63,7 +65,8 @@ void NodeGroup::Draw(sf::RenderTarget *target)
 
 PoiInfo *NodeGroup::AlwaysGetNextNode()
 {
-	return nodeVec->at(picker.AlwaysGetNextOption());
+	int ind = picker.AlwaysGetNextOption();
+	return nodeVec->at(ind);
 }
 
 PoiInfo * NodeGroup::TryGetNextNode()

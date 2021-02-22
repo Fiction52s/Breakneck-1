@@ -242,7 +242,7 @@ void SkeletonPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			sess->AddEnemy(skeleton);
-			skeleton->Wait();
+			skeleton->SeqWait();
 
 			sess->AddEnemy(coyHelper);
 			coyHelper->Wait();
@@ -337,7 +337,7 @@ void SkeletonPostFightScene::UpdateState()
 		{
 			SetPlayerStandPoint("kinstand0", true);
 			sess->SetGameSessionState(GameSession::RUN);
-			skeleton->Wait();
+			skeleton->SeqWait();
 			coyHelper->Wait();
 		}	
 		break;

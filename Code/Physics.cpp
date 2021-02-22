@@ -2237,103 +2237,66 @@ bool WithinDistance(sf::Vector2<double> &A,
 	return false;
 }
 
-/*void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint )
-{
-
-	if( node->leaf )
-	{
-		EdgeLeafNode *n = (EdgeLeafNode*)node;
-
-		Edge e;
-		e.v0 = startPoint;
-		e.v1 = endPoint;
-
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
-	
-		if( IsEdgeTouchingBox( &e, nodeBox ) )
-		{
-			for( int i = 0; i < n->objCount; ++i )
-			{
-				LineIntersection li = SegmentIntersect( startPoint, endPoint, n->edges[i]->v0, n->edges[i]->v1 );	
-				if( !li.parallel )
-				{
-					handler->HandleRayCollision( n->edges[i], n->edges[i]->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
-				}
-			}
-		}
-		
-	}
-	else
-	{
-		EdgeParentNode *n = (EdgeParentNode*)node;
-
-		for( int i = 0; i < 4; ++i )
-		{
-			RayCast( handler, n->children[i], startPoint, endPoint );
-		}
-	}
-}*/
-
-
 //only works on edges
-void RayCast( RayCastHandler *handler, QNode *node, V2d startPoint, V2d endPoint )
+void RayCast(RayCastHandler *handler, QNode *node,Edge &e)
 {
-	if( node->leaf )
+	if (node->leaf)
 	{
 		LeafNode *n = (LeafNode*)node;
 
-		Edge e;
-		e.v0 = startPoint;
-		e.v1 = endPoint;
+		sf::Rect<double> nodeBox(node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2);
 
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
-	
-		if( IsEdgeTouchingBox( &e, nodeBox ) )
+		if (IsEdgeTouchingBox(&e, nodeBox))
 		{
-			for( int i = 0; i < n->objCount; ++i )
+			for (int i = 0; i < n->objCount; ++i)
 			{
-				LineIntersection li = SegmentIntersect( startPoint, endPoint, ((Edge*)(n->entrants[i]))->v0, ((Edge*)(n->entrants[i]))->v1 );	
-				if( !li.parallel )
+				LineIntersection li = SegmentIntersect(e.v0, e.v1, ((Edge*)(n->entrants[i]))->v0, ((Edge*)(n->entrants[i]))->v1);
+				if (!li.parallel)
 				{
-					handler->HandleRayCollision( ((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity( li.position ), 
-						dot( V2d( li.position - startPoint ), normalize( endPoint - startPoint ) ) );
+					handler->HandleRayCollision(((Edge*)(n->entrants[i])), ((Edge*)(n->entrants[i]))->GetQuantity(li.position),
+						dot(V2d(li.position - e.v0), e.Along()));
 				}
 			}
 		}
-		
 	}
 	else
 	{
 		ParentNode *n = (ParentNode*)node;
 
-		Edge e;
-		e.v0 = startPoint;
-		e.v1 = endPoint;
+		sf::Rect<double> nodeBox(node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2);
 
-		sf::Rect<double> nodeBox( node->pos.x - node->rw, node->pos.y - node->rh, node->rw * 2, node->rh * 2 );
-
-		if( IsEdgeTouchingBox( &e, nodeBox ) )
+		if (IsEdgeTouchingBox(&e, nodeBox))
 		{
 			int extraChildrenSize = n->extraChildren.size();
 			Edge *currEdge;
-			for (int i = 0; i < extraChildrenSize; ++i )
+			for (int i = 0; i < extraChildrenSize; ++i)
 			{
 				currEdge = (Edge*)(n->extraChildren[i]);
-				LineIntersection li = SegmentIntersect(startPoint, endPoint, currEdge->v0, (currEdge->v1));
+				LineIntersection li = SegmentIntersect(e.v0, e.v1, currEdge->v0, (currEdge->v1));
 				if (!li.parallel)
 				{
 					handler->HandleRayCollision(currEdge, currEdge->GetQuantity(li.position),
-						dot(V2d(li.position - startPoint), normalize(endPoint - startPoint)));
+						dot(V2d(li.position - e.v0), e.Along()));
 				}
 			}
 
-		for (int i = 0; i < 4; ++i)
-		{
-			RayCast(handler, n->children[i], startPoint, endPoint);
-		}
+			for (int i = 0; i < 4; ++i)
+			{
+				RayCast(handler, n->children[i], e);
+			}
 		}
 	}
+}
+
+//only works on edges
+void RayCast( RayCastHandler *handler, QNode *node, V2d &startPoint, V2d &endPoint )
+{
+	Edge e;
+	e.v0 = startPoint;
+	e.v1 = endPoint;
+	e.CalcAABB();
+
+	RayCast(handler, node, e);
 }
 
 void Edge::HandleQuery(QuadTreeCollider * qtc)
