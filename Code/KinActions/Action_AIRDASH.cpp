@@ -8,7 +8,7 @@ using namespace std;
 void Actor::AIRDASH_Start()
 {
 	framesExtendingAirdash = 0;
-	BounceFlameOff();
+	//BounceFlameOff();
 	airDashStall = false;
 	currAirdashBoostCounter = 0;
 	holdJump = false;
@@ -395,6 +395,9 @@ void Actor::AIRDASH_UpdateSprite()
 		//cout << "airdash fx" << endl;
 
 	}
+
+	if (scorpOn)
+		SetAerialScorpSprite();
 }
 
 

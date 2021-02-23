@@ -77,6 +77,10 @@ int ControllerState::GetCompressedState()
 	s |= LDown() << bit++;
 	s |= LLeft() << bit++;
 	s |= LRight() << bit++;
+	s |= RUp() << bit++;
+	s |= RDown() << bit++;
+	s |= RLeft() << bit++;
+	s |= RRight() << bit++;
 	s |= A << bit++;
 	s |= B << bit++;
 	s |= X << bit++;
@@ -101,6 +105,11 @@ void ControllerState::SetFromCompressedState(int s)
 	bool ldown = s & (1 << bit++);
 	bool lleft = s & (1 << bit++);
 	bool lright = s & (1 << bit++);
+
+	bool rup = s & (1 << bit++);
+	bool rdown = s & (1 << bit++);
+	bool rleft = s & (1 << bit++);
+	bool rright = s & (1 << bit++);
 	A = s & (1 << bit++);
 	B = s & (1 << bit++);
 	X = s & (1 << bit++);
@@ -132,6 +141,24 @@ void ControllerState::SetFromCompressedState(int s)
 	else if (ldown)
 	{
 		leftStickPad += 1 << 1;
+	}
+
+	if (rright)
+	{
+		rightStickPad += 1 << 3;
+	}
+	else if (rleft)
+	{
+		rightStickPad += 1 << 2;
+	}
+
+	if (rup)
+	{
+		rightStickPad += 1;
+	}
+	else if (rdown)
+	{
+		rightStickPad += 1 << 1;
 	}
 
 	int leftDir = (s >> 16);

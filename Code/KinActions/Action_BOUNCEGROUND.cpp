@@ -18,10 +18,9 @@ void Actor::BOUNCEGROUND_End()
 
 void Actor::BOUNCEGROUND_Change()
 {
-	if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
+	//if (!PowerButtonHeld() || currPowerMode != PMODE_BOUNCE )
+	if( !bounceFlameOn)
 	{
-
-
 		SetAction(JUMP);
 		velocity = storedBounceVel;
 		frame = 1;

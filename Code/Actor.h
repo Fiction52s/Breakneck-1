@@ -1154,6 +1154,10 @@ struct Actor : QuadTreeCollider,
 	bool TryPressGrind();
 	bool JumpButtonPressed();
 	bool DashButtonPressed();
+	bool GrindButtonPressed();
+	bool GrindButtonHeld();
+	bool BounceButtonPressed();
+	bool BounceButtonHeld();
 	bool JumpButtonHeld();
 	bool DashButtonHeld();
 	bool AttackButtonPressed();

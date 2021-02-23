@@ -15,11 +15,13 @@ void Actor::BOUNCEAIR_End()
 
 void Actor::BOUNCEAIR_Change()
 {
-	if (!currInput.PowerButtonDown() || currPowerMode != PMODE_BOUNCE)
+	//if (!currInput.PowerButtonDown() || currPowerMode != PMODE_BOUNCE)
+	if( !bounceFlameOn)
 	{
 		SetAction(JUMP);
 		frame = 1;
-		BounceFlameOff();
+		return;
+		//BounceFlameOff();
 	}
 
 	if (TryAirDash()) return;

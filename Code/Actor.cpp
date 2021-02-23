@@ -126,6 +126,7 @@ void Actor::PopulateState(PState *ps)
 	ps->facingRight = facingRight;
 	ps->groundSpeed = groundSpeed;
 	ps->currInput = currInput.GetCompressedState();
+
 	ps->ground = ground;
 	ps->quant = edgeQuantity;
 	ps->xOffset = offsetX;
@@ -5275,7 +5276,23 @@ void Actor::UpdateCanStandUp()
 void Actor::UpdateBounceFlameOn()
 {
 	justToggledBounce = false;
+
 	if (bounceFlameOn)
+	{
+		if (!HasUpgrade(UPGRADE_POWER_BOUNCE) || BounceButtonPressed())
+		{
+			BounceFlameOff();
+		}
+	}
+	else
+	{
+		if (HasUpgrade(UPGRADE_POWER_BOUNCE) && BounceButtonPressed())
+		{
+			BounceFlameOn();
+		}
+	}
+
+	/*if (bounceFlameOn)
 	{
 		if (currPowerMode == PMODE_BOUNCE)
 		{
@@ -5319,30 +5336,7 @@ void Actor::UpdateBounceFlameOn()
 
 			BounceFlameOn();
 		}
-	}
-	//if (bounceFlameOn)
-	//{
-	//	if (toggleBounceInput)
-	//	{
-	//		if (currInput.X && !prevInput.X)
-	//		{
-	//			BounceFlameOff();
-	//			bounceGrounded = false;
-	//			justToggledBounce = true;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		//assert( !toggleBounceInput );
-	//		if (!currInput.X)
-	//		{
-	//			bounceFlameOn = false;
-	//			oldBounceEdge = NULL;
-	//			bounceGrounded = false;
-	//			scorpOn = false;
-	//		}
-	//	}
-	//}
+	}*/
 }
 
 void Actor::UpdateWireStates()
@@ -6008,7 +6002,8 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 }
 
 void Actor::UpdatePrePhysics()
-{
+{	
+
 	if (action == DEATH && simulationMode)
 		return;
 	/*static int skinTest = 0;
@@ -6181,7 +6176,7 @@ void Actor::UpdatePrePhysics()
 	
 	UpdateCanStandUp();
 
-	TryChangePowerMode();
+	//TryChangePowerMode();
 
 	UpdateBounceFlameOn();
 
@@ -9545,7 +9540,7 @@ bool Actor::BasicAirAttackAction()
 void Actor::CheckBounceFlame()
 {
 	//currInput.X
-	if ( HasUpgrade( UPGRADE_POWER_BOUNCE ) )
+	/*if ( HasUpgrade( UPGRADE_POWER_BOUNCE ) )
 	{
 		if (currPowerMode == PMODE_BOUNCE 
 			&& PowerButtonHeld() && !bounceFlameOn && !justToggledBounce)
@@ -9557,7 +9552,7 @@ void Actor::CheckBounceFlame()
 		{
 			BounceFlameOff();
 		}
-	}
+	}*/
 }
 
 bool Actor::TryWallJump()
@@ -12717,7 +12712,7 @@ void Actor::PhysicsResponse()
 			//cout << "BOUNCING HERE" << endl;
 
 			storedBounceVel = velocity;
-			bounceFlameOn = false;
+			//bounceFlameOn = false;
 			scorpOn = false;
 			//oldBounceEdge = NULL;
 			//BounceFlameOff();
@@ -18359,12 +18354,14 @@ void Actor::AttackMovement()
 
 bool Actor::CanBufferGrind()
 {
-	return !touchedGrass[Grass::ANTIGRIND] && currPowerMode == PMODE_GRIND && HasUpgrade(UPGRADE_POWER_GRIND) && currInput.Y;
+	return !touchedGrass[Grass::ANTIGRIND]
+		//&& currPowerMode == PMODE_GRIND 
+		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
 {
-	return CanBufferGrind() && !prevInput.PowerButtonDown();
+	return CanBufferGrind() && !prevInput.RDown();//!prevInput.PowerButtonDown();
 }
 
 bool Actor::TryBufferGrind()
@@ -18387,6 +18384,26 @@ bool Actor::TryPressGrind()
 	}
 
 	return false;
+}
+
+bool Actor::GrindButtonPressed()
+{
+	return (GrindButtonHeld() && !prevInput.RDown());
+}
+
+bool Actor::GrindButtonHeld()
+{
+	return currInput.RDown();
+}
+
+bool Actor::BounceButtonPressed()
+{
+	return BounceButtonHeld() && !prevInput.RLeft();
+}
+
+bool Actor::BounceButtonHeld()
+{
+	return currInput.RLeft();
 }
 
 bool Actor::JumpButtonPressed()

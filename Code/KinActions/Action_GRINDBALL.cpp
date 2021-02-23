@@ -17,7 +17,7 @@ void Actor::GRINDBALL_Change()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	bool j = JumpButtonPressed();
 	//bool isntWall = grindEdge->Normal().y != 0;
-	if (!PowerButtonHeld() || j || touchedGrass[Grass::ANTIGRIND])//&& grindEdge->Normal().y < 0 )
+	if ((framesGrinding > 0 && GrindButtonPressed() ) || j || touchedGrass[Grass::ANTIGRIND])//&& grindEdge->Normal().y < 0 )
 	{
 		V2d op = position;
 
