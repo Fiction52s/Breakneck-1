@@ -16,7 +16,7 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	SetEditorActions(MOVE, 0, 0);
 
 	StageSetup(4, 4);
-
+	
 	level = ap->GetLevel();
 
 	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
