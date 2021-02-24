@@ -7,18 +7,18 @@
 
 struct TigerSpinTurret;
 
-struct TigerSpinTurretPool
-{
-	TigerSpinTurretPool();
-	~TigerSpinTurretPool();
-	void Reset();
-	TigerSpinTurret *Throw(V2d &pos, V2d &dir );
-	void Draw(sf::RenderTarget *target);
-	std::vector<TigerSpinTurret*> turretVec;
-	sf::Vertex *verts;
-	Tileset *ts;
-	int numTurrets;
-};
+//struct TigerSpinTurretPool
+//{
+//	TigerSpinTurretPool();
+//	~TigerSpinTurretPool();
+//	void Reset();
+//	TigerSpinTurret *Throw(V2d &pos, V2d &dir );
+//	void Draw(sf::RenderTarget *target);
+//	std::vector<TigerSpinTurret*> turretVec;
+//	sf::Vertex *verts;
+//	Tileset *ts;
+//	int numTurrets;
+//};
 
 struct TigerSpinTurret : Enemy, LauncherEnemy
 {
@@ -30,6 +30,7 @@ struct TigerSpinTurret : Enemy, LauncherEnemy
 	};
 
 	int framesToLive;
+	int maxFramesToLive;
 
 	int bulletSpeed;
 	int framesBetween;
@@ -40,20 +41,17 @@ struct TigerSpinTurret : Enemy, LauncherEnemy
 	double speed;
 	Tileset *ts;
 
-	sf::Vertex *quad;
-
-	TigerSpinTurretPool *pool;
-
 	V2d velocity;
 
 	V2d facingDir;
 
+	V2d initVel;
 
-	TigerSpinTurret(sf::Vertex *quad);
+
+	TigerSpinTurret(ActorParams *ap);
 	bool IsHitFacingRight();
-	void Die();
-	void ProcessHit();
 	void Throw(V2d &pos, V2d &dir );
+	void Init(V2d &pos, V2d &dir);
 	void SetLevel(int lev);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,

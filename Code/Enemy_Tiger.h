@@ -5,11 +5,12 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "Enemy_TigerGrindBullet.h"
+#include "Enemy_TigerSpinTurret.h"
 
 struct TigerPostFightScene;
 struct TigerPostFight2Scene;
 
-struct Tiger : Boss
+struct Tiger : Boss, LauncherEnemy, Summoner
 {
 	enum Action
 	{
@@ -17,23 +18,37 @@ struct Tiger : Boss
 		MOVE_GRIND,
 		MOVE_JUMP,
 		COMBOMOVE,
+		SUMMON,
 		SEQ_WAIT,
 		A_Count
 	};
 
-	
+	SummonGroup palmSummonGroup;
 
 	TigerPostFightScene *postFightScene;
 	TigerPostFight2Scene *postFightScene2;
 
 	Tileset *ts_move;
+	Tileset *ts_bulletExplode;
+
+	SummonGroup spinTurretSummonGroup;
 
 	TigerGrindBulletPool snakePool;
+	//TigerSpinTurretPool spinPool;
 
 	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
 
 	Tiger(ActorParams *ap);
 	~Tiger();
+
+	//Summoner functions
+	void InitEnemyForSummon(SummonGroup *group,
+		Enemy *e);
+
+	//Launcher functions
+	void BulletHitPlayer(int playerIndex,
+		BasicBullet *b, int hitResult);
 
 	//Enemy functions
 	void DebugDraw(sf::RenderTarget *target);

@@ -31,7 +31,7 @@ struct MovementTester : Enemy, RayCastHandler
 	TigerGrindBulletPool tigerBulletPool;
 	GatorWaterOrbPool gatorOrbPool;
 	CoyoteShockwavePool coyShockPool;
-	TigerSpinTurretPool tigerSpinTurretPool;
+	//TigerSpinTurretPool tigerSpinTurretPool;
 
 	double approachStartDist;
 	CubicBezier approachBez;

@@ -559,6 +559,7 @@ void Session::RegisterW3Enemies()
 
 void Session::RegisterW4Enemies()
 {
+	AddUnlistedWorldEnemy("tigerspinturret", 4, CreateEnemy<TigerSpinTurret>, NULL, Vector2i(), Vector2i(), false, true, false, false, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("orangegoal", 4, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("tiger", 4, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
@@ -834,6 +835,7 @@ void Session::AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCre
 	SetupEnemyType(testPI, true);
 }
 
+
 void Session::AddBasicGroundWorldEnemy(const std::string &name, int w, EnemyCreator *p_enemyCreator,
 	Vector2i &off, Vector2i &size, bool w_mon,
 	bool w_level, bool w_path, bool w_loop, int p_numLevels, Tileset *ts, int tileIndex)
@@ -876,6 +878,31 @@ void Session::AddBasicAerialWorldEnemy(
 {
 	AddWorldEnemy(name, w, p_enemyCreator, SetParamsType<BasicAirEnemyParams>, off, size, w_mon, w_level,
 		w_path, w_loop, true, false, false, p_numLevels, ts, tileIndex);
+}
+
+void Session::AddUnlistedWorldEnemy(const std::string &name,
+	int w,
+	EnemyCreator *p_enemyCreator,
+	ParamsCreator *p_paramsCreator,
+	sf::Vector2i &off,
+	sf::Vector2i &size,
+	bool w_mon,
+	bool w_level,
+	bool w_path,
+	bool w_loop,
+	bool p_canBeAerial,
+	bool p_canBeGrounded,
+	bool p_canBeRailGrounded,
+	int p_numLevels,
+	Tileset *ts,
+	int tileIndex)
+{
+
+	ParamsInfo pInfo(name, p_enemyCreator, p_paramsCreator, off, size,
+		w_mon, w_level, w_path, w_loop, p_canBeAerial, p_canBeGrounded,
+		p_canBeRailGrounded, p_numLevels, w, ts, tileIndex);
+
+	SetupEnemyType(pInfo, true);
 }
 
 void Session::AddWorldEnemy(const std::string &name,
@@ -1288,7 +1315,6 @@ void Session::AddEnemy(Enemy *e)
 {
 	//do not spawn shards that are already captured in the file.
 	
-
 	//cout << "spawning enemy! of type: " << e->type << endl;
 	if (e->spawned)
 	{
@@ -1331,7 +1357,10 @@ void Session::RemoveEnemy(Enemy *e)
 		return;
 	}
 
+
+	e->HandleRemove();
 	e->active = false;
+	
 
 	Enemy *prev = e->prev;
 	Enemy *next = e->next;

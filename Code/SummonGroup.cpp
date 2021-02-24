@@ -1,6 +1,9 @@
 #include "SummonGroup.h"
 #include "Enemy.h"
 #include "Session.h"
+#include <iostream>
+
+using namespace std;
 
 SummonGroup::SummonGroup( Summoner *p_summoner, 
 	ActorParams *p_enemyParams,
@@ -22,6 +25,8 @@ SummonGroup::SummonGroup( Summoner *p_summoner,
 		enemies[i] = enemyParams->GenerateEnemy();
 		enemies[i]->SetSummonGroup(this);
 	}
+
+	numActiveEnemies = 0;
 }
 
 SummonGroup::~SummonGroup()
@@ -39,8 +44,6 @@ void SummonGroup::Reset()
 {
 	currMaxActiveEnemies = startMaxActive;
 	numEnemiesToSummonAtOnce = startSummonAtOnce;
-	numActiveEnemies = 0;
-
 	for (int i = 0; i < numTotalEnemies; ++i)
 	{
 		if (enemies[i]->active)
@@ -49,6 +52,9 @@ void SummonGroup::Reset()
 		}
 		enemies[i]->Reset();
 	}
+
+	assert(numActiveEnemies == 0);
+	//numActiveEnemies = 0;
 }
 
 bool SummonGroup::CanSummon()
@@ -71,6 +77,8 @@ void SummonGroup::Summon()
 			sess->AddEnemy(enemies[i]);
 			++numActiveEnemies;
 			++currSummoned;
+
+			
 
 			if (!CanSummon())
 			{

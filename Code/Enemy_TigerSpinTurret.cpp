@@ -10,67 +10,66 @@ using namespace std;
 using namespace sf;
 
 
-TigerSpinTurretPool::TigerSpinTurretPool()
+//TigerSpinTurretPool::TigerSpinTurretPool()
+//{
+//	ts = NULL;
+//	numTurrets = 4;
+//	turretVec.resize(numTurrets);
+//	verts = new Vertex[numTurrets * 4];
+//	for (int i = 0; i < numTurrets; ++i)
+//	{
+//		turretVec[i] = new TigerSpinTurret(verts + 4 * i);
+//		turretVec[i]->pool = this;
+//	}
+//
+//	Session *sess = Session::GetSession();
+//
+//	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+//}
+//
+//TigerSpinTurretPool::~TigerSpinTurretPool()
+//{
+//	for (int i = 0; i < numTurrets; ++i)
+//	{
+//		delete turretVec[i];
+//	}
+//
+//	delete[] verts;
+//}
+//
+//void TigerSpinTurretPool::Reset()
+//{
+//	for (int i = 0; i < numTurrets; ++i)
+//	{
+//		turretVec[i]->Reset();
+//	}
+//}
+//
+//TigerSpinTurret * TigerSpinTurretPool::Throw(V2d &pos, V2d &dir)
+//{
+//	TigerSpinTurret *bs = NULL;
+//	TigerSpinTurret *thrownShur = NULL;
+//	for (int i = 0; i < numTurrets; ++i)
+//	{
+//		bs = turretVec[i];
+//		if (!bs->spawned)
+//		{
+//			bs->Throw(pos, dir);
+//			thrownShur = bs;
+//			break;
+//		}
+//	}
+//	return thrownShur;
+//}
+//
+//void TigerSpinTurretPool::Draw(sf::RenderTarget *target)
+//{
+//	target->draw(verts, turretVec.size() * 4, sf::Quads, ts->texture);
+//}
+
+TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
+	:Enemy(EnemyType::EN_TIGERSPINTURRET, ap)
 {
-	ts = NULL;
-	numTurrets = 3;
-	turretVec.resize(numTurrets);
-	verts = new Vertex[numTurrets * 4];
-	for (int i = 0; i < numTurrets; ++i)
-	{
-		turretVec[i] = new TigerSpinTurret(verts + 4 * i);
-		turretVec[i]->pool = this;
-	}
-
-	Session *sess = Session::GetSession();
-
-	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
-}
-
-TigerSpinTurretPool::~TigerSpinTurretPool()
-{
-	for (int i = 0; i < numTurrets; ++i)
-	{
-		delete turretVec[i];
-	}
-
-	delete[] verts;
-}
-
-void TigerSpinTurretPool::Reset()
-{
-	for (int i = 0; i < numTurrets; ++i)
-	{
-		turretVec[i]->Reset();
-	}
-}
-
-TigerSpinTurret * TigerSpinTurretPool::Throw(V2d &pos, V2d &dir)
-{
-	TigerSpinTurret *bs = NULL;
-	TigerSpinTurret *thrownShur = NULL;
-	for (int i = 0; i < numTurrets; ++i)
-	{
-		bs = turretVec[i];
-		if (!bs->spawned)
-		{
-			bs->Throw(pos, dir);
-			thrownShur = bs;
-			break;
-		}
-	}
-	return thrownShur;
-}
-
-void TigerSpinTurretPool::Draw(sf::RenderTarget *target)
-{
-	target->draw(verts, turretVec.size() * 4, sf::Quads, ts->texture);
-}
-
-TigerSpinTurret::TigerSpinTurret(sf::Vertex *myQuad)
-	:Enemy(EnemyType::EN_TIGERSPINTURRET, NULL)
-{
-
 	SetNumActions(A_Count);
 	SetEditorActions(HOMING, 0, 0);
 
@@ -80,22 +79,18 @@ TigerSpinTurret::TigerSpinTurret(sf::Vertex *myQuad)
 	actionLength[TURRET] = 1;
 	animFactor[TURRET] = 1;
 
-	pool = NULL;
-
-	quad = myQuad;
 
 	bulletSpeed = 10;
 	framesBetween = 60;
+	maxFramesToLive = 180;
 
 	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
 
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 1, GetPosition(),
-		V2d(1, 0), 0, 120, false, 0, 0, ts_basicBullets);
+	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 4, GetPosition(),
+		V2d(1, 0), 2 * PI, 40, false, 0, 0, ts_basicBullets);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
-
-	frame = 0;
 
 	ts = sess->GetSizedTileset("Bosses/Tiger/bosstiger_spinturret_80x80.png");
 	sprite.setTexture(*ts->texture);
@@ -116,6 +111,8 @@ TigerSpinTurret::TigerSpinTurret(sf::Vertex *myQuad)
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	speed = 10;
+
+	cutObject->Setup(ts, 0, 0, scale);
 	//accel = .1;
 
 	ResetEnemy();
@@ -123,13 +120,11 @@ TigerSpinTurret::TigerSpinTurret(sf::Vertex *myQuad)
 
 void TigerSpinTurret::ResetEnemy()
 {
-	ClearRect(quad);
-
 	fireCounter = 0;
-	dead = false;
 	facingRight = true;
 
-	velocity = V2d(0, 0);
+	framesToLive = maxFramesToLive;
+	velocity = initVel;
 
 	action = HOMING;
 	frame = 0;
@@ -139,7 +134,7 @@ void TigerSpinTurret::ResetEnemy()
 
 	UpdateHitboxes();
 
-	//UpdateSprite();
+	UpdateSprite();
 }
 
 void TigerSpinTurret::SetLevel(int lev)
@@ -161,27 +156,10 @@ void TigerSpinTurret::SetLevel(int lev)
 	}
 }
 
-void TigerSpinTurret::ProcessHit()
+void TigerSpinTurret::Init(V2d &pos, V2d &dir )
 {
-	if (!dead && ReceivedHit() && numHealth > 0)
-	{
-		Die();
-
-		receivedHit = NULL;
-	}
-}
-
-void TigerSpinTurret::Throw(V2d &pos, V2d &dir )
-{
-	Reset();
-	sess->AddEnemy(this);
-	currPosInfo.position = pos;
-	currPosInfo.ground = NULL;
-
-	velocity = dir * speed;
-
-	action = HOMING;
-	frame = 0;
+	startPosInfo.position = pos;
+	initVel = dir * speed;
 }
 
 void TigerSpinTurret::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
@@ -230,19 +208,22 @@ void TigerSpinTurret::DirectKill()
 	receivedHit = NULL;
 }
 
-void TigerSpinTurret::Die()
-{
-	ClearRect(quad);
-	sess->RemoveEnemy(this);
-	spawned = false;
-	dead = true;
-}
-
 void TigerSpinTurret::FrameIncrement()
 {
 	if (action == TURRET)
 	{
 		++fireCounter;
+	}
+
+	if (framesToLive > 0)
+	{
+		--framesToLive;
+		if (framesToLive == 0)
+		{
+			dead = true;
+			sess->RemoveEnemy(this);
+			//numHealth = 0;
+		}
 	}
 }
 
@@ -333,17 +314,19 @@ void TigerSpinTurret::UpdateEnemyPhysics()
 
 	currPosInfo.position += movementVec;
 
-	hitboxInfo->hitPosType = HitboxInfo::GetAirType(velocity);
+	//hitboxInfo->hitPosType = HitboxInfo::GetAirType(velocity);
 }
 
 void TigerSpinTurret::UpdateSprite()
 {
-	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, 128, 128, GetPositionF());
+	ts->SetSubRect(sprite, 0);
+	sprite.setOrigin(sprite.getGlobalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
 }
 
 void TigerSpinTurret::EnemyDraw(sf::RenderTarget *target)
 {
+	target->draw(sprite);
 }
 
 void TigerSpinTurret::HandleHitAndSurvive()

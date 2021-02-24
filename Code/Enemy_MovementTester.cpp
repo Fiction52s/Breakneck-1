@@ -110,7 +110,7 @@ void MovementTester::ResetEnemy()
 	tigerBulletPool.Reset();
 	gatorOrbPool.Reset();
 	coyShockPool.Reset();
-	tigerSpinTurretPool.Reset();
+//	tigerSpinTurretPool.Reset();
 
 	testCheck = 0;
 }
@@ -456,7 +456,7 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 	tigerBulletPool.Draw(target);
 	gatorOrbPool.Draw(target);
 	coyShockPool.Draw(target);
-	tigerSpinTurretPool.Draw(target);
+//	tigerSpinTurretPool.Draw(target);
 	//target->draw(predictCircle);
 }
 

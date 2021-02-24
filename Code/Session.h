@@ -431,6 +431,22 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupEnemyTypes();
 	void SetupEnemyType(ParamsInfo &pi, bool unlisted = false);
 	void AddUnlistedEnemy(const std::string &name, EnemyCreator *p_enemyCreator);
+	void AddUnlistedWorldEnemy(const std::string &name,
+		int w,
+		EnemyCreator *p_enemyCreator,
+		ParamsCreator *p_paramsCreator,
+		sf::Vector2i &off,
+		sf::Vector2i &size,
+		bool w_mon,
+		bool w_level,
+		bool w_path,
+		bool w_loop,
+		bool p_canBeAerial,
+		bool p_canBeGrounded,
+		bool p_canBeRailGrounded,
+		int p_numLevels = 1,
+		Tileset *ts = NULL,
+		int tileIndex = 0);
 	void AddWorldEnemy(const std::string &name,
 		int w,
 		EnemyCreator *p_enemyCreator,
@@ -447,6 +463,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int p_numLevels = 1,
 		Tileset *ts = NULL,
 		int tileIndex = 0);
+
 	void AddBasicGroundWorldEnemy(const std::string &name, int w,
 		EnemyCreator *p_enemyCreator,
 		sf::Vector2i &off,

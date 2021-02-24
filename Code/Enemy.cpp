@@ -358,6 +358,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_CHEETAH:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_TIGERSPINTURRET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
+		break;
 	case EnemyType::EN_HUNGRYCOMBOER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 1);
 		break;
@@ -1386,7 +1389,7 @@ void Enemy::UpdatePostPhysics()
 	{
 		dead = true;
 		sess->RemoveEnemy(this);
-		HandleRemove();
+		
 		return;
 	}
 
@@ -1476,7 +1479,7 @@ void Enemy::ProcessShieldHit()
 
 void Enemy::ProcessHit()
 {
-	if (!dead && ReceivedHit() && numHealth > 0 )
+	if (!dead && ReceivedHit())// && numHealth > 0 )
 	{
 		numHealth -= 1;
 
