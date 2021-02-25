@@ -11,7 +11,8 @@ using namespace sf;
 
 
 Gator::Gator(ActorParams *ap)
-	:Boss(EnemyType::EN_GATORBOSS, ap)
+	:Boss(EnemyType::EN_GATORBOSS, ap),
+	swarmSummonGroup(this, new BasicAirEnemyParams(sess->types["swarm"], 1), 2, 2, 1)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -20,11 +21,14 @@ Gator::Gator(ActorParams *ap)
 
 	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 
+	actionLength[SUMMON] = 60;
+
 	postFightScene = NULL;
 
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(0, SUMMON, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
@@ -70,6 +74,7 @@ void Gator::LoadParams()
 void Gator::ResetEnemy()
 {
 	orbPool.Reset();
+	swarmSummonGroup.Reset();
 
 	BossReset();
 
@@ -117,7 +122,18 @@ void Gator::ActionEnded()
 
 void Gator::HandleAction() 
 {
-
+	switch (action)
+	{
+	case SUMMON:
+	{
+		if (frame == 20 && slowCounter == 1)
+		{
+			swarmSummonGroup.Summon();
+		}
+		break;
+	}
+		
+	}
 }
 
 void Gator::StartAction()
@@ -130,6 +146,7 @@ void Gator::StartAction()
 		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 		orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::OrbType::NODE_GROW);
 		break;
+
 	}
 	case MOVE_NODE_QUADRATIC:
 	{

@@ -165,7 +165,7 @@ Swarm::Swarm( ActorParams *ap )
 
 	SetLevel(ap->GetLevel());
 	
-	liveFrames = 300;
+	liveFrames = 420;//600;//300;
 
 	actionLength[NEUTRAL] = 10;
 	actionLength[FIRE] = 6;
@@ -305,7 +305,7 @@ void Swarm::ActionEnded()
 void Swarm::ProcessState()
 {
 	ActionEnded();
-	switch( action )
+	/*switch( action )
 	{
 	case NEUTRAL:
 		cout << "neutral: " << frame << endl;
@@ -321,7 +321,7 @@ void Swarm::ProcessState()
 	case REFILL:
 		cout << "refill: " << frame << endl;
 		break;
-	}
+	}*/
 
 	int activeMembers = 0;
 

@@ -8,7 +8,7 @@
 
 struct GatorPostFightScene;
 
-struct Gator : Boss
+struct Gator : Boss, Summoner
 {
 	//DOMINATION
 	enum Action
@@ -19,6 +19,7 @@ struct Gator : Boss
 		MOVE_CHASE,
 		COMBOMOVE,
 		MOVE,
+		SUMMON,
 		SEQ_WAIT,
 		A_Count
 	};
@@ -26,6 +27,8 @@ struct Gator : Boss
 	NodeGroup nodeGroupA;
 
 	GatorWaterOrbPool orbPool;
+
+	SummonGroup swarmSummonGroup;
 
 	Tileset *ts_punch;
 	Tileset *ts_kick;
@@ -35,6 +38,10 @@ struct Gator : Boss
 
 	Gator(ActorParams *ap);
 	~Gator();
+
+	//summoner functions
+	void InitEnemyForSummon(SummonGroup *group,
+		Enemy *e);
 
 	//Enemy functions
 	void DebugDraw(sf::RenderTarget *target);

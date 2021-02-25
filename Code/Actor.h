@@ -418,6 +418,8 @@ struct Actor : QuadTreeCollider,
 
 	//havent put into rollback yet
 
+	TerrainRail * prevRail;
+
 	const static int NUM_SWORD_PROJECTILES = 6;
 	SwordProjectile *swordProjectiles[NUM_SWORD_PROJECTILES];
 	int projectileSwordFrames;
@@ -1014,7 +1016,7 @@ struct Actor : QuadTreeCollider,
 	bool canRailSlide;
 	double minRailGrindSpeed[3];
 	sf::RectangleShape railTest;
-	TerrainRail * prevRail;
+	
 	bool railGrind;
 	int regrindOffCount;
 	int regrindOffMax;

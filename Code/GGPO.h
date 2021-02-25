@@ -298,6 +298,8 @@ struct PState
 
 	int kinMode;
 
+	TerrainRail * prevRail;
+
 	//new stuff I added recently
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;

@@ -284,6 +284,8 @@ void Actor::PopulateState(PState *ps)
 	ps->kinMode = kinMode;
 
 	//new stuff
+	ps->prevRail = prevRail;
+
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
 	ps->gravModifyFrames = gravModifyFrames;
@@ -501,6 +503,9 @@ void Actor::PopulateFromState(PState *ps)
 	kinMode = (Mode)ps->kinMode;
 
 	//new stuff
+
+	prevRail = ps->prevRail;
+
 	projectileSwordFrames = ps->projectileSwordFrames;
 	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
 	gravModifyFrames = ps->gravModifyFrames;
@@ -7454,7 +7459,8 @@ bool Actor::CheckStandUp()
 		//hope this doesnt make weird issues sometimes ;_;
 
 		
-		double ex = .1;
+		double ex = .05;//.1 //needs to be smaller than the extra amount given to grind for 
+		//standup to work for grind.
 		Rect<double> r;
 
 		/*if( action != GRINDBALL )
@@ -11944,9 +11950,9 @@ void Actor::UpdatePhysics()
 				ActivateSound( S_GRAVREVERSE );
 			}
 			else if(!touchedGrass[Grass::ANTIGRIND] 
-				&& tempCollision && currPowerMode == PMODE_GRIND 
+				&& tempCollision //&& currPowerMode == PMODE_GRIND 
 				&& HasUpgrade(UPGRADE_POWER_GRIND) 
-				&& PowerButtonHeld()
+				&& CanBufferGrind()//PowerButtonHeld()
 				&& velocity.y != 0 //remove this soon
 				&& abs( minContact.normal.x ) >= wallThresh 
 				&& !minContact.edge->IsInvisibleWall()  )
@@ -16148,6 +16154,11 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	{
 		Edge *e = (Edge*)qte;
 		RailPtr rail = e->rail;
+
+		if ( grindEdge != NULL && grindEdge->rail == rail)
+		{
+			return;
+		}
 
 		if ((rail->RequiresPowerToGrind() && !canRailGrind) 
 			|| IsInHistunAction(action) || rail->IsTerrainType()
