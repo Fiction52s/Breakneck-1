@@ -239,6 +239,24 @@ void Gator::EnemyDraw(sf::RenderTarget *target)
 	orbPool.Draw(target);
 }
 
+
+void Gator::InitEnemyForSummon(SummonGroup *group,
+	Enemy *e)
+{
+	if (group == &swarmSummonGroup)
+	{
+		PoiInfo *summonNode;
+
+		summonNode = nodeGroupA.AlwaysGetNextNode();
+		e->startPosInfo.SetGround(summonNode->poly,
+			summonNode->edgeIndex, summonNode->edgeQuantity);
+	}
+}
+
+
+
+//rollback
+
 int Gator::GetNumStoredBytes()
 {
 	return sizeof(MyData);

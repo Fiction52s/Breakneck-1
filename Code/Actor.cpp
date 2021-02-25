@@ -7880,10 +7880,10 @@ V2d Actor::UpdateReversePhysics()
 						{
 							jumpOff = true;
 						}
-						else if( nextNorm.x <= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
+						/*else if( nextNorm.x <= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
 						{
 							jumpOff = true;
-						}
+						}*/
 						else
 						{
 							jumpOff = false;
@@ -8165,10 +8165,10 @@ V2d Actor::UpdateReversePhysics()
 						{
 							jumpOff = true;
 						}
-						else if( nextNorm.x >= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
+						/*else if( nextNorm.x >= 0 && currInput.LUp() && yDist < -slopeLaunchMinSpeed )
 						{
 							jumpOff = true;
-						}
+						}*/
 						else
 						{
 							jumpOff = false;

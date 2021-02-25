@@ -305,23 +305,23 @@ void Swarm::ActionEnded()
 void Swarm::ProcessState()
 {
 	ActionEnded();
-	/*switch( action )
+	switch( action )
 	{
 	case NEUTRAL:
-		cout << "neutral: " << frame << endl;
+		//cout << "neutral: " << frame << endl;
 		break;
 	case FIRE:
-		cout << "fire: " << frame << endl;
+		//cout << "fire: " << frame << endl;
 		if( frame == ( actionLength[FIRE] - 2 ) * animFactor[FIRE] )
 			Launch();
 		break;
 	case USED:
-		cout << "used: " << frame << endl;
+		//cout << "used: " << frame << endl;
 		break;
 	case REFILL:
-		cout << "refill: " << frame << endl;
+		//cout << "refill: " << frame << endl;
 		break;
-	}*/
+	}
 
 	int activeMembers = 0;
 
