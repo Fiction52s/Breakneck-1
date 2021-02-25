@@ -127,8 +127,8 @@ struct SaveWireInfo
 	CollisionBox movingHitbox;
 	bool clockwise;
 	Edge *rcEdge;
-	double rcCancelDist;
 	double rcQuant;
+	double rcCancelDist;
 };
 
 struct PState

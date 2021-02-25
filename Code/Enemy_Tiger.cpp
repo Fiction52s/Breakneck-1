@@ -37,6 +37,7 @@ Tiger::Tiger(ActorParams *ap)
 	level = ap->GetLevel();
 
 	actionLength[SUMMON] = 60;
+	actionLength[THROW_SPINTURRET] = 60;
 
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
@@ -44,7 +45,8 @@ Tiger::Tiger(ActorParams *ap)
 
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
-	//stageMgr.AddActiveOption(0, SUMMON, 2);
+	stageMgr.AddActiveOption(0, SUMMON, 2);
+	stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(1, MOVE_JUMP, 2);
@@ -155,6 +157,7 @@ void Tiger::ActionEnded()
 	case MOVE_GRIND:
 	case MOVE_JUMP:
 	case SUMMON:
+	case THROW_SPINTURRET:
 		Decide();
 		break;
 	case COMBOMOVE:
@@ -210,10 +213,21 @@ void Tiger::StartAction()
 		enemyMover.SetModeNodeProjectile(node->pos, V2d(0, 1.5), 200);
 		enemyMover.SetDestNode(node);
 
-		spinTurretSummonGroup.Summon();
+		
 		//spinPool.Throw(GetPosition(), PlayerDir());
 		break;
 	}
+	case THROW_SPINTURRET:
+	{
+		spinTurretSummonGroup.Summon();
+		break;
+	}
+	case MOVE_LUNGE:
+	{
+
+		break;
+	}
+		
 		
 	}
 }

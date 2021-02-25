@@ -97,7 +97,7 @@ Spider::~Spider()
 
 void Spider::ResetEnemy()
 {
-	rcEdge = NULL;
+	rayCastInfo.Reset();
 	framesLaseringPlayer = 0;
 	laserCounter = 0;
 	laserLevel = 0;
@@ -441,16 +441,16 @@ void Spider::UpdatePostPhysics()
 	V2d playerPos = sess->GetPlayerPos(0);
 	if( length( playerPos - GetPosition() ) < 1200 )
 	{
-		rayStart = GetPosition();
+		rayCastInfo.rayStart = GetPosition();
 		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
-		rayEnd = playerPos;
-		rcEdge = NULL;
-		RayCast( this, sess->terrainTree->startNode, rayStart, rayEnd );
+		rayCastInfo.rayEnd = playerPos;
+		rayCastInfo.rcEdge = NULL;
+		RayCast( this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd );
 
-		if( rcEdge != NULL )
+		if(rayCastInfo.rcEdge != NULL )
 		{
-			V2d rcPoint = rcEdge->GetPosition( rcQuantity );
+			V2d rcPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant );
 			if( length( rcPoint - GetPosition() ) < length(playerPos - GetPosition() ) )
 			{
 				canSeePlayer = false;
@@ -546,13 +546,13 @@ void Spider::EnemyDraw(sf::RenderTarget *target )
 	if (canSeePlayer)
 	{
 		V2d rcPoint;
-		if (rcEdge != NULL)
+		if (rayCastInfo.rcEdge != NULL)
 		{
-			rcPoint = rcEdge->GetPosition(rcQuantity);
+			rcPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 		}
 		else
 		{
-			rcPoint = rayEnd;
+			rcPoint = rayCastInfo.rayEnd;
 		}
 		sf::Vertex line[] = {
 			Vertex(GetPositionF(), laserColor),
@@ -661,10 +661,5 @@ void Spider::HandleRayCollision( Edge *edge, double equant, double rayPortion )
 		return;
 	}
 
-	if( rcEdge == NULL || length( edge->GetPosition( equant ) - rayStart ) < 
-		length( rcEdge->GetPosition( rcQuantity ) - rayStart ) )
-	{
-		rcEdge = edge;
-		rcQuantity = equant;
-	}
+	RayCastHandler::HandleRayCollision(edge, equant, rayPortion);
 }

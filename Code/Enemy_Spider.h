@@ -48,11 +48,6 @@ struct Spider : Enemy, RayCastHandler, SurfaceMoverHandler
 
 	Tileset *ts;
 
-	Edge *rcEdge;
-	double rcQuantity;
-	V2d rayStart;
-	V2d rayEnd;
-
 	bool canSeePlayer;
 
 	int framesLaseringPlayer;

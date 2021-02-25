@@ -123,10 +123,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	int antiWireGrassCount;
 	CollisionBox movingHitbox;
 	bool clockwise;
-	Edge *rcEdge;
 	double rcCancelDist;
-	double rcQuant;
-
 	
 	Edge *minSideEdge;
 	

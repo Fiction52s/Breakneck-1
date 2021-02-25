@@ -119,18 +119,18 @@ void Skeleton::StartAction()
 	case MOVE_WIRE_DASH:
 	{
 		V2d pPos = targetPlayer->position;
-		rcEdge = NULL;
-		rayStart = GetPosition();
-		rayEnd = pPos + PlayerDir(targetPlayerIndex) * 5000.0;
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = GetPosition();
+		rayCastInfo.rayEnd = pPos + PlayerDir(targetPlayerIndex) * 5000.0;
 		ignorePointsCloserThanPlayer = true;
 		playerDist = PlayerDist(targetPlayerIndex);
-		RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+		RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
 
-		if (rcEdge != NULL)
+		if (rayCastInfo.rcEdge != NULL)
 		{
-			assert(rcEdge != NULL);
+			assert(rayCastInfo.rcEdge != NULL);
 
-			V2d basePos = rcEdge->GetPosition(rcQuantity);
+			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
@@ -154,17 +154,17 @@ void Skeleton::StartAction()
 
 		if (nodeDiff.y < -600)
 		{
-			rcEdge = NULL;
-			rayStart = nodePos + V2d(0, -10);
-			rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
+			rayCastInfo.rcEdge = NULL;
+			rayCastInfo.rayStart = nodePos + V2d(0, -10);
+			rayCastInfo.rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
 			ignorePointsCloserThanPlayer = false;
-			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+			RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
 
-			if (rcEdge != NULL)
+			if (rayCastInfo.rcEdge != NULL)
 			{
-				assert(rcEdge != NULL);
+				assert(rayCastInfo.rcEdge != NULL);
 
-				V2d basePos = rcEdge->GetPosition(rcQuantity);
+				V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 
 				enemyMover.currPosInfo.SetAerial();
 				currPosInfo.SetAerial();
@@ -199,16 +199,16 @@ void Skeleton::StartAction()
 			}
 
 
-			rcEdge = NULL;
-			rayStart = midPoint;
-			rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
-			RayCast(this, sess->terrainTree->startNode, rayStart, rayEnd);
+			rayCastInfo.rcEdge = NULL;
+			rayCastInfo.rayStart = midPoint;
+			rayCastInfo.rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
+			RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
 
-			if (rcEdge != NULL)
+			if (rayCastInfo.rcEdge != NULL)
 			{
-				assert(rcEdge != NULL);
+				assert(rayCastInfo.rcEdge != NULL);
 
-				V2d basePos = rcEdge->GetPosition(rcQuantity);
+				V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 
 				//V2d dir = normalize(basePos - GetPosition());
 				//V2d along(-dir.y, dir.x);
@@ -341,7 +341,7 @@ void Skeleton::HandleRayCollision(Edge *edge, double edgeQuantity,
 		return;
 	}
 
-	V2d dir = normalize(rayEnd - rayStart);
+	V2d dir = normalize(rayCastInfo.rayEnd - rayCastInfo.rayStart);
 	V2d pos = edge->GetPosition(edgeQuantity);
 
 	//if (!sess->IsWithinBounds(pos))
@@ -353,13 +353,13 @@ void Skeleton::HandleRayCollision(Edge *edge, double edgeQuantity,
 
 	double posDist = length(pos - GetPosition());
 
-	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
-		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
+	if (along < 0 && (rayCastInfo.rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart) <
+		length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcPortion) - rayCastInfo.rayStart)))
 	{
 		if (!ignorePointsCloserThanPlayer || (ignorePointsCloserThanPlayer && posDist > playerDist))
 		{
-			rcEdge = edge;
-			rcQuantity = edgeQuantity;
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
 		}
 	}
 }

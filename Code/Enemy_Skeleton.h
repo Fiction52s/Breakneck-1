@@ -37,10 +37,6 @@ struct Skeleton : Boss, RayCastHandler
 	Tileset *ts_kick;
 	Tileset *ts_move;
 
-	V2d rayEnd;
-	V2d rayStart;
-	Edge *rcEdge;
-	double rcQuantity;
 	bool ignorePointsCloserThanPlayer;
 	double playerDist;
 

@@ -3773,16 +3773,16 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 			break;
 
 		cn = curr->Normal();
-		rcEdge = NULL;
-		rayStart = curr->GetPosition( quant );
-		rayEnd = rayStart - cn * (double)maxPen;
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = curr->GetPosition( quant );
+		rayCastInfo.rayEnd = rayCastInfo.rayStart - cn * (double)maxPen;
 		rayIgnoreEdge = curr;
 
-		RayCast( this, qt->startNode, rayStart, rayEnd );
+		RayCast( this, qt->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd );
 
-		if( rcEdge != NULL )
+		if( rayCastInfo.rcEdge != NULL )
 		{
-			penLimit = length( rcEdge->GetPosition( rcQuantity ) - rayStart );
+			penLimit = length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant ) - rayCastInfo.rayStart );
 			diffPenMax = (int)penLimit - minDistanceApart;
 		}
 		if (diffPenMax == 0)
@@ -3979,17 +3979,17 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 			return;
 		}
 
-		if( edge != rayIgnoreEdge && ( rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - rayStart ) <
-			length( rcEdge->GetPosition( rcQuantity ) - rayStart ) ) )
+		if( edge != rayIgnoreEdge && (rayCastInfo.rcEdge == NULL || length( edge->GetPosition( edgeQuantity ) - rayCastInfo.rayStart ) <
+			length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant ) - rayCastInfo.rayStart ) ) )
 		{
-			rcEdge = edge;
-			rcQuantity = edgeQuantity;
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
 		}
 		}
 		else
 		{
-			rcEdge = edge;
-			rcQuantity = edgeQuantity;
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
 		}
 	}
 	else if( rayMode == "decor" )
@@ -3997,18 +3997,18 @@ void GameSession::HandleRayCollision( Edge *edge, double edgeQuantity, double ra
 		if( edge == rayIgnoreEdge )
 			return; 
 
-		if( rcEdge == NULL )
+		if(rayCastInfo.rcEdge == NULL )
 		{
-			rcEdge = edge;
-			rcQuantity = edgeQuantity;
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
 		}
 		else
 		{
-			V2d rc = rcEdge->GetPosition( rcQuantity );
-			if( length( rayStart - edge->GetPosition( edgeQuantity ) ) < length( rayStart - rc ) )
+			V2d rc = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant );
+			if( length(rayCastInfo.rayStart - edge->GetPosition( edgeQuantity ) ) < length(rayCastInfo.rayStart - rc ) )
 			{
-				rcEdge = edge;
-				rcQuantity = edgeQuantity;
+				rayCastInfo.rcEdge = edge;
+				rayCastInfo.rcQuant = edgeQuantity;
 			}
 		}
 	}

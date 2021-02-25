@@ -353,12 +353,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 		double edgeQuantity, double rayPortion);
 	
 	int numEdgesHitByRay;
-	Edge * rcEdge;
-	double rcQuant;
 	Edge *ignoreEdge;
-	double rcPortion;
-	V2d rayStart;
-	V2d rayEnd;
 
 	void QueryQuadTree(QuadTree *tree,
 		QueryType qType, sf::Rect<double> & r);

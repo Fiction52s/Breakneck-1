@@ -47,6 +47,8 @@ struct TigerSpinTurret : Enemy, LauncherEnemy
 
 	V2d initVel;
 
+	double accel;
+
 
 	TigerSpinTurret(ActorParams *ap);
 	bool IsHitFacingRight();

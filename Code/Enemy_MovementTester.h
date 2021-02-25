@@ -69,11 +69,6 @@ struct MovementTester : Enemy, RayCastHandler
 
 	V2d targetPos;
 
-	V2d rayEnd;
-	V2d rayStart;
-	Edge *rcEdge;
-	double rcQuantity;
-
 	MovementTester(ActorParams *ap);
 	~MovementTester();
 

@@ -463,13 +463,13 @@ void MovementTester::EnemyDraw(sf::RenderTarget *target)
 void MovementTester::HandleRayCollision(Edge *edge, double edgeQuantity,
 	double rayPortion)
 {
-	V2d dir = normalize(rayEnd - rayStart);
+	V2d dir = normalize(rayCastInfo.rayEnd - rayCastInfo.rayStart);
 	V2d pos = edge->GetPosition(edgeQuantity);
 	double along = dot(dir, edge->Normal());
-	if (along < 0 && (rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayStart) <
-		length(rcEdge->GetPosition(rcQuantity) - rayStart)))
+	if (along < 0 && (rayCastInfo.rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart) <
+		length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant) - rayCastInfo.rayStart)))
 	{
-		rcEdge = edge;
-		rcQuantity = edgeQuantity;
+		rayCastInfo.rcEdge = edge;
+		rayCastInfo.rcQuant = edgeQuantity;
 	}
 }

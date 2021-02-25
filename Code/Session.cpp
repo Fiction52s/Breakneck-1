@@ -5416,12 +5416,12 @@ void Session::SetupGoalFlow()
 		double angle = (tau / divs) * i;
 		V2d rayDir(cos(angle), sin(angle));
 
-		rayStart = goalPos + rayDir * startRadius;
-		rayEnd = rayStart + rayDir * rayLen;
+		flowHandler.rayCastInfo.rayStart = goalPos + rayDir * startRadius;
+		flowHandler.rayCastInfo.rayEnd = flowHandler.rayCastInfo.rayStart + rayDir * rayLen;
 
-		bool rayOkay = rayEnd.x >= mapHeader->leftBounds && rayEnd.y >= mapHeader->topBounds
-			&& rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
-			&& rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
+		bool rayOkay = flowHandler.rayCastInfo.rayEnd.x >= mapHeader->leftBounds && flowHandler.rayCastInfo.rayEnd.y >= mapHeader->topBounds
+			&& flowHandler.rayCastInfo.rayEnd.x <= mapHeader->leftBounds + mapHeader->boundsWidth
+			&& flowHandler.rayCastInfo.rayEnd.y <= mapHeader->topBounds + mapHeader->boundsHeight;
 
 
 		Edge *cEdge = NULL;
@@ -5431,9 +5431,9 @@ void Session::SetupGoalFlow()
 		while (rayOkay)
 		{
 			//cout << "ray start: " << rayStart.x << ", " << rayStart.y << endl;
-			rcEdge = NULL;
+			flowHandler.rayCastInfo.rcEdge = NULL;
 
-			RayCast(&flowHandler, qt->startNode, rayStart, rayEnd);
+			RayCast(&flowHandler, qt->startNode, flowHandler.rayCastInfo.rayStart, flowHandler.rayCastInfo.rayEnd);
 			//rayStart = v0 + along * quant;
 			//rayIgnoreEdge = te;
 			//V2d goalDir = normalize( rayStart - goalPos );
@@ -5441,21 +5441,21 @@ void Session::SetupGoalFlow()
 
 
 			//start ray
-			if (rcEdge != NULL)
+			if (flowHandler.rayCastInfo.rcEdge != NULL)
 			{
 				//cout << "point list size: " << pointList.size() << endl;
-				if (rcEdge->IsInvisibleWall() || rcEdge->edgeType == Edge::CLOSED_GATE)
+				if (flowHandler.rayCastInfo.rcEdge->IsInvisibleWall() || flowHandler.rayCastInfo.rcEdge->edgeType == Edge::CLOSED_GATE)
 				{
 					//	cout << "secret break" << endl;
 					break;
 				}
 
 				rayIgnoreEdge1 = rayIgnoreEdge;
-				rayIgnoreEdge = rcEdge;
+				rayIgnoreEdge = flowHandler.rayCastInfo.rcEdge;
 
-				V2d rn = rcEdge->Normal();
+				V2d rn = flowHandler.rayCastInfo.rcEdge->Normal();
 				double d = dot(rn, rayDir);
-				V2d hitPoint = rcEdge->GetPosition(rcQuantity);
+				V2d hitPoint = flowHandler.rayCastInfo.rcEdge->GetPosition(flowHandler.rayCastInfo.rcQuant);
 				if (d > 0)
 				{
 					if (pointList.size() > 0 && pointList.back().second == false)
@@ -5493,8 +5493,8 @@ void Session::SetupGoalFlow()
 				}
 				//rayPoint = rcEdge->GetPoint( rcQuantity );	
 				//rays.push_back( pair<V2d,V2d>(rayStart, rayPoint) );
-				rayStart = hitPoint;
-				rayEnd = hitPoint + rayDir * rayLen;
+				flowHandler.rayCastInfo.rayStart = hitPoint;
+				flowHandler.rayCastInfo.rayEnd = hitPoint + rayDir * rayLen;
 
 
 
@@ -5504,12 +5504,12 @@ void Session::SetupGoalFlow()
 			}
 			else
 			{
-				rayStart = rayEnd;
-				rayEnd = rayStart + rayDir * rayLen;
+				flowHandler.rayCastInfo.rayStart = flowHandler.rayCastInfo.rayEnd;
+				flowHandler.rayCastInfo.rayEnd = flowHandler.rayCastInfo.rayStart + rayDir * rayLen;
 			}
 
 			double oldRayCheck = rayCheck;
-			rayCheck = length((goalPos + rayDir * startRadius) - rayEnd);
+			rayCheck = length((goalPos + rayDir * startRadius) - flowHandler.rayCastInfo.rayEnd);
 
 			if (rayCheck == oldRayCheck)
 			{
@@ -5537,7 +5537,7 @@ void Session::SetupGoalFlow()
 			{
 				//pointList.pop_back();
 				//	cout << "popping from back!" << endl;
-				pointList.push_back(pair<V2d, bool>(rayEnd, false));
+				pointList.push_back(pair<V2d, bool>(flowHandler.rayCastInfo.rayEnd, false));
 			}
 		}
 
@@ -5573,11 +5573,11 @@ void Session::FlowHandler::HandleRayCollision(Edge *edge, double edgeQuantity, d
 	}
 
 	if (edge != sess->rayIgnoreEdge && edge != sess->rayIgnoreEdge1
-		&& (sess->rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - sess->rayStart) <
-			length(sess->rcEdge->GetPosition(sess->rcQuantity) - sess->rayStart)))
+		&& (rayCastInfo.rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart) <
+			length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant) - rayCastInfo.rayStart)))
 	{
-		sess->rcEdge = edge;
-		sess->rcQuantity = edgeQuantity;
+		rayCastInfo.rcEdge = edge;
+		rayCastInfo.rcQuant = edgeQuantity;
 	}
 }
 

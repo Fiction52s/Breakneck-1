@@ -1030,21 +1030,21 @@ DecorExpression * TerrainPolygon::CreateDecorExpression(DecorType dType,
 			break;
 
 		cn = curr->Normal();
-		rcEdge = NULL;
-		rayStart = curr->GetPosition(quant);
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = curr->GetPosition(quant);
 
 		rPen = rand() % diffPenMax;
 		penDistance = minPen + rPen; //minpen times 2 cuz gotta account for the other side too
 
-		rayEnd = rayStart - cn * (penDistance + minPen);
+		rayCastInfo.rayEnd = rayCastInfo.rayStart - cn * (penDistance + minPen);
 		ignoreEdge = curr;
 
-		rcPortion = 9999999;
-		RayCast(this, qt->startNode, rayStart, rayEnd);
+		rayCastInfo.rcPortion = 9999999;
+		RayCast(this, qt->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
 
-		if (rcEdge != NULL)
+		if (rayCastInfo.rcEdge != NULL)
 		{
-			V2d rcPos = rcEdge->GetPosition(rcQuant);
+			V2d rcPos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 			continue;
 		}
 
@@ -1114,12 +1114,12 @@ void TerrainPolygon::HandleRayCollision(Edge *edge,
 		return;
 	}
 
-	double len = length(edge->GetPosition(edgeQuantity) - rayStart);
-	if (rcEdge == NULL || len < rcPortion)
+	double len = length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart);
+	if (rayCastInfo.rcEdge == NULL || len < rayCastInfo.rcPortion)
 	{
-		rcEdge = edge;
-		rcPortion = len;
-		rcQuant = edgeQuantity;
+		rayCastInfo.rcEdge = edge;
+		rayCastInfo.rcPortion = len;
+		rayCastInfo.rcQuant = edgeQuantity;
 	}
 	++numEdgesHitByRay;
 }
@@ -5035,7 +5035,7 @@ bool TerrainPolygon::IsInsideArea(V2d &point)
 		closest.y = drect.top - extra;
 	}
 
-	rcEdge = NULL;
+	rayCastInfo.rcEdge = NULL;
 	numEdgesHitByRay = 0;
 
 	RayCast(this, myTerrainTree->startNode, insideQueryPoint, closest);

@@ -21,10 +21,6 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 
 	Tileset *ts;
 
-	Edge *rcEdge;
-	double rcQuantity;
-	V2d rayStart;
-	V2d rayEnd;
 	sf::CircleShape ccwCircle;
 	sf::CircleShape cwCircle;
 

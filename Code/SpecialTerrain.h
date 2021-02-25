@@ -50,8 +50,6 @@ struct SpecialTerrainPiece : QuadTreeEntrant, QuadTreeCollider, RayCastHandler
 
 	QuadTree *edgeTree;
 	
-	Edge *rcEdge;
-	double rcQuant;
 	int numEdgesHit;
 
 	V2d insideQueryPoint;

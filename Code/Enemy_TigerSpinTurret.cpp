@@ -82,12 +82,12 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 
 	bulletSpeed = 10;
 	framesBetween = 60;
-	maxFramesToLive = 180;
+	maxFramesToLive = 180 * 2;
 
 	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
 
 	SetNumLaunchers(1);
-	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 4, GetPosition(),
+	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 2, GetPosition(),
 		V2d(1, 0), 2 * PI, 40, false, 0, 0, ts_basicBullets);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
@@ -111,6 +111,8 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	speed = 10;
+
+	accel = .5;
 
 	cutObject->Setup(ts, 0, 0, scale);
 	//accel = .1;
@@ -252,7 +254,8 @@ void TigerSpinTurret::ProcessState()
 
 	if (action == HOMING)
 	{
-		velocity = pDir * speed;
+		velocity += pDir * accel;
+		CapVectorLength(velocity, speed);
 	}
 	else
 	{
@@ -268,7 +271,7 @@ void TigerSpinTurret::ProcessState()
 			launchers[0]->position = position;
 			launchers[0]->facingDir = facingDir;
 			launchers[0]->Fire();
-			RotateCW(facingDir, PI / 32);
+			RotateCW(facingDir, PI / 32); //PI / 32);
 		}
 	}
 	
@@ -326,7 +329,7 @@ void TigerSpinTurret::UpdateSprite()
 
 void TigerSpinTurret::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	DrawSprite(target, sprite);
 }
 
 void TigerSpinTurret::HandleHitAndSurvive()

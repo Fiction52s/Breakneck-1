@@ -260,12 +260,12 @@ bool SpecialTerrainPiece::Load( ifstream &is )
 
 void SpecialTerrainPiece::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
-	if ( rcEdge == NULL 
+	if ( rayCastInfo.rcEdge == NULL 
 		|| ( length(edge->GetPosition(edgeQuantity) - insideQueryPoint) 
-	> length(rcEdge->GetPosition(rcQuant) - insideQueryPoint)))
+	> length(rayCastInfo.rcEdge->GetPosition(rcQuant) - insideQueryPoint)))
 	{
-		rcEdge = edge;
-		rcQuant = edgeQuantity;
+		rayCastInfo.rcEdge = edge;
+		rayCastInfo.rcQuant = edgeQuantity;
 	}
 
 	++numEdgesHit;

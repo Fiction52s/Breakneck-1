@@ -2288,6 +2288,18 @@ void RayCast(RayCastHandler *handler, QNode *node,Edge &e)
 	}
 }
 
+void RayCastHandler::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
+{
+	double len = length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart);
+	if (rayCastInfo.rcEdge == NULL
+		|| len < rayCastInfo.rcPortion)
+	{
+		rayCastInfo.rcEdge = edge;
+		rayCastInfo.rcPortion = len;
+		rayCastInfo.rcQuant = edgeQuantity;
+	}
+}
+
 //only works on edges
 void RayCast( RayCastHandler *handler, QNode *node, V2d &startPoint, V2d &endPoint )
 {

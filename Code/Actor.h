@@ -486,8 +486,6 @@ struct Actor : QuadTreeCollider,
 
 	//dont sync
 	int rayMode;
-	Edge *rcEdge;
-	double rcQuantity;
 	
 
 

@@ -81,7 +81,7 @@ Widow::~Widow()
 
 void Widow::ResetEnemy()
 {
-	rcEdge = NULL;
+	rayCastInfo.Reset();
 
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
@@ -429,12 +429,7 @@ void Widow::HandleRayCollision(Edge *edge, double equant, double rayPortion)
 		return;
 	}
 
-	if (rcEdge == NULL || length(edge->GetPosition(equant) - rayStart) <
-		length(rcEdge->GetPosition(rcQuantity) - rayStart))
-	{
-		rcEdge = edge;
-		rcQuantity = equant;
-	}
+	RayCastHandler::HandleRayCollision(edge, equant, rayPortion);
 }
 
 void Widow::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)

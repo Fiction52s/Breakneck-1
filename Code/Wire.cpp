@@ -57,9 +57,9 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->antiWireGrassCount = antiWireGrassCount;
 	wi->movingHitbox = movingHitbox;
 	wi->clockwise = clockwise;
-	wi->rcEdge = rcEdge;
+	wi->rcEdge = rayCastInfo.rcEdge;
 	wi->rcCancelDist = rcCancelDist;
-	wi->rcQuant = rcQuant;
+	wi->rcQuant = rayCastInfo.rcQuant;
 	/*wi->activeChargeList = activeChargeList;
 	wi->inactiveChargeList = inactiveChargeList;
 	wi->minSideEdge	= minSideEdge;
@@ -111,9 +111,11 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	antiWireGrassCount = wi->antiWireGrassCount;
 	movingHitbox = wi->movingHitbox;
 	clockwise = wi->clockwise;
-	rcEdge = wi->rcEdge;
+
+	//i dont think i need these??
+	rayCastInfo.rcEdge = wi->rcEdge;
 	rcCancelDist = wi->rcCancelDist;
-	rcQuant = wi->rcQuant;
+	rayCastInfo.rcQuant = wi->rcQuant;
 	/*activeChargeList = wi->activeChargeList;
 	inactiveChargeList = wi->inactiveChargeList;
 	minSideEdge = wi->minSideEdge;
@@ -327,7 +329,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case FIRING:
 		{
-			if( rcEdge != NULL )
+			if( rayCastInfo.rcEdge != NULL )
 			{
 				CheckAntiWireGrass();
 
@@ -502,7 +504,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		}
 	case FIRING:
 		{
-			rcEdge = NULL;
+			rayCastInfo.rcEdge = NULL;
 			rcCancelDist = -1;
 			V2d currPos = playerPos + fireDir * fireRate * (double)(framesFiring);
 			V2d futurePos = playerPos + fireDir * fireRate * (double)(framesFiring + 1);
@@ -518,9 +520,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			tipHitboxInfo->hDir = fireDir;
 
-			if (rcEdge != NULL && rcCancelDist >= 0)
+			if (rayCastInfo.rcEdge != NULL && rcCancelDist >= 0)
 			{
-				double rcLength = length(rcEdge->GetPosition(rcQuant) - playerPos);
+				double rcLength = length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant) - playerPos);
 				if (rcCancelDist < rcLength)
 				{
 					Reset();
@@ -530,7 +532,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			//cout << "framesFiring " << framesFiring << endl;
 
-			if( rcEdge != NULL )
+			if(rayCastInfo.rcEdge != NULL )
 			{
 				CheckAntiWireGrass();
 
@@ -540,8 +542,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					break;
 				}
 
-				if (rcEdge->rail != NULL 
-					&& rcEdge->rail->GetRailType() == TerrainRail::WIREBLOCKING)
+				if (rayCastInfo.rcEdge->rail != NULL
+					&& rayCastInfo.rcEdge->rail->GetRailType() == TerrainRail::WIREBLOCKING)
 				{
 					Reset();
 					break;
@@ -549,26 +551,26 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 
 				//cout << "hit edge!: " << rcEdge->Normal().x << ", " << rcEdge->Normal().y << ", : " << rcEdge << endl;
-				if( rcQuant < 4 )
+				if(rayCastInfo.rcQuant < 4 )
 				{
 					//cout << "Aw" << endl;
 					//cout << "lock1" << endl;
-					anchor.pos = rcEdge->v0;
+					anchor.pos = rayCastInfo.rcEdge->v0;
 				}
-				else if( rcQuant > length( rcEdge->v1 - rcEdge->v0 ) - 4 )
+				else if(rayCastInfo.rcQuant > length(rayCastInfo.rcEdge->v1 - rayCastInfo.rcEdge->v0 ) - 4 )
 				{
 					//cout << "Bw" << endl;
 					//cout << "lock2" << endl;
-					anchor.pos = rcEdge->v1;
+					anchor.pos = rayCastInfo.rcEdge->v1;
 				}
 				else
 				{
 					//cout << "Cw" << endl;
-					anchor.pos = rcEdge->GetPosition( rcQuant );
+					anchor.pos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant );
 				}
 				
-				anchor.e = rcEdge;
-				anchor.quantity = rcQuant;
+				anchor.e = rayCastInfo.rcEdge;
+				anchor.quantity = rayCastInfo.rcQuant;
 
 				//cout << "anchor pos: " << anchor.pos.x << ", " << anchor.pos.y << endl;
 				//player->owner->ActivateEffect( ts_miniHit, rcEdge->GetPoint( rcQuant ), true, 0, , 3, facingRight );
@@ -1175,9 +1177,9 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 	double lengthToPlayer = length(edge->GetPosition(edgeQuantity) - playerPos );
 	
 	double rcLength = 0;
-	if (rcEdge != NULL)
+	if (rayCastInfo.rcEdge != NULL)
 	{
-		rcLength = length(rcEdge->GetPosition(rcQuant) - playerPos);
+		rcLength = length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant) - playerPos);
 	}
 
 	if (edge->IsInvisibleWall())
@@ -1197,19 +1199,19 @@ void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortio
 		}
 		else
 		{
-			if (rcEdge == NULL || lengthToPlayer < rcLength)
+			if (rayCastInfo.rcEdge == NULL || lengthToPlayer < rcLength)
 			{
-				rcEdge = edge;
-				rcQuant = edgeQuantity;
+				rayCastInfo.rcEdge = edge;
+				rayCastInfo.rcQuant = edgeQuantity;
 			}
 		}
 	}
 	else
 	{
-		if (rcEdge == NULL || lengthToPlayer < rcLength)
+		if (rayCastInfo.rcEdge == NULL || lengthToPlayer < rcLength)
 		{
-			rcEdge = edge;
-			rcQuant = edgeQuantity;
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
 		}
 	}
 }
@@ -1564,7 +1566,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 		Grass *g = (Grass*)qte;
 		//Rect<double> r(position.x + b.offset.x - b.rw, position.y + b.offset.y - b.rh, 2 * b.rw, 2 * b.rh);
 
-		V2d touchPoint = rcEdge->GetPosition(rcQuant);
+		V2d touchPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 		if (g->grassType == Grass::ANTIWIRE && g->IsTouchingCircle( touchPoint, grassCheckRadius ))
 		{
 			antiWireGrassCount++;
@@ -1576,7 +1578,7 @@ void Wire::CheckAntiWireGrass()
 {
 	if ( player->owner != NULL && player->owner->hasGrass[Grass::ANTIWIRE])
 	{
-		V2d hitPoint = rcEdge->GetPosition(rcQuant);
+		V2d hitPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 		sf::Rect<double> r;
 		r.left = hitPoint.x - grassCheckRadius / 2;
 		r.top = hitPoint.y - grassCheckRadius / 2;

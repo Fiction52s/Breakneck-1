@@ -343,9 +343,35 @@ void Query( EdgeQuadTreeCollider *qtc, EdgeQNode *node, const sf::Rect<double> &
 
 bool IsEdgeTouchingBox( Edge *e, const sf::Rect<double> & ir );
 
+struct RayCastInfo
+{
+	Edge * rcEdge;
+	double rcQuant;
+	double rcPortion;
+	V2d rayStart;
+	V2d rayEnd;
+
+	RayCastInfo()
+	{
+		Reset();
+	}
+	void Reset()
+	{
+		rcEdge = NULL;
+		rcQuant = 0;
+		rcPortion = 0;
+		rayStart.x = 0;
+		rayStart.y = 0;
+		rayEnd.x = 0;
+		rayEnd.y = 0;
+	}
+};
+
 struct RayCastHandler
 {
-	virtual void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion ) = 0;
+	RayCastInfo rayCastInfo;
+	
+	virtual void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 };
 
 void RayCast( RayCastHandler *handler, 

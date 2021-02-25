@@ -13889,18 +13889,18 @@ Edge * Actor::RayCastSpecialTerrainExit()
 {
 	V2d targetPos = position - normalize(velocity) * 200.0;
 	rayMode = RAYMODE_WATER;
-	rcEdge = NULL;
+	rayCastInfo.Reset();
 	RayCast(this, oldSpecialTerrain->myTerrainTree->startNode, position, targetPos);
-	return rcEdge;
+	return rayCastInfo.rcEdge;
 }
 
 Edge * Actor::RayCastSpecialTerrainEnter()
 {
 	V2d targetPos = position - normalize(velocity) * 200.0;
 	rayMode = RAYMODE_WATER;
-	rcEdge = NULL;
+	rayCastInfo.Reset();
 	RayCast(this, currSpecialTerrain->myTerrainTree->startNode, position, targetPos);
-	return rcEdge;
+	return rayCastInfo.rcEdge;
 }
 
 void Actor::UpdateSmallLightning()
@@ -17596,11 +17596,12 @@ void Actor::UnlockGate(Gate *g)
 		leftWire->Retract();
 }
 
-void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
+void Actor::HandleRayCollision( Edge *edge, double p_edgeQuantity, double rayPortion )
 {
 	if (rayMode == RAYMODE_WATER)
 	{
-		if (rcEdge == NULL)
+		RayCastHandler::HandleRayCollision(edge, p_edgeQuantity, rayPortion);
+		/*if (rcEdge == NULL)
 		{
 			rcEdge = edge;
 			rcQuantity = rayPortion;
@@ -17612,7 +17613,7 @@ void Actor::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPorti
 				rcEdge = edge;
 				rcQuantity = rayPortion;
 			}
-		}
+		}*/
 	}
 	/*if( rayPortion > 1 && ( rcEdge == NULL || length( edge->GetPoint( edgeQuantity ) - position ) < length( rcEdge->GetPoint( rcQuantity ) - position ) ) )
 	{

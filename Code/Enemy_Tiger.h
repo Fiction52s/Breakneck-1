@@ -17,8 +17,10 @@ struct Tiger : Boss, LauncherEnemy, Summoner
 		WAIT,
 		MOVE_GRIND,
 		MOVE_JUMP,
+		MOVE_LUNGE,
 		COMBOMOVE,
 		SUMMON,
+		THROW_SPINTURRET,
 		SEQ_WAIT,
 		A_Count
 	};

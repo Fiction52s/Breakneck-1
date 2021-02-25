@@ -350,10 +350,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	V2d goalNodePosFinal;
 
 	std::string rayMode;
-	V2d rayStart;
-	V2d rayEnd;
-	Edge *rcEdge;
-	double rcQuantity;
 	Edge *rayIgnoreEdge;
 	Edge *rayIgnoreEdge1;
 
