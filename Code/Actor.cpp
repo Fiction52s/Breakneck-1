@@ -285,6 +285,7 @@ void Actor::PopulateState(PState *ps)
 
 	//new stuff
 	ps->prevRail = prevRail;
+	ps->specialSlow = specialSlow;
 
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
@@ -505,6 +506,7 @@ void Actor::PopulateFromState(PState *ps)
 	//new stuff
 
 	prevRail = ps->prevRail;
+	specialSlow = ps->specialSlow;
 
 	projectileSwordFrames = ps->projectileSwordFrames;
 	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
@@ -5732,27 +5734,37 @@ void Actor::UpdateBubbles()
 		holdJump = false;
 	}
 
-
-	bool inTimeSlowTerrain = timeSlowTerrain;
+	
 
 	if (grindEdge != NULL)
 	{
 		if (grindEdge->rail != NULL
 			&& grindEdge->rail->GetRailType() == TerrainRail::ANTITIMESLOW)
 		{
-			inTimeSlowTerrain = false;
+			timeSlowTerrain = false;
 		}
+	}
+
+	if (timeSlowTerrain)
+	{
+		specialSlow = true;
 	}
 
 	bool powerSlow = CanCreateTimeBubble()
 		&& HasUpgrade(UPGRADE_POWER_TIME)
 		&& PowerButtonHeld()
 		&& currPowerMode == PMODE_TIMESLOW;
+
+
+	if (specialSlow)
+	{
+		inBubble = true;
+	}
 	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
-	if (antiTimeSlowFrames == 0 && ( powerSlow || inTimeSlowTerrain ) )
+	if (antiTimeSlowFrames == 0 && ( powerSlow || specialSlow)  )
 	{
-		if (!prevInput.PowerButtonDown() && !inBubble && !inTimeSlowTerrain)
+		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow)
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
@@ -6253,6 +6265,8 @@ void Actor::UpdatePrePhysics()
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
 	showSword = false;
+	specialSlow = false;
+	
 
 	touchedCoyoteHelper = false;
 	

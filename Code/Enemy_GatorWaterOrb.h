@@ -14,6 +14,12 @@ struct GatorWaterOrbPool
 	GatorWaterOrb * Throw(V2d &pos, V2d &dir,
 		int orbType );
 	void Draw(sf::RenderTarget *target);
+	void Redirect(V2d &vel);
+	bool RedirectOldestAtPlayer(Actor *p, double speed );
+	bool RedirectOldest(V2d &vel);
+	int GetNumGrowingOrbs();
+	GatorWaterOrb *GetOldest();
+	bool CanThrow();
 	std::vector<GatorWaterOrb*> bulletVec;
 	sf::Vertex *verts;
 	Tileset *ts;
@@ -24,19 +30,22 @@ struct GatorWaterOrb : Enemy
 {
 	enum OrbType
 	{
-		UNDODGEABLE_REFRESH,
-		NODE_GROW,
+		NODE_GROW_HIT,
+		NODE_GROW_SLOW,
 	};
 
 	enum Action
 	{
 		FLYING,
+		GROWING,
+		REDIRECT,
 		A_Count
 	};
 
 	int orbType;
 
 	Tileset *ts;
+
 
 	double flySpeed;
 	double maxFlySpeed;
@@ -50,6 +59,8 @@ struct GatorWaterOrb : Enemy
 
 	//for node grow
 	double currRadius;
+	double startRadius;
+	double maxRadius;
 	V2d targetPos;
 
 	QuadraticMovement *quadraticMove;
@@ -62,6 +73,7 @@ struct GatorWaterOrb : Enemy
 	void UpdateEnemyPhysics();
 	void Die();
 	void Throw(V2d &pos, V2d &dir, int orbType );
+	void Redirect(V2d &vel);
 	void SetLevel(int lev);
 	void ProcessState();
 	bool CheckHitPlayer(int index = 0);

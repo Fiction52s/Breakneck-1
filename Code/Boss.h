@@ -68,7 +68,7 @@ struct Boss : Enemy
 	virtual void ProcessState();
 	virtual	bool IsEnemyMoverAction(int a) { return false; }
 	virtual bool TryComboMove(V2d &comboPos,
-		int comboMoveDuration, int moveDurationBeforeStartNextAction,
+		int comboMoveDuration, int moveDurationBeforeStartNextAction, int remainingDuration,
 		V2d &comboOffset ) {return false;}
 
 	virtual void FrameIncrement();

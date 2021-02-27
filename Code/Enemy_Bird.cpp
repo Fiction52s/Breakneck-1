@@ -345,10 +345,10 @@ void Bird::StartAction()
 }
 
 //returns true if comboing
-bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration, int moveDurationBeforeStartNextAction, V2d &comboOffset )
+bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration, int moveDurationBeforeStartNextAction, int framesRemaining, V2d &comboOffset )
 {
 	nextAction = COMBOMOVE;
-	actionLength[COMBOMOVE] = moveDurationBeforeStartNextAction;
+	actionLength[COMBOMOVE] = moveDurationBeforeStartNextAction - framesRemaining;
 
 	enemyMover.SetModeNodeLinear(comboPos + comboOffset, CubicBezier(), comboMoveDuration);
 

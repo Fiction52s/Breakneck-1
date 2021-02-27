@@ -2353,7 +2353,7 @@ sf::Rect<double> CollisionBox::GetAABB()
 	if (isCircle)
 	{
 		V2d truePos = GetTrueCenter();
-		return sf::Rect<double>(truePos.x - rw, truePos.y - rw, rw * 2, rh * 2);
+		return sf::Rect<double>(truePos.x - rw, truePos.y - rw, rw * 2, rw * 2);
 	}
 	else
 	{

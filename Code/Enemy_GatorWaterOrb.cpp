@@ -12,12 +12,11 @@ using namespace sf;
 GatorWaterOrbPool::GatorWaterOrbPool()
 {
 	Session *sess = Session::GetSession();
-
 	ts = NULL;
-	numBullets = 10;
+	numBullets = 5;
 	bulletVec.resize(numBullets);
 	verts = new Vertex[numBullets * 4];
-	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
+	ts = sess->GetSizedTileset("Bosses/Gator/orb_32x32.png");
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bulletVec[i] = new GatorWaterOrb(verts + 4 * i, this);
@@ -55,6 +54,19 @@ void GatorWaterOrbPool::Reset()
 	}
 }
 
+bool GatorWaterOrbPool::CanThrow()
+{
+	GatorWaterOrb *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (!bs->spawned)
+		{
+			return true;
+		}
+	}
+}
+
 GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir, int orbType )
 {
 	GatorWaterOrb *bs = NULL;
@@ -68,6 +80,85 @@ GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir, int orbType )
 		}
 	}
 	return bs;
+}
+
+void GatorWaterOrbPool::Redirect(V2d &vel)
+{
+	GatorWaterOrb *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (bs->spawned )
+		{
+			bs->Redirect(vel);
+		}
+	}
+}
+
+GatorWaterOrb *GatorWaterOrbPool::GetOldest()
+{
+	GatorWaterOrb *bs = NULL;
+	GatorWaterOrb *oldest = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (bs->spawned && bs->action == GatorWaterOrb::GROWING)
+		{
+			if (oldest == NULL || bs->framesToLive
+				< oldest->framesToLive)
+			{
+				oldest = bs;
+			}
+		}
+	}
+
+	return oldest;
+}
+
+bool GatorWaterOrbPool::RedirectOldestAtPlayer(Actor *player,double speed )
+{
+	GatorWaterOrb *oldest = NULL;
+	oldest = GetOldest();
+
+	if (oldest != NULL)
+	{
+		double bigger = oldest->currRadius - oldest->startRadius;
+		speed -= .2/speed * bigger;
+		V2d dir = normalize(V2d(player->position - oldest->GetPosition()));
+		oldest->Redirect( dir * speed);
+		return true;
+	}
+	return false;
+}
+
+bool GatorWaterOrbPool::RedirectOldest(V2d &vel)
+{
+	
+	GatorWaterOrb *oldest = GetOldest();
+
+	if (oldest != NULL)
+	{
+		oldest->Redirect(vel);
+		return true;
+	}
+		
+	return false;
+}
+
+int GatorWaterOrbPool::GetNumGrowingOrbs()
+{
+	GatorWaterOrb *bs = NULL;
+	int numGrowing = 0;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (bs->spawned && bs->action == GatorWaterOrb::GROWING)
+		{
+			++numGrowing;
+		}
+	}
+
+	return numGrowing;
 }
 
 void GatorWaterOrbPool::Draw(sf::RenderTarget *target)
@@ -91,8 +182,8 @@ GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *pool)
 	quadraticMove = quadraticMoveSeq.AddQuadraticMovement(
 		V2d(), V2d(), V2d(), CubicBezier(), 0);
 
-
-
+	startRadius = ts->tileWidth;
+	maxRadius = 200;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -154,6 +245,7 @@ void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
 	
+	velocity = V2d(0, 0);
 
 	action = FLYING;
 	frame = 0;
@@ -163,23 +255,24 @@ void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 
 	flySpeed = 10;
 
-	if (orbType == UNDODGEABLE_REFRESH)
-	{
-		distToTarget = length(pos - sess->GetPlayerPos(0));
-	}
-	else if (orbType == NODE_GROW)
-	{
-		quadraticMove->SetFrameDuration(60);
-		quadraticMove->A = pos;
-		quadraticMove->B = sess->GetPlayerPos(0);
-		quadraticMove->C = dir;
-		quadraticMove->start = pos;
-		quadraticMove->end = dir;
-		quadraticMoveSeq.Reset();
-	}
+	quadraticMove->SetFrameDuration(60);
+	quadraticMove->A = pos;
+	quadraticMove->B = sess->GetPlayerPos(0);
+	quadraticMove->C = dir;
+	quadraticMove->start = pos;
+	quadraticMove->end = dir;
+	quadraticMoveSeq.Reset();
 
-	currRadius = ts->tileWidth;
+	currRadius = ts->tileWidth / 2;
 
+}
+
+void GatorWaterOrb::Redirect(V2d &vel)
+{
+	velocity = vel;
+	action = REDIRECT;
+	frame = 0;
+	framesToLive = 180;
 }
 
 void GatorWaterOrb::FrameIncrement()
@@ -205,44 +298,38 @@ void GatorWaterOrb::ProcessState()
 		frame = 0;
 	}
 
+	if (action == FLYING && quadraticMoveSeq.currMovement == NULL)
+	{
+		action = GROWING;
+		frame = 0;
+	}
+
 	if (framesToLive == 0)
 	{
 		ClearRect(quad);
-		
+
 		sess->RemoveEnemy(this);
 		spawned = false;
 	}
 
-	if (action == FLYING)
+	if (action == FLYING || action == GROWING)
 	{
-		if (orbType == UNDODGEABLE_REFRESH)
-		{
-			velocity = pDir * flySpeed;
-			flySpeed += accel;
-			if (flySpeed > maxFlySpeed)
-				flySpeed = maxFlySpeed;
-		}
-		else if (orbType == NODE_GROW)
+		if (currRadius < maxRadius)
 		{
 			currRadius += 1;
-
-			if (length(GetPosition() - targetPos) < flySpeed)
-			{
-				velocity = V2d(0, 0);
-				currPosInfo.position = targetPos;
-			}
+			hitBody.GetCollisionBoxes(0).at(0).rw = currRadius;
 		}
 	}
-	
 }
 
 void GatorWaterOrb::IHitPlayer(int index)
 {
+	
 }
 
 void GatorWaterOrb::UpdateEnemyPhysics()
 {
-	if (orbType == NODE_GROW)
+	if (action == FLYING )
 	{
 		if (numPhysSteps == 1)
 		{
@@ -267,8 +354,17 @@ void GatorWaterOrb::UpdateEnemyPhysics()
 
 void GatorWaterOrb::UpdateSprite()
 {
-	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, currRadius, currRadius, GetPositionF());
+	int tile = 0;
+	if (orbType == NODE_GROW_HIT)
+	{
+		tile = 0;
+	}
+	else if (orbType == NODE_GROW_SLOW)
+	{
+		tile = 1;
+	}
+	ts->SetQuadSubRect(quad, tile);
+	SetRectCenter(quad, currRadius * 2, currRadius * 2, GetPositionF());
 }
 
 void GatorWaterOrb::EnemyDraw(sf::RenderTarget *target)
@@ -289,10 +385,16 @@ void GatorWaterOrb::Die()
 
 bool GatorWaterOrb::CheckHitPlayer(int index)
 {
+
 	Actor *player = sess->GetPlayer(index);
 
 	if (player == NULL)
 		return false;
+
+	//if (player->specialSlow)
+	//{
+	//	return false;
+	//}
 
 
 	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
@@ -304,13 +406,30 @@ bool GatorWaterOrb::CheckHitPlayer(int index)
 
 		if (hitResult != Actor::HitResult::MISS)
 		{
-			IHitPlayer(index);
+			//IHitPlayer(index);
 			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
 			{
-				player->RestoreAirOptions();
-				ClearRect(quad);
-				spawned = false;
-				sess->RemoveEnemy(this);
+				if (orbType == GatorWaterOrb::OrbType::NODE_GROW_HIT)
+				{
+					if (hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
+					{
+						player->ApplyHit(currHitboxes->hitboxInfo,
+							NULL, hitResult, GetPosition());
+						Die();
+					}
+					//Die(); might be better out here
+				}
+				else
+				{
+					player->RestoreAirOptions();
+					player->specialSlow = true;
+				}
+				
+				//Die();
+				//velocity = velocity *= .9;
+
+				
+
 				/*player->ApplyHit(currHitboxes->hitboxInfo,
 					NULL, hitResult, GetPosition());*/
 			}

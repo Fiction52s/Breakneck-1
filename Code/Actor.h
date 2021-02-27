@@ -418,7 +418,15 @@ struct Actor : QuadTreeCollider,
 
 	//havent put into rollback yet
 
+	bool specialSlow;
+
+
+	//---
+
+
+
 	TerrainRail * prevRail;
+	
 
 	const static int NUM_SWORD_PROJECTILES = 6;
 	SwordProjectile *swordProjectiles[NUM_SWORD_PROJECTILES];

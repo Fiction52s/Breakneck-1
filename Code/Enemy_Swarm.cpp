@@ -346,7 +346,7 @@ void Swarm::ProcessState()
 			{
 				
 				double dist = PlayerDist(0);
-				if (dist < 900)
+				if (dist < 1200)
 				{
 					action = FIRE;
 					frame = 0;

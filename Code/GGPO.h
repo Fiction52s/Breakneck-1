@@ -299,6 +299,7 @@ struct PState
 	int kinMode;
 
 	TerrainRail * prevRail;
+	bool specialSlow;
 
 	//new stuff I added recently
 	int projectileSwordFrames;

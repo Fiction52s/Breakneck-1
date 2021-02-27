@@ -71,7 +71,7 @@ struct Bird : Summoner, Boss
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
-		int moveDurationBeforeStartNextAction,
+		int moveDurationBeforeStartNextAction, int framesRemaining,
 		V2d &comboOffset );
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();

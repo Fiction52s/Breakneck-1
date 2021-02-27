@@ -17,9 +17,16 @@ struct Gator : Boss, Summoner
 		MOVE_NODE_LINEAR,
 		MOVE_NODE_QUADRATIC,
 		MOVE_CHASE,
+		ATTACK,
 		COMBOMOVE,
 		MOVE,
 		SUMMON,
+		TRIPLE_LUNGE_1,
+		TRIPLE_LUNGE_WAIT_1,
+		TRIPLE_LUNGE_2,
+		TRIPLE_LUNGE_WAIT_2,
+		TRIPLE_LUNGE_3,
+		REDIRECT_ORBS,
 		SEQ_WAIT,
 		A_Count
 	};
@@ -28,7 +35,13 @@ struct Gator : Boss, Summoner
 
 	GatorWaterOrbPool orbPool;
 
+	RandomPicker orbTypePicker;
+
 	SummonGroup swarmSummonGroup;
+
+	bool redirectingOrbs;
+	int redirectFrame;
+	int redirectRate;
 
 	Tileset *ts_punch;
 	Tileset *ts_kick;
@@ -48,10 +61,12 @@ struct Gator : Boss, Summoner
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void FrameIncrement();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
 		int moveDurationBeforeStartNextAction,
+		int framesRemaining,
 		V2d &comboOffset);
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();

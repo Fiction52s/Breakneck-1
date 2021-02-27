@@ -142,8 +142,8 @@ void Boss::TryCombo()
 			BossCommand nextComboAction = commandQueue[currCommandIndex];
 
 			int framesRemaining = (actionLength[action] * animFactor[action]) - frame;
-			int durationBeforeNextAction = 
-				moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1) - framesRemaining;
+			int durationBeforeNextAction =
+				moveDuration - (hitboxStartFrame[nextComboAction.action] * animFactor[nextComboAction.action] - 1);// -framesRemaining;
 
 			V2d offset;
 			if (hitOffsetMap.find(nextComboAction.action) != hitOffsetMap.end() )
@@ -156,7 +156,7 @@ void Boss::TryCombo()
 			}
 
 			movingToCombo = TryComboMove(tPos, moveDuration,
-				durationBeforeNextAction, offset );
+				durationBeforeNextAction, framesRemaining, offset );
 		}
 	}
 }
