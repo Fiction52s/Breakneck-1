@@ -29,8 +29,8 @@ Bird::Bird(ActorParams *ap)
 	:Boss(EnemyType::EN_BIRDBOSS, ap),
 	shurPool(this),
 	batSummonGroup(this, new BasicAirEnemyParams(sess->types["bat"], 1), 2, 1, 1),
-	nodeGroupA(Color::Magenta),
-	nodeGroupB(Color::Yellow)
+	nodeGroupA(1, Color::Magenta),
+	nodeGroupB(1, Color::Yellow)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(PUNCH, 0, 0);

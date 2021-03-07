@@ -10,16 +10,18 @@ struct CircleGroup;
 
 struct NodeGroup
 {
-	NodeGroup(sf::Color c = sf::Color::Magenta);
+	NodeGroup( int numPickers = 1, sf::Color c = sf::Color::Magenta);
 	~NodeGroup();
 	void Draw(sf::RenderTarget *target);
 	void SetNodeVec(std::vector<PoiInfo*> *nv);
-	PoiInfo *AlwaysGetNextNode();
-	PoiInfo * TryGetNextNode();
+	PoiInfo *AlwaysGetNextNode(int pickerIndex = 0);
+	PoiInfo * TryGetNextNode( int pickerIndex = 0);
 	std::vector<PoiInfo*> *nodeVec;
 	CircleGroup *circles;
 	sf::Color circleColor;
-	RandomPicker picker;
+	std::vector<RandomPicker> pickers;
+	int numPickers;
+
 	
 };
 

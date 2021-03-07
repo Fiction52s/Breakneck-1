@@ -1381,6 +1381,7 @@ struct Actor : QuadTreeCollider,
 	void SetupAction(int a);
 	void SetBoostVelocity();
 	void SetBounceBoostVelocity();
+	void CoyoteBulletBounce();
 	double GetNumSteps();
 	double CalcLandingSpeed( sf::Vector2<double> &testVel,
 		sf::Vector2<double> &alongVel, 

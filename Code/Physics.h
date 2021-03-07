@@ -350,9 +350,11 @@ struct RayCastInfo
 	double rcPortion;
 	V2d rayStart;
 	V2d rayEnd;
+	QuadTree *tree;
 
 	RayCastInfo()
 	{
+		tree = NULL;
 		Reset();
 	}
 	void Reset()
@@ -365,11 +367,22 @@ struct RayCastInfo
 		rayEnd.x = 0;
 		rayEnd.y = 0;
 	}
+	V2d GetRayHitPos()
+	{
+		if (rcEdge != NULL)
+		{
+			return rcEdge->GetPosition(rcQuant);
+		}
+
+		return V2d();
+	}
 };
 
 struct RayCastHandler
 {
 	RayCastInfo rayCastInfo;
+	
+	bool ExecuteRayCast( V2d &start, V2d& end );
 	
 	virtual void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 };

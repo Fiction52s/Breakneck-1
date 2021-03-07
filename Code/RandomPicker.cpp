@@ -4,6 +4,7 @@
 
 RandomPicker::RandomPicker()
 {
+	preventShuffleRepetition = false;
 }
 
 RandomPicker::~RandomPicker()
@@ -58,12 +59,31 @@ int RandomPicker::TryGetNextOption()
 	}
 }
 
+void RandomPicker::SetPreventShuffleRepetition(bool s)
+{
+	preventShuffleRepetition = s;
+}
+
 int RandomPicker::AlwaysGetNextOption()
 {
 	int r = TryGetNextOption();
 	if (r == -1)
 	{
+		int lastOption = options.back();
 		ShuffleActiveOptions();
+
+		if (preventShuffleRepetition)
+		{
+			//prevents nodes from repeating from a shuffle
+			if (options[0] == lastOption)
+			{
+				int newI = (rand() % (options.size() - 2)) + 1;
+				int temp = options[newI];
+				options[newI] = options[0];
+				options[0] = temp;
+			}
+		}
+
 		r = TryGetNextOption();
 	}
 	return r;

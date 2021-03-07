@@ -491,6 +491,7 @@ void Session::RegisterW2Enemies()
 
 void Session::RegisterW3Enemies()
 {
+	AddUnlistedWorldEnemy("babyscorpion", 3, CreateEnemy<BabyScorpion>, NULL, Vector2i(), Vector2i(), false, true, false, false, true, false, false, 3);
 	//AddBasicAerialWorldEnemy("bouncefloater", 3, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 

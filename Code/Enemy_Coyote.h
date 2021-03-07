@@ -9,32 +9,58 @@
 
 struct CoyotePostFightScene;
 
-
-
-struct Coyote : Boss, Summoner
+struct Coyote : Boss, Summoner, RayCastHandler,
+	LauncherEnemy
 {
 	enum Action
 	{
 		WAIT,
 		SEQ_WAIT,
 		MOVE,
+		RUSH,
+		PLAN_PATTERN,
+		PATTERN_MOVE,
+		PATTERN_RUSH,
 		SUMMON,
 		COMBOMOVE,
 		A_Count
 	};
 	
+	int bounceCounter;
+
 	NodeGroup nodeGroupA;
 
+	sf::CircleShape patternPreview;
+	int patternFlickerFrames;
+	int numPatternMoves;
+
 	SummonGroup fireflySummonGroup;
+	SummonGroup babyScorpionGroup;
+
+	PoiInfo *currNode;
+
+	V2d currBabyScorpPos;
 
 	CoyotePostFightScene *postFightScene;
 
 	Tileset *ts_move;
+	Tileset *ts_bulletExplode;
 
 	CoyoteBulletPool stopStartPool;
 
+	RandomPicker patternTypePicker;
+
+	std::vector<PoiInfo*> pattern;
+	std::vector<int> patternType;
+	int patternIndex;
+
 	Coyote(ActorParams *ap);
 	~Coyote();
+
+	//launcher functions
+	void BulletHitTerrain(BasicBullet *b,
+		Edge *edge, V2d &pos);
+	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
 
 	//summoner functions
 	void InitEnemyForSummon(SummonGroup *group, Enemy *e);

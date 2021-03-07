@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_CoyoteBullet.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -218,6 +219,46 @@ void CoyoteBullet::ProcessState()
 
 void CoyoteBullet::IHitPlayer(int index)
 {
+}
+
+bool CoyoteBullet::CheckHitPlayer(int index)
+{
+
+	Actor *player = sess->GetPlayer(index);
+
+	if (player == NULL)
+		return false;
+
+
+	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
+	{
+		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+			GetPosition(), facingRight,
+			currHitboxes->hitboxInfo->canBeParried,
+			currHitboxes->hitboxInfo->canBeBlocked);
+
+		if (hitResult != Actor::HitResult::MISS)
+		{
+			//IHitPlayer(index);
+			if (currHitboxes != NULL) //needs a second check in case ihitplayer changes the hitboxes
+			{
+				/*player->SetAction(Actor::BOOSTERBOUNCE);
+				player->frame = 0;
+				Die();*/
+
+				//Die();
+				//velocity = velocity *= .9;
+
+
+
+				player->ApplyHit(currHitboxes->hitboxInfo,
+				NULL, hitResult, GetPosition());
+			}
+		}
+	}
+
+
+	return false;
 }
 
 void CoyoteBullet::UpdateEnemyPhysics()

@@ -14,7 +14,10 @@ Coyote::Coyote(ActorParams *ap)
 	:Boss(EnemyType::EN_COYOTEBOSS, ap),
 	fireflySummonGroup( this, 
 		new BasicAirEnemyParams(sess->types["firefly"], 1),
-		5, 2, 1 )
+		5, 2, 1 ),
+	babyScorpionGroup(this,
+		new BasicAirEnemyParams(sess->types["babyscorpion"], 1),
+		6, 6, 1)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
@@ -23,21 +26,51 @@ Coyote::Coyote(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 
+
+	patternFlickerFrames = 30;
+	numPatternMoves = 3;
+
+	
+	patternTypePicker.Reset();
+	patternTypePicker.AddActiveOption(PATTERN_RUSH);
+	patternTypePicker.AddActiveOption(PATTERN_MOVE);
+
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	postFightScene = NULL;
 
-	stageMgr.AddActiveOption(0, MOVE, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
+	pattern.reserve(6);
+	pattern.resize(numPatternMoves);
 
-	stageMgr.AddActiveOption(1, MOVE, 2);
-	stageMgr.AddActiveOption(1, SUMMON, 2);
+	patternType.reserve(6);
+	patternType.resize(numPatternMoves);
+	//stageMgr.AddActiveOption(0, MOVE, 2);
+	//stageMgr.AddActiveOption(0, RUSH, 2);
+	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+
+	stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOption(1, MOVE, 2);
+	//stageMgr.AddActiveOption(1, SUMMON, 2);
 
 	stageMgr.AddActiveOption(2, MOVE, 2);
 	stageMgr.AddActiveOption(2, SUMMON, 2);
 
 	stageMgr.AddActiveOption(3, MOVE, 2);
 	stageMgr.AddActiveOption(3, SUMMON, 2);
+
+	
+
+	SetNumLaunchers(1);
+	launchers[0] = new Launcher(this, BasicBullet::OWL, 16, 3, GetPosition(), V2d(1, 0), PI / 12, 300);
+	launchers[0]->SetBulletSpeed(10);
+	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->Reset();
+
+	patternPreview.setFillColor(Color::Magenta);
+	patternPreview.setRadius(60);
+	patternPreview.setOrigin(patternPreview.getLocalBounds().width / 2,
+		patternPreview.getLocalBounds().height / 2);
 
 	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
@@ -85,6 +118,8 @@ void Coyote::ResetEnemy()
 	stopStartPool.Reset();
 	fireflySummonGroup.Reset();
 
+	currNode = NULL;
+
 	BossReset();
 	facingRight = true;
 
@@ -95,9 +130,17 @@ void Coyote::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	rayCastInfo.tree = sess->terrainTree;
+
 	hitPlayer = false;
 
 	frame = 0;
+
+	bounceCounter = -1;
+	patternIndex = -1;
+
+	enemyMover.currPosInfo.SetAerial();
+	currPosInfo.SetAerial();
 
 	UpdateSprite();
 }
@@ -153,9 +196,79 @@ void Coyote::ActionEnded()
 {	
 	switch (action)
 	{
-	case WAIT:
 	case MOVE:
+	{
+		if (bounceCounter == 3)
+		{
+			Wait(30);
+			launchers[0]->position = GetPosition();
+			launchers[0]->facingDir = PlayerDir();
+			launchers[0]->Fire();
+		}
+		else
+		{
+			++bounceCounter;
+			SetAction(MOVE);
+		}
+		break;
+	}
+	case PLAN_PATTERN:
+	{
+		patternIndex = 0;
+
+		SetAction(PATTERN_MOVE);
+		break;
+	}
+	case PATTERN_MOVE:
+	{
+		if (patternIndex == numPatternMoves - 1)
+		{
+			/*if (stageMgr.GetCurrStage() > 0)
+			{
+				launchers[0]->position = GetPosition();
+				launchers[0]->facingDir = PlayerDir();
+				launchers[0]->Fire();
+			}*/
+
+			if (patternType[patternIndex] == PATTERN_MOVE)
+			{
+				Wait(30);
+			}
+			else
+			{
+				++patternIndex;
+				SetAction(patternType[patternIndex-1]);
+			}
+			
+		}
+		else
+		{
+			++patternIndex;
+			SetAction(patternType[patternIndex-1]);
+			
+		}
+
+		break;
+	}
+	case PATTERN_RUSH:
+	{
+		//SetAction(PATTERN_MOVE);
+		if (patternIndex == numPatternMoves)
+		{
+			//SetAction(PATTERN_MOVE);
+			//++patternIndex;
+			Wait(30);
+		}
+		else
+		{
+			SetAction(PATTERN_MOVE);
+		}
+
+		break;
+	}
+	case WAIT:
 	case SUMMON:
+	case RUSH:
 		Decide();
 		break;
 	case SEQ_WAIT:
@@ -179,21 +292,111 @@ void Coyote::HandleAction()
 		}
 		break;
 	}
+	case PLAN_PATTERN:
+	{
+		if (frame % patternFlickerFrames == 0 )
+		{
+			int mult = frame / patternFlickerFrames;
+			if (mult < numPatternMoves)
+			{
+				currBabyScorpPos = pattern[mult]->pos;
+				patternPreview.setPosition(Vector2f(pattern[mult]->pos));
+
+				if (patternType[mult] == PATTERN_MOVE)
+				{
+					patternPreview.setFillColor(Color::Magenta);
+				}
+				else if (patternType[mult] == PATTERN_RUSH)
+				{
+					patternPreview.setFillColor(Color::Red);
+				}
+			}
+
+			//babyScorpionGroup.Summon();
+		}
+		break;
+	}
 		
 	}
 }
 
 void Coyote::StartAction()
 {
+	if (prevAction == MOVE && action != MOVE)
+	{
+		bounceCounter = -1;
+	}
+
 	switch (action)
 	{
 	case MOVE:
+	{
+		if (bounceCounter == -1)
+		{
+			bounceCounter = 0;
+		}
 		enemyMover.currPosInfo.SetAerial();
 		currPosInfo.SetAerial();
 		V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
+		if (nodePos == GetPosition())
+		{
+			int xxx = 5;
+		}
+		
+
 		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+		/*if (length(nodePos - GetPosition()) < 100)
+		{
+			enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 20);
+		}
+		else
+		{
+			
+		}*/
 		stopStartPool.Throw(GetPosition(), PlayerDir());
 		break;
+	}
+	case PATTERN_RUSH:
+	case RUSH:
+	{
+		if (ExecuteRayCast(GetPosition() + PlayerDir() * 1.0 , GetPosition() + PlayerDir() * 3000.0));
+		{
+			V2d rayPos = rayCastInfo.GetRayHitPos();
+			enemyMover.SetModeNodeLinearConstantSpeed(rayPos, CubicBezier(), 60);
+			
+		}
+		//stopStartPool.Throw(GetPosition(), PlayerDir());
+		break;
+	}
+	case PATTERN_MOVE:
+	{
+		currNode = pattern[patternIndex];
+		enemyMover.SetModeNodeLinearConstantSpeed(currNode->pos, CubicBezier(), 60);
+		//stopStartPool.Throw(GetPosition(), PlayerDir());
+		break;
+	}
+	case PLAN_PATTERN:
+	{
+		babyScorpionGroup.Reset();
+		PoiInfo *testNode;
+		for (int i = 0; i < numPatternMoves; ++i)
+		{
+			do
+			{
+				testNode = nodeGroupA.AlwaysGetNextNode();
+			} while (testNode == currNode);
+
+			pattern[i] = testNode;
+		}
+
+		for (int i = 0; i < numPatternMoves; ++i)
+		{
+			patternType[i] = patternTypePicker.AlwaysGetNextOption();
+		}
+
+		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
+		break;
+	}
 	}
 }
 
@@ -214,7 +417,7 @@ void Coyote::SetupNodeVectors()
 
 bool Coyote::IsEnemyMoverAction(int a)
 {
-	return a == MOVE;
+	return a == MOVE || a == RUSH || a == PATTERN_MOVE || a == PATTERN_RUSH;
 }
 
 bool Coyote::IsDecisionValid(int d)
@@ -256,6 +459,11 @@ void Coyote::UpdateSprite()
 
 void Coyote::EnemyDraw(sf::RenderTarget *target)
 {
+	if (action == PLAN_PATTERN)
+	{
+		target->draw(patternPreview);
+	}
+
 	DrawSprite(target, sprite);
 	stopStartPool.Draw(target);
 }
@@ -267,10 +475,59 @@ void Coyote::InitEnemyForSummon(SummonGroup *group,
 	{
 		PoiInfo *summonNode;
 
-		summonNode = nodeGroupA.AlwaysGetNextNode();
+		summonNode = nodeGroupA.AlwaysGetNextNode(1);
 
 		e->startPosInfo.SetAerial(summonNode->pos);
 	}
+	else if (group == &babyScorpionGroup)
+	{
+		e->startPosInfo.SetAerial(currBabyScorpPos);
+	}
+}
+
+void Coyote::BulletHitTerrain(BasicBullet *b, Edge *edge, V2d &pos)
+{
+	if (b->bounceCount == 1)
+	{
+		V2d norm = edge->Normal();
+		double angle = atan2(norm.y, -norm.x);
+		sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
+		b->launcher->DeactivateBullet(b);
+	}
+	else
+	{
+		V2d en = edge->Normal();
+		if (pos == edge->v0)
+		{
+			en = normalize(b->position - pos);
+		}
+		else if (pos == edge->v1)
+		{
+			en = normalize(b->position - pos);
+		}
+		double d = dot(b->velocity, en);
+		V2d ref = b->velocity - (2.0 * d * en);
+		b->velocity = ref;
+		//cout << "ref: " << ref.x << ", " << ref.y << endl;
+		//b->velocity = -b->velocity;
+		b->bounceCount++;
+		b->framesToLive = b->launcher->maxFramesToLive;
+	}
+}
+
+
+void Coyote::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
+{
+	V2d vel = b->velocity;
+	double angle = atan2(vel.y, vel.x);
+	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, b->position, true, angle, 6, 2, true);
+
+	if (hitResult != Actor::HitResult::INVINCIBLEHIT)
+	{
+		sess->PlayerApplyHit(playerIndex, b->launcher->hitboxInfo, NULL, hitResult, b->position);
+	}
+
+	b->launcher->DeactivateBullet(b);
 }
 
 //rollback

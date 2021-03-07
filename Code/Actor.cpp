@@ -15162,6 +15162,11 @@ void Actor::SetBoostVelocity()
 	velocity = normalize(velocity) * (length(velocity) + currBooster->strength);
 }
 
+void Actor::CoyoteBulletBounce()
+{
+
+}
+
 void Actor::SetBounceBoostVelocity()
 {
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL)

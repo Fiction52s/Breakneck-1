@@ -46,6 +46,7 @@ struct CoyoteBullet : Enemy
 	void Die();
 	V2d GetThrowDir(V2d &dir);
 	void UpdateEnemyPhysics();
+	bool CheckHitPlayer(int index);
 	void Throw(V2d &pos, V2d &dir);
 	void SetLevel(int lev);
 	void ProcessState();

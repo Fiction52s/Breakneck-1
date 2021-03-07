@@ -13,5 +13,6 @@
 #include "Enemy_ShotgunTurret.h"
 #include "Enemy_Roadrunner.h"
 #include "Enemy_Firefly.h"
+#include "Enemy_BabyScorpion.h"
 
 #endif

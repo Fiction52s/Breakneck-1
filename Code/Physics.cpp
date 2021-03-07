@@ -2300,6 +2300,21 @@ void RayCastHandler::HandleRayCollision(Edge *edge, double edgeQuantity, double 
 	}
 }
 
+bool RayCastHandler::ExecuteRayCast(V2d &start, V2d& end)
+{
+	rayCastInfo.Reset();
+	rayCastInfo.rayStart = start;
+	rayCastInfo.rayEnd = end;
+	RayCast(this, rayCastInfo.tree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
+
+	if (rayCastInfo.rcEdge != NULL)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 //only works on edges
 void RayCast( RayCastHandler *handler, QNode *node, V2d &startPoint, V2d &endPoint )
 {
