@@ -45,8 +45,9 @@ Tiger::Tiger(ActorParams *ap)
 
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
-	stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
+	stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
+	//stageMgr.AddActiveOption(0, SUMMON, 2);
+	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(1, MOVE_JUMP, 2);
@@ -163,6 +164,13 @@ void Tiger::ActionEnded()
 	case COMBOMOVE:
 		SetNextComboAction();
 		break;
+	case MOVE_RUSH:
+	{
+		enemyMover.currPosInfo.SetSurface(rayCastInfo.rcEdge, rayCastInfo.rcQuant);
+		currPosInfo = enemyMover.currPosInfo;
+		SetAction(MOVE_GRIND);
+		break;
+	}
 	}
 }
 
@@ -194,14 +202,25 @@ void Tiger::StartAction()
 	{
 		int gr = rand() % 2;
 
+		if (facingRight)
+		{
+			gr = 0;
+		}
+		else
+		{
+			gr = 1;
+		}
+
 		double grindSpeed = 20;
 		if (gr == 0)
 		{
 			enemyMover.SetModeGrind(grindSpeed, 120);
+			facingRight = true;
 		}
 		else if (gr == 1)
 		{
 			enemyMover.SetModeGrind(-grindSpeed, 120);
+			facingRight = false;
 		}
 		break;
 	}
@@ -213,6 +232,14 @@ void Tiger::StartAction()
 		enemyMover.SetModeNodeProjectile(node->pos, V2d(0, 1.5), 200);
 		enemyMover.SetDestNode(node);
 
+		if (node->pos.x >= GetPosition().x)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
 		
 		//spinPool.Throw(GetPosition(), PlayerDir());
 		break;
@@ -227,7 +254,44 @@ void Tiger::StartAction()
 
 		break;
 	}
-		
+	case MOVE_RUSH:
+	{
+		V2d pPos = targetPlayer->position;
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = GetPosition();
+		rayCastInfo.rayEnd = pPos + PlayerDir(targetPlayerIndex) * 5000.0;
+		ignorePointsCloserThanPlayer = true;
+		playerDist = PlayerDist(targetPlayerIndex);
+		RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
+
+		if (rayCastInfo.rcEdge != NULL)
+		{
+			assert(rayCastInfo.rcEdge != NULL);
+
+			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
+
+			enemyMover.currPosInfo.SetAerial();
+			currPosInfo.SetAerial();
+			//enemyMover.SetModeNodeLinear(basePos, CubicBezier(), 60);
+			enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
+
+			if (basePos.x >= GetPosition().x)
+			{
+				facingRight = true;
+			}
+			else
+			{
+				facingRight = false;
+			}
+			//enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
+		}
+		else
+		{
+			Wait(1);
+			assert(0);
+		}
+		break;
+	}
 		
 	}
 }
@@ -282,7 +346,7 @@ bool Tiger::IsDecisionValid(int d)
 
 bool Tiger::IsEnemyMoverAction(int a)
 {
-	return a == MOVE_GRIND || a == MOVE_JUMP ;
+	return a == MOVE_GRIND || a == MOVE_JUMP || a == MOVE_RUSH;
 }
 
 void Tiger::SeqWait()
@@ -354,6 +418,37 @@ void Tiger::InitEnemyForSummon(SummonGroup *group,
 	{
 		TigerSpinTurret *t = (TigerSpinTurret*)e;
 		t->Init(GetPosition(), PlayerDir());
+	}
+}
+
+void Tiger::HandleRayCollision(Edge *edge, double edgeQuantity,
+	double rayPortion)
+{
+	if (edge->edgeType == Edge::BORDER)
+	{
+		return;
+	}
+
+	V2d dir = normalize(rayCastInfo.rayEnd - rayCastInfo.rayStart);
+	V2d pos = edge->GetPosition(edgeQuantity);
+
+	//if (!sess->IsWithinBounds(pos))
+	//{
+	//	return; //prevents it from hitting the birdtransform area currently
+	//}
+
+	double along = dot(dir, edge->Normal());
+
+	double posDist = length(pos - GetPosition());
+
+	if (along < 0 && (rayCastInfo.rcEdge == NULL || length(edge->GetPosition(edgeQuantity) - rayCastInfo.rayStart) <
+		length(rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcPortion) - rayCastInfo.rayStart)))
+	{
+		if (!ignorePointsCloserThanPlayer || (ignorePointsCloserThanPlayer && posDist > playerDist))
+		{
+			rayCastInfo.rcEdge = edge;
+			rayCastInfo.rcQuant = edgeQuantity;
+		}
 	}
 }
 

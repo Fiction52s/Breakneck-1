@@ -10,7 +10,8 @@
 struct TigerPostFightScene;
 struct TigerPostFight2Scene;
 
-struct Tiger : Boss, LauncherEnemy, Summoner
+struct Tiger : Boss, LauncherEnemy, Summoner,
+	RayCastHandler
 {
 	enum Action
 	{
@@ -18,6 +19,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner
 		MOVE_GRIND,
 		MOVE_JUMP,
 		MOVE_LUNGE,
+		MOVE_RUSH,
 		COMBOMOVE,
 		SUMMON,
 		THROW_SPINTURRET,
@@ -36,6 +38,9 @@ struct Tiger : Boss, LauncherEnemy, Summoner
 	SummonGroup spinTurretSummonGroup;
 
 	TigerGrindBulletPool snakePool;
+
+	bool ignorePointsCloserThanPlayer;
+	double playerDist;
 	//TigerSpinTurretPool spinPool;
 
 	NodeGroup nodeGroupA;
@@ -57,6 +62,8 @@ struct Tiger : Boss, LauncherEnemy, Summoner
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void HandleRayCollision(Edge *edge, double edgeQuantity,
+		double rayPortion);
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

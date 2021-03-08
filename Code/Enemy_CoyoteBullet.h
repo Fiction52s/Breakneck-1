@@ -33,6 +33,8 @@ struct CoyoteBullet : Enemy
 	int hitlagFrames;
 	int hitstunFrames;
 
+	int rhythm;
+
 	double dashSpeed;
 
 	V2d velocity;

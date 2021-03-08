@@ -6,12 +6,14 @@
 #include "SequenceW3.h"
 #include "Enemy_Firefly.h"
 #include "Session.h"
+#include "Enemy_BabyScorpion.h"
 
 using namespace std;
 using namespace sf;
 
 Coyote::Coyote(ActorParams *ap)
 	:Boss(EnemyType::EN_COYOTEBOSS, ap),
+	nodeGroupA( 2 ),
 	fireflySummonGroup( this, 
 		new BasicAirEnemyParams(sess->types["firefly"], 1),
 		5, 2, 1 ),
@@ -19,12 +21,22 @@ Coyote::Coyote(ActorParams *ap)
 		new BasicAirEnemyParams(sess->types["babyscorpion"], 1),
 		6, 6, 1)
 {
+	BabyScorpion *bs = NULL;
+	for (int i = 0; i < babyScorpionGroup.numTotalEnemies; ++i)
+	{
+		bs = (BabyScorpion*)babyScorpionGroup.enemies[i];
+		bs->stopStartPool = &stopStartPool;
+	}
+
+
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
 	StageSetup(4, 4);
 
 	actionLength[SUMMON] = 60;
+	actionLength[DANCE_PREP] = 60;
+	actionLength[DANCE] = 360;
 
 
 	patternFlickerFrames = 30;
@@ -47,6 +59,8 @@ Coyote::Coyote(ActorParams *ap)
 	patternType.resize(numPatternMoves);
 	//stageMgr.AddActiveOption(0, MOVE, 2);
 	//stageMgr.AddActiveOption(0, RUSH, 2);
+
+	//stageMgr.AddActiveOption(0, DANCE_PREP, 2);
 	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 
 	stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
@@ -277,6 +291,13 @@ void Coyote::ActionEnded()
 	case COMBOMOVE:
 		frame = 0;
 		break;
+	case DANCE_PREP:
+		SetAction(DANCE);
+		break;
+	case DANCE:
+		babyScorpionGroup.Reset();
+		Decide();
+		break;
 	}
 }
 
@@ -299,7 +320,7 @@ void Coyote::HandleAction()
 			int mult = frame / patternFlickerFrames;
 			if (mult < numPatternMoves)
 			{
-				currBabyScorpPos = pattern[mult]->pos;
+				//currBabyScorpPos = pattern[mult]->pos;
 				patternPreview.setPosition(Vector2f(pattern[mult]->pos));
 
 				if (patternType[mult] == PATTERN_MOVE)
@@ -377,7 +398,7 @@ void Coyote::StartAction()
 	}
 	case PLAN_PATTERN:
 	{
-		babyScorpionGroup.Reset();
+		//babyScorpionGroup.Reset();
 		PoiInfo *testNode;
 		for (int i = 0; i < numPatternMoves; ++i)
 		{
@@ -397,6 +418,19 @@ void Coyote::StartAction()
 		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
 		break;
 	}
+	case DANCE_PREP:
+	{
+		babyScorpionGroup.Reset();
+		enemyMover.SetModeNodeLinear(danceNode->pos, CubicBezier(), 30);
+		for (int i = 0; i < babyScorpionGroup.currMaxActiveEnemies; ++i)
+		{
+			currBabyScorpPos = nodeGroupA.nodeVec->at(i)->pos;
+			babyScorpionGroup.Summon();
+		}
+		//fireflySummonGroup.Summon();
+		//fireflySummonGroup.Summon();
+		break;
+	}
 	}
 }
 
@@ -413,6 +447,8 @@ void Coyote::SetupPostFightScenes()
 void Coyote::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_COYOTE, "A"));
+
+	danceNode = sess->GetBossNodeVector(BossFightType::FT_COYOTE, "B")->at(0);
 }
 
 bool Coyote::IsEnemyMoverAction(int a)
@@ -528,6 +564,15 @@ void Coyote::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 	}
 
 	b->launcher->DeactivateBullet(b);
+}
+
+int Coyote::SetLaunchersStartIndex(int ind)
+{
+	int currIndex = Enemy::SetLaunchersStartIndex(ind);
+
+	currIndex = babyScorpionGroup.SetLaunchersStartIndex(currIndex);
+
+	return currIndex;
 }
 
 //rollback

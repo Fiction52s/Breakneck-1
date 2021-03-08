@@ -58,6 +58,26 @@ int PositionInfo::GetEdgeIndex()
 	return edgeIndex;
 }
 
+void PositionInfo::SetSurface(Edge *e, double q)
+{
+	if (e->poly != NULL)
+	{
+		ground = e->poly;
+	}
+	else if (e->rail != NULL)
+	{
+		railGround = e->rail;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	edgeIndex = e->edgeIndex;
+	groundQuantity = q;
+	position = e->GetPosition(q);
+}
+
 void PositionInfo::SetGround(PolyPtr p_ground, int p_edgeIndex, double quant)
 {
 	ground = p_ground;

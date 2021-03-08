@@ -14,7 +14,7 @@ CoyoteBulletPool::CoyoteBulletPool()
 	Session *sess = Session::GetSession();
 
 	ts = NULL;
-	numBullets = 10;
+	numBullets = 30;
 	bulletVec.resize(numBullets);
 	verts = new Vertex[numBullets * 4];
 	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
@@ -76,10 +76,12 @@ CoyoteBullet::CoyoteBullet(sf::Vertex *myQuad, CoyoteBulletPool *pool)
 	SetNumActions(A_Count);
 	SetEditorActions(DASHING, 0, 0);
 
-	actionLength[DASHING] = 30;
+	rhythm = 30;
+
+	actionLength[DASHING] = rhythm;
 	animFactor[DASHING] = 1;
 
-	actionLength[WAITING] = 30;
+	actionLength[WAITING] = rhythm;
 	animFactor[WAITING] = 1;
 
 	quad = myQuad;

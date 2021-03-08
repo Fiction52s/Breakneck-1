@@ -187,9 +187,12 @@ void TerrainRail::AddEdgesToQuadTree(QuadTree *tree)
 	CalcEdgeAABBs();
 	int numP = GetNumPoints();
 	int numEdges = (numP - 1) * 2;
+	Edge *e;
 	for (int i = 0; i < numEdges; ++i)
 	{
-		tree->Insert(GetEdge(i));
+		e = GetEdge(i);
+		e->edgeIndex = i;
+		tree->Insert(e);
 	}
 }
 

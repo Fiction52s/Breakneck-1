@@ -186,7 +186,15 @@ V2d Movement::GetEndVelocity()
 {
 	int numFrames = duration / (NUM_MAX_STEPS * 5);
 
-	return GetFrameVelocity(numFrames - 1);
+	if (numFrames == 1)
+	{
+		return V2d(0, 0); //bug fix
+	}
+	else
+	{
+		return GetFrameVelocity(numFrames - 1);
+	}
+	
 }
 
 V2d Movement::GetFrameVelocity(int f)

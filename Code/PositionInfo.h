@@ -23,6 +23,7 @@ struct PositionInfo
 	void SetAerial( V2d &pos );
 	void SetAerial();
 	void SetGround(PolyPtr p_ground, int p_edgeIndex, double quant);
+	void SetSurface(Edge *e, double q);
 	void SetRail(RailPtr p_rail, int p_edgeIndex, double quant);
 	int GetEdgeIndex();
 	V2d GetPosition();

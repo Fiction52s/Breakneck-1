@@ -75,7 +75,7 @@ int RandomPicker::AlwaysGetNextOption()
 		if (preventShuffleRepetition)
 		{
 			//prevents nodes from repeating from a shuffle
-			if (options[0] == lastOption)
+			if (options[0] == lastOption && options.size() > 2 )
 			{
 				int newI = (rand() % (options.size() - 2)) + 1;
 				int temp = options[newI];

@@ -21,6 +21,8 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 		PLAN_PATTERN,
 		PATTERN_MOVE,
 		PATTERN_RUSH,
+		DANCE_PREP,
+		DANCE,
 		SUMMON,
 		COMBOMOVE,
 		A_Count
@@ -29,6 +31,8 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	int bounceCounter;
 
 	NodeGroup nodeGroupA;
+
+	PoiInfo *danceNode;
 
 	sf::CircleShape patternPreview;
 	int patternFlickerFrames;
@@ -70,6 +74,8 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	int SetLaunchersStartIndex(int ind);
+
 
 	//boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

@@ -65,6 +65,7 @@ struct Edge : QuadTreeEntrant
 	TerrainPolygon *poly;
 	TerrainRail *rail;
 	sf::Rect<double> aabb;
+	int edgeIndex;//only when finalized for gameplay does this take on its real value atm
 
 	void *info;
 };

@@ -2207,9 +2207,11 @@ void TerrainPolygon::GenerateBorderMesh()
 void TerrainPolygon::AddEdgesToQuadTree(QuadTree *tree)
 {
 	CalcEdgeAABBs();
+	
 	int numP = GetNumPoints();
 	for (int i = 0; i < numP; ++i)
 	{
+		edges[i].edgeIndex = i;
 		tree->Insert(&edges[i]);
 	}
 }
