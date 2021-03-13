@@ -275,6 +275,9 @@ void Skeleton::StartMovement(V2d &pos)
 	V2d nodeDiff = nodePos - GetPosition();
 	double absNodeDiffX = abs(nodeDiff.x);
 
+	enemyMover.currPosInfo.SetAerial();
+	currPosInfo.SetAerial();
+
 	if (nodeDiff.y < -600)
 	{
 		rayCastInfo.rcEdge = NULL;
@@ -288,10 +291,6 @@ void Skeleton::StartMovement(V2d &pos)
 			assert(rayCastInfo.rcEdge != NULL);
 
 			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
-
-			enemyMover.currPosInfo.SetAerial();
-			currPosInfo.SetAerial();
-
 			enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
 			//enemyMover.SetModeRadial(basePos, speed, dest);
 			//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
@@ -362,7 +361,7 @@ void Skeleton::SetupPostFightScenes()
 
 void Skeleton::SetupNodeVectors()
 {
-	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON, "A"));
+	//nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON, "B"));
 }
 
