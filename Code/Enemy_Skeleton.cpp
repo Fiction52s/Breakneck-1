@@ -23,7 +23,9 @@ Skeleton::Skeleton(ActorParams *ap)
 	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 
 
-	stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
+	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+
+	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_WIRE_DASH, 2);
 
@@ -40,6 +42,24 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	BasicCircleHurtBodySetup(16);
 	BasicCircleHitBodySetup(16);
+
+	patternFlickerFrames = 30;
+	numPatternMoves = 3;
+
+	patternTypePicker.Reset();
+	patternTypePicker.AddActiveOption(PATTERN_MOVE);
+
+	pattern.reserve(6);
+	pattern.resize(numPatternMoves);
+
+	patternType.reserve(6);
+	patternType.resize(numPatternMoves);
+
+	patternPreview.setFillColor(Color::Magenta);
+	patternPreview.setRadius(60);
+	patternPreview.setOrigin(patternPreview.getLocalBounds().width / 2,
+		patternPreview.getLocalBounds().height / 2);
+
 
 	ResetEnemy();
 }
@@ -68,7 +88,12 @@ void Skeleton::ResetEnemy()
 {
 	orbPool.Reset();
 
+	currNode = NULL;
+	patternIndex = -1;
+
 	facingRight = true;
+
+	rayCastInfo.tree = sess->terrainTree;
 
 	BossReset();
 
@@ -104,12 +129,73 @@ void Skeleton::ActionEnded()
 	case MOVE_OTHER:
 		Decide();
 		break;
+	case PLAN_PATTERN:
+	{
+		patternIndex = 0;
+
+		SetAction(PATTERN_MOVE);
+		break;
+	}
+	case PATTERN_MOVE:
+	{
+		if (patternIndex == numPatternMoves - 1)
+		{
+			/*if (stageMgr.GetCurrStage() > 0)
+			{
+			launchers[0]->position = GetPosition();
+			launchers[0]->facingDir = PlayerDir();
+			launchers[0]->Fire();
+			}*/
+
+			if (patternType[patternIndex] == PATTERN_MOVE)
+			{
+				Wait(30);
+			}
+			else
+			{
+				++patternIndex;
+				SetAction(patternType[patternIndex - 1]);
+			}
+		}
+		else
+		{
+			++patternIndex;
+			SetAction(patternType[patternIndex - 1]);
+
+		}
+
+		break;
+	}
 	}
 }
 
 void Skeleton::HandleAction()
 {
+	switch (action)
+	{
+	case PLAN_PATTERN:
+	{
+		if (frame % patternFlickerFrames == 0)
+		{
+			int mult = frame / patternFlickerFrames;
+			if (mult < numPatternMoves)
+			{
+				//currBabyScorpPos = pattern[mult]->pos;
+				patternPreview.setPosition(Vector2f(pattern[mult]->pos));
 
+				if (patternType[mult] == PATTERN_MOVE)
+				{
+					patternPreview.setFillColor(Color::Magenta);
+				}
+				/*else if (patternType[mult] == PATTERN_RUSH)
+				{
+					patternPreview.setFillColor(Color::Red);
+				}*/
+			}
+		}
+		break;
+	}
+	}
 }
 
 void Skeleton::StartAction()
@@ -148,85 +234,118 @@ void Skeleton::StartAction()
 	case MOVE_OTHER:
 	{
 		V2d nodePos = nodeGroupB.AlwaysGetNextNode()->pos;
-
-		V2d nodeDiff = nodePos - GetPosition();
-		double absNodeDiffX = abs(nodeDiff.x);
-
-		if (nodeDiff.y < -600)
+		StartMovement(nodePos);
+		break;
+	}
+	case PATTERN_MOVE:
+	{
+		currNode = pattern[patternIndex];
+		StartMovement(currNode->pos);
+		break;
+	}
+	case PLAN_PATTERN:
+	{
+		//babyScorpionGroup.Reset();
+		PoiInfo *testNode;
+		for (int i = 0; i < numPatternMoves; ++i)
 		{
-			rayCastInfo.rcEdge = NULL;
-			rayCastInfo.rayStart = nodePos + V2d(0, -10);
-			rayCastInfo.rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
-			ignorePointsCloserThanPlayer = false;
-			RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
-
-			if (rayCastInfo.rcEdge != NULL)
+			do
 			{
-				assert(rayCastInfo.rcEdge != NULL);
+				testNode = nodeGroupB.AlwaysGetNextNode();
+			} while (testNode == currNode);
 
-				V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
-
-				enemyMover.currPosInfo.SetAerial();
-				currPosInfo.SetAerial();
-
-				enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
-				//enemyMover.SetModeRadial(basePos, speed, dest);
-				//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
-			}
-			else
-			{
-			}
-			//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
-
+			pattern[i] = testNode;
 		}
-		else if (absNodeDiffX > 600)
+
+		for (int i = 0; i < numPatternMoves; ++i)
 		{
-
-			//stuff
-			V2d along = nodePos - GetPosition();
-			V2d midPoint = GetPosition() + along / 4.0;
-			V2d centerPoint = (nodePos + GetPosition()) / 2.0;
-			along = normalize(along);
-
-			V2d other(along.y, -along.x);
-
-			double speed = -40;//dot(startVel, dir);
-
-			if (other.y >= 0)
-			{
-				speed = -speed;
-				other = -other;
-			}
-
-
-			rayCastInfo.rcEdge = NULL;
-			rayCastInfo.rayStart = midPoint;
-			rayCastInfo.rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
-			RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
-
-			if (rayCastInfo.rcEdge != NULL)
-			{
-				assert(rayCastInfo.rcEdge != NULL);
-
-				V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
-
-				//V2d dir = normalize(basePos - GetPosition());
-				//V2d along(-dir.y, dir.x);
-
-
-
-				enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, nodePos);
-				//enemyMover.SetModeRadial(basePos, speed, dest);
-				//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
-			}
+			patternType[i] = patternTypePicker.AlwaysGetNextOption();
 		}
-		else
-		{
-			enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
-		}
+
+		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
 		break;
 	}
 		
+	}
+}
+
+void Skeleton::StartMovement(V2d &pos)
+{
+	V2d nodePos = pos;
+	V2d nodeDiff = nodePos - GetPosition();
+	double absNodeDiffX = abs(nodeDiff.x);
+
+	if (nodeDiff.y < -600)
+	{
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = nodePos + V2d(0, -10);
+		rayCastInfo.rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
+		ignorePointsCloserThanPlayer = false;
+		RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
+
+		if (rayCastInfo.rcEdge != NULL)
+		{
+			assert(rayCastInfo.rcEdge != NULL);
+
+			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
+
+			enemyMover.currPosInfo.SetAerial();
+			currPosInfo.SetAerial();
+
+			enemyMover.SetModeZipAndFall(basePos, V2d(0, 2), nodePos);
+			//enemyMover.SetModeRadial(basePos, speed, dest);
+			//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
+		}
+		else
+		{
+		}
+		//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
+
+	}
+	else if (absNodeDiffX > 600)
+	{
+
+		//stuff
+		V2d along = nodePos - GetPosition();
+		V2d midPoint = GetPosition() + along / 4.0;
+		V2d centerPoint = (nodePos + GetPosition()) / 2.0;
+		along = normalize(along);
+
+		V2d other(along.y, -along.x);
+
+		double speed = -40;//dot(startVel, dir);
+
+		if (other.y >= 0)
+		{
+			speed = -speed;
+			other = -other;
+		}
+
+
+		rayCastInfo.rcEdge = NULL;
+		rayCastInfo.rayStart = midPoint;
+		rayCastInfo.rayEnd = midPoint + V2d(0, -1) * 5000.0;//other * 5000.0;
+		RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
+
+		if (rayCastInfo.rcEdge != NULL)
+		{
+			assert(rayCastInfo.rcEdge != NULL);
+
+			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
+
+			//V2d dir = normalize(basePos - GetPosition());
+			//V2d along(-dir.y, dir.x);
+
+
+
+			enemyMover.SetModeRadialDoubleJump(basePos, speed, centerPoint, nodePos);
+			//enemyMover.SetModeRadial(basePos, speed, dest);
+			//enemyMover.SetModeSwing(basePos, length(basePos - GetPosition()), 60);
+		}
+	}
+	else
+	{
+		enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
 	}
 }
 
@@ -254,7 +373,7 @@ bool Skeleton::IsDecisionValid(int d)
 
 bool Skeleton::IsEnemyMoverAction(int a)
 {
-	return a == MOVE_WIRE_DASH || a == MOVE_OTHER;
+	return a == MOVE_WIRE_DASH || a == MOVE_OTHER || a == PATTERN_MOVE;
 }
 
 void Skeleton::DebugDraw(sf::RenderTarget *target)
@@ -300,6 +419,11 @@ void Skeleton::UpdateSprite()
 
 void Skeleton::EnemyDraw(sf::RenderTarget *target)
 {
+	if (action == PLAN_PATTERN)
+	{
+		target->draw(patternPreview);
+	}
+
 	DrawSprite(target, sprite);
 	orbPool.Draw(target);
 }

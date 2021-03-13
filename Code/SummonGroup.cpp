@@ -110,3 +110,11 @@ void SummonGroup::HandleSummonedEnemyRemoval(Enemy *e)
 
 	summoner->HandleSummonedChildRemoval(e);
 }
+
+void SummonGroup::DrawMinimap(sf::RenderTarget *target)
+{
+	for (int i = 0; i < numTotalEnemies; ++i)
+	{
+		enemies[i]->DrawMinimap(target);
+	}
+}

@@ -304,6 +304,9 @@ bool Enemy::SetHitParams()
 	case EnemyType::EN_PARROT:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
+	case EnemyType::EN_TIGERTARGET:
+		hitParams.Set(5, .8, (3 * 60) / 3, 1, false);
+		break;
 	case EnemyType::EN_PULSER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;

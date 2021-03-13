@@ -34,14 +34,12 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 
 	PoiInfo *danceNode;
 
-	sf::CircleShape patternPreview;
-	int patternFlickerFrames;
-	int numPatternMoves;
+	
 
 	SummonGroup fireflySummonGroup;
 	SummonGroup babyScorpionGroup;
 
-	PoiInfo *currNode;
+	
 
 	V2d currBabyScorpPos;
 
@@ -52,8 +50,11 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 
 	CoyoteBulletPool stopStartPool;
 
+	PoiInfo *currNode;
 	RandomPicker patternTypePicker;
-
+	sf::CircleShape patternPreview;
+	int patternFlickerFrames;
+	int numPatternMoves;
 	std::vector<PoiInfo*> pattern;
 	std::vector<int> patternType;
 	int patternIndex;

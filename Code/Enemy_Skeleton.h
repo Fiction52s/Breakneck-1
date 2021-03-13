@@ -14,6 +14,8 @@ struct Skeleton : Boss, RayCastHandler
 	enum Action
 	{
 		WAIT,
+		PLAN_PATTERN,
+		PATTERN_MOVE,
 		MOVE_WIRE_DASH,
 		MOVE_OTHER,
 		COMBOMOVE,
@@ -21,6 +23,15 @@ struct Skeleton : Boss, RayCastHandler
 		SEQ_WAIT,
 		A_Count
 	};
+
+	PoiInfo *currNode;
+	RandomPicker patternTypePicker;
+	sf::CircleShape patternPreview;
+	int patternFlickerFrames;
+	int numPatternMoves;
+	std::vector<PoiInfo*> pattern;
+	std::vector<int> patternType;
+	int patternIndex;
 
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
@@ -62,6 +73,8 @@ struct Skeleton : Boss, RayCastHandler
 	void SetupNodeVectors();
 	bool IsDecisionValid(int d);
 	bool IsEnemyMoverAction(int a);
+	void StartMovement(V2d &pos);
+
 
 	//My functions
 	void SeqWait();

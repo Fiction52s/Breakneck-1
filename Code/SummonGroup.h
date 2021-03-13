@@ -27,6 +27,7 @@ struct SummonGroup
 	~SummonGroup();
 	void Summon();
 	bool CanSummon();
+	void DrawMinimap(sf::RenderTarget *target);
 	int SetLaunchersStartIndex(int ind);
 	void HandleSummonedEnemyRemoval(Enemy *e);
 	ActorParams *enemyParams;

@@ -17525,10 +17525,12 @@ void Actor::ConfirmHit( Enemy *e )
 	if (!hitParams.canBeHit)
 		return;
 
-	if (ground == NULL && velocity.y > 0 && action == DAIR )
+	//slows the player down so its easier to kill enemies while falling
+	//might remove and test it
+	/*if (ground == NULL && velocity.y > 0 && action == DAIR )
 	{
-		velocity.y = 4;//.5;
-	}
+		velocity.y = 4;
+	}*/
 
 	Color c;
 	switch(e->world )

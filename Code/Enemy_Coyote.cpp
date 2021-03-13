@@ -133,6 +133,7 @@ void Coyote::ResetEnemy()
 	fireflySummonGroup.Reset();
 
 	currNode = NULL;
+	patternIndex = -1;
 
 	BossReset();
 	facingRight = true;
@@ -151,7 +152,7 @@ void Coyote::ResetEnemy()
 	frame = 0;
 
 	bounceCounter = -1;
-	patternIndex = -1;
+	
 
 	enemyMover.currPosInfo.SetAerial();
 	currPosInfo.SetAerial();

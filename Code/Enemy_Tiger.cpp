@@ -26,8 +26,11 @@ Tiger::Tiger(ActorParams *ap)
 	palmSummonGroup(this,
 		new BasicGroundEnemyParams(sess->types["palmturret"], 1),
 		2, 2, 1),
-	spinTurretSummonGroup( this, new BasicAirEnemyParams( sess->types["tigerspinturret"], 1),
-		4, 4, 1, true)
+	spinTurretSummonGroup(this, new BasicAirEnemyParams(sess->types["tigerspinturret"], 1),
+		4, 4, 1, true),
+	targetGroup(this, new BasicAirEnemyParams(sess->types["tigertarget"], 1),
+		3, 3, 1, true),
+	nodeGroupA(2)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE_GRIND, 0, 0);
@@ -38,14 +41,16 @@ Tiger::Tiger(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
+	actionLength[TEST] = 10000;
 
 	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
-	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
-	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
-	stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
+	stageMgr.AddActiveOption(0, TEST, 2);
+	//stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
+	//stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
+	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
 	//stageMgr.AddActiveOption(0, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
@@ -107,12 +112,17 @@ void Tiger::ResetEnemy()
 	snakePool.Reset();
 	spinTurretSummonGroup.Reset();
 	palmSummonGroup.Reset();
+	targetGroup.Reset();
+
+	lastTargetDestroyedPos = V2d(0, 0);
 
 	BossReset();
 
 	facingRight = true;
 
 	HitboxesOff();
+
+	framesSinceRush = 0;
 
 	StartFight();
 
@@ -185,6 +195,28 @@ void Tiger::HandleAction()
 			palmSummonGroup.Summon();
 		}
 	}
+	case MOVE_GRIND:
+	{
+		double dist = PlayerDist();
+		if (framesSinceRush > 60 && dist > 500 && dist < 2000)
+		{
+			SetAction(MOVE_RUSH);
+		}
+		break;
+	}
+	case TEST:
+	{
+		if (targetGroup.numActiveEnemies == 0)
+		{
+			nodeGroupC.pickers[0].ShuffleActiveOptions();
+			for (int i = 0; i < 3; ++i)
+			{
+				targetGroup.Summon();
+			}
+			
+		}
+		break;
+	}
 	}
 	/*if (action == MOVE_JUMP && enemyMover.actionFrame % 4 == 0)
 	{
@@ -256,6 +288,7 @@ void Tiger::StartAction()
 	}
 	case MOVE_RUSH:
 	{
+		framesSinceRush = 0;
 		V2d pPos = targetPlayer->position;
 		rayCastInfo.rcEdge = NULL;
 		rayCastInfo.rayStart = GetPosition();
@@ -272,8 +305,9 @@ void Tiger::StartAction()
 
 			enemyMover.currPosInfo.SetAerial();
 			currPosInfo.SetAerial();
-			//enemyMover.SetModeNodeLinear(basePos, CubicBezier(), 60);
+
 			enemyMover.SetModeNodeLinearConstantSpeed(basePos, CubicBezier(), 40);
+			//enemyMover.SetModeNodeProjectile(basePos, V2d(0, 1.5), 200);
 
 			if (basePos.x >= GetPosition().x)
 			{
@@ -292,7 +326,16 @@ void Tiger::StartAction()
 		}
 		break;
 	}
-		
+	case TEST:
+	{
+		nodeGroupC.pickers[0].ShuffleActiveOptions();
+		for (int i = 0; i < 3; ++i)
+		{
+			targetGroup.Summon();
+		}
+		break;
+	}
+
 	}
 }
 
@@ -315,7 +358,6 @@ void Tiger::SetupPostFightScenes()
 	}
 	else if (level == 2)
 	{
-
 		if (postFightScene != NULL)
 		{
 			delete postFightScene;
@@ -332,6 +374,25 @@ void Tiger::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "B"));
+	nodeGroupC.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "C"));
+}
+
+void Tiger::DrawMinimap( sf::RenderTarget *target )
+{
+	Enemy::DrawMinimap(target);
+	palmSummonGroup.DrawMinimap(target);
+	targetGroup.DrawMinimap(target);
+	spinTurretSummonGroup.DrawMinimap(target);
+}
+
+void Tiger::FrameIncrement()
+{
+	Boss::FrameIncrement();
+	if (action != MOVE_RUSH)
+	{
+		++framesSinceRush;
+	}
+	
 }
 
 bool Tiger::IsDecisionValid(int d)
@@ -418,6 +479,25 @@ void Tiger::InitEnemyForSummon(SummonGroup *group,
 	{
 		TigerSpinTurret *t = (TigerSpinTurret*)e;
 		t->Init(GetPosition(), PlayerDir());
+	}
+	else if (group == &targetGroup)
+	{
+		PoiInfo *summonNode;
+		summonNode = nodeGroupC.AlwaysGetNextNode();//nodeGroupA.AlwaysGetNextNode(1);
+		if (summonNode->pos == lastTargetDestroyedPos)
+		{
+			summonNode = nodeGroupC.AlwaysGetNextNode();
+		}
+		e->startPosInfo.SetAerial(summonNode->pos);
+		//cout << "summon pos:" << summonNode->pos.x << ", " << summonNode->pos.y << endl;
+	}
+}
+
+void Tiger::HandleSummonedChildRemoval(Enemy *e)
+{
+	if (e->type == EnemyType::EN_TIGERTARGET)
+	{
+		lastTargetDestroyedPos = e->GetPosition();
 	}
 }
 
