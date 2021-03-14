@@ -26,11 +26,15 @@ struct Skeleton : Boss, RayCastHandler
 
 	PoiInfo *currNode;
 	RandomPicker patternTypePicker;
+
+	RandomPicker patternOrderPicker;
 	sf::CircleShape patternPreview;
+	sf::Text patternNumberText;
 	int patternFlickerFrames;
 	int numPatternMoves;
 	std::vector<PoiInfo*> pattern;
 	std::vector<int> patternType;
+	std::vector<int> patternOrder;
 	int patternIndex;
 
 	NodeGroup nodeGroupA;
@@ -60,6 +64,7 @@ struct Skeleton : Boss, RayCastHandler
 	void UpdateSprite();
 	void ResetEnemy();
 
+	void SetPatternLength(int len);
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
 		int moveDurationBeforeStartNextAction,

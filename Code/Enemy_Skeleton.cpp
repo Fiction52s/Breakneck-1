@@ -5,6 +5,7 @@
 #include "Enemy_Skeleton.h"
 #include "Actor.h"
 #include "SequenceW6.h"
+#include "MainMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -44,22 +45,26 @@ Skeleton::Skeleton(ActorParams *ap)
 	BasicCircleHitBodySetup(16);
 
 	patternFlickerFrames = 30;
-	numPatternMoves = 3;
+	
+	
 
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
 
-	pattern.reserve(6);
-	pattern.resize(numPatternMoves);
+	pattern.reserve(9);
+	patternType.reserve(9);
+	patternOrder.reserve(9);
 
-	patternType.reserve(6);
-	patternType.resize(numPatternMoves);
+	SetPatternLength(5);
 
 	patternPreview.setFillColor(Color::Magenta);
 	patternPreview.setRadius(60);
 	patternPreview.setOrigin(patternPreview.getLocalBounds().width / 2,
 		patternPreview.getLocalBounds().height / 2);
 
+	patternNumberText.setFont(sess->mainMenu->arial);
+	patternNumberText.setCharacterSize(90);
+	patternNumberText.setFillColor(Color::Black);
 
 	ResetEnemy();
 }
@@ -180,8 +185,15 @@ void Skeleton::HandleAction()
 			int mult = frame / patternFlickerFrames;
 			if (mult < numPatternMoves)
 			{
+				Vector2f pos(pattern[mult]->pos);
 				//currBabyScorpPos = pattern[mult]->pos;
-				patternPreview.setPosition(Vector2f(pattern[mult]->pos));
+				patternPreview.setPosition( pos );
+				patternNumberText.setPosition(pos);
+				patternNumberText.setString(to_string(patternOrder[mult]+1));
+				patternNumberText.setOrigin(patternNumberText.getLocalBounds().width / 2, 
+					patternNumberText.getLocalBounds().height / 2);
+				//patternNumber.setString( )
+				//patternNumber.setPosition(patternPreview.getPosition());
 
 				if (patternType[mult] == PATTERN_MOVE)
 				{
@@ -239,7 +251,16 @@ void Skeleton::StartAction()
 	}
 	case PATTERN_MOVE:
 	{
-		currNode = pattern[patternIndex];
+		int trueIndex = 0;
+		for (int i = 0; i < numPatternMoves; ++i)
+		{
+			if (patternOrder[i] == patternIndex)
+			{
+				trueIndex = i;
+				break;
+			}
+		}
+		currNode = pattern[trueIndex];
 		StartMovement(currNode->pos);
 		break;
 	}
@@ -247,6 +268,7 @@ void Skeleton::StartAction()
 	{
 		//babyScorpionGroup.Reset();
 		PoiInfo *testNode;
+		nodeGroupB.pickers[0].ShuffleActiveOptions();
 		for (int i = 0; i < numPatternMoves; ++i)
 		{
 			do
@@ -260,6 +282,11 @@ void Skeleton::StartAction()
 		for (int i = 0; i < numPatternMoves; ++i)
 		{
 			patternType[i] = patternTypePicker.AlwaysGetNextOption();
+		}
+
+		for (int i = 0; i < numPatternMoves; ++i)
+		{
+			patternOrder[i] = patternOrderPicker.AlwaysGetNextOption();
 		}
 
 		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
@@ -421,10 +448,30 @@ void Skeleton::EnemyDraw(sf::RenderTarget *target)
 	if (action == PLAN_PATTERN)
 	{
 		target->draw(patternPreview);
+		target->draw( patternNumberText);
 	}
+	
 
 	DrawSprite(target, sprite);
 	orbPool.Draw(target);
+}
+
+void Skeleton::SetPatternLength(int len)
+{
+	patternOrderPicker.Reset();
+	for (int i = 0; i < len; ++i)
+	{
+		patternOrderPicker.AddActiveOption(i);
+	}
+	numPatternMoves = len;
+
+	
+	pattern.resize(numPatternMoves);
+
+	patternType.resize(numPatternMoves);
+
+	
+	patternOrder.resize(numPatternMoves);
 }
 
 int Skeleton::GetNumStoredBytes()
