@@ -1511,6 +1511,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	timeSyncFrames = 0;
 
+	
+
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
 
@@ -1605,6 +1607,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	uiView = View(sf::Vector2f(960, 540), sf::Vector2f(1920, 1080));
 
+	numSimulatedFramesRequired = 0;
 	totalNumberBullets = 0;
 	keyFrame = 0;
 
@@ -5247,9 +5250,12 @@ void Session::UpdateEnemiesPreFrameCalculations()
 void Session::UpdatePreFrameCalculations()
 {
 	numCalculatedFuturePositions = 0;
-	//ForwardSimulatePlayer(0, 120, true);
-	//ForwardSimulatePlayer(0, 10, true);
-	//RevertSimulatedPlayer(0);
+	if (numSimulatedFramesRequired > 0)
+	{
+		ForwardSimulatePlayer(0, numSimulatedFramesRequired, true);
+		//ForwardSimulatePlayer(0, 10, true);
+		RevertSimulatedPlayer(0);
+	}
 }
 
 void Session::UpdatePhysics()

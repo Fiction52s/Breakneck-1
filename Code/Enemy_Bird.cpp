@@ -51,8 +51,8 @@ Bird::Bird(ActorParams *ap)
 	hitOffsetMap[PUNCH] = V2d(100, 0);
 
 	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
-	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
-	//stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
+	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);

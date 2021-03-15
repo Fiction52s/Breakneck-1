@@ -1084,6 +1084,9 @@ void GameSession::ProcessActor(ActorPtr a)
 	const string &typeName = a->type->info.name;
 	if (enemy != NULL)
 	{
+		numSimulatedFramesRequired = max(numSimulatedFramesRequired,
+			enemy->GetNumSimulationFramesRequired());
+
 		enemy->AddToGame();
 
 		if (typeName == "shippickup")
@@ -1174,6 +1177,7 @@ void GameSession::ProcessActor(ActorPtr a)
 
 void GameSession::ProcessAllActors()
 {
+	//how does this know the right number of bullets?
 	CreateBulletQuads();
 
 

@@ -24,6 +24,11 @@ Boss::~Boss()
 	}
 }
 
+int Boss::GetNumSimulationFramesRequired()
+{
+	return sess->MAX_SIMULATED_FUTURE_PLAYER_FRAMES;
+}
+
 void Boss::CreateHitboxManager(const std::string &folder)
 {
 	assert(hitboxManager == NULL);

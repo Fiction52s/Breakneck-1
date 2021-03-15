@@ -42,6 +42,7 @@ struct Boss : Enemy
 
 	Boss(EnemyType et, ActorParams *ap);
 	virtual ~Boss();
+	virtual int GetNumSimulationFramesRequired();
 	void CreateHitboxManager(const std::string &folder);
 	void QueueCommand(BossCommand &cm);
 	void UpdateHitboxes();

@@ -908,6 +908,20 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	numSimulatedFramesRequired = 0;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
+		{
+			currEnemy = (*enit)->myEnemy;
+			if (currEnemy != NULL)
+			{
+				numSimulatedFramesRequired = max(
+					numSimulatedFramesRequired, currEnemy->GetNumSimulationFramesRequired());
+			}
+		}
+	}
+
 	CreateBulletQuads();
 	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
