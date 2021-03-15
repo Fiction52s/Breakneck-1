@@ -6538,6 +6538,7 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 				n = 0;
 			testEdge.v0 = V2d(pointVector[0][i].pos);
 			testEdge.v1 = V2d(pointVector[0][n].pos);
+			testEdge.CalcAABB();
 			if (IsEdgeTouchingBox(&testEdge, rectD))
 			{
 				return true;

@@ -10212,7 +10212,7 @@ bool EditSession::BoxSelectPolys(sf::IntRect &rect, int terrainLayer )
 		}
 	}
 
-	return true;
+	return found;
 }
 
 bool EditSession::BoxSelectRails(sf::IntRect &rect)
