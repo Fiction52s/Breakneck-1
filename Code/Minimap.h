@@ -26,6 +26,7 @@ struct Minimap
 	sf::Vertex blackBorderQuadsMini[4 * 2];
 	sf::Vertex topBorderQuadMini[4];
 	static sf::Color terrainColor;
+	const static float MINIMAP_ZOOM;
 
 	Minimap();
 	void DrawToTex();

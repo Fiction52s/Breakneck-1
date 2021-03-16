@@ -10,6 +10,8 @@ using namespace std;
 
 Color Minimap::terrainColor(0x75, 0x70, 0x90);// , 191);
 
+const float Minimap::MINIMAP_ZOOM = 16.f;
+
 Minimap::Minimap()
 {
 	sess = Session::GetSession();
@@ -128,11 +130,11 @@ void Minimap::DrawToTex()
 {
 	//Actor *p0 = owner->GetPlayer(0);
 
-	double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
+	//double minimapZoom = 16;//12;// * cam.GetZoom();// + cam.GetZoom();
 	V2d pos0 = sess->GetPlayerPos(0);
 	View vv;
 	vv.setCenter(pos0.x, pos0.y);
-	vv.setSize(minimapTex->getSize().x * minimapZoom, minimapTex->getSize().y * minimapZoom);
+	vv.setSize(minimapTex->getSize().x * MINIMAP_ZOOM, minimapTex->getSize().y * MINIMAP_ZOOM);
 
 	minimapTex->setView(vv);
 	minimapTex->clear(Color(0, 0, 0, 191));

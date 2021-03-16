@@ -287,6 +287,46 @@ void CreateTerrainModeUI::SetShown(bool s)
 	}
 }
 
+void CreateTerrainModeUI::SetLayerTerrain()
+{
+	terrainLayerDropdown->SetSelectedIndex(0);
+	SetLayer(0);
+
+	if (matTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(matTypePanel);
+		ExpandTerrainLibrary();
+	}
+}
+
+void CreateTerrainModeUI::SetLayerWater()
+{
+	terrainLayerDropdown->SetSelectedIndex(1);
+	SetLayer(1);
+
+	if (matTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(matTypePanel);
+		ExpandTerrainLibrary();
+	}
+}
+
+void CreateTerrainModeUI::SetLayerPickup()
+{
+	terrainLayerDropdown->SetSelectedIndex(2);
+	SetLayer(2);
+}
+
+void CreateTerrainModeUI::SetLayer(int selectedIndex)
+{
+	for (int i = 0; i < TERRAINLAYER_Count; ++i)
+	{
+		currMatRects[i]->SetShown(false);
+	}
+
+	currMatRects[selectedIndex]->SetShown(true);
+}
+
 void CreateTerrainModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (eventType == ChooseRect::E_LEFTCLICKED ||
@@ -385,13 +425,7 @@ void CreateTerrainModeUI::DropdownCallback(Dropdown *dropdown, const std::string
 {
 	if (dropdown == terrainLayerDropdown)
 	{
-		int selectedIndex = dropdown->selectedIndex;
-		for (int i = 0; i < TERRAINLAYER_Count; ++i)
-		{
-			currMatRects[i]->SetShown(false);
-		}
-
-		currMatRects[selectedIndex]->SetShown(true);
+		SetLayer(dropdown->selectedIndex);
 	}
 	else if (dropdown == terrainActionDropdown)
 	{

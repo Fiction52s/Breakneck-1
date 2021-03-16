@@ -1178,6 +1178,7 @@ TerrainPolygon::TerrainPolygon()
 	flyTransRotate = 0;
 	flyQuads = NULL;
 	pShader = NULL;
+	miniShader = NULL;
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
 	tdInfo = NULL;
@@ -1220,6 +1221,7 @@ TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool store
 	flyTransRotate = 0;
 	flyQuads = NULL;
 	pShader = NULL;
+	miniShader = NULL;
 	numGrassTotal = 0;
 	decorTree = new QuadTree(1000000, 1000000);
 	myTerrainTree = new QuadTree(1000000, 1000000);
@@ -3238,12 +3240,8 @@ void TerrainPolygon::UpdateMaterialType()
 	if (waterType != -1)
 	{
 		pShader = &sess->waterShaders[waterType];
+		miniShader = &sess->minimapWaterShaders[waterType];
 		tdInfo = NULL;
-
-		switch (waterType)
-		{
-
-		}
 	}
 	else
 	{
@@ -3256,7 +3254,7 @@ void TerrainPolygon::UpdateMaterialType()
 		}*/
 
 		pShader = &sess->terrainShader;//&sess->polyShaders[texInd];
-		
+		miniShader = NULL;
 		tdInfo = sess->terrainDecorInfoMap[make_pair(terrainWorldType, terrainVariation)];
 	}
 
@@ -6586,9 +6584,9 @@ void TerrainPolygon::MiniDraw(sf::RenderTarget *target)
 		//currently, draw the water w/ texture on minimap
 		if (terrainWorldType >= TerrainWorldType::W1_SPECIAL)
 		{
-			if (pShader != NULL)
+			if (miniShader != NULL)
 			{
-				target->draw(*va, pShader);
+				target->draw(*va, miniShader);
 			}
 			else
 			{

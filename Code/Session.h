@@ -190,6 +190,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	float waterShaderCounter;
 	Tileset *ts_water;
 	sf::Shader *waterShaders;
+	sf::Shader *minimapWaterShaders;
 
 
 	int timeSyncFrames;
@@ -590,6 +591,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool ReadRails(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
 	void SetupWaterShaders();
+	void SetupWaterShader(sf::Shader &sh, int waterIndex );
 	bool LoadPolyShader();
 
 	bool OneFrameModeUpdate();

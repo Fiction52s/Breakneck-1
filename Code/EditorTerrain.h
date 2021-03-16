@@ -475,6 +475,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 
 
 	sf::Shader *pShader;
+	sf::Shader *miniShader;
 	bool IsValidInProgressPoint(sf::Vector2i point);
 	void UpdateLinePositions();
 	TerrainPolygon();

@@ -1594,6 +1594,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	//polyShaders = NULL;
 	waterShaders = NULL;
+	minimapWaterShaders = NULL;
 	background = NULL;
 	hitboxManager = NULL;
 	inactiveEffects = NULL;
@@ -1783,6 +1784,12 @@ Session::~Session()
 		delete[] waterShaders;
 		waterShaders = NULL;
 	}
+
+	if (minimapWaterShaders != NULL)
+	{
+		delete[] minimapWaterShaders;
+		minimapWaterShaders = NULL;
+	}
 		
 
 	for (auto it = terrainDecorInfoMap.begin(); it != terrainDecorInfoMap.end(); ++it)
@@ -1949,39 +1956,47 @@ void Session::SetupWaterShaders()
 
 	ts_water = GetSizedTileset("Env/water_128x128.png");
 	waterShaders = new Shader[TerrainPolygon::WATER_Count];
+	minimapWaterShaders = new Shader[TerrainPolygon::WATER_Count];
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		Shader &waterShader = waterShaders[i];
-		if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
-		{
-			cout << "water SHADER NOT LOADING CORRECTLY" << endl;
-		}
-
-		waterShader.setUniform("u_slide", 0.f);
-		waterShader.setUniform("u_texture", *ts_water->texture);
-		waterShader.setUniform("Resolution", Vector2f(1920, 1080));
-		waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
-		waterShader.setUniform("skyColor", ColorGL(Color::White));
-
-		Color wColor = TerrainPolygon::GetWaterColor(i);
-		wColor.a = 200;
-		waterShader.setUniform("u_waterBaseColor", ColorGL(wColor));
-
-		IntRect ir1 = ts_water->GetSubRect(i * 2);
-		IntRect ir2 = ts_water->GetSubRect(i * 2 + 1);
-
-		float width = ts_water->texture->getSize().x;
-		float height = ts_water->texture->getSize().y;
-
-		waterShader.setUniform("u_quad1",
-			Glsl::Vec4(ir1.left / width, ir1.top / height,
-			(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
-
-		waterShader.setUniform("u_quad2",
-			Glsl::Vec4(ir2.left / width, ir2.top / height,
-			(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
+		SetupWaterShader(waterShaders[i], i);
+		SetupWaterShader(minimapWaterShaders[i], i);
+		minimapWaterShaders[i].setUniform("zoom", Minimap::MINIMAP_ZOOM);
+		minimapWaterShaders[i].setUniform("topLeft", Vector2f( 0, 0 ));
 	}
+}
+
+void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
+{
+	if (!waterShader.loadFromFile("Resources/Shader/water_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "water SHADER NOT LOADING CORRECTLY" << endl;
+	}
+
+	waterShader.setUniform("u_slide", 0.f);
+	waterShader.setUniform("u_texture", *ts_water->texture);
+	waterShader.setUniform("Resolution", Vector2f(1920, 1080));
+	waterShader.setUniform("AmbientColor", Glsl::Vec4(1, 1, 1, 1));
+	waterShader.setUniform("skyColor", ColorGL(Color::White));
+
+	Color wColor = TerrainPolygon::GetWaterColor(waterIndex);
+	wColor.a = 200;
+	waterShader.setUniform("u_waterBaseColor", ColorGL(wColor));
+
+	IntRect ir1 = ts_water->GetSubRect(waterIndex * 2);
+	IntRect ir2 = ts_water->GetSubRect(waterIndex * 2 + 1);
+
+	float width = ts_water->texture->getSize().x;
+	float height = ts_water->texture->getSize().y;
+
+	waterShader.setUniform("u_quad1",
+		Glsl::Vec4(ir1.left / width, ir1.top / height,
+		(ir1.left + ir1.width) / width, (ir1.top + ir1.height) / height));
+
+	waterShader.setUniform("u_quad2",
+		Glsl::Vec4(ir2.left / width, ir2.top / height,
+		(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
 }
 
 void Session::DrawPlayerWires( RenderTarget *target )

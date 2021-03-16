@@ -1097,6 +1097,10 @@ struct CreateTerrainModeUI : GUIHandler
 {
 	CreateTerrainModeUI();
 	~CreateTerrainModeUI();
+	void SetLayerTerrain();
+	void SetLayerWater();
+	void SetLayerPickup();
+	void SetLayer(int i);
 	void SetShown(bool s);
 	bool IsGridOn();
 	void FlipGrid();

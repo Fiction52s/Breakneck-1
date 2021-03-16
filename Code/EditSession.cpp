@@ -12570,6 +12570,14 @@ void EditSession::CreateTerrainModeHandleEvent()
 		{
 			playerTracker->SwitchOnOff();
 		}
+		else if( ev.key.code == Keyboard::W )
+		{
+			createTerrainModeUI->SetLayerWater();
+		}
+		else if (ev.key.code == Keyboard::Q)
+		{
+			createTerrainModeUI->SetLayerTerrain();
+		}
 		break;
 	}
 	case Event::KeyReleased:
