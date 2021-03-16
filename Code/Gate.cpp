@@ -118,6 +118,9 @@ void Gate::Setup(GateInfoPtr gi)
 	edgeB->v0 = point1;
 	edgeB->v1 = point0;
 
+	edgeA->CalcAABB();
+	edgeB->CalcAABB();
+
 	next = NULL;
 	prev = NULL;
 
