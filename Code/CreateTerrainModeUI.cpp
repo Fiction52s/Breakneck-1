@@ -133,6 +133,17 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	}
 
 	matPanelPos = Vector2i(currMatRects[0]->pos.x, currMatRects[0]->pos.y + 100 + 10) + mainPanel->pos;
+
+	//set up rectangles for starting material
+	auto &mtr0 = edit->matTypeRects[0];
+	auto &mtr1 = edit->matTypeRects[1];
+
+	terrainLayerDropdown->SetSelectedIndex(0);
+	ChooseMatType(mtr0.at(0));
+	terrainLayerDropdown->SetSelectedIndex(1);
+	ChooseMatType(mtr1.at(0));
+
+	terrainLayerDropdown->SetSelectedIndex(0);
 }
 
 CreateTerrainModeUI::~CreateTerrainModeUI()
