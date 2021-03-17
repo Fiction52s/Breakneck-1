@@ -5289,7 +5289,9 @@ void Session::UpdatePhysics()
 			p->physicsOver = false;
 	}
 
-	int numSteps;
+
+
+	/*int numSteps;
 	for (int i = 0; i < 4; ++i)
 	{
 		p = GetPlayer(i);
@@ -5299,18 +5301,38 @@ void Session::UpdatePhysics()
 			for (substep = 0; substep < numSteps; ++substep)
 			{
 				p->UpdatePhysics();
-			}		
+			}
 		}
-	}
+	}*/
 
+	//1 substep of players, then 1 substep of enemies. how it should be.
 	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
 	{
+		for (int i = 0; i < 4; ++i)
+		{
+			p = GetPlayer(i);
+
+			if (p != NULL)
+			{
+				//players always have high accuracy movements in normal physics
+				p->UpdatePhysics();
+				/*numSteps = p->GetNumSteps();
+				for (substep = 0; substep < numSteps; ++substep)
+				{
+					p->UpdatePhysics();
+				}*/
+			}
+		}
+
+
 		Enemy *current = activeEnemyList;
 		while (current != NULL)
 		{
 			current->UpdatePhysics(substep);
 			current = current->next;
 		}
+
+
 	}
 }
 

@@ -1370,6 +1370,8 @@ void Enemy::UpdatePostPhysics()
 			
 		}
 		--pauseFrames;
+
+		//cout << "update enemy pause frames: " << pauseFrames << endl;
 		return;
 	}
 
@@ -1539,11 +1541,12 @@ void Enemy::ConfirmHitNoKill()
 	{
 		//sess->Pause(5);
 		//pauseFrames = 0;
-		pauseFrames = 5;
+		//actually gets out of lag a frame after the player.
+		pauseFrames = receivedHit->hitlagFrames;//4;//receivedHit->hitlagFrames;
 	}
 	
 	HandleHitAndSurvive();
-	sess->cam.SetRumble(.5, .5, 5);
+	sess->cam.SetRumble(.5, .5, pauseFrames);
 }
 
 void Enemy::HandleNoHealth()

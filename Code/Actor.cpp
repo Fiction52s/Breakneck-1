@@ -6020,7 +6020,7 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 
 void Actor::UpdatePrePhysics()
 {	
-
+	//cout << "update pre" << endl;
 	if (action == DEATH && simulationMode)
 		return;
 	/*static int skinTest = 0;
@@ -10436,8 +10436,11 @@ void Actor::UpdatePhysics()
 {
 	if (hitlagFrames > 0)
 	{
+		//cout << "cancel update physics because of hitlag" << endl;
 		return;
 	}
+
+	//cout << "update physics " << endl;
 
 	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
@@ -14550,6 +14553,7 @@ void Actor::TryEndLevel()
 
 void Actor::UpdatePostPhysics()
 {
+	
 	if (action == DEATH && simulationMode)
 	{
 		return;
@@ -14558,6 +14562,8 @@ void Actor::UpdatePostPhysics()
 	if (hitlagFrames > 0)
 	{
 		--hitlagFrames;
+
+		//cout << "update hitlag: " << hitlagFrames << endl;
 
 		if (hitlagFrames > 0)
 		{
@@ -17525,6 +17531,8 @@ void Actor::ConfirmHit( Enemy *e )
 	if (!hitParams.canBeHit)
 		return;
 
+	//cout << "hit enemy" << endl;
+
 	//slows the player down so its easier to kill enemies while falling
 	//might remove and test it
 	/*if (ground == NULL && velocity.y > 0 && action == DAIR )
@@ -17604,11 +17612,11 @@ void Actor::ConfirmHit( Enemy *e )
 		break;
 	}*/
 
-	double slowDownFall = 14;
+	/*double slowDownFall = 14;
 	if (velocity.y > slowDownFall)
 	{
 		velocity.y = slowDownFall;
-	}
+	}*/
 }
 
 //void Actor::ConfirmWireHit( bool right )

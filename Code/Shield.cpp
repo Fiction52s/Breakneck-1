@@ -79,17 +79,17 @@ void Shield::ConfirmHitNoKill()
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
 		//parent->sess->Pause(5);
-		pauseFrames = 5;
+		pauseFrames = receivedHit->hitlagFrames;
 	}
 	else
 	{
 		//cout << "set pause frames 5" << endl;
-		pauseFrames = 5;
+		pauseFrames = receivedHit->hitlagFrames;
 	}
 
 	parent->pauseFrames = pauseFrames;
 
-	parent->sess->cam.SetRumble(.5, .5, 5);
+	parent->sess->cam.SetRumble(.5, .5, pauseFrames);
 }
 
 V2d Shield::GetPosition()
