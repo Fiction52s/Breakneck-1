@@ -43,6 +43,7 @@ int Enemy::bloodLengths[8] = {
 	9 };
 
 const int Enemy::summonDuration = 60;
+const int Enemy::minSubstepToCheckHits = 3;
 
 bool Enemy::IsGoalType()
 {
@@ -1303,7 +1304,7 @@ void Enemy::UpdatePrePhysics()
 
 	Actor *player = sess->GetPlayer(0);
 	bool isFar = player->EnemyIsFar(GetPosition());
-	isFar = false;
+	//isFar = false;
 	if (isFar)
 	{
 		numPhysSteps = NUM_STEPS;
@@ -1311,7 +1312,7 @@ void Enemy::UpdatePrePhysics()
 	else
 	{
 		numPhysSteps = NUM_MAX_STEPS;
-		player->highAccuracyHitboxes = true;
+		//player->highAccuracyHitboxes = true;
 	}
 
 	if (highResPhysics)
@@ -1541,8 +1542,9 @@ void Enemy::ConfirmHitNoKill()
 	{
 		//sess->Pause(5);
 		//pauseFrames = 0;
-		//actually gets out of lag a frame after the player.
-		pauseFrames = receivedHit->hitlagFrames;//4;//receivedHit->hitlagFrames;
+		//actually gets out of lag a frame after the player
+		//if value is set to receivedHit->hitlagFrames;
+		pauseFrames = receivedHit->hitlagFrames - 1;//4;//receivedHit->hitlagFrames;
 	}
 	
 	HandleHitAndSurvive();
@@ -1844,21 +1846,31 @@ void Enemy::UpdateEnemyPhysics()
 	}
 }
 
-void Enemy::CheckPlayerInteractions( int i )
+void Enemy::CheckPlayerInteractions(int substep, int i)
 {
-
 	//SlowCheck(i);
-	if (currShield != NULL)
-	{
-		if (currShield->pauseFrames == 0)
-			currShield->CheckHit(sess->GetPlayer(i), this);
-	}
-	else
-	{
-		CheckHit(sess->GetPlayer(i), this);
-	}
 
-	CheckHitPlayer(i);
+	//this is for the player using a
+	//sword vs enemies. enough movement must happen
+	//from both the player and enemy end to feel natural.
+	if (numPhysSteps < NUM_MAX_STEPS || substep >= minSubstepToCheckHits)
+	{
+		/*if (substep == NUM_MAX_STEPS - 1)
+		{
+			int xxx = 5;
+		}*/
+		if (currShield != NULL)
+		{
+			if (currShield->pauseFrames == 0)
+				currShield->CheckHit(sess->GetPlayer(i), this);
+		}
+		else
+		{
+			CheckHit(sess->GetPlayer(i), this);
+		}
+
+		CheckHitPlayer(i);
+	}
 }
 
 void Enemy::UpdatePhysics( int substep )
@@ -1900,13 +1912,13 @@ void Enemy::UpdatePhysics( int substep )
 			a = sess->GetPlayer(i);
 			if (a != NULL)
 			{
-				CheckPlayerInteractions(i);
+				CheckPlayerInteractions( substep, i);
 			}
 		}
 	}
 	else
 	{
-		CheckPlayerInteractions(playerIndex);
+		CheckPlayerInteractions( substep, playerIndex);
 	}
 }
 

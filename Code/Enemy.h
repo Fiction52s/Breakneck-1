@@ -96,6 +96,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int summonFrame;
 	const static int summonDuration;
 
+	const static int minSubstepToCheckHits;
+
 
 	bool facingRight;
 	PositionInfo currPosInfo;
@@ -172,7 +174,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool IsSummoning();
 	virtual ~Enemy();
 	virtual void UpdatePreFrameCalculations() {}
-	void CheckPlayerInteractions( int i );
+	void CheckPlayerInteractions( int substep, int i );
 	void UpdateKeySprite();
 	void SetKey();
 	virtual int GetNumSimulationFramesRequired() { return 0; }

@@ -45,6 +45,7 @@ struct Owl : Enemy, LauncherEnemy
 	int hitstunFrames;
 
 	Owl(ActorParams *ap);
+	~Owl();
 	void SetLevel(int lev);
 	void DirectKill();
 	void BulletHitTerrain(BasicBullet *b,

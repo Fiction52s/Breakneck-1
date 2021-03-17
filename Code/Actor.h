@@ -419,7 +419,7 @@ struct Actor : QuadTreeCollider,
 	//havent put into rollback yet
 
 	bool specialSlow;
-
+	bool frameAfterAttackingHitlagOver;
 
 	//---
 
@@ -787,6 +787,7 @@ struct Actor : QuadTreeCollider,
 	
 
 	//unsaved vars
+	double maxFallSpeedWhileHitting;
 	bool simulationMode;
 	int possibleEdgeCount;
 	GameSession *owner;

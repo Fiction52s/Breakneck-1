@@ -2786,7 +2786,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
-
+	maxFallSpeedWhileHitting = 4.0;
+	frameAfterAttackingHitlagOver = false;
 	hitGrassHitInfo.damage = 60;//3 * 60;
 	hitGrassHitInfo.drainX = 1.0;
 	hitGrassHitInfo.drainY = 1.0;
@@ -4387,6 +4388,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	frameAfterAttackingHitlagOver = false;
 	modifiedDrainFrames = 0;
 	invertInputFrames = 0;
 	airBounceCounter = 0;
@@ -10490,6 +10492,16 @@ void Actor::UpdatePhysics()
 	}
 	else
 	{
+		//to prevent falling too fast while hitting an enemy and falling
+		//maybe only trigger when using dair?
+		if( frameAfterAttackingHitlagOver )
+		{
+			if (temp_velocity.y > maxFallSpeedWhileHitting)
+			{
+				temp_velocity.y = maxFallSpeedWhileHitting;
+			}
+		}
+
 		movementVec = temp_velocity / GetNumSteps();
 	}
 
@@ -14576,7 +14588,15 @@ void Actor::UpdatePostPhysics()
 			{
 				velocity = GetAdjustedKnockback(velocity);
 			}
+			else
+			{
+				frameAfterAttackingHitlagOver = true;
+			}
 		}
+	}
+	else
+	{
+		frameAfterAttackingHitlagOver = false;
 	}
 
 	KinModeUpdate();
@@ -17611,6 +17631,16 @@ void Actor::ConfirmHit( Enemy *e )
 		dairBoostedDouble = true;
 		break;
 	}*/
+
+	/*if (ground != NULL && bounceEdge != NULL && grindEdge != NULL)
+	{
+		if (velocity.y > 14)
+		{
+			slowFallFromHit = true;
+		}
+	}
+
+	if( velocity.y > */
 
 	/*double slowDownFall = 14;
 	if (velocity.y > slowDownFall)

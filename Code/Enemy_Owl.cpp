@@ -75,6 +75,11 @@ Owl::Owl(ActorParams *ap)
 	ResetEnemy();
 }
 
+Owl::~Owl()
+{
+	delete shield;
+}
+
 void Owl::SetLevel(int lev)
 {
 	level = lev;
