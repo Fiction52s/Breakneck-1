@@ -2797,6 +2797,8 @@ void Session::CleanupZones()
 		delete (*it);
 	}
 	zones.clear();
+
+	CleanupGateMarkers();
 }
 
 void Session::DrawZones(sf::RenderTarget *target)
@@ -3315,7 +3317,19 @@ void Session::CreateZones()
 		//assert(inverseEdgeTree != NULL);
 
 		TerrainPolygon tp;
-		Edge *startEdge = allPolysVec[0]->GetEdge(0);
+		Edge *startEdge;
+		
+		//this is p ugly. just testing.
+		if (IsSessTypeGame())
+		{
+			startEdge = allPolysVec[0]->GetEdge(0);
+		}
+		else
+		{
+			EditSession *edit = (EditSession*)this;
+			startEdge = edit->polygons.front()->GetEdge(0);
+		}
+		
 		Edge *curr = startEdge;
 
 		tp.AddPoint(Vector2i(curr->v0.x, curr->v0.y), false);
@@ -3797,7 +3811,7 @@ void Session::SetupGateMarkers()
 {
 	//doesnt care about parentGame
 
-	CleanupGateMarkers();
+	
 
 	int maxGates = 0;
 	int numGatesInZone;

@@ -286,6 +286,7 @@ void Actor::PopulateState(PState *ps)
 	//new stuff
 	ps->prevRail = prevRail;
 	ps->specialSlow = specialSlow;
+	ps->frameAfterAttackingHitlagOver = frameAfterAttackingHitlagOver;
 
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;

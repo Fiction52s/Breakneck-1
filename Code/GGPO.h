@@ -300,6 +300,7 @@ struct PState
 
 	TerrainRail * prevRail;
 	bool specialSlow;
+	bool frameAfterAttackingHitlagOver;
 
 	//new stuff I added recently
 	int projectileSwordFrames;

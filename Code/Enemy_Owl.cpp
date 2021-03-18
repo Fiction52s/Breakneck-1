@@ -77,7 +77,7 @@ Owl::Owl(ActorParams *ap)
 
 Owl::~Owl()
 {
-	delete shield;
+	//delete shield;
 }
 
 void Owl::SetLevel(int lev)
