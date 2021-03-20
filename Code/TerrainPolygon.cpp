@@ -3079,6 +3079,8 @@ void TerrainPolygon::Move(Vector2i move )
 		edges[i].v1 += dMove;
 	}
 
+	CalcEdgeAABBs();
+
 	if (borderQuads != NULL)
 	{
 		for (int i = 0; i < totalNumBorderQuads * 4; ++i)
@@ -6555,13 +6557,15 @@ bool TerrainPolygon::Intersects( sf::IntRect rect )
 		return true;
 	}
 
-	if (!inverse)
+	//what is this...why did I ever think this made sense.
+	//im so confused.
+	/*if (!inverse)
 	{
 		if (rectD.contains(GetDCenter()))
 		{
 			return true;
 		}
-	}
+	}*/
 	
 	return false;
 }
