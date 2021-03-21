@@ -4942,6 +4942,7 @@ void EditSession::TryRemoveSelectedPoints()
 		list<PolyPtr> affectedPolys;
 		list<PolyPtr> newPolys;
 		bool valid = true;
+
 		for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ++it)
 		{
 			PolyPtr tp = (*it).first;
@@ -4964,6 +4965,7 @@ void EditSession::TryRemoveSelectedPoints()
 				if (!IsPolygonValid(newPoly, tp))
 				{
 					valid = false;
+					ShowMostRecentError();
 				}
 			}
 
@@ -6370,6 +6372,8 @@ bool EditSession::PolyContainsPolys(PolyPtr p, PolyPtr ignore)
 			return true;
 		}
 	}
+
+	return false;
 }
 
 bool EditSession::PolyIsContainedByPolys(PolyPtr p, PolyPtr ignore)
@@ -6385,6 +6389,8 @@ bool EditSession::PolyIsContainedByPolys(PolyPtr p, PolyPtr ignore)
 			return true;
 		}
 	}
+
+	return false;
 }
 
 bool EditSession::PolyIsTouchingEnemiesOrBeingTouched( PolyPtr p, PolyPtr ignore)
@@ -7046,6 +7052,7 @@ bool EditSession::IsPolygonValid( PolyPtr poly, PolyPtr ignore )
 {
 	bool a = IsPolygonExternallyValid(poly, ignore);
 	bool b = poly->IsInternallyValid();
+	//cout << "a: " << a << " b: " << b << endl;
 
 	return a && b;
 }
