@@ -5639,7 +5639,10 @@ void Actor::LimitMaxSpeeds()
 	{
 		if (action != AIRDASH && !(rightWire->state == Wire::PULLING && leftWire->state == Wire::PULLING) && action != GRINDLUNGE && action != RAILDASH && action != GETSHARD)
 		{
-			velocity = AddAerialGravity(velocity);
+			if (!frameAfterAttackingHitlagOver) //hitting enemies was making full hop height lower
+			{
+				velocity = AddAerialGravity(velocity);
+			}
 		}
 
 		if (InWater( TerrainPolygon::WATER_NORMAL))//make this into a cleaner function very soon.
