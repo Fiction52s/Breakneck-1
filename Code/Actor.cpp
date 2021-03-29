@@ -3996,7 +3996,7 @@ void Actor::ActionEnded()
 
 void Actor::CheckHoldJump()
 {
-	if (InWater( TerrainPolygon::WATER_BUOYANCY) )
+	if (InWater( TerrainPolygon::WATER_BUOYANCY) )//|| InWater( TerrainPolygon::WATER_NORMAL ))
 	{
 		if (!JumpButtonHeld())
 		{
@@ -4006,17 +4006,27 @@ void Actor::CheckHoldJump()
 		return;
 	}
 
+	/*if (InWater(TerrainPolygon::WATER_NORMAL))
+	{
+
+	}*/
+
+
 	if( hasDoubleJump )
 	{
 		if( holdJump && velocity.y >= -8 )
 			holdJump = false;
 
 		
-		if( holdJump && ((!steepJump && !JumpButtonHeld()) || (steepJump && !currInput.LUp() ) ) && framesInAir > 2 )
+		if( holdJump && framesInAir > 2 )
 		{
-			if( velocity.y < -8 )
+			bool steepCheck = (!steepJump && !JumpButtonHeld()) || (steepJump && !currInput.LUp());
+			if (steepCheck)
 			{
-				velocity.y = -8;
+				if (velocity.y < -8)
+				{
+					velocity.y = -8;
+				}
 			}
 		}
 	}
@@ -13586,7 +13596,10 @@ void Actor::HandleWaterSituation(int wType,
 				vel.y -= 5;
 			}
 
-			vel = normalize(vel) * 15.0;
+			if (length(vel) < 15.0)
+			{
+				vel = normalize(vel) * 15.0;
+			}
 
 			springVel = vel;
 

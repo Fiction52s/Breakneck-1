@@ -47,14 +47,14 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	SetEditorActions(STAND, STAND, 0);
 	
 	actionLength[STAND] = 10;
-	actionLength[JUMPSQUAT] = 2;
+	actionLength[JUMPSQUAT] = 4;
 	actionLength[JUMP] = 2;
-	actionLength[LAND] = 2;
+	actionLength[LAND] = 4;
 	actionLength[STEEPJUMP] = 2;
 	actionLength[WALLCLING] = 30;
 
 	animFactor[STAND] = 1;
-	animFactor[JUMPSQUAT] = 4;
+	animFactor[JUMPSQUAT] = 2;
 	animFactor[JUMP] = 1;
 	animFactor[LAND] = 3;
 	animFactor[STEEPJUMP] = 1;
@@ -115,7 +115,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	cutObject->Setup(ts_test, 10, 9, scale);
+	cutObject->Setup(ts_test, 17, 16, scale);
 
 	ResetEnemy();
 }
@@ -397,15 +397,37 @@ void PoisonFrog::UpdateSprite()
 	case JUMP:
 	{
 		int window = 6;
+		double yVel = groundMover->velocity.y;
 		if (reverse)
 		{
-			if (groundMover->velocity.y > window)
-			{
-				currTile = 3;
-			}
-			else if (groundMover->velocity.y < -window)
+			yVel = -yVel;
+		}
+
+		//add more checks for the other anim frames
+		if (yVel < -window)
+		{
+			currTile = 6;
+		}
+		else if (yVel > window)
+		{
+			currTile = 10;
+		}
+		else
+		{
+			currTile = 8;
+		}
+
+
+
+		/*if (reverse)
+		{
+			if (yVel > window)
 			{
 				currTile = 5;
+			}
+			else if (yVel < -window)
+			{
+				currTile = ;
 			}
 			else
 			{
@@ -414,11 +436,11 @@ void PoisonFrog::UpdateSprite()
 		}
 		else
 		{
-			if (groundMover->velocity.y < -window)
+			if (yVel < -window)
 			{
 				currTile = 3;
 			}
-			else if (groundMover->velocity.y > window)
+			else if (yVel > window)
 			{
 				currTile = 5;
 			}
@@ -426,17 +448,17 @@ void PoisonFrog::UpdateSprite()
 			{
 				currTile = 4;
 			}
-		}
+		}*/
 		break;
 	}
 	case LAND:
 	{
-		currTile = frame / animFactor[LAND] + 6;
+		currTile = frame / animFactor[LAND] + 11;
 		break;
 	}
 	case WALLCLING:
 	{
-		currTile = 8;
+		currTile = 15;
 		break;
 	}
 	

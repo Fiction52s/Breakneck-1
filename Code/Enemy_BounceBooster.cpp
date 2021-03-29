@@ -16,7 +16,7 @@ BounceBooster::BounceBooster(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	strength = 30;
+	strength = 40;
 
 	upOnly = false; //omni
 	if (ap->GetTypeName() == "upbouncebooster")

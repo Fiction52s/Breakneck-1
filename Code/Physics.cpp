@@ -240,6 +240,7 @@ double Edge::GetQuantity(Vector2<double> &p)
 	V2d e = normalize(v1 - v0);
 	double result = dot( vv, e );
 	double len = length( v1 - v0 );
+
 	if( approxEquals( result, 0 ) )
 		return 0;
 	else if( approxEquals( result, length( v1 - v0 ) ) )
@@ -789,7 +790,7 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				//double testing = dot( normalize( (corner-vel) - corner), normalize( e->v1 - e->v0 ));
 				if( li.parallel )//|| abs( testing ) == 1 )
 				{
-					cout << "returning circle null1" << endl;
+					//cout << "returning circle null1" << endl;
 					return NULL;
 				}
 
@@ -807,6 +808,11 @@ Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, co
 				currentContact->normal= edgeNormal;
 				currentContact->position = e->GetPosition( lineQuantity );
 				currentContact->collisionPriority = length( intersect - ( oldPosition + radius * -edgeNormal ) );
+
+				/*if (length(currentContact->resolution) > 1000)
+				{
+					int xxx = 5;
+				}*/
 
 				/*CircleShape *cs = new CircleShape;
 				cs->setFillColor( Color::Cyan );
