@@ -335,19 +335,30 @@ void Zone::Init()
 		miniShader->setUniform("alpha", 1.f);
 	}
 
-	for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
+	/*totalNumKeys = 0;
+	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
 	{
-		if ((*it)->type == EN_CRAWLERQUEEN)
+		if ((*it)->hasMonitor)
 		{
-			action = OPEN;
+			totalNumKeys++;
 		}
-		//if( (*it)->type == EN_NEXUS|| (*it)->type == EN_CRAWLERQUEEN )
-		//{
-		//	active = true;
-		//	//owner->ActivateZone( this );
-		//	break;
-		//}
-	}
+	}*/
+
+	
+
+	//for( list<Enemy*>::iterator it = allEnemies.begin(); it != allEnemies.end(); ++it )
+	//{
+	//	if ((*it)->type == EN_CRAWLERQUEEN)
+	//	{
+	//		action = OPEN;
+	//	}
+	//	//if( (*it)->type == EN_NEXUS|| (*it)->type == EN_CRAWLERQUEEN )
+	//	//{
+	//	//	active = true;
+	//	//	//owner->ActivateZone( this );
+	//	//	break;
+	//	//}
+	//}
 
 	
 }

@@ -13,7 +13,8 @@ struct Gate : public QuadTreeEntrant
 {
 	enum GateCategory
 	{
-		KEY,
+		ALLKEY,
+		NUMBER_KEY,
 		SHARD,
 		BOSS,
 		SECRET,

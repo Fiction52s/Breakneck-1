@@ -40,7 +40,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
 	ts_pickupGateTypes = edit->GetSizedTileset("Editor/pickupgatetypes_128x128.png");
 
-	std::vector<string> gateCatOptions = { "Key", "Shard", "Boss", "Secret", "Pickup", "Black" };
+	std::vector<string> gateCatOptions = { "All keys", "Number of keys", "Shard", "Boss", "Secret", "Pickup", "Black" };
 	gateCategoryDropdown = mainPanel->AddDropdown(
 		"catdrop", Vector2i(0, 0), Vector2i(200, 28), gateCatOptions, 0);
 	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
@@ -197,22 +197,25 @@ void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 {
 	switch (gi->category)
 	{
-	case Gate::KEY:
+	case Gate::ALLKEY:
 		gateCategoryDropdown->SetSelectedIndex(0);
+		break;
+	case Gate::NUMBER_KEY:
+		gateCategoryDropdown->SetSelectedIndex(1);
 		//set key num text based on gate params
 		break;
 	case Gate::SHARD:
-		gateCategoryDropdown->SetSelectedIndex(1);
+		gateCategoryDropdown->SetSelectedIndex(2);
 		SetShard(gi->shardWorld, gi->shardIndex);
 		break;
 	case Gate::BOSS:
-		gateCategoryDropdown->SetSelectedIndex(2);
-		break;
-	case Gate::SECRET:
 		gateCategoryDropdown->SetSelectedIndex(3);
 		break;
+	case Gate::SECRET:
+		gateCategoryDropdown->SetSelectedIndex(4);
+		break;
 	case Gate::BLACK:
-		gateCategoryDropdown->SetSelectedIndex(5);
+		gateCategoryDropdown->SetSelectedIndex(6);
 		break;
 	}
 
@@ -396,13 +399,13 @@ void CreateGatesModeUI::ExpandLibrary()
 	int cat = GetGateCategory();
 	switch (cat)
 	{
-	case 1:
+	case 2:
 		ExpandShardLibrary();
 		break;
-	case 2:
+	case 3:
 		ExpandBossLibrary();
 		break;
-	case 4:
+	case 5:
 		ExpandPickupLibrary();
 		break;
 	}

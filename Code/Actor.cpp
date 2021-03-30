@@ -3720,9 +3720,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 		
 
-	minRailGrindSpeed[0] = dashSpeed0;
-	minRailGrindSpeed[1] = dashSpeed1;
-	minRailGrindSpeed[2] = dashSpeed2;
+	minRailGrindSpeed[0] = dashSpeed0 + 10;
+	minRailGrindSpeed[1] = dashSpeed1 + 10;
+	minRailGrindSpeed[2] = dashSpeed2 + 10;
 
 	touchEdgeWithLeftWire= false;
 	touchEdgeWithRightWire= false;
@@ -12200,7 +12200,7 @@ void Actor::HandleTouchedGate()
 
 	double thresh = .01;
 	bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
-	cout << "a: " << crossA << ", b: " << crossB << ", c: " << crossC << ", d: " << crossD << "\n";
+	//cout << "a: " << crossA << ", b: " << crossB << ", c: " << crossC << ", d: " << crossD << "\n";
 
 
 
@@ -16310,7 +16310,25 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				}
 				else
 				{
-					railSpeed = groundSpeed;
+					if (groundSpeed > 0)
+					{
+						railSpeed = max(groundSpeed, minRailCurr );
+					}
+					else if( groundSpeed < 0 )
+					{
+						railSpeed = min(groundSpeed, -minRailCurr);
+					}
+					else
+					{
+						if (facingRight)
+						{
+							railSpeed = minRailCurr;
+						}
+						else
+						{
+							railSpeed = -minRailCurr;
+						}
+					}
 				}
 
 			

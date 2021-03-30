@@ -58,6 +58,8 @@ struct Zone
 	bool reexplored;
 	int openFrames;
 	int closeFrames;
+	int totalNumKeys;
+
 	enum ZoneType : int
 	{
 		NORMAL,

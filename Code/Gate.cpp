@@ -95,10 +95,14 @@ void Gate::Setup(GateInfoPtr gi)
 	{
 		SetShard(gi->shardWorld, gi->shardIndex);
 	}
-	else if (category == Gate::KEY || category == Gate::PICKUP)
+	else if (category == Gate::NUMBER_KEY || category == Gate::PICKUP || category == Gate::ALLKEY )
 	{
 		SetNumToOpen(gi->numToOpen);
 	}
+	/*else if (category == Gate::ALLKEY)
+	{
+		SetNumToOpen(gi->numToOpen);
+	}*/
 
 	temp0prev = edge0->edge0;
 	temp0next = edge0;
@@ -288,7 +292,7 @@ void Gate::Close()
 
 void Gate::UpdateOrb()
 {
-	if (category == KEY)
+	if (category == NUMBER_KEY || category == ALLKEY)
 	{
 		if (gState == LOCKFOREVER || gState == REFORM)
 		{
@@ -497,7 +501,8 @@ bool Gate::CanSoften()
 	{
 		switch (category)
 		{
-		case KEY:
+		case ALLKEY:
+		case NUMBER_KEY:
 		{
 			if ((player->numKeysHeld >= numToOpen))
 				okayToSoften = true;
@@ -621,7 +626,8 @@ bool Gate::CanUnlock()
 		{
 		case BLACK:
 			return false;
-		case KEY:
+		case ALLKEY:
+		case NUMBER_KEY:
 		{
 			return true;
 		}
@@ -713,7 +719,7 @@ void Gate::Draw( sf::RenderTarget *target )
 					target->draw(hardLine, 4, sf::Quads, &gateShader);
 				}
 
-				if (category == KEY || category == PICKUP)
+				if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP)
 				{
 					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
 
@@ -744,7 +750,7 @@ void Gate::MapDraw(sf::RenderTarget *target)
 
 void Gate::SetNumToOpen(int num)
 {
-	assert(category == KEY || category == PICKUP);
+	assert(category == NUMBER_KEY || category == PICKUP || category == ALLKEY );
 
 	numToOpen = num;
 	numberText.setString(to_string(numToOpen));
@@ -784,7 +790,8 @@ void Gate::SetMapLineColor()
 	case BOSS:
 		mapLineColor = Color::Blue;
 		break;
-	case KEY:
+	case ALLKEY:
+	case NUMBER_KEY:
 	{
 		switch (sess->mapHeader->envWorldType)
 		{

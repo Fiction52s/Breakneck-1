@@ -902,7 +902,7 @@ void GameSession::ProcessGate(int gCat,
 	{
 		gate->SetShard(shardWorld, shardIndex);
 	}
-	else if (gCat == Gate::KEY || gCat == Gate::PICKUP)
+	else if (gCat == Gate::NUMBER_KEY || gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
 	{
 		gate->SetNumToOpen(numToOpen);
 	}

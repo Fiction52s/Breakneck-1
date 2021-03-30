@@ -2450,7 +2450,7 @@ bool Session::ReadGates(std::ifstream &is)
 		is >> gCat;
 		is >> gVar;
 
-		if (gCat == Gate::KEY || gCat == Gate::PICKUP)
+		if (gCat == Gate::NUMBER_KEY || gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
 		{
 			is >> numToOpen;
 		}
@@ -3464,14 +3464,17 @@ void Session::SetupZones()
 			(*it)->zone->allEnemies.push_back((*it));
 	}
 
+	int mapTotalNumKeys = 0; //useful for stats later?
 	for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
 	{
-		int numTotalKeys = 0;
+		(*zit)->totalNumKeys = 0;
+		//int numTotalKeys = 0;
 		for (auto it = (*zit)->allEnemies.begin(); it != (*zit)->allEnemies.end(); ++it)
 		{
 			if ((*it)->hasMonitor)
 			{
-				++numTotalKeys;
+				++(*zit)->totalNumKeys;
+				++mapTotalNumKeys;
 			}
 		}
 	}
@@ -3761,6 +3764,16 @@ void Session::ActivateZone(Zone * z, bool instant)
 
 		CloseOffLimitZones();
 
+		/*Gate *g;
+		for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+		{
+			g = (Gate*)(*it)->info;
+			if (g->category == Gate::ALLKEY)
+			{
+				g->SetNumToOpen(currentZone->totalNumKeys);
+			}
+		}*/
+
 		if (gateMarkers != NULL)
 		{
 			gateMarkers->SetToZone(currentZone);
@@ -3772,9 +3785,21 @@ void Session::ActivateZone(Zone * z, bool instant)
 		Zone *oldZone = currentZone;
 		currentZone = z;
 
+		
+
 		if (oldZone == NULL) //for starting the map
 		{
 
+		}
+	}
+
+	Gate *g;
+	for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+		if (g->category == Gate::ALLKEY)
+		{
+			g->SetNumToOpen(currentZone->totalNumKeys);
 		}
 	}
 

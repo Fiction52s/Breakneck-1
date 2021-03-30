@@ -30,7 +30,7 @@ GateInfo::GateInfo()
 
 void GateInfo::SetNumToOpen(int num)
 {
-	if (category == Gate::KEY || category == Gate::PICKUP)
+	if (category == Gate::NUMBER_KEY || category == Gate::PICKUP)
 	{
 		numToOpen = num;
 	}
@@ -48,7 +48,7 @@ bool GateInfo::HasSameInfo(GateInfo *other)
 	if (other->variation != variation)
 		return false;
 
-	if (category == Gate::KEY || category == Gate::PICKUP)
+	if (category == Gate::NUMBER_KEY || category == Gate::PICKUP)
 	{
 		if (other->numToOpen != numToOpen)
 			return false;
@@ -154,7 +154,8 @@ void GateInfo::WriteFile(ofstream &of)
 	of << category << " ";
 	of << variation << " ";
 
-	if (category == Gate::KEY || category == Gate::PICKUP)
+	//allkey should not export numToOpen but it needs to be like this currently to not mess up old gate maps
+	if ( category == Gate::ALLKEY || category == Gate::NUMBER_KEY || category == Gate::PICKUP)
 	{
 		of << numToOpen << " ";
 	}
@@ -192,7 +193,7 @@ void GateInfo::UpdateLine()
 	{
 		color = Color(200, 200, 200);
 	}
-	else if (category == Gate::KEY)
+	else if (category == Gate::ALLKEY || category == Gate::NUMBER_KEY)
 	{
 		color = Color(200, 200, 200);
 	}
@@ -266,7 +267,7 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 		color = Color::Cyan;
 		//color = Color(150, 150, 150);
 	}
-	else if (category == Gate::KEY)
+	else if (category == Gate::NUMBER_KEY || category == Gate::ALLKEY)
 	{
 		color = Color::Cyan;//Color(100, 100, 100);
 	}
