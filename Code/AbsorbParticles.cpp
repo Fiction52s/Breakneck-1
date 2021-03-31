@@ -327,7 +327,14 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	}
 	else 
 	{
-		accel = 1.f;
+		if (parent->abType == DARK)
+		{
+			accel = 4.f;
+		}
+		else
+		{
+			accel = 1.f;
+		}
 	}
 	velocity += normalize(targetPos - pos) * accel;
 

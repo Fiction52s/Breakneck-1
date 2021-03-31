@@ -1016,9 +1016,19 @@ void EditSession::TestPlayerMode()
 
 	CleanupZones();
 	CreateZones();
-	SetupZones();
+
+	int setupZoneStatus = SetupZones();
+	
 
 	SetupGateMarkers();
+
+	if (originalZone != NULL)
+	{
+		if (gateMarkers != NULL)
+		{
+			gateMarkers->SetToZone(originalZone);
+		}
+	}
 
 	hasGoal = false;
 
@@ -1211,7 +1221,13 @@ void EditSession::TestPlayerMode()
 		int x = 5;
 	}
 
-	
+	if (setupZoneStatus == -1) //couldnt find goal in a zone based map
+	{
+		SetMode(EDIT);
+		CreateError(ERR_CANT_MAKE_ZONE_STRUCTURE_WITHOUT_GOAL);
+		ShowMostRecentError();
+		return;
+	}
 }
 
 void EditSession::EndTestMode()

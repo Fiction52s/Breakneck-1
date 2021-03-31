@@ -12,6 +12,7 @@ struct Comboer : Enemy
 		S_FLOAT,
 		S_SHOT,
 		S_EXPLODE,
+		S_RETURN,
 		S_Count
 	};
 
@@ -22,6 +23,7 @@ struct Comboer : Enemy
 	Comboer(ActorParams * ap);
 	~Comboer();
 
+	void Return();
 	void ProcessState();
 	void ProcessHit();
 	void UpdateEnemyPhysics();

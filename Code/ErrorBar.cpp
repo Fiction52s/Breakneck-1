@@ -98,4 +98,6 @@ void ErrorBar::CreateErrorTable()
 	errorStringVec[ERR_INVERSE_CANT_INTERSECT_NORMAL_POLYS] = "New inverse polygon can't intersect other polygons";
 
 	errorStringVec[ERR_CANT_DELETE_WHILE_MOVING] = "Can't delete while moving objects";
+
+	errorStringVec[ERR_CANT_MAKE_ZONE_STRUCTURE_WITHOUT_GOAL] = "A map with gates requires a goal of some kind to be placed";
 }

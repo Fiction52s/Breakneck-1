@@ -22,6 +22,7 @@ Comboer::Comboer(ActorParams *ap )
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_SHOT] = 3;
 	actionLength[S_EXPLODE] = 20;
+	actionLength[S_RETURN] = 30;
 
 	animFactor[S_FLOAT] = 2;
 	animFactor[S_SHOT] = 6;
@@ -108,6 +109,16 @@ void Comboer::UpdateOnPlacement(ActorParams *ap)
 void Comboer::UpdatePath()
 {
 	pathFollower.SetParams(editParams);
+}
+
+void Comboer::Return()
+{
+	sess->PlayerRemoveActiveComboer(comboObj);
+
+	SetHurtboxes(NULL, 0);
+	SetHitboxes(NULL, 0);
+
+	numHealth = maxHealth;
 }
 
 void Comboer::ResetEnemy()
@@ -261,9 +272,20 @@ void Comboer::ProcessState()
 		switch (action)
 		{
 		case S_EXPLODE:
-			numHealth = 0;
+			action = S_RETURN;
+			frame = 0;
+			Return();
+
+			/*numHealth = 0;
 			dead = true;
-			sess->PlayerRemoveActiveComboer(comboObj);
+			sess->PlayerRemoveActiveComboer(comboObj);*/
+			break;
+		case S_RETURN:
+			action = S_FLOAT;
+			frame = 0;
+			SetCurrPosInfo(startPosInfo);
+			DefaultHurtboxesOn();
+			DefaultHitboxesOn();
 			break;
 		}
 	}

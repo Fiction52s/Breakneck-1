@@ -37,6 +37,8 @@ Zone::Zone( TerrainPolygon &tp )
 	TerrainPoint * curr;
 	int tpNumP = tp.GetNumPoints();
 
+	definedArea = NULL;
+
 	
 	pointVector.push_back(vector<Vector2i>());
 	vector<Vector2i> &mainPoly = pointVector[0];
@@ -62,7 +64,12 @@ Zone::Zone( TerrainPolygon &tp )
 
 Zone::~Zone()
 {
-	delete definedArea;
+	if (definedArea != NULL)
+	{
+		delete definedArea;
+		definedArea = NULL;
+	}
+
 	if (zShader != NULL)
 	{
 		delete zShader;

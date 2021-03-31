@@ -3402,10 +3402,10 @@ void Session::CreateZones()
 	}
 }
 
-void Session::SetupZones()
+int Session::SetupZones()
 {
 	if (zones.size() == 0)
-		return;
+		return 0;
 	//cout << "setupzones" << endl;
 	//setup subzones
 	//for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
@@ -3586,7 +3586,8 @@ void Session::SetupZones()
 
 	if (!foundGoal)
 	{
-		assert(foundGoal);
+		return -1;
+		//assert(foundGoal);
 	}
 
 	Gate *g;
@@ -3652,12 +3653,13 @@ void Session::SetupZones()
 		(*it)->Init();
 	}
 
-	if (originalZone != NULL)
-	{
-		//CloseOffLimitZones();
-		if( gateMarkers != NULL )
-			gateMarkers->SetToZone(currentZone);
-	}
+	return 0;
+	//if (originalZone != NULL)
+	//{
+	//	//CloseOffLimitZones();
+	//	if( gateMarkers != NULL )
+	//		gateMarkers->SetToZone(currentZone);
+	//}
 }
 
 void Session::ActivateZone(Zone * z, bool instant)
@@ -3774,10 +3776,7 @@ void Session::ActivateZone(Zone * z, bool instant)
 			}
 		}*/
 
-		if (gateMarkers != NULL)
-		{
-			gateMarkers->SetToZone(currentZone);
-		}
+		
 	}
 	else
 	{
@@ -3801,6 +3800,11 @@ void Session::ActivateZone(Zone * z, bool instant)
 		{
 			g->SetNumToOpen(currentZone->totalNumKeys);
 		}
+	}
+
+	if (gateMarkers != NULL)
+	{
+		gateMarkers->SetToZone(currentZone);
 	}
 
 	if (!instant)

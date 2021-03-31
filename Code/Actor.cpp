@@ -4333,17 +4333,25 @@ void Actor::AddActiveComboObj(ComboObject *c)
 	if (c->active)
 		return;
 
+	//cout << "adding comboer: " << 
 
-	ComboObject *testCurr = activeComboObjList;
-	while (testCurr != NULL)
-	{
-		/*if (testCurr == c)
-		{
-			int xxx = 5;
-		}*/
 
-		testCurr = testCurr->nextComboObj;//activeComboObjList->nextComboObj;
-	}
+	//int numComboers = 0;
+
+	//ComboObject *testCurr = activeComboObjList;
+	//while (testCurr != NULL)
+	//{
+	//	if (testCurr == c)
+	//	{
+	//		int xxx = 5;
+	//	}
+
+	//	++numComboers;
+
+	//	testCurr = testCurr->nextComboObj;//activeComboObjList->nextComboObj;
+	//}
+
+	//cout << "adding comboer. size after: " << numComboers + 1 << endl;
 
 	c->active = true;
 	if (activeComboObjList == NULL)
@@ -4366,6 +4374,20 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 		return;
 	//assert(activeComboObjList != NULL);
 
+
+
+	//int numComboers = 0;
+
+	//ComboObject *testCurr = activeComboObjList;
+	//while (testCurr != NULL)
+	//{
+	//	++numComboers;
+
+	//	testCurr = testCurr->nextComboObj;//activeComboObjList->nextComboObj;
+	//}
+
+
+
 	c->active = false;
 	if (c == activeComboObjList)
 	{
@@ -4385,6 +4407,8 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 		prev = curr;
 		curr = curr->nextComboObj;
 	}
+
+	c->nextComboObj = NULL;
 }
 
 void Actor::DebugDrawComboObj(sf::RenderTarget *target)
@@ -6035,7 +6059,7 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 }
 
 void Actor::UpdatePrePhysics()
-{	
+{
 	//cout << "update pre" << endl;
 	if (action == DEATH && simulationMode)
 		return;

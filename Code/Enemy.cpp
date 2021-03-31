@@ -1548,7 +1548,11 @@ void Enemy::ConfirmHitNoKill()
 	}
 	
 	HandleHitAndSurvive();
-	sess->cam.SetRumble(.5, .5, pauseFrames);
+
+	if (hType != HitboxInfo::COMBO)
+	{
+		sess->cam.SetRumble(.5, .5, pauseFrames);
+	}
 }
 
 void Enemy::HandleNoHealth()
@@ -1598,8 +1602,13 @@ void Enemy::ConfirmKill()
 	{
 		sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_blood, GetPosition(), true, 0, bloodLengths[world - 1], 5, true);
 	}
+
+	if (hType != HitboxInfo::COMBO)
+	{
+		sess->cam.SetRumble(1.5, 1.5, 7);
+	}
 	
-	sess->cam.SetRumble(1.5, 1.5, 7);
+	
 	
 	if (hasMonitor && !suppressMonitor)
 	{
