@@ -38,8 +38,13 @@ struct Ball : Enemy, SurfaceMoverHandler
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+	void UpdateJuggleRepsText(int reps);
 
 	double flySpeed;
+
+	bool limitedJuggles;
+	sf::Text numJugglesText;
+	
 
 	int hitLimit;
 	int currHits;

@@ -2887,7 +2887,7 @@ bool TerrainPolygon::AlignExtremes( std::list<PointMoveInfo> &lockPoints,
 			{
 				if (nextPointLocked)
 				{
-					//continue;
+					continue;
 					assert(0); //need to adjust the next point, but its locked too!
 				}
 

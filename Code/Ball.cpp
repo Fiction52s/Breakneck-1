@@ -6,6 +6,8 @@
 #include "Ball.h"
 #include "Eye.h"
 #include "KeyMarker.h"
+#include "MainMenu.h"
+#include "AbsorbParticles.h"
 
 using namespace std;
 using namespace sf;
@@ -16,8 +18,13 @@ using namespace sf;
 
 void Ball::UpdateParamsSettings()
 {
-	/*JugglerParams *jParams = (JugglerParams*)editParams;
-	juggleReps = jParams->numJuggles;*/
+	Enemy::UpdateParamsSettings();
+	if (limitedJuggles)
+	{
+		JugglerParams *jParams = (JugglerParams*)editParams;
+		juggleReps = jParams->numJuggles;
+		UpdateJuggleRepsText(juggleReps);
+	}
 }
 
 void Ball::SetLevel(int lev)
@@ -46,12 +53,29 @@ Ball::Ball(ActorParams *ap)
 	SetNumActions(S_Count);
 	SetEditorActions(S_FLOAT, 0, 0);
 
+	numJugglesText.setFont(sess->mainMenu->arial);
+	numJugglesText.setFillColor(Color::White);
+	numJugglesText.setOutlineColor(Color::Black);
+	numJugglesText.setOutlineThickness(3);
+	numJugglesText.setCharacterSize(32);
+
 	flySpeed = 14;
-	maxWaitFrames = 5000;
+	maxWaitFrames = 180;
+
+	string &typeName = ap->type->info.name;
+	if (typeName == "ball")
+	{
+		limitedJuggles = false;
+	}
+	else if (typeName == "limitedball")
+	{
+		limitedJuggles = true;
+	}
 
 	UpdateParamsSettings();
 
 	CreateSurfaceMover(startPosInfo, 32, this);
+	
 	
 
 	guidedDir = NULL;
@@ -128,6 +152,8 @@ void Ball::ResetEnemy()
 	surfaceMover->ClearAirForces();
 	surfaceMover->AddAirForce(V2d(0, 1));
 
+	UpdateJuggleRepsText(juggleReps);
+
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -152,6 +178,8 @@ void Ball::Return()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
+	UpdateJuggleRepsText(0);
+
 	currJuggle = 0;
 
 	numHealth = maxHealth;
@@ -166,6 +194,7 @@ void Ball::Pop()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 	waitFrame = 0;
+	UpdateJuggleRepsText(juggleReps - currJuggle);
 }
 
 void Ball::PopThrow()
@@ -226,6 +255,18 @@ void Ball::PopThrow()
 	sess->PlayerAddActiveComboObj(comboObj);
 }
 
+void Ball::UpdateJuggleRepsText(int reps)
+{
+	if (limitedJuggles)
+	{
+		numJugglesText.setString(to_string(reps));
+		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
+			+ numJugglesText.getLocalBounds().width / 2,
+			numJugglesText.getLocalBounds().top
+			+ numJugglesText.getLocalBounds().height / 2);
+	}
+}
+
 void Ball::ProcessHit()
 {
 	if (!dead && ReceivedHit() && numHealth > 0)
@@ -236,11 +277,12 @@ void Ball::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if (currJuggle == juggleReps)
+			if ( limitedJuggles && currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
-					sess->CollectKey();
+					sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::DARK,
+						sess->GetPlayer(0), 1, GetPosition());
 					suppressMonitor = true;
 				}
 
@@ -279,6 +321,7 @@ void Ball::ProcessState()
 			surfaceMover->Set(startPosInfo);
 			//DefaultHitboxesOn();
 			DefaultHurtboxesOn();
+			UpdateJuggleRepsText(juggleReps);
 			break;
 			/*case S_EXPLODE:
 			numHealth = 0;
@@ -395,11 +438,21 @@ void Ball::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	if (limitedJuggles)
+	{
+		numJugglesText.setPosition(sprite.getPosition());
+	}
 }
 
 void Ball::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+
+	if (limitedJuggles)
+	{
+		target->draw(numJugglesText);
+	}
 }
 
 V2d Ball::GetBounceVel(V2d &normal)

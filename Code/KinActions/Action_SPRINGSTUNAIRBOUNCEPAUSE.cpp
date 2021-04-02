@@ -6,6 +6,7 @@ using namespace std;
 
 void Actor::SPRINGSTUNAIRBOUNCEPAUSE_Start()
 {
+	springStunFrames = aimLauncherStunFrames;
 	airBounceCounter++;
 }
 

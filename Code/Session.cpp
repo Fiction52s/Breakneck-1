@@ -505,6 +505,7 @@ void Session::RegisterW3Enemies()
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
 
 	AddBasicAerialWorldEnemy("ball", 3, CreateEnemy<Ball>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+	AddWorldEnemy("limitedball", 3, CreateEnemy<Ball>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("bouncejuggler", 3, CreateEnemy<BounceJuggler>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 	AddWorldEnemy("limitedbouncejuggler", 3, CreateEnemy<BounceJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);

@@ -306,6 +306,7 @@ struct PState
 	int projectileSwordFrames;
 	int enemyProjectileSwordFrames;
 	int gravModifyFrames;
+	double extraGravityModifier;
 	V2d waterEntrancePosition;
 	Edge *waterEntranceGround;
 	Edge *waterEntranceGrindEdge;
@@ -354,9 +355,6 @@ struct PState
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
-
-	
-
 
 
 	//HitboxInfo currVSHitboxInfo;

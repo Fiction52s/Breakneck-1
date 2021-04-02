@@ -6,7 +6,6 @@ using namespace std;
 
 void Actor::SPRINGSTUNAIRBOUNCE_Start()
 {
-	airBounceCounter = 0;
 	airBounceLimit = 3;
 }
 

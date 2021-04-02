@@ -38,15 +38,18 @@ void Actor::AIMWAIT_Change()
 		else if (aimLauncherType == AimLauncher::TYPE_AIRBOUNCE)
 		{
 			SetAction(SPRINGSTUNAIRBOUNCE);
-			
+			airBounceCounter = 0;
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
 		}
 		else if (aimLauncherType == AimLauncher::TYPE_GRIND)
 		{
 			SetAction(SPRINGSTUNGRINDFLY);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
 		}
 		else if (aimLauncherType == AimLauncher::TYPE_HOMING)
 		{
 			SetAction(SPRINGSTUNHOMING);
+			aimLauncherStunFrames = currAimLauncher->stunFrames;
 		}
 		
 		frame = 0;
@@ -55,6 +58,15 @@ void Actor::AIMWAIT_Change()
 		double s = currAimLauncher->speed;
 
 		springVel = currAimLauncher->currDir * s;
+
+		if (springVel.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (springVel.x < 0)
+		{
+			facingRight = false;
+		}
 
 		springExtra = V2d(0, 0);
 

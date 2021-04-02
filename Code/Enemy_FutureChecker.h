@@ -18,6 +18,7 @@ struct FutureChecker : Enemy
 
 	Tileset *ts_bulletExplode;
 	int bulletSpeed;
+	const static int predictFrames;
 
 	int fireCounter;
 
@@ -34,7 +35,7 @@ struct FutureChecker : Enemy
 	void UpdateEnemyPhysics();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
-
+	int GetNumSimulationFramesRequired();
 	void SetLevel(int lev);
 
 	void UpdateSprite();

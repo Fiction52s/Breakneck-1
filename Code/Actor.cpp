@@ -291,6 +291,7 @@ void Actor::PopulateState(PState *ps)
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
 	ps->gravModifyFrames = gravModifyFrames;
+	ps->extraGravityModifier = extraGravityModifier;
 	ps->waterEntrancePosition = waterEntrancePosition;
 	ps->waterEntranceGround = waterEntranceGround;
 	ps->waterEntranceGrindEdge = waterEntranceGrindEdge;
@@ -336,6 +337,8 @@ void Actor::PopulateState(PState *ps)
 	ps->oldSwingLauncher = oldSwingLauncher;
 	ps->currBounceBooster = currBounceBooster;
 	ps->oldBounceBooster = oldBounceBooster;
+
+	
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -512,6 +515,7 @@ void Actor::PopulateFromState(PState *ps)
 	projectileSwordFrames = ps->projectileSwordFrames;
 	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
 	gravModifyFrames = ps->gravModifyFrames;
+	extraGravityModifier = ps->extraGravityModifier;
 	waterEntrancePosition = ps->waterEntrancePosition;
 	waterEntranceGround = ps->waterEntranceGround;
 	waterEntranceGrindEdge = ps->waterEntranceGrindEdge;
@@ -557,6 +561,8 @@ void Actor::PopulateFromState(PState *ps)
 	oldSwingLauncher = ps->oldSwingLauncher;
 	currBounceBooster = ps->currBounceBooster;
 	oldBounceBooster = ps->oldBounceBooster;
+
+	
 }
 
 
@@ -6035,6 +6041,12 @@ bool Actor::CheckTerrainDisappear(Edge *e)
 	bool disappear = false;
 	if (e != NULL )
 	{
+		//Gate *g;
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			disappear = true;
+		}
+
 		if (e->poly != NULL)
 		{
 			if ( !e->poly->IsActive() || (e->poly->IsPhaseType() && phaseFrames == 0)
@@ -12198,7 +12210,12 @@ bool Actor::TryGroundAttack()
 }
 
 void Actor::HandleTouchedGate()
-{
+{ 
+	if (simulationMode)
+	{
+		return;
+	}
+
 	Edge *edge = gateTouched;
 	Gate *g = (Gate*)gateTouched->info;
 

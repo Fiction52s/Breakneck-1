@@ -9,6 +9,8 @@
 using namespace std;
 using namespace sf;
 
+const int FutureChecker::predictFrames = 25;
+
 FutureChecker::FutureChecker(ActorParams *ap)
 	:Enemy(EnemyType::EN_FUTURECHECKER, ap)
 {
@@ -110,6 +112,11 @@ void FutureChecker::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+}
+
+int FutureChecker::GetNumSimulationFramesRequired()
+{
+	return predictFrames + 2;
 }
 
 void FutureChecker::ActionEnded()
