@@ -4319,6 +4319,7 @@ void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 		break;
 	case AbsorbParticles::DARK:
 		absorbDarkParticles->Activate(p, storedHits, pos, startAngle);
+		CollectKey();
 		break;
 	case AbsorbParticles::SHARD:
 		absorbShardParticles->Activate(p, storedHits, pos, startAngle);

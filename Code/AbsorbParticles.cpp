@@ -329,7 +329,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	{
 		if (parent->abType == DARK)
 		{
-			accel = 4.f;
+			accel = 1.f;
 		}
 		else
 		{
@@ -366,7 +366,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 				parent->ts_explodeDestroy, V2d(targetPos), true, 0, 6, 3, true);
-			parent->sess->CollectKey();
+			//parent->sess->CollectKey();
 			break;
 		}
 		case SHARD:

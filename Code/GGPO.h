@@ -356,7 +356,7 @@ struct PState
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
 
-
+	int springStunFrames;
 	//HitboxInfo currVSHitboxInfo;
 };
 

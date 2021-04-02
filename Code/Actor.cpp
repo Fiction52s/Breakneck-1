@@ -338,7 +338,7 @@ void Actor::PopulateState(PState *ps)
 	ps->currBounceBooster = currBounceBooster;
 	ps->oldBounceBooster = oldBounceBooster;
 
-	
+	ps->springStunFrames = springStunFrames;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -562,7 +562,7 @@ void Actor::PopulateFromState(PState *ps)
 	currBounceBooster = ps->currBounceBooster;
 	oldBounceBooster = ps->oldBounceBooster;
 
-	
+	springStunFrames = ps->springStunFrames;
 }
 
 
