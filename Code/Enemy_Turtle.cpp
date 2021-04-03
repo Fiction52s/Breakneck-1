@@ -40,7 +40,7 @@ Turtle::Turtle( ActorParams *ap )
 	launchers[0]->SetBulletSpeed( bulletSpeed );
 	launchers[0]->Reset();
 
-	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/W4/turtle_320x256.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 
@@ -80,7 +80,7 @@ void Turtle::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 4.0;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;

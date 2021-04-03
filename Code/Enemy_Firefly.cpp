@@ -38,14 +38,13 @@ Firefly::Firefly(ActorParams *ap)
 
 	activatePulseRadius = 300;
 
-	ts = sess->GetSizedTileset("Enemies/W3/pulser_256x256.png");
+	ts = sess->GetSizedTileset("Enemies/W3/pulser_192x192.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
-	sprite.setScale(.75, .75);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(11);
-	cutObject->SetSubRectBack(10);
+	cutObject->SetSubRectFront(21);
+	cutObject->SetSubRectBack(20);
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -234,25 +233,25 @@ void Firefly::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		sprite.setColor(Color::White);
+		//sprite.setColor(Color::White);
 		trueFrame = frame / animFactor[NEUTRAL];
 		break;
 	case APPROACH:
 		trueFrame = frame / animFactor[APPROACH];
-		sprite.setColor(Color::White);
+		//sprite.setColor(Color::White);
 		break;
 	case CHARGE:
-		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
+		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 10;
 		//trueFrame = frame / animFactor[APPROACH];
-		sprite.setColor(Color::Green);
+		//sprite.setColor(Color::Green);
 		break;
 	case PULSE:
 		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
-		sprite.setColor(Color::White);
+		//sprite.setColor(Color::White);
 		break;
 	case RECOVER:
-		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]);
-		sprite.setColor(Color::Blue);
+		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 15;
+		//sprite.setColor(Color::Blue);
 		break;
 	}
 
