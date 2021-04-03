@@ -1815,14 +1815,14 @@ void ModifyTerrainTypeAction::Perform()
 	int tWorldType;
 	int tVar;
 
-	PolyPtr poly;
+	/*PolyPtr poly;
 	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
 		if (poly != NULL)
 			poly->Deactivate();
-	}
+	}*/
 
 	for (auto it = terrainTypeMap.begin();
 		it != terrainTypeMap.end(); ++it)
@@ -1830,13 +1830,13 @@ void ModifyTerrainTypeAction::Perform()
 		(*it).first->SetMaterialType(newTerrainWorld, newVariation);
 	}
 
-	for (auto it = terrainBrush.objects.begin();
+	/*for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
 		if (poly != NULL)
 			poly->Activate();
-	}
+	}*/
 
 	performed = true;
 }
@@ -1847,14 +1847,14 @@ void ModifyTerrainTypeAction::Undo()
 
 	EditSession *edit = EditSession::GetSession();
 
-	PolyPtr poly;
+	/*PolyPtr poly;
 	for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
 		if (poly != NULL)
 			poly->Deactivate();
-	}
+	}*/
 
 	for( auto it = terrainTypeMap.begin();
 		it != terrainTypeMap.end(); ++it )
@@ -1862,13 +1862,13 @@ void ModifyTerrainTypeAction::Undo()
 		(*it).first->SetMaterialType( (*it).second.first, (*it).second.second );
 	}
 
-	for (auto it = terrainBrush.objects.begin();
+	/*for (auto it = terrainBrush.objects.begin();
 		it != terrainBrush.objects.end(); ++it)
 	{
 		poly = (*it)->GetAsTerrain();
 		if (poly != NULL)
 			poly->Activate();
-	}
+	}*/
 
 	performed = false;
 }

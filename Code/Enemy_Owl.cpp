@@ -70,7 +70,15 @@ Owl::Owl(ActorParams *ap)
 
 	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
 
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 70, 4, this);
+	if (level == 2)
+	{
+		shield = new Shield(Shield::ShieldType::T_BLOCK, 70, 4, this);
+	}
+	else
+	{
+		shield = NULL;
+	}
+	
 
 	ResetEnemy();
 }
@@ -154,9 +162,13 @@ void Owl::ResetEnemy()
 	action = REST;
 	frame = 0;
 
-	shield->SetPosition(GetPosition());
-	currShield = shield;
-	shield->Reset();
+	if (shield != NULL)
+	{
+		shield->SetPosition(GetPosition());
+		currShield = shield;
+		shield->Reset();
+	}
+	
 
 
 	DefaultHitboxesOn();
