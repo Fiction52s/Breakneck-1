@@ -17,15 +17,15 @@ Firefly::Firefly(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 1;
-	actionLength[APPROACH] = 2;
+	actionLength[NEUTRAL] = 4;
+	actionLength[APPROACH] = 4;
 	actionLength[CHARGE] = 40;
 	actionLength[PULSE] = 20;
 	actionLength[RECOVER] = 30;
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[APPROACH] = 1;
-	animFactor[PULSE] = 1;
+	animFactor[NEUTRAL] = 5;
+	animFactor[APPROACH] = 5;
+	animFactor[PULSE] = 3;
 	animFactor[RECOVER] = 1;
 
 	pulseRadius = 150;
@@ -38,13 +38,14 @@ Firefly::Firefly(ActorParams *ap)
 
 	activatePulseRadius = 300;
 
-	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/W3/pulser_256x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
+	sprite.setScale(.75, .75);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(36);
-	cutObject->SetSubRectBack(37);
+	cutObject->SetSubRectFront(11);
+	cutObject->SetSubRectBack(10);
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -229,28 +230,33 @@ void Firefly::UpdateEnemyPhysics()
 
 void Firefly::UpdateSprite()
 {
-	int trueFrame;
+	int trueFrame = 0;
 	switch (action)
 	{
 	case NEUTRAL:
 		sprite.setColor(Color::White);
+		trueFrame = frame / animFactor[NEUTRAL];
 		break;
 	case APPROACH:
+		trueFrame = frame / animFactor[APPROACH];
 		sprite.setColor(Color::White);
 		break;
 	case CHARGE:
+		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
+		//trueFrame = frame / animFactor[APPROACH];
 		sprite.setColor(Color::Green);
 		break;
 	case PULSE:
+		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]) + 5;
 		sprite.setColor(Color::White);
 		break;
 	case RECOVER:
+		trueFrame = ((frame / animFactor[NEUTRAL]) % actionLength[NEUTRAL]);
 		sprite.setColor(Color::Blue);
-
 		break;
 	}
 
-	ts->SetSubRect(sprite, 0, !facingRight);
+	ts->SetSubRect(sprite, trueFrame, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

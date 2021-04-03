@@ -446,7 +446,7 @@ bool GameController::UpdateState()
 {
 	DWORD result;
 	ControllerState tempState;
-	if (gcController.enabled)
+	if (gcController.enabled && false)
 	{
 		result = ERROR_SUCCESS;
 		controllerType = ControllerType::CTYPE_GAMECUBE;
