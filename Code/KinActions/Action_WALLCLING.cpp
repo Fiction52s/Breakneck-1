@@ -29,23 +29,10 @@ void Actor::WALLCLING_Change()
 		frame = 1;
 		holdJump = false;
 	}
-	else //if( currInput.rightShoulder && !prevInput.rightShoulder )
+	else if (currInput.rightShoulder && !prevInput.rightShoulder)
 	{
-		bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
-		bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
-			|| (currInput.RLeft() && !prevInput.RLeft())
-			|| (currInput.RUp() && !prevInput.RUp())
-			|| (currInput.RRight() && !prevInput.RRight());
-
-		if (normalSwing || (rightStickSwing && (currInput.RLeft() || currInput.RRight())))
-		{
-			SetAction(WALLATTACK);
-			frame = 0;
-		}
-		/*else if (!normalSwing && (rightStickSwing && (currInput.RUp() || currInput.RDown())))
-		{
-		AirAttack();
-		}*/
+		SetAction(WALLATTACK);
+		frame = 0;
 	}
 }
 

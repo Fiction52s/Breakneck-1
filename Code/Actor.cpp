@@ -4060,13 +4060,7 @@ bool Actor::SteepSlideAttack()
 		return true;
 	}
 
-	bool normalSwing = AttackButtonPressed();
-	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
-		|| (currInput.RLeft() && !prevInput.RLeft())
-		|| (currInput.RUp() && !prevInput.RUp())
-		|| (currInput.RRight() && !prevInput.RRight());
-
-	if (normalSwing || rightStickSwing )
+	if (AttackButtonPressed())
 	{
 		SetAction(STEEPSLIDEATTACK);
 		frame = 0;
@@ -4085,13 +4079,7 @@ bool Actor::SteepClimbAttack()
 		return true;
 	}
 
-	bool normalSwing = AttackButtonPressed();
-	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
-		|| (currInput.RLeft() && !prevInput.RLeft())
-		|| (currInput.RUp() && !prevInput.RUp())
-		|| (currInput.RRight() && !prevInput.RRight());
-
-	if (normalSwing || rightStickSwing)
+	if (AttackButtonPressed())
 	{
 		SetAction(STEEPCLIMBATTACK);
 		frame = 0;
@@ -4117,145 +4105,74 @@ bool Actor::AirAttack()
 		return true;
 	}
 
-	bool normalSwing = AttackButtonPressed();
-	bool rightStickSwing = false;/* (currInput.RDown() && !prevInput.RDown())
-		|| (currInput.RLeft() && !prevInput.RLeft())
-		|| (currInput.RUp() && !prevInput.RUp())
-		|| (currInput.RRight() && !prevInput.RRight());*/
-
-
-	if( normalSwing || rightStickSwing )
+	if(AttackButtonPressed())
 	{
 		if( action == AIRDASH )
 		{
-			if (normalSwing)
+			if (currInput.LUp())
 			{
-				if (currInput.LUp())
-				{
-					if (currInput.LRight() || currInput.LLeft())
-					{
-						SetAction(DIAGUPATTACK);
-						frame = 0;
-						return true;
-					}
-				}
-				else if (currInput.LDown())
-				{
-					if (currInput.LRight() || currInput.LLeft())
-					{
-						SetAction(DIAGDOWNATTACK);
-						frame = 0;
-						return true;
-					}
-				}
-			}
-			else
-			{
-				return false;
-				/*bool sideInput = currInput.RRight() || currInput.RLeft();
-				if (currInput.RUp())
+				if (currInput.LRight() || currInput.LLeft())
 				{
 					SetAction(DIAGUPATTACK);
 					frame = 0;
 					return true;
 				}
-				else if (currInput.RDown())
+			}
+			else if (currInput.LDown())
+			{
+				if (currInput.LRight() || currInput.LLeft())
 				{
 					SetAction(DIAGDOWNATTACK);
 					frame = 0;
 					return true;
-				}*/
+				}
 			}
 		}
 		
-		if (normalSwing)
+		if ((currInput.LUp()))
 		{
-			if ((currInput.LUp()))
+			if (action == UAIR)
 			{
-				if (action == UAIR)
+				if (currLockedUairFX != NULL && action != UAIR)
 				{
-					if (currLockedUairFX != NULL && action != UAIR)
-					{
-						currLockedUairFX->ClearLockPos();
-						currLockedUairFX = NULL;
-					}
+					currLockedUairFX->ClearLockPos();
+					currLockedUairFX = NULL;
 				}
-				SetAction(UAIR);
-				frame = 0;
 			}
-			else if (currInput.LDown())
+			SetAction(UAIR);
+			frame = 0;
+		}
+		else if (currInput.LDown())
+		{
+			if (action == DAIR)
 			{
-				if (action == DAIR)
+				if (currLockedDairFX != NULL && action != DAIR)
 				{
-					if (currLockedDairFX != NULL && action != DAIR)
-					{
-						currLockedDairFX->ClearLockPos();
-						currLockedDairFX = NULL;
-					}
+					currLockedDairFX->ClearLockPos();
+					currLockedDairFX = NULL;
 				}
-				SetAction(DAIR);
-				frame = 0;
 			}
-			else
-			{
-				if (action == FAIR)
-				{
-					if (currLockedFairFX != NULL && action != FAIR)
-					{
-						currLockedFairFX->ClearLockPos();
-						currLockedFairFX = NULL;
-					}
-				}
-				SetAction(FAIR);
-				frame = 0;
-			}
+			SetAction(DAIR);
+			frame = 0;
 		}
 		else
 		{
-			/*if ((currInput.RUp()) )
+			if (action == FAIR)
 			{
-				if (action == UAIR)
+				if (currLockedFairFX != NULL && action != FAIR)
 				{
-					if (currLockedUairFX != NULL && action != UAIR)
-					{
-						currLockedUairFX->ClearLockPos();
-						currLockedUairFX = NULL;
-					}
+					currLockedFairFX->ClearLockPos();
+					currLockedFairFX = NULL;
 				}
-				SetAction(UAIR);
-				frame = 0;
 			}
-			else if (currInput.RDown() )
-			{
-				if (action == DAIR)
-				{
-					if (currLockedDairFX != NULL && action != DAIR)
-					{
-						currLockedDairFX->ClearLockPos();
-						currLockedDairFX = NULL;
-					}
-				}
-				SetAction(DAIR);
-				frame = 0;
-			}
-			else
-			{
-				if (action == FAIR)
-				{
-					if (currLockedFairFX != NULL && action != FAIR)
-					{
-						currLockedFairFX->ClearLockPos();
-						currLockedFairFX = NULL;
-					}
-				}
-				SetAction(FAIR);
-				frame = 0;
-			}*/
-
+			SetAction(FAIR);
+			frame = 0;
 		}
-		
+
 		return true;
+
 	}
+
 	return false;
 }
 
@@ -6245,7 +6162,7 @@ void Actor::UpdatePrePhysics()
 	
 	UpdateCanStandUp();
 
-	//TryChangePowerMode();
+	TryChangePowerMode();
 
 	UpdateBounceFlameOn();
 
@@ -12084,7 +12001,7 @@ void Actor::UpdatePhysics()
 
 bool Actor::CheckSwing()
 {
-	return CheckNormalSwing() || CheckRightStickSwing();
+	return CheckNormalSwing();
 }
 
 bool Actor::CheckNormalSwingHeld()
@@ -12094,27 +12011,13 @@ bool Actor::CheckNormalSwingHeld()
 
 bool Actor::CheckSwingHeld()
 {
-	return CheckNormalSwingHeld() || CheckRightStickSwingHeld();
+	return CheckNormalSwingHeld();
 }
 
 bool Actor::CheckNormalSwing()
 {
 	bool normalSwing = currInput.rightShoulder && !prevInput.rightShoulder;
 	return normalSwing;
-}
-
-bool Actor::CheckRightStickSwingHeld()
-{
-	return currInput.RDown() || currInput.RLeft() || currInput.RUp() || currInput.RRight();
-}
-
-bool Actor::CheckRightStickSwing()
-{
-	bool rightStickSwing = (currInput.RDown() && !prevInput.RDown())
-		|| (currInput.RLeft() && !prevInput.RLeft())
-		|| (currInput.RUp() && !prevInput.RUp())
-		|| (currInput.RRight() && !prevInput.RRight());
-	return rightStickSwing;
 }
 
 void Actor::ResetSuperLevel()
@@ -12144,36 +12047,17 @@ bool Actor::IsGroundAttack(int a)
 bool Actor::TryGroundAttack()
 {
 	bool normalSwing = CheckNormalSwing();
-	bool rightStickSwing = false;//CheckRightStickSwing();
 
-	if ( normalSwing || rightStickSwing || IsGroundAttackAction(pauseBufferedAttack) )
+	if ( normalSwing || IsGroundAttackAction(pauseBufferedAttack) )
 	{
-		
-		if (!rightStickSwing)
+		if (currInput.LLeft())
 		{
-			if (currInput.LLeft())
-			{
-				facingRight = false;
-			}
-			else if (currInput.LRight())
-			{
-				facingRight = true;
-			}
+			facingRight = false;
 		}
-		else
+		else if (currInput.LRight())
 		{
-			//this is probably buggy on ceiling?
-			if (currInput.RLeft())
-			{
-				facingRight = false;
-			}
-			else if (currInput.RRight())
-			{
-				facingRight = true;
-			}
+			facingRight = true;
 		}
-
-		
 		
 		if (action == DASH || ((action == DASHATTACK
 			|| action == DASHATTACK2 || action == DASHATTACK3) && DashButtonHeld()
@@ -18503,12 +18387,12 @@ bool Actor::CanBufferGrind()
 {
 	return !touchedGrass[Grass::ANTIGRIND]
 		//&& currPowerMode == PMODE_GRIND 
-		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.RDown();//currInput.Y;
+		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
 }
 
 bool Actor::CanPressGrind()
 {
-	return CanBufferGrind() && !prevInput.RDown();//!prevInput.PowerButtonDown();
+	return CanBufferGrind() && !prevInput.PowerButtonDown();//!prevInput.RDown();//!prevInput.PowerButtonDown();
 }
 
 bool Actor::TryBufferGrind()
@@ -18535,22 +18419,22 @@ bool Actor::TryPressGrind()
 
 bool Actor::GrindButtonPressed()
 {
-	return (GrindButtonHeld() && !prevInput.RDown());
+	return currPowerMode == PMODE_GRIND && PowerButtonPressed();//(GrindButtonHeld() && !prevInput.RDown());
 }
 
 bool Actor::GrindButtonHeld()
 {
-	return currInput.RDown();
+	return currPowerMode == PMODE_GRIND && PowerButtonHeld();//currInput.RDown();
 }
 
 bool Actor::BounceButtonPressed()
 {
-	return BounceButtonHeld() && !prevInput.RLeft();
+	return currPowerMode == PMODE_BOUNCE && PowerButtonPressed();//BounceButtonHeld() && !prevInput.RLeft();
 }
 
 bool Actor::BounceButtonHeld()
 {
-	return currInput.RLeft();
+	return currPowerMode == PMODE_BOUNCE && PowerButtonHeld();//currInput.RLeft();
 }
 
 bool Actor::JumpButtonPressed()

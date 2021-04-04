@@ -1482,8 +1482,6 @@ struct Actor : QuadTreeCollider,
 	bool CheckSwing();
 	bool CheckNormalSwing();
 	bool CheckNormalSwingHeld();
-	bool CheckRightStickSwing();
-	bool CheckRightStickSwingHeld();
 	bool CheckSwingHeld();
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
