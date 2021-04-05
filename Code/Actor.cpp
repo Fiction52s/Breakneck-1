@@ -10953,9 +10953,9 @@ void Actor::UpdatePhysics()
 
 				if( approxEquals( m, 0 ) )
 				{
+					cout << "shouldn't be hit. movement issue with approxequals(0)" << endl;
 					if( groundSpeed > 0 )
 					{
-						
 						Edge *next = ground->edge1;
 						double yDist = abs( gNormal.x ) * groundSpeed;
 						if( next != NULL && next->Normal().y < 0 && abs( e1n.x ) < wallThresh && !(currInput.LUp() && !currInput.LRight() && gNormal.x < 0 && yDist > slopeLaunchMinSpeed && next->Normal().x >= 0 ) )
@@ -11008,28 +11008,9 @@ void Actor::UpdatePhysics()
 						{
 							if( e0n.x > 0 && e0n.y > -steepThresh && groundSpeed >= -steepClimbSpeedThresh )
 							{
-								if( e0->edgeType == Edge::CLOSED_GATE )
+								if (TryUnlockOnTransfer(e0))
 								{
-							//		cout << "similar secret but not reversed C" << endl;
-									Gate *g = (Gate*)e0->info;
-
-									if( CanUnlockGate( g ) )
-									{
-										UnlockGate( g );
-
-										if( e0 == g->edgeA )
-										{
-											gateTouched = g->edgeB;
-										}
-										else
-										{
-											gateTouched = g->edgeA;
-											
-										}
-
-										break;
-									}
-
+									break;
 								}
 
 								groundSpeed = 0;
@@ -12104,10 +12085,11 @@ void Actor::HandleTouchedGate()
 	Gate *g = (Gate*)gateTouched->info;
 
 
-	V2d A(b.globalPosition.x - b.rw, b.globalPosition.y - b.rh);
-	V2d B(b.globalPosition.x + b.rw, b.globalPosition.y - b.rh);
-	V2d C(b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
-	V2d D(b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
+	V2d A = b.GetQuadVertex(0);//(b.globalPosition.x - b.rw, b.globalPosition.y - b.rh);
+	V2d B = b.GetQuadVertex(1);//(b.globalPosition.x + b.rw, b.globalPosition.y - b.rh);
+	V2d C = b.GetQuadVertex(2);// (b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
+	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
+
 	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 	double ang = atan2(nEdge.x, -nEdge.y);
 
