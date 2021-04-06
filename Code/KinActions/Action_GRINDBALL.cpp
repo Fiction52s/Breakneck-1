@@ -17,7 +17,7 @@ void Actor::GRINDBALL_Change()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	bool j = JumpButtonPressed();
 	//bool isntWall = grindEdge->Normal().y != 0;
-	if ((framesGrinding > 0 && GrindButtonPressed() ) || j || touchedGrass[Grass::ANTIGRIND])//&& grindEdge->Normal().y < 0 )
+	if ((framesGrinding > 0 && !GrindButtonHeld() ) || j || touchedGrass[Grass::ANTIGRIND])//&& grindEdge->Normal().y < 0 )
 	{
 		V2d op = position;
 
@@ -197,6 +197,16 @@ void Actor::GRINDBALL_Change()
 		}
 		else
 		{
+
+			if (grindNorm.x > 0)
+			{
+				position.x += b.rw + .1;
+			}
+			else if (grindNorm.x < 0)
+			{
+				position.x += -b.rw - .1;
+			}
+
 			if (CheckStandUp())
 			{
 				framesInAir = 0;
@@ -206,14 +216,11 @@ void Actor::GRINDBALL_Change()
 				ground = NULL;
 
 				//TODO: this might glitch grind areas? test it with the range of your get out of grind query
-				if (grindNorm.x > 0)
-				{
-					position.x += b.rw + .1;
-				}
-				else if (grindNorm.x < 0)
-				{
-					position.x += -b.rw - .1;
-				}
+				
+			}
+			else
+			{
+				position = op;
 			}
 		}
 		//velocity = normalize( grindEdge->v1 - grindEdge->v0 ) * grindSpeed;

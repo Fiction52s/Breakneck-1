@@ -1223,7 +1223,9 @@ struct Actor : QuadTreeCollider,
 	void ProcessAccelGrass();
 	void ProcessDecelGrass();
 	void ProcessHitGrass();
+	void ProcessBounceGrassGrounded();
 	void ProcessPoisonGrass();
+	void ApplyGeneralAcceleration(double amt);
 	void TryCheckGrass();
 	void LimitMaxSpeeds();
 	void UpdateBubbles();

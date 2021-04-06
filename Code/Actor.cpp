@@ -5565,6 +5565,42 @@ void Actor::ProcessPoisonGrass()
 	}
 }
 
+void Actor::ApplyGeneralAcceleration(double accelFactor)
+{
+	if (ground != NULL)
+	{
+		if (groundSpeed > 0)
+		{
+			groundSpeed += accelFactor;
+		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed -= accelFactor;
+		}
+	}
+	else
+	{
+		double velLen = length(velocity);
+
+		if (velLen > 0)
+		{
+			velocity = (velLen + accelFactor) * normalize(velocity);
+		}
+
+		if (action == AIRDASH)
+		{
+			if (velocity.x > 0)
+			{
+				startAirDashVel.x += accelFactor;
+			}
+			else if (velocity.x < 0)
+			{
+				startAirDashVel.x -= accelFactor;
+			}
+		}
+	}
+}
+
 void Actor::ProcessHitGrass()
 {
 	if (touchedGrass[Grass::HIT])
@@ -5576,6 +5612,44 @@ void Actor::ProcessHitGrass()
 			invincibleFrames += 30;
 			receivedHit = NULL;
 		}
+	}
+}
+
+void Actor::ProcessBounceGrassGrounded()
+{
+	if ( ground != NULL && touchedGrass[Grass::BOUNCE])
+	{
+		SetAction(JUMP);
+		frame = 1;
+
+		velocity = GetTrueVel();
+
+		ground = NULL;
+		bounceEdge = NULL;
+		grindEdge = NULL;
+
+		RestoreAirOptions();
+		
+
+		V2d gn = ground->Normal();
+		if (gn.y < 0)
+		{
+			velocity.y -= 25;
+			//velocity.y = -25;
+		}
+		else if (gn.y > 0)
+		{
+			velocity.y += 25;
+			//velocity.y = 25;
+		}
+		/*else if (gn.x > 0)
+		{
+			velocity.x = 18;
+		}
+		else if (gn.x < 0)
+		{
+			velocity.x = -18;
+		}*/
 	}
 }
 
@@ -6206,6 +6280,8 @@ void Actor::UpdatePrePhysics()
 	ProcessPoisonGrass();
 
 	ProcessHitGrass();
+
+	ProcessBounceGrassGrounded();
 
 	LimitMaxSpeeds();
 
@@ -13613,39 +13689,7 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			double accelFactor = .5;
-			if (ground != NULL)
-			{
-				if (groundSpeed > 0)
-				{
-					groundSpeed += accelFactor;
-				}
-				else if (groundSpeed < 0)
-				{
-					groundSpeed -= accelFactor;
-				}
-			}
-			else
-			{
-				double velLen = length(velocity);
-
-				if (velLen > 0)
-				{
-					velocity = (velLen + accelFactor) * normalize(velocity);
-				}
-
-				if (action == AIRDASH)
-				{
-					if (velocity.x > 0)
-					{
-						startAirDashVel.x += accelFactor;
-					}
-					else if (velocity.x < 0)
-					{
-						startAirDashVel.x -= accelFactor;
-					}
-				}
-			}
+			ApplyGeneralAcceleration(.5);
 		}
 		break;
 	}
@@ -13720,6 +13764,7 @@ void Actor::HandleWaterSituation(int wType,
 			RestoreAirOptions();
 			modifiedDrainFrames = 10;
 			modifiedDrain = drainAmount * 4;
+			ApplyGeneralAcceleration(.2);
 		}
 		break;
 	}
@@ -18368,7 +18413,7 @@ void Actor::AttackMovement()
 bool Actor::CanBufferGrind()
 {
 	return !touchedGrass[Grass::ANTIGRIND]
-		//&& currPowerMode == PMODE_GRIND 
+		&& currPowerMode == PMODE_GRIND 
 		&& HasUpgrade(UPGRADE_POWER_GRIND) && currInput.PowerButtonDown();//currInput.RDown();//currInput.Y;
 }
 
