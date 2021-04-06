@@ -10517,6 +10517,7 @@ void EditSession::SetMode(Emode m)
 	{
 		if (editModeUI->IsShowGrassOn())
 		{
+			editModeUI->FlipShowGrass();
 			ShowGrass(false);
 		}
 		break;

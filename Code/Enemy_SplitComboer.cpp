@@ -48,9 +48,9 @@ SplitPiece::SplitPiece( SplitComboer *splitComb )
 	
 	Tileset *ts = sc->ts;
 	sprite.setTexture(*ts->texture);
-	sprite.setTextureRect(ts->GetSubRect(0));
+	//sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	
 
 	comboObj = new ComboObject(this);
 
@@ -146,6 +146,7 @@ void SplitPiece::ComboHit()
 void SplitPiece::UpdateSprite()
 {
 	sprite.setTextureRect(sc->ts->GetSubRect(1));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	/*int tIndex = 0;
 	switch (action)
@@ -358,8 +359,10 @@ void SplitComboer::UpdateEnemyPhysics()
 
 void SplitComboer::UpdateSprite()
 {
-	sprite.setPosition(GetPositionF());
 	sprite.setTextureRect(ts->GetSubRect(1));
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+	sprite.setPosition(GetPositionF());
+	
 	/*int tIndex = 0;
 	switch (action)
 	{
