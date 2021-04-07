@@ -15824,8 +15824,15 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					{
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						//cout << "sfdfdsfsdfdsfds" << endl;
-						c->edge = prev;
-						return;
+
+
+						//commented the 2 lines below out because of a bug outlined below in the next case. 
+						//i dont remember what case this code is solving. if you find a weird bug, 
+						//come back and fix this code for both cases, as well as writing down
+						//what this code is here for.
+
+						//c->edge = prev;
+						//return;
 
 						//c->normal = V2d( 0, -1 );
 					}
@@ -15848,8 +15855,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 						//this could cause some glitches. patch them up as they come. prioritizes ground/higher up edges i think? kinda weird
 						//cout << "herererere" << endl;
 					//	return;
-						c->edge = next;
-						return;
+
+
+
+						//previously these next 2 lines were uncommented. It caused a bug where you'd fall through the terrain
+						//when you were wallsliding on a steep reverse slope with a very low ceiling above it.
+						//I don't know what case this is supposed to cover, but removing these 2 lines
+						//fixes the bug. 
+
+
+						//c->edge = next;
+						//return;
+
+
+
+
+
+
 						//c->normal = V2d( 0, -1 );
 					}
 				}
