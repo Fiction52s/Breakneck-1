@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 W1_01b_cascades
 29
-CollectionTest
-1
+nothing
+0
 0 w1_01
 -5700 -6000 30100 15000
 60
 0
 317
+NONE
+NONE
 0
 -4311 115
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 0
 28
@@ -348,17 +358,17 @@ no_borderpoly
 goal 2 238 178.002
 crawler 0 6 118.843
 0
-0
+1
 crawler 2 145 260.228
 0
-0
+1
 crawler 2 181 56.7186
 0
-0
+1
 crawler 2 162 34.4762
 0
-0
+1
 crawler 0 27 297.905
 0
-0
+1
 0

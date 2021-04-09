@@ -1,16 +1,26 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 0
-CollectionTest
-1
+nothing
+0
 0 w1_06
 -3600 1300 13300 7700
 60
 0
 88
+NONE
+NONE
 0
 -3382 2657
+0
+0
+0
+0
+0
+0
+0
+0
 borderpoly
 0 0
 56
@@ -137,10 +147,10 @@ bat -2390 2904
 0
 0
 0
-0
+1
 bat 303 2683
 1
 0
 0
-0
+1
 0

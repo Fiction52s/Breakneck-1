@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_16_mineral_caves
 29
-CollectionTest
-1
+nothing
+0
 0 w1_02
 -10000 -4000 31000 13000
 60
 0
 178
+NONE
+NONE
 0
 -9167 7149
+0
+0
+0
+0
+0
+0
+0
+0
 borderpoly
 0 7
 119
@@ -231,123 +241,123 @@ patroller -7112 6952
 0
 0
 0
-0
+1
 blocker 2979 8058
 1
 220 -500
 0
 0
 0
-0
+1
 blocker 9094 12188
 0
 0
 0
 0
-0
+1
 blocker 9298 11938
 0
 0
 0
 0
-0
+1
 blocker 9678 12100
 0
 0
 0
 0
-0
+1
 blocker 9346 11566
 0
 0
 0
 0
-0
+1
 blocker 9646 11320
 0
 0
 0
 0
-0
+1
 blocker 9720 11572
 0
 0
 0
 0
-0
+1
 blocker 9216 12528
 0
 0
 0
 0
-0
+1
 blocker 9180 12376
 0
 0
 0
 0
-0
+1
 blocker 9500 12028
 0
 0
 0
 0
-0
+1
 blocker 9524 11540
 0
 0
 0
 0
-0
+1
 patroller 15847 15650
 0
 0
 0
-0
+1
 patroller 16275 15694
 0
 0
 0
-0
+1
 basicturret -1 93 441.355
 0
-0
+1
 basicturret -1 92 424.238
 0
-0
+1
 basicturret -1 94 235.311
 0
-0
+1
 shroom -1 45 80.4995
 0
-0
+1
 basicturret -1 58 589
 0
-0
+1
 basicturret -1 58 787.001
 0
-0
+1
 shroom -1 52 265.129
 0
-0
+1
 shroom -1 49 222.824
 0
-0
+1
 goal -1 6 147
 crawler -1 114 188.036
 0
-0
+1
 crawler -1 113 157.574
 0
-0
+1
 crawler -1 115 146.01
 0
-0
+1
 patroller 18123 13987
 0
 0
 0
-0
+1
 blocker 13486 13744
 5
 122 -32
@@ -358,5 +368,5 @@ blocker 13486 13744
 0
 0
 0
-0
+1
 0

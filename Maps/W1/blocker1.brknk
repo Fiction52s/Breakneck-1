@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_20_hunter
 29
-CollectionTest
-1
+nothing
+0
 0 w1_05
 -5700 -3000 15400 12000
 60
 0
 104
+NONE
+NONE
 0
 -2624 981
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 1
 4
@@ -158,90 +168,90 @@ blocker -1793 1442
 0
 0
 0
-0
+1
 blocker -1423 1446
 0
 0
 0
 0
-0
+1
 blocker -1043 1440
 0
 0
 0
 0
-0
+1
 blocker -656 1436
 0
 0
 0
 0
-0
+1
 blocker -236 1428
 0
 0
 0
 0
-0
+1
 blocker 204 1252
 0
 0
 0
 0
-0
+1
 blocker 619 862
 0
 0
 0
 0
-0
+1
 blocker 1051 792
 1
 -1 -738
 0
 0
 0
-0
+1
 blocker 551 1762
 1
 -2 -612
 0
 0
 0
-0
+1
 blocker 1068 1855
 1
 -2 -912
 0
 0
 0
-0
+1
 blocker -2133 1870
 0
 0
 0
 0
-0
+1
 blocker -1571 1876
 1
 -1 -141
 0
 0
 0
-0
+1
 blocker -1245 1755
 0
 0
 0
 0
-0
+1
 blocker -802 1873
 1
 355 1
 0
 0
 0
-0
+1
 goal 7 57 71
 flowerpod 7 46 81.9995
 destroygoals

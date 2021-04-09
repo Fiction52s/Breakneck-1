@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_16_mineral_caves
 29
-CollectionTest
-1
+nothing
+0
 0 w1_02
 -5700 -3000 12700 12000
 180
 0
 526
+NONE
+NONE
 0
 -4872 -2080
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 7
 14
@@ -652,6 +662,6 @@ no_borderpoly
 -- 2
 shroom 21 29 91.3608
 0
-0
+1
 goal 22 127 131.001
 0

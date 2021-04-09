@@ -1,19 +1,29 @@
-1.5
+2.6
 This is the beginning of the song<>
 1
 0 0
 1
 W1_03_chase
 29
-CollectionTest
-1
+nothing
+0
 0 w1_01
 -6000 -6000 46700 15000
 60
 0
 183
+NONE
+NONE
 0
 -2762 247
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 0
 183
@@ -208,7 +218,7 @@ no_borderpoly
 -- 3
 crawler 0 118 374.569
 0
-0
+1
 goal 0 167 347
 shard -2437 622
 0 0

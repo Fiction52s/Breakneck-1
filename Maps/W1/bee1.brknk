@@ -1,16 +1,26 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 0
-CollectionTest
-1
+nothing
+0
 0 w1_06
 -1700 -3000 5800 12000
 60
 0
 97
+NONE
+NONE
 0
 2033 2478
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 0
 13
@@ -135,14 +145,14 @@ no_borderpoly
 goal 0 0 80.4985
 airdasher 2612 2232
 0
-0
+1
 airdasher 2350 2311
 0
-0
+1
 airdasher 2634 2520
 0
-0
+1
 airdasher 3019 2268
 0
-0
+1
 0

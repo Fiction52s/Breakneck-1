@@ -1,16 +1,26 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 0
-CollectionTest
-1
+nothing
+0
 0 w1_06
 -21500 -11200 31200 20200
 60
 0
 172
+NONE
+NONE
 0
 -4260 1853
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 0
 8
@@ -200,18 +210,18 @@ blocker -2117 2308
 0
 0
 0
-0
+1
 blocker -1481 2160
 0
 0
 0
 0
-0
+1
 goal 0 7 226.595
 crawler 1 40 18.1954
 0
-0
+1
 crawler 1 30 112.079
 0
-0
+1
 0

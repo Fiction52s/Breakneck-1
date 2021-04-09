@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_20_hunter
 29
-CollectionTest
-1
+nothing
+0
 0 w1_05
 -5700 -3000 15400 12000
 60
 0
 129
+NONE
+NONE
 0
 -3955 2511
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 1
 4
@@ -202,175 +212,175 @@ blocker -3254 1562
 0
 0
 0
-0
+1
 blocker -3726 1748
 0
 0
 0
 0
-0
+1
 blocker -3070 896
 1
 736 1
 0
 0
 0
-0
+1
 blocker -3962 1595
 0
 0
 0
 0
-0
+1
 blocker -4238 1405
 0
 0
 0
 0
-0
+1
 blocker -4502 1219
 0
 0
 0
 0
-0
+1
 blocker -4794 1061
 0
 0
 0
 0
-0
+1
 blocker -4356 847
 0
 0
 0
 0
-0
+1
 blocker -4564 915
 0
 0
 0
 0
-0
+1
 blocker -3976 747
 0
 0
 0
 0
-0
+1
 blocker -3670 663
 0
 0
 0
 0
-0
+1
 blocker -3934 2386
 1
 -1 -398
 0
 0
 0
-0
+1
 blocker -1999 1851
 1
 1 -607
 0
 0
 0
-0
+1
 patroller -855 2159
 0
 0
 0
-0
+1
 patroller -580 2215
 0
 0
 0
-0
+1
 patroller -747 2322
 0
 0
 0
-0
+1
 patroller 346 2996
 0
 0
 0
-0
+1
 patroller 692 2998
 0
 0
 0
-0
+1
 patroller 1030 3000
 0
 0
 0
-0
+1
 patroller 1302 3000
 0
 0
 0
-0
+1
 patroller 1758 2774
 0
 0
 0
-0
+1
 patroller 1766 2550
 0
 0
 0
-0
+1
 blocker 2234 2125
 0
 0
 0
 0
-0
+1
 blocker 2244 1887
 0
 0
 0
 0
-0
+1
 blocker 2496 1895
 0
 0
 0
 0
-0
+1
 blocker 2364 2001
 0
 0
 0
 0
-0
+1
 blocker 2492 2009
 0
 0
 0
 0
-0
+1
 blocker 2478 2125
 1
 -3 796
 0
 0
 0
-0
+1
 blocker 1727 3324
 0
 0
 0
 0
-0
+1
 blocker 2381 3134
 0
 0
 0
 0
-0
+1
 goal 11 44 248
 0

@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_Momenta_Proto_01
 29
-CollectionTest
-1
+nothing
+0
 0 w1_06
 2000 1000 4000 8000
 60
 0
 128
+NONE
+NONE
 0
 2905 3717
+0
+0
+0
+0
+0
+0
+0
+0
 borderpoly
 0 3
 92
@@ -187,4 +197,6 @@ shroom -1 3 38.0905
 shroom -1 45 144.999
 1
 1
-0
+2
+0 0 3 6 3 -1 21
+0 0 3 6 2 -1 22

@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "Wire.h"
 #include "Enemy_Booster.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -27,7 +28,7 @@ void Actor::AIRDASH_Start()
 
 void Actor::AIRDASH_End()
 {
-	if (inBubble)//|| rightWire->state == Wire::PULLING )
+	if (inBubble || InWater( TerrainPolygon::WATER_ZEROGRAV ) )//|| rightWire->state == Wire::PULLING )
 	{
 		//5 is here to give you extra frames to airdash
 		frame = GetActionLength(AIRDASH) - 1;

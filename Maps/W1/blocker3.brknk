@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 w1_27_Cliffs_02
 29
-CollectionTest
-1
+nothing
+0
 0 w1_05
 -4000 -3100 44600 12100
 60
 0
 307
+NONE
+NONE
 0
 -3477 450
+0
+0
+0
+0
+0
+0
+0
+0
 no_borderpoly
 0 1
 23
@@ -337,150 +347,150 @@ blocker -1139 1314
 0
 0
 0
-0
+1
 blocker -47 1652
 0
 0
 0
 0
-0
+1
 blocker 753 1399
 0
 0
 0
 0
-0
+1
 blocker 1767 1797
 0
 0
 0
 0
-0
+1
 blocker 3759 2133
 0
 0
 0
 0
-0
+1
 blocker 5143 2153
 0
 0
 0
 0
-0
+1
 blocker 6159 1429
 0
 0
 0
 0
-0
+1
 blocker 7311 2157
 0
 0
 0
 0
-0
+1
 blocker 8411 2505
 0
 0
 0
 0
-0
+1
 blocker 9981 2578
 0
 0
 0
 0
-0
+1
 blocker 10673 2266
 0
 0
 0
 0
-0
+1
 blocker 11373 2106
 0
 0
 0
 0
-0
+1
 blocker 12681 2114
 0
 0
 0
 0
-0
+1
 blocker 13757 1425
 0
 0
 0
 0
-0
+1
 blocker 15549 1693
 0
 0
 0
 0
-0
+1
 blocker 16874 777
 0
 0
 0
 0
-0
+1
 blocker 19430 885
 0
 0
 0
 0
-0
+1
 blocker 21114 -222
 0
 0
 0
 0
-0
+1
 blocker 22774 -718
 0
 0
 0
 0
-0
+1
 blocker 24389 229
 0
 0
 0
 0
-0
+1
 blocker 25869 1437
 0
 0
 0
 0
-0
+1
 blocker 27905 789
 0
 0
 0
 0
-0
+1
 blocker 30913 1485
 0
 0
 0
 0
-0
+1
 blocker 35905 3721
 0
 0
 0
 0
-0
+1
 blocker 37707 4301
 0
 0
 0
 0
-0
+1
 goal 1 279 402.041
 0

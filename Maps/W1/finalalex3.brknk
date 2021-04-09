@@ -1,18 +1,28 @@
-1.5
+2.6
 This is the beginning of the song<>
 0
 1
 W1_04_infiltration
 29
-CollectionTest
-1
+nothing
+0
 0 w1_03
 -5100 -4000 30700 13000
 120
 0
 325
+NONE
+NONE
 0
 -4930 16
+0
+0
+0
+0
+0
+0
+0
+0
 borderpoly
 0 7
 255
@@ -413,17 +423,17 @@ spring 10666 5401
 24 -992
 crawler -1 175 23.9959
 0
-0
+1
 crawler -1 165 537.793
 0
-0
+1
 crawler -1 191 291.314
 0
-0
+1
 crawler -1 186 138.481
 0
-0
+1
 crawler -1 236 54.6999
 0
-0
+1
 0
