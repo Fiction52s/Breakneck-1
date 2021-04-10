@@ -8312,6 +8312,11 @@ void EditSession::ExecuteRailCompletion()
 				AddDoneAction(action);
 
 				ClearUndoneActions();
+
+				railAttachStart = NULL;
+				railAttachEnd = NULL;
+				railAttachStartPoint = NULL;
+				railAttachEndPoint = NULL;
 			}
 		}
 	}
