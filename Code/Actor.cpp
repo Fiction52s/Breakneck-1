@@ -1823,6 +1823,18 @@ void Actor::SetupActionFunctions()
 		&Actor::INTROBOOST_GetActionLength,
 		&Actor::INTROBOOST_GetTileset);
 
+	SetupFuncsForAction(INVERSEINPUTSTUN,
+		&Actor::INVERSEINPUTSTUN_Start,
+		&Actor::INVERSEINPUTSTUN_End,
+		&Actor::INVERSEINPUTSTUN_Change,
+		&Actor::INVERSEINPUTSTUN_Update,
+		&Actor::INVERSEINPUTSTUN_UpdateSprite,
+		&Actor::INVERSEINPUTSTUN_TransitionToAction,
+		&Actor::INVERSEINPUTSTUN_TimeIndFrameInc,
+		&Actor::INVERSEINPUTSTUN_TimeDepFrameInc,
+		&Actor::INVERSEINPUTSTUN_GetActionLength,
+		&Actor::INVERSEINPUTSTUN_GetTileset);
+
 	SetupFuncsForAction(JUMP,
 		&Actor::JUMP_Start,
 		&Actor::JUMP_End,
@@ -2793,6 +2805,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+	directionalInputFreezeFrames = 0;
 	maxFallSpeedWhileHitting = 4.0;
 	frameAfterAttackingHitlagOver = false;
 	hitGrassHitInfo.damage = 60;//3 * 60;
@@ -4346,6 +4359,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
 	modifiedDrainFrames = 0;
 	invertInputFrames = 0;
@@ -5661,7 +5675,8 @@ void Actor::LimitMaxSpeeds()
 		&& action != GLIDE
 		&& !IsSpringAction( action )
 		&& freeFlightFrames == 0
-		&& action != HOMINGATTACK )
+		&& action != HOMINGATTACK)
+		//&& action != INVERSEINPUTSTUN )
 		//&& action != SPRINGSTUN
 		//&& action != SPRINGSTUNGLIDE
 		//&& action != SPRINGSTUNBOUNCE
@@ -5704,6 +5719,11 @@ void Actor::LimitMaxSpeeds()
 			groundSpeed = -maxReal;
 		}
 	}
+}
+
+bool Actor::CheckExtendedAirdash()
+{
+	return (inBubble || InWater(TerrainPolygon::WATER_ZEROGRAV));
 }
 
 void Actor::UpdateBubbles()
@@ -5763,8 +5783,8 @@ void Actor::UpdateBubbles()
 	}
 
 
-
-	if (!inBubble && action == AIRDASH && airDashStall)
+	//end extended airdash
+	if (action == AIRDASH && airDashStall && !CheckExtendedAirdash() )
 	{
 		SetAction(JUMP);
 		frame = 1;
@@ -6081,10 +6101,17 @@ void Actor::UpdatePrePhysics()
 		//currInput.Y = true;
 	}
 
-	if (invertInputFrames > 0)
+	if (directionalInputFreezeFrames > 0)
+	{
+		currInput.leftStickPad = prevInput.leftStickPad;
+		currInput.leftStickDirection = prevInput.leftStickDirection;
+		currInput.leftStickMagnitude = prevInput.leftStickMagnitude;
+	}
+	else if (invertInputFrames > 0)
 	{
 		currInput.InvertLeftStick();
 	}
+
 
 	if (CheckTerrainDisappear(ground) || CheckTerrainDisappear(bounceEdge)
 		|| CheckTerrainDisappear(grindEdge))
@@ -13637,6 +13664,11 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
+			if (sit == SPECIALT_ENTER)
+			{
+				RestoreAirOptions();
+			}
+
 			double revGrav = .3;
 			V2d gNorm;
 			if (ground != NULL)
@@ -13794,6 +13826,8 @@ void Actor::HandleWaterSituation(int wType,
 
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_EXIT)
 		{
+			directionalInputFreezeFrames = 20;
+			//SetAction(INVERSEINPUTSTUN);
 		}
 		break;
 	}
@@ -14426,6 +14460,12 @@ void Actor::SlowDependentFrameIncrement()
 
 		if (springStunFrames > 0 && action != SPRINGSTUNANNIHILATIONATTACK)
 			--springStunFrames;
+
+		if (directionalInputFreezeFrames > 0)
+		{
+			--directionalInputFreezeFrames;
+		}
+		
 		//cout << "frame: " << frame << endl;
 
 		++framesSinceClimbBoost;

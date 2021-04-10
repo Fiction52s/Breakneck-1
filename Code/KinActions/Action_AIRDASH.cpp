@@ -28,7 +28,7 @@ void Actor::AIRDASH_Start()
 
 void Actor::AIRDASH_End()
 {
-	if (inBubble || InWater( TerrainPolygon::WATER_ZEROGRAV ) )//|| rightWire->state == Wire::PULLING )
+	if (CheckExtendedAirdash())//|| rightWire->state == Wire::PULLING )
 	{
 		//5 is here to give you extra frames to airdash
 		frame = GetActionLength(AIRDASH) - 1;

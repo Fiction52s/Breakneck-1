@@ -82,7 +82,11 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	}
 
 	attackMovement= ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
-	retreatMovement = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER]);
+
+	//needs 1 less frame of movement than the length of the animation for some reason. Otherwise it slowly moves
+	//off of its base. works with this fix though.
+	retreatMovement = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER] - 1);
+	
 
 	ResetEnemy();
 }
