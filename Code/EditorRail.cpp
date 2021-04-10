@@ -571,6 +571,138 @@ sf::Color TerrainRail::GetRailColor()
 	return Color::White;
 }
 
+void TerrainRail::UpdateTexturedQuads()
+{
+	double startQuant = 0;
+	double endQuant = 0;
+	int startIndex = 0;
+	V2d startCenter;
+	V2d endCenter;
+	V2d eNorm;
+	IntRect subRect = ts_rail->GetSubRect(rType);
+	Edge *curr, *next;
+	int numQuadsForEdge;
+
+	int numSmoothQuads = 3;
+	int numP = GetNumPoints();
+
+	double railTileWidth = ts_rail->tileWidth;
+	double railTileHeight = ts_rail->tileHeight;
+
+	double out = ts_rail->tileHeight / 2.0;
+	double in = ts_rail->tileHeight / 2.0;
+
+	/*for (int i = 0; i < numEdgesPerSide; ++i)
+	{
+		curr = GetPoint(i);
+		next = GetPoint(i + 1);
+
+		edges[i].v0 = V2d(curr->pos);
+		edges[i].v1 = V2d(next->pos);
+		edges[i].rail = this;
+	}*/
+
+	for (int i = 0; i < numP - 1; ++i)
+	{
+		curr = GetEdge(i);
+		next = curr->GetNextEdge();
+
+		eNorm = curr->Normal();
+		//next = curr->GetNextEdge();
+
+		numQuadsForEdge = ceil(curr->GetLength() / railTileWidth);
+
+		startQuant = 0;
+
+		for (int j = 0; j < numQuadsForEdge; ++j)
+		{
+			startCenter = curr->GetPosition(startQuant);
+
+			if (j == numQuadsForEdge - 1)
+			{
+				endQuant = curr->GetLength();
+				endCenter = curr->v1;
+			}
+			else
+			{
+				endQuant = startQuant + railTileWidth;
+				endCenter = curr->GetPosition(endQuant);
+			}
+
+			texturedQuads[startIndex + j * 4 + 0].position =
+				Vector2f(startCenter + eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 1].position =
+				Vector2f(endCenter + eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 2].position =
+				Vector2f(endCenter - eNorm * railTileHeight / 2.0);
+			texturedQuads[startIndex + j * 4 + 3].position =
+				Vector2f(startCenter - eNorm * railTileHeight / 2.0);
+
+			texturedQuads[startIndex + j * 4 + 0].texCoords =
+				Vector2f(subRect.left, subRect.top);
+			texturedQuads[startIndex + j * 4 + 1].texCoords =
+				Vector2f(subRect.left + (endQuant - startQuant), subRect.top);
+			texturedQuads[startIndex + j * 4 + 2].texCoords =
+				Vector2f(subRect.left + (endQuant - startQuant), subRect.top + subRect.height);
+			texturedQuads[startIndex + j * 4 + 3].texCoords =
+				Vector2f(subRect.left, subRect.top + subRect.height);
+
+
+			startQuant += railTileWidth;
+		}
+
+		if (next != NULL && next->Normal() != curr->Normal())
+		{
+			V2d nextNorm = next->Normal();
+
+			V2d centerPoint = curr->v1;
+
+			double c = cross(next->Along(), curr->Along());
+
+			int quadIndex = startIndex + numQuadsForEdge * 4;
+
+			V2d startVec, endVec;
+
+			if (c < 0)
+			{
+				startVec = eNorm * out;
+				endVec = nextNorm * out;
+			}
+			else
+			{
+				startVec = -nextNorm * out;
+				endVec = -eNorm * out;
+			}
+
+			V2d nextVec;
+			double angleDiff = GetVectorAngleDiffCW(startVec, endVec);
+			for (int k = 0; k < numSmoothQuads; ++k)
+			{
+				nextVec = startVec;
+				RotateCW(nextVec, angleDiff / numSmoothQuads);
+				texturedQuads[quadIndex + k * 4 + 0].position = Vector2f(curr->v1 + startVec);
+				texturedQuads[quadIndex + k * 4 + 1].position = Vector2f(curr->v1 + nextVec);
+				texturedQuads[quadIndex + k * 4 + 2].position = Vector2f(centerPoint);
+				texturedQuads[quadIndex + k * 4 + 3].position = Vector2f(centerPoint);
+
+				float outerWidth = length(
+					texturedQuads[quadIndex + k * 4 + 1].position -
+					texturedQuads[quadIndex + k * 4 + 0].position);
+				texturedQuads[quadIndex + k * 4 + 0].texCoords = Vector2f(subRect.left, subRect.top);
+				texturedQuads[quadIndex + k * 4 + 1].texCoords = Vector2f(subRect.left + outerWidth, subRect.top);
+				texturedQuads[quadIndex + k * 4 + 2].texCoords = Vector2f(subRect.left + outerWidth / 2, subRect.top + out);
+				texturedQuads[quadIndex + k * 4 + 3].texCoords = Vector2f(subRect.left + outerWidth / 2, subRect.top + out);
+				startVec = nextVec;
+			}
+
+			numQuadsForEdge += numSmoothQuads;
+
+		}
+
+		startIndex += numQuadsForEdge * 4;		
+	}
+}
+
 void TerrainRail::Finalize()
 {
 	finalized = true;
@@ -1459,34 +1591,41 @@ void TerrainRail::CancelTransformation()
 
 RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 {
-	RailPtr newRail(new TerrainRail);
-
-	int numP = GetNumPoints();
-	TerrainPoint *curr;
-	Vector2i temp;
-
-	newRail->Reserve(numP);
-	int posInd;
-	for (int i = 0; i < numP; ++i)
+	if (renderMode == RENDERMODE_TRANSFORM)
 	{
-		posInd = i * 2;
-		if (i == numP - 1)
-			posInd--;
-		temp.x = round(lines[posInd].position.x);
-		temp.y = round(lines[posInd].position.y);
-		newRail->AddPoint(temp, false);
+		SetRenderMode(TerrainRail::RENDERMODE_NORMAL);
+		RailPtr newRail(new TerrainRail);
+
+		int numP = GetNumPoints();
+		TerrainPoint *curr;
+		Vector2i temp;
+
+		newRail->Reserve(numP);
+		int posInd;
+		for (int i = 0; i < numP; ++i)
+		{
+			posInd = i * 2;
+			if (i == numP - 1)
+				posInd--;
+			temp.x = round(lines[posInd].position.x);
+			temp.y = round(lines[posInd].position.y);
+			newRail->AddPoint(temp, false);
+		}
+
+		//newPoly->SetMaterialType(terrainWorldType, terrainVariation);
+
+		UpdateLines();
+		//UpdateLinePositions();
+
+		//newRail->SetFlyTransform(this, tr);
+
+		newRail->SetRailType(rType);
+
+		newRail->Finalize();
+
+		return newRail;
 	}
-
-	//newPoly->SetMaterialType(terrainWorldType, terrainVariation);
-
-	UpdateLines();
-	//UpdateLinePositions();
-
-	//newRail->SetFlyTransform(this, tr);
-
-	newRail->SetRailType(rType);
-
-	newRail->Finalize();
+	
 
 	//check for validity here
 
@@ -1499,7 +1638,9 @@ RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
 	//SoftReset();
 	//Finalize();
 
-	return newRail;
+	
+
+	return NULL;
 	/*}*/
 }
 
@@ -1567,6 +1708,8 @@ void TerrainRail::UpdateTransformation(TransformTools *tr)
 			coloredNodeCircles->SetPosition(i+1, end);
 		}
 	}
+
+	//UpdateTexturedQuads();
 }
 
 void TerrainRail::ResetState()

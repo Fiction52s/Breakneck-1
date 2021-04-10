@@ -24,6 +24,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	{
 		RENDERMODE_NORMAL,
 		RENDERMODE_MOVING_POINTS,
+		RENDERMODE_TRANSFORM,
 	};
 	RenderMode renderMode;
 
@@ -124,6 +125,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	TerrainRail();
 	TerrainRail(TerrainRail &r);
 	~TerrainRail();
+	void UpdateTexturedQuads();
 	void SetRenderMode(RenderMode rm);
 	int GetRailType();
 	const std::string &GetRailTypeName();

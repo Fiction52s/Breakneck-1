@@ -628,6 +628,24 @@ void EditSession::TestPlayerMode()
 	
 	//----------------------------------------
 	
+	for (int i = 0; i < 3; ++i)
+	{
+		auto & pList = GetCorrectPolygonList(i);
+		for (auto it = pList.begin(); it != pList.end(); ++it)
+		{
+			if ((*it)->renderMode == TerrainPolygon::RENDERMODE_TRANSFORM)
+			{
+				(*it)->CancelTransformation();
+			}
+			
+		}
+	}
+
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		(*it)->CancelTransformation();
+	}
+
 	scoreDisplay->Reset();
 
 	gameState = Session::RUN;
@@ -12716,6 +12734,7 @@ void EditSession::EditModeTransform()
 	//selectedBrush->Scale(1.05f);
 	PolyPtr p;
 	DecorPtr dec;
+	RailPtr r;
 	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 	{
 		p = (*it)->GetAsTerrain();
@@ -12727,6 +12746,14 @@ void EditSession::EditModeTransform()
 			//p->Scale(1.1f);
 			//p->Finalize();
 		}
+
+		r = (*it)->GetAsRail();
+		if (r != NULL)
+		{
+			r->SetRenderMode(TerrainRail::RENDERMODE_TRANSFORM);
+		}
+
+
 		dec = (*it)->GetAsDecor();
 		if (dec != NULL)
 		{
