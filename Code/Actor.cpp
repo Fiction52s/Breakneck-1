@@ -13920,6 +13920,8 @@ Edge * Actor::RayCastSpecialTerrainExit()
 	V2d targetPos = position - normalize(velocity) * 200.0;
 	rayMode = RAYMODE_WATER;
 	rayCastInfo.Reset();
+	rayCastInfo.rayStart = position;
+	rayCastInfo.rayEnd = targetPos;
 	RayCast(this, oldSpecialTerrain->myTerrainTree->startNode, position, targetPos);
 	return rayCastInfo.rcEdge;
 }
@@ -13929,6 +13931,8 @@ Edge * Actor::RayCastSpecialTerrainEnter()
 	V2d targetPos = position - normalize(velocity) * 200.0;
 	rayMode = RAYMODE_WATER;
 	rayCastInfo.Reset();
+	rayCastInfo.rayStart = position;
+	rayCastInfo.rayEnd = targetPos;
 	RayCast(this, currSpecialTerrain->myTerrainTree->startNode, position, targetPos);
 	return rayCastInfo.rcEdge;
 }
