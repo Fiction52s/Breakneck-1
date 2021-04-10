@@ -84,6 +84,7 @@ void Actor::AIRDASH_Update()
 	{
 		bool isDoubleWiring = IsDoubleWirePulling();
 
+		V2d startVel = velocity;
 		//some old code in here for an alternate airdash when double wiring. ignore for now
 		if (frame == 0)
 		{
@@ -104,6 +105,7 @@ void Actor::AIRDASH_Update()
 				}
 			}
 
+			
 			startAirDashVel = V2d(velocity.x, 0);//velocity;//
 			if ((velocity.y > 0 && currInput.LDown()) || (velocity.y < 0 && currInput.LUp()))
 			{
@@ -189,16 +191,27 @@ void Actor::AIRDASH_Update()
 					mod = max(1.0, mod);
 					mod = min(2.0, mod);
 				}
-				//extragravitymodifier must not be 0
-				velocity.y = -aSpeed / mod + extraAirDashY;
 
-				if (extraAirDashY < 0)
+				if (extraGravityModifier == 0) //0 gravity water
 				{
-					extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
-					//extraAirDashY += gravity / slowMultiple;
-					if (extraAirDashY > 0)
-						extraAirDashY = 0;
+					velocity.y = min(-aSpeed, startVel.y);
 				}
+				else
+				{
+					velocity.y = -aSpeed / mod + extraAirDashY;
+
+					if (extraAirDashY < 0)
+					{
+						extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
+						//extraAirDashY += gravity / slowMultiple;
+						if (extraAirDashY > 0)
+							extraAirDashY = 0;
+					}
+				}
+				//extragravitymodifier must not be 0
+				
+
+				
 			}
 			else if (currInput.LDown())
 			{
@@ -208,16 +221,28 @@ void Actor::AIRDASH_Update()
 					//cout << "velocity.x: " << velocity.x << endl;
 				}
 
-				if (extraAirDashY < 0)
-					extraAirDashY = 0;
 
-				velocity.y = aSpeed + extraAirDashY;
-
-				if (extraAirDashY > 0)
+				if (extraGravityModifier == 0)
 				{
-					extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
-					//extraAirDashY += gravity / slowMultiple;
+					velocity.y = max(aSpeed, startVel.y);
 				}
+				else
+				{
+					if (extraAirDashY < 0)
+						extraAirDashY = 0;
+
+					velocity.y = aSpeed + extraAirDashY;
+
+					if (extraAirDashY > 0)
+					{
+						extraAirDashY = AddAerialGravity(V2d(0, extraAirDashY)).y;
+						//extraAirDashY += gravity / slowMultiple;
+					}
+				}
+
+				
+
+
 			}
 			else
 			{

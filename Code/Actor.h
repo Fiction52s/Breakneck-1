@@ -262,7 +262,6 @@ struct Actor : QuadTreeCollider,
 		GRABSHIP,
 		DIAGUPATTACK,
 		DIAGDOWNATTACK,
-		INVERSEINPUTSTUN,
 		SPRINGSTUN,
 		SPRINGSTUNGLIDE,
 		SPRINGSTUNBOUNCEGROUND,
@@ -422,7 +421,7 @@ struct Actor : QuadTreeCollider,
 	bool specialSlow;
 	bool frameAfterAttackingHitlagOver;
 
-	int directionalInputFreezeFrames;
+	
 
 
 	//---
@@ -485,7 +484,7 @@ struct Actor : QuadTreeCollider,
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
-
+	int directionalInputFreezeFrames;
 	
 	
 	
@@ -2229,17 +2228,6 @@ struct Actor : QuadTreeCollider,
 	void INTROBOOST_TimeDepFrameInc();
 	int INTROBOOST_GetActionLength();
 	Tileset * INTROBOOST_GetTileset();
-
-	void INVERSEINPUTSTUN_Start();
-	void INVERSEINPUTSTUN_End();
-	void INVERSEINPUTSTUN_Change();
-	void INVERSEINPUTSTUN_Update();
-	void INVERSEINPUTSTUN_UpdateSprite();
-	void INVERSEINPUTSTUN_TransitionToAction(int a);
-	void INVERSEINPUTSTUN_TimeIndFrameInc();
-	void INVERSEINPUTSTUN_TimeDepFrameInc();
-	int INVERSEINPUTSTUN_GetActionLength();
-	Tileset * INVERSEINPUTSTUN_GetTileset();
 
 	void JUMP_Start();
 	void JUMP_End();

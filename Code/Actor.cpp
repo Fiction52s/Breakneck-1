@@ -339,6 +339,8 @@ void Actor::PopulateState(PState *ps)
 	ps->oldBounceBooster = oldBounceBooster;
 
 	ps->springStunFrames = springStunFrames;
+
+	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -563,6 +565,8 @@ void Actor::PopulateFromState(PState *ps)
 	oldBounceBooster = ps->oldBounceBooster;
 
 	springStunFrames = ps->springStunFrames;
+
+	directionalInputFreezeFrames = ps->directionalInputFreezeFrames;
 }
 
 
@@ -1822,18 +1826,6 @@ void Actor::SetupActionFunctions()
 		&Actor::INTROBOOST_TimeDepFrameInc,
 		&Actor::INTROBOOST_GetActionLength,
 		&Actor::INTROBOOST_GetTileset);
-
-	SetupFuncsForAction(INVERSEINPUTSTUN,
-		&Actor::INVERSEINPUTSTUN_Start,
-		&Actor::INVERSEINPUTSTUN_End,
-		&Actor::INVERSEINPUTSTUN_Change,
-		&Actor::INVERSEINPUTSTUN_Update,
-		&Actor::INVERSEINPUTSTUN_UpdateSprite,
-		&Actor::INVERSEINPUTSTUN_TransitionToAction,
-		&Actor::INVERSEINPUTSTUN_TimeIndFrameInc,
-		&Actor::INVERSEINPUTSTUN_TimeDepFrameInc,
-		&Actor::INVERSEINPUTSTUN_GetActionLength,
-		&Actor::INVERSEINPUTSTUN_GetTileset);
 
 	SetupFuncsForAction(JUMP,
 		&Actor::JUMP_Start,
@@ -13054,7 +13046,7 @@ void Actor::PhysicsResponse()
 				}
 			}
 		}
-		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ))
+		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE )
 		{
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{

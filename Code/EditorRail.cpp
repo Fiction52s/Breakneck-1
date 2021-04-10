@@ -878,6 +878,7 @@ void TerrainRail::CreateNewRailsWithSelectedPointsRemoved( list<RailPtr> &rails 
 			{
 				newRail->AddPoint(GetPoint(i)->pos, false);
 			}
+			newRail->rType = rType;
 			rails.push_back(newRail);
 		}
 		startIndex = currSelectedIndex + 1;
