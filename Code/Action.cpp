@@ -1505,6 +1505,12 @@ void MoveBrushAction::Perform()
 			}
 			(*it).first->UpdateLines();
 			(*it).first->UpdateBounds();
+
+			RailPtr rail = (*it).first;
+			rail->SoftReset();
+			rail->Finalize();
+
+			rail->SetRenderMode(TerrainRail::RENDERMODE_NORMAL);
 			/*(*it).first->SoftReset();
 			(*it).first->Finalize();
 			(*it).first->movingPointMode = false;*/
@@ -1594,6 +1600,12 @@ void MoveBrushAction::Undo()
 			}
 			(*it).first->UpdateLines();
 			(*it).first->UpdateBounds();
+
+			RailPtr rail = (*it).first;
+			rail->SoftReset();
+			rail->Finalize();
+
+			rail->SetRenderMode(TerrainRail::RENDERMODE_NORMAL);
 			/*(*it).first->SoftReset();
 			(*it).first->Finalize();
 			(*it).first->movingPointMode = false;*/

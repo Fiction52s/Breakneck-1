@@ -5626,7 +5626,10 @@ bool EditSession::PerformMovePointsAction()
 
 		rail->StoreEnemyPositions(pm->newEnemyPosInfo);
 
-		rail->UpdateBounds();
+		rail->SoftReset();
+		rail->Finalize();
+		rail->SetRenderMode(TerrainRail::RENDERMODE_NORMAL);
+		//rail->UpdateBounds();
 		/*rail->SoftReset();
 		rail->Finalize();
 		rail->SetRenderMode(TerrainPolygon::RENDERMODE_NORMAL);*/
@@ -6304,7 +6307,7 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 		else if (affected)
 		{
 			rail->UpdateEnemyChain();
-			//rail->SetRenderMode(TerrainPolygon::RENDERMODE_MOVING_POINTS);
+			rail->SetRenderMode(TerrainRail::RENDERMODE_MOVING_POINTS);
 			rail->UpdateLines();
 			rail->UpdateBounds();
 		}

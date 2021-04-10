@@ -270,22 +270,7 @@ void TerrainRail::Init()
 
 TerrainRail::~TerrainRail()
 {
-	if (lines != NULL)
-		delete[] lines;
-
-	if (coloredQuads != NULL)
-	{
-		delete[] coloredQuads;
-		delete coloredNodeCircles;
-	}
-
-	if (texturedQuads != NULL)
-	{
-		delete[] texturedQuads;
-	}
-
-	if (enemyParams != NULL)
-		delete enemyParams;
+	SoftReset();
 
 	ClearPoints();
 }
@@ -867,7 +852,7 @@ void TerrainRail::CreateNewRailsWithSelectedPointsRemoved( list<RailPtr> &rails 
 	int currSelectedIndex = selectedIndexes[indexMarker];
 
 	int diff;
-	while (startIndex < numP - 2)
+	while (startIndex < numP - 1)
 	{
 		diff = currSelectedIndex - startIndex;
 		if( diff >= 2 )
@@ -1099,6 +1084,11 @@ void TerrainRail::SoftReset()
 
 	if (coloredNodeCircles != NULL)
 		delete coloredNodeCircles;
+
+	if (texturedQuads != NULL)
+	{
+		delete[] texturedQuads;
+	}
 
 	lines = NULL;
 	finalized = false;
@@ -1663,6 +1653,11 @@ void TerrainRail::StoreEnemyPositions(std::vector<std::pair<ActorPtr, PositionIn
 	}
 }
 
+void TerrainRail::SetRenderMode(RenderMode rm)
+{
+	renderMode = rm;
+}
+
 void TerrainRail::Draw( RenderTarget *target )
 {
 	Draw(1.0, false, target);
@@ -1678,37 +1673,42 @@ void TerrainRail::Draw( double zoomMultiple, bool showPoints, sf::RenderTarget *
 		return;
 	}
 
-	switch (rType)
+	if (renderMode == RENDERMODE_NORMAL)
 	{
-	case FLOORANDCEILING:
-	case FLOOR:
-	case CEILING:
-	case BOUNCE:
-	case SCORPIONONLY:
-	case GRIND:
-	case ACCELERATE:
-	case FADE:
-	case LOCKED:
-	case PHASE:
-	case INVERSEPHASE:
-	case ANTITIMESLOW:
-	case WIREONLY:
-	case WIREBLOCKING:
-	case HIT:
-	{
-		/*target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
-		coloredNodeCircles->Draw(target);*/
-		target->draw(texturedQuads, numTexturedQuads * 4,
-			sf::Quads, ts_rail->texture);
-		break;
-	}
-	case FLY:
-	case BLOCKER:
-	{
-		enemyParams->Draw(target);
-		//blockerParams->Draw(target);
-		break;
-	}
+
+
+		switch (rType)
+		{
+		case FLOORANDCEILING:
+		case FLOOR:
+		case CEILING:
+		case BOUNCE:
+		case SCORPIONONLY:
+		case GRIND:
+		case ACCELERATE:
+		case FADE:
+		case LOCKED:
+		case PHASE:
+		case INVERSEPHASE:
+		case ANTITIMESLOW:
+		case WIREONLY:
+		case WIREBLOCKING:
+		case HIT:
+		{
+			/*target->draw(coloredQuads, numColoredQuads * 4, sf::Quads);
+			coloredNodeCircles->Draw(target);*/
+			target->draw(texturedQuads, numTexturedQuads * 4,
+				sf::Quads, ts_rail->texture);
+			break;
+		}
+		case FLY:
+		case BLOCKER:
+		{
+			enemyParams->Draw(target);
+			//blockerParams->Draw(target);
+			break;
+		}
+		}
 	}
 	
 
