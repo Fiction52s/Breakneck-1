@@ -47,11 +47,10 @@ Shroom::Shroom(ActorParams *ap )
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
-	hitboxInfo->drainX = .5;
-	hitboxInfo->drainY = .5;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 5;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitlagFrames = 5;
+	hitboxInfo->hitstunFrames = 20;
+	hitboxInfo->knockback = 10;
+	hitboxInfo->kbDir = V2d(1, -1);
 
 	jelly = new ShroomJelly( this );
 	jelly->Reset();
@@ -79,8 +78,8 @@ void Shroom::ResetEnemy()
 	jellySpawnable = true;
 	slowMultiple = 1;
 
-	SetHitboxes(&hitBody, 0);
-	SetHurtboxes(&hurtBody, 0);
+	DefaultHitboxesOn();
+	DefaultHurtboxesOn();
 
 	UpdateSprite();
 }

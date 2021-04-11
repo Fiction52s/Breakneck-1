@@ -21,6 +21,7 @@
 #include "AbsorbParticles.h"
 #include "Barrier.h"
 #include "ShardSequence.h"
+#include "PowerSequence.h"
 #include "Sequence.h"
 #include "ParticleEffects.h"
 #include "DeathSequence.h"
@@ -54,6 +55,8 @@
 #include "ScoreDisplay.h"
 
 #include "GameMode.h"
+
+
 
 
 
@@ -233,6 +236,9 @@ void Session::RegisterGeneralEnemies()
 
 	AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
+
+	AddExtraEnemy("poweritem", CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 6);
 
 	AddExtraEnemy("healthfly", CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
@@ -1546,8 +1552,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	topClouds = NULL;
 
 	getShardSeq = NULL;
+	getPowerSeq = NULL;
 	deathSeq = NULL;
 	shardPop = NULL;
+	powerPop = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -1837,10 +1845,22 @@ Session::~Session()
 		getShardSeq = NULL;
 	}
 
+	if (getPowerSeq != NULL)
+	{
+		delete getPowerSeq;
+		getPowerSeq = NULL;
+	}
+
 	if (shardPop != NULL)
 	{
 		delete shardPop;
 		shardPop = NULL;
+	}
+
+	if (powerPop != NULL)
+	{
+		delete powerPop;
+		powerPop = NULL;
 	}
 
 	if (parentGame == NULL && shardsCapturedField != NULL)
@@ -4827,6 +4847,20 @@ void Session::TryCreateShardResources()
 	{
 		getShardSeq = new GetShardSequence;
 		getShardSeq->Init();
+	}
+}
+
+void Session::TryCreatePowerItemResources()
+{
+	if (powerPop == NULL)
+	{
+		powerPop = new PowerPopup;
+	}
+
+	if (getPowerSeq == NULL)
+	{
+		getPowerSeq = new GetPowerSequence;
+		getPowerSeq->Init();
 	}
 }
 

@@ -71,6 +71,7 @@ struct CameraShot;
 struct MusicInfo;
 
 struct ShardPopup;
+struct PowerPopup;
 struct DeathSequece;
 
 struct SuperSequence;
@@ -331,7 +332,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::Vertex blackBorderQuads[4 * 2];
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
+	PowerPopup *powerPop;
 	Sequence *getShardSeq;
+	Sequence *getPowerSeq;
 	Sequence *deathSeq;
 	BitField *shardsCapturedField;
 
@@ -666,6 +669,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void QueryToSpawnEnemies();
 	void DrawBlackBorderQuads(sf::RenderTarget *target);
 	void TryCreateShardResources();
+	void TryCreatePowerItemResources();
 	virtual bool IsShardCaptured(int sType);
 	void SetupShardsCapturedField();
 	void SetActiveSequence(Sequence *activeSeq);

@@ -86,7 +86,7 @@ void Teleporter::UpdatePath()
 
 	dist = length(V2d(other));
 
-	speed = 200;
+	speed = 50;
 	stunFrames = floor(dist / speed);
 
 	dir = springVec;

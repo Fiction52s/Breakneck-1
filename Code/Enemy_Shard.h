@@ -82,8 +82,6 @@ struct Shard : Enemy
 	static std::string GetShardString(int w,
 		int li );
 	static void SetupShardMaps();
-	int actionLength[Count];
-	int animFactor[Count];
 	void DirectKill();
 
 	//MovementSequence testSeq;
