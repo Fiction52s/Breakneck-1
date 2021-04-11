@@ -312,6 +312,10 @@ void CreateTerrainModeUI::SetLayerTerrain()
 
 void CreateTerrainModeUI::SetLayerWater()
 {
+	if (GetCurrTerrainTool() == EditSession::TERRAINTOOL_SETINVERSE )
+	{
+		SetTerrainTool(EditSession::TERRAINTOOL_ADD);
+	}
 	terrainLayerDropdown->SetSelectedIndex(1);
 	SetLayer(1);
 

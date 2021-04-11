@@ -28,10 +28,15 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	SetNumActions(Count);
 	SetEditorActions(IDLE, 0, 0);
 
-	actionLength[IDLE] = 2;
-	actionLength[CHARGE] = 60;
-	actionLength[FIRE] = 30;
-	actionLength[RECOVER] = 60;
+	actionLength[IDLE] = 6;
+	actionLength[CHARGE] = 3;//60
+	actionLength[FIRE] = 11;//30
+	actionLength[RECOVER] = 14;//60
+
+	animFactor[IDLE] = 4;
+	animFactor[CHARGE] = 20;
+	animFactor[FIRE] = 3;
+	animFactor[RECOVER] = 5;
 
 	SetLevel(ap->GetLevel());
 
@@ -40,7 +45,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	finalLaserWidth = 100;
 	laserLength = 3000;
 
-	ts = sess->GetSizedTileset("Enemies/W2/curveturret_144x96.png");
+	ts = sess->GetSizedTileset("Enemies/W4/palm_256x256.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
@@ -77,8 +82,8 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	laserBody.hitboxInfo = hitboxInfo;
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(12);
-	cutObject->SetSubRectBack(11);
+	cutObject->SetSubRectFront(35);
+	cutObject->SetSubRectBack(34);
 	cutObject->SetScale(scale);
 	cutObject->rotateAngle = sprite.getRotation();
 
@@ -264,7 +269,37 @@ void PalmTurret::EnemyDraw(sf::RenderTarget *target)
 
 void PalmTurret::UpdateSprite()
 {
-	sprite.setTextureRect(ts->GetSubRect(0));
+	/*IDLE,
+		CHARGE,
+		FIRE,
+		RECOVER,*/
+
+	int tile = 0;
+	switch (action)
+	{
+	case IDLE:
+	{
+		tile = frame / animFactor[IDLE];
+		break;
+	}
+	case CHARGE:
+	{
+		tile = frame / animFactor[CHARGE] + 6;
+		break;
+	}
+	case FIRE:
+	{
+		tile = frame / animFactor[FIRE] + 9;
+		break;
+	}
+	case RECOVER:
+	{
+		tile = frame / animFactor[RECOVER] + 20;
+		break;
+	}
+	}
+
+	sprite.setTextureRect(ts->GetSubRect(tile));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

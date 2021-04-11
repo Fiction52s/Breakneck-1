@@ -1586,7 +1586,7 @@ void TerrainRail::CancelTransformation()
 		(*it)->SetPosition((*it)->preTransformPos);
 	}*/
 
-	//triBackups.clear();f
+	//triBackups.clear();
 }
 
 RailPtr TerrainRail::CompleteTransformation(TransformTools *tr)
