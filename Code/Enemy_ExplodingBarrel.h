@@ -10,6 +10,8 @@ struct ExplodingBarrel : Enemy
 	enum Action
 	{
 		S_IDLE,
+		S_TINYCHARGE,
+		S_CHARGE,
 		S_EXPLODE,
 		S_Count
 	};

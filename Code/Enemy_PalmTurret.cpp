@@ -53,7 +53,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	width *= scale;
 	height *= scale;
 
-	SetOffGroundHeight(height / 2.f);
+	SetOffGroundHeight(height / 2.f - 56);
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -134,9 +134,11 @@ void PalmTurret::StartCharge()
 
 	currLaserWidth = 10;
 
-	V2d laserDir = normalize(playerPos - position);
+	V2d laserAnchor = position + currPosInfo.GetEdge()->Normal() * 40.0;
+
+	V2d laserDir = normalize(playerPos - laserAnchor);
 	laserAngle = GetVectorAngleCW(laserDir);
-	laserCenter = position + laserDir * laserLength/2.0;
+	laserCenter = laserAnchor + laserDir * laserLength/2.0;
 	
 	laserBody.SetBasicPos(0, laserCenter, laserAngle);
 
@@ -259,12 +261,14 @@ void PalmTurret::ProcessState()
 
 void PalmTurret::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite);
-
 	if (action == CHARGE || action == FIRE)
 	{
 		target->draw(laserQuad, 4, sf::Quads);
 	}
+
+	DrawSprite(target, sprite);
+
+	
 }
 
 void PalmTurret::UpdateSprite()

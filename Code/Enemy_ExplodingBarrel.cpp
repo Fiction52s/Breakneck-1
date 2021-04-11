@@ -17,12 +17,16 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 	:Enemy(EnemyType::EN_EXPLODINGBARREL, ap)//, false, 1, false)
 {
 	SetNumActions(S_Count);
-	SetEditorActions(S_IDLE, S_IDLE, 0);
+	SetEditorActions(S_CHARGE, S_CHARGE, 0);
 
-	actionLength[S_IDLE] = 1;
+	actionLength[S_IDLE] = 15;
+	actionLength[S_TINYCHARGE] = 3;
+	actionLength[S_CHARGE] = 12;
 	actionLength[S_EXPLODE] = 20;
 
 	animFactor[S_IDLE] = 1;
+	animFactor[S_CHARGE] = 5;
+	animFactor[S_TINYCHARGE] = 5;
 	animFactor[S_EXPLODE] = 1;
 
 
@@ -32,11 +36,11 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	facingRight = true;
 
-	ts = sess->GetSizedTileset("Enemies/W3/explodingbarrel_128x128.png");
+	ts = sess->GetSizedTileset("Enemies/W3/barrel_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	SetOffGroundHeight(ts->tileHeight / 2.0);
+	SetOffGroundHeight(ts->tileHeight / 2.0 - 20);
 
 
 	
@@ -162,6 +166,21 @@ void ExplodingBarrel::ProcessState()
 			dead = true;
 			sess->PlayerRemoveActiveComboer(comboObj);
 			break;
+		case S_IDLE:
+			if (PlayerDist() > 300)
+			{
+				action = S_CHARGE;
+			}
+			else
+			{
+				action = S_TINYCHARGE;
+			}
+			
+			break;
+		case S_TINYCHARGE:
+		case S_CHARGE:
+			action = S_IDLE;
+			break;
 		}
 	}
 }
@@ -193,7 +212,26 @@ void ExplodingBarrel::ComboHit()
 void ExplodingBarrel::UpdateSprite()
 {
 	sprite.setPosition(GetPositionF());
-	sprite.setTextureRect(ts->GetSubRect(0));
+	int tile = 0;
+	switch (action)
+	{
+	case S_IDLE:
+		tile = 0;
+		break;
+	case S_CHARGE:
+	{
+		tile = frame / animFactor[S_CHARGE];
+		break;
+	}
+	case S_TINYCHARGE:
+	{
+		tile = frame / animFactor[S_TINYCHARGE] + 1;
+		break;
+	}
+		
+		
+	}
+	sprite.setTextureRect(ts->GetSubRect(tile));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
