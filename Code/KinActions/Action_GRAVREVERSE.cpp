@@ -36,11 +36,6 @@ void Actor::GRAVREVERSE_Change()
 
 			if (groundSpeed < 0 && currNormal.x > 0 || groundSpeed > 0 && currNormal.x < 0)
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
-
 				SetAction(STEEPCLIMB);
 
 				frame = 0;
@@ -48,10 +43,6 @@ void Actor::GRAVREVERSE_Change()
 			}
 			else
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
 				SetAction(STEEPSLIDE);
 				frame = 0;
 				return;

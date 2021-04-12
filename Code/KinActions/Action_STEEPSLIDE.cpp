@@ -6,6 +6,31 @@ using namespace std;
 void Actor::STEEPSLIDE_Start()
 {
 	repeatingSound = ActivateSound(S_STEEPSLIDE, true);
+
+	V2d norm = ground->Normal();
+
+	if (reversed)
+	{
+		if (norm.x < 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
+	else
+	{
+		if (norm.x > 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
 }
 
 void Actor::STEEPSLIDE_End()
@@ -129,14 +154,12 @@ void Actor::STEEPSLIDE_Change()
 		if (currNormal.x < 0 && (currInput.LRight() || currInput.LUp()))
 		{
 			SetAction(STEEPCLIMB);
-			facingRight = true;
 			groundSpeed = steepClimbBoostStart;
 			frame = 0;
 		}
 		else if (currNormal.x > 0 && (currInput.LLeft() || currInput.LUp()))
 		{
 			SetAction(STEEPCLIMB);
-			facingRight = false;
 			groundSpeed = -steepClimbBoostStart;
 			frame = 0;
 		}

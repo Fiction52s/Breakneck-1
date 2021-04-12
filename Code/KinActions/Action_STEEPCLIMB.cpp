@@ -5,6 +5,30 @@ using namespace std;
 
 void Actor::STEEPCLIMB_Start()
 {
+	V2d norm = ground->Normal();
+
+	if (reversed)
+	{
+		if (norm.x < 0)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
+	}
+	else
+	{
+		if (norm.x > 0)
+		{
+			facingRight = false;
+		}
+		else
+		{
+			facingRight = true;
+		}
+	}
 }
 
 void Actor::STEEPCLIMB_End()

@@ -38,14 +38,12 @@ void Actor::STEEPSLIDEATTACK_Change()
 			if (currNormal.x < 0 && currInput.LRight())
 			{
 				SetAction(STEEPCLIMB);
-				facingRight = true;
 				groundSpeed = steepClimbBoostStart;
 				frame = 0;
 			}
 			else if (currNormal.x > 0 && currInput.LLeft())
 			{
 				SetAction(STEEPCLIMB);
-				facingRight = false;
 				groundSpeed = -steepClimbBoostStart;
 				frame = 0;
 			}

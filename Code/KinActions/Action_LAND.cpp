@@ -39,11 +39,6 @@ void Actor::LAND_Change()
 
 			if (groundSpeed < 0 && currNormal.x > 0 || groundSpeed > 0 && currNormal.x < 0)
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
-
 				SetAction(STEEPCLIMB);
 
 				if (SteepClimbAttack())
@@ -55,10 +50,6 @@ void Actor::LAND_Change()
 			}
 			else
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
 				SetAction(STEEPSLIDE);
 				if (SteepSlideAttack())
 				{
@@ -102,10 +93,6 @@ void Actor::LAND_Change()
 		{
 			if (groundSpeed > 0 && currNormal.x < 0 || groundSpeed < 0 && currNormal.x > 0)
 			{
-				if (groundSpeed > 0)
-					facingRight = true;
-				else
-					facingRight = false;
 				SetAction(STEEPCLIMB);
 
 				if (SteepClimbAttack())

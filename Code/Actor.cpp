@@ -8123,7 +8123,6 @@ V2d Actor::UpdateReversePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
-								facingRight = false;
 								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -8413,7 +8412,6 @@ V2d Actor::UpdateReversePhysics()
 							else if( e1n.x < 0 )
 							{
 								//cout << "setting to climb??" << endl;
-								facingRight = true;
 								SetAction(STEEPCLIMB);
 								frame = 0;
 								//rightWire->UpdateAnchors( V2d( 0, 0 ) );
@@ -10744,7 +10742,6 @@ void Actor::UpdatePhysics()
 							}
 							else if( e0n.x > 0 )
 							{
-								facingRight = false;
 								SetAction(STEEPCLIMB);
 								frame = 0;
 								ground = next;
@@ -10842,7 +10839,6 @@ void Actor::UpdatePhysics()
 							}
 							else if( e1n.x < 0 )
 							{
-								facingRight = true;
 								SetAction(STEEPCLIMB);
 								frame = 0;
 								ground = next;

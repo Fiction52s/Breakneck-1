@@ -283,6 +283,11 @@ void Teleporter::ResetEnemy()
 	UpdateHitboxes();
 
 	UpdateSprite();
+
+	if (goesBothWays && !secondary)
+	{
+		otherTele->Reset();
+	}
 }
 
 void Teleporter::ActionEnded()
