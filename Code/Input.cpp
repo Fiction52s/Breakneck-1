@@ -1142,7 +1142,7 @@ KeyboardSettings::KeyboardSettings()
 	buttonMap[TIMESLOW] = Keyboard::LShift;
 	buttonMap[LEFTWIRE] = Keyboard::LControl;
 	buttonMap[RIGHTWIRE] = Keyboard::RControl;
-	buttonMap[MAP] = Keyboard::Tilde;
+	buttonMap[MAP] = Keyboard::Insert;//Keyboard::Tilde;
 	buttonMap[PAUSE] = Keyboard::Delete;
 
 	toggleBounce = false;

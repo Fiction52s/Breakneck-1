@@ -2480,6 +2480,14 @@ void EditSession::WriteActors(ofstream &of)
 		//(*it).second->WriteFile( of );
 
 	}
+
+	/*for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if ((*it)->IsEnemyType())
+		{
+			(*it)->enemyParams->WriteFile(of);
+		}
+	}*/
 }
 
 void EditSession::WriteGates(ofstream &of)
@@ -2495,15 +2503,27 @@ void EditSession::WriteRails(ofstream &of)
 {
 	int writeIndex = tempWriteIndex;
 
+	/*int numNonEnemyRails = 0;
+	for (auto it = rails.begin(); it != rails.end(); ++it)
+	{
+		if (!(*it)->IsEnemyType())
+		{
+			++numNonEnemyRails;
+		}
+	}*/
+
 	of << rails.size() << endl;
+	//of << numNonEnemyRails << endl;
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
-		(*it)->writeIndex = writeIndex;
-		++writeIndex;
+		//if (!(*it)->IsEnemyType())
+		{
+			(*it)->writeIndex = writeIndex;
+			++writeIndex;
 
-		(*it)->WriteFile(of);
-		
+			(*it)->WriteFile(of);
+		}
 	}
 }
 
@@ -6325,7 +6345,10 @@ void EditSession::MoveSelectedRailPoints(V2d worldPos)
 		else if (affected)
 		{
 			rail->UpdateEnemyChain();
-			rail->SetRenderMode(TerrainRail::RENDERMODE_MOVING_POINTS);
+			if (!rail->IsEnemyType())
+			{
+				rail->SetRenderMode(TerrainRail::RENDERMODE_MOVING_POINTS);
+			}
 			rail->UpdateLines();
 			rail->UpdateBounds();
 		}

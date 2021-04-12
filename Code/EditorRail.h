@@ -168,6 +168,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	bool IsInternallyValid();
 	void Draw(double zoomMultiple, bool showPoints, 
 		sf::RenderTarget *target);
+	bool IsEnemyType();
 	void Deactivate();
 	void Activate();
 	bool CanApply();

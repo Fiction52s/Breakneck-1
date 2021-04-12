@@ -573,7 +573,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	lines = NULL;
 	LoadAerial(is);
 	
-	LoadGlobalPath(is);
+	//LoadGlobalPath(is);
 
 	int ibType;
 	is >> ibType;
@@ -583,7 +583,7 @@ BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 
 	is >> spacing;
 
-	LoadEnemyLevel(is);
+	LoadEnemyLevel(is);	
 }
 
 BlockerParams::BlockerParams(ActorType *at, int level)
@@ -659,7 +659,7 @@ void BlockerParams::Draw(sf::RenderTarget *target)
 
 void BlockerParams::WriteParamFile(ofstream &of)
 {
-	WritePath(of);
+	//WritePath(of);
 
 	//WriteLoop(of);
 
@@ -687,7 +687,7 @@ FlyParams::FlyParams(ActorType *at, ifstream &is)
 	lines = NULL;
 	LoadAerial(is);
 
-	LoadGlobalPath(is);
+	//LoadGlobalPath(is);
 
 	int ifType;
 	is >> ifType;
@@ -763,7 +763,7 @@ void FlyParams::Draw(sf::RenderTarget *target)
 
 void FlyParams::WriteParamFile(ofstream &of)
 {
-	WritePath(of);
+	//WritePath(of);
 
 	of << fType << "\n";
 

@@ -106,7 +106,7 @@ void Actor::WALLJUMP_TimeDepFrameInc()
 
 int Actor::WALLJUMP_GetActionLength()
 {
-	return 9 * 2;
+	return 11 * 2;
 }
 
 Tileset * Actor::WALLJUMP_GetTileset()

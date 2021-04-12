@@ -76,5 +76,5 @@ int Actor::EXITBOOST_GetActionLength()
 
 Tileset * Actor::EXITBOOST_GetTileset()
 {
-	return GetActionTileset("exit_96x128.png");
+	return GetActionTileset("exitboost_96x128.png");
 }

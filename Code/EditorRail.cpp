@@ -273,6 +273,11 @@ TerrainRail::~TerrainRail()
 	SoftReset();
 
 	ClearPoints();
+
+	if (enemyParams != NULL)
+	{
+		delete enemyParams;
+	}
 }
 
 void TerrainRail::SwitchDirection()
@@ -323,9 +328,19 @@ void TerrainRail::Activate()
 
 }
 
+bool TerrainRail::IsEnemyType()
+{
+	return rType >= RailType::BLOCKER;
+}
+
 void TerrainRail::WriteFile(std::ofstream &of)
 {
 	of << rType << "\n";
+
+	if (IsEnemyType())
+	{
+		enemyParams->WriteFile(of);
+	}
 
 	int numP = GetNumPoints();
 	of << numP << "\n";
@@ -346,6 +361,41 @@ void TerrainRail::Reserve(int numP)
 void TerrainRail::Load(std::ifstream &is)
 {
 	is >> rType;
+
+
+	if (IsEnemyType())
+	{
+		string typeString;
+		is >> typeString;
+
+		//ActorType *at = sess->types[typeString];
+
+
+		//enemyParams = sess->types[typeString]->defaultParamsVec[0]->Copy();
+		//enemyParams->group = sess->groups["--"];
+
+	//SetChainPath();
+
+	//enemyParams->CreateMyEnemy();
+	//enemyChain = (EnemyChain*)enemyParams->myEnemy;
+
+		//ActorPtr a(NULL);
+		//at->LoadEnemy(is, a);
+		//defaultParamsVec[0]->Copy();
+		//enemyParams->group = sess->groups["--"];
+	}
+
+	//a little messy but it works for these. Shouldn't need to do anything more special
+	//this allows for special parameters for each enemy to be saved, such as spacing between
+	//flies/blockers
+	if (rType == RailType::BLOCKER)
+	{
+		enemyParams = new BlockerParams(sess->types["blocker"], is);
+	}
+	else if (rType == RailType::FLY)
+	{
+		enemyParams = new FlyParams(sess->types["healthfly"], is);
+	}
 
 	int numRailPoints;
 	is >> numRailPoints;
@@ -920,8 +970,11 @@ void TerrainRail::TryCreateEnemyChain()
 
 	SetChainPath();
 
-	enemyParams->CreateMyEnemy();
-	enemyChain = (EnemyChain*)enemyParams->myEnemy;
+	if (enemyParams->myEnemy == NULL)
+	{
+		enemyParams->CreateMyEnemy();
+		enemyChain = (EnemyChain*)enemyParams->myEnemy;
+	}
 }
 
 int TerrainRail::GetNumSelectedPoints()

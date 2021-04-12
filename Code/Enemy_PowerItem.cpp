@@ -377,7 +377,7 @@ void PowerItem::UpdateSprite()
 {
 	int tile = 0;
 
-	sprite.setTextureRect(ts->GetSubRect(tile));
+	sprite.setTextureRect(ts->GetSubRect(powerIndex));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 }
