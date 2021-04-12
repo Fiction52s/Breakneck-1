@@ -1,0 +1,528 @@
+{
+	"difactor": 0.3,
+	"blockstunfactor": 0.5,
+	
+	"fair": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 60,
+			"knockback": 15,
+			"knockbackangle": 45,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airforward"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 45,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 30,
+			"hitblockcanceldelay": 6,
+			"postype": "airforward"
+		}
+	},
+	
+	"dair": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 40,
+			"knockback": 20,
+			"knockbackangle": 270,
+			"invincibleframes": 8,
+			"gravmultiplier": 0.8,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airdown"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 270,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airdown"
+		}
+	},
+	
+	"uair": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 40,
+			"knockback": 18,
+			"knockbackangle": 90,
+			"invincibleframes": 8,
+			"gravmultiplier": 0.8,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airup"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 90,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airup"
+		}
+	},
+	
+	"standattack1": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"standattack2": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"standattack3": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"standattack4": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"dashattack": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+	},
+	
+	"dashattack2": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+	},
+	
+	"dashattack3": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 54,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+	},
+	
+	"wallattack": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airforward"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airforward"
+		}
+	},
+	
+	"diagupattack": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airupforward"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airupforward"
+		}
+	},
+	
+	"diagdownattack": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 315,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airdownforward"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 105,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "airdownforward"
+		}
+	},
+	
+	"uptilt1": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"uptilt2": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"uptilt3": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 60,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "ground"
+		}
+		
+		
+	},
+	
+	"homing": 
+	{
+		"normal":
+		{
+			"damage": 0,
+			"hitlag": 5,
+			"hitstun": 60,
+			"knockback": 15,
+			"knockbackangle": 45,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 0,
+			"hitblockcanceldelay": 6,
+			"postype": "omni"
+		},
+		"level1":
+		{
+			"damage": 0,
+			"hitlag": 6,
+			"hitstun": 30,
+			"knockback": 15,
+			"knockbackangle": 45,
+			"invincibleframes": 16,
+			"gravmultiplier": 0.5,
+			"extradefenderhitlag": 30,
+			"hitblockcanceldelay": 6,
+			"postype": "omni"
+		}
+	}
+}
