@@ -152,8 +152,8 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 60;
-	hitboxInfo->knockback = 20;
+	hitboxInfo->hitstunFrames = 30;
+	hitboxInfo->knockback = 10;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
