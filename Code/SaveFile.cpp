@@ -583,7 +583,7 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	adventureFile( p_adventure ),
 	name( p_name )
 {
-	CreateSaveWorlds();
+	//CreateSaveWorlds();
 
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";

@@ -304,5 +304,5 @@ int Actor::SPRINT_GetActionLength()
 
 Tileset * Actor::SPRINT_GetTileset()
 {
-	return GetActionTileset("sprint_80x48.png");
+	return GetActionTileset("sprint_128x48.png");
 }

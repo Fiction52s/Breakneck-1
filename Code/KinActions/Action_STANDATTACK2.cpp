@@ -105,5 +105,5 @@ int Actor::STANDATTACK2_GetActionLength()
 
 Tileset * Actor::STANDATTACK2_GetTileset()
 {
-	return GetActionTileset("stand_att_02_64x64.png");
+	return GetActionTileset("stand_att_02_96x64.png");
 }
