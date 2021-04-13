@@ -87,6 +87,7 @@ TouchGrass::TouchGrass(TouchGrassCollection *p_coll, int index,
 	:coll( p_coll ), edge( e ), gIndex( index ), quant( q ), hurtBody( CollisionBox::Hurt )
 {
 	myQuad = coll->touchGrassVA + gIndex * 4;
+	//SetRectColor(myQuad, Color::Red);
 }
 
 TouchGrass::~TouchGrass()
@@ -245,7 +246,8 @@ void BasicTouchGrass::Reset()
 	visible = true;
 	action = STILL;
 	frame = 0;
-	currTile = 0;
+	currTile = -1;
+	UpdateSprite();
 }
 
 void BasicTouchGrass::UpdateSprite()
@@ -362,6 +364,8 @@ void TestTouchGrass::Reset()
 	visible = true;
 	action = STILL;
 	frame = 0;
+	currTile = -1;
+	UpdateSprite();
 }
 
 void TestTouchGrass::UpdateSprite()
@@ -381,7 +385,12 @@ void TestTouchGrass::UpdateSprite()
 		break;
 	}
 
-	SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(tileIndex));
+	if (tileIndex != currTile)
+	{
+		currTile = tileIndex;
+		SetRectSubRect(myQuad, coll->ts_grass->GetSubRect(tileIndex));
+	}
+
 }
 
 void TestTouchGrass::Update()
