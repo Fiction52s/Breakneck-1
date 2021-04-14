@@ -560,6 +560,11 @@ using namespace boost::filesystem;
 
 LevelScore::LevelScore()
 {
+	Reset();
+}
+
+void LevelScore::Reset()
+{
 	bestFramesToBeat = 0;
 }
 
@@ -614,6 +619,33 @@ int SaveFile::GetBestFrames()
 	}
 
 	return total;
+}
+
+std::string SaveFile::GetBestTimeString()
+{
+	int totalFrames = GetBestFrames();
+
+	int allFrames = totalFrames;
+
+	int framesInSecond = 60;
+	int framesInMinute = framesInSecond * 60;
+	int framesInHour = framesInMinute * 60;
+	int numHours = totalFrames / framesInHour;
+
+	totalFrames = totalFrames - numHours * framesInHour;
+
+	int numMinutes = totalFrames / framesInMinute;
+
+	totalFrames = totalFrames - numMinutes * framesInMinute;
+
+	int numSeconds = totalFrames / framesInSecond;
+
+	totalFrames = totalFrames - numSeconds * framesInSecond;
+
+	stringstream ss;
+	ss << numHours << " hrs " << numMinutes << " mins " << numSeconds << " seconds\n(Frames: " << allFrames << ")";
+
+	return ss.str();
 }
 
 int SaveFile::GetBestFramesWorld(int w)
@@ -727,9 +759,17 @@ float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
 	CalcProgress(start, end, totalMaps, totalBeaten);
 	CalcShardProgress(b, totalShards, totalCaptured);
 
-	float shardPortion = totalCaptured / totalShards;
+	float shardPortion = 0;
+	if (totalShards > 0)
+	{
+		shardPortion = totalCaptured / totalShards;
+	}
+	
 	float portion = totalBeaten / totalMaps;
-	float totalPortion = shardPortion * .5 + portion * .5;
+
+	float portionShardsWorth = .1;
+
+	float totalPortion = shardPortion * portionShardsWorth + portion * (1.0 - portionShardsWorth);
 
 	if (totalPortion > .99f)
 		totalPortion = 1.0f;
@@ -795,7 +835,7 @@ bool SaveFile::TrySetRecordTime(int totalFrames,
 {
 	int index = lev->index;//GetMapIndex(w, s, m);
 	int toBeat = levelScores[index].bestFramesToBeat;
-	if ( toBeat < 0 || totalFrames < toBeat)
+	if ( toBeat == 0 || totalFrames < toBeat)
 	{
 		levelScores[index].bestFramesToBeat = totalFrames;
 		return true;
@@ -845,7 +885,7 @@ bool SaveFile::IsCompleteLevel(Level *lev)
 {
 	int index = lev->index;
 	AdventureMap &am = adventureFile->GetMap(index);
-	if (am.Exists() && !levelsBeatenField.GetBit(index))
+	if (am.Exists() && levelsBeatenField.GetBit(index))
 	{
 		return true;
 	}
@@ -891,14 +931,14 @@ bool SaveFile::ShardIsCaptured(int sType)
 	return shardField.GetBit(sType);
 }
 
-void SaveFile::CopyFromDefault()
-{
-	path from("Resources/Data/default.kin");
-
-	path to(fileName);
-
-	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
-}
+//void SaveFile::CopyFromDefault()
+//{
+//	path from("Resources/Data/default.kin");
+//
+//	path to(fileName);
+//
+//	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
+//}
 
 bool SaveFile::LoadInfo(ifstream &is)
 {
@@ -979,10 +1019,11 @@ bool SaveFile::Load()
 
 	if (!LoadInfo(is))
 	{
-		ifstream defIs;
+		SetAsDefault();
+		/*ifstream defIs;
 		defIs.open("Resources/Data/default.kin");
 		bool test = LoadInfo(defIs);
-		assert(test);
+		assert(test);*/
 		return false;
 	}
 	else
@@ -1023,4 +1064,20 @@ void SaveFile::Save()
 		cout << "error saving file: " << fileName << endl;
 		assert(false);
 	}
+}
+
+void SaveFile::SetAsDefault()
+{
+	controlProfileName = "KIN Default";
+	levelsBeatenField.Reset();
+	
+	for (int i = 0; i < 512; ++i)
+	{
+		levelScores[i].Reset();
+	}
+
+	upgradeField.Reset();
+	momentaField.Reset();
+	shardField.Reset();
+	newShardField.Reset();
 }

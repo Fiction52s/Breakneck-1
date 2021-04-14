@@ -78,5 +78,5 @@ int Actor::DEATH_GetActionLength()
 
 Tileset * Actor::DEATH_GetTileset()
 {
-	return GetActionTileset("death_128x96.png");
+	return GetActionTileset("death_64x64.png");
 }

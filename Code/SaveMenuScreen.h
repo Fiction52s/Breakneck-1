@@ -14,6 +14,8 @@ struct SaveFileDisplay
 	sf::Text completedShards;
 	sf::Text totalTime;
 	sf::Text totalPercentage;
+	sf::Text blankText;
+	bool blankMode;
 	void SetValues(SaveFile *sf);
 	void Draw(sf::RenderTarget *target);
 };

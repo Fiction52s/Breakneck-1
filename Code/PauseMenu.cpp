@@ -308,7 +308,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 		SetRectCenter(pauseOptionQuads + i * 4, 768, 128, startOffset + Vector2f(0, (spacing + 128) * i));
 	}
 
-	int waitFrames[3] = { 10, 5, 2 };
+	int waitFrames[3] = { 60, 30, 30 };
 	int waitModeThresh[2] = { 2, 2 };
 	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0);
 	

@@ -12137,10 +12137,10 @@ bool Actor::TryGroundAttack()
 		{
 			SetAction(GetCurrDashAttack());
 		}
-		else if (currInput.LUp())
-		{
-			SetAction(GetCurrUpTilt());
-		}
+		//else if (currInput.LUp())
+		//{
+		//	SetAction(GetCurrUpTilt());
+		//}
 		else
 		{
 			SetAction(GetCurrStandAttack());
@@ -19373,10 +19373,10 @@ void Actor::UpdateInHitlag()
 					{
 						pauseBufferedAttack = STEEPSLIDEATTACK;
 					}
-					else if (currInput.LUp())
+					/*else if (currInput.LUp())
 					{
 						pauseBufferedAttack = GetCurrUpTilt();
-					}
+					}*/
 					else
 					{
 						pauseBufferedAttack = GetCurrStandAttack();

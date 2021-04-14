@@ -251,6 +251,7 @@ struct LevelScore
 	int bestFramesToBeat;
 
 	LevelScore();
+	void Reset();
 	void Save(std::ofstream &of);
 	void Load(std::ifstream &is);
 };
@@ -265,7 +266,8 @@ struct SaveFile
 	void Save();
 	bool Load();
 	bool LoadInfo(std::ifstream &is );
-	void CopyFromDefault();
+
+	void SetAsDefault();
 
 	void CreateSaveWorlds();
 	//queries
@@ -274,6 +276,8 @@ struct SaveFile
 	float GetCompletionPercentageWorld( int w);
 	float GetCompletionPercentageSector(int w, int s);
 
+
+	std::string GetBestTimeString();
 	int GetBestFrames();
 	int GetBestFramesWorld(int w);
 	int GetBestFramesSector(int w, int s);

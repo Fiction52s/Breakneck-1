@@ -17,7 +17,7 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
-	allUnlocked = true;
+	allUnlocked = false;
 
 	worldSelector = new WorldSelector(p_mainMenu);
 

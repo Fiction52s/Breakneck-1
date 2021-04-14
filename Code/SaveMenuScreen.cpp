@@ -11,13 +11,17 @@ using namespace std;
 
 SaveFileDisplay::SaveFileDisplay(sf::Font &f)
 {
+	blankMode = true;
+
 	completedShards.setFont(f);
 	totalTime.setFont(f);
 	totalPercentage.setFont(f);
+	blankText.setFont(f);
 
-	completedShards.setCharacterSize(60);
-	totalTime.setCharacterSize(60);
-	totalPercentage.setCharacterSize(60);
+	completedShards.setCharacterSize(30);
+	totalTime.setCharacterSize(30);
+	totalPercentage.setCharacterSize(30);
+	blankText.setCharacterSize(30);
 
 	Color fillColor = Color::White;
 	Color lineColor = Color::Black;
@@ -31,32 +35,57 @@ SaveFileDisplay::SaveFileDisplay(sf::Font &f)
 	totalPercentage.setFillColor(fillColor);
 	totalPercentage.setOutlineColor(lineColor);
 	totalPercentage.setOutlineThickness(3);
+
+	blankText.setFillColor(fillColor);
+	blankText.setOutlineColor(lineColor);
+	blankText.setOutlineThickness(3);
+	blankText.setString("OPEN SLOT");
 }
 
 void SaveFileDisplay::SetPosition(Vector2f &pos)
 {
 	Vector2f innerStart = pos + Vector2f(280, 30);
 
+	blankText.setPosition(innerStart);
 	totalPercentage.setPosition(innerStart);
-	//totalTime.setPosition(innerStart + Vector2f(100, 0));
-	completedShards.setPosition(innerStart + Vector2f(0, 80));
+	totalTime.setPosition(innerStart + Vector2f(0, 100));
+	completedShards.setPosition(innerStart + Vector2f(0, 50));
 }
 
 void SaveFileDisplay::Draw(sf::RenderTarget *target)
 {
-	target->draw(completedShards);
-	target->draw(totalTime);
-	target->draw(totalPercentage);
+	if (blankMode)
+	{
+		target->draw(blankText);
+	}
+	else
+	{
+		target->draw(completedShards);
+		target->draw(totalTime);
+		target->draw(totalPercentage);
+	}
 }
 
 void SaveFileDisplay::SetValues(SaveFile *sf)
 {
-	stringstream ss;
-	ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards";
-	completedShards.setString(ss.str());
-	ss.str("");
-	ss << sf->GetCompletionPercentage() << "%";
-	totalPercentage.setString(ss.str());
+	if (sf != NULL)
+	{
+		stringstream ss;
+		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards";
+		completedShards.setString(ss.str());
+		ss.str("");
+		ss << sf->GetCompletionPercentage() << "% Complete";
+		totalPercentage.setString(ss.str());
+
+		ss.str("");
+		ss << "Time: " << sf->GetBestTimeString();
+		totalTime.setString(ss.str());
+		blankMode = false;
+	}
+	else
+	{
+		blankMode = true;
+	}
 }
 
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
@@ -134,6 +163,10 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 		}*/
 		if( !defaultFiles[i] )
 			fileDisplay[i]->SetValues(files[i]);
+		else
+		{
+			fileDisplay[i]->SetValues(NULL);
+		}
 	}
 
 	background.setTexture(*ts_background->texture);
@@ -255,9 +288,11 @@ bool SaveMenuScreen::Update()
 					assert(0);
 				}*/
 				defaultFiles[selectedSaveIndex] = false;
-				files[selectedSaveIndex]->CopyFromDefault();
+				files[selectedSaveIndex]->SetAsDefault();
+				files[selectedSaveIndex]->Save();
 				mainMenu->worldMap->InitSelectors();
-				action = TRANSITIONMOVIE;
+				//action = TRANSITIONMOVIE;
+				action = TRANSITION;
 			}
 			else
 			{
@@ -306,8 +341,8 @@ bool SaveMenuScreen::Update()
 	bool moveRight = false;
 
 
-	int moveDelayFrames = 15;
-	int moveDelayFramesSmall = 6;
+	int moveDelayFrames = 60;
+	int moveDelayFramesSmall = 40;
 
 	if (mainMenu->menuMode == MainMenu::SAVEMENU && action == WAIT )
 	{
@@ -327,10 +362,20 @@ bool SaveMenuScreen::Update()
 			return true;
 		}
 
-		bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-		bool canMoveSame = (moveDelayCounter == 0);
-		if ((menuCurrInput.LDown() || menuCurrInput.PDown()) && (
-			(!moveDown && canMoveOther) || (moveDown && canMoveSame)))
+		//bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
+		//bool canMoveSame = (moveDelayCounter == 0);
+
+
+		bool down = (menuCurrInput.LDown() && !menuPrevInput.LDown())
+			|| ( menuCurrInput.PDown() && !menuPrevInput.PDown() );
+		bool left = (menuCurrInput.LLeft() && !menuPrevInput.LLeft())
+			|| (menuCurrInput.PLeft() && !menuPrevInput.PLeft());
+		bool up = (menuCurrInput.LUp() && !menuPrevInput.LUp())
+			|| (menuCurrInput.PUp() && !menuPrevInput.PUp());
+		bool right = (menuCurrInput.LRight() && !menuPrevInput.LRight())
+			|| (menuCurrInput.PRight() && !menuPrevInput.PRight());
+
+		if (down )
 		{
 			selectedSaveIndex += 2;
 			//currentMenuSelect++;
@@ -341,8 +386,7 @@ bool SaveMenuScreen::Update()
 			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
-		else if ((menuCurrInput.LUp() || menuCurrInput.PUp()) && (
-			(!moveUp && canMoveOther) || (moveUp && canMoveSame)))
+		else if (up)
 		{
 			selectedSaveIndex -= 2;
 			if (selectedSaveIndex < 0)
@@ -353,8 +397,7 @@ bool SaveMenuScreen::Update()
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
 
-		if ((menuCurrInput.LRight() || menuCurrInput.PRight()) && (
-			(!moveRight && canMoveOther) || (moveRight && canMoveSame)))
+		if (right)
 		{
 			selectedSaveIndex++;
 			//currentMenuSelect++;
@@ -364,8 +407,7 @@ bool SaveMenuScreen::Update()
 			moveDelayCounter = moveDelayFrames;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 		}
-		else if ((menuCurrInput.LLeft() || menuCurrInput.PLeft()) && (
-			(!moveLeft && canMoveOther) || (moveLeft && canMoveSame)))
+		else if (left)
 		{
 			selectedSaveIndex--;
 			if (selectedSaveIndex % 2 == 1)
@@ -382,7 +424,9 @@ bool SaveMenuScreen::Update()
 
 		if (moveDelayCounter > 0)
 		{
-			moveDelayCounter--;
+			//should have to press a direction each time to get the save file
+			//clean up later?
+			//moveDelayCounter--;
 		}
 
 
@@ -619,7 +663,13 @@ void SaveMenuScreen::Reset()
 	for (int i = 0; i < 6; ++i)
 	{
 		if (!defaultFiles[i])
+		{
 			fileDisplay[i]->SetValues(files[i]);
+		}
+		else
+		{
+			fileDisplay[i]->SetValues(NULL);
+		}
 	}
 	
 	asteroidFrameBack = 0;

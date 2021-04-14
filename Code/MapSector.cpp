@@ -134,7 +134,7 @@ void MapSector::UpdateUnlockedLevelCount()
 	for (int i = 0; i < numLevels - 1; ++i)
 	{
 		level = sec->GetLevel(i);
-		if( saveFile->IsCompleteLevel( level ))
+		if( !saveFile->IsCompleteLevel( level ))
 		{
 			unlockedLevelCount = max(1, i + 1);
 			break;
