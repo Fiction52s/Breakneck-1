@@ -62,5 +62,5 @@ int Actor::INTRO_GetActionLength()
 
 Tileset * Actor::INTRO_GetTileset()
 {
-	return GetActionTileset("enter_64x64.png");
+	return GetActionTileset("entrance_64x64.png");
 }

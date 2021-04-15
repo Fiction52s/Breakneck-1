@@ -146,6 +146,7 @@ void Comboer::ProcessHit()
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
+		shootFrames = 0;
 		action = S_SHOT;
 		frame = 0;
 		//SetHitboxes(hitBody, 0);

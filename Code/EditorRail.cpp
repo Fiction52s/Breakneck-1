@@ -362,11 +362,9 @@ void TerrainRail::Load(std::ifstream &is)
 {
 	is >> rType;
 
-
 	if (IsEnemyType())
 	{
-		string typeString;
-		is >> typeString;
+		is >> enemyTypeName;
 
 		//ActorType *at = sess->types[typeString];
 
@@ -388,9 +386,9 @@ void TerrainRail::Load(std::ifstream &is)
 	//a little messy but it works for these. Shouldn't need to do anything more special
 	//this allows for special parameters for each enemy to be saved, such as spacing between
 	//flies/blockers
-	if (rType == RailType::BLOCKER)
+	if (rType == RailType::BLOCKER )
 	{
-		enemyParams = new BlockerParams(sess->types["blocker"], is);
+		enemyParams = new BlockerParams(sess->types[enemyTypeName], is);
 	}
 	else if (rType == RailType::FLY)
 	{
@@ -942,7 +940,12 @@ void TerrainRail::SetChainPath()
 
 void TerrainRail::TryCreateEnemyChain()
 {
-	string typeString;
+	if (!IsEnemyType())
+	{
+		return;
+	}
+
+	/*string typeString;
 	if (rType == BLOCKER)
 	{
 		typeString = "blocker";
@@ -955,7 +958,7 @@ void TerrainRail::TryCreateEnemyChain()
 	else
 	{
 		return;
-	}
+	}*/
 
 	if (enemyParams != NULL)
 	{
@@ -964,7 +967,7 @@ void TerrainRail::TryCreateEnemyChain()
 	}
 	else
 	{
-		enemyParams = sess->types[typeString]->defaultParamsVec[0]->Copy();
+		enemyParams = sess->types[enemyTypeName]->defaultParamsVec[0]->Copy();
 		enemyParams->group = sess->groups["--"];
 	}
 
@@ -1619,9 +1622,11 @@ void TerrainRail::SetRailToActorType(ActorParams *ap)
 	{
 	case EnemyType::EN_BLOCKERCHAIN:
 		t = RailType::BLOCKER;
+		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
 		break;
 	case EnemyType::EN_FLYCHAIN:
 		t = RailType::FLY;
+		enemyTypeName = ap->myEnemy->editParams->GetTypeName();
 		break;
 	}
 

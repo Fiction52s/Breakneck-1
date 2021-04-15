@@ -113,5 +113,5 @@ int Actor::BOOSTERBOUNCEGROUND_GetActionLength()
 
 Tileset * Actor::BOOSTERBOUNCEGROUND_GetTileset()
 {
-	return GetActionTileset("bounce_wall_224x224.png");
+	return GetActionTileset("bounce_wall_96x64.png");
 }

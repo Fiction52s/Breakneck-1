@@ -24,7 +24,7 @@ void Actor::GROUNDHITSTUN_Change()
 void Actor::GROUNDHITSTUN_Update()
 {
 	hitstunFrames--;
-	int slowDown = 1;
+	/*int slowDown = 1;
 	if (groundSpeed > 0)
 	{
 		groundSpeed -= slowDown;
@@ -40,7 +40,7 @@ void Actor::GROUNDHITSTUN_Update()
 		{
 			groundSpeed = 0;
 		}
-	}
+	}*/
 }
 
 void Actor::GROUNDHITSTUN_UpdateSprite()

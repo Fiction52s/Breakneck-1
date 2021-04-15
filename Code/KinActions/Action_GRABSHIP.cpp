@@ -57,5 +57,5 @@ int Actor::GRABSHIP_GetActionLength()
 
 Tileset * Actor::GRABSHIP_GetTileset()
 {
-	return GetActionTileset("shipjump_160x96.png");
+	return GetActionTileset("ship_jump_160x96.png");
 }

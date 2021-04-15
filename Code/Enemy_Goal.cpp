@@ -84,6 +84,8 @@ Goal::Goal( ActorParams *ap )
 		break;
 	}
 
+	miniSprite.setTextureRect(ts_mini->GetSubRect(5));
+
 	ResetEnemy();
 }
 

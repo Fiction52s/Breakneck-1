@@ -96,11 +96,13 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	ts = sess->GetSizedTileset("Enemies/poweritem_128x128.png");
 
-	UpdateParamsSettings();
+	//UpdateParamsSettings();
 
 	alreadyCollected = false;
 
-	if (sess->GetPlayer(0)->HasUpgrade(Actor::UPGRADE_POWER_AIRDASH + powerIndex))
+	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+
+	if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
 	{
 		alreadyCollected = true;
 	}
@@ -248,12 +250,21 @@ void PowerItem::DissipateOnTouch()
 
 void PowerItem::Capture()
 {
-	sess->GetPlayer(0)->SetStartUpgrade(Actor::UPGRADE_POWER_AIRDASH + powerIndex, true);
+	int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+
+	sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
 
 	if (powerIndex == 5)
 	{
 		//left wire also
-		sess->GetPlayer(0)->SetStartUpgrade(Actor::UPGRADE_POWER_AIRDASH + powerIndex + 1, true);
+		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex + 1, true);
+	}
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+
+		game->UnlockUpgrade(upgradeIndex);
 	}
 
 	//if (sess->IsSessTypeGame())

@@ -238,7 +238,7 @@ void Session::RegisterGeneralEnemies()
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
 
 	AddExtraEnemy("poweritem", CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
-		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 6);
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 6);
 
 	AddExtraEnemy("healthfly", CreateEnemy<FlyChain>, SetParamsType<FlyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
@@ -276,7 +276,8 @@ void Session::RegisterGeneralEnemies()
 	AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
 		true, false );
 	
-	
+	AddExtraEnemy("blocker", CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	
 
 	/*AddExtraEnemy("groundedwarper", CreateEnemy<GroundedWarper>, SetParamsType<GroundedWarperParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false,
@@ -370,7 +371,7 @@ void Session::RegisterW1Enemies()
 	AddBasicAerialWorldEnemy("booster", 1, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
-	AddWorldEnemy("blocker", 1, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+	AddWorldEnemy("blueblocker", 1, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("patroller", 1, CreateEnemy<Patroller>, Vector2i(0, 0), Vector2i(32, 32), true, true, true, true, 3 );
@@ -422,6 +423,9 @@ void Session::RegisterW2Enemies()
 	AddBasicAerialWorldEnemy("bird", 2, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("glidetarget", 2, CreateEnemy<GlideTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
+
+	AddWorldEnemy("greenblocker", 2, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("greengoal", 2, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 	//AddBasicGroundWorldEnemy("greengoal", 2, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1,
@@ -502,6 +506,9 @@ void Session::RegisterW3Enemies()
 	//	GetTileset("Enemies/bouncefloater_128x128.png", 128, 128));
 
 	//AddBasicGroundWorldEnemy("yellowgoal", 3, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
+
+	AddWorldEnemy("yellowblocker", 3, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddBasicAerialWorldEnemy("yellowcomboertarget", 3, CreateEnemy<ComboerTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
@@ -4293,7 +4300,7 @@ void Session::HitlagUpdate()
 
 	//UpdatePlayersInHitlag();
 
-	if (activeSequence == superSequence)
+	if ( activeSequence != NULL && activeSequence == superSequence)
 	{
 		ActiveSequenceUpdate();
 		currSuperPlayer->CheckBirdCommands();

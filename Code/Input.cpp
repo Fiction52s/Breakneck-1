@@ -1239,8 +1239,8 @@ void SetFilterDefault( XBoxButton *filter)
 	filter[ControllerSettings::DASH] = XBOX_X;
 	filter[ControllerSettings::ATTACK] = XBOX_R1;
 	filter[ControllerSettings::BOUNCE] = XBOX_B;
-	filter[ControllerSettings::GRIND] = XBOX_Y;
-	filter[ControllerSettings::TIMESLOW] = XBOX_L1;
+	filter[ControllerSettings::GRIND] = XBOX_L1;//XBOX_Y;
+	filter[ControllerSettings::TIMESLOW] = XBOX_Y;//XBOX_L1;
 	filter[ControllerSettings::LEFTWIRE] = XBOX_L2;
 	filter[ControllerSettings::RIGHTWIRE] = XBOX_R2;
 	filter[ControllerSettings::MAP] = XBOX_BACK;

@@ -58,5 +58,5 @@ int Actor::SEQ_TURNFACE_GetActionLength()
 
 Tileset * Actor::SEQ_TURNFACE_GetTileset()
 {
-	return GetActionTileset("shipjump_160x96.png");
+	return GetActionTileset("ship_jump_160x96.png");
 }

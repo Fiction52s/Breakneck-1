@@ -421,6 +421,7 @@ struct Actor : QuadTreeCollider,
 	bool specialSlow;
 	bool frameAfterAttackingHitlagOver;
 
+	//Enemy *receivedHitEnemy;
 	
 
 
@@ -1308,6 +1309,7 @@ struct Actor : QuadTreeCollider,
 	void UpdatePrePhysics();
 	void ApplyHit( HitboxInfo *info,
 		Actor *receivedHitPlayer,
+		//Enemy *recievedHitEnemy,
 		HitResult res, V2d &pos );
 	bool ResolvePhysics( sf::Vector2<double> vel );
 	void UpdatePhysics();

@@ -7,6 +7,9 @@
 #include "CircleGroup.h"
 #include "EnemyChain.h"
 
+#include "Actor.h"
+//testing knockback stuff
+
 using namespace std;
 using namespace sf;
 
@@ -28,10 +31,42 @@ BlockerChain::BlockerChain(ActorParams *ap)
 	paletteImage.loadFromFile("Resources/Enemies/blocker_palette.png");
 	
 	int skinIndex = 0;
-	for (int i = 0; i < 9; ++i)
-	{	
-		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel( i, skinIndex));
+	
+	const string &typeName = ap->GetTypeName();
+	if (typeName == "blocker")
+	{
+		blockerType = Blocker::GREY;
+		skinIndex = 0;
 	}
+	if (typeName == "blueblocker")
+	{
+		blockerType = Blocker::BLUE;
+		skinIndex = 0;
+	}
+	else if (typeName == "greenblocker")
+	{
+		blockerType = Blocker::GREEN;
+		skinIndex = 1;
+	}
+	else if (typeName == "yellowblocker")
+	{
+		blockerType = Blocker::YELLOW;
+		skinIndex = 2;
+	}
+
+	for (int i = 0; i < 9; ++i)
+	{
+		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel(i, skinIndex));
+	}
+
+	/*GREY,
+		BLUE,
+		GREEN,
+		YELLOW,
+		ORANGE,
+		RED,
+		MAGENTA,
+		BLACK,*/
 
 	/*for (int i = 0; i < 9; ++i)
 	{
@@ -154,9 +189,10 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hitPosType = HitboxInfo::OMNI;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(40);
+	BasicCircleHitBodySetup(40);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -367,6 +403,61 @@ bool Blocker::IsFastDying()
 	}
 
 	return false;
+}
+
+void Blocker::UpdateHitboxes()
+{
+	BasicUpdateHitboxes();
+
+	int numEnemies = bc->numEnemies;
+	if ( numEnemies > 1)
+	{
+		
+
+		if (vaIndex == 0 || vaIndex == numEnemies - 1)
+		{
+			hitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
+		}
+		else
+		{
+			int prev = vaIndex - 1;
+			int next = vaIndex + 1;
+
+
+			if (bc->enemies[prev]->dead || bc->enemies[next]->dead )
+			{
+				hitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
+			}
+			else
+			{
+				hitboxInfo->hitPosType = HitboxInfo::HitPosType::AIRFORWARD;
+
+				V2d prevPos = bc->enemies[vaIndex - 1]->GetPosition();
+				V2d nextPos = bc->enemies[vaIndex + 1]->GetPosition();
+
+				V2d along = normalize(nextPos - prevPos);
+				V2d norm(along.y, -along.x);
+
+				V2d playerPos = sess->GetPlayerPos();
+				V2d playerDir = normalize(playerPos - GetPosition());
+				if (dot(playerDir, norm) >= 0)
+				{
+					hitboxInfo->kbDir = norm;
+				}
+				else
+				{
+					hitboxInfo->kbDir = -norm;
+				}
+			}
+			//hitboxInfo->kbDir = 
+		}
+	}
+	else
+	{
+		hitboxInfo->hitPosType = HitboxInfo::HitPosType::OMNI;
+	}
+	
+
 }
 
 void Blocker::UpdateSprite()

@@ -71,10 +71,10 @@ void SaveFileDisplay::SetValues(SaveFile *sf)
 	if (sf != NULL)
 	{
 		stringstream ss;
-		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards";
+		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
 		completedShards.setString(ss.str());
 		ss.str("");
-		ss << sf->GetCompletionPercentage() << "% Complete";
+		ss << sf->GetTotalMapsBeaten() << " / " << sf->GetTotalMaps() << " Maps completed";//sf->GetCompletionPercentage() << "% Complete";
 		totalPercentage.setString(ss.str());
 
 		ss.str("");

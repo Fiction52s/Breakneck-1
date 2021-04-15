@@ -282,7 +282,13 @@ Panel *ActorType::CreatePanel()
 		p = CreateDefaultPanel();
 		p->AddCheckBox("facingright", Vector2i(0, 0));
 	}
-	else if (name == "blocker" || name == "greenblocker")
+	else if (name == "blocker" || name == "blueblocker"
+		|| name == "greenblocker"
+		|| name == "yellowblocker"
+		|| name == "orangeblocker"
+		|| name == "redblocker"
+		|| name == "magentablocker"
+		|| name == "blackblocker" )
 	{
 		p = CreateDefaultPanel();
 		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",

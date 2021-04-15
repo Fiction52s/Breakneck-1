@@ -102,7 +102,7 @@ struct HitboxInfo
 	};
 
 	HitboxInfo()
-		:knockback(0), kbDir(0, 0),
+		:knockback(0),
 		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
 		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true),
 		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
@@ -115,6 +115,8 @@ struct HitboxInfo
 		flipHorizontalKB( false ),
 		flipVerticalKB( false )
 	{
+		kbDir = normalize(V2d(1, -1));
+		//gravMultiplier = .5;
 	};
 
 	static bool IsAirType(HitPosType hpt);

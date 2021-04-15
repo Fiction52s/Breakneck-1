@@ -20,6 +20,7 @@ struct BlockerChain : EnemyChain
 	void EnemyDraw(sf::RenderTarget *target);
 	sf::Shader blockerShader;
 	sf::Glsl::Vec4 paletteArray[9];
+	int blockerType;
 };
 
 
@@ -59,6 +60,7 @@ struct Blocker : Enemy, QuadTreeEntrant
 	void IHitPlayer(int index);
 	void SetStartPosition(V2d &pos);
 	sf::FloatRect GetAABB();
+	void UpdateHitboxes();
 	int minimapCirclePoints;
 	int minimapCircleRadius;
 

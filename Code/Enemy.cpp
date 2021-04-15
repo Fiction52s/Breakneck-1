@@ -689,12 +689,15 @@ void Enemy::SetKey()
 
 void Enemy::UpdateParamsSettings()
 {
-	bool oldHasMonitor = hasMonitor;
-	hasMonitor = editParams->hasMonitor;
-
-	if (hasMonitor != oldHasMonitor)
+	if (sess->IsSessTypeEdit())
 	{
-		SetKey();
+		bool oldHasMonitor = hasMonitor;
+		hasMonitor = editParams->hasMonitor;
+
+		if (hasMonitor != oldHasMonitor)
+		{
+			SetKey();
+		}
 	}
 }
 
@@ -1834,10 +1837,10 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 
 void Enemy::BasicUpdateHitboxInfo()
 {
-	if (hitboxInfo != NULL)
+	/*if (hitboxInfo != NULL)
 	{
 		hitboxInfo->kbDir = sess->GetPlayerKnockbackDirFromVel();
-	}
+	}*/
 }
 
 void Enemy::UpdateEnemyPhysics()

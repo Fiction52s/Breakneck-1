@@ -269,6 +269,9 @@ struct SaveFile
 
 	void SetAsDefault();
 
+	int GetTotalMaps();
+	int GetTotalMapsBeaten();
+
 	void CreateSaveWorlds();
 	//queries
 	

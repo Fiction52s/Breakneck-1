@@ -74,5 +74,5 @@ int Actor::GROUNDTECHINPLACE_GetActionLength()
 
 Tileset * Actor::GROUNDTECHINPLACE_GetTileset()
 {
-	return GetActionTileset("tech_stand_64x64.png");
+	return GetActionTileset("tech_stand_80x80.png");
 }

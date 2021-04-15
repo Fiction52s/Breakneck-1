@@ -48,6 +48,13 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 		WIREBLOCKING,
 		HIT,
 		BLOCKER,
+		/*BLUEBLOCKER,
+		GREENBLOCKER,
+		YELLOWBLOCKER,
+		ORANGEBLOCKER,
+		REDBLOCKER,
+		MAGENTABLOCKER,
+		BLACKBLOCKER,*/
 		FLY,
 		/*NORMAL,
 		LOCKED,
@@ -86,6 +93,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	ActorParams *enemyParams;
 	EnemyChain *enemyChain;
 	RailPtr mostRecentCopy;
+	std::string enemyTypeName;
 
 	ActorParams *blockerParams;
 	BlockerChain *blockerChain;

@@ -821,9 +821,12 @@ void GameSession::RecordReplayEnemies()
 	}
 }
 
-void GameSession::UnlockPower(int pType)
+void GameSession::UnlockUpgrade(int pType)
 {
-	mainMenu->GetCurrentProgress()->UnlockUpgrade(pType);
+	if (saveFile != NULL)
+	{
+		saveFile->UnlockUpgrade(pType);
+	}
 }
 
 void GameSession::UpdateEnemiesSprites()
@@ -924,6 +927,9 @@ void GameSession::ProcessGate(int gCat,
 
 	gate->edgeB->v0 = point1;
 	gate->edgeB->v1 = point0;
+
+	gate->edgeA->CalcAABB();
+	gate->edgeB->CalcAABB();
 
 	gate->next = NULL;
 	gate->prev = NULL;
@@ -1872,7 +1878,7 @@ bool GameSession::SetupControlProfiles()
 		return true;
 
 	ControlProfile *currProfile;
-	SaveFile *currFile = mainMenu->GetCurrentProgress();
+	SaveFile *currFile = saveFile;//mainMenu->GetCurrentProgress();
 	if (currFile != NULL)
 	{
 		bool set = pauseMenu->controlSettingsMenu->pSel->SetCurrProfileByName(currFile->controlProfileName);
@@ -2045,13 +2051,13 @@ int GameSession::Run()
 		SetActiveSequence(shipEnterScene);
 	}
 
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (GetPlayer(i) != NULL)
 		{
 			SetPlayerOptionField(i);
 		}
-	}
+	}*/
 
 	if (parentGame != NULL)
 	{
@@ -3313,14 +3319,15 @@ void GameSession::SetOriginalMusic()
 
 SaveFile *GameSession::GetCurrentProgress()
 {
-	if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+	return saveFile;
+	/*if (mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
 	{
 		return mainMenu->GetCurrentProgress();
 	}
 	else
 	{
 		return NULL;
-	}
+	}*/
 }
 
 

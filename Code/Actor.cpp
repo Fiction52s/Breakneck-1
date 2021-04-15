@@ -2797,6 +2797,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+	blockstunFrames = 0;
 	directionalInputFreezeFrames = 0;
 	maxFallSpeedWhileHitting = 4.0;
 	frameAfterAttackingHitlagOver = false;
@@ -3762,15 +3763,23 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		if (currProgress != NULL )
 		{
 			isCampaign = true;
+
+			//sess->playerOptionsField.Set(currProgress->upgradeField);
+
+			SetAllUpgrades(currProgress->upgradeField);
 			//set this up better later
-			if( currProgress->HasUpgrade(UPGRADE_POWER_AIRDASH) )
-				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);
+			/*if( currProgress->HasUpgrade(UPGRADE_POWER_AIRDASH) )
+				SetStartUpgrade(UPGRADE_POWER_AIRDASH, true);*/
 		}
 	}
 
 	if (!isCampaign)
 	{
 		SetAllUpgrades(sess->playerOptionsField);
+	}
+	else
+	{
+		
 	}
 
 	//for (int i = 0; i < UPGRADE_Count; ++i)
@@ -4368,6 +4377,8 @@ void Actor::Respawn()
 	momentumBoostFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
+	//should probably just stay at wherever you previously set it? not sure
+	//might save this in the save file after this beta
 	currPowerMode = PMODE_SHIELD;
 	touchedCoyoteHelper = false;
 	coyoteBoostFrames = 0;
@@ -4886,13 +4897,15 @@ void Actor::ProcessReceivedHit()
 
 				V2d otherPos = receivedHitPosition;
 				double kbImpulse = 6;
+
+				
 				if (otherPos.x < position.x)
 				{
-					groundSpeed += kbImpulse;
+					groundSpeed += receivedHit->knockback;
 				}
 				else
 				{
-					groundSpeed -= kbImpulse;
+					groundSpeed -= receivedHit->knockback;//kbImpulse;
 				}
 			}
 			else if (IsActionAirBlock(action))
@@ -4902,7 +4915,7 @@ void Actor::ProcessReceivedHit()
 
 				V2d otherPos = receivedHitPosition;
 
-				double shieldKBFactor = .5;
+				double shieldKBFactor = 1.0;//.5;
 
 				if (receivedHit->knockback > 0)
 				{
@@ -7182,6 +7195,13 @@ void Actor::SetStartUpgrade(int upgrade, bool on)
 {
 	bStartHasUpgradeField.SetBit(upgrade, on);
 	SetUpgrade(upgrade, on);
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->UnlockUpgrade(upgrade);
+	}
+	
 }
 
 
@@ -12596,13 +12616,34 @@ void Actor::HitWhileAerial()
 	SetAction(AIRHITSTUN);
 	frame = 0;
 
-
-	
-	
+	double upwardsMult = 2.0;
 
 	if (receivedHit->knockback > 0)
 	{
-		velocity = receivedHit->GetKnockbackVector();
+		if (receivedHit->hitPosType == HitboxInfo::OMNI)
+		{
+			V2d hitDir = normalize(position - receivedHitPosition);
+			velocity = hitDir * receivedHit->knockback;
+			if (velocity.y < 0)
+			{
+				velocity.y *= upwardsMult;
+			}
+		}
+		else
+		{
+			velocity = receivedHit->GetKnockbackVector();
+
+			if (receivedHitPlayer == NULL) //enemies only
+			{
+				if (velocity.y < 0)
+				{
+					velocity.y *= upwardsMult;
+				}
+			}
+			
+		}
+
+		
 		//velocity = receivedHit->knockback * receivedHit->kbDir;
 	}
 	else
@@ -12703,6 +12744,13 @@ void Actor::HitGroundWhileInAirHitstun()
 			//cout << "bouncing off ground \n";
 			double d = dot(velocity, gNormal);
 			velocity = velocity - (2.0 * d * gNormal);
+
+			double bounceCap = 20;
+
+			if (velocity.y < -bounceCap)
+			{
+				velocity.y = -bounceCap;
+			}
 			//velocity.y = -velocity.y;
 			ground = NULL;
 			physicsOver = true;
@@ -16831,6 +16879,7 @@ void Actor::ApplyHit( HitboxInfo *info,
 		{
 			receivedHit = info;
 			receivedHitPlayer = attackingPlayer;
+			//receivedHitEnemy = attackingEnemy;
 			receivedHitReaction = res;
 			receivedHitPosition = pos;
 		}

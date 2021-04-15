@@ -58,5 +58,5 @@ int Actor::WAITFORSHIP_GetActionLength()
 
 Tileset * Actor::WAITFORSHIP_GetTileset()
 {
-	return GetActionTileset("shipjump_160x96.png");
+	return GetActionTileset("ship_jump_160x96.png");
 }

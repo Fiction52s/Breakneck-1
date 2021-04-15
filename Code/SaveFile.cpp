@@ -643,7 +643,7 @@ std::string SaveFile::GetBestTimeString()
 	totalFrames = totalFrames - numSeconds * framesInSecond;
 
 	stringstream ss;
-	ss << numHours << " hrs " << numMinutes << " mins " << numSeconds << " seconds\n(Frames: " << allFrames << ")";
+	ss << numHours << " hr " << numMinutes << " min " << numSeconds << " sec\n(Frames: " << allFrames << ")";
 
 	return ss.str();
 }
@@ -750,6 +750,34 @@ void SaveFile::CalcShardProgress(BitField &b, float &totalShards,
 			}
 		}
 	}
+}
+
+int SaveFile::GetTotalMaps()
+{
+	int totalMaps = 0;
+	for (int i = 0; i < 512; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists())
+		{
+			++totalMaps;
+		}
+	}
+	return totalMaps;
+}
+int SaveFile::GetTotalMapsBeaten()
+{
+	int totalMapsBeaten = 0;
+	for (int i = 0; i < 512; ++i)
+	{
+		if (adventureFile->GetMap(i).Exists())
+		{
+			if (levelsBeatenField.GetBit(i))
+			{
+				++totalMapsBeaten;
+			}
+		}
+	}
+	return totalMapsBeaten;
 }
 
 float SaveFile::CalcCompletionPercentage(int start, int end, BitField & b)
