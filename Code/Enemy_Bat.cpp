@@ -73,10 +73,11 @@ Bat::Bat( ActorParams *ap )
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->knockback = 8;
+	hitboxInfo->kbDir = V2d(1, 0);
 
-	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(16);
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );

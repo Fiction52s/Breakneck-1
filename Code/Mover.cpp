@@ -1123,6 +1123,22 @@ void GroundMover::HitTerrainAerial()
 			roll = true;
 			edgeQuantity = ground->GetQuantity( minContact.position );
 			physBody.globalPosition += minContact.resolution;
+
+			if (handler != NULL)
+				handler->Land();
+
+			Edge *prev = ground->GetPrevEdge();
+			Edge *next = ground->GetNextEdge();
+			if ( approxEquals(edgeQuantity, 0 ) && !IsEdgeViableGround(prev->Normal()))
+			{
+				handler->ReachCliff();
+			}
+			else if (approxEquals(edgeQuantity, ground->GetLength()) && !IsEdgeViableGround(next->Normal()))
+			{
+				handler->ReachCliff();
+			}
+
+			
 			//cout << "corner: " << minContact.resolution.x << ", " <<
 			//	", " << minContact.resolution.y << endl;
 			//cout << framesInAir << " land corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
@@ -1133,9 +1149,11 @@ void GroundMover::HitTerrainAerial()
 			edgeQuantity = ground->GetQuantity( minContact.position + minContact.resolution );
 			//cout << framesInAir << " land non corner: " << ground->Normal().x << ", " << ground->Normal().y << endl;
 			UpdateGroundPos();
+
+			if (handler != NULL)
+				handler->Land();
 		}
-		if( handler != NULL )
-			handler->Land();
+		
 	}
 	else
 	{

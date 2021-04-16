@@ -81,11 +81,12 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitstunFrames = 40;
+	hitboxInfo->knockback = 20;
+	hitboxInfo->kbDir = normalize(V2d(1, -.7));
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(60*scale);
+	BasicCircleHitBodySetup(60*scale);
 	hitBody.hitboxInfo = hitboxInfo;
 
 
@@ -154,34 +155,6 @@ void StagBeetle::ResetEnemy()
 	currShield = shield;
 	shield->Reset();
 	shield->SetPosition(GetPosition());
-}
-
-void StagBeetle::UpdateHitboxes()
-{
-	Edge *ground = groundMover->ground;
-	if( ground != NULL )
-	{
-
-		V2d knockbackDir( 1, -1 );
-		knockbackDir = normalize( knockbackDir );
-		if(groundMover->groundSpeed > 0 )
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = 15;
-		}
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
-
-	BasicUpdateHitboxes();
 }
 
 void StagBeetle::ActionEnded()
@@ -547,5 +520,7 @@ void StagBeetle::Land()
 	//sprite.setTexture( *ts_hop->texture );
 	//sprite.setTextureRect( ts_hop->GetSubRect( 0 ) );
 	frame = 0;
+
+	//Edge *ground = groundMover->ground;
 	//cout << "land" << endl;
 }

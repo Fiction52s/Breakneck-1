@@ -190,6 +190,7 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->hitPosType = HitboxInfo::OMNI;
+	hitboxInfo->reversableKnockback = false;;
 
 	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(40);

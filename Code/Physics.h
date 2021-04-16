@@ -113,7 +113,8 @@ struct HitboxInfo
 		canBeParried(true),
 		hitsThroughInvincibility(false),
 		flipHorizontalKB( false ),
-		flipVerticalKB( false )
+		flipVerticalKB( false ),
+		reversableKnockback(true )
 	{
 		kbDir = normalize(V2d(1, -1));
 		//gravMultiplier = .5;
@@ -148,6 +149,7 @@ struct HitboxInfo
 	bool hitsThroughInvincibility;
 	bool flipHorizontalKB;
 	bool flipVerticalKB;
+	bool reversableKnockback;
 	
 };
 

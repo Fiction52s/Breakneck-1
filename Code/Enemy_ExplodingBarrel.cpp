@@ -42,13 +42,6 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	SetOffGroundHeight(ts->tileHeight / 2.0 - 20);
 
-
-	
-
-	
-
-
-
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3 * 60;
 	hitboxInfo->drainX = 0;

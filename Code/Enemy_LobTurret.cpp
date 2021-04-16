@@ -62,8 +62,11 @@ LobTurret::LobTurret(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicRectHurtBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
+	BasicRectHitBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
+
+	//BasicCircleHurtBodySetup(32);
+	//BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	bulletSpeed = 7;

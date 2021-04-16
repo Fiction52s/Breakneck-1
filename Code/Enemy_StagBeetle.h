@@ -24,8 +24,6 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	
-	void UpdateHitboxes();
-	
 	void ResetEnemy();
 
 	void HitTerrain(double &q);

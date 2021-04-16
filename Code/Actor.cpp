@@ -12638,8 +12638,8 @@ V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
 					knockbackVec.y *= upwardsMult;
 				}
 
-				if ((diff.x < 0 && !receivedHit->flipHorizontalKB)
-					|| (diff.x > 0 && receivedHit->flipHorizontalKB))
+				if ( receivedHit->reversableKnockback && ((diff.x < 0 && !receivedHit->flipHorizontalKB)
+					|| (diff.x > 0 && receivedHit->flipHorizontalKB)))
 				{
 					knockbackVec.x = -knockbackVec.x;
 				}
