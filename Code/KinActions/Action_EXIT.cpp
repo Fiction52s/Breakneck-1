@@ -29,7 +29,7 @@ void Actor::EXIT_UpdateSprite()
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2,
 		sprite->getLocalBounds().height / 2);
-	sprite->setPosition(position.x, position.y);//position.x, position.y );
+	sprite->setPosition(position.x, position.y - 16);//position.x, position.y );
 	sprite->setRotation(0);
 }
 

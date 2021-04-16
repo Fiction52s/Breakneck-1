@@ -6178,6 +6178,8 @@ void Actor::UpdatePrePhysics()
 		return;
 	}
 
+	showSword = false;
+
 	SetCurrHitboxes(NULL, 0);
 
 	ProcessGravityGrass();
@@ -6195,6 +6197,8 @@ void Actor::UpdatePrePhysics()
 	ReverseVerticalInputsWhenOnCeiling();
 
 	ActionEnded();
+
+	
 
 	if (action == DEATH)
 	{
@@ -6348,7 +6352,7 @@ void Actor::UpdatePrePhysics()
 	wallNormal.x = 0;
 	wallNormal.y = 0;
 	hitEnemyDuringPhyiscs = false;
-	showSword = false;
+	
 	specialSlow = false;
 	
 

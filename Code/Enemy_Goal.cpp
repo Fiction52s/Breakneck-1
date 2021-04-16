@@ -41,9 +41,10 @@ Goal::Goal( ActorParams *ap )
 		break;
 	}
 
-	SetOffGroundHeight(512 / 2.0);
+	SetOffGroundHeight(128);
+	SetCurrPosInfo(startPosInfo);
 
-	BasicRectHurtBodySetup(80, 100, startPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
+	BasicRectHurtBodySetup(80, 100, currPosInfo.GetGroundAngleRadians(), V2d(0, 20), GetPosition());
 
 	frame = 0;
 	animationFactor = 7;
@@ -58,8 +59,8 @@ Goal::Goal( ActorParams *ap )
 	miniSprite.setTextureRect(ts_mini->GetSubRect(2));
 
 	miniSprite.setOrigin(miniSprite.getLocalBounds().width / 2, miniSprite.getLocalBounds().height);
-	miniSprite.setPosition(startPosInfo.GetPositionF());
-	miniSprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+	miniSprite.setPosition(currPosInfo.GetPositionF());
+	miniSprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	miniSprite.setScale(16, 16);
 
 	switch (world)
@@ -197,7 +198,8 @@ void Goal::UpdateSprite()
 	{
 		sprite.setTexture(*ts->texture);
 		sprite.setTextureRect(ts->GetSubRect(0));
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);//- initialYOffset);
 	}
 	else  if (action == A_KINKILLING)
 	{
@@ -219,7 +221,8 @@ void Goal::UpdateSprite()
 		}
 		sprite.setTexture(*ts->texture);
 		sprite.setTextureRect(ts->GetSubRect(trueFrame));
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - initialYOffset);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -initialYOffset);
 	}
 	else if (action == A_EXPLODING)
 	{
@@ -236,7 +239,8 @@ void Goal::UpdateSprite()
 			sprite.setTexture(*ts_explosion->texture);
 			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 		}
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);// -explosionYOffset - initialYOffset);
 	}
 	else if (action == A_DESTROYED)
 	{
@@ -254,11 +258,12 @@ void Goal::UpdateSprite()
 			sprite.setTextureRect(ts_explosion->GetSubRect(trueFrame));
 		}
 
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height - explosionYOffset - initialYOffset);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);//- explosionYOffset - initialYOffset);
 	}
 
-	sprite.setPosition(startPosInfo.GetPositionF());
-	sprite.setRotation(startPosInfo.GetGroundAngleDegrees());
+	sprite.setPosition(currPosInfo.GetPositionF());
+	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
 void Goal::EnemyDraw(sf::RenderTarget *target )
