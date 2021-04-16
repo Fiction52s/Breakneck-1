@@ -79,6 +79,7 @@ void LaserJays::Construct(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->kbDir = V2d(1, 0);
 
 	laserBody.BasicCircleSetup(10 * scale, 0, V2d());
 	laserBody.hitboxInfo = hitboxInfo;
@@ -187,6 +188,17 @@ void LaserJays::ResetEnemy()
 	if (!secondary)
 	{
 		otherJay->Reset();
+		//otherJay->SetCurrPosInfo(startPosInfo);
+	}
+}
+
+void LaserJays::UpdateOnPlacement(ActorParams *ap)
+{
+	Enemy::UpdateOnPlacement(ap);
+
+	if (!secondary)
+	{
+		otherJay->UpdateOnPlacement(ap); //assuming that ap is editparams here
 	}
 }
 

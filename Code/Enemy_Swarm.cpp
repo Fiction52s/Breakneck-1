@@ -30,6 +30,7 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->kbDir = V2d(1, 0);
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
@@ -208,7 +209,7 @@ Swarm::Swarm( ActorParams *ap )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 10;
 
 	BasicCircleHitBodySetup(48);

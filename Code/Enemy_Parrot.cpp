@@ -46,6 +46,7 @@ Parrot::Parrot(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->kbDir = V2d(1, 0);
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);

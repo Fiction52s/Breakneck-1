@@ -69,7 +69,7 @@ Lizard::Lizard(ActorParams *ap)
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->knockback = 12;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
@@ -128,34 +128,6 @@ void Lizard::ResetEnemy()
 
 	UpdateSprite();
 	UpdateHitboxes();
-}
-
-void Lizard::UpdateHitboxes()
-{
-	Edge *ground = groundMover->ground;
-	if (ground != NULL)
-	{
-
-		V2d knockbackDir(1, -1);
-		knockbackDir = normalize(knockbackDir);
-		if (groundMover->groundSpeed > 0)
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
-			hitboxInfo->knockback = 15;
-		}
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
-
-	BasicUpdateHitboxes();
 }
 
 void Lizard::ActionEnded()

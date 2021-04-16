@@ -44,6 +44,7 @@ struct LaserJays : Enemy
 	void HandleNoHealth();
 	void ProcessState();
 	void UpdateEnemyPhysics();
+	void UpdateOnPlacement(ActorParams *ap);
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
 

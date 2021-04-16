@@ -66,8 +66,9 @@ Shark::Shark( ActorParams *ap )
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->kbDir = V2d(1, 0);
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
