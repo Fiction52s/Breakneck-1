@@ -28,12 +28,14 @@ struct Airdasher : Enemy
 	double SetFacingPlayerAngle();
 	void SetFacingSide( V2d pDir );
 	void IHitPlayer(int index = 0);
+	void UpdateHitboxes();
 
 	int hitLimit;
 	int currHits;
 
 	V2d playerDir;
 	V2d velocity;
+	V2d dashDir;
 
 	int hitFrame;
 	int chargeFrames;

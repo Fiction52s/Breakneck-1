@@ -16,6 +16,8 @@ bool HitboxInfo::IsAirType(HitPosType hpt)
 		|| hpt == AIRUPFORWARD || hpt == AIRUP;
 }
 
+
+
 void HitboxInfo::SetupHitboxLevelInfo(
 	json &j, HitboxInfo &hi)
 {
@@ -93,7 +95,7 @@ V2d HitboxInfo::GetKnockbackDir()
 	return kb;
 }
 
-V2d HitboxInfo::GetKnockbackVector()
+V2d HitboxInfo::GetKnockbackVector( )
 {
 	return GetKnockbackDir() * knockback;
 }

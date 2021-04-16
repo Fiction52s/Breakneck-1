@@ -91,6 +91,7 @@ Crawler::Crawler(ActorParams *ap )
 	hitboxInfo->hitlagFrames = 6;
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->kbDir = normalize(V2d(2, -1));
 	
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -193,41 +194,46 @@ void Crawler::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
 	
-	if( surfaceMover->ground != NULL )
-	{
-		V2d gn = surfaceMover->ground->Normal();
-		double angle = 0;
-		
-		
-		angle = atan2( gn.x, -gn.y );
-		
-		//hitBox.globalAngle = angle;
-		//hurtBox.globalAngle = angle;
 
-		V2d knockbackDir( 1, -1 );
-		knockbackDir = normalize( knockbackDir );
-		double maxExtraKB = 15.0;
-		double baseKB = 8;
-		double scaleFactor = .2;
-		double sc = scale * scaleFactor - scaleFactor;
-		maxExtraKB += maxExtraKB * sc;
-		baseKB += baseKB * sc;
-		if( surfaceMover->groundSpeed > 0 )
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = baseKB + max( abs( surfaceMover->groundSpeed ), maxExtraKB);
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
-			hitboxInfo->knockback = baseKB + max(abs(surfaceMover->groundSpeed), maxExtraKB);
-		}
-	}
-	else
+	if (surfaceMover->ground != NULL)
 	{
-		//hitBox.globalAngle = 0;
-		//hurtBox.globalAngle = 0;
+		hitboxInfo->knockback = 15 + abs(surfaceMover->groundSpeed) * .3;
 	}
+	//if( surfaceMover->ground != NULL )
+	//{
+	//	V2d gn = surfaceMover->ground->Normal();
+	//	double angle = 0;
+	//	
+	//	
+	//	angle = atan2( gn.x, -gn.y );
+	//	
+	//	//hitBox.globalAngle = angle;
+	//	//hurtBox.globalAngle = angle;
+
+	//	V2d knockbackDir( 1, -1 );
+	//	knockbackDir = normalize( knockbackDir );
+	//	double maxExtraKB = 15.0;
+	//	double baseKB = 8;
+	//	double scaleFactor = .2;
+	//	double sc = scale * scaleFactor - scaleFactor;
+	//	maxExtraKB += maxExtraKB * sc;
+	//	baseKB += baseKB * sc;
+	//	if( surfaceMover->groundSpeed > 0 )
+	//	{
+	//		hitboxInfo->kbDir = knockbackDir;
+	//		hitboxInfo->knockback = baseKB + max( abs( surfaceMover->groundSpeed ), maxExtraKB);
+	//	}
+	//	else
+	//	{
+	//		hitboxInfo->kbDir = V2d( -knockbackDir.x, knockbackDir.y );
+	//		hitboxInfo->knockback = baseKB + max(abs(surfaceMover->groundSpeed), maxExtraKB);
+	//	}
+	//}
+	//else
+	//{
+	//	//hitBox.globalAngle = 0;
+	//	//hurtBox.globalAngle = 0;
+	//}
 	
 }
 

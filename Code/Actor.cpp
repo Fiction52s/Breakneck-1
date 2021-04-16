@@ -4882,6 +4882,13 @@ void Actor::ProcessReceivedHit()
 
 		attackingHitlag = false;
 		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
+
+		
+		/*else
+		{
+			if( receivedHit->hitPosType == HitboxInfo::HitPosType::GROUND)
+		}*/
+		//receivedHit->hitPosType = 
 		
 		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
 
@@ -12603,7 +12610,50 @@ void Actor::HitWhileGrounded()
 	}
 }
 
+V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
+{
+	double upwardsMult = 2.0;
 
+	V2d knockbackVec;
+	if (receivedHit->knockback > 0)
+	{
+		V2d diff = position - receivedHitPosition;
+		if (receivedHit->hitPosType == HitboxInfo::OMNI)
+		{
+			V2d hitDir = normalize(diff);
+			knockbackVec = hitDir * receivedHit->knockback;
+			if (knockbackVec.y < 0)
+			{
+				knockbackVec.y *= upwardsMult;
+			}
+		}
+		else
+		{
+			knockbackVec = receivedHit->GetKnockbackVector();
+
+			if (receivedHitPlayer == NULL) //enemies only
+			{
+				if (knockbackVec.y < 0)
+				{
+					knockbackVec.y *= upwardsMult;
+				}
+
+				if ((diff.x < 0 && !receivedHit->flipHorizontalKB)
+					|| (diff.x > 0 && receivedHit->flipHorizontalKB))
+				{
+					knockbackVec.x = -knockbackVec.x;
+				}
+			}
+		}
+	}
+	else
+	{
+		knockbackVec.x *= (1 - receivedHit->drainX);
+		knockbackVec.y *= (1 - receivedHit->drainY);
+	}
+
+	return knockbackVec;
+}
 
 void Actor::HitWhileAerial()
 {
@@ -12618,39 +12668,7 @@ void Actor::HitWhileAerial()
 
 	double upwardsMult = 2.0;
 
-	if (receivedHit->knockback > 0)
-	{
-		if (receivedHit->hitPosType == HitboxInfo::OMNI)
-		{
-			V2d hitDir = normalize(position - receivedHitPosition);
-			velocity = hitDir * receivedHit->knockback;
-			if (velocity.y < 0)
-			{
-				velocity.y *= upwardsMult;
-			}
-		}
-		else
-		{
-			velocity = receivedHit->GetKnockbackVector();
-
-			if (receivedHitPlayer == NULL) //enemies only
-			{
-				if (velocity.y < 0)
-				{
-					velocity.y *= upwardsMult;
-				}
-			}
-			
-		}
-
-		
-		//velocity = receivedHit->knockback * receivedHit->kbDir;
-	}
-	else
-	{
-		velocity.x *= (1 - receivedHit->drainX);
-		velocity.y *= (1 - receivedHit->drainY);
-	}
+	velocity = CalcKnockback(receivedHit);
 }
 
 void Actor::ApplyBlockFriction()

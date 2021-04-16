@@ -1127,6 +1127,8 @@ struct Actor : QuadTreeCollider,
 
 	bool CheckExtendedAirdash();
 
+	V2d CalcKnockback(HitboxInfo *receivedHit);
+
 	bool CheckTerrainDisappear(Edge *e);
 	void CheckBirdCommands();
 	void SetActionSuperLevel();

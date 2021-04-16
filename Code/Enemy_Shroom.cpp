@@ -28,7 +28,7 @@ Shroom::Shroom(ActorParams *ap )
 	actionLength[HITTING] = 11;
 
 	animFactor[LATENT] = 2;
-	animFactor[HITTING] = 2;
+	animFactor[HITTING] = 2;	
 
 	SetLevel(ap->GetLevel());
 
@@ -43,7 +43,7 @@ Shroom::Shroom(ActorParams *ap )
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
-	hitBody.hitboxInfo = hitboxInfo;
+	
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 3*60;
@@ -51,6 +51,9 @@ Shroom::Shroom(ActorParams *ap )
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, -1);
+	hitboxInfo->hitPosType = HitboxInfo::AIRFORWARD;
+
+	hitBody.hitboxInfo = hitboxInfo;
 
 	jelly = new ShroomJelly( this );
 	jelly->Reset();

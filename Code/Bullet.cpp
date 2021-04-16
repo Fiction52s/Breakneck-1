@@ -192,8 +192,9 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	hitboxInfo->drainX = .3;
 	hitboxInfo->drainY = .3;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 1.0;
+	hitboxInfo->kbDir = V2d( 1, 0 );
 
 	bytesStoredPerBullet = inactiveBullets->GetNumStoredBytes();
 }

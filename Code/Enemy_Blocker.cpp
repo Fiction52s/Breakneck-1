@@ -374,6 +374,8 @@ void Blocker::IHitPlayer(int index)
 
 bool Blocker::IsFastDying()
 {
+	//if( receivedHit->hType == HitboxInfo::)
+
 	switch (bc->chainEnemyVariation)
 	{
 	case BLUE:

@@ -1989,7 +1989,15 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 
 	if (body != NULL && body->hitboxInfo != NULL)
 	{
-		Actor::HitResult hitResult = player->CheckIfImHit(body, currHitboxFrame, body->hitboxInfo->hitPosType,
+		V2d playerPos = player->position;
+		V2d diff = playerPos - GetPosition();
+		HitboxInfo::HitPosType hpt = body->hitboxInfo->hitPosType;
+		if (HitboxInfo::IsAirType(hpt))
+		{
+			hpt = HitboxInfo::GetAirType(normalize(diff));
+		}
+
+		Actor::HitResult hitResult = player->CheckIfImHit(body, currHitboxFrame, hpt,
 			GetPosition(), IsHitFacingRight(),
 			body->hitboxInfo->canBeParried,
 			body->hitboxInfo->canBeBlocked);
