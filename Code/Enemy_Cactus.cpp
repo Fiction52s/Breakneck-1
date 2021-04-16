@@ -306,8 +306,8 @@ CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(16);
+	BasicCircleHurtBodySetup(32);
+	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	double size = max(width, height);

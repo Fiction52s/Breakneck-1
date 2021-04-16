@@ -35,8 +35,10 @@ struct PalmTurret : Enemy
 	bool CheckHitPlayer(int index = 0);
 
 	CollisionBody laserBody;
+	HitboxInfo *laserHitboxInfo;
 
 	PalmTurret(ActorParams *ap);
+	~PalmTurret();
 
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);

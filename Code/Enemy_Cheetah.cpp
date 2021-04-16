@@ -60,7 +60,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->knockback = 15;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
@@ -116,32 +116,6 @@ void Cheetah::ResetEnemy()
 	UpdateHitboxes();
 }
 
-void Cheetah::UpdateHitboxes()
-{
-	Edge *ground = groundMover->ground;
-	if (ground != NULL)
-	{
-		V2d knockbackDir(1, -1);
-		knockbackDir = normalize(knockbackDir);
-		if (groundMover->groundSpeed > 0)
-		{
-			hitboxInfo->kbDir = knockbackDir;
-			hitboxInfo->knockback = 15;
-		}
-		else
-		{
-			hitboxInfo->kbDir = V2d(-knockbackDir.x, knockbackDir.y);
-			hitboxInfo->knockback = 15;
-		}
-	}
-	else
-	{
-		//hitBody.globalAngle = 0;
-		//hurtBody.globalAngle = 0;
-	}
-
-	BasicUpdateHitboxes();
-}
 
 void Cheetah::ActionEnded()
 {

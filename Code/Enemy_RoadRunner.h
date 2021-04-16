@@ -32,7 +32,6 @@ struct Roadrunner : Enemy, GroundMoverHandler
 	void EnemyDraw(sf::RenderTarget *target);
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
-	void UpdateHitboxes();
 	void ResetEnemy();
 	void HitTerrain(double &q);
 	bool StartRoll();

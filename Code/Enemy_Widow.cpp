@@ -43,8 +43,8 @@ Widow::Widow(ActorParams *ap)
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
 	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 0;
-	hitboxInfo->knockback = 0;
+	hitboxInfo->hitstunFrames = 10;
+	hitboxInfo->knockback = 15;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

@@ -58,8 +58,8 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
-	BasicCircleHurtBodySetup(32);
-	BasicCircleHitBodySetup(32);
+	BasicCircleHurtBodySetup(40);
+	BasicCircleHitBodySetup(40);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	bulletSpeed = 7;

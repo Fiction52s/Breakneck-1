@@ -73,13 +73,21 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
+	laserHitboxInfo = new HitboxInfo;
+	laserHitboxInfo->damage = 18;//do more damage than hitting the turret itself
+	laserHitboxInfo->drainX = 0;
+	laserHitboxInfo->drainY = 0;
+	laserHitboxInfo->hitlagFrames = 0;
+	laserHitboxInfo->hitstunFrames = 40;
+	laserHitboxInfo->knockback = 15;
+
+
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
-
 	laserBody.BasicRectSetup( laserLength/2, finalLaserWidth/2, 0, V2d());
-	laserBody.hitboxInfo = hitboxInfo;
+	laserBody.hitboxInfo = laserHitboxInfo;
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(35);
@@ -91,6 +99,11 @@ PalmTurret::PalmTurret(ActorParams *ap)
 
 
 	ResetEnemy();
+}
+
+PalmTurret::~PalmTurret()
+{
+	delete laserHitboxInfo;
 }
 
 void PalmTurret::ResetEnemy()
