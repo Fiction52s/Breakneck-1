@@ -423,7 +423,18 @@ struct Actor : QuadTreeCollider,
 
 	//Enemy *receivedHitEnemy;
 	
+	struct Hitter
+	{
+		void *info;
+		int framesToStayInArray;
 
+		void Set(void *inf);
+		void Clear();
+		void Update();
+	};
+
+	const static int MAX_HITTERS = 16;
+	Hitter recentHitters[MAX_HITTERS];
 
 	//---
 
@@ -1099,6 +1110,8 @@ struct Actor : QuadTreeCollider,
 	bool CanHalfBlock(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
 		bool attackFacingRight);
+
+	bool CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos );
 	void RestoreAirOptions();
 	bool CanCancelAttack();
 	int MostRecentFrameCurrAttackBlocked();
@@ -1126,6 +1139,11 @@ struct Actor : QuadTreeCollider,
 	CollisionBody * GetBubbleHitbox(int index);
 
 	bool CheckExtendedAirdash();
+
+	void ClearRecentHitters();
+	void UpdateRecentHitters();
+	bool RecentlyHitMe(void *hitter);
+	void AddRecentHitter(void *hitter);
 
 	V2d CalcKnockback(HitboxInfo *receivedHit);
 
@@ -1313,13 +1331,24 @@ struct Actor : QuadTreeCollider,
 		Actor *receivedHitPlayer,
 		//Enemy *recievedHitEnemy,
 		HitResult res, V2d &pos );
-	bool ResolvePhysics( sf::Vector2<double> vel );
+	bool ResolvePhysics( V2d vel );
 	void UpdatePhysics();
 	void PhysicsResponse();
 	bool TryGroundAttack();
 	bool SteepSlideAttack();
 	bool SteepClimbAttack();
 	void ConfirmEnemyKill( Enemy *e );
+	HitResult CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBody,
+		int hitFrame,
+		HitboxInfo::HitPosType hpt,
+		V2d &hitPos,
+		bool attackFacingRight,
+		bool canBeParried,
+		bool canBeBlocked);
+	HitResult CheckIfImHitByEnemy(void *hitter, CollisionBox &cb, 
+		HitboxInfo::HitPosType hpt,
+		V2d &hitPos, bool attackFacingRight,
+		bool canBeParried, bool canBeBlocked);
 	HitResult CheckIfImHit(CollisionBody *hitBody,
 		int hitFrame,
 		HitboxInfo::HitPosType hpt,

@@ -150,6 +150,22 @@ void LobTurret::ResetEnemy()
 	UpdateSprite();
 }
 
+void LobTurret::UpdateHitboxes()
+{
+	BasicUpdateHitboxes();
+
+	if (reverse)
+	{
+		hitboxInfo->kbDir = normalize(V2d(1,1));
+	}
+	else
+	{
+		hitboxInfo->kbDir = normalize(V2d(1, -1));
+	}
+}
+
+
+
 void LobTurret::SetLevel(int lev)
 {
 	level = lev;

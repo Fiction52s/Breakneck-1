@@ -82,6 +82,32 @@ using namespace std;
 
 //#define SETUP_ACTION_FUNCS(VAR) SetupFuncsForAction(##VAR,&Actor::##VAR_Start,&Actor::X_End,&Actor::X_Change,&Actor::X_Update,&Actor::X_UpdateSprite,&Actor::X_TransitionToAction,&Actor::X_TimeIndFrameInc,&Actor::X_TimeDepFrameInc,&Actor::X_GetActionLength,&Actor::X_GetTileset);
 
+void Actor::Hitter::Clear()
+{
+	info = NULL;
+	framesToStayInArray = -1;
+}
+void Actor::Hitter::Update()
+{
+	if (info != NULL)
+	{
+		assert(framesToStayInArray > 0);
+		--framesToStayInArray;
+
+		if (framesToStayInArray == 0)
+		{
+			Clear();
+		}
+	}
+}
+
+void Actor::Hitter::Set(void *hi)
+{
+	info = hi;
+	framesToStayInArray = 10;
+}
+
+
 void KeyExplodeUpdater::OnDeactivate(EffectInstance *ei)
 {
 	actor->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
@@ -986,7 +1012,7 @@ void Actor::UpdateGroundedShieldSprite( int tile)
 
 	shieldSprite.setOrigin(sprite->getOrigin());
 	shieldSprite.setPosition(sprite->getPosition());
-	ts_blockShield->SetSubRect(shieldSprite, tile, !r, reversed);
+	ts_blockShield->SetSubRect(shieldSprite, tile, !r, !reversed);
 	shieldSprite.setRotation(sprite->getRotation());
 }
 
@@ -2797,6 +2823,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
 	{
+	ClearRecentHitters();
 	blockstunFrames = 0;
 	directionalInputFreezeFrames = 0;
 	maxFallSpeedWhileHitting = 4.0;
@@ -4360,6 +4387,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
 	modifiedDrainFrames = 0;
@@ -4905,14 +4933,15 @@ void Actor::ProcessReceivedHit()
 				V2d otherPos = receivedHitPosition;
 				double kbImpulse = 6;
 
+				double shieldKBFactor = 1.0;
 				
 				if (otherPos.x < position.x)
 				{
-					groundSpeed += receivedHit->knockback;
+					groundSpeed += receivedHit->knockback * shieldKBFactor;
 				}
 				else
 				{
-					groundSpeed -= receivedHit->knockback;//kbImpulse;
+					groundSpeed -= receivedHit->knockback * shieldKBFactor;//kbImpulse;
 				}
 			}
 			else if (IsActionAirBlock(action))
@@ -4922,18 +4951,53 @@ void Actor::ProcessReceivedHit()
 
 				V2d otherPos = receivedHitPosition;
 
-				double shieldKBFactor = 1.0;//.5;
+				double shieldKBFactor = 1.0;//2.0;//.5;
 
-				if (receivedHit->knockback > 0)
+				V2d kb = CalcKnockback(receivedHit) * shieldKBFactor;
+
+				velocity = kb;
+
+				//RestoreAirOptions();
+
+				/*if (action == AIRBLOCKDOWN)
 				{
-					velocity = receivedHit->GetKnockbackVector() 
-						* shieldKBFactor;
+					if ((velocity.x > 0 && kb.x > 0) || (velocity.x < 0 && kb.x < 0 ))
+					{
+						velocity.y = kb.y;
+						velocity.x += kb.x;
+					}
+					else
+					{
+						velocity = kb;
+					}
 				}
 				else
 				{
-					velocity.x *= (1 - receivedHit->drainX);
-					velocity.y *= (1 - receivedHit->drainY);
-				}
+					if (dot(velocity, kb) > 0)
+					{
+						velocity += kb;
+					}
+					else*/
+					//{
+						//velocity = kb;
+					//}
+				//}
+
+				
+
+				
+
+
+				//if (receivedHit->knockback > 0)
+				//{
+				//	velocity = kb * shieldKBFactor;//eceivedHit->GetKnockbackVector() 
+				//		//* shieldKBFactor;
+				//}
+				//else
+				//{
+				//	velocity.x *= (1 - receivedHit->drainX);
+				//	velocity.y *= (1 - receivedHit->drainY);
+				//}
 			}
 
 			if (receivedHitReaction == FULLBLOCK)
@@ -5731,6 +5795,51 @@ void Actor::LimitMaxSpeeds()
 			groundSpeed = -maxReal;
 		}
 	}
+}
+
+void Actor::ClearRecentHitters()
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		recentHitters[i].Clear();
+	}
+}
+void Actor::UpdateRecentHitters()
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		recentHitters[i].Update();
+	}
+}
+
+bool Actor::RecentlyHitMe(void *info)
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		if (recentHitters[i].info != NULL)
+		{
+			if (recentHitters[i].info == info)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+void Actor::AddRecentHitter(void *hitter)
+{
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		if (recentHitters[i].info == NULL)
+		{
+			recentHitters[i].Set(hitter);
+			return;
+		}
+	}
+
+	//recentHitters[0].Set(hitter);
+	//maybe set up a system later, but i doubt we'll ever hit this number of hitters
 }
 
 bool Actor::CheckExtendedAirdash()
@@ -11985,11 +12094,11 @@ void Actor::UpdatePhysics()
 				}
 				//cout << "groundinggg" << endl;
 			}
-			else if(( action == AIRHITSTUN || HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] )
+			else if(( HasUpgrade(UPGRADE_POWER_GRAV) || touchedGrass[Grass::GRAVREVERSE] )
 				&& tempCollision
+				&& action != AIRHITSTUN && action != GROUNDHITSTUN
 				&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld())
-				|| ( action == AIRHITSTUN && CanTech() ) )
+				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld()))
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1
@@ -12670,8 +12779,6 @@ void Actor::HitWhileAerial()
 	SetAction(AIRHITSTUN);
 	frame = 0;
 
-	double upwardsMult = 2.0;
-
 	velocity = CalcKnockback(receivedHit);
 }
 
@@ -12984,7 +13091,7 @@ void Actor::PhysicsResponse()
 					
 					//frame = 0;
 				}
-				else if (action != GROUNDHITSTUN && action != LAND2 && action != LAND
+				else if (action != GROUNDHITSTUN && action != AIRHITSTUN && action != LAND2 && action != LAND
 					&& action != SEQ_CRAWLERFIGHT_STRAIGHTFALL
 					&& action != SEQ_CRAWLERFIGHT_LAND
 					&& action != SEQ_CRAWLERFIGHT_DODGEBACK && action != GRAVREVERSE
@@ -14766,6 +14873,8 @@ void Actor::UpdatePostPhysics()
 
 	if( standNDashBoostCurr > 0 )
 		standNDashBoostCurr--;
+
+	UpdateRecentHitters();
 
 	UpdateBounceFlameCounters();
 	
@@ -18964,6 +19073,101 @@ bool Actor::IsSingleWirePulling()
 		&& !IsDoubleWirePulling() );
 }
 
+bool Actor::CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos )
+{
+	bool facingHitbox = (facingRight && position.x - hitPos.x <= 0)
+		|| (!facingRight && position.x - hitPos.x >= 0);
+
+	if (HitboxInfo::IsAirType(hpt) || hpt == HitboxInfo::OMNI)
+	{
+		V2d diff = position - hitPos;
+		if (reversed)
+		{
+			diff.y = -diff.y;
+		}
+
+		hpt = HitboxInfo::GetAirType(normalize(diff));
+	}
+
+	if (action == GROUNDBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDLOW)
+			return true;
+	}
+	else if (action == GROUNDBLOCKDOWNFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::GROUND
+				|| hpt == HitboxInfo::HitPosType::GROUNDLOW)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKFORWARD)
+	{
+		if ((facingHitbox && hpt == HitboxInfo::HitPosType::AIRFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			|| (facingHitbox && hpt == HitboxInfo::HitPosType::GROUND))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| (facingHitbox &&
+			(hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+				|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)))
+			return true;
+	}
+	else if (action == GROUNDBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+			|| hpt == HitboxInfo::HitPosType::GROUNDHIGH)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWN)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRUP
+			|| hpt == HitboxInfo::HitPosType::AIRUPFORWARD)
+			return true;
+	}
+	else if (action == AIRBLOCKDOWNFORWARD)
+	{
+		if ( hpt == HitboxInfo::HitPosType::AIRUP
+			|| (facingHitbox && (hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKFORWARD)
+	{
+		if (facingHitbox && 
+			( hpt == HitboxInfo::HitPosType::AIRUPFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRFORWARD
+				|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD))
+			return true;
+	}
+	else if (action == AIRBLOCKUPFORWARD)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| ( facingHitbox && 
+				( hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD
+					|| hpt == HitboxInfo::HitPosType::AIRFORWARD)))
+			return true;
+	}
+	else if (action == AIRBLOCKUP)
+	{
+		if (hpt == HitboxInfo::HitPosType::AIRDOWN
+			|| hpt == HitboxInfo::HitPosType::AIRDOWNFORWARD )
+			return true;
+	}
+
+	return false;
+}
 
 bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight)
 {
@@ -18974,6 +19178,10 @@ bool Actor::CanFullBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 
 	bool frontalAttack = opposingFacing || facingHitbox;
 
+	if (hpt == HitboxInfo::OMNI)
+	{
+		hpt = HitboxInfo::GetAirType(normalize(position - hitPos));
+	}
 
 	if (action == GROUNDBLOCKDOWN)
 	{
@@ -19058,6 +19266,10 @@ bool Actor::CanHalfBlock(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFac
 	}
 	int angleMult = posAngle / (PI / 4.0);
 
+	if (hpt == HitboxInfo::OMNI)
+	{
+		hpt = HitboxInfo::GetAirType(normalize(position - hitPos));
+	}
 
 	if (action == GROUNDBLOCKDOWN)
 	{
@@ -19145,6 +19357,94 @@ bool Actor::CanParry(HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingR
 	}
 
 	return false;
+}
+
+
+Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBody, int hitFrame,
+	HitboxInfo::HitPosType hpt, V2d &hitPos, bool attackFacingRight,
+	bool canBeParried, bool canBeBlocked)
+{
+	if (IntersectMyHurtboxes(hitBody, hitFrame))
+	{
+		if (hitter != NULL && RecentlyHitMe(hitter))
+		{
+			return HitResult::MISS;
+		}
+
+		AddRecentHitter(hitter);
+
+
+		if (IsInvincible()
+			&& (hitBody->hitboxInfo == NULL
+				|| !hitBody->hitboxInfo->hitsThroughInvincibility))
+		{
+			return HitResult::INVINCIBLEHIT;
+		}
+		/*else if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::PARRY;
+		}*/
+		else if (canBeBlocked && CanBlockEnemy(hpt, hitPos))
+		{
+			return HitResult::FULLBLOCK;
+		}
+		/*else if (canBeBlocked && CanFullBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::FULLBLOCK;
+		}
+		else if (canBeBlocked && CanHalfBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::HALFBLOCK;
+		}*/
+		else
+		{
+			return HitResult::HIT;
+		}
+	}
+
+	return HitResult::MISS;
+}
+
+Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBox &cb, HitboxInfo::HitPosType hpt,
+	V2d &hitPos, bool attackFacingRight,
+	bool canBeParried, bool canBeBlocked)
+{
+	if (IntersectMyHurtboxes(cb))
+	{
+		if (hitter != NULL && RecentlyHitMe(hitter))
+		{
+			return HitResult::MISS;
+		}
+
+		AddRecentHitter(hitter);
+
+		if (IsInvincible())
+		{
+			return HitResult::INVINCIBLEHIT;
+		}
+		else if (canBeBlocked && CanBlockEnemy(hpt, hitPos))
+		{
+
+		}
+		/*else if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::PARRY;
+		}
+		else if (canBeBlocked && CanFullBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::FULLBLOCK;
+		}
+		else if (canBeBlocked && CanHalfBlock(hpt, hitPos, attackFacingRight))
+		{
+			return HitResult::HALFBLOCK;
+		}*/
+		else
+		{
+			return HitResult::HIT;
+		}
+	}
+
+	return HitResult::MISS;
 }
 
 Actor::HitResult Actor::CheckIfImHit(CollisionBody *hitBody, int hitFrame,
@@ -19545,7 +19845,16 @@ void Actor::UpdateInHitlag()
  {
 	 bool forwardHeld = currInput.LLeft() || currInput.LRight();
 
-	 if (currInput.LUp())
+	 bool up = currInput.LUp();
+	 bool down = currInput.LDown();
+
+	/* if (reversed)
+	 {
+		 up = !up;
+		 down = !down;
+	 }*/
+
+	 if (up)
 	 {
 		 if (forwardHeld)
 		 {
@@ -19558,7 +19867,7 @@ void Actor::UpdateInHitlag()
 				 SetAction(GROUNDBLOCKUP);
 		 }
 	 }
-	 else if (currInput.LDown())
+	 else if (down)
 	 {
 		 if (forwardHeld)
 		 {

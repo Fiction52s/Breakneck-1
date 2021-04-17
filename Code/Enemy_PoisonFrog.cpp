@@ -112,7 +112,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 8;
-	hitboxInfo->kbDir = V2d(1, 0);
+	
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -151,6 +151,15 @@ void PoisonFrog::ResetEnemy()
 void PoisonFrog::UpdateHitboxes()
 {
 	BasicUpdateHitboxes();
+
+	if (reverse)
+	{
+		hitboxInfo->kbDir = normalize(V2d(1, 0));
+	}
+	else
+	{
+		hitboxInfo->kbDir = normalize(V2d(1, 0));
+	}
 }
 
 void PoisonFrog::ActionEnded()

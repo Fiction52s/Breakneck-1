@@ -234,7 +234,7 @@ bool CoyoteBullet::CheckHitPlayer(int index)
 
 	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
 	{
-		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
+		Actor::HitResult hitResult = player->CheckIfImHitByEnemy( this, currHitboxes, currHitboxFrame, currHitboxes->hitboxInfo->hitPosType,
 			GetPosition(), facingRight,
 			currHitboxes->hitboxInfo->canBeParried,
 			currHitboxes->hitboxInfo->canBeBlocked);

@@ -31,6 +31,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	void FinishedRoll();
 	void SetLevel(int lev);
 	bool IsFacingTrueRight();
+	void UpdateHitboxes();
 
 	Shield *shield;
 

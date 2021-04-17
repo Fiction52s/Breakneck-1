@@ -83,7 +83,7 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 40;
 	hitboxInfo->knockback = 20;
-	hitboxInfo->kbDir = normalize(V2d(1, -.7));
+	
 
 	BasicCircleHurtBodySetup(60*scale);
 	BasicCircleHitBodySetup(60*scale);
@@ -523,4 +523,18 @@ void StagBeetle::Land()
 
 	//Edge *ground = groundMover->ground;
 	//cout << "land" << endl;
+}
+
+void StagBeetle::UpdateHitboxes()
+{
+	BasicUpdateHitboxes();
+
+	if (reverse)
+	{
+		hitboxInfo->kbDir = normalize(V2d(1, .7));
+	}
+	else
+	{
+		hitboxInfo->kbDir = normalize(V2d(1, -.7));
+	}
 }

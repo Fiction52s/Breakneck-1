@@ -179,7 +179,7 @@ bool GroundedWarper::CheckHitPlayer(int index)
 
 	if (currHitboxes != NULL )
 	{
-		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, HitboxInfo::HitPosType::GROUND,
+		Actor::HitResult hitResult = player->CheckIfImHitByEnemy( this, currHitboxes, currHitboxFrame, HitboxInfo::HitPosType::GROUND,
 			GetPosition(), IsHitFacingRight(),false,false);
 
 		if (hitResult != Actor::HitResult::MISS)

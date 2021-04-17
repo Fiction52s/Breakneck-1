@@ -262,7 +262,7 @@ bool CoyoteShockwave::CheckHitPlayer(int index)
 
 		V2d pDir = normalize(playerPos - GetPosition());
 
-		Actor::HitResult hitResult = player->CheckIfImHit(currHitboxes, currHitboxFrame, HitboxInfo::GetAirType(pDir),
+		Actor::HitResult hitResult = player->CheckIfImHitByEnemy( this, currHitboxes, currHitboxFrame, HitboxInfo::GetAirType(pDir),
 			GetPosition(), hitboxFacingRight,
 			currHitboxes->hitboxInfo->canBeParried,
 			currHitboxes->hitboxInfo->canBeBlocked);

@@ -31,6 +31,7 @@ struct LobTurret : Enemy, LauncherEnemy
 	double bulletSpeed;
 
 	LobTurret(ActorParams *ap);
+	void UpdateHitboxes();
 	void UpdateOnPlacement(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
