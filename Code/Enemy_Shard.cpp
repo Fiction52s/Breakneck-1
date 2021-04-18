@@ -56,9 +56,9 @@ void Shard::UpdateParamsSettings()
 
 void Shard::SetupShardMaps()
 {
-	shardTypeMap["SHARD_W1_TEACH_JUMP"] = SHARD_W1_0_TEACH_JUMP;
-	shardTypeMap["BACKWARDS_DASH_JUMP"] = SHARD_W1_1_BACKWARDS_DASH_JUMP;
-	shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
+	shardTypeMap["GET_DASH_BOOST"] = SHARD_W1_0_GET_DASH_BOOST;
+	shardTypeMap["GET_AIRDASH_BOOST"] = SHARD_W1_1_GET_AIRDASH_BOOST;
+	//shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
 		shardStrMap[(*it).second] = (*it).first;

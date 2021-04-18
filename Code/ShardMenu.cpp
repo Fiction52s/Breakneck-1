@@ -64,7 +64,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	ts_shardContainer = mm->tilesetManager.GetTileset("Menu/shard_container_401x512.png", 401, 512);
 	ts_sparkle = mm->tilesetManager.GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
 	ts_bigShards = mm->tilesetManager.GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/notcaptured.png", 512, 512);
+	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/not_captured_512x512.png", 512, 512);
 	ts_noPreview = mm->tilesetManager.GetTileset("Menu/nopreview.png", 512, 512);
 	ts_shardButtons = mm->tilesetManager.GetTileset("Menu/pause_shard_buttons_128x93.png", 128, 93);
 	for (int i = 0; i < 4; ++i)
