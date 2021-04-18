@@ -177,6 +177,16 @@ PowerItem::~PowerItem()
 
 void PowerItem::ResetEnemy()
 {
+	if (!alreadyCollected)
+	{
+		int upgradeIndex = Actor::UPGRADE_POWER_AIRDASH + powerIndex;
+		if (sess->GetPlayer(0)->HasUpgrade(upgradeIndex))
+		{
+			alreadyCollected = true;
+		}
+	}
+	
+
 	SetCurrPosInfo(startPosInfo);
 
 	geoGroup.Reset();

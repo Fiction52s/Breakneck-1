@@ -22,7 +22,6 @@
 #include "Wire.h"
 #include "EditorDecorInfo.h"
 #include "EditorPlayerTracker.h"
-
 #include "clipper.hpp"
 
 #include "TransformTools.h"
@@ -645,6 +644,8 @@ void EditSession::TestPlayerMode()
 	{
 		(*it)->CancelTransformation();
 	}
+
+	shardsCapturedField->Reset();
 
 	scoreDisplay->Reset();
 
@@ -10490,6 +10491,7 @@ void EditSession::RemoveActivePanel(Panel *p)
 
 void EditSession::CleanupTestPlayerMode()
 {
+	shardsCapturedField->Reset();
 	fader->Reset();
 	swiper->Reset();
 

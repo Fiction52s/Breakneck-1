@@ -3383,7 +3383,11 @@ void GameSession::RestartLevel()
 
 	SetDrainOn(true);
 
-	shardsCapturedField->Reset();
+	if (saveFile == NULL)
+	{
+		shardsCapturedField->Reset();
+	}
+	
 
 	nextFrameRestart = false;
 	//accumulator = TIMESTEP + .1;

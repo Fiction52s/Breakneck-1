@@ -159,6 +159,14 @@ Shard::~Shard()
 
 void Shard::ResetEnemy()
 {
+	if (!alreadyCollected)
+	{
+		if (sess->IsShardCaptured(shardType))
+		{
+			alreadyCollected = true;
+		}
+	}
+
 	SetCurrPosInfo(startPosInfo);
 
 	geoGroup.Reset();
@@ -293,6 +301,34 @@ void Shard::Capture()
 			game->saveFile->shardField.SetBit(shardType, true);
 			game->saveFile->newShardField.SetBit(shardType, true);
 			game->saveFile->Save();
+		}
+	}
+
+
+	int upgradeIndex = -1;
+	switch (shardType)
+	{
+	case SHARD_W1_0_GET_DASH_BOOST:
+	{
+		upgradeIndex = Actor::UPGRADE_DASH_BOOSTER_1;
+		break;
+	}
+	case SHARD_W1_1_GET_AIRDASH_BOOST:
+	{
+		upgradeIndex = Actor::UPGRADE_AIRDASH_BOOSTER_1;
+		break;
+	}
+	}
+		
+	if (upgradeIndex != -1)
+	{
+		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);
+
+		if (sess->IsSessTypeGame())
+		{
+			GameSession *game = GameSession::GetSession();
+
+			game->UnlockUpgrade(upgradeIndex);
 		}
 	}
 }

@@ -5,6 +5,10 @@ using namespace std;
 
 void Actor::GETSHARD_Start()
 {
+	//switch( )
+	//SHARD_W1_0_GET_DASH_BOOST;
+	//shardTypeMap["GET_AIRDASH_BOOST"] = SHARD_W1_1_GET_AIRDASH_BOOST;
+
 }
 
 void Actor::GETSHARD_End()

@@ -3774,7 +3774,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bubbleRadius0 = 160;
 	bubbleRadius1 = 180;
 	bubbleRadius2 = 200;
-		
 
 	bubbleLifeSpan = 240;
 
