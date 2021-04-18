@@ -63,10 +63,10 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3*60;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
@@ -96,6 +96,11 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	testShield->SetPosition(GetPosition());
 
 	ResetEnemy();
+}
+
+BasicTurret::~BasicTurret()
+{
+	delete testShield;
 }
 
 void BasicTurret::UpdateOnPlacement(ActorParams *ap)

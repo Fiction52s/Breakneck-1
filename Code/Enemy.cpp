@@ -479,6 +479,7 @@ void Enemy::OnCreate(ActorParams *ap,
 		name = ap->GetTypeName();
 	}
 
+	pauseFramesFromAttacking = false;
 	active = false;
 	summonGroup = NULL;
 	prev = NULL;
@@ -821,8 +822,8 @@ Enemy::~Enemy()
 		delete cutObject;
 	}
 
-	if (currShield != NULL)
-		delete currShield;
+	/*if (currShield != NULL)
+		delete currShield;*/
 
 	if (hitboxInfo != NULL)
 		delete hitboxInfo;
@@ -891,7 +892,7 @@ std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 
 void Enemy::DrawSprite( sf::RenderTarget *target, sf::Sprite &spr )
 {
-	bool drawHurtShader = pauseFrames >= 2 && currShield == NULL;
+	bool drawHurtShader = ( pauseFrames >= 2 && !pauseFramesFromAttacking ) && currShield == NULL;
 		//(pauseFrames < 2 || currShield != NULL);
 		//(sess->GetPauseFrames() < 2 && pauseFrames < 2) 
 		//|| ( receivedHit == NULL && pauseFrames < 2 );
@@ -1549,6 +1550,8 @@ void Enemy::ConfirmHitNoKill()
 		//if value is set to receivedHit->hitlagFrames;
 		pauseFrames = receivedHit->hitlagFrames - 1;//4;//receivedHit->hitlagFrames;
 	}
+
+	pauseFramesFromAttacking = false;
 	
 	HandleHitAndSurvive();
 
@@ -1600,6 +1603,8 @@ void Enemy::ConfirmKill()
 		//sess->Pause(7);
 		//pauseFrames = 0;
 	}
+
+	pauseFramesFromAttacking = false;
 
 	if (world >= 1)
 	{
@@ -1812,6 +1817,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.prev = prev;
 	ed.next = next;
 	ed.pauseFrames = pauseFrames;
+	ed.pauseFramesFromAttacking = pauseFramesFromAttacking;
 	ed.dead = dead;
 	ed.spawned = spawned;
 }
@@ -1831,6 +1837,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	prev = ed.prev;
 	next = ed.next;
 	pauseFrames = ed.pauseFrames;
+	pauseFramesFromAttacking = ed.pauseFramesFromAttacking;
 	dead = ed.dead;
 	spawned = ed.spawned;
 }
@@ -2003,6 +2010,11 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 			IHitPlayer(index);
 			if (body != NULL && hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
 			{
+				if (body->hitboxInfo != NULL)
+				{
+					pauseFrames = body->hitboxInfo->hitlagFrames;
+					pauseFramesFromAttacking = true;
+				}
 				player->ApplyHit(body->hitboxInfo,
 					NULL, hitResult, GetPosition());
 			}

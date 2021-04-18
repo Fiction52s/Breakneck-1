@@ -46,8 +46,8 @@ Shroom::Shroom(ActorParams *ap )
 	
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3*60;
-	hitboxInfo->hitlagFrames = 5;
+	hitboxInfo->damage = 180;
+	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, -1);

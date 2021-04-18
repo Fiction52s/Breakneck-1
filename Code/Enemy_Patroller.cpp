@@ -34,10 +34,10 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	eye->SetPosition(GetPositionF());
 	
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3*60;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = normalize(V2d(1, -.3));
@@ -383,50 +383,52 @@ void Patroller::UpdateSprite()
 
 void Patroller::EnemyDraw( sf::RenderTarget *target )
 {
-	bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2) || (receivedHit == NULL && pauseFrames < 2);
+	//bool b = (sess->GetPauseFrames() < 2 && pauseFrames < 2 && !pauseFramesFromAttacking) || (receivedHit == NULL && pauseFrames < 2);
+
+	bool drawHurtShader = (pauseFrames >= 2 && !pauseFramesFromAttacking) && currShield == NULL;
 
 	RenderStates rs;
 	rs.texture = ts->texture;
 
 	if( hasMonitor && !suppressMonitor )
 	{			
-		if( b )
-		{
-			rs.shader = &keyShader;
-			//target->draw( sprite, keyShader );
-			
-			target->draw(bodyVA, 8, sf::Quads, rs);
-			eye->Draw(target, &keyShader);
-			
-		}
-		else
+		if(drawHurtShader)
 		{
 			rs.shader = &hurtShader;
 			//target->draw( sprite, hurtShader );
-			
+
 			target->draw(bodyVA, 8, sf::Quads, rs);
 			eye->Draw(target, &hurtShader);
+		}
+		else
+		{
+			rs.shader = &keyShader;
+			//target->draw( sprite, keyShader );
+
+			target->draw(bodyVA, 8, sf::Quads, rs);
+			eye->Draw(target, &keyShader);
 			
 		}
 		target->draw( keySprite );
 	}
 	else
 	{
-		if( b )
+		if(drawHurtShader)
 		{
 			//target->draw( sprite );
 			
+			rs.shader = &hurtShader;
+			//target->draw( sprite, hurtShader );
+
 			target->draw(bodyVA, 8, sf::Quads, rs);
-			eye->Draw(target);
+			eye->Draw(target, &hurtShader);
 			
 		}
 		else
 		{
-			rs.shader = &hurtShader;
-			//target->draw( sprite, hurtShader );
-			
+
 			target->draw(bodyVA, 8, sf::Quads, rs);
-			eye->Draw(target, &hurtShader);
+			eye->Draw(target);
 
 		}		
 	}	

@@ -85,10 +85,10 @@ Crawler::Crawler(ActorParams *ap )
 	BasicCircleHitBodySetup(32);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 6;
+	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 	hitboxInfo->kbDir = normalize(V2d(2, -1));

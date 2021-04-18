@@ -44,12 +44,12 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
-	hitboxInfo->hitstunFrames = 10;
-	hitboxInfo->knockback = 4;
+	hitboxInfo->hitlagFrames = 4;
+	hitboxInfo->hitstunFrames = 15;
+	hitboxInfo->knockback = 8;
 
 	anchorRadius = 30;
 

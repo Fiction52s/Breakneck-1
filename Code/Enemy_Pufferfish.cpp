@@ -48,10 +48,10 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 

@@ -91,7 +91,7 @@ Specter::Specter( ActorParams *ap )
 	hitboxInfo->damage = 18;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 

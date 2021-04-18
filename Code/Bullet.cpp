@@ -188,7 +188,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	}
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = .3;
 	hitboxInfo->drainY = .3;
 	hitboxInfo->hitlagFrames = 0;

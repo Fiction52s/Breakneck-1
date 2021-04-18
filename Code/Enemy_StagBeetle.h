@@ -15,6 +15,7 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	};
 
 	StagBeetle(ActorParams *ap);
+	~StagBeetle();
 	void HandleNoHealth();
 	void ActionEnded();
 	void ProcessState();

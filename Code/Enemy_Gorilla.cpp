@@ -83,10 +83,10 @@ Gorilla::Gorilla( ActorParams *ap )
 
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
@@ -99,10 +99,10 @@ Gorilla::Gorilla( ActorParams *ap )
 	wallHitboxHeight = 50;
 
 	wallHitboxInfo = new HitboxInfo;
-	wallHitboxInfo->damage = 18;
+	wallHitboxInfo->damage = 180;
 	wallHitboxInfo->drainX = 0;
 	wallHitboxInfo->drainY = 0;
-	wallHitboxInfo->hitlagFrames = 0;
+	wallHitboxInfo->hitlagFrames = 5;
 	wallHitboxInfo->hitstunFrames = 10;
 	wallHitboxInfo->knockback = 4;
 

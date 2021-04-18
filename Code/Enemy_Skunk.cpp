@@ -60,10 +60,10 @@ Skunk::Skunk(ActorParams *ap)
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
@@ -74,10 +74,10 @@ Skunk::Skunk(ActorParams *ap)
 	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
 	explosion.hitboxInfo = hitboxInfo;
 
-	explosionHitboxInfo.damage = 18;
+	explosionHitboxInfo.damage = 180;
 	explosionHitboxInfo.drainX = 0;
 	explosionHitboxInfo.drainY = 0;
-	explosionHitboxInfo.hitlagFrames = 0;
+	explosionHitboxInfo.hitlagFrames = 6;
 	explosionHitboxInfo.hitstunFrames = 30;
 	explosionHitboxInfo.knockback = 20;
 	explosionHitboxInfo.hitPosType = HitboxInfo::HitPosType::OMNI;

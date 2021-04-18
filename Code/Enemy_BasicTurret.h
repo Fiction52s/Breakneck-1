@@ -19,7 +19,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	
 
 	BasicTurret(ActorParams *ap);
-
+	~BasicTurret();
 	void SetLevel(int lev);
 	void UpdateOnPlacement(ActorParams *ap);
 	void ProcessState();

@@ -54,10 +54,10 @@ Owl::Owl(ActorParams *ap)
 	launchers[1]->Reset();
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 3;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, 0);
@@ -86,7 +86,8 @@ Owl::Owl(ActorParams *ap)
 
 Owl::~Owl()
 {
-	//delete shield;
+	currShield = NULL;
+	delete shield;
 }
 
 void Owl::SetLevel(int lev)

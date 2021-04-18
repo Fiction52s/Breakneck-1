@@ -66,15 +66,15 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	//shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 
 	laserHitboxInfo = new HitboxInfo;
-	laserHitboxInfo->damage = 18;//do more damage than hitting the turret itself
+	laserHitboxInfo->damage = 180;//do more damage than hitting the turret itself
 	laserHitboxInfo->drainX = 0;
 	laserHitboxInfo->drainY = 0;
 	laserHitboxInfo->hitlagFrames = 0;

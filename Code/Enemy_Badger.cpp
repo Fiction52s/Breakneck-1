@@ -61,10 +61,10 @@ Badger::Badger(ActorParams *ap)
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 15;
 

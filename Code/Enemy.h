@@ -75,6 +75,7 @@ struct StoredEnemyData
 	Enemy *prev;
 	Enemy *next;
 	int pauseFrames;
+	bool pauseFramesFromAttacking;
 	bool dead;
 	bool spawned;
 };
@@ -103,6 +104,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	PositionInfo currPosInfo;
 	int action;
 	int pauseFrames;
+	bool pauseFramesFromAttacking;
 	int frame;
 	bool dead;
 

@@ -24,10 +24,10 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	receivedHit = NULL;
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 60;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 2;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, 0);
@@ -205,10 +205,10 @@ Swarm::Swarm( ActorParams *ap )
 	spriteSize = Vector2f(24, 24);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 3 * 60;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 10;
 

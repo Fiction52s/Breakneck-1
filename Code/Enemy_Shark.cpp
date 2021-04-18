@@ -62,10 +62,10 @@ Shark::Shark( ActorParams *ap )
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 60;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 4;
 	hitboxInfo->kbDir = V2d(1, 0);

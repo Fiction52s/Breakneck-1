@@ -1012,7 +1012,7 @@ void Actor::UpdateGroundedShieldSprite( int tile)
 
 	shieldSprite.setOrigin(sprite->getOrigin());
 	shieldSprite.setPosition(sprite->getPosition());
-	ts_blockShield->SetSubRect(shieldSprite, tile, !r, !reversed);
+	ts_blockShield->SetSubRect(shieldSprite, tile, !r, false);
 	shieldSprite.setRotation(sprite->getRotation());
 }
 
@@ -3997,7 +3997,7 @@ void Actor::LoadHitboxes()
 
 	DIFactor = j["difactor"];
 	blockstunFactor = j["blockstunfactor"];
-	DIChangesMagnitude = true;
+	DIChangesMagnitude = false;
 
 	SetupHitboxInfo( j, "fair", hitboxInfos[FAIR]);
 	SetupHitboxInfo(j, "dair", hitboxInfos[DAIR]);
@@ -4852,6 +4852,7 @@ void Actor::ReverseVerticalInputsWhenOnCeiling()
 	}
 }
 
+//directional influence
 V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 {
 	double len = length(kbVec);
@@ -4876,6 +4877,9 @@ V2d Actor::GetAdjustedKnockback(const V2d &kbVec )
 
 	modDir = normalize(modDir);
 	modDir *= len * DIFactor;
+
+
+	//modDir *=  * DIFactor;
 
 	if (DIChangesMagnitude)
 	{
@@ -12872,7 +12876,10 @@ void Actor::HitGroundWhileInAirHitstun()
 		{
 			//cout << "bouncing off ground \n";
 			double d = dot(velocity, gNormal);
+			V2d oldVel = velocity;
 			velocity = velocity - (2.0 * d * gNormal);
+
+			velocity.x *= .7; //dont want player bouncing far
 
 			double bounceCap = 20;
 
@@ -14762,7 +14769,7 @@ void Actor::UpdatePostPhysics()
 		}
 		else
 		{
-			if (!attackingHitlag)
+			if (!attackingHitlag && !IsBlockAction( action ) )
 			{
 				velocity = GetAdjustedKnockback(velocity);
 			}

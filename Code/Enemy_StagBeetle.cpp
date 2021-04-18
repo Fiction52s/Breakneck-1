@@ -77,10 +77,10 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = 0;
 	hitboxInfo->drainY = 0;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 40;
 	hitboxInfo->knockback = 20;
 	
@@ -104,6 +104,11 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	ResetEnemy();
+}
+
+StagBeetle::~StagBeetle()
+{
+	delete shield;
 }
 
 void StagBeetle::SetLevel(int lev)

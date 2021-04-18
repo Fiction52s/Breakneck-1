@@ -82,10 +82,10 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	
 
 	hitboxInfo = new HitboxInfo;
-	hitboxInfo->damage = 18;
+	hitboxInfo->damage = 180;
 	hitboxInfo->drainX = .5;
 	hitboxInfo->drainY = .5;
-	hitboxInfo->hitlagFrames = 0;
+	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
 
