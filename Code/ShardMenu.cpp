@@ -93,19 +93,19 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	int xSize = 11;
 	int ySize = 2;//14;
 
-	shardNames = new string*[xSize];
-	shardDesc = new string*[xSize];
-	shardDescriptionNames = new string*[xSize];
-	seqLoadThread = new boost::thread**[xSize];
-	shardSeq = new PNGSeq**[xSize];
+	shardNames = new string*[ySize];
+	shardDesc = new string*[ySize];
+	shardDescriptionNames = new string*[ySize];
+	seqLoadThread = new boost::thread**[ySize];
+	shardSeq = new PNGSeq**[ySize];
 
-	for (int i = 0; i < xSize; ++i)
+	for (int i = 0; i < ySize; ++i)
 	{
-		shardNames[i] = new string[ySize];
-		shardDesc[i] = new string[ySize];
-		shardDescriptionNames[i] = new string[ySize];
-		seqLoadThread[i] = new boost::thread*[ySize];
-		shardSeq[i] = new PNGSeq*[ySize];
+		shardNames[i] = new string[xSize];
+		shardDesc[i] = new string[xSize];
+		shardDescriptionNames[i] = new string[xSize];
+		seqLoadThread[i] = new boost::thread*[xSize];
+		shardSeq[i] = new PNGSeq*[xSize];
 	}
 
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
@@ -119,16 +119,18 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	
 	//shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
 
-	for (int x = 0; x < xSize; ++x)
+	for (int y = 0; y < ySize; ++y)
 	{
-		for (int y = 0; y < ySize; ++y)
+		for (int x = 0; x < xSize; ++x)
 		{
 			ss.str("");
-			shardSeq[x][y] = NULL;
-			seqLoadThread[x][y] = NULL;
-			shardNames[0][0] = Shard::GetShardString(x, y);
+			shardSeq[y][x] = NULL;
+			seqLoadThread[y][x] = NULL;
+			//int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+			int index = x + y * 11;
+			shardNames[y][x] = Shard::GetShardString((ShardType)index);
 
-			std::string &currShardName = shardNames[x][y];
+			std::string &currShardName = shardNames[y][x];
 
 			if (currShardName == "")
 			{
@@ -143,7 +145,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 			
 			//currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
 			if(currShardName != "" )
-				SetDescription(shardDescriptionNames[x][y], shardDesc[x][y], shardNames[x][y]);
+				SetDescription(shardDescriptionNames[y][x], shardDesc[y][x], shardNames[y][x]);
 		}
 	}
 
@@ -172,11 +174,11 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 ShardMenu::~ShardMenu()
 {
-	for (int i = 0; i < xSelector->totalItems; ++i)
+	for (int i = 0; i < ySelector->totalItems; ++i)
 	{
 		delete[] shardNames[i];
 		delete[] shardDesc[i];
-		for (int j = 0; j < ySelector->totalItems; ++j)
+		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
 			if (shardSeq[i][j] != NULL)
 				delete shardSeq[i][j];
@@ -204,6 +206,11 @@ ShardMenu::~ShardMenu()
 bool ShardMenu::IsShardCaptured( int x, int y )
 {
 	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	if (saveFile == NULL)
+	{
+		return false;
+	}
+
 	return (shardNames[x][y] != "" && saveFile->ShardIsCaptured(Shard::GetShardType(shardNames[x][y])));
 }
 
@@ -280,7 +287,7 @@ bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, cons
 
 void ShardMenu::SetCurrMusic()
 {
-	std::string &name = shardNames[xSelector->currIndex][ySelector->currIndex];
+	std::string &name = shardNames[ySelector->currIndex][xSelector->currIndex];
 	assert(currShardMusic == NULL);
 	currShardMusic = GetShardMusic(name);
 	if (currShardMusic != NULL)
@@ -296,7 +303,7 @@ void ShardMenu::SetCurrMusic()
 
 PNGSeq *&ShardMenu::GetCurrSeq()
 {
-	return shardSeq[xSelector->currIndex][ySelector->currIndex];
+	return shardSeq[ySelector->currIndex][xSelector->currIndex];
 }
 
 void ShardMenu::AsyncGetSequence(const std::string &str)
@@ -319,12 +326,12 @@ void ShardMenu::sGetSequence( const std::string &str, ShardMenu *sMenu)
 
 boost::thread *&ShardMenu::GetCurrLoadThread()
 {
-	return seqLoadThread[xSelector->currIndex][ySelector->currIndex];
+	return seqLoadThread[ySelector->currIndex][xSelector->currIndex];
 }
 
 void ShardMenu::SetCurrSequence()
 {
-	std::string &name = shardNames[xSelector->currIndex][ySelector->currIndex];
+	std::string &name = shardNames[ySelector->currIndex][xSelector->currIndex];
 	//sGetSequence(name, this);
 	if (GetCurrSeq() == NULL && GetCurrLoadThread() == NULL )
 	{
@@ -459,19 +466,20 @@ void ShardMenu::UpdateShardSelectQuads()
 
 void ShardMenu::SetCurrentDescription( bool captured)
 {
-	currShardNameText.setString(shardDescriptionNames[xSelector->currIndex][ySelector->currIndex]);
+	currShardNameText.setString(shardDescriptionNames[ySelector->currIndex][xSelector->currIndex]);
 	FloatRect lBounds = currShardNameText.getLocalBounds();
 	currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if( captured )
-		currShardText.setString(shardDesc[xSelector->currIndex][ySelector->currIndex]);
+		currShardText.setString(shardDesc[ySelector->currIndex][xSelector->currIndex]);
 }
 
 std::string ShardMenu::GetShardDesc(int w, int li)
 {
 	int x = li + (w % 2) * 11;
 	int y = w / 2;
+	
 
-	return shardDesc[x][y];
+	return shardDesc[y][x];
 }
 
 void ShardMenu::StopMusic()

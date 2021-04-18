@@ -520,7 +520,7 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	effectSpr.setTexture(*shardSpr.getTexture());
 	effectSpr.setTextureRect(shardSpr.getTextureRect());
 
-	string test = sess->mainMenu->pauseMenu->shardMenu->GetShardDesc(0, 0);
+	string test = sess->mainMenu->pauseMenu->shardMenu->GetShardDesc(w, li);
 	desc.setString(test);
 }
 
