@@ -912,6 +912,8 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_scorpDash;
 	Tileset *ts_scorpSprint;
 	Tileset *ts_scorpClimb;
+	Tileset *ts_scorpBounce;
+	Tileset *ts_scorpBounceWall;
 	sf::Sprite scorpSprite;
 	Tileset * ts_fx_airdashUp;
 	Tileset * ts_fx_airdashDiagonal;

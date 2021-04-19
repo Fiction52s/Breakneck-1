@@ -446,55 +446,93 @@ void Actor::BOUNCEGROUND_UpdateSprite()
 	}
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	sprite->setRotation(0);
 
-	if (abs(bn.x) >= wallThresh)
+	assert(scorpOn);
+	if (scorpOn)
 	{
-		if (bn.x > 0)
-		{
-			sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
-		}
-		else
-		{
-			sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
-		}
-	}
-	else if (bn.y <= 0 && bn.y > -steepThresh)
-	{
-		if (bounceFacingRight)
-		{
-			sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
-			//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-		}
-		else
-		{
-			//sprite->setOrigin( , sprite->getLocalBounds().height / 2);
-			sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
-		}
-	}
-	else if (bn.y >= 0 && -bn.y > -steepThresh)
-	{
-		if (bounceFacingRight)//bounceFrame == 4 )
-		{
-			sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
-			//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
-			//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
-		}
-		else
-		{
-			sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
-			//sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
-		}
-	}
-	else if (bn.y < 0)
-	{
-		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - 120);
-	}
-	else if (bn.y > 0)
-	{
-		//cout << "this one" << endl;
-		sprite->setOrigin(sprite->getLocalBounds().width / 2, 80);
-	}
+		scorpSprite.setTexture(*ts_scorpBounce->texture);
+		SetSpriteTile(&scorpSprite, ts_scorpBounce, bounceFrame, facingRight);
 
+		/*if (r)
+		{
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 30,
+		scorpSprite.getLocalBounds().height / 2 + 25);
+		}
+		else
+		{
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 30,
+		scorpSprite.getLocalBounds().height / 2 + 25);
+		}*/
+
+		scorpSprite.setPosition(position.x, position.y);
+
+		if (bounceFrame == 4)
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+				scorpSprite.getLocalBounds().height / 2 - 60);
+		}
+		else
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+				scorpSprite.getLocalBounds().height / 2);
+		}
+
+		
+		scorpSprite.setRotation(0);//sprite->getRotation());
+		scorpSet = true;
+	}
+	//if (abs(bn.x) >= wallThresh)
+	//{
+	//	if (bn.x > 0)
+	//	{
+	//		sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
+	//	}
+	//	else
+	//	{
+	//		sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
+	//	}
+	//}
+	//else if (bn.y <= 0 && bn.y > -steepThresh)
+	//{
+	//	if (bounceFacingRight)
+	//	{
+	//		sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
+	//		//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+	//	}
+	//	else
+	//	{
+	//		//sprite->setOrigin( , sprite->getLocalBounds().height / 2);
+	//		sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
+	//	}
+	//}
+	//else if (bn.y >= 0 && -bn.y > -steepThresh)
+	//{
+	//	if (bounceFacingRight)//bounceFrame == 4 )
+	//	{
+	//		sprite->setOrigin(110, sprite->getLocalBounds().height / 2);
+	//		//sprite->setOrigin( sprite->getLocalBounds().width / 2, 0);
+	//		//sprite->setOrigin( 0, sprite->getLocalBounds().height / 2);
+	//	}
+	//	else
+	//	{
+	//		sprite->setOrigin(sprite->getLocalBounds().width - 110, sprite->getLocalBounds().height / 2);
+	//		//sprite->setOrigin( sprite->getLocalBounds().width, sprite->getLocalBounds().height / 2);
+	//	}
+	//}
+	//else if (bn.y < 0)
+	//{
+	//	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height - 120);
+	//}
+	//else if (bn.y > 0)
+	//{
+	//	//cout << "this one" << endl;
+	//	sprite->setOrigin(sprite->getLocalBounds().width / 2, 80);
+	//}
+	if (bounceFrame == 4) //ceiling
+	{
+		sprite->setOrigin(sprite->getLocalBounds().width / 2, 22 );
+	}
 
 	sprite->setPosition(position.x, position.y);
 

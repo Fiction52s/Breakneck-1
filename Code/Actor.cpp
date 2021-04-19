@@ -980,6 +980,8 @@ void Actor::SetupExtraTilesets()
 	ts_scorpDash = sess->GetSizedTileset(powerFolder, "scorp_dash_192x80.png");
 	ts_scorpSprint = sess->GetSizedTileset(powerFolder, "scorp_sprint_192x96.png");
 	ts_scorpClimb = sess->GetSizedTileset(powerFolder, "scorp_climb_256x128.png");
+	ts_scorpBounce = sess->GetSizedTileset(powerFolder, "scorp_bounce_256x256.png");
+	ts_scorpBounceWall = sess->GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
 	
 	ts_bubble = sess->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
 	ts_dodecaSmall = sess->GetSizedTileset(powerFolder, "dodecasmall_180x180.png", skin);
@@ -12942,11 +12944,7 @@ void Actor::PhysicsResponse()
 			//cout << "BOUNCING HERE" << endl;
 
 			storedBounceVel = velocity;
-			//bounceFlameOn = false;
-			scorpOn = false;
-			//oldBounceEdge = NULL;
-			//BounceFlameOff();
-			//bounceFlameOn = false;
+			//scorpOn = false;
 
 			SetAction(BOUNCEGROUND);
 			boostBounce = false;
@@ -17075,7 +17073,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 
 
-	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != BOUNCEGROUNDEDWALL && action != GRINDBALL 
+	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
 		target->draw( scorpSprite );

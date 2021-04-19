@@ -81,7 +81,11 @@ void Actor::BOUNCEGROUNDEDWALL_UpdateSprite()
 		angle = atan2(currNormal.x, -currNormal.y);
 	}
 
-	int yOffset = -75;
+	SetGroundedSpriteTransform();
+
+	//sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+
+	/*int yOffset = -75;
 	if (frame < 6)
 	{
 		if ((facingRight && !reversed) || (!facingRight && reversed))
@@ -100,15 +104,37 @@ void Actor::BOUNCEGROUNDEDWALL_UpdateSprite()
 	else
 	{
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height + yOffset);
-	}
+	}*/
 	//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 
-	sprite->setRotation(angle / PI * 180);
-	V2d pp = ground->GetPosition(edgeQuantity);
+	//sprite->setRotation(angle / PI * 180);
+	//V2d pp = ground->GetPosition(edgeQuantity);
 
-	SetGroundedSpritePos(ground, angle);
+	//SetGroundedSpritePos(ground, angle);
 
-	scorpSet = true;
+	assert(scorpOn);
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpBounceWall->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpBounceWall, tFrame, r);
+
+		/*if (r)
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 30,
+				scorpSprite.getLocalBounds().height / 2 + 25);
+		}
+		else
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 30,
+				scorpSprite.getLocalBounds().height / 2 + 25);
+		}*/
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2, scorpSprite.getLocalBounds().height / 2 + 20);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::BOUNCEGROUNDEDWALL_TransitionToAction(int a)

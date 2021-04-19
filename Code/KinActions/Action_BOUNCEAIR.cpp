@@ -138,7 +138,30 @@ void Actor::BOUNCEAIR_UpdateSprite()
 	sprite->setPosition(position.x, position.y);
 	sprite->setRotation(0);
 
-	scorpSet = true;
+	//scorpSet = true;
+	assert(scorpOn);
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpBounce->texture);
+		SetSpriteTile(&scorpSprite, ts_scorpBounce, bounceFrame, facingRight);
+
+		/*if (r)
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 + 30,
+				scorpSprite.getLocalBounds().height / 2 + 25);
+		}
+		else
+		{
+			scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2 - 30,
+				scorpSprite.getLocalBounds().height / 2 + 25);
+		}*/
+
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2);
+		scorpSprite.setRotation(0);//sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::BOUNCEAIR_TransitionToAction(int a)
