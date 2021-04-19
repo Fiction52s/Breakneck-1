@@ -1099,8 +1099,10 @@ void Actor::Init()
 	}
 	else
 	{
-		SetAction(JUMP);
-		frame = 1;
+		SetAction(INTROBOOST);//INTRO
+		frame = 0;
+		/*SetAction(JUMP);
+		frame = 1;*/
 	}
 }
 
@@ -4541,14 +4543,17 @@ void Actor::Respawn()
 
 	if( owner != NULL && owner->shipEnterScene == NULL )
 	{
-		SetAction(INTROBOOST);
+		//SetAction(INTROBOOST);
+		SetAction(SPAWNWAIT);
 		frame = 0;
 		//ActivateEffect(EffectLayer::IN_FRONT, GetTileset("Kin/FX/enter_fx_320x320.png", 320, 320), position, false, 0, 6, 2, true);
 	}
 	else if (owner == NULL && editOwner != NULL)
 	{
-		SetAction(JUMP);
-		frame = 1;
+		/*SetAction(JUMP);
+		frame = 1;*/
+		SetAction(SPAWNWAIT);
+		frame = 0;
 	}
 
 	velocity.x = 0;
@@ -9626,15 +9631,15 @@ void Actor::TryChangePowerMode()
 	{
 		currPowerMode = PMODE_SHIELD;
 	}
-	else if (currInput.RDown() && noHoriz)
+	else if (currInput.RDown() && noHoriz && HasUpgrade( UPGRADE_POWER_TIME ) )
 	{
 		currPowerMode = PMODE_TIMESLOW;
 	}
-	else if (currInput.RRight() && noVert )
+	else if (currInput.RRight() && noVert && HasUpgrade( UPGRADE_POWER_GRIND ))
 	{
 		currPowerMode = PMODE_GRIND;
 	}
-	else if (currInput.RLeft() && noVert )
+	else if (currInput.RLeft() && noVert && HasUpgrade( UPGRADE_POWER_BOUNCE ) )
 	{
 		currPowerMode = PMODE_BOUNCE;
 	}
@@ -19428,7 +19433,7 @@ Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBox &cb, Hit
 		}
 		else if (canBeBlocked && CanBlockEnemy(hpt, hitPos))
 		{
-
+			return HitResult::FULLBLOCK;
 		}
 		/*else if (canBeParried && CanParry(hpt, hitPos, attackFacingRight))
 		{

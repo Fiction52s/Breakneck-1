@@ -2083,6 +2083,17 @@ int GameSession::Run()
 			}
 		}
 	}
+
+	if (saveFile == NULL)
+	{
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			if (GetPlayer(i) != NULL)
+			{
+				SetPlayerOptionField(i);
+			}
+		}
+	}
 	
 	gameMode->StartGame();
 	currSuperPlayer = NULL;

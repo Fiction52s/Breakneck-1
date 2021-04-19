@@ -17,7 +17,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 	ts_actionIcons = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
 
-	numActions = 8;
+	numActions = 6;
 
 	actionQuads = new Vertex[numActions * 4];
 	buttonQuads = new Vertex[numActions * 4];
@@ -25,8 +25,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	labelQuads = new Vertex[numActions * 4];
 	actionText = new Text[numActions];
 
-	std::string buttonTexts[8] = { "JUMP", "DASH", "ATTACK", "POWER 3", "POWER 4",
-		"POWER 5", "POWER 6 LEFT", "POWER 6 RIGHT" };// , "MAP", "PAUSE"
+	std::string buttonTexts[6] = { "JUMP", "DASH", "ATTACK", "SHIELD/POWER","POWER 6 LEFT", "POWER 6 RIGHT" };// , "MAP", "PAUSE"
 
 	for (int i = 0; i < numActions; ++i)
 	{
@@ -45,8 +44,10 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
 	SetActionTile(3, 11);
 	SetActionTile(4, 12);
 	SetActionTile(5, 13);
-	SetActionTile(6, 14);
-	SetActionTile(7, 14);
+	//SetActionTile(6, 14);
+	//SetActionTile(7, 14);
+
+
 	//SetActionTile(8, 7);
 	//SetActionTile(9, 7);
 

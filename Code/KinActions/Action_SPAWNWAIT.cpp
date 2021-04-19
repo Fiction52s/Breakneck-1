@@ -42,7 +42,7 @@ void Actor::SPAWNWAIT_TimeDepFrameInc()
 
 int Actor::SPAWNWAIT_GetActionLength()
 {
-	return 120;
+	return 30;
 }
 
 Tileset * Actor::SPAWNWAIT_GetTileset()
