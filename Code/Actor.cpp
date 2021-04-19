@@ -3667,8 +3667,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	maxFallSpeedSlow = 30;//30;//100; // 4
 	maxFallSpeedFast = maxSpeed;
 
-	scorpAdditionalAccel = .2;
-	scorpAdditionalCapMax = 20.0;//12.0;
+	scorpAdditionalAccel = 0;//.2;
+	scorpAdditionalCapMax = 0;//20.0;//12.0;
 	scorpAdditionalCap = 0.0;
 
 	offSlopeByWallThresh = dashSpeed;//18;
@@ -12103,7 +12103,7 @@ void Actor::UpdatePhysics()
 				&& tempCollision
 				&& action != AIRHITSTUN && action != GROUNDHITSTUN
 				&& !touchedGrass[Grass::ANTIGRAVREVERSE]
-				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && PowerButtonHeld()))
+				&& (((DashButtonHeld() && currInput.LUp()) || touchedGrass[Grass::GRAVREVERSE])|| (HasUpgrade(UPGRADE_POWER_GRIND) && GrindButtonHeld()))
 				&& minContact.normal.y > 0 
 				&& abs( minContact.normal.x ) < wallThresh 
 				&& minContact.position.y <= position.y - b.rh + b.offset.y + 1

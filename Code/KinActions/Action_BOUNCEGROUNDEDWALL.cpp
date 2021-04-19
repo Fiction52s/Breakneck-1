@@ -18,6 +18,14 @@ void Actor::BOUNCEGROUNDEDWALL_Change()
 {
 	if (TryPressGrind()) return;
 
+	if (!bounceFlameOn)
+	{
+		SetAction(RUN);
+		frame = 0;
+		//BounceFlameOff();
+		//holdJump = false;
+		return;
+	}
 
 	if (JumpButtonPressed())
 	{

@@ -30,8 +30,10 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	actionLength[IDLE] = 11 * 5;
 	actionLength[LAND] = 1;
 	actionLength[JUMP] = 2;
-	actionLength[RUN] = 9 * 4;
+	actionLength[RUN] = 3;//9 * 4;
 	actionLength[WAKEUP] = 30;
+
+	animFactor[RUN] = 5;
 
 	gravity = .5;
 	maxGroundSpeed = 30;
@@ -125,7 +127,7 @@ void Roadrunner::ResetEnemy()
 
 void Roadrunner::ActionEnded()
 {
-	if (frame == actionLength[action])
+	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
@@ -303,7 +305,22 @@ void Roadrunner::EnemyDraw(sf::RenderTarget *target)
 void Roadrunner::UpdateSprite()
 {
 
-	IntRect r = ts->GetSubRect(0);
+	int tile = 0;
+	switch (action)
+	{
+	case RUN:
+	{
+		tile = frame / animFactor[RUN];
+		break;
+	}
+	case JUMP:
+	{
+		tile = 1;
+		break;
+	}
+	}
+
+	IntRect r = ts->GetSubRect(tile);
 	if (!facingRight )
 	{
 		r = sf::IntRect(r.left + r.width, r.top, -r.width, r.height);
