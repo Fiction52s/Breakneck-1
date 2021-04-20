@@ -84,6 +84,21 @@ void Actor::STANDATTACK1_UpdateSprite()
 {
 	UpdateGroundedAttackSprite(action, ts_standAttackSword[speedLevel],
 		0, -1, 2, Vector2f(0, 0));
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpRun->texture);
+
+		bool r = (facingRight && !reversed) || (!facingRight && reversed);
+
+		SetSpriteTile(&scorpSprite, ts_scorpDash, 0, r, !reversed);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 20);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::STANDATTACK1_TransitionToAction(int a)

@@ -1865,9 +1865,11 @@ void Wire::UpdateQuads()
 			otherDir.y = -temp;
 			currWirePos = playerPos + hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
 			currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
+
+			
 		}
 		
-		
+		wireTip.setPosition(Vector2f(currWirePos));
 		firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
 		
