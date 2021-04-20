@@ -67,7 +67,7 @@ void Actor::UPTILT1_Change()
 
 void Actor::UPTILT1_Update()
 {
-	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(standHitboxes1[speedLevel], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{

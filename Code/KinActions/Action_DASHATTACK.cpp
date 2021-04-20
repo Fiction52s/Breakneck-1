@@ -73,7 +73,7 @@ void Actor::DASHATTACK_Change()
 
 void Actor::DASHATTACK_Update()
 {
-	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(dashHitboxes1[speedLevel], frame / 2);
 
 	AttackMovement();
 }

@@ -982,8 +982,13 @@ struct Actor : QuadTreeCollider,
 	CollisionBody *fairHitboxes[3];
 	CollisionBody *uairHitboxes[3];
 	CollisionBody *dairHitboxes[3];
-	CollisionBody *standHitboxes[3];
-	CollisionBody *dashHitboxes[3];
+	CollisionBody *standHitboxes1[3];
+	CollisionBody *standHitboxes2[3];
+	CollisionBody *standHitboxes3[3];
+	CollisionBody *standHitboxes4[3];
+	CollisionBody *dashHitboxes1[3];
+	CollisionBody *dashHitboxes2[3];
+	CollisionBody *dashHitboxes3[3];
 	CollisionBody *wallHitboxes[3];
 	CollisionBody *steepClimbHitboxes[3];
 	CollisionBody *steepSlideHitboxes[3];

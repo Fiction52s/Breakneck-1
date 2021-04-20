@@ -3381,10 +3381,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	/*offsets[1] = Vector2i(16, -40);
 	offsets[2] = Vector2i(32, -48);*/
 
-	standSwordOffset[0] = Vector2f(64, -32);//Vector2f(0, -64);
-	standSwordOffset[1] = Vector2f(64, -32);//Vector2f(64, 32);//Vector2f(0, -64);
-	standSwordOffset[2] = Vector2f(64, -32);//Vector2f(64, 16);//Vector2f(0, -64);
-
+	
 	climbAttackOffset[0] = Vector2f(0, -32);
 	climbAttackOffset[1] = Vector2f(0, -128);
 	climbAttackOffset[2] = Vector2f(0, -72);
@@ -3407,9 +3404,35 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		dairHitboxes[1] = CreateCollisionBody("dairbhitboxes");
 		dairHitboxes[2] = CreateCollisionBody("dairchitboxes");
 
-		standHitboxes[0] = CreateCollisionBody("standahitboxes"); 
-		standHitboxes[1] = CreateCollisionBody("standbhitboxes");
-		standHitboxes[2] = CreateCollisionBody("standchitboxes");
+		standHitboxes1[0] = CreateCollisionBody("stand_att_01_a_hitboxes"); 
+		standHitboxes1[1] = CreateCollisionBody("stand_att_01_b_hitboxes");
+		standHitboxes1[2] = CreateCollisionBody("stand_att_01_c_hitboxes");
+
+		standHitboxes2[0] = CreateCollisionBody("stand_att_02_a_hitboxes");
+		standHitboxes2[1] = CreateCollisionBody("stand_att_02_b_hitboxes");
+		standHitboxes2[2] = CreateCollisionBody("stand_att_02_c_hitboxes");
+
+		standHitboxes3[0] = CreateCollisionBody("stand_att_03_a_hitboxes");
+		standHitboxes3[1] = CreateCollisionBody("stand_att_03_b_hitboxes");
+		standHitboxes3[2] = CreateCollisionBody("stand_att_03_c_hitboxes");
+
+		standHitboxes4[0] = CreateCollisionBody("stand_att_04_a_hitboxes");
+		standHitboxes4[1] = CreateCollisionBody("stand_att_04_b_hitboxes");
+		standHitboxes4[2] = CreateCollisionBody("stand_att_04_c_hitboxes");
+
+		dashHitboxes1[0] = CreateCollisionBody("dash_att_01_a_hitboxes");
+		dashHitboxes1[1] = CreateCollisionBody("dash_att_01_b_hitboxes");
+		dashHitboxes1[2] = CreateCollisionBody("dash_att_01_c_hitboxes");
+
+		dashHitboxes2[0] = CreateCollisionBody("dash_att_02_a_hitboxes");
+		dashHitboxes2[1] = CreateCollisionBody("dash_att_02_b_hitboxes");
+		dashHitboxes2[2] = CreateCollisionBody("dash_att_02_c_hitboxes");
+
+		dashHitboxes3[0] = CreateCollisionBody("dash_att_03_a_hitboxes");
+		dashHitboxes3[1] = CreateCollisionBody("dash_att_03_b_hitboxes");
+		dashHitboxes3[2] = CreateCollisionBody("dash_att_03_c_hitboxes");
+
+		
 
 		wallHitboxes[0] = CreateCollisionBody("wallahitboxes");
 		wallHitboxes[1] = CreateCollisionBody("wallbhitboxes");
@@ -3439,12 +3462,24 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 			diagUpHitboxes[i]->OffsetAllFrames(diagUpSwordOffset[i]);
 		}
 
+		standSwordOffset[0] = Vector2f(64, -32);//Vector2f(0, -64);
+		standSwordOffset[1] = Vector2f(64, -32);//Vector2f(64, 32);//Vector2f(0, -64);
+		standSwordOffset[2] = Vector2f(64, -32);//Vector2f(64, 16);//Vector2f(0, -64);
+
+		Vector2f groundAttackOffset(0, -32);
 		for (int i = 0; i < 3; ++i)
 		{
 			Vector2f testOffset = standSwordOffset[i];
 			//testOffset.y -= ts_standAttackSword[i]->tileHeight / 2.0;
 			//standHitboxes[i]->OffsetAllFrames(standSwordOffset[i]);
-			standHitboxes[i]->OffsetAllFrames(testOffset);
+			standHitboxes1[i]->OffsetAllFrames(groundAttackOffset);
+			standHitboxes2[i]->OffsetAllFrames(groundAttackOffset);
+			standHitboxes3[i]->OffsetAllFrames(groundAttackOffset);
+			standHitboxes4[i]->OffsetAllFrames(groundAttackOffset);
+
+			dashHitboxes1[i]->OffsetAllFrames(groundAttackOffset);
+			dashHitboxes2[i]->OffsetAllFrames(groundAttackOffset);
+			dashHitboxes3[i]->OffsetAllFrames(groundAttackOffset);
 		}
 
 		for (int i = 0; i < 3; ++i)
@@ -3503,9 +3538,33 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		dairHitboxes[2] = NULL;
 
 
-		standHitboxes[0] = NULL;
-		standHitboxes[1] = NULL;
-		standHitboxes[2] = NULL;
+		standHitboxes1[0] = NULL;
+		standHitboxes1[1] = NULL;
+		standHitboxes1[2] = NULL;
+
+		standHitboxes2[0] = NULL;
+		standHitboxes2[1] = NULL;
+		standHitboxes2[2] = NULL;
+
+		standHitboxes3[0] = NULL;
+		standHitboxes3[1] = NULL;
+		standHitboxes3[2] = NULL;
+
+		standHitboxes4[0] = NULL;
+		standHitboxes4[1] = NULL;
+		standHitboxes4[2] = NULL;
+
+		dashHitboxes1[0] = NULL;
+		dashHitboxes1[1] = NULL;
+		dashHitboxes1[2] = NULL;
+
+		dashHitboxes2[0] = NULL;
+		dashHitboxes2[1] = NULL;
+		dashHitboxes2[2] = NULL;
+
+		dashHitboxes3[0] = NULL;
+		dashHitboxes3[1] = NULL;
+		dashHitboxes3[2] = NULL;
 
 		wallHitboxes[0] = NULL;
 
@@ -3895,9 +3954,17 @@ Actor::~Actor()
 			delete fairHitboxes[i];
 			delete uairHitboxes[i];
 			delete dairHitboxes[i];
-			delete standHitboxes[i];
+
+			delete standHitboxes1[i];
+			delete standHitboxes2[i];
+			delete standHitboxes3[i];
+			delete standHitboxes4[i];
+
 			delete wallHitboxes[i];
-			//		delete dashHitboxes[i];
+
+			delete dashHitboxes1[i];
+			delete dashHitboxes2[i];
+			delete dashHitboxes3[i];
 
 				//	delete wallHitboxes[i];
 			delete steepClimbHitboxes[i];

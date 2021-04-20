@@ -68,7 +68,7 @@ void Actor::STANDATTACK2_Change()
 
 void Actor::STANDATTACK2_Update()
 {
-	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(standHitboxes2[speedLevel], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{

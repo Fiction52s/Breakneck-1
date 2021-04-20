@@ -21,7 +21,7 @@ void Actor::DASHATTACK3_Change()
 void Actor::DASHATTACK3_Update()
 {
 	//change this to dash attack 2 hitboxes soon
-	SetCurrHitboxes(standHitboxes[speedLevel], frame / 2);
+	SetCurrHitboxes(dashHitboxes3[speedLevel], frame / 2);
 
 	if (frame == 0 && slowCounter == 1)
 	{
