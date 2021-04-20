@@ -67,6 +67,10 @@ struct Camera
 	sf::Vector2f moveFrames;
 	int playerIndex;
 
+	int grindAdjustFrames;
+
+	int oldFramesGrinding;
+	int oldFramesNotGrinding;
 
 	int easeOutCount;
 	int easeOutFrame;

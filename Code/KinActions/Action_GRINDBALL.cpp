@@ -373,6 +373,8 @@ void Actor::GRINDBALL_Change()
 		hurtBody.isCircle = false;
 		hurtBody.rw = 7;
 		hurtBody.rh = normalHeight;
+
+		framesNotGrinding = 0;
 	}
 }
 
@@ -448,7 +450,8 @@ void Actor::GRINDBALL_UpdateSprite()
 	V2d oldv0 = grindEdge->v0;
 	V2d oldv1 = grindEdge->v1;
 
-	V2d pp = grindEdge->GetPosition(grindQuantity);
+	V2d grindPoint = grindEdge->GetPosition(grindQuantity);
+	V2d pp = grindPoint + grindNorm * 20.0;
 
 	sprite->setPosition(pp.x, pp.y);
 
@@ -462,13 +465,13 @@ void Actor::GRINDBALL_UpdateSprite()
 	gstrirgb.setOrigin(gstrirgb.getLocalBounds().width / 2, gstrirgb.getLocalBounds().height / 2);
 
 
-	gsdodeca.setPosition(pp.x, pp.y);
-	gstriblue.setPosition(pp.x, pp.y);
-	gstricym.setPosition(pp.x, pp.y);
-	gstrigreen.setPosition(pp.x, pp.y);
-	gstrioran.setPosition(pp.x, pp.y);
-	gstripurp.setPosition(pp.x, pp.y);
-	gstrirgb.setPosition(pp.x, pp.y);
+	gsdodeca.setPosition(grindPoint.x, grindPoint.y);
+	gstriblue.setPosition(grindPoint.x, grindPoint.y);
+	gstricym.setPosition(grindPoint.x, grindPoint.y);
+	gstrigreen.setPosition(grindPoint.x, grindPoint.y);
+	gstrioran.setPosition(grindPoint.x, grindPoint.y);
+	gstripurp.setPosition(grindPoint.x, grindPoint.y);
+	gstrirgb.setPosition(grindPoint.x, grindPoint.y);
 }
 
 void Actor::GRINDBALL_TransitionToAction(int a)

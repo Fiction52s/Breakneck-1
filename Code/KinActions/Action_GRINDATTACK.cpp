@@ -9,8 +9,10 @@ void Actor::GRINDATTACK_Start()
 
 void Actor::GRINDATTACK_End()
 {
-	SetAction(GRINDATTACK);
+	SetAction(GRINDBALL);
 	frame = 0;
+	//SetAction(GRINDATTACK);
+	//frame = 0;
 }
 
 void Actor::GRINDATTACK_Change()
@@ -366,7 +368,7 @@ void Actor::GRINDATTACK_Change()
 void Actor::GRINDATTACK_Update()
 {
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	double dSpeed = GetDashSpeed();
+	/*double dSpeed = GetDashSpeed();
 	double adSpeed = abs(dSpeed);
 	double tot = (abs(grindSpeed) - adSpeed) / (maxGroundSpeed - adSpeed);
 
@@ -386,16 +388,16 @@ void Actor::GRINDATTACK_Update()
 		grindSpeed += fac * slowMultiple;
 		if (grindSpeed > -dSpeed)
 			grindSpeed = -dSpeed;
-	}
+	}*/
 
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
 
-	//if( grindHitboxes.count( frame ) > 0 )
-	if (abs(grindSpeed) > dSpeed)
+	/*if (abs(grindSpeed) > dSpeed)
 	{
 		SetCurrHitboxes(grindHitboxes[0], 0);
-	}
+	}*/
+	SetCurrHitboxes(grindHitboxes[0], 0);
 }
 
 void Actor::GRINDATTACK_UpdateSprite()

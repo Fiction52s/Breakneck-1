@@ -22,6 +22,7 @@ void Config::CreateSaveThread(Config *config)
 ConfigData::ConfigData()
 	:resolutionX( 1920 ), resolutionY( 1080 )
 {
+	SetToDefault();
 }
 
 void ConfigData::SetToDefault()

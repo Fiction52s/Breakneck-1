@@ -9631,19 +9631,29 @@ void Actor::TryChangePowerMode()
 	bool noHoriz = !currInput.RLeft() && !currInput.RRight();
 	bool noVert = !currInput.RUp() && !currInput.RDown();
 
+	bool hasTimeSlow = HasUpgrade(UPGRADE_POWER_TIME);
+	bool hasGrind = HasUpgrade(UPGRADE_POWER_GRIND);
+	bool hasBounce = HasUpgrade(UPGRADE_POWER_BOUNCE);
+	if ((currPowerMode == PMODE_TIMESLOW && !hasTimeSlow )
+		|| (currPowerMode == PMODE_GRIND && !hasGrind )
+		|| (currPowerMode == PMODE_BOUNCE && !hasBounce))
+	{
+		currPowerMode = PMODE_SHIELD;
+	}
+
 	if (currInput.RUp() && noHoriz)
 	{
 		currPowerMode = PMODE_SHIELD;
 	}
-	else if (currInput.RDown() && noHoriz && HasUpgrade( UPGRADE_POWER_TIME ) )
+	else if (currInput.RDown() && noHoriz && hasTimeSlow)
 	{
 		currPowerMode = PMODE_TIMESLOW;
 	}
-	else if (currInput.RRight() && noVert && HasUpgrade( UPGRADE_POWER_GRIND ))
+	else if (currInput.RRight() && noVert && hasGrind)
 	{
 		currPowerMode = PMODE_GRIND;
 	}
-	else if (currInput.RLeft() && noVert && HasUpgrade( UPGRADE_POWER_BOUNCE ) )
+	else if (currInput.RLeft() && noVert && hasBounce )
 	{
 		currPowerMode = PMODE_BOUNCE;
 	}
@@ -17044,6 +17054,22 @@ void Actor::MiniDraw(sf::RenderTarget *target)
 	keyExplodeRingGroup->Draw(target);
 }
 
+void Actor::DrawPlayerSprite( sf::RenderTarget *target )
+{
+	if (kinMode == K_DESPERATION)
+	{
+		target->draw(*sprite, &playerDespShader);
+	}
+	else if (kinMode == K_SUPER)
+	{
+		target->draw(*sprite, &playerSuperShader);
+	}
+	else
+	{
+		target->draw(*sprite, &sh);
+	}
+}
+
 void Actor::Draw( sf::RenderTarget *target )
 {
 	//dustParticles->Draw(target);
@@ -17290,7 +17316,6 @@ void Actor::Draw( sf::RenderTarget *target )
 	}
 	if (action == GRINDBALL || action == GRINDATTACK || action == RAILGRIND)
 	{
-		target->draw(*sprite, &sh);
 		target->draw( gsdodeca );
 		target->draw( gstriblue );
 		target->draw( gstricym );
@@ -17298,7 +17323,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw( gstrioran );
 		target->draw( gstripurp );
 		target->draw( gstrirgb );
-		target->draw( *sprite );
+
+		DrawPlayerSprite(target);
 	}
 	else
 	{
@@ -17306,18 +17332,8 @@ void Actor::Draw( sf::RenderTarget *target )
 			flashFrames = owner->pauseFrames;
 		else
 			flashFrames = 0;
-		if (kinMode == K_DESPERATION)
-		{
-			target->draw(*sprite, &playerDespShader);
-		}
-		else if (kinMode == K_SUPER)
-		{
-			target->draw(*sprite, &playerSuperShader);
-		}
-		else
-		{
-			target->draw(*sprite, &sh);
-		}
+		
+		DrawPlayerSprite( target );
 		
 		if (showSword)
 		{

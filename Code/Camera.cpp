@@ -65,6 +65,8 @@ Camera::Camera()
 	rX = 0;
 	rY = 0;
 	offsetVel = Vector2f(0, 0);
+
+	Reset();
 }
 
 void Camera::Reset()
@@ -82,6 +84,7 @@ void Camera::Reset()
 	offset.y = 0;
 	pos.x = 0;
 	pos.y = 0;
+	oldFramesGrinding = 0;
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -663,24 +666,12 @@ void Camera::UpdateZoomLevel( ControllerState &con, ControllerState &prevcon )
 sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 {
 	V2d pVel;
-	double cap = 30;
 	if (player->grindEdge != NULL && (player->action == Actor::GRINDBALL))
 	{
 		//cout << "here!" << endl;
 		V2d grindDir = normalize(player->grindEdge->v1 - player->grindEdge->v0);
-		V2d otherDir = grindDir;
-		double oTemp = otherDir.x;
-		otherDir.x = otherDir.y;
-		otherDir.y = -oTemp;
 
-		if (player->framesGrinding < cap)
-		{
-
-			playerPos += otherDir * player->normalHeight * (1 - player->framesGrinding / cap);
-			//cout << "height on: " << playerPos.y << endl;
-		}
 		pVel = grindDir * player->grindSpeed;
-		//cout << "grindspeed: " << player->grindSpeed << endl;
 
 		if (player->reversed)
 		{
@@ -689,28 +680,6 @@ sf::Vector2<double> Camera::GetPlayerVel( Actor *player)
 	}
 	else if (player->ground != NULL)
 	{
-		double cap2 = cap;
-		if (player->framesGrinding < cap)
-		{
-			//cout << "bad trigger" << endl;
-			player->framesNotGrinding = cap - player->framesGrinding;
-			//cap2 = player->framesGrinding;
-		}
-
-		if (player->framesNotGrinding <= cap2)
-		{
-			V2d otherDir;
-			if (player->ground != NULL)
-			{
-				otherDir = -player->ground->Normal();
-
-				V2d toffset = otherDir * player->normalHeight * (1 - player->framesNotGrinding / cap2);
-				playerPos += toffset;
-				//cout << "height off: " << playerPos.y << endl;
-				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
-			}
-		}
-
 		if (player->action != Actor::JUMPSQUAT)
 		{
 			pVel = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed;
@@ -1092,6 +1061,53 @@ void Camera::UpdateBasicMode()
 		pos.x = playerPos.x + offset.x;
 		pos.y = playerPos.y + offset.y;
 	}
+
+
+	double grindFramesCap = 30;
+	if (player->grindEdge != NULL && (player->action == Actor::GRINDBALL))
+	{
+		V2d grindNorm = player->grindEdge->Normal();
+
+
+		if (oldFramesNotGrinding < grindFramesCap && player->framesGrinding == 1)
+		{
+			//cout << "bad trigger" << endl;
+			player->framesGrinding = grindFramesCap - oldFramesNotGrinding;
+			//cap2 = player->framesGrinding;
+		}
+
+		if (player->framesGrinding < grindFramesCap)
+		{
+			playerPos += grindNorm * player->normalHeight * (1 - player->framesGrinding / grindFramesCap);
+			//cout << "height on: " << playerPos.y << endl;
+		}
+	}
+	else if (player->ground != NULL)
+	{
+		if (oldFramesGrinding < grindFramesCap && player->framesNotGrinding == 1)
+		{
+			//cout << "bad trigger" << endl;
+			player->framesNotGrinding = grindFramesCap - oldFramesGrinding;
+			//cap2 = player->framesGrinding;
+		}
+
+		if (player->framesNotGrinding < grindFramesCap)
+		{
+			V2d oppositeGroundNormal;
+			if (player->ground != NULL)
+			{
+				oppositeGroundNormal = -player->ground->Normal();
+
+				V2d toffset = oppositeGroundNormal * player->normalHeight * (1 - player->framesNotGrinding / grindFramesCap);
+				playerPos += toffset;
+				//cout << "height off: " << playerPos.y << endl;
+				//cout << "offset: " << offset.x << ", " << offset.y << ", framesNotGrinding: " << player->framesNotGrinding << endl;
+			}
+		}
+	}
+
+	oldFramesGrinding = player->framesGrinding;
+	oldFramesNotGrinding = player->framesNotGrinding;
 
 	ControllerState & con = player->currInput;
 	ControllerState & prevcon = player->prevInput;
