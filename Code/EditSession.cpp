@@ -1391,13 +1391,13 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 		if (!set)
 		{
 			//error. profile does not exist
-			currFile->controlProfileName = "KIN Default";
+			currFile->controlProfileName = "KIN_Default";
 			currFile->Save();
 		}
 	}
 	//update this later
 
-	mainMenu->SetCurrProfileByName("Custom 1");
+	mainMenu->SetCurrProfileByName("KIN_Default");//"Custom 1");
 	ControlProfile *currProfile = mainMenu->GetCurrSelectedProfile();
 	for (int i = 0; i < 4; ++i)
 	{

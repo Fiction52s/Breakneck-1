@@ -574,7 +574,7 @@ bool ControlProfileManager::LoadProfiles()
 	ClearProfiles();
 
 	ControlProfile *def = new ControlProfile;
-	def->name = "KIN Default";
+	def->name = "KIN_Default";
 	profiles.push_front(def);
 
 	is.open( "Resources/controlprofiles.txt" );
@@ -894,17 +894,9 @@ ControllerSettings::ButtonType ControlProfileManager::GetButtonTypeFromAction(
 	{
 		buttonType = ControllerSettings::ATTACK;
 	}
-	else if( inputName == "POWER3" )
+	else if( inputName == "SHIELD" )
 	{
-		buttonType = ControllerSettings::BOUNCE;
-	}
-	else if( inputName == "POWER4" )
-	{
-		buttonType = ControllerSettings::GRIND;
-	}
-	else if( inputName == "POWER5" )
-	{
-		buttonType = ControllerSettings::TIMESLOW;
+		buttonType = ControllerSettings::SHIELD;
 	}
 	else if( inputName == "POWER6RIGHT" )
 	{
@@ -1058,9 +1050,7 @@ void ControlProfileManager::WriteFilter( ofstream &of, XBoxButton *filter)
 	of << "JUMP=" << GetXBoxButtonString(filter[ControllerSettings::JUMP]) << "\n";
 	of << "DASH=" << GetXBoxButtonString(filter[ControllerSettings::DASH]) << "\n";
 	of << "ATTACK=" << GetXBoxButtonString(filter[ControllerSettings::ATTACK]) << "\n";
-	of << "POWER3=" << GetXBoxButtonString(filter[ControllerSettings::BOUNCE]) << "\n";
-	of << "POWER4=" << GetXBoxButtonString(filter[ControllerSettings::GRIND]) << "\n";
-	of << "POWER5=" << GetXBoxButtonString(filter[ControllerSettings::TIMESLOW]) << "\n";
+	of << "SHIELD=" << GetXBoxButtonString(filter[ControllerSettings::SHIELD]) << "\n";
 	of << "POWER6LEFT=" << GetXBoxButtonString(filter[ControllerSettings::LEFTWIRE]) << "\n";
 	of << "POWER6RIGHT=" << GetXBoxButtonString(filter[ControllerSettings::RIGHTWIRE]) << "\n\n";
 }

@@ -704,6 +704,7 @@ struct Actor : QuadTreeCollider,
 	sf::Color halfBlockShieldColor;
 	sf::Shader shieldShader;
 	sf::Sprite shieldSprite;
+	sf::Sprite grindAttackSprite;
 	Tileset *ts_blockShield;
 	
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
@@ -832,6 +833,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * tsgstrioran;
 	Tileset * tsgstripurp;
 	Tileset * tsgstrirgb;
+	Tileset *ts_grindAttackFX;
 	sf::Sprite fairSword;
 	Tileset *ts_fairSword[3];
 	Tileset *ts_fairSwordLightning[3];

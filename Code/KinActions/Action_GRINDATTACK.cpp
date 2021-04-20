@@ -401,6 +401,21 @@ void Actor::GRINDATTACK_Update()
 void Actor::GRINDATTACK_UpdateSprite()
 {
 	GRINDBALL_UpdateSprite();
+
+	V2d grindNorm = grindEdge->Normal();
+	bool r = grindSpeed > 0;
+
+	if (IsOnRailAction(action) && grindNorm.y > 0)
+	{
+		grindNorm = -grindNorm;
+		r = !r;
+	}
+
+	ts_grindAttackFX->SetSubRect(grindAttackSprite, frame, r);
+	grindAttackSprite.setPosition(position.x, position.y);
+	grindAttackSprite.setOrigin(grindAttackSprite.getLocalBounds().width / 2,
+		grindAttackSprite.getLocalBounds().height / 2);
+
 }
 
 void Actor::GRINDATTACK_TransitionToAction(int a)
@@ -420,7 +435,7 @@ void Actor::GRINDATTACK_TimeDepFrameInc()
 
 int Actor::GRINDATTACK_GetActionLength()
 {
-	return 1;
+	return 20;
 }
 
 Tileset * Actor::GRINDATTACK_GetTileset()

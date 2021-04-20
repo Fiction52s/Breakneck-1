@@ -16,6 +16,7 @@ struct ConfigData
 	int musicVolume;
 	int soundVolume;
 	std::string defaultProfileName;
+	int defaultInputFormat;
 };
 
 struct Config

@@ -29,7 +29,10 @@ void MusicPlayer::StopCurrentMusic()
 
 void MusicPlayer::UpdateVolume()
 {
-	currMusic->music->setVolume(mm->config->GetData().musicVolume);
+	if (currMusic != NULL)
+	{
+		currMusic->music->setVolume(mm->config->GetData().musicVolume);
+	}
 }
 
 void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)

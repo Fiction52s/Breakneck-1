@@ -14,7 +14,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu)
 {
 	int width = 1000;
-	int height = 700;
+	int height = 900;
 	Vector2f menuOffset(0, 0);
 
 	optionsWindow = new UIWindow(NULL, mainMenu->tilesetManager.GetTileset("Menu/windows_64x24.png", 64, 24),
@@ -29,6 +29,9 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 
 	int windowModeInts[] = { sf::Style::None, sf::Style::Default, sf::Style::Fullscreen };
 
+	int controllerOptionInts[] = { ControllerType::CTYPE_XBOX, ControllerType::CTYPE_GAMECUBE,
+	ControllerType::CTYPE_KEYBOARD };
+
 	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1366, 768),
 		Vector2i(1280, 800), Vector2i(1280, 720) };
 
@@ -37,6 +40,10 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 
 	horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
 		windowModes, "Window Mode", 300, windowModeInts, true, 0, 500);
+
+	string controllerOptions[] = { "XBOX", "Gamecube", "Keyboard" };
+	horizDefaultController = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
+		controllerOptions, "Default control type:", 600, controllerOptionInts, true, 0, 400);
 
 	int vol[101];
 	for (int i = 0; i < 101; ++i)
@@ -58,7 +65,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
 	UIControl *testBlah[] = { horizResolution, horizWindowModes,
-		musicVolume, soundVolume, defaultButton, applyButton };
+		musicVolume, soundVolume, defaultButton, horizDefaultController, applyButton };
 
 	//check->SetTopLeft(100, 50);
 	UIVerticalControlList *cList = new UIVerticalControlList(optionsWindow, sizeof(testBlah) / sizeof(UIControl*), testBlah, 20);
@@ -95,6 +102,7 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 			d.windowStyle = winMode;
 			d.musicVolume = mVol;
 			d.soundVolume = sVol;
+			d.defaultInputFormat = horizDefaultController->GetResult(horizDefaultController->currIndex);
 
 			mainMenu->config->SetData(d);
 			Config::CreateSaveThread(mainMenu->config);
@@ -134,10 +142,12 @@ void OptionsMenuScreen::Load()
 	bool hWinMode = horizWindowModes->SetCurrAsResult(cd.windowStyle);
 	bool mvRes = musicVolume->SetCurrAsResult(cd.musicVolume);
 	bool svRes = soundVolume->SetCurrAsResult(cd.soundVolume);
+	bool cRes = horizDefaultController->SetCurrAsResult(cd.defaultInputFormat);
 	assert(hRes);
 	assert(hWinMode);
 	assert(mvRes);
 	assert(svRes);
+	assert(cRes);
 }
 
 void OptionsMenuScreen::Update(ControllerState &currInput, ControllerState &prevInput)

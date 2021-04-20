@@ -1885,7 +1885,7 @@ bool GameSession::SetupControlProfiles()
 		if (!set)
 		{
 			//error. profile does not exist
-			currFile->controlProfileName = "KIN Default";
+			currFile->controlProfileName = "KIN_Default";
 			currFile->Save();
 		}
 	}

@@ -1096,7 +1096,7 @@ void SaveFile::Save()
 
 void SaveFile::SetAsDefault()
 {
-	controlProfileName = "KIN Default";
+	controlProfileName = "KIN_Default";
 	levelsBeatenField.Reset();
 	
 	for (int i = 0; i < 512; ++i)

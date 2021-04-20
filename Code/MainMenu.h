@@ -167,6 +167,7 @@ struct OptionsMenuScreen : UIEventHandlerBase
 	UIHorizSelector<int> *soundVolume;
 	UIButton *defaultButton;
 	UIButton *applyButton;
+	UIHorizSelector<int> *horizDefaultController;
 };
 
 

@@ -936,32 +936,32 @@ void Actor::SetupSwordTilesets()
 	ts_diagDownSword[2] = sess->GetSizedTileset(folder, "airdash_sword_p_320x384.png", swordSkin);
 
 	ts_dashAttackSword[0] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
-	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
-	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_384x320.png", swordSkin);
+	ts_dashAttackSword[1] = sess->GetSizedTileset(folder, "dash_att_01_sword_b_480x480.png", swordSkin);
+	ts_dashAttackSword[2] = sess->GetSizedTileset(folder, "dash_att_01_sword_p_480x480.png", swordSkin);
 
 	ts_dashAttackSword2[0] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
-	ts_dashAttackSword2[1] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
-	ts_dashAttackSword2[2] = sess->GetSizedTileset(folder, "dash_att_02_sword_384x384.png", swordSkin);
+	ts_dashAttackSword2[1] = sess->GetSizedTileset(folder, "dash_att_02_sword_b_480x480.png", swordSkin);
+	ts_dashAttackSword2[2] = sess->GetSizedTileset(folder, "dash_att_02_sword_p_480x480.png", swordSkin);
 
 	ts_dashAttackSword3[0] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
-	ts_dashAttackSword3[1] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
-	ts_dashAttackSword3[2] = sess->GetSizedTileset(folder, "dash_att_03_sword_384x384.png", swordSkin);
+	ts_dashAttackSword3[1] = sess->GetSizedTileset(folder, "dash_att_03_sword_b_480x480.png", swordSkin);
+	ts_dashAttackSword3[2] = sess->GetSizedTileset(folder, "dash_att_03_sword_p_480x480.png", swordSkin);
 
 	ts_standAttackSword[0] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
-	ts_standAttackSword[1] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
-	ts_standAttackSword[2] = sess->GetSizedTileset(folder, "stand_att_01_sword_384x384.png", swordSkin);
+	ts_standAttackSword[1] = sess->GetSizedTileset(folder, "stand_att_01_sword_b_480x256.png", swordSkin);
+	ts_standAttackSword[2] = sess->GetSizedTileset(folder, "stand_att_01_sword_p_480x320.png", swordSkin);
 
 	ts_standAttackSword2[0] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
-	ts_standAttackSword2[1] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
-	ts_standAttackSword2[2] = sess->GetSizedTileset(folder, "stand_att_02_sword_384x384.png", swordSkin);
+	ts_standAttackSword2[1] = sess->GetSizedTileset(folder, "stand_att_02_sword_b_480x320.png", swordSkin);
+	ts_standAttackSword2[2] = sess->GetSizedTileset(folder, "stand_att_02_sword_p_480x320.png", swordSkin);
 
 	ts_standAttackSword3[0] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
-	ts_standAttackSword3[1] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
-	ts_standAttackSword3[2] = sess->GetSizedTileset(folder, "stand_att_03_sword_384x384.png", swordSkin);
+	ts_standAttackSword3[1] = sess->GetSizedTileset(folder, "stand_att_03_sword_b_480x256.png", swordSkin);
+	ts_standAttackSword3[2] = sess->GetSizedTileset(folder, "stand_att_03_sword_p_480x256.png", swordSkin);
 
 	ts_standAttackSword4[0] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
-	ts_standAttackSword4[1] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
-	ts_standAttackSword4[2] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png", swordSkin);
+	ts_standAttackSword4[1] = sess->GetSizedTileset(folder, "stand_att_04_sword_b_480x400.png", swordSkin);
+	ts_standAttackSword4[2] = sess->GetSizedTileset(folder, "stand_att_04_sword_p_480x400.png", swordSkin);
 
 }
 
@@ -993,6 +993,10 @@ void Actor::SetupExtraTilesets()
 	tsgstrioran = sess->GetSizedTileset(powerFolder, "trioran_128x128.png");
 	tsgstripurp = sess->GetSizedTileset(powerFolder, "tripurp_128x128.png");
 	tsgstrirgb = sess->GetSizedTileset(powerFolder, "trirgb_128x128.png");
+
+	ts_grindAttackFX = sess->GetSizedTileset(powerFolder, "grind_attack_192x192.png");
+
+	ts_grindAttackFX->SetSpriteTexture(grindAttackSprite);
 
 	ts_blockShield = sess->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
@@ -6019,7 +6023,7 @@ void Actor::UpdateBubbles()
 
 	if (isBeingSlowed && !isInOwnBubble)
 	{
-		if (currInput.leftShoulder)
+		if (currInput.PowerButtonDown())
 		{
 			slowCounter = 1;
 			slowMultiple = baseSlowMultiple;
@@ -6269,7 +6273,7 @@ void Actor::UpdatePrePhysics()
 		framesSinceBlockPress = 0;
 	}
 
-	if (currInput.leftShoulder && !prevInput.leftShoulder)
+	if (currInput.Y && !prevInput.Y)
 	{
 		if (superLevelCounter < 2 )
 		{
@@ -17090,6 +17094,11 @@ void Actor::Draw( sf::RenderTarget *target )
 		//target->draw(railTest);
 	}
 
+	if (action == GRINDATTACK)
+	{
+		target->draw(grindAttackSprite);
+	}
+
 	V2d motionGhostDir;
 	double motionMagnitude = 0;
 	if (ground != NULL)
@@ -18739,12 +18748,12 @@ bool Actor::AttackButtonHeld()
 
 bool Actor::PowerButtonHeld()
 {
-	return currInput.Y;
+	return currInput.PowerButtonDown();
 }
 
 bool Actor::PowerButtonPressed()
 {
-	return currInput.Y && !prevInput.Y;
+	return currInput.PowerButtonDown() && !prevInput.PowerButtonDown();
 }
 
 

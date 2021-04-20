@@ -19,6 +19,7 @@ For each button, its bool its true if the it is down
 (pressed) and false if it is up (not pressed).
 */
 
+
 struct KeyboardState;
 struct ControllerState
 {
@@ -104,11 +105,9 @@ struct KeyboardSettings
 		DOWN,
 		RIGHT,
 		JUMP,
-		SLASH,
+		ATTACK,
 		DASH,
-		BOUNCE,
-		GRIND,
-		TIMESLOW,
+		SHIELD,
 		LEFTWIRE,
 		RIGHTWIRE,
 		MAP,
@@ -164,9 +163,7 @@ struct ControllerSettings
 		JUMP,
 		DASH,
 		ATTACK,
-		BOUNCE,
-		GRIND,
-		TIMESLOW,
+		SHIELD,
 		LEFTWIRE,
 		RIGHTWIRE,
 		MAP,
@@ -237,7 +234,9 @@ public:
 	int gcDefaultRightTrigger;
 private:
 	DWORD m_index;
-	
+	bool UpdateGCC();
+	bool UpdateXBOX();
+	bool UpdateKeyboard();
 	ControllerType controllerType;
 
 	const static DWORD LEFT_STICK_DEADZONE;

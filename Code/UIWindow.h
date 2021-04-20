@@ -226,9 +226,9 @@ struct UIHorizSelector : UIControl
 		currIndexText.setColor( Color::White );*/
 		bar->SetText(names[defaultIndex]);
 
-		waitFrames[0] = 10;
-		waitFrames[1] = 5;
-		waitFrames[2] = 2;
+		waitFrames[0] = 60;
+		waitFrames[1] = 30;
+		waitFrames[2] = 4;
 
 		waitModeThresh[0] = 2;
 		waitModeThresh[1] = 2;

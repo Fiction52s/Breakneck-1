@@ -1,6 +1,7 @@
 #include "Config.h"
 #include <iostream>
 #include <fstream>
+#include "Input.h"
 
 
 using namespace std;
@@ -30,13 +31,14 @@ void ConfigData::SetToDefault()
 	windowStyle = sf::Style::Fullscreen;
 	musicVolume = 100;
 	soundVolume = 100;
-	defaultProfileName = "";
+	defaultProfileName = "KIN_Default";
 }
 
 Config::Config()
 	:doneLoading( false ), doneSaving( false )
 {
 	t = NULL;
+	SetToDefault();
 	CreateLoadThread( this );
 }
 
@@ -129,6 +131,29 @@ void Config::Load()
 			{
 				is >> data.defaultProfileName;
 			}
+			else if (settingName == "defaultinputformat")
+			{
+				is >> data.defaultInputFormat;
+				/*string defaultInputName;
+				is >> defaultInputName;
+
+				if (defaultInputName == "XBOX")
+				{
+					data.defaultInputFormat = ControllerType::CTYPE_XBOX;
+				}
+				else if (defaultInputName == "Gamecube")
+				{
+					data.defaultInputFormat = ControllerType::CTYPE_GAMECUBE;
+				}
+				else if (defaultInputName == "Keyboard")
+				{
+					data.defaultInputFormat = ControllerType::CTYPE_KEYBOARD;
+				}
+				else
+				{
+					assert(0);
+				}*/
+			}
 
 			int c = is.peek();
 			if( c == EOF )
@@ -172,7 +197,8 @@ void Config::Save()
 		of << "WindowMode " << data.GetWindowModeString() << "\n";
 		of << "MusicVolume " << data.musicVolume << "\n";
 		of << "SoundVolume " << data.soundVolume << "\n";
-		of << "DefaultProfile" << data.defaultProfileName;// << "\n";
+		of << "DefaultProfile " << data.defaultProfileName << "\n";
+		of << "DefaultInputFormat " << data.defaultInputFormat;
 		of.close();
 	}
 	else
