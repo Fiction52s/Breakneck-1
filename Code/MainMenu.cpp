@@ -194,6 +194,32 @@ void MainMenu::UpdateMenuOptionText()
 	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, 100 + alpha * 155 ));
 }
 
+void MainMenu::CheckForControllers()
+{
+	//currently only checks for gamecube, xbox doesnt need it.
+	gccDriver = new GCC::USBDriver;
+	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
+	{
+		gccDriverEnabled = true;
+		joys = new GCC::VJoyGCControllers(*gccDriver);
+		{
+			auto controllers = gccDriver->getState();
+			//for (int i = 0; i < 4; ++i)
+			//{
+			//	//GameController &c = GetController(i);
+
+			//	//c.gcDefaultControl.x = controllers[i].enabled
+			//}
+		}
+	}
+	else
+	{
+		joys = NULL;
+		gccDriverEnabled = false;
+		delete gccDriver;
+	}
+}
+
 MainMenu::MainMenu()
 	:windowWidth(1920), windowHeight(1080)
 {
@@ -210,26 +236,7 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
-	gccDriver = new GCC::USBDriver;
-	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
-	{
-		gccDriverEnabled = true;
-		joys = new GCC::VJoyGCControllers(*gccDriver);
-		{
-			auto controllers = gccDriver->getState();
-			for (int i = 0; i < 4; ++i)
-			{
-				//GameController &c = GetController(i);
-
-				//c.gcDefaultControl.x = controllers[i].enabled
-			}
-		}
-	}
-	else
-	{
-		joys = NULL;
-		gccDriverEnabled = false;
-	}
+	CheckForControllers();
 	
 	for (int i = 0; i < 4; ++i)
 	{
@@ -1115,6 +1122,7 @@ ControllerState &MainMenu::GetCurrInputUnfiltered(int index)
 {
 	return currInputUnfiltered[index];
 }
+
 
 void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 {

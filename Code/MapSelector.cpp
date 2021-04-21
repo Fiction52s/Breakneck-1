@@ -20,7 +20,15 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	kinFrame = 0;
 	kinSprite.setPosition(960, 540 + 300);
 
-	state = S_SECTORSELECT;
+	if (world->numSectors == 1)
+	{
+		state = S_MAPSELECT;
+	}
+	else
+	{
+		state = S_SECTORSELECT;
+	}
+	
 	mainMenu = mm;
 
 
@@ -159,9 +167,18 @@ bool MapSelector::Update(ControllerState &curr,
 	{
 		if (kinState == K_STAND)
 		{
+			
 			if (curr.B && !prev.B)
 			{
-				state = S_SECTORSELECT;
+				if (world->numSectors == 1)
+				{
+					return false;
+					//state = S_MAPSELECT;
+				}
+				else
+				{
+					state = S_SECTORSELECT;
+				}
 				break;
 			}
 

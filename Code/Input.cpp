@@ -777,11 +777,11 @@ bool GameController::UpdateKeyboard()
 		using namespace sf;
 		//WORD b = state.Gamepad.wButtons;
 		m_state.start = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::PAUSE]);
-		m_state.back = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::MAP]);
+		m_state.back = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::MAP]);
 		m_state.leftShoulder = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::SHIELD]);
 		m_state.rightShoulder = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::ATTACK]);
 		m_state.A = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::JUMP]);
-		m_state.B = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::DASH]);
+		m_state.B = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::MAP]);//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::DASH]);
 		m_state.X = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::DASH]);
 		m_state.Y = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::GRIND]);
 		m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
@@ -1646,7 +1646,7 @@ KeyboardSettings::KeyboardSettings()
 
 	buttonMap[LEFTWIRE] = Keyboard::LControl;
 	buttonMap[RIGHTWIRE] = Keyboard::RControl;
-	buttonMap[MAP] = Keyboard::Insert;//Keyboard::Tilde;
+	buttonMap[MAP] = Keyboard::BackSpace;//Keyboard::Tilde;
 	buttonMap[PAUSE] = Keyboard::Delete;
 
 	toggleBounce = false;

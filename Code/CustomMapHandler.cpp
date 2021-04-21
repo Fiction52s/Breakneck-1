@@ -45,6 +45,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else if (b->name == "Upload")
 		{
+#ifdef __AWS__ON__
 			string path = "Resources/Maps/" + ls.localPaths[ls.selectedIndex];
 			string name = ls.text[ls.selectedIndex].getString().toAnsiString();
 
@@ -57,6 +58,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 			{
 				cout << "upload failed" << endl;
 			}
+#endif
 		}
 	}
 	else
@@ -76,6 +78,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		showNamePopup = false;
 		ls.newLevelName = b->panel->textBoxes["name"]->text.getString().toAnsiString();
 	}
+#ifdef __AWS__ON__
 	else if (b->name == "List")
 	{
 		cout << "..getting map list.." << endl;
@@ -166,6 +169,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 			cout << "index could not be read." << endl;
 		}
 	}
+#endif
 }
 
 void CustomMapsHandler::TextBoxCallback(TextBox *tb, const std::string & e)

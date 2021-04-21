@@ -167,6 +167,7 @@ struct OptionsMenuScreen : UIEventHandlerBase
 	UIHorizSelector<int> *soundVolume;
 	UIButton *defaultButton;
 	UIButton *applyButton;
+	UIButton *checkForControllerButton;
 	UIHorizSelector<int> *horizDefaultController;
 };
 
@@ -511,6 +512,7 @@ struct MainMenu
 	void CreateRenderTextures();
 	void SetupWindow();
 	void UpdateMenuMode();
+	void CheckForControllers();
 
 	std::vector<void(MainMenu::*)()> updateModeFuncs;
 
@@ -716,6 +718,7 @@ struct MainMenu
 
 	int transWorldMapFrame;
 	sf::Uint8 transAlpha;
+
 	void CopyMap(CustomMapsHandler *cmp,
 		Panel *namePop);
 

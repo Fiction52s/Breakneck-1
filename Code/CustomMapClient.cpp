@@ -1,3 +1,5 @@
+#ifdef __AWS__ON__
+
 #include "AppClientID.h"
 #include "CustomMapClient.h"
 
@@ -864,3 +866,5 @@ bool CustomMapClient::IsLoggedIn()
 {
 	return cognitoInterface.isLoggedIn;
 }
+
+#endif

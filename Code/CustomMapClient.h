@@ -1,6 +1,8 @@
 #ifndef __CUSTOMMAPCLIENT_H__
 #define __CUSTOMMAPCLIENT_H__
 
+#ifdef __AWS__ON__
+
 #include <aws/core/Aws.h>
 #include <aws/s3/S3Client.h>
 
@@ -150,5 +152,7 @@ private:
 	Aws::SDKOptions AWSSDKOptions;
 
 };
+
+#endif
 
 #endif

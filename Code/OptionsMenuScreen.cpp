@@ -61,11 +61,13 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	defaultButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "set to defaults", 300);
 	applyButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "apply settings", 300);
 
+	checkForControllerButton = new UIButton(NULL, this, &mainMenu->tilesetManager, &mainMenu->arial, "Check for controllers", 300);
+
 	//UICheckbox *check = new UICheckbox(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, "testcheckbox", 300);
 	//test->SetTopLeft( Vector2f( 50, 0 ) );
 
 	UIControl *testBlah[] = { horizResolution, horizWindowModes,
-		musicVolume, soundVolume, defaultButton, horizDefaultController, applyButton };
+		musicVolume, soundVolume, horizDefaultController, defaultButton, applyButton, checkForControllerButton };
 
 	//check->SetTopLeft(100, 50);
 	UIVerticalControlList *cList = new UIVerticalControlList(optionsWindow, sizeof(testBlah) / sizeof(UIControl*), testBlah, 20);
@@ -116,6 +118,12 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 			mainMenu->ResizeWindow(res.x, res.y, winMode);
 			//mainMenu->config->
 		}
+		else if (pButton == checkForControllerButton)
+		{
+			mainMenu->CheckForControllers();
+		}
+	
+		
 	}
 
 	return true;
