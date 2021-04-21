@@ -35,7 +35,8 @@ void Actor::INTROBOOST_UpdateSprite()
 		//owner->cam.SetManual(false);
 	}
 	SetSpriteTexture(action);
-	SetSpriteTile((frame / 2) + 110, facingRight);
+	//SetSpriteTile((frame / 2) + 110, facingRight);
+	SetSpriteTile((frame / 2), facingRight);
 
 	sprite->setOrigin(sprite->getLocalBounds().width / 2,
 		sprite->getLocalBounds().height / 2);
@@ -60,10 +61,10 @@ void Actor::INTROBOOST_TimeDepFrameInc()
 
 int Actor::INTROBOOST_GetActionLength()
 {
-	return 22 * 2;
+	return 18 * 2;//22 * 2;
 }
 
 Tileset * Actor::INTROBOOST_GetTileset()
 {
-	return EXITBOOST_GetTileset();
+	return INTRO_GetTileset();//EXITBOOST_GetTileset();
 }

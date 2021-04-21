@@ -3,6 +3,7 @@
 #include "Fader.h"
 #include "VectorMath.h" 
 
+
 using namespace std;
 using namespace sf;
 
@@ -22,6 +23,25 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 
 	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/exitboost_96x128.png", 96, 128);
 	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
+
+
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
+
+	int currSkinIndex = 0;
+	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
+	{
+		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
+	}
+
+	assert(Shader::isAvailable() && "help me");
+	if (!pShader.loadFromFile("Resources/Shader/boostplayer_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "BOOST PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "boost player shader not loaded");
+	}
+
+	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
+	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
 	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));
@@ -141,7 +161,7 @@ void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 	{
 		target->draw(kinAuraSpr);
 	}
-	target->draw(kinSpr);
+	target->draw(kinSpr, &pShader);
 }
 
 void KinBoostScreen::Update()

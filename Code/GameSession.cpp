@@ -2892,6 +2892,8 @@ void GameSession::Init()
 	mapTex = mainMenu->mapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
+	boostEntrance = false;
+
 	activateBonus = false;
 	bonusGame = NULL;
 	gateMarkers = NULL;

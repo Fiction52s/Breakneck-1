@@ -1096,15 +1096,17 @@ void Actor::SetupTilesets()
 
 void Actor::Init()
 {
-	if (owner != NULL)
+	if (owner != NULL && owner->boostEntrance )
 	{
 		SetAction(INTROBOOST);//INTRO
 		frame = 0;
 	}
 	else
 	{
-		SetAction(INTROBOOST);//INTRO
+		SetAction(SPAWNWAIT);
 		frame = 0;
+		//SetAction(INTROBOOST);//INTRO
+		//frame = 0;
 		/*SetAction(JUMP);
 		frame = 1;*/
 	}

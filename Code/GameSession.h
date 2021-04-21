@@ -297,6 +297,10 @@ struct GameSession : RayCastHandler, Session
 	static GameSession *GetSession();
 	static GameSession *currSession;
 
+
+	//new
+	bool boostEntrance;
+
 	//from mainmenu
 
 	sf::RenderTexture *mapTex;

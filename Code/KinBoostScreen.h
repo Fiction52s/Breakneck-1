@@ -3,6 +3,7 @@
 
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
+#include "Actor.h"
 
 struct MainMenu;
 struct Level;
@@ -64,6 +65,10 @@ struct KinBoostScreen
 	Tileset *ts_swipe[NUM_SWIPE_SPRITES];
 
 	sf::Sprite swipeSpr;
+
+	sf::Image skinPaletteImage;
+	sf::Shader pShader;
+	sf::Glsl::Vec4 paletteArray[Actor::NUM_PALETTE_COLORS];
 
 	//std::string levName;
 	Level *level;

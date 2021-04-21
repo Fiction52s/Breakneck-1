@@ -917,7 +917,7 @@ void Gate::Init()
 	nodes[6].position = Vector2f(nodeBLeftv1);
 	nodes[7].position = Vector2f(nodeBRightv1);
 
-	ts_node = sess->GetTileset("Zone/gatenode_32x64.png", 32, 64);
+	 ts_node = sess->GetTileset("Zone/gatenode_32x64.png", 32, 64);
 
 	SetRectSubRect(nodes, ts_node->GetSubRect(0) );
 	SetRectSubRect((nodes+4), ts_node->GetSubRect(0));

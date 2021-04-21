@@ -675,7 +675,7 @@ int MapSector::GetNodeSubIndex(int node)
 		}
 	}
 	//return res;
-	return 0;
+	return res;
 }
 
 int MapSector::GetSelectedNodeSubIndex()

@@ -1603,6 +1603,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 
 	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], levName);
 	m->currLevel->level = lev;
+	m->currLevel->boostEntrance = true;
 	//
 	
 	//
