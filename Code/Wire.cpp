@@ -910,7 +910,7 @@ bool Wire::TryFire()
 		}
 		anchor.enemy = NULL;
 
-		wireTip.setRotation(angle);
+		wireTip.setRotation((angle / PI ) * 180 + 90);
 
 		return true;
 	}
