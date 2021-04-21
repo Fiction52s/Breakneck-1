@@ -3506,6 +3506,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		grindHitboxes[0] = new CollisionBody( CollisionBox::Hit);
 		grindHitboxes[0]->BasicSetup();
 		grindHitboxes[0]->AddCollisionBox(0, cb);
+		grindHitboxes[0]->hitboxInfo = currHitboxInfo;
 
 		homingHitboxes = new CollisionBody(CollisionBox::Hit);
 		homingHitboxes->BasicSetup();
@@ -6396,10 +6397,14 @@ void Actor::UpdatePrePhysics()
 		return;
 	}
 
+	TryChangePowerMode();
+
 	if( IsIntroAction( action ) || (IsGoalKillAction(action) && action != GOALKILLWAIT) || action == EXIT 
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || IsSequenceAction( action ) || action == EXITBOOST )
 	{
+
+
 		if( action == WAITFORSHIP )
 		{ 
 			HandleWaitingScoreDisplay();
@@ -6469,7 +6474,7 @@ void Actor::UpdatePrePhysics()
 	
 	UpdateCanStandUp();
 
-	TryChangePowerMode();
+	
 
 	UpdateBounceFlameOn();
 
