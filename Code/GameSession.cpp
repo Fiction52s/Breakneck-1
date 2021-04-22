@@ -2520,7 +2520,34 @@ int GameSession::Run()
 			{
 				UpdateControllers();
 
-				PauseMenu::UpdateResponse ur = pauseMenu->Update(GetCurrInputUnfiltered(0), GetPrevInputUnfiltered(0));
+				ControllerState &curr = GetCurrInputUnfiltered(0);
+				ControllerState &prev= GetPrevInputUnfiltered(0);
+
+				if (curr.X && !prev.X)
+				{
+					if (parentGame != NULL)
+					{
+						//parentGame->RestartGame();
+						quit = true;
+						returnVal = GR_BONUS_RESPAWN;
+						break;
+					}
+					else
+					{
+
+						RestartLevel();
+
+						//moved this stuff into restart level
+						/*gameState = GameSession::RUN;
+						gameClock.restart();
+						currentTime = 0;
+						accumulator = TIMESTEP + .1;
+						frameRateDisplay.Reset();*/
+					}
+				}
+
+
+				PauseMenu::UpdateResponse ur = pauseMenu->Update(curr,prev);
 				switch (ur)
 				{
 				case PauseMenu::R_NONE:
@@ -2591,6 +2618,8 @@ int GameSession::Run()
 
 				accumulator -= TIMESTEP;
 			}
+
+			
 
 			if (instantQuitForBonus)
 			{

@@ -62,7 +62,7 @@ struct ShroomJelly : Enemy
 	void ResetEnemy();
 	void ProcessState();
 	void UpdateEnemyPhysics();
-	void ProcessHit();
+	//void ProcessHit();
 	void ComboHit();
 
 	Tileset *ts;

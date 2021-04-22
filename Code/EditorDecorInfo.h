@@ -16,7 +16,7 @@ struct EditorDecorInfo : ISelectable
 	EditorDecorInfo(const std::string &dName,
 		Tileset *ts, int p_tile,int lay,
 		sf::Vector2f &centerPos, float rot, sf::Vector2f &sc );
-
+	~EditorDecorInfo();
 	void CancelTransformation();
 	DecorPtr CompleteTransformation(TransformTools *tr);
 	void UpdateTransformation(TransformTools *tr);

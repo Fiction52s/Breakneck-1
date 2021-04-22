@@ -28,6 +28,11 @@ EditorDecorInfo::EditorDecorInfo(const std::string &dName,
 	UpdateQuad();
 }
 
+EditorDecorInfo::~EditorDecorInfo()
+{
+	int x = 5;
+}
+
 IntRect EditorDecorInfo::GetAABB()
 {
 	float left = quad[0].position.x;

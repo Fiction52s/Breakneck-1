@@ -268,7 +268,8 @@ void Goal::UpdateSprite()
 
 void Goal::EnemyDraw(sf::RenderTarget *target )
 {
-	target->draw( sprite );
+	DrawSprite(target, sprite);
+	//target->draw( sprite );
 }
 
 void Goal::DrawMinimap( sf::RenderTarget *target )

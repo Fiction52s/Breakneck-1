@@ -251,8 +251,7 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
-
-	comboObj = new ComboObject(this);
+	/*comboObj = new ComboObject(this);
 
 
 	comboObj->enemyHitboxInfo = new HitboxInfo;
@@ -267,10 +266,10 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 
 	comboObj->enemyHitBody.SetupNumFrames(2);
 	comboObj->enemyHitBody.SetupNumBoxesOnFrame(0, 1);
-	comboObj->enemyHitBody.SetupNumBoxesOnFrame(1, 1);
+	comboObj->enemyHitBody.SetupNumBoxesOnFrame(1, 1);*/
 	//= new CollisionBody(2);
 
-	comboObj->enemyHitBody.AddCollisionBox(0, hitBody.GetCollisionBoxes(0).front() );
+	//comboObj->enemyHitBody.AddCollisionBox(0, hitBody.GetCollisionBoxes(0).front() );
 
 	CollisionBox exBox;
 	exBox.isCircle = true;
@@ -280,9 +279,9 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	exBox.rw = 128 * scale;
 	exBox.rh = 128 * scale;
 
-	comboObj->enemyHitBody.AddCollisionBox(1, exBox);
+	//comboObj->enemyHitBody.AddCollisionBox(1, exBox);
 
-	comboObj->enemyHitboxFrame = 0;
+	//comboObj->enemyHitboxFrame = 0;
 
 	frame = 0;
 
@@ -318,59 +317,59 @@ ShroomJelly::~ShroomJelly()
 	//delete comboObj;
 }
 
-void ShroomJelly::ProcessHit()
-{
-	if (!dead && ReceivedHit() && numHealth > 0)
-	{
-		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
-		ConfirmHitNoKill();
-		action = SHOT;
-		frame = 0;
-		SetHitboxes(NULL, 0);
-		SetHurtboxes(NULL, 0);
-
-		V2d dir;
-		double speed = 10;
-
-		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
-		dir = normalize(receivedHit->hDir);
-		/*switch (receivedHit->hDir)
-		{
-		case HitboxInfo::LEFT:
-			dir = V2d(-1, 0);
-			break;
-		case HitboxInfo::RIGHT:
-			dir = V2d(1, 0);
-			break;
-		case HitboxInfo::UP:
-			dir = V2d(0, -1);
-			break;
-		case HitboxInfo::DOWN:
-			dir = V2d(0, 1);
-			break;
-		case HitboxInfo::UPLEFT:
-			dir = V2d(-1, -1);
-			break;
-		case HitboxInfo::UPRIGHT:
-			dir = V2d(1, -1);
-			break;
-		case HitboxInfo::DOWNLEFT:
-			dir = V2d(-1, 1);
-			break;
-		case HitboxInfo::DOWNRIGHT:
-			dir = V2d(1, 1);
-			break;
-		default:
-			assert(0);
-
-		}*/
-		//dir = normalize(dir);
-
-		velocity = dir * speed;
-
-		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
-	}
-}
+//void ShroomJelly::ProcessHit()
+//{
+//	if (!dead && ReceivedHit() && numHealth > 0)
+//	{
+//		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
+//		ConfirmHitNoKill();
+//		action = DISSIPATING;
+//		frame = 0;
+//		HitboxesOff();
+//		HurtboxesOff();
+//
+//		V2d dir;
+//		double speed = 10;
+//
+//		//comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
+//		//dir = normalize(receivedHit->hDir);
+//		/*switch (receivedHit->hDir)
+//		{
+//		case HitboxInfo::LEFT:
+//			dir = V2d(-1, 0);
+//			break;
+//		case HitboxInfo::RIGHT:
+//			dir = V2d(1, 0);
+//			break;
+//		case HitboxInfo::UP:
+//			dir = V2d(0, -1);
+//			break;
+//		case HitboxInfo::DOWN:
+//			dir = V2d(0, 1);
+//			break;
+//		case HitboxInfo::UPLEFT:
+//			dir = V2d(-1, -1);
+//			break;
+//		case HitboxInfo::UPRIGHT:
+//			dir = V2d(1, -1);
+//			break;
+//		case HitboxInfo::DOWNLEFT:
+//			dir = V2d(-1, 1);
+//			break;
+//		case HitboxInfo::DOWNRIGHT:
+//			dir = V2d(1, 1);
+//			break;
+//		default:
+//			assert(0);
+//
+//		}*/
+//		//dir = normalize(dir);
+//
+//		//velocity = dir * speed;
+//
+//		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
+//	}
+//}
 
 void ShroomJelly::ComboHit()
 {
@@ -379,7 +378,7 @@ void ShroomJelly::ComboHit()
 	if (currHits >= hitLimit)
 	{
 		action = EXPLODING;
-		comboObj->enemyHitboxFrame = 1;
+		//comboObj->enemyHitboxFrame = 1;
 		velocity = V2d(0, 0);
 		frame = 0;
 	}
@@ -388,8 +387,8 @@ void ShroomJelly::ComboHit()
 void ShroomJelly::ResetEnemy()
 {
 	currPosInfo.position = shroom->GetPosition();
-	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
+	//comboObj->Reset();
+	//comboObj->enemyHitboxFrame = 0;
 	action = WAIT;
 	currentCycle = 0;
 	frame = 0;
@@ -443,11 +442,11 @@ void ShroomJelly::ProcessState()
 		case DISSIPATING:
 			numHealth = 0;
 			dead = true;
-			sess->PlayerRemoveActiveComboer(comboObj);
+			//sess->PlayerRemoveActiveComboer(comboObj);
 			break;
 		case SHOT:
 			action = EXPLODING;
-			comboObj->enemyHitboxFrame = 1;
+			//comboObj->enemyHitboxFrame = 1;
 			velocity = V2d(0, 0);
 			break;
 		}

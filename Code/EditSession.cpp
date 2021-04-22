@@ -1853,6 +1853,8 @@ void EditSession::Draw()
 
 	DrawDecor(EffectLayer::BEHIND_ENEMIES, preScreenTex);
 
+	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, preScreenTex);
+
 	if (!IsDrawMode(Emode::TEST_PLAYER))
 	{
 		DrawActors();
@@ -2003,7 +2005,7 @@ void EditSession::ProcessDecorSpr(const std::string &name,
 		//decorImagesBetween.push_back(dec);
 	}
 
-	CreateDecorImage(dec);
+	dec->Activate();
 
 	mapStartBrush->AddObject(dec);
 }
@@ -7575,6 +7577,7 @@ void EditSession::CreatePreview(Vector2i imageSize)
 
 	bool oldSelected;
 
+	DrawDecor(EffectLayer::BEHIND_TERRAIN, mapPreviewTex);
 
 	for (auto it = waterPolygons.begin(); it != waterPolygons.end(); ++it)
 	{
@@ -7623,7 +7626,8 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	//sf::Vertex borderRect[4];
 	//SetRectColor(borderRect, Color::Cyan);
 		
-		
+	DrawDecor(EffectLayer::BEHIND_ENEMIES, mapPreviewTex);
+	DrawDecor(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, mapPreviewTex);
 
 	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
 	{
@@ -7649,6 +7653,8 @@ void EditSession::CreatePreview(Vector2i imageSize)
 			
 		//(*it).second->DrawPreview( mapPreviewTex );
 	}
+
+	DrawDecor(EffectLayer::IN_FRONT, mapPreviewTex);
 
 	cs.setPosition(playerMarkers[0]->GetFloatPos());
 	cs.setFillColor(Color::Green);
