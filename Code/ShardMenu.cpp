@@ -211,7 +211,7 @@ bool ShardMenu::IsShardCaptured( int x, int y )
 		return false;
 	}
 
-	return (shardNames[x][y] != "" && saveFile->ShardIsCaptured(Shard::GetShardType(shardNames[x][y])));
+	return (shardNames[y][x] != "" && saveFile->ShardIsCaptured(Shard::GetShardType(shardNames[y][x])));
 }
 
 bool ShardMenu::IsCurrShardCaptured()

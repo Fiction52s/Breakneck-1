@@ -486,6 +486,7 @@ void PauseMenu::SetTab( Tab t )
 		mapZoomFactor = 16;	
 		break;
 	case KIN:
+		kinMenu->UpdatePowers(owner->GetPlayer(0));
 		break;
 	case SHARDS:
 		//shardMenu->SetCurrSequence();
