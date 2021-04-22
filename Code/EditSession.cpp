@@ -459,6 +459,11 @@ bool EditSession::TestPlayerModeUpdate()
 	return true;
 }
 
+void EditSession::UpdateEnvShaders()
+{
+	UpdatePolyShaders();
+}
+
 void EditSession::SetupGGPOStatsPanel()
 {
 	ggpoStatsPanel = new Panel("stats", 500, 300, this, false);
@@ -3940,8 +3945,14 @@ int EditSession::EditRun()
 		
 		UpdateFullBounds();
 
-		UpdatePolyShaders();
-
+		if (mode != TEST_PLAYER)
+		{
+			for (int i = 0; i < spriteUpdateFrames; ++i)
+			{
+				UpdateEnvShaders();
+			}
+		}
+		
 		//ShowMostRecentError();
 
 		/*int testSize = 0;

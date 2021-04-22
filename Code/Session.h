@@ -329,6 +329,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	MusicInfo *originalMusic;
 	std::map<std::string, MusicInfo*> musicMap; //for sequences to change music? might be useless..
 	bool goalDestroyed;
+
+	float oldShaderZoom;
+	sf::Vector2f oldShaderBotLeft;
+
 	sf::Vertex blackBorderQuads[4 * 2];
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;

@@ -269,8 +269,6 @@ struct EditSession : GUIHandler, Session
 	double minZoom;
 	double maxZoom;
 	bool gameCam;
-	float oldShaderZoom;
-	sf::Vector2f oldShaderBotLeft;
 	int borderMove;
 	bool panning;
 	Brush *progressBrush;
@@ -391,6 +389,8 @@ struct EditSession : GUIHandler, Session
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
 	void CleanupTestPlayerMode();
+
+	void UpdateEnvShaders();
 	void Load();
 	void Init();
 	void DefaultInit();

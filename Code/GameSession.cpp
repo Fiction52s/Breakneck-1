@@ -1919,6 +1919,7 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 
 int GameSession::Run()
 {
+	oldShaderZoom = -1;
 	goalDestroyed = false;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
@@ -3236,26 +3237,42 @@ void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
 
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
+	//oldShaderZoom is only used in editor. Need to optimize this in GameSession as well
+	bool first = oldShaderZoom < 0;
 
-	terrainShader.setUniform("zoom", cam.GetZoom());
-	terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+	float zoom = cam.GetZoom();
+
+	if (first || oldShaderZoom != zoom)
+	{
+		oldShaderZoom = zoom;
+		terrainShader.setUniform("zoom", cam.GetZoom());
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			waterShaders[i].setUniform("zoom", zoom);
+		}
+	}
+
+	if (first || oldShaderBotLeft != botLeft)
+	{
+		oldShaderBotLeft = botLeft;
+
+		terrainShader.setUniform("topLeft", botLeft); //just need to change the name topleft eventually
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			waterShaders[i].setUniform("topLeft", botLeft);
+		}
+	}
+	
 	terrainShader.setUniform("playertest", playertest);
 	terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
 
-	//inefficient. should only update these when they are changed.
-	//for (int i = 0; i < numPolyShaders; ++i)
-	//{
-	//	polyShaders[i].setUniform("zoom", cam.GetZoom());
-	//	polyShaders[i].setUniform("topLeft", botLeft); //just need to change the name topleft eventually
-	//	polyShaders[i].setUniform("playertest", playertest);
-	//	polyShaders[i].setUniform("skyColor", ColorGL(background->GetSkyColor()));
-	//}
-
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
-		waterShaders[i].setUniform("zoom", cam.GetZoom());
-		waterShaders[i].setUniform("topLeft", botLeft);
+		waterShaders[i].setUniform("u_slide", waterShaderCounter);
 	}
+	waterShaderCounter += .01f;
 }
 
 void GameSession::SetOriginalMusic()

@@ -217,6 +217,7 @@ void MainMenu::CheckForControllers()
 		joys = NULL;
 		gccDriverEnabled = false;
 		delete gccDriver;
+		gccDriver = NULL;
 	}
 }
 
