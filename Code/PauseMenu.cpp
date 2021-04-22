@@ -310,7 +310,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 
 	int waitFrames[3] = { 60, 30, 30 };
 	int waitModeThresh[2] = { 2, 2 };
-	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0);
+	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0, false);
 	
 	controlSettingsMenu = new ControlSettingsMenu(mainMenu);
 	
@@ -498,7 +498,8 @@ void PauseMenu::SetTab( Tab t )
 		//UpdateButtonIcons();
 		break;
 	case PAUSE:
-		pauseSelector->currIndex = 0;
+		//pauseSelector->currIndex = 0;
+		pauseSelector->Reset();
 		break;
 	}
 }
@@ -931,7 +932,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				//}
 			}
 
-			int res = pauseSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+			int res = pauseSelector->UpdateIndex(currInput.LUp() && !prevInput.LUp(), currInput.LDown() && !prevInput.LDown());
 
 			if (res != 0)
 			{

@@ -68,7 +68,7 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 
 	}
 
-	int waitFrames[3] = { 10, 5, 2 };
+	int waitFrames[3] = { 60, 30, 20 };
 	int waitModeThresh[2] = { 2, 2 };
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
