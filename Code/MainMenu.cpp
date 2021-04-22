@@ -327,9 +327,9 @@ MainMenu::MainMenu()
 	t.setFillColor(Color::White);
 	
 
-	int waitFrames[] = { 10, 5, 2 };
+	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0, false);
 
 	Vector2f textBase(100, 300);
 	int textOptionSpacing = 6;

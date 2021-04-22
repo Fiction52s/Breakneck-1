@@ -88,7 +88,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
-	int waitFrames[3] = { 10, 5, 2 };
+	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 2 };
 	int xSize = 11;
 	int ySize = 2;//14;
