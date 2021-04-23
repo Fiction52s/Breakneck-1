@@ -624,12 +624,6 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	}
 	shardPop = NULL;
 
-	if (getShardSeq != NULL)
-	{
-		delete getShardSeq;
-	}
-	getShardSeq = NULL;
-
 	//might be able to setup in setuptopclouds
 	CleanupTopClouds();
 

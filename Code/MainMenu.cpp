@@ -166,7 +166,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	{
 		assert(currTutorialSession == NULL);
 		currTutorialSession = new GameSession(NULL, "Resources/Maps/Beta2/tutorial1.brknk");
-		currTutorialSession->Load();
+		GameSession::sLoad(currTutorialSession);
 		break;
 	}
 	}
@@ -188,7 +188,7 @@ GameController &MainMenu::GetController( int index )
 
 void MainMenu::UpdateMenuOptionText()
 {
-	int breatheFrames = 60;
+	int breatheFrames = 180;
 	int breatheWaitFrames = 0;
 	int bTotal = breatheFrames + breatheWaitFrames;
 	float halfBreathe = breatheFrames / 2;
@@ -208,7 +208,10 @@ void MainMenu::UpdateMenuOptionText()
 		alpha = 0;
 	}
 
-	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, 100 + alpha * 155 ));
+	float baseAlpha = 180;
+	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, baseAlpha + alpha * (255.f - baseAlpha ) ));
+
+	selectorSprite.setPosition(selectorSpriteXPos, selectorSpriteYPosBase + selectorSpriteYPosInterval * saSelector->currIndex);
 }
 
 void MainMenu::CheckForControllers()
@@ -244,6 +247,11 @@ MainMenu::MainMenu()
 	assert(currInstance == NULL);
 	currInstance = this;
 
+	selectorAnimFrame = 0;
+	selectorAnimDuration = 21;
+	selectorAnimFactor = 3;
+	
+
 	currEditSession = NULL;
 	currTutorialSession = NULL;
 
@@ -275,15 +283,19 @@ MainMenu::MainMenu()
 	deadThread = NULL;
 	loadThread = NULL;
 	
-	ts_mainOption = tilesetManager.GetTileset("Menu/mainmenu_text_560x64.png", 560, 64);
+	ts_mainOption = tilesetManager.GetSizedTileset("Menu/mainmenu_text_512x64.png");
+	ts_menuSelector = tilesetManager.GetSizedTileset("Menu/menu_selector_64x64.png");
 
-	activatedMainMenuOptions[0] = true;
-	activatedMainMenuOptions[1] = false;//false;
-	activatedMainMenuOptions[2] = false;//false;
-	activatedMainMenuOptions[3] = true;//false;
-	activatedMainMenuOptions[4] = true;
-	activatedMainMenuOptions[5] = false;
-	activatedMainMenuOptions[6] = true;
+	selectorSprite.setTexture(*ts_menuSelector->texture);
+
+	activatedMainMenuOptions[0] = true;		//adventure
+	activatedMainMenuOptions[1] = false;	//freeplay
+	activatedMainMenuOptions[2] = false;	//local multiplayer
+	activatedMainMenuOptions[3] = true;		//level editor
+	activatedMainMenuOptions[4] = true;		//options
+	activatedMainMenuOptions[5] = true;		//tutorial
+	activatedMainMenuOptions[6] = false;	//credits
+	activatedMainMenuOptions[7] = true;		//exit
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
@@ -293,12 +305,12 @@ MainMenu::MainMenu()
 		}
 		else
 		{
-			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + 7));
+			SetRectSubRect(mainMenuOptionQuads + i * 4, ts_mainOption->GetSubRect(i + M_Count*2));
 		}
 
 		if (activatedMainMenuOptions[i])
 		{
-			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + 14));
+			SetRectSubRect(mainMenuOptionHighlight + i * 4, ts_mainOption->GetSubRect(i + M_Count));
 		}
 	}
 
@@ -347,40 +359,25 @@ MainMenu::MainMenu()
 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, M_Count, 0);
 
 	Vector2f textBase(100, 300);
 	int textOptionSpacing = 6;
 	int charHeight = 40;
 
-	
+	selectorSpriteXPos = textBase.x - 32;//+ 512 + 50;
+	selectorSpriteYPosBase = textBase.y + 32;
+	selectorSpriteYPosInterval = 64 + textOptionSpacing;
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
-		menuOptions[i].setFont(arial);
-		menuOptions[i].setCharacterSize(charHeight);
-		menuOptions[i].setFillColor(Color::White);
-	}
-
-
-	string optionStrings[] = { "Adventure", "Free Play", "Local Multiplayer", "Level Editor",
-		"Options", "Credits", "Exit" };
-
-	
-
-	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
-	{
-		menuOptions[i].setString(optionStrings[i]);
-		menuOptions[i].setOrigin(menuOptions[i].getLocalBounds().width / 2, 0);
-		menuOptions[i].setPosition(textBase.x, textBase.y + (textOptionSpacing + charHeight) * i);
-
-		SetRectCenter(mainMenuOptionQuads + i * 4, 560, 64, textBase + Vector2f(560/2, 32 + i * (64 + textOptionSpacing) ) );
-		SetRectCenter(mainMenuOptionHighlight + i * 4, 560, 64, textBase + Vector2f(560 / 2, 32 + i * (64 + textOptionSpacing)));
+		SetRectCenter(mainMenuOptionQuads + i * 4, 512, 64, textBase + Vector2f(512/2, 32 + i * (64 + textOptionSpacing) ) );
+		SetRectCenter(mainMenuOptionHighlight + i * 4, 512, 64, textBase + Vector2f(512 / 2, 32 + i * (64 + textOptionSpacing)));
 	}
 
 	menuOptionsBG.setFillColor(Color( 0, 0, 0, 70 ));
 	menuOptionsBG.setPosition(textBase);
-	menuOptionsBG.setSize(Vector2f(560, (64 + textOptionSpacing) * 7));
+	menuOptionsBG.setSize(Vector2f(600, (64 + textOptionSpacing) * M_Count));
 
 	soundNodeList = new SoundNodeList( 10 );
 	soundNodeList->SetSoundVolume(config->GetData().soundVolume);
@@ -850,6 +847,11 @@ void MainMenu::SetMode(Mode m)
 	{
 		kinBoostScreen->Reset();
 	}
+
+	if (menuMode == TITLEMENU)
+	{
+		selectorAnimFrame = 0;
+	}
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
@@ -857,7 +859,7 @@ void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
 	target->draw(menuOptionsBG);
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
 	{
-		target->draw(mainMenuOptionQuads, 7 * 4, sf::Quads, ts_mainOption->texture);
+		target->draw(mainMenuOptionQuads, M_Count * 4, sf::Quads, ts_mainOption->texture);
 		//preScreenTexsetture->draw(menuOptions[i]);
 	}
 
@@ -866,6 +868,8 @@ void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)
 		target->draw(mainMenuOptionHighlight + saSelector->currIndex * 4, 4, sf::Quads,
 			ts_mainOption->texture);
 	}
+
+	target->draw(selectorSprite);
 }
 
 sf::Vector2i MainMenu::GetPixelPos()
@@ -2348,7 +2352,15 @@ MapCollection::~MapCollection()
 void MainMenu::TitleMenuModeUpdate()
 {
 	titleScreen->Update();
+	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
+	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
+	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
 
+	selectorAnimFrame++;
+	if (selectorAnimFrame == selectorAnimDuration * selectorAnimFactor)
+	{
+		selectorAnimFrame = 0;
+	}
 	
 	sf::Event ev;
 	while (window->pollEvent(ev))
@@ -2465,6 +2477,11 @@ void MainMenu::TitleMenuModeUpdate()
 			SetMode(TRANS_MAIN_TO_OPTIONS);
 			break;
 		}
+		case M_TUTORIAL:
+		{
+			LoadMode(TUTORIAL);
+			break;
+		}
 		case M_CREDITS:
 		{
 			SetMode(TRANS_MAIN_TO_CREDITS);
@@ -2472,8 +2489,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_EXIT:
 		{
-			LoadMode(TUTORIAL);
-			//quit = true;
+			quit = true;
 			break;
 		}
 		}

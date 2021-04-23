@@ -337,8 +337,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	PowerPopup *powerPop;
-	Sequence *getShardSeq;
-	Sequence *getPowerSeq;
 	Sequence *deathSeq;
 	BitField *shardsCapturedField;
 

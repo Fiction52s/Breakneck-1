@@ -80,6 +80,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	ShardParams *sParams = (ShardParams*)ap;
 	editParams = ap;
 
+	shardSeq = NULL;
 
 	radius = 400;
 	shardType = -1;
@@ -104,6 +105,7 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 	ts_explodeCreate = NULL;
 	sparklePool = NULL;
 
+	
 	if (!alreadyCollected)
 	{
 		testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);
@@ -126,8 +128,11 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
 			Color::Cyan, Color(0, 0, 100, 0), 60));
 		geoGroup.Init();
-	}
 
+		shardSeq = new GetShardSequence;
+		shardSeq->Init();
+		shardSeq->shard = this;
+	}
 	
 	
 
@@ -154,6 +159,12 @@ Shard::~Shard()
 	if (sparklePool != NULL)
 	{
 		delete sparklePool;
+	}
+
+	if (shardSeq != NULL)
+	{
+		delete shardSeq;
+		shardSeq = NULL;
 	}
 }
 
@@ -271,13 +282,11 @@ void Shard::DissipateOnTouch()
 	sess->ActivateEffect(EffectLayer::IN_FRONT,
 		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);
 
-	SetHitboxes(NULL, 0);
-	SetHurtboxes(NULL, 0);
+	HitboxesOff();
+	HurtboxesOff();
 
-	GetShardSequence *gss = (GetShardSequence*)sess->getShardSeq;
-	gss->shard = this;
-	sess->getShardSeq->Reset();
-	sess->SetActiveSequence(sess->getShardSeq);
+	shardSeq->Reset();
+	sess->SetActiveSequence(shardSeq);
 	
 	Actor *player = sess->GetPlayer(0);
 	player->SetAction(Actor::GETSHARD);

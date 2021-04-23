@@ -47,7 +47,7 @@ struct ShardPopup
 
 };
 
-
+struct GetShardSequence;
 struct ShapeEmitter;
 struct Shard : Enemy
 {
@@ -102,6 +102,7 @@ struct Shard : Enemy
 	V2d rootPos;
 	int radius;
 
+	GetShardSequence *shardSeq;
 	Tileset *ts;
 
 	int shardType;

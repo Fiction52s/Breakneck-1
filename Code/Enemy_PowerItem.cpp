@@ -144,6 +144,10 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
 			Color::Cyan, Color(0, 0, 100, 0), 60));
 		geoGroup.Init();
+
+		powerSeq = new GetPowerSequence;
+		powerSeq->Init();
+		powerSeq->powerItem = this;
 	}
 
 
@@ -173,6 +177,12 @@ PowerItem::~PowerItem()
 	{
 		delete sparklePool;
 	}
+
+	if (powerSeq != NULL)
+	{
+		delete powerSeq;
+		powerSeq = NULL;
+	}
 }
 
 void PowerItem::ResetEnemy()
@@ -185,6 +195,7 @@ void PowerItem::ResetEnemy()
 			alreadyCollected = true;
 		}
 	}
+	
 	
 
 	SetCurrPosInfo(startPosInfo);
@@ -243,13 +254,11 @@ void PowerItem::DissipateOnTouch()
 	sess->ActivateEffect(EffectLayer::IN_FRONT,
 		ts_explodeCreate, GetPosition(), true, 0, 12, 3, true);
 
-	SetHitboxes(NULL, 0);
-	SetHurtboxes(NULL, 0);
+	HitboxesOff();
+	HurtboxesOff();
 
-	GetPowerSequence *gps = (GetPowerSequence*)sess->getPowerSeq;
-	gps->powerItem = this;
-	gps->Reset();
-	sess->SetActiveSequence(gps);
+	powerSeq->Reset();
+	sess->SetActiveSequence(powerSeq);
 
 	Actor *player = sess->GetPlayer(0);
 	player->SetAction(Actor::GETSHARD);
@@ -417,7 +426,7 @@ void PowerItem::EnemyDraw(sf::RenderTarget *target)
 			sparklePool->Draw(target);
 		}
 
-		testEmitter->Draw(target);
+		//testEmitter->Draw(target);
 	}
 	else
 	{

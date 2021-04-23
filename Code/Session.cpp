@@ -1557,9 +1557,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	hud = NULL;
 	gateMarkers = NULL;
 	topClouds = NULL;
-
-	getShardSeq = NULL;
-	getPowerSeq = NULL;
 	deathSeq = NULL;
 	shardPop = NULL;
 	powerPop = NULL;
@@ -1844,18 +1841,6 @@ Session::~Session()
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		delete(*it).second;
-	}
-
-	if (getShardSeq != NULL)
-	{
-		delete getShardSeq;
-		getShardSeq = NULL;
-	}
-
-	if (getPowerSeq != NULL)
-	{
-		delete getPowerSeq;
-		getPowerSeq = NULL;
 	}
 
 	if (shardPop != NULL)
@@ -4849,12 +4834,6 @@ void Session::TryCreateShardResources()
 	{
 		shardPop = new ShardPopup;
 	}
-
-	if (getShardSeq == NULL)
-	{
-		getShardSeq = new GetShardSequence;
-		getShardSeq->Init();
-	}
 }
 
 void Session::TryCreatePowerItemResources()
@@ -4862,12 +4841,6 @@ void Session::TryCreatePowerItemResources()
 	if (powerPop == NULL)
 	{
 		powerPop = new PowerPopup;
-	}
-
-	if (getPowerSeq == NULL)
-	{
-		getPowerSeq = new GetPowerSequence;
-		getPowerSeq->Init();
 	}
 }
 

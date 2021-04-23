@@ -444,6 +444,7 @@ struct MainMenu
 		M_LOCAL_MULTIPLAYER,
 		M_LEVEL_EDITOR,
 		M_OPTIONS,
+		M_TUTORIAL,
 		M_CREDITS,
 		M_EXIT,
 		M_Count
@@ -551,7 +552,6 @@ struct MainMenu
 	SingleAxisSelector *saSelector;
 
 	SaveFile *currSaveFile;
-	sf::Text menuOptions[MainMenuOptions::M_Count];
 	void UpdateMenuOptionText();
 	void DrawMenuOptionText(sf::RenderTarget *target);
 	
@@ -724,12 +724,21 @@ struct MainMenu
 	void CopyMap(CustomMapsHandler *cmp,
 		Panel *namePop);
 
-	sf::Vertex mainMenuOptionQuads[7 * 4];
-	sf::Vertex mainMenuOptionHighlight[7*4];
-	bool activatedMainMenuOptions[7];
+
+	sf::Vertex mainMenuOptionQuads[M_Count * 4];
+	sf::Vertex mainMenuOptionHighlight[M_Count *4];
+	bool activatedMainMenuOptions[M_Count];
 	
 	Tileset *ts_mainOption;
+	Tileset *ts_menuSelector;
 	sf::RectangleShape menuOptionsBG;
+	sf::Sprite selectorSprite;
+	int selectorAnimFrame;
+	int selectorAnimDuration;
+	int selectorAnimFactor;
+	float selectorSpriteXPos;
+	float selectorSpriteYPosBase;
+	float selectorSpriteYPosInterval;
 	bool lastMovementDown;
 	
 	

@@ -48,6 +48,7 @@ struct PowerPopup
 
 
 struct ShapeEmitter;
+struct GetPowerSequence;
 struct PowerItem : Enemy
 {
 	enum Action
@@ -75,6 +76,7 @@ struct PowerItem : Enemy
 
 	bool caught;
 	int totalFrame;
+	GetPowerSequence *powerSeq;
 
 	PowerItem(ActorParams *ap);//sf::Vector2i pos,
 						   //int w, int li);
