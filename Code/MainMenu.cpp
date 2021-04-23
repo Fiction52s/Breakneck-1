@@ -127,10 +127,20 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		break;
 	}
 	case RUNNINGEDITOR:
+	{
 		assert(currEditSession != NULL);
 		delete currEditSession;
 		currEditSession = NULL;
 		break;
+	}
+	case TUTORIAL:
+	{
+		assert(currTutorialSession != NULL);
+		delete currTutorialSession;
+		currTutorialSession = NULL;
+		break;
+	}
+
 	}
 
 	switch (toMode)
@@ -152,6 +162,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(currEditSession == NULL);
 		currEditSession = new EditSession(this, "");
 		break;
+	case TUTORIAL:
+	{
+		assert(currTutorialSession == NULL);
+		currTutorialSession = new GameSession(NULL, "Resources/Maps/Beta2/tutorial1.brknk");
+		currTutorialSession->Load();
+		break;
+	}
 	}
 }
 
@@ -228,6 +245,7 @@ MainMenu::MainMenu()
 	currInstance = this;
 
 	currEditSession = NULL;
+	currTutorialSession = NULL;
 
 	currSaveFile = NULL;
 
@@ -329,7 +347,7 @@ MainMenu::MainMenu()
 
 	int waitFrames[] = { 60, 30, 20 };
 	int waitModeThresh[] = { 2, 2 };
-	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0, false);
+	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 7, 0);
 
 	Vector2f textBase(100, 300);
 	int textOptionSpacing = 6;
@@ -1963,6 +1981,22 @@ void MainMenu::HandleMenuMode()
 		LoadMode(TITLEMENU);
 		break;
 	}
+	case TUTORIAL:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		View oldView = window->getView();
+
+		int result = currTutorialSession->Run();
+
+		window->setView(oldView);
+
+		LoadMode(TITLEMENU);
+		break;
+	}
 	case SAVEMENU:
 	{
 		while (window->pollEvent(ev))
@@ -2438,7 +2472,8 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_EXIT:
 		{
-			quit = true;
+			LoadMode(TUTORIAL);
+			//quit = true;
 			break;
 		}
 		}
@@ -2676,6 +2711,10 @@ void MainMenu::DrawMode( Mode m )
 	case RUNNINGEDITOR:
 	{
 		int xxx = 6;
+		break;
+	}
+	case TUTORIAL:
+	{
 		break;
 	}
 	default:

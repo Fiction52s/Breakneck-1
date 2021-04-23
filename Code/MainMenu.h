@@ -463,6 +463,7 @@ struct MainMenu
 		RUNNINGMAP,
 		RUNNINGEDITOR,
 		SAVEMENU,
+		TUTORIAL,
 		TRANS_MAIN_TO_SAVE,
 		TRANS_SAVE_TO_MAIN,
 		TRANS_SAVE_TO_WORLDMAP,
@@ -639,6 +640,7 @@ struct MainMenu
 	boost::thread *deadThread;
 
 	EditSession *currEditSession;
+	GameSession *currTutorialSession;
 	GameSession *currLevel;
 	GameSession *deadLevel;
 	void HandleMenuMode();
