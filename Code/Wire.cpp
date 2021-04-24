@@ -1240,7 +1240,10 @@ double Wire::GetTestPointAngle( Edge *e )
 	V2d oldVec = normalize( oldPos - realAnchor );
 	V2d newVec = normalize( playerPos - realAnchor );
 
-	V2d pVec = normalize( p - realAnchor );
+	V2d pDiff = p - realAnchor;
+	V2d pVec = normalize( pDiff );
+
+	double testAngleAngle = atan2((long double)pDiff.y, (long double)pDiff.x);
 
 	double oldAngle = atan2( oldVec.y, oldVec.x );
 
@@ -2043,49 +2046,49 @@ void Wire::Draw( RenderTarget *target )
 		progressDraw.push_back( cstest );
 	}*/
 
-	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING || state == HITENEMY )
-	{	
-		target->draw( quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture );
-		target->draw( wireTip );
-	}
-	
-	if( state == HIT || state == PULLING )
-	{
-		CircleShape cs1;
-		cs1.setFillColor( Color::Red );
-		cs1.setRadius( 2 );
-		cs1.setOrigin( cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2 );
-		cs1.setPosition( anchor.pos.x, anchor.pos.y );
-
-		target->draw( cs1 );
-
-		for( int i = 0; i < numPoints; ++i )
-		{
-			CircleShape cs;
-			cs.setFillColor( Color::Cyan );
-			cs.setRadius( 2 );
-			cs.setOrigin( cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2 );
-			cs.setPosition( points[i].pos.x, points[i].pos.y );
-
-			target->draw( cs );
-		}
-	}
-
-	if( state == RETRACTING )
-	{
-		target->draw( chargeVA, ts_wireCharge->texture );
-	}
-}
-
-void Wire::DrawMinimap( sf::RenderTarget *target )
+if (state == FIRING || state == HIT || state == PULLING || state == RETRACTING || state == HITENEMY)
 {
-	if( state == FIRING || state == HIT || state == PULLING || state == RETRACTING )
+	target->draw(quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture);
+	target->draw(wireTip);
+}
+
+if (state == HIT || state == PULLING)
+{
+	CircleShape cs1;
+	cs1.setFillColor(Color::Red);
+	cs1.setRadius(2);
+	cs1.setOrigin(cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2);
+	cs1.setPosition(anchor.pos.x, anchor.pos.y);
+
+	target->draw(cs1);
+
+	for (int i = 0; i < numPoints; ++i)
 	{
-		target->draw( minimapQuads, numVisibleIndexes * 4, sf::Quads );
+		CircleShape cs;
+		cs.setFillColor(Color::Cyan);
+		cs.setRadius(2);
+		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+		cs.setPosition(points[i].pos.x, points[i].pos.y);
+
+		target->draw(cs);
 	}
 }
 
-void Wire::DebugDraw( RenderTarget *target )
+if (state == RETRACTING)
+{
+	target->draw(chargeVA, ts_wireCharge->texture);
+}
+}
+
+void Wire::DrawMinimap(sf::RenderTarget *target)
+{
+	if (state == FIRING || state == HIT || state == PULLING || state == RETRACTING)
+	{
+		target->draw(minimapQuads, numVisibleIndexes * 4, sf::Quads);
+	}
+}
+
+void Wire::DebugDraw(RenderTarget *target)
 {
 	/*for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
 	{
@@ -2096,33 +2099,33 @@ void Wire::DebugDraw( RenderTarget *target )
 
 	if (state == FIRING)
 	{
-		movingHitbox.DebugDraw( CollisionBox::Hit, target);
+		movingHitbox.DebugDraw(CollisionBox::Hit, target);
 	}
 }
 
 void Wire::ActivateRetractionCharges()
 {
-	if( right )
+	if (right)
 	{
-		int limit = min( numPoints, MAX_CHARGES );
-		for( int i = 0; i < limit; ++i )
+		int limit = min(numPoints, MAX_CHARGES);
+		for (int i = 0; i < limit; ++i)
 		{
-			ActivateWireCharge( i );
+			ActivateWireCharge(i);
 		}
 	}
 	else
 	{
-		int limit = min( numPoints, MAX_CHARGES );
-		for( int i = 0; i < limit; ++i )
+		int limit = min(numPoints, MAX_CHARGES);
+		for (int i = 0; i < limit; ++i)
 		{
-			ActivateWireCharge( (numPoints-1)-i );
+			ActivateWireCharge((numPoints - 1) - i);
 		}
 	}
 }
 
 void Wire::ClearDebug()
 {
-	for( list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it )
+	for (list<Drawable*>::iterator it = progressDraw.begin(); it != progressDraw.end(); ++it)
 	{
 		delete (*it);
 	}
@@ -2132,9 +2135,40 @@ void Wire::ClearDebug()
 void Wire::SortNewPoints()
 {
 	//insertion sort just for easy testing
-	if( newWirePoints > 1 )
+	if (newWirePoints > 1)
 	{
-		for( int i = numPoints - newWirePoints; i < numPoints; ++i )
+		int closestIndex;
+		for (int i = numPoints - newWirePoints; i < numPoints; ++i)
+		{
+			closestIndex = i;
+			for (int j = i+1; j < numPoints; ++j)
+			{
+				if (abs(points[j].sortingAngleDist - points[closestIndex].sortingAngleDist) < .01)
+				{
+					if (length(points[j].pos - realAnchor) < length(points[closestIndex].pos - realAnchor))
+					{
+						closestIndex = j;
+					}
+				}
+				else if (points[j].sortingAngleDist < points[closestIndex].sortingAngleDist)
+				{
+					closestIndex = j;
+				}
+
+				
+				/*else if (points[j].sortingAngleDist == points[closestIndex].sortingAngleDist)
+				{
+					
+				}*/
+			}
+
+			if (closestIndex != i)
+			{
+				SwapPoints(i, closestIndex);
+			}
+		}
+
+		/*for( int i = numPoints - newWirePoints; i < numPoints; ++i )
 		{
 			int j = i;
 
@@ -2145,7 +2179,7 @@ void Wire::SortNewPoints()
 				SwapPoints( j-1, j );
 				--j;
 			}
-		}
+		}*/
 	}
 }
 

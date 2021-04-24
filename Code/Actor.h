@@ -1537,6 +1537,7 @@ struct Actor : QuadTreeCollider,
 	void ClearPauseBufferedActions();
 	void UpdateInHitlag();
 	bool IsBlockAction(int a);
+	bool IsGrindAction(int a);
 	bool IsAttackAction( int a );
 	bool IsGroundAttackAction(int a);
 	bool IsSpringAction(int a);

@@ -14014,27 +14014,30 @@ void Actor::HandleWaterSituation(int wType,
 		}
 		else if (sit == SPECIALT_EXIT)
 		{
-			Edge *exitEdge = RayCastSpecialTerrainExit();
-			if (exitEdge != NULL)
+			if (grindEdge == NULL)
 			{
-				V2d norm = exitEdge->Normal();
-				SetAction(SPRINGSTUN);
-				springStunFrames = 60;
+				Edge *exitEdge = RayCastSpecialTerrainExit();
+				if (exitEdge != NULL)
+				{
+					V2d norm = exitEdge->Normal();
+					SetAction(SPRINGSTUN);
+					springStunFrames = 60;
 
-				//make into function soon
-				holdJump = false;
-				holdDouble = false;
-				RestoreAirOptions();
-				rightWire->Reset();
-				leftWire->Reset();
-				frame = 0;
-				UpdateHitboxes();
-				ground = NULL;
-				wallNormal = V2d(0, 0);
-				velocity = V2d(0, 0);
-				currWall = NULL;
-				double speed = 30;
-				springVel = norm * speed;
+					//make into function soon
+					holdJump = false;
+					holdDouble = false;
+					RestoreAirOptions();
+					rightWire->Reset();
+					leftWire->Reset();
+					frame = 0;
+					UpdateHitboxes();
+					ground = NULL;
+					wallNormal = V2d(0, 0);
+					velocity = V2d(0, 0);
+					currWall = NULL;
+					double speed = 30;
+					springVel = norm * speed;
+				}
 			}
 		}
 		break;
@@ -19637,6 +19640,11 @@ void Actor::ClearPauseBufferedActions()
 bool Actor::IsBlockAction(int a)
 {
 	return IsActionAirBlock(a) || IsActionGroundBlock(a);
+}
+
+bool Actor::IsGrindAction(int a)
+{
+	return action == GRINDBALL || action == GRINDATTACK;
 }
 
 bool Actor::IsAttackAction( int a )
