@@ -85,8 +85,7 @@ struct KinMask
 	Session *sess;
 	MomentumBar *momentumBar;
 	KinRing *kinRing;
-	Tileset *ts_newShardMarker;
-	sf::Sprite shardMarker;
+
 
 	KinMask( Actor *a);
 	~KinMask();
@@ -138,6 +137,7 @@ struct FightHUD : HUD
 	void Reset();
 };
 
+struct PowerSelector;
 struct AdventureHUD : HUD
 {
 	enum State
@@ -172,7 +172,8 @@ struct AdventureHUD : HUD
 
 	KinMask *kinMask;
 	KeyMarker *keyMarker;
-
+	
+	PowerSelector *powerSelector;
 	
 
 	AdventureHUD();

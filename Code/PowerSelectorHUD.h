@@ -1,0 +1,37 @@
+#ifndef __POWERSELECTOR_H__
+#define __POWERSELECTOR_H__
+
+#include <SFML\Graphics.hpp>
+#include "Input.h"
+
+struct Tileset;
+struct Session;
+struct PowerSelector
+{
+	enum State
+	{
+		STATIC,
+		SWITCHING,
+	};
+
+	Tileset *ts;
+	Session *sess;
+	sf::Sprite sprite;
+
+	int currPowerMode;
+
+	State state;
+	int frame;
+
+	
+
+
+
+	PowerSelector();
+
+	void Update(int currPowerMode );
+
+	void Draw(sf::RenderTarget *target);
+};
+
+#endif

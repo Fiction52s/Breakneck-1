@@ -66,6 +66,7 @@
 #include "Enemy_Bird.h"
 
 #include "BossCommand.h"
+#include "PowerSelectorHUD.h"
 
 using namespace sf;
 using namespace std;
@@ -2851,6 +2852,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	airBounceCounter = 0;
 	//fallThroughDuration = 0;
+	
 	currPowerMode = PMODE_SHIELD;
 
 	shieldPushbackFrames = 0;
@@ -17746,6 +17748,12 @@ void Actor::UpdateSprite()
 		return;
 	}
 
+	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+	{
+		AdventureHUD *ah = (AdventureHUD*)sess->hud;
+		ah->powerSelector->Update(currPowerMode);
+	}
+
 	keyExplodePool->Update();
 	if (!keyExplodeRingGroup->Update())
 	{
@@ -19734,7 +19742,6 @@ void Actor::RestoreAirDash()
 {
 	hasAirDash = true;
 }
-
 
 int Actor::GetCurrStandAttack()
 {

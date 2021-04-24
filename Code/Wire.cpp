@@ -126,7 +126,7 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
-	, player( p ), hitStallFrames( 10 ), hitStallCounter( 0 ), right( r )
+	, player( p ), hitStallFrames( 10/*10*/ ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ),
@@ -435,7 +435,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if( !triggerDown && player->ground == NULL )
 				{
 					state = RETRACTING;
-					ActivateCharges();
+					//ActivateCharges();
 					retractPlayerPos = playerPos;
 					fusePointIndex = numPoints;
 					if( numPoints == 0 )
@@ -2076,7 +2076,7 @@ if (state == HIT || state == PULLING)
 
 if (state == RETRACTING)
 {
-	target->draw(chargeVA, ts_wireCharge->texture);
+	//target->draw(chargeVA, ts_wireCharge->texture);
 }
 }
 

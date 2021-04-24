@@ -9,6 +9,7 @@
 #include "Actor.h"
 #include "Session.h"
 #include "MainMenu.h"
+#include "PowerSelectorHUD.h"
 
 using namespace sf;
 using namespace std;
@@ -146,6 +147,8 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 AdventureHUD::AdventureHUD()
 {
 	keyMarker = new KeyMarker;
+
+	powerSelector = new PowerSelector;
 
 	flyCountTextShowPos = Vector2f(1920 - 30, 10);
 	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
@@ -336,7 +339,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 			owner->despOrb->Draw(target);
 		}*/
 
-
+		powerSelector->Draw(target);
 
 		keyMarker->Draw(target);
 
@@ -358,12 +361,6 @@ KinMask::KinMask( Actor *a )
 	faceBG.setTextureRect(ts_face->GetSubRect(0));
 
 	momentumBar = new MomentumBar(sess);
-
-	ts_newShardMarker = sess->GetTileset("HUD/shardexlcaim_48x48.png", 48, 48);
-	shardMarker.setTexture(*ts_newShardMarker->texture);
-	shardMarker.setTextureRect(ts_newShardMarker->GetSubRect(0));
-	shardMarker.setOrigin(shardMarker.getLocalBounds().width / 2, shardMarker.getLocalBounds().height / 2);
-	shardMarker.setPosition(286, 202);
 
 	kinRing = actor->kinRing;
 
@@ -405,15 +402,6 @@ void KinMask::Draw(RenderTarget *target)
 	momentumBar->Draw(target);
 
 	kinRing->Draw(target);
-
-	//SaveFile *currProgress = owner->GetCurrentProgress();
-	//if (currProgress != NULL)
-	{
-		//if (currProgress->HasNewShards())
-		{
-			target->draw(shardMarker);
-		}
-	}
 }
 
 void KinMask::SetExpr(KinMask::Expr ex)
