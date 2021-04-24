@@ -234,7 +234,7 @@ void MapSector::SetXCenter(float x)
 	xCenter = x;
 
 	//left = Vector2f(xCenter - 600, 400);
-	left = Vector2f(xCenter, 150);
+	left = Vector2f(xCenter, 170);//150
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
@@ -247,11 +247,15 @@ void MapSector::SetXCenter(float x)
 
 
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
-	sectorNameText.setPosition(x, 0);
+	sectorNameText.setPosition(x, 20);
 	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
 	Vector2f sectorStatsSize(256, 256);
 
-	endSpr.setPosition(sectorStatsCenter + Vector2f(-72, -74));
+	sf::FloatRect sectorNameGlobalBounds = sectorNameText.getGlobalBounds();
+	Vector2f sectorNameTopRight(sectorNameGlobalBounds.left + sectorNameGlobalBounds.width, sectorNameGlobalBounds.top + sectorNameGlobalBounds.height / 2);
+
+	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
+	endSpr.setPosition(sectorNameTopRight + Vector2f( 70, 0 ) );
 
 	Vector2f levelStatsSize(512, 256);
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
@@ -534,6 +538,8 @@ bool MapSector::Update(ControllerState &curr,
 			{
 				mapSASelector->currIndex = unlockedLevelCount - 1;
 				UpdateLevelStats();
+				selectorSprite.setPosition(GetSelectedNodePos()
+					+ Vector2f(0, 50));
 				//saSelector->currIndex = unlockedIndex + 1;
 			}
 		}
@@ -770,6 +776,9 @@ void MapSector::Init(SaveFile *p_saveFile)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
+
+	selectorSprite.setPosition(GetSelectedNodePos()
+		+ Vector2f(0, 50));
 
 	mapSASelector->SetTotalSize(unlockedLevelCount);
 }
