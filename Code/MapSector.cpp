@@ -42,7 +42,18 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	ts_mapPreview = NULL;
 	
+	ts_menuSelector = worldMap->GetSizedTileset("Menu/menu_selector_64x64.png");
+
+	selectorSprite.setTexture(*ts_menuSelector->texture);
+
+	selectorAnimFrame = 0;
+	selectorAnimDuration = 21;
+	selectorAnimFactor = 3;
+
+
+
 	
+
 		
 	shardsCollectedText.setFont(mainMenu->arial);
 	completionPercentText.setFont(mainMenu->arial);
@@ -106,6 +117,8 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	requirementText.setFillColor(Color::White);
 	requirementText.setString(to_string(numRequiredRunes));
 
+
+	
 
 	//ts_mapPreview = worldMap->GetSizedTileset()
 
@@ -197,6 +210,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 		{
 			target->draw(nodes[i]);
 		}
+
+		target->draw(selectorSprite);
 
 		target->draw(endSpr);
 
@@ -463,6 +478,9 @@ bool MapSector::Update(ControllerState &curr,
 
 			UpdateLevelStats();
 			UpdateMapPreview();
+
+			selectorSprite.setPosition(GetSelectedNodePos()
+				+ Vector2f(0, 50));
 		}
 
 		if (changed != 0)
@@ -550,7 +568,16 @@ bool MapSector::Update(ControllerState &curr,
 		}
 	}
 
-	
+	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
+	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
+	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
+	selectorSprite.setRotation(-90);
+
+	selectorAnimFrame++;
+	if (selectorAnimFrame == selectorAnimDuration * selectorAnimFactor)
+	{
+		selectorAnimFrame = 0;
+	}
 
 	++frame;
 	++stateFrame;

@@ -85,6 +85,12 @@ struct MapSector
 
 	Tileset *ts_mapPreview;
 
+	Tileset *ts_menuSelector;
+	sf::Sprite selectorSprite;
+	int selectorAnimFrame;
+	int selectorAnimDuration;
+	int selectorAnimFactor;
+
 	SingleAxisSelector *mapSASelector;
 	Background *bg;
 
@@ -142,6 +148,7 @@ struct MapSelector
 	std::vector<MapSector*> sectors;
 	MainMenu *mainMenu;
 	WorldMap *worldMap;
+
 
 	sf::Sprite nodeHighlight;
 	sf::Sprite kinSprite;
