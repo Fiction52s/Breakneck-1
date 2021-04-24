@@ -9708,6 +9708,9 @@ void Actor::TryChangePowerMode()
 	bool hasTimeSlow = HasUpgrade(UPGRADE_POWER_TIME);
 	bool hasGrind = HasUpgrade(UPGRADE_POWER_GRIND);
 	bool hasBounce = HasUpgrade(UPGRADE_POWER_BOUNCE);
+
+	int oldPowerMode = currPowerMode;
+
 	if ((currPowerMode == PMODE_TIMESLOW && !hasTimeSlow )
 		|| (currPowerMode == PMODE_GRIND && !hasGrind )
 		|| (currPowerMode == PMODE_BOUNCE && !hasBounce))
@@ -9730,6 +9733,11 @@ void Actor::TryChangePowerMode()
 	else if (currInput.RLeft() && noVert && hasBounce )
 	{
 		currPowerMode = PMODE_BOUNCE;
+	}
+
+	if (oldPowerMode == PMODE_BOUNCE && currPowerMode != PMODE_BOUNCE)
+	{
+		BounceFlameOff();
 	}
 }
 
