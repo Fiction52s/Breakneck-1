@@ -40,6 +40,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	endSpr.setTexture(*ms->ts_sectorOpen[0]->texture);
 	endSpr.setTextureRect(ms->ts_sectorOpen[0]->GetSubRect(0));
 
+	ts_mapPreview = NULL;
+	
+	
+		
 	shardsCollectedText.setFont(mainMenu->arial);
 	completionPercentText.setFont(mainMenu->arial);
 
@@ -102,10 +106,15 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	requirementText.setFillColor(Color::White);
 	requirementText.setString(to_string(numRequiredRunes));
 
+
+	//ts_mapPreview = worldMap->GetSizedTileset()
+
 	SetXCenter(960);
 	//UpdateNodes();
 	UpdateStats();
 	UpdateLevelStats();
+
+	UpdateMapPreview();
 }
 
 MapSector::~MapSector()
@@ -173,6 +182,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 		{
 			DrawStats(target);
 			DrawLevelStats(target);
+
+			target->draw(mapPreviewSpr);
 		}
 		else
 		{
@@ -208,7 +219,7 @@ void MapSector::SetXCenter(float x)
 	xCenter = x;
 
 	//left = Vector2f(xCenter - 600, 400);
-	left = Vector2f(xCenter, 400);
+	left = Vector2f(xCenter, 150);
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
@@ -449,7 +460,9 @@ bool MapSector::Update(ControllerState &curr,
 
 		if (changed != 0)
 		{
+
 			UpdateLevelStats();
+			UpdateMapPreview();
 		}
 
 		if (changed != 0)
@@ -570,6 +583,23 @@ void MapSector::UpdateNodes()
 void MapSector::Load()
 {
 
+}
+
+void MapSector::UpdateMapPreview()
+{
+	if (ts_mapPreview != NULL)
+	{
+		ms->worldMap->DestroyTileset(ts_mapPreview);
+		ts_mapPreview = NULL;
+	}
+
+	string fPath = adventureFile.GetAdventureSector(sec).maps[GetSelectedIndex()].GetFilePath();
+	string previewPath = fPath + ".png";
+
+	ts_mapPreview = ms->worldMap->GetTileset(previewPath, 912, 492);
+	mapPreviewSpr.setTexture(*ts_mapPreview->texture);
+	mapPreviewSpr.setOrigin(mapPreviewSpr.getLocalBounds().width / 2, mapPreviewSpr.getLocalBounds().height / 2);
+	mapPreviewSpr.setPosition(960, 500);
 }
 
 int MapSector::GetNodeSubIndex(int node)

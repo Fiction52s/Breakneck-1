@@ -68,6 +68,7 @@ struct MapSector
 	sf::Sprite *nodes;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
+	sf::Sprite mapPreviewSpr;
 
 
 	sf::Text shardsCollectedText;
@@ -81,6 +82,8 @@ struct MapSector
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
 	Tileset *ts_shards;
+
+	Tileset *ts_mapPreview;
 
 	SingleAxisSelector *mapSASelector;
 	Background *bg;
@@ -99,6 +102,7 @@ struct MapSector
 	Level *GetSelectedLevel();
 	AdventureMap *GetSelectedAdventureMap();
 	void Load();
+	void UpdateMapPreview();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateBG();
