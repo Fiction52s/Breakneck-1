@@ -18,6 +18,8 @@ struct PowerSelector
 	Session *sess;
 	sf::Sprite sprite;
 
+	sf::Vertex deactivatedQuads[3 * 4];
+
 	int currPowerMode;
 
 	State state;

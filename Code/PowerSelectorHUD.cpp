@@ -13,6 +13,10 @@ PowerSelector::PowerSelector()
 	sprite.setTextureRect(ts->GetSubRect( 0 ));
 	sprite.setPosition(288, 140);
 	state = STATIC;
+
+	SetRectSubRect(deactivatedQuads, ts->GetSubRect(11));
+	SetRectSubRect(deactivatedQuads + 4, ts->GetSubRect(9));
+	SetRectSubRect(deactivatedQuads + 8, ts->GetSubRect(10));
 }
 
 void PowerSelector::Update( int playerPowerMode )
@@ -37,7 +41,39 @@ void PowerSelector::Update( int playerPowerMode )
 				tile = 4;
 				break;
 			}
+
 			sprite.setTextureRect(ts->GetSubRect(tile));
+
+			Actor *player = sess->GetPlayer(0);
+			if (player->HasUpgrade(Actor::UPGRADE_POWER_BOUNCE))
+			{
+				ClearRect(deactivatedQuads);
+			}
+			else
+			{
+				SetRectTopLeft(deactivatedQuads, ts->tileWidth, ts->tileHeight,
+					Vector2f(sprite.getPosition()));
+			}
+
+			if (player->HasUpgrade(Actor::UPGRADE_POWER_GRIND))
+			{
+				ClearRect(deactivatedQuads + 4);
+			}
+			else
+			{
+				SetRectTopLeft(deactivatedQuads + 4, ts->tileWidth, ts->tileHeight,
+					Vector2f(sprite.getPosition()));
+			}
+
+			if (player->HasUpgrade(Actor::UPGRADE_POWER_TIME))
+			{
+				ClearRect(deactivatedQuads + 8);
+			}
+			else
+			{
+				SetRectTopLeft(deactivatedQuads + 8, ts->tileWidth, ts->tileHeight,
+					Vector2f(sprite.getPosition()));
+			}
 
 			break;
 		}
@@ -60,4 +96,6 @@ void PowerSelector::Update( int playerPowerMode )
 void PowerSelector::Draw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
+
+	target->draw(deactivatedQuads, 3 * 4, sf::Quads, ts->texture);
 }
