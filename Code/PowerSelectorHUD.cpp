@@ -12,6 +12,7 @@ PowerSelector::PowerSelector()
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect( 0 ));
 	sprite.setPosition(288, 140);
+	state = STATIC;
 }
 
 void PowerSelector::Update( int playerPowerMode )

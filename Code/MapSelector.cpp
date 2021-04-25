@@ -16,9 +16,17 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
 	}
 
+	ts_rock = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/level_rock_256x300.png");
+
+	rockSprite.setTexture(*ts_rock->texture);
+	rockSprite.setOrigin(rockSprite.getLocalBounds().width / 2, 0);
+	rockSprite.setPosition(960, 540 + 399);
+
 	kinState = K_STAND;
 	kinFrame = 0;
 	kinSprite.setPosition(960, 540 + 300);
+
+	
 
 	if (world->numSectors == 1)
 	{
@@ -109,6 +117,8 @@ void MapSelector::RunSelectedMap()
 void MapSelector::Draw(sf::RenderTarget *target)
 {
 	FocusedSector()->Draw(target);
+
+	target->draw(rockSprite);
 
 	if (kinState != K_HIDE)
 	{
@@ -205,6 +215,10 @@ bool MapSelector::Update(ControllerState &curr,
 		ts_kinJump[0]->SetSubRect(kinSprite, 0);
 		kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
 			kinSprite.getLocalBounds().height / 2);
+
+		sf::FloatRect ksGlobalBounds = kinSprite.getGlobalBounds();
+		//rockSprite.setPosition(ksGlobalBounds.left + ksGlobalBounds.width / 2.0,
+		//	ksGlobalBounds.top + ksGlobalBounds.height + 40);
 	}
 	else if (kinState == K_JUMP)
 	{
@@ -225,9 +239,19 @@ bool MapSelector::Update(ControllerState &curr,
 			ts_kinJump[kinTex]->SetSubRect(kinSprite, realKinFrame);
 			kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
 				kinSprite.getLocalBounds().height / 2);
+
+			sf::FloatRect ksGlobalBounds = kinSprite.getGlobalBounds();
+			//rockSprite.setPosition(ksGlobalBounds.left + ksGlobalBounds.width / 2.0,
+			//	ksGlobalBounds.top + ksGlobalBounds.height + 40);
 		}
+
+		
+
 	}
 
+
+	//keep selector spinning during jump
+	FocusedSector()->UpdateSelectorSprite();
 
 	++kinFrame;
 	++frame;

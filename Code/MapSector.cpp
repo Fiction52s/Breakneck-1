@@ -483,8 +483,7 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateLevelStats();
 			UpdateMapPreview();
 
-			selectorSprite.setPosition(GetSelectedNodePos()
-				+ Vector2f(0, 50));
+			
 		}
 
 		if (changed != 0)
@@ -538,8 +537,6 @@ bool MapSector::Update(ControllerState &curr,
 			{
 				mapSASelector->currIndex = unlockedLevelCount - 1;
 				UpdateLevelStats();
-				selectorSprite.setPosition(GetSelectedNodePos()
-					+ Vector2f(0, 50));
 				//saSelector->currIndex = unlockedIndex + 1;
 			}
 		}
@@ -574,16 +571,7 @@ bool MapSector::Update(ControllerState &curr,
 		}
 	}
 
-	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
-	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
-	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
-	selectorSprite.setRotation(-90);
-
-	selectorAnimFrame++;
-	if (selectorAnimFrame == selectorAnimDuration * selectorAnimFactor)
-	{
-		selectorAnimFrame = 0;
-	}
+	//UpdateSelectorSprite();
 
 	++frame;
 	++stateFrame;
@@ -751,6 +739,23 @@ int MapSector::GetSelectedNodeBossFightType()
 	return 0; //sec->levels[GetSelectedIndex()].bossFightType;
 }
 
+void MapSector::UpdateSelectorSprite()
+{
+	ts_menuSelector->SetSubRect(selectorSprite, selectorAnimFrame / selectorAnimFactor, true);
+	//selectorSprite.setTextureRect(ts_menuSelector->GetSubRect(selectorAnimFrame / selectorAnimFactor));
+	selectorSprite.setOrigin(selectorSprite.getLocalBounds().width / 2, selectorSprite.getLocalBounds().height / 2);
+	selectorSprite.setRotation(-90);
+
+	selectorAnimFrame++;
+	if (selectorAnimFrame == selectorAnimDuration * selectorAnimFactor)
+	{
+		selectorAnimFrame = 0;
+	}
+
+	selectorSprite.setPosition(GetSelectedNodePos()
+		+ Vector2f(0, 50));
+}
+
 void MapSector::Init(SaveFile *p_saveFile)
 {
 	saveFile = p_saveFile;
@@ -777,8 +782,8 @@ void MapSector::Init(SaveFile *p_saveFile)
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
 
-	selectorSprite.setPosition(GetSelectedNodePos()
-		+ Vector2f(0, 50));
+	//selectorSprite.setPosition(GetSelectedNodePos()
+	//	+ Vector2f(0, 50));
 
 	mapSASelector->SetTotalSize(unlockedLevelCount);
 }

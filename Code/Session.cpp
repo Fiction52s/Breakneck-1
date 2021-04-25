@@ -4745,10 +4745,19 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	int rBound = mapHeader->leftBounds + mapHeader->boundsWidth;
 	int height = mapHeader->boundsHeight;
 
-	SetRectCenter(blackBorderQuads, quadWidth, height, Vector2f(lBound + quadWidth / 2,
-		top + height / 2));
-	SetRectCenter(blackBorderQuads + 4, quadWidth, height, Vector2f(rBound - quadWidth / 2,
-		top + height / 2));
+	Vector2f leftCenter(lBound + quadWidth / 2,
+		top + height / 2);
+	Vector2f rightCenter(rBound - quadWidth / 2,
+		top + height / 2);
+
+	int extraWidth = 500;
+
+	SetRectCenter(blackBorderQuads, quadWidth, height, leftCenter);
+	SetRectCenter(blackBorderQuads + 8, 500, height, leftCenter + Vector2f( -quadWidth / 2 - extraWidth/2,0 ));
+
+
+	SetRectCenter(blackBorderQuads + 4, quadWidth, height, rightCenter);
+	SetRectCenter(blackBorderQuads + 12, 500, height, rightCenter + Vector2f(quadWidth / 2 + extraWidth/2, 0));
 
 	/*SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
 		top + height / 2));
@@ -4756,6 +4765,8 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 		top + height / 2));*/
 	SetRectColor(blackBorderQuads, Color(Color::Black));
 	SetRectColor(blackBorderQuads + 4, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 8, Color(Color::Black));
+	SetRectColor(blackBorderQuads + 12, Color(Color::Black));
 	//SetRectColor(blackBorderQuads + 8, Color(Color::Black));
 	//SetRectColor(blackBorderQuads + 12, Color(Color::Black));
 
@@ -4818,14 +4829,15 @@ void Session::DrawBlackBorderQuads(sf::RenderTarget *target)
 {
 	bool narrowMap = mapHeader->boundsWidth < 1920 * 2;
 
-	if (cam.manual || narrowMap)
+	target->draw(blackBorderQuads, 16, sf::Quads);
+	/*if (cam.manual || narrowMap)
 	{
 		target->draw(blackBorderQuads, 16, sf::Quads);
 	}
 	else
 	{
 		target->draw(blackBorderQuads, 8, sf::Quads);
-	}
+	}*/
 }
 
 void Session::TryCreateShardResources()

@@ -9,6 +9,7 @@ using namespace sf;
 
 FightHUD::FightHUD()
 {
+	hType = HUDType::FIGHT;
 	Reset();
 }
 

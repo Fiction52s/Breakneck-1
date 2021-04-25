@@ -333,7 +333,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	float oldShaderZoom;
 	sf::Vector2f oldShaderBotLeft;
 
-	sf::Vertex blackBorderQuads[4 * 2];
+	//2 borders, 2 extensions
+	sf::Vertex blackBorderQuads[4 * 4];
+
 	PolyPtr inversePolygon;
 	ShardPopup *shardPop;
 	PowerPopup *powerPop;

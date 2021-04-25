@@ -109,6 +109,7 @@ struct MapSector
 	AdventureMap *GetSelectedAdventureMap();
 	void Load();
 	void UpdateMapPreview();
+	void UpdateSelectorSprite();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
 	void UpdateBG();
@@ -155,6 +156,7 @@ struct MapSelector
 	sf::Sprite bottomBG;
 	sf::Sprite thumbnailBG;
 	sf::Sprite shardBG;
+	sf::Sprite rockSprite;
 
 	KinState kinState;
 	int kinFrame;
@@ -176,6 +178,8 @@ struct MapSelector
 	Tileset *ts_sectorKey;
 	Tileset **ts_sectorOpen;
 	Tileset *ts_kinJump[5];
+	Tileset *ts_rock;
+	
 
 	MapSelector( WorldMap *worldMap, 
 		World *world, MainMenu *mm, sf::Vector2f &pos );

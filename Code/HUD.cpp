@@ -28,6 +28,8 @@ HUD::~HUD()
 RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 	:raceFight( rf )
 {
+	
+
 	owner = rf->owner;
 
 	Tileset *ts_scoreRed = owner->GetTileset("HUD/number_score_red_64x64.png", 64, 64);
@@ -146,6 +148,8 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 
 AdventureHUD::AdventureHUD()
 {
+	hType = HUDType::ADVENTURE;
+
 	keyMarker = new KeyMarker;
 
 	powerSelector = new PowerSelector;
@@ -183,6 +187,8 @@ AdventureHUD::AdventureHUD()
 AdventureHUD::~AdventureHUD()
 {
 	delete keyMarker;
+
+	delete powerSelector;
 }
 
 void AdventureHUD::Hide(int frames)

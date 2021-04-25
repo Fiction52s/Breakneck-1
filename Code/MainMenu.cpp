@@ -453,7 +453,7 @@ void MainMenu::SetupWindow()
 	window->setKeyRepeatEnabled(false);
 
 	mouseGrabbed = true;//false;//true;
-	mouseVisible = true;//false;//true;//false;
+	mouseVisible = false;//false;//true;//false;
 
 	SetMouseGrabbed(mouseGrabbed);
 	SetMouseVisible(mouseVisible);
@@ -1981,6 +1981,7 @@ void MainMenu::HandleMenuMode()
 		int result = currEditSession->Run();
 
 		window->setView(oldView);
+		SetMouseVisible(false);
 
 		LoadMode(TITLEMENU);
 		break;
