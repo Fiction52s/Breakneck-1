@@ -444,7 +444,8 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 {
 	barSprite.setTexture(*parent->ts_score->texture);
 	barSprite.setTextureRect(parent->ts_score->GetSubRect(15 + row));
-	//buttonIconSprite.setTexture(*parent->ts_score->texture);
+	buttonIconSprite.setTexture(*parent->sess->mainMenu->ts_buttonIcons->texture);
+	
 
 	stateLength[NONE] = 1;
 	stateLength[POP_OUT] = 30;
@@ -459,6 +460,40 @@ void SelectBar::Reset()
 	SetBarPos(0);
 	state = NONE;
 	frame = 0;
+
+	Session *sess = parent->sess;
+
+	int tileOffset = 0;
+
+	ControllerType ct = sess->GetController(0).GetCType();
+	switch (ct)
+	{
+	case ControllerType::CTYPE_XBOX:
+		tileOffset = 0;
+		break;
+	case ControllerType::CTYPE_GAMECUBE:
+		tileOffset = 16 * 2;
+		break;
+	}
+	
+	int buttonIndex = 0;
+
+	if (row == 0) //continue
+	{
+		buttonIndex = 0;
+	}
+	else if (row == 1) //exit
+	{
+		buttonIndex = 2;
+	}
+	else if (row == 2) //retry
+	{
+		buttonIndex = 1;
+	}
+
+	buttonIconSprite.setTextureRect(
+		parent->sess->mainMenu->ts_buttonIcons->GetSubRect(tileOffset + buttonIndex));
+	buttonIconSprite.setScale(.5, .5);
 }
 
 void SelectBar::SetBarPos(float xDiff)
@@ -469,6 +504,7 @@ void SelectBar::SetBarPos(float xDiff)
 	Vector2f newPos(parent->basePos.x + xDiffPos, 
 		parent->basePos.y + row * rowHeight + parent->selectOffset);
 	barSprite.setPosition(newPos);
+	buttonIconSprite.setPosition(newPos + Vector2f( 320, 2 ));
 }
 
 void SelectBar::Update()
@@ -526,7 +562,7 @@ void SelectBar::Update()
 void SelectBar::Draw(sf::RenderTarget *target)
 {
 	target->draw(barSprite);
-	//target->draw(buttonIconSprite);
+	target->draw(buttonIconSprite);
 }
 
 void SelectBar::PopOut()

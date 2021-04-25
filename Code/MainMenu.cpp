@@ -439,8 +439,7 @@ MainMenu::MainMenu()
 		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
 	}
 
-	ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
-	ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
+	
 }
 
 void MainMenu::SetupWindow()
@@ -646,7 +645,7 @@ void MainMenu::Init()
 		cout << (int)(controllers[0].axis.left_x) << endl;
 		break;
 	}*/
-
+	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
 	splashSprite.setTexture( *ts_splashScreen->texture );
@@ -672,7 +671,7 @@ void MainMenu::Init()
 	soundBuffers[S_UP] = soundManager.GetSound( "menu_up" );
 	soundBuffers[S_SELECT] = soundManager.GetSound( "menu_select" );
 
-	
+	ts_loadBG = NULL;
 
 	cout << "init finished" << endl;
 }
@@ -1478,7 +1477,21 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 {
 	SetMode( LOADINGMAP );
 	wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
-	loadingBGSpr.setTexture(*ts_loadBG[wIndex]->texture);
+
+	stringstream ss;
+	ss << "Menu/Load/load_w" << (wIndex + 1) << ".png";//"_1.png";
+
+	if (ts_loadBG != NULL)
+	{
+		tilesetManager.DestroyTileset(ts_loadBG);
+		ts_loadBG = NULL;
+	}
+
+	ts_loadBG = tilesetManager.GetSizedTileset(ss.str());
+	//ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
+	//ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
+
+	loadingBGSpr.setTexture(*ts_loadBG->texture);
 }
 
 void MainMenu::SetModeKinBoostLoadingMap(int variation)

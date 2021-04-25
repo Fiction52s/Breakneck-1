@@ -595,9 +595,9 @@ bool GameController::UpdateGCC()
 
 
 	//this is for the menus
-	bool tempX = m_unfilteredState.X;
-	m_unfilteredState.X = m_unfilteredState.Y;
-	m_unfilteredState.Y = tempX;
+	//bool tempX = m_unfilteredState.X;
+	//m_unfilteredState.X = m_unfilteredState.Y;
+	//m_unfilteredState.Y = tempX;
 
 	tempState.A = Pressed(filter[ControllerSettings::JUMP]);
 	tempState.B = false;//Pressed(filter[ControllerSettings::DASH]);

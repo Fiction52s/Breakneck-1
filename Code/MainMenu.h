@@ -587,7 +587,9 @@ struct MainMenu
 
 	sf::Sprite loadingIconBackpack[3];
 	sf::Sprite loadingBGSpr;
-	Tileset *ts_loadBG[7];
+	Tileset *ts_loadBG;
+
+	Tileset *ts_buttonIcons;
 	//GameController controller;
 	//GameController controller2;
 	GameController *controllers[4];
