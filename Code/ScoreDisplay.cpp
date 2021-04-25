@@ -8,54 +8,44 @@ using namespace sf;
 
 ScoreDisplay::ScoreDisplay(Vector2f &position,
 	sf::Font &testFont)
-	:scoreBarVA(sf::Quads, 4 * (NUM_BARS+1)), scoreSymbolsVA(sf::Quads, 4 * NUM_BARS), scoreSheetVA(sf::Quads, 4 * NUM_BARS), font(testFont)
+	:font(testFont)
 {
 	sess = Session::GetSession();
 	basePos = position;
-	ts_scoreBar = sess->GetTileset("HUD/score_bar_384x80.png", 384, 80);
-	ts_scoreSheet = sess->GetTileset("HUD/score_sheet_384x80.png", 384, 80);
-	ts_scoreSymbols = sess->GetTileset("HUD/score_symbol_384x80.png", 384, 80);
 
-	scoreContinue.setOrigin(scoreContinue.getLocalBounds().width, 0);
-	scoreContinue.setPosition(1920, 400);
-
-	IntRect ir = ts_scoreBar->GetSubRect(0);
-	IntRect irCont = ts_scoreBar->GetSubRect(1);
+	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
-		//SetRectSubRect(scoreBarVA + i * 4, ir);
-		scoreBarVA[i * 4 + 0].texCoords = Vector2f(ir.left, ir.top);
-		scoreBarVA[i * 4 + 1].texCoords = Vector2f(ir.left + ir.width, ir.top);
-		scoreBarVA[i * 4 + 2].texCoords = Vector2f(ir.left + ir.width, ir.top + ir.height);
-		scoreBarVA[i * 4 + 3].texCoords = Vector2f(ir.left, ir.top + ir.height);
-
-		IntRect ir1 = ts_scoreSymbols->GetSubRect(0);
-		scoreSymbolsVA[i * 4 + 0].texCoords = Vector2f(ir1.left, ir1.top);
-		scoreSymbolsVA[i * 4 + 1].texCoords = Vector2f(ir1.left + ir1.width, ir1.top);
-		scoreSymbolsVA[i * 4 + 2].texCoords = Vector2f(ir1.left + ir1.width, ir1.top + ir1.height);
-		scoreSymbolsVA[i * 4 + 3].texCoords = Vector2f(ir1.left, ir1.top + ir1.height);
-
 		bars[i] = new ScoreBar(i, this);
-		bars[i]->SetSymbolTransparency(0);
 	}
 
-	scoreBarVA[NUM_BARS * 4 + 0].texCoords = Vector2f(irCont.left, irCont.top);
-	scoreBarVA[NUM_BARS * 4 + 1].texCoords = Vector2f(irCont.left + irCont.width, irCont.top);
-	scoreBarVA[NUM_BARS * 4 + 2].texCoords = Vector2f(irCont.left + irCont.width, irCont.top + irCont.height);
-	scoreBarVA[NUM_BARS * 4 + 3].texCoords = Vector2f(irCont.left, irCont.top + irCont.height);
-	bars[NUM_BARS] = new ScoreBar(NUM_BARS, this, true );
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		selectBars[i] = new SelectBar(i, this);
+	}
+
+	bars[0]->SetText("hello", Color::Black);
+	bars[1]->SetText("hello", Color::Black);
+	bars[2]->SetText("hello", Color::Black);
+
+
+	selectOffset = NUM_BARS * 100 + 20;
 
 	active = false;
 	waiting = false;
-	//SetScoreBarPos( 0, 0 );
 }
 
 ScoreDisplay::~ScoreDisplay()
 {
-	for (int i = 0; i <= NUM_BARS; ++i)
+	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		delete bars[i];
+	}
+
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		delete selectBars[i];
 	}
 }
 
@@ -63,21 +53,48 @@ void ScoreDisplay::Draw(RenderTarget *target)
 {
 	if (active)
 	{
-		target->draw(scoreBarVA, ts_scoreBar->texture);
-		target->draw(scoreSheetVA, ts_scoreSheet->texture);
-		target->draw(scoreSymbolsVA, ts_scoreSymbols->texture);
-		//target->draw(scoreContinue);
+		for (int i = 0; i < NUM_BARS; ++i)
+		{
+			bars[i]->Draw(target);
+		}
+
+		for (int i = 0; i < NUM_SELECT_BARS; ++i)
+		{
+			selectBars[i]->Draw(target);
+		}
 
 		if (bars[0]->state == ScoreBar::SHEET_DISPLAY || bars[0]->state ==
 			ScoreBar::SYMBOL_DISPLAY)
 		{
-			target->draw(time);
+			
+			
 		}
 		if (bars[1]->state == ScoreBar::SHEET_DISPLAY || bars[1]->state ==
 			ScoreBar::SYMBOL_DISPLAY)
 		{
-			target->draw(keys);
+			//target->draw(timeSprite);
+			//target->draw(timeText);
+			//target->draw(keys);
 		}
+		if (bars[2]->state == ScoreBar::SHEET_DISPLAY || bars[2]->state ==
+			ScoreBar::SYMBOL_DISPLAY)
+		{
+			//target->draw(shardSprite);
+			//target->draw(keys);
+		}
+	}
+}
+
+void ScoreDisplay::PopOutBar(int row)
+{
+	bars[row]->PopOut();
+}
+
+void ScoreDisplay::PopOutSelectBars()
+{
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		selectBars[i]->PopOut();
 	}
 }
 
@@ -88,19 +105,34 @@ void ScoreDisplay::Update()
 
 	bool allNone = true;
 	bool allDisplay = true;
-	for (int i = 0; i < NUM_BARS+1; ++i)
+	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i]->Update();
 		if (bars[i]->state != ScoreBar::NONE)
 		{
 			allNone = false;
 		}
-
 		if (bars[i]->state != ScoreBar::SHEET_DISPLAY)
 		{
 			allDisplay = false;
 		}
+
+		
 	}
+
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		selectBars[i]->Update();
+		if (selectBars[i]->state != SelectBar::NONE)
+		{
+			allNone = false;
+		}
+		if (selectBars[i]->state != SelectBar::DISPLAY)
+		{
+			allDisplay = false;
+		}
+	}
+	
 
 	if (allNone)
 	{
@@ -117,9 +149,14 @@ void ScoreDisplay::Reset()
 {
 	waiting = false;
 	active = false;
-	for (int i = 0; i < NUM_BARS+1; ++i)
+	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i]->Reset();
+	}
+
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		selectBars[i]->Reset();
 	}
 }
 
@@ -127,25 +164,26 @@ void ScoreDisplay::Activate()
 {
 	active = true;
 	waiting = false;
-	bars[0]->state = ScoreBar::POP_OUT;
-	bars[0]->frame = 0;
+	PopOutBar(0);
+	//bars[0]->state = ScoreBar::POP_OUT;
+	//bars[0]->frame = 0;
 
-	time.setFont(font);
-	time.setCharacterSize(40);
-	time.setFillColor(Color::Black);
+	/*timeText.setFont(font);
+	timeText.setCharacterSize(40);
+	timeText.setFillColor(Color::Black);
 
 	
 	keys.setFont(font);
 	keys.setCharacterSize(40);
-	keys.setFillColor(Color::Black);
+	keys.setFillColor(Color::Black);*/
 
 	stringstream ss;
 
-	time.setString(GetTimeStr(sess->totalFramesBeforeGoal));
+	//timeText.setString(GetTimeStr(sess->totalFramesBeforeGoal));
 	
 	ss.str("");
 	//ss << sess->numKeysCollected << " / " << sess->numTotalKeys;
-	keys.setString(ss.str());
+	//keys.setString(ss.str());
 
 	//time.setString("HERE I AM BUDDY");
 
@@ -164,23 +202,41 @@ void ScoreDisplay::Activate()
 
 void ScoreDisplay::Deactivate()
 {
-	for (int i = 0; i < NUM_BARS+1; ++i)
+	for (int i = 0; i < NUM_BARS; ++i)
 	{
-		bars[i]->state = ScoreBar::RETRACT;
-		bars[i]->frame = 0;
-		//bars[i]->xDiffPos = 0;
+		bars[i]->Retract();
 	}
-	waiting = false;
 
-	//active = false;
-	//waiting = false;
-	//Reset();
+	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	{
+		selectBars[i]->Retract();
+	}
+
+	waiting = false;
 }
 
-ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent, bool p_contBar )
-	:parent(p_parent), frame(0), state(NONE), row(p_row), xDiffPos(0), contBar( p_contBar )
+ScoreBar::ScoreBar(int p_row, ScoreDisplay *p_parent)
+	:row(p_row), parent( p_parent )
 {
+	barSprite.setTexture(*parent->ts_score->texture);
+	symbolSprite.setTexture(*parent->ts_score->texture);
 
+	symbolSprite.setTextureRect(parent->ts_score->GetSubRect(12 + row));
+
+	stateLength[NONE] = 1;
+	stateLength[POP_OUT] = 30;
+	stateLength[SHEET_APPEAR] = 12;
+	stateLength[SYMBOL_DISPLAY] = 30;
+	stateLength[SHEET_DISPLAY] = 1;
+	stateLength[RETRACT] = 30;
+
+	textColor = Color::Black;
+
+	text.setFont(parent->font);
+	text.setCharacterSize(40);
+	text.setFillColor(textColor);
+
+	Reset();
 }
 
 void ScoreBar::Reset()
@@ -188,170 +244,52 @@ void ScoreBar::Reset()
 	SetBarPos(0);
 	state = NONE;
 	frame = 0;
-
-	if (!contBar)
-		SetSymbolTransparency(0);
-
-	
-	if (!contBar)
-		SetSheetFrame(0);
+	symbolSprite.setColor(Color::Transparent);
 }
 
 void ScoreBar::SetBarPos(float xDiff)
 {
-	int f = 0;
-	if (contBar)
-		f = 1;
-	IntRect ir = parent->ts_scoreBar->GetSubRect(f);
 	int rowHeight = 100;
 	xDiffPos = xDiff;
 
-	VertexArray &scoreBarVA = parent->scoreBarVA;
-	VertexArray &scoreSheetVA = parent->scoreSheetVA;
-	VertexArray &scoreSymbolsVA = parent->scoreSymbolsVA;
-	Vector2f &basePos = parent->basePos;
-
-	scoreBarVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
-	scoreBarVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
-	scoreBarVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
-	scoreBarVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
-
-	if (row < ScoreDisplay::NUM_BARS)
-	{
-		scoreSheetVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
-		scoreSheetVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
-		scoreSheetVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
-		scoreSheetVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
-
-		scoreSymbolsVA[row * 4 + 0].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight);
-		scoreSymbolsVA[row * 4 + 1].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight);
-		scoreSymbolsVA[row * 4 + 2].position = Vector2f(basePos.x + xDiff + ir.width, basePos.y + row * rowHeight + ir.height);
-		scoreSymbolsVA[row * 4 + 3].position = Vector2f(basePos.x + xDiff, basePos.y + row * rowHeight + ir.height);
-	}
-}
-
-void ScoreBar::ClearSheet()
-{
-	/*scoreSheetVA[ row * 4 + 0 ].texCoords = Vector2f( ir.left, ir.top );
-	scoreSheetVA[ row * 4 + 1 ].texCoords = Vector2f( ir.left + ir.width, ir.top );
-	scoreSheetVA[ row * 4 + 2 ].texCoords = Vector2f( ir.left + ir.width, ir.top + ir.height );
-	scoreSheetVA[ row * 4 + 3 ].texCoords = Vector2f( ir.left, ir.top + ir.height );*/
-}
-
-void ScoreBar::SetSheetFrame(int frame)
-{
-	VertexArray &scoreSheetVA = parent->scoreSheetVA;
-	Tileset *ts_scoreSheet = parent->ts_scoreSheet;
-	IntRect ir = ts_scoreSheet->GetSubRect(frame);
-	scoreSheetVA[row * 4 + 0].texCoords = Vector2f(ir.left, ir.top);
-	scoreSheetVA[row * 4 + 1].texCoords = Vector2f(ir.left + ir.width, ir.top);
-	scoreSheetVA[row * 4 + 2].texCoords = Vector2f(ir.left + ir.width, ir.top + ir.height);
-	scoreSheetVA[row * 4 + 3].texCoords = Vector2f(ir.left, ir.top + ir.height);
-}
-
-void ScoreBar::SetSymbolTransparency(float f)
-{
-	int n = floor(f * 255.0 + .5);
-	VertexArray &scoreSymbolsVA = parent->scoreSymbolsVA;
-	scoreSymbolsVA[row * 4 + 0].color = Color(255, 255, 255, n);
-	scoreSymbolsVA[row * 4 + 1].color = Color(255, 255, 255, n);
-	scoreSymbolsVA[row * 4 + 2].color = Color(255, 255, 255, n);
-	scoreSymbolsVA[row * 4 + 3].color = Color(255, 255, 255, n);
-
+	Vector2f newPos(parent->basePos.x + xDiffPos, parent->basePos.y + row * rowHeight);
+	barSprite.setPosition(newPos);
+	symbolSprite.setPosition(newPos);
+	text.setPosition(newPos + Vector2f(150, 20));
 }
 
 void ScoreBar::Update()
 {
-	switch (state)
+	if (frame == stateLength[state])
 	{
-	case NONE:
-	{
-		break;
-	}
-	case POP_OUT:
-	{
-		int popoutFrames = 30;
-		if (frame == popoutFrames + 1)
+		frame = 0;
+		switch (state)
 		{
-			if (contBar)
+		case NONE:
+			break;
+		case POP_OUT:
+			if (row < parent->NUM_BARS - 1)
 			{
-				state = SHEET_DISPLAY;
+				parent->PopOutBar(row + 1);
 			}
 			else
 			{
-				state = SHEET_APPEAR;
+				parent->PopOutSelectBars();
 			}
-			
-			frame = 0;
+			state = SHEET_APPEAR;
 			break;
-		}
-		else if (frame == popoutFrames)
-		{
-			if (row < parent->NUM_BARS)
-			{
-				parent->bars[row + 1]->state = ScoreBar::POP_OUT;
-				parent->bars[row + 1]->frame = 0;
-			}
-		}
-		++frame;
-
-		break;
-	}
-	case SHEET_APPEAR:
-	{
-		if (frame == 10)
-		{
+		case SHEET_APPEAR:
 			state = SYMBOL_DISPLAY;
-			frame = 0;
-
-			if (row == 0)
-			{
-				int rowHeight = 100;
-				Vector2f basePos = parent->basePos + Vector2f(0, rowHeight * row)
-					+ Vector2f(32, 20) + Vector2f(-parent->ts_scoreBar->tileWidth + 80, 0);
-				parent->time.setPosition(basePos);
-			}
-			else if (row == 1)
-			{
-				int rowHeight = 100;
-				Vector2f basePos = parent->basePos + Vector2f(0, rowHeight * row)
-					+ Vector2f(32, 20) + Vector2f(-parent->ts_scoreBar->tileWidth + 80, 0);
-				parent->keys.setPosition(basePos);
-				
-			}
 			break;
-		}
-
-		++frame;
-		break;
-	}
-	case SYMBOL_DISPLAY:
-	{
-		if (frame == 31)
-		{
+		case SYMBOL_DISPLAY:
 			state = SHEET_DISPLAY;
-			frame = 0;
+			break;
+		case SHEET_DISPLAY:
+			break;
+		case RETRACT:
+			state = NONE;
 			break;
 		}
-		++frame;
-		break;
-	}
-	case SHEET_DISPLAY:
-	{
-		break;
-	}
-	case RETRACT:
-	{
-		if (frame == 30)
-		{
-			state = NONE;
-			frame = 0;
-			//active = false;
-		}
-
-		++frame;
-		break;
-	}
 	}
 
 	switch (state)
@@ -362,35 +300,32 @@ void ScoreBar::Update()
 	}
 	case POP_OUT:
 	{
-		int popoutFrames = 30;
 		CubicBezier bez(0, 0, 1, 1);
-		float z = bez.GetValue((double)frame / popoutFrames);
+		float z = bez.GetValue((double)frame / (stateLength[POP_OUT] - 1 ));
 
 		SetBarPos(-384.f * z);
+
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(0));
 
 		break;
 	}
 	case SHEET_APPEAR:
 	{
-		if( !contBar )
-			SetSheetFrame(frame);
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(frame));
 		break;
 	}
 	case SYMBOL_DISPLAY:
 	{
-		if (!contBar)
+		//if (!contBar)
 		{
-
-
 			int dispFrames = 30;
 			CubicBezier bez(0, 0, 1, 1);
 			float z = bez.GetValue((double)frame / dispFrames);
-			SetSymbolTransparency(z);
-
-			if (row == 0)
-			{
-
-			}
+			symbolSprite.setColor(Color(255, 255, 255, z * 255.f));
+			
+			Color c = textColor;
+			c.a = z * 255.f;
+			text.setFillColor(c);
 		}
 		break;
 	}
@@ -408,4 +343,146 @@ void ScoreBar::Update()
 		break;
 	}
 	}
+
+	++frame;
+}
+
+void ScoreBar::Draw(sf::RenderTarget *target)
+{
+	target->draw(barSprite);
+
+	if (state == SYMBOL_DISPLAY || state == SHEET_DISPLAY || state == RETRACT)
+	{
+		target->draw(symbolSprite);
+		target->draw(text);
+	}
+	
+}
+
+void ScoreBar::SetText(const std::string &str,
+	sf::Color c)
+{
+	textColor = c;
+	text.setString(str);
+	text.setFillColor(textColor);
+}
+
+void ScoreBar::PopOut()
+{
+	Reset();
+	state = POP_OUT;
+	frame = 0;
+}
+
+void ScoreBar::Retract()
+{
+	state = RETRACT;
+	frame = 0;
+}
+
+
+
+
+
+SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
+	:row(p_row), parent(p_parent)
+{
+	barSprite.setTexture(*parent->ts_score->texture);
+	barSprite.setTextureRect(parent->ts_score->GetSubRect(15 + row));
+	//buttonIconSprite.setTexture(*parent->ts_score->texture);
+
+	stateLength[NONE] = 1;
+	stateLength[POP_OUT] = 30;
+	stateLength[DISPLAY] = 1;
+	stateLength[RETRACT] = 30;
+
+	Reset();
+}
+
+void SelectBar::Reset()
+{
+	SetBarPos(0);
+	state = NONE;
+	frame = 0;
+}
+
+void SelectBar::SetBarPos(float xDiff)
+{
+	int rowHeight = 100;
+	xDiffPos = xDiff;
+
+	Vector2f newPos(parent->basePos.x + xDiffPos, 
+		parent->basePos.y + row * rowHeight + parent->selectOffset);
+	barSprite.setPosition(newPos);
+}
+
+void SelectBar::Update()
+{
+	if (frame == stateLength[state])
+	{
+		frame = 0;
+		switch (state)
+		{
+		case NONE:
+			break;
+		case POP_OUT:
+			state = DISPLAY;
+			break;
+		case DISPLAY:
+			break;
+		case RETRACT:
+			state = NONE;
+			break;
+		}
+	}
+
+	switch (state)
+	{
+	case NONE:
+	{
+		break;
+	}
+	case POP_OUT:
+	{
+		CubicBezier bez(0, 0, 1, 1);
+		float z = bez.GetValue((double)frame / (stateLength[POP_OUT] - 1));
+
+		SetBarPos(-384.f * z);
+		break;
+	}
+	case DISPLAY:
+	{
+		break;
+	}
+	case RETRACT:
+	{
+		int retractFrames = 30;
+		CubicBezier bez(0, 0, 1, 1);
+		float z = bez.GetValue((double)frame / retractFrames);
+
+		SetBarPos(-384 * (1 - z));
+		break;
+	}
+	}
+
+	++frame;
+}
+
+void SelectBar::Draw(sf::RenderTarget *target)
+{
+	target->draw(barSprite);
+	//target->draw(buttonIconSprite);
+}
+
+void SelectBar::PopOut()
+{
+	Reset();
+	state = POP_OUT;
+	frame = 0;
+}
+
+void SelectBar::Retract()
+{
+	state = RETRACT;
+	frame = 0;
 }

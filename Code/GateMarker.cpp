@@ -21,9 +21,7 @@ GateMarker::GateMarker( GateMarkerGroup *g, sf::Vertex *p_quad)
 	numText.setCharacterSize(32);
 	numText.setFont(*group->font);
 
-
-	SetRectColor(quad, Color::Green);
-	group->ts_gateMarker->SetQuadSubRect(quad, 0);
+	group->ts_gateMarker->SetQuadSubRect(quad, 1);
 
 	currInfo = NULL;
 
@@ -128,18 +126,17 @@ void GateMarker::Update( Camera *cam )
 	}
 
 	Session *sess = Session::GetSession();
-	Color testColor;
+
+	int tile = 0;
 	if (sess->GetPlayer(0)->numKeysHeld >= currGate->numToOpen)
 	{
-		testColor = Color::Green;
+		tile = 1;
 	}
 	else
 	{
-		testColor = Color::Red;
+		tile = 2;
 	}
-
-	testColor.a = alpha;
-	SetRectColor(quad, testColor);
+	group->ts_gateMarker->SetQuadSubRect(quad, tile);
 
 	Color textColor = Color::Black;
 	textColor.a = alpha;
@@ -226,7 +223,7 @@ GateMarkerGroup::GateMarkerGroup(int p_maxGates)
 
 	Session *sess = Session::GetSession();
 
-	ts_gateMarker = sess->GetSizedTileset("HUD/gatemarker_100x30.png");
+	ts_gateMarker = sess->GetSizedTileset("HUD/gate_arrow_128x32.png");
 	font = &sess->mainMenu->arial;
 	fadeInFrames = 20;
 	fadeOutFrames = 20;

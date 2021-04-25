@@ -143,7 +143,6 @@ void RaceFightHUD::ScorePoint(RaceFightHUD::PlayerColor pc)
 	case PURPLE:
 		break;
 	}
-
 }
 
 AdventureHUD::AdventureHUD()
