@@ -692,6 +692,16 @@ int SaveFile::GetBestFramesLevel(int w, int s, int m)
 	return -1;
 }
 
+int SaveFile::GetBestFramesLevel(int index)
+{
+	if (adventureFile->GetMap(index).Exists())
+	{
+		return levelScores[index].bestFramesToBeat;
+	}
+
+	return -1;
+}
+
 
 int SaveFile::GetWorldStart(int w)
 {

@@ -285,6 +285,7 @@ struct SaveFile
 	int GetBestFramesWorld(int w);
 	int GetBestFramesSector(int w, int s);
 	int GetBestFramesLevel(int w, int s, int m);
+	int GetBestFramesLevel(int index);
 
 	bool HasNewShards();
 	bool HasUpgrade(int pType);

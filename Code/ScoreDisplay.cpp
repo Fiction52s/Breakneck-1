@@ -2,6 +2,9 @@
 #include "Session.h"
 #include "Tileset.h"
 #include "MainMenu.h"
+#include "GameSession.h"
+#include "SaveFile.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
@@ -25,9 +28,9 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 		selectBars[i] = new SelectBar(i, this);
 	}
 
-	bars[0]->SetText("hello", Color::Black);
-	bars[1]->SetText("hello", Color::Black);
-	bars[2]->SetText("hello", Color::Black);
+	//bars[0]->SetText("", Color::White);
+	//bars[1]->SetText("", Color::White);
+	//bars[2]->SetText("", Color::White);
 
 
 	selectOffset = NUM_BARS * 100 + 20;
@@ -372,6 +375,58 @@ void ScoreBar::PopOut()
 	Reset();
 	state = POP_OUT;
 	frame = 0;
+
+	GameSession *game = GameSession::GetSession();
+	if (row == 0)
+	{
+		if (game != NULL && game->saveFile != NULL)
+		{
+			int recordScore = 
+				game->saveFile->GetBestFramesLevel(game->level->index);
+
+			if (recordScore > 0)
+			{
+				SetText(GetTimeStr(recordScore),
+					Color::White);
+			}
+			else
+			{
+				SetText("-----", Color::White);
+			}
+		}
+		else
+		{
+			SetText("-----", Color::White);
+		}
+	}
+	else if (row == 1)
+	{
+		if( game != NULL )
+		{
+			SetText(GetTimeStr(game->totalFramesBeforeGoal), 
+				Color::White);
+		}
+	}
+	else if( row == 2 )
+	{
+		Session *sess = parent->sess;
+
+		int total = sess->mapHeader->numShards;
+		int currCaptured = 0;
+		for (auto it = sess->mapHeader->shardInfoVec.begin();
+			it != sess->mapHeader->shardInfoVec.end(); ++it)
+		{
+			if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
+			{
+				currCaptured++;
+			}
+		}
+
+		stringstream ss;
+		ss << currCaptured << "/" << total;
+		SetText(ss.str(), Color::White );
+		
+	}
 }
 
 void ScoreBar::Retract()
@@ -479,6 +534,7 @@ void SelectBar::PopOut()
 	Reset();
 	state = POP_OUT;
 	frame = 0;
+
 }
 
 void SelectBar::Retract()
