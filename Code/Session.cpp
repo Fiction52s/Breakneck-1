@@ -4750,14 +4750,14 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	Vector2f rightCenter(rBound - quadWidth / 2,
 		top + height / 2);
 
-	int extraWidth = 500;
+	int extraWidth = 1000;
 
 	SetRectCenter(blackBorderQuads, quadWidth, height, leftCenter);
-	SetRectCenter(blackBorderQuads + 8, 500, height, leftCenter + Vector2f( -quadWidth / 2 - extraWidth/2,0 ));
+	SetRectCenter(blackBorderQuads + 8, extraWidth, height, leftCenter + Vector2f( -quadWidth / 2 - extraWidth/2,0 ));
 
 
 	SetRectCenter(blackBorderQuads + 4, quadWidth, height, rightCenter);
-	SetRectCenter(blackBorderQuads + 12, 500, height, rightCenter + Vector2f(quadWidth / 2 + extraWidth/2, 0));
+	SetRectCenter(blackBorderQuads + 12, extraWidth, height, rightCenter + Vector2f(quadWidth / 2 + extraWidth/2, 0));
 
 	/*SetRectCenter(blackBorderQuads + 8, extra, height, Vector2f(lBound - extra / 2,
 		top + height / 2));
@@ -5685,7 +5685,8 @@ void Session::CleanupGoalFlow()
 
 void Session::FlowHandler::HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion)
 {
-	if (edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE)
+	if (edge->edgeType == Edge::CLOSED_GATE || edge->edgeType == Edge::OPEN_GATE
+		|| edge->edgeType == Edge::BORDER || edge->edgeType == Edge::BARRIER )
 	{
 		return;
 	}
