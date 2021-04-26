@@ -17,7 +17,9 @@ GateMarker::GateMarker( GateMarkerGroup *g, sf::Vertex *p_quad)
 	group = g;
 	quad = p_quad;
 	
-	numText.setFillColor(Color::Black);
+	numText.setFillColor(Color::White);
+	numText.setOutlineColor(Color::Black);
+	numText.setOutlineThickness(2);
 	numText.setCharacterSize(32);
 	numText.setFont(*group->font);
 
@@ -138,7 +140,8 @@ void GateMarker::Update( Camera *cam )
 	}
 	group->ts_gateMarker->SetQuadSubRect(quad, tile);
 
-	Color textColor = Color::Black;
+	//Color textColor = Color::Black;
+	Color textColor = numText.getFillColor();
 	textColor.a = alpha;
 	numText.setFillColor(textColor);
 

@@ -2094,6 +2094,10 @@ int GameSession::Run()
 	currSuperPlayer = NULL;
 	gameClock.restart();
 
+	//testing
+	/*cam.Set(Vector2f(GetPlayerPos()), 1.0, 0);
+	cam.EaseOutOfManual(60);*/
+
 	while( !quit )
 	{
 		switchGameState = false;

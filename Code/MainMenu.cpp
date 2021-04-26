@@ -636,15 +636,6 @@ MainMenu *MainMenu::GetInstance()
 
 void MainMenu::Init()
 {	
-	//GCC::USBDriver driver;
-	
-	
-	//controllers[0]
-	/*if (controllers[0].buttons.a)
-	{
-		cout << (int)(controllers[0].axis.left_x) << endl;
-		break;
-	}*/
 	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
 
 	ts_splashScreen = tilesetManager.GetTileset( "Menu/splashscreen_1920x1080.png", 1920, 1080 );
@@ -1487,7 +1478,7 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 		ts_loadBG = NULL;
 	}
 
-	ts_loadBG = tilesetManager.GetSizedTileset(ss.str());
+	ts_loadBG = tilesetManager.GetTileset(ss.str(), 1920, 1080);
 	//ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
 	//ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
 

@@ -32,6 +32,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_energyTri = worldMap->GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
 	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
+	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
 
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
@@ -189,7 +190,6 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 	if (focused)
 	{
-
 		target->draw(sectorNameText);
 		if (unlocked)
 		{

@@ -64,6 +64,7 @@ struct MapSector
 	sf::Vertex statsBG[4];
 	sf::Vertex sectorStatsBG[4];
 	sf::Vertex lockedOverlayQuad[4];
+	sf::Vertex sectorArrowQuads[4 * 2];
 
 	sf::Sprite *nodes;
 	sf::Sprite nodeExplodeSpr;
@@ -82,6 +83,7 @@ struct MapSector
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
 	Tileset *ts_shards;
+	Tileset *ts_sectorArrows;
 
 	Tileset *ts_mapPreview;
 

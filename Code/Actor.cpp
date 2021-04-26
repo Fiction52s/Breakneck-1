@@ -4466,6 +4466,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	
+
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
@@ -4711,7 +4713,6 @@ void Actor::Respawn()
 	pauseBufferedDash = false;
 
 	oldAction = action;
-
 
 	//some v
 	//doubleJumpBufferedAttack
