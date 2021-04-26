@@ -20,11 +20,11 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	rockSprite.setTexture(*ts_rock->texture);
 	rockSprite.setOrigin(rockSprite.getLocalBounds().width / 2, 0);
-	rockSprite.setPosition(960, 540 + 399);
+	rockSprite.setPosition(960, 540 + 399 + 30);
 
 	kinState = K_STAND;
 	kinFrame = 0;
-	kinSprite.setPosition(960, 540 + 300);
+	kinSprite.setPosition(960, 540 + 300 + 30);
 
 	
 
@@ -124,8 +124,6 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	{
 		target->draw(kinSprite);
 	}
-
-	target->draw(nodeHighlight);
 }
 
 void MapSelector::ReturnFromMap()
@@ -205,8 +203,6 @@ bool MapSelector::Update(ControllerState &curr,
 
 	FocusedSector()->UpdateBG();
 
-	UpdateHighlight();
-
 
 	if (kinState == K_STAND)
 	{
@@ -257,38 +253,4 @@ bool MapSelector::Update(ControllerState &curr,
 	++frame;
 
 	return true;
-}
-
-void MapSelector::UpdateHighlight()
-{
-	MapSector *currSec = FocusedSector();
-	nodeHighlight.setPosition(currSec->GetSelectedNodePos());
-	int n = currSec->GetSelectedNodeSubIndex();
-
-
-	int bossFightT = currSec->GetSelectedNodeBossFightType();//sec->levels[saSelector->currIndex].bossFightType;
-
-	switch (bossFightT)
-	{
-	case 0:
-		nodeHighlight.setTexture(*ts_node->texture);
-		nodeHighlight.setTextureRect(ts_node->GetSubRect(9 + (n % 3)));
-		break;
-	case 1:
-		nodeHighlight.setTexture(*ts_bossFight[0]->texture);
-		nodeHighlight.setTextureRect(ts_bossFight[0]->GetSubRect(6));
-		break;
-	}
-
-	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
-
-	int breathe = 60;
-	float trans = (float)(frame%breathe) / (breathe / 2);
-	if (trans > 1)
-	{
-		trans = 2.f - trans;
-
-	}
-
-	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
 }

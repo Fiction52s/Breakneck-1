@@ -1467,7 +1467,7 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 void MainMenu::SetModeLoadingMap( int wIndex )
 {
 	SetMode( LOADINGMAP );
-	wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
+	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 
 	stringstream ss;
 	ss << "Menu/Load/load_w" << (wIndex + 1) << ".png";//"_1.png";

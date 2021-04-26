@@ -26,7 +26,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
 	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
-	SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
+	//SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
 
 	ts_energyCircle = worldMap->GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
 	ts_energyTri = worldMap->GetTileset("WorldMap/node_energy_tri_80x80.png", 80, 80);
@@ -57,17 +57,17 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 		
 	shardsCollectedText.setFont(mainMenu->arial);
-	completionPercentText.setFont(mainMenu->arial);
+	//completionPercentText.setFont(mainMenu->arial);
 
 	shardsCollectedText.setCharacterSize(40);
 	shardsCollectedText.setFillColor(Color::White);
 
-	completionPercentText.setCharacterSize(40);
-	completionPercentText.setFillColor(Color::White);
+	//completionPercentText.setCharacterSize(40);
+	//completionPercentText.setFillColor(Color::White);
 
-	levelPercentCompleteText.setFillColor(Color::White);
-	levelPercentCompleteText.setCharacterSize(40);
-	levelPercentCompleteText.setFont(mainMenu->arial);
+	//levelPercentCompleteText.setFillColor(Color::White);
+	//levelPercentCompleteText.setCharacterSize(40);
+	//levelPercentCompleteText.setFont(mainMenu->arial);
 
 	
 	int waitFrames[3] = { 30, 15, 10 };
@@ -118,8 +118,13 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	requirementText.setFillColor(Color::White);
 	requirementText.setString(to_string(numRequiredRunes));
 
+	SetRectCenter(sectorArrowQuads, 64, 64, Vector2f(960 - 600, 500));
+	SetRectCenter(sectorArrowQuads+4, 64, 64, Vector2f(960 + 600, 500));
 
-	
+	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, 0);
+	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads+4, 0, true );
+
+	mapPreviewSpr.setPosition(960, 500);
 
 	//ts_mapPreview = worldMap->GetSizedTileset()
 
@@ -193,10 +198,34 @@ void MapSector::Draw(sf::RenderTarget *target)
 		target->draw(sectorNameText);
 		if (unlocked)
 		{
-			DrawStats(target);
-			DrawLevelStats(target);
+			target->draw(endSpr);
+			if (ms->state == MapSelector::S_SECTORSELECT)
+			{
+				DrawStats(target);
+				target->draw(sectorArrowQuads, 2 * 4, sf::Quads, ts_sectorArrows->texture);
+			}
+			else if (ms->state == MapSelector::S_MAPSELECT)
+			{
+				for (int i = 0; i < numLevels; ++i)
+				{
+					target->draw(nodes[i]);
+				}
 
-			target->draw(mapPreviewSpr);
+				target->draw(nodeHighlight);
+
+				target->draw(selectorSprite);
+
+				
+
+				if (state == LEVELJUSTCOMPLETE)
+				{
+					target->draw(nodeExplodeSpr);
+				}
+
+				DrawLevelStats(target);
+
+				target->draw(mapPreviewSpr);
+			}
 		}
 		else
 		{
@@ -204,22 +233,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 		}
 	}
 
-	if (unlocked)
-	{
-		for (int i = 0; i < numLevels; ++i)
-		{
-			target->draw(nodes[i]);
-		}
-
-		target->draw(selectorSprite);
-
-		target->draw(endSpr);
-
-		if (state == LEVELJUSTCOMPLETE)
-		{
-			target->draw(nodeExplodeSpr);
-		}
-	}
+	
 }
 
 void MapSector::DrawLevelStats(sf::RenderTarget *target)
@@ -234,7 +248,7 @@ void MapSector::SetXCenter(float x)
 	xCenter = x;
 
 	//left = Vector2f(xCenter - 600, 400);
-	left = Vector2f(xCenter, 170);//150
+	left = Vector2f(xCenter, 170 + 50);//150
 	int numLevelsPlus = numLevels + 0;
 	if (numLevelsPlus % 2 == 0)
 	{
@@ -248,8 +262,8 @@ void MapSector::SetXCenter(float x)
 
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 20);
-	Vector2f sectorStatsCenter = Vector2f(x + 150, ms->sectorCenter.y - 370);
-	Vector2f sectorStatsSize(256, 256);
+	Vector2f sectorStatsCenter = Vector2f(x, 500);//ms->sectorCenter.y - 370);
+	Vector2f sectorStatsSize(912, 492);
 
 	sf::FloatRect sectorNameGlobalBounds = sectorNameText.getGlobalBounds();
 	Vector2f sectorNameTopRight(sectorNameGlobalBounds.left + sectorNameGlobalBounds.width, sectorNameGlobalBounds.top + sectorNameGlobalBounds.height / 2);
@@ -261,6 +275,9 @@ void MapSector::SetXCenter(float x)
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
 	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f(levelStatsSize.x / 2, levelStatsSize.y / 2);
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
+	SetRectColor(sectorStatsBG, Color(0, 0, 0, 100));
+
+
 	SetRectCenter(levelBG, 1200, 400, Vector2f(x, ms->sectorCenter.y));
 	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter);
 
@@ -271,7 +288,7 @@ void MapSector::SetXCenter(float x)
 	requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
 	shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
-	completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
+	//completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
 
 	Vector2f shardGridOffset = Vector2f(20, 20);
 	Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
@@ -287,14 +304,15 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
 
-	levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
+	//levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
 
 	UpdateNodePosition();
 }
 
 void MapSector::DrawStats(sf::RenderTarget *target)
 {
-	target->draw(completionPercentText);
+	target->draw(sectorStatsBG, 4, sf::Quads);
+	//target->draw(completionPercentText);
 	target->draw(shardsCollectedText);
 }
 
@@ -537,6 +555,7 @@ bool MapSector::Update(ControllerState &curr,
 			{
 				mapSASelector->currIndex = unlockedLevelCount - 1;
 				UpdateLevelStats();
+				UpdateMapPreview();
 				//saSelector->currIndex = unlockedIndex + 1;
 			}
 		}
@@ -545,7 +564,7 @@ bool MapSector::Update(ControllerState &curr,
 			//paths[unlockedIndex].setTextureRect(ms->ts_path->GetSubRect(ff));
 			if (stateFrame == 0)
 			{
-				nodeExplodeSpr.setPosition(ms->nodeHighlight.getPosition());
+				nodeExplodeSpr.setPosition(nodeHighlight.getPosition());
 			}
 			nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(ff));
 		}
@@ -571,6 +590,7 @@ bool MapSector::Update(ControllerState &curr,
 		}
 	}
 
+	UpdateHighlight();
 	//UpdateSelectorSprite();
 
 	++frame;
@@ -620,7 +640,7 @@ void MapSector::UpdateMapPreview()
 	ts_mapPreview = ms->worldMap->GetTileset(previewPath, 912, 492);
 	mapPreviewSpr.setTexture(*ts_mapPreview->texture);
 	mapPreviewSpr.setOrigin(mapPreviewSpr.getLocalBounds().width / 2, mapPreviewSpr.getLocalBounds().height / 2);
-	mapPreviewSpr.setPosition(960, 500);
+	mapPreviewSpr.setPosition(960, 500 + 50);
 }
 
 int MapSector::GetNodeSubIndex(int node)
@@ -786,4 +806,37 @@ void MapSector::Init(SaveFile *p_saveFile)
 	//	+ Vector2f(0, 50));
 
 	mapSASelector->SetTotalSize(unlockedLevelCount);
+}
+
+void MapSector::UpdateHighlight()
+{
+	nodeHighlight.setPosition(GetSelectedNodePos());
+	int n = GetSelectedNodeSubIndex();
+
+
+	int bossFightT = GetSelectedNodeBossFightType();//sec->levels[saSelector->currIndex].bossFightType;
+
+	switch (bossFightT)
+	{
+	case 0:
+		nodeHighlight.setTexture(*ms->ts_node->texture);
+		nodeHighlight.setTextureRect(ms->ts_node->GetSubRect(9 + (n % 3)));
+		break;
+	case 1:
+		nodeHighlight.setTexture(*ms->ts_bossFight[0]->texture);
+		nodeHighlight.setTextureRect(ms->ts_bossFight[0]->GetSubRect(6));
+		break;
+	}
+
+	nodeHighlight.setOrigin(nodeHighlight.getLocalBounds().width / 2, nodeHighlight.getLocalBounds().height / 2);
+
+	int breathe = 60;
+	float trans = (float)(frame%breathe) / (breathe / 2);
+	if (trans > 1)
+	{
+		trans = 2.f - trans;
+
+	}
+
+	nodeHighlight.setColor(Color(255, 255, 255, 255 * trans));
 }

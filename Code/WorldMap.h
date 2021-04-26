@@ -70,11 +70,11 @@ struct MapSector
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
 	sf::Sprite mapPreviewSpr;
+	sf::Sprite nodeHighlight;
 
 
 	sf::Text shardsCollectedText;
-	sf::Text completionPercentText;
-	sf::Text levelPercentCompleteText;
+	sf::Text levelsBeatenText;
 	sf::Text requirementText;
 	sf::Text sectorNameText;
 
@@ -101,6 +101,7 @@ struct MapSector
 		MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
+	void UpdateHighlight();
 	bool IsFocused();
 	void RunSelectedMap();
 	void Init(SaveFile *sf);
@@ -153,7 +154,7 @@ struct MapSelector
 	WorldMap *worldMap;
 
 
-	sf::Sprite nodeHighlight;
+	
 	sf::Sprite kinSprite;
 	sf::Sprite bottomBG;
 	sf::Sprite thumbnailBG;
@@ -186,7 +187,6 @@ struct MapSelector
 	MapSelector( WorldMap *worldMap, 
 		World *world, MainMenu *mm, sf::Vector2f &pos );
 	void ReturnFromMap();
-	void UpdateHighlight();
 	void RunSelectedMap();
 	void Init();
 	~MapSelector();
