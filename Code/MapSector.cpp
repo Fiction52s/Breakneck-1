@@ -262,14 +262,15 @@ void MapSector::SetXCenter(float x)
 
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 20);
-	Vector2f sectorStatsCenter = Vector2f(x, 500);//ms->sectorCenter.y - 370);
-	Vector2f sectorStatsSize(912, 492);
+	Vector2f sectorStatsSize(386, 192);
+	Vector2f sectorStatsCenter = Vector2f(x, mapPreviewSpr.getPosition().y - sectorStatsSize.y/2);//ms->sectorCenter.y - 370);
+	
 
 	sf::FloatRect sectorNameGlobalBounds = sectorNameText.getGlobalBounds();
 	Vector2f sectorNameTopRight(sectorNameGlobalBounds.left + sectorNameGlobalBounds.width, sectorNameGlobalBounds.top + sectorNameGlobalBounds.height / 2);
 
 	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
-	endSpr.setPosition(sectorNameTopRight + Vector2f( 70, 0 ) );
+	endSpr.setPosition(sectorNameTopRight + Vector2f( 70 + 15, 0 ) );
 
 	Vector2f levelStatsSize(512, 256);
 	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);

@@ -21,6 +21,28 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	worldSelector = new WorldSelector(p_mainMenu);
 
+	SetRectColor(infoQuadBG, Color(0, 0, 0, 100));
+	SetRectColor(infoNameBG, Color(0, 0, 0, 200));
+
+	Vector2f infoQuadPos(1416, 292);
+	SetRectTopLeft(infoQuadBG, 256, 192, infoQuadPos);
+	SetRectTopLeft(infoNameBG, 256, 64, infoQuadPos + Vector2f( 0, -64 ));
+
+	sectorsCompleteText.setFillColor(Color::White);
+	sectorsCompleteText.setCharacterSize(36);
+	sectorsCompleteText.setFont(mainMenu->arial);
+	sectorsCompleteText.setPosition( infoQuadPos + Vector2f(10, 10));
+	sectorsCompleteText.setString("Sectors: 0/0");
+
+	worldNameText.setFillColor(Color::White);
+	worldNameText.setCharacterSize(40);
+	worldNameText.setFont(mainMenu->arial);
+	worldNameText.setPosition(infoQuadPos + Vector2f(256/2, 10) + Vector2f( 0, -64 ));
+	worldNameText.setString("World 1");
+	FloatRect worldNameTextLocalBounds = worldNameText.getLocalBounds();
+	worldNameText.setOrigin(worldNameTextLocalBounds.width / 2
+		+ worldNameTextLocalBounds.left, 0);
+
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 
 	ts_colonyActive[0] = GetTileset("WorldMap/w1_select.png", 1920, 1080);
@@ -889,7 +911,7 @@ void WorldMap::Draw( RenderTarget *target )
 
 	//rt->draw(colonySelectSpr);
 	//rt->draw(colonySelectSprZoomed);
-	if (state != COLONY)
+	if (state != COLONY )
 	{
 		worldSelector->Draw(rt);
 	}
@@ -920,7 +942,14 @@ void WorldMap::Draw( RenderTarget *target )
 		}
 	}
 
-	
+	if (state != COLONY && state != PlANET_TO_COLONY
+		&& state != COLONY_TO_PLANET )
+	{
+		rt->draw(infoQuadBG, 4, sf::Quads);
+		rt->draw(infoNameBG, 4, sf::Quads);
+		rt->draw(sectorsCompleteText);
+		rt->draw(worldNameText);
+	}
 
 	//rt->draw(asteroidSpr[2]);
 	//asteroidSpr[2].setScale(5.f, 5.f);

@@ -259,6 +259,11 @@ struct WorldMap : TilesetManager
 	TreeNode **dirNode;
 	TreeNode *entries;
 
+	sf::Vertex infoNameBG[4];
+	sf::Vertex infoQuadBG[4];
+	sf::Text sectorsCompleteText;
+	sf::Text worldNameText;
+
 	sf::Vertex asteroidQuads[4 * 4];
 	sf::Vertex worldActiveQuads[MAX_NUM_WORLDS * 4];
 	sf::Vertex worldActiveQuadsZoomed[MAX_NUM_WORLDS * 4];
