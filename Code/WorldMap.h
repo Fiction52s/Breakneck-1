@@ -73,6 +73,7 @@ struct MapSector
 	sf::Sprite nodeHighlight;
 	sf::Sprite mapShardIconSpr;
 	sf::Sprite mapBestTimeIconSpr;
+	sf::Sprite sectorShardIconSpr;
 
 	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
@@ -80,6 +81,7 @@ struct MapSector
 	sf::Text requirementText;
 	sf::Text sectorNameText;
 	sf::Text numLevelsBeatenText;
+	sf::Text sectorShardsCollectedText;
 
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;

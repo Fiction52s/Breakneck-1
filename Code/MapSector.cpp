@@ -75,6 +75,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	numLevelsBeatenText.setCharacterSize(40);
 	numLevelsBeatenText.setFillColor(Color::White);
 
+	sectorShardsCollectedText.setFont(mainMenu->arial);
+	sectorShardsCollectedText.setCharacterSize(40);
+	sectorShardsCollectedText.setFillColor(Color::White);
+
 	
 
 	//completionPercentText.setCharacterSize(40);
@@ -303,6 +307,8 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f sectorStatsTopLeft = sectorStatsCenter - sectorStatsSize / 2.f;
 	numLevelsBeatenText.setPosition(sectorStatsTopLeft + Vector2f(10, 10));
+	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(0, 96));
+	sectorShardsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96));
 
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
 	SetRectColor(sectorStatsBG, Color(0, 0, 0, 100));
@@ -349,6 +355,8 @@ void MapSector::DrawStats(sf::RenderTarget *target)
 {
 	target->draw(sectorStatsBG, 4, sf::Quads);
 	target->draw(numLevelsBeatenText);
+	target->draw(sectorShardIconSpr);
+	target->draw(sectorShardsCollectedText);
 	//target->draw(completionPercentText);
 	//target->draw(shardsCollectedText);
 }
@@ -375,6 +383,33 @@ void MapSector::UpdateStats()
 	ss << "Levels: " << numLevelsCompleted << "/" << numLevels;
 
 	numLevelsBeatenText.setString(ss.str());
+
+	int totalShards = 0;
+	int numCaptured = 0;
+
+	int numShardsPerLevel = 0;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		AdventureMapHeaderInfo &amhi = 
+			adventureFile.GetMapHeaderInfo(sec->GetLevelIndex(i));
+		numShardsPerLevel = amhi.shardInfoVec.size();
+		totalShards += numShardsPerLevel;
+		for (int j = 0; j < numShardsPerLevel; ++j)
+		{
+			if (saveFile->ShardIsCaptured(amhi.shardInfoVec[j].GetTrueIndex()))
+			{
+				++numCaptured;
+			}
+		}
+
+	}
+	
+	ss.str("");
+	ss.clear();
+
+	ss << numCaptured << "/" << totalShards;
+
+	sectorShardsCollectedText.setString(ss.str());
 
 	/*int numTotalShards = adventureFile.GetAdventureSector(sec).hasShardField.GetOnCount();
 	int numShardsCaptured = saveSector->GetNumShardsCaptured();
