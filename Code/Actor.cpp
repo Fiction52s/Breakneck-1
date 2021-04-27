@@ -7457,10 +7457,17 @@ void Actor::HandleWaitingScoreDisplay()
 			if (owner != NULL)
 			{
 				SaveFile *currFile = sess->mainMenu->GetCurrentProgress();
-				bool levValid = owner->level != NULL && !currFile->IsLevelLastInSector(owner->level);
+				bool levValid = owner->level != NULL; 
 				if (a && owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE && levValid)
 				{
-					owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+					if (currFile->IsLevelLastInSector(owner->level))
+					{
+						owner->resType = GameSession::GameResultType::GR_WIN;
+					}
+					else
+					{
+						owner->resType = GameSession::GameResultType::GR_WINCONTINUE;
+					}
 				}
 				else if (x)
 				{

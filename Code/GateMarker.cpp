@@ -19,7 +19,7 @@ GateMarker::GateMarker( GateMarkerGroup *g, sf::Vertex *p_quad)
 	
 	numText.setFillColor(Color::White);
 	numText.setOutlineColor(Color::Black);
-	numText.setOutlineThickness(2);
+	numText.setOutlineThickness(3);
 	numText.setCharacterSize(32);
 	numText.setFont(*group->font);
 

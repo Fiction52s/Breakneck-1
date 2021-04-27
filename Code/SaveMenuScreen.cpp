@@ -10,46 +10,40 @@ using namespace sf;
 using namespace std;
 
 SaveFileDisplay::SaveFileDisplay(sf::Font &f)
+	:font( f )
 {
 	blankMode = true;
+	fillColor = Color::White;
+	lineColor = Color::Black;
 
-	completedShards.setFont(f);
-	totalTime.setFont(f);
-	totalPercentage.setFont(f);
-	blankText.setFont(f);
+	InitText(capturedShardsText);
+	InitText(totalTime);
+	InitText(completeLevelsText);
+	InitText(blankText);
+	InitText(completedWorldsText);
 
-	completedShards.setCharacterSize(30);
-	totalTime.setCharacterSize(30);
-	totalPercentage.setCharacterSize(30);
-	blankText.setCharacterSize(30);
-
-	Color fillColor = Color::White;
-	Color lineColor = Color::Black;
-
-	completedShards.setFillColor(fillColor);
-	completedShards.setOutlineColor(lineColor);
-	completedShards.setOutlineThickness(3);
-	totalTime.setFillColor(fillColor);
-	totalTime.setOutlineColor(lineColor);
-	totalTime.setOutlineThickness(3);
-	totalPercentage.setFillColor(fillColor);
-	totalPercentage.setOutlineColor(lineColor);
-	totalPercentage.setOutlineThickness(3);
-
-	blankText.setFillColor(fillColor);
-	blankText.setOutlineColor(lineColor);
-	blankText.setOutlineThickness(3);
 	blankText.setString("OPEN SLOT");
+}
+
+void SaveFileDisplay::InitText( sf::Text &text)
+{
+	text.setFont(font);
+	text.setFillColor(fillColor);
+	text.setOutlineColor(lineColor);
+	text.setOutlineThickness(3);
 }
 
 void SaveFileDisplay::SetPosition(Vector2f &pos)
 {
 	Vector2f innerStart = pos + Vector2f(280, 30);
 
-	blankText.setPosition(innerStart);
-	totalPercentage.setPosition(innerStart);
-	totalTime.setPosition(innerStart + Vector2f(0, 100));
-	completedShards.setPosition(innerStart + Vector2f(0, 50));
+
+	blankText.setPosition(innerStart + Vector2f( 0, 50 ));
+	//totalPercentage.setPosition(innerStart);
+	//totalTime.setPosition(innerStart + Vector2f(0, 100));
+	completedWorldsText.setPosition(innerStart);
+	completeLevelsText.setPosition(innerStart + Vector2f(0, 50));
+	capturedShardsText.setPosition(innerStart + Vector2f(0, 100));
 }
 
 void SaveFileDisplay::Draw(sf::RenderTarget *target)
@@ -60,26 +54,40 @@ void SaveFileDisplay::Draw(sf::RenderTarget *target)
 	}
 	else
 	{
-		target->draw(completedShards);
-		target->draw(totalTime);
-		target->draw(totalPercentage);
+		target->draw(completedWorldsText);
+		target->draw(completeLevelsText);
+		target->draw(capturedShardsText);
+		//target->draw(totalTime);
+		
 	}
 }
 
-void SaveFileDisplay::SetValues(SaveFile *sf)
+void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 {
 	if (sf != NULL)
 	{
 		stringstream ss;
-		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
-		completedShards.setString(ss.str());
-		ss.str("");
-		ss << sf->GetTotalMapsBeaten() << " / " << sf->GetTotalMaps() << " Maps completed";//sf->GetCompletionPercentage() << "% Complete";
-		totalPercentage.setString(ss.str());
+
+		int totalWorlds = wm->planet->numWorlds;
+		int numCompleteWorlds = sf->GetNumCompleteWorlds(wm->planet);
+
+		ss << numCompleteWorlds << "/" << totalWorlds << " Worlds completed";
+
+		completedWorldsText.setString(ss.str());
 
 		ss.str("");
+
+		ss << sf->GetTotalMapsBeaten() << " / " << sf->GetTotalMaps() << " Levels completed";//sf->GetCompletionPercentage() << "% Complete";
+		completeLevelsText.setString(ss.str());
+
+		ss.str("");
+
+		ss << sf->GetNumShardsCaptured() << " / " << sf->GetNumShardsTotal() << " Shards collected";
+		capturedShardsText.setString(ss.str());
+		
+		/*ss.str("");
 		ss << "Time: " << sf->GetBestTimeString();
-		totalTime.setString(ss.str());
+		totalTime.setString(ss.str());*/
 		blankMode = false;
 	}
 	else
@@ -162,10 +170,10 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 			assert(0);
 		}*/
 		if( !defaultFiles[i] )
-			fileDisplay[i]->SetValues(files[i]);
+			fileDisplay[i]->SetValues(files[i], mainMenu->worldMap);
 		else
 		{
-			fileDisplay[i]->SetValues(NULL);
+			fileDisplay[i]->SetValues(NULL, NULL);
 		}
 	}
 
@@ -667,11 +675,11 @@ void SaveMenuScreen::Reset()
 	{
 		if (!defaultFiles[i])
 		{
-			fileDisplay[i]->SetValues(files[i]);
+			fileDisplay[i]->SetValues(files[i], mainMenu->worldMap);
 		}
 		else
 		{
-			fileDisplay[i]->SetValues(NULL);
+			fileDisplay[i]->SetValues(NULL, NULL);
 		}
 	}
 	

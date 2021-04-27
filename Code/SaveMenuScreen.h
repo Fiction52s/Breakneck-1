@@ -6,17 +6,25 @@
 
 struct MainMenu;
 struct SaveFile;
+struct WorldMap;
 
 struct SaveFileDisplay
 {
 	SaveFileDisplay(sf::Font &f);
 	void SetPosition(sf::Vector2f &pos);
-	sf::Text completedShards;
+	void InitText(sf::Text &text);
+	sf::Text completedWorldsText;
+	sf::Text completeLevelsText;
+	sf::Text capturedShardsText;
 	sf::Text totalTime;
-	sf::Text totalPercentage;
+	
 	sf::Text blankText;
+	
 	bool blankMode;
-	void SetValues(SaveFile *sf);
+	sf::Color fillColor;
+	sf::Color lineColor;
+	sf::Font &font;
+	void SetValues(SaveFile *sf, WorldMap *wm );
 	void Draw(sf::RenderTarget *target);
 };
 

@@ -195,6 +195,7 @@ bool MapSelector::Update(ControllerState &curr,
 				else
 				{
 					state = S_SECTORSELECT;
+					FocusedSector()->UpdateStats();
 				}
 				break;
 			}

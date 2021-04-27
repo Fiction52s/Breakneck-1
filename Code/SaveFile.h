@@ -304,6 +304,8 @@ struct SaveFile
 	int GetNumShardsCaptured();
 	int GetNumShardsTotal();
 
+	int GetNumCompleteWorlds( Planet *planet );
+
 	bool IsLevelLastInSector( Level *lev );
 
 	bool IsLevelJustBeaten(Level *lev);

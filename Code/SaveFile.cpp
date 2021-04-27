@@ -901,6 +901,20 @@ bool SaveFile::IsLevelLastInSector( Level *lev )
 	return true;
 }
 
+int SaveFile::GetNumCompleteWorlds( Planet *planet )
+{
+	int numComplete = 0;
+	for (int i = 0; i < planet->numWorlds; ++i)
+	{
+		if (IsCompleteWorld(&planet->worlds[i]))
+		{
+			numComplete++;
+		}
+	}
+
+	return numComplete;
+}
+
 void SaveFile::CompleteLevel(Level *lev)
 {
 	int index = lev->index;
