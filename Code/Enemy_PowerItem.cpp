@@ -122,6 +122,8 @@ PowerItem::PowerItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	ts_explodeCreate = NULL;
 	sparklePool = NULL;
 
+	powerSeq = NULL;
+
 	if (!alreadyCollected)
 	{
 		testEmitter = new ShapeEmitter(6, 300);// PI / 2.0, 2 * PI, 1.0, 2.5);

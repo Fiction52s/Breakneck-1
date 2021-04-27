@@ -1079,7 +1079,7 @@ void GameSession::ProcessAllTerrain()
 
 void GameSession::ProcessActor(ActorPtr a)
 {
-	Enemy *enemy = a->GenerateEnemy();
+	Enemy *enemy = a->myEnemy; //enemy already created during loading from file
 
 	const string &typeName = a->type->info.name;
 	if (enemy != NULL)
@@ -1172,6 +1172,7 @@ void GameSession::ProcessActor(ActorPtr a)
 		}
 	}
 
+	a->myEnemy = NULL;
 	delete a; //eventually probably delete these all at once or something
 }
 

@@ -32,16 +32,20 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	sectorsCompleteText.setCharacterSize(36);
 	sectorsCompleteText.setFont(mainMenu->arial);
 	sectorsCompleteText.setPosition( infoQuadPos + Vector2f(10, 10));
-	sectorsCompleteText.setString("Sectors: 0/0");
+
+	shardsCapturedText.setFillColor(Color::White);
+	shardsCapturedText.setCharacterSize(36);
+	shardsCapturedText.setFont(mainMenu->arial);
+	shardsCapturedText.setPosition(infoQuadPos + Vector2f(10, 10 + 60));
+
+	
 
 	worldNameText.setFillColor(Color::White);
 	worldNameText.setCharacterSize(40);
 	worldNameText.setFont(mainMenu->arial);
 	worldNameText.setPosition(infoQuadPos + Vector2f(256/2, 10) + Vector2f( 0, -64 ));
-	worldNameText.setString("World 1");
-	FloatRect worldNameTextLocalBounds = worldNameText.getLocalBounds();
-	worldNameText.setOrigin(worldNameTextLocalBounds.width / 2
-		+ worldNameTextLocalBounds.left, 0);
+	
+	
 
 	ts_colonySelect = GetTileset("WorldMap/w1_select.png", 1920, 1080);
 
@@ -166,35 +170,35 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	entries = NULL;
 	text = NULL;
 	dirNode = NULL;
-	localPaths = NULL;
-	leftBorder = 20;
-	//numTotalEntries = 0;
+localPaths = NULL;
+leftBorder = 20;
+//numTotalEntries = 0;
 
-	currLevelTimeText.setFillColor(Color::White);
-	currLevelTimeText.setCharacterSize(40);
-	currLevelTimeText.setFont(mainMenu->arial);
-	currLevelTimeText.setOrigin(currLevelTimeText.getLocalBounds().left + currLevelTimeText.getLocalBounds().width / 2, 0);
-	currLevelTimeText.setPosition(1300, 200);
-	currLevelTimeText.setString("");
+currLevelTimeText.setFillColor(Color::White);
+currLevelTimeText.setCharacterSize(40);
+currLevelTimeText.setFont(mainMenu->arial);
+currLevelTimeText.setOrigin(currLevelTimeText.getLocalBounds().left + currLevelTimeText.getLocalBounds().width / 2, 0);
+currLevelTimeText.setPosition(1300, 200);
+currLevelTimeText.setString("");
 
-	Reset( NULL );
+Reset(NULL);
 
-	adventureFile.Load("Resources/Adventure", "tadventure");
-	adventureFile.LoadMapHeaders();
-	planet = new Planet(adventureFile);
+adventureFile.Load("Resources/Adventure", "tadventure");
+adventureFile.LoadMapHeaders();
+planet = new Planet(adventureFile);
 
-	int numWorlds = planet->numWorlds;
-	selectors = new MapSelector*[numWorlds];
+int numWorlds = planet->numWorlds;
+selectors = new MapSelector*[numWorlds];
 
-	for (int i = 0; i < numWorlds; ++i)
-	{
-		selectors[i] = new MapSelector( this, &(planet->worlds[i]), 
-			mainMenu, Vector2f(960, 540));
-	}
-	/*for (int i = 0; i < 8; ++i)
-	{
-		selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
-	}*/
+for (int i = 0; i < numWorlds; ++i)
+{
+	selectors[i] = new MapSelector(this, &(planet->worlds[i]),
+		mainMenu, Vector2f(960, 540));
+}
+/*for (int i = 0; i < 8; ++i)
+{
+	selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
+}*/
 }
 
 WorldMap::~WorldMap()
@@ -219,6 +223,71 @@ WorldMap::~WorldMap()
 	ClearEntries();
 	//delete [] text;
 	//delete [] localPaths;
+}
+
+void WorldMap::UpdateWorldStats()
+{
+	int sel = selectedColony + 1;
+
+	worldNameText.setString("World " + to_string(sel));
+
+	FloatRect worldNameTextLocalBounds = worldNameText.getLocalBounds();
+	worldNameText.setOrigin(worldNameTextLocalBounds.width / 2
+		+ worldNameTextLocalBounds.left, 0);
+
+	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+
+	AdventureWorld &aw = adventureFile.GetWorld(selectedColony);
+
+
+	World &world = planet->worlds[selectedColony];
+	int numTotalSectors = world.numSectors;
+	int numCompletedSectors = 0;
+	for (int i = 0; i < numTotalSectors; ++i)
+	{
+		if (saveFile->IsCompleteSector(&world.sectors[i]))
+		{
+			++numCompletedSectors;
+		}
+	}
+
+	stringstream ss;
+
+	ss << "Sectors: " << numCompletedSectors << "/" << numTotalSectors;
+
+	sectorsCompleteText.setString(ss.str());
+
+	int numTotalShards = 0;
+	int totalCaptured = 0;
+	int numLevels;
+	int levIndex;
+	int numShardsInLevel;
+
+	for (int i = 0; i < numTotalSectors; ++i)
+	{
+		numLevels = world.sectors[i].numLevels;
+		for (int j = 0; j < numLevels; ++j)
+		{
+			levIndex = world.sectors[i].GetLevelIndex(j);
+			AdventureMapHeaderInfo &amhi = adventureFile.GetMapHeaderInfo(levIndex);
+			numShardsInLevel = amhi.shardInfoVec.size();
+			numTotalShards += numShardsInLevel;
+			for (int k = 0; k < numShardsInLevel; ++k)
+			{
+				if (saveFile->ShardIsCaptured(amhi.shardInfoVec[k].GetTrueIndex()))
+				{
+					++totalCaptured;
+				}
+			}
+		}
+	}
+
+	ss.str("");
+	ss.clear();
+
+	ss << "Shards: " << totalCaptured << "/" << numTotalShards;
+
+	shardsCapturedText.setString(ss.str());
 }
 
 void WorldMap::UpdateColonySelect()
@@ -452,7 +521,7 @@ void WorldMap::UpdateMapList()
 
 void WorldMap::SetDefaultSelections()
 {
-	mainMenu->worldMap->selectedColony = 0;
+	selectedColony = 0;
 }
 
 void WorldMap::InitSelectors()
@@ -553,6 +622,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				selectedColony = 0;
 			moveDown = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
+			UpdateWorldStats();
 			
 		}
 		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
@@ -562,6 +632,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				selectedColony = planet->numWorlds - 1;
 			moveUp = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
+			UpdateWorldStats();
 		}
 
 		if (!(currInput.LDown() || currInput.PDown()))
@@ -802,6 +873,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_out"));
 				state = COLONY_TO_PLANET;
 				frame = 0;
+				UpdateWorldStats();
 			}
 			break;
 		}
@@ -948,6 +1020,7 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(infoQuadBG, 4, sf::Quads);
 		rt->draw(infoNameBG, 4, sf::Quads);
 		rt->draw(sectorsCompleteText);
+		rt->draw(shardsCapturedText);
 		rt->draw(worldNameText);
 	}
 

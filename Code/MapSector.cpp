@@ -71,6 +71,12 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	shardsCollectedText.setCharacterSize(40);
 	shardsCollectedText.setFillColor(Color::White);
 
+	numLevelsBeatenText.setFont(mainMenu->arial);
+	numLevelsBeatenText.setCharacterSize(40);
+	numLevelsBeatenText.setFillColor(Color::White);
+
+	
+
 	//completionPercentText.setCharacterSize(40);
 	//completionPercentText.setFillColor(Color::White);
 
@@ -139,10 +145,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	SetXCenter(960);
 	//UpdateNodes();
-	UpdateStats();
+	//UpdateStats();
 	//UpdateLevelStats();
 
-	UpdateMapPreview();
+	//UpdateMapPreview();
 }
 
 MapSector::~MapSector()
@@ -295,6 +301,9 @@ void MapSector::SetXCenter(float x)
 
 	Vector2f levelStatsSize(256, 192);
 
+	Vector2f sectorStatsTopLeft = sectorStatsCenter - sectorStatsSize / 2.f;
+	numLevelsBeatenText.setPosition(sectorStatsTopLeft + Vector2f(10, 10));
+
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
 	SetRectColor(sectorStatsBG, Color(0, 0, 0, 100));
 
@@ -311,9 +320,6 @@ void MapSector::SetXCenter(float x)
 
 	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
 	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 60, 20));
-
-
-	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x / 2, sectorStatsCenter.y - sectorStatsSize.y / 2);
 
 	requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
@@ -342,6 +348,7 @@ void MapSector::SetXCenter(float x)
 void MapSector::DrawStats(sf::RenderTarget *target)
 {
 	target->draw(sectorStatsBG, 4, sf::Quads);
+	target->draw(numLevelsBeatenText);
 	//target->draw(completionPercentText);
 	//target->draw(shardsCollectedText);
 }
@@ -353,7 +360,21 @@ void MapSector::DrawRequirement(sf::RenderTarget *target)
 
 void MapSector::UpdateStats()
 {
+	//numLevelsBeatenText
+	int numLevels = sec->numLevels;
+	int numLevelsCompleted = 0;
+	for (int i = 0; i < numLevels; ++i)
+	{
+		if (saveFile->IsCompleteLevel(sec->GetLevel(i)))
+		{
+			++numLevelsCompleted;
+		}
+	}
+
 	stringstream ss;
+	ss << "Levels: " << numLevelsCompleted << "/" << numLevels;
+
+	numLevelsBeatenText.setString(ss.str());
 
 	/*int numTotalShards = adventureFile.GetAdventureSector(sec).hasShardField.GetOnCount();
 	int numShardsCaptured = saveSector->GetNumShardsCaptured();
@@ -421,7 +442,7 @@ void MapSector::UpdateLevelStats()
 	}
 
 	stringstream ss;
-	ss << totalNumShards << "/" << numCollected;
+	ss << numCollected << "/" << totalNumShards;
 
 	shardsCollectedText.setString(ss.str());
 
@@ -870,6 +891,7 @@ void MapSector::Init(SaveFile *p_saveFile)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
+	UpdateMapPreview();
 
 	//selectorSprite.setPosition(GetSelectedNodePos()
 	//	+ Vector2f(0, 50));

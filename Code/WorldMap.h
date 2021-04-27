@@ -79,6 +79,7 @@ struct MapSector
 	sf::Text levelsBeatenText;
 	sf::Text requirementText;
 	sf::Text sectorNameText;
+	sf::Text numLevelsBeatenText;
 
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
@@ -268,6 +269,7 @@ struct WorldMap : TilesetManager
 	sf::Vertex infoNameBG[4];
 	sf::Vertex infoQuadBG[4];
 	sf::Text sectorsCompleteText;
+	sf::Text shardsCapturedText;
 	sf::Text worldNameText;
 
 	sf::Vertex asteroidQuads[4 * 4];
@@ -320,6 +322,7 @@ struct WorldMap : TilesetManager
 	void UpdateMapList(TreeNode *parentNode, const std::string &relativePath);
 	void ClearEntries();
 	void UpdateColonySelect();
+	void UpdateWorldStats();
 	int Tex(int index, int level, TreeNode *entry);
 	void SetDefaultSelections();
 	MapSelector *CurrSelector();

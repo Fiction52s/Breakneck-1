@@ -291,6 +291,7 @@ bool SaveMenuScreen::Update()
 				files[selectedSaveIndex]->SetAsDefault();
 				files[selectedSaveIndex]->Save();
 				mainMenu->worldMap->InitSelectors();
+				mainMenu->worldMap->SetDefaultSelections();
 				//action = TRANSITIONMOVIE;
 				action = TRANSITION;
 			}
@@ -299,13 +300,15 @@ bool SaveMenuScreen::Update()
 				action = TRANSITION;
 			}
 			
+			mainMenu->worldMap->UpdateWorldStats();
+
 			transparency = 0;
 			fadeOut = 0;
 			frame = 0;
 			break;
 		case TRANSITION:
 		{
-			mainMenu->worldMap->SetDefaultSelections();
+			
 			mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
 			mainMenu->transAlpha = 255;
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
