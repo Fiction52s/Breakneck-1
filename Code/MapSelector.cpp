@@ -16,7 +16,16 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
 	}
 
+	ts_statIcons = mm->tilesetManager.GetSizedTileset("HUD/score_384x96.png");
+
+	ts_statIcons->SetSpriteTexture(bestTimeIconSpr);
+	ts_statIcons->SetSpriteTexture(shardIconSpr);
+
+	ts_statIcons->SetSubRect(bestTimeIconSpr, 12);
+	ts_statIcons->SetSubRect(shardIconSpr, 14);
+
 	ts_rock = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/level_rock_256x300.png");
+
 
 	rockSprite.setTexture(*ts_rock->texture);
 	rockSprite.setOrigin(rockSprite.getLocalBounds().width / 2, 0);

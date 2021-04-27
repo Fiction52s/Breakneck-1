@@ -61,7 +61,7 @@ struct MapSector
 
 	sf::Vertex levelCollectedShards[16 * 4];
 	sf::Vertex levelBG[4];
-	sf::Vertex statsBG[4];
+	sf::Vertex levelStatsBG[4];
 	sf::Vertex sectorStatsBG[4];
 	sf::Vertex lockedOverlayQuad[4];
 	sf::Vertex sectorArrowQuads[4 * 2];
@@ -71,8 +71,10 @@ struct MapSector
 	sf::Sprite endSpr;
 	sf::Sprite mapPreviewSpr;
 	sf::Sprite nodeHighlight;
+	sf::Sprite mapShardIconSpr;
+	sf::Sprite mapBestTimeIconSpr;
 
-
+	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
 	sf::Text levelsBeatenText;
 	sf::Text requirementText;
@@ -182,6 +184,10 @@ struct MapSelector
 	Tileset **ts_sectorOpen;
 	Tileset *ts_kinJump[5];
 	Tileset *ts_rock;
+	Tileset *ts_statIcons;
+
+	sf::Sprite bestTimeIconSpr;
+	sf::Sprite shardIconSpr;
 	
 
 	MapSelector( WorldMap *worldMap, 

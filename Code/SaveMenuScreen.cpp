@@ -254,7 +254,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
 
 	selectSlot.setPosition(topLeftPos);
-	kinFace.setPosition(topLeftPos);
+	//kinFace.setPosition(topLeftPos + Vector2f( 50, 0 ));
 
 
 }
@@ -537,7 +537,7 @@ bool SaveMenuScreen::Update()
 	Vector2f topLeftPos = GetTopLeftSaveSlot(selectedSaveIndex);
 
 	selectSlot.setPosition(topLeftPos);
-	kinFace.setPosition(topLeftPos);
+	kinFace.setPosition(topLeftPos + Vector2f( 15, -6 ));
 
 	UpdateClouds();
 	++asteroidFrameBack;

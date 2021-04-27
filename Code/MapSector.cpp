@@ -21,11 +21,20 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
 
+	ms->ts_statIcons->SetSpriteTexture(mapShardIconSpr);
+	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 14);
+
+	ms->ts_statIcons->SetSpriteTexture(mapBestTimeIconSpr);
+	ms->ts_statIcons->SetSubRect(mapBestTimeIconSpr, 12);
+	
+
 	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
 	SetRectColor(lockedOverlayQuad, Color(100, 100, 100, 100));
 
 	SetRectSubRect(levelBG, ms->ts_sectorLevelBG->GetSubRect(0));
-	SetRectSubRect(statsBG, ms->ts_levelStatsBG->GetSubRect(0));
+
+	SetRectColor(levelStatsBG, Color(0, 0, 0, 100));
+	//SetRectSubRect(levelStatsBG, ms->ts_levelStatsBG->GetSubRect(0));
 	//SetRectSubRect(sectorStatsBG, ms->ts_sectorStatsBG->GetSubRect(0));
 
 	ts_energyCircle = worldMap->GetTileset("WorldMap/node_energy_circle_80x80.png", 80, 80);
@@ -52,13 +61,13 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	selectorAnimFactor = 3;
 
 
-
+	bestTimeText.setFont(mainMenu->arial);
+	bestTimeText.setCharacterSize(40);
+	bestTimeText.setFillColor(Color::White);
 	
 
 		
 	shardsCollectedText.setFont(mainMenu->arial);
-	//completionPercentText.setFont(mainMenu->arial);
-
 	shardsCollectedText.setCharacterSize(40);
 	shardsCollectedText.setFillColor(Color::White);
 
@@ -131,7 +140,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	SetXCenter(960);
 	//UpdateNodes();
 	UpdateStats();
-	UpdateLevelStats();
+	//UpdateLevelStats();
 
 	UpdateMapPreview();
 }
@@ -225,7 +234,16 @@ void MapSector::Draw(sf::RenderTarget *target)
 				DrawLevelStats(target);
 
 				target->draw(mapPreviewSpr);
+
+				target->draw(levelStatsBG, 4, sf::Quads);
+				target->draw(mapBestTimeIconSpr);
+				target->draw(bestTimeText);
+				target->draw(mapShardIconSpr);
+				target->draw(shardsCollectedText);
+
 			}
+
+			
 		}
 		else
 		{
@@ -259,11 +277,14 @@ void MapSector::SetXCenter(float x)
 		left.x -= nodeSize / 2 + (pathLen + nodeSize) * (numLevelsPlus / 2);
 	}
 
+	
+
 
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 20);
 	Vector2f sectorStatsSize(386, 192);
 	Vector2f sectorStatsCenter = Vector2f(x, mapPreviewSpr.getPosition().y - sectorStatsSize.y/2);//ms->sectorCenter.y - 370);
+	
 	
 
 	sf::FloatRect sectorNameGlobalBounds = sectorNameText.getGlobalBounds();
@@ -272,23 +293,31 @@ void MapSector::SetXCenter(float x)
 	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
 	endSpr.setPosition(sectorNameTopRight + Vector2f( 70 + 15, 0 ) );
 
-	Vector2f levelStatsSize(512, 256);
-	Vector2f levelStatsCenter = Vector2f(x, ms->sectorCenter.y + 370);
-	Vector2f levelStatsTopLeft = levelStatsCenter - Vector2f(levelStatsSize.x / 2, levelStatsSize.y / 2);
+	Vector2f levelStatsSize(256, 192);
+
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
 	SetRectColor(sectorStatsBG, Color(0, 0, 0, 100));
 
 
 	SetRectCenter(levelBG, 1200, 400, Vector2f(x, ms->sectorCenter.y));
-	SetRectCenter(statsBG, levelStatsSize.x, levelStatsSize.y, levelStatsCenter);
 
+	//top right of mappreview
+	Vector2f levelStatsTopLeft = mapPreviewSpr.getPosition() + Vector2f(912 / 2, -492 / 2);
+
+	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft); 
+
+	mapShardIconSpr.setPosition(levelStatsTopLeft + Vector2f( -15, 96 ));
+	mapBestTimeIconSpr.setPosition(levelStatsTopLeft + Vector2f( -20, 0 ) );
+
+	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
+	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 60, 20));
 
 
 	Vector2f sectorStatsTopLeft(sectorStatsCenter.x - sectorStatsSize.x / 2, sectorStatsCenter.y - sectorStatsSize.y / 2);
 
 	requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
-	shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
+	//shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
 	//completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
 
 	Vector2f shardGridOffset = Vector2f(20, 20);
@@ -314,7 +343,7 @@ void MapSector::DrawStats(sf::RenderTarget *target)
 {
 	target->draw(sectorStatsBG, 4, sf::Quads);
 	//target->draw(completionPercentText);
-	target->draw(shardsCollectedText);
+	//target->draw(shardsCollectedText);
 }
 
 void MapSector::DrawRequirement(sf::RenderTarget *target)
@@ -359,6 +388,45 @@ AdventureMap *MapSector::GetSelectedAdventureMap()
 
 void MapSector::UpdateLevelStats()
 {
+	Level *level = GetSelectedLevel();
+
+	int recordScore =
+		saveFile->GetBestFramesLevel(level->index);
+
+	if (recordScore > 0)
+	{
+		bestTimeText.setString(GetTimeStr(recordScore));
+	}
+	else
+	{
+		bestTimeText.setString("-----");
+	}
+
+	AdventureMapHeaderInfo &headerInfo = 
+		saveFile->adventureFile->GetMapHeaderInfo(level->index);
+
+	
+
+	int totalNumShards = headerInfo.shardInfoVec.size();
+
+
+	int numCollected = 0;
+	for (auto it = headerInfo.shardInfoVec.begin(); it !=
+		headerInfo.shardInfoVec.end(); ++it)
+	{
+		if (saveFile->ShardIsCaptured((*it).GetTrueIndex()))
+		{
+			numCollected++;
+		}
+	}
+
+	stringstream ss;
+	ss << totalNumShards << "/" << numCollected;
+
+	shardsCollectedText.setString(ss.str());
+
+
+
 	//int gridIndex = 0;
 	//int uncaptured = 0;
 	//Level &lev = GetSelectedLevel();
