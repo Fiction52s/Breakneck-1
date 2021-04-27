@@ -1476,8 +1476,7 @@ bool GameSession::Load()
 
 	//repGhost = new ReplayGhost( player );
 
-	//recPlayer = new RecordPlayer( player );
-	//repPlayer = new ReplayPlayer( player );
+	
 
 
 	cout << "weird timing 3" << endl;
@@ -1511,7 +1510,8 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
-	
+	recPlayer = new RecordPlayer(GetPlayer(0));
+	repPlayer = new ReplayPlayer(GetPlayer(0));
 
 	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
 	//{
@@ -1582,6 +1582,10 @@ bool GameSession::Load()
 	
 
 	SetupRecGhost();
+
+	//std::list<GhostEntry*> ghostEntries;
+	//GhostEntry *ge = new GhostEntry("Recordings/Ghost/testghost.bghst",)
+	//SetupGhosts(
 	
 
 	SetupPauseMenu();
@@ -2013,17 +2017,25 @@ int GameSession::Run()
 		recPlayer->StartRecording();
 
 	if (repPlayer != NULL)
-		repPlayer->OpenReplay("testreplay.brep");
+	{
+		bool canOpen = repPlayer->OpenReplay("testreplay.brep");
+		if (!canOpen)
+		{
+			delete repPlayer;
+			repPlayer = NULL;
+		}
+	}
+		
 
 	testBuf.byteIndex = 0;
 
-	boost::thread *threa = NULL;
-	ofstream of;
-	if (recPlayer != NULL)//&& !repPlayer->init )
-	{
-		of.open("tempreplay.brep", ios::binary | ios::out);
-		threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
-	}
+	//boost::thread *threa = NULL;
+	//ofstream of;
+	//if (recPlayer != NULL)//&& !repPlayer->init )
+	//{
+	//	of.open("tempreplay.brep", ios::binary | ios::out);
+	//	threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
+	//}
 
 	//mainMenu->musicPlayer->StopCurrentMusic();
 	SetOriginalMusic();
@@ -2809,7 +2821,7 @@ int GameSession::Run()
 	if (parentGame == NULL)
 	{
 
-
+		if( false)
 		if (recGhost != NULL)
 		{
 			recGhost->StopRecording();
@@ -2841,43 +2853,43 @@ int GameSession::Run()
 
 		testBuf.SetRecOver(true);
 
-		if (recPlayer != NULL)
-		{
-			threa->join();
-			delete threa;
+		//if (recPlayer != NULL)
+		//{
+		//	threa->join();
+		//	delete threa;
 
-			assert(of.is_open());
-			of.close();
+		//	assert(of.is_open());
+		//	of.close();
 
-			ifstream is;
-			is.open("tempreplay.brep", ios::binary | ios::in);
-
-
-			ofstream out;
-			//custom file
-			out.open("testreplay.brep", ios::binary | ios::out);
-			out.write((char*)&(recPlayer->numTotalFrames), sizeof(int));
-			//out << recPlayer->numTotalFrames << "\n";
-
-			char c;
-			while (true)
-			{
-				c = is.get();
-				if (is.eof()) break;
-				out.put(c);
-			}
-
-			out.close();
+		//	ifstream is;
+		//	is.open("tempreplay.brep", ios::binary | ios::in);
 
 
-			/*istreambuf_iterator<char> begin_source( is );
-			istreambuf_iterator<char> end_source;
-			ostreambuf_iterator<char> begin_dest( out );
-			copy( begin_source, end_source, begin_dest );*/
+		//	ofstream out;
+		//	//custom file
+		//	out.open("testreplay.brep", ios::binary | ios::out);
+		//	out.write((char*)&(recPlayer->numTotalFrames), sizeof(int));
+		//	//out << recPlayer->numTotalFrames << "\n";
 
-			is.close();
+		//	char c;
+		//	while (true)
+		//	{
+		//		c = is.get();
+		//		if (is.eof()) break;
+		//		out.put(c);
+		//	}
 
-		}
+		//	out.close();
+
+
+		//	/*istreambuf_iterator<char> begin_source( is );
+		//	istreambuf_iterator<char> end_source;
+		//	ostreambuf_iterator<char> begin_dest( out );
+		//	copy( begin_source, end_source, begin_dest );*/
+
+		//	is.close();
+
+		//}
 
 	}
 

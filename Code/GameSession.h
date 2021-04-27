@@ -360,7 +360,7 @@ struct GameSession : RayCastHandler, Session
 	RecordGhost *recGhost;
 	RecordPlayer *recPlayer;
 	ReplayPlayer *repPlayer;
-	std::list<ReplayGhost*> replayGhosts;
+	std::vector<ReplayGhost*> replayGhosts;
 	Grass *explodingGravityGrass;
 	bool quit;
 	bool boostIntro;

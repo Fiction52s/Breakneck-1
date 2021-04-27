@@ -118,7 +118,7 @@ struct RecordPlayer
 	void WriteToFile(const std::string &fileName);
 	void RecordFrame();
 	const static int MAX_RECORD = 3600 * 60;
-	ControllerState inputBuffer[MAX_RECORD]; //1 hour
+	int inputBuffer[MAX_RECORD];
 };
 
 
@@ -129,7 +129,7 @@ struct ReplayPlayer
 	ReplayPlayer(Actor *p);
 	bool OpenReplay(const std::string &fileName);
 	void UpdateInput(ControllerState &state);
-	ControllerState *inputBuffer;
+	int *inputBuffer;
 	Actor *player;
 	int frame;
 	int numTotalFrames;
