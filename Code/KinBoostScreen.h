@@ -38,6 +38,8 @@ struct KinBoostScreen
 	Tileset *ts_bgShape;
 	Tileset *ts_kinBoost;
 	Tileset *ts_kinAura;
+	Tileset *ts_enterFX;
+	sf::Sprite enterFXSpr;
 	sf::Sprite kinSpr;
 	int kinLoopLength;
 	int kinLoopTileStart;

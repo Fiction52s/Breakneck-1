@@ -23,8 +23,10 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 
 	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/exitboost_96x128.png", 96, 128);
 	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
+	ts_enterFX = mainMenu->tilesetManager.GetSizedTileset("Kin/FX/enter_fx_320x320.png");
+	
 
-
+	ts_enterFX->SetSpriteTexture(enterFXSpr);
 	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
 
 	int currSkinIndex = 0;
@@ -125,7 +127,7 @@ void KinBoostScreen::End()
 	state = FINISHBOOST;
 	stateFrame = 0;
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
-	mainMenu->fader->Fade(false, 30, Color::Black, true);
+	mainMenu->fader->Fade(false, 30, Color::Black);// true);
 	//frame = 0;
 }
 
@@ -157,11 +159,19 @@ void KinBoostScreen::Reset()
 
 void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 {
-	if (showAura)
+	if (state != ENDING)
 	{
-		target->draw(kinAuraSpr);
+		if (showAura)
+		{
+			target->draw(kinAuraSpr);
+		}
+		target->draw(kinSpr, &pShader);
 	}
-	target->draw(kinSpr, &pShader);
+
+	if (state == ENDING)
+	{
+		target->draw(enterFXSpr);
+	}
 }
 
 void KinBoostScreen::Update()
@@ -227,6 +237,9 @@ void KinBoostScreen::Update()
 			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kActual));
 
 			kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(kActual - 55));
+
+			
+			
 		}
 
 		
@@ -237,7 +250,8 @@ void KinBoostScreen::Update()
 			stateFrame = 0;
 			
 		}
-		else if (state == ENDING)
+		
+		if (state == ENDING)
 		{
 			kFrame = stateFrame / 2 + kinEndTileStart;
 			kinSpr.setTextureRect(ts_kinBoost->GetSubRect(kFrame));
@@ -246,6 +260,15 @@ void KinBoostScreen::Update()
 			//	showAura = false;
 
 			kinAuraSpr.setTextureRect(ts_kinAura->GetSubRect(kFrame - 55));
+
+			if (stateFrame / 2 < 12)
+			{
+				ts_enterFX->SetSubRect(enterFXSpr, stateFrame / 2 + 7);
+				enterFXSpr.setPosition(kinSpr.getPosition());
+				enterFXSpr.setScale(2, 2);
+				enterFXSpr.setOrigin(enterFXSpr.getLocalBounds().width / 2,
+					enterFXSpr.getLocalBounds().height / 2);
+			}
 
 			//cout << "blah: " << kFrame - 55 << endl;
 

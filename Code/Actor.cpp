@@ -1099,7 +1099,8 @@ void Actor::Init()
 {
 	if (owner != NULL && owner->boostEntrance )
 	{
-		SetAction(INTROBOOST);//INTRO
+		SetAction(SPAWNWAIT);
+		//SetAction(INTROBOOST);//INTRO
 		frame = 0;
 	}
 	else
