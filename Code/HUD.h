@@ -158,6 +158,9 @@ struct AdventureHUD : HUD
 	sf::Vector2f miniShowPos;
 	sf::Vector2f miniHidePos;
 
+	sf::Vector2f powerSelectorShowPos;
+	sf::Vector2f powerSelectorHidePos;
+
 	sf::Vector2f keyMarkerShowPos;
 	sf::Vector2f keyMarkerHidePos;
 

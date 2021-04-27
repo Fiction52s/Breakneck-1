@@ -153,6 +153,9 @@ AdventureHUD::AdventureHUD()
 
 	powerSelector = new PowerSelector;
 
+	powerSelectorShowPos = Vector2f(288, 140);
+	powerSelectorHidePos = Vector2f(288-500, 140);
+
 	flyCountTextShowPos = Vector2f(1920 - 30, 10);
 	flyCountTextHidePos = Vector2f((1920 - 30) + 500, 10);
 
@@ -199,6 +202,7 @@ void AdventureHUD::Hide(int frames)
 		mini->SetCenter(miniHidePos);
 		keyMarker->SetPosition(keyMarkerHidePos);
 		kinMask->SetTopLeft(kinMaskHidePos);
+		powerSelector->SetPosition(powerSelectorHidePos);
 		flyCountText.setPosition(flyCountTextHidePos);
 	}
 	else
@@ -219,6 +223,7 @@ void AdventureHUD::Show(int frames)
 		kinMask->SetTopLeft(kinMaskShowPos);
 		keyMarker->SetPosition(keyMarkerShowPos);
 		flyCountText.setPosition(flyCountTextShowPos);
+		powerSelector->SetPosition(powerSelectorShowPos);
 	}
 	else
 	{
@@ -254,6 +259,7 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(kinMaskShowPos);
 			keyMarker->SetPosition(keyMarkerShowPos);
 			flyCountText.setPosition(flyCountTextShowPos);
+			powerSelector->SetPosition(powerSelectorShowPos);
 			//momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
@@ -268,6 +274,8 @@ void AdventureHUD::Update()
 			keyMarker->SetPosition(neededCenter);
 			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
 			flyCountText.setPosition(countPos);
+			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
+			powerSelector->SetPosition(powerPos);
 		}
 		break;
 	case EXITING:
@@ -279,6 +287,7 @@ void AdventureHUD::Update()
 			keyMarker->SetPosition(keyMarkerHidePos);
 			kinMask->SetTopLeft(kinMaskHidePos);
 			flyCountText.setPosition(flyCountTextHidePos);
+			powerSelector->SetPosition(powerSelectorHidePos);
 		}
 		else
 		{
@@ -292,6 +301,8 @@ void AdventureHUD::Update()
 			keyMarker->SetPosition(neededCenter);
 			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
 			flyCountText.setPosition(countPos);
+			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
+			powerSelector->SetPosition(powerPos);
 		}
 		break;
 	case HIDDEN:
@@ -321,6 +332,8 @@ void AdventureHUD::Reset()
 	mini->SetCenter(miniShowPos);
 	kinMask->SetTopLeft(kinMaskShowPos);
 	keyMarker->SetPosition(keyMarkerShowPos);
+	powerSelector->SetPosition(powerSelectorShowPos);
+	//sprite.setPosition(288, 140);
 	//momentumBar->SetTopLeft(momentumShowPos);
 }
 
@@ -348,7 +361,7 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 		keyMarker->Draw(target);
 
-		target->draw(flyCountText);
+		//target->draw(flyCountText);
 		
 	}
 }

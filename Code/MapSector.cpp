@@ -146,7 +146,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, 0);
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads+4, 0, true );
 
-	mapPreviewSpr.setPosition(960, 500);
+	//mapPreviewSpr.setPosition(960, 500);
 
 	//ts_mapPreview = worldMap->GetSizedTileset()
 
@@ -278,6 +278,8 @@ void MapSector::SetXCenter(float x)
 {
 	xCenter = x;
 
+	//mapPreviewSpr.setPosition(960, 500+50);
+
 	//left = Vector2f(xCenter - 600, 400);
 	left = Vector2f(xCenter, 170 + 50);//150
 	int numLevelsPlus = numLevels + 0;
@@ -347,7 +349,7 @@ void MapSector::SetXCenter(float x)
 	SetRectCenter(levelBG, 1200, 400, Vector2f(x, ms->sectorCenter.y));
 
 	//top right of mappreview
-	Vector2f levelStatsTopLeft = mapPreviewSpr.getPosition() + Vector2f(912 / 2, -492 / 2) + Vector2f( 20, 0 );
+	Vector2f levelStatsTopLeft = Vector2f( 960, 550 ) + Vector2f(912 / 2, -492 / 2) + Vector2f( 20, 0 );
 
 	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft); 
 

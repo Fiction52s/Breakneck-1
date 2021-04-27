@@ -20,6 +20,7 @@ void Actor::GOALKILL_End()
 	SetAction(GOALKILLWAIT);
 	frame = 0;
 	sess->scoreDisplay->Activate();
+	sess->hud->Hide(60);
 }
 
 void Actor::GOALKILL_Change()

@@ -25,11 +25,9 @@ struct PowerSelector
 	State state;
 	int frame;
 
-	
-
-
-
 	PowerSelector();
+
+	void SetPosition(sf::Vector2f &pos);
 
 	void Update(int currPowerMode );
 

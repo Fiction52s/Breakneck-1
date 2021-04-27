@@ -377,21 +377,31 @@ void ScoreBar::PopOut()
 	frame = 0;
 
 	GameSession *game = GameSession::GetSession();
+
+	int recordScore =
+		game->saveFile->GetBestFramesLevel(game->level->index);
+
 	if (row == 0)
 	{
 		if (game != NULL && game->saveFile != NULL)
 		{
-			int recordScore = 
-				game->saveFile->GetBestFramesLevel(game->level->index);
-
 			if (recordScore > 0)
 			{
-				SetText(GetTimeStr(recordScore),
-					Color::White);
+				if (game->totalFramesBeforeGoal < recordScore)
+				{
+					SetText(GetTimeStr(game->totalFramesBeforeGoal),
+						Color::Red);
+				}
+				else
+				{
+					SetText(GetTimeStr(recordScore),
+						Color::White);
+				}
 			}
 			else
 			{
-				SetText("-----", Color::White);
+				SetText(GetTimeStr(game->totalFramesBeforeGoal),
+					Color::Red);
 			}
 		}
 		else
@@ -403,8 +413,18 @@ void ScoreBar::PopOut()
 	{
 		if( game != NULL )
 		{
-			SetText(GetTimeStr(game->totalFramesBeforeGoal), 
-				Color::White);
+			if (recordScore > 0 &&
+				game->totalFramesBeforeGoal < recordScore)
+			{
+				SetText(GetTimeStr(game->totalFramesBeforeGoal),
+					Color::Red);
+			}
+			else
+			{
+				SetText(GetTimeStr(game->totalFramesBeforeGoal),
+					Color::White);
+			}
+			
 		}
 	}
 	else if( row == 2 )

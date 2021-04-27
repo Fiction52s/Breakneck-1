@@ -11,7 +11,7 @@ PowerSelector::PowerSelector()
 	ts = sess->GetSizedTileset("HUD/power_selector_96x96.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect( 0 ));
-	sprite.setPosition(288, 140);
+	//sprite.setPosition(288, 140);
 	state = STATIC;
 
 	SetRectSubRect(deactivatedQuads, ts->GetSubRect(11));
@@ -44,36 +44,7 @@ void PowerSelector::Update( int playerPowerMode )
 
 			sprite.setTextureRect(ts->GetSubRect(tile));
 
-			Actor *player = sess->GetPlayer(0);
-			if (player->HasUpgrade(Actor::UPGRADE_POWER_BOUNCE))
-			{
-				ClearRect(deactivatedQuads);
-			}
-			else
-			{
-				SetRectTopLeft(deactivatedQuads, ts->tileWidth, ts->tileHeight,
-					Vector2f(sprite.getPosition()));
-			}
-
-			if (player->HasUpgrade(Actor::UPGRADE_POWER_GRIND))
-			{
-				ClearRect(deactivatedQuads + 4);
-			}
-			else
-			{
-				SetRectTopLeft(deactivatedQuads + 4, ts->tileWidth, ts->tileHeight,
-					Vector2f(sprite.getPosition()));
-			}
-
-			if (player->HasUpgrade(Actor::UPGRADE_POWER_TIME))
-			{
-				ClearRect(deactivatedQuads + 8);
-			}
-			else
-			{
-				SetRectTopLeft(deactivatedQuads + 8, ts->tileWidth, ts->tileHeight,
-					Vector2f(sprite.getPosition()));
-			}
+			SetPosition(Vector2f(sprite.getPosition()));
 
 			break;
 		}
@@ -90,6 +61,42 @@ void PowerSelector::Update( int playerPowerMode )
 		break;
 	case SWITCHING:
 		break;
+	}
+}
+
+void PowerSelector::SetPosition(Vector2f &pos)
+{
+	sprite.setPosition(pos);
+
+	Actor *player = sess->GetPlayer(0);
+	if (player->HasUpgrade(Actor::UPGRADE_POWER_BOUNCE))
+	{
+		ClearRect(deactivatedQuads);
+	}
+	else
+	{
+		SetRectTopLeft(deactivatedQuads, ts->tileWidth, ts->tileHeight,
+			Vector2f(sprite.getPosition()));
+	}
+
+	if (player->HasUpgrade(Actor::UPGRADE_POWER_GRIND))
+	{
+		ClearRect(deactivatedQuads + 4);
+	}
+	else
+	{
+		SetRectTopLeft(deactivatedQuads + 4, ts->tileWidth, ts->tileHeight,
+			Vector2f(sprite.getPosition()));
+	}
+
+	if (player->HasUpgrade(Actor::UPGRADE_POWER_TIME))
+	{
+		ClearRect(deactivatedQuads + 8);
+	}
+	else
+	{
+		SetRectTopLeft(deactivatedQuads + 8, ts->tileWidth, ts->tileHeight,
+			Vector2f(sprite.getPosition()));
 	}
 }
 
