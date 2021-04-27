@@ -98,6 +98,8 @@ struct MapSector
 	int selectorAnimDuration;
 	int selectorAnimFactor;
 
+	int sectorArrowFrame;
+
 	SingleAxisSelector *mapSASelector;
 	Background *bg;
 
@@ -114,6 +116,7 @@ struct MapSector
 	void UpdateNodePosition();
 	int GetSelectedIndex();
 	Level *GetSelectedLevel();
+	void UpdateSectorArrows();
 	AdventureMap *GetSelectedAdventureMap();
 	void Load();
 	void UpdateMapPreview();

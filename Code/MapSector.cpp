@@ -27,6 +27,9 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ms->ts_statIcons->SetSpriteTexture(mapBestTimeIconSpr);
 	ms->ts_statIcons->SetSubRect(mapBestTimeIconSpr, 12);
 	
+	ms->ts_statIcons->SetSpriteTexture(sectorShardIconSpr);
+	ms->ts_statIcons->SetSubRect(sectorShardIconSpr, 14);
+	
 
 	SetRectCenter(lockedOverlayQuad, 1920, 1080, Vector2f(960, 540));
 	SetRectColor(lockedOverlayQuad, Color(100, 100, 100, 100));
@@ -57,6 +60,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
 	selectorAnimFrame = 0;
+	sectorArrowFrame = 0;
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
 
@@ -137,8 +141,7 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	requirementText.setFillColor(Color::White);
 	requirementText.setString(to_string(numRequiredRunes));
 
-	SetRectCenter(sectorArrowQuads, 64, 64, Vector2f(960 - 600, 500));
-	SetRectCenter(sectorArrowQuads+4, 64, 64, Vector2f(960 + 600, 500));
+	
 
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, 0);
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads+4, 0, true );
@@ -296,28 +299,55 @@ void MapSector::SetXCenter(float x)
 	Vector2f sectorStatsCenter = Vector2f(x, mapPreviewSpr.getPosition().y - sectorStatsSize.y/2);//ms->sectorCenter.y - 370);
 	
 	
+	
+
+
+
+	
+
+
 
 	sf::FloatRect sectorNameGlobalBounds = sectorNameText.getGlobalBounds();
+
 	Vector2f sectorNameTopRight(sectorNameGlobalBounds.left + sectorNameGlobalBounds.width, sectorNameGlobalBounds.top + sectorNameGlobalBounds.height / 2);
 
 	endSpr.setOrigin(endSpr.getLocalBounds().width / 2, endSpr.getLocalBounds().height / 2);
 	endSpr.setPosition(sectorNameTopRight + Vector2f( 70 + 15, 0 ) );
 
+	FloatRect endGB = endSpr.getGlobalBounds();
+	float arrowSpacing = 64;
+	float left = sectorNameGlobalBounds.left - arrowSpacing;
+	float right = endGB.left + endGB.width
+		+ arrowSpacing - 100;
+	float y = sectorNameGlobalBounds.top + sectorNameGlobalBounds.height / 2;
+
+	float testCenter = (left + right) / 2.f;
+	float diff = 960 - testCenter;
+
+	Vector2f vDiff(diff, 0);
+
+	sectorNameText.move(vDiff);
+	endSpr.move(vDiff);
+
+	SetRectCenter(sectorArrowQuads, 64, 64, Vector2f(left + diff, y));
+	SetRectCenter(sectorArrowQuads + 4, 64, 64, Vector2f(right + diff, y));
+
+
 	Vector2f levelStatsSize(256, 192);
 
 	Vector2f sectorStatsTopLeft = sectorStatsCenter - sectorStatsSize / 2.f;
 	numLevelsBeatenText.setPosition(sectorStatsTopLeft + Vector2f(10, 10));
-	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(0, 96));
+	sectorShardIconSpr.setPosition(sectorStatsTopLeft + Vector2f(-30, 96 - 20));
 	sectorShardsCollectedText.setPosition(sectorStatsTopLeft + Vector2f(100, 96));
 
 	SetRectCenter(sectorStatsBG, sectorStatsSize.x, sectorStatsSize.y, sectorStatsCenter);
-	SetRectColor(sectorStatsBG, Color(0, 0, 0, 100));
+	SetRectColor(sectorStatsBG, Color(0, 0, 0, 200));
 
 
 	SetRectCenter(levelBG, 1200, 400, Vector2f(x, ms->sectorCenter.y));
 
 	//top right of mappreview
-	Vector2f levelStatsTopLeft = mapPreviewSpr.getPosition() + Vector2f(912 / 2, -492 / 2);
+	Vector2f levelStatsTopLeft = mapPreviewSpr.getPosition() + Vector2f(912 / 2, -492 / 2) + Vector2f( 20, 0 );
 
 	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft); 
 
@@ -390,7 +420,7 @@ void MapSector::UpdateStats()
 	int numShardsPerLevel = 0;
 	for (int i = 0; i < numLevels; ++i)
 	{
-		AdventureMapHeaderInfo &amhi = 
+		AdventureMapHeaderInfo &amhi =
 			adventureFile.GetMapHeaderInfo(sec->GetLevelIndex(i));
 		numShardsPerLevel = amhi.shardInfoVec.size();
 		totalShards += numShardsPerLevel;
@@ -401,7 +431,6 @@ void MapSector::UpdateStats()
 				++numCaptured;
 			}
 		}
-
 	}
 	
 	ss.str("");
@@ -899,6 +928,43 @@ void MapSector::UpdateSelectorSprite()
 
 	selectorSprite.setPosition(GetSelectedNodePos()
 		+ Vector2f(0, 50));
+}
+
+void MapSector::UpdateSectorArrows()
+{
+	int tile = (sectorArrowFrame / 60) % 2;
+
+	if (tile == 1)
+	{
+		tile = 2;
+	}
+
+	if (ms->mainMenu->GetCurrInputUnfiltered(0).LLeft())
+	{
+		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile + 1);
+	}
+	else
+	{
+		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile);
+	}
+
+	if (ms->mainMenu->GetCurrInputUnfiltered(0).LRight())
+	{
+		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads + 4, tile + 1, true);
+	}
+	else
+	{
+		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads + 4, tile, true);
+	}
+	/*if (tile == 1)
+	{
+		tile = 2;
+	}*/
+
+	
+	
+
+	sectorArrowFrame++;
 }
 
 void MapSector::Init(SaveFile *p_saveFile)
