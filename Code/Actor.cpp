@@ -3185,16 +3185,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	}
 	Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
 	Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
-	Color auraColor(Color::Cyan);
+	//Color auraColor(Color::Cyan);
 	//auraColor.a = 200;
-	sh.setUniform("u_auraColor", ColorGL( auraColor ));
+	//SetAuraColor(auraColor);
 	ts_auraTest2->texture->setRepeated(true);
 	ts_auraTest->texture->setRepeated(true);
 	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
 	sh.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
 
-	SetSkin(0);
+	SetSkin(SKIN_NORMAL);
 
 
 	if (!shieldShader.loadFromFile("Resources/Shader/shield_shader.frag", sf::Shader::Fragment))
@@ -4468,7 +4468,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn()
 {
 	
-
+	SetSkin(SKIN_NORMAL);
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
@@ -13871,6 +13871,14 @@ void Actor::HandleWaterSituation(int wType,
 			gravModifyFrames = 1;
 			RestoreAirOptions();
 		}
+		if (sit == SPECIALT_ENTER)
+		{
+			SetSkin(SKIN_ORANGE);
+		}
+		else if (sit == SPECIALT_EXIT)
+		{
+			SetSkin(SKIN_NORMAL);
+		}
 		break;
 	}
 	case TerrainPolygon::WATER_GLIDE:
@@ -17192,6 +17200,11 @@ bool Actor::IsVisibleAction(int a)
 	return true;
 }
 
+void Actor::SetAuraColor(Color c)
+{
+	sh.setUniform("u_auraColor", ColorGL(c));
+}
+
 void Actor::Draw( sf::RenderTarget *target )
 {
 	if (!IsVisibleAction(action))
@@ -20199,7 +20212,7 @@ void Actor::UpdateInHitlag()
 
  bool Actor::LoadPalette()
  {
-	 return skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
+	 return skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
  }
 
  void Actor::FillPaletteArray(int skinIndex)
@@ -20216,6 +20229,7 @@ void Actor::UpdateInHitlag()
 	 FillPaletteArray(currSkinIndex);
 
 	 sh.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
+	 sh.setUniform("u_auraColor", ColorGL(paletteArray[9]));
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

@@ -28,9 +28,9 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 
 
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
 
-	int currSkinIndex = 0;
+	int currSkinIndex = 5;
 	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
 	{
 		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
@@ -43,8 +43,7 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 		assert(0 && "boost player shader not loaded");
 	}
 
-	Color auraColor(Color::Magenta);
-	pShader.setUniform("u_auraColor", ColorGL(auraColor));
+	pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
 
 	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
 	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
@@ -136,8 +135,8 @@ void ReplayGhost::UpdateReplaySprite()
 	if (!init || frame == numTotalFrames)
 		return;
 
-	//if (player->action == Actor::SPAWNWAIT)
-	//	return;
+	if (player->action == Actor::SPAWNWAIT)
+		return;
 
 	
 

@@ -414,6 +414,17 @@ struct Actor : QuadTreeCollider,
 		RAYMODE_WATER,
 	};
 
+	enum SkinTypes
+	{
+		SKIN_NORMAL,
+		SKIN_RED,
+		SKIN_BLUE,
+		SKIN_ORANGE,
+		SKIN_PURPLE,
+		SKIN_GHOST,
+		SKIN_Count
+	};
+
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
@@ -1137,6 +1148,7 @@ struct Actor : QuadTreeCollider,
 		HitboxInfo *hi);
 
 	bool IsVisibleAction(int a);
+	void SetAuraColor(sf::Color c);
 
 	bool TryHandleHitInRewindWater();
 	bool TryHandleHitWhileRewindBoosted();

@@ -27,7 +27,7 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm )
 	
 
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
 
 	int currSkinIndex = 0;
 	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
