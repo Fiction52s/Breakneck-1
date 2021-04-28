@@ -73,6 +73,8 @@ struct MapSector
 	sf::Vertex levelSelectOptionQuads[4 * 3];
 	sf::Vertex levelSelectOptionButtonQuads[4 * 3];
 
+	sf::Vertex levelNumberQuads[8 * 4];
+
 	sf::Sprite *nodes;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
@@ -91,6 +93,7 @@ struct MapSector
 	sf::Text sectorShardsCollectedText;
 
 	Tileset *ts_mapOptionButtons;
+	Tileset *ts_levelSelectNumbers;
 	Tileset *ts_mapSelectOptions;
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;

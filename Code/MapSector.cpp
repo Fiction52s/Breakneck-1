@@ -48,9 +48,16 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_mapSelectOptions = worldMap->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
 	ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
 
+	ts_levelSelectNumbers = worldMap->GetSizedTileset("Menu/LevelSelect/level_select_number_32x32.png");
+
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, 0);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, 1);
 	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, 2);
+
+	for (int i = 0; i < 8; ++i)
+	{
+		ts_levelSelectNumbers->SetQuadSubRect(levelNumberQuads + i * 4, i);
+	}
 
 	
 
@@ -266,6 +273,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 				target->draw(levelSelectOptionQuads, 4 * 3, sf::Quads, ts_mapSelectOptions->texture);
 				target->draw(levelSelectOptionButtonQuads, 4 * 3, sf::Quads, ts_mapOptionButtons->texture);
+
+				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 			}
 
 			
@@ -407,6 +416,13 @@ void MapSector::SetXCenter(float x)
 	//levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
 
 	UpdateNodePosition();
+
+	for (int i = 0; i < numLevels; ++i)
+	{
+		SetRectCenter(levelNumberQuads + i * 4, 32, 32, 
+			GetNodePos(i) + Vector2f( 0, -64));
+	}
+	
 }
 
 void MapSector::DrawStats(sf::RenderTarget *target)
