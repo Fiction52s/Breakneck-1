@@ -45,6 +45,14 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	ts_energyMask = worldMap->GetTileset("WorldMap/node_energy_mask_80x80.png", 80, 80);
 	ts_nodeExplode = worldMap->GetTileset("WorldMap/nodeexplode_288x288.png", 288, 288);
 	ts_sectorArrows = worldMap->GetSizedTileset("Menu/LevelSelect/sector_arrows_64x64.png");
+	ts_mapSelectOptions = worldMap->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
+	ts_mapOptionButtons = worldMap->GetSizedTileset("Menu/button_icon_128x128.png");
+
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads, 0);
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 4, 1);
+	ts_mapSelectOptions->SetQuadSubRect(levelSelectOptionQuads + 8, 2);
+
+	
 
 	nodeExplodeSpr.setTexture(*ts_nodeExplode->texture);
 	nodeExplodeSpr.setTextureRect(ts_nodeExplode->GetSubRect(0));
@@ -145,6 +153,8 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, 0);
 	ts_sectorArrows->SetQuadSubRect(sectorArrowQuads+4, 0, true );
+
+	mapPreviewHeight = 500 + 50;
 
 	//mapPreviewSpr.setPosition(960, 500);
 
@@ -254,6 +264,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 				target->draw(mapShardIconSpr);
 				target->draw(shardsCollectedText);
 
+				target->draw(levelSelectOptionQuads, 4 * 3, sf::Quads, ts_mapSelectOptions->texture);
+				target->draw(levelSelectOptionButtonQuads, 4 * 3, sf::Quads, ts_mapOptionButtons->texture);
 			}
 
 			
@@ -298,7 +310,8 @@ void MapSector::SetXCenter(float x)
 	//sectorNameText.setPosition(Vector2f(x - 150, ms->sectorCenter.y - 370));
 	sectorNameText.setPosition(x, 20);
 	Vector2f sectorStatsSize(386, 192);
-	Vector2f sectorStatsCenter = Vector2f(x, mapPreviewSpr.getPosition().y - sectorStatsSize.y/2);//ms->sectorCenter.y - 370);
+	Vector2f sectorStatsCenter = Vector2f(x, mapPreviewHeight 
+		- sectorStatsSize.y/2);//ms->sectorCenter.y - 370);
 	
 	
 	
@@ -350,6 +363,19 @@ void MapSector::SetXCenter(float x)
 
 	//top right of mappreview
 	Vector2f levelStatsTopLeft = Vector2f( 960, 550 ) + Vector2f(912 / 2, -492 / 2) + Vector2f( 20, 0 );
+
+	Vector2f levelSelectOptionsTopLeft = levelStatsTopLeft + Vector2f(0, levelStatsSize.y + 28);
+	Vector2f buttonIconOffset(320, 2);
+	SetRectTopLeft(levelSelectOptionQuads, 384, 80, levelSelectOptionsTopLeft);
+	SetRectTopLeft(levelSelectOptionButtonQuads, 64, 64, levelSelectOptionsTopLeft + buttonIconOffset);
+
+	SetRectTopLeft(levelSelectOptionQuads + 4, 384, 80, levelSelectOptionsTopLeft + Vector2f( 0, 100 ));
+	SetRectTopLeft(levelSelectOptionButtonQuads + 4, 64, 64, levelSelectOptionsTopLeft + Vector2f(0, 100) + buttonIconOffset);
+
+	SetRectTopLeft(levelSelectOptionQuads + 8, 384, 80, levelSelectOptionsTopLeft + Vector2f( 0, 200 ));
+	SetRectTopLeft(levelSelectOptionButtonQuads + 8, 64, 64, levelSelectOptionsTopLeft + Vector2f(0, 200) + buttonIconOffset);
+
+	
 
 	SetRectTopLeft(levelStatsBG, 256 + 48, 192, levelStatsTopLeft); 
 
@@ -581,8 +607,15 @@ void MapSector::UpdateNodePosition()
 void MapSector::RunSelectedMap()
 {
 	ms->mainMenu->gameRunType = MainMenu::GRT_ADVENTURE;
-	ms->mainMenu->AdventureLoadLevel( ms->world->index, GetSelectedAdventureMap(),
-		GetSelectedLevel());
+
+	LevelLoadParams loadParams;
+	loadParams.adventureMap = GetSelectedAdventureMap();
+	loadParams.bestTimeGhostOn = bestTimeGhostOn; //finish rn
+	loadParams.level = GetSelectedLevel();
+	loadParams.loadingScreenOn = true;
+	loadParams.world = ms->world->index;
+
+	ms->mainMenu->AdventureLoadLevel( loadParams );
 }
 
 int MapSector::GetNumLevels()
@@ -666,8 +699,11 @@ bool MapSector::Update(ControllerState &curr,
 			UpdateNodes();
 		}
 
-		if (curr.A && !prev.A && saveFile->IsUnlockedSector( sec ))
+		bool aPress = (curr.A && !prev.A);
+		bool xPress = (curr.X && !prev.X);
+		if ( (aPress || xPress) && saveFile->IsUnlockedSector( sec ))
 		{
+			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )
 			{
 				state = COMPLETE;
@@ -676,6 +712,8 @@ bool MapSector::Update(ControllerState &curr,
 			{
 				state = NORMAL;
 			}
+
+			bestTimeGhostOn = xPress && !aPress;
 
 			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
 
@@ -796,7 +834,7 @@ void MapSector::UpdateMapPreview()
 	ts_mapPreview = ms->worldMap->GetTileset(previewPath, 912, 492);
 	mapPreviewSpr.setTexture(*ts_mapPreview->texture);
 	mapPreviewSpr.setOrigin(mapPreviewSpr.getLocalBounds().width / 2, mapPreviewSpr.getLocalBounds().height / 2);
-	mapPreviewSpr.setPosition(960, 500 + 50);
+	mapPreviewSpr.setPosition(960, mapPreviewHeight);
 }
 
 int MapSector::GetNodeSubIndex(int node)
@@ -930,6 +968,27 @@ void MapSector::UpdateSelectorSprite()
 
 	selectorSprite.setPosition(GetSelectedNodePos()
 		+ Vector2f(0, 50));
+}
+
+void MapSector::UpdateOptionButtons()
+{
+	ControllerType ct = ms->mainMenu->GetController(0).GetCType();
+	int tileOffset = 0;
+	switch (ct)
+	{
+	case ControllerType::CTYPE_XBOX:
+		tileOffset = 0;
+		break;
+	case ControllerType::CTYPE_GAMECUBE:
+		tileOffset = 16 * 2;
+		break;
+	}
+
+	int buttonIndex = 0;
+
+	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads, tileOffset + 0);
+	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+4, tileOffset + 3);
+	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+8, tileOffset + 2);
 }
 
 void MapSector::UpdateSectorArrows()

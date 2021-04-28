@@ -273,6 +273,7 @@ bool MapSelector::Update(ControllerState &curr,
 	//keep selector spinning during jump
 	FocusedSector()->UpdateSelectorSprite();
 	FocusedSector()->UpdateSectorArrows();
+	FocusedSector()->UpdateOptionButtons();
 
 	++kinFrame;
 	++frame;

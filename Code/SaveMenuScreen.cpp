@@ -71,7 +71,7 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 		int totalWorlds = wm->planet->numWorlds;
 		int numCompleteWorlds = sf->GetNumCompleteWorlds(wm->planet);
 
-		ss << numCompleteWorlds << "/" << totalWorlds << " Worlds completed";
+		ss << numCompleteWorlds << " / " << totalWorlds << " Worlds completed";
 
 		completedWorldsText.setString(ss.str());
 

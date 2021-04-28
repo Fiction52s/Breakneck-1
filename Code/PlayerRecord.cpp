@@ -20,6 +20,7 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	:player(p_player), sprBuffer(NULL)
 {
 	frame = 0;
+	action = 0;
 	init = false;
 
 	cs.setFillColor(Color::Red);
@@ -36,28 +37,43 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	}
 
 	assert(Shader::isAvailable() && "help me");
-	if (!pShader.loadFromFile("Resources/Shader/boostplayer_shader.frag", sf::Shader::Fragment))
+	if (!pShader.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
 	{
 		cout << "BOOST PLAYER SHADER NOT LOADING CORRECTLY" << endl;
 		assert(0 && "boost player shader not loaded");
 	}
 
+	Color auraColor(Color::Magenta);
+	pShader.setUniform("u_auraColor", ColorGL(auraColor));
+
 	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
 	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+
+	pShader.setUniform("u_invincible", 0.f);
+	pShader.setUniform("u_super", 0.f);
+	pShader.setUniform("u_slide", 0.f);
 }
 
 void ReplayGhost::Draw(RenderTarget *target)
 {
-	if (!init)
+	if (!init || frame == numTotalFrames)
 		return;
 
+	if (!player->IsVisibleAction(action))
+	{
+		return;
+	}
 
 	if (frame >= 0 && frame < numTotalFrames)
 	{
 		//target->draw(cs);
 		target->draw(replaySprite, &pShader);
 	}
-		
+}
+
+void ReplayGhost::Reset()
+{
+	frame = 0;
 }
 
 bool ReplayGhost::OpenGhost(const boost::filesystem::path &filePath)
@@ -120,21 +136,28 @@ void ReplayGhost::UpdateReplaySprite()
 	if (!init || frame == numTotalFrames)
 		return;
 
-	if (player->action == Actor::SPAWNWAIT)
-		return;
+	//if (player->action == Actor::SPAWNWAIT)
+	//	return;
+
+	
 
 	SprInfo &info = sprBuffer[frame];
 	Tileset *ts = player->tileset[(Actor::Action)info.action];
 	replaySprite.setTexture(*ts->texture);
 
+	action = info.action;
 	Actor::Action a = (Actor::Action)info.action;
-	if (a == Actor::JUMPSQUAT)
+	/*if (a == Actor::JUMPSQUAT)
 	{
 		cout << "setting jumpsquat in ghost. frame: " << frame << endl;
-	}
+	}*/
 	IntRect ir = ts->GetSubRect(info.tileIndex);
 
 	replaySprite.setRotation(info.rotation);
+
+
+	float width = ts->texture->getSize().x;
+	float height = ts->texture->getSize().y;
 
 	if (info.flipX)
 	{
@@ -147,6 +170,10 @@ void ReplayGhost::UpdateReplaySprite()
 		ir.height = -ir.height;
 	}
 
+
+	pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+
 	replaySprite.setTextureRect(ir);
 	replaySprite.setOrigin(info.origin.x, info.origin.y);
 	replaySprite.setRotation(info.rotation);
@@ -154,7 +181,7 @@ void ReplayGhost::UpdateReplaySprite()
 
 	cs.setPosition(replaySprite.getPosition());
 
-	replaySprite.setColor(Color(255, 255, 255, 200));
+	//replaySprite.setColor(Color(255, 255, 255, 200));
 
 	++frame;
 }

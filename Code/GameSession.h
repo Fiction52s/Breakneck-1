@@ -300,6 +300,7 @@ struct GameSession : RayCastHandler, Session
 
 	//new
 	bool boostEntrance;
+	bool bestTimeGhostOn;
 
 	//from mainmenu
 
@@ -414,6 +415,7 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
+	std::string GetBestTimeGhostPath();
 	GameSession * CreateBonus(const std::string &bonusName);
 	void ActivateBonus(V2d &returnPos);
 	void SetBonus(GameSession *bonus,

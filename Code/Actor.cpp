@@ -14342,8 +14342,23 @@ void Actor::ProcessHitGoal()
 		SetKinMode(K_NORMAL);
 		hitGoal = false;
 
-		if (owner != NULL && owner->parentGame == NULL)
+		
+
+		if (owner != NULL && owner->parentGame == NULL && owner->saveFile != NULL)
 		{
+			bool recordTime = false;
+
+			int levelIndex = owner->level->index;
+			int currRecord = owner->saveFile->GetBestFramesLevel(levelIndex);
+			if (currRecord == 0
+				|| (currRecord > 0 && sess->totalFramesBeforeGoal < currRecord))
+			{
+				recordTime = true;
+			}
+				
+
+
+
 			if (owner->recPlayer != NULL)
 			{
 				owner->recPlayer->RecordFrame();
@@ -14351,10 +14366,10 @@ void Actor::ProcessHitGoal()
 				owner->recPlayer->WriteToFile("testreplay.brep");
 			}
 
-			if (owner->recGhost != NULL)
+			if (owner->recGhost != NULL && recordTime )
 			{
 				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
+				owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
 			}
 		}
 
@@ -17166,13 +17181,25 @@ void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 	}
 }
 
+bool Actor::IsVisibleAction(int a)
+{
+	if (a == DEATH || a == EXITWAIT || a == SPAWNWAIT 
+		|| a == SEQ_LOOKUPDISAPPEAR || a == SPRINGSTUNTELEPORT)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 void Actor::Draw( sf::RenderTarget *target )
 {
-	//dustParticles->Draw(target);
-	if (action == DEATH || action == EXITWAIT || action == SPAWNWAIT /*|| (action == INTRO && frame < 11 )*/ || action == SEQ_LOOKUPDISAPPEAR || action == SPRINGSTUNTELEPORT )
+	if (!IsVisibleAction(action))
 	{
 		return;
 	}
+	//dustParticles->Draw(target);
+	
 	//risingAuraPool->Draw(target);
 	
 	/*double c = cos( -currInput.leftStickRadians);

@@ -42,6 +42,9 @@ struct MapSector
 	Sector *sec;
 	SaveFile *saveFile;
 	AdventureFile &adventureFile;
+	float mapPreviewHeight;
+
+	bool bestTimeGhostOn;
 
 	sf::Vector2f left;
 
@@ -67,6 +70,9 @@ struct MapSector
 	sf::Vertex lockedOverlayQuad[4];
 	sf::Vertex sectorArrowQuads[4 * 2];
 
+	sf::Vertex levelSelectOptionQuads[4 * 3];
+	sf::Vertex levelSelectOptionButtonQuads[4 * 3];
+
 	sf::Sprite *nodes;
 	sf::Sprite nodeExplodeSpr;
 	sf::Sprite endSpr;
@@ -84,6 +90,8 @@ struct MapSector
 	sf::Text numLevelsBeatenText;
 	sf::Text sectorShardsCollectedText;
 
+	Tileset *ts_mapOptionButtons;
+	Tileset *ts_mapSelectOptions;
 	Tileset *ts_energyCircle;
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
@@ -117,6 +125,7 @@ struct MapSector
 	void UpdateNodePosition();
 	int GetSelectedIndex();
 	Level *GetSelectedLevel();
+	void UpdateOptionButtons();
 	void UpdateSectorArrows();
 	AdventureMap *GetSelectedAdventureMap();
 	void Load();

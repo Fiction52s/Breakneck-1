@@ -1136,6 +1136,8 @@ struct Actor : QuadTreeCollider,
 		json &j, const std::string &name,
 		HitboxInfo *hi);
 
+	bool IsVisibleAction(int a);
+
 	bool TryHandleHitInRewindWater();
 	bool TryHandleHitWhileRewindBoosted();
 	void SetFBubbleFrame(int i, float val);

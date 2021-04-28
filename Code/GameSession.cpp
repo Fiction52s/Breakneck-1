@@ -392,6 +392,23 @@ void GameSession::ActivateBonus(V2d &returnPos)
 	bonusReturnPos = returnPos;
 }
 
+string GameSession::GetBestTimeGhostPath()
+{
+	assert(saveFile != NULL);
+	if( saveFile != NULL )
+	{
+		stringstream ss;
+
+		ss << "Resources/Data/" << saveFile->name << "/" << level->index << "_besttime.bghst";
+
+		return ss.str();
+	}
+	else
+	{
+		return "";
+	}
+}
+
 GameSession * GameSession::CreateBonus(const std::string &bonusName)
 {
 	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
@@ -1426,7 +1443,7 @@ bool GameSession::Load()
 		return false;
 	}
 
-	SetupQuadTrees();	
+	SetupQuadTrees();
 
 	cout << "weird timing 1" << endl;
 
@@ -1511,7 +1528,7 @@ bool GameSession::Load()
 	SetupPlayers();
 
 	//recPlayer = new RecordPlayer(GetPlayer(0));
-	repPlayer = new ReplayPlayer(GetPlayer(0));
+	//repPlayer = new ReplayPlayer(GetPlayer(0));
 
 	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
 	//{
@@ -1591,9 +1608,15 @@ bool GameSession::Load()
 	header.playerInfo = new GhostHeader::PlayerInfo[1];
 	header.playerInfo[0].skinIndex = 0;*/
 
-	GhostEntry *ge = new GhostEntry(boost::filesystem::path("Recordings/Ghost/testghost.bghst"), NULL);
-	ghostEntries.push_back(ge);
-	//SetupGhosts(ghostEntries);
+	string ghostPath = GetBestTimeGhostPath();
+	if ( bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+		&& boost::filesystem::exists(ghostPath))
+	{
+		GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
+		ghostEntries.push_back(ge);
+		SetupGhosts(ghostEntries);
+	}
+	
 
 	SetupPauseMenu();
 
@@ -2937,6 +2960,9 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+
+	bestTimeGhostOn = false;
+
 	mapTex = mainMenu->mapTexture;
 	pauseTex = mainMenu->pauseTexture;
 
@@ -3528,7 +3554,7 @@ void GameSession::RestartLevel()
 
 	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
 	{
-		(*it)->frame = 0;//players[0]->actionLength[Actor::Action::SPAWNWAIT];
+		(*it)->Reset();
 	}
 
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)

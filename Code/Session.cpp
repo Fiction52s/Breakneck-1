@@ -5917,6 +5917,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	LayeredDraw(EffectLayer::BEHIND_ENEMIES, target);
 
+	DrawReplayGhosts(target);
+
 	DrawEnemies(target);
 
 	LayeredDraw(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, target);
@@ -5937,7 +5939,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	absorbShardParticles->Draw(target);
 
-	DrawReplayGhosts(target);
+	
 
 	LayeredDraw(EffectLayer::IN_FRONT, target);
 

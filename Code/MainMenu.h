@@ -418,8 +418,6 @@ struct CreditsMenuScreen
 	sf::Vector2f menuOffset;
 };
 
-
-
 struct Parallax;
 struct SingleAxisSelector;
 struct MusicManager;
@@ -430,6 +428,26 @@ struct IntroMovie;
 struct MusicPlayer;
 struct Fader;
 struct Swiper;
+
+struct LevelLoadParams
+{
+	LevelLoadParams()
+		:bestTimeGhostOn(false),
+		loadingScreenOn( false ),
+		world(0),
+		level(NULL),
+		adventureMap(NULL)
+	{
+
+	}
+	bool bestTimeGhostOn;
+	bool loadingScreenOn;
+	int world;
+	Level *level;
+	AdventureMap *adventureMap;
+};
+
+
 
 std::string GetTimeStr(int numFrames);
 
@@ -634,9 +652,7 @@ struct MainMenu
 	void CustomMapOption();
 	void PlayIntroMovie();
 	Mode menuMode;
-	void AdventureLoadLevel( int w, AdventureMap *am,
-		Level *lev,
-		bool loadingScreen = true );
+	void AdventureLoadLevel(LevelLoadParams &loadParams);
 	void AdventureNextLevel(Level *lev);
 	boost::thread *loadThread;
 	boost::thread *deadThread;

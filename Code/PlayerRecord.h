@@ -93,7 +93,9 @@ struct ReplayGhost
 	sf::CircleShape cs;
 
 	bool init;
+	int action;
 	ReplayGhost(Actor *p);
+	void Reset();
 	bool OpenGhost(const boost::filesystem::path &fileName);
 	sf::Sprite replaySprite;
 
