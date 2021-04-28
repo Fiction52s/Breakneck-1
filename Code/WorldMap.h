@@ -15,6 +15,7 @@ struct SaveFile;
 struct MapSelector;
 struct MapSector;
 struct WorldMap;
+struct RecordGhostMenu;
 
 enum MapNodeState
 {
@@ -161,7 +162,7 @@ struct MapSelector
 	MainMenu *mainMenu;
 	WorldMap *worldMap;
 
-
+	//RecordGhostMenu *recordGhostMenu;
 	
 	sf::Sprite kinSprite;
 	sf::Sprite bottomBG;

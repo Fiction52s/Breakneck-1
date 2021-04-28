@@ -21,6 +21,29 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 {
 	frame = 0;
 	init = false;
+
+	cs.setFillColor(Color::Red);
+	cs.setRadius(50);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+
+
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x4.png");
+
+	int currSkinIndex = 0;
+	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
+	{
+		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
+	}
+
+	assert(Shader::isAvailable() && "help me");
+	if (!pShader.loadFromFile("Resources/Shader/boostplayer_shader.frag", sf::Shader::Fragment))
+	{
+		cout << "BOOST PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+		assert(0 && "boost player shader not loaded");
+	}
+
+	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
+	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 }
 
 void ReplayGhost::Draw(RenderTarget *target)
@@ -28,8 +51,13 @@ void ReplayGhost::Draw(RenderTarget *target)
 	if (!init)
 		return;
 
+
 	if (frame >= 0 && frame < numTotalFrames)
-		target->draw(replaySprite);
+	{
+		//target->draw(cs);
+		target->draw(replaySprite, &pShader);
+	}
+		
 }
 
 bool ReplayGhost::OpenGhost(const boost::filesystem::path &filePath)
@@ -123,6 +151,8 @@ void ReplayGhost::UpdateReplaySprite()
 	replaySprite.setOrigin(info.origin.x, info.origin.y);
 	replaySprite.setRotation(info.rotation);
 	replaySprite.setPosition(info.position.x, info.position.y);
+
+	cs.setPosition(replaySprite.getPosition());
 
 	replaySprite.setColor(Color(255, 255, 255, 200));
 

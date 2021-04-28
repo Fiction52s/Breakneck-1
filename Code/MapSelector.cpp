@@ -2,7 +2,7 @@
 #include "WorldMap.h"
 #include "Background.h"
 #include "VectorMath.h"
-
+#include "PlayerRecord.h"
 
 using namespace std;
 using namespace sf;
@@ -35,7 +35,17 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	kinFrame = 0;
 	kinSprite.setPosition(960, 540 + 300 + 30);
 
-	
+	//recordGhostMenu = new RecordGhostMenu(mainMenu, Vector2f(960, 540));
+	//recordGhostMenu->UpdateItemText();
+	//list< GhostEntry*> ghosts;
+	//recordGhostMenu->GetActiveList(ghosts);
+	//if (!ghosts.empty())
+	//{
+		//gs->SetupGhosts(ghosts);
+		
+	//}
+	//ghostSelector->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
+	//ghostSelector->UpdateLoadedFolders();
 
 	if (world->numSectors == 1)
 	{
@@ -94,6 +104,8 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 MapSelector::~MapSelector()
 {
+//	delete recordGhostMenu;
+
 	delete[] ts_bossFight;
 	delete[] ts_sectorOpen;
 
@@ -133,6 +145,8 @@ void MapSelector::Draw(sf::RenderTarget *target)
 	{
 		target->draw(kinSprite);
 	}
+
+	//recordGhostMenu->Draw(target);
 }
 
 void MapSelector::ReturnFromMap()

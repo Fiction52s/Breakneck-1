@@ -87,6 +87,11 @@ struct RecordGhost
 //play back the players sprite info
 struct ReplayGhost
 {
+	sf::Image skinPaletteImage;
+	sf::Shader pShader;
+	sf::Glsl::Vec4 paletteArray[23]; //actor palette colors
+	sf::CircleShape cs;
+
 	bool init;
 	ReplayGhost(Actor *p);
 	bool OpenGhost(const boost::filesystem::path &fileName);

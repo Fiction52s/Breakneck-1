@@ -1510,7 +1510,7 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
-	recPlayer = new RecordPlayer(GetPlayer(0));
+	//recPlayer = new RecordPlayer(GetPlayer(0));
 	repPlayer = new ReplayPlayer(GetPlayer(0));
 
 	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
@@ -1583,10 +1583,17 @@ bool GameSession::Load()
 
 	SetupRecGhost();
 
-	//std::list<GhostEntry*> ghostEntries;
-	//GhostEntry *ge = new GhostEntry("Recordings/Ghost/testghost.bghst",)
-	//SetupGhosts(
-	
+	std::list<GhostEntry*> ghostEntries;
+	GhostHeader *gh = new GhostHeader;
+
+	/*header.ver1 = 1;
+	header.ver2 = 0;
+	header.playerInfo = new GhostHeader::PlayerInfo[1];
+	header.playerInfo[0].skinIndex = 0;*/
+
+	GhostEntry *ge = new GhostEntry(boost::filesystem::path("Recordings/Ghost/testghost.bghst"), NULL);
+	ghostEntries.push_back(ge);
+	//SetupGhosts(ghostEntries);
 
 	SetupPauseMenu();
 
