@@ -14363,15 +14363,12 @@ void Actor::ProcessHitGoal()
 			{
 				recordTime = true;
 			}
-				
 
-
-
-			if (owner->recPlayer != NULL)
+			if (owner->recPlayer != NULL && recordTime)
 			{
 				owner->recPlayer->RecordFrame();
 				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile("testreplay.brep");
+				owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
 			}
 
 			if (owner->recGhost != NULL && recordTime )

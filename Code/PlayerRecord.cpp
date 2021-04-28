@@ -403,13 +403,16 @@ bool ReplayPlayer::OpenReplay(const std::string &fileName)
 		is.read((char*)inputBuffer, numTotalFrames * sizeof(int));
 
 		is.close();
-
-		frame = 0;
 		return true;
 	}
 	//return false on failure
 	return false;
 
+}
+
+void ReplayPlayer::Reset()
+{
+	frame = 0;
 }
 
 void ReplayPlayer::UpdateInput(ControllerState &state)

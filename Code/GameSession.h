@@ -301,6 +301,7 @@ struct GameSession : RayCastHandler, Session
 	//new
 	bool boostEntrance;
 	bool bestTimeGhostOn;
+	bool bestReplayOn;
 
 	//from mainmenu
 
@@ -319,6 +320,8 @@ struct GameSession : RayCastHandler, Session
 	ScreenRecorder *debugScreenRecorder;
 	SaveFile *saveFile;
 	Config *config;
+
+	sf::Text replayText;
 	
 	PauseMenu *pauseMenu;
 
@@ -415,7 +418,9 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
+
 	std::string GetBestTimeGhostPath();
+	std::string GetBestReplayPath();
 	GameSession * CreateBonus(const std::string &bonusName);
 	void ActivateBonus(V2d &returnPos);
 	void SetBonus(GameSession *bonus,

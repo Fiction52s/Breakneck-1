@@ -409,6 +409,22 @@ string GameSession::GetBestTimeGhostPath()
 	}
 }
 
+std::string GameSession::GetBestReplayPath()
+{
+	assert(saveFile != NULL);
+	if (saveFile != NULL)
+	{
+		stringstream ss;
+
+		ss << "Resources/Data/" << saveFile->name << "/" << level->index << "_best.brep";
+		return ss.str();
+	}
+	else
+	{
+		return "";
+	}
+}
+
 GameSession * GameSession::CreateBonus(const std::string &bonusName)
 {
 	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
@@ -1399,6 +1415,17 @@ bool GameSession::Load()
 
 	//while (true);
 
+	replayText.setFont(mainMenu->arial);
+	replayText.setCharacterSize(48);
+	replayText.setFillColor(Color( 255, 0, 0, 150 ));
+	replayText.setOutlineColor(Color::Black);
+	replayText.setOutlineThickness(3);
+	replayText.setString("REPLAY");
+	replayText.setOrigin(replayText.getLocalBounds().width / 2 + replayText.getLocalBounds().left, 0);
+	replayText.setPosition(960, 10);
+
+
+
 	RegisterAllEnemies();
 	SetupEnemyTypes();
 
@@ -1527,8 +1554,8 @@ bool GameSession::Load()
 
 	SetupPlayers();
 
-	//recPlayer = new RecordPlayer(GetPlayer(0));
-	//repPlayer = new ReplayPlayer(GetPlayer(0));
+	recPlayer = new RecordPlayer(GetPlayer(0));
+	
 
 	//for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
 	//{
@@ -1609,6 +1636,7 @@ bool GameSession::Load()
 	header.playerInfo[0].skinIndex = 0;*/
 
 	string ghostPath = GetBestTimeGhostPath();
+	string replayPath = GetBestReplayPath();
 	if ( bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
 		&& boost::filesystem::exists(ghostPath))
 	{
@@ -1616,8 +1644,18 @@ bool GameSession::Load()
 		ghostEntries.push_back(ge);
 		SetupGhosts(ghostEntries);
 	}
+	else if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+		&& boost::filesystem::exists(replayPath))
+	{
+		repPlayer = new ReplayPlayer(GetPlayer(0));
+		bool canOpen = repPlayer->OpenReplay(replayPath);
+		if (!canOpen)
+		{
+			delete repPlayer;
+			repPlayer = NULL;
+		}
+	}
 	
-
 	SetupPauseMenu();
 
 	SetupControlProfiles();
@@ -2048,12 +2086,7 @@ int GameSession::Run()
 
 	if (repPlayer != NULL)
 	{
-		bool canOpen = repPlayer->OpenReplay("testreplay.brep");
-		if (!canOpen)
-		{
-			delete repPlayer;
-			repPlayer = NULL;
-		}
+		repPlayer->Reset();
 	}
 		
 
@@ -2197,6 +2230,13 @@ int GameSession::Run()
 			}
 
 			DrawGame(preScreenTex);
+
+			if (repPlayer != NULL)
+			{
+				preScreenTex->setView(uiView);
+				preScreenTex->draw(replayText);
+				preScreenTex->setView(view);
+			}
 
 			preScreenTex->display();
 
@@ -2962,6 +3002,7 @@ void GameSession::Init()
 {
 
 	bestTimeGhostOn = false;
+	bestReplayOn = false;
 
 	mapTex = mainMenu->mapTexture;
 	pauseTex = mainMenu->pauseTexture;
@@ -3456,6 +3497,11 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
+	if (repPlayer != NULL)
+	{
+		repPlayer->Reset();
+	}
+
 	gameState = GameSession::RUN;
 	gameClock.restart();
 	currentTime = 0;

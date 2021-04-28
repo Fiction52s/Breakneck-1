@@ -45,6 +45,9 @@ struct MapSector
 	float mapPreviewHeight;
 
 	bool bestTimeGhostOn;
+	bool bestReplayOn;
+
+	bool ghostAndReplayOn;
 
 	sf::Vector2f left;
 

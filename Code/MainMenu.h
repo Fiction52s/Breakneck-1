@@ -433,6 +433,7 @@ struct LevelLoadParams
 {
 	LevelLoadParams()
 		:bestTimeGhostOn(false),
+		bestReplayOn(false),
 		loadingScreenOn( false ),
 		world(0),
 		level(NULL),
@@ -441,6 +442,7 @@ struct LevelLoadParams
 
 	}
 	bool bestTimeGhostOn;
+	bool bestReplayOn;
 	bool loadingScreenOn;
 	int world;
 	Level *level;

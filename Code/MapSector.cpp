@@ -271,8 +271,17 @@ void MapSector::Draw(sf::RenderTarget *target)
 				target->draw(mapShardIconSpr);
 				target->draw(shardsCollectedText);
 
-				target->draw(levelSelectOptionQuads, 4 * 3, sf::Quads, ts_mapSelectOptions->texture);
-				target->draw(levelSelectOptionButtonQuads, 4 * 3, sf::Quads, ts_mapOptionButtons->texture);
+				int numOptionsShown = 0;
+				if (ghostAndReplayOn)
+				{
+					numOptionsShown = 3;
+				}
+				else
+				{
+					numOptionsShown = 1;
+				}
+				target->draw(levelSelectOptionQuads, numOptionsShown * 4, sf::Quads, ts_mapSelectOptions->texture);
+				target->draw(levelSelectOptionButtonQuads, numOptionsShown * 4, sf::Quads, ts_mapOptionButtons->texture);
 
 				target->draw(levelNumberQuads, numLevels * 4, sf::Quads, ts_levelSelectNumbers->texture);
 			}
@@ -525,10 +534,14 @@ void MapSector::UpdateLevelStats()
 	if (recordScore > 0)
 	{
 		bestTimeText.setString(GetTimeStr(recordScore));
+
+		ghostAndReplayOn = true;
 	}
 	else
 	{
 		bestTimeText.setString("-----");
+
+		ghostAndReplayOn = false;
 	}
 
 	AdventureMapHeaderInfo &headerInfo = 
@@ -626,7 +639,8 @@ void MapSector::RunSelectedMap()
 
 	LevelLoadParams loadParams;
 	loadParams.adventureMap = GetSelectedAdventureMap();
-	loadParams.bestTimeGhostOn = bestTimeGhostOn; //finish rn
+	loadParams.bestTimeGhostOn = bestTimeGhostOn;
+	loadParams.bestReplayOn = bestReplayOn;
 	loadParams.level = GetSelectedLevel();
 	loadParams.loadingScreenOn = true;
 	loadParams.world = ms->world->index;
@@ -716,8 +730,10 @@ bool MapSector::Update(ControllerState &curr,
 		}
 
 		bool aPress = (curr.A && !prev.A);
-		bool xPress = (curr.X && !prev.X);
-		if ( (aPress || xPress) && saveFile->IsUnlockedSector( sec ))
+		bool xPress = (curr.X && !prev.X) && ghostAndReplayOn;
+		bool yPress = (curr.Y && !prev.Y) && ghostAndReplayOn;
+
+		if ( (aPress || xPress || yPress) && saveFile->IsUnlockedSector( sec ))
 		{
 			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )
@@ -729,7 +745,23 @@ bool MapSector::Update(ControllerState &curr,
 				state = NORMAL;
 			}
 
-			bestTimeGhostOn = xPress && !aPress;
+			bestTimeGhostOn = false;
+			bestReplayOn = false;
+
+			if (aPress)
+			{
+
+			}
+			else if (xPress)
+			{
+				bestTimeGhostOn = true;
+			}
+			else if (yPress)
+			{
+				bestReplayOn = true;
+			}
+
+			
 
 			ms->mainMenu->soundNodeList->ActivateSound(ms->mainMenu->soundManager.GetSound("level_select"));
 
@@ -1005,6 +1037,8 @@ void MapSector::UpdateOptionButtons()
 	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads, tileOffset + 0);
 	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+4, tileOffset + 3);
 	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+8, tileOffset + 2);
+
+	
 }
 
 void MapSector::UpdateSectorArrows()

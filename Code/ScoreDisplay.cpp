@@ -413,18 +413,24 @@ void ScoreBar::PopOut()
 	{
 		if( game != NULL )
 		{
-			if (recordScore > 0 &&
-				game->totalFramesBeforeGoal < recordScore)
+			if (recordScore > 0)
 			{
-				SetText(GetTimeStr(game->totalFramesBeforeGoal),
-					Color::Red);
+				if (game->totalFramesBeforeGoal < recordScore)
+				{
+					SetText(GetTimeStr(game->totalFramesBeforeGoal),
+						Color::Red);
+				}
+				else
+				{
+					SetText(GetTimeStr(recordScore),
+						Color::White);
+				}
 			}
 			else
 			{
 				SetText(GetTimeStr(game->totalFramesBeforeGoal),
-					Color::White);
+					Color::Red);
 			}
-			
 		}
 	}
 	else if( row == 2 )

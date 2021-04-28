@@ -1524,6 +1524,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
+	currLevel->bestReplayOn = loadParams.bestReplayOn;
 	currLevel->level = loadParams.level;
 
 
