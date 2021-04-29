@@ -288,6 +288,16 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	:mainMenu( p_mainMenu ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 	
 {
+	debugText.setFont(mainMenu->arial);
+	debugText.setCharacterSize(28);
+	debugText.setFillColor(Color::White);
+//	debugText.setOutlineColor(Color::Black);
+	debugText.setString(
+		"Hold Y and press Dpad Down\n"
+		"to store a debug replay.\n"
+		"The game is currently a work\nin progress. Thanks for testing");
+	debugText.setPosition(100, 100);
+
 	owner = NULL;
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
@@ -525,6 +535,7 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	if( currentTab == PAUSE )
 	{
 		target->draw(pauseOptionQuads, 4 * 5, sf::Quads, ts_pauseOptions->texture);
+		target->draw(debugText);
 		//target->draw( selectSprite );
 	}
 	else if( currentTab == OPTIONS )

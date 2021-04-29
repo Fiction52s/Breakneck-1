@@ -558,6 +558,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateEnvPlants();
 	bool UpdateRunModeBackAndStartButtons();
 	void CleanupDecor();
+	void CleanupGhosts();
 	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
 
 	bool RunPreUpdate();

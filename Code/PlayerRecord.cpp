@@ -386,6 +386,11 @@ ReplayPlayer::ReplayPlayer(Actor *p_player)
 	init = false;
 }
 
+ReplayPlayer::~ReplayPlayer()
+{
+	delete[] inputBuffer;
+}
+
 bool ReplayPlayer::OpenReplay(const std::string &fileName)
 {
 	ifstream is;

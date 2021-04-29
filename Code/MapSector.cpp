@@ -429,7 +429,7 @@ void MapSector::SetXCenter(float x)
 	for (int i = 0; i < numLevels; ++i)
 	{
 		SetRectCenter(levelNumberQuads + i * 4, 32, 32, 
-			GetNodePos(i) + Vector2f( 0, -64));
+			GetNodePos(i) + Vector2f( 0, -68));
 	}
 	
 }

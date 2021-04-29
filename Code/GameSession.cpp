@@ -717,6 +717,8 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}*/
 
+
+
 	for( int i = 0; i < allPolysVec.size(); ++i)
 	{
 		delete allPolysVec[i];
@@ -810,6 +812,23 @@ void GameSession::Cleanup()
 	for (auto it = fullAirTriggerList.begin(); it != fullAirTriggerList.end(); ++it)
 	{
 		delete (*it);
+	}
+
+	if (repPlayer != NULL)
+	{
+		delete repPlayer;
+	}
+
+	if (recPlayer != NULL)
+	{
+		delete recPlayer;
+	}
+
+	CleanupGhosts();
+
+	if (recGhost != NULL)
+	{
+		delete recGhost;
 	}
 }
 
@@ -1628,7 +1647,7 @@ bool GameSession::Load()
 	SetupRecGhost();
 
 	std::list<GhostEntry*> ghostEntries;
-	GhostHeader *gh = new GhostHeader;
+	//GhostHeader *gh = new GhostHeader;
 
 	/*header.ver1 = 1;
 	header.ver2 = 0;
@@ -1980,6 +1999,15 @@ void GameSession::SetupGhosts(std::list<GhostEntry*> &ghostEntries)
 
 		rg->frame = 0;
 	}
+}
+
+void GameSession::CleanupGhosts()
+{
+	for (auto it = replayGhosts.begin(); it != replayGhosts.end(); ++it)
+	{
+		delete (*it);
+	}
+	replayGhosts.clear();
 }
 
 
@@ -2528,18 +2556,18 @@ int GameSession::Run()
 
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
-			swiper->Draw(preScreenTex);
+swiper->Draw(preScreenTex);
 
-			mainMenu->DrawEffects(preScreenTex);
+mainMenu->DrawEffects(preScreenTex);
 
-			DrawFrameRate(preScreenTex);
+DrawFrameRate(preScreenTex);
 
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
-			//UpdateInput();
-		
+preTexSprite.setTexture(preScreenTex->getTexture());
+preTexSprite.setPosition(-960 / 2, -540 / 2);
+preTexSprite.setScale(.5, .5);
+window->draw(preTexSprite);
+//UpdateInput();
+
 		}
 		else if (gameState == SEQUENCE)
 		{
@@ -2597,12 +2625,12 @@ int GameSession::Run()
 			accumulator += frameTime;
 
 			bool instantQuitForBonus = false;
-			while (accumulator >= TIMESTEP )
+			while (accumulator >= TIMESTEP)
 			{
 				UpdateControllers();
 
 				ControllerState &curr = GetCurrInputUnfiltered(0);
-				ControllerState &prev= GetPrevInputUnfiltered(0);
+				ControllerState &prev = GetPrevInputUnfiltered(0);
 
 				if (curr.X && !prev.X)
 				{
@@ -2624,6 +2652,15 @@ int GameSession::Run()
 						currentTime = 0;
 						accumulator = TIMESTEP + .1;
 						frameRateDisplay.Reset();*/
+					}
+				}
+
+				if (curr.Y && curr.PDown() && !prev.PDown())
+				{
+					if (recPlayer != NULL)
+					{
+						recPlayer->numTotalFrames = recPlayer->frame;
+						recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
 					}
 				}
 

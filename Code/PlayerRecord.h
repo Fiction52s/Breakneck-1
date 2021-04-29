@@ -134,6 +134,7 @@ struct ReplayPlayer
 {
 	bool init;
 	ReplayPlayer(Actor *p);
+	~ReplayPlayer();
 	bool OpenReplay(const std::string &fileName);
 	void Reset();
 	void UpdateInput(ControllerState &state);

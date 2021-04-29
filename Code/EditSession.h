@@ -62,6 +62,7 @@ struct BrushManager;
 struct DefaultFileSelector;
 struct AdventureCreator;
 struct FileChooser;
+struct ReplayPlayer;
 
 struct GrassDiff
 {
@@ -148,6 +149,8 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	ReplayPlayer *debugReplayPlayer;
+	bool debugReplayPlayerOn;
 	int currGrassType;
 	FrameWaiter *removeProgressPointWaiter;
 	std::list<Panel*> activePanels;
@@ -389,6 +392,7 @@ struct EditSession : GUIHandler, Session
 	bool TestPlayerModeUpdate();
 	void TestPlayerMode();
 	void CleanupTestPlayerMode();
+	void RepPlayerUpdateInput();
 
 	void UpdateEnvShaders();
 	void Load();

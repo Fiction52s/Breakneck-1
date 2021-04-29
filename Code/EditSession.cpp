@@ -48,6 +48,7 @@
 #include "Enemy_Goal.h"
 #include "GGPO.h"
 #include "GameMode.h"
+#include "PlayerRecord.h"
 
 //#define GGPO_ON
 
@@ -417,6 +418,15 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	return true;
 }
 
+void EditSession::RepPlayerUpdateInput()
+{
+	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
+	{
+		//currently only records 1 player replays. fix this later
+		debugReplayPlayer->UpdateInput(GetCurrInput(0));
+	}
+}
+
 bool EditSession::TestPlayerModeUpdate()
 {
 	switchGameState = false;
@@ -641,7 +651,6 @@ void EditSession::TestPlayerMode()
 			{
 				(*it)->CancelTransformation();
 			}
-			
 		}
 	}
 
@@ -653,6 +662,21 @@ void EditSession::TestPlayerMode()
 	shardsCapturedField->Reset();
 
 	scoreDisplay->Reset();
+
+
+	if (IsKeyPressed( sf::Keyboard::LAlt ))
+	{
+		debugReplayPlayerOn = true;
+	}
+	else
+	{
+		debugReplayPlayerOn = false;
+	}
+
+	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
+	{
+		debugReplayPlayer->Reset();
+	}
 
 	gameState = Session::RUN;
 	cam.Reset();
@@ -1649,6 +1673,11 @@ EditSession::~EditSession()
 	for (int i = 0; i < 4; ++i)
 	{
 		players[i] = allPlayers[i];
+	}
+
+	if (debugReplayPlayer != NULL)
+	{
+		delete debugReplayPlayer;
 	}
 
 	delete removeProgressPointWaiter;
@@ -3436,6 +3465,14 @@ void EditSession::Init()
 		allPlayers[i] = players[i];
 	}
 
+	debugReplayPlayer = new ReplayPlayer(players[0]);
+	bool canOpen = debugReplayPlayer->OpenReplay("Resources/Debug/debugreplay.brep");
+	if (!canOpen)
+	{
+		delete debugReplayPlayer;
+		debugReplayPlayer = NULL;
+	}
+
 	SetupEnemyTypes();
 
 	brushManager = new BrushManager;
@@ -3947,7 +3984,7 @@ int EditSession::EditRun()
 		
 		UpdateFullBounds();
 
-		if (mode != TEST_PLAYER)
+		if (mode != TEST_PLAYER || ( mode == TEST_PLAYER && oneFrameMode ))
 		{
 			for (int i = 0; i < spriteUpdateFrames; ++i)
 			{
@@ -12431,6 +12468,8 @@ void EditSession::GeneralEventHandler()
 				else if (ev.key.code == Keyboard::T )
 				{
 					//make this only to some modes later
+					
+
 					TestPlayerMode();
 					//quit = true;
 				}

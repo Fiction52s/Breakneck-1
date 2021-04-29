@@ -102,6 +102,8 @@ struct PauseMenu
 	void ApplySoundSettings( );
 	bool CanChangeTab();
 
+	sf::Text debugText;
+
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];
 	void UpdatePauseOptions();

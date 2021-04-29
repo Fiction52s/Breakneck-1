@@ -378,8 +378,9 @@ void ScoreBar::PopOut()
 
 	GameSession *game = GameSession::GetSession();
 
-	int recordScore =
-		game->saveFile->GetBestFramesLevel(game->level->index);
+	int recordScore = 0;
+	if( game != NULL && game->saveFile != NULL )
+		recordScore = game->saveFile->GetBestFramesLevel(game->level->index);
 
 	if (row == 0)
 	{
@@ -437,20 +438,28 @@ void ScoreBar::PopOut()
 	{
 		Session *sess = parent->sess;
 
-		int total = sess->mapHeader->numShards;
-		int currCaptured = 0;
-		for (auto it = sess->mapHeader->shardInfoVec.begin();
-			it != sess->mapHeader->shardInfoVec.end(); ++it)
+		if (game != NULL)
 		{
-			if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
+			int total = sess->mapHeader->numShards;
+			int currCaptured = 0;
+			for (auto it = sess->mapHeader->shardInfoVec.begin();
+				it != sess->mapHeader->shardInfoVec.end(); ++it)
 			{
-				currCaptured++;
+				if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
+				{
+					currCaptured++;
+				}
 			}
-		}
 
-		stringstream ss;
-		ss << currCaptured << "/" << total;
-		SetText(ss.str(), Color::White );
+			stringstream ss;
+			ss << currCaptured << "/" << total;
+			SetText(ss.str(), Color::White);
+		}
+		else
+		{
+			//do this for editor soon
+			SetText("---", Color::White);
+		}
 		
 	}
 }
