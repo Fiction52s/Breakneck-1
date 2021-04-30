@@ -4738,19 +4738,21 @@ void Session::SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn)
 	SetGlobalBorders();
 
 	int quadWidth = 200;
-	int extra = 1000;
 
-	int top = mapHeader->topBounds;
+	int extraHeight = 1000;
+	int extraWidth = 2000;
+
+	int top = mapHeader->topBounds - extraHeight;
 	int lBound = mapHeader->leftBounds;
 	int rBound = mapHeader->leftBounds + mapHeader->boundsWidth;
-	int height = mapHeader->boundsHeight;
+	int height = mapHeader->boundsHeight + extraHeight;
 
 	Vector2f leftCenter(lBound + quadWidth / 2,
 		top + height / 2);
 	Vector2f rightCenter(rBound - quadWidth / 2,
 		top + height / 2);
 
-	int extraWidth = 1000;
+	
 
 	SetRectCenter(blackBorderQuads, quadWidth, height, leftCenter);
 	SetRectCenter(blackBorderQuads + 8, extraWidth, height, leftCenter + Vector2f( -quadWidth / 2 - extraWidth/2,0 ));

@@ -1926,6 +1926,8 @@ void MainMenu::HandleMenuMode()
 
 			SetMode(WORLDMAP);
 			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 			worldMap->Update(menuPrevInput, menuCurrInput);
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
@@ -1945,7 +1947,11 @@ void MainMenu::HandleMenuMode()
 
 				fader->Clear();
 				SetMode( MainMenu::WORLDMAP );
+				
 				worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+				worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+				worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
 				worldMap->Update(menuPrevInput, menuCurrInput);
 			}
 
@@ -1965,7 +1971,11 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 
 			SetMode( MainMenu::WORLDMAP );
+			
 			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
 			worldMap->Update(menuPrevInput, menuCurrInput);
 
 			musicPlayer->TransitionMusic(menuMusic, 60);

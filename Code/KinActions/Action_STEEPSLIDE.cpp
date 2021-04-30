@@ -9,7 +9,16 @@ void Actor::STEEPSLIDE_Start()
 
 	V2d norm = ground->Normal();
 
-	if (reversed)
+	if (norm.x > 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+
+	/*if (reversed)
 	{
 		if (norm.x < 0)
 		{
@@ -30,7 +39,7 @@ void Actor::STEEPSLIDE_Start()
 		{
 			facingRight = false;
 		}
-	}
+	}*/
 }
 
 void Actor::STEEPSLIDE_End()

@@ -8,6 +8,16 @@ void Actor::STEEPCLIMBATTACK_Start()
 	SetActionSuperLevel();
 
 	ResetAttackHit();
+
+	V2d norm = ground->Normal();
+	if (norm.x > 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 }
 
 void Actor::STEEPCLIMBATTACK_End()

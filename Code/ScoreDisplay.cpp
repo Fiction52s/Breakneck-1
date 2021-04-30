@@ -433,33 +433,38 @@ void ScoreBar::PopOut()
 					Color::Red);
 			}
 		}
+		else
+		{
+			Session *sess = Session::GetSession();
+			SetText(GetTimeStr(sess->totalFramesBeforeGoal),
+				Color::White);
+		}
 	}
 	else if( row == 2 )
 	{
 		Session *sess = parent->sess;
 
-		if (game != NULL)
+		
+		int total = sess->mapHeader->numShards;
+		int currCaptured = 0;
+		for (auto it = sess->mapHeader->shardInfoVec.begin();
+			it != sess->mapHeader->shardInfoVec.end(); ++it)
 		{
-			int total = sess->mapHeader->numShards;
-			int currCaptured = 0;
-			for (auto it = sess->mapHeader->shardInfoVec.begin();
-				it != sess->mapHeader->shardInfoVec.end(); ++it)
+			if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
 			{
-				if (sess->shardsCapturedField->GetBit((*it).GetTrueIndex()))
-				{
-					currCaptured++;
-				}
+				currCaptured++;
 			}
+		}
 
-			stringstream ss;
-			ss << currCaptured << "/" << total;
-			SetText(ss.str(), Color::White);
-		}
-		else
-		{
-			//do this for editor soon
-			SetText("---", Color::White);
-		}
+		stringstream ss;
+		ss << currCaptured << "/" << total;
+		SetText(ss.str(), Color::White);
+		//}
+		//else
+		//{
+		//	//do this for editor soon
+		//	SetText("---", Color::White);
+		//}
 		
 	}
 }

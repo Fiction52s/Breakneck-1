@@ -26,6 +26,12 @@ ShipExitScene::ShipExitScene()
 	shipSprite.setOrigin(421, 425);
 }
 
+ShipExitScene::~ShipExitScene()
+{
+	delete shots["shot1"];
+	delete shots["shot2"];
+}
+
 void ShipExitScene::SetupStates()
 {
 	SetNumStates(Count);
@@ -35,6 +41,8 @@ void ShipExitScene::SetupStates()
 
 void ShipExitScene::AddShots()
 {
+	shots["shot1"] = new CameraShot("shot1", Vector2f(0, 0), 1.5);
+	shots["shot2"] = new CameraShot("shot2", Vector2f(0, 0), 1.5);
 }
 
 void ShipExitScene::AddEnemies()
@@ -75,13 +83,17 @@ void ShipExitScene::UpdateState()
 
 		if (frame == 0)
 		{
-			sess->cam.SetManual(true);
+			
+			shots["shot1"]->centerPos = sess->cam.pos + Vector2f( 0, -400 );
+			
+			EaseShot("shot1", enterTime);
+			//sess->cam.SetManual(true);
 			center.movementList->start = V2d(sess->cam.pos.x, sess->cam.pos.y);
 			center.movementList->end = V2d(sess->GetPlayer(0)->position.x,
 				sess->GetPlayer(0)->position.y - 200);
 
 			center.Reset();
-			sess->cam.SetMovementSeq(&center, false);
+			//sess->cam.SetMovementSeq(&center, false);
 
 			abovePlayer = V2d(player->position.x, player->position.y - 300);
 
@@ -93,6 +105,8 @@ void ShipExitScene::UpdateState()
 
 			m->start = abovePlayer;
 			m->end = abovePlayer + V2d(1500, -900) + V2d(1500, -900);
+			Vector2f shot2Pos = Vector2f(m->start * .75 + m->end * .25);
+			shots["shot2"]->centerPos = shot2Pos + Vector2f(0, -400);
 
 			origPlayer = sess->GetPlayer(0)->position;
 			attachPoint = abovePlayer;//V2d(player->position.x, player->position.y);//abovePlayer.y + 170 );
@@ -110,9 +124,14 @@ void ShipExitScene::UpdateState()
 		int jumpSquat = startGrabWire + 3 * 5;
 		int startJump = 4 * 5;//60 - jumpSquat;
 
-		if (frame > enterTime)
+		if (frame >= enterTime)
 		{
-			sess->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0);
+			sess->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0 + 28.0);
+			if (frame == enterTime)
+			{
+				EaseShot("shot2", exitTime);
+			}
+			
 		}
 		else if (frame >= jumpSquat && frame <= enterTime)//startJump )
 		{
@@ -146,7 +165,7 @@ void ShipExitScene::UpdateState()
 
 void ShipExitScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 {
-	if (layer != EffectLayer::IN_FRONT)
+	if (layer != EffectLayer::BETWEEN_PLAYER_AND_ENEMIES)
 	{
 		return;
 	}

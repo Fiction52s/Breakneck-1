@@ -9,6 +9,16 @@ void Actor::STEEPSLIDEATTACK_Start()
 	SetActionSuperLevel();
 	ActivateSound(S_STANDATTACK);
 	ResetAttackHit();
+
+	V2d norm = ground->Normal();
+	if (norm.x > 0)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
 }
 
 void Actor::STEEPSLIDEATTACK_End()

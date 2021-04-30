@@ -27,6 +27,7 @@
 #include "Nexus.h"
 #include "MovingGeo.h"
 #include "ParticleEffects.h"
+#include "HUD.h"
 
 using namespace sf;
 using namespace std;
@@ -118,11 +119,8 @@ void NexusCoreSeq::ReturnToGame()
 	player->SetAction(Actor::GOALKILLWAIT);
 	player->frame = 0;
 	
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		game->scoreDisplay->Activate();
-	}
+	sess->scoreDisplay->Activate();
+	sess->hud->Hide();
 }
 
 void NexusCoreSeq::UpdateState()

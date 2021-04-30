@@ -4467,7 +4467,6 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
-	
 	SetSkin(SKIN_NORMAL);
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
@@ -4487,9 +4486,8 @@ void Actor::Respawn()
 	momentumBoostFrames = 0;
 	currSpecialTerrain = NULL;
 	oldSpecialTerrain = NULL;
-	//should probably just stay at wherever you previously set it? not sure
-	//might save this in the save file after this beta
-	currPowerMode = PMODE_SHIELD;
+	//stays between respawns.
+	//currPowerMode = PMODE_SHIELD; 
 	touchedCoyoteHelper = false;
 	coyoteBoostFrames = 0;
 
@@ -7503,6 +7501,7 @@ void Actor::HandleWaitingScoreDisplay()
 
 void Actor::EndLevelWithoutGoal()
 {
+	sess->hud->Hide(60);
 	sess->scoreDisplay->Activate();
 	SetAction(Actor::GOALKILLWAIT);
 	frame = 0;
@@ -14352,31 +14351,7 @@ void Actor::ProcessHitGoal()
 
 		
 
-		if (owner != NULL && owner->parentGame == NULL && owner->saveFile != NULL)
-		{
-			bool recordTime = false;
-
-			int levelIndex = owner->level->index;
-			int currRecord = owner->saveFile->GetBestFramesLevel(levelIndex);
-			if (currRecord == 0
-				|| (currRecord > 0 && sess->totalFramesBeforeGoal < currRecord))
-			{
-				recordTime = true;
-			}
-
-			if (owner->recPlayer != NULL && recordTime)
-			{
-				owner->recPlayer->RecordFrame();
-				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
-			}
-
-			if (owner->recGhost != NULL && recordTime )
-			{
-				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
-			}
-		}
+		WriteBestTimeRecordings();
 
 		frame = 0;
 		position = sess->goalNodePos;
@@ -14397,21 +14372,8 @@ void Actor::ProcessHitGoal()
 		SetAction(NEXUSKILL);
 		SetKinMode(K_NORMAL);
 //		hitNexus = NULL;
-		if (owner != NULL && owner->parentGame == NULL)
-		{
-			if (owner->recPlayer != NULL)
-			{
-				owner->recPlayer->RecordFrame();
-				owner->recPlayer->StopRecording();
-				owner->recPlayer->WriteToFile("testreplay.brep");
-			}
+		WriteBestTimeRecordings();
 
-			if (owner->recGhost != NULL)
-			{
-				owner->recGhost->StopRecording();
-				owner->recGhost->WriteToFile("Recordings/Ghost/testghost.bghst");
-			}
-		}
 		frame = 0;
 		position = sess->goalNodePos;
 		rightWire->Reset();
@@ -14689,6 +14651,37 @@ void Actor::UpdateDashBooster()
 		if (currAirdashBoostCounter < maxAirdashBoostCount)
 		{
 			currAirdashBoostCounter++;
+		}
+	}
+}
+
+void Actor::WriteBestTimeRecordings()
+{
+	if (owner != NULL && owner->parentGame == NULL && owner->saveFile != NULL)
+	{
+		bool recordTime = false;
+
+		int levelIndex = owner->level->index;
+		int currRecord = owner->saveFile->GetBestFramesLevel(levelIndex);
+		if (currRecord == 0
+			|| (currRecord > 0 && sess->totalFramesBeforeGoal < currRecord))
+		{
+			recordTime = true;
+		}
+
+		if (owner->recPlayer != NULL && recordTime)
+		{
+			owner->recPlayer->RecordFrame();
+			owner->recPlayer->StopRecording();
+			owner->recPlayer->WriteToFile(owner->GetBestReplayPath());
+		}
+
+		if (owner->recGhost != NULL && recordTime)
+		{
+			owner->recGhost->StopRecording();
+			owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
+
+			owner->SetupBestTimeGhost();
 		}
 	}
 }
@@ -17581,8 +17574,11 @@ void Actor::ShipPickupPoint( double eq, bool fr )
 		if (sess->scoreDisplay != NULL)
 		{
 			sess->scoreDisplay->Activate();
+			sess->hud->Hide(60);
 		}
 		
+		WriteBestTimeRecordings();
+
 		SetAction(WAITFORSHIP);
 		frame = 0;
 		assert( ground != NULL );

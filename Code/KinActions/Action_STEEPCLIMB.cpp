@@ -7,27 +7,13 @@ void Actor::STEEPCLIMB_Start()
 {
 	V2d norm = ground->Normal();
 
-	if (reversed)
+	if (norm.x > 0)
 	{
-		if (norm.x < 0)
-		{
-			facingRight = false;
-		}
-		else
-		{
-			facingRight = true;
-		}
+		facingRight = false;
 	}
 	else
 	{
-		if (norm.x > 0)
-		{
-			facingRight = false;
-		}
-		else
-		{
-			facingRight = true;
-		}
+		facingRight = true;
 	}
 }
 

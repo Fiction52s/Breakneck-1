@@ -470,7 +470,8 @@ struct GameSession : RayCastHandler, Session
 	//fader
 	
 
-	
+	void SetupBestTimeGhost();
+	void SetupBestReplay();
 	PolyPtr GetPolygon(int index);
 	
 	void UpdateDecorSprites();

@@ -293,8 +293,8 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	debugText.setFillColor(Color::White);
 //	debugText.setOutlineColor(Color::Black);
 	debugText.setString(
-		"Hold Y and press Dpad Down\n"
-		"to store a debug replay.\n"
+		"Hold Y and press Dpad Down while\n"
+		"paused to store a debug replay.\n"
 		"The game is currently a work\nin progress. Thanks for testing");
 	debugText.setPosition(100, 100);
 

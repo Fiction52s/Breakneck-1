@@ -370,6 +370,7 @@ struct ShipExitScene : Sequence
 	sf::Sprite shipSprite;
 
 	ShipExitScene();
+	~ShipExitScene();
 	void SetupStates();
 	void ReturnToGame();
 	void AddShots();

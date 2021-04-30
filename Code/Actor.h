@@ -1138,6 +1138,7 @@ struct Actor : QuadTreeCollider,
 	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
 
+	void WriteBestTimeRecordings();
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
 	bool TryThrowSwordProjectileBasic();
 	bool TryThrowEnemySwordProjectileBasic();

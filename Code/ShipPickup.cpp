@@ -37,7 +37,7 @@ ShipPickup::ShipPickup(ActorParams * ap)
 	ts = sess->GetSizedTileset( "Ship/shipleave_128x128.png");
 	sprite.setTexture( *ts->texture );
 	
-	SetOffGroundHeight(ts->tileHeight / 2.0 - 10);
+	SetOffGroundHeight(ts->tileHeight / 2.0 - 58);
 
 	//SetCurrPosInfo(startPosInfo);
 	

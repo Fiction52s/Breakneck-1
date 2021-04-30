@@ -999,9 +999,16 @@ void GameSession::ProcessGate(int gCat,
 
 void GameSession::ProcessRail(RailPtr rail)
 {
-	railDrawTree->Insert(rail);
-	totalRails++; //is this really even needed?
-	allRails.push_back(rail);
+	if (rail->IsEnemyType())
+	{
+		ProcessActor(rail->enemyParams);
+	}
+	else
+	{
+		railDrawTree->Insert(rail);
+		totalRails++; //is this really even needed?
+		allRails.push_back(rail);
+	}
 }
 
 void GameSession::ProcessHeader()
@@ -1646,34 +1653,15 @@ bool GameSession::Load()
 
 	SetupRecGhost();
 
-	std::list<GhostEntry*> ghostEntries;
+	
 	//GhostHeader *gh = new GhostHeader;
 
+	SetupBestTimeGhost();
 	/*header.ver1 = 1;
 	header.ver2 = 0;
 	header.playerInfo = new GhostHeader::PlayerInfo[1];
 	header.playerInfo[0].skinIndex = 0;*/
-
-	string ghostPath = GetBestTimeGhostPath();
-	string replayPath = GetBestReplayPath();
-	if ( bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-		&& boost::filesystem::exists(ghostPath))
-	{
-		GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
-		ghostEntries.push_back(ge);
-		SetupGhosts(ghostEntries);
-	}
-	else if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-		&& boost::filesystem::exists(replayPath))
-	{
-		repPlayer = new ReplayPlayer(GetPlayer(0));
-		bool canOpen = repPlayer->OpenReplay(replayPath);
-		if (!canOpen)
-		{
-			delete repPlayer;
-			repPlayer = NULL;
-		}
-	}
+	SetupBestReplay();
 	
 	SetupPauseMenu();
 
@@ -2010,7 +1998,36 @@ void GameSession::CleanupGhosts()
 	replayGhosts.clear();
 }
 
+void GameSession::SetupBestReplay()
+{
+	string replayPath = GetBestReplayPath();
+	if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+		&& boost::filesystem::exists(replayPath))
+	{
+		repPlayer = new ReplayPlayer(GetPlayer(0));
+		bool canOpen = repPlayer->OpenReplay(replayPath);
+		if (!canOpen)
+		{
+			delete repPlayer;
+			repPlayer = NULL;
+		}
+	}
+}
 
+void GameSession::SetupBestTimeGhost()
+{
+	CleanupGhosts();
+
+	string ghostPath = GetBestTimeGhostPath();
+	std::list<GhostEntry*> ghostEntries;
+	if (bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+		&& boost::filesystem::exists(ghostPath))
+	{
+		GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
+		ghostEntries.push_back(ge);
+		SetupGhosts(ghostEntries);
+	}
+}
 
 int GameSession::Run()
 {
