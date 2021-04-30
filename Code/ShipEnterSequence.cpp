@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include "Actor.h"
 #include "HUD.h"
+#include "Background.h"
 
 using namespace sf;
 using namespace std;
@@ -20,12 +21,12 @@ ShipEnterScene::ShipEnterScene()
 
 void ShipEnterScene::AddFlashes()
 {
-	AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
+	/*AddFlashedImage("stare0", sess->GetTileset("Bosses/Coyote/Coy_09b.png", 1920, 1080),
 		0, 30, 20, 30, Vector2f(960, 540));
 
 	FlashGroup * group = AddFlashGroup("staregroup");
 	AddSeqFlashToGroup(group, "stare0", 0);
-	group->Init();
+	group->Init();*/
 }
 
 void ShipEnterScene::Reset()
@@ -114,7 +115,7 @@ void ShipEnterScene::UpdateState()
 	if (frame == 0)
 	{
 		sess->hud->Hide();
-		SetFlashGroup("staregroup");
+		//SetFlashGroup("staregroup");
 	}
 
 	float oldLeft = cloud0[0].position.x;
@@ -135,6 +136,10 @@ void ShipEnterScene::UpdateState()
 	Vector2f cl = relShipVel;
 
 	middleClouds.move(Vector2f(0, cl.y));// + Vector2f( allDiff, 0 ) );
+
+
+
+
 	for (int i = 0; i < 3 * 4; ++i)
 	{
 		cloud0[i].position = cl + Vector2f(cloud0[i].position.x + allDiff, cloud0[i].position.y);
@@ -142,6 +147,21 @@ void ShipEnterScene::UpdateState()
 
 		cloudBot0[i].position = cl + Vector2f(cloudBot0[i].position.x + allDiff, cloudBot0[i].position.y);
 		cloudBot1[i].position = cl + Vector2f(cloudBot1[i].position.x + allDiff, cloudBot1[i].position.y);
+	}
+
+	float origClouds = sess->playerOrigPos[0].x - 480;
+	float currClouds = middleClouds.getPosition().x;
+	
+	
+	//sess->background->Update(sess->view.getCenter());
+
+	if (frame <= 120) //arbitrary, but when kin is in the middle of the clouds
+	{
+		sess->background->SetExtra(Vector2f(frame * -30.0, 0));
+	}
+	else if( frame == 121 )
+	{
+		sess->background->SetExtra(Vector2f( 0, 0 ));
 	}
 
 	if (frame >= 90 && frame <= 180)

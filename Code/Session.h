@@ -187,7 +187,6 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-
 	float waterShaderCounter;
 	Tileset *ts_water;
 	sf::Shader *waterShaders;

@@ -14,8 +14,10 @@ struct ScrollingBackground
 		int depthLevel, float p_scrollSpeedX = 0.f);
 	~ScrollingBackground();
 	void Set(sf::Vector2f &pos, float zoom = 1.f);
+	void SetExtra(sf::Vector2f &extra);
 	Tileset *ts;
 	int tsIndex;
+	sf::Vector2f extra;
 	sf::Vector2f relPos;
 	sf::VertexArray va;
 	float xPos;
@@ -49,6 +51,7 @@ struct Background
 		TilesetManager *tm, bool deleteTilesets );
 
 	void DestroyTilesets();
+	void SetExtra(sf::Vector2f &extra);
 	void Update( const sf::Vector2f &camPos,
 		int frames = 1 );
 	void Reset();

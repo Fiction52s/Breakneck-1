@@ -6221,7 +6221,7 @@ bool Session::RunGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 
-		if (IsSessTypeGame())
+		if (IsSessTypeGame() )
 		{
 			background->Update(view.getCenter());
 		}

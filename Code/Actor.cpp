@@ -6417,6 +6417,7 @@ void Actor::UpdatePrePhysics()
 			{
 				sess->SetActiveSequence(sess->shipExitScene);
 				sess->shipExitScene->Reset();
+				sess->shipExitScene->Update();
 				//owner->SetActiveSequence(owner->shipExitSeq);
 				//owner->shipExitSeq->Reset();
 			}

@@ -27,15 +27,21 @@ ScrollingBackground::~ScrollingBackground()
 
 }
 
+void ScrollingBackground::SetExtra(Vector2f &p_extra)
+{
+	extra = p_extra;
+}
+
 void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 {
 	Vector2f cPos = camPos;
-	cPos.x -= scrollOffset;
-	if (scrollOffset * depth > 1920)
-		scrollOffset = 0;
-	if (scrollOffset * depth < -1920)
+	float testScrollOffset = extra.x + scrollOffset;
+	cPos.x -= testScrollOffset;
+	if (testScrollOffset * depth > 1920)
+		testScrollOffset = 0;
+	if (testScrollOffset * depth < -1920)
 	{
-		scrollOffset = 0;
+		testScrollOffset = 0;
 	}
 	int repeatWidth = 1920 * 2;
 	int p = floor(cPos.x * depth + .5f);
@@ -68,7 +74,12 @@ void ScrollingBackground::Update(const Vector2f &camPos, int updateFrames )
 	if (p > 0)
 		pxx = -pxx;
 
-
+	if (scrollOffset * depth > 1920)
+		scrollOffset = 0;
+	if (scrollOffset * depth < -1920)
+	{
+		scrollOffset = 0;
+	}
 	scrollOffset += scrollSpeedX * updateFrames;
 
 	//cout << "pxx: " << pxx << ", modified:  " << (pxx / .5f) << endl;
@@ -398,6 +409,14 @@ void Background::Set(Vector2f &pos, float zoom )
 	}
 }
 
+void Background::SetExtra(sf::Vector2f &p_extra)
+{
+	for (auto it = scrollingBackgrounds.begin(); it != scrollingBackgrounds.end(); ++it)
+	{
+		(*it)->SetExtra(p_extra);
+	}
+}
+
 void Background::DestroyTilesets()
 {
 	tm->DestroyTileset(ts_bg);
@@ -489,6 +508,7 @@ void Background::Reset()
 	int r = rand() % 4;
 	int r2 = rand() % transFrames;
 	frame = r * transFrames + r2;
+	SetExtra(Vector2f( 0, 0 ));
 }
 
 void Background::Draw(sf::RenderTarget *target)
