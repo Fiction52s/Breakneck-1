@@ -13427,7 +13427,9 @@ void Actor::PhysicsResponse()
 
 		if (collision && minContact.normal.y > 0 && !reversed && action != WALLCLING 
 			&& rightWire->state != Wire::PULLING && leftWire->state != Wire::PULLING
-			&& action != SEQ_KINFALL )
+			&& action != SEQ_KINFALL && action != WATERGLIDE && action != SPRINGSTUNGLIDE
+			&& action != FREEFLIGHT && action != FREEFLIGHTSTUN
+			&& !InWater( TerrainPolygon::WATER_BUOYANCY))
 			//&& hitCeilingCounter == 0 )
 		{
 			//hitCeilingCounter = hitCeilingLockoutFrames;

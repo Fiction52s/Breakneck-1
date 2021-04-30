@@ -284,6 +284,8 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	//comboObj->enemyHitboxFrame = 0;
 
 	frame = 0;
+	
+	cutObject->Setup(ts, 22, 21, scale, !facingRight);
 
 	float halfWidth = ts->tileWidth / 2;
 	float halfHeight = ts->tileHeight / 2;
