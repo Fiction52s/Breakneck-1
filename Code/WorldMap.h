@@ -239,6 +239,7 @@ struct WorldSelector
 	sf::Vertex quads[4 * 4];
 };
 
+struct KinBoostScreen;
 struct WorldMap : TilesetManager
 {
 	enum State
@@ -252,6 +253,11 @@ struct WorldMap : TilesetManager
 		PLANET_TO_SPACE,
 		START_LEVEL
 	};
+
+	//moved this here
+	//because its only needed in adventure 
+	//currently.
+	KinBoostScreen *kinBoostScreen;
 
 	const static int MAX_NUM_WORLDS = 8;
 

@@ -80,7 +80,8 @@ MapOptionsUI::MapOptionsUI()
 	bgOptionsPanel->SetPosition(Vector2i(960 - bgOptionsPanel->size.x / 2,
 		540 - bgOptionsPanel->size.y / 2));
 
-	Tileset *bgTS;
+
+	Tileset *ts_mapBGThumbnails = edit->ts_mapBGThumbnails;
 	string bgName;
 	string numStr;
 	string fullName;
@@ -93,18 +94,17 @@ MapOptionsUI::MapOptionsUI()
 			index = w * 8 + i;
 			numStr = to_string(i + 1);
 			bgName = "w" + to_string(w + 1) + "_0" + numStr;
-			fullName = "BGInfo/" + bgName + ".png";
-			bgTS = edit->GetTileset(fullName, 1920, 1080);
-			if (bgTS == NULL)
+			fullName = "Resources/BGInfo/" + bgName + ".bg";
+
+			if (boost::filesystem::exists(fullName))
 			{
-				continue;
+				bgNameArr[index] = bgName;
+				icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
+					Vector2f(i * 125, w * 125), ts_mapBGThumbnails, index, 125);
+				icr->Init();
+				icr->SetShown(true);
+				icr->SetInfo((void*)index);
 			}
-			bgNameArr[index] = bgName;
-			icr = bgOptionsPanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_BACKGROUNDLIBRARY,
-				Vector2f(i * 125, w * 125), bgTS, 0, 125);
-			icr->Init();
-			icr->SetShown(true);
-			icr->SetInfo((void*)index);
 		}
 	}
 }

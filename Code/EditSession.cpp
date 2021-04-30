@@ -3431,7 +3431,7 @@ void EditSession::Init()
 	mainMenu->SetMouseGrabbed(true);
 	mainMenu->SetMouseVisible(true);
 
-	
+	ts_mapBGThumbnails = GetSizedTileset("BGInfo/bg_thumbnails_240x135.png");
 
 	playerType = NULL;
 

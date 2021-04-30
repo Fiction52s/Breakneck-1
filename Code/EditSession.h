@@ -186,7 +186,7 @@ struct EditSession : GUIHandler, Session
 	sf::RenderTexture *brushPreviewTex;
 	std::list<Enemy*> allCurrEnemies;
 	std::list<Panel*> allPopups;
-	
+	Tileset *ts_mapBGThumbnails;
 	ImageEditTool currImageTool;
 	Tileset *ts_shards[7];
 	int grassSize;

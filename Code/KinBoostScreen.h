@@ -21,7 +21,8 @@ struct KinBoostScreen
 	bool IsEnded();
 	int stateFrame;
 	State state;
-	KinBoostScreen( MainMenu *mm);
+	KinBoostScreen( MainMenu *mm,
+		TilesetManager *tm );
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	bool IsBoosting();

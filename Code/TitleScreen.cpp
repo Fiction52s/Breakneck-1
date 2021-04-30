@@ -27,16 +27,6 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	background = new Background(p_mainMenu);
 
-	ts_light[0] = GetTileset("Title/titlelight_1_1920x1080.png", 1920, 1080);
-	ts_light[1] = GetTileset("Title/titlelight_2_1920x1080.png", 1920, 1080);
-	ts_light[2] = GetTileset("Title/titlelight_3_1920x1080.png", 1920, 1080);
-	ts_light[3] = GetTileset("Title/titlelight_4_1920x1080.png", 1920, 1080);
-
-	for (int i = 0; i < 4; ++i)
-	{
-		lightSpr[i].setTexture(*ts_light[i]->texture);
-	}
-
 	ts_energy = GetTileset("Title/energy_1920x1080.png", 1920, 1080);
 	energySpr.setTexture(*ts_energy->texture);
 
@@ -92,16 +82,6 @@ void TitleScreen::Update()
 
 	Vector2f empty(0, 0);
 	background->Update(empty);
-
-	for (int i = 0; i < 4; ++i)
-	{
-		Color c = background->GetShapeColor();
-		c.r = 255 - c.r;
-		c.g = 255 - c.g;
-		c.b = 255 - c.b;
-
-		lightSpr[i].setColor(c);//
-	}
 
 	for ( auto it = scrollingBackgrounds.begin();
 		it != scrollingBackgrounds.end(); ++it)
@@ -194,14 +174,7 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 
 	mainMenu->DrawMenuOptionText(target);
 
-	/*for (int i = 0; i < 4; ++i)
-	{
-		target->draw(lightSpr[i]);
-	}*/
-
 	target->draw(breakneckTitleSprite);
 	target->draw(emergenceTitleSprite);
-
-	
 	
 }

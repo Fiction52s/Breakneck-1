@@ -395,7 +395,7 @@ MainMenu::MainMenu()
 	saveMenu = NULL;
 	//worldMap = new WorldMap( this );
 
-	kinBoostScreen = new KinBoostScreen(this);
+	
 
 	levelSelector = new LevelSelector( this );
 
@@ -607,7 +607,7 @@ MainMenu::~MainMenu()
 		delete saveMenu;
 	}
 
-	delete kinBoostScreen;
+	
 	delete levelSelector;
 	delete window;
 
@@ -835,7 +835,7 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == KINBOOSTLOADINGMAP)
 	{
-		kinBoostScreen->Reset();
+		worldMap->kinBoostScreen->Reset();
 	}
 
 	if (menuMode == TITLEMENU)
@@ -1571,7 +1571,7 @@ void MainMenu::AdventureNextLevel(Level *lev)
 	//window->setFramerateLimit(60);
 	//string levelPath = lev->GetFullName();// name;
 										  //View oldView = window->getView();
-	kinBoostScreen->level = lev;
+	worldMap->kinBoostScreen->level = lev;
 	SetModeKinBoostLoadingMap(0);
 	
 	//kinBoostScreen->levName = levelPath;
@@ -1833,18 +1833,18 @@ void MainMenu::HandleMenuMode()
 			}
 		}
 
-		if (kinBoostScreen->IsEnded())//swiper->IsPostWipe())
+		if (worldMap->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
 			//mainMenu->fader->Fade(true, 30, Color::Black, true);
 			fader->Fade(true, 30, Color::Black, true);
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUNNINGMAP);
 		}
-		else if ( kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && kinBoostScreen->IsBoosting())
+		else if ( worldMap->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && worldMap->kinBoostScreen->IsBoosting())
 		{
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
-			kinBoostScreen->End();
+			worldMap->kinBoostScreen->End();
 			
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
@@ -1860,18 +1860,18 @@ void MainMenu::HandleMenuMode()
 		{
 			//kinBoostScreen->Update();
 
-			if (kinBoostScreen->frame == 60 && kinBoostScreen->IsBoosting() )
+			if (worldMap->kinBoostScreen->frame == 60 && worldMap->kinBoostScreen->IsBoosting() )
 			{
 				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
 				//string levelPath = kinBoostScreen->level->GetFullName();//kinBoostScreen->levName;
-				Level *lev = kinBoostScreen->level;
+				Level *lev = worldMap->kinBoostScreen->level;
 				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &worldMap->adventureFile.GetMap( lev->index ), lev);
-				kinBoostScreen->level = NULL;
+				worldMap->kinBoostScreen->level = NULL;
 			}
 			
 		}
-		kinBoostScreen->Update();
+		worldMap->kinBoostScreen->Update();
 		break;
 	}
 
@@ -2623,7 +2623,7 @@ void MainMenu::DrawMode( Mode m )
 	case KINBOOSTLOADINGMAP:
 	{
 		preScreenTexture->setView(v);
-		kinBoostScreen->Draw(preScreenTexture);
+		worldMap->kinBoostScreen->Draw(preScreenTexture);
 		break;
 	}
 
@@ -2763,6 +2763,6 @@ void MainMenu::DrawMode( Mode m )
 	if (menuMode == KINBOOSTLOADINGMAP)
 	{
 		preScreenTexture->setView(v);
-		kinBoostScreen->DrawLateKin(preScreenTexture);
+		worldMap->kinBoostScreen->DrawLateKin(preScreenTexture);
 	}
 }

@@ -157,7 +157,7 @@ void ShipEnterScene::UpdateState()
 
 	if (frame <= 120) //arbitrary, but when kin is in the middle of the clouds
 	{
-		sess->background->SetExtra(Vector2f(frame * -30.0, 0));
+		sess->background->SetExtra(Vector2f(frame * -60.0, 0));
 	}
 	else if( frame == 121 )
 	{

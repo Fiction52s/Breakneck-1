@@ -2,28 +2,29 @@
 #include "MainMenu.h"
 #include "Fader.h"
 #include "VectorMath.h" 
+#include "WorldMap.h"
 
 
 using namespace std;
 using namespace sf;
 
-KinBoostScreen::KinBoostScreen( MainMenu *mm )
+KinBoostScreen::KinBoostScreen( MainMenu *mm, TilesetManager *tm )
 	:mainMenu( mm )
 {
-	ts_bg = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
-	ts_bgShape = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
+	ts_bg = tm->GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
+	ts_bgShape = tm->GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
 
-	ts_light[0] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_light_01a.png", 1920, 1080);
-	ts_light[1] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_light_01b.png", 1920, 1080);
+	ts_light[0] = tm->GetTileset("KinBoost/kinboost_light_01a.png", 1920, 1080);
+	ts_light[1] = tm->GetTileset("KinBoost/kinboost_light_01b.png", 1920, 1080);
 
-	ts_stars[0] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01a.png", 1920, 1080);
-	ts_stars[1] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01b.png", 1920, 1080);
-	ts_stars[2] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
-	ts_stars[3] = mainMenu->tilesetManager.GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
+	ts_stars[0] = tm->GetTileset("KinBoost/kinboost_stars_01a.png", 1920, 1080);
+	ts_stars[1] = tm->GetTileset("KinBoost/kinboost_stars_01b.png", 1920, 1080);
+	ts_stars[2] = tm->GetTileset("KinBoost/kinboost_stars_01c.png", 1920, 1080);
+	ts_stars[3] = tm->GetTileset("KinBoost/kinboost_stars_01d.png", 1920, 1080);
 
-	ts_kinBoost = mainMenu->tilesetManager.GetTileset("Kin/exitboost_96x128.png", 96, 128);
-	ts_kinAura = mainMenu->tilesetManager.GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
-	ts_enterFX = mainMenu->tilesetManager.GetSizedTileset("Kin/FX/enter_fx_320x320.png");
+	ts_kinBoost = tm->GetTileset("Kin/exitboost_96x128.png", 96, 128);
+	ts_kinAura = tm->GetTileset("Kin/FX/exitaura_256x256.png", 256, 256);
+	ts_enterFX = tm->GetSizedTileset("Kin/FX/enter_fx_320x320.png");
 	
 
 	ts_enterFX->SetSpriteTexture(enterFXSpr);

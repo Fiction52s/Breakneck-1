@@ -9,6 +9,7 @@
 #include "SaveMenuScreen.h"
 
 #include "Background.h"
+#include "KinBoostScreen.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -18,6 +19,8 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
 	allUnlocked = true;
+
+	kinBoostScreen = new KinBoostScreen(mainMenu, this);
 
 	worldSelector = new WorldSelector(p_mainMenu);
 
@@ -170,35 +173,35 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 	entries = NULL;
 	text = NULL;
 	dirNode = NULL;
-localPaths = NULL;
-leftBorder = 20;
-//numTotalEntries = 0;
+	localPaths = NULL;
+	leftBorder = 20;
+	//numTotalEntries = 0;
 
-currLevelTimeText.setFillColor(Color::White);
-currLevelTimeText.setCharacterSize(40);
-currLevelTimeText.setFont(mainMenu->arial);
-currLevelTimeText.setOrigin(currLevelTimeText.getLocalBounds().left + currLevelTimeText.getLocalBounds().width / 2, 0);
-currLevelTimeText.setPosition(1300, 200);
-currLevelTimeText.setString("");
+	currLevelTimeText.setFillColor(Color::White);
+	currLevelTimeText.setCharacterSize(40);
+	currLevelTimeText.setFont(mainMenu->arial);
+	currLevelTimeText.setOrigin(currLevelTimeText.getLocalBounds().left + currLevelTimeText.getLocalBounds().width / 2, 0);
+	currLevelTimeText.setPosition(1300, 200);
+	currLevelTimeText.setString("");
 
-Reset(NULL);
+	Reset(NULL);
 
-adventureFile.Load("Resources/Adventure", "tadventure");
-adventureFile.LoadMapHeaders();
-planet = new Planet(adventureFile);
+	adventureFile.Load("Resources/Adventure", "tadventure");
+	adventureFile.LoadMapHeaders();
+	planet = new Planet(adventureFile);
 
-int numWorlds = planet->numWorlds;
-selectors = new MapSelector*[numWorlds];
+	int numWorlds = planet->numWorlds;
+	selectors = new MapSelector*[numWorlds];
 
-for (int i = 0; i < numWorlds; ++i)
-{
-	selectors[i] = new MapSelector(this, &(planet->worlds[i]),
-		mainMenu, Vector2f(960, 540));
-}
-/*for (int i = 0; i < 8; ++i)
-{
-	selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
-}*/
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		selectors[i] = new MapSelector(this, &(planet->worlds[i]),
+			mainMenu, Vector2f(960, 540));
+	}
+	/*for (int i = 0; i < 8; ++i)
+	{
+		selectors[i] = new MapSelector( planet->worlds[mainMenu, Vector2f(960, 540), i);
+	}*/
 }
 
 WorldMap::~WorldMap()
@@ -219,6 +222,8 @@ WorldMap::~WorldMap()
 	//delete sectionTex[i];
 	//delete colonyTex[i];
 	//}
+
+	delete kinBoostScreen;
 
 	ClearEntries();
 	//delete [] text;

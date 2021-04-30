@@ -618,7 +618,7 @@ struct MainMenu
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;
 	MultiLoadingScreen *multiLoadingScreen;
-	KinBoostScreen *kinBoostScreen;
+	
 	bool quit;
 	bool doneLoading;
 	bool changedMode;
