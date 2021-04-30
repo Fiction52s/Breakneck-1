@@ -588,6 +588,8 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 			currSelector->sectorSASelector->currIndex = startSector;
 
+			currSelector->sectors[startSector]->CreateBG();
+
 			for (int se = 0; se < currSelector->numSectors; ++se)
 			{
 				int numLevels = currSelector->sectors[startSector]->numLevels;

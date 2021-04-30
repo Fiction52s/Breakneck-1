@@ -116,6 +116,7 @@ struct MapSector
 	int sectorArrowFrame;
 
 	SingleAxisSelector *mapSASelector;
+	std::string bgName;
 	Background *bg;
 
 	MapSector( AdventureFile &adventureFile,
@@ -123,6 +124,8 @@ struct MapSector
 		MapSelector *ms, int index);
 	~MapSector();
 	void UpdateUnlockedLevelCount();
+	void DestroyBG();
+	void CreateBG();
 	void UpdateHighlight();
 	bool IsFocused();
 	void RunSelectedMap();

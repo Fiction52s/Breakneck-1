@@ -180,9 +180,11 @@ bool MapSelector::Update(ControllerState &curr,
 		}
 		else if (curr.B && !prev.B)
 		{
+			FocusedSector()->DestroyBG();
 			return false;
 		}
 		//(currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE)
+		MapSector *oldSector = FocusedSector();
 		int changed = sectorSASelector->UpdateIndex(curr.LLeft(), curr.LRight());
 		int numCurrLevels = FocusedSector()->unlockedLevelCount;
 		if (changed != 0)
@@ -190,6 +192,9 @@ bool MapSelector::Update(ControllerState &curr,
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
 			//mapSelector->SetTotalSize(numCurrLevels);
 			FocusedSector()->UpdateLevelStats();
+
+			oldSector->DestroyBG();
+			FocusedSector()->CreateBG();
 		}
 		
 		break;

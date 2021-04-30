@@ -113,12 +113,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	mapSASelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	
 	string worldStr = to_string(sec->worldIndex + 1);
-	if (bg == NULL)
-	{
-		string secStr = to_string(index + 1);
-		string bgStr = "w" + worldStr + "_0" + secStr;
-		bg = Background::SetupFullBG(bgStr, worldMap, true);
-	}
+	string secStr = to_string(index + 1);
+	bgName = "w" + worldStr + "_0" + secStr;
+
+	
 
 	stringstream ss;
 	ss.str("");
@@ -186,6 +184,19 @@ MapSector::~MapSector()
 	}
 
 	delete bg;
+}
+
+void MapSector::DestroyBG()
+{
+	assert(bg != NULL);
+	delete bg;
+	bg = NULL;
+}
+
+void MapSector::CreateBG()
+{
+	assert(bg == NULL);
+	bg = Background::SetupFullBG(bgName, ms->worldMap, true);
 }
 
 void MapSector::UpdateUnlockedLevelCount()
