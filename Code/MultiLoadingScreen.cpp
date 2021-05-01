@@ -8,7 +8,6 @@ using namespace std;
 MultiLoadingScreen::MultiLoadingScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu), loadThread(NULL)
 {
-
 	int quarter = 1920 / 4;
 	menuOffset = Vector2f(0, 0);
 	for (int i = 0; i < 4; ++i)

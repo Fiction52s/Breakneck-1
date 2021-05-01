@@ -275,6 +275,8 @@ struct WorldMap : TilesetManager
 		START_LEVEL
 	};
 
+	//bool bgLoadFinished;
+	//bool continueBGLoadingThread;
 	boost::thread *bgLoadThread;
 	boost::thread *bgDestroyThread;
 	static void sLoadBGs(WorldMap *wm);

@@ -428,6 +428,7 @@ struct IntroMovie;
 struct MusicPlayer;
 struct Fader;
 struct Swiper;
+struct LoadingBackpack;
 
 struct LevelLoadParams
 {
@@ -605,9 +606,10 @@ struct MainMenu
 	sf::View v;
 	sf::View uiView;
 
-	sf::Sprite loadingIconBackpack[3];
+	
 	sf::Sprite loadingBGSpr;
 	Tileset *ts_loadBG;
+	LoadingBackpack *loadingBackpack;
 
 	Tileset *ts_buttonIcons;
 	//GameController controller;

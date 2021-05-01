@@ -10,6 +10,7 @@
 
 #include "Background.h"
 #include "KinBoostScreen.h"
+#include "LoadingBackpack.h"
 
 using namespace boost::filesystem;
 using namespace sf;
@@ -22,6 +23,10 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 
 	bgDestroyThread = NULL;
 	bgLoadThread = NULL;
+	//bgLoadFinished = true;
+	//continueBGLoadingThread = true;
+	
+	
 
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
 
@@ -555,6 +560,19 @@ void WorldMap::sLoadBGs(WorldMap *wm)
 	MapSelector *currSelector = wm->CurrSelector();
 	currSelector->CreateBGs();
 	cout << "done loading bgs" << endl;
+	//wm->bgLoadFinished = true;
+	/*while (wm->continueBGLoadingThread)
+	{
+		if (!wm->bgLoadFinished)
+		{
+			cout << "start loading bgs" << endl;
+			MapSelector *currSelector = wm->CurrSelector();
+			currSelector->CreateBGs();
+			cout << "done loading bgs" << endl;
+			wm->bgLoadFinished = true;
+		}
+	}*/
+	
 }
 
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
@@ -596,6 +614,12 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			state = LOAD_COLONY;
 			frame = 0;
+
+			//mainMenu->loadingBackpack->SetScale(.25f);
+			//mainMenu->loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
+
+
+			//bgLoadFinished = false;
 			bgLoadThread = new boost::thread(WorldMap::sLoadBGs, this);
 
 			//state = PlANET_TO_COLONY;
@@ -850,10 +874,12 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case LOAD_COLONY:
 	{
-		if (bgLoadThread->try_join_for(boost::chrono::milliseconds(0)))
+		//if (bgLoadFinished )
+		//mainMenu->loadingBackpack->Update();
+		if( bgLoadThread->try_join_for(boost::chrono::milliseconds(0)))
 		{
-			delete bgLoadThread;
-			bgLoadThread = NULL;
+			//delete bgLoadThread;
+			//bgLoadThread = NULL;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
 			state = PlANET_TO_COLONY;
 			frame = 0;
@@ -949,7 +975,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 void WorldMap::Draw( RenderTarget *target )
 {
 	sf::RenderTexture *rt = MainMenu::extraScreenTexture;
-	rt->clear();
+	rt->clear(sf::Color::Transparent);
 	
 	rt->setView(uiView);
 	rt->draw(spaceSpr);
@@ -1073,6 +1099,11 @@ void WorldMap::Draw( RenderTarget *target )
 		rt->draw(worldNameText);
 	}
 
+	/*if (state == LOAD_COLONY)
+	{
+		mainMenu->loadingBackpack->Draw(rt);
+	}*/
+
 	//rt->draw(asteroidSpr[2]);
 	//asteroidSpr[2].setScale(5.f, 5.f);
 	//asteroidSpr[3].setScale(5.f, 5.f);
@@ -1191,10 +1222,3 @@ int WorldMap::GetCurrSectorNumLevels()
 	int secIndex = currSelector->sectorSASelector->currIndex;
 	return currSelector->sectors[secIndex]->numLevels;
 }
-
-//void WorldMap::sLoadBGs(WorldMap *wm)
-//{
-//	MapSelector *currSelector = wm->selectors[wm->selectedColony];
-//	int prevIndex = -1;
-//	int currIndex = currSelector->sectorSASelector
-//}

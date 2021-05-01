@@ -34,6 +34,7 @@
 #include "GCC/VJoyGCController.h"
 
 #include "CustomMapClient.h"
+#include "LoadingBackpack.h"
 
 using namespace std;
 using namespace sf;
@@ -429,15 +430,7 @@ MainMenu::MainMenu()
 
 	creditsMenu = new CreditsMenuScreen(this);
 
-	Tileset *ts_loadIcon = tilesetManager.GetTileset("Menu/loadicon_320x320.png", 320, 320);
-
-	for (int i = 0; i < 3; ++i)
-	{
-		loadingIconBackpack[i].setTexture(*ts_loadIcon->texture);
-		loadingIconBackpack[i].setTextureRect(ts_loadIcon->GetSubRect(i));
-		loadingIconBackpack[i].setOrigin(loadingIconBackpack[i].getLocalBounds().width / 2, loadingIconBackpack[i].getLocalBounds().height / 2);
-		loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
-	}
+	loadingBackpack = new LoadingBackpack(&tilesetManager);
 
 	
 }
@@ -567,6 +560,7 @@ MainMenu::~MainMenu()
 
 	window->close();
 
+	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
 	delete pauseMenu;
@@ -1420,13 +1414,11 @@ void DispLoadTest( MainMenu *mm )
 		pTex->clear(Color::Black);
 		win->clear(Color::Red);
 		
-		mm->loadingIconBackpack[1].rotate(-1);
-		mm->loadingIconBackpack[2].rotate(2);
+		mm->loadingBackpack->Update();
 
 		pTex->draw(mm->loadingBGSpr);
 
-		for (int i = 0; i < 3; ++i)
-			pTex->draw(mm->loadingIconBackpack[i]);
+		mm->loadingBackpack->Draw(pTex);
 
 		mm->fader->Draw(pTex);
 		mm->swiper->Draw(pTex);
@@ -1479,9 +1471,12 @@ void MainMenu::SetModeLoadingMap( int wIndex )
 	}
 
 	ts_loadBG = tilesetManager.GetTileset(ss.str(), 1920, 1080);
+
+	loadingBackpack->SetScale(1.f);
+	loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
 	//ts_loadBG[0] = tilesetManager.GetTileset("Menu/load_w1_1.png", 1920, 1080);
 	//ts_loadBG[1] = tilesetManager.GetTileset("Menu/load_w2_1.png", 1920, 1080);
-
+	//loadingIconBackpack[i].setPosition(1920 - 260, 1080 - 200);
 	loadingBGSpr.setTexture(*ts_loadBG->texture);
 }
 
@@ -1744,8 +1739,7 @@ void MainMenu::HandleMenuMode()
 	}
 	case LOADINGMAP:
 	{
-		loadingIconBackpack[1].rotate(-1);
-		loadingIconBackpack[2].rotate(2);
+		loadingBackpack->Update();
 
 		if (loadThread != NULL)
 		{
@@ -1761,8 +1755,9 @@ void MainMenu::HandleMenuMode()
 			}
 			else
 			{
-				loadingIconBackpack[1].rotate(-1);
-				loadingIconBackpack[2].rotate(2);
+				loadingBackpack->Update();
+				//loadingIconBackpack[1].rotate(-1);
+				//loadingIconBackpack[2].rotate(2);
 			}
 		}
 		break;
@@ -1777,8 +1772,7 @@ void MainMenu::HandleMenuMode()
 	}
 	
 	case LOADINGMENULOOP:
-		loadingIconBackpack[1].rotate(-1);
-		loadingIconBackpack[2].rotate(2);
+		loadingBackpack->Update();
 
 		if (loadThread != NULL)
 		{
@@ -1791,8 +1785,7 @@ void MainMenu::HandleMenuMode()
 			}
 			else
 			{
-				loadingIconBackpack[1].rotate(-1);
-				loadingIconBackpack[2].rotate(2);
+				loadingBackpack->Update();
 			}
 		}
 		break;
@@ -2598,8 +2591,7 @@ void MainMenu::DrawMode( Mode m )
 		preScreenTexture->setView(v);
 		preScreenTexture->draw(loadingBGSpr);
 
-		for (int i = 0; i < 3; ++i)
-			preScreenTexture->draw(loadingIconBackpack[i]);
+		loadingBackpack->Draw(preScreenTexture);
 
 		break;
 	}
@@ -2611,8 +2603,7 @@ void MainMenu::DrawMode( Mode m )
 	case LOADINGMENULOOP:
 	{
 		preScreenTexture->setView(v);
-		for (int i = 0; i < 3; ++i)
-			preScreenTexture->draw(loadingIconBackpack[i]);
+		loadingBackpack->Draw(preScreenTexture);
 		break;
 	}
 	case LOADINGMENUEND:
