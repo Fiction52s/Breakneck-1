@@ -423,7 +423,7 @@ void ScoreBar::PopOut()
 				}
 				else
 				{
-					SetText(GetTimeStr(recordScore),
+					SetText(GetTimeStr(game->totalFramesBeforeGoal),
 						Color::White);
 				}
 			}

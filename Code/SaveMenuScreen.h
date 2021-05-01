@@ -7,6 +7,7 @@
 struct MainMenu;
 struct SaveFile;
 struct WorldMap;
+struct SkinMenu;
 
 struct SaveFileDisplay
 {
@@ -37,6 +38,7 @@ struct SaveMenuScreen : TilesetManager
 		TRANSITION,
 		TRANSITIONMOVIE,
 		FADEIN,
+		SKINMENU,
 		Count
 	};
 
@@ -44,6 +46,7 @@ struct SaveMenuScreen : TilesetManager
 	Action action;
 	int actionLength[Count];
 	int frame;
+	SkinMenu * skinMenu;
 	SaveMenuScreen(MainMenu *p_mainMenu);
 	~SaveMenuScreen();
 	Tileset *ts_background;//ts_saveMenuBG;

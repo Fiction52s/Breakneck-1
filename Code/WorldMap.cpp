@@ -548,18 +548,20 @@ void WorldMap::InitSelectors()
 
 void WorldMap::sDestroyBGs(WorldMap *wm)
 {
-	cout << "Start destroying bgs" << endl;
+	//cout << "Start destroying bgs" << endl;
 	MapSelector *currSelector = wm->CurrSelector();
 	currSelector->DestroyBGs();
-	cout << "done destroying bgs" << endl;
+	//cout << "done destroying bgs" << endl;
 }
 
 void WorldMap::sLoadBGs(WorldMap *wm)
 {
-	cout << "start loading bgs" << endl;
+	//cout << "start loading bgs" << endl;
 	MapSelector *currSelector = wm->CurrSelector();
 	currSelector->CreateBGs();
-	cout << "done loading bgs" << endl;
+	//cout << "done loading bgs" << endl;
+
+
 	//wm->bgLoadFinished = true;
 	/*while (wm->continueBGLoadingThread)
 	{
@@ -609,18 +611,18 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			bgDestroyThread = NULL;
 		}
 
-
 		if (currInput.A && !prevInput.A)
 		{
 			state = LOAD_COLONY;
 			frame = 0;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_select"));
 
 			//mainMenu->loadingBackpack->SetScale(.25f);
 			//mainMenu->loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));
 
 
 			//bgLoadFinished = false;
-			bgLoadThread = new boost::thread(WorldMap::sLoadBGs, this);
+			
 
 			//state = PlANET_TO_COLONY;
 			//frame = 0;
@@ -874,16 +876,30 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case LOAD_COLONY:
 	{
+		
 		//if (bgLoadFinished )
 		//mainMenu->loadingBackpack->Update();
-		if( bgLoadThread->try_join_for(boost::chrono::milliseconds(0)))
+		if( bgLoadThread != NULL && bgLoadThread->try_join_for(boost::chrono::milliseconds(0)))
 		{
-			//delete bgLoadThread;
-			//bgLoadThread = NULL;
+			delete bgLoadThread;
+			bgLoadThread = NULL;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
 			state = PlANET_TO_COLONY;
 			frame = 0;
+			break;
 		}
+
+		if (bgDestroyThread != NULL && bgDestroyThread->try_join_for(boost::chrono::milliseconds(0)))
+		{
+			delete bgDestroyThread;
+			bgDestroyThread = NULL;
+		}
+
+		if (bgLoadThread == NULL && bgDestroyThread == NULL )
+		{
+			bgLoadThread = new boost::thread(WorldMap::sLoadBGs, this);
+		}
+		
 		break;
 	}
 	}

@@ -5,6 +5,7 @@
 #include "IntroMovie.h"
 #include "WorldMap.h"
 #include "Fader.h"
+#include "SkinMenu.h"
 
 using namespace sf;
 using namespace std;
@@ -103,6 +104,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	//TilesetManager &tsMan = mainMenu->tilesetManager;
 	selectedSaveIndex = 0;
+	skinMenu = new SkinMenu(this);
 	
 	frame = 0;
 	kinFaceTurnLength = 15;
@@ -269,6 +271,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 SaveMenuScreen::~SaveMenuScreen()
 {
+	delete skinMenu;
 	for (int i = 0; i < 6; ++i)
 	{
 		if (files[i] != mainMenu->currSaveFile)
@@ -338,6 +341,11 @@ bool SaveMenuScreen::Update()
 			action = WAIT;
 			break;
 		}
+		case SKINMENU:
+		{
+			frame = 0;
+			break;
+		}
 		}
 	}
 
@@ -371,6 +379,11 @@ bool SaveMenuScreen::Update()
 			frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
 			return true;
+		}
+		else if (menuCurrInput.Y && !menuPrevInput.Y)
+		{
+			action = SKINMENU;
+			frame = 0;
 		}
 
 		//bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
@@ -540,6 +553,15 @@ bool SaveMenuScreen::Update()
 	case FADEIN:
 		transparency = 1.f - ((float)(frame%actionLength[FADEIN]) / actionLength[FADEIN]);
 		break;
+	case SKINMENU:
+	{
+		if (!skinMenu->Update(menuCurrInput, menuPrevInput))
+		{
+			action = WAIT;
+			frame = 0;
+		}
+		break;
+	}
 	}
 
 	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(selectedSaveIndex));
@@ -549,6 +571,8 @@ bool SaveMenuScreen::Update()
 
 	selectSlot.setPosition(topLeftPos);
 	kinFace.setPosition(topLeftPos + Vector2f( 15, -6 ));
+
+	
 
 	UpdateClouds();
 	++asteroidFrameBack;
@@ -660,11 +684,16 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveSpr.setColor(Color(255, 255, 255, 255 * (1.f - transparency)));
 	
 	target->draw(saveSpr);
-	
+
+	if (action == SKINMENU)
+	{
+		skinMenu->Draw(target);
+	}
 }
 
 void SaveMenuScreen::Reset()
 {
+	skinMenu->Reset();
 	//doesnt reset the selected save index
 	fadeOut = 0;
 	transparency = 0;
