@@ -42,13 +42,13 @@ struct ScrollingBackground
 struct Background
 {
 	Background( GameSession *owner, int envLevel, int envType);
-	Background(TilesetManager *tm, const std::string &bgName);
+	Background(TilesetManager *tm, const std::string &bgName );
 	Background(MainMenu *mm);
 	void Set(sf::Vector2f &pos, float zoom = 1.f);
 	~Background();
 	static std::string GetBGNameFromBGInfo(const std::string &fileName);
 	static Background *SetupFullBG(const std::string &fName,
-		TilesetManager *tm, bool deleteTilesets );
+		TilesetManager *tm, bool deleteTilesets);
 
 	void DestroyTilesets();
 	void SetExtra(sf::Vector2f &extra);

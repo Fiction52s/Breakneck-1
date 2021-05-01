@@ -47,14 +47,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	//ghostSelector->Update(mainMenu->menuCurrInput, mainMenu->menuPrevInput);
 	//ghostSelector->UpdateLoadedFolders();
 
-	if (world->numSectors == 1)
-	{
-		state = S_MAPSELECT;
-	}
-	else
-	{
-		state = S_SECTORSELECT;
-	}
+	
 	
 	mainMenu = mm;
 
@@ -83,7 +76,14 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	frame = 0;
 
-	
+	/*continueBGLoadingThread = true;
+	bgLoadFinished = true;
+	bgLoadThread = NULL;
+	bgLoadThread = new boost::thread(MapSelector::sLoadBG, this);
+
+	continueBGDestroyThread = true;
+	bgDestroyFinished = true;
+	bgDestroyThread = new boost::thread(MapSelector::sDestroyBG, this);*/
 
 	
 	numSectors = world->numSectors;
@@ -100,6 +100,16 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, 
 		waitModeThresh, numSectors, 0);
+
+	if (world->numSectors == 1)
+	{
+		state = S_MAPSELECT;
+		FocusedSector()->UpdateMapPreview();
+	}
+	else
+	{
+		state = S_SECTORSELECT;
+	}
 }
 
 MapSelector::~MapSelector()
@@ -160,6 +170,22 @@ MapSector * MapSelector::FocusedSector()
 	return sectors[sectorSASelector->currIndex];
 }
 
+void MapSelector::CreateBGs()
+{
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i]->CreateBG();
+	}
+}
+
+void MapSelector::DestroyBGs()
+{
+	for (int i = 0; i < numSectors; ++i)
+	{
+		sectors[i]->DestroyBG();
+	}
+}
+
 bool MapSelector::Update(ControllerState &curr,
 	ControllerState &prev)
 {
@@ -176,25 +202,30 @@ bool MapSelector::Update(ControllerState &curr,
 		if (curr.A && !prev.A)
 		{
 			state = S_MAPSELECT;
+			FocusedSector()->UpdateMapPreview();
 			break;
 		}
 		else if (curr.B && !prev.B)
 		{
-			FocusedSector()->DestroyBG();
+			//FocusedSector()->DestroyBG();
 			return false;
 		}
-		//(currSectorState == MapSector::NORMAL || currSectorState == MapSector::COMPLETE)
-		MapSector *oldSector = FocusedSector();
+
+		int oldIndex = sectorSASelector->currIndex;
 		int changed = sectorSASelector->UpdateIndex(curr.LLeft(), curr.LRight());
 		int numCurrLevels = FocusedSector()->unlockedLevelCount;
 		if (changed != 0)
 		{
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_change"));
-			//mapSelector->SetTotalSize(numCurrLevels);
-			FocusedSector()->UpdateLevelStats();
 
-			oldSector->DestroyBG();
-			FocusedSector()->CreateBG();
+			//mapSelector->SetTotalSize(numCurrLevels);
+
+			/*loadIndex = sectorSASelector->currIndex;
+			sectorSASelector->currIndex = oldIndex;
+			bgLoadFinished = false;
+			state = S_CHANGINGSECTORS;*/
+
+			FocusedSector()->UpdateLevelStats();
 		}
 		
 		break;
@@ -226,6 +257,20 @@ bool MapSelector::Update(ControllerState &curr,
 			}
 
 		}
+		break;
+	}
+	case S_CHANGINGSECTORS:
+	{
+		/*if (bgLoadFinished)
+		{
+			state = S_SECTORSELECT;
+
+			destroyIndex = sectorSASelector->currIndex;
+
+			sectorSASelector->currIndex = loadIndex;
+
+			bgDestroyFinished = false;
+		}*/
 		break;
 	}
 	}
@@ -285,3 +330,28 @@ bool MapSelector::Update(ControllerState &curr,
 
 	return true;
 }
+
+//void MapSelector::sLoadBG(MapSelector* ms )
+//{
+//	while (ms->continueBGLoadingThread)
+//	{
+//		if (!ms->bgLoadFinished)
+//		{
+//			ms->sectors[ms->loadIndex]->CreateBG();
+//			ms->bgLoadFinished = true;
+//		}
+//	}
+//	//ms->sectors[oldIndex]->DestroyBG();
+//}
+//
+//void MapSelector::sDestroyBG(MapSelector *ms)
+//{
+//	while (ms->continueBGDestroyThread)
+//	{
+//		if (!ms->bgDestroyFinished)
+//		{
+//			ms->sectors[ms->destroyIndex]->DestroyBG();
+//			ms->bgDestroyFinished = true;
+//		}
+//	}
+//}

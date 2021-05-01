@@ -1287,8 +1287,8 @@ void MainMenu::Run()
 
 		accumulator += frameTime;
 
-		preScreenTexture->clear(Color::Black);
-		window->clear(Color::Red);
+		preScreenTexture->clear(Color::Transparent);
+		window->clear(Color::Transparent);
 		
 	#if defined( USE_MOVIE_TEST )
 		if (m.getStatus() == sfe::Status::Stopped)

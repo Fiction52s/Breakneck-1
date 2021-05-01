@@ -8,6 +8,7 @@
 #include "Tileset.h"
 #include "ItemSelector.h"
 #include "SaveFile.h"
+#include <boost/thread.hpp>
 
 struct Background;
 struct MainMenu;
@@ -36,6 +37,7 @@ struct MapSector
 		EXPLODECOMPLETE,
 		COMPLETE
 	};
+
 
 	State state;
 	MapSelector *ms;
@@ -114,7 +116,7 @@ struct MapSector
 	int selectorAnimFactor;
 
 	int sectorArrowFrame;
-
+	
 	SingleAxisSelector *mapSASelector;
 	std::string bgName;
 	Background *bg;
@@ -166,6 +168,7 @@ struct MapSelector
 		//S_SLIDINGRIGHT,
 		S_SECTORSELECT,
 		S_MAPSELECT,
+		S_CHANGINGSECTORS
 	};
 
 	enum KinState
@@ -174,6 +177,18 @@ struct MapSelector
 		K_JUMP,
 		K_HIDE,
 	};
+
+	/*static void sLoadBG( MapSelector* ms );
+	static void sDestroyBG(MapSelector *ms);
+	boost::thread *bgLoadThread;
+	boost::thread *bgDestroyThread;
+	int loadIndex;
+	bool bgLoadFinished;
+	bool continueBGLoadingThread;
+
+	bool bgDestroyFinished;
+	int destroyIndex;
+	bool continueBGDestroyThread;*/
 
 	State state;
 	std::vector<MapSector*> sectors;
@@ -226,6 +241,8 @@ struct MapSelector
 	bool Update(ControllerState &curr,
 		ControllerState &prev);
 	void Draw(sf::RenderTarget *target);
+	void CreateBGs();
+	void DestroyBGs();
 };
 
 struct WorldSelector
@@ -250,12 +267,20 @@ struct WorldMap : TilesetManager
 		SPACE,
 		SPACE_TO_PLANET,
 		PLANET,
+		LOAD_COLONY,
 		PlANET_TO_COLONY,
 		COLONY,
 		COLONY_TO_PLANET,
 		PLANET_TO_SPACE,
 		START_LEVEL
 	};
+
+	boost::thread *bgLoadThread;
+	boost::thread *bgDestroyThread;
+	static void sLoadBGs(WorldMap *wm);
+	static void sDestroyBGs(WorldMap*wm);
+	//std::thread *bgLoadThread;
+	//static void sLoadBGs(WorldMap *wm);
 
 	//moved this here
 	//because its only needed in adventure 

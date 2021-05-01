@@ -15,6 +15,7 @@ ScrollingBackground::ScrollingBackground(Tileset *p_ts, int index,
 {
 	assert(p_ts != NULL);
 	tsSource = ts->sourceName;
+	//ts->texture->setSmooth(false);
 	SetTileIndex(tsIndex);
 	SetLeftPos(Vector2f(0, 0));
 	scrollOffset = 0;
@@ -221,12 +222,13 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 
 
 Background *Background::SetupFullBG(const std::string &fName,
-	TilesetManager *tm, bool p_deleteTilesets )
+	TilesetManager *tm, bool p_deleteTilesets)
 {
 	ifstream is;
 	stringstream fss;
 	fss << "Resources/BGInfo/" << fName << ".bg";
 	string fStr = fss.str();
+
 	string eStr = ".png";
 	string parDirStr = "Parallax/";
 
@@ -269,7 +271,7 @@ Background *Background::SetupFullBG(const std::string &fName,
 
 			newBG->scrollingBackgrounds.push_back(
 				new ScrollingBackground(
-					tm->GetTileset(parDirStr + pStr + eStr, 1920, 1080), tsIndex, depthLevel, scrollSpeed));
+					tm->GetTileset(parDirStr + pStr + eStr), tsIndex, depthLevel, scrollSpeed));
 		}
 
 		is.close();
@@ -287,8 +289,6 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 
 	name = bgName;
 
-	//int eType = envLevel + 1; //adjust for alex naming -_-
-	//ss << folder << "w" << envType + 1 << "_BG";
 	ss << folder << bgName;
 
 	//ss << eType;
@@ -297,7 +297,7 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 
 	bgSourceName = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
-	shapeSourceName = bgStr + "_shape.png";
+	shapeSourceName = bgStr + "_shape" + ".png";
 
 	ts_bg = tm->GetTileset(bgSourceName, 1920, 1080);
 	ts_shape = tm->GetTileset(shapeSourceName, 1920, 1080);

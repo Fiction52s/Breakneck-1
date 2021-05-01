@@ -116,8 +116,6 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	string secStr = to_string(index + 1);
 	bgName = "w" + worldStr + "_0" + secStr;
 
-	
-
 	stringstream ss;
 	ss.str("");
 	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
@@ -196,6 +194,7 @@ void MapSector::DestroyBG()
 void MapSector::CreateBG()
 {
 	assert(bg == NULL);
+
 	bg = Background::SetupFullBG(bgName, ms->worldMap, true);
 }
 
@@ -249,7 +248,8 @@ void MapSector::Draw(sf::RenderTarget *target)
 		if (unlocked)
 		{
 			target->draw(endSpr);
-			if (ms->state == MapSelector::S_SECTORSELECT)
+			if (ms->state == MapSelector::S_SECTORSELECT
+				|| ms->state == MapSelector::S_CHANGINGSECTORS)
 			{
 				DrawStats(target);
 				target->draw(sectorArrowQuads, 2 * 4, sf::Quads, ts_sectorArrows->texture);
@@ -1114,7 +1114,7 @@ void MapSector::Init(SaveFile *p_saveFile)
 	UpdateStats();
 	UpdateLevelStats();
 	UpdateUnlockedLevelCount();
-	UpdateMapPreview();
+	
 
 	//selectorSprite.setPosition(GetSelectedNodePos()
 	//	+ Vector2f(0, 50));
