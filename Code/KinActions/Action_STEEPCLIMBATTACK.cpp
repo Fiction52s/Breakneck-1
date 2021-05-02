@@ -10,7 +10,7 @@ void Actor::STEEPCLIMBATTACK_Start()
 	ResetAttackHit();
 
 	V2d norm = ground->Normal();
-	if (norm.x > 0)
+	if (norm.x < 0)
 	{
 		facingRight = true;
 	}

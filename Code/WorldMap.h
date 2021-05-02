@@ -9,6 +9,7 @@
 #include "ItemSelector.h"
 #include "SaveFile.h"
 #include <boost/thread.hpp>
+#include "PlayerSkinShader.h"
 
 struct Background;
 struct MainMenu;
@@ -190,6 +191,7 @@ struct MapSelector
 	int destroyIndex;
 	bool continueBGDestroyThread;*/
 
+	PlayerSkinShader playerSkinShader;
 	State state;
 	std::vector<MapSector*> sectors;
 	MainMenu *mainMenu;

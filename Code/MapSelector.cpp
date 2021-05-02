@@ -9,8 +9,11 @@ using namespace sf;
 
 MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	MainMenu *mm, sf::Vector2f &pos )
-	:centerPos(pos), world( p_world ), worldMap( p_worldMap )
+	:centerPos(pos), world( p_world ), worldMap( p_worldMap ),
+	playerSkinShader( "basicplayerskin")
 {
+	mainMenu = mm;
+
 	for (int i = 1; i <= 5; ++i)
 	{
 		ts_kinJump[i - 1] = mm->tilesetManager.GetSizedTileset("Menu/LevelSelect/Level_Teleport_0" + to_string(i) + "_512x512.png");
@@ -49,7 +52,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	
 	
-	mainMenu = mm;
+	
 
 
 	string worldIndexStr = to_string(1);//to_string(worldIndex+1);
@@ -128,6 +131,7 @@ MapSelector::~MapSelector()
 
 void MapSelector::Init()
 {
+	playerSkinShader.SetSkin(mainMenu->GetCurrentProgress()->defaultSkinIndex);
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i]->Init(mainMenu->GetCurrentProgress());
@@ -153,7 +157,7 @@ void MapSelector::Draw(sf::RenderTarget *target)
 
 	if (kinState != K_HIDE)
 	{
-		target->draw(kinSprite);
+		target->draw(kinSprite, &playerSkinShader.pShader);
 	}
 
 	//recordGhostMenu->Draw(target);
