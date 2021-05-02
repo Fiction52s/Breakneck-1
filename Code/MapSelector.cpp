@@ -57,15 +57,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	string worldIndexStr = to_string(world->index + 1);
 
-	string nodeFile;
-	if (world->index < 4)
-	{
-		nodeFile = "WorldMap/node_w" + worldIndexStr + "_128x128.png";
-	}
-	else
-	{
-		nodeFile = "WorldMap/node_w1_128x128.png";
-	}
+	string nodeFile = "WorldMap/node_w" + worldIndexStr + "_128x128.png";
 
 	ts_node = worldMap->GetSizedTileset(nodeFile);
 

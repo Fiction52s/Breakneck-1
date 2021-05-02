@@ -367,16 +367,25 @@ void AdventureHUD::Draw(RenderTarget *target)
 }
 
 KinMask::KinMask( Actor *a )
+	:playerSkinShader("player")
 {
 	actor = a;
 	sess = actor->sess;
 
-	ts_face = sess->GetTileset("HUD/kinportrait_320x288.png", 320, 288);
+	ts_face = sess->GetSizedTileset("HUD/kin_face_320x288.png");
+	ts_portraitBG = sess->GetSizedTileset("HUD/kin_portrait_320x288.png");
 	face.setTexture(*ts_face->texture);
 	face.setTextureRect(ts_face->GetSubRect(0));
+	playerSkinShader.SetSubRect( ts_face, ts_face->GetSubRect(0));
 
-	faceBG.setTexture(*ts_face->texture);
-	faceBG.setTextureRect(ts_face->GetSubRect(0));
+	faceBG.setTexture(*ts_portraitBG->texture);
+	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
+
+	if (a->owner != NULL && a->owner->saveFile != NULL)
+	{
+		playerSkinShader.SetSkin(a->owner->saveFile->defaultSkinIndex);
+	}
+	
 
 	momentumBar = new MomentumBar(sess);
 
@@ -399,7 +408,7 @@ void KinMask::Reset()
 	Update(0,false);
 	frame = 0;
 
-	faceBG.setTextureRect(ts_face->GetSubRect(0));
+	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
 
 	kinRing->Reset();
 }
@@ -414,7 +423,7 @@ void KinMask::Draw(RenderTarget *target)
 	{
 		target->draw(faceBG);
 	}
-	target->draw(face);
+	target->draw(face, &playerSkinShader.pShader);
 
 	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
 	momentumBar->Draw(target);
@@ -439,15 +448,16 @@ void KinMask::Update( int speedLevel, bool desp )
 
 		if (f < 12 )
 		{
-			face.setTextureRect(ts_face->GetSubRect(11 + f));
-
+			face.setTextureRect(ts_face->GetSubRect(5 + f));
+			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5+f));
 			++frame;
 		}
 	}
 	else if (expr == Expr_DEATHYELL)
 	{
-		faceBG.setTextureRect(ts_face->GetSubRect(5));
-		face.setTextureRect(ts_face->GetSubRect(11));
+		faceBG.setTextureRect(ts_portraitBG->GetSubRect(5));
+		face.setTextureRect(ts_face->GetSubRect(5));
+		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5));
 	}
 	else
 	{ 
@@ -477,8 +487,9 @@ void KinMask::Update( int speedLevel, bool desp )
 			}*/
 		}
 
-		face.setTextureRect(ts_face->GetSubRect(expr + 6));
-		faceBG.setTextureRect(ts_face->GetSubRect(expr));
+		face.setTextureRect(ts_face->GetSubRect(expr));
+		playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(expr));
+		faceBG.setTextureRect(ts_portraitBG->GetSubRect(expr));
 	}
 	/*switch (expr)
 	{

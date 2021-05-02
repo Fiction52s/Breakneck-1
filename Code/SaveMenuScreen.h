@@ -67,7 +67,7 @@ struct SaveMenuScreen : TilesetManager
 	sf::Sprite selectSlot;
 	sf::Sprite kinFace;
 	PlayerSkinShader playerSkinShader;
-	PlayerSkinShader basicPlayerSkinShader;
+	PlayerSkinShader maskPlayerSkinShader;
 	int selectedSaveIndex;
 	float transparency;
 	float fadeOut;

@@ -100,7 +100,7 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu),
 	playerSkinShader( "player" ),
-	basicPlayerSkinShader( "basicplayerskin" )
+	maskPlayerSkinShader( "player" )
 {
 	menuOffset = Vector2f(0, 0);
 
@@ -187,6 +187,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 
 	kinFace.setTexture(*ts_kinFace->texture);
 	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+	maskPlayerSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
 	selectSlot.setTexture(*ts_selectSlot->texture);
 	selectSlot.setTextureRect(ts_selectSlot->GetSubRect(0));
 
@@ -294,7 +295,7 @@ void SaveMenuScreen::SetSkin(int index)
 	mainMenu->currSaveFile->defaultSkinIndex = index;
 	SaveSelectedFile();
 	playerSkinShader.SetSkin(index);
-	basicPlayerSkinShader.SetSkin(index);
+	maskPlayerSkinShader.SetSkin(index);
 }
 
 bool SaveMenuScreen::Update()
@@ -502,7 +503,11 @@ bool SaveMenuScreen::Update()
 	case SELECT:
 	{
 		if (frame < 15 * 3)
+		{
 			kinFace.setTextureRect(ts_kinFace->GetSubRect(frame / 3));
+			maskPlayerSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(frame / 3));
+		}
+			
 
 		if (frame >= 12 * 3)
 		{
@@ -705,7 +710,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	}
 	
 	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace, &basicPlayerSkinShader.pShader);
+	saveTexture->draw(kinFace, &maskPlayerSkinShader.pShader);
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -761,6 +766,7 @@ void SaveMenuScreen::Reset()
 	playerSkinShader.SetSubRect(ts_kinJump[0], ts_kinJump[0]->GetSubRect(0));
 
 	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
+	maskPlayerSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
 }
 
 void SaveMenuScreen::UpdateClouds()

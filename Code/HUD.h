@@ -5,6 +5,7 @@
 #include "Tileset.h"
 #include <SFML\Graphics.hpp>
 #include "GameSession.h"
+#include "PlayerSkinShader.h"
 
 struct Session;
 struct GameSession;
@@ -80,11 +81,13 @@ struct KinMask
 	Expr expr;
 	Actor *actor;
 	Tileset *ts_face;
+	Tileset *ts_portraitBG;
 	sf::Sprite face;
 	sf::Sprite faceBG;
 	Session *sess;
 	MomentumBar *momentumBar;
 	KinRing *kinRing;
+	PlayerSkinShader playerSkinShader;
 
 
 	KinMask( Actor *a);
