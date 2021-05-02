@@ -836,6 +836,11 @@ void MainMenu::SetMode(Mode m)
 	{
 		selectorAnimFrame = 0;
 	}
+
+	if (menuMode == SAVEMENU)
+	{
+		saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+	}
 }
 
 void MainMenu::DrawMenuOptionText(sf::RenderTarget *target)

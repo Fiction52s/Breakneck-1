@@ -59,6 +59,7 @@ struct SaveMenuScreen : TilesetManager
 	bool Update();
 	void Draw(sf::RenderTarget *target);
 	void Reset();
+	void SelectedIndexChanged();
 
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
@@ -66,6 +67,7 @@ struct SaveMenuScreen : TilesetManager
 	sf::Sprite selectSlot;
 	sf::Sprite kinFace;
 	PlayerSkinShader playerSkinShader;
+	PlayerSkinShader basicPlayerSkinShader;
 	int selectedSaveIndex;
 	float transparency;
 	float fadeOut;

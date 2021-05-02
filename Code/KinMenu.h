@@ -5,6 +5,7 @@
 #include "Tileset.h"
 #include "Input.h"
 #include "Movement.h"
+#include "PlayerSkinShader.h"
 
 struct Actor;
 struct GameSession;
@@ -15,6 +16,7 @@ struct SingleAxisSelector;
 
 struct KinMenu
 {
+	PlayerSkinShader playerSkinShader;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 	ControlSettingsMenu *csm;

@@ -10,7 +10,7 @@ using namespace sf;
 MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	MainMenu *mm, sf::Vector2f &pos )
 	:centerPos(pos), world( p_world ), worldMap( p_worldMap ),
-	playerSkinShader( "basicplayerskin")
+	playerSkinShader( "player")
 {
 	mainMenu = mm;
 
@@ -55,10 +55,19 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 	
 
 
-	string worldIndexStr = to_string(1);//to_string(worldIndex+1);
-	string nodeFile = "WorldMap/node_w1_128x128.png";//string("WorldMap/node_w") + worldIndexStr + string("_128x128.png");
+	string worldIndexStr = to_string(world->index + 1);
 
-	ts_node = worldMap->GetTileset(nodeFile, 128, 128);
+	string nodeFile;
+	if (world->index < 4)
+	{
+		nodeFile = "WorldMap/node_w" + worldIndexStr + "_128x128.png";
+	}
+	else
+	{
+		nodeFile = "WorldMap/node_w1_128x128.png";
+	}
+
+	ts_node = worldMap->GetSizedTileset(nodeFile);
 
 	ts_bossFight = new Tileset*[1];
 	ts_bossFight[0] = worldMap->GetTileset("Worldmap/boss_w1_128x128.png", 128, 128);
@@ -287,6 +296,11 @@ bool MapSelector::Update(ControllerState &curr,
 		kinFrame = 0;
 		ts_kinJump[0]->SetSpriteTexture(kinSprite);
 		ts_kinJump[0]->SetSubRect(kinSprite, 0);
+
+		IntRect ir = ts_kinJump[0]->GetSubRect(0);
+
+		playerSkinShader.SetSubRect(ts_kinJump[0], ir);
+
 		kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
 			kinSprite.getLocalBounds().height / 2);
 
@@ -313,6 +327,10 @@ bool MapSelector::Update(ControllerState &curr,
 			ts_kinJump[kinTex]->SetSubRect(kinSprite, realKinFrame);
 			kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2,
 				kinSprite.getLocalBounds().height / 2);
+
+			IntRect ir = ts_kinJump[kinTex]->GetSubRect(realKinFrame);
+
+			playerSkinShader.SetSubRect(ts_kinJump[kinTex], ir);
 
 			sf::FloatRect ksGlobalBounds = kinSprite.getGlobalBounds();
 			//rockSprite.setPosition(ksGlobalBounds.left + ksGlobalBounds.width / 2.0,

@@ -293,9 +293,10 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	debugText.setFillColor(Color::White);
 //	debugText.setOutlineColor(Color::Black);
 	debugText.setString(
-		"Hold Y and press Dpad Down while\n"
-		"paused to store a debug replay.\n"
-		"The game is currently a work\nin progress. Thanks for testing");
+		"Hold Y and press Dpad Down\n"
+		"while paused to store a debug\n"
+		"replay. The game is currently a\n"
+		"work in progress.\nThanks for testing");
 	debugText.setPosition(100, 100);
 
 	owner = NULL;
@@ -496,6 +497,7 @@ void PauseMenu::SetTab( Tab t )
 		mapZoomFactor = 16;	
 		break;
 	case KIN:
+		kinMenu->playerSkinShader.SetSkin(mainMenu->GetCurrentProgress()->defaultSkinIndex);
 		kinMenu->UpdatePowers(owner->GetPlayer(0));
 		break;
 	case SHARDS:

@@ -98,7 +98,9 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 }
 
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
-	:mainMenu(p_mainMenu), playerSkinShader( "basicplayerskin" )
+	:mainMenu(p_mainMenu),
+	playerSkinShader( "player" ),
+	basicPlayerSkinShader( "basicplayerskin" )
 {
 	menuOffset = Vector2f(0, 0);
 
@@ -292,6 +294,7 @@ void SaveMenuScreen::SetSkin(int index)
 	mainMenu->currSaveFile->defaultSkinIndex = index;
 	SaveSelectedFile();
 	playerSkinShader.SetSkin(index);
+	basicPlayerSkinShader.SetSkin(index);
 }
 
 bool SaveMenuScreen::Update()
@@ -394,9 +397,12 @@ bool SaveMenuScreen::Update()
 		}
 		else if (menuCurrInput.Y && !menuPrevInput.Y)
 		{
-			action = SKINMENU;
-			frame = 0;
-			skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+			if (!defaultFiles[selectedSaveIndex])
+			{
+				action = SKINMENU;
+				frame = 0;
+				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+			}
 		}
 
 		//bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
@@ -421,7 +427,8 @@ bool SaveMenuScreen::Update()
 			moveDown = true;
 			moveDelayCounter = moveDelayFrames;
 			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+			SelectedIndexChanged();
+
 		}
 		else if (up)
 		{
@@ -431,7 +438,7 @@ bool SaveMenuScreen::Update()
 			moveUp = true;
 			moveDelayCounter = moveDelayFrames;
 			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+			SelectedIndexChanged();
 		}
 
 		if (right)
@@ -442,7 +449,7 @@ bool SaveMenuScreen::Update()
 				selectedSaveIndex -= 2;
 			moveRight = true;
 			moveDelayCounter = moveDelayFrames;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+			SelectedIndexChanged();
 		}
 		else if (left)
 		{
@@ -456,7 +463,7 @@ bool SaveMenuScreen::Update()
 			moveLeft = true;
 
 			moveDelayCounter = moveDelayFrames;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+			SelectedIndexChanged();
 		}
 
 		if (moveDelayCounter > 0)
@@ -513,7 +520,10 @@ bool SaveMenuScreen::Update()
 				kinJump.setTexture(*ts_kinJump[texIndex]->texture);
 			}
 
-			kinJump.setTextureRect(ts_kinJump[texIndex]->GetSubRect(rem / 2));
+			Tileset *ts_currKinJump = ts_kinJump[texIndex];
+			IntRect ir = ts_currKinJump->GetSubRect(rem / 2);
+			playerSkinShader.SetSubRect(ts_currKinJump, ir);
+			kinJump.setTextureRect(ir);
 		}
 		//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
 		//{
@@ -610,7 +620,7 @@ bool SaveMenuScreen::Update()
 	asteroid1.setPosition(a1start * (float)(1.0 - v) + a1end * (float)v);
 	asteroid2.setPosition(a2start * (float)(1.0 - v1) + a2end * (float)v1);
 
-	mainMenu->currSaveFile = files[selectedSaveIndex];
+	
 	//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
 	//{
 	//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
@@ -649,6 +659,20 @@ bool SaveMenuScreen::Update()
 	return true;
 }
 
+void SaveMenuScreen::SelectedIndexChanged()
+{
+	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
+	mainMenu->currSaveFile = files[selectedSaveIndex];
+	if (defaultFiles[selectedSaveIndex])
+	{
+
+	}
+	else
+	{
+		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+	}
+}
+
 Vector2f SaveMenuScreen::GetTopLeftSaveSlot(int index)
 {
 	Vector2f topLeftPos;
@@ -675,13 +699,13 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinWindow);
 
 	int endDraw = 12 * 3 + 24 * 2;
-	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN )
+	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU )
 	{
 		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
 	
 	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace, &playerSkinShader.pShader);
+	saveTexture->draw(kinFace, &basicPlayerSkinShader.pShader);
 
 	for (int i = 0; i < 6; ++i)
 	{
@@ -733,6 +757,8 @@ void SaveMenuScreen::Reset()
 	kinJump.setTextureRect(ts_kinJump[0]->GetSubRect(0));
 	kinJump.setOrigin(kinJump.getLocalBounds().width, 0);
 	kinJump.setPosition(Vector2f(1920, 0) + menuOffset);
+
+	playerSkinShader.SetSubRect(ts_kinJump[0], ts_kinJump[0]->GetSubRect(0));
 
 	kinFace.setTextureRect(ts_kinFace->GetSubRect(0));
 }

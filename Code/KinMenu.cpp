@@ -19,7 +19,7 @@ using namespace sf;
 using namespace std;
 
 KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
-	:mainMenu(p_mainMenu), csm(p_csm)
+	:mainMenu(p_mainMenu), csm(p_csm), playerSkinShader( "player")
 {
 	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
@@ -107,6 +107,9 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	aura2ASpr.setTexture(*ts_aura2A->texture);
 	aura2BSpr.setTexture(*ts_aura2B->texture);
 	veinSpr.setTexture(*ts_veins->texture);
+
+
+	playerSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 
 	/*aura1ASpr.setColor(Color::Red);
 	aura1BSpr.setColor(Color::Green);
@@ -413,7 +416,7 @@ void KinMenu::Draw(sf::RenderTarget *target)
 	target->draw(aura2ASpr, &scrollShader2);
 	scrollShader2.setUniform("blendColor", ColorGL(aura2BShifter->GetCurrColor()));
 	target->draw(aura2BSpr, &scrollShader2);
-	target->draw(kinSpr);
+	target->draw(kinSpr, &playerSkinShader.pShader);
 	target->draw(veinSpr);
 
 	target->draw(powerQuadsBG, 10 * 4, sf::Quads);
