@@ -423,7 +423,15 @@ void KinMask::Draw(RenderTarget *target)
 	{
 		target->draw(faceBG);
 	}
-	target->draw(face, &playerSkinShader.pShader);
+
+	int faceDeathAnimLength = 11;
+	int an = 4;
+	int f = frame / an;
+
+	if (expr != Expr_DEATH || ( expr == Expr_DEATH && f < faceDeathAnimLength ) )
+	{
+		target->draw(face, &playerSkinShader.pShader);
+	}
 
 	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
 	momentumBar->Draw(target);
@@ -442,11 +450,11 @@ void KinMask::Update( int speedLevel, bool desp )
 {
 	if (expr == Expr_DEATH )
 	{
-		int faceDeathAnimLength = 12;
+		int faceDeathAnimLength = 11;
 		int an = 4;
 		int f = frame / an;
 
-		if (f < 12 )
+		if (f < faceDeathAnimLength)
 		{
 			face.setTextureRect(ts_face->GetSubRect(5 + f));
 			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5+f));

@@ -149,14 +149,14 @@ void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 	{
 		if (showAura)
 		{
-			target->draw(kinAuraSpr);
+			target->draw(kinAuraSpr, &skinShader.pShader);
 		}
 		target->draw(kinSpr, &skinShader.pShader);
 	}
 
 	if (state == ENDING)
 	{
-		target->draw(enterFXSpr);
+		target->draw(enterFXSpr );
 	}
 }
 

@@ -2000,16 +2000,19 @@ void GameSession::CleanupGhosts()
 
 void GameSession::SetupBestReplay()
 {
-	string replayPath = GetBestReplayPath();
-	if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-		&& boost::filesystem::exists(replayPath))
+	if (saveFile != NULL)
 	{
-		repPlayer = new ReplayPlayer(GetPlayer(0));
-		bool canOpen = repPlayer->OpenReplay(replayPath);
-		if (!canOpen)
+		string replayPath = GetBestReplayPath();
+		if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+			&& boost::filesystem::exists(replayPath))
 		{
-			delete repPlayer;
-			repPlayer = NULL;
+			repPlayer = new ReplayPlayer(GetPlayer(0));
+			bool canOpen = repPlayer->OpenReplay(replayPath);
+			if (!canOpen)
+			{
+				delete repPlayer;
+				repPlayer = NULL;
+			}
 		}
 	}
 }
@@ -2018,14 +2021,17 @@ void GameSession::SetupBestTimeGhost()
 {
 	CleanupGhosts();
 
-	string ghostPath = GetBestTimeGhostPath();
-	std::list<GhostEntry*> ghostEntries;
-	if (bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
-		&& boost::filesystem::exists(ghostPath))
+	if (saveFile != NULL)
 	{
-		GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
-		ghostEntries.push_back(ge);
-		SetupGhosts(ghostEntries);
+		string ghostPath = GetBestTimeGhostPath();
+		std::list<GhostEntry*> ghostEntries;
+		if (bestTimeGhostOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
+			&& boost::filesystem::exists(ghostPath))
+		{
+			GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
+			ghostEntries.push_back(ge);
+			SetupGhosts(ghostEntries);
+		}
 	}
 }
 
@@ -2145,7 +2151,7 @@ int GameSession::Run()
 	//	threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
 	//}
 
-	//mainMenu->musicPlayer->StopCurrentMusic();
+	
 	SetOriginalMusic();
 
 	std::stringstream ss;
@@ -2729,18 +2735,21 @@ window->draw(preTexSprite);
 				{
 					quit = true;
 					returnVal = GR_EXITLEVEL;
+					mainMenu->musicPlayer->StopCurrentMusic();
 					break;
 				}
 				case PauseMenu::R_P_EXITTITLE:
 				{
 					quit = true;
 					returnVal = GR_EXITTITLE;
+					mainMenu->musicPlayer->StopCurrentMusic();
 					break;
 				}
 				case PauseMenu::R_P_EXITGAME:
 				{
 					quit = true;
 					returnVal = GR_EXITGAME;
+					mainMenu->musicPlayer->StopCurrentMusic();
 					break;
 				}
 
