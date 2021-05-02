@@ -17,7 +17,7 @@ const int RecordGhostMenu::BOX_HEIGHT = 40;
 const int RecordGhostMenu::BOX_SPACING = 0;
 
 ReplayGhost::ReplayGhost(Actor *p_player)
-	:player(p_player), sprBuffer(NULL)
+	:player(p_player), sprBuffer(NULL), playerSkinShader( "player")
 {
 	frame = 0;
 	action = 0;
@@ -28,29 +28,11 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 
 
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
+	playerSkinShader.SetSkin(5);
 
-	int currSkinIndex = 5;
-	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
-	{
-		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
-	}
-
-	assert(Shader::isAvailable() && "help me");
-	if (!pShader.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "BOOST PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "boost player shader not loaded");
-	}
-
-	pShader.setUniform("u_auraColor", ColorGL(paletteArray[9]));
-
-	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
-	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
-
-	pShader.setUniform("u_invincible", 0.f);
-	pShader.setUniform("u_super", 0.f);
-	pShader.setUniform("u_slide", 0.f);
+	playerSkinShader.pShader.setUniform("u_invincible", 0.f);
+	playerSkinShader.pShader.setUniform("u_super", 0.f);
+	playerSkinShader.pShader.setUniform("u_slide", 0.f);
 }
 
 void ReplayGhost::Draw(RenderTarget *target)
@@ -66,7 +48,7 @@ void ReplayGhost::Draw(RenderTarget *target)
 	if (frame >= 0 && frame < numTotalFrames)
 	{
 		//target->draw(cs);
-		target->draw(replaySprite, &pShader);
+		target->draw(replaySprite, &playerSkinShader.pShader);
 	}
 }
 
@@ -170,7 +152,7 @@ void ReplayGhost::UpdateReplaySprite()
 	}
 
 
-	pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+	playerSkinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
 
 	replaySprite.setTextureRect(ir);

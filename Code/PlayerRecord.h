@@ -8,6 +8,7 @@
 #include <map>
 #include "ItemSelector.h"
 #include "UIWindow.h"
+#include "PlayerSkinShader.h"
 
 struct Actor;
 
@@ -87,9 +88,7 @@ struct RecordGhost
 //play back the players sprite info
 struct ReplayGhost
 {
-	sf::Image skinPaletteImage;
-	sf::Shader pShader;
-	sf::Glsl::Vec4 paletteArray[23]; //actor palette colors
+	PlayerSkinShader playerSkinShader;
 	sf::CircleShape cs;
 
 	bool init;

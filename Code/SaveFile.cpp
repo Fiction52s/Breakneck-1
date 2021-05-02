@@ -586,7 +586,8 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	momentaField(4 * 32),
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
-	name( p_name )
+	name( p_name ),
+	defaultSkinIndex( 0 )
 {
 	//CreateSaveWorlds();
 
@@ -997,6 +998,7 @@ bool SaveFile::LoadInfo(ifstream &is)
 	if (is.is_open())
 	{
 		getline(is, controlProfileName);
+		is >> defaultSkinIndex;
 
 		levelsBeatenField.Load(is);
 
@@ -1097,6 +1099,8 @@ void SaveFile::Save()
 	{
 		of << controlProfileName << endl;
 
+		of << defaultSkinIndex << endl;
+
 		levelsBeatenField.Save(of);
 
 		for (int i = 0; i < 512; ++i)
@@ -1132,4 +1136,6 @@ void SaveFile::SetAsDefault()
 	momentaField.Reset();
 	shardField.Reset();
 	newShardField.Reset();
+
+	defaultSkinIndex = 0;
 }

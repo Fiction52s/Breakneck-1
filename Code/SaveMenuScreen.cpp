@@ -98,7 +98,7 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 }
 
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
-	:mainMenu(p_mainMenu)
+	:mainMenu(p_mainMenu), playerSkinShader( "basicplayerskin" )
 {
 	menuOffset = Vector2f(0, 0);
 
@@ -282,6 +282,18 @@ SaveMenuScreen::~SaveMenuScreen()
 	}
 }
 
+void SaveMenuScreen::SaveSelectedFile()
+{
+	mainMenu->currSaveFile->Save();
+}
+
+void SaveMenuScreen::SetSkin(int index)
+{
+	mainMenu->currSaveFile->defaultSkinIndex = index;
+	SaveSelectedFile();
+	playerSkinShader.SetSkin(index);
+}
+
 bool SaveMenuScreen::Update()
 {
 	if (frame == actionLength[action])
@@ -384,6 +396,7 @@ bool SaveMenuScreen::Update()
 		{
 			action = SKINMENU;
 			frame = 0;
+			skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
 		}
 
 		//bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
@@ -664,11 +677,11 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	int endDraw = 12 * 3 + 24 * 2;
 	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN )
 	{
-		saveTexture->draw(kinJump);
+		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
 	
 	saveTexture->draw(selectSlot);
-	saveTexture->draw(kinFace);
+	saveTexture->draw(kinFace, &playerSkinShader.pShader);
 
 	for (int i = 0; i < 6; ++i)
 	{

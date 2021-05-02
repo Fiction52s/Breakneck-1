@@ -334,6 +334,7 @@ struct SaveFile
 	BitField momentaField;
 	BitField shardField;
 	BitField newShardField; //for unviewed shards	
+	int defaultSkinIndex;
 
 private:
 	void CalcProgress(int start, int end, float &totalMaps,

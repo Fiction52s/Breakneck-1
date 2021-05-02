@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
 #include "Actor.h"
+#include "PlayerSkinShader.h"
 
 struct MainMenu;
 struct Level;
@@ -69,9 +70,7 @@ struct KinBoostScreen
 
 	sf::Sprite swipeSpr;
 
-	sf::Image skinPaletteImage;
-	sf::Shader pShader;
-	sf::Glsl::Vec4 paletteArray[Actor::NUM_PALETTE_COLORS];
+	PlayerSkinShader skinShader;
 
 	//std::string levName;
 	Level *level;

@@ -9,7 +9,7 @@ using namespace std;
 using namespace sf;
 
 KinBoostScreen::KinBoostScreen( MainMenu *mm, TilesetManager *tm )
-	:mainMenu( mm )
+	:mainMenu( mm ), skinShader( "boostplayer")
 {
 	ts_bg = tm->GetTileset("KinBoost/kinboost_BG1.png", 1920, 1080);
 	ts_bgShape = tm->GetTileset("KinBoost/kinboost_BG1_shape.png", 1920, 1080);
@@ -28,23 +28,6 @@ KinBoostScreen::KinBoostScreen( MainMenu *mm, TilesetManager *tm )
 	
 
 	ts_enterFX->SetSpriteTexture(enterFXSpr);
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
-
-	int currSkinIndex = 0;
-	for (int i = 0; i < Actor::NUM_PALETTE_COLORS; ++i)
-	{
-		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
-	}
-
-	assert(Shader::isAvailable() && "help me");
-	if (!pShader.loadFromFile("Resources/Shader/boostplayer_shader.frag", sf::Shader::Fragment))
-	{
-		cout << "BOOST PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-		assert(0 && "boost player shader not loaded");
-	}
-
-	pShader.setUniformArray("u_palette", paletteArray, Actor::NUM_PALETTE_COLORS);
-	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	kinSpr.setTexture(*ts_kinBoost->texture);
 	kinSpr.setTextureRect(ts_kinBoost->GetSubRect(71));
@@ -139,6 +122,8 @@ void KinBoostScreen::Reset()
 	state = STARTING;
 	ended = false;
 
+	skinShader.SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		starFac[i] = 0;
@@ -166,7 +151,7 @@ void KinBoostScreen::DrawLateKin(sf::RenderTarget *target)
 		{
 			target->draw(kinAuraSpr);
 		}
-		target->draw(kinSpr, &pShader);
+		target->draw(kinSpr, &skinShader.pShader);
 	}
 
 	if (state == ENDING)

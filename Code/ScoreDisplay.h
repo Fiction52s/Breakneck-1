@@ -87,11 +87,14 @@ struct ScoreDisplay
 	static const int NUM_BARS = 3;
 	ScoreBar *bars[NUM_BARS];
 
-	static const int NUM_SELECT_BARS = 3;
+	static const int NUM_SELECT_BARS = 5;
 	SelectBar *selectBars[NUM_SELECT_BARS];
+
+	bool madeRecord;
 
 	Session *sess;
 	Tileset *ts_score;
+	Tileset *ts_mapSelectOptions;
 
 	sf::Vector2f basePos;
 	float selectOffset;

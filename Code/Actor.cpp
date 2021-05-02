@@ -2833,7 +2833,8 @@ void Actor::UpdateActionSprite()
 
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
+	skinShader("player")
 	{
 	ClearRecentHitters();
 	blockstunFrames = 0;
@@ -3033,9 +3034,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	actionFolder = "Kin/";
 		
 	team = (Team)actorIndex; //debug
-
-	LoadPalette();
-
 	
 
 	if( actorIndex == 1 )
@@ -3175,14 +3173,14 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 	//numActiveEdges = 0;
-	assert( Shader::isAvailable() && "help me" );
-	if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
-	//if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
-	{
+	//assert( Shader::isAvailable() && "help me" );
+	//if (!sh.loadFromFile("Resources/Shader/player_shader.frag", sf::Shader::Fragment))
+	////if (!sh.loadFromMemory(fragmentShader, sf::Shader::Fragment))
+	//{
 
-		cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
-		assert( 0 && "player shader not loaded" );
-	}
+	//	cout << "PLAYER SHADER NOT LOADING CORRECTLY" << endl;
+	//	assert( 0 && "player shader not loaded" );
+	//}
 	Tileset *ts_auraTest = sess->GetSizedTileset("FX/aura1_64x64.png");
 	Tileset *ts_auraTest2 = sess->GetSizedTileset("FX/aura2_64x64.png");
 	//Color auraColor(Color::Cyan);
@@ -3190,8 +3188,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//SetAuraColor(auraColor);
 	ts_auraTest2->texture->setRepeated(true);
 	ts_auraTest->texture->setRepeated(true);
-	sh.setUniform("u_auraTex", *(ts_auraTest->texture));
-	sh.setUniform("u_auraTex2", *(ts_auraTest2->texture));
+	skinShader.pShader.setUniform("u_auraTex", *(ts_auraTest->texture));
+	skinShader.pShader.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
 
 	SetSkin(SKIN_NORMAL);
@@ -14625,17 +14623,17 @@ void Actor::UpdatePlayerShader()
 
 	if (kinMode == K_DESPERATION )
 	{
-		sh.setUniform("despFrame", (float)despCounter);
+		skinShader.pShader.setUniform("despFrame", (float)despCounter);
 	}
 	else
 	{
 		float invinc = min(invincibleFrames, 1);
-		sh.setUniform("u_invincible", invinc);
+		skinShader.pShader.setUniform("u_invincible", invinc);
 
 		float super = superLevelCounter;
-		sh.setUniform("u_super", super);
+		skinShader.pShader.setUniform("u_super", super);
 		
-		sh.setUniform("despFrame", -1.f);
+		skinShader.pShader.setUniform("despFrame", -1.f);
 	}
 }
 
@@ -17178,7 +17176,7 @@ void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 	}
 	else
 	{
-		target->draw(*sprite, &sh);
+		target->draw(*sprite, &skinShader.pShader);
 	}
 }
 
@@ -17195,7 +17193,7 @@ bool Actor::IsVisibleAction(int a)
 
 void Actor::SetAuraColor(Color c)
 {
-	sh.setUniform("u_auraColor", ColorGL(c));
+	skinShader.pShader.setUniform("u_auraColor", ColorGL(c));
 }
 
 void Actor::Draw( sf::RenderTarget *target )
@@ -18255,11 +18253,11 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 
 	if (kinMode == K_NORMAL)
 	{		
-		sh.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+		skinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
 			
 		static float testCounter = 0;
-		sh.setUniform("u_slide", testCounter);
+		skinShader.pShader.setUniform("u_slide", testCounter);
 		testCounter += .01f;
 	}
 	else if( kinMode == K_SUPER )
@@ -20206,26 +20204,19 @@ void Actor::UpdateInHitlag()
 	 return EnemyTracker::IsValidTrackEnemy(e);
  }
 
- bool Actor::LoadPalette()
- {
-	 return skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_23x6.png");
- }
-
- void Actor::FillPaletteArray(int skinIndex)
- {
-	 for (int i = 0; i < NUM_PALETTE_COLORS; ++i)
-	 {
-		 paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, currSkinIndex));
-	 }
- }
-
  void Actor::SetSkin(int skinIndex)
  {
-	 currSkinIndex = skinIndex;
-	 FillPaletteArray(currSkinIndex);
+	 if (skinIndex == SKIN_NORMAL && owner != NULL && owner->saveFile != NULL)
+	 {
+		 int defaultSkin = owner->saveFile->defaultSkinIndex;
+		 currSkinIndex = defaultSkin;
+	 }
+	 else
+	 {
+		 currSkinIndex = skinIndex;
+	 }
 
-	 sh.setUniformArray("u_palette", paletteArray, NUM_PALETTE_COLORS);
-	 sh.setUniform("u_auraColor", ColorGL(paletteArray[9]));
+	 skinShader.SetSkin(currSkinIndex);
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

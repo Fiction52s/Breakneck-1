@@ -17,6 +17,7 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	basePos = position;
 
 	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
+	ts_mapSelectOptions = sess->GetSizedTileset("Menu/LevelSelect/map_select_options_384x80.png");
 
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
@@ -60,11 +61,18 @@ void ScoreDisplay::Draw(RenderTarget *target)
 		{
 			bars[i]->Draw(target);
 		}
+		
+		int activeSelectBars = NUM_SELECT_BARS;
+		if (!madeRecord)
+		{
+			activeSelectBars = 3;
+		}
 
 		for (int i = 0; i < NUM_SELECT_BARS; ++i)
 		{
 			selectBars[i]->Draw(target);
 		}
+		
 
 		if (bars[0]->state == ScoreBar::SHEET_DISPLAY || bars[0]->state ==
 			ScoreBar::SYMBOL_DISPLAY)
@@ -123,7 +131,12 @@ void ScoreDisplay::Update()
 		
 	}
 
-	for (int i = 0; i < NUM_SELECT_BARS; ++i)
+	int activeSelectBars = NUM_SELECT_BARS;
+	if (!madeRecord)
+	{
+		activeSelectBars = 3;
+	}
+	for (int i = 0; i < activeSelectBars; ++i)
 	{
 		selectBars[i]->Update();
 		if (selectBars[i]->state != SelectBar::NONE)
@@ -152,6 +165,7 @@ void ScoreDisplay::Reset()
 {
 	waiting = false;
 	active = false;
+	madeRecord = false;
 	for (int i = 0; i < NUM_BARS; ++i)
 	{
 		bars[i]->Reset();
@@ -167,6 +181,22 @@ void ScoreDisplay::Activate()
 {
 	active = true;
 	waiting = false;
+	madeRecord = false;
+
+	GameSession *game = GameSession::GetSession();
+
+	if (game != NULL && game->saveFile != NULL)
+	{
+		int recordScore = 0;
+		recordScore = game->saveFile->GetBestFramesLevel(game->level->index);
+		if (recordScore == 0 || game->totalFramesBeforeGoal < recordScore)
+		{
+			madeRecord = true;
+		}
+	}
+
+	
+
 	PopOutBar(0);
 	//bars[0]->state = ScoreBar::POP_OUT;
 	//bars[0]->frame = 0;
@@ -482,8 +512,18 @@ void ScoreBar::Retract()
 SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	:row(p_row), parent(p_parent)
 {
-	barSprite.setTexture(*parent->ts_score->texture);
-	barSprite.setTextureRect(parent->ts_score->GetSubRect(15 + row));
+	if (row <= 2)
+	{
+		barSprite.setTexture(*parent->ts_score->texture);
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(15 + row));
+	}
+	else
+	{
+		barSprite.setTexture(*parent->ts_mapSelectOptions->texture);
+		barSprite.setTextureRect(parent->ts_score->GetSubRect(row - 2));
+	}
+	
+	
 	buttonIconSprite.setTexture(*parent->sess->mainMenu->ts_buttonIcons->texture);
 	
 
@@ -529,6 +569,14 @@ void SelectBar::Reset()
 	else if (row == 2) //retry
 	{
 		buttonIndex = 1;
+	}
+	else if (row == 3)
+	{
+		buttonIndex = 3;
+	}
+	else if (row == 4)
+	{
+		buttonIndex = 4;
 	}
 
 	buttonIconSprite.setTextureRect(

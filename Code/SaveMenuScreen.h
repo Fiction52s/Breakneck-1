@@ -3,6 +3,7 @@
 
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
+#include "PlayerSkinShader.h"
 
 struct MainMenu;
 struct SaveFile;
@@ -53,14 +54,18 @@ struct SaveMenuScreen : TilesetManager
 	Tileset *ts_selectSlot;//ts_saveMenuSelect;
 	Tileset *ts_kinFace;//ts_saveMenuKinFace;
 	sf::Vector2f GetTopLeftSaveSlot(int index);
+	void SaveSelectedFile();
+	void SetSkin(int index);
 	bool Update();
 	void Draw(sf::RenderTarget *target);
 	void Reset();
+
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
 	sf::Sprite background;
 	sf::Sprite selectSlot;
 	sf::Sprite kinFace;
+	PlayerSkinShader playerSkinShader;
 	int selectedSaveIndex;
 	float transparency;
 	float fadeOut;

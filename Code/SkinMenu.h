@@ -19,8 +19,12 @@ struct SkinMenu
 	sf::Vector2f gridTopLeft;
 
 	sf::RectangleShape rect;
+	SaveMenuScreen *saveScreen;
+	sf::Vertex bgQuad[4];
 
 	SkinMenu(SaveMenuScreen *saveScreen);
+	int GetSelectedIndex();
+	void SetSelectedIndex(int index);
 	void Reset();
 	void SetGridTopLeft(sf::Vector2f &pos);
 	bool Update(ControllerState &currInput,
