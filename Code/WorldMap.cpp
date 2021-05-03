@@ -548,10 +548,10 @@ void WorldMap::InitSelectors()
 
 void WorldMap::sDestroyBGs(WorldMap *wm)
 {
-	//cout << "Start destroying bgs" << endl;
+	cout << "Start destroying bgs" << endl;
 	MapSelector *currSelector = wm->CurrSelector();
 	currSelector->DestroyBGs();
-	//cout << "done destroying bgs" << endl;
+	cout << "done destroying bgs" << endl;
 }
 
 void WorldMap::sLoadBGs(WorldMap *wm)
@@ -613,7 +613,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 		if (currInput.A && !prevInput.A)
 		{
-			state = LOAD_COLONY;
+			state = PlANET_TO_COLONY;
 			frame = 0;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_select"));
 
@@ -713,12 +713,18 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		int limit = 120 / 2;
 		if (frame == limit)
 		{
-			state = COLONY;
-			frame = 0;
+			//state = COLONY;
+			//frame = 0;
+			//state = PLANET;
+			//frame = 0;
+			mainMenu->LoadMode(MainMenu::WORLDMAP_COLONY);
+			return;
 			//worldSelector->SetAlpha(1.f - a);
 		}
 		else
 		{
+			
+
 			float a = frame / (float)(limit - 1);
 
 			worldSelector->SetAlpha(1.f - a * 2);
@@ -959,12 +965,10 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			if (!CurrSelector()->Update(currInput, prevInput))
 			{
-				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_out"));
-				state = COLONY_TO_PLANET;
-				frame = 0;
-				UpdateWorldStats();
+				mainMenu->LoadMode(MainMenu::WORLDMAP);
+				//mainMenu->SetMode(MainMenu::WORLDMAP);
 
-				bgDestroyThread = new boost::thread(WorldMap::sDestroyBGs, this);
+				//bgDestroyThread = new boost::thread(WorldMap::sDestroyBGs, this);
 			}
 			break;
 		}
@@ -994,6 +998,33 @@ void WorldMap::Draw( RenderTarget *target )
 	rt->clear(sf::Color::Transparent);
 	
 	rt->setView(uiView);
+
+
+	if (state == COLONY)
+	{
+		rt->clear(Color::Transparent);
+		rt->setView(uiView);
+		CurrSelector()->Draw(rt);
+		rt->draw(currLevelTimeText);
+		rt->display();
+		const sf::Texture &ttex = rt->getTexture();
+		selectorExtraPass.setTexture(ttex);
+
+		float dur = 30;
+		if (frame <= dur)
+		{
+			selectorExtraPass.setColor(Color(255, 255, 255, 255.f * (frame / dur)));
+		}
+		else
+		{
+			//selectorExtraPass.setColor(Color(255, 255, 255, 40));
+			selectorExtraPass.setColor(Color::White);
+		}
+		target->draw(selectorExtraPass);
+
+		return;
+	}
+
 	rt->draw(spaceSpr);
 
 	int scrollSeconds[] = { 400, 300, 140, 120 };
@@ -1167,30 +1198,7 @@ void WorldMap::Draw( RenderTarget *target )
 		target->draw(extraPassSpr);
 	}
 
-	if (state == COLONY )
-	{
-		rt->clear(Color::Transparent);
-		rt->setView(uiView);
-		CurrSelector()->Draw(rt);
-		rt->draw(currLevelTimeText);
-		rt->display();
-		const sf::Texture &ttex = rt->getTexture();
-		selectorExtraPass.setTexture(ttex);
-
-		float dur = 30;
-		if (frame <= dur)
-		{
-			selectorExtraPass.setColor(Color(255, 255, 255, 255.f * (frame / dur)));
-		}
-		else
-		{
-			//selectorExtraPass.setColor(Color(255, 255, 255, 40));
-			selectorExtraPass.setColor(Color::White);
-		}
-		target->draw(selectorExtraPass);
-
-		
-	}
+	
 }
 
 Sector & WorldMap::GetCurrSector()

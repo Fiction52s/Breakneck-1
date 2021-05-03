@@ -102,7 +102,13 @@ V2d HitboxInfo::GetKnockbackVector( )
 
 HitboxInfo::HitPosType HitboxInfo::GetAirType(V2d &vel)
 {
-	assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?
+	//assert(vel.x != 0.0 || vel.y != 0.0); //stationary bullet?
+
+
+	if (vel.x == 0 && vel.y == 0)
+	{
+		return AIRFORWARD;
+	}
 
 	V2d dir = normalize(vel);
 

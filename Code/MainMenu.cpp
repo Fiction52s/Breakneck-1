@@ -141,12 +141,21 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		currTutorialSession = NULL;
 		break;
 	}
+	case WORLDMAP_COLONY:
+	{
+		worldMap->CurrSelector()->DestroyBGs();
+		break;
+	}
+	case WORLDMAP:
+	{
+		worldMap->CurrSelector()->CreateBGs();
+		break;
+	}
 
 	}
 
 	switch (toMode)
 	{
-	case WORLDMAP:
 	case SAVEMENU:
 		assert(worldMap == NULL);
 		assert(saveMenu == NULL);
@@ -840,6 +849,19 @@ void MainMenu::SetMode(Mode m)
 	if (menuMode == SAVEMENU)
 	{
 		saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+	}
+
+	if (menuMode == WORLDMAP_COLONY)
+	{
+		worldMap->state = WorldMap::COLONY;
+		worldMap->frame = 0;
+	}
+	if (menuMode == WORLDMAP && worldMap->state == WorldMap::COLONY)
+	{
+		soundNodeList->ActivateSound(soundManager.GetSound("world_zoom_out"));
+		worldMap->state = WorldMap::COLONY_TO_PLANET;
+		worldMap->frame = 0;
+		worldMap->UpdateWorldStats();
 	}
 }
 
@@ -1723,6 +1745,7 @@ void MainMenu::HandleMenuMode()
 		break;
 	}
 	case WORLDMAP:
+	case WORLDMAP_COLONY:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -2574,6 +2597,7 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case WORLDMAP:
+	case WORLDMAP_COLONY:
 	{
 		preScreenTexture->setView(v);
 		worldMap->Draw(preScreenTexture);
