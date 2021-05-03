@@ -16137,7 +16137,12 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 
 			if (c->weirdPoint)
 			{
-				//		cout << "weird point " << endl;
+				cout << "weird point\n";
+
+				//okay, I fixed the bugs involving this. There might still
+				//be cases where weirdpoint solves need to be implemented.
+				//ill put some prints here and then if someone encounters a bug
+				//ill know where to look.
 
 				Edge *edge = e;
 				Edge *prev = edge->edge0;
@@ -16155,14 +16160,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					V2d pn = prev->Normal();
 					V2d en = e->Normal();
 
+					//second weirdpoint glitch. remove for now. similar to the one
+					//below it where it can make you fall through terrain.
+					//i dont know which case i added this in for in the
+					//first place.
 
+					//this causes a fallthrough on the launcher/water map
+					//if you land right on the corner.
 					if (ground == NULL && pn.y >= 0 && en.y < 0)
 					{
-						//cout << "bhaehfdf" << endl; //falling off and you dont want to keep hitting the ground
-						assert(!reversed);
-						return;
+						//falling off and you dont want to keep hitting the ground
+						//assert(!reversed);
+						//return;
 					}
 
+					//--end second weirdpoint glitch
+
+					//first weirdpointglitch is right here. 
 					//ground != NULL
 					if (pn.y < en.y)
 					{
@@ -16187,10 +16201,9 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 					V2d en = e->Normal();
 					if (ground == NULL && en.y < 0 && nn.y >= 0)
 					{
-						//cout << "bhaehfdf" << endl;
 						//falling off and you dont want to keep hitting the ground
-						assert(!reversed);
-						return;
+						//assert(!reversed);
+						//return;
 					}
 
 					//ground != NULL

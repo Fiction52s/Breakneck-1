@@ -278,6 +278,7 @@ private:
 struct Contact
 {
 	Contact();
+	void Reset();
 		
 	double collisionPriority;	
 	sf::Vector2<double> position;

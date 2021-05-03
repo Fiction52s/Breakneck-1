@@ -717,6 +717,19 @@ Contact::Contact()
 	collisionPriority = 0;
 }
 
+void Contact::Reset()
+{
+	collisionPriority = 0;
+	edge = NULL;
+	weirdPoint = false;
+	resolution.x = 0;
+	resolution.y = 0;
+	position.x = 0;
+	position.y = 0;
+	normal.x = 0;
+	normal.y = 0;
+}
+
 Collider::Collider()
 	:currentContact(NULL)
 {
@@ -730,6 +743,7 @@ Collider::~Collider()
 
 Contact *Collider::collideEdge( V2d position, const CollisionBox &b, Edge *e, const V2d &vel, const V2d &tVel )
 {
+	currentContact->Reset();
 	if( b.isCircle )
 	{
 		double pointMinTime = 100;
