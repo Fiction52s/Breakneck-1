@@ -6302,7 +6302,6 @@ void Actor::UpdatePrePhysics()
 		skinTest = 0;
 	}*/
 
-	cout << sess->totalGameFrames << " position: " << position.x << ", " << position.y << endl;
 
 	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)
