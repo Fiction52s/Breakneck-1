@@ -3668,6 +3668,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	inBubble = false;
 	airDashStall = false;
 	oldInBubble = false;
+	specialSlow = false;
 
 	reversed = false;
 
