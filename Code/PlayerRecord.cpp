@@ -407,7 +407,13 @@ void ReplayPlayer::UpdateInput(ControllerState &state)
 	if (!init || frame == numTotalFrames)
 		return;
 
+	bool start = state.start;
+	bool back = state.back;
+
 	state.SetFromCompressedState(inputBuffer[frame]);
+
+	state.start = start;
+	state.back = back;
 
 	++frame;
 }

@@ -106,7 +106,7 @@ void ScoreDisplay::PopOutSelectBars()
 	}
 }
 
-bool ScoreDisplay::GetNumSelectBars()
+int ScoreDisplay::GetNumSelectBars()
 {
 	bool isReplaying = game != NULL && game->bestReplayOn;
 	int activeSelectBars = NUM_SELECT_BARS;

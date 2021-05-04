@@ -742,9 +742,9 @@ bool MapSector::Update(ControllerState &curr,
 
 		bool aPress = (curr.A && !prev.A);
 		bool yPress = (curr.Y && !prev.Y) && ghostAndReplayOn;
-		bool rPress = (curr.RightTriggerPressed() && !prev.RightTriggerPressed()) && ghostAndReplayOn;
+		bool r1Press = (curr.rightShoulder && !prev.rightShoulder) && ghostAndReplayOn;
 
-		if ( (aPress || yPress || rPress) && saveFile->IsUnlockedSector( sec ))
+		if ( (aPress || yPress || r1Press) && saveFile->IsUnlockedSector( sec ))
 		{
 			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )
@@ -767,7 +767,7 @@ bool MapSector::Update(ControllerState &curr,
 			{
 				bestTimeGhostOn = true;
 			}
-			else if (rPress)
+			else if (r1Press)
 			{
 				bestReplayOn = true;
 			}
@@ -1046,8 +1046,8 @@ void MapSector::UpdateOptionButtons()
 	int buttonIndex = 0;
 
 	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads, tileOffset + 0);
-	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+4, tileOffset + 3);
-	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+8, tileOffset + 2);
+	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+4, tileOffset + 4);
+	ts_mapOptionButtons->SetQuadSubRect(levelSelectOptionButtonQuads+8, tileOffset + 3);
 
 	
 }

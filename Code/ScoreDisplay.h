@@ -107,7 +107,7 @@ struct ScoreDisplay
 		sf::Font & testFont);
 	~ScoreDisplay();
 
-	bool GetNumSelectBars();
+	int GetNumSelectBars();
 	void Draw(sf::RenderTarget *target);
 	int numEnemiesTotal;
 	int numEnemiesKilled;

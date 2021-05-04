@@ -4469,6 +4469,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 void Actor::Respawn()
 {
 	SetSkin(SKIN_NORMAL);
+	inBubble = false;
+	specialSlow = false;
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
 	frameAfterAttackingHitlagOver = false;
@@ -7450,17 +7452,17 @@ void Actor::HandleWaitingScoreDisplay()
 	{
 		
 		ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
-		ControllerState &unfiltetedPrev = sess->GetPrevInputUnfiltered(0);
-		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
-		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
-		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
-		bool y = unfilteredCurr.Y && !unfiltetedPrev.Y;
-		bool r = unfilteredCurr.RightTriggerPressed() && !unfiltetedPrev.RightTriggerPressed();
+		ControllerState &unfilteredPrev = sess->GetPrevInputUnfiltered(0);
+		bool a = unfilteredCurr.A && !unfilteredPrev.A;
+		bool x = unfilteredCurr.X && !unfilteredPrev.X;
+		bool b = unfilteredCurr.B && !unfilteredPrev.B;
+		bool y = unfilteredCurr.Y && !unfilteredPrev.Y;
+		bool r1 = unfilteredCurr.rightShoulder && !unfilteredPrev.rightShoulder;
 
 		if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
 		{
 			y = false;
-			r = false;
+			r1 = false;
 		}
 
 		if (a || x)
@@ -7499,12 +7501,14 @@ void Actor::HandleWaitingScoreDisplay()
 					currFile->Save();
 				}
 
-				if (owner->bestReplayOn)
+
+				if (owner->repPlayer != NULL)
 				{
-					owner->bestReplayOn = false;
 					delete owner->repPlayer;
 					owner->repPlayer = NULL;
 				}
+				owner->bestReplayOn = false;
+
 				
 				owner->RestartGame();
 				//owner->NextFrameRestartLevel();
@@ -7527,6 +7531,12 @@ void Actor::HandleWaitingScoreDisplay()
 					currFile->Save();
 				}
 
+				if (owner->repPlayer != NULL)
+				{
+					delete owner->repPlayer;
+					owner->repPlayer = NULL;
+				}
+
 				owner->bestTimeGhostOn = true;
 				owner->bestReplayOn = false;
 				owner->SetupBestTimeGhost();
@@ -7535,7 +7545,7 @@ void Actor::HandleWaitingScoreDisplay()
 				//owner->NextFrameRestartLevel();
 			}
 		}
-		else if (r)
+		else if (r1)
 		{
 			if (owner != NULL)
 			{
@@ -7545,6 +7555,8 @@ void Actor::HandleWaitingScoreDisplay()
 					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
 					currFile->Save();
 				}
+
+				owner->CleanupGhosts();
 
 				owner->bestTimeGhostOn = false;
 				owner->bestReplayOn = true;
