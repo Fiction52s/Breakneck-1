@@ -3791,8 +3791,8 @@ void TerrainPolygon::SetupGrass(int i, int &grassIndex )
 
 		int flipX = rand() % 2;
 		int flipY = rand() % 2;
-
-		SetRectRotation(grassVA + grassIndex * 4, currEdge->GetNormalAngleRadians() + rad,
+		float rot = currEdge->GetNormalAngleRadians() + rad;
+		SetRectRotation(grassVA + grassIndex * 4, rot,
 			128, 128, pos, flipX, flipY);
 		//grassVA[grassIndex * 4 + 3].texCoords = Vector2f(grassSize, 0);
 		++grassIndex;
@@ -4259,7 +4259,9 @@ void TerrainPolygon::SetupGrassAfterGameSessionLoad(std::list<GrassSeg> &segment
 				Vector2f bottomLeft = pos + Vector2f(-grassSize / 2, grassSize / 2);
 				Vector2f bottomRight = pos + Vector2f(grassSize / 2, grassSize / 2);
 				Vertex *currGrassRect = grassVA + (j + totalGrass) * 4;
-				SetRectCenter(currGrassRect, grassSize, grassSize, pos);
+
+				float rot = (rand() % 360) * PI / 180.0;
+				SetRectRotation(currGrassRect, rot, grassSize, grassSize, pos);
 				//Color c = Grass::GetColor((*it).gType);
 				//SetRectColor(grassVA + (j + totalGrass) * 4, c);
 				ts_grass->SetQuadSubRect(currGrassRect, (*it).gType);

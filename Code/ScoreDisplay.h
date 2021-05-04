@@ -7,6 +7,7 @@ struct Tileset;
 struct Session;
 
 struct ScoreDisplay;
+struct GameSession;
 
 struct ScoreBar
 {
@@ -83,6 +84,7 @@ struct ScoreDisplay
 	bool active;
 	bool waiting;
 
+	GameSession *game;
 	sf::Sprite score;
 	static const int NUM_BARS = 3;
 	ScoreBar *bars[NUM_BARS];
@@ -105,6 +107,7 @@ struct ScoreDisplay
 		sf::Font & testFont);
 	~ScoreDisplay();
 
+	bool GetNumSelectBars();
 	void Draw(sf::RenderTarget *target);
 	int numEnemiesTotal;
 	int numEnemiesKilled;

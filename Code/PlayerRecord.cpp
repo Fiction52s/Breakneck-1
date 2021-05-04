@@ -153,8 +153,6 @@ void ReplayGhost::UpdateReplaySprite()
 		ir.top += ir.height;
 		ir.height = -ir.height;
 	}
-
-
 	
 
 	replaySprite.setTextureRect(ir);

@@ -227,9 +227,11 @@ void MainMenu::UpdateMenuOptionText()
 void MainMenu::CheckForControllers()
 {
 	//currently only checks for gamecube, xbox doesnt need it.
+	//cout << "start checking" << endl;
 	gccDriver = new GCC::USBDriver;
 	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
 	{
+		//cout << "ready" << endl;
 		gccDriverEnabled = true;
 		joys = new GCC::VJoyGCControllers(*gccDriver);
 		{
@@ -244,11 +246,14 @@ void MainMenu::CheckForControllers()
 	}
 	else
 	{
+		//cout << "failing" << endl;
 		joys = NULL;
 		gccDriverEnabled = false;
 		delete gccDriver;
 		gccDriver = NULL;
 	}
+
+	//cout << "end checking" << endl;
 }
 
 MainMenu::MainMenu()

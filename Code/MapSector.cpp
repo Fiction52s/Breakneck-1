@@ -741,10 +741,10 @@ bool MapSector::Update(ControllerState &curr,
 		}
 
 		bool aPress = (curr.A && !prev.A);
-		bool xPress = (curr.X && !prev.X) && ghostAndReplayOn;
 		bool yPress = (curr.Y && !prev.Y) && ghostAndReplayOn;
+		bool rPress = (curr.RightTriggerPressed() && !prev.RightTriggerPressed()) && ghostAndReplayOn;
 
-		if ( (aPress || xPress || yPress) && saveFile->IsUnlockedSector( sec ))
+		if ( (aPress || yPress || rPress) && saveFile->IsUnlockedSector( sec ))
 		{
 			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )
@@ -763,11 +763,11 @@ bool MapSector::Update(ControllerState &curr,
 			{
 
 			}
-			else if (xPress)
+			else if (yPress)
 			{
 				bestTimeGhostOn = true;
 			}
-			else if (yPress)
+			else if (rPress)
 			{
 				bestReplayOn = true;
 			}

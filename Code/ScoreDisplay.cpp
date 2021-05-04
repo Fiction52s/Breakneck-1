@@ -14,6 +14,7 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	:font(testFont)
 {
 	sess = Session::GetSession();
+	game = GameSession::GetSession();
 	basePos = position;
 
 	ts_score = sess->GetSizedTileset("HUD/score_384x96.png");
@@ -28,6 +29,7 @@ ScoreDisplay::ScoreDisplay(Vector2f &position,
 	{
 		selectBars[i] = new SelectBar(i, this);
 	}
+
 
 	//bars[0]->SetText("", Color::White);
 	//bars[1]->SetText("", Color::White);
@@ -62,12 +64,7 @@ void ScoreDisplay::Draw(RenderTarget *target)
 			bars[i]->Draw(target);
 		}
 		
-		int activeSelectBars = NUM_SELECT_BARS;
-		if (!madeRecord)
-		{
-			activeSelectBars = 3;
-		}
-
+		int activeSelectBars = GetNumSelectBars();
 		for (int i = 0; i < NUM_SELECT_BARS; ++i)
 		{
 			selectBars[i]->Draw(target);
@@ -109,6 +106,18 @@ void ScoreDisplay::PopOutSelectBars()
 	}
 }
 
+bool ScoreDisplay::GetNumSelectBars()
+{
+	bool isReplaying = game != NULL && game->bestReplayOn;
+	int activeSelectBars = NUM_SELECT_BARS;
+	if (!madeRecord && !isReplaying)
+	{
+		activeSelectBars = 3;
+	}
+
+	return activeSelectBars;
+}
+
 void ScoreDisplay::Update()
 {
 	if (!active)
@@ -131,11 +140,7 @@ void ScoreDisplay::Update()
 		
 	}
 
-	int activeSelectBars = NUM_SELECT_BARS;
-	if (!madeRecord)
-	{
-		activeSelectBars = 3;
-	}
+	int activeSelectBars = GetNumSelectBars();
 	for (int i = 0; i < activeSelectBars; ++i)
 	{
 		selectBars[i]->Update();
@@ -520,7 +525,7 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	else
 	{
 		barSprite.setTexture(*parent->ts_mapSelectOptions->texture);
-		barSprite.setTextureRect(parent->ts_score->GetSubRect(row - 2));
+		barSprite.setTextureRect(parent->ts_mapSelectOptions->GetSubRect(row - 2));
 	}
 	
 	
@@ -570,13 +575,13 @@ void SelectBar::Reset()
 	{
 		buttonIndex = 1;
 	}
-	else if (row == 3)
-	{
-		buttonIndex = 3;
-	}
-	else if (row == 4)
+	else if (row == 3)//watch
 	{
 		buttonIndex = 4;
+	}
+	else if (row == 4)//race ghost
+	{
+		buttonIndex = 3;
 	}
 
 	buttonIconSprite.setTextureRect(

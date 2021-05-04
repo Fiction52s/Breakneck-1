@@ -2909,7 +2909,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
-	
 
 	standNDashBoost = false;
 	kinMode = K_NORMAL;
@@ -3666,6 +3665,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	timeSlowStrength = 5 * baseSlowMultiple;
 	slowMultiple = baseSlowMultiple;
 	slowCounter = 1;
+	inBubble = false;
+	airDashStall = false;
+	oldInBubble = false;
 
 	reversed = false;
 
@@ -6299,6 +6301,8 @@ void Actor::UpdatePrePhysics()
 		skinTest = 0;
 	}*/
 
+	cout << sess->totalGameFrames << " position: " << position.x << ", " << position.y << endl;
+
 	hitOutOfHitstunLastFrame = false;
 	if (actorIndex == 1)
 	{
@@ -7444,11 +7448,21 @@ void Actor::HandleWaitingScoreDisplay()
 {
 	if (sess->scoreDisplay != NULL && sess->scoreDisplay->waiting)
 	{
+		
 		ControllerState &unfilteredCurr = sess->GetCurrInputUnfiltered(0);
 		ControllerState &unfiltetedPrev = sess->GetPrevInputUnfiltered(0);
 		bool a = unfilteredCurr.A && !unfiltetedPrev.A;
 		bool x = unfilteredCurr.X && !unfiltetedPrev.X;
 		bool b = unfilteredCurr.B && !unfiltetedPrev.B;
+		bool y = unfilteredCurr.Y && !unfiltetedPrev.Y;
+		bool r = unfilteredCurr.RightTriggerPressed() && !unfiltetedPrev.RightTriggerPressed();
+
+		if (!sess->scoreDisplay->madeRecord && (owner != NULL && !owner->bestReplayOn))
+		{
+			y = false;
+			r = false;
+		}
+
 		if (a || x)
 		{
 			if (owner != NULL)
@@ -7485,7 +7499,13 @@ void Actor::HandleWaitingScoreDisplay()
 					currFile->Save();
 				}
 
-
+				if (owner->bestReplayOn)
+				{
+					owner->bestReplayOn = false;
+					delete owner->repPlayer;
+					owner->repPlayer = NULL;
+				}
+				
 				owner->RestartGame();
 				//owner->NextFrameRestartLevel();
 			}
@@ -7494,6 +7514,46 @@ void Actor::HandleWaitingScoreDisplay()
 				editOwner->TestPlayerMode();
 			}
 			return;
+		}
+		else if (y)
+		{
+			//turn on ghosts
+			if (owner != NULL)
+			{
+				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				{
+					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
+					currFile->Save();
+				}
+
+				owner->bestTimeGhostOn = true;
+				owner->bestReplayOn = false;
+				owner->SetupBestTimeGhost();
+				owner->RestartGame();
+				
+				//owner->NextFrameRestartLevel();
+			}
+		}
+		else if (r)
+		{
+			if (owner != NULL)
+			{
+				if (owner->mainMenu->gameRunType == MainMenu::GRT_ADVENTURE)
+				{
+					SaveFile *currFile = owner->mainMenu->GetCurrentProgress();
+					owner->mainMenu->worldMap->CompleteCurrentMap(owner->level, owner->totalFramesBeforeGoal);
+					currFile->Save();
+				}
+
+				owner->bestTimeGhostOn = false;
+				owner->bestReplayOn = true;
+				owner->SetupBestReplay();
+				owner->RestartGame();
+				
+				//owner->NextFrameRestartLevel();
+			}
+			
 		}
 	}
 }
@@ -14681,8 +14741,7 @@ void Actor::WriteBestTimeRecordings()
 		{
 			owner->recGhost->StopRecording();
 			owner->recGhost->WriteToFile(owner->GetBestTimeGhostPath());
-
-			owner->SetupBestTimeGhost();
+			owner->SetupBestTimeGhost(); //only if ghost is already on
 		}
 	}
 }
