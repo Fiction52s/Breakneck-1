@@ -931,7 +931,10 @@ bool SaveFile::IsCompleteWorld( World *world )
 
 bool SaveFile::IsCompleteSector(Sector *sector)
 {
-	return IsRangeComplete(sector->index, sector->index + 8);
+	int first = sector->GetLevelIndex(0);
+	int last = sector->GetLevelIndex(sector->numLevels - 1);
+	
+	return IsRangeComplete(first, last+1);
 }
 
 bool SaveFile::IsCompleteLevel(Level *lev)

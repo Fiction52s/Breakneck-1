@@ -28,7 +28,7 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 
 
-	playerSkinShader.SetSkin(5);
+	playerSkinShader.SetSkin(Actor::SKIN_GHOST);
 
 	playerSkinShader.pShader.setUniform("u_invincible", 0.f);
 	playerSkinShader.pShader.setUniform("u_super", 0.f);

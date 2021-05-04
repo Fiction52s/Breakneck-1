@@ -421,8 +421,12 @@ struct Actor : QuadTreeCollider,
 		SKIN_RED,
 		SKIN_BLUE,
 		SKIN_ORANGE,
-		SKIN_PURPLE,
+		SKIN_PINK,
+		SKIN_LIGHT,
 		SKIN_GHOST,
+		SKIN_DARK,
+		SKIN_VILLAIN,
+		SKIN_TOXIC,
 		SKIN_Count
 	};
 

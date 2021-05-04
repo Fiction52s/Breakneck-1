@@ -2,6 +2,7 @@
 #include "SaveMenuScreen.h"
 #include "Tileset.h"
 #include "VectorMath.h"
+#include "Actor.h"
 
 using namespace sf;
 
@@ -105,15 +106,20 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 	rect.setPosition(gridTopLeft + Vector2f( selectedPos.x * gridSpacing.x,
 		selectedPos.y * gridSpacing.y));
 
-	saveScreen->SetSkin(GetSelectedIndex());
+	int selectedIndex = GetSelectedIndex();
 
-	if (currInput.A && !prevInput.A)
+	if (selectedIndex < Actor::SKIN_Count)
 	{
-		saveScreen->SaveCurrSkin();
-		return false;
-		//select skin
-	}
+		saveScreen->SetSkin(selectedIndex);
 
+		if (currInput.A && !prevInput.A)
+		{
+			saveScreen->SaveCurrSkin();
+			return false;
+			//select skin
+		}
+	}
+	
 	if (currInput.B && !prevInput.B)
 	{
 		return false;
