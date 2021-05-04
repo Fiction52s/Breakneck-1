@@ -179,17 +179,6 @@ struct MapSelector
 		K_HIDE,
 	};
 
-	/*static void sLoadBG( MapSelector* ms );
-	static void sDestroyBG(MapSelector *ms);
-	boost::thread *bgLoadThread;
-	boost::thread *bgDestroyThread;
-	int loadIndex;
-	bool bgLoadFinished;
-	bool continueBGLoadingThread;
-
-	bool bgDestroyFinished;
-	int destroyIndex;
-	bool continueBGDestroyThread;*/
 
 	PlayerSkinShader playerSkinShader;
 	State state;
@@ -269,22 +258,12 @@ struct WorldMap : TilesetManager
 		SPACE,
 		SPACE_TO_PLANET,
 		PLANET,
-		LOAD_COLONY,
 		PlANET_TO_COLONY,
 		COLONY,
 		COLONY_TO_PLANET,
 		PLANET_TO_SPACE,
 		START_LEVEL
 	};
-
-	//bool bgLoadFinished;
-	//bool continueBGLoadingThread;
-	boost::thread *bgLoadThread;
-	boost::thread *bgDestroyThread;
-	static void sLoadBGs(WorldMap *wm);
-	static void sDestroyBGs(WorldMap*wm);
-	//std::thread *bgLoadThread;
-	//static void sLoadBGs(WorldMap *wm);
 
 	//moved this here
 	//because its only needed in adventure 

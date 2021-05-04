@@ -21,13 +21,7 @@ WorldMap::WorldMap( MainMenu *p_mainMenu )
 {
 	allUnlocked = true;
 
-	bgDestroyThread = NULL;
-	bgLoadThread = NULL;
-	//bgLoadFinished = true;
-	//continueBGLoadingThread = true;
 	
-	
-
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
 
 	worldSelector = new WorldSelector(p_mainMenu);
@@ -546,37 +540,6 @@ void WorldMap::InitSelectors()
 	}
 }
 
-void WorldMap::sDestroyBGs(WorldMap *wm)
-{
-	cout << "Start destroying bgs" << endl;
-	MapSelector *currSelector = wm->CurrSelector();
-	currSelector->DestroyBGs();
-	cout << "done destroying bgs" << endl;
-}
-
-void WorldMap::sLoadBGs(WorldMap *wm)
-{
-	//cout << "start loading bgs" << endl;
-	MapSelector *currSelector = wm->CurrSelector();
-	currSelector->CreateBGs();
-	//cout << "done loading bgs" << endl;
-
-
-	//wm->bgLoadFinished = true;
-	/*while (wm->continueBGLoadingThread)
-	{
-		if (!wm->bgLoadFinished)
-		{
-			cout << "start loading bgs" << endl;
-			MapSelector *currSelector = wm->CurrSelector();
-			currSelector->CreateBGs();
-			cout << "done loading bgs" << endl;
-			wm->bgLoadFinished = true;
-		}
-	}*/
-	
-}
-
 void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 {
 	int trans = 20;
@@ -605,12 +568,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		break;
 	case PLANET:
 	{
-		if (bgDestroyThread != NULL && bgDestroyThread->try_join_for(boost::chrono::milliseconds(0)))
-		{
-			delete bgDestroyThread;
-			bgDestroyThread = NULL;
-		}
-
 		if (currInput.A && !prevInput.A)
 		{
 			state = PlANET_TO_COLONY;
@@ -880,34 +837,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		}
 	}
 		break;
-	case LOAD_COLONY:
-	{
-		
-		//if (bgLoadFinished )
-		//mainMenu->loadingBackpack->Update();
-		if( bgLoadThread != NULL && bgLoadThread->try_join_for(boost::chrono::milliseconds(0)))
-		{
-			delete bgLoadThread;
-			bgLoadThread = NULL;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
-			state = PlANET_TO_COLONY;
-			frame = 0;
-			break;
-		}
-
-		if (bgDestroyThread != NULL && bgDestroyThread->try_join_for(boost::chrono::milliseconds(0)))
-		{
-			delete bgDestroyThread;
-			bgDestroyThread = NULL;
-		}
-
-		if (bgLoadThread == NULL && bgDestroyThread == NULL )
-		{
-			bgLoadThread = new boost::thread(WorldMap::sLoadBGs, this);
-		}
-		
-		break;
-	}
 	}
 
 	
@@ -968,7 +897,6 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 				mainMenu->LoadMode(MainMenu::WORLDMAP);
 				//mainMenu->SetMode(MainMenu::WORLDMAP);
 
-				//bgDestroyThread = new boost::thread(WorldMap::sDestroyBGs, this);
 			}
 			break;
 		}

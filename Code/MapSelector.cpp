@@ -177,7 +177,7 @@ MapSector * MapSelector::FocusedSector()
 
 void MapSelector::CreateBGs()
 {
-	cout << "creating bgs for world " << world->index + 1 << endl;
+	//cout << "creating bgs for world " << world->index + 1 << endl;
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i]->CreateBG();
@@ -187,7 +187,7 @@ void MapSelector::CreateBGs()
 
 void MapSelector::DestroyBGs()
 {
-	cout << "destroying bgs for world " << world->index + 1 << endl;
+	//cout << "destroying bgs for world " << world->index + 1 << endl;
 	for (int i = 0; i < numSectors; ++i)
 	{
 		sectors[i]->DestroyBG();

@@ -21,6 +21,7 @@ struct SkinMenu
 	sf::RectangleShape rect;
 	SaveMenuScreen *saveScreen;
 	sf::Vertex bgQuad[4];
+	float skinScale;
 
 	SkinMenu(SaveMenuScreen *saveScreen);
 	int GetSelectedIndex();

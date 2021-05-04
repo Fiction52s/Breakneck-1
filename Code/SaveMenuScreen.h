@@ -43,6 +43,7 @@ struct SaveMenuScreen : TilesetManager
 		Count
 	};
 
+	int currSkin;
 	bool defaultFiles[6];
 	Action action;
 	int actionLength[Count];
@@ -56,6 +57,7 @@ struct SaveMenuScreen : TilesetManager
 	sf::Vector2f GetTopLeftSaveSlot(int index);
 	void SaveSelectedFile();
 	void SetSkin(int index);
+	void SaveCurrSkin();
 	bool Update();
 	void Draw(sf::RenderTarget *target);
 	void Reset();

@@ -292,10 +292,15 @@ void SaveMenuScreen::SaveSelectedFile()
 
 void SaveMenuScreen::SetSkin(int index)
 {
-	mainMenu->currSaveFile->defaultSkinIndex = index;
+	currSkin = index;
+	playerSkinShader.SetSkin(currSkin);
+	maskPlayerSkinShader.SetSkin(currSkin);
+}
+
+void SaveMenuScreen::SaveCurrSkin()
+{
+	mainMenu->currSaveFile->defaultSkinIndex = currSkin;
 	SaveSelectedFile();
-	playerSkinShader.SetSkin(index);
-	maskPlayerSkinShader.SetSkin(index);
 }
 
 bool SaveMenuScreen::Update()
@@ -315,7 +320,9 @@ bool SaveMenuScreen::Update()
 					assert(0);
 				}*/
 				defaultFiles[selectedSaveIndex] = false;
+				int savedSkin = files[selectedSaveIndex]->defaultSkinIndex;
 				files[selectedSaveIndex]->SetAsDefault();
+				files[selectedSaveIndex]->defaultSkinIndex = savedSkin;
 				files[selectedSaveIndex]->Save();
 				mainMenu->worldMap->InitSelectors();
 				mainMenu->worldMap->SetDefaultSelections();
@@ -398,11 +405,13 @@ bool SaveMenuScreen::Update()
 		}
 		else if (menuCurrInput.Y && !menuPrevInput.Y)
 		{
+			action = SKINMENU;
+			frame = 0;
+			skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+
 			if (!defaultFiles[selectedSaveIndex])
 			{
-				action = SKINMENU;
-				frame = 0;
-				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+				
 			}
 		}
 
@@ -587,6 +596,7 @@ bool SaveMenuScreen::Update()
 		{
 			action = WAIT;
 			frame = 0;
+			SetSkin( mainMenu->currSaveFile->defaultSkinIndex );
 		}
 		break;
 	}
@@ -668,13 +678,14 @@ void SaveMenuScreen::SelectedIndexChanged()
 {
 	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 	mainMenu->currSaveFile = files[selectedSaveIndex];
+	SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
 	if (defaultFiles[selectedSaveIndex])
 	{
 
 	}
 	else
 	{
-		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+		
 	}
 }
 

@@ -7,6 +7,7 @@ using namespace sf;
 
 SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 {
+	skinScale = 2.0;
 	saveScreen = p_saveScreen;
 	ts_skins = saveScreen->GetSizedTileset("Menu/Skin/skin_64x64.png");
 	for (int i = 0; i < 64; ++i)
@@ -18,7 +19,7 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 		ts_skins->SetQuadSubRect(skinQuads + i * 4, i);
 	}
 
-	gridSpacing = Vector2f(80, 80);
+	gridSpacing = Vector2f(80 * skinScale, 80 * skinScale);
 
 	float totalWidth = gridSpacing.x * 8;
 
@@ -26,9 +27,9 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 	SetGridTopLeft(Vector2f(960 - totalWidth / 2.f, 0));
 
 	rect.setFillColor(Color::White);
-	rect.setSize(Vector2f(64, 64));
+	rect.setSize(Vector2f(64 * skinScale, 64 * skinScale));
 
-	SetRectColor(bgQuad, Color::Black);
+	SetRectColor(bgQuad, Color( 0, 0, 0, 50 ) );
 	
 }
 
@@ -57,7 +58,7 @@ void SkinMenu::SetGridTopLeft(sf::Vector2f &pos)
 		for (int x = 0; x < 8; ++x)
 		{
 			i = y * 8 + x;
-			SetRectTopLeft(skinQuads + i * 4, 64, 64,
+			SetRectTopLeft(skinQuads + i * 4, 64 * skinScale, 64 * skinScale,
 				Vector2f(pos.x + gridSpacing.x * x, pos.y + gridSpacing.y * y));
 		}
 	}
@@ -104,9 +105,11 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 	rect.setPosition(gridTopLeft + Vector2f( selectedPos.x * gridSpacing.x,
 		selectedPos.y * gridSpacing.y));
 
+	saveScreen->SetSkin(GetSelectedIndex());
+
 	if (currInput.A && !prevInput.A)
 	{
-		saveScreen->SetSkin(GetSelectedIndex());
+		saveScreen->SaveCurrSkin();
 		return false;
 		//select skin
 	}
