@@ -1945,7 +1945,7 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 			fader->Clear();
 
-			SetMode(WORLDMAP);
+			SetMode(WORLDMAP_COLONY);
 			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
 			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
@@ -1967,7 +1967,7 @@ void MainMenu::HandleMenuMode()
 				currLevel = NULL;
 
 				fader->Clear();
-				SetMode( MainMenu::WORLDMAP );
+				SetMode( MainMenu::WORLDMAP_COLONY );
 				
 				worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 				worldMap->CurrSelector()->FocusedSector()->UpdateStats();
@@ -1991,7 +1991,7 @@ void MainMenu::HandleMenuMode()
 			delete currLevel;
 			currLevel = NULL;
 
-			SetMode( MainMenu::WORLDMAP );
+			SetMode( MainMenu::WORLDMAP_COLONY );
 			
 			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 			worldMap->CurrSelector()->FocusedSector()->UpdateStats();

@@ -140,6 +140,9 @@ void ReplayGhost::UpdateReplaySprite()
 	float width = ts->texture->getSize().x;
 	float height = ts->texture->getSize().y;
 
+	playerSkinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+
 	if (info.flipX)
 	{
 		ir.left += ir.width;
@@ -152,8 +155,7 @@ void ReplayGhost::UpdateReplaySprite()
 	}
 
 
-	playerSkinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
-		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+	
 
 	replaySprite.setTextureRect(ir);
 	replaySprite.setOrigin(info.origin.x, info.origin.y);
