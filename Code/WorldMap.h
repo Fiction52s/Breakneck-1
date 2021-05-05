@@ -105,7 +105,7 @@ struct MapSector
 	Tileset *ts_energyTri;
 	Tileset *ts_energyMask;
 	Tileset *ts_nodeExplode;
-	Tileset *ts_shards;
+	//Tileset *ts_shards;
 	Tileset *ts_sectorArrows;
 
 	Tileset *ts_mapPreview;
@@ -142,6 +142,7 @@ struct MapSector
 	AdventureMap *GetSelectedAdventureMap();
 	void Load();
 	void UpdateMapPreview();
+	void DestroyMapPreview();
 	void UpdateSelectorSprite();
 	bool Update(ControllerState &curr,
 		ControllerState &prev);

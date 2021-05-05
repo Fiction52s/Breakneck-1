@@ -116,32 +116,13 @@ void Shroom::ProcessState()
 			frame = 0;
 			break;
 		case HITTING:
+			action = LATENT;
 			frame = 0;
 			break;
 		}
 	}
 
 	V2d playerPos = sess->GetPlayerPos(0);
-
-	V2d position = GetPosition();
-	switch (action)
-	{
-	case LATENT:
-		if (length(playerPos - position) < 60)
-		{
-			action = HITTING;
-			sess->ActivateSoundAtPos( position, hitSound);
-			frame = 0;
-		}
-		break;
-	case HITTING:
-		if (length(playerPos - position) > 120)
-		{
-			action = LATENT;
-			frame = 0;
-		}
-		break;
-	}
 }
 
 void Shroom::DirectKill()
@@ -176,6 +157,13 @@ void Shroom::HandleNoHealth()
 {
 	if( jellySpawnable )
 		sess->AddEnemy(jelly);
+}
+
+void Shroom::IHitPlayer(int index)
+{
+	action = HITTING;
+	frame = 0;
+	sess->ActivateSoundAtPos(GetPosition(), hitSound);
 }
 
 void Shroom::CheckedMiniDraw(sf::RenderTarget *target,

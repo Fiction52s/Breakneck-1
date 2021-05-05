@@ -267,6 +267,13 @@ MainMenu::MainMenu()
 	selectorAnimFactor = 3;
 	
 
+	globalFile = new GlobalSaveFile;
+	if (!globalFile->Load())
+	{
+		globalFile->SetToDefaults();
+		globalFile->Save();
+	}
+
 	currEditSession = NULL;
 	currTutorialSession = NULL;
 
@@ -294,6 +301,8 @@ MainMenu::MainMenu()
 	musicManager->LoadMusicNames();
 
 	pauseMenu = new PauseMenu(this);
+
+	
 
 	deadThread = NULL;
 	loadThread = NULL;
@@ -634,6 +643,8 @@ MainMenu::~MainMenu()
 
 	if( gccDriver != NULL )
 		delete gccDriver;
+
+	delete globalFile;
 }
 
 //singleton
@@ -2370,6 +2381,18 @@ ControlProfile *MainMenu::GetCurrSelectedProfile()
 {
 	return pauseMenu->GetCurrSelectedProfile();
 }
+
+void MainMenu::UnlockSkin(int skinIndex)
+{
+	globalFile->UnlockSkin(skinIndex);
+}
+
+bool MainMenu::IsSkinUnlocked(int skinIndex)
+{
+	return globalFile->IsSkinUnlocked(skinIndex);
+}
+
+
 
 bool MainMenu::SetCurrProfileByName(const std::string &name)
 {

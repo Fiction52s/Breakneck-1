@@ -215,7 +215,7 @@ bool MapSelector::Update(ControllerState &curr,
 		}
 		else if (curr.B && !prev.B)
 		{
-			
+			//FocusedSector()->DestroyMapPreview();
 			//FocusedSector()->DestroyBG();
 			return false;
 		}
@@ -243,11 +243,11 @@ bool MapSelector::Update(ControllerState &curr,
 	{
 		if (kinState == K_STAND)
 		{
-			
 			if (curr.B && !prev.B)
 			{
 				if (world->numSectors == 1)
 				{
+					FocusedSector()->DestroyMapPreview();
 					return false;
 					//state = S_MAPSELECT;
 				}
@@ -255,6 +255,7 @@ bool MapSelector::Update(ControllerState &curr,
 				{
 					state = S_SECTORSELECT;
 					FocusedSector()->UpdateStats();
+					FocusedSector()->DestroyMapPreview();
 				}
 				break;
 			}

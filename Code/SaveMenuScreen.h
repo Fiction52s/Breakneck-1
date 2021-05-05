@@ -4,6 +4,7 @@
 #include <SFML\Graphics.hpp>
 #include "Tileset.h"
 #include "PlayerSkinShader.h"
+#include "Input.h"
 
 struct MainMenu;
 struct SaveFile;
@@ -30,6 +31,43 @@ struct SaveFileDisplay
 	void Draw(sf::RenderTarget *target);
 };
 
+struct SaveMenuConfirmPopup
+{
+	enum Options
+	{
+		OPTION_NOTHING,
+		OPTION_CONFIRM,
+		OPTION_BACK
+	};
+
+	SaveMenuConfirmPopup(MainMenu *mainMenu);
+	sf::Vector2f size;
+	sf::Vertex popupBGQuad[4];
+	sf::Text confirmText;
+	sf::Vertex buttonQuads[4 * 2];
+	Tileset *ts_buttons;
+	int Update(ControllerState &currInput,
+		ControllerState &prevInput);
+	void SetText(const std::string &str);
+	void SetPos(sf::Vector2f &pos);
+	void Draw(sf::RenderTarget *target);
+};
+
+struct SaveMenuInfoPopup
+{
+	sf::Vector2f size;
+	sf::Text text;
+	sf::Vertex popupBGQuad[4];
+
+
+	SaveMenuInfoPopup(MainMenu*mainMenu);
+	void SetText(const std::string &str);
+	bool Update(ControllerState &currInput,
+		ControllerState &prevInput);
+	void SetPos(sf::Vector2f &pos);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct SaveMenuScreen : TilesetManager
 {
 	enum Action
@@ -40,9 +78,16 @@ struct SaveMenuScreen : TilesetManager
 		TRANSITIONMOVIE,
 		FADEIN,
 		SKINMENU,
+		CONFIRMDELETE,
+		CONFIRMCOPY,
+		INFOPOP,
+		COPY,
 		Count
 	};
 
+	int copiedIndex;
+	SaveMenuConfirmPopup confirmPopup;
+	SaveMenuInfoPopup infoPopup;
 	int currSkin;
 	bool defaultFiles[6];
 	Action action;
@@ -62,6 +107,9 @@ struct SaveMenuScreen : TilesetManager
 	void Draw(sf::RenderTarget *target);
 	void Reset();
 	void SelectedIndexChanged();
+	void UnlockSkin(int skinIndex);
+	bool IsSkinUnlocked(int skinIndex);
+	void ChangeIndex(bool down, bool up, bool left, bool right);
 
 	MainMenu *mainMenu;
 	sf::Vector2f menuOffset;
@@ -117,9 +165,6 @@ struct SaveMenuScreen : TilesetManager
 
 	SaveFile *files[6];
 	SaveFileDisplay *fileDisplay[6];
-
-
-	int moveDelayCounter;
 };
 
 #endif

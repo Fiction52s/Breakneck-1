@@ -24,6 +24,7 @@ struct Shroom : Enemy
 	void HandleNoHealth();
 	void DirectKill();
 	void ResetEnemy();
+	void IHitPlayer(int index = 0);
 	void ProcessState();
 
 	void CheckedMiniDraw(sf::RenderTarget *target,

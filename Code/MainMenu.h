@@ -30,6 +30,7 @@ struct PauseMenu;
 struct LevelSelector;
 struct MusicInfo;
 struct AdventureMap;
+struct GlobalSaveFile;
 
 struct EffectPool;
 
@@ -537,6 +538,11 @@ struct MainMenu
 	void SetupWindow();
 	void UpdateMenuMode();
 	void CheckForControllers();
+
+	void UnlockSkin(int skinIndex);
+	bool IsSkinUnlocked(int skinIndex);
+	GlobalSaveFile *globalFile;
+
 
 	std::vector<void(MainMenu::*)()> updateModeFuncs;
 

@@ -116,10 +116,10 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	string secStr = to_string(index + 1);
 	bgName = "w" + worldStr + "_0" + secStr;
 
-	stringstream ss;
-	ss.str("");
-	ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
-	ts_shards = worldMap->GetTileset(ss.str(), 48, 48);
+	//stringstream ss;
+	//ss.str("");
+	//ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
+	//ts_shards = worldMap->GetTileset(ss.str(), 48, 48);
 
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(60);
@@ -419,11 +419,11 @@ void MapSector::SetXCenter(float x)
 	//shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
 	//completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
 
-	Vector2f shardGridOffset = Vector2f(20, 20);
-	Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
-	float gridSpacing = 30;
+	//Vector2f shardGridOffset = Vector2f(20, 20);
+	//Vector2f gridTopLeft = levelStatsTopLeft + shardGridOffset;
+	//float gridSpacing = 30;
 
-	float gridTotalRight = gridTopLeft.x + (ts_shards->tileWidth * 4) + (gridSpacing * 3);
+	//float gridTotalRight = gridTopLeft.x + (ts_shards->tileWidth * 4) + (gridSpacing * 3);
 
 	/*for (int i = 0; i < numTotalShards; ++i)
 	{
@@ -431,7 +431,7 @@ void MapSector::SetXCenter(float x)
 			gridTopLeft.y + (ts_shards->tileHeight + gridSpacing) * (i / 4) + ts_shards->tileHeight / 2.f));
 	}*/
 
-	Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
+	//Vector2f levelStatsActualTopLeft(gridTotalRight, gridTopLeft.y);
 
 	//levelPercentCompleteText.setPosition(levelStatsActualTopLeft + Vector2f(50, 50));
 
@@ -879,13 +879,19 @@ void MapSector::Load()
 
 }
 
-void MapSector::UpdateMapPreview()
+void MapSector::DestroyMapPreview()
 {
+	//cout << "destroyed preview" << endl;
 	if (ts_mapPreview != NULL)
 	{
 		ms->worldMap->DestroyTileset(ts_mapPreview);
 		ts_mapPreview = NULL;
 	}
+}
+
+void MapSector::UpdateMapPreview()
+{
+	DestroyMapPreview();
 
 	string fPath = adventureFile.GetAdventureSector(sec).maps[GetSelectedIndex()].GetFilePath();
 	string previewPath = fPath + ".png";

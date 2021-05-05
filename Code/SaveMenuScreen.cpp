@@ -100,7 +100,8 @@ void SaveFileDisplay::SetValues(SaveFile *sf, WorldMap *wm)
 SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu),
 	playerSkinShader( "player" ),
-	maskPlayerSkinShader( "player" )
+	maskPlayerSkinShader( "player" ),
+	confirmPopup( p_mainMenu ), infoPopup( p_mainMenu )
 {
 	menuOffset = Vector2f(0, 0);
 
@@ -180,6 +181,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 			fileDisplay[i]->SetValues(NULL, NULL);
 		}
 	}
+
+	
 
 	background.setTexture(*ts_background->texture);
 	background.setPosition(menuOffset);
@@ -333,7 +336,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = TRANSITION;
 			}
-			
+
 			mainMenu->worldMap->UpdateWorldStats();
 
 			transparency = 0;
@@ -342,7 +345,7 @@ bool SaveMenuScreen::Update()
 			break;
 		case TRANSITION:
 		{
-			
+
 			mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
 			mainMenu->transAlpha = 255;
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
@@ -369,10 +372,17 @@ bool SaveMenuScreen::Update()
 			frame = 0;
 			break;
 		}
+		case CONFIRMCOPY:
+		case CONFIRMDELETE:
+		case COPY:
+		{
+			frame = 0;
+			break;
+		}
 		}
 	}
 
-	
+
 
 	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
 	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
@@ -383,123 +393,141 @@ bool SaveMenuScreen::Update()
 	bool moveRight = false;
 
 
+	bool down = (menuCurrInput.LDown() && !menuPrevInput.LDown())
+		|| (menuCurrInput.PDown() && !menuPrevInput.PDown());
+	bool left = (menuCurrInput.LLeft() && !menuPrevInput.LLeft())
+		|| (menuCurrInput.PLeft() && !menuPrevInput.PLeft());
+	bool up = (menuCurrInput.LUp() && !menuPrevInput.LUp())
+		|| (menuCurrInput.PUp() && !menuPrevInput.PUp());
+	bool right = (menuCurrInput.LRight() && !menuPrevInput.LRight())
+		|| (menuCurrInput.PRight() && !menuPrevInput.PRight());
+
 	int moveDelayFrames = 60;
 	int moveDelayFramesSmall = 40;
 
-	if (mainMenu->menuMode == MainMenu::SAVEMENU && action == WAIT )
+	if (mainMenu->menuMode == MainMenu::SAVEMENU )
 	{
-		if (menuCurrInput.B && !menuPrevInput.B )
+		if( action == WAIT )
 		{
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
-			return false;
-			/*mainMenu->LoadMode(SAVEMENU);
-			mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
-			mainMenu->fader->CrossFade(30, 0, 30, Color::Black);*/
-		}
-		else if (menuCurrInput.A && !menuPrevInput.A )
-		{
-			action = SELECT;
-			frame = 0;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
-			return true;
-		}
-		else if (menuCurrInput.Y && !menuPrevInput.Y)
-		{
-			action = SKINMENU;
-			frame = 0;
-			skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
-
-			if (!defaultFiles[selectedSaveIndex])
+			if (menuCurrInput.B && !menuPrevInput.B)
 			{
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("main_menu_back"));
+				return false;
+				/*mainMenu->LoadMode(SAVEMENU);
+				mainMenu->SetMode(MainMenu::TRANS_SAVE_TO_MAIN);
+				mainMenu->fader->CrossFade(30, 0, 30, Color::Black);*/
+			}
+			else if (menuCurrInput.A && !menuPrevInput.A)
+			{
+				action = SELECT;
+				frame = 0;
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+				return true;
+			}
+			else if (menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder)
+			{
+				action = SKINMENU;
+				frame = 0;
+				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
+
 				
 			}
-		}
-
-		//bool canMoveOther = ((moveDelayCounter - moveDelayFramesSmall) <= 0);
-		//bool canMoveSame = (moveDelayCounter == 0);
-
-
-		bool down = (menuCurrInput.LDown() && !menuPrevInput.LDown())
-			|| ( menuCurrInput.PDown() && !menuPrevInput.PDown() );
-		bool left = (menuCurrInput.LLeft() && !menuPrevInput.LLeft())
-			|| (menuCurrInput.PLeft() && !menuPrevInput.PLeft());
-		bool up = (menuCurrInput.LUp() && !menuPrevInput.LUp())
-			|| (menuCurrInput.PUp() && !menuPrevInput.PUp());
-		bool right = (menuCurrInput.LRight() && !menuPrevInput.LRight())
-			|| (menuCurrInput.PRight() && !menuPrevInput.PRight());
-
-		if (down )
-		{
-			selectedSaveIndex += 2;
-			//currentMenuSelect++;
-			if (selectedSaveIndex > 5)
-				selectedSaveIndex -= 6;
-			moveDown = true;
-			moveDelayCounter = moveDelayFrames;
-			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
-			SelectedIndexChanged();
-
-		}
-		else if (up)
-		{
-			selectedSaveIndex -= 2;
-			if (selectedSaveIndex < 0)
-				selectedSaveIndex += 6;
-			moveUp = true;
-			moveDelayCounter = moveDelayFrames;
-			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
-			SelectedIndexChanged();
-		}
-
-		if (right)
-		{
-			selectedSaveIndex++;
-			//currentMenuSelect++;
-			if (selectedSaveIndex % 2 == 0)
-				selectedSaveIndex -= 2;
-			moveRight = true;
-			moveDelayCounter = moveDelayFrames;
-			SelectedIndexChanged();
-		}
-		else if (left)
-		{
-			selectedSaveIndex--;
-			if (selectedSaveIndex % 2 == 1)
-				selectedSaveIndex += 2;
-			else if (selectedSaveIndex < 0)
+			else if (menuCurrInput.X && !menuPrevInput.X)
 			{
-				selectedSaveIndex += 2;
+				if (!defaultFiles[selectedSaveIndex])
+				{
+					action = CONFIRMDELETE;
+					frame = 0;
+				}
 			}
-			moveLeft = true;
-
-			moveDelayCounter = moveDelayFrames;
-			SelectedIndexChanged();
+			else if (menuCurrInput.Y && !menuPrevInput.Y)
+			{
+				if (!defaultFiles[selectedSaveIndex])
+				{
+					action = COPY;
+					frame = 0;
+					copiedIndex = selectedSaveIndex;
+				}
+			}
+			else
+			{
+				ChangeIndex(down, up, left, right);
+			}
 		}
+		else if (action == CONFIRMDELETE)
+		{
+			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
+			if ( res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			{
+				action = INFOPOP;
+				frame = 0;
+				infoPopup.SetText("Deleted save file");
 
-		if (moveDelayCounter > 0)
-		{
-			//should have to press a direction each time to get the save file
-			//clean up later?
-			//moveDelayCounter--;
+				defaultFiles[selectedSaveIndex] = true;
+				files[selectedSaveIndex]->Delete();
+				fileDisplay[selectedSaveIndex]->SetValues(NULL, NULL);
+				
+			}
+			else if( res == SaveMenuConfirmPopup::OPTION_BACK)
+			{
+				action = WAIT;
+				frame = 0;
+			}
 		}
+		else if (action == INFOPOP)
+		{
+			bool res = infoPopup.Update(menuCurrInput, menuPrevInput);
+			if (res)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+		}
+		else if (action == COPY)
+		{
+			if (menuCurrInput.A && !menuPrevInput.A)
+			{
+				if (defaultFiles[selectedSaveIndex])
+				{
+					action = CONFIRMCOPY;
+					frame = 0;
+				}
+				else
+				{
+					action = INFOPOP;
+					frame = 0;
+					infoPopup.SetText("Cannot overwrite existing file");
+				}
+			}
+			else if (menuCurrInput.B && !menuPrevInput.B)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+			else
+			{
+				ChangeIndex(down, up, left, right);
+			}
+		}
+		else if (action == CONFIRMCOPY)
+		{
+			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
+			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			{
+				action = INFOPOP;
+				frame = 0;
+				infoPopup.SetText("Copied save file successfully");
 
-
-		if (!(menuCurrInput.LDown() || menuCurrInput.PDown()))
-		{
-			moveDown = false;
-		}
-		if (!(menuCurrInput.LUp() || menuCurrInput.PUp()))
-		{
-			moveUp = false;
-		}
-
-		if (!(menuCurrInput.LRight() || menuCurrInput.PRight()))
-		{
-			moveRight = false;
-		}
-		if (!(menuCurrInput.LLeft() || menuCurrInput.PLeft()))
-		{
-			moveLeft = false;
+				files[copiedIndex]->CopyTo(files[selectedSaveIndex]);
+				files[selectedSaveIndex]->Save();
+				defaultFiles[selectedSaveIndex] = false;
+				fileDisplay[selectedSaveIndex]->SetValues(files[selectedSaveIndex], mainMenu->worldMap);
+			}
+			else if (res == SaveMenuConfirmPopup::OPTION_BACK)
+			{
+				action = WAIT;
+				frame = 0;
+			}
 		}
 	}
 
@@ -539,45 +567,6 @@ bool SaveMenuScreen::Update()
 			playerSkinShader.SetSubRect(ts_currKinJump, ir);
 			kinJump.setTextureRect(ir);
 		}
-		//if( kinFaceFrame == saveKinFaceTurnLength * 3 + 40 )
-		//{
-		//	menuMode = WORLDMAP;
-		//	break;
-		//	//kinFaceFrame = 0;
-		//}
-
-		//if( kinFaceFrame < saveKinFaceTurnLength * 3 )
-		//{
-		//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( kinFaceFrame / 3 ) );
-		//}
-		//else
-		//{
-		//	saveKinFace.setTextureRect( ts_saveMenuKinFace->GetSubRect( saveKinFaceTurnLength - 1 ) );
-		//}
-
-		//if( kinFaceFrame < saveJumpLength * saveJumpFactor )
-		//{
-		//	if( kinFaceFrame == 0 )
-		//	{
-		//		saveKinJump.setTexture( *ts_saveKinJump1->texture );
-		//	}
-		//	else if( kinFaceFrame == 3 * saveJumpFactor )
-		//	{
-		//		saveKinJump.setTexture( *ts_saveKinJump2->texture );
-		//	}
-
-		//	int f = kinFaceFrame / saveJumpFactor;
-		//	if( kinFaceFrame < 3 * saveJumpFactor )
-		//	{
-		//		saveKinJump.setTextureRect( ts_saveKinJump1->GetSubRect( f ) );
-		//	}
-		//	else
-		//	{
-		//		saveKinJump.setTextureRect( ts_saveKinJump2->GetSubRect( f - 3 ) );
-		//	}
-
-		//	saveKinJump.setOrigin( saveKinJump.getLocalBounds().width, 0);
-		//}
 
 		break;
 	}
@@ -678,7 +667,11 @@ void SaveMenuScreen::SelectedIndexChanged()
 {
 	mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_change"));
 	mainMenu->currSaveFile = files[selectedSaveIndex];
-	SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+
+	if (action != COPY)
+	{
+		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+	}
 	if (defaultFiles[selectedSaveIndex])
 	{
 
@@ -686,6 +679,61 @@ void SaveMenuScreen::SelectedIndexChanged()
 	else
 	{
 		
+	}
+}
+
+void SaveMenuScreen::UnlockSkin(int skinIndex)
+{
+	mainMenu->UnlockSkin(skinIndex);
+}
+
+bool SaveMenuScreen::IsSkinUnlocked(int skinIndex)
+{
+	return mainMenu->IsSkinUnlocked(skinIndex);
+}
+
+void SaveMenuScreen::ChangeIndex(bool down, bool up, bool left, bool right)
+{
+	if (down)
+	{
+		selectedSaveIndex += 2;
+		//currentMenuSelect++;
+		if (selectedSaveIndex > 5)
+			selectedSaveIndex -= 6;
+	
+		//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_DOWN]);
+		SelectedIndexChanged();
+
+	}
+	else if (up)
+	{
+		selectedSaveIndex -= 2;
+		if (selectedSaveIndex < 0)
+			selectedSaveIndex += 6;
+		
+		//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_UP]);
+		SelectedIndexChanged();
+	}
+
+	if (right)
+	{
+		selectedSaveIndex++;
+		//currentMenuSelect++;
+		if (selectedSaveIndex % 2 == 0)
+			selectedSaveIndex -= 2;
+
+		SelectedIndexChanged();
+	}
+	else if (left)
+	{
+		selectedSaveIndex--;
+		if (selectedSaveIndex % 2 == 1)
+			selectedSaveIndex += 2;
+		else if (selectedSaveIndex < 0)
+		{
+			selectedSaveIndex += 2;
+		}
+		SelectedIndexChanged();
 	}
 }
 
@@ -715,7 +763,8 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveTexture->draw(kinWindow);
 
 	int endDraw = 12 * 3 + 24 * 2;
-	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU )
+	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU 
+		|| action == CONFIRMDELETE || action == CONFIRMCOPY || action == COPY || action == INFOPOP )
 	{
 		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
@@ -742,6 +791,14 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	{
 		skinMenu->Draw(target);
 	}
+	else if (action == CONFIRMDELETE || action == CONFIRMCOPY)
+	{
+		confirmPopup.Draw(target);
+	}
+	else if (action == INFOPOP)
+	{
+		infoPopup.Draw(target);
+	}
 }
 
 void SaveMenuScreen::Reset()
@@ -767,7 +824,6 @@ void SaveMenuScreen::Reset()
 	
 	asteroidFrameBack = 0;
 	asteroidFrameFront = 0;
-	moveDelayCounter = 0;
 
 	kinJump.setTexture(*ts_kinJump[0]->texture);
 	kinJump.setTextureRect(ts_kinJump[0]->GetSubRect(0));
@@ -793,4 +849,101 @@ void SaveMenuScreen::UpdateClouds()
 	kinClouds.setTextureRect(ts_kinClouds->GetSubRect(f));
 
 	cloudFrame++;
+}
+
+SaveMenuConfirmPopup::SaveMenuConfirmPopup( MainMenu *mainMenu )
+{
+	size = Vector2f(500, 200);
+	ts_buttons = mainMenu->tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
+	SetRectColor(popupBGQuad, Color::Black);
+
+	ts_buttons->SetQuadSubRect(buttonQuads, 0);
+	ts_buttons->SetQuadSubRect(buttonQuads+4, 1);
+
+	confirmText.setFont(mainMenu->arial);
+	confirmText.setCharacterSize(40);
+	confirmText.setFillColor(Color::White);
+	confirmText.setString("HELLO");
+
+	SetPos(Vector2f(960, 540));
+}
+
+void SaveMenuConfirmPopup::SetPos(sf::Vector2f &pos)
+{
+	SetRectCenter(popupBGQuad, size.x, size.y, pos);
+	SetRectCenter(buttonQuads, 128, 128, pos + Vector2f(-100, 100));
+	SetRectCenter(buttonQuads+4, 128, 128, pos + Vector2f(100, 100));
+	confirmText.setPosition(pos);
+}
+
+int SaveMenuConfirmPopup::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	if (currInput.A && !prevInput.A)
+	{
+		return OPTION_CONFIRM;
+	}
+	else if (currInput.B && !prevInput.B)
+	{
+		return OPTION_BACK;
+	}
+
+	return OPTION_NOTHING;
+}
+
+void SaveMenuConfirmPopup::Draw(sf::RenderTarget *target)
+{
+	target->draw(popupBGQuad, 4, sf::Quads);
+	target->draw(confirmText);
+	target->draw(buttonQuads, 4 * 2, sf::Quads, ts_buttons->texture);
+}
+
+void SaveMenuConfirmPopup::SetText(const std::string &str)
+{
+	confirmText.setString(str);
+}
+
+SaveMenuInfoPopup::SaveMenuInfoPopup(MainMenu *mainMenu)
+{
+	size = Vector2f(300, 100);
+	SetRectColor(popupBGQuad, Color::Black);
+
+	text.setFont(mainMenu->arial);
+	text.setCharacterSize(40);
+	text.setFillColor(Color::White);
+	text.setString("HELLO");
+
+	SetPos(Vector2f(960, 540));
+}
+
+bool SaveMenuInfoPopup::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	if( (currInput.A && !prevInput.A)
+		|| (currInput.B && !prevInput.B)
+		|| (currInput.Y && !prevInput.Y)
+		|| (currInput.X && !prevInput.X)
+		|| (currInput.rightShoulder && !prevInput.rightShoulder) )
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void SaveMenuInfoPopup::SetPos(sf::Vector2f &pos)
+{
+	SetRectCenter(popupBGQuad, size.x, size.y, pos);
+	text.setPosition(pos);
+}
+
+void SaveMenuInfoPopup::SetText(const std::string &str)
+{
+	text.setString(str);
+}
+
+void SaveMenuInfoPopup::Draw(sf::RenderTarget *target)
+{
+	target->draw(popupBGQuad, 4, sf::Quads);
+	target->draw(text);
 }

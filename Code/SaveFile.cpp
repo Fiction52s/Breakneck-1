@@ -1125,6 +1125,28 @@ void SaveFile::Save()
 	}
 }
 
+void SaveFile::Delete()
+{
+	boost::filesystem::remove(fileName);
+	SetAsDefault();
+}
+
+void SaveFile::CopyTo(SaveFile *saveFile)
+{
+	saveFile->controlProfileName = controlProfileName;
+	saveFile->levelsBeatenField.Set(saveFile->levelsBeatenField);
+
+	for (int i = 0; i < 512; ++i)
+	{
+		saveFile->levelScores[i] = levelScores[i];
+	}
+	saveFile->upgradeField.Set(saveFile->upgradeField);
+	saveFile->momentaField.Set(saveFile->momentaField);
+	saveFile->shardField.Set(saveFile->shardField);
+	saveFile->newShardField.Set(saveFile->newShardField);
+	saveFile->defaultSkinIndex = defaultSkinIndex;
+}
+
 void SaveFile::SetAsDefault()
 {
 	controlProfileName = "KIN_Default";
@@ -1141,4 +1163,73 @@ void SaveFile::SetAsDefault()
 	newShardField.Reset();
 
 	defaultSkinIndex = 0;
+}
+
+string GlobalSaveFile::fileName = "Resources/Data/globalsave";
+
+GlobalSaveFile::GlobalSaveFile()
+	:skinField(64)
+{
+	SetToDefaults();
+}
+
+bool GlobalSaveFile::Load()
+{
+	ifstream is;
+
+	is.open(fileName);
+
+	if (is.is_open())
+	{
+		skinField.Load(is);
+
+		//add more later
+		is.close();
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void GlobalSaveFile::Save()
+{
+	ofstream of;
+
+	of.open(fileName);
+
+	//cout << "saving global savefile" << endl;
+
+	if (of.is_open())
+	{
+		skinField.Save(of);
+
+		of.close();
+	}
+	else
+	{
+		cout << "error saving global savefile" << endl;
+		assert(false);
+	}
+}
+
+void GlobalSaveFile::UnlockSkin(int skinIndex)
+{
+	if (!skinField.GetBit(skinIndex))
+	{
+		skinField.SetBit(skinIndex, true);
+		Save();
+	}
+}
+
+bool GlobalSaveFile::IsSkinUnlocked(int skinIndex)
+{
+	return skinField.GetBit(skinIndex);
+}
+
+void GlobalSaveFile::SetToDefaults()
+{
+	skinField.Reset();
+	skinField.SetBit(0, true);
 }

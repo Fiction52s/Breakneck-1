@@ -3,6 +3,7 @@
 #include "Tileset.h"
 #include "VectorMath.h"
 #include "Actor.h"
+#include "MainMenu.h"
 
 using namespace sf;
 
@@ -11,14 +12,22 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 	skinScale = 2.0;
 	saveScreen = p_saveScreen;
 	ts_skins = saveScreen->GetSizedTileset("Menu/Skin/skin_64x64.png");
-	for (int i = 0; i < 64; ++i)
+
+	//unlock all skins for debug
+	for (int i = 0; i < Actor::SKIN_Count; ++i)
 	{
-		if (i == 10)
-		{
-			break;
-		}
-		ts_skins->SetQuadSubRect(skinQuads + i * 4, i);
+		saveScreen->UnlockSkin(i);
 	}
+
+	for (int i = 0; i < Actor::SKIN_Count; ++i)
+	{
+		if (saveScreen->IsSkinUnlocked(i))
+		{
+			ts_skins->SetQuadSubRect(skinQuads + i * 4, i);
+		}
+	}
+
+	
 
 	gridSpacing = Vector2f(80 * skinScale, 80 * skinScale);
 
@@ -31,7 +40,6 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 	rect.setSize(Vector2f(64 * skinScale, 64 * skinScale));
 
 	SetRectColor(bgQuad, Color( 0, 0, 0, 50 ) );
-	
 }
 
 void SkinMenu::Reset()
@@ -108,7 +116,8 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 	int selectedIndex = GetSelectedIndex();
 
-	if (selectedIndex < Actor::SKIN_Count)
+	if (selectedIndex < Actor::SKIN_Count
+		&& saveScreen->IsSkinUnlocked(selectedIndex))
 	{
 		saveScreen->SetSkin(selectedIndex);
 
