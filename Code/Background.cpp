@@ -163,8 +163,8 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
 
-	ts_bg = owner->GetTileset(bgFile, 1920, 1080);
-	ts_shape = owner->GetTileset(shapeFile, 1920, 1080);
+	ts_bg = owner->GetTileset(bgFile, 960, 540);
+	ts_shape = owner->GetTileset(shapeFile, 960, 540);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
@@ -172,12 +172,14 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	background.setTexture(*ts_bg->texture);
 	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
 	background.setPosition(0, 0);
+	background.setScale(2, 2);
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
 	
 	shape.setTexture(*ts_shape->texture);
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
 	shape.setPosition(0, 0);
+	shape.setScale(2, 2);
 
 	transFrames = 60 * 20;
 
@@ -299,8 +301,8 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	shapeSourceName = bgStr + "_shape" + ".png";
 
-	ts_bg = tm->GetTileset(bgSourceName, 1920, 1080);
-	ts_shape = tm->GetTileset(shapeSourceName, 1920, 1080);
+	ts_bg = tm->GetTileset(bgSourceName, 960, 540);
+	ts_shape = tm->GetTileset(shapeSourceName, 960, 540);
 
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
@@ -309,12 +311,14 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	background.setTexture(*ts_bg->texture);
 	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
 	background.setPosition(0, 0);
+	background.setScale(2, 2);
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
 
 	shape.setTexture(*ts_shape->texture);
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
 	shape.setPosition(0, 0);
+	shape.setScale(2, 2);
 
 	transFrames = 60 * 20;
 
@@ -362,6 +366,7 @@ Background::Background(MainMenu *mm)
 	shape.setTexture(*ts_shape->texture);
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
 	shape.setPosition(0, 0);
+	shape.setScale(2, 2);
 
 	transFrames = 60 * 3;
 
