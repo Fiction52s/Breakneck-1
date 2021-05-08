@@ -148,16 +148,20 @@ void ScrollingBackground::Draw(RenderTarget *target)
 
 Background::Background( GameSession *owner, int envLevel, int envType)
 {
-	stringstream ss;
-
-	string folder = "Backgrounds/";
-
-	int eType = envLevel + 1; //adjust for alex naming -_-
+	/*stringstream ss;
+	int eType = envLevel + 1;
 	ss << folder << "w" << envType + 1 << "_BG";
 
-	ss << eType;
+	ss << eType;*/
 
-	string bgStr = ss.str();
+	string worldStr = to_string(envType + 1);
+	string varStr = to_string(envLevel + 1);
+
+	string worldFolder = "W" + worldStr + "/w" + worldStr + "_0" + varStr;
+
+	string folder = "Backgrounds/" + worldStr +worldFolder + "/";
+
+	string bgStr = folder + "w" + worldStr + "_BG" + varStr;
 
 	string bgFile = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
@@ -197,7 +201,7 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 {
 	ifstream is;
 	stringstream fss;
-	fss << "Resources/BGInfo/" << fileName << ".bg";
+	fss << "Resources/Backgrounds/BGInfo/" << fileName << ".bg";
 	string fStr = fss.str();
 
 	is.open(fStr);
@@ -220,19 +224,18 @@ string Background::GetBGNameFromBGInfo(const std::string &fileName)
 		//background = new Background(this, mh->envLevel, mh->envType);
 }
 
-
-
-
 Background *Background::SetupFullBG(const std::string &fName,
 	TilesetManager *tm, bool p_deleteTilesets)
 {
 	ifstream is;
 	stringstream fss;
-	fss << "Resources/BGInfo/" << fName << ".bg";
+	fss << "Resources/Backgrounds/BGInfo/" << fName << ".bg";
 	string fStr = fss.str();
 
+	string worldStr(1, fName[1]);
+
 	string eStr = ".png";
-	string parDirStr = "Parallax/";
+	string parDirStr = "Backgrounds/W" + worldStr + "/" + fName + "/";
 
 	try {
 		is.open(fStr);
@@ -250,8 +253,9 @@ Background *Background::SetupFullBG(const std::string &fName,
 		string bgStr;
 		is >> bgStr;
 
-		newBG = new Background(tm, bgStr);
+		bgStr = fName + "/" + bgStr;
 
+		newBG = new Background(tm, bgStr);
 		newBG->deleteTilesets = p_deleteTilesets;
 
 		int numPar;
@@ -285,17 +289,17 @@ Background *Background::SetupFullBG(const std::string &fName,
 Background::Background(TilesetManager *p_tm, const string &bgName)
 	:tm(p_tm)
 {
-	stringstream ss;
-
-	string folder = "Backgrounds/";
-
 	name = bgName;
 
-	ss << folder << bgName;
+	char worldChar = bgName[1];
+	
+	string worldNum( 1, worldChar);
+
+	string folder = "Backgrounds/W" + worldNum + "/";
 
 	//ss << eType;
 
-	string bgStr = ss.str();
+	string bgStr = folder + bgName;
 
 	bgSourceName = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
@@ -308,10 +312,13 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
 
-	background.setTexture(*ts_bg->texture);
-	background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
-	background.setPosition(0, 0);
-	background.setScale(2, 2);
+	if (ts_bg != NULL)
+	{
+		background.setTexture(*ts_bg->texture);
+		background.setOrigin(background.getLocalBounds().width / 2, background.getLocalBounds().height / 2);
+		background.setPosition(0, 0);
+		background.setScale(2, 2);
+	}
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
 
@@ -342,7 +349,7 @@ Background::Background(MainMenu *mm)
 	show = true;
 	//ss << eType;
 
-	string bgStr = "Resources/Backgrounds/w1_BG1";// = ss.str();
+	string bgStr = "Resources/Backgrounds/W1/w1_01/w1_BG1";// = ss.str();
 
 
 
@@ -526,7 +533,11 @@ void Background::Draw(sf::RenderTarget *target)
 
 	target->draw(backgroundSky, 4, sf::Quads);
 	target->draw(shape);
-	target->draw(background);
+	if (ts_bg != NULL)
+	{
+		target->draw(background);
+	}
+	
 
 	target->setView(oldView);
 

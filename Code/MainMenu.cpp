@@ -144,10 +144,14 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case WORLDMAP_COLONY:
 	{
 		worldMap->CurrSelector()->DestroyBGs();
+		worldMap->CurrSelector()->FocusedSector()->DestroyMapPreview();
 		break;
 	}
 	case WORLDMAP:
 	{
+		SaveFile *saveFile = GetCurrentProgress();
+		saveFile->mostRecentWorldSelected = worldMap->selectedColony;
+		saveFile->Save();
 		worldMap->CurrSelector()->CreateBGs();
 		break;
 	}

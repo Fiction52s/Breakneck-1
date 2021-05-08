@@ -587,7 +587,8 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
 	name( p_name ),
-	defaultSkinIndex( 0 )
+	defaultSkinIndex( 0 ),
+	mostRecentWorldSelected( 0 )
 {
 	//CreateSaveWorlds();
 
@@ -1002,6 +1003,7 @@ bool SaveFile::LoadInfo(ifstream &is)
 	{
 		getline(is, controlProfileName);
 		is >> defaultSkinIndex;
+		is >> mostRecentWorldSelected;
 
 		levelsBeatenField.Load(is);
 
@@ -1104,6 +1106,8 @@ void SaveFile::Save()
 
 		of << defaultSkinIndex << endl;
 
+		of << mostRecentWorldSelected << endl;
+
 		levelsBeatenField.Save(of);
 
 		for (int i = 0; i < 512; ++i)
@@ -1151,6 +1155,8 @@ void SaveFile::SetAsDefault()
 {
 	controlProfileName = "KIN_Default";
 	levelsBeatenField.Reset();
+
+	mostRecentWorldSelected = 0;
 	
 	for (int i = 0; i < 512; ++i)
 	{

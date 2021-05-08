@@ -672,14 +672,19 @@ void SaveMenuScreen::SelectedIndexChanged()
 	{
 		SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
 	}
+
+	int currColonyIndex = 0;
 	if (defaultFiles[selectedSaveIndex])
 	{
-
+		currColonyIndex = 0;
 	}
 	else
 	{
-		
+		currColonyIndex = mainMenu->currSaveFile->mostRecentWorldSelected;
 	}
+
+	mainMenu->worldMap->selectedColony = currColonyIndex;
+	mainMenu->worldMap->UpdateColonySelect();
 }
 
 void SaveMenuScreen::UnlockSkin(int skinIndex)

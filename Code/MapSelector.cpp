@@ -247,7 +247,6 @@ bool MapSelector::Update(ControllerState &curr,
 			{
 				if (world->numSectors == 1)
 				{
-					FocusedSector()->DestroyMapPreview();
 					return false;
 					//state = S_MAPSELECT;
 				}

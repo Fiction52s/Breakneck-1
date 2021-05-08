@@ -26,7 +26,7 @@
 //#include "ActorParamsBase.h"
 //#include "EditorRail.h"
 struct GateMarker;
-
+struct MusicSelectorUI;
 struct FrameWaiter;
 struct TransformTools;
 struct EditorGraph;
@@ -149,6 +149,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	MusicSelectorUI *musicSelectorUI;
 	ReplayPlayer *debugReplayPlayer;
 	bool debugReplayPlayerOn;
 	int currGrassType;

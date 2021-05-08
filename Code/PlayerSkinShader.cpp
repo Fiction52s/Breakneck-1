@@ -8,7 +8,7 @@ using namespace sf;
 
 PlayerSkinShader::PlayerSkinShader(const std::string &shaderStr)
 {
-	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_64x10.png");
+	skinPaletteImage.loadFromFile("Resources/Kin/kin_palette_64x14.png");
 
 	assert(Shader::isAvailable() && "help me");
 	if (!pShader.loadFromFile("Resources/Shader/" + shaderStr + "_shader.frag", sf::Shader::Fragment))

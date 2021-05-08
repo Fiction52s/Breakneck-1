@@ -223,7 +223,7 @@ struct SaveFile
 	std::string name;
 	std::string fileName;
 	AdventureFile *adventureFile;
-	
+	int mostRecentWorldSelected;
 	
 	//state
 	BitField levelsJustBeatenField;

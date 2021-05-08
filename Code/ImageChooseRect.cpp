@@ -60,7 +60,7 @@ void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 }
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, Tileset *p_ts,
-	int p_tileIndex, int bSize, Panel *p)
+	int p_tileIndex, sf::Vector2f &bSize, Panel *p)
 	:ChooseRect(ident, ChooseRectType::IMAGE, v, bSize, p_pos, p)
 {
 	ts = NULL;
@@ -68,7 +68,7 @@ ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector
 }
 
 ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
-	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, int bSize, Panel *p)
+	sf::Vector2f &p_pos, Tileset *p_ts, const sf::IntRect &subRect, sf::Vector2f &bSize, Panel *p)
 	:ChooseRect(ident, ChooseRectType::IMAGE, v, bSize, p_pos, p)
 {
 	ts = NULL;
@@ -77,19 +77,19 @@ ImageChooseRect::ImageChooseRect(ChooseRectIdentity ident, sf::Vertex *v,
 
 void ImageChooseRect::UpdatePanelPos()
 {
-	Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
+	Vector2f truePos = GetGlobalPos() + Vector2f(boxSize.x / 2.f, boxSize.y / 2.f);
 
 	float test;
 	FloatRect aabb = spr.getGlobalBounds();
 	float max = std::max(aabb.height, aabb.width) * 1.2f; //.8 to give the box a little room
-	test = max / boxSize;
+	test = max / boxSize.y;
 	view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
 	view.setSize(Vector2f(1920 * test, 1080 * test));
 }
 
-void ImageChooseRect::SetSize(float s)
+void ImageChooseRect::SetSize(sf::Vector2f &bSize)
 {
-	ChooseRect::SetSize(s);
+	ChooseRect::SetSize(bSize);
 	UpdatePanelPos();
 }
 

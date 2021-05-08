@@ -9,8 +9,8 @@ using namespace sf;
 using namespace std;
 
 ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
-	Vertex *v, float size, sf::Vector2f &p_pos, Panel *p)
-	:PanelMember(p), quad(v), boxSize(size), pos(p_pos), chooseRectType(crType),
+	Vertex *v, sf::Vector2f &bSize, sf::Vector2f &p_pos, Panel *p)
+	:PanelMember(p), quad(v), boxSize(bSize), pos(p_pos), chooseRectType(crType),
 	rectIdentity(ident), circleMode(false)
 {
 	idleColor = Color::Black;
@@ -66,7 +66,7 @@ void ChooseRect::Init()
 
 void ChooseRect::UpdateTextPosition()
 {
-	nameText.setPosition(Vector2f(pos.x + boxSize / 2, pos.y));// +boxSize + 2));
+	nameText.setPosition(Vector2f(pos.x + boxSize.x / 2, pos.y));// +boxSize + 2));
 }
 
 void ChooseRect::SetPosition(sf::Vector2f &p_pos)
@@ -76,9 +76,9 @@ void ChooseRect::SetPosition(sf::Vector2f &p_pos)
 	UpdateTextPosition();
 }
 
-void ChooseRect::SetSize(float s)
+void ChooseRect::SetSize(sf::Vector2f &bSize)
 {
-	boxSize = s;
+	boxSize = bSize;
 	UpdateRectDimensions();
 }
 
@@ -87,8 +87,8 @@ void ChooseRect::UpdateRectDimensions()
 	//SetRectCenter(quad, boxSize, boxSize, pos);
 	bounds.left = pos.x;// -boxSize / 2.f;
 	bounds.top = pos.y;// -boxSize / 2.f;
-	bounds.width = boxSize;
-	bounds.height = boxSize;
+	bounds.width = boxSize.x;
+	bounds.height = boxSize.y;
 }
 
 void ChooseRect::SetShown(bool s)
@@ -105,7 +105,7 @@ void ChooseRect::SetShown(bool s)
 		}
 		else
 		{
-			SetRectTopLeft(quad, boxSize, boxSize, pos);
+			SetRectTopLeft(quad, boxSize.x, boxSize.y, pos);
 		}
 		SetSize(boxSize);
 	}
@@ -120,7 +120,7 @@ sf::Vector2f ChooseRect::GetGlobalPos()
 
 sf::Vector2f ChooseRect::GetGlobalCenterPos()
 {
-	return GetGlobalPos() + Vector2f(boxSize / 2, boxSize / 2);
+	return GetGlobalPos() + Vector2f(boxSize.x / 2, boxSize.y / 2);
 }
 
 void ChooseRect::SetActive(bool a)

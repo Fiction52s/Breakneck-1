@@ -13,6 +13,7 @@ struct EnemyChooser;
 struct Enemy;
 struct EnemyChooseRect;
 struct ImageChooseRect;
+struct TextChooseRect;
 
 struct ActorParams;
 struct Tileset;
@@ -149,6 +150,7 @@ struct ChooseRect : PanelMember
 	{
 		IMAGE,
 		ENEMY,
+		TEXT,
 	};
 
 	enum ChooseRectEventType : int
@@ -188,10 +190,11 @@ struct ChooseRect : PanelMember
 		I_ADVENTURECREATOR_SECTOR,
 		I_ADVENTURECREATOR_MAP,
 		I_BACKGROUNDLIBRARY,
+		I_MUSICLIBRARY,
 	};
 
 	sf::Text nameText;
-	void SetName(const std::string &name);
+	virtual void SetName(const std::string &name);
 	ChooseRectIdentity rectIdentity;
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();
@@ -200,7 +203,7 @@ struct ChooseRect : PanelMember
 	ChooseRect( ChooseRectIdentity ident, 
 		ChooseRectType crType, 
 		sf::Vertex *v,
-	float size, sf::Vector2f &pos,
+		sf::Vector2f &bSize, sf::Vector2f &pos,
 		Panel *panel );
 	bool MouseUpdate();
 	void SetCircleMode(int radius);
@@ -212,10 +215,10 @@ struct ChooseRect : PanelMember
 	sf::Vector2f GetGlobalPos();
 	sf::Vector2f GetGlobalCenterPos();
 	void SetPosition(sf::Vector2f &pos);
-	void UpdateTextPosition();
-	virtual void SetSize(float s);
+	virtual void UpdateTextPosition();
+	virtual void SetSize(sf::Vector2f &bSize );
 	void UpdateRectDimensions();
-	float boxSize;
+	sf::Vector2f boxSize;
 	sf::Vector2f pos;
 	
 	virtual void UpdateSprite(int frameUpdate) {}
@@ -247,7 +250,7 @@ struct EnemyChooseRect : ChooseRect
 		int level, Panel *p );
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
-	void SetSize(float s);
+	void SetSize(sf::Vector2f & bSize);
 	void SetType(ActorType *type, int lev);
 	void UpdatePanelPos();
 	//void Unfocus();
@@ -262,16 +265,16 @@ struct ImageChooseRect : ChooseRect
 {
 	ImageChooseRect( ChooseRectIdentity ident, 
 		sf::Vertex *v, sf::Vector2f &position,
-		Tileset *ts, int tileIndex, int boxSize, Panel *p );
+		Tileset *ts, int tileIndex, sf::Vector2f & boxSize, Panel *p );
 	ImageChooseRect(ChooseRectIdentity ident,
 		sf::Vertex *v, sf::Vector2f &position,
-		Tileset *ts, const sf::IntRect &subRect, int boxSize, 
+		Tileset *ts, const sf::IntRect &subRect, sf::Vector2f &boxSize, 
 		Panel *p);
 
 	void UpdatePanelPos();
 	void UpdateSprite(int frameUpdate);
 	void Draw(sf::RenderTarget *target);
-	void SetSize(float s);
+	void SetSize(sf::Vector2f &bSize);
 	void SetImage(Tileset *ts, int index);
 	void SetImage(Tileset *ts, const sf::IntRect &subRect);
 
@@ -628,6 +631,8 @@ struct Panel
 		sf::Vector2f &position, Tileset *ts, int tileIndex, int bSize = 100 );
 	ImageChooseRect * AddImageRect(ChooseRect::ChooseRectIdentity ident,
 		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect, int bSize = 100 );
+	TextChooseRect * AddTextRect(ChooseRect::ChooseRectIdentity ident,
+		sf::Vector2f &position, sf::Vector2f &bSize, const std::string &text);
 	void SetPosition(const sf::Vector2i &p_pos);
 	void SetCenterPos(const sf::Vector2i &p_pos);
 	bool HandleEvent(sf::Event ev);
@@ -652,12 +657,16 @@ struct Panel
 	std::map<std::string, Slider*> sliders;
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
+	void ReserveTextRects(int num);
 	int reservedEnemyRectCount;
 	int reservedImageRectCount;
+	int reservedTextRectCount;
 	std::vector<EnemyChooseRect*> enemyChooseRects;
 	std::vector<ImageChooseRect*> imageChooseRects;
+	std::vector<TextChooseRect*> textChooseRects;
 	sf::Vertex *enemyChooseRectQuads;
 	sf::Vertex *imageChooseRectQuads;
+	sf::Vertex *textChooseRectQuads;
 
 	const sf::Vector2i &GetMousePos();
 
@@ -776,6 +785,7 @@ struct MapOptionsUI : GUIHandler
 	std::string *bgNameArr;
 	EditSession *edit;
 	Button *bgButton;
+	Button *musicButton;
 	Button *okButton;
 	TextBox* drainTextbox;
 	Dropdown *preDropdown;
@@ -1215,5 +1225,6 @@ struct CreateDecorModeUI
 
 	ImageChooseRect *librarySearchRect;
 };
+
 
 #endif

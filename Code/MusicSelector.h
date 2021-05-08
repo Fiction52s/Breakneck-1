@@ -7,6 +7,7 @@
 #include "ItemSelector.h"
 #include <boost\filesystem.hpp>
 #include <SFML\Audio.hpp>
+#include "GUI.h"
 struct MusicInfo;
 struct MainMenu;
 
@@ -94,6 +95,89 @@ struct MusicManager
 	//std::list<boost::filesystem::path> songPaths;
 	std::map<std::string, MusicInfo*> songMap;
 	MainMenu *mainMenu;
+};
+
+
+struct TextChooseRect : ChooseRect
+{
+	TextChooseRect(ChooseRectIdentity ident,
+		sf::Vertex *v, sf::Vector2f &position,
+		const std::string &str, sf::Vector2f &boxSize,
+		Panel *p);
+
+	void UpdatePanelPos();
+	void Draw(sf::RenderTarget *target);
+	void SetSize(sf::Vector2f &bSize );
+	void SetText(const std::string &str);
+	void UpdateTextPosition();
+	void SetName(const std::string &name);
+};
+
+struct ListChooser;
+struct ListChooserHandler : GUIHandler
+{
+	ListChooserHandler(int rows);
+	virtual ~ListChooserHandler();
+	//virtual void Cancel() = 0;
+	//virtual void Confirm() = 0;
+	//virtual void ClickFile(ChooseRect *cr) = 0;
+	//virtual void FocusFile(ChooseRect *cr) = 0;
+	//virtual void UnfocusFile(ChooseRect *cr) = 0;
+	//virtual bool MouseUpdate() { return true; }
+	virtual void Draw(sf::RenderTarget *target) {}
+	//virtual void ChangePath() {}
+	//virtual void LateDraw(sf::RenderTarget *target) {}
+
+	////guihandler functions
+	//virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
+	//virtual void ButtonCallback(Button *b, const std::string & e);
+	//virtual void SliderCallback(Slider *slider) {}
+	//---------
+	void PanelCallback(Panel *p, const std::string & e);
+
+	ListChooser *chooser;
+};
+
+struct ListChooser : PanelUpdater
+{
+	int topRow;
+	int maxTopRow;
+	int numEntries;
+	int totalRects;
+	EditSession *edit;
+	TextChooseRect **textRects;
+	TextChooseRect **myMusicRects;
+	int numMyMusicRects;
+	Panel *panel;
+	ListChooserHandler *handler;
+	std::vector<std::string> songNames;
+
+
+	ListChooser( ListChooserHandler *handler, int rows );
+	~ListChooser();
+	void OpenPopup();
+	void ClosePopup();
+	bool MouseUpdate();
+	void Draw(sf::RenderTarget *target);
+	void Deactivate();
+	void MouseScroll(int delta);
+	void LateDraw(sf::RenderTarget *target);
+	void PopulateRects();
+};
+
+struct MusicSelectorUI : GUIHandler
+{
+	ListChooserHandler *listHandler;
+	EditSession *edit;
+	
+
+	
+
+	MusicSelectorUI();
+	void OpenPopup();
+	void ClosePopup();
+	void Draw(sf::RenderTarget *target);
+	void Update();
 };
 
 #endif

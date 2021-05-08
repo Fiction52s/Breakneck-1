@@ -4,6 +4,7 @@
 #include "Session.h"
 #include "EditorDecorInfo.h"
 #include "EditSession.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
@@ -424,6 +425,11 @@ bool Panel::MouseUpdate()
 		bool temp = (*it)->MouseUpdate();
 	}
 
+	for (auto it = textChooseRects.begin(); it != textChooseRects.end(); ++it)
+	{
+		bool temp = (*it)->MouseUpdate();
+	}
+
 	if (extraUpdater != NULL)
 		extraUpdater->MouseUpdate();
 
@@ -533,6 +539,13 @@ void Panel::ReserveImageRects(int num)
 	imageChooseRectQuads = new Vertex[num * 4];
 }
 
+void Panel::ReserveTextRects(int num)
+{
+	reservedTextRectCount = num;
+	textChooseRects.reserve(num);
+	textChooseRectQuads = new Vertex[num * 4];
+}
+
 void Panel::AddAutoSpaceX(int x)
 {
 	if (autoSpace.x && !autoSpacePaused)
@@ -572,7 +585,7 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 	assert(imageChooseRects.size() < reservedImageRectCount);
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
-		Vector2f(autoStart) + position, ts, tileIndex, bSize, this);
+		Vector2f(autoStart) + position, ts, tileIndex, Vector2f( bSize, bSize ), this);
 	imageChooseRects.push_back(icRect);
 
 	AddAutoSpaceX(bSize + position.x);
@@ -587,11 +600,26 @@ ImageChooseRect * Panel::AddImageRect(ChooseRect::ChooseRectIdentity ident,
 	assert(imageChooseRects.size() < reservedImageRectCount);
 	ImageChooseRect *icRect = new ImageChooseRect(ident,
 		imageChooseRectQuads + imageChooseRects.size() * 4,
-		Vector2f(autoStart) + position, ts, subRect, bSize, this);
+		Vector2f(autoStart) + position, ts, subRect, Vector2f(bSize, bSize), this);
 	imageChooseRects.push_back(icRect);
 
 	AddAutoSpaceX(bSize + position.x);
 	AddAutoSpaceY(bSize + position.y);
+
+	return icRect;
+}
+
+TextChooseRect * Panel::AddTextRect(ChooseRect::ChooseRectIdentity ident,
+	sf::Vector2f &position, sf::Vector2f &bSize, const std::string &text)
+{
+	assert(textChooseRects.size() < reservedTextRectCount);
+	TextChooseRect *icRect = new TextChooseRect(ident,
+		textChooseRectQuads + textChooseRects.size() * 4,
+		Vector2f(autoStart) + position, text, bSize, this);
+	textChooseRects.push_back(icRect);
+
+	AddAutoSpaceX(bSize.x + position.x);
+	AddAutoSpaceY(bSize.y + position.y);
 
 	return icRect;
 }
@@ -897,6 +925,12 @@ void Panel::Draw(RenderTarget *target)
 
 	target->draw(imageChooseRectQuads, 4 * imageChooseRects.size(), sf::Quads);
 	for (auto it = imageChooseRects.begin(); it != imageChooseRects.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+
+	target->draw(textChooseRectQuads, 4 * textChooseRects.size(), sf::Quads);
+	for (auto it = textChooseRects.begin(); it != textChooseRects.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}

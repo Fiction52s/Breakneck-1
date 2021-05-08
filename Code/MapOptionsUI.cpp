@@ -1,5 +1,6 @@
 #include "GUI.h"
 #include "EditSession.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
@@ -18,6 +19,7 @@ MapOptionsUI::MapOptionsUI()
 	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 50), 200, 10, "", "Time to Drain (seconds): ");
 	drainTextbox->SetNumbersOnly(true);
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
+	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");
 	
 
 	string fileName = "Resources/Editor/SpecialOptions/extrascene_options.txt";
@@ -94,7 +96,7 @@ MapOptionsUI::MapOptionsUI()
 			index = w * 8 + i;
 			numStr = to_string(i + 1);
 			bgName = "w" + to_string(w + 1) + "_0" + numStr;
-			fullName = "Resources/BGInfo/" + bgName + ".bg";
+			fullName = "Resources/Backgrounds/BGInfo/" + bgName + ".bg";
 
 			if (boost::filesystem::exists(fullName))
 			{
@@ -177,6 +179,10 @@ void MapOptionsUI::ButtonCallback(Button *b, const std::string & e)
 	else if (b == bgButton)
 	{
 		edit->AddActivePanel(bgOptionsPanel);
+	}
+	else if (b == musicButton)
+	{
+		edit->musicSelectorUI->OpenPopup();
 	}
 }
 

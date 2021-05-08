@@ -10,7 +10,7 @@ using namespace std;
 
 EnemyChooseRect::EnemyChooseRect(ChooseRectIdentity ident, sf::Vertex *v, Vector2f &p_pos, ActorType * p_type, int p_level,
 	Panel *p)
-	:ChooseRect(ident, ChooseRectType::ENEMY, v, 100, p_pos, p), level(p_level)
+	:ChooseRect(ident, ChooseRectType::ENEMY, v, Vector2f( 100, 100 ), p_pos, p), level(p_level)
 {
 	actorType = NULL;
 	SetType(p_type, level);
@@ -73,9 +73,9 @@ void EnemyChooseRect::SetType(ActorType *type, int lev)
 	}
 }
 
-void EnemyChooseRect::SetSize(float s)
+void EnemyChooseRect::SetSize(sf::Vector2f &bSize)
 {
-	ChooseRect::SetSize(s);
+	ChooseRect::SetSize(bSize);
 	UpdatePanelPos();
 }
 
@@ -83,14 +83,14 @@ void EnemyChooseRect::UpdatePanelPos()
 {
 	if (actorType != NULL)
 	{
-		Vector2f truePos = GetGlobalPos() + Vector2f(boxSize / 2.f, boxSize / 2.f);
+		Vector2f truePos = GetGlobalPos() + Vector2f(boxSize.x / 2.f, boxSize.y / 2.f);
 
 		float test;
 		FloatRect aabb = enemyParams->GetAABB();
 
 		float max = std::max(aabb.height, aabb.width);
 		//max *= 1.1f;
-		test = max / boxSize;
+		test = max / boxSize.y;
 		view.setCenter(Vector2f(960 * test - truePos.x * test, 540 * test - truePos.y * test));// + Vector2f( 64,0 ));//-pos / 5);//Vector2f(0, 0));
 		view.setSize(Vector2f(1920 * test, 1080 * test));
 	}

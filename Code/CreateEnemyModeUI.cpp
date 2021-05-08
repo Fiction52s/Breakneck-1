@@ -59,8 +59,8 @@ EnemyVariationSelector::EnemyVariationSelector( bool p_createMode )
 	{
 		varRects[i] = panel->AddEnemyRect(ident,
 			Vector2f(0, 0), NULL, 0);
-		Vector2f currPos = centerPoint - Vector2f( varRects[i]->boxSize / 2,
-			varRects[i]->boxSize / 2 ) + tr.transformPoint(offset);
+		Vector2f currPos = centerPoint - Vector2f( varRects[i]->boxSize.x / 2,
+			varRects[i]->boxSize.y / 2 ) + tr.transformPoint(offset);
 		varRects[i]->SetPosition(currPos);
 		varRects[i]->SetCircleMode(circleRadius);
 		tr.rotate(360 / 6);

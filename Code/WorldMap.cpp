@@ -572,7 +572,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		{
 			state = PlANET_TO_COLONY;
 			frame = 0;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("level_select"));
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_zoom_in"));
 
 			//mainMenu->loadingBackpack->SetScale(.25f);
 			//mainMenu->loadingBackpack->SetPosition(Vector2f(1920 - 260, 1080 - 200));

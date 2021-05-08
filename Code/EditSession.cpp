@@ -49,6 +49,7 @@
 #include "GGPO.h"
 #include "GameMode.h"
 #include "PlayerRecord.h"
+#include "MusicSelector.h"
 
 //#define GGPO_ON
 
@@ -1693,6 +1694,8 @@ EditSession::~EditSession()
 	delete graph;
 
 	delete confirmPopup;
+
+	delete musicSelectorUI;
 
 	delete brushManager;
 
@@ -3431,7 +3434,7 @@ void EditSession::Init()
 	mainMenu->SetMouseGrabbed(true);
 	mainMenu->SetMouseVisible(true);
 
-	ts_mapBGThumbnails = GetSizedTileset("BGInfo/bg_thumbnails_240x135.png");
+	ts_mapBGThumbnails = GetSizedTileset("Backgrounds/BGInfo/bg_thumbnails_240x135.png");
 
 	playerType = NULL;
 
@@ -3494,6 +3497,8 @@ void EditSession::Init()
 	SetupShardSelectPanel();
 	SetupBrushPanels();
 	SetupNewMapPanel();
+
+	musicSelectorUI = new MusicSelectorUI;
 
 	confirmPopup = new ConfirmPopup();
 
