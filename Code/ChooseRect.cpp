@@ -16,6 +16,8 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	idleColor = Color::Black;
 	idleColor.a = 100;
 
+	defaultIdleColor = idleColor;
+
 	mouseOverColor = Color::Green;
 	mouseOverColor.a = 100;
 
@@ -47,6 +49,11 @@ void ChooseRect::SetCircleMode(int p_radius)
 void ChooseRect::SetRectMode()
 {
 	circleMode = false;
+}
+
+void ChooseRect::SetIdleColor(sf::Color c)
+{
+	idleColor = c;
 }
 
 

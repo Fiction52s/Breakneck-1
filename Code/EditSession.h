@@ -149,6 +149,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	MusicInfo *previewMusic;
 	MusicSelectorUI *musicSelectorUI;
 	ReplayPlayer *debugReplayPlayer;
 	bool debugReplayPlayerOn;
@@ -462,8 +463,11 @@ struct EditSession : GUIHandler, Session
 	int EditRun();
 	void CleanupForReload();
 	void LoadAndResave();
-	void SetMusic(const std::string &name);
-	void ClearMusic();
+	void SetOriginalMusic(const std::string &name);
+	void SetPreviewMusic(const std::string &name);
+	void PlayMusic(MusicInfo *mi);
+	void StopMusic(MusicInfo *mi);
+	void CleanupMusic(MusicInfo *&mi);
 	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	void SnapPointToGraph(V2d &p, int gridSize);
 	TerrainPoint * TrySnapPosToPoint(sf::Vector2f &p, SelectPtr &obj, double radius);

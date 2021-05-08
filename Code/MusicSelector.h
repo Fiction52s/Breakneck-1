@@ -183,6 +183,10 @@ struct ListChooser : PanelUpdater
 	Slider *sliders[3];
 	ListChooserHandler *handler;
 	std::vector<std::string> songNames;
+	std::string playingSongName;
+
+	TextChooseRect *currPlayingRect;
+	TextChooseRect *currPlayingMyRect;
 	//Button *okButton;
 	//Button *cancelButton;
 
@@ -191,6 +195,10 @@ struct ListChooser : PanelUpdater
 	~ListChooser();
 	void ResetSlider(const std::string &str);
 	void HideSlider(const std::string &str);
+	void SetPlayingColor(const std::string &str);
+	void SetPlayingColorMyRects(const std::string &str);
+	void SetStoppedColor();
+	void SetStoppedColorMyRects();
 	void OpenPopup();
 	void ClosePopup();
 	bool MouseUpdate();

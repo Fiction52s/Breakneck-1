@@ -475,6 +475,7 @@ void EditSession::UpdateEnvShaders()
 	UpdatePolyShaders();
 }
 
+
 void EditSession::SetupGGPOStatsPanel()
 {
 	ggpoStatsPanel = new Panel("stats", 500, 300, this, false);
@@ -855,12 +856,8 @@ void EditSession::TestPlayerMode()
 			SetActiveSequence(shipEnterScene);
 		}
 
-		if (originalMusic != NULL)
-		{
-			originalMusic->music->play();
-			originalMusic->music->setLoop(true);
-			originalMusic->music->setVolume(100);
-		}
+		StopMusic(previewMusic);
+		PlayMusic(originalMusic);
 
 		gameMode->StartGame();
 		
@@ -1289,11 +1286,8 @@ void EditSession::TestPlayerMode()
 		return;
 	}
 
-	if (originalMusic != NULL)
-	{
-		originalMusic->music->play();
-		originalMusic->music->setVolume(100);
-	}
+	StopMusic(previewMusic);
+	PlayMusic( originalMusic );
 }
 
 void EditSession::EndTestMode()
@@ -3452,7 +3446,7 @@ void EditSession::Init()
 	ts_mapBGThumbnails = GetSizedTileset("Backgrounds/BGInfo/bg_thumbnails_240x135.png");
 
 	playerType = NULL;
-
+	previewMusic = NULL;
 	graph = NULL;
 
 	currTerrainWorld[TERRAINLAYER_NORMAL] = 0;
@@ -3752,7 +3746,7 @@ int EditSession::EditRun()
 	
 	if (mapHeader->GetNumSongs() > 0)
 	{
-		SetMusic(mapHeader->songOrder[0]);
+		SetOriginalMusic(mapHeader->songOrder[0]);
 	}
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
@@ -10566,9 +10560,9 @@ void EditSession::RemoveActivePanel(Panel *p)
 	}
 }
 
-void EditSession::SetMusic(const std::string &name)
+void EditSession::SetOriginalMusic(const std::string &name)
 {
-	ClearMusic();
+	CleanupMusic(originalMusic);
 
 	originalMusic = mainMenu->musicManager->songMap[name];
 
@@ -10576,12 +10570,44 @@ void EditSession::SetMusic(const std::string &name)
 		originalMusic->Load();
 }
 
-void EditSession::ClearMusic()
+void EditSession::SetPreviewMusic(const std::string &name)
 {
-	if (originalMusic != NULL)
+	CleanupMusic(previewMusic);
+
+	previewMusic = mainMenu->musicManager->songMap[name];
+
+	if (previewMusic != NULL)
+		previewMusic->Load();
+}
+
+void EditSession::PlayMusic(MusicInfo *mi)
+{
+	if (mi != NULL)
 	{
-		originalMusic->Cleanup();
-		originalMusic = NULL;
+		mi->music->play();
+		mi->music->setLoop(true);
+		mi->music->setVolume(100);
+
+		musicSelectorUI->listHandler->chooser->SetPlayingColor(mi->songPath.stem().string());
+	}
+}
+
+void EditSession::CleanupMusic(MusicInfo *&mi)
+{
+	if (mi != NULL)
+	{
+		mi->Cleanup();
+		mi = NULL;
+	}
+}
+
+void EditSession::StopMusic(MusicInfo *mi)
+{
+	if (mi != NULL)
+	{
+		mi->music->stop();
+
+		musicSelectorUI->listHandler->chooser->SetStoppedColor();
 	}
 }
 

@@ -209,6 +209,7 @@ struct ChooseRect : PanelMember
 	bool MouseUpdate();
 	void SetCircleMode(int radius);
 	void SetRectMode();
+	void SetIdleColor(sf::Color c);
 	virtual void Draw(sf::RenderTarget *target) {}
 
 	void Init();
@@ -238,6 +239,7 @@ struct ChooseRect : PanelMember
 
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
+	sf::Color defaultIdleColor;
 	void *info;
 	bool circleMode;
 	int circleRadius;

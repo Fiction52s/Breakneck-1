@@ -60,6 +60,23 @@ void MusicChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 		{
 			ClickText(cr);
 		}
+		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
+		{
+			string crName = cr->nameText.getString();
+			
+			if (cr == chooser->currPlayingRect)
+			{
+				chooser->edit->StopMusic(chooser->edit->previewMusic);
+			}
+			else
+			{
+				chooser->edit->SetPreviewMusic(crName);
+				chooser->edit->PlayMusic(chooser->edit->previewMusic);
+			}
+			//cr->SetIdleColor(Color::Magenta);
+
+			//chooser->SetPlayingColor(crName);
+		}
 	}
 	else if (cr->rectIdentity == ChooseRect::I_MUSICLEVEL)//map
 	{
@@ -75,6 +92,8 @@ void MusicChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 		{
 			ClickText(cr);
 			cr->SetName("");
+			chooser->SetStoppedColorMyRects();
+			
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
 		{
@@ -82,15 +101,29 @@ void MusicChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 			{
 				cr->SetName(grabbedString);
 				chooser->ResetSlider(grabbedString);
+				if (chooser->playingSongName != "")
+				{
+					chooser->SetPlayingColorMyRects(chooser->playingSongName);
+				}
+				
 				//grabbedString = "";
 			}
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
 		{
-			/*FileNode *fn = (FileNode*)cr->info;
+			string crName = cr->nameText.getString();
 
-			chooser->TurnOff();
-			chooser->edit->Reload(fn->filePath);*/
+			if (cr == chooser->currPlayingMyRect)
+			{
+				chooser->edit->StopMusic(chooser->edit->previewMusic);
+			}
+			else
+			{
+				chooser->edit->SetPreviewMusic(crName);
+				chooser->edit->PlayMusic(chooser->edit->previewMusic);
+			}
+
+			//chooser->SetPlayingColor(crName);
 		}
 	}
 	else
@@ -117,7 +150,7 @@ void MusicChooserHandler::ButtonCallback(Button *b, const std::string & e)
 		if (numSongsSelected == 0)
 		{
 			mh->ClearSongs();
-			chooser->edit->ClearMusic();
+			chooser->edit->CleanupMusic( chooser->edit->originalMusic );
 		}
 		else// if (numSongsSelected == 1)
 		{
@@ -132,7 +165,7 @@ void MusicChooserHandler::ButtonCallback(Button *b, const std::string & e)
 
 					if (!setSong)
 					{
-						chooser->edit->SetMusic(currString);
+						chooser->edit->SetOriginalMusic(currString);
 						setSong = true;
 					}
 				}
@@ -329,6 +362,70 @@ void ListChooser::HideSlider(const std::string &str)
 	}
 }
 
+void ListChooser::SetPlayingColorMyRects(const std::string &str)
+{
+	currPlayingMyRect = NULL;
+	for (int i = 0; i < numMyMusicRects; ++i)
+	{
+		if (str == myMusicRects[i]->nameText.getString())
+		{
+			myMusicRects[i]->SetIdleColor(Color::Magenta);
+			currPlayingMyRect = myMusicRects[i];
+		}
+		else
+		{
+			myMusicRects[i]->SetIdleColor(myMusicRects[i]->defaultIdleColor);
+		}
+	}
+}
+
+void ListChooser::SetPlayingColor(const std::string &str)
+{
+	if (str == "")
+	{
+		return;
+	}
+	playingSongName = str;
+	
+	SetPlayingColorMyRects(str);
+
+	currPlayingRect = NULL;
+	for (int i = 0; i < totalRects; ++i)
+	{
+		if (str == textRects[i]->nameText.getString())
+		{
+			textRects[i]->SetIdleColor(Color::Magenta);
+			currPlayingRect = textRects[i];
+		}
+		else
+		{
+			textRects[i]->SetIdleColor(textRects[i]->defaultIdleColor);
+		}
+	}
+}
+
+void ListChooser::SetStoppedColor()
+{
+	playingSongName = "";
+	currPlayingMyRect = NULL;
+	SetStoppedColorMyRects();
+
+	currPlayingRect = NULL;
+	for (int i = 0; i < totalRects; ++i)
+	{
+		textRects[i]->SetIdleColor(textRects[i]->defaultIdleColor);
+	}
+}
+
+void ListChooser::SetStoppedColorMyRects()
+{
+	currPlayingMyRect = NULL;
+	for (int i = 0; i < numMyMusicRects; ++i)
+	{
+		myMusicRects[i]->SetIdleColor(myMusicRects[i]->defaultIdleColor);
+	}
+}
+
 void ListChooser::Draw(sf::RenderTarget *target)
 {
 	handler->Draw(target);
@@ -398,6 +495,8 @@ void ListChooser::PopulateRects()
 		tcRect->SetShown(false);
 	}
 
+	SetPlayingColor(playingSongName);
+	//SetPlayingColor();
 	
 }
 
