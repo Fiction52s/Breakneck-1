@@ -81,6 +81,7 @@ void MusicChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 			if (state == DRAG)
 			{
 				cr->SetName(grabbedString);
+				chooser->ResetSlider(grabbedString);
 				//grabbedString = "";
 			}
 		}
@@ -127,7 +128,7 @@ void MusicChooserHandler::ButtonCallback(Button *b, const std::string & e)
 				currString = chooser->myMusicRects[i]->nameText.getString();
 				if ( currString != "")
 				{
-					mh->AddSong(currString, 100);
+					mh->AddSong(currString, chooser->sliders[i]->GetCurrValue());
 
 					if (!setSong)
 					{
@@ -172,6 +173,8 @@ void MusicChooserHandler::ClickText(ChooseRect *cr)
 		grabbedText.getLocalBounds().top
 		+ grabbedText.getLocalBounds().height / 2);
 	state = DRAG;
+
+	chooser->HideSlider(grabbedString);
 }
 
 void MusicChooserHandler::Draw(sf::RenderTarget *target)
@@ -201,14 +204,15 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
 	textRects = new TextChooseRect*[totalRects];
 	myMusicRects = new TextChooseRect*[numMyMusicRects];
 
-	panel = new Panel("listchooser", 500, 500, handler, true);
-	panel->SetPosition(Vector2i(300, 300));
+	panel = new Panel("listchooser", 1000, 500, handler, true);
+	panel->SetCenterPos(Vector2i(960, 540));
 	//panel->ReserveTextRects(totalRects);
 	panel->extraUpdater = this;
 
-	Vector2f startRects(10, 100);
+	Vector2f startRects(10, 10);
 	Vector2f spacing(60, 2);
-	Vector2f boxSize(100, 30);
+	Vector2f myRectSpacing(0, 30);
+	Vector2f boxSize(300, 30);
 	float myMusicRectsXStart = startRects.x + boxSize.x + 100;
 
 	auto &songMap = edit->mainMenu->musicManager->songMap;
@@ -237,19 +241,23 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
 		textRects[i]->Init();
 	}
 
+	Vector2f currRectPos;
 	for (int i = 0; i < numMyMusicRects; ++i)
 	{
+		currRectPos = Vector2f(myMusicRectsXStart, startRects.y + (boxSize.y + myRectSpacing.y) * i);
 		myMusicRects[i] = panel->AddTextRect(ChooseRect::I_MUSICLEVEL,
-			Vector2f(myMusicRectsXStart, startRects.y + (boxSize.y + spacing.y) * i),
-			boxSize, "");
+			currRectPos, boxSize, "");
+
+		sliders[i] = panel->AddSlider("slider" + to_string(i),
+			Vector2i(currRectPos.x + boxSize.x + 20, currRectPos.y ), 200, 0, 100, 100);
 		myMusicRects[i]->SetShown(true);
 		myMusicRects[i]->Init();
 	}
 
+	
+
 	panel->SetConfirmButton(panel->AddButton("ok", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "OK"));
 	panel->SetCancelButton(panel->AddButton("cancel", Vector2i(140, panel->size.y - 100), Vector2f(100, 40), "Cancel"));
-
-	//
 }
 
 ListChooser::~ListChooser()
@@ -269,10 +277,21 @@ void ListChooser::OpenPopup()
 	PopulateRects();
 
 	auto &songOrder = edit->mapHeader->songOrder;
+	auto &songLevels = edit->mapHeader->songLevels;
 	int songCounter = 0;
+
+	for (int i = 0; i < numMyMusicRects; ++i)
+	{
+		sliders[i]->HideMember();
+	}
+
 	for (auto it = songOrder.begin(); it != songOrder.end(); ++it)
 	{
 		myMusicRects[songCounter]->SetName((*it));
+
+		sliders[songCounter]->SetCurrValue(songLevels[(*it)]);
+
+		sliders[songCounter]->ShowMember();
 
 		++songCounter;
 		if (songCounter == 3)
@@ -285,6 +304,29 @@ void ListChooser::OpenPopup()
 void ListChooser::ClosePopup()
 {
 	edit->RemoveActivePanel(panel);
+}
+
+void ListChooser::ResetSlider(const std::string &str)
+{
+	for (int i = 0; i < numMyMusicRects; ++i)
+	{
+		if (myMusicRects[i]->nameText.getString() == str)
+		{
+			sliders[i]->SetCurrValue(sliders[i]->defaultValue);
+			sliders[i]->ShowMember();
+		}
+	}
+}
+
+void ListChooser::HideSlider(const std::string &str)
+{
+	for (int i = 0; i < numMyMusicRects; ++i)
+	{
+		if (myMusicRects[i]->nameText.getString() == str)
+		{
+			sliders[i]->HideMember();
+		}
+	}
 }
 
 void ListChooser::Draw(sf::RenderTarget *target)

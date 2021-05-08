@@ -858,6 +858,7 @@ void EditSession::TestPlayerMode()
 		if (originalMusic != NULL)
 		{
 			originalMusic->music->play();
+			originalMusic->music->setLoop(true);
 			originalMusic->music->setVolume(100);
 		}
 
@@ -10570,7 +10571,9 @@ void EditSession::SetMusic(const std::string &name)
 	ClearMusic();
 
 	originalMusic = mainMenu->musicManager->songMap[name];
-	originalMusic->Load();
+
+	if( originalMusic != NULL )
+		originalMusic->Load();
 }
 
 void EditSession::ClearMusic()
@@ -12511,10 +12514,12 @@ void EditSession::GeneralEventHandler()
 				}
 				else if (ev.key.code == Keyboard::M)
 				{
-					if (mode != TEST_PLAYER)
+					if (mode == TEST_PLAYER)
 					{
-						musicSelectorUI->OpenPopup();
+						EndTestMode();
 					}
+					musicSelectorUI->OpenPopup();
+					
 				}
 				else if (ev.key.code == Keyboard::T )
 				{

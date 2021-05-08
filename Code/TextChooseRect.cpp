@@ -33,13 +33,13 @@ void TextChooseRect::UpdatePanelPos()
 
 void TextChooseRect::UpdateTextPosition()
 {
-	nameText.setPosition(Vector2f(pos.x + boxSize.x / 2, pos.y + boxSize.y / 2));// +boxSize + 2));
+	nameText.setPosition(Vector2f(pos.x, pos.y + boxSize.y / 2));// +boxSize + 2));
 }
 
 void TextChooseRect::SetName(const std::string &name)
 {
 	nameText.setString(name);
-	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+	nameText.setOrigin(nameText.getLocalBounds().left,
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height /2);
 }
 

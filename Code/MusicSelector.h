@@ -180,6 +180,7 @@ struct ListChooser : PanelUpdater
 	TextChooseRect **myMusicRects;
 	int numMyMusicRects;
 	Panel *panel;
+	Slider *sliders[3];
 	ListChooserHandler *handler;
 	std::vector<std::string> songNames;
 	//Button *okButton;
@@ -188,6 +189,8 @@ struct ListChooser : PanelUpdater
 
 	ListChooser( ListChooserHandler *handler, int rows );
 	~ListChooser();
+	void ResetSlider(const std::string &str);
+	void HideSlider(const std::string &str);
 	void OpenPopup();
 	void ClosePopup();
 	bool MouseUpdate();
