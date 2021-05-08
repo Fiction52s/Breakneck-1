@@ -15,6 +15,7 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 {
 	imageChooseRectQuads = NULL;
 	enemyChooseRectQuads = NULL;
+	textChooseRectQuads = NULL;
 	reservedEnemyRectCount = 0;
 	reservedImageRectCount = 0;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
@@ -98,6 +99,15 @@ Panel::~Panel()
 	if (imageChooseRectQuads != NULL)
 	{
 		delete[] imageChooseRectQuads;
+	}
+
+	for (auto it = textChooseRects.begin(); it != textChooseRects.end(); ++it)
+	{
+		delete (*it);
+	}
+	if (textChooseRectQuads != NULL)
+	{
+		delete[] textChooseRectQuads;
 	}
 
 

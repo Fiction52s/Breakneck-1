@@ -595,8 +595,16 @@ MusicInfo::MusicInfo()
 
 MusicInfo::~MusicInfo()
 {
-	if( music != NULL )
+	Cleanup();
+}
+
+void MusicInfo::Cleanup()
+{
+	if (music != NULL)
+	{
 		delete music;
+		music = NULL;
+	}
 }
 
 bool MusicManager::LoadMusicNames()

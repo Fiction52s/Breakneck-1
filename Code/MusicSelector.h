@@ -76,6 +76,7 @@ struct MusicInfo
 {
 	MusicInfo();
 	~MusicInfo();
+	void Cleanup();
 	sf::Music *music;
 	boost::filesystem::path songPath;
 	bool Load();
@@ -118,24 +119,54 @@ struct ListChooserHandler : GUIHandler
 {
 	ListChooserHandler(int rows);
 	virtual ~ListChooserHandler();
+	virtual void ClickText(ChooseRect *cr) = 0;
 	//virtual void Cancel() = 0;
 	//virtual void Confirm() = 0;
 	//virtual void ClickFile(ChooseRect *cr) = 0;
 	//virtual void FocusFile(ChooseRect *cr) = 0;
 	//virtual void UnfocusFile(ChooseRect *cr) = 0;
-	//virtual bool MouseUpdate() { return true; }
+	virtual	bool MouseUpdate() { return true; }
 	virtual void Draw(sf::RenderTarget *target) {}
 	//virtual void ChangePath() {}
-	//virtual void LateDraw(sf::RenderTarget *target) {}
+	virtual void LateDraw(sf::RenderTarget *target) {}
 
 	////guihandler functions
 	//virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
 	//virtual void ButtonCallback(Button *b, const std::string & e);
 	//virtual void SliderCallback(Slider *slider) {}
 	//---------
-	void PanelCallback(Panel *p, const std::string & e);
+	//virtual void PanelCallback(Panel *p, const std::string & e);
 
 	ListChooser *chooser;
+};
+
+struct MusicChooserHandler : ListChooserHandler
+{
+	enum State
+	{
+		BROWSE,
+		DRAG,
+	};
+
+	sf::Text grabbedText;
+	std::string grabbedString;
+	State state;
+
+	MusicChooserHandler(int rows);
+	~MusicChooserHandler();
+	bool MouseUpdate();
+	void Draw(sf::RenderTarget *target);
+
+	void ClickText(ChooseRect *cr);
+	//virtual void ChangePath() {}
+	void LateDraw(sf::RenderTarget *target);
+
+	////guihandler functions
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
+	//virtual void SliderCallback(Slider *slider) {}
+	//---------
+	void PanelCallback(Panel *p, const std::string & e);
 };
 
 struct ListChooser : PanelUpdater
@@ -151,6 +182,8 @@ struct ListChooser : PanelUpdater
 	Panel *panel;
 	ListChooserHandler *handler;
 	std::vector<std::string> songNames;
+	//Button *okButton;
+	//Button *cancelButton;
 
 
 	ListChooser( ListChooserHandler *handler, int rows );
@@ -167,13 +200,14 @@ struct ListChooser : PanelUpdater
 
 struct MusicSelectorUI : GUIHandler
 {
-	ListChooserHandler *listHandler;
+	MusicChooserHandler *listHandler;
 	EditSession *edit;
 	
 
 	
 
 	MusicSelectorUI();
+	~MusicSelectorUI();
 	void OpenPopup();
 	void ClosePopup();
 	void Draw(sf::RenderTarget *target);

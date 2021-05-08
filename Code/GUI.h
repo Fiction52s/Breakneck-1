@@ -191,6 +191,7 @@ struct ChooseRect : PanelMember
 		I_ADVENTURECREATOR_MAP,
 		I_BACKGROUNDLIBRARY,
 		I_MUSICLIBRARY,
+		I_MUSICLEVEL,
 	};
 
 	sf::Text nameText;

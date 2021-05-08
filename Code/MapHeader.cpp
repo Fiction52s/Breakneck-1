@@ -88,6 +88,7 @@ bool MapHeader::Load(std::ifstream &is)
 		getline(is, tempSongStr); //this allows spaces in names
 		is >> oftenLevel;
 
+		songOrder.push_back(tempSongStr);
 		songLevels[tempSongStr] = oftenLevel;
 		is.get();
 	}
@@ -146,11 +147,17 @@ void MapHeader::Save(std::ofstream &of)
 		of << (*it).world << " " << (*it).localIndex << "\n";
 	}
 
-	of << songLevels.size() << "\n";
+	of << songOrder.size() << "\n";
+	for (auto it = songOrder.begin(); it != songOrder.end(); ++it)
+	{
+		of << (*it) << "\n" << songLevels[(*it)] << "\n";
+	}
+
+	/*of << songLevels.size() << "\n";
 	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
 	{
 		of << (*it).first << "\n" << (*it).second << "\n";
-	}
+	}*/
 
 	of << collectionName << "\n";
 	of << gameMode << "\n";
@@ -185,6 +192,24 @@ int MapHeader::GetNumPlayers()
 	default:
 		return 1;
 	}
+}
+
+void MapHeader::ClearSongs()
+{
+	songLevels.clear();
+	songOrder.clear();
+}
+
+void MapHeader::AddSong(const std::string &songName,
+	int songLevel)
+{
+	songOrder.push_back(songName);
+	songLevels[songName] = songLevel;
+}
+
+int MapHeader::GetNumSongs()
+{
+	return songOrder.size();
 }
 
 int MapHeader::GetLeft()

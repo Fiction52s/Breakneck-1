@@ -643,6 +643,8 @@ void EditSession::TestPlayerMode()
 	
 	//----------------------------------------
 	
+	
+
 	hud->Show();
 
 	for (int i = 0; i < 3; ++i)
@@ -851,6 +853,12 @@ void EditSession::TestPlayerMode()
 		{
 			shipEnterScene->Reset();
 			SetActiveSequence(shipEnterScene);
+		}
+
+		if (originalMusic != NULL)
+		{
+			originalMusic->music->play();
+			originalMusic->music->setVolume(100);
 		}
 
 		gameMode->StartGame();
@@ -1278,6 +1286,12 @@ void EditSession::TestPlayerMode()
 		CreateError(ERR_CANT_MAKE_ZONE_STRUCTURE_WITHOUT_GOAL);
 		ShowMostRecentError();
 		return;
+	}
+
+	if (originalMusic != NULL)
+	{
+		originalMusic->music->play();
+		originalMusic->music->setVolume(100);
 	}
 }
 
@@ -3729,15 +3743,16 @@ int EditSession::EditRun()
 		DefaultInit();
 
 		ActivateNewMapPanel();
-
-		
 	}
 	else if( filePathStr != "" )
 	{
 		ReadFile();
 	}
-
 	
+	if (mapHeader->GetNumSongs() > 0)
+	{
+		SetMusic(mapHeader->songOrder[0]);
+	}
 
 	//this needs to be after readfile because reading enemies deletes actorgroup
 
@@ -10550,8 +10565,30 @@ void EditSession::RemoveActivePanel(Panel *p)
 	}
 }
 
+void EditSession::SetMusic(const std::string &name)
+{
+	ClearMusic();
+
+	originalMusic = mainMenu->musicManager->songMap[name];
+	originalMusic->Load();
+}
+
+void EditSession::ClearMusic()
+{
+	if (originalMusic != NULL)
+	{
+		originalMusic->Cleanup();
+		originalMusic = NULL;
+	}
+}
+
 void EditSession::CleanupTestPlayerMode()
 {
+	if (originalMusic != NULL && originalMusic->music->getStatus() != sf::SoundSource::Stopped)
+	{
+		originalMusic->music->stop();
+	}
+
 	shardsCapturedField->Reset();
 	fader->Reset();
 	swiper->Reset();
@@ -12471,6 +12508,13 @@ void EditSession::GeneralEventHandler()
 				else if (ev.key.code == Keyboard::N && ev.key.control)
 				{
 					TryReloadNew();
+				}
+				else if (ev.key.code == Keyboard::M)
+				{
+					if (mode != TEST_PLAYER)
+					{
+						musicSelectorUI->OpenPopup();
+					}
 				}
 				else if (ev.key.code == Keyboard::T )
 				{

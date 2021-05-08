@@ -35,6 +35,10 @@ struct MapHeader
 	int GetRight();
 	int GetBot();
 	int GetNumPlayers();
+	void ClearSongs();
+	void AddSong(const std::string &songName,
+		int songLevel);
+	int GetNumSongs();
 	int ver1;
 	int ver2;
 	std::string collectionName;
@@ -55,6 +59,7 @@ struct MapHeader
 	std::string postLevelSceneName;
 
 	std::map < std::string, int > songLevels;
+	std::vector<std::string> songOrder;
 
 	bool songLevelsModified;
 };
