@@ -166,6 +166,7 @@ struct MusicChooserHandler : ListChooserHandler
 	void ButtonCallback(Button *b, const std::string & e);
 	//virtual void SliderCallback(Slider *slider) {}
 	//---------
+	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
 };
 
@@ -182,8 +183,10 @@ struct ListChooser : PanelUpdater
 	Panel *panel;
 	Slider *sliders[3];
 	ListChooserHandler *handler;
-	std::vector<std::string> songNames;
+	std::map<std::string, std::vector<std::string>> songNames;
 	std::string playingSongName;
+	CheckBox *playOriginalCheckbox;
+	Dropdown *worldDropdown;
 
 	TextChooseRect *currPlayingRect;
 	TextChooseRect *currPlayingMyRect;
@@ -219,6 +222,7 @@ struct MusicSelectorUI : GUIHandler
 
 	MusicSelectorUI();
 	~MusicSelectorUI();
+	bool ShouldPlayOriginal();
 	void OpenPopup();
 	void ClosePopup();
 	void Draw(sf::RenderTarget *target);

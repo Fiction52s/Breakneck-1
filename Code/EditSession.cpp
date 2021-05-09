@@ -856,8 +856,12 @@ void EditSession::TestPlayerMode()
 			SetActiveSequence(shipEnterScene);
 		}
 
-		StopMusic(previewMusic);
-		PlayMusic(originalMusic);
+		if (musicSelectorUI->ShouldPlayOriginal())
+		{
+			StopMusic(previewMusic);
+			PlayMusic(originalMusic);
+		}
+		
 
 		gameMode->StartGame();
 		
@@ -1286,8 +1290,11 @@ void EditSession::TestPlayerMode()
 		return;
 	}
 
-	StopMusic(previewMusic);
-	PlayMusic( originalMusic );
+	if (musicSelectorUI->ShouldPlayOriginal())
+	{
+		StopMusic(previewMusic);
+		PlayMusic(originalMusic);
+	}
 }
 
 void EditSession::EndTestMode()

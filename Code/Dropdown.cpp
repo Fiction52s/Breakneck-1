@@ -188,7 +188,7 @@ bool Dropdown::MouseUpdate()
 	Vector2f point(mousePos);
 
 	bool onMainQuad = QuadContainsPoint(mainRect, point);
-
+	bool useMouse = false;
 
 	if (!expanded && onMainQuad)
 	{
@@ -211,6 +211,7 @@ bool Dropdown::MouseUpdate()
 			if (IsMouseOnOption(i, point))
 			{
 				highlightedIndex = i;
+				useMouse = true;
 				break;
 			}
 		}
@@ -231,6 +232,8 @@ bool Dropdown::MouseUpdate()
 				SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
 			}
 		}
+
+
 	}
 
 
@@ -294,5 +297,5 @@ bool Dropdown::MouseUpdate()
 	{
 		clickedDown = false;
 	}
-	return false;
+	return useMouse;
 }

@@ -15,7 +15,6 @@ ListChooserHandler::~ListChooserHandler()
 	delete chooser;
 }
 
-
 MusicChooserHandler::MusicChooserHandler(int rows)
 	:ListChooserHandler( rows )
 {
@@ -34,6 +33,17 @@ void MusicChooserHandler::PanelCallback(Panel *p, const std::string & e)
 	{
 		chooser->ClosePopup();	
 	}
+}
+
+void MusicChooserHandler::DropdownCallback(Dropdown *dropdown, const std::string & e)
+{
+	chooser->topRow = 0;
+	chooser->numEntries = chooser->songNames[dropdown->GetSelectedText()].size();
+	chooser->maxTopRow = chooser->numEntries - chooser->totalRects;
+	if (chooser->maxTopRow < 0)
+		chooser->maxTopRow = 0;
+
+	chooser->PopulateRects();
 }
 
 void MusicChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -242,7 +252,7 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
 	//panel->ReserveTextRects(totalRects);
 	panel->extraUpdater = this;
 
-	Vector2f startRects(10, 10);
+	Vector2f startRects(10, 80);
 	Vector2f spacing(60, 2);
 	Vector2f myRectSpacing(0, 30);
 	Vector2f boxSize(300, 30);
@@ -250,16 +260,23 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
 
 	auto &songMap = edit->mainMenu->musicManager->songMap;
 	int numSongs = songMap.size();
-	songNames.resize(numSongs);
-	int ind = 0;
-	for (auto it = songMap.begin(); it != songMap.end(); ++it)
-	{
-		songNames[ind] = (*it).first;
-		++ind;
-	}
-	numEntries = numSongs;
 
-	maxTopRow = numSongs - totalRects;
+	std::vector<string> worldOptions = { "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
+
+	for (auto it = worldOptions.begin(); it != worldOptions.end(); ++it)
+	{
+		for (auto sit = songMap.begin(); sit != songMap.end(); ++sit)
+		{
+			if ((*sit).first[1] == (*it)[1])
+			{
+				songNames[(*it)].push_back((*sit).first);
+			}
+		}
+	}
+	
+	numEntries = songNames["W1"].size();
+
+	maxTopRow = numEntries - totalRects;
 	if (maxTopRow < 0)
 		maxTopRow = 0;
 	
@@ -287,6 +304,11 @@ ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
 		myMusicRects[i]->Init();
 	}
 
+	playOriginalCheckbox = panel->AddCheckBox("playoriginal", Vector2i(400, 300), false);
+
+	
+	worldDropdown = panel->AddDropdown("worlddropdown", Vector2i(10, 10), Vector2i(100, 30),
+		worldOptions, 0);
 	
 
 	panel->SetConfirmButton(panel->AddButton("ok", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "OK"));
@@ -469,11 +491,14 @@ void ListChooser::PopulateRects()
 	int start = topRow;
 
 	int i;
+
+	
+	auto &currSongNames = songNames[worldDropdown->GetSelectedText()];
 	for (i = start; i < numEntries && i < start + totalRects; ++i)
 	{
 		tcRect = textRects[i - start];
 
-		tcRect->SetText(songNames[i]);
+		tcRect->SetText(currSongNames[i]);
 		//node = nodes[i];
 		//tcRect->SetName( )
 		//tcRect->SetName(node->filePath.filename().stem().string());
@@ -525,6 +550,13 @@ void MusicSelectorUI::Update()
 {
 	//panel->MouseUpdate();
 }
+
+bool MusicSelectorUI::ShouldPlayOriginal()
+{
+	return listHandler->chooser->playOriginalCheckbox->checked;
+}
+
+
 
 void MusicSelectorUI::OpenPopup()
 {

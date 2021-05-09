@@ -917,15 +917,7 @@ void Panel::Draw(RenderTarget *target)
 		(*it).second->Draw(target);
 	}
 
-	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
-	{
-		(*it).second->Draw(target);
-	}
-
-	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
-	{
-		(*it).second->Draw(target);
-	}
+	
 
 	target->draw(enemyChooseRectQuads, 4 * enemyChooseRects.size(), sf::Quads);
 	for (auto it = enemyChooseRects.begin(); it != enemyChooseRects.end(); ++it)
@@ -943,6 +935,16 @@ void Panel::Draw(RenderTarget *target)
 	for (auto it = textChooseRects.begin(); it != textChooseRects.end(); ++it)
 	{
 		(*it)->Draw(target);
+	}
+
+	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
+
+	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
+	{
+		(*it).second->Draw(target);
 	}
 
 	if (currToolTip != NULL)
