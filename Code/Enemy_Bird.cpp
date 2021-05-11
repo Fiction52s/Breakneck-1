@@ -307,8 +307,8 @@ void Bird::StartAction()
 
 		
 
-		//enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
-		enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
+		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
+		//enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 60);
 		break;
 	}
 	case MOVE_NODE_QUADRATIC:

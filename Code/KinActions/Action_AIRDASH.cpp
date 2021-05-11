@@ -125,12 +125,12 @@ void Actor::AIRDASH_Update()
 					extraAirDashY = velocity.y;//0;
 				}
 
-				if (extraAirDashY > 0)
-				{
-					extraAirDashY = .1;
-					//extraAirDashY = min( extraAirDashY, 5.0 );
-					//extraAirDashY *= 1.8;
-				}
+				//if (extraAirDashY > 0)
+				//{
+				//	extraAirDashY = .1;
+				//	//extraAirDashY = min( extraAirDashY, 5.0 );
+				//	//extraAirDashY *= 1.8;
+				//}
 			}
 			else
 			{

@@ -5934,6 +5934,7 @@ void Actor::AddRecentHitter(void *hitter)
 bool Actor::CheckExtendedAirdash()
 {
 	return (inBubble || InWater(TerrainPolygon::WATER_ZEROGRAV));
+		//|| InWater( TerrainPolygon::WATER_MOMENTUM ));
 }
 
 void Actor::UpdateBubbles()
@@ -15534,15 +15535,19 @@ bool Actor::SpringLaunch()
 
 		springStunFrames = currSpring->stunFrames;
 
-		if (currSpring->springType == Spring::GLIDE)
+		if (currSpring->springType == Spring::TYPE_GLIDE)
 		{
 			SetAction(SPRINGSTUNGLIDE);
 		}
-		else if (currSpring->springType == Spring::ANNIHILATION_GLIDE)
+		else if (currSpring->springType == Spring::TYPE_ANNIHILATION_GLIDE)
 		{
 			//action = SPRINGSTUNGLIDE;
 			SetAction( SPRINGSTUNANNIHILATION);
 		}
+		/*else if (currSpring->springType == Spring::TYPE_HOMING)
+		{
+			SetAction(SPRINGSTUNHOMING);
+		}*/
 		else
 		{
 			SetAction(SPRINGSTUN);
@@ -17334,6 +17339,17 @@ void Actor::Draw( sf::RenderTarget *target )
 	if (action == GRINDATTACK)
 	{
 		target->draw(grindAttackSprite);
+	}
+
+	if (action == HOMINGATTACK || action == SPRINGSTUNHOMINGATTACK)
+	{
+		sf::CircleShape homingTestCircle;
+		homingTestCircle.setFillColor(Color( 255, 0, 0, 100 ));
+		homingTestCircle.setRadius(homingHitboxes->GetCollisionBoxes(0)[0].rw);
+		homingTestCircle.setOrigin(homingTestCircle.getLocalBounds().width / 2,
+			homingTestCircle.getLocalBounds().height / 2);
+		homingTestCircle.setPosition(Vector2f(position));
+		target->draw(homingTestCircle);
 	}
 
 	V2d motionGhostDir;

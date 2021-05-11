@@ -15,9 +15,10 @@ struct Spring : Enemy
 
 	enum SpringType
 	{
-		REGULAR,
-		GLIDE,
-		ANNIHILATION_GLIDE,
+		TYPE_REGULAR,
+		TYPE_GLIDE,
+		//TYPE_HOMING,
+		TYPE_ANNIHILATION_GLIDE,
 	};
 
 	void UpdateParamsSettings();

@@ -126,7 +126,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	string &typeName = ap->type->info.name;
 	if (typeName == "spring")
 	{
-		springType = REGULAR;
+		springType = TYPE_REGULAR;
 		tilesetChoice = 0;
 		recoverTileseChoice = 0;
 		recoverStartFrame = 0;
@@ -134,7 +134,7 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	}
 	else if (typeName == "glidespring")
 	{
-		springType = GLIDE;
+		springType = TYPE_GLIDE;
 		tilesetChoice = 0;
 		recoverTileseChoice = 0;
 		recoverStartFrame = 8;
@@ -142,12 +142,20 @@ Spring::Spring(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2i &other, 
 	}
 	else if (typeName == "annihilationspring")
 	{
-		springType = ANNIHILATION_GLIDE;
+		springType = TYPE_ANNIHILATION_GLIDE;
 		tilesetChoice = 1;
 		recoverTileseChoice = 2;
 		recoverStartFrame = 16;
 		startFrame = 20;
 	}
+	/*else if (typeName == "hominglauncher")
+	{
+		springType = TYPE_HOMING;
+		tilesetChoice = 1;
+		recoverTileseChoice = 2;
+		recoverStartFrame = 0;
+		startFrame = 10;
+	}*/
 	
 	if (tilesetChoice == 0)
 	{

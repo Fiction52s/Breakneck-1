@@ -85,13 +85,6 @@ Chess::Chess(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	Color circleColor = Color::Red;
-	circleColor.a = 100;
-	testCircle.setFillColor(circleColor);
-	testCircle.setRadius(50);
-	testCircle.setOrigin(testCircle.getLocalBounds().width / 2,
-		testCircle.getLocalBounds().height / 2);
-
 	ResetEnemy();
 }
 
@@ -181,7 +174,7 @@ void Chess::StartRush()
 	double time = rushDist / speed;
 	actionLength[RUSH] = time + 1;//time * 1.5;
 
-	testCircle.setPosition(Vector2f(futurePos));
+	//testCircle.setPosition(Vector2f(futurePos));
 
 	velocity = rushDir * speed;
 }
@@ -339,6 +332,4 @@ void Chess::UpdateSprite()
 void Chess::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-
-	target->draw(testCircle);
 }
