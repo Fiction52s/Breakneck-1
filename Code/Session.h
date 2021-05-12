@@ -424,6 +424,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void DrawZones(sf::RenderTarget *target);
 	void CreateZones();
 	int SetupZones();
+	void AdjustBoundsFromTerrain();
+	void AdjustBoundsHeightFromTerrain();
 	void ActivateZone(Zone * z, bool instant = false);
 	void SetPlayerOptionField(int pIndex);
 	void SetupHitboxManager();

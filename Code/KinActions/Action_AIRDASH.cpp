@@ -301,21 +301,26 @@ void Actor::AIRDASH_Update()
 		dWireAirDashOld = dWireAirDash;
 	}
 
-	if (currBooster != NULL && oldBooster == NULL && currBooster->Boost())
+	if (!simulationMode)
 	{
-		SetBoostVelocity();
+		if (currBooster != NULL && oldBooster == NULL && currBooster->Boost())
+		{
+			SetBoostVelocity();
 
-		startAirDashVel.x = velocity.x;
-		extraAirDashY = velocity.y;
-		if (extraAirDashY > aSpeed)
-		{
-			extraAirDashY = extraAirDashY - aSpeed;
-		}
-		else if (extraAirDashY < -aSpeed)
-		{
-			extraAirDashY = extraAirDashY + aSpeed;
+			startAirDashVel.x = velocity.x;
+			extraAirDashY = velocity.y;
+			if (extraAirDashY > aSpeed)
+			{
+				extraAirDashY = extraAirDashY - aSpeed;
+			}
+			else if (extraAirDashY < -aSpeed)
+			{
+				extraAirDashY = extraAirDashY + aSpeed;
+			}
 		}
 	}
+
+	//cout << "velocity.x: " << velocity.x << endl;
 }
 
 void Actor::AIRDASH_UpdateSprite()

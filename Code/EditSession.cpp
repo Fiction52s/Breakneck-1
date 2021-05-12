@@ -1472,7 +1472,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	cursorLocationText.setFont( mainMenu->arial );
 	cursorLocationText.setCharacterSize( 16 );
 	cursorLocationText.setFillColor( Color::White );
-	cursorLocationText.setPosition( 1920 - 100, 1080 - 100 );
+	cursorLocationText.setPosition( 1920 - 150, 1080 - 100 );
 	
 	scaleSprite.setPosition(0, 80);
 	scaleSpriteBGRect.setPosition(0, 80);
@@ -1944,6 +1944,8 @@ void EditSession::Draw()
 
 void EditSession::UpdateFullBounds()
 {
+	AdjustBoundsHeightFromTerrain();
+
 	int boundRectWidth = 5 * zoomMultiple;
 
 	int leftBound = mapHeader->leftBounds;
@@ -2652,6 +2654,8 @@ void EditSession::WriteFile(string fileName)
 		mapHeader->boundsWidth = realBoundsWidth;
 		mapHeader->boundsHeight = realBoundsHeight;
 	}
+
+	//AdjustBoundsFromTerrain();
 
 	WriteMapHeader(of);
 
