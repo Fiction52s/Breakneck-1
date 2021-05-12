@@ -27,7 +27,7 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	actionLength[IDLE] = 10;
 	actionLength[CHARGE] = 30;
-	actionLength[BOOST] = 60;
+	actionLength[BOOST] = 20;
 	actionLength[RUN] = 5;
 
 	animFactor[IDLE] = 1;

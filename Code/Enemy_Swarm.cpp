@@ -36,6 +36,8 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
+	cutObject->Setup(parent->ts_swarm, 0, 0, scale);
+
 	ResetEnemy();
 }
 
