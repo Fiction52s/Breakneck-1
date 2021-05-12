@@ -76,6 +76,7 @@ struct Background
 	sf::Image palette;
 	Tileset *ts_bg;
 	Tileset *ts_shape;
+	Tileset *ts_sky;
 	TilesetManager *tm;
 	bool deleteTilesets;
 

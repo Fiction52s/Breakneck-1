@@ -166,9 +166,11 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	string bgFile = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
 	string shapeFile = bgStr + "_shape.png";
+	string skyFile = bgStr + "_sky.png";
 
 	ts_bg = owner->GetTileset(bgFile, 960, 540);
 	ts_shape = owner->GetTileset(shapeFile, 960, 540);
+	ts_sky = owner->GetTileset(skyFile, 960, 540);
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
 	assert(loadPalette);
@@ -179,6 +181,11 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 	background.setScale(2, 2);
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
+
+	if (ts_sky != NULL)
+	{
+		ts_sky->SetQuadSubRect(backgroundSky, 0);
+	}
 	
 	shape.setTexture(*ts_shape->texture);
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
@@ -303,10 +310,13 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 
 	bgSourceName = bgStr + ".png";
 	string paletteFile = string("Resources/") + bgStr + "_palette.png";
-	shapeSourceName = bgStr + "_shape" + ".png";
+	shapeSourceName = bgStr + "_shape.png";
+	string skyFile = bgStr + "_sky.png";
 
 	ts_bg = tm->GetTileset(bgSourceName, 960, 540);
 	ts_shape = tm->GetTileset(shapeSourceName, 960, 540);
+
+	ts_sky = tm->GetTileset(skyFile, 960, 540);
 
 	//Image im(rtt->getTexture().copyToImage());
 	bool loadPalette = palette.loadFromFile(paletteFile);
@@ -321,6 +331,11 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	}
 
 	SetRectCenter(backgroundSky, 1920, 1080, Vector2f(0, 0));
+
+	if (ts_sky != NULL)
+	{
+		ts_sky->SetQuadSubRect(backgroundSky, 0);
+	}
 
 	shape.setTexture(*ts_shape->texture);
 	shape.setOrigin(shape.getLocalBounds().width / 2, shape.getLocalBounds().height / 2);
@@ -352,6 +367,7 @@ Background::Background(MainMenu *mm)
 	string bgStr = "Resources/Backgrounds/W1/w1_01/w1_BG1";// = ss.str();
 
 
+	ts_sky = NULL;
 
 	bgSourceName = folder + "title_base_1920x1080.png";
 	string paletteFile = bgStr + "_palette.png";
@@ -442,7 +458,10 @@ void Background::DestroyTilesets()
 
 void Background::UpdateSky()
 {
-	SetRectColor(backgroundSky, GetSkyColor() );
+	if (ts_sky == NULL)
+	{
+		SetRectColor(backgroundSky, GetSkyColor());
+	}
 }
 
 sf::Color Background::GetSkyColor()
@@ -531,7 +550,15 @@ void Background::Draw(sf::RenderTarget *target)
 	sf::View oldView = target->getView();
 	target->setView(bgView);
 
-	target->draw(backgroundSky, 4, sf::Quads);
+	if (ts_sky != NULL)
+	{
+		target->draw(backgroundSky, 4, sf::Quads, ts_sky->texture);
+	}
+	else
+	{
+		target->draw(backgroundSky, 4, sf::Quads);
+	}
+	
 	target->draw(shape);
 	if (ts_bg != NULL)
 	{

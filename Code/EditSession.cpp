@@ -1685,6 +1685,9 @@ void EditSession::CleanupForReload()
 	CleanupTopClouds();
 
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
+
+	StopMusic(originalMusic);
+	StopMusic(previewMusic);
 }
 
 EditSession::~EditSession()
@@ -1799,7 +1802,10 @@ EditSession::~EditSession()
 	if (ggpoStatsPanel != NULL)
 		delete ggpoStatsPanel;
 
+	
+
 	currSession = NULL;
+
 }
 
 void EditSession::SnapPointToGraph(Vector2f &p, int gridSize )
@@ -4069,6 +4075,9 @@ int EditSession::Run()
 	fader->Reset();
 	swiper->Reset();
 	soundNodeList->Reset();
+
+	StopMusic(originalMusic);
+	StopMusic(previewMusic);
 
 	return result;
 }
