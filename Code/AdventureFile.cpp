@@ -125,6 +125,11 @@ bool AdventureMap::LoadHeaderInfo()
 
 		headerInfo.mapType = mh.bossFightType;
 		headerInfo.shardInfoVec = mh.shardInfoVec;
+		if (mh.GetNumSongs() > 0)
+		{
+			headerInfo.mainSongName = mh.songOrder[0];
+		}
+		
 
 		for (auto it = headerInfo.shardInfoVec.begin();
 			it != headerInfo.shardInfoVec.end(); ++it)

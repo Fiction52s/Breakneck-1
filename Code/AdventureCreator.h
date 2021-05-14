@@ -3,6 +3,7 @@
 
 #include "FileChooser.h"
 #include "SaveFile.h"
+#include "MusicSelector.h"
 struct AdventureFile;
 
 struct AdventureCreator : FileChooserHandler
@@ -30,7 +31,7 @@ struct AdventureCreator : FileChooserHandler
 	void ChooseWorld(int w);
 	void ChooseSector(int s);
 	
-
+	MusicChooserHandler *musicListHandler;
 	State state;
 
 	sf::Vertex largePreview[4];
@@ -74,6 +75,8 @@ struct AdventureCreator : FileChooserHandler
 	ImageChooseRect *sectorRects[8];
 
 	ImageChooseRect *mapRects[8];
+
+	TextChooseRect *musicRects[8];
 
 	AdventureFile *adventure;
 

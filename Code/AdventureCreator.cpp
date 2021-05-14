@@ -12,19 +12,23 @@ AdventureCreator::AdventureCreator()
 {
 	adventure = new AdventureFile;
 
+
+	musicListHandler = new MusicChooserHandler(10);
+
 	ts_largePreview = NULL;
 	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
 	
 
 	Panel *panel = chooser->panel;
 
-	int rightSideStart = 650;
+	int rightSideStart = 610;
 
-	SetRectTopLeft(largePreview, 912, 492, Vector2f(rightSideStart, 540 ));
+	SetRectTopLeft(largePreview, 912, 492, Vector2f(rightSideStart + 150, 550 ));
 
-	Vector2f startWorldPos(rightSideStart, 90);
-	Vector2f startSectorPos(rightSideStart, 210);
-	Vector2f startMapPos(rightSideStart, 385);
+	Vector2f startWorldPos(rightSideStart, 90 - 20);
+	Vector2f startSectorPos(rightSideStart, 210 - 20);
+	Vector2f startMapPos(rightSideStart, 385 - 20);
+	Vector2f startMusicPos(startMapPos.x, startMapPos.y + 130);
 
 	Tileset *ts_worldChoosers = chooser->edit->GetSizedTileset("Editor/worldselector_64x64.png");
 
@@ -54,20 +58,32 @@ AdventureCreator::AdventureCreator()
 	}
 
 	
+	int mapSpacing = 160;//140;
+
 	for (int i = 0; i < 8; ++i)
 	{
 		mapRects[i] = panel->AddImageRect(ChooseRect::I_ADVENTURECREATOR_MAP,
-			startMapPos + Vector2f(i * 140, 0), NULL, 0, 120);
+			startMapPos + Vector2f(i * mapSpacing, 0), NULL, 0, 120);
 		mapRects[i]->SetShown(true);
 		mapRects[i]->Init();
 		//mapRects[i]->SetInfo((void*)(i+1));
 	}
 
-	Vector2i sectorLabelPos(rightSideStart, 340);
+	panel->ReserveTextRects(8);
+	for (int i = 0; i < 8; ++i)
+	{
+		musicRects[i] = panel->AddTextRect(ChooseRect::I_MUSICLEVEL,
+			startMusicPos + Vector2f(i * mapSpacing, 0), Vector2f(120, 40), "w0_awhfoewahfehf");
+		musicRects[i]->SetShown(true);
+		musicRects[i]->Init();
+		musicRects[i]->SetTextHeight(14);
+	}
+
+	Vector2i sectorLabelPos(rightSideStart, 340 - 20);
 
 	sectorLabel = panel->AddLabel("sectorlabel", sectorLabelPos, 40, "Sector 1");
 
-	Vector2i sliderPos(rightSideStart + 300, 350);
+	Vector2i sliderPos(rightSideStart + 300, 350 - 20);
 	sectorRequirementsSlider = panel->AddSlider("requirements", sliderPos, 200, 0, 7, 0);
 
 	
@@ -76,6 +92,7 @@ AdventureCreator::AdventureCreator()
 AdventureCreator::~AdventureCreator()
 {
 	delete adventure;
+	delete musicListHandler;
 }
 
 
@@ -98,7 +115,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 	const std::string &adventureName )
 {
 	adventure->Load(path, adventureName);
-
+	adventure->LoadMapHeaders();
 
 	int ind;
 	if (adventure->copyMode == AdventureFile::COPY)
@@ -123,6 +140,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 						file = sectorStr + name;
 						adventureNodes[ind].filePath = file + ".brknk";
 						adventureNodes[ind].ts_preview = chooser->GetTileset(file + ".png");
+						adventureNodes[ind].index = ind;
 					}
 				}
 			}
@@ -150,6 +168,7 @@ void AdventureCreator::LoadAdventure(const std::string &path,
 							localDir + filePath + ".brknk";
 						adventureNodes[ind].ts_preview = 
 							chooser->GetTileset(filePath + ".png");
+						adventureNodes[ind].index = ind;
 					}
 				}
 			}
@@ -357,6 +376,23 @@ void AdventureCreator::SetRectNode(ChooseRect *cr, FileNode *fn)
 	if (fn->ts_preview == NULL)
 		icRect->SetShown(true);
 	icRect->SetName(fn->filePath.stem().string());
+	
+	if (fn->index >= 0)
+	{
+		auto &mhi = adventure->GetMapHeaderInfo(fn->index);
+		//if (mhi.mainSongName != "")
+		//{
+		int levelIndex = fn->index % 8;
+		TextChooseRect *tcRect = musicRects[levelIndex];
+		tcRect->SetText(mhi.mainSongName);
+		//}
+		//TextChooseRect *tcRect = fn-
+	}
+	else
+	{
+		
+	}
+	
 }
 
 void AdventureCreator::ChooseWorld(int w)
@@ -378,8 +414,12 @@ void AdventureCreator::ChooseSector(int s)
 	currSector = s;
 
 	int nodeStart = GetNodeStart();
+
+
 	for (int i = 0; i < 8; ++i)
 	{
+		musicRects[i]->SetText("");
+
 		SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
 	}
 
@@ -499,6 +539,43 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 			chooser->TurnOff();
 			chooser->edit->Reload(fn->filePath);
+		}
+	}
+	else if (cr->rectIdentity == ChooseRect::I_MUSICLEVEL)
+	{
+		if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
+		{
+			//ClickText(cr);
+			//cr->SetName("");
+			//chooser->SetStoppedColorMyRects();
+
+		}
+		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)
+		{
+			if (state == DRAG)
+			{
+				//cr->SetName(grabbedString);
+				//chooser->ResetSlider(grabbedString);
+				//if (chooser->playingSongName != "")
+				//{
+				//	chooser->SetPlayingColorMyRects(chooser->playingSongName);
+				//}
+			}
+		}
+		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
+		{
+			musicListHandler->ChooseRectEvent(cr, eventType);
+			/*string crName = cr->nameText.getString();
+
+			if (cr == chooser->currPlayingMyRect)
+			{
+				chooser->edit->StopMusic(chooser->edit->previewMusic);
+			}
+			else
+			{
+				chooser->edit->SetPreviewMusic(crName);
+				chooser->edit->PlayMusic(chooser->edit->previewMusic);
+			}*/
 		}
 	}
 	else

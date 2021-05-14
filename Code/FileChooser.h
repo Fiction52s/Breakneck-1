@@ -18,11 +18,12 @@ struct FileNode
 		FOLDER,
 	};
 
-	FileNode() { ts_preview = NULL; type = FILE; }
+	FileNode() { ts_preview = NULL; type = FILE; index = -1; }
 	Type type;
 	void Draw(sf::RenderTarget *target);
 	boost::filesystem::path filePath;
 	Tileset *ts_preview;
+	int index;
 };
 
 struct FileChooserHandler : GUIHandler

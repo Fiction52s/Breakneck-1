@@ -17,14 +17,15 @@ Falcon::Falcon(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 2;
-	actionLength[FLY] = 2;
-	actionLength[RUSH] = 15;
+	actionLength[NEUTRAL] = 7;
+	actionLength[FLY] = 7;
+	actionLength[RUSH] = 2;
 
 	recoverDuration = 60;
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[FLY] = 1;
+	animFactor[NEUTRAL] = 5;
+	animFactor[FLY] = 3;
+	animFactor[RUSH] = 12;//8;
 
 	rushSpeed = 30;
 	attentionRadius = 800;
@@ -37,13 +38,13 @@ Falcon::Falcon(ActorParams *ap)
 	maxSpeed.x = 20;
 	maxSpeed.y = 10;
 
-	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = sess->GetSizedTileset("Enemies/W4/falcon_256x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(36);
-	cutObject->SetSubRectBack(37);
+	cutObject->SetSubRectFront(9);
+	cutObject->SetSubRectBack(10);
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -117,6 +118,15 @@ void Falcon::FlyMovement()
 		else if (velocity.y < -maxSpeed.y)
 		{
 			velocity.y = -maxSpeed.y;
+		}
+
+		if (playerDir.x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
 		}
 	}
 }
@@ -228,20 +238,39 @@ void Falcon::UpdateEnemyPhysics()
 
 void Falcon::UpdateSprite()
 {
-	int trueFrame;
+
+	int tile = 0;
+
 	switch (action)
 	{
 	case NEUTRAL:
-		sprite.setColor(Color::White);
+		tile = frame / animFactor[NEUTRAL];
+		sprite.setRotation(0);
 		break;
-
+	case FLY:
+		tile = frame / animFactor[FLY];
+		sprite.setRotation(0);
+		break;
+	case RUSH:
+		tile = frame / animFactor[RUSH] + 7;
+		
+		double ang = GetVectorAngleCW(velocity);
+		if (facingRight)
+		{
+			sprite.setRotation(ang / PI * 180.0);
+		}
+		else
+		{
+			sprite.setRotation(ang / PI * 180.0 + 180);
+		}
 		break;
 	}
-
-	ts->SetSubRect(sprite, 0, !facingRight);
+	ts->SetSubRect(sprite, tile, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+
 }
 
 void Falcon::EnemyDraw(sf::RenderTarget *target)

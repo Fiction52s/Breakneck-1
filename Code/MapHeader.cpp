@@ -3,9 +3,11 @@
 #include "SFML\Graphics.hpp"
 #include <assert.h>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 using namespace sf;
+using namespace boost::filesystem;
 
 bool MapHeader::Load(std::ifstream &is)
 {
@@ -177,6 +179,57 @@ void MapHeader::Save(std::ofstream &of)
 	of << preLevelSceneName << "\n";
 
 	of << postLevelSceneName << "\n";
+}
+
+bool MapHeader::Replace(boost::filesystem::path &p )
+{
+	ifstream is;
+	is.open(p.string());
+
+	path from("Resources/map.tmp");
+	ofstream of;
+	of.open(from.string());
+	assert(of.is_open());
+
+	Save(of);
+
+	if (is.is_open())
+	{
+		MapHeader *oldHeader = new MapHeader;
+		oldHeader->Load(is);// MainMenu::ReadMapHeader(is);
+
+		is.get(); //gets rid of the extra newline char
+
+		char c;
+		while (is.get(c))
+		{
+			of.put(c);
+		}
+
+		of.close();
+		is.close();
+
+		delete oldHeader;
+	}
+	else
+	{
+		assert(0);
+	}
+
+	try
+	{
+		//assert(boost::filesystem::exists(from) && boost::filesystem::exists(p));
+		boost::filesystem::copy_file(from, p, copy_option::overwrite_if_exists);
+	}
+	catch (const boost::system::system_error &err)
+	{
+		cout << "file already exists!" << endl;
+		assert(0);
+	}
+
+	//mh->songLevelsModified = false;
+
+	return true;
 }
 
 int MapHeader::GetNumPlayers()

@@ -15,6 +15,11 @@ ListChooserHandler::~ListChooserHandler()
 	delete chooser;
 }
 
+void ListChooserHandler::SetHeader(MapHeader *mh)
+{
+	chooser->mh = mh;
+}
+
 MusicChooserHandler::MusicChooserHandler(int rows)
 	:ListChooserHandler( rows )
 {
@@ -156,7 +161,7 @@ void MusicChooserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 
 		string currString;
-		MapHeader *mh = chooser->edit->mapHeader;
+		MapHeader *mh = chooser->mh;
 		if (numSongsSelected == 0)
 		{
 			mh->ClearSongs();
@@ -233,8 +238,8 @@ void MusicChooserHandler::LateDraw(sf::RenderTarget *target)
 	}
 }
 
-ListChooser::ListChooser( ListChooserHandler *p_handler, int rows )
-	:handler( p_handler )
+ListChooser::ListChooser( ListChooserHandler *p_handler, int rows)
+	:handler( p_handler ), mh( NULL )
 {
 	edit = EditSession::GetSession();
 
@@ -331,8 +336,8 @@ void ListChooser::OpenPopup()
 {
 	PopulateRects();
 
-	auto &songOrder = edit->mapHeader->songOrder;
-	auto &songLevels = edit->mapHeader->songLevels;
+	auto &songOrder = mh->songOrder;
+	auto &songLevels = mh->songLevels;
 	int songCounter = 0;
 
 	for (int i = 0; i < numMyMusicRects; ++i)
@@ -530,6 +535,7 @@ MusicSelectorUI::MusicSelectorUI()
 {
 	edit = EditSession::GetSession();
 	listHandler = new MusicChooserHandler(10);
+	listHandler->SetHeader(edit->mapHeader);
 	/*panel = new Panel("panel", 500, 500, this, true);
 	panel->SetPosition(Vector2i(960 - panel->size.x / 2,
 		540 - panel->size.y / 2));*/
@@ -572,11 +578,297 @@ void MusicSelectorUI::ClosePopup()
 	//edit->RemoveActivePanel(panel);
 }
 
-//void MusicSelectorUI::PanelCallback(Panel *p, const std::string & e)
+
+
+//AdventureMusicListChooser::AdventureMusicListChooser(ListChooserHandler *p_handler, int rows,
+//	int p_numMyMusicRects, TextChooseRect **musicRects)
+//	:handler(p_handler), mh(NULL)
 //{
-//	if (e == "leftclickoffpopup")
+//	edit = EditSession::GetSession();
+//
+//	numMyMusicRects = p_numMyMusicRects;
+//	myMusicRects = musicRects;
+//	totalRects = rows;
+//	topRow = 0;
+//	maxTopRow = 0;
+//	numEntries = 10; //this should be the number of current entries
+//
+//	textRects = new TextChooseRect*[totalRects];
+//
+//	panel = new Panel("listchooser", 1000, 500, handler, true);
+//	panel->SetCenterPos(Vector2i(960, 540));
+//	//panel->ReserveTextRects(totalRects);
+//	panel->extraUpdater = this;
+//
+//	Vector2f startRects(10, 80);
+//	Vector2f spacing(60, 2);
+//	Vector2f myRectSpacing(0, 30);
+//	Vector2f boxSize(300, 30);
+//	float myMusicRectsXStart = startRects.x + boxSize.x + 100;
+//
+//	auto &songMap = edit->mainMenu->musicManager->songMap;
+//	int numSongs = songMap.size();
+//
+//	std::vector<string> worldOptions = { "W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8" };
+//
+//	for (auto it = worldOptions.begin(); it != worldOptions.end(); ++it)
 //	{
-//		ClosePopup();
-//		
+//		for (auto sit = songMap.begin(); sit != songMap.end(); ++sit)
+//		{
+//			if ((*sit).first[1] == (*it)[1])
+//			{
+//				songNames[(*it)].push_back((*sit).first);
+//			}
+//		}
 //	}
+//
+//	numEntries = songNames["W1"].size();
+//
+//	maxTopRow = numEntries - totalRects;
+//	if (maxTopRow < 0)
+//		maxTopRow = 0;
+//
+//
+//	panel->ReserveTextRects(totalRects + numMyMusicRects);
+//	for (int i = 0; i < totalRects; ++i)
+//	{
+//		textRects[i] = panel->AddTextRect(ChooseRect::I_MUSICLIBRARY,
+//			Vector2f(startRects.x, startRects.y + (boxSize.y + spacing.y) * i),
+//			boxSize, "");
+//		textRects[i]->SetShown(true);
+//		textRects[i]->Init();
+//	}
+//
+//	Vector2f currRectPos;
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		currRectPos = Vector2f(myMusicRectsXStart, startRects.y + (boxSize.y + myRectSpacing.y) * i);
+//		myMusicRects[i] = panel->AddTextRect(ChooseRect::I_MUSICLEVEL,
+//			currRectPos, boxSize, "");
+//
+//		sliders[i] = panel->AddSlider("slider" + to_string(i),
+//			Vector2i(currRectPos.x + boxSize.x + 20, currRectPos.y), 200, 0, 100, 100);
+//		myMusicRects[i]->SetShown(true);
+//		myMusicRects[i]->Init();
+//	}
+//
+//	playOriginalCheckbox = panel->AddCheckBox("playoriginal", Vector2i(400, 300), false);
+//
+//
+//	worldDropdown = panel->AddDropdown("worlddropdown", Vector2i(10, 10), Vector2i(100, 30),
+//		worldOptions, 0);
+//
+//
+//	panel->SetConfirmButton(panel->AddButton("ok", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "OK"));
+//	panel->SetCancelButton(panel->AddButton("cancel", Vector2i(140, panel->size.y - 100), Vector2f(100, 40), "Cancel"));
+//}
+//
+//ListChooser::~ListChooser()
+//{
+//	delete[] textRects;
+//	delete[] myMusicRects;
+//	delete panel;
+//}
+//
+//bool ListChooser::MouseUpdate()
+//{
+//	return handler->MouseUpdate();
+//}
+//
+//void ListChooser::OpenPopup()
+//{
+//	PopulateRects();
+//
+//	auto &songOrder = mh->songOrder;
+//	auto &songLevels = mh->songLevels;
+//	int songCounter = 0;
+//
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		sliders[i]->HideMember();
+//	}
+//
+//	for (auto it = songOrder.begin(); it != songOrder.end(); ++it)
+//	{
+//		myMusicRects[songCounter]->SetName((*it));
+//
+//		sliders[songCounter]->SetCurrValue(songLevels[(*it)]);
+//
+//		sliders[songCounter]->ShowMember();
+//
+//		++songCounter;
+//		if (songCounter == 3)
+//			break;
+//	}
+//
+//	edit->AddActivePanel(panel);
+//}
+//
+//void ListChooser::ClosePopup()
+//{
+//	edit->RemoveActivePanel(panel);
+//}
+//
+//void ListChooser::ResetSlider(const std::string &str)
+//{
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		if (myMusicRects[i]->nameText.getString() == str)
+//		{
+//			sliders[i]->SetCurrValue(sliders[i]->defaultValue);
+//			sliders[i]->ShowMember();
+//		}
+//	}
+//}
+//
+//void ListChooser::HideSlider(const std::string &str)
+//{
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		if (myMusicRects[i]->nameText.getString() == str)
+//		{
+//			sliders[i]->HideMember();
+//		}
+//	}
+//}
+//
+//void ListChooser::SetPlayingColorMyRects(const std::string &str)
+//{
+//	currPlayingMyRect = NULL;
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		if (str == myMusicRects[i]->nameText.getString())
+//		{
+//			myMusicRects[i]->SetIdleColor(Color::Magenta);
+//			currPlayingMyRect = myMusicRects[i];
+//		}
+//		else
+//		{
+//			myMusicRects[i]->SetIdleColor(myMusicRects[i]->defaultIdleColor);
+//		}
+//	}
+//}
+//
+//void ListChooser::SetPlayingColor(const std::string &str)
+//{
+//	if (str == "")
+//	{
+//		return;
+//	}
+//	playingSongName = str;
+//
+//	SetPlayingColorMyRects(str);
+//
+//	currPlayingRect = NULL;
+//	for (int i = 0; i < totalRects; ++i)
+//	{
+//		if (str == textRects[i]->nameText.getString())
+//		{
+//			textRects[i]->SetIdleColor(Color::Magenta);
+//			currPlayingRect = textRects[i];
+//		}
+//		else
+//		{
+//			textRects[i]->SetIdleColor(textRects[i]->defaultIdleColor);
+//		}
+//	}
+//}
+//
+//void ListChooser::SetStoppedColor()
+//{
+//	playingSongName = "";
+//	currPlayingMyRect = NULL;
+//	SetStoppedColorMyRects();
+//
+//	currPlayingRect = NULL;
+//	for (int i = 0; i < totalRects; ++i)
+//	{
+//		textRects[i]->SetIdleColor(textRects[i]->defaultIdleColor);
+//	}
+//}
+//
+//void ListChooser::SetStoppedColorMyRects()
+//{
+//	currPlayingMyRect = NULL;
+//	for (int i = 0; i < numMyMusicRects; ++i)
+//	{
+//		myMusicRects[i]->SetIdleColor(myMusicRects[i]->defaultIdleColor);
+//	}
+//}
+//
+//void ListChooser::Draw(sf::RenderTarget *target)
+//{
+//	handler->Draw(target);
+//}
+//
+//void ListChooser::Deactivate()
+//{
+//
+//}
+//
+//void ListChooser::MouseScroll(int delta)
+//{
+//	int oldTopRow = topRow;
+//	if (delta < 0)
+//	{
+//		topRow -= delta;
+//		if (topRow > maxTopRow)
+//			topRow = maxTopRow;
+//	}
+//	else if (delta > 0)
+//	{
+//		topRow -= delta;
+//		if (topRow < 0)
+//			topRow = 0;
+//	}
+//
+//	if (topRow != oldTopRow)
+//	{
+//		PopulateRects();
+//	}
+//}
+//
+//void ListChooser::LateDraw(sf::RenderTarget *target)
+//{
+//	handler->LateDraw(target);
+//}
+//
+//void ListChooser::PopulateRects()
+//{
+//	TextChooseRect *tcRect;
+//	int start = topRow;
+//
+//	int i;
+//
+//
+//	auto &currSongNames = songNames[worldDropdown->GetSelectedText()];
+//	for (i = start; i < numEntries && i < start + totalRects; ++i)
+//	{
+//		tcRect = textRects[i - start];
+//
+//		tcRect->SetText(currSongNames[i]);
+//		//node = nodes[i];
+//		//tcRect->SetName( )
+//		//tcRect->SetName(node->filePath.filename().stem().string());
+//		//tcRect->SetInfo(node);
+//
+//		/*if (ts != NULL)
+//		icRect->SetImage(ts, ts->GetSubRect(0));
+//		else
+//		{
+//		icRect->SetImage(NULL, 0);
+//		}*/
+//
+//		tcRect->SetShown(true);
+//	}
+//
+//	for (; i < start + totalRects; ++i)
+//	{
+//		tcRect = textRects[i - start];
+//		tcRect->SetShown(false);
+//	}
+//
+//	SetPlayingColor(playingSongName);
+//	//SetPlayingColor();
+//
 //}

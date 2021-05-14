@@ -65,6 +65,7 @@ struct AdventureMapHeaderInfo
 	std::vector<ShardInfo> shardInfoVec;
 	bool IsLoaded() { return mapType >= 0; }
 	BitField hasShardField;
+	std::string mainSongName;
 
 	AdventureMapHeaderInfo()
 		:mapType(-1), hasShardField( ShardInfo::MAX_SHARDS )

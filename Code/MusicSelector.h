@@ -111,13 +111,16 @@ struct TextChooseRect : ChooseRect
 	void SetSize(sf::Vector2f &bSize );
 	void SetText(const std::string &str);
 	void UpdateTextPosition();
+	void SetTextHeight(int height);
 	void SetName(const std::string &name);
 };
 
 struct ListChooser;
+struct MapHeader;
 struct ListChooserHandler : GUIHandler
 {
 	ListChooserHandler(int rows);
+	void SetHeader(MapHeader *mh);
 	virtual ~ListChooserHandler();
 	virtual void ClickText(ChooseRect *cr) = 0;
 	//virtual void Cancel() = 0;
@@ -187,6 +190,7 @@ struct ListChooser : PanelUpdater
 	std::string playingSongName;
 	CheckBox *playOriginalCheckbox;
 	Dropdown *worldDropdown;
+	MapHeader *mh;
 
 	TextChooseRect *currPlayingRect;
 	TextChooseRect *currPlayingMyRect;
@@ -194,7 +198,7 @@ struct ListChooser : PanelUpdater
 	//Button *cancelButton;
 
 
-	ListChooser( ListChooserHandler *handler, int rows );
+	ListChooser( ListChooserHandler *handler, int rows);
 	~ListChooser();
 	void ResetSlider(const std::string &str);
 	void HideSlider(const std::string &str);
@@ -228,5 +232,49 @@ struct MusicSelectorUI : GUIHandler
 	void Draw(sf::RenderTarget *target);
 	void Update();
 };
+
+//struct AdventureMusicListChooser : PanelUpdater
+//{
+//	int topRow;
+//	int maxTopRow;
+//	int numEntries;
+//	int totalRects;
+//	EditSession *edit;
+//	TextChooseRect **textRects;
+//	TextChooseRect **myMusicRects;
+//	int numMyMusicRects;
+//	Panel *panel;
+//	Slider *sliders[3];
+//	ListChooserHandler *handler;
+//	std::map<std::string, std::vector<std::string>> songNames;
+//	std::string playingSongName;
+//	CheckBox *playOriginalCheckbox;
+//	Dropdown *worldDropdown;
+//	MapHeader *mh;
+//
+//	TextChooseRect *currPlayingRect;
+//	TextChooseRect *currPlayingMyRect;
+//	//Button *okButton;
+//	//Button *cancelButton;
+//
+//
+//	AdventureMusicListChooser(ListChooserHandler *handler, int rows,
+//		int numMyMusicRects, TextChooseRect **musicRects );
+//	~AdventureMusicListChooser();
+//	void ResetSlider(const std::string &str);
+//	void HideSlider(const std::string &str);
+//	void SetPlayingColor(const std::string &str);
+//	void SetPlayingColorMyRects(const std::string &str);
+//	void SetStoppedColor();
+//	void SetStoppedColorMyRects();
+//	void OpenPopup();
+//	void ClosePopup();
+//	bool MouseUpdate();
+//	void Draw(sf::RenderTarget *target);
+//	void Deactivate();
+//	void MouseScroll(int delta);
+//	void LateDraw(sf::RenderTarget *target);
+//	void PopulateRects();
+//};
 
 #endif

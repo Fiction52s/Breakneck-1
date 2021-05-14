@@ -36,6 +36,8 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	sf::Vector2<double> tempVel;
 	sf::Vector2<double> gravity;
+	int chargeFrames;
+	int chargeCounter;
 
 	int attackFrame;
 	int attackMult;
@@ -51,7 +53,7 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void ProcessState();
 	void SetLevel(int lev);
 	void UpdateEnemyPhysics();
-	void HandleNoHealth();
+	//void HandleNoHealth();
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();

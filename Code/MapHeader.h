@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <boost/filesystem.hpp>
 
 struct MapHeader
 {
@@ -30,6 +31,7 @@ struct MapHeader
 
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
+	bool Replace(boost::filesystem::path &p);
 	int GetLeft();
 	int GetTop();
 	int GetRight();

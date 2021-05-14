@@ -43,6 +43,11 @@ void TextChooseRect::SetName(const std::string &name)
 		nameText.getLocalBounds().top + nameText.getLocalBounds().height /2);
 }
 
+void TextChooseRect::SetTextHeight(int height)
+{
+	nameText.setCharacterSize(height);
+}
+
 void TextChooseRect::SetSize(sf::Vector2f &bSize)
 {
 	ChooseRect::SetSize(bSize);

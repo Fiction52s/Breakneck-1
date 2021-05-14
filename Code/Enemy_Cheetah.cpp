@@ -23,16 +23,19 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	turnaroundDist = 100;
 	boostPastDist = 400;
-	boostSpeed = 100;
+	boostSpeed = 60;
 
-	actionLength[IDLE] = 10;
-	actionLength[CHARGE] = 30;
-	actionLength[BOOST] = 20;
-	actionLength[RUN] = 5;
+	chargeFrames = 30;
 
-	animFactor[IDLE] = 1;
-	animFactor[CHARGE] = 1;
-	animFactor[BOOST] = 1;
+	actionLength[IDLE] = 6;
+	actionLength[CHARGE] = 8;
+	actionLength[BOOST] = 1;
+	actionLength[RUN] = 8;
+
+	animFactor[IDLE] = 16;
+	animFactor[RUN] = 3;
+	animFactor[CHARGE] = 3;
+	animFactor[BOOST] = 30;
 
 	gravity = V2d(0, .6);
 
@@ -49,7 +52,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->AddAirForce(V2d(0, .6));
 
-	ts = sess->GetSizedTileset("Enemies/W3/Badger_192x128.png");
+	ts = sess->GetSizedTileset("Enemies/W4/cheetah_224x96.png");
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -65,6 +68,8 @@ Cheetah::Cheetah(ActorParams *ap)
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
+
+	cutObject->Setup(ts, 23, 24, scale);
 
 	bezLength = 60 * NUM_STEPS;
 
@@ -91,11 +96,11 @@ void Cheetah::SetLevel(int lev)
 	}
 }
 
-void Cheetah::HandleNoHealth()
-{
-	cutObject->SetFlipHoriz(facingRight);
-	cutObject->rotateAngle = sprite.getRotation();
-}
+//void Cheetah::HandleNoHealth()
+//{
+//	cutObject->SetFlipHoriz(facingRight);
+//	cutObject->rotateAngle = sprite.getRotation();
+//}
 
 void Cheetah::ResetEnemy()
 {
@@ -127,7 +132,6 @@ void Cheetah::ActionEnded()
 		case IDLE:
 			break;
 		case CHARGE:
-			action = BOOST;
 			break;
 		case BOOST:
 			action = RUN;
@@ -181,15 +185,18 @@ void Cheetah::ProcessState()
 			{
 				action = CHARGE;
 				frame = 0;
+				chargeCounter = 0;
 			}
 		}
 		break;
 	}
 	case CHARGE:
-		break;
-	case BOOST:
-		if (frame == 0)
+
+		if (chargeFrames == chargeCounter)
 		{
+			action = BOOST;
+			frame = 0;
+
 			if (facingRight)
 			{
 				groundMover->SetSpeed(boostSpeed);
@@ -198,17 +205,10 @@ void Cheetah::ProcessState()
 			{
 				groundMover->SetSpeed(-boostSpeed);
 			}
-			/*if (xDiff >= 0)
-			{
-				groundMover->SetSpeed(boostSpeed);
-				facingRight = true;
-			}
-			else
-			{
-				groundMover->SetSpeed(-boostSpeed);
-				facingRight = false;
-			}*/
 		}
+		break;
+	case BOOST:
+		
 		break;
 	}
 
@@ -226,6 +226,8 @@ void Cheetah::ProcessState()
 	}
 	case CHARGE:
 		RunMovement();
+
+		++chargeCounter;
 		break;
 	case BOOST:
 		if (groundMover->groundSpeed > 0)
@@ -234,7 +236,8 @@ void Cheetah::ProcessState()
 			{
 				groundMover->SetSpeed(maxGroundSpeed);
 				facingRight = false;
-				action = IDLE;
+				action = RUN;
+				preChargeFrames = 0;
 				frame = 0;
 			}
 		}
@@ -244,10 +247,13 @@ void Cheetah::ProcessState()
 			{
 				groundMover->SetSpeed(-maxGroundSpeed);
 				facingRight = true;
-				action = IDLE;
+				action = RUN;
 				frame = 0;
+				preChargeFrames = 0;
 			}
 		}
+
+		
 		break;
 	}
 }
@@ -321,14 +327,19 @@ void Cheetah::UpdateSprite()
 	int index = 0;
 	switch (action)
 	{
+	case RUN:
+	{
+		index = frame / animFactor[RUN];
+		break;
+	}
 	case IDLE:
-		index = 0;
+		index = frame / animFactor[IDLE] + 16;
 		break;
 	case CHARGE:
-		index = 1;
+		index = frame / animFactor[CHARGE] + 8;
 		break;
 	case BOOST:
-		index = 2;
+		index = 22;//frame / animFactor[BOOST] + 22;
 		break;
 	}
 
