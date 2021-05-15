@@ -99,6 +99,7 @@ struct SaveMenuScreen : TilesetManager
 	Tileset *ts_background;//ts_saveMenuBG;
 	Tileset *ts_selectSlot;//ts_saveMenuSelect;
 	Tileset *ts_kinFace;//ts_saveMenuKinFace;
+	Tileset *ts_skinButton;
 	sf::Vector2f GetTopLeftSaveSlot(int index);
 	void SaveSelectedFile();
 	void SetSkin(int index);
@@ -132,6 +133,8 @@ struct SaveMenuScreen : TilesetManager
 	sf::Sprite kinJump;
 	sf::Sprite kinWindow;
 	sf::Sprite kinSky;
+	sf::Sprite skinButtonSpr;
+	sf::Sprite skinButtonIconSpr;
 
 	Tileset *ts_starBackground;
 	sf::Sprite starBackground;

@@ -129,7 +129,8 @@ bool SkinMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		}
 	}
 	
-	if (currInput.B && !prevInput.B)
+	if ((currInput.B && !prevInput.B)
+		||( currInput.rightShoulder && !prevInput.rightShoulder ) )
 	{
 		return false;
 	}

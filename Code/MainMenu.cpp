@@ -314,6 +314,8 @@ MainMenu::MainMenu()
 	ts_mainOption = tilesetManager.GetSizedTileset("Menu/mainmenu_text_512x64.png");
 	ts_menuSelector = tilesetManager.GetSizedTileset("Menu/menu_selector_64x64.png");
 
+	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
+
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
 	activatedMainMenuOptions[0] = true;		//adventure
@@ -1379,8 +1381,7 @@ void MainMenu::Run()
 				if( active )
 				{
 					currInput = c.GetUnfilteredState();
-
-					menuCurrInput.A |= ( currInput.A && !prevInput.A );
+					/*menuCurrInput.A |= ( currInput.A && !prevInput.A );
 					menuCurrInput.B |= ( currInput.B && !prevInput.B );
 					menuCurrInput.X |= ( currInput.X && !prevInput.X );
 					menuCurrInput.Y |= ( currInput.Y && !prevInput.Y );
@@ -1390,6 +1391,18 @@ void MainMenu::Run()
 					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
 					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
 					menuCurrInput.back |= ( currInput.back && !prevInput.back );
+					menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
+
+					menuCurrInput.A |= currInput.A;
+					menuCurrInput.B |= currInput.B;
+					menuCurrInput.X |= currInput.X;
+					menuCurrInput.Y |= currInput.Y;
+					menuCurrInput.rightShoulder |= currInput.rightShoulder;
+					menuCurrInput.leftShoulder |= currInput.leftShoulder;
+					menuCurrInput.start |= currInput.start;
+					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
+					menuCurrInput.back |= currInput.back;
 					menuCurrInput.leftStickPad |= currInput.leftStickPad;
 
 

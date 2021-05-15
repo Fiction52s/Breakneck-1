@@ -346,6 +346,8 @@ struct MapSelectionMenu
 	MusicSelector *musicSelector;
 	void UpdateMultiInput();
 
+	Tileset *ts_buttonIcons;
+
 	int numTotalItems;
 	std::pair<std::string,MapIndexInfo> *allItems;
 	int GetPairIndex(int index);

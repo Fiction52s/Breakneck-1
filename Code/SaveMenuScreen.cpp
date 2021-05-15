@@ -121,12 +121,40 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	ts_background = GetTileset("Menu/save_bg_1920x1080.png", 1920, 1080);
 	ts_kinFace = GetTileset("Menu/save_menu_kin_256x256.png", 256, 256);
 	ts_selectSlot = GetTileset("Menu/save_select_710x270.png", 710, 270);
+	ts_skinButton = GetSizedTileset("Menu/skin_select_256x80.png");
 	
 	actionLength[WAIT] = 1;
 	actionLength[SELECT] = 12 * 3 + 24 * 2 + 20;
 	actionLength[TRANSITION] = 30;
 	actionLength[TRANSITIONMOVIE] = 30;
 	actionLength[FADEIN] = 30;
+
+	ts_skinButton->SetSpriteTexture(skinButtonSpr);
+	ts_skinButton->SetSubRect(skinButtonSpr, 0);
+	skinButtonSpr.setPosition(1542, 0);
+
+	mainMenu->ts_buttonIcons->SetSpriteTexture(skinButtonIconSpr);
+
+	ControllerType ct = mainMenu->GetController(0).GetCType();
+	int tileOffset = 0;
+	switch (ct)
+	{
+	case ControllerType::CTYPE_XBOX:
+		tileOffset = 0;
+		break;
+	case ControllerType::CTYPE_GAMECUBE:
+		tileOffset = 16 * 2;
+		break;
+	}
+
+	int buttonIndex = 4;
+
+	mainMenu->ts_buttonIcons->SetSubRect(skinButtonIconSpr, tileOffset + buttonIndex);
+	skinButtonIconSpr.setScale(.5, .5);
+
+	Vector2f buttonOffset(192, 2);
+
+	skinButtonIconSpr.setPosition(skinButtonSpr.getPosition() + buttonOffset);
 
 	AdventureFile *af = &mainMenu->worldMap->adventureFile;
 
@@ -135,6 +163,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	{
 		currName = mainMenu->currSaveFile->name;
 	}
+
+	
 
 	std::vector<string> saveNames = { "blue", "green", "yellow", "orange", "red", "magenta" };
 	for (int i = 0; i < 6; ++i)
@@ -387,6 +417,7 @@ bool SaveMenuScreen::Update()
 	ControllerState &menuCurrInput = mainMenu->menuCurrInput;
 	ControllerState &menuPrevInput = mainMenu->menuPrevInput;
 
+
 	bool moveDown = false;
 	bool moveUp = false;
 	bool moveLeft = false;
@@ -404,6 +435,8 @@ bool SaveMenuScreen::Update()
 
 	int moveDelayFrames = 60;
 	int moveDelayFramesSmall = 40;
+
+	bool changedToSkin = false;
 
 	if (mainMenu->menuMode == MainMenu::SAVEMENU )
 	{
@@ -429,7 +462,7 @@ bool SaveMenuScreen::Update()
 				action = SKINMENU;
 				frame = 0;
 				skinMenu->SetSelectedIndex(mainMenu->currSaveFile->defaultSkinIndex);
-
+				changedToSkin = true; //so you dont exit the same frame you open
 				
 			}
 			else if (menuCurrInput.X && !menuPrevInput.X)
@@ -531,6 +564,15 @@ bool SaveMenuScreen::Update()
 		}
 	}
 
+	if (menuCurrInput.rightShoulder)
+	{
+		ts_skinButton->SetSubRect(skinButtonSpr, 1);
+	}
+	else
+	{
+		ts_skinButton->SetSubRect(skinButtonSpr, 0);
+	}
+
 	switch (action)
 	{
 	case WAIT:
@@ -581,11 +623,14 @@ bool SaveMenuScreen::Update()
 		break;
 	case SKINMENU:
 	{
-		if (!skinMenu->Update(menuCurrInput, menuPrevInput))
+		if (!changedToSkin)
 		{
-			action = WAIT;
-			frame = 0;
-			SetSkin( mainMenu->currSaveFile->defaultSkinIndex );
+			if (!skinMenu->Update(menuCurrInput, menuPrevInput))
+			{
+				action = WAIT;
+				frame = 0;
+				SetSkin(mainMenu->currSaveFile->defaultSkinIndex);
+			}
 		}
 		break;
 	}
@@ -791,6 +836,9 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	saveSpr.setColor(Color(255, 255, 255, 255 * (1.f - transparency)));
 	
 	target->draw(saveSpr);
+
+	target->draw(skinButtonSpr);
+	target->draw(skinButtonIconSpr);
 
 	if (action == SKINMENU)
 	{
