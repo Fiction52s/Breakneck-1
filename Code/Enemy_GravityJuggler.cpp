@@ -95,7 +95,6 @@ GravityJuggler::GravityJuggler(ActorParams *ap)
 		limitedJuggles = true;
 	}
 
-	
 	UpdateParamsSettings();
 	
 	maxWaitFrames = 180;

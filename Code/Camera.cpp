@@ -793,6 +793,7 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 	yChangeNeg = 0;
 
 	int topBoundsCamExtra = 50;
+	int bottomBoundsCamExtra = 0;
 	int topBounds = sess->mapHeader->topBounds + topBoundsCamExtra;
 
 	float halfw = 960 / 2;
@@ -819,8 +820,9 @@ void Camera::UpdateBarrier( Actor *player, float &xChangePos, float &xChangeNeg,
 		yChangePos = tdiff;
 	}
 
+	int botBounds = sess->mapHeader->topBounds + sess->mapHeader->boundsHeight + bottomBoundsCamExtra;
 	float bot = truePos.y + halfh * GetZoom();
-	tdiff = bot - (sess->mapHeader->topBounds + sess->mapHeader->boundsHeight);
+	tdiff = bot - botBounds;
 	if (tdiff > 0)
 	{
 		yChangeNeg = -tdiff;

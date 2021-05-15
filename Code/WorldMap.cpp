@@ -19,7 +19,7 @@ using namespace std;
 WorldMap::WorldMap( MainMenu *p_mainMenu )
 	:font( mainMenu->arial ), mainMenu( p_mainMenu )
 {
-	allUnlocked = true;
+	allUnlocked = false;
 
 	
 	kinBoostScreen = new KinBoostScreen(mainMenu, this);
@@ -635,19 +635,55 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 
 		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
 		{
+			int numCompletedWorlds;
+			if (allUnlocked)
+			{
+				numCompletedWorlds = planet->numWorlds;
+			}
+			else
+			{
+				SaveFile *saveFile = mainMenu->GetCurrentProgress();
+				numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
+			}
+
+
 			selectedColony++;
-			if (selectedColony >= planet->numWorlds)
+			if (selectedColony > numCompletedWorlds
+				|| selectedColony >= planet->numWorlds )
 				selectedColony = 0;
+			
 			moveDown = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
 			UpdateWorldStats();
-			
 		}
 		else if ((currInput.LUp() || currInput.PUp()) && !moveUp)
 		{
+			int numCompletedWorlds;
+			if (allUnlocked)
+			{
+				numCompletedWorlds = planet->numWorlds;
+			}
+			else
+			{
+				SaveFile *saveFile = mainMenu->GetCurrentProgress();
+				numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
+			}
+
 			selectedColony--;
 			if (selectedColony < 0)
-				selectedColony = planet->numWorlds - 1;
+			{
+				if (numCompletedWorlds == planet->numWorlds)
+				{
+					selectedColony = planet->numWorlds - 1;
+				}
+				else
+				{
+					selectedColony = numCompletedWorlds;
+				}
+				
+			}
+				
+
 			moveUp = true;
 			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
 			UpdateWorldStats();

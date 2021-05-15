@@ -347,7 +347,8 @@ void Cheetah::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+	sprite.setRotation(groundMover->GetAngleDegrees());
+	//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 }
 
 bool Cheetah::StartRoll()

@@ -85,7 +85,6 @@ AttractJuggler::AttractJuggler(ActorParams *ap)
 		limitedJuggles = true;
 	}
 
-
 	UpdateParamsSettings();
 
 	maxWaitFrames = 180;

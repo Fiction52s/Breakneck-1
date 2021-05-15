@@ -319,7 +319,7 @@ MainMenu::MainMenu()
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
 	activatedMainMenuOptions[0] = true;		//adventure
-	activatedMainMenuOptions[1] = true;	//freeplay
+	activatedMainMenuOptions[1] = false;	//freeplay
 	activatedMainMenuOptions[2] = false;	//local multiplayer
 	activatedMainMenuOptions[3] = true;		//level editor
 	activatedMainMenuOptions[4] = true;		//options
@@ -1376,12 +1376,11 @@ void MainMenu::Run()
 					c.gcController = controllers[i];
 				bool active = c.UpdateState();
 
-				menuCurrInputUnfiltered = ControllerState();
-
 				if( active )
 				{
 					currInput = c.GetUnfilteredState();
-					/*menuCurrInput.A |= ( currInput.A && !prevInput.A );
+					
+					menuCurrInput.A |= ( currInput.A && !prevInput.A );
 					menuCurrInput.B |= ( currInput.B && !prevInput.B );
 					menuCurrInput.X |= ( currInput.X && !prevInput.X );
 					menuCurrInput.Y |= ( currInput.Y && !prevInput.Y );
@@ -1391,9 +1390,9 @@ void MainMenu::Run()
 					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
 					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
 					menuCurrInput.back |= ( currInput.back && !prevInput.back );
-					menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
+					menuCurrInput.leftStickPad |= currInput.leftStickPad;
 
-					menuCurrInput.A |= currInput.A;
+					/*menuCurrInput.A |= currInput.A;
 					menuCurrInput.B |= currInput.B;
 					menuCurrInput.X |= currInput.X;
 					menuCurrInput.Y |= currInput.Y;
@@ -1403,20 +1402,7 @@ void MainMenu::Run()
 					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
 					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
 					menuCurrInput.back |= currInput.back;
-					menuCurrInput.leftStickPad |= currInput.leftStickPad;
-
-
-					/*menuCurrInputUnfiltered.A |= currInput.A;
-					menuCurrInputUnfiltered.B |= currInput.B;
-					menuCurrInputUnfiltered.X |= currInput.X;
-					menuCurrInputUnfiltered.Y |= currInput.Y;;
-					menuCurrInputUnfiltered.rightShoulder |= currInput.rightShoulder;
-					menuCurrInputUnfiltered.leftShoulder |= currInput.leftShoulder;
-					menuCurrInputUnfiltered.start |= currInput.start;
-					menuCurrInputUnfiltered.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-					menuCurrInputUnfiltered.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-					menuCurrInputUnfiltered.back |= currInput.back;
-					menuCurrInputUnfiltered.leftStickPad |= currInput.leftStickPad;*/
+					menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
 				}
 				else
 				{
@@ -1982,7 +1968,10 @@ void MainMenu::HandleMenuMode()
 			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
 			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
 			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
 			worldMap->Update(menuPrevInput, menuCurrInput);
+
+			musicPlayer->TransitionMusic(menuMusic, 60);
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
@@ -2007,6 +1996,8 @@ void MainMenu::HandleMenuMode()
 				worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 
 				worldMap->Update(menuPrevInput, menuCurrInput);
+
+				musicPlayer->TransitionMusic(menuMusic, 60);
 			}
 
 		}

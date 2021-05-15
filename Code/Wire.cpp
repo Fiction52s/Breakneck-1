@@ -126,7 +126,7 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
-	, player( p ), hitStallFrames( 4/*10*/ ), hitStallCounter( 0 ), right( r )
+	, player( p ), hitStallFrames( 10/*10*/ ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ),
@@ -140,6 +140,8 @@ Wire::Wire( Actor *p, bool r)
 
 	aimingPrimaryAngleRange = 2;
 	hitEnemyFramesTotal = 5;
+
+	antiWireGrassCount = 0;
 
 	int tipIndex = 0;
 	ts_wire = player->sess->GetTileset( "Kin/Powers/wires_16x16.png", 16, 16 );
@@ -1090,7 +1092,7 @@ void Wire::UpdateAnchors( V2d vel )
 
 		Enemy *foundEnemy = NULL;
 		int foundIndex;
-		if (GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
+		if ( player->HasUpgrade( Actor::UPGRADE_WIRE_ENEMIES ) && GetClosestEnemyPos(wirePos, 128, foundEnemy, foundIndex))
 		{
 			storedPlayerPos = playerPos;
 			state = HIT;
@@ -2212,6 +2214,7 @@ void Wire::Reset()
 	state = IDLE;
 	numPoints = 0;
 	framesFiring = 0;
+	antiWireGrassCount = 0;
 	frame = 0;
 	ClearCharges();
 	pullStrength = startPullStrength;

@@ -515,14 +515,16 @@ void Enemy::OnCreate(ActorParams *ap,
 
 	sess = Session::GetSession();
 
-	if (sess->IsSessTypeEdit())
+	//need this for updateparamssettings calls
+	editParams = ap;
+	/*if (sess->IsSessTypeEdit())
 	{
-		editParams = ap;
+		
 	}
 	else
 	{
 		editParams = NULL;
-	}
+	}*/
 
 
 	if (CanTouchSpecter())

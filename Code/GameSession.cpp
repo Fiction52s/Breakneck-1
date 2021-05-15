@@ -2655,6 +2655,8 @@ window->draw(preTexSprite);
 				ControllerState &curr = GetCurrInputUnfiltered(0);
 				ControllerState &prev = GetPrevInputUnfiltered(0);
 
+
+
 				if (curr.X && !prev.X)
 				{
 					if (parentGame != NULL)

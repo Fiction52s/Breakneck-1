@@ -2602,7 +2602,6 @@ void Session::UpdateControllers()
 	{
 		GetPrevInput(i) = GetCurrInput(i);
 		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-
 		/*if (!cutPlayerInput)
 		{
 			p = GetPlayer(i);
@@ -4680,7 +4679,8 @@ void Session::AdjustBoundsFromTerrain()
 
 	if (adjust)
 	{
-		mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
+		maxY += extraBorder;
+		mapHeader->boundsHeight = maxY - mapHeader->topBounds;
 		int oldRight = mapHeader->leftBounds + mapHeader->boundsWidth;
 		int oldLeft = mapHeader->leftBounds;
 		if (minX > oldLeft)
@@ -4733,7 +4733,8 @@ void Session::AdjustBoundsHeightFromTerrain()
 
 	if (adjust)
 	{
-		mapHeader->boundsHeight = maxY - mapHeader->topBounds - extraBorder;
+		maxY += extraBorder;
+		mapHeader->boundsHeight = maxY - mapHeader->topBounds;
 	}
 }
 

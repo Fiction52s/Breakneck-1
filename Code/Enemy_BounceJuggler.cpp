@@ -16,7 +16,7 @@ using namespace sf;
 void BounceJuggler::UpdateParamsSettings()
 {
 	Enemy::UpdateParamsSettings();
-	if (limitedJuggles)
+	if (limitedJuggles )
 	{
 		JugglerParams *jParams = (JugglerParams*)editParams;
 		juggleReps = jParams->numJuggles;
@@ -60,6 +60,9 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 	flySpeed = 14;
 	maxWaitFrames = 180;
+
+	
+	
 
 	string &typeName = ap->type->info.name;
 	if (typeName == "bouncejuggler")

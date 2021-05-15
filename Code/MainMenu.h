@@ -704,8 +704,7 @@ struct MainMenu
 
 	ControllerState menuPrevInput;
 	ControllerState menuCurrInput;
-	ControllerState menuPrevInputUnfiltered;
-	ControllerState menuCurrInputUnfiltered;
+	
 	
 	sf::Sprite titleBGSprite;
 	sf::Sprite breakneckTitleSprite;
