@@ -3,6 +3,7 @@
 #include "Fader.h"
 #include "VectorMath.h" 
 #include "WorldMap.h"
+#include "MusicPlayer.h"
 
 
 using namespace std;
@@ -112,6 +113,7 @@ void KinBoostScreen::End()
 	stateFrame = 0;
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
 	mainMenu->fader->Fade(false, 30, Color::Black);// true);
+	mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 	//frame = 0;
 }
 

@@ -2834,7 +2834,7 @@ void Actor::UpdateActionSprite()
 Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	:dead( false ), actorIndex( p_actorIndex ), bHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	skinShader("player")
+	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
 	ClearRecentHitters();
 	blockstunFrames = 0;
@@ -17532,7 +17532,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	
 	if (showExitAura)
 	{
-		target->draw(exitAuraSprite);
+		target->draw(exitAuraSprite, &exitAuraShader.pShader);
 		//if we add another "extra aura" should just make a single sprite for them, combining
 		//this and dirtyaura
 	}

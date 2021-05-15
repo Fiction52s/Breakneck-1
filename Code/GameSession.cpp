@@ -1002,6 +1002,8 @@ void GameSession::ProcessRail(RailPtr rail)
 	if (rail->IsEnemyType())
 	{
 		ProcessActor(rail->enemyParams);
+		rail->enemyParams = NULL;
+		delete rail;
 	}
 	else
 	{
@@ -3505,7 +3507,8 @@ void GameSession::SetOriginalMusic()
 				}
 				else
 				{
-					mainMenu->musicPlayer->TransitionMusic(originalMusic, 60);
+					mainMenu->musicPlayer->PlayMusic(originalMusic);
+					//mainMenu->musicPlayer->TransitionMusic(originalMusic, 60);
 				}
 				
 				//originalMusic->music->setVolume(mainMenu->config->GetData().musicVolume);

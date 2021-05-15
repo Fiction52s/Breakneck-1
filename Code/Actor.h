@@ -707,6 +707,7 @@ struct Actor : QuadTreeCollider,
 	//const static int NUM_PAST_INPUTS = 60;
 
 	PlayerSkinShader skinShader;
+	PlayerSkinShader exitAuraShader;
 
 	int superActiveLimit;
 	int attackLevelCounterLimit;

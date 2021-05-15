@@ -833,14 +833,16 @@ void MainMenu::SetMode(Mode m)
 	
 	modeFrame = 0;
 
-	if (menuMode == TITLEMENU && m != TITLEMENU)
+	/*if (menuMode == TITLEMENU && m != TITLEMENU)
 	{
 		musicPlayer->TransitionMusic(menuMusic, 60);
 	}
 	else if (menuMode != TITLEMENU && m == TITLEMENU)
 	{
 		musicPlayer->TransitionMusic(titleScreen->titleMusic, 60);
-	}
+	}*/
+
+	int oldMode = menuMode;
 
 	menuMode = m;
 	//only need this because the transition is seamless so inputs can
@@ -870,6 +872,10 @@ void MainMenu::SetMode(Mode m)
 
 	if (menuMode == SAVEMENU)
 	{
+		if (oldMode != WORLDMAP)
+		{
+			musicPlayer->PlayMusic(menuMusic);
+		}
 		saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
 	}
 
@@ -1504,6 +1510,7 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 
 void MainMenu::SetModeLoadingMap( int wIndex )
 {
+	musicPlayer->FadeOutCurrentMusic(30);
 	SetMode( LOADINGMAP );
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 
@@ -2072,6 +2079,7 @@ void MainMenu::HandleMenuMode()
 		worldMap->Update(menuPrevInput, menuCurrInput);
 		if (!saveMenu->Update())
 		{
+			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(TITLEMENU);
 		}
 
@@ -2520,6 +2528,7 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 		case M_ADVENTURE:
 		{
+			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(SAVEMENU);
 			//SetMode(TRANS_MAIN_TO_SAVE);
 			//swiper->Swipe(Swiper::SwipeType::W1, 15);
@@ -2540,6 +2549,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LEVEL_EDITOR:
 		{
+			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(RUNNINGEDITOR);
 				//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
@@ -2553,6 +2563,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_TUTORIAL:
 		{
+			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(TUTORIAL);
 			break;
 		}

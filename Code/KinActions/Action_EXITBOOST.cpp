@@ -35,6 +35,7 @@ void Actor::EXITBOOST_UpdateSprite()
 	int aF = frame / 2 - 55;
 	if (aF < 61 && aF >= 0)
 	{
+		exitAuraShader.SetSkin(currSkinIndex);
 		showExitAura = true;
 		exitAuraSprite.setTextureRect(ts_exitAura->GetSubRect(aF));
 		exitAuraSprite.setOrigin(exitAuraSprite.getLocalBounds().width / 2,

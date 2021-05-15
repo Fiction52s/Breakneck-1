@@ -829,6 +829,9 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 	saveTexture->draw(blackQuad, 4, sf::Quads);
 	
+	saveTexture->draw(skinButtonSpr);
+	saveTexture->draw(skinButtonIconSpr);
+
 	saveTexture->display();
 	const Texture &saveTex = saveTexture->getTexture();
 	sf::Sprite saveSpr(saveTex);
@@ -837,8 +840,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	
 	target->draw(saveSpr);
 
-	target->draw(skinButtonSpr);
-	target->draw(skinButtonIconSpr);
+	
 
 	if (action == SKINMENU)
 	{
