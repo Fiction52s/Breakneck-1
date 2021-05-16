@@ -541,6 +541,7 @@ struct MainMenu
 	void SetupWindow();
 	void UpdateMenuMode();
 	void CheckForControllers();
+	void UpdateMenuInput();
 
 	void UnlockSkin(int skinIndex);
 	bool IsSkinUnlocked(int skinIndex);

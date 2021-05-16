@@ -14201,7 +14201,11 @@ void Actor::HandleWaterSituation(int wType,
 
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_EXIT)
 		{
-			directionalInputFreezeFrames = 20;
+			if (currInput.LLeft() || currInput.LRight()
+				|| currInput.LDown() || currInput.LUp())
+			{
+				directionalInputFreezeFrames = 20;
+			}
 			//SetAction(INVERSEINPUTSTUN);
 		}
 		break;

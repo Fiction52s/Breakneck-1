@@ -147,7 +147,7 @@ void MapSelector::UpdateSprites()
 void MapSelector::RunSelectedMap()
 {
 	FocusedSector()->RunSelectedMap();
-	ReturnFromMap();
+	//ReturnFromMap();
 }
 
 void MapSelector::Draw(sf::RenderTarget *target)

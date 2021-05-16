@@ -153,6 +153,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		saveFile->mostRecentWorldSelected = worldMap->selectedColony;
 		saveFile->Save();
 		worldMap->CurrSelector()->CreateBGs();
+
+		if (worldMap->CurrSelector()->numSectors == 1)
+		{
+			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+		
+		}
 		break;
 	}
 
@@ -897,6 +903,7 @@ void MainMenu::SetMode(Mode m)
 	{
 		ts_thanksForPlaying = tilesetManager.GetTileset("Story/Ship_04.png", 1920, 1080);
 		ts_thanksForPlaying->SetQuadSubRect(thanksQuad, 0);
+		SetRectTopLeft(thanksQuad, 1920, 1080, Vector2f(0, 0));
 	}
 	else if( oldMode == THANKS_FOR_PLAYING )
 	{
@@ -1264,6 +1271,68 @@ void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 
 }
 
+void MainMenu::UpdateMenuInput()
+{
+	menuPrevInput = menuCurrInput;
+	menuCurrInput.Set(ControllerState());
+
+	//int upCount = 0;
+	//int downCount = 0;
+
+	vector<GCC::GCController> controllers;
+	if (gccDriverEnabled)
+		controllers = gccDriver->getState();
+
+
+	for (int i = 0; i < 4; ++i)
+	{
+		ControllerState &prevInput = GetPrevInputUnfiltered(i);
+		ControllerState &currInput = GetCurrInputUnfiltered(i);
+		GameController &c = GetController(i);
+
+		prevInput = currInput;
+
+
+		if (gccDriverEnabled)
+			c.gcController = controllers[i];
+		bool active = c.UpdateState();
+
+		if (active)
+		{
+			currInput = c.GetUnfilteredState();
+
+			menuCurrInput.A |= (currInput.A && !prevInput.A);
+			menuCurrInput.B |= (currInput.B && !prevInput.B);
+			menuCurrInput.X |= (currInput.X && !prevInput.X);
+			menuCurrInput.Y |= (currInput.Y && !prevInput.Y);
+			menuCurrInput.rightShoulder |= (currInput.rightShoulder && !prevInput.rightShoulder);
+			menuCurrInput.leftShoulder |= (currInput.leftShoulder && !prevInput.leftShoulder);
+			menuCurrInput.start |= (currInput.start && !prevInput.start);
+			menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+			menuCurrInput.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
+			menuCurrInput.back |= (currInput.back && !prevInput.back);
+			menuCurrInput.leftStickPad |= currInput.leftStickPad;
+
+			/*menuCurrInput.A |= currInput.A;
+			menuCurrInput.B |= currInput.B;
+			menuCurrInput.X |= currInput.X;
+			menuCurrInput.Y |= currInput.Y;
+			menuCurrInput.rightShoulder |= currInput.rightShoulder;
+			menuCurrInput.leftShoulder |= currInput.leftShoulder;
+			menuCurrInput.start |= currInput.start;
+			menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+			menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
+			menuCurrInput.back |= currInput.back;
+			menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
+		}
+		else
+		{
+			currInput.Set(ControllerState());
+		}
+
+	}
+}
+
 
 #include <sfeMovie/Movie.hpp>
 
@@ -1368,73 +1437,17 @@ void MainMenu::Run()
 		
 		while ( accumulator >= TIMESTEP  )
         {
-
-
-			menuPrevInput = menuCurrInput;
-			menuCurrInput.Set( ControllerState() );
-
-			//int upCount = 0;
-			//int downCount = 0;
-
-			vector<GCC::GCController> controllers;
-			if (gccDriverEnabled)
-				controllers = gccDriver->getState();
-
-
-			for( int i = 0; i < 4; ++i )
-			{
-				ControllerState &prevInput = GetPrevInputUnfiltered( i );
-				ControllerState &currInput = GetCurrInputUnfiltered( i );
-				GameController &c = GetController( i );
-
-				prevInput = currInput;
-
-
-				if (gccDriverEnabled)
-					c.gcController = controllers[i];
-				bool active = c.UpdateState();
-
-				if( active )
-				{
-					currInput = c.GetUnfilteredState();
-					
-					menuCurrInput.A |= ( currInput.A && !prevInput.A );
-					menuCurrInput.B |= ( currInput.B && !prevInput.B );
-					menuCurrInput.X |= ( currInput.X && !prevInput.X );
-					menuCurrInput.Y |= ( currInput.Y && !prevInput.Y );
-					menuCurrInput.rightShoulder |= ( currInput.rightShoulder && !prevInput.rightShoulder );
-					menuCurrInput.leftShoulder |= ( currInput.leftShoulder && !prevInput.leftShoulder );
-					menuCurrInput.start |= ( currInput.start && !prevInput.start );
-					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-					menuCurrInput.back |= ( currInput.back && !prevInput.back );
-					menuCurrInput.leftStickPad |= currInput.leftStickPad;
-
-					/*menuCurrInput.A |= currInput.A;
-					menuCurrInput.B |= currInput.B;
-					menuCurrInput.X |= currInput.X;
-					menuCurrInput.Y |= currInput.Y;
-					menuCurrInput.rightShoulder |= currInput.rightShoulder;
-					menuCurrInput.leftShoulder |= currInput.leftShoulder;
-					menuCurrInput.start |= currInput.start;
-					menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-					menuCurrInput.rightTrigger= max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-					menuCurrInput.back |= currInput.back;
-					menuCurrInput.leftStickPad |= currInput.leftStickPad;*/
-				}
-				else
-				{
-					currInput.Set( ControllerState() );
-				}
-
-			}
-
+			//gotta be honest i dont know what this does.
+			//does it loop like this to fix some kind of drawing issue?
 			do
 			{
+				//added this so going back from the thanks screen
+				//doesnt inta select a level. carrying over inputs
+				//between menus makes no sense.
+				UpdateMenuInput();
+
 				changedMode = false;
 				HandleMenuMode();
-					//preScreenTexture->clear();
-					//window->clear();
 			} while (changedMode);
 			
 			musicPlayer->Update();
@@ -1732,14 +1745,7 @@ void MainMenu::ReturnToWorldAfterLevel()
 	SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
 	int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
 
-	SetMode(WORLDMAP_COLONY);
-	worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-	worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-	worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
-
-	worldMap->Update(menuPrevInput, menuCurrInput);
-
-	musicPlayer->TransitionMusic(menuMusic, 60);
+	
 
 	int numWorlds = worldMap->planet->numWorlds;
 	if (worldMap->selectedColony == numWorlds - 1)
@@ -1752,6 +1758,19 @@ void MainMenu::ReturnToWorldAfterLevel()
 				//return;
 			}
 		}
+	}
+
+	if (menuMode != THANKS_FOR_PLAYING)
+	{
+		worldMap->selectors[worldMap->selectedColony]->ReturnFromMap();
+		SetMode(WORLDMAP_COLONY);
+		worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+		worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+		worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+		worldMap->Update(menuPrevInput, menuCurrInput);
+
+		musicPlayer->TransitionMusic(menuMusic, 60);
 	}
 	
 }
@@ -2395,7 +2414,17 @@ void MainMenu::HandleMenuMode()
 
 		if (menuCurrInput.A)
 		{
-			SetMode(WORLDMAP);
+			worldMap->CurrSelector()->ReturnFromMap();
+			SetMode(WORLDMAP_COLONY);
+			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+			//menuCurrInput.Clear();
+			//worldMap->Update(menuPrevInput, menuCurrInput);
+
+			musicPlayer->TransitionMusic(menuMusic, 60);
+			//SetMode(WORLDMAP);
 		}
 		break;
 	}
