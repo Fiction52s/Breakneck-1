@@ -315,6 +315,7 @@ MainMenu::MainMenu()
 	ts_menuSelector = tilesetManager.GetSizedTileset("Menu/menu_selector_64x64.png");
 
 	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
+	ts_thanksForPlaying = NULL;
 
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
@@ -890,6 +891,17 @@ void MainMenu::SetMode(Mode m)
 		worldMap->state = WorldMap::COLONY_TO_PLANET;
 		worldMap->frame = 0;
 		worldMap->UpdateWorldStats();
+	}
+
+	if (menuMode == THANKS_FOR_PLAYING)
+	{
+		ts_thanksForPlaying = tilesetManager.GetTileset("Story/Ship_04.png", 1920, 1080);
+		ts_thanksForPlaying->SetQuadSubRect(thanksQuad, 0);
+	}
+	else if( oldMode == THANKS_FOR_PLAYING )
+	{
+		tilesetManager.DestroyTileset(ts_thanksForPlaying);
+		ts_thanksForPlaying = NULL;
 	}
 }
 
@@ -1715,6 +1727,35 @@ void MainMenu::UpdateMenuMode()
 	(this->*updateModeFuncs[menuMode])();
 }
 
+void MainMenu::ReturnToWorldAfterLevel()
+{
+	SingleAxisSelector *sa = worldMap->selectors[worldMap->selectedColony]->FocusedSector()->mapSASelector;
+	int numLevels = worldMap->GetCurrSectorNumLevels();//worldMap->selectors[worldMap->selectedColony]->sectors[secIndex]->numLevels;
+
+	SetMode(WORLDMAP_COLONY);
+	worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
+	worldMap->CurrSelector()->FocusedSector()->UpdateStats();
+	worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
+
+	worldMap->Update(menuPrevInput, menuCurrInput);
+
+	musicPlayer->TransitionMusic(menuMusic, 60);
+
+	int numWorlds = worldMap->planet->numWorlds;
+	if (worldMap->selectedColony == numWorlds - 1)
+	{
+		if (sa->currIndex == numLevels - 1)
+		{
+			if (currSaveFile->GetNumCompleteWorlds(worldMap->planet) == numWorlds)
+			{
+				SetMode(THANKS_FOR_PLAYING);
+				//return;
+			}
+		}
+	}
+	
+}
+
 void MainMenu::HandleMenuMode()
 {
 
@@ -1971,14 +2012,7 @@ void MainMenu::HandleMenuMode()
 			currLevel = NULL;
 			fader->Clear();
 
-			SetMode(WORLDMAP_COLONY);
-			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
-
-			worldMap->Update(menuPrevInput, menuCurrInput);
-
-			musicPlayer->TransitionMusic(menuMusic, 60);
+			ReturnToWorldAfterLevel();
 		}
 		else if (result == GameSession::GR_WINCONTINUE)
 		{
@@ -1996,15 +2030,8 @@ void MainMenu::HandleMenuMode()
 				currLevel = NULL;
 
 				fader->Clear();
-				SetMode( MainMenu::WORLDMAP_COLONY );
-				
-				worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-				worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-				worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
 
-				worldMap->Update(menuPrevInput, menuCurrInput);
-
-				musicPlayer->TransitionMusic(menuMusic, 60);
+				ReturnToWorldAfterLevel();
 			}
 
 		}
@@ -2022,15 +2049,7 @@ void MainMenu::HandleMenuMode()
 			delete currLevel;
 			currLevel = NULL;
 
-			SetMode( MainMenu::WORLDMAP_COLONY );
-			
-			worldMap->CurrSelector()->FocusedSector()->UpdateLevelStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateStats();
-			worldMap->CurrSelector()->FocusedSector()->UpdateMapPreview();
-
-			worldMap->Update(menuPrevInput, menuCurrInput);
-
-			musicPlayer->TransitionMusic(menuMusic, 60);
+			ReturnToWorldAfterLevel();
 
 			//fader->CrossFade(30, 0, Color::Black);
 		}
@@ -2367,6 +2386,19 @@ void MainMenu::HandleMenuMode()
 
 		break;
 	}
+	case THANKS_FOR_PLAYING:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		if (menuCurrInput.A)
+		{
+			SetMode(WORLDMAP);
+		}
+		break;
+	}
 
 	}
 
@@ -2457,6 +2489,7 @@ void MainMenu::TitleMenuModeUpdate()
 			}
 			else if (ev.key.code == Keyboard::M)
 			{
+				musicPlayer->StopCurrentMusic();
 				CustomMapsOption();
 				//WorldSelectMenu();
 			}
@@ -2815,6 +2848,12 @@ void MainMenu::DrawMode( Mode m )
 	}
 	case TUTORIAL:
 	{
+		break;
+	}
+	case THANKS_FOR_PLAYING:
+	{
+		preScreenTexture->setView(v);
+		preScreenTexture->draw(thanksQuad, 4, sf::Quads, ts_thanksForPlaying->texture);
 		break;
 	}
 	default:

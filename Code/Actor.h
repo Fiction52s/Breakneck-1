@@ -1138,6 +1138,7 @@ struct Actor : QuadTreeCollider,
 	bool CanHalfBlock(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
 		bool attackFacingRight);
+	bool IsNormalSkin();
 
 	bool CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos );
 	void RestoreAirOptions();

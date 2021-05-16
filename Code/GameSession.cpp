@@ -1007,9 +1007,10 @@ void GameSession::ProcessRail(RailPtr rail)
 	}
 	else
 	{
-		railDrawTree->Insert(rail);
 		totalRails++; //is this really even needed?
 		allRails.push_back(rail);
+		rail->AddEdgesToQuadTree(railEdgeTree);
+		railDrawTree->Insert(rail);
 	}
 }
 
@@ -3335,6 +3336,7 @@ void GameSession::UpdateEnvShaders()
 
 void GameSession::DrawRails(sf::RenderTarget *target)
 {
+	QueryRailDrawTree(screenRect);
 	DrawQueriedRails(target);
 }
 

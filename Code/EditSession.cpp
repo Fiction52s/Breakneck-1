@@ -3761,6 +3761,7 @@ int EditSession::EditRun()
 		ReadFile();
 	}
 	
+	musicSelectorUI->listHandler->SetHeader(mapHeader);
 	if (mapHeader->GetNumSongs() > 0)
 	{
 		SetOriginalMusic(mapHeader->songOrder[0]);

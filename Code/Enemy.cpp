@@ -1453,7 +1453,7 @@ void Enemy::CheckedMiniDraw(sf::RenderTarget *target, sf::FloatRect &rect)
 {
 	if ( zone == NULL || ( zone != NULL && zone->active ) )
 	{
-		if (rect.intersects(zonedSprite.getGlobalBounds()))
+		if (rect.intersects(GetAABB()))
 		{
 			DrawMinimap(target);
 		}

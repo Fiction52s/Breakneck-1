@@ -5627,6 +5627,8 @@ void Actor::ProcessAntiTimeSlowBooster()
 		antiTimeSlowFrames = currAntiTimeSlowBooster->strength;
 		currAntiTimeSlowBooster = NULL;
 
+		SetSkin(SKIN_NORMAL);
+
 		RestoreAirOptions();
 	}
 }
@@ -13943,10 +13945,9 @@ void Actor::HandleWaterSituation(int wType,
 			extraGravityModifier = .8;
 			gravModifyFrames = 1;
 			RestoreAirOptions();
-		}
-		if (sit == SPECIALT_ENTER)
-		{
-			SetSkin(SKIN_ORANGE);
+
+			if( IsNormalSkin() )
+				SetSkin(SKIN_ORANGE);
 		}
 		else if (sit == SPECIALT_EXIT)
 		{
@@ -14151,6 +14152,15 @@ void Actor::HandleWaterSituation(int wType,
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			RestoreAirOptions();
+
+			if (IsNormalSkin())
+			{
+				SetSkin(SKIN_TOXIC);
+			}
+		}
+		else if (sit == SPECIALT_EXIT)
+		{
+			SetSkin(SKIN_NORMAL);
 		}
 		break;
 	}
@@ -14870,6 +14880,10 @@ void Actor::SlowDependentFrameIncrement()
 		if (antiTimeSlowFrames > 0)
 		{
 			--antiTimeSlowFrames;
+			if (antiTimeSlowFrames == 0)
+			{
+				SetSkin(SKIN_NORMAL);
+			}
 		}
 		
 		if (phaseFrames > 0)
@@ -20316,7 +20330,37 @@ void Actor::UpdateInHitlag()
 		 currSkinIndex = skinIndex;
 	 }
 
+	 if (skinIndex == SKIN_NORMAL)
+	 {
+		if( antiTimeSlowFrames > 0)
+		{
+			currSkinIndex = SKIN_PINK;
+		}
+	 }
+
 	 skinShader.SetSkin(currSkinIndex);
+ }
+
+ bool Actor::IsNormalSkin()
+ {
+	 if (owner != NULL && owner->saveFile != NULL)
+	 {
+		 int defaultSkin = owner->saveFile->defaultSkinIndex;
+		 if (currSkinIndex == defaultSkin)
+		 {
+			 return true;
+		 }
+	 }
+	 else
+	 {
+		 if (currSkinIndex == SKIN_NORMAL)
+		 {
+			 return true;
+		 }
+	 }
+
+	 return false;
+
  }
 
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )

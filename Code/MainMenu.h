@@ -507,7 +507,8 @@ struct MainMenu
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
 		TRANS_WORLDMAP_TO_LOADING,
-		INTROMOVIE
+		INTROMOVIE,
+		THANKS_FOR_PLAYING,
 	};
 
 	enum SoundType
@@ -598,6 +599,7 @@ struct MainMenu
 	int modeFrame;
 
 	void SetMode(Mode m);
+	void ReturnToWorldAfterLevel();
 	int transFrame;
 	int transLength;
 	void ResizeWindow( int windowWidth, 
@@ -621,6 +623,8 @@ struct MainMenu
 	LoadingBackpack *loadingBackpack;
 
 	Tileset *ts_buttonIcons;
+	Tileset *ts_thanksForPlaying;
+	sf::Vertex thanksQuad[4];
 	//GameController controller;
 	//GameController controller2;
 	GameController *controllers[4];

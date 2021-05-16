@@ -59,7 +59,7 @@ void Actor::WALLJUMP_Change()
 
 void Actor::WALLJUMP_Update()
 {
-	if (frame == 0)
+	if (frame == 0 && slowCounter == 1)
 	{
 		ExecuteWallJump();
 	}

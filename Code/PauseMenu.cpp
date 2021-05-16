@@ -497,9 +497,21 @@ void PauseMenu::SetTab( Tab t )
 		mapZoomFactor = 16;	
 		break;
 	case KIN:
-		kinMenu->playerSkinShader.SetSkin(mainMenu->GetCurrentProgress()->defaultSkinIndex);
+	{
+		SaveFile *sf = mainMenu->GetCurrentProgress();
+		int skinInd = 0;
+		if (sf != NULL)
+		{
+			skinInd = sf->defaultSkinIndex;
+		}
+
+		kinMenu->playerSkinShader.SetSkin(skinInd);
 		kinMenu->UpdatePowers(owner->GetPlayer(0));
+		
 		break;
+	}
+		
+		
 	case SHARDS:
 		//shardMenu->SetCurrSequence();
 		shardMenu->state = ShardMenu::WAIT;

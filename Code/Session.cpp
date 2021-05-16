@@ -6283,6 +6283,11 @@ bool Session::RunGameModeUpdate()
 
 		UpdateGoalFlow();
 
+		//careful because minimap also needs to query
+		//to draw things.
+		//if something is behind the minimap,
+		//the minimaps query might interfere w/ one of these.
+
 		QueryToSpawnEnemies();
 
 		UpdateEnvPlants();
@@ -6291,7 +6296,7 @@ bool Session::RunGameModeUpdate()
 
 		QuerySpecialTerrainTree(screenRect);
 
-		QueryRailDrawTree(screenRect);
+		//QueryRailDrawTree(screenRect);
 
 		QueryFlyTerrainTree(screenRect);
 

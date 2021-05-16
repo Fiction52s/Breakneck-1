@@ -535,7 +535,7 @@ MusicSelectorUI::MusicSelectorUI()
 {
 	edit = EditSession::GetSession();
 	listHandler = new MusicChooserHandler(10);
-	listHandler->SetHeader(edit->mapHeader);
+	
 	/*panel = new Panel("panel", 500, 500, this, true);
 	panel->SetPosition(Vector2i(960 - panel->size.x / 2,
 		540 - panel->size.y / 2));*/
