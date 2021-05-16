@@ -53,8 +53,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	//SetCurrPosInfo(ap->posInfo);
 	
-	testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
-	//testShield->SetPosition(GetPosition());
+	//testShield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
@@ -93,14 +92,14 @@ BasicTurret::BasicTurret(ActorParams *ap )
 
 	cutObject->Setup(ts, 12, 11, scale, 0);
 	
-	testShield->SetPosition(GetPosition());
+	//testShield->SetPosition(GetPosition());
 
 	ResetEnemy();
 }
 
 BasicTurret::~BasicTurret()
 {
-	delete testShield;
+	//delete testShield;
 }
 
 void BasicTurret::UpdateOnPlacement(ActorParams *ap)
@@ -148,8 +147,8 @@ void BasicTurret::ResetEnemy()
 
 	//cutObject->SetRotation(sprite.getRotation());
 
-	currShield = testShield;
-	testShield->Reset();
+	//currShield = testShield;
+	//testShield->Reset();
 
 	UpdateSprite();
 }

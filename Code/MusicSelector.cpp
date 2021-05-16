@@ -508,7 +508,7 @@ bool MusicManager::LoadFolderPaths()
 		//assert(0 && "failed to open music directories sheet");
 	}
 
-	//folderPaths.push_back(current_path().string() + "/Resources/Audio/Music/");
+	folderPaths.push_back(current_path().string() + "/Resources/Audio/Music/");
 	return true;
 }
 
@@ -528,11 +528,6 @@ bool MusicManager::rLoadMusicNames(const path &p)
 						MusicInfo *mi = new MusicInfo;
 						mi->songPath = p;
 						mi->music = NULL;
-
-						if (fString == "w01_Cavern")
-						{
-							int x = 5;
-						}
 						
 						songMap[fString] = mi;
 					}
@@ -613,6 +608,7 @@ bool MusicManager::LoadMusicNames()
 	{
 		rLoadMusicNames((*it));
 	}
+
 	return true;
 }
 

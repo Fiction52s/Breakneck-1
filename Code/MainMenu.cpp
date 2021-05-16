@@ -352,8 +352,17 @@ MainMenu::MainMenu()
 	}
 
 	introMovie = new IntroMovie(this);
+
+	if (musicManager->songMap.empty())
+	{
+		cout << "music manager is empty. no songs loaded" << endl;
+		assert(0);
+		
+	}
+
 	MusicInfo *filmMusicInfo = musicManager->songMap["w0_0_Film"];
 	filmMusicInfo->Load();
+	
 	
   	int wholeX = 1920;
 	int wholeY = 1080;
@@ -398,6 +407,8 @@ MainMenu::MainMenu()
 	int waitModeThresh[] = { 2, 2 };
 	saSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, M_Count, 0);
 
+
+	
 	Vector2f textBase(100, 300);
 	int textOptionSpacing = 6;
 	int charHeight = 40;

@@ -180,6 +180,7 @@ void Badger::ActionEnded()
 		case RUN:
 			action = nextAction;
 			UpdateNextAction();
+			cout << "run transition to: " << action << endl;
 			frame = 0;
 			break;
 		case LEDGEJUMP:
@@ -219,8 +220,14 @@ void Badger::ActionEnded()
 
 void Badger::Jump( double strengthx, double strengthy )
 {
+	//cout << "jump " << action << endl;
 	//cout << "jump: " << strengthx << ", " << strengthy << endl;
-	assert(groundMover->ground != NULL );
+	if (groundMover->ground == NULL)
+	{
+		int xxx = 5;
+		assert(groundMover->ground != NULL);
+	}
+	
 
 	landedAction = action;
 
@@ -330,7 +337,7 @@ void Badger::ProcessState()
 	case LEDGEJUMP:
 		break;
 	case SHORTJUMP:
-		if( frame == 0 )
+		if( frame == 0 && slowCounter == 1)
 		{
 			if( facingRight )
 				Jump( 10, 10 );
@@ -343,7 +350,7 @@ void Badger::ProcessState()
 		}
 		break;
 	case TALLJUMP:
-		if( frame == 0 )
+		if( frame == 0 && slowCounter == 1)
 		{
 			if( facingRight )
 				Jump( 10, 20 );
@@ -589,6 +596,8 @@ void Badger::ReachCliff()
 	frame = 0;
 
 	Jump( v.x, v.y );
+
+	//cout << "ledgejump" << endl;
 }
 
 void Badger::HitOtherAerial( Edge *e )

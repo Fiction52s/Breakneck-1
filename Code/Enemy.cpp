@@ -1372,14 +1372,18 @@ void Enemy::UpdatePostPhysics()
 
 	if (pauseFrames > 0)
 	{
-		if (UpdateAccountingForSlow())
-		{
-			
-		}
 		--pauseFrames;
+		if (pauseFrames > 0)
+		{
+			if (UpdateAccountingForSlow())
+			{
+
+			}
+			return;
+		}
 
 		//cout << "update enemy pause frames: " << pauseFrames << endl;
-		return;
+		//return;
 	}
 
 	SlowCheck(0); //moved here from physics for speed?
