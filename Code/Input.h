@@ -26,6 +26,8 @@ struct ControllerState
 	ControllerState();
 	void Set( const ControllerState &state );
 	void SetLeftDirection();
+	bool IsLeftNeutral();
+	bool IsRightNeutral();
 	sf::Vector2<double> GetLeft8Dir();
 	int GetCompressedState();
 	void SetFromCompressedState(int s);
@@ -41,6 +43,7 @@ struct ControllerState
 	BYTE triggerThresh;
 	void Clear();
 	void AddState(ControllerState &state);
+	
 	//bool leftTriggerPress;
 	//bool rightTriggerPress;
 	bool start;

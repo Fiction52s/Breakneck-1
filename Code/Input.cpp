@@ -167,6 +167,17 @@ void ControllerState::SetFromCompressedState(int s)
 	leftStickDirection = leftDir;
 }
 
+
+bool ControllerState::IsLeftNeutral()
+{
+	return leftStickPad == 0;
+}
+
+bool ControllerState::IsRightNeutral()
+{
+	return rightStickPad == 0;
+}
+
 void ControllerState::SetLeftDirection()
 {
 	int aimingPrimaryAngleRange = 2;

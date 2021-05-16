@@ -633,18 +633,133 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 			break;
 		}
 
-		if ((currInput.LDown() || currInput.PDown()) && !moveDown)
+		int numCompletedWorlds;
+		if (allUnlocked)
 		{
-			int numCompletedWorlds;
-			if (allUnlocked)
+			numCompletedWorlds = planet->numWorlds;
+		}
+		else
+		{
+			SaveFile *saveFile = mainMenu->GetCurrentProgress();
+			numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
+		}
+
+		/*int tempSelected = -1;
+		if (currInput.LUp())
+		{
+			if (currInput.LLeft())
 			{
-				numCompletedWorlds = planet->numWorlds;
+				tempSelected = 4;
+			}
+			else if (currInput.LRight())
+			{
+				tempSelected = 0;
 			}
 			else
 			{
-				SaveFile *saveFile = mainMenu->GetCurrentProgress();
-				numCompletedWorlds = saveFile->GetNumCompleteWorlds(planet);
+				tempSelected = 5;
 			}
+		}
+		else if (currInput.LDown())
+		{
+			if (currInput.LLeft())
+			{
+				tempSelected = 3;
+			}
+			else if (currInput.LRight())
+			{
+				tempSelected = 1;
+			}
+			else
+			{
+				tempSelected = 2;
+			}
+		}*/
+
+		bool left = currInput.LLeft() && prevInput.IsLeftNeutral();//!prevInput.LLeft();
+		bool up = currInput.LUp() && prevInput.IsLeftNeutral();//!prevInput.LUp();
+		bool down = currInput.LDown() && prevInput.IsLeftNeutral();//!prevInput.LDown();
+		bool right = currInput.LRight() && prevInput.IsLeftNeutral();//!prevInput.LRight();
+
+
+		int tempSelected = -1;
+		if (selectedColony == 0)
+		{
+			if (left || up )
+			{
+				tempSelected = 5;
+			}
+			else if (down)
+			{
+				tempSelected = 1;
+			}
+		}
+		else if (selectedColony == 1)
+		{
+			if (up)
+			{
+				tempSelected = 0;
+			}
+			else if (left || down )
+			{
+				tempSelected = 2;
+			}
+		}
+		else if (selectedColony == 2)
+		{
+			if (left)
+			{
+				tempSelected = 3;
+			}
+			else if (right)
+			{
+				tempSelected = 1;
+			}
+		}
+		else if (selectedColony == 3)
+		{
+			if (down || right )
+			{
+				tempSelected = 2;
+			}
+			else if (up)
+			{
+				tempSelected = 4;
+			}
+		}
+		else if (selectedColony == 4)
+		{
+			if (down)
+			{
+				tempSelected = 3;
+			}
+			else if (up || right )
+			{
+				tempSelected = 5;
+			}
+		}
+		else if (selectedColony == 5)
+		{
+			if (left)
+			{
+				tempSelected = 4;
+			}
+			else if (right)
+			{
+				tempSelected = 0;
+			}
+		}
+
+		if (tempSelected >= 0 && tempSelected <= numCompletedWorlds)
+		{
+			selectedColony = tempSelected;
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("world_change"));
+			UpdateWorldStats();
+		}
+
+		/*if ((currInput.LDown() || currInput.PDown()) && !moveDown)
+		{
+			
 
 
 			selectedColony++;
@@ -696,7 +811,7 @@ void WorldMap::Update( ControllerState &prevInput, ControllerState &currInput )
 		if (!(currInput.LUp() || currInput.PUp()))
 		{
 			moveUp = false;
-		}
+		}*/
 
 		UpdateColonySelect();
 	}
