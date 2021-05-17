@@ -116,7 +116,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	int firingTakingUp;
 	int numVisibleIndexes;
 	int newWirePoints;
-	int numTotalCharges;
 	int aimingPrimaryAngleRange;
 	int hitStallFrames;
 	int hitStallCounter;
@@ -128,8 +127,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	Edge *minSideEdge;
 	
 	Actor *player;
-	WireCharge *activeChargeList;
-	WireCharge *inactiveChargeList;
 	double retractSpeed;
 	double maxTotalLength;
 	double maxFireLength;
@@ -160,8 +157,6 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	Tileset *ts_wireTip;
 	Tileset *ts_wire;
 	Tileset *ts_miniHit;
-	Tileset *ts_wireCharge;
-	sf::VertexArray chargeVA;
 	HitboxInfo *tipHitboxInfo;
 	sf::Vertex *quads;
 	sf::Vertex *minimapQuads;
@@ -193,24 +188,9 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	sf::Vector2<double> GetPlayerPos();
 	double GetCurrentTotalLength();
 	void HitEnemy(V2d &pos);
-	//void DrawWireCharges( sf::RenderTarget *target );
-	void CreateWireCharge();
-	void DeactivateWireCharge( WireCharge *wc );
-	WireCharge * GetWireCharge();
-	void ActivateWireCharge( int index );
-	void ClearCharges();
-	void DestroyDeactivatedCharges();
-	void ActivateRetractionCharges();
-	void UpdateChargesPhysics();
-	void UpdateChargesSprites();
-	void UpdateChargesPrePhysics();
-	void UpdateChargesPostPhysics();
 	void CheckAntiWireGrass();
 	void TestPoint2( Edge *e );
 	double GetTestPointAngle( Edge *e );
-	int CountActiveCharges();
-	int CountInactiveCharges();
-	void ActivateCharges();
 	void Retract();
 	CollisionBox *GetTipHitbox();
 	void SortNewPoints();

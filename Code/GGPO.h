@@ -120,7 +120,6 @@ struct SaveWireInfo
 	int firingTakingUp;
 	int numVisibleIndexes;
 	int newWirePoints;
-	int numTotalCharges;
 	int aimingPrimaryAngleRange;
 	int hitStallCounter;
 	int antiWireGrassCount;

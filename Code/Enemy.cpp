@@ -1554,7 +1554,7 @@ void Enemy::ConfirmHitNoKill()
 		//pauseFrames = 0;
 		//actually gets out of lag a frame after the player
 		//if value is set to receivedHit->hitlagFrames;
-		pauseFrames = receivedHit->hitlagFrames - 1;//4;//receivedHit->hitlagFrames;
+		pauseFrames = receivedHit->hitlagFrames -1;//4;//receivedHit->hitlagFrames;
 	}
 
 	pauseFramesFromAttacking = false;

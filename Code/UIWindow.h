@@ -329,7 +329,7 @@ struct UIHorizSelector : UIControl
 
 				++flipCounterRight;
 
-				if (flipCounterRight == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+				if (flipCounterRight == waitModeThresh[currWaitLevel] && currWaitLevel < 3)
 				{
 					currWaitLevel++;
 				}
@@ -368,7 +368,7 @@ struct UIHorizSelector : UIControl
 
 				++flipCounterLeft;
 
-				if (flipCounterLeft == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+				if (flipCounterLeft == waitModeThresh[currWaitLevel] && currWaitLevel < 3)
 				{
 					currWaitLevel++;
 				}

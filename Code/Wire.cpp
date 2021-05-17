@@ -51,7 +51,6 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->firingTakingUp = firingTakingUp;
 	wi->numVisibleIndexes = numVisibleIndexes;
 	wi->newWirePoints = newWirePoints;
-	wi->numTotalCharges = numTotalCharges;
 	wi->aimingPrimaryAngleRange = aimingPrimaryAngleRange;
 	wi->hitStallCounter	= hitStallCounter;
 	wi->antiWireGrassCount = antiWireGrassCount;
@@ -60,10 +59,6 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 	wi->rcEdge = rayCastInfo.rcEdge;
 	wi->rcCancelDist = rcCancelDist;
 	wi->rcQuant = rayCastInfo.rcQuant;
-	/*wi->activeChargeList = activeChargeList;
-	wi->inactiveChargeList = inactiveChargeList;
-	wi->minSideEdge	= minSideEdge;
-	*/
 }
 
 void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
@@ -105,7 +100,6 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	firingTakingUp = wi->firingTakingUp;
 	numVisibleIndexes = wi->numVisibleIndexes;
 	newWirePoints = wi->newWirePoints;
-	numTotalCharges = wi->numTotalCharges;
 	aimingPrimaryAngleRange = wi->aimingPrimaryAngleRange;
 	hitStallCounter = wi->hitStallCounter;
 	antiWireGrassCount = wi->antiWireGrassCount;
@@ -116,10 +110,6 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 	rayCastInfo.rcEdge = wi->rcEdge;
 	rcCancelDist = wi->rcCancelDist;
 	rayCastInfo.rcQuant = wi->rcQuant;
-	/*activeChargeList = wi->activeChargeList;
-	inactiveChargeList = wi->inactiveChargeList;
-	minSideEdge = wi->minSideEdge;
-	rcEdge = wi->rcEdge;*/
 }
 
 //removed hitstallframes from the wire info
@@ -129,8 +119,7 @@ Wire::Wire( Actor *p, bool r)
 	, player( p ), hitStallFrames( 10/*10*/ ), hitStallCounter( 0 ), right( r )
 	, extraBuffer( MAX_POINTS ),//64  ), 
 	//eventually you can split this up into smaller sections so that they don't all need to draw
-  quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 ),
-  numTotalCharges( 0 ), chargeVA( sf::Quads, MAX_CHARGES * 4 )
+  quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 )
 {
 	numQuadVertices = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
 	quads = new Vertex[numQuadVertices];
@@ -163,9 +152,6 @@ Wire::Wire( Actor *p, bool r)
 	wireTip.setTexture( *ts_wireTip->texture );
 	wireTip.setTextureRect( ts_wireTip->GetSubRect( tipIndex ) );
 	wireTip.setOrigin( wireTip.getLocalBounds().width / 2, wireTip.getLocalBounds().height / 2 );
-
-
-	ts_wireCharge = player->sess->GetTileset( "Kin/Powers/wirecharge_32x32.png", 32, 32 );
 
 
 	tipHitboxInfo = new HitboxInfo();
@@ -208,18 +194,6 @@ Wire::Wire( Actor *p, bool r)
 	startDragStrength = 10;
 	dragStrength = startDragStrength;
 	dragAccel = (maxDragStrength - startDragStrength) / 180.0;
-	//numTotalCharges = 0;
-
-	activeChargeList = NULL;
-	inactiveChargeList = NULL;
-	//charges start at the earliest retraction points so they hit the most targets.
-	for( int i = 0; i < MAX_CHARGES; ++i )
-	{
-		CreateWireCharge();
-	}
-	
-	//offsetFlagged = false;
-	//lockEdge = NULL;
 }
 
 Wire::~Wire()
@@ -228,41 +202,6 @@ Wire::~Wire()
 	delete[] minimapQuads;
 
 	delete tipHitboxInfo;
-
-	ClearCharges();
-	DestroyDeactivatedCharges();
-}
-
-void Wire::ActivateCharges()
-{
-	for( int i = 0; i < numPoints; ++i )
-	{
-		ActivateWireCharge( i );
-	}
-}
-
-int Wire::CountActiveCharges()
-{
-	int counter = 0;
-	WireCharge *curr = activeChargeList;
-	while( curr != NULL )
-	{
-		++counter;
-		curr = curr->next;
-	}
-	return counter;
-}
-
-int Wire::CountInactiveCharges()
-{
-	int counter = 0;
-	WireCharge *curr = inactiveChargeList;
-	while( curr != NULL )
-	{
-		++counter;
-		curr = curr->next;
-	}
-	return counter;
 }
 
 V2d Wire::GetPlayerPos()
@@ -437,7 +376,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if( !triggerDown && player->ground == NULL )
 				{
 					state = RETRACTING;
-					//ActivateCharges();
 					retractPlayerPos = playerPos;
 					fusePointIndex = numPoints;
 					if( numPoints == 0 )
@@ -767,22 +705,6 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 	}
 
 	
-}
-
-void Wire::ClearCharges()
-{
-	//cout << "about to clear active: " << CountActiveCharges() << ", inact: " << CountInactiveCharges() << endl;
-	//cout << "clearing charges" << endl;
-	WireCharge *curr = activeChargeList;
-	WireCharge *temp;
-	while( curr != NULL )
-	{
-		temp = curr->next;
-		curr->ClearSprite();
-		DeactivateWireCharge( curr );
-		curr = temp;
-	}
-	activeChargeList = NULL;
 }
 
 bool Wire::TryFire()
@@ -1977,13 +1899,6 @@ void Wire::UpdateQuads()
 		if( state == FIRING )
 			++framesFiring;
 	}
-
-	//does this get called more times per frame than it should be?
-	if( state == RETRACTING )
-	{
-		//cout << "calling to update all sprites" << endl;
-		UpdateChargesSprites();
-	}
 }
 
 double Wire::GetSegmentLength()
@@ -2009,8 +1924,6 @@ void Wire::Retract()
 	state = RETRACTING;
 
 	retractPlayerPos = storedPlayerPos;
-
-	ActivateCharges();
 	//cout << "beginning retracting" << endl;
 					
 	fusePointIndex = numPoints;
@@ -2078,10 +1991,6 @@ if (state == HIT || state == PULLING)
 	}
 }
 
-if (state == RETRACTING)
-{
-	//target->draw(chargeVA, ts_wireCharge->texture);
-}
 }
 
 void Wire::DrawMinimap(sf::RenderTarget *target)
@@ -2104,26 +2013,6 @@ void Wire::DebugDraw(RenderTarget *target)
 	if (state == FIRING)
 	{
 		movingHitbox.DebugDraw(CollisionBox::Hit, target);
-	}
-}
-
-void Wire::ActivateRetractionCharges()
-{
-	if (right)
-	{
-		int limit = min(numPoints, MAX_CHARGES);
-		for (int i = 0; i < limit; ++i)
-		{
-			ActivateWireCharge(i);
-		}
-	}
-	else
-	{
-		int limit = min(numPoints, MAX_CHARGES);
-		for (int i = 0; i < limit; ++i)
-		{
-			ActivateWireCharge((numPoints - 1) - i);
-		}
 	}
 }
 
@@ -2216,12 +2105,8 @@ void Wire::Reset()
 	framesFiring = 0;
 	antiWireGrassCount = 0;
 	frame = 0;
-	ClearCharges();
 	pullStrength = startPullStrength;
 	anchor.enemy = NULL;
-	//cout << "reset wire reset clear" << endl;
-	//offsetFlagged = false;
-	//clear charges gets called twice and thats not useful
 }
 
 V2d Wire::GetOriginPos( bool test )
@@ -2309,8 +2194,6 @@ void Wire::UpdateFuse()
 					fuseQuantity = 0;
 					state = RELEASED;
 					numPoints = 0;
-					ClearCharges();
-					
 					return;
 				}
 				else if( fusePointIndex == 0 )
@@ -2339,8 +2222,6 @@ void Wire::UpdateFuse()
 					fuseQuantity = 0;
 					state = RELEASED;
 					numPoints = 0;
-					ClearCharges();
-					//cout << "setting released A" << endl;
 					return;
 				}
 				else if( fusePointIndex == 0 )
@@ -2361,236 +2242,5 @@ void Wire::UpdateFuse()
 				}
 			}
 		}
-	}
-}
-
-void Wire::CreateWireCharge()
-{
-	WireCharge *charge = new WireCharge( this, numTotalCharges );
-	++numTotalCharges;
-	if( inactiveChargeList == NULL )
-	{
-		inactiveChargeList = charge;
-	}
-	else
-	{
-		charge->next = inactiveChargeList;
-		inactiveChargeList->prev = charge;
-		inactiveChargeList = charge;
-	}
-}
-
-void Wire::ActivateWireCharge( int index )
-{
-	WireCharge *charge = GetWireCharge();
-	if( charge != NULL )
-	{
-		if( right )
-		{
-			//cout << "activate!: " << index << endl;
-			charge->edgeIndex = index;
-			if( index > 0 )
-			{
-				charge->edgeQuantity = length(points[index].pos - points[index-1].pos);
-				//cout << "setting quant: " << charge->edgeQuantity << endl;
-			}
-			else
-			{
-				charge->edgeQuantity = length( points[0].pos - anchor.pos );
-				//cout << "setting quantb: " << charge->edgeQuantity << endl;
-			}
-		
-			//charge->edgeQuantity = 0;
-			charge->position = points[index].pos;
-			charge->action = WireCharge::Action::RETRACTING;
-
-			if( activeChargeList == NULL )
-			{
-				activeChargeList = charge;
-				charge->next = NULL;
-				charge->prev = NULL;
-			}
-			else
-			{
-				charge->next = activeChargeList;
-				activeChargeList->prev = charge;
-				activeChargeList = charge;
-			}
-		}
-		else
-		{
-			//cout << "LEFT active: " << CountActiveCharges() << ", inact: " << CountInactiveCharges() << endl;
-			//cout << "activate LEFT!: " << index << endl;
-			charge->edgeIndex = index;
-			if( index > 0 )
-			{
-				
-				charge->edgeQuantity = length(points[(numPoints-1)-index].pos - points[(numPoints-1) - (index-1)].pos);
-				//cout << "setting quant: " << charge->edgeQuantity << endl;
-			}
-			else
-			{
-				charge->edgeQuantity = length( points[numPoints-1].pos - retractPlayerPos );//..anchor.pos );
-				//cout << "setting quantb: " << charge->edgeQuantity << endl;
-			}
-		
-			//charge->edgeQuantity = 0;
-			charge->position = points[(numPoints-1)-index].pos;
-			charge->action = WireCharge::Action::RETRACTING;
-
-			if( activeChargeList == NULL )
-			{
-				activeChargeList = charge;
-				charge->next = NULL;
-				charge->prev = NULL;
-			}
-			else
-			{
-				charge->next = activeChargeList;
-				activeChargeList->prev = charge;
-				activeChargeList = charge;
-			}
-		}
-	}
-}
-
-void Wire::DeactivateWireCharge( WireCharge *charge )
-{
-	//cout << "removing charge from list!" << endl;
-	assert( activeChargeList != NULL );
-	//cout << "removing active: " << CountActiveCharges() << ", inact: " << CountInactiveCharges() << endl;
-	if( charge->prev == NULL && charge->next == NULL )
-	{
-		assert( activeChargeList == charge );
-		activeChargeList = NULL;
-		//charge->prev = NULL;
-		//charge->next = NULL;
-	}
-	else if( charge == activeChargeList )
-	{
-		WireCharge *n = activeChargeList->next;
-
-		activeChargeList->next->prev = NULL;
-		activeChargeList->next = NULL;
-
-		activeChargeList = n;
-	}
-	else
-	{
-		if( charge->prev != NULL )
-		{
-			charge->prev->next = charge->next;
-		}
-
-		if( charge->next != NULL )
-		{
-			charge->next->prev = charge->prev;
-		}
-
-		charge->prev = NULL;
-		charge->next = NULL;
-	}
-
-	if( inactiveChargeList == NULL )
-	{
-		inactiveChargeList = charge;
-	}
-	else
-	{
-		charge->next = inactiveChargeList;
-		inactiveChargeList->prev = charge;
-		inactiveChargeList = charge;
-	}
-	//cout << "AFTER removing active: " << CountActiveCharges() << ", inact: " << CountInactiveCharges() << endl;
-}
-
-void Wire::DestroyDeactivatedCharges()
-{
-	WireCharge *curr = inactiveChargeList;
-	WireCharge *n = NULL;
-	while (curr != NULL)
-	{
-		n = curr->next;
-		delete curr;
-		curr = n;
-	}
-}
-
-WireCharge *Wire::GetWireCharge()
-{
-	if( inactiveChargeList == NULL )
-		return NULL;
-	else
-	{
-		if( inactiveChargeList->next == NULL )
-		{
-			WireCharge * temp = inactiveChargeList;
-			inactiveChargeList = NULL;
-
-			return temp;
-		}
-		else
-		{
-			WireCharge *old = inactiveChargeList;
-			WireCharge *newList = old->next;
-
-			old->next = NULL;
-
-			newList->prev = NULL;
-
-			inactiveChargeList = newList;
-
-			return old;
-		}
-	}
-}
-
-void Wire::UpdateChargesPhysics()
-{
-	if( state != RETRACTING )
-		return;
-
-	WireCharge *curr = activeChargeList;
-	WireCharge *temp;
-	int numList = 0;
-	while( curr != NULL )
-	{
-		temp = curr->next;
-		//cout << "updating charge: " << numList << endl;
-		curr->UpdatePhysics();
-		curr = temp;
-		++numList;
-	}
-
-}
-
-void Wire::UpdateChargesPrePhysics()
-{
-	WireCharge *curr = activeChargeList;
-	while( curr != NULL )
-	{
-		curr->UpdatePrePhysics();
-		curr = curr->next;
-	}
-}
-
-void Wire::UpdateChargesPostPhysics()
-{
-	WireCharge *curr = activeChargeList;
-	while( curr != NULL )
-	{
-		curr->UpdatePrePhysics();
-		curr = curr->next;
-	}
-}
-
-void Wire::UpdateChargesSprites()
-{
-	WireCharge *curr = activeChargeList;
-	while( curr != NULL )
-	{
-		//cout << "update sprite---!!: " << endl;
-		curr->UpdateSprite();
-		curr = curr->next;
 	}
 }

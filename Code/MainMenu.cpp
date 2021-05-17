@@ -2315,6 +2315,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
+
 		optionsMenu->Update(menuCurrInput, menuPrevInput);
 		break;
 	}
