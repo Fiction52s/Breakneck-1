@@ -2530,9 +2530,9 @@ void MainMenu::TitleMenuModeUpdate()
 			}
 			else if (ev.key.code == Keyboard::M)
 			{
-				musicPlayer->StopCurrentMusic();
-				CustomMapsOption();
-				//WorldSelectMenu();
+				//turned off for the beta
+				//musicPlayer->StopCurrentMusic();
+				//CustomMapsOption();
 			}
 			else if (ev.key.code == Keyboard::P)
 			{
@@ -2655,11 +2655,12 @@ void MainMenu::TitleMenuModeUpdate()
 	}
 	else
 	{
-		if (IsKeyPressed(Keyboard::Tilde))
+		//turned off for beta
+		/*if (IsKeyPressed(Keyboard::Tilde))
 		{
 			quit = true;
 			return;
-		}
+		}*/
 
 		int oldIndex = saSelector->currIndex;
 		int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());

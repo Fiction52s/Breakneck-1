@@ -1285,6 +1285,8 @@ void Enemy::UpdatePrePhysics()
 		launchers[i]->UpdatePrePhysics();
 	}
 
+	receivedHit = NULL;
+
 	if (pauseFrames > 0)
 	{
 		return;
@@ -1294,8 +1296,6 @@ void Enemy::UpdatePrePhysics()
 		return;
 
 	CheckSpecters();
-
-	receivedHit = NULL;
 
 	ProcessState();
 	if (currShield != NULL)

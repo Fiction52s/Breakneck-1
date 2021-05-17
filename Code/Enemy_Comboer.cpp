@@ -158,6 +158,9 @@ void Comboer::ProcessHit()
 		comboObj->enemyHitboxInfo->hDir = receivedHit->hDir;
 
 		dir = normalize(receivedHit->hDir);
+
+		//receivedHit = NULL;
+
 		/*switch (receivedHit->hDir)
 		{
 		case HitboxInfo::LEFT:
