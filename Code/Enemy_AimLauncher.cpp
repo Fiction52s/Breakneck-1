@@ -327,3 +327,16 @@ void AimLauncher::EnemyDraw(sf::RenderTarget *target)
 		target->draw(boostSprite);
 	}
 }
+
+void AimLauncher::DrawMinimap(sf::RenderTarget *target)
+{
+	if (!dead)
+	{
+		CircleShape enemyCircle;
+		enemyCircle.setFillColor(Color::Blue);
+		enemyCircle.setRadius(50);
+		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
+		enemyCircle.setPosition(GetPositionF());
+		target->draw(enemyCircle);
+	}
+}

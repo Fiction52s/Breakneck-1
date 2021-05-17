@@ -450,7 +450,7 @@ PowerPopup::PowerPopup()
 	desc.setFillColor(Color::White);
 	desc.setFont(sess->mainMenu->arial);
 
-	descRel = Vector2f(200, 20);
+	descRel = Vector2f(10, 10);
 	effectRel = Vector2f(20, 20);
 	powerRel = Vector2f(100, 20);
 
@@ -493,22 +493,22 @@ void PowerPopup::SetPower(int index)
 	switch (index)
 	{
 	case 0:
-		desc.setString("You unlocked airdash! Hold dash in the air to dash in any of the 8 directions!");
+		desc.setString("You unlocked airdash!\nHold dash in the air to dash in any of the 8 directions!");
 		break;
 	case 1:
-		desc.setString("You unlocked gravity cling! Hold dash and up while touching a ceiling to reverse gravity and stick!");
+		desc.setString("You unlocked gravity cling!\nHold dash and up while touching a ceiling to reverse gravity and stick!");
 		break;
 	case 2:
-		desc.setString("You unlocked bounce scorpion! Use left c stick to change modes, and the shield button to toggle!");
+		desc.setString("You unlocked bounce scorpion!\nUse left c stick to change modes, and the shield button to toggle!");
 		break;
 	case 3:
-		desc.setString("You unlocked grind! Use right c stick to change modes, and the shield button to move on any surface!");
+		desc.setString("You unlocked grind!\nUse right c stick to change modes, and the shield button to move on any surface!");
 		break;
 	case 4:
-		desc.setString("You unlocked time slow bubbles! Use down c stick to change modes, and the shield button to slow down enemies and yourself!");
+		desc.setString("You unlocked time slow bubbles!\nUse down c stick to change modes, and the shield button to slow down enemies and yourself!");
 		break;
 	case 5:
-		desc.setString("You unlocked double wires! Use the triggers to swing and move around anywhere!");
+		desc.setString("You unlocked double wires!\nUse the triggers to swing and move around anywhere!");
 		break;
 	}
 

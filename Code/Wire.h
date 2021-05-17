@@ -31,34 +31,34 @@ struct WirePoint
 
 
 struct Wire;
-struct WireCharge
-{
-	enum Action
-	{
-		INACTIVE,
-		RETRACTING,
-		//EXPLODING
-	};
-
-	WireCharge *next;
-	WireCharge *prev;
-	Action action;
-	Wire *wire;
-	V2d position;
-	int edgeIndex;
-	double edgeQuantity;
-	CollisionBox hitbox;
-	int vaIndex;
-
-	WireCharge(Wire *w, int vIndex);
-	void Reset();
-	void UpdatePrePhysics();
-	void UpdatePhysics();
-	void UpdatePostPhysics();
-	void UpdateSprite();
-	void ClearSprite();
-	void HitEnemy();
-};
+//struct WireCharge
+//{
+//	enum Action
+//	{
+//		INACTIVE,
+//		RETRACTING,
+//		//EXPLODING
+//	};
+//
+//	WireCharge *next;
+//	WireCharge *prev;
+//	Action action;
+//	Wire *wire;
+//	V2d position;
+//	int edgeIndex;
+//	double edgeQuantity;
+//	CollisionBox hitbox;
+//	int vaIndex;
+//
+//	WireCharge(Wire *w, int vIndex);
+//	void Reset();
+//	void UpdatePrePhysics();
+//	void UpdatePhysics();
+//	void UpdatePostPhysics();
+//	void UpdateSprite();
+//	void ClearSprite();
+//	void HitEnemy();
+//};
 
 struct SaveWireInfo;
 struct Actor;

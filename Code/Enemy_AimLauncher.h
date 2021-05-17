@@ -48,6 +48,7 @@ struct AimLauncher : Enemy
 	AimLauncher(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget *target);
 	sf::SoundBuffer *launchSoundBuf;
 
 	void StartAiming();

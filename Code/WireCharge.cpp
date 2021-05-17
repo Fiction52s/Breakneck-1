@@ -49,7 +49,7 @@ void WireCharge::UpdatePhysics()
 					//cout << "DEACTIVA" << endl;
 					action = INACTIVE;
 					ClearSprite();
-					wire->DeactivateWireCharge(this);
+					
 
 					//assert( wire->activeChargeList == NULL );
 					return;

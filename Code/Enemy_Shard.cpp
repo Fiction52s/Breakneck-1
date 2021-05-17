@@ -490,7 +490,7 @@ ShardPopup::ShardPopup()
 	desc.setFillColor(Color::White);
 	desc.setFont(sess->mainMenu->arial);
 
-	descRel = Vector2f(200, 20);
+	descRel = Vector2f(10, 10);
 	effectRel = Vector2f(20, 20);
 	shardRel = Vector2f(100, 20);
 

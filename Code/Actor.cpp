@@ -10345,10 +10345,10 @@ void Actor::GroundExtraAccel()
 
 void Actor::UpdateWirePhysics()
 {
-	if (rightWire != NULL)
+	/*if (rightWire != NULL)
 		rightWire->UpdateChargesPhysics();
 	if (leftWire != NULL)
-		leftWire->UpdateChargesPhysics();
+		leftWire->UpdateChargesPhysics();*/
 
 	if (rightWire != NULL)
 	{
@@ -19281,7 +19281,7 @@ int Actor::GetDoubleJump()
 bool Actor::CanDoubleJump()
 {
 	return ( (hasDoubleJump || extraDoubleJump ) && 
-		(JumpButtonPressed() || pauseBufferedJump )  && !IsSingleWirePulling() );
+		(JumpButtonPressed() || pauseBufferedJump ) && !IsSingleWirePulling() );
 }
 
 bool Actor::IsDoubleWirePulling()
@@ -19357,8 +19357,11 @@ bool Actor::TryGlide()
 //you can pull with both or neither to return false. pulling with a single wire will return true;
 bool Actor::IsSingleWirePulling()
 {
-	return ( ( rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING )
-		&& !IsDoubleWirePulling() );
+	bool pulling = (rightWire->state == Wire::PULLING || leftWire->state == Wire::PULLING);
+	bool hitAndTryingToPull = (rightWire->state == Wire::HIT && currInput.RightTriggerPressed())
+		|| (leftWire->state == Wire::HIT && currInput.LeftTriggerPressed());
+	return ( pulling || hitAndTryingToPull ) 
+		&& !IsDoubleWirePulling();
 }
 
 bool Actor::CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos )

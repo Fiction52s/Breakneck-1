@@ -1169,7 +1169,7 @@ V2d Enemy::TurretSetup()
 
 bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 {
-	Actor *player = sess->GetPlayer(0);
+	/*Actor *player = sess->GetPlayer(0);
 	if( player->HasUpgrade(Actor::UPGRADE_POWER_RWIRE))
 	{
 		WireCharge *charge = player->rightWire->activeChargeList;
@@ -1184,14 +1184,14 @@ bool Enemy::RightWireHitMe( CollisionBox p_hurtBox )
 			}
 			charge = charge->next;
 		}
-	}
+	}*/
 
 	return false;
 }
 
 bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 {
-	Actor *player = sess->GetPlayer(0);
+	/*Actor *player = sess->GetPlayer(0);
 	if(player->HasUpgrade(Actor::UPGRADE_POWER_LWIRE))
 	{
 		WireCharge *charge = player->leftWire->activeChargeList;
@@ -1206,7 +1206,7 @@ bool Enemy::LeftWireHitMe( CollisionBox p_hurtBox )
 			}
 			charge = charge->next;
 		}
-	}
+	}*/
 
 	return false;
 }

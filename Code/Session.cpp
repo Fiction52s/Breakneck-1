@@ -4687,9 +4687,17 @@ void Session::AdjustBoundsFromTerrain()
 		{
 			mapHeader->leftBounds = minX;
 		}
-		if (maxX <= oldRight)
+		else if (minX == oldLeft && inversePolygon != NULL )
+		{
+			mapHeader->leftBounds = minX - extraBorder;
+		}
+		if (maxX < oldRight)
 		{
 			mapHeader->boundsWidth = maxX - mapHeader->leftBounds;
+		}
+		else if (maxX == oldRight && inversePolygon != NULL)
+		{
+			mapHeader->boundsWidth = ( maxX + extraBorder ) - mapHeader->leftBounds;
 		}
 	}
 }

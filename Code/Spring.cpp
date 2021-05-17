@@ -321,3 +321,16 @@ void Spring::EnemyDraw(sf::RenderTarget *target)
 		target->draw(boostSprite);
 	}
 }
+
+void Spring::DrawMinimap(sf::RenderTarget *target)
+{
+	if (!dead)
+	{
+		CircleShape enemyCircle;
+		enemyCircle.setFillColor(COLOR_BLUE);
+		enemyCircle.setRadius(50);
+		enemyCircle.setOrigin(enemyCircle.getLocalBounds().width / 2, enemyCircle.getLocalBounds().height / 2);
+		enemyCircle.setPosition(GetPositionF());
+		target->draw(enemyCircle);
+	}
+}

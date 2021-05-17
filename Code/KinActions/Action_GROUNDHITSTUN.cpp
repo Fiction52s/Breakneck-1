@@ -52,6 +52,19 @@ void Actor::GROUNDHITSTUN_UpdateSprite()
 
 
 	SetGroundedSpriteTransform();
+
+	if (scorpOn)
+	{
+		scorpSprite.setTexture(*ts_scorpStand->texture);
+
+		SetSpriteTile(&scorpSprite, ts_scorpStand, 0, r);
+
+		scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2,
+			scorpSprite.getLocalBounds().height / 2 + 10);
+		scorpSprite.setPosition(position.x, position.y);
+		scorpSprite.setRotation(sprite->getRotation());
+		scorpSet = true;
+	}
 }
 
 void Actor::GROUNDHITSTUN_TransitionToAction(int a)

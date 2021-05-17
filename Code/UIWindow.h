@@ -231,7 +231,7 @@ struct UIHorizSelector : UIControl
 		waitFrames[2] = 4;
 
 		waitModeThresh[0] = 2;
-		waitModeThresh[1] = 2;
+		waitModeThresh[1] = 4;
 
 		currWaitLevel = 0;
 		flipCounterLeft = 0;
@@ -318,14 +318,16 @@ struct UIHorizSelector : UIControl
 
 		if (right)
 		{
+			if (flipCounterRight == 0)
+			{
+				currWaitLevel = 0;
+			}
+
 			if (flipCounterRight == 0
 				|| (flipCounterRight > 0 && framesWaiting == waitFrames[currWaitLevel])
 				)
 			{
-				if (flipCounterRight == 0)
-				{
-					currWaitLevel = 0;
-				}
+				
 
 				++flipCounterRight;
 
@@ -357,14 +359,16 @@ struct UIHorizSelector : UIControl
 		}
 		else if (left)
 		{
+			if (flipCounterLeft == 0)
+			{
+				currWaitLevel = 0;
+			}
+
 			if (flipCounterLeft == 0
 				|| (flipCounterLeft > 0 && framesWaiting == waitFrames[currWaitLevel])
 				)
 			{
-				if (flipCounterLeft == 0)
-				{
-					currWaitLevel = 0;
-				}
+				
 
 				++flipCounterLeft;
 

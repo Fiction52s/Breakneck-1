@@ -116,8 +116,8 @@ void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 
 Wire::Wire( Actor *p, bool r)
 	:state( IDLE ), numPoints( 0 ), framesFiring( 0 ), fireRate( 200/*120*/ ), maxTotalLength( 10000 ), maxFireLength( 5000 ), minSegmentLength( 128 )//50 )
-	, player( p ), hitStallFrames( 10/*10*/ ), hitStallCounter( 0 ), right( r )
-	, extraBuffer( MAX_POINTS ),//64  ), 
+	, player( p ), hitStallFrames( 8/*10*/ ), hitStallCounter( 0 ), right( r )
+	, extraBuffer( MAX_POINTS ),//64  ),
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 )
 {
@@ -884,9 +884,6 @@ void Wire::UpdateAnchors( V2d vel )
 
 	if ((state == HIT || state == PULLING) && anchor.enemy == NULL)
 	{
-		//UpdateEnemyAnchor();
-
-
 		if (oldPos.x == storedPlayerPos.x && oldPos.y == storedPlayerPos.y)
 		{
 			//return;
@@ -1568,10 +1565,8 @@ void Wire::UpdateQuads()
 		{	
 			if( pointI == cap )
 			{
-				//cout << "cap" << endl;
 				if( numPoints == 0 )
 				{
-
 					currWirePos = anchor.pos;
 					if( state == RETRACTING )
 					{
@@ -1600,7 +1595,6 @@ void Wire::UpdateQuads()
 				else
 				{
 					currWirePos = anchor.pos;
-					//currWireStart = points[0].pos;
 					if( state == RETRACTING && ( (right && fusePointIndex == 0) || ( !right ) ) )
 					{
 						if( right )
@@ -1617,20 +1611,16 @@ void Wire::UpdateQuads()
 							V2d end;
 							if( cap == 0 )
 							{
-								//cout << "cap zero" << endl;
 								start = points[0].pos;
 								end = anchor.pos;
 							}
 							else if( cap == numPoints )
 							{
-								//cout << "cap max" << endl;
 								start = retractPlayerPos;
 								end = points[cap-1].pos;
-								//currWirePos = points[
 							}
 							else
 							{
-								//cout << "cap mid" << endl;
 								start = points[cap].pos;;
 								end = points[cap-1].pos;
 							}
@@ -1640,34 +1630,8 @@ void Wire::UpdateQuads()
 							currWireStart = start;
 
 							currWirePos = start + dir * fuseQuantity;
-							//currWirePos = end;
-							//currWirePos = end;
-							
-							//currWireStart = retractPlayerPos;
-							//V2d start = retractPlayerPos;
-							//V2d end = points[numPoints-1].pos;
-							//currWireStart = retractPlayerPos;
-							//V2d start = retractPlayerPos;//anchor.pos;
-							//V2d end = points[numPoints-1].pos;//points[pointI].pos;
-
-							//V2d dir = normalize( end - start );
-							//cout << "final: " << fuseQuantity;
-							////currWireStart = start + dir * fuseQuantity; 
-							//if( cap == numPoints )
-							//{
-							//	currWirePos = start + dir * fuseQuantity; 
-							//}
-							//else
-							//{
-							//	currWirePos = end;
-							//}
-							
 						}
 					}
-					/*else if( state == RETRACTING && !right  )
-					{
-
-					}*/
 					else
 					{
 						currWireStart = points[0].pos;//playerPos + V2d( player->GetWireOffset().x, player->GetWireOffset().y );
@@ -1676,10 +1640,8 @@ void Wire::UpdateQuads()
 			}
 			else
 			{
-				//cout << "not cap" << endl;
 				if( pointI == currNumPoints )
-				{
-					
+				{		
 					currWirePos = points[pointI-1].pos;
 					
 					if( state == RETRACTING )
@@ -1709,33 +1671,6 @@ void Wire::UpdateQuads()
 							V2d dir = normalize( end - start );
 							currWirePos = end;
 							currWireStart = start;
-							//currWirePos = points[0].pos;
-							////currWireStart = retractPlayerPos;
-							//V2d start = currWirePos;//points[pointI-1].pos;
-							//V2d end = anchor.pos;
-							//
-							//V2d dir = normalize( end - start );
-							////if( cap == 0 )
-							//{
-							//	currWireStart = start + dir * fuseQuantity;
-							//}
-							////else
-							//{
-							//	//currWireStart = end;
-							//}
-
-
-
-							//if( cap == currNumPoints )
-							//{
-								
-							//}
-							//else
-							//{
-							//	currWireStart = end;
-							//}
-							
-							//cout << "STARTING REVERSE: " << fuseQuantity << endl;
 						}
 					}
 					else
@@ -1745,28 +1680,8 @@ void Wire::UpdateQuads()
 				}
 				else
 				{
-					/*if( state == RETRACTING && !right )
-					{
-						currWireStart = points[pointI-1].pos;
-						currWirePos = points[pointI].pos;
-					}
-					else
-					{*/
-					if( false )//if( state == RETRACTING && !right )
-					{
-						cout << "pos ind: " << (numPoints-1)-(pointI-1) << endl;
-						cout << "start ind: " << (numPoints-1)-(pointI) << endl;
-						currWirePos = points[(numPoints-1)-(pointI-1)].pos;
-						currWireStart = points[(numPoints-1) -(pointI)].pos;
-					}
-					else
-					{
-						currWirePos = points[pointI-1].pos;
-						currWireStart = points[pointI].pos;
-					}
-						
-					//}
-					
+					currWirePos = points[pointI - 1].pos;
+					currWireStart = points[pointI].pos;
 				}
 			}
 			alongDir = normalize( currWirePos - currWireStart );
@@ -1794,8 +1709,6 @@ void Wire::UpdateQuads()
 			otherDir.y = -temp;
 			currWirePos = playerPos + hitEnemyDelta;//playerPos + fireDir * fireRate * (double)(framesFiring + 1);
 			currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
-
-			
 		}
 		
 		wireTip.setPosition(Vector2f(currWirePos));
@@ -1816,7 +1729,6 @@ void Wire::UpdateQuads()
 		V2d endPartial;
 		
 
-		//cout << "startIndex: " << startIndex << ", firingTakingUp: " << firingTakingUp << endl;
 		for( int j = 0; j < firingTakingUp; ++j )
 		{
 			startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
@@ -1836,58 +1748,69 @@ void Wire::UpdateQuads()
 			V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
 			V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
 			int index = (j + startIndex );
-			quads[index*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
-			quads[index*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
-			quads[index*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
-			quads[index*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
 
-			double miniExtraWidth = 20;
-			startPartialBack -= otherDir * miniExtraWidth;
-			startPartialFront += otherDir * miniExtraWidth;
-			endPartialBack -= otherDir * miniExtraWidth;
-			endPartialFront += otherDir * miniExtraWidth;
-			minimapQuads[index*4].position = Vector2f( startPartialBack.x, startPartialBack.y );
-			minimapQuads[index*4+1].position = Vector2f( startPartialFront.x, startPartialFront.y );
-			minimapQuads[index*4+2].position = Vector2f( endPartialFront.x, endPartialFront.y );
-			minimapQuads[index*4+3].position = Vector2f( endPartialBack.x, endPartialBack.y );
-
-			Color miniColor;
-			if( right )
+			//this is to prevent going over on the quads.
+			//might be able to just do this with a pixel shader
+			//and keep the number of quads very low. 
+			//so im putting this here to fix things
+			//until I put in a real fix soon.
+			if (index * 4 + 3 < numQuadVertices)
 			{
-				miniColor = Color::Red;
-				
-			}
-			else
-			{
-				miniColor = Color( 0, 100, 255 );
-			}
 
-			minimapQuads[index*4].color = miniColor;
-			minimapQuads[index*4+1].color = miniColor;
-			minimapQuads[index*4+2].color = miniColor;
-			minimapQuads[index*4+3].color = miniColor;
 
-			int trueFrame = frame / animFactor;
+				quads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
+				quads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
+				quads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
+				quads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
 
-		
+				double miniExtraWidth = 20;
+				startPartialBack -= otherDir * miniExtraWidth;
+				startPartialFront += otherDir * miniExtraWidth;
+				endPartialBack -= otherDir * miniExtraWidth;
+				endPartialFront += otherDir * miniExtraWidth;
+				minimapQuads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
+				minimapQuads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
+				minimapQuads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
+				minimapQuads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
 
-			int fr  = frame/animFactor;
-			int ifr = (numAnimFrames-1) - fr;
-			int f = ifr;
-			if( right )
-			{
-				f = fr;
+				Color miniColor;
+				if (right)
+				{
+					miniColor = Color::Red;
+
+				}
+				else
+				{
+					miniColor = Color(0, 100, 255);
+				}
+
+				minimapQuads[index * 4].color = miniColor;
+				minimapQuads[index * 4 + 1].color = miniColor;
+				minimapQuads[index * 4 + 2].color = miniColor;
+				minimapQuads[index * 4 + 3].color = miniColor;
+
+				int trueFrame = frame / animFactor;
+
+
+
+				int fr = frame / animFactor;
+				int ifr = (numAnimFrames - 1) - fr;
+				int f = ifr;
+				if (right)
+				{
+					f = fr;
+				}
+				else
+				{
+					f += numAnimFrames;
+				}
+				IntRect subRect = ts_wire->GetSubRect(f);
+
+				quads[index * 4].texCoords = Vector2f(subRect.left, subRect.top);//realTopLeft;
+				quads[index * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
+				quads[index * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
+				quads[index * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
 			}
-			else
-			{
-				f += numAnimFrames;
-			}
-			IntRect subRect = ts_wire->GetSubRect( f );
-		
-			quads[index*4].texCoords = Vector2f( subRect.left, subRect.top );//realTopLeft;
-			quads[index*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-			quads[index*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-			quads[index*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 		}
 
 		startIndex += firingTakingUp;
@@ -1895,6 +1818,13 @@ void Wire::UpdateQuads()
 		}
 
 		numVisibleIndexes = startIndex - 1;
+
+		if (numVisibleIndexes * 4 > numQuadVertices)
+		{
+			//this is also the stop-glitch method
+			//which I'll need to go over later
+			numVisibleIndexes = numQuadVertices / 4;
+		}
 
 		if( state == FIRING )
 			++framesFiring;
@@ -2178,6 +2108,7 @@ void Wire::UpdateFuse()
 	double momentum = retractSpeed;
 	while( !approxEquals( momentum, 0 ) )
 	{
+		//if( true )
 		if( right )
 		{
 			if( fuseQuantity > momentum )
