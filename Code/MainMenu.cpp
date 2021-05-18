@@ -2528,11 +2528,11 @@ void MainMenu::TitleMenuModeUpdate()
 			{
 				//quit = true;
 			}
-			else if (ev.key.code == Keyboard::M)
+			else if (ev.key.code == Keyboard::M && ev.key.alt)
 			{
 				//turned off for the beta
-				//musicPlayer->StopCurrentMusic();
-				//CustomMapsOption();
+				musicPlayer->StopCurrentMusic();
+				CustomMapsOption();
 			}
 			else if (ev.key.code == Keyboard::P)
 			{
@@ -2656,11 +2656,11 @@ void MainMenu::TitleMenuModeUpdate()
 	else
 	{
 		//turned off for beta
-		/*if (IsKeyPressed(Keyboard::Tilde))
+		if (IsKeyPressed(Keyboard::Tilde))
 		{
 			quit = true;
 			return;
-		}*/
+		}
 
 		int oldIndex = saSelector->currIndex;
 		int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());

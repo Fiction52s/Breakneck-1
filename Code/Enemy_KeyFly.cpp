@@ -65,6 +65,7 @@ void KeyFly::ResetEnemy()
 
 void KeyFly::ProcessState()
 {
+	//cout << "process state" << endl;
 	V2d playerPos = sess->GetPlayerPos(0);
 
 	if (frame == actionLength[action] * animFactor[action])
@@ -75,6 +76,7 @@ void KeyFly::ProcessState()
 
 void KeyFly::UpdateSprite()
 {
+	//cout << "update sprite " << frame << endl;
 	sprite.setTextureRect(ts->GetSubRect(frame / animFactor[S_NEUTRAL]));
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

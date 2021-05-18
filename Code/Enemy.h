@@ -104,6 +104,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	PositionInfo currPosInfo;
 	int action;
 	int pauseFrames;
+	bool pauseBeganThisFrame;
 	bool pauseFramesFromAttacking;
 	int frame;
 	bool dead;

@@ -2705,7 +2705,8 @@ bool Session::IsMousePressed(int m)
 bool Session::OneFrameModeUpdate()
 {
 	//turned off for the beta
-	bool skipInput = false;//IsKeyPressed(sf::Keyboard::PageUp);
+	
+	bool skipInput = IsSessTypeEdit() && IsKeyPressed(sf::Keyboard::PageUp);
 
 	if (skipInput && !oneFrameMode)
 	{

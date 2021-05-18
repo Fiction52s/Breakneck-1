@@ -1286,10 +1286,13 @@ void Enemy::UpdatePrePhysics()
 	}
 
 	receivedHit = NULL;
+	pauseBeganThisFrame = false;
 
 	if (pauseFrames > 0)
 	{
-		return;
+		--pauseFrames;
+		if( pauseFrames > 0 )
+			return;
 	}
 
 	if ( dead )
@@ -1370,21 +1373,25 @@ void Enemy::UpdatePostPhysics()
 		}
 	}
 
-	if (pauseFrames > 0)
+	if (pauseFrames > 0 && !pauseBeganThisFrame )
 	{
-		--pauseFrames;
-		if (pauseFrames > 0)
-		{
-			if (UpdateAccountingForSlow())
-			{
-
-			}
-			return;
-		}
-
-		//cout << "update enemy pause frames: " << pauseFrames << endl;
-		//return;
+		return;
 	}
+	//if (pauseFrames > 0)
+	//{
+	//	--pauseFrames;
+	//	if (pauseFrames > 0)
+	//	{
+	//		if (UpdateAccountingForSlow())
+	//		{
+
+	//		}
+	//		return;
+	//	}
+
+	//	//cout << "update enemy pause frames: " << pauseFrames << endl;
+	//	//return;
+	//}
 
 	SlowCheck(0); //moved here from physics for speed?
 	
@@ -1554,8 +1561,10 @@ void Enemy::ConfirmHitNoKill()
 		//pauseFrames = 0;
 		//actually gets out of lag a frame after the player
 		//if value is set to receivedHit->hitlagFrames;
-		pauseFrames = receivedHit->hitlagFrames -1;//4;//receivedHit->hitlagFrames;
+		pauseFrames = receivedHit->hitlagFrames;// -1;//4;//receivedHit->hitlagFrames;
 	}
+
+	pauseBeganThisFrame = true;
 
 	pauseFramesFromAttacking = false;
 	
@@ -1598,6 +1607,7 @@ void Enemy::ConfirmKill()
 	{
 		pauseFrames = 7;
 		comboHitEnemy->ComboKill(this);
+
 	}
 	else if (hType == HitboxInfo::WIREHITRED || hType == HitboxInfo::WIREHITBLUE)
 	{
@@ -1609,6 +1619,7 @@ void Enemy::ConfirmKill()
 		//sess->Pause(7);
 		//pauseFrames = 0;
 	}
+	pauseBeganThisFrame = true;
 
 	pauseFramesFromAttacking = false;
 
@@ -2019,6 +2030,7 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 				if (body->hitboxInfo != NULL)
 				{
 					pauseFrames = body->hitboxInfo->hitlagFrames;
+					pauseBeganThisFrame = true;
 					pauseFramesFromAttacking = true;
 				}
 				player->ApplyHit(body->hitboxInfo,

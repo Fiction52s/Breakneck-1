@@ -3683,7 +3683,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	steepSlideGravFactor = .25;//.25;//.4;
 	steepSlideFastGravFactor = .3;//.5;
 
-	wallJumpStrength.x = 10;
+	//ths is now just the dashspeed + 1.0
+	wallJumpStrength.x = 0;//10; 
+
 	wallJumpStrength.y = 20;
 	clingSpeed = 3;
 
@@ -14780,7 +14782,11 @@ void Actor::SlowDependentFrameIncrement()
 		ActionTimeDepFrameInc();
 
 		if (wallJumpFrameCounter < wallJumpMovementLimit)
+		{
+			
 			wallJumpFrameCounter++;
+		}
+			
 		//cout << "++frames in air: "<< framesInAir << " to " << (framesInAir+1) << endl;
 		framesInAir++;
 
@@ -19211,9 +19217,16 @@ void Actor::ExecuteDoubleJump()
 
 void Actor::ExecuteWallJump()
 {
+	//cout << "Executing walljump" << endl;
 	wallJumpFrameCounter = 0;
-	double strengthX = wallJumpStrength.x;
+	//double strengthX = wallJumpStrength.x;
+
+	double strengthX = GetDashSpeed() + 1.0;
 	double strengthY = wallJumpStrength.y;
+
+	/*dashSpeed0 = 9;
+	dashSpeed1 = 10.5;
+	dashSpeed2 = 14;*/
 
 	if (touchedGrass[Grass::JUMP])
 	{
