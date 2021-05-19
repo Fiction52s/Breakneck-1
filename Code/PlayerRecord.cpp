@@ -258,6 +258,34 @@ void RecordGhost::WriteToFile(const std::string &fileName)
 	}
 }
 
+ReplayHeader::ReplayHeader()
+	:ver1( 0 ), ver2( 0 ),
+	bUpgradeField(Session::PLAYER_OPTION_BIT_COUNT)
+{
+	SetVer(1, 0);
+}
+
+void ReplayHeader::Read(ifstream &is)
+{
+	is.read((char*)&ver1, sizeof(int) * 4); //read in the basic vars
+	is.read((char*)&ver2, sizeof(int) * 4);
+	bUpgradeField.LoadBinary(is);
+}
+
+void ReplayHeader::Write(ofstream &of)
+{
+	of.write((char*)&ver1, sizeof(int) * 4);
+	of.write((char*)&ver2, sizeof(int) * 4);
+	bUpgradeField.SaveBinary(of);
+}
+
+void ReplayHeader::SetVer(int v1, int v2)
+{
+	ver1 = v1;
+	ver2 = v2;
+}
+
+
 RecordPlayer::RecordPlayer(Actor *p_player)
 	:player(p_player)
 {
@@ -269,6 +297,7 @@ void RecordPlayer::StartRecording()
 {
 	frame = 0;
 	numTotalFrames = -1;
+	header.bUpgradeField.Set(player->bStartHasUpgradeField);
 }
 
 void RecordPlayer::StopRecording()
@@ -349,6 +378,8 @@ void RecordPlayer::WriteToFile(const std::string &fileName)
 	of.open(fileName, ios::binary | ios::out );
 	if (of.is_open())
 	{
+		header.Write(of);
+
 		of.write((char*)&numTotalFrames, sizeof(numTotalFrames));
 		of.write((char*)inputBuffer, numTotalFrames * sizeof(int));
 
@@ -381,6 +412,8 @@ bool ReplayPlayer::OpenReplay(const std::string &fileName)
 	if (is.is_open())
 	{
 		init = true;
+
+		header.Read(is);
 
 		is.read((char*)&numTotalFrames, sizeof(numTotalFrames));
 		cout << "reading num frames: " << numTotalFrames << endl;
@@ -1219,6 +1252,7 @@ void GhostHeader::Read(std::ifstream &is)
 	assert(playerInfo == NULL);
 
 	is.read((char*)&ver1, sizeof(int) * 4); //read in the basic vars
+	is.read((char*)&ver2, sizeof(int) * 4);
 
 	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
 	playerInfo = new PlayerInfo[numberOfPlayers];
@@ -1228,6 +1262,7 @@ void GhostHeader::Read(std::ifstream &is)
 void GhostHeader::Write(std::ofstream &of)
 {
 	of.write((char*)&ver1, sizeof(int) * 4);
+	of.write((char*)&ver2, sizeof(int) * 4);
 	for (int i = 0; i < numberOfPlayers; ++i)
 	{
 		playerInfo[i].Write(of);

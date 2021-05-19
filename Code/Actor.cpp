@@ -19217,16 +19217,10 @@ void Actor::ExecuteDoubleJump()
 
 void Actor::ExecuteWallJump()
 {
-	//cout << "Executing walljump" << endl;
 	wallJumpFrameCounter = 0;
-	//double strengthX = wallJumpStrength.x;
 
 	double strengthX = GetDashSpeed() + 1.0;
 	double strengthY = wallJumpStrength.y;
-
-	/*dashSpeed0 = 9;
-	dashSpeed1 = 10.5;
-	dashSpeed2 = 14;*/
 
 	if (touchedGrass[Grass::JUMP])
 	{

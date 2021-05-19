@@ -9,6 +9,7 @@
 #include "ItemSelector.h"
 #include "UIWindow.h"
 #include "PlayerSkinShader.h"
+#include "BitField.h"
 
 struct Actor;
 
@@ -76,6 +77,7 @@ struct RecordGhost
 	int frame;
 	void StartRecording();
 	void StopRecording();
+	
 	int numTotalFrames;
 	Actor *player;
 	void WriteToFile(const std::string &fileName);
@@ -112,11 +114,25 @@ struct ReplayGhost
 struct RecordGhost;
 struct ReplayGhost;
 
+struct ReplayHeader
+{
+	int ver1;
+	int ver2;
+	BitField bUpgradeField;
+
+	ReplayHeader();
+	void Read(std::ifstream &is);
+	void Write(std::ofstream &of);
+	void SetVer(int v1, int v2);
+};
+
 //record the player's inputs to create a full replay of a map
 struct RecordPlayer
 {
 	RecordPlayer(Actor *p);
 	int frame;
+	ReplayHeader header;
+	
 	void StartRecording();
 	void StopRecording();
 	int numTotalFrames;
@@ -131,6 +147,7 @@ struct RecordPlayer
 //replay the player's inputs to set up a replay playback
 struct ReplayPlayer
 {
+	ReplayHeader header;
 	bool init;
 	ReplayPlayer(Actor *p);
 	~ReplayPlayer();

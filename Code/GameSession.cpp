@@ -2135,8 +2135,7 @@ int GameSession::Run()
 		repGhost->OpenGhost("testghost.bghst");
 	}*/
 
-	if (recPlayer != NULL)
-		recPlayer->StartRecording();
+	
 
 	if (repPlayer != NULL)
 	{
@@ -2227,6 +2226,9 @@ int GameSession::Run()
 	//testing
 	/*cam.Set(Vector2f(GetPlayerPos()), 1.0, 0);
 	cam.EaseOutOfManual(60);*/
+
+	if (recPlayer != NULL)
+		recPlayer->StartRecording();
 
 	while( !quit )
 	{
@@ -2687,6 +2689,7 @@ window->draw(preTexSprite);
 				{
 					if (recPlayer != NULL)
 					{
+						ActivatePauseSound(GetSound("pause_off"));
 						recPlayer->numTotalFrames = recPlayer->frame;
 						recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
 					}

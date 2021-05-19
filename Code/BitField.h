@@ -9,6 +9,8 @@ struct BitField
 	BitField(int p_numOptions);
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
+	bool LoadBinary(std::ifstream &is);
+	void SaveBinary(std::ofstream &of);
 	~BitField();
 	void SetBit(int index, bool val);
 	bool GetBit(int index);

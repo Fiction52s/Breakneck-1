@@ -124,3 +124,24 @@ void BitField::Save(std::ofstream &of)
 		of << optionField[i] << "\n";
 	}
 }
+
+bool BitField::LoadBinary(std::ifstream &is)
+{
+	//is.read((char*)optionField, sizeof(sf::Uint32) * numFields);
+	for (int i = 0; i < numFields; ++i)
+	{
+		is.read((char*)&(optionField[i]), sizeof(optionField[i]));
+	}
+	
+
+	return true;
+}
+
+void BitField::SaveBinary(std::ofstream &of)
+{
+	//of.write((char*)optionField, sizeof(sf::Uint32) * numFields);
+	for (int i = 0; i < numFields; ++i)
+	{
+		of.write((char*)&(optionField[i]), sizeof(optionField[i]));
+	}
+}
