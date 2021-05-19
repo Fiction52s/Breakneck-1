@@ -19230,7 +19230,7 @@ void Actor::ExecuteWallJump()
 
 	if (touchedGrass[Grass::JUMP])
 	{
-		strengthY += 10;
+		strengthY += strengthX;//10;
 	}
 
 	if (facingRight)
