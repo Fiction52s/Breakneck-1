@@ -2137,10 +2137,7 @@ int GameSession::Run()
 
 	
 
-	if (repPlayer != NULL)
-	{
-		repPlayer->Reset();
-	}
+	
 		
 
 	testBuf.byteIndex = 0;
@@ -2218,6 +2215,12 @@ int GameSession::Run()
 			}
 		}
 	}
+
+	if (repPlayer != NULL)
+	{
+		repPlayer->Reset();
+		GetPlayer(0)->SetAllUpgrades(repPlayer->header.bUpgradeField);
+	}
 	
 	gameMode->StartGame();
 	currSuperPlayer = NULL;
@@ -2249,7 +2252,6 @@ int GameSession::Run()
 			cout << "new time: " << newTime << "\n";
 			cout << "big frametime: " << frameTime << "\n";*/
 			frameTime = 0.25;	
-			
 		}
 		//frameTime = 0.167;//0.25;	
         currentTime = newTime;
@@ -3570,11 +3572,6 @@ void GameSession::RestartGame()
 
 void GameSession::RestartLevel()
 {
-	if (repPlayer != NULL)
-	{
-		repPlayer->Reset();
-	}
-
 	gameState = GameSession::RUN;
 	gameClock.restart();
 	currentTime = 0;
@@ -3711,6 +3708,12 @@ void GameSession::RestartLevel()
 				player->Respawn();
 		}
 
+	}
+
+	if (repPlayer != NULL)
+	{
+		repPlayer->Reset();
+		GetPlayer(0)->SetAllUpgrades(repPlayer->header.bUpgradeField);
 	}
 
 	scoreDisplay->Reset();

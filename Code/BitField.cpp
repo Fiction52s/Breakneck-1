@@ -132,8 +132,6 @@ bool BitField::LoadBinary(std::ifstream &is)
 	{
 		is.read((char*)&(optionField[i]), sizeof(optionField[i]));
 	}
-	
-
 	return true;
 }
 

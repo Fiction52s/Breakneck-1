@@ -679,10 +679,7 @@ void EditSession::TestPlayerMode()
 		debugReplayPlayerOn = false;
 	}
 
-	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
-	{
-		debugReplayPlayer->Reset();
-	}
+	
 
 	gameState = Session::RUN;
 	cam.Reset();
@@ -707,6 +704,13 @@ void EditSession::TestPlayerMode()
 			SetPlayerOptionField(i);
 		}
 	}
+
+	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
+	{
+		debugReplayPlayer->Reset();
+		GetPlayer(0)->SetAllUpgrades(debugReplayPlayer->header.bUpgradeField);
+	}
+
 	skipped = false;
 	oneFrameMode = false;
 

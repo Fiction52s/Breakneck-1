@@ -267,15 +267,15 @@ ReplayHeader::ReplayHeader()
 
 void ReplayHeader::Read(ifstream &is)
 {
-	is.read((char*)&ver1, sizeof(int) * 4); //read in the basic vars
-	is.read((char*)&ver2, sizeof(int) * 4);
+	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
+	is.read((char*)&ver2, sizeof(ver2));
 	bUpgradeField.LoadBinary(is);
 }
 
 void ReplayHeader::Write(ofstream &of)
 {
-	of.write((char*)&ver1, sizeof(int) * 4);
-	of.write((char*)&ver2, sizeof(int) * 4);
+	of.write((char*)&ver1, sizeof(ver1));
+	of.write((char*)&ver2, sizeof(ver2));
 	bUpgradeField.SaveBinary(of);
 }
 
