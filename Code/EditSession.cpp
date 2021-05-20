@@ -708,7 +708,6 @@ void EditSession::TestPlayerMode()
 	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
 	{
 		debugReplayPlayer->Reset();
-		GetPlayer(0)->SetAllUpgrades(debugReplayPlayer->header.bUpgradeField);
 	}
 
 	skipped = false;

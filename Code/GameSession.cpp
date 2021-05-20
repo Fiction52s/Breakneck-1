@@ -2219,7 +2219,6 @@ int GameSession::Run()
 	if (repPlayer != NULL)
 	{
 		repPlayer->Reset();
-		GetPlayer(0)->SetAllUpgrades(repPlayer->header.bUpgradeField);
 	}
 	
 	gameMode->StartGame();
@@ -3707,13 +3706,11 @@ void GameSession::RestartLevel()
 			if (player != NULL)
 				player->Respawn();
 		}
-
 	}
 
 	if (repPlayer != NULL)
 	{
 		repPlayer->Reset();
-		GetPlayer(0)->SetAllUpgrades(repPlayer->header.bUpgradeField);
 	}
 
 	scoreDisplay->Reset();

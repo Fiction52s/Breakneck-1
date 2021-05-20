@@ -37,23 +37,14 @@ struct GhostHeader
 		G_SINGLE_RESTART_OR_QUIT,
 		G_MULTI
 	};
-	~GhostHeader()
-	{
-		if (playerInfo != NULL)
-		{
-			delete[] playerInfo;
-		}
-	}
+	
 
-	GhostHeader()
-		:ver1(-1),
-		ver2(-1), playerInfo(NULL)
-	{
-
-	}
+	GhostHeader();
+	~GhostHeader();
 
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);
+	void SetVer(int v1, int v2);
 
 	struct PlayerInfo
 	{
@@ -80,6 +71,7 @@ struct RecordGhost
 	
 	int numTotalFrames;
 	Actor *player;
+	
 	void WriteToFile(const std::string &fileName);
 	void RecordFrame();
 	const static int MAX_RECORD = 3600 * 60;
@@ -118,6 +110,7 @@ struct ReplayHeader
 {
 	int ver1;
 	int ver2;
+	int startPowerMode;
 	BitField bUpgradeField;
 
 	ReplayHeader();

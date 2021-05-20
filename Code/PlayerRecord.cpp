@@ -172,8 +172,6 @@ RecordGhost::RecordGhost(Actor *p_player)
 {
 	numTotalFrames = -1;
 	frame = -1;
-	header.ver1 = 1;
-	header.ver2 = 0;
 	header.playerInfo = new GhostHeader::PlayerInfo[1];
 	header.playerInfo[0].skinIndex = 0;
 }
@@ -269,6 +267,7 @@ void ReplayHeader::Read(ifstream &is)
 {
 	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
 	is.read((char*)&ver2, sizeof(ver2));
+	is.read((char*)&startPowerMode, sizeof(startPowerMode));
 	bUpgradeField.LoadBinary(is);
 }
 
@@ -276,6 +275,7 @@ void ReplayHeader::Write(ofstream &of)
 {
 	of.write((char*)&ver1, sizeof(ver1));
 	of.write((char*)&ver2, sizeof(ver2));
+	of.write((char*)&startPowerMode, sizeof(startPowerMode));
 	bUpgradeField.SaveBinary(of);
 }
 
@@ -298,6 +298,7 @@ void RecordPlayer::StartRecording()
 	frame = 0;
 	numTotalFrames = -1;
 	header.bUpgradeField.Set(player->bStartHasUpgradeField);
+	header.startPowerMode = player->currPowerMode;
 }
 
 void RecordPlayer::StopRecording()
@@ -433,6 +434,8 @@ bool ReplayPlayer::OpenReplay(const std::string &fileName)
 void ReplayPlayer::Reset()
 {
 	frame = 0;
+	player->SetAllUpgrades(header.bUpgradeField);
+	player->currPowerMode = header.startPowerMode;
 }
 
 void ReplayPlayer::UpdateInput(ControllerState &state)
@@ -1245,6 +1248,26 @@ bool GhostFolder::IsAutoActive()
 	}
 
 	return false;
+}
+
+GhostHeader::GhostHeader()
+	:ver1(0),ver2(0), playerInfo(NULL)
+{
+	SetVer(1, 0);
+}
+
+GhostHeader::~GhostHeader()
+{
+	if (playerInfo != NULL)
+	{
+		delete[] playerInfo;
+	}
+}
+
+void GhostHeader::SetVer(int v1, int v2)
+{
+	ver1 = v1;
+	ver2 = v2;
 }
 
 void GhostHeader::Read(std::ifstream &is)
