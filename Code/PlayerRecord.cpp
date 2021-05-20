@@ -1251,8 +1251,8 @@ void GhostHeader::Read(std::ifstream &is)
 {
 	assert(playerInfo == NULL);
 
-	is.read((char*)&ver1, sizeof(int) * 4); //read in the basic vars
-	is.read((char*)&ver2, sizeof(int) * 4);
+	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
+	is.read((char*)&ver2, sizeof(ver2));
 
 	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
 	playerInfo = new PlayerInfo[numberOfPlayers];
@@ -1261,8 +1261,8 @@ void GhostHeader::Read(std::ifstream &is)
 
 void GhostHeader::Write(std::ofstream &of)
 {
-	of.write((char*)&ver1, sizeof(int) * 4);
-	of.write((char*)&ver2, sizeof(int) * 4);
+	of.write((char*)&ver1, sizeof(ver1));
+	of.write((char*)&ver2, sizeof(ver2));
 	for (int i = 0; i < numberOfPlayers; ++i)
 	{
 		playerInfo[i].Write(of);

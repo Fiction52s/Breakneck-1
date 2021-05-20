@@ -20,11 +20,21 @@
 //VENDORID 0x57E
 //PRODUCT ID 0x337
 
+const int NUM_USB_TYPES = 5;
+uint_fast16_t vendorID[NUM_USB_TYPES] = { 0x57E, 0x79, 0x79, 0x79, 0x79 };
+uint_fast16_t productID[NUM_USB_TYPES] = { 0x337, 0x1843, 0x1844, 0x1846, 0x1800 };
+
 const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
 
 const uint_fast16_t MAYFLASH_VENDOR_ID = 0x79;
-const uint_fast16_t MAYFLASH_PRODUCT_ID = 0x1843;
+const uint_fast16_t MAYFLASH_PRODUCT_ID = 0x1846;
+
+const uint_fast16_t MAYFLASH_VENDOR_ID_2 = 0x79;
+const uint_fast16_t MAYFLASH_PRODUCT_ID_2 = 0x1843;
+
+const uint_fast16_t MAYFLASH_VENDOR_ID_3 = 0x79;
+const uint_fast16_t MAYFLASH_PRODUCT_ID_3 = 0x1844;
 
 
 
@@ -63,18 +73,35 @@ namespace GCC
 
 		libusb_set_debug(mUSBContext, 3);
 
-		mHandle = libusb_open_device_with_vid_pid(mUSBContext, GCC_VENDOR_ID, GCC_PRODUCT_ID);
+
+		mHandle = NULL;
+		for (int i = 0; i < NUM_USB_TYPES; ++i)
+		{
+			mHandle = libusb_open_device_with_vid_pid(mUSBContext, vendorID[i], productID[i]);
+			if (mHandle != NULL )
+			{
+				break;
+			}
+		}
 
 		if (!mHandle)
 		{
-			//mHandle = libusb_open_device_with_vid_pid(mUSBContext, MAYFLASH_VENDOR_ID, MAYFLASH_PRODUCT_ID);
+			mStatus = Status::ERR;
+			return;
+		}
 
-			//if (!mHandle)
-			//{
+		/*mHandle = libusb_open_device_with_vid_pid(mUSBContext, GCC_VENDOR_ID, GCC_PRODUCT_ID);
+
+		if (!mHandle)
+		{
+			mHandle = libusb_open_device_with_vid_pid(mUSBContext, MAYFLASH_VENDOR_ID, MAYFLASH_PRODUCT_ID);
+
+			if (!mHandle)
+			{
 				mStatus = Status::ERR;
 				return;
-			//}
-		}
+			}
+		}*/
 		
 		if (
 			libusb_set_configuration(mHandle, 1) < 0 || //I don't know why it is 1, but that's what I'm seeing elsewhere being used...

@@ -40,6 +40,7 @@ struct MapHeader;
 struct DecorLayer;
 struct Background;
 struct HitboxManager;
+struct Boss;
 
 struct TerrainDecorInfo;
 
@@ -192,7 +193,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	sf::Shader *waterShaders;
 	sf::Shader *minimapWaterShaders;
 
-
+	std::list<Boss*> activeBosses;
 	int timeSyncFrames;
 	GameMode *gameMode;
 	bool switchGameState;
@@ -640,6 +641,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupHUD();
 	void UpdateHUD();
 	void DrawHUD(sf::RenderTarget *target);
+	void DrawBossHUD(sf::RenderTarget *target);
 	void HitlagUpdate();
 	void SetupAbsorbParticles();
 	void ResetAbsorbParticles();
@@ -778,6 +780,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
+	sf::CircleShape testSimCircle;
 
 	int GetSaveDataSize();
 	//SaveGameState *saveStates[10];
@@ -807,7 +810,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool IsWithinCurrentBounds(V2d &p);
 	virtual void UpdateTerrainStates();
 	virtual void UpdateRailStates();
-	sf::CircleShape testSimCircle;
+	void SetCurrentBoss(Boss *b);
+	void RemoveBoss( Boss *b );
+	
 };
 
 #endif

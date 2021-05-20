@@ -560,14 +560,8 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 		if (currSeq != NULL)
 		{
 			Movement *currMovement = currSeq->currMovement;
-			if (numPhysSteps == 1)
-			{
-				currSeq->Update(slowMultiple, 10);
-			}
-			else
-			{
-				currSeq->Update(slowMultiple);
-			}
+
+			currSeq->Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
 			currPosInfo.position = currSeq->position;
 

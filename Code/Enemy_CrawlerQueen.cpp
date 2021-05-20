@@ -387,6 +387,7 @@ void CrawlerQueen::StartFight()
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 	HitboxesOff();
+	sess->SetCurrentBoss(this);
 }
 
 int CrawlerQueen::ChooseActionAfterStageChange()
@@ -396,6 +397,7 @@ int CrawlerQueen::ChooseActionAfterStageChange()
 
 void CrawlerQueen::ActivatePostFightScene()
 {
+	sess->RemoveBoss(this);
 	if (level == 1)
 	{
 		postFightScene->Reset();

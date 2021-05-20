@@ -5973,6 +5973,8 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawHUD(target);
 
+	DrawBossHUD(target);
+
 	DrawGates(target);
 	DrawRails(target);
 
@@ -7225,4 +7227,23 @@ void Session::UpdateTerrainStates()
 void Session::UpdateRailStates()
 {
 
+}
+
+void Session::DrawBossHUD(sf::RenderTarget *target)
+{
+	for (auto it = activeBosses.begin(); it != activeBosses.end(); ++it)
+	{
+		(*it)->DrawHealth(target);
+	}
+}
+
+void Session::SetCurrentBoss(Boss *b)
+{
+	activeBosses.clear();
+	activeBosses.push_back(b);
+}
+
+void Session::RemoveBoss(Boss *b)
+{
+	activeBosses.remove(b);
 }

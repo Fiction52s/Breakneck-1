@@ -10,8 +10,7 @@
 #include "HitboxManager.h"
 #include "BossCommand.h"
 
-
-
+struct BossHealth;
 struct Boss : Enemy
 {
 	BossStageManager stageMgr;
@@ -26,6 +25,7 @@ struct Boss : Enemy
 	HitboxManager *hitboxManager;
 	bool movingToCombo;
 	bool actionHitPlayer;
+	BossHealth *healthBar;
 
 	int nextAction;
 
@@ -76,6 +76,7 @@ struct Boss : Enemy
 	void SetBasicActiveHitbox();
 	void SetupHitboxes(int a, const std::string &name);
 	void Wait(int numFrames);
+	void DrawHealth(sf::RenderTarget *target);
 
 	//virtual void MovementEnded();
 

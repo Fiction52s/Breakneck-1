@@ -348,14 +348,7 @@ void Bat::UpdateEnemyPhysics()
 		ms = &returnSeq;
 	}
 
-	if (numPhysSteps == 1)
-	{
-		ms->Update(slowMultiple, 10);
-	}
-	else
-	{
-		ms->Update(slowMultiple);
-	}
+	ms->Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
 	currPosInfo.SetPosition(currBasePos + ms->position);
 	//cout << "basePos: " << currBasePos.x << ", " << currBasePos.y << "   ms: " << ms->position.x << ", " << ms->position.y << endl;

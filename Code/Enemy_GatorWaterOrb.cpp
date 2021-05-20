@@ -331,14 +331,8 @@ void GatorWaterOrb::UpdateEnemyPhysics()
 {
 	if (action == FLYING )
 	{
-		if (numPhysSteps == 1)
-		{
-			quadraticMoveSeq.Update(slowMultiple, 10);
-		}
-		else
-		{
-			quadraticMoveSeq.Update(slowMultiple, 1);
-		}
+
+		quadraticMoveSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
 		currPosInfo.position = quadraticMoveSeq.position;
 	}

@@ -1,6 +1,10 @@
 #include "Boss.h"
 #include "Session.h"
 #include "Actor.h"
+#include "BossHealth.h"
+
+using namespace sf;
+using namespace std;
 
 Boss::Boss(EnemyType et, ActorParams *ap)
 	:Enemy(et, ap)
@@ -9,6 +13,8 @@ Boss::Boss(EnemyType et, ActorParams *ap)
 	hitboxInfo = new HitboxInfo;
 	hitboxManager = NULL;
 	commandQueue.reserve(10);
+	healthBar = new BossHealth(this);
+	healthBar->SetTopLeft(Vector2f(1920 - 100, 200));
 }
 
 Boss::~Boss()
@@ -359,4 +365,9 @@ void Boss::ProcessHit()
 
 		receivedHit = NULL;
 	}
+}
+
+void Boss::DrawHealth(sf::RenderTarget *target)
+{
+	healthBar->Draw(target);
 }
