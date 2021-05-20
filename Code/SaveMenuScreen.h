@@ -57,6 +57,7 @@ struct SaveMenuInfoPopup
 {
 	sf::Vector2f size;
 	sf::Text text;
+	sf::Vector2f position;
 	sf::Vertex popupBGQuad[4];
 
 

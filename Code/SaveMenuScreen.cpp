@@ -470,6 +470,7 @@ bool SaveMenuScreen::Update()
 				if (!defaultFiles[selectedSaveIndex])
 				{
 					action = CONFIRMDELETE;
+					confirmPopup.SetText("Are you sure you want\nto delete this save file?");
 					frame = 0;
 				}
 			}
@@ -524,6 +525,7 @@ bool SaveMenuScreen::Update()
 				{
 					action = CONFIRMCOPY;
 					frame = 0;
+					confirmPopup.SetText("Are you sure you want to\ncopy the save file here?");
 				}
 				else
 				{
@@ -908,7 +910,7 @@ void SaveMenuScreen::UpdateClouds()
 
 SaveMenuConfirmPopup::SaveMenuConfirmPopup( MainMenu *mainMenu )
 {
-	size = Vector2f(500, 200);
+	size = Vector2f(500, 300);
 	ts_buttons = mainMenu->tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
 	SetRectColor(popupBGQuad, Color::Black);
 
@@ -926,9 +928,9 @@ SaveMenuConfirmPopup::SaveMenuConfirmPopup( MainMenu *mainMenu )
 void SaveMenuConfirmPopup::SetPos(sf::Vector2f &pos)
 {
 	SetRectCenter(popupBGQuad, size.x, size.y, pos);
-	SetRectCenter(buttonQuads, 128, 128, pos + Vector2f(-100, 100));
-	SetRectCenter(buttonQuads+4, 128, 128, pos + Vector2f(100, 100));
-	confirmText.setPosition(pos);
+	SetRectCenter(buttonQuads, 128, 128, pos + Vector2f(-100, 50));
+	SetRectCenter(buttonQuads+4, 128, 128, pos + Vector2f(100, 50));
+	confirmText.setPosition(Vector2f( pos.x, (pos.y - size.y / 2) + 10));
 }
 
 int SaveMenuConfirmPopup::Update(ControllerState &currInput,
@@ -956,11 +958,13 @@ void SaveMenuConfirmPopup::Draw(sf::RenderTarget *target)
 void SaveMenuConfirmPopup::SetText(const std::string &str)
 {
 	confirmText.setString(str);
+	confirmText.setOrigin(confirmText.getLocalBounds().left
+		+ confirmText.getLocalBounds().width / 2, 0);
 }
 
 SaveMenuInfoPopup::SaveMenuInfoPopup(MainMenu *mainMenu)
 {
-	size = Vector2f(300, 100);
+	size = Vector2f(500, 300);
 	SetRectColor(popupBGQuad, Color::Black);
 
 	text.setFont(mainMenu->arial);
@@ -988,6 +992,7 @@ bool SaveMenuInfoPopup::Update(ControllerState &currInput,
 
 void SaveMenuInfoPopup::SetPos(sf::Vector2f &pos)
 {
+	position = pos;
 	SetRectCenter(popupBGQuad, size.x, size.y, pos);
 	text.setPosition(pos);
 }
@@ -995,6 +1000,11 @@ void SaveMenuInfoPopup::SetPos(sf::Vector2f &pos)
 void SaveMenuInfoPopup::SetText(const std::string &str)
 {
 	text.setString(str);
+	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2, 
+		text.getLocalBounds().top + text.getLocalBounds().height / 2 );
+	size.x = text.getGlobalBounds().width + 40;
+	size.y = text.getGlobalBounds().height + 40;
+	SetPos(position);
 }
 
 void SaveMenuInfoPopup::Draw(sf::RenderTarget *target)

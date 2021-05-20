@@ -2937,7 +2937,6 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	case RUNNINGEDITOR:
 	{
-		int xxx = 6;
 		break;
 	}
 	case TUTORIAL:
