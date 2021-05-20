@@ -2034,6 +2034,12 @@ void GameSession::SetupBestTimeGhost()
 			GhostEntry *ge = new GhostEntry(boost::filesystem::path(ghostPath), NULL);
 			ghostEntries.push_back(ge);
 			SetupGhosts(ghostEntries);
+
+			for (auto it = ghostEntries.begin(); it != ghostEntries.end(); ++it)
+			{
+				delete (*it);
+			}
+			ghostEntries.clear();
 		}
 	}
 }
@@ -2277,7 +2283,13 @@ int GameSession::Run()
 				if (ev.type == Event::LostFocus)
 				{
 					if (gameState == RUN)
-						gameState = PAUSE;
+					{
+						if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+						{
+							gameState = PAUSE;
+						}
+					}
+						
 				}
 				else if (ev.type == sf::Event::GainedFocus)
 				{
@@ -2686,15 +2698,45 @@ window->draw(preTexSprite);
 					}
 				}
 
-				if (curr.Y && curr.PDown() && !prev.PDown())
+				if (pauseMenu->currentTab == PauseMenu::PAUSE)
 				{
-					if (recPlayer != NULL)
+					
+
+					if (curr.Y && !prev.Y && !bestTimeGhostOn)
 					{
-						ActivatePauseSound(GetSound("pause_off"));
-						recPlayer->numTotalFrames = recPlayer->frame;
-						recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
+						if (parentGame != NULL)
+						{
+							/*quit = true;
+							returnVal = GR_BONUS_RESPAWN;
+							break;*/
+						}
+						else
+						{
+							bestTimeGhostOn = true;
+							bestReplayOn = false;
+
+							if (repPlayer != NULL)
+							{
+								delete repPlayer;
+								repPlayer = NULL;
+							}
+
+							SetupBestTimeGhost();
+							RestartLevel();
+						}
 					}
+					else if (curr.X && curr.PDown() && !prev.PDown())
+					{
+						if (recPlayer != NULL)
+						{
+							ActivatePauseSound(GetSound("pause_off"));
+							recPlayer->numTotalFrames = recPlayer->frame;
+							recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
+						}
+					}
+					
 				}
+				
 
 
 				PauseMenu::UpdateResponse ur = pauseMenu->Update(curr,prev);

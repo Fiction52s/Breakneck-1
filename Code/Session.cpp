@@ -7231,10 +7231,15 @@ void Session::UpdateRailStates()
 
 void Session::DrawBossHUD(sf::RenderTarget *target)
 {
+	sf::View oldView = target->getView();
+	target->setView(uiView);
+
 	for (auto it = activeBosses.begin(); it != activeBosses.end(); ++it)
 	{
 		(*it)->DrawHealth(target);
 	}
+
+	target->setView(oldView);
 }
 
 void Session::SetCurrentBoss(Boss *b)

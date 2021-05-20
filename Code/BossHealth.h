@@ -14,6 +14,7 @@ struct BossHealth
 	float bgWidth;
 	float bgHeight;
 	float healthPadding;
+	sf::Vector2f topLeftPosition;
 
 	BossHealth(Boss *p_boss);
 	void SetTopLeft(sf::Vector2f &pos);

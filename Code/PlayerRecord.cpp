@@ -35,6 +35,14 @@ ReplayGhost::ReplayGhost(Actor *p_player)
 	playerSkinShader.pShader.setUniform("u_slide", 0.f);
 }
 
+ReplayGhost::~ReplayGhost()
+{
+	if (sprBuffer != NULL)
+	{
+		delete[] sprBuffer;
+	}
+}
+
 void ReplayGhost::Draw(RenderTarget *target)
 {
 	if (!init || frame == numTotalFrames)
@@ -1251,7 +1259,7 @@ bool GhostFolder::IsAutoActive()
 }
 
 GhostHeader::GhostHeader()
-	:ver1(0),ver2(0), playerInfo(NULL)
+	:ver1(0),ver2(0), playerInfo(NULL), numberOfPlayers(0)
 {
 	SetVer(1, 0);
 }
@@ -1276,7 +1284,7 @@ void GhostHeader::Read(std::ifstream &is)
 
 	is.read((char*)&ver1, sizeof(ver1)); //read in the basic vars
 	is.read((char*)&ver2, sizeof(ver2));
-
+	is.read((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 	assert(numberOfPlayers > 0 && numberOfPlayers < 5);
 	playerInfo = new PlayerInfo[numberOfPlayers];
 	is.read((char*)playerInfo, sizeof(PlayerInfo) * numberOfPlayers);
@@ -1286,6 +1294,7 @@ void GhostHeader::Write(std::ofstream &of)
 {
 	of.write((char*)&ver1, sizeof(ver1));
 	of.write((char*)&ver2, sizeof(ver2));
+	of.write((char*)&numberOfPlayers, sizeof(numberOfPlayers));
 	for (int i = 0; i < numberOfPlayers; ++i)
 	{
 		playerInfo[i].Write(of);

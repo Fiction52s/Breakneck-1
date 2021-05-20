@@ -9,6 +9,7 @@
 #include "Enemy_Crawler.h"
 #include "Enemy_QueenFloatingBomb.h"
 #include <algorithm>
+#include "BossHealth.h"
 
 using namespace std;
 using namespace sf;
@@ -387,7 +388,8 @@ void CrawlerQueen::StartFight()
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 	HitboxesOff();
-	sess->SetCurrentBoss(this);
+
+	
 }
 
 int CrawlerQueen::ChooseActionAfterStageChange()
@@ -413,6 +415,8 @@ void CrawlerQueen::ActivatePostFightScene()
 
 void CrawlerQueen::UpdateSprite()
 {
+	healthBar->Update();
+
 	bool isAerial = enemyMover.currPosInfo.IsAerial();
 	if (!isAerial)
 	{

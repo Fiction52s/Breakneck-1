@@ -28,6 +28,8 @@ Boss::~Boss()
 	{
 		delete (*it).second;
 	}
+
+	delete healthBar;
 }
 
 int Boss::GetNumSimulationFramesRequired()
@@ -365,6 +367,11 @@ void Boss::ProcessHit()
 
 		receivedHit = NULL;
 	}
+}
+
+void Boss::Init()
+{
+	sess->SetCurrentBoss(this);
 }
 
 void Boss::DrawHealth(sf::RenderTarget *target)

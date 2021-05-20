@@ -84,23 +84,21 @@ struct ReplayGhost
 {
 	PlayerSkinShader playerSkinShader;
 	sf::CircleShape cs;
-
 	bool init;
 	int action;
-	ReplayGhost(Actor *p);
-	void Reset();
-	bool OpenGhost(const boost::filesystem::path &fileName);
 	sf::Sprite replaySprite;
-
-	void UpdateReplaySprite();
-
-	void Draw(sf::RenderTarget *target);
-
 	SprInfo *sprBuffer;
 	Actor *player;
 	int frame;
 	int numTotalFrames;
 	GhostHeader header;
+
+	ReplayGhost(Actor *p);
+	~ReplayGhost();
+	void Reset();
+	bool OpenGhost(const boost::filesystem::path &fileName);
+	void UpdateReplaySprite();
+	void Draw(sf::RenderTarget *target);
 };
 
 struct RecordGhost;

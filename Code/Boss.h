@@ -48,6 +48,7 @@ struct Boss : Enemy
 	void UpdateHitboxes();
 	void ProcessHit();
 	void SetAction(int a);
+	void Init();
 	bool TrySetActionToNextAction();
 	BossCommand &GetCurrCommand();
 	void SetNextComboAction();
