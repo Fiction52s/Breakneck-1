@@ -509,6 +509,7 @@ struct MainMenu
 		TRANS_WORLDMAP_TO_LOADING,
 		INTROMOVIE,
 		THANKS_FOR_PLAYING,
+		EXITING,
 	};
 
 	enum SoundType

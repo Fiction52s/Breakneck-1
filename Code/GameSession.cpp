@@ -2698,7 +2698,20 @@ window->draw(preTexSprite);
 							RestartLevel();
 						}
 					}
-					else if (curr.X && curr.PDown() && !prev.PDown())
+					else if (curr.X && !prev.X)
+					{
+						if (parentGame != NULL)
+						{
+							quit = true;
+							returnVal = GR_BONUS_RESPAWN;
+							break;
+						}
+						else
+						{
+							RestartLevel();
+						}
+					}
+					else if (curr.B && curr.PDown() && !prev.PDown())
 					{
 						if (recPlayer != NULL)
 						{

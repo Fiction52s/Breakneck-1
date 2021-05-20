@@ -161,6 +161,21 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case RUNNINGMAP:
+	{
+		if (worldMap != NULL)
+		{
+			delete worldMap;
+			worldMap = NULL;
+		}
+
+		if (saveMenu != NULL)
+		{
+			currSaveFile = NULL;
+			delete saveMenu;
+			saveMenu = NULL;
+		}
+	}
 
 	}
 
@@ -643,8 +658,10 @@ MainMenu::~MainMenu()
 	{
 		delete worldMap;
 	}
+
 	if (saveMenu != NULL)
 	{
+		currSaveFile = NULL;
 		delete saveMenu;
 	}
 
@@ -2065,6 +2082,41 @@ void MainMenu::HandleMenuMode()
 			}
 
 		}
+		else if (result == GameSession::GR_EXITTITLE)
+		{
+			Sector &sec = worldMap->GetCurrSector();
+			for (int i = 0; i < sec.numLevels; ++i)
+			{
+				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
+			}
+			//fix this later for other options
+
+			currFile->Save();
+
+			delete currLevel;
+			currLevel = NULL;
+
+			LoadMode(TITLEMENU);
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			Sector &sec = worldMap->GetCurrSector();
+			for (int i = 0; i < sec.numLevels; ++i)
+			{
+				currFile->SetLevelNotJustBeaten(&sec.levels[i]);
+			}
+			//fix this later for other options
+
+			currFile->Save();
+
+			delete currLevel;
+			currLevel = NULL;
+
+			SetMode(EXITING);
+			//LoadMode(TITLEMENU);
+
+			quit = true;
+		}
 		else
 		{
 			Sector &sec = worldMap->GetCurrSector();
@@ -2896,6 +2948,10 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		preScreenTexture->draw(thanksQuad, 4, sf::Quads, ts_thanksForPlaying->texture);
+		break;
+	}
+	case RUNNINGMAP:
+	{
 		break;
 	}
 	default:
