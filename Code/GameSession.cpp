@@ -2673,35 +2673,8 @@ window->draw(preTexSprite);
 				ControllerState &curr = GetCurrInputUnfiltered(0);
 				ControllerState &prev = GetPrevInputUnfiltered(0);
 
-
-
-				if (curr.X && !prev.X)
-				{
-					if (parentGame != NULL)
-					{
-						//parentGame->RestartGame();
-						quit = true;
-						returnVal = GR_BONUS_RESPAWN;
-						break;
-					}
-					else
-					{
-
-						RestartLevel();
-
-						//moved this stuff into restart level
-						/*gameState = GameSession::RUN;
-						gameClock.restart();
-						currentTime = 0;
-						accumulator = TIMESTEP + .1;
-						frameRateDisplay.Reset();*/
-					}
-				}
-
 				if (pauseMenu->currentTab == PauseMenu::PAUSE)
 				{
-					
-
 					if (curr.Y && !prev.Y && !bestTimeGhostOn)
 					{
 						if (parentGame != NULL)
