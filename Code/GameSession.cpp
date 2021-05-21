@@ -2597,17 +2597,17 @@ int GameSession::Run()
 
 			preScreenTex->setView(uiView);
 			fader->Draw(preScreenTex);
-swiper->Draw(preScreenTex);
+			swiper->Draw(preScreenTex);
 
-mainMenu->DrawEffects(preScreenTex);
+			mainMenu->DrawEffects(preScreenTex);
 
-DrawFrameRate(preScreenTex);
+			DrawFrameRate(preScreenTex);
 
-preTexSprite.setTexture(preScreenTex->getTexture());
-preTexSprite.setPosition(-960 / 2, -540 / 2);
-preTexSprite.setScale(.5, .5);
-window->draw(preTexSprite);
-//UpdateInput();
+			preTexSprite.setTexture(preScreenTex->getTexture());
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			window->draw(preTexSprite);
+			//UpdateInput();
 
 		}
 		else if (gameState == SEQUENCE)

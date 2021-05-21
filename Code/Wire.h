@@ -144,6 +144,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	double startDragStrength;
 	double grassCheckRadius;
 	
+	sf::Shader wireShader;
 	int extraBuffer; //when swinging around edges sometimes the wire
 					 //stretches some. This is attemping to hole up that problem. if it happens
 					 //too much then I can go into it and solve the real problems.

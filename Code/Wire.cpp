@@ -121,11 +121,17 @@ Wire::Wire( Actor *p, bool r)
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 )
 {
-	numQuadVertices = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
+	numQuadVertices = (MAX_POINTS+1) * 4;//(int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
 	quads = new Vertex[numQuadVertices];
 
-	numMinimapQuads = (int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
-	minimapQuads = new Vertex[numMinimapQuads];
+	minimapQuads = new Vertex[numQuadVertices];
+
+	if (!wireShader.loadFromFile("Resources/Shader/wire_shader.frag", sf::Shader::Fragment))
+	{
+		assert(0);
+	}
+	
+
 
 	aimingPrimaryAngleRange = 2;
 	hitEnemyFramesTotal = 5;
@@ -146,6 +152,9 @@ Wire::Wire( Actor *p, bool r)
 	}
 
 	ts_wireTip = player->sess->GetTileset( "Kin/Powers/wire_tips_16x16.png", 16, 16 );
+
+	wireShader.setUniform("u_texture", *ts_wire->texture);//sf::Shader::CurrentTexture);
+	wireShader.setUniform("u_quant", 0.f);
 
 	grassCheckRadius = 20;
 
@@ -680,7 +689,11 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		frame = 0;
 	}
 
-	
+	static float u_quant = 0.f;
+
+	wireShader.setUniform("u_quant", u_quant);
+
+	u_quant += .001;
 }
 
 bool Wire::TryFire()
@@ -898,7 +911,7 @@ void Wire::UpdateAnchors( V2d vel )
 		//player->owner->barrierTree->Query(this, r);
 		if (state == RELEASED)
 		{
-			cout << "went too many points" << endl;
+			//cout << "went too many points" << endl;
 			//should cut the wire when you go over the point count
 			return;
 		}
@@ -1652,112 +1665,160 @@ void Wire::UpdateQuads()
 		}
 		
 		wireTip.setPosition(Vector2f(currWirePos));
-		firingTakingUp = ceil( length( currWirePos - currWireStart ) / tileHeight );
 
-		
+		double wireLength = length(currWirePos - currWireStart);
+		firingTakingUp = ceil(wireLength / tileHeight );
+
+		V2d startBack = currWireStart - otherDir * quadHalfWidth;
+		V2d startFront = currWireStart + otherDir * quadHalfWidth;
 		V2d endBack = currWirePos - otherDir * quadHalfWidth;
 		V2d endFront = currWirePos + otherDir * quadHalfWidth;
 
-		if( firingTakingUp > numQuadVertices / 4 )
+		quads[startIndex * 4].position = Vector2f(startBack.x, startBack.y);
+		quads[startIndex * 4 + 1].position = Vector2f(startFront.x, startFront.y);
+		quads[startIndex * 4 + 2].position = Vector2f(endFront.x, endFront.y);
+		quads[startIndex * 4 + 3].position = Vector2f(endBack.x, endBack.y);
+
+		float width = ts_wire->texture->getSize().x;
+		float height = ts_wire->texture->getSize().y;
+
+		IntRect ir = ts_wire->GetSubRect(0);
+
+		wireShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+
+		SetRectSubRect(quads + startIndex * 4, sf::FloatRect(0, 0, 1.0, wireLength / height));//2.0));//wireLength / ir.height));
+		//SetRectSubRectGL(quads + startIndex * 4, ts_wire->GetSubRect(0), Vector2f(ts_wire->texture->getSize()));
+
+		SetRectColor(quads + startIndex * 4, Color::Red);
+
+		double miniExtraWidth = 20;
+		startBack -= otherDir * miniExtraWidth;
+		startFront += otherDir * miniExtraWidth;
+		endBack -= otherDir * miniExtraWidth;
+		endFront += otherDir * miniExtraWidth;
+		minimapQuads[startIndex * 4].position = Vector2f(startBack.x, startBack.y);
+		minimapQuads[startIndex * 4 + 1].position = Vector2f(startFront.x, startFront.y);
+		minimapQuads[startIndex * 4 + 2].position = Vector2f(endFront.x, endFront.y);
+		minimapQuads[startIndex * 4 + 3].position = Vector2f(endBack.x, endBack.y);
+
+		Color miniColor;
+		if (right)
 		{
-			cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
-			cout << "firingTakingup: " << firingTakingUp << ", count: " << numQuadVertices / 4 << endl;
-			assert( false );
+			miniColor = Color::Red;
+
+		}
+		else
+		{
+			miniColor = Color(0, 100, 255);
 		}
 
-		V2d startPartial;
-		V2d endPartial;
+		SetRectColor(minimapQuads + startIndex * 4, miniColor);
+
+		startIndex++;
 		
 
-		for( int j = 0; j < firingTakingUp; ++j )
-		{
-			startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
-			endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
-
-			int diff = tileHeight * (j + 1) - length( currWirePos - currWireStart );
 		
-			if( diff > 0 )
-			{
-				assert( j == firingTakingUp - 1 );
-				endPartial = currWirePos;
-			}
+		//if( firingTakingUp > numQuadVertices / 4 )
+		//{
+		//	cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
+		//	cout << "firingTakingup: " << firingTakingUp << ", count: " << numQuadVertices / 4 << endl;
+		//	assert( false );
+		//}
 
-			V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
-			V2d startPartialFront = startPartial + otherDir * quadHalfWidth;
+		//V2d startPartial;
+		//V2d endPartial;
+		//
 
-			V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
-			V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
-			int index = (j + startIndex );
+		//for( int j = 0; j < firingTakingUp; ++j )
+		//{
+		//	startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
+		//	endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
 
-			//this is to prevent going over on the quads.
-			//might be able to just do this with a pixel shader
-			//and keep the number of quads very low. 
-			//so im putting this here to fix things
-			//until I put in a real fix soon.
-			if (index * 4 + 3 < numQuadVertices)
-			{
+		//	int diff = tileHeight * (j + 1) - length( currWirePos - currWireStart );
+		//
+		//	if( diff > 0 )
+		//	{
+		//		assert( j == firingTakingUp - 1 );
+		//		endPartial = currWirePos;
+		//	}
 
+		//	V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
+		//	V2d startPartialFront = startPartial + otherDir * quadHalfWidth;
 
-				quads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
-				quads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
-				quads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
-				quads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
+		//	V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
+		//	V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
+		//	int index = (j + startIndex );
 
-				double miniExtraWidth = 20;
-				startPartialBack -= otherDir * miniExtraWidth;
-				startPartialFront += otherDir * miniExtraWidth;
-				endPartialBack -= otherDir * miniExtraWidth;
-				endPartialFront += otherDir * miniExtraWidth;
-				minimapQuads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
-				minimapQuads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
-				minimapQuads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
-				minimapQuads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
-
-				Color miniColor;
-				if (right)
-				{
-					miniColor = Color::Red;
-
-				}
-				else
-				{
-					miniColor = Color(0, 100, 255);
-				}
-
-				minimapQuads[index * 4].color = miniColor;
-				minimapQuads[index * 4 + 1].color = miniColor;
-				minimapQuads[index * 4 + 2].color = miniColor;
-				minimapQuads[index * 4 + 3].color = miniColor;
-
-				int trueFrame = frame / animFactor;
+		//	//this is to prevent going over on the quads.
+		//	//might be able to just do this with a pixel shader
+		//	//and keep the number of quads very low. 
+		//	//so im putting this here to fix things
+		//	//until I put in a real fix soon.
+		//	if (index * 4 + 3 < numQuadVertices)
+		//	{
 
 
+		//		quads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
+		//		quads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
+		//		quads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
+		//		quads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
 
-				int fr = frame / animFactor;
-				int ifr = (numAnimFrames - 1) - fr;
-				int f = ifr;
-				if (right)
-				{
-					f = fr;
-				}
-				else
-				{
-					f += numAnimFrames;
-				}
-				IntRect subRect = ts_wire->GetSubRect(f);
+		//		double miniExtraWidth = 20;
+		//		startPartialBack -= otherDir * miniExtraWidth;
+		//		startPartialFront += otherDir * miniExtraWidth;
+		//		endPartialBack -= otherDir * miniExtraWidth;
+		//		endPartialFront += otherDir * miniExtraWidth;
+		//		minimapQuads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
+		//		minimapQuads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
+		//		minimapQuads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
+		//		minimapQuads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
 
-				quads[index * 4].texCoords = Vector2f(subRect.left, subRect.top);//realTopLeft;
-				quads[index * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
-				quads[index * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
-				quads[index * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
-			}
+		//		Color miniColor;
+		//		if (right)
+		//		{
+		//			miniColor = Color::Red;
+
+		//		}
+		//		else
+		//		{
+		//			miniColor = Color(0, 100, 255);
+		//		}
+
+		//		minimapQuads[index * 4].color = miniColor;
+		//		minimapQuads[index * 4 + 1].color = miniColor;
+		//		minimapQuads[index * 4 + 2].color = miniColor;
+		//		minimapQuads[index * 4 + 3].color = miniColor;
+
+		//		int trueFrame = frame / animFactor;
+
+
+
+		//		int fr = frame / animFactor;
+		//		int ifr = (numAnimFrames - 1) - fr;
+		//		int f = ifr;
+		//		if (right)
+		//		{
+		//			f = fr;
+		//		}
+		//		else
+		//		{
+		//			f += numAnimFrames;
+		//		}
+		//		IntRect subRect = ts_wire->GetSubRect(f);
+
+		//		quads[index * 4].texCoords = Vector2f(subRect.left, subRect.top);//realTopLeft;
+		//		quads[index * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
+		//		quads[index * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
+		//		quads[index * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
+		//	}
+		//}
+
+		//startIndex += firingTakingUp;
+
 		}
 
-		startIndex += firingTakingUp;
-
-		}
-
-		numVisibleIndexes = startIndex - 1;
+		numVisibleIndexes = startIndex;//startIndex - 1;
 
 		if (numVisibleIndexes * 4 > numQuadVertices)
 		{
@@ -1828,7 +1889,7 @@ void Wire::Draw( RenderTarget *target )
 
 if (state == FIRING || state == HIT || state == PULLING || state == RETRACTING || state == HITENEMY)
 {
-	target->draw(quads, numVisibleIndexes * 4, sf::Quads, ts_wire->texture);
+	target->draw(quads, numVisibleIndexes * 4, sf::Quads, &wireShader );//, ts_wire->texture);
 	target->draw(wireTip);
 }
 
