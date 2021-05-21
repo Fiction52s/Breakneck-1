@@ -83,6 +83,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	const static int MAX_POINTS = 64;
 	const static int MAX_CHARGES = 16;
 
+	float shaderOffset;
 	bool foundPoint;
 	WirePoint anchor;
 	WirePoint points[MAX_POINTS];

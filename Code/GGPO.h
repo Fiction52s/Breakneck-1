@@ -83,6 +83,7 @@ struct GGPONonGameState
 
 struct SaveWireInfo
 {
+	float shaderOffset;
 	bool foundPoint;
 	WirePoint anchor;
 	WirePoint points[Wire::MAX_POINTS];

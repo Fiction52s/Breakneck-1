@@ -14,6 +14,7 @@ using namespace std;
 
 void Wire::PopulateWireInfo( SaveWireInfo *wi)
 {
+	wi->shaderOffset = shaderOffset;
 	wi->foundPoint = foundPoint;
 	wi->anchor = anchor;
 	memcpy(&wi->points, &points, sizeof(WirePoint) * MAX_POINTS);
@@ -63,6 +64,7 @@ void Wire::PopulateWireInfo( SaveWireInfo *wi)
 
 void Wire::PopulateFromWireInfo(SaveWireInfo *wi)
 {
+	shaderOffset = wi->shaderOffset;
 	foundPoint = wi->foundPoint;
 	anchor = wi->anchor;
 	memcpy(&points, &wi->points, sizeof(WirePoint) * MAX_POINTS);
@@ -121,8 +123,10 @@ Wire::Wire( Actor *p, bool r)
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 )
 {
+	int numCurveQuads = 2;
+	int numCurveVertices = (MAX_POINTS + 1) * 4;
 	numQuadVertices = (MAX_POINTS+1) * 4;//(int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
-	quads = new Vertex[numQuadVertices];
+	quads = new Vertex[numQuadVertices + numCurveVertices];
 
 	minimapQuads = new Vertex[numQuadVertices];
 
@@ -203,6 +207,8 @@ Wire::Wire( Actor *p, bool r)
 	startDragStrength = 10;
 	dragStrength = startDragStrength;
 	dragAccel = (maxDragStrength - startDragStrength) / 180.0;
+
+	Reset();
 }
 
 Wire::~Wire()
@@ -689,11 +695,17 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		frame = 0;
 	}
 
-	static float u_quant = 0.f;
+	double offsetAmount = .002;
+	if (right)
+	{
+		shaderOffset -= offsetAmount;
+	}
+	else
+	{
+		shaderOffset += offsetAmount;
+	}
 
-	wireShader.setUniform("u_quant", u_quant);
-
-	u_quant += .001;
+	wireShader.setUniform("u_quant", shaderOffset);
 }
 
 bool Wire::TryFire()
@@ -1664,7 +1676,12 @@ void Wire::UpdateQuads()
 			currWireStart = playerPos;// +V2d(player->GetWireOffset().x, player->GetWireOffset().y);
 		}
 		
-		wireTip.setPosition(Vector2f(currWirePos));
+		if (pointI == 0)
+		{
+			wireTip.setPosition(Vector2f(currWirePos));
+			//float angle = atan2(alongDir.y, alongDir.x);
+			//wireTip.setRotation((angle / PI) * 180 + 90);
+		}
 
 		double wireLength = length(currWirePos - currWireStart);
 		firingTakingUp = ceil(wireLength / tileHeight );
@@ -1682,15 +1699,21 @@ void Wire::UpdateQuads()
 		float width = ts_wire->texture->getSize().x;
 		float height = ts_wire->texture->getSize().y;
 
-		IntRect ir = ts_wire->GetSubRect(0);
+	//	IntRect ir = ts_wire->GetSubRect(0);
+
+		IntRect ir(0, 0, 16, 16 * 16);
+
+		if (!right)
+		{
+			ir.top += 16 * 16;
+		}
 
 		wireShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
 
-		SetRectSubRect(quads + startIndex * 4, sf::FloatRect(0, 0, 1.0, wireLength / height));//2.0));//wireLength / ir.height));
-		//SetRectSubRectGL(quads + startIndex * 4, ts_wire->GetSubRect(0), Vector2f(ts_wire->texture->getSize()));
+		SetRectSubRect(quads + startIndex * 4, sf::FloatRect(0, 0, 1.0, (wireLength / ir.height)/2.0));
 
-		SetRectColor(quads + startIndex * 4, Color::Red);
+		//SetRectColor(quads + startIndex * 4, Color::Red);
 
 		double miniExtraWidth = 20;
 		startBack -= otherDir * miniExtraWidth;
@@ -1716,105 +1739,6 @@ void Wire::UpdateQuads()
 		SetRectColor(minimapQuads + startIndex * 4, miniColor);
 
 		startIndex++;
-		
-
-		
-		//if( firingTakingUp > numQuadVertices / 4 )
-		//{
-		//	cout << "wirestart: " << currWireStart.x << ", " << currWireStart.y << ", curr: " << currWirePos.x << ", " << currWirePos.y << endl;
-		//	cout << "firingTakingup: " << firingTakingUp << ", count: " << numQuadVertices / 4 << endl;
-		//	assert( false );
-		//}
-
-		//V2d startPartial;
-		//V2d endPartial;
-		//
-
-		//for( int j = 0; j < firingTakingUp; ++j )
-		//{
-		//	startPartial = ( currWireStart + alongDir * (double)(tileHeight * j) );
-		//	endPartial = ( currWireStart + alongDir * (double)(tileHeight * ( j + 1 )) );
-
-		//	int diff = tileHeight * (j + 1) - length( currWirePos - currWireStart );
-		//
-		//	if( diff > 0 )
-		//	{
-		//		assert( j == firingTakingUp - 1 );
-		//		endPartial = currWirePos;
-		//	}
-
-		//	V2d startPartialBack = startPartial - otherDir * quadHalfWidth;
-		//	V2d startPartialFront = startPartial + otherDir * quadHalfWidth;
-
-		//	V2d endPartialBack = endPartial - otherDir * quadHalfWidth;
-		//	V2d endPartialFront = endPartial + otherDir * quadHalfWidth;
-		//	int index = (j + startIndex );
-
-		//	//this is to prevent going over on the quads.
-		//	//might be able to just do this with a pixel shader
-		//	//and keep the number of quads very low. 
-		//	//so im putting this here to fix things
-		//	//until I put in a real fix soon.
-		//	if (index * 4 + 3 < numQuadVertices)
-		//	{
-
-
-		//		quads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
-		//		quads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
-		//		quads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
-		//		quads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
-
-		//		double miniExtraWidth = 20;
-		//		startPartialBack -= otherDir * miniExtraWidth;
-		//		startPartialFront += otherDir * miniExtraWidth;
-		//		endPartialBack -= otherDir * miniExtraWidth;
-		//		endPartialFront += otherDir * miniExtraWidth;
-		//		minimapQuads[index * 4].position = Vector2f(startPartialBack.x, startPartialBack.y);
-		//		minimapQuads[index * 4 + 1].position = Vector2f(startPartialFront.x, startPartialFront.y);
-		//		minimapQuads[index * 4 + 2].position = Vector2f(endPartialFront.x, endPartialFront.y);
-		//		minimapQuads[index * 4 + 3].position = Vector2f(endPartialBack.x, endPartialBack.y);
-
-		//		Color miniColor;
-		//		if (right)
-		//		{
-		//			miniColor = Color::Red;
-
-		//		}
-		//		else
-		//		{
-		//			miniColor = Color(0, 100, 255);
-		//		}
-
-		//		minimapQuads[index * 4].color = miniColor;
-		//		minimapQuads[index * 4 + 1].color = miniColor;
-		//		minimapQuads[index * 4 + 2].color = miniColor;
-		//		minimapQuads[index * 4 + 3].color = miniColor;
-
-		//		int trueFrame = frame / animFactor;
-
-
-
-		//		int fr = frame / animFactor;
-		//		int ifr = (numAnimFrames - 1) - fr;
-		//		int f = ifr;
-		//		if (right)
-		//		{
-		//			f = fr;
-		//		}
-		//		else
-		//		{
-		//			f += numAnimFrames;
-		//		}
-		//		IntRect subRect = ts_wire->GetSubRect(f);
-
-		//		quads[index * 4].texCoords = Vector2f(subRect.left, subRect.top);//realTopLeft;
-		//		quads[index * 4 + 1].texCoords = Vector2f(subRect.left + subRect.width, subRect.top);
-		//		quads[index * 4 + 2].texCoords = Vector2f(subRect.left + subRect.width, subRect.top + subRect.height);
-		//		quads[index * 4 + 3].texCoords = Vector2f(subRect.left, subRect.top + subRect.height);
-		//	}
-		//}
-
-		//startIndex += firingTakingUp;
 
 		}
 
@@ -1895,19 +1819,27 @@ if (state == FIRING || state == HIT || state == PULLING || state == RETRACTING |
 
 if (state == HIT || state == PULLING)
 {
-	CircleShape cs1;
+	/*CircleShape cs1;
 	cs1.setFillColor(Color::Red);
-	cs1.setRadius(2);
+	cs1.setRadius(8);
 	cs1.setOrigin(cs1.getLocalBounds().width / 2, cs1.getLocalBounds().height / 2);
 	cs1.setPosition(anchor.pos.x, anchor.pos.y);
 
-	target->draw(cs1);
+	target->draw(cs1);*/
 
 	for (int i = 0; i < numPoints; ++i)
 	{
 		CircleShape cs;
-		cs.setFillColor(Color::Cyan);
-		cs.setRadius(2);
+		if (right)
+		{
+			cs.setFillColor(Color::Red);
+		}
+		else
+		{
+			cs.setFillColor(Color::Cyan);
+		}
+		
+		cs.setRadius(8);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
 		cs.setPosition(points[i].pos.x, points[i].pos.y);
 
@@ -2031,6 +1963,7 @@ void Wire::Reset()
 	frame = 0;
 	pullStrength = startPullStrength;
 	anchor.Reset();
+	shaderOffset = 0;
 }
 
 V2d Wire::GetOriginPos( bool test )
