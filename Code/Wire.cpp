@@ -380,9 +380,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					}
 					else
 					{
-						if( right )
+						if( true )
 						{
-							fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
+							fuseQuantity = length(retractPlayerPos - points[numPoints - 1].pos);
 						}
 						else
 						{
@@ -736,7 +736,7 @@ bool Wire::TryFire()
 				double angle = (PI / 32.0) * currInput.leftStickDirection;
 				fireDir.x = cos(angle);
 				fireDir.y = -sin(angle);
-				cout << "fireDir: " << fireDir.x << ", " << fireDir.y << endl;
+				//cout << "fireDir: " << fireDir.x << ", " << fireDir.y << endl;
 				//double angle = currInput.leftStickRadians;
 
 				//double degs = angle / PI * 180.0;
@@ -1525,7 +1525,7 @@ void Wire::UpdateQuads()
 	{
 		if( state == RETRACTING )
 		{
-			if( right )
+			if( true )
 			{
 				currNumPoints = fusePointIndex;
 				//cap++;
@@ -1549,7 +1549,7 @@ void Wire::UpdateQuads()
 					currWirePos = anchor.pos;
 					if( state == RETRACTING )
 					{
-						if( right )
+						if( true )
 						{
 							V2d start = anchor.pos;//points[pointI-1].pos;
 							V2d end = retractPlayerPos;
@@ -1574,9 +1574,9 @@ void Wire::UpdateQuads()
 				else
 				{
 					currWirePos = anchor.pos;
-					if( state == RETRACTING && ( (right && fusePointIndex == 0) || ( !right ) ) )
+					if( state == RETRACTING && fusePointIndex == 0 )//( (right && fusePointIndex == 0) || ( !right ) ) )
 					{
-						if( right )
+						if( true )
 						{
 							V2d start = anchor.pos;//points[0].pos;//points[pointI-1].pos;
 							V2d end = points[pointI].pos;
@@ -1626,7 +1626,7 @@ void Wire::UpdateQuads()
 					if( state == RETRACTING )
 					{
 						currWirePos = points[0].pos;
-						if( right )
+						if( true )
 						{
 							V2d start = points[pointI-1].pos;
 							V2d end;
@@ -1842,14 +1842,7 @@ void Wire::Retract()
 	}
 	else
 	{
-		if( right )
-		{
-			fuseQuantity = length( retractPlayerPos - points[numPoints-1].pos );
-		}
-		else
-		{
-			fuseQuantity = length( anchor.pos - points[0].pos );
-		}
+		fuseQuantity = length(retractPlayerPos - points[numPoints - 1].pos);
 	}
 	}
 	else if (state == HITENEMY)
@@ -2087,8 +2080,8 @@ void Wire::UpdateFuse()
 	double momentum = retractSpeed;
 	while( !approxEquals( momentum, 0 ) )
 	{
-		//if( true )
-		if( right )
+		if( true )
+		//if( right )
 		{
 			if( fuseQuantity > momentum )
 			{
