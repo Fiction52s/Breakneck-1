@@ -66,7 +66,7 @@ Falcon::Falcon(ActorParams *ap)
 
 void Falcon::HandleNoHealth()
 {
-	cutObject->SetFlipHoriz(facingRight);
+	cutObject->SetFlipHoriz(!facingRight);
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
 

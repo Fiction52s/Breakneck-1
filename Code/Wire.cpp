@@ -736,45 +736,6 @@ bool Wire::TryFire()
 				double angle = (PI / 32.0) * currInput.leftStickDirection;
 				fireDir.x = cos(angle);
 				fireDir.y = -sin(angle);
-				//cout << "fireDir: " << fireDir.x << ", " << fireDir.y << endl;
-				//double angle = currInput.leftStickRadians;
-
-				//double degs = angle / PI * 180.0;
-				//double sec = 360.0 / 64.0;
-				//int mult = floor((degs / sec) + .5);
-
-				//if (mult < 0)
-				//{
-				//	mult += 64;
-				//}
-
-				//int test;
-				//int bigger, smaller;
-				//for (int i = 0; i < aimingPrimaryAngleRange; ++i)
-				//{
-				//	test = i + 1;
-				//	for (int j = 0; j < 64; j += 16)
-				//	{
-				//		bigger = mult + test;
-				//		smaller = mult - test;
-				//		if (smaller < 0)
-				//			smaller += 64;
-				//		if (bigger >= 64)
-				//			bigger -= 64;
-
-				//		if (bigger == j || smaller == j)
-				//		{
-				//			mult = j;
-				//		}
-				//	}
-				//}
-
-				//angle = (PI / 32.0) * mult;
-
-				////cout << "mult: " << mult << endl;
-
-				//fireDir.x = cos(angle);
-				//fireDir.y = -sin(angle);
 			}
 			else
 			{
