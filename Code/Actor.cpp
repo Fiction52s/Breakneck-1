@@ -11376,8 +11376,8 @@ void Actor::UpdatePhysics()
 
 				if( approxEquals( m, 0 ) )
 				{
-					if( !simulationMode )
-						cout << "shouldn't be hit. movement issue with approxequals(0)" << endl;
+					//if( !simulationMode )
+					//	cout << "shouldn't be hit. movement issue with approxequals(0)" << endl;
 					if( groundSpeed > 0 )
 					{
 						Edge *next = ground->edge1;

@@ -277,14 +277,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if (antiWireGrassCount == 0)
 				{
 					state = HIT;
-					if (!triggerDown)
-					{
-						canRetractGround = true;
-					}
-					else
-					{
-						canRetractGround = false;
-					}
+					SetCanRetractGround();
 					hitStallCounter = framesFiring;
 
 				}
@@ -305,6 +298,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		{
 			totalLength = GetCurrentTotalLength();
 
+			bool hitStallFinished = hitStallCounter >= hitStallFrames;
+
 			if( totalLength > maxTotalLength )
 			{
 				state = RELEASED;
@@ -313,7 +308,8 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 			}
 			else
 			{
-				if( canRetractGround && !triggerDown && prevTriggerDown )
+				//if( canRetractGround && 
+				if(hitStallFinished && !triggerDown && prevTriggerDown )
 				{
 					Retract();
 					
@@ -330,12 +326,12 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 			bool a = player->ground == NULL;
 			bool b = !touchEdgeWithWire;
-			bool c = hitStallCounter >= hitStallFrames;
+			
 			bool d = triggerDown;
 			bool e = player->oldAction != Actor::WALLCLING && player->oldAction != Actor::WALLATTACK && player->action != Actor::WALLATTACK;
 			bool f = ( !player->bounceFlameOn || player->framesSinceBounce > 8 || player->oldBounceEdge == NULL ) && player->bounceEdge == NULL;
 			
-			if( a && b && c && d && e && f )
+			if( a && b && hitStallFinished && d && e && f )
 			{
 				//cout << "playeraction: " << player->action << endl;
 				//cout << "set state pulling" << endl;
@@ -397,14 +393,7 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 				if( triggerDown && ( touchEdgeWithWire || player->action == Actor::WALLCLING ) )
 				{
 					state = HIT;
-					if( !triggerDown )
-					{
-						canRetractGround = true;
-					}
-					else
-					{
-						canRetractGround = false;
-					}
+					SetCanRetractGround();
 				}
 			}
 			break;
@@ -434,6 +423,17 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 		break;
 	}
 	}
+
+
+	if (state == RETRACTING)
+	{
+		playerPos = retractPlayerPos;
+	}
+	else
+	{
+		playerPos = GetPlayerPos();//GetOriginPos(true);
+	}
+	storedPlayerPos = playerPos;
 
 	switch( state )
 	{
@@ -519,34 +519,10 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 
 				state = HIT;
 
-				if( !triggerDown )
-				{
-					canRetractGround = true;
-				}
-				else
-				{
-					canRetractGround = false;
-				}
+				SetCanRetractGround();
 				hitStallCounter = framesFiring;
 
 				storedPlayerPos = playerPos;
-				//storedPlayerPos = playerPos;
-				//state = HIT;
-				//if( !triggerDown )
-				//{
-				//	canRetractGround = true;
-				//}
-				//else
-				//{
-				////	canRetractGround = false;
-				//}
-				//numPoints = 0;
-				//anchor.pos = minSideEdge->v0;
-				//anchor.quantity = 0;
-				//anchor.e = minSideEdge;
-				//UpdateAnchors( V2d( 0, 0 ) );
-
-				//UpdateAnchors( V2d( 0, 0 ) );
 			}
 			break;
 		}
@@ -760,6 +736,7 @@ bool Wire::TryFire()
 				double angle = (PI / 32.0) * currInput.leftStickDirection;
 				fireDir.x = cos(angle);
 				fireDir.y = -sin(angle);
+				cout << "fireDir: " << fireDir.x << ", " << fireDir.y << endl;
 				//double angle = currInput.leftStickRadians;
 
 				//double degs = angle / PI * 180.0;
@@ -832,7 +809,8 @@ bool Wire::TryFire()
 		{
 			anchor.enemy->HandleWireUnanchored(this);
 		}
-		anchor.enemy = NULL;
+
+		anchor.Reset();
 
 		wireTip.setRotation((angle / PI ) * 180 + 90);
 
@@ -1016,18 +994,12 @@ void Wire::UpdateAnchors( V2d vel )
 			storedPlayerPos = playerPos;
 			state = HIT;
 			hitStallCounter = framesFiring;
-			if (!triggerDown)
-			{
-				canRetractGround = true;
-			}
-			else
-			{
-				canRetractGround = false;
-			}
+			SetCanRetractGround();
 			numPoints = 0;
 			anchor.pos = foundEnemy->GetCamPoint(foundIndex); //minSideEdge->v0;
 			anchor.quantity = 0;
-			anchor.e = NULL;//minSideEdge;
+
+			anchor.Reset();
 
 			anchor.enemy = foundEnemy;
 			anchorVel = V2d(0, 0);
@@ -1070,14 +1042,7 @@ void Wire::UpdateAnchors( V2d vel )
 					storedPlayerPos = playerPos;
 					state = HIT;
 					hitStallCounter = framesFiring;
-					if (!triggerDown)
-					{
-						canRetractGround = true;
-					}
-					else
-					{
-						canRetractGround = false;
-					}
+					SetCanRetractGround();
 					numPoints = 0;
 					anchor.pos = minSideEdge->v0;
 					anchor.quantity = 0;
@@ -1089,6 +1054,20 @@ void Wire::UpdateAnchors( V2d vel )
 	}
 
 	storedPlayerPos = playerPos;
+}
+
+void Wire::SetCanRetractGround()
+{
+	if (!triggerDown)
+	{
+		canRetractGround = true;
+	}
+	else
+	{
+		canRetractGround = false;
+	}
+
+	//canRetractGround = true;
 }
 
 void Wire::HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion )
@@ -2036,7 +2015,7 @@ void Wire::Reset()
 	antiWireGrassCount = 0;
 	frame = 0;
 	pullStrength = startPullStrength;
-	anchor.enemy = NULL;
+	anchor.Reset();
 }
 
 V2d Wire::GetOriginPos( bool test )

@@ -293,7 +293,7 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	debugText.setFillColor(Color::White);
 //	debugText.setOutlineColor(Color::Black);
 	debugText.setString(
-		"Hold X and press Dpad Down\n"
+		"Hold B and press Dpad Down\n"
 		"while paused to store a debug\n"
 		"replay. The game is currently a\n"
 		"work in progress.\nThanks for testing\n\nPress Y to restart w/ ghost");

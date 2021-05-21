@@ -24,6 +24,10 @@ struct WirePoint
 
 	WirePoint()
 	{
+		Reset();
+	}
+	void Reset()
+	{
 		e = NULL;
 		enemy = NULL;
 	}
@@ -170,6 +174,7 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	void UpdateAnchors( V2d vel );
 	void UpdateEnemyAnchor();
 	bool TryFire();
+	void SetCanRetractGround();
 	void HandleRayCollision( Edge *edge, double edgeQuantity, double rayPortion );
 	void UpdateState( bool touchEdgeWithWire );
 	void Draw( sf::RenderTarget *target );
