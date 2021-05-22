@@ -404,6 +404,7 @@ bool SaveMenuScreen::Update()
 		}
 		case CONFIRMCOPY:
 		case CONFIRMDELETE:
+		case CONFIRMDELETE2:
 		case COPY:
 		{
 			frame = 0;
@@ -489,6 +490,21 @@ bool SaveMenuScreen::Update()
 			}
 		}
 		else if (action == CONFIRMDELETE)
+		{
+			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
+			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
+			{
+				action = CONFIRMDELETE2;
+				confirmPopup.SetText("Save file will be permanently deleted. Continue?");
+				frame = 0;
+			}
+			else if (res == SaveMenuConfirmPopup::OPTION_BACK)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+		}
+		else if (action == CONFIRMDELETE2)
 		{
 			int res = confirmPopup.Update(menuCurrInput, menuPrevInput);
 			if ( res == SaveMenuConfirmPopup::OPTION_CONFIRM)
@@ -816,7 +832,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 	int endDraw = 12 * 3 + 24 * 2;
 	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU 
-		|| action == CONFIRMDELETE || action == CONFIRMCOPY || action == COPY || action == INFOPOP )
+		|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP )
 	{
 		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}
@@ -848,7 +864,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	{
 		skinMenu->Draw(target);
 	}
-	else if (action == CONFIRMDELETE || action == CONFIRMCOPY)
+	else if (action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY)
 	{
 		confirmPopup.Draw(target);
 	}

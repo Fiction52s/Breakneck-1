@@ -80,6 +80,7 @@ struct SaveMenuScreen : TilesetManager
 		FADEIN,
 		SKINMENU,
 		CONFIRMDELETE,
+		CONFIRMDELETE2,
 		CONFIRMCOPY,
 		INFOPOP,
 		COPY,

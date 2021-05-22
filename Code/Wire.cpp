@@ -123,10 +123,12 @@ Wire::Wire( Actor *p, bool r)
 	//eventually you can split this up into smaller sections so that they don't all need to draw
   quadHalfWidth( 8 ), ts_wire( NULL ), frame( 0 ), animFactor( 1 ), offset( 8, 18 )
 {
-	int numCurveQuads = 2;
-	int numCurveVertices = (MAX_POINTS + 1) * 4;
+	//int numCurveQuads = 2;
+	//int numCurveVertices = (MAX_POINTS + 1) * 4;
 	numQuadVertices = (MAX_POINTS+1) * 4;//(int)((ceil( maxTotalLength / 8.0 ) + extraBuffer) * 4 );
-	quads = new Vertex[numQuadVertices + numCurveVertices];
+	quads = new Vertex[numQuadVertices];// +numCurveVertices];
+
+	nodeQuads = new Vertex[numQuadVertices];
 
 	minimapQuads = new Vertex[numQuadVertices];
 
@@ -154,6 +156,8 @@ Wire::Wire( Actor *p, bool r)
 		tipIndex = 2;
 		ts_miniHit = player->sess->GetTileset( "Env/rain_64x64.png", 64, 64 );
 	}
+
+	ts_wireNode = player->sess->GetSizedTileset("Kin/Powers/wire_node_16x16.png");
 
 	ts_wireTip = player->sess->GetTileset( "Kin/Powers/wire_tips_16x16.png", 16, 16 );
 
@@ -215,6 +219,7 @@ Wire::~Wire()
 {
 	delete[] quads;
 	delete[] minimapQuads;
+	delete[] nodeQuads;
 
 	delete tipHitboxInfo;
 }
@@ -1699,7 +1704,18 @@ void Wire::UpdateQuads()
 		float width = ts_wire->texture->getSize().x;
 		float height = ts_wire->texture->getSize().y;
 
-	//	IntRect ir = ts_wire->GetSubRect(0);
+		if (pointI >= 0)
+		{
+			SetRectCenter(nodeQuads + startIndex * 4, ts_wireNode->tileWidth,
+				ts_wireNode->tileHeight, Vector2f(currWireStart));
+			int nodeTile = 0;
+			if (!right)
+			{
+				nodeTile = 1;
+			}
+			SetRectSubRect(nodeQuads + startIndex * 4, ts_wireNode->GetSubRect(nodeTile));
+		}
+		
 
 		IntRect ir(0, 0, 16, 16 * 16);
 
@@ -1817,7 +1833,7 @@ if (state == FIRING || state == HIT || state == PULLING || state == RETRACTING |
 	target->draw(wireTip);
 }
 
-if (state == HIT || state == PULLING)
+if (state == HIT || state == PULLING || state == RETRACTING)
 {
 	/*CircleShape cs1;
 	cs1.setFillColor(Color::Red);
@@ -1827,9 +1843,14 @@ if (state == HIT || state == PULLING)
 
 	target->draw(cs1);*/
 
+	//if (numPoints > 0)
+	{
+		target->draw(nodeQuads, numVisibleIndexes * 4, sf::Quads, ts_wireNode->texture);
+	}
+	
 	for (int i = 0; i < numPoints; ++i)
 	{
-		CircleShape cs;
+		/*CircleShape cs;
 		if (right)
 		{
 			cs.setFillColor(Color::Red);
@@ -1841,9 +1862,10 @@ if (state == HIT || state == PULLING)
 		
 		cs.setRadius(8);
 		cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
-		cs.setPosition(points[i].pos.x, points[i].pos.y);
+		cs.setPosition(points[i].pos.x, points[i].pos.y);*/
 
-		target->draw(cs);
+		//target->draw(cs);
+		
 	}
 }
 

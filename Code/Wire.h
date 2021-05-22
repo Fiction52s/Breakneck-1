@@ -163,9 +163,11 @@ struct Wire : RayCastHandler, QuadTreeCollider,
 	Tileset *ts_wireTip;
 	Tileset *ts_wire;
 	Tileset *ts_miniHit;
+	Tileset *ts_wireNode;
 	HitboxInfo *tipHitboxInfo;
 	sf::Vertex *quads;
 	sf::Vertex *minimapQuads;
+	sf::Vertex *nodeQuads;
 
 	Wire( Actor *player, bool right );
 	~Wire();
