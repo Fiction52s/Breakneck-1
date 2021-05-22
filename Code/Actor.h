@@ -437,6 +437,9 @@ struct Actor : QuadTreeCollider,
 		SKIN_BONFIRE,
 		SKIN_GDUBS,
 		SKIN_SHADOW,
+		SKIN_DUSK,
+		SKIN_DAWN,
+		SKIN_TRIX,
 		SKIN_Count
 	};
 

@@ -288,7 +288,7 @@ Panel *ActorType::CreatePanel()
 		|| name == "orangeblocker"
 		|| name == "redblocker"
 		|| name == "magentablocker"
-		|| name == "blackblocker" )
+		|| name == "blackblocker")
 	{
 		p = CreateDefaultPanel();
 		std::vector<string> bTypes{ "Grey", "Blue", "Green", "Yellow",
@@ -331,7 +331,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "limitedbouncejuggler"
 		|| name == "limitedbluewirejuggler"
 		|| name == "limitedredwirejuggler"
-		|| name == "limitedmagentawirejuggler")
+		|| name == "limitedmagentawirejuggler"
+		|| name == "limitedball")
 	{
 		p = CreateDefaultPanel();
 		AddLabeledSlider(p, "numJuggles", "required juggles:", 1, 9, 3);

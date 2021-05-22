@@ -13939,6 +13939,106 @@ V2d Actor::GetTrueCenter()
 void Actor::HandleWaterSituation(int wType,
 	SpecialTerrainSituation sit)
 {
+	if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
+	{
+		int skinChoice = SKIN_NORMAL;
+
+		switch (wType)
+		{
+		case TerrainPolygon::WATER_NORMAL:
+		{
+			skinChoice = SKIN_ORANGE;
+			break;
+		}
+		case TerrainPolygon::WATER_GLIDE:
+		{
+			skinChoice = SKIN_GLIDE;
+			break;
+		}
+		case TerrainPolygon::WATER_LOWGRAV:
+		{
+			skinChoice = SKIN_PINK;
+			break;
+		}
+		case TerrainPolygon::WATER_HEAVYGRAV:
+		{
+			skinChoice = SKIN_DAWN;
+			break;
+		}
+		case TerrainPolygon::WATER_BUOYANCY:
+		{
+			skinChoice = SKIN_GDUBS;
+			break;
+		}
+		case TerrainPolygon::WATER_ACCEL:
+		{
+			skinChoice = SKIN_PURPLE;
+			break;
+		}
+		case TerrainPolygon::WATER_ZEROGRAV:
+		{
+			skinChoice = SKIN_GOLD;
+			break;
+		}
+		case TerrainPolygon::WATER_LAUNCHER:
+		{
+			skinChoice = SKIN_DUSK;
+			break;
+		}
+		case TerrainPolygon::WATER_MOMENTUM:
+		{
+			skinChoice = SKIN_VILLAIN;
+			break;
+		}
+		case TerrainPolygon::WATER_TIMESLOW:
+		{
+			skinChoice = SKIN_BONFIRE;
+			break;
+		}
+		case TerrainPolygon::WATER_POISON:
+		{
+			skinChoice = SKIN_TOXIC;
+			break;
+		}
+		case TerrainPolygon::WATER_FREEFLIGHT:
+		{
+			skinChoice = SKIN_MAGI;
+			break;
+		}
+		case TerrainPolygon::WATER_INVERTEDINPUTS:
+		{
+			skinChoice = SKIN_DAWN;
+			break;
+		}
+		case TerrainPolygon::WATER_REWIND:
+		{
+			skinChoice = SKIN_AMERICA;
+			break;
+		}
+		case TerrainPolygon::WATER_SWORDPROJECTILE:
+		{
+			skinChoice = SKIN_RED;
+			break;
+		}
+		case TerrainPolygon::WATER_SUPER:
+		{
+			skinChoice = SKIN_GHOST;
+			break;
+		}
+		}
+
+		if (skinChoice != SKIN_NORMAL)
+		{
+			if (IsNormalSkin())
+				SetSkin(skinChoice);
+		}
+	}
+	else if( sit == SPECIALT_EXIT )
+	{
+		SetSkin(SKIN_NORMAL);
+	}
+
+
 	switch (wType)
 	{
 	case TerrainPolygon::WATER_NORMAL:
@@ -13949,8 +14049,7 @@ void Actor::HandleWaterSituation(int wType,
 			gravModifyFrames = 1;
 			RestoreAirOptions();
 
-			if( IsNormalSkin() )
-				SetSkin(SKIN_ORANGE);
+			
 		}
 		else if (sit == SPECIALT_EXIT)
 		{
@@ -14000,6 +14099,9 @@ void Actor::HandleWaterSituation(int wType,
 			currWall = NULL;
 			bounceEdge = NULL;
 			grindEdge = NULL;
+
+			if (IsNormalSkin())
+				SetSkin(SKIN_GLIDE);
 		}
 
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
