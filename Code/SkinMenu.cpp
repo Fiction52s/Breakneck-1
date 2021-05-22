@@ -34,7 +34,7 @@ SkinMenu::SkinMenu(SaveMenuScreen *p_saveScreen)
 	float totalWidth = gridSpacing.x * 8;
 
 
-	SetGridTopLeft(Vector2f(960 - totalWidth / 2.f, 0));
+	SetGridTopLeft(Vector2f(960 - totalWidth / 2.f - 20, 0));
 
 	rect.setFillColor(Color::White);
 	rect.setSize(Vector2f(64 * skinScale, 64 * skinScale));
@@ -50,6 +50,8 @@ void SkinMenu::SetSelectedIndex(int index)
 {
 	selectedPos.y = index / 8;
 	selectedPos.x = index % 8;
+	rect.setPosition(gridTopLeft + Vector2f(selectedPos.x * gridSpacing.x,
+		selectedPos.y * gridSpacing.y));
 }
 
 

@@ -495,7 +495,7 @@ bool SaveMenuScreen::Update()
 			if (res == SaveMenuConfirmPopup::OPTION_CONFIRM)
 			{
 				action = CONFIRMDELETE2;
-				confirmPopup.SetText("Save file will be permanently deleted. Continue?");
+				confirmPopup.SetText("Save file will be permanently\ndeleted. Continue?");
 				frame = 0;
 			}
 			else if (res == SaveMenuConfirmPopup::OPTION_BACK)
@@ -943,6 +943,7 @@ SaveMenuConfirmPopup::SaveMenuConfirmPopup( MainMenu *mainMenu )
 
 void SaveMenuConfirmPopup::SetPos(sf::Vector2f &pos)
 {
+	position = pos;
 	SetRectCenter(popupBGQuad, size.x, size.y, pos);
 	SetRectCenter(buttonQuads, 128, 128, pos + Vector2f(-100, 50));
 	SetRectCenter(buttonQuads+4, 128, 128, pos + Vector2f(100, 50));
@@ -976,6 +977,8 @@ void SaveMenuConfirmPopup::SetText(const std::string &str)
 	confirmText.setString(str);
 	confirmText.setOrigin(confirmText.getLocalBounds().left
 		+ confirmText.getLocalBounds().width / 2, 0);
+	size = Vector2f(max(confirmText.getGlobalBounds().width + 40.f, 500.f ), 300);
+	SetPos(position);
 }
 
 SaveMenuInfoPopup::SaveMenuInfoPopup(MainMenu *mainMenu)

@@ -46,6 +46,7 @@ struct SaveMenuConfirmPopup
 	sf::Text confirmText;
 	sf::Vertex buttonQuads[4 * 2];
 	Tileset *ts_buttons;
+	sf::Vector2f position;
 	int Update(ControllerState &currInput,
 		ControllerState &prevInput);
 	void SetText(const std::string &str);
