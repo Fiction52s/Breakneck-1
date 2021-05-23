@@ -590,7 +590,7 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	defaultSkinIndex( 0 ),
 	mostRecentWorldSelected( 0 )
 {
-	//CreateSaveWorlds();
+	SetVer(1, 0);
 
 	stringstream ss;
 	ss << "Resources/Data/" << name << ".kin";
@@ -997,10 +997,19 @@ bool SaveFile::ShardIsCaptured(int sType)
 //	boost::filesystem::copy_file(from, to, copy_option::fail_if_exists);
 //}
 
+void SaveFile::SetVer(int v1, int v2)
+{
+	ver1 = v1;
+	ver2 = v2;
+}
+
 bool SaveFile::LoadInfo(ifstream &is)
 {
 	if (is.is_open())
 	{
+		is >> ver1;
+		is >> ver2;
+
 		getline(is, controlProfileName);
 		is >> defaultSkinIndex;
 		is >> mostRecentWorldSelected;
@@ -1102,6 +1111,8 @@ void SaveFile::Save()
 
 	if (of.is_open())
 	{
+		of << ver1 << " " << ver2 << endl;
+
 		of << controlProfileName << endl;
 
 		of << defaultSkinIndex << endl;
@@ -1187,6 +1198,9 @@ bool GlobalSaveFile::Load()
 
 	if (is.is_open())
 	{
+		is >> ver1;
+		is >> ver2;
+
 		skinField.Load(is);
 
 		//add more later
@@ -1199,6 +1213,12 @@ bool GlobalSaveFile::Load()
 	}
 }
 
+void GlobalSaveFile::SetVer(int v1, int v2)
+{
+	ver1 = v1;
+	ver2 = v2;
+}
+
 void GlobalSaveFile::Save()
 {
 	ofstream of;
@@ -1209,6 +1229,8 @@ void GlobalSaveFile::Save()
 
 	if (of.is_open())
 	{
+		of << ver1 << " " << ver2 << endl;
+
 		skinField.Save(of);
 
 		of.close();
@@ -1236,6 +1258,7 @@ bool GlobalSaveFile::IsSkinUnlocked(int skinIndex)
 
 void GlobalSaveFile::SetToDefaults()
 {
+	SetVer(1, 0);
 	skinField.Reset();
 	skinField.SetBit(0, true);
 }

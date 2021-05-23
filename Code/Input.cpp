@@ -455,6 +455,11 @@ void GameController::UpdateLeftStickPad()
 	}
 }
 
+bool GameController::UpdatePS5()
+{
+
+}
+
 bool GameController::UpdateGCC()
 {
 	if (!gcController.enabled)

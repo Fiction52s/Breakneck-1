@@ -216,6 +216,7 @@ struct SaveFile
 
 	bool IsUnlockedLevel(Sector *sec, int index );
 	bool IsFullyCompleteLevel(Level *lev);
+	void SetVer(int v1, int v2);
 
 	const static int MAX_SECTORS = 8;
 	const static int MAX_LEVELS_PER_SECTOR = 8;
@@ -239,6 +240,9 @@ struct SaveFile
 	BitField newShardField; //for unviewed shards	
 	int defaultSkinIndex;
 
+	int ver1;
+	int ver2;
+
 private:
 	void CalcProgress(int start, int end, float &totalMaps,
 		float &totalBeaten);
@@ -260,10 +264,14 @@ struct GlobalSaveFile
 	BitField skinField;
 	static std::string fileName;
 
+	int ver1;
+	int ver2;
+
 	GlobalSaveFile();
 	void SetToDefaults();
 	void Save();
 	bool Load();
+	void SetVer(int v1, int v2);
 	bool IsSkinUnlocked(int skinIndex);
 	void UnlockSkin(int skinIndex);
 };

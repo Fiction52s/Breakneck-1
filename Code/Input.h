@@ -5,6 +5,7 @@
 #include <map>
 #include <SFML/Graphics.hpp>
 #include "GCC/GCController.h"
+#include <ds5w.h>
 
 //true if down, false if up
 //^^make this more efficient if I'm using it for networking
@@ -232,6 +233,7 @@ public:
 	KeyboardSettings keySettings;
 	static float stickThresh;
 	GCC::GCController gcController;
+	DS5W::DS5InputState ps5Controller;
 	sf::Vector2i gcDefaultControl;
 	sf::Vector2i gcDefaultC;
 	int gcDefaultLeftTrigger;
@@ -240,6 +242,7 @@ private:
 	DWORD m_index;
 	bool UpdateGCC();
 	bool UpdateXBOX();
+	bool UpdatePS5();
 	bool UpdateKeyboard();
 	ControllerType controllerType;
 
