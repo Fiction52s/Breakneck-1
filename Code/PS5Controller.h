@@ -4,22 +4,32 @@
 #include <Windows.h>
 #include <ds5w.h>
 
+struct GameController;
+struct MainMenu;
+struct PS5ControllerManager
+{
+	PS5ControllerManager();
+	const static int MAX_CONTROLLERS = 4;
+	unsigned int numControllers;
+	DS5W::DeviceEnumInfo infos[4];
+	bool CheckForControllers();
+	void InitControllers( MainMenu *mm);
+};
+
 struct PS5Controller
 {
-	static unsigned int numControllers;
-	static DS5W::DeviceEnumInfo infos[4];
-	static bool CheckForControllers();
-
 	bool enabled;
+	int index;
 
-	
 	DS5W::DeviceContext context;
 	DS5W::DS5InputState inState;
 
+
 	PS5Controller();
+	~PS5Controller();
 	void ClearState();
-	bool InitContext();
-	bool Update();
+	bool InitContext(DS5W::DeviceEnumInfo &info);
+	bool UpdateState();
 	void CleanupContext();
 };
 

@@ -5,7 +5,7 @@
 #include <map>
 #include <SFML/Graphics.hpp>
 #include "GCC/GCController.h"
-#include <ds5w.h>
+#include "PS5Controller.h"
 
 //true if down, false if up
 //^^make this more efficient if I'm using it for networking
@@ -184,6 +184,7 @@ enum ControllerType
 	CTYPE_XBOX,
 	CTYPE_GAMECUBE,
 	CTYPE_PS4,
+	CTYPE_PS5,
 	CTYPE_KEYBOARD,
 	CTYPE_NONE,
 	CTYPE_Count
@@ -233,7 +234,7 @@ public:
 	KeyboardSettings keySettings;
 	static float stickThresh;
 	GCC::GCController gcController;
-	DS5W::DS5InputState ps5Controller;
+	PS5Controller ps5Controller;
 	sf::Vector2i gcDefaultControl;
 	sf::Vector2i gcDefaultC;
 	int gcDefaultLeftTrigger;

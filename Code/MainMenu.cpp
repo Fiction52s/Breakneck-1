@@ -253,6 +253,13 @@ void MainMenu::CheckForControllers()
 {
 	//currently only checks for gamecube, xbox doesnt need it.
 	//cout << "start checking" << endl;
+
+	ps5ControllerManager.CheckForControllers();
+
+	ps5ControllerManager.InitControllers(this);
+	
+
+
 	gccDriver = new GCC::USBDriver;
 	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
 	{
@@ -310,12 +317,12 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
-	CheckForControllers();
-	
 	for (int i = 0; i < 4; ++i)
 	{
 		controllers[i] = new GameController(i);
 	}
+
+	CheckForControllers();
 
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();

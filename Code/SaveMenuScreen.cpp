@@ -142,6 +142,9 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	case ControllerType::CTYPE_XBOX:
 		tileOffset = 0;
 		break;
+	case ControllerType::CTYPE_PS5:
+		tileOffset = 16 * 1;
+		break;
 	case ControllerType::CTYPE_GAMECUBE:
 		tileOffset = 16 * 2;
 		break;

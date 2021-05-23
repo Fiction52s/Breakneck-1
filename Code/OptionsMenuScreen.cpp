@@ -30,6 +30,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	int windowModeInts[] = { sf::Style::None, sf::Style::Default, sf::Style::Fullscreen };
 
 	int controllerOptionInts[] = { ControllerType::CTYPE_XBOX, ControllerType::CTYPE_GAMECUBE,
+		ControllerType::CTYPE_PS5,
 	ControllerType::CTYPE_KEYBOARD };
 
 	Vector2i resolutions[] = { Vector2i(1920, 1080), Vector2i(1600, 900), Vector2i(1366, 768),
@@ -41,7 +42,7 @@ OptionsMenuScreen::OptionsMenuScreen(MainMenu *p_mainMenu)
 	horizWindowModes = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
 		windowModes, "Window Mode", 300, windowModeInts, true, 0, 500);
 
-	string controllerOptions[] = { "XBOX", "Gamecube", "Keyboard" };
+	string controllerOptions[] = { "XBOX", "Gamecube", "PS5", "Keyboard" };
 	horizDefaultController = new UIHorizSelector<int>(NULL, NULL, &mainMenu->tilesetManager, &mainMenu->arial, 3,
 		controllerOptions, "Default control type:", 600, controllerOptionInts, true, 0, 400);
 

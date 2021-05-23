@@ -457,7 +457,167 @@ void GameController::UpdateLeftStickPad()
 
 bool GameController::UpdatePS5()
 {
+	if (!ps5Controller.enabled)
+	{
+		return false;
+	}
 
+	ps5Controller.UpdateState();
+
+	ControllerState tempState;
+
+	controllerType = ControllerType::CTYPE_PS5;
+	
+	/*int lTrigger = GetGCCLeftTrigger();
+	int rTrigger = GetGCCRightTrigger();
+
+	Vector2i left(gcController.axis.left_x - gcDefaultControl.x,
+		gcController.axis.left_y - gcDefaultControl.y);*/
+
+	char leftX = ps5Controller.inState.leftStick.x;
+	char leftY = ps5Controller.inState.leftStick.y;
+
+	if (leftX < -127)
+	{
+		leftX = -127;
+	}
+	if (leftY < -127)
+	{
+		leftY = -127;
+	}
+
+	double LX = leftX / 127.0;
+	double LY = leftY / 127.0;
+
+	double magnitude = sqrt(LX * LX + LY * LY);
+
+	double normalizedMagnitude = 0;
+
+	if (magnitude > GC_LEFT_STICK_DEADZONE)//LEFT_STICK_DEADZONE)
+	{
+		double normalizedLX = LX / magnitude;
+		double normalizedLY = LY / magnitude;
+		if (magnitude > 1.0)
+			magnitude = 1.0;
+
+		normalizedMagnitude = magnitude;
+
+		m_state.leftStickRadians = atan(normalizedLY / normalizedLX);
+		if (normalizedLX < 0.0f)
+			m_state.leftStickRadians += PI;
+	}
+	else
+	{
+		magnitude = 0.0f;
+		normalizedMagnitude = 0.0;
+
+		m_state.leftStickRadians = 0.0;
+	}
+
+	m_state.leftStickMagnitude = normalizedMagnitude;
+
+
+	char rightX = ps5Controller.inState.rightStick.x;
+	char rightY = ps5Controller.inState.rightStick.y;
+
+	if (rightX < -127)
+	{
+		rightX = -127;
+	}
+	if (rightY < -127)
+	{
+		rightY = -127;
+	}
+
+	double RX = rightX / 127.0;
+	double RY = rightY / 127.0;
+
+	magnitude = sqrt(RX * RX + RY * RY);
+
+	double normalizedRX = RX / magnitude;
+	double normalizedRY = RY / magnitude;
+
+	if (magnitude > GC_RIGHT_STICK_DEADZONE)
+	{
+		if (magnitude > 1.0)
+			magnitude = 1.0;
+
+		//magnitude -= RIGHT_STICK_DEADZONE;
+		normalizedMagnitude = magnitude;// / (32767 - RIGHT_STICK_DEADZONE);
+	}
+	else
+	{
+		magnitude = 0.0f;
+		normalizedMagnitude = 0.0f;
+	}
+
+	m_state.rightStickMagnitude = normalizedMagnitude;
+	m_state.rightStickRadians = atan(normalizedRY / normalizedRX);
+	if (normalizedRX < 0.0f)
+		m_state.rightStickRadians += PI;
+
+
+	m_state.start = ps5Controller.inState.buttonsA & DS5W_ISTATE_BTN_A_MENU;
+	m_state.back = ps5Controller.inState.buttonsA & DS5W_ISTATE_BTN_A_SELECT;
+	m_state.leftShoulder = ps5Controller.inState.buttonsA & DS5W_ISTATE_BTN_A_LEFT_BUMPER;
+	m_state.rightShoulder = ps5Controller.inState.buttonsA & DS5W_ISTATE_BTN_A_RIGHT_BUMPER;
+	m_state.A = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_BTX_CROSS;
+	m_state.B = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_BTX_CIRCLE;
+	m_state.X = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_BTX_SQUARE;
+	m_state.Y = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_BTX_TRIANGLE;
+	m_state.leftPress = false;//b & XINPUT_GAMEPAD_LEFT_THUMB;
+	m_state.rightPress = false;//b & XINPUT_GAMEPAD_RIGHT_THUMB;
+
+	int dpadUp = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_DPAD_UP;
+	int dpadLeft = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_DPAD_LEFT;
+	int dpadRight = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_DPAD_RIGHT;
+	int dpadDown = ps5Controller.inState.buttonsAndDpad & DS5W_ISTATE_DPAD_DOWN;
+
+	m_state.pad = dpadUp + (dpadDown << 1) + (dpadLeft << 2) + (dpadRight << 3);//gcController.buttons.dpad_up //( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
+
+	m_state.leftTrigger = 255 * (int)(ps5Controller.inState.leftTrigger);
+	m_state.rightTrigger = 255 * (int)(ps5Controller.inState.rightTrigger);
+
+	//can use analog triggers for the triggers here now.
+
+
+	UpdateLeftStickPad();
+
+	m_state.rightStickPad = 0;
+	if (m_state.rightStickMagnitude > stickThresh)
+	{
+		//cout << "left stick radians: " << m_state.leftStickRadians << endl;
+		float x = cos(m_state.rightStickRadians);
+		float y = sin(m_state.rightStickRadians);
+
+		if (x > stickThresh)
+			m_state.rightStickPad += 1 << 3;
+		if (x < -stickThresh)
+			m_state.rightStickPad += 1 << 2;
+		if (y > stickThresh)
+			m_state.rightStickPad += 1;
+		if (y < -stickThresh)
+			m_state.rightStickPad += 1 << 1;
+	}
+	tempState = m_state;
+	m_unfilteredState = m_state;
+
+	tempState.A = Pressed(filter[ControllerSettings::JUMP]);
+	tempState.B = false;//Pressed(filter[ControllerSettings::DASH]);
+	tempState.rightShoulder = Pressed(filter[ControllerSettings::ATTACK]);
+	tempState.X = Pressed(filter[ControllerSettings::DASH]);
+	tempState.Y = false;//Pressed(filter[ControllerSettings::GRIND]);
+	tempState.leftShoulder = Pressed(filter[ControllerSettings::SHIELD]);
+	tempState.leftTrigger = Pressed(filter[ControllerSettings::LEFTWIRE]);
+	tempState.rightTrigger = Pressed(filter[ControllerSettings::RIGHTWIRE]);
+	tempState.back = Pressed(filter[ControllerSettings::MAP]);
+	tempState.start = Pressed(filter[ControllerSettings::PAUSE]);
+
+	m_state = tempState;
+
+	m_state.SetLeftDirection();
+
+	return true;
 }
 
 bool GameController::UpdateGCC()
@@ -481,16 +641,6 @@ bool GameController::UpdateGCC()
 
 	int lTrigger = GetGCCLeftTrigger();
 	int rTrigger = GetGCCRightTrigger();
-	/*if (gcDefaultLeftTrigger < 0)
-	{
-	gcDefaultLeftTrigger =
-	}
-	if (gcDefaultRightTrigger < 0)
-	{
-	gcDefaultRightTrigger =
-	}*/
-
-	//int zeroAxis = 
 
 	Vector2i left(gcController.axis.left_x - gcDefaultControl.x,
 		gcController.axis.left_y - gcDefaultControl.y);
@@ -941,12 +1091,41 @@ bool GameController::UpdateState()
 
 		if (!res)
 		{
+			res = UpdatePS5();
+		}
+
+		if (!res)
+		{
 			res = UpdateKeyboard();
 		}
 	}
 	else if (defaultInputFormat == ControllerType::CTYPE_XBOX)
 	{
 		res = UpdateXBOX();
+
+		if (!res)
+		{
+			res = UpdatePS5();
+		}
+
+		if (!res)
+		{
+			res = UpdateGCC();
+		}
+
+		if (!res)
+		{
+			res = UpdateKeyboard();
+		}
+	}
+	else if (defaultInputFormat == ControllerType::CTYPE_PS5)
+	{
+		res = UpdatePS5();
+
+		if (!res)
+		{
+			res = UpdateXBOX();
+		}
 
 		if (!res)
 		{
@@ -1456,6 +1635,8 @@ int GameController::Pressed( XBoxButton b )
 		return m_state.back;
 		break;
 	}
+
+	return 0;
 }
 
 float GameController::stickThresh = .45;//.4;

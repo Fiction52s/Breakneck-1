@@ -555,6 +555,8 @@ struct MainMenu
 	GCC::VJoyGCControllers *joys;
 	bool gccDriverEnabled;
 
+	PS5ControllerManager ps5ControllerManager;
+
 	sf::Vector2i GetPixelPos();
 
 	bool IsKeyPressed(int key);
