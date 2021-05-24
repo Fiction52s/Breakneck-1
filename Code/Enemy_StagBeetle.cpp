@@ -101,14 +101,14 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	cutObject->SetSubRectBack(1);
 	cutObject->SetScale(scale);
 
-	shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
+	//shield = new Shield(Shield::ShieldType::T_BLOCK, 80 * scale, 3, this);
 
 	ResetEnemy();
 }
 
 StagBeetle::~StagBeetle()
 {
-	delete shield;
+	//delete shield;
 }
 
 void StagBeetle::SetLevel(int lev)
@@ -157,9 +157,9 @@ void StagBeetle::ResetEnemy()
 	UpdateSprite();
 	UpdateHitboxes();
 
-	currShield = shield;
-	shield->Reset();
-	shield->SetPosition(GetPosition());
+	//currShield = shield;
+	//shield->Reset();
+	//shield->SetPosition(GetPosition());
 }
 
 void StagBeetle::ActionEnded()
@@ -318,7 +318,7 @@ void StagBeetle::UpdateEnemyPhysics()
 			gn = groundMover->ground->Normal();
 		}
 
-		shield->SetPosition(GetPosition());
+		//shield->SetPosition(GetPosition());
 	}
 }
 

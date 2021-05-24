@@ -493,7 +493,7 @@ bool GameController::UpdatePS5()
 
 	double normalizedMagnitude = 0;
 
-	if (magnitude > GC_LEFT_STICK_DEADZONE)//LEFT_STICK_DEADZONE)
+	if (magnitude > PS5Controller::deadZone)//LEFT_STICK_DEADZONE)
 	{
 		double normalizedLX = LX / magnitude;
 		double normalizedLY = LY / magnitude;
@@ -537,7 +537,7 @@ bool GameController::UpdatePS5()
 	double normalizedRX = RX / magnitude;
 	double normalizedRY = RY / magnitude;
 
-	if (magnitude > GC_RIGHT_STICK_DEADZONE)
+	if (magnitude > PS5Controller::deadZone)
 	{
 		if (magnitude > 1.0)
 			magnitude = 1.0;
@@ -575,8 +575,8 @@ bool GameController::UpdatePS5()
 
 	m_state.pad = dpadUp + (dpadDown << 1) + (dpadLeft << 2) + (dpadRight << 3);//gcController.buttons.dpad_up //( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 );
 
-	m_state.leftTrigger = 255 * (int)(ps5Controller.inState.leftTrigger);
-	m_state.rightTrigger = 255 * (int)(ps5Controller.inState.rightTrigger);
+	m_state.leftTrigger = ps5Controller.inState.leftTrigger;
+	m_state.rightTrigger = ps5Controller.inState.rightTrigger;
 
 	//can use analog triggers for the triggers here now.
 
@@ -938,7 +938,7 @@ bool GameController::UpdateKeyboard()
 
 	if (m_index == 0)
 	{
-		controllerType = ControllerType::CTYPE_PS4; //change to keyboard soon
+		controllerType = ControllerType::CTYPE_KEYBOARD; //change to keyboard soon
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
 		//WORD b = state.Gamepad.wButtons;

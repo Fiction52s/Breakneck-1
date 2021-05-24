@@ -23,7 +23,7 @@ struct PS5Controller
 
 	DS5W::DeviceContext context;
 	DS5W::DS5InputState inState;
-
+	const static float deadZone;
 
 	PS5Controller();
 	~PS5Controller();

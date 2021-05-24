@@ -259,7 +259,6 @@ void MainMenu::CheckForControllers()
 	ps5ControllerManager.InitControllers(this);
 	
 
-
 	gccDriver = new GCC::USBDriver;
 	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
 	{
@@ -343,6 +342,7 @@ MainMenu::MainMenu()
 	ts_menuSelector = tilesetManager.GetSizedTileset("Menu/menu_selector_64x64.png");
 
 	ts_buttonIcons = tilesetManager.GetSizedTileset("Menu/button_icon_128x128.png");
+	ts_keyboardIcons = tilesetManager.GetSizedTileset("Menu/keyboard_icons_64x64.png");
 	ts_thanksForPlaying = NULL;
 
 	selectorSprite.setTexture(*ts_menuSelector->texture);
@@ -1216,6 +1216,44 @@ void MainMenu::GGPOOption()
 	delete edit;
 }
 
+sf::IntRect MainMenu::GetButtonIconTile(int controllerIndex, int baseButtonIndex)
+{
+	ControllerType controllerType = GetController(controllerIndex).GetCType();
+
+	/*CTYPE_XBOX,
+		CTYPE_GAMECUBE,
+		CTYPE_PS4,
+		CTYPE_PS5,
+		CTYPE_KEYBOARD,
+		CTYPE_NONE,*/
+
+	switch (controllerType)
+	{
+	case CTYPE_XBOX:
+		return ts_buttonIcons->GetSubRect(baseButtonIndex);
+	case CTYPE_GAMECUBE:
+		return ts_buttonIcons->GetSubRect(baseButtonIndex + 16 * 2);
+	case CTYPE_PS5:
+	case CTYPE_PS4:
+		return ts_buttonIcons->GetSubRect(baseButtonIndex + 16);
+	case CTYPE_KEYBOARD:
+		return ts_keyboardIcons->GetSubRect(baseButtonIndex);
+	}
+}
+
+Tileset * MainMenu::GetButtonIconTileset(int controllerIndex )
+{
+	ControllerType controllerType = GetController(controllerIndex).GetCType();
+
+	if (controllerType == CTYPE_KEYBOARD)
+	{
+		return ts_keyboardIcons;
+	}
+	else
+	{
+		return ts_buttonIcons;
+	}
+}
 
 ControllerState &MainMenu::GetPrevInput( int index )
 {

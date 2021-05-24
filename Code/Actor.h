@@ -717,6 +717,8 @@ struct Actor : QuadTreeCollider,
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
 
+	EffectPool *glideEffectPool;
+
 	int superActiveLimit;
 	int attackLevelCounterLimit;
 	sf::Vector2f fairSwordOffset[3];
@@ -738,6 +740,7 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
+	Tileset *ts_glideParticle;
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
@@ -916,6 +919,7 @@ struct Actor : QuadTreeCollider,
 	GravityModifier *currGravModifier;
 	sf::Vector2<double> springVel;
 	sf::Vector2<double> springExtra;
+	int springStunFramesStart;
 	int springStunFrames;
 	V2d teleportSpringDest;
 	V2d teleportSpringVel;

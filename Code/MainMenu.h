@@ -617,6 +617,9 @@ struct MainMenu
 	void SetModeLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 
+	sf::IntRect GetButtonIconTile(int controllerIndex, int baseButtonIndex);
+	Tileset * GetButtonIconTileset(int controllerIndex);
+
 	sf::RenderWindow *window;
 	sf::View v;
 	sf::View uiView;
@@ -627,6 +630,7 @@ struct MainMenu
 	LoadingBackpack *loadingBackpack;
 
 	Tileset *ts_buttonIcons;
+	Tileset *ts_keyboardIcons;
 	Tileset *ts_thanksForPlaying;
 	sf::Vertex thanksQuad[4];
 	//GameController controller;

@@ -258,7 +258,7 @@ void KinMenu::UpdateCommandButton()
 		//assert(0);
 		break;
 	default:
-		assert(0);
+		//assert(0);
 		ts_currentButtons = ts_xboxButtons;
 	}
 

@@ -366,6 +366,7 @@ void Actor::PopulateState(PState *ps)
 	ps->oldBounceBooster = oldBounceBooster;
 
 	ps->springStunFrames = springStunFrames;
+	ps->springStunFramesStart = springStunFramesStart;
 
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
@@ -592,6 +593,7 @@ void Actor::PopulateFromState(PState *ps)
 	oldBounceBooster = ps->oldBounceBooster;
 
 	springStunFrames = ps->springStunFrames;
+	springStunFramesStart = ps->springStunFramesStart;
 
 	directionalInputFreezeFrames = ps->directionalInputFreezeFrames;
 }
@@ -3092,6 +3094,14 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
+	ts_glideParticle = sess->GetSizedTileset("Kin/FX/glide_launch_fx_128x128.png");
+
+	glideEffectPool = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
+	glideEffectPool->SetTileset(ts_glideParticle);
+	
+
+	
+
 	ts_dirtyAura = sess->GetTileset("Kin/FX/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
 	//dirtyAuraSprite.setpo
@@ -4470,6 +4480,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
+	glideEffectPool->DeactivateAll();
+
 	SetSkin(SKIN_NORMAL);
 	inBubble = false;
 	specialSlow = false;
@@ -15661,6 +15673,7 @@ bool Actor::SpringLaunch()
 		
 
 		springStunFrames = currSpring->stunFrames;
+		springStunFramesStart = springStunFrames;
 
 		if (currSpring->springType == Spring::TYPE_GLIDE)
 		{
@@ -17450,6 +17463,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw(dirtyAuraSprite);
 	}
 
+	glideEffectPool->Draw(target);
+
 
 	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != GRINDBALL 
 		&& action != RAILGRIND )
@@ -18032,6 +18047,8 @@ void Actor::UpdateSprite()
 
 	UpdateSmallLightning();
 	UpdateRisingAura();
+
+	glideEffectPool->Update();
 
 	UpdateLockedFX();
 

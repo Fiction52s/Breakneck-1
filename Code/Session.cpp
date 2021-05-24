@@ -610,12 +610,12 @@ void Session::RegisterW4Enemies()
 
 	AddBasicGroundWorldEnemy("groundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 3);
 
-	AddWorldEnemy("limitedgroundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), 
+	AddWorldEnemy("limitedgroundedgrindjugglercw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedJugglerParams>, Vector2i(0, 0), Vector2i(128, 128),
 		true, true, false, false, false, true, false, 3);
 
 	AddBasicGroundWorldEnemy("groundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false,3);
 
-	AddWorldEnemy("limitedgroundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, 
+	AddWorldEnemy("limitedgroundedgrindjugglerccw", 4, CreateEnemy<GroundedGrindJuggler>, SetParamsType<GroundedJugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false,
 		false, true, false, 3);
 
 	AddWorldEnemy("grindlauncher", 4, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);

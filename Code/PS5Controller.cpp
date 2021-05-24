@@ -4,6 +4,8 @@
 
 using namespace std;
 
+const float PS5Controller::deadZone = .3f;
+
 PS5ControllerManager::PS5ControllerManager()
 {
 	numControllers = 0;

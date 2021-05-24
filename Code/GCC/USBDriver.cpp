@@ -63,6 +63,8 @@ namespace GCC
 	USBDriver::USBDriver()
 		:mPollRate(1000)
 	{ 
+		mEnabled = false;
+
 		int s = libusb_init(&mUSBContext);
 
 		if (s < 0)

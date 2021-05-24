@@ -133,27 +133,8 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	ts_skinButton->SetSubRect(skinButtonSpr, 0);
 	skinButtonSpr.setPosition(1542, 0);
 
-	mainMenu->ts_buttonIcons->SetSpriteTexture(skinButtonIconSpr);
 
-	ControllerType ct = mainMenu->GetController(0).GetCType();
-	int tileOffset = 0;
-	switch (ct)
-	{
-	case ControllerType::CTYPE_XBOX:
-		tileOffset = 0;
-		break;
-	case ControllerType::CTYPE_PS5:
-		tileOffset = 16 * 1;
-		break;
-	case ControllerType::CTYPE_GAMECUBE:
-		tileOffset = 16 * 2;
-		break;
-	}
-
-	int buttonIndex = 4;
-
-	mainMenu->ts_buttonIcons->SetSubRect(skinButtonIconSpr, tileOffset + buttonIndex);
-	skinButtonIconSpr.setScale(.5, .5);
+	
 
 	Vector2f buttonOffset(192, 2);
 
@@ -341,6 +322,20 @@ void SaveMenuScreen::SaveCurrSkin()
 
 bool SaveMenuScreen::Update()
 {
+	Tileset * ts_buttons = mainMenu->GetButtonIconTileset(0);
+	IntRect ir = mainMenu->GetButtonIconTile(0, 4);
+	ts_buttons->SetSpriteTexture(skinButtonIconSpr);
+	skinButtonIconSpr.setTextureRect(ir);
+
+	if (ts_buttons == mainMenu->ts_buttonIcons)
+	{
+		skinButtonIconSpr.setScale(.5, .5);
+	}
+	else
+	{
+		skinButtonIconSpr.setScale(1.0, 1.0);
+	}
+
 	if (frame == actionLength[action])
 	{
 		switch (action)

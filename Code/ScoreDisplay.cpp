@@ -529,7 +529,7 @@ SelectBar::SelectBar(int p_row, ScoreDisplay *p_parent)
 	}
 	
 	
-	buttonIconSprite.setTexture(*parent->sess->mainMenu->ts_buttonIcons->texture);
+	buttonIconSprite.setTexture(*parent->sess->mainMenu->GetButtonIconTileset(0)->texture);
 	
 
 	stateLength[NONE] = 1;
@@ -587,9 +587,18 @@ void SelectBar::Reset()
 		buttonIndex = 3;
 	}
 
-	buttonIconSprite.setTextureRect(
-		parent->sess->mainMenu->ts_buttonIcons->GetSubRect(tileOffset + buttonIndex));
-	buttonIconSprite.setScale(.5, .5);
+	IntRect ir = parent->sess->mainMenu->GetButtonIconTile(0, buttonIndex);
+	buttonIconSprite.setTextureRect(ir);
+
+	if (ir.width == 128)
+	{
+		buttonIconSprite.setScale(.5, .5);
+	}
+	else
+	{
+		buttonIconSprite.setScale(1.0, 1.0);
+	}
+	
 }
 
 void SelectBar::SetBarPos(float xDiff)

@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -92,6 +93,23 @@ void Actor::SPRINGSTUNGLIDE_Update()
 
 	//springExtra = tempVel - springVel;
 	velocity = springVel + springExtra;
+
+	float framesIn = springStunFramesStart - springStunFrames;
+	float doneFactor = framesIn / springStunFramesStart;
+	float scaleFactor = 1.f - doneFactor;//.5 + (1.f - doneFactor ) * .5;
+
+	EffectInstance ef;
+	Transform ti = Transform::Identity;
+	ti.scale(scaleFactor, scaleFactor);
+
+	V2d velDir = normalize(velocity);
+	double angD = GetVectorAngleCW(velDir) / PI * 180.0;
+	//cout << "angle: " << angD << endl;
+
+	ti.rotate(angD);
+	ef.SetParams(Vector2f( position ), ti, 7, 4, 0);
+	//ef.SetVelocityParams( Vector2f( 0, )
+	glideEffectPool->ActivateEffect(&ef);
 }
 
 void Actor::SPRINGSTUNGLIDE_UpdateSprite()
