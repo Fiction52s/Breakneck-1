@@ -892,6 +892,10 @@ void Actor::SetupFXTilesets()
 	keyExplodePool->SetUpdater(keyExplodeUpdater);
 	ts_keyExplode = sess->GetSizedTileset("FX/keyexplode_128x128.png");
 
+	ts_fx_dashBoost = sess->GetSizedTileset("Kin/FX/dash_boost_160x160.png");
+
+	ts_fx_glideParticle = sess->GetSizedTileset("Kin/FX/glide_launch_fx_128x128.png");
+
 	keyExplodeRingGroup = new MovingGeoGroup;
 	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
 		Color::Cyan, Color(0, 0, 100, 0), 60));
@@ -3094,10 +3098,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-	ts_glideParticle = sess->GetSizedTileset("Kin/FX/glide_launch_fx_128x128.png");
-
 	glideEffectPool = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
-	glideEffectPool->SetTileset(ts_glideParticle);
+	glideEffectPool->SetTileset(ts_fx_glideParticle);
 	
 
 	
@@ -10024,6 +10026,18 @@ void Actor::TryDashBoost()
 
 	if (currBBoostCounter >= 20)
 	{
+		//ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart,
+		//	pp + currNormal * 64.0 + along * xExtraStart, false, angle, 9, 3, fr);
+		bool fr = facingRight;
+		if (reversed)
+		{
+			fr = !facingRight;
+		}
+
+		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			ts_fx_dashBoost, position, false, GroundedAngle(), 12, 3, fr);
+		//ActivateEts_fx_dashBoostFX
+
 		double dashFactor = 1.85;//1.5;
 		double bboostSpeed = GetDashSpeed() * dashFactor;
 

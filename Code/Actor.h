@@ -740,7 +740,8 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
-	Tileset *ts_glideParticle;
+	Tileset *ts_fx_glideParticle;
+	
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
 	sf::Shader playerSuperShader;
@@ -806,6 +807,7 @@ struct Actor : QuadTreeCollider,
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
+	Tileset *ts_fx_dashBoost;
 	Tileset *ts_fx_rightWire;
 	Tileset *ts_fx_leftWire;
 	Tileset *ts_fx_doubleWire;

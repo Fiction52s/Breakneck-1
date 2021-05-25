@@ -107,7 +107,7 @@ void Actor::SPRINGSTUNGLIDE_Update()
 	//cout << "angle: " << angD << endl;
 
 	ti.rotate(angD);
-	ef.SetParams(Vector2f( position ), ti, 7, 4, 0);
+	ef.SetParams(Vector2f( position ), ti, 1, 32, 2);
 	//ef.SetVelocityParams( Vector2f( 0, )
 	glideEffectPool->ActivateEffect(&ef);
 }
