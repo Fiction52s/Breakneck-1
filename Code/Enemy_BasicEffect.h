@@ -25,12 +25,10 @@ struct BasicEffect : Enemy
 
 	float depth;
 	int frameCount;
-	sf::Sprite s;
 	Tileset *ts;
 	bool pauseImmune;
 	bool activated;
 	int animationFactor;
-	bool facingRight;
 	EffectLayer layer;
 	int stored_frame;
 	int startFrame;

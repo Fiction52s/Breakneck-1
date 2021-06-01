@@ -892,9 +892,12 @@ void Actor::SetupFXTilesets()
 	keyExplodePool->SetUpdater(keyExplodeUpdater);
 	ts_keyExplode = sess->GetSizedTileset("FX/keyexplode_128x128.png");
 
-	ts_fx_dashBoost = sess->GetSizedTileset("Kin/FX/dash_boost_160x160.png");
+	ts_fx_dashBoost = sess->GetSizedTileset("Kin/FX/sprint_ring_128x256.png");
 
-	ts_fx_glideParticle = sess->GetSizedTileset("Kin/FX/glide_launch_fx_128x128.png");
+	ts_fx_sprintStar = sess->GetSizedTileset("Kin/FX/sprint_star_96x96.png");
+	
+
+	ts_fx_launchParticle = sess->GetSizedTileset("Kin/FX/launch_fx_192x128.png");
 
 	keyExplodeRingGroup = new MovingGeoGroup;
 	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
@@ -1007,6 +1010,8 @@ void Actor::SetupExtraTilesets()
 
 	ts_blockShield = sess->GetSizedTileset(powerFolder, "block_shield_64x64.png");
 	ts_blockShield->SetSpriteTexture(shieldSprite);
+
+	ts_lowGravRing = sess->GetSizedTileset("Kin/FX/low_grav_ring_128x128.png");
 
 	if (owner != NULL)
 	{
@@ -3098,11 +3103,15 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
 	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
 
-	glideEffectPool = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
-	glideEffectPool->SetTileset(ts_fx_glideParticle);
+	launcherEffectPool[0] = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
+	launcherEffectPool[1] = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
+	launcherEffectPool[0]->SetTileset(ts_fx_launchParticle);
+	launcherEffectPool[1]->SetTileset(ts_fx_launchParticle);
 	
 
-	
+	sprintSparkPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.0);
+	sprintSparkPool->SetTileset(ts_fx_sprintStar);
+
 
 	ts_dirtyAura = sess->GetTileset("Kin/FX/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
@@ -3937,6 +3946,10 @@ Actor::~Actor()
 		delete smallLightningPool[i];
 	}
 
+	delete launcherEffectPool[0];
+	delete launcherEffectPool[1];
+	delete sprintSparkPool;
+
 	//delete risingAuraPool;
 	for (int i = 0; i < 3; ++i)
 	{
@@ -4482,7 +4495,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn()
 {
-	glideEffectPool->DeactivateAll();
+	launcherEffectPool[0]->DeactivateAll();
+	launcherEffectPool[1]->DeactivateAll();
 
 	SetSkin(SKIN_NORMAL);
 	inBubble = false;
@@ -5645,6 +5659,9 @@ void Actor::ProcessAntiTimeSlowBooster()
 
 		SetSkin(SKIN_NORMAL);
 
+		boosterRingSprite.setTexture(*ts_lowGravRing->texture);
+		boosterRingSprite.setTextureRect(ts_lowGravRing->GetSubRect(0));
+
 		RestoreAirOptions();
 	}
 }
@@ -5947,6 +5964,49 @@ void Actor::AddRecentHitter(void *hitter)
 
 	//recentHitters[0].Set(hitter);
 	//maybe set up a system later, but i doubt we'll ever hit this number of hitters
+}
+
+void Actor::ActivateLauncherEffect(int tile)
+{
+	float framesIn = springStunFramesStart - springStunFrames;
+	float doneFactor = framesIn / springStunFramesStart;
+	float scaleFactor = 1.f - doneFactor;//.5 + (1.f - doneFactor ) * .5;
+
+	EffectInstance ef;
+	Transform ti = Transform::Identity;
+	scaleFactor *= .9;
+	ti.scale(scaleFactor, scaleFactor);
+
+	V2d velDir = normalize(velocity);
+	double ang = GetVectorAngleCW(velDir) / PI * 180.0 + 90;
+	//cout << "angle: " << angD << endl;
+
+	ti.rotate(ang);
+	ef.SetParams(Vector2f(position), ti, 1, 32, tile);
+
+	//ef.SetVelocityParams( Vector2f( 0, )
+	launcherEffectPool[0]->ActivateEffect(&ef);
+
+	ef.SetParams(Vector2f(position), ti, 1, 32, tile + 1);
+
+	float colorFactor;
+	float firstThresh = .3f;
+	float secondThresh = .8f;
+	if (doneFactor < firstThresh)
+	{
+		colorFactor = 0;
+	}
+	else if (doneFactor >= firstThresh && doneFactor < secondThresh)
+	{
+		colorFactor = (doneFactor - firstThresh) / (secondThresh - firstThresh);
+	}
+	else
+	{
+		colorFactor = 1;
+	}
+
+	ef.color = Color(255, 255, 255, colorFactor * 255);
+	launcherEffectPool[1]->ActivateEffect(&ef);
 }
 
 bool Actor::CheckExtendedAirdash()
@@ -10034,8 +10094,9 @@ void Actor::TryDashBoost()
 			fr = !facingRight;
 		}
 
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			ts_fx_dashBoost, position, false, GroundedAngle(), 12, 3, fr);
+		BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			ts_fx_dashBoost, position, false, GroundedAngle(), 5, 4, fr, 1);
+		be->sprite.setScale(1, 4);
 		//ActivateEts_fx_dashBoostFX
 
 		double dashFactor = 1.85;//1.5;
@@ -10129,6 +10190,12 @@ void Actor::TryAirdashBoost()
 		{
 			velocity = velDir * (velLen + highSpeedBoost);
 		}
+
+		double ang = GetVectorAngleCW(velDir);// / PI * 180.0;
+
+		BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			ts_fx_dashBoost, position, false, ang, 5, 4, true, 1);
+		be->sprite.setScale(1, 4);
 	}
 }
 
@@ -15757,8 +15824,7 @@ void Actor::SetBounceBoostVelocity()
 		//SetAction(BOOSTERBOUNCE);
 	}
 
-	SetAction(BOOSTERBOUNCE);
-	frame = 0;
+	
 
 	
 
@@ -15770,6 +15836,14 @@ void Actor::SetBounceBoostVelocity()
 	if (currBounceBooster->upOnly)
 	{
 		velocity.y = -s;
+
+		if (action == AIRDASH)
+		{
+			SetAction(JUMP);
+			frame = 1;
+		}
+		holdJump = false;
+
 	}
 	else
 	{
@@ -15779,6 +15853,9 @@ void Actor::SetBounceBoostVelocity()
 
 		if (velocity.y > 0)
 			velocity.y *= .5;
+
+		SetAction(BOOSTERBOUNCE);
+		frame = 0;
 	}
 	
 }
@@ -17472,12 +17549,19 @@ void Actor::Draw( sf::RenderTarget *target )
 
 	//if (action == SEQ_KNEEL || action == SEQ_KNEEL_TO_MEDITATE
 	//	|| action == SEQ_MEDITATE_MASKON)
+
+	if (antiTimeSlowFrames > 0)
+	{
+		target->draw(boosterRingSprite);
+	}
+
 	if (showDirtyAura)
 	{
 		target->draw(dirtyAuraSprite);
 	}
 
-	glideEffectPool->Draw(target);
+	launcherEffectPool[0]->Draw(target);
+	launcherEffectPool[1]->Draw(target);
 
 
 	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != GRINDBALL 
@@ -17770,6 +17854,8 @@ void Actor::Draw( sf::RenderTarget *target )
 		smallLightningPool[i]->Draw(target);
 	}
 
+	//sprintSparkPool->Draw(target);
+
 	keyExplodeRingGroup->Draw(target);
 	keyExplodePool->Draw(target);
 }
@@ -18047,6 +18133,15 @@ void Actor::UpdateSprite()
 		return;
 	}
 
+	UpdateActionSprite();
+
+
+	Vector2f oldOrigin = sprite->getOrigin();
+	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
+	Vector2f diff = center - oldOrigin;
+	RotateCW(diff, sprite->getRotation() / 180.f * PI);
+	spriteCenter = V2d(sprite->getPosition() + diff);
+
 	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
 	{
 		AdventureHUD *ah = (AdventureHUD*)sess->hud;
@@ -18060,9 +18155,17 @@ void Actor::UpdateSprite()
 	}
 
 	UpdateSmallLightning();
+
+	boosterRingSprite.setPosition(Vector2f(spriteCenter));
+	boosterRingSprite.setOrigin(boosterRingSprite.getLocalBounds().width / 2,
+		boosterRingSprite.getLocalBounds().height / 2);
+
+	sprintSparkPool->Update();
+
 	UpdateRisingAura();
 
-	glideEffectPool->Update();
+	launcherEffectPool[0]->Update();
+	launcherEffectPool[1]->Update();
 
 	UpdateLockedFX();
 
@@ -18128,14 +18231,7 @@ void Actor::UpdateSprite()
 
 	
 
-	UpdateActionSprite();
 	
-
-	Vector2f oldOrigin = sprite->getOrigin();
-	Vector2f center(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
-	Vector2f diff = center - oldOrigin;
-	RotateCW(diff, sprite->getRotation() / 180.f * PI);
-	spriteCenter = V2d(sprite->getPosition() + diff);
 
 	
 	//Vector2f extraParticle0(rand() % t - t / 2, rand() % t - t / 2);

@@ -2005,6 +2005,13 @@ void GameSession::SetupBestReplay()
 {
 	if (saveFile != NULL)
 	{
+		if (repPlayer != NULL)
+		{
+			delete repPlayer;
+			repPlayer = NULL;
+		}
+
+
 		string replayPath = GetBestReplayPath();
 		if (bestReplayOn && saveFile != NULL && saveFile->GetBestFramesLevel(level->index) > 0
 			&& boost::filesystem::exists(replayPath))

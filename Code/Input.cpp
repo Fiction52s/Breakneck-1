@@ -98,6 +98,7 @@ int ControllerState::GetCompressedState()
 	return s;
 }
 
+//notably this doesnt give you the analog stick values
 void ControllerState::SetFromCompressedState(int s)
 {
 	Clear();
@@ -165,6 +166,7 @@ void ControllerState::SetFromCompressedState(int s)
 
 	int leftDir = (s >> 16);
 	leftStickDirection = leftDir;
+
 }
 
 
@@ -356,7 +358,38 @@ sf::Vector2<double> ControllerState::GetLeft8Dir()
 
 void ControllerState::InvertLeftStick()
 {
-	leftStickPad = 0;
+	//int oldLeftStickPad = leftStickPad;
+	int newLeftStickPad = 0;
+
+	if (!IsLeftNeutral())
+	{
+		leftStickDirection += 32;
+		if (leftStickDirection > 64)
+		{
+			leftStickDirection -= 64;
+		}
+
+		if (LLeft())
+		{
+			newLeftStickPad += 1 << 3;
+		}
+		else if (LRight())
+		{
+			newLeftStickPad += 1 << 2;
+		}
+		if (LUp())
+		{
+			newLeftStickPad += 1 << 1;
+		}
+		else if (LDown())
+		{
+			newLeftStickPad += 1;
+		}
+
+		leftStickPad = newLeftStickPad;
+	}
+
+	/*leftStickPad = 0;
 	if (leftStickMagnitude > GameController::stickThresh)
 	{
 		leftStickRadians += PI;
@@ -376,7 +409,7 @@ void ControllerState::InvertLeftStick()
 			leftStickPad += 1;
 		if (y < -GameController::stickThresh)
 			leftStickPad += 1 << 1;
-	}
+	}*/
 }
 
 bool GameController::IsKeyPressed(int k)

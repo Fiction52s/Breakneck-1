@@ -1010,6 +1010,8 @@ bool SaveFile::LoadInfo(ifstream &is)
 		is >> ver1;
 		is >> ver2;
 
+		is.get();
+
 		getline(is, controlProfileName);
 		is >> defaultSkinIndex;
 		is >> mostRecentWorldSelected;

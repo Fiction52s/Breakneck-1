@@ -88,6 +88,8 @@ void Actor::SPRINGSTUNBOUNCE_Update()
 	}
 
 	velocity = springVel + springExtra;
+
+	ActivateLauncherEffect(4);
 }
 
 void Actor::SPRINGSTUNBOUNCE_UpdateSprite()

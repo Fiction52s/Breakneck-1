@@ -71,6 +71,7 @@ void Actor::AIMWAIT_Change()
 		springExtra = V2d(0, 0);
 
 		springStunFrames = currAimLauncher->stunFrames;
+		springStunFramesStart = springStunFrames;
 
 		currAimLauncher = NULL;
 	}

@@ -45,6 +45,8 @@ void Actor::SPRINGSTUN_Change()
 void Actor::SPRINGSTUN_Update()
 {
 	velocity = springVel + springExtra;
+
+	ActivateLauncherEffect(0);
 }
 
 void Actor::SPRINGSTUN_UpdateSprite()

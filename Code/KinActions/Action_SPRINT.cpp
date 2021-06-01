@@ -1,4 +1,6 @@
 #include "Actor.h"
+#include "Session.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -279,6 +281,21 @@ void Actor::SPRINT_UpdateSprite()
 		scorpSprite.setPosition(position.x, position.y);
 		scorpSprite.setRotation(sprite->getRotation());
 		scorpSet = true;
+	}
+
+	if (!IsIntroAction(action) && sess->totalGameFrames % 10 == 0)
+	{
+		RelEffectInstance params;
+		//EffectInstance params;
+		Transform tr = sf::Transform::Identity;
+
+		int dist = 80;
+		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
+		Vector2f randPos(rand() % dist - dist/2, rand() % dist - dist/2);
+
+		params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
+
+		sprintSparkPool->ActivateEffect(&params);
 	}
 }
 

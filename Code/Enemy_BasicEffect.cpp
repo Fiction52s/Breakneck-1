@@ -27,7 +27,7 @@ BasicEffect::BasicEffect(BasicEffect &be)
 {
 	depth = be.depth;
 	frameCount = be.frameCount;
-	s = be.s;
+	sprite = be.sprite;
 	ts = be.ts;
 	pauseImmune = be.pauseImmune;
 	activated = be.activated;
@@ -65,9 +65,10 @@ void BasicEffect::ResetEnemy()
 
 void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right, float p_depth )
 {
+	sprite.setScale(1, 1);
 	depth = p_depth;
 	//cout << "init: " << this << ", " << t->sourceName << endl;
-	s.setTexture( *t->texture );
+	sprite.setTexture( *t->texture );
 	facingRight = right;
 
 	//pos /= (double)depth;
@@ -76,16 +77,16 @@ void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int f
 
 	if( facingRight )
 	{
-		s.setTextureRect( ir );
+		sprite.setTextureRect( ir );
 	}
 	else
 	{
-		s.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
+		sprite.setTextureRect( sf::IntRect( ir.left + ir.width, ir.top, -ir.width, ir.height ) );
 	}
 
-	s.setOrigin( s.getLocalBounds().width / 2, s.getLocalBounds().height / 2 );
-	s.setPosition( pos.x, pos.y );
-	s.setRotation( angle / PI * 180 );
+	sprite.setOrigin( sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 );
+	sprite.setPosition( pos.x, pos.y );
+	sprite.setRotation( angle / PI * 180 );
 
 	//ResetSlow();
 
@@ -108,22 +109,13 @@ void BasicEffect::EnemyDraw(sf::RenderTarget *target )
 	float newFactor = oldFactor * depth;
 	newView.setSize(Vector2f(960, 540) * newFactor);
 	target->setView(newView);
-	target->draw( s );	
+	target->draw( sprite );	
 	target->setView(oldView);
 }
 
 void BasicEffect::UpdateSprite()
 {
-	sf::IntRect ir = ts->GetSubRect(frame / animationFactor + startFrame);
-
-	if (facingRight)
-	{
-		s.setTextureRect(ir);
-	}
-	else
-	{
-		s.setTextureRect(sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height));
-	}
+	ts->SetSubRect(sprite, frame / animationFactor + startFrame, !facingRight);
 }
 
 void BasicEffect::DebugDraw(sf::RenderTarget *target)

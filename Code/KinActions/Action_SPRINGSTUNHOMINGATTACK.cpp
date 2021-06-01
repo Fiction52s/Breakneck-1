@@ -65,6 +65,8 @@ void Actor::SPRINGSTUNHOMINGATTACK_Update()
 	}
 
 	velocity = springVel + springExtra;
+
+	ActivateLauncherEffect(14);
 }
 
 void Actor::SPRINGSTUNHOMINGATTACK_UpdateSprite()

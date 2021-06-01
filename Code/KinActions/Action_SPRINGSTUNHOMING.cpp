@@ -43,6 +43,8 @@ void Actor::SPRINGSTUNHOMING_Change()
 	{
 		SetAction(SPRINGSTUNHOMINGATTACK);
 	}
+
+	ActivateLauncherEffect(12);
 }
 
 void Actor::SPRINGSTUNHOMING_Update()

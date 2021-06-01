@@ -717,7 +717,10 @@ struct Actor : QuadTreeCollider,
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
 
-	EffectPool *glideEffectPool;
+	EffectPool *launcherEffectPool[2];
+	EffectPool *sprintSparkPool;
+
+	//std::map<std::string, EffectPool*> effectPoolMap;
 
 	int superActiveLimit;
 	int attackLevelCounterLimit;
@@ -740,7 +743,9 @@ struct Actor : QuadTreeCollider,
 	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
-	Tileset *ts_fx_glideParticle;
+	Tileset *ts_fx_launchParticle;
+	Tileset *ts_lowGravRing;
+	sf::Sprite boosterRingSprite;
 	
 	sf::Shader despFaceShader;
 	sf::Shader playerDespShader;
@@ -807,6 +812,7 @@ struct Actor : QuadTreeCollider,
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
+	Tileset *ts_fx_sprintStar;
 	Tileset *ts_fx_dashBoost;
 	Tileset *ts_fx_rightWire;
 	Tileset *ts_fx_leftWire;
@@ -1184,6 +1190,8 @@ struct Actor : QuadTreeCollider,
 	void PopulateFromState(PState *ps);
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
+
+	void ActivateLauncherEffect(int tile);
 
 	bool CheckExtendedAirdash();
 

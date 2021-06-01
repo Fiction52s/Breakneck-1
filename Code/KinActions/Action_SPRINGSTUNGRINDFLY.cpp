@@ -45,6 +45,8 @@ void Actor::SPRINGSTUNGRINDFLY_Change()
 void Actor::SPRINGSTUNGRINDFLY_Update()
 {
 	velocity = springVel + springExtra;
+
+	ActivateLauncherEffect(8);
 }
 
 void Actor::SPRINGSTUNGRINDFLY_UpdateSprite()

@@ -101,6 +101,8 @@ void Actor::SPRINGSTUNAIRBOUNCE_Update()
 	{
 		facingRight = true;
 	}
+
+	ActivateLauncherEffect(6);
 }
 
 void Actor::SPRINGSTUNAIRBOUNCE_UpdateSprite()

@@ -94,22 +94,7 @@ void Actor::SPRINGSTUNGLIDE_Update()
 	//springExtra = tempVel - springVel;
 	velocity = springVel + springExtra;
 
-	float framesIn = springStunFramesStart - springStunFrames;
-	float doneFactor = framesIn / springStunFramesStart;
-	float scaleFactor = 1.f - doneFactor;//.5 + (1.f - doneFactor ) * .5;
-
-	EffectInstance ef;
-	Transform ti = Transform::Identity;
-	ti.scale(scaleFactor, scaleFactor);
-
-	V2d velDir = normalize(velocity);
-	double angD = GetVectorAngleCW(velDir) / PI * 180.0;
-	//cout << "angle: " << angD << endl;
-
-	ti.rotate(angD);
-	ef.SetParams(Vector2f( position ), ti, 1, 32, 2);
-	//ef.SetVelocityParams( Vector2f( 0, )
-	glideEffectPool->ActivateEffect(&ef);
+	ActivateLauncherEffect(2);
 }
 
 void Actor::SPRINGSTUNGLIDE_UpdateSprite()

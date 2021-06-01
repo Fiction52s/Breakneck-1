@@ -23,7 +23,7 @@ BounceBooster::BounceBooster(ActorParams *ap)
 	{
 		upOnly = true;
 		strength = 40;
-		BasicCircleHitBodySetup(50);
+		BasicCircleHitBodySetup(80, 0,V2d( 0, 50 ), V2d());
 	}
 	else
 	{
