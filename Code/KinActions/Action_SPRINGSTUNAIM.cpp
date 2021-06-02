@@ -45,6 +45,8 @@ void Actor::SPRINGSTUNAIM_Change()
 void Actor::SPRINGSTUNAIM_Update()
 {
 	velocity = springVel + springExtra;
+
+	ActivateLauncherEffect(4);
 }
 
 void Actor::SPRINGSTUNAIM_UpdateSprite()

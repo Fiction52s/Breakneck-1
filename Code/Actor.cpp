@@ -807,7 +807,7 @@ void Actor::SetupFXTilesets()
 	ts_uairSwordLightning[1] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png", swordSkin);
 	ts_uairSwordLightning[2] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png", swordSkin);
 
-	ts_bounceBoost = sess->GetSizedTileset(folder, "bounceboost_256x192.png", skin);
+	ts_bounceBoost = sess->GetSizedTileset(folder, "bounceboost_256x192.png");
 
 	ts_fx_hurtSpack = sess->GetSizedTileset(folder, "hurt_spack_128x160.png");
 
@@ -994,8 +994,8 @@ void Actor::SetupExtraTilesets()
 	ts_scorpBounceWall = sess->GetSizedTileset(powerFolder, "scorp_bounce_wall_256x128.png");
 	
 	ts_bubble = sess->GetSizedTileset(powerFolder, "time_bubble_128x128.png");
-	ts_dodecaSmall = sess->GetSizedTileset(powerFolder, "dodecasmall_180x180.png", skin);
-	ts_dodecaBig = sess->GetSizedTileset(powerFolder, "dodecabig_360x360.png", skin);
+	ts_dodecaSmall = sess->GetSizedTileset(powerFolder, "dodecasmall_180x180.png");
+	ts_dodecaBig = sess->GetSizedTileset(powerFolder, "dodecabig_360x360.png");
 	tsgsdodeca = sess->GetSizedTileset(powerFolder, "dodeca_64x64.png");
 	tsgstriblue = sess->GetSizedTileset(powerFolder, "triblue_64x64.png");
 	tsgstricym = sess->GetSizedTileset(powerFolder, "tricym_128x128.png");
@@ -1152,7 +1152,7 @@ void Actor::SetupFuncsForAction(
 
 Tileset *Actor::GetActionTileset(const std::string &fn)
 {
-	return sess->GetSizedTileset(actionFolder, fn, skin);
+	return sess->GetSizedTileset(actionFolder, fn);
 }
 
 void Actor::SetupActionFunctions()
@@ -2847,11 +2847,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
-	ClearRecentHitters();
-	blockstunFrames = 0;
-	directionalInputFreezeFrames = 0;
 	maxFallSpeedWhileHitting = 4.0;
-	frameAfterAttackingHitlagOver = false;
 	hitGrassHitInfo.damage = 60;//3 * 60;
 	hitGrassHitInfo.drainX = 1.0;
 	hitGrassHitInfo.drainY = 1.0;
@@ -2860,15 +2856,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
-	modifiedDrainFrames = 0;
-	invertInputFrames = 0;
+	action = -1;
 
-	airBounceCounter = 0;
-	//fallThroughDuration = 0;
-	
-	currPowerMode = PMODE_SHIELD;
-
-	shieldPushbackFrames = 0;
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
 	{
@@ -2880,99 +2869,27 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		swordProjectiles[i] = new SwordProjectile;
 	}
 
-	touchedCoyoteHelper = false;
-
 	LoadHitboxes();
 
+	currPowerMode = PMODE_SHIELD;
 	simulationMode = false;
-	currActionSuperLevel = 0;
-	superLevelCounter = 0;
 	receivedHitReaction = HitResult::MISS;
 	superActiveLimit = 180;
-	currSpecialTerrain = NULL;
-	oldSpecialTerrain = NULL;
-
-	framesSinceBlockPress = -1;
-	framesSinceSuperPress = -1;
-
-	dashAttackLevel = 0;
-	standAttackLevel = 0;
-	upTiltLevel = 0;
-	downTiltLevel = 0;
-	framesSinceDashAttack = 0;
-	framesSinceStandAttack = 0;
-	framesSinceUpTilt = 0;
-	framesSinceDownTilt = 0;
-
 	attackLevelCounterLimit = 60;
-	globalTimeSlowFrames = 0;
-	freeFlightFrames = 0;
-	antiTimeSlowFrames = 0;
-	homingFrames = 0;
-	projectileSwordFrames = 0;
-	enemyProjectileSwordFrames = 0;
-	phaseFrames = 0;
-	rewindOnHitFrames = 0;
-	momentumBoostFrames = 0;
-	flyCounter = 0;
-	action = -1; //for init
+
 	SetupActionFunctions();
 
-	numKeysHeld = 0;
 	SetSession(Session::GetSession(), gs, es);
 
-	standNDashBoost = false;
-	kinMode = K_NORMAL;
-	autoRunStopEdge = NULL;
-	extraDoubleJump = false;
-
-	extraGravityModifier = 1.0;
-	airTrigBehavior = AT_NONE;
 	rpu = new RisingParticleUpdater( this );
 
 	totalHealth = 3600;
-	storedTrigger = NULL;
 	steepClimbBoostStart = 5;
 	SetDirtyAura(false);
-	activeComboObjList = NULL;
-
 	accelGrassAccel = .25;
 	jumpGrassExtra = 15;
 
-	//cout << "Start player" << endl;
-
-
-	//glideEmitter = new GlideEmitter(owner);
-	//glideEmitter->CreateParticles();
-	//glideEmitter->Reset();
-	//glideEmitter->SetOn(false);
-	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
-
-	repeatingSound = NULL;
-	currBooster = NULL;
-	currTimeBooster = NULL;
-	currAntiTimeSlowBooster = NULL;
-	currSwordProjectileBooster = NULL;
-	currFreeFlightBooster = NULL;
-	currHomingBooster = NULL;
-	currPhaseBooster = NULL;
-	currMomentumBooster = NULL;
-	currRewindBooster = NULL;
-	oldBooster = NULL;
-
-	currBounceBooster = NULL;
-	oldBounceBooster = NULL;
-
-	gravModifyFrames = 0;
-
-	currGravModifier = NULL;
-	currWall = NULL;
-	currHurtboxes = NULL;
-	currHitboxes = NULL;
-
 	standNDashBoostCooldown = 10;
-	standNDashBoostCurr = 0;
-	ClearPauseBufferedActions();
 	standNDashBoostQuant = 3;
 	dairBoostVel = 4;
 	fairAirDashBoostQuant = 2;
@@ -2985,12 +2902,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	sess->GetTileset("Kin/exitenergy_0_512x512.png", 512, 512);
 	sess->GetTileset("Kin/exitenergy_2_512x512.png", 512, 512);
 	sess->GetTileset("Kin/exitenergy_1_512x512.png", 512, 512);
-		
-			
-	currLockedFairFX = NULL;
-	currLockedDairFX = NULL;
-	currLockedUairFX = NULL;
-	gateBlackFX = NULL;
 
 	
 
@@ -3016,43 +2927,13 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	maxMotionGhosts = 80;
 	memset(tileset, 0, sizeof(tileset));
-	sf::Color startChanges[] = {
-		sf::Color(0x14, 0x59, 0x22),
-		sf::Color(0x08, 0x40, 0x12),
-		sf::Color(0x08, 0x2a, 0x4d),
-		sf::Color(0x05, 0x1a, 0x26),
-		sf::Color(0x4d, 0x2c, 0x28),
-		sf::Color(0x12, 0x3f, 0x4d),
-		sf::Color(0x04, 0x23, 0x26),
-		sf::Color(0x6b, 0xff, 0xff),
-		sf::Color(0x66, 0xdd, 0xff)
-	};
-	sf::Color endChanges[] = {
-		sf::Color(0x71, 0x0f, 0x0f),
-		sf::Color(0x04, 0x08, 0x08),
-		sf::Color(0x12, 0x3b, 0x2e),
-		sf::Color(0x01, 0x2a, 0x0a),
-		sf::Color(0x59, 0x55, 0x47),
-		sf::Color(0xb2, 0x91, 0x0c),
-		sf::Color(0x65, 0x3f, 0x07),
-		sf::Color(0x6b, 0xfd, 0x30),
-		sf::Color(0x53, 0xf9, 0xf9)
-	};
-
-	skin = NULL;
+	
 	swordSkin = NULL;
 	actionFolder = "Kin/";
 		
 	team = (Team)actorIndex; //debug
 	
-
-	if( actorIndex == 1 )
-		skin = new Skin(startChanges, endChanges, 9, 1);
-
 	SetupTilesets();
-
-	if( actorIndex == 1)
-		delete skin;
 
 	/*if (actorIndex == 0)
 	{
@@ -3071,33 +2952,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 		
 
-	prevRail = NULL;
-
 	maxFramesSinceGrindAttempt = 30;
-	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	canRailGrind = false;
-	canRailSlide = false;
 
 	regrindOffMax = 3;
-	regrindOffCount = 3;
-
-
-	currSpring = NULL;
-	currAimLauncher = NULL;
-	currBooster = NULL;
-	currTimeBooster = NULL;
-	currAntiTimeSlowBooster = NULL;
-	currSwordProjectileBooster = NULL;
-	currFreeFlightBooster = NULL;
-	currPhaseBooster = NULL;
-	currTeleporter = NULL;
-	currMomentumBooster = NULL;
-	currHomingBooster = NULL;
-	currRewindBooster = NULL;
-	currSwingLauncher = NULL;
-
-	currBounceBooster = NULL;
-	oldBounceBooster = NULL;
 
 	railTest.setSize(Vector2f(64, 64));
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
@@ -3115,18 +2972,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	ts_dirtyAura = sess->GetTileset("Kin/FX/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
-	//dirtyAuraSprite.setpo
-	//dirtyAuraSprite.setOrigin( )
-
-	//framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
-	ResetGrassCounters();
-
-	scorpOn = false;
-	framesSinceRightWireBoost = 0;
-	framesSinceLeftWireBoost = 0;
-	framesSinceDoubleWireBoost = 0;
-
-	glideTurnFactor = 0;
 
 	singleWireBoostTiming = 4;
 	doubleWireBoostTiming = 4;
@@ -3134,26 +2979,14 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	glideTurnAccel = .01;
 	maxGlideTurnFactor = .08;
 
-	//(0x14, 0x59, 0x22) = Kin Green
-	// gonna try to make this red in his airdash animation
 	spriteAction = FAIR;
 	currTileIndex = 0;
 
-	framesNotGrinding = 0;
-	bufferedAttack = JUMP;
-	oldBounceEdge = NULL;
-	//seq = SEQ_NOTHING;
-	enemiesKilledThisFrame = 0;
-	enemiesKilledLastFrame = 0;
 	GameController &cont = GetController(actorIndex);
 	toggleBounceInput = cont.keySettings.toggleBounce;
 	toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
 	toggleGrindInput = cont.keySettings.toggleGrind;
 	speedParticleRate = 10; //20
-	speedParticleCounter = 1;
-	hitGoal = false;
-	hitNexus = NULL;
-	ground = NULL;
 	//re = new RotaryParticleEffect( this );
 	//re1 = new RotaryParticleEffect( this );
 	//pTrail = new ParticleTrail( this );
@@ -3171,25 +3004,11 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	grindLungeSpeed2 = 22.0;//28.0;
 	//grindLungeExtraMax = 10.0;
 
-	speedLevel = 0;
-	currentSpeedBar = 0;
-
 	motionGhostSpacing = 1;
 	ghostSpacingCounter = 0;
 
 	drainCounterMax = 10;
 	drainAmount = 1;
-	drainCounter = 0;
-	//currentCheckPoint = NULL;
-	flashFrames = 0;
-	hitEnemyDuringPhyiscs = false;
-
-	inBubble = false;
-	oldInBubble = false;
-		
-		
-
-	gateTouched = NULL;
 
 	//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 	//numActiveEdges = 0;
@@ -3212,7 +3031,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	skinShader.pShader.setUniform("u_auraTex2", *(ts_auraTest2->texture));
 
 
-	SetSkin(SKIN_NORMAL);
+	//SetSkin(SKIN_NORMAL);
 
 
 	if (!shieldShader.loadFromFile("Resources/Shader/shield_shader.frag", sf::Shader::Fragment))
@@ -3343,31 +3162,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	currVSHitboxInfo->freezeDuringStun = true;
 	currVSHitboxInfo->invincibleFrames = 16;
 	
-		
-	framesGrinding = 0;
 	maxDespFrames = 60 * 5;
-	despCounter = 0;
-
 	maxSuperFrames = 60 * 5;
-	
-
-	
-
-		
-
-	holdJump = false;
-	steepJump = false;
 
 	bounceBoostSpeed = 6.0;//8.0;//.5;//1;//6.0;//5.0;//4.7;
 
-	offsetX = 0;
 	sprite = new Sprite;
 	if( actorIndex == 1 )
 	{
 		//sprite->setColor( Color( 255, 0, 0 ) );
 	}
-
-	velocity = Vector2<double>( 0, 0 );
 		
 	CollisionBox cb;
 	cb.isCircle = true;
@@ -3623,10 +3427,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//grindHitboxes[0]->push_back( cb );
 	wallThresh = .9999;
 	//tileset setup
-		
-		
-
-	BounceFlameOff();
 
 	maxBBoostCount = GetActionLength(DASH);
 	maxAirdashBoostCount = GetActionLength(AIRDASH);
@@ -3667,6 +3467,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	swordShaders[2].setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	grindActionLength = 32;
+
+	repeatingSound = NULL;
 	//SetAction( SPAWNWAIT );
 
 	//if (owner != NULL)
@@ -3684,19 +3486,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	baseSlowMultiple = 1;
 	timeSlowStrength = 5 * baseSlowMultiple;
-	slowMultiple = baseSlowMultiple;
-	slowCounter = 1;
-	inBubble = false;
-	airDashStall = false;
-	oldInBubble = false;
-	specialSlow = false;
 
-	reversed = false;
-
-	grindActionCurrent = 0;
-
-	framesInAir = 0;
-	wallJumpFrameCounter = 0;
 	wallJumpMovementLimit = 12; //10 frames
 
 	steepThresh = .4; // go between 0 and 1
@@ -3717,28 +3507,16 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	steepClimbDownFactor = steepClimbGravFactor;//.5;
 	steepClingSpeedLimit = 2.0;
 	//steepClimbFastFactor = .7;//.2;
-	framesSinceClimbBoost = 0;
-	climbBoostLimit = 30;//25;//22;//15;
-		
-
-		
-		
-	hasDoubleJump = true;
-		
-
-	ground = NULL;
-
-	groundSpeed = 0;
-	maxNormalRun = 60; //adjust up w/ more power?
 	
-	facingRight = true;
-	collision = false;
+	climbBoostLimit = 30;//25;//22;//15;
+
+	
+	maxNormalRun = 60; //adjust up w/ more power?
 	
 	airAccel = 1.5;
 		
 	gravity = 1;//1.9; // 1 
 	wallClimbGravityFactor = .7;
-	wallClimbGravityOn = false;
 	jumpStrength = 21.5;//18;//25;//27.5; // 2 
 	doubleJumpStrength = 20;//17;//23;//26.5;
 	backDoubleJumpStrength = 22;
@@ -3776,13 +3554,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	maxAirXControl = 6;//maxRunInit;
 	airSlow = .3;//.7;//.3;
 
-	grindEdge = NULL;
-	grindQuantity = 0;
-	grindSpeed = 0;
-
-		
-		
-
 	//max ground speed should probably start around 60-80 and then get powerups to rise to 100
 	//for world 1 lets do the lowest number for the beta
 		
@@ -3803,8 +3574,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	doubleJumpHeight = 10;
 	sprintHeight = 16;
 
-	hasAirDash = true;
-
 	//CollisionBox b;
 	b.isCircle = false;
 	//b.offsetAngle = 0;
@@ -3821,51 +3590,15 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hurtBody.rh = 15;//normalHeight - 5;//normalHeight;
 	//hurtboxMap[STAND]->AddCollisionBox(0, hurtBody);
 
-		
-
-
-	currHitboxes = NULL;
-	//currHitboxInfo = NULL;
-		
-		 
-	wireChargeInfo = new HitboxInfo();
-	wireChargeInfo->damage = 20;
-	wireChargeInfo->drainX = .5;
-	wireChargeInfo->drainY = .5;
-	wireChargeInfo->hitlagFrames = 0;
-	wireChargeInfo->hitstunFrames = 30;//30;
-	wireChargeInfo->knockback = 0;
-	wireChargeInfo->freezeDuringStun = true;
-
-	receivedHit = NULL;
-	hitlagFrames = 0;
-	hitstunFrames = 0;
-	invincibleFrames = 0;
-
-	/*wireEdge = NULL;
-	wireState = 0;
-	pointNum = 0;
-	maxLength = 100;
-	minLength = 32;*/
-
 	leftWire = new Wire( this, false );
 	rightWire = new Wire( this, true );
-
-	bounceEdge = NULL;
-	bounceGrounded = false;
-
-		
 
 	minRailGrindSpeed[0] = dashSpeed0 + 10;
 	minRailGrindSpeed[1] = dashSpeed1 + 10;
 	minRailGrindSpeed[2] = dashSpeed2 + 10;
 
-	touchEdgeWithLeftWire= false;
-	touchEdgeWithRightWire= false;
-
 	bubbleSprite.setTexture( *ts_bubble->texture );
-
-	currBubble = 0;
+	
 	bubbleRadius = 160;
 
 	bubbleRadius0 = 160;
@@ -3876,8 +3609,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	bHasUpgradeField.Reset();
 	bStartHasUpgradeField.Reset();
-
-	oldAction = action;
 
 	bool isCampaign = false;
 	if (owner != NULL)
@@ -3914,6 +3645,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	SetupTimeBubbles();
 
+	Respawn(false);
 
 	cout << "end player" << endl;
 }
@@ -3966,7 +3698,6 @@ Actor::~Actor()
 		delete dairLightningPool[i];
 	}
 	delete gateBlackFXPool;
-	delete wireChargeInfo;
 
 	delete keyExplodePool;
 	delete keyExplodeUpdater;
@@ -4493,13 +4224,15 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 	}
 }
 
-void Actor::Respawn()
+void Actor::Respawn( bool setStartPos )
 {
 	launcherEffectPool[0]->DeactivateAll();
 	launcherEffectPool[1]->DeactivateAll();
 
-	SetSkin(SKIN_NORMAL);
+	hitEnemyDuringPhysics = false;
+	
 	inBubble = false;
+	oldInBubble = false;
 	specialSlow = false;
 	ClearRecentHitters();
 	directionalInputFreezeFrames = 0;
@@ -4578,6 +4311,27 @@ void Actor::Respawn()
 
 	gravModifyFrames = 0;
 
+	velocity.x = 0;
+	velocity.y = 0;
+	reversed = false;
+	b.offset.y = 0;
+	b.rh = normalHeight;
+	facingRight = true;
+	offsetX = 0;
+	prevInput.Clear();// = ControllerState();
+	currInput.Clear();// = ControllerState();
+	ground = NULL;
+	grindEdge = NULL;
+	dead = false;
+
+	hitlagFrames = 0;
+	hitstunFrames = 0;
+	invincibleFrames = 0;
+	receivedHit = NULL;
+	speedParticleCounter = 1;
+	speedLevel = 0;
+	currentSpeedBar = 0;//60;
+
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
@@ -4630,7 +4384,6 @@ void Actor::Respawn()
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	canRailSlide = false;
 	canRailGrind = false;
-	scorpOn = false;
 
 	framesSinceRightWireBoost = 0;
 	framesSinceLeftWireBoost = 0;
@@ -4645,9 +4398,11 @@ void Actor::Respawn()
 	hitGoal = false;
 	hitNexus = NULL;
 
-	SetToOriginalPos();
+	if( owner != NULL || setStartPos )
+		SetToOriginalPos();
 
 	enemiesKilledThisFrame = 0;
+	enemiesKilledLastFrame = 0;
 	gateTouched = NULL;
 
 
@@ -4666,30 +4421,8 @@ void Actor::Respawn()
 		frame = 0;
 	}
 
-	velocity.x = 0;
-	velocity.y = 0;
-	reversed = false;
-	b.offset.y = 0;
-	b.rh = normalHeight;
-	facingRight = true;
-	offsetX = 0;
-	prevInput.Clear();// = ControllerState();
-	currInput.Clear();// = ControllerState();
-	ground = NULL;
-	grindEdge = NULL;
-	bounceEdge = NULL;
-	dead = false;
+	
 
-	hitlagFrames = 0;
-	hitstunFrames = 0;
-	invincibleFrames = 0;
-	receivedHit = NULL;
-	speedParticleCounter = 1;
-	speedLevel = 0;
-	currentSpeedBar = 0;//60;
-
-	bounceFlameOn = false;
-	scorpOn = false;
 
 	if( HasUpgrade( UPGRADE_POWER_LWIRE ) )
 	{
@@ -4745,6 +4478,28 @@ void Actor::Respawn()
 	pauseBufferedDash = false;
 
 	oldAction = action;
+
+	framesGrinding = 0;
+	despCounter = 0;
+	holdJump = false;
+	steepJump = false;
+	airDashStall = false;
+	grindActionCurrent = 0;
+	framesInAir = 0;
+	wallJumpFrameCounter = 0;
+	framesSinceClimbBoost = 0;
+	groundSpeed = 0;
+	collision = false;
+	grindQuantity = 0;
+	grindSpeed = 0;
+	bounceGrounded = false;
+	touchEdgeWithLeftWire = false;
+	touchEdgeWithRightWire = false;
+	currBubble = 0;
+
+	BounceFlameOff();
+
+	SetSkin(SKIN_NORMAL);
 
 	//some v
 	//doubleJumpBufferedAttack
@@ -6634,7 +6389,7 @@ void Actor::UpdatePrePhysics()
 	highAccuracyHitboxes = true;
 	wallNormal.x = 0;
 	wallNormal.y = 0;
-	hitEnemyDuringPhyiscs = false;
+	hitEnemyDuringPhysics = false;
 	
 	specialSlow = false;
 	
@@ -10932,7 +10687,7 @@ void Actor::UpdatePhysics()
 	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
-		|| action == DEATH || hitEnemyDuringPhyiscs)
+		|| action == DEATH || hitEnemyDuringPhysics)
 		return;
 
 	UpdateWirePhysics();
@@ -12665,7 +12420,8 @@ void Actor::HandleTouchedGate()
 		params.SetParams(Vector2f(0, 0), tr, 8, 2, 0, &spriteCenter);
 		//fair should be 25 but meh
 
-		gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
+		//gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
+		gateBlackFXPool->ActivateEffect(&params);
 
 		//lock all the gates from this zone now that I chose one
 
@@ -18332,7 +18088,7 @@ void Actor::ConfirmHit( Enemy *e )
 	}
 
 	currentSpeedBar += hitParams.speedBar;
-	hitEnemyDuringPhyiscs = true;
+	hitEnemyDuringPhysics = true;
 	currAttackHit = true;
 	if( bounceFlameOn )
 	{

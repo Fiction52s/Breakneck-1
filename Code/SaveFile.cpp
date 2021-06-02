@@ -1239,7 +1239,7 @@ void GlobalSaveFile::Save()
 	}
 	else
 	{
-		cout << "error saving global savefile" << endl;
+		cout << "error saving global savefile: " << fileName << endl;
 		assert(false);
 	}
 }

@@ -806,7 +806,6 @@ struct Actor : QuadTreeCollider,
 	bool leftWireBoost;
 	bool rightWireBoost;
 	bool doubleWireBoost;
-	Skin *skin;
 	Skin *swordSkin;
 	std::string actionFolder;
 	bool toggleBounceInput;
@@ -817,7 +816,6 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_fx_rightWire;
 	Tileset *ts_fx_leftWire;
 	Tileset *ts_fx_doubleWire;
-	HitboxInfo *wireChargeInfo;
 	bool hitGoal;
 	Nexus *hitNexus;
 
@@ -878,7 +876,6 @@ struct Actor : QuadTreeCollider,
 	RelEffectInstance *currLockedFairFX;
 	RelEffectInstance *currLockedDairFX;
 	RelEffectInstance *currLockedUairFX;
-	RelEffectInstance *gateBlackFX;
 	bool showSword;
 	
 	sf::Sprite swordSprite;
@@ -986,7 +983,7 @@ struct Actor : QuadTreeCollider,
 	int speedParticleCounter;
 	int speedParticleRate;
 	
-	bool hitEnemyDuringPhyiscs;
+	bool hitEnemyDuringPhysics;
 	double offSlopeByWallThresh;
 	VertexBuf *motionGhostBuffer;
 	VertexBuf *motionGhostBufferBlue;
@@ -1473,7 +1470,7 @@ struct Actor : QuadTreeCollider,
 	void HandleWaitingScoreDisplay();
 	void EndLevelWithoutGoal();
 	void CheckHoldJump();
-	void Respawn();
+	void Respawn( bool setStartPos = true);
 	void BounceFlameOff();
 	void BounceFlameOn();
 	void SetupAction(int a);
