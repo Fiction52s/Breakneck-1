@@ -283,20 +283,20 @@ void Actor::SPRINT_UpdateSprite()
 		scorpSet = true;
 	}
 
-	if (!IsIntroAction(action) && sess->totalGameFrames % 10 == 0)
-	{
-		RelEffectInstance params;
-		//EffectInstance params;
-		Transform tr = sf::Transform::Identity;
+	//if (!IsIntroAction(action) && sess->totalGameFrames % 10 == 0)
+	//{
+	//	RelEffectInstance params;
+	//	//EffectInstance params;
+	//	Transform tr = sf::Transform::Identity;
 
-		int dist = 80;
-		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
-		Vector2f randPos(rand() % dist - dist/2, rand() % dist - dist/2);
+	//	int dist = 80;
+	//	//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
+	//	Vector2f randPos(rand() % dist - dist/2, rand() % dist - dist/2);
 
-		params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
+	//	params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
 
-		sprintSparkPool->ActivateEffect(&params);
-	}
+	//	sprintSparkPool->ActivateEffect(&params);
+	//}
 }
 
 void Actor::SPRINT_TransitionToAction(int a)

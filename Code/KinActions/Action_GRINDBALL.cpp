@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "VisualEffects.h"
 
 using namespace sf;
 using namespace std;
@@ -380,13 +381,35 @@ void Actor::GRINDBALL_Change()
 
 void Actor::GRINDBALL_Update()
 {
+	double decel = .5;
+	double slowDecel = .1;
+	double dSpeed = GetDashSpeed();
+
+	double currDecel = slowDecel;
+	if (framesGrinding >= grindLimitBeforeSlow)
+	{
+		currDecel = decel;
+	}
+
 	if (grindSpeed > 0)
 	{
 		grindSpeed = std::min(maxGroundSpeed + scorpAdditionalCap, grindSpeed);
+
+		grindSpeed -= currDecel;
+		if (grindSpeed < dSpeed)
+		{
+			grindSpeed = dSpeed;
+		}
 	}
 	else
 	{
 		grindSpeed = std::max(-maxGroundSpeed - scorpAdditionalCap, grindSpeed);
+
+		grindSpeed += currDecel;
+		if (grindSpeed > -dSpeed)
+		{
+			grindSpeed = -dSpeed;
+		}
 	}
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
@@ -472,6 +495,21 @@ void Actor::GRINDBALL_UpdateSprite()
 	gstrioran.setPosition(grindPoint.x, grindPoint.y);
 	gstripurp.setPosition(grindPoint.x, grindPoint.y);
 	gstrirgb.setPosition(grindPoint.x, grindPoint.y);
+
+	if (framesGrinding % 10 == 0 && framesGrinding >= grindLimitBeforeSlow)
+	{
+		RelEffectInstance params;
+		//EffectInstance params;
+		Transform tr = sf::Transform::Identity;
+
+		int dist = 80;
+		//params.SetParams(Vector2f(position.x, position.y - 100) , tr, 7, 1, 0);
+		Vector2f randPos(rand() % dist - dist / 2, rand() % dist - dist / 2);
+
+		params.SetParams(randPos, tr, 24, 1, 0, &spriteCenter);
+
+		sprintSparkPool->ActivateEffect(&params);
+	}
 }
 
 void Actor::GRINDBALL_TransitionToAction(int a)

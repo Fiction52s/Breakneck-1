@@ -2856,6 +2856,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
+	grindLimitBeforeSlow = 60;
+	
 	action = -1;
 
 	birdCommands.resize(3);
@@ -17610,7 +17612,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		smallLightningPool[i]->Draw(target);
 	}
 
-	//sprintSparkPool->Draw(target);
+	sprintSparkPool->Draw(target);
 
 	keyExplodeRingGroup->Draw(target);
 	keyExplodePool->Draw(target);

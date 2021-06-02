@@ -1139,6 +1139,8 @@ struct Actor : QuadTreeCollider,
 	double autoRunStopQuant;
 	double maxAutoRunSpeed;
 
+	int grindLimitBeforeSlow;
+
 	
 
 	Actor( GameSession *owner, 
