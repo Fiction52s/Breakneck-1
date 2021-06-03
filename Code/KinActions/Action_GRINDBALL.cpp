@@ -382,7 +382,7 @@ void Actor::GRINDBALL_Change()
 void Actor::GRINDBALL_Update()
 {
 	double decel = .5;
-	double slowDecel = .1;
+	double slowDecel = .2;
 	double dSpeed = GetDashSpeed();
 
 	double currDecel = slowDecel;

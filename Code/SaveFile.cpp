@@ -583,7 +583,7 @@ SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
 	shardField(ShardInfo::MAX_SHARDS), 
 	newShardField(ShardInfo::MAX_SHARDS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	momentaField(4 * 32),
+	momentaField(256),
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
 	name( p_name ),

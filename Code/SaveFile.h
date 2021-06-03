@@ -231,13 +231,14 @@ struct SaveFile
 	BitField levelsJustBeatenField;
 
 	//state that gets saved out
+	
 	std::string controlProfileName;
 	BitField levelsBeatenField;
 	LevelScore levelScores[512];
 	BitField upgradeField;
 	BitField momentaField;
 	BitField shardField;
-	BitField newShardField; //for unviewed shards	
+	BitField newShardField; //for unviewed shards
 	int defaultSkinIndex;
 
 	int ver1;
