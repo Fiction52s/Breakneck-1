@@ -16,13 +16,15 @@
 #include <mutex>
 #pragma warning(default:4996)
 
+using namespace std;
+
 //WUP-028
 //VENDORID 0x57E
 //PRODUCT ID 0x337
 
 const int NUM_USB_TYPES = 5;
-uint_fast16_t vendorID[NUM_USB_TYPES] = { 0x57E, 0x79, 0x79, 0x79, 0x79 };
-uint_fast16_t productID[NUM_USB_TYPES] = { 0x337, 0x1843, 0x1844, 0x1846, 0x1800 };
+uint_fast16_t vendorID[NUM_USB_TYPES] = { 0x57E, 0x79, 0x79, 0x79, 0x79};
+uint_fast16_t productID[NUM_USB_TYPES] = { 0x337, 0x1843, 0x1844, 0x1846, 0x1800};
 
 const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
@@ -62,7 +64,8 @@ namespace GCC
 
 	USBDriver::USBDriver()
 		:mPollRate(1000)
-	{ 
+	{
+
 		mEnabled = false;
 
 		int s = libusb_init(&mUSBContext);
@@ -73,6 +76,28 @@ namespace GCC
 			return;
 		}
 
+		libusb_device **device_list;
+		libusb_device_handle *handle = NULL;
+		int deviceCount = libusb_get_device_list(mUSBContext, &device_list);
+
+		int i;
+		for (i = 0; i < deviceCount; i++) {
+			struct libusb_device* device = device_list[i];
+			struct libusb_device_descriptor desc;
+			libusb_get_device_descriptor(device, &desc);
+
+			cout << std::hex << "DEVICE---   " << "vendor: 0x" << desc.idVendor << ", product: 0x" << desc.idProduct << endl;
+			/*if (desc.idVendor == VENDOR_ID && desc.idProduct == devid) {
+				libusb_open(device, &handle);
+				break;*/
+		}
+
+
+		
+		libusb_free_device_list(device_list, 1);
+
+
+
 		libusb_set_debug(mUSBContext, 3);
 
 
@@ -80,7 +105,7 @@ namespace GCC
 		for (int i = 0; i < NUM_USB_TYPES; ++i)
 		{
 			mHandle = libusb_open_device_with_vid_pid(mUSBContext, vendorID[i], productID[i]);
-			if (mHandle != NULL )
+			if (mHandle != NULL)
 			{
 				break;
 			}
@@ -104,12 +129,20 @@ namespace GCC
 				return;
 			}
 		}*/
-		
-		if (
-			libusb_set_configuration(mHandle, 1) < 0 || //I don't know why it is 1, but that's what I'm seeing elsewhere being used...
-			libusb_claim_interface(mHandle, 0) < 0 ||
-			libusb_control_transfer(mHandle, 0x21, 11, 0x0001, 0, nullptr, 0, 0) < 0
-			) 
+
+		bool a = false, b = false, c = false;
+		a = libusb_set_configuration(mHandle, 1) < 0;//I don't know why it is 1, but that's what I'm seeing elsewhere being used...
+		if (!a)
+		{
+			b = libusb_claim_interface(mHandle, 0) < 0;
+
+			if (!b)
+			{
+				c = libusb_control_transfer(mHandle, 0x21, 11, 0x0001, 0, nullptr, 0, 0) < 0;
+			}
+		}
+
+		if (a || b || c )
 		{
 			mStatus = Status::ERR;
 			return;

@@ -10760,7 +10760,7 @@ void Actor::UpdatePhysics()
 		return;
 	}
 
-	if (grindEdge != NULL && (action == GRINDBALL || action == GRINDATTACK || action == SPRINGSTUNGRIND))
+	if (grindEdge != NULL && IsGrindAction( action ))
 	{
 		UpdateGrindPhysics(movement);
 		return;
@@ -14135,16 +14135,20 @@ void Actor::HandleWaterSituation(int wType,
 	{
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
-			SetAction(FREEFLIGHTSTUN);
-			springStunFrames = 2;
-			extraGravityModifier = 0;
-			gravModifyFrames = 2;
-			RestoreAirOptions();
-			ground = NULL;
-			wallNormal = V2d(0, 0);
-			currWall = NULL;
-			bounceEdge = NULL;
-			grindEdge = NULL;
+			if (!IsGrindAction(action))
+			{
+				SetAction(FREEFLIGHTSTUN);
+				springStunFrames = 2;
+				extraGravityModifier = 0;
+				gravModifyFrames = 2;
+				RestoreAirOptions();
+				ground = NULL;
+				wallNormal = V2d(0, 0);
+				currWall = NULL;
+				bounceEdge = NULL;
+				grindEdge = NULL;
+				reversed = false;
+			}
 		}
 		break;
 	}
@@ -19811,7 +19815,7 @@ bool Actor::IsBlockAction(int a)
 
 bool Actor::IsGrindAction(int a)
 {
-	return action == GRINDBALL || action == GRINDATTACK;
+	return action == GRINDBALL || action == GRINDATTACK || action == SPRINGSTUNGRIND;
 }
 
 bool Actor::IsAttackAction( int a )
