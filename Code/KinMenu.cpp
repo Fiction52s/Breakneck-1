@@ -18,34 +18,36 @@
 using namespace sf;
 using namespace std;
 
-KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
-	:mainMenu(p_mainMenu), csm(p_csm), playerSkinShader( "player")
+KinMenu::KinMenu( GameSession *p_game)
+	:playerSkinShader( "player"),
+	game( p_game )
 {
+	csm = game->mainMenu->controlSettingsMenu;
 	Vector2f powersOffset(512, 495);
 	Vector2f powerPos(0, 0);
 	Vector2f powerSpacing(30, 20);
-	ts_powers = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+	ts_powers = game->GetSizedTileset("Menu/power_icon_128x128.png");
 
-	description.setFont(mainMenu->arial);
+	description.setFont(game->mainMenu->arial);
 	description.setCharacterSize(24);
 	description.setFillColor(Color::White);
 
 	int tutWidth = 1220;
 	int tutHeight = 320;
-	ts_tutorial[0] = mainMenu->tilesetManager.GetTileset("Menu/tut_jump.png", tutWidth, tutHeight);
-	ts_tutorial[1] = mainMenu->tilesetManager.GetTileset("Menu/tut_attack.png", tutWidth, tutHeight);
-	ts_tutorial[2] = mainMenu->tilesetManager.GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
-	ts_tutorial[3] = mainMenu->tilesetManager.GetTileset("Menu/tut_dash.png", tutWidth, tutHeight);
-	ts_tutorial[4] = mainMenu->tilesetManager.GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
-	ts_tutorial[5] = mainMenu->tilesetManager.GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
-	ts_tutorial[6] = mainMenu->tilesetManager.GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
-	ts_tutorial[7] = mainMenu->tilesetManager.GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
-	ts_tutorial[8] = mainMenu->tilesetManager.GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
-	ts_tutorial[9] = mainMenu->tilesetManager.GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
+	ts_tutorial[0] = game->GetTileset("Menu/tut_jump.png", tutWidth, tutHeight);
+	ts_tutorial[1] = game->GetTileset("Menu/tut_attack.png", tutWidth, tutHeight);
+	ts_tutorial[2] = game->GetTileset("Menu/tut_sprint.png", tutWidth, tutHeight);
+	ts_tutorial[3] = game->GetTileset("Menu/tut_dash.png", tutWidth, tutHeight);
+	ts_tutorial[4] = game->GetTileset("Menu/tut_walljump.png", tutWidth, tutHeight);
+	ts_tutorial[5] = game->GetTileset("Menu/tut_speed.png", tutWidth, tutHeight);
+	ts_tutorial[6] = game->GetTileset("Menu/tut_health.png", tutWidth, tutHeight);
+	ts_tutorial[7] = game->GetTileset("Menu/tut_survival.png", tutWidth, tutHeight);
+	ts_tutorial[8] = game->GetTileset("Menu/tut_key.png", tutWidth, tutHeight);
+	ts_tutorial[9] = game->GetTileset("Menu/tut_airdash.png", tutWidth, tutHeight);
 	tutorialSpr.setPosition(512, 74);
 
 
-	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
+	ts_xboxButtons = game->GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
 
 	SetRectColor(descriptionBox, Color(0, 0, 0, 255));
 	SetRectCenter(descriptionBox, 1220, 90, Vector2f(1122, 439));//topleft is 512,394
@@ -73,16 +75,16 @@ KinMenu::KinMenu(MainMenu *p_mainMenu, ControlSettingsMenu *p_csm)
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 8, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 2, 0);
 
-	Tileset *ts_selector = mainMenu->tilesetManager.GetTileset("Menu/power_icon_border_160x160.png", 160, 160);
+	Tileset *ts_selector = game->GetSizedTileset("Menu/power_icon_border_160x160.png");
 	selectorSpr.setTexture(*ts_selector->texture);
 	selectorSpr.setOrigin(selectorSpr.getLocalBounds().width / 2, selectorSpr.getLocalBounds().height / 2);
 
-	ts_kin = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_400x836.png", 400, 836);
-	ts_aura1A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1a_400x836.png", 400, 836);
-	ts_aura1B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_1b_400x836.png", 400, 836);
-	ts_aura2A = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2a_400x836.png", 400, 836);
-	ts_aura2B = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_aura_2b_400x836.png", 400, 836);
-	ts_veins = mainMenu->tilesetManager.GetTileset("Menu/pause_kin_veins_400x836.png", 400, 836);
+	ts_kin = game->GetSizedTileset("Menu/pause_kin_400x836.png");
+	ts_aura1A = game->GetSizedTileset("Menu/pause_kin_aura_1a_400x836.png");
+	ts_aura1B = game->GetSizedTileset("Menu/pause_kin_aura_1b_400x836.png");
+	ts_aura2A = game->GetSizedTileset("Menu/pause_kin_aura_2a_400x836.png");
+	ts_aura2B = game->GetSizedTileset("Menu/pause_kin_aura_2b_400x836.png");
+	ts_veins = game->GetSizedTileset("Menu/pause_kin_veins_400x836.png");
 
 	if (!scrollShader1.loadFromFile("Resources/Shader/menuauraslide.frag", sf::Shader::Fragment))
 	{
@@ -239,7 +241,7 @@ void KinMenu::UpdatePowers(Actor *player)
 
 void KinMenu::UpdateCommandButton()
 {
-	GameController &con = mainMenu->GetController(0);
+	GameController &con = game->GetController(0);
 	ts_currentButtons = NULL;
 	ControllerType cType = con.GetCType();
 	switch (cType)
@@ -289,11 +291,7 @@ void KinMenu::Update(ControllerState &curr, ControllerState &prev)
 
 	if (xchanged != 0 || ychanged != 0)
 	{
-		if (mainMenu->pauseMenu->owner != NULL)
-		{
-			GameSession *owner = mainMenu->pauseMenu->owner;
-			mainMenu->pauseMenu->owner->pauseSoundNodeList->ActivateSound(mainMenu->pauseMenu->owner->soundManager->GetSound("pause_change"));
-		}
+		game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
 
 		if (ySelector->currIndex == 1 && xSelector->currIndex > secondRowMax)
 		{

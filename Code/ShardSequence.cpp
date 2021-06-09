@@ -165,7 +165,7 @@ void GetShardSequence::Reset()
 
 		assert(shard != NULL);
 
-		shardPop->SetShard(shard->world, shard->localIndex);
+		shardPop->SetShard(shard->shardWorld, shard->localIndex);
 		shardPop->SetCenter(Vector2f(960, 800));
 		shardPop->Reset();
 

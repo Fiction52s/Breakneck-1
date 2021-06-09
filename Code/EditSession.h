@@ -615,8 +615,6 @@ struct EditSession : GUIHandler, Session
 	void SetTrackingDecor(DecorPtr dec);
 	void ChooseRectEvent(ChooseRect *cr, int eventType );
 	Panel * CreatePopupPanel( const std::string &p );
-	void CreateShardGridSelector( Panel *p,
-		sf::Vector2i &pos );
 	void GetShardWorldAndIndex(int selX, int selY,
 		int &w, int &li );
 	void SetEnemyGridIndex( GridSelector *gs,

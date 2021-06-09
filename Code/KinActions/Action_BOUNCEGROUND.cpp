@@ -128,6 +128,16 @@ void Actor::BOUNCEGROUND_Change()
 					double fac = max(6.0, .25 * abs(velocity.y)); //bounceBoostSpeed;
 																  //cout << "fac: " << fac << ", vy: "<< velocity.y << endl;
 					velocity += normalize(velocity) * fac / (double)slowMultiple;
+
+					/*double shardSpeedBoost = 5;
+					if (velocity.x > 0)
+					{
+						velocity.x += shardSpeedBoost;
+					}
+					else if (velocity.x < 0)
+					{
+						velocity.x -= shardSpeedBoost;
+					}*/
 					boostBounce = false;
 				}
 				else if (boostBounce)

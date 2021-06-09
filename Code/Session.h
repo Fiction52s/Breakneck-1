@@ -75,6 +75,8 @@ struct ShardPopup;
 struct PowerPopup;
 struct DeathSequece;
 
+struct ShardMenu;
+
 struct SuperSequence;
 struct BasicBossScene;
 struct Sequence;
@@ -375,6 +377,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPOSession *ggpo;
 
 	SuperSequence *superSequence;
+
+	ShardMenu *shardMenu;
 
 	PState *playerSimState;
 	Actor *currSuperPlayer;
@@ -812,7 +816,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void UpdateRailStates();
 	void SetCurrentBoss(Boss *b);
 	void RemoveBoss( Boss *b );
-	
+	void SetupShardMenu();
+	void CleanupShardMenu();
 };
 
 #endif

@@ -116,11 +116,6 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	string secStr = to_string(index + 1);
 	bgName = "w" + worldStr + "_0" + secStr;
 
-	//stringstream ss;
-	//ss.str("");
-	//ss << "Shard/shards_w" << (index + 1) << "_48x48.png";
-	//ts_shards = worldMap->GetTileset(ss.str(), 48, 48);
-
 	sectorNameText.setFillColor(Color::White);
 	sectorNameText.setCharacterSize(60);
 	sectorNameText.setFont(mainMenu->arial);

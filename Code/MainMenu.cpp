@@ -25,7 +25,7 @@
 #include "VisualEffects.h"
 #include "MapHeader.h"
 #include "ButtonHolder.h"
-
+#include "ControlSettingsMenu.h"
 
 #include <Windows.h>
 #include "public.h"
@@ -331,9 +331,7 @@ MainMenu::MainMenu()
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
 
-	pauseMenu = new PauseMenu(this);
-
-	
+	controlSettingsMenu = new ControlSettingsMenu(this, &tilesetManager);
 
 	deadThread = NULL;
 	loadThread = NULL;
@@ -632,7 +630,8 @@ MainMenu::~MainMenu()
 	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
-	delete pauseMenu;
+
+	delete controlSettingsMenu;
 
 	if( introMovie != NULL)
 		delete introMovie;
@@ -2565,7 +2564,7 @@ void MainMenu::StartLoadModeScreen()
 
 ControlProfile *MainMenu::GetCurrSelectedProfile()
 {
-	return pauseMenu->GetCurrSelectedProfile();
+	return controlSettingsMenu->pSel->currProfile;
 }
 
 void MainMenu::UnlockSkin(int skinIndex)
@@ -2582,7 +2581,7 @@ bool MainMenu::IsSkinUnlocked(int skinIndex)
 
 bool MainMenu::SetCurrProfileByName(const std::string &name)
 {
-	return pauseMenu->SetCurrProfileByName(name);
+	return controlSettingsMenu->pSel->SetCurrProfileByName(name);
 }
 
 #include <fstream>

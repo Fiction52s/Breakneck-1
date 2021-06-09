@@ -47,6 +47,7 @@ struct SingleAxisSelector;
 struct MainMenu;
 struct MusicInfo;
 struct EffectPool;
+struct GameSession;
 
 //struct Sparkle
 //{
@@ -59,7 +60,7 @@ struct EffectPool;
 //};
 
 
-
+struct Session;
 
 struct ShardMenu
 {
@@ -87,7 +88,7 @@ struct ShardMenu
 	};
 	State state;
 	EffectPool *sparklePool;
-	ShardMenu( MainMenu *mm );
+	ShardMenu( Session *sess );
 	~ShardMenu();
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
@@ -95,6 +96,7 @@ struct ShardMenu
 
 	void SetCurrShard();
 
+	int selectedIndex;
 	int totalFrame;
 	sf::Text currShardText;
 	sf::Text currShardNameText;
@@ -106,7 +108,7 @@ struct ShardMenu
 	void SetCurrentDescription( bool captured );
 	bool LoadPNGSequences();
 	sf::Vertex *shardQuads;
-	MainMenu *mainMenu;
+	Session *sess;
 	int numShardsTotal;
 	std::string GetShardDesc(int w, int li);
 	sf::Vector2f imagePos;
@@ -133,6 +135,8 @@ struct ShardMenu
 	PNGSeq *&GetCurrSeq();
 	boost::thread *&GetCurrLoadThread();
 
+	sf::Vertex selectedBGQuad[4];
+
 
 	
 	void UpdateUnlockedShards();
@@ -155,7 +159,6 @@ struct ShardMenu
 	Tileset *ts_shardButtons;
 	Tileset *ts_shardContainer;
 	Tileset *ts_sparkle;
-	Tileset *ts_bigShards;
 
 	Tileset *ts_notCapturedPreview;
 	Tileset *ts_noPreview;

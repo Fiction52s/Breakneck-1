@@ -22,12 +22,11 @@ struct KinMenu
 	ControlSettingsMenu *csm;
 	int GetCurrIndex();
 	~KinMenu();
-	MainMenu *mainMenu;
+	GameSession *game;
 	sf::Sprite selectorSpr;
 	void UpdatePowers(Actor *player);
 	int secondRowMax;
-	KinMenu(MainMenu *p_mainMenu,
-		ControlSettingsMenu *csm);
+	KinMenu( GameSession *p_game);
 	sf::Vertex powerQuads[10 * 4];
 	sf::Vertex powerQuadsBG[10 * 4];
 	ColorShifter *selectedShifter;

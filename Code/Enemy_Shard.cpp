@@ -41,16 +41,11 @@ void Shard::UpdateParamsSettings()
 
 	if (shardType != oldShardType)
 	{
-		switch (shardWorld)
-		{
-		case 0://ShardType::SHARD_W1_TEACH_JUMP:
-		default:
-			ts = sess->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-			sprite.setTexture(*ts->texture);
-			sprite.setTextureRect(ts->GetSubRect(localIndex));
-			sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
-			break;
-		}
+		ts = Shard::GetShardTileset(shardWorld, sess);
+
+		sprite.setTexture(*ts->texture);
+		sprite.setTextureRect(ts->GetSubRect(localIndex));
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	}
 }
 
@@ -58,6 +53,15 @@ void Shard::SetupShardMaps()
 {
 	shardTypeMap["GET_DASH_BOOST"] = SHARD_W1_0_GET_DASH_BOOST;
 	shardTypeMap["GET_AIRDASH_BOOST"] = SHARD_W1_1_GET_AIRDASH_BOOST;
+
+	shardTypeMap["MAX_SPEED_INCREASE_1"] = SHARD_W3_0_MAX_SPEED_INCREASE_1;
+	shardTypeMap["MAX_SPEED_INCREASE_2"] = SHARD_W3_1_MAX_SPEED_INCREASE_2;
+	shardTypeMap["MAX_SPEED_INCREASE_3"] = SHARD_W3_2_MAX_SPEED_INCREASE_3;
+	shardTypeMap["MAX_SPEED_INCREASE_4"] = SHARD_W3_3_MAX_SPEED_INCREASE_4;
+	shardTypeMap["MAX_SPEED_INCREASE_5"] = SHARD_W3_4_MAX_SPEED_INCREASE_5;
+	shardTypeMap["MAX_SPEED_INCREASE_6"] = SHARD_W3_5_MAX_SPEED_INCREASE_6;
+	shardTypeMap["MAX_SPEED_INCREASE_7"] = SHARD_W3_6_MAX_SPEED_INCREASE_7;
+	shardTypeMap["MAX_SPEED_INCREASE_8"] = SHARD_W3_7_MAX_SPEED_INCREASE_8;
 	//shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
@@ -120,8 +124,8 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 		sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 		sparklePool->ts = ts_sparkle;
 
-		BasicCircleHurtBodySetup(32);
-		BasicCircleHitBodySetup(32);
+		BasicCircleHurtBodySetup(64);
+		BasicCircleHitBodySetup(64);
 
 		hitBody.hitboxInfo = NULL;
 
@@ -218,12 +222,10 @@ void Shard::ResetEnemy()
 Tileset *Shard::GetShardTileset(int w, TilesetManager *ttm)
 {
 	Tileset *ts = NULL;
-	switch (w)
-	{
-	case 0:
-	default:
-		ts = ttm->GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-	}
+
+
+	string tsName = "Shard/shards_w" + to_string(w + 1) + "_192x192.png";
+	ts = ttm->GetSizedTileset(tsName);
 
 	return ts;
 }
@@ -315,6 +317,7 @@ void Shard::Capture()
 
 
 	int upgradeIndex = -1;
+
 	switch (shardType)
 	{
 	case SHARD_W1_0_GET_DASH_BOOST:
@@ -325,6 +328,46 @@ void Shard::Capture()
 	case SHARD_W1_1_GET_AIRDASH_BOOST:
 	{
 		upgradeIndex = Actor::UPGRADE_AIRDASH_BOOSTER_1;
+		break;
+	}
+	case SHARD_W3_0_MAX_SPEED_INCREASE_1:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_1;
+		break;
+	}
+	case SHARD_W3_1_MAX_SPEED_INCREASE_2:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_2;
+		break;
+	}
+	case SHARD_W3_2_MAX_SPEED_INCREASE_3:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_3;
+		break;
+	}
+	case SHARD_W3_3_MAX_SPEED_INCREASE_4:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_4;
+		break;
+	}
+	case SHARD_W3_4_MAX_SPEED_INCREASE_5:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_5;
+		break;
+	}
+	case SHARD_W3_5_MAX_SPEED_INCREASE_6:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_6;
+		break;
+	}
+	case SHARD_W3_6_MAX_SPEED_INCREASE_7:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_7;
+		break;
+	}
+	case SHARD_W3_7_MAX_SPEED_INCREASE_8:
+	{
+		upgradeIndex = Actor::UPGRADE_MAX_SPEED_8;
 		break;
 	}
 	}
@@ -449,6 +492,7 @@ void Shard::UpdateSprite()
 {
 	int tile = 0;
 
+	sprite.setScale(2, 2);
 	//sprite.setTextureRect(ts->GetSubRect(tile));
 	sprite.setPosition(GetPositionF());
 }
@@ -529,7 +573,7 @@ void ShardPopup::SetShard(int p_w, int p_li)
 	effectSpr.setTexture(*shardSpr.getTexture());
 	effectSpr.setTextureRect(shardSpr.getTextureRect());
 
-	string test = sess->mainMenu->pauseMenu->shardMenu->GetShardDesc(w, li);
+	string test = sess->shardMenu->GetShardDesc(w, li);
 	desc.setString(test);
 }
 

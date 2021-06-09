@@ -639,7 +639,7 @@ void Actor::UpdatePowersMenu()
 {
 	if (owner != NULL)
 	{
-		owner->mainMenu->pauseMenu->kinMenu->UpdatePowers(this);
+		owner->pauseMenu->kinMenu->UpdatePowers(this);
 	}
 }
 
@@ -3511,9 +3511,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	//steepClimbFastFactor = .7;//.2;
 	
 	climbBoostLimit = 30;//25;//22;//15;
-
-	
-	maxNormalRun = 60; //adjust up w/ more power?
 	
 	airAccel = 1.5;
 		
@@ -3534,17 +3531,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	airDashSpeed = dashSpeed;
 
-	maxVelocity = 60;
-	double maxSpeed = maxVelocity;
-	double maxXSpeed = maxVelocity;
-	maxGroundSpeed = maxSpeed;
-	maxAirXSpeed = maxSpeed;
-	maxFallSpeedSlow = 30;//30;//100; // 4
-	maxFallSpeedFast = maxSpeed;
-
-	scorpAdditionalAccel = 0;//.2;
-	scorpAdditionalCapMax = 0;//20.0;//12.0;
-	scorpAdditionalCap = 0.0;
+	maxSpeed = 60;
+	maxFallSpeedSlow = 30;
 
 	offSlopeByWallThresh = dashSpeed;//18;
 	slopeLaunchMinSpeed = 5;//dashSpeed * .7;
@@ -3755,6 +3743,55 @@ Actor::~Actor()
 	if (leftWire != NULL)
 		delete leftWire;
 }
+
+double Actor::GetMaxSpeed()
+{
+	//starts at 60, goes up to 100
+	double currRealMax = maxSpeed;
+	double upgradeAmount = 5;
+	if (HasUpgrade(UPGRADE_MAX_SPEED_1))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_2))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_3))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_4))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_5))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_6))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_7))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_SPEED_8))
+	{
+		currRealMax += upgradeAmount;
+	}
+
+	return currRealMax;
+}
+
 
 void Actor::SetGameMode()
 {
@@ -4381,7 +4418,6 @@ void Actor::Respawn( bool setStartPos )
 	gateBlackFXPool->Reset();
 
 	regrindOffCount = 3;
-	scorpAdditionalCap = 0.0;
 	prevRail = NULL;
 	framesSinceGrindAttempt = maxFramesSinceGrindAttempt;
 	canRailSlide = false;
@@ -5626,7 +5662,7 @@ void Actor::ProcessBounceGrassGrounded()
 
 void Actor::LimitMaxSpeeds()
 {
-	double maxReal = maxVelocity + scorpAdditionalCap;
+	double maxReal = GetMaxSpeed();
 	if (ground == NULL && bounceEdge == NULL && grindEdge == NULL
 		&& action != ENTERNEXUS1
 		&& action != GLIDE
@@ -6139,6 +6175,10 @@ void Actor::UpdatePrePhysics()
 	{
 		skinTest = 0;
 	}*/
+
+
+	//cout << "vely: " << velocity.y << endl;
+	cout << "groundspeed: " << groundSpeed << endl;
 
 
 	hitOutOfHitstunLastFrame = false;
@@ -7083,7 +7123,7 @@ float Actor::GetSpeedBarPart()
 	}
 	else
 	{
-		quant = (float)((currentSpeedBar - level2SpeedThresh) / (maxGroundSpeed - level2SpeedThresh));
+		quant = (float)((currentSpeedBar - level2SpeedThresh) / (GetMaxSpeed() - level2SpeedThresh));
 	}
 
 	return quant;
@@ -14371,22 +14411,6 @@ void Actor::ProcessSpecialTerrain()
 	HandleSpecialTerrain();
 }
 
-void Actor::UpdateScorpCap()
-{
-	if (scorpOn)
-	{
-		scorpAdditionalCap += scorpAdditionalAccel;
-		if (scorpAdditionalCap > scorpAdditionalCapMax)
-			scorpAdditionalCap = scorpAdditionalCapMax;
-	}
-	else
-	{
-		scorpAdditionalCap -= scorpAdditionalAccel;
-		if (scorpAdditionalCap < 0)
-			scorpAdditionalCap = 0;
-	}
-}
-
 void Actor::ProcessHitGoal()
 {
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
@@ -14492,7 +14516,7 @@ void Actor::UpdateSpeedBar()
 
 	if (momentumBoostFrames > 0)
 	{
-		speed = maxGroundSpeed;
+		speed = GetMaxSpeed();
 	}
 
 	if (CareAboutSpeedAction())
@@ -14969,13 +14993,6 @@ void Actor::UpdatePostPhysics()
 	QueryTouchGrass();
 
 	ProcessSpecialTerrain();
-
-	
-
-
-
-
-	UpdateScorpCap();
 	
 	if( ground != NULL )
 	{
@@ -17326,7 +17343,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	launcherEffectPool[1]->Draw(target);
 
 
-	if( bounceFlameOn && action != EXIT && !IsGoalKillAction(action) && action != GRINDBALL 
+	if( bounceFlameOn && !IsExitAction( action ) && !IsGoalKillAction(action) && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
 		target->draw( scorpSprite );
@@ -19050,11 +19067,11 @@ void Actor::SetActionGrind()
 	}
 	else if( groundSpeed > 0 )
 	{
-		grindSpeed = std::min( maxGroundSpeed, std::max( groundSpeed, minGrindSpeed) );
+		grindSpeed = std::min(GetMaxSpeed(), std::max( groundSpeed, minGrindSpeed) );
 	}
 	else
 	{
-		grindSpeed = std::max( -maxGroundSpeed, std::min( groundSpeed, -minGrindSpeed) );
+		grindSpeed = std::max( -GetMaxSpeed(), std::min( groundSpeed, -minGrindSpeed) );
 	}
 	
 

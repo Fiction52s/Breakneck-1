@@ -31,6 +31,7 @@ struct LevelSelector;
 struct MusicInfo;
 struct AdventureMap;
 struct GlobalSaveFile;
+struct ControlSettingsMenu;
 
 struct EffectPool;
 
@@ -658,12 +659,12 @@ struct MainMenu
 	static sf::RenderTexture *brushPreviewTexture;
 	static sf::RenderTexture *extraScreenTexture;
 	static sf::RenderTexture *auraCheckTexture;
-	
-	PauseMenu *pauseMenu;
 
 	sf::Texture worldMapTex;
 	sf::Sprite worldMapSpr;
 	Tileset *ts_worldMap;
+
+	ControlSettingsMenu *controlSettingsMenu;
 	
 	//Tileset *ts_kinTitle[7];
 	TitleScreen *titleScreen;

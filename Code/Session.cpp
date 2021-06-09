@@ -34,6 +34,8 @@
 #include "EnvEffects.h"
 #include "MusicPlayer.h"
 
+#include "ShardMenu.h"
+
 //enemy stuff:
 #include "SoundManager.h"
 #include "GGPO.h"
@@ -1560,6 +1562,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	deathSeq = NULL;
 	shardPop = NULL;
 	powerPop = NULL;
+
+	shardMenu = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -5820,6 +5824,28 @@ void Session::DrawGoalPulse(sf::RenderTarget *target)
 	{
 		goalPulse->Draw(target);
 	}
+}
+
+void Session::SetupShardMenu()
+{
+	if (parentGame != NULL)
+	{
+		shardMenu = parentGame->shardMenu;
+	}
+	else
+	{
+		shardMenu = new ShardMenu(this);
+	}
+}
+
+void Session::CleanupShardMenu()
+{
+	if (parentGame == NULL)
+	{
+		delete shardMenu;
+	}
+
+	shardMenu = NULL;
 }
 
 void Session::CleanupRain()

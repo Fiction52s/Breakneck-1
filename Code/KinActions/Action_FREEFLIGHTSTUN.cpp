@@ -23,8 +23,8 @@ void Actor::FREEFLIGHTSTUN_Change()
 
 void Actor::FREEFLIGHTSTUN_Update()
 {
-	double driftFactor = 1.0;
-	double maxAccelSpeed = 15;
+	double driftFactor = 2.0;//1.0;
+	double maxAccelSpeed = 30;//15;
 
 	if (currInput.LUp())
 	{

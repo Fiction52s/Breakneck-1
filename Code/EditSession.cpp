@@ -1253,6 +1253,7 @@ void EditSession::TestPlayerMode()
 	}
 
 
+
 	if( hud != NULL )
 		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
@@ -1805,7 +1806,7 @@ EditSession::~EditSession()
 	if (ggpoStatsPanel != NULL)
 		delete ggpoStatsPanel;
 
-	
+	CleanupShardMenu();
 
 	currSession = NULL;
 
@@ -3356,7 +3357,7 @@ void EditSession::SetupShardSelectPanel()
 
 	shardGridSize = 64;
 
-	shardTypePanel = new Panel("shardtype", 600, 600, this, true);
+	shardTypePanel = new Panel("shardtype", 600, 800, this, true);
 	Color c(100, 100, 100);
 	c.a = 180;
 	shardTypePanel->SetColor(c);
@@ -3364,7 +3365,7 @@ void EditSession::SetupShardSelectPanel()
 	int numWorlds = 7;
 	for (int i = 0; i < numWorlds; ++i)
 	{
-		ts_shards[i] = GetSizedTileset("Shard/shards_w" + to_string(i + 1) + "_48x48.png");
+		ts_shards[i] = Shard::GetShardTileset(i, this);
 	}
 
 	int totalShards = shardNumX * shardNumY * 7;
@@ -3485,7 +3486,7 @@ void EditSession::Init()
 
 	SetupHitboxManager();
 	
-	
+	SetupShardMenu();
 
 	SetupShardsCapturedField();
 
@@ -7241,13 +7242,6 @@ Panel * EditSession::CreatePopupPanel( const std::string &type )
 	{
 		p = new Panel("bg_popup", 1500, 600, this);
 	}
-	/*else if (type == "shardselector")
-	{
-		p = new Panel("shardselector", 700, 1080, this);
-		p->AddLabel("shardtype", Vector2i(20, 900), 24, "SHARD_W1_TEACH_JUMP");
-		CreateShardGridSelector(p, Vector2i(0, 0));
-		p->AddButton("ok", Vector2i(100, 1000), Vector2f(100, 50), "OK");
-	}*/
 
 	if( p != NULL )
 		allPopups.push_back(p);
@@ -8548,51 +8542,7 @@ bool EditSession::HoldingControl()
 		IsKeyPressed(Keyboard::RControl)));
 }
 
-void EditSession::CreateShardGridSelector( Panel *p, sf::Vector2i &pos )
-{
-	int xSize = 11;
-	int ySize = 2;
 
-	GridSelector *gs = p->AddGridSelector("shardselector", pos, xSize, ySize * 7, 64, 64, true, true);
-	Sprite spr;
-
-
-	ts_shards[0] = GetTileset("Shard/shards_w1_48x48.png", 48, 48);
-	ts_shards[1] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-	ts_shards[2] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-	ts_shards[3] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-	ts_shards[4] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-	ts_shards[5] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-	ts_shards[6] = GetTileset("Shard/shards_w2_48x48.png", 48, 48);
-
-
-	Tileset *ts_currShards;
-	int sInd = 0;
-
-	for (int w = 0; w < 7; ++w)
-	{
-		ts_currShards = ts_shards[w];
-		spr.setTexture(*ts_currShards->texture);
-		for (int y = 0; y < ySize; ++y)
-		{
-			for (int x = 0; x < xSize; ++x)
-			{
-				sInd = y * xSize + x;
-				spr.setTextureRect(ts_currShards->GetSubRect(sInd));
-				int shardT = (sInd + (xSize * ySize) * w);
-				if (shardT >= SHARD_Count)
-				{
-					gs->Set(x, y + ySize * w, spr, "---"); //need a way to set the names later
-				}
-				else
-				{
-					gs->Set(x, y + ySize * w, spr, Shard::GetShardString((ShardType)shardT));
-				}
-
-			}
-		}
-	}
-}
 
 void EditSession::GetShardWorldAndIndex(int selX, int selY,
 	int &w, int &li)

@@ -17,24 +17,25 @@
 #include "MusicSelector.h"
 #include "VisualEffects.h"
 #include "SaveFile.h"
+#include "Session.h"
 
 
 using namespace sf;
 using namespace std;
 
-ShardMenu::ShardMenu(MainMenu *mm)
-	:mainMenu( mm )
+ShardMenu::ShardMenu(Session *p_sess)
+	:sess( p_sess )
 {
 	totalFrame = 0;
 	currShardMusic = NULL;
 	//currentMovie.scale(.5, .5);
 
 	currShardText.setCharacterSize(20);
-	currShardText.setFont(mm->arial);
+	currShardText.setFont(sess->mainMenu->arial);
 	currShardText.setPosition(960, 740);
 
 	currShardNameText.setCharacterSize(20);
-	currShardNameText.setFont(mm->arial);
+	currShardNameText.setFont(sess->mainMenu->arial);
 	currShardNameText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
 	
 	Vector2f controlCenter = Vector2f(1243 + 512 / 2, 594 + 93 / 2);
@@ -61,12 +62,11 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
-	ts_shardContainer = mm->tilesetManager.GetTileset("Menu/shard_container_401x512.png", 401, 512);
-	ts_sparkle = mm->tilesetManager.GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
-	ts_bigShards = mm->tilesetManager.GetTileset("Shard/shards_w1_192x192.png", 192, 192);
-	ts_notCapturedPreview = mm->tilesetManager.GetTileset("Menu/not_captured_512x512.png", 512, 512);
-	ts_noPreview = mm->tilesetManager.GetTileset("Menu/nopreview.png", 512, 512);
-	ts_shardButtons = mm->tilesetManager.GetTileset("Menu/pause_shard_buttons_128x93.png", 128, 93);
+	ts_shardContainer = sess->GetSizedTileset("Menu/shard_container_401x512.png");
+	ts_sparkle = sess->GetSizedTileset("Menu/shard_sparkle_64x64.png");
+	ts_notCapturedPreview = sess->GetSizedTileset("Menu/not_captured_512x512.png");
+	ts_noPreview = sess->GetTileset("Menu/nopreview.png", 512, 512);
+	ts_shardButtons = sess->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
 	for (int i = 0; i < 4; ++i)
 	{
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
@@ -83,15 +83,19 @@ ShardMenu::ShardMenu(MainMenu *mm)
 
 	state = PAUSED;
 
-	ts_shards[0] = mm->tilesetManager.GetTileset("Shard/shards_w1_48x48.png", 48, 48);
+	//this probably loads shard textures twice, is probably wasteful.
+	for (int i = 0; i < 7; ++i)
+	{
+		ts_shards[i] = sess->GetSizedTileset("Shard/shards_w" + to_string(i+1) + "_192x192.png");
+	}
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
 
 	int waitFrames[3] = { 60, 20, 10 };
-	int waitModeThresh[2] = { 2, 2 };
+	int waitModeThresh[2] = { 2, 4 };
 	int xSize = 11;
-	int ySize = 2;//14;
+	int ySize = 14;
 
 	shardNames = new string*[ySize];
 	shardDesc = new string*[ySize];
@@ -139,7 +143,7 @@ ShardMenu::ShardMenu(MainMenu *mm)
 			else
 			{
 				ss << "Shard/" << currShardName << "_preview.png";
-				ts_preview[x + y * xSize] = mainMenu->tilesetManager.GetTileset(ss.str(), 512, 512);
+				ts_preview[x + y * xSize] = sess->GetTileset(ss.str(), 512, 512);
 			}
 			
 			
@@ -162,10 +166,10 @@ ShardMenu::ShardMenu(MainMenu *mm)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
-			index = (i * xSelector->totalItems + j) * 4;
+			index = (i * xSelector->totalItems + j);
 			
-			SetRectCenter(shardSelectQuads + index, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			SetRectSubRect(shardSelectQuads + index, ts_shards[0]->GetSubRect(i * xSelector->totalItems + j));
+			SetRectCenter(shardSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
+			SetRectSubRect(shardSelectQuads + index * 4, ts_shards[index/22]->GetSubRect(index % 22));
 		}
 	}
 	
@@ -205,7 +209,9 @@ ShardMenu::~ShardMenu()
 
 bool ShardMenu::IsShardCaptured( int x, int y )
 {
-	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	return true; //testing
+
+	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
 	if (saveFile == NULL)
 	{
 		return false;
@@ -222,7 +228,7 @@ bool ShardMenu::IsCurrShardCaptured()
 void ShardMenu::UpdateUnlockedShards()
 {
 	int index = 0;
-	SaveFile *saveFile = mainMenu->GetCurrentProgress();
+	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
 
 	if (saveFile == NULL)
 		return;
@@ -253,7 +259,7 @@ void ShardMenu::UpdateUnlockedShards()
 bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, const std::string &shardTypeStr)
 {
 	stringstream ss;
-	ss << "Resources/Shard/" << shardTypeStr << ".sdesc";
+	ss << "Resources/Shard/Descriptions/" << shardTypeStr << ".sdesc";
 	ifstream is;
 	is.open(ss.str());
 
@@ -262,7 +268,15 @@ bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, cons
 	if( is.is_open())
 	{
 		getline(is, nameStr);
-		getline(is, destStr);
+		destStr.assign((std::istreambuf_iterator<char>(is)),
+			(std::istreambuf_iterator<char>()));
+		/*char c;
+		while (is.get(c))
+		{
+			
+		}*/
+
+		//getline(is, destStr);
 		/*is.seekg(0, std::ios::end);
 		destStr.reserve(is.tellg());
 		is.seekg(0, std::ios::beg);
@@ -349,7 +363,7 @@ MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
 	//ss.str("");
 	//ss << "Shard/" << str << "_" << counter << ".png";
 	//cout << "test: " << ss.str() << endl;
-	return mainMenu->musicManager->songMap["w02_Glade"];
+	return sess->mainMenu->musicManager->songMap["w02_Glade"];
 	//sf::Music *m = mainMenu->musicManager->//LoadSong("Audio/Music/.ogg");
 }
 
@@ -449,19 +463,25 @@ void ShardMenu::UpdateShardSelectQuads()
 	int selectedShardTileIndex = -1;
 	if (IsCurrShardCaptured())
 	{
-		SetRectSubRect(largeShard, ts_bigShards->GetSubRect(index));
-		selectedShardTileIndex = index + 22;
+		SetRectSubRect(largeShard, ts_shards[index/22]->GetSubRect(index%22));
+		//selectedShardTileIndex = index + 22;
 	}
 	else
 	{
 		SetRectSubRect(largeShard, FloatRect());
-		selectedShardTileIndex = index + 44;
+		//selectedShardTileIndex = index + 44;
 	}
-	selectedShardHighlight.setTextureRect(ts_shards[0]->GetSubRect(selectedShardTileIndex));
+
+	selectedShardHighlight.setScale(48 / 192.0, 48 / 192.0 );
+	selectedShardHighlight.setTexture(*ts_shards[index / 22]->texture);
+	selectedShardHighlight.setTextureRect(ts_shards[index/22]->GetSubRect(index%22));
 	selectedShardHighlight.setOrigin(selectedShardHighlight.getLocalBounds().width / 2,
 		selectedShardHighlight.getLocalBounds().height / 2);
 
 	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
+
+	SetRectCenter(selectedBGQuad, 48, 48, Vector2f(selectedShardHighlight.getPosition()));
+	SetRectColor(selectedBGQuad, Color::White);
 }
 
 void ShardMenu::SetCurrentDescription( bool captured)
@@ -475,8 +495,8 @@ void ShardMenu::SetCurrentDescription( bool captured)
 
 std::string ShardMenu::GetShardDesc(int w, int li)
 {
-	int x = li + (w % 2) * 11;
-	int y = w / 2;
+	int x = li % 11;//li + (w % 2) * 11;
+	int y = w * 2 + li/11;
 	
 
 	return shardDesc[y][x];
@@ -505,6 +525,7 @@ void ShardMenu::SetCurrShard()
 		else
 		{
 			int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+			selectedIndex = index;
 			Tileset *tp = ts_preview[index];
 			if (tp != NULL)
 			{
@@ -612,7 +633,7 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 	
 	if (currShardCap)
 	{
-		int lightningFactor = 8;
+		int lightningFactor = 14;//8;
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
 	}
 	else
@@ -684,7 +705,7 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	target->draw(shardButtons, 4 * 4, sf::Quads, ts_shardButtons->texture);
 	
 
-	target->draw(largeShard, 4, sf::Quads, ts_bigShards->texture);
+	target->draw(largeShard, 4, sf::Quads, ts_shards[selectedIndex/22]->texture);
 	sparklePool->Draw(target);
 	if(GetCurrSeq() != NULL )
 		GetCurrSeq()->Draw(target);
@@ -692,9 +713,21 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	{
 		target->draw(previewSpr);
 	}
-	target->draw(shardSelectQuads, 22 * 4/*xSelector->totalItems * ySelector->totalItems * 4*/,
-		sf::Quads, ts_shards[0]->texture);
-	target->draw(selectedShardHighlight);
+
+
+	target->draw(selectedBGQuad, 4, sf::Quads);
+
+	for (int i = 0; i < 7; ++i)
+	{
+		target->draw(shardSelectQuads + 22 * 4 * i, 22 * 4,
+			sf::Quads, ts_shards[i]->texture);
+	}
+
+	
+
+	/*target->draw(shardSelectQuads, 22 * 4,
+		sf::Quads, ts_shards[0]->texture);*/
+	//target->draw(selectedShardHighlight);
 	if (currShardText.getString() != "")
 	{
 		target->draw(currShardText);

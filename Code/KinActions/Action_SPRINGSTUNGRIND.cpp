@@ -386,11 +386,11 @@ void Actor::SPRINGSTUNGRIND_Update()
 {
 	if (grindSpeed > 0)
 	{
-		grindSpeed = std::min(maxGroundSpeed + scorpAdditionalCap, grindSpeed);
+		grindSpeed = std::min(GetMaxSpeed(), grindSpeed);
 	}
 	else
 	{
-		grindSpeed = std::max(-maxGroundSpeed - scorpAdditionalCap, grindSpeed);
+		grindSpeed = std::max(-GetMaxSpeed(), grindSpeed);
 	}
 
 	velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;

@@ -169,6 +169,14 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_DASH_BOOSTER_1,
 		UPGRADE_AIRDASH_BOOSTER_1,
 		UPGRADE_WIRE_ENEMIES,
+		UPGRADE_MAX_SPEED_1,
+		UPGRADE_MAX_SPEED_2,
+		UPGRADE_MAX_SPEED_3,
+		UPGRADE_MAX_SPEED_4,
+		UPGRADE_MAX_SPEED_5,
+		UPGRADE_MAX_SPEED_6,
+		UPGRADE_MAX_SPEED_7,
+		UPGRADE_MAX_SPEED_8,
 		UPGRADE_Count,
 	};
 
@@ -932,10 +940,7 @@ struct Actor : QuadTreeCollider,
 	double glideTurnAccel;
 	double maxGlideTurnFactor;
 	//these are for your max vel
-	double scorpAdditionalCap;
-	double scorpAdditionalCapMax;
-	double scorpAdditionalAccel;
-	double maxVelocity;
+	double maxSpeed;
 	bool highAccuracyHitboxes;
 	V2d movementVec;
 	double extra;
@@ -1043,18 +1048,14 @@ struct Actor : QuadTreeCollider,
 	double airSlow;
 	double slopeLaunchMinSpeed;
 	double maxRunInit;
-	double maxGroundSpeed;
 	double runAccelInit;
 	double sprintAccel;
-	double maxNormalRun;
 	double runAccel;
 	double maxFallSpeedSlow;
-	double maxFallSpeedFast;
 	double gravity;
 	double extraGravityModifier;
 	double jumpStrength;
 	double airAccel;
-	double maxAirXSpeed;
 	double maxAirXControl;
 	double dashSpeed;
 	double dashSpeed0;
@@ -1189,6 +1190,8 @@ struct Actor : QuadTreeCollider,
 	void PopulateFromState(PState *ps);
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
+
+	double GetMaxSpeed();
 
 	void ActivateLauncherEffect(int tile);
 
@@ -1493,7 +1496,6 @@ struct Actor : QuadTreeCollider,
 	void ProcessReceivedHit();
 	void UpdateDrain();
 	void ProcessGravityGrass();
-	void UpdateScorpCap();
 	void ProcessHitGoal();
 	void UpdateWirePhysics();
 	void UpdateGrindPhysics(double movement);

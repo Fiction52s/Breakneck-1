@@ -7,6 +7,7 @@ struct SingleAxisSelector;
 struct MainMenu;
 struct Tileset;
 struct ProfileSelector;
+struct TilesetManager;
 
 struct ControlSettingsMenu
 {
@@ -28,7 +29,9 @@ struct ControlSettingsMenu
 
 	int numActions;
 	ButtonState currButtonState;
-	ControlSettingsMenu(MainMenu *p_mm);
+	MainMenu *mainMenu;
+	ControlSettingsMenu( MainMenu *p_mm,
+		TilesetManager *tm);
 	XBoxButton GetFilteredButton( ControllerType cType,
 		ControllerSettings::ButtonType b );
 	~ControlSettingsMenu();
@@ -43,7 +46,6 @@ struct ControlSettingsMenu
 	void SetButtonAssoc();
 	bool IsEditingButtons();
 
-	MainMenu *mainMenu;
 	void SetActionTile(int actionIndex, int actionType);
 	void Draw(sf::RenderTarget *target);
 	void UpdateXboxButtonIcons();

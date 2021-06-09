@@ -46,11 +46,12 @@ struct OptionSelector
 struct PauseMenu;
 struct MainMenu;
 struct SingleAxisSelector;
+struct GameSession;
 struct OptionsMenu
 {
 
 	MainMenu *mainMenu;
-
+	GameSession *game;
 
 	enum State
 	{
@@ -91,7 +92,7 @@ struct PauseMenu
 		Count
 	};
 
-	PauseMenu( MainMenu *p_mainMenu );
+	PauseMenu(GameSession *game);
 	~PauseMenu();
 	void Draw( sf::RenderTarget *target );
 	void ResetCounters();
@@ -104,6 +105,7 @@ struct PauseMenu
 
 	sf::Text debugText;
 
+	MainMenu *mainMenu;
 	Tileset *ts_pauseOptions;
 	sf::Vertex pauseOptionQuads[5 * 4];
 	void UpdatePauseOptions();
@@ -132,18 +134,18 @@ struct PauseMenu
 		ControllerState &prevInput );
 	Tileset *ts_background[Count];
 	Tileset *ts_select;
-	GameSession *owner;
 
 	ShardMenu *shardMenu;
 	KinMenu *kinMenu;
 
 	sf::Sprite bgSprite;
 	sf::Sprite selectSprite;
-	MainMenu *mainMenu;
+	GameSession *game;
+	ControlSettingsMenu *controlSettingsMenu;
 
 	ControlProfile *GetCurrSelectedProfile();
 	bool SetCurrProfileByName(const std::string &name);
-	ControlSettingsMenu *controlSettingsMenu;
+	
 	OptionsMenu *optionsMenu;
 	
 	Tab currentTab;

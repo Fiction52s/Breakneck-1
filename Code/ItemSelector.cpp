@@ -75,10 +75,13 @@ bool FrameWaiter::Hold() //returns true when framesWaiting resets
 	}
 }
 
-SingleAxisSelector::SingleAxisSelector(int numWaitFramesLevels, int*p_waitFrames, int numWaitModeThreshLevels,
+SingleAxisSelector::SingleAxisSelector(int p_numWaitFramesLevels, int*p_waitFrames, int p_numWaitModeThreshLevels,
 	int *p_waitModeThresh, int p_totalItems, int p_startIndex, bool p_loop)
 	:startIndex( p_startIndex ), loop(p_loop), currIndex(p_startIndex), totalItems(p_totalItems)
 {
+	numWaitFramesLevels = p_numWaitFramesLevels;
+	numWaitModeThreshLevels = p_numWaitModeThreshLevels;
+
 	waitFrames = new int[numWaitFramesLevels];
 	for (int i = 0; i < numWaitFramesLevels; ++i)
 	{
@@ -135,7 +138,7 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 
 			++flipCounterDown;
 
-			if (flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+			if (flipCounterDown == waitModeThresh[currWaitLevel] && currWaitLevel < numWaitModeThreshLevels)
 			{
 				currWaitLevel++;
 			}
@@ -176,7 +179,7 @@ int SingleAxisSelector::UpdateIndex(bool dec, bool inc)
 
 			++flipCounterUp;
 
-			if (flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < 2)
+			if (flipCounterUp == waitModeThresh[currWaitLevel] && currWaitLevel < numWaitModeThreshLevels)
 			{
 				currWaitLevel++;
 			}

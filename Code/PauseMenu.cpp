@@ -139,6 +139,7 @@ void OptionSelector::Draw( sf::RenderTarget *target )
 OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 {
 	state = CHOOSESTATE;
+	game = pauseMenu->game;
 	mainMenu = pauseMenu->mainMenu;
 	//temporary init here
 	basePos = Vector2f( 100, 100 );
@@ -147,7 +148,7 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	int waitModeThresh[2] = { 2, 2 };
 	optionModeSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
 
-	ts_optionMode = pauseMenu->mainMenu->tilesetManager.GetTileset("Menu/optionsptions_768x128.png", 768, 128);
+	ts_optionMode = game->GetSizedTileset("Menu/optionsptions_768x128.png");
 
 	//Vector2f startOffset(1820 / 2, 100);
 	Vector2f startOffset(1820 / 2, 128/2 + 150);
@@ -158,7 +159,7 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 		SetRectCenter(optionModeQuads + i * 4, 768, 128, startOffset + Vector2f(0, (128 + spacing) * i));
 	}
 
-	csm = pauseMenu->controlSettingsMenu;
+	csm = mainMenu->controlSettingsMenu;
 }
 
 OptionsMenu::~OptionsMenu()
@@ -192,11 +193,7 @@ void OptionsMenu::Update( ControllerState &currInput,
 		int res = optionModeSelector->UpdateIndex(currInput.LUp(), currInput.LDown());
 		if (res != 0)
 		{
-			if (mainMenu->pauseMenu->owner != NULL)
-			{
-				GameSession *owner = mainMenu->pauseMenu->owner;
-				mainMenu->pauseMenu->owner->pauseSoundNodeList->ActivateSound(mainMenu->pauseMenu->owner->soundManager->GetSound("pause_change"));
-			}
+			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
 			//owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_change"));
 		}
 		UpdateOptionModeQuads();
@@ -284,11 +281,14 @@ bool OptionsMenu::CanChangeTab()
 	return true;
 }
 
-PauseMenu::PauseMenu(MainMenu *p_mainMenu )
-	:mainMenu( p_mainMenu ), currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
-	
+PauseMenu::PauseMenu( GameSession *p_game)
+	:currentTab( Tab::MAP ),  accelBez( 0, 0, 1, 1 )
 {
-	debugText.setFont(mainMenu->arial);
+	game = p_game;
+	mainMenu = game->mainMenu;
+	
+
+	debugText.setFont(game->mainMenu->arial);
 	debugText.setCharacterSize(28);
 	debugText.setFillColor(Color::White);
 //	debugText.setOutlineColor(Color::Black);
@@ -299,18 +299,19 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 		"work in progress.\nThanks for testing\n\nPress Y to restart w/ ghost");
 	debugText.setPosition(100, 100);
 
-	owner = NULL;
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
-	ts_background[0] = mainMenu->tilesetManager.GetTileset( "Menu/pause_1_pause_1820x980.png", 1820, 980 );
-	ts_background[1] = mainMenu->tilesetManager.GetTileset( "Menu/pause_2_map_1820x980.png", 1820, 980 );
-	ts_background[2] = mainMenu->tilesetManager.GetTileset( "Menu/pause_3_shards_1820x980.png", 1820, 980 );
-	ts_background[3] = mainMenu->tilesetManager.GetTileset( "Menu/pause_4_options_1820x980.png", 1820, 980 );
-	ts_background[4] = mainMenu->tilesetManager.GetTileset( "Menu/pause_5_kin_1820x980.png", 1820, 980 );
+	ts_background[0] = game->GetSizedTileset("Menu/pause_1_pause_1820x980.png");
+	ts_background[1] = game->GetSizedTileset("Menu/pause_2_map_1820x980.png");
+	ts_background[2] = game->GetSizedTileset("Menu/pause_3_shards_1820x980.png");
+	ts_background[3] = game->GetSizedTileset("Menu/pause_4_options_1820x980.png");
+	ts_background[4] = game->GetSizedTileset("Menu/pause_5_kin_1820x980.png");
 
-	ts_select = mainMenu->tilesetManager.GetTileset( "Menu/menu_select_800x140.png", 800, 140 );
+	ts_select = game->GetSizedTileset("Menu/menu_select_800x140.png");
 	
-	ts_pauseOptions = mainMenu->tilesetManager.GetTileset("Menu/pauseoptions_768x128.png", 768, 128);
+	ts_pauseOptions = game->GetSizedTileset("Menu/pauseoptions_768x128.png");
+
+	controlSettingsMenu = game->mainMenu->controlSettingsMenu;
 
 	Vector2f startOffset(1820 / 2, 128/2 + 100);
 	int spacing = 20;
@@ -323,8 +324,6 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	int waitModeThresh[2] = { 2, 2 };
 	pauseSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 5, 0, false);
 	
-	controlSettingsMenu = new ControlSettingsMenu(mainMenu);
-	
 	optionsMenu = new OptionsMenu(this);
 
 	selectSprite.setTexture( *ts_select->texture );
@@ -336,8 +335,8 @@ PauseMenu::PauseMenu(MainMenu *p_mainMenu )
 	numVideoOptions = 3;
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
-	shardMenu = new ShardMenu( mainMenu );
-	kinMenu = new KinMenu(mainMenu, controlSettingsMenu);
+	shardMenu = game->shardMenu;
+	kinMenu = new KinMenu(game);
 	//resolution
 	//fullscreen
 	//vsync
@@ -428,7 +427,7 @@ void PauseMenu::UpdatePauseOptions()
 PauseMenu::~PauseMenu()
 {
 	delete pauseSelector;
-	delete controlSettingsMenu;
+	
 	delete optionsMenu;
 	for (int i = 0; i < numVideoOptions; ++i)
 	{
@@ -449,12 +448,12 @@ PauseMenu::~PauseMenu()
 
 ControlProfile * PauseMenu::GetCurrSelectedProfile()
 {
-	return controlSettingsMenu->pSel->currProfile;
+	return game->mainMenu->GetCurrSelectedProfile();;
 }
 
 bool PauseMenu::SetCurrProfileByName(const std::string &name)
 {
-	return controlSettingsMenu->pSel->SetCurrProfileByName(name);
+	return game->mainMenu->SetCurrProfileByName(name);
 }
 
 void PauseMenu::TabLeft()
@@ -464,7 +463,7 @@ void PauseMenu::TabLeft()
 	if( index < 0 )
 		index = 4;	
 	SetTab((Tab)index);
-	owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("tab_left"));
+	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_left"));
 }
 
 void PauseMenu::TabRight()
@@ -474,7 +473,7 @@ void PauseMenu::TabRight()
 	if( index > 4 )
 		index = 0;
 	SetTab((Tab)index );
-	owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("tab_right"));
+	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_right"));
 }
 
 void PauseMenu::SetTab( Tab t )
@@ -492,13 +491,13 @@ void PauseMenu::SetTab( Tab t )
 	switch( t )
 	{
 	case MAP:
-		mapCenter.x = owner->GetPlayerPos( 0 ).x;
-		mapCenter.y = owner->GetPlayerPos( 0 ).y;
+		mapCenter.x = game->GetPlayerPos( 0 ).x;
+		mapCenter.y = game->GetPlayerPos( 0 ).y;
 		mapZoomFactor = 16;	
 		break;
 	case KIN:
 	{
-		SaveFile *sf = mainMenu->GetCurrentProgress();
+		SaveFile *sf = game->GetCurrentProgress();
 		int skinInd = 0;
 		if (sf != NULL)
 		{
@@ -506,7 +505,7 @@ void PauseMenu::SetTab( Tab t )
 		}
 
 		kinMenu->playerSkinShader.SetSkin(skinInd);
-		kinMenu->UpdatePowers(owner->GetPlayer(0));
+		kinMenu->UpdatePowers(game->GetPlayer(0));
 		
 		break;
 	}
@@ -637,18 +636,11 @@ void PauseMenu::ApplyVideoSettings()
 	{
 		width = 1920;
 		height = 1080;
-		//owner->mainMenu->ResizeWindow( 1920, 1080 );
-		/*sf::VideoMode( windowWidth, windowHeight ), "Breakneck", sf::Style::Default, sf::ContextSettings( 0, 0, 0, 0, 0 ) );*/
-		//owner->window->create( VideoMode( 1920, 1080 ), "Breakneck",sf::Style::None, sf::ContextSettings( 0, 0, 0, 0, 0 )  );
-
-		//owner->updatewin
-		//owner->sets
 	}
 	else if( resolution == "1600 x 900" )
 	{
 		width = 1600;
 		height = 900;
-		//owner->mainMenu->ResizeWindow( 1600, 900 );
 	}
 	else
 	{
@@ -672,16 +664,16 @@ void PauseMenu::ApplyVideoSettings()
 	{
 		assert( 0 );
 	}
-	mainMenu->ResizeWindow( width, height, style );
+	game->mainMenu->ResizeWindow( width, height, style );
 
 
 	if( vsync == "on" )
 	{
-		mainMenu->window->setVerticalSyncEnabled( true );
+		game->mainMenu->window->setVerticalSyncEnabled( true );
 	}
 	else if( vsync == "off" )
 	{
-		mainMenu->window->setVerticalSyncEnabled( false );
+		game->mainMenu->window->setVerticalSyncEnabled( false );
 	}
 	else
 	{
@@ -767,16 +759,16 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 
 			if (currentTab == OPTIONS)
 			{
-				int sVol = mainMenu->config->GetData().soundVolume;
-				owner->soundNodeList->SetSoundVolume(sVol);
-				owner->pauseSoundNodeList->SetSoundVolume(sVol);
+				int sVol = game->mainMenu->config->GetData().soundVolume;
+				game->soundNodeList->SetSoundVolume(sVol);
+				game->pauseSoundNodeList->SetSoundVolume(sVol);
 				controlSettingsMenu->SetButtonAssoc();
 				optionsMenu->optionModeSelector->currIndex = 0;
 			}
 
-			owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_off"));
-			owner->SetGameSessionState(GameSession::RUN);
-			owner->soundNodeList->Pause(false);
+			game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_off"));
+			game->SetGameSessionState(GameSession::RUN);
+			game->soundNodeList->Pause(false);
 		}
 	}
 
@@ -792,16 +784,16 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
 
-				int sVol = mainMenu->config->GetData().soundVolume;
-				owner->soundNodeList->SetSoundVolume(sVol);
-				owner->pauseSoundNodeList->SetSoundVolume(sVol);
+				int sVol = game->mainMenu->config->GetData().soundVolume;
+				game->soundNodeList->SetSoundVolume(sVol);
+				game->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
 			TabLeft();
 
 			if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
-				mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+				game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 			}
 			else if (currentTab == SHARDS)
 			{
@@ -824,16 +816,16 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				optionsMenu->optionModeSelector->currIndex = 0;
 
-				int sVol = mainMenu->config->GetData().soundVolume;
-				owner->soundNodeList->SetSoundVolume(sVol);
-				owner->pauseSoundNodeList->SetSoundVolume(sVol);
+				int sVol = game->mainMenu->config->GetData().soundVolume;
+				game->soundNodeList->SetSoundVolume(sVol);
+				game->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
 			TabRight();
 
 			if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
-				mainMenu->optionsMenu->Center(Vector2f(1820, 980));
+				game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 			}
 			else if (currentTab == SHARDS)
 			{
@@ -889,22 +881,22 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				mapCenter.y += move;
 			}
 
-			if( mapCenter.x < owner->mapHeader->leftBounds )
+			if( mapCenter.x < game->mapHeader->leftBounds )
 			{
-				mapCenter.x = owner->mapHeader->leftBounds;
+				mapCenter.x = game->mapHeader->leftBounds;
 			}
-			else if( mapCenter.x > owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth )
+			else if( mapCenter.x > game->mapHeader->leftBounds + game->mapHeader->boundsWidth )
 			{
-				mapCenter.x = owner->mapHeader->leftBounds + owner->mapHeader->boundsWidth;
+				mapCenter.x = game->mapHeader->leftBounds + game->mapHeader->boundsWidth;
 			}
 
-			if( mapCenter.y < owner->mapHeader->topBounds )
+			if( mapCenter.y < game->mapHeader->topBounds )
 			{
-				mapCenter.y = owner->mapHeader->topBounds;
+				mapCenter.y = game->mapHeader->topBounds;
 			}
-			else if( mapCenter.y > owner->mapHeader->topBounds + owner->mapHeader->boundsHeight )
+			else if( mapCenter.y > game->mapHeader->topBounds + game->mapHeader->boundsHeight )
 			{
-				mapCenter.y = owner->mapHeader->topBounds + owner->mapHeader->boundsHeight;
+				mapCenter.y = game->mapHeader->topBounds + game->mapHeader->boundsHeight;
 			}
 			break;
 		}
@@ -935,33 +927,14 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				UpdateResponse ur = (UpdateResponse)(pauseSelector->currIndex+1);
 				//owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_select"));
 				return ur;
-				//switch( pauseSelectIndex )
-				//{
-				//case 0: //resume
-				//	{
-				//		//owner->state = GameSession::RUN;
-				//		//owner->soundNodeList->Pause( false );
-				//		break;
-				//	}
-				//case 1: //restart
-				//	{
 
-				//		break;
-				//	}
-				//case 2: //exit level
-				//	break;
-				//case 3: //exit to title
-				//	break;
-				//case 4: //exit game
-				//	break;
-				//}
 			}
 
 			int res = pauseSelector->UpdateIndex(currInput.LUp() && !prevInput.LUp(), currInput.LDown() && !prevInput.LDown());
 
 			if (res != 0)
 			{
-				owner->pauseSoundNodeList->ActivateSound(owner->soundManager->GetSound("pause_change"));
+				game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("pause_change"));
 			}
 			int h = 200;
 			//selectSprite.setPosition( 100, 100 + h * pauseSelector->currIndex);

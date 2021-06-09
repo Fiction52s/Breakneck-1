@@ -394,7 +394,7 @@ void Actor::GRINDBALL_Update()
 
 	if (grindSpeed > 0)
 	{
-		grindSpeed = std::min(maxGroundSpeed + scorpAdditionalCap, grindSpeed);
+		grindSpeed = std::min(GetMaxSpeed(), grindSpeed);
 
 		grindSpeed -= currDecel;
 		if (grindSpeed < dSpeed)
@@ -404,7 +404,7 @@ void Actor::GRINDBALL_Update()
 	}
 	else
 	{
-		grindSpeed = std::max(-maxGroundSpeed - scorpAdditionalCap, grindSpeed);
+		grindSpeed = std::max(-GetMaxSpeed(), grindSpeed);
 
 		grindSpeed += currDecel;
 		if (grindSpeed > -dSpeed)

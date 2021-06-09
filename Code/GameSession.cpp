@@ -318,12 +318,13 @@ int GameSession::TryToActivateBonus()
 					p->SetSession(bonusGame, bonusGame, NULL);
 				}
 			}
-			pauseMenu->owner = bonusGame;
+
+			pauseMenu->game = bonusGame;
 
 			bonusGame->RestartLevel();
 			bonusGame->Run();
 
-			pauseMenu->owner = this;
+			pauseMenu->game = this;
 			currSession = this;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
 			{
@@ -434,7 +435,7 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName)
 	newBonus->Load();
 
 	currSession = this;
-	pauseMenu->owner = this;
+	pauseMenu->game = this;
 
 	return newBonus;
 }
@@ -830,6 +831,8 @@ void GameSession::Cleanup()
 	{
 		delete recGhost;
 	}
+
+	CleanupPauseMenu();
 }
 
 GameSession::~GameSession()
@@ -1464,7 +1467,9 @@ bool GameSession::Load()
 
 	SetupShardsCapturedField();
 	
+	SetupShardMenu();
 
+	SetupPauseMenu();
 	//return true;
 
 	if( progressDisplay != NULL )
@@ -1666,7 +1671,6 @@ bool GameSession::Load()
 	header.playerInfo[0].skinIndex = 0;*/
 	SetupBestReplay();
 	
-	SetupPauseMenu();
 
 	SetupControlProfiles();
 
@@ -1935,17 +1939,6 @@ void GameSession::SetupRecGhost()
 	else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
 	{
 		recGhost = new RecordGhost(GetPlayer(0));
-	}
-}
-
-void GameSession::SetupPauseMenu()
-{
-	pauseMenu = mainMenu->pauseMenu;
-	pauseMenu->owner = this;
-
-	if (parentGame == NULL)
-	{
-		pauseMenu->SetTab(PauseMenu::PAUSE);
 	}
 }
 
@@ -3083,11 +3076,11 @@ int GameSession::Run()
 
 	if (parentGame != NULL)
 	{
-		pauseMenu->owner = parentGame;
+		pauseMenu->game = parentGame;
 	}
 	else
 	{
-		pauseMenu->owner = NULL;
+		pauseMenu->game = NULL;
 	}
 
 	
@@ -3120,7 +3113,7 @@ void GameSession::Init()
 	bonusGame = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;
-	
+
 	postLevelScene = NULL;
 	shardsCapturedField = NULL;
 	level = NULL;
@@ -3355,7 +3348,27 @@ void GameSession::OpenGates(int gCat)
 }
 
 
+void GameSession::SetupPauseMenu()
+{
+	if (parentGame != NULL)
+	{
+		pauseMenu = parentGame->pauseMenu;
+	}
+	else
+	{
+		assert(pauseMenu == NULL);
+		pauseMenu = new PauseMenu(this);
+	}
+}
 
+void GameSession::CleanupPauseMenu()
+{
+	if (parentGame == NULL && pauseMenu != NULL)
+	{
+		delete pauseMenu;
+		pauseMenu = NULL;
+	}
+}
 
 
 void GameSession::UpdateEnvShaders()

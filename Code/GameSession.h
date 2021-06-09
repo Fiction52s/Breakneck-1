@@ -496,7 +496,6 @@ struct GameSession : RayCastHandler, Session
 	void SetupQuadTrees();
 	bool SetupControlProfiles();
 	
-	void SetupPauseMenu();
 	void SetupRecGhost();
 	
 	sf::VertexArray *SetupBushes(int bgLayer,
@@ -572,5 +571,8 @@ struct GameSession : RayCastHandler, Session
 	void SequenceGameModeRespondToGoalDestroyed();
 	void UpdateTerrainStates();
 	void UpdateRailStates();
+
+	void SetupPauseMenu();
+	void CleanupPauseMenu();
 };
 #endif

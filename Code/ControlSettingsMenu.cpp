@@ -9,13 +9,13 @@
 using namespace std;
 using namespace sf;
 
-ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm)
+ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm, TilesetManager *tm)
 	:mainMenu( p_mm )
 {
 	pSel = new ProfileSelector(mainMenu, Vector2f( 250, 100));
 
-	ts_xboxButtons = mainMenu->tilesetManager.GetTileset("Menu/xbox_button_icons_128x128.png", 128, 128);
-	ts_actionIcons = mainMenu->tilesetManager.GetTileset("Menu/power_icon_128x128.png", 128, 128);
+	ts_xboxButtons = tm->GetSizedTileset("Menu/xbox_button_icons_128x128.png");
+	ts_actionIcons = tm->GetSizedTileset("Menu/power_icon_128x128.png");
 
 	numActions = 6;
 
