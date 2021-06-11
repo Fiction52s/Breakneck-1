@@ -51,17 +51,29 @@ void Shard::UpdateParamsSettings()
 
 void Shard::SetupShardMaps()
 {
-	shardTypeMap["GET_DASH_BOOST"] = SHARD_W1_0_GET_DASH_BOOST;
-	shardTypeMap["GET_AIRDASH_BOOST"] = SHARD_W1_1_GET_AIRDASH_BOOST;
+	shardTypeMap["W1_DASH_BOOST"] = SHARD_W1_0_DASH_BOOST;
+	shardTypeMap["W1_AIRDASH_BOOST"] = SHARD_W1_1_AIRDASH_BOOST;
 
-	shardTypeMap["MAX_SPEED_INCREASE_1"] = SHARD_W3_0_MAX_SPEED_INCREASE_1;
-	shardTypeMap["MAX_SPEED_INCREASE_2"] = SHARD_W3_1_MAX_SPEED_INCREASE_2;
-	shardTypeMap["MAX_SPEED_INCREASE_3"] = SHARD_W3_2_MAX_SPEED_INCREASE_3;
-	shardTypeMap["MAX_SPEED_INCREASE_4"] = SHARD_W3_3_MAX_SPEED_INCREASE_4;
-	shardTypeMap["MAX_SPEED_INCREASE_5"] = SHARD_W3_4_MAX_SPEED_INCREASE_5;
-	shardTypeMap["MAX_SPEED_INCREASE_6"] = SHARD_W3_5_MAX_SPEED_INCREASE_6;
-	shardTypeMap["MAX_SPEED_INCREASE_7"] = SHARD_W3_6_MAX_SPEED_INCREASE_7;
-	shardTypeMap["MAX_SPEED_INCREASE_8"] = SHARD_W3_7_MAX_SPEED_INCREASE_8;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_1"] = SHARD_W3_0_MAX_SPEED_INCREASE_1;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_2"] = SHARD_W3_1_MAX_SPEED_INCREASE_2;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_3"] = SHARD_W3_2_MAX_SPEED_INCREASE_3;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_4"] = SHARD_W3_3_MAX_SPEED_INCREASE_4;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_5"] = SHARD_W3_4_MAX_SPEED_INCREASE_5;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_6"] = SHARD_W3_5_MAX_SPEED_INCREASE_6;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_7"] = SHARD_W3_6_MAX_SPEED_INCREASE_7;
+	shardTypeMap["W3_MAX_SPEED_INCREASE_8"] = SHARD_W3_7_MAX_SPEED_INCREASE_8;
+
+	shardTypeMap["W3_SCORPION_JUMP"] = SHARD_W3_8_SCORPION_JUMP;
+	shardTypeMap["W3_SCORPION_DOUBLE_JUMP"] = SHARD_W3_9_SCORPION_DOUBLE_JUMP;
+
+	shardTypeMap["W5_MAX_BUBBLES_INCREASE_1"] = SHARD_W5_0_MAX_BUBBLES_INCREASE_1;
+	shardTypeMap["W5_MAX_BUBBLES_INCREASE_2"] = SHARD_W5_1_MAX_BUBBLES_INCREASE_2;
+	shardTypeMap["W5_MAX_BUBBLES_INCREASE_3"] = SHARD_W5_2_MAX_BUBBLES_INCREASE_3;
+	shardTypeMap["W5_MAX_BUBBLES_INCREASE_4"] = SHARD_W5_3_MAX_BUBBLES_INCREASE_4;
+
+	shardTypeMap["W6_WIRE_ENEMIES"] = SHARD_W6_0_WIRE_ENEMIES;
+
+
 	//shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
 	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
 	{
@@ -315,62 +327,7 @@ void Shard::Capture()
 		}
 	}
 
-
-	int upgradeIndex = -1;
-
-	switch (shardType)
-	{
-	case SHARD_W1_0_GET_DASH_BOOST:
-	{
-		upgradeIndex = Actor::UPGRADE_DASH_BOOSTER_1;
-		break;
-	}
-	case SHARD_W1_1_GET_AIRDASH_BOOST:
-	{
-		upgradeIndex = Actor::UPGRADE_AIRDASH_BOOSTER_1;
-		break;
-	}
-	case SHARD_W3_0_MAX_SPEED_INCREASE_1:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_1;
-		break;
-	}
-	case SHARD_W3_1_MAX_SPEED_INCREASE_2:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_2;
-		break;
-	}
-	case SHARD_W3_2_MAX_SPEED_INCREASE_3:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_3;
-		break;
-	}
-	case SHARD_W3_3_MAX_SPEED_INCREASE_4:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_4;
-		break;
-	}
-	case SHARD_W3_4_MAX_SPEED_INCREASE_5:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_5;
-		break;
-	}
-	case SHARD_W3_5_MAX_SPEED_INCREASE_6:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_6;
-		break;
-	}
-	case SHARD_W3_6_MAX_SPEED_INCREASE_7:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_7;
-		break;
-	}
-	case SHARD_W3_7_MAX_SPEED_INCREASE_8:
-	{
-		upgradeIndex = Actor::UPGRADE_MAX_SPEED_8;
-		break;
-	}
-	}
+	int upgradeIndex = sess->shardMenu->upgradeIndexes[shardType];
 		
 	if (upgradeIndex != -1)
 	{
@@ -501,8 +458,6 @@ void Shard::EnemyDraw( sf::RenderTarget *target )
 {
 	if (!alreadyCollected)
 	{
-
-
 		geoGroup.Draw(target);
 
 		if (action != DISSIPATE)

@@ -10,6 +10,7 @@
 #include "EditSession.h"
 #include "EditorRail.h"
 #include "Action.h"
+#include "ShardMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -499,6 +500,19 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	{
 		myEnemy->UpdateParamsSettings();
 	}
+
+	EditSession *edit= EditSession::GetSession();
+
+	if (edit != NULL)
+	{
+		nameText.setFont(edit->arial);
+		nameText.setCharacterSize(30);
+		nameText.setString(edit->shardMenu->shardNames[sY + w * 2][sX]);
+		nameText.setOrigin(nameText.getLocalBounds().left +
+			nameText.getLocalBounds().width / 2, 0);
+	}
+
+	
 	/*EditSession *session = EditSession::GetSession();
 	
 	Tileset *ts = session->ts_shards[world];
@@ -559,6 +573,19 @@ void ShardParams::SetPanelInfo()
 	//GridSelector *gs = p->gridSelectors["shardselector"];
 	//gs->selectedX = sX;
 	//gs->selectedY = sY + world * 2;
+}
+
+void ShardParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	Vector2f fPos = GetFloatPos();
+
+	sf::FloatRect fr = myEnemy->GetAABB();
+
+	nameText.setPosition(fPos.x, fr.top - 35);//fPos.y - 40);
+
+	target->draw(nameText);
 }
 
 ActorParams *ShardParams::Copy()

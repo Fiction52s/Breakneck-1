@@ -3182,6 +3182,7 @@ void GameSession::SetStorySeq(StorySequence *storySeq)
 	gameState = GameSession::STORY;
 }
 
+//currently not used at all
 void GameSession::UpdateTimeSlowShader()
 {
 	Actor *p0 = GetPlayer(0);
@@ -3201,7 +3202,7 @@ void GameSession::UpdateTimeSlowShader()
 	timeSlowShader.setUniformArray("bubbleRadius", fBubbleRadiusSize, 20);//p0->maxBubbles * m_numActivePlayers);
 	timeSlowShader.setUniformArray("bPos", fBubblePos, 20);//p0->maxBubbles * m_numActivePlayers);
 	timeSlowShader.setUniformArray("bFrame", fBubbleFrame, 20);//p0->maxBubbles * m_numActivePlayers);
-	timeSlowShader.setUniform("totalBubbles", p0->maxBubbles * m_numActivePlayers);
+	timeSlowShader.setUniform("totalBubbles", p0->MAX_BUBBLES * m_numActivePlayers);
 	//too many assumptions that p0 will always be here lots of refactoring to do
 
 

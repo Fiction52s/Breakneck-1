@@ -18,6 +18,7 @@
 #include "VisualEffects.h"
 #include "SaveFile.h"
 #include "Session.h"
+#include "Actor.h"
 
 
 using namespace sf;
@@ -172,6 +173,32 @@ ShardMenu::ShardMenu(Session *p_sess)
 			SetRectSubRect(shardSelectQuads + index * 4, ts_shards[index/22]->GetSubRect(index % 22));
 		}
 	}
+
+	upgradeIndexes.resize(SHARD_Count);
+
+	for (int i = 0; i < SHARD_Count; ++i)
+	{
+		upgradeIndexes[i] = -1;
+	}
+
+	upgradeIndexes[SHARD_W1_0_DASH_BOOST] = Actor::UPGRADE_W1_DASH_BOOST;
+	upgradeIndexes[SHARD_W1_1_AIRDASH_BOOST] = Actor::UPGRADE_W1_AIRDASH_BOOST;
+
+	upgradeIndexes[SHARD_W3_0_MAX_SPEED_INCREASE_1] = Actor::UPGRADE_W3_MAX_SPEED_1;
+	upgradeIndexes[SHARD_W3_1_MAX_SPEED_INCREASE_2] = Actor::UPGRADE_W3_MAX_SPEED_2;
+	upgradeIndexes[SHARD_W3_2_MAX_SPEED_INCREASE_3] = Actor::UPGRADE_W3_MAX_SPEED_3;
+	upgradeIndexes[SHARD_W3_3_MAX_SPEED_INCREASE_4] = Actor::UPGRADE_W3_MAX_SPEED_4;
+	upgradeIndexes[SHARD_W3_4_MAX_SPEED_INCREASE_5] = Actor::UPGRADE_W3_MAX_SPEED_5;
+	upgradeIndexes[SHARD_W3_5_MAX_SPEED_INCREASE_6] = Actor::UPGRADE_W3_MAX_SPEED_6;
+	upgradeIndexes[SHARD_W3_6_MAX_SPEED_INCREASE_7] = Actor::UPGRADE_W3_MAX_SPEED_7;
+	upgradeIndexes[SHARD_W3_7_MAX_SPEED_INCREASE_8] = Actor::UPGRADE_W3_MAX_SPEED_8;
+
+	upgradeIndexes[SHARD_W5_0_MAX_BUBBLES_INCREASE_1] = Actor::UPGRADE_W5_MAX_BUBBLES_1;
+	upgradeIndexes[SHARD_W5_1_MAX_BUBBLES_INCREASE_2] = Actor::UPGRADE_W5_MAX_BUBBLES_2;
+	upgradeIndexes[SHARD_W5_2_MAX_BUBBLES_INCREASE_3] = Actor::UPGRADE_W5_MAX_BUBBLES_3;
+	upgradeIndexes[SHARD_W5_3_MAX_BUBBLES_INCREASE_4] = Actor::UPGRADE_W5_MAX_BUBBLES_4;
+
+	upgradeIndexes[SHARD_W6_0_WIRE_ENEMIES] = Actor::UPGRADE_W6_WIRE_ENEMIES;
 	
 	//SetCurrSequence();
 }

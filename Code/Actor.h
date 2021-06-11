@@ -166,17 +166,25 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_POWER_TIME,
 		UPGRADE_POWER_RWIRE,
 		UPGRADE_POWER_LWIRE,
-		UPGRADE_DASH_BOOSTER_1,
-		UPGRADE_AIRDASH_BOOSTER_1,
-		UPGRADE_WIRE_ENEMIES,
-		UPGRADE_MAX_SPEED_1,
-		UPGRADE_MAX_SPEED_2,
-		UPGRADE_MAX_SPEED_3,
-		UPGRADE_MAX_SPEED_4,
-		UPGRADE_MAX_SPEED_5,
-		UPGRADE_MAX_SPEED_6,
-		UPGRADE_MAX_SPEED_7,
-		UPGRADE_MAX_SPEED_8,
+		UPGRADE_W1_DASH_BOOST,
+		UPGRADE_W1_AIRDASH_BOOST,
+		UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP,
+		UPGRADE_W1_WJ_RESTORES_AIRDASH,
+		UPGRADE_W3_MAX_SPEED_1,
+		UPGRADE_W3_MAX_SPEED_2,
+		UPGRADE_W3_MAX_SPEED_3,
+		UPGRADE_W3_MAX_SPEED_4,
+		UPGRADE_W3_MAX_SPEED_5,
+		UPGRADE_W3_MAX_SPEED_6,
+		UPGRADE_W3_MAX_SPEED_7,
+		UPGRADE_W3_MAX_SPEED_8,
+		UPGRADE_W3_SCORPION_JUMP,
+		UPGRADE_W3_SCORPION_DOUBLEJUMP,
+		UPGRADE_W5_MAX_BUBBLES_1,
+		UPGRADE_W5_MAX_BUBBLES_2,
+		UPGRADE_W5_MAX_BUBBLES_3,
+		UPGRADE_W5_MAX_BUBBLES_4,
+		UPGRADE_W6_WIRE_ENEMIES,
 		UPGRADE_Count,
 	};
 
@@ -1114,7 +1122,6 @@ struct Actor : QuadTreeCollider,
 	
 	bool wallClimbGravityFactor;
 	bool wallClimbGravityOn;
-	int maxBubbles;
 	int bubbleLifeSpan;
 	int bubbleRadius;
 	int bubbleRadius0;
@@ -1185,12 +1192,14 @@ struct Actor : QuadTreeCollider,
 	void SetFBubbleFrame(int i, float val);
 	void SetFBubblePos(int i, sf::Vector2f &pos);
 	void SetFBubbleRadiusSize(int i, float rad);
+	int GetNumActiveBubbles();
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
+	int GetMaxBubbles();
 	double GetMaxSpeed();
 
 	void ActivateLauncherEffect(int tile);

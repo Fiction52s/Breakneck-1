@@ -109,13 +109,21 @@ void Actor::JUMP_Update()
 					velocity.y = 0;
 				}
 
+				double currJumpStrength = jumpStrength;
+				double scorpionJumpBoost = 10;
+
+				if (bounceFlameOn && HasUpgrade( UPGRADE_SCORPION_JUMP ))
+				{
+					currJumpStrength += scorpionJumpBoost;
+				}
+
 				if (steepJump)
 				{
-					velocity.y -= jumpStrength * .75;
+					velocity.y -= currJumpStrength * .75;
 				}
 				else
 				{
-					velocity.y -= jumpStrength;
+					velocity.y -= currJumpStrength;
 				}
 
 				V2d pp = ground->GetPosition(edgeQuantity);

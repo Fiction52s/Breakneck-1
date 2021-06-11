@@ -96,6 +96,8 @@ struct ShardMenu
 
 	void SetCurrShard();
 
+
+	std::vector<int> upgradeIndexes;
 	int selectedIndex;
 	int totalFrame;
 	sf::Text currShardText;

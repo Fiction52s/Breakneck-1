@@ -799,7 +799,7 @@ bool BasicBullet::PlayerSlowingMe()
 		return true;
 	}
 
-	for (int i = 0; i < player->maxBubbles; ++i)
+	for (int i = 0; i < Actor::MAX_BUBBLES; ++i)
 	{
 		if (player->bubbleFramesToLive[i] > 0)
 		{

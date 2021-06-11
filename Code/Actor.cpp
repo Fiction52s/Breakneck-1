@@ -3805,17 +3805,6 @@ void Actor::SetGameMode()
 	{
 		mapType = sess->mapHeader->gameMode;
 	}
-
-	/*if (mapType == MapHeader::MapType::T_)
-	{
-		maxBubbles = 2;
-		invincibleFrames = 180;
-	}
-	else*/
-	{
-		maxBubbles = MAX_BUBBLES;
-		invincibleFrames = 0;
-	}
 }
 
 void Actor::SetFBubbleFrame(int i, float val)
@@ -3833,7 +3822,6 @@ void Actor::SetFBubbleRadiusSize(int i, float rad)
 
 void Actor::SetupTimeBubbles()
 {
-	maxBubbles = MAX_BUBBLES;
 	CollisionBox genericBox;
 	genericBox.isCircle = true;
 	for (int i = 0; i < MAX_BUBBLES; ++i)
@@ -4477,7 +4465,7 @@ void Actor::Respawn( bool setStartPos )
 	
 	RestoreAirOptions();
 
-	for( int i = 0; i < maxBubbles; ++i )
+	for( int i = 0; i < MAX_BUBBLES; ++i )
 	{
 		bubbleFramesToLive[i] = 0;
 		
@@ -5808,9 +5796,23 @@ bool Actor::CheckExtendedAirdash()
 		//|| InWater( TerrainPolygon::WATER_MOMENTUM ));
 }
 
+int Actor::GetNumActiveBubbles()
+{
+	int numActiveBubbles = 0;
+	for (int i = 0; i < MAX_BUBBLES; ++i)
+	{
+		if (bubbleFramesToLive[i] > 0)
+		{
+			++numActiveBubbles;
+		}
+	}
+
+	return numActiveBubbles;
+}
+
 void Actor::UpdateBubbles()
 {
-	for (int i = 0; i < maxBubbles; ++i)
+	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
 		if (bubbleFramesToLive[i] > 0)
 		{
@@ -5824,12 +5826,10 @@ void Actor::UpdateBubbles()
 	oldInBubble = inBubble;
 	inBubble = false;
 
-	//int mBubbles = maxBubbles;
-
 	if (HasUpgrade(UPGRADE_POWER_TIME))
 	{
 		//calculate this all the time so I can give myself infinite airdash
-		for (int i = 0; i < maxBubbles; ++i)
+		for (int i = 0; i < MAX_BUBBLES; ++i)
 		{
 			if (bubbleFramesToLive[i] > 0)
 			{
@@ -5899,16 +5899,18 @@ void Actor::UpdateBubbles()
 	{
 		inBubble = true;
 	}
+
 	//currInput.leftShoulder before
 	int tempSlowCounter = slowCounter;
 	if (antiTimeSlowFrames == 0 && ( powerSlow || specialSlow)  )
 	{
-		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow)
+		if (!prevInput.PowerButtonDown() && !inBubble && !specialSlow
+			&& GetNumActiveBubbles() < GetMaxBubbles() )
 		{
 			if (bubbleFramesToLive[currBubble] == 0)
 			{
 				inBubble = true;
-				//bubbleFramesToLive[currBubble] = bubbleLifeSpan;
+
 				bubbleFramesToLive[currBubble] = bubbleLifeSpan;
 
 				bubbleRadiusSize[currBubble] = GetBubbleRadius();
@@ -5920,7 +5922,7 @@ void Actor::UpdateBubbles()
 				SetFBubblePos(currBubble, Vector2f(position));
 
 				++currBubble;
-				if (currBubble == maxBubbles)
+				if (currBubble == MAX_BUBBLES)
 				{
 					currBubble = 0;
 				}
@@ -6178,7 +6180,7 @@ void Actor::UpdatePrePhysics()
 
 
 	//cout << "vely: " << velocity.y << endl;
-	cout << "groundspeed: " << groundSpeed << endl;
+	//cout << "groundspeed: " << groundSpeed << endl;
 
 
 	hitOutOfHitstunLastFrame = false;
@@ -10138,18 +10140,48 @@ bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 		return false;
 
 	CollisionBody *bubbleBody;
-	for (int i = 0; i < maxBubbles; ++i)
+	for (int i = 0; i < MAX_BUBBLES; ++i)
 	{
-		bubbleBody = GetBubbleHitbox(i);
-		if (bubbleBody != NULL)
+		if (bubbleFramesToLive[i] > 0)
 		{
-			if (bubbleBody->Intersects(0, cb, cbFrame))
+			bubbleBody = GetBubbleHitbox(i);
+			if (bubbleBody != NULL)
 			{
-				return true;
+				if (bubbleBody->Intersects(0, cb, cbFrame))
+				{
+					return true;
+				}
 			}
 		}
 	}
 	return false;
+}
+
+int Actor::GetMaxBubbles()
+{
+	int numBubbles = 1;
+
+	if (HasUpgrade(UPGRADE_MAX_BUBBLES_1))
+	{
+		numBubbles += 1;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_BUBBLES_2))
+	{
+		numBubbles += 1;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_BUBBLES_3))
+	{
+		numBubbles += 1;
+	}
+
+	if (HasUpgrade(UPGRADE_MAX_BUBBLES_4))
+	{
+		numBubbles += 1;
+	}
+
+	return 1;
 }
 
 double Actor::GetAirDashSpeed()
@@ -10217,21 +10249,30 @@ double Actor::GetMinRailGrindSpeed()
 
 void Actor::GroundExtraAccel()
 {
-	if( bounceFlameOn )
+	if (groundSpeed > 0)
 	{
-		double bounceFlameAccel = GetBounceFlameAccel();
-		if( groundSpeed > 0 )
-			groundSpeed += bounceFlameAccel / slowMultiple;
-		else if( groundSpeed < 0 )
-			groundSpeed -= bounceFlameAccel / slowMultiple;
+		groundSpeed += runAccel;
 	}
-	else if( DashButtonHeld() )
+	else if (groundSpeed < 0)
 	{
-		/*if( groundSpeed > 0 )
-			groundSpeed += holdDashAccel / slowMultiple;
-		else if( groundSpeed < 0 )
-			groundSpeed -= holdDashAccel / slowMultiple;*/
+		groundSpeed -= runAccel;
 	}
+
+	//if( bounceFlameOn )
+	//{
+	//	double bounceFlameAccel = GetBounceFlameAccel();
+	//	if( groundSpeed > 0 )
+	//		groundSpeed += bounceFlameAccel / slowMultiple;
+	//	else if( groundSpeed < 0 )
+	//		groundSpeed -= bounceFlameAccel / slowMultiple;
+	//}
+	//else if( DashButtonHeld() )
+	//{
+	//	/*if( groundSpeed > 0 )
+	//		groundSpeed += holdDashAccel / slowMultiple;
+	//	else if( groundSpeed < 0 )
+	//		groundSpeed -= holdDashAccel / slowMultiple;*/
+	//}
 }
 
 
@@ -15140,7 +15181,7 @@ bool Actor::IsBeingSlowed()
 
 
 	bool found = false;
-	for( int i = 0; i < other->maxBubbles; ++i )
+	for( int i = 0; i < MAX_BUBBLES; ++i )
 	{
 		if( other->bubbleFramesToLive[i] > 0 )
 		{
@@ -17597,7 +17638,7 @@ void Actor::Draw( sf::RenderTarget *target )
 		}
 	}
 	
-	for( int i = 0; i < maxBubbles; ++i )
+	for( int i = 0; i < MAX_BUBBLES; ++i )
 	{
 		if( bubbleFramesToLive[i] > 0 )
 		{
@@ -17730,7 +17771,7 @@ void Actor::EnterNexus( int nexusIndex, sf::Vector2<double> &pos )
 void Actor::DodecaLateDraw(sf::RenderTarget *target)
 {
 	int dodecaFactor = 1;
-	for( int i = 0; i < maxBubbles; ++i )
+	for( int i = 0; i < MAX_BUBBLES; ++i )
 	{
 		if( bubbleFramesToLive[i] > 0 )
 		{
@@ -19144,14 +19185,25 @@ void Actor::ExecuteDoubleJump()
 	if (velocity.y > 0)
 		velocity.y = 0;
 
+	double scorpionExtra = 10;
+
+	double currStrength;
 	if (action == BACKWARDSDOUBLE)
 	{
-		velocity.y = -backDoubleJumpStrength;
+		currStrength = backDoubleJumpStrength;
 	}
 	else
 	{
-		velocity.y = -doubleJumpStrength;
+		currStrength = doubleJumpStrength;
 	}
+
+	if (bounceFlameOn && HasUpgrade( UPGRADE_SCORPION_DOUBLEJUMP ))
+	{
+		currStrength += scorpionExtra;
+	}
+	
+
+	velocity.y = -currStrength;
 
 	extraDoubleJump = false;
 	hasDoubleJump = false;

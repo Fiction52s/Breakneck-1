@@ -297,11 +297,16 @@ struct ShardParams : public ActorParams
 	void SetPanelInfo();
 	int GetTotalIndex();
 	ActorParams *Copy();
-
+	void Draw(sf::RenderTarget *target);
 	ShardInfo shInfo;
 	int sX;
 	int sY;
 	std::string shardStr;
+
+	sf::Text nameText;
+	/*std::string name;
+	static sf::Font *font;
+	sf::Text nameText;*/
 };
 
 struct BlockerParams : public ActorParams

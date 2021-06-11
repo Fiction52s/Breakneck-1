@@ -135,8 +135,8 @@ void EditModeUI::CreateKinOptionsPanel()
 	AddKinOption("Right Wire: ", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
 
 	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(300, 10), Vector2i(0, 20));
-	AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_DASH_BOOSTER_1);
-	AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_AIRDASH_BOOSTER_1);
+	AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOSTER_1);
+	AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOSTER_1);
 }
 
 void EditModeUI::ToggleKinOptionsPanel()
