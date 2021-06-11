@@ -3749,42 +3749,42 @@ double Actor::GetMaxSpeed()
 	//starts at 60, goes up to 100
 	double currRealMax = maxSpeed;
 	double upgradeAmount = 5;
-	if (HasUpgrade(UPGRADE_MAX_SPEED_1))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_1))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_2))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_2))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_3))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_3))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_4))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_4))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_5))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_5))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_6))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_6))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_7))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_7))
 	{
 		currRealMax += upgradeAmount;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_SPEED_8))
+	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_8))
 	{
 		currRealMax += upgradeAmount;
 	}
@@ -9878,7 +9878,7 @@ bool Actor::TryWallJump()
 
 void Actor::TryDashBoost()
 {
-	if (!HasUpgrade(UPGRADE_DASH_BOOSTER_1))
+	if (!HasUpgrade(UPGRADE_W1_DASH_BOOST))
 	{
 		return;
 	}
@@ -9955,7 +9955,7 @@ void Actor::TryDashBoost()
 
 void Actor::TryAirdashBoost()
 {
-	if (!HasUpgrade(UPGRADE_AIRDASH_BOOSTER_1))
+	if (!HasUpgrade(UPGRADE_W1_AIRDASH_BOOST))
 	{
 		return;
 	}
@@ -10161,22 +10161,22 @@ int Actor::GetMaxBubbles()
 {
 	int numBubbles = 1;
 
-	if (HasUpgrade(UPGRADE_MAX_BUBBLES_1))
+	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_1))
 	{
 		numBubbles += 1;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_BUBBLES_2))
+	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_2))
 	{
 		numBubbles += 1;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_BUBBLES_3))
+	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_3))
 	{
 		numBubbles += 1;
 	}
 
-	if (HasUpgrade(UPGRADE_MAX_BUBBLES_4))
+	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_4))
 	{
 		numBubbles += 1;
 	}
@@ -10249,13 +10249,16 @@ double Actor::GetMinRailGrindSpeed()
 
 void Actor::GroundExtraAccel()
 {
-	if (groundSpeed > 0)
+	if (HasUpgrade(UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL))
 	{
-		groundSpeed += runAccel;
-	}
-	else if (groundSpeed < 0)
-	{
-		groundSpeed -= runAccel;
+		if (groundSpeed > 0)
+		{
+			groundSpeed += runAccel;
+		}
+		else if (groundSpeed < 0)
+		{
+			groundSpeed -= runAccel;
+		}
 	}
 
 	//if( bounceFlameOn )
@@ -10751,8 +10754,17 @@ void Actor::RestoreAirOptions()
 {
 	hasDoubleJump = true;
 	hasAirDash = true;
-	hasWallJumpRechargeDoubleJump = true;
-	hasWallJumpRechargeAirDash = true;
+
+	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
+	{
+		hasWallJumpRechargeDoubleJump = true;
+	}
+	
+	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH))
+	{
+		hasWallJumpRechargeAirDash = true;
+	}
+	
 	hasHitRechargeDoubleJump = true;
 	hasHitRechargeAirDash = true;
 }
@@ -19197,7 +19209,7 @@ void Actor::ExecuteDoubleJump()
 		currStrength = doubleJumpStrength;
 	}
 
-	if (bounceFlameOn && HasUpgrade( UPGRADE_SCORPION_DOUBLEJUMP ))
+	if (bounceFlameOn && HasUpgrade( UPGRADE_W3_SCORPION_DOUBLEJUMP ))
 	{
 		currStrength += scorpionExtra;
 	}

@@ -112,7 +112,7 @@ void Actor::JUMP_Update()
 				double currJumpStrength = jumpStrength;
 				double scorpionJumpBoost = 10;
 
-				if (bounceFlameOn && HasUpgrade( UPGRADE_SCORPION_JUMP ))
+				if (bounceFlameOn && HasUpgrade( UPGRADE_W3_SCORPION_JUMP ))
 				{
 					currJumpStrength += scorpionJumpBoost;
 				}

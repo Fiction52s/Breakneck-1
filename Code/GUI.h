@@ -617,6 +617,9 @@ struct Panel
 	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
+	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
+		int maxValue);
+	
 	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
 		int textBoxLengthLimit, const std::string &initialText, const std::string &labelText );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
@@ -859,11 +862,17 @@ struct EditModeUI : GUIHandler
 	void SetEnemyPanel(ActorParams * ap);
 	void SetCurrRailPanel(TerrainRail *rail);
 	void SaveKinOptions();
+	void LoadKinOptions();
 	void CreateKinOptionsPanel();
 	void AddKinOption(
 		const std::string &text, 
 		const std::string &toolTipText,
 		int upgradeIndex);
+	void AddKinOptionSlider(
+		const std::string &text,
+		const std::string &toolTipText,
+		int upgradeIndex,
+		int maxQuant);
 	void SetGrassType(ImageChooseRect *icRect);
 	Panel *currEnemyPanel;
 	ActorParams *currParams;
@@ -887,7 +896,8 @@ struct EditModeUI : GUIHandler
 	void ToggleKinOptionsPanel();
 	Panel *kinOptionsPanel;
 
-	std::vector<CheckBox*> kinCheckboxes;
+	std::map<int,CheckBox*> kinCheckboxes;
+	std::map<int,Slider*> kinSliders;
 
 	void SetShown(bool s);
 	bool IsGridOn();

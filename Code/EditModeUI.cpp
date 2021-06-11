@@ -117,26 +117,53 @@ void EditModeUI::AddKinOption(const std::string &text, const std::string &toolTi
 	kinCheckboxes[upgradeIndex]->SetToolTip(toolTipText);
 }
 
+void EditModeUI::AddKinOptionSlider(const std::string &text,
+	const std::string &toolTipText, int upgradeIndex, int maxQuant)
+{
+	kinSliders[upgradeIndex] = kinOptionsPanel->AddLabeledSlider(text, Vector2i(0, 0),
+		text, 100, maxQuant);
+	kinSliders[upgradeIndex]->SetToolTip(toolTipText);
+}
+
 void EditModeUI::CreateKinOptionsPanel()
 {
-	kinOptionsPanel = new Panel("kinoptions", 600, 800, this, true);
+	kinOptionsPanel = new Panel("kinoptions", 1900, 900, this, true);
 	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
-		540 - kinOptionsPanel->size.y / 2));
-	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+		540 - kinOptionsPanel->size.y / 2 + 20));
 
-	kinCheckboxes.resize(Actor::UPGRADE_Count);
+	int worldSpacing = 130;//250;
+	int inBetweenSpacing = 40;
 
-	AddKinOption("Airdash: ", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(inBetweenSpacing, 0));
+	AddKinOption("Airdash:", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
 	AddKinOption("Gravity Cling: ", "Toggle Gravity Cling Power", Actor::UPGRADE_POWER_GRAV);
-	AddKinOption("Bounce Scorpion: ", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
-	AddKinOption("Grind Wheel: ", "Toggle Grind Power", Actor::UPGRADE_POWER_GRIND);
-	AddKinOption("Time Slow Bubbles ", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
-	AddKinOption("Left Wire: ", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
-	AddKinOption("Right Wire: ", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
+	AddKinOption("Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
+	AddKinOption("Grind Wheel:", "Toggle Grind Power", Actor::UPGRADE_POWER_GRIND);
+	AddKinOption("Time Slow Bubble:", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
+	AddKinOption("Left Wire:", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
+	AddKinOption("Right Wire:", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
 
-	kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(300, 10), Vector2i(0, 20));
-	AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOSTER_1);
-	AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOSTER_1);
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing), Vector2i(inBetweenSpacing, 0));
+	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing, 10), Vector2i(0, 20));
+	AddKinOption("Dash Boost:", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
+	AddKinOption("Airdash Boost:", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
+	AddKinOption("WJ Restores Doublejump :", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
+	AddKinOption("WJ Restores Airdash:", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 3), Vector2i(inBetweenSpacing, 0));
+	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing * 3, 10), Vector2i(0, 20));
+	AddKinOptionSlider("Max speed increase:", "increases max speed", Actor::UPGRADE_W3_MAX_SPEED_1, 8);
+	//AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
+	//AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
+	//AddKinOption("WJ Restores Doublejump : ", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
+	//AddKinOption("WJ Restores Airdash: ", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 5), Vector2i(inBetweenSpacing, 0));
+	AddKinOptionSlider("Extra timeslow bubbles:", "increases number of timeslow bubbles", Actor::UPGRADE_W5_MAX_BUBBLES_1, 4);
+
+
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 6), Vector2i(inBetweenSpacing, 0));
+	AddKinOption("Wire enemies:", "Allows wire to attach to enemies", Actor::UPGRADE_W6_WIRE_ENEMIES);
 }
 
 void EditModeUI::ToggleKinOptionsPanel()
@@ -149,6 +176,7 @@ void EditModeUI::ToggleKinOptionsPanel()
 	else
 	{
 		edit->AddActivePanel(kinOptionsPanel);
+		LoadKinOptions();
 	}
 }
 
@@ -487,6 +515,55 @@ void EditModeUI::SaveKinOptions()
 		if (kinCheckboxes[i] != NULL)
 		{
 			edit->playerOptionsField.SetBit( i, kinCheckboxes[i]->checked);
+		}
+		else if (kinSliders[i] != NULL)
+		{
+			Slider *currSlider = kinSliders[i];
+			int sliderVal = currSlider->GetCurrValue();
+			int maxVal = currSlider->maxValue;
+			for (int j = 0; j < maxVal; ++j)
+			{
+				if (sliderVal > j)
+				{
+					edit->playerOptionsField.SetBit(i + j, true);
+				}
+				else
+				{
+					edit->playerOptionsField.SetBit(i + j, false);
+				}
+			}
+			
+		}
+
+	}
+}
+
+void EditModeUI::LoadKinOptions()
+{
+	for (auto it = kinCheckboxes.begin(); it != kinCheckboxes.end(); ++it)
+	{
+		if ((*it).second != NULL)
+		{
+			(*it).second->checked = edit->playerOptionsField.GetBit((*it).first);
+		}
+	}
+
+	int currNumOn = 0;
+	int currMax;
+	for (auto it = kinSliders.begin(); it != kinSliders.end(); ++it)
+	{
+		if ((*it).second != NULL)
+		{
+			currNumOn = 0;
+			currMax = (*it).second->maxValue;
+			for (int i = 0; i < currMax; ++i)
+			{
+				if (edit->playerOptionsField.GetBit((*it).first + i))
+				{
+					currNumOn++;
+				}
+			}
+			(*it).second->SetCurrValue(currNumOn);
 		}
 	}
 }

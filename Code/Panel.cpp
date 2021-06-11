@@ -730,6 +730,24 @@ CheckBox * Panel::AddLabeledCheckBox(
 	return AddCheckBox(name, pos, startChecked);
 }
 
+Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
+	const std::string &labelText, int width, int maxValue)
+{
+	int extraSpacing = 8;
+
+	Vector2i oldAutoStart = autoStart;
+	Vector2i labelStart = pos;
+
+	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
+
+	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	autoStart = oldAutoStart;
+
+	labelStart.y += 6;
+
+	return AddSlider(name, pos, width, 0, maxValue, 0);
+}
+
 TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
 	int textBoxLengthLimit, const std::string &initialText, const std::string &labelText)
 {
