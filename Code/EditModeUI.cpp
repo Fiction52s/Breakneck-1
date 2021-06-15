@@ -134,7 +134,15 @@ void EditModeUI::CreateKinOptionsPanel()
 	int worldSpacing = 130;//250;
 	int inBetweenSpacing = 40;
 
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(inBetweenSpacing, 0));
+	int currVerticalSpacing = 10;
+
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	allOptionsCheckbox = kinOptionsPanel->AddLabeledCheckBox("all", Vector2i(0, 0),
+		"All Abilities:", false);
+
+	currVerticalSpacing += worldSpacing;
+
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	AddKinOption("Airdash:", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
 	AddKinOption("Gravity Cling: ", "Toggle Gravity Cling Power", Actor::UPGRADE_POWER_GRAV);
 	AddKinOption("Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
@@ -143,26 +151,36 @@ void EditModeUI::CreateKinOptionsPanel()
 	AddKinOption("Left Wire:", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
 	AddKinOption("Right Wire:", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
 
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing), Vector2i(inBetweenSpacing, 0));
+	currVerticalSpacing += worldSpacing;
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing, 10), Vector2i(0, 20));
 	AddKinOption("Dash Boost:", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
 	AddKinOption("Airdash Boost:", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
 	AddKinOption("WJ Restores Doublejump :", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
 	AddKinOption("WJ Restores Airdash:", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+	AddKinOptionSlider("Increased Base Dash speed:", "Increase base dash speed", Actor::UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
 
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 3), Vector2i(inBetweenSpacing, 0));
+	currVerticalSpacing += worldSpacing;
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing * 3, 10), Vector2i(0, 20));
 	AddKinOptionSlider("Max speed increase:", "increases max speed", Actor::UPGRADE_W3_MAX_SPEED_1, 8);
+	AddKinOptionSlider("Increaed passive ground accel:", "Change increased passive ground accel", Actor::UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
+	AddKinOptionSlider("Increaed sprint accel:", "Change increased sprint accel", Actor::UPGRADE_W3_INCREASE_SPRINT_ACCEL_1, 3);
+
+	
 	//AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
 	//AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
 	//AddKinOption("WJ Restores Doublejump : ", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
 	//AddKinOption("WJ Restores Airdash: ", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
 
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 5), Vector2i(inBetweenSpacing, 0));
+	currVerticalSpacing += worldSpacing;
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	AddKinOptionSlider("Extra timeslow bubbles:", "increases number of timeslow bubbles", Actor::UPGRADE_W5_MAX_BUBBLES_1, 4);
+	AddKinOption("Infinite Airdash within bubbles:", "Toggle infinite airdash within bubbles", Actor::UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES);
+	AddKinOption("Infinite doublejump within bubbles:", "Toggle infinitely refreshing doublejump within bubbles", Actor::UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES);
 
-
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 10 + worldSpacing * 6), Vector2i(inBetweenSpacing, 0));
+	currVerticalSpacing += worldSpacing;
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	AddKinOption("Wire enemies:", "Allows wire to attach to enemies", Actor::UPGRADE_W6_WIRE_ENEMIES);
 }
 
@@ -566,6 +584,8 @@ void EditModeUI::LoadKinOptions()
 			(*it).second->SetCurrValue(currNumOn);
 		}
 	}
+
+	UpdateAllAbilitiesCheckbox();
 }
 
 void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
@@ -692,6 +712,22 @@ void EditModeUI::GridSelectorCallback(GridSelector *gs, const std::string & e)
 
 void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 {
+	
+
+	bool isChecked = false;
+	if (e == "checked")
+	{
+		isChecked = true;
+	}
+	else if (e == "unchecked")
+	{
+		isChecked = false;
+	}
+	else
+	{
+		assert(0);
+	}
+
 	if (cb->panel == currEnemyPanel)
 	{
 		if (currRail)
@@ -706,21 +742,6 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 	}
 	else if (cb->panel == layerPanel)
 	{
-		bool isChecked = false;
-		if (e == "checked")
-		{
-			isChecked = true;
-		}
-		else if (e == "unchecked")
-		{
-			isChecked = false;
-		}
-		else
-		{
-			assert(0);
-		}
-
-
 		int found = cb->name.find('_');
 		if (found == string::npos)
 		{
@@ -755,11 +776,49 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 			edit->showGraph = cb->checked;
 		}
 	}
-
+	else if (cb->panel == kinOptionsPanel)
+	{
+		if (cb == allOptionsCheckbox)
+		{
+			for (auto it = kinCheckboxes.begin(); it != kinCheckboxes.end(); ++it)
+			{
+				(*it).second->checked = isChecked;
+			}
+			for (auto it = kinSliders.begin(); it != kinSliders.end(); ++it)
+			{
+				if (isChecked)
+				{
+					(*it).second->SetCurrValue((*it).second->maxValue);
+				}
+				else
+				{
+					(*it).second->SetCurrValue((*it).second->minValue);
+				}
+			}
+		}
+		else
+		{
+			UpdateAllAbilitiesCheckbox();
+		}
+	}
 	/*if (currParams != NULL)
 	{
 		currParams->CheckBoxCallback(cb, e);
 	}*/
+}
+
+void EditModeUI::UpdateAllAbilitiesCheckbox()
+{
+	bool allChecked = true;
+	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
+	{
+		if (!edit->playerOptionsField.GetBit(i))
+		{
+			allChecked = false;
+		}
+	}
+
+	allOptionsCheckbox->checked = allChecked;
 }
 
 void EditModeUI::SliderCallback(Slider *slider)

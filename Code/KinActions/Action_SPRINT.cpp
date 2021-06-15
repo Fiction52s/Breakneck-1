@@ -210,6 +210,8 @@ void Actor::SPRINT_Update()
 		}
 		facingRight = true;
 	}
+
+	GroundExtraAccel();
 }
 
 void Actor::SPRINT_UpdateSprite()

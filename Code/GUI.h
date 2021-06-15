@@ -894,8 +894,11 @@ struct EditModeUI : GUIHandler
 	sf::Vector2i labelExtra;
 
 	void ToggleKinOptionsPanel();
+	void UpdateAllAbilitiesCheckbox();
 	Panel *kinOptionsPanel;
 
+	CheckBox *allOptionsCheckbox;
+	CheckBox *allWorldOptionsCheckBox[7];
 	std::map<int,CheckBox*> kinCheckboxes;
 	std::map<int,Slider*> kinSliders;
 

@@ -3747,49 +3747,11 @@ Actor::~Actor()
 double Actor::GetMaxSpeed()
 {
 	//starts at 60, goes up to 100
-	double currRealMax = maxSpeed;
 	double upgradeAmount = 5;
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_1))
-	{
-		currRealMax += upgradeAmount;
-	}
 
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_2))
-	{
-		currRealMax += upgradeAmount;
-	}
+	int maxSpeedUpgrades = NumUpgradeRange(UPGRADE_W3_MAX_SPEED_1, 8);
 
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_3))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_4))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_5))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_6))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_7))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	if (HasUpgrade(UPGRADE_W3_MAX_SPEED_8))
-	{
-		currRealMax += upgradeAmount;
-	}
-
-	return currRealMax;
+	return maxSpeed + upgradeAmount * maxSpeedUpgrades;
 }
 
 
@@ -5792,7 +5754,8 @@ void Actor::ActivateLauncherEffect(int tile)
 
 bool Actor::CheckExtendedAirdash()
 {
-	return (inBubble || InWater(TerrainPolygon::WATER_ZEROGRAV));
+	return (( inBubble && UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES ) 
+		|| InWater(TerrainPolygon::WATER_ZEROGRAV));
 		//|| InWater( TerrainPolygon::WATER_MOMENTUM ));
 }
 
@@ -5866,12 +5829,12 @@ void Actor::UpdateBubbles()
 
 
 	//end extended airdash
-	if (action == AIRDASH && airDashStall && !CheckExtendedAirdash() )
+	/*if (action == AIRDASH && airDashStall && !CheckExtendedAirdash() )
 	{
 		SetAction(JUMP);
 		frame = 1;
 		holdJump = false;
-	}
+	}*/
 
 	
 
@@ -7277,6 +7240,18 @@ bool Actor::HasUpgrade(int index)
 {
 	return bHasUpgradeField.GetBit(index);
 }
+
+int Actor::NumUpgradeRange(int index, int numUpgrades)
+{
+	int numOn = 0;
+	for (int i = 0; i < numUpgrades; ++i)
+	{
+		numOn += bHasUpgradeField.GetBit(index + i);
+	}
+
+	return numOn;
+}
+
 
 void Actor::SetUpgrade(int upgrade, bool on)
 {
@@ -9549,25 +9524,31 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 
 double Actor::GetDashSpeed()
 {
-	
+	double dSpeed;
 	switch( speedLevel )
 	{
 	case 0:
-		return dashSpeed0;
+		dSpeed = dashSpeed0;
 		break;
 	case 1:
-		return dashSpeed1;
+		dSpeed = dashSpeed1;
 		break;
 	case 2:
 	{
 		double sbp = GetSpeedBarPart();
 		if (sbp > .8)
 			sbp = 1.0;
-		return dashSpeed2 + 4.0 * sbp;
+		dSpeed = dashSpeed2 + 4.0 * sbp;
 		break;
 	}
 		
 	}
+
+	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+	double upgradeAmount = 3;
+	dSpeed += upgradeAmount * numBaseDashUpgrades;
+
+	return dSpeed;
 }
 
 bool Actor::TryJumpSquat()
@@ -10159,29 +10140,8 @@ bool Actor::IntersectMySlowboxes(CollisionBody *cb, int cbFrame )
 
 int Actor::GetMaxBubbles()
 {
-	int numBubbles = 1;
-
-	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_1))
-	{
-		numBubbles += 1;
-	}
-
-	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_2))
-	{
-		numBubbles += 1;
-	}
-
-	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_3))
-	{
-		numBubbles += 1;
-	}
-
-	if (HasUpgrade(UPGRADE_W5_MAX_BUBBLES_4))
-	{
-		numBubbles += 1;
-	}
-
-	return 1;
+	int numBubbles = 1 + NumUpgradeRange(UPGRADE_W5_MAX_BUBBLES_1, 4);
+	return numBubbles;
 }
 
 double Actor::GetAirDashSpeed()
@@ -10235,6 +10195,12 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 	}
 	extraSprintAccel *= .09;
 
+
+	int numSprintUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_SPRINT_ACCEL_1, 3);
+	double upgradeSprintAmount = .03;
+
+	extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
+
 	return sprintAccel + extraSprintAccel;
 }
 
@@ -10249,16 +10215,17 @@ double Actor::GetMinRailGrindSpeed()
 
 void Actor::GroundExtraAccel()
 {
-	if (HasUpgrade(UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL))
+	double extraAccel = 0;
+	int numPassiveAccelUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
+	extraAccel = numPassiveAccelUpgrades * .03;
+
+	if (groundSpeed > 0)
 	{
-		if (groundSpeed > 0)
-		{
-			groundSpeed += runAccel;
-		}
-		else if (groundSpeed < 0)
-		{
-			groundSpeed -= runAccel;
-		}
+		groundSpeed += extraAccel;
+	}
+	else if (groundSpeed < 0)
+	{
+		groundSpeed -= extraAccel;
 	}
 
 	//if( bounceFlameOn )
@@ -19360,7 +19327,7 @@ int Actor::GetDoubleJump()
 
 bool Actor::CanDoubleJump()
 {
-	return ( (hasDoubleJump || extraDoubleJump ) && 
+	return ( (hasDoubleJump || extraDoubleJump || ( HasUpgrade( UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES) && inBubble ) ) && 
 		(JumpButtonPressed() || pauseBufferedJump ) && !IsSingleWirePulling() );
 }
 

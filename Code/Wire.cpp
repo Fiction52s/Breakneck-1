@@ -201,8 +201,8 @@ Wire::Wire( Actor *p, bool r)
 	numAnimFrames = 16;
 
 	//pullStrength = 10;
-	maxPullStrength = 10;
-	startPullStrength = 10;
+	maxPullStrength = 10;//10;
+	startPullStrength = maxPullStrength;//10;
 	pullStrength = startPullStrength;
 	pullAccel = (maxPullStrength - startPullStrength) / 180;
 	//.1 = 10 frames per 1. 100 frames per 10
@@ -622,9 +622,9 @@ void Wire::UpdateState( bool touchEdgeWithWire )
 					dragStrength += dragAccel;
 					if( dragStrength > maxDragStrength )
 						dragStrength = maxDragStrength;
-					
 					//cout << "GROWING" << endl;
 				}
+				
 			}
 			else
 			{
