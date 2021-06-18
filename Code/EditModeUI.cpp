@@ -159,6 +159,13 @@ void EditModeUI::CreateKinOptionsPanel()
 	AddKinOption("WJ Restores Doublejump :", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
 	AddKinOption("WJ Restores Airdash:", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
 	AddKinOptionSlider("Increased Base Dash speed:", "Increase base dash speed", Actor::UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
+	AddKinOptionSlider("Improve highspeed dash boost:", "increase dash boost performance at high speed", Actor::UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+	AddKinOptionSlider("Improve highspeed airdash boost:", "increase airdash boost performance at high speed", Actor::UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_1, 3);
+
+	currVerticalSpacing += worldSpacing;
+	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	AddKinOptionSlider("Increase passive ceiling accel:", "increase passive accel on the ceiling", Actor::UPGRADE_W2_INCREASE_PASSIVE_CEILING_ACCEL_1, 3);
+	AddKinOptionSlider("Increase spring on ceiling accel:", "increase sprint accel on the ceiling", Actor::UPGRADE_W2_INCREASE_CEILING_SPRINT_ACCEL_1, 3);
 
 	currVerticalSpacing += worldSpacing;
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));

@@ -2856,7 +2856,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
-	grindLimitBeforeSlow = 60;
+	grindLimitBeforeSlow = 120;
 	
 	action = -1;
 
@@ -9544,7 +9544,7 @@ double Actor::GetDashSpeed()
 		
 	}
 
-	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseDashUpgrades;
 
