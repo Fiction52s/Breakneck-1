@@ -57,6 +57,7 @@ PredictTurret::PredictTurret(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

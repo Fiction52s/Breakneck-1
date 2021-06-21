@@ -40,6 +40,7 @@ Spider::Spider( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 0;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

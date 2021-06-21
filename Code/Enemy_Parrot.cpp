@@ -47,6 +47,7 @@ Parrot::Parrot(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);
@@ -54,6 +55,7 @@ Parrot::Parrot(ActorParams *ap)
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);
 	launchers[0]->SetBulletSpeed(15);
+	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 	launchers[0]->Reset();
 
 	hitBody.hitboxInfo = hitboxInfo;

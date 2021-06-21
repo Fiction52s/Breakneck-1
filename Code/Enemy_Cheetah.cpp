@@ -64,6 +64,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 15;
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

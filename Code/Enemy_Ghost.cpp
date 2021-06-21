@@ -44,6 +44,7 @@ Ghost::Ghost( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

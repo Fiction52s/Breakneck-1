@@ -30,6 +30,7 @@ QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 6;
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

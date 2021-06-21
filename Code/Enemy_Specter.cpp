@@ -94,6 +94,7 @@ Specter::Specter( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHitBodySetup(48);
 	BasicCircleHurtBodySetup(48);

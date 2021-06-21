@@ -55,6 +55,7 @@ Falcon::Falcon(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);

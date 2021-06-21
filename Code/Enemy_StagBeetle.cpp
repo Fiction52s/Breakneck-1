@@ -83,6 +83,7 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 40;
 	hitboxInfo->knockback = 20;
+	hitboxInfo->hType = HitboxInfo::GREEN;
 	
 
 	BasicCircleHurtBodySetup(60*scale);

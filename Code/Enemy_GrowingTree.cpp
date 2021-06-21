@@ -66,14 +66,17 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	launchers[0] = new Launcher( this, BasicBullet::PATROLLER, 8, 1, GetPosition(), V2d( 1, 0 ), 0, framesToLive, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 
 	launchers[1] = new Launcher(this, BasicBullet::BIG_OWL, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
 	launchers[1]->SetBulletSpeed(bulletSpeed);
 	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->hitboxInfo->hType = HitboxInfo::RED;
 
 	launchers[2] = new Launcher(this, BasicBullet::LOB_TURRET, 8, 1, GetPosition(), V2d(1, 0), 0, framesToLive, false);
 	launchers[2]->SetBulletSpeed(bulletSpeed);
 	launchers[2]->hitboxInfo->damage = 18;
+	launchers[2]->hitboxInfo->hType = HitboxInfo::RED;
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -88,6 +91,7 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

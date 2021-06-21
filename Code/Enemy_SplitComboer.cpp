@@ -234,6 +234,7 @@ SplitComboer::SplitComboer( ActorParams *ap )//Vector2i pos, list<Vector2i> &pat
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	hitBody.hitboxInfo = hitboxInfo;
 

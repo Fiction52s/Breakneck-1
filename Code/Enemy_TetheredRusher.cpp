@@ -50,6 +50,7 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 8;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	anchorRadius = 30;
 

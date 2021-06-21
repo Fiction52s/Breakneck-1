@@ -64,6 +64,7 @@ Copycat::Copycat(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);

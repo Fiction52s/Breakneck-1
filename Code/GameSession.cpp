@@ -1860,6 +1860,8 @@ void GameSession::SetupBackground()
 
 	background = Background::SetupFullBG(mapHeader->envName, this,
 		sameBGNotAlreadyUsedByParents);
+
+	mapHeader->envWorldType = background->envWorld;
 }
 
 

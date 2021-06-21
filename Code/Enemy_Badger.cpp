@@ -67,6 +67,7 @@ Badger::Badger(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 15;
+	hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

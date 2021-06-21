@@ -68,6 +68,9 @@ struct Background
 	int transFrames;
 	int frame;
 
+	int envWorld;
+	//int envVar;
+
 	bool show;
 	void Show();
 	void Hide();

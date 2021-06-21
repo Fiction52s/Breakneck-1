@@ -38,6 +38,7 @@ Bat::Bat( ActorParams *ap )
 		V2d( 1, 0 ), 0, 120, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );	
 	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->hType = HitboxInfo::GREEN;
 
 	int pSize = pathFollower.path.size();
 	for( int i = 0; i < pSize - 1; ++i )
@@ -75,6 +76,7 @@ Bat::Bat( ActorParams *ap )
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 8;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::GREEN;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

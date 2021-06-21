@@ -51,7 +51,28 @@ void Shard::UpdateParamsSettings()
 
 void Shard::SetupShardMaps()
 {
-	shardTypeMap["W1_DASH_BOOST"] = SHARD_W1_0_DASH_BOOST;
+	ifstream is;
+	is.open("Resources/Shard/shardnamelist.txt");
+
+	if (is.is_open())
+	{
+		string currStringName;
+		int shardIndex = 0;
+		while (cin >> currStringName)
+		{
+			shardTypeMap[currStringName] = (ShardType)shardIndex;
+			++shardIndex;
+		}
+
+		is.close();
+	}
+	else
+	{
+		cout << "error opening shard name list" << endl;
+		assert(0);
+	}
+
+	/*shardTypeMap["W1_DASH_BOOST"] = SHARD_W1_0_DASH_BOOST;
 	shardTypeMap["W1_AIRDASH_BOOST"] = SHARD_W1_1_AIRDASH_BOOST;
 	shardTypeMap["W1_WALLJUMP_RESTORES_DOUBLEJUMP"] = SHARD_W1_2_WALLJUMP_RESTORES_DOUBLEJUMP;
 	shardTypeMap["W1_WALLJUMP_RESTORES_AIRDASH"] = SHARD_W1_3_WALLJUMP_RESTORES_AIRDASH;
@@ -74,7 +95,7 @@ void Shard::SetupShardMaps()
 	shardTypeMap["W5_MAX_BUBBLES_INCREASE_3"] = SHARD_W5_2_MAX_BUBBLES_INCREASE_3;
 	shardTypeMap["W5_MAX_BUBBLES_INCREASE_4"] = SHARD_W5_3_MAX_BUBBLES_INCREASE_4;
 
-	shardTypeMap["W6_WIRE_ENEMIES"] = SHARD_W6_0_WIRE_ENEMIES;
+	shardTypeMap["W6_WIRE_ENEMIES"] = SHARD_W6_0_WIRE_ENEMIES;*/
 
 
 	//shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;

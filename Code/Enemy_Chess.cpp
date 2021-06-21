@@ -79,6 +79,7 @@ Chess::Chess(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);

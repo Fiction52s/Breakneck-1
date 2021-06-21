@@ -72,6 +72,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	laserHitboxInfo = new HitboxInfo;
 	laserHitboxInfo->damage = 180;//do more damage than hitting the turret itself
@@ -80,6 +81,7 @@ PalmTurret::PalmTurret(ActorParams *ap)
 	laserHitboxInfo->hitlagFrames = 0;
 	laserHitboxInfo->hitstunFrames = 40;
 	laserHitboxInfo->knockback = 15;
+	laserHitboxInfo->hType = HitboxInfo::ORANGE;
 
 
 	BasicCircleHurtBodySetup(32);

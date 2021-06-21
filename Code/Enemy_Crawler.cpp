@@ -92,6 +92,7 @@ Crawler::Crawler(ActorParams *ap )
 	hitboxInfo->hitstunFrames = 30;
 	hitboxInfo->knockback = 0;
 	hitboxInfo->kbDir = normalize(V2d(2, -1));
+	hitboxInfo->hType = HitboxInfo::BLUE;
 	
 	hitBody.hitboxInfo = hitboxInfo;
 

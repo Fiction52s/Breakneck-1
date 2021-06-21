@@ -52,6 +52,7 @@ Shroom::Shroom(ActorParams *ap )
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, -1);
 	hitboxInfo->hitPosType = HitboxInfo::AIRFORWARD;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -235,6 +236,7 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 5;
 	hitboxInfo->knockback = 0;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

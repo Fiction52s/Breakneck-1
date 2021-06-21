@@ -36,6 +36,7 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 24, 24, GetPosition(), V2d(1, 0), 2 * PI, 90, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
+	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
 	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
@@ -54,6 +55,7 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	puffRadius = 800;
 	unpuffRadius = 1000;

@@ -41,6 +41,7 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = normalize(V2d(1, -.3));
+	hitboxInfo->hType = HitboxInfo::BLUE;
 	
 	BasicRectHurtBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
 	BasicRectHitBodySetup(32, 60, 0, V2d(0, 30));//72, 0, V2d(0, 30));
@@ -70,6 +71,7 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 	launchers[0]->SetBulletSpeed(5);//70);
 	launchers[0]->hitboxInfo->damage = 18;
 	launchers[0]->hitboxInfo->hitstunFrames = 10;
+	launchers[0]->hitboxInfo->hType = HitboxInfo::BLUE;
 
 
 	

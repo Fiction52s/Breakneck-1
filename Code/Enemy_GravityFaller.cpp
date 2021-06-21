@@ -66,6 +66,7 @@ GravityFaller::GravityFaller(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::GREEN;
 
 	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(40);

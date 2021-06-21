@@ -81,6 +81,8 @@ struct HitboxInfo
 		ORANGE,
 		RED,
 		MAGENTA,
+		GREY,
+		BLACK,
 		WIREHITRED,
 		WIREHITBLUE,
 		SCORPIONSTRIKE,

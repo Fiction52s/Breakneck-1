@@ -57,6 +57,7 @@ FutureChecker::FutureChecker(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 8;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);

@@ -46,6 +46,7 @@ Widow::Widow(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 10;
 	hitboxInfo->kbDir = normalize(V2d(1, -.3));
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 	BasicCircleHitBodySetup(32);
 	BasicCircleHurtBodySetup(32);
@@ -69,6 +70,7 @@ Widow::Widow(ActorParams *ap)
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 12, 1, GetPosition(), V2d(1, 0), 0, 90, false);
 	launchers[0]->SetBulletSpeed(15);
+	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
 	distToCheck = 100;

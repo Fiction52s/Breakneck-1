@@ -611,6 +611,37 @@ void Actor::SetSession(Session *p_sess,
 void Actor::SetupDrain()
 {
 	float numSecondsToDrain = sess->mapHeader->drainSeconds;
+
+	int numDrainUpgrades = 0;
+	switch (sess->mapHeader->envWorldType)
+	{
+	case 0:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DRAIN_1, 3);
+		break;
+	case 1:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DRAIN_1, 3);
+		break;
+	case 2:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DRAIN_1, 3);
+		break;
+	case 3:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DRAIN_1, 3);
+		break;
+	case 4:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DRAIN_1, 3);
+		break;
+	case 5:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DRAIN_1, 3);
+		break;
+	case 6:
+		numDrainUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DRAIN_1, 3);
+		break;
+	}
+
+	float changePerUpgrade = .2;
+	float upgradeFactor = numDrainUpgrades * changePerUpgrade;
+	numSecondsToDrain += numSecondsToDrain * upgradeFactor;
+
 	float drainPerSecond = totalHealth / numSecondsToDrain;
 	float drainPerFrame = drainPerSecond / 60.f;
 	float drainFrames = 1.f;
@@ -622,6 +653,7 @@ void Actor::SetupDrain()
 	if (drainPerFrame < 1.0)
 		drainPerFrame = 1.0;
 	drainAmount = drainPerFrame;
+	drainCounter = 0;
 }
 
 
@@ -4955,7 +4987,67 @@ void Actor::ReactToBeingHit()
 		}
 	}
 	else if (kinRing != NULL)
-		kinRing->powerRing->Drain(receivedHit->damage);
+	{
+		int damage = receivedHit->damage;
+
+		int damageUpgrades = 0;
+
+		switch (receivedHit->hType)
+		{
+		case HitboxInfo::BLUE:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::GREEN:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::YELLOW:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::ORANGE:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::RED:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::MAGENTA:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		case HitboxInfo::GREY:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DAMAGE_1, 3);
+			break;
+		}
+		/*case HitboxInfo::BLACK:
+		{
+			damageUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DAMAGE_1, 3);
+			break;
+		}*/
+
+		}
+
+		float dmg = damage;
+		float upgradeFactor = .2 * damageUpgrades;
+		dmg -= upgradeFactor * dmg;
+		damage = dmg;
+
+		if (damage > 0)
+		{
+			kinRing->powerRing->Drain(damage);
+		}
+	}
+		
 
 	//makes being hit always make you aerial
 	//its very useful in multiplayer

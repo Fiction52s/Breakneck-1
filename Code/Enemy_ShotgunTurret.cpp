@@ -57,6 +57,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	BasicCircleHurtBodySetup(40);
 	BasicCircleHitBodySetup(40);
@@ -72,6 +73,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 		PI / 6, 180, false);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(1);

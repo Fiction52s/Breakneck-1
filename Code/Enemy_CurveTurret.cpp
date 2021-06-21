@@ -61,6 +61,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::GREEN;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

@@ -154,6 +154,8 @@ Background::Background( GameSession *owner, int envLevel, int envType)
 
 	ss << eType;*/
 
+	envWorld = envLevel;
+
 	string worldStr = to_string(envType + 1);
 	string varStr = to_string(envLevel + 1);
 
@@ -241,6 +243,8 @@ Background *Background::SetupFullBG(const std::string &fName,
 
 	string worldStr(1, fName[1]);
 
+	
+
 	string eStr = ".png";
 	string parDirStr = "Backgrounds/W" + worldStr + "/" + fName + "/";
 
@@ -299,6 +303,8 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 	name = bgName;
 
 	char worldChar = bgName[1];
+
+	envWorld = worldChar - 1;
 	
 	string worldNum( 1, worldChar);
 

@@ -52,6 +52,7 @@ Comboer::Comboer(ActorParams *ap )
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);

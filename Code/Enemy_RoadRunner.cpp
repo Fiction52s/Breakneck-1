@@ -62,6 +62,7 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::YELLOW;
 
 
 

@@ -76,6 +76,7 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	hitBody.hitboxInfo = hitboxInfo;
 	hitboxInfo->kbDir = V2d(1, 0);
 	hitboxInfo->hitPosType = HitboxInfo::AIRFORWARD;
+	hitboxInfo->hType = HitboxInfo::BLUE;
 
 	maxCharge = 15;
 

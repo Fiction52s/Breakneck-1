@@ -38,6 +38,7 @@ Turtle::Turtle( ActorParams *ap )
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), PI * .5, 90, false );
 	launchers[0]->SetBulletSpeed( bulletSpeed );
+	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
 	ts = sess->GetSizedTileset("Enemies/W4/turtle_320x256.png");
@@ -56,7 +57,8 @@ Turtle::Turtle( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
-	hitboxInfo->kbDir= V2d( 1, 0 );
+	hitboxInfo->kbDir = V2d( 1, 0 );
+	hitboxInfo->hType = HitboxInfo::ORANGE;
 
 
 	BasicCircleHitBodySetup(16);

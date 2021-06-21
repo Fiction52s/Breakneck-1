@@ -61,6 +61,7 @@ LobTurret::LobTurret(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::GREEN;
 
 	BasicRectHurtBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
 	BasicRectHitBodySetup(30, 50, startPosInfo.GetGroundAngleRadians(), V2d(0, 50), GetPosition());
@@ -79,6 +80,7 @@ LobTurret::LobTurret(ActorParams *ap)
 		0, 180, true);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
+	launchers[0]->hitboxInfo->hType = HitboxInfo::GREEN;
 
 	V2d gravity(0, .3);
 	const string &typeName = ap->GetTypeName();

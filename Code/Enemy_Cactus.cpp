@@ -305,6 +305,7 @@ CactusShotgun::CactusShotgun(Cactus *p, ObjectPool *pool, int poolIndex )
 	hitboxInfo->hitlagFrames = 0;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 10;
+	hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);

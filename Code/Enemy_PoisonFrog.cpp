@@ -112,6 +112,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 20;
 	hitboxInfo->knockback = 8;
+	hitboxInfo->hType = HitboxInfo::GREEN;
 	
 
 	hitBody.hitboxInfo = hitboxInfo;

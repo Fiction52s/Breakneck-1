@@ -78,7 +78,12 @@ void GetShardSequence::SetupStates()
 
 void GetShardSequence::ReturnToGame()
 {
+	
 	Actor *player = sess->GetPlayer(0);
+	player->SetupDrain();
+	//the shard might have changed
+	//your drain rate
+
 	sess->cam.EaseOutOfManual(60);
 	player->SetAction(Actor::JUMP);
 	player->frame = 1;

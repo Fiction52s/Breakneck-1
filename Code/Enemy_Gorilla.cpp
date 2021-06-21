@@ -89,6 +89,7 @@ Gorilla::Gorilla( ActorParams *ap )
 	hitboxInfo->hitlagFrames = 5;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
@@ -105,6 +106,7 @@ Gorilla::Gorilla( ActorParams *ap )
 	wallHitboxInfo->hitlagFrames = 5;
 	wallHitboxInfo->hitstunFrames = 10;
 	wallHitboxInfo->knockback = 4;
+	wallHitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	wallHitBody.SetupNumFrames(1);
 	wallHitBody.SetupNumBoxesOnFrame(0, 1);

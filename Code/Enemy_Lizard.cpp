@@ -56,6 +56,7 @@ Lizard::Lizard(ActorParams *ap)
 	launchers[0] = new Launcher(this,
 		BasicBullet::LIZARD, 32, 1, GetPosition(), V2d(0, -1), 0, 180, true);
 	launchers[0]->SetBulletSpeed(10);
+	launchers[0]->hitboxInfo->hType = HitboxInfo::RED;
 	launchers[0]->hitboxInfo->damage = 18;
 
 	SetOffGroundHeight(128 / 2);
@@ -70,6 +71,7 @@ Lizard::Lizard(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 12;
+	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);

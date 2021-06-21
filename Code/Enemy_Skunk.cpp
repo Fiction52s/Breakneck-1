@@ -66,6 +66,7 @@ Skunk::Skunk(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 4;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::MAGENTA;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);

@@ -100,7 +100,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 
 	shardNames = new string*[ySize];
 	shardDesc = new string*[ySize];
-	shardDescriptionNames = new string*[ySize];
 	seqLoadThread = new boost::thread**[ySize];
 	shardSeq = new PNGSeq**[ySize];
 
@@ -108,7 +107,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 	{
 		shardNames[i] = new string[xSize];
 		shardDesc[i] = new string[xSize];
-		shardDescriptionNames[i] = new string[xSize];
 		seqLoadThread[i] = new boost::thread*[xSize];
 		shardSeq[i] = new PNGSeq*[xSize];
 	}
@@ -124,6 +122,9 @@ ShardMenu::ShardMenu(Session *p_sess)
 	
 	//shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
 
+	//ifstream is;
+	//is.open( "shard")
+
 	for (int y = 0; y < ySize; ++y)
 	{
 		for (int x = 0; x < xSize; ++x)
@@ -133,11 +134,12 @@ ShardMenu::ShardMenu(Session *p_sess)
 			seqLoadThread[y][x] = NULL;
 			//int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
 			int index = x + y * 11;
-			shardNames[y][x] = Shard::GetShardString((ShardType)index);
+			//shardNames[y][x] = Shard::GetShardString((ShardType)index);
 
-			std::string &currShardName = shardNames[y][x];
+			//std::string &currShardName = shardNames[y][x];
 
-			if (currShardName == "")
+			ts_preview[index] = NULL;
+			/*if (currShardName == "")
 			{
 				ts_preview[x + y * xSize] = NULL;
 			}
@@ -145,14 +147,16 @@ ShardMenu::ShardMenu(Session *p_sess)
 			{
 				ss << "Shard/" << currShardName << "_preview.png";
 				ts_preview[x + y * xSize] = sess->GetTileset(ss.str(), 512, 512);
-			}
+			}*/
 			
 			
 			//currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
-			if(currShardName != "" )
-				SetDescription(shardDescriptionNames[y][x], shardDesc[y][x], shardNames[y][x]);
+			//if(currShardName != "" )
+			//	SetDescription(shardDescriptionNames[y][x], shardDesc[y][x], shardNames[y][x]);
 		}
 	}
+
+	LoadShardInfo();
 
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
@@ -181,7 +185,13 @@ ShardMenu::ShardMenu(Session *p_sess)
 		upgradeIndexes[i] = -1;
 	}
 
-	upgradeIndexes[SHARD_W1_0_DASH_BOOST] = Actor::UPGRADE_W1_DASH_BOOST;
+	int offset = Actor::UPGRADE_POWER_LWIRE + 1;
+	for (int i = 0; i < SHARD_Count; ++i)
+	{
+		upgradeIndexes[i] = offset + i;
+	}
+
+	/*upgradeIndexes[SHARD_W1_0_DASH_BOOST] = Actor::UPGRADE_W1_DASH_BOOST;
 	upgradeIndexes[SHARD_W1_1_AIRDASH_BOOST] = Actor::UPGRADE_W1_AIRDASH_BOOST;
 	upgradeIndexes[SHARD_W1_2_WALLJUMP_RESTORES_DOUBLEJUMP] = Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP;
 	upgradeIndexes[SHARD_W1_3_WALLJUMP_RESTORES_AIRDASH] = Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH;
@@ -201,7 +211,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	upgradeIndexes[SHARD_W5_2_MAX_BUBBLES_INCREASE_3] = Actor::UPGRADE_W5_MAX_BUBBLES_3;
 	upgradeIndexes[SHARD_W5_3_MAX_BUBBLES_INCREASE_4] = Actor::UPGRADE_W5_MAX_BUBBLES_4;
 
-	upgradeIndexes[SHARD_W6_0_WIRE_ENEMIES] = Actor::UPGRADE_W6_WIRE_ENEMIES;
+	upgradeIndexes[SHARD_W6_0_WIRE_ENEMIES] = Actor::UPGRADE_W6_WIRE_ENEMIES;*/
 	
 	//SetCurrSequence();
 }
@@ -217,7 +227,6 @@ ShardMenu::~ShardMenu()
 			if (shardSeq[i][j] != NULL)
 				delete shardSeq[i][j];
 		}
-		delete[] shardDescriptionNames[i];
 		delete[] shardSeq[i];
 		delete[] seqLoadThread[i];
 
@@ -227,7 +236,6 @@ ShardMenu::~ShardMenu()
 	delete[] shardNames;
 	delete[] shardDesc;
 	delete[] shardSeq;
-	delete[] shardDescriptionNames;
 	delete[] seqLoadThread;
 	delete xSelector;
 	delete ySelector;
@@ -235,6 +243,67 @@ ShardMenu::~ShardMenu()
 	delete[] shardQuads;
 	delete[] shardSelectQuads;
 	delete sparklePool;
+}
+
+void ShardMenu::LoadShardInfo()
+{
+	ifstream is;
+	is.open("Resources/Shard/shardinfo.txt");
+
+	if (is.is_open())
+	{
+		string lineString;
+		string descriptionString;
+		int index = 0;
+		int x;
+		int y;
+
+
+		while (getline(is, lineString))
+		{
+			x = index % 11;
+			y = index / 11;
+
+			shardNames[y][x] = lineString;
+
+			descriptionString = "";
+
+			while (getline(is, lineString))
+			{
+				if (lineString == "")
+				{
+					index++;
+					break;
+				}
+				else
+				{
+					descriptionString += lineString;
+				}
+			}
+		}
+		
+
+
+		/*while (getline(is, lineString))
+		{
+			if (lineString == "")
+			{
+				index++;
+			}
+			else
+			{
+
+			}
+
+		}*/
+
+		is.close();
+	}
+	else
+	{
+		cout << "couldnt open shard info file" << endl;
+		assert(0);
+	}
 }
 
 bool ShardMenu::IsShardCaptured( int x, int y )
@@ -516,7 +585,7 @@ void ShardMenu::UpdateShardSelectQuads()
 
 void ShardMenu::SetCurrentDescription( bool captured)
 {
-	currShardNameText.setString(shardDescriptionNames[ySelector->currIndex][xSelector->currIndex]);
+	currShardNameText.setString(shardNames[ySelector->currIndex][xSelector->currIndex]);
 	FloatRect lBounds = currShardNameText.getLocalBounds();
 	currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if( captured )

@@ -96,7 +96,6 @@ struct ShardMenu
 
 	void SetCurrShard();
 
-
 	std::vector<int> upgradeIndexes;
 	int selectedIndex;
 	int totalFrame;
@@ -125,7 +124,6 @@ struct ShardMenu
 	sf::Sprite previewSpr;
 	std::map<std::string, PNGSeq*> seqMap;
 	std::string **shardNames;
-	std::string **shardDescriptionNames;
 	MusicInfo *currShardMusic;
 	void SetCurrMusic();
 	void StopMusic();
@@ -136,6 +134,8 @@ struct ShardMenu
 		ShardMenu *sMenu );
 	PNGSeq *&GetCurrSeq();
 	boost::thread *&GetCurrLoadThread();
+
+	void LoadShardInfo();
 
 	sf::Vertex selectedBGQuad[4];
 

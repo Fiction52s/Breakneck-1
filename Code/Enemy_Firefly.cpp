@@ -54,6 +54,7 @@ Firefly::Firefly(ActorParams *ap)
 	hitboxInfo->hitlagFrames = 3;
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
+	hitboxInfo->hType = HitboxInfo::YELLOW;
 
 	pulseBody.BasicCircleSetup(pulseRadius * scale, 0, V2d());
 	pulseBody.hitboxInfo = hitboxInfo;

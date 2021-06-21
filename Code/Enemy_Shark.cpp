@@ -69,6 +69,7 @@ Shark::Shark( ActorParams *ap )
 	hitboxInfo->hitstunFrames = 15;
 	hitboxInfo->knockback = 4;
 	hitboxInfo->kbDir = V2d(1, 0);
+	hitboxInfo->hType = HitboxInfo::RED;
 
 	BasicCircleHurtBodySetup(48);
 	BasicCircleHitBodySetup(48);
