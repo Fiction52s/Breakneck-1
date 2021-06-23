@@ -190,6 +190,10 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W1_INCREASE_STEEP_SLIDE_ACCEL_1,
 		UPGRADE_W1_INCREASE_STEEP_SLIDE_ACCEL_2,
 		UPGRADE_W1_INCREASE_STEEP_SLIDE_ACCEL_3,
+		//UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_1,
+		//UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_2,
+		//UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_3,
+		
 
 
 		//22
@@ -617,8 +621,7 @@ struct Actor : QuadTreeCollider,
 
 	//havent put into rollback yet
 
-	bool specialSlow;
-	bool frameAfterAttackingHitlagOver;
+	//--empty for now
 
 	//Enemy *receivedHitEnemy;
 	
@@ -641,7 +644,9 @@ struct Actor : QuadTreeCollider,
 
 	TerrainRail * prevRail;
 	
-
+	bool specialSlow;
+	bool frameAfterAttackingHitlagOver;
+	bool bouncedFromKill;
 	const static int NUM_SWORD_PROJECTILES = 6;
 	SwordProjectile *swordProjectiles[NUM_SWORD_PROJECTILES];
 	int projectileSwordFrames;
@@ -1327,6 +1332,7 @@ struct Actor : QuadTreeCollider,
 	int MostRecentFrameCurrAttackBlocked();
 	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
+	double GetBounceBoostSpeed();
 
 	void WriteBestTimeRecordings();
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);

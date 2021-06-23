@@ -189,20 +189,26 @@ void Actor::STEEPSLIDE_Update()
 	if (currInput.LDown())
 	{
 		//cout << "fast slide" << endl;
-		fac = GetGravity() * steepSlideFastGravFactor;
+
+		int numSlideUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_STEEP_SLIDE_ACCEL_1, 3);
+
+		double upgradeAmount = steepSlideFastGravFactor * .2;
+		double currFactor = steepSlideFastGravFactor + upgradeAmount * numSlideUpgrades;
+
+		
+
+		if (reversed)
+		{
+			int numCeilingSlideUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_STEEP_SLIDE_ACCEL_1, 3);
+			double ceilingUpgradeAmount = steepSlideFastGravFactor * .2;
+			currFactor += numCeilingSlideUpgrades * ceilingUpgradeAmount;
+		}
+
+		fac = GetGravity() * currFactor;
 	}
 
-	if (reversed)
-	{
 
-		groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	}
-	else
-	{
-
-
-		groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
-	}
+	groundSpeed += dot(V2d(0, fac), normalize(ground->v1 - ground->v0)) / slowMultiple;
 }
 
 void Actor::STEEPSLIDE_UpdateSprite()

@@ -42,6 +42,8 @@ void Actor::BOUNCEGROUND_Change()
 		oldBounceNorm = bounceNorm;
 		frame = 0;
 
+		double currBoostBounceSpeed = GetBounceBoostSpeed();
+
 		int option = 0; //0 is ground, 1 is wall, 2 is ceiling
 
 		bool boostNow = boostBounce && framesSinceBounce > 8;
@@ -88,7 +90,7 @@ void Actor::BOUNCEGROUND_Change()
 				if (boostNow)
 				{
 					//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
-					velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
+					velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 
 
 					boostBounce = false;
@@ -125,8 +127,9 @@ void Actor::BOUNCEGROUND_Change()
 
 				if (boostNow)
 				{
-					double fac = max(6.0, .25 * abs(velocity.y)); //bounceBoostSpeed;
-																  //cout << "fac: " << fac << ", vy: "<< velocity.y << endl;
+					//6.0
+					double fac = max(currBoostBounceSpeed, .25 * abs(velocity.y));
+																  
 					velocity += normalize(velocity) * fac / (double)slowMultiple;
 
 					/*double shardSpeedBoost = 5;
@@ -209,7 +212,7 @@ void Actor::BOUNCEGROUND_Change()
 			{
 				//double fac = max( 6.0, .3 * velocity.y ); //bounceBoostSpeed;
 				//velocity += normalize( velocity ) * bounceBoostSpeed / (double)slowMultiple;
-				velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
+				velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 
 				boostBounce = false;
 			}
@@ -240,9 +243,7 @@ void Actor::BOUNCEGROUND_Change()
 
 			if (boostNow)
 			{
-				velocity += vDir * bounceBoostSpeed / (double)slowMultiple;
-
-
+				velocity += vDir * currBoostBounceSpeed / (double)slowMultiple;
 				/*if( currInput.LUp() )
 				{
 				velocity += V2d( 0, -1 ) * extraBUp;

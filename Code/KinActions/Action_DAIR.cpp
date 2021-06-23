@@ -19,7 +19,18 @@ void Actor::DAIR_End()
 
 void Actor::DAIR_Change()
 {
-	BasicAirAttackAction();
+	if (bouncedFromKill)
+	{
+		if (velocity.y > 0)
+		{
+			SetAction(BOUNCEAIR);
+			velocity.y = -40;
+			//velocity.y = -velocity.y;
+		}
+	}
+
+	if (BasicAirAttackAction())
+		return;
 }
 
 void Actor::DAIR_Update()

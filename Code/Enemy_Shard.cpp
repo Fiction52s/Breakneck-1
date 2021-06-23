@@ -58,7 +58,8 @@ void Shard::SetupShardMaps()
 	{
 		string currStringName;
 		int shardIndex = 0;
-		while (cin >> currStringName)
+
+		while (is >> currStringName)
 		{
 			shardTypeMap[currStringName] = (ShardType)shardIndex;
 			++shardIndex;

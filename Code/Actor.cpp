@@ -314,6 +314,7 @@ void Actor::PopulateState(PState *ps)
 	ps->prevRail = prevRail;
 	ps->specialSlow = specialSlow;
 	ps->frameAfterAttackingHitlagOver = frameAfterAttackingHitlagOver;
+	ps->bouncedFromKill = bouncedFromKill;
 
 	ps->projectileSwordFrames = projectileSwordFrames;
 	ps->enemyProjectileSwordFrames = enemyProjectileSwordFrames;
@@ -537,10 +538,10 @@ void Actor::PopulateFromState(PState *ps)
 	superFrame = ps->superFrame;
 	kinMode = (Mode)ps->kinMode;
 
-	//new stuff
-
 	prevRail = ps->prevRail;
 	specialSlow = ps->specialSlow;
+	frameAfterAttackingHitlagOver = ps->frameAfterAttackingHitlagOver;
+	bouncedFromKill = ps->bouncedFromKill;
 
 	projectileSwordFrames = ps->projectileSwordFrames;
 	enemyProjectileSwordFrames = ps->enemyProjectileSwordFrames;
@@ -3781,7 +3782,7 @@ double Actor::GetMaxSpeed()
 	//starts at 60, goes up to 100
 	double upgradeAmount = 5;
 
-	int maxSpeedUpgrades = NumUpgradeRange(UPGRADE_W3_MAX_SPEED_1, 8);
+	int maxSpeedUpgrades = NumUpgradeRange(UPGRADE_W6_MAX_SPEED_1, 8);
 
 	return maxSpeed + upgradeAmount * maxSpeedUpgrades;
 }
@@ -3844,6 +3845,18 @@ bool Actor::CanCancelAttack()
 
 	return false;
 }
+
+double Actor::GetBounceBoostSpeed()
+{
+	double currBounceBoostSpeed = bounceBoostSpeed;
+
+	double upgradeAmount = 2.0;
+	int numUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_BOUNCE_STRENGTH_1, 3);
+	currBounceBoostSpeed += upgradeAmount * numUpgrades;
+
+	return currBounceBoostSpeed;
+}
+
 
 void Actor::LoadHitboxes()
 {
@@ -4247,6 +4260,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+	bouncedFromKill = false;
+
 	launcherEffectPool[0]->DeactivateAll();
 	launcherEffectPool[1]->DeactivateAll();
 
@@ -6491,6 +6506,7 @@ void Actor::UpdatePrePhysics()
 	hitEnemyDuringPhysics = false;
 	
 	specialSlow = false;
+	bouncedFromKill = false;
 	
 
 	touchedCoyoteHelper = false;
@@ -6587,6 +6603,22 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
 		double extra = 10.0;
+
+		int numClimbUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_STEEP_CLIMB_1, 3);
+
+		double upgradeAmount = 2.0;
+
+		extra += numClimbUpgrades * upgradeAmount;
+
+		if (reversed)
+		{
+			int numCeilingClimbUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_STEEP_CLIMB_1, 3);
+			double upgradeAmountCeiling = 2.0;
+
+			extra += numCeilingClimbUpgrades * upgradeAmountCeiling;
+		}
+
+
 		if (currInput.LUp())
 		{
 			//cout << "boost but better" << endl;
@@ -9636,7 +9668,7 @@ double Actor::GetDashSpeed()
 		
 	}
 
-	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
+	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_BASE_DASH_1, 3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseDashUpgrades;
 
@@ -9987,7 +10019,13 @@ void Actor::TryDashBoost()
 		}
 		else
 		{
-			double highSpeedBoost = 5;
+			double highSpeedBoost = 3;//5
+
+			int highSpeedBoostUpgrades = NumUpgradeRange(UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+			double upgradeAmount = 2;
+
+			highSpeedBoost += highSpeedBoostUpgrades * upgradeAmount;
+
 			if (groundSpeed > 0)
 			{
 				groundSpeed += highSpeedBoost;
@@ -10293,6 +10331,14 @@ double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
 
 	extraSprintAccel += upgradeSprintAmount * numSprintUpgrades;
 
+	if (reversed)
+	{
+		int numCeilingSprintUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_CEILING_SPRINT_ACCEL_1, 3);
+		double upgradeCeilingSprintAmount = .03;
+
+		extraSprintAccel += upgradeCeilingSprintAmount * numCeilingSprintUpgrades;
+	}
+
 	return sprintAccel + extraSprintAccel;
 }
 
@@ -10310,6 +10356,13 @@ void Actor::GroundExtraAccel()
 	double extraAccel = 0;
 	int numPassiveAccelUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
 	extraAccel = numPassiveAccelUpgrades * .03;
+
+
+	if (reversed)
+	{
+		int numPassiveCeilingAccelUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_PASSIVE_CEILING_ACCEL_1, 3);
+		extraAccel += numPassiveCeilingAccelUpgrades * .03;
+	}
 
 	if (groundSpeed > 0)
 	{
@@ -18169,6 +18222,15 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 
 	TryThrowEnemySwordProjectileBasic();
 
+	if (!bouncedFromKill)
+	{
+		if (bounceFlameOn && action == DAIR)
+		{
+			bouncedFromKill = true;
+		}
+	}
+	
+
 	//for the growing tree
 	//wrong
 }
@@ -18247,8 +18309,42 @@ void Actor::ConfirmHit( Enemy *e )
 
 	//owner->powerWheel->Charge( charge );
 
+	float ch = hitParams.charge;
+
+	int numChargeUpgrades = 0;
+
+	switch (e->world)
+	{
+	case 1:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W1_INCREASE_REGEN_1, 3);
+		break;
+	case 2:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W2_INCREASE_REGEN_1, 3);
+		break;
+	case 3:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W3_INCREASE_REGEN_1, 3);
+		break;
+	case 4:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_REGEN_1, 3);
+		break;
+	case 5:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_REGEN_1, 3);
+		break;
+	case 6:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W6_INCREASE_REGEN_1, 3);
+		break;
+	case 7:
+		numChargeUpgrades = NumUpgradeRange(UPGRADE_W7_INCREASE_REGEN_1, 3);
+		break;
+	}
+
+	float upgradeFactor = .2 * numChargeUpgrades;
+	ch += upgradeFactor * ch;
+
+	int charge = ch;
+
 	if( kinRing != NULL )
-		kinRing->powerRing->Fill(hitParams.charge);
+		kinRing->powerRing->Fill(charge);
 	
 	if (kinMode == K_DESPERATION)
 	{
@@ -19256,7 +19352,7 @@ void Actor::ExecuteDoubleJump()
 	if (velocity.y > 0)
 		velocity.y = 0;
 
-	double scorpionExtra = 10;
+	
 
 	double currStrength;
 	if (action == BACKWARDSDOUBLE)
@@ -19268,6 +19364,7 @@ void Actor::ExecuteDoubleJump()
 		currStrength = doubleJumpStrength;
 	}
 
+	double scorpionExtra = 10;
 	if (bounceFlameOn && HasUpgrade( UPGRADE_W3_SCORPION_DOUBLEJUMP ))
 	{
 		currStrength += scorpionExtra;

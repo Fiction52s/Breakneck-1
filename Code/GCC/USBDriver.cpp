@@ -22,9 +22,9 @@ using namespace std;
 //VENDORID 0x57E
 //PRODUCT ID 0x337
 
-const int NUM_USB_TYPES = 5;
-uint_fast16_t vendorID[NUM_USB_TYPES] = { 0x57E, 0x79, 0x79, 0x79, 0x79};
-uint_fast16_t productID[NUM_USB_TYPES] = { 0x337, 0x1843, 0x1844, 0x1846, 0x1800};
+const int NUM_USB_TYPES = 1;
+uint_fast16_t vendorID[NUM_USB_TYPES] = { 0x57E };// , 0x79, 0x79, 0x79, 0x79};
+uint_fast16_t productID[NUM_USB_TYPES] = { 0x337 };// , 0x1843, 0x1844, 0x1846, 0x1800};
 
 const uint_fast16_t GCC_VENDOR_ID = 0x57E;
 const uint_fast16_t GCC_PRODUCT_ID = 0x337;
@@ -76,25 +76,26 @@ namespace GCC
 			return;
 		}
 
-		libusb_device **device_list;
-		libusb_device_handle *handle = NULL;
-		int deviceCount = libusb_get_device_list(mUSBContext, &device_list);
+		//list all usb devices
+		//libusb_device **device_list;
+		//libusb_device_handle *handle = NULL;
+		//int deviceCount = libusb_get_device_list(mUSBContext, &device_list);
 
-		int i;
-		for (i = 0; i < deviceCount; i++) {
-			struct libusb_device* device = device_list[i];
-			struct libusb_device_descriptor desc;
-			libusb_get_device_descriptor(device, &desc);
+		//int i;
+		//for (i = 0; i < deviceCount; i++) {
+		//	struct libusb_device* device = device_list[i];
+		//	struct libusb_device_descriptor desc;
+		//	libusb_get_device_descriptor(device, &desc);
 
-			cout << std::hex << "DEVICE---   " << "vendor: 0x" << desc.idVendor << ", product: 0x" << desc.idProduct << endl;
-			/*if (desc.idVendor == VENDOR_ID && desc.idProduct == devid) {
-				libusb_open(device, &handle);
-				break;*/
-		}
+		//	cout << std::hex << "DEVICE---   " << "vendor: 0x" << desc.idVendor << ", product: 0x" << desc.idProduct << endl;
+		//	/*if (desc.idVendor == VENDOR_ID && desc.idProduct == devid) {
+		//		libusb_open(device, &handle);
+		//		break;*/
+		//}
 
 
-		
-		libusb_free_device_list(device_list, 1);
+		//
+		//libusb_free_device_list(device_list, 1);
 
 
 

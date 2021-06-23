@@ -359,6 +359,8 @@ struct PState
 	int springStunFrames;
 	int springStunFramesStart;
 	int directionalInputFreezeFrames;
+
+	bool bouncedFromKill;
 	//HitboxInfo currVSHitboxInfo;
 };
 
