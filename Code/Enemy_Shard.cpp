@@ -27,9 +27,6 @@ using namespace sf;
 #define COLOR_MAGENTA Color( 0xff, 0, 0xff )
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
-std::map<std::string, ShardType> Shard::shardTypeMap;
-std::map<ShardType, std::string> Shard::shardStrMap;
-
 void Shard::UpdateParamsSettings()
 {
 	int oldShardType = shardType;
@@ -37,7 +34,7 @@ void Shard::UpdateParamsSettings()
 	ShardParams *sParams = (ShardParams*)editParams;
 	shardWorld = sParams->shInfo.world;
 	localIndex = sParams->shInfo.localIndex;
-	shardType = Shard::GetShardType(shardWorld, localIndex);
+	shardType = GetShardTypeFromWorldAndIndex(shardWorld, localIndex);//shardWorld * 22 + localIndex;//Shard::GetShardType(shardWorld, localIndex);
 
 	if (shardType != oldShardType)
 	{
@@ -49,61 +46,19 @@ void Shard::UpdateParamsSettings()
 	}
 }
 
-void Shard::SetupShardMaps()
+int Shard::GetShardTypeFromGrid(int y, int x)
 {
-	ifstream is;
-	is.open("Resources/Shard/shardnamelist.txt");
+	return y * 11 + x;
+}
 
-	if (is.is_open())
-	{
-		string currStringName;
-		int shardIndex = 0;
+int Shard::GetShardTypeFromWorldAndIndex(int w, int li)
+{
+	return w * 22 + li;
+}
 
-		while (is >> currStringName)
-		{
-			shardTypeMap[currStringName] = (ShardType)shardIndex;
-			++shardIndex;
-		}
-
-		is.close();
-	}
-	else
-	{
-		cout << "error opening shard name list" << endl;
-		assert(0);
-	}
-
-	/*shardTypeMap["W1_DASH_BOOST"] = SHARD_W1_0_DASH_BOOST;
-	shardTypeMap["W1_AIRDASH_BOOST"] = SHARD_W1_1_AIRDASH_BOOST;
-	shardTypeMap["W1_WALLJUMP_RESTORES_DOUBLEJUMP"] = SHARD_W1_2_WALLJUMP_RESTORES_DOUBLEJUMP;
-	shardTypeMap["W1_WALLJUMP_RESTORES_AIRDASH"] = SHARD_W1_3_WALLJUMP_RESTORES_AIRDASH;
-
-	shardTypeMap["W3_MAX_SPEED_INCREASE_1"] = SHARD_W3_0_MAX_SPEED_INCREASE_1;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_2"] = SHARD_W3_1_MAX_SPEED_INCREASE_2;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_3"] = SHARD_W3_2_MAX_SPEED_INCREASE_3;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_4"] = SHARD_W3_3_MAX_SPEED_INCREASE_4;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_5"] = SHARD_W3_4_MAX_SPEED_INCREASE_5;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_6"] = SHARD_W3_5_MAX_SPEED_INCREASE_6;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_7"] = SHARD_W3_6_MAX_SPEED_INCREASE_7;
-	shardTypeMap["W3_MAX_SPEED_INCREASE_8"] = SHARD_W3_7_MAX_SPEED_INCREASE_8;
-	shardTypeMap["W3_INCREASE_PASSIVE_GROUND_ACCEL"] = SHARD_W3_10_INCREASE_PASSIVE_GROUND_ACCEL;
-
-	shardTypeMap["W3_SCORPION_JUMP"] = SHARD_W3_8_SCORPION_JUMP;
-	shardTypeMap["W3_SCORPION_DOUBLEJUMP"] = SHARD_W3_9_SCORPION_DOUBLEJUMP;
-
-	shardTypeMap["W5_MAX_BUBBLES_INCREASE_1"] = SHARD_W5_0_MAX_BUBBLES_INCREASE_1;
-	shardTypeMap["W5_MAX_BUBBLES_INCREASE_2"] = SHARD_W5_1_MAX_BUBBLES_INCREASE_2;
-	shardTypeMap["W5_MAX_BUBBLES_INCREASE_3"] = SHARD_W5_2_MAX_BUBBLES_INCREASE_3;
-	shardTypeMap["W5_MAX_BUBBLES_INCREASE_4"] = SHARD_W5_3_MAX_BUBBLES_INCREASE_4;
-
-	shardTypeMap["W6_WIRE_ENEMIES"] = SHARD_W6_0_WIRE_ENEMIES;*/
-
-
-	//shardTypeMap["SHARD_W1_GET_AIRDASH"] = SHARD_W1_2_GET_AIRDASH;
-	for (auto it = shardTypeMap.begin(); it != shardTypeMap.end(); ++it)
-	{
-		shardStrMap[(*it).second] = (*it).first;
-	}
+int Shard::GetNumShardsTotal()
+{
+	return 22 * 7;
 }
 
 void Shard::Setup()
@@ -272,40 +227,40 @@ void Shard::FrameIncrement()
 	++totalFrame;
 }
 
-int Shard::GetShardType(const std::string &str)
-{
-	return shardTypeMap[str];
-}
-
-int Shard::GetShardType(int w, int li)
-{
-	int totalIndex = w * 22 + li;
-	if (totalIndex >= SHARD_Count)
-	{
-		totalIndex = 0;
-	}
-	return totalIndex;
-	//return shardTypeMap[str];
-}
-
-std::string Shard::GetShardString(ShardType st)
-{
-	return shardStrMap[st];
-}
-
-std::string Shard::GetShardString(int w, int li)
-{
-	int shardIndex = 22 * w + li;
-
-	if (shardIndex < ShardType::SHARD_Count)
-	{
-		return GetShardString((ShardType)shardIndex);
-	}
-	else
-	{
-		return string("-------");
-	}
-}
+//int Shard::GetShardType(const std::string &str)
+//{
+//	return shardTypeMap[str];
+//}
+//
+//int Shard::GetShardType(int w, int li)
+//{
+//	int totalIndex = w * 22 + li;
+//	if (totalIndex >= SHARD_Count)
+//	{
+//		totalIndex = 0;
+//	}
+//	return totalIndex;
+//	//return shardTypeMap[str];
+//}
+//
+//std::string Shard::GetShardString(ShardType st)
+//{
+//	return shardStrMap[st];
+//}
+//
+//std::string Shard::GetShardString(int w, int li)
+//{
+//	int shardIndex = 22 * w + li;
+//
+//	if (shardIndex < ShardType::SHARD_Count)
+//	{
+//		return GetShardString((ShardType)shardIndex);
+//	}
+//	else
+//	{
+//		return string("-------");
+//	}
+//}
 
 void Shard::IHitPlayer(int index)
 {
@@ -352,8 +307,8 @@ void Shard::Capture()
 		}
 	}
 
-	int upgradeIndex = sess->shardMenu->upgradeIndexes[shardType];
-		
+	int upgradeIndex = shardType + (Actor::UPGRADE_POWER_LWIRE + 1); //sess->shardMenu->upgradeIndexes[shardType];
+
 	if (upgradeIndex != -1)
 	{
 		sess->GetPlayer(0)->SetStartUpgrade(upgradeIndex, true);

@@ -223,7 +223,7 @@ struct Actor : QuadTreeCollider,
 
 
 
-		//22
+		//21
 		UPGRADE_W3_DECREASE_DRAIN_1,
 		UPGRADE_W3_DECREASE_DRAIN_2,
 		UPGRADE_W3_DECREASE_DRAIN_3,
@@ -236,7 +236,7 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W3_SCORPION_JUMP,
 		UPGRADE_W3_SCORPION_DOUBLEJUMP,
 		UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE,
-		UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE_ATTACK,
+		//UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE_ATTACK,
 		UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1,
 		UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_2,
 		UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_3,
@@ -286,8 +286,8 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W5_MAX_BUBBLES_2,
 		UPGRADE_W5_MAX_BUBBLES_3,
 		UPGRADE_W5_MAX_BUBBLES_4,
-		UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES,
 		UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES,
+		UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES,
 		UPGRADE_W5_INCREASE_BUBBLE_SIZE_1,
 		UPGRADE_W5_INCREASE_BUBBLE_SIZE_2,
 		UPGRADE_W5_INCREASE_BUBBLE_SIZE_3,
@@ -332,9 +332,10 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W7_INCREASE_REGEN_2,
 		UPGRADE_W7_INCREASE_REGEN_3,
 		UPGRADE_W7_TRIPLE_JUMP,
+		UPGRADE_W7_TRIPLE_JUMP_BOOST,
 		UPGRADE_W7_DOUBLE_AIRDASH_BOOST,
 		UPGRADE_W7_SURVIVAL_UNLIMITED_JUMPS,
-
+		UPGRADE_W7_SURVIVAL_INFINITE_ACCELERATING_AIRDASH,
 
 		//UPGRADE_W2_GRAVITY_CLING_RESTORES_DOUBLEJUMP,
 		//UPGRADE_W2_GRAVITY_CLING_RESTORES_AIRDASH,
@@ -1234,7 +1235,6 @@ struct Actor : QuadTreeCollider,
 	int maxAirdashBoostCount;
 	double doubleJumpStrength;
 	double backDoubleJumpStrength;
-	int timeSlowStrength;
 	double lessSlowDownThresh;
 	sf::Vector2<double> wallJumpStrength;
 	double clingSpeed;
@@ -1265,6 +1265,7 @@ struct Actor : QuadTreeCollider,
 	double slopeTooSteepLaunchLimitX;
 	
 	int baseSlowMultiple;
+	int baseTimeSlowedMultiple;
 	sf::Vector2<double> wallNormal;
 	Edge *currWall;
 	bool touchedGrass[Grass::GrassType::Count];
@@ -1283,9 +1284,6 @@ struct Actor : QuadTreeCollider,
 	bool wallClimbGravityOn;
 	int bubbleLifeSpan;
 	int bubbleRadius;
-	int bubbleRadius0;
-	int bubbleRadius1;
-	int bubbleRadius2;
 	Tileset * ts_bubble;
 	sf::Sprite bubbleSprite;
 	bool dead;
@@ -1691,6 +1689,7 @@ struct Actor : QuadTreeCollider,
 	double GetBounceFlameAccel();
 	void GroundExtraAccel();
 	double GetDashSpeed();
+	double GetOriginalDashSpeed();
 	double GetAirDashSpeed();
 	void AddToFlyCounter(int count);
 	void SetCurrHitboxes(CollisionBody *cBody,
@@ -1737,6 +1736,8 @@ struct Actor : QuadTreeCollider,
 	void RestoreDoubleJump();
 	void RestoreAirDash();
 	int GetBubbleRadius();
+	int GetBubbleTimeFactor();
+	int GetBeingSlowedFactor();
 	bool IsBeingSlowed();
 	void SetAllUpgrades(BitField &b);
 	bool HasUpgrade(int index);

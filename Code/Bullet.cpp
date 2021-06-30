@@ -816,10 +816,12 @@ void BasicBullet::UpdatePrePhysics()
 {
 	if (PlayerSlowingMe())
 	{
+		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
+		int currSlowMult = player->GetBubbleTimeFactor();
 		if (slowMultiple == 1)
 		{
 			slowCounter = 1;
-			slowMultiple = 5;
+			slowMultiple = currSlowMult;
 		}
 	}
 	else

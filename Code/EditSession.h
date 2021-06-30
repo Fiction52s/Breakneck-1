@@ -14,7 +14,6 @@
 #include <boost/filesystem.hpp>
 #include "MainMenu.h"
 #include "MapHeader.h"
-#include "ShardTypes.h"
 #include "Gate.h"
 #include "ISelectable.h"
 

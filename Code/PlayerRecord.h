@@ -111,6 +111,7 @@ struct ReplayHeader
 	int startPowerMode;
 	BitField bUpgradeField;
 
+
 	ReplayHeader();
 	void Read(std::ifstream &is);
 	void Write(std::ofstream &of);

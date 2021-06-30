@@ -3,8 +3,6 @@
 
 #include "Enemy.h"
 #include <map>
-#include "ShardTypes.h"
-
 #include "MovingGeo.h"
 
 

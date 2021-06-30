@@ -177,43 +177,6 @@ ShardMenu::ShardMenu(Session *p_sess)
 			SetRectSubRect(shardSelectQuads + index * 4, ts_shards[index/22]->GetSubRect(index % 22));
 		}
 	}
-
-	upgradeIndexes.resize(SHARD_Count);
-
-	for (int i = 0; i < SHARD_Count; ++i)
-	{
-		upgradeIndexes[i] = -1;
-	}
-
-	int offset = Actor::UPGRADE_POWER_LWIRE + 1;
-	for (int i = 0; i < SHARD_Count; ++i)
-	{
-		upgradeIndexes[i] = offset + i;
-	}
-
-	/*upgradeIndexes[SHARD_W1_0_DASH_BOOST] = Actor::UPGRADE_W1_DASH_BOOST;
-	upgradeIndexes[SHARD_W1_1_AIRDASH_BOOST] = Actor::UPGRADE_W1_AIRDASH_BOOST;
-	upgradeIndexes[SHARD_W1_2_WALLJUMP_RESTORES_DOUBLEJUMP] = Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP;
-	upgradeIndexes[SHARD_W1_3_WALLJUMP_RESTORES_AIRDASH] = Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH;
-
-	upgradeIndexes[SHARD_W3_0_MAX_SPEED_INCREASE_1] = Actor::UPGRADE_W3_MAX_SPEED_1;
-	upgradeIndexes[SHARD_W3_1_MAX_SPEED_INCREASE_2] = Actor::UPGRADE_W3_MAX_SPEED_2;
-	upgradeIndexes[SHARD_W3_2_MAX_SPEED_INCREASE_3] = Actor::UPGRADE_W3_MAX_SPEED_3;
-	upgradeIndexes[SHARD_W3_3_MAX_SPEED_INCREASE_4] = Actor::UPGRADE_W3_MAX_SPEED_4;
-	upgradeIndexes[SHARD_W3_4_MAX_SPEED_INCREASE_5] = Actor::UPGRADE_W3_MAX_SPEED_5;
-	upgradeIndexes[SHARD_W3_5_MAX_SPEED_INCREASE_6] = Actor::UPGRADE_W3_MAX_SPEED_6;
-	upgradeIndexes[SHARD_W3_6_MAX_SPEED_INCREASE_7] = Actor::UPGRADE_W3_MAX_SPEED_7;
-	upgradeIndexes[SHARD_W3_7_MAX_SPEED_INCREASE_8] = Actor::UPGRADE_W3_MAX_SPEED_8;
-	upgradeIndexes[SHARD_W3_10_INCREASE_PASSIVE_GROUND_ACCEL] = Actor::UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1;
-
-	upgradeIndexes[SHARD_W5_0_MAX_BUBBLES_INCREASE_1] = Actor::UPGRADE_W5_MAX_BUBBLES_1;
-	upgradeIndexes[SHARD_W5_1_MAX_BUBBLES_INCREASE_2] = Actor::UPGRADE_W5_MAX_BUBBLES_2;
-	upgradeIndexes[SHARD_W5_2_MAX_BUBBLES_INCREASE_3] = Actor::UPGRADE_W5_MAX_BUBBLES_3;
-	upgradeIndexes[SHARD_W5_3_MAX_BUBBLES_INCREASE_4] = Actor::UPGRADE_W5_MAX_BUBBLES_4;
-
-	upgradeIndexes[SHARD_W6_0_WIRE_ENEMIES] = Actor::UPGRADE_W6_WIRE_ENEMIES;*/
-	
-	//SetCurrSequence();
 }
 
 ShardMenu::~ShardMenu()
@@ -247,63 +210,65 @@ ShardMenu::~ShardMenu()
 
 void ShardMenu::LoadShardInfo()
 {
-	ifstream is;
-	is.open("Resources/Shard/shardinfo.txt");
-
-	if (is.is_open())
+	for (int i = 0; i < 7; ++i)
 	{
-		string lineString;
-		string descriptionString;
-		int index = 0;
-		int x;
-		int y;
+		ifstream is;
+		is.open("Resources/Shard/shardinfo" + to_string( i + 1 ) + ".txt");
 
-
-		while (getline(is, lineString))
+		if (is.is_open())
 		{
-			x = index % 11;
-			y = index / 11;
+			string lineString;
+			string descriptionString;
+			int index = 22 * i;
+			int x;
+			int y;
 
-			shardNames[y][x] = lineString;
-
-			descriptionString = "";
 
 			while (getline(is, lineString))
 			{
-				if (lineString == "")
+				x = index % 11;
+				y = index / 11;
+
+				shardNames[y][x] = lineString;
+
+				descriptionString = "";
+
+				bool first = true;
+				while (getline(is, lineString))
 				{
-					index++;
-					break;
+					if (lineString == "")
+					{
+						index++;
+						break;
+					}
+					else
+					{
+						if (first)
+						{
+							first = false;
+						}
+						else
+						{
+							descriptionString += "\n";
+						}
+
+						descriptionString += lineString;
+
+					}
 				}
-				else
-				{
-					descriptionString += lineString;
-				}
+
+				shardDesc[y][x] = descriptionString;
 			}
+
+			is.close();
 		}
-		
-
-
-		/*while (getline(is, lineString))
+		else
 		{
-			if (lineString == "")
-			{
-				index++;
-			}
-			else
-			{
-
-			}
-
-		}*/
-
-		is.close();
+			cout << "couldnt open shard info file" << endl;
+			assert(0);
+		}
 	}
-	else
-	{
-		cout << "couldnt open shard info file" << endl;
-		assert(0);
-	}
+	
 }
 
 bool ShardMenu::IsShardCaptured( int x, int y )
@@ -316,7 +281,7 @@ bool ShardMenu::IsShardCaptured( int x, int y )
 		return false;
 	}
 
-	return (shardNames[y][x] != "" && saveFile->ShardIsCaptured(Shard::GetShardType(shardNames[y][x])));
+	return (shardNames[y][x] != "" && saveFile->ShardIsCaptured(Shard::GetShardTypeFromGrid( y, x )));
 }
 
 bool ShardMenu::IsCurrShardCaptured()

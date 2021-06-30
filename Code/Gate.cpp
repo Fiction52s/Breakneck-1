@@ -771,7 +771,7 @@ void Gate::SetShard(int w, int li)
 	shardSprite.setTextureRect(ts_shard->GetSubRect(shardIndex));
 	shardSprite.setOrigin(shardSprite.getLocalBounds().width / 2, shardSprite.getLocalBounds().height / 2);
 
-	shardType = Shard::GetShardType(shardWorld, shardIndex);
+	shardType = Shard::GetShardTypeFromWorldAndIndex(shardWorld, shardIndex);
 }
 
 void Gate::SetMapLineColor()

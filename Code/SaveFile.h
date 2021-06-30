@@ -3,7 +3,6 @@
 
 #include <fstream>
 #include <SFML/Graphics.hpp>
-#include "ShardTypes.h"
 #include <list>
 #include <string>
 #include "BitField.h"

@@ -3,7 +3,6 @@
 
 #include "Physics.h"
 #include "Tileset.h"
-#include "ShardTypes.h"
 #include "ISelectable.h"
 
 struct Session;

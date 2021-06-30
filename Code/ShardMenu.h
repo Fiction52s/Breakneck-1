@@ -5,7 +5,6 @@
 #include <list>
 #include "Tileset.h"
 #include "Input.h"
-#include "ShardTypes.h"
 #include <SFML\Audio.hpp>
 #include <map>
 #include <string>
@@ -95,8 +94,6 @@ struct ShardMenu
 	void Draw(sf::RenderTarget *target);
 
 	void SetCurrShard();
-
-	std::vector<int> upgradeIndexes;
 	int selectedIndex;
 	int totalFrame;
 	sf::Text currShardText;

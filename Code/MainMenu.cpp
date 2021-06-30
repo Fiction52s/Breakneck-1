@@ -326,7 +326,6 @@ MainMenu::MainMenu()
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
-	Shard::SetupShardMaps();
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();

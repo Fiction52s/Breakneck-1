@@ -3390,7 +3390,7 @@ void EditSession::SetupShardSelectPanel()
 			{
 				sInd = y * shardNumX + x;
 				int shardT = (sInd + (shardNumX * shardNumY) * w);
-				if (shardT >= SHARD_Count)
+				if (shardT >= Shard::GetNumShardsTotal())
 				{
 					shardTypeRects[shardT] = NULL;
 				}

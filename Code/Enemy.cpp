@@ -1964,6 +1964,13 @@ bool Enemy::IsSlowed( int index )
 	return (player->IntersectMySlowboxes(currHurtboxes, currHurtboxFrame));
 }
 
+int Enemy::GetSlowFactor(int playerIndex)
+{
+	Actor *player = sess->GetPlayer(playerIndex);
+
+	return player->GetBubbleTimeFactor();
+}
+
 HitboxInfo * Enemy::IsHit(int pIndex )
 {
 	if (currHurtboxes == NULL)

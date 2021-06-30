@@ -3,7 +3,6 @@
 
 #include "Enemy.h"
 #include <map>
-#include "ShardTypes.h"
 
 #include "MovingGeo.h"
 
@@ -76,14 +75,11 @@ struct Shard : Enemy
 	//SpinningTri *triTest[5];
 	//Laser *laser;
 	//MovingRing *mRing;
-	static int GetShardType(const std::string &str);
-	static int GetShardType(int w, int li);
-	static std::string GetShardString(ShardType st);
-	static std::string GetShardString(int w,
-		int li );
-	static void SetupShardMaps();
 	void DirectKill();
 
+	static int GetShardTypeFromGrid(int y, int x);
+	static int GetShardTypeFromWorldAndIndex(int w, int li);
+	static int GetNumShardsTotal();
 	//MovementSequence testSeq;
 	
 	void ProcessState();
@@ -112,10 +108,6 @@ struct Shard : Enemy
 
 	int shardWorld;
 	int localIndex;
-
-private:
-	static std::map<std::string, ShardType> shardTypeMap;
-	static std::map<ShardType, std::string> shardStrMap;
 };
 
 #endif

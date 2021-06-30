@@ -67,6 +67,7 @@ struct SlowableObject
 	}
 
 	virtual bool IsSlowed(int playerIndex) = 0;
+	virtual int GetSlowFactor(int playerIndex) = 0;
 	void ResetSlow()
 	{
 		slowCounter = 1;
@@ -82,7 +83,9 @@ struct SlowableObject
 			if (slowMultiple == 1)
 			{
 				slowCounter = 1;
-				slowMultiple = 5;
+				
+				//GetBubbleTimeFactor()
+				slowMultiple = GetSlowFactor(playerIndex);//5;
 			}
 		}
 		else

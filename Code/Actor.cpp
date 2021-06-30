@@ -3520,7 +3520,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	Init();
 
 	baseSlowMultiple = 1;
-	timeSlowStrength = 5 * baseSlowMultiple;
+	baseTimeSlowedMultiple = 5;
 
 	wallJumpMovementLimit = 12; //10 frames
 
@@ -3624,9 +3624,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	
 	bubbleRadius = 160;
 
-	bubbleRadius0 = 160;
-	bubbleRadius1 = 180;
-	bubbleRadius2 = 200;
+	
 
 	bubbleLifeSpan = 240;
 
@@ -4368,6 +4366,11 @@ void Actor::Respawn( bool setStartPos )
 	speedLevel = 0;
 	currentSpeedBar = 0;//60;
 
+	int numStartMomentumUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_START_MOMENTUM_1, 3);
+
+	float startMomentumUpgradeFactor = 15.0;
+	currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
+
 	currBBoostCounter = 0;
 	repeatingSound = NULL;
 	currBooster = NULL;
@@ -5044,11 +5047,6 @@ void Actor::ReactToBeingHit()
 			damageUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DAMAGE_1, 3);
 			break;
 		}
-		/*case HitboxInfo::BLACK:
-		{
-			damageUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DAMAGE_1, 3);
-			break;
-		}*/
 
 		}
 
@@ -6008,7 +6006,7 @@ void Actor::UpdateBubbles()
 			{
 				//cout << "a" << endl;
 				slowCounter = 1;
-				slowMultiple = timeSlowStrength;
+				slowMultiple = GetBubbleTimeFactor();//5
 			}
 		}
 		else
@@ -6050,7 +6048,7 @@ void Actor::UpdateBubbles()
 		else
 		{
 			slowCounter = tempSlowCounter;
-			slowMultiple = timeSlowStrength;
+			slowMultiple = GetBeingSlowedFactor();
 		}
 	}
 }
@@ -9646,10 +9644,10 @@ bool Actor::TrySprintOrRun(V2d &gNorm)
 	return false;
 }
 
-double Actor::GetDashSpeed()
+double Actor::GetOriginalDashSpeed()
 {
 	double dSpeed;
-	switch( speedLevel )
+	switch (speedLevel)
 	{
 	case 0:
 		dSpeed = dashSpeed0;
@@ -9665,14 +9663,47 @@ double Actor::GetDashSpeed()
 		dSpeed = dashSpeed2 + 4.0 * sbp;
 		break;
 	}
-		
+
 	}
+
+	return dSpeed;
+}
+
+double Actor::GetDashSpeed()
+{
+	double dSpeed = GetOriginalDashSpeed();
 
 	int numBaseDashUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_BASE_DASH_1, 3);
 	double upgradeAmount = 3;
 	dSpeed += upgradeAmount * numBaseDashUpgrades;
 
 	return dSpeed;
+}
+
+double Actor::GetAirDashSpeed()
+{
+	//return 45;
+	/*switch (speedLevel)
+	{
+	case 0:
+		return airDashSpeed0;
+		break;
+	case 1:
+		return airDashSpeed1;
+		break;
+	case 2:
+		return airDashSpeed2;
+		break;
+	}*/
+
+	double dSpeed = GetOriginalDashSpeed();
+
+	int numBaseAirdashUpgrades = NumUpgradeRange(UPGRADE_W6_INCREASE_BASE_AIRDASH_1, 3);
+	double upgradeAmount = 3;
+	dSpeed += upgradeAmount * numBaseAirdashUpgrades;
+
+	return dSpeed;
+
 }
 
 bool Actor::TryJumpSquat()
@@ -10274,28 +10305,17 @@ int Actor::GetMaxBubbles()
 	return numBubbles;
 }
 
-double Actor::GetAirDashSpeed()
-{
-	//return 45;
-	switch( speedLevel )
-	{
-	case 0:
-		return airDashSpeed0;
-		break;
-	case 1:
-		return airDashSpeed1;
-		break;
-	case 2:
-		return airDashSpeed2;
-		break;
-	}
 
-	
-}
 
 int Actor::GetBubbleRadius()
 {
-	switch( speedLevel )
+	int numBubbleSizeUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_BUBBLE_SIZE_1, 3);
+	int upgradeFactor = 15;
+	return bubbleRadius + numBubbleSizeUpgrades * upgradeFactor;
+	//bubbleRadius0 = 160;
+	//bubbleRadius1 = 180;
+	//bubbleRadius2 = 200;
+	/*switch( speedLevel )
 	{
 	case 0:
 		return bubbleRadius0;
@@ -10306,7 +10326,19 @@ int Actor::GetBubbleRadius()
 	case 2:
 		return bubbleRadius2;
 		break;
-	}
+	}*/
+}
+
+int Actor::GetBubbleTimeFactor()
+{
+	int numBubbleFactorUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_BUBBLE_SLOW_FACTOR_1, 2);
+	return baseTimeSlowedMultiple + numBubbleFactorUpgrades;
+}
+
+int Actor::GetBeingSlowedFactor()
+{
+	int numTimeslowResistanceUpgrades = NumUpgradeRange(UPGRADE_W5_INCREASE_SLOW_RESISTANCE_1, 2);
+	return baseTimeSlowedMultiple - numTimeslowResistanceUpgrades;
 }
 
 double Actor::GetFullSprintAccel( bool downSlope, sf::Vector2<double> &gNorm )
@@ -18284,6 +18316,13 @@ void Actor::ConfirmHit( Enemy *e )
 		break;
 	}
 
+	float speedBarAddition = hitParams.speedBar;
+
+	int numMomentumUpgrades = NumUpgradeRange(UPGRADE_W4_INCREASE_MOMENTUM_FROM_ENEMIES_1, 3);
+
+	float upgradeAmount = .2;
+	speedBarAddition += speedBarAddition * upgradeAmount * numMomentumUpgrades;
+
 	currentSpeedBar += hitParams.speedBar;
 	hitEnemyDuringPhysics = true;
 	currAttackHit = true;
@@ -19153,6 +19192,8 @@ void Actor::AttackMovement()
 
 		shieldPushbackFrames--;
 	}
+
+	GroundExtraAccel();
 }
 
 bool Actor::CanBufferGrind()
