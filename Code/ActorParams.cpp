@@ -594,6 +594,123 @@ ActorParams *ShardParams::Copy()
 	return copy;
 }
 
+LogParams::LogParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	PlaceAerial(Vector2i(0, 0));
+	SetLog(0, 0, 0);
+}
+
+void LogParams::SetLog(int w, int li)
+{
+	SetLog(w, li % 11, li / 11);
+}
+
+void LogParams::SetLog(int w, int realX, int realY)
+{
+	lInfo.world = w;
+	sX = realX;
+	sY = realY;
+	lInfo.localIndex = realX + realY * 11;
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
+
+	EditSession *edit = EditSession::GetSession();
+
+	if (edit != NULL)
+	{
+		nameText.setFont(edit->arial);
+		nameText.setCharacterSize(30);
+		nameText.setString(edit->shardMenu->shardNames[sY + w * 2][sX]);
+		nameText.setOrigin(nameText.getLocalBounds().left +
+			nameText.getLocalBounds().width / 2, 0);
+	}
+
+
+	/*EditSession *session = EditSession::GetSession();
+
+	Tileset *ts = session->ts_shards[world];
+	image.setTexture(*ts->texture);
+	image.setTextureRect(ts->GetSubRect(localIndex));
+	image.setOrigin(image.getLocalBounds().width / 2, image.getLocalBounds().height / 2);
+
+	Panel *p = type->panel;
+	GridSelector *gs = p->gridSelectors["shardselector"];
+	gs->selectedX = sX;
+	gs->selectedY = sY + world * 2;
+
+	shardStr = gs->names[gs->selectedX][gs->selectedY];*/
+}
+
+int LogParams::GetTotalIndex()
+{
+	return 0;//shInfo.world * 22 + shInfo.localIndex;
+}
+
+LogParams::LogParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	int w;
+	is >> w;
+
+	int li;
+	is >> li;
+
+	SetLog(w, li);
+}
+
+void LogParams::WriteParamFile(std::ofstream &of)
+{
+	of << lInfo.world << " " << lInfo.localIndex << endl;
+}
+
+void LogParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	//shardStr = p->labels["shardtype"]->getString();
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
+}
+
+void LogParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+
+	//p->labels["shardtype"]->setString( shardStr );
+
+	//GridSelector *gs = p->gridSelectors["shardselector"];
+	//gs->selectedX = sX;
+	//gs->selectedY = sY + world * 2;
+}
+
+void LogParams::Draw(sf::RenderTarget *target)
+{
+	ActorParams::Draw(target);
+
+	Vector2f fPos = GetFloatPos();
+
+	sf::FloatRect fr = myEnemy->GetAABB();
+
+	nameText.setPosition(fPos.x, fr.top - 35);//fPos.y - 40);
+
+	target->draw(nameText);
+}
+
+ActorParams *LogParams::Copy()
+{
+	LogParams *copy = new LogParams(*this);
+	return copy;
+}
+
 BlockerParams::BlockerParams(ActorType *at,ifstream &is)
 	:ActorParams(at)
 {

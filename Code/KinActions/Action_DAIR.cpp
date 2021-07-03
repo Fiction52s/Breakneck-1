@@ -21,12 +21,8 @@ void Actor::DAIR_Change()
 {
 	if (bouncedFromKill)
 	{
-		if (velocity.y > 0)
-		{
-			SetAction(BOUNCEAIR);
-			velocity.y = -40;
-			//velocity.y = -velocity.y;
-		}
+		SetAction(BOUNCEAIR);
+		BounceFloaterBoost(V2d(0, 1));
 	}
 
 	if (BasicAirAttackAction())

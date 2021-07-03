@@ -39,6 +39,9 @@ bool MapHeader::Load(std::ifstream &is)
 		assert(0);
 	}
 
+	ver1 = part1Num;
+	ver2 = part2Num;
+
 	//get description
 	char last = 0;
 	char curr = 0;
@@ -79,6 +82,19 @@ bool MapHeader::Load(std::ifstream &is)
 		shardInfoVec.push_back(ShardInfo(w, li));
 	}
 
+	if (ver1 > 2 || (ver1 == 2 && ver2 >= 7))
+	{
+		is >> numLogs;
+		logInfoVec.reserve(16);
+		for (int i = 0; i < numLogs; ++i)
+		{
+			is >> w;
+			is >> li;
+			logInfoVec.push_back(LogInfo(w, li));
+		}
+	}
+
+
 	int numSongValues;
 	is >> numSongValues;
 
@@ -106,8 +122,7 @@ bool MapHeader::Load(std::ifstream &is)
 		assert(0);
 	}
 
-	ver1 = part1Num;
-	ver2 = part2Num;
+	
 
 	is >> gameMode;
 	is >> envWorldType;
@@ -145,6 +160,12 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << numShards << "\n";
 	for (auto it = shardInfoVec.begin(); it != shardInfoVec.end(); ++it)
+	{
+		of << (*it).world << " " << (*it).localIndex << "\n";
+	}
+
+	of << numLogs << "\n";
+	for (auto it = logInfoVec.begin(); it != logInfoVec.end(); ++it)
 	{
 		of << (*it).world << " " << (*it).localIndex << "\n";
 	}

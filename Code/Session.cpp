@@ -239,6 +239,9 @@ void Session::RegisterGeneralEnemies()
 	AddExtraEnemy("shard", CreateEnemy<Shard>, SetParamsType<ShardParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1 );
 
+	AddExtraEnemy("log", CreateEnemy<LogItem>, SetParamsType<LogParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
+
 	AddExtraEnemy("poweritem", CreateEnemy<PowerItem>, SetParamsType<BasicAirEnemyParams>,
 		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 6);
 
@@ -7278,3 +7281,4 @@ void Session::RemoveBoss(Boss *b)
 {
 	activeBosses.remove(b);
 }
+

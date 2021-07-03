@@ -566,6 +566,15 @@ std::string ShardMenu::GetShardDesc(int w, int li)
 	return shardDesc[y][x];
 }
 
+std::string ShardMenu::GetShardName(int w, int li)
+{
+	int x = li % 11;//li + (w % 2) * 11;
+	int y = w * 2 + li / 11;
+
+
+	return shardNames[y][x];
+}
+
 void ShardMenu::StopMusic()
 {
 	if (currShardMusic != NULL)

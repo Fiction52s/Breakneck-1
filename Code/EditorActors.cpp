@@ -217,7 +217,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "glidetarget"
 		|| name == "freeflighttarget"
 		|| name == "bluecomboertarget"
-		|| name == "greencomboertarget")
+		|| name == "greencomboertarget"
+		|| name == "log")
 		//|| name == "yellowcomboertarget"
 		//|| name == "orangecomboertarget"
 		//|| name == "redcomboertarget"

@@ -109,6 +109,7 @@ struct ShardMenu
 	Session *sess;
 	int numShardsTotal;
 	std::string GetShardDesc(int w, int li);
+	std::string GetShardName(int w, int li);
 	sf::Vector2f imagePos;
 	void SetCurrSequence();
 	void SetupShardImages();

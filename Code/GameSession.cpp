@@ -878,6 +878,14 @@ void GameSession::UnlockUpgrade(int pType)
 	}
 }
 
+void GameSession::UnlockLog(int lType)
+{
+	if (saveFile != NULL)
+	{
+		saveFile->UnlockLog(lType);
+	}
+}
+
 void GameSession::UpdateEnemiesSprites()
 {
 	Actor *player = GetPlayer( 0 );
@@ -4895,8 +4903,14 @@ void GameSession::DecorDraw::Draw(sf::RenderTarget *target)
 	target->draw(quads,	numVertices, sf::Quads, ts->texture);
 }
 
-
-
+bool GameSession::HasLog(int logIndex)
+{
+	if (saveFile != NULL)
+	{
+		return saveFile->HasLog(logIndex);
+	}
+	return false;
+}
 
 //void GameSession::LoadEnemy(std::ifstream &is )
 //{

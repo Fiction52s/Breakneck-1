@@ -7,6 +7,8 @@
 #include "EditorGraph.h"
 #include "EditorRail.h"
 #include "Actor.h"
+#include "ShardMenu.h"
+#include "Enemy_Shard.h"
 
 using namespace std;
 using namespace sf;
@@ -22,6 +24,7 @@ EditModeUI::EditModeUI()
 	//grassTypePanel = edit->grassTypePanel;
 
 	shardTypePanel = edit->shardTypePanel;
+	logTypePanel = edit->matTypePanel;
 
 	mainPanel = new Panel("edit", /*1310*/1500, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
@@ -67,6 +70,7 @@ EditModeUI::EditModeUI()
 
 	matPanelPos = Vector2i(960 - matTypePanel->size.x / 2, 540 - matTypePanel->size.y / 2);
 	shardPanelPos = Vector2i(960 - shardTypePanel->size.x / 2, 540 - shardTypePanel->size.y / 2);
+	logPanelPos = Vector2i(960 - logTypePanel->size.x / 2, 540 - logTypePanel->size.y / 2);
 
 	Vector2f currTypeRectPos = Vector2f(0, 0);
 
@@ -110,28 +114,29 @@ EditModeUI::~EditModeUI()
 }
 
 
-void EditModeUI::AddKinOption(const std::string &text, const std::string &toolTipText, int upgradeIndex)
+void EditModeUI::AddKinOption( int world, const std::string &text, const std::string &toolTipText, int upgradeIndex)
 {
-	kinCheckboxes[upgradeIndex] = kinOptionsPanel->AddLabeledCheckBox(
+	kinCheckboxes[world][upgradeIndex] = kinOptionsPanel->AddLabeledCheckBox(
 		text, Vector2i(0, 0), text, edit->playerOptionsField.GetBit(upgradeIndex));
-	kinCheckboxes[upgradeIndex]->SetToolTip(toolTipText);
+	kinCheckboxes[world][upgradeIndex]->SetToolTip(toolTipText);
 }
 
-void EditModeUI::AddKinOptionSlider(const std::string &text,
+void EditModeUI::AddKinOptionSlider( int world, const std::string &text,
 	const std::string &toolTipText, int upgradeIndex, int maxQuant)
 {
-	kinSliders[upgradeIndex] = kinOptionsPanel->AddLabeledSlider(text, Vector2i(0, 0),
+	kinSliders[world][upgradeIndex] = kinOptionsPanel->AddLabeledSlider(text, Vector2i(0, 0),
 		text, 100, maxQuant);
-	kinSliders[upgradeIndex]->SetToolTip(toolTipText);
+	kinSliders[world][upgradeIndex]->SetToolTip(toolTipText);
+	kinSliders[world][upgradeIndex]->SetInnerDisplayMode(true);
 }
 
 void EditModeUI::CreateKinOptionsPanel()
 {
-	kinOptionsPanel = new Panel("kinoptions", 1900, 900, this, true);
+	kinOptionsPanel = new Panel("kinoptions", 1920, 1080, this, true);
 	kinOptionsPanel->SetPosition(Vector2i(960 - kinOptionsPanel->size.x / 2,
 		540 - kinOptionsPanel->size.y / 2 + 20));
 
-	int worldSpacing = 130;//250;
+	int vertSpacing = 40;//130;//250;
 	int inBetweenSpacing = 40;
 
 	int currVerticalSpacing = 10;
@@ -139,55 +144,139 @@ void EditModeUI::CreateKinOptionsPanel()
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	allOptionsCheckbox = kinOptionsPanel->AddLabeledCheckBox("all", Vector2i(0, 0),
 		"All Abilities:", false);
+	allWorldOptionsCheckBox[0] = kinOptionsPanel->AddLabeledCheckBox("all1", Vector2i(0, 0),
+		"All W1:", false);
+	allWorldOptionsCheckBox[1] = kinOptionsPanel->AddLabeledCheckBox("all2", Vector2i(0, 0),
+		"All W2:", false);
+	allWorldOptionsCheckBox[2] = kinOptionsPanel->AddLabeledCheckBox("all3", Vector2i(0, 0),
+		"All W3:", false);
+	allWorldOptionsCheckBox[3] = kinOptionsPanel->AddLabeledCheckBox("all4", Vector2i(0, 0),
+		"All W4:", false);
+	allWorldOptionsCheckBox[4] = kinOptionsPanel->AddLabeledCheckBox("all5", Vector2i(0, 0),
+		"All W5:", false);
+	allWorldOptionsCheckBox[5] = kinOptionsPanel->AddLabeledCheckBox("all6", Vector2i(0, 0),
+		"All W6:", false);
+	allWorldOptionsCheckBox[6] = kinOptionsPanel->AddLabeledCheckBox("all7", Vector2i(0, 0),
+		"All W7:", false);
 
-	currVerticalSpacing += worldSpacing;
+	currVerticalSpacing += vertSpacing;
 
 	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOption("Airdash:", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
-	AddKinOption("Gravity Cling: ", "Toggle Gravity Cling Power", Actor::UPGRADE_POWER_GRAV);
-	AddKinOption("Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
-	AddKinOption("Grind Wheel:", "Toggle Grind Power", Actor::UPGRADE_POWER_GRIND);
-	AddKinOption("Time Slow Bubble:", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
-	AddKinOption("Left Wire:", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
-	AddKinOption("Right Wire:", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
+	AddKinOption(0, "Airdash:", "Toggle Airdash Power", Actor::UPGRADE_POWER_AIRDASH);
+	AddKinOption(1, "Gravity Cling: ", "Toggle Gravity Cling Power", Actor::UPGRADE_POWER_GRAV);
+	AddKinOption(2, "Bounce Scorpion:", "Toggle Bounce Scorpion Power", Actor::UPGRADE_POWER_BOUNCE);
+	AddKinOption(3, "Grind Wheel:", "Toggle Grind Power", Actor::UPGRADE_POWER_GRIND);
+	AddKinOption(4, "Time Slow Bubble:", "Toggle Time Slow", Actor::UPGRADE_POWER_TIME);
+	AddKinOption(5, "Left Wire:", "Toggle Left Wire Power", Actor::UPGRADE_POWER_LWIRE);
+	AddKinOption(5, "Right Wire:", "Toggle Right Wire Power", Actor::UPGRADE_POWER_RWIRE);
 
-	currVerticalSpacing += worldSpacing;
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing, 10), Vector2i(0, 20));
-	AddKinOption("Dash Boost:", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
-	AddKinOption("Airdash Boost:", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
-	AddKinOption("WJ Restores Doublejump :", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
-	AddKinOption("WJ Restores Airdash:", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
-	//AddKinOptionSlider("Increased Base Dash speed:", "Increase base dash speed", Actor::UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
-	AddKinOptionSlider("Improve highspeed dash boost:", "increase dash boost performance at high speed", Actor::UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
-	//AddKinOptionSlider("Improve highspeed airdash boost:", "increase airdash boost performance at high speed", Actor::UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_1, 3);
+	//currVerticalSpacing += vertSpacing;//10;
 
-	currVerticalSpacing += worldSpacing;
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOptionSlider("Increase passive ceiling accel:", "increase passive accel on the ceiling", Actor::UPGRADE_W2_INCREASE_PASSIVE_CEILING_ACCEL_1, 3);
-	AddKinOptionSlider("Increase spring on ceiling accel:", "increase sprint accel on the ceiling", Actor::UPGRADE_W2_INCREASE_CEILING_SPRINT_ACCEL_1, 3);
+	int totalShards = Shard::GetNumShardsTotal();
+	int w, li;
+	string currName;
+	int currWorld = -1;
+	int upgradeIndex;
+	int numUpgradesPerLine = 3;
+	int numUpgradesCurrLine = 0;
+	for (int i = 0; i < totalShards; ++i)
+	{
+		w = i / 22;
+		li = i % 22;
 
-	currVerticalSpacing += worldSpacing;
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	//kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing * 3, 10), Vector2i(0, 20));
-	//AddKinOptionSlider("Max speed increase:", "increases max speed", Actor::UPGRADE_W3_MAX_SPEED_1, 8);
-	AddKinOptionSlider("Increaed passive ground accel:", "Change increased passive ground accel", Actor::UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
-	AddKinOptionSlider("Increaed sprint accel:", "Change increased sprint accel", Actor::UPGRADE_W3_INCREASE_SPRINT_ACCEL_1, 3);
+		if (w > currWorld)
+		{
+			currWorld = w;
+			numUpgradesCurrLine = 0;
+			currVerticalSpacing += vertSpacing;
+			kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, 
+				currVerticalSpacing), 
+				Vector2i(inBetweenSpacing, 0));
+		}
+		else if( numUpgradesCurrLine == numUpgradesPerLine )
+		{
+			currVerticalSpacing += vertSpacing;
+			kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10,
+				currVerticalSpacing),
+				Vector2i(inBetweenSpacing, 0));
+			numUpgradesCurrLine = 0;
+		}
 
 	
-	//AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
-	//AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
-	//AddKinOption("WJ Restores Doublejump : ", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
-	//AddKinOption("WJ Restores Airdash: ", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+		currName = edit->shardMenu->GetShardName(w, li);
+		upgradeIndex = i + (Actor::UPGRADE_POWER_LWIRE + 1);
 
-	currVerticalSpacing += worldSpacing;
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
-	AddKinOptionSlider("Extra timeslow bubbles:", "increases number of timeslow bubbles", Actor::UPGRADE_W5_MAX_BUBBLES_1, 4);
-	AddKinOption("Infinite Airdash within bubbles:", "Toggle infinite airdash within bubbles", Actor::UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES);
-	AddKinOption("Infinite doublejump within bubbles:", "Toggle infinitely refreshing doublejump within bubbles", Actor::UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES);
+		if (currName == "")
+		{
+			continue;
+		}
+		//multiple shard
+		if (currName.at(currName.size() - 2) == '/')
+		{
+			int numberOfUpgrades = currName.at(currName.size() - 1) - '0';
 
-	currVerticalSpacing += worldSpacing;
-	kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+			string modifiedName = currName.substr(0, currName.size() - 4);
+
+			modifiedName += ":";
+
+			AddKinOptionSlider(w, modifiedName,
+				edit->shardMenu->GetShardDesc(w, li),
+				upgradeIndex, numberOfUpgrades);
+			i += (numberOfUpgrades - 1);
+		}
+		else
+		{
+			string modifiedName = currName + ":";
+
+			AddKinOption(w, modifiedName,
+				edit->shardMenu->GetShardDesc( w, li ), upgradeIndex );
+		}
+
+		++numUpgradesCurrLine;
+	}
+	
+	
+	
+
+	
+
+	//currVerticalSpacing += worldSpacing;
+	//kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	////kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing, 10), Vector2i(0, 20));
+	//AddKinOption("Dash Boost:", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
+	//AddKinOption("Airdash Boost:", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
+	//AddKinOption("WJ Restores Doublejump :", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
+	//AddKinOption("WJ Restores Airdash:", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+	////AddKinOptionSlider("Increased Base Dash speed:", "Increase base dash speed", Actor::UPGRADE_W1_INCREASE_BASE_DASH_1, 3);
+	//AddKinOptionSlider("Improve highspeed dash boost:", "increase dash boost performance at high speed", Actor::UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1, 3);
+	////AddKinOptionSlider("Improve highspeed airdash boost:", "increase airdash boost performance at high speed", Actor::UPGRADE_W1_AIRDASH_BOOST_HIGH_SPEED_1, 3);
+
+	//currVerticalSpacing += worldSpacing;
+	//kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	//AddKinOptionSlider("Increase passive ceiling accel:", "increase passive accel on the ceiling", Actor::UPGRADE_W2_INCREASE_PASSIVE_CEILING_ACCEL_1, 3);
+	//AddKinOptionSlider("Increase spring on ceiling accel:", "increase sprint accel on the ceiling", Actor::UPGRADE_W2_INCREASE_CEILING_SPRINT_ACCEL_1, 3);
+
+	//currVerticalSpacing += worldSpacing;
+	//kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	////kinOptionsPanel->SetAutoSpacing(false, true, Vector2i(10 + worldSpacing * 3, 10), Vector2i(0, 20));
+	////AddKinOptionSlider("Max speed increase:", "increases max speed", Actor::UPGRADE_W3_MAX_SPEED_1, 8);
+	//AddKinOptionSlider("Increaed passive ground accel:", "Change increased passive ground accel", Actor::UPGRADE_W3_INCREASE_PASSIVE_GROUND_ACCEL_1, 3);
+	//AddKinOptionSlider("Increaed sprint accel:", "Change increased sprint accel", Actor::UPGRADE_W3_INCREASE_SPRINT_ACCEL_1, 3);
+
+	//
+	////AddKinOption("Dash Boost: ", "Toggle Dash Boost", Actor::UPGRADE_W1_DASH_BOOST);
+	////AddKinOption("Airdash Boost: ", "Toggle Airdash Boost", Actor::UPGRADE_W1_AIRDASH_BOOST);
+	////AddKinOption("WJ Restores Doublejump : ", "Toggle walljump restoring doublejump", Actor::UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP);
+	////AddKinOption("WJ Restores Airdash: ", "Toggle walljump restoring airdash", Actor::UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH);
+
+	//currVerticalSpacing += worldSpacing;
+	//kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
+	//AddKinOptionSlider("Extra timeslow bubbles:", "increases number of timeslow bubbles", Actor::UPGRADE_W5_MAX_BUBBLES_1, 4);
+	//AddKinOption("Infinite Airdash within bubbles:", "Toggle infinite airdash within bubbles", Actor::UPGRADE_W5_INFINITE_AIRDASH_WITHIN_BUBBLES);
+	//AddKinOption("Infinite doublejump within bubbles:", "Toggle infinitely refreshing doublejump within bubbles", Actor::UPGRADE_W5_INFINITE_DOUBLEJUMP_WITHIN_BUBBLES);
+
+	//currVerticalSpacing += worldSpacing;
+	//kinOptionsPanel->SetAutoSpacing(true, false, Vector2i(10, currVerticalSpacing), Vector2i(inBetweenSpacing, 0));
 	//AddKinOption("Wire enemies:", "Allows wire to attach to enemies", Actor::UPGRADE_W6_WIRE_ENEMIES);
 }
 
@@ -246,6 +335,21 @@ void EditModeUI::ExpandShardLibrary()
 		shardTypePanel->handler = this;
 
 		edit->AddActivePanel(shardTypePanel);
+	}
+}
+
+void EditModeUI::ExpandLogLibrary()
+{
+	if (logTypePanel == edit->focusedPanel)
+	{
+		edit->RemoveActivePanel(logTypePanel);
+	}
+	else
+	{
+		logTypePanel->SetPosition(logPanelPos);
+		logTypePanel->handler = this;
+
+		edit->AddActivePanel(logTypePanel);
 	}
 }
 
@@ -537,27 +641,30 @@ void EditModeUI::SaveKinOptions()
 {
 	for (int i = 0; i < Actor::UPGRADE_Count; ++i)
 	{
-		if (kinCheckboxes[i] != NULL)
+		for (int w = 0; w < 7; ++w)
 		{
-			edit->playerOptionsField.SetBit( i, kinCheckboxes[i]->checked);
-		}
-		else if (kinSliders[i] != NULL)
-		{
-			Slider *currSlider = kinSliders[i];
-			int sliderVal = currSlider->GetCurrValue();
-			int maxVal = currSlider->maxValue;
-			for (int j = 0; j < maxVal; ++j)
+			if (kinCheckboxes[w].count( i ) > 0)
 			{
-				if (sliderVal > j)
-				{
-					edit->playerOptionsField.SetBit(i + j, true);
-				}
-				else
-				{
-					edit->playerOptionsField.SetBit(i + j, false);
-				}
+				edit->playerOptionsField.SetBit(i, kinCheckboxes[w][i]->checked);
 			}
-			
+			else if (kinSliders[w].count( i ) > 0 )
+			{
+				Slider *currSlider = kinSliders[w][i];
+				int sliderVal = currSlider->GetCurrValue();
+				int maxVal = currSlider->maxValue;
+				for (int j = 0; j < maxVal; ++j)
+				{
+					if (sliderVal > j)
+					{
+						edit->playerOptionsField.SetBit(i + j, true);
+					}
+					else
+					{
+						edit->playerOptionsField.SetBit(i + j, false);
+					}
+				}
+
+			}
 		}
 
 	}
@@ -565,32 +672,43 @@ void EditModeUI::SaveKinOptions()
 
 void EditModeUI::LoadKinOptions()
 {
-	for (auto it = kinCheckboxes.begin(); it != kinCheckboxes.end(); ++it)
+	for (int w = 0; w < 7; ++w)
 	{
-		if ((*it).second != NULL)
+		for (auto it = kinCheckboxes[w].begin(); it != kinCheckboxes[w].end(); ++it)
 		{
-			(*it).second->checked = edit->playerOptionsField.GetBit((*it).first);
+			if ((*it).second != NULL)
+			{
+				(*it).second->checked = edit->playerOptionsField.GetBit((*it).first);
+			}
 		}
 	}
+	
 
 	int currNumOn = 0;
 	int currMax;
-	for (auto it = kinSliders.begin(); it != kinSliders.end(); ++it)
+
+	for (int w = 0; w < 7; ++w)
 	{
-		if ((*it).second != NULL)
+		for (auto it = kinSliders[w].begin(); it != kinSliders[w].end(); ++it)
 		{
-			currNumOn = 0;
-			currMax = (*it).second->maxValue;
-			for (int i = 0; i < currMax; ++i)
+			if ((*it).second != NULL)
 			{
-				if (edit->playerOptionsField.GetBit((*it).first + i))
+				currNumOn = 0;
+				currMax = (*it).second->maxValue;
+				for (int i = 0; i < currMax; ++i)
 				{
-					currNumOn++;
+					if (edit->playerOptionsField.GetBit((*it).first + i))
+					{
+						currNumOn++;
+					}
 				}
+				(*it).second->SetCurrValue(currNumOn);
 			}
-			(*it).second->SetCurrValue(currNumOn);
 		}
+
+		UpdateAllAbilitiesPerWorldCheckboxes(w);
 	}
+
 
 	UpdateAllAbilitiesCheckbox();
 }
@@ -787,27 +905,88 @@ void EditModeUI::CheckBoxCallback(CheckBox *cb, const std::string & e)
 	{
 		if (cb == allOptionsCheckbox)
 		{
-			for (auto it = kinCheckboxes.begin(); it != kinCheckboxes.end(); ++it)
+			for (int w = 0; w < 7; ++w)
 			{
-				(*it).second->checked = isChecked;
+				for (auto it = kinCheckboxes[w].begin(); it != kinCheckboxes[w].end(); ++it)
+				{
+					if ((*it).second != NULL)
+					{
+						(*it).second->checked = isChecked;
+					}
+				}
+				for (auto it = kinSliders[w].begin(); it != kinSliders[w].end(); ++it)
+				{
+					if ((*it).second != NULL)
+					{
+						if (isChecked)
+						{
+							(*it).second->SetCurrValue((*it).second->maxValue);
+						}
+						else
+						{
+							(*it).second->SetCurrValue((*it).second->minValue);
+						}
+					}
+				}
 			}
-			for (auto it = kinSliders.begin(); it != kinSliders.end(); ++it)
+
+			for (int i = 0; i < 7; ++i)
 			{
-				if (isChecked)
-				{
-					(*it).second->SetCurrValue((*it).second->maxValue);
-				}
-				else
-				{
-					(*it).second->SetCurrValue((*it).second->minValue);
-				}
+				UpdateAllAbilitiesPerWorldCheckboxes(i);
 			}
 		}
 		else
 		{
+			int foundIndex = -1;
+
+			for (int w = 0; w < 7; ++w)
+			{
+				if (cb == allWorldOptionsCheckBox[w])
+				{
+					foundIndex = w;
+					for (auto it = kinCheckboxes[w].begin(); it != kinCheckboxes[w].end(); ++it)
+					{
+						if ((*it).second != NULL)
+						{
+							(*it).second->checked = isChecked;
+						}
+						
+					}
+					for (auto it = kinSliders[w].begin(); it != kinSliders[w].end(); ++it)
+					{
+						if ((*it).second != NULL)
+						{
+							if (isChecked)
+							{
+								(*it).second->SetCurrValue((*it).second->maxValue);
+							}
+							else
+							{
+								(*it).second->SetCurrValue((*it).second->minValue);
+							}
+						}
+					}
+					break;
+				}
+			}
+
+			
+			for (int i = 0; i < 7; ++i)
+			{
+				if (i == foundIndex)
+				{
+					continue;
+				}
+				UpdateAllAbilitiesPerWorldCheckboxes(i);
+			}
+
 			UpdateAllAbilitiesCheckbox();
 		}
 	}
+
+	
+
+	
 	/*if (currParams != NULL)
 	{
 		currParams->CheckBoxCallback(cb, e);
@@ -822,10 +1001,59 @@ void EditModeUI::UpdateAllAbilitiesCheckbox()
 		if (!edit->playerOptionsField.GetBit(i))
 		{
 			allChecked = false;
+			break;
 		}
 	}
 
 	allOptionsCheckbox->checked = allChecked;
+
+	if (allChecked)
+	{
+		for (int w = 0; w < 7; ++w)
+		{
+			allWorldOptionsCheckBox[w]->checked = true;
+		}
+	}
+}
+
+void EditModeUI::UpdateAllAbilitiesPerWorldCheckboxes( int w)
+{
+	bool allChecked = true;
+	int shardIndex;
+
+	for (auto it = kinCheckboxes[w].begin(); it != kinCheckboxes[w].end(); ++it)
+	{
+		if ((*it).second != NULL)
+		{
+			if (!edit->playerOptionsField.GetBit((*it).first))
+			{
+				allChecked = false;
+				break;
+			}
+		}
+	}
+	for (auto it = kinSliders[w].begin(); it != kinSliders[w].end(); ++it)
+	{
+		if ((*it).second != NULL)
+		{
+			int maxVal = (*it).second->maxValue;
+			for (int i = 0; i < maxVal; ++i)
+			{
+				if (!edit->playerOptionsField.GetBit((*it).first + i))
+				{
+					allChecked = false;
+					break;
+				}
+			}
+
+			if (!allChecked)
+			{
+				break;
+			}
+		}
+	}
+
+	allWorldOptionsCheckBox[w]->checked = allChecked;
 }
 
 void EditModeUI::SliderCallback(Slider *slider)

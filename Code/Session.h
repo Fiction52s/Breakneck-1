@@ -818,6 +818,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RemoveBoss( Boss *b );
 	void SetupShardMenu();
 	void CleanupShardMenu();
+	virtual bool HasLog(int logIndex) { return false; }
 };
 
 #endif

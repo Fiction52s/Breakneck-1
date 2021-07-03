@@ -1791,6 +1791,7 @@ EditSession::~EditSession()
 
 	delete matTypePanel;
 	delete shardTypePanel;
+	delete logTypePanel;
 	delete nameBrushPanel;
 	delete newMapPanel;
 
@@ -2330,9 +2331,10 @@ void EditSession::ProcessHeader()
 void EditSession::WriteMapHeader(ofstream &of)
 {
 	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 6;
+	mapHeader->ver2 = 7;
 
 	ShardParams *sp = NULL;
+	LogParams *lp = NULL;
 
 	auto &shardVec = mapHeader->shardInfoVec;
 	shardVec.reserve(16);//unlikely to be more than 16 types
@@ -2366,6 +2368,42 @@ void EditSession::WriteMapHeader(ofstream &of)
 	}
 
 	mapHeader->numShards = shardVec.size();
+
+
+	auto &logVec = mapHeader->logInfoVec;
+	logVec.reserve(16);//unlikely to be more than 16 types
+	logVec.clear();
+	bool foundLog;
+	for (auto it = groups.begin(); it != groups.end(); ++it)
+	{
+		std::list<ActorPtr> &aList = (*it).second->actors;
+		for (auto ait = aList.begin(); ait != aList.end(); ++ait)
+		{
+			if ((*ait)->type->info.name == "log")
+			{
+				lp = (LogParams*)(*ait);
+				foundLog = false;
+				for (auto sit = logVec.begin(); sit != logVec.end(); ++sit)
+				{
+					if ((*sit).world == lp->lInfo.world
+						&& (*sit).localIndex == lp->lInfo.localIndex)
+					{
+						foundLog = true;
+						break;
+					}
+				}
+
+				if (!foundLog)
+				{
+					logVec.push_back(lp->lInfo);
+				}
+			}
+		}
+	}
+
+	mapHeader->numLogs = logVec.size();
+
+
 	mapHeader->Save(of);
 }
 
@@ -3408,6 +3446,62 @@ void EditSession::SetupShardSelectPanel()
 	}
 }
 
+void EditSession::SetupLogSelectPanel()
+{
+	/*shardNumX = 11;
+	shardNumY = 2;
+
+	shardGridSize = 64;*/
+
+	logTypePanel = new Panel("logtype", 600, 800, this, true);
+	Color c(100, 100, 100);
+	c.a = 180;
+	logTypePanel->SetColor(c);
+
+	/*int numWorlds = 7;
+	for (int i = 0; i < numWorlds; ++i)
+	{
+		ts_shards[i] = Shard::GetShardTileset(i, this);
+	}
+
+	int totalShards = shardNumX * shardNumY * 7;
+
+	Tileset *ts_currShards;
+	int sInd = 0;
+
+	shardTypePanel->ReserveImageRects(totalShards);
+	shardTypeRects.resize(totalShards);
+
+	for (int w = 0; w < numWorlds; ++w)
+	{
+		ts_currShards = ts_shards[w];
+		if (ts_currShards == NULL)
+			continue;
+
+		for (int y = 0; y < shardNumY; ++y)
+		{
+			for (int x = 0; x < shardNumX; ++x)
+			{
+				sInd = y * shardNumX + x;
+				int shardT = (sInd + (shardNumX * shardNumY) * w);
+				if (shardT >= Shard::GetNumShardsTotal())
+				{
+					shardTypeRects[shardT] = NULL;
+				}
+				else
+				{
+					shardTypeRects[shardT] =
+						shardTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_SHARDLIBRARY,
+							Vector2f(x * shardGridSize, y * shardGridSize + w * 2 * shardGridSize),
+							ts_currShards, sInd, shardGridSize);
+					shardTypeRects[shardT]->Init();
+					shardTypeRects[shardT]->SetShown(true);
+				}
+			}
+		}
+	}*/
+}
+
 void EditSession::SetupNewMapPanel()
 {
 	newMapPanel = new Panel("newmap", 500, 500, this, true);
@@ -3527,6 +3621,7 @@ void EditSession::Init()
 	SetupGGPOStatsPanel();
 	SetupTerrainSelectPanel();
 	SetupShardSelectPanel();
+	SetupLogSelectPanel();
 	SetupBrushPanels();
 	SetupNewMapPanel();
 
@@ -13071,6 +13166,10 @@ void EditSession::EditModeHandleEvent()
 				else if (a->type->info.name == "shard")
 				{
 					editModeUI->ExpandShardLibrary();
+				}
+				else if (a->type->info.name == "log")
+				{
+					editModeUI->ExpandLogLibrary();
 				}
 			}
 			

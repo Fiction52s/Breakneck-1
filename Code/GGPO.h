@@ -173,6 +173,7 @@ struct PState
 	bool hasDoubleJump;
 	int framesInAir;
 	bool hasAirDash;
+	int numRemainingExtraAirdashBoosts;
 	double storedGroundSpeed;
 	int currBBoostCounter;
 	int currAirdashBoostCounter;

@@ -525,6 +525,7 @@ struct GameSession : RayCastHandler, Session
 	void UpdateTimeSlowShader();
 	void UpdateEnvShaders();
 	void UnlockUpgrade(int pType);
+	void UnlockLog(int lType);
 	void UpdateExplodingGravityGrass();
 	void AddGravityGrassToExplodeList(Grass *g);
 	void RemoveGravityGrassFromExplodeList(Grass *g);
@@ -574,5 +575,7 @@ struct GameSession : RayCastHandler, Session
 
 	void SetupPauseMenu();
 	void CleanupPauseMenu();
+
+	bool HasLog(int logIndex);
 };
 #endif

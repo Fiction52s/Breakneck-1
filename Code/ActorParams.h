@@ -8,6 +8,7 @@
 //#include "EditorTerrain.h"
 #include "ActorParamsBase.h"
 #include "ShardInfo.h"
+#include "LogInfo.h"
 
 
 struct TerrainPolygon;
@@ -301,7 +302,30 @@ struct ShardParams : public ActorParams
 	ShardInfo shInfo;
 	int sX;
 	int sY;
-	std::string shardStr;
+
+	sf::Text nameText;
+	/*std::string name;
+	static sf::Font *font;
+	sf::Text nameText;*/
+};
+
+struct LogParams : public ActorParams
+{
+	LogParams(ActorType *at, int level);
+	LogParams(ActorType *at,
+		std::ifstream &is);
+	void WriteParamFile(std::ofstream &of);
+
+	void SetLog(int world, int realX, int realY);
+	void SetLog(int world, int li);
+	void SetParams();
+	void SetPanelInfo();
+	int GetTotalIndex();
+	ActorParams *Copy();
+	void Draw(sf::RenderTarget *target);
+	int sX;
+	int sY;
+	LogInfo lInfo;
 
 	sf::Text nameText;
 	/*std::string name;

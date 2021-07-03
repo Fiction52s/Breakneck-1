@@ -579,11 +579,12 @@ void LevelScore::Load(ifstream &is)
 }
 
 SaveFile::SaveFile(const std::string &p_name, AdventureFile *p_adventure)
-	:levelsBeatenField( 512 ), 
-	shardField(ShardInfo::MAX_SHARDS), 
+	:levelsBeatenField(512),
+	shardField(ShardInfo::MAX_SHARDS),
 	newShardField(ShardInfo::MAX_SHARDS),
 	upgradeField(Session::PLAYER_OPTION_BIT_COUNT),
-	momentaField(256),
+	upgradesTurnedOnField(Session::PLAYER_OPTION_BIT_COUNT),
+	logField(256),
 	levelsJustBeatenField( 512 ),
 	adventureFile( p_adventure ),
 	name( p_name ),
@@ -983,6 +984,16 @@ void SaveFile::UnlockUpgrade(int pow)
 	upgradeField.SetBit(pow, true);
 }
 
+bool SaveFile::HasLog(int lType)
+{
+	return logField.GetBit(lType);
+}
+
+void SaveFile::UnlockLog(int lType)
+{
+	logField.SetBit(lType, true);
+}
+
 bool SaveFile::ShardIsCaptured(int sType)
 {
 	return shardField.GetBit(sType);
@@ -1024,7 +1035,8 @@ bool SaveFile::LoadInfo(ifstream &is)
 		}
 		
 		upgradeField.Load(is);
-		momentaField.Load(is);
+		upgradesTurnedOnField.Load(is);
+		logField.Load(is);
 		shardField.Load(is);
 		newShardField.Load(is);
 
@@ -1129,7 +1141,8 @@ void SaveFile::Save()
 		}
 
 		upgradeField.Save(of);
-		momentaField.Save(of);
+		upgradesTurnedOnField.Save(of);
+		logField.Save(of);
 		shardField.Save(of);
 		newShardField.Save(of);
 
@@ -1158,7 +1171,8 @@ void SaveFile::CopyTo(SaveFile *saveFile)
 		saveFile->levelScores[i] = levelScores[i];
 	}
 	saveFile->upgradeField.Set(saveFile->upgradeField);
-	saveFile->momentaField.Set(saveFile->momentaField);
+	saveFile->upgradesTurnedOnField.Set(saveFile->upgradesTurnedOnField);
+	saveFile->logField.Set(saveFile->logField);
 	saveFile->shardField.Set(saveFile->shardField);
 	saveFile->newShardField.Set(saveFile->newShardField);
 	saveFile->defaultSkinIndex = defaultSkinIndex;
@@ -1177,7 +1191,8 @@ void SaveFile::SetAsDefault()
 	}
 
 	upgradeField.Reset();
-	momentaField.Reset();
+	upgradesTurnedOnField.Reset();
+	logField.Reset();
 	shardField.Reset();
 	newShardField.Reset();
 

@@ -740,6 +740,7 @@ struct Actor : QuadTreeCollider,
 	int framesInAir;
 	CollisionBox b;
 	bool hasAirDash;
+	int numRemainingExtraAirdashBoosts;
 	int speedLevel; //0,1,2
 	double currentSpeedBar;
 	double storedGroundSpeed;
@@ -1093,8 +1094,6 @@ struct Actor : QuadTreeCollider,
 	
 	bool scorpSet;
 
-
-	
 
 	Session *sess;
 	GravityModifier *currGravModifier;
@@ -1458,6 +1457,7 @@ struct Actor : QuadTreeCollider,
 	void HandleGroundTrigger(GroundTrigger *trigger);
 	void CheckForAirTrigger();
 	void HandleAirTrigger();
+	void BounceFloaterBoost( V2d &hitDir );
 	void UpdateCanStandUp();
 	void UpdateBounceFlameOn();
 	void ProcessBooster();
@@ -1598,6 +1598,8 @@ struct Actor : QuadTreeCollider,
 	bool CheckStandUp();
 	void TryDashBoost();
 	void TryAirdashBoost();
+	void TryExtraAirdashBoost();
+	void ActivateAirdashBoost();
 	void CheckBounceFlame();
 	bool BasicAirAction();
 	bool GlideAction();

@@ -26,6 +26,22 @@ void Actor::FAIR_End()
 
 void Actor::FAIR_Change()
 {
+	if (bouncedFromKill)
+	{
+		SetAction(BOUNCEAIR);
+		if (facingRight)
+		{
+			BounceFloaterBoost(V2d(1, 0));
+			facingRight = false;
+		}
+		else
+		{
+			BounceFloaterBoost(V2d(-1, 0));
+			facingRight = true;
+		}
+		
+	}
+
 	BasicAirAttackAction();
 }
 

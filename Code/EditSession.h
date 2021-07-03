@@ -237,6 +237,7 @@ struct EditSession : GUIHandler, Session
 	int shardGridSize;
 	int shardNumX;
 	int shardNumY;
+	Panel *logTypePanel;
 	std::vector<ImageChooseRect*> shardTypeRects;
 	Panel *nameBrushPanel;
 	//allpolygons should hold all the lists but
@@ -601,6 +602,7 @@ struct EditSession : GUIHandler, Session
 	void SetupTerrainSelectPanel();
 	void SetCurrSelectedShardType(int w, int li);
 	void SetupShardSelectPanel();
+	void SetupLogSelectPanel();
 	void SetupBrushPanels();
 	void EditModeDelete();
 	void EditModeTransform();

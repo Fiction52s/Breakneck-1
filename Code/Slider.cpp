@@ -18,10 +18,13 @@ Slider::Slider(const std::string &n, sf::Vector2i &p_pos, int width, sf::Font &f
 	size.x = width;
 	circleRad = 13;
 	currValue = defaultValue;
+	innerDisplayMode = false;
 
 	displayText.setFont(f);
 	displayText.setCharacterSize(characterHeight);
 	displayText.setFillColor(Color::White);
+	displayText.setOutlineThickness(2);
+	displayText.setOutlineColor(Color::Black);
 
 	SetRectColor(displayRect, Color(Color::Black));
 
@@ -41,6 +44,12 @@ void Slider::SetFloatMode(float p_min, float p_step)
 	floatSlider = true;
 	step = p_step;
 	minDec = p_min;
+	SetCurrValue(currValue);
+}
+
+void Slider::SetInnerDisplayMode(bool on)
+{
+	innerDisplayMode = on;
 	SetCurrValue(currValue);
 }
 
@@ -75,7 +84,15 @@ void Slider::SetToFactor(float factor)
 	auto textBounds = displayText.getLocalBounds();
 	displayText.setOrigin(textBounds.left + textBounds.width / 2,
 		textBounds.top + textBounds.height / 2);
-	displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	//displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	if (innerDisplayMode)
+	{
+		displayText.setPosition(Vector2f(currX, pos.y + textBounds.height / 2));
+	}
+	else
+	{
+		displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	}
 	SetRectCenter(displayRect, textBounds.width + 10, textBounds.height + 10, Vector2f(displayText.getPosition()));
 	SetCircle(currX);
 }
@@ -149,7 +166,15 @@ void Slider::SetCurrValue(int v)
 	auto textBounds = displayText.getLocalBounds();
 	displayText.setOrigin(textBounds.left + textBounds.width / 2,
 		textBounds.top + textBounds.height / 2);
-	displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	if (innerDisplayMode)
+	{
+		displayText.setPosition(Vector2f(currX, pos.y + textBounds.height / 2));
+	}
+	else
+	{
+		displayText.setPosition(Vector2f(currX, pos.y - textBounds.height / 2 - 10));
+	}
+	
 	SetRectCenter(displayRect, textBounds.width + 10, textBounds.height + 10, Vector2f(displayText.getPosition()));
 	SetCircle(currX);
 }
@@ -206,6 +231,10 @@ void Slider::Draw(sf::RenderTarget *target)
 	target->draw(mainRect, 4, sf::Quads);
 	target->draw(underRect, 4, sf::Quads);
 	target->draw(selectCircle);
-	target->draw(displayRect, 4, sf::Quads);
+	if (!innerDisplayMode)
+	{
+		target->draw(displayRect, 4, sf::Quads);
+	}
+	
 	target->draw(displayText);
 }

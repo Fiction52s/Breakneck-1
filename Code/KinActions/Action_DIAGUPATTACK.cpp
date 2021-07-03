@@ -18,6 +18,19 @@ void Actor::DIAGUPATTACK_End()
 
 void Actor::DIAGUPATTACK_Change()
 {
+	if (bouncedFromKill)
+	{
+		SetAction(BOUNCEAIR);
+		if (facingRight)
+		{
+			BounceFloaterBoost(normalize(V2d(1, -1)));
+		}
+		else
+		{
+			BounceFloaterBoost(normalize(V2d(-1, -1)));
+		}
+	}
+
 	BasicAirAttackAction();
 }
 

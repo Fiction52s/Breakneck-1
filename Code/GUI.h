@@ -418,7 +418,9 @@ struct Slider : PanelMember
 		Panel *panel);
 	void SetFloatMode(
 		float minDec, float step);
+	void SetInnerDisplayMode(bool on);
 
+	bool innerDisplayMode;
 	bool floatSlider;
 	float minDec;
 	float step;
@@ -864,11 +866,11 @@ struct EditModeUI : GUIHandler
 	void SaveKinOptions();
 	void LoadKinOptions();
 	void CreateKinOptionsPanel();
-	void AddKinOption(
+	void AddKinOption( int world,
 		const std::string &text, 
 		const std::string &toolTipText,
 		int upgradeIndex);
-	void AddKinOptionSlider(
+	void AddKinOptionSlider( int world,
 		const std::string &text,
 		const std::string &toolTipText,
 		int upgradeIndex,
@@ -895,12 +897,13 @@ struct EditModeUI : GUIHandler
 
 	void ToggleKinOptionsPanel();
 	void UpdateAllAbilitiesCheckbox();
+	void UpdateAllAbilitiesPerWorldCheckboxes( int w );
 	Panel *kinOptionsPanel;
 
 	CheckBox *allOptionsCheckbox;
 	CheckBox *allWorldOptionsCheckBox[7];
-	std::map<int,CheckBox*> kinCheckboxes;
-	std::map<int,Slider*> kinSliders;
+	std::map<int, CheckBox*> kinCheckboxes[7];
+	std::map<int,Slider*> kinSliders[7];
 
 	void SetShown(bool s);
 	bool IsGridOn();
@@ -915,6 +918,7 @@ struct EditModeUI : GUIHandler
 	void SetGridSize(int gs);
 	void ExpandTerrainLibrary(int layer);
 	void ExpandShardLibrary();
+	void ExpandLogLibrary();
 	void ExpandGrassLibrary();
 	void ChooseMatType(ImageChooseRect *icRect);
 	void ButtonCallback(Button *b, const std::string & e);
@@ -943,9 +947,11 @@ struct EditModeUI : GUIHandler
 	Panel *matTypePanel;
 	//Panel *grassTypePanel;
 	Panel *shardTypePanel;
+	Panel *logTypePanel;
 	//std::vector<ImageChooseRect*> *matTypeRects;
 	sf::Vector2i matPanelPos;
 	sf::Vector2i shardPanelPos;
+	sf::Vector2i logPanelPos;
 
 	std::map<int, std::string> layerMap;
 	std::map<std::string, int> reverseLayerMap;

@@ -168,6 +168,7 @@ void Actor::PopulateState(PState *ps)
 	ps->byoffset = b.offset.y;
 	ps->bpos = b.globalPosition;
 	ps->hasAirDash = hasAirDash;//true;//
+	ps->numRemainingExtraAirdashBoosts = numRemainingExtraAirdashBoosts;
 	ps->storedGroundSpeed = storedGroundSpeed;
 	ps->currBBoostCounter = currBBoostCounter;
 	ps->currAirdashBoostCounter = currAirdashBoostCounter;
@@ -397,6 +398,7 @@ void Actor::PopulateFromState(PState *ps)
 	b.offset.y = ps->byoffset;
 	b.globalPosition = ps->bpos;
 	hasAirDash = ps->hasAirDash;
+	numRemainingExtraAirdashBoosts = ps->numRemainingExtraAirdashBoosts;
 	storedGroundSpeed = ps->storedGroundSpeed;
 	currBBoostCounter = ps->currBBoostCounter;
 	currAirdashBoostCounter = ps->currAirdashBoostCounter;
@@ -2889,6 +2891,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hitGrassHitInfo.knockback = 0;
 	hitGrassHitInfo.gravMultiplier = 0.0;
 	
+	hasWallJumpRechargeDoubleJump = false;
+	hasWallJumpRechargeAirDash = false;
+	numRemainingExtraAirdashBoosts = 0;
+
 	grindLimitBeforeSlow = 120;
 	
 	action = -1;
@@ -9879,6 +9885,7 @@ bool Actor::BasicAirAction()
 
 	if (TryAirDash()) return true;
 
+	TryExtraAirdashBoost();
 	//if (TryGlide()) return true;
 
 	if (TryWallJump()) return true;
@@ -10106,38 +10113,94 @@ void Actor::TryAirdashBoost()
 		(currInput.LLeft() || currInput.LUp()
 			|| currInput.LRight() || currInput.LDown()))
 	{
-		double dashFactor = 1.85;//1.5;
-		double bboostSpeed = GetDashSpeed() * dashFactor;
-		double velLen = length(velocity);
-		double highSpeedBoost = 5;
-		V2d velDir = normalize(velocity);
-		if (velLen < bboostSpeed)
-		{
-			if (velDir.y < 0)
-			{
-				velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
-			}
-			else if (velDir.y > 0)
-			{
-				velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed);
-			}
-			else
-			{
-				velocity = velDir * bboostSpeed;
-			}
+		ActivateAirdashBoost();
+	}
+}
 
+void Actor::TryExtraAirdashBoost()
+{
+	/*if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	{
+		return;
+	}*/
+
+	if (DashButtonPressed() && action != AIRDASH && !hasAirDash && numRemainingExtraAirdashBoosts > 0)
+	{
+		numRemainingExtraAirdashBoosts--;
+
+		double aSpeed = GetAirDashSpeed();
+		V2d dir = currInput.GetLeft8Dir();
+
+		if (dir.x > 0)
+		{
+			velocity.x = max(velocity.x, aSpeed);
+		}
+		else if (dir.x < 0)
+		{
+			velocity.x = min(velocity.x, -aSpeed);
 		}
 		else
 		{
-			velocity = velDir * (velLen + highSpeedBoost);
+			velocity.x = 0;
+		}
+		if (dir.y > 0)
+		{
+			velocity.y = max(velocity.y, aSpeed);
+		}
+		else if (dir.y < 0)
+		{
+			velocity.y = min(velocity.y, -aSpeed);
+		}
+		else
+		{
+			velocity.y = 0;
 		}
 
-		double ang = GetVectorAngleCW(velDir);// / PI * 180.0;
-
-		BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			ts_fx_dashBoost, position, false, ang, 5, 4, true, 1);
-		be->sprite.setScale(1, 4);
+		if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+		else if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		ActivateAirdashBoost();
 	}
+}
+
+void Actor::ActivateAirdashBoost()
+{
+	double dashFactor = 1.85;//1.5;
+	double bboostSpeed = GetAirDashSpeed() * dashFactor;
+	double velLen = length(velocity);
+	double highSpeedBoost = 5;
+	V2d velDir = normalize(velocity);
+	if (velLen < bboostSpeed)
+	{
+		if (velDir.y < 0)
+		{
+			velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed * 1.5);
+		}
+		else if (velDir.y > 0)
+		{
+			velocity = V2d(velDir.x * bboostSpeed, velDir.y * bboostSpeed);
+		}
+		else
+		{
+			velocity = velDir * bboostSpeed;
+		}
+
+	}
+	else
+	{
+		velocity = velDir * (velLen + highSpeedBoost);
+	}
+
+	double ang = GetVectorAngleCW(velDir);// / PI * 180.0;
+
+	BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+		ts_fx_dashBoost, position, false, ang, 5, 4, true, 1);
+	be->sprite.setScale(1, 4);
 }
 
 void Actor::TryCheckGrass()
@@ -10907,6 +10970,11 @@ void Actor::RestoreAirOptions()
 	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH))
 	{
 		hasWallJumpRechargeAirDash = true;
+	}
+
+	//if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	{
+		numRemainingExtraAirdashBoosts = 1;
 	}
 	
 	hasHitRechargeDoubleJump = true;
@@ -17881,8 +17949,6 @@ void Actor::GrabShipWire()
 	frame = 0;
 }
 
-
-
 void Actor::ShipPickupPoint( double eq, bool fr )
 {
 	if( action != WAITFORSHIP && action != GRABSHIP )
@@ -18254,14 +18320,18 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 
 	TryThrowEnemySwordProjectileBasic();
 
-	if (!bouncedFromKill)
+
+	if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))
 	{
-		if (bounceFlameOn && action == DAIR)
+		if (!bouncedFromKill)
 		{
-			bouncedFromKill = true;
+			if (bounceFlameOn && (action == FAIR || action == UAIR || action == DAIR
+				|| action == DIAGDOWNATTACK || action == DIAGUPATTACK ))
+			{
+				bouncedFromKill = true;
+			}
 		}
 	}
-	
 
 	//for the growing tree
 	//wrong
@@ -18855,7 +18925,7 @@ void Actor::AirMovement()
 	}
 	else
 	{
-		double dSpeed = GetDashSpeed();
+		double dSpeed = GetOriginalDashSpeed();//GetDashSpeed();
 		if( currInput.LLeft() )
 		{
 			if( velocity.x > dSpeed )
@@ -19288,6 +19358,66 @@ bool Actor::PowerButtonHeld()
 bool Actor::PowerButtonPressed()
 {
 	return currInput.PowerButtonDown() && !prevInput.PowerButtonDown();
+}
+
+void Actor::BounceFloaterBoost( V2d &hitDir )
+{
+	Actor *player = sess->GetPlayer(0);
+
+	double minX = 20;
+
+	if (player->ground != NULL)
+	{
+		if (player->groundSpeed > 0)
+		{
+			player->groundSpeed = min(-player->groundSpeed, -minX);
+		}
+		else if( player->groundSpeed < 0 )
+		{
+			player->groundSpeed = max(-player->groundSpeed, minX);
+		}
+	}
+	else
+	{
+		
+		bool fr = player->facingRight;
+		if (hitDir.x != 0)//&& dir.y == 0)
+		{
+			double velx = player->velocity.x;
+			if (fr && velx < minX)
+			{
+				velx = minX;
+			}
+			else if (!fr && velx > -minX)
+			{
+				velx = -minX;
+			}
+
+			player->velocity.x = -velx;
+			//= -player->velocity.x;
+		}
+		if (hitDir.y != 0)//&& dir.x == 0)
+		{
+			double minUp = -20;
+			double minDown = 40;
+			double vely = player->velocity.y;
+			if (hitDir.y > 0 && vely < minDown)
+			{
+				vely = -minDown;
+			}
+			else if (hitDir.y < 0 && vely > minUp)
+			{
+				vely = -minUp;
+			}
+
+			//player->velocity.x = -velx;
+			//= -player->velocity.x;
+
+
+
+			player->velocity.y = vely;//-60;//player->velocity.y;
+		}
+	}
 }
 
 

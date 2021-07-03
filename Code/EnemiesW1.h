@@ -34,6 +34,7 @@
 #include "Enemy_QueenFloatingBomb.h"
 
 #include "Enemy_PowerItem.h"
+#include "Enemy_LogItem.h"
 
 
 #endif

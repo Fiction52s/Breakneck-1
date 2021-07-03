@@ -25,6 +25,12 @@ void Actor::UAIR_End()
 
 void Actor::UAIR_Change()
 {
+	if (bouncedFromKill)
+	{
+		SetAction(BOUNCEAIR);
+		BounceFloaterBoost(V2d(0, -1));
+	}
+
 	BasicAirAttackAction();
 }
 
