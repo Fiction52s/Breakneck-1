@@ -706,7 +706,7 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 	
 	if (currShardCap)
 	{
-		int lightningFactor = 14;//8;
+		int lightningFactor = 7;//14;//8;
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
 	}
 	else
@@ -756,7 +756,7 @@ void ShardMenu::SetShardTab()
 	bool currShardCap = IsCurrShardCaptured();
 	if (currShardCap)
 	{
-		int lightningFactor = 8;
+		int lightningFactor = 7;//8;
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
 	}
 	else

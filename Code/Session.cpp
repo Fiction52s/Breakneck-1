@@ -35,6 +35,7 @@
 #include "MusicPlayer.h"
 
 #include "ShardMenu.h"
+#include "LogMenu.h"
 
 //enemy stuff:
 #include "SoundManager.h"
@@ -1504,6 +1505,8 @@ void Session::CreateBulletQuads()
 
 void Session::DrawBullets(sf::RenderTarget *target)
 {
+	//added the bigBulletVA != NULL here for when I create
+	//enemies with bullets for the logmenu, but don't use them.
 	if (totalNumberBullets > 0 )
 	{
 		target->draw(bigBulletVA, totalNumberBullets * 4, sf::Quads, ts_basicBullets->texture);
@@ -1567,6 +1570,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	powerPop = NULL;
 
 	shardMenu = NULL;
+	logMenu = NULL;
 
 	zoneTree = NULL;
 	currentZoneNode = NULL;
@@ -5849,6 +5853,28 @@ void Session::CleanupShardMenu()
 	}
 
 	shardMenu = NULL;
+}
+
+void Session::SetupLogMenu()
+{
+	if (parentGame != NULL)
+	{
+		logMenu = parentGame->logMenu;
+	}
+	else
+	{
+		logMenu = new LogMenu(this);
+	}
+}
+
+void Session::CleanupLogMenu()
+{
+	if (parentGame == NULL)
+	{
+		delete logMenu;
+	}
+
+	logMenu = NULL;
 }
 
 void Session::CleanupRain()

@@ -16,7 +16,7 @@ struct LogInfo
 	int world;
 	int localIndex;
 	int GetTrueIndex() {
-		return 0;
+		return world * 22 + localIndex;
 	}
 
 	//const static int MAX_LOGS = 256;

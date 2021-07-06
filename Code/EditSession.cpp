@@ -1808,6 +1808,7 @@ EditSession::~EditSession()
 		delete ggpoStatsPanel;
 
 	CleanupShardMenu();
+	CleanupLogMenu();
 
 	currSession = NULL;
 
@@ -3583,6 +3584,7 @@ void EditSession::Init()
 	SetupHitboxManager();
 	
 	SetupShardMenu();
+	SetupLogMenu();
 
 	SetupShardsCapturedField();
 

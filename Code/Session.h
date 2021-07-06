@@ -76,6 +76,7 @@ struct PowerPopup;
 struct DeathSequece;
 
 struct ShardMenu;
+struct LogMenu;
 
 struct SuperSequence;
 struct BasicBossScene;
@@ -379,6 +380,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	SuperSequence *superSequence;
 
 	ShardMenu *shardMenu;
+	LogMenu *logMenu;
 
 	PState *playerSimState;
 	Actor *currSuperPlayer;
@@ -818,6 +820,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RemoveBoss( Boss *b );
 	void SetupShardMenu();
 	void CleanupShardMenu();
+	void SetupLogMenu();
+	void CleanupLogMenu();
 	virtual bool HasLog(int logIndex) { return false; }
 };
 

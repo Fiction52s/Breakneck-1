@@ -8,6 +8,7 @@
 
 struct GameSession;
 struct ShardMenu;
+struct LogMenu;
 struct ControlSettingsMenu;
 struct ColorShifter;
 struct ControlProfile;
@@ -87,6 +88,7 @@ struct PauseMenu
 		PAUSE,
 		MAP,
 		SHARDS,
+		LOGS,
 		OPTIONS,
 		KIN,
 		Count
@@ -136,6 +138,7 @@ struct PauseMenu
 	Tileset *ts_select;
 
 	ShardMenu *shardMenu;
+	LogMenu *logMenu;
 	KinMenu *kinMenu;
 
 	sf::Sprite bgSprite;

@@ -358,3 +358,18 @@ void LogItem::EnemyDraw(sf::RenderTarget *target)
 void LogItem::DrawMinimap(sf::RenderTarget *target)
 {
 }
+
+int LogItem::GetLogTypeFromGrid(int y, int x)
+{
+	return y * 11 + x;
+}
+
+int LogItem::GetLogTypeFromWorldAndIndex(int w, int li)
+{
+	return w * 22 + li;
+}
+
+int LogItem::GetNumLogsTotal()
+{
+	return 22 * 7;
+}

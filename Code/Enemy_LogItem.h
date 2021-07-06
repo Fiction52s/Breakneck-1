@@ -41,6 +41,10 @@ struct LogItem : Enemy
 	bool caught;
 	int totalFrame;
 
+	static int GetLogTypeFromGrid(int y, int x);
+	static int GetLogTypeFromWorldAndIndex(int w, int li);
+	static int GetNumLogsTotal();
+
 	LogItem(ActorParams *ap);//sf::Vector2i pos,
 							   //int w, int li);
 	~LogItem();

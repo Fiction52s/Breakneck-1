@@ -13,6 +13,7 @@
 #include "MapHeader.h"
 #include "Config.h"
 #include "KinMenu.h"
+#include "LogMenu.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -148,7 +149,7 @@ OptionsMenu::OptionsMenu( PauseMenu *pauseMenu )
 	int waitModeThresh[2] = { 2, 2 };
 	optionModeSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, 4, 0);
 
-	ts_optionMode = game->GetSizedTileset("Menu/optionsptions_768x128.png");
+	ts_optionMode = game->GetSizedTileset("Menu/Pause/optionsptions_768x128.png");
 
 	//Vector2f startOffset(1820 / 2, 100);
 	Vector2f startOffset(1820 / 2, 128/2 + 150);
@@ -301,15 +302,16 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
-	ts_background[0] = game->GetSizedTileset("Menu/pause_1_pause_1820x980.png");
-	ts_background[1] = game->GetSizedTileset("Menu/pause_2_map_1820x980.png");
-	ts_background[2] = game->GetSizedTileset("Menu/pause_3_shards_1820x980.png");
-	ts_background[3] = game->GetSizedTileset("Menu/pause_4_options_1820x980.png");
-	ts_background[4] = game->GetSizedTileset("Menu/pause_5_kin_1820x980.png");
+	ts_background[0] = game->GetSizedTileset("Menu/Pause/pause_1_pause_910x490.png");
+	ts_background[1] = game->GetSizedTileset("Menu/Pause/pause_2_map_910x490.png");
+	ts_background[2] = game->GetSizedTileset("Menu/Pause/pause_3_shards_910x490.png");
+	ts_background[3] = game->GetSizedTileset("Menu/Pause/pause_4_logs_910x490.png");
+	ts_background[4] = game->GetSizedTileset("Menu/Pause/pause_5_options_910x490.png");
+	ts_background[5] = game->GetSizedTileset("Menu/Pause/pause_6_kin_910x490.png");
 
 	ts_select = game->GetSizedTileset("Menu/menu_select_800x140.png");
 	
-	ts_pauseOptions = game->GetSizedTileset("Menu/pauseoptions_768x128.png");
+	ts_pauseOptions = game->GetSizedTileset("Menu/Pause/pauseoptions_768x128.png");
 
 	controlSettingsMenu = game->mainMenu->controlSettingsMenu;
 
@@ -329,6 +331,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	selectSprite.setTexture( *ts_select->texture );
 
 	bgSprite.setPosition( 0, 0 );
+	bgSprite.setScale(2, 2);
 
 	//pauseSelectIndex = 0;
 
@@ -336,6 +339,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	videoSelectors = new OptionSelector*[numVideoOptions];
 
 	shardMenu = game->shardMenu;
+	logMenu = game->logMenu;
 	kinMenu = new KinMenu(game);
 	//resolution
 	//fullscreen
@@ -435,7 +439,6 @@ PauseMenu::~PauseMenu()
 	}
 	delete[] videoSelectors;
 
-	delete shardMenu;
 	delete kinMenu;
 
 	for (int i = 0; i < numSoundOptions; ++i)
@@ -461,7 +464,7 @@ void PauseMenu::TabLeft()
 	int index = (int)currentTab;
 	index--;
 	if( index < 0 )
-		index = 4;	
+		index = 5;	
 	SetTab((Tab)index);
 	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_left"));
 }
@@ -470,7 +473,7 @@ void PauseMenu::TabRight()
 {
 	int index = (int)currentTab;
 	index++;
-	if( index > 4 )
+	if( index > 5 )
 		index = 0;
 	SetTab((Tab)index );
 	game->pauseSoundNodeList->ActivateSound(game->soundManager->GetSound("tab_right"));
@@ -482,6 +485,9 @@ void PauseMenu::SetTab( Tab t )
 	{
 	case SHARDS:
 		shardMenu->StopMusic();
+		break;
+	case LOGS:
+		logMenu->StopMusic();
 		break;
 	}
 
@@ -515,6 +521,11 @@ void PauseMenu::SetTab( Tab t )
 		//shardMenu->SetCurrSequence();
 		shardMenu->state = ShardMenu::WAIT;
 		shardMenu->SetCurrShard();
+		break;
+	case LOGS:
+		//shardMenu->SetCurrSequence();
+		logMenu->state = LogMenu::WAIT;
+		logMenu->SetCurrLog();
 		break;
 	case OPTIONS:
 		//LoadControlOptions();
@@ -617,6 +628,10 @@ void PauseMenu::Draw( sf::RenderTarget *target )
 	else if (currentTab == SHARDS)
 	{
 		shardMenu->Draw(target);
+	}
+	else if (currentTab == LOGS)
+	{
+		logMenu->Draw(target);
 	}
 	else if (currentTab == KIN)
 	{
@@ -799,6 +814,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			{
 				shardMenu->SetShardTab();
 			}
+			else if (currentTab == LOGS)
+			{
+				logMenu->SetLogTab();
+			}
 			else if (currentTab == KIN)
 			{
 				kinMenu->UpdateCommandButton();
@@ -830,6 +849,10 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			else if (currentTab == SHARDS)
 			{
 				shardMenu->SetShardTab();
+			}
+			else if (currentTab == LOGS)
+			{
+				logMenu->SetLogTab();
 			}
 			else if (currentTab == KIN)
 			{
@@ -910,6 +933,11 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			shardMenu->Update( currInput, prevInput );
 			break;
 		}
+	case LOGS:
+	{
+		logMenu->Update(currInput, prevInput);
+		break;
+	}
 	case OPTIONS:
 		{	
 			
