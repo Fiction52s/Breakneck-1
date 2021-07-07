@@ -39,7 +39,7 @@ BounceFloater::BounceFloater(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 	//sprite.setColor(Color::Red);

@@ -82,7 +82,7 @@ Specter::Specter( ActorParams *ap )
 
 	animationFactor = 10;
 
-	ts = sess->GetSizedTileset("Enemies/W6/specter_256x256.png");
+	ts = GetSizedTileset("Enemies/W6/specter_256x256.png");
 	sprite.setTexture( *ts->texture );
 	
 	sprite.setScale(scale, scale);

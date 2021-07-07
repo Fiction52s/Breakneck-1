@@ -39,7 +39,7 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
-	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -65,7 +65,7 @@ Pufferfish::Pufferfish(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	ResetEnemy();
 }

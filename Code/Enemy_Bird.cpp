@@ -72,10 +72,10 @@ Bird::Bird(ActorParams *ap)
 	stageMgr.AddActiveOption(3, SHURIKEN_SHOTGUN, 2);
 	stageMgr.AddActiveOption(3, UNDODGEABLE_SHURIKEN, 2);
 
-	ts_move = sess->GetSizedTileset("Bosses/Bird/intro_256x256.png");
-	ts_punch = sess->GetSizedTileset("Bosses/Bird/punch_256x256.png");
-	ts_kick = sess->GetSizedTileset("Bosses/Bird/kick_256x256.png");
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
+	ts_move = GetSizedTileset("Bosses/Bird/intro_256x256.png");
+	ts_punch = GetSizedTileset("Bosses/Bird/punch_256x256.png");
+	ts_kick = GetSizedTileset("Bosses/Bird/kick_256x256.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	BasicCircleHurtBodySetup(16);
 	//BasicCircleHitBodySetup(32, 0, V2d(100, 0), V2d());

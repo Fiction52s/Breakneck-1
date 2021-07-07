@@ -35,7 +35,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 	animationFactor = 3;
 	assert(framesWait > 13 * animationFactor);
 
-	ts = sess->GetSizedTileset("Enemies/W3/cactus_160x160.png");
+	ts = GetSizedTileset("Enemies/W3/cactus_160x160.png");
 
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
@@ -65,7 +65,7 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	bulletSpeed = 7;
 
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode2_64x64.png", 64, 64);
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,

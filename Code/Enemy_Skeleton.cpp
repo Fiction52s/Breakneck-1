@@ -21,7 +21,7 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	level = ap->GetLevel();
 
-	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 
 
 	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);

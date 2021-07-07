@@ -41,7 +41,7 @@ void FlyChain::UpdateStartPosition(int ind, V2d &pos)
 
 Tileset *FlyChain::GetTileset(int variation)
 {
-	return sess->GetTileset("Enemies/healthfly_64x64.png", 64, 64);
+	return GetSizedTileset("Enemies/healthfly_64x64.png");
 }
 
 Enemy *FlyChain::CreateEnemy(V2d &pos, int ind)

@@ -30,8 +30,8 @@ Booster::Booster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	SetCurrPosInfo(startPosInfo);
 
-	ts = sess->GetSizedTileset("Enemies/booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
+	ts = GetSizedTileset("Enemies/booster_512x512.png");
+	ts_refresh = GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
 

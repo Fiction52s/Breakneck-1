@@ -29,7 +29,7 @@ Spider::Spider( ActorParams *ap )
 	CreateSurfaceMover(startPosInfo, 32, this);
 	surfaceMover->SetSpeed( 0 );
 
-	ts = sess->GetSizedTileset( "Enemies/W1/crawler_160x160.png");
+	ts = GetSizedTileset( "Enemies/W1/crawler_160x160.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 

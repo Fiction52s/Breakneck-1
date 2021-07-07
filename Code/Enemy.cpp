@@ -548,10 +548,10 @@ void Enemy::OnCreate(ActorParams *ap,
 	}
 
 	pauseFrames = 0;
-	ts_zoned = sess->GetTileset("Enemies/enemy_zone_icon_128x128.png", 128, 128);
+	ts_zoned = GetSizedTileset("Enemies/enemy_zone_icon_128x128.png");
 	zonedSprite.setTexture(*ts_zoned->texture);
 
-	genericDeathSound = sess->GetSound("Enemies/kill");
+	genericDeathSound = GetSound("Enemies/kill");
 
 	highResPhysics = false;
 	numLaunchers = 0;
@@ -623,11 +623,50 @@ void Enemy::OnCreate(ActorParams *ap,
 		stringstream ss;
 		ss << "FX/Blood/blood_w" << fxWorld << "_256x256.png";
 
-		ts_blood = sess->GetTileset(ss.str(), 256, 256);
+		ts_blood = GetSizedTileset(ss.str());
 	}
 	else
 	{
 		ts_blood = NULL;
+	}
+}
+
+
+Tileset * Enemy::GetTileset(const std::string &s,
+	int tileWidth,
+	int tileHeight)
+{
+	if( sess->specialTempTilesetManager != NULL )
+	{
+		return sess->specialTempTilesetManager->GetTileset(s, tileWidth, tileHeight);
+	}
+	else
+	{
+		return sess->GetTileset(s, tileWidth, tileHeight);
+	}
+}
+
+Tileset *Enemy::GetSizedTileset(const std::string &s)
+{
+	if (sess->specialTempTilesetManager != NULL)
+	{
+		return sess->specialTempTilesetManager->GetSizedTileset(s);
+	}
+	else
+	{
+		return sess->GetSizedTileset(s);
+	}
+}
+
+sf::SoundBuffer * Enemy::GetSound(const std::string &s)
+{
+	if (sess->specialTempSoundManager != NULL)
+	{
+		return sess->specialTempSoundManager->GetSound(s);
+	}
+	else
+	{
+		return sess->GetSound(s);
 	}
 }
 

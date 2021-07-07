@@ -81,7 +81,7 @@ GrindJuggler::GrindJuggler(ActorParams *ap)
 
 	hitLimit = -1;
 
-	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

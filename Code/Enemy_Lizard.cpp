@@ -49,8 +49,8 @@ Lizard::Lizard(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = sess->GetSizedTileset("Enemies/W3/Roadrunner_256x256.png");
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
+	ts = GetSizedTileset("Enemies/W3/Roadrunner_256x256.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,

@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <boost/thread.hpp>
+#include "SoundManager.h"
 
 struct Session;
 struct EffectPool;
@@ -61,6 +62,7 @@ struct LogMenu
 	Session *sess;
 	sf::Vector2f imagePos;
 	TilesetManager tMan;
+	SoundManager sMan;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
 	Tileset **ts_preview;

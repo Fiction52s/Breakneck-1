@@ -48,7 +48,7 @@ Roadrunner::Roadrunner(ActorParams *ap)
 	groundMover->AddAirForce(V2d(0, gravity));
 	groundMover->SetSpeed(0);
 
-	ts = sess->GetSizedTileset("Enemies/W3/roadrunner_256x256.png");
+	ts = GetSizedTileset("Enemies/W3/roadrunner_256x256.png");
 
 	SetOffGroundHeight(128 / 2);
 

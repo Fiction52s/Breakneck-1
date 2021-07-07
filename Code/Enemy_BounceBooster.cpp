@@ -30,7 +30,7 @@ BounceBooster::BounceBooster(ActorParams *ap)
 		BasicCircleHitBodySetup(128);
 	}
 
-	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 	ts_refresh = ts;//sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 	sprite.setTexture(*ts->texture);
 

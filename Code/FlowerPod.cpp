@@ -36,9 +36,9 @@ FlowerPod::FlowerPod(ActorParams* ap)//const std::string &typeStr, Edge *g, doub
 	//geoGroup.Init();
 
 
-	ts_flower = sess->GetSizedTileset("Momenta/momentaflower_128x128.png");
-	ts_bud = sess->GetSizedTileset("Momenta/momentabud_128x128.png");
-	ts_rise = sess->GetSizedTileset("Momenta/momentaflower_rise_128x128.png");
+	ts_flower = GetSizedTileset("Momenta/momentaflower_128x128.png");
+	ts_bud = GetSizedTileset("Momenta/momentabud_128x128.png");
+	ts_rise = GetSizedTileset("Momenta/momentaflower_rise_128x128.png");
 
 	sprite.setPosition(startPosInfo.GetPositionF());
 
@@ -311,7 +311,7 @@ void FlowerPod::DirectKill()
 MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeStr)
 {
 	pod = p_pod;
-	ts_basicFlower = pod->sess->GetTileset("Momenta/momentaflower_320x288.png", 320, 288);
+	ts_basicFlower = pod->GetSizedTileset("Momenta/momentaflower_320x288.png");
 	initialFlowerLength = 120;
 	//can currently handle 30 chars per line
 	
@@ -333,7 +333,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	{
 	case SEESHARDS:
 	{
-		ts_broadcast = pod->sess->GetTileset("Momenta/momentabroadcast_w1_1_320x288.png", 320, 288);
+		ts_broadcast = pod->GetSizedTileset("Momenta/momentabroadcast_w1_1_320x288.png");
 		conv->Load("momenta1");
 		//textDisp->Load("momenta1");
 			//script->Load("momenta1");
@@ -358,7 +358,7 @@ MomentaBroadcast::MomentaBroadcast( FlowerPod *p_pod, const std::string &btypeSt
 	}	
 	case DESTROYGOALS:
 	{
-		ts_broadcast = pod->sess->GetTileset("Momenta/momentabroadcast_w1_2_320x288.png", 320, 288);
+		ts_broadcast = pod->GetSizedTileset("Momenta/momentabroadcast_w1_2_320x288.png");
 		conv->Load("momenta2");
 		//script->Load("momenta2");
 		//numImages = script->numSections;

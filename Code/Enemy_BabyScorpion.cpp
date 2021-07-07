@@ -22,11 +22,11 @@ BabyScorpion::BabyScorpion(ActorParams *ap)
 	actionLength[DISSIPATE] = 30;
 	actionLength[DANCE] = 60;
 
-	ts = sess->GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
+	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;

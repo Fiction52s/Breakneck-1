@@ -89,6 +89,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 	imagePos = Vector2f(1243, 66);
 	previewSpr.setPosition(imagePos);
+
 	
 
 	state = WAIT;
@@ -456,17 +457,26 @@ void LogMenu::SetCurrLog()
 			if (currInfo.enemyTypeName != "" )
 			{
 				ActorType *at;
-				at = sess->types[currInfo.enemyTypeName];//"crawler"];
+				at = sess->types[currInfo.enemyTypeName];
 
 				if (testParams != NULL)
 				{
 					delete testParams;
+					tMan.ClearTilesets();
+					sMan.ClearAll();
 				}
 
+				sess->specialTempTilesetManager = &tMan;
+				sess->specialTempSoundManager = &sMan;
 				testParams = at->info.pMaker(at, 1);
+				
 
-				testParams->SetPosition(imagePos);
+				testParams->SetPosition(imagePos + Vector2f( 256, 256 ));
 				testParams->CreateMyEnemy();
+
+				sess->specialTempTilesetManager = NULL;
+				sess->specialTempSoundManager = NULL;
+
 				testParams->myEnemy->UpdateFromEditParams(0);
 
 				//currInfo.ts_preview = tMan.GetSizedTileset(currInfo.imageStr + ".png");

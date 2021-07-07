@@ -84,7 +84,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	framesBetween = 60;
 	maxFramesToLive = 180 * 2;
 
-	Tileset *ts_basicBullets = sess->GetTileset("Enemies/bullet_64x64.png", 64, 64);
+	Tileset *ts_basicBullets = GetSizedTileset("Enemies/bullet_64x64.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::BAT, 128, 2, GetPosition(),
@@ -92,7 +92,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
 
-	ts = sess->GetSizedTileset("Bosses/Tiger/bosstiger_spinturret_80x80.png");
+	ts = GetSizedTileset("Bosses/Tiger/bosstiger_spinturret_80x80.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -108,7 +108,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
+	ts_bulletExplode = GetTileset("FX/bullet_explode3_64x64.png");
 
 	speed = 10;
 

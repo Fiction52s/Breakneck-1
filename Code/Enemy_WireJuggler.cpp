@@ -122,7 +122,7 @@ WireJuggler::WireJuggler( ActorParams *ap )
 
 	reversed = true;
 
-	ts = sess->GetSizedTileset("Enemies/comboers_128x128.png");
+	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);

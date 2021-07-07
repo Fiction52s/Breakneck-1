@@ -14,6 +14,7 @@ struct Panel;
 
 struct Enemy;
 struct ParamsInfo;
+struct TilesetManager;
 
 template<typename X> ActorParams *MakeParams(
 	ActorType *, int );

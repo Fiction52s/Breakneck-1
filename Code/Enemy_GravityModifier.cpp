@@ -40,12 +40,12 @@ GravityModifier::GravityModifier(ActorParams *ap )
 	
 	if (increaser)
 	{
-		ts = sess->GetSizedTileset("Enemies/W2/grav_increase_256x256.png");
+		ts = GetSizedTileset("Enemies/W2/grav_increase_256x256.png");
 		gravFactor = 2.0;
 	}
 	else
 	{
-		ts = sess->GetSizedTileset("Enemies/W2/grav_decrease_256x256.png");
+		ts = GetSizedTileset("Enemies/W2/grav_decrease_256x256.png");
 		gravFactor = .5;
 	}
 

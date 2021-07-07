@@ -64,7 +64,7 @@ Bat::Bat( ActorParams *ap )
 
 	animationFactor = 5;
 
-	ts = sess->GetSizedTileset("Enemies/W2/bat_208x272.png");
+	ts = GetSizedTileset("Enemies/W2/bat_208x272.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 
@@ -82,7 +82,7 @@ Bat::Bat( ActorParams *ap )
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode3_64x64.png", 64, 64 );
+	ts_bulletExplode = GetSizedTileset( "FX/bullet_explode3_64x64.png");
 
 	cutObject->Setup(ts, 53, 52, scale);
 

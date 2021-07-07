@@ -63,7 +63,7 @@ Chess::Chess(ActorParams *ap)
 
 	maxSpeed = 30;//20;
 
-	ts = sess->GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

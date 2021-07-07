@@ -62,7 +62,7 @@ SwingLauncher::SwingLauncher(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, IDLE, 0);
 
-	launchSoundBuf = sess->GetSound("Enemies/spring_launch");
+	launchSoundBuf = GetSound("Enemies/spring_launch");
 
 	debugSpeed.setFont(sess->mainMenu->arial);
 	debugSpeed.setFillColor(Color::White);
@@ -78,9 +78,9 @@ SwingLauncher::SwingLauncher(ActorParams *ap)
 		sprite.setColor(Color::Red);
 	}
 
-	ts_idle = sess->GetSizedTileset("Enemies/spring_idle_256x256.png");
-	ts_recover = sess->GetSizedTileset("Enemies/spring_recover_256x256.png");
-	ts_springing = sess->GetSizedTileset("Enemies/spring_spring_512x576.png");
+	ts_idle = GetSizedTileset("Enemies/spring_idle_256x256.png");
+	ts_recover = GetSizedTileset("Enemies/spring_recover_256x256.png");
+	ts_springing = GetSizedTileset("Enemies/spring_spring_512x576.png");
 
 	animationFactor = 10;
 

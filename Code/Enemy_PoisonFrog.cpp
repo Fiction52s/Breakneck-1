@@ -69,7 +69,7 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
-	ts_test = sess->GetSizedTileset( "Enemies/W2/frog_80x80.png");
+	ts_test = GetSizedTileset( "Enemies/W2/frog_80x80.png");
 
 	const string &typeName = ap->GetTypeName();
 

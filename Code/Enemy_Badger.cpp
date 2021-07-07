@@ -55,7 +55,7 @@ Badger::Badger(ActorParams *ap)
 	groundMover->SetSpeed(0);
 	groundMover->AddAirForce(gravity);
 
-	ts = sess->GetSizedTileset("Enemies/W3/badger_192x128.png");
+	ts = GetSizedTileset("Enemies/W3/badger_192x128.png");
 
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);

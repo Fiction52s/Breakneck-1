@@ -52,7 +52,7 @@ Skunk::Skunk(ActorParams *ap)
 
 	
 
-	ts = sess->GetSizedTileset("Enemies/W6/skunk_128x128.png");
+	ts = GetSizedTileset("Enemies/W6/skunk_128x128.png");
 
 	SetOffGroundHeight(128 / 2);
 

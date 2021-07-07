@@ -19,7 +19,7 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	
 	level = ap->GetLevel();
 
-	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 	sprite.setColor(Color::Green);
 
 	postFightScene = NULL;

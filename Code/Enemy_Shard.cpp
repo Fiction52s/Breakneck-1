@@ -109,9 +109,9 @@ Shard::Shard(ActorParams *ap )//Vector2i pos, int w, int li )
 		testEmitter->SetPos(GetPositionF());
 		testEmitter->SetRatePerSecond(30);
 
-		ts_sparkle = sess->GetTileset("Menu/shard_sparkle_64x64.png", 64, 64);
+		ts_sparkle = GetSizedTileset("Menu/shard_sparkle_64x64.png");
 
-		ts_explodeCreate = sess->GetTileset("FX/shard_explode_01_256x256.png", 256, 256);
+		ts_explodeCreate = GetSizedTileset("FX/shard_explode_01_256x256.png");
 
 		sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 		sparklePool->ts = ts_sparkle;

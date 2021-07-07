@@ -40,9 +40,9 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	double width = 208;
 	double height = 176;
 
-	fireSound = sess->GetSound("Enemies/turret_shoot");
+	fireSound = GetSound("Enemies/turret_shoot");
 
-	ts = sess->GetTileset("Enemies/W1/turret_208x176.png", width, height);
+	ts = GetSizedTileset("Enemies/W1/turret_208x176.png");
 
 	width *= scale;
 	height *= scale;
@@ -59,7 +59,7 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	sprite.setScale(scale, scale);
 	
 	
-	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode1_64x64.png", 64, 64 );
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode1_64x64.png");
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 180;

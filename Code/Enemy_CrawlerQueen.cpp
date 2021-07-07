@@ -64,12 +64,12 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	clockwisePicker.AddActiveOption(0, 2);
 	clockwisePicker.AddActiveOption(1, 2);
 
-	ts_move = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dash_320x320.png");
-	ts_slash = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_slash_320x320.png");
-	ts_dig_in = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
-	ts_dig_out = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
-	ts_jump = sess->GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
+	ts_move = GetSizedTileset("Bosses/Crawler/crawler_queen_dash_320x320.png");
+	ts_slash = GetSizedTileset("Bosses/Crawler/crawler_queen_slash_320x320.png");
+	ts_dig_in = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
+	ts_dig_out = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts_jump = GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	postFightScene = NULL;
 	postFightScene2 = NULL;

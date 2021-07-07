@@ -33,7 +33,7 @@ Ghost::Ghost( ActorParams *ap )
 	animFactor[EXPLODE] = 7;
 	animFactor[RETURN] = 1;
 
-	ts = sess->GetSizedTileset("Enemies/W5/plasmid_192x192.png");
+	ts = GetSizedTileset("Enemies/W5/plasmid_192x192.png");
 	sprite.setTexture( *ts->texture );
 	sprite.setScale(scale, scale);
 

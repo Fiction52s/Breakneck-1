@@ -139,7 +139,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	launchers[0]->hitboxInfo->damage = 18;
 	frame = 0;
 
-	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	ts = GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

@@ -47,8 +47,8 @@ Coyote::Coyote(ActorParams *ap)
 	patternTypePicker.AddActiveOption(PATTERN_RUSH);
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
 
-	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
+	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	postFightScene = NULL;
 

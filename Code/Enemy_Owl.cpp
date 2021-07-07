@@ -18,10 +18,10 @@ Owl::Owl(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	ts_death = sess->GetSizedTileset("Enemies/W3/owl_death_160x160.png");
-	ts_flap = sess->GetSizedTileset( "Enemies/W3/owl_flap_160x160.png");
-	ts_spin = sess->GetSizedTileset( "Enemies/W3/owl_spin_160x160.png");
-	ts_throw = sess->GetSizedTileset( "Enemies/W3/owl_throw_160x160.png");
+	ts_death = GetSizedTileset("Enemies/W3/owl_death_160x160.png");
+	ts_flap = GetSizedTileset( "Enemies/W3/owl_flap_160x160.png");
+	ts_spin = GetSizedTileset( "Enemies/W3/owl_spin_160x160.png");
+	ts_throw = GetSizedTileset( "Enemies/W3/owl_throw_160x160.png");
 
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);
@@ -72,7 +72,7 @@ Owl::Owl(ActorParams *ap)
 
 	sprite.setScale(scale, scale);
 
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode3_64x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	if (level == 2)
 	{

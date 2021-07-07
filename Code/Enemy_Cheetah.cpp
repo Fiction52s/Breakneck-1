@@ -52,7 +52,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	CreateGroundMover(startPosInfo, 32, true, this);
 	groundMover->AddAirForce(V2d(0, .6));
 
-	ts = sess->GetSizedTileset("Enemies/W4/cheetah_224x96.png");
+	ts = GetSizedTileset("Enemies/W4/cheetah_224x96.png");
 
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);

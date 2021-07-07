@@ -16,7 +16,7 @@ GlideTarget::GlideTarget(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	ts = sess->GetSizedTileset("Enemies/healthfly_64x64.png");
+	ts = GetSizedTileset("Enemies/healthfly_64x64.png");
 
 	BasicCircleHitBodySetup(32);
 

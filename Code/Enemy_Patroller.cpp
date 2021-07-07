@@ -27,8 +27,8 @@ Patroller::Patroller(ActorParams *ap)//bool p_hasMonitor, Vector2i pos, list<Vec
 
 	pathFollower.SetParams(ap);
 
-	ts = sess->GetSizedTileset("Enemies/W1/patroller_256x256.png");
-	shootSound = sess->GetSound("Enemies/patroller_shoot");
+	ts = GetSizedTileset("Enemies/W1/patroller_256x256.png");
+	shootSound = GetSound("Enemies/patroller_shoot");
 
 	eye = new PatrollerEye(this);
 	eye->SetPosition(GetPositionF());

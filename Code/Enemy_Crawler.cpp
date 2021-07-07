@@ -55,8 +55,8 @@ Crawler::Crawler(ActorParams *ap )
 
 	CreateSurfaceMover(startPosInfo, 32, this);
 
-	deathSound = sess->GetSound("Enemies/crawler_death");
-	ts = sess->GetSizedTileset("Enemies/W1/crawler_160x160.png");
+	deathSound = GetSound("Enemies/crawler_death");
+	ts = GetSizedTileset("Enemies/W1/crawler_160x160.png");
 
 	sprite.setTexture( *ts->texture );
 

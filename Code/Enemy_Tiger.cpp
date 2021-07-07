@@ -43,8 +43,8 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[THROW_SPINTURRET] = 60;
 	actionLength[TEST] = 10000;
 
-	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
-	ts_bulletExplode = sess->GetSizedTileset("FX/bullet_explode2_64x64.png");
+	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
 	stageMgr.AddActiveOption(0, TEST, 2);

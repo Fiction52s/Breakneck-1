@@ -34,7 +34,7 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 
 	chainRadius = 500;
 
-	ts = sess->GetSizedTileset("Enemies/W6/rusher_160x160.png");
+	ts = GetSizedTileset("Enemies/W6/rusher_160x160.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

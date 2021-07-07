@@ -45,8 +45,8 @@ SwordProjectileBooster::SwordProjectileBooster(ActorParams *ap)//Vector2i &pos, 
 	
 	strength = 300;
 
-	ts = sess->GetSizedTileset("Enemies/Booster_512x512.png");
-	ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
+	ts = GetSizedTileset("Enemies/Booster_512x512.png");
+	ts_refresh = GetSizedTileset("Enemies/Booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
 

@@ -65,12 +65,12 @@ StagBeetle::StagBeetle( ActorParams *ap )
 		groundMover->reverse = true;
 	}
 
-	ts_death = sess->GetSizedTileset("Enemies/W2/stag_death_192x176.png");
-	ts_hop = sess->GetSizedTileset( "Enemies/W2/stag_hop_256x256.png");
-	ts_idle = sess->GetSizedTileset( "Enemies/W2/stag_idle_256x176.png");
-	ts_run = sess->GetSizedTileset( "Enemies/W2/stag_run_256x176.png");
-	ts_sweep = sess->GetSizedTileset( "Enemies/W2/stag_sweep_256x298.png");
-	ts_walk = sess->GetSizedTileset( "Enemies/W2/stag_walk_256x176.png");
+	ts_death = GetSizedTileset("Enemies/W2/stag_death_192x176.png");
+	ts_hop = GetSizedTileset( "Enemies/W2/stag_hop_256x256.png");
+	ts_idle = GetSizedTileset( "Enemies/W2/stag_idle_256x176.png");
+	ts_run = GetSizedTileset( "Enemies/W2/stag_run_256x176.png");
+	ts_sweep = GetSizedTileset( "Enemies/W2/stag_sweep_256x298.png");
+	ts_walk = GetSizedTileset( "Enemies/W2/stag_walk_256x176.png");
 	
 	
 	sprite.setTexture( *ts_idle->texture );

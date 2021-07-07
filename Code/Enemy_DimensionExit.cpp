@@ -23,7 +23,7 @@ DimensionExit::DimensionExit(ActorParams *ap)
 	animFactor[IDLE] = 1;
 
 
-	ts = sess->GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
+	ts = GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
 
 	sprite.setColor(Color::Red);
 

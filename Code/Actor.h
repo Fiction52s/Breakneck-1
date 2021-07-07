@@ -983,7 +983,6 @@ struct Actor : QuadTreeCollider,
 	bool leftWireBoost;
 	bool rightWireBoost;
 	bool doubleWireBoost;
-	Skin *swordSkin;
 	std::string actionFolder;
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;

@@ -16,7 +16,7 @@ struct LeaveGroundAction;
 
 struct Edge;
 struct Enemy;
-
+struct TilesetManager;
 
 
 struct ActorParams : ISelectable

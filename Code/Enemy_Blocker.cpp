@@ -105,28 +105,28 @@ Tileset *BlockerChain::GetTileset(int variation)
 	switch (variation)
 	{
 	case Blocker::GREY:
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::BLUE:												 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::GREEN:											 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::YELLOW:											 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::ORANGE:											 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;						 
 	case Blocker::RED:												 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::MAGENTA:											 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::BLACK:											 
-		return sess->GetSizedTileset("Enemies/blocker_w1_192x192.png");
+		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;
 	}
 }

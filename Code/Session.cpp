@@ -1530,6 +1530,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	playerSimState = new PState;
 
+	specialTempTilesetManager = NULL;
+	specialTempSoundManager = NULL;
+
 	gameMode = NULL;
 
 	timeSyncFrames = 0;

@@ -40,7 +40,7 @@ DimensionEye::DimensionEye(ActorParams *ap)
 	animFactor[DIE] = 1;
 	
 
-	ts = sess->GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
+	ts = GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;

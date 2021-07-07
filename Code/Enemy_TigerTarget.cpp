@@ -19,7 +19,7 @@ TigerTarget::TigerTarget(ActorParams *ap)
 
 	actionLength[NEUTRAL] = 2;
 
-	ts = sess->GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
+	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

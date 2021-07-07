@@ -33,13 +33,13 @@ Shroom::Shroom(ActorParams *ap )
 	SetLevel(ap->GetLevel());
 
 	double height = 192;
-	ts = sess->GetTileset("Enemies/W1/shroom_192x192.png", 192, 192);
+	ts = GetSizedTileset("Enemies/W1/shroom_192x192.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	SetOffGroundHeight(40 * scale);
 
-	hitSound = sess->GetSound("Enemies/shroom_spark");
+	hitSound = GetSound("Enemies/shroom_spark");
 
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
@@ -215,12 +215,12 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	hitLimit = 1;
 
 	double height = 160;
-	ts = sess->GetTileset("Enemies/W1/shroom_jelly_160x160.png", 160, 160);
+	ts = GetSizedTileset("Enemies/W1/shroom_jelly_160x160.png");
 	sprite.setTexture(*ts->texture);
 
 	receivedHit = NULL;
 
-	floatSound = sess->GetSound("Enemies/shroom_float");
+	floatSound = GetSound("Enemies/shroom_float");
 
 	angle = 0;
 

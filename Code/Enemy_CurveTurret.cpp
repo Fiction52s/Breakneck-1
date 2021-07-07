@@ -41,7 +41,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	double height = 96;
 
 	//ts = owner->GetTileset( "basicturret_112x64.png", width, height );
-	ts = sess->GetTileset( "Enemies/W2/curveturret_144x96.png", width, height );
+	ts = GetSizedTileset( "Enemies/W2/curveturret_144x96.png");
 
 	width *= scale;
 	height *= scale;
@@ -72,7 +72,7 @@ CurveTurret::CurveTurret( ActorParams *ap )
 	double size = 400;//max( width, height );
 
 
-	ts_bulletExplode = sess->GetTileset( "FX/bullet_explode2_64x64.png", 64, 64 );
+	ts_bulletExplode = GetSizedTileset( "FX/bullet_explode2_64x64.png");
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::CURVE_TURRET, 32, 1, GetPosition(), V2d( 0,-1), 

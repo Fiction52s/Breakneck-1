@@ -35,7 +35,7 @@ CoyoteHelper::CoyoteHelper(ActorParams *ap)
 	animFactor[COMBOMOVE] = 1;
 	reachPointOnFrame[COMBOMOVE] = 0;
 
-	ts_move = sess->GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 
 	nodeAStr = "A";
 
@@ -58,7 +58,7 @@ CoyoteHelper::CoyoteHelper(ActorParams *ap)
 
 	sprite.setColor(Color::Black);
 
-	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	ResetEnemy();
 }

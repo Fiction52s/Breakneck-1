@@ -21,7 +21,7 @@ PhaseBooster::PhaseBooster(ActorParams *ap)//Vector2i &pos, int p_level)
 
 	strength = 300;
 
-	ts = sess->GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/boosters_384x384.png");
 	//ts_refresh = sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);

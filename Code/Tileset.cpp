@@ -389,8 +389,6 @@ void TilesetManager::DestroyTilesetIfExists(const std::string &sourceName,
 	auto it = currMap.find(sourceName);
 	if (it != currMap.end())
 	{
-		list<pair<Tileset*, int>> &currList = (*it).second;
-
 		auto &tPair = (*it).second;
 
 		delete tPair.first;
@@ -444,7 +442,7 @@ void TilesetManager::CleanupUnusedTilests()
 
 			if (tPair.second == 0) //not used
 			{
-				cout << "cleaning up unused: " << i << " called: " << (*lit).first->sourceName << endl;
+				cout << "cleaning up unused: " << i << " called: " << tPair.first->sourceName << endl;
 				delete tPair.first;
 				currMap.erase(it);
 			}

@@ -21,12 +21,12 @@ Goal::Goal( ActorParams *ap )
 	explosionAnimFactor = 3;
 	explosionLength = 16;
 	ts_explosion1 = NULL;
-	ts_mini = sess->GetSizedTileset("HUD/minimap_icons_64x64.png");
+	ts_mini = GetSizedTileset("HUD/minimap_icons_64x64.png");
 
 	string tsStr = "Goal/goal_w" + to_string(world) + "_a_512x512.png";
-	ts = sess->GetSizedTileset(tsStr);
+	ts = GetSizedTileset(tsStr);
 	string explosionStr = "Goal/goal_w" + to_string(world) + "_b_512x512.png";
-	ts_explosion = sess->GetSizedTileset(explosionStr);
+	ts_explosion = GetSizedTileset(explosionStr);
 
 	switch (world)
 	{

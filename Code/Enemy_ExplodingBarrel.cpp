@@ -36,7 +36,7 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	facingRight = true;
 
-	ts = sess->GetSizedTileset("Enemies/W3/barrel_128x128.png");
+	ts = GetSizedTileset("Enemies/W3/barrel_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

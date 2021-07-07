@@ -43,8 +43,13 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 	sess = Session::GetSession();
 
 	ts_bullet = ts;
-	if (ts_bullet != NULL)
+	if (ts_bullet != NULL
+		|| sess->specialTempTilesetManager != NULL )
 	{
+		//specialtemptilesetmanager because
+		//this means the enemy
+		//shouldnt add its own bullets
+		//to the overall bullets
 		drawOwnBullets = true;
 	}
 	else
@@ -213,7 +218,11 @@ void Launcher::SetStartIndex(int ind)
 
 void Launcher::Draw(sf::RenderTarget *target)
 {
-	if (drawOwnBullets)
+	//the ts_bullet check 
+	//is when you dont really want to 
+	//draw bullets at all. 
+	//log menu enemy special case
+	if (drawOwnBullets && ts_bullet != NULL )
 	{
 		target->draw(bulletVA, 4 * totalBullets, sf::Quads, ts_bullet->texture);
 	}

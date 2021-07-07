@@ -84,7 +84,6 @@ ActorParams::ActorParams(ActorType *at)
 	{
 		hasMonitor = true;
 	}
-
 	//partOfTerrain = false;
 	lines = NULL;
 	myEnemy = NULL;

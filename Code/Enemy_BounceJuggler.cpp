@@ -84,7 +84,7 @@ BounceJuggler::BounceJuggler(ActorParams *ap)
 
 	action = S_FLOAT;
 
-	ts = sess->GetTileset("Enemies/comboers_128x128.png", 128, 128);
+	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

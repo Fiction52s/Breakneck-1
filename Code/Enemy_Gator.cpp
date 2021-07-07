@@ -19,7 +19,7 @@ Gator::Gator(ActorParams *ap)
 
 	StageSetup(4, 4);
 
-	ts_move = sess->GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 
 	actionLength[SUMMON] = 60;
 	actionLength[REDIRECT_ORBS] = 60;

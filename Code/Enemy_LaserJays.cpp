@@ -50,7 +50,7 @@ void LaserJays::Construct(ActorParams *ap)
 
 	activatePulseRadius = 300;
 
-	ts = sess->GetSizedTileset("Enemies/W6/laserjays_128x128.png");
+	ts = GetSizedTileset("Enemies/W6/laserjays_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

@@ -38,7 +38,7 @@ Firefly::Firefly(ActorParams *ap)
 
 	activatePulseRadius = 300;
 
-	ts = sess->GetSizedTileset("Enemies/W3/pulser_192x192.png");
+	ts = GetSizedTileset("Enemies/W3/pulser_192x192.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 

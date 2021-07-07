@@ -57,7 +57,7 @@ Airdasher::Airdasher( ActorParams *ap )//bool p_hasMonitor, Vector2i pos, int p_
 	dashFrames = 36;
 	returnFrames = 30;
 
-	ts = sess->GetSizedTileset("Enemies/W1/airdasher_176x112.png");
+	ts = GetSizedTileset("Enemies/W1/airdasher_176x112.png");
 	
 	sprite.setTexture(*ts->texture);	
 	sprite.setScale(scale, scale);
