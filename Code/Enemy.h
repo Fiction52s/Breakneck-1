@@ -173,6 +173,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, int w);
 	void OnCreate( ActorParams *ap,
 		int w );
+
+	Tileset * GetTileset(const std::string s,
+		int tileWidth,
+		int tileHeight);
 	void SetSummonGroup(SummonGroup *p_summonGroup);
 	bool IsSummoning();
 	virtual ~Enemy();

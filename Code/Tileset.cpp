@@ -100,11 +100,11 @@ void TilesetManager::SetParentTilesetManager(TilesetManager *man)
 	parentManager = man;
 }
 
-Tileset *TilesetManager::Find(TilesetCategory cat, const std::string &s, int altColorIndex)
+Tileset *TilesetManager::Find(TilesetCategory cat, const std::string &s)
 {
 	if (parentManager != NULL)
 	{
-		Tileset *parentRes = parentManager->Find(cat, s, altColorIndex);
+		Tileset *parentRes = parentManager->Find(cat, s);
 		if (parentRes != NULL)
 			return parentRes;
 
@@ -116,15 +116,9 @@ Tileset *TilesetManager::Find(TilesetCategory cat, const std::string &s, int alt
 	auto it = currMap.find(s);
 	if (it != currMap.end())
 	{
-		auto &currList = (*it).second;
-		for (auto listIt = currList.begin(); listIt != currList.end(); ++listIt)
-		{
-			if ((*listIt).first->altColorIndex == altColorIndex)
-			{
-				(*listIt).second++;
-				return (*listIt).first;
-			}
-		}
+		auto &tPair = (*it).second;
+		tPair.second++;
+		return tPair.first;
 	}
 
 	return NULL;
@@ -132,7 +126,7 @@ Tileset *TilesetManager::Find(TilesetCategory cat, const std::string &s, int alt
 
 void TilesetManager::Add(TilesetCategory cat, const std::string &s, Tileset *ts)
 {
-	tilesetMaps[cat][s].push_back(make_pair(ts,1));
+	tilesetMaps[cat][s] = make_pair(ts, 1);//.push_back(make_pair(ts,1));
 }
 
 void TilesetManager::SetGameResourcesMode(bool on)
@@ -157,20 +151,15 @@ int TilesetManager::GetMemoryUsage()
 		auto & currMap = tilesetMaps[i];
 		for (auto it = currMap.begin(); it != currMap.end(); ++it)
 		{
-			listIt = (*it).second.begin();
-			listItEnd = (*it).second.end();
-			for (; listIt != listItEnd; ++listIt)
-			{
-				counted += (*listIt).first->GetMemoryUsage();
-			}
+			auto &tPair = (*it).second;
+			counted += tPair.first->GetMemoryUsage();
 		}
 	}
 
 	return counted;
 }
 
-Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight,
-	int altColorIndex )
+Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int tileWidth, int tileHeight)
 {
 	string s2;
 	if (gameResourcesMode)
@@ -214,8 +203,6 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 		tileHeight = tex->getSize().y;
 	}
 
-
-	t->altColorIndex = altColorIndex;
 	t->tileWidth = tileWidth;
 	t->tileHeight = tileHeight;
 	t->sourceName = s;
@@ -225,45 +212,45 @@ Tileset *TilesetManager::Create(TilesetCategory cat, const std::string &s, int t
 	return t;
 }
 
-Texture *TilesetManager::CreateAltColorTex( sf::Image &im,
-		int numAltColors, 
-		sf::Color *startColorBuf,
-		sf::Color *endColorBuf )
-{
-	int imW = im.getSize().x;
-	int imH = im.getSize().y;
-	sf::Color tempColor;
-	for( int x = 0; x < imW; ++x )
-	{
-		for( int y = 0; y < imH; ++y )
-		{
-			for( int i = 0; i < numAltColors; ++i )
-			{
-				tempColor = im.getPixel(x, y);
-				if( startColorBuf[i].r == tempColor.r &&
-					startColorBuf[i].g == tempColor.g &&
-					startColorBuf[i].b == tempColor.b )
-				{
-					tempColor.r = endColorBuf[i].r;
-					tempColor.g = endColorBuf[i].g;
-					tempColor.b = endColorBuf[i].b;
-
-					if (tempColor.a != 255)
-					{
-						int xxxx = 6;
-					}
-					assert( x != 0 || y != 0 );
-					im.setPixel( x, y, tempColor );
-				}
-			}
-		}
-	}
-
-	Texture *tNew = new Texture;
-	tNew->loadFromImage( im );
-
-	return tNew;
-}
+//Texture *TilesetManager::CreateAltColorTex( sf::Image &im,
+//		int numAltColors, 
+//		sf::Color *startColorBuf,
+//		sf::Color *endColorBuf )
+//{
+//	int imW = im.getSize().x;
+//	int imH = im.getSize().y;
+//	sf::Color tempColor;
+//	for( int x = 0; x < imW; ++x )
+//	{
+//		for( int y = 0; y < imH; ++y )
+//		{
+//			for( int i = 0; i < numAltColors; ++i )
+//			{
+//				tempColor = im.getPixel(x, y);
+//				if( startColorBuf[i].r == tempColor.r &&
+//					startColorBuf[i].g == tempColor.g &&
+//					startColorBuf[i].b == tempColor.b )
+//				{
+//					tempColor.r = endColorBuf[i].r;
+//					tempColor.g = endColorBuf[i].g;
+//					tempColor.b = endColorBuf[i].b;
+//
+//					if (tempColor.a != 255)
+//					{
+//						int xxxx = 6;
+//					}
+//					assert( x != 0 || y != 0 );
+//					im.setPixel( x, y, tempColor );
+//				}
+//			}
+//		}
+//	}
+//
+//	Texture *tNew = new Texture;
+//	tNew->loadFromImage( im );
+//
+//	return tNew;
+//}
 
 
 TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s)
@@ -324,56 +311,14 @@ TilesetManager::TilesetCategory TilesetManager::GetCategory(const std::string &s
 	}
 }
 
-Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numAltColors,
-	sf::Color *startColorBuf, sf::Color *endColorBuf)
-{
-	TilesetCategory cat = GetCategory(s);
-
-	Tileset *alreadyExistsTS = Find(cat, s, altColorIndex);
-	if (alreadyExistsTS != NULL)
-		return alreadyExistsTS;
-	
-	string s2;
-	if (gameResourcesMode)
-	{
-		s2 = string("Resources/") + s;
-	}
-	else
-	{
-		s2 = s;
-	}
-
-	sf::Image im;
-	if( !im.loadFromFile( s2 ) )
-	{
-		cout << "failed to load IM: " << s << endl;
-		//assert( false );
-
-		return NULL;
-	}
-
-	Tileset *t = new Tileset();
-
-	t->altColorIndex = altColorIndex;
-	t->texture = CreateAltColorTex( im, numAltColors, startColorBuf, endColorBuf );
-
-	t->tileWidth = tileWidth;
-	t->tileHeight = tileHeight;
-	t->sourceName = s;
-
-	Add(cat, s, t);
-
-	return t;
-}
-
 
 #include <boost/filesystem.hpp>
 
-Tileset * TilesetManager::GetSizedTileset(const std::string & s, int altColorIndex)
+Tileset * TilesetManager::GetSizedTileset(const std::string & s)
 {
 	TilesetCategory cat = GetCategory(s);
 
-	Tileset *alreadyExistsTS = Find(cat, s, altColorIndex);
+	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
 		return alreadyExistsTS;
 
@@ -383,78 +328,39 @@ Tileset * TilesetManager::GetSizedTileset(const std::string & s, int altColorInd
 	int tileWidth = std::stoi(s.substr(finalUnderScore + 1, finalX - finalUnderScore - 1));
 	int tileHeight = std::stoi(s.substr(finalX + 1, finalDot - finalX - 1));
 
-	return Create(cat, s, tileWidth, tileHeight, altColorIndex);
+	return Create(cat, s, tileWidth, tileHeight);
 }
 
-Tileset * TilesetManager::GetSizedTileset(const std::string &folder, const std::string & s, int altColorIndex)
+Tileset * TilesetManager::GetSizedTileset(const std::string &folder, const std::string & s)
 {
 	string fullString = folder + s;
-	return GetSizedTileset(fullString, altColorIndex);
+	return GetSizedTileset(fullString);
 }
 
-Tileset * TilesetManager::GetSizedTileset(const std::string &folder, const std::string & s, Skin *skin)
-{
-	string fullString = folder + s;
-
-	if (skin != NULL)
-	{
-		return GetSizedTileset(fullString, skin->index, skin->numChanges, skin->startColors, skin->endColors);
-	}
-	else
-	{
-		return GetSizedTileset(fullString);
-	}
-}
-
-Tileset * TilesetManager::GetSizedTileset(const std::string & s, int altColorIndex, int numColorChanges,
-	sf::Color *startColorBuf, sf::Color *endColorBuf)
-{
-	std::size_t finalUnderScore = s.find_last_of("_");
-	std::size_t finalX = s.find_last_of("x");
-	std::size_t finalDot = s.find('.');
-	int tileWidth = std::stoi(s.substr(finalUnderScore + 1, finalX - finalUnderScore - 1));
-	int tileHeight = std::stoi(s.substr(finalX + 1, finalDot - finalX - 1));
-
-	return GetTileset(s, tileWidth, tileHeight, altColorIndex, numColorChanges, startColorBuf, endColorBuf );
-}
-
-
-Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex )
+Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int tileHeight )
 {
 	TilesetCategory cat = GetCategory(s);
 
-	Tileset *alreadyExistsTS = Find(cat, s, altColorIndex);
+	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
 		return alreadyExistsTS;
 
-	return Create(cat, s, tileWidth, tileHeight, altColorIndex);
-}
-
-Tileset * TilesetManager::GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin)
-{
-	if (skin != NULL)
-	{
-		return GetTileset(s, tileWidth, tileHeight, skin->index, skin->numChanges, skin->startColors, skin->endColors);
-	}
-	else
-	{
-		return GetTileset(s, tileWidth, tileHeight);
-	}
+	return Create(cat, s, tileWidth, tileHeight);
 }
 
 
 Tileset *TilesetManager::GetUpdatedTileset(
-	const std::string & s, int tileWidth, int tileHeight, int altColorIndex)
+	const std::string & s, int tileWidth, int tileHeight)
 {
 	TilesetCategory cat = GetCategory(s);
 
-	Tileset *alreadyExistsTS = Find(cat, s, altColorIndex);
+	Tileset *alreadyExistsTS = Find(cat, s);
 	if (alreadyExistsTS != NULL)
 	{
 		DestroyTileset(alreadyExistsTS);
 	}
 
-	return Create(cat, s, tileWidth, tileHeight, altColorIndex);
+	return Create(cat, s, tileWidth, tileHeight);
 }
 
 void TilesetManager::ClearTilesets()
@@ -466,25 +372,8 @@ void TilesetManager::ClearTilesets()
 		auto & currMap = tilesetMaps[i];
 		for (auto it = currMap.begin(); it != currMap.end(); ++it)
 		{
-			listIt = (*it).second.begin();
-			listItEnd = (*it).second.end();
-			for (; listIt != listItEnd; ++listIt)
-			{
-				delete (*listIt).first;
-
-				/*if ((*listIt) == NULL)
-				{
-					cout << "should never have a NULL tileset here" << endl;
-					assert( false );
-					continue;
-
-				}
-
-				cout << "About to delete: " << (*listIt)->sourceName << ", "
-					<< (*listIt)->tileWidth << ", " << (*listIt)->tileWidth << endl;*/
-
-			}
-
+			auto &tPair = (*it).second;
+			delete tPair.first;
 		}
 		currMap.clear();
 	}
@@ -501,20 +390,12 @@ void TilesetManager::DestroyTilesetIfExists(const std::string &sourceName,
 	if (it != currMap.end())
 	{
 		list<pair<Tileset*, int>> &currList = (*it).second;
-		for (auto lit = currList.begin(); lit != currList.end(); ++lit)
-		{
-			if ((*lit).first->altColorIndex == altIndex)
-			{
-				delete (*lit).first;
-				currList.erase(lit);
 
-				if (currList.empty())
-				{
-					currMap.erase(it);
-				}
-				return;
-			}
-		}
+		auto &tPair = (*it).second;
+
+		delete tPair.first;
+		
+		currMap.erase(it);
 	}
 }
 
@@ -526,21 +407,9 @@ void TilesetManager::DestroyTileset(Tileset * t)
 	auto it = currMap.find(t->sourceName);
 	if (it != currMap.end())
 	{
-		list<pair<Tileset*,int>> &currList = (*it).second;
-		for (auto lit = currList.begin(); lit != currList.end(); ++lit)
-		{
-			if ((*lit).first->altColorIndex == t->altColorIndex)
-			{
-				currList.erase(lit);
-				delete t;
+		delete t;
 
-				if (currList.empty())
-				{
-					currMap.erase(it);
-				}
-				return;
-			}
-		}
+		currMap.erase(it);
 	}
 }
 
@@ -557,11 +426,9 @@ void TilesetManager::ResetTilesetAccessCount()
 		auto &currMap = tilesetMaps[i];
 		for (auto it = currMap.begin(); it != currMap.end(); ++it)
 		{
-			auto &currList = (*it).second;
-			for (auto lit = currList.begin(); lit != currList.end(); ++lit)
-			{
-				(*lit).second = 0;
-			}
+			auto &tPair = (*it).second;
+
+			tPair.second = 0;
 		}
 	}
 }
@@ -571,21 +438,19 @@ void TilesetManager::CleanupUnusedTilests()
 	for (int i = C_ENEMY; i < C_Count; ++i)
 	{
 		auto &currMap = tilesetMaps[i];
-		for (auto it = currMap.begin(); it != currMap.end(); ++it)
+		for (auto it = currMap.begin(); it != currMap.end();)
 		{
-			auto &currList = (*it).second;
-			for (auto lit = currList.begin(); lit != currList.end(); )
+			auto &tPair = (*it).second;
+
+			if (tPair.second == 0) //not used
 			{
-				if ((*lit).second == 0) //not used
-				{
-					cout << "cleaning up unused: " << i << " called: " << (*lit).first->sourceName << endl;
-					delete (*lit).first;
-					lit = currList.erase(lit);
-				}
-				else
-				{
-					++lit;
-				}
+				cout << "cleaning up unused: " << i << " called: " << (*lit).first->sourceName << endl;
+				delete tPair.first;
+				currMap.erase(it);
+			}
+			else
+			{
+				++it;
 			}
 		}
 	}
@@ -596,11 +461,8 @@ void TilesetManager::DestroyTilesetCategory(TilesetCategory tc)
 	auto & currMap = tilesetMaps[tc];
 	for (auto it = currMap.begin(); it != currMap.end(); ++it)
 	{
-		auto & tsList = (*it).second;
-		for (auto lit = tsList.begin(); lit != tsList.end(); ++lit)
-		{
-			delete (*lit).first;
-		}
+		auto & tPair = (*it).second;
+		delete tPair.first;;
 	}
 	currMap.clear();
 }

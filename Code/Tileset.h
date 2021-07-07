@@ -4,21 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <list>
 
-struct Skin
-{
-	Skin(sf::Color *startCols, sf::Color *endCols,
-		int p_numChanges, int p_index)
-		:startColors(startCols), endColors(endCols),
-		numChanges(p_numChanges), index(p_index)
-	{
-
-	}
-	sf::Color *startColors;
-	sf::Color *endColors;
-	int numChanges;
-	int index;
-};
-
 struct Tileset
 {
 	~Tileset();
@@ -34,7 +19,6 @@ struct Tileset
 	int tileWidth;
 	int tileHeight;
 	std::string sourceName;
-	int altColorIndex;
 };
 
 struct TilesetManager
@@ -60,17 +44,11 @@ struct TilesetManager
 
 	TilesetManager();
 	~TilesetManager();
-	Tileset * GetSizedTileset(const std::string & s, int altColorIndex = 0);
-	Tileset * GetSizedTileset(const std::string &folder, const std::string & s, int altColorIndex = 0);
-	Tileset * GetSizedTileset(const std::string &folder, const std::string & s, Skin *skin);
-	Tileset * GetTileset(const std::string & s, int tileWidth = 0, int tileHeight = 0, int altColorIndex = 0);
-	Tileset * GetTileset( const std::string & s, int tileWidth, int tileHeight, int altColorIndex, int numColorChanges,
-		sf::Color *startColorBuf, sf::Color *endColorBuf);
-	Tileset * GetSizedTileset(const std::string & s, int altColorIndex, int numColorChanges,
-		sf::Color *startColorBuf, sf::Color *endColorBuf);
-	Tileset * GetTileset(const std::string & s, int tileWidth, int tileHeight, Skin *skin);
+	Tileset * GetSizedTileset(const std::string & s);
+	Tileset * GetSizedTileset(const std::string &folder, const std::string & s);
+	Tileset * GetTileset(const std::string & s, int tileWidth = 0, int tileHeight = 0);
 	Tileset *GetUpdatedTileset(
-		const std::string & s, int tileWidth, int tileHeight, int altColorIndex = 0);
+		const std::string & s, int tileWidth, int tileHeight );
 	void ClearTilesets();
 	int GetMemoryUsage();
 	void DestroyTilesetIfExists(const std::string &sourceName,
@@ -82,24 +60,22 @@ struct TilesetManager
 	void SetGameResourcesMode(bool on);
 	bool IsResourceMode();
 
-	sf::Texture *CreateAltColorTex( sf::Image &im,
+	/*sf::Texture *CreateAltColorTex( sf::Image &im,
 		int numAltColors, 
 		sf::Color *startColorBuf,
-		sf::Color *endColorBuf );
+		sf::Color *endColorBuf );*/
 	
 	void SetParentTilesetManager(TilesetManager *man);
 private:
 	bool gameResourcesMode;
 	TilesetManager *parentManager;
 	TilesetCategory GetCategory(const std::string &s);
-	Tileset *Create( TilesetCategory cat, const std::string &s, int tw, int th,
-		int altColorIndex );
+	Tileset *Create( TilesetCategory cat, const std::string &s, int tw, int th);
 	void Add( TilesetCategory cat, const std::string &s, Tileset *ts);
-	Tileset *Find( TilesetCategory cat, const std::string &s, int altColorIndex);
+	Tileset *Find( TilesetCategory cat, const std::string &s);
 	//std::list<Tileset*> tilesetList;
-	std::map<std::string, 
-		std::list<
-		std::pair<Tileset*,int>>> tilesetMaps[C_Count];
+	std::map<std::string,
+		std::pair<Tileset*, int>> tilesetMaps[C_Count];
 };
 
 #endif
