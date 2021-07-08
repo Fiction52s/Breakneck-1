@@ -22,13 +22,13 @@ struct LogDetailedInfo
 {
 	enum LogType
 	{
-		MOMENTA,
-		SKIN,
-		ENEMY,
-		WATER,
-		RAIL,
-		MUSIC,
-		LORE,
+		LT_MOMENTA,
+		LT_SKIN,
+		LT_ENEMY,
+		LT_WATER,
+		LT_RAIL,
+		LT_MUSIC,
+		LT_LORE,
 		Count
 	};
 
@@ -55,8 +55,9 @@ struct LogMenu
 		PREVIEWING_MUSIC,
 	};
 
-
-	TerrainPolygon *currWaterPoly;
+	int currLogType;
+	float waterShaderCounter;
+	TerrainPolygon *previewPoly;
 	State state;
 	EffectPool *sparklePool;
 	int selectedIndex;
@@ -75,7 +76,7 @@ struct LogMenu
 	Tileset **ts_preview;
 	sf::Vertex previewQuad[4];
 	sf::Sprite previewSpr;
-	ActorParams *testParams;
+	ActorParams *previewParams;
 	MusicInfo *currLogMusic;
 	sf::Vertex selectedBGQuad[4];
 	sf::Vertex *logSelectQuads;

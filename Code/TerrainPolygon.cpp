@@ -3538,6 +3538,7 @@ int TerrainPolygon::GetWaterIndexFromString(const std::string &s)
 	}
 	else
 	{
+		cout << "water string was not matched: " << s << endl;
 		assert(0);
 		return -1;
 	}
@@ -3654,7 +3655,7 @@ void TerrainPolygon::UpdateWaterType()
 
 void TerrainPolygon::SetAsWaterType(int water)
 {
-	SetMaterialType(GetWaterWorld(water), GetWaterIndexInWorld(water));
+	SetMaterialType(GetWaterWorld(water) + W1_SPECIAL, GetWaterIndexInWorld(water));
 }
 
 void TerrainPolygon::SetMaterialType(int world, int variation)

@@ -27,7 +27,7 @@ using namespace std;
 LogMenu::LogMenu(Session *p_sess)
 	:sess(p_sess)
 {
-	testParams = NULL;
+	previewParams = NULL;
 
 	ActorType *at = NULL;
 	//at = sess->types["crawler"];
@@ -38,6 +38,7 @@ LogMenu::LogMenu(Session *p_sess)
 	//testParams->CreateMyEnemy();
 	//testParams->myEnemy->UpdateFromEditParams(0);
 
+	waterShaderCounter = 0;
 	totalFrame = 0;
 	currLogMusic = NULL;
 	//currentMovie.scale(.5, .5);
@@ -120,15 +121,15 @@ LogMenu::LogMenu(Session *p_sess)
 	}
 
 
-	int waterWidth = 200;
-	int waterHeight = 200;
-	currWaterPoly = new TerrainPolygon;
-	currWaterPoly->AddPoint(Vector2i(imagePos), false);
-	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, 0 )), false);
-	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, waterHeight)), false);
-	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(0, waterHeight)), false);
-	currWaterPoly->SetAsWaterType(TerrainPolygon::WATER_POISON);
-	currWaterPoly->Finalize();
+	int waterWidth = 400;
+	int waterHeight = 400;
+	previewPoly = new TerrainPolygon;
+	previewPoly->AddPoint(Vector2i(imagePos), false);
+	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, 0 )), false);
+	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, waterHeight)), false);
+	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(0, waterHeight)), false);
+	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
+	previewPoly->Finalize();
 
 	stringstream ss;
 
@@ -210,7 +211,7 @@ void LogMenu::LoadLogInfo()
 				{
 					getline(is, enemyString);
 
-					currLog.logType = LogDetailedInfo::ENEMY;
+					currLog.logType = LogDetailedInfo::LT_ENEMY;
 					currLog.enemyTypeName = enemyString;
 				}
 				else if (typeString == "Water")
@@ -218,6 +219,7 @@ void LogMenu::LoadLogInfo()
 					string waterString;
 					getline(is, waterString);
 
+					currLog.logType = LogDetailedInfo::LT_WATER;
 					currLog.waterIndex = TerrainPolygon::GetWaterIndexFromString(waterString);
 				}
 
@@ -472,42 +474,46 @@ void LogMenu::SetCurrLog()
 		else
 		{
 			LogDetailedInfo &currInfo = logInfo[ySelector->currIndex][xSelector->currIndex];
-			if (currInfo.enemyTypeName != "" )
+
+			if (previewParams != NULL)
+			{
+				delete previewParams;
+				previewParams = NULL;
+				tMan.ClearTilesets();
+				sMan.ClearAll();
+			}
+
+			currLogType = currInfo.logType;
+
+			if (currLogType == LogDetailedInfo::LT_ENEMY )
 			{
 				ActorType *at;
 				at = sess->types[currInfo.enemyTypeName];
 
-				if (testParams != NULL)
-				{
-					delete testParams;
-					tMan.ClearTilesets();
-					sMan.ClearAll();
-				}
+				
 
 				sess->specialTempTilesetManager = &tMan;
 				sess->specialTempSoundManager = &sMan;
-				testParams = at->info.pMaker(at, 1);
+				previewParams = at->info.pMaker(at, 1);
 
-				testParams->SetPosition(imagePos + Vector2f( 256, 256 ));
-				testParams->CreateMyEnemy();
+				previewParams->SetPosition(imagePos + Vector2f( 256, 256 ));
+				previewParams->CreateMyEnemy();
 
 				sess->specialTempTilesetManager = NULL;
 				sess->specialTempSoundManager = NULL;
 
-				testParams->myEnemy->UpdateFromEditParams(0);
+				previewParams->myEnemy->UpdateFromEditParams(0);
 
 				//currInfo.ts_preview = tMan.GetSizedTileset(currInfo.imageStr + ".png");
 				//previewSpr.setTexture(*currInfo.ts_preview->texture);
 				//previewSpr.setTextureRect(currInfo.ts_preview->GetSubRect(currInfo.tile));
 			}
+			else if (currLogType == LogDetailedInfo::LT_WATER)
+			{
+				previewPoly->SetAsWaterType(currInfo.waterIndex);
+			}
 			else
 			{
-				if (testParams != NULL)
-				{
-					delete testParams;
-					testParams = NULL;
-				}
-				 
 				previewSpr.setTexture(*ts_noPreview->texture);
 				previewSpr.setTextureRect(ts_noPreview->GetSubRect(0));
 			}
@@ -623,9 +629,23 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		sparklePool->ActivateEffect(&ei);
 	}
 
-	if (testParams != NULL)
+	if (previewParams != NULL)
 	{
-		testParams->myEnemy->UpdateFromEditParams(1);
+		previewParams->myEnemy->UpdateFromEditParams(1);
+	}
+
+	if (currLogType == LogDetailedInfo::LT_WATER)
+	{
+		//set oldshaderzoom when you pause the game, so that if it gets changed
+		//it updates when you return to the game
+		//oldShaderZoom = zoom;
+
+		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		{
+			sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+			sess->waterShaders[i].setUniform("zoom", 1.f);
+		}
+		waterShaderCounter += .01f;
 	}
 	
 	++totalFrame;
@@ -666,15 +686,19 @@ void LogMenu::Draw(sf::RenderTarget *target)
 	{
 		//target->draw(previewSpr);
 
-		if (testParams != NULL)
+		switch (currLogType)
 		{
-			testParams->DrawEnemy(target);
-		}
-		else
+		case LogDetailedInfo::LT_ENEMY:
 		{
-			currWaterPoly->Draw(target);
+			previewParams->DrawEnemy(target);
+			break;
 		}
-		
+		case LogDetailedInfo::LT_WATER:
+		{
+			previewPoly->Draw(target);
+			break;
+		}
+		}
 	}
 
 
