@@ -108,7 +108,7 @@ TigerSpinTurret::TigerSpinTurret(ActorParams *ap)
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	ts_bulletExplode = GetTileset("FX/bullet_explode3_64x64.png");
+	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	speed = 10;
 

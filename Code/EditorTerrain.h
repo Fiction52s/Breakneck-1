@@ -274,6 +274,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ResetState();
 	static int GetWaterWorld(int waterT);
 	static int GetWaterIndexInWorld(int waterT);
+	static int GetWaterIndexFromString(const std::string &s);
 	static sf::Color GetWaterColor(int waterT);
 	bool IsSpecialTerrainType(int w, int var);
 	void UpdateWaterType();
@@ -510,6 +511,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void ClearPoints();
 	void SetMaterialType(
 		int world, int variation);
+	void SetAsWaterType(int water);
 	void SetGrassType(int gType);
 	void UpdateMaterialType();
 	void RemoveSlivers();

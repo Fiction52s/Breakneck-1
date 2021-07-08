@@ -16,6 +16,7 @@ struct EffectPool;
 struct MusicInfo;
 struct SingleAxisSelector;
 struct ActorParams;
+struct TerrainPolygon;
 
 struct LogDetailedInfo
 {
@@ -24,13 +25,16 @@ struct LogDetailedInfo
 		MOMENTA,
 		SKIN,
 		ENEMY,
+		WATER,
+		RAIL,
 		MUSIC,
 		LORE,
 		Count
 	};
 
 	LogDetailedInfo()
-		:logType(0),ts_preview( NULL )
+		:logType(0),ts_preview( NULL ),
+		waterIndex(-1)
 	{
 
 	}
@@ -39,6 +43,7 @@ struct LogDetailedInfo
 	std::string desc;
 	int logType;
 	std::string enemyTypeName;
+	int waterIndex;
 	Tileset *ts_preview;
 };
 
@@ -50,6 +55,8 @@ struct LogMenu
 		PREVIEWING_MUSIC,
 	};
 
+
+	TerrainPolygon *currWaterPoly;
 	State state;
 	EffectPool *sparklePool;
 	int selectedIndex;

@@ -1478,11 +1478,10 @@ bool GameSession::Load()
 
 	SetupShardsCapturedField();
 	
-	SetupShardMenu();
+	/*SetupShardMenu();
 	SetupLogMenu();
 
-	SetupPauseMenu();
-	//return true;
+	SetupPauseMenu();*/
 
 	if( progressDisplay != NULL )
 		progressDisplay->SetProgressString("started loading!", 0);
@@ -1597,6 +1596,11 @@ bool GameSession::Load()
 	matSet.clear();
 
 	ReadFile();
+
+	SetupShardMenu();
+	SetupLogMenu();
+
+	SetupPauseMenu();
 
 	SetupPlayers();
 

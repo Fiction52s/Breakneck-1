@@ -405,6 +405,7 @@ void SoundManager::ClearAll()
 	{
 		delete (*it);
 	}
+	sounds.clear();
 
 	/*for( list<MusicInfo*>::iterator it = songs.begin(); it != songs.end(); ++it )
 	{

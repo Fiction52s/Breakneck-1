@@ -19,7 +19,7 @@
 #include "SaveFile.h"
 #include "Session.h"
 #include "Actor.h"
-
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -120,6 +120,16 @@ LogMenu::LogMenu(Session *p_sess)
 	}
 
 
+	int waterWidth = 200;
+	int waterHeight = 200;
+	currWaterPoly = new TerrainPolygon;
+	currWaterPoly->AddPoint(Vector2i(imagePos), false);
+	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, 0 )), false);
+	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, waterHeight)), false);
+	currWaterPoly->AddPoint(Vector2i(imagePos + Vector2f(0, waterHeight)), false);
+	currWaterPoly->SetAsWaterType(TerrainPolygon::WATER_POISON);
+	currWaterPoly->Finalize();
+
 	stringstream ss;
 
 	LoadLogInfo();
@@ -200,7 +210,15 @@ void LogMenu::LoadLogInfo()
 				{
 					getline(is, enemyString);
 
+					currLog.logType = LogDetailedInfo::ENEMY;
 					currLog.enemyTypeName = enemyString;
+				}
+				else if (typeString == "Water")
+				{
+					string waterString;
+					getline(is, waterString);
+
+					currLog.waterIndex = TerrainPolygon::GetWaterIndexFromString(waterString);
 				}
 
 				while (getline(is, lineString))
@@ -469,7 +487,6 @@ void LogMenu::SetCurrLog()
 				sess->specialTempTilesetManager = &tMan;
 				sess->specialTempSoundManager = &sMan;
 				testParams = at->info.pMaker(at, 1);
-				
 
 				testParams->SetPosition(imagePos + Vector2f( 256, 256 ));
 				testParams->CreateMyEnemy();
@@ -652,6 +669,10 @@ void LogMenu::Draw(sf::RenderTarget *target)
 		if (testParams != NULL)
 		{
 			testParams->DrawEnemy(target);
+		}
+		else
+		{
+			currWaterPoly->Draw(target);
 		}
 		
 	}

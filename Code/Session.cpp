@@ -726,9 +726,6 @@ void Session::RegisterW6Enemies()
 	AddWorldEnemy("skeletonnode", 6, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/skeletonnode_32x32.png"));
 
-	AddBasicAerialWorldEnemy("dimensioneye", 6, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
-	AddBasicAerialWorldEnemy("dimensionexit", 6, CreateEnemy<DimensionExit>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
-
 	AddBasicAerialWorldEnemy("freeflightbooster", 6, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("skeleton", 6, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
@@ -807,6 +804,9 @@ void Session::RegisterW7Enemies()
 {
 	//AddBasicGroundWorldEnemy("greygoal", 7, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
+	AddBasicAerialWorldEnemy("dimensioneye", 7, CreateEnemy<DimensionEye>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+	AddBasicAerialWorldEnemy("dimensionexit", 7, CreateEnemy<DimensionExit>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);
+
 	AddWorldEnemy("annihilationspring", 7, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	AddBasicAerialWorldEnemy("swordprojectilebooster", 7, CreateEnemy<SwordProjectileBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
@@ -825,11 +825,7 @@ void Session::RegisterW7Enemies()
 
 	AddBasicAerialWorldEnemy("remotecomboer", 7, CreateEnemy<RemoteComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
-	
-
 	AddBasicAerialWorldEnemy("trailer", 7, CreateEnemy<Trailer>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
-
-
 }
 
 void Session::RegisterW8Enemies()

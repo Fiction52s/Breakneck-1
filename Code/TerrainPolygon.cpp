@@ -3470,6 +3470,79 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 	}
 }
 
+int TerrainPolygon::GetWaterIndexFromString(const std::string &s)
+{
+	if (s == "Normal")
+	{
+		return WATER_NORMAL;
+	}
+	else if (s == "Glide")
+	{
+		return WATER_GLIDE;
+	}
+	else if (s == "LowGrav")
+	{
+		return WATER_LOWGRAV;
+	}
+	else if (s == "HeavyGrav")
+	{
+		return WATER_HEAVYGRAV;
+	}
+	else if (s == "Buoyancy")
+	{
+		return WATER_BUOYANCY;
+	}
+	else if (s == "Accel")
+	{
+		return WATER_ACCEL;
+	}
+	else if (s == "ZeroGrav")
+	{
+		return WATER_ZEROGRAV;
+	}
+	else if (s == "Launcher")
+	{
+		return WATER_LAUNCHER;
+	}
+	else if (s == "Momentum")
+	{
+		return WATER_MOMENTUM;
+	}
+	else if (s == "Timeslow")
+	{
+		return WATER_TIMESLOW;
+	}
+	else if (s == "Poison")
+	{
+		return WATER_POISON;
+	}
+	else if (s == "FreeFlight")
+	{
+		return WATER_FREEFLIGHT;
+	}
+	else if (s == "InvertedInputs")
+	{
+		return WATER_INVERTEDINPUTS;
+	}
+	else if (s == "Rewind")
+	{
+		return WATER_REWIND;
+	}
+	else if (s == "SwordProjectile")
+	{
+		return WATER_SWORDPROJECTILE;
+	}
+	else if (s == "Super")
+	{
+		return WATER_SUPER;
+	}
+	else
+	{
+		assert(0);
+		return -1;
+	}
+}
+
 bool TerrainPolygon::IsPhaseType()
 {
 	return terrainWorldType == 3 && terrainVariation == 5;
@@ -3577,6 +3650,11 @@ void TerrainPolygon::UpdateWaterType()
 	{
 		waterType = -1;
 	}
+}
+
+void TerrainPolygon::SetAsWaterType(int water)
+{
+	SetMaterialType(GetWaterWorld(water), GetWaterIndexInWorld(water));
 }
 
 void TerrainPolygon::SetMaterialType(int world, int variation)
