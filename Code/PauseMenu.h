@@ -6,12 +6,14 @@
 #include "Input.h"
 #include "Movement.h"
 
+
 struct GameSession;
 struct ShardMenu;
 struct LogMenu;
 struct ControlSettingsMenu;
 struct ColorShifter;
 struct ControlProfile;
+struct PaletteShader;
 struct OptionSelector
 {
 	static sf::Font *font;	
@@ -134,7 +136,11 @@ struct PauseMenu
 	UpdateResponse Update(
 		ControllerState &currInput,
 		ControllerState &prevInput );
-	Tileset *ts_background[Count];
+	Tileset *ts_background;
+	
+
+	PaletteShader *bgPaletteShader;
+
 	Tileset *ts_select;
 
 	ShardMenu *shardMenu;
@@ -142,6 +148,8 @@ struct PauseMenu
 	KinMenu *kinMenu;
 
 	sf::Sprite bgSprite;
+	sf::Sprite tabSprite;
+	Tileset *ts_tabs;
 	sf::Sprite selectSprite;
 	GameSession *game;
 	ControlSettingsMenu *controlSettingsMenu;

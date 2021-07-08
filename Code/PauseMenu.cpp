@@ -14,6 +14,7 @@
 #include "Config.h"
 #include "KinMenu.h"
 #include "LogMenu.h"
+#include "PaletteShader.h"
 //#include "Actor.h"
 
 using namespace sf;
@@ -302,12 +303,22 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	optionType = OptionType::O_INPUT;
 	cOptions = NULL;//new OptionsMenu( this );
-	ts_background[0] = game->GetSizedTileset("Menu/Pause/pause_1_pause_910x490.png");
+	/*ts_background[0] = game->GetSizedTileset("Menu/Pause/pause_1_pause_910x490.png");
 	ts_background[1] = game->GetSizedTileset("Menu/Pause/pause_2_map_910x490.png");
 	ts_background[2] = game->GetSizedTileset("Menu/Pause/pause_3_shards_910x490.png");
 	ts_background[3] = game->GetSizedTileset("Menu/Pause/pause_4_logs_910x490.png");
 	ts_background[4] = game->GetSizedTileset("Menu/Pause/pause_5_options_910x490.png");
-	ts_background[5] = game->GetSizedTileset("Menu/Pause/pause_6_kin_910x490.png");
+	ts_background[5] = game->GetSizedTileset("Menu/Pause/pause_6_kin_910x490.png");*/
+
+	ts_background = game->GetSizedTileset("Menu/Pause/pause_BG_1720x880.png");
+	bgSprite.setTexture(*ts_background->texture);
+
+	ts_tabs = game->GetSizedTileset("Menu/Pause/pause_tabs_1326x50.png");
+	tabSprite.setTexture(*ts_tabs->texture);
+	
+
+	bgPaletteShader = new PaletteShader("pause", 
+		"Resources/Menu/Pause/pause_palette_16x6.png");
 
 	ts_select = game->GetSizedTileset("Menu/menu_select_800x140.png");
 	
@@ -330,8 +341,8 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	selectSprite.setTexture( *ts_select->texture );
 
-	bgSprite.setPosition( 0, 0 );
-	bgSprite.setScale(2, 2);
+	bgSprite.setPosition( 50, 50 );
+	tabSprite.setPosition(0, 0);
 
 	//pauseSelectIndex = 0;
 
@@ -399,6 +410,8 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	minWaitFrames = 4;
 	momentum = 0;
 	maxMomentum = 4;
+
+	SetTab(PAUSE);
 	/*maxWaitFrames = 30;
 	currWaitFrames = maxWaitFrames;
 	minWaitFrames = 4;
@@ -446,6 +459,8 @@ PauseMenu::~PauseMenu()
 		delete soundSelectors[i];
 	}
 	delete[] soundSelectors;
+
+	delete bgPaletteShader;
 }
 
 
@@ -492,7 +507,9 @@ void PauseMenu::SetTab( Tab t )
 	}
 
 	currentTab = t;
-	bgSprite.setTexture( *ts_background[currentTab]->texture );
+	bgPaletteShader->SetPaletteIndex(currentTab);
+
+	tabSprite.setTextureRect(ts_tabs->GetSubRect(currentTab));
 
 	switch( t )
 	{
@@ -554,7 +571,8 @@ bool PauseMenu::CanChangeTab()
 
 void PauseMenu::Draw( sf::RenderTarget *target )
 {
-	target->draw( bgSprite );
+	target->draw( bgSprite, &bgPaletteShader->pShader);
+	target->draw(tabSprite);
 
 	if( currentTab == PAUSE )
 	{
