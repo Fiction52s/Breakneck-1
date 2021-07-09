@@ -618,6 +618,8 @@ struct Actor : QuadTreeCollider,
 		SKIN_Count
 	};
 
+	
+
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
@@ -1321,7 +1323,7 @@ struct Actor : QuadTreeCollider,
 		V2d &hitPos,
 		bool attackFacingRight);
 	bool IsNormalSkin();
-
+	static int GetSkinIndexFromString(const std::string &s);
 	bool CanBlockEnemy(HitboxInfo::HitPosType hpt, V2d &hitPos );
 	void RestoreAirOptions();
 	bool CanCancelAttack();

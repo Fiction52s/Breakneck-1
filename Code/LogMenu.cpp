@@ -20,12 +20,13 @@
 #include "Session.h"
 #include "Actor.h"
 #include "EditorTerrain.h"
+#include "EditorRail.h"
 
 using namespace sf;
 using namespace std;
 
 LogMenu::LogMenu(Session *p_sess)
-	:sess(p_sess)
+	:sess(p_sess), pSkinShader("player"), pFaceSkinShader( "player")
 {
 	previewParams = NULL;
 
@@ -91,11 +92,24 @@ LogMenu::LogMenu(Session *p_sess)
 	imagePos = Vector2f(1243, 66);
 	previewSpr.setPosition(imagePos);
 
+	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
+	kinSprite.setTexture(*ts_kin->texture);
+	kinSprite.setScale(.5, .5);
+	kinSprite.setPosition(imagePos);
+
+	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 	
+
+	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
+	kinFaceSprite.setTexture(*ts_kinFace->texture);
+	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
+	kinFaceSprite.setPosition(imagePos + Vector2f(250, 0));
+
+	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
 
 	state = WAIT;
 
-	ts_logs = sess->GetSizedTileset("Enemies/poweritem_128x128.png");
+	ts_logs = sess->GetSizedTileset("Logs/logs_64x64.png");
 
 	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
 	sparklePool->ts = ts_sparkle;
@@ -130,6 +144,13 @@ LogMenu::LogMenu(Session *p_sess)
 	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(0, waterHeight)), false);
 	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
 	previewPoly->Finalize();
+
+	previewRail = new TerrainRail;
+	previewRail->AddPoint(Vector2i(imagePos), false);
+	previewRail->AddPoint(Vector2i(imagePos + Vector2f(300, 300)), false);
+
+	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
+	previewRail->Finalize();
 
 	stringstream ss;
 
@@ -183,7 +204,10 @@ void LogMenu::LoadLogInfo()
 		{
 			string lineString;
 			string typeString;
+			string skinString;
 			string enemyString;
+			string waterString;
+			string railString;
 			string descriptionString;
 			int index = 22 * i;
 			int x;
@@ -194,6 +218,11 @@ void LogMenu::LoadLogInfo()
 
 			while (getline(is, lineString))
 			{
+				if (lineString == "")
+				{
+					continue;
+				}
+
 				x = index % 11;
 				y = index / 11;
 
@@ -216,35 +245,53 @@ void LogMenu::LoadLogInfo()
 				}
 				else if (typeString == "Water")
 				{
-					string waterString;
 					getline(is, waterString);
 
 					currLog.logType = LogDetailedInfo::LT_WATER;
 					currLog.waterIndex = TerrainPolygon::GetWaterIndexFromString(waterString);
 				}
-
-				while (getline(is, lineString))
+				else if (typeString == "Rail")
 				{
-					if (lineString == "")
+					getline(is, railString);
+					currLog.logType = LogDetailedInfo::LT_RAIL;
+					currLog.railIndex = TerrainRail::GetRailIndexFromString(railString);
+				}
+				else if (typeString == "Skin")
+				{
+					getline(is, skinString);
+					currLog.logType = LogDetailedInfo::LT_SKIN;
+					currLog.skinIndex = Actor::GetSkinIndexFromString(skinString);
+				}
+				
+				if (currLog.logType == LogDetailedInfo::LT_SKIN)
+				{
+					descriptionString = "Special costume for Kin";
+				}
+				else
+				{
+					while (getline(is, lineString))
 					{
-						index++;
-						break;
-					}
-					else
-					{
-						if (first)
+						if (lineString == "")
 						{
-							first = false;
+							break;
 						}
 						else
 						{
-							descriptionString += "\n";
+							if (first)
+							{
+								first = false;
+							}
+							else
+							{
+								descriptionString += "\n";
+							}
+
+							descriptionString += lineString;
+
 						}
-
-						descriptionString += lineString;
-
 					}
 				}
+				index++;
 				currLog.desc = descriptionString;
 			}
 
@@ -512,6 +559,16 @@ void LogMenu::SetCurrLog()
 			{
 				previewPoly->SetAsWaterType(currInfo.waterIndex);
 			}
+			else if (currLogType == LogDetailedInfo::LT_RAIL)
+			{
+				previewRail->SetRailType(currInfo.railIndex);
+				previewRail->UpdateTexturedQuads();
+			}
+			else if (currLogType == LogDetailedInfo::LT_SKIN)
+			{
+				pSkinShader.SetSkin(currInfo.skinIndex);
+				pFaceSkinShader.SetSkin(currInfo.skinIndex);
+			}
 			else
 			{
 				previewSpr.setTexture(*ts_noPreview->texture);
@@ -696,6 +753,17 @@ void LogMenu::Draw(sf::RenderTarget *target)
 		case LogDetailedInfo::LT_WATER:
 		{
 			previewPoly->Draw(target);
+			break;
+		}
+		case LogDetailedInfo::LT_RAIL:
+		{
+			previewRail->Draw(target);
+			break;
+		}
+		case LogDetailedInfo::LT_SKIN:
+		{
+			target->draw(kinSprite, &pSkinShader.pShader);
+			target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
 			break;
 		}
 		}

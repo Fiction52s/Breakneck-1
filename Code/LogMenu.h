@@ -10,6 +10,7 @@
 #include <string>
 #include <boost/thread.hpp>
 #include "SoundManager.h"
+#include "PlayerSkinShader.h"
 
 struct Session;
 struct EffectPool;
@@ -17,6 +18,7 @@ struct MusicInfo;
 struct SingleAxisSelector;
 struct ActorParams;
 struct TerrainPolygon;
+struct TerrainRail;
 
 struct LogDetailedInfo
 {
@@ -34,7 +36,9 @@ struct LogDetailedInfo
 
 	LogDetailedInfo()
 		:logType(0),ts_preview( NULL ),
-		waterIndex(-1)
+		waterIndex(-1),
+		railIndex(-1),
+		skinIndex( -1)
 	{
 
 	}
@@ -44,6 +48,8 @@ struct LogDetailedInfo
 	int logType;
 	std::string enemyTypeName;
 	int waterIndex;
+	int railIndex;
+	int skinIndex;
 	Tileset *ts_preview;
 };
 
@@ -55,9 +61,16 @@ struct LogMenu
 		PREVIEWING_MUSIC,
 	};
 
+	PlayerSkinShader pSkinShader;
+	PlayerSkinShader pFaceSkinShader;
+	Tileset *ts_kinFace;
+	sf::Sprite kinFaceSprite;
+	Tileset *ts_kin;
+	sf::Sprite kinSprite;
 	int currLogType;
 	float waterShaderCounter;
 	TerrainPolygon *previewPoly;
+	TerrainRail *previewRail;
 	State state;
 	EffectPool *sparklePool;
 	int selectedIndex;
@@ -66,6 +79,7 @@ struct LogMenu
 	sf::Text currLogNameText;
 	LogDetailedInfo **logInfo;
 	Tileset *ts_logs;
+	Tileset *ts_rail;
 	sf::Sprite selectedLogHighlight;
 	Session *sess;
 	sf::Vector2f imagePos;

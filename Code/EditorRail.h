@@ -141,6 +141,7 @@ struct TerrainRail : ISelectable, QuadTreeEntrant
 	void UpdateState();
 	void FadeOut();
 	bool IsActive();
+	static int GetRailIndexFromString(const std::string &s);
 	void TryCreateEnemyChain();
 	sf::Color GetRailColor();
 	void SetRailToActorType(ActorParams *ap);

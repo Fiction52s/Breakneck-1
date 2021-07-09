@@ -20776,6 +20776,38 @@ void Actor::UpdateInHitlag()
 
  }
 
+ int Actor::GetSkinIndexFromString(const std::string &s)
+ {
+	if (s == "SKIN_NORMAL"){return SKIN_NORMAL; }
+	 else if (s == "SKIN_RED"){return SKIN_RED;}
+	 else if (s == "SKIN_BLUE"){return SKIN_BLUE; }
+	 else if (s == "SKIN_ORANGE"){return SKIN_ORANGE; }
+	 else if (s == "SKIN_PINK"){return SKIN_PINK; }
+	 else if (s == "SKIN_LIGHT"){return SKIN_LIGHT; }
+	 else if (s == "SKIN_GHOST"){return SKIN_GHOST; }
+	 else if (s == "SKIN_DARK"){return SKIN_DARK; }
+	 else if (s == "SKIN_VILLAIN"){return SKIN_VILLAIN; }
+	 else if (s == "SKIN_TOXIC"){return SKIN_TOXIC; }
+	 else if (s == "SKIN_AMERICA"){return SKIN_AMERICA; }
+	 else if (s == "SKIN_METAL"){return SKIN_METAL; }
+	 else if (s == "SKIN_GOLD"){return SKIN_GOLD; }
+	 else if (s == "SKIN_PURPLE"){return SKIN_PURPLE; }
+	 else if (s == "SKIN_MAGI"){return SKIN_MAGI; }
+	 else if (s == "SKIN_GLIDE"){return SKIN_GLIDE; }
+	 else if (s == "SKIN_BONFIRE"){return SKIN_BONFIRE; }
+	 else if (s == "SKIN_GDUBS"){return SKIN_GDUBS; }
+	 else if (s == "SKIN_SHADOW"){return SKIN_SHADOW; }
+	 else if (s == "SKIN_DUSK"){return SKIN_DUSK; }
+	 else if (s == "SKIN_DAWN"){return SKIN_DAWN; }
+	 else if (s == "SKIN_TRIX"){return SKIN_TRIX; }
+	 else
+	 {
+		 cout << "wrong string for skin: " << s << endl;
+		 assert(0);
+		 return SKIN_NORMAL;
+	 }
+ }
+
 MotionGhostEffect::MotionGhostEffect( int maxGhosts )
 	:shader( NULL ), ts( NULL )
 {

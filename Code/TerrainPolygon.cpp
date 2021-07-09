@@ -3472,67 +3472,67 @@ sf::Color TerrainPolygon::GetWaterColor(int waterT)
 
 int TerrainPolygon::GetWaterIndexFromString(const std::string &s)
 {
-	if (s == "Normal")
+	if (s == "WATER_NORMAL")
 	{
 		return WATER_NORMAL;
 	}
-	else if (s == "Glide")
+	else if (s == "WATER_GLIDE")
 	{
 		return WATER_GLIDE;
 	}
-	else if (s == "LowGrav")
+	else if (s == "WATER_LOWGRAV")
 	{
 		return WATER_LOWGRAV;
 	}
-	else if (s == "HeavyGrav")
+	else if (s == "WATER_HEAVYGRAV")
 	{
 		return WATER_HEAVYGRAV;
 	}
-	else if (s == "Buoyancy")
+	else if (s == "WATER_BUOYANCY")
 	{
 		return WATER_BUOYANCY;
 	}
-	else if (s == "Accel")
+	else if (s == "WATER_ACCEL")
 	{
 		return WATER_ACCEL;
 	}
-	else if (s == "ZeroGrav")
+	else if (s == "WATER_ZEROGRAV")
 	{
 		return WATER_ZEROGRAV;
 	}
-	else if (s == "Launcher")
+	else if (s == "WATER_LAUNCHER")
 	{
 		return WATER_LAUNCHER;
 	}
-	else if (s == "Momentum")
+	else if (s == "WATER_MOMENTUM")
 	{
 		return WATER_MOMENTUM;
 	}
-	else if (s == "Timeslow")
+	else if (s == "WATER_TIMESLOW")
 	{
 		return WATER_TIMESLOW;
 	}
-	else if (s == "Poison")
+	else if (s == "WATER_POISON")
 	{
 		return WATER_POISON;
 	}
-	else if (s == "FreeFlight")
+	else if (s == "WATER_FREEFLIGHT")
 	{
 		return WATER_FREEFLIGHT;
 	}
-	else if (s == "InvertedInputs")
+	else if (s == "WATER_INVERTEDINPUTS")
 	{
 		return WATER_INVERTEDINPUTS;
 	}
-	else if (s == "Rewind")
+	else if (s == "WATER_REWIND")
 	{
 		return WATER_REWIND;
 	}
-	else if (s == "SwordProjectile")
+	else if (s == "WATER_SWORDPROJECTILE")
 	{
 		return WATER_SWORDPROJECTILE;
 	}
-	else if (s == "Super")
+	else if (s == "WATER_SUPER")
 	{
 		return WATER_SUPER;
 	}

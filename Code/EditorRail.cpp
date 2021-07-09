@@ -302,6 +302,75 @@ TerrainPoint *TerrainRail::GetPoint(int index)
 	}
 }
 
+int TerrainRail::GetRailIndexFromString(const std::string &s)
+{
+	if (s == "FLOORANDCEILING")
+	{
+		return FLOORANDCEILING;
+	}
+	else if (s == "FLOOR")
+	{
+		return FLOOR;
+	}
+	else if (s == "CEILING")
+	{
+		return CEILING;
+	}
+	else if (s == "BOUNCE")
+	{
+		return BOUNCE;
+	}
+	else if (s == "SCORPIONONLY")
+	{
+		return SCORPIONONLY;
+	}
+	else if (s == "GRIND")
+	{
+		return GRIND;
+	}
+	else if (s == "PHASE")
+	{
+		return PHASE;
+	}
+	else if (s == "INVERSEPHASE")
+	{
+		return INVERSEPHASE;
+	}
+	else if (s == "ACCELERATE")
+	{
+		return ACCELERATE;
+	}
+	else if (s == "FADE")
+	{
+		return FADE;
+	}
+	else if (s == "LOCKED")
+	{
+		return LOCKED;
+	}
+	else if (s == "ANTITIMESLOW")
+	{
+		return ANTITIMESLOW;
+	}
+	else if (s == "WIREONLY")
+	{
+		return WIREONLY;
+	}
+	else if (s == "WIREBLOCKING")
+	{
+		return WIREBLOCKING;
+	}
+	else if (s == "HIT")
+	{
+		return HIT;
+	}
+	else
+	{
+		cout << "rail string was not matched: " << s << endl;
+		assert(0);
+		return -1;
+	}
+}
 
 bool TerrainRail::CanAdd()
 {
