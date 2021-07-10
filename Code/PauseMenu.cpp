@@ -507,6 +507,7 @@ void PauseMenu::SetTab( Tab t )
 	}
 
 	currentTab = t;
+
 	bgPaletteShader->SetPaletteIndex(currentTab);
 
 	tabSprite.setTextureRect(ts_tabs->GetSubRect(currentTab));
@@ -520,6 +521,7 @@ void PauseMenu::SetTab( Tab t )
 		break;
 	case KIN:
 	{
+		kinMenu->UpdateCommandButton();
 		SaveFile *sf = game->GetCurrentProgress();
 		int skinInd = 0;
 		if (sf != NULL)
@@ -536,15 +538,18 @@ void PauseMenu::SetTab( Tab t )
 		
 	case SHARDS:
 		//shardMenu->SetCurrSequence();
+		shardMenu->SetShardTab();
 		shardMenu->state = ShardMenu::WAIT;
 		shardMenu->SetCurrShard();
 		break;
 	case LOGS:
+		logMenu->SetLogTab();
 		//shardMenu->SetCurrSequence();
-		logMenu->state = LogMenu::WAIT;
-		logMenu->SetCurrLog();
+		
 		break;
 	case OPTIONS:
+		optionsMenu->state = OptionsMenu::CHOOSESTATE;
+		game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
 		//LoadControlOptions();
 		//UpdateButtonIcons();
 		break;
@@ -821,8 +826,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
-			TabLeft();
-
+			
 			if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
@@ -840,6 +844,8 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			{
 				kinMenu->UpdateCommandButton();
 			}
+
+			TabLeft();
 
 			return R_NONE;
 		}
@@ -857,25 +863,12 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				game->soundNodeList->SetSoundVolume(sVol);
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
+			
+
+			
+
 			TabRight();
 
-			if (currentTab == OPTIONS)
-			{
-				optionsMenu->state = OptionsMenu::CHOOSESTATE;
-				game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
-			}
-			else if (currentTab == SHARDS)
-			{
-				shardMenu->SetShardTab();
-			}
-			else if (currentTab == LOGS)
-			{
-				logMenu->SetLogTab();
-			}
-			else if (currentTab == KIN)
-			{
-				kinMenu->UpdateCommandButton();
-			}
 			return R_NONE;
 		}
 	}

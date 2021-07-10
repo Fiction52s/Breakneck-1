@@ -37,7 +37,7 @@ struct LogDetailedInfo
 	};
 
 	LogDetailedInfo()
-		:logType(0), ts_preview(NULL),
+		:logType(-1), ts_preview(NULL),
 		waterIndex(-1),
 		railIndex(-1),
 		skinIndex(-1),
@@ -70,6 +70,14 @@ struct LogMenu
 		PREVIEWING_MUSIC,
 	};
 
+	enum SelectMode
+	{
+		SM_WORLD,
+		SM_LOG,
+	};
+
+	sf::Text worldText;
+	int currSelectMode;
 	Tileset *ts_grass;
 	sf::Sprite grassSprite;
 	PlayerSkinShader pSkinShader;
@@ -91,14 +99,13 @@ struct LogMenu
 	LogDetailedInfo **logInfo;
 	Tileset *ts_logs;
 	Tileset *ts_rail;
-	sf::Sprite selectedLogHighlight;
 	Session *sess;
 	sf::Vector2f imagePos;
 	TilesetManager tMan;
 	SoundManager sMan;
 	SingleAxisSelector *xSelector;
 	SingleAxisSelector *ySelector;
-	Tileset **ts_preview;
+	SingleAxisSelector *worldSelector;
 	sf::Vertex previewQuad[4];
 	sf::Sprite previewSpr;
 	ActorParams *previewParams;
@@ -138,6 +145,7 @@ struct LogMenu
 	bool IsLogFound(int x, int y);
 	bool IsCurrLogFound();
 	void UpdateLogSelectQuads();
+	void UpdateLogsOnWorldChange();
 	void SetLogTab();
 };
 

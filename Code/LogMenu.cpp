@@ -48,6 +48,10 @@ LogMenu::LogMenu(Session *p_sess)
 	currLogText.setFont(sess->mainMenu->arial);
 	currLogText.setPosition(960, 740);
 
+	worldText.setFont(sess->mainMenu->arial);
+	worldText.setCharacterSize(40);
+	worldText.setFillColor(Color::White);
+
 	currLogNameText.setCharacterSize(20);
 	currLogNameText.setFont(sess->mainMenu->arial);
 	currLogNameText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
@@ -123,23 +127,19 @@ LogMenu::LogMenu(Session *p_sess)
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 12;
-	int ySize = 14;
+	int xSize = 6;
+	int ySize = 6 + 1; //+1 for world selector
 
-	logInfo = new LogDetailedInfo*[ySize];
-	for (int i = 0; i < ySize; ++i)
+	int numWorlds = 8;
+	logInfo = new LogDetailedInfo*[numWorlds];
+	for (int i = 0; i < numWorlds; ++i)
 	{
-		logInfo[i] = new LogDetailedInfo[xSize];
+		logInfo[i] = new LogDetailedInfo[LogInfo::MAX_LOGS_PER_WORLD];
 	}
 
+	worldSelector = new SingleAxisSelector( 3, waitFrames, 2, waitModeThresh, numWorlds, 0 );
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
-
-	ts_preview = new Tileset*[xSize * ySize];
-	for (int i = 0; i < xSize * ySize; ++i)
-	{
-		ts_preview[i] = NULL;
-	}
 
 
 	int waterWidth = 400;
@@ -165,14 +165,15 @@ LogMenu::LogMenu(Session *p_sess)
 
 	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
-	selectedLogHighlight.setTexture(*ts_logs->texture);
-
 	int index = 0;
-	int rectSize = 48;
+	int rectSize = 64;
 	int xSpacing = 20;
 	int ySpacing = 12;
-	Vector2f gridStart(100, 100);
-	for (int i = 0; i < ySelector->totalItems; ++i)
+
+	worldText.setPosition(100, 100);
+
+	Vector2f gridStart(100, 200);
+	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
@@ -182,15 +183,18 @@ LogMenu::LogMenu(Session *p_sess)
 			SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(0));
 		}
 	}
+
+	
+
+	UpdateLogsOnWorldChange();
 }
 
 LogMenu::~LogMenu()
 {
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	for (int i = 0; i < 8; ++i)
 	{
 		delete[] logInfo[i];
 	}
-	delete[] ts_preview;
 
 	delete[] logInfo;
 	delete xSelector;
@@ -218,7 +222,9 @@ void LogMenu::LoadLogInfo()
 			string railString;
 			string descriptionString;
 			string specialTerrainString;
-			int index = LogInfo::MAX_LOGS_PER_WORLD * i;
+			int index = 0;//LogInfo::MAX_LOGS_PER_WORLD * i;
+
+			int currWorld = i;
 			int x;
 			int y;
 
@@ -232,10 +238,7 @@ void LogMenu::LoadLogInfo()
 					continue;
 				}
 
-				x = index % 12;
-				y = index / 12;
-
-				LogDetailedInfo &currLog = logInfo[y][x];
+				LogDetailedInfo &currLog = logInfo[currWorld][index];
 
 				currLog.name = lineString;
 
@@ -368,7 +371,7 @@ void LogMenu::UpdateUnlockedLogs()
 	if (saveFile == NULL)
 		return;
 
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	for (int i = 0; i < ySelector->totalItems-1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
@@ -467,15 +470,72 @@ void LogMenu::SetupLogImages()
 
 }
 
-void LogMenu::UpdateLogSelectQuads()
+void LogMenu::UpdateLogsOnWorldChange()
 {
 	int index = 0;
-	Color c = Color::Red;
-	
-	index = (xSelector->currIndex + xSelector->totalItems * ySelector->currIndex);
+	for (int i = 1; i < ySelector->totalItems; ++i)
+	{
+		for (int j = 0; j < xSelector->totalItems; ++j)
+		{
+			index = ((i - 1) * xSelector->totalItems + j);
 
-	//SetRectColor(logSelectQuads + index, currColor);
-	int selectedShardTileIndex = -1;
+
+
+			LogDetailedInfo &currInfo = logInfo[worldSelector->currIndex][index];
+
+			if (currInfo.logType == -1)
+			{
+				SetRectSubRect(logSelectQuads + index * 4, FloatRect());
+			}
+			else
+			{
+
+
+
+				int tileIndex = 0;
+				switch (currInfo.logType)
+				{
+				case LogDetailedInfo::LT_MOMENTA:
+					tileIndex = 8;
+					break;
+				case LogDetailedInfo::LT_SKIN:
+					tileIndex = 9;
+					break;
+				case LogDetailedInfo::LT_ENEMY:
+					tileIndex = worldSelector->currIndex;
+					break;
+				case LogDetailedInfo::LT_WATER:
+					tileIndex = 13;
+					break;
+				case LogDetailedInfo::LT_RAIL:
+					tileIndex = 14;
+					break;
+				case LogDetailedInfo::LT_GRASS:
+					tileIndex = 12;
+					break;
+				case LogDetailedInfo::LT_SPECIALTERRAIN:
+					tileIndex = 11;
+					break;
+				case LogDetailedInfo::LT_MUSIC:
+					tileIndex = 10;
+					break;
+				case LogDetailedInfo::LT_LORE:
+					break;
+				}
+
+				SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(tileIndex));
+
+			}
+		}
+	}
+
+	worldText.setString("World " + to_string(worldSelector->currIndex + 1));
+}
+
+void LogMenu::UpdateLogSelectQuads()
+{
+	int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+
 	if (IsCurrLogFound())
 	{
 		SetRectSubRect(largeShard, ts_logs->GetSubRect(0));
@@ -487,21 +547,15 @@ void LogMenu::UpdateLogSelectQuads()
 		//selectedShardTileIndex = index + 44;
 	}
 
-	selectedLogHighlight.setScale(48 / 192.0, 48 / 192.0);
-	selectedLogHighlight.setTexture(*ts_logs->texture);
-	selectedLogHighlight.setTextureRect(ts_logs->GetSubRect(0));
-	selectedLogHighlight.setOrigin(selectedLogHighlight.getLocalBounds().width / 2,
-		selectedLogHighlight.getLocalBounds().height / 2);
 
-	selectedLogHighlight.setPosition((logSelectQuads + index * 4)->position + Vector2f(24, 24));
-
-	SetRectCenter(selectedBGQuad, 48, 48, Vector2f(selectedLogHighlight.getPosition()));
+	SetRectCenter(selectedBGQuad, 64, 64,
+		Vector2f((logSelectQuads + index * 4)->position + Vector2f(32, 32)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
 void LogMenu::SetCurrentDescription(bool captured)
 {
-	LogDetailedInfo &currLog = logInfo[ySelector->currIndex][xSelector->currIndex];
+	LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][selectedIndex];
 	currLogNameText.setString(currLog.name);
 	FloatRect lBounds = currLogNameText.getLocalBounds();
 	currLogNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
@@ -511,20 +565,20 @@ void LogMenu::SetCurrentDescription(bool captured)
 
 std::string LogMenu::GetLogDesc(int w, int li)
 {
-	int x = li % xSelector->totalItems;
-	int y = w * 2 + li / xSelector->totalItems;
+	//int x = li % xSelector->totalItems;
+	//int y = w * 2 + li / xSelector->totalItems;
 
-	LogDetailedInfo &currLog = logInfo[y][x];
+	LogDetailedInfo &currLog = logInfo[w][li];
 
 	return currLog.desc;
 }
 
 std::string LogMenu::GetLogName(int w, int li)
 {
-	int x = li % 11;//li + (w % 2) * 11;
-	int y = w * 2 + li / 11;
+	//int x = li % 11;//li + (w % 2) * 11;
+	//int y = w * 2 + li / 11;
 
-	LogDetailedInfo &currLog = logInfo[y][x];
+	LogDetailedInfo &currLog = logInfo[w][li];
 
 	return currLog.name;
 }
@@ -540,12 +594,15 @@ void LogMenu::StopMusic()
 
 void LogMenu::SetCurrLog()
 {
+	if (currSelectMode == SM_WORLD)
+		return;
+
 	bool captured = IsCurrLogFound();
 	if (captured)
 	{
-		int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
+		int index = xSelector->currIndex + (ySelector->currIndex-1) * xSelector->totalItems;
 		selectedIndex = index;
-		Tileset *tp = ts_preview[index];
+		Tileset *tp = NULL;//ts_preview[index];
 		if (tp != NULL)
 		{
 			previewSpr.setTexture(*tp->texture);
@@ -553,7 +610,7 @@ void LogMenu::SetCurrLog()
 		}
 		else
 		{
-			LogDetailedInfo &currInfo = logInfo[ySelector->currIndex][xSelector->currIndex];
+			LogDetailedInfo &currInfo = logInfo[worldSelector->currIndex][selectedIndex];
 
 			if (previewParams != NULL)
 			{
@@ -628,125 +685,234 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 	int oldX = xSelector->currIndex;
 	int oldY = ySelector->currIndex;
 
-	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+	int testIndex;
 
-	bool currShardCap = IsCurrLogFound();
-
-	if (xchanged != 0 || ychanged != 0)
+	if (currSelectMode == SM_WORLD)
 	{
-		//state = PAUSED;
-		if (!currShardCap)
+		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+
+		if (worldChanged != 0)
 		{
-			sparklePool->Reset();
-		}
-		StopMusic();
-		state = WAIT;
-
-		LogDetailedInfo &li = logInfo[oldY][oldX];
-		if (li.ts_preview != NULL)
-		{
-			tMan.DestroyTileset(li.ts_preview);
-			li.ts_preview = NULL;
-		}
-		//SetCurrSequence();
-		SetCurrLog();
-	}
-
-	if (currInput.A && !prevInput.A)
-	{
-		if (currShardCap)
-		{
-			//if (state == WAIT)
-			//{
-			//	//state = LOADTOPLAY;
-			//	//SetCurrSequence();
-			//}
-			//else if (state == PAUSED)
-			//{
-			//	//state = PLAYING;
-			//	//SetCurrMusic();
-			//}
-			//else if (state == PLAYING)
-			//{
-			//	state = PAUSED;
-			//	StopMusic();
-			//}
-
-		}
-	}
-
-	UpdateLogSelectQuads();
-
-
-	if (currShardCap)
-	{
-		int lightningFactor = 7;//14;//8;
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
-	}
-	else
-	{
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
-	}
-
-
-	sparklePool->Update();
-
-
-	Vector2f sparkleCenter(825 + 401 / 2, 66 + 512 / 2);
-
-	if (totalFrame % 120 == 0 && currShardCap)
-	{
-		Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
-		EffectInstance ei;
-
-		int r = rand() % 3;
-		if (r == 0)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 11, 5, 0);
-		}
-		else if (r == 1)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 10, 5, 11);
-		}
-		else if (r == 2)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 10, 5, 11);
+			UpdateLogsOnWorldChange();
 		}
 
-		//ei.pos = sparkleCenter;
-		//ei.animFactor = 8;
-
-		sparklePool->ActivateEffect(&ei);
-	}
-
-	if (previewParams != NULL)
-	{
-		previewParams->myEnemy->UpdateFromEditParams(1);
-	}
-
-	if (currLogType == LogDetailedInfo::LT_WATER)
-	{
-		//set oldshaderzoom when you pause the game, so that if it gets changed
-		//it updates when you return to the game
-		//oldShaderZoom = zoom;
-
-		for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+		if (ychanged != 0 )
 		{
-			sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
-			sess->waterShaders[i].setUniform("zoom", 1.f);
+			currSelectMode = SM_LOG;
+			SetCurrLog();
+		
+			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+			LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
+
+			if (currLog.logType == -1)
+			{
+				for (int i = ySelector->totalItems - 1; i >= 1; --i)
+				{
+					ySelector->currIndex--;
+					testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+					LogDetailedInfo &testLog = logInfo[worldSelector->currIndex][testIndex];
+					if (testLog.logType != -1)
+					{
+						break;
+					}
+				}
+			}
+
+			UpdateLogSelectQuads();
 		}
-		waterShaderCounter += .01f;
 	}
-	
+	else if (currSelectMode == SM_LOG)
+	{
+		int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+
+		bool currLogFound = IsCurrLogFound();
+
+		int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+		LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
+
+		if (ychanged > 0)
+		{
+			if (currLog.logType == -1)
+			{
+				ySelector->currIndex = 0;
+			}
+		}
+
+		if (ySelector->currIndex == 0)
+		{
+			currSelectMode = SM_WORLD;
+			StopMusic();
+			state = WAIT;
+		}
+		else
+		{
+			if (xchanged != 0 || ychanged != 0)
+			{
+				//if (currLog.logType == -1)
+				//{
+				//	if (ychanged > 0)
+				//	{
+				//		ySelector->currIndex = ;
+				//	}
+				//	else if (ychanged < 0)
+				//	{
+				//		/*for (int i = ySelector->totalItems - 1; i >= 1; --i)
+				//		{
+				//			ySelector->currIndex--;
+				//			testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+				//			LogDetailedInfo &testLog = logInfo[worldSelector->currIndex][testIndex];
+				//			if (testLog.logType != -1)
+				//			{
+				//				break;
+				//			}
+				//		}*/
+				//	}
+				//}
+				
+				if (currLog.logType == -1)
+				{
+					if (xchanged > 0)
+					{
+						if (currLog.logType == -1)
+						{
+							xSelector->currIndex = 0;
+						}
+					}
+					else if (xchanged < 0)
+					{
+						for (int i = xSelector->totalItems - 1; i >= 0; --i)
+						{
+							xSelector->currIndex--;
+							testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+							LogDetailedInfo &testLog = logInfo[worldSelector->currIndex][testIndex];
+							if (testLog.logType != -1)
+							{
+								break;
+							}
+						}
+					}
+				}
+
+
+				//state = PAUSED;
+				if (!currLogFound)
+				{
+					sparklePool->Reset();
+				}
+				StopMusic();
+				state = WAIT;
+
+				/*LogDetailedInfo &li = logInfo[oldY][oldX];
+				if (li.ts_preview != NULL)
+				{
+					tMan.DestroyTileset(li.ts_preview);
+					li.ts_preview = NULL;
+				}*/
+				//SetCurrSequence();
+				SetCurrLog();
+			}
+
+			if (currInput.A && !prevInput.A)
+			{
+				if (currLogFound)
+				{
+					//if (state == WAIT)
+					//{
+					//	//state = LOADTOPLAY;
+					//	//SetCurrSequence();
+					//}
+					//else if (state == PAUSED)
+					//{
+					//	//state = PLAYING;
+					//	//SetCurrMusic();
+					//}
+					//else if (state == PLAYING)
+					//{
+					//	state = PAUSED;
+					//	StopMusic();
+					//}
+
+				}
+			}
+
+			UpdateLogSelectQuads();
+
+
+			if (currLogFound)
+			{
+				int lightningFactor = 7;//14;//8;
+				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
+			}
+			else
+			{
+				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
+			}
+
+			sparklePool->Update();
+
+
+			Vector2f sparkleCenter(825 + 401 / 2, 66 + 512 / 2);
+
+			if (totalFrame % 120 == 0 && currLogFound)
+			{
+				Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
+				EffectInstance ei;
+
+				int r = rand() % 3;
+				if (r == 0)
+				{
+					ei.SetParams(sparkleCenter + off,
+						Transform(Transform::Identity), 11, 5, 0);
+				}
+				else if (r == 1)
+				{
+					ei.SetParams(sparkleCenter + off,
+						Transform(Transform::Identity), 10, 5, 11);
+				}
+				else if (r == 2)
+				{
+					ei.SetParams(sparkleCenter + off,
+						Transform(Transform::Identity), 10, 5, 11);
+				}
+
+				//ei.pos = sparkleCenter;
+				//ei.animFactor = 8;
+
+				sparklePool->ActivateEffect(&ei);
+			}
+
+			if (previewParams != NULL)
+			{
+				previewParams->myEnemy->UpdateFromEditParams(1);
+			}
+
+			if (currLogType == LogDetailedInfo::LT_WATER)
+			{
+				//set oldshaderzoom when you pause the game, so that if it gets changed
+				//it updates when you return to the game
+				//oldShaderZoom = zoom;
+
+				for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
+				{
+					sess->waterShaders[i].setUniform("u_slide", waterShaderCounter);
+					sess->waterShaders[i].setUniform("zoom", 1.f);
+				}
+				waterShaderCounter += .01f;
+			}
+		}
+	}
+
 	++totalFrame;
 }
 
 void LogMenu::SetLogTab()
 {
+	currSelectMode = SM_WORLD;
+	ySelector->currIndex = 0;
+	xSelector->ResetCounters();
+	ySelector->ResetCounters();
 	bool currShardCap = IsCurrLogFound();
 	if (currShardCap)
 	{
@@ -759,6 +925,9 @@ void LogMenu::SetLogTab()
 	}
 	UpdateUnlockedLogs();
 	UpdateLogSelectQuads();
+
+	state = LogMenu::WAIT;
+	//logMenu->SetCurrLog();
 }
 
 void LogMenu::Draw(sf::RenderTarget *target)
@@ -775,46 +944,47 @@ void LogMenu::Draw(sf::RenderTarget *target)
 	target->draw(largeShard, 4, sf::Quads, ts_logs->texture);
 	sparklePool->Draw(target);
 
+	if (currSelectMode == SM_LOG)
+	{
+		switch (currLogType)
+		{
+		case LogDetailedInfo::LT_ENEMY:
+		{
+			previewParams->DrawEnemy(target);
+			break;
+		}
+		case LogDetailedInfo::LT_WATER:
+		{
+			previewPoly->Draw(target);
+			break;
+		}
+		case LogDetailedInfo::LT_RAIL:
+		{
+			previewRail->Draw(target);
+			break;
+		}
+		case LogDetailedInfo::LT_SKIN:
+		{
+			target->draw(kinSprite, &pSkinShader.pShader);
+			target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
+			break;
+		}
+		case LogDetailedInfo::LT_GRASS:
+		{
+			target->draw(grassSprite);
+			break;
+		}
+		}
 
-	switch (currLogType)
-	{
-	case LogDetailedInfo::LT_ENEMY:
-	{
-		previewParams->DrawEnemy(target);
-		break;
+		target->draw(selectedBGQuad, 4, sf::Quads);
 	}
-	case LogDetailedInfo::LT_WATER:
-	{
-		previewPoly->Draw(target);
-		break;
-	}
-	case LogDetailedInfo::LT_RAIL:
-	{
-		previewRail->Draw(target);
-		break;
-	}
-	case LogDetailedInfo::LT_SKIN:
-	{
-		target->draw(kinSprite, &pSkinShader.pShader);
-		target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
-		break;
-	}
-	case LogDetailedInfo::LT_GRASS:
-	{
-		target->draw(grassSprite);
-		break;
-	}
-	}
+	
 
+	target->draw(logSelectQuads, xSelector->totalItems * (ySelector->totalItems - 1) * 4,
+		sf::Quads, ts_logs->texture );
 
-
-	target->draw(selectedBGQuad, 4, sf::Quads);
-
-	for (int i = 0; i < 7; ++i)
-	{
-		target->draw(logSelectQuads + 22 * 4 * i, 22 * 4,
-			sf::Quads, ts_logs->texture);
-	}
+	
+	target->draw(worldText);
 
 	if (currLogText.getString() != "")
 	{

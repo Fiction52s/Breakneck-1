@@ -958,8 +958,17 @@ GravityModifierParams::GravityModifierParams(ActorType *at, ifstream &is)
 GravityModifierParams::GravityModifierParams(ActorType *at, int level)
 	:ActorParams(at)
 {
-	gravFactor = at->panel->sliders["gravfactor"]->GetCurrValueF();
-	durationInSeconds = at->panel->sliders["duration"]->GetCurrValue();
+	if (at->panel != NULL)
+	{
+		gravFactor = at->panel->sliders["gravfactor"]->GetCurrValueF();
+		durationInSeconds = at->panel->sliders["duration"]->GetCurrValue();
+	}
+	else
+	{
+		gravFactor = 1.0;
+		durationInSeconds = 1;
+	}
+	
 	PlaceAerial(Vector2i(0, 0));
 }
 
