@@ -92,6 +92,13 @@ LogMenu::LogMenu(Session *p_sess)
 	imagePos = Vector2f(1243, 66);
 	previewSpr.setPosition(imagePos);
 
+
+	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
+	grassSprite.setTexture(*ts_grass->texture);
+	grassSprite.setPosition(imagePos);
+	//grassSprite.setTextureRect(ts_grass->GetSubRect(0));
+	
+
 	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setScale(.5, .5);
@@ -116,7 +123,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 11;
+	int xSize = 12;
 	int ySize = 14;
 
 	logInfo = new LogDetailedInfo*[ySize];
@@ -204,12 +211,14 @@ void LogMenu::LoadLogInfo()
 		{
 			string lineString;
 			string typeString;
+			string detailString;
 			string skinString;
 			string enemyString;
 			string waterString;
 			string railString;
 			string descriptionString;
-			int index = 22 * i;
+			string specialTerrainString;
+			int index = LogInfo::MAX_LOGS_PER_WORLD * i;
 			int x;
 			int y;
 
@@ -223,8 +232,8 @@ void LogMenu::LoadLogInfo()
 					continue;
 				}
 
-				x = index % 11;
-				y = index / 11;
+				x = index % 12;
+				y = index / 12;
 
 				LogDetailedInfo &currLog = logInfo[y][x];
 
@@ -238,23 +247,47 @@ void LogMenu::LoadLogInfo()
 
 				if (typeString == "Enemy")
 				{
-					getline(is, enemyString);
+					getline(is, detailString);
 
 					currLog.logType = LogDetailedInfo::LT_ENEMY;
-					currLog.enemyTypeName = enemyString;
+					currLog.enemyTypeName = detailString;
 				}
 				else if (typeString == "Water")
 				{
-					getline(is, waterString);
+					getline(is, detailString);
 
 					currLog.logType = LogDetailedInfo::LT_WATER;
-					currLog.waterIndex = TerrainPolygon::GetWaterIndexFromString(waterString);
+					currLog.waterIndex = TerrainPolygon::GetWaterIndexFromString(detailString);
 				}
 				else if (typeString == "Rail")
 				{
-					getline(is, railString);
+					getline(is, detailString);
 					currLog.logType = LogDetailedInfo::LT_RAIL;
-					currLog.railIndex = TerrainRail::GetRailIndexFromString(railString);
+					currLog.railIndex = TerrainRail::GetRailIndexFromString(detailString);
+				}
+				else if (typeString == "Grass")
+				{
+					getline(is, detailString);
+					currLog.logType = LogDetailedInfo::LT_GRASS;
+					currLog.grassTypeIndex = Grass::GetGrassTypeFromString(detailString);
+				}
+				else if (typeString == "SpecialTerrain")
+				{
+					getline(is, specialTerrainString);
+					currLog.logType = LogDetailedInfo::LT_SPECIALTERRAIN;
+
+					if (specialTerrainString == "Phase")
+					{
+
+					}
+					else if (specialTerrainString == "InversePhase")
+					{
+						
+					}
+					else if (specialTerrainString == "Fade")
+					{
+
+					}
 				}
 				else if (typeString == "Skin")
 				{
@@ -478,8 +511,8 @@ void LogMenu::SetCurrentDescription(bool captured)
 
 std::string LogMenu::GetLogDesc(int w, int li)
 {
-	int x = li % 11;//li + (w % 2) * 11;
-	int y = w * 2 + li / 11;
+	int x = li % xSelector->totalItems;
+	int y = w * 2 + li / xSelector->totalItems;
 
 	LogDetailedInfo &currLog = logInfo[y][x];
 
@@ -568,6 +601,10 @@ void LogMenu::SetCurrLog()
 			{
 				pSkinShader.SetSkin(currInfo.skinIndex);
 				pFaceSkinShader.SetSkin(currInfo.skinIndex);
+			}
+			else if (currLogType == LogDetailedInfo::LT_GRASS)
+			{
+				grassSprite.setTextureRect(ts_grass->GetSubRect(currInfo.grassTypeIndex));
 			}
 			else
 			{
@@ -737,37 +774,38 @@ void LogMenu::Draw(sf::RenderTarget *target)
 
 	target->draw(largeShard, 4, sf::Quads, ts_logs->texture);
 	sparklePool->Draw(target);
-	//if (GetCurrSeq() != NULL)
-	//	GetCurrSeq()->Draw(target);
-	//else
-	{
-		//target->draw(previewSpr);
 
-		switch (currLogType)
-		{
-		case LogDetailedInfo::LT_ENEMY:
-		{
-			previewParams->DrawEnemy(target);
-			break;
-		}
-		case LogDetailedInfo::LT_WATER:
-		{
-			previewPoly->Draw(target);
-			break;
-		}
-		case LogDetailedInfo::LT_RAIL:
-		{
-			previewRail->Draw(target);
-			break;
-		}
-		case LogDetailedInfo::LT_SKIN:
-		{
-			target->draw(kinSprite, &pSkinShader.pShader);
-			target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
-			break;
-		}
-		}
+
+	switch (currLogType)
+	{
+	case LogDetailedInfo::LT_ENEMY:
+	{
+		previewParams->DrawEnemy(target);
+		break;
 	}
+	case LogDetailedInfo::LT_WATER:
+	{
+		previewPoly->Draw(target);
+		break;
+	}
+	case LogDetailedInfo::LT_RAIL:
+	{
+		previewRail->Draw(target);
+		break;
+	}
+	case LogDetailedInfo::LT_SKIN:
+	{
+		target->draw(kinSprite, &pSkinShader.pShader);
+		target->draw(kinFaceSprite, &pFaceSkinShader.pShader);
+		break;
+	}
+	case LogDetailedInfo::LT_GRASS:
+	{
+		target->draw(grassSprite);
+		break;
+	}
+	}
+
 
 
 	target->draw(selectedBGQuad, 4, sf::Quads);
@@ -778,11 +816,6 @@ void LogMenu::Draw(sf::RenderTarget *target)
 			sf::Quads, ts_logs->texture);
 	}
 
-
-
-	/*target->draw(logSelectQuads, 22 * 4,
-	sf::Quads, ts_shards[0]->texture);*/
-	//target->draw(selectedShardHighlight);
 	if (currLogText.getString() != "")
 	{
 		target->draw(currLogText);
@@ -792,6 +825,4 @@ void LogMenu::Draw(sf::RenderTarget *target)
 		target->draw(currLogNameText);
 	}
 
-
-	//target->draw(currentMovie);
 }

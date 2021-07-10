@@ -29,16 +29,21 @@ struct LogDetailedInfo
 		LT_ENEMY,
 		LT_WATER,
 		LT_RAIL,
+		LT_GRASS,
+		LT_SPECIALTERRAIN,
 		LT_MUSIC,
 		LT_LORE,
 		Count
 	};
 
 	LogDetailedInfo()
-		:logType(0),ts_preview( NULL ),
+		:logType(0), ts_preview(NULL),
 		waterIndex(-1),
 		railIndex(-1),
-		skinIndex( -1)
+		skinIndex(-1),
+		grassTypeIndex(-1),
+		specialTerrainWorld(-1),
+		specialTerrainVariation(-1)
 	{
 
 	}
@@ -50,6 +55,10 @@ struct LogDetailedInfo
 	int waterIndex;
 	int railIndex;
 	int skinIndex;
+
+	int grassTypeIndex;
+	int specialTerrainWorld;
+	int specialTerrainVariation;
 	Tileset *ts_preview;
 };
 
@@ -61,6 +70,8 @@ struct LogMenu
 		PREVIEWING_MUSIC,
 	};
 
+	Tileset *ts_grass;
+	sf::Sprite grassSprite;
 	PlayerSkinShader pSkinShader;
 	PlayerSkinShader pFaceSkinShader;
 	Tileset *ts_kinFace;

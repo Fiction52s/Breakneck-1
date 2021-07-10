@@ -19,6 +19,8 @@ struct LogInfo
 		return world * 22 + localIndex;
 	}
 
+	const static int MAX_LOGS_PER_WORLD = 36;
+
 	//const static int MAX_LOGS = 256;
 };
 

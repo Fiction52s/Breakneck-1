@@ -27,6 +27,28 @@ sf::Color Grass::GetColor( int gType )
 	return c;
 }
 
+int Grass::GetGrassTypeFromString(const std::string &s)
+{
+	if (s == "DECELERATE") { return DECELERATE; }
+	else if (s == "JUMP") { return JUMP; }
+	else if (s == "GRAVREVERSE") { return GRAVREVERSE; }
+	else if (s == "ANTIGRAVREVERSE") { return ANTIGRAVREVERSE; }
+	else if (s == "BOUNCE") { return BOUNCE; }
+	else if (s == "ACCELERATE") { return ACCELERATE; }
+	else if (s == "ANTIGRIND") { return ANTIGRIND; }
+	else if (s == "POISON") { return POISON; }
+	else if (s == "ANTIWIRE") { return ANTIWIRE; }
+	else if (s == "SLIPPERY") { return SLIPPERY; }
+	else if (s == "HIT") { return HIT; }
+	else if (s == "UNTECHABLE") { return UNTECHABLE; }
+	else
+	{
+		cout << "Grass string not found: " << s << endl;
+		assert(0);
+		return DECELERATE;
+	}
+}
+
 Grass::Grass(Tileset *p_ts_grass, int p_tileIndex,
 	V2d &p_pos, TerrainPolygon *p_poly, GrassType gType)
 	:tileIndex(p_tileIndex), prev(NULL), next(NULL), visible(true),
