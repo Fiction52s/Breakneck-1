@@ -159,8 +159,6 @@ LogMenu::LogMenu(Session *p_sess)
 	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
 	previewRail->Finalize();
 
-	stringstream ss;
-
 	LoadLogInfo();
 
 	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
@@ -199,6 +197,7 @@ LogMenu::~LogMenu()
 	delete[] logInfo;
 	delete xSelector;
 	delete ySelector;
+	delete worldSelector;
 
 	delete[] logSelectQuads;
 	delete sparklePool;
@@ -701,6 +700,9 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		{
 			currSelectMode = SM_LOG;
 			SetCurrLog();
+
+			//worldText.setOutlineColor(Color::Red);
+			worldText.setOutlineThickness(0);
 		
 			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 			LogDetailedInfo &currLog = logInfo[worldSelector->currIndex][index];
@@ -743,6 +745,8 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		if (ySelector->currIndex == 0)
 		{
 			currSelectMode = SM_WORLD;
+			worldText.setOutlineColor(Color::Red);
+			worldText.setOutlineThickness(2);
 			StopMusic();
 			state = WAIT;
 		}
@@ -750,35 +754,11 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 		{
 			if (xchanged != 0 || ychanged != 0)
 			{
-				//if (currLog.logType == -1)
-				//{
-				//	if (ychanged > 0)
-				//	{
-				//		ySelector->currIndex = ;
-				//	}
-				//	else if (ychanged < 0)
-				//	{
-				//		/*for (int i = ySelector->totalItems - 1; i >= 1; --i)
-				//		{
-				//			ySelector->currIndex--;
-				//			testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
-				//			LogDetailedInfo &testLog = logInfo[worldSelector->currIndex][testIndex];
-				//			if (testLog.logType != -1)
-				//			{
-				//				break;
-				//			}
-				//		}*/
-				//	}
-				//}
-				
 				if (currLog.logType == -1)
 				{
 					if (xchanged > 0)
 					{
-						if (currLog.logType == -1)
-						{
-							xSelector->currIndex = 0;
-						}
+						xSelector->currIndex = 0;
 					}
 					else if (xchanged < 0)
 					{
@@ -924,7 +904,7 @@ void LogMenu::SetLogTab()
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
 	}
 	UpdateUnlockedLogs();
-	UpdateLogSelectQuads();
+	//UpdateLogSelectQuads();
 
 	state = LogMenu::WAIT;
 	//logMenu->SetCurrLog();

@@ -46,11 +46,6 @@ void Shard::UpdateParamsSettings()
 	}
 }
 
-int Shard::GetShardTypeFromGrid(int y, int x)
-{
-	return y * 11 + x;
-}
-
 int Shard::GetShardTypeFromWorldAndIndex(int w, int li)
 {
 	return w * 22 + li;

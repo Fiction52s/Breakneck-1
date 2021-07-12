@@ -1,10 +1,3 @@
-//sfe::Movie m;
-//assert(m.openFromFile("Movie/testvid.ogv"));
-//m.fit(sf::FloatRect(0, 0, 1920, 1080));
-//
-//
-//m.play();
-
 #include "ShardMenu.h"
 #include <sstream>
 #include <list>
@@ -28,59 +21,89 @@ ShardMenu::ShardMenu(Session *p_sess)
 	:sess( p_sess )
 {
 	totalFrame = 0;
-	currShardMusic = NULL;
-	//currentMovie.scale(.5, .5);
-
-	currShardText.setCharacterSize(20);
-	currShardText.setFont(sess->mainMenu->arial);
-	currShardText.setPosition(960, 740);
-
-	currShardNameText.setCharacterSize(20);
-	currShardNameText.setFont(sess->mainMenu->arial);
-	currShardNameText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
-	
-	Vector2f controlCenter = Vector2f(1243 + 512 / 2, 594 + 93 / 2);
-
-	SetRectCenter(shardBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
-	SetRectCenter(shardTitleBGQuad, 401, 93, Vector2f(825 + 401/ 2, 594 + 93 / 2));
-	SetRectCenter(controlsQuadBGQuad, 512, 93, controlCenter );
-	SetRectCenter(descriptionBGQuad, 929, 211, Vector2f(825 + 929 / 2, 703 + 211 / 2));
-	
-	SetRectCenter(shardButtons, 128, 93, Vector2f(controlCenter.x - 128 - 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 1 * 4, 128, 93, Vector2f(controlCenter.x - 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 2 * 4, 128, 93, Vector2f(controlCenter.x + 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 3 * 4, 128, 93, Vector2f(controlCenter.x + 128 + 128 / 2, controlCenter.y));
-
-
-	SetRectCenter(containerBGQuad, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-
-	SetRectCenter(largeShardContainer, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-	SetRectCenter(largeShard, 192, 192, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-
-	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
-	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
-	SetRectColor(controlsQuadBGQuad, Color(0, 0, 0, 128));
-	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
-	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
 	ts_shardContainer = sess->GetSizedTileset("Menu/shard_container_401x512.png");
 	ts_sparkle = sess->GetSizedTileset("Menu/shard_sparkle_64x64.png");
-	ts_notCapturedPreview = sess->GetSizedTileset("Menu/not_captured_512x512.png");
-	ts_noPreview = sess->GetTileset("Menu/nopreview.png", 512, 512);
-	ts_shardButtons = sess->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
-	for (int i = 0; i < 4; ++i)
-	{
-		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
-	}
+
 	
+
+	int edgeMargin = 65;
+
+	Vector2f pauseTexSize(1820, 980);
+
+	
+
+	currShardText.setCharacterSize(20);
+	currShardText.setFont(sess->mainMenu->arial);
+	
+
+	currShardNameText.setCharacterSize(36);
+	currShardNameText.setFont(sess->mainMenu->arial);
+	
+
+	worldText.setCharacterSize(20);
+	worldText.setFont(sess->mainMenu->arial);
+	//worldText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
+	
+
+	//SetRectCenter(shardBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
+
+	float shardBGQuadWidth = 740;
+	worldText.setPosition(edgeMargin + shardBGQuadWidth / 2, 100);
+
+	Vector2f shardBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
+	SetRectTopLeft(shardBGQuad, shardBGQuadWidth, pauseTexSize.y - edgeMargin * 2, shardBGQuadTopLeft);
+
+	float rightOfShardBGQuad = shardBGQuadTopLeft.x + shardBGQuadWidth;
+
+	float separationMargin = 15;
+	float rightSideStartX = rightOfShardBGQuad + separationMargin;
+
+	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
+	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
+	
+	
+	
+
+	float containerBGQuadHeight = 512;
+
+	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin);
+
+	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
+
+	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
+
+	Vector2f containerSize = Vector2f(ts_shardContainer->tileWidth,
+		ts_shardContainer->tileHeight);
+	containerCenter = Vector2f(rightSideCenterX, edgeMargin + containerSize.y / 2);
+
+	SetRectCenter(largeShardContainer, containerSize.x, containerSize.y, containerCenter);
+	SetRectCenter(largeShard, 192, 192, containerCenter);
+
+	float nameQuadHeight = 93;
+	float descriptionQuadHeight = 215;
+
+	Vector2f shardTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
+	Vector2f shardDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
+
+
+	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, shardTitleBGQuadPos);
+	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, shardDescriptionBGQuadPos);
+
+	currShardNameText.setPosition(Vector2f(rightSideCenterX, shardTitleBGQuadPos.y + nameQuadHeight / 2));
+
+	currShardText.setPosition(shardDescriptionBGQuadPos + Vector2f( edgeMargin, edgeMargin));
+
+	SetRectColor(shardBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
+	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
 	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(0));
 
 	numShardsTotal = 1;
 	shardQuads = new Vertex[numShardsTotal * 4];
-	currButtonState = S_NEUTRAL;
 	imagePos = Vector2f(1243, 66);
-	previewSpr.setPosition(imagePos);
 
 	state = PAUSED;
 
@@ -95,86 +118,68 @@ ShardMenu::ShardMenu(Session *p_sess)
 
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 11;
-	int ySize = 14;
+	int xSize = 5;
+	int ySize = 5 + 1;
 
-	shardNames = new string*[ySize];
-	shardDesc = new string*[ySize];
-	seqLoadThread = new boost::thread**[ySize];
-	shardSeq = new PNGSeq**[ySize];
+	int numWorlds = 7;
 
-	for (int i = 0; i < ySize; ++i)
+	shardInfo = new ShardDetailedInfo*[numWorlds];
+	for (int i = 0; i < numWorlds; ++i)
 	{
-		shardNames[i] = new string[xSize];
-		shardDesc[i] = new string[xSize];
-		seqLoadThread[i] = new boost::thread*[xSize];
-		shardSeq[i] = new PNGSeq*[xSize];
+		shardInfo[i] = new ShardDetailedInfo[ShardInfo::MAX_SHARDS_PER_WORLD];
 	}
 
+	worldSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, numWorlds, 0);
 	xSelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, xSize, 0);
 	ySelector = new SingleAxisSelector(3, waitFrames, 2, waitModeThresh, ySize, 0);
-
-	ts_preview = new Tileset*[xSize * ySize];
-
-	stringstream ss;
-
-	
-	
-	//shardNames[1][0] = Shard::GetShardString(ShardType::SHARD_W1_BACKWARDS_DASH_JUMP);
-
-	//ifstream is;
-	//is.open( "shard")
-
-	for (int y = 0; y < ySize; ++y)
-	{
-		for (int x = 0; x < xSize; ++x)
-		{
-			ss.str("");
-			shardSeq[y][x] = NULL;
-			seqLoadThread[y][x] = NULL;
-			//int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
-			int index = x + y * 11;
-			//shardNames[y][x] = Shard::GetShardString((ShardType)index);
-
-			//std::string &currShardName = shardNames[y][x];
-
-			ts_preview[index] = NULL;
-			/*if (currShardName == "")
-			{
-				ts_preview[x + y * xSize] = NULL;
-			}
-			else
-			{
-				ss << "Shard/" << currShardName << "_preview.png";
-				ts_preview[x + y * xSize] = sess->GetTileset(ss.str(), 512, 512);
-			}*/
-			
-			
-			//currShardName = Shard::GetShardString(ShardType::SHARD_W1_TEACH_JUMP);
-			//if(currShardName != "" )
-			//	SetDescription(shardDescriptionNames[y][x], shardDesc[y][x], shardNames[y][x]);
-		}
-	}
 
 	LoadShardInfo();
 
 	shardSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
-	selectedShardHighlight.setTexture(*ts_shards[0]->texture);
-
 	int index = 0;
-	int rectSize = 48;
-	int xSpacing = 20;
-	int ySpacing = 12;
-	Vector2f gridStart(100, 100);
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	int rectSize = 192/2;
+	int xSpacing = 20 * 2;
+	int ySpacing = 12 * 2;
+
+	Vector2f gridStart(150, 200);
+	
+	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
 			index = (i * xSelector->totalItems + j);
-			
+
 			SetRectCenter(shardSelectQuads + index * 4, rectSize, rectSize, Vector2f(j * rectSize + xSpacing * j, i * rectSize + ySpacing * i) + gridStart);
-			SetRectSubRect(shardSelectQuads + index * 4, ts_shards[index/22]->GetSubRect(index % 22));
+		}
+	}
+
+	SetWorldMode();
+	UpdateWorld();
+}
+
+void ShardMenu::UpdateWorld()
+{
+	worldText.setString("World " + to_string(worldSelector->currIndex + 1));
+	UpdateShardQuads();
+}
+
+void ShardMenu::UpdateShardQuads()
+{
+	int index;
+	for (int i = 0; i < ySelector->totalItems - 1; ++i)
+	{
+		for (int j = 0; j < xSelector->totalItems; ++j)
+		{
+			index = (i * xSelector->totalItems + j);
+
+			if (index == ShardInfo::MAX_SHARDS_PER_WORLD)
+			{
+				return;
+			}
+
+			SetRectSubRect(shardSelectQuads + index * 4,
+				ts_shards[worldSelector->currIndex]->GetSubRect(index));
 		}
 	}
 }
@@ -183,25 +188,13 @@ ShardMenu::~ShardMenu()
 {
 	for (int i = 0; i < ySelector->totalItems; ++i)
 	{
-		delete[] shardNames[i];
-		delete[] shardDesc[i];
-		for (int j = 0; j < xSelector->totalItems; ++j)
-		{
-			if (shardSeq[i][j] != NULL)
-				delete shardSeq[i][j];
-		}
-		delete[] shardSeq[i];
-		delete[] seqLoadThread[i];
-
+		delete[] shardInfo[i];
 	}
-	delete[] ts_preview;
+	delete[] shardInfo;
 
-	delete[] shardNames;
-	delete[] shardDesc;
-	delete[] shardSeq;
-	delete[] seqLoadThread;
 	delete xSelector;
 	delete ySelector;
+	delete worldSelector;
 
 	delete[] shardQuads;
 	delete[] shardSelectQuads;
@@ -219,17 +212,11 @@ void ShardMenu::LoadShardInfo()
 		{
 			string lineString;
 			string descriptionString;
-			int index = 22 * i;
-			int x;
-			int y;
-
+			int index = 0;
 
 			while (getline(is, lineString))
 			{
-				x = index % 11;
-				y = index / 11;
-
-				shardNames[y][x] = lineString;
+				shardInfo[i][index].name = lineString;
 
 				descriptionString = "";
 
@@ -238,7 +225,6 @@ void ShardMenu::LoadShardInfo()
 				{
 					if (lineString == "")
 					{
-						index++;
 						break;
 					}
 					else
@@ -257,7 +243,8 @@ void ShardMenu::LoadShardInfo()
 					}
 				}
 
-				shardDesc[y][x] = descriptionString;
+				shardInfo[i][index].desc = descriptionString;
+				index++;
 			}
 
 			is.close();
@@ -271,7 +258,7 @@ void ShardMenu::LoadShardInfo()
 	
 }
 
-bool ShardMenu::IsShardCaptured( int x, int y )
+bool ShardMenu::IsShardCaptured(int w, int li)
 {
 	return true; //testing
 
@@ -281,12 +268,13 @@ bool ShardMenu::IsShardCaptured( int x, int y )
 		return false;
 	}
 
-	return (shardNames[y][x] != "" && saveFile->ShardIsCaptured(Shard::GetShardTypeFromGrid( y, x )));
+	return (shardInfo[w][li].name != "" 
+		&& saveFile->ShardIsCaptured(Shard::GetShardTypeFromWorldAndIndex(w, li)));
 }
 
 bool ShardMenu::IsCurrShardCaptured()
 {
-	return IsShardCaptured(xSelector->currIndex, ySelector->currIndex);
+	return IsShardCaptured(worldSelector->currIndex, selectedIndex);
 }
 
 void ShardMenu::UpdateUnlockedShards()
@@ -297,7 +285,7 @@ void ShardMenu::UpdateUnlockedShards()
 	if (saveFile == NULL)
 		return;
 
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
 		{
@@ -363,171 +351,23 @@ bool ShardMenu::SetDescription( std::string &nameStr, std::string &destStr, cons
 	return true;
 }
 
-void ShardMenu::SetCurrMusic()
-{
-	std::string &name = shardNames[ySelector->currIndex][xSelector->currIndex];
-	assert(currShardMusic == NULL);
-	currShardMusic = GetShardMusic(name);
-	if (currShardMusic != NULL)
-	{
-		bool loaded = currShardMusic->music != NULL;
-		if (currShardMusic->music == NULL)
-			loaded = currShardMusic->Load();
-		assert(loaded);
-		currShardMusic->music->setVolume(100);
-		currShardMusic->music->play();
-	}
-}
-
-PNGSeq *&ShardMenu::GetCurrSeq()
-{
-	return shardSeq[ySelector->currIndex][xSelector->currIndex];
-}
-
-void ShardMenu::AsyncGetSequence(const std::string &str)
-{
-	PNGSeq *& ps = GetCurrSeq();
-
-	if( ps == NULL )
-		ps = GetSequence(str);
-
-	if (ps != NULL)
-	{
-		ps->spr.setPosition(imagePos);
-	}
-}
-
-void ShardMenu::sGetSequence( const std::string &str, ShardMenu *sMenu)
-{
-	sMenu->AsyncGetSequence(str);
-}
-
-boost::thread *&ShardMenu::GetCurrLoadThread()
-{
-	return seqLoadThread[ySelector->currIndex][xSelector->currIndex];
-}
-
-void ShardMenu::SetCurrSequence()
-{
-	std::string &name = shardNames[ySelector->currIndex][xSelector->currIndex];
-	//sGetSequence(name, this);
-	if (GetCurrSeq() == NULL && GetCurrLoadThread() == NULL )
-	{
-		GetCurrLoadThread() = new boost::thread(&(ShardMenu::sGetSequence), name, this);
-	}
-	
-	//testSeq = GetSequence(name);//GetSequence("testanim");
-	
-}
-
-MusicInfo *ShardMenu::GetShardMusic(const std::string &str)
-{
-	//stringstream ss;
-	
-	//ss.str("");
-	//ss << "Shard/" << str << "_" << counter << ".png";
-	//cout << "test: " << ss.str() << endl;
-	return sess->mainMenu->musicManager->songMap["w02_Glade"];
-	//sf::Music *m = mainMenu->musicManager->//LoadSong("Audio/Music/.ogg");
-}
-
-
-PNGSeq * ShardMenu::GetSequence(const std::string &str)
-{
-	if (str == "")
-	{
-		return NULL;
-	}
-	if ( seqMap.count( str ) > 0 )
-	{
-		PNGSeq *cSeq = seqMap[str];
-		cSeq->Reset();
-		return cSeq;
-	}
-
-
-	stringstream ss;
-	int counter = 0;
-	list<Tileset*> tList;
-	while (true)
-	{
-		ss.str("");
-		ss << "Shard/" << str << "_" << counter << ".png";
-		cout << "test: " << ss.str() << endl;
-		Tileset *t = tMan.GetTileset(ss.str(), 512, 512);
-		if (t == NULL)
-		{
-			break;
-		}
-		else
-		{
-			tList.push_back(t);
-		}
-		++counter;
-	}
-
-	//assert(counter > 0);
-	
-	if (counter == 0)
-	{
-		return NULL;
-	}
-	else
-	{
-
-		bool single = tList.size() == 1 && tList.front()->texture->getSize().x == 512;
-		
-		PNGSeq *newSeq = new PNGSeq(str, tList, single);
-
-		seqMap[str] = newSeq;
-
-		return newSeq;
-	}
-}
-
-void ShardMenu::SetupShardImages()
-{
-	
-}
-
 void ShardMenu::UpdateShardSelectQuads()
 {
 	int index = 0;
-	Color c = Color::Red;
-	//for (int i = 0; i < xSelector->totalItems; ++i)
-	//{
-	//	for (int j = 0; j < ySelector->totalItems; ++j)
-	//	{
-	//		index = (i * ySelector->totalItems + j) * 4;
-	//		
-	//		//SetRectColor(shardSelectQuads + index, c);
-	//	}
-	//}
 
-	Color currColor;
-	switch (currButtonState)
+	if (ySelector->currIndex == 0)
 	{
-	case S_NEUTRAL:
-		currColor = Color::White;
-		break;
-	case S_PRESSED:
-		currColor = Color::Blue;
-		break;
-	case S_UNPRESSED:
-		currColor = Color::Green;
-		break;
-	case S_SELECTED:
-		currColor = Color::Magenta;
-		break;
+		return;
 	}
 
-	index = (xSelector->currIndex + xSelector->totalItems * ySelector->currIndex);
+	index = (xSelector->currIndex + xSelector->totalItems * (ySelector->currIndex-1));
 
 	//SetRectColor(shardSelectQuads + index, currColor);
 	int selectedShardTileIndex = -1;
 	if (IsCurrShardCaptured())
 	{
-		SetRectSubRect(largeShard, ts_shards[index/22]->GetSubRect(index%22));
+		SetRectSubRect(largeShard,
+			ts_shards[worldSelector->currIndex]->GetSubRect(index));
 		//selectedShardTileIndex = index + 22;
 	}
 	else
@@ -536,216 +376,208 @@ void ShardMenu::UpdateShardSelectQuads()
 		//selectedShardTileIndex = index + 44;
 	}
 
-	selectedShardHighlight.setScale(48 / 192.0, 48 / 192.0 );
-	selectedShardHighlight.setTexture(*ts_shards[index / 22]->texture);
-	selectedShardHighlight.setTextureRect(ts_shards[index/22]->GetSubRect(index%22));
-	selectedShardHighlight.setOrigin(selectedShardHighlight.getLocalBounds().width / 2,
-		selectedShardHighlight.getLocalBounds().height / 2);
-
-	selectedShardHighlight.setPosition((shardSelectQuads + index * 4)->position + Vector2f(24, 24));
-
-	SetRectCenter(selectedBGQuad, 48, 48, Vector2f(selectedShardHighlight.getPosition()));
+	SetRectCenter(selectedBGQuad, 192/2, 192/2,
+		Vector2f((shardSelectQuads + index * 4)->position + Vector2f(192/4, 192/4)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
 void ShardMenu::SetCurrentDescription( bool captured)
 {
-	currShardNameText.setString(shardNames[ySelector->currIndex][xSelector->currIndex]);
+	ShardDetailedInfo &currInfo = GetCurrShardInfo();
+	currShardNameText.setString(currInfo.name);
 	FloatRect lBounds = currShardNameText.getLocalBounds();
 	currShardNameText.setOrigin(lBounds.left + lBounds.width / 2, lBounds.top + lBounds.height / 2);
 	if( captured )
-		currShardText.setString(shardDesc[ySelector->currIndex][xSelector->currIndex]);
+		currShardText.setString(currInfo.desc);
 }
 
-std::string ShardMenu::GetShardDesc(int w, int li)
+const std::string & ShardMenu::GetShardDesc(int w, int li)
 {
-	int x = li % 11;//li + (w % 2) * 11;
-	int y = w * 2 + li/11;
-	
-
-	return shardDesc[y][x];
+	return shardInfo[w][li].desc;
 }
 
-std::string ShardMenu::GetShardName(int w, int li)
+const std::string & ShardMenu::GetShardName(int w, int li)
 {
-	int x = li % 11;//li + (w % 2) * 11;
-	int y = w * 2 + li / 11;
-
-
-	return shardNames[y][x];
+	return shardInfo[w][li].name;
 }
 
-void ShardMenu::StopMusic()
+ShardDetailedInfo &ShardMenu::GetCurrShardInfo()
 {
-	if (currShardMusic != NULL)
-	{
-		currShardMusic->music->stop();
-		currShardMusic = NULL;
-	}
+	return shardInfo[worldSelector->currIndex][selectedIndex];
 }
 
 void ShardMenu::SetCurrShard()
 {
 	bool captured = IsCurrShardCaptured();
+
 	if (captured)
 	{
-		
-		PNGSeq *seq = GetCurrSeq();
-		if (seq != NULL)
-		{
-			seq->Reset();
-		}
-		else
-		{
-			int index = xSelector->currIndex + ySelector->currIndex * xSelector->totalItems;
-			selectedIndex = index;
-			Tileset *tp = ts_preview[index];
-			if (tp != NULL)
-			{
-				previewSpr.setTexture( *tp->texture);
-				previewSpr.setTextureRect(tp->GetSubRect(0));
-			}
-			else
-			{
-				previewSpr.setTexture(*ts_noPreview->texture);
-				previewSpr.setTextureRect(ts_noPreview->GetSubRect(0));
-			}
-		}
+		int index = xSelector->currIndex + (ySelector->currIndex - 1) * xSelector->totalItems;
+		selectedIndex = index;
 	}
 	else
 	{
-		previewSpr.setTexture(*ts_notCapturedPreview->texture);
-		previewSpr.setTextureRect(ts_notCapturedPreview->GetSubRect(0));
+		/*previewSpr.setTexture(*ts_notCapturedPreview->texture);
+		previewSpr.setTextureRect(ts_notCapturedPreview->GetSubRect(0));*/
 	}
 	SetCurrentDescription(captured);
 }
 
+void ShardMenu::SetWorldMode()
+{
+	currSelectMode = SM_WORLD;
+	worldText.setOutlineColor(Color::Red);
+	worldText.setOutlineThickness(2);
+	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
+}
+
 void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
-	int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
-	int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+	int testIndex;
 
-	bool currShardCap = IsCurrShardCaptured();
-
-	if (xchanged != 0 || ychanged != 0 )
+	if (currSelectMode == SM_WORLD)
 	{
-		//state = PAUSED;
-		if (!currShardCap)
+		int worldChanged = worldSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+
+		if (worldChanged != 0)
 		{
-			sparklePool->Reset();
+			UpdateWorld();
 		}
-		currButtonState = S_NEUTRAL;
-		StopMusic();
-		state = WAIT;
 
-		
-		//SetCurrSequence();
-		SetCurrShard();
-	}
-
-	if (currInput.A && !prevInput.A)
-	{
-		if (currShardCap)
+		if (ychanged != 0)
 		{
-			if (state == WAIT)
+			currSelectMode = SM_SHARD;
+			SetCurrShard();
+
+			worldText.setOutlineThickness(0);
+
+			int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+			ShardDetailedInfo &currInfo = shardInfo[worldSelector->currIndex][index];
+
+			if (currInfo.name == "")
 			{
-				state = LOADTOPLAY;
-				SetCurrSequence();
-			}
-			else if (state == PAUSED)
-			{
-				state = PLAYING;
-				SetCurrMusic();
-			}
-			else if (state == PLAYING)
-			{
-				state = PAUSED;
-				StopMusic();
+				for (int i = ySelector->totalItems - 1; i >= 1; --i)
+				{
+					ySelector->currIndex--;
+					testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+					ShardDetailedInfo &testInfo = shardInfo[worldSelector->currIndex][testIndex];
+					if (testInfo.name != "")
+					{
+						break;
+					}
+				}
 			}
 
+			UpdateShardSelectQuads();
 		}
 	}
-
-	PNGSeq* seq = GetCurrSeq();
-	if (seq != NULL)
+	else if (currSelectMode == SM_SHARD)
 	{
-		if (currInput.X && !prevInput.X)
+		int xchanged = xSelector->UpdateIndex(currInput.LLeft(), currInput.LRight());
+		int ychanged = ySelector->UpdateIndex(currInput.LUp(), currInput.LDown());
+
+		bool currShardCap = IsCurrShardCaptured();
+
+		int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+		//ShardDetailedInfo &currInfo = shardInfo[worldSelector->currIndex][index];
+
+		bool currShardValid = index < ShardInfo::MAX_SHARDS_PER_WORLD
+			&&  shardInfo[worldSelector->currIndex][index].name != "";
+
+		if (ychanged > 0)
 		{
-			seq->Reset();
+			if (!currShardValid)
+			{
+				ySelector->currIndex = 0;
+			}
 		}
-		else if ( state == PAUSED && currInput.PLeft() && !prevInput.PLeft())
+
+		if (ySelector->currIndex == 0)
 		{
-			seq->DecrementFrame();
+			SetWorldMode();
+			state = WAIT;
 		}
-		else if (state == PAUSED && currInput.PRight() && !prevInput.PRight())
+		else
 		{
-			seq->IncrementFrame();
+			if (xchanged != 0 || ychanged != 0)
+			{
+				if (!currShardValid)
+				{
+					if (xchanged > 0)
+					{
+						xSelector->currIndex = 0;
+					}
+					else if (xchanged < 0)
+					{
+						for (int i = xSelector->totalItems - 1; i >= 0; --i)
+						{
+							xSelector->currIndex--;
+							testIndex = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
+							ShardDetailedInfo &testInfo = shardInfo[worldSelector->currIndex][testIndex];
+							if (testInfo.name != "")
+							{
+								break;
+							}
+						}
+					}
+				}
+
+
+				//state = PAUSED;
+				if (!currShardCap)
+				{
+					sparklePool->Reset();
+				}
+				
+				state = WAIT;
+				SetCurrShard();
+			}
+
+			UpdateShardSelectQuads();
+
+
+			if (currShardCap)
+			{
+				int lightningFactor = 7;//14;//8;
+				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
+			}
+			else
+			{
+				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
+			}
+
+			sparklePool->Update();
+
+
+			if (totalFrame % 120 == 0 && currShardCap)
+			{
+				Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
+				EffectInstance ei;
+
+				int r = rand() % 3;
+				if (r == 0)
+				{
+					ei.SetParams(containerCenter + off,
+						Transform(Transform::Identity), 11, 5, 0);
+				}
+				else if (r == 1)
+				{
+					ei.SetParams(containerCenter + off,
+						Transform(Transform::Identity), 10, 5, 11);
+				}
+				else if (r == 2)
+				{
+					ei.SetParams(containerCenter + off,
+						Transform(Transform::Identity), 10, 5, 11);
+				}
+
+				//ei.pos = sparkleCenter;
+				//ei.animFactor = 8;
+
+				sparklePool->ActivateEffect(&ei);
+			}
 		}
-	}
-	boost::thread *& loadThread = GetCurrLoadThread();
-
-	if (loadThread == NULL && seq != NULL && state == LOADTOPLAY )//currButtonState == S_SELECTED)
-	{
-		state = PLAYING;
-		SetCurrMusic();
-	}
-
-	if (state == PLAYING && loadThread == NULL && seq != NULL)
-	{
-		GetCurrSeq()->Update();
-	}
-
-	if (loadThread  != NULL && loadThread->try_join_for(boost::chrono::milliseconds(0)))
-	{
-		delete loadThread;
-		loadThread = NULL;
-	}
-
-	UpdateShardSelectQuads();
-
-	
-	if (currShardCap)
-	{
-		int lightningFactor = 7;//14;//8;
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
-	}
-	else
-	{
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
-	}
-	
-
-	sparklePool->Update( );
-
-
-	Vector2f sparkleCenter(825 + 401 / 2, 66 + 512 / 2);
-	
-	if (totalFrame % 120 == 0 && currShardCap)
-	{
-		Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
-		EffectInstance ei;
-
-		int r = rand() % 3;
-		if (r == 0)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 11 , 5, 0);
-		}
-		else if (r == 1)
-		{
-			ei.SetParams(sparkleCenter + off,
-				Transform(Transform::Identity), 10, 5, 11);
-		}
-		else if (r == 2)
-		{
-			ei.SetParams(sparkleCenter+ off,
-				Transform(Transform::Identity), 10, 5, 11);
-		}
-		
-		//ei.pos = sparkleCenter;
-		//ei.animFactor = 8;
-		
-		sparklePool->ActivateEffect(&ei);
 	}
 
 	++totalFrame;
@@ -753,6 +585,11 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 void ShardMenu::SetShardTab()
 {
+	currSelectMode = SM_WORLD;
+	ySelector->currIndex = 0;
+	xSelector->ResetCounters();
+	ySelector->ResetCounters();
+
 	bool currShardCap = IsCurrShardCaptured();
 	if (currShardCap)
 	{
@@ -764,7 +601,9 @@ void ShardMenu::SetShardTab()
 		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
 	}
 	UpdateUnlockedShards();
-	UpdateShardSelectQuads();
+	//UpdateShardSelectQuads();
+
+	//shardMenu->SetCurrShard();
 }
 
 void ShardMenu::Draw(sf::RenderTarget *target)
@@ -772,30 +611,26 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 	target->draw(shardBGQuad, 4, sf::Quads);
 	target->draw(containerBGQuad, 4, sf::Quads);
 	target->draw(descriptionBGQuad, 4, sf::Quads);
-	target->draw(controlsQuadBGQuad, 4, sf::Quads);
 	target->draw(shardTitleBGQuad, 4, sf::Quads);
+
 	target->draw(largeShardContainer, 4, sf::Quads, ts_shardContainer->texture);
-	target->draw(shardButtons, 4 * 4, sf::Quads, ts_shardButtons->texture);
 	
-
-	target->draw(largeShard, 4, sf::Quads, ts_shards[selectedIndex/22]->texture);
-	sparklePool->Draw(target);
-	if(GetCurrSeq() != NULL )
-		GetCurrSeq()->Draw(target);
-	else
+	if (currSelectMode == SM_SHARD)
 	{
-		target->draw(previewSpr);
+		target->draw(largeShard, 4, sf::Quads, ts_shards[worldSelector->currIndex]->texture);
+		sparklePool->Draw(target);
+
+		target->draw(selectedBGQuad, 4, sf::Quads);
 	}
-
-
-	target->draw(selectedBGQuad, 4, sf::Quads);
-
-	for (int i = 0; i < 7; ++i)
+	
+	target->draw(shardSelectQuads , ShardInfo::MAX_SHARDS_PER_WORLD * 4,
+		sf::Quads, ts_shards[worldSelector->currIndex]->texture);
+	/*for (int i = 0; i < 7; ++i)
 	{
 		target->draw(shardSelectQuads + 22 * 4 * i, 22 * 4,
 			sf::Quads, ts_shards[i]->texture);
-	}
-
+	}*/
+	target->draw(worldText);
 	
 
 	/*target->draw(shardSelectQuads, 22 * 4,
@@ -810,11 +645,6 @@ void ShardMenu::Draw(sf::RenderTarget *target)
 		target->draw(currShardNameText);
 	}
 	//target->draw(currentMovie);
-}
-
-bool ShardMenu::LoadPNGSequences()	
-{
-	return false;
 }
 
 PNGSeq::PNGSeq(const

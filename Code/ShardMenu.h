@@ -61,23 +61,14 @@ struct GameSession;
 
 struct Session;
 
+struct ShardDetailedInfo
+{
+	std::string name;
+	std::string desc;
+};
+
 struct ShardMenu
 {
-	//looping movie that plays
-	//with button inputs over it?
-
-	//tutorial shards are the first kind,
-	//leave room open for other types, but
-	//this is the basic one for world 1
-	//
-	enum ShardButtonState
-	{
-		S_NEUTRAL,
-		S_PRESSED,
-		S_UNPRESSED,
-		S_SELECTED,
-	};
-
 	enum State
 	{
 		PLAYING,
@@ -85,84 +76,74 @@ struct ShardMenu
 		WAIT,
 		LOADTOPLAY,
 	};
+
+	enum SelectMode
+	{
+		SM_WORLD,
+		SM_SHARD,
+	};
+
+	sf::Vector2f containerCenter;
+
 	State state;
+
 	EffectPool *sparklePool;
+	
+	sf::Text worldText;
+	sf::Text currShardText;
+	sf::Text currShardNameText;
+
+	ShardDetailedInfo **shardInfo;
+	
+	Session *sess;
+
+	int currSelectMode;
+	int numShardsTotal;
+	int selectedIndex;
+	int totalFrame;
+
+	sf::Vector2f imagePos;
+
+	TilesetManager tMan;
+
+	SingleAxisSelector *xSelector;
+	SingleAxisSelector *ySelector;
+	SingleAxisSelector *worldSelector;
+
+	sf::Vertex *shardQuads;
+	sf::Vertex selectedBGQuad[4];
+	sf::Vertex *shardSelectQuads;
+	sf::Vertex shardBGQuad[4];
+	sf::Vertex containerBGQuad[4];
+	sf::Vertex descriptionBGQuad[4];
+	sf::Vertex shardTitleBGQuad[4];
+	sf::Vertex largeShardContainer[4];
+	sf::Vertex largeShard[4];
+	sf::Vertex shardButtons[4 * 4];
+	Tileset *ts_shards[7];
+	Tileset *ts_shardContainer;
+	Tileset *ts_sparkle;
+
 	ShardMenu( Session *sess );
 	~ShardMenu();
 	void Update( ControllerState &currInput,
 		ControllerState &prevInput );
 	void Draw(sf::RenderTarget *target);
-
 	void SetCurrShard();
-	int selectedIndex;
-	int totalFrame;
-	sf::Text currShardText;
-	sf::Text currShardNameText;
-	std::string **shardDesc;// [ShardType::SHARD_W1_TEACH_JUMP];
-	Tileset *ts_shards[7];
-	sf::Sprite selectedShardHighlight;
-	ShardButtonState currButtonState;
 	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr );
 	void SetCurrentDescription( bool captured );
-	bool LoadPNGSequences();
-	sf::Vertex *shardQuads;
-	Session *sess;
-	int numShardsTotal;
-	std::string GetShardDesc(int w, int li);
-	std::string GetShardName(int w, int li);
-	sf::Vector2f imagePos;
-	void SetCurrSequence();
-	void SetupShardImages();
-	TilesetManager tMan;
-	PNGSeq * GetSequence(const std::string &str);
-	MusicInfo *GetShardMusic(const std::string &str);
-	SingleAxisSelector *xSelector;
-	SingleAxisSelector *ySelector;
-	Tileset **ts_preview;
-	sf::Sprite previewSpr;
-	std::map<std::string, PNGSeq*> seqMap;
-	std::string **shardNames;
-	MusicInfo *currShardMusic;
-	void SetCurrMusic();
-	void StopMusic();
-	boost::thread ***seqLoadThread;
-	PNGSeq ***shardSeq;
-	void AsyncGetSequence(const std::string &str);
-	static void sGetSequence( const std::string &str, 
-		ShardMenu *sMenu );
-	PNGSeq *&GetCurrSeq();
-	boost::thread *&GetCurrLoadThread();
-
+	const std::string &GetShardDesc(int w, int li);
+	const std::string &GetShardName(int w, int li);
+	ShardDetailedInfo &GetCurrShardInfo();
 	void LoadShardInfo();
-
-	sf::Vertex selectedBGQuad[4];
-
-
-	
 	void UpdateUnlockedShards();
-	bool IsShardCaptured( int x, int y );
 	bool IsCurrShardCaptured();
-
-	sf::Vertex *shardSelectQuads;
 	void UpdateShardSelectQuads();
-
-	sf::Vertex shardBGQuad[4];
-	sf::Vertex containerBGQuad[4];
-	sf::Vertex descriptionBGQuad[4];
-	sf::Vertex controlsQuadBGQuad[4];
-	sf::Vertex shardTitleBGQuad[4];
-	sf::Vertex largeShardContainer[4];
-	sf::Vertex largeShard[4];
-	sf::Vertex shardButtons[4 * 4];
-
 	void SetShardTab();
-	Tileset *ts_shardButtons;
-	Tileset *ts_shardContainer;
-	Tileset *ts_sparkle;
-
-	Tileset *ts_notCapturedPreview;
-	Tileset *ts_noPreview;
-	
+	void UpdateShardQuads();
+	void UpdateWorld();
+	bool IsShardCaptured(int w, int li);
+	void SetWorldMode();
 };
 
 #endif

@@ -2757,7 +2757,7 @@ int GameSession::Run()
 					gameState = GameSession::RUN;
 					ActivatePauseSound(GetSound("pause_off"));
 					soundNodeList->Pause(false);
-					pauseMenu->shardMenu->StopMusic();
+					//pauseMenu->shardMenu->StopMusic();
 					break;
 				}
 				case PauseMenu::R_P_RESPAWN:

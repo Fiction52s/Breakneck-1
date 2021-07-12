@@ -499,7 +499,7 @@ void PauseMenu::SetTab( Tab t )
 	switch (currentTab)
 	{
 	case SHARDS:
-		shardMenu->StopMusic();
+	//	shardMenu->StopMusic();
 		break;
 	case LOGS:
 		logMenu->StopMusic();
@@ -539,8 +539,8 @@ void PauseMenu::SetTab( Tab t )
 	case SHARDS:
 		//shardMenu->SetCurrSequence();
 		shardMenu->SetShardTab();
-		shardMenu->state = ShardMenu::WAIT;
-		shardMenu->SetCurrShard();
+		
+		
 		break;
 	case LOGS:
 		logMenu->SetLogTab();
@@ -827,7 +827,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 				game->pauseSoundNodeList->SetSoundVolume(sVol);
 			}
 			
-			if (currentTab == OPTIONS)
+			/*if (currentTab == OPTIONS)
 			{
 				optionsMenu->state = OptionsMenu::CHOOSESTATE;
 				game->mainMenu->optionsMenu->Center(Vector2f(1820, 980));
@@ -843,7 +843,7 @@ PauseMenu::UpdateResponse PauseMenu::Update( ControllerState &currInput,
 			else if (currentTab == KIN)
 			{
 				kinMenu->UpdateCommandButton();
-			}
+			}*/
 
 			TabLeft();
 

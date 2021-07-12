@@ -11,6 +11,7 @@
 #include "EditorRail.h"
 #include "Action.h"
 #include "ShardMenu.h"
+#include "LogMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -507,7 +508,8 @@ void ShardParams::SetShard(int w, int realX, int realY)
 	{
 		nameText.setFont(edit->arial);
 		nameText.setCharacterSize(30);
-		nameText.setString(edit->shardMenu->shardNames[sY + w * 2][sX]);
+		nameText.setString(edit->shardMenu->GetShardName(shInfo.world,
+			shInfo.localIndex));
 		nameText.setOrigin(nameText.getLocalBounds().left +
 			nameText.getLocalBounds().width / 2, 0);
 	}
@@ -624,7 +626,7 @@ void LogParams::SetLog(int w, int realX, int realY)
 	{
 		nameText.setFont(edit->arial);
 		nameText.setCharacterSize(30);
-		nameText.setString(edit->shardMenu->shardNames[sY + w * 2][sX]);
+		nameText.setString(edit->logMenu->GetLogName(lInfo.world, lInfo.localIndex));
 		nameText.setOrigin(nameText.getLocalBounds().left +
 			nameText.getLocalBounds().width / 2, 0);
 	}

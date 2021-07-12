@@ -77,7 +77,6 @@ struct Shard : Enemy
 	//MovingRing *mRing;
 	void DirectKill();
 
-	static int GetShardTypeFromGrid(int y, int x);
 	static int GetShardTypeFromWorldAndIndex(int w, int li);
 	static int GetNumShardsTotal();
 	//MovementSequence testSeq;
