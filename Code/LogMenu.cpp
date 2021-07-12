@@ -30,49 +30,79 @@ LogMenu::LogMenu(Session *p_sess)
 {
 	previewParams = NULL;
 
-	ActorType *at = NULL;
-	//at = sess->types["crawler"];
-
-	//testParams = at->info.pMaker(at, 1);
-
-	//testParams->SetPosition(imagePos);
-	//testParams->CreateMyEnemy();
-	//testParams->myEnemy->UpdateFromEditParams(0);
-
 	waterShaderCounter = 0;
 	totalFrame = 0;
 	currLogMusic = NULL;
-	//currentMovie.scale(.5, .5);
 
 	currLogText.setCharacterSize(20);
 	currLogText.setFont(sess->mainMenu->arial);
-	currLogText.setPosition(960, 740);
+	
 
 	worldText.setFont(sess->mainMenu->arial);
 	worldText.setCharacterSize(40);
 	worldText.setFillColor(Color::White);
 
-	currLogNameText.setCharacterSize(20);
+	currLogNameText.setCharacterSize(36);
 	currLogNameText.setFont(sess->mainMenu->arial);
-	currLogNameText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
+
+	int edgeMargin = 65;
+
+	Vector2f pauseTexSize(1820, 980);
 
 	Vector2f controlCenter = Vector2f(1243 + 512 / 2, 594 + 93 / 2);
 
-	SetRectCenter(logBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
-	SetRectCenter(shardTitleBGQuad, 401, 93, Vector2f(825 + 401 / 2, 594 + 93 / 2));
-	SetRectCenter(controlsQuadBGQuad, 512, 93, controlCenter);
-	SetRectCenter(descriptionBGQuad, 929, 211, Vector2f(825 + 929 / 2, 703 + 211 / 2));
+	float logBGQuadWidth = 740;
 
-	SetRectCenter(shardButtons, 128, 93, Vector2f(controlCenter.x - 128 - 128 / 2, controlCenter.y));
+	worldText.setPosition(edgeMargin + logBGQuadWidth / 2, 100);
+
+	Vector2f logBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
+
+	SetRectTopLeft(logBGQuad, logBGQuadWidth, pauseTexSize.y - edgeMargin * 2, logBGQuadTopLeft);
+
+	float rightOfLogBGQuad = logBGQuadTopLeft.x + logBGQuadWidth;
+
+	float leftSideMiddle = logBGQuadTopLeft.x + logBGQuadWidth / 2;
+
+	worldText.setPosition(leftSideMiddle, 80);
+
+	float separationMargin = 15;
+	float rightSideStartX = rightOfLogBGQuad + separationMargin;
+
+	float rightSideWidth = (pauseTexSize.x - edgeMargin) - rightSideStartX;
+	float rightSideCenterX = rightSideStartX + rightSideWidth / 2;
+
+
+
+
+	float containerBGQuadHeight = 512;
+
+	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin);
+
+	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
+
+	previewCenter = containerBGQuadPos + Vector2f(rightSideWidth / 2, containerBGQuadHeight / 2);
+
+	float containerQuadBottom = containerBGQuadPos.y + containerBGQuadHeight;
+
+	float nameQuadHeight = 93;
+	float descriptionQuadHeight = 215;
+
+	Vector2f logTitleBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin);
+	Vector2f logDescriptionBGQuadPos = Vector2f(rightSideStartX, containerQuadBottom + separationMargin + nameQuadHeight + separationMargin);
+
+	SetRectTopLeft(shardTitleBGQuad, rightSideWidth, nameQuadHeight, logTitleBGQuadPos);
+	SetRectTopLeft(descriptionBGQuad, rightSideWidth, descriptionQuadHeight, logDescriptionBGQuadPos);
+
+
+	currLogNameText.setPosition(Vector2f(rightSideCenterX, logTitleBGQuadPos.y + nameQuadHeight / 2));
+
+	currLogText.setPosition(logDescriptionBGQuadPos + Vector2f(edgeMargin, edgeMargin));
+	
+
+	/*SetRectCenter(shardButtons, 128, 93, Vector2f(controlCenter.x - 128 - 128 / 2, controlCenter.y));
 	SetRectCenter(shardButtons + 1 * 4, 128, 93, Vector2f(controlCenter.x - 128 / 2, controlCenter.y));
 	SetRectCenter(shardButtons + 2 * 4, 128, 93, Vector2f(controlCenter.x + 128 / 2, controlCenter.y));
-	SetRectCenter(shardButtons + 3 * 4, 128, 93, Vector2f(controlCenter.x + 128 + 128 / 2, controlCenter.y));
-
-
-	SetRectCenter(containerBGQuad, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-
-	SetRectCenter(largeShardContainer, 401, 512, Vector2f(825 + 401 / 2, 66 + 512 / 2));
-	SetRectCenter(largeShard, 192, 192, Vector2f(825 + 401 / 2, 66 + 512 / 2));
+	SetRectCenter(shardButtons + 3 * 4, 128, 93, Vector2f(controlCenter.x + 128 + 128 / 2, controlCenter.y));*/
 
 	SetRectColor(logBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(shardTitleBGQuad, Color(0, 0, 0, 128));
@@ -80,8 +110,6 @@ LogMenu::LogMenu(Session *p_sess)
 	SetRectColor(descriptionBGQuad, Color(0, 0, 0, 128));
 	SetRectColor(containerBGQuad, Color(0, 0, 0, 128));
 
-	ts_shardContainer = sess->GetSizedTileset("Menu/shard_container_401x512.png");
-	ts_sparkle = sess->GetSizedTileset("Menu/shard_sparkle_64x64.png");
 	ts_notCapturedPreview = sess->GetSizedTileset("Menu/not_captured_512x512.png");
 	ts_noPreview = sess->GetTileset("Menu/nopreview.png", 512, 512);
 	ts_shardButtons = sess->GetSizedTileset("Menu/pause_shard_buttons_128x93.png");
@@ -89,24 +117,18 @@ LogMenu::LogMenu(Session *p_sess)
 	{
 		SetRectSubRect(shardButtons + i * 4, ts_shardButtons->GetSubRect(i));
 	}
-
-
-	SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(0));
-
-	imagePos = Vector2f(1243, 66);
-	previewSpr.setPosition(imagePos);
+	previewSpr.setPosition(previewCenter);
 
 
 	ts_grass = sess->GetSizedTileset("Env/grass_128x128.png");
 	grassSprite.setTexture(*ts_grass->texture);
-	grassSprite.setPosition(imagePos);
-	//grassSprite.setTextureRect(ts_grass->GetSubRect(0));
-	
+	grassSprite.setPosition(previewCenter);
 
 	ts_kin = sess->GetSizedTileset("Menu/pause_kin_400x836.png");
 	kinSprite.setTexture(*ts_kin->texture);
 	kinSprite.setScale(.5, .5);
-	kinSprite.setPosition(imagePos);
+	kinSprite.setPosition(previewCenter + Vector2f( -100, 0 ));
+	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
 
 	pSkinShader.SetSubRect(ts_kin, ts_kin->GetSubRect(0));
 	
@@ -114,7 +136,8 @@ LogMenu::LogMenu(Session *p_sess)
 	ts_kinFace = sess->GetSizedTileset("HUD/kin_face_320x288.png");
 	kinFaceSprite.setTexture(*ts_kinFace->texture);
 	kinFaceSprite.setTextureRect(ts_kinFace->GetSubRect(0));
-	kinFaceSprite.setPosition(imagePos + Vector2f(250, 0));
+	kinFaceSprite.setPosition(previewCenter + Vector2f(100, 0));
+	kinFaceSprite.setOrigin(kinFaceSprite.getLocalBounds().width / 2, kinFaceSprite.getLocalBounds().height / 2);
 
 	pFaceSkinShader.SetSubRect(ts_kinFace, ts_kinFace->GetSubRect(0));
 
@@ -122,13 +145,10 @@ LogMenu::LogMenu(Session *p_sess)
 
 	ts_logs = sess->GetSizedTileset("Logs/logs_64x64.png");
 
-	sparklePool = new EffectPool(EffectType::FX_REGULAR, 3, 1.f);
-	sparklePool->ts = ts_sparkle;
-
 	int waitFrames[3] = { 60, 20, 10 };
 	int waitModeThresh[2] = { 2, 4 };
-	int xSize = 6;
-	int ySize = 6 + 1; //+1 for world selector
+	int xSize = 5;
+	int ySize = 7 + 1; //+1 for world selector
 
 	int numWorlds = 8;
 	logInfo = new LogDetailedInfo*[numWorlds];
@@ -145,16 +165,16 @@ LogMenu::LogMenu(Session *p_sess)
 	int waterWidth = 400;
 	int waterHeight = 400;
 	previewPoly = new TerrainPolygon;
-	previewPoly->AddPoint(Vector2i(imagePos), false);
-	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, 0 )), false);
-	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(waterWidth, waterHeight)), false);
-	previewPoly->AddPoint(Vector2i(imagePos + Vector2f(0, waterHeight)), false);
+	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(-waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(waterWidth / 2, -waterHeight / 2)), false);
+	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(waterWidth/2, waterHeight/2)), false);
+	previewPoly->AddPoint(Vector2i(previewCenter + Vector2f(-waterWidth/2, waterHeight/2)), false);
 	previewPoly->SetAsWaterType(TerrainPolygon::WATER_NORMAL);
 	previewPoly->Finalize();
 
 	previewRail = new TerrainRail;
-	previewRail->AddPoint(Vector2i(imagePos), false);
-	previewRail->AddPoint(Vector2i(imagePos + Vector2f(300, 300)), false);
+	previewRail->AddPoint(Vector2i(previewCenter + Vector2f( -150, -150 )), false);
+	previewRail->AddPoint(Vector2i(previewCenter + Vector2f(150, 150)), false);
 
 	previewRail->SetRailType(TerrainRail::FLOORANDCEILING);
 	previewRail->Finalize();
@@ -164,13 +184,13 @@ LogMenu::LogMenu(Session *p_sess)
 	logSelectQuads = new sf::Vertex[xSize * ySize * 4];
 
 	int index = 0;
-	int rectSize = 64;
-	int xSpacing = 20;
-	int ySpacing = 12;
+	int rectSize = 192/2;
+	int xSpacing = 20 * 2;
+	int ySpacing = 12 * 2;
 
-	worldText.setPosition(100, 100);
+	worldText.setPosition(150, 100);
 
-	Vector2f gridStart(100, 200);
+	Vector2f gridStart(150, 200);
 	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
 		for (int j = 0; j < xSelector->totalItems; ++j)
@@ -183,7 +203,7 @@ LogMenu::LogMenu(Session *p_sess)
 	}
 
 	
-
+	SetWorldMode();
 	UpdateLogsOnWorldChange();
 }
 
@@ -200,7 +220,6 @@ LogMenu::~LogMenu()
 	delete worldSelector;
 
 	delete[] logSelectQuads;
-	delete sparklePool;
 }
 
 void LogMenu::LoadLogInfo()
@@ -529,26 +548,17 @@ void LogMenu::UpdateLogsOnWorldChange()
 	}
 
 	worldText.setString("World " + to_string(worldSelector->currIndex + 1));
+	sf::FloatRect localBounds = worldText.getLocalBounds();
+	worldText.setOrigin(localBounds.left + localBounds.width / 2, 0);
 }
 
 void LogMenu::UpdateLogSelectQuads()
 {
 	int index = (ySelector->currIndex - 1) * xSelector->totalItems + xSelector->currIndex;
 
-	if (IsCurrLogFound())
-	{
-		SetRectSubRect(largeShard, ts_logs->GetSubRect(0));
-		//selectedShardTileIndex = index + 22;
-	}
-	else
-	{
-		SetRectSubRect(largeShard, FloatRect());
-		//selectedShardTileIndex = index + 44;
-	}
-
-
-	SetRectCenter(selectedBGQuad, 64, 64,
-		Vector2f((logSelectQuads + index * 4)->position + Vector2f(32, 32)));
+	float quadSize = 192/2;
+	SetRectCenter(selectedBGQuad, quadSize, quadSize,
+		Vector2f((logSelectQuads + index * 4)->position + Vector2f(quadSize/2, quadSize/2)));
 	SetRectColor(selectedBGQuad, Color::White);
 }
 
@@ -632,7 +642,7 @@ void LogMenu::SetCurrLog()
 				sess->specialTempSoundManager = &sMan;
 				previewParams = at->info.pMaker(at, 1);
 
-				previewParams->SetPosition(imagePos + Vector2f( 256, 256 ));
+				previewParams->SetPosition(previewCenter);
 				previewParams->CreateMyEnemy();
 
 				sess->specialTempTilesetManager = NULL;
@@ -661,6 +671,7 @@ void LogMenu::SetCurrLog()
 			else if (currLogType == LogDetailedInfo::LT_GRASS)
 			{
 				grassSprite.setTextureRect(ts_grass->GetSubRect(currInfo.grassTypeIndex));
+				grassSprite.setOrigin(grassSprite.getLocalBounds().width / 2, grassSprite.getLocalBounds().height / 2);
 			}
 			else
 			{
@@ -693,6 +704,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 		if (worldChanged != 0)
 		{
+			xSelector->currIndex = 0;
 			UpdateLogsOnWorldChange();
 		}
 
@@ -744,9 +756,7 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 
 		if (ySelector->currIndex == 0)
 		{
-			currSelectMode = SM_WORLD;
-			worldText.setOutlineColor(Color::Red);
-			worldText.setOutlineThickness(2);
+			SetWorldMode();
 			StopMusic();
 			state = WAIT;
 		}
@@ -775,12 +785,6 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 					}
 				}
 
-
-				//state = PAUSED;
-				if (!currLogFound)
-				{
-					sparklePool->Reset();
-				}
 				StopMusic();
 				state = WAIT;
 
@@ -820,49 +824,6 @@ void LogMenu::Update(ControllerState &currInput, ControllerState &prevInput)
 			UpdateLogSelectQuads();
 
 
-			if (currLogFound)
-			{
-				int lightningFactor = 7;//14;//8;
-				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
-			}
-			else
-			{
-				SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
-			}
-
-			sparklePool->Update();
-
-
-			Vector2f sparkleCenter(825 + 401 / 2, 66 + 512 / 2);
-
-			if (totalFrame % 120 == 0 && currLogFound)
-			{
-				Vector2f off(rand() % 101 - 50, rand() % 101 - 50);
-				EffectInstance ei;
-
-				int r = rand() % 3;
-				if (r == 0)
-				{
-					ei.SetParams(sparkleCenter + off,
-						Transform(Transform::Identity), 11, 5, 0);
-				}
-				else if (r == 1)
-				{
-					ei.SetParams(sparkleCenter + off,
-						Transform(Transform::Identity), 10, 5, 11);
-				}
-				else if (r == 2)
-				{
-					ei.SetParams(sparkleCenter + off,
-						Transform(Transform::Identity), 10, 5, 11);
-				}
-
-				//ei.pos = sparkleCenter;
-				//ei.animFactor = 8;
-
-				sparklePool->ActivateEffect(&ei);
-			}
-
 			if (previewParams != NULL)
 			{
 				previewParams->myEnemy->UpdateFromEditParams(1);
@@ -893,21 +854,18 @@ void LogMenu::SetLogTab()
 	ySelector->currIndex = 0;
 	xSelector->ResetCounters();
 	ySelector->ResetCounters();
-	bool currShardCap = IsCurrLogFound();
-	if (currShardCap)
-	{
-		int lightningFactor = 7;//8;
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect((totalFrame / lightningFactor) % 12));
-	}
-	else
-	{
-		SetRectSubRect(largeShardContainer, ts_shardContainer->GetSubRect(12));
-	}
 	UpdateUnlockedLogs();
 	//UpdateLogSelectQuads();
 
 	state = LogMenu::WAIT;
 	//logMenu->SetCurrLog();
+}
+
+void LogMenu::SetWorldMode()
+{
+	currSelectMode = SM_WORLD;
+	worldText.setOutlineColor(Color::Red);
+	worldText.setOutlineThickness(2);
 }
 
 void LogMenu::Draw(sf::RenderTarget *target)
@@ -917,12 +875,8 @@ void LogMenu::Draw(sf::RenderTarget *target)
 	target->draw(descriptionBGQuad, 4, sf::Quads);
 	target->draw(controlsQuadBGQuad, 4, sf::Quads);
 	target->draw(shardTitleBGQuad, 4, sf::Quads);
-	target->draw(largeShardContainer, 4, sf::Quads, ts_shardContainer->texture);
+	
 	target->draw(shardButtons, 4 * 4, sf::Quads, ts_shardButtons->texture);
-
-
-	target->draw(largeShard, 4, sf::Quads, ts_logs->texture);
-	sparklePool->Draw(target);
 
 	if (currSelectMode == SM_LOG)
 	{

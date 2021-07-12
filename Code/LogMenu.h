@@ -91,7 +91,6 @@ struct LogMenu
 	TerrainPolygon *previewPoly;
 	TerrainRail *previewRail;
 	State state;
-	EffectPool *sparklePool;
 	int selectedIndex;
 	int totalFrame;
 	sf::Text currLogText;
@@ -100,7 +99,6 @@ struct LogMenu
 	Tileset *ts_logs;
 	Tileset *ts_rail;
 	Session *sess;
-	sf::Vector2f imagePos;
 	TilesetManager tMan;
 	SoundManager sMan;
 	SingleAxisSelector *xSelector;
@@ -117,14 +115,11 @@ struct LogMenu
 	sf::Vertex descriptionBGQuad[4];
 	sf::Vertex controlsQuadBGQuad[4];
 	sf::Vertex shardTitleBGQuad[4];
-	sf::Vertex largeShardContainer[4];
-	sf::Vertex largeShard[4];
 	sf::Vertex shardButtons[4 * 4];
 	Tileset *ts_shardButtons;
-	Tileset *ts_shardContainer;
-	Tileset *ts_sparkle;
 	Tileset *ts_notCapturedPreview;
 	Tileset *ts_noPreview;
+	sf::Vector2f previewCenter;
 	
 	LogMenu(Session *sess);
 	~LogMenu();
@@ -147,6 +142,7 @@ struct LogMenu
 	void UpdateLogSelectQuads();
 	void UpdateLogsOnWorldChange();
 	void SetLogTab();
+	void SetWorldMode();
 };
 
 #endif

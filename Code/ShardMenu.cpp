@@ -41,7 +41,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	currShardNameText.setFont(sess->mainMenu->arial);
 	
 
-	worldText.setCharacterSize(20);
+	worldText.setCharacterSize(40);
 	worldText.setFont(sess->mainMenu->arial);
 	//worldText.setPosition(Vector2f(825 + 401 / 2, 594 + 93 / 2));
 	
@@ -49,12 +49,17 @@ ShardMenu::ShardMenu(Session *p_sess)
 	//SetRectCenter(shardBGQuad, 744, 848, Vector2f(65 + 744 / 2, 66 + 848 / 2));
 
 	float shardBGQuadWidth = 740;
-	worldText.setPosition(edgeMargin + shardBGQuadWidth / 2, 100);
 
 	Vector2f shardBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
 	SetRectTopLeft(shardBGQuad, shardBGQuadWidth, pauseTexSize.y - edgeMargin * 2, shardBGQuadTopLeft);
 
+	
+
 	float rightOfShardBGQuad = shardBGQuadTopLeft.x + shardBGQuadWidth;
+
+	float leftSideMiddle = shardBGQuadTopLeft.x + shardBGQuadWidth / 2;
+
+	worldText.setPosition(leftSideMiddle, 80);
 
 	float separationMargin = 15;
 	float rightSideStartX = rightOfShardBGQuad + separationMargin;
@@ -68,6 +73,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	float containerBGQuadHeight = 512;
 
 	Vector2f containerBGQuadPos = Vector2f(rightSideStartX, edgeMargin);
+
 
 	SetRectTopLeft(containerBGQuad, rightSideWidth, containerBGQuadHeight, containerBGQuadPos);
 
@@ -161,6 +167,8 @@ ShardMenu::ShardMenu(Session *p_sess)
 void ShardMenu::UpdateWorld()
 {
 	worldText.setString("World " + to_string(worldSelector->currIndex + 1));
+	sf::FloatRect localBounds = worldText.getLocalBounds();
+	worldText.setOrigin(localBounds.left + localBounds.width / 2, 0);
 	UpdateShardQuads();
 }
 
@@ -442,6 +450,7 @@ void ShardMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 
 		if (worldChanged != 0)
 		{
+			xSelector->currIndex = 0;
 			UpdateWorld();
 		}
 
