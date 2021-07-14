@@ -14,6 +14,7 @@
 #include "ParticleEffects.h"
 
 #include "Enemy_LogItem.h"
+#include "LogMenu.h"
 
 using namespace std;
 using namespace sf;
@@ -34,14 +35,17 @@ void LogItem::UpdateParamsSettings()
 	LogParams *lParams = (LogParams*)editParams;
 	logWorld = lParams->lInfo.world;
 	localIndex = lParams->lInfo.localIndex;
-	logType = 0;//GetShardTypeFromWorldAndIndex(shardWorld, localIndex);//shardWorld * 22 + localIndex;//Shard::GetShardType(shardWorld, localIndex);
+
+	tile = sess->logMenu->GetLogTile(logWorld, localIndex);
+	sprite.setTextureRect(ts->GetSubRect(tile));
+	logType = logWorld * LogInfo::MAX_LOGS_PER_WORLD + localIndex;//GetShardTypeFromWorldAndIndex(shardWorld, localIndex);//shardWorld * 22 + localIndex;//Shard::GetShardType(shardWorld, localIndex);
 
 	/*if (logType != oldShardType)
 	{
 		ts = Shard::GetShardTileset(shardWorld, sess);
 
 		sprite.setTexture(*ts->texture);
-		sprite.setTextureRect(ts->GetSubRect(localIndex));
+		
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	}*/
 }
@@ -63,7 +67,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 	ts = GetSizedTileset("Logs/logs_64x64.png");
 	ts_shine = GetSizedTileset("Logs/logs_shine_64x64.png");
-	//UpdateParamsSettings();
+	UpdateParamsSettings();
 
 	alreadyCollected = false;
 
@@ -331,9 +335,7 @@ void LogItem::ProcessHit()
 
 void LogItem::UpdateSprite()
 {
-	int tile = 0;
-
-	sprite.setTextureRect(ts->GetSubRect(0));
+	sprite.setTextureRect(ts->GetSubRect(tile));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 

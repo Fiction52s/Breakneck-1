@@ -605,11 +605,6 @@ LogParams::LogParams(ActorType *at, int level)
 
 void LogParams::SetLog(int w, int li)
 {
-	if (myEnemy != NULL)
-	{
-		myEnemy->UpdateParamsSettings();
-	}
-
 	EditSession *edit = EditSession::GetSession();
 
 	lInfo.world = w;
@@ -622,6 +617,11 @@ void LogParams::SetLog(int w, int li)
 		nameText.setString(edit->logMenu->GetLogName(lInfo.world, lInfo.localIndex));
 		nameText.setOrigin(nameText.getLocalBounds().left +
 			nameText.getLocalBounds().width / 2, 0);
+	}
+
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
 	}
 
 	//SetLog(w, li % 11, li / 11);

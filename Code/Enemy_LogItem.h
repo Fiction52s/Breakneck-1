@@ -34,6 +34,7 @@ struct LogItem : Enemy
 
 	Tileset *ts;
 	Tileset *ts_shine;
+	int tile;
 
 	int logType;
 	int logWorld;
