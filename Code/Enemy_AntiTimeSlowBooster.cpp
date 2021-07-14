@@ -32,7 +32,7 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 
 	strength = 360;
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	ts = GetSizedTileset("Enemies/W5/anti_time_384x384.png");
 	//ts_refresh = sess->GetSizedTileset("Enemies/booster_on_256x256.png");
 
 	sprite.setScale(scale, scale);
@@ -41,12 +41,12 @@ AntiTimeSlowBooster::AntiTimeSlowBooster(ActorParams *ap)
 	double radius = 90;
 	BasicCircleHitBodySetup(radius);
 
-	actionLength[NEUTRAL] = 6;
-	actionLength[BOOST] = 8;
+	actionLength[NEUTRAL] = 1;
+	actionLength[BOOST] = 10;
 	actionLength[REFRESH] = 7;
 
 	animFactor[NEUTRAL] = 3;
-	animFactor[BOOST] = 3;
+	animFactor[BOOST] = 5;
 	animFactor[REFRESH] = 5;
 
 	ResetEnemy();
@@ -149,20 +149,18 @@ void AntiTimeSlowBooster::UpdateSprite()
 		//ir = ts->GetSubRect(tile);
 		break;
 	case BOOST:
-		tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+		tile = frame / animFactor[BOOST] + 1;
 		//ir = ts->GetSubRect(tile);
 		break;
 	case REFRESH:
-		tile = frame / animFactor[REFRESH];
+		tile = frame / animFactor[REFRESH] + 12;
 		//ir = ts_refresh->GetSubRect(tile);
 		break;
 	}
 
-	tile = 0;
 
 
-
-	sprite.setTextureRect(ts->GetSubRect( 9 ) );
+	sprite.setTextureRect(ts->GetSubRect(tile) );
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
