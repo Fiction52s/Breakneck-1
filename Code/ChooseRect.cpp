@@ -16,6 +16,8 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	idleColor = Color::Black;
 	idleColor.a = 100;
 
+	showName = true;
+
 	defaultIdleColor = idleColor;
 
 	mouseOverColor = Color::Green;
@@ -64,6 +66,10 @@ void ChooseRect::SetName(const std::string &name)
 		0);
 }
 
+void ChooseRect::ShowName(bool show)
+{
+	showName = show;
+}
 
 void ChooseRect::Init()
 {

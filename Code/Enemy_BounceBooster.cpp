@@ -24,13 +24,15 @@ BounceBooster::BounceBooster(ActorParams *ap)
 		upOnly = true;
 		strength = 40;
 		BasicCircleHitBodySetup(80, 0,V2d( 0, 50 ), V2d());
+		ts = GetSizedTileset("Enemies/W3/up_bounce_384x384.png");
 	}
 	else
 	{
 		BasicCircleHitBodySetup(128);
+		ts = GetSizedTileset("Enemies/boosters_384x384.png");
 	}
 
-	ts = GetSizedTileset("Enemies/boosters_384x384.png");
+	
 	ts_refresh = ts;//sess->GetSizedTileset("Enemies/Booster_on_256x256.png");
 	sprite.setTexture(*ts->texture);
 
@@ -38,10 +40,10 @@ BounceBooster::BounceBooster(ActorParams *ap)
 	//BasicCircleHitBodySetup(90);
 
 	actionLength[NEUTRAL] = 6;
-	actionLength[BOOST] = 8;
+	actionLength[BOOST] = 7;
 
-	animFactor[NEUTRAL] = 3;
-	animFactor[BOOST] = 2;
+	animFactor[NEUTRAL] = 8;
+	animFactor[BOOST] = 4;
 
 	ResetEnemy();
 }
@@ -139,27 +141,38 @@ void BounceBooster::UpdateSprite()
 {
 	int tile = 0;
 
+	
+	IntRect ir;
 	if (upOnly)
 	{
-		tile = 3;
+		switch (action)
+		{
+		case NEUTRAL:
+			//tile = frame / animFactor[NEUTRAL];
+			ir = ts->GetSubRect( frame / animFactor[NEUTRAL]);
+			break;
+		case BOOST:
+			//tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+			ir = ts->GetSubRect( frame / animFactor[BOOST] + 7 );
+			break;
+		}
 	}
 	else
 	{
-		tile = 4;
+		switch (action)
+		{
+		case NEUTRAL:
+			//tile = frame / animFactor[NEUTRAL];
+			ir = ts->GetSubRect(tile);
+			break;
+		case BOOST:
+			//tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
+			ir = ts->GetSubRect(tile);
+			break;
+		}
 	}
 
-	IntRect ir;
-	switch (action)
-	{
-	case NEUTRAL:
-		//tile = frame / animFactor[NEUTRAL];
-		ir = ts->GetSubRect(tile);
-		break;
-	case BOOST:
-		//tile = frame / animFactor[BOOST] + actionLength[NEUTRAL];
-		ir = ts->GetSubRect(tile);
-		break;
-	}
+	
 
 	sprite.setTextureRect(ir);
 

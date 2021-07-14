@@ -53,7 +53,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 	float logBGQuadWidth = 740;
 
-	worldText.setPosition(edgeMargin + logBGQuadWidth / 2, 100);
+	//worldText.setPosition(edgeMargin + logBGQuadWidth / 2, 100);
 
 	Vector2f logBGQuadTopLeft = Vector2f(edgeMargin, edgeMargin);
 
@@ -188,8 +188,6 @@ LogMenu::LogMenu(Session *p_sess)
 	int xSpacing = 20 * 2;
 	int ySpacing = 12 * 2;
 
-	worldText.setPosition(150, 100);
-
 	Vector2f gridStart(150, 200);
 	for (int i = 0; i < ySelector->totalItems - 1; ++i)
 	{
@@ -220,6 +218,9 @@ LogMenu::~LogMenu()
 	delete worldSelector;
 
 	delete[] logSelectQuads;
+
+	delete previewPoly;
+	delete previewRail;
 }
 
 void LogMenu::LoadLogInfo()
@@ -360,7 +361,7 @@ void LogMenu::LoadLogInfo()
 
 }
 
-bool LogMenu::IsLogFound(int x, int y)
+bool LogMenu::IsLogFound(int w, int li)
 {
 	return true; //testing
 
@@ -370,15 +371,15 @@ bool LogMenu::IsLogFound(int x, int y)
 		return false;
 	}
 
-	LogDetailedInfo &currLog = logInfo[y][x];
+	LogDetailedInfo &currLog = logInfo[w][li];
 
 	return (currLog.name != "" 
-		&& saveFile->ShardIsCaptured(LogItem::GetLogTypeFromGrid(y, x)));
+		&& saveFile->HasLog(LogItem::GetLogTypeFromWorldAndIndex(w, li)));
 }
 
 bool LogMenu::IsCurrLogFound()
 {
-	return IsLogFound(xSelector->currIndex, ySelector->currIndex);
+	return IsLogFound(worldSelector->currIndex, selectedIndex);
 }
 
 void LogMenu::UpdateUnlockedLogs()
@@ -488,6 +489,52 @@ void LogMenu::SetupLogImages()
 
 }
 
+int LogMenu::GetLogTile(int w, int li)
+{
+	LogDetailedInfo &currInfo = logInfo[w][li];
+
+	if (currInfo.logType == -1)
+	{
+		return -1;
+		//SetRectSubRect(logSelectQuads + index * 4, FloatRect());
+	}
+	else
+	{
+		int tileIndex = 0;
+		switch (currInfo.logType)
+		{
+		case LogDetailedInfo::LT_MOMENTA:
+			tileIndex = 8;
+			break;
+		case LogDetailedInfo::LT_SKIN:
+			tileIndex = 9;
+			break;
+		case LogDetailedInfo::LT_ENEMY:
+			tileIndex = w;
+			break;
+		case LogDetailedInfo::LT_WATER:
+			tileIndex = 13;
+			break;
+		case LogDetailedInfo::LT_RAIL:
+			tileIndex = 14;
+			break;
+		case LogDetailedInfo::LT_GRASS:
+			tileIndex = 12;
+			break;
+		case LogDetailedInfo::LT_SPECIALTERRAIN:
+			tileIndex = 11;
+			break;
+		case LogDetailedInfo::LT_MUSIC:
+			tileIndex = 10;
+			break;
+		case LogDetailedInfo::LT_LORE:
+			break;
+		}
+
+		return tileIndex;
+	}
+}
+
 void LogMenu::UpdateLogsOnWorldChange()
 {
 	int index = 0;
@@ -497,52 +544,15 @@ void LogMenu::UpdateLogsOnWorldChange()
 		{
 			index = ((i - 1) * xSelector->totalItems + j);
 
+			int tile = GetLogTile(worldSelector->currIndex, index);
 
-
-			LogDetailedInfo &currInfo = logInfo[worldSelector->currIndex][index];
-
-			if (currInfo.logType == -1)
+			if (tile == -1)
 			{
 				SetRectSubRect(logSelectQuads + index * 4, FloatRect());
 			}
 			else
 			{
-
-
-
-				int tileIndex = 0;
-				switch (currInfo.logType)
-				{
-				case LogDetailedInfo::LT_MOMENTA:
-					tileIndex = 8;
-					break;
-				case LogDetailedInfo::LT_SKIN:
-					tileIndex = 9;
-					break;
-				case LogDetailedInfo::LT_ENEMY:
-					tileIndex = worldSelector->currIndex;
-					break;
-				case LogDetailedInfo::LT_WATER:
-					tileIndex = 13;
-					break;
-				case LogDetailedInfo::LT_RAIL:
-					tileIndex = 14;
-					break;
-				case LogDetailedInfo::LT_GRASS:
-					tileIndex = 12;
-					break;
-				case LogDetailedInfo::LT_SPECIALTERRAIN:
-					tileIndex = 11;
-					break;
-				case LogDetailedInfo::LT_MUSIC:
-					tileIndex = 10;
-					break;
-				case LogDetailedInfo::LT_LORE:
-					break;
-				}
-
-				SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(tileIndex));
-
+				SetRectSubRect(logSelectQuads + index * 4, ts_logs->GetSubRect(tile));
 			}
 		}
 	}

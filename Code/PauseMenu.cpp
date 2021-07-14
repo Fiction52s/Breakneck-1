@@ -310,7 +310,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 	ts_background[4] = game->GetSizedTileset("Menu/Pause/pause_5_options_910x490.png");
 	ts_background[5] = game->GetSizedTileset("Menu/Pause/pause_6_kin_910x490.png");*/
 
-	ts_background = game->GetSizedTileset("Menu/Pause/pause_BG_1720x880.png");
+	ts_background = game->GetSizedTileset("Menu/Pause/pause_BG_1820x980.png");
 	bgSprite.setTexture(*ts_background->texture);
 
 	ts_tabs = game->GetSizedTileset("Menu/Pause/pause_tabs_1326x50.png");

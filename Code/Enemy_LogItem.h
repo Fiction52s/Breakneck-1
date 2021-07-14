@@ -33,15 +33,17 @@ struct LogItem : Enemy
 	int radius;
 
 	Tileset *ts;
+	Tileset *ts_shine;
 
 	int logType;
 	int logWorld;
 	int localIndex;
+	
+	sf::Sprite shineSprite;
 
 	bool caught;
 	int totalFrame;
 
-	static int GetLogTypeFromGrid(int y, int x);
 	static int GetLogTypeFromWorldAndIndex(int w, int li);
 	static int GetNumLogsTotal();
 

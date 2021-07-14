@@ -194,7 +194,7 @@ void ShardMenu::UpdateShardQuads()
 
 ShardMenu::~ShardMenu()
 {
-	for (int i = 0; i < ySelector->totalItems; ++i)
+	for (int i = 0; i < worldSelector->totalItems; ++i)
 	{
 		delete[] shardInfo[i];
 	}

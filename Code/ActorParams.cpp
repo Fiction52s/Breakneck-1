@@ -600,12 +600,31 @@ LogParams::LogParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	PlaceAerial(Vector2i(0, 0));
-	SetLog(0, 0, 0);
+	SetLog(0, 0);
 }
 
 void LogParams::SetLog(int w, int li)
 {
-	SetLog(w, li % 11, li / 11);
+	if (myEnemy != NULL)
+	{
+		myEnemy->UpdateParamsSettings();
+	}
+
+	EditSession *edit = EditSession::GetSession();
+
+	lInfo.world = w;
+	lInfo.localIndex = li;
+
+	if (edit != NULL)
+	{
+		nameText.setFont(edit->arial);
+		nameText.setCharacterSize(30);
+		nameText.setString(edit->logMenu->GetLogName(lInfo.world, lInfo.localIndex));
+		nameText.setOrigin(nameText.getLocalBounds().left +
+			nameText.getLocalBounds().width / 2, 0);
+	}
+
+	//SetLog(w, li % 11, li / 11);
 }
 
 void LogParams::SetLog(int w, int realX, int realY)

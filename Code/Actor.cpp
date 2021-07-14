@@ -10123,12 +10123,19 @@ void Actor::TryExtraAirdashBoost()
 		return;
 	}*/
 
+	V2d dir = currInput.GetLeft8Dir();
+
+	if (dir.x == 0 && dir.y == 0)
+	{
+		return;
+	}
+
 	if (DashButtonPressed() && action != AIRDASH && !hasAirDash && numRemainingExtraAirdashBoosts > 0)
 	{
 		numRemainingExtraAirdashBoosts--;
 
 		double aSpeed = GetAirDashSpeed();
-		V2d dir = currInput.GetLeft8Dir();
+		
 
 		if (dir.x > 0)
 		{

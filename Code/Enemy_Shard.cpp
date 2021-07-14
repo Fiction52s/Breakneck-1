@@ -424,7 +424,7 @@ void Shard::UpdateSprite()
 {
 	int tile = 0;
 
-	sprite.setScale(2, 2);
+	//sprite.setScale(2, 2);
 	//sprite.setTextureRect(ts->GetSubRect(tile));
 	sprite.setPosition(GetPositionF());
 }

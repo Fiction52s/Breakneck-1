@@ -53,7 +53,7 @@ void LogItem::Setup()
 }
 
 LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
-	:Enemy(EnemyType::EN_POWERITEM, ap)//, false, w+1 )
+	:Enemy(EnemyType::EN_LOGITEM, ap)//, false, w+1 )
 {
 	SetNumActions(Count);
 	SetEditorActions(FLOAT, FLOAT, 0);
@@ -61,8 +61,8 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 	radius = 400;
 	logType = 0;
 
-	ts = GetSizedTileset("Enemies/poweritem_128x128.png");
-
+	ts = GetSizedTileset("Logs/logs_64x64.png");
+	ts_shine = GetSizedTileset("Logs/logs_shine_64x64.png");
 	//UpdateParamsSettings();
 
 	alreadyCollected = false;
@@ -72,7 +72,8 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 		alreadyCollected = true;
 	}
 
-	sprite.setColor(Color::Red);
+	sprite.setScale(1.5, 1.5);
+	shineSprite.setScale(1.5, 1.5);
 
 	/*if (sess->IsShardCaptured(shardType))
 	{
@@ -115,6 +116,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 
 	sprite.setTexture(*ts->texture);
+	shineSprite.setTexture(*ts_shine->texture);
 
 	actionLength[FLOAT] = 120;
 	actionLength[DISSIPATE] = 10;
@@ -334,6 +336,13 @@ void LogItem::UpdateSprite()
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
+
+	int shineAnimFactor = 2;
+	int shineTile = (totalFrame / shineAnimFactor) % (32);
+
+	shineSprite.setTextureRect(ts_shine->GetSubRect(shineTile));
+	shineSprite.setOrigin(shineSprite.getLocalBounds().width / 2, shineSprite.getLocalBounds().height / 2);
+	shineSprite.setPosition(GetPositionF());
 }
 
 void LogItem::EnemyDraw(sf::RenderTarget *target)
@@ -345,6 +354,7 @@ void LogItem::EnemyDraw(sf::RenderTarget *target)
 		if (action != DISSIPATE)
 		{
 			target->draw(sprite);
+			target->draw(shineSprite);
 			sparklePool->Draw(target);
 		}
 		//testEmitter->Draw(target);
@@ -359,17 +369,12 @@ void LogItem::DrawMinimap(sf::RenderTarget *target)
 {
 }
 
-int LogItem::GetLogTypeFromGrid(int y, int x)
-{
-	return y * 11 + x;
-}
-
 int LogItem::GetLogTypeFromWorldAndIndex(int w, int li)
 {
-	return w * 22 + li;
+	return w * LogInfo::MAX_LOGS_PER_WORLD + li;
 }
 
 int LogItem::GetNumLogsTotal()
 {
-	return 22 * 7;
+	return LogInfo::MAX_LOGS_PER_WORLD * 8;
 }

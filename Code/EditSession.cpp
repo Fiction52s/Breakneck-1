@@ -13,6 +13,7 @@
 #include "MainMenu.h"
 #include "Background.h"
 #include "Enemy_Shard.h"
+#include "Enemy_LogItem.h"
 #include "ActorParams.h"
 #include "EditorRail.h"
 #include "EditorGraph.h"
@@ -50,6 +51,8 @@
 #include "GameMode.h"
 #include "PlayerRecord.h"
 #include "MusicSelector.h"
+#include "LogMenu.h"
+#include "ShardMenu.h"
 
 //#define GGPO_ON
 
@@ -1483,6 +1486,12 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	scaleSpriteBGRect.setFillColor(Color( 255, 255, 255, 200 ));
 	scaleSpriteBGRect.setSize(Vector2f( 80, 100 ));
 
+	choiceNameText.setFont(mainMenu->arial);
+	choiceNameText.setCharacterSize(30);
+	choiceNameText.setFillColor(Color::Black);
+	choiceNameText.setOutlineColor(Color::White);
+	choiceNameText.setOutlineThickness(2);
+	showChoiceNameText = false;
 	
 
 	scaleText.setFont(mainMenu->arial);
@@ -3391,6 +3400,20 @@ void EditSession::SetCurrSelectedShardType(int w, int li)
 	}
 }
 
+void EditSession::SetCurrSelectedLogType(int w, int li)
+{
+	if (selectedBrush->IsSingleActor())
+	{
+		ActorPtr a = selectedBrush->GetFirst()->GetAsActor();
+		LogParams *lp = (LogParams*)a;
+		lp->SetLog(w, li);
+	}
+	else
+	{
+		assert(0);
+	}
+}
+
 void EditSession::SetupShardSelectPanel()
 {
 	shardNumX = 11;
@@ -3427,6 +3450,7 @@ void EditSession::SetupShardSelectPanel()
 		{
 			for (int x = 0; x < shardNumX; ++x)
 			{
+				int shardLocalIndex = y % shardNumY * shardNumX + x;
 				sInd = y * shardNumX + x;
 				int shardT = (sInd + (shardNumX * shardNumY) * w);
 				if (shardT >= Shard::GetNumShardsTotal())
@@ -3441,6 +3465,8 @@ void EditSession::SetupShardSelectPanel()
 							ts_currShards, sInd, shardGridSize);
 					shardTypeRects[shardT]->Init();
 					shardTypeRects[shardT]->SetShown(true);
+					shardTypeRects[shardT]->SetName(shardMenu->GetShardName(w, shardLocalIndex));
+					shardTypeRects[shardT]->ShowName(false);
 				}
 			}
 		}
@@ -3449,58 +3475,63 @@ void EditSession::SetupShardSelectPanel()
 
 void EditSession::SetupLogSelectPanel()
 {
-	/*shardNumX = 11;
-	shardNumY = 2;
+	logNumX = LogInfo::MAX_LOGS_PER_WORLD / 2;
+	logNumY = 2;
 
-	shardGridSize = 64;*/
+	logGridSize = 64;
 
 	logTypePanel = new Panel("logtype", 600, 800, this, true);
 	Color c(100, 100, 100);
 	c.a = 180;
 	logTypePanel->SetColor(c);
 
-	/*int numWorlds = 7;
-	for (int i = 0; i < numWorlds; ++i)
-	{
-		ts_shards[i] = Shard::GetShardTileset(i, this);
-	}
 
-	int totalShards = shardNumX * shardNumY * 7;
+	int numWorlds = 8;
 
-	Tileset *ts_currShards;
-	int sInd = 0;
+	ts_logs = GetSizedTileset("Logs/logs_64x64.png");
 
-	shardTypePanel->ReserveImageRects(totalShards);
-	shardTypeRects.resize(totalShards);
+	int totalLogs = logNumX * logNumY * numWorlds;
+	int lInd = 0;
+
+	logTypePanel->ReserveImageRects(totalLogs);
+	logTypeRects.resize(totalLogs);
 
 	for (int w = 0; w < numWorlds; ++w)
 	{
-		ts_currShards = ts_shards[w];
-		if (ts_currShards == NULL)
-			continue;
-
-		for (int y = 0; y < shardNumY; ++y)
+		for (int y = 0; y < logNumY; ++y)
 		{
-			for (int x = 0; x < shardNumX; ++x)
+			for (int x = 0; x < logNumX; ++x)
 			{
-				sInd = y * shardNumX + x;
-				int shardT = (sInd + (shardNumX * shardNumY) * w);
-				if (shardT >= Shard::GetNumShardsTotal())
+				int logLocalIndex = y % logNumY * logNumX + x;
+				lInd = y * logNumX + x;
+				int logT = (lInd + (logNumX * logNumY) * w);
+				if (logT >= LogItem::GetNumLogsTotal())
 				{
-					shardTypeRects[shardT] = NULL;
+					logTypeRects[logT] = NULL;
 				}
 				else
 				{
-					shardTypeRects[shardT] =
-						shardTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_SHARDLIBRARY,
-							Vector2f(x * shardGridSize, y * shardGridSize + w * 2 * shardGridSize),
-							ts_currShards, sInd, shardGridSize);
-					shardTypeRects[shardT]->Init();
-					shardTypeRects[shardT]->SetShown(true);
+					int logTile = logMenu->GetLogTile(w, logLocalIndex);
+					if (logTile == -1)
+					{
+						logTypeRects[logT] = NULL;
+					}
+					else
+					{
+						logTypeRects[logT] =
+							logTypePanel->AddImageRect(ChooseRect::ChooseRectIdentity::I_LOGLIBRARY,
+								Vector2f(x * logGridSize, y * logGridSize + w * 2 * logGridSize),
+								ts_logs, logTile, logGridSize);
+						logTypeRects[logT]->Init();
+						logTypeRects[logT]->SetShown(true);
+						logTypeRects[logT]->SetName(logMenu->GetLogName(w, logLocalIndex));
+						logTypeRects[logT]->ShowName(false);
+						//logTypeRects[logT]->showname
+					}
 				}
 			}
 		}
-	}*/
+	}
 }
 
 void EditSession::SetupNewMapPanel()
@@ -12410,6 +12441,12 @@ void EditSession::DrawUI()
 	{
 		(*it)->Draw(preScreenTex);
 	}
+	
+	if (showChoiceNameText)
+	{
+		preScreenTex->draw(choiceNameText);
+	}
+
 
 	if( mode != TEST_PLAYER )
 		generalUI->Draw(preScreenTex);
@@ -14138,78 +14175,78 @@ void EditSession::EditModeUpdate()
 	bool sizeOne = selectedBrush->objects.size() == 1;
 	bool oneActor = selectedBrush->GetNumActors() == 1;
 	if ( rightClicked && sizeOne &&
-		oneActor )
+oneActor )
 	{
-		ActorPtr a = selectedBrush->objects.front()->GetAsActor();
-		if (a->type->info.name != "player")
+	ActorPtr a = selectedBrush->objects.front()->GetAsActor();
+	if (a->type->info.name != "player")
+	{
+		if (a->ContainsPoint(testPoint))
 		{
-			if (a->ContainsPoint(testPoint))
-			{
-				Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
-				variationSelector->SetPosition(Vector2f(pixel));
-				variationSelector->SetType(a->type);
-				AddActivePanel(variationSelector->panel);
-				focusedPanel = variationSelector->panel;
-				return;
-			}
+			Vector2i pixel = preScreenTex->mapCoordsToPixel(a->GetFloatPos());
+			variationSelector->SetPosition(Vector2f(pixel));
+			variationSelector->SetType(a->type);
+			AddActivePanel(variationSelector->panel);
+			focusedPanel = variationSelector->panel;
+			return;
 		}
 	}
-
-	UpdateInputNonGame();
-
-	if (GetCurrInput(0).start && !GetPrevInput(0).start)
-	{
-		TestPlayerMode();
-		return;
 	}
 
-	if (focusedPanel == NULL)
-	{
-		if (IsGridOn())
-		{
-			SnapPointToGraph(worldPos, graph->graphSpacing);
-		}
-	}
+UpdateInputNonGame();
 
-	if (grabbedBorderIndex >= 0)
-	{
-		Vector2i wPos(worldPos);
-		switch (grabbedBorderIndex)
-		{
-		case 0:
-			{
-				int bot = mapHeader->topBounds + mapHeader->boundsHeight;
-				mapHeader->topBounds = wPos.y;
-				mapHeader->boundsHeight = bot - wPos.y;
-				break;
-			}
-		case 1:
-		{
-			int right = mapHeader->leftBounds + mapHeader->boundsWidth;
-			mapHeader->leftBounds = wPos.x;
-			mapHeader->boundsWidth = right - wPos.x;
-			break;
-		}
-		case 2:
-		{
-			mapHeader->boundsWidth = wPos.x - mapHeader->leftBounds;
-			break;
-		}
-
-		}
-
-		UpdateFullBounds();
-		
-	}
-		
-	TrySelectedMove();
-
-	ModifyGrass();
+if (GetCurrInput(0).start && !GetPrevInput(0).start)
+{
+	TestPlayerMode();
+	return;
 }
 
-void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
+if (focusedPanel == NULL)
 {
-	
+	if (IsGridOn())
+	{
+		SnapPointToGraph(worldPos, graph->graphSpacing);
+	}
+}
+
+if (grabbedBorderIndex >= 0)
+{
+	Vector2i wPos(worldPos);
+	switch (grabbedBorderIndex)
+	{
+	case 0:
+	{
+		int bot = mapHeader->topBounds + mapHeader->boundsHeight;
+		mapHeader->topBounds = wPos.y;
+		mapHeader->boundsHeight = bot - wPos.y;
+		break;
+	}
+	case 1:
+	{
+		int right = mapHeader->leftBounds + mapHeader->boundsWidth;
+		mapHeader->leftBounds = wPos.x;
+		mapHeader->boundsWidth = right - wPos.x;
+		break;
+	}
+	case 2:
+	{
+		mapHeader->boundsWidth = wPos.x - mapHeader->leftBounds;
+		break;
+	}
+
+	}
+
+	UpdateFullBounds();
+
+}
+
+TrySelectedMove();
+
+ModifyGrass();
+}
+
+void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType)
+{
+
 	if (mode == CREATE_ENEMY)
 	{
 		if (eventType == ChooseRect::E_LEFTCLICKED)
@@ -14227,14 +14264,17 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType )
 					createEnemyModeUI->FlipLibraryShown();
 				}
 			}
-
 		}
 		else if (eventType == ChooseRect::E_FOCUSED)
 		{
 			ImageChooseRect *icRect = cr->GetAsImageChooseRect();
-			if (icRect != NULL && icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
+			if (icRect != NULL)
 			{
-				createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+				if (icRect->rectIdentity == ChooseRect::I_WORLDCHOOSER)
+				{
+					createEnemyModeUI->SetActiveLibraryWorld(icRect->tileIndex);
+				}
+				
 			}
 		}
 		else if (eventType == ChooseRect::E_RIGHTCLICKED)

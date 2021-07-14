@@ -174,6 +174,8 @@ struct EditSession : GUIHandler, Session
 	CreateGatesModeUI *createGatesModeUI;
 	MapOptionsUI *mapOptionsUI;
 	EditModeUI *editModeUI;
+	sf::Text choiceNameText;
+	bool showChoiceNameText;
 	GeneralUI *generalUI;
 	V2d oldWorldPosTest;
 	int spriteUpdateFrames;
@@ -190,6 +192,7 @@ struct EditSession : GUIHandler, Session
 	Tileset *ts_mapBGThumbnails;
 	ImageEditTool currImageTool;
 	Tileset *ts_shards[7];
+	Tileset *ts_logs;
 	int grassSize;
 	int grassSpacing;
 	GrassDiff *grassChanges;
@@ -237,7 +240,11 @@ struct EditSession : GUIHandler, Session
 	int shardGridSize;
 	int shardNumX;
 	int shardNumY;
+	int logNumX;
+	int logNumY;
+	int logGridSize;
 	Panel *logTypePanel;
+	std::vector<ImageChooseRect*> logTypeRects;
 	std::vector<ImageChooseRect*> shardTypeRects;
 	Panel *nameBrushPanel;
 	//allpolygons should hold all the lists but
@@ -601,6 +608,7 @@ struct EditSession : GUIHandler, Session
 		int world, int var);
 	void SetupTerrainSelectPanel();
 	void SetCurrSelectedShardType(int w, int li);
+	void SetCurrSelectedLogType(int w, int li);
 	void SetupShardSelectPanel();
 	void SetupLogSelectPanel();
 	void SetupBrushPanels();

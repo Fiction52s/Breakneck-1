@@ -107,7 +107,10 @@ void EnemyChooseRect::Draw(RenderTarget *target)
 
 		target->setView(oldView);
 
-		target->draw(nameText);
+		if (showName)
+		{
+			target->draw(nameText);
+		}
 	}
 }
 

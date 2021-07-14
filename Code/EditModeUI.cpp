@@ -24,7 +24,7 @@ EditModeUI::EditModeUI()
 	//grassTypePanel = edit->grassTypePanel;
 
 	shardTypePanel = edit->shardTypePanel;
-	logTypePanel = edit->matTypePanel;
+	logTypePanel = edit->logTypePanel;
 
 	mainPanel = new Panel("edit", /*1310*/1500, 120, this, false);
 	mainPanel->SetPosition(Vector2i(0, edit->generalUI->height));
@@ -328,6 +328,7 @@ void EditModeUI::ExpandShardLibrary()
 	if (shardTypePanel == edit->focusedPanel)
 	{
 		edit->RemoveActivePanel(shardTypePanel);
+		edit->showChoiceNameText = false;
 	}
 	else
 	{
@@ -343,6 +344,7 @@ void EditModeUI::ExpandLogLibrary()
 	if (logTypePanel == edit->focusedPanel)
 	{
 		edit->RemoveActivePanel(logTypePanel);
+		edit->showChoiceNameText = false;
 	}
 	else
 	{
@@ -736,6 +738,23 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 				edit->SetCurrSelectedShardType(world, localIndex);
 
 				edit->RemoveActivePanel(shardTypePanel);
+
+				edit->showChoiceNameText = false;
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_LOGLIBRARY)
+			{
+				int x = icRect->pos.x / edit->logGridSize;
+				int y = icRect->pos.y / edit->logGridSize;
+
+				int world = y / edit->logNumY;
+				int localIndex = (y % edit->logNumY) * edit->logNumX + x;
+
+				edit->SetCurrSelectedLogType(world, localIndex);
+
+				edit->RemoveActivePanel(logTypePanel);
+
+				edit->showChoiceNameText = false;
+
 			}
 			else if (icRect->rectIdentity == ChooseRect::I_GRASSSEARCH
 				&& eventType == ChooseRect::E_LEFTCLICKED)
@@ -750,6 +769,63 @@ void EditModeUI::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 
 	}
+	else if (eventType == ChooseRect::E_FOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_SHARDLIBRARY)
+			{
+				edit->showChoiceNameText = true;
+				edit->choiceNameText.setString(icRect->nameText.getString());
+				edit->choiceNameText.setOrigin(edit->choiceNameText.getLocalBounds().left
+					+ edit->choiceNameText.getLocalBounds().width / 2, 0);
+				edit->choiceNameText.setPosition(icRect->GetGlobalCenterPos() + Vector2f(0, -(icRect->boxSize.y + 20)));
+			}
+			else if (icRect->rectIdentity == ChooseRect::I_LOGLIBRARY)
+			{
+				edit->showChoiceNameText = true;
+				edit->choiceNameText.setString(icRect->nameText.getString());
+				edit->choiceNameText.setOrigin(edit->choiceNameText.getLocalBounds().left
+					+ edit->choiceNameText.getLocalBounds().width / 2, 0);
+				edit->choiceNameText.setPosition(icRect->GetGlobalCenterPos() + Vector2f(0, -(icRect->boxSize.y + 20)));
+			}
+		}
+	}
+	else if (eventType == ChooseRect::E_UNFOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_LOGLIBRARY)
+			{
+				//edit->showLogNameText = false;
+			}
+		}
+	}
+	
+	/*else if (eventType == ChooseRect::E_FOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_LOGLIBRARY)
+			{
+				icRect->ShowName(true);
+			}
+		}
+	}
+	else if (eventType == ChooseRect::E_UNFOCUSED)
+	{
+		ImageChooseRect *icRect = cr->GetAsImageChooseRect();
+		if (icRect != NULL)
+		{
+			if (icRect->rectIdentity == ChooseRect::I_LOGLIBRARY)
+			{
+				icRect->ShowName(false);
+			}
+		}
+	}*/
 }
 
 void EditModeUI::SetGrassType(ImageChooseRect *icRect)
@@ -1104,5 +1180,6 @@ void EditModeUI::PanelCallback(Panel *p, const std::string & e)
 			SaveKinOptions();
 		}
 		edit->RemoveActivePanel(p);
+		edit->showChoiceNameText = false;
 	}
 }

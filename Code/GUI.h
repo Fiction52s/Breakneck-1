@@ -192,10 +192,14 @@ struct ChooseRect : PanelMember
 		I_BACKGROUNDLIBRARY,
 		I_MUSICLIBRARY,
 		I_MUSICLEVEL,
+		I_LOGLIBRARY,
 	};
 
 	sf::Text nameText;
 	virtual void SetName(const std::string &name);
+	void ShowName(bool show);
+	bool showName;
+
 	ChooseRectIdentity rectIdentity;
 	ChooseRectType chooseRectType;
 	EnemyChooseRect *GetAsEnemyChooseRect();
@@ -888,7 +892,7 @@ struct EditModeUI : GUIHandler
 	ImageChooseRect *currGrassTypeRect;
 	std::vector<ImageChooseRect*> grassRects;
 
-
+	
 
 	int labelCharHeight;
 	int labelExtraSpacing;

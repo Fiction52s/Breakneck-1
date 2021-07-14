@@ -137,12 +137,13 @@ struct LogMenu
 	bool SetDescription(std::string &nameStr, std::string &destStr, const std::string &shardTypeStr);
 	void SetCurrentDescription(bool captured);
 	void UpdateUnlockedLogs();
-	bool IsLogFound(int x, int y);
+	bool IsLogFound(int w, int li);
 	bool IsCurrLogFound();
 	void UpdateLogSelectQuads();
 	void UpdateLogsOnWorldChange();
 	void SetLogTab();
 	void SetWorldMode();
+	int GetLogTile(int w, int li);
 };
 
 #endif
