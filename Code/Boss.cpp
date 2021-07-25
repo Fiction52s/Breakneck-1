@@ -2,6 +2,7 @@
 #include "Session.h"
 #include "Actor.h"
 #include "BossHealth.h"
+#include "EditorTerrain.h"
 
 using namespace sf;
 using namespace std;
@@ -193,6 +194,12 @@ void Boss::UpdateHitboxes()
 		hurtBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
 	}
 
+	if (!hitBody.Empty())
+	{
+		hitBody.SetBasicPos(position, ang);
+		hitBody.GetCollisionBoxes(0).at(0).flipHorizontal = !facingRight;
+	}
+
 	if (currHitboxes != NULL)
 	{
 		std::vector<CollisionBox> *cList = &(currHitboxes->GetCollisionBoxes(currHitboxFrame));
@@ -362,6 +369,7 @@ void Boss::ProcessHit()
 			{
 				stageMgr.TakeHit();
 				invincibleFrames = 60;
+				RespondToTakingFullHit();
 			}
 		}
 
@@ -378,3 +386,79 @@ void Boss::DrawHealth(sf::RenderTarget *target)
 {
 	healthBar->Draw(target);
 }
+
+//PositionInfo Boss::CheckGround(PositionInfo &startPos,
+//	double dist)
+//{
+//	PositionInfo info;
+//	Edge *g = currPosInfo.GetEdge();
+//
+//	if (g == NULL)
+//		return info;
+//
+//	assert(g != NULL);
+//
+//	//double factor = slowMultiple * (double)numPhysSteps;
+//	double movement = dist;
+//
+//	int edgeIndex = currPosInfo.GetEdgeIndex();
+//	double quant = currPosInfo.GetQuant();
+//	PolyPtr groundPoly = currPosInfo.ground;
+//	int numPoints = groundPoly->GetNumPoints();
+//
+//	while (!approxEquals(movement, 0))
+//	{
+//		double gLen = g->GetLength();
+//
+//		if (movement > 0)
+//		{
+//			double extra = quant + movement - gLen;
+//
+//			if (extra > 0)
+//			{
+//				movement -= gLen - quant;
+//				g = g->GetNextEdge();
+//				++edgeIndex;
+//				if (edgeIndex == numPoints)
+//				{
+//					edgeIndex = 0;
+//				}
+//
+//				quant = 0;
+//			}
+//			else
+//			{
+//				quant += movement;
+//				movement = 0;
+//			}
+//		}
+//		else
+//		{
+//			double extra = quant + movement;
+//
+//			if (extra < 0)
+//			{
+//				movement -= movement - extra;
+//				g = g->GetPrevEdge();
+//				quant = g->GetLength();
+//
+//				--edgeIndex;
+//				if (edgeIndex < 0)
+//				{
+//					edgeIndex = numPoints - 1;
+//				}
+//			}
+//			else
+//			{
+//				quant += movement;
+//				movement = 0;
+//			}
+//		}
+//	}
+//
+//	//V2d finalPos = g->GetPosition(quant);
+//
+//	info.SetGround(groundPoly, edgeIndex, quant);
+//
+//	return info;
+//}

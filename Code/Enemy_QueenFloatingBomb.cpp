@@ -18,10 +18,12 @@ QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	action = FLOATING;
 
 	actionLength[FLOATING] = 9;
-	actionLength[EXPLODING] = 4;
+	actionLength[EXPLODING] = 10;
 
 	animFactor[FLOATING] = 3;
-	animFactor[EXPLODING] = 3;
+	animFactor[EXPLODING] = 1;
+
+
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -35,6 +37,19 @@ QueenFloatingBomb::QueenFloatingBomb(ActorParams *ap)
 	BasicCircleHurtBodySetup(32);
 	BasicCircleHitBodySetup(32);
 	hitBody.hitboxInfo = hitboxInfo;
+
+	explosion.BasicCircleSetup(80 * scale, 0, V2d());
+	explosion.hitboxInfo = hitboxInfo;
+
+	explosionHitboxInfo.damage = 180;
+	explosionHitboxInfo.drainX = 0;
+	explosionHitboxInfo.drainY = 0;
+	explosionHitboxInfo.hitlagFrames = 6;
+	explosionHitboxInfo.hitstunFrames = 30;
+	explosionHitboxInfo.knockback = 20;
+	explosionHitboxInfo.hitPosType = HitboxInfo::HitPosType::OMNI;
+
+	explosion.hitboxInfo = &explosionHitboxInfo;
 
 
 	ResetEnemy();
@@ -63,8 +78,6 @@ void QueenFloatingBomb::ProcessState()
 			numHealth = 0;
 			dead = true;
 			spawned = false;
-			sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				ts_explosion, GetPosition(), false, 0, 10, 3, true);
 			//cout << "deactivating " << this << " . currently : " << myPool->numActiveMembers << endl;
 			//myPool->DeactivatePoolMember(this);
 			break;
@@ -100,15 +113,17 @@ void QueenFloatingBomb::FrameIncrement()
 
 void QueenFloatingBomb::EnemyDraw(sf::RenderTarget *target)
 {
-	target->draw(sprite);
+	if (action == FLOATING)
+	{
+		target->draw(sprite);
+	}
 }
 
 void QueenFloatingBomb::IHitPlayer(int index)
 {
 	if (action == FLOATING)
 	{
-		action = EXPLODING;
-		frame = 0;
+		Explode();
 	}
 }
 
@@ -139,9 +154,7 @@ void QueenFloatingBomb::HitTerrainAerial(Edge * e, double q)
 {
 	if (action == FLOATING)
 	{
-		surfaceMover->velocity = V2d(0, 0);
-		action = EXPLODING;
-		frame = 0;
+		Explode();
 	}
 }
 
@@ -160,8 +173,19 @@ void QueenFloatingBomb::ProcessHit()
 {
 	if (!dead && ReceivedHit() && action == FLOATING)
 	{
-		action = EXPLODING;
-		frame = 0;
+		Explode();
 	}
 
+}
+
+void QueenFloatingBomb::Explode()
+{
+	action = EXPLODING;
+	frame = 0;
+	surfaceMover->velocity = V2d(0, 0);
+	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+		ts_explosion, GetPosition(), false, 0, 10, 3, true);
+	explosion.SetBasicPos(GetPosition());
+	SetHitboxes(&explosion, 0);
+	HurtboxesOff();
 }

@@ -28,11 +28,16 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	{
 		WAIT,
 		MOVE,
+		CHASE,
 		COMBOMOVE,
 		SUMMON,
 		DIG_IN,
+		BOOST,
+		BOOSTCHARGE,
 		UNDERGROUND,
 		LUNGE,
+		LUNGESTART,
+		LUNGELAND,
 		DIG_OUT,
 		SLASH,
 		SEQ_WAIT,
@@ -49,23 +54,32 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 
 	int spriteGoalAngle;
 	bool wasAerial;
+	bool chaseOver;
 
 	CrawlerPostFightScene *postFightScene;
 	CrawlerPostFight2Scene *postFightScene2;
 
 	PoiInfo *targetNode;
 
+	V2d bombThrowDir;
+	double bombThrowSpeed;
+
+	
+
+	Tileset *ts_lunge;
 	Tileset *ts_move;
 	Tileset *ts_slash;
 	Tileset *ts_dig_in;
 	Tileset *ts_dig_out;
 	Tileset *ts_jump;
 	Tileset *ts_bulletExplode;
+	Tileset *ts_boostCharge;
 
 	SummonGroup crawlerSummonGroup;
 	SummonGroup bombSummonGroup;
 
 	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
 
 	CrawlerQueen(ActorParams *ap);
 	~CrawlerQueen();
@@ -82,6 +96,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void ResetEnemy();
 
 	//Boss functions
+	void RespondToTakingFullHit();
 	void SetupPostFightScenes();
 	void SetupNodeVectors();
 	bool IsDecisionValid(int d);
@@ -90,9 +105,13 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void StartAction();
 	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();
+	int GetNumSimulationFramesRequired();
 
 	//My functions
-
+	double GetCurrThrowSpeed();
+	double GetCurrDashSpeed();
+	double GetCurrBoostSpeed();
+	bool GetPlayerClockwise();
 	void GoUnderground(int numFrames);
 	void SeqWait();
 	void StartFight();

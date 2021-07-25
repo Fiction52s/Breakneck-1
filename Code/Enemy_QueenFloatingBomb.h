@@ -21,6 +21,8 @@ struct QueenFloatingBomb : Enemy, SurfaceMoverHandler
 	Tileset *ts_explosion;
 	V2d initVel;
 	V2d initPos;
+	CollisionBody explosion;
+	HitboxInfo explosionHitboxInfo;
 	void Init(V2d &pos, V2d &vel);
 	void ProcessState();
 	void HandleNoHealth();
@@ -32,6 +34,7 @@ struct QueenFloatingBomb : Enemy, SurfaceMoverHandler
 	void DebugDraw(sf::RenderTarget *target);
 	void ResetEnemy();
 	void ProcessHit();
+	void Explode();
 };
 
 #endif

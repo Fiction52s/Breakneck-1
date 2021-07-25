@@ -363,7 +363,7 @@ void Session::RegisterW1Enemies()
 {
 	AddUnlistedEnemy("queenfloatingbomb", CreateEnemy<QueenFloatingBomb>);
 
-	AddWorldEnemy("crawlernode", 2, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
+	AddWorldEnemy("crawlernode", 1, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/crawlernode_32x32.png"));
 
 	AddBasicAerialWorldEnemy("movementtester", 1, CreateEnemy<MovementTester>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, 1);

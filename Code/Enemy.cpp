@@ -2070,9 +2070,11 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 
 		if (hitResult != Actor::HitResult::MISS)
 		{
-			IHitPlayer(index);
+			//IHitPlayer(index); used to be here
 			if (body != NULL && hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
 			{
+				IHitPlayer(index);
+
 				if (body->hitboxInfo != NULL)
 				{
 					pauseFrames = body->hitboxInfo->hitlagFrames;

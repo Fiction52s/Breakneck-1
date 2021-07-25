@@ -58,6 +58,7 @@ struct Boss : Enemy
 	void Decide();
 	void TryCombo();
 	void TryExecuteDecision();
+	virtual void RespondToTakingFullHit() {}
 	virtual void StartAction() {}
 	void StageSetup(int numStages,
 		int hitsPerStage);
@@ -89,6 +90,9 @@ struct Boss : Enemy
 	virtual void ActivatePostFightScene() {}
 	virtual bool CanBeHitByPlayer();
 	virtual void UpdateEnemyPhysics();
+
+	/*PositionInfo CheckGround(PositionInfo &startPos,
+		double dist);*/
 };
 
 #endif

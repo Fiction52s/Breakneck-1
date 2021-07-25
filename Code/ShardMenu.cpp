@@ -268,7 +268,7 @@ void ShardMenu::LoadShardInfo()
 
 bool ShardMenu::IsShardCaptured(int w, int li)
 {
-	return true; //testing
+	//return true; //testing
 
 	SaveFile *saveFile = sess->mainMenu->GetCurrentProgress();
 	if (saveFile == NULL)

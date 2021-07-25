@@ -17,16 +17,16 @@ using namespace sf;
 
 CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	:Boss(EnemyType::EN_CRAWLERQUEEN, ap),
-	crawlerSummonGroup(this, 
+	crawlerSummonGroup(this,
 		new BasicGroundEnemyParams(sess->types["crawler"], 1),
 		5, 5, 1),
-	bombSummonGroup( this, new ActorParams( sess->types["queenfloatingbomb"]),
-		10, 10, 1, true )
+	bombSummonGroup(this, new ActorParams(sess->types["queenfloatingbomb"]),
+		10, 10, 1, true)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(4, 4);
+	StageSetup(4, 8);
 
 	level = ap->GetLevel();
 
@@ -35,17 +35,47 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	actionLength[SLASH] = 26;
 	actionLength[UNDERGROUND] = 60;
 	actionLength[SUMMON] = 60;
+	actionLength[BOOST] = 180;
+	actionLength[BOOSTCHARGE] = 11;
+	actionLength[CHASE] = 180;
+	actionLength[LUNGESTART] = 10;
+	actionLength[LUNGE] = 1000;
+	actionLength[LUNGELAND] = 14;
 
 	animFactor[COMBOMOVE] = 1;
-	animFactor[SLASH] =4;
+	animFactor[SLASH] = 4;
 	animFactor[DIG_IN] = 4;
 	animFactor[DIG_OUT] = 4;
+	animFactor[LUNGESTART] = 4;
+	animFactor[LUNGE] = 4;
+	animFactor[LUNGELAND] = 4;
+	animFactor[BOOSTCHARGE] = 3;
 
-	stageMgr.AddActiveOption(0, MOVE, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
-	stageMgr.AddActiveOption(0, DIG_IN, 2);
+	stageMgr.AddActiveOption(0, CHASE, 2);
+	stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
 
-	stageMgr.AddActiveOption(1, MOVE, 2);
+
+
+	//stageMgr.AddActiveOption(0, DIG_IN, 2);
+	
+	//stageMgr.AddActiveOption(0, SUMMON, 2);
+
+	stageMgr.AddActiveOption(1, CHASE, 2);
+	stageMgr.AddActiveOption(1, DIG_IN, 2);
+	stageMgr.AddActiveOption(1, BOOSTCHARGE, 2);
+	//stageMgr.AddActiveOption(1, SUMMON, 2);
+
+	stageMgr.AddActiveOption(2, CHASE, 2);
+	stageMgr.AddActiveOption(2, DIG_IN, 2);
+	stageMgr.AddActiveOption(2, BOOSTCHARGE, 2);
+	stageMgr.AddActiveOption(2, SUMMON, 2);
+
+	stageMgr.AddActiveOption(3, CHASE, 2);
+	stageMgr.AddActiveOption(3, DIG_IN, 2);
+	stageMgr.AddActiveOption(3, BOOSTCHARGE, 2);
+	stageMgr.AddActiveOption(3, SUMMON, 2);
+
+	/*stageMgr.AddActiveOption(1, MOVE, 2);
 	stageMgr.AddActiveOption(1, SUMMON, 2);
 	stageMgr.AddActiveOption(1, DIG_IN, 2);
 
@@ -55,10 +85,10 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	stageMgr.AddActiveOption(3, MOVE, 2);
 	stageMgr.AddActiveOption(3, SUMMON, 2);
-	stageMgr.AddActiveOption(3, DIG_IN, 2);
+	stageMgr.AddActiveOption(3, DIG_IN, 2);*/
 
 	digDecidePicker.AddActiveOption(DIG_OUT, 2);
-	digDecidePicker.AddActiveOption(LUNGE, 2);
+	digDecidePicker.AddActiveOption(LUNGESTART, 2);
 	digDecidePicker.AddActiveOption(SLASH, 2);
 
 	clockwisePicker.AddActiveOption(0, 2);
@@ -69,6 +99,8 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	ts_dig_in = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
 	ts_dig_out = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
 	ts_jump = GetSizedTileset("Bosses/Crawler/crawler_queen_jump_320x320.png");
+	ts_lunge = GetSizedTileset("Bosses/Crawler/crawler_queen_lunge_320x320.png");
+	ts_boostCharge = GetSizedTileset("Bosses/Crawler/crawler_queen_charge_320x320.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
 	postFightScene = NULL;
@@ -82,8 +114,13 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	LoadParams();
 
-	BasicCircleHurtBodySetup(70);
-	BasicCircleHitBodySetup(70);
+	//CreateHitboxManager("Bosses/Crawler");
+	//SetupHitboxes(MOVE, "normal");
+
+	BasicCircleHurtBodySetup(70, 0, V2d( 30, -40 ), V2d());
+	BasicCircleHitBodySetup(70, 0, V2d( 30, -40 ), V2d());
+
+	hitBody.hitboxInfo = &hitboxInfos[MOVE];
 
 	ResetEnemy();
 }
@@ -103,16 +140,17 @@ CrawlerQueen::~CrawlerQueen()
 
 void CrawlerQueen::LoadParams()
 {
-	/*ifstream is;
-	is.open("Resources/Bosses/Bird/birdparams.json");
+	ifstream is;
+	is.open("Resources/Bosses/Crawler/crawlerparams.json");
 
 	assert(is.is_open());
 
 	json j;
 	is >> j;
 
-	HitboxInfo::SetupHitboxLevelInfo(j["punch"], hitboxInfos[PUNCH]);
-	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
+	HitboxInfo::SetupHitboxLevelInfo(j["normal"], hitboxInfos[MOVE]);
+	//hitboxInfos[MOVE].hitsThroughInvincibility = false;
+	//HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);
 }
 
 void CrawlerQueen::ResetEnemy()
@@ -128,7 +166,7 @@ void CrawlerQueen::ResetEnemy()
 
 	facingRight = true;
 
-	currDashSpeed = 20;
+	currDashSpeed = 30;//20;
 	currDashAccel = 1.0;
 
 	surfaceMover->Set(startPosInfo);
@@ -157,6 +195,11 @@ void CrawlerQueen::HandleFinishTargetedMovement()
 void CrawlerQueen::DebugDraw(sf::RenderTarget *target)
 {
 	surfaceMover->DebugDraw(target);
+
+	if (currHitboxes != NULL)
+		currHitboxes->DebugDraw(currHitboxFrame, target);
+	if (currHurtboxes != NULL)
+		currHurtboxes->DebugDraw(currHurtboxFrame, target);
 }
 
 void CrawlerQueen::GoUnderground(int numFrames)
@@ -185,6 +228,20 @@ void CrawlerQueen::ActionEnded()
 	case MOVE:
 		Decide();
 		break;
+	case CHASE:
+		Decide();
+		break;
+	case BOOST:
+	{
+		surfaceMover->SetSpeed(0);
+		Decide();
+		break;
+	}
+	case BOOSTCHARGE:
+	{
+		SetAction(BOOST);
+		break;
+	}
 	case DIG_IN:
 		GoUnderground(60);
 		break;
@@ -202,31 +259,143 @@ void CrawlerQueen::ActionEnded()
 		SetAction(digChoice);
 		break;
 	}
+	case LUNGESTART:
+	{
+		SetAction(LUNGE);
+		break;
 	}
+	case LUNGELAND:
+	{
+		Decide();
+		break;
+	}
+	}
+}
+
+bool CrawlerQueen::GetPlayerClockwise()
+{
+	Edge *e = surfaceMover->ground;
+	V2d along = e->Along();
+
+	double d = dot(targetPlayer->position - GetPosition(), along);
+
+	bool cw = true;
+	if (d > 0)
+	{
+		cw = true;
+	}
+	else
+	{
+		cw = false;
+	}
+
+	return cw;
+}
+
+double CrawlerQueen::GetCurrDashSpeed()
+{
+	switch (stageMgr.GetCurrStage())
+	{
+	case 0:
+		return 30;
+	case 1:
+		return 35;
+	case 2:
+		return 40;
+	case 3:
+		return 45;
+	}
+}
+
+double CrawlerQueen::GetCurrBoostSpeed()
+{
+	switch (stageMgr.GetCurrStage())
+	{
+	case 0:
+		return 60;
+	case 1:
+		return 70;
+	case 2:
+		return 80;
+	case 3:
+		return 90;
+	}
+}
+
+double CrawlerQueen::GetCurrThrowSpeed()
+{
+	switch (stageMgr.GetCurrStage())
+	{
+	case 0:
+		return 6;
+	case 1:
+		return 10;
+	case 2:
+		return 18;
+	case 3:
+		return 25;
+	}
+}
+
+int CrawlerQueen::GetNumSimulationFramesRequired()
+{
+	return 0;// sess->MAX_SIMULATED_FUTURE_PLAYER_FRAMES;
 }
 
 void CrawlerQueen::HandleAction()
 {
+	/*if (!actionHitPlayer)
+	{
+		SetHitboxes(hitBodies[action], frame / animFactor[action]);
+	}*/
+
+	double cDashSpeed = GetCurrDashSpeed();
+
 	switch (action)
 	{
 	case MOVE:
-		if (facingRight && surfaceMover->groundSpeed < currDashSpeed)
+	case CHASE:
+
+
+		if (chaseOver)
 		{
-			surfaceMover->groundSpeed += currDashAccel;
-			if (surfaceMover->groundSpeed > currDashSpeed)
+			if (frame < 150)
 			{
-				surfaceMover->groundSpeed = currDashSpeed;
+				frame = 150;
 			}
 		}
-		else if (!facingRight && surfaceMover->groundSpeed > -currDashSpeed)
+
+		if (frame % 15 == 0 && frame != 0 )
+		{
+			bool cw = GetPlayerClockwise();
+			facingRight = cw;
+
+			
+		}
+
+		
+
+		if (facingRight && surfaceMover->groundSpeed < cDashSpeed)
+		{
+			surfaceMover->groundSpeed += currDashAccel;
+			if (surfaceMover->groundSpeed > cDashSpeed)
+			{
+				surfaceMover->groundSpeed = cDashSpeed;
+			}
+		}
+		else if (!facingRight && surfaceMover->groundSpeed > -cDashSpeed)
 		{
 			surfaceMover->groundSpeed += -currDashAccel;
-			if (surfaceMover->groundSpeed < -currDashSpeed)
+			if (surfaceMover->groundSpeed < -cDashSpeed)
 			{
-				surfaceMover->groundSpeed = -currDashSpeed;
+				surfaceMover->groundSpeed = -cDashSpeed;
 			}
 		}
 		break;
+	case BOOST:
+	{
+		break;
+	}
 	case SUMMON:
 		if (frame == 20 && slowCounter == 1)
 		{
@@ -236,7 +405,19 @@ void CrawlerQueen::HandleAction()
 	case SLASH:
 		if (frame == 11 * animFactor[SLASH] && slowCounter == 1)
 		{
-			bombSummonGroup.Summon();
+			V2d norm = surfaceMover->ground->Normal();;
+			bombThrowDir = norm;
+			bombThrowSpeed = GetCurrThrowSpeed();
+
+			double diff = PI / 6;
+
+			RotateCCW(bombThrowDir, diff *2 );
+
+			for (int i = 0; i < 5; ++i)
+			{
+				bombSummonGroup.Summon();
+				RotateCW(bombThrowDir, diff);
+			}
 		}
 		break;
 	case LUNGE:
@@ -251,8 +432,10 @@ void CrawlerQueen::HandleAction()
 	}
 }
 
+
 void CrawlerQueen::StartAction()
 {
+	double cDashSpeed = GetCurrDashSpeed();
 	switch (action)
 	{
 	case MOVE:
@@ -264,7 +447,7 @@ void CrawlerQueen::StartAction()
 		{
 			if (surfaceMover->groundSpeed == 0)
 			{
-				surfaceMover->SetSpeed(currDashSpeed);
+				surfaceMover->SetSpeed(cDashSpeed);
 			}
 
 			facingRight = true;
@@ -273,12 +456,57 @@ void CrawlerQueen::StartAction()
 		{
 			if (surfaceMover->groundSpeed == 0)
 			{
-				surfaceMover->SetSpeed(-currDashSpeed);
+				surfaceMover->SetSpeed(-cDashSpeed);
 			}
 
 			facingRight = false;
 		}
 
+		break;
+	}
+	case CHASE:
+	{
+		bool cw = GetPlayerClockwise();
+		chaseOver = false;
+		if (cw)
+		{
+			if (surfaceMover->groundSpeed == 0)
+			{
+				surfaceMover->SetSpeed(cDashSpeed);
+			}
+
+			facingRight = true;
+		}
+		else
+		{
+			if (surfaceMover->groundSpeed == 0)
+			{
+				surfaceMover->SetSpeed(-cDashSpeed);
+			}
+
+			facingRight = false;
+		}
+		break;
+	}
+	case BOOST:
+	{
+		double boostSpeed = GetCurrBoostSpeed();
+
+		if (facingRight)
+		{
+			surfaceMover->SetSpeed(boostSpeed);
+		}
+		else
+		{
+			surfaceMover->SetSpeed(-boostSpeed);
+		}
+		break;
+	}
+	case BOOSTCHARGE:
+	{
+		surfaceMover->SetSpeed(0);
+
+		facingRight = GetPlayerClockwise();
 		break;
 	}
 	case WAIT:
@@ -306,11 +534,24 @@ void CrawlerQueen::StartAction()
 		V2d gn = surfaceMover->ground->Normal();
 		V2d lungeVel = gn * lungeSpeed;
 		surfaceMover->Jump(lungeVel);
-		if (lungeVel.x > 0)
+		/*if (lungeVel.x > 0)
 		{
 			facingRight = true;
 		}
 		else if (lungeVel.x < 0)
+		{
+			facingRight = false;
+		}*/
+		break;
+	}
+	case LUNGESTART:
+	{
+		V2d gn = surfaceMover->ground->Normal();
+		if (gn.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (gn.x < 0)
 		{
 			facingRight = false;
 		}
@@ -359,6 +600,7 @@ void CrawlerQueen::SetupPostFightScenes()
 void CrawlerQueen::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_CRAWLER, "A"));
+	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_CRAWLER, "B"));
 }
 
 void CrawlerQueen::StartAngryYelling()
@@ -379,7 +621,7 @@ void CrawlerQueen::SeqWait()
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
 	HurtboxesOff();
-	HitboxesOff();
+	//HitboxesOff();
 }
 
 void CrawlerQueen::StartFight()
@@ -387,9 +629,18 @@ void CrawlerQueen::StartFight()
 	Wait(30);
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
-	HitboxesOff();
-
+	DefaultHitboxesOn();
+	//HitboxesOff();
 	
+}
+
+void CrawlerQueen::RespondToTakingFullHit()
+{
+	if (action == CHASE)
+	{
+		chaseOver = true;
+	}
+	//HitboxesOff();
 }
 
 int CrawlerQueen::ChooseActionAfterStageChange()
@@ -424,18 +675,34 @@ void CrawlerQueen::UpdateSprite()
 
 	}
 
-	int extraHeight = -80;
+	int extraHeight = -90;
+
+	/*if (action == BOOSTCHARGE)
+	{
+		sprite.setColor(Color::Blue);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}*/
 
 	switch (action)
 	{
 	case MOVE:
+	case CHASE:
+	case BOOST:
 	{
 		sprite.setTexture(*ts_move->texture);
-		
-		
-
 		ts_move->SetSubRect(sprite, 0, !facingRight);
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
+		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		break;
+	}
+	case BOOSTCHARGE:
+	{
+		sprite.setTexture(*ts_boostCharge->texture);
+		ts_boostCharge->SetSubRect(sprite, frame/animFactor[BOOSTCHARGE], !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight + 20);
 		sprite.setRotation(surfaceMover->GetAngleDegrees());
 		//sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight );
 		break;
@@ -528,12 +795,41 @@ void CrawlerQueen::UpdateSprite()
 	}
 	case LUNGE:
 	{
-		V2d vel = surfaceMover->velocity;
+		if (frame / animFactor[LUNGE] < 6)
+		{
+			sprite.setTexture(*ts_lunge->texture);
+			ts_slash->SetSubRect(sprite, frame / animFactor[LUNGE] + 4, !facingRight);
+		}
+		/*V2d vel = surfaceMover->velocity;
 		double ang = RadiansToDegrees(GetVectorAngleCCW(normalize(vel)));
-		sprite.setTexture(*ts_jump->texture);
-		ts_jump->SetSubRect(sprite, 1, !facingRight);
+		sprite.setTexture(*ts_jump->texture);*/
+		//ts_lunge->SetSubRect(sprite, 1, !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2);
+		//sprite.setRotation(ang);
+		break;
+	}
+	case LUNGESTART:
+	{
+		if (frame / animFactor[LUNGESTART] < 6)
+		{
+			sprite.setTexture(*ts_slash->texture);
+			ts_slash->SetSubRect(sprite, frame / animFactor[LUNGESTART], !facingRight);
+		}
+		else
+		{
+			sprite.setTexture(*ts_lunge->texture);
+			ts_lunge->SetSubRect(sprite, (frame / animFactor[LUNGESTART]) - 6, !facingRight);
+		}
 		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height + extraHeight);
-		sprite.setRotation(ang);
+		sprite.setRotation(surfaceMover->GetAngleDegrees());
+		break;
+	}
+	case LUNGELAND:
+	{
+		sprite.setTexture(*ts_lunge->texture);
+		ts_lunge->SetSubRect(sprite, frame / animFactor[LUNGELAND] + 10, !facingRight);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, 60);//sprite.getLocalBounds().height + extraHeight);
+		sprite.setRotation(surfaceMover->GetAngleDegrees() + 180);
 		break;
 	}
 		
@@ -694,7 +990,8 @@ bool CrawlerQueen::IsDecisionValid(int d)
 
 void CrawlerQueen::HitTerrainAerial(Edge *e, double quant)
 {
-	Decide();
+	SetAction(LUNGELAND);
+	//Decide();
 }
 
 void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
@@ -704,7 +1001,7 @@ void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
 	{
 		PoiInfo *summonNode;
 
-		summonNode = nodeGroupA.AlwaysGetNextNode();
+		summonNode = nodeGroupB.AlwaysGetNextNode();
 		e->startPosInfo.SetGround(summonNode->poly,
 			summonNode->edgeIndex, summonNode->edgeQuantity);
 	}
@@ -713,7 +1010,7 @@ void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
 		QueenFloatingBomb *bomb = (QueenFloatingBomb*)e;
 
 		V2d gn = surfaceMover->ground->Normal();
-		bomb->Init(GetPosition() + gn * 80.0, gn * 2.0);
+		bomb->Init(GetPosition() + gn * 80.0, bombThrowDir * bombThrowSpeed);
 	}
 }
 
