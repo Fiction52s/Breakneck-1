@@ -392,8 +392,46 @@ void EnemyChain::UpdateFromPath(ActorParams *ap)
 
 FloatRect EnemyChain::GetAABB()
 {
-	V2d pos = currPosInfo.GetPosition();
-	return FloatRect(pos.x - 100, pos.y - 100, 200, 200);
+	if (enemies == NULL)
+	{
+		V2d pos = currPosInfo.GetPosition();
+		return FloatRect(pos.x - 100, pos.y - 100, 200, 200);
+	}
+	else
+	{
+		float left, right, top, bottom;
+		left = enemies[0]->GetPositionF().x;
+		right = left;
+		top = enemies[0]->GetPositionF().y;
+		bottom = top;
+
+		for (int i = 1; i < numEnemies; ++i)
+		{
+			Vector2f currPos = enemies[i]->GetPositionF();
+			if (currPos.x < left)
+			{
+				left = currPos.x;
+			}
+			if (currPos.x > right)
+			{
+				right = currPos.x;
+			}
+			if (currPos.y < top)
+			{
+				top = currPos.y;
+			}
+			if (currPos.y > bottom)
+			{
+				bottom = currPos.y;
+			}
+		}
+
+		float extra = 100;
+
+		return FloatRect(left - extra, top - extra, 
+			(right - left) + extra * 2, 
+			(bottom - top) + extra * 2);
+	}
 }
 
 EnemyChain::EnemyChain(ActorParams *ap, EnemyType et)

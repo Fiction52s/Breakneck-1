@@ -10118,10 +10118,10 @@ void Actor::TryAirdashBoost()
 
 void Actor::TryExtraAirdashBoost()
 {
-	/*if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	if (!HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 	{
 		return;
-	}*/
+	}
 
 	V2d dir = currInput.GetLeft8Dir();
 
@@ -10978,7 +10978,7 @@ void Actor::RestoreAirOptions()
 		hasWallJumpRechargeAirDash = true;
 	}
 
-	//if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
+	if (HasUpgrade(UPGRADE_W7_DOUBLE_AIRDASH_BOOST))
 	{
 		numRemainingExtraAirdashBoosts = 1;
 	}

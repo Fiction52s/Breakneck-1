@@ -1023,6 +1023,9 @@ void EditSession::TestPlayerMode()
 		specialTerrainTree->Insert((*it));
 	}
 
+
+	fullEnemyList.clear();
+
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
 		
@@ -1030,6 +1033,7 @@ void EditSession::TestPlayerMode()
 		{
 			(*it)->AddEnemyChainToWorldTrees();
 			enemyTree->Insert((*it)->enemyChain);
+			fullEnemyList.push_back((*it)->enemyChain);
 		}
 		else
 		{
@@ -1039,7 +1043,7 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
-	fullEnemyList.clear();
+	
 	for (auto it = groups.begin(); it != groups.end(); ++it)
 	{
 		for (auto enit = (*it).second->actors.begin(); enit != (*it).second->actors.end(); ++enit)
@@ -11847,7 +11851,12 @@ void EditSession::DrawRails( sf::RenderTarget *target )
 
 	for (list<RailPtr>::iterator it = rails.begin(); it != rails.end(); ++it)
 	{
-		if (mode != TEST_PLAYER || (*it)->enemyChain == NULL)
+		if (mode == PAUSED && (*it)->enemyChain != NULL)
+		{
+			continue;
+		}
+
+		if ( mode != TEST_PLAYER || (*it)->enemyChain == NULL)
 		{
 			(*it)->Draw(zoomMultiple, showPoints, target);
 		}

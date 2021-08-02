@@ -497,6 +497,6 @@ void Blocker::UpdateSprite()
 	}
 }
 
-void Blocker::DrawMinimap(sf::RenderTarget *target)
-{
-}
+//void Blocker::DrawMinimap(sf::RenderTarget *target)
+//{
+//}

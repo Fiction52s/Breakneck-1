@@ -52,7 +52,7 @@ struct Blocker : Enemy, QuadTreeEntrant
 	bool IsFastDying();
 	void ProcessState();
 	Blocker( BlockerChain *bc, V2d &pos, int index);
-	void DrawMinimap(sf::RenderTarget *target);
+	//void DrawMinimap(sf::RenderTarget *target);
 	void ClearSprite();
 	void UpdateSprite();
 	void ResetEnemy();
