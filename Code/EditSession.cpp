@@ -1086,6 +1086,19 @@ void EditSession::TestPlayerMode()
 	SetupGates();
 
 	CleanupZones();
+
+	CleanupGlobalBorders();
+
+	bool blackBorder[2];
+	bool topBorderOn = false;
+
+	realLeftBounds = mapHeader->leftBounds;
+	realTopBounds = mapHeader->topBounds;
+	realBoundsWidth = mapHeader->boundsWidth;
+	realBoundsHeight = mapHeader->boundsHeight;
+
+	SetupGlobalBorderQuads(blackBorder, topBorderOn);
+
 	CreateZones();
 
 	int setupZoneStatus = SetupZones();
@@ -1234,17 +1247,7 @@ void EditSession::TestPlayerMode()
 
 	SetupEnemyZoneSprites();
 
-	CleanupGlobalBorders();
-
-	bool blackBorder[2];
-	bool topBorderOn = false;
-
-	realLeftBounds = mapHeader->leftBounds;
-	realTopBounds = mapHeader->topBounds;
-	realBoundsWidth = mapHeader->boundsWidth;
-	realBoundsHeight = mapHeader->boundsHeight;
-
-	SetupGlobalBorderQuads(blackBorder, topBorderOn);
+	
 
 	CleanupTopClouds();
 	if (topBorderOn)
@@ -2254,7 +2257,7 @@ void EditSession::AddRecentEnemy(ActorPtr a)
 
 void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 	int poly0Index, int vertexIndex0, int poly1Index,
-	int vertexIndex1, int shardWorld, int shardIndex)
+	int vertexIndex1, int shardWorld, int shardIndex, int seconds)
 {
 	int testIndex = 0;
 	PolyPtr terrain0(NULL);
@@ -2306,6 +2309,7 @@ void EditSession::ProcessGate(int gCat, int gVar, int numToOpen,
 	gi->category = gCat;
 	gi->variation = gVar;
 	gi->SetNumToOpen(numToOpen);
+	gi->seconds = seconds;
 	gi->edit = this;
 
 	if (gCat == Gate::SHARD)

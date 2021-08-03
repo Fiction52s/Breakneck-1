@@ -417,7 +417,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
-		int shardIndex) {}
+		int shardIndex, int seconds) {}
 	virtual void ProcessSpecialTerrain(PolyPtr poly) {}
 	virtual int Run() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);

@@ -2447,6 +2447,8 @@ bool Session::ReadGates(std::ifstream &is)
 	int shardWorld = -1;
 	int shardIndex = -1;
 	int numToOpen;
+
+	int seconds = 0;
 	for (int i = 0; i < numGates; ++i)
 	{
 		shardWorld = -1;
@@ -2467,7 +2469,6 @@ bool Session::ReadGates(std::ifstream &is)
 				is >> shardWorld;
 				is >> shardIndex;
 			}
-
 			continue;
 		}
 
@@ -2489,9 +2490,13 @@ bool Session::ReadGates(std::ifstream &is)
 			is >> shardWorld;
 			is >> shardIndex;
 		}
+		else if (gCat == Gate::TIME_GLOBAL || gCat == Gate::TIME_ROOM)
+		{
+			is >> seconds;
+		}
 
 		ProcessGate( gCat, gVar, numToOpen, poly0Index, vertexIndex0, poly1Index, vertexIndex1, shardWorld,
-			shardIndex);
+			shardIndex, seconds);
 	
 	}
 	return true;
@@ -3341,7 +3346,7 @@ void Session::CreateZones()
 		Edge *startEdge;
 		
 		//this is p ugly. just testing.
-		if (IsSessTypeGame())
+		/*if (IsSessTypeGame())
 		{
 			startEdge = allPolysVec[0]->GetEdge(0);
 		}
@@ -3349,7 +3354,11 @@ void Session::CreateZones()
 		{
 			EditSession *edit = (EditSession*)this;
 			startEdge = edit->polygons.front()->GetEdge(0);
-		}
+		}*/
+
+		startEdge = globalBorderEdges.front();
+
+
 		
 		Edge *curr = startEdge;
 
@@ -3427,34 +3436,6 @@ int Session::SetupZones()
 {
 	if (zones.size() == 0)
 		return 0;
-	//cout << "setupzones" << endl;
-	//setup subzones
-	//for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-	//{
-	//	for( list<Zone*>::iterator it2 = zones.begin(); it2 != zones.end(); ++it2 )
-	//	{
-	//		if( (*it) == (*it2) ) 
-	//			continue;
-
-	//		if( (*it)->ContainsZone( (*it2) ) )
-	//		{
-	//			//cout << "contains zone!" << endl;
-	//			(*it)->subZones.push_back( (*it2) );
-	//		}
-	//	}
-	//}
-
-	//for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-	//{
-	//	for (list<Zone*>::iterator it2 = (*it)->subZones.begin();
-	//		it2 != (*it)->subZones.end(); ++it2)
-	//	{
-	//		if ((*it)->ContainsZoneMostSpecific((*it2)))
-	//		{
-	//			(*it2)->parentZone = (*it);
-	//		}
-	//	}
-	//}
 
 	//add enemies to the correct zone.
 	for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)

@@ -451,7 +451,7 @@ struct GameSession : RayCastHandler, Session
 		int gVar, int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
-		int shardIndex);
+		int shardIndex, int seconds);
 	void ProcessRail(RailPtr rail);
 	void ProcessSpecialTerrain(PolyPtr poly);
 

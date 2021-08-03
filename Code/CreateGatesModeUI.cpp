@@ -40,7 +40,7 @@ CreateGatesModeUI::CreateGatesModeUI()
 	ts_bossGateTypes = edit->GetSizedTileset("Editor/bossgatetypes_128x128.png");
 	ts_pickupGateTypes = edit->GetSizedTileset("Editor/pickupgatetypes_128x128.png");
 
-	std::vector<string> gateCatOptions = { "All keys", "Number of keys", "Shard", "Boss", "Secret", "Pickup", "Black" };
+	std::vector<string> gateCatOptions = { "All keys", "Number of keys", "Enemy", "Global time", "Room time", "Shard", "Boss", "Secret", "Pickup", "Black" };
 	gateCategoryDropdown = mainPanel->AddDropdown(
 		"catdrop", Vector2i(0, 0), Vector2i(200, 28), gateCatOptions, 0);
 	gateCategoryDropdown->SetToolTip("Choose the gate category\n(E to expand types)");
@@ -66,11 +66,18 @@ CreateGatesModeUI::CreateGatesModeUI()
 	currGateTypeRects[0]->SetShown(true);
 
 	numToOpen = 0;
+	seconds = 0;
+
 
 	mainPanel->AddLabel("numkeyslabel", Vector2i( 0, labelExtraY ), labelCharHeight, "Number of keys/pickups:");
 	numToOpenTextbox = mainPanel->AddTextBox("numtoopen", Vector2i(0, 0), 50, 5, "");
 	numToOpenTextbox->SetToolTip("Set number of keys/pickups to open a gate");
 	numToOpenTextbox->SetString(to_string(numToOpen));
+
+	mainPanel->AddLabel("secondslabel", Vector2i(0, labelExtraY), labelCharHeight, "Time before lock:");
+	secondsTextbox = mainPanel->AddTextBox("secondsbox", Vector2i(0, 0), 50, 5, "");
+	secondsTextbox->SetToolTip("Set number of seconds before the gate closes");
+	secondsTextbox->SetString(to_string(seconds));
 
 	deleteGateButton = mainPanel->AddButton("delete", Vector2i(30, 0), Vector2f(200, 28 + 4), "delete");
 	deleteGateButton->SetToolTip("Delete selected gate (X / Delete)");
@@ -195,34 +202,38 @@ void CreateGatesModeUI::SetEditGate(GateInfo *gi)
 
 void CreateGatesModeUI::SetFromGateInfo(GateInfo *gi)
 {
-	switch (gi->category)
-	{
-	case Gate::ALLKEY:
-		gateCategoryDropdown->SetSelectedIndex(0);
-		break;
-	case Gate::NUMBER_KEY:
-		gateCategoryDropdown->SetSelectedIndex(1);
-		//set key num text based on gate params
-		break;
-	case Gate::SHARD:
-		gateCategoryDropdown->SetSelectedIndex(2);
-		SetShard(gi->shardWorld, gi->shardIndex);
-		break;
-	case Gate::BOSS:
-		gateCategoryDropdown->SetSelectedIndex(3);
-		break;
-	case Gate::SECRET:
-		gateCategoryDropdown->SetSelectedIndex(4);
-		break;
-	case Gate::BLACK:
-		gateCategoryDropdown->SetSelectedIndex(6);
-		break;
-	}
+	gateCategoryDropdown->SetSelectedIndex(gi->category);
+
+	//switch (gi->category)
+	//{
+	//case Gate::ALLKEY:
+	//	gateCategoryDropdown->SetSelectedIndex(0);
+	//	break;
+	//case Gate::NUMBER_KEY:
+	//	gateCategoryDropdown->SetSelectedIndex(1);
+	//	//set key num text based on gate params
+	//	break;
+	//case Gate::SHARD:
+	//	gateCategoryDropdown->SetSelectedIndex(2);
+	//	SetShard(gi->shardWorld, gi->shardIndex);
+	//	break;
+	//case Gate::BOSS:
+	//	gateCategoryDropdown->SetSelectedIndex(3);
+	//	break;
+	//case Gate::SECRET:
+	//	gateCategoryDropdown->SetSelectedIndex(4);
+	//	break;
+	//case Gate::BLACK:
+	//	gateCategoryDropdown->SetSelectedIndex(6);
+	//	break;
+	//}
 
 	UpdateCategoryDropdownType();
 
 	numToOpen = gi->numToOpen;
+	seconds = gi->seconds;
 	numToOpenTextbox->SetString(to_string(numToOpen));
+	secondsTextbox->SetString(to_string(seconds));
 }
 
 void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
@@ -232,6 +243,7 @@ void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 	gi->variation = currVariation[gateCat];
 
 	gi->SetNumToOpen(numToOpen);
+	gi->SetTime(seconds);
 	gi->UpdateLine();
 }
 
@@ -324,7 +336,7 @@ void CreateGatesModeUI::ExpandPickupLibrary()
 
 void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 {
-	currGateTypeRects[1]->SetImage(icRect->ts, icRect->spr.getTextureRect());
+	currGateTypeRects[Gate::SHARD]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
@@ -341,7 +353,7 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 
 void CreateGatesModeUI::ChooseBossGateType(ImageChooseRect *icRect)
 {
-	currGateTypeRects[2]->SetImage(icRect->ts, icRect->spr.getTextureRect());
+	currGateTypeRects[Gate::BOSS]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
@@ -353,7 +365,7 @@ void CreateGatesModeUI::ChooseBossGateType(ImageChooseRect *icRect)
 
 void CreateGatesModeUI::ChoosePickupGateType(ImageChooseRect *icRect)
 {
-	currGateTypeRects[4]->SetImage(icRect->ts, icRect->spr.getTextureRect());
+	currGateTypeRects[Gate::PICKUP]->SetImage(icRect->ts, icRect->spr.getTextureRect());
 
 	int x = icRect->pos.x / gateGridSize;
 	int y = icRect->pos.y / gateGridSize;
@@ -399,13 +411,13 @@ void CreateGatesModeUI::ExpandLibrary()
 	int cat = GetGateCategory();
 	switch (cat)
 	{
-	case 2:
+	case Gate::SHARD:
 		ExpandShardLibrary();
 		break;
-	case 3:
+	case Gate::BOSS:
 		ExpandBossLibrary();
 		break;
-	case 5:
+	case Gate::PICKUP:
 		ExpandPickupLibrary();
 		break;
 	}
@@ -523,6 +535,22 @@ void CreateGatesModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
 			if (modifyGate != NULL)
 			{
 				modifyGate->SetNumToOpen(numToOpen);
+			}
+		}
+	}
+	else if (tb == secondsTextbox)
+	{
+		string str = tb->GetString();
+		stringstream ss;
+		ss << str;
+		int num;
+		ss >> num;
+		if (!ss.fail())
+		{
+			seconds = num;
+			if (modifyGate != NULL)
+			{
+				modifyGate->SetTime(seconds);
 			}
 		}
 	}

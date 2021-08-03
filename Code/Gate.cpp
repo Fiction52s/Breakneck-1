@@ -46,6 +46,8 @@ Gate::Gate( Session *p_sess, int p_cat, int p_var )
 	orbFrame = 0;
 	orbState = ORB_RED;
 
+	seconds = 0;
+
 	stateLength[HARD] = 61;
 	stateLength[SOFTEN] = 61;
 	stateLength[GLITCH] = 7 * 3;

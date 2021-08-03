@@ -23,6 +23,7 @@ GateInfo::GateInfo()
 	variation = 0;
 	category = 0;
 	numToOpen = 0;
+	seconds = 0;
 	//to its easier to track down errors
 	shardWorld = -1;
 	shardIndex = -1;
@@ -37,6 +38,19 @@ void GateInfo::SetNumToOpen(int num)
 	else
 	{
 		numToOpen = 0;
+	}
+}
+
+void GateInfo::SetTime(int sec)
+{
+	if (category == Gate::TIME_GLOBAL ||
+		category == Gate::TIME_ROOM)
+	{
+		seconds = sec;
+	}
+	else
+	{
+		seconds = 0;
 	}
 }
 
@@ -168,6 +182,11 @@ void GateInfo::WriteFile(ofstream &of)
 	if (category == Gate::SHARD)
 	{
 		of << " " << shardWorld << " " << shardIndex << endl;
+	}
+	else if (category == Gate::TIME_GLOBAL
+		|| category == Gate::TIME_ROOM)
+	{
+		of << " " << seconds << endl;
 	}
 	else
 	{

@@ -1043,7 +1043,9 @@ struct CreateGatesModeUI : GUIHandler
 	void UpdateCategoryDropdownType();
 
 	TextBox *numToOpenTextbox;
+	TextBox *secondsTextbox;
 	int numToOpen;
+	int seconds;
 	Button *deleteGateButton;
 	//Button *OKGateButton;
 

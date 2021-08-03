@@ -945,7 +945,7 @@ void GameSession::ProcessGate(int gCat,
 	int numToOpen,
 	int poly0Index, int vertexIndex0, int poly1Index,
 	int vertexIndex1, int shardWorld,
-	int shardIndex)
+	int shardIndex, int seconds)
 {
 	if (inversePolygon != NULL)
 	{
@@ -968,6 +968,10 @@ void GameSession::ProcessGate(int gCat,
 	else if (gCat == Gate::NUMBER_KEY || gCat == Gate::ALLKEY || gCat == Gate::PICKUP)
 	{
 		gate->SetNumToOpen(numToOpen);
+	}
+	else if (gCat == Gate::TIME_GLOBAL || gCat == Gate::TIME_ROOM)
+	{
+		gate->seconds = seconds; //do stuff here to set the timer
 	}
 
 	gate->temp0prev = edge0->edge0;

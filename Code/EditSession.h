@@ -427,7 +427,7 @@ struct EditSession : GUIHandler, Session
 		int numToOpen,
 		int poly0Index, int vertexIndex0, int poly1Index,
 		int vertexIndex1, int shardWorld,
-		int shardIndex);
+		int shardIndex, int seconds);
 	bool ReadPlayer(std::ifstream &is);
 	bool ReadDecor(std::ifstream &is);
 	bool ReadBGTerrain(std::ifstream &is);

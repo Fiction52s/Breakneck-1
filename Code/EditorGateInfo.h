@@ -14,6 +14,7 @@ struct GateInfo : ISelectable
 	void SetShard(int shardW, int shardI);
 	bool HasSameInfo(GateInfo *other);
 	void SetNumToOpen(int num);
+	void SetTime(int sec);
 	sf::IntRect GetAABB();
 	TerrainPoint *point0;
 	TerrainPoint *point1;
@@ -34,6 +35,7 @@ struct GateInfo : ISelectable
 	sf::Color color;
 	int category;
 	int variation;
+	int seconds;
 	
 
 	int shardWorld;

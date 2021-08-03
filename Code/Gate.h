@@ -14,6 +14,9 @@ struct Gate : public QuadTreeEntrant
 	{
 		ALLKEY,
 		NUMBER_KEY,
+		ENEMY,
+		TIME_GLOBAL,
+		TIME_ROOM,
 		SHARD,
 		BOSS,
 		SECRET,
@@ -98,6 +101,8 @@ struct Gate : public QuadTreeEntrant
 
 	Session *sess;
 	GateState gState;
+
+	int seconds;
 
 	int category;
 	int variation;

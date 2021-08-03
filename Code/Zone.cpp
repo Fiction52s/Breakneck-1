@@ -161,8 +161,24 @@ void Zone::Init()
 	}
 
 
+
+	for (list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it)
+	{
+		pointVector.push_back(vector<Vector2i>());
+		vector<Vector2i> &currHoleVector = pointVector.back();
+
+		int subPoints = (*it)->PointVector().size();
+		for (int i = 0; i < subPoints; ++i)
+		{
+			currHoleVector.push_back((*it)->GetPolyPoint(i));
+		}
+	}
+
+
+
 	int emergency = 200;
 	int ecounter = 0;
+	if( false)
 	while( !relGates.empty() )
 	{
 		pointVector.push_back(vector<Vector2i>());
@@ -613,10 +629,14 @@ bool Zone::ContainsPoint(V2d test)
 		else
 			prev = V2d(pVec[i - 1]);
 
-		if (((curr.y > test.y) != (prev.y > test.y)) &&
-			(test.x < (prev.x - curr.x) * (test.y - curr.y) / (prev.y - curr.y) + curr.x))
+		if (((curr.y >= test.y) != (prev.y >= test.y)) &&
+			(test.x <= (prev.x - curr.x) * (test.y - curr.y) / (prev.y - curr.y) + curr.x))
 			c = !c;
 	}
+
+	//I changed all of these to less than or equals and greater than or equals
+	//to fix issues where the border touches the edge of another zone.
+	//might cause issues later, so leaving this note here just in case.
 
 	return c;
 }
