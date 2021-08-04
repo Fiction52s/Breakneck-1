@@ -47,6 +47,10 @@ Gate::Gate( Session *p_sess, int p_cat, int p_var )
 	orbFrame = 0;
 	orbState = ORB_RED;
 
+	timeGateIsSecret = false;
+	secretTimeGateIsOpened = false;
+	timeLocked = false;
+
 	seconds = 0;
 
 	stateLength[HARD] = 61;
@@ -102,6 +106,10 @@ void Gate::Setup(GateInfoPtr gi)
 	{
 		SetNumToOpen(gi->numToOpen);
 	}
+	else if (category == Gate::TIME_GLOBAL || category == Gate::TIME_ROOM)
+	{
+		SetTime(gi->seconds);
+	}
 	/*else if (category == Gate::ALLKEY)
 	{
 		SetNumToOpen(gi->numToOpen);
@@ -155,6 +163,9 @@ void Gate::Reset()
 	flowFrame = 0;
 	frame = 0;
 
+	secretTimeGateIsOpened = false;
+	timeLocked = false;
+
 	orbState = ORB_RED;
 	orbFrame = 0;
 
@@ -171,6 +182,11 @@ void Gate::Reset()
 	{
 		gState = SOFT;
 	}
+	else if (category == TIME_GLOBAL
+		|| category == TIME_ROOM)
+	{
+		gState = SOFT;
+	}
 	else
 	{
 		gState = HARD;
@@ -180,7 +196,7 @@ void Gate::Reset()
 
 void Gate::PassThrough(double alongAmount)
 {
-	if (category == SECRET)
+	if (category == SECRET || timeGateIsSecret )
 	{
 		gState = Gate::GLITCH;
 		frame = 0;
@@ -413,6 +429,26 @@ void Gate::UpdateOrb()
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
+	else if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		if (gState == LOCKFOREVER || gState == REFORM)
+		{
+			SetRectColor(mapLine, mapLineColor);
+		}
+
+		if (!timeLocked)
+		{
+			orbState = ORB_GREEN;
+			orbFrame = 0;
+			ts_orb->SetQuadSubRect(orbQuad, 1);
+			SetRectColor(mapLine, mapLineColor);
+		}
+		else
+		{
+			ts_orb->SetQuadSubRect(orbQuad, 0);
+			SetRectColor(mapLine, mapLineColor);
+		}
+	}
 }
 
 void Gate::Update()
@@ -424,9 +460,12 @@ void Gate::Update()
 
 	ActionEnded();
 	CheckSoften();
+	CheckTimeLock();
 	UpdateSprite();
 	UpdateShaders();
 	UpdateOrb();
+
+	
 
 	if( gState != LOCKFOREVER && gState != OPEN )
 		++frame;
@@ -592,6 +631,12 @@ bool Gate::CanSoften()
 			//TODO
 			break;
 		}
+		case TIME_GLOBAL:
+		case TIME_ROOM:
+		{
+			okayToSoften = true;
+			break;
+		}
 		}
 	}
 
@@ -604,6 +649,77 @@ void Gate::CheckSoften()
 	{
 		return;
 	}
+
+	bool canSoften = CanSoften();
+
+	Zone *currZone = sess->currentZone;
+
+	if (canSoften)
+	{
+		if (category == SHARD)
+		{
+			Soften();
+		}
+		else
+		{
+			if (zoneA == zoneB && zoneA == currZone)
+			{
+				TotalDissolve();
+			}
+			else
+			{
+				Soften();
+			}
+		}
+	}
+}
+
+void Gate::SetToTwoWay()
+{
+	if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		timeGateIsSecret = true;
+	}
+	else
+	{
+		category = SECRET;
+	}
+}
+
+void Gate::CheckTimeLock()
+{
+	if (category != TIME_GLOBAL && category != TIME_ROOM )
+	{
+		return;
+	}
+
+	if (gState == SOFT && !secretTimeGateIsOpened)
+	{
+		if (sess->totalGameFrames >= seconds * 60)
+		{
+			timeLocked = true;
+			Reform();
+			numberText.setString(to_string(seconds));
+			auto &bounds = numberText.getLocalBounds();
+			numberText.setOrigin(bounds.left + bounds.width / 2,
+				bounds.top + bounds.height / 2);
+		}
+		else
+		{
+			if (category == TIME_GLOBAL || category == TIME_ROOM)
+			{
+				if (gState == SOFT )
+				{
+					numberText.setString(to_string(seconds - sess->totalGameFrames / 60));
+					auto &bounds = numberText.getLocalBounds();
+					numberText.setOrigin(bounds.left + bounds.width / 2,
+						bounds.top + bounds.height / 2);
+				}
+			}
+		}
+	}
+
+	
 
 	bool canSoften = CanSoften();
 
@@ -656,7 +772,8 @@ void Gate::UpdateSprite()
 
 bool Gate::IsTwoWay()
 {
-	return category == SECRET || category == SHARD;
+	return category == SECRET || category == SHARD
+		|| ( (category == TIME_GLOBAL || category == TIME_ROOM) && timeGateIsSecret && !timeLocked);
 }
 
 bool Gate::IsAlwaysUnlocked()
@@ -698,6 +815,11 @@ bool Gate::CanUnlock()
 			return false;
 		case ALLKEY:
 		case NUMBER_KEY:
+		{
+			return true;
+		}
+		case TIME_GLOBAL:
+		case TIME_ROOM:
 		{
 			return true;
 		}
@@ -750,18 +872,21 @@ void Gate::CalcAABB()
 
 
 
-void Gate::Draw( sf::RenderTarget *target )
+void Gate::Draw(sf::RenderTarget *target)
 {
 	if (!visible)
 		return;
-	
+
+	bool isTimeGate = category == TIME_GLOBAL || category == TIME_ROOM;
+
 	if( gState != OPEN )
 	{
+		
 		if (gState == REFORM || gState == LOCKFOREVER)
 		{
 			if (gState == REFORM)
 			{
-				if (category == SECRET)
+				if (category == SECRET || timeGateIsSecret)
 				{
 
 				}
@@ -769,9 +894,19 @@ void Gate::Draw( sf::RenderTarget *target )
 				{
 					target->draw(centerLine, 4, sf::Quads, &centerShader);
 				}
-				
+
 			}
-			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_lockedAndHardened->texture );
+			target->draw(gateQuads, numGateQuads * 4, sf::Quads, ts_lockedAndHardened->texture);
+
+			//&& !((gState == REFORM || gState == LOCKFOREVER) && !timeLocked))
+			if (isTimeGate && timeLocked)
+			{
+				target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
+				if (!secretTimeGateIsOpened)
+				{
+					target->draw(numberText);
+				}
+			}
 		}
 		else if (gState == GLITCH)
 		{
@@ -786,7 +921,12 @@ void Gate::Draw( sf::RenderTarget *target )
 
 			if (category != SECRET)
 			{
-				target->draw(centerLine, 4, sf::Quads, &centerShader);
+				if (!(isTimeGate && timeGateIsSecret))
+				{
+					target->draw(centerLine, 4, sf::Quads, &centerShader);
+				}
+				
+				
 
 				if (gState != SOFT)
 				{
@@ -794,18 +934,22 @@ void Gate::Draw( sf::RenderTarget *target )
 				}
 
 				if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP 
-					|| category == ENEMY)
+					|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && secretTimeGateIsOpened )))
 				{
 					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
 
-					if (orbState != ORB_GO)
+					if (orbState != ORB_GO )
 					{
 						target->draw(numberText);
 					}
 				}
 			}
 			
+			
 		}
+
+		
+		
 	}
 
 	target->draw(nodes, 8, sf::Quads, ts_node->texture);
@@ -823,12 +967,34 @@ void Gate::MapDraw(sf::RenderTarget *target)
 		target->draw(mapLine, 4, sf::Quads);
 }
 
+void Gate::OpenSecretTimeGate()
+{
+	if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		if (timeGateIsSecret)
+		{
+			secretTimeGateIsOpened = true;
+		}
+	}
+}
+
 void Gate::SetNumToOpen(int num)
 {
 	assert(category == NUMBER_KEY || category == PICKUP || category == ALLKEY );
 
 	numToOpen = num;
 	numberText.setString(to_string(numToOpen));
+	auto &bounds = numberText.getLocalBounds();
+	numberText.setOrigin(bounds.left + bounds.width / 2,
+		bounds.top + bounds.height / 2);
+}
+
+void Gate::SetTime(int sec)
+{
+	assert(category == TIME_GLOBAL || category == TIME_ROOM);
+
+	seconds = sec;
+	numberText.setString(to_string(seconds));
 	auto &bounds = numberText.getLocalBounds();
 	numberText.setOrigin(bounds.left + bounds.width / 2,
 		bounds.top + bounds.height / 2);
@@ -935,7 +1101,7 @@ void Gate::Init()
 		V2d center = (edgeA->v0 + edgeA->v1) / 2.0;
 		shardSprite.setPosition(Vector2f(center));
 	}
-	else if (category == SECRET)
+	else if (category == SECRET || category == TIME_GLOBAL || category == TIME_ROOM )
 	{
 		ts_glitch = sess->GetSizedTileset("Zone/gate_glitch_64x64.png");
 		//tileHeight = 256;

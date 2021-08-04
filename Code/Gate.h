@@ -80,6 +80,7 @@ struct Gate : public QuadTreeEntrant
 	void UpdateSprite();
 	void UpdateShaders();
 	void CheckSoften();
+	void CheckTimeLock();
 	void TotalDissolve();
 	void ReverseDissolve();
 	void Soften();
@@ -95,9 +96,12 @@ struct Gate : public QuadTreeEntrant
 	void CalcAABB();
 	void SetShard(int w, int li);
 	void SetNumToOpen(int num);
+	void SetTime(int sec);
 	void UpdateOrb();
 	void SetMapLineColor();
 	void MapDraw(sf::RenderTarget *target);
+	void OpenSecretTimeGate();
+	void SetToTwoWay();
 
 	Session *sess;
 	GateState gState;
@@ -112,6 +116,10 @@ struct Gate : public QuadTreeEntrant
 
 	int frame;
 	int flowFrame;
+
+	bool timeGateIsSecret;
+	bool timeLocked;
+	bool secretTimeGateIsOpened;
 
 	sf::Color mapLineColor;
 	sf::Vertex hardLine[4];

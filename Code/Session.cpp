@@ -3643,7 +3643,7 @@ int Session::SetupZones()
 			for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
 			{
 				g = (Gate*)(*git)->info;
-				g->category = Gate::SECRET;
+				g->SetToTwoWay();
 				g->Init();
 			}
 			(*it)->SetZoneType(Zone::SECRET);
@@ -4407,6 +4407,8 @@ void Session::LockGate(Gate *g)
 void Session::UnlockGate(Gate *g)
 {
 	g->SetLocked(false);
+
+	g->OpenSecretTimeGate();
 }
 
 void Session::DrawGates(sf::RenderTarget *target)

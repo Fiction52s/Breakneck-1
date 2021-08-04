@@ -26,6 +26,7 @@ struct Spring : Enemy
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);
+	bool CountsForEnemyGate() { return false; }
 
 	SpringType springType;
 	Spring(ActorParams *ap);

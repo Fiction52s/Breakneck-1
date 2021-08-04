@@ -550,9 +550,12 @@ int Zone::GetNumRemainingKillableEnemies()
 	int numLeft = 0;
 	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
 	{
-		if ( !(*it)->spawned || !(*it)->dead)
+		if ((*it)->CountsForEnemyGate())
 		{
-			++numLeft;
+			if (!(*it)->spawned || !(*it)->dead)
+			{
+				++numLeft;
+			}
 		}
 	}
 

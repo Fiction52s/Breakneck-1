@@ -1007,7 +1007,6 @@ void Actor::SetupSwordTilesets()
 	ts_standAttackSword4[0] = sess->GetSizedTileset(folder, "stand_att_04_sword_384x384.png");
 	ts_standAttackSword4[1] = sess->GetSizedTileset(folder, "stand_att_04_sword_b_480x400.png");
 	ts_standAttackSword4[2] = sess->GetSizedTileset(folder, "stand_att_04_sword_p_480x400.png");
-
 }
 
 void Actor::SetupExtraTilesets()
