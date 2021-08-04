@@ -93,6 +93,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void SetFromBytes(unsigned char *bytes) {}
 	void StoreBasicEnemyData(StoredEnemyData &ed);
 	void SetBasicEnemyData(StoredEnemyData &ed);
+	virtual bool CountsForEnemyGate() { return true; }
 
 	int summonFrame;
 	const static int summonDuration;

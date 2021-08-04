@@ -48,6 +48,7 @@ struct Zone
 	void Update( float zoom, sf::Vector2f &topLeft,
 		sf::Vector2f &playertest );
 	void Update();
+	int GetNumRemainingKillableEnemies();
 	int frame;
 	float GetOpeningAlpha();
 	bool secretZone;

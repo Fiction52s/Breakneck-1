@@ -12,6 +12,7 @@
 #include "MainMenu.h"
 #include "EditorGateInfo.h"
 #include "EditorTerrain.h"
+#include "Zone.h"
 
 using namespace std;
 using namespace sf;
@@ -353,6 +354,65 @@ void Gate::UpdateOrb()
 			SetRectColor(mapLine, mapLineColor);
 		}
 	}
+	else if (category == ENEMY )
+	{
+		if (gState == LOCKFOREVER || gState == REFORM)
+		{
+			SetRectColor(mapLine, mapLineColor);
+			return;
+		}
+
+		if (sess->currentZone->GetNumRemainingKillableEnemies() == 0 )
+		{
+			bool currZone = (sess->currentZone == zoneA ||
+				sess->currentZone == zoneB);
+			if (orbState != ORB_GO && currZone)
+			{
+				orbState = ORB_GO;
+				orbFrame = 0;
+			}
+			else if (!currZone)
+			{
+				orbState = ORB_GREEN;
+				orbFrame = 0;
+			}
+
+			if (orbState == ORB_GO)
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 2 + orbFrame / 2);
+
+				orbFrame++;
+				if (orbFrame == 10 * 2)
+				{
+					orbFrame = 0;
+				}
+
+				int mapLineFrame = (orbFrame / 2) % 3;
+				switch (mapLineFrame)
+				{
+				case 0:
+					SetRectColor(mapLine, mapLineColor);
+					break;
+				case 1:
+					SetRectColor(mapLine, Color::Red);
+					break;
+				case 2:
+					SetRectColor(mapLine, Color::Yellow);
+					break;
+				}
+			}
+			else
+			{
+				ts_orb->SetQuadSubRect(orbQuad, 1);
+				SetRectColor(mapLine, mapLineColor);
+			}
+		}
+		else
+		{
+			ts_orb->SetQuadSubRect(orbQuad, 0);
+			SetRectColor(mapLine, mapLineColor);
+		}
+	}
 }
 
 void Gate::Update()
@@ -510,6 +570,14 @@ bool Gate::CanSoften()
 				okayToSoften = true;
 			break;
 		}
+		case ENEMY:
+		{
+			if (currZone->GetNumRemainingKillableEnemies() == 0)
+			{
+				okayToSoften = true;
+			}
+			break;
+		}
 		case SHARD:
 		{
 			double len = length(sess->GetPlayer(0)->position - GetCenter());
@@ -633,6 +701,10 @@ bool Gate::CanUnlock()
 		{
 			return true;
 		}
+		case ENEMY:
+		{
+			return true;
+		}
 		case SHARD:
 		{
 			return true;
@@ -721,7 +793,8 @@ void Gate::Draw( sf::RenderTarget *target )
 					target->draw(hardLine, 4, sf::Quads, &gateShader);
 				}
 
-				if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP)
+				if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP 
+					|| category == ENEMY)
 				{
 					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
 
@@ -795,7 +868,8 @@ void Gate::SetMapLineColor()
 	case ALLKEY:
 	case NUMBER_KEY:
 	{
-		switch (sess->mapHeader->envWorldType)
+		mapLineColor = Color::Cyan;
+		/*switch (sess->mapHeader->envWorldType)
 		{
 		case 0:
 			mapLineColor = COLOR_BLUE;
@@ -818,7 +892,18 @@ void Gate::SetMapLineColor()
 		case 6:
 			mapLineColor = COLOR_MAGENTA;
 			break;
-		}
+		}*/
+	}
+	case ENEMY:
+	{
+		mapLineColor = Color::Magenta;
+		break;
+	}
+	case TIME_GLOBAL:
+	case TIME_ROOM:
+	{
+		mapLineColor = Color::Green;
+		break;
 	}
 	case PICKUP:
 		//todo

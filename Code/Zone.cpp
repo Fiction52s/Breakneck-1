@@ -545,6 +545,20 @@ void Zone::Update(float zoom, sf::Vector2f &topLeft, sf::Vector2f &playertest)
 	++frame;
 }
 
+int Zone::GetNumRemainingKillableEnemies()
+{
+	int numLeft = 0;
+	for (auto it = allEnemies.begin(); it != allEnemies.end(); ++it)
+	{
+		if ( !(*it)->spawned || !(*it)->dead)
+		{
+			++numLeft;
+		}
+	}
+
+	return numLeft;
+}
+
 float Zone::GetOpeningAlpha()
 {
 	return 1.f - frame / ((float)openFrames);

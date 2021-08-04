@@ -216,6 +216,15 @@ void GateInfo::UpdateLine()
 	{
 		color = Color(200, 200, 200);
 	}
+	else if (category == Gate::ENEMY)
+	{
+		color = Color::Magenta;
+	}
+	else if (category == Gate::TIME_GLOBAL
+		|| category == Gate::TIME_ROOM)
+	{
+		color == Color::Yellow;
+	}
 	else if (category == Gate::SECRET)
 	{
 		color = Color(255, 0, 0);
