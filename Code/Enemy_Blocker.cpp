@@ -28,7 +28,7 @@ BlockerChain::BlockerChain(ActorParams *ap)
 	}
 
 	sf::Image paletteImage;
-	paletteImage.loadFromFile("Resources/Enemies/blocker_palette.png");
+	paletteImage.loadFromFile("Resources/Enemies/blocker_palette_16x9.png");
 	
 	int skinIndex = 0;
 	
@@ -41,20 +41,40 @@ BlockerChain::BlockerChain(ActorParams *ap)
 	if (typeName == "blueblocker")
 	{
 		blockerType = Blocker::BLUE;
-		skinIndex = 0;
+		skinIndex = 1;
 	}
 	else if (typeName == "greenblocker")
 	{
 		blockerType = Blocker::GREEN;
-		skinIndex = 1;
+		skinIndex = 2;
 	}
 	else if (typeName == "yellowblocker")
 	{
 		blockerType = Blocker::YELLOW;
-		skinIndex = 2;
+		skinIndex = 3;
+	}
+	else if (typeName == "orangeblocker")
+	{
+		blockerType = Blocker::ORANGE;
+		skinIndex = 4;
+	}
+	else if (typeName == "redblocker")
+	{
+		blockerType = Blocker::RED;
+		skinIndex = 5;
+	}
+	else if (typeName == "magentablocker")
+	{
+		blockerType = Blocker::MAGENTA;
+		skinIndex = 6;
+	}
+	else if (typeName == "blackblocker")
+	{
+		blockerType = Blocker::BLACK;
+		skinIndex = 8;
 	}
 
-	for (int i = 0; i < 9; ++i)
+	for (int i = 0; i < 16; ++i)
 	{
 		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel(i, skinIndex));
 	}
@@ -73,7 +93,7 @@ BlockerChain::BlockerChain(ActorParams *ap)
 		paletteArray[i] = sf::Glsl::Vec4(Color::Magenta);
 	}*/
 
-	blockerShader.setUniformArray("u_palette", paletteArray, 9);
+	blockerShader.setUniformArray("u_palette", paletteArray, 16);
 
 	
 	

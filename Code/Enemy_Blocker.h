@@ -19,7 +19,7 @@ struct BlockerChain : EnemyChain
 	void UpdateStartPosition(int ind, V2d &pos);
 	void EnemyDraw(sf::RenderTarget *target);
 	sf::Shader blockerShader;
-	sf::Glsl::Vec4 paletteArray[9];
+	sf::Glsl::Vec4 paletteArray[16];
 	int blockerType;
 };
 

@@ -10509,12 +10509,198 @@ void Actor::UpdateWirePhysics()
 	}
 }
 
+void Actor::StopGrind()
+{
+	V2d op = position;
+
+	V2d grindNorm = grindEdge->Normal();
+
+	if (grindNorm.y < 0)
+	{
+		double extra = 0;
+		if (grindNorm.x > 0)
+		{
+			offsetX = b.rw;
+			extra = .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			offsetX = -b.rw;
+			extra = -.1;
+		}
+		else
+		{
+			offsetX = 0;
+		}
+
+		position.x += offsetX + extra;
+
+		position.y -= normalHeight + .1;
+
+		if (!CheckStandUp())
+		{
+			position = op;
+		}
+		else
+		{
+			if (grindSpeed > 0)
+			{
+				facingRight = true;
+			}
+			else
+			{
+				facingRight = false;
+			}
+
+			framesNotGrinding = 0;
+			RestoreAirOptions();
+			action = JUMP;
+			frame = 1;
+			grindEdge = NULL;
+			reversed = false;
+			offsetX = 0;
+		}
+
+	}
+	else if (grindNorm.y > 0)
+	{
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+
+		if (grindNorm.y > 0)
+			position.y += normalHeight + .1;
+
+		if (!CheckStandUp())
+		{
+			position = op;
+		}
+		else
+		{
+			if (!HasUpgrade(UPGRADE_POWER_GRAV) || (abs(grindNorm.x) >= wallThresh) || grindEdge->IsInvisibleWall())
+			{
+				if (grindSpeed < 0)
+				{
+					facingRight = true;
+				}
+				else
+				{
+					facingRight = false;
+				}
+
+
+				framesNotGrinding = 0;
+				if (reversed)
+				{
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * -grindSpeed;
+				}
+				else
+				{
+					velocity = normalize(grindEdge->v1 - grindEdge->v0) * grindSpeed;
+				}
+
+				SetAction(JUMP);
+				frame = 1;
+				ground = NULL;
+				grindEdge = NULL;
+				reversed = false;
+			}
+			else
+			{
+				if (grindNorm.x > 0)
+				{
+					offsetX = b.rw;
+				}
+				else if (grindNorm.x < 0)
+				{
+					offsetX = -b.rw;
+				}
+				else
+				{
+					offsetX = 0;
+				}
+
+				if (grindSpeed < 0)
+				{
+					facingRight = true;
+				}
+				else
+				{
+					facingRight = false;
+				}
+
+				RestoreAirOptions();
+
+				ground = grindEdge;
+				groundSpeed = -grindSpeed;
+				edgeQuantity = grindQuantity;
+				reversed = true;
+				grindEdge = NULL;
+
+				SetAction(LAND2);
+				framesNotGrinding = 0;
+				frame = 0;
+
+
+				double angle = GroundedAngle();
+
+				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+				ActivateSound(S_GRAVREVERSE);
+			}
+		}
+	}
+	else
+	{
+
+		if (grindNorm.x > 0)
+		{
+			position.x += b.rw + .1;
+		}
+		else if (grindNorm.x < 0)
+		{
+			position.x += -b.rw - .1;
+		}
+
+		if (CheckStandUp())
+		{
+			framesInAir = 0;
+			SetAction(JUMP);
+			frame = 1;
+			grindEdge = NULL;
+			ground = NULL;
+
+			//TODO: this might glitch grind areas? test it with the range of your get out of grind query
+
+		}
+		else
+		{
+			position = op;
+		}
+	}
+}
+
 void Actor::UpdateGrindPhysics(double movement)
 {
 	Edge *e0 = grindEdge->edge0;
 	Edge *e1 = grindEdge->edge1;
-	V2d e0n = e0->Normal();
-	V2d e1n = e1->Normal();
+
+	V2d e0n;
+	V2d e1n;
+
+	if (e0 != NULL)
+	{
+		e0n = e0->Normal();
+	}
+	
+	if (e1 != NULL)
+	{
+		e1n = e1->Normal();
+	}
 
 	double q = grindQuantity;
 	double hitBorderSpeed = GetDashSpeed() / 2;
@@ -10543,7 +10729,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				V2d v1 = grindEdge->v1;
 
 
-				if (e1->edgeType == Edge::CLOSED_GATE)
+				if ( e1 != NULL && e1->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *gg = (Gate*)e1->info;
 					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
@@ -10570,14 +10756,35 @@ void Actor::UpdateGrindPhysics(double movement)
 				}
 				grindEdge = e1;
 
-				if (GameSession::IsWall(grindEdge->Normal()) == -1)
+				if (grindEdge != NULL)
 				{
-					if (HasUpgrade( UPGRADE_POWER_GRAV ) || grindEdge->Normal().y < 0)
+					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						RestoreAirOptions();
+						if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						{
+							RestoreAirOptions();
+						}
 					}
+					q = 0;
 				}
-				q = 0;
+				else
+				{
+					framesInAir = 0;
+					SetAction(JUMP);
+					frame = 1;
+					ground = NULL;
+					offsetX = 0;
+					PhysicsResponse();
+					if (velocity.x > 0)
+					{
+						facingRight = true;
+					}
+					else if (velocity.x < 0)
+					{
+						facingRight = false;
+					}
+					return;
+				}
 			}
 			else
 			{
@@ -10608,7 +10815,7 @@ void Actor::UpdateGrindPhysics(double movement)
 				//CheckStandUp();
 				//if( )
 
-				if (e0->edgeType == Edge::CLOSED_GATE)
+				if ( e0 != NULL && e0->edgeType == Edge::CLOSED_GATE)
 				{
 					Gate *gg = (Gate*)e0->info;
 					if (gg->gState == Gate::SOFT || gg->gState == Gate::SOFTEN)
@@ -10633,14 +10840,36 @@ void Actor::UpdateGrindPhysics(double movement)
 					}
 				}
 				grindEdge = e0;
-				q = length(grindEdge->v1 - grindEdge->v0);
 
-				if (GameSession::IsWall(grindEdge->Normal()) == -1)
+				if (grindEdge != NULL)
 				{
-					if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+					q = length(grindEdge->v1 - grindEdge->v0);
+
+					if (GameSession::IsWall(grindEdge->Normal()) == -1)
 					{
-						RestoreAirOptions();
+						if (HasUpgrade(UPGRADE_POWER_GRAV) || grindEdge->Normal().y < 0)
+						{
+							RestoreAirOptions();
+						}
 					}
+				}
+				else
+				{
+					framesInAir = 0;
+					SetAction(JUMP);
+					frame = 1;
+					ground = NULL;
+					offsetX = 0;
+					PhysicsResponse();
+					if (velocity.x > 0)
+					{
+						facingRight = true;
+					}
+					else if (velocity.x < 0)
+					{
+						facingRight = false;
+					}
+					return;
 				}
 			}
 			else

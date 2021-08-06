@@ -591,6 +591,8 @@ void Session::RegisterW4Enemies()
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
 
+	AddWorldEnemy("orangeblocker", 4, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddWorldEnemy("tigernode", 4, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/tigernode_32x32.png"));
@@ -678,7 +680,8 @@ void Session::RegisterW5Enemies()
 
 	AddBasicAerialWorldEnemy("antitimeslowbooster", 5, CreateEnemy<AntiTimeSlowBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
-
+	AddWorldEnemy("redblocker", 5, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	AddWorldEnemy("hominglauncher", 5, CreateEnemy<AimLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	//AddWorldEnemy("hungryreturncomboer", 5, LoadParams<JugglerParams>, NULL, MakeParamsAerial<JugglerParams>,
@@ -733,6 +736,9 @@ void Session::RegisterW6Enemies()
 	AddBasicGroundWorldEnemy("coyotehelper", 6, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 
 	AddBasicAerialWorldEnemy("gorilla", 6, CreateEnemy<Gorilla>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
+
+	AddWorldEnemy("magentablocker", 6, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 
 	//AddWorldEnemy("glidespring", 2, CreateEnemy<Spring>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 	AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
@@ -830,6 +836,8 @@ void Session::RegisterW7Enemies()
 
 void Session::RegisterW8Enemies()
 {
+	AddWorldEnemy("blackblocker", 8, CreateEnemy<BlockerChain>, SetParamsType<BlockerParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, true, false, false, 3);
 	//AddBasicGroundWorldEnemy("blackgoal", 8, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 }
 

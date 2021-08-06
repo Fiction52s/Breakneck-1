@@ -1669,6 +1669,7 @@ struct Actor : QuadTreeCollider,
 	void ProcessHitGoal();
 	void UpdateWirePhysics();
 	void UpdateGrindPhysics(double movement);
+	void StopGrind();
 	void HandleBounceGrass();
 	void HandleBounceRail();
 	bool UpdateGrindRailPhysics(double movement);
