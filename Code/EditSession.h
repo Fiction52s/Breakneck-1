@@ -563,6 +563,7 @@ struct EditSession : GUIHandler, Session
 	void DeselectPoint(RailPtr rail,
 		TerrainPoint *point);
 	void SetInversePoly();
+	void SetInversePoly(Brush &orig, Brush &result );
 	void UpdateFullBounds();
 	void AddActorMove(Action *a);
 	PositionInfo ConvertPointToGround( sf::Vector2i point,
@@ -793,6 +794,11 @@ struct EditSession : GUIHandler, Session
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
 		Brush &result, int terrainLayer );
+	bool ExecuteTerrainInverseMultiSubtract(
+		std::list<PolyPtr> &brushPolys,
+		Brush &orig,
+		Brush &result, int terrainLayer
+	);
 	bool TryGateAdjustAction( GateAdjustOption option,
 		GateInfo *gi, sf::Vector2i &adjust,
 		CompoundAction *compound );

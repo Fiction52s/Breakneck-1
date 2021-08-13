@@ -2454,9 +2454,9 @@ bool Session::ReadGates(std::ifstream &is)
 	int poly0Index, vertexIndex0, poly1Index, vertexIndex1;
 	int shardWorld = -1;
 	int shardIndex = -1;
-	int numToOpen;
+	int numToOpen = -1;
 
-	int seconds = 0;
+	int seconds = -1;
 	for (int i = 0; i < numGates; ++i)
 	{
 		shardWorld = -1;

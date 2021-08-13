@@ -4099,7 +4099,7 @@ void Actor::CreateGateExplosion()
 	keyExplodeRingGroup->Reset();
 	keyExplodeRingGroup->Start();
 	sess->cam.SetRumble(3, 3, 20);//5
-	sess->Pause(4);//5
+	//sess->Pause(4);//5
 }
 
 void Actor::CreateKeyExplosion()

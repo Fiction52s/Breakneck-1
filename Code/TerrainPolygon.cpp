@@ -6387,6 +6387,12 @@ bool TerrainPolygon::Contains( PolyPtr poly )
 		}
 	}
 
+	int liRes = LinesIntersect(poly);
+	if (liRes > 0)
+	{
+		return false;
+	}
+
 	return true;
 }
 

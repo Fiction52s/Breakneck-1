@@ -170,11 +170,11 @@ void Crawler::DecideDirection()
 		{
 			if (playerPos.y < position.y)
 			{
-				facingRight = false;
+				facingRight = true;
 			}
 			else
 			{
-				facingRight = true;
+				facingRight = false;
 			}
 		}
 		else if (gn.x > 0)

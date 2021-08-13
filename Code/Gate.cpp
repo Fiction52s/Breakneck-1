@@ -378,7 +378,8 @@ void Gate::UpdateOrb()
 			return;
 		}
 
-		if (sess->currentZone->GetNumRemainingKillableEnemies() == 0 )
+		if ( sess->currentZone != NULL 
+			&& sess->currentZone->GetNumRemainingKillableEnemies() == 0 )
 		{
 			bool currZone = (sess->currentZone == zoneA ||
 				sess->currentZone == zoneB);
@@ -611,10 +612,18 @@ bool Gate::CanSoften()
 		}
 		case ENEMY:
 		{
-			if (currZone->GetNumRemainingKillableEnemies() == 0)
+			if (currZone != NULL)
 			{
-				okayToSoften = true;
+				if (currZone->GetNumRemainingKillableEnemies() == 0)
+				{
+					okayToSoften = true;
+				}
 			}
+			else
+			{
+				okayToSoften = false;
+			}
+			
 			break;
 		}
 		case SHARD:
