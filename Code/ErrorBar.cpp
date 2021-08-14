@@ -99,5 +99,7 @@ void ErrorBar::CreateErrorTable()
 
 	errorStringVec[ERR_CANT_DELETE_WHILE_MOVING] = "Can't delete while moving objects";
 
+	errorStringVec[ERR_CANT_TRANSFORM_ACTORS] = "Can't use transform tool when non-transformable objects are selected";
+
 	errorStringVec[ERR_CANT_MAKE_ZONE_STRUCTURE_WITHOUT_GOAL] = "A map with gates requires a goal of some kind to be placed";
 }

@@ -17,11 +17,14 @@ Parrot::Parrot(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
-	actionLength[NEUTRAL] = 1;
-	actionLength[FLY] = 2;
+	actionLength[NEUTRAL] = 10;
+	actionLength[FLY] = 10;
+	actionLength[ATTACK] = 9;
+	
 
-	animFactor[NEUTRAL] = 1;
-	animFactor[FLY] = 1;
+	animFactor[NEUTRAL] = 8;
+	animFactor[FLY] = 4;
+	animFactor[ATTACK] = 4;
 
 	attentionRadius = 800;
 	ignoreRadius = 2000;
@@ -30,13 +33,13 @@ Parrot::Parrot(ActorParams *ap)
 
 	maxSpeed = 15;
 
-	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = GetSizedTileset("Enemies/W5/parrot_256x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(36);
-	cutObject->SetSubRectBack(37);
+	cutObject->SetSubRectFront(20);
+	cutObject->SetSubRectBack(19);
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -106,7 +109,7 @@ void Parrot::ResetEnemy()
 
 void Parrot::FrameIncrement()
 {
-	if (action != NEUTRAL)
+	if (action != NEUTRAL && action != ATTACK )
 	{
 		++fireCounter;
 	}
@@ -125,6 +128,10 @@ void Parrot::ActionEnded()
 		case NEUTRAL:
 			break;
 		case FLY:
+			break;
+		case ATTACK:
+			action = FLY;
+			frame = 0;
 			break;
 		}
 	}
@@ -161,26 +168,53 @@ void Parrot::ProcessState()
 		velocity = V2d(0, 0);
 		break;
 	case FLY:
+	case ATTACK:
 		velocity += PlayerDir(V2d(), V2d( 0, -300 )) * accel;
 		CapVectorLength(velocity, maxSpeed);
 		break;
 	}
 
-	if (action != NEUTRAL)
+	if (action == FLY || action == ATTACK)
+	{
+		if (dir.x >= 0)
+		{
+			facingRight = true;
+		}
+		else
+		{
+			facingRight = false;
+		}
+	}
+
+	int throwFrame = 3;
+	if (action == ATTACK && frame == throwFrame * animFactor[ATTACK])
+	{
+		V2d shootOffset(70, 20);
+		if (!facingRight)
+		{
+			shootOffset.x = -shootOffset.x;
+		}
+		launchers[0]->position = GetPosition() + shootOffset;
+		launchers[0]->facingDir = PlayerDir();
+		launchers[0]->Fire();
+	}
+
+	if (action == FLY)
 	{
 		if (fireCounter == 30)
 		{
-			launchers[0]->position = GetPosition();
-			launchers[0]->facingDir = PlayerDir();
-			launchers[0]->Fire();
+			action = ATTACK;
+			frame = 0;
 			fireCounter = 0;
 		}
 	}
+
+	
 }
 
 void Parrot::UpdateEnemyPhysics()
 {
-	if (action == FLY )
+	if (action == FLY || action == ATTACK)
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
@@ -191,8 +225,20 @@ void Parrot::UpdateEnemyPhysics()
 
 void Parrot::UpdateSprite()
 {
-
-	ts->SetSubRect(sprite, 0, !facingRight);
+	int tile = 0;
+	switch (action)
+	{
+	case NEUTRAL:
+		tile = frame / animFactor[NEUTRAL];
+		break;
+	case FLY:
+		tile = frame / animFactor[FLY];
+		break;
+	case ATTACK:
+		tile = frame / animFactor[ATTACK] + 10;
+		break;
+	}
+	ts->SetSubRect(sprite, tile, facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

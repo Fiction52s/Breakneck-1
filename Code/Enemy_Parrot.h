@@ -10,6 +10,7 @@ struct Parrot : Enemy, LauncherEnemy
 	{
 		NEUTRAL,
 		FLY,
+		ATTACK,
 		A_Count
 	};
 

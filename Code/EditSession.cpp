@@ -13267,6 +13267,17 @@ void EditSession::EditModeTransform()
 	if (selectedBrush->IsEmpty())
 		return;
 
+	for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
+	{
+		if ((*it)->GetAsActor() != NULL )
+		{
+			ClearMostRecentError();
+			CreateError(ERR_CANT_TRANSFORM_ACTORS);
+			ShowMostRecentError();
+			return;
+		}
+	}
+
 	SetMode(TRANSFORM);
 
 	if (selectedBrush->IsSingleDecor())
@@ -13839,10 +13850,10 @@ void EditSession::TransformModeHandleEvent()
 						resultBrush.AddObject(temp);
 						attachList.push_back(temp);
 
-						TryAttachActorsToPoly(p, attachList, &resultBrush);
-						TryKeepGrass(p, attachList);
+						//TryAttachActorsToPoly(p, attachList, &resultBrush);
+						//TryKeepGrass(p, attachList);
 
-						TryKeepGates(gInfoList, attachList, &resultBrush);
+						//TryKeepGates(gInfoList, attachList, &resultBrush);
 					}
 					//origBrush.AddObject((*it));
 				}
