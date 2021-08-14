@@ -127,7 +127,7 @@ Tileset *BlockerChain::GetTileset(int variation)
 	case Blocker::GREY:
 		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
-	case Blocker::BLUE:												 
+	case Blocker::BLUE:											 
 		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;														 
 	case Blocker::GREEN:											 
@@ -399,6 +399,8 @@ bool Blocker::IsFastDying()
 
 	switch (bc->chainEnemyVariation)
 	{
+	case GREY:
+		return true;
 	case BLUE:
 		if (receivedHit->hType == HitboxInfo::BLUE)
 			return true;

@@ -569,6 +569,7 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	void SetLayer(int p_layer);
 	bool IsInternallyValid();
 	sf::IntRect GetAABB();
+	sf::IntRect GetAABBWithEnemies();
 	sf::FloatRect GetAngledAABB(float rotation);
 	V2d GetDCenter();
 	void MovePoint( int index, sf::Vector2i &delta);
@@ -665,6 +666,10 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int right;
 	int top;
 	int bottom;
+	int leftWithEnemies;
+	int rightWithEnemies;
+	int topWithEnemies;
+	int bottomWithEnemies;
 	std::list<sf::Vector2i> path;
 
 	const static int inverseExtraBoxDist = 500;

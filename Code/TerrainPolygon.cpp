@@ -3060,6 +3060,12 @@ void TerrainPolygon::Move(Vector2i move )
 	bottom += move.y;
 	top += move.y;
 
+	leftWithEnemies = move.x;
+	rightWithEnemies = move.x;
+	topWithEnemies = move.y;
+	bottomWithEnemies += move.y;
+
+
 	V2d dMove(move);
 	Vector2f fMove(move);
 
@@ -3193,6 +3199,11 @@ void TerrainPolygon::UpdateBounds()
 		bottom = max(curr->pos.y, bottom);
 	}
 
+	leftWithEnemies = left;
+	rightWithEnemies = right;
+	topWithEnemies = top;
+	bottomWithEnemies = bottom;
+
 	for( EnemyMap::iterator it = enemies.begin(); it != enemies.end(); ++it )
 	{
 		list<ActorPtr> &en = (*it).second;
@@ -3203,25 +3214,24 @@ void TerrainPolygon::UpdateBounds()
 			{
 				int x = bq[i].position.x;
 				int y = bq[i].position.y;
-				if( x < left )
+				if( x < leftWithEnemies)
 				{
-					left = x;
+					leftWithEnemies = x;
 				}
-				if( x > right )
+				if( x > rightWithEnemies)
 				{
-					right = x;
+					rightWithEnemies = x;
 				}
-				if( y < top )
+				if( y < topWithEnemies)
 				{
-					top = y;
+					topWithEnemies = y;
 				}
-				if( y > bottom )
+				if( y > bottomWithEnemies)
 				{
 					//cout << "adjusting botton from: " << bottom << " to " << y << endl;
-					bottom = y;
+					bottomWithEnemies = y;
 					
 				}
-					
 			}
 
 		}
@@ -5954,6 +5964,13 @@ int TerrainPolygon::IsRemovePointsOkayEnemies( EditSession *edit )
 sf::IntRect TerrainPolygon::GetAABB()
 {
 	return IntRect(left, top, right - left, bottom - top);
+}
+
+sf::IntRect TerrainPolygon::GetAABBWithEnemies()
+{
+	return IntRect(leftWithEnemies, topWithEnemies, 
+		rightWithEnemies - leftWithEnemies, 
+		bottomWithEnemies - topWithEnemies);
 }
 
 V2d TerrainPolygon::GetDCenter()

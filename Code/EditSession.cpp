@@ -8287,7 +8287,7 @@ bool EditSession::ExecuteTerrainCompletion()
 				//}
 
 
-				success = ExecuteTerrainInverseMultiSubtract(inProgress,
+				success = ExecuteTerrainInverseMultiAdd(inProgress,
 					orig, result, GetSpecialTerrainMode());
 
 				if (success)
@@ -9336,7 +9336,7 @@ bool EditSession::FixPathSlivers(ClipperLib::Path &p,
 	return true;
 }
 
-bool EditSession::ExecuteTerrainInverseMultiSubtract(
+bool EditSession::ExecuteTerrainInverseMultiAdd(
 	std::list<PolyPtr> &brushPolys,
 	Brush &orig,
 	Brush &resultBrush, int terrainLayer)
@@ -13820,17 +13820,31 @@ void EditSession::TransformModeHandleEvent()
 			DecorPtr tempDec;
 			RailPtr r;
 			RailPtr tempRail;
+			list<GateInfoPtr> gInfoList;
+
+			list<PolyPtr> attachList;
+			//does attachlist and ginfolist need to be cleared each object?
+
 			for (auto it = selectedBrush->objects.begin(); it != selectedBrush->objects.end(); ++it)
 			{
+				attachList.clear();
 				p = (*it)->GetAsTerrain();
 				if (p != NULL)
 				{
+					AddFullPolyToBrush(p, gInfoList, &origBrush);
+
 					temp = p->CompleteTransformation(transformTools);
 					if (temp != NULL)
 					{
 						resultBrush.AddObject(temp);
+						attachList.push_back(temp);
+
+						TryAttachActorsToPoly(p, attachList, &resultBrush);
+						TryKeepGrass(p, attachList);
+
+						TryKeepGates(gInfoList, attachList, &resultBrush);
 					}
-					origBrush.AddObject((*it));
+					//origBrush.AddObject((*it));
 				}
 
 				r = (*it)->GetAsRail();

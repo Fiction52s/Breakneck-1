@@ -794,7 +794,7 @@ struct EditSession : GUIHandler, Session
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
 		Brush &result, int terrainLayer );
-	bool ExecuteTerrainInverseMultiSubtract(
+	bool ExecuteTerrainInverseMultiAdd(
 		std::list<PolyPtr> &brushPolys,
 		Brush &orig,
 		Brush &result, int terrainLayer
