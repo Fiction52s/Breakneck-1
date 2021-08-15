@@ -390,6 +390,49 @@ ActorParams *GroundTriggerParams::Copy()
 	return copy;
 }
 
+TutorialObjectParams::TutorialObjectParams(ActorType *at, ifstream &is)
+	:ActorParams(at)
+{
+	LoadAerial(is);
+
+	is >> typeStr;
+}
+
+TutorialObjectParams::TutorialObjectParams(ActorType *at, int level)
+	:ActorParams(at)
+{
+	PlaceAerial(Vector2i(0, 0));
+	typeStr = "NONE";
+}
+
+void TutorialObjectParams::SetPanelInfo()
+{
+	Panel *p = type->panel;
+	p->textBoxes["name"]->text.setString("test");
+	p->textBoxes["tutorialtype"]->text.setString(typeStr);
+
+}
+
+void TutorialObjectParams::SetParams()
+{
+	Panel *p = type->panel;
+
+	string s = p->textBoxes["tutorialtype"]->text.getString().toAnsiString();
+
+	typeStr = s;
+}
+
+void TutorialObjectParams::WriteParamFile(ofstream &of)
+{
+	of << typeStr << endl;
+}
+
+ActorParams *TutorialObjectParams::Copy()
+{
+	TutorialObjectParams *copy = new TutorialObjectParams(*this);
+	return copy;
+}
+
 ShipPickupParams::ShipPickupParams(ActorType *at, int level)
 	:ActorParams(at), facingRight( true )
 {

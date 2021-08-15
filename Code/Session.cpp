@@ -265,7 +265,8 @@ void Session::RegisterGeneralEnemies()
 
 	AddExtraEnemy("shippickup", CreateEnemy<ShipPickup>, SetParamsType<ShipPickupParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, false, 1);
 
-	
+	AddExtraEnemy("tutorialobject", CreateEnemy<TutorialObject>, SetParamsType<TutorialObjectParams>,
+		Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false, 1);
 
 	//AddExtraEnemy("groundtrigger", NULL, SetParamsType<GroundTriggerParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, false, true, true, 1,
 	//	GetSizedTileset("Ship/shipleave_128x128.png" ));

@@ -78,6 +78,19 @@ struct GroundTriggerParams : public ActorParams
 	bool facingRight;
 };
 
+struct TutorialObjectParams : public ActorParams
+{
+	TutorialObjectParams(ActorType *at, int level);
+	TutorialObjectParams(ActorType *at,
+		std::ifstream &is);
+
+	ActorParams *Copy();
+	void SetParams();
+	void SetPanelInfo();
+	void WriteParamFile(std::ofstream &of);
+	std::string typeStr;
+};
+
 struct FlowerPodParams : public ActorParams
 {
 	FlowerPodParams(ActorType *at, int level);

@@ -20,18 +20,18 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	bulletSpeed = 5;
 
 	actionLength[NEUTRAL] = 1;
-	actionLength[PUFF] = 15;
-	actionLength[HOLDPUFF] = 15;
-	actionLength[UNPUFF] = 15;
-	actionLength[BLAST] = 4;
-	actionLength[RECOVER] = 17;
+	actionLength[PUFF] = 1;
+	actionLength[HOLDPUFF] = 1;
+	actionLength[UNPUFF] = 1;
+	actionLength[BLAST] = 1;
+	actionLength[RECOVER] = 1;
 
 	animFactor[NEUTRAL] = 2;
-	animFactor[PUFF] = 2;
-	animFactor[HOLDPUFF] = 2;
-	animFactor[UNPUFF] = 2;
-	animFactor[BLAST] = 15;
-	animFactor[RECOVER] = 5;
+	animFactor[PUFF] = 30;
+	animFactor[HOLDPUFF] = 30;
+	animFactor[UNPUFF] = 30;
+	animFactor[BLAST] = 60;
+	animFactor[RECOVER] = 17 * 5;
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this, BasicBullet::TURTLE, 24, 24, GetPosition(), V2d(1, 0), 2 * PI, 90, false);
@@ -39,13 +39,12 @@ Pufferfish::Pufferfish(ActorParams *ap)
 	launchers[0]->hitboxInfo->hType = HitboxInfo::ORANGE;
 	launchers[0]->Reset();
 
-	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
+	ts = GetSizedTileset("Enemies/W4/puffer_256x256.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
 	cutObject->SetTileset(ts);
-	cutObject->SetSubRectFront(36);
-	cutObject->SetSubRectBack(37);
+	
 	cutObject->SetScale(scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -76,6 +75,17 @@ void Pufferfish::HandleNoHealth()
 	{
 		Fire();
 	}
+
+	if (action == HOLDPUFF)
+	{
+		cutObject->SetSubRectFront(5);
+		cutObject->SetSubRectBack(4);
+	}
+	else
+	{
+		cutObject->SetSubRectFront(7);
+		cutObject->SetSubRectBack(6);
+	}
 	cutObject->SetFlipHoriz(facingRight);
 	//cutObject->SetCutRootPos(Vector2f(position));
 }
@@ -87,7 +97,7 @@ void Pufferfish::SetLevel(int lev)
 	switch (level)
 	{
 	case 1:
-		scale = 4.0;
+		scale = 1.0;
 		break;
 	case 2:
 		scale = 2.0;
@@ -256,9 +266,8 @@ void Pufferfish::UpdateEnemyPhysics()
 
 void Pufferfish::UpdateSprite()
 {
-	int tile  = 0;
 
-	switch (action)
+	/*switch (action)
 	{
 	case NEUTRAL:
 		sprite.setScale(scale, scale);
@@ -275,9 +284,32 @@ void Pufferfish::UpdateSprite()
 	case RECOVER:
 		sprite.setScale(scale * .8, scale * .8);
 		break;
+	}*/
+
+	int tile = 0;
+	switch (action)
+	{
+	case NEUTRAL:
+		tile = 0;
+		break;
+	case PUFF:
+		tile = 1;
+		break;
+	case HOLDPUFF:
+		tile = 2;
+		break;
+	case UNPUFF:
+		tile = 3;
+		break;
+	case BLAST:
+		tile = 2;
+		break;
+	case RECOVER:
+		tile = 3;
+		break;
 	}
 
-	ts->SetSubRect(sprite, 0, !facingRight);
+	ts->SetSubRect(sprite, tile, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

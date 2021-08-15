@@ -35,6 +35,7 @@
 
 #include "Enemy_PowerItem.h"
 #include "Enemy_LogItem.h"
+#include "Enemy_TutorialObject.h"
 
 
 #endif

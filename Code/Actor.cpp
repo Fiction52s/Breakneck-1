@@ -59,6 +59,7 @@
 #include "Enemy_MomentumBooster.h"
 #include "GameMode.h"
 #include "Enemy_RewindBooster.h"
+#include "Enemy_TutorialObject.h"
 
 #include "GGPO.h"
 
@@ -17294,7 +17295,16 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 	else if (queryType == Q_ACTIVEITEM)
 	{
 		Enemy *en = (Enemy*)qte;
-		if (en->type == EnemyType::EN_BOOSTER)
+		if (en->type == EnemyType::EN_TUTORIALOBJECT)
+		{
+			TutorialObject *tut = (TutorialObject*)qte;
+
+			if (tut->hitBody.Intersects(tut->currHitboxFrame, &hurtBody) && tut->IsTutorialShowable())
+			{
+				tut->ShowTutorial();
+			}
+		}
+		else if (en->type == EnemyType::EN_BOOSTER)
 		{
 			Booster *boost = (Booster*)qte;
 
