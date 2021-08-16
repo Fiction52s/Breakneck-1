@@ -4500,6 +4500,7 @@ void EditSession::TextBoxCallback( TextBox *tb, const std::string & e )
 			}
 		}
 	}
+	
 	else if (p == editDecorPanel)
 	{
 		SetDecorParams();

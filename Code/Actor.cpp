@@ -4377,6 +4377,7 @@ void Actor::Respawn( bool setStartPos )
 	currentSpeedBar = startMomentumUpgradeFactor * numStartMomentumUpgrades;
 
 	currBBoostCounter = 0;
+	currTutorialObject = NULL;
 	repeatingSound = NULL;
 	currBooster = NULL;
 	currFreeFlightBooster = NULL;
@@ -6451,6 +6452,14 @@ void Actor::UpdatePrePhysics()
 
 	if (!simulationMode)
 	{
+		if (currTutorialObject != NULL)
+		{
+			if (currTutorialObject->TryDeactivate())
+			{
+				currTutorialObject = NULL;
+			}
+		}
+
 		ProcessBooster();
 
 		ProcessTimeBooster();
@@ -17299,9 +17308,12 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			TutorialObject *tut = (TutorialObject*)qte;
 
-			if (tut->hitBody.Intersects(tut->currHitboxFrame, &hurtBody) && tut->IsTutorialShowable())
+			if (currTutorialObject == NULL)
 			{
-				tut->ShowTutorial();
+				if(tut->TryActivate() )
+				{
+					currTutorialObject = tut;
+				}
 			}
 		}
 		else if (en->type == EnemyType::EN_BOOSTER)
@@ -21256,6 +21268,7 @@ void MotionGhostEffect::SetFacing(bool p_facingRight, bool p_reversed)
 	facingRight = p_facingRight;
 	reversed = p_reversed;
 }
+
 
 void MotionGhostEffect::Draw(sf::RenderTarget *target)
 {

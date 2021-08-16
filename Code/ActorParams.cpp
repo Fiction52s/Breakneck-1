@@ -395,21 +395,22 @@ TutorialObjectParams::TutorialObjectParams(ActorType *at, ifstream &is)
 {
 	LoadAerial(is);
 
-	is >> typeStr;
+	is.get();
+	getline(is, tutStr);
 }
 
 TutorialObjectParams::TutorialObjectParams(ActorType *at, int level)
 	:ActorParams(at)
 {
 	PlaceAerial(Vector2i(0, 0));
-	typeStr = "NONE";
+	tutStr = "NONE";
 }
 
 void TutorialObjectParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
-	p->textBoxes["name"]->text.setString("test");
-	p->textBoxes["tutorialtype"]->text.setString(typeStr);
+	//p->textBoxes["name"]->text.setString("test");
+	p->textBoxes["tutstr"]->text.setString(tutStr);
 
 }
 
@@ -417,14 +418,14 @@ void TutorialObjectParams::SetParams()
 {
 	Panel *p = type->panel;
 
-	string s = p->textBoxes["tutorialtype"]->text.getString().toAnsiString();
+	string s = p->textBoxes["tutstr"]->text.getString().toAnsiString();
 
-	typeStr = s;
+	tutStr = s;
 }
 
 void TutorialObjectParams::WriteParamFile(ofstream &of)
 {
-	of << typeStr << endl;
+	of << tutStr << endl;
 }
 
 ActorParams *TutorialObjectParams::Copy()

@@ -53,6 +53,8 @@ struct HealthFly;
 struct TerrainRail;
 struct Nexus;
 
+struct TutorialObject;
+
 struct MotionGhostEffect
 {
 	MotionGhostEffect( int maxGhosts );
@@ -704,6 +706,7 @@ struct Actor : QuadTreeCollider,
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
 	int directionalInputFreezeFrames;
+	TutorialObject *currTutorialObject;
 	
 	
 	

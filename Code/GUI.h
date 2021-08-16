@@ -396,7 +396,6 @@ struct TextBox : PanelMember
 	bool focused;
 	sf::Vector2i size;
 	bool numbersOnly;
-	
 };
 
 struct Button : PanelMember

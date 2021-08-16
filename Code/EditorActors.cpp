@@ -403,6 +403,14 @@ Panel *ActorType::CreatePanel()
 		p->AddTextBox("triggertype", Vector2i(20, 150), 200, 20, "0");
 		p->AddButton("createrect", Vector2i(20, 350), Vector2f(100, 50), "Create Rect");
 	}
+	else if (name == "tutorialobject")
+	{
+		p = new Panel("tutorialobject_options", 700, 80, edit);
+		p->SetPosition(Vector2i(0, 300));
+		p->SetAutoSpacing(true, false, Vector2i(10, 0), Vector2i(20, 0));
+		p->SetColor(Color::Green);
+		TextBox *test = p->AddTextBox("tutstr", Vector2i(20, 20), 600, 200, "NONE");
+	}
 	else
 	{
 		p = CreateDefaultPanel();

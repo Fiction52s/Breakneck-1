@@ -3,6 +3,7 @@
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
+#include "TutorialSequence.h"
 
 
 using namespace std;
@@ -19,6 +20,13 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 
+void TutorialObject::UpdateParamsSettings()
+{
+	TutorialObjectParams *top = (TutorialObjectParams*)editParams;
+	
+	tutorialSeq->SetText(top->tutStr);
+}
+
 TutorialObject::TutorialObject(ActorParams *ap)
 	:Enemy(EnemyType::EN_TUTORIALOBJECT, ap)
 {
@@ -32,6 +40,11 @@ TutorialObject::TutorialObject(ActorParams *ap)
 	ts = GetSizedTileset("Enemies/booster_512x512.png");
 	ts_tutorial = GetTileset("Menu/tut_dash.png", 1220, 320 );
 
+	TutorialObjectParams *top = (TutorialObjectParams*)ap;
+	
+	tutorialSeq = new TutorialSequence;
+	tutorialSeq->Init();
+
 	sprite.setScale(scale, scale);
 	sprite.setColor(Color::Red);
 
@@ -39,8 +52,10 @@ TutorialObject::TutorialObject(ActorParams *ap)
 	tutorialSpr.setOrigin(tutorialSpr.getLocalBounds().width / 2, 
 		tutorialSpr.getLocalBounds().height / 2);
 
-	double radius = 90;
-	BasicCircleHitBodySetup(radius);
+	entranceRadius = 300;
+	exitRadius = 600;
+	//double radius = 500;
+	//BasicCircleHitBodySetup(radius);
 
 	actionLength[NEUTRAL] = 6;
 	actionLength[SHOW] = 8;
@@ -48,9 +63,16 @@ TutorialObject::TutorialObject(ActorParams *ap)
 	animFactor[NEUTRAL] = 3;
 	animFactor[SHOW] = 3;
 
+	UpdateParamsSettings();
+
 	ResetEnemy();
 
 	SetSpawnRect();
+}
+
+TutorialObject::~TutorialObject()
+{
+	delete tutorialSeq;
 }
 
 void TutorialObject::ResetEnemy()
@@ -58,7 +80,7 @@ void TutorialObject::ResetEnemy()
 	action = NEUTRAL;
 	frame = 0;
 
-	SetHitboxes(&hitBody, 0);
+	//SetHitboxes(&hitBody, 0);
 	UpdateHitboxes();
 
 	sprite.setTexture(*ts->texture);
@@ -96,7 +118,9 @@ bool TutorialObject::ShowTutorial()
 	{
 		action = SHOW;
 		frame = 0;
-		sess->cam.Ease(GetPositionF(), 2.0, 60);
+		//sess->cam.Ease(GetPositionF() + Vector2f( 0, -350 ), 2.0, 60);
+		tutorialSeq->Reset();
+		sess->SetActiveSequence(tutorialSeq);
 		return true;
 	}
 	return false;
@@ -107,6 +131,18 @@ bool TutorialObject::IsTutorialShowable()
 	return action == NEUTRAL;
 }
 
+bool TutorialObject::IsShowing()
+{
+	return action == SHOW;
+}
+
+void TutorialObject::HideTutorial()
+{
+	//sess->cam.EaseOutOfManual(60);
+	action = NEUTRAL;
+	frame = 0;
+	sess->SetActiveSequence(NULL);
+}
 
 
 void TutorialObject::ProcessState()
@@ -127,6 +163,28 @@ void TutorialObject::ProcessState()
 		}
 		}
 	}
+}
+
+bool TutorialObject::TryActivate()
+{
+	if (action == NEUTRAL && PlayerDist() < entranceRadius)
+	{
+		ShowTutorial();
+		return true;
+	}
+
+	return false;
+}
+
+bool TutorialObject::TryDeactivate()
+{
+	if (action == SHOW && PlayerDist() > exitRadius)
+	{
+		HideTutorial();
+		return true;
+	}
+
+	return false;
 }
 
 void TutorialObject::UpdateSprite()
@@ -160,7 +218,7 @@ void TutorialObject::EnemyDraw(sf::RenderTarget *target)
 
 	if (action == SHOW)
 	{
-		target->draw(tutorialSpr);
+	//	target->draw(tutorialSpr);
 	}
 }
 

@@ -4935,7 +4935,18 @@ void Session::SetupShardsCapturedField()
 
 void Session::SetActiveSequence(Sequence *activeSeq)
 {
+	if (activeSeq == NULL)
+	{
+		activeSequence->ReturnToGame();
+		activeSequence = NULL;
+		return;
+	}
+
+		
+
 	activeSequence = activeSeq;
+
+	
 
 	if (activeSequence == preLevelScene)
 	{

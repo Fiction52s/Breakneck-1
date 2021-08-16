@@ -3,6 +3,8 @@
 
 #include "Enemy.h"
 
+struct TutorialSequence;
+
 struct TutorialObject : Enemy
 {
 	enum Action
@@ -13,7 +15,7 @@ struct TutorialObject : Enemy
 	};
 
 	TutorialObject(ActorParams *ap);//sf::Vector2i &pos, int level);
-
+	~TutorialObject();
 	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void SetLevel(int lev);
@@ -23,11 +25,20 @@ struct TutorialObject : Enemy
 	void ResetEnemy();
 	bool ShowTutorial();
 	bool IsTutorialShowable();
+	bool IsShowing();
+	void HideTutorial();
 	void AddToWorldTrees();
+	bool TryActivate();
+	bool TryDeactivate();
+	void UpdateParamsSettings();
 	
+	
+	double entranceRadius;
+	double exitRadius;
 	Tileset *ts;
 	Tileset *ts_tutorial;
 	sf::Sprite tutorialSpr;
+	TutorialSequence *tutorialSeq;
 };
 
 #endif

@@ -88,7 +88,7 @@ struct TutorialObjectParams : public ActorParams
 	void SetParams();
 	void SetPanelInfo();
 	void WriteParamFile(std::ofstream &of);
-	std::string typeStr;
+	std::string tutStr;
 };
 
 struct FlowerPodParams : public ActorParams

@@ -236,6 +236,9 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		if (cursorIndex < text.getString().getSize())
 			cursorIndex += 1;
 		break;
+	case Keyboard::BackSlash:
+		c = '\\';
+		break;
 
 	}
 
@@ -347,7 +350,10 @@ void TextBox::Draw(sf::RenderTarget *target)
 		return;
 	sf::RectangleShape rs;
 	//rs.setSize( Vector2f( 300, characterHeight + verticalBorder) );
+
+
 	rs.setSize(Vector2f(size));
+
 	rs.setFillColor(Color::White);
 	rs.setPosition(pos.x, pos.y);
 

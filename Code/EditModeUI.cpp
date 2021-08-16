@@ -904,6 +904,10 @@ void EditModeUI::TextBoxCallback(TextBox *tb, const std::string & e)
 			edit->graph->SetSpacing(spacing);
 		}
 	}
+	else if (tb->panel == currEnemyPanel)
+	{
+		edit->UpdateCurrEnemyParamsFromPanel();
+	}
 }
 
 void EditModeUI::GridSelectorCallback(GridSelector *gs, const std::string & e)
