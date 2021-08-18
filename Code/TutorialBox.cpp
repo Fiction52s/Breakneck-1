@@ -49,7 +49,7 @@ bool TutorialBox::CalcButtonPos( std::string &startString,
 
 
 	
-	startString.replace(found, buttonStr.length(), "     ");
+	startString.replace(found, buttonStr.length(), "    ");
 
 
 	int numLines = 0;
@@ -93,7 +93,8 @@ void TutorialBox::SetText(const std::string &str)
 	string s = str;
 	std::replace(s.begin(), s.end(), '\\', '\n');
 
-	std::vector<string> inputStrings = { "DASH", "JUMP" };
+	std::vector<string> inputStrings = {  "JUMP", "DASH",
+	"ATTACK", "SHIELD", "LEFTWIRE", "RIGHTWIRE", "MAP", "PAUSE"};
 
 	float buttonSize = 48;
 	float rectBuffer = 30;
@@ -113,7 +114,7 @@ void TutorialBox::SetText(const std::string &str)
 
 		if (buttonTest)
 		{
-			testPos.y -= rectBuffer / 4;
+			//testPos.y -= rectBuffer / 4;
 
 			buttonInfos.push_back(ButtonInfo(i, testPos));
 		}
@@ -122,6 +123,11 @@ void TutorialBox::SetText(const std::string &str)
 			++i;
 		}
 	}
+
+	/*text.setString(s);
+	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
+		text.getLocalBounds().top + text.getLocalBounds().height / 2);*/
+
 	globalBounds = text.getGlobalBounds();
 
 	for (int i = 0; i < buttonInfos.size(); ++i)
@@ -129,19 +135,48 @@ void TutorialBox::SetText(const std::string &str)
 		SetRectCenter(buttonQuad + i * 4, buttonSize, buttonSize,
 			Vector2f(globalBounds.left, globalBounds.top) + buttonInfos[i].pos + Vector2f(buttonSize / 2, buttonSize / 2));
 
-		if (buttonInfos[i].buttonType == 0)
+		
+
+		ControllerType cType = sess->GetController(0).GetCType();
+		int bIndex = 0;
+		switch (cType)
 		{
-			SetRectColor(buttonQuad + i * 4, Color::Red);
-		}
-		else
+		case CTYPE_XBOX:
 		{
-			SetRectColor(buttonQuad + i * 4, Color::Green);
+			bIndex = sess->GetController(0).filter[buttonInfos[i].buttonType] - 1;
+			/*switch (b)
+			{
+			case ControllerSettings::JUMP:
+				bIndex = 0;
+				break;
+			case ControllerSettings::DASH:
+				bIndex = 2;
+				break;
+			case ControllerSettings::ATTACK:
+				bIndex = 4;
+				break;
+			}
+
+			bIndex = sess->GetController(0).filter[bIndex];*/
+
+			break;
 		}
+			
+		case CTYPE_GAMECUBE:
+			bIndex = sess->GetController(0).filter[buttonInfos[i].buttonType] - 1;
+			break;
+		}
+		//dash = x
+		//jump = a
+		//attack = rightshoulder
+		//shield = leftshoulder
+		//rightwire = r2
+		//leftwire = l2
+
+		SetRectSubRect(buttonQuad + i * 4, sess->mainMenu->GetButtonIconTile(0, bIndex));
 	}
 	
-	text.setString(s);
-	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
-		text.getLocalBounds().top + text.getLocalBounds().height / 2);
+	
 
 	SetRectCenter(quad, globalBounds.width + rectBuffer, globalBounds.height + rectBuffer,
 		Vector2f(globalBounds.left + globalBounds.width / 2,
@@ -168,5 +203,5 @@ void TutorialBox::Draw(sf::RenderTarget *target)
 {
 	target->draw(quad, 4, sf::Quads);
 	target->draw(text);
-	target->draw(buttonQuad, 4 * MAX_BUTTONS, sf::Quads);
+	target->draw(buttonQuad, 4 * MAX_BUTTONS, sf::Quads, sess->mainMenu->ts_buttonIcons->texture);
 }
