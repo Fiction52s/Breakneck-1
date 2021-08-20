@@ -6611,7 +6611,7 @@ bool Actor::TryClimbBoost( V2d &gNorm)
 {
 	if (DashButtonPressed())
 	{
-		double sp = steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
+		double sp = steepClimbBoostStart + GetDashSpeed();//steepClimbBoostStart;// 8;//13;//10;//5;//20;//5;//jumpStrength + 1;//28.0;
 		double fac = min(((double)framesSinceClimbBoost) / climbBoostLimit, 1.0);
 
 		double extra = 10.0;
@@ -11510,6 +11510,7 @@ void Actor::UpdatePhysics()
 			else if( transferRight )
 			{
 				TryUnlockOnTransfer(e1);
+				
 
 				Edge *next = ground->edge1;
 				V2d nextNorm = next->Normal();
@@ -12907,11 +12908,20 @@ void Actor::HandleTouchedGate()
 	Edge *edge = gateTouched;
 	Gate *g = (Gate*)gateTouched->info;
 
+	
 
 	V2d A = b.GetQuadVertex(0);//(b.globalPosition.x - b.rw, b.globalPosition.y - b.rh);
 	V2d B = b.GetQuadVertex(1);//(b.globalPosition.x + b.rw, b.globalPosition.y - b.rh);
 	V2d C = b.GetQuadVertex(2);// (b.globalPosition.x + b.rw, b.globalPosition.y + b.rh);
 	V2d D = b.GetQuadVertex(3);// (b.globalPosition.x - b.rw, b.globalPosition.y + b.rh);
+
+	//double dd = dot(b.GetTrueCenter() - edge->v0, edge->Along());
+	//if (dd < 0 || dd > edge->GetLength())
+	//{
+	//	//player center is not lined up with gate
+	//	gateTouched = NULL;
+	//	sess->LockGate(g);
+	//}
 
 	V2d nEdge = edge->Normal();//normalize( edge->v1 - edge->v0 );
 	double ang = atan2(nEdge.x, -nEdge.y);
@@ -12928,10 +12938,37 @@ void Actor::HandleTouchedGate()
 	//alongAmount = 1.0 - alongAmount;
 	V2d alongPos = edge->v1 + normalize(edge->v0 - edge->v1) * alongAmount * edge->GetLength();
 
-	double thresh = .01;
-	bool activate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
+	double thresh = .01;//1.0;//.01;
+
+	bool activate = false;
+	bool pointsAcrossGate = crossA > thresh && crossB > thresh && crossC > thresh && crossD > thresh;
 	//cout << "a: " << crossA << ", b: " << crossB << ", c: " << crossC << ", d: " << crossD << "\n";
 
+	if (pointsAcrossGate)
+	{
+		Zone *currZone = sess->currentZone;
+		Zone *newZone = NULL;
+
+		if (currZone == g->zoneA)
+		{
+			newZone = g->zoneB;
+		}
+		else
+		{
+			newZone = g->zoneA;
+		}
+
+		bool isInNewZone = newZone->ContainsPoint(position);
+		bool isInCurrZone = currZone->ContainsPoint(position);
+		if ( isInNewZone && !isInCurrZone )
+		{
+			activate = true;
+		}
+		else
+		{
+			activate = false;
+		}
+	}
 
 
 	g->SetLocked(true);
@@ -13044,7 +13081,7 @@ void Actor::HandleTouchedGate()
 		//it only enters this state if you already unlock it though
 		gateTouched = NULL;
 	}
-	else if (crossA < 0 && crossB < 0 && crossC < 0 && crossD < 0)
+	else if (crossA < -thresh && crossB < -thresh && crossC < -thresh && crossD < -thresh)
 	{
 		//cout << "went back" << endl;
 		gateTouched = NULL;
