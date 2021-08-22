@@ -3814,8 +3814,7 @@ void GameSession::RestartLevel()
 		ActivateZone(originalZone, true);
 		gateMarkers->SetToZone(currentZone);
 
-		AdventureHUD *ah = GetAdventureHUD();
-		if (ah != NULL) ah->keyMarker->Reset();
+		SetKeyMarkerToCurrentZone();
 	}
 	//	originalZone->active = true;
 	//

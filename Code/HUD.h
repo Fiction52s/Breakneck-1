@@ -177,14 +177,18 @@ struct AdventureHUD : HUD
 	sf::Vector2f flyCountTextHidePos;
 
 	KinMask *kinMask;
-	KeyMarker *keyMarker;
+	std::vector<KeyMarker*> keyMarkers;
+	float keyMarkerYOffset;
+
+	int numActiveKeyMarkers;
 	
 	PowerSelector *powerSelector;
 	
 
 	AdventureHUD();
 	~AdventureHUD();
-	
+	void UpdateKeyNumbers();
+	void UpdateEnemyNumbers();
 	void Hide(int frames = 0);
 	void Show(int frames = 0);
 	void Draw(sf::RenderTarget *target);

@@ -17,6 +17,7 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	positionCenter = false;
 	numShowZeroes = 0;
 	activeDigits = 1;
+	scale = 1.f;
 }
 
 ImageText::~ImageText()
@@ -74,23 +75,26 @@ void ImageText::UpdateSprite()
 
 	activeDigits = ind;
 
+	float width = ts->tileWidth * scale;
+	float height = ts->tileHeight * scale;
+
 	Vector2f currTopRight;
 	if (positionCenter)
 	{
-		currTopRight = Vector2f(center.x + (ts->tileWidth * activeDigits) / 2, center.y - ts->tileHeight / 2);
+		currTopRight = Vector2f(center.x + (width * activeDigits) / 2, center.y - height / 2);
 	}
 	else
 	{
 		currTopRight = topRight;
 	}
 	
-
+	
 	for (int i = 0; i < activeDigits; ++i)
 	{
-		vert[i * 4 + 0].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(-ts->tileWidth, 0);
-		vert[i * 4 + 1].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight;
-		vert[i * 4 + 2].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(0, ts->tileHeight);
-		vert[i * 4 + 3].position = Vector2f(-i * ts->tileWidth, 0) + currTopRight + Vector2f(-ts->tileWidth, ts->tileHeight);
+		vert[i * 4 + 0].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(-width, 0);
+		vert[i * 4 + 1].position = Vector2f(-i * width, 0) + currTopRight;
+		vert[i * 4 + 2].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(0, height);
+		vert[i * 4 + 3].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(-width, height);
 	}
 }
 
@@ -109,6 +113,11 @@ void ImageText::SetNumber( int num )
 {
 	assert( num >= 0 );
 	value = num;
+}
+
+void ImageText::SetScale(float s)
+{
+	scale = s;
 }
 
 TimerText::TimerText( Tileset *ts_tex )

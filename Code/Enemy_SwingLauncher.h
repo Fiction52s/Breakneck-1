@@ -30,7 +30,7 @@ struct SwingLauncher : Enemy
 	sf::Text debugSpeed;
 
 	V2d anchor;
-
+	bool CountsForEnemyGate() { return false; }
 	SwingLauncher(ActorParams *ap );
 	void ProcessState();
 	void AddToWorldTrees();

@@ -63,7 +63,7 @@ struct Shard : Enemy
 	~Shard();
 	void UpdateParamsSettings();
 	void Setup();
-
+	bool CountsForEnemyGate() { return false; }
 	ShapeEmitter *testEmitter;
 	MovingGeoGroup geoGroup;
 

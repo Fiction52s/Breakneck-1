@@ -825,6 +825,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupLogMenu();
 	void CleanupLogMenu();
 	virtual bool HasLog(int logIndex) { return false; }
+	void SetKeyMarkerToCurrentZone();
 };
 
 #endif

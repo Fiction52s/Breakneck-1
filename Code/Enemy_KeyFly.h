@@ -17,8 +17,15 @@ struct KeyFly : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void HandleNoHealth();
+	bool CountsForEnemyGate() { return false; }
+	//void ProcessHit();
 
 	Tileset *ts;
+	Tileset *ts_container;
+
+
+	sf::Sprite containerSpr;
 };
 
 #endif

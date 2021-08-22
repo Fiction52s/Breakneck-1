@@ -28,7 +28,7 @@ struct Teleporter : Enemy
 	int startFrame;
 	int recoverTileseChoice;
 	int recoverStartFrame;
-
+	bool CountsForEnemyGate() { return false; }
 	void AddToWorldTrees();
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();

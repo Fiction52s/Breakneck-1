@@ -21,6 +21,7 @@ struct MomentaBroadcast
 		DESTROYGOALS,
 	};
 
+
 	MomentaBroadcast( FlowerPod *pod, const std::string &btypeStr );
 	~MomentaBroadcast();
 	static BroadcastType GetType(const std::string &tStr);
@@ -69,7 +70,7 @@ struct FlowerPod : Enemy//, RayCastHandler
 	FlowerPod(ActorParams *ap);//const std::string &podType,
 		//Edge *ground, double quantity);
 	~FlowerPod();
-
+	bool CountsForEnemyGate() { return false; }
 	//MovingGeoGroup healRingGroup;
 	Ring *healRing;
 	Actor *healingPlayer;

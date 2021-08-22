@@ -18,6 +18,7 @@ struct ComboerTarget : Enemy
 		YELLOW,
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	ComboerTarget(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();

@@ -552,7 +552,7 @@ int Zone::GetNumRemainingKillableEnemies()
 	{
 		if ((*it)->CountsForEnemyGate())
 		{
-			if (!(*it)->spawned || !(*it)->dead)
+			if (!(*it)->spawned || ( !(*it)->dead && (*it)->numHealth > 0 ))
 			{
 				++numLeft;
 			}

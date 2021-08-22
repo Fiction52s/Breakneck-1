@@ -39,7 +39,7 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	bool clockwise;
 
 	GroundedGrindJuggler(ActorParams *ap);
-
+	bool CountsForEnemyGate() { return false; }
 	~GroundedGrindJuggler();
 	void UpdateParamsSettings();
 	void SetLevel(int lev);

@@ -13045,13 +13045,24 @@ void Actor::HandleTouchedGate()
 						oldZone->ReformAllGates(g);
 					}
 
-					if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
-					{
-						AdventureHUD *ah = (AdventureHUD*)sess->hud;
-						ah->keyMarker->Reset();
-					}
+					//if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+					//{
+					//	sess->SetKeyMarkerToCurrentZone();
+					//	//AdventureHUD *ah = (AdventureHUD*)sess->hud;
+					//	//ah->keyMarker->Reset();
+					//}
 				}
 				sess->ActivateZone(newZone);
+
+				if (!twoWay) //for secret gates
+				{
+					if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+					{
+						sess->SetKeyMarkerToCurrentZone();
+						//AdventureHUD *ah = (AdventureHUD*)sess->hud;
+						//ah->keyMarker->Reset();
+					}
+				}
 				
 				if (!twoWay)
 				{
@@ -18612,6 +18623,13 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	enemiesKilledThisFrame++;
 
 	TryThrowEnemySwordProjectileBasic();
+
+	if (sess->hud != NULL && sess->hud->hType == HUD::ADVENTURE)
+	{
+		AdventureHUD *ah = (AdventureHUD*)sess->hud;
+		ah->UpdateEnemyNumbers();
+		//ah->keyMarker->Reset();
+	}
 
 
 	if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))

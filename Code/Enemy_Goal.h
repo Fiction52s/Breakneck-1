@@ -19,7 +19,7 @@ struct Goal : Enemy
 	Goal(ActorParams *ap);
 	~Goal();
 	void SetMapGoalPos();
-
+	bool CountsForEnemyGate() { return false; }
 	void DrawMinimap(sf::RenderTarget *target);
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();

@@ -69,6 +69,32 @@ void GateMarker::Update( Camera *cam )
 	V2d center(currGate->edgeA->v0 + currGate->edgeA->v1);
 	center = center / 2.0;
 
+	if (currGate->category == Gate::ALLKEY || currGate->category == Gate::NUMBER_KEY)
+	{
+		Session *sess = Session::GetSession();
+		int numKeysHeld = sess->GetPlayer(0)->numKeysHeld;
+
+		int numRemaining = currGate->numToOpen - numKeysHeld;
+		if (numRemaining < 0)
+		{
+			numRemaining = 0;
+		}
+		numText.setString(to_string(numRemaining));
+		auto bounds = numText.getLocalBounds();
+		numText.setOrigin(bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2);
+	}
+	else if (currGate->category == Gate::ENEMY)
+	{
+		Session *sess = Session::GetSession();
+		int numRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+
+		numText.setString(to_string(numRemaining));
+		auto bounds = numText.getLocalBounds();
+		numText.setOrigin(bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2);
+	}
+
 	if (state == HIDE)
 	{
 		if (!vRect.contains(Vector2f(center)))
@@ -130,13 +156,27 @@ void GateMarker::Update( Camera *cam )
 	Session *sess = Session::GetSession();
 
 	int tile = 0;
-	if (sess->GetPlayer(0)->numKeysHeld >= currGate->numToOpen)
+	if (currGate->category == Gate::ALLKEY || currGate->category == Gate::NUMBER_KEY)
 	{
-		tile = 1;
+		if (sess->GetPlayer(0)->numKeysHeld >= currGate->numToOpen)
+		{
+			tile = 1;
+		}
+		else
+		{
+			tile = 2;
+		}
 	}
-	else
+	else if (currGate->category == Gate::ENEMY)
 	{
-		tile = 2;
+		if (sess->currentZone->GetNumRemainingKillableEnemies() == 0)
+		{
+			tile = 1;
+		}
+		else
+		{
+			tile = 2;
+		}
 	}
 	group->ts_gateMarker->SetQuadSubRect(quad, tile);
 
@@ -144,6 +184,9 @@ void GateMarker::Update( Camera *cam )
 	Color textColor = numText.getFillColor();
 	textColor.a = alpha;
 	numText.setFillColor(textColor);
+	Color outlineColor = numText.getOutlineColor();
+	outlineColor.a = alpha;
+	numText.setOutlineColor(outlineColor);
 
 	
 

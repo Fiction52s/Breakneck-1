@@ -15,6 +15,7 @@ struct BounceFloater : Enemy
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	BounceFloater(ActorParams *ap);
 	void ProcessState();
 	void ProcessHit();

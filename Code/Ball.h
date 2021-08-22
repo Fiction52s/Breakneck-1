@@ -16,6 +16,7 @@ struct Ball : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	Ball(ActorParams *ap);
 	~Ball();
 	void SetLevel(int lev);

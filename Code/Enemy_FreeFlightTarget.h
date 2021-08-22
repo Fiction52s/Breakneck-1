@@ -11,6 +11,7 @@ struct FreeFlightTarget : Enemy
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	FreeFlightTarget(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();

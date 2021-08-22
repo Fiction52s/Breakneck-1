@@ -25,6 +25,7 @@ struct HealthFly : Enemy, ChainableObject
 		Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	HealthFly( FlyChain *fc, int index, 
 		V2d &pos, int level,
 		

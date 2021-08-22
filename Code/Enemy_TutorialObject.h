@@ -31,13 +31,12 @@ struct TutorialObject : Enemy
 	bool TryActivate();
 	bool TryDeactivate();
 	void UpdateParamsSettings();
+	sf::FloatRect GetAABB();
 	
 	
 	double entranceRadius;
 	double exitRadius;
 	Tileset *ts;
-	Tileset *ts_tutorial;
-	sf::Sprite tutorialSpr;
 	TutorialSequence *tutorialSeq;
 };
 

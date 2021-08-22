@@ -16,6 +16,7 @@ struct AttractJuggler : Enemy
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	AttractJuggler(ActorParams *ap);
 	~AttractJuggler();
 	void UpdateParamsSettings();

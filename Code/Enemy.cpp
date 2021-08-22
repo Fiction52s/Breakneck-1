@@ -432,7 +432,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 4, 4);
 		break;
 	case EnemyType::EN_KEYFLY:
-		hitParams.Set(5, .8, (3 * 60) / 2, 2);
+		hitParams.Set(5, .8, (3 * 60) / 2, 2, false);
 		break;
 	case EnemyType::EN_GLIDETARGET:
 		hitParams.Set(5, .8, (3 * 60) / 2, 2);

@@ -15,7 +15,7 @@ struct DimensionExit : Enemy
 	};
 
 	Tileset *ts;
-
+	bool CountsForEnemyGate() { return false; }
 	DimensionExit(ActorParams *ap);
 	void ProcessState();
 	void HandleNoHealth();

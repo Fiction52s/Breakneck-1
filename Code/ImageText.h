@@ -20,9 +20,11 @@ struct ImageText
 	void Draw( sf::RenderTarget *target );
 	//in a timer this sets number of seconds
 	void SetNumber( int num );
+	void SetScale(float s);
 	
 	void ShowZeroes( int numZeroes );
 
+	float scale;
 	int numShowZeroes;
 	int maxDigits;
 	int activeDigits;

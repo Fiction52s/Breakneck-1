@@ -3563,8 +3563,7 @@ int Session::SetupZones()
 		//cout << "setting original zone to active: " << originalZone << endl;
 		ActivateZone(originalZone, true);
 
-		AdventureHUD *ah = GetAdventureHUD();
-		if( ah != NULL ) ah->keyMarker->Reset();
+		SetKeyMarkerToCurrentZone();
 		
 		
 	}
@@ -4343,7 +4342,7 @@ void Session::CollectKey()
 	if (hud != NULL && hud->hType == HUD::ADVENTURE)
 	{
 		AdventureHUD *ah = (AdventureHUD*)hud;
-		ah->keyMarker->UpdateKeyNumbers();
+		ah->UpdateKeyNumbers();
 	}
 }
 
@@ -7310,3 +7309,64 @@ void Session::RemoveBoss(Boss *b)
 	activeBosses.remove(b);
 }
 
+void Session::SetKeyMarkerToCurrentZone()
+{
+	AdventureHUD *ah = (AdventureHUD*)hud;
+	
+	ah->numActiveKeyMarkers = 0;
+
+	bool hasEnemyGate = false;
+	bool hasKeyGate = false;
+	Gate *g;
+	for (auto it = currentZone->gates.begin(); it != currentZone->gates.end(); ++it)
+	{
+		g = (Gate*)(*it)->info;
+
+		if (g->gState == Gate::REFORM || g->gState == Gate::LOCKFOREVER )
+		{
+			continue;
+		}
+
+		if (!hasKeyGate)
+		{
+			if (g->category == Gate::ALLKEY || g->category == Gate::NUMBER_KEY)
+			{
+				hasKeyGate = true;
+			}
+		}
+		if (!hasEnemyGate)
+		{
+			if (g->category == Gate::ENEMY)
+			{
+				hasEnemyGate = true;
+			}
+		}
+		
+	}
+
+	if (hasKeyGate)
+	{
+		ah->numActiveKeyMarkers++;
+		ah->keyMarkers[0]->SetMarkerType(KeyMarker::KEY);
+	}
+
+	if (hasEnemyGate)
+	{
+		ah->numActiveKeyMarkers++;
+		if (hasKeyGate)
+		{
+			ah->keyMarkers[1]->SetMarkerType(KeyMarker::ENEMY);
+		}
+		else
+		{
+			ah->keyMarkers[0]->SetMarkerType(KeyMarker::ENEMY);
+		}
+	}
+
+	for (int i = 0; i < ah->keyMarkers.size(); ++i)
+	{
+		ah->keyMarkers[i]->Reset();
+	}
+	
+	//ah->keyMarker->Reset();
+}

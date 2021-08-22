@@ -24,6 +24,7 @@ struct RewindBooster : Enemy
 	bool Boost();
 	bool IsBoostable();
 	void AddToWorldTrees();
+	bool CountsForEnemyGate() { return false; }
 
 	Tileset *ts;
 	Tileset *ts_refresh;

@@ -28,8 +28,6 @@ HUD::~HUD()
 RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 	:raceFight( rf )
 {
-	
-
 	owner = rf->owner;
 
 	Tileset *ts_scoreRed = owner->GetTileset("HUD/number_score_red_64x64.png", 64, 64);
@@ -149,7 +147,8 @@ AdventureHUD::AdventureHUD()
 {
 	hType = HUDType::ADVENTURE;
 
-	keyMarker = new KeyMarker;
+	keyMarkers.push_back(new KeyMarker);
+	keyMarkers.push_back(new KeyMarker);
 
 	powerSelector = new PowerSelector;
 
@@ -177,8 +176,10 @@ AdventureHUD::AdventureHUD()
 	kinMaskShowPos = kinMask->GetTopLeft();
 	kinMaskHidePos = Vector2f(-500, kinMaskShowPos.y);
 
-	keyMarkerShowPos = keyMarker->GetPosition();
+	keyMarkerShowPos = keyMarkers[0]->GetPosition();
 	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
+
+	keyMarkerYOffset = 80;
 	
 	/*momentumShowPos = momentumBar->GetTopLeft();
 	momentumHidePos = Vector2f(-200, momentumShowPos.y);*/
@@ -188,9 +189,32 @@ AdventureHUD::AdventureHUD()
 
 AdventureHUD::~AdventureHUD()
 {
-	delete keyMarker;
+	for (auto it = keyMarkers.begin(); it != keyMarkers.end(); ++it)
+	{
+		delete (*it);
+	}
 
 	delete powerSelector;
+}
+
+void AdventureHUD::UpdateKeyNumbers()
+{
+	if (keyMarkers[0]->markerType == KeyMarker::KEY)
+	{
+		keyMarkers[0]->UpdateKeyNumbers();
+	}
+}
+
+void AdventureHUD::UpdateEnemyNumbers()
+{
+	if (keyMarkers[0]->markerType == KeyMarker::ENEMY)
+	{
+		keyMarkers[0]->UpdateKeyNumbers();
+	}
+	else if (numActiveKeyMarkers == 2 && keyMarkers[1]->markerType == KeyMarker::ENEMY)
+	{
+		keyMarkers[1]->UpdateKeyNumbers();
+	}
 }
 
 void AdventureHUD::Hide(int frames)
@@ -200,7 +224,10 @@ void AdventureHUD::Hide(int frames)
 		state = HIDDEN;
 		frame = 0;
 		mini->SetCenter(miniHidePos);
-		keyMarker->SetPosition(keyMarkerHidePos);
+		for (int i = 0; i < keyMarkers.size(); ++i)
+		{
+			keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+		}
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
 		flyCountText.setPosition(flyCountTextHidePos);
@@ -221,7 +248,10 @@ void AdventureHUD::Show(int frames)
 		frame = 0;
 		mini->SetCenter(miniShowPos);
 		kinMask->SetTopLeft(kinMaskShowPos);
-		keyMarker->SetPosition(keyMarkerShowPos);
+		for (int i = 0; i < keyMarkers.size(); ++i)
+		{
+			keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
+		}
 		flyCountText.setPosition(flyCountTextShowPos);
 		powerSelector->SetPosition(powerSelectorShowPos);
 	}
@@ -257,7 +287,10 @@ void AdventureHUD::Update()
 			frame = 0;
 			mini->SetCenter(miniShowPos);
 			kinMask->SetTopLeft(kinMaskShowPos);
-			keyMarker->SetPosition(keyMarkerShowPos);
+			for (int i = 0; i < keyMarkers.size(); ++i)
+			{
+				keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
+			}
 			flyCountText.setPosition(flyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
 			//momentumBar->SetTopLeft(momentumShowPos);
@@ -271,7 +304,10 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskHidePos * (1.f - a) + a * kinMaskShowPos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerHidePos * (1.f - a) + a * keyMarkerShowPos;
-			keyMarker->SetPosition(neededCenter);
+			for (int i = 0; i < keyMarkers.size(); ++i)
+			{
+				keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
+			}
 			Vector2f countPos = flyCountTextHidePos * (1.f - a) + a * flyCountTextShowPos;
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
@@ -284,7 +320,10 @@ void AdventureHUD::Update()
 			state = HIDDEN;
 			frame = 0;
 			mini->SetCenter(miniHidePos);
-			keyMarker->SetPosition(keyMarkerHidePos);
+			for (int i = 0; i < keyMarkers.size(); ++i)
+			{
+				keyMarkers[i]->SetPosition(keyMarkerHidePos + Vector2f(0, i * keyMarkerYOffset));
+			}
 			kinMask->SetTopLeft(kinMaskHidePos);
 			flyCountText.setPosition(flyCountTextHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
@@ -298,7 +337,10 @@ void AdventureHUD::Update()
 			Vector2f topLeft = kinMaskShowPos * (1.f - a) + a * kinMaskHidePos;
 			kinMask->SetTopLeft(topLeft);
 			Vector2f neededCenter = keyMarkerShowPos * (1.f - a) + a * keyMarkerHidePos;
-			keyMarker->SetPosition(neededCenter);
+			for (int i = 0; i < keyMarkers.size(); ++i)
+			{
+				keyMarkers[i]->SetPosition(neededCenter + Vector2f(0, i * keyMarkerYOffset));
+			}
 			Vector2f countPos = flyCountTextShowPos * (1.f - a) + a * flyCountTextHidePos;
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
@@ -311,7 +353,11 @@ void AdventureHUD::Update()
 	}
 
 	mini->Update();
-	keyMarker->Update();
+
+	for (int i = 0; i < keyMarkers.size(); ++i)
+	{
+		keyMarkers[i]->Update();
+	}
 	/*if (state != HIDDEN)
 	{
 		
@@ -327,11 +373,17 @@ void AdventureHUD::Reset()
 	state = SHOWN;
 	frame = 0;
 
-	keyMarker->Reset();
+	for (int i = 0; i < keyMarkers.size(); ++i)
+	{
+		keyMarkers[i]->Reset();
+	}
 
 	mini->SetCenter(miniShowPos);
 	kinMask->SetTopLeft(kinMaskShowPos);
-	keyMarker->SetPosition(keyMarkerShowPos);
+	for (int i = 0; i < keyMarkers.size(); ++i)
+	{
+		keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
+	}
 	powerSelector->SetPosition(powerSelectorShowPos);
 	//sprite.setPosition(288, 140);
 	//momentumBar->SetTopLeft(momentumShowPos);
@@ -359,7 +411,10 @@ void AdventureHUD::Draw(RenderTarget *target)
 
 		powerSelector->Draw(target);
 
-		keyMarker->Draw(target);
+		for (int i = 0; i < numActiveKeyMarkers; ++i)
+		{
+			keyMarkers[i]->Draw(target);
+		}
 
 		//target->draw(flyCountText);
 		

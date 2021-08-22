@@ -37,8 +37,7 @@ TutorialObject::TutorialObject(ActorParams *ap)
 
 	SetCurrPosInfo(startPosInfo);
 
-	ts = GetSizedTileset("Enemies/booster_512x512.png");
-	ts_tutorial = GetTileset("Menu/tut_dash.png", 1220, 320 );
+	ts = GetSizedTileset("Enemies/tutorial_flower_256x256.png");
 
 	TutorialObjectParams *top = (TutorialObjectParams*)ap;
 	
@@ -46,11 +45,7 @@ TutorialObject::TutorialObject(ActorParams *ap)
 	tutorialSeq->Init();
 
 	sprite.setScale(scale, scale);
-	sprite.setColor(Color::Red);
-
-	tutorialSpr.setTexture(*ts_tutorial->texture);
-	tutorialSpr.setOrigin(tutorialSpr.getLocalBounds().width / 2, 
-		tutorialSpr.getLocalBounds().height / 2);
+	//sprite.setColor(Color::Red);
 
 	entranceRadius = 300;
 	exitRadius = 600;
@@ -67,12 +62,20 @@ TutorialObject::TutorialObject(ActorParams *ap)
 
 	ResetEnemy();
 
+	//spawnRect = Rect<double>(GetPosition(), V2d(entranceRadius * 2, entranceRadius * 2));
 	SetSpawnRect();
 }
 
 TutorialObject::~TutorialObject()
 {
 	delete tutorialSeq;
+}
+
+sf::FloatRect TutorialObject::GetAABB()
+{
+	Vector2f posF = GetPositionF();
+	return FloatRect(posF.x - entranceRadius, posF.y - entranceRadius, entranceRadius * 2,
+		entranceRadius * 2);
 }
 
 void TutorialObject::ResetEnemy()
@@ -194,11 +197,11 @@ void TutorialObject::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		tile = frame / animFactor[NEUTRAL];
+		tile = 0;//frame / animFactor[NEUTRAL];
 		ir = ts->GetSubRect(tile);
 		break;
 	case SHOW:
-		tile = 0;
+		tile = 1;
 		ir = ts->GetSubRect(tile);
 		break;
 	}
@@ -207,8 +210,6 @@ void TutorialObject::UpdateSprite()
 
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
-
-	tutorialSpr.setPosition(GetPositionF() + Vector2f( 0, - 400 ));
 }
 
 void TutorialObject::EnemyDraw(sf::RenderTarget *target)

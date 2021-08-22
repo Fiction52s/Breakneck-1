@@ -50,7 +50,7 @@ struct HungryComboer : Enemy, EnemyTracker
 	int maxWaitFrames;
 
 	
-
+	bool CountsForEnemyGate() { return false; }
 	HungryComboer(ActorParams *ap);
 	~HungryComboer();
 	void SetLevel(int lev);

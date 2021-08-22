@@ -46,7 +46,7 @@ struct RelativeComboer : Enemy
 	V2d basePos;
 
 	V2d offsetPos;
-
+	bool CountsForEnemyGate() { return false; }
 	RelativeComboer(
 		ActorParams *ap);/*GameSession *owner, bool hasMonitor,
 		sf::Vector2i pos,

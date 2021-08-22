@@ -15,7 +15,7 @@ struct Comboer : Enemy
 		S_RETURN,
 		S_Count
 	};
-
+	bool CountsForEnemyGate() { return false; }
 	void UpdateOnPlacement(ActorParams *ap);
 	void UpdatePath();
 	void SetLevel(int lev);

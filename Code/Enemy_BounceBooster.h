@@ -18,6 +18,7 @@ struct BounceBooster : Enemy
 	int strength;
 	bool upOnly;
 
+	bool CountsForEnemyGate() { return false; }
 	BounceBooster(ActorParams *ap);	
 	void ProcessState();
 	void SetLevel(int lev);

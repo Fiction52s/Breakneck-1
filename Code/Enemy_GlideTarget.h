@@ -11,6 +11,7 @@ struct GlideTarget : Enemy
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	GlideTarget(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();
@@ -21,6 +22,7 @@ struct GlideTarget : Enemy
 	void Collect();
 
 	Tileset *ts;
+	
 };
 
 #endif

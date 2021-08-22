@@ -13,6 +13,7 @@ struct GravityModifier : Enemy
 		Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	GravityModifier(ActorParams *ap);
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);

@@ -16,6 +16,7 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	bool CountsForEnemyGate() { return false; }
 	BounceJuggler(ActorParams *ap);
 	~BounceJuggler();
 	void SetLevel(int lev);

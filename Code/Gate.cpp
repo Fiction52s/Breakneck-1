@@ -319,7 +319,9 @@ void Gate::UpdateOrb()
 			return;
 		}
 
-		if (sess->GetPlayer(0)->numKeysHeld >= numToOpen)
+		int numKeysHeld = sess->GetPlayer(0)->numKeysHeld;
+
+		if ( numKeysHeld >= numToOpen)
 		{
 			bool currZone = (sess->currentZone == zoneA ||
 				sess->currentZone == zoneB);
@@ -366,6 +368,10 @@ void Gate::UpdateOrb()
 		}
 		else
 		{
+			numberText.setString(to_string(numToOpen - numKeysHeld));
+			auto &bounds = numberText.getLocalBounds();
+			numberText.setOrigin(bounds.left + bounds.width / 2,
+				bounds.top + bounds.height / 2);
 			ts_orb->SetQuadSubRect(orbQuad, 0);
 			SetRectColor(mapLine, mapLineColor);
 		}
@@ -378,6 +384,12 @@ void Gate::UpdateOrb()
 			return;
 		}
 
+		int numRemainingEnemies = sess->currentZone->GetNumRemainingKillableEnemies();
+
+		numberText.setString(to_string(numRemainingEnemies));
+		auto &bounds = numberText.getLocalBounds();
+		numberText.setOrigin(bounds.left + bounds.width / 2,
+			bounds.top + bounds.height / 2);
 		if ( sess->currentZone != NULL 
 			&& sess->currentZone->GetNumRemainingKillableEnemies() == 0 )
 		{
@@ -1122,6 +1134,11 @@ void Gate::Init()
 		ts_wiggle = sess->GetSizedTileset("Zone/gate_glitch_loop_64x64.png");
 		stateLength[SOFT] = 5 * 3;
 	}
+	else if( category == ENEMY )
+	{
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_2_64x64.png");
+		stateLength[SOFT] = 11 * 3;
+	}
 	else
 	{
 		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
@@ -1130,7 +1147,17 @@ void Gate::Init()
 
 	ts = sess->GetTileset("Zone/gates_32x64.png", 32, 64);
 	gateShader.setUniform("u_texture", *ts->texture);
-	gateShader.setUniform("tile", 1.f);
+
+	if (category == ENEMY)
+	{
+		gateShader.setUniform("tile", 11.f);
+	}
+	else
+	{
+		gateShader.setUniform("tile", 7.f);
+	}
+
+	
 	centerShader.setUniform("u_texture", *ts->texture);
 	 //5
 	V2d dv0( edgeA->v0.x, edgeA->v0.y );
@@ -1185,6 +1212,19 @@ void Gate::Init()
 	SetRectSubRect((nodes+4), ts_node->GetSubRect(0));
 
 	FloatRect ir;
+	
+
+	if (category == ALLKEY || category == NUMBER_KEY)
+	{
+		centerShader.setUniform("tile", 0.f);
+	}
+	else if (category == ENEMY)
+	{
+		centerShader.setUniform("tile", 4.f);
+	}
+
+	
+
 	ir.left = 0;
 	ir.top = 0;
 	ir.width = 1.0;
