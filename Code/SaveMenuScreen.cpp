@@ -101,9 +101,12 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu),
 	playerSkinShader( "player" ),
 	maskPlayerSkinShader( "player" ),
-	confirmPopup( p_mainMenu ), infoPopup( p_mainMenu )
+	confirmPopup( p_mainMenu ), infoPopup( p_mainMenu ),
+	decisionPopup( p_mainMenu )
 {
 	menuOffset = Vector2f(0, 0);
+
+	startWithTutorial = false;
 
 	//TilesetManager &tsMan = mainMenu->tilesetManager;
 	selectedSaveIndex = 0;
@@ -451,10 +454,19 @@ bool SaveMenuScreen::Update()
 			}
 			else if (menuCurrInput.A && !menuPrevInput.A)
 			{
-				action = SELECT;
-				frame = 0;
-				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
-				return true;
+				if (defaultFiles[selectedSaveIndex])
+				{
+					action = ASKTUTORIAL;
+					frame = 0;
+					decisionPopup.SetText("You are starting a new file.\nDo you want a tutorial?");
+				}
+				else
+				{
+					action = SELECT;
+					frame = 0;
+					mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+					return true;
+				}
 			}
 			else if (menuCurrInput.rightShoulder && !menuPrevInput.rightShoulder)
 			{
@@ -526,6 +538,29 @@ bool SaveMenuScreen::Update()
 		{
 			bool res = infoPopup.Update(menuCurrInput, menuPrevInput);
 			if (res)
+			{
+				action = WAIT;
+				frame = 0;
+			}
+		}
+		else if (action == ASKTUTORIAL)
+		{
+			int res = decisionPopup.Update(menuCurrInput, menuPrevInput);
+			if (res == SaveMenuDecisionPopup::OPTION_YES)
+			{
+				action = SELECT;
+				frame = 0;
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+				startWithTutorial = true;
+			}
+			else if (res == SaveMenuDecisionPopup::OPTION_NO)
+			{
+				action = SELECT;
+				frame = 0;
+				mainMenu->soundNodeList->ActivateSound(mainMenu->soundManager.GetSound("save_Select"));
+				startWithTutorial = false;
+			}
+			else if (res == SaveMenuDecisionPopup::OPTION_BACK)
 			{
 				action = WAIT;
 				frame = 0;
@@ -866,6 +901,10 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	{
 		confirmPopup.Draw(target);
 	}
+	else if (action == ASKTUTORIAL)
+	{
+		decisionPopup.Draw(target);
+	}
 	else if (action == INFOPOP)
 	{
 		infoPopup.Draw(target);
@@ -978,6 +1017,126 @@ void SaveMenuConfirmPopup::SetText(const std::string &str)
 	size = Vector2f(max(confirmText.getGlobalBounds().width + 40.f, 500.f ), 300);
 	SetPos(position);
 }
+
+SaveMenuDecisionPopup::SaveMenuDecisionPopup(MainMenu *mainMenu)
+{
+	size = Vector2f(500, 300);
+	
+	SetRectColor(popupBGQuad, Color::Black);
+
+	optionText.setFont(mainMenu->arial);
+	optionText.setCharacterSize(40);
+	optionText.setFillColor(Color::White);
+	optionText.setString("HELLO");
+
+	yesText.setFont(mainMenu->arial);
+	yesText.setCharacterSize(40);
+	yesText.setFillColor(Color::White);
+	yesText.setString("YES");
+	yesText.setOrigin(yesText.getLocalBounds().left + yesText.getLocalBounds().width / 2,
+		yesText.getLocalBounds().top + yesText.getLocalBounds().height / 2);
+
+	noText.setFont(mainMenu->arial);
+	noText.setCharacterSize(40);
+	noText.setFillColor(Color::White);
+	noText.setString("NO");
+	noText.setOrigin(noText.getLocalBounds().left + noText.getLocalBounds().width / 2,
+		noText.getLocalBounds().top + noText.getLocalBounds().height / 2);
+
+	SetOption(OPTION_YES);
+	//SetRectColor(yesSelectedQuad, Color::Red);
+	//SetRectColor(noSelectedQuad, Color::Blue);
+
+	//currentlySelectedOption = OPTION_YES;
+
+	SetPos(Vector2f(960, 540));
+}
+
+void SaveMenuDecisionPopup::SetPos(sf::Vector2f &pos)
+{
+	position = pos;
+	SetRectCenter(popupBGQuad, size.x, size.y, pos);
+
+	Vector2f yesOffset = Vector2f(-100, 50);
+	Vector2f noOffset = Vector2f(100, 50);
+
+	SetRectCenter(yesSelectedQuad, 128, 128, pos + yesOffset);
+	yesText.setPosition(pos + yesOffset);
+	SetRectCenter(noSelectedQuad, 128, 128, pos + Vector2f(100, 50));
+	noText.setPosition(pos + noOffset);
+
+
+	optionText.setPosition(Vector2f(pos.x, (pos.y - size.y / 2) + 10));
+}
+
+int SaveMenuDecisionPopup::Update(ControllerState &currInput,
+	ControllerState &prevInput)
+{
+	if (currInput.LLeft())
+	{
+		SetOption(OPTION_YES);
+	}
+	else if (currInput.LRight())
+	{
+		SetOption(OPTION_NO);
+	}
+
+
+	if (currInput.A && !prevInput.A)
+	{
+		return currentlySelectedOption;
+	}
+	else if (currInput.B && !prevInput.B)
+	{
+		return OPTION_BACK;
+	}
+
+	
+	
+
+	return OPTION_NOTHING;
+}
+
+void SaveMenuDecisionPopup::SetOption(int op)
+{
+	Color yesSelectedColor = Color( 29, 208, 9 );
+	Color noSelectedColor = Color::Red;
+	Color unselectedColor = Color(93, 93, 93);//Color::Green;
+	currentlySelectedOption = op;
+	if (op == OPTION_YES)
+	{
+		SetRectColor( yesSelectedQuad, yesSelectedColor);
+		SetRectColor( noSelectedQuad, unselectedColor);
+	}
+	else if (op == OPTION_NO)
+	{
+		SetRectColor(yesSelectedQuad, unselectedColor);
+		SetRectColor(noSelectedQuad, noSelectedColor);
+	}
+}
+
+void SaveMenuDecisionPopup::Draw(sf::RenderTarget *target)
+{
+	target->draw(popupBGQuad, 4, sf::Quads);
+	target->draw(optionText);
+
+	target->draw(yesSelectedQuad, 4, sf::Quads);
+	target->draw(noSelectedQuad, 4, sf::Quads);
+	target->draw(yesText);
+	target->draw(noText);
+	
+}
+
+void SaveMenuDecisionPopup::SetText(const std::string &str)
+{
+	optionText.setString(str);
+	optionText.setOrigin(optionText.getLocalBounds().left
+		+ optionText.getLocalBounds().width / 2, 0);
+	size = Vector2f(max(optionText.getGlobalBounds().width + 40.f, 500.f), 300);
+	SetPos(position);
+}
+
+
 
 SaveMenuInfoPopup::SaveMenuInfoPopup(MainMenu *mainMenu)
 {

@@ -17356,11 +17356,14 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 		{
 			TutorialObject *tut = (TutorialObject*)qte;
 
-			if (currTutorialObject == NULL)
+			if (tut->spawned)
 			{
-				if(tut->TryActivate() )
+				if (currTutorialObject == NULL)
 				{
-					currTutorialObject = tut;
+					if (tut->TryActivate())
+					{
+						currTutorialObject = tut;
+					}
 				}
 			}
 		}

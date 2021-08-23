@@ -54,6 +54,35 @@ struct SaveMenuConfirmPopup
 	void Draw(sf::RenderTarget *target);
 };
 
+struct SaveMenuDecisionPopup
+{
+	enum Options
+	{
+		OPTION_YES,
+		OPTION_NO,
+		OPTION_BACK,
+		OPTION_NOTHING,
+	};
+
+	int currentlySelectedOption;
+
+	SaveMenuDecisionPopup(MainMenu *mainMenu);
+	sf::Vector2f size;
+	sf::Vertex popupBGQuad[4];
+	sf::Text optionText;
+	sf::Vertex yesSelectedQuad[4];
+	sf::Vertex noSelectedQuad[4];
+	sf::Text yesText;
+	sf::Text noText;
+	sf::Vector2f position;
+	void SetOption(int op);
+	int Update(ControllerState &currInput,
+		ControllerState &prevInput);
+	void SetText(const std::string &str);
+	void SetPos(sf::Vector2f &pos);
+	void Draw(sf::RenderTarget *target);
+};
+
 struct SaveMenuInfoPopup
 {
 	sf::Vector2f size;
@@ -85,12 +114,15 @@ struct SaveMenuScreen : TilesetManager
 		CONFIRMCOPY,
 		INFOPOP,
 		COPY,
+		ASKTUTORIAL,
 		Count
 	};
 
 	int copiedIndex;
 	SaveMenuConfirmPopup confirmPopup;
 	SaveMenuInfoPopup infoPopup;
+	SaveMenuDecisionPopup decisionPopup;
+	bool startWithTutorial;
 	int currSkin;
 	bool defaultFiles[6];
 	Action action;

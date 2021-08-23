@@ -207,6 +207,9 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	case Keyboard::Period:
 		c = '.';
 		break;
+	case Keyboard::Comma:
+		c = ',';
+		break;
 	case Keyboard::BackSpace:
 	{
 		//text.setString( text.getString().substring( 0, cursorIndex ) + text.getString().substring( cursorIndex + 1 ) );
