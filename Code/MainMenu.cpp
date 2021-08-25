@@ -135,6 +135,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		break;
 	}
 	case TUTORIAL:
+	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession != NULL);
 		delete currTutorialSession;
@@ -181,6 +182,23 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 	switch (toMode)
 	{
+	case WORLDMAP:
+	{
+		if (fromMode == ADVENTURETUTORIAL)
+		{
+			assert(worldMap == NULL);
+			assert(saveMenu == NULL);
+			worldMap = new WorldMap(this);
+			saveMenu = new SaveMenuScreen(this);
+			saveMenu->Reset();
+			worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			worldMap->frame = 0;
+			worldMap->InitSelectors();
+			worldMap->SetDefaultSelections();
+			worldMap->UpdateWorldStats();
+			break;
+		}
+	}
 	case SAVEMENU:
 		assert(worldMap == NULL);
 		assert(saveMenu == NULL);
@@ -198,9 +216,10 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		currEditSession = new EditSession(this, "");
 		break;
 	case TUTORIAL:
+	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
-		currTutorialSession = new GameSession(NULL, "Resources/Maps/Beta2/tutorial1.brknk");
+		currTutorialSession = new GameSession(currSaveFile, "Resources/Maps/Beta3/tut1.brknk");
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
@@ -2214,6 +2233,27 @@ void MainMenu::HandleMenuMode()
 		LoadMode(TITLEMENU);
 		break;
 	}
+	case ADVENTURETUTORIAL:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		View oldView = window->getView();
+
+		int result = currTutorialSession->Run();
+
+		window->setView(oldView);
+
+		//worldMap->state = WorldMap::PLANET;
+		//worldMap->frame = 0;
+
+		LoadMode(WORLDMAP);
+
+		
+		break;
+	}
 	case SAVEMENU:
 	{
 		while (window->pollEvent(ev))
@@ -2983,6 +3023,10 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case TUTORIAL:
+	{
+		break;
+	}
+	case ADVENTURETUTORIAL:
 	{
 		break;
 	}

@@ -6,6 +6,7 @@
 #include "WorldMap.h"
 #include "Fader.h"
 #include "SkinMenu.h"
+#include "MusicPlayer.h"
 
 using namespace sf;
 using namespace std;
@@ -130,6 +131,7 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	actionLength[SELECT] = 12 * 3 + 24 * 2 + 20;
 	actionLength[TRANSITION] = 30;
 	actionLength[TRANSITIONMOVIE] = 30;
+	actionLength[TRANSITIONTUTORIAL] = 60;
 	actionLength[FADEIN] = 30;
 
 	ts_skinButton->SetSpriteTexture(skinButtonSpr);
@@ -353,15 +355,27 @@ bool SaveMenuScreen::Update()
 				{
 					assert(0);
 				}*/
+
+
+
 				defaultFiles[selectedSaveIndex] = false;
 				int savedSkin = files[selectedSaveIndex]->defaultSkinIndex;
 				files[selectedSaveIndex]->SetAsDefault();
 				files[selectedSaveIndex]->defaultSkinIndex = savedSkin;
 				files[selectedSaveIndex]->Save();
-				mainMenu->worldMap->InitSelectors();
-				mainMenu->worldMap->SetDefaultSelections();
 				//action = TRANSITIONMOVIE;
-				action = TRANSITION;
+				if (startWithTutorial)
+				{
+					mainMenu->musicPlayer->FadeOutCurrentMusic(30);
+					mainMenu->LoadMode(MainMenu::ADVENTURETUTORIAL);
+					action = TRANSITIONTUTORIAL;
+				}
+				else
+				{
+					action = TRANSITION;
+					mainMenu->worldMap->InitSelectors();
+					mainMenu->worldMap->SetDefaultSelections();
+				}
 			}
 			else
 			{
@@ -385,6 +399,21 @@ bool SaveMenuScreen::Update()
 
 			mainMenu->worldMap->InitSelectors();
 			return true;
+			break;
+		}
+		case TRANSITIONTUTORIAL:
+		{
+			//mainMenu->musicPlayer->FadeOutCurrentMusic(30);
+			//mainMenu->LoadMode(MainMenu::TUTORIAL);
+			return true;
+
+			//mainMenu->SetMode(MainMenu::Mode::TRANS_SAVE_TO_WORLDMAP);
+			//mainMenu->transAlpha = 255;
+			//mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
+			//mainMenu->worldMap->frame = 0;
+			//mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+
+			//mainMenu->worldMap->InitSelectors();
 			break;
 		}
 		case TRANSITIONMOVIE:
@@ -865,7 +894,8 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 
 	int endDraw = 12 * 3 + 24 * 2;
 	if (action == WAIT || (action == SELECT && frame < endDraw ) || action == FADEIN || action == SKINMENU 
-		|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP )
+		|| action == CONFIRMDELETE || action == CONFIRMDELETE2 || action == CONFIRMCOPY || action == COPY || action == INFOPOP 
+		|| action == ASKTUTORIAL || action == TRANSITIONTUTORIAL )
 	{
 		saveTexture->draw(kinJump, &playerSkinShader.pShader);
 	}

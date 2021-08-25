@@ -1599,12 +1599,20 @@ bool GameSession::Load()
 
 	matSet.clear();
 
-	ReadFile();
-
 	SetupShardMenu();
+
 	SetupLogMenu();
 
 	SetupPauseMenu();
+
+	SetupControlProfiles();
+
+	ReadFile();
+
+	
+	
+
+	
 
 	SetupPlayers();
 
@@ -1692,7 +1700,7 @@ bool GameSession::Load()
 	SetupBestReplay();
 	
 
-	SetupControlProfiles();
+	
 
 	
 
