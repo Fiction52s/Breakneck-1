@@ -196,8 +196,8 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			worldMap->InitSelectors();
 			worldMap->SetDefaultSelections();
 			worldMap->UpdateWorldStats();
-			break;
 		}
+		break;
 	}
 	case SAVEMENU:
 		assert(worldMap == NULL);
@@ -2230,7 +2230,16 @@ void MainMenu::HandleMenuMode()
 
 		window->setView(oldView);
 
-		LoadMode(TITLEMENU);
+		if (result == GameSession::GR_EXITGAME)
+		{
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			LoadMode(TITLEMENU);
+		}
+		
 		break;
 	}
 	case ADVENTURETUTORIAL:
@@ -2244,12 +2253,27 @@ void MainMenu::HandleMenuMode()
 
 		int result = currTutorialSession->Run();
 
+		if (result == GameSession::GR_EXITTITLE)
+		{
+			LoadMode(TITLEMENU);
+
+		}
+		else if (result == GameSession::GR_EXITGAME)
+		{
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			LoadMode(WORLDMAP);
+		}
+
 		window->setView(oldView);
 
 		//worldMap->state = WorldMap::PLANET;
 		//worldMap->frame = 0;
 
-		LoadMode(WORLDMAP);
+		
 
 		
 		break;

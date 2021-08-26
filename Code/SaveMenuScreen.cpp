@@ -488,6 +488,7 @@ bool SaveMenuScreen::Update()
 					action = ASKTUTORIAL;
 					frame = 0;
 					decisionPopup.SetText("You are starting a new file.\nDo you want a tutorial?");
+					decisionPopup.SetOption(SaveMenuDecisionPopup::OPTION_YES);
 				}
 				else
 				{
