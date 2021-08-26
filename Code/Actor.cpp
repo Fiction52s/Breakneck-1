@@ -14554,6 +14554,11 @@ void Actor::HandleWaterSituation(int wType,
 
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
+			//if i add glide attack, adjust this
+			if (action != WATERGLIDE)
+			{
+				SetAction(WATERGLIDE);
+			}
 			springStunFrames = 2;
 		}
 		break;
