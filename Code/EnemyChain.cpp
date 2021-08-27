@@ -31,6 +31,7 @@ void EnemyChain::UpdateFromParams(ActorParams *ap, int numFrames)
 		enemies[i]->UpdateFromParams(ap, numFrames);
 	}
 
+	//Enemy::UpdateFromParams(ap, numFrames);
 	UpdateSpriteFromParams(ap);
 }
 

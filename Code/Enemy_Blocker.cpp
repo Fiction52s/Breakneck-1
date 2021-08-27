@@ -326,6 +326,7 @@ void Blocker::ProcessHit()
 void Blocker::SetStartPosition(V2d &pos)
 {
 	startPosInfo.position = pos;
+	SetCurrPosInfo(startPosInfo);
 	Vector2f spriteSize(bc->ts->tileWidth * scale, bc->ts->tileHeight * scale);
 	SetRectCenter(bc->va + vaIndex * 4, spriteSize.x, spriteSize.y, Vector2f( pos ) );
 }

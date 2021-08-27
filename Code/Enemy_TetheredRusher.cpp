@@ -18,7 +18,7 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 1;
-	actionLength[RUSH] = 10;
+	actionLength[RUSH] = 14;
 	actionLength[RECOVER] = 40;
 
 	animFactor[NEUTRAL] = 1;
@@ -79,7 +79,7 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 
 	for (int i = 0; i < NUM_SEGMENTS; ++i)
 	{
-		ts->SetQuadSubRect(segmentQuads + i * 4, 1);
+		ts->SetQuadSubRect(segmentQuads + i * 4, 0);
 	}
 
 	attackMovement= ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
@@ -307,7 +307,31 @@ void TetheredRusher::UpdateSprite()
 	}
 	
 
-	ts->SetSubRect(sprite, 0, !facingRight);
+	int tile = 1;
+
+	switch (action)
+	{
+	case NEUTRAL:
+		tile = 1;
+		break;
+	case RUSH:
+		tile = frame / 2 + 2;
+		break;
+	case RECOVER:
+		if (frame < 15)
+		{
+			tile = 8;
+		}
+		else
+		{
+			tile = 9;
+		}
+		
+		break;
+	}
+
+
+	ts->SetSubRect(sprite, tile, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());

@@ -341,7 +341,7 @@ PauseMenu::PauseMenu( GameSession *p_game)
 
 	selectSprite.setTexture( *ts_select->texture );
 
-	bgSprite.setPosition( 50, 50 );
+	bgSprite.setPosition(0, 0);//50, 50 );
 	tabSprite.setPosition(0, 0);
 
 	//pauseSelectIndex = 0;

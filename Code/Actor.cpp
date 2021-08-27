@@ -14555,6 +14555,8 @@ void Actor::HandleWaterSituation(int wType,
 		if (sit == SPECIALT_ENTER || sit == SPECIALT_REMAIN)
 		{
 			//if i add glide attack, adjust this
+			//this makes sure that you don't
+			//get hit and then hitstun cancels the glide.
 			if (action != WATERGLIDE)
 			{
 				SetAction(WATERGLIDE);
