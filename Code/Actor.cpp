@@ -12960,13 +12960,38 @@ void Actor::HandleTouchedGate()
 
 		bool isInNewZone = newZone->ContainsPoint(position);
 		bool isInCurrZone = currZone->ContainsPoint(position);
-		if ( isInNewZone && !isInCurrZone )
+
+		bool newIsSubOfOld = false;
+		for (auto it = currZone->subZones.begin(); it != currZone->subZones.end(); ++it)
 		{
-			activate = true;
+			if ((*it) == newZone)
+			{
+				newIsSubOfOld = true;
+				break;
+			}
+		}
+
+		if (newIsSubOfOld)
+		{
+			if (isInNewZone)
+			{
+				activate = true;
+			}
+			else
+			{
+				activate = false;
+			}
 		}
 		else
 		{
-			activate = false;
+			if (isInNewZone && !isInCurrZone)
+			{
+				activate = true;
+			}
+			else
+			{
+				activate = false;
+			}
 		}
 	}
 

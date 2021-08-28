@@ -716,7 +716,17 @@ void Gate::CheckTimeLock()
 
 	if (gState == SOFT && !secretTimeGateIsOpened)
 	{
-		if (sess->totalGameFrames >= seconds * 60)
+		int totalTime = -1;
+		if (category == TIME_GLOBAL)
+		{
+			totalTime = sess->totalGameFrames;
+		}
+		else
+		{
+			totalTime = sess->currentZone->framesSinceActivation;
+		}
+
+		if (totalTime >= seconds * 60)
 		{
 			timeLocked = true;
 			Reform();
@@ -731,7 +741,7 @@ void Gate::CheckTimeLock()
 			{
 				if (gState == SOFT )
 				{
-					numberText.setString(to_string(seconds - sess->totalGameFrames / 60));
+					numberText.setString(to_string(seconds - totalTime / 60));
 					auto &bounds = numberText.getLocalBounds();
 					numberText.setOrigin(bounds.left + bounds.width / 2,
 						bounds.top + bounds.height / 2);
@@ -1136,7 +1146,22 @@ void Gate::Init()
 	}
 	else if( category == ENEMY )
 	{
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_5_64x64.png");
+		stateLength[SOFT] = 11 * 3;
+	}
+	else if (category == ALLKEY || category == NUMBER_KEY)
+	{
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_1_64x64.png");
+		stateLength[SOFT] = 11 * 3;
+	}
+	else if (category == SHARD)
+	{
 		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_2_64x64.png");
+		stateLength[SOFT] = 11 * 3;
+	}
+	else if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		ts_wiggle = sess->GetSizedTileset("Zone/gates_lightning_3_64x64.png");
 		stateLength[SOFT] = 11 * 3;
 	}
 	else
@@ -1148,9 +1173,21 @@ void Gate::Init()
 	ts = sess->GetTileset("Zone/gates_32x64.png", 32, 64);
 	gateShader.setUniform("u_texture", *ts->texture);
 
-	if (category == ENEMY)
+	if (category == ALLKEY || category == NUMBER_KEY)
+	{
+		gateShader.setUniform("tile", 7.f);
+	}
+	else if (category == ENEMY)
 	{
 		gateShader.setUniform("tile", 11.f);
+	}
+	else if (category == SHARD)
+	{
+		gateShader.setUniform("tile", 8.f);
+	}
+	else if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		gateShader.setUniform("tile", 9.f);
 	}
 	else
 	{
@@ -1218,9 +1255,21 @@ void Gate::Init()
 	{
 		centerShader.setUniform("tile", 0.f);
 	}
+	else if (category == SHARD)
+	{
+		centerShader.setUniform("tile", 1.f);
+	}
+	else if (category == TIME_GLOBAL || category == TIME_ROOM)
+	{
+		centerShader.setUniform("tile", 2.f);
+	}
 	else if (category == ENEMY)
 	{
 		centerShader.setUniform("tile", 4.f);
+	}
+	else
+	{
+		centerShader.setUniform("tile", 0.f);
 	}
 
 	

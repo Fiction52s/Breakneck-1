@@ -86,7 +86,7 @@ struct Zone
 	void Reset();
 	void ReformAllGates( Gate *ignoreGate = NULL);
 
-
+	int framesSinceActivation;
 	bool hasGoal;
 
 	sf::VertexArray *definedArea;

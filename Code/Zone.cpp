@@ -160,10 +160,13 @@ void Zone::Init()
 		}
 	}
 
-
-
 	for (list<Zone*>::iterator it = subZones.begin(); it != subZones.end(); ++it)
 	{
+		if ((*it)->parentZone != this)
+		{
+			continue;
+		}
+
 		pointVector.push_back(vector<Vector2i>());
 		vector<Vector2i> &currHoleVector = pointVector.back();
 
@@ -418,6 +421,7 @@ void Zone::Reset()
 	visited = false;
 	active = false;
 	action = UNEXPLORED;
+	framesSinceActivation = 0;
 	frame = 0;
 	reexplored = false;
 	if( zShader != NULL )
@@ -476,6 +480,11 @@ void Zone::Update()
 		case CLOSED:
 			break;
 		}
+	}
+
+	if (action == OPENING || action == OPEN)
+	{
+		++framesSinceActivation;
 	}
 	
 	++frame;

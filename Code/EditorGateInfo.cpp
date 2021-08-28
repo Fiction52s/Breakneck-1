@@ -13,13 +13,9 @@ double GateInfo::lineWidth = 10;//5;
 double GateInfo::selectWidth = 100;//5;
 
 GateInfo::GateInfo()
-	:ISelectable(ISelectable::GATE), thickLine(sf::Quads, 4)
+	:ISelectable(ISelectable::GATE)
 {
 	edit = EditSession::GetSession();
-	thickLine[0].color = Color(255, 0, 0, 255);
-	thickLine[1].color = Color(255, 0, 0, 255);
-	thickLine[2].color = Color(255, 0, 0, 255);
-	thickLine[3].color = Color(255, 0, 0, 255);
 	variation = 0;
 	category = 0;
 	numToOpen = 0;
@@ -208,7 +204,7 @@ void GateInfo::UpdateLine()
 	V2d leftv1 = dv1 - other * halfWidth;
 	V2d rightv1 = dv1 + other * halfWidth;
 
-	if (category == Gate::BLACK)
+	/*if (category == Gate::BLACK)
 	{
 		color = Color(200, 200, 200);
 	}
@@ -240,7 +236,9 @@ void GateInfo::UpdateLine()
 	thickLine[0].color = color;
 	thickLine[1].color = color;
 	thickLine[2].color = color;
-	thickLine[3].color = color;
+	thickLine[3].color = color;*/
+
+	SetRectSubRect(thickLine, edit->createGatesModeUI->ts_gateCategories->GetSubRect(category));
 
 	thickLine[0].position = Vector2f(leftv0.x, leftv0.y);
 	thickLine[1].position = Vector2f(leftv1.x, leftv1.y);
@@ -264,7 +262,7 @@ void GateInfo::Draw(sf::RenderTarget *target)
 	cs.setPosition(point1->pos.x, point1->pos.y);
 	target->draw(cs);
 
-	target->draw(thickLine);
+	target->draw(thickLine, 4, sf::Quads, edit->createGatesModeUI->ts_gateCategories->texture);
 
 	if (category == Gate::SHARD)
 	{
@@ -299,6 +297,7 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	{
 		color = Color::Cyan;//Color(100, 100, 100);
 	}
+	
 
 	SetRectColor(thickerLine, color);
 

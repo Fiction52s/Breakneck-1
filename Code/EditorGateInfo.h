@@ -25,7 +25,7 @@ struct GateInfo : ISelectable
 	int vertexIndex0;
 	PolyPtr poly1;
 	int vertexIndex1;
-	sf::VertexArray thickLine;
+	sf::Vertex thickLine[4];
 	EditSession *edit;
 	void UpdateLine();
 	void WriteFile(std::ofstream &of);

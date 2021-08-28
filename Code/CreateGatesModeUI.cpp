@@ -242,6 +242,11 @@ void CreateGatesModeUI::SetGateInfo(GateInfo *gi)
 	gi->category = gateCat;
 	gi->variation = currVariation[gateCat];
 
+	if (gateCat == Gate::SHARD)
+	{
+		gi->SetShard(currShardWorld, currShardLocalIndex);
+	}
+
 	gi->SetNumToOpen(numToOpen);
 	gi->SetTime(seconds);
 	gi->UpdateLine();
@@ -346,6 +351,11 @@ void CreateGatesModeUI::ChooseShardType(ImageChooseRect *icRect)
 
 	currShardWorld = world;
 	currShardLocalIndex = localIndex;
+
+	if (modifyGate != NULL)
+	{
+		modifyGate->SetShard(currShardWorld, currShardLocalIndex);
+	}
 
 
 	edit->RemoveActivePanel(shardGateTypePanel);
