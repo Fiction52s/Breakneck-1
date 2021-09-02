@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -209,7 +210,7 @@ void Actor::GRINDATTACK_Change()
 					double angle = GroundedAngle();
 
 					ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-					ActivateSound(S_GRAVREVERSE);
+					ActivateSound(PlayerSounds::S_GRAVREVERSE);
 				}
 			}
 		}

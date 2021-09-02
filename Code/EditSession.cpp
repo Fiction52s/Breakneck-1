@@ -54,6 +54,8 @@
 #include "LogMenu.h"
 #include "ShardMenu.h"
 
+#include "Config.h"
+
 //#define GGPO_ON
 
 using namespace std;
@@ -850,6 +852,13 @@ void EditSession::TestPlayerMode()
 			{
 				(*it)->ResetState();
 			}
+		}
+
+
+		if (originalZone != NULL)
+		{
+			SetKeyMarkerToCurrentZone();
+
 		}
 
 		if (preLevelScene != NULL)
@@ -4200,7 +4209,7 @@ int EditSession::EditRun()
 
 int EditSession::Run()
 {
-	soundNodeList->SetSoundVolume(10);
+	soundNodeList->SetSoundVolume(mainMenu->config->GetData().soundVolume);
 	int result;
 	while( true )
 	{

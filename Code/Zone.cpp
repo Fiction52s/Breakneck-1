@@ -389,6 +389,24 @@ void Zone::Init()
 	
 }
 
+bool Zone::HasEnemyGate()
+{
+	Gate *g;
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		g = (Gate*)((*it)->info);
+		if (g->gState != Gate::REFORM && g->gState != Gate::LOCKFOREVER)
+		{
+			if (g->category == Gate::ENEMY)
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 Vector2i &Zone::GetPolyPoint(int index)
 {
 	int currVecIndex = 0;

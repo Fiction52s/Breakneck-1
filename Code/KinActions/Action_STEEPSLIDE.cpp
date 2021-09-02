@@ -1,11 +1,12 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::STEEPSLIDE_Start()
 {
-	repeatingSound = ActivateSound(S_STEEPSLIDE, true);
+	repeatingSound = ActivateSound(PlayerSounds::S_STEEPSLIDE, true);
 
 	V2d norm = ground->Normal();
 

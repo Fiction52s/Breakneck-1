@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -7,7 +8,7 @@ void Actor::STANDATTACK4_Start()
 {
 	SetActionSuperLevel();
 
-	ActivateSound(S_STANDATTACK);
+	ActivateSound(PlayerSounds::S_STANDATTACK);
 	ResetAttackHit();
 
 	StartStandAttack();

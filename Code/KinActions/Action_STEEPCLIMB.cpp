@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -249,11 +250,11 @@ void Actor::STEEPCLIMB_UpdateSprite()
 
 	if (frame == 0 * 4 && slowCounter == 1)
 	{
-		ActivateSound(S_CLIMB_STEP1);
+		ActivateSound(PlayerSounds::S_CLIMB_STEP1);
 	}
 	else if (frame == 4 * 4 && slowCounter == 1)
 	{
-		ActivateSound(S_CLIMB_STEP1);
+		ActivateSound(PlayerSounds::S_CLIMB_STEP1);
 	}
 
 	if (scorpOn)

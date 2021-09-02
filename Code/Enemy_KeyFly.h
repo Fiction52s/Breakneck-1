@@ -19,10 +19,12 @@ struct KeyFly : Enemy
 	void ResetEnemy();
 	void HandleNoHealth();
 	bool CountsForEnemyGate() { return false; }
+	void PlayDeathSound();
 	//void ProcessHit();
 
 	Tileset *ts;
 	Tileset *ts_container;
+
 
 
 	sf::Sprite containerSpr;

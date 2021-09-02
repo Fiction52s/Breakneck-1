@@ -40,6 +40,7 @@ struct Zone
 	bool ContainsZone( Zone *z );
 	void Close();
 	void SetShadowColor( sf::Color c );
+	bool HasEnemyGate();
 	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
 		sf::Vector2i test );

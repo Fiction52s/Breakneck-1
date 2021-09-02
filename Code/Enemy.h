@@ -119,6 +119,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	CuttableObject *cutObject;
 	HitboxInfo *hitboxInfo;
 	sf::SoundBuffer *genericDeathSound;
+	sf::SoundBuffer *finalDeathSound;
+	sf::SoundBuffer *keyDeathSound;
 	CollisionBody hurtBody;
 	CollisionBody hitBody;
 	int numLaunchers;

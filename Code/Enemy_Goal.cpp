@@ -184,11 +184,12 @@ void Goal::HandleNoHealth()
 	SetHurtboxes(NULL, 0);
 	action = A_KINKILLING;
 
-	if (sess->IsSessTypeGame())
+	sess->goalPulse->StartPulse();
+	/*if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
 		game->goalPulse->StartPulse();
-	}
+	}*/
 }
 
 void Goal::UpdateSprite()

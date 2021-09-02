@@ -207,7 +207,7 @@ void AdventureHUD::UpdateKeyNumbers()
 
 void AdventureHUD::UpdateEnemyNumbers()
 {
-	if (keyMarkers[0]->markerType == KeyMarker::ENEMY)
+	if (numActiveKeyMarkers > 0 && keyMarkers[0]->markerType == KeyMarker::ENEMY)
 	{
 		keyMarkers[0]->UpdateKeyNumbers();
 	}
@@ -372,6 +372,8 @@ void AdventureHUD::Reset()
 	show = true;
 	state = SHOWN;
 	frame = 0;
+
+	numActiveKeyMarkers = 0;
 
 	for (int i = 0; i < keyMarkers.size(); ++i)
 	{

@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -242,7 +243,7 @@ void Actor::DASH_UpdateSprite()
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_dashStart,
 			pp + currNormal * 64.0 + along * xExtraStart, false, angle, 9, 3, fr);
-		ActivateSound(S_DASH_START);
+		ActivateSound(PlayerSounds::S_DASH_START);
 	}
 	else if (frame % 5 == 0)
 	{

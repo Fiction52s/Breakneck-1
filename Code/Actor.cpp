@@ -69,6 +69,8 @@
 #include "BossCommand.h"
 #include "PowerSelectorHUD.h"
 
+#include "SoundTypes.h"
+
 using namespace sf;
 using namespace std;
 
@@ -740,7 +742,7 @@ void Actor::SetToOriginalPos()
 	}
 }
 
-SoundNode * Actor::ActivateSound(SoundType st, bool loop )
+SoundNode * Actor::ActivateSound(int st, bool loop )
 {
 	if (simulationMode)
 	{
@@ -939,6 +941,23 @@ void Actor::SetupFXTilesets()
 	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
 		Color::Cyan, Color(0, 0, 100, 0), 60));
 	keyExplodeRingGroup->Init();
+
+	enemyExplodeRingGroup = new MovingGeoGroup;
+	enemyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Red, Color(255, 0, 0, 0), 60));
+	enemyExplodeRingGroup->Init();
+
+	enemiesClearedRingGroup = new MovingGeoGroup;
+	enemiesClearedRingGroup->AddGeo(new MovingRing(32, 20, 250, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Red, Color(255, 0, 0, 0),30));
+	enemiesClearedRingGroup->Init();
+
+
+	enoughKeysToExitRingGroup = new MovingGeoGroup;
+	enoughKeysToExitRingGroup->AddGeo(new MovingRing(32, 20, 250, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
+		Color::Cyan, Color(0, 0, 100, 0),
+		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
+	enoughKeysToExitRingGroup->Init();
 }
 
 void Actor::SetupSwordTilesets()
@@ -2882,6 +2901,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	bStartHasUpgradeField(Session::PLAYER_OPTION_BIT_COUNT),
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
+
+	soundBuffers.resize(PlayerSounds::S_Count);
+
 	maxFallSpeedWhileHitting = 4.0;
 	hitGrassHitInfo.damage = 60;//3 * 60;
 	hitGrassHitInfo.drainX = 1.0;
@@ -3133,43 +3155,55 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "time slow shader not loaded" );
 	}*/
-	int sizeofsoundbuf = sizeof(soundBuffers);
-	memset(soundBuffers, 0, sizeofsoundbuf );
+
+
+	//int sizeofsoundbuf = sizeof(soundBuffers);
+	//memset(soundBuffers, 0, sizeofsoundbuf );
 		
-	soundBuffers[S_HITCEILING] = GetSound("Kin/ceiling");
-	soundBuffers[S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
-	soundBuffers[S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
-	soundBuffers[S_DAIR] = GetSound("Kin/dair");
-	soundBuffers[S_DOUBLE] = GetSound("Kin/doublejump");
-	soundBuffers[S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
-	soundBuffers[S_FAIR1] = GetSound("Kin/fair");
-	soundBuffers[S_JUMP] = GetSound("Kin/jump");
-	soundBuffers[S_LAND] = GetSound("Kin/land");
-	soundBuffers[S_RUN_STEP1] = GetSound( "Kin/run_01a" );
-	soundBuffers[S_RUN_STEP2] = GetSound( "Kin/run_01b" );
-	soundBuffers[S_SLIDE] = GetSound("Kin/slide");
-	soundBuffers[S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
-	soundBuffers[S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
-	soundBuffers[S_STANDATTACK] = GetSound("Kin/stand");
-	soundBuffers[S_STEEPSLIDE] = GetSound("Kin/steep");
-	soundBuffers[S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
-	soundBuffers[S_UAIR] = GetSound("Kin/uair");
-	soundBuffers[S_WALLATTACK] = GetSound("Kin/wall_att");
-	soundBuffers[S_WALLJUMP] = GetSound("Kin/walljump");
-	soundBuffers[S_WALLSLIDE] = GetSound("Kin/wallslide");
+	soundBuffers[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
+	soundBuffers[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
+	soundBuffers[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+	soundBuffers[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
+	soundBuffers[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
+	soundBuffers[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
+	soundBuffers[PlayerSounds::S_FAIR1] = GetSound("Kin/fair");
+	soundBuffers[PlayerSounds::S_JUMP] = GetSound("Kin/jump");
+	soundBuffers[PlayerSounds::S_LAND] = GetSound("Kin/land");
+	soundBuffers[PlayerSounds::S_RUN_STEP1] = GetSound( "Kin/run_01a" );
+	soundBuffers[PlayerSounds::S_RUN_STEP2] = GetSound( "Kin/run_01b" );
+	soundBuffers[PlayerSounds::S_SLIDE] = GetSound("Kin/slide");
+	soundBuffers[PlayerSounds::S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
+	soundBuffers[PlayerSounds::S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
+	soundBuffers[PlayerSounds::S_STANDATTACK] = GetSound("Kin/stand");
+	soundBuffers[PlayerSounds::S_STEEPSLIDE] = GetSound("Kin/steep");
+	soundBuffers[PlayerSounds::S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
+	soundBuffers[PlayerSounds::S_UAIR] = GetSound("Kin/uair");
+	soundBuffers[PlayerSounds::S_WALLATTACK] = GetSound("Kin/wall_att");
+	soundBuffers[PlayerSounds::S_WALLJUMP] = GetSound("Kin/walljump");
+	soundBuffers[PlayerSounds::S_WALLSLIDE] = GetSound("Kin/wallslide");
 
-	soundBuffers[S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
-	soundBuffers[S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
-	soundBuffers[S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
-	soundBuffers[S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
+	soundBuffers[PlayerSounds::S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
+	soundBuffers[PlayerSounds::S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
+	soundBuffers[PlayerSounds::S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
+	soundBuffers[PlayerSounds::S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
 
+	soundBuffers[PlayerSounds::S_ENEMY_GATE_UNLOCKED] = GetSound("Test/Explode");
+	soundBuffers[PlayerSounds::S_OPEN_ENEMY_GATE] = GetSound("Zone/Gate_Open_03");
+
+	soundBuffers[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
+
+	soundBuffers[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
+	soundBuffers[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_03");
+	
+	soundBuffers[PlayerSounds::S_ENTER] = GetSound("Test/Crawler_Theme_01");
+	soundBuffers[PlayerSounds::S_HURT] = GetSound("Test/Thud");
+	//soundBuffers[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
 	/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
 	soundBuffers[S_HIT] = GetSound( "kin_hitspack_short" );
 	soundBuffers[S_HURT] = GetSound( "Kin/hit_1b" );
 	soundBuffers[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
 	soundBuffers[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
-		
 		
 	soundBuffers[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
 	soundBuffers[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
@@ -3728,6 +3762,9 @@ Actor::~Actor()
 	delete keyExplodePool;
 	delete keyExplodeUpdater;
 	delete keyExplodeRingGroup;
+	delete enemyExplodeRingGroup;
+	delete enemiesClearedRingGroup;
+	delete enoughKeysToExitRingGroup;
 	
 	delete sprite;
 
@@ -4093,17 +4130,45 @@ bool Actor::AirAttack()
 	return false;
 }
 
-void Actor::CreateGateExplosion()
+void Actor::CreateEnemiesClearedRing()
 {
 	Vector2f floatPos(position);
-	keyExplodeRingGroup->SetBase(floatPos);
-	keyExplodeRingGroup->Reset();
-	keyExplodeRingGroup->Start();
+	enemiesClearedRingGroup->SetBase(floatPos);
+	enemiesClearedRingGroup->Reset();
+	enemiesClearedRingGroup->Start();
+}
+
+void Actor::CreateEnoughKeysRing()
+{
+	Vector2f floatPos(position);
+	enoughKeysToExitRingGroup->SetBase(floatPos);
+	enoughKeysToExitRingGroup->Reset();
+	enoughKeysToExitRingGroup->Start();
+}
+
+void Actor::CreateGateExplosion( int gateCategory )
+{
+	Vector2f floatPos(position);
+
+	if (gateCategory == Gate::ALLKEY || gateCategory == Gate::NUMBER_KEY)
+	{
+		keyExplodeRingGroup->SetBase(floatPos);
+		keyExplodeRingGroup->Reset();
+		keyExplodeRingGroup->Start();
+	}
+	else if( gateCategory == Gate::ENEMY)
+	{
+		enemyExplodeRingGroup->SetBase(floatPos);
+		enemyExplodeRingGroup->Reset();
+		enemyExplodeRingGroup->Start();
+	}
+
 	sess->cam.SetRumble(3, 3, 20);//5
+	ActivateSound(PlayerSounds::S_OPEN_ENEMY_GATE);
 	//sess->Pause(4);//5
 }
 
-void Actor::CreateKeyExplosion()
+void Actor::CreateKeyExplosion( int gateCategory )
 {
 	//this gets rid of any keys that are still around, instead of
 	//letting the player collect them after going through the door
@@ -4131,7 +4196,7 @@ void Actor::CreateKeyExplosion()
 		posTransform.rotate(360.f / numKeysHeld);
 	}
 
-	CreateGateExplosion();
+	CreateGateExplosion( gateCategory );
 }
 
 void Actor::CreateAttackLightning()
@@ -4328,6 +4393,9 @@ void Actor::Respawn( bool setStartPos )
 	action = -1;
 	framesStanding = 0;
 	keyExplodeRingGroup->Reset();
+	enemyExplodeRingGroup->Reset();
+	enemiesClearedRingGroup->Reset();
+	enoughKeysToExitRingGroup->Reset();
 	numKeysHeld = 0;
 	//glideEmitter->Reset();
 	//owner->AddEmitter(glideEmitter, EffectLayer::BETWEEN_PLAYER_AND_ENEMIES);
@@ -4990,7 +5058,7 @@ void Actor::ReactToBeingHit()
 		invincibleFrames = receivedHit->invincibleFrames;
 	}
 
-	ActivateSound(S_HURT);
+	ActivateSound(PlayerSounds::S_HURT);
 
 	if (sess->GetGameMode() == MapHeader::T_FIGHT)
 	{
@@ -6002,7 +6070,7 @@ void Actor::UpdateBubbles()
 				}
 
 				bubbleCreated = true;
-				ActivateSound(S_TIMESLOW);
+				ActivateSound(PlayerSounds::S_TIMESLOW);
 			}
 		}
 
@@ -6380,11 +6448,11 @@ void Actor::UpdatePrePhysics()
 		}
 		if( action == INTRO && frame == 0 )
 		{
-			ActivateSound( S_ENTER );
+			ActivateSound(PlayerSounds::S_ENTER );
 		}
 		else if( action == EXIT && frame == 30 )
 		{
-			ActivateSound( S_EXIT );
+			ActivateSound(PlayerSounds::S_EXIT );
 		}
 		else if (action == EXITWAIT)
 		{
@@ -9464,7 +9532,7 @@ bool Actor::ExitGrind(bool jump)
 				double angle = GroundedAngle();
 
 				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-				ActivateSound(S_GRAVREVERSE);
+				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
 		}
 	}
@@ -10660,7 +10728,7 @@ void Actor::StopGrind()
 				double angle = GroundedAngle();
 
 				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-				ActivateSound(S_GRAVREVERSE);
+				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
 		}
 	}
@@ -11206,10 +11274,10 @@ void Actor::RestoreAirOptions()
 	hasDoubleJump = true;
 	hasAirDash = true;
 
-	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
-	{
+	//if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
+	//{
 		hasWallJumpRechargeDoubleJump = true;
-	}
+	//}
 	
 	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH))
 	{
@@ -12748,7 +12816,7 @@ void Actor::UpdatePhysics()
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
 
 				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-				ActivateSound( S_GRAVREVERSE );
+				ActivateSound(PlayerSounds::S_GRAVREVERSE );
 			}
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
@@ -13091,13 +13159,13 @@ void Actor::HandleTouchedGate()
 				
 				if (!twoWay)
 				{
-					CreateKeyExplosion();
+					CreateKeyExplosion(g->category);
 					sess->absorbDarkParticles->KillAllActive();
 					numKeysHeld = 0;
 				}
 				else
-				{ 
-					CreateGateExplosion();
+				{
+					CreateGateExplosion(g->category);
 				}
 
 				RestoreAirOptions();
@@ -13208,7 +13276,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 
 	ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
-	ActivateSound(S_GRAVREVERSE);
+	ActivateSound(PlayerSounds::S_GRAVREVERSE);
 }
 
 void Actor::HitOutOfCeilingGrindIntoAir()
@@ -13765,7 +13833,7 @@ void Actor::PhysicsResponse()
 					if (currInput.LLeft() || currInput.LRight())
 					{
 						SetAction(LAND2);
-						ActivateSound(S_LAND);
+						ActivateSound(PlayerSounds::S_LAND);
 						frame = 0;
 					}
 					else
@@ -13786,7 +13854,7 @@ void Actor::PhysicsResponse()
 						else
 						{
 							SetAction(LAND);
-							ActivateSound(S_LAND);
+							ActivateSound(PlayerSounds::S_LAND);
 						}
 						frame = 0;
 					}
@@ -13900,7 +13968,7 @@ void Actor::PhysicsResponse()
 							//cout << "setting to wallcling" << endl;
 							facingRight = true;
 							SetAction(WALLCLING);
-							repeatingSound = ActivateSound(S_WALLSLIDE, true);
+							repeatingSound = ActivateSound(PlayerSounds::S_WALLSLIDE, true);
 							frame = 0;
 						}
 					}
@@ -13911,7 +13979,7 @@ void Actor::PhysicsResponse()
 							//cout << "setting to wallcling" << endl;
 							facingRight = false;
 							SetAction(WALLCLING);
-							repeatingSound = ActivateSound(S_WALLSLIDE, true);
+							repeatingSound = ActivateSound(PlayerSounds::S_WALLSLIDE, true);
 							
 							frame = 0;
 						}
@@ -13982,7 +14050,7 @@ void Actor::PhysicsResponse()
 			//&& hitCeilingCounter == 0 )
 		{
 			//hitCeilingCounter = hitCeilingLockoutFrames;
-			ActivateSound(S_HITCEILING);
+			ActivateSound(PlayerSounds::S_HITCEILING);
 
 			if (action == SEQ_KINTHROWN)
 			{
@@ -15000,6 +15068,12 @@ void Actor::ProcessSpecialTerrain()
 	HandleSpecialTerrain();
 }
 
+void Actor::HitGoal()
+{
+	hitGoal = true;
+	ActivateSound(PlayerSounds::S_DESTROY_GOAL);
+}
+
 void Actor::ProcessHitGoal()
 {
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
@@ -15009,7 +15083,7 @@ void Actor::ProcessHitGoal()
 		SetAction(GOALKILL);
 		SetKinMode(K_NORMAL);
 		hitGoal = false;
-
+		
 		
 
 		WriteBestTimeRecordings();
@@ -17865,6 +17939,7 @@ CollisionBody * Actor::GetBubbleHitbox(int index)
 void Actor::MiniDraw(sf::RenderTarget *target)
 {
 	keyExplodeRingGroup->Draw(target);
+	enemyExplodeRingGroup->Draw(target);
 }
 
 void Actor::DrawPlayerSprite( sf::RenderTarget *target )
@@ -18240,6 +18315,9 @@ void Actor::Draw( sf::RenderTarget *target )
 	sprintSparkPool->Draw(target);
 
 	keyExplodeRingGroup->Draw(target);
+	enemyExplodeRingGroup->Draw(target);
+	enemiesClearedRingGroup->Draw(target);
+	enoughKeysToExitRingGroup->Draw(target);
 	keyExplodePool->Draw(target);
 }
 
@@ -18535,6 +18613,11 @@ void Actor::UpdateSprite()
 		//keyExplodeRingGroup->Reset();
 	}
 
+	enemyExplodeRingGroup->Update();
+
+	enemiesClearedRingGroup->Update();
+	enoughKeysToExitRingGroup->Update();
+
 	UpdateSmallLightning();
 
 	boosterRingSprite.setPosition(Vector2f(spriteCenter));
@@ -18686,7 +18769,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 void Actor::ConfirmEnemyNoKill( Enemy *e )
 {
 	//cout << "hit sound" << endl;
-	ActivateSound( S_HIT );
+	ActivateSound(PlayerSounds::S_HIT );
 }
 
 void Actor::ConfirmHit( Enemy *e )
@@ -19953,11 +20036,11 @@ void Actor::ExecuteDoubleJump()
 
 	if( action == DOUBLE)
 	{
-		ActivateSound(S_DOUBLE);
+		ActivateSound(PlayerSounds::S_DOUBLE);
 	}
 	else if( action == BACKWARDSDOUBLE)
 	{
-		ActivateSound(S_DOUBLEBACK);
+		ActivateSound(PlayerSounds::S_DOUBLEBACK);
 	}
 }
 
@@ -19986,7 +20069,7 @@ void Actor::ExecuteWallJump()
 	velocity.y = min(velocity.y - movingVertStrength, -strengthY);
 
 
-	ActivateSound(S_WALLJUMP);
+	ActivateSound(PlayerSounds::S_WALLJUMP);
 
 	V2d fxPos = position;
 	if (facingRight)

@@ -72,6 +72,11 @@ struct Camera
 	int oldFramesGrinding;
 	int oldFramesNotGrinding;
 
+	float maxOffsetLeft;
+	float maxOffsetRight;
+	float maxOffsetTop;
+	float maxOffsetBottom;
+
 	int easeOutCount;
 	int easeOutFrame;
 	bool easingOut;

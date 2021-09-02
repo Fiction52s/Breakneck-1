@@ -1,11 +1,12 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::SLIDE_Start()
 {
-	repeatingSound = ActivateSound(S_SLIDE, true);
+	repeatingSound = ActivateSound(PlayerSounds::S_SLIDE, true);
 }
 
 void Actor::SLIDE_End()

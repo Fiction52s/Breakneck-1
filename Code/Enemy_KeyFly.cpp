@@ -33,6 +33,8 @@ KeyFly::KeyFly(ActorParams *ap)
 	actionLength[S_NEUTRAL] = 16;
 	animFactor[S_NEUTRAL] = 3;
 
+	
+
 	//cutObject->Setup(ts, 0, 1, scale, 0, false, false);
 
 	ResetEnemy();
@@ -117,6 +119,11 @@ void KeyFly::ProcessState()
 void KeyFly::HandleNoHealth()
 {
 	sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_container, GetPosition(), false, 0, 10, 3, true);
+}
+
+void KeyFly::PlayDeathSound()
+{
+	sess->ActivateSound(keyDeathSound);
 }
 
 void KeyFly::UpdateSprite()

@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include <iostream>
 #include "Session.h"
+#include "SoundTypes.h"
 
 using namespace std;
 using namespace sf;
@@ -35,7 +36,7 @@ void Actor::BOUNCEGROUND_Change()
 	bool framesDone = frame == GetActionLength(BOUNCEGROUND) - 1;
 	if (boostBounce || (framesDone && bn.y >= 0))
 	{
-		ActivateSound(S_BOUNCEJUMP);
+		ActivateSound(PlayerSounds::S_BOUNCEJUMP);
 		framesInAir = 0;
 		SetAction(BOUNCEAIR);
 		oldBounceEdge = bounceEdge;

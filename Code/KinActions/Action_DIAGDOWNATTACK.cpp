@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -6,7 +7,7 @@ using namespace std;
 void Actor::DIAGDOWNATTACK_Start()
 {
 	SetActionSuperLevel();
-	ActivateSound(S_DIAGDOWNATTACK);
+	ActivateSound(PlayerSounds::S_DIAGDOWNATTACK);
 	ResetAttackHit();
 }
 

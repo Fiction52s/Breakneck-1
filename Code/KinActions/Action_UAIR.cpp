@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -12,7 +13,7 @@ void Actor::UAIR_Start()
 	}
 	else
 	{
-		ActivateSound(S_UAIR);
+		ActivateSound(PlayerSounds::S_UAIR);
 		ResetAttackHit();
 	}
 }

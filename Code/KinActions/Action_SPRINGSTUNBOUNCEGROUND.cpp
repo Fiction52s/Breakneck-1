@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include <iostream>
 #include "Session.h"
+#include "SoundTypes.h"
 
 using namespace std;
 using namespace sf;
@@ -36,7 +37,7 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Change()
 	if (boostBounce )
 	{
 		springStunFrames = aimLauncherStunFrames;
-		ActivateSound(S_BOUNCEJUMP);
+		ActivateSound(PlayerSounds::S_BOUNCEJUMP);
 		framesInAir = 0;
 		SetAction(SPRINGSTUNAIM);
 		oldBounceEdge = bounceEdge;

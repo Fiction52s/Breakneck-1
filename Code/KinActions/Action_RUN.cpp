@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -103,13 +104,13 @@ void Actor::RUN_UpdateSprite()
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
 			pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr);
-		ActivateSound(S_RUN_STEP1);
+		ActivateSound(PlayerSounds::S_RUN_STEP1);
 	}
 	else if (frame == 8 * 4 && slowCounter == 1)
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
 			pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr);
-		ActivateSound(S_RUN_STEP2);
+		ActivateSound(PlayerSounds::S_RUN_STEP2);
 	}
 
 

@@ -181,7 +181,8 @@ struct Actor : QuadTreeCollider,
 		UPGRADE_W1_INCREASE_REGEN_3,
 		UPGRADE_W1_DASH_BOOST,
 		UPGRADE_W1_AIRDASH_BOOST,
-		UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP,
+		UPGRADE_W1_EMPTY, //fix later
+		//UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP,
 		UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH,
 		UPGRADE_W1_DASH_BOOST_HIGH_SPEED_1,
 		UPGRADE_W1_DASH_BOOST_HIGH_SPEED_2,
@@ -507,52 +508,6 @@ struct Actor : QuadTreeCollider,
 		UPTILT2,
 		UPTILT3,
 		Count
-	};
-
-	enum SoundType
-	{
-		S_RUN_STEP1,
-		S_RUN_STEP2,
-		S_SPRINT_STEP1,
-		S_SPRINT_STEP2,
-		S_DASH_START,
-		S_HIT,
-		S_CLIMB_STEP1,
-		S_CLIMB_STEP2,
-		S_HITCEILING,
-		S_HURT,
-		S_HIT_AND_KILL,
-		S_HIT_AND_KILL_KEY,
-		S_FAIR1,
-		S_FAIR2,
-		S_FAIR3,
-		S_DAIR,
-		S_DAIR_B,
-		S_UAIR,
-		S_LAND,
-		S_STANDATTACK,
-		S_CLIMBATTACK,
-		S_WALLJUMP,
-		S_WALLATTACK,
-		S_GRAVREVERSE,
-		S_BOUNCEJUMP,
-		S_TIMESLOW,
-		S_ENTER,
-		S_EXIT,
-		S_DIAGUPATTACK,
-		S_DIAGDOWNATTACK,
-		S_DOUBLE,
-		S_DOUBLEBACK,
-		S_JUMP,
-		S_SLIDE,
-		S_STEEPSLIDE,
-		S_STEEPSLIDEATTACK,
-		S_WALLSLIDE,
-		S_GOALKILLSLASH1,
-		S_GOALKILLSLASH2,
-		S_GOALKILLSLASH3,
-		S_GOALKILLSLASH4,
-		S_Count
 	};
 
 	enum AirTriggerBehavior
@@ -922,7 +877,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite grindAttackSprite;
 	Tileset *ts_blockShield;
 	
-	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+	std::vector<sf::SoundBuffer*> soundBuffers;
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
 	Tileset *ts_fx_launchParticle;
@@ -958,6 +913,10 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_keyExplode;
 	Tileset *ts_key;
 	MovingGeoGroup *keyExplodeRingGroup;
+	MovingGeoGroup *enemyExplodeRingGroup;
+	MovingGeoGroup *enemiesClearedRingGroup;
+	MovingGeoGroup *enoughKeysToExitRingGroup;
+
 	EffectPool *dustParticles;
 	RisingParticleUpdater *rpu;
 	GroundTrigger *storedTrigger;
@@ -1379,8 +1338,10 @@ struct Actor : QuadTreeCollider,
 	void SetActionSuperLevel();
 	void ResetSuperLevel();
 	bool CanTech();
-	void CreateKeyExplosion();
-	void CreateGateExplosion();
+	void CreateKeyExplosion( int gateCategory );
+	void CreateGateExplosion( int gateCategory );
+	void CreateEnemiesClearedRing();
+	void CreateEnoughKeysRing();
 	void CollectFly(HealthFly *hf);
 	void SetupActionFunctions();
 	void StartAction();
@@ -1427,7 +1388,7 @@ struct Actor : QuadTreeCollider,
 	bool AttackButtonHeld();
 	bool PowerButtonHeld();
 	bool PowerButtonPressed();
-	SoundNode * ActivateSound(SoundType st, bool loop = false);
+	SoundNode * ActivateSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,
 		Tileset *ts,
@@ -1667,6 +1628,7 @@ struct Actor : QuadTreeCollider,
 	void KinModeUpdate();
 	void ReverseVerticalInputsWhenOnCeiling();
 	void ProcessReceivedHit();
+	void HitGoal();
 	void UpdateDrain();
 	void ProcessGravityGrass();
 	void ProcessHitGoal();

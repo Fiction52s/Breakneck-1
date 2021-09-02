@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -7,7 +8,7 @@ void Actor::UPTILT3_Start()
 {
 	SetActionSuperLevel();
 
-	ActivateSound(S_UAIR);
+	ActivateSound(PlayerSounds::S_UAIR);
 	ResetAttackHit();
 
 	StartUpTilt();

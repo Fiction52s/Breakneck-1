@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include "ScoreDisplay.h"
 #include "HUD.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -21,6 +22,7 @@ void Actor::GOALKILL_End()
 	frame = 0;
 	sess->scoreDisplay->Activate();
 	sess->hud->Hide(60);
+	ActivateSound(PlayerSounds::S_LEVEL_COMPLETE);
 }
 
 void Actor::GOALKILL_Change()
@@ -38,19 +40,19 @@ void Actor::GOALKILL_UpdateSprite()
 	{
 		if (frame == 20)
 		{
-			ActivateSound(S_GOALKILLSLASH1);
+			ActivateSound(PlayerSounds::S_GOALKILLSLASH1);
 		}
 		else if (frame == 36)
 		{
-			ActivateSound(S_GOALKILLSLASH2);
+			ActivateSound(PlayerSounds::S_GOALKILLSLASH2);
 		}
 		else if (frame == 60)
 		{
-			ActivateSound(S_GOALKILLSLASH3);
+			ActivateSound(PlayerSounds::S_GOALKILLSLASH3);
 		}
 		else if (frame == 84)
 		{
-			ActivateSound(S_GOALKILLSLASH4);
+			ActivateSound(PlayerSounds::S_GOALKILLSLASH4);
 		}
 	}
 

@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include <assert.h>
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -62,7 +63,7 @@ void Actor::JUMPSQUAT_Update()
 {
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateSound(S_JUMP);
+		ActivateSound(PlayerSounds::S_JUMP);
 		storedGroundSpeed = groundSpeed;
 		/*if( reversed )
 		storedGroundSpeed = -storedGroundSpeed;*/

@@ -137,12 +137,36 @@ void KeyMarker::UpdateKeyNumbers()
 		int numKeys = sess->GetPlayer(0)->numKeysHeld;
 		keyNumberNeededHUD->SetNumber(numKeys);
 		keyNumberNeededHUDBack->SetNumber(numKeys);
+
+		bool makeRing = false;
+		for (auto it = sess->currentZone->gates.begin(); it != sess->currentZone->gates.end(); ++it)
+		{
+			Gate *g = (Gate*)(*it)->info;
+			if (g->category == Gate::ALLKEY || g->NUMBER_KEY)
+			{
+				if (g->numToOpen == numKeys)
+				{
+					makeRing = true;
+					break;
+				}
+			}
+		}
+
+		if (makeRing)
+		{
+			sess->GetPlayer(0)->CreateEnoughKeysRing();
+		}
 	}
 	else if (markerType == ENEMY)
 	{
 		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
 		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
 		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
+
+		if (numEnemiesRemaining == 0)
+		{
+			sess->GetPlayer(0)->CreateEnemiesClearedRing();
+		}
 	}
 	
 	//keyNumberTotalHUD->SetNumber(numKeys);

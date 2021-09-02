@@ -1,5 +1,6 @@
 #include "Actor.h"
 #include <assert.h>
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -7,7 +8,7 @@ using namespace std;
 void Actor::STEEPSLIDEATTACK_Start()
 {
 	SetActionSuperLevel();
-	ActivateSound(S_STANDATTACK);
+	ActivateSound(PlayerSounds::S_STANDATTACK);
 	ResetAttackHit();
 
 	V2d norm = ground->Normal();

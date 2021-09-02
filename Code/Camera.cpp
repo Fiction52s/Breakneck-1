@@ -42,13 +42,13 @@ Camera::Camera()
 	zoomLevel2 = .5;
 	zoomLevel3 = 1.75;
 
-	maxOffset.x = 100 * 5;//10;
-	maxOffset.y = 100 * 5;//10;
+	//maxOffset.x = 100 * 5;//10;
+	//maxOffset.y = 100 * 5;//10;
 
 	left = 300;
 	right = -300;
-	top = 150;
-	bottom = -150;
+	top = 300;//150;
+	bottom = -300;
 
 	easing = false;
 	manual = false;
@@ -61,6 +61,11 @@ Camera::Camera()
 	easeOutFrame = 0;
 	easingOut = false;
 	currMove = NULL;
+
+	maxOffsetLeft = 150;
+	maxOffsetRight = -150;
+	maxOffsetTop = 150;//300;//150;//125;// -75;//-125;
+	maxOffsetBottom = 150;//75;//300;//150;//200;//75;//125;//150;
 	
 	rX = 0;
 	rY = 0;
@@ -258,11 +263,11 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 	Vector2f maxOff;
 	if (moveFrames.x > 0)
 	{
-		maxOff.x = 100.f + 150.f * (moveFrames.x / maxFramesX);
+		maxOff.x = 100.f + maxOffsetLeft * (moveFrames.x / maxFramesX);
 	}
 	else if (moveFrames.x < 0)
 	{
-		maxOff.x = -100.f + 150.f * (moveFrames.x / maxFramesX);
+		maxOff.x = -100.f + maxOffsetRight * (moveFrames.x / maxFramesX);
 	}
 	else
 	{
@@ -271,11 +276,11 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 
 	if (moveFrames.y > 0)
 	{
-		maxOff.y = 125.f;// + 150.f * (moveFrames.y / maxFramesX);
+		maxOff.y = maxOffsetTop;//125.f;// + 150.f * (moveFrames.y / maxFramesX);
 	}
 	else if (moveFrames.y < 0)
 	{
-		maxOff.y = -75.f;// +150.f * (moveFrames.y / maxFramesX);
+		maxOff.y = -maxOffsetBottom;//-75.f;// +150.f * (moveFrames.y / maxFramesX);
 	}
 	else
 	{
@@ -344,11 +349,11 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 	
 	if (targetOffset.y > 0)
 	{
-		targetOffset.y *= 125.0;//maxOffset.y;
+		targetOffset.y *= maxOffsetTop;//125.0;//maxOffset.y;
 	}
 	else
 	{
-		targetOffset.y *= 75.0;
+		targetOffset.y *= maxOffsetBottom;//75.0;
 	}
 
 	

@@ -1,6 +1,7 @@
 #include "Actor.h"
 #include "Session.h"
 #include "VisualEffects.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -263,13 +264,13 @@ void Actor::SPRINT_UpdateSprite()
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
 			pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight);
-		ActivateSound(S_SPRINT_STEP1);
+		ActivateSound(PlayerSounds::S_SPRINT_STEP1);
 	}
 	else if (frame == 6 * 4 && slowCounter == 1)
 	{
 		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
 			pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight);
-		ActivateSound(S_SPRINT_STEP2);
+		ActivateSound(PlayerSounds::S_SPRINT_STEP2);
 	}
 
 	if (scorpOn)

@@ -1462,7 +1462,7 @@ void Session::PlayerHitGoal(int index)
 	Actor *p = GetPlayer(index);
 	if (p != NULL)
 	{
-		p->hitGoal = true;
+		p->HitGoal();
 	}
 }
 

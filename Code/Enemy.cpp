@@ -552,6 +552,8 @@ void Enemy::OnCreate(ActorParams *ap,
 	zonedSprite.setTexture(*ts_zoned->texture);
 
 	genericDeathSound = GetSound("Enemies/kill");
+	finalDeathSound = GetSound("Test/Heal_01");
+	keyDeathSound = GetSound("Enemies/Key_Kill_02");
 
 	highResPhysics = false;
 	numLaunchers = 0;
@@ -909,7 +911,32 @@ bool Enemy::ReadBool(std::ifstream &is,
 
 void Enemy::PlayDeathSound()
 {
-	sess->ActivateSoundAtPos( GetPosition(), genericDeathSound);
+	if( hasMonitor )
+	{
+		sess->ActivateSound(keyDeathSound);
+		return;
+	}
+
+	if (sess->currentZone->HasEnemyGate())
+	{
+		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+		if (numEnemiesRemaining == 0)
+		{
+			//if( sess->currentZone->)
+
+			sess->ActivateSound(finalDeathSound);
+		}
+		else
+		{
+			sess->ActivateSound(genericDeathSound);
+		}
+	}
+	else
+	{
+		sess->ActivateSound(genericDeathSound);
+	}
+	
+	
 }
 
 void Enemy::SetZoneSpritePosition()

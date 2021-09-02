@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
@@ -13,7 +14,7 @@ void Actor::FAIR_Start()
 	}
 	else
 	{
-		ActivateSound(S_FAIR1);
+		ActivateSound(PlayerSounds::S_FAIR1);
 		ResetAttackHit();
 	}
 }
