@@ -285,6 +285,7 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 	V2d leftv1 = dv1 - other * width;
 	V2d rightv1 = dv1 + other * width;
 
+	SetRectSubRect(thickerLine, edit->createGatesModeUI->ts_gateCategories->GetSubRect(category));
 	//cout << "a: " << dv0.x << ", " << dv0.y << ", b: " << dv1.x << ", " << dv1.y << endl;
 
 	//Color c;
@@ -298,13 +299,13 @@ void GateInfo::DrawPreview(sf::RenderTarget * target)
 		color = Color::Cyan;//Color(100, 100, 100);
 	}
 	
-
-	SetRectColor(thickerLine, color);
+	
+	/*SetRectColor(thickerLine, color);*/
 
 	thickerLine[0].position = Vector2f(leftv0.x, leftv0.y);
 	thickerLine[1].position = Vector2f(leftv1.x, leftv1.y);
 	thickerLine[2].position = Vector2f(rightv1.x, rightv1.y);
 	thickerLine[3].position = Vector2f(rightv0.x, rightv0.y);
 
-	target->draw(thickerLine, 4, sf::Quads);
+	target->draw(thickerLine, 4, sf::Quads, edit->createGatesModeUI->ts_gateCategories->texture);
 }

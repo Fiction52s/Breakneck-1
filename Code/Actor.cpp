@@ -3193,10 +3193,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	soundBuffers[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
 
 	soundBuffers[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
-	soundBuffers[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_03");
+	soundBuffers[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
 	
 	soundBuffers[PlayerSounds::S_ENTER] = GetSound("Test/Crawler_Theme_01");
-	soundBuffers[PlayerSounds::S_HURT] = GetSound("Test/Thud");
+	soundBuffers[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
 	//soundBuffers[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
 	/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
