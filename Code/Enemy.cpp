@@ -917,7 +917,7 @@ void Enemy::PlayDeathSound()
 		return;
 	}
 
-	if (sess->currentZone->HasEnemyGate())
+	if ( sess->currentZone != NULL && sess->currentZone->HasEnemyGate())
 	{
 		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
 		if (numEnemiesRemaining == 0)

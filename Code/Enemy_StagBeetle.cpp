@@ -86,8 +86,8 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	hitboxInfo->hType = HitboxInfo::GREEN;
 	
 
-	BasicCircleHurtBodySetup(60*scale);
-	BasicCircleHitBodySetup(60*scale);
+	BasicCircleHurtBodySetup(60);
+	BasicCircleHitBodySetup(60);
 	hitBody.hitboxInfo = hitboxInfo;
 
 
@@ -421,11 +421,14 @@ void StagBeetle::UpdateSprite()
 
 		sprite.setTextureRect(r);
 
-		float extraVert = 20 * scale;//8 * scale;
+		//when you scale this its too large. no idea why
+		float extraVert = 20;// *scale;//8 * scale;
+
+		//extraVert += 2 * (scale-1);
 
 		int originHeight = 144 - (48);
 
-		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 + extraVert);
+		sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height/2 + extraVert);
 		sprite.setPosition(GetPositionF());
 		sprite.setRotation(groundMover->GetAngleDegrees());
 	}
