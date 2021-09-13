@@ -43,7 +43,7 @@ struct Zone
 	bool HasEnemyGate();
 	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
-		sf::Vector2i test );
+		V2d point );
 	bool ContainsZoneMostSpecific(
 		Zone *z);
 	void Update( float zoom, sf::Vector2f &topLeft,

@@ -3310,13 +3310,23 @@ void Session::CreateZones()
 		}
 		if (g->zoneA == NULL && g->zoneB == NULL)
 		{
+			bool foundZone = false;
+
 			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
 			{
-				if ((*zit)->ContainsPoint(g->edgeA->v0))
+				if ((*zit)->ContainsPointMostSpecific((g->edgeA->v0 + g->edgeA->v1) / 2.0) != NULL);
 				{
 					g->zoneA = (*zit);
 					g->zoneB = (*zit);
+					foundZone = true;
+					break;
 				}
+			}
+
+			if (!foundZone)
+			{
+				outsideGates.push_back(g->edgeB);
+				numOutsideGates++;
 			}
 		}
 		else if (g->zoneA == NULL)
@@ -3651,6 +3661,14 @@ int Session::SetupZones()
 			for (auto git = (*it)->gates.begin(); git != (*it)->gates.end(); ++git)
 			{
 				g = (Gate*)(*git)->info;
+
+				if (g->zoneA == g->zoneB)
+				{
+					//a gate thats fully within a zone should simply
+					//disappear upon entering
+					continue;
+				}
+
 				g->SetToTwoWay();
 				g->Init();
 			}

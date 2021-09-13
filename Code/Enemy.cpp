@@ -1185,6 +1185,7 @@ void Enemy::DirectKill()
 
 		if (cutObject != NULL)
 		{
+			SyncCutObject();
 			cutObject->SetCutRootPos(GetPositionF());
 		}
 	}

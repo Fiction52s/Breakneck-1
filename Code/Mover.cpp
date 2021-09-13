@@ -305,6 +305,17 @@ void SurfaceMover::HandleEntrant( QuadTreeEntrant *qte )
 	{
 		Edge *e = (Edge*)qte;
 
+		if (e->edgeType == Edge::OPEN_GATE)
+		{
+			Gate *g = (Gate*)e->info;
+			if (g->category != Gate::SECRET)
+			{
+				return;
+			}
+		}
+			
+
+
 		//cout << "edge: " << e->Normal().x << ", " << e->Normal().y << endl;
 
 		if (ground == e || e->IsInvisibleWall()  )

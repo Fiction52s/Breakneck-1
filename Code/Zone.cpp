@@ -717,10 +717,10 @@ bool Zone::ContainsZoneMostSpecific(Zone *z)
 	return false;
 }
 
-Zone* Zone::ContainsPointMostSpecific( sf::Vector2i test )
+Zone* Zone::ContainsPointMostSpecific( V2d test )
 {
-	//bool contains = ContainsPoint( test );
-	bool contains = false;
+	bool contains = ContainsPoint( test );
+	//bool contains = false;
 	if( contains )
 	{
 		if( subZones.empty() )

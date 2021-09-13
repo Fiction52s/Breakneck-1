@@ -240,11 +240,11 @@ void Crawler::UpdateHitboxes()
 
 void Crawler::ProcessState()
 {
-	if (surfaceMover->ground->edgeType == Edge::OPEN_GATE)
+	/*if (surfaceMover->ground->edgeType == Edge::OPEN_GATE)
 	{
 		DirectKill();
 		return;
-	}
+	}*/
 
 	V2d en = surfaceMover->ground->Normal();
 
