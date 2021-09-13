@@ -302,9 +302,9 @@ Background::Background(TilesetManager *p_tm, const string &bgName)
 {
 	name = bgName;
 
-	char worldChar = bgName[1];
+	char worldChar = bgName[1] ;
 
-	envWorld = worldChar - 1;
+	envWorld = (worldChar - 1) - '0';
 	
 	string worldNum( 1, worldChar);
 

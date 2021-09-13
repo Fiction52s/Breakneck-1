@@ -3194,8 +3194,15 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	soundBuffers[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
 	soundBuffers[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
-	
-	soundBuffers[PlayerSounds::S_ENTER] = GetSound("Test/Crawler_Theme_01");
+
+	soundBuffers[PlayerSounds::S_ENTER_W1] = GetSound("Test/Crawler_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W2] = GetSound("Test/Bird_Theme_04");
+	soundBuffers[PlayerSounds::S_ENTER_W3] = GetSound("Test/Coyote_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W4] = GetSound("Test/Tiger_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W5] = GetSound("Test/Gator_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W6] = GetSound("Test/Skele_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
+	soundBuffers[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
 	soundBuffers[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
 	//soundBuffers[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
@@ -6448,7 +6455,8 @@ void Actor::UpdatePrePhysics()
 		}
 		if( action == INTRO && frame == 0 )
 		{
-			ActivateSound(PlayerSounds::S_ENTER );
+			int enterIndex = PlayerSounds::S_ENTER_W1 + sess->mapHeader->envWorldType;
+			ActivateSound(enterIndex);
 		}
 		else if( action == EXIT && frame == 30 )
 		{
