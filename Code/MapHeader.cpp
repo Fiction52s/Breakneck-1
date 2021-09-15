@@ -125,7 +125,12 @@ bool MapHeader::Load(std::ifstream &is)
 	
 
 	is >> gameMode;
-	is >> envWorldType;
+
+	if (ver1 < 2 || (ver1 == 2 && ver2 < 8 ) )
+	{
+		is >> envWorldType;
+	}
+	
 	is >> envName;
 	is >> leftBounds;
 	is >> topBounds;
@@ -186,7 +191,8 @@ void MapHeader::Save(std::ofstream &of)
 	of << gameMode << "\n";
 
 	//of << (int)envType << " " << envLevel << endl;
-	of << envWorldType << " ";
+
+	//of << envWorldType << " ";
 	of << envName << endl;
 
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;

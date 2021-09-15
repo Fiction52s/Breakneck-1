@@ -912,7 +912,6 @@ void Gate::Draw(sf::RenderTarget *target)
 
 	if( gState != OPEN )
 	{
-		
 		if (gState == REFORM || gState == LOCKFOREVER)
 		{
 			if (gState == REFORM)
@@ -964,16 +963,20 @@ void Gate::Draw(sf::RenderTarget *target)
 					target->draw(hardLine, 4, sf::Quads, &gateShader);
 				}
 
-				if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP 
-					|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && secretTimeGateIsOpened )))
+				if (gState != TOTALDISSOLVE)
 				{
-					target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
-
-					if (orbState != ORB_GO )
+					if (category == NUMBER_KEY || category == ALLKEY || category == PICKUP
+						|| category == ENEMY || (isTimeGate && !(timeGateIsSecret && secretTimeGateIsOpened)))
 					{
-						target->draw(numberText);
+						target->draw(orbQuad, 4, sf::Quads, ts_orb->texture);
+
+						if (orbState != ORB_GO)
+						{
+							target->draw(numberText);
+						}
 					}
 				}
+				
 			}
 			
 			
