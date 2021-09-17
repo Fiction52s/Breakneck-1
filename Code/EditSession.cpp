@@ -3503,17 +3503,15 @@ void EditSession::SetupLogSelectPanel()
 	logTypePanel->SetColor(c);
 
 
-	int numWorlds = 8;
-
 	ts_logs = GetSizedTileset("Logs/logs_64x64.png");
 
-	int totalLogs = logNumX * logNumY * numWorlds;
+	int totalLogs = logNumX * logNumY * logMenu->numWorlds;
 	int lInd = 0;
 
 	logTypePanel->ReserveImageRects(totalLogs);
 	logTypeRects.resize(totalLogs);
 
-	for (int w = 0; w < numWorlds; ++w)
+	for (int w = 0; w < logMenu->numWorlds; ++w)
 	{
 		for (int y = 0; y < logNumY; ++y)
 		{

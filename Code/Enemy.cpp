@@ -554,6 +554,7 @@ void Enemy::OnCreate(ActorParams *ap,
 	genericDeathSound = GetSound("Enemies/kill");
 	finalDeathSound = GetSound("Test/Heal_01");
 	keyDeathSound = GetSound("Enemies/Key_Kill_02");
+	keyUnlockDeathSound = GetSound("Test2/Key_Complete_01");
 
 	highResPhysics = false;
 	numLaunchers = 0;
@@ -909,11 +910,24 @@ bool Enemy::ReadBool(std::ifstream &is,
 	return true;
 }
 
+void Enemy::PlayKeyDeathSound()
+{
+	if (sess->currentZone != NULL
+		&& sess->currentZone->HasKeyGateOfNumber(sess->GetPlayer(0)->numKeysHeld))
+	{
+		sess->ActivateSound(keyUnlockDeathSound);
+	}
+	else
+	{
+		sess->ActivateSound(keyDeathSound);
+	}
+}
+
 void Enemy::PlayDeathSound()
 {
 	if( hasMonitor )
 	{
-		sess->ActivateSound(keyDeathSound);
+		PlayKeyDeathSound();
 		return;
 	}
 

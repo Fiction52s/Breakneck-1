@@ -150,7 +150,7 @@ LogMenu::LogMenu(Session *p_sess)
 	int xSize = 5;
 	int ySize = 7 + 1; //+1 for world selector
 
-	int numWorlds = 8;
+	numWorlds = 7;
 	logInfo = new LogDetailedInfo*[numWorlds];
 	for (int i = 0; i < numWorlds; ++i)
 	{
@@ -207,7 +207,7 @@ LogMenu::LogMenu(Session *p_sess)
 
 LogMenu::~LogMenu()
 {
-	for (int i = 0; i < 8; ++i)
+	for (int i = 0; i < numWorlds; ++i)
 	{
 		delete[] logInfo[i];
 	}
@@ -225,7 +225,7 @@ LogMenu::~LogMenu()
 
 void LogMenu::LoadLogInfo()
 {
-	for (int i = 0; i < 7; ++i)
+	for (int i = 0; i < numWorlds; ++i)
 	{
 		ifstream is;
 		is.open("Resources/Logs/loginfo" + to_string(i + 1) + ".txt");

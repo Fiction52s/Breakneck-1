@@ -41,6 +41,7 @@ struct Zone
 	void Close();
 	void SetShadowColor( sf::Color c );
 	bool HasEnemyGate();
+	bool HasKeyGateOfNumber(int n);
 	//bool ContainsPlayer(); super 
 	Zone * ContainsPointMostSpecific( 
 		V2d point );

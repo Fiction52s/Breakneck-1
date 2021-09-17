@@ -23,14 +23,23 @@ void Actor::FREEFLIGHTSTUN_Change()
 
 void Actor::FREEFLIGHTSTUN_Update()
 {
-	double driftFactor = 2.0;//1.0;
+	double accelFactor = 1.0;//1.1;
+	double decelFactor = 2.0;//1.1;
+	//double driftFactor = 1.1;//2.0;//1.0;
 	double maxAccelSpeed = 30;//15;
 
 	if (currInput.LUp())
 	{
 		if (velocity.y > -maxAccelSpeed)
 		{
-			velocity.y -= driftFactor;
+			if (velocity.y > 0)
+			{
+				velocity.y -= decelFactor;
+			}
+			else
+			{
+				velocity.y -= accelFactor;
+			}
 		}
 
 	}
@@ -38,14 +47,29 @@ void Actor::FREEFLIGHTSTUN_Update()
 	{
 		if (velocity.y < maxAccelSpeed)
 		{
-			velocity.y += driftFactor;
+			if (velocity.y < 0)
+			{
+				velocity.y += decelFactor;
+			}
+			else
+			{
+				velocity.y += accelFactor;
+			}
+			
 		}
 	}
 	if (currInput.LLeft())
 	{
 		if (velocity.x > -maxAccelSpeed)
 		{
-			velocity.x -= driftFactor;
+			if (velocity.x > 0)
+			{
+				velocity.x -= decelFactor;
+			}
+			else
+			{
+				velocity.x -= accelFactor;
+			}
 		}
 
 	}
@@ -53,9 +77,58 @@ void Actor::FREEFLIGHTSTUN_Update()
 	{
 		if (velocity.x < maxAccelSpeed)
 		{
-			velocity.x += driftFactor;
+			if (velocity.x < 0)
+			{
+				velocity.x += decelFactor;
+			}
+			else
+			{
+				velocity.x += accelFactor;
+			}
 		}
 	}
+
+	/*if (!(currInput.LLeft() || currInput.LRight()))
+	{
+		double decel = .1;
+		if (velocity.x > 0)
+		{
+			velocity.x -= decel;
+			if (velocity.x < 0)
+			{
+				velocity.x = 0;
+			}
+		}
+		else if (velocity.x < 0)
+		{
+			velocity.x -= -decel;
+			if (velocity.x > 0)
+			{
+				velocity.x = 0;
+			}
+		}
+	}
+
+	if (!(currInput.LUp() || currInput.LDown()))
+	{
+		double decel = .1;
+		if (velocity.y > 0)
+		{
+			velocity.y -= decel;
+			if (velocity.y < 0)
+			{
+				velocity.y = 0;
+			}
+		}
+		else if (velocity.y < 0)
+		{
+			velocity.y -= -decel;
+			if (velocity.y > 0)
+			{
+				velocity.y = 0;
+			}
+		}
+	}*/
 }
 
 void Actor::FREEFLIGHTSTUN_UpdateSprite()

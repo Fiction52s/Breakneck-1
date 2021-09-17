@@ -13959,7 +13959,7 @@ void Actor::PhysicsResponse()
 				}
 			}
 		}
-		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE )
+		else if( action != AIRHITSTUN && action != AIRDASH && !IsActionAirBlock( action ) && action != WATERGLIDE && action != FREEFLIGHTSTUN )
 		{
 			if( collision && action != WALLATTACK && action != WALLCLING )
 			{
@@ -14596,6 +14596,7 @@ void Actor::HandleWaterSituation(int wType,
 			extraGravityModifier = .8;
 			gravModifyFrames = 1;
 			RestoreAirOptions();
+			ApplyGeneralAcceleration(.1);
 
 			
 		}
@@ -14775,6 +14776,7 @@ void Actor::HandleWaterSituation(int wType,
 					V2d norm = exitEdge->Normal();
 					SetAction(SPRINGSTUN);
 					springStunFrames = 60;
+					springStunFramesStart = springStunFrames;
 
 					//make into function soon
 					holdJump = false;
@@ -14789,7 +14791,17 @@ void Actor::HandleWaterSituation(int wType,
 					velocity = V2d(0, 0);
 					currWall = NULL;
 					double speed = 30;
+
 					springVel = norm * speed;
+
+					if (springVel.x > 0)
+					{
+						facingRight = true;
+					}
+					else if (springVel.x < 0)
+					{
+						facingRight = false;
+					}
 				}
 			}
 		}

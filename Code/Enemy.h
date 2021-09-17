@@ -121,6 +121,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	sf::SoundBuffer *genericDeathSound;
 	sf::SoundBuffer *finalDeathSound;
 	sf::SoundBuffer *keyDeathSound;
+	sf::SoundBuffer *keyUnlockDeathSound;
 	CollisionBody hurtBody;
 	CollisionBody hitBody;
 	int numLaunchers;
@@ -252,6 +253,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		int &pLen, std::vector<sf::Vector2i> &localPath);
 	virtual void UpdatePreLauncherPhysics() {}
 	virtual void PlayDeathSound();
+	void PlayKeyDeathSound();
 	virtual int GetNumCamPoints() { return 1; }
 	virtual V2d GetCamPoint(int index) { return GetPosition(); }
 	virtual void ComboHit();

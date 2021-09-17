@@ -120,6 +120,7 @@ struct LogMenu
 	Tileset *ts_notCapturedPreview;
 	Tileset *ts_noPreview;
 	sf::Vector2f previewCenter;
+	int numWorlds;
 	
 	LogMenu(Session *sess);
 	~LogMenu();

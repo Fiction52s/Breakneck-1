@@ -219,6 +219,11 @@ Swarm::Swarm( ActorParams *ap )
 	BasicCircleHitBodySetup(48);
 	BasicCircleHurtBodySetup(48);
 
+	cutObject->SetTileset(ts);
+	cutObject->SetSubRectFront(7);
+	cutObject->SetSubRectBack(8);
+	cutObject->SetScale(scale);
+
 	hitBody.hitboxInfo = hitboxInfo;
 
 	ResetEnemy();

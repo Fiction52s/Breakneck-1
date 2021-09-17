@@ -407,6 +407,29 @@ bool Zone::HasEnemyGate()
 	return false;
 }
 
+bool Zone::HasKeyGateOfNumber(int n)
+{
+	Gate *g;
+	for (auto it = gates.begin(); it != gates.end(); ++it)
+	{
+		g = (Gate*)((*it)->info);
+		if (g->gState != Gate::REFORM && g->gState != Gate::LOCKFOREVER)
+		{
+			if (g->category == Gate::ALLKEY && n == totalNumKeys )
+			{
+				return true;
+			}
+			else if (g->category == Gate::NUMBER_KEY && n == g->numToOpen)
+			{
+				return true;
+			}
+		}
+	}
+
+
+	return false;
+}
+
 Vector2i &Zone::GetPolyPoint(int index)
 {
 	int currVecIndex = 0;

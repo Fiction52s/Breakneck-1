@@ -123,7 +123,7 @@ void KeyFly::HandleNoHealth()
 
 void KeyFly::PlayDeathSound()
 {
-	sess->ActivateSound(keyDeathSound);
+	PlayKeyDeathSound();
 }
 
 void KeyFly::UpdateSprite()

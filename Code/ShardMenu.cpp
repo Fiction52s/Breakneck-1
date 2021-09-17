@@ -25,7 +25,7 @@ ShardMenu::ShardMenu(Session *p_sess)
 	ts_shardContainer = sess->GetSizedTileset("Menu/shard_container_401x512.png");
 	ts_sparkle = sess->GetSizedTileset("Menu/shard_sparkle_64x64.png");
 
-	
+	selectedIndex = 0;
 
 	int edgeMargin = 65;
 
