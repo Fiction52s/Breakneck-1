@@ -207,7 +207,7 @@ bool Enemy::SetHitParams()
 		break;
 	}
 	case EnemyType::EN_CRAWLER:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_GOAL:
 		hitParams.Set(5, .8, 6, 3, false);
@@ -291,10 +291,10 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_STAGBEETLE:
-		hitParams.Set(5, .8, (3 * 60) / 4, 4);
+		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_GRAVITYFALLER:
-		hitParams.Set(4, .8, (3 * 60) / 4, 4);
+		hitParams.Set(4, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_SPIDER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);

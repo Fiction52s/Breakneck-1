@@ -7686,7 +7686,7 @@ void Actor::SetAirPos(V2d &pos, bool fr)
 	ground = NULL;
 	bounceEdge = NULL;
 	grindEdge = NULL;
-	action = Actor::JUMP;
+	SetAction(JUMP);
 	frame = 1;
 	position = pos;
 	facingRight = fr;
@@ -9572,8 +9572,7 @@ bool Actor::TrySlideBrakeOrStand()
 	{
 		if (currInput.LDown() || currInput.LUp())
 		{
-			action = SLIDE;
-			frame = 0;
+			SetAction(SLIDE);
 		}
 		else
 		{
@@ -10640,7 +10639,7 @@ void Actor::StopGrind()
 
 			framesNotGrinding = 0;
 			RestoreAirOptions();
-			action = JUMP;
+			SetAction(JUMP);
 			frame = 1;
 			grindEdge = NULL;
 			reversed = false;
@@ -11283,11 +11282,11 @@ void Actor::RestoreAirOptions()
 	hasAirDash = true;
 
 	//if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_DOUBLEJUMP))
-	//{
+	{
 		hasWallJumpRechargeDoubleJump = true;
-	//}
+	}
 	
-	if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH))
+	//if (HasUpgrade(UPGRADE_W1_WALLJUMP_RESTORES_AIRDASH))
 	{
 		hasWallJumpRechargeAirDash = true;
 	}
@@ -16067,7 +16066,7 @@ bool Actor::SwingLaunch()
 		ground = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
-		action = SWINGSTUN;
+		SetAction(SWINGSTUN);
 
 		currSwingLauncher = NULL;
 
@@ -16113,7 +16112,8 @@ bool Actor::TeleporterLaunch()
 		ground = NULL;
 		bounceEdge = NULL;
 		grindEdge = NULL;
-		action = SPRINGSTUNTELEPORT;
+
+		SetAction(SPRINGSTUNTELEPORT);
 		teleportSpringDest = currTeleporter->dest;
 		teleportSpringVel = velocity;
 
