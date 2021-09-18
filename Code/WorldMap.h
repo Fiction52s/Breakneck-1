@@ -66,7 +66,6 @@ struct MapSector
 	int unlockedIndex;
 	int unlockFrame;
 	int numTotalShards;
-	int numRequiredRunes;
 	int sectorIndex;
 
 	sf::Vertex levelCollectedShards[16 * 4];
@@ -93,7 +92,7 @@ struct MapSector
 	sf::Text bestTimeText;
 	sf::Text shardsCollectedText;
 	sf::Text levelsBeatenText;
-	sf::Text requirementText;
+	//sf::Text requirementText;
 	sf::Text sectorNameText;
 	sf::Text numLevelsBeatenText;
 	sf::Text sectorShardsCollectedText;
@@ -158,7 +157,7 @@ struct MapSector
 	void UpdateLevelStats();
 	void DrawLevelStats(sf::RenderTarget *target);
 	void DrawStats(sf::RenderTarget *target);
-	void DrawRequirement(sf::RenderTarget *target);
+	//void DrawRequirement(sf::RenderTarget *target);
 	void UpdateStats();
 };
 

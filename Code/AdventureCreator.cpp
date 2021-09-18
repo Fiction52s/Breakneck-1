@@ -83,8 +83,8 @@ AdventureCreator::AdventureCreator()
 
 	sectorLabel = panel->AddLabel("sectorlabel", sectorLabelPos, 40, "Sector 1");
 
-	Vector2i sliderPos(rightSideStart + 300, 350 - 20);
-	sectorRequirementsSlider = panel->AddSlider("requirements", sliderPos, 200, 0, 7, 0);
+	//Vector2i sliderPos(rightSideStart + 300, 350 - 20);
+	//sectorRequirementsSlider = panel->AddSlider("requirements", sliderPos, 200, 0, 7, 0);
 
 	
 }
@@ -423,8 +423,8 @@ void AdventureCreator::ChooseSector(int s)
 		SetRectNode(mapRects[i], &(adventureNodes[nodeStart + i]));
 	}
 
-	sectorRequirementsSlider->SetCurrValue(
-		adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes);
+	//sectorRequirementsSlider->SetCurrValue(
+	//	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes);
 
 	sectorLabel->setString("Sector " + to_string(currSector));
 	//update maps
@@ -584,7 +584,7 @@ void AdventureCreator::ChooseRectEvent(ChooseRect *cr, int eventType)
 	}
 }
 
-void AdventureCreator::SliderCallback(Slider *slider)
-{
-	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes = slider->currValue;
-}
+//void AdventureCreator::SliderCallback(Slider *slider)
+//{
+//	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes = slider->currValue;
+//}

@@ -140,12 +140,12 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	}
 
 	//requirementText
-	numRequiredRunes = adventureFile.GetRequiredRunes(sec);
+	//numRequiredRunes = adventureFile.GetRequiredRunes(sec);
 
-	requirementText.setFont(mainMenu->arial);
+	/*requirementText.setFont(mainMenu->arial);
 	requirementText.setCharacterSize(40);
 	requirementText.setFillColor(Color::White);
-	requirementText.setString(to_string(numRequiredRunes));
+	requirementText.setString(to_string(numRequiredRunes));*/
 
 	
 
@@ -296,7 +296,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 		}
 		else
 		{
-			DrawRequirement(target);
+			//DrawRequirement(target);
 		}
 	}
 
@@ -409,7 +409,7 @@ void MapSector::SetXCenter(float x)
 	bestTimeText.setPosition(mapBestTimeIconSpr.getPosition() + Vector2f(96 + 60, 20));
 	shardsCollectedText.setPosition(mapShardIconSpr.getPosition() + Vector2f(96 + 60, 20));
 
-	requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
+	//requirementText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50);
 
 	//shardsCollectedText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 0);
 	//completionPercentText.setPosition(sectorStatsTopLeft.x + 30, sectorStatsTopLeft.y + 30 + 50 * 1);
@@ -450,10 +450,10 @@ void MapSector::DrawStats(sf::RenderTarget *target)
 	//target->draw(shardsCollectedText);
 }
 
-void MapSector::DrawRequirement(sf::RenderTarget *target)
-{
-	target->draw(requirementText);
-}
+//void MapSector::DrawRequirement(sf::RenderTarget *target)
+//{
+//	target->draw(requirementText);
+//}
 
 void MapSector::UpdateStats()
 {

@@ -90,10 +90,9 @@ struct AdventureSector
 {	
 	AdventureSector();
 	BitField hasShardField;
-	int requiredRunes;
 	AdventureMap maps[8];
-	void Load(std::ifstream &is, int copyMode );
-	void Save(std::ofstream &of, int copyMode );
+	void Load(std::ifstream &is, int ver1, int ver2, int copyMode );
+	void Save(std::ofstream &of, int ver1, int ver2, int copyMode );
 	int GetNumActiveMaps();
 };
 
@@ -108,8 +107,10 @@ struct AdventureWorld
 
 	}
 	
-	void Load(std::ifstream &is, int copyMode );
-	void Save(std::ofstream &of, int copyMode );
+	void Load(std::ifstream &is, int ver1, 
+		int ver2, int copyMode );
+	void Save(std::ofstream &of, int ver1,
+		int ver2, int copyMode );
 	int GetNumActiveSectors();
 };
 
@@ -124,15 +125,16 @@ struct AdventureFile
 	CopyMode copyMode;
 	BitField hasShardField;
 	AdventureWorld worlds[8];
-
+	int ver1;
+	int ver2;
 
 	AdventureFile();
 	~AdventureFile();
+	void SetVer(int v1, int v2);
 	bool Load(const std::string &p_path,
 		const std::string &adventureName);
 	void Save(const std::string &p_path,
 		const std::string &adventureName, CopyMode cpy );
-	int GetRequiredRunes(Sector *sec);
 	AdventureMap &GetMap(int index);
 	AdventureMapHeaderInfo &GetMapHeaderInfo(int index);
 
