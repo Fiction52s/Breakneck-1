@@ -1142,6 +1142,7 @@ void GameSession::ProcessAllTerrain()
 	{
 		poly = (*it);
 		poly->Finalize();
+		poly->grassBufferForAABBOn = true; //so that the quadtree can get a bigger AABB for this
 		poly->AddEdgesToQuadTree(terrainTree);
 		//poly->AddGrassToQuadTree(grassTree);
 

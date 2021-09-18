@@ -1172,6 +1172,7 @@ TerrainPolygon::TerrainPolygon()
 	//	Glsl::Vec4(ir2.left / width, ir2.top / height,
 	//	(ir2.left + ir2.width) / width, (ir2.top + ir2.height) / height));
 
+	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
@@ -1215,6 +1216,7 @@ TerrainPolygon::TerrainPolygon()
 TerrainPolygon::TerrainPolygon(TerrainPolygon &poly, bool pointsOnly, bool storeSelectedPoints )
 	:ISelectable(ISelectable::TERRAIN)
 {
+	grassBufferForAABBOn = false;
 	copiedInverse = false;
 	isGrassBackedUp = false;
 	flyTransScale = Vector2f(1.f, 1.f);
@@ -6943,6 +6945,16 @@ ActorPtr TerrainPolygon::GetFurthestEnemy(int index, double &maxQuant)
 bool TerrainPolygon::IsTouchingBox(const sf::Rect<double> &r)
 {
 	Rect<double> aabb(GetAABB());
+
+	if (grassBufferForAABBOn)
+	{
+		double extra = 10;
+		aabb.left -= ts_grass->tileWidth / 2 + extra;
+		aabb.width += ts_grass->tileWidth + extra *2;
+		aabb.top -= ts_grass->tileHeight / 2 + extra;
+		aabb.height += ts_grass->tileHeight + extra * 2;
+	}
+
 	return IsBoxTouchingBox(aabb, r);
 }
 

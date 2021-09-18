@@ -271,6 +271,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	State state;
 
 	int waterType;
+
+	bool grassBufferForAABBOn;
 	void ResetState();
 	static int GetWaterWorld(int waterT);
 	static int GetWaterIndexInWorld(int waterT);

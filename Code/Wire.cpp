@@ -1477,7 +1477,7 @@ void Wire::HandleEntrant( QuadTreeEntrant *qte )
 
 void Wire::CheckAntiWireGrass()
 {
-	if ( player->owner != NULL && player->owner->hasGrass[Grass::ANTIWIRE])
+	//if ( player->owner != NULL && player->owner->hasGrass[Grass::ANTIWIRE])
 	{
 		V2d hitPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 		sf::Rect<double> r;
@@ -1487,7 +1487,7 @@ void Wire::CheckAntiWireGrass()
 		r.height = grassCheckRadius;
 		antiWireGrassCount = 0;
 		queryMode = "grass";
-		player->owner->grassTree->Query(this, r);
+		player->sess->grassTree->Query(this, r);
 	}
 }
 //make multiples of the quads for each edge later
