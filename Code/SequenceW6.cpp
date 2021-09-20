@@ -10,6 +10,8 @@
 #include "Enemy_Skeleton.h"
 #include "Enemy_CoyoteHelper.h"
 #include "Enemy_Tiger.h"
+#include "Enemy_Coyote.h"
+#include "MusicSelector.h"
 
 using namespace std;
 using namespace sf;
@@ -18,7 +20,12 @@ using namespace sf;
 EnterFortressScene::EnterFortressScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
+	coyote = NULL;
 
+	wind = sess->mainMenu->musicManager->songMap["w6_64_Wind"];
+
+	assert(wind != NULL);
+	wind->Load();
 }
 
 void EnterFortressScene::SetupStates()
@@ -27,8 +34,14 @@ void EnterFortressScene::SetupStates()
 
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
+	stateLength[COYOTE_ENTRANCE] = 60;
+	stateLength[WAIT2] = 60;
+	stateLength[FACES1] = -1;
 	stateLength[COYOTECONV] = -1;
+	stateLength[FACES2] = -1;
 	stateLength[SPLITUP] = 60;
+
+	//coyote = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
 }
 
 void EnterFortressScene::AddShots()
@@ -53,11 +66,65 @@ void EnterFortressScene::AddEnemies()
 
 void EnterFortressScene::AddFlashes()
 {
+	int togetherFrames = 5;
+
+	FlashGroup * group = AddFlashGroup("group0");
+	FlashGroup * group1 = AddFlashGroup("group1");
+
+
+	AddFlashedImage("c3", sess->GetTileset("Story/EnterFortress/Breakneck_Comic_W6_1920x1080_03.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("c10", sess->GetTileset("Story/EnterFortress/Breakneck_Comic_W6_1920x1080_10.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("c4", sess->GetTileset("Story/EnterFortress/Breakneck_Comic_W6_1920x1080_04.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddSeqFlashToGroup(group, "c3", 0);
+	AddSeqFlashToGroup(group, "c10", 0);
+
+	AddSeqFlashToGroup(group1, "c4", 0);
+
+	group->Init();
+	group1->Init();
+
+	/*for (int i = 1; i < 10; ++i)
+	{
+		AddFlashedImage("c" + to_string(i), sess->GetTileset("Story/Breakneck_Comic_W6_1920x1080_0" + to_string(i) + ".png"),
+			0, 30, 60, 30, Vector2f(960, 540));
+		
+	}*/
+
+	/*AddFlashedImage("stare2", sess->GetTileset("Bosses/Coyote/Coy_11b.png", 1920, 1080),
+		0, 30, 20, 30, Vector2f(960, 540));*/
+
+	
+	//for( int i = 1; i < 10; ++)
+	//AddSeqFlashToGroup(group, "smile", 0);
+	//AddSeqFlashToGroup(group, "stare1", 0);//-togetherFrames);
+	//AddSeqFlashToGroup(group, "stare2", 0);//-togetherFrames);
+	//group->Init();
+
+	//
+	//AddSeqFlashToGroup(group1, "stare0", 0);
+	//AddSeqFlashToGroup(group1, "stare1", 0);//-togetherFrames);
+	//AddSeqFlashToGroup(group1, "stare2", 0);//-togetherFrames);
+	//group1->Init();
+}
+
+void EnterFortressScene::StartRunning()
+{
+	prevMusic = sess->mainMenu->musicPlayer->currMusic;
+	sess->mainMenu->musicPlayer->TransitionMusic(wind, 60);//StopCurrentMusic();//FadeOutCurrentMusic(60);
+	//sess->mainMenu->musicPlayer->PlayMusic(wind);
 }
 
 void EnterFortressScene::ReturnToGame()
 {
 	Actor *player = sess->GetPlayer(0);
+
+	sess->mainMenu->musicPlayer->TransitionMusic(prevMusic, 60);
 
 	BasicBossScene::ReturnToGame();
 }
@@ -74,9 +141,67 @@ void EnterFortressScene::UpdateState()
 		}
 		EntranceUpdate();
 		break;
+	case WAIT:
+	{
+		if (frame == 0)
+		{
+
+		}
+		break;
+	}
+	case COYOTE_ENTRANCE:
+	{
+		break;
+	}
+	case WAIT2:
+	{
+		break;
+	}
+	case FACES1:
+	{
+		if (frame == 0)
+		{
+			SetFlashGroup("group0");
+		}
+		else
+		{
+			if (currFlashGroup == NULL)
+			{
+				EndCurrState();
+			}
+		}
+
+		/*if (IsLastFrame())
+		{
+			coy->StartFight();
+			sess->ReverseDissolveGates(Gate::BOSS);
+		}*/
+		break;
+	}
 	case COYOTECONV:
 		ConvUpdate();
 		break;
+	case FACES2:
+	{
+		if (frame == 0)
+		{
+			SetFlashGroup("group1");
+		}
+		else
+		{
+			if (currFlashGroup == NULL)
+			{
+				EndCurrState();
+			}
+		}
+
+		/*if (IsLastFrame())
+		{
+		coy->StartFight();
+		sess->ReverseDissolveGates(Gate::BOSS);
+		}*/
+		break;
+	}
 	case SPLITUP:
 		break;
 	}

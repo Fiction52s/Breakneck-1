@@ -104,6 +104,7 @@ MapSelector::MapSelector( WorldMap *p_worldMap, World *p_world,
 
 	sectorSASelector = new SingleAxisSelector(3, waitFrames, 2, 
 		waitModeThresh, numSectors, 0);
+	//sectorSASelector->SetTotalSize()
 
 	if (world->numSectors == 1)
 	{

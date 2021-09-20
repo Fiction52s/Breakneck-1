@@ -63,6 +63,10 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new CoyoteAndSkeletonScene;
 	}
+	else if (name == "coyotew6entrance")
+	{
+		bScene = new EnterFortressScene;
+	}
 	else if (name == "tigerscene0")
 	{
 		bScene = new TigerPreFightScene;
@@ -90,7 +94,7 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	}
 	else if (name == "enterfortress")
 	{
-		bScene = new TigerAndBirdTunnelScene;
+		bScene = new EnterFortressScene;
 	}
 	else if (name == "tigerbirdtunnel")
 	{

@@ -43,6 +43,7 @@ struct MapSector
 	State state;
 	MapSelector *ms;
 	Sector *sec;
+	World *world;
 	SaveFile *saveFile;
 	AdventureFile &adventureFile;
 	float mapPreviewHeight;

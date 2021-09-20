@@ -789,6 +789,7 @@ bool ZoneNode::SetZone(Zone *p_myZone)
 		return true;
 	}
 
+
 	children.reserve(myZone->connectedSet.size());
 	for (auto it = myZone->connectedSet.begin(); it != myZone->connectedSet.end(); ++it)
 	{

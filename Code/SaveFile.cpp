@@ -953,25 +953,18 @@ bool SaveFile::IsCompleteLevel(Level *lev)
 	return false;
 }
 
-bool SaveFile::IsUnlockedSector(Sector *sector)
+bool SaveFile::IsUnlockedSector( World *world, Sector *sector)
 {
-	//AdventureSector &as = adventureFile->GetAdventureSector(sector);//adventureFile->GetSector(sector->world, sector->);
-	//int required = as.requiredRunes;
-
-	//int complete = 0;
-	//for (int i = 0; i < 8; ++i)
-	//{
-	//	if (IsCompleteSector(sector->world, i))
-	//	{
-	//		++complete;
-	//		if (complete == required)
-	//			return true;
-	//	}
-	//}
+	int secIndex = sector->index;
+	for (int i = 0; i < secIndex; ++i)
+	{
+		if (!IsCompleteSector(&world->sectors[i]))
+		{
+			return false;
+		}
+	}
 
 	return true;
-
-	//return false;
 }
 
 bool SaveFile::HasUpgrade(int pow)

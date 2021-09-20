@@ -17,9 +17,13 @@ MapSector::MapSector( AdventureFile &p_adventureFile, Sector *p_sector, MapSelec
 	frame = 0;
 	nodes = NULL;
 
+	
+
 	MainMenu *mainMenu = ms->mainMenu;
 	WorldMap *worldMap = ms->worldMap;
 	bg = NULL;
+
+	world = &worldMap->planet->worlds[sec->worldIndex];
 
 	ms->ts_statIcons->SetSpriteTexture(mapShardIconSpr);
 	ms->ts_statIcons->SetSubRect(mapShardIconSpr, 14);
@@ -228,7 +232,7 @@ void MapSector::Draw(sf::RenderTarget *target)
 
 	//if (!saveFile->adventureFile->IsUnlocked()) //later, store this variable instead of 
 		//calling the function every frame
-	bool unlocked = saveFile->IsUnlockedSector(sec);
+	bool unlocked = saveFile->IsUnlockedSector(world, sec);
 
 	if( !unlocked)
 	{
@@ -739,7 +743,7 @@ bool MapSector::Update(ControllerState &curr,
 		bool yPress = (curr.Y && !prev.Y) && ghostAndReplayOn;
 		bool r1Press = (curr.rightShoulder && !prev.rightShoulder) && ghostAndReplayOn;
 
-		if ( (aPress || yPress || r1Press) && saveFile->IsUnlockedSector( sec ))
+		if ( (aPress || yPress || r1Press) && saveFile->IsUnlockedSector( world, sec ))
 		{
 			//no idea wtf this does
 			if (saveFile->IsCompleteSector(sec) )

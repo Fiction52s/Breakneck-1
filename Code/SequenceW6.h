@@ -15,6 +15,8 @@
 struct CoyoteHelper;
 struct Skeleton;
 struct Tiger;
+struct Coyote;
+struct MusicInfo;
 
 struct EnterFortressScene : BasicBossScene
 {
@@ -22,10 +24,19 @@ struct EnterFortressScene : BasicBossScene
 	{
 		ENTRANCE,
 		WAIT,
+		COYOTE_ENTRANCE,
+		WAIT2,
+		FACES1,
 		COYOTECONV,
+		FACES2,
 		SPLITUP,
 		Count
 	};
+
+	Coyote *coyote;
+	MusicInfo *wind;
+	MusicInfo *specialMusic;
+	MusicInfo *prevMusic;
 
 	EnterFortressScene();
 
@@ -37,6 +48,7 @@ struct EnterFortressScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+	void StartRunning();
 };
 
 struct TigerAndBirdTunnelScene : BasicBossScene

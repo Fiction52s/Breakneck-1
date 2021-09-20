@@ -203,7 +203,7 @@ struct SaveFile
 	bool IsCompleteLevel(Level *lev);
 	void CompleteLevel(Level *lev);
 
-	bool IsUnlockedSector(Sector *sector);
+	bool IsUnlockedSector( World *world, Sector *sector);
 	bool TrySetRecordTime(int totalFrames,
 		Level *lev );
 

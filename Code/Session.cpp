@@ -3314,7 +3314,7 @@ void Session::CreateZones()
 
 			for (list<Zone*>::iterator zit = zones.begin(); zit != zones.end(); ++zit)
 			{
-				if ((*zit)->ContainsPointMostSpecific((g->edgeA->v0 + g->edgeA->v1) / 2.0) != NULL);
+				if ((*zit)->ContainsPointMostSpecific((g->edgeA->v0 + g->edgeA->v1) / 2.0) != NULL)
 				{
 					g->zoneA = (*zit);
 					g->zoneB = (*zit);
@@ -3453,6 +3453,8 @@ void Session::CreateZones()
 
 int Session::SetupZones()
 {
+	originalZone = NULL;
+
 	if (zones.size() == 0)
 		return 0;
 
@@ -3626,7 +3628,7 @@ int Session::SetupZones()
 			}
 			else
 			{
-				assert(0);
+				//assert(0);
 			}
 		}
 	}
@@ -3641,6 +3643,18 @@ int Session::SetupZones()
 	zoneTreeEnd = goalZone;
 	zoneTree = new ZoneNode;
 	zoneTree->parent = NULL;
+
+	//this is testing a black gate bug
+	if (zoneTreeStart == NULL)
+	{
+		cout << "unreachable goal? Black gate bug fix." << endl;
+		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		{
+			(*it)->Init();
+		}
+		return 0;
+	}
+
 	zoneTree->SetZone(zoneTreeStart);
 	currentZoneNode = zoneTree;
 
