@@ -15,7 +15,7 @@
 struct CoyoteHelper;
 struct Skeleton;
 struct Tiger;
-struct Coyote;
+struct SequenceCoyote;
 struct MusicInfo;
 
 struct EnterFortressScene : BasicBossScene
@@ -33,7 +33,7 @@ struct EnterFortressScene : BasicBossScene
 		Count
 	};
 
-	Coyote *coyote;
+	SequenceCoyote *seqCoyote;
 	MusicInfo *wind;
 	MusicInfo *specialMusic;
 	MusicInfo *prevMusic;

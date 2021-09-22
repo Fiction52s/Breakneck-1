@@ -1273,6 +1273,11 @@ void GameSession::ProcessAllActors()
 		preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
 	}
 
+	if (mapHeader->postLevelSceneName != "NONE")
+	{
+		postLevelScene = Sequence::CreateScene(mapHeader->postLevelSceneName);
+	}
+
 	////create sequences for the barriers after all enemies have already been loaded
 	//SetupBarrierScenes();
 

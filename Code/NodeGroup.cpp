@@ -26,6 +26,9 @@ NodeGroup::~NodeGroup()
 
 void NodeGroup::SetNodeVec(std::vector<PoiInfo*> *nv)
 {
+	if (nv == NULL)
+		return;
+
 	nodeVec = nv;
 	assert(nodeVec != NULL);
 

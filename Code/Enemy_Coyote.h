@@ -66,7 +66,6 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
 	void BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult);
-
 	//summoner functions
 	void InitEnemyForSummon(SummonGroup *group, Enemy *e);
 

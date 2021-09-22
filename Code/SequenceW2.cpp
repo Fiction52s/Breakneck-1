@@ -159,6 +159,7 @@ void BirdPostFightScene::ReturnToGame()
 	sess->cam.EaseOutOfManual(60);
 	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
+	
 }
 
 void BirdPostFightScene::AddShots()
@@ -237,10 +238,11 @@ void BirdCrawlerAllianceScene::SetupStates()
 
 void BirdCrawlerAllianceScene::ReturnToGame()
 {
-	sess->SetPlayerInputOn(true);
-	sess->hud->Show();
-	sess->cam.SetManual(false);
-	sess->Fade(true, 60, Color::Black);
+	//sess->SetPlayerInputOn(true);
+	//sess->hud->Show();
+	//sess->cam.SetManual(false);
+	//sess->Fade(true, 60, Color::Black);
+	sess->EndLevelNoScene();
 	
 	//owner->cam.EaseOutOfManual(60);
 	//owner->cam.EaseOutOfManual(60);

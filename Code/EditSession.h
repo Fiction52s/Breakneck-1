@@ -474,6 +474,7 @@ struct EditSession : GUIHandler, Session
 	void SetPreviewMusic(const std::string &name);
 	void PlayMusic(MusicInfo *mi);
 	void StopMusic(MusicInfo *mi);
+	void StopCurrentMusic();
 	void CleanupMusic(MusicInfo *&mi);
 	void SnapPointToGraph(sf::Vector2f &p, int gridSize);
 	void SnapPointToGraph(V2d &p, int gridSize);
@@ -826,6 +827,7 @@ struct EditSession : GUIHandler, Session
 	void InitGGPO();
 
 	std::string preLevelSceneName;
+	std::string postLevelSceneName;
 
 	void SetGameMode(int gm);
 	void UpdateNumPlayers();

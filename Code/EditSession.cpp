@@ -873,7 +873,8 @@ void EditSession::TestPlayerMode()
 
 		if (musicSelectorUI->ShouldPlayOriginal())
 		{
-			StopMusic(previewMusic);
+			//StopCurrentMusic();
+			//StopMusic(previewMusic);
 			PlayMusic(originalMusic);
 		}
 		
@@ -1233,11 +1234,28 @@ void EditSession::TestPlayerMode()
 		{
 			CleanupPreLevelScene();
 			preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
+			preLevelSceneName = mapHeader->preLevelSceneName;
 		}
 	}
 	else
 	{
 		CleanupPreLevelScene();
+		preLevelSceneName = "NONE";
+	}
+
+	if (mapHeader->postLevelSceneName != "NONE")
+	{
+		if (postLevelSceneName != mapHeader->postLevelSceneName)
+		{
+			CleanupPostLevelScene();
+			postLevelScene = Sequence::CreateScene(mapHeader->postLevelSceneName);
+			postLevelSceneName = mapHeader->postLevelSceneName;
+		}
+	}
+	else
+	{
+		CleanupPostLevelScene();
+		postLevelSceneName = "NONE";
 	}
 
 	if (!foundShipEnter && shipEnterScene != NULL)
@@ -1315,7 +1333,8 @@ void EditSession::TestPlayerMode()
 
 	if (musicSelectorUI->ShouldPlayOriginal())
 	{
-		StopMusic(previewMusic);
+		//StopCurrentMusic();
+		//StopMusic(previewMusic);
 		PlayMusic(originalMusic);
 	}
 }
@@ -1715,8 +1734,9 @@ void EditSession::CleanupForReload()
 
 	DestroyTilesetCategory(TilesetCategory::C_STORY);
 
-	StopMusic(originalMusic);
-	StopMusic(previewMusic);
+	StopCurrentMusic();
+	//StopMusic(originalMusic);
+	//StopMusic(previewMusic);
 }
 
 EditSession::~EditSession()
@@ -4227,8 +4247,9 @@ int EditSession::Run()
 	swiper->Reset();
 	soundNodeList->Reset();
 
-	StopMusic(originalMusic);
-	StopMusic(previewMusic);
+	StopCurrentMusic();
+	//StopMusic(originalMusic);
+	//StopMusic(previewMusic);
 
 	return result;
 }
@@ -10954,6 +10975,8 @@ void EditSession::RemoveActivePanel(Panel *p)
 	}
 }
 
+
+
 void EditSession::SetOriginalMusic(const std::string &name)
 {
 	CleanupMusic(originalMusic);
@@ -10978,10 +11001,7 @@ void EditSession::PlayMusic(MusicInfo *mi)
 {
 	if (mi != NULL)
 	{
-		mi->music->play();
-		mi->music->setLoop(true);
-		mi->music->setVolume(100);
-
+		mainMenu->musicPlayer->PlayMusic(mi);
 		musicSelectorUI->listHandler->chooser->SetPlayingColor(mi->songPath.stem().string());
 	}
 }
@@ -10999,18 +11019,30 @@ void EditSession::StopMusic(MusicInfo *mi)
 {
 	if (mi != NULL)
 	{
-		mi->music->stop();
-
+		//mi->music->stop();
+		mainMenu->musicPlayer->StopCurrentMusic();
 		musicSelectorUI->listHandler->chooser->SetStoppedColor();
 	}
 }
 
+void EditSession::StopCurrentMusic()
+{
+	mainMenu->musicPlayer->StopCurrentMusic();
+	musicSelectorUI->listHandler->chooser->SetStoppedColor();
+}
+
 void EditSession::CleanupTestPlayerMode()
 {
-	if (originalMusic != NULL && originalMusic->music->getStatus() != sf::SoundSource::Stopped)
+	if ( !(previewMusic != NULL && mainMenu->musicPlayer->currMusic == previewMusic 
+		&& !musicSelectorUI->ShouldPlayOriginal() ) )
 	{
-		originalMusic->music->stop();
+		StopCurrentMusic();
 	}
+	/*if (originalMusic != NULL && originalMusic->music->getStatus() != sf::SoundSource::Stopped)
+	{
+		mainMenu->musicPlayer->StopCurrentMusic();
+		originalMusic->music->stop();
+	}*/
 
 	shardsCapturedField->Reset();
 	fader->Reset();

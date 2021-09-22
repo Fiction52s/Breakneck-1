@@ -20,12 +20,14 @@ struct MusicPlayer
 	void Update();
 	void PauseCurrentMusic();
 	void UnpauseCurrentMusic();
+	void StopFades();
 	int musicFadeOutMax;
 	int musicFadeOutCurr;
 	MusicInfo *fadingOutMusic;
 	MusicInfo *fadingInMusic;
 	int musicFadeInMax;
 	int musicFadeInCurr;
+	bool paused;
 
 	MusicInfo *currMusic;
 

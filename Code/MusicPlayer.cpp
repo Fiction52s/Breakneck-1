@@ -16,6 +16,7 @@ void MusicPlayer::Reset()
 	musicFadeInMax = -1;
 	fadingOutMusic = NULL;
 	fadingInMusic = NULL;
+	//paused = false;
 }
 
 void MusicPlayer::StopCurrentMusic()
@@ -24,7 +25,18 @@ void MusicPlayer::StopCurrentMusic()
 	{
 		StopMusic(currMusic);
 		currMusic = NULL;
+
+		StopMusic(fadingInMusic);
+		fadingInMusic = NULL;
+
+		StopMusic(fadingOutMusic);
+		fadingOutMusic = NULL;
+
+		musicFadeOutMax = -1;
+		musicFadeInMax = -1;
+		
 	}
+	//paused = false;
 }
 
 void MusicPlayer::UpdateVolume()
@@ -38,21 +50,8 @@ void MusicPlayer::UpdateVolume()
 void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 {
 	//MusicInfo *newMusic = musicMap[name];
-
-	musicFadeOutMax = -1;
-	musicFadeInMax = -1;
-
-	if (fadingInMusic != NULL)
-	{
-		StopMusic(fadingInMusic);
-		fadingInMusic = NULL;
-	}
-
-	if (fadingOutMusic != NULL)
-	{
-		StopMusic(fadingOutMusic);
-		fadingOutMusic = NULL;
-	}
+	
+	StopFades();
 
 	if (currMusic != NULL)
 	{
@@ -109,6 +108,8 @@ void MusicPlayer::Update()
 	}
 }
 
+//pause and unpause aren't really
+//done. need to account for fades.
 void MusicPlayer::PauseCurrentMusic()
 {
 	if (currMusic != NULL)
@@ -125,8 +126,7 @@ void MusicPlayer::UnpauseCurrentMusic()
 	}
 }
 
-void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
-	int crossFadeFrames, sf::Time startTime)
+void MusicPlayer::StopFades()
 {
 	if (fadingInMusic != NULL)
 	{
@@ -139,6 +139,15 @@ void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
 		StopMusic(fadingOutMusic);
 		fadingOutMusic = NULL;
 	}
+
+	musicFadeOutMax = -1;
+	musicFadeInMax = -1;
+}
+
+void MusicPlayer::TransitionMusic(MusicInfo *newMusic,
+	int crossFadeFrames, sf::Time startTime)
+{
+	StopFades();
 
 
 	if (newMusic == NULL)
@@ -191,6 +200,8 @@ void MusicPlayer::StopMusic(MusicInfo *m)
 
 void MusicPlayer::FadeOutCurrentMusic(int numFrames)
 {
+	StopFades();
+
 	if (currMusic != NULL)
 	{
 		fadingOutMusic = currMusic;

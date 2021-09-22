@@ -14,5 +14,6 @@
 #include "Enemy_Roadrunner.h"
 #include "Enemy_Firefly.h"
 #include "Enemy_BabyScorpion.h"
+#include "Enemy_SequenceCoyote.h"
 
 #endif

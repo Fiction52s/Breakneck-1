@@ -10,7 +10,7 @@
 #include "Enemy_Skeleton.h"
 #include "Enemy_CoyoteHelper.h"
 #include "Enemy_Tiger.h"
-#include "Enemy_Coyote.h"
+#include "Enemy_SequenceCoyote.h"
 #include "MusicSelector.h"
 
 using namespace std;
@@ -20,12 +20,16 @@ using namespace sf;
 EnterFortressScene::EnterFortressScene()
 	:BasicBossScene(BasicBossScene::RUN)
 {
-	coyote = NULL;
+	seqCoyote = NULL;
 
 	wind = sess->mainMenu->musicManager->songMap["w6_64_Wind"];
+	specialMusic = sess->mainMenu->musicManager->songMap["w3_65_Nothing"];
 
 	assert(wind != NULL);
 	wind->Load();
+
+	assert(specialMusic != NULL);
+	specialMusic->Load();
 }
 
 void EnterFortressScene::SetupStates()
@@ -39,9 +43,9 @@ void EnterFortressScene::SetupStates()
 	stateLength[FACES1] = -1;
 	stateLength[COYOTECONV] = -1;
 	stateLength[FACES2] = -1;
-	stateLength[SPLITUP] = 60;
+	stateLength[SPLITUP] = 120;
 
-	//coyote = (Coyote*)sess->GetEnemy(EnemyType::EN_COYOTEBOSS);
+	seqCoyote = (SequenceCoyote*)sess->GetEnemy(EnemyType::EN_SEQUENCECOYOTE);
 }
 
 void EnterFortressScene::AddShots()
@@ -52,6 +56,7 @@ void EnterFortressScene::AddShots()
 void EnterFortressScene::AddPoints()
 {
 	AddStartAndStopPoints();
+	AddPoint("coyotedest");
 }
 
 void EnterFortressScene::AddGroups()
@@ -115,8 +120,10 @@ void EnterFortressScene::AddFlashes()
 
 void EnterFortressScene::StartRunning()
 {
-	prevMusic = sess->mainMenu->musicPlayer->currMusic;
-	sess->mainMenu->musicPlayer->TransitionMusic(wind, 60);//StopCurrentMusic();//FadeOutCurrentMusic(60);
+	
+
+	//sess->TransitionMusic(wind, 180);
+	//sess->mainMenu->musicPlayer->TransitionMusic(wind, 60);//StopCurrentMusic();//FadeOutCurrentMusic(60);
 	//sess->mainMenu->musicPlayer->PlayMusic(wind);
 }
 
@@ -124,7 +131,8 @@ void EnterFortressScene::ReturnToGame()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	sess->mainMenu->musicPlayer->TransitionMusic(prevMusic, 60);
+	sess->TransitionMusic(prevMusic, 60);
+	//sess->mainMenu->musicPlayer->TransitionMusic(prevMusic, 60);
 
 	BasicBossScene::ReturnToGame();
 }
@@ -137,7 +145,12 @@ void EnterFortressScene::UpdateState()
 	case ENTRANCE:
 		if (frame == 0)
 		{
-
+			
+		}
+		else if (frame == fadeFrames)
+		{
+			prevMusic = sess->mainMenu->musicPlayer->currMusic;
+			sess->TransitionMusic(wind, 120);
 		}
 		EntranceUpdate();
 		break;
@@ -151,6 +164,11 @@ void EnterFortressScene::UpdateState()
 	}
 	case COYOTE_ENTRANCE:
 	{
+		if (frame == 0)
+		{
+			seqCoyote->Walk(points["coyotedest"]->pos);
+			//enemyMover.SetDestNode(node);
+		}
 		break;
 	}
 	case WAIT2:
@@ -162,6 +180,7 @@ void EnterFortressScene::UpdateState()
 		if (frame == 0)
 		{
 			SetFlashGroup("group0");
+			sess->TransitionMusic(specialMusic, 120);
 		}
 		else
 		{
@@ -186,6 +205,7 @@ void EnterFortressScene::UpdateState()
 		if (frame == 0)
 		{
 			SetFlashGroup("group1");
+			seqCoyote->SummonScorpion();
 		}
 		else
 		{
@@ -203,6 +223,10 @@ void EnterFortressScene::UpdateState()
 		break;
 	}
 	case SPLITUP:
+		if (frame == 0)
+		{
+			seqCoyote->Bounce(points["coyotedest"]->pos + V2d(1000, 0));
+		}
 		break;
 	}
 }

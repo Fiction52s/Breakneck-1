@@ -785,6 +785,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupScoreDisplay();
 	void CleanupScoreDisplay();
 	void EndLevel();
+	void EndLevelNoScene();
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
@@ -826,6 +827,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupLogMenu();
 	virtual bool HasLog(int logIndex) { return false; }
 	void SetKeyMarkerToCurrentZone();
+	void TransitionMusic(MusicInfo *mi,
+		int transFrames);
 };
 
 #endif

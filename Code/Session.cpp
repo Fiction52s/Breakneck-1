@@ -521,6 +521,8 @@ void Session::RegisterW3Enemies()
 
 	AddBasicGroundWorldEnemy("coyote", 3, CreateEnemy<Coyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 
+	AddBasicGroundWorldEnemy("sequencecoyote", 3, CreateEnemy<SequenceCoyote>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
+
 	AddWorldEnemy("coyotenode", 3, NULL, SetParamsType<PoiParams>, Vector2i(0, 0), Vector2i(32, 32),
 		false, false, false, false, true, true, false, 1, GetSizedTileset("Enemies/coyotenode_32x32.png"));
 
@@ -5189,6 +5191,8 @@ void Session::TriggerBarrier(Barrier *b)
 {
 	if (b->triggerSeq != NULL)
 	{
+		b->Trigger(); //of course it should trigger here, right?
+		cam.SetManual(true);
 		SetActiveSequence(b->triggerSeq);
 	}
 	else if (b->myBonus != NULL)
@@ -7020,19 +7024,24 @@ void Session::EndLevel()
 	}
 	else
 	{
-		if (IsSessTypeGame())
-		{
-			GameSession *game = GameSession::GetSession();
-			game->QuitGame();
-			/*quit = true;
-			returnVal = resType;*/
-			//goalDestroyed = true;
-		}
-		else
-		{
-			EditSession *edit = EditSession::GetSession();
-			edit->EndTestMode();
-		}
+		EndLevelNoScene();
+	}
+}
+
+void Session::EndLevelNoScene()
+{
+	if (IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		game->QuitGame();
+		/*quit = true;
+		returnVal = resType;*/
+		//goalDestroyed = true;
+	}
+	else
+	{
+		EditSession *edit = EditSession::GetSession();
+		edit->EndTestMode();
 	}
 }
 
@@ -7401,4 +7410,10 @@ void Session::SetKeyMarkerToCurrentZone()
 	}
 	
 	//ah->keyMarker->Reset();
+}
+
+void Session::TransitionMusic(MusicInfo *mi,
+	int transFrames)
+{
+	mainMenu->musicPlayer->TransitionMusic(mi, transFrames);
 }

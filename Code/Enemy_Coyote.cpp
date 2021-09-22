@@ -38,7 +38,6 @@ Coyote::Coyote(ActorParams *ap)
 	actionLength[DANCE_PREP] = 60;
 	actionLength[DANCE] = 360;
 
-
 	patternFlickerFrames = 30;
 	numPatternMoves = 3;
 
@@ -49,6 +48,8 @@ Coyote::Coyote(ActorParams *ap)
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
+
+	
 
 	postFightScene = NULL;
 

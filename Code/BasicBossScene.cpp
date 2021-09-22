@@ -231,7 +231,7 @@ void BasicBossScene::EntranceUpdate()
 		}
 		else if (frame == fadeFrames)
 		{
-			barrier->Trigger();
+			//barrier->Trigger();
 			sess->RemoveAllEnemies();
 			sess->Fade(true, fadeFrames, Color::Black);
 			SetEntranceShot();
@@ -244,10 +244,10 @@ void BasicBossScene::EntranceUpdate()
 		{
 
 
-			if (barrier != NULL)
+			/*if (barrier != NULL)
 			{
 				barrier->Trigger();
-			}
+			}*/
 
 			sess->hud->Hide();
 			player->Wait();
