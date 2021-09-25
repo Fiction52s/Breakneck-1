@@ -9,6 +9,8 @@
 //#include "Enemy_BirdBoss.h"
 #include "Enemy_Bird.h"
 #include "GroundedWarper.h"
+#include "Enemy_SequenceCrawler.h"
+#include "Enemy_SequenceBird.h"
 
 using namespace sf;
 using namespace std;
@@ -234,6 +236,9 @@ void BirdCrawlerAllianceScene::SetupStates()
 	stateLength[CRAWLERARRIVE] = 60;
 	stateLength[CONV] = -1;
 	stateLength[FADEOUT] = 60;
+
+	seqCrawler = (SequenceCrawler*)sess->GetEnemy(EnemyType::EN_SEQUENCECRAWLER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void BirdCrawlerAllianceScene::ReturnToGame()
@@ -284,6 +289,11 @@ void BirdCrawlerAllianceScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			seqBird->facingRight = false;
+			seqBird->Breathe();
+
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -295,6 +305,15 @@ void BirdCrawlerAllianceScene::UpdateState()
 		break;
 	case CRAWLERARRIVE:
 	{
+		if (frame == 0)
+		{
+			seqCrawler->Reset();
+			sess->AddEnemy(seqCrawler);
+			seqCrawler->facingRight = false;
+			//seqCrawler->Init();
+			seqCrawler->DigOut();
+		}
+		
 		break;
 	}
 	case CONV:

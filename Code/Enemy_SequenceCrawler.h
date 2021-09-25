@@ -1,5 +1,5 @@
-#ifndef __ENEMY_SEQUENCECOYOTE_H__
-#define __ENEMY_SEQUENCECOYOTE_H__
+#ifndef __ENEMY_SEQUENCECRAWLER_H__
+#define __ENEMY_SEQUENCECRAWLER_H__
 
 #include "Enemy.h"
 #include "Bullet.h"
@@ -8,19 +8,18 @@
 
 struct GameSession;
 
-struct SequenceCoyote : Enemy
+struct SequenceCrawler : Enemy
 {
 	enum Action
 	{
 		IDLE,
-		WAIT,
-		WALK,
-		SUMMON_SCORPION,
-		BOUNCE,
+		UNDERGROUND,
+		DIG_OUT,
 		A_Count
 	};
 
-	Tileset *ts_walk;
+	//Tileset *ts_walk;
+	Tileset *ts_dig_out;
 
 	int moveFrames;
 	int waitFrames;
@@ -31,15 +30,10 @@ struct SequenceCoyote : Enemy
 
 	V2d targetPos;
 	int framesToArrive;
-	
 
-	SequenceCoyote(ActorParams *ap);
-
-	virtual bool SpawnableByCamera() { return false; }
+	SequenceCrawler(ActorParams *ap);
 	void Wait();
-	void Walk(V2d &pos);
-	void SummonScorpion();
-	void Bounce(V2d &pos);
+	void DigOut();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);
@@ -50,6 +44,7 @@ struct SequenceCoyote : Enemy
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
 	void DrawMinimap(sf::RenderTarget *target) {}
+	virtual bool SpawnableByCamera() { return false; }
 };
 
 #endif

@@ -166,6 +166,8 @@ void EnterFortressScene::UpdateState()
 	{
 		if (frame == 0)
 		{
+			seqCoyote->Reset();
+			sess->AddEnemy(seqCoyote);
 			seqCoyote->Walk(points["coyotedest"]->pos);
 			//enemyMover.SetDestNode(node);
 		}

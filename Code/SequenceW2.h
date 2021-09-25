@@ -6,6 +6,8 @@
 //struct BirdBoss;
 struct Bird;
 struct GroundedWarper;
+struct SequenceCrawler;
+struct SequenceBird;
 
 struct BirdPreFightScene : BasicBossScene
 {
@@ -69,6 +71,9 @@ struct BirdCrawlerAllianceScene : BasicBossScene
 		FADEOUT,
 		Count
 	};
+
+	SequenceCrawler *seqCrawler;
+	SequenceBird *seqBird;
 
 	BirdCrawlerAllianceScene();
 	void SetupStates();

@@ -684,8 +684,7 @@ void EditSession::TestPlayerMode()
 		debugReplayPlayerOn = false;
 	}
 
-	
-
+	goalDestroyed = false;
 	gameState = Session::RUN;
 	cam.Reset();
 	currStorySequence = NULL;
@@ -800,6 +799,7 @@ void EditSession::TestPlayerMode()
 			RemoveEnemy(curr);
 			curr = next;
 		}
+		activeEnemyList = NULL;
 		
 		ResetZones();
 
@@ -1230,12 +1230,12 @@ void EditSession::TestPlayerMode()
 
 	if (mapHeader->preLevelSceneName != "NONE")
 	{
-		if (preLevelSceneName != mapHeader->preLevelSceneName)
-		{
+		//if (preLevelSceneName != mapHeader->preLevelSceneName)
+		//{
 			CleanupPreLevelScene();
 			preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
 			preLevelSceneName = mapHeader->preLevelSceneName;
-		}
+		//}
 	}
 	else
 	{
@@ -1245,12 +1245,12 @@ void EditSession::TestPlayerMode()
 
 	if (mapHeader->postLevelSceneName != "NONE")
 	{
-		if (postLevelSceneName != mapHeader->postLevelSceneName)
-		{
+		//if (postLevelSceneName != mapHeader->postLevelSceneName)
+		//{
 			CleanupPostLevelScene();
 			postLevelScene = Sequence::CreateScene(mapHeader->postLevelSceneName);
 			postLevelSceneName = mapHeader->postLevelSceneName;
-		}
+		//}
 	}
 	else
 	{
@@ -11047,6 +11047,8 @@ void EditSession::CleanupTestPlayerMode()
 	shardsCapturedField->Reset();
 	fader->Reset();
 	swiper->Reset();
+
+	
 
 	ResetEnemies();
 

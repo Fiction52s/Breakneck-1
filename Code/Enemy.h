@@ -320,6 +320,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual void UpdatePostPhysics();
 	virtual void UpdateSprite() {}
 	virtual void FrameIncrement(){}
+	virtual bool SpawnableByCamera() { return true; }
 	virtual void DrawMinimap( sf::RenderTarget *target );
 	virtual void IHitPlayer(int index = 0) {}
 	virtual bool CheckHitPlayer(int index = 0);

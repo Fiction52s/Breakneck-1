@@ -37,5 +37,7 @@
 #include "Enemy_LogItem.h"
 #include "Enemy_TutorialObject.h"
 
+#include "Enemy_SequenceCrawler.h"
+
 
 #endif

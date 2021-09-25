@@ -13,5 +13,6 @@
 #include "Enemy_Shark.h"
 #include "Enemy_Lizard.h"
 #include "Enemy_Parrot.h"
+#include "Enemy_SequenceTiger.h"
 
 #endif

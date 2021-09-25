@@ -375,6 +375,8 @@ void Session::RegisterW1Enemies()
 
 	AddBasicGroundWorldEnemy("crawlerqueen", 1, CreateEnemy<CrawlerQueen>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 2);
 	
+	AddBasicGroundWorldEnemy("sequencecrawler", 1, CreateEnemy<SequenceCrawler>, Vector2i(0, 0), Vector2i(100, 100), false, true, false, false, 1);
+
 	AddBasicAerialWorldEnemy("booster", 1, CreateEnemy<Booster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3 );
 		//GetTileset("Goal/goal_w01_a_288x320.png", 288, 320));
 
@@ -428,6 +430,8 @@ void Session::RegisterW1Enemies()
 void Session::RegisterW2Enemies()
 {
 	AddBasicAerialWorldEnemy("bird", 2, CreateEnemy<Bird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 3);
+
+	AddBasicGroundWorldEnemy("sequencebird", 2, CreateEnemy<SequenceBird>, Vector2i(0, 0), Vector2i(200, 200), false, true, false, false, 1);
 
 	AddBasicAerialWorldEnemy("glidetarget", 2, CreateEnemy<GlideTarget>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
@@ -3995,6 +3999,11 @@ void Session::TrySpawnEnemy(QuadTreeEntrant *qte)
 	if (e->spawned)
 		return;
 
+	if (!e->SpawnableByCamera())
+	{
+		return;
+	}
+
 	bool a = e->spawnRect.intersects(tempSpawnRect);
 	bool b = (e->zone == NULL || e->zone->active);
 
@@ -7020,6 +7029,7 @@ void Session::EndLevel()
 {
 	if (postLevelScene != NULL)
 	{
+		postLevelScene->Reset();
 		SetActiveSequence(postLevelScene);
 	}
 	else
