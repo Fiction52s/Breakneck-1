@@ -650,6 +650,17 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 
 	dir.x *= speed;
 
+	if (sess->GetPlayer(0)->ground != NULL)
+	{
+		//helps slightly while on hills, but needs adjustment later.
+		//only gets you back to neutral, not showing ahead.
+		if ((pVel.y > 0 && tempOffset.y < 0) || pVel.y < 0 && tempOffset.y > 0)
+		{
+			dir.y *= 4;
+		}
+	}
+	
+
 	offsetVel = dir;// *speed;
 	//offsetVel.x *= abs(dir.x);
 	//offsetVel.y *= abs(dir.y);

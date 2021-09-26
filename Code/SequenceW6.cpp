@@ -360,6 +360,8 @@ void TigerAndBirdTunnelScene::UpdateState()
 
 		if (seqBird->action == SequenceBird::IDLE && seqTiger->action == SequenceTiger::IDLE)
 		{
+			//doesnt actually get here, because the length of it is only 60 frames,
+			//not -1. works pretty well though.
 			EndCurrState();
 		}
 		break;
