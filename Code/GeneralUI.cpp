@@ -124,6 +124,7 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 			edit->SetMode(EditSession::CREATE_IMAGES);
 			break;
 		case MAP_OPTIONS:
+			edit->SetMode(EditSession::MAP_OPTIONS);
 			edit->mapOptionsUI->OpenMapOptionsPopup();
 			break;
 		}

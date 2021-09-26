@@ -7,6 +7,8 @@ struct GroundedWarper;
 
 struct Tiger;
 struct CrawlerQueen;
+struct SequenceTiger;
+struct SequenceBird;
 
 struct CrawlerPreFight2Scene : BasicBossScene
 {
@@ -126,6 +128,9 @@ struct BirdTigerAllianceScene : BasicBossScene
 		Count
 	};
 
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
+
 	BirdTigerAllianceScene();
 	void SetupStates();
 	void ReturnToGame();
@@ -150,6 +155,9 @@ struct BirdVSTigerScene : BasicBossScene
 		FADEOUT,
 		Count
 	};
+
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
 
 	BirdVSTigerScene();
 	void SetupStates();

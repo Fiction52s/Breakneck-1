@@ -17,6 +17,8 @@ struct Skeleton;
 struct Tiger;
 struct SequenceCoyote;
 struct MusicInfo;
+struct SequenceTiger;
+struct SequenceBird;
 
 struct EnterFortressScene : BasicBossScene
 {
@@ -57,10 +59,15 @@ struct TigerAndBirdTunnelScene : BasicBossScene
 	{
 		FADE,
 		WAIT,
+		WALK_IN,
 		CONV,
+		WALK_OUT,
 		FADEOUT,
 		Count
 	};
+
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
 
 	TigerAndBirdTunnelScene();
 	void SetupStates();

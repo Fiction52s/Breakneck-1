@@ -11,6 +11,9 @@
 #include "Enemy_Tiger.h"
 #include "Enemy_CrawlerQueen.h"
 
+#include "Enemy_SequenceTiger.h"
+#include "Enemy_SequenceBird.h"
+
 using namespace sf;
 using namespace std;
 
@@ -434,6 +437,8 @@ void TigerPostFightScene::UpdateState()
 BirdTigerAllianceScene::BirdTigerAllianceScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqTiger = NULL;
+	seqBird = NULL;
 }
 
 void BirdTigerAllianceScene::SetupStates()
@@ -445,10 +450,14 @@ void BirdTigerAllianceScene::SetupStates()
 	stateLength[CONV] = -1;
 	stateLength[TIGERSTORY] = 60;
 	stateLength[FADEOUT] = 60;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void BirdTigerAllianceScene::ReturnToGame()
 {
+	sess->EndLevelNoScene();
 }
 
 void BirdTigerAllianceScene::AddShots()
@@ -474,7 +483,7 @@ void BirdTigerAllianceScene::AddEnemies()
 
 void BirdTigerAllianceScene::AddGroups()
 {
-	AddGroup("conv", "W4/w4_bird_tiger");
+	AddGroup("conv", "W4/w4_bird_tiger_alliance");
 	SetConvGroup("conv");
 }
 
@@ -486,6 +495,17 @@ void BirdTigerAllianceScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			//seqBird->facingRight = false;
+			seqBird->Breathe();
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			seqTiger->facingRight = false;
+			//seqTiger->Breathe();
+
+
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -511,10 +531,10 @@ void BirdTigerAllianceScene::UpdateState()
 			sess->Fade(false, 60, Color::Black);
 		}
 
-		if (IsLastFrame())
+		/*if (IsLastFrame())
 		{
 			sess->goalDestroyed = true;
-		}
+		}*/
 		break;
 	}
 
@@ -527,6 +547,8 @@ void BirdTigerAllianceScene::UpdateState()
 BirdVSTigerScene::BirdVSTigerScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqTiger = NULL;
+	seqBird = NULL;
 }
 
 void BirdVSTigerScene::StartRunning()
@@ -547,11 +569,14 @@ void BirdVSTigerScene::SetupStates()
 	stateLength[BIRDRETREAT] = 60;
 	stateLength[TIGERCHASE] = 60;
 	stateLength[FADEOUT] = 60;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void BirdVSTigerScene::ReturnToGame()
 {
-	
+	sess->EndLevelNoScene();
 }
 
 void BirdVSTigerScene::AddShots()
@@ -576,7 +601,7 @@ void BirdVSTigerScene::AddEnemies()
 
 void BirdVSTigerScene::AddGroups()
 {
-	AddGroup("conv", "W4/w4_bird_tiger");
+	AddGroup("conv", "W4/w4_bird_tiger_argue");
 	SetConvGroup("conv");
 }
 
@@ -588,6 +613,15 @@ void BirdVSTigerScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			//seqBird->facingRight = false;
+			seqBird->Breathe();
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			seqTiger->facingRight = false;
+
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -617,11 +651,6 @@ void BirdVSTigerScene::UpdateState()
 			sess->CrossFade( 60, 0, 60, Color::Black);
 		}
 
-		if (IsLastFrame())
-		{
-			sess->cam.SetManual(false);
-			sess->hud->Show();
-		}
 		break;
 	}
 

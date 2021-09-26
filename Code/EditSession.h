@@ -111,6 +111,7 @@ struct EditSession : GUIHandler, Session
 		TEST_PLAYER,
 		TRANSFORM,
 		MOVE_BORDER,
+		MAP_OPTIONS,
 		EMODE_Count
 	};
 

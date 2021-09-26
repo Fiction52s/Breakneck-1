@@ -22,10 +22,12 @@ SequenceBird::SequenceBird(ActorParams *ap)
 
 	actionLength[IDLE] = 2;
 	actionLength[BREATHE] = 2;
+	actionLength[WALK] = 2;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
 	animFactor[BREATHE] = 1;
+	animFactor[WALK] = 1;
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Bird/intro_256x256.png");
@@ -45,6 +47,7 @@ void SequenceBird::ResetEnemy()
 	moveFrames = 0;
 
 	currPosInfo.SetAerial();
+	enemyMover.currPosInfo = currPosInfo;
 
 	UpdateSprite();
 }
@@ -54,6 +57,24 @@ void SequenceBird::Breathe()
 	action = BREATHE;
 	frame = 0;
 	//facingRight = false;
+}
+
+void SequenceBird::Walk(V2d &pos)
+{
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
+
+	action = WALK;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 3);
+	//enemyMover.SetModeNodeJump(pos, 400);
 }
 
 void SequenceBird::DebugDraw(sf::RenderTarget *target)
@@ -90,16 +111,19 @@ void SequenceBird::ProcessState()
 		case BREATHE:
 			frame = 0;
 			break;
+		case WALK:
+			frame = 0;
+			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	/*if (action == WALK && enemyMover.IsIdle())
+	if (action == WALK && enemyMover.IsIdle())
 	{
-	action = IDLE;
-	frame = 0;
-	}*/
+		action = IDLE;
+		frame = 0;
+	}
 }
 
 void SequenceBird::UpdateEnemyPhysics()

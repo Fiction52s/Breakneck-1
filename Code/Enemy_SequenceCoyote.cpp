@@ -56,6 +56,7 @@ void SequenceCoyote::ResetEnemy()
 	moveFrames = 0;
 
 	currPosInfo.SetAerial();
+	enemyMover.currPosInfo = currPosInfo;
 
 	UpdateSprite();
 }

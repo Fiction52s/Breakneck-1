@@ -12,6 +12,9 @@
 #include "Enemy_Tiger.h"
 #include "Enemy_SequenceCoyote.h"
 #include "MusicSelector.h"
+#include "Enemy_SequenceTiger.h"
+#include "Enemy_SequenceBird.h"
+#include "Enemy_SequenceSkeleton.h"
 
 using namespace std;
 using namespace sf;
@@ -239,14 +242,16 @@ void EnterFortressScene::UpdateState()
 TigerAndBirdTunnelScene::TigerAndBirdTunnelScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqTiger = NULL;
+	seqBird = NULL;
 }
 
 void TigerAndBirdTunnelScene::StartRunning()
 {
 
 	//owner->state = GameSession::SEQUENCE;
-	sess->FreezePlayerAndEnemies(true);
-	sess->SetPlayerInputOn(false);
+	//sess->FreezePlayerAndEnemies(true);
+	//sess->SetPlayerInputOn(false);
 }
 
 void TigerAndBirdTunnelScene::SetupStates()
@@ -255,13 +260,18 @@ void TigerAndBirdTunnelScene::SetupStates()
 
 	stateLength[FADE] = 60;
 	stateLength[WAIT] = 60;
+	stateLength[WALK_IN] = -1;
 	stateLength[CONV] = -1;
+	stateLength[WALK_OUT] = 60;
 	stateLength[FADEOUT] = 60;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void TigerAndBirdTunnelScene::ReturnToGame()
 {
-
+	//sess->EndLevelNoScene();
 }
 
 void TigerAndBirdTunnelScene::AddShots()
@@ -271,7 +281,10 @@ void TigerAndBirdTunnelScene::AddShots()
 
 void TigerAndBirdTunnelScene::AddPoints()
 {
-
+	AddPoint("birdwalk1");
+	AddPoint("birdwalk2");
+	AddPoint("tigerwalk1");
+	AddPoint("tigerwalk2");
 }
 
 void TigerAndBirdTunnelScene::AddFlashes()
@@ -298,6 +311,12 @@ void TigerAndBirdTunnelScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			
+			//seqBird->facingRight = false;
+			
+
+			
+
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -307,9 +326,42 @@ void TigerAndBirdTunnelScene::UpdateState()
 		break;
 	case WAIT:
 		break;
+	case WALK_IN:
+		if (frame == 0)
+		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			seqBird->Walk(points["birdwalk1"]->pos);
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			seqTiger->Walk(points["tigerwalk1"]->pos);
+
+			
+		}
+
+		if (seqBird->action == SequenceBird::IDLE && seqTiger->action == SequenceTiger::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
 	case CONV:
 	{
 		ConvUpdate();
+		break;
+	}
+	case WALK_OUT:
+	{
+		if (frame == 0)
+		{
+			seqBird->Walk(points["birdwalk2"]->pos);
+			seqTiger->Walk(points["tigerwalk2"]->pos);
+		}
+
+		if (seqBird->action == SequenceBird::IDLE && seqTiger->action == SequenceTiger::IDLE)
+		{
+			EndCurrState();
+		}
 		break;
 	}
 	case FADEOUT:

@@ -224,7 +224,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool SetHitParams();
 	void SetOffGroundHeight(double h);
 	void SetGroundOffset(double x);
-	
 	V2d AlongGroundDir();
 	void CreateSurfaceMover(PositionInfo &pi,
 		double rad, SurfaceMoverHandler *handler);

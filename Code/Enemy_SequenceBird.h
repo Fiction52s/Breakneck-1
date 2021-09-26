@@ -14,6 +14,7 @@ struct SequenceBird : Enemy
 	{
 		IDLE,
 		BREATHE,
+		WALK,
 		A_Count
 	};
 
@@ -33,6 +34,7 @@ struct SequenceBird : Enemy
 	SequenceBird(ActorParams *ap);
 	void Wait();
 	void Breathe();
+	void Walk(V2d &pos);
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

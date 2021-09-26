@@ -228,7 +228,7 @@ TextTestSeq::TextTestSeq()
 	AddGroup("W3/w3_coy_skeleton");
 	AddGroup("W3/w3_skeleton_kin");
 
-	AddGroup("W4/w4_bird_tiger");
+	//AddGroup("W4/w4_bird_tiger");
 	AddGroup("W4/w4_crawler_kin");
 	AddGroup("W4/w4_tiger_fight_pre");
 	AddGroup("W4/w4_tiger_fight_post");

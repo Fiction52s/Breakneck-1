@@ -11,7 +11,7 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel = new Panel("mapoptions", 600, 600, this, true);
 
 	mapOptionsPanel->SetPosition(Vector2i(960 - mapOptionsPanel->size.x / 2,
-		540 - mapOptionsPanel->size.y / 2));
+		540 - mapOptionsPanel->size.y / 2 - 300));
 
 	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 

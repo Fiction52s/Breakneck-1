@@ -76,6 +76,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new BirdCrawlerAllianceScene;
 	}
+	else if (name == "birdtigeralliancescene")
+	{
+		bScene = new BirdTigerAllianceScene;
+	}
 	else if (name == "birdtigerapproach")
 	{
 		bScene = new BirdTigerApproachScene;

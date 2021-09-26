@@ -71,6 +71,10 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new TigerPreFightScene;
 	}
+	else if (name == "birdtigeralliancescene")
+	{
+		bScene = new BirdTigerAllianceScene;
+	}
 	else if (name == "birdtigervsscene")
 	{
 		bScene = new BirdVSTigerScene;

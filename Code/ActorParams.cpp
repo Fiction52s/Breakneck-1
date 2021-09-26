@@ -185,6 +185,7 @@ void PoiParams::SetPanelInfo()
 {
 	Panel *p = type->panel;
 
+	type->SetSpecialDropIndex(type->GetSpecialOptionsIndex(name));
 	//p->textBoxes["name"]->text.setString( name );
 }
 

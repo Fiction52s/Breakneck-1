@@ -326,6 +326,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	std::list<Edge*> globalBorderEdges;
 	bool drain;
 	bool playerAndEnemiesFrozen;
+	bool playerFrozen;
 
 	std::map<std::string, PoiInfo*> poiMap;
 	std::vector<std::map<std::string, std::vector<PoiInfo*>>> bossNodeVectorMap;
@@ -677,6 +678,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetDrainOn(bool d);
 	void RemoveAllEnemies();
 	void FreezePlayerAndEnemies(bool freeze);
+	void FreezePlayer(bool freeze);
 	void SetGlobalBorders();
 	void SetupGlobalBorderQuads(bool *blackBorder, bool &topBorderOn);
 	void CleanupGlobalBorders();

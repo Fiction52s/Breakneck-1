@@ -594,6 +594,8 @@ void Session::RegisterW4Enemies()
 	//AddBasicGroundWorldEnemy("orangegoal", 4, CreateEnemy<Goal>, Vector2i(0, -32), Vector2i(200, 200), false, false, false, false, 1);
 
 	AddBasicGroundWorldEnemy("tiger", 4, CreateEnemy<Tiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 2);
+
+	AddBasicGroundWorldEnemy("sequencetiger", 4, CreateEnemy<SequenceTiger>, Vector2i(0, 0), Vector2i(80, 80), false, true, false, false, 1);
 	//AddWorldEnemy("rail", 4, LoadParams<RailParams>, NULL, MakeParamsAerial<RailParams>,
 	//	Vector2i(0, 0), Vector2i(32, 32), false, false, false, false,
 	//	3, GetTileset("Enemies/rail_64x64.png", 64, 64));
@@ -673,6 +675,8 @@ void Session::RegisterW5Enemies()
 
 	AddBasicAerialWorldEnemy("gator", 5, CreateEnemy<Gator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 
+	AddBasicAerialWorldEnemy("sequencegator", 5, CreateEnemy<SequenceGator>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
 	AddBasicAerialWorldEnemy("hungrycomboer", 5, CreateEnemy<HungryComboer>, Vector2i(0, 0), Vector2i(128, 128), false, true, false, false, 3);
 
 	AddWorldEnemy("limitedhungrycomboer", 5, CreateEnemy<HungryComboer>, SetParamsType<JugglerParams>, Vector2i(0, 0), Vector2i(128, 128), true, true, false, false, true, false, false, 3);
@@ -739,6 +743,8 @@ void Session::RegisterW6Enemies()
 	AddBasicAerialWorldEnemy("freeflightbooster", 6, CreateEnemy<FreeFlightBooster>, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3);
 
 	AddBasicGroundWorldEnemy("skeleton", 6, CreateEnemy<Skeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
+
+	AddBasicGroundWorldEnemy("sequenceskeleton", 6, CreateEnemy<SequenceSkeleton>, Vector2i(0, 0), Vector2i(200, 200), false, false, false, false);
 	//w6
 	AddBasicGroundWorldEnemy("coyotehelper", 6, CreateEnemy<CoyoteHelper>, Vector2i(0, 0), Vector2i(80, 80), false, false, false, false);
 
@@ -1558,6 +1564,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	drain = true;
 	goalDestroyed = false;
 	playerAndEnemiesFrozen = false;
+	playerFrozen = false;
 
 	currSuperPlayer = NULL;
 	superSequence = NULL;
@@ -4570,6 +4577,11 @@ void Session::FreezePlayerAndEnemies(bool freeze)
 	playerAndEnemiesFrozen = freeze;
 }
 
+void Session::FreezePlayer(bool freeze)
+{
+	playerFrozen = freeze;
+}
+
 int Session::GetGameSessionState()
 {
 	return gameState;
@@ -4992,7 +5004,8 @@ void Session::SetActiveSequence(Sequence *activeSeq)
 
 	if (activeSequence == preLevelScene)
 	{
-		FreezePlayerAndEnemies(true);
+		FreezePlayer(true);
+		//FreezePlayerAndEnemies(true);
 		SetPlayerInputOn(false);
 	}
 
@@ -5015,7 +5028,8 @@ void Session::ActiveSequenceUpdate()
 			{
 				if (activeSequence == preLevelScene)
 				{
-					FreezePlayerAndEnemies(false);
+					//FreezePlayerAndEnemies(false);
+					FreezePlayer(false);
 					SetPlayerInputOn(true);
 					if (shipEnterScene != NULL)
 					{
@@ -5429,7 +5443,7 @@ void Session::CleanupShipExit()
 void Session::UpdateEnemiesPrePhysics()
 {
 	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	if ((player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT) && !playerFrozen)
 	{
 		return;
 	}
@@ -5467,7 +5481,7 @@ void Session::UpdatePhysics()
 {
 	Actor *p = NULL;
 	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	if ((player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT) && !playerFrozen)
 	{
 		return;
 	}
@@ -5498,19 +5512,22 @@ void Session::UpdatePhysics()
 	//1 substep of players, then 1 substep of enemies. how it should be.
 	for (substep = 0; substep < NUM_MAX_STEPS; ++substep)
 	{
-		for (int i = 0; i < 4; ++i)
+		if (!playerFrozen)
 		{
-			p = GetPlayer(i);
-
-			if (p != NULL)
+			for (int i = 0; i < 4; ++i)
 			{
-				//players always have high accuracy movements in normal physics
-				p->UpdatePhysics();
-				/*numSteps = p->GetNumSteps();
-				for (substep = 0; substep < numSteps; ++substep)
+				p = GetPlayer(i);
+
+				if (p != NULL)
 				{
+					//players always have high accuracy movements in normal physics
 					p->UpdatePhysics();
-				}*/
+					/*numSteps = p->GetNumSteps();
+					for (substep = 0; substep < numSteps; ++substep)
+					{
+						p->UpdatePhysics();
+					}*/
+				}
 			}
 		}
 
@@ -5529,7 +5546,7 @@ void Session::UpdatePhysics()
 void Session::UpdateEnemiesPostPhysics()
 {
 	Actor *player = GetPlayer(0);
-	if (player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT)
+	if ((player->action == Actor::INTRO || player->action == Actor::SPAWNWAIT) && !playerFrozen)
 	{
 		return;
 	}
@@ -6244,7 +6261,10 @@ bool Session::RunGameModeUpdate()
 
 		if (!playerAndEnemiesFrozen)
 		{
-			UpdatePreFrameCalculations();
+			if (!playerFrozen)
+			{
+				UpdatePreFrameCalculations();
+			}
 			UpdateEnemiesPreFrameCalculations();
 		}
 
@@ -6294,7 +6314,10 @@ bool Session::RunGameModeUpdate()
 
 		if (!playerAndEnemiesFrozen)
 		{
-			UpdatePlayersPrePhysics();
+			if (!playerFrozen)
+			{
+				UpdatePlayersPrePhysics();
+			}
 		}
 		
 
@@ -6313,10 +6336,10 @@ bool Session::RunGameModeUpdate()
 
 		UpdateInputVis();
 
+		
 		if (!playerAndEnemiesFrozen)
 		{
 			UpdateEnemiesPrePhysics();
-
 			UpdatePhysics();
 		}
 
@@ -6324,7 +6347,10 @@ bool Session::RunGameModeUpdate()
 
 		if (!playerAndEnemiesFrozen)
 		{
-			UpdatePlayersPostPhysics();
+			if (!playerFrozen)
+			{
+				UpdatePlayersPostPhysics();
+			}
 		}
 
 		RecGhostRecordFrame();

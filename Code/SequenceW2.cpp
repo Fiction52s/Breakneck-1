@@ -225,6 +225,8 @@ void BirdPostFightScene::UpdateState()
 BirdCrawlerAllianceScene::BirdCrawlerAllianceScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqCrawler = NULL;
+	seqBird = NULL;
 }
 
 void BirdCrawlerAllianceScene::SetupStates()
