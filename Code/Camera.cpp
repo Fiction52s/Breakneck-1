@@ -63,9 +63,9 @@ Camera::Camera()
 	currMove = NULL;
 
 	maxOffsetLeft = 150;
-	maxOffsetRight = -150;
-	maxOffsetTop = 150;//300;//150;//125;// -75;//-125;
-	maxOffsetBottom = 150;//75;//300;//150;//200;//75;//125;//150;
+	maxOffsetRight = 150;
+	maxOffsetTop = 150;//80;//170;//540-100;//300;//150;//125;// -75;//-125;
+	maxOffsetBottom = 150;//80;//170;//75;//300;//150;//200;//75;//125;//150;
 	
 	rX = 0;
 	rY = 0;
@@ -171,6 +171,297 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 
 	return numEnemies;
 }
+
+//this is the new one i was working on to debug the old one. probably revisit at some point
+
+//Vector2f Camera::GetNewOffset(V2d &pVel)
+//{
+//	float offXAccelOut = .1;
+//	float offXAccelIn = .1;
+//	float offYAccelOut = .1;
+//	float offYAccelIn = .1;
+//
+//	Vector2f targetOffset;
+//	double maxXVelRegistered = 30.0;
+//	double maxYVelRegistered = 30.0;
+//	Vector2f moveFactor;
+//	float moveF = 1.0;
+//
+//	Vector2f tempOffset = offset;
+//
+//
+//	double bigXMove = 8.0;
+//	double smallXMove = 4.0;
+//	double returnXMove = 4.0;
+//
+//	if (pVel.x > 0 && tempOffset.x < 0)
+//	{
+//		tempOffset.x += bigXMove;
+//	}
+//	else if (pVel.x > 0 && tempOffset.x >= 0)
+//	{
+//		tempOffset.x += smallXMove;
+//	}
+//	else if (pVel.x < 0 && tempOffset.x > 0)
+//	{
+//		tempOffset.x -= bigXMove;
+//	}
+//	else if (pVel.x < 0 && tempOffset.x <= 0)
+//	{
+//		tempOffset.x -= smallXMove;
+//	}
+//	else if (pVel.x == 0)
+//	{
+//		if (tempOffset.x > 0)
+//		{
+//			tempOffset.x -= returnXMove;
+//			if (tempOffset.x < 0)
+//			{
+//				tempOffset.x = 0;
+//			}
+//		}
+//		else if (tempOffset.x < 0)
+//		{
+//			tempOffset.x += returnXMove;
+//			if (tempOffset.x > 0)
+//			{
+//				tempOffset.x = 0;
+//			}
+//		}
+//	}
+//
+//	if (tempOffset.x > maxOffsetLeft)
+//	{
+//		tempOffset.x = maxOffsetLeft;
+//	}
+//	else if (tempOffset.x < -maxOffsetRight)
+//	{
+//		tempOffset.x = -maxOffsetRight;
+//	}
+//
+//	double bigYMove = 8.0;
+//	double smallYMove = 4.0;
+//	double returnYMove = 4.0;
+//
+//	if (pVel.y > 0 && tempOffset.y < 0)
+//	{
+//		tempOffset.y += bigYMove;
+//	}
+//	else if (pVel.y > 0 && tempOffset.y >= 0)
+//	{
+//		tempOffset.y += smallYMove;
+//	}
+//	else if (pVel.y < 0 && tempOffset.y > 0)
+//	{
+//		tempOffset.y -= bigYMove;
+//	}
+//	else if (pVel.y < 0 && tempOffset.y <= 0)
+//	{
+//		tempOffset.y -= smallYMove;
+//	}
+//	else if (pVel.y == 0)
+//	{
+//		if (tempOffset.y > 0)
+//		{
+//			tempOffset.y -= returnYMove;
+//			if (tempOffset.y < 0)
+//			{
+//				tempOffset.y = 0;
+//			}
+//		}
+//		else if (tempOffset.y < 0)
+//		{
+//			tempOffset.y += returnYMove;
+//			if (tempOffset.y > 0)
+//			{
+//				tempOffset.y = 0;
+//			}
+//		}
+//	}
+//
+//	if (tempOffset.y > maxOffsetTop)
+//	{
+//		tempOffset.y = maxOffsetTop;
+//	}
+//	else if (tempOffset.y < -maxOffsetBottom)
+//	{
+//		tempOffset.y = -maxOffsetBottom;
+//	}
+//
+//	tempOffset *= GetZoom();
+//
+//	return tempOffset;
+//
+//	if (pVel.x > 0)
+//	{
+//		moveFactor.x = min(1.0, pVel.x / maxXVelRegistered);
+//		moveFrames.x += 1.0;
+//	}
+//	else if (pVel.x < 0)
+//	{
+//		moveFactor.x = max(-1.0, pVel.x / maxXVelRegistered);
+//		moveFrames.x += -1.f;
+//	}
+//	else
+//	{
+//		float moveFrameIncrement = 1.f;
+//		if (moveFrames.x > 0)
+//		{
+//			moveFrames.x -= moveFrameIncrement;
+//		}
+//		else if (moveFrames.x < 0)
+//		{
+//			moveFrames.x += moveFrameIncrement;
+//		}
+//	}
+//
+//	if (pVel.y > 0)
+//	{
+//		moveFactor.y = min(1.0, pVel.y / maxYVelRegistered);
+//		moveFrames.y += 1.0;
+//	}
+//	else if (pVel.y < 0)
+//	{
+//		moveFactor.y = max(-1.0, pVel.y / maxYVelRegistered);
+//		moveFrames.y += -1.f;
+//	}
+//	else
+//	{
+//		float moveFrameIncrement = 1.f;
+//		if (moveFrames.y > 0)
+//		{
+//			moveFrames.y -= moveFrameIncrement;
+//		}
+//		else if (moveFrames.y < 0)
+//		{
+//			moveFrames.y += moveFrameIncrement;
+//		}
+//	}
+//
+//	float maxFramesX = 60;
+//	float maxFramesY = 60;
+//
+//	if (moveFrames.x > maxFramesX)
+//	{
+//		moveFrames.x = maxFramesX;
+//	}
+//	else if (moveFrames.x < -maxFramesX)
+//	{
+//		moveFrames.x = -maxFramesX;
+//	}
+//
+//	if (moveFrames.y > maxFramesY)
+//	{
+//		moveFrames.y = maxFramesY;
+//	}
+//	else if (moveFrames.y < -maxFramesY)
+//	{
+//		moveFrames.y = -maxFramesY;
+//	}
+//
+//	Vector2f maxOff;
+//	if (moveFrames.x > 0)
+//	{
+//		maxOff.x = 100.f + maxOffsetLeft * (moveFrames.x / maxFramesX);
+//	}
+//	else if (moveFrames.x < 0)
+//	{
+//		maxOff.x = -100.f + maxOffsetRight * (moveFrames.x / maxFramesX);
+//	}
+//	else
+//	{
+//		maxOff.x = 0;
+//	}
+//
+//	if (moveFrames.y > 0)
+//	{
+//		maxOff.y = 100.f + maxOffsetTop * (moveFrames.y / maxFramesY);//maxOffsetTop;//125.f;// + 150.f * (moveFrames.y / maxFramesX);
+//	}
+//	else if (moveFrames.y < 0)
+//	{
+//		maxOff.y = -100.f - maxOffsetBottom * (-moveFrames.y / maxFramesY);//-maxOffsetBottom;//-75.f;// +150.f * (moveFrames.y / maxFramesX);
+//	}
+//	else
+//	{
+//		maxOff.y = 0;
+//	}
+//
+//	targetOffset = maxOff;
+//
+//	targetOffset *= GetZoom();//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
+//							  //cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
+//
+//							  //offset = targetOffset;
+//							  //offset = targetOffset;
+//	Vector2f maxVel(1.0, 1.0);
+//
+//	//	float speed = 2.0;
+//	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0 )
+//	{
+//		maxVel.x *= 2;	//speed *= 2;
+//	}
+//	else if ((pVel.y > 0 && tempOffset.y < 0) || pVel.y < 0 && tempOffset.y > 0)
+//	{
+//		maxVel.y *= 10;
+//	}
+//	//
+//	//	dir.x *= speed;
+//
+//	offsetVel = Vector2f(0, 0);
+//	if (targetOffset.x > tempOffset.x)
+//	{
+//		offsetVel.x = maxVel.x;
+//	}
+//	else if( targetOffset.x < tempOffset.x )
+//	{
+//		offsetVel.x = -maxVel.x;
+//	}
+//	else
+//	{
+//		offsetVel.x = 0;
+//	}
+//
+//	if (targetOffset.y > tempOffset.y)
+//	{
+//		offsetVel.y = maxVel.y;
+//	}
+//	else if( targetOffset.y < tempOffset.y)
+//	{
+//		offsetVel.y = -maxVel.y;
+//	}
+//	else
+//	{
+//		offsetVel.y = 0;
+//	}
+//
+//	/*Vector2f dir = normalize(targetOffset - tempOffset);
+//	float speed = 2.0;
+//	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0)
+//	{
+//		speed *= 2;
+//	}
+//
+//	dir.x *= speed;
+//
+//	offsetVel = dir;*/
+//
+//	tempOffset += offsetVel;//targetOffset;
+//	/*Vector2f diff = targetOffset - tempOffset;
+//	if (abs(diff.x) <= maxVel.x)
+//	{
+//		tempOffset.x = targetOffset.x;
+//		offsetVel.x = 0;
+//	}
+//	if (abs(diff.y) <= maxVel.y)
+//	{
+//		tempOffset.y = targetOffset.y;
+//		offsetVel.y = 0;
+//	}*/
+//
+//	cout << "tempOffset: " << tempOffset.x << ", " << tempOffset.y << endl;
+//	return tempOffset;
+//	//cout << "offset: " << offset.x << " , " << offset.y << endl;
+//}
 
 Vector2f Camera::GetNewOffset( V2d &pVel )
 {
@@ -287,38 +578,7 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 		maxOff.y = 0;
 	}
 	
-
-	Vector2f moveStuff;
-	
 	targetOffset = maxOff;// *5.f;
-
-
-	/*if (moveFrames.x > 0)
-	{
-		targetOffset.x = moveFrames.x / maxFramesX;
-	}
-	else if (moveFrames.x < 0)
-	{
-		targetOffset.x = moveFrames.x / maxFramesX;
-	}
-	else
-	{
-		targetOffset.x = 0;
-	}
-
-	if (moveFrames.y > 0)
-	{
-		targetOffset.y = moveFrames.y / maxFramesY;
-	}
-	else if (moveFrames.y < 0)
-	{
-		targetOffset.y = moveFrames.y / maxFramesY;
-	}
-	else
-	{
-		targetOffset.y = 0;
-	}*/
-	
 
 	//targetOffset = //moveFactor;
 	if (pVel.x > 0)
