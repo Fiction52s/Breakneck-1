@@ -16,11 +16,15 @@ struct SequenceCoyote : Enemy
 		WAIT,
 		WALK,
 		SUMMON_SCORPION,
+		SCORPION_STAND,
+		TURN,
+		JUMPSQUAT,
 		BOUNCE,
 		A_Count
 	};
 
-	Tileset *ts_walk;
+	Tileset *ts_coy;
+	Tileset *ts_scorp;
 
 	int moveFrames;
 	int waitFrames;
@@ -29,8 +33,11 @@ struct SequenceCoyote : Enemy
 
 	int targetPlayerIndex;
 
+	V2d bouncePos;
 	V2d targetPos;
 	int framesToArrive;
+
+	sf::Sprite scorpSprite;
 	
 
 	SequenceCoyote(ActorParams *ap);

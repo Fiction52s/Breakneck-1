@@ -60,6 +60,7 @@
 #include "GameMode.h"
 #include "Enemy_RewindBooster.h"
 #include "Enemy_TutorialObject.h"
+#include "Enemy_ScorpionLauncher.h"
 
 #include "GGPO.h"
 
@@ -373,6 +374,9 @@ void Actor::PopulateState(PState *ps)
 	ps->springStunFrames = springStunFrames;
 	ps->springStunFramesStart = springStunFramesStart;
 
+	ps->currScorpionLauncher = currScorpionLauncher;
+	ps->oldScorpionLauncher = oldScorpionLauncher;
+
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
@@ -597,6 +601,9 @@ void Actor::PopulateFromState(PState *ps)
 	oldSwingLauncher = ps->oldSwingLauncher;
 	currBounceBooster = ps->currBounceBooster;
 	oldBounceBooster = ps->oldBounceBooster;
+
+	currScorpionLauncher = ps->currScorpionLauncher;
+	oldScorpionLauncher = ps->oldScorpionLauncher;
 
 	springStunFrames = ps->springStunFrames;
 	springStunFramesStart = ps->springStunFramesStart;
@@ -4468,6 +4475,8 @@ void Actor::Respawn( bool setStartPos )
 	currRewindBooster = NULL;
 	currHomingBooster = NULL;
 	oldBooster = NULL;
+	currScorpionLauncher = NULL;
+	oldScorpionLauncher = NULL;
 
 	currBounceBooster = NULL;
 	oldBounceBooster = NULL;
@@ -13770,6 +13779,8 @@ void Actor::PhysicsResponse()
 	{
 		if (SpringLaunch()) return;
 
+		if (ScorpionLaunch()) return;
+
 		if (TeleporterLaunch())return;
 
 		if (SwingLaunch())return;
@@ -13933,6 +13944,8 @@ void Actor::PhysicsResponse()
 	else
 	{
 		if (SpringLaunch()) return;
+
+		if (ScorpionLaunch()) return;
 
 		if (TeleporterLaunch())return;
 
@@ -16181,6 +16194,48 @@ bool Actor::AimLauncherAim()
 	return false;
 }
 
+bool Actor::ScorpionLaunch()
+{
+	if (currScorpionLauncher != NULL)
+	{
+		oldScorpionLauncher = currScorpionLauncher;
+		
+		currScorpionLauncher->Launch();
+		position = currScorpionLauncher->GetPosition();
+		V2d sprDir = currScorpionLauncher->dir;
+
+		double s = currScorpionLauncher->speed;
+
+		velocity = sprDir * s;
+
+		SetAction(BOOSTERBOUNCE);
+		frame = 0;
+
+		currScorpionLauncher = NULL;
+
+		holdJump = false;
+		holdDouble = false;
+		RestoreAirOptions();
+		ground = NULL;
+		currWall = NULL;
+		wallNormal = V2d(0, 0);
+		
+
+		if (velocity.x > 0)
+		{
+			facingRight = true;
+		}
+		else if (velocity.x < 0)
+		{
+			facingRight = false;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
 bool Actor::SpringLaunch()
 {
 	if (currSpring != NULL)
@@ -17518,6 +17573,23 @@ void Actor::HandleEntrant(QuadTreeEntrant *qte)
 				if (boost->hitBody.Intersects(boost->currHitboxFrame, &hurtBody) && boost->IsBoostable())
 				{
 					currBounceBooster = boost;
+				}
+			}
+			else
+			{
+				//some replacement formula later
+			}
+		}
+		else if (en->type == EnemyType::EN_SCORPIONLAUNCHER)
+		{
+			ScorpionLauncher *sLaunch = (ScorpionLauncher*)qte;
+
+			if (currScorpionLauncher == NULL)
+			{
+				if (sLaunch->hitBody.Intersects(sLaunch->currHitboxFrame, &hurtBody) 
+					&& sLaunch->action == Spring::IDLE)
+				{
+					currScorpionLauncher = sLaunch;
 				}
 			}
 			else

@@ -31,6 +31,7 @@ struct EnterFortressScene : BasicBossScene
 		FACES1,
 		COYOTECONV,
 		FACES2,
+		SUMMON_SCORPION,
 		SPLITUP,
 		Count
 	};

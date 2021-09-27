@@ -40,13 +40,14 @@ void EnterFortressScene::SetupStates()
 	SetNumStates(Count);
 
 	stateLength[ENTRANCE] = -1;
-	stateLength[WAIT] = 1;
-	stateLength[COYOTE_ENTRANCE] = 60;
-	stateLength[WAIT2] = 60;
+	stateLength[WAIT] = 120;
+	stateLength[COYOTE_ENTRANCE] = -1;
+	stateLength[WAIT2] = 120;
 	stateLength[FACES1] = -1;
 	stateLength[COYOTECONV] = -1;
 	stateLength[FACES2] = -1;
-	stateLength[SPLITUP] = 120;
+	stateLength[SUMMON_SCORPION] = 90;
+	stateLength[SPLITUP] = 90;
 
 	seqCoyote = (SequenceCoyote*)sess->GetEnemy(EnemyType::EN_SEQUENCECOYOTE);
 }
@@ -87,7 +88,7 @@ void EnterFortressScene::AddFlashes()
 		0, 30, 60, 30, Vector2f(960, 540));
 
 	AddFlashedImage("c4", sess->GetTileset("Story/EnterFortress/Breakneck_Comic_W6_1920x1080_04.png"),
-		0, 30, 60, 30, Vector2f(960, 540));
+		0, 30, 20, 30, Vector2f(960, 540));
 
 	AddSeqFlashToGroup(group, "c3", 0);
 	AddSeqFlashToGroup(group, "c10", 0);
@@ -135,6 +136,7 @@ void EnterFortressScene::ReturnToGame()
 	Actor *player = sess->GetPlayer(0);
 
 	sess->TransitionMusic(prevMusic, 60);
+	sess->RemoveEnemy(seqCoyote);
 	//sess->mainMenu->musicPlayer->TransitionMusic(prevMusic, 60);
 
 	BasicBossScene::ReturnToGame();
@@ -174,6 +176,11 @@ void EnterFortressScene::UpdateState()
 			seqCoyote->Walk(points["coyotedest"]->pos);
 			//enemyMover.SetDestNode(node);
 		}
+
+		if (seqCoyote->action == SequenceCoyote::IDLE)
+		{
+			EndCurrState();
+		}
 		break;
 	}
 	case WAIT2:
@@ -210,7 +217,6 @@ void EnterFortressScene::UpdateState()
 		if (frame == 0)
 		{
 			SetFlashGroup("group1");
-			seqCoyote->SummonScorpion();
 		}
 		else
 		{
@@ -224,6 +230,20 @@ void EnterFortressScene::UpdateState()
 		{
 		coy->StartFight();
 		sess->ReverseDissolveGates(Gate::BOSS);
+		}*/
+		break;
+	}
+	case SUMMON_SCORPION:
+	{
+		if (frame == 0)
+		{
+			seqCoyote->SummonScorpion();
+		}
+		
+
+		/*if (seqCoyote->action != SequenceCoyote::SUMMON_SCORPION)
+		{
+			EndCurrState();
 		}*/
 		break;
 	}

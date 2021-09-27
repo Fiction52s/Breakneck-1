@@ -343,7 +343,8 @@ Panel *ActorType::CreatePanel()
 		|| name == "swinglauncherccw"
 		|| name == "aimlauncher"
 		|| name == "hominglauncher"
-		|| name == "grindlauncher")
+		|| name == "grindlauncher"
+		|| name == "scorpionlauncher")
 	{
 		p = CreateDefaultPanel();
 		AddSetDirectionButton(p);

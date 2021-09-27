@@ -356,6 +356,8 @@ struct PState
 	SwingLauncher *oldSwingLauncher;
 	BounceBooster *currBounceBooster;
 	BounceBooster *oldBounceBooster;
+	ScorpionLauncher *currScorpionLauncher;
+	ScorpionLauncher *oldScorpionLauncher;
 
 	int springStunFrames;
 	int springStunFramesStart;

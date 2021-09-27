@@ -33,13 +33,23 @@ SequenceCoyote::SequenceCoyote(ActorParams *ap)
 	actionLength[WALK] = 15;
 	animFactor[WALK] = 5;
 
-	actionLength[SUMMON_SCORPION] = 30;
-	animFactor[SUMMON_SCORPION] = 2;
+	actionLength[SUMMON_SCORPION] = 17;
+	animFactor[SUMMON_SCORPION] = 3;
+
+	actionLength[SCORPION_STAND] = 2;
+	animFactor[SCORPION_STAND] = 1;
+
+	actionLength[TURN] = 2;
+	animFactor[TURN] = 3;
+
+	actionLength[JUMPSQUAT] = 12;
+	animFactor[JUMPSQUAT] = 1;
 
 	actionLength[BOUNCE] = 2;
 	animFactor[BOUNCE] = 2;
 
-	ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
+	ts_coy = GetSizedTileset("Bosses/Coyote/coy_old_80x80.png");
+	ts_scorp = GetSizedTileset("Bosses/Coyote/coy_scorp_160x128.png");
 
 	ResetEnemy();
 }
@@ -93,15 +103,28 @@ void SequenceCoyote::ProcessState()
 			frame = 0;
 			break;
 		case SUMMON_SCORPION:
-			action = IDLE;
+			action = SCORPION_STAND;
 			frame = 0;
+			break;
+		case SCORPION_STAND:
+			frame = 0;
+			break;
+		case TURN:
+			action = JUMPSQUAT;
+			frame = 0;
+			facingRight = !facingRight;
+			break;
+		case JUMPSQUAT:
+			action = BOUNCE;
+			frame = 0;
+			enemyMover.SetModeNodeJump(bouncePos, 400);
 			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if (action == WALK && enemyMover.IsIdle())
+	if ((action == WALK || action == BOUNCE ) && enemyMover.IsIdle())
 	{
 		action = IDLE;
 		frame = 0;
@@ -134,9 +157,21 @@ void SequenceCoyote::SummonScorpion()
 
 void SequenceCoyote::Bounce(V2d &pos)
 {
-	action = BOUNCE;
+	/*if (pos.x >= GetPosition().x)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}*/
+
+	action = TURN;
+	//action = JUMPSQUAT;//BOUNCE;
 	frame = 0;
-	enemyMover.SetModeNodeJump(pos, 400);
+	bouncePos = pos;
+	
+	//enemyMover.SetModeNodeJump(pos, 400);
 }
 
 void SequenceCoyote::UpdateEnemyPhysics()
@@ -150,23 +185,90 @@ void SequenceCoyote::UpdateEnemyPhysics()
 
 void SequenceCoyote::UpdateSprite()
 {
-	sprite.setTexture(*ts_walk->texture);
+	sprite.setTexture(*ts_coy->texture);
+	scorpSprite.setTexture(*ts_scorp->texture);
 
-	if (action == WALK)
+	int coyTile = 0;
+	switch (action)
 	{
-		ts_walk->SetSubRect(sprite, frame / animFactor[WALK], !facingRight);
+	case IDLE:
+		coyTile = 15;
+		break;
+	case WAIT:
+		coyTile = 15;
+		break;
+	case WALK:
+		coyTile = frame / animFactor[WALK];
+		break;
+	case SUMMON_SCORPION:
+		coyTile = 15;
+		break;
+	case SCORPION_STAND:
+		coyTile = 15;
+		break;
+	case TURN:
+		coyTile = 17 + frame / animFactor[TURN];
+		break;
+	case JUMPSQUAT:
+		coyTile = 19;
+		break;
+	case BOUNCE:
+		coyTile = 20;
+		break;
 	}
-	else
+
+	ts_coy->SetSubRect(sprite, coyTile, !facingRight);
+
+	int scorpTile = 0;
+	switch (action)
 	{
-		ts_walk->SetSubRect(sprite, 0, !facingRight);
+	case IDLE:
+		break;
+	case WAIT:
+		break;
+	case WALK:
+		break;
+	case SUMMON_SCORPION:
+		scorpTile = frame / animFactor[SUMMON_SCORPION];
+		break;
+	case SCORPION_STAND:
+		scorpTile = 17;
+		break;
+	case TURN:
+		if (frame / animFactor[TURN] == 0)
+		{
+			scorpTile = 17;
+		}
+		else
+		{
+			scorpTile = 18;
+		}
+		break;
+	case JUMPSQUAT:
+		scorpTile = 15;
+		break;
+	case BOUNCE:
+		scorpTile = 19;
+		break;
 	}
-	
-	sprite.setPosition(GetPositionF() + Vector2f( 0, -ts_walk->tileHeight/2 ));
+
+	ts_scorp->SetSubRect(scorpSprite, scorpTile, !facingRight);
+
+	scorpSprite.setPosition(GetPositionF() + Vector2f( 0, -42 ));
+	scorpSprite.setOrigin(scorpSprite.getLocalBounds().width / 2, scorpSprite.getLocalBounds().height / 2);
+
+	sprite.setPosition(GetPositionF() + Vector2f( 0, -ts_coy->tileHeight/2 + 8));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
 void SequenceCoyote::EnemyDraw(sf::RenderTarget *target)
 {
+	if (action == SUMMON_SCORPION || action == SCORPION_STAND || action == TURN 
+		|| action == BOUNCE || action == JUMPSQUAT )
+	{
+		DrawSprite(target, scorpSprite);
+	}
+	
 	DrawSprite(target, sprite);
 }
 

@@ -117,6 +117,7 @@ struct AbsorbParticles;
 struct GravityModifier;
 struct MomentumBooster;
 struct Booster;
+struct ScorpionLauncher;
 struct BounceBooster;
 struct TimeBooster;
 struct FreeFlightBooster;
@@ -661,6 +662,10 @@ struct Actor : QuadTreeCollider,
 	BounceBooster *oldBounceBooster;
 	int directionalInputFreezeFrames;
 	TutorialObject *currTutorialObject;
+	ScorpionLauncher *currScorpionLauncher;
+	ScorpionLauncher *oldScorpionLauncher;
+
+
 	
 	
 	
@@ -1713,6 +1718,7 @@ struct Actor : QuadTreeCollider,
 	void SetUpgrade(int upgrade, bool on);
 	void SetStartUpgrade(int upgrade, bool on);
 	bool SpringLaunch();
+	bool ScorpionLaunch();
 	bool TeleporterLaunch();
 	bool AimLauncherAim();
 	bool SwingLaunch();

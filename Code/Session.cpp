@@ -794,6 +794,8 @@ void Session::RegisterW6Enemies()
 
 	AddBasicGroundWorldEnemy("copycat", 6, CreateEnemy<Copycat>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	AddWorldEnemy("scorpionlauncher", 6, CreateEnemy<ScorpionLauncher>, SetParamsType<SpringParams>, Vector2i(0, 0), Vector2i(32, 32),
+		false, false, false, false, true, false, false, 1);
 
 	//AddBasicAerialWorldEnemy("specter", 6, CreateEnemy<Specter>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 

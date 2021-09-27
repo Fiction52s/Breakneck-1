@@ -223,7 +223,8 @@ void BasicBossScene::EntranceUpdate()
 {
 	Actor *player = sess->GetPlayer(0);
 
-	sess->FreezePlayerAndEnemies(false);
+	//sess->FreezePlayerAndEnemies(false);
+	sess->FreezePlayer(false);
 	if (entranceType == RUN)
 	{
 		if (frame == 0)
