@@ -22,10 +22,18 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 
 	actionLength[IDLE] = 2;
 	actionLength[WALK] = 2;
+	actionLength[BREATHE] = 10;
+	actionLength[LOOK_UP] = 10;
+	actionLength[CARRIED_BY_BIRD] = -1;
+	
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
 	animFactor[WALK] = 1;
+	animFactor[BREATHE] = 1;
+	animFactor[LOOK_UP] = 1;
+	animFactor[CARRIED_BY_BIRD] = 1;
+	
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
@@ -101,12 +109,18 @@ void SequenceTiger::ProcessState()
 		case IDLE:
 			frame = 0;
 			break;
+		case LOOK_UP:
+			frame = 0;
+			break;
+		case BREATHE:
+			frame = 0;
+			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if (action == WALK && enemyMover.IsIdle())
+	if ((action == WALK || action == CARRIED_BY_BIRD ) && enemyMover.IsIdle())
 	{
 		action = IDLE;
 		frame = 0;
@@ -145,4 +159,23 @@ void SequenceTiger::Wait()
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
+}
+
+void SequenceTiger::LookUp()
+{
+	action = LOOK_UP;
+	frame = 0;
+}
+
+void SequenceTiger::Carried(V2d &pos)
+{
+	action = CARRIED_BY_BIRD;
+	frame = 0;
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 10);
+}
+
+void SequenceTiger::Breathe()
+{
+	action = BREATHE;
+	frame = 0;
 }

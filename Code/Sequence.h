@@ -224,6 +224,8 @@ struct Sequence
 	void SetNumStates(int count);
 	void UpdateMovie();
 	void SetConvGroup(const std::string &n);
+	V2d GetPointPos(const std::string &s);
+	PoiInfo *GetPoint(const std::string &s);
 	Conversation *GetCurrentConv();
 	void SetCurrMovie(const std::string &name,
 		int movFadeFrames = 0,

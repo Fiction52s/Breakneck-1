@@ -20,6 +20,7 @@ struct SequenceCoyote : Enemy
 		TURN,
 		JUMPSQUAT,
 		BOUNCE,
+		SLEEP,
 		A_Count
 	};
 
@@ -47,6 +48,8 @@ struct SequenceCoyote : Enemy
 	void Walk(V2d &pos);
 	void SummonScorpion();
 	void Bounce(V2d &pos);
+	void Sleep();
+	//void WakeUpFromSleep();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

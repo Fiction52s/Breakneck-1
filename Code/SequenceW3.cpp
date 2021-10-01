@@ -9,6 +9,7 @@
 #include "ScoreDisplay.h"
 #include "Enemy_Coyote.h"
 #include "GroundedWarper.h"
+#include "Enemy_SequenceCoyote.h"
 
 using namespace sf;
 using namespace std;
@@ -16,7 +17,7 @@ using namespace std;
 CoyoteSleepScene::CoyoteSleepScene()
 	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
-
+	seqCoyote = NULL;
 }
 
 void CoyoteSleepScene::SetupStates()
@@ -26,6 +27,9 @@ void CoyoteSleepScene::SetupStates()
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 1;
 	stateLength[COYOTEWAKE] = -1;
+	stateLength[COYOTELEAVE] = 120;
+
+	seqCoyote = (SequenceCoyote*)sess->GetEnemy(EnemyType::EN_SEQUENCECOYOTE);
 }
 
 void CoyoteSleepScene::AddShots()
@@ -36,6 +40,8 @@ void CoyoteSleepScene::AddShots()
 void CoyoteSleepScene::AddPoints()
 {
 	AddStartAndStopPoints();
+
+	AddPoint("coyotedest");
 }
 
 void CoyoteSleepScene::AddGroups()
@@ -144,6 +150,8 @@ void CoyoteSleepScene::ReturnToGame()
 {
 	Actor *player = sess->GetPlayer(0);
 
+	sess->RemoveEnemy(seqCoyote);
+
 	BasicBossScene::ReturnToGame();
 }
 
@@ -153,6 +161,16 @@ void CoyoteSleepScene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
+		if (frame == 0)
+		{
+			seqCoyote->Reset();
+			sess->AddEnemy(seqCoyote);
+			seqCoyote->facingRight = false;
+			seqCoyote->Sleep();
+			
+			//enemyMover.SetDestNode(node);
+		}
+
 		EntranceUpdate();
 		break;
 	case COYOTEWAKE:
@@ -168,6 +186,14 @@ void CoyoteSleepScene::UpdateState()
 			}
 		}
 		break;
+	case COYOTELEAVE:
+	{
+		if (frame == 0)
+		{
+			seqCoyote->Walk(GetPointPos("coyotedest"));
+		}
+		break;
+	}
 	}
 }
 
@@ -294,9 +320,9 @@ void CoyotePreFightScene::UpdateState()
 CoyotePostFightScene::CoyotePostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	coy = NULL;//set by coyote when he makes this scene
-
-	warper = sess->GetWarper("FinishedScenes/W3/coyoteandskeleton");
+	//coy = NULL;//set by coyote when he makes this scene
+	seqCoyote = NULL;
+	warper = NULL;
 	//assert(warper != NULL);
 }
 
@@ -309,6 +335,9 @@ void CoyotePostFightScene::SetupStates()
 	stateLength[COYOTECONV] = -1;
 	stateLength[NEXUSEXPLODE] = 60;
 	stateLength[COYOTELEAVE] = 30;
+
+	seqCoyote = (SequenceCoyote*)sess->GetEnemy(EnemyType::EN_SEQUENCECOYOTE);
+	warper = sess->GetWarper("FinishedScenes/W3/coyoteandskeleton");
 }
 
 void CoyotePostFightScene::ReturnToGame()
@@ -319,6 +348,7 @@ void CoyotePostFightScene::ReturnToGame()
 	}
 	warper->Activate();
 	sess->cam.EaseOutOfManual(60);
+	sess->RemoveEnemy(seqCoyote);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
 	BasicBossScene::ReturnToGame();
 }
@@ -365,8 +395,11 @@ void CoyotePostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			coy->SeqWait();
-				
+			
+			seqCoyote->Reset();
+			sess->AddEnemy(seqCoyote);
+			
+			//coy->SeqWait();
 		}
 		break;
 	case WAIT:

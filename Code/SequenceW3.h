@@ -3,6 +3,8 @@
 
 #include "Sequence.h"
 
+struct SequenceCoyote;
+
 struct CoyoteSleepScene : BasicBossScene
 {
 	enum State
@@ -10,8 +12,11 @@ struct CoyoteSleepScene : BasicBossScene
 		ENTRANCE,
 		WAIT,
 		COYOTEWAKE,
+		COYOTELEAVE,
 		Count
 	};
+
+	SequenceCoyote *seqCoyote;
 
 	CoyoteSleepScene();
 
@@ -68,7 +73,7 @@ struct CoyotePostFightScene : BasicBossScene
 		Count
 	};
 
-	Coyote *coy;
+	SequenceCoyote *seqCoyote;
 	GroundedWarper *warper;
 
 	CoyotePostFightScene();

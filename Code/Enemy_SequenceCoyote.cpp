@@ -48,6 +48,9 @@ SequenceCoyote::SequenceCoyote(ActorParams *ap)
 	actionLength[BOUNCE] = 2;
 	animFactor[BOUNCE] = 2;
 
+	actionLength[SLEEP] = 4;
+	animFactor[SLEEP] = 1;
+
 	ts_coy = GetSizedTileset("Bosses/Coyote/coy_old_80x80.png");
 	ts_scorp = GetSizedTileset("Bosses/Coyote/coy_scorp_160x128.png");
 
@@ -119,6 +122,9 @@ void SequenceCoyote::ProcessState()
 			frame = 0;
 			enemyMover.SetModeNodeJump(bouncePos, 400);
 			break;
+		case SLEEP:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -152,6 +158,12 @@ void SequenceCoyote::Walk( V2d &pos )
 void SequenceCoyote::SummonScorpion()
 {
 	action = SUMMON_SCORPION;
+	frame = 0;
+}
+
+void SequenceCoyote::Sleep()
+{
+	action = SLEEP;
 	frame = 0;
 }
 

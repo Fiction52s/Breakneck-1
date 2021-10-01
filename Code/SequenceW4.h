@@ -98,12 +98,18 @@ struct TigerPostFightScene : BasicBossScene
 	{
 		FADE,
 		WAIT,
-		CONV,
-		BIRDRESCUETIGER,
+		CONV1,
+		BIRD_ENTER,
+		CONV2,
+		BIRD_SWOOP,
+		CONV3,
+		BIRD_EXIT,
 		Count
 	};
 
-	Tiger *tiger;
+	//Tiger *tiger;
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
 
 	TigerPostFightScene();
 	void SetupStates();

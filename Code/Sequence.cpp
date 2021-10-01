@@ -96,6 +96,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new CoyoteAndSkeletonScene;
 	}
+	else if (name == "coyotepost")
+	{
+		bScene = new CoyotePostFightScene;
+	}
 	else if (name == "coyotew6entrance")
 	{
 		bScene = new EnterFortressScene;
@@ -140,6 +144,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	else if (name == "tigerfight2")
 	{
 		bScene = new TigerPreFight2Scene;
+	}
+	else if (name == "posttigerfight")
+	{
+		bScene = new TigerPostFightScene;
 	}
 	else
 	{
@@ -332,6 +340,18 @@ void Sequence::SetConvGroup(const std::string &groupName)
 	cIndex = 0;
 }
 
+V2d Sequence::GetPointPos(const std::string &s)
+{
+	assert(points.count(s) == 1);
+	return points[s]->pos;
+}
+
+PoiInfo *Sequence::GetPoint(const std::string &s)
+{
+	assert(points.count(s) == 1);
+	return points[s];
+}
+
 FlashedImage * Sequence::AddFlashedImage(const std::string &imageName, Tileset *ts, int tileIndex,
 	int appearFrames, int holdFrames, int disappearFrames, sf::Vector2f &pos)
 {
@@ -395,7 +415,7 @@ void Sequence::ConvUpdate()
 	{
 		conv->NextSection();
 	}
-	if (sess->GetCurrInput(0).B)
+	if (sess->GetCurrInput(0).X)
 	{
 		conv->SetRate(1, 5);
 	}

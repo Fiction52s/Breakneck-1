@@ -14,6 +14,9 @@ struct SequenceTiger : Enemy
 	{
 		IDLE,
 		WALK,
+		BREATHE,
+		LOOK_UP,
+		CARRIED_BY_BIRD,
 		A_Count
 	};
 
@@ -33,6 +36,9 @@ struct SequenceTiger : Enemy
 	SequenceTiger(ActorParams *ap);
 	void Wait();
 	void Walk(V2d &pos);
+	void LookUp();
+	void Carried(V2d &pos);
+	void Breathe();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

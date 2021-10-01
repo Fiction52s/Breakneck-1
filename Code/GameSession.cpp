@@ -764,11 +764,7 @@ void GameSession::Cleanup()
 	}
 	allEnvPlants.clear();
 
-	if ( parentGame == NULL && recGhost != NULL)
-	{
-		delete recGhost;
-		recGhost = NULL;
-	}
+	
 
 	CleanupGoalPulse();
 
@@ -827,9 +823,10 @@ void GameSession::Cleanup()
 
 	CleanupGhosts();
 
-	if (recGhost != NULL)
+	if (parentGame == NULL && recGhost != NULL)
 	{
 		delete recGhost;
+		recGhost = NULL;
 	}
 
 	CleanupShardMenu();

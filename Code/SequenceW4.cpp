@@ -354,6 +354,8 @@ void TigerPreFightScene::UpdateState()
 TigerPostFightScene::TigerPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqTiger = NULL;
+	seqBird = NULL;
 }
 
 void TigerPostFightScene::SetupStates()
@@ -362,8 +364,15 @@ void TigerPostFightScene::SetupStates()
 
 	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
-	stateLength[CONV] = -1;
-	stateLength[BIRDRESCUETIGER] = 60;
+	stateLength[CONV1] = -1;
+	stateLength[BIRD_ENTER] = 120;
+	stateLength[CONV2] = -1;
+	stateLength[BIRD_SWOOP] = 120;
+	stateLength[CONV3] = -1;
+	stateLength[BIRD_EXIT] = 120;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void TigerPostFightScene::ReturnToGame()
@@ -381,6 +390,9 @@ void TigerPostFightScene::AddShots()
 void TigerPostFightScene::AddPoints()
 {
 	AddPoint("kinstand0");
+	AddPoint("birdfly1");
+	AddPoint("birdfly2");
+	AddPoint("birdfly3");
 }
 
 void TigerPostFightScene::AddFlashes()
@@ -395,8 +407,9 @@ void TigerPostFightScene::AddEnemies()
 
 void TigerPostFightScene::AddGroups()
 {
-	AddGroup("postfight", "W4/w4_tiger_Fight_post");
-	SetConvGroup("postfight");
+	AddGroup("postfight_1", "W4/w4_tiger_fight_post_1");
+	AddGroup("postfight_2", "W4/w4_tiger_fight_post_2");
+	AddGroup("postfight_3", "W4/w4_tiger_fight_post_3");
 }
 
 void TigerPostFightScene::UpdateState()
@@ -407,14 +420,29 @@ void TigerPostFightScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			
+			//seqTiger->Breathe();
+
+
 			StartBasicKillFade();
 		}
-		else if (frame == 10)
+		else if (frame == explosionFadeFrames)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			PositionInfo birdPos;
+			birdPos.position = points["birdfly1"]->pos;
+			seqBird->SetCurrPosInfo(birdPos);
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			seqTiger->facingRight = false;
+			seqTiger->Breathe();
+
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("birdrescuecam");
-			tiger->SeqWait();
+			//tiger->SeqWait();
 		}
 		break;
 	case WAIT:
@@ -424,11 +452,58 @@ void TigerPostFightScene::UpdateState()
 		}
 		//EntranceUpdate();
 		break;
-	case CONV:
+	case CONV1:
+		if (frame == 0)
+		{
+			SetConvGroup("postfight_1");
+		}
+		
 		ConvUpdate();
 		break;
-	case BIRDRESCUETIGER:
+	case BIRD_ENTER:
+	{
+		if (frame == 0)
+		{
+			seqBird->Fly(GetPointPos("birdfly2"));
+			seqTiger->LookUp();
+			//seqBird->Fly
+		}
 		break;
+	}
+	case CONV2:
+		if (frame == 0)
+		{
+			SetConvGroup("postfight_2");
+		}
+
+		ConvUpdate();
+		break;
+	case BIRD_SWOOP:
+	{
+		if (frame == 0)
+		{
+			seqBird->Fly(seqTiger->GetPosition() + V2d(0, -50));
+		}
+		break;
+	}
+	case CONV3:
+		if (frame == 0)
+		{
+			SetConvGroup("postfight_3");
+		}
+
+		ConvUpdate();
+		break;
+	case BIRD_EXIT:
+	{
+		if (frame == 0)
+		{
+			seqBird->FlyAwayWithTiger(GetPointPos("birdfly3") + V2d(0, -50));
+			seqTiger->Carried(GetPointPos("birdfly3"));
+		}
+		break;
+	}
+		
 	}
 }
 

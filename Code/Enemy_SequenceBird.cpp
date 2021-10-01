@@ -23,11 +23,19 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	actionLength[IDLE] = 2;
 	actionLength[BREATHE] = 2;
 	actionLength[WALK] = 2;
+	actionLength[FLY] = 10;
+	actionLength[FLY_IDLE] = 10;
+	actionLength[PICKUP_TIGER] = 10;
+	actionLength[FLY_HOLDING_TIGER] = 10;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
 	animFactor[BREATHE] = 1;
 	animFactor[WALK] = 1;
+	animFactor[FLY] = 1;
+	animFactor[FLY_IDLE] = 1;
+	animFactor[PICKUP_TIGER] = 1;
+	animFactor[FLY_HOLDING_TIGER] = 1;
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Bird/intro_256x256.png");
@@ -114,15 +122,35 @@ void SequenceBird::ProcessState()
 		case WALK:
 			frame = 0;
 			break;
+		case FLY:
+			frame = 0;
+			break;
+		case FLY_IDLE:
+			frame = 0;
+			break;
+		case PICKUP_TIGER:
+			frame = 0;
+			break;
+		case FLY_HOLDING_TIGER:
+			frame = 0;
+			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if (action == WALK && enemyMover.IsIdle())
+	if (enemyMover.IsIdle())
 	{
-		action = IDLE;
-		frame = 0;
+		if (action == WALK)
+		{
+			action = IDLE;
+			frame = 0;
+		}
+		else if (action == FLY || action == FLY_HOLDING_TIGER )
+		{
+			action = FLY_IDLE;
+			frame = 0;
+		}
 	}
 }
 
@@ -158,4 +186,44 @@ void SequenceBird::Wait()
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
+}
+
+void SequenceBird::Fly(V2d &pos)
+{
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
+
+	action = FLY;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 10);
+}
+
+void SequenceBird::PickupTiger()
+{
+	action = PICKUP_TIGER;
+	frame = 0;
+}
+
+void SequenceBird::FlyAwayWithTiger(V2d &pos)
+{
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
+
+	action = FLY_HOLDING_TIGER;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 10);
 }

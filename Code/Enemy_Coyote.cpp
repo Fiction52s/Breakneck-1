@@ -441,7 +441,7 @@ void Coyote::SetupPostFightScenes()
 	if (postFightScene != NULL)
 	{
 		postFightScene = new CoyotePostFightScene;
-		postFightScene->coy = this;
+		//postFightScene->coy = this;
 		postFightScene->Init();
 	}
 }

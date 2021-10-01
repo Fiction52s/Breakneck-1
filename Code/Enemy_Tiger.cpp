@@ -352,7 +352,7 @@ void Tiger::SetupPostFightScenes()
 		if (postFightScene == NULL)
 		{
 			postFightScene = new TigerPostFightScene;
-			postFightScene->tiger = this;
+			//postFightScene->tiger = this;
 			postFightScene->Init();
 		}
 	}
