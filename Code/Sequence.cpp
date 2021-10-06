@@ -519,6 +519,13 @@ void Sequence::Flash(const std::string &flashName)
 	flashes[flashName]->Flash();
 }
 
+bool Sequence::IsFlashDone(const std::string &flashName)
+{
+	assert(flashes.count(flashName) == 1);
+
+	return flashes[flashName]->IsDone();
+}
+
 void Sequence::EndCurrState()
 {
 	int sLen = stateLength[state];

@@ -4,6 +4,7 @@
 #include "Sequence.h"
 
 struct SequenceCoyote;
+struct SequenceSkeleton;
 
 struct CoyoteSleepScene : BasicBossScene
 {
@@ -94,9 +95,18 @@ struct CoyoteAndSkeletonScene : BasicBossScene
 		ENTRANCE,
 		WAIT,
 		SHOWIMAGE,
-		SKELECOYCONV,
+		CONV1,
+		SKELETONLASER,
+		CONV2,
+		COYOTERETREAT,
+		SKELETONAPPROACH,
+		CONV3,
+		SKELETONEXIT,
 		Count
 	};
+
+	SequenceCoyote *seqCoyote;
+	SequenceSkeleton *seqSkeleton;
 
 	CoyoteAndSkeletonScene();
 	void SetupStates();

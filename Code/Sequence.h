@@ -252,6 +252,7 @@ struct Sequence
 		float targetZoom, int frames,
 		CubicBezier bez = CubicBezier());
 	void Flash(const std::string &flashName);
+	bool IsFlashDone(const std::string &flashName);
 	virtual void ReturnToGame() {}
 	virtual void DrawFlashes(sf::RenderTarget *target);
 	virtual void SpecialInit() {}

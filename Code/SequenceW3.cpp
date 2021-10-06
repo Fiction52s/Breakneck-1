@@ -10,6 +10,7 @@
 #include "Enemy_Coyote.h"
 #include "GroundedWarper.h"
 #include "Enemy_SequenceCoyote.h"
+#include "Enemy_SequenceSkeleton.h"
 
 using namespace sf;
 using namespace std;
@@ -428,6 +429,9 @@ CoyoteAndSkeletonScene::CoyoteAndSkeletonScene()
 	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
 {
 	SetEntranceIndex(0);
+
+	seqCoyote = NULL;
+	seqSkeleton = NULL;
 }
 
 void CoyoteAndSkeletonScene::SetupStates()
@@ -437,7 +441,16 @@ void CoyoteAndSkeletonScene::SetupStates()
 	stateLength[ENTRANCE] = -1;
 	stateLength[WAIT] = 60;
 	stateLength[SHOWIMAGE] = -1;
-	stateLength[SKELECOYCONV] = -1;
+	stateLength[CONV1] = -1;
+	stateLength[SKELETONLASER] = 60;
+	stateLength[CONV2] = -1;
+	stateLength[COYOTERETREAT] = 180;
+	stateLength[SKELETONAPPROACH] = 120;
+	stateLength[CONV3] = -1;
+	stateLength[SKELETONEXIT] = 180;//-1;//120;
+
+	seqCoyote = (SequenceCoyote*)sess->GetEnemy(EnemyType::EN_SEQUENCECOYOTE);
+	seqSkeleton = (SequenceSkeleton*)sess->GetEnemy(EnemyType::EN_SEQUENCESKELETON);
 }
 
 void CoyoteAndSkeletonScene::AddShots()
@@ -448,12 +461,16 @@ void CoyoteAndSkeletonScene::AddShots()
 void CoyoteAndSkeletonScene::AddPoints()
 {
 	AddStartAndStopPoints();
+
+	AddPoint("skelestop");
 }
 
 void CoyoteAndSkeletonScene::AddGroups()
 {
-	AddGroup("talk", "W3/w3_coy_skeleton");
-	SetConvGroup("talk");
+	AddGroup("conv1", "W3/w3_coy_skeleton_1");
+	AddGroup("conv2", "W3/w3_coy_skeleton_2");
+	AddGroup("conv3", "W3/w3_coy_skeleton_3");
+	//SetConvGroup("conv1");
 }
 
 void CoyoteAndSkeletonScene::AddEnemies()
@@ -486,6 +503,11 @@ void CoyoteAndSkeletonScene::ReturnToGame()
 	Actor *player = sess->GetPlayer(0);
 
 	BasicBossScene::ReturnToGame();
+
+	sess->RemoveEnemy(seqCoyote);
+	sess->RemoveEnemy(seqSkeleton);
+
+	player->EndLevelWithoutGoal();
 }
 
 void CoyoteAndSkeletonScene::UpdateState()
@@ -494,6 +516,17 @@ void CoyoteAndSkeletonScene::UpdateState()
 	switch (state)
 	{
 	case ENTRANCE:
+
+		if (frame == 0)
+		{
+			seqCoyote->Reset();
+			sess->AddEnemy(seqCoyote);
+
+			seqSkeleton->Reset();
+			sess->AddEnemy(seqSkeleton);
+			seqSkeleton->facingRight = false;
+		}
+
 		EntranceUpdate();
 		break;
 	case SHOWIMAGE:
@@ -503,19 +536,81 @@ void CoyoteAndSkeletonScene::UpdateState()
 			Flash("screen0");
 			Flash("screen1");
 		}
-		else if(flashes["screen0"]->IsDone() && flashes["screen1"]->IsDone())
+		else if(IsFlashDone("screen0") && IsFlashDone( "screen1" ))
 		{
 			EndCurrState();	
 		}
 		break;
 	}
-	case SKELECOYCONV:
-		ConvUpdate();
-		if (IsLastFrame())
+	case CONV1:
+	{
+		if (frame == 0)
 		{
-			player->EndLevelWithoutGoal();
+			SetConvGroup("conv1");
+		}
+		ConvUpdate();
+		break;
+	}
+	case SKELETONLASER:
+	{
+		break;
+	}
+	case CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv2");
+		}
+		ConvUpdate();
+		break;
+	}
+	case COYOTERETREAT:
+	{
+		if (frame == 0)
+		{
+			seqCoyote->SummonScorpion();
+		}
+
+		if (seqCoyote->action == SequenceCoyote::SCORPION_STAND)
+		{
+			seqCoyote->Bounce(seqCoyote->GetPosition() + V2d(-1000, 0));
 		}
 		break;
+	}
+	case SKELETONAPPROACH:
+	{
+		if (frame == 0)
+		{
+			seqSkeleton->Walk(GetPointPos("skelestop"));
+		}
+		break;
+	}
+	case CONV3:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv3");
+		}
+		ConvUpdate();
+		break;
+	}
+	case SKELETONEXIT:
+	{
+
+		if (frame == 0)
+		{
+			seqSkeleton->WireThrow(seqSkeleton->GetPosition() + V2d(1000, -1000));
+		}
+
+		if (seqSkeleton->action == SequenceSkeleton::WIRE_IDLE)
+		{
+			seqSkeleton->WirePull();
+		}
+
+
+		break;
+	}
+		
 	}
 }
 
