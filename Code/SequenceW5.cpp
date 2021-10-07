@@ -10,6 +10,7 @@
 #include "Enemy_Gator.h"
 #include "GroundedWarper.h"
 #include "Enemy_Bird.h"
+#include "Enemy_SequenceBird.h"
 
 using namespace std;
 using namespace sf;
@@ -95,8 +96,8 @@ void BirdPreFight2Scene::UpdateState()
 BirdPostFight2Scene::BirdPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	bird = NULL;
-	warper = sess->GetWarper("Bosses/greyw1");
+	seqBird = NULL;
+	warper = NULL;
 }
 
 void BirdPostFight2Scene::SetupStates()
@@ -105,18 +106,27 @@ void BirdPostFight2Scene::SetupStates()
 
 	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
-	stateLength[BIRDCONV] = 1000000;
-	stateLength[BIRDLEAVE] = 30;
+	stateLength[BIRDCONV] = -1;
+	stateLength[BIRDLEAVE] = 120;
+
+
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
+	warper = sess->GetWarper("Bosses/greyw1");
 }
 
 void BirdPostFight2Scene::ReturnToGame()
 {
-	if (!warper->spawned)
+	if (warper != NULL)
 	{
-		sess->AddEnemy(warper);
+		if (!warper->spawned)
+		{
+			sess->AddEnemy(warper);
+		}
+		warper->Activate();
 	}
-	warper->Activate();
+	
 	sess->cam.EaseOutOfManual(60);
+	sess->RemoveEnemy(seqBird);
 	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
@@ -128,7 +138,7 @@ void BirdPostFight2Scene::AddShots()
 
 void BirdPostFight2Scene::AddPoints()
 {
-	AddPoint("kinstop0");
+	AddStopPoint();
 }
 
 void BirdPostFight2Scene::AddFlashes()
@@ -162,7 +172,10 @@ void BirdPostFight2Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			bird->SeqWait();
+			
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			seqBird->facingRight = false;
 		}
 		break;
 	case WAIT:
@@ -172,6 +185,10 @@ void BirdPostFight2Scene::UpdateState()
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
+		if (frame == 0)
+		{
+			seqBird->Fly(seqBird->GetPosition() + V2d(1000, -1000));
+		}
 		break;
 	}
 }

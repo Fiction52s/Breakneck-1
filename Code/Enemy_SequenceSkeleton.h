@@ -13,8 +13,13 @@ struct SequenceSkeleton : Enemy
 	enum Action
 	{
 		IDLE,
+		CHARGELASER,
 		LASER,
+		LASER_IDLE,
 		WALK,
+		JUMPSQUAT,
+		HOP,
+		LAND,
 		WIRETHROW,
 		WIRE_IDLE,
 		WIREPULL,
@@ -23,7 +28,10 @@ struct SequenceSkeleton : Enemy
 
 	//Tileset *ts_walk;
 	Tileset *ts;
-
+	Tileset *ts_laser;
+	Tileset *ts_bullet;
+	Tileset *ts_walk;
+	Tileset *ts_hop;
 	int moveFrames;
 	int waitFrames;
 
@@ -34,7 +42,17 @@ struct SequenceSkeleton : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	V2d hopTarget;
+
+	V2d laserPos;
+	double laserSpeed;
+	int laserFrame;
+	int laserAnimFactor;
+	int laserAnimFrames;
+	V2d laserVel;
+
 	sf::Vertex wireQuad[4];
+	sf::Vertex laserQuad[4];
 
 	double extraHeight;
 	double wireThrowSpeed;
@@ -43,12 +61,17 @@ struct SequenceSkeleton : Enemy
 	V2d wireAnchor;
 	int framesThrowingWire;
 
+	//int framesThrowingLaser;
+
 	SequenceSkeleton(ActorParams *ap);
 	void Wait();
 
+	void HopDown( V2d &pos );
+	void Idle();
+	void ChargeLaser();
 	void UpdateWire();
 	void Walk(V2d &pos);
-	void Laser();
+	void Laser( V2d &pos );
 	void WireThrow(V2d &pos);
 	void WirePull();
 	void UpdateWireQuad();

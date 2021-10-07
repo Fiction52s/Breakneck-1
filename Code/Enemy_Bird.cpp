@@ -156,7 +156,7 @@ void Bird::SetupPostFightScenes()
 		if (postFightScene == NULL)
 		{
 			postFightScene = new BirdPostFightScene;
-			postFightScene->bird = this;
+			//postFightScene->bird = this;
 			postFightScene->Init();
 		}
 	}
@@ -177,7 +177,7 @@ void Bird::SetupPostFightScenes()
 		if (postFightScene2 == NULL)
 		{
 			postFightScene2 = new BirdPostFight2Scene;
-			postFightScene2->bird = this;
+			//postFightScene2->bird = this;
 			postFightScene2->Init();
 		}
 

@@ -51,6 +51,15 @@ SequenceCoyote::SequenceCoyote(ActorParams *ap)
 	actionLength[SLEEP] = 4;
 	animFactor[SLEEP] = 1;
 
+	actionLength[HOPSQUAT] = 3;
+	animFactor[HOPSQUAT] = 1;
+
+	actionLength[HOP_BACK] = 2;
+	animFactor[HOP_BACK] = 2;
+
+	actionLength[RUN] = 15;
+	animFactor[RUN] = 2;
+
 	ts_coy = GetSizedTileset("Bosses/Coyote/coy_old_80x80.png");
 	ts_scorp = GetSizedTileset("Bosses/Coyote/coy_scorp_160x128.png");
 
@@ -105,6 +114,9 @@ void SequenceCoyote::ProcessState()
 		case WALK:
 			frame = 0;
 			break;
+		case RUN:
+			frame = 0;
+			break;
 		case SUMMON_SCORPION:
 			action = SCORPION_STAND;
 			frame = 0;
@@ -125,16 +137,38 @@ void SequenceCoyote::ProcessState()
 		case SLEEP:
 			frame = 0;
 			break;
+		case HOPSQUAT:
+			action = HOP_BACK;
+			frame = 0;
+			enemyMover.SetModeNodeJump(hopPos, 20, 10);
+			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if ((action == WALK || action == BOUNCE ) && enemyMover.IsIdle())
+	if ((action == WALK || action == BOUNCE || action == HOP_BACK || action == RUN ) && enemyMover.IsIdle())
 	{
 		action = IDLE;
 		frame = 0;
 	}
+}
+
+void SequenceCoyote::HopBack( V2d &pos )
+{
+	action = HOPSQUAT;
+	frame = 0;
+
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = true;
+	}
+	else
+	{
+		facingRight = false;
+	}
+
+	hopPos = pos;
 }
 
 void SequenceCoyote::Walk( V2d &pos )
@@ -152,6 +186,24 @@ void SequenceCoyote::Walk( V2d &pos )
 	frame = 0;
 
 	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 3);
+	//enemyMover.SetModeNodeJump(pos, 400);
+}
+
+void SequenceCoyote::Run(V2d &pos)
+{
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
+
+	action = RUN;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 10);
 	//enemyMover.SetModeNodeJump(pos, 400);
 }
 
@@ -212,6 +264,9 @@ void SequenceCoyote::UpdateSprite()
 	case WALK:
 		coyTile = frame / animFactor[WALK];
 		break;
+	case RUN:
+		coyTile = frame / animFactor[RUN];
+		break;
 	case SUMMON_SCORPION:
 		coyTile = 15;
 		break;
@@ -225,6 +280,12 @@ void SequenceCoyote::UpdateSprite()
 		coyTile = 19;
 		break;
 	case BOUNCE:
+		coyTile = 20;
+		break;
+	case HOPSQUAT:
+		coyTile = 19;
+		break;
+	case HOP_BACK:
 		coyTile = 20;
 		break;
 	}

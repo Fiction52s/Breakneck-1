@@ -76,7 +76,7 @@ kinstart2
 poi 1 -1 39 734.501
 kinstop2
 xbarrier -3191 -5022
-coyotescene0
+coyotesleep
 0
 xbarrier -1394 -5005
 coyotescene1

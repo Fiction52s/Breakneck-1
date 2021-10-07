@@ -139,7 +139,7 @@ struct EnemyMover
 		V2d &nodePos,
 		CubicBezier &cb,
 		int frameDuration);
-	void SetModeNodeQuadraticConstantSpeed(
+	int SetModeNodeQuadraticConstantSpeed(
 		V2d &controlPoint0,
 		V2d &nodePos,
 		CubicBezier &cb,
@@ -175,9 +175,10 @@ struct EnemyMover
 	void SetModeApproach(V2d *approachPos,
 		V2d &approachOffset, int framesToLock,
 		int framesWhileLocked);
-	void SetModeNodeJump(
+	int SetModeNodeJump(
 		V2d &nodePos,
-		double extraHeight);
+		double extraHeight,
+		double jumpSpeed = 20);
 	void FrameIncrement();
 	void UpdatePhysics(int numPhysSteps,
 		int slowMultiple);

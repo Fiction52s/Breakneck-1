@@ -1,0 +1,57 @@
+2.8
+no description<>
+0
+0
+1
+w6_21_Aureo
+100
+nothing
+0
+w6_01
+-4474 -5593 627114 4314
+180
+0
+8
+NONE
+NONE
+0
+2277 -2176
+262240
+0
+0
+0
+0
+0
+0
+0
+no_borderpoly
+5 4
+8
+4728 -1664
+4224 -1664
+4224 -1379
+1516 -1379
+1516 -2007
+4140 -2007
+4140 -4056
+4728 -4056
+0
+0
+0
+0
+1
+-- 6
+poi 1 0 4 1090
+kinstart0
+poi 1 0 4 1521
+kinstop0
+poi 1 0 4 2068
+coyotedest
+xbarrier 2746 -2344
+enterfortress
+0
+camerashot 3327 -2247
+scenecam
+1
+sequencecoyote 0 4 2457
+0

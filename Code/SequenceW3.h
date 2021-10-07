@@ -96,10 +96,13 @@ struct CoyoteAndSkeletonScene : BasicBossScene
 		WAIT,
 		SHOWIMAGE,
 		CONV1,
+		SKELETONCHARGELASER,
 		SKELETONLASER,
 		CONV2,
 		COYOTERETREAT,
+		SKELETONHOPDOWN,
 		SKELETONAPPROACH,
+		SKELETONPOINT,
 		CONV3,
 		SKELETONEXIT,
 		Count
@@ -107,6 +110,8 @@ struct CoyoteAndSkeletonScene : BasicBossScene
 
 	SequenceCoyote *seqCoyote;
 	SequenceSkeleton *seqSkeleton;
+	MusicInfo *specialMusic;
+	MusicInfo *prevMusic;
 
 	CoyoteAndSkeletonScene();
 	void SetupStates();

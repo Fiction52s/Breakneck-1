@@ -271,7 +271,7 @@ void EnemyMover::SetModeApproach(V2d *approachPos,
 
 }
 
-void EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight)
+int EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight, double jumpSpeed)
 {
 	V2d start = currPosInfo.GetPosition();
 	double xDiff = nodePos.x - start.x;
@@ -286,8 +286,10 @@ void EnemyMover::SetModeNodeJump(V2d &nodePos, double extraHeight)
 		peakY = nodePos.y - extraHeight;
 	}
 
-	SetModeNodeQuadraticConstantSpeed(V2d(start.x + xDiff / 2, peakY),
-		nodePos, CubicBezier(), 20);
+	int frames = SetModeNodeQuadraticConstantSpeed(V2d(start.x + xDiff / 2, peakY),
+		nodePos, CubicBezier(), jumpSpeed);
+
+	return frames;
 }
 
 void EnemyMover::SetModeNodeLinear(V2d &nodePos, CubicBezier &cb, int frameDuration)
@@ -328,7 +330,7 @@ void EnemyMover::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
 	actionTotalDuration = frameDuration;
 }
 
-void EnemyMover::SetModeNodeQuadraticConstantSpeed(
+int EnemyMover::SetModeNodeQuadraticConstantSpeed(
 	V2d &controlPoint0,
 	V2d &nodePos,
 	CubicBezier &cb,
@@ -338,6 +340,8 @@ void EnemyMover::SetModeNodeQuadraticConstantSpeed(
 		controlPoint0, nodePos);
 
 	SetModeNodeQuadratic(controlPoint0, nodePos, cb, frames);
+
+	return frames;
 }
 
 void EnemyMover::SetModeNodeCubic(V2d &controlPoint0, V2d &controlPoint1,

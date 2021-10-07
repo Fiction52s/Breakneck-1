@@ -15,12 +15,15 @@ struct SequenceCoyote : Enemy
 		IDLE,
 		WAIT,
 		WALK,
+		RUN,
 		SUMMON_SCORPION,
 		SCORPION_STAND,
 		TURN,
 		JUMPSQUAT,
 		BOUNCE,
 		SLEEP,
+		HOPSQUAT,
+		HOP_BACK,
 		A_Count
 	};
 
@@ -35,6 +38,7 @@ struct SequenceCoyote : Enemy
 	int targetPlayerIndex;
 
 	V2d bouncePos;
+	V2d hopPos;
 	V2d targetPos;
 	int framesToArrive;
 
@@ -45,10 +49,12 @@ struct SequenceCoyote : Enemy
 
 	virtual bool SpawnableByCamera() { return false; }
 	void Wait();
+	void Run(V2d &pos);
 	void Walk(V2d &pos);
 	void SummonScorpion();
 	void Bounce(V2d &pos);
 	void Sleep();
+	void HopBack(V2d &pos);
 	//void WakeUpFromSleep();
 
 	void ProcessState();

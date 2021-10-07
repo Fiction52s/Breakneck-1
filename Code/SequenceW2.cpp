@@ -137,8 +137,8 @@ void BirdPreFightScene::UpdateState()
 BirdPostFightScene::BirdPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	bird = NULL;
-	warper = sess->GetWarper("FinishedScenes/W2/nexus2");
+	seqBird = NULL;
+	
 }
 
 void BirdPostFightScene::SetupStates()
@@ -147,21 +147,29 @@ void BirdPostFightScene::SetupStates()
 
 	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
-	stateLength[BIRDCONV] = 1000000;
-	stateLength[BIRDLEAVE] = 30;
+	stateLength[BIRDCONV] = -1;
+	stateLength[BIRDLEAVE] = 120;
+
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
+	warper = sess->GetWarper("FinishedScenes/W2/nexus2");
 }
 
 void BirdPostFightScene::ReturnToGame()
 {
-	if (!warper->spawned)
+	if (warper != NULL)
 	{
-		sess->AddEnemy(warper);
+		if (!warper->spawned)
+		{
+			sess->AddEnemy(warper);
+		}
+
+		warper->Activate();
 	}
-	warper->Activate();
+
 	sess->cam.EaseOutOfManual(60);
-	sess->TotalDissolveGates(Gate::BOSS);
+	sess->RemoveEnemy(seqBird);
+	//sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
-	
 }
 
 void BirdPostFightScene::AddShots()
@@ -208,16 +216,27 @@ void BirdPostFightScene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("scenecam");
-			bird->SeqWait();
+
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			seqBird->facingRight = false;
 		}
 		break;
 	case WAIT:
+		/*if (frame == 0)
+		{
+			sess->TotalDissolveGates(Gate::BOSS);
+		}*/
 		//EntranceUpdate();
 		break;
 	case BIRDCONV:
 		ConvUpdate();
 		break;
 	case BIRDLEAVE:
+		if (frame == 0)
+		{
+			seqBird->Fly(seqBird->GetPosition() + V2d(1000, -1000));
+		}
 		break;
 	}
 }
@@ -311,7 +330,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 		{
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
-			seqCrawler->facingRight = false;
+			//seqCrawler->facingRight = false;
 			//seqCrawler->Init();
 			seqCrawler->DigOut();
 		}

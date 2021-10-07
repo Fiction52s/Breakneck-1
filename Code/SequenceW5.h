@@ -5,6 +5,7 @@
 
 struct Bird;
 struct GroundedWarper;
+struct SequenceBird;
 
 struct BirdPreFight2Scene : BasicBossScene
 {
@@ -41,6 +42,9 @@ struct BirdPostFight2Scene : BasicBossScene
 		Count
 	};
 
+	SequenceBird *seqBird;
+	GroundedWarper *warper;
+
 	BirdPostFight2Scene();
 	void SetupStates();
 	void ReturnToGame();
@@ -51,8 +55,7 @@ struct BirdPostFight2Scene : BasicBossScene
 	void AddGroups();
 	void UpdateState();
 
-	Bird *bird;
-	GroundedWarper *warper;
+	
 };
 
 struct Gator;

@@ -11,6 +11,7 @@
 #include "GroundedWarper.h"
 #include "Enemy_SequenceCoyote.h"
 #include "Enemy_SequenceSkeleton.h"
+#include "MusicSelector.h"
 
 using namespace sf;
 using namespace std;
@@ -150,6 +151,7 @@ void CoyoteSleepScene::AddFlashes()
 void CoyoteSleepScene::ReturnToGame()
 {
 	Actor *player = sess->GetPlayer(0);
+
 
 	sess->RemoveEnemy(seqCoyote);
 
@@ -399,6 +401,7 @@ void CoyotePostFightScene::UpdateState()
 			
 			seqCoyote->Reset();
 			sess->AddEnemy(seqCoyote);
+			seqCoyote->facingRight = false;
 			
 			//coy->SeqWait();
 		}
@@ -421,6 +424,10 @@ void CoyotePostFightScene::UpdateState()
 		//	ConvUpdate();
 		//	break;
 	case COYOTELEAVE:
+		if (frame == 0)
+		{
+			seqCoyote->Run(seqCoyote->GetPosition() + V2d(1000, 0));
+		}
 		break;
 	}
 }
@@ -432,6 +439,11 @@ CoyoteAndSkeletonScene::CoyoteAndSkeletonScene()
 
 	seqCoyote = NULL;
 	seqSkeleton = NULL;
+
+	//specialMusic = sess->mainMenu->musicManager->songMap["w3_28_Boomerang_03"];
+
+	//assert(specialMusic != NULL);
+	//specialMusic->Load();
 }
 
 void CoyoteAndSkeletonScene::SetupStates()
@@ -442,10 +454,13 @@ void CoyoteAndSkeletonScene::SetupStates()
 	stateLength[WAIT] = 60;
 	stateLength[SHOWIMAGE] = -1;
 	stateLength[CONV1] = -1;
-	stateLength[SKELETONLASER] = 60;
+	stateLength[SKELETONCHARGELASER] = 150;
+	stateLength[SKELETONLASER] = 150 + 20;
 	stateLength[CONV2] = -1;
 	stateLength[COYOTERETREAT] = 180;
+	stateLength[SKELETONHOPDOWN] = -1;
 	stateLength[SKELETONAPPROACH] = 120;
+	stateLength[SKELETONPOINT] = -1;
 	stateLength[CONV3] = -1;
 	stateLength[SKELETONEXIT] = 180;//-1;//120;
 
@@ -463,6 +478,7 @@ void CoyoteAndSkeletonScene::AddPoints()
 	AddStartAndStopPoints();
 
 	AddPoint("skelestop");
+	AddPoint("skelehop");
 }
 
 void CoyoteAndSkeletonScene::AddGroups()
@@ -494,8 +510,17 @@ void CoyoteAndSkeletonScene::AddFlashes()
 
 	AddFlashedImage("screen1", sess->GetTileset("Bosses/Coyote/Coy_Pan_02b.png", 1920, 1080),
 		0, fadeInFrames, holdFrames, fadeOutFrames, Vector2f(960, 540 - 1080))
-		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);;
-	
+		->AddPanY(scrollAmount, fadeInFrames, scrollFrames);
+
+
+	AddFlashedImage("skeleangry", sess->GetTileset("Story/CoyoteAndSkeleton/Coy_23c.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("skelelaser", sess->GetTileset("Story/CoyoteAndSkeleton/Coy_24d.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("skelepoint", sess->GetTileset("Story/CoyoteAndSkeleton/Skele_Point_02c.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
 }
 
 void CoyoteAndSkeletonScene::ReturnToGame()
@@ -506,6 +531,8 @@ void CoyoteAndSkeletonScene::ReturnToGame()
 
 	sess->RemoveEnemy(seqCoyote);
 	sess->RemoveEnemy(seqSkeleton);
+
+	//sess->TransitionMusic(prevMusic, 60);
 
 	player->EndLevelWithoutGoal();
 }
@@ -525,6 +552,9 @@ void CoyoteAndSkeletonScene::UpdateState()
 			seqSkeleton->Reset();
 			sess->AddEnemy(seqSkeleton);
 			seqSkeleton->facingRight = false;
+
+			prevMusic = sess->mainMenu->musicPlayer->currMusic;
+			//sess->TransitionMusic(specialMusic, 60);
 		}
 
 		EntranceUpdate();
@@ -547,12 +577,39 @@ void CoyoteAndSkeletonScene::UpdateState()
 		if (frame == 0)
 		{
 			SetConvGroup("conv1");
+			//Flash("skeleangry");
 		}
 		ConvUpdate();
 		break;
 	}
+	case SKELETONCHARGELASER:
+	{
+		if (frame == 0)
+		{
+			seqSkeleton->ChargeLaser();
+		}
+		if (frame == 30)
+		{
+			Flash("skelelaser");
+		}
+		break;
+	}
 	case SKELETONLASER:
 	{
+		if (frame == 20)
+		{
+			seqSkeleton->Laser( seqCoyote->GetPosition() );
+		}
+
+		if (frame == 70)
+		{
+			seqCoyote->HopBack(seqCoyote->GetPosition() + V2d(-100, 0));
+		}
+
+		if (IsLastFrame())
+		{
+			seqSkeleton->Idle();
+		}
 		break;
 	}
 	case CONV2:
@@ -577,12 +634,39 @@ void CoyoteAndSkeletonScene::UpdateState()
 		}
 		break;
 	}
+	case SKELETONHOPDOWN:
+	{
+		if (frame == 0)
+		{
+			seqSkeleton->HopDown(GetPointPos("skelehop"));
+		}
+
+		if (seqSkeleton->action == SequenceSkeleton::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
 	case SKELETONAPPROACH:
 	{
 		if (frame == 0)
 		{
 			seqSkeleton->Walk(GetPointPos("skelestop"));
 		}
+		break;
+	}
+	case SKELETONPOINT:
+	{
+		if (frame == 0)
+		{
+			Flash("skelepoint");
+		}
+
+		if (IsFlashDone("skelepoint"))
+		{
+			EndCurrState();
+		}
+
 		break;
 	}
 	case CONV3:

@@ -46,6 +46,9 @@ struct BirdPostFightScene : BasicBossScene
 		Count
 	};
 
+	GroundedWarper *warper;
+	SequenceBird *seqBird;
+
 	BirdPostFightScene();
 	void SetupStates();
 	void ReturnToGame();
@@ -56,8 +59,7 @@ struct BirdPostFightScene : BasicBossScene
 	void AddGroups();
 	void UpdateState();
 
-	Bird *bird;
-	GroundedWarper *warper;
+	
 };
 
 struct BirdCrawlerAllianceScene : BasicBossScene

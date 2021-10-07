@@ -27,6 +27,18 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new BirdPreFight2Scene;
 	}
+	else if (name == "postbirdfight")
+	{
+		bScene = new BirdPostFightScene;
+	}
+	else if (name == "postbirdfight2")
+	{
+		bScene = new BirdPostFight2Scene;
+	}
+	else if (name == "postbirdfight3")
+	{
+		bScene = new BirdPostFight3Scene;
+	}
 	else if (name == "crawlerscene0")
 	{
 		bScene = new CrawlerAttackScene;
@@ -51,7 +63,7 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new BirdTigerApproachScene;
 	}
-	else if (name == "coyotescene0")
+	else if (name == "coyotesleep")
 	{
 		bScene = new CoyoteSleepScene;
 	}

@@ -6,9 +6,9 @@ w2_53_Airedia
 100
 nothing
 0
-0 w1_01
-371 -6814 5016 8314
-6000
+0 w2_01
+371 -6814 5016 10358
+180
 0
 464
 NONE
@@ -558,7 +558,7 @@ no_borderpoly
 0
 0
 1
--- 4
+-- 5
 gravitydecreaser 4378 -1060
 5
 0.5
@@ -569,4 +569,6 @@ goal 9 0 409
 gravitydecreaser 4736 -4941
 5
 0.5
+poweritem 2471 2557
+1
 0
