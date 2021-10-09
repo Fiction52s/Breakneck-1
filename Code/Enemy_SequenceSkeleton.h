@@ -22,7 +22,6 @@ struct SequenceSkeleton : Enemy
 		HOP,
 		LAND,
 		WIRETHROW,
-		WIRE_PEACE,
 		WIRE_IDLE,
 		WIREPULL,
 		RIDE_BIRD,

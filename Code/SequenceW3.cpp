@@ -455,12 +455,14 @@ void CoyoteAndSkeletonScene::SetupStates()
 	stateLength[SHOWIMAGE] = -1;
 	stateLength[CONV1] = -1;
 	stateLength[SKELETONCHARGELASER] = 150;
-	stateLength[SKELETONLASER] = 150 + 20;
+	stateLength[SKELETONLASER] = -1;//150 + 20;
+	stateLength[WAIT_AFTER_LASER] = 20;
 	stateLength[CONV2] = -1;
 	stateLength[COYOTERETREAT] = 180;
 	stateLength[SKELETONIMPOSING] = -1;
 	stateLength[SKELETONHOPDOWN] = -1;
-	stateLength[SKELETONAPPROACH] = 120;
+	stateLength[SKELETONAPPROACH] = -1;
+	stateLength[WAIT_AFTER_APPROACH] = 45;
 	stateLength[SKELETONPOINT] = -1;
 	stateLength[CONV3] = -1;
 	stateLength[SKELETONEXIT] = 180;//-1;//120;
@@ -614,9 +616,10 @@ void CoyoteAndSkeletonScene::UpdateState()
 			Flash("coyotedodge");
 		}
 
-		if (IsLastFrame())
+		if (frame > 70 && IsFlashDone("coyotedodge") )
 		{
 			seqSkeleton->Idle();
+			EndCurrState();
 		}
 		break;
 	}
@@ -673,6 +676,11 @@ void CoyoteAndSkeletonScene::UpdateState()
 		if (frame == 0)
 		{
 			seqSkeleton->Walk(GetPointPos("skelestop"));
+		}
+
+		if (seqSkeleton->action == SequenceSkeleton::IDLE)
+		{
+			EndCurrState();
 		}
 		break;
 	}

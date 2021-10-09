@@ -30,7 +30,6 @@ SequenceSkeleton::SequenceSkeleton(ActorParams *ap)
 	actionLength[LASER] = 12;
 	actionLength[LASER_IDLE] = 2;
 	actionLength[WIRETHROW] = 36;
-	actionLength[WIRE_PEACE] = 14;
 	actionLength[WIRE_IDLE] = 2;
 	actionLength[WIREPULL] = 1;
 	actionLength[RIDE_BIRD] = 2;
@@ -236,32 +235,32 @@ V2d SequenceSkeleton::GetWireOrigin()
 		int trueFrame = frame / animFactor[WIRETHROW];
 		if (trueFrame == 7 || trueFrame == 8)
 		{
-			baseWireOffset = V2d(50, 48);
+			baseWireOffset = V2d(52, 48);
 		}
 		else if (trueFrame == 9)
 		{
-			baseWireOffset = V2d(50, 52);
+			baseWireOffset = V2d(52, 52);
 		}
 		else if (trueFrame >= 10 && trueFrame <= 13)
 		{
-			baseWireOffset = V2d(51, 48);
+			baseWireOffset = V2d(53, 48);
 		}
 		else if (trueFrame >= 14 && trueFrame <= 15)
 		{
-			baseWireOffset = V2d(60, 40);
+			baseWireOffset = V2d(62, 40);
 		}
 		else if (trueFrame >= 16 && trueFrame <= 22)
 		{
-			baseWireOffset = V2d(66, 50);
+			baseWireOffset = V2d(68, 50);
 		}
 		else if (trueFrame >= 23 && trueFrame <= 36)
 		{
-			baseWireOffset = V2d(67, 47);
+			baseWireOffset = V2d(69, 47);
 		}
 	}
 	else if (action == WIREPULL)
 	{
-		baseWireOffset = V2d(29, 29);
+		baseWireOffset = V2d(31, 29);
 	}
 	
 	V2d wireOffset(baseWireOffset.x - ts_wireAway->tileWidth / 2, baseWireOffset.y - ts_wireAway->tileHeight / 2 );
@@ -410,7 +409,7 @@ void SequenceSkeleton::WirePull()
 	action = WIREPULL;
 	frame = 0;
 
-	enemyMover.SetModeNodeLinearConstantSpeed(wireAnchor, CubicBezier(), 30);
+	enemyMover.SetModeNodeLinearConstantSpeed(wireAnchor, CubicBezier(), 20);
 }
 
 void SequenceSkeleton::UpdateSprite()
@@ -442,7 +441,7 @@ void SequenceSkeleton::UpdateSprite()
 
 		ts_laser->SetSubRect(sprite, tile, !facingRight);
 	}
-	else if (action == WIRETHROW || action == WIRE_IDLE || action == WIREPULL || action == WIRE_PEACE)
+	else if (action == WIRETHROW || action == WIRE_IDLE || action == WIREPULL )
 	{
 		sprite.setTexture(*ts_wireAway->texture);
 
@@ -458,10 +457,6 @@ void SequenceSkeleton::UpdateSprite()
 				wireInitialThrowOrigin = currWirePos;
 			}
 		}
-		/*else if (action == WIRE_PEACE)
-		{
-			tile = 
-		}*/
 		else if (action == WIREPULL)
 		{
 			tile = 37;
