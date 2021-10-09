@@ -431,7 +431,7 @@ void TigerPostFightScene::UpdateState()
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
 			PositionInfo birdPos;
-			birdPos.position = points["birdfly1"]->pos;
+			birdPos.position = GetPointPos("birdfly1");
 			seqBird->SetCurrPosInfo(birdPos);
 
 			seqTiger->Reset();

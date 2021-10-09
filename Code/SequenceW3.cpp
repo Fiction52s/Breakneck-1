@@ -458,6 +458,7 @@ void CoyoteAndSkeletonScene::SetupStates()
 	stateLength[SKELETONLASER] = 150 + 20;
 	stateLength[CONV2] = -1;
 	stateLength[COYOTERETREAT] = 180;
+	stateLength[SKELETONIMPOSING] = -1;
 	stateLength[SKELETONHOPDOWN] = -1;
 	stateLength[SKELETONAPPROACH] = 120;
 	stateLength[SKELETONPOINT] = -1;
@@ -520,6 +521,12 @@ void CoyoteAndSkeletonScene::AddFlashes()
 		0, 30, 60, 30, Vector2f(960, 540));
 
 	AddFlashedImage("skelepoint", sess->GetTileset("Story/CoyoteAndSkeleton/Skele_Point_02c.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("coyotedodge", sess->GetTileset("Story/CoyoteAndSkeleton/Coy_Blast_Skele_01b.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("skeleimposing", sess->GetTileset("Story/CoyoteAndSkeleton/Coy_20c.png"),
 		0, 30, 60, 30, Vector2f(960, 540));
 }
 
@@ -604,6 +611,7 @@ void CoyoteAndSkeletonScene::UpdateState()
 		if (frame == 70)
 		{
 			seqCoyote->HopBack(seqCoyote->GetPosition() + V2d(-100, 0));
+			Flash("coyotedodge");
 		}
 
 		if (IsLastFrame())
@@ -634,11 +642,24 @@ void CoyoteAndSkeletonScene::UpdateState()
 		}
 		break;
 	}
+	case SKELETONIMPOSING:
+	{
+		if (frame == 0)
+		{
+			Flash("skeleimposing");
+		}
+
+		if (IsFlashDone("skeleimposing"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
 	case SKELETONHOPDOWN:
 	{
 		if (frame == 0)
 		{
-			seqSkeleton->HopDown(GetPointPos("skelehop"));
+			seqSkeleton->Hop(GetPointPos("skelehop"), 5, 16);
 		}
 
 		if (seqSkeleton->action == SequenceSkeleton::IDLE)

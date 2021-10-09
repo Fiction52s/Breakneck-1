@@ -11,6 +11,7 @@
 #include "GroundedWarper.h"
 #include "Enemy_Bird.h"
 #include "Enemy_SequenceBird.h"
+#include "Enemy_SequenceTiger.h"
 
 using namespace std;
 using namespace sf;
@@ -197,14 +198,16 @@ void BirdPostFight2Scene::UpdateState()
 BirdTigerApproachScene::BirdTigerApproachScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
+	seqTiger = NULL;
+	seqBird = NULL;
 }
 
 void BirdTigerApproachScene::StartRunning()
 {
 
 	//owner->state = GameSession::SEQUENCE;
-	sess->FreezePlayerAndEnemies(true);
-	sess->SetPlayerInputOn(false);
+	//sess->FreezePlayerAndEnemies(true);
+	//sess->SetPlayerInputOn(false);
 }
 
 void BirdTigerApproachScene::SetupStates()
@@ -214,8 +217,11 @@ void BirdTigerApproachScene::SetupStates()
 	stateLength[FADE] = 60;
 	stateLength[WAIT] = 60;
 	stateLength[CONV] = -1;
-	stateLength[ENTERGATORAREA] = 60;
+	stateLength[WALK_OUT] = 120;
 	stateLength[FADEOUT] = 60;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void BirdTigerApproachScene::ReturnToGame()
@@ -230,7 +236,8 @@ void BirdTigerApproachScene::AddShots()
 
 void BirdTigerApproachScene::AddPoints()
 {
-
+	AddPoint("birdwalk1");
+	AddPoint("tigerwalk1");
 }
 
 void BirdTigerApproachScene::AddFlashes()
@@ -257,6 +264,15 @@ void BirdTigerApproachScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			
+
+
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -271,8 +287,13 @@ void BirdTigerApproachScene::UpdateState()
 		ConvUpdate();
 		break;
 	}
-	case ENTERGATORAREA:
+	case WALK_OUT:
 	{
+		if (frame == 0)
+		{
+			seqBird->Walk(GetPointPos("birdwalk1"));
+			seqTiger->Walk(GetPointPos("tigerwalk1"));
+		}
 		break;
 	}
 	case FADEOUT:

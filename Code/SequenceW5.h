@@ -6,6 +6,7 @@
 struct Bird;
 struct GroundedWarper;
 struct SequenceBird;
+struct SequenceTiger;
 
 struct BirdPreFight2Scene : BasicBossScene
 {
@@ -117,10 +118,13 @@ struct BirdTigerApproachScene : BasicBossScene
 		FADE,
 		WAIT,
 		CONV,
-		ENTERGATORAREA,
+		WALK_OUT,
 		FADEOUT,
 		Count
 	};
+
+	SequenceBird *seqBird;
+	SequenceTiger *seqTiger;
 
 	BirdTigerApproachScene();
 	void SetupStates();

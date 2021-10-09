@@ -5,6 +5,7 @@
 
 struct Bird;
 struct GreySkeleton;
+struct SequenceBird;
 
 struct BirdChaseScene : BasicBossScene
 {
@@ -66,7 +67,7 @@ struct BirdPostFight3Scene : BasicBossScene
 		Count
 	};
 
-	Bird *bird;
+	SequenceBird *seqBird;
 
 	BirdPostFight3Scene();
 	void SetupStates();

@@ -19,6 +19,8 @@ struct SequenceBird : Enemy
 		FLY_IDLE,
 		PICKUP_TIGER,
 		FLY_HOLDING_TIGER,
+		FLY_WITH_SKELETON,
+		HIT_BY_MIND_CONTROL,
 		A_Count
 	};
 
@@ -39,10 +41,12 @@ struct SequenceBird : Enemy
 	void Wait();
 	void Breathe();
 	void Walk(V2d &pos);
+	void HitByMindControl();
 
 	void Fly(V2d &pos);
 	void PickupTiger();
 	void FlyAwayWithTiger(V2d &pos);
+	void FlyAwayWithSkeleton(V2d &pos, double speed);
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

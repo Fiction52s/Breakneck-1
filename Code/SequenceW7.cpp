@@ -9,6 +9,7 @@
 #include "ScoreDisplay.h"
 #include "Enemy_Bird.h"
 #include "Enemy_GreySkeleton.h"
+#include "Enemy_SequenceBird.h"
 
 using namespace std;
 using namespace sf;
@@ -165,7 +166,7 @@ void BirdPreFight3Scene::UpdateState()
 BirdPostFight3Scene::BirdPostFight3Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	bird = NULL;
+	seqBird = NULL;
 }
 
 void BirdPostFight3Scene::SetupStates()
@@ -176,11 +177,14 @@ void BirdPostFight3Scene::SetupStates()
 	stateLength[WAIT] = 60;
 	stateLength[BIRDCONV] = -1;
 	stateLength[BIRDDIES] = 30;
+
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
 }
 
 void BirdPostFight3Scene::ReturnToGame()
 {
 	sess->cam.EaseOutOfManual(60);
+	sess->RemoveEnemy(seqBird);
 	sess->TotalDissolveGates(Gate::BOSS);
 	BasicBossScene::ReturnToGame();
 }
@@ -226,7 +230,10 @@ void BirdPostFight3Scene::UpdateState()
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("scenecam");
-			bird->SeqWait();
+			
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			seqBird->facingRight = false;
 		}
 		break;
 	case WAIT:

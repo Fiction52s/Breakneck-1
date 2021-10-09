@@ -25,6 +25,7 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	actionLength[BREATHE] = 10;
 	actionLength[LOOK_UP] = 10;
 	actionLength[CARRIED_BY_BIRD] = -1;
+	actionLength[HIT_BY_MIND_CONTROL] = 2;
 	
 	//actionLength[DIG_OUT] = 12;
 
@@ -33,6 +34,7 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	animFactor[BREATHE] = 1;
 	animFactor[LOOK_UP] = 1;
 	animFactor[CARRIED_BY_BIRD] = 1;
+	animFactor[HIT_BY_MIND_CONTROL] = 1;
 	
 	//animFactor[DIG_OUT] = 4;
 
@@ -115,6 +117,9 @@ void SequenceTiger::ProcessState()
 		case BREATHE:
 			frame = 0;
 			break;
+		case HIT_BY_MIND_CONTROL:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -177,5 +182,11 @@ void SequenceTiger::Carried(V2d &pos)
 void SequenceTiger::Breathe()
 {
 	action = BREATHE;
+	frame = 0;
+}
+
+void SequenceTiger::HitByMindControl()
+{
+	action = HIT_BY_MIND_CONTROL;
 	frame = 0;
 }

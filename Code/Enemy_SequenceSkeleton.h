@@ -7,6 +7,7 @@
 #include "EnemyMover.h"
 
 struct GameSession;
+struct SequenceBird;
 
 struct SequenceSkeleton : Enemy
 {
@@ -21,8 +22,12 @@ struct SequenceSkeleton : Enemy
 		HOP,
 		LAND,
 		WIRETHROW,
+		WIRE_PEACE,
 		WIRE_IDLE,
 		WIREPULL,
+		RIDE_BIRD,
+		MIND_CONTROL,
+		MIND_CONTROL_IDLE,
 		A_Count
 	};
 
@@ -32,6 +37,7 @@ struct SequenceSkeleton : Enemy
 	Tileset *ts_bullet;
 	Tileset *ts_walk;
 	Tileset *ts_hop;
+	Tileset *ts_wireAway;
 	int moveFrames;
 	int waitFrames;
 
@@ -43,6 +49,8 @@ struct SequenceSkeleton : Enemy
 	int framesToArrive;
 
 	V2d hopTarget;
+	double hopSpeed;
+	double hopExtraHeight;
 
 	V2d laserPos;
 	double laserSpeed;
@@ -50,6 +58,8 @@ struct SequenceSkeleton : Enemy
 	int laserAnimFactor;
 	int laserAnimFrames;
 	V2d laserVel;
+
+	
 
 	sf::Vertex wireQuad[4];
 	sf::Vertex laserQuad[4];
@@ -59,14 +69,20 @@ struct SequenceSkeleton : Enemy
 
 	V2d currWirePos;
 	V2d wireAnchor;
-	int framesThrowingWire;
+	V2d wireInitialThrowOrigin;
+	bool wireMoving;
 
+
+	SequenceBird *seqBird;
+	V2d offsetFromBird;
 	//int framesThrowingLaser;
 
 	SequenceSkeleton(ActorParams *ap);
 	void Wait();
 
-	void HopDown( V2d &pos );
+	V2d GetWireOrigin();
+	void RideBird(SequenceBird *seqBird);
+	void Hop( V2d &pos, double p_hopSpeed, double p_hopExtraHeight );
 	void Idle();
 	void ChargeLaser();
 	void UpdateWire();
@@ -75,6 +91,7 @@ struct SequenceSkeleton : Enemy
 	void WireThrow(V2d &pos);
 	void WirePull();
 	void UpdateWireQuad();
+	void MindControl();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

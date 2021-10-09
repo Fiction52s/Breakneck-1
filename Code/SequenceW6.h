@@ -19,6 +19,7 @@ struct SequenceCoyote;
 struct MusicInfo;
 struct SequenceTiger;
 struct SequenceBird;
+struct SequenceSkeleton;
 
 struct EnterFortressScene : BasicBossScene
 {
@@ -139,6 +140,49 @@ struct SkeletonPostFightScene : BasicBossScene
 	void UpdateState();
 
 	bool IsAutoRunState();
+};
+
+struct MindControlScene : BasicBossScene
+{
+	enum State
+	{
+		FADE,
+		WAIT,
+		CONV1,
+		NEXUS_EXPLODE,
+		CONV2,
+		SKELETON_ENTRANCE,
+		CONV3,
+		SKELETON_FACE_PRE_MIND_CONTROL,
+		SKELETON_MIND_CONTROL,
+		CONV4,
+		MIND_CONTROL_FINISH,
+		CONV5,
+		BIRD_WALK_OVER_TO_SKELETON,
+		ENTRANCE,
+		CONV6,
+		SKELETON_JUMP_ONTO_BIRD,
+		TIGER_FACE_KIN,
+		SKELETON_BIRD_EXIT,
+		Count
+	};
+
+	SequenceTiger *seqTiger;
+	SequenceBird *seqBird;
+	SequenceSkeleton *seqSkeleton;
+
+	MindControlScene();
+
+	bool IsAutoRunState();
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	void SetEntranceShot();
 };
 
 struct TigerPreFight2Scene : BasicBossScene

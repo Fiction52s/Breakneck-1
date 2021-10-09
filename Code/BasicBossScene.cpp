@@ -99,6 +99,10 @@ BasicBossScene *BasicBossScene::CreateScene(const std::string &name)
 	{
 		bScene = new GatorPreFightScene;
 	}
+	else if (name == "mindcontrol")
+	{
+		bScene = new MindControlScene;
+	}
 	else if (name == "birdchase")
 	{
 		bScene = new BirdChaseScene;

@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_SequenceSkeleton.h"
 #include "Actor.h"
+#include "Enemy_SequenceBird.h"
 
 #include "PauseMenu.h"
 
@@ -28,9 +29,13 @@ SequenceSkeleton::SequenceSkeleton(ActorParams *ap)
 	actionLength[CHARGELASER] = 7;
 	actionLength[LASER] = 12;
 	actionLength[LASER_IDLE] = 2;
-	actionLength[WIRETHROW] = 30;
+	actionLength[WIRETHROW] = 36;
+	actionLength[WIRE_PEACE] = 14;
 	actionLength[WIRE_IDLE] = 2;
-	actionLength[WIREPULL] = 5;
+	actionLength[WIREPULL] = 1;
+	actionLength[RIDE_BIRD] = 2;
+	actionLength[MIND_CONTROL] = 10;
+	actionLength[MIND_CONTROL_IDLE] = 10;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -38,12 +43,15 @@ SequenceSkeleton::SequenceSkeleton(ActorParams *ap)
 	animFactor[JUMPSQUAT] = 3;//1
 	animFactor[HOP] = 1;
 	animFactor[LAND] = 3;
-	animFactor[CHARGELASER] = 3;
+	animFactor[CHARGELASER] = 4;
 	animFactor[LASER] = 4;
-	animFactor[WIRETHROW] = 1;
+	animFactor[WIRETHROW] = 3;
 	animFactor[WIRE_IDLE] = 1;
 	animFactor[WIREPULL] = 1;
 	animFactor[LASER_IDLE] = 1;
+	animFactor[RIDE_BIRD] = 1;
+	animFactor[MIND_CONTROL] = 1;
+	animFactor[MIND_CONTROL_IDLE] = 1;
 	//animFactor[DIG_OUT] = 4;
 
 	extraHeight = 64;
@@ -63,6 +71,8 @@ SequenceSkeleton::SequenceSkeleton(ActorParams *ap)
 
 	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
 
+	ts_wireAway = GetSizedTileset("Bosses/Skeleton/skele_wire_160x128.png");
+
 	SetRectColor(wireQuad, Color::Red);
 
 	//SetRectColor(laserQuad, Color::Magenta);
@@ -75,6 +85,7 @@ void SequenceSkeleton::ResetEnemy()
 {
 	enemyMover.Reset();
 	facingRight = true;
+	wireMoving = false;
 
 	action = IDLE;
 	frame = 0;
@@ -86,6 +97,8 @@ void SequenceSkeleton::ResetEnemy()
 	currPosInfo.position += V2d(0, -extraHeight);
 
 	enemyMover.currPosInfo = currPosInfo;
+
+	seqBird = NULL;
 
 	UpdateSprite();
 }
@@ -106,11 +119,6 @@ void SequenceSkeleton::FrameIncrement()
 	if (waitFrames > 0)
 	{
 		--waitFrames;
-	}
-
-	if (action == WIRETHROW)
-	{
-		framesThrowingWire++;
 	}
 
 	/*if (action == LASER)
@@ -148,7 +156,7 @@ void SequenceSkeleton::ProcessState()
 		{
 			action = HOP;
 			frame = 0;
-			int hopFrames = enemyMover.SetModeNodeJump(hopTarget, 16, 5);
+			int hopFrames = enemyMover.SetModeNodeJump(hopTarget, hopExtraHeight, hopSpeed);
 			animFactor[HOP] = hopFrames / 2;
 		}
 			
@@ -168,7 +176,8 @@ void SequenceSkeleton::ProcessState()
 			frame = 0;
 			break;
 		case WIRETHROW:
-			frame = actionLength[WIREPULL] * animFactor[WIREPULL] - 1;
+			action = WIRE_IDLE;
+			frame = 0;
 			break;
 		case WIRE_IDLE:
 			frame = 0;
@@ -176,7 +185,22 @@ void SequenceSkeleton::ProcessState()
 		case WIREPULL:
 			frame = actionLength[WIREPULL] * animFactor[WIREPULL] - 1;
 			break;
+		case RIDE_BIRD:
+			frame = 0;
+			break;
+		case MIND_CONTROL:
+			action = MIND_CONTROL_IDLE;
+			frame = 0;
+			break;
+		case MIND_CONTROL_IDLE:
+			frame = 0;
+			break;
 		}
+	}
+
+	if (action == RIDE_BIRD)
+	{
+		currPosInfo.position = seqBird->GetPosition() + offsetFromBird;
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -199,25 +223,82 @@ void SequenceSkeleton::ProcessState()
 
 	UpdateWire();
 
-	UpdateWireQuad();
+	
+}
+
+V2d SequenceSkeleton::GetWireOrigin()
+{
+	V2d pos = GetPosition();
+	V2d baseWireOffset;
+	
+	if (action == WIRETHROW)
+	{
+		int trueFrame = frame / animFactor[WIRETHROW];
+		if (trueFrame == 7 || trueFrame == 8)
+		{
+			baseWireOffset = V2d(50, 48);
+		}
+		else if (trueFrame == 9)
+		{
+			baseWireOffset = V2d(50, 52);
+		}
+		else if (trueFrame >= 10 && trueFrame <= 13)
+		{
+			baseWireOffset = V2d(51, 48);
+		}
+		else if (trueFrame >= 14 && trueFrame <= 15)
+		{
+			baseWireOffset = V2d(60, 40);
+		}
+		else if (trueFrame >= 16 && trueFrame <= 22)
+		{
+			baseWireOffset = V2d(66, 50);
+		}
+		else if (trueFrame >= 23 && trueFrame <= 36)
+		{
+			baseWireOffset = V2d(67, 47);
+		}
+	}
+	else if (action == WIREPULL)
+	{
+		baseWireOffset = V2d(29, 29);
+	}
+	
+	V2d wireOffset(baseWireOffset.x - ts_wireAway->tileWidth / 2, baseWireOffset.y - ts_wireAway->tileHeight / 2 );
+	if (!facingRight)
+	{
+		wireOffset.x = -wireOffset.x;
+	}
+	pos += wireOffset;
+
+	return pos;
 }
 
 void SequenceSkeleton::UpdateWire()
 {
-	if (action == WIRETHROW)
+	if (wireMoving)
 	{
-		double len = length(wireAnchor - GetPosition());
-		V2d along = normalize(wireAnchor - GetPosition());
+		V2d myPos = GetWireOrigin();
+		double len = length(wireAnchor - myPos);
+		V2d along = normalize(wireAnchor - wireInitialThrowOrigin);
 
-		if (framesThrowingWire * wireThrowSpeed >= len)
+
+		currWirePos += along * wireThrowSpeed;
+
+		if (length(currWirePos - wireInitialThrowOrigin) > length(wireAnchor - wireInitialThrowOrigin))
 		{
 			currWirePos = wireAnchor;
-			action = WIRE_IDLE;
+			wireMoving = false;
+		}
+
+		/*if (framesThrowingWire * wireThrowSpeed >= len)
+		{
+			currWirePos = wireAnchor;
 		}
 		else
 		{
-			currWirePos = GetPosition() + along * wireThrowSpeed * (double)framesThrowingWire;
-		}
+			currWirePos = myPos + along * wireThrowSpeed * (double)framesThrowingWire;
+		}*/
 	}
 }
 
@@ -258,7 +339,13 @@ void SequenceSkeleton::ChargeLaser()
 	frame = 0;
 }
 
-void SequenceSkeleton::HopDown(V2d &pos)
+void SequenceSkeleton::MindControl()
+{
+	action = MIND_CONTROL;
+	frame = 0;
+}
+
+void SequenceSkeleton::Hop(V2d &pos, double p_hopSpeed, double p_hopExtraHeight )
 {
 	action = JUMPSQUAT;
 	frame = 0;
@@ -273,6 +360,8 @@ void SequenceSkeleton::HopDown(V2d &pos)
 	}
 
 	hopTarget = pos + V2d(0, -extraHeight);
+	hopSpeed = p_hopSpeed;
+	hopExtraHeight = p_hopExtraHeight;
 	
 }
 
@@ -289,7 +378,7 @@ void SequenceSkeleton::WireThrow(V2d &pos)
 {
 	action = WIRETHROW;
 	frame = 0;
-	framesThrowingWire = 0;
+	wireMoving = false;
 
 	if (GetPosition().x > pos.x)
 	{
@@ -301,16 +390,15 @@ void SequenceSkeleton::WireThrow(V2d &pos)
 	}
 
 	wireAnchor = pos;
-	currWirePos = GetPosition();
 }
 
 void SequenceSkeleton::UpdateWireQuad()
 {
-	V2d myPos = GetPosition();
+	V2d myPos = GetWireOrigin();
 	V2d along = normalize(currWirePos - myPos);
 	V2d other(along.y, -along.x);
 
-	double width = 5;
+	double width = 1;
 	wireQuad[0].position = Vector2f(myPos + other * width);
 	wireQuad[1].position = Vector2f(myPos - other * width);
 	wireQuad[2].position = Vector2f(currWirePos - other * width);
@@ -327,6 +415,13 @@ void SequenceSkeleton::WirePull()
 
 void SequenceSkeleton::UpdateSprite()
 {
+	if (action == RIDE_BIRD) //update post physics
+	{
+		currPosInfo.position = seqBird->GetPosition() + offsetFromBird;
+		enemyMover.currPosInfo = currPosInfo;
+	}
+
+	
 	if (action == LASER || action == CHARGELASER || action == LASER_IDLE)
 	{
 		sprite.setTexture(*ts_laser->texture);
@@ -346,6 +441,40 @@ void SequenceSkeleton::UpdateSprite()
 		}
 
 		ts_laser->SetSubRect(sprite, tile, !facingRight);
+	}
+	else if (action == WIRETHROW || action == WIRE_IDLE || action == WIREPULL || action == WIRE_PEACE)
+	{
+		sprite.setTexture(*ts_wireAway->texture);
+
+		int tile = 0;
+		if (action == WIRETHROW)
+		{
+			tile = frame / animFactor[WIRETHROW];
+
+			if (frame == 7 * animFactor[WIRETHROW])
+			{
+				wireMoving = true;
+				currWirePos = GetWireOrigin();
+				wireInitialThrowOrigin = currWirePos;
+			}
+		}
+		/*else if (action == WIRE_PEACE)
+		{
+			tile = 
+		}*/
+		else if (action == WIREPULL)
+		{
+			tile = 37;
+		}
+		else if (action == WIRE_IDLE)
+		{
+			tile = 37;
+		}
+		
+
+		ts_wireAway->SetSubRect(sprite, tile, !facingRight);
+
+		UpdateWireQuad();
 	}
 	else if (action == WALK)
 	{
@@ -402,7 +531,8 @@ void SequenceSkeleton::DrawWire(sf::RenderTarget *target)
 
 void SequenceSkeleton::EnemyDraw(sf::RenderTarget *target)
 {
-	if (action == WIRETHROW || action == WIREPULL|| action == WIRE_IDLE)
+	//frame - 1 because it increments prior to the draw
+	if ((action == WIRETHROW && (frame-1) / animFactor[WIRETHROW] >= 7 )|| action == WIREPULL|| action == WIRE_IDLE)
 	{
 		DrawWire(target);
 	}
@@ -423,4 +553,13 @@ void SequenceSkeleton::Wait()
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
+}
+
+void SequenceSkeleton::RideBird(SequenceBird *p_seqBird)
+{
+	seqBird = p_seqBird;
+	action = RIDE_BIRD;
+	frame = 0;
+
+	offsetFromBird = GetPosition() - seqBird->GetPosition();
 }

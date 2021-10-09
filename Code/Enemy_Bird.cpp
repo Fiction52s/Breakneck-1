@@ -199,7 +199,7 @@ void Bird::SetupPostFightScenes()
 		if (postFightScene3 == NULL)
 		{
 			postFightScene3 = new BirdPostFight3Scene;
-			postFightScene3->bird = this;
+			//postFightScene3->bird = this;
 			postFightScene3->Init();
 		}
 	}

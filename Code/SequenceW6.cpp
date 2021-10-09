@@ -331,12 +331,6 @@ void TigerAndBirdTunnelScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
-			
-			//seqBird->facingRight = false;
-			
-
-			
-
 			sess->hud->Hide();
 			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
@@ -351,13 +345,11 @@ void TigerAndBirdTunnelScene::UpdateState()
 		{
 			seqBird->Reset();
 			sess->AddEnemy(seqBird);
-			seqBird->Walk(points["birdwalk1"]->pos);
+			seqBird->Walk(GetPointPos("birdwalk1"));
 
 			seqTiger->Reset();
 			sess->AddEnemy(seqTiger);
-			seqTiger->Walk(points["tigerwalk1"]->pos);
-
-			
+			seqTiger->Walk(GetPointPos("tigerwalk1"));
 		}
 
 		if (seqBird->action == SequenceBird::IDLE && seqTiger->action == SequenceTiger::IDLE)
@@ -374,8 +366,8 @@ void TigerAndBirdTunnelScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			seqBird->Walk(points["birdwalk2"]->pos);
-			seqTiger->Walk(points["tigerwalk2"]->pos);
+			seqBird->Walk(GetPointPos("birdwalk2"));
+			seqTiger->Walk(GetPointPos("tigerwalk2"));
 		}
 
 		if (seqBird->action == SequenceBird::IDLE && seqTiger->action == SequenceTiger::IDLE)
@@ -645,7 +637,274 @@ bool SkeletonPostFightScene::IsAutoRunState()
 	return state == KINMOVE;
 }
 
+MindControlScene::MindControlScene()
+	:BasicBossScene(BasicBossScene::APPEAR)
+{
+	seqBird = NULL;
+	seqTiger = NULL;
+	seqSkeleton = NULL;
+}
 
+void MindControlScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[FADE] = 60;
+	stateLength[WAIT] = 60;
+	stateLength[CONV1] = -1;
+	stateLength[NEXUS_EXPLODE] = 120;
+	stateLength[CONV2] = -1;
+	stateLength[SKELETON_ENTRANCE] = 60;
+	stateLength[CONV3] = -1;
+	stateLength[SKELETON_FACE_PRE_MIND_CONTROL] = -1;
+	stateLength[SKELETON_MIND_CONTROL] = 120;
+	stateLength[CONV4] = -1;
+	stateLength[MIND_CONTROL_FINISH] = 60;
+	stateLength[CONV5] = -1;
+	stateLength[BIRD_WALK_OVER_TO_SKELETON] = -1;
+	stateLength[ENTRANCE] = -1;
+	stateLength[CONV6] = -1;
+	stateLength[SKELETON_JUMP_ONTO_BIRD] = -1;
+	stateLength[TIGER_FACE_KIN] = 30;
+	stateLength[SKELETON_BIRD_EXIT] = 120;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
+	seqSkeleton = (SequenceSkeleton*)sess->GetEnemy(EnemyType::EN_SEQUENCESKELETON);
+}
+
+void MindControlScene::AddShots()
+{
+	AddShot("scenecam");
+}
+
+void MindControlScene::AddPoints()
+{
+	AddStartAndStopPoints();
+
+	AddPoint("birdfly1");
+	AddPoint("birdwalk1");
+}
+
+void MindControlScene::AddGroups()
+{
+	AddGroup("conv1", "W6/w6_skele_nexus_1");
+	AddGroup("conv2", "W6/w6_skele_nexus_2");
+	AddGroup("conv3", "W6/w6_skele_nexus_3");
+	AddGroup("conv4", "W6/w6_skele_nexus_4");
+	AddGroup("conv5", "W6/w6_skele_nexus_5");
+	AddGroup("conv6", "W6/w6_skele_nexus_6");
+	SetConvGroup("conv1");
+}
+
+void MindControlScene::AddEnemies()
+{
+}
+
+void MindControlScene::AddFlashes()
+{
+	AddFlashedImage("skeleangry", sess->GetTileset("Story/CoyoteAndSkeleton/Coy_23c.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+}
+
+bool MindControlScene::IsAutoRunState()
+{
+	if (state == ENTRANCE)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+
+}
+
+void MindControlScene::ReturnToGame()
+{
+	Actor *player = sess->GetPlayer(0);
+
+
+	//sess->RemoveEnemy(seqCoyote);
+
+	BasicBossScene::ReturnToGame();
+}
+
+void MindControlScene::UpdateState()
+{
+	Actor *player = sess->GetPlayer(0);
+	switch (state)
+	{
+	case FADE:
+		if (frame == 0)
+		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+
+			seqSkeleton->Reset();
+			sess->AddEnemy(seqSkeleton);
+			seqSkeleton->facingRight = false;
+
+			sess->hud->Hide();
+			sess->cam.SetManual(true);
+			MainMenu *mm = sess->mainMenu;
+			sess->Fade(true, 60, Color::Black);
+			SetCameraShot("scenecam");
+			//enemyMover.SetDestNode(node);
+		}
+		break;
+	case CONV1:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv1");
+		}
+		ConvUpdate();
+		break;
+	}
+	case NEXUS_EXPLODE:
+	{
+		break;
+	}
+	case CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv2");
+		}
+		ConvUpdate();
+		break;
+	}
+	case SKELETON_ENTRANCE:
+	{
+		break;
+	}
+	case CONV3:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv3");
+		}
+		ConvUpdate();
+		break;
+	}
+	case SKELETON_FACE_PRE_MIND_CONTROL:
+	{
+		if (frame == 0)
+		{
+			Flash("skeleangry");
+		}
+		
+
+		if (IsFlashDone("skeleangry"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case SKELETON_MIND_CONTROL:
+	{
+		if (frame == 0)
+		{
+			seqSkeleton->MindControl();
+			seqBird->HitByMindControl();
+			seqTiger->HitByMindControl();
+		}
+		break;
+	}
+	case CONV4:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv4");
+		}
+		ConvUpdate();
+		break;
+	}
+	case MIND_CONTROL_FINISH:
+	{
+		break;
+	}
+	case CONV5:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv5");
+		}
+		ConvUpdate();
+		break;
+	}
+	case BIRD_WALK_OVER_TO_SKELETON:
+	{
+		if (frame == 0)
+		{
+			seqBird->Walk(GetPointPos("birdwalk1"));
+		}
+
+		if (seqBird->action == SequenceBird::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case ENTRANCE:
+	{
+		if (frame == 0)
+		{
+			sess->FreezePlayer(false);
+			SetEntranceRun();
+		}
+		break;
+	}
+	case CONV6:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv6");
+		}
+		ConvUpdate();
+		break;
+	}
+	case SKELETON_JUMP_ONTO_BIRD:
+	{
+		if (frame == 0)
+		{
+			seqSkeleton->Hop(seqBird->GetPosition(), 5, 20);
+		}
+
+		if (seqSkeleton->action == SequenceSkeleton::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case TIGER_FACE_KIN:
+	{
+		if (frame == 0)
+		{
+			seqTiger->facingRight = false;
+		}
+		break;
+	}
+	case SKELETON_BIRD_EXIT:
+	{
+		if (frame == 0)
+		{
+			seqBird->FlyAwayWithSkeleton(GetPointPos("birdfly1"), 20);
+			seqSkeleton->RideBird(seqBird);
+		}
+		break;
+	}
+	}
+}
+
+void MindControlScene::SetEntranceShot()
+{
+	//SetCameraShot("scenecam");
+}
 
 
 TigerPreFight2Scene::TigerPreFight2Scene()

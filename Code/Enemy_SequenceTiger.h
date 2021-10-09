@@ -17,6 +17,7 @@ struct SequenceTiger : Enemy
 		BREATHE,
 		LOOK_UP,
 		CARRIED_BY_BIRD,
+		HIT_BY_MIND_CONTROL,
 		A_Count
 	};
 
@@ -35,6 +36,8 @@ struct SequenceTiger : Enemy
 
 	SequenceTiger(ActorParams *ap);
 	void Wait();
+
+	void HitByMindControl();
 	void Walk(V2d &pos);
 	void LookUp();
 	void Carried(V2d &pos);

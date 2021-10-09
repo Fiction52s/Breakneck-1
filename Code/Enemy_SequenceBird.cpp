@@ -27,6 +27,8 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	actionLength[FLY_IDLE] = 10;
 	actionLength[PICKUP_TIGER] = 10;
 	actionLength[FLY_HOLDING_TIGER] = 10;
+	actionLength[FLY_WITH_SKELETON] = 10;
+	actionLength[HIT_BY_MIND_CONTROL] = 10;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -36,6 +38,8 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	animFactor[FLY_IDLE] = 1;
 	animFactor[PICKUP_TIGER] = 1;
 	animFactor[FLY_HOLDING_TIGER] = 1;
+	animFactor[FLY_WITH_SKELETON] = 1;
+	animFactor[HIT_BY_MIND_CONTROL] = 1;
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Bird/intro_256x256.png");
@@ -65,6 +69,12 @@ void SequenceBird::Breathe()
 	action = BREATHE;
 	frame = 0;
 	//facingRight = false;
+}
+
+void SequenceBird::HitByMindControl()
+{
+	action = HIT_BY_MIND_CONTROL;
+	frame = 0;
 }
 
 void SequenceBird::Walk(V2d &pos)
@@ -134,6 +144,12 @@ void SequenceBird::ProcessState()
 		case FLY_HOLDING_TIGER:
 			frame = 0;
 			break;
+		case FLY_WITH_SKELETON:
+			frame = 0;
+			break;
+		case HIT_BY_MIND_CONTROL:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -146,7 +162,7 @@ void SequenceBird::ProcessState()
 			action = IDLE;
 			frame = 0;
 		}
-		else if (action == FLY || action == FLY_HOLDING_TIGER )
+		else if (action == FLY || action == FLY_HOLDING_TIGER || action == FLY_WITH_SKELETON)
 		{
 			action = FLY_IDLE;
 			frame = 0;
@@ -209,6 +225,23 @@ void SequenceBird::PickupTiger()
 {
 	action = PICKUP_TIGER;
 	frame = 0;
+}
+
+void SequenceBird::FlyAwayWithSkeleton(V2d &pos, double speed)
+{
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else
+	{
+		facingRight = true;
+	}
+
+	action = FLY_WITH_SKELETON;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), speed);
 }
 
 void SequenceBird::FlyAwayWithTiger(V2d &pos)
