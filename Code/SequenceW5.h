@@ -7,6 +7,7 @@ struct Bird;
 struct GroundedWarper;
 struct SequenceBird;
 struct SequenceTiger;
+struct SequenceGator;
 
 struct BirdPreFight2Scene : BasicBossScene
 {
@@ -92,11 +93,18 @@ struct GatorPostFightScene : BasicBossScene
 		FADE,
 		WAIT,
 		GATORANGRY,
-		BIRDATTACKS,
+		BIRD_BREAKS_FREE,
+		BIRD_KICK,
 		TIGERFALL,
-		TIGERLEAVESWITHBIRD,
+		TIGER_WALK_TO_BIRD,
+		TIGER_PUTS_BIRD_ON_BACK,
+		TIGER_LEAVES_WITH_BIRD,
 		Count
 	};
+
+	SequenceGator *seqGator;
+	SequenceBird *seqBird;
+	SequenceTiger *seqTiger;
 
 	GatorPostFightScene();
 	void SetupStates();
@@ -107,8 +115,6 @@ struct GatorPostFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
-
-	Gator *gator;
 };
 
 struct BirdTigerApproachScene : BasicBossScene

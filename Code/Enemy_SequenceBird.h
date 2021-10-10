@@ -7,6 +7,7 @@
 #include "EnemyMover.h"
 
 struct GameSession;
+struct SequenceTiger;
 
 struct SequenceBird : Enemy
 {
@@ -21,6 +22,12 @@ struct SequenceBird : Enemy
 		FLY_HOLDING_TIGER,
 		FLY_WITH_SKELETON,
 		HIT_BY_MIND_CONTROL,
+		PUT_ON_TIGER,
+		RIDE_TIGER,
+		BREAK_BUBBLE,
+		BUBBLE_BREAK_IDLE,
+		SUPER_KICK,
+		POST_SUPER_KICK_LIE,
 		A_Count
 	};
 
@@ -29,6 +36,9 @@ struct SequenceBird : Enemy
 
 	int moveFrames;
 	int waitFrames;
+
+	SequenceTiger *seqTiger;
+	V2d offsetFromTiger;
 
 	EnemyMover enemyMover;
 
@@ -42,6 +52,9 @@ struct SequenceBird : Enemy
 	void Breathe();
 	void Walk(V2d &pos);
 	void HitByMindControl();
+	void RideTiger( SequenceTiger *p_seqTiger );
+	void BreakFreeFromBubble();
+	void SuperKick(V2d &pos);
 
 	void Fly(V2d &pos);
 	void PickupTiger();

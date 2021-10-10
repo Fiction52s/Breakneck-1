@@ -12,6 +12,7 @@
 #include "Enemy_Bird.h"
 #include "Enemy_SequenceBird.h"
 #include "Enemy_SequenceTiger.h"
+#include "Enemy_SequenceGator.h"
 
 using namespace std;
 using namespace sf;
@@ -395,7 +396,7 @@ void GatorPreFightScene::UpdateState()
 GatorPostFightScene::GatorPostFightScene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	gator = NULL;
+	seqGator = NULL;
 }
 
 void GatorPostFightScene::SetupStates()
@@ -405,9 +406,15 @@ void GatorPostFightScene::SetupStates()
 	stateLength[FADE] = 60;
 	stateLength[WAIT] = 60;
 	stateLength[GATORANGRY] = -1;
-	stateLength[BIRDATTACKS] = 10;
-	stateLength[TIGERFALL] = 10;
-	stateLength[TIGERLEAVESWITHBIRD] = 10;
+	stateLength[BIRD_KICK] = -1;
+	stateLength[TIGERFALL] = -1;
+	stateLength[TIGER_WALK_TO_BIRD] = -1;
+	stateLength[TIGER_PUTS_BIRD_ON_BACK] = 30;
+	stateLength[TIGER_LEAVES_WITH_BIRD] = 180;
+
+	seqGator = (SequenceGator*)sess->GetEnemy(EnemyType::EN_SEQUENCEGATOR);
+	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
 }
 
 void GatorPostFightScene::ReturnToGame()
@@ -425,6 +432,10 @@ void GatorPostFightScene::AddShots()
 void GatorPostFightScene::AddPoints()
 {
 	AddPoint("kinstand0");
+	AddPoint("birdcage");
+	AddPoint("tigercage");
+	AddPoint("tigerland");
+	AddPoint("birdkick");
 }
 
 void GatorPostFightScene::AddFlashes()
@@ -455,10 +466,29 @@ void GatorPostFightScene::UpdateState()
 		}
 		else if (frame == 10)
 		{
+			seqBird->Reset();
+			sess->AddEnemy(seqBird);
+			PositionInfo birdPos;
+			birdPos.position = GetPointPos("birdcage");
+			seqBird->SetCurrPosInfo(birdPos);
+			seqBird->facingRight = false;
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			PositionInfo tigerPos;
+			tigerPos.position = GetPointPos("tigercage");
+			seqTiger->SetCurrPosInfo(tigerPos);
+
+
+			seqGator->Reset();
+			sess->AddEnemy(seqGator);
+			PositionInfo gatorPos;
+			//gatorPos.position = GetPointPos("tigercage");
+
 			sess->SetGameSessionState(GameSession::RUN);
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("gatordeathcam");
-			gator->SeqWait();
+			
 		}
 		break;
 	case WAIT:
@@ -472,16 +502,73 @@ void GatorPostFightScene::UpdateState()
 		ConvUpdate();
 		break;
 	}
-	case BIRDATTACKS:
+	case BIRD_BREAKS_FREE:
 	{
+		if (frame == 0)
+		{
+			seqBird->BreakFreeFromBubble();
+		}
+
+		if (seqBird->action == SequenceBird::BUBBLE_BREAK_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_KICK:
+	{
+		if (frame == 0)
+		{
+			seqBird->SuperKick(GetPointPos( "birdkick" ));
+		}
+
+		if (seqBird->action == SequenceBird::POST_SUPER_KICK_LIE)
+		{
+			EndCurrState();
+		}
 		break;
 	}
 	case TIGERFALL:
 	{
+		if (frame == 0)
+		{
+			seqTiger->Fall(GetPointPos("tigerland").y);
+		}
+
+		if (seqTiger->action == SequenceTiger::FALL_LAND_IDLE)
+		{
+			EndCurrState();
+		}
 		break;
 	}
-	case TIGERLEAVESWITHBIRD:
+	case TIGER_WALK_TO_BIRD:
 	{
+		if (frame == 0)
+		{
+			seqTiger->Walk(seqBird->GetPosition());
+		}
+
+		if (seqTiger->action == SequenceTiger::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case TIGER_PUTS_BIRD_ON_BACK:
+	{
+		if (frame == 0)
+		{
+			seqBird->RideTiger(seqTiger);
+			seqTiger->PutBirdOnBack();
+		}
+		break;
+	}
+	case TIGER_LEAVES_WITH_BIRD:
+	{
+		if (frame == 0)
+		{
+			seqTiger->CarryBirdAway(seqTiger->GetPosition() + V2d(2000, 0));
+		}
 		break;
 	}
 	}

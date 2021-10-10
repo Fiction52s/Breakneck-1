@@ -26,7 +26,11 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	actionLength[LOOK_UP] = 10;
 	actionLength[CARRIED_BY_BIRD] = -1;
 	actionLength[HIT_BY_MIND_CONTROL] = 2;
-	
+	actionLength[INJURED_ROAR] = 40;
+	actionLength[FALL] = 1;
+	actionLength[FALL_LAND_IDLE] = 1;
+	actionLength[PUT_BIRD_ON_BACK] = 10;
+	actionLength[CARRY_BIRD] = 2;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -35,7 +39,12 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	animFactor[LOOK_UP] = 1;
 	animFactor[CARRIED_BY_BIRD] = 1;
 	animFactor[HIT_BY_MIND_CONTROL] = 1;
-	
+	animFactor[INJURED_ROAR] = 1;
+	animFactor[FALL] = 1;
+	animFactor[FALL_LAND_IDLE] = 1;
+	animFactor[PUT_BIRD_ON_BACK] = 1;
+	animFactor[CARRY_BIRD] = 1;
+
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
@@ -120,6 +129,23 @@ void SequenceTiger::ProcessState()
 		case HIT_BY_MIND_CONTROL:
 			frame = 0;
 			break;
+		case INJURED_ROAR:
+			action = BREATHE;
+			frame = 0;
+			break;
+		case FALL:
+			frame = 0;
+			break;
+		case FALL_LAND_IDLE:
+			frame = 0;
+			break;
+		case PUT_BIRD_ON_BACK:
+			action = CARRY_BIRD;
+			frame = 0;
+			break;
+		case CARRY_BIRD:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -128,6 +154,11 @@ void SequenceTiger::ProcessState()
 	if ((action == WALK || action == CARRIED_BY_BIRD ) && enemyMover.IsIdle())
 	{
 		action = IDLE;
+		frame = 0;
+	}
+	else if (action == FALL && enemyMover.IsIdle())
+	{
+		action = FALL_LAND_IDLE;
 		frame = 0;
 	}
 }
@@ -166,9 +197,49 @@ void SequenceTiger::Wait()
 	enemyMover.Reset();
 }
 
+void SequenceTiger::Fall(double y)
+{
+	assert(y > GetPosition().y);
+
+	action = FALL;
+	frame = 0;
+
+	V2d nodePos(GetPosition().x, y);
+	enemyMover.SetModeNodeProjectile(nodePos, V2d(0, .5), 0);
+}
+
 void SequenceTiger::LookUp()
 {
 	action = LOOK_UP;
+	frame = 0;
+}
+
+void SequenceTiger::PutBirdOnBack()
+{
+	action = PUT_BIRD_ON_BACK;
+	frame = 0;
+}
+
+void SequenceTiger::CarryBirdAway(V2d &pos)
+{
+	action = CARRY_BIRD;
+	frame = 0;
+
+	if (pos.x > GetPosition().x)
+	{
+		facingRight = true;
+	}
+	else if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 10);
+}
+
+void SequenceTiger::InjuredRoar()
+{
+	action = INJURED_ROAR;
 	frame = 0;
 }
 

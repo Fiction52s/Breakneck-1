@@ -26,7 +26,7 @@ SequenceGator::SequenceGator(ActorParams *ap)
 	animFactor[IDLE] = 2;
 	//animFactor[DIG_OUT] = 4;
 
-	ts = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 
 	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
 
@@ -106,9 +106,9 @@ void SequenceGator::UpdateSprite()
 {
 	sprite.setTexture(*ts->texture);
 
-	ts->SetSubRect(sprite, 11, !facingRight);
+	ts->SetSubRect(sprite, 0, !facingRight);
 
-	sprite.setPosition(GetPositionF() + Vector2f(0, -128));
+	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 

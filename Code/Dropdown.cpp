@@ -15,6 +15,7 @@ Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 	myFont(f), defaultIndex(p_defaultIndex), expanded(false)
 {
 	selectedIndex = -1;
+	baseIndex = 0;
 	SetOptions(p_options);
 }
 
@@ -96,6 +97,30 @@ void Dropdown::SetOptions(const std::vector<std::string> &p_options)
 	}
 }
 
+void Dropdown::UpdateOptions()
+{
+	for (int i = baseIndex; i < numOptions; ++i)
+	{
+		int ind = i - baseIndex;
+		Vector2f dropPos(pos.x, pos.y + size.y * (ind + 1));
+		Text &t = optionText[ind];
+		t.setString(options[i]);
+		t.setFont(myFont);
+		t.setFillColor(Color::White);
+		t.setCharacterSize(characterHeight);
+		auto tlb = t.getLocalBounds();
+		t.setOrigin(tlb.left, tlb.top);
+		t.setPosition(dropPos + Vector2f(4, 4));
+	}
+
+	/*int diff = numOptions - ( numOptions - baseIndex);
+	for (int i = numOptions - 1; i > diff; --i )
+	{
+		Text &t = optionText[i];
+		t.setString("");
+	}*/
+}
+
 int Dropdown::GetIndex(const std::string &s)
 {
 	for (int i = 0; i < options.size(); ++i)
@@ -119,8 +144,9 @@ void Dropdown::Draw(sf::RenderTarget *target)
 
 	if (expanded)
 	{
-		target->draw(dropdownRects, numOptions * 4, sf::Quads);
-		for (int i = 0; i < numOptions; ++i)
+		int numVisible = numOptions - baseIndex;
+		target->draw(dropdownRects, numVisible * 4, sf::Quads);
+		for (int i = 0; i < numVisible; ++i)
 		{
 			target->draw(optionText[i]);
 		}
@@ -176,7 +202,35 @@ const std::string &Dropdown::GetSelectedText()
 
 bool Dropdown::IsMouseOnOption(int ind, Vector2f &point)
 {
-	return QuadContainsPoint(dropdownRects + ind * 4, point);
+	int i = ind - baseIndex;
+	if (i < 0)
+	{
+		return false;
+	}
+	return QuadContainsPoint(dropdownRects + i * 4, point);
+}
+
+void Dropdown::MouseScroll(int delta)
+{
+	//if (panel->focusedMember == this)
+	{
+		int oldIndex = baseIndex;
+
+		baseIndex -= delta;
+		if (baseIndex < 0)
+		{
+			baseIndex = 0;
+		}
+		else if (baseIndex > numOptions - 10)
+		{
+			baseIndex = numOptions - 10;
+		}
+
+		if (oldIndex != baseIndex)
+		{
+			UpdateOptions();
+		}
+	}
 }
 
 bool Dropdown::MouseUpdate()
@@ -223,16 +277,13 @@ bool Dropdown::MouseUpdate()
 
 		for (int i = 0; i < numOptions; ++i)
 		{
-			if (i == highlightedIndex)
-			{
-				SetRectColor(dropdownRects + i * 4, Color(Color::Red));
-			}
-			else
-			{
-				SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
-			}
+			SetRectColor(dropdownRects + i * 4, Color(Color::Blue));
 		}
 
+		if (highlightedIndex - baseIndex >= 0)
+		{
+			SetRectColor(dropdownRects + (highlightedIndex - baseIndex) * 4, Color(Color::Red));
+		}
 
 	}
 
@@ -289,6 +340,8 @@ bool Dropdown::MouseUpdate()
 			{
 				clickedDown = true;
 				expanded = true;
+				baseIndex = 0;
+				UpdateOptions();
 				return true;
 			}
 		}

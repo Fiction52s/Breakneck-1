@@ -18,6 +18,11 @@ struct SequenceTiger : Enemy
 		LOOK_UP,
 		CARRIED_BY_BIRD,
 		HIT_BY_MIND_CONTROL,
+		INJURED_ROAR,
+		FALL,
+		FALL_LAND_IDLE,
+		PUT_BIRD_ON_BACK,
+		CARRY_BIRD,
 		A_Count
 	};
 
@@ -37,11 +42,15 @@ struct SequenceTiger : Enemy
 	SequenceTiger(ActorParams *ap);
 	void Wait();
 
+	void Fall(double y );
+	void InjuredRoar();
 	void HitByMindControl();
 	void Walk(V2d &pos);
 	void LookUp();
 	void Carried(V2d &pos);
 	void Breathe();
+	void CarryBirdAway(V2d &pos);
+	void PutBirdOnBack();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

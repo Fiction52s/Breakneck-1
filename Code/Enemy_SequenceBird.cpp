@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "Enemy_SequenceBird.h"
 #include "Actor.h"
-
+#include "Enemy_SequenceTiger.h"
 #include "PauseMenu.h"
 
 using namespace std;
@@ -29,6 +29,14 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	actionLength[FLY_HOLDING_TIGER] = 10;
 	actionLength[FLY_WITH_SKELETON] = 10;
 	actionLength[HIT_BY_MIND_CONTROL] = 10;
+	actionLength[PUT_ON_TIGER] = 10;
+	actionLength[RIDE_TIGER] = 2;
+
+	actionLength[BREAK_BUBBLE] = 30;
+	actionLength[BUBBLE_BREAK_IDLE] = 2;
+	actionLength[SUPER_KICK] = 2;
+	actionLength[POST_SUPER_KICK_LIE] = 2;
+
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -40,6 +48,13 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	animFactor[FLY_HOLDING_TIGER] = 1;
 	animFactor[FLY_WITH_SKELETON] = 1;
 	animFactor[HIT_BY_MIND_CONTROL] = 1;
+	animFactor[PUT_ON_TIGER] = 1;
+	animFactor[RIDE_TIGER] = 1;
+
+	animFactor[BREAK_BUBBLE] = 1;
+	animFactor[BUBBLE_BREAK_IDLE] = 1;
+	animFactor[SUPER_KICK] = 1;
+	animFactor[POST_SUPER_KICK_LIE] = 1;
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Bird/intro_256x256.png");
@@ -150,6 +165,26 @@ void SequenceBird::ProcessState()
 		case HIT_BY_MIND_CONTROL:
 			frame = 0;
 			break;
+		case PUT_ON_TIGER:
+			action = RIDE_TIGER;
+			frame = 0;
+			break;
+		case RIDE_TIGER:
+			frame = 0;
+			break;
+		case BREAK_BUBBLE:
+			action = BUBBLE_BREAK_IDLE;
+			frame = 0;
+			break;
+		case BUBBLE_BREAK_IDLE:
+			frame = 0;
+			break;
+		case SUPER_KICK:
+			frame = 0;
+			break;
+		case POST_SUPER_KICK_LIE:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -167,6 +202,11 @@ void SequenceBird::ProcessState()
 			action = FLY_IDLE;
 			frame = 0;
 		}
+		else if (action == SUPER_KICK)
+		{
+			action = POST_SUPER_KICK_LIE;
+			frame = 0;
+		}
 	}
 }
 
@@ -181,6 +221,12 @@ void SequenceBird::UpdateEnemyPhysics()
 
 void SequenceBird::UpdateSprite()
 {
+	if (action == RIDE_TIGER) //update post physics
+	{
+		currPosInfo.position = seqTiger->GetPosition() + offsetFromTiger;
+		enemyMover.currPosInfo = currPosInfo;
+	}
+
 	sprite.setTexture(*ts->texture);
 
 	ts->SetSubRect(sprite, 0, !facingRight);
@@ -202,6 +248,38 @@ void SequenceBird::Wait()
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
+}
+
+void SequenceBird::SuperKick(V2d &pos)
+{
+	action = SUPER_KICK;
+	frame = 0;
+
+	if (pos.x > GetPosition().x)
+	{
+		facingRight = true;
+	}
+	else if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 15);
+}
+
+void SequenceBird::RideTiger(SequenceTiger *p_seqTiger)
+{
+	seqTiger = p_seqTiger;
+	action = RIDE_TIGER;
+	frame = 0;
+
+	offsetFromTiger = GetPosition() - seqTiger->GetPosition();
+}
+
+void SequenceBird::BreakFreeFromBubble()
+{
+	action = BREAK_BUBBLE;
+	frame = 0;
 }
 
 void SequenceBird::Fly(V2d &pos)

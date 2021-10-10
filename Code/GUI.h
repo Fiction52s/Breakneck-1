@@ -479,6 +479,7 @@ struct Dropdown : PanelMember
 	~Dropdown();
 	int GetIndex(const std::string &s);
 	void SetOptions(const std::vector<std::string> &options);
+	void UpdateOptions();
 	void Draw(sf::RenderTarget *rt);
 	bool MouseUpdate();
 	void Deactivate();
@@ -493,10 +494,11 @@ struct Dropdown : PanelMember
 	std::vector<sf::Text> optionText;
 	sf::Font &myFont;
 	bool IsMouseOnOption(int i, sf::Vector2f &point);
-
+	void MouseScroll(int delta);
 	bool expanded;
 	int selectedIndex;
 	sf::Text selectedText;
+	int baseIndex;
 
 	int numOptions;
 	sf::Vertex mainRect[4];

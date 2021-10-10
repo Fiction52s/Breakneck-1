@@ -345,7 +345,7 @@ void Gator::SetupPostFightScenes()
 	if (postFightScene == NULL)
 	{
 		postFightScene = new GatorPostFightScene;
-		postFightScene->gator = this;
+		//postFightScene->gator = this;
 		postFightScene->Init();
 	}
 }

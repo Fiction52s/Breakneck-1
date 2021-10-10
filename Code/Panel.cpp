@@ -319,7 +319,6 @@ const sf::Vector2i &Panel::GetMousePos()
 bool Panel::MouseUpdate()
 {
 	Vector2i mPos = MOUSE.GetPos();
-
 	if (!(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
 		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
 	{
@@ -526,6 +525,17 @@ bool Panel::HandleEvent(sf::Event ev)
 			if (extraUpdater != NULL)
 			{
 				extraUpdater->MouseScroll(ev.mouseWheel.delta);
+			}
+			else
+			{
+				for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
+				{
+					if ((*it).second->expanded)
+					{
+						(*it).second->MouseScroll(ev.mouseWheel.delta);
+						break;
+					}
+				}
 			}
 		}
 		return true;
