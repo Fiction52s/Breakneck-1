@@ -554,6 +554,19 @@ void GatorPostFightScene::UpdateState()
 		}
 		break;
 	}
+	case TIGER_ROAR:
+	{
+		if (frame == 0)
+		{
+			seqTiger->InjuredRoar();
+		}
+
+		if (seqTiger->action == SequenceTiger::BREATHE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
 	case TIGER_PUTS_BIRD_ON_BACK:
 	{
 		if (frame == 0)

@@ -212,6 +212,8 @@ void GatorWaterOrb::ResetEnemy()
 	action = FLYING;
 	frame = 0;
 
+	growing = false;
+
 	quadraticMoveSeq.Reset();
 
 	DefaultHitboxesOn();
@@ -245,6 +247,7 @@ void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
 	
+	growing = true;
 	velocity = V2d(0, 0);
 
 	action = FLYING;
@@ -273,6 +276,7 @@ void GatorWaterOrb::Redirect(V2d &vel)
 	action = REDIRECT;
 	frame = 0;
 	framesToLive = 180;
+	growing = false;
 }
 
 void GatorWaterOrb::FrameIncrement()
@@ -312,13 +316,20 @@ void GatorWaterOrb::ProcessState()
 		spawned = false;
 	}
 
-	if (action == FLYING || action == GROWING)
+	if (growing )//action == FLYING || action == GROWING)
 	{
 		if (currRadius < maxRadius)
 		{
 			currRadius += 1;
-			hitBody.GetCollisionBoxes(0).at(0).rw = currRadius;
 		}
+		
+		if (currRadius >= maxRadius)
+		{
+			currRadius = maxRadius;
+			growing = false;
+		}
+
+		hitBody.GetCollisionBoxes(0).at(0).rw = currRadius;
 	}
 }
 

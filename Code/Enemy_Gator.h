@@ -5,6 +5,7 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "Enemy_GatorWaterOrb.h"
+#include "Enemy_GatorSuperOrb.h"
 
 struct GatorPostFightScene;
 
@@ -28,12 +29,16 @@ struct Gator : Boss, Summoner
 		TRIPLE_LUNGE_3,
 		REDIRECT_ORBS,
 		SEQ_WAIT,
+		SUPER_ORB,
+		SEQ_RETRACT_SUPER_ORB,
+		SEQ_HOLD_SUPER_ORB,
 		A_Count
 	};
 
 	NodeGroup nodeGroupA;
 
 	GatorWaterOrbPool orbPool;
+	GatorSuperOrbPool superOrbPool;
 
 	RandomPicker orbTypePicker;
 
@@ -62,6 +67,7 @@ struct Gator : Boss, Summoner
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
+	//void HandleRemove();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

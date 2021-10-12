@@ -21,12 +21,12 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	targetPlayerIndex = 0;
 
 	actionLength[IDLE] = 2;
-	actionLength[WALK] = 2;
+	actionLength[WALK] = 8;
 	actionLength[BREATHE] = 10;
 	actionLength[LOOK_UP] = 10;
 	actionLength[CARRIED_BY_BIRD] = -1;
 	actionLength[HIT_BY_MIND_CONTROL] = 2;
-	actionLength[INJURED_ROAR] = 40;
+	actionLength[INJURED_ROAR] = 18;
 	actionLength[FALL] = 1;
 	actionLength[FALL_LAND_IDLE] = 1;
 	actionLength[PUT_BIRD_ON_BACK] = 10;
@@ -34,20 +34,23 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
-	animFactor[WALK] = 1;
+	animFactor[WALK] = 6;
 	animFactor[BREATHE] = 1;
 	animFactor[LOOK_UP] = 1;
 	animFactor[CARRIED_BY_BIRD] = 1;
 	animFactor[HIT_BY_MIND_CONTROL] = 1;
-	animFactor[INJURED_ROAR] = 1;
+	animFactor[INJURED_ROAR] = 3;
 	animFactor[FALL] = 1;
 	animFactor[FALL_LAND_IDLE] = 1;
 	animFactor[PUT_BIRD_ON_BACK] = 1;
 	animFactor[CARRY_BIRD] = 1;
 
+	extraHeight = 72;
+
 	//animFactor[DIG_OUT] = 4;
 
-	ts = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
+	ts_roar = GetSizedTileset("Bosses/Tiger/tiger_roar_256x160.png");
+	ts_walk = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
 
 	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
 
@@ -66,6 +69,7 @@ void SequenceTiger::ResetEnemy()
 	moveFrames = 0;
 
 	currPosInfo.SetAerial();
+	currPosInfo.position += V2d(0, -extraHeight);
 	enemyMover.currPosInfo = currPosInfo;
 
 	UpdateSprite();
@@ -79,6 +83,8 @@ void SequenceTiger::DebugDraw(sf::RenderTarget *target)
 
 void SequenceTiger::Walk(V2d &pos)
 {
+	pos += V2d(0, -extraHeight);
+
 	if (pos.x < GetPosition().x)
 	{
 		facingRight = false;
@@ -146,6 +152,9 @@ void SequenceTiger::ProcessState()
 		case CARRY_BIRD:
 			frame = 0;
 			break;
+		case WALK:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -174,11 +183,30 @@ void SequenceTiger::UpdateEnemyPhysics()
 
 void SequenceTiger::UpdateSprite()
 {
-	sprite.setTexture(*ts->texture);
+	int tile = 0;
+	switch (action)
+	{
+	case INJURED_ROAR:
+	{
+		sprite.setTexture(*ts_roar->texture);
+		tile = frame / animFactor[INJURED_ROAR] + 1;
+		ts_roar->SetSubRect(sprite, tile, !facingRight);
+		break;
+	}
+	case WALK:
+	{
+		sprite.setTexture(*ts_walk->texture);
+		tile = frame / animFactor[WALK];
+		ts_walk->SetSubRect(sprite, tile, !facingRight);
+		break;
+	}
+	default:
+		sprite.setTexture(*ts_walk->texture);
+		tile = 0;
+		ts_walk->SetSubRect(sprite, tile, !facingRight);
+	}
 
-	ts->SetSubRect(sprite, 11, !facingRight);
-
-	sprite.setPosition(GetPositionF() + Vector2f(0, -128));
+	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
@@ -200,6 +228,9 @@ void SequenceTiger::Wait()
 void SequenceTiger::Fall(double y)
 {
 	assert(y > GetPosition().y);
+
+	y += -extraHeight;
+
 
 	action = FALL;
 	frame = 0;

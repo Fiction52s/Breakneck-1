@@ -37,6 +37,8 @@ struct SequenceBird : Enemy
 	int moveFrames;
 	int waitFrames;
 
+	double extraHeight;
+
 	SequenceTiger *seqTiger;
 	V2d offsetFromTiger;
 

@@ -33,6 +33,7 @@ struct EnemyMover
 		SWINGJUMP,
 		RADIAL_DOUBLE_JUMP,
 		ZIP_AND_FALL,
+		CATCH,
 	};
 
 	sf::Vertex swingQuad[4];
@@ -60,6 +61,7 @@ struct EnemyMover
 	V2d chaseOffset;
 	double chaseMaxVel;
 	double chaseAccel;
+	double catchSpeed;
 
 	int actionFrame;
 	int actionTotalDuration;
@@ -172,6 +174,9 @@ struct EnemyMover
 		V2d &chaseOffset, double maxVel,
 		double accel,
 		int frameDuration = -1);
+	void SetModeCatch(V2d *chaseTarget,
+		double startVel,
+		double accel);
 	void SetModeApproach(V2d *approachPos,
 		V2d &approachOffset, int framesToLock,
 		int framesWhileLocked);

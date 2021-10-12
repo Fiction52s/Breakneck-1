@@ -507,6 +507,7 @@ struct Actor : QuadTreeCollider,
 		UPTILT1,
 		UPTILT2,
 		UPTILT3,
+		SEQ_GATORSTUN,
 		Count
 	};
 
@@ -1278,6 +1279,7 @@ struct Actor : QuadTreeCollider,
 		EditSession *editOwner, int actorIndex );
 	~Actor();
 	void Init();
+	void GatorStun();
 	void DrawShield(sf::RenderTarget *target);
 	bool CanParry(HitboxInfo::HitPosType hpt,
 		V2d &hitPos,
@@ -2682,6 +2684,17 @@ struct Actor : QuadTreeCollider,
 	void SEQ_FLOAT_TO_NEXUS_OPENING_TimeDepFrameInc();
 	int SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength();
 	Tileset * SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset();
+
+	void SEQ_GATORSTUN_Start();
+	void SEQ_GATORSTUN_End();
+	void SEQ_GATORSTUN_Change();
+	void SEQ_GATORSTUN_Update();
+	void SEQ_GATORSTUN_UpdateSprite();
+	void SEQ_GATORSTUN_TransitionToAction(int a);
+	void SEQ_GATORSTUN_TimeIndFrameInc();
+	void SEQ_GATORSTUN_TimeDepFrameInc();
+	int SEQ_GATORSTUN_GetActionLength();
+	Tileset * SEQ_GATORSTUN_GetTileset();
 
 	void SEQ_KINFALL_Start();
 	void SEQ_KINFALL_End();

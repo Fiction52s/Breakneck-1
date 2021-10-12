@@ -54,6 +54,7 @@ struct GatorWaterOrb : Enemy
 	int origFramesToLive;
 	V2d velocity;
 	double distToTarget;
+	bool growing;
 
 	sf::Vertex *quad;
 

@@ -2189,6 +2189,18 @@ void Actor::SetupActionFunctions()
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetActionLength,
 		&Actor::SEQ_FLOAT_TO_NEXUS_OPENING_GetTileset);
 
+	SetupFuncsForAction(SEQ_GATORSTUN,
+		&Actor::SEQ_GATORSTUN_Start,
+		&Actor::SEQ_GATORSTUN_End,
+		&Actor::SEQ_GATORSTUN_Change,
+		&Actor::SEQ_GATORSTUN_Update,
+		&Actor::SEQ_GATORSTUN_UpdateSprite,
+		&Actor::SEQ_GATORSTUN_TransitionToAction,
+		&Actor::SEQ_GATORSTUN_TimeIndFrameInc,
+		&Actor::SEQ_GATORSTUN_TimeDepFrameInc,
+		&Actor::SEQ_GATORSTUN_GetActionLength,
+		&Actor::SEQ_GATORSTUN_GetTileset);
+
 	SetupFuncsForAction(SEQ_KINFALL,
 		&Actor::SEQ_KINFALL_Start,
 		&Actor::SEQ_KINFALL_End,
@@ -7772,6 +7784,14 @@ void Actor::TurnFace()
 	assert(ground != NULL);
 	SetAction(SEQ_TURNFACE);
 	frame = 0;
+}
+
+void Actor::GatorStun()
+{
+	SetAirPos(position, facingRight );
+	SetAction(SEQ_GATORSTUN);
+	frame = 0;
+	velocity = V2d(0, 0);
 }
 
 void Actor::StandInPlace()
@@ -16425,7 +16445,7 @@ bool Actor::IsIntroAction(int a)
 bool Actor::IsSequenceAction(int a)
 {
 	return a == SEQ_ENTERCORE1 || action == SEQ_LOOKUP || action == SEQ_KINTHROWN
-		|| action == SEQ_KINFALL;
+		|| action == SEQ_KINFALL || action == SEQ_GATORSTUN;
 }
 
 bool Actor::IsExitAction(int a)

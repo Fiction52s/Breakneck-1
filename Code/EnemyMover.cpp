@@ -264,6 +264,19 @@ void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
 	actionTotalDuration = frameDuration;
 }
 
+void EnemyMover::SetModeCatch(V2d *target,
+	double startVel,
+	double accel)
+{
+	chaseTarget = target;
+	chaseAccel = accel;
+	//velocity = startVel * normalize((*target) - currPosInfo.GetPosition());
+	SetMoveType(CATCH);
+	actionTotalDuration = -1;
+	chaseMaxVel = 80;
+	catchSpeed = startVel;
+}
+
 void EnemyMover::SetModeApproach(V2d *approachPos,
 	V2d &approachOffset, int framesToLock,
 	int framesWhileLocked)
@@ -524,6 +537,14 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 		break;
 	}
 	case CHASE:
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		currPosInfo.position += movementVec;
+		break;
+	}
+	case CATCH:
 	{
 		V2d movementVec = velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
@@ -861,6 +882,18 @@ void EnemyMover::FrameIncrement()
 		if (velLen > chaseMaxVel)
 		{
 			velocity = normalize(velocity) * chaseMaxVel;
+		}
+	}
+	else if (moveType == CATCH)
+	{
+		V2d diff = *chaseTarget - currPosInfo.GetPosition();
+		V2d pDir = normalize(diff);
+
+		velocity = pDir * catchSpeed;
+		catchSpeed += chaseAccel;
+		if (catchSpeed > chaseMaxVel)
+		{
+			catchSpeed = chaseMaxVel;
 		}
 	}
 	else if (moveType == NODE_PROJECTILE)

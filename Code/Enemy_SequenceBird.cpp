@@ -22,7 +22,7 @@ SequenceBird::SequenceBird(ActorParams *ap)
 
 	actionLength[IDLE] = 2;
 	actionLength[BREATHE] = 2;
-	actionLength[WALK] = 2;
+	actionLength[WALK] = 4;
 	actionLength[FLY] = 10;
 	actionLength[FLY_IDLE] = 10;
 	actionLength[PICKUP_TIGER] = 10;
@@ -41,7 +41,7 @@ SequenceBird::SequenceBird(ActorParams *ap)
 
 	animFactor[IDLE] = 2;
 	animFactor[BREATHE] = 1;
-	animFactor[WALK] = 1;
+	animFactor[WALK] = 8;
 	animFactor[FLY] = 1;
 	animFactor[FLY_IDLE] = 1;
 	animFactor[PICKUP_TIGER] = 1;
@@ -57,7 +57,9 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	animFactor[POST_SUPER_KICK_LIE] = 1;
 	//animFactor[DIG_OUT] = 4;
 
-	ts = GetSizedTileset("Bosses/Bird/intro_256x256.png");
+	extraHeight = 76;
+
+	ts = GetSizedTileset("Bosses/Bird/bird_walk_160x160.png");
 
 	ResetEnemy();
 }
@@ -74,6 +76,7 @@ void SequenceBird::ResetEnemy()
 	moveFrames = 0;
 
 	currPosInfo.SetAerial();
+	currPosInfo.position += V2d(0, -extraHeight);
 	enemyMover.currPosInfo = currPosInfo;
 
 	UpdateSprite();
@@ -94,6 +97,8 @@ void SequenceBird::HitByMindControl()
 
 void SequenceBird::Walk(V2d &pos)
 {
+	pos += V2d(0, -extraHeight);
+
 	if (pos.x < GetPosition().x)
 	{
 		facingRight = false;
@@ -229,9 +234,19 @@ void SequenceBird::UpdateSprite()
 
 	sprite.setTexture(*ts->texture);
 
-	ts->SetSubRect(sprite, 0, !facingRight);
+	int tile = 0;
+	switch (action)
+	{
+	case WALK:
+	{
+		tile = frame / animFactor[WALK] + 1;
+		break;
+	}
+	}
 
-	sprite.setPosition(GetPositionF());// +Vector2f(0, -128));
+	ts->SetSubRect(sprite, tile, !facingRight);
+
+	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 

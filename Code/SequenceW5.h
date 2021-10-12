@@ -97,6 +97,7 @@ struct GatorPostFightScene : BasicBossScene
 		BIRD_KICK,
 		TIGERFALL,
 		TIGER_WALK_TO_BIRD,
+		TIGER_ROAR,
 		TIGER_PUTS_BIRD_ON_BACK,
 		TIGER_LEAVES_WITH_BIRD,
 		Count

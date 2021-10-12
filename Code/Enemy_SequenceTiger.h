@@ -27,7 +27,8 @@ struct SequenceTiger : Enemy
 	};
 
 	//Tileset *ts_walk;
-	Tileset *ts;
+	Tileset *ts_roar;
+	Tileset *ts_walk;
 
 	int moveFrames;
 	int waitFrames;
@@ -38,6 +39,8 @@ struct SequenceTiger : Enemy
 
 	V2d targetPos;
 	int framesToArrive;
+
+	double extraHeight;
 
 	SequenceTiger(ActorParams *ap);
 	void Wait();
