@@ -5,6 +5,7 @@
 #include "Enemy_Gator.h"
 #include "Actor.h"
 #include "SequenceW5.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -117,6 +118,13 @@ void Gator::ResetEnemy()
 	redirectingOrbs = false;
 
 	UpdateSprite();
+}
+
+void Gator::Setup()
+{
+	SetSpawnRect();
+
+	//myBonus = sess->CreateBonus("NewScenes/postgatorfight");
 }
 
 bool Gator::TryComboMove(V2d &comboPos, int comboMoveDuration,

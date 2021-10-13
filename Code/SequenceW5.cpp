@@ -409,6 +409,7 @@ void GatorPostFightScene::SetupStates()
 	stateLength[BIRD_KICK] = -1;
 	stateLength[TIGERFALL] = -1;
 	stateLength[TIGER_WALK_TO_BIRD] = -1;
+	stateLength[TIGER_ROAR] = -1;
 	stateLength[TIGER_PUTS_BIRD_ON_BACK] = 30;
 	stateLength[TIGER_LEAVES_WITH_BIRD] = 180;
 

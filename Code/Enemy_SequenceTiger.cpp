@@ -39,7 +39,7 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 	animFactor[LOOK_UP] = 1;
 	animFactor[CARRIED_BY_BIRD] = 1;
 	animFactor[HIT_BY_MIND_CONTROL] = 1;
-	animFactor[INJURED_ROAR] = 3;
+	animFactor[INJURED_ROAR] = 5;
 	animFactor[FALL] = 1;
 	animFactor[FALL_LAND_IDLE] = 1;
 	animFactor[PUT_BIRD_ON_BACK] = 1;

@@ -54,6 +54,8 @@ struct Gator : Boss, Summoner
 
 	GatorPostFightScene *postFightScene;
 
+	GameSession *myBonus;
+
 	Gator(ActorParams *ap);
 	~Gator();
 
@@ -67,6 +69,7 @@ struct Gator : Boss, Summoner
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
+	void Setup();
 	//void HandleRemove();
 
 	//Boss functions
