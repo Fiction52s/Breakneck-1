@@ -24,12 +24,15 @@ SequenceGator::SequenceGator(ActorParams *ap)
 	actionLength[SUPER_ORB] = -1;
 	actionLength[RETRACT_SUPER_ORB] = -1;
 	actionLength[HOLD_SUPER_ORB] = -1;
+	actionLength[BEAT_UP_KIN] = 60;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
 	//animFactor[DIG_OUT] = 4;
 
 	ts = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+
+	superOrbOffset = V2d(-150, 0);
 
 	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
 
@@ -42,6 +45,7 @@ void SequenceGator::ResetEnemy()
 	superOrbPool.Reset();
 	facingRight = true;
 
+	superOrb = NULL;
 	action = IDLE;
 	frame = 0;
 
@@ -85,6 +89,10 @@ void SequenceGator::ProcessState()
 		case IDLE:
 			frame = 0;
 			break;
+		case BEAT_UP_KIN:
+			action = HOLD_SUPER_ORB;
+			frame = 0;
+			break;
 		}
 	}
 
@@ -94,23 +102,34 @@ void SequenceGator::ProcessState()
 		{
 			if (frame == 30)
 			{
-				superOrbPool.Throw(GetPosition(), V2d(0, -1));
+				superOrb = superOrbPool.Throw(GetPosition(), V2d(0, -1));
 			}
-			else if (frame > 30 && superOrbPool.IsIdle())
+			else if (frame > 30 && superOrb->IsIdle())
 			{
 				action = RETRACT_SUPER_ORB;
 				frame = 0;
-				superOrbPool.ReturnToGator(GetPosition() + V2d(-150, 0));
+				superOrb->ReturnToGator(GetPosition() + superOrbOffset);
 			}
 			break;
 		}
 		case RETRACT_SUPER_ORB:
 		{
-			if (superOrbPool.IsIdle())
+			if (superOrb->IsIdle())
 			{
 				action = HOLD_SUPER_ORB;
 				frame = 0;
 			}
+			break;
+		}
+		case FLOAT_WITH_ORB:
+		{
+			if (enemyMover.IsIdle())
+			{
+				action = HOLD_SUPER_ORB;
+				frame = 0;
+			}
+
+			superOrb->SetPos(GetPosition() + superOrbOffset);
 			break;
 		}
 	}
@@ -128,6 +147,19 @@ void SequenceGator::ThrowSuperOrb()
 {
 	action = SUPER_ORB;
 	frame = 0;
+}
+
+void SequenceGator::BeatUpKin()
+{
+	action = BEAT_UP_KIN;
+	frame = 0;
+}
+
+void SequenceGator::FloatWithOrb( V2d &pos )
+{
+	action = FLOAT_WITH_ORB;
+	frame = 0;
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 2);
 }
 
 void SequenceGator::UpdateEnemyPhysics()

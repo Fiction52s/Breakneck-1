@@ -407,6 +407,10 @@ void GatorPostFightScene::SetupStates()
 	stateLength[WAIT] = 60;
 	stateLength[GATORANGRY] = -1;
 	stateLength[GATOR_THROW_SUPER_ORB] = -1;
+	stateLength[GATOR_FLOAT_WITH_ORB] = -1;
+	stateLength[GATOR_BEAT_UP_KIN] = -1;
+	stateLength[GATOR_ANGRY_2] = -1;
+	stateLength[GATOR_BEAT_UP_KIN_2] = -1;
 	stateLength[BIRD_KICK] = -1;
 	stateLength[TIGERFALL] = -1;
 	stateLength[TIGER_WALK_TO_BIRD] = -1;
@@ -438,6 +442,7 @@ void GatorPostFightScene::AddPoints()
 	AddPoint("tigercage");
 	AddPoint("tigerland");
 	AddPoint("birdkick");
+	AddPoint("gatordest");
 }
 
 void GatorPostFightScene::AddFlashes()
@@ -453,7 +458,7 @@ void GatorPostFightScene::AddEnemies()
 void GatorPostFightScene::AddGroups()
 {
 	AddGroup("conv", "W5/w5_gator_fight_post");
-	SetConvGroup("conv");
+	AddGroup("conv2", "W5/w5_gator_fight_post_2");
 }
 
 void GatorPostFightScene::UpdateState()
@@ -489,9 +494,9 @@ void GatorPostFightScene::UpdateState()
 
 			sess->SetGameSessionState(GameSession::RUN);
 			sess->FreezePlayer(false);
-			//SetPlayerStandPoint("kinstand0", true);
-			SetCameraShot("gatordeathcam");
 			
+			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("gatordeathcam");
 		}
 		break;
 	case WAIT:
@@ -502,6 +507,10 @@ void GatorPostFightScene::UpdateState()
 		break;
 	case GATORANGRY:
 	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv");
+		}
 		ConvUpdate();
 		break;
 	}
@@ -509,7 +518,59 @@ void GatorPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
+			sess->SetPlayerInputOn(true);
 			seqGator->ThrowSuperOrb();
+		}
+
+		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		{
+			EndCurrState();
+			sess->SetPlayerInputOn(false);
+		}
+		break;
+	}
+	case GATOR_FLOAT_WITH_ORB:
+	{
+		if (frame == 0)
+		{
+			seqGator->FloatWithOrb(GetPointPos("gatordest"));
+		}
+
+		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case GATOR_BEAT_UP_KIN:
+	{
+		if (frame == 0)
+		{
+			seqGator->BeatUpKin();
+			sess->cam.SetRumble(5, 5, 60);
+		}
+
+		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case GATOR_ANGRY_2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv2");
+		}
+		ConvUpdate();
+		break;
+	}
+	case GATOR_BEAT_UP_KIN_2:
+	{
+		if (frame == 0)
+		{
+			seqGator->BeatUpKin();
+			sess->cam.SetRumble(5, 5, 60);
 		}
 
 		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)

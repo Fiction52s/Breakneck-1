@@ -318,6 +318,13 @@ void GatorSuperOrb::ReturnToGator(V2d &pos)
 	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 5);
 }
 
+void GatorSuperOrb::SetPos(V2d &pos)
+{
+	currPosInfo.position = pos;
+	enemyMover.currPosInfo.position = pos;
+	sess->GetPlayer(0)->position = currPosInfo.position;
+}
+
 bool GatorSuperOrb::CheckHitPlayer(int index)
 {
 

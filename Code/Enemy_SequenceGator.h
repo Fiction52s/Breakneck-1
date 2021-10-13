@@ -17,6 +17,8 @@ struct SequenceGator : Enemy
 		SUPER_ORB,
 		RETRACT_SUPER_ORB,
 		HOLD_SUPER_ORB,
+		FLOAT_WITH_ORB,
+		BEAT_UP_KIN,
 		A_Count
 	};
 
@@ -34,10 +36,15 @@ struct SequenceGator : Enemy
 	int framesToArrive;
 
 	GatorSuperOrbPool superOrbPool;
+	GatorSuperOrb *superOrb;
+
+	V2d superOrbOffset;
 
 	SequenceGator(ActorParams *ap);
 	void Wait();
 	void ThrowSuperOrb();
+	void FloatWithOrb( V2d &pos );
+	void BeatUpKin();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

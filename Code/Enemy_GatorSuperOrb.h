@@ -55,6 +55,7 @@ struct GatorSuperOrb : Enemy
 		GatorSuperOrbPool *pool);
 	void ReturnToGator( V2d &pos );
 	void UpdateEnemyPhysics();
+	void SetPos(V2d &pos);
 	void Die();
 	bool IsIdle();
 	void Throw(V2d &pos, V2d &dir);
