@@ -578,6 +578,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void PlayerAddActiveComboObj(ComboObject *, int index = 0);
 	void PlayerRemoveActiveComboer(ComboObject *, int index = 0);
 	void AddEnemy(Enemy *e);
+	void AddEnemyWithoutResetting(Enemy *e);
 	void RemoveEnemy(Enemy *e);
 	void CreateBulletQuads();
 	void DrawBullets(sf::RenderTarget *target);

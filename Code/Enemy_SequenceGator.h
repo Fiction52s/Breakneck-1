@@ -5,6 +5,7 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "EnemyMover.h"
+#include "Enemy_GatorSuperOrb.h"
 
 struct GameSession;
 
@@ -13,6 +14,9 @@ struct SequenceGator : Enemy
 	enum Action
 	{
 		IDLE,
+		SUPER_ORB,
+		RETRACT_SUPER_ORB,
+		HOLD_SUPER_ORB,
 		A_Count
 	};
 
@@ -29,8 +33,11 @@ struct SequenceGator : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	GatorSuperOrbPool superOrbPool;
+
 	SequenceGator(ActorParams *ap);
 	void Wait();
+	void ThrowSuperOrb();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

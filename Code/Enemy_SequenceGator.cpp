@@ -21,6 +21,9 @@ SequenceGator::SequenceGator(ActorParams *ap)
 	targetPlayerIndex = 0;
 
 	actionLength[IDLE] = 2;
+	actionLength[SUPER_ORB] = -1;
+	actionLength[RETRACT_SUPER_ORB] = -1;
+	actionLength[HOLD_SUPER_ORB] = -1;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -36,6 +39,7 @@ SequenceGator::SequenceGator(ActorParams *ap)
 void SequenceGator::ResetEnemy()
 {
 	enemyMover.Reset();
+	superOrbPool.Reset();
 	facingRight = true;
 
 	action = IDLE;
@@ -84,6 +88,33 @@ void SequenceGator::ProcessState()
 		}
 	}
 
+	switch (action)
+	{
+		case SUPER_ORB:
+		{
+			if (frame == 30)
+			{
+				superOrbPool.Throw(GetPosition(), V2d(0, -1));
+			}
+			else if (frame > 30 && superOrbPool.IsIdle())
+			{
+				action = RETRACT_SUPER_ORB;
+				frame = 0;
+				superOrbPool.ReturnToGator(GetPosition() + V2d(-150, 0));
+			}
+			break;
+		}
+		case RETRACT_SUPER_ORB:
+		{
+			if (superOrbPool.IsIdle())
+			{
+				action = HOLD_SUPER_ORB;
+				frame = 0;
+			}
+			break;
+		}
+	}
+
 	enemyMover.currPosInfo = currPosInfo;
 
 	/*if (action == WALK && enemyMover.IsIdle())
@@ -91,6 +122,12 @@ void SequenceGator::ProcessState()
 	action = IDLE;
 	frame = 0;
 	}*/
+}
+
+void SequenceGator::ThrowSuperOrb()
+{
+	action = SUPER_ORB;
+	frame = 0;
 }
 
 void SequenceGator::UpdateEnemyPhysics()
@@ -114,6 +151,7 @@ void SequenceGator::UpdateSprite()
 
 void SequenceGator::EnemyDraw(sf::RenderTarget *target)
 {
+	superOrbPool.Draw(target);
 	DrawSprite(target, sprite);
 }
 

@@ -6,10 +6,11 @@
 #include "Movement.h"
 #include "Enemy_GatorWaterOrb.h"
 #include "Enemy_GatorSuperOrb.h"
+#include "BonusHandler.h"
 
 struct GatorPostFightScene;
 
-struct Gator : Boss, Summoner
+struct Gator : Boss, Summoner, BonusHandler
 {
 	//DOMINATION
 	enum Action
@@ -29,9 +30,7 @@ struct Gator : Boss, Summoner
 		TRIPLE_LUNGE_3,
 		REDIRECT_ORBS,
 		SEQ_WAIT,
-		SUPER_ORB,
-		SEQ_RETRACT_SUPER_ORB,
-		SEQ_HOLD_SUPER_ORB,
+		TEST_POST,
 		A_Count
 	};
 
@@ -55,6 +54,8 @@ struct Gator : Boss, Summoner
 	GatorPostFightScene *postFightScene;
 
 	GameSession *myBonus;
+
+	V2d oldPlayerPos;
 
 	Gator(ActorParams *ap);
 	~Gator();
@@ -92,6 +93,8 @@ struct Gator : Boss, Summoner
 	void SeqWait();
 	void StartFight();
 	void LoadParams();
+
+	void InitBonus();
 
 	//Rollback
 	struct MyData : StoredEnemyData

@@ -24,9 +24,6 @@ Gator::Gator(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 	actionLength[REDIRECT_ORBS] = 60;
-	actionLength[SUPER_ORB] = 5000;
-	actionLength[SEQ_RETRACT_SUPER_ORB] = 5000;
-	actionLength[SEQ_HOLD_SUPER_ORB] = 5000;
 
 	actionLength[TRIPLE_LUNGE_WAIT_1] = 30;
 	actionLength[TRIPLE_LUNGE_WAIT_2] = 20;
@@ -45,7 +42,7 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	stageMgr.AddActiveOption(0, SUPER_ORB);
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
 	/*stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
@@ -64,6 +61,7 @@ Gator::Gator(ActorParams *ap)
 	stageMgr.AddActiveOption(3, MOVE_NODE_LINEAR, 2);
 	stageMgr.AddActiveOption(3, MOVE_NODE_QUADRATIC, 2);
 
+	myBonus = NULL;
 
 	LoadParams();
 
@@ -83,7 +81,11 @@ Gator::~Gator()
 {
 	if (postFightScene != NULL)
 		delete postFightScene;
+
+	if (myBonus != NULL)
+		delete myBonus;
 }
+
 
 void Gator::LoadParams()
 {
@@ -104,8 +106,12 @@ void Gator::LoadParams()
 
 void Gator::ResetEnemy()
 {
+	if (myBonus != NULL)
+	{
+		myBonus->RestartLevel();
+	}
+
 	orbPool.Reset();
-	superOrbPool.Reset();
 	swarmSummonGroup.Reset();
 
 	BossReset();
@@ -124,7 +130,21 @@ void Gator::Setup()
 {
 	SetSpawnRect();
 
-	//myBonus = sess->CreateBonus("NewScenes/postgatorfight");
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("BossTest/gatorfightpost");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
+}
+
+
+void Gator::InitBonus()
+{
+	//sess->GetPlayer(0)->position = oldPlayerPos;
 }
 
 bool Gator::TryComboMove(V2d &comboPos, int comboMoveDuration,
@@ -226,11 +246,6 @@ void Gator::ActionEnded()
 	case TRIPLE_LUNGE_WAIT_2:
 		SetAction(TRIPLE_LUNGE_3);
 		break;
-	case SUPER_ORB:
-	{
-		frame = 0;
-		break;
-	}
 	}
 }
 
@@ -275,26 +290,7 @@ void Gator::HandleAction()
 			SetHitboxes(hitBodies[action], 0);
 		}
 		break;
-	case SUPER_ORB:
-	{
-		if (frame == 30 && slowCounter == 1)
-		{
-			superOrbPool.Throw(GetPosition(), V2d(0, -1));
-		}
-		else if ( frame > 30 && superOrbPool.IsIdle())
-		{
-			SetAction(SEQ_RETRACT_SUPER_ORB);
-		}
-		break;
-	}
-	case SEQ_RETRACT_SUPER_ORB:
-	{
-		if (superOrbPool.IsIdle())
-		{
-			SetAction(SEQ_HOLD_SUPER_ORB);
-		}
-		break;
-	}
+	
 	}
 }
 
@@ -374,14 +370,16 @@ void Gator::StartAction()
 	{
 		break;
 	}
-	case SEQ_RETRACT_SUPER_ORB:
+	case TEST_POST:
 	{
-		superOrbPool.ReturnToGator( GetPosition() + V2d( -150, 0 ));
-		break;
-	}
-	case SEQ_HOLD_SUPER_ORB:
-	{
-		
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			oldPlayerPos = sess->GetPlayerPos(0);
+			game->SetBonus(myBonus, GetPosition(), this);
+
+		}
 		break;
 	}
 

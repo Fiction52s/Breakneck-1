@@ -1372,6 +1372,13 @@ void Session::AddEnemy(Enemy *e)
 	//^^note remove this later
 	//debugging only
 
+	AddEnemyWithoutResetting(e);
+	
+}
+
+//kinda buggy on its own rn
+void Session::AddEnemyWithoutResetting(Enemy *e)
+{
 	//debug test
 	Enemy *c = activeEnemyList;
 	while (c != NULL)

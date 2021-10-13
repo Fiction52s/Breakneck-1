@@ -406,6 +406,7 @@ void GatorPostFightScene::SetupStates()
 	stateLength[FADE] = 60;
 	stateLength[WAIT] = 60;
 	stateLength[GATORANGRY] = -1;
+	stateLength[GATOR_THROW_SUPER_ORB] = -1;
 	stateLength[BIRD_KICK] = -1;
 	stateLength[TIGERFALL] = -1;
 	stateLength[TIGER_WALK_TO_BIRD] = -1;
@@ -487,7 +488,8 @@ void GatorPostFightScene::UpdateState()
 			//gatorPos.position = GetPointPos("tigercage");
 
 			sess->SetGameSessionState(GameSession::RUN);
-			SetPlayerStandPoint("kinstand0", true);
+			sess->FreezePlayer(false);
+			//SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("gatordeathcam");
 			
 		}
@@ -501,6 +503,19 @@ void GatorPostFightScene::UpdateState()
 	case GATORANGRY:
 	{
 		ConvUpdate();
+		break;
+	}
+	case GATOR_THROW_SUPER_ORB:
+	{
+		if (frame == 0)
+		{
+			seqGator->ThrowSuperOrb();
+		}
+
+		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		{
+			EndCurrState();
+		}
 		break;
 	}
 	case BIRD_BREAKS_FREE:

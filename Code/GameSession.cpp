@@ -67,6 +67,7 @@
 #include "DeathSequence.h"
 #include "GoalFlow.h"
 
+#include "BonusHandler.h"
 #include "GameMode.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
@@ -324,6 +325,7 @@ int GameSession::TryToActivateBonus()
 			bonusGame->RestartLevel();
 			bonusGame->Run();
 
+			bonusHandler = NULL;
 			pauseMenu->game = this;
 			currSession = this;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -442,13 +444,12 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName)
 
 
 void GameSession::SetBonus(GameSession *bonus,
-	V2d &returnPos)
+	V2d &returnPos, BonusHandler *bHandler)
 {
-
 	assert(bonus != NULL);
 
 	ActivateBonus(returnPos);
-
+	bonusHandler = bHandler;
 	bonusGame = bonus;
 	bonusGame->cam.offset = cam.offset;
 	bonusGame->cam.zoomFactor = cam.zoomFactor;
@@ -2271,6 +2272,11 @@ int GameSession::Run()
 	if (recPlayer != NULL)
 		recPlayer->StartRecording();
 
+	if (parentGame != NULL && parentGame->bonusHandler != NULL)
+	{
+		parentGame->bonusHandler->InitBonus();
+	}
+
 	while( !quit )
 	{
 		switchGameState = false;
@@ -3145,6 +3151,7 @@ void GameSession::Init()
 
 	activateBonus = false;
 	bonusGame = NULL;
+	bonusHandler = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;
 

@@ -93,6 +93,7 @@ struct GatorPostFightScene : BasicBossScene
 		FADE,
 		WAIT,
 		GATORANGRY,
+		GATOR_THROW_SUPER_ORB,
 		BIRD_BREAKS_FREE,
 		BIRD_KICK,
 		TIGERFALL,

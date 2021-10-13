@@ -26,6 +26,8 @@
 
 #include "Session.h"
 
+struct BonusHandler;
+
 struct ZoneNode;
 
 struct Actor;
@@ -381,6 +383,7 @@ struct GameSession : RayCastHandler, Session
 	
 	bool activateBonus;
 	V2d bonusReturnPos;
+	BonusHandler *bonusHandler;
 	
 	Gate *unlockedGateList;
 	sf::Vector2f oldCamBotLeft;
@@ -424,7 +427,7 @@ struct GameSession : RayCastHandler, Session
 	GameSession * CreateBonus(const std::string &bonusName);
 	void ActivateBonus(V2d &returnPos);
 	void SetBonus(GameSession *bonus,
-		V2d &returnPos);
+		V2d &returnPos, BonusHandler *bHandler = NULL);
 	void ReturnFromBonus();
 	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
