@@ -19,6 +19,9 @@ struct SequenceGator : Enemy
 		HOLD_SUPER_ORB,
 		FLOAT_WITH_ORB,
 		BEAT_UP_KIN,
+		SMASH_WITH_ORB,
+		KICKED_BY_BIRD,
+		DEAD_BODY,
 		A_Count
 	};
 
@@ -43,8 +46,11 @@ struct SequenceGator : Enemy
 	SequenceGator(ActorParams *ap);
 	void Wait();
 	void ThrowSuperOrb();
-	void FloatWithOrb( V2d &pos );
+	void FloatWithOrb( V2d &pos, double speed );
+	void SmashWithOrb(V2d &pos, double speed);
 	void BeatUpKin();
+	void KickedByBird();
+	void LaunchSuperOrb(V2d &pos, double extraHeight, double speed);
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

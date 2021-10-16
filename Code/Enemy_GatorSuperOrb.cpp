@@ -119,8 +119,12 @@ GatorSuperOrb::GatorSuperOrb(sf::Vertex *myQuad, GatorSuperOrbPool *pool)
 	SetNumActions(A_Count);
 	SetEditorActions(CHASING, 0, 0);
 
+
 	actionLength[CHASING] = 1;
 	animFactor[CHASING] = 1;
+
+	actionLength[DISSIPATE] = 10;
+	animFactor[DISSIPATE] = 1;
 
 	quad = myQuad;
 
@@ -223,9 +227,17 @@ void GatorSuperOrb::ProcessState()
 		switch (action)
 		{
 		case CHASING:
+			frame = 0;
+			break;
+		case DISSIPATE:
+			ClearRect(quad);
+
+			sess->RemoveEnemy(this);
+			spawned = false;
+			sess->GetPlayer(0)->SetAirPos(GetPosition(), true);
 			break;
 		}
-		frame = 0;
+		
 	}
 
 	/*if (action == CENTER && enemyMover.IsIdle())
@@ -237,6 +249,11 @@ void GatorSuperOrb::ProcessState()
 	if (action == RETURN_TO_GATOR && enemyMover.IsIdle())
 	{
 		action = STASIS;
+		frame = 0;
+	}
+	else if (action == LAUNCH && enemyMover.IsIdle())
+	{
+		action = DISSIPATE;
 		frame = 0;
 	}
 
@@ -270,7 +287,7 @@ void GatorSuperOrb::UpdateEnemyPhysics()
 		enemyMover.UpdatePhysics(numPhysSteps, slowMultiple);
 		currPosInfo = enemyMover.currPosInfo;
 
-		if (action == RETURN_TO_GATOR)
+		if (action == RETURN_TO_GATOR || action == LAUNCH)
 		{
 			sess->GetPlayer(0)->position = currPosInfo.position;
 		}
@@ -309,6 +326,13 @@ void GatorSuperOrb::Die()
 bool GatorSuperOrb::IsIdle()
 {
 	return action == STASIS;
+}
+
+void GatorSuperOrb::Launch(V2d &pos, double extraHeight, double speed)
+{
+	action = LAUNCH;
+	frame = 0;
+	enemyMover.SetModeNodeJump(pos,extraHeight, speed);
 }
 
 void GatorSuperOrb::ReturnToGator(V2d &pos)

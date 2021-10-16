@@ -23,6 +23,9 @@ struct SequenceTiger : Enemy
 		FALL_LAND_IDLE,
 		PUT_BIRD_ON_BACK,
 		CARRY_BIRD,
+		LUNGE,
+		PRE_CRAWLER_KILL,
+		CRAWLER_KILL,
 		A_Count
 	};
 
@@ -45,6 +48,7 @@ struct SequenceTiger : Enemy
 	SequenceTiger(ActorParams *ap);
 	void Wait();
 
+	void Lunge(V2d &pos, double extraHeight, double speed);
 	void Fall(double y );
 	void InjuredRoar();
 	void HitByMindControl();
@@ -54,6 +58,7 @@ struct SequenceTiger : Enemy
 	void Breathe();
 	void CarryBirdAway(V2d &pos);
 	void PutBirdOnBack();
+	void KillCrawler();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

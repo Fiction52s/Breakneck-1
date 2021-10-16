@@ -35,8 +35,23 @@ SequenceCrawler::SequenceCrawler(ActorParams *ap)
 	
 	animFactor[IDLE] = 2;
 	animFactor[DIG_OUT] = 4;
-	
-	
+
+	actionLength[DIG_IN] = 21;
+	animFactor[DIG_IN] = 4;
+
+	actionLength[TRIGGER_BOMBS] = 30;
+	animFactor[TRIGGER_BOMBS] = 1;
+
+	actionLength[HIT_BY_TIGER] = 30;
+	animFactor[HIT_BY_TIGER] = 1;
+
+	actionLength[DYING_BREATH] = 30;
+	animFactor[DYING_BREATH] = 1;
+
+	actionLength[DIE_BY_TIGER] = 30;
+	animFactor[DIE_BY_TIGER] = 1;
+
+	ts_dig_in = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_in_320x320.png");
 	ts_dig_out = GetSizedTileset("Bosses/Crawler/crawler_queen_dig_out_320x320.png");
 
 	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
@@ -49,7 +64,7 @@ void SequenceCrawler::ResetEnemy()
 	enemyMover.Reset();
 	facingRight = true;
 
-	action = UNDERGROUND;
+	action = IDLE;
 	frame = 0;
 
 	waitFrames = 0;
@@ -66,6 +81,13 @@ void SequenceCrawler::DebugDraw(sf::RenderTarget *target)
 	enemyMover.DebugDraw(target);
 	Enemy::DebugDraw(target);
 }
+
+void SequenceCrawler::TriggerBombs()
+{
+	action = TRIGGER_BOMBS;
+	frame = 0;
+}
+
 
 void SequenceCrawler::FrameIncrement()
 {
@@ -92,6 +114,12 @@ void SequenceCrawler::ProcessState()
 		case UNDERGROUND:
 			frame = 0;
 			break;
+		case DIG_IN:
+		{
+			action = UNDERGROUND;
+			frame = 0;
+			break;
+		}
 		case DIG_OUT:
 			action = IDLE;
 			frame = 0;
@@ -99,6 +127,25 @@ void SequenceCrawler::ProcessState()
 		case IDLE:
 			frame = 0;
 			break;
+		case TRIGGER_BOMBS:
+		{
+			action = IDLE;
+			frame = 0;
+			break;
+		}
+		case HIT_BY_TIGER:
+		{
+			action = DYING_BREATH;
+			frame = 0;
+			break;
+		}
+		case DIE_BY_TIGER:
+		{
+			action = DEAD;
+			frame = 0;
+			break;
+		}
+
 		}
 	}
 
@@ -109,6 +156,18 @@ void SequenceCrawler::ProcessState()
 		action = IDLE;
 		frame = 0;
 	}*/
+}
+
+void SequenceCrawler::Underground()
+{
+	action = UNDERGROUND;
+	frame = 0;
+}
+
+void SequenceCrawler::DigIn()
+{
+	action = DIG_IN;
+	frame = 0;
 }
 
 void SequenceCrawler::DigOut()
@@ -139,14 +198,19 @@ void SequenceCrawler::UpdateEnemyPhysics()
 
 void SequenceCrawler::UpdateSprite()
 {
-	sprite.setTexture(*ts_dig_out->texture);
-
-	if (action == DIG_OUT)
+	if (action == DIG_IN)
 	{
+		sprite.setTexture(*ts_dig_in->texture);
+		ts_dig_in->SetSubRect(sprite, frame / animFactor[DIG_IN], !facingRight);
+	}
+	else if (action == DIG_OUT)
+	{
+		sprite.setTexture(*ts_dig_out->texture);
 		ts_dig_out->SetSubRect(sprite, frame / animFactor[DIG_OUT], !facingRight);
 	}
 	else
 	{
+		sprite.setTexture(*ts_dig_out->texture);
 		ts_dig_out->SetSubRect(sprite,11, !facingRight);
 	}
 
@@ -161,7 +225,24 @@ void SequenceCrawler::EnemyDraw(sf::RenderTarget *target)
 		return;
 	}
 
+	if (action == DEAD)
+	{
+		return;
+	}
+
 	DrawSprite(target, sprite);
+}
+
+void SequenceCrawler::HitByTiger()
+{
+	action = HIT_BY_TIGER;
+	frame = 0;
+}
+
+void SequenceCrawler::DieByTiger()
+{
+	action = DIE_BY_TIGER;
+	frame = 0;
 }
 
 void SequenceCrawler::Wait()

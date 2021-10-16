@@ -54,7 +54,8 @@ SequenceTiger::SequenceTiger(ActorParams *ap)
 
 	//ts_walk = GetSizedTileset("Bosses/Coyote/coy_walk_80x80.png");
 
-	ResetEnemy();
+	Reset();
+	//ResetEnemy();
 }
 
 void SequenceTiger::ResetEnemy()
@@ -155,21 +156,47 @@ void SequenceTiger::ProcessState()
 		case WALK:
 			frame = 0;
 			break;
+		case CRAWLER_KILL:
+			action = IDLE;
+			frame = 0;
+			break;
 		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
 
-	if ((action == WALK || action == CARRIED_BY_BIRD ) && enemyMover.IsIdle())
+	if (enemyMover.IsIdle())
 	{
-		action = IDLE;
-		frame = 0;
+		if ((action == WALK || action == CARRIED_BY_BIRD))
+		{
+			action = IDLE;
+			frame = 0;
+		}
+		else if (action == FALL)
+		{
+			action = FALL_LAND_IDLE;
+			frame = 0;
+		}
+		else if (action == LUNGE)
+		{
+			action = PRE_CRAWLER_KILL;
+			frame = 0;
+		}
 	}
-	else if (action == FALL && enemyMover.IsIdle())
-	{
-		action = FALL_LAND_IDLE;
-		frame = 0;
-	}
+	
+}
+
+void SequenceTiger::KillCrawler()
+{
+	action = CRAWLER_KILL;
+	frame = 0;
+}
+
+void SequenceTiger::Lunge(V2d &pos, double extraHeight, double speed)
+{
+	action = LUNGE;
+	frame = 0;
+	enemyMover.SetModeNodeJump(pos, extraHeight, speed);
 }
 
 void SequenceTiger::UpdateEnemyPhysics()

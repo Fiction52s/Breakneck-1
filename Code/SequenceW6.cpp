@@ -554,14 +554,13 @@ void SkeletonPostFightScene::UpdateState()
 		{
 			SetPlayerStandPoint("kinstand0", true);
 			sess->SetGameSessionState(GameSession::RUN);
-			skeleton->SeqWait();
-			coyHelper->Wait();
 		}	
 		break;
 	case MOVIE:
 	{
 		if (frame == 0)
 		{
+			//EndCurrState();
 			SetCurrMovie("crawler_slash", 60);
 			sess->SetGameSessionState(GameSession::SEQUENCE);
 		}

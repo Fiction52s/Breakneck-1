@@ -25,6 +25,9 @@ SequenceGator::SequenceGator(ActorParams *ap)
 	actionLength[RETRACT_SUPER_ORB] = -1;
 	actionLength[HOLD_SUPER_ORB] = -1;
 	actionLength[BEAT_UP_KIN] = 60;
+	actionLength[SMASH_WITH_ORB] = -1;
+	actionLength[KICKED_BY_BIRD] = 30;
+	actionLength[DEAD_BODY] = 10;
 	//actionLength[DIG_OUT] = 12;
 
 	animFactor[IDLE] = 2;
@@ -90,7 +93,12 @@ void SequenceGator::ProcessState()
 			frame = 0;
 			break;
 		case BEAT_UP_KIN:
-			action = HOLD_SUPER_ORB;
+			frame = 0;
+			//action = HOLD_SUPER_ORB;
+			//frame = 0;
+			break;
+		case KICKED_BY_BIRD:
+			action = DEAD_BODY;
 			frame = 0;
 			break;
 		}
@@ -132,6 +140,25 @@ void SequenceGator::ProcessState()
 			superOrb->SetPos(GetPosition() + superOrbOffset);
 			break;
 		}
+		case SMASH_WITH_ORB:
+		{
+			if (enemyMover.IsIdle())
+			{
+				action = HOLD_SUPER_ORB;
+				frame = 0;
+			}
+
+			superOrb->SetPos(GetPosition() + superOrbOffset);
+			break;
+		}
+		case BEAT_UP_KIN:
+		{
+			if (frame == 0)
+			{
+				sess->cam.SetRumble(5, 5, 10);
+			}
+			break;
+		}
 	}
 
 	enemyMover.currPosInfo = currPosInfo;
@@ -149,17 +176,35 @@ void SequenceGator::ThrowSuperOrb()
 	frame = 0;
 }
 
+void SequenceGator::KickedByBird()
+{
+	action = KICKED_BY_BIRD;
+	frame = 0;
+}
+
+void SequenceGator::LaunchSuperOrb(V2d &pos, double extraHeight, double speed)
+{
+	superOrb->Launch(pos, extraHeight, speed);
+}
+
 void SequenceGator::BeatUpKin()
 {
 	action = BEAT_UP_KIN;
 	frame = 0;
 }
 
-void SequenceGator::FloatWithOrb( V2d &pos )
+void SequenceGator::FloatWithOrb( V2d &pos, double speed  )
 {
 	action = FLOAT_WITH_ORB;
 	frame = 0;
-	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 2);
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), speed);
+}
+
+void SequenceGator::SmashWithOrb(V2d &pos, double speed)
+{
+	action = SMASH_WITH_ORB;
+	frame = 0;
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), speed);
 }
 
 void SequenceGator::UpdateEnemyPhysics()

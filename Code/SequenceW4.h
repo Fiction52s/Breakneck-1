@@ -9,6 +9,7 @@ struct Tiger;
 struct CrawlerQueen;
 struct SequenceTiger;
 struct SequenceBird;
+struct SequenceCrawler;
 
 struct CrawlerPreFight2Scene : BasicBossScene
 {
@@ -44,9 +45,15 @@ struct CrawlerPostFight2Scene : BasicBossScene
 		FADE,
 		WAIT,
 		CONV,
+		TIGERRUMBLE,
+		CONV2,
 		CRAWLERLEAVE,
 		Count
 	};
+
+
+	SequenceCrawler *seqCrawler;
+	GroundedWarper *warper;
 
 	CrawlerPostFight2Scene();
 	void SetupStates();
@@ -57,11 +64,43 @@ struct CrawlerPostFight2Scene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
+	
 
-	CrawlerQueen *queen;
-	GroundedWarper *warper;
+	
 };
 
+struct CrawlerVSTigerScene : BasicBossScene
+{
+	enum State
+	{
+		ENTRANCE,
+		WAIT,
+		CONV1,
+		CRAWLER_FLIP_SWITCH,
+		NEXUS_EXPLODE,
+		CONV2,
+		TIGER_LUNGE,
+		TIGER_KILL_CRAWLER,
+		CONV3,
+		CRAWLER_DEATH,
+		Count
+	};
+
+	//Tiger *tiger;
+	SequenceTiger *seqTiger;
+	SequenceCrawler *seqCrawler;
+
+	CrawlerVSTigerScene();
+	void SetupStates();
+	void ReturnToGame();
+	void AddShots();
+	void AddPoints();
+	void AddFlashes();
+	void AddEnemies();
+	void AddGroups();
+	void UpdateState();
+	void SetEntranceShot();
+};
 
 struct TigerPreFightScene : BasicBossScene
 {

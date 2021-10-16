@@ -380,8 +380,8 @@ void Skeleton::SetupPostFightScenes()
 	if (postFightScene == NULL)
 	{
 		postFightScene = new SkeletonPostFightScene;
-		postFightScene->skeleton = this;
-		postFightScene->coyHelper = coyHelper;
+		//postFightScene->skeleton = this;
+		//postFightScene->coyHelper = coyHelper;
 		postFightScene->Init();
 	}
 }

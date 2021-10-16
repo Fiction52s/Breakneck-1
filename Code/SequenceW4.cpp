@@ -13,6 +13,7 @@
 
 #include "Enemy_SequenceTiger.h"
 #include "Enemy_SequenceBird.h"
+#include "Enemy_SequenceCrawler.h"
 
 using namespace sf;
 using namespace std;
@@ -119,8 +120,8 @@ void CrawlerPreFight2Scene::UpdateState()
 CrawlerPostFight2Scene::CrawlerPostFight2Scene()
 	:BasicBossScene(BasicBossScene::APPEAR)
 {
-	queen = NULL;
-	warper = sess->GetWarper("FinishedScenes/W4/tigerfight");
+	seqCrawler = NULL;
+	warper = NULL;
 }
 
 void CrawlerPostFight2Scene::SetupStates()
@@ -130,16 +131,25 @@ void CrawlerPostFight2Scene::SetupStates()
 	stateLength[FADE] = fadeFrames + explosionFadeFrames;
 	stateLength[WAIT] = 60;
 	stateLength[CONV] = -1;
-	stateLength[CRAWLERLEAVE] = 30;
+	stateLength[TIGERRUMBLE] = 30;
+	stateLength[CRAWLERLEAVE] = 120;
+
+	warper = sess->GetWarper("FinishedScenes/W4/tigerfight");
+
+	seqCrawler = (SequenceCrawler*)sess->GetEnemy(EnemyType::EN_SEQUENCECRAWLER);
 }
 
 void CrawlerPostFight2Scene::ReturnToGame()
 {
-	if (!warper->spawned)
+	if (warper != NULL)
 	{
-		sess->AddEnemy(warper);
+		if (!warper->spawned)
+		{
+			sess->AddEnemy(warper);
+		}
+		warper->Activate();
 	}
-	warper->Activate();
+	
 	sess->cam.EaseOutOfManual(60);
 	BasicBossScene::ReturnToGame();
 }
@@ -167,7 +177,8 @@ void CrawlerPostFight2Scene::AddEnemies()
 void CrawlerPostFight2Scene::AddGroups()
 {
 	AddGroup("postfight", "W4/w4_crawler_kin_post");
-	SetConvGroup("postfight");
+	AddGroup("postfight2", "W4/w4_crawler_kin_post_2");
+	
 }
 
 void CrawlerPostFight2Scene::UpdateState()
@@ -182,10 +193,15 @@ void CrawlerPostFight2Scene::UpdateState()
 		}
 		else if (frame == 10)
 		{
+			seqCrawler->Reset();
+			sess->AddEnemy(seqCrawler);
+			seqCrawler->facingRight = false;
+
+
 			sess->SetGameSessionState(GameSession::RUN);
+			sess->FreezePlayer(false);
 			SetPlayerStandPoint("kinstop0", true);
 			SetCameraShot("crawlercam");
-			queen->SeqWait();
 		}
 		break;
 	case WAIT:
@@ -196,13 +212,212 @@ void CrawlerPostFight2Scene::UpdateState()
 		//EntranceUpdate();
 		break;
 	case CONV:
+		if (frame == 0)
+		{
+			SetConvGroup("postfight");
+		}
 		ConvUpdate();
 		break;
+	case TIGERRUMBLE:
+	{
+		if (frame == 0)
+		{
+			sess->cam.SetRumble(3, 3, 30);
+		}
+		break;
+	}
+	case CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("postfight2");
+		}
+
+		ConvUpdate();
+		break;
+	}
 	case CRAWLERLEAVE:
+		if (frame == 0)
+		{
+			seqCrawler->DigIn();
+		}
 		break;
 	}
 }
 
+CrawlerVSTigerScene::CrawlerVSTigerScene()
+	:BasicBossScene(BasicBossScene::STARTMAP_RUN)
+{
+	seqTiger = NULL;
+	seqCrawler = NULL;
+
+	SetEntranceIndex(0);
+}
+
+void CrawlerVSTigerScene::SetupStates()
+{
+	SetNumStates(Count);
+
+	stateLength[WAIT] = 60;
+	stateLength[TIGER_KILL_CRAWLER] = 60;
+	stateLength[CRAWLER_DEATH] = 60;
+
+	seqTiger = (SequenceTiger*)sess->GetEnemy(EnemyType::EN_SEQUENCETIGER);
+	seqCrawler = (SequenceCrawler*)sess->GetEnemy(EnemyType::EN_SEQUENCECRAWLER);
+}
+
+void CrawlerVSTigerScene::ReturnToGame()
+{
+	Actor *player = sess->GetPlayer(0);
+	//player->EndLevelWithoutGoal();
+	sess->SetPlayerInputOn(true);
+}
+
+void CrawlerVSTigerScene::AddShots()
+{
+	AddShot("scenecam");
+}
+
+void CrawlerVSTigerScene::AddPoints()
+{
+	AddStartAndStopPoints();
+	/*AddPoint("kinstand0");
+	AddPoint("birdfly1");
+	AddPoint("birdfly2");
+	AddPoint("birdfly3");*/
+}
+
+void CrawlerVSTigerScene::AddFlashes()
+{
+
+}
+
+void CrawlerVSTigerScene::AddEnemies()
+{
+
+}
+
+void CrawlerVSTigerScene::AddGroups()
+{
+	AddGroup("conv1", "W4/w4_crawler_tiger_1");
+	AddGroup("conv2", "W4/w4_crawler_tiger_2");
+	AddGroup("conv3", "W4/w4_crawler_tiger_3");
+}
+
+void CrawlerVSTigerScene::SetEntranceShot()
+{
+	SetCameraShot("scenecam");
+}
+
+void CrawlerVSTigerScene::UpdateState()
+{
+	Actor *player = sess->GetPlayer(0);
+	switch (state)
+	{
+	case ENTRANCE:
+		if (frame == 0)
+		{
+			seqCrawler->Reset();
+			sess->AddEnemy(seqCrawler);
+
+			seqTiger->Reset();
+			sess->AddEnemy(seqTiger);
+			seqTiger->facingRight = false;
+		}
+		EntranceUpdate();
+		break;
+	case WAIT:
+		if (frame == 0)
+		{
+			sess->TotalDissolveGates(Gate::BOSS);
+		}
+		//EntranceUpdate();
+		break;
+	case CONV1:
+		if (frame == 0)
+		{
+			SetConvGroup("conv1");
+		}
+
+		ConvUpdate();
+		break;
+	case CRAWLER_FLIP_SWITCH:
+	{
+		if (frame == 0)
+		{
+			seqCrawler->TriggerBombs();
+		}
+
+		if (seqCrawler->action == SequenceCrawler::IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case NEXUS_EXPLODE:
+	{
+		if (frame == 0)
+		{
+			sess->cam.SetRumble(5, 5, 30);
+		}
+		if (frame == 60)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv2");
+		}
+
+		ConvUpdate();
+		break;
+	}
+	case TIGER_LUNGE:
+	{
+		if (frame == 0)
+		{
+			seqTiger->Lunge(seqCrawler->GetPosition(), 50, 10);
+		}
+
+		if (seqTiger->action == SequenceTiger::PRE_CRAWLER_KILL)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case TIGER_KILL_CRAWLER:
+	{
+		if (frame == 0)
+		{
+			seqTiger->KillCrawler();
+			seqCrawler->HitByTiger();
+		}
+		break;
+	}
+	case CONV3:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv3");
+		}
+
+		ConvUpdate();
+		break;
+	}
+	case CRAWLER_DEATH:
+	{
+		if (frame == 0)
+		{
+			seqCrawler->DieByTiger();
+		}
+		break;
+	}
+	}
+}
 
 
 TigerPreFightScene::TigerPreFightScene()

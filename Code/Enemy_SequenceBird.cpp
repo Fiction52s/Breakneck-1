@@ -31,11 +31,18 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	actionLength[HIT_BY_MIND_CONTROL] = 10;
 	actionLength[PUT_ON_TIGER] = 10;
 	actionLength[RIDE_TIGER] = 2;
+	actionLength[FALL] = 1;
+	actionLength[FALL_LAND_IDLE] = 1;
 
 	actionLength[BREAK_BUBBLE] = 30;
 	actionLength[BUBBLE_BREAK_IDLE] = 2;
 	actionLength[SUPER_KICK] = 2;
 	actionLength[POST_SUPER_KICK_LIE] = 2;
+
+	actionLength[TRY_TO_GET_UP] = 60;
+	actionLength[GET_UP] = 60;
+	actionLength[INJURED_STAND_IDLE] = 10;
+	
 
 	//actionLength[DIG_OUT] = 12;
 
@@ -50,12 +57,20 @@ SequenceBird::SequenceBird(ActorParams *ap)
 	animFactor[HIT_BY_MIND_CONTROL] = 1;
 	animFactor[PUT_ON_TIGER] = 1;
 	animFactor[RIDE_TIGER] = 1;
+	
+
+	animFactor[FALL] = 1;
+	animFactor[FALL_LAND_IDLE] = 1;
 
 	animFactor[BREAK_BUBBLE] = 1;
 	animFactor[BUBBLE_BREAK_IDLE] = 1;
 	animFactor[SUPER_KICK] = 1;
 	animFactor[POST_SUPER_KICK_LIE] = 1;
 	//animFactor[DIG_OUT] = 4;
+	animFactor[TRY_TO_GET_UP] = 1;
+	animFactor[GET_UP] = 1;
+	animFactor[INJURED_STAND_IDLE] = 1;
+	
 
 	extraHeight = 76;
 
@@ -87,6 +102,32 @@ void SequenceBird::Breathe()
 	action = BREATHE;
 	frame = 0;
 	//facingRight = false;
+}
+
+void SequenceBird::Fall(double y)
+{
+	assert(y > GetPosition().y);
+
+	y += -extraHeight;
+
+
+	action = FALL;
+	frame = 0;
+
+	V2d nodePos(GetPosition().x, y);
+	enemyMover.SetModeNodeProjectile(nodePos, V2d(0, .5), 0);
+}
+
+void SequenceBird::TryToGetUp()
+{
+	action = TRY_TO_GET_UP;
+	frame = 0;
+}
+
+void SequenceBird::GetUp()
+{
+	action = GET_UP;
+	frame = 0;
 }
 
 void SequenceBird::HitByMindControl()
@@ -190,6 +231,17 @@ void SequenceBird::ProcessState()
 		case POST_SUPER_KICK_LIE:
 			frame = 0;
 			break;
+		case TRY_TO_GET_UP:
+			action = FALL_LAND_IDLE;
+			frame = 0;
+			break;
+		case GET_UP:
+			action = INJURED_STAND_IDLE;
+			frame = 0;
+			break;
+		case INJURED_STAND_IDLE:
+			frame = 0;
+			break;
 		}
 	}
 
@@ -209,7 +261,22 @@ void SequenceBird::ProcessState()
 		}
 		else if (action == SUPER_KICK)
 		{
+			action = SUPER_KICK_HOLD;
+			frame = 0;
+		}
+		else if (action == SUPER_KICK_FOLLOW_THROUGH)
+		{
 			action = POST_SUPER_KICK_LIE;
+			frame = 0;
+		}
+		else if (action == FALL )
+		{
+			action = FALL_LAND_IDLE;
+			frame = 0;
+		}
+		else if (action == RISE_FROM_GROUND)
+		{
+			action = FLOAT_IDLE;
 			frame = 0;
 		}
 	}
@@ -280,6 +347,22 @@ void SequenceBird::SuperKick(V2d &pos)
 	}
 
 	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 15);
+}
+
+void SequenceBird::SuperKickFollowThrough(V2d &pos)
+{
+	action = SUPER_KICK_FOLLOW_THROUGH;
+	frame = 0;
+	enemyMover.SetModeNodeLinearConstantSpeed(pos, CubicBezier(), 15);
+}
+
+
+void SequenceBird::RiseFromGround(double riseAmount, double speed)
+{
+	action = RISE_FROM_GROUND;
+	frame = 0;
+
+	enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + V2d( 0, -riseAmount), CubicBezier(), speed);
 }
 
 void SequenceBird::RideTiger(SequenceTiger *p_seqTiger)

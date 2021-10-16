@@ -330,6 +330,7 @@ void BirdCrawlerAllianceScene::UpdateState()
 		{
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
+			seqCrawler->Underground();
 			//seqCrawler->facingRight = false;
 			//seqCrawler->Init();
 			seqCrawler->DigOut();

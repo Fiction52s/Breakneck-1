@@ -15,10 +15,17 @@ struct SequenceCrawler : Enemy
 		IDLE,
 		UNDERGROUND,
 		DIG_OUT,
+		DIG_IN,
+		TRIGGER_BOMBS,
+		HIT_BY_TIGER,
+		DYING_BREATH,
+		DIE_BY_TIGER,
+		DEAD,
 		A_Count
 	};
 
 	//Tileset *ts_walk;
+	Tileset *ts_dig_in;
 	Tileset *ts_dig_out;
 
 	int moveFrames;
@@ -34,6 +41,11 @@ struct SequenceCrawler : Enemy
 	SequenceCrawler(ActorParams *ap);
 	void Wait();
 	void DigOut();
+	void DigIn();
+	void Underground();
+	void TriggerBombs();
+	void HitByTiger();
+	void DieByTiger();
 
 	void ProcessState();
 	void DebugDraw(sf::RenderTarget *target);

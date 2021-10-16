@@ -92,6 +92,14 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new BirdTigerAllianceScene;
 	}
+	else if (name == "postcrawlerfight2")
+	{
+		bScene = new CrawlerPostFight2Scene;
+	}
+	else if (name == "crawlervstiger")
+	{
+		bScene = new CrawlerVSTigerScene;
+	}
 	else if (name == "birdtigerapproach")
 	{
 		bScene = new BirdTigerApproachScene;
@@ -168,6 +176,10 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	else if (name == "posttigerfight")
 	{
 		bScene = new TigerPostFightScene;
+	}
+	else if (name == "postskeletonfight")
+	{
+		bScene = new SkeletonPostFightScene;
 	}
 	else
 	{
@@ -605,6 +617,11 @@ void Sequence::SetNumStates(int count)
 {
 	numStates = count;
 	stateLength = new int[numStates];
+
+	for (int i = 0; i < numStates; ++i)
+	{
+		stateLength[i] = -1;
+	}
 }
 
 void Sequence::DrawFlashes(sf::RenderTarget *target)
@@ -639,12 +656,14 @@ void Sequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 		conv->Draw(target);
 	}
 
-	target->setView(v);
-
 	if (currMovie != NULL)
 	{
 		target->draw(*currMovie);
 	}
+
+	target->setView(v);
+
+	
 }
 
 void Sequence::Init()

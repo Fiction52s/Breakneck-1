@@ -123,9 +123,6 @@ struct SkeletonPostFightScene : BasicBossScene
 		Count
 	};
 
-	CoyoteHelper *coyHelper;
-	Skeleton *skeleton;
-
 
 	SkeletonPostFightScene();
 	void SetupStates();

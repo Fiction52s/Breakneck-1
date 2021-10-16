@@ -405,13 +405,16 @@ void GatorPostFightScene::SetupStates()
 
 	stateLength[FADE] = 60;
 	stateLength[WAIT] = 60;
-	stateLength[GATORANGRY] = -1;
+	stateLength[GATOR_CONV1] = -1;
 	stateLength[GATOR_THROW_SUPER_ORB] = -1;
 	stateLength[GATOR_FLOAT_WITH_ORB] = -1;
+	stateLength[GATOR_CONV2] = -1;
 	stateLength[GATOR_BEAT_UP_KIN] = -1;
-	stateLength[GATOR_ANGRY_2] = -1;
-	stateLength[GATOR_BEAT_UP_KIN_2] = -1;
+	stateLength[BIRD_BREAKS_FREE] = -1;
+	stateLength[BIRD_FALL] = -1;
+	stateLength[BIRD_FLOAT_UP] = -1;
 	stateLength[BIRD_KICK] = -1;
+	stateLength[BIRD_KICK_2] = -1;
 	stateLength[TIGERFALL] = -1;
 	stateLength[TIGER_WALK_TO_BIRD] = -1;
 	stateLength[TIGER_ROAR] = -1;
@@ -433,6 +436,9 @@ void GatorPostFightScene::ReturnToGame()
 void GatorPostFightScene::AddShots()
 {
 	AddShot("gatordeathcam");
+	AddShot("cagecam");
+	AddShot("birdfallfromcagecam");
+	AddShot("gatorholdkincam");
 }
 
 void GatorPostFightScene::AddPoints()
@@ -443,6 +449,8 @@ void GatorPostFightScene::AddPoints()
 	AddPoint("tigerland");
 	AddPoint("birdkick");
 	AddPoint("gatordest");
+	AddPoint("gatordest2");
+	AddPoint("birdland");
 }
 
 void GatorPostFightScene::AddFlashes()
@@ -459,6 +467,8 @@ void GatorPostFightScene::AddGroups()
 {
 	AddGroup("conv", "W5/w5_gator_fight_post");
 	AddGroup("conv2", "W5/w5_gator_fight_post_2");
+	AddGroup("birdconv1", "W5/w5_gator_fight_post_bird_1");
+	AddGroup("birdconv2", "W5/w5_gator_fight_post_bird_2");
 }
 
 void GatorPostFightScene::UpdateState()
@@ -505,7 +515,7 @@ void GatorPostFightScene::UpdateState()
 			sess->TotalDissolveGates(Gate::BOSS);
 		}
 		break;
-	case GATORANGRY:
+	case GATOR_CONV1:
 	{
 		if (frame == 0)
 		{
@@ -533,11 +543,36 @@ void GatorPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			seqGator->FloatWithOrb(GetPointPos("gatordest"));
+			seqGator->FloatWithOrb(GetPointPos("gatordest"), 10);
+			EaseShot("gatorholdkincam", 60);
 		}
 
 		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
 		{
+			EndCurrState();
+		}
+		break;
+	}
+	case GATOR_CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("conv2");
+		}
+		ConvUpdate();
+		break;
+	}
+	case GATOR_SMASH_ORB:
+	{
+		if (frame == 0)
+		{
+			seqGator->SmashWithOrb(GetPointPos("gatordest2"), 15);
+			EaseShot("gatordeathcam", 60);
+		}
+
+		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		{
+			sess->cam.SetRumble(5, 5, 10);
 			EndCurrState();
 		}
 		break;
@@ -547,30 +582,31 @@ void GatorPostFightScene::UpdateState()
 		if (frame == 0)
 		{
 			seqGator->BeatUpKin();
-			sess->cam.SetRumble(5, 5, 60);
+			sess->cam.SetRumble(5, 5, 10);
 		}
 
-		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
+		if (frame == 120)
+		{
+			EaseShot("cagecam", 60);
+		}
+
+		if (frame == 180)
 		{
 			EndCurrState();
 		}
-		break;
-	}
-	case GATOR_ANGRY_2:
-	{
-		if (frame == 0)
+		/*if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
 		{
-			SetConvGroup("conv2");
-		}
-		ConvUpdate();
+			
+		}*/
 		break;
 	}
-	case GATOR_BEAT_UP_KIN_2:
+	/*case GATOR_BEAT_UP_KIN_2:
 	{
 		if (frame == 0)
 		{
 			seqGator->BeatUpKin();
 			sess->cam.SetRumble(5, 5, 60);
+			EaseShot("cagecam", 60);
 		}
 
 		if (seqGator->action == SequenceGator::HOLD_SUPER_ORB)
@@ -578,7 +614,7 @@ void GatorPostFightScene::UpdateState()
 			EndCurrState();
 		}
 		break;
-	}
+	}*/
 	case BIRD_BREAKS_FREE:
 	{
 		if (frame == 0)
@@ -586,7 +622,93 @@ void GatorPostFightScene::UpdateState()
 			seqBird->BreakFreeFromBubble();
 		}
 
+		/*if (frame == 10)
+		{
+			EaseShot("gatordeathcam", 60);
+		}*/
+
 		if (seqBird->action == SequenceBird::BUBBLE_BREAK_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_FALL:
+	{
+		if (frame == 0)
+		{
+			EaseShot("birdfallfromcagecam", 60);
+			seqBird->Fall(GetPointPos("birdland").y);
+		}
+
+		if (seqBird->action == SequenceBird::FALL_LAND_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_TRY_TO_GET_UP:
+	{
+		if (frame == 0)
+		{
+			seqBird->TryToGetUp();
+		}
+
+		if (seqBird->action == SequenceBird::FALL_LAND_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_CONV1:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("birdconv1");
+		}
+
+		ConvUpdate();
+		break;
+	}
+	case BIRD_GET_UP:
+	{
+		if (frame == 0)
+		{
+			seqBird->GetUp();
+		}
+
+		if (seqBird->action == SequenceBird::INJURED_STAND_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_CONV2:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("birdconv2");
+		}
+
+		ConvUpdate();
+		break;
+	}
+	case BIRD_FLOAT_UP:
+	{
+		if (frame == 0)
+		{
+			seqBird->RiseFromGround(150, 1);
+		}
+
+		if (seqBird->action == SequenceBird::FLOAT_IDLE)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_FLOAT_CHARGE:
+	{
+		if (frame == 30)
 		{
 			EndCurrState();
 		}
@@ -596,10 +718,36 @@ void GatorPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			seqBird->SuperKick(GetPointPos( "birdkick" ));
+			seqBird->SuperKick(seqGator->GetPosition());
+			EaseShot("gatordeathcam", 30);
 		}
 
-		if (seqBird->action == SequenceBird::POST_SUPER_KICK_LIE)
+		if (seqBird->action == SequenceBird::SUPER_KICK_HOLD)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case STORY_PAUSE_TEST:
+	{
+		if (frame == 30)
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case BIRD_KICK_2:
+	{
+		if (frame == 0)
+		{
+			seqGator->KickedByBird();
+			seqBird->SuperKickFollowThrough(GetPointPos("birdkick"));
+			seqGator->LaunchSuperOrb(GetPointPos("kinstand0") + V2d( 0, -50 ),
+				40, 8);
+		}
+
+		//if (seqGator->action == SequenceBird)
+		if( sess->GetPlayer(0)->action == Actor::STAND)
 		{
 			EndCurrState();
 		}

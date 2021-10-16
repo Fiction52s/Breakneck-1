@@ -32,6 +32,8 @@ struct GatorSuperOrb : Enemy
 		GROW,
 		STASIS,
 		RETURN_TO_GATOR,
+		LAUNCH,
+		DISSIPATE,
 		A_Count
 	};
 
@@ -58,6 +60,7 @@ struct GatorSuperOrb : Enemy
 	void SetPos(V2d &pos);
 	void Die();
 	bool IsIdle();
+	void Launch(V2d &pos, double extraHeight, double speed);
 	void Throw(V2d &pos, V2d &dir);
 	void SetLevel(int lev);
 	void ProcessState();

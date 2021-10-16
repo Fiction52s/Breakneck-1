@@ -27,7 +27,16 @@ struct SequenceBird : Enemy
 		BREAK_BUBBLE,
 		BUBBLE_BREAK_IDLE,
 		SUPER_KICK,
+		SUPER_KICK_HOLD,
+		SUPER_KICK_FOLLOW_THROUGH,
 		POST_SUPER_KICK_LIE,
+		FALL,
+		FALL_LAND_IDLE,
+		RISE_FROM_GROUND,
+		FLOAT_IDLE,
+		TRY_TO_GET_UP,
+		GET_UP,
+		INJURED_STAND_IDLE,
 		A_Count
 	};
 
@@ -49,6 +58,8 @@ struct SequenceBird : Enemy
 	V2d targetPos;
 	int framesToArrive;
 
+	V2d kickDir;
+
 	SequenceBird(ActorParams *ap);
 	void Wait();
 	void Breathe();
@@ -57,6 +68,12 @@ struct SequenceBird : Enemy
 	void RideTiger( SequenceTiger *p_seqTiger );
 	void BreakFreeFromBubble();
 	void SuperKick(V2d &pos);
+	void SuperKickFollowThrough(V2d &pos);
+	void RiseFromGround(double riseAmount, double speed );
+
+	void Fall(double y);
+	void TryToGetUp();
+	void GetUp();
 
 	void Fly(V2d &pos);
 	void PickupTiger();
