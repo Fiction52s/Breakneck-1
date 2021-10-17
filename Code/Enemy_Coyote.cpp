@@ -7,6 +7,7 @@
 #include "Enemy_Firefly.h"
 #include "Session.h"
 #include "Enemy_BabyScorpion.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
@@ -62,7 +63,13 @@ Coyote::Coyote(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, RUSH, 2);
 
 	//stageMgr.AddActiveOption(0, DANCE_PREP, 2);
-	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+
+
+
+
+
+	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 1);
 
 	stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
 	//stageMgr.AddActiveOption(1, MOVE, 2);
@@ -87,6 +94,8 @@ Coyote::Coyote(ActorParams *ap)
 	patternPreview.setOrigin(patternPreview.getLocalBounds().width / 2,
 		patternPreview.getLocalBounds().height / 2);
 
+
+	myBonus = NULL;
 	/*hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 0;
 	hitboxInfo->drainX = 0;
@@ -112,6 +121,9 @@ Coyote::~Coyote()
 	{
 		delete postFightScene;
 	}
+
+	if (myBonus != NULL)
+		delete myBonus;
 }
 
 void Coyote::LoadParams()
@@ -128,8 +140,29 @@ void Coyote::LoadParams()
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
+void Coyote::Setup()
+{
+	SetSpawnRect();
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("NewScenes/postcoyotefight");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
+}
+
+
 void Coyote::ResetEnemy()
 {
+	if (myBonus != NULL)
+	{
+		myBonus->RestartLevel();
+	}
+
 	stopStartPool.Reset();
 	fireflySummonGroup.Reset();
 
@@ -431,6 +464,18 @@ void Coyote::StartAction()
 		}
 		//fireflySummonGroup.Summon();
 		//fireflySummonGroup.Summon();
+		break;
+	}
+	case TEST_POST:
+	{
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			//oldPlayerPos = sess->GetPlayerPos(0);
+			game->SetBonus(myBonus, GetPosition());
+
+		}
 		break;
 	}
 	}

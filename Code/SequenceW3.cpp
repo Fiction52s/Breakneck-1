@@ -345,11 +345,17 @@ void CoyotePostFightScene::SetupStates()
 
 void CoyotePostFightScene::ReturnToGame()
 {
-	if (!warper->spawned)
+	if (warper != NULL)
 	{
-		sess->AddEnemy(warper);
+		if (!warper->spawned)
+		{
+			sess->AddEnemy(warper);
+		}
+
+		warper->Activate();
 	}
-	warper->Activate();
+	
+	
 	sess->cam.EaseOutOfManual(60);
 	sess->RemoveEnemy(seqCoyote);
 	//owner->TotalDissolveGates(Gate::CRAWLER_UNLOCK);
@@ -364,7 +370,7 @@ void CoyotePostFightScene::AddShots()
 
 void CoyotePostFightScene::AddPoints()
 {
-	AddStopPoint();
+	AddStandPoint();
 }
 
 void CoyotePostFightScene::AddFlashes()
@@ -396,7 +402,8 @@ void CoyotePostFightScene::UpdateState()
 		else if (frame == 10)
 		{
 			sess->SetGameSessionState(GameSession::RUN);
-			SetPlayerStandPoint("kinstop0", true);
+			sess->FreezePlayer(false);
+			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("scenecam");
 			
 			seqCoyote->Reset();

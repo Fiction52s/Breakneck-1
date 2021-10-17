@@ -5867,7 +5867,7 @@ void Session::UpdateGoalFlow()
 
 void Session::CleanupGoalPulse()
 {
-	if (parentGame == NULL && goalPulse != NULL)
+	if (parentGame == NULL || (parentGame != NULL && !parentGame->hasGoal) )
 	{
 		delete goalPulse;
 		goalPulse = NULL;

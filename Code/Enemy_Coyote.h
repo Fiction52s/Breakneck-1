@@ -10,7 +10,7 @@
 struct CoyotePostFightScene;
 
 struct Coyote : Boss, Summoner, RayCastHandler,
-	LauncherEnemy
+	LauncherEnemy//, BonusHandler
 {
 	enum Action
 	{
@@ -25,6 +25,7 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 		DANCE,
 		SUMMON,
 		COMBOMOVE,
+		TEST_POST,
 		A_Count
 	};
 	
@@ -34,7 +35,7 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 
 	PoiInfo *danceNode;
 
-	
+	GameSession *myBonus;
 
 	SummonGroup fireflySummonGroup;
 	SummonGroup babyScorpionGroup;
@@ -75,7 +76,7 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	void UpdateSprite();
 	void ResetEnemy();
 	int SetLaunchersStartIndex(int ind);
-
+	void Setup();
 
 	//boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

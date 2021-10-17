@@ -116,7 +116,7 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new CoyoteAndSkeletonScene;
 	}
-	else if (name == "coyotepost")
+	else if (name == "postcoyotefight")
 	{
 		bScene = new CoyotePostFightScene;
 	}
