@@ -651,7 +651,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupHUD();
 	void UpdateHUD();
 	void DrawHUD(sf::RenderTarget *target);
-	void DrawBossHUD(sf::RenderTarget *target);
+//	void DrawBossHUD(sf::RenderTarget *target);
 	void HitlagUpdate();
 	void SetupAbsorbParticles();
 	void ResetAbsorbParticles();

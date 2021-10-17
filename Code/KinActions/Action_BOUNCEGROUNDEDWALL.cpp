@@ -5,7 +5,6 @@ using namespace std;
 
 void Actor::BOUNCEGROUNDEDWALL_Start()
 {
-
 }
 
 void Actor::BOUNCEGROUNDEDWALL_End()

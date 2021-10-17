@@ -69,6 +69,7 @@ Brush * PointMover::MakeBrush()
 	return b;
 }
 
+const int TerrainPolygon::inverseExtraBoxDist = 1500;
 
 //for creating blockers and flies..for now
 void TerrainPolygon::MakeGlobalPath(V2d &startPos, std::vector<sf::Vector2i> &path )

@@ -10,6 +10,7 @@
 #include "Session.h"
 #include "MainMenu.h"
 #include "PowerSelectorHUD.h"
+#include "BossHealth.h"
 
 using namespace sf;
 using namespace std;
@@ -179,7 +180,12 @@ AdventureHUD::AdventureHUD()
 	keyMarkerShowPos = keyMarkers[0]->GetPosition();
 	keyMarkerHidePos = Vector2f(1920 + 200, keyMarkerShowPos.y);
 
+	bossHealthShowPos = Vector2f(1920 - 100, 200);
+	bossHealthHidePos = bossHealthShowPos + Vector2f(500, 0);
+
 	keyMarkerYOffset = 80;
+
+	bossHealthBar = NULL;
 	
 	/*momentumShowPos = momentumBar->GetTopLeft();
 	momentumHidePos = Vector2f(-200, momentumShowPos.y);*/
@@ -231,6 +237,10 @@ void AdventureHUD::Hide(int frames)
 		kinMask->SetTopLeft(kinMaskHidePos);
 		powerSelector->SetPosition(powerSelectorHidePos);
 		flyCountText.setPosition(flyCountTextHidePos);
+		if (bossHealthBar != NULL)
+		{
+			bossHealthBar->SetTopLeft(bossHealthHidePos);
+		}
 	}
 	else
 	{
@@ -254,6 +264,10 @@ void AdventureHUD::Show(int frames)
 		}
 		flyCountText.setPosition(flyCountTextShowPos);
 		powerSelector->SetPosition(powerSelectorShowPos);
+		if (bossHealthBar != NULL)
+		{
+			bossHealthBar->SetTopLeft(bossHealthShowPos);
+		}
 	}
 	else
 	{
@@ -293,6 +307,10 @@ void AdventureHUD::Update()
 			}
 			flyCountText.setPosition(flyCountTextShowPos);
 			powerSelector->SetPosition(powerSelectorShowPos);
+			if (bossHealthBar != NULL)
+			{
+				bossHealthBar->SetTopLeft(bossHealthShowPos);
+			}
 			//momentumBar->SetTopLeft(momentumShowPos);
 		}
 		else
@@ -312,6 +330,13 @@ void AdventureHUD::Update()
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorHidePos * (1.f - a) + a * powerSelectorShowPos;
 			powerSelector->SetPosition(powerPos);
+
+			Vector2f bossHealthPos = bossHealthHidePos * (1.f - a) + a * bossHealthShowPos;
+
+			if (bossHealthBar != NULL)
+			{
+				bossHealthBar->SetTopLeft(bossHealthPos);
+			}
 		}
 		break;
 	case EXITING:
@@ -327,6 +352,10 @@ void AdventureHUD::Update()
 			kinMask->SetTopLeft(kinMaskHidePos);
 			flyCountText.setPosition(flyCountTextHidePos);
 			powerSelector->SetPosition(powerSelectorHidePos);
+			if (bossHealthBar != NULL)
+			{
+				bossHealthBar->SetTopLeft(bossHealthHidePos);
+			}
 		}
 		else
 		{
@@ -345,6 +374,13 @@ void AdventureHUD::Update()
 			flyCountText.setPosition(countPos);
 			Vector2f powerPos = powerSelectorShowPos * (1.f - a) + a * powerSelectorHidePos;
 			powerSelector->SetPosition(powerPos);
+
+			Vector2f bossHealthPos = bossHealthShowPos * (1.f - a) + a * bossHealthHidePos;
+
+			if (bossHealthBar != NULL)
+			{
+				bossHealthBar->SetTopLeft(bossHealthPos);
+			}
 		}
 		break;
 	case HIDDEN:
@@ -387,6 +423,10 @@ void AdventureHUD::Reset()
 		keyMarkers[i]->SetPosition(keyMarkerShowPos + Vector2f(0, i * keyMarkerYOffset));
 	}
 	powerSelector->SetPosition(powerSelectorShowPos);
+	if (bossHealthBar != NULL)
+	{
+		bossHealthBar->SetTopLeft(bossHealthShowPos);
+	}
 	//sprite.setPosition(288, 140);
 	//momentumBar->SetTopLeft(momentumShowPos);
 }
@@ -416,6 +456,11 @@ void AdventureHUD::Draw(RenderTarget *target)
 		for (int i = 0; i < numActiveKeyMarkers; ++i)
 		{
 			keyMarkers[i]->Draw(target);
+		}
+
+		if (bossHealthBar != NULL)
+		{
+			bossHealthBar->Draw(target);
 		}
 
 		//target->draw(flyCountText);

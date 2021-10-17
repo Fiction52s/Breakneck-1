@@ -4360,6 +4360,8 @@ void Actor::Respawn( bool setStartPos )
 	launcherEffectPool[1]->DeactivateAll();
 
 	hitEnemyDuringPhysics = false;
+
+	groundedWallBounce = false;
 	
 	inBubble = false;
 	oldInBubble = false;

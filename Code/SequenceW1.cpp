@@ -49,6 +49,9 @@ void CrawlerAttackScene::SetupStates()
 void CrawlerAttackScene::AddShots()
 {
 	AddShot("scenecam");
+	AddShot("crawlerdig1");
+	AddShot("crawlerdig2");
+	//AddShot("crawlerdig3");
 	//AddShot("cavecam");
 	//AddShot("fightcam");
 }
@@ -56,9 +59,7 @@ void CrawlerAttackScene::AddShots()
 void CrawlerAttackScene::AddPoints()
 {
 	AddStartAndStopPoints();
-	AddPoint("crawlerdig1");
-	AddPoint("crawlerdig2");
-	AddPoint("crawlerdig3");
+	
 	//AddPoint("crawlersurface");
 	//AddPoint("crawlerthrowkin");
 }
@@ -147,11 +148,11 @@ void CrawlerAttackScene::UpdateState()
 		RumbleDuringState(10, 10);
 		if (frame == 0)
 		{
-			EasePoint("crawlerdig1", 1, 90);
+			EaseShot("crawlerdig1", 90);
 		}
 		else if (frame == 90)
 		{
-			EasePoint("crawlerdig2", 1, 90);
+			EaseShot("crawlerdig2", 90);
 		}
 		else if (frame == 150)
 		{
@@ -437,12 +438,12 @@ void CrawlerPreFightScene::AddShots()
 {
 	AddShot("cavecam");
 	AddShot("fightcam");
+	AddShot("crawlerdig1");
+	AddShot("crawlerdig2");
 }
 
 void CrawlerPreFightScene::AddPoints()
 {
-	AddPoint("crawlerdig1");
-	AddPoint("crawlerdig2");
 	AddPoint("crawlersurface");
 	AddPoint("crawlerthrowkin");
 }
@@ -499,17 +500,17 @@ void CrawlerPreFightScene::UpdateState()
 	{
 	case DIGGINGAROUND:
 	{
-		//RumbleDuringState(10, 10);
+		RumbleDuringState(10, 10);
 		if (frame == 0)
 		{
-			sess->Fade(true, 60, Color::Black);
-			sess->FreezePlayerAndEnemies(false);
+			//sess->Fade(true, 60, Color::Black;
+			sess->FreezePlayer(true);
 			sess->AddEnemy(queen);
 			queen->SeqWait();
-			sess->SetPlayerInputOn(false);
-			sess->cam.SetManual(true);
-			sess->cam.Set(Vector2f(points["crawlerdig1"]->pos), 1.0, 0);
-			EasePoint("crawlerdig2", 1, 90);
+			sess->hud->Hide();
+			
+			SetCameraShot("crawlerdig1");
+			EaseShot("crawlerdig2", 90);
 			//EasePoint("crawlerdig1", 1, 60);
 			
 		}
@@ -520,7 +521,7 @@ void CrawlerPreFightScene::UpdateState()
 
 		if (frame == 20)
 		{
-			Flash("detailedgrab");
+			//Flash("detailedgrab");
 		}
 		break;
 	}
@@ -529,8 +530,8 @@ void CrawlerPreFightScene::UpdateState()
 		if (frame == 0)
 		{
 			//sess->currentZone->ReformAllGates();
-			
-			player->StartSeqKinThrown(points["crawlersurface"]->pos, V2d(-10, -10));
+			sess->FreezePlayer(false);
+			player->StartSeqKinThrown(GetPointPos("crawlersurface"), V2d(-10, -10));
 		}
 		else if (frame == 30)
 		{

@@ -15,7 +15,7 @@ Boss::Boss(EnemyType et, ActorParams *ap)
 	hitboxManager = NULL;
 	commandQueue.reserve(10);
 	healthBar = new BossHealth(this);
-	healthBar->SetTopLeft(Vector2f(1920 - 100, 200));
+	//healthBar->SetTopLeft(Vector2f(1920 - 100, 200));
 }
 
 Boss::~Boss()
@@ -379,12 +379,8 @@ void Boss::ProcessHit()
 
 void Boss::Init()
 {
-	sess->SetCurrentBoss(this);
-}
 
-void Boss::DrawHealth(sf::RenderTarget *target)
-{
-	healthBar->Draw(target);
+	sess->SetCurrentBoss(this);
 }
 
 //PositionInfo Boss::CheckGround(PositionInfo &startPos,

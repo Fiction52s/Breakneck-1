@@ -61,6 +61,7 @@ struct Minimap;
 struct Actor;
 struct MomentumBar;
 struct KinRing;
+struct BossHealth;
 
 
 struct KinMask
@@ -170,6 +171,9 @@ struct AdventureHUD : HUD
 	sf::Vector2f kinMaskShowPos;
 	sf::Vector2f kinMaskHidePos;
 
+	sf::Vector2f bossHealthShowPos;
+	sf::Vector2f bossHealthHidePos;
+
 	CubicBezier showBez;
 	CubicBezier hideBez;
 
@@ -184,6 +188,7 @@ struct AdventureHUD : HUD
 	
 	PowerSelector *powerSelector;
 	
+	BossHealth *bossHealthBar;
 
 	AdventureHUD();
 	~AdventureHUD();

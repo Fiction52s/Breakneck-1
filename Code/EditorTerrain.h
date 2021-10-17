@@ -674,7 +674,8 @@ struct TerrainPolygon : ISelectable, QuadTreeCollider, RayCastHandler,
 	int bottomWithEnemies;
 	std::list<sf::Vector2i> path;
 
-	const static int inverseExtraBoxDist = 500;
+
+	const static int inverseExtraBoxDist;
 
 	//enemymap
 	std::map<TerrainPoint*, std::list<ActorPtr>> enemies;

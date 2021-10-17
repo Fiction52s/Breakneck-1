@@ -273,7 +273,26 @@ void GameSession::DrawRaceFightScore(sf::RenderTarget *target)
 
 void GameSession::DrawTerrain(sf::RenderTarget *target)
 {
+	//kind of messy. its when you have the camera not seeing the edges
+	//of the map, 
+	bool inverseInList = false;
+	PolyPtr poly = polyQueryList;
+	while (poly != NULL)
+	{
+		if (poly->inverse)
+		{
+			inverseInList = true;
+		}
+		poly = poly->queryNext;
+	}
+
+
 	DrawQueriedTerrain(target);
+
+	if (!inverseInList)
+	{
+		inversePolygon->Draw(target);
+	}
 }
 
 void GameSession::DrawFlyTerrain(sf::RenderTarget *target)
@@ -3706,6 +3725,14 @@ void GameSession::RestartLevel()
 		raceFight->Reset();
 
 	background->Reset();
+	//keeps lighting the same when going into bonuses with the same bg
+	if (parentGame != NULL)
+	{
+		if (parentGame->background != NULL)
+		{
+			background->frame = parentGame->background->frame;
+		}
+	}
 
 	if (parentGame == NULL)
 	{

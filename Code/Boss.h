@@ -78,7 +78,6 @@ struct Boss : Enemy
 	void SetBasicActiveHitbox();
 	void SetupHitboxes(int a, const std::string &name);
 	void Wait(int numFrames);
-	void DrawHealth(sf::RenderTarget *target);
 
 	//virtual void MovementEnded();
 

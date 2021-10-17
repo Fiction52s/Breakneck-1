@@ -4584,6 +4584,7 @@ void Session::RemoveAllEnemies()
 void Session::FreezePlayerAndEnemies(bool freeze)
 {
 	playerAndEnemiesFrozen = freeze;
+	playerFrozen = freeze;
 }
 
 void Session::FreezePlayer(bool freeze)
@@ -6100,7 +6101,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawHUD(target);
 
-	DrawBossHUD(target);
+	//DrawBossHUD(target);
 
 	DrawGates(target);
 	DrawRails(target);
@@ -7278,7 +7279,7 @@ void Session::DrawQueriedTerrain(sf::RenderTarget *target)
 	PolyPtr poly = polyQueryList;
 	while (poly != NULL)
 	{
-		poly->Draw(preScreenTex);
+		poly->Draw(target); //preScreenTex
 		poly = poly->queryNext;
 	}
 }
@@ -7288,7 +7289,7 @@ void Session::DrawQueriedSpecialTerrain(sf::RenderTarget *target)
 	PolyPtr sp = specialPieceList;
 	while (sp != NULL)
 	{
-		sp->Draw(preScreenTex);
+		sp->Draw(target); //preScreenTex
 		sp = sp->queryNext;
 	}
 }
@@ -7371,28 +7372,41 @@ void Session::UpdateRailStates()
 
 }
 
-void Session::DrawBossHUD(sf::RenderTarget *target)
-{
-	sf::View oldView = target->getView();
-	target->setView(uiView);
-
-	for (auto it = activeBosses.begin(); it != activeBosses.end(); ++it)
-	{
-		(*it)->DrawHealth(target);
-	}
-
-	target->setView(oldView);
-}
+//void Session::DrawBossHUD(sf::RenderTarget *target)
+//{
+//	sf::View oldView = target->getView();
+//	target->setView(uiView);
+//
+//	for (auto it = activeBosses.begin(); it != activeBosses.end(); ++it)
+//	{
+//		(*it)->DrawHealth(target);
+//	}
+//
+//	target->setView(oldView);
+//}
 
 void Session::SetCurrentBoss(Boss *b)
 {
+	//activeBosses not really used for anything atm
 	activeBosses.clear();
 	activeBosses.push_back(b);
+
+	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	{
+		AdventureHUD *ah = (AdventureHUD*)hud;
+		ah->bossHealthBar = b->healthBar;
+	}
 }
 
 void Session::RemoveBoss(Boss *b)
 {
 	activeBosses.remove(b);
+
+	if (hud != NULL && hud->hType == HUD::ADVENTURE)
+	{
+		AdventureHUD *ah = (AdventureHUD*)hud;
+		ah->bossHealthBar = NULL;
+	}
 }
 
 void Session::SetKeyMarkerToCurrentZone()
