@@ -7,6 +7,7 @@ FlashGroup::FlashGroup()
 {
 	currBGTileset = NULL;
 	bg = NULL;
+	inFrontOfFade = false;
 }
 
 void FlashGroup::Reset()

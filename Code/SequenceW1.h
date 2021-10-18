@@ -14,6 +14,7 @@ struct Session;
 struct ShapeEmitter;
 struct Nexus;
 struct GroundedWarper;
+struct SequenceCrawler;
 
 //BirdPostFightScene
 
@@ -87,19 +88,24 @@ struct CrawlerPostFightScene : BasicBossScene
 	enum State
 	{
 		FADE,
-		PLAYMOVIE,
+		CRAWLER_SLASHED,
+		FADE_IN,
+		WAIT,
+		//PLAYMOVIE,
 		Count
 	};
 
-	CrawlerQueen *queen;
-	GroundedWarper *warper;
+	SequenceCrawler *seqCrawler;
+	//CrawlerQueen *queen;
+	//GroundedWarper *warper;
 
 	CrawlerPostFightScene();
 
 	void SetupStates();
 	void ReturnToGame();
-	void StartRunning();
-	void AddMovies();
+	void AddShots();
+	//void StartRunning();
+	void AddFlashes();
 	void AddPoints();
 	void UpdateState();
 };

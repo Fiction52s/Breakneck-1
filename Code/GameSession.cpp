@@ -2654,8 +2654,8 @@ int GameSession::Run()
 			}
 
 			preScreenTex->setView(uiView);
-			fader->Draw(preScreenTex);
-			swiper->Draw(preScreenTex);
+			fader->Draw(EffectLayer::IN_FRONT_OF_UI, preScreenTex);
+			//swiper->Draw(preScreenTex);
 
 			mainMenu->DrawEffects(preScreenTex);
 

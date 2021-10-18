@@ -10,6 +10,7 @@
 #include "SaveFile.h"
 #include "PauseMenu.h"
 #include "GroundedWarper.h"
+#include "Enemy_SequenceCrawler.h"
 
 using namespace std;
 using namespace sf;
@@ -570,30 +571,36 @@ void CrawlerPreFightScene::Draw(sf::RenderTarget *target, EffectLayer layer)
 CrawlerPostFightScene::CrawlerPostFightScene()
 	:BasicBossScene( BasicBossScene::APPEAR )
 {
-	queen = NULL;
-	warper = sess->GetWarper("FinishedScenes/W1/nexus1");
+	//queen = NULL;
+	seqCrawler = NULL;
+	//warper = sess->GetWarper("FinishedScenes/W1/nexus1");
 }
 
 void CrawlerPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = 10;
-	stateLength[PLAYMOVIE] = 1000000;
+	stateLength[FADE] = explosionFadeFrames;//fadeFrames;// +explosionFadeFrames;
+	stateLength[FADE_IN] = fadeFrames;
+	stateLength[WAIT] = 60;
+	//stateLength[PLAYMOVIE] = 1000000;
+
+	seqCrawler = (SequenceCrawler*)sess->GetEnemy(EnemyType::EN_SEQUENCECRAWLER);
 }
 
 void CrawlerPostFightScene::ReturnToGame()
 {
-	if (!warper->spawned)
+	/*if (!warper->spawned)
 	{
 		sess->AddEnemy(warper);
 	}
-	warper->Activate();
+	warper->Activate();*/
 	SetPlayerStandDefaultPoint(true);
-	sess->Fade(true, 60, Color::Black);
 	sess->cam.EaseOutOfManual(60);
-	sess->TotalDissolveGates(Gate::BOSS);
-	queen->SeqWait();
+	sess->RemoveEnemy(seqCrawler);
+	//sess->TotalDissolveGates(Gate::BOSS);
+	BasicBossScene::ReturnToGame();
+	//queen->SeqWait();
 }
 
 void CrawlerPostFightScene::AddPoints()
@@ -601,39 +608,93 @@ void CrawlerPostFightScene::AddPoints()
 	AddStandPoint();
 }
 
-void CrawlerPostFightScene::StartRunning()
+void CrawlerPostFightScene::AddFlashes()
 {
-	//right now only works in gamesession
-	sess->SetGameSessionState(GameSession::SEQUENCE);
+	AddFlashedImage("crawlercut", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_01b.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
 }
+
+void CrawlerPostFightScene::AddShots()
+{
+	AddShot("scenecam");
+}
+
+//void CrawlerPostFightScene::StartRunning()
+//{
+//	//right now only works in gamesession
+//	//sess->SetGameSessionState(GameSession::SEQUENCE);
+//}
 
 void CrawlerPostFightScene::UpdateState()
 {
-	if (state == FADE)
+
+	switch (state)
+	{
+	case FADE:
 	{
 		if (frame == 0)
 		{
+			sess->SetGameSessionState(GameSession::FROZEN);
+			sess->hud->Hide(explosionFadeFrames);
+			sess->cam.SetManual(true);
 			MainMenu *mm = sess->mainMenu;
-
-			sess->CrossFade(10, 0, 60, Color::White);
-			mm->musicPlayer->FadeOutCurrentMusic(60);
+			//sess->CrossFade(explosionFadeFrames, 0, fadeFrames, Color::White);
+			sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);
+			//StartBasicKillFade();
 		}
+		else if (frame == explosionFadeFrames)
+		{
+			
+
+
+
+			//mm->musicPlayer->FadeOutCurrentMusic(60);
+		}
+		break;
 	}
-	if (state == PLAYMOVIE)
+	case CRAWLER_SLASHED:
 	{
 		if (frame == 0)
 		{
-			SetCurrMovie("crawler_slash", 60);
+			Flash("crawlercut");
 		}
-		
-		UpdateMovie();
+
+		if (IsFlashDone("crawlercut"))
+		{
+			EndCurrState();
+		}
+		break;
 	}
+	case FADE_IN:
+	{
+		if (frame == 0)
+		{
+			sess->Fade(true, fadeFrames, Color::White, false, EffectLayer::IN_FRONT);
+
+			sess->SetGameSessionState(GameSession::RUN);
+			sess->FreezePlayer(false);
+			SetPlayerStandPoint("kinstand0", true);
+			SetCameraShot("scenecam");
+
+			seqCrawler->Reset();
+			sess->AddEnemy(seqCrawler);
+			seqCrawler->facingRight = false;
+		}
+		break;
+	}
+	}
+	//if (state == PLAYMOVIE)
+	//{
+	//	EndCurrState();
+	//	/*if (frame == 0)
+	//	{
+	//		SetCurrMovie("crawler_slash", 60);
+	//	}
+	//	
+	//	UpdateMovie();*/
+	//}
 }
 
-void CrawlerPostFightScene::AddMovies()
-{
-	AddMovie("crawler_slash");
-}
 
 
 GetAirdashPowerScene::GetAirdashPowerScene()

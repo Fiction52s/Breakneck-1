@@ -20,7 +20,8 @@ struct Fader
 	bool crossFading;
 	bool crossSkipKin;
 	sf::Color crossColor;
-	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
+	int currLayer;
+	void Fade(bool in, int frames, sf::Color c, bool skipKin, int layer);
 	void CrossFade(int fadeOutFrames,
 		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);
@@ -29,7 +30,7 @@ struct Fader
 	void Update();
 	void Clear();
 	void Reset();
-	void Draw(sf::RenderTarget *target);
+	void Draw(int layer, sf::RenderTarget *target );
 };
 
 struct MainMenu;

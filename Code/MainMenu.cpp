@@ -1587,8 +1587,8 @@ void DispLoadTest( MainMenu *mm )
 
 		mm->loadingBackpack->Draw(pTex);
 
-		mm->fader->Draw(pTex);
-		mm->swiper->Draw(pTex);
+		mm->fader->Draw( EffectLayer::IN_FRONT_OF_UI, pTex);
+		//mm->swiper->Draw( EffectLayer::IN_FRONT_OF_UI, pTex);
 		pTex->display();
 		sf::Sprite spr;
 		spr.setTexture(pTex->getTexture());
@@ -1985,7 +1985,7 @@ void MainMenu::HandleMenuMode()
 				delete loadThread;
 				loadThread = NULL;
 				SetMode(LOADINGMENUEND);
-				fader->Fade(false, 30, Color::Black);
+				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 			}
 			else
 			{
@@ -1997,7 +1997,7 @@ void MainMenu::HandleMenuMode()
 	{
 		if (fader->IsFullyFadedOut())
 		{
-			fader->Fade(true, 30, Color::Black);
+			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 			SetMode(modeToLoad);
 		}
 		break;
@@ -2033,7 +2033,7 @@ void MainMenu::HandleMenuMode()
 		if (worldMap->kinBoostScreen->IsEnded())//swiper->IsPostWipe())
 		{
 			//mainMenu->fader->Fade(true, 30, Color::Black, true);
-			fader->Fade(true, 30, Color::Black, true);
+			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUNNINGMAP);
 		}
@@ -2610,7 +2610,7 @@ void MainMenu::HandleMenuMode()
 
 void MainMenu::LoadMode(Mode m)
 {
-	fader->Fade(false, 60, Color::Black);
+	fader->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	modeLoadingFrom = menuMode;
 
 	SetMode(LOADINGMENUSTART);
@@ -2620,7 +2620,7 @@ void MainMenu::LoadMode(Mode m)
 
 void MainMenu::StartLoadModeScreen()
 {
-	fader->Fade(true, 30, Color::Black);
+	fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	SetMode(LOADINGMENULOOP);
 	loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 }
@@ -3069,8 +3069,8 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 
-	fader->Draw(preScreenTexture);
-	swiper->Draw(preScreenTexture);
+	fader->Draw( EffectLayer::IN_FRONT_OF_UI, preScreenTexture);
+	//swiper->Draw(preScreenTexture);
 	DrawEffects(preScreenTexture);
 
 

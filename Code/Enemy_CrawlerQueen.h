@@ -41,6 +41,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 		DIG_OUT,
 		SLASH,
 		SEQ_WAIT,
+		TEST_POST,
 		A_Count
 	};
 
@@ -64,6 +65,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	V2d bombThrowDir;
 	double bombThrowSpeed;
 
+	GameSession *myBonus;
 	
 
 	Tileset *ts_lunge;
@@ -94,6 +96,7 @@ struct CrawlerQueen : Boss, SurfaceMoverHandler,
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	void Setup();
 
 	//Boss functions
 	void RespondToTakingFullHit();

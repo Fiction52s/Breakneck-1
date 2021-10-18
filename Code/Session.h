@@ -668,7 +668,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AddBarrier(XBarrierParams *xbp, bool warp);
 	void SetGameSessionState(int s);
 	virtual int GetGameSessionState();
-	void Fade(bool in, int frames, sf::Color c, bool skipKin = false);
+	void Fade(bool in, int frames, sf::Color c, bool skipKin = false, EffectLayer layer = EffectLayer::IN_FRONT_OF_UI);
 	void CrossFade(int fadeOutFrames,
 		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);

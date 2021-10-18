@@ -112,7 +112,7 @@ void KinBoostScreen::End()
 	state = FINISHBOOST;
 	stateFrame = 0;
 	//mainMenu->fader->CrossFade(30, 0, 30, Color::Black, true);
-	mainMenu->fader->Fade(false, 30, Color::Black);// true);
+	mainMenu->fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);// true);
 	mainMenu->musicPlayer->FadeOutCurrentMusic(30);
 	//frame = 0;
 }
@@ -171,7 +171,7 @@ void KinBoostScreen::Update()
 		state = BOOSTING;
 		//frame = 0;
 		stateFrame = 0;
-		mainMenu->fader->Fade(true, 30, Color::Black, true);
+		mainMenu->fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 		break;
 	case BOOSTING:
 		break;

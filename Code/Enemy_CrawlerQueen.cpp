@@ -51,14 +51,14 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 	animFactor[LUNGELAND] = 4;
 	animFactor[BOOSTCHARGE] = 3;
 
-	stageMgr.AddActiveOption(0, CHASE, 2);
-	stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
+	myBonus = NULL;
 
-
-
-	//stageMgr.AddActiveOption(0, DIG_IN, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
 	
-	//stageMgr.AddActiveOption(0, SUMMON, 2);
+
+	//stageMgr.AddActiveOption(0, CHASE, 2);
+	//stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
+
 
 	stageMgr.AddActiveOption(1, CHASE, 2);
 	stageMgr.AddActiveOption(1, DIG_IN, 2);
@@ -136,6 +136,24 @@ CrawlerQueen::~CrawlerQueen()
 	{
 		delete postFightScene2;
 	}
+
+	if (myBonus != NULL)
+		delete myBonus;
+}
+
+void CrawlerQueen::Setup()
+{
+	SetSpawnRect();
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
 }
 
 void CrawlerQueen::LoadParams()
@@ -156,6 +174,11 @@ void CrawlerQueen::LoadParams()
 void CrawlerQueen::ResetEnemy()
 {
 	//currPosInfo = startPosInfo;
+
+	if (myBonus != NULL)
+	{
+		myBonus->RestartLevel();
+	}
 
 	wasAerial = false;
 	
@@ -557,6 +580,17 @@ void CrawlerQueen::StartAction()
 		}
 		break;
 	}
+	case TEST_POST:
+	{
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			sess->RemoveBoss(this);
+			game->SetBonus(myBonus, GetPosition());
+		}
+		break;
+	}
 
 	}
 }
@@ -574,7 +608,7 @@ void CrawlerQueen::SetupPostFightScenes()
 		if (postFightScene == NULL)
 		{
 			postFightScene = new CrawlerPostFightScene;
-			postFightScene->queen = this;
+			//postFightScene->queen = this;
 			postFightScene->Init();
 		}
 	}

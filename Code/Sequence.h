@@ -146,6 +146,7 @@ struct FlashGroup
 	sf::Vertex bgQuad[4];
 	int frame;
 	int numFrames;
+	bool inFrontOfFade;
 	
 
 

@@ -4518,9 +4518,9 @@ void Session::AddBarrier(XBarrierParams *xbp, bool warp )
 	barriers.push_back(b);
 }
 
-void Session::Fade(bool in, int frames, sf::Color c, bool skipKin)
+void Session::Fade(bool in, int frames, sf::Color c, bool skipKin, EffectLayer layer )
 {
-	fader->Fade(in, frames, c, skipKin);
+	fader->Fade(in, frames, c, skipKin, layer );
 }
 
 void Session::CrossFade(int fadeOutFrames,
@@ -5636,11 +5636,18 @@ void Session::DrawGateMarkers(sf::RenderTarget *target)
 
 void Session::LayeredDraw(EffectLayer ef, sf::RenderTarget *target)
 {
+	View oldView = target->getView();
+	target->setView(uiView);
+	fader->Draw(ef, target);
+	target->setView(oldView);
+	
+
 	DrawDecor(ef, target);
 	DrawStoryLayer(ef, target);
 	DrawActiveSequence(ef, target);
 	DrawEffects(ef, target);
 	DrawEmitters(ef, target);
+	//swiper->Draw(target);
 }
 
 typedef pair<V2d, V2d> pairV2d;
@@ -6171,8 +6178,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	LayeredDraw(EffectLayer::UI_FRONT, target);
 
-	fader->Draw(target);
-	swiper->Draw(target);
+	LayeredDraw(EffectLayer::IN_FRONT_OF_UI, target);
 
 	mainMenu->DrawEffects(target);
 
@@ -6524,6 +6530,11 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 		//preScreenTex->setView(uiView);
 		for (int i = 0; i < EffectLayer::EFFECTLAYER_Count; ++i)
 		{
+			View oldView = preScreenTex->getView();
+			preScreenTex->setView(uiView);
+			fader->Draw(i, preScreenTex);
+			preScreenTex->setView(oldView);
+			//swiper->Draw(i, preScreenTex);
 			activeSequence->Draw(preScreenTex, (EffectLayer)i);
 		}
 	}
@@ -6531,8 +6542,7 @@ void Session::DrawGameSequence(sf::RenderTarget *target)
 	preScreenTex->setView(uiView);
 
 
-	fader->Draw(preScreenTex);
-	swiper->Draw(preScreenTex);
+	//fader draw was here before
 
 	mainMenu->DrawEffects(preScreenTex);
 

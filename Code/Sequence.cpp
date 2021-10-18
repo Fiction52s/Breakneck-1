@@ -76,7 +76,11 @@ Sequence *Sequence::CreateScene(const std::string &name)
 	{
 		bScene = new CrawlerPreFightScene;
 	}
-	else if (name == "crawlerscene2")
+	else if (name == "crawlerscene2")//repetitive, get rid of eventually
+	{
+		bScene = new CrawlerPostFightScene;
+	}
+	else if (name == "postcrawlerfight1")
 	{
 		bScene = new CrawlerPostFightScene;
 	}
@@ -643,7 +647,7 @@ void Sequence::Draw(sf::RenderTarget *target, EffectLayer layer)
 	target->setView(sess->uiView);
 
 	//temporarily have this here, eventually move the BGs as another thing you can have a bunch of in a sequence.
-	if (currFlashGroup != NULL)
+	if (currFlashGroup != NULL )
 	{
 		(*currFlashGroup).DrawBG(target);
 	}
