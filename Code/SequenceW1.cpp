@@ -582,6 +582,7 @@ void CrawlerPostFightScene::SetupStates()
 
 	stateLength[FADE] = explosionFadeFrames;//fadeFrames;// +explosionFadeFrames;
 	stateLength[FADE_IN] = fadeFrames;
+	stateLength[CRAWLER_RETREAT] = 80;
 	stateLength[WAIT] = 60;
 	//stateLength[PLAYMOVIE] = 1000000;
 
@@ -608,9 +609,29 @@ void CrawlerPostFightScene::AddPoints()
 	AddStandPoint();
 }
 
+void CrawlerPostFightScene::AddGroups()
+{
+	AddGroup("post_crawler", "W1/w1_crawler_post_fight");
+}
+
 void CrawlerPostFightScene::AddFlashes()
 {
 	AddFlashedImage("crawlercut", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_01b.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("k1", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_02b2.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("c1", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_02c.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("k2", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_03a.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("c2", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_03b.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
+
+	AddFlashedImage("k3", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_02d.png"),
 		0, 30, 60, 30, Vector2f(960, 540));
 }
 
@@ -634,21 +655,7 @@ void CrawlerPostFightScene::UpdateState()
 	{
 		if (frame == 0)
 		{
-			sess->SetGameSessionState(GameSession::FROZEN);
-			sess->hud->Hide(explosionFadeFrames);
-			sess->cam.SetManual(true);
-			MainMenu *mm = sess->mainMenu;
-			//sess->CrossFade(explosionFadeFrames, 0, fadeFrames, Color::White);
-			sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);
-			//StartBasicKillFade();
-		}
-		else if (frame == explosionFadeFrames)
-		{
-			
-
-
-
-			//mm->musicPlayer->FadeOutCurrentMusic(60);
+			StartBasicNewMapKillFade();
 		}
 		break;
 	}
@@ -665,20 +672,100 @@ void CrawlerPostFightScene::UpdateState()
 		}
 		break;
 	}
+	case KIN_1:
+	{
+		if (frame == 0)
+		{
+			Flash("k1");
+		}
+
+		if (IsFlashDone("k1"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case CRAWLER_ANGRY:
+	{
+		if (frame == 0)
+		{
+			Flash("c1");
+		}
+
+		if (IsFlashDone("c1"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case KIN_2:
+	{
+		if (frame == 0)
+		{
+			Flash("k2");
+		}
+
+		if (IsFlashDone("k2"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case CRAWLER_SCARED:
+	{
+		if (frame == 0)
+		{
+			Flash("c2");
+		}
+
+		if (IsFlashDone("c2"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
 	case FADE_IN:
 	{
 		if (frame == 0)
 		{
-			sess->Fade(true, fadeFrames, Color::White, false, EffectLayer::IN_FRONT);
-
-			sess->SetGameSessionState(GameSession::RUN);
-			sess->FreezePlayer(false);
+			EndBasicNewMapKillFade();
 			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("scenecam");
 
 			seqCrawler->Reset();
 			sess->AddEnemy(seqCrawler);
 			seqCrawler->facingRight = false;
+		}
+		break;
+	}
+	case CRAWLER_GIBBERISH:
+	{
+		if (frame == 0)
+		{
+			SetConvGroup("post_crawler");
+		}
+		ConvUpdate();
+		break;
+	}
+	case CRAWLER_RETREAT:
+	{
+		if (frame == 0)
+		{
+			seqCrawler->DigIn();
+		}
+		
+		break;
+	}
+	case KIN_FINAL_FACE:
+	{
+		if (frame == 0)
+		{
+			Flash("k3");
+		}
+
+		if (IsFlashDone("k3"))
+		{
+			EndCurrState();
 		}
 		break;
 	}

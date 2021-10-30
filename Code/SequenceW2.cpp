@@ -8,7 +8,6 @@
 #include "HUD.h"
 //#include "Enemy_BirdBoss.h"
 #include "Enemy_Bird.h"
-#include "GroundedWarper.h"
 #include "Enemy_SequenceCrawler.h"
 #include "Enemy_SequenceBird.h"
 
@@ -145,27 +144,17 @@ void BirdPostFightScene::SetupStates()
 {
 	SetNumStates(Count);
 
-	stateLength[FADE] = fadeFrames + explosionFadeFrames;
-	stateLength[WAIT] = 60;
+	stateLength[FADE] = explosionFadeFrames;
+	stateLength[FADE_IN] = fadeFrames;
+	stateLength[WAIT] = 30;
 	stateLength[BIRDCONV] = -1;
 	stateLength[BIRDLEAVE] = 120;
 
 	seqBird = (SequenceBird*)sess->GetEnemy(EnemyType::EN_SEQUENCEBIRD);
-	warper = sess->GetWarper("FinishedScenes/W2/nexus2");
 }
 
 void BirdPostFightScene::ReturnToGame()
 {
-	if (warper != NULL)
-	{
-		if (!warper->spawned)
-		{
-			sess->AddEnemy(warper);
-		}
-
-		warper->Activate();
-	}
-
 	sess->cam.EaseOutOfManual(60);
 	sess->RemoveEnemy(seqBird);
 	//sess->TotalDissolveGates(Gate::BOSS);
@@ -179,7 +168,8 @@ void BirdPostFightScene::AddShots()
 
 void BirdPostFightScene::AddPoints()
 {
-	AddStopPoint();
+	AddStandPoint();
+	//AddStopPoint();
 	//AddStartAndStopPoints();
 
 	//AddPoint("kinstand0");
@@ -187,7 +177,8 @@ void BirdPostFightScene::AddPoints()
 
 void BirdPostFightScene::AddFlashes()
 {
-
+	AddFlashedImage("birdcut", sess->GetTileset("Story/PostCrawlerFight1/Crawler_Slash_01a.png"),
+		0, 30, 60, 30, Vector2f(960, 540));
 }
 
 void BirdPostFightScene::AddEnemies()
@@ -209,12 +200,31 @@ void BirdPostFightScene::UpdateState()
 	case FADE:
 		if (frame == 0)
 		{
-			StartBasicKillFade();
+			StartBasicNewMapKillFade();
 		}
-		else if (frame == explosionFadeFrames)
+		break;
+	case CUT_IMAGE:
+	{
+		if (frame == 0)
 		{
-			sess->SetGameSessionState(GameSession::RUN);
-			SetPlayerStandPoint("kinstop0", true);
+			Flash("birdcut");
+		}
+
+		if (IsFlashDone("birdcut"))
+		{
+			EndCurrState();
+		}
+		break;
+	}
+	case FADE_IN:
+	{
+		if (frame == 0)
+		{
+			EndBasicNewMapKillFade();
+
+			
+			
+			SetPlayerStandPoint("kinstand0", true);
 			SetCameraShot("scenecam");
 
 			seqBird->Reset();
@@ -222,6 +232,7 @@ void BirdPostFightScene::UpdateState()
 			seqBird->facingRight = false;
 		}
 		break;
+	}
 	case WAIT:
 		/*if (frame == 0)
 		{

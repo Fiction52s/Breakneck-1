@@ -40,13 +40,14 @@ struct BirdPostFightScene : BasicBossScene
 	enum State
 	{
 		FADE,
+		CUT_IMAGE,
+		FADE_IN,
 		WAIT,
 		BIRDCONV,
 		BIRDLEAVE,
 		Count
 	};
 
-	GroundedWarper *warper;
 	SequenceBird *seqBird;
 
 	BirdPostFightScene();
@@ -58,8 +59,6 @@ struct BirdPostFightScene : BasicBossScene
 	void AddEnemies();
 	void AddGroups();
 	void UpdateState();
-
-	
 };
 
 struct BirdCrawlerAllianceScene : BasicBossScene

@@ -89,7 +89,14 @@ struct CrawlerPostFightScene : BasicBossScene
 	{
 		FADE,
 		CRAWLER_SLASHED,
+		KIN_1,
+		CRAWLER_ANGRY,
+		KIN_2,
+		CRAWLER_SCARED,
 		FADE_IN,
+		CRAWLER_GIBBERISH,
+		CRAWLER_RETREAT,
+		KIN_FINAL_FACE,
 		WAIT,
 		//PLAYMOVIE,
 		Count
@@ -103,6 +110,7 @@ struct CrawlerPostFightScene : BasicBossScene
 
 	void SetupStates();
 	void ReturnToGame();
+	void AddGroups();
 	void AddShots();
 	//void StartRunning();
 	void AddFlashes();

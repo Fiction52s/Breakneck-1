@@ -310,6 +310,8 @@ struct BasicBossScene : Sequence
 	void StartEntranceStand(bool fr,
 		const std::string &n);
 	void StartBasicKillFade();
+	void StartBasicNewMapKillFade();
+	void EndBasicNewMapKillFade();
 
 };
 

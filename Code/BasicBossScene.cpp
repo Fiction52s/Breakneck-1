@@ -193,6 +193,7 @@ void BasicBossScene::StartEntranceRun(bool fr,
 	PoiInfo *kinStop = points[n1];
 	sess->GetPlayer(0)->SetStoryRun(fr, maxSpeed, kinStart->edge, kinStart->edgeQuantity, kinStop->edge,
 		kinStop->edgeQuantity);
+	sess->FreezePlayer(false);
 }
 
 void BasicBossScene::StartEntranceStand(bool fr,
@@ -204,6 +205,7 @@ void BasicBossScene::StartEntranceStand(bool fr,
 	player->facingRight = fr;
 	player->SetGroundedPos(kinStand->edge, kinStand->edgeQuantity);
 	player->StandInPlace();
+	sess->FreezePlayer(false);
 }
 
 void BasicBossScene::SetEntranceRun()
@@ -320,6 +322,7 @@ void BasicBossScene::SetPlayerStandPoint(const std::string &n,
 
 	PoiInfo *pi = points[n];
 	Actor *player = sess->GetPlayer(0);
+	sess->FreezePlayer(false);
 	player->SetStandInPlacePos(pi->edge, pi->edgeQuantity, fr);
 }
 
@@ -392,4 +395,19 @@ void BasicBossScene::StartBasicKillFade()
 	sess->cam.SetManual(true);
 	MainMenu *mm = sess->mainMenu;
 	sess->CrossFade(explosionFadeFrames, 0, fadeFrames, Color::White);
+}
+
+void BasicBossScene::StartBasicNewMapKillFade()
+{
+	sess->SetGameSessionState(GameSession::SEQUENCE);
+	sess->hud->Hide(explosionFadeFrames);
+	sess->cam.SetManual(true);
+	MainMenu *mm = sess->mainMenu;
+	sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);
+}
+
+void BasicBossScene::EndBasicNewMapKillFade()
+{
+	sess->Fade(true, 30, Color::White, false, EffectLayer::IN_FRONT);
+	sess->SetGameSessionState(GameSession::RUN);
 }

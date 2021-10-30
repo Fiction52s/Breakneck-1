@@ -31,6 +31,7 @@ struct Bird : Summoner, Boss
 		UNDODGEABLE_SHURIKEN,
 		SUMMON,
 		SEQ_WAIT,
+		TEST_POST,
 		A_Count
 	};
 
@@ -38,6 +39,8 @@ struct Bird : Summoner, Boss
 
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
+
+	GameSession *myBonus;
 
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
@@ -68,6 +71,7 @@ struct Bird : Summoner, Boss
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
+	void Setup();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

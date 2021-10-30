@@ -50,9 +50,11 @@ Bird::Bird(ActorParams *ap)
 
 	hitOffsetMap[PUNCH] = V2d(100, 0);
 
-	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(0, TEST_POST, 2);
+
+	/*stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
+	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);*/
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
@@ -85,6 +87,9 @@ Bird::Bird(ActorParams *ap)
 	CreateHitboxManager("Bosses/Bird");
 	SetupHitboxes(PUNCH, "punch");
 
+
+	myBonus = NULL;
+
 	postFightScene = NULL;
 	postFightScene2 = NULL;
 	postFightScene3 = NULL;
@@ -106,6 +111,9 @@ Bird::~Bird()
 	{
 		delete postFightScene3;
 	}
+
+	if (myBonus != NULL)
+		delete myBonus;
 }
 
 void Bird::LoadParams()
@@ -124,6 +132,11 @@ void Bird::LoadParams()
 
 void Bird::ResetEnemy()
 {
+	if (myBonus != NULL)
+	{
+		myBonus->RestartLevel();
+	}
+
 	shurPool.Reset();
 	batSummonGroup.Reset();
 
@@ -135,6 +148,21 @@ void Bird::ResetEnemy()
 	StartFight();
 	
 	UpdateSprite();
+}
+
+void Bird::Setup()
+{
+	SetSpawnRect();
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("FinishedScenes/W2/birdpost");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
 }
 
 void Bird::SetupPostFightScenes()
@@ -322,6 +350,17 @@ void Bird::StartAction()
 	{
 		enemyMover.SetModeChase(&sess->GetPlayer(0)->position, V2d(0, 0),
 			10, .5, 60);
+		break;
+	}
+	case TEST_POST:
+	{
+		GameSession *game = GameSession::GetSession();
+
+		if (game != NULL)
+		{
+			sess->RemoveBoss(this);
+			game->SetBonus(myBonus, GetPosition());
+		}
 		break;
 	}
 	/*case RUSH:
