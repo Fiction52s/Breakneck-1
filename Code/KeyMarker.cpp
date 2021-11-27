@@ -114,7 +114,10 @@ void KeyMarker::SetMarkerType(int k)
 void KeyMarker::UpdateKeyNumbers()
 {
 	//owner->numKeysCollected++;
-	
+	if (sess->currentZone == NULL)
+	{
+		return;
+	}
 
 	//--keysRequired;
 

@@ -6168,6 +6168,19 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	DrawGateMarkers(target);
 
+	sf::Vertex testGrid[4];
+	testGrid[0].position = Vector2f(960, 0);
+	testGrid[1].position = Vector2f(960, 1080);
+	testGrid[2].position = Vector2f(0, 540);
+	testGrid[3].position = Vector2f(1920, 540);
+	
+	testGrid[0].color = Color::Red;
+	testGrid[1].color = Color::Red;
+	testGrid[2].color = Color::Red;
+	testGrid[3].color = Color::Red;
+	target->draw(testGrid, 4, sf::Lines);
+
+
 	target->setView(view);
 
 	DrawDyingPlayers(target);

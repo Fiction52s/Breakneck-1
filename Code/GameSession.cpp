@@ -289,7 +289,7 @@ void GameSession::DrawTerrain(sf::RenderTarget *target)
 
 	DrawQueriedTerrain(target);
 
-	if (!inverseInList)
+	if ( inversePolygon != NULL && !inverseInList)
 	{
 		inversePolygon->Draw(target);
 	}

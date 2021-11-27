@@ -672,7 +672,7 @@ void CrawlerPostFightScene::UpdateState()
 		}
 		break;
 	}
-	case KIN_1:
+	/*case KIN_1:
 	{
 		if (frame == 0)
 		{
@@ -723,7 +723,7 @@ void CrawlerPostFightScene::UpdateState()
 			EndCurrState();
 		}
 		break;
-	}
+	}*/
 	case FADE_IN:
 	{
 		if (frame == 0)

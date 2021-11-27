@@ -400,7 +400,7 @@ void BasicBossScene::StartBasicKillFade()
 void BasicBossScene::StartBasicNewMapKillFade()
 {
 	sess->SetGameSessionState(GameSession::SEQUENCE);
-	sess->hud->Hide(explosionFadeFrames);
+	sess->hud->Hide();
 	sess->cam.SetManual(true);
 	MainMenu *mm = sess->mainMenu;
 	sess->Fade(false, explosionFadeFrames, Color::White, false, EffectLayer::IN_FRONT);

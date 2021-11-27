@@ -463,7 +463,228 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 //	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 //}
 
-Vector2f Camera::GetNewOffset( V2d &pVel )
+//Vector2f Camera::GetNewOffset( V2d &pVel )
+//{
+//	float offXAccelOut = .1;
+//	float offXAccelIn = .1;
+//	float offYAccelOut = .1;
+//	float offYAccelIn = .1;
+//
+//	Vector2f targetOffset;
+//	double maxXVelRegistered = 30.0;
+//	Vector2f moveFactor;
+//	float moveF = 1.0;
+//
+//	Vector2f tempOffset = offset;
+//
+//	
+//
+//	if (pVel.x > 0)
+//	{
+//		moveFactor.x = min(1.0, pVel.x / maxXVelRegistered);
+//		moveFactor.x = 1.f;
+//		moveFrames.x += moveFactor.x;
+//		//targetOffset.x = ;
+//	}
+//	else if( pVel.x < 0 )
+//	{
+//		
+//		moveFactor.x = max(-1.0, pVel.x / maxXVelRegistered);
+//		moveFactor.x = -1.f;
+//		moveFrames.x += moveFactor.x;
+//	//	targetOffset.x =  );
+//	}
+//	else
+//	{
+//		float zFactor = 1.f;
+//		if (moveFrames.x > 0)
+//		{
+//			moveFrames.x -= zFactor;
+//		}
+//		else if (moveFrames.x < 0)
+//		{
+//			moveFrames.x += zFactor;
+//		}
+//	}
+//	//cout << "moveframes.x: " << moveFrames.x << endl;
+//
+//	double maxYVelRegistered = 30.0;
+//	if (pVel.y > 0)
+//	{
+//		
+//		moveFactor.y = min(1.0, pVel.y / maxYVelRegistered);
+//		moveFactor.y = 1.f;
+//		moveFrames.y += moveFactor.y;
+//		//targetOffset.y = min(1.0, pVel.y / maxYVelRegistered);
+//	}
+//	else if (pVel.y < 0)
+//	{
+//		
+//		moveFactor.y = max(-1.0, pVel.y / maxYVelRegistered);
+//		moveFactor.y = -1.f;
+//		moveFrames.y += moveFactor.y;
+//		//targetOffset.y = max(-1.0, pVel.y / maxYVelRegistered);
+//	}
+//	else
+//	{
+//		moveFrames.y = 0;
+//	}
+//
+//	float maxFramesX = 60;
+//	float maxFramesY = 60;
+//
+//	if (moveFrames.x > maxFramesX)
+//	{
+//		moveFrames.x = maxFramesX;
+//	}
+//	else if (moveFrames.x < -maxFramesX)
+//	{
+//		moveFrames.x = -maxFramesX;
+//	}
+//
+//	if (moveFrames.y > maxFramesY)
+//	{
+//		moveFrames.y = maxFramesY;
+//	}
+//	else if (moveFrames.y < -maxFramesY)
+//	{
+//		moveFrames.y = -maxFramesY;
+//	}
+//
+//	Vector2f maxOff;
+//	if (moveFrames.x > 0)
+//	{
+//		maxOff.x = 100.f + maxOffsetLeft * (moveFrames.x / maxFramesX);
+//	}
+//	else if (moveFrames.x < 0)
+//	{
+//		maxOff.x = -100.f + maxOffsetRight * (moveFrames.x / maxFramesX);
+//	}
+//	else
+//	{
+//		maxOff.x = 0;
+//	}
+//
+//	if (moveFrames.y > 0)
+//	{
+//		maxOff.y = maxOffsetTop;//125.f;// + 150.f * (moveFrames.y / maxFramesX);
+//	}
+//	else if (moveFrames.y < 0)
+//	{
+//		maxOff.y = -maxOffsetBottom;//-75.f;// +150.f * (moveFrames.y / maxFramesX);
+//	}
+//	else
+//	{
+//		maxOff.y = 0;
+//	}
+//	
+//	targetOffset = maxOff;// *5.f;
+//
+//	//targetOffset = //moveFactor;
+//	if (pVel.x > 0)
+//	{
+//		targetOffset.x = 1.0;
+//	}
+//	else if (pVel.x < 0)
+//	{
+//		targetOffset.x = -1.0;
+//	}
+//	else
+//	{
+//		targetOffset.x = 0;
+//	}
+//	if (pVel.y > 0)
+//	{
+//		targetOffset.y = 1.0;
+//	}
+//	else if (pVel.y < 0)
+//	{
+//		targetOffset.y = -1.0;
+//	}
+//	else
+//	{
+//		targetOffset.y = 0;
+//	}
+//	targetOffset.x *= 250.0;
+//	
+//	if (targetOffset.y > 0)
+//	{
+//		targetOffset.y *= maxOffsetTop;//125.0;//maxOffset.y;
+//	}
+//	else
+//	{
+//		targetOffset.y *= maxOffsetBottom;//75.0;
+//	}
+//
+//	
+//	targetOffset *= GetZoom();//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
+//	//cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
+//
+//	//offset = targetOffset;
+//	//offset = targetOffset;
+//	Vector2f maxVel(1.0, 1.0);
+//	if (targetOffset.x > tempOffset.x)
+//	{
+//		offsetVel.x = maxVel.x;
+//	}
+//	else
+//	{
+//		offsetVel.x = -maxVel.x;
+//	}
+//
+//	if (targetOffset.y > tempOffset.y)
+//	{
+//		offsetVel.y = maxVel.y;
+//	}
+//	else
+//	{
+//		offsetVel.y = -maxVel.y;
+//	}
+//
+//	Vector2f dir = normalize(targetOffset - tempOffset);
+//	float speed = 2.0;
+//	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0 )
+//	{
+//		speed *= 2;
+//	}
+//
+//	dir.x *= speed;
+//
+//	if (sess->GetPlayer(0)->ground != NULL)
+//	{
+//		//helps slightly while on hills, but needs adjustment later.
+//		//only gets you back to neutral, not showing ahead.
+//		if ((pVel.y > 0 && tempOffset.y < 0) || pVel.y < 0 && tempOffset.y > 0)
+//		{
+//			dir.y *= 4;
+//		}
+//	}
+//
+//	//dir.y *= 6.0;
+//	
+//
+//	offsetVel = dir;// *speed;
+//	//offsetVel.x *= abs(dir.x);
+//	//offsetVel.y *= abs(dir.y);
+//	cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
+//	tempOffset += offsetVel;//targetOffset;
+//	Vector2f diff = targetOffset - tempOffset;
+//	if (abs(diff.x) <= maxVel.x ) 
+//	{
+//		tempOffset.x = targetOffset.x;
+//		offsetVel.x = 0;
+//	}
+//	if( abs( diff.y ) <= maxVel.y )
+//	{
+//		tempOffset.y = targetOffset.y;
+//		offsetVel.y = 0;
+//	}
+//
+//	return tempOffset;
+//	//cout << "offset: " << offset.x << " , " << offset.y << endl;
+//}
+
+Vector2f Camera::GetNewOffset(V2d &pVel)
 {
 	float offXAccelOut = .1;
 	float offXAccelIn = .1;
@@ -477,110 +698,6 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 
 	Vector2f tempOffset = offset;
 
-	
-
-	if (pVel.x > 0)
-	{
-		moveFactor.x = min(1.0, pVel.x / maxXVelRegistered);
-		moveFactor.x = 1.f;
-		moveFrames.x += moveFactor.x;
-		//targetOffset.x = ;
-	}
-	else if( pVel.x < 0 )
-	{
-		
-		moveFactor.x = max(-1.0, pVel.x / maxXVelRegistered);
-		moveFactor.x = -1.f;
-		moveFrames.x += moveFactor.x;
-	//	targetOffset.x =  );
-	}
-	else
-	{
-		float zFactor = 1.f;
-		if (moveFrames.x > 0)
-		{
-			moveFrames.x -= zFactor;
-		}
-		else if (moveFrames.x < 0)
-		{
-			moveFrames.x += zFactor;
-		}
-	}
-	//cout << "moveframes.x: " << moveFrames.x << endl;
-
-	double maxYVelRegistered = 30.0;
-	if (pVel.y > 0)
-	{
-		
-		moveFactor.y = min(1.0, pVel.y / maxYVelRegistered);
-		moveFactor.y = 1.f;
-		moveFrames.y += moveFactor.y;
-		//targetOffset.y = min(1.0, pVel.y / maxYVelRegistered);
-	}
-	else if (pVel.y < 0)
-	{
-		
-		moveFactor.y = max(-1.0, pVel.y / maxYVelRegistered);
-		moveFactor.y = -1.f;
-		moveFrames.y += moveFactor.y;
-		//targetOffset.y = max(-1.0, pVel.y / maxYVelRegistered);
-	}
-	else
-	{
-		moveFrames.y = 0;
-	}
-
-	float maxFramesX = 60;
-	float maxFramesY = 60;
-
-	if (moveFrames.x > maxFramesX)
-	{
-		moveFrames.x = maxFramesX;
-	}
-	else if (moveFrames.x < -maxFramesX)
-	{
-		moveFrames.x = -maxFramesX;
-	}
-
-	if (moveFrames.y > maxFramesY)
-	{
-		moveFrames.y = maxFramesY;
-	}
-	else if (moveFrames.y < -maxFramesY)
-	{
-		moveFrames.y = -maxFramesY;
-	}
-
-	Vector2f maxOff;
-	if (moveFrames.x > 0)
-	{
-		maxOff.x = 100.f + maxOffsetLeft * (moveFrames.x / maxFramesX);
-	}
-	else if (moveFrames.x < 0)
-	{
-		maxOff.x = -100.f + maxOffsetRight * (moveFrames.x / maxFramesX);
-	}
-	else
-	{
-		maxOff.x = 0;
-	}
-
-	if (moveFrames.y > 0)
-	{
-		maxOff.y = maxOffsetTop;//125.f;// + 150.f * (moveFrames.y / maxFramesX);
-	}
-	else if (moveFrames.y < 0)
-	{
-		maxOff.y = -maxOffsetBottom;//-75.f;// +150.f * (moveFrames.y / maxFramesX);
-	}
-	else
-	{
-		maxOff.y = 0;
-	}
-	
-	targetOffset = maxOff;// *5.f;
-
-	//targetOffset = //moveFactor;
 	if (pVel.x > 0)
 	{
 		targetOffset.x = 1.0;
@@ -606,7 +723,7 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 		targetOffset.y = 0;
 	}
 	targetOffset.x *= 250.0;
-	
+
 	if (targetOffset.y > 0)
 	{
 		targetOffset.y *= maxOffsetTop;//125.0;//maxOffset.y;
@@ -616,62 +733,68 @@ Vector2f Camera::GetNewOffset( V2d &pVel )
 		targetOffset.y *= maxOffsetBottom;//75.0;
 	}
 
+	Vector2f targetOffsetUnzoomed = targetOffset;
+	float currZoom = GetZoom();
+	targetOffset *= currZoom;//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
+							  //cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
+
+							  //offset = targetOffset;
+							  //offset = targetOffset;
+	//Vector2f maxVel(1.0, 1.0);
+	Vector2f maxVel(2.0, 8.0);
 	
-	targetOffset *= GetZoom();//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
-	//cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
 
-	//offset = targetOffset;
-	//offset = targetOffset;
-	Vector2f maxVel(1.0, 1.0);
-	if (targetOffset.x > tempOffset.x)
-	{
-		offsetVel.x = maxVel.x;
-	}
-	else
-	{
-		offsetVel.x = -maxVel.x;
-	}
-
-	if (targetOffset.y > tempOffset.y)
-	{
-		offsetVel.y = maxVel.y;
-	}
-	else
-	{
-		offsetVel.y = -maxVel.y;
-	}
+	double xProp = min(1.0, abs(pVel.x) / 60.0);
+	double yProp = min(1.0, abs(pVel.y) / 60.0);
 
 	Vector2f dir = normalize(targetOffset - tempOffset);
-	float speed = 2.0;
-	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0 )
+	dir.x *= 4;
+	if ((pVel.x >= 0 && tempOffset.x < 0) || pVel.x <= 0 && tempOffset.x > 0)
 	{
-		speed *= 2;
+		float testThresh = abs(tempOffset.x / currZoom);
+		float threshFactor = testThresh / 250;
+		dir.x *= 1.0 + 1.0 * threshFactor;
 	}
-
-	dir.x *= speed;
+	dir.x *= max(1.0, 4.0 * xProp);
 
 	if (sess->GetPlayer(0)->ground != NULL)
 	{
+		dir.y *= max( 1.0, 8.0 * yProp );
 		//helps slightly while on hills, but needs adjustment later.
 		//only gets you back to neutral, not showing ahead.
-		if ((pVel.y > 0 && tempOffset.y < 0) || pVel.y < 0 && tempOffset.y > 0)
-		{
-			dir.y *= 4;
-		}
 	}
-	
+	else
+	{
+		float thresh = 100;
+		float testThresh = abs(tempOffset.y / currZoom);
+		//if (testThresh > thresh)
+		{
+			float threshFactor = testThresh / 150;
+			if ((pVel.y >= 0 && tempOffset.y < 0) || pVel.y <= 0 && tempOffset.y > 0)
+			{
+				dir.y *= 1.0 + 3 * threshFactor;//8;// *yProp;
+				cout << "fast back to normal: " << tempOffset.y / currZoom << endl;
+			}
+		}
+		dir.y *= max(1.0, 4.0 * yProp);
+		
+	}
 
-	offsetVel = dir;// *speed;
-	//offsetVel.x *= abs(dir.x);
-	//offsetVel.y *= abs(dir.y);
-	tempOffset += offsetVel;//targetOffset;
+	//dir.y *= 6.0;
+
+	cout << "offsetunzoomed: " << targetOffsetUnzoomed.x << ", "
+		<< targetOffsetUnzoomed.y << endl;
+	cout << "offsetvel: " << dir.x << ", " << dir.y << endl;
+	offsetVel = dir;
+	//cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
+	tempOffset += offsetVel;
 	Vector2f diff = targetOffset - tempOffset;
-	if (abs(diff.x) <= maxVel.x ) 
+	if (abs(diff.x) <= maxVel.x)
 	{
 		tempOffset.x = targetOffset.x;
 		offsetVel.x = 0;
 	}
-	if( abs( diff.y ) <= maxVel.y )
+	if (abs(diff.y) <= maxVel.y)
 	{
 		tempOffset.y = targetOffset.y;
 		offsetVel.y = 0;
@@ -989,17 +1112,23 @@ double Camera::GetMovementZoomTarget( Actor *player )
 	double temp;
 	V2d f;
 	double kk = 18.0;
+	double mult = 1.0;//2.0;
 	if (player->ground != NULL)
 	{
 		temp = abs(player->groundSpeed) / kk;
+
+		double extra = temp - 1.0;
+		temp = 1.0f + extra * mult;
+
 		f = normalize(player->ground->v1 - player->ground->v0) * player->groundSpeed * 10.0;
 		if (player->reversed)
 			f = -f;
-
 	}
 	else
 	{
 		temp = length(player->velocity) / kk;
+		double extra = temp - 1.0;
+		temp = 1.0f + extra * mult;
 		f = player->velocity * 10.0;
 	}
 
@@ -1423,6 +1552,7 @@ void Camera::UpdateBasicMode()
 		currOffset = GetNewOffset(pVel);
 	}
 
+	//cout << "currOffset: " << currOffset.x << ", " << currOffset.y << endl;
 	double moveZoom = GetMovementZoomTarget(player);
 
 	double oldZoomFactor = zoomFactor;
@@ -1430,6 +1560,7 @@ void Camera::UpdateBasicMode()
 	double nextMovementZoom = GetNextMovementZoom(moveZoom);
 
 	zoomFactor = nextMovementZoom;
+	cout << "zoomfactor: " << zoomFactor << endl;
 
 	pos += currOffset;// *GetZoom();
 	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
