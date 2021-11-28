@@ -92,6 +92,7 @@ struct Camera
 	sf::Vector2f offset;
 	sf::Vector2f maxOffset;
 	sf::Vector2f pos;
+	//float oldZoomFactor;
 	float zoomFactor;
 	float zoomOutRate;
 	float zoomInRate;

@@ -85,6 +85,7 @@ void Camera::Reset()
 	manual = false;
 	rumbling = false;
 	zoomFactor = 1;
+	//oldZoomFactor = 1;
 	offset.x = 0;
 	offset.y = 0;
 	pos.x = 0;
@@ -734,74 +735,81 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	}
 
 	Vector2f targetOffsetUnzoomed = targetOffset;
-	float currZoom = GetZoom();
-	targetOffset *= currZoom;//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
-							  //cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
-
-							  //offset = targetOffset;
-							  //offset = targetOffset;
-	//Vector2f maxVel(1.0, 1.0);
-	Vector2f maxVel(2.0, 8.0);
 	
+	float currZoom = GetZoom();
+	
+	targetOffset *= currZoom;
 
 	double xProp = min(1.0, abs(pVel.x) / 60.0);
 	double yProp = min(1.0, abs(pVel.y) / 60.0);
 
-	Vector2f dir = normalize(targetOffset - tempOffset);
-	dir.x *= 4;
-	if ((pVel.x >= 0 && tempOffset.x < 0) || pVel.x <= 0 && tempOffset.x > 0)
+
+	bool playerIsGrounded = sess->GetPlayer(0)->ground != NULL;
+
+	Vector2f diff = targetOffset - tempOffset;
+	Vector2f dir = normalize(diff);
+	offsetVel = dir;
+
+	offsetVel.x *= 4;
+	if ((pVel.x > 0 && tempOffset.x < 0) || (pVel.x < 0 && tempOffset.x > 0))
 	{
 		float testThresh = abs(tempOffset.x / currZoom);
 		float threshFactor = testThresh / 250;
-		dir.x *= 1.0 + 1.0 * threshFactor;
-	}
-	dir.x *= max(1.0, 4.0 * xProp);
 
-	if (sess->GetPlayer(0)->ground != NULL)
+		offsetVel.x *= 1.0 + 1.0 * threshFactor;
+	}
+	offsetVel.x *= max(1.0, 4.0 * xProp);
+
+	if (playerIsGrounded)
 	{
-		dir.y *= max( 1.0, 8.0 * yProp );
-		//helps slightly while on hills, but needs adjustment later.
-		//only gets you back to neutral, not showing ahead.
+		float thresh = 100;
+		float testThresh = abs(tempOffset.y / currZoom);
+		float threshFactor = testThresh / 150;
+		if ((pVel.y >= 0 && tempOffset.y < 0) || (pVel.y <= 0 && tempOffset.y > 0))
+		{
+			offsetVel.y *= 1.0 + 3 * threshFactor;
+		}
+		offsetVel.y *= max(1.0, 8.0 * yProp);
 	}
 	else
 	{
 		float thresh = 100;
 		float testThresh = abs(tempOffset.y / currZoom);
-		//if (testThresh > thresh)
+		float threshFactor = testThresh / 150;
+		if ((pVel.y >= 0 && tempOffset.y < 0) || pVel.y <= 0 && tempOffset.y > 0)
 		{
-			float threshFactor = testThresh / 150;
-			if ((pVel.y >= 0 && tempOffset.y < 0) || pVel.y <= 0 && tempOffset.y > 0)
-			{
-				dir.y *= 1.0 + 3 * threshFactor;//8;// *yProp;
-				cout << "fast back to normal: " << tempOffset.y / currZoom << endl;
-			}
+			offsetVel.y *= 1.0 + 3 * threshFactor;
 		}
-		dir.y *= max(1.0, 4.0 * yProp);
+		offsetVel.y *= max(1.0, 4.0 * yProp);
 		
 	}
 
-	//dir.y *= 6.0;
-
-	cout << "offsetunzoomed: " << targetOffsetUnzoomed.x << ", "
-		<< targetOffsetUnzoomed.y << endl;
-	cout << "offsetvel: " << dir.x << ", " << dir.y << endl;
-	offsetVel = dir;
-	//cout << "offsetVel: " << offsetVel.x << ", " << offsetVel.y << endl;
+	Vector2f oldTempOffset = tempOffset;
 	tempOffset += offsetVel;
-	Vector2f diff = targetOffset - tempOffset;
-	if (abs(diff.x) <= maxVel.x)
+
+	//prevent vibrating by stopping at the target correctly.
+	if (offsetVel.x > 0 && oldTempOffset.x < targetOffset.x && tempOffset.x > targetOffset.x)
 	{
 		tempOffset.x = targetOffset.x;
-		offsetVel.x = 0;
 	}
-	if (abs(diff.y) <= maxVel.y)
+	else if (offsetVel.x < 0 && oldTempOffset.x > targetOffset.x && tempOffset.x < targetOffset.x)
 	{
-		tempOffset.y = targetOffset.y;
-		offsetVel.y = 0;
+		tempOffset.x = targetOffset.x;
 	}
 
+	if (offsetVel.y > 0 && oldTempOffset.y < targetOffset.y && tempOffset.y > targetOffset.y)
+	{
+		tempOffset.y = targetOffset.y;
+	}
+	else if (offsetVel.y < 0 && oldTempOffset.y > targetOffset.y && tempOffset.y < targetOffset.y)
+	{
+		tempOffset.y = targetOffset.y;
+	}
+
+	//cout << "offset: " << tempOffset.x << ", "
+	//<< tempOffset.y << endl;
+
 	return tempOffset;
-	//cout << "offset: " << offset.x << " , " << offset.y << endl;
 }
 
 double Camera::GetEnemyZoomTarget( Actor *player )
@@ -1555,7 +1563,7 @@ void Camera::UpdateBasicMode()
 	//cout << "currOffset: " << currOffset.x << ", " << currOffset.y << endl;
 	double moveZoom = GetMovementZoomTarget(player);
 
-	double oldZoomFactor = zoomFactor;
+	//double oldZoomFactor = zoomFactor;
 
 	double nextMovementZoom = GetNextMovementZoom(moveZoom);
 
