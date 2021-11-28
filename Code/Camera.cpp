@@ -62,10 +62,8 @@ Camera::Camera()
 	easingOut = false;
 	currMove = NULL;
 
-	maxOffsetLeft = 150;
-	maxOffsetRight = 150;
-	maxOffsetTop = 150;//80;//170;//540-100;//300;//150;//125;// -75;//-125;
-	maxOffsetBottom = 150;//80;//170;//75;//300;//150;//200;//75;//125;//150;
+	maxOffset.x = 250;
+	maxOffset.y = 150;
 	
 	rX = 0;
 	rY = 0;
@@ -172,297 +170,6 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 
 	return numEnemies;
 }
-
-//this is the new one i was working on to debug the old one. probably revisit at some point
-
-//Vector2f Camera::GetNewOffset(V2d &pVel)
-//{
-//	float offXAccelOut = .1;
-//	float offXAccelIn = .1;
-//	float offYAccelOut = .1;
-//	float offYAccelIn = .1;
-//
-//	Vector2f targetOffset;
-//	double maxXVelRegistered = 30.0;
-//	double maxYVelRegistered = 30.0;
-//	Vector2f moveFactor;
-//	float moveF = 1.0;
-//
-//	Vector2f tempOffset = offset;
-//
-//
-//	double bigXMove = 8.0;
-//	double smallXMove = 4.0;
-//	double returnXMove = 4.0;
-//
-//	if (pVel.x > 0 && tempOffset.x < 0)
-//	{
-//		tempOffset.x += bigXMove;
-//	}
-//	else if (pVel.x > 0 && tempOffset.x >= 0)
-//	{
-//		tempOffset.x += smallXMove;
-//	}
-//	else if (pVel.x < 0 && tempOffset.x > 0)
-//	{
-//		tempOffset.x -= bigXMove;
-//	}
-//	else if (pVel.x < 0 && tempOffset.x <= 0)
-//	{
-//		tempOffset.x -= smallXMove;
-//	}
-//	else if (pVel.x == 0)
-//	{
-//		if (tempOffset.x > 0)
-//		{
-//			tempOffset.x -= returnXMove;
-//			if (tempOffset.x < 0)
-//			{
-//				tempOffset.x = 0;
-//			}
-//		}
-//		else if (tempOffset.x < 0)
-//		{
-//			tempOffset.x += returnXMove;
-//			if (tempOffset.x > 0)
-//			{
-//				tempOffset.x = 0;
-//			}
-//		}
-//	}
-//
-//	if (tempOffset.x > maxOffsetLeft)
-//	{
-//		tempOffset.x = maxOffsetLeft;
-//	}
-//	else if (tempOffset.x < -maxOffsetRight)
-//	{
-//		tempOffset.x = -maxOffsetRight;
-//	}
-//
-//	double bigYMove = 8.0;
-//	double smallYMove = 4.0;
-//	double returnYMove = 4.0;
-//
-//	if (pVel.y > 0 && tempOffset.y < 0)
-//	{
-//		tempOffset.y += bigYMove;
-//	}
-//	else if (pVel.y > 0 && tempOffset.y >= 0)
-//	{
-//		tempOffset.y += smallYMove;
-//	}
-//	else if (pVel.y < 0 && tempOffset.y > 0)
-//	{
-//		tempOffset.y -= bigYMove;
-//	}
-//	else if (pVel.y < 0 && tempOffset.y <= 0)
-//	{
-//		tempOffset.y -= smallYMove;
-//	}
-//	else if (pVel.y == 0)
-//	{
-//		if (tempOffset.y > 0)
-//		{
-//			tempOffset.y -= returnYMove;
-//			if (tempOffset.y < 0)
-//			{
-//				tempOffset.y = 0;
-//			}
-//		}
-//		else if (tempOffset.y < 0)
-//		{
-//			tempOffset.y += returnYMove;
-//			if (tempOffset.y > 0)
-//			{
-//				tempOffset.y = 0;
-//			}
-//		}
-//	}
-//
-//	if (tempOffset.y > maxOffsetTop)
-//	{
-//		tempOffset.y = maxOffsetTop;
-//	}
-//	else if (tempOffset.y < -maxOffsetBottom)
-//	{
-//		tempOffset.y = -maxOffsetBottom;
-//	}
-//
-//	tempOffset *= GetZoom();
-//
-//	return tempOffset;
-//
-//	if (pVel.x > 0)
-//	{
-//		moveFactor.x = min(1.0, pVel.x / maxXVelRegistered);
-//		moveFrames.x += 1.0;
-//	}
-//	else if (pVel.x < 0)
-//	{
-//		moveFactor.x = max(-1.0, pVel.x / maxXVelRegistered);
-//		moveFrames.x += -1.f;
-//	}
-//	else
-//	{
-//		float moveFrameIncrement = 1.f;
-//		if (moveFrames.x > 0)
-//		{
-//			moveFrames.x -= moveFrameIncrement;
-//		}
-//		else if (moveFrames.x < 0)
-//		{
-//			moveFrames.x += moveFrameIncrement;
-//		}
-//	}
-//
-//	if (pVel.y > 0)
-//	{
-//		moveFactor.y = min(1.0, pVel.y / maxYVelRegistered);
-//		moveFrames.y += 1.0;
-//	}
-//	else if (pVel.y < 0)
-//	{
-//		moveFactor.y = max(-1.0, pVel.y / maxYVelRegistered);
-//		moveFrames.y += -1.f;
-//	}
-//	else
-//	{
-//		float moveFrameIncrement = 1.f;
-//		if (moveFrames.y > 0)
-//		{
-//			moveFrames.y -= moveFrameIncrement;
-//		}
-//		else if (moveFrames.y < 0)
-//		{
-//			moveFrames.y += moveFrameIncrement;
-//		}
-//	}
-//
-//	float maxFramesX = 60;
-//	float maxFramesY = 60;
-//
-//	if (moveFrames.x > maxFramesX)
-//	{
-//		moveFrames.x = maxFramesX;
-//	}
-//	else if (moveFrames.x < -maxFramesX)
-//	{
-//		moveFrames.x = -maxFramesX;
-//	}
-//
-//	if (moveFrames.y > maxFramesY)
-//	{
-//		moveFrames.y = maxFramesY;
-//	}
-//	else if (moveFrames.y < -maxFramesY)
-//	{
-//		moveFrames.y = -maxFramesY;
-//	}
-//
-//	Vector2f maxOff;
-//	if (moveFrames.x > 0)
-//	{
-//		maxOff.x = 100.f + maxOffsetLeft * (moveFrames.x / maxFramesX);
-//	}
-//	else if (moveFrames.x < 0)
-//	{
-//		maxOff.x = -100.f + maxOffsetRight * (moveFrames.x / maxFramesX);
-//	}
-//	else
-//	{
-//		maxOff.x = 0;
-//	}
-//
-//	if (moveFrames.y > 0)
-//	{
-//		maxOff.y = 100.f + maxOffsetTop * (moveFrames.y / maxFramesY);//maxOffsetTop;//125.f;// + 150.f * (moveFrames.y / maxFramesX);
-//	}
-//	else if (moveFrames.y < 0)
-//	{
-//		maxOff.y = -100.f - maxOffsetBottom * (-moveFrames.y / maxFramesY);//-maxOffsetBottom;//-75.f;// +150.f * (moveFrames.y / maxFramesX);
-//	}
-//	else
-//	{
-//		maxOff.y = 0;
-//	}
-//
-//	targetOffset = maxOff;
-//
-//	targetOffset *= GetZoom();//10.f;//zoomFactor * 2 + zoomLevel;//zoomFactor * 2;//GetZoom();
-//							  //cout << "targetOffset: " << targetOffset.x << ", " << targetOffset.y << endl;
-//
-//							  //offset = targetOffset;
-//							  //offset = targetOffset;
-//	Vector2f maxVel(1.0, 1.0);
-//
-//	//	float speed = 2.0;
-//	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0 )
-//	{
-//		maxVel.x *= 2;	//speed *= 2;
-//	}
-//	else if ((pVel.y > 0 && tempOffset.y < 0) || pVel.y < 0 && tempOffset.y > 0)
-//	{
-//		maxVel.y *= 10;
-//	}
-//	//
-//	//	dir.x *= speed;
-//
-//	offsetVel = Vector2f(0, 0);
-//	if (targetOffset.x > tempOffset.x)
-//	{
-//		offsetVel.x = maxVel.x;
-//	}
-//	else if( targetOffset.x < tempOffset.x )
-//	{
-//		offsetVel.x = -maxVel.x;
-//	}
-//	else
-//	{
-//		offsetVel.x = 0;
-//	}
-//
-//	if (targetOffset.y > tempOffset.y)
-//	{
-//		offsetVel.y = maxVel.y;
-//	}
-//	else if( targetOffset.y < tempOffset.y)
-//	{
-//		offsetVel.y = -maxVel.y;
-//	}
-//	else
-//	{
-//		offsetVel.y = 0;
-//	}
-//
-//	/*Vector2f dir = normalize(targetOffset - tempOffset);
-//	float speed = 2.0;
-//	if ((pVel.x > 0 && tempOffset.x < 0) || pVel.x < 0 && tempOffset.x > 0)
-//	{
-//		speed *= 2;
-//	}
-//
-//	dir.x *= speed;
-//
-//	offsetVel = dir;*/
-//
-//	tempOffset += offsetVel;//targetOffset;
-//	/*Vector2f diff = targetOffset - tempOffset;
-//	if (abs(diff.x) <= maxVel.x)
-//	{
-//		tempOffset.x = targetOffset.x;
-//		offsetVel.x = 0;
-//	}
-//	if (abs(diff.y) <= maxVel.y)
-//	{
-//		tempOffset.y = targetOffset.y;
-//		offsetVel.y = 0;
-//	}*/
-//
-//	cout << "tempOffset: " << tempOffset.x << ", " << tempOffset.y << endl;
-//	return tempOffset;
-//	//cout << "offset: " << offset.x << " , " << offset.y << endl;
-//}
 
 //Vector2f Camera::GetNewOffset( V2d &pVel )
 //{
@@ -687,17 +394,18 @@ int Camera::GetActiveEnemyCount( Actor *player, double &minX, double &maxX, doub
 
 Vector2f Camera::GetNewOffset(V2d &pVel)
 {
-	float offXAccelOut = .1;
-	float offXAccelIn = .1;
-	float offYAccelOut = .1;
-	float offYAccelIn = .1;
-
 	Vector2f targetOffset;
-	double maxXVelRegistered = 30.0;
-	Vector2f moveFactor;
-	float moveF = 1.0;
-
 	Vector2f tempOffset = offset;
+
+	Vector2f baseOffsetFactor(4, 1);
+
+	float xPropMultiplier = 4.f;
+	float yPropMultiplierGrounded = 8.f;
+	float yPropMultiplerAerial = 4.f;
+	float returnToCenterMultX = 1.f;
+	float returnToCenterMultYGrounded = 3.f;
+	float returnToCenterMultYAerial = 3.f;
+	V2d maxRegisteredSpeed(60, 60);
 
 	if (pVel.x > 0)
 	{
@@ -723,65 +431,53 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	{
 		targetOffset.y = 0;
 	}
-	targetOffset.x *= 250.0;
 
-	if (targetOffset.y > 0)
-	{
-		targetOffset.y *= maxOffsetTop;//125.0;//maxOffset.y;
-	}
-	else
-	{
-		targetOffset.y *= maxOffsetBottom;//75.0;
-	}
-
-	Vector2f targetOffsetUnzoomed = targetOffset;
+	targetOffset.x *= maxOffset.x;
+	targetOffset.y *= maxOffset.y;
 	
 	float currZoom = GetZoom();
 	
 	targetOffset *= currZoom;
 
-	double xProp = min(1.0, abs(pVel.x) / 60.0);
-	double yProp = min(1.0, abs(pVel.y) / 60.0);
-
+	//how fast you are moving on the axis in comparison to the max speed
+	//capped at 1.0. Assumes max speed is 60
+	double xProp = min(1.0, abs(pVel.x) / maxRegisteredSpeed.x);
+	double yProp = min(1.0, abs(pVel.y) / maxRegisteredSpeed.y);
 
 	bool playerIsGrounded = sess->GetPlayer(0)->ground != NULL;
 
 	Vector2f diff = targetOffset - tempOffset;
 	Vector2f dir = normalize(diff);
+
 	offsetVel = dir;
 
-	offsetVel.x *= 4;
+	offsetVel.x *= baseOffsetFactor.x;
+	offsetVel.y *= baseOffsetFactor.y;
+
+	Vector2f returnToCenterBaseFactor(abs(tempOffset.x / currZoom) / maxOffset.x,
+		abs(tempOffset.y / currZoom) / maxOffset.y);
+
 	if ((pVel.x > 0 && tempOffset.x < 0) || (pVel.x < 0 && tempOffset.x > 0))
 	{
-		float testThresh = abs(tempOffset.x / currZoom);
-		float threshFactor = testThresh / 250;
-
-		offsetVel.x *= 1.0 + 1.0 * threshFactor;
+		offsetVel.x *= 1.0 + returnToCenterMultX * returnToCenterBaseFactor.x;
 	}
-	offsetVel.x *= max(1.0, 4.0 * xProp);
+	offsetVel.x *= max(1.0, xPropMultiplier * xProp);
 
 	if (playerIsGrounded)
 	{
-		float thresh = 100;
-		float testThresh = abs(tempOffset.y / currZoom);
-		float threshFactor = testThresh / 150;
 		if ((pVel.y >= 0 && tempOffset.y < 0) || (pVel.y <= 0 && tempOffset.y > 0))
 		{
-			offsetVel.y *= 1.0 + 3 * threshFactor;
+			offsetVel.y *= 1.0 + returnToCenterMultYGrounded * returnToCenterBaseFactor.y;
 		}
-		offsetVel.y *= max(1.0, 8.0 * yProp);
+		offsetVel.y *= max(1.0, yPropMultiplierGrounded * yProp);
 	}
 	else
 	{
-		float thresh = 100;
-		float testThresh = abs(tempOffset.y / currZoom);
-		float threshFactor = testThresh / 150;
 		if ((pVel.y >= 0 && tempOffset.y < 0) || pVel.y <= 0 && tempOffset.y > 0)
 		{
-			offsetVel.y *= 1.0 + 3 * threshFactor;
+			offsetVel.y *= 1.0 + returnToCenterMultYAerial * returnToCenterBaseFactor.y;
 		}
-		offsetVel.y *= max(1.0, 4.0 * yProp);
-		
+		offsetVel.y *= max(1.0, yPropMultiplerAerial * yProp);
 	}
 
 	Vector2f oldTempOffset = tempOffset;
