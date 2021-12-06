@@ -583,3 +583,97 @@ void MovingRing::Update()
 
 	++frame;
 }
+
+PokeTri::PokeTri(sf::Vector2f &p_offset)
+{
+	offset = p_offset;
+	pokeAngle = GetVectorAngleCW(offset) / PI * 180;
+
+	stateLength[S_POKING] = 6;
+	stateLength[S_SHRINKING] = 6;
+
+	startWidth = 30;
+	startColor = Color( 255, 255, 255, 100 );//Color::Blue;
+	fadeColor = Color(40, 40, 40, 0);
+}
+
+void PokeTri::Reset()
+{
+	color = startColor;
+	length = 0;
+	frame = 0;
+	state = S_POKING;
+	angle = pokeAngle;
+	width = startWidth;
+	done = false;
+	lengthFactor = 1;
+
+	maxLength = 500 + ( rand() % 100 );
+
+	Clear();
+
+	width = startWidth + (rand() % 20);
+	//UpdatePoints();
+}
+
+void PokeTri::SetLengthFactor(float f)
+{
+	lengthFactor = f;
+}
+
+void PokeTri::Update()
+{
+	if (done)
+		return;
+
+	if (frame == stateLength[state])
+	{
+		frame = 0;
+		switch (state)
+		{
+		case S_POKING:
+			state = S_SHRINKING;
+			break;
+		case S_SHRINKING:
+			done = true;
+			Clear();
+			return;
+		}
+	}
+
+	double fac = (double)frame / stateLength[state];
+	switch (state)
+	{
+	case S_POKING:
+		length = fac * maxLength;
+		break;
+	case S_SHRINKING:
+		length = (1.0 - fac) * maxLength;
+		break;
+	}
+
+
+	UpdatePoints();
+	++frame;
+}
+
+void PokeTri::UpdatePoints()
+{
+	//Vector2f dir(1, 0);
+	//RotateCCW(dir, angle);
+
+	Vector2f dir = normalize(-offset);
+
+	Vector2f norm(dir.y, -dir.x);
+
+	Vector2f end = basePos + offset + dir * length * lengthFactor;
+
+	Vector2f triBase = basePos + offset;
+
+	points[0].position = end;
+	points[1].position = end;
+	points[2].position = triBase + norm * (width / 2.f);
+	points[3].position = triBase - norm * (width / 2.f);
+
+	SetColor(color);
+}

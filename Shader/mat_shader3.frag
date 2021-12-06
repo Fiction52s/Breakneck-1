@@ -8,10 +8,29 @@ uniform vec2 topLeft;
 uniform float zoom;
 uniform vec4 u_quad;
 
+uniform float u_cameraAngle;
+//uniform float u_seed;
+
 uniform vec2 Resolution;      //resolution of screen
 uniform vec4 AmbientColor;    //ambient RGBA -- alpha is intensity 
 
+vec2 rotateUV(in vec2 uv, in vec2 pivot, in float rotation) {
+    float sine = sin(rotation);
+    float cosine = cos(rotation);
 
+    uv -= pivot;
+	float tempX = uv.x * cosine - uv.y * sine;
+    uv.y = uv.x * sine + uv.y * cosine;
+	uv.x = tempX;
+    uv += pivot;
+
+    return uv;
+}
+
+float PHI = 1.61803398874989484820459;  // Φ = Golden Ratio   
+
+float gold_noise(vec2 xy, float seed){
+       return fract(tan(distance(xy*PHI, xy)*seed)*xy.x);}
 
 
 void main()
@@ -20,11 +39,11 @@ void main()
 	vec2 fc = gl_FragCoord.xy;
 	fc.y = 1.0 - fc.y;
 	fc = fc * vec2( 960, 540 ) / Resolution;
-	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );	
+	vec2 pixelPos = vec2( fc.x * zoom, fc.y * zoom );
+
+	vec2 pos = topLeft + rotateUV( pixelPos, vec2( 0.0 ), u_cameraAngle );
 	
 	ivec2 texSize = textureSize(u_texture, 0);
-	
-	vec2 pos = mod( topLeft + pixelPos, size) / texSize;
 	
 	vec2 tileLimit = vec2( size ) / texSize;
 	
@@ -32,13 +51,15 @@ void main()
 	
 	vec4 DiffuseColor;
 	
-	DiffuseColor = texture2D( u_texture, mod( pos, tileLimit ) + u_quad.xy);
+	vec2 UV = mod( pos / texSize, tileLimit ) + u_quad.xy;
 	
-	//DiffuseColor = texture2D(u_texture, pos );
+	DiffuseColor = texture2D(u_texture, UV );
 	
-	vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
-	vec3 Intensity = Ambient;//.000001;
-	finalfinal = vec4( DiffuseColor.rgb * Intensity, DiffuseColor.a );
+	//vec3 Ambient = AmbientColor.rgb * AmbientColor.a;
+	//vec3 Intensity = Ambient;//.000001;
+	//finalfinal = vec4( DiffuseColor.rgb * Intensity, DiffuseColor.a );
+	
+	finalfinal = DiffuseColor;
 	
 	finalfinal = gl_Color * finalfinal;
 	

@@ -14,7 +14,7 @@ struct GoalFlow
 		std::list<std::list<std::pair<V2d, bool>>> &infoList);
 	~GoalFlow();
 	void Update( float camZoom,
-		sf::Vector2f &topLeft );
+		sf::Vector2f &topLeft, float camAngleRad );
 	void Draw(sf::RenderTarget *target);
 	
 	sf::Shader flowShader;

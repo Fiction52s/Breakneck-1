@@ -36,38 +36,17 @@ Camera::Camera()
 	minZoom = 1;
 	maxZoom = 2.25;
 
-	pos.x = 0;
-	pos.y = 0;
 	zoomLevel1 = 0;
 	zoomLevel2 = .5;
 	zoomLevel3 = 1.75;
-
-	//maxOffset.x = 100 * 5;//10;
-	//maxOffset.y = 100 * 5;//10;
 
 	left = 300;
 	right = -300;
 	top = 300;//150;
 	bottom = -300;
 
-	easing = false;
-	manual = false;
-	rumbling = false;
-
-	offset.x = 0;
-	offset.y = 0;
-
-	zoomLevel = 0;
-	easeOutFrame = 0;
-	easingOut = false;
-	currMove = NULL;
-
 	maxOffset.x = 250;
 	maxOffset.y = 150;
-	
-	rX = 0;
-	rY = 0;
-	offsetVel = Vector2f(0, 0);
 
 	Reset();
 }
@@ -76,12 +55,17 @@ void Camera::Reset()
 {
 	rX = 0;
 	rY = 0;
+	cameraAngle = 0;
+	offsetVel = Vector2f(0, 0);
+	rumbleRotateDegrees = 0;
+	easeOutFrame = 0;
 	currMove = NULL;
 	easingOut = false;
 	zoomLevel = 0;
 	easing = false;
 	manual = false;
 	rumbling = false;
+	rumbleRotateDegrees = 0;
 	zoomFactor = 1;
 	//oldZoomFactor = 1;
 	offset.x = 0;
@@ -569,7 +553,7 @@ double Camera::GetEnemyZoomTarget( Actor *player )
 	return testZoom;
 }
 
-void Camera::SetRumble( int xFactor, int yFactor, int duration )
+void Camera::SetRumble( int xFactor, int yFactor, int duration, float rotateAngle )
 {
 	assert( duration > 0 );
 
@@ -578,6 +562,7 @@ void Camera::SetRumble( int xFactor, int yFactor, int duration )
 	rumbleY = yFactor;
 	rumbling = true;
 	rumbleFrame = 0;
+	rumbleRotateDegrees = rotateAngle;
 }
 
 void Camera::StopRumble()
@@ -596,6 +581,10 @@ void Camera::StopRumble()
 	}
 	rX = 0;
 	rY = 0;
+
+	cameraAngle = 0;
+
+	rumbleRotateDegrees = 0;
 }
 
 void Camera::Ease( Vector2f &p_pos, float zFactor, int numFrames, CubicBezier bez)
@@ -629,6 +618,7 @@ void Camera::UpdateRumble()
 		rumbling = false;
 		rX = 0;
 		rY = 0;
+		cameraAngle = 0;
 		return;
 	}
 	//this needs to be random?
@@ -637,6 +627,9 @@ void Camera::UpdateRumble()
 	
 	rX = fx * rumbleX * GetZoom();
 	rY = fy * rumbleY * GetZoom();
+
+	int fr = (rand() % 3) - 1;
+	cameraAngle = rumbleRotateDegrees * fr;
 
 	//pos += sf::Vector2f( rX, rY );
 
@@ -651,7 +644,29 @@ sf::FloatRect Camera::GetRect()
 	float width = 960 * zoom;
 	float height = 540 * zoom;
 
-	return FloatRect(center.x - width / 2, center.y - height / 2, width, height);
+	Vector2f A(center.x - width / 2, center.y - height / 2);
+	Vector2f B(center.x + width / 2, center.y - height / 2);
+	Vector2f C(center.x + width / 2, center.y + height / 2);
+	Vector2f D(center.x - width / 2, center.y + height / 2);
+
+	Transform t;
+	t.rotate(GetRotation());
+
+	Vector2f aA = t.transformPoint(A);
+	Vector2f aB = t.transformPoint(B);
+	Vector2f aC = t.transformPoint(C);
+	Vector2f aD = t.transformPoint(D);
+
+	float left = min(min(aA.x, aB.x), min(aC.x, aD.x));
+	float right = max(max(aA.x, aB.x), max(aC.x, aD.x));
+	float top = min(min(aA.y, aB.y), min(aC.y, aD.y));
+	float bot = max(max(aA.y, aB.y), max(aC.y, aD.y));
+
+	//return FloatRect(center.x - width / 2, center.y - height / 2, width, height);
+	Vector2f aCenter((left + right) / 2.f, (top + bot) / 2.f);
+	Vector2f aSize(right - left, bot - top);
+
+	return FloatRect( aCenter, aSize );
 }
 
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )
@@ -1264,7 +1279,7 @@ void Camera::UpdateBasicMode()
 	double nextMovementZoom = GetNextMovementZoom(moveZoom);
 
 	zoomFactor = nextMovementZoom;
-	cout << "zoomfactor: " << zoomFactor << endl;
+//	cout << "zoomfactor: " << zoomFactor << endl;
 
 	pos += currOffset;// *GetZoom();
 	UpdateBarrier(player, xChangePos, xChangeNeg, yChangePos, yChangeNeg);
@@ -1493,6 +1508,11 @@ float Camera::GetZoom()
 sf::Vector2f Camera::GetPos()
 {
 	return pos + Vector2f( rX, rY );
+}
+
+float Camera::GetRotation()
+{
+	return cameraAngle;
 }
 
 void Camera::SetMovementSeq( MovementSequence *move, bool relative )

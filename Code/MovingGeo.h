@@ -54,6 +54,42 @@ struct MovingGeoGroup
 	bool running;
 };
 
+
+struct SpecialMovingGeoGroup
+{
+	SpecialMovingGeoGroup();
+	virtual ~SpecialMovingGeoGroup();
+	void Start();
+	void Reset();
+	bool Update();
+	virtual void StartGeo() = 0;
+	void AddGeo(MovingGeo *mg);
+	void Init();
+	void Draw(sf::RenderTarget *target);
+	void SetBase(sf::Vector2f &pos);
+	void RemoveAll();
+	void StopGenerating();
+
+	bool continueGenerating;
+
+	std::vector<MovingGeo*> geoVector;
+	int frame;
+	sf::Vertex *points;
+	int numTotalPoints;
+	bool running;
+};
+
+struct PokeTriangleScreenGeoGroup : SpecialMovingGeoGroup
+{
+	PokeTriangleScreenGeoGroup();
+	~PokeTriangleScreenGeoGroup();
+	
+	void SetLengthFactor(float f);
+	void StartGeo();
+
+	float lengthFactor;
+};
+
 struct SpinningTri : MovingGeo
 {
 	enum State
@@ -194,6 +230,49 @@ struct MovingRing : Ring
 	
 
 	
+};
+
+struct PokeTri : MovingGeo
+{
+	enum State
+	{
+		S_POKING,
+		S_SHRINKING,
+		S_Count
+	};
+
+
+	PokeTri(sf::Vector2f &offset );
+	void Reset();
+	void Update();
+
+	//void SetColorGrad(sf::Color startCol,
+	//	sf::Color endCol);
+	//void SetColorChange(sf::Color &startC,
+	//	sf::Color &endC, float progress);
+	int GetNumPoints() { return 4; }
+	void UpdatePoints();
+	void SetLengthFactor(float f);
+	int stateLength[S_Count];
+	int maxLength;
+	State state;
+	int frame;
+
+	float length;
+	float width;
+	float angle;
+	float pokeAngle;
+	sf::Color startColor;
+	sf::Color fadeColor;
+	sf::Vector2f offset;
+
+	float lengthFactor;
+
+	float startWidth;
+
+
+	//float finalWidth;
+	//float startWidth;
 };
 
 #endif

@@ -23,6 +23,7 @@ struct LogItem : Enemy
 
 
 	ShapeEmitter *testEmitter;
+	//MovingGeoGroup geoGroup;
 	MovingGeoGroup geoGroup;
 	bool alreadyCollected;
 

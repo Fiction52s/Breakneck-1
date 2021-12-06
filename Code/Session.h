@@ -42,6 +42,8 @@ struct Background;
 struct HitboxManager;
 struct Boss;
 
+struct PokeTriangleScreenGeoGroup;
+
 struct TerrainDecorInfo;
 
 struct SoundNodeList;
@@ -372,7 +374,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	Rain *rain;
 	ScoreDisplay *scoreDisplay;
 	InputVisualizer *inputVis;
-
+	PokeTriangleScreenGeoGroup *pokeTriangleScreenGroup;
 
 	FrameRateDisplay frameRateDisplay;
 	RunningTimerDisplay runningTimerDisplay;
@@ -832,6 +834,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetKeyMarkerToCurrentZone();
 	void TransitionMusic(MusicInfo *mi,
 		int transFrames);
+	void SetupPokeTriangleScreenGroup();
+	void CleanupPokeTriangleScreenGroup();
 };
 
 #endif

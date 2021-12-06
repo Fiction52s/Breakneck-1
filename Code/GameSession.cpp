@@ -239,13 +239,14 @@ void GameSession::UpdateCamera()
 	double camWidth = 960 * cam.GetZoom();
 	double camHeight = 540 * cam.GetZoom();
 
-	screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+	screenRect = sf::Rect<double>(cam.GetRect());//sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
-	view.setSize(Vector2f(1920 / 2 * cam.GetZoom(), 1080 / 2 * cam.GetZoom()));
-
+	view.setSize(Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()));
 	//this is because kin's sprite is 2x size in the game as well as other stuff
 	lastViewSize = view.getSize();
 	view.setCenter(camPos.x, camPos.y);
+
+	view.setRotation(cam.GetRotation());
 
 	lastViewCenter = view.getCenter();
 }
@@ -1524,6 +1525,7 @@ bool GameSession::Load()
 	
 	//inputVis = new InputVisualizer;
 
+	SetupPokeTriangleScreenGroup();
 
 	SetupAbsorbParticles();
 
@@ -3563,6 +3565,7 @@ void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 	
 	terrainShader.setUniform("playertest", playertest);
 	terrainShader.setUniform("skyColor", ColorGL(background->GetSkyColor()));
+	
 
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
@@ -3891,6 +3894,8 @@ void GameSession::RestartLevel()
 	{
 		activeSequence = NULL;
 	}
+
+	pokeTriangleScreenGroup->Reset();
 }
 
 void GameSession::AddGravityGrassToExplodeList(Grass *g)

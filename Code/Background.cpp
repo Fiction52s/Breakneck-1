@@ -133,11 +133,13 @@ void ScrollingBackground::Set(sf::Vector2f &pos, float zoom)
 
 void ScrollingBackground::Draw(RenderTarget *target)
 {
-	oldView.setCenter(target->getView().getCenter());
-	oldView.setSize(target->getView().getSize());
+	oldView = target->getView();
+	//oldView.setCenter(target->getView().getCenter());
+	//oldView.setSize(target->getView().getSize());
 
 	newView.setCenter(Vector2f( oldView.getCenter().x, 0) - extraOffset);
 	newView.setSize(Vector2f(1920, 1080) / extraZoom );
+	//newView.setRotation(oldView.getRotation());
 	
 	target->setView(newView);
 
@@ -554,7 +556,11 @@ void Background::Draw(sf::RenderTarget *target)
 		return;
 
 	sf::View oldView = target->getView();
-	target->setView(bgView);
+
+	sf::View newView = bgView;
+	//newView.setRotation(oldView.getRotation());
+
+	target->setView(newView);
 
 	if (ts_sky != NULL)
 	{

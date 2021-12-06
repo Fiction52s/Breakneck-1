@@ -100,7 +100,7 @@ void DeathSequence::UpdateState()
 		{
 			sess->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
-			sess->cam.SetRumble(10, 10, 90);
+			//sess->cam.SetRumble(10, 10, 90, 4);
 		}
 
 		if (frame == 60)

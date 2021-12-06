@@ -113,6 +113,7 @@ LogItem::LogItem(ActorParams *ap)//Vector2i pos, int w, int li )
 
 		hitBody.hitboxInfo = NULL;
 
+		
 		geoGroup.AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
 			Color::Cyan, Color(0, 0, 100, 0), 60));
 		geoGroup.Init();

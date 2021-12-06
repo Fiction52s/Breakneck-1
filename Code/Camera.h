@@ -37,7 +37,8 @@ struct Camera
 	void Set( sf::Vector2f &pos, float zFactor,
 		int zLevel );
 	void Reset();
-	void SetRumble( int xFactor, int yFactor, int duration );
+	void SetRumble( int xFactor, int yFactor, 
+		int duration, float rotateAngle = 0.f );
 	void StopRumble();
 	void UpdateRumble();
 	void EaseOutOfManual( int frames );
@@ -55,6 +56,7 @@ struct Camera
 	
 	sf::FloatRect GetRect();
 	sf::Vector2f GetPos();
+	float GetRotation();
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;
 	float startManualZoom;
@@ -83,6 +85,10 @@ struct Camera
 	bool rumbling;
 	int rX;
 	int rY;
+
+	float rumbleRotateDegrees;
+
+	float cameraAngle;
 
 	sf::Vector2f offset;
 	sf::Vector2f maxOffset;

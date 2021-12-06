@@ -475,7 +475,6 @@ void Coyote::StartAction()
 			sess->RemoveBoss(this);
 			//oldPlayerPos = sess->GetPlayerPos(0);
 			game->SetBonus(myBonus, GetPosition());
-
 		}
 		break;
 	}

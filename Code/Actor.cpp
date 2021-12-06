@@ -4810,6 +4810,7 @@ void Actor::KinModeUpdate()
 				leftWire->Reset();
 				slowCounter = 1;
 				frame = 0;
+				sess->cam.SetRumble(15, 15, GetActionLength( DEATH ), 3);
 				//springStunFrames = 0;
 
 
@@ -5291,10 +5292,20 @@ void Actor::ReactToBeingHit()
 
 void Actor::SetKinMode(Mode m)
 {
+	if (kinMode == K_DESPERATION )
+	{
+		sess->pokeTriangleScreenGroup->StopGenerating();
+	}
+
+	if (kinMode == m)
+	{
+		return;
+	}
 	kinMode = m;
 	switch (m)
 	{
 	case K_NORMAL:
+		
 		SetExpr(KinMask::Expr::Expr_NEUTRAL);
 		break;
 	case K_SUPER:
@@ -5302,8 +5313,10 @@ void Actor::SetKinMode(Mode m)
 		SetExpr(KinMask::Expr::Expr_NEUTRAL);
 		break;
 	case K_DESPERATION:
+		sess->pokeTriangleScreenGroup->Start();
 		despCounter = 0;
 		SetExpr(KinMask::Expr::Expr_DESP);
+		
 		break;
 	}
 }
@@ -6353,6 +6366,8 @@ void Actor::UpdatePrePhysics()
 
 	//cout << "vely: " << velocity.y << endl;
 	//cout << "groundspeed: " << groundSpeed << endl;
+
+	
 
 
 	hitOutOfHitstunLastFrame = false;
@@ -15676,6 +15691,16 @@ void Actor::UpdatePostPhysics()
 	{
 		return;
 	}
+
+	if (kinMode == K_DESPERATION)
+	{
+		float despFactor = despCounter / (float)maxDespFrames;
+		sess->pokeTriangleScreenGroup->SetLengthFactor(min( 1.f, despFactor + .3f));
+
+		double maxRumble = 7;
+		sess->cam.SetRumble(max(1.0, maxRumble * despFactor), max(1.0, maxRumble * despFactor), 60 );// 60, 2 * despFactor );
+	}
+	
 
 	if (hitlagFrames > 0)
 	{

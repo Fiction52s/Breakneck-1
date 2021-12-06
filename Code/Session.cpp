@@ -1588,6 +1588,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	postLevelScene = NULL;
 	activeSequence = NULL;
 
+	pokeTriangleScreenGroup = NULL;
+
 	shipEnterScene = NULL;
 	shipExitScene = NULL;
 
@@ -1926,7 +1928,8 @@ Session::~Session()
 	CleanupCameraShots();
 	CleanupPoi();
 	CleanupBossNodes();
-	
+
+	CleanupPokeTriangleScreenGroup();
 
 	CleanupTopClouds();
 
@@ -4354,6 +4357,9 @@ void Session::HitlagUpdate()
 	swiper->Update();
 	mainMenu->UpdateEffects();
 
+
+	pokeTriangleScreenGroup->Update();
+
 	pauseFrames--;
 
 	//cout << "hitlag update. pause frames is now: " << pauseFrames << endl;
@@ -5864,12 +5870,23 @@ void Session::UpdateGoalFlow()
 {
 	if (goalFlow != NULL)
 	{
-		//Vector2f topLeft(screenRect.left, screenRect.top + screenRect.height); //actually bottom left
-		Vector2f topLeft(view.getCenter().x - view.getSize().x / 2,
+		Vector2f vSize = view.getSize();
+
+		float zoom = vSize.x / 960.f;
+
+		Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
 			view.getCenter().y + view.getSize().y / 2);
-		float zoom = view.getSize().x / 960.f;
-		//goalFlow->Update(cam.GetZoom(), topLeft);
-		goalFlow->Update(zoom, topLeft);
+
+		float camAngle = (float)(view.getRotation() * PI / 180.0);
+
+		Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
+		RotateCW(botLeftTest, camAngle);
+
+		botLeftTest += view.getCenter();
+
+		botLeft = botLeftTest;
+
+		goalFlow->Update(zoom, botLeft, camAngle );
 	}
 }
 
@@ -6155,6 +6172,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	target->setView(uiView);
 
+	pokeTriangleScreenGroup->Draw(target);
 
 	DrawRaceFightScore(target);
 
@@ -6439,6 +6457,8 @@ bool Session::RunGameModeUpdate()
 		fader->Update();
 		swiper->Update();
 
+		pokeTriangleScreenGroup->Update();
+
 		if (IsSessTypeGame() )
 		{
 			background->Update(view.getCenter());
@@ -6520,6 +6540,8 @@ bool Session::FrozenGameModeUpdate()
 
 		fader->Update();
 		swiper->Update();
+
+		pokeTriangleScreenGroup->Update();
 
 		if (gameState != FROZEN)
 		{
@@ -6822,6 +6844,7 @@ bool Session::GGPORunGameModeUpdate()
 
 	fader->Update();
 	swiper->Update();
+	pokeTriangleScreenGroup->Update();
 
 	if (IsSessTypeGame())
 	{
@@ -7499,4 +7522,35 @@ void Session::TransitionMusic(MusicInfo *mi,
 	int transFrames)
 {
 	mainMenu->musicPlayer->TransitionMusic(mi, transFrames);
+}
+
+void Session::SetupPokeTriangleScreenGroup()
+{
+	if (parentGame != NULL )
+	{
+		pokeTriangleScreenGroup = parentGame->pokeTriangleScreenGroup;
+	}
+	else
+	{
+		if (pokeTriangleScreenGroup == NULL)
+		{
+			pokeTriangleScreenGroup = new PokeTriangleScreenGeoGroup;
+		}
+	}
+}
+
+void Session::CleanupPokeTriangleScreenGroup()
+{
+	if (parentGame != NULL)
+	{
+
+	}
+	else
+	{
+		if (pokeTriangleScreenGroup != NULL)
+		{
+			delete pokeTriangleScreenGroup;
+			pokeTriangleScreenGroup = NULL;
+		}
+	}
 }

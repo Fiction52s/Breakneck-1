@@ -338,17 +338,26 @@ void EditSession::UpdateCamera()
 	Vector2f camPos = cam.GetPos();
 	double camWidth = 960 * cam.GetZoom();
 	double camHeight = 540 * cam.GetZoom();
-	screenRect = sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
+	screenRect = sf::Rect<double>(cam.GetRect());//sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
 	if (gameCam)
 	{
 
 		view.setSize(Vector2f(960 * cam.GetZoom(), 540 * cam.GetZoom()));
+		//view.setRotation(cam.GetRotation());
+		//cout << "rotation: " << cam.GetRotation() << endl;
 
 		//this is because kin's sprite is 2x size in the game as well as other stuff
 		//lastViewSize = view.getSize();
 		view.setCenter(camPos.x, camPos.y);
+		
+		view.setRotation(cam.GetRotation());
 	}
+	else
+	{
+		view.setRotation(0);
+	}
+	
 }
 
 bool EditSession::RunPostUpdate()
@@ -700,6 +709,9 @@ void EditSession::TestPlayerMode()
 	ClearEmitters();
 	ClearEffects();
 	ResetAbsorbParticles();
+
+	pokeTriangleScreenGroup->Reset();
+	
 
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
@@ -3717,6 +3729,8 @@ void EditSession::Init()
 	AllocateEffects();
 
 	SetupAbsorbParticles();
+
+	SetupPokeTriangleScreenGroup();
 
 	SetupDeathSequence();
 
@@ -12002,9 +12016,22 @@ void EditSession::UpdatePolyShaders()
 	Vector2f vSize = view.getSize();
 	float zoom = vSize.x / 960;
 	Vector2f botLeft(view.getCenter().x - vSize.x / 2, view.getCenter().y + vSize.y / 2);
+
+	float camAngle = (float)(view.getRotation() * PI / 180.0);
+
+	Vector2f botLeftTest(-vSize.x / 2, vSize.y / 2);
+	RotateCW(botLeftTest, camAngle);
+
+	botLeftTest += view.getCenter();
+
+	botLeft = botLeftTest;
+
+	
+	
 	bool first = oldShaderZoom < 0;
 
-
+	terrainShader.setUniform("u_cameraAngle",camAngle );
+	//terrainShader.setUniform("u_seed", (float)totalGameFrames );
 	if (first || oldShaderZoom != zoom ) //first run
 	{
 		oldShaderZoom = zoom;
@@ -12033,8 +12060,10 @@ void EditSession::UpdatePolyShaders()
 	for (int i = 0; i < TerrainPolygon::WATER_Count; ++i)
 	{
 		waterShaders[i].setUniform("u_slide", waterShaderCounter);
+		waterShaders[i].setUniform("u_cameraAngle", camAngle);
 	}
 	waterShaderCounter += .01f;
+	
 	
 	
 }

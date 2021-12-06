@@ -13,4 +13,3 @@ void main()
 	gl_FragColor = DiffuseColor * gl_Color;
 	
 }
-

@@ -92,7 +92,7 @@ void GoalFlow::SetGoalPos(sf::Vector2f &gPos)
 	flowShader.setUniform("goalPos", goalPos );
 }
 
-void GoalFlow::Update( float camZoom, sf::Vector2f &topLeft  )
+void GoalFlow::Update( float camZoom, sf::Vector2f &topLeft, float camAngleRad  )
 {
 	V2d pPos = sess->GetPlayerPos(0);
 	flowRadius = (maxFlowRadius - (maxFlowRadius / flowFrameCount) * flowFrame);
@@ -102,6 +102,8 @@ void GoalFlow::Update( float camZoom, sf::Vector2f &topLeft  )
 	flowShader.setUniform("playerPos", Vector2f(pPos));
 
 	flowShader.setUniform("topLeft", topLeft );
+
+	flowShader.setUniform("u_cameraAngle", camAngleRad);
 
 	++flowFrame;
 	if (flowFrame == flowFrameCount)
