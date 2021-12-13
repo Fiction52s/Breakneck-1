@@ -38,7 +38,8 @@ struct Camera
 		int zLevel );
 	void Reset();
 	void SetRumble( int xFactor, int yFactor, 
-		int duration, float rotateAngle = 0.f );
+		int duration, float rotateAngle = 0.f,
+		bool singleDirection = false);
 	void StopRumble();
 	void UpdateRumble();
 	void EaseOutOfManual( int frames );
@@ -66,6 +67,7 @@ struct Camera
 	sf::Vector2f sequenceStartPos;
 	float sequenceStartZoom;
 
+	bool singleRumbleDirection;
 	sf::Vector2f moveFrames;
 	int playerIndex;
 

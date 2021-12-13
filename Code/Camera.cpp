@@ -428,7 +428,8 @@ Vector2f Camera::GetNewOffset(V2d &pVel)
 	double xProp = min(1.0, abs(pVel.x) / maxRegisteredSpeed.x);
 	double yProp = min(1.0, abs(pVel.y) / maxRegisteredSpeed.y);
 
-	bool playerIsGrounded = sess->GetPlayer(0)->ground != NULL;
+	bool playerIsGrounded = sess->GetPlayer(0)->ground != NULL
+		|| sess->GetPlayer(0)->grindEdge != NULL;
 
 	Vector2f diff = targetOffset - tempOffset;
 	Vector2f dir = normalize(diff);
@@ -553,7 +554,8 @@ double Camera::GetEnemyZoomTarget( Actor *player )
 	return testZoom;
 }
 
-void Camera::SetRumble( int xFactor, int yFactor, int duration, float rotateAngle )
+void Camera::SetRumble( int xFactor, int yFactor, int duration, float rotateAngle,
+	bool singleDirection )
 {
 	assert( duration > 0 );
 
@@ -563,6 +565,7 @@ void Camera::SetRumble( int xFactor, int yFactor, int duration, float rotateAngl
 	rumbling = true;
 	rumbleFrame = 0;
 	rumbleRotateDegrees = rotateAngle;
+	singleRumbleDirection = singleDirection;
 }
 
 void Camera::StopRumble()
@@ -621,12 +624,41 @@ void Camera::UpdateRumble()
 		cameraAngle = 0;
 		return;
 	}
-	//this needs to be random?
-	int fx = ( rand() % 3 ) - 1;
-	int fy = (rand() % 3) - 1;
+
+	if (singleRumbleDirection)
+	{
+		Vector2f rumbleDir(rumbleX, rumbleY);
+		Vector2f oppRumbleDir(-rumbleDir);
+
+		int r = rand() % 3;
+
+		if (r == 0)
+		{
+			rX = rumbleDir.x * GetZoom();
+			rY = rumbleDir.y * GetZoom();
+		}
+		else if (r == 1)
+		{
+			rX = -rumbleDir.x * GetZoom();
+			rY = -rumbleDir.y * GetZoom();
+		}
+		else
+		{
+			rX = 0;
+			rY = 0;
+		}
+	}
+	else
+	{
+		//this needs to be random?
+		int fx = (rand() % 3) - 1;
+		int fy = (rand() % 3) - 1;
+
+		rX = fx * rumbleX * GetZoom();
+		rY = fy * rumbleY * GetZoom();
+	}
+
 	
-	rX = fx * rumbleX * GetZoom();
-	rY = fy * rumbleY * GetZoom();
 
 	int fr = (rand() % 3) - 1;
 	cameraAngle = rumbleRotateDegrees * fr;
