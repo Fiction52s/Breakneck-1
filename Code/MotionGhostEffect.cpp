@@ -5,11 +5,19 @@
 using namespace sf;
 using namespace std;
 
-MotionGhostEffect::MotionGhostEffect(int maxGhosts)
+MotionGhostEffect::MotionGhostEffect(int p_maxGhosts, int gt )
 	:shader(NULL), ts(NULL)
 {
+	gType = (GhostType)gt;
+	maxGhosts = p_maxGhosts;
 	motionGhostBuffer = new VertexBuf(maxGhosts, sf::Quads);
 	oldPositions.resize(maxGhosts);
+	Reset();
+}
+
+void MotionGhostEffect::Reset()
+{
+	motionGhostBuffer->SetNumActiveMembers(0);
 }
 
 MotionGhostEffect::~MotionGhostEffect()
@@ -27,6 +35,20 @@ void MotionGhostEffect::SetSpread(int p_numGhosts, Vector2f &p_dir, float p_angl
 	motionGhostBuffer->SetNumActiveMembers(p_numGhosts);
 	dir = p_dir;
 	angle = p_angle;
+}
+
+void MotionGhostEffect::AddPosition(sf::Vector2f &pos)
+{
+	for (int i = maxGhosts - 1; i > 0; --i)
+	{
+		oldPositions[i] = oldPositions[i - 1];
+	}
+	oldPositions[0] = pos;
+
+	if (motionGhostBuffer->numActiveMembers < maxGhosts)
+	{
+		motionGhostBuffer->SetNumActiveMembers(motionGhostBuffer->numActiveMembers + 1);
+	}
 }
 
 void MotionGhostEffect::SetRootPos(Vector2f &pos)
@@ -67,6 +89,9 @@ void MotionGhostEffect::ApplyUpdates()
 	Vector2f motionNormal(dir.y, -dir.x);
 
 
+	
+
+	
 	//float scaleAmountDown = scaleBez.GetValue(pGhosts) * maxScaleDown;
 
 	Vector2f tempPos;
@@ -108,9 +133,6 @@ void MotionGhostEffect::ApplyUpdates()
 			{
 				sGhosts = 0;
 			}
-
-
-
 		}
 
 
@@ -138,12 +160,24 @@ void MotionGhostEffect::ApplyUpdates()
 		if (iVibrateAmount % 2 == 1)
 			iVibrateAmount++;
 
-		scaleAmountUp = scaleBez.GetValue(sGhosts) * maxScaleUp;
+		if (gType == GT_DRAG)
+		{
+			scaleAmountUp = scaleBez.GetValue(sGhosts) * maxScaleUp;
 
 
-		tempPos = Vector2f(rootPos.x + dir.x * (i * distInBetween), rootPos.y + dir.y * (i * distInBetween));
-		if (iVibrateAmount != 0)
-			tempPos += Vector2f(motionNormal * (float)(rand() % iVibrateAmount - iVibrateAmount / 2));
+			tempPos = Vector2f(rootPos.x + dir.x * (i * distInBetween), rootPos.y + dir.y * (i * distInBetween));
+			if (iVibrateAmount != 0)
+				tempPos += Vector2f(motionNormal * (float)(rand() % iVibrateAmount - iVibrateAmount / 2));
+		}
+		else
+		{
+			tempPos = oldPositions[i];
+
+			vibrateAmount = vibrateBez.GetValue(vGhosts) * maxVibrate;
+
+			if( iVibrateAmount != 0 )
+				tempPos += Vector2f(motionNormal * (float)(rand() % iVibrateAmount - iVibrateAmount / 2));
+		}
 		//motionGhosts[i].setPosition( tempPos );
 
 		/*int tf = 10;
@@ -167,8 +201,7 @@ void MotionGhostEffect::ApplyUpdates()
 		//	y = -y;
 
 		//motionGhostBuffer->SetScale(i, Vector2f(x, y));
-
-		if (i >= startScaleGhost)
+		if (gType == GT_DRAG && i >= startScaleGhost)
 		{
 			//float blah = ((rand() % testq) - testq / 2) / ((float)testq / 2);
 			float blah = ((rand() % 100)) / 100.f;

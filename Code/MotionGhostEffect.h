@@ -10,9 +10,16 @@ struct VertexBuf;
 
 struct MotionGhostEffect
 {
-	MotionGhostEffect(int maxGhosts);
+	enum GhostType
+	{
+		GT_DRAG,
+		GT_PAST,
+	};
+
+	MotionGhostEffect(int maxGhosts, int gt );
 	~MotionGhostEffect();
 	void SetParams();
+	void AddPosition(sf::Vector2f &pos);
 	void SetShader(sf::Shader *pShad);
 	void SetRootPos(sf::Vector2f &pos);
 	void SetDistInBetween(float dist);
@@ -28,7 +35,11 @@ struct MotionGhostEffect
 	void SetFacing(bool facingRight, bool reversed);
 	void SetScaleParams(CubicBezier &sBez, float p_maxScaleUp, float p_maxScaleDown, int startScaleGhost = 0);
 	void ApplyUpdates();
+	void Reset();
 
+
+	int maxGhosts;
+	GhostType gType;
 	VertexBuf *motionGhostBuffer;
 	sf::Color rootColor;
 	sf::Color tailColor;

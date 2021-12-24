@@ -5,34 +5,34 @@
 #include "VectorMath.h"
 #include "CircleGroup.h"
 
-sf::Vector2<double> GetQuadraticValue( 
-	sf::Vector2<double> &p0,
-	sf::Vector2<double> &p1,
-	sf::Vector2<double> &p2,
-	sf::Vector2<double> &p3,
+V2d GetQuadraticValue( 
+	V2d &p0,
+	V2d &p1,
+	V2d &p2,
+	V2d &p3,
 	double time );
 
-sf::Vector2<double> GetCubicValue( 
-	sf::Vector2<double> &p0,
-	sf::Vector2<double> &p1,
-	sf::Vector2<double> &p2,
-	sf::Vector2<double> &p3,
+V2d GetCubicValue(
+	V2d &p0,
+	V2d &p1,
+	V2d &p2,
+	V2d &p3,
 	double time );
 
-sf::Vector2<double> GetLinearValue( 
-	sf::Vector2<double> &p0,
-	sf::Vector2<double> &p1,
-	sf::Vector2<double> &p2,
-	sf::Vector2<double> &p3,
+V2d GetLinearValue(
+	V2d &p0,
+	V2d &p1,
+	V2d &p2,
+	V2d &p3,
 	double time );
 
 struct CubicBezier
 {
 	CubicBezier()
-		:p0( sf::Vector2<double>( 0, 0 ) )
-		,p1(sf::Vector2<double>(0, 0))
-		, p2(sf::Vector2<double>(1, 1))
-		,p3(sf::Vector2<double>(1, 1))
+		:p0(V2d( 0, 0 ) )
+		,p1(V2d(0, 0))
+		, p2(V2d(1, 1))
+		,p3(V2d(1, 1))
 
 	{}
 	CubicBezier( double p1x,
@@ -41,22 +41,15 @@ struct CubicBezier
 		double p2y );
 
 
-	sf::Vector2<double> p0;
-	sf::Vector2<double> p1;
-	sf::Vector2<double> p2;
-	sf::Vector2<double> p3;
+	V2d p0;
+	V2d p1;
+	V2d p2;
+	V2d p3;
 
 	double GetValue( double a );
 	double GetX( double t );
 	double GetY( double t );
 	//double GetValue( double time );
-};
-
-struct Projectile
-{
-	Projectile();
-	int duration;
-	Projectile *next;
 };
 
 struct Rotation
@@ -82,8 +75,8 @@ struct Movement
 	CubicBezier bez;
 	int duration;
 	Movement *next;
-	sf::Vector2<double> start;
-	sf::Vector2<double> end;
+	V2d start;
+	V2d end;
 	Types moveType;
 	CircleGroup *circles;
 	CircleGroup *controlPointCircles;
@@ -103,10 +96,10 @@ struct Movement
 
 struct WaitMovement : Movement
 {
-	sf::Vector2<double> pos;
+	V2d pos;
 
 	WaitMovement( int duration );
-	sf::Vector2<double> GetPosition( int t );
+	V2d GetPosition( int t );
 };
 
 struct QuadraticMovement : Movement
@@ -125,19 +118,19 @@ struct QuadraticMovement : Movement
 
 struct CubicMovement : Movement
 {
-	sf::Vector2<double> A;
-	sf::Vector2<double> B;
-	sf::Vector2<double> C;
-	sf::Vector2<double> D;
+	V2d A;
+	V2d B;
+	V2d C;
+	V2d D;
 
-	CubicMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B,
-		sf::Vector2<double> &C,
-		sf::Vector2<double> &D,
+	CubicMovement( V2d &A,
+		V2d &B,
+		V2d &C,
+		V2d &D,
 		CubicBezier &bez,
 		int duration );
 	void SetDebugControlPoints();
-	sf::Vector2<double> GetPosition( int t );
+	V2d GetPosition( int t );
 };
 
 struct RadialMovement : Movement
@@ -169,15 +162,15 @@ struct RadialMovement : Movement
 
 struct LineMovement: Movement
 {
-	LineMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B,
+	LineMovement( V2d &A,
+		V2d &B,
 		CubicBezier &bez,
 		int duration );
 		
-	//sf::Vector2<double> A;
-	//sf::Vector2<double> B;
+	//V2d A;
+	//V2d B;
 
-	sf::Vector2<double> GetPosition( int t );
+	V2d GetPosition( int t );
 };
 
 struct GameSession;
@@ -186,21 +179,21 @@ struct MovementSequence
 	MovementSequence();
 	~MovementSequence();
 	GameSession *owner;
-	sf::Vector2<double> position;
+	V2d position;
 	double rotation;
 	int currTime;
 	void AddMovement( Movement *movement );
 	void AddRotation( Rotation *rotation );
 	void InitMovementDebug();
 	void MovementDebugDraw( sf::RenderTarget *target );
-	LineMovement * AddLineMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B, CubicBezier&, int duration );
+	LineMovement * AddLineMovement( V2d &A,
+		V2d &B, CubicBezier&, int duration );
 	QuadraticMovement * AddQuadraticMovement(
 		V2d &A, V2d &B, V2d &C, CubicBezier &cb,
 		int duration);
-	CubicMovement * AddCubicMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B, sf::Vector2<double> &C,
-		sf::Vector2<double> &D, CubicBezier&, int duration );
+	CubicMovement * AddCubicMovement( V2d &A,
+		V2d &B, V2d &C,
+		V2d &D, CubicBezier&, int duration );
 	RadialMovement * AddRadialMovement( V2d &base, 
 		V2d &startPos, double endAngle, 
 		bool clockwise, 

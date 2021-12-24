@@ -2978,7 +2978,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	fairAirDashBoostQuant = 2;
 	for (int i = 0; i < 3; ++i)
 	{
-		motionGhostsEffects[i] = new MotionGhostEffect(80);
+		//motionGhostsEffects[i] = new MotionGhostEffect(80);
+		motionGhostsEffects[i] = new MotionGhostEffect(4, 1);
 	}
 		
 	//preload them
@@ -4355,6 +4356,8 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
+
+
 	bouncedFromKill = false;
 
 	launcherEffectPool[0]->DeactivateAll();
@@ -4593,7 +4596,10 @@ void Actor::Respawn( bool setStartPos )
 		SetFBubbleFrame(i, 0);
 	}
 	
-
+	for (int i = 0; i < 3; ++i)
+	{
+		motionGhostsEffects[i]->Reset();
+	}
 	//for( int i = 0; i < maxMotionGhosts; ++i )
 	//{
 	//	motionGhosts[i].setPosition( position.x, position.y );
@@ -15296,6 +15302,7 @@ void Actor::UpdateSpeedBar()
 		}
 	}
 }
+static int testBlah = 0;
 
 void Actor::UpdateMotionGhosts()
 {
@@ -15332,11 +15339,23 @@ void Actor::UpdateMotionGhosts()
 	{
 		showMotionGhosts = min(showMotionGhosts * 2.0, 80.0);
 	}
-	for (int i = 0; i < 3; ++i)
+	/*for (int i = 0; i < 3; ++i)
 	{
 		motionGhostsEffects[i]->SetSpread(showMotionGhosts, Vector2f(motionGhostDir.x, motionGhostDir.y), sprite->getRotation() / 180.f * PI);
 		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
+	}*/
+
+	if (testBlah % 4 == 0)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			motionGhostsEffects[i]->AddPosition(Vector2f(spriteCenter.x, spriteCenter.y));
+			motionGhostsEffects[i]->angle = sprite->getRotation() / 180.f * PI;
+		}
 	}
+	
+	testBlah++;
+	
 }
 
 void Actor::UpdateSpeedParticles()
@@ -18300,7 +18319,7 @@ void Actor::Draw( sf::RenderTarget *target )
 	motionGhostBufferBlue->SetNumActiveMembers(showMotionGhosts);
 	motionGhostBufferPurple->SetNumActiveMembers(showMotionGhosts);
 	
-	if( showMotionGhosts > 0 )
+	//if( showMotionGhosts > 0 )
 	{
 
 		CubicBezier cb(.11, 1.01, .4, .96);//(.1, .82, .49, .86);//(.29, .71, .49, .86);//(.11, 1.01, .4, .96);
@@ -18371,12 +18390,18 @@ void Actor::Draw( sf::RenderTarget *target )
 			motionGhostBufferPurple->Draw(target, &motionGhostShader);
 		}*/
 
-		for (int i = speedLevel; i >= 0; --i)
-		{
+
+		motionGhostsEffects[speedLevel]->SetShader(&motionGhostShader);
+		motionGhostsEffects[speedLevel]->ApplyUpdates();
+		motionGhostsEffects[speedLevel]->Draw(target);
+
+		//for (int i = speedLevel; i >= 0; --i)
+		//for (int i = 0; i >= 0; --i)
+		/*{
 			motionGhostsEffects[i]->SetShader(&motionGhostShader);
 			motionGhostsEffects[i]->ApplyUpdates();
 			motionGhostsEffects[i]->Draw(target);
-		}
+		}*/
 		
 	}
 	
@@ -19330,20 +19355,28 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 	
 
 
-	CubicBezier cb(.11, 1.01, .4, .96);
+	//CubicBezier cb(.11, 1.01, .4, .96);
+	CubicBezier cb;
 	Color cols[3] = { Color::Cyan, Color::Blue, Color::Magenta };//Color(100, 0, 255) };
 	for (int i = 0; i < 3; ++i)
 	{
 		motionGhostsEffects[i]->SetTileset(tileset[spriteAction]);
 		motionGhostsEffects[i]->SetTile(currTileIndex);
 		motionGhostsEffects[i]->SetFacing(facingRight, reversed);
-		motionGhostsEffects[i]->SetDistInBetween(1.f);
-		motionGhostsEffects[i]->SetScaleParams(CubicBezier(), .25 + i * .15, 0, 10);
-		motionGhostsEffects[i]->SetVibrateParams(CubicBezier(), 20 + i * 4, 10);
+		//motionGhostsEffects[i]->SetDistInBetween(1.f);
+		//motionGhostsEffects[i]->SetScaleParams(CubicBezier(), .25 + i * .15, 0, 10);
+		//motionGhostsEffects[i]->SetVibrateParams(CubicBezier(), i * 10);
+
 		Color t(cols[i]);
-		t.a = 100;
 		Color b(cols[i]);//(Color::Blue);
-		b.a = 10;
+
+		t = GetBlendColor(cols[0], cols[i], .5f);//i / 3.f);
+		b = t;
+
+		
+		t.a = 200;
+		
+		b.a = 80;
 
 		motionGhostsEffects[i]->SetColorGradient(t, b, cb);
 	}
