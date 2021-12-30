@@ -293,7 +293,7 @@ void KeyMarker::Update()
 			int ry = (rand() % 3) - 1;
 			rx *= 10;
 			ry *= 10;
-			keyNumberNeededHUDBack->SetCenter(keyNumberNeededHUD->center + Vector2f(rx, ry));
+			keyNumberNeededHUDBack->SetCenter(keyNumberNeededHUD->anchor + Vector2f(rx, ry));
 			keyNumberNeededHUDBack->UpdateSprite();
 
 			int rx1 = (rand() % 3) - 1;
@@ -301,7 +301,7 @@ void KeyMarker::Update()
 			rx1 *= 2;
 			ry1 *= 2;
 
-			keyNumberNeededHUD->SetCenter(keyNumberNeededHUD->center + Vector2f(rx1, ry1));
+			keyNumberNeededHUD->SetCenter(keyNumberNeededHUD->anchor + Vector2f(rx1, ry1));
 			keyNumberNeededHUD->UpdateSprite();
 		}
 		else if (frame == 20)

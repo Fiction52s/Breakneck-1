@@ -11,6 +11,8 @@
 #include "MainMenu.h"
 #include "PowerSelectorHUD.h"
 #include "BossHealth.h"
+#include "TimerHUD.h"
+#include "MapHeader.h"
 
 using namespace sf;
 using namespace std;
@@ -56,12 +58,12 @@ RaceFightHUD::RaceFightHUD(GameSession::RaceFight* rf)
 
 	scoreRed->ShowZeroes(2);
 	scoreRed->SetNumber(0);
-	scoreRed->topRight = Vector2f(maskPos.x - 200 + ts_scoreRed->GetSubRect(0).width * 2, maskPos.y - 60);
+	scoreRed->SetTopRight(Vector2f(maskPos.x - 200 + ts_scoreRed->GetSubRect(0).width * 2, maskPos.y - 60));
 	scoreRed->UpdateSprite();
 	
 	scoreBlue->ShowZeroes(2);
 	scoreBlue->SetNumber(0);
-	scoreBlue->topRight = Vector2f(maskPos.x + 200, maskPos.y - 60);
+	scoreBlue->SetTopRight(Vector2f(maskPos.x + 200, maskPos.y - 60));
 	scoreBlue->UpdateSprite();
 
 	mask.setPosition(maskPos);
@@ -148,6 +150,8 @@ AdventureHUD::AdventureHUD()
 {
 	hType = HUDType::ADVENTURE;
 
+	timer = new TimerHUD;
+
 	keyMarkers.push_back(new KeyMarker);
 	keyMarkers.push_back(new KeyMarker);
 
@@ -201,6 +205,8 @@ AdventureHUD::~AdventureHUD()
 	}
 
 	delete powerSelector;
+
+	delete timer;
 }
 
 void AdventureHUD::UpdateKeyNumbers()
@@ -399,6 +405,9 @@ void AdventureHUD::Update()
 		
 	}*/
 
+	timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
+	timer->Update();
+
 	++frame;
 }
 
@@ -438,12 +447,11 @@ void AdventureHUD::Draw(RenderTarget *target)
 		//Actor *p0 = owner->GetPlayer(0);
 		kinMask->Draw(target);
 		
-		
+		timer->Draw(target);
 
 		mini->Draw(target);
 		//target->draw(owner->minimapSprite, &owner->minimapShader);
 
-		//kinRing->Draw(target);
 		//target->draw(owner->kinMinimapIcon);
 		/*if (owner->powerRing != NULL)
 		{
@@ -491,8 +499,6 @@ KinMask::KinMask( Actor *a )
 
 	momentumBar = new MomentumBar(sess);
 
-	kinRing = actor->kinRing;
-
 	SetTopLeft(Vector2f(0, 0));
 
 	Reset();
@@ -501,7 +507,6 @@ KinMask::KinMask( Actor *a )
 KinMask::~KinMask()
 {
 	delete momentumBar;
-	delete kinRing;
 }
 
 void KinMask::Reset()
@@ -511,8 +516,6 @@ void KinMask::Reset()
 	frame = 0;
 
 	faceBG.setTextureRect(ts_portraitBG->GetSubRect(0));
-
-	kinRing->Reset();
 }
 
 void KinMask::Draw(RenderTarget *target)
@@ -537,8 +540,6 @@ void KinMask::Draw(RenderTarget *target)
 
 	momentumBar->SetMomentumInfo(actor->speedLevel, actor->GetSpeedBarPart());
 	momentumBar->Draw(target);
-
-	kinRing->Draw(target);
 }
 
 void KinMask::SetExpr(KinMask::Expr ex)
@@ -635,7 +636,6 @@ void KinMask::SetTopLeft(sf::Vector2f &pos)
 	face.setPosition(pos);
 	faceBG.setPosition(pos);
 	momentumBar->SetTopLeft(pos + Vector2f(202, 117));
-	kinRing->SetCenter(pos + Vector2f(80, 220));
 }
 
 sf::Vector2f KinMask::GetTopLeft()

@@ -10,6 +10,8 @@
 struct Session;
 struct GameSession;
 
+struct TimerHUD;
+
 
 struct RaceFightHUD
 {
@@ -60,7 +62,6 @@ struct RaceFightHUD
 struct Minimap;
 struct Actor;
 struct MomentumBar;
-struct KinRing;
 struct BossHealth;
 
 
@@ -87,7 +88,6 @@ struct KinMask
 	sf::Sprite faceBG;
 	Session *sess;
 	MomentumBar *momentumBar;
-	KinRing *kinRing;
 	PlayerSkinShader playerSkinShader;
 
 
@@ -156,6 +156,8 @@ struct AdventureHUD : HUD
 	bool show;
 	int frame;
 	State state;
+
+	TimerHUD *timer;
 
 	sf::Text flyCountText;
 

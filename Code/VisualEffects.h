@@ -178,6 +178,7 @@ struct VertexBuf
 	void SetNumActiveMembers(int activeMembers);
 	void SetColor(int index, sf::Color &color);
 	void Reset();
+	void Clear();
 
 	//int numVertices;
 	//int numMembers;

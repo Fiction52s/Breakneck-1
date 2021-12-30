@@ -425,7 +425,7 @@ sf::Vector2<double> WaitMovement::GetPosition( int t )
 
 MovementSequence::MovementSequence()
 	:movementList( NULL ), currMovement( NULL ), rotationList( NULL), 
-	currRotation( NULL ), currProjectile( NULL )
+	currRotation( NULL )
 {
 	Reset();
 }
@@ -561,11 +561,6 @@ void MovementSequence::Update( int slowMultiple, int stepsAtOnce )
 	{
 		rotation = currRotation->GetRotation( currTime );
 	}
-	if( currProjectile != NULL )
-	{
-		//do later
-	}
-
 
 	currTime += (5 / slowMultiple) * stepsAtOnce;
 	//currTime++;
@@ -593,19 +588,6 @@ void MovementSequence::Update( int slowMultiple, int stepsAtOnce )
 			if (currRotation != NULL)
 			{
 				currRotationStartTime = currTime;
-			}
-		}
-	}
-	if( currProjectile != NULL )
-	{
-		if ((currProjectile->next != NULL && currTime >= currProjectile->duration + currProjectileStartTime)
-			|| (currProjectile->next == NULL && currTime >= currProjectile->duration + currProjectileStartTime + 1))
-		{
-			currProjectile = currProjectile->next;
-
-			if (currProjectile != NULL)
-			{
-				currProjectileStartTime = currTime;
 			}
 		}
 	}

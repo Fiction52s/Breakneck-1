@@ -2,34 +2,55 @@
 #define __PROJECTILE_H__
 
 #include "Enemy.h"
+#include "EnemyMover.h"
 
 struct Projectile;
 
 struct ProjectileLauncher
 {
+	enum ProjectileType
+	{
+
+	};
+
+
+	ProjectileLauncher( int projType );
 	Tileset *ts;
 	sf::Vertex *quads;
+	std::vector<Projectile*> projectileVec;
+};
+
+struct ProjectileParams
+{
+	int projType;
+	V2d position;
+	V2d velocity;
 };
 
 struct Projectile : Enemy, SurfaceMoverHandler
 {
+	enum ProjectileType
+	{
+		TEST,
+		P_Count
+	};
+
 	enum Action
 	{
-		THROWN,
-		GRIND,
+		IDLE,
+		LINEAR_MOVE,
 		A_Count
 	};
 
-	int hitlagFrames;
-	int hitstunFrames;
-
-	double flySpeed;
-
+	ProjectileType projType;
 	V2d velocity;
+	ProjectileLauncher *launcher;
+	sf::Vertex *quad;
+	int index;
 
 	Projectile(ProjectileLauncher *pLauncher,
 		int index );
-	V2d GetThrowDir(V2d &dir);
+	void Launch(ProjectileParams &params);
 	void Throw(V2d &pos, V2d &dir);
 	void SetLevel(int lev);
 	void ProcessState();
@@ -39,6 +60,7 @@ struct Projectile : Enemy, SurfaceMoverHandler
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
+	bool IsEnemyMoverAction(int a);
 
 	void HitTerrainAerial(Edge *, double);
 };

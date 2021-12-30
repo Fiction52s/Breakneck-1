@@ -8,14 +8,22 @@ struct Session;
 
 struct ImageText
 {
+	enum PositionType
+	{
+		TOP_LEFT,
+		CENTER,
+		TOP_RIGHT
+	};
+
+	PositionType posType;
+
 	ImageText( int maxDigits, 
 		Tileset *ts_tex );
 	~ImageText();
-	sf::Vector2f topRight;
-	sf::Vector2f center;
-	bool positionCenter;
+	sf::Vector2f anchor;
 	void SetCenter(sf::Vector2f &p_center);
 	void SetTopRight(sf::Vector2f &p_topRight);
+	void SetTopLeft(sf::Vector2f &p_topLeft);
 	virtual void UpdateSprite();
 	void Draw( sf::RenderTarget *target );
 	//in a timer this sets number of seconds

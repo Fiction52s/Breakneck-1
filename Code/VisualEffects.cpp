@@ -490,11 +490,24 @@ VertexBuf::VertexBuf(int p_numMembers, sf::PrimitiveType p_pType )
 	Reset();
 }
 
+void VertexBuf::Clear()
+{
+	for (int i = 0; i < numMembers; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			vb[j].position = Vector2f(0, 0);
+		}
+	}
+	
+}
+
 void VertexBuf::Reset()
 {
 	memset(dirty, 0, sizeof(dirty));
 	dirtyTS = false;
 	SetNumActiveMembers(0);
+	Clear();
 }
 
 VertexBuf::~VertexBuf()

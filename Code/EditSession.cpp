@@ -1306,8 +1306,6 @@ void EditSession::TestPlayerMode()
 	if( hud != NULL )
 		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
 
-	GetPlayer(0)->SetupDrain();
-
 	
 	if (preLevelScene != NULL)
 	{

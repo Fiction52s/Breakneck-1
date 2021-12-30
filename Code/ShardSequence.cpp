@@ -80,7 +80,6 @@ void GetShardSequence::ReturnToGame()
 {
 	
 	Actor *player = sess->GetPlayer(0);
-	player->SetupDrain();
 	//the shard might have changed
 	//your drain rate
 

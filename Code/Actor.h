@@ -82,7 +82,6 @@ struct AimLauncher;
 struct GroundTrigger;
 
 struct KinMask;
-struct KinRing;
 struct RisingParticleUpdater;
 struct EffectPool;
 struct KeyExplodeUpdater;
@@ -528,6 +527,7 @@ struct Actor : QuadTreeCollider,
 
 	//havent put into rollback yet
 
+
 	//--empty for now
 
 	//Enemy *receivedHitEnemy;
@@ -547,7 +547,7 @@ struct Actor : QuadTreeCollider,
 
 	//---
 
-
+	int numFramesToLive;
 
 	TerrainRail * prevRail;
 	
@@ -622,7 +622,6 @@ struct Actor : QuadTreeCollider,
 
 	//new but synced
 	Mode kinMode;
-	int despCounter;
 	int superFrame;
 
 	//dont sync
@@ -665,7 +664,6 @@ struct Actor : QuadTreeCollider,
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	int oldAction;
-	int drainCounter;
 	sf::Vector2<double> oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
@@ -923,7 +921,7 @@ struct Actor : QuadTreeCollider,
 	int numKeysHeld;	
 	KinMask *kinMask;
 	sf::Color currentDespColor;
-	KinRing *kinRing;
+	//KinRing *kinRing;
 	
 	
 	
@@ -1204,8 +1202,6 @@ struct Actor : QuadTreeCollider,
 	sf::Color flashColor;
 	int steepClimbBoostStart;
 	
-	int drainCounterMax;
-	int drainAmount;
 	int climbBoostLimit;
 	
 	double DIFactor;
@@ -1245,6 +1241,7 @@ struct Actor : QuadTreeCollider,
 	V2d GetAdjustedKnockback(const V2d &kbDir);
 	V2d GetGroundAnchor();
 	double GetBounceBoostSpeed();
+	int GetSurvivalFrame();
 
 	void WriteBestTimeRecordings();
 	bool TryThrowSwordProjectile(V2d &offset,V2d &dir);
@@ -1320,7 +1317,6 @@ struct Actor : QuadTreeCollider,
 		void(Actor::*)(),
 		int(Actor::*)(),
 		Tileset*(Actor::*)());
-	void SetupDrain();
 	void SetupTimeBubbles();
 	void SetGameMode();
 	void UpdateModifiedGravity();
@@ -1582,6 +1578,8 @@ struct Actor : QuadTreeCollider,
 	void ProcessReceivedHit();
 	void HitGoal();
 	void UpdateDrain();
+	void DrainTimer(int drainFrames);
+	void HealTimer(int healFrames);
 	void ProcessGravityGrass();
 	void ProcessHitGoal();
 	void UpdateWirePhysics();

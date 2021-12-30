@@ -184,7 +184,6 @@ struct PState
 	sf::Vector2<double> startAirDashVel;
 	double extraAirDashY;
 	int oldAction;
-	int drainCounter;
 	sf::Vector2<double> oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
@@ -217,10 +216,6 @@ struct PState
 	//CollisionBody *currHitboxes;
 	//int currHitboxFrame;
 	int cancelAttack;
-
-	int currRing;
-	int prevRingValue[3]; //3 fillringsections as part of KinRing
-	int currRingValue[3];
 
 	bool dairBoostedDouble;
 	bool aerialHitCancelDouble;
@@ -294,7 +289,6 @@ struct PState
 	int framesBlocking;
 	V2d receivedHitPosition;
 
-	int despCounter;
 	int superFrame;
 
 	int kinMode;
@@ -364,6 +358,8 @@ struct PState
 	int directionalInputFreezeFrames;
 
 	bool bouncedFromKill;
+
+	int numFramesToLive;
 	//HitboxInfo currVSHitboxInfo;
 };
 

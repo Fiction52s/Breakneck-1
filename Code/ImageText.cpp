@@ -14,7 +14,7 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	vert = new Vertex[numVertices];
 	value = 0;
 	
-	positionCenter = false;
+	posType = TOP_LEFT;
 	numShowZeroes = 0;
 	activeDigits = 1;
 	scale = 1.f;
@@ -27,15 +27,21 @@ ImageText::~ImageText()
 
 void ImageText::SetCenter(sf::Vector2f &p_center)
 {
-	center = p_center;
-	positionCenter = true;
+	anchor = p_center;
+	posType = CENTER;
 	UpdateSprite();
 }
 
 void ImageText::SetTopRight(sf::Vector2f &p_topRight)
 {
-	topRight = p_topRight;
-	positionCenter = false;
+	anchor = p_topRight;
+	posType = TOP_RIGHT;
+}
+
+void ImageText::SetTopLeft(sf::Vector2f &p_topLeft)
+{
+	anchor = p_topLeft;
+	posType = TOP_LEFT;
 }
 
 void ImageText::UpdateSprite()
@@ -49,10 +55,7 @@ void ImageText::UpdateSprite()
 		int res = val % div;
 
 		IntRect subRect = ts->GetSubRect( res );
-		vert[ind*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-		vert[ind*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		vert[ind*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		vert[ind*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+		SetRectSubRect(vert + ind * 4, subRect);
 
 		++ind;
 
@@ -67,21 +70,38 @@ void ImageText::UpdateSprite()
 	for(; ind < numShowZeroes; ++ind )
 	{
 		IntRect subRect = ts->GetSubRect( 0 );
-		vert[ind*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-		vert[ind*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-		vert[ind*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-		vert[ind*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+		SetRectSubRect(vert + ind * 4, subRect);
 	}
 
 	activeDigits = ind;
 
-	float width = ts->tileWidth * scale;
-	float height = ts->tileHeight * scale;
+	float tw = ts->tileWidth * scale;
+	float th = ts->tileHeight * scale;
 
-	Vector2f currTopRight;
-	if (positionCenter)
+	Vector2f anchorTopLeft;
+
+	if (posType == CENTER)
 	{
-		currTopRight = Vector2f(center.x + (width * activeDigits) / 2, center.y - height / 2);
+		anchorTopLeft = anchor + Vector2f(tw * -2.5, th * -.5);
+	}
+	else if (posType == TOP_RIGHT)
+	{
+		anchorTopLeft = anchor + Vector2f(tw * -5, 0);
+	}
+	else if (posType == TOP_LEFT)
+	{
+		anchorTopLeft = anchor;
+	}
+
+	for (int i = 0; i < maxDigits; ++i)
+	{
+		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * ((maxDigits-1) - i), 0));
+	}
+
+	/*Vector2f currTopRight;
+	if (posType == TOP_LEFT)
+	{
+		currTopRight = Vector2f(anchor.x + (width * activeDigits) / 2, anchor.y - height / 2);
 	}
 	else
 	{
@@ -95,7 +115,7 @@ void ImageText::UpdateSprite()
 		vert[i * 4 + 1].position = Vector2f(-i * width, 0) + currTopRight;
 		vert[i * 4 + 2].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(0, height);
 		vert[i * 4 + 3].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(-width, height);
-	}
+	}*/
 }
 
 void ImageText::Draw( sf::RenderTarget *target )
@@ -123,12 +143,12 @@ void ImageText::SetScale(float s)
 TimerText::TimerText( Tileset *ts_tex )
 	:ImageText(5, ts_tex )
 {
-	int colonIndex = 5/2;
-	IntRect subRect = ts->GetSubRect( 10 );
-	vert[colonIndex*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-	vert[colonIndex*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-	vert[colonIndex*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	vert[colonIndex*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	int colonIndex = 2;//5/2;
+	SetRectSubRect(vert + colonIndex * 4, ts->GetSubRect(10));
+	//vert[colonIndex*4+0].texCoords = Vector2f( subRect.left, subRect.top );
+	//vert[colonIndex*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
+	//vert[colonIndex*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
+	//vert[colonIndex*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
 }
 
 void TimerText::UpdateSprite()
@@ -136,48 +156,44 @@ void TimerText::UpdateSprite()
 	int numMinutes = value / 60;
 	int numSeconds = value % 60;
 
-	for( int i = 0; i < maxDigits; ++i )
+	int tw = ts->tileWidth * scale;
+	int th = ts->tileHeight * scale;
+
+	Vector2f anchorTopLeft;
+
+	if (posType == CENTER)
 	{
-		vert[i*4 + 0].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, 0 );
-		vert[i*4 + 1].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight;
-		vert[i*4 + 2].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( 0, ts->tileHeight );
-		vert[i*4 + 3].position = Vector2f( -i * ts->tileWidth, 0 ) + topRight + Vector2f( -ts->tileWidth, ts->tileHeight );
+		anchorTopLeft = anchor + Vector2f( tw * -2.5, th * -.5 );
+	}
+	else if( posType == TOP_RIGHT )
+	{
+		anchorTopLeft = anchor + Vector2f(tw * -5, 0);
+	}
+	else if (posType == TOP_LEFT)
+	{
+		anchorTopLeft = anchor;
+	}
+
+	for (int i = 0; i < maxDigits; ++i)
+	{
+		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * i, 0));
 	}
 
 	int div = 10;
 	int val = value;
 	int ind = 0;
 	
-	int numDigit1 = numSeconds / 10;
-	int numDigit2 = numSeconds % 10;
+	int second1s = numSeconds % 10;
+	int second10s = numSeconds / 10;
 
-	IntRect subRect = ts->GetSubRect( numDigit2 );
-	vert[0*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-	vert[0*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-	vert[0*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	vert[0*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	int minute1s = numMinutes % 10;
+	int minute10s = numMinutes / 10;
 
-	subRect = ts->GetSubRect( numDigit1 );
-	vert[1*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-	vert[1*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-	vert[1*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	vert[1*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	SetRectSubRect(vert, ts->GetSubRect(minute10s));
+	SetRectSubRect(vert + 4, ts->GetSubRect(minute1s));
 
-	
-	numDigit1 = numMinutes / 10;
-	numDigit2 = numMinutes % 10;
-
-	subRect = ts->GetSubRect( numDigit2 );
-	vert[3*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-	vert[3*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-	vert[3*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	vert[3*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
-
-	subRect = ts->GetSubRect( numDigit1 );
-	vert[4*4+0].texCoords = Vector2f( subRect.left, subRect.top );
-	vert[4*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
-	vert[4*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
-	vert[4*4+3].texCoords = Vector2f( subRect.left, subRect.top + subRect.height );
+	SetRectSubRect(vert + 3 * 4, ts->GetSubRect(second10s));
+	SetRectSubRect(vert + 4 * 4, ts->GetSubRect(second1s));
 
 	activeDigits = maxDigits;
 }

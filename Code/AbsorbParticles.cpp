@@ -355,11 +355,9 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 		case ENERGY:
 		{
-			PowerRing *powerRing = parent->sess->GetPlayer(0)->kinRing->powerRing;
-			if (powerRing != NULL)
-			{
-				powerRing->Fill(20);
-			}
+			//need to tune this to heal the right amount
+			int healFrames = 1 * 60;
+			parent->sess->GetPlayer(0)->HealTimer(healFrames); 
 			break;
 		}
 		case DARK:

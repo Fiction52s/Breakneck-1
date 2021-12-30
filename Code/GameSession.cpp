@@ -1723,13 +1723,6 @@ bool GameSession::Load()
 	header.playerInfo = new GhostHeader::PlayerInfo[1];
 	header.playerInfo[0].skinIndex = 0;*/
 	SetupBestReplay();
-	
-
-	
-
-	
-
-	GetPlayer(0)->SetupDrain();
 
 	if (hasGoal)
 	{
@@ -4492,12 +4485,12 @@ GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds
 	Tileset *score2TS = scoreTS;
 	int numDigits = 2;
 	playerScoreImage = new ImageText( 2, scoreTS );
-	playerScoreImage->topRight = Vector2f( 1920/2 - 200, 0 );
+	playerScoreImage->SetTopRight(Vector2f( 1920/2 - 200, 0 ));
 	player2ScoreImage = new ImageText( 2, score2TS );
-	player2ScoreImage->topRight = Vector2f( 1920/2 + 200 + 80 * 2, 0 );
+	player2ScoreImage->SetTopRight(Vector2f( 1920/2 + 200 + 80 * 2, 0 ));
 
 	gameTimer = new TimerText( scoreTS );
-	gameTimer->topRight = Vector2f( 1920/2 + 80 * 2.5, 0 );
+	gameTimer->SetTopRight(Vector2f( 1920/2 + 80 * 2.5, 0 ));
 	gameTimer->SetNumber( raceFightMaxSeconds );
 
 	victoryScreen = new ResultsScreen( owner );
@@ -4527,9 +4520,9 @@ void GameSession::RaceFight::Init()
 	//after we know how many total targets we have
 	int digits = NumDigits( numTargets );
 	numberTargetsRemainingImage = new ImageText( digits, playerScoreImage->ts );
-	numberTargetsRemainingImage->topRight = Vector2f( 1920/2 + 80 * 3, 90 );
+	numberTargetsRemainingImage->SetTopRight(Vector2f( 1920/2 + 80 * 3, 90 ));
 	numberTargetsTotalImage = new ImageText( digits, playerScoreImage->ts );
-	numberTargetsTotalImage->topRight = Vector2f( 1920/2 + 80 * 2, 90 );
+	numberTargetsTotalImage->SetTopRight(Vector2f( 1920/2 + 80 * 2, 90 ));
 	numberTargetsTotalImage->UpdateSprite();
 
 	raceWinnerIndex = -1;

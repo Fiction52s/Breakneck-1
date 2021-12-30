@@ -214,9 +214,9 @@ struct MovementSequence
 	int currRotationStartTime;
 	void Update( int slowMultiple = 1, int stepsAtOnce = 1);
 	void Reset();
-	Projectile *projectileList;
-	Projectile *currProjectile;
-	int currProjectileStartTime;
+	//Projectile *projectileList;
+	//Projectile *currProjectile;
+	//int currProjectileStartTime;
 };
 
 #endif 

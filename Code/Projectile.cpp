@@ -1,74 +1,79 @@
 #include "Projectile.h"
+#include "Session.h"
 
-TigerGrindBulletPool::TigerGrindBulletPool()
+
+using namespace std;
+using namespace sf;
+
+ProjectileLauncher::ProjectileLauncher( int projType )
 {
 	Session *sess = Session::GetSession();
 
 	ts = NULL;
-	numBullets = 10;
-	bulletVec.resize(numBullets);
-	verts = new Vertex[numBullets * 4];
+	//numBullets = 10;
+	//bulletVec.resize(numBullets);
+	//verts = new Vertex[numBullets * 4];
 	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
-	for (int i = 0; i < numBullets; ++i)
+	/*for (int i = 0; i < numBullets; ++i)
 	{
-		bulletVec[i] = new TigerGrindBullet(verts + 4 * i, this);
-	}
+		bulletVec[i] = new Projectile(verts + 4 * i, this);
+	}*/
 }
 
 
-TigerGrindBulletPool::~TigerGrindBulletPool()
-{
-	for (int i = 0; i < numBullets; ++i)
-	{
-		delete bulletVec[i];
-	}
+//ProjectileLauncher::~ProjectileLauncher()
+//{
+//	for (int i = 0; i < numBullets; ++i)
+//	{
+//		delete bulletVec[i];
+//	}
+//
+//	delete[] verts;
+//}
+//
+//void ProjectileLauncher::Reset()
+//{
+//	for (int i = 0; i < numBullets; ++i)
+//	{
+//		bulletVec[i]->Reset();
+//	}
+//}
+//
+//Projectile * ProjectileLauncher::Throw(V2d &pos, V2d &dir)
+//{
+//	Projectile *bs = NULL;
+//	for (int i = 0; i < numBullets; ++i)
+//	{
+//		bs = bulletVec[i];
+//		if (!bs->spawned)
+//		{
+//			bs->Throw(pos, dir);
+//			break;
+//		}
+//	}
+//	return bs;
+//}
+//
+//void ProjectileLauncher::Draw(sf::RenderTarget *target)
+//{
+//	target->draw(verts, bulletVec.size() * 4, sf::Quads, ts->texture);
+//}
 
-	delete[] verts;
-}
-
-void TigerGrindBulletPool::Reset()
-{
-	for (int i = 0; i < numBullets; ++i)
-	{
-		bulletVec[i]->Reset();
-	}
-}
-
-TigerGrindBullet * TigerGrindBulletPool::Throw(V2d &pos, V2d &dir)
-{
-	TigerGrindBullet *bs = NULL;
-	for (int i = 0; i < numBullets; ++i)
-	{
-		bs = bulletVec[i];
-		if (!bs->spawned)
-		{
-			bs->Throw(pos, dir);
-			break;
-		}
-	}
-	return bs;
-}
-
-void TigerGrindBulletPool::Draw(sf::RenderTarget *target)
-{
-	target->draw(verts, bulletVec.size() * 4, sf::Quads, ts->texture);
-}
-
-TigerGrindBullet::TigerGrindBullet(sf::Vertex *myQuad, TigerGrindBulletPool *pool)
-	:Enemy(EnemyType::EN_TIGERGRINDBULLET, NULL)
+Projectile::Projectile(ProjectileLauncher *p_launcher, int p_index )
+	:Enemy(EnemyType::EN_PROJECTILE, NULL)
 {
 	SetNumActions(A_Count);
-	SetEditorActions(THROWN, 0, 0);
+	SetEditorActions(IDLE, 0, 0);
 
-	actionLength[THROWN] = 1;
-	animFactor[THROWN] = 1;
+	actionLength[IDLE] = 1;
+	animFactor[IDLE] = 1;
 
-	actionLength[GRIND] = 10;
-	animFactor[GRIND] = 1;
+	//actionLength[GRIND] = 10;
+	//animFactor[GRIND] = 1;
 
-	quad = myQuad;
-
-	ts = pool->ts;
+	launcher = p_launcher;
+	index = p_index;
+	quad = launcher->quads + index * 4;
 
 	CreateSurfaceMover(startPosInfo, 12, this);
 
@@ -83,35 +88,35 @@ TigerGrindBullet::TigerGrindBullet(sf::Vertex *myQuad, TigerGrindBulletPool *poo
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	flySpeed = 10;
+	//flySpeed = 10;
 
 	ResetEnemy();
 }
 
-void TigerGrindBullet::ResetEnemy()
+void Projectile::ResetEnemy()
 {
 	ClearRect(quad);
 
 	facingRight = true;
 
-	action = THROWN;
+	//action = THROWN;
 	frame = 0;
 
-	firePool.Reset();
+	//firePool.Reset();
 
 	DefaultHitboxesOn();
 
 	UpdateHitboxes();
 }
 
-void TigerGrindBullet::HitTerrainAerial(Edge *e, double quant)
+void Projectile::HitTerrainAerial(Edge *e, double quant)
 {
-	action = GRIND;
+	//action = GRIND;
 	frame = 0;
 	surfaceMover->SetSpeed(10);
 }
 
-void TigerGrindBullet::SetLevel(int lev)
+void Projectile::SetLevel(int lev)
 {
 	level = lev;
 	switch (level)
@@ -130,70 +135,66 @@ void TigerGrindBullet::SetLevel(int lev)
 	}
 }
 
-V2d TigerGrindBullet::GetThrowDir(V2d &dir)
-{
-	double ang = GetVectorAngleCCW(dir);
-
-	double degs = ang / PI * 180.0;
-	double sec = 360.0 / 8.0;
-	int mult = floor((degs / sec) + .5);
-
-	double trueAngle = (PI / (8 / 2)) * mult;
-	return V2d(cos(trueAngle), -sin(trueAngle));
-}
-
-void TigerGrindBullet::Throw(V2d &pos, V2d &dir)
+void Projectile::Launch(ProjectileParams &params)
 {
 	Reset();
 	sess->AddEnemy(this);
 
-	currPosInfo.position = pos;
+	currPosInfo.position = params.position;
 	currPosInfo.ground = NULL;
 
-	surfaceMover->Set(currPosInfo);
+	if (surfaceMover != NULL)
+	{
+		surfaceMover->Set(currPosInfo);
+	}
 
-	surfaceMover->velocity = dir * flySpeed;
+	//surfaceMover->velocity = dir * flySpeed;
 }
 
-void TigerGrindBullet::FrameIncrement()
+bool Projectile::IsEnemyMoverAction(int a)
+{
+	return false;
+}
+
+void Projectile::FrameIncrement()
 {
 }
 
-void TigerGrindBullet::ProcessState()
+void Projectile::ProcessState()
 {
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
 		{
-		case THROWN:
+		case IDLE:
 			break;
-		case GRIND:
+		case LINEAR_MOVE:
 			break;
 		}
 		frame = 0;
 	}
 
-	if (action == GRIND)
+	/*if (action == GRIND)
 	{
 		firePool.Create(GetPosition(), surfaceMover->ground, surfaceMover->edgeQuantity);
-	}
+	}*/
 }
 
-void TigerGrindBullet::IHitPlayer(int index)
+void Projectile::IHitPlayer(int index)
 {
 }
 
-void TigerGrindBullet::UpdateSprite()
+void Projectile::UpdateSprite()
 {
-	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
+	//ts->SetQuadSubRect(quad, 0);
+	//SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
 }
 
-void TigerGrindBullet::EnemyDraw(sf::RenderTarget *target)
+void Projectile::EnemyDraw(sf::RenderTarget *target)
 {
-	firePool.Draw(target);
+	//firePool.Draw(target);
 }
 
-void TigerGrindBullet::HandleHitAndSurvive()
+void Projectile::HandleHitAndSurvive()
 {
 }

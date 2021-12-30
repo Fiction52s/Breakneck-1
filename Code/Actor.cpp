@@ -185,7 +185,6 @@ void Actor::PopulateState(PState *ps)
 	ps->startAirDashVel = startAirDashVel;
 	ps->extraAirDashY = extraAirDashY;
 	ps->oldAction = oldAction;
-	ps->drainCounter = drainCounter;
 
 	ps->oldVelocity = oldVelocity;
 
@@ -233,9 +232,6 @@ void Actor::PopulateState(PState *ps)
 	ps->receivedHit = receivedHit;
 
 	ps->cancelAttack = cancelAttack;
-	
-	kinRing->GetData(&ps->currRing, ps->prevRingValue,
-		ps->currRingValue);
 
 	ps->dairBoostedDouble = dairBoostedDouble;
 	ps->aerialHitCancelDouble = aerialHitCancelDouble;
@@ -312,7 +308,6 @@ void Actor::PopulateState(PState *ps)
 	ps->framesBlocking = framesBlocking;
 	ps->receivedHitPosition = receivedHitPosition;
 
-	ps->despCounter = despCounter;
 	ps->superFrame = superFrame;
 	ps->kinMode = kinMode;
 
@@ -379,6 +374,8 @@ void Actor::PopulateState(PState *ps)
 	ps->oldScorpionLauncher = oldScorpionLauncher;
 
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
+
+	ps->numFramesToLive = numFramesToLive;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -419,7 +416,6 @@ void Actor::PopulateFromState(PState *ps)
 	extraAirDashY = ps->extraAirDashY;
 
 	oldAction = ps->oldAction;
-	drainCounter = ps->drainCounter;
 
 	oldVelocity = ps->oldVelocity;
 
@@ -467,8 +463,6 @@ void Actor::PopulateFromState(PState *ps)
 
 	
 	cancelAttack = ps->cancelAttack;
-
-	kinRing->Set(ps->currRing, ps->prevRingValue, ps->currRingValue);
 
 	dairBoostedDouble = ps->dairBoostedDouble;
 	aerialHitCancelDouble = ps->aerialHitCancelDouble;
@@ -544,7 +538,6 @@ void Actor::PopulateFromState(PState *ps)
 	framesBlocking = ps->framesBlocking;
 	receivedHitPosition = ps->receivedHitPosition;
 
-	despCounter = ps->despCounter;
 	superFrame = ps->superFrame;
 	kinMode = (Mode)ps->kinMode;
 
@@ -610,6 +603,8 @@ void Actor::PopulateFromState(PState *ps)
 	springStunFramesStart = ps->springStunFramesStart;
 
 	directionalInputFreezeFrames = ps->directionalInputFreezeFrames;
+
+	numFramesToLive = ps->numFramesToLive;
 }
 
 
@@ -622,53 +617,53 @@ void Actor::SetSession(Session *p_sess,
 	editOwner = edit;
 }
 
-void Actor::SetupDrain()
-{
-	float numSecondsToDrain = sess->mapHeader->drainSeconds;
-
-	int numDrainUpgrades = 0;
-	switch (sess->mapHeader->envWorldType)
-	{
-	case 0:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DRAIN_1, 3);
-		break;
-	case 1:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DRAIN_1, 3);
-		break;
-	case 2:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DRAIN_1, 3);
-		break;
-	case 3:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DRAIN_1, 3);
-		break;
-	case 4:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DRAIN_1, 3);
-		break;
-	case 5:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DRAIN_1, 3);
-		break;
-	case 6:
-		numDrainUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DRAIN_1, 3);
-		break;
-	}
-
-	float changePerUpgrade = .2;
-	float upgradeFactor = numDrainUpgrades * changePerUpgrade;
-	numSecondsToDrain += numSecondsToDrain * upgradeFactor;
-
-	float drainPerSecond = totalHealth / numSecondsToDrain;
-	float drainPerFrame = drainPerSecond / 60.f;
-	float drainFrames = 1.f;
-	if (drainPerFrame < 1.f)
-	{
-		drainFrames = floor(1.f / drainPerFrame);
-	}
-	drainCounterMax = drainFrames;
-	if (drainPerFrame < 1.0)
-		drainPerFrame = 1.0;
-	drainAmount = drainPerFrame;
-	drainCounter = 0;
-}
+//void Actor::SetupDrain()
+//{
+//	float numSecondsToDrain = sess->mapHeader->drainSeconds;
+//
+//	int numDrainUpgrades = 0;
+//	switch (sess->mapHeader->envWorldType)
+//	{
+//	case 0:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W1_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 1:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W2_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 2:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W3_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 3:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W4_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 4:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W5_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 5:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W6_DECREASE_DRAIN_1, 3);
+//		break;
+//	case 6:
+//		numDrainUpgrades = NumUpgradeRange(UPGRADE_W7_DECREASE_DRAIN_1, 3);
+//		break;
+//	}
+//
+//	float changePerUpgrade = .2;
+//	float upgradeFactor = numDrainUpgrades * changePerUpgrade;
+//	numSecondsToDrain += numSecondsToDrain * upgradeFactor;
+//
+//	float drainPerSecond = totalHealth / numSecondsToDrain;
+//	float drainPerFrame = drainPerSecond / 60.f;
+//	float drainFrames = 1.f;
+//	if (drainPerFrame < 1.f)
+//	{
+//		drainFrames = floor(1.f / drainPerFrame);
+//	}
+//	drainCounterMax = drainFrames;
+//	if (drainPerFrame < 1.0)
+//		drainPerFrame = 1.0;
+//	drainAmount = drainPerFrame;
+//	drainCounter = 0;
+//}
 
 
 sf::SoundBuffer * Actor::GetSound(const std::string &name)
@@ -2993,17 +2988,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	motionGhostBufferBlue = new VertexBuf(80, sf::Quads);
 	motionGhostBufferPurple = new VertexBuf(80, sf::Quads);
 
-	kinRing = new KinRing(this);
 	kinMask = new KinMask(this);
-	/*if (owner != NULL)
-	{
-		
-	}
-	else
-	{
-		kinRing = NULL;
-		kinMask = NULL;
-	}*/
 		
 
 	//risingAuraPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.f);
@@ -3089,9 +3074,6 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	motionGhostSpacing = 1;
 	ghostSpacingCounter = 0;
-
-	drainCounterMax = 10;
-	drainAmount = 1;
 
 	//activeEdges = new Edge*[16]; //this can probably be really small I don't think it matters. 
 	//numActiveEdges = 0;
@@ -3776,9 +3758,6 @@ Actor::~Actor()
 		delete motionGhostsEffects[i];
 	}
 
-	//delete kinRing;
-//	delete dustParticles;
-
 	for (int i = 0; i < 3; ++i)
 	{
 		delete fairLightningPool[i];
@@ -4356,7 +4335,15 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 
 void Actor::Respawn( bool setStartPos )
 {
-
+	if (sess->mapHeader != NULL)
+	{
+		numFramesToLive = sess->mapHeader->drainSeconds * 60;
+	}
+	else
+	{
+		numFramesToLive = -1;
+	}
+	
 
 	bouncedFromKill = false;
 
@@ -4419,7 +4406,6 @@ void Actor::Respawn( bool setStartPos )
 	framesSinceDownTilt = 0;
 
 	standNDashBoost = false;
-	drainCounter = 0;
 	flyCounter = 0;
 	kinMode = K_NORMAL;
 	action = -1;
@@ -4613,8 +4599,7 @@ void Actor::Respawn( bool setStartPos )
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
 	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
 
-	if( kinRing != NULL && kinRing->powerRing != NULL )
-		kinRing->powerRing->ResetFull(); //only means anything for single player
+	
 
 	ResetAttackHit();
 	bounceAttackHit = false;
@@ -4629,7 +4614,6 @@ void Actor::Respawn( bool setStartPos )
 	oldAction = action;
 
 	framesGrinding = 0;
-	despCounter = 0;
 	holdJump = false;
 	steepJump = false;
 	airDashStall = false;
@@ -4778,8 +4762,8 @@ void Actor::KinModeUpdate()
 		}
 		int numColors = cIndex;
 
-		int tFrame = despCounter % transFrames;
-		int ind = (despCounter / transFrames) % numColors;
+		int tFrame = GetSurvivalFrame() % transFrames;
+		int ind = (GetSurvivalFrame() / transFrames) % numColors;
 		Color currCol = blah[ind];
 		Color nextCol;
 		if( ind == numColors - 1 )
@@ -4795,7 +4779,7 @@ void Actor::KinModeUpdate()
 		currentDespColor.g = floor(currCol.g * ( 1.f - fac ) + nextCol.g * fac + .5);
 		currentDespColor.b = floor(currCol.b * ( 1.f - fac ) + nextCol.b * fac + .5);
 
-		float overallFac = (float)despCounter / 60;
+		float overallFac = (float)GetSurvivalFrame() / 60;
 		overallFac = std::min( overallFac, 1.f );
 		Color auraColor( 0x66, 0xdd, 0xff );
 		auraColor.r = floor( auraColor.r * ( 1.f - overallFac ) + Color::Black.r * fac + .5 );
@@ -4805,35 +4789,28 @@ void Actor::KinModeUpdate()
 		despFaceShader.setUniform( "toColor", ColorGL(currentDespColor) );
 		playerDespShader.setUniform("toColor", ColorGL(currentDespColor));
 
-		despCounter++;
-		if( kinRing != NULL && despCounter == maxDespFrames )
+		if( numFramesToLive == 0 )
 		{
 			SetKinMode(K_NORMAL);
-			if (kinRing->powerRing->IsEmpty())
+			SetAction(DEATH);
+			rightWire->Reset();
+			leftWire->Reset();
+			slowCounter = 1;
+			frame = 0;
+			sess->cam.SetRumble(15, 15, GetActionLength( DEATH ), 3);
+			//springStunFrames = 0;
+
+
+			sess->deathSeq->Reset();
+			sess->SetActiveSequence(sess->deathSeq);
+
+			for (int i = 0; i < 3; ++i)
 			{
-				SetAction(DEATH);
-				rightWire->Reset();
-				leftWire->Reset();
-				slowCounter = 1;
-				frame = 0;
-				sess->cam.SetRumble(15, 15, GetActionLength( DEATH ), 3);
-				//springStunFrames = 0;
-
-
-				sess->deathSeq->Reset();
-				sess->SetActiveSequence(sess->deathSeq);
-
-				for (int i = 0; i < 3; ++i)
-				{
-					fairLightningPool[i]->Reset();
-					dairLightningPool[i]->Reset();
-					uairLightningPool[i]->Reset();
-				}
+				fairLightningPool[i]->Reset();
+				dairLightningPool[i]->Reset();
+				uairLightningPool[i]->Reset();
 			}
-			else
-			{
-				kinRing->powerRing->mode == PowerRing::NORMAL;
-			}
+			
 		}
 	}
 	else if (kinMode == K_SUPER)
@@ -4844,16 +4821,21 @@ void Actor::KinModeUpdate()
 
 		if (superFrame == maxSuperFrames)
 		{
-			if (kinRing != NULL && kinRing->powerRing->IsEmpty())
+			/*if (kinRing != NULL && kinRing->powerRing->IsEmpty())
 			{
 				SetKinMode(K_DESPERATION);
 			}
 			else
 			{
 				SetKinMode(K_NORMAL);
-			}
+			}*/
 		}
 	}
+}
+
+int Actor::GetSurvivalFrame()
+{
+	return maxDespFrames - numFramesToLive;
 }
 
 void Actor::ReverseVerticalInputsWhenOnCeiling()
@@ -5115,7 +5097,7 @@ void Actor::ReactToBeingHit()
 				fm->data.p1Health = 0;
 		}
 	}
-	else if (kinRing != NULL)
+	else
 	{
 		int damage = receivedHit->damage;
 
@@ -5168,7 +5150,7 @@ void Actor::ReactToBeingHit()
 
 		if (damage > 0)
 		{
-			kinRing->powerRing->Drain(damage);
+			DrainTimer(damage);
 		}
 	}
 		
@@ -5224,8 +5206,7 @@ void Actor::ReactToBeingHit()
 				{
 					position = op;
 
-					if (kinRing != NULL)
-						kinRing->powerRing->Drain(receivedHit->damage);
+					DrainTimer(receivedHit->damage);
 
 					//apply extra damage since you cant stand up
 				}
@@ -5255,8 +5236,8 @@ void Actor::ReactToBeingHit()
 					position = op;
 
 					//owner->powerWheel->Damage( receivedHit->damage );
-					if (kinRing != NULL)
-						kinRing->powerRing->Drain(receivedHit->damage);
+
+					DrainTimer(receivedHit->damage);
 
 					//apply extra damage since you cant stand up
 				}
@@ -5320,7 +5301,6 @@ void Actor::SetKinMode(Mode m)
 		break;
 	case K_DESPERATION:
 		sess->pokeTriangleScreenGroup->Start();
-		despCounter = 0;
 		SetExpr(KinMask::Expr::Expr_DESP);
 		
 		break;
@@ -5339,35 +5319,49 @@ void Actor::UpdateDrain()
 		return; //dont drain while simulating player for now
 	}
 
-	//change this soon. just so i can get the minimap running
-	if ( kinRing != NULL && kinRing->powerRing != NULL && action != DEATH && sess->hud->IsShown()
+	if (action != DEATH && sess->hud->IsShown()
 		&& (sess->currentZone == NULL || sess->currentZone->zType != Zone::MOMENTA))
 	{
-		if (sess->drain && kinMode == K_NORMAL
-			&& !IsIntroAction(action) && !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
+		//!IsIntroAction(action)
+		if (sess->drain
+			&& !IsGoalKillAction(action) && !IsExitAction(action) && !IsSequenceAction(action)
 			&& sess->activeSequence == NULL)
 		{
-			drainCounter++;
-			if (drainCounter == drainCounterMax)
+			if (numFramesToLive > 0)
 			{
-				int res;
-				if (modifiedDrainFrames > 0)
+				numFramesToLive--;
+
+				if (kinMode == K_NORMAL)
 				{
-					res = kinRing->powerRing->Drain(modifiedDrain);
+					if (numFramesToLive <= maxDespFrames)
+					{
+						SetKinMode(K_DESPERATION);
+						if (numFramesToLive < maxDespFrames)
+						{
+
+						}
+					}
 				}
-				else
-				{
-					res = kinRing->powerRing->Drain(drainAmount);
-				}
-																 //cout << "drain by " << drainAmount << endl;
-				if (res > 0)
-				{
-					SetKinMode(K_DESPERATION);
-				}
-				drainCounter = 0;
 			}
+			
 		}
 	}
+}
+
+void Actor::DrainTimer(int drainFrames)
+{
+	assert(drainFrames > 0);
+	numFramesToLive -= drainFrames;
+	if (numFramesToLive < 0)
+	{
+		numFramesToLive = 0;
+	}
+}
+
+void Actor::HealTimer(int healFrames)
+{
+	assert(healFrames > 0);
+	numFramesToLive += healFrames;
 }
 
 void Actor::ProcessGravityGrass()
@@ -5745,8 +5739,7 @@ void Actor::ProcessPoisonGrass()
 	if (ground != NULL && touchedGrass[Grass::POISON])
 	{
 		modifiedDrainFrames = 10;
-		modifiedDrain = drainAmount * 4;
-		//res = kinRing->powerRing->Drain(modifiedDrain);
+		modifiedDrain = 1;//drainAmount * 4;
 	}
 }
 
@@ -6461,7 +6454,6 @@ void Actor::UpdatePrePhysics()
 	enemiesKilledLastFrame = enemiesKilledThisFrame;
 	enemiesKilledThisFrame = 0;
 
-	//kinRing->powerRing->DraenemiesKilledThisFramein(1000000);
 	//DesperationUpdate();
 
 	ReverseVerticalInputsWhenOnCeiling();
@@ -14911,7 +14903,7 @@ void Actor::HandleWaterSituation(int wType,
 		{
 			RestoreAirOptions();
 			modifiedDrainFrames = 10;
-			modifiedDrain = drainAmount * 4;
+			modifiedDrain = 1;//drainAmount * 4;
 			ApplyGeneralAcceleration(.2);
 		}
 		break;
@@ -15302,7 +15294,7 @@ void Actor::UpdateSpeedBar()
 		}
 	}
 }
-static int testBlah = 0;
+//static int testBlah = 0;
 
 void Actor::UpdateMotionGhosts()
 {
@@ -15345,16 +15337,20 @@ void Actor::UpdateMotionGhosts()
 		motionGhostsEffects[i]->SetRootPos(Vector2f(spriteCenter.x, spriteCenter.y));
 	}*/
 
-	if (testBlah % 4 == 0)
+	if (!IsIntroAction(action))
 	{
-		for (int i = 0; i < 3; ++i)
+		if (sess->totalGameFrames % 4 == 0)
 		{
-			motionGhostsEffects[i]->AddPosition(Vector2f(spriteCenter.x, spriteCenter.y));
-			motionGhostsEffects[i]->angle = sprite->getRotation() / 180.f * PI;
+			for (int i = 0; i < 3; ++i)
+			{
+				motionGhostsEffects[i]->AddPosition(Vector2f(spriteCenter.x, spriteCenter.y));
+				motionGhostsEffects[i]->angle = sprite->getRotation() / 180.f * PI;
+			}
 		}
 	}
 	
-	testBlah++;
+	
+	//testBlah++;
 	
 }
 
@@ -15458,7 +15454,7 @@ void Actor::UpdatePlayerShader()
 
 	if (kinMode == K_DESPERATION )
 	{
-		skinShader.pShader.setUniform("despFrame", (float)despCounter);
+		skinShader.pShader.setUniform("despFrame", (float)GetSurvivalFrame());
 	}
 	else
 	{
@@ -15726,7 +15722,7 @@ void Actor::UpdatePostPhysics()
 
 	if (kinMode == K_DESPERATION)
 	{
-		float despFactor = despCounter / (float)maxDespFrames;
+		float despFactor = GetSurvivalFrame() / (float)maxDespFrames;
 		sess->pokeTriangleScreenGroup->SetLengthFactor(min( 1.f, despFactor + .3f));
 
 		double maxRumble = 7;
@@ -15868,9 +15864,6 @@ void Actor::UpdatePostPhysics()
 	{
 		velocity = normalize( ground->v1 - ground->v0) * groundSpeed;
 	}
-
-	if (kinRing != NULL && !simulationMode)
-		kinRing->Update();
 
 	TryEndLevel();
 }
@@ -19058,8 +19051,7 @@ void Actor::ConfirmHit( Enemy *e )
 
 	int charge = ch;
 
-	if( kinRing != NULL )
-		kinRing->powerRing->Fill(charge);
+	HealTimer(charge);
 	
 	if (kinMode == K_DESPERATION)
 	{
@@ -19357,7 +19349,7 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 
 	//CubicBezier cb(.11, 1.01, .4, .96);
 	CubicBezier cb;
-	Color cols[3] = { Color::Cyan, Color::Blue, Color::Magenta };//Color(100, 0, 255) };
+	Color cols[3] = { Color::Cyan, Color( 91, 136, 253 ), Color::Magenta};//Color(100, 0, 255) };
 	for (int i = 0; i < 3; ++i)
 	{
 		motionGhostsEffects[i]->SetTileset(tileset[spriteAction]);
@@ -19370,7 +19362,16 @@ void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
 		Color t(cols[i]);
 		Color b(cols[i]);//(Color::Blue);
 
-		t = GetBlendColor(cols[0], cols[i], .5f);//i / 3.f);
+
+		if (kinMode == K_DESPERATION)
+		{
+			t = currentDespColor;
+		}
+		else
+		{
+			t = cols[i];//GetBlendColor(Color::White, cols[i], .8f);//i / 3.f);
+		}
+		
 		b = t;
 
 		
@@ -21114,8 +21115,7 @@ void Actor::UpdateInHitlag()
 
  void Actor::CollectFly(HealthFly *hf)
  {
-	 if (kinRing != NULL)
-		 kinRing->powerRing->Fill(hf->GetHealAmount());
+	 HealTimer(hf->GetHealAmount());
 	 hf->Collect();
 	 AddToFlyCounter(hf->GetCounterAmount());
  }

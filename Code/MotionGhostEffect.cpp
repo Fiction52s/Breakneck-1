@@ -17,7 +17,7 @@ MotionGhostEffect::MotionGhostEffect(int p_maxGhosts, int gt )
 
 void MotionGhostEffect::Reset()
 {
-	motionGhostBuffer->SetNumActiveMembers(0);
+	motionGhostBuffer->Reset();// SetNumActiveMembers(0);
 }
 
 MotionGhostEffect::~MotionGhostEffect()
