@@ -21,7 +21,7 @@ PaletteShader::PaletteShader(const std::string &shaderStr,
 		cout << "Palette SHADER NOT LOADING CORRECTLY: " << shaderStr  << endl;
 		assert(0 && "palette shader not loaded");
 	}
-	pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	//pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
 
 	SetPaletteIndex(0);
 }
@@ -31,6 +31,13 @@ PaletteShader::~PaletteShader()
 	delete[] paletteArray;
 }
 
+void PaletteShader::SetTileset(Tileset *ts)
+{
+	//pShader.setUniform("u_texture", *ts->texture);
+	//pShader.setUniform("u_texture", sf::Shader::CurrentTexture);
+	pShader.setUniform("u_texture", *ts->texture);
+}
+
 void PaletteShader::SetSubRect(Tileset *ts, IntRect &ir)
 {
 	float width = ts->texture->getSize().x;
@@ -38,6 +45,12 @@ void PaletteShader::SetSubRect(Tileset *ts, IntRect &ir)
 
 	pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+}
+
+void PaletteShader::SetColor(int colorIndex, sf::Color c)
+{
+	paletteArray[colorIndex] = ColorGL(c);//sf::Glsl::Vec4(paletteImage.getPixel(i, pIndex));
+	pShader.setUniformArray("u_palette", paletteArray, paletteSize);
 }
 
 void PaletteShader::SetPaletteIndex(int index)

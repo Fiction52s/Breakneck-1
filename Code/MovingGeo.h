@@ -61,7 +61,7 @@ struct SpecialMovingGeoGroup
 	virtual ~SpecialMovingGeoGroup();
 	void Start();
 	void Reset();
-	bool Update();
+	virtual bool Update();
 	virtual void StartGeo() = 0;
 	void AddGeo(MovingGeo *mg);
 	void Init();
@@ -141,7 +141,8 @@ struct Laser: MovingGeo
 	};
 
 
-	Laser(float startAngle);
+	Laser( float startWidth, float growWidth, float shrinkWidth, float startAngle,
+		sf::Color startColor );
 	void Reset();
 	void Update();
 
@@ -158,7 +159,7 @@ struct Laser: MovingGeo
 	int frame;
 
 	float height;
-	float width;
+	float currWidth;
 	float angle;
 	float startAngle;
 	sf::Color startColor;

@@ -11,6 +11,8 @@ struct PaletteShader
 	void SetPaletteIndex(int index);
 	void FillPaletteArray(int pIndex);
 	void SetSubRect(Tileset *ts, sf::IntRect &ir);
+	void SetTileset(Tileset *ts);
+	void SetColor(int colorIndex, sf::Color c);
 	int paletteSize;
 	int numPaletteOptions;
 	sf::Image paletteImage;

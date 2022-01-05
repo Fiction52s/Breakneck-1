@@ -72,6 +72,7 @@
 
 #include "SoundTypes.h"
 #include "MotionGhostEffect.h"
+#include "TimerHUD.h"
 
 using namespace sf;
 using namespace std;
@@ -4727,35 +4728,38 @@ void Actor::KinModeUpdate()
 		blah[0] = Color( 0x00, 0xff, 0xff );
 		blah[1] = Color( 0x00, 0xbb, 0xff );
 		int cIndex = 2;
-		if( HasUpgrade( UPGRADE_POWER_AIRDASH ) )
+
+		bool allColorsOn = true;
+
+		if( HasUpgrade( UPGRADE_POWER_AIRDASH ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0x55, 0xff );
 			cIndex++;
 		}
-		if(HasUpgrade(UPGRADE_POWER_GRAV))
+		if(HasUpgrade(UPGRADE_POWER_GRAV) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0x00, 0xff, 0x88 );
 			cIndex++;
 		}
-		if(HasUpgrade(UPGRADE_POWER_BOUNCE))
+		if(HasUpgrade(UPGRADE_POWER_BOUNCE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0xff, 0x33 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_GRIND))
+		if(HasUpgrade(UPGRADE_POWER_GRIND) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x88, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_TIME ))
+		if(HasUpgrade(UPGRADE_POWER_TIME ) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x00, 0x00 );
 			cIndex++;
 		}
 
-		if(HasUpgrade(UPGRADE_POWER_LWIRE) || HasUpgrade(UPGRADE_POWER_RWIRE))
+		if(HasUpgrade(UPGRADE_POWER_LWIRE) || HasUpgrade(UPGRADE_POWER_RWIRE) || allColorsOn)
 		{
 			blah[cIndex] = Color( 0xff, 0x33, 0xaa );
 			cIndex++;
@@ -4764,17 +4768,27 @@ void Actor::KinModeUpdate()
 
 		int tFrame = GetSurvivalFrame() % transFrames;
 		int ind = (GetSurvivalFrame() / transFrames) % numColors;
+
+		float fac = (float)tFrame / transFrames;
+
 		Color currCol = blah[ind];
 		Color nextCol;
+		int nextIndex;
 		if( ind == numColors - 1 )
 		{
-			nextCol = blah[0];
+			nextIndex = 0;
 		}
 		else
 		{
-			nextCol = blah[ind+1];
+			nextIndex = ind + 1;
 		}
-		float fac = (float)tFrame / transFrames;
+
+		int skinBase = 22;
+
+		BlendSkins(ind + skinBase, nextIndex + skinBase, fac);
+
+		nextCol = blah[nextIndex];
+		
 		currentDespColor.r = floor(currCol.r * ( 1.f - fac ) + nextCol.r * fac + .5);
 		currentDespColor.g = floor(currCol.g * ( 1.f - fac ) + nextCol.g * fac + .5);
 		currentDespColor.b = floor(currCol.b * ( 1.f - fac ) + nextCol.b * fac + .5);
@@ -5350,18 +5364,54 @@ void Actor::UpdateDrain()
 
 void Actor::DrainTimer(int drainFrames)
 {
+	if (kinMode == K_DESPERATION)
+	{
+		return;
+	}
+
+	if (drainFrames == 0)
+		return;
+
+
+	if (numFramesToLive - drainFrames < maxDespFrames )//if its not the normal timer
+	{
+		drainFrames = numFramesToLive - maxDespFrames;
+	}
+
 	assert(drainFrames > 0);
 	numFramesToLive -= drainFrames;
 	if (numFramesToLive < 0)
 	{
 		numFramesToLive = 0;
 	}
+
+	AdventureHUD *ah = sess->GetAdventureHUD();
+	if (ah != NULL)
+	{
+		ah->modifierTimer->SetModifiedMinus(drainFrames);
+	}
 }
 
 void Actor::HealTimer(int healFrames)
 {
+	if (healFrames == 0)
+	{
+		return;
+	}
 	assert(healFrames > 0);
 	numFramesToLive += healFrames;
+
+	if (numFramesToLive > maxDespFrames)
+	{
+		SetKinMode(K_NORMAL);
+		SetSkin(SKIN_NORMAL);
+	}
+
+	AdventureHUD *ah = sess->GetAdventureHUD();
+	if (ah != NULL)
+	{
+		ah->modifierTimer->SetModifiedPlus(healFrames);
+	}
 }
 
 void Actor::ProcessGravityGrass()
@@ -15161,9 +15211,8 @@ void Actor::ProcessHitGoal()
 		
 		sess->totalFramesBeforeGoal = sess->totalGameFrames;
 		SetAction(GOALKILL);
-		SetKinMode(K_NORMAL);
 		hitGoal = false;
-		
+		SetSkin(SKIN_NORMAL);
 		
 
 		WriteBestTimeRecordings();
@@ -15723,7 +15772,8 @@ void Actor::UpdatePostPhysics()
 	if (kinMode == K_DESPERATION)
 	{
 		float despFactor = GetSurvivalFrame() / (float)maxDespFrames;
-		sess->pokeTriangleScreenGroup->SetLengthFactor(min( 1.f, despFactor + .3f));
+		float lengthFactor = min(1.f, despFactor + .3f);//min(1.f, despFactor + .3f);
+		sess->pokeTriangleScreenGroup->SetLengthFactor(lengthFactor);
 
 		double maxRumble = 7;
 		sess->cam.SetRumble(max(1.0, maxRumble * despFactor), max(1.0, maxRumble * despFactor), 60 );// 60, 2 * despFactor );
@@ -18110,7 +18160,8 @@ void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 {
 	if (kinMode == K_DESPERATION)
 	{
-		target->draw(*sprite, &playerDespShader);
+		target->draw(*sprite, &skinShader.pShader);
+		//target->draw(*sprite, &playerDespShader);
 	}
 	else if (kinMode == K_SUPER)
 	{
@@ -19289,17 +19340,17 @@ void Actor::SetAerialScorpSprite()
 	scorpSet = true;
 }
 
-void Actor::SetSpriteTile( int tileIndex, bool noFlipX, bool noFlipY )
+void Actor::SetSpriteTile(int tileIndex, bool noFlipX, bool noFlipY)
 {
 	currTileIndex = tileIndex;
 
 	Tileset *ts = tileset[spriteAction];
-	IntRect ir = ts->GetSubRect( currTileIndex );
+	IntRect ir = ts->GetSubRect(currTileIndex);
 
 	float width = ts->texture->getSize().x;
 	float height = ts->texture->getSize().y;
 
-	if (kinMode == K_NORMAL)
+	if (kinMode == K_NORMAL || kinMode == K_DESPERATION)
 	{		
 		skinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
@@ -21085,6 +21136,7 @@ void Actor::UpdateInHitlag()
 		}
 	}	
 
+	UpdateDrain();
 	//if (flashFrames > 0)
 	//{
 	//	//not having the >0 thing caused a desync here at some point and I don't know why
@@ -21367,6 +21419,11 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 skinShader.SetSkin(currSkinIndex);
+ }
+
+ void Actor::BlendSkins(int first, int second, float progress)
+ {
+	skinShader.BlendSkins( first, second, progress );
  }
 
  bool Actor::IsNormalSkin()

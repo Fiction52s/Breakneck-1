@@ -210,7 +210,7 @@ bool Enemy::SetHitParams()
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);
 		break;
 	case EnemyType::EN_GOAL:
-		hitParams.Set(5, .8, 6, 3, false);
+		hitParams.Set(5, 0, 0, 3, false);
 		break;
 	case EnemyType::EN_PATROLLER:
 		hitParams.Set(5, .8, (3 * 60) / 3, 3);

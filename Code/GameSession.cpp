@@ -2291,6 +2291,8 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
+	RestartLevel();
+
 	while( !quit )
 	{
 		switchGameState = false;

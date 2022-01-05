@@ -158,6 +158,7 @@ struct AdventureHUD : HUD
 	State state;
 
 	TimerHUD *timer;
+	TimerHUD *modifierTimer;
 
 	sf::Text flyCountText;
 

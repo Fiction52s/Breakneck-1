@@ -2222,7 +2222,6 @@ bool Session::ReadHeader(std::ifstream &is)
 		delete mapHeader;
 		mapHeader = NULL;
 	}
-		
 
 	mapHeader = new MapHeader;
 	mapHeader->Load(is);

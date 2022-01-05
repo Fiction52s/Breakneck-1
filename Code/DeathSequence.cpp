@@ -25,7 +25,7 @@ DeathSequence::DeathSequence()
 	
 
 	//geoGroup->AddGeo( )
-	geoGroup->AddGeo(new Laser(0));
+	geoGroup->AddGeo(new Laser( 100, 200, 150, 0, Color( 255, 255, 255, 150 )));
 	geoGroup->AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),
 		Color::White, Color(100, 0, 0, 0), 30), 0);
 	geoGroup->AddGeo(new MovingRing(32, 20, 200, 10, 20, Vector2f(0, 0), Vector2f(0, 0),

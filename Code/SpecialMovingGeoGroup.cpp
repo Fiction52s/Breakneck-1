@@ -70,6 +70,9 @@ bool SpecialMovingGeoGroup::Update()
 
 	for (auto it = geoVector.begin(); it != geoVector.end(); ++it)
 	{
+		//Color randColor(rand() % 255, rand() % 255, rand() % 255, 100);
+		//Color white = Color::White;
+		//(*it)->SetColor(GetBlendColor(randColor, white, .3));
 		(*it)->Update();
 		if (!(*it)->done)
 		{

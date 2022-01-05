@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "GameSession.h"
 #include "MainMenu.h"
+#include "PaletteShader.h"
 
 using namespace std;
 using namespace sf;
@@ -11,18 +12,39 @@ ImageText::ImageText( int p_maxDigits, Tileset *ts_tex )
 	maxDigits = p_maxDigits;
 	ts = ts_tex;
 	int numVertices = maxDigits * 4;
-	vert = new Vertex[numVertices];
+	vert = new Vertex[numVertices + 4];
 	value = 0;
+
+	symbolType = SymbolType::SYMBOL_NONE;
+
+	ClearRect(vert + (maxDigits * 4));
 	
 	posType = TOP_LEFT;
 	numShowZeroes = 0;
 	activeDigits = 1;
 	scale = 1.f;
+
+	sh = NULL;
 }
 
 ImageText::~ImageText()
 {
 	delete[]vert;
+}
+
+void ImageText::SetSymbol(SymbolType sType)
+{
+	symbolType = sType;
+
+	if (symbolType == SYMBOL_NONE)
+	{
+		ClearRect(vert + maxDigits * 4);
+	}
+}
+
+void ImageText::SetShader(sf::Shader *p_sh)
+{
+	sh = p_sh;
 }
 
 void ImageText::SetCenter(sf::Vector2f &p_center)
@@ -50,12 +72,24 @@ void ImageText::UpdateSprite()
 	int val = value;
 	int ind = 0;
 	
+	for (int i = 0; i < maxDigits + 1; ++i)
+	{
+		ClearRect(vert + i * 4);
+	}
+
 	while( true )
 	{
 		int res = val % div;
 
 		IntRect subRect = ts->GetSubRect( res );
-		SetRectSubRect(vert + ind * 4, subRect);
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(vert + ind * 4, subRect, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(vert + ind * 4, subRect);
+		}
 
 		++ind;
 
@@ -69,8 +103,16 @@ void ImageText::UpdateSprite()
 
 	for(; ind < numShowZeroes; ++ind )
 	{
-		IntRect subRect = ts->GetSubRect( 0 );
-		SetRectSubRect(vert + ind * 4, subRect);
+		IntRect subRect = ts->GetSubRect( 0 );	
+
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(vert + ind * 4, subRect, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(vert + ind * 4, subRect);
+		}
 	}
 
 	activeDigits = ind;
@@ -93,34 +135,52 @@ void ImageText::UpdateSprite()
 		anchorTopLeft = anchor;
 	}
 
+	if (symbolType != SYMBOL_NONE)
+	{
+		SetRectTopLeft(vert + maxDigits * 4, tw, th, anchorTopLeft);
+		anchorTopLeft.x += tw;
+
+		int tile = 0;
+
+		switch (symbolType)
+		{
+		case SYMBOL_PLUS:
+			tile = 11;
+			break;
+		case SYMBOL_MINUS:
+			tile = 12;
+			break;
+		}
+
+		IntRect subRect = ts->GetSubRect(tile);
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(vert + maxDigits * 4, subRect, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(vert + maxDigits * 4, subRect);
+		}
+	}
+
 	for (int i = 0; i < maxDigits; ++i)
 	{
 		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * ((maxDigits-1) - i), 0));
 	}
 
-	/*Vector2f currTopRight;
-	if (posType == TOP_LEFT)
-	{
-		currTopRight = Vector2f(anchor.x + (width * activeDigits) / 2, anchor.y - height / 2);
-	}
-	else
-	{
-		currTopRight = topRight;
-	}
-	
-	
-	for (int i = 0; i < activeDigits; ++i)
-	{
-		vert[i * 4 + 0].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(-width, 0);
-		vert[i * 4 + 1].position = Vector2f(-i * width, 0) + currTopRight;
-		vert[i * 4 + 2].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(0, height);
-		vert[i * 4 + 3].position = Vector2f(-i * width, 0) + currTopRight + Vector2f(-width, height);
-	}*/
+
 }
 
 void ImageText::Draw( sf::RenderTarget *target )
 {
-	target->draw( vert, activeDigits * 4, sf::Quads, ts->texture );
+	if (sh != NULL)
+	{
+		target->draw(vert, (maxDigits +1 )* 4, sf::Quads, sh);
+	}
+	else
+	{
+		target->draw(vert, (maxDigits + 1) * 4, sf::Quads, ts->texture);
+	}
 }
 
 void ImageText::ShowZeroes( int numZ )
@@ -143,8 +203,8 @@ void ImageText::SetScale(float s)
 TimerText::TimerText( Tileset *ts_tex )
 	:ImageText(5, ts_tex )
 {
-	int colonIndex = 2;//5/2;
-	SetRectSubRect(vert + colonIndex * 4, ts->GetSubRect(10));
+	
+
 	//vert[colonIndex*4+0].texCoords = Vector2f( subRect.left, subRect.top );
 	//vert[colonIndex*4+1].texCoords = Vector2f( subRect.left + subRect.width, subRect.top );
 	//vert[colonIndex*4+2].texCoords = Vector2f( subRect.left + subRect.width, subRect.top + subRect.height );
@@ -174,6 +234,34 @@ void TimerText::UpdateSprite()
 		anchorTopLeft = anchor;
 	}
 
+	if (symbolType != SYMBOL_NONE)
+	{
+		SetRectTopLeft(vert + maxDigits * 4, tw, th, anchorTopLeft);
+		anchorTopLeft.x += tw;
+
+		int tile = 0;
+
+		switch (symbolType)
+		{
+		case SYMBOL_PLUS:
+			tile = 11;
+			break;
+		case SYMBOL_MINUS:
+			tile = 12;
+			break;
+		}
+
+		IntRect subRect = ts->GetSubRect(tile);
+		if (sh != NULL)
+		{
+			SetRectSubRectGL(vert + maxDigits * 4, subRect, Vector2f(ts->texture->getSize()));
+		}
+		else
+		{
+			SetRectSubRect(vert + maxDigits * 4, subRect);
+		}
+	}
+
 	for (int i = 0; i < maxDigits; ++i)
 	{
 		SetRectTopLeft(vert + i * 4, tw, th, anchorTopLeft + Vector2f(tw * i, 0));
@@ -189,11 +277,32 @@ void TimerText::UpdateSprite()
 	int minute1s = numMinutes % 10;
 	int minute10s = numMinutes / 10;
 
-	SetRectSubRect(vert, ts->GetSubRect(minute10s));
-	SetRectSubRect(vert + 4, ts->GetSubRect(minute1s));
+	
 
-	SetRectSubRect(vert + 3 * 4, ts->GetSubRect(second10s));
-	SetRectSubRect(vert + 4 * 4, ts->GetSubRect(second1s));
+	int colonIndex = 2;//5/2;
+
+	if (sh != NULL)
+	{
+		SetRectSubRectGL(vert, ts->GetSubRect(minute10s), Vector2f(ts->texture->getSize()));
+		SetRectSubRectGL(vert + 4, ts->GetSubRect(minute1s), Vector2f(ts->texture->getSize()));
+
+		SetRectSubRectGL(vert + 3 * 4, ts->GetSubRect(second10s), Vector2f(ts->texture->getSize()));
+		SetRectSubRectGL(vert + 4 * 4, ts->GetSubRect(second1s), Vector2f(ts->texture->getSize()));
+
+		//colon
+		SetRectSubRectGL(vert + colonIndex * 4, ts->GetSubRect(10), Vector2f(ts->texture->getSize()));
+	}
+	else
+	{
+		SetRectSubRect(vert, ts->GetSubRect(minute10s));
+		SetRectSubRect(vert + 4, ts->GetSubRect(minute1s));
+
+		SetRectSubRect(vert + 3 * 4, ts->GetSubRect(second10s));
+		SetRectSubRect(vert + 4 * 4, ts->GetSubRect(second1s));
+
+		//colon
+		SetRectSubRect(vert + colonIndex * 4, ts->GetSubRect(10));
+	}
 
 	activeDigits = maxDigits;
 }

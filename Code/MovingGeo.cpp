@@ -303,8 +303,11 @@ void SpinningTri::SetColorGrad(sf::Color startCol,
 }
 
 
-Laser::Laser(float p_startAngle)
-	:startAngle(p_startAngle)
+Laser::Laser(float p_startWidth, float p_growWidth, float p_shrinkWidth, float p_startAngle,
+	sf::Color p_startColor )
+	:startAngle(p_startAngle),startWidth( p_startWidth),
+	growWidth( p_growWidth ), shrinkWidth( p_shrinkWidth ),
+	startColor( p_startColor )
 {
 	stateLength[S_VERTICALGROW] = 30;// 60 / 20;
 	stateLength[S_WIDEN] = 30;
@@ -313,14 +316,14 @@ Laser::Laser(float p_startAngle)
 	stateLength[S_DISAPPEAR] = 40;
 
 	maxHeight = 2000;
-	//quad[0].position = center;
 	
-	width = 100;
-	startWidth = 100;
-	growWidth = 200;
-	shrinkWidth = 150;
+	//startWidth = 100
+	//growWidth = 200;
+	//shrinkWidth = 150;
 
-	startColor = Color::White;
+	//startColor = Color::White;
+
+	//Reset();
 }
 
 void Laser::Reset()
@@ -328,11 +331,10 @@ void Laser::Reset()
 	SetColor(color);
 	color = startColor;
 	height = 0;
-	width = 100;
 	frame = 0;
 	state = S_VERTICALGROW;
 	angle = startAngle;
-	width = startWidth;
+	currWidth = startWidth;
 	done = false;
 	Clear();
 }
@@ -355,9 +357,9 @@ void Laser::SetHeight(float h)
 
 void Laser::SetWidth(float w)
 {
-	width = w;
-	float left = basePos.x - width / 2.f;
-	float right = basePos.x + width / 2.f;
+	currWidth = w;
+	float left = basePos.x - currWidth / 2.f;
+	float right = basePos.x + currWidth / 2.f;
 	points[0].position.x = left;
 	points[3].position.x = left;
 	points[1].position.x = right;

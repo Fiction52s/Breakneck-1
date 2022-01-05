@@ -698,7 +698,7 @@ sf::FloatRect Camera::GetRect()
 	Vector2f aCenter((left + right) / 2.f, (top + bot) / 2.f);
 	Vector2f aSize(right - left, bot - top);
 
-	return FloatRect( aCenter, aSize );
+	return FloatRect( Vector2f( left, top ), aSize );
 }
 
 void Camera::Set( sf::Vector2f &p, float zFactor, int zLevel )

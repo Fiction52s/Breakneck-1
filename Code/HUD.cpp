@@ -150,7 +150,8 @@ AdventureHUD::AdventureHUD()
 {
 	hType = HUDType::ADVENTURE;
 
-	timer = new TimerHUD;
+	timer = new TimerHUD(false);
+	modifierTimer = new TimerHUD(true);
 
 	keyMarkers.push_back(new KeyMarker);
 	keyMarkers.push_back(new KeyMarker);
@@ -207,6 +208,7 @@ AdventureHUD::~AdventureHUD()
 	delete powerSelector;
 
 	delete timer;
+	delete modifierTimer;
 }
 
 void AdventureHUD::UpdateKeyNumbers()
@@ -408,6 +410,9 @@ void AdventureHUD::Update()
 	timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
 	timer->Update();
 
+	modifierTimer->SetCenter(timer->GetRightCenter() + Vector2f(100, 0 ));
+	modifierTimer->Update();
+
 	++frame;
 }
 
@@ -424,6 +429,9 @@ void AdventureHUD::Reset()
 	{
 		keyMarkers[i]->Reset();
 	}
+
+	timer->Reset();
+	modifierTimer->Reset();
 
 	mini->SetCenter(miniShowPos);
 	kinMask->SetTopLeft(kinMaskShowPos);
@@ -448,6 +456,8 @@ void AdventureHUD::Draw(RenderTarget *target)
 		kinMask->Draw(target);
 		
 		timer->Draw(target);
+
+		modifierTimer->Draw(target);
 
 		mini->Draw(target);
 		//target->draw(owner->minimapSprite, &owner->minimapShader);
@@ -561,7 +571,6 @@ void KinMask::Update( int speedLevel, bool desp )
 		{
 			face.setTextureRect(ts_face->GetSubRect(5 + f));
 			playerSkinShader.SetSubRect(ts_face, ts_face->GetSubRect(5+f));
-			++frame;
 		}
 	}
 	else if (expr == Expr_DEATHYELL)

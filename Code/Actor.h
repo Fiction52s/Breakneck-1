@@ -1685,6 +1685,7 @@ struct Actor : QuadTreeCollider,
 	bool IsActionAirBlock(int a);
 
 	void SetSkin(int skinIndex);
+	void BlendSkins(int first, int second, float progress);
 
 	V2d GetKnockbackDirFromVel();
 

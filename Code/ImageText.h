@@ -15,7 +15,15 @@ struct ImageText
 		TOP_RIGHT
 	};
 
+	enum SymbolType
+	{
+		SYMBOL_NONE,
+		SYMBOL_PLUS,
+		SYMBOL_MINUS,
+	};
+
 	PositionType posType;
+	SymbolType symbolType;
 
 	ImageText( int maxDigits, 
 		Tileset *ts_tex );
@@ -26,9 +34,13 @@ struct ImageText
 	void SetTopLeft(sf::Vector2f &p_topLeft);
 	virtual void UpdateSprite();
 	void Draw( sf::RenderTarget *target );
+	void SetShader(sf::Shader *sh);
 	//in a timer this sets number of seconds
 	void SetNumber( int num );
 	void SetScale(float s);
+	void UpdateSymbolSprite();
+
+	void SetSymbol(SymbolType sType);
 	
 	void ShowZeroes( int numZeroes );
 
@@ -39,6 +51,7 @@ struct ImageText
 	int value;
 	sf::Vertex *vert;
 	Tileset *ts;
+	sf::Shader *sh;
 };
 
 struct TimerText : ImageText

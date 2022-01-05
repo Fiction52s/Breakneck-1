@@ -658,7 +658,10 @@ void EditSession::TestPlayerMode()
 	
 	//----------------------------------------
 	
-	
+	if (hud != NULL)
+	{
+		hud->Reset();
+	}
 
 	hud->Show();
 
