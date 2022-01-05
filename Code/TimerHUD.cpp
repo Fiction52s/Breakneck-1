@@ -168,21 +168,26 @@ void TimerHUD::SetCenter(sf::Vector2f &p_center)
 	SetScale(currScale);
 }
 
+sf::Vector2f TimerHUD::GetAdjustedCenter()
+{
+	Vector2f adjustedCenter = center;
+
+	if (currScale > baseScale)
+	{
+		adjustedCenter.y += (ts_text->tileHeight / 2) * (currScale - baseScale);
+	}
+
+	return adjustedCenter;
+}
+
 void TimerHUD::SetScale(float f)
 {
 	currScale = f;
 
-	Vector2f adjustedCenter = center;
-
-	if (f > baseScale)
-	{
-		adjustedCenter.y += (ts_text->tileHeight / 2) * (f - baseScale);
-	}
+	Vector2f adjustedCenter = GetAdjustedCenter();
 
 	timer->SetCenter(adjustedCenter);
 	timer->SetScale(f);
-
-	
 
 	Vector2f centiTopLeft = adjustedCenter + Vector2f(ts_text->tileWidth * f * 2.5, ts_text->tileHeight * f * (.5 - centiScale));
 
@@ -199,7 +204,9 @@ sf::Vector2f TimerHUD::GetRightCenter()
 {
 	float rightWidth = (ts_text->tileWidth * 2.5 * currScale)
 		+ (ts_text->tileWidth * 2 * currScale * centiScale);
-	return Vector2f(center.x + rightWidth, center.y);
+
+	
+	return GetAdjustedCenter() + Vector2f(rightWidth, 0);//Vector2f(center.x + rightWidth, center.y);
 	//return center + 
 }
 

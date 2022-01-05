@@ -55,6 +55,7 @@ struct TimerHUD
 	void SetModifiedPlus(int frames);
 	void SetModifiedMinus(int frames);
 	void Update();
+	sf::Vector2f GetAdjustedCenter();
 	void SetCenter(sf::Vector2f &p_center);
 	void SetColor(sf::Color c);
 	void Reset();
