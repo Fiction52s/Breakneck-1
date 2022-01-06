@@ -322,6 +322,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool SpawnableByCamera() { return true; }
 	virtual void DrawMinimap( sf::RenderTarget *target );
 	virtual void IHitPlayer(int index = 0) {}
+	virtual void IHitPlayerShield(int index = 0) { IHitPlayer(index); }
 	virtual bool CheckHitPlayer(int index = 0);
 	bool BasicCheckHitPlayer( CollisionBody *body, int index);
 	virtual int NumTotalBullets();

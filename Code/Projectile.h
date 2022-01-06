@@ -10,11 +10,12 @@ struct ProjectileLauncher
 {
 	enum ProjectileType
 	{
-
+		TEST,
+		P_Count
 	};
 
-
 	ProjectileLauncher( int projType );
+	void SetTileset(Tileset *p_ts);
 	Tileset *ts;
 	sf::Vertex *quads;
 	std::vector<Projectile*> projectileVec;
@@ -29,12 +30,6 @@ struct ProjectileParams
 
 struct Projectile : Enemy, SurfaceMoverHandler
 {
-	enum ProjectileType
-	{
-		TEST,
-		P_Count
-	};
-
 	enum Action
 	{
 		IDLE,
@@ -42,7 +37,6 @@ struct Projectile : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
-	ProjectileType projType;
 	V2d velocity;
 	ProjectileLauncher *launcher;
 	sf::Vertex *quad;

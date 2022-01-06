@@ -194,7 +194,7 @@ void PoiParams::Draw( sf::RenderTarget *target )
 	EditSession *edit = EditSession::GetSession();
 	if (edit != NULL)
 	{
-		if (!edit->editModeUI->IsLayerShowing(LAYER_POI)
+		if (!edit->editModeUI->IsLayerShowing(LAYER_SEQUENCE)
 			&& GetTypeName() == "poi" )
 		{
 			return;
@@ -1894,7 +1894,7 @@ void CameraShotParams::Draw(RenderTarget *target)
 	EditSession *edit = EditSession::GetSession();
 	if (edit != NULL)
 	{
-		if (!edit->editModeUI->IsLayerShowing(LAYER_CAMERA))
+		if (!edit->editModeUI->IsLayerShowing(LAYER_SEQUENCE))
 		{
 			return;
 		}

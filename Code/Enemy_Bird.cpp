@@ -50,11 +50,11 @@ Bird::Bird(ActorParams *ap)
 
 	hitOffsetMap[PUNCH] = V2d(100, 0);
 
-	stageMgr.AddActiveOption(0, TEST_POST, 2);
+	//stageMgr.AddActiveOption(0, TEST_POST, 2);
 
-	/*stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
+	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);*/
+	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
@@ -150,10 +150,8 @@ void Bird::ResetEnemy()
 	UpdateSprite();
 }
 
-void Bird::Setup()
+void Bird::SetupPostFightScenes()
 {
-	SetSpawnRect();
-
 	if (sess->IsSessTypeGame())
 	{
 		GameSession *game = GameSession::GetSession();
@@ -163,10 +161,8 @@ void Bird::Setup()
 	{
 		myBonus = NULL;
 	}
-}
 
-void Bird::SetupPostFightScenes()
-{
+
 	if (level == 1)
 	{
 		if (postFightScene2 != NULL)
@@ -386,8 +382,19 @@ void Bird::StartAction()
 //returns true if comboing
 bool Bird::TryComboMove(V2d &comboPos, int comboMoveDuration, int moveDurationBeforeStartNextAction, int framesRemaining, V2d &comboOffset )
 {
+	if (moveDurationBeforeStartNextAction < 0)
+	{
+		//TODO: make the bird combo off of this. usually means hitstun is interrupted.
+		return false;
+	}
 	nextAction = COMBOMOVE;
 	actionLength[COMBOMOVE] = moveDurationBeforeStartNextAction - framesRemaining;
+
+	if (actionLength[COMBOMOVE] < 0)
+	{
+		assert(actionLength[COMBOMOVE] > 0);
+	}
+
 
 	enemyMover.SetModeNodeLinear(comboPos + comboOffset, CubicBezier(), comboMoveDuration);
 

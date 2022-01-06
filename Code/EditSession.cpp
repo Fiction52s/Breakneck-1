@@ -5424,6 +5424,13 @@ bool EditSession::PointSelectActor( V2d &pos )
 			ait != (*it).second->actors.end(); ++ait)
 		{
 
+			if (!editModeUI->IsLayerActionable(LAYER_SEQUENCE)
+				&& ((*ait)->GetTypeName() == "camerashot"
+					|| (*ait)->GetTypeName() == "poi"))
+			{
+				continue;
+			}
+
 			if ((*ait)->ContainsPoint(Vector2f(pos)))
 			{
 				if ((*ait)->selected)
@@ -10678,6 +10685,14 @@ bool EditSession::BoxSelectActors(sf::IntRect &rect)
 		for (auto ait = (*it).second->actors.begin();
 			ait != (*it).second->actors.end(); ++ait)
 		{
+			if (!editModeUI->IsLayerActionable(LAYER_SEQUENCE)
+				&& ((*ait)->GetTypeName() == "camerashot"
+					|| (*ait)->GetTypeName() == "poi"))
+			{
+				continue;
+			}
+
+
 			if ((*ait)->Intersects(rect))
 			{
 				if (HoldingShift())

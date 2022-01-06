@@ -84,11 +84,10 @@ enum TerrainLayers : int
 enum EditLayer : int
 {
 	LAYER_ACTOR,
+	LAYER_SEQUENCE,
 	LAYER_IMAGE,
 	LAYER_TERRAIN,
 	LAYER_WATER,
-	LAYER_CAMERA,
-	LAYER_POI,
 };
 
 struct EditSession : GUIHandler, Session

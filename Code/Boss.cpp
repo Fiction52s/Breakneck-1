@@ -304,6 +304,14 @@ void Boss::IHitPlayer(int index)
 	pauseFrames = currHitboxes->hitboxInfo->hitlagFrames + 1; //+1 so you can wait until the player has chosen DI before predicting
 }
 
+void Boss::IHitPlayerShield(int index)
+{
+	//hitPlayer = true;
+	//actionHitPlayer = true;
+	UpdateSprite(); //because paused will not show the correct frame
+	pauseFrames = currHitboxes->hitboxInfo->hitlagFrames + 1; //+1 so you can wait until the player has chosen DI before predicting
+}
+
 void Boss::UpdateEnemyPhysics()
 {
 	if (!enemyMover.IsIdle())

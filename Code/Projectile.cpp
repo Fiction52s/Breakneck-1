@@ -20,6 +20,11 @@ ProjectileLauncher::ProjectileLauncher( int projType )
 	}*/
 }
 
+void ProjectileLauncher::SetTileset(Tileset *p_ts)
+{
+	ts = p_ts;
+}
+
 
 //ProjectileLauncher::~ProjectileLauncher()
 //{

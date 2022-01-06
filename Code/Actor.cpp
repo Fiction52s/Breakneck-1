@@ -4338,7 +4338,8 @@ void Actor::Respawn( bool setStartPos )
 {
 	if (sess->mapHeader != NULL)
 	{
-		numFramesToLive = sess->mapHeader->drainSeconds * 60;
+		numFramesToLive = min( sess->mapHeader->drainSeconds * 60, 
+			100 * 60 * 60);
 	}
 	else
 	{

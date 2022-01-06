@@ -364,11 +364,12 @@ void EditModeUI::CreateLayerPanel()
 	int currLayerIndex = 0;
 
 	layerMap[LAYER_ACTOR] = "actors";
+	layerMap[LAYER_SEQUENCE] = "sequence objects";
 	layerMap[LAYER_IMAGE] = "images";
 	layerMap[LAYER_TERRAIN] = "terrain";
 	layerMap[LAYER_WATER] = "water";
-	layerMap[LAYER_CAMERA] = "camera";
-	layerMap[LAYER_POI] = "poi";
+	/*layerMap[LAYER_CAMERA] = "camera";
+	layerMap[LAYER_POI] = "poi";*/
 
 
 	terrainEditLayerMap[TERRAINLAYER_NORMAL] = LAYER_TERRAIN;
@@ -401,11 +402,11 @@ void EditModeUI::CreateLayerPanel()
 	layerPanel->AddLabel("lock", Vector2i(50, startY - 20), 16, "lock");
 
 	AddLayerToPanel(layerMap[LAYER_ACTOR], 0, startY);
-	AddLayerToPanel(layerMap[LAYER_IMAGE], 1, startY);
-	AddLayerToPanel(layerMap[LAYER_TERRAIN], 2, startY);
-	AddLayerToPanel(layerMap[LAYER_WATER], 3, startY);
-	AddLayerToPanel(layerMap[LAYER_CAMERA], 4, startY);
-	AddLayerToPanel(layerMap[LAYER_POI], 5, startY);
+	AddLayerToPanel(layerMap[LAYER_SEQUENCE], 1, startY);
+	AddLayerToPanel(layerMap[LAYER_IMAGE], 2, startY);
+	AddLayerToPanel(layerMap[LAYER_TERRAIN], 3, startY);
+	AddLayerToPanel(layerMap[LAYER_WATER], 4, startY);
+	//AddLayerToPanel(layerMap[LAYER_POI], 5, startY);
 
 
 	layerPanel->checkBoxes[GetLayerShowName(LAYER_ACTOR)]->SetLockedStatus(true, true);
@@ -623,14 +624,15 @@ void EditModeUI::UpdateLayerLock(int layer, bool lock)
 		case LAYER_ACTOR:
 			edit->DeselectObjectType(ISelectable::ACTOR);
 			break;
-		case LAYER_CAMERA:
+		case LAYER_SEQUENCE:
 		{
 			edit->DeselectActorType("camerashot");
-			break;
-		}
-		case LAYER_POI:
 			edit->DeselectActorType("poi");
 			break;
+		}
+		/*case LAYER_POI:
+			
+			break;*/
 
 		}
 	}

@@ -82,6 +82,7 @@ struct Boss : Enemy
 	//virtual void MovementEnded();
 
 	void IHitPlayer(int index = 0);
+	virtual void IHitPlayerShield(int index = 0);
 	void BossReset();
 	virtual int ChooseActionAfterStageChange();
 	virtual bool IsDecisionValid(int d) { return true; }

@@ -71,7 +71,6 @@ struct Bird : Summoner, Boss
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
-	void Setup();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
