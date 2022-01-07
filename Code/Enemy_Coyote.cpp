@@ -8,6 +8,7 @@
 #include "Session.h"
 #include "Enemy_BabyScorpion.h"
 #include "GameSession.h"
+#include "Enemy_PulseAttack.h"
 
 using namespace std;
 using namespace sf;
@@ -38,6 +39,8 @@ Coyote::Coyote(ActorParams *ap)
 	actionLength[SUMMON] = 60;
 	actionLength[DANCE_PREP] = 60;
 	actionLength[DANCE] = 360;
+	actionLength[PATTERN_BULLETS] = 60;
+	actionLength[PATTERN_PULSE] = 60;
 
 	patternFlickerFrames = 30;
 	numPatternMoves = 3;
@@ -46,11 +49,13 @@ Coyote::Coyote(ActorParams *ap)
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_RUSH);
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
+	patternTypePicker.AddActiveOption(PATTERN_BULLETS);
+	patternTypePicker.AddActiveOption(PATTERN_PULSE);
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
-	
+	pulsePool = new PulseAttackPool(5);
 
 	postFightScene = NULL;
 
@@ -68,8 +73,8 @@ Coyote::Coyote(ActorParams *ap)
 
 
 
-	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
-	stageMgr.AddActiveOption(0, TEST_POST, 1);
+	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOption(0, TEST_POST, 1);
 
 	stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
 	//stageMgr.AddActiveOption(1, MOVE, 2);
@@ -83,11 +88,16 @@ Coyote::Coyote(ActorParams *ap)
 
 	
 
-	SetNumLaunchers(1);
+	SetNumLaunchers(2);
 	launchers[0] = new Launcher(this, BasicBullet::OWL, 16, 3, GetPosition(), V2d(1, 0), PI / 12, 300);
 	launchers[0]->SetBulletSpeed(10);
 	launchers[0]->hitboxInfo->damage = 18;
 	launchers[0]->Reset();
+
+	launchers[1] = new Launcher(this, BasicBullet::OWL, 6*6, 6, GetPosition(), V2d(1, 0), PI / 3, 300);
+	launchers[1]->SetBulletSpeed(10);
+	launchers[1]->hitboxInfo->damage = 18;
+	launchers[1]->Reset();
 
 	patternPreview.setFillColor(Color::Magenta);
 	patternPreview.setRadius(60);
@@ -124,6 +134,8 @@ Coyote::~Coyote()
 
 	if (myBonus != NULL)
 		delete myBonus;
+
+	delete pulsePool;
 }
 
 void Coyote::LoadParams()
@@ -140,21 +152,6 @@ void Coyote::LoadParams()
 	HitboxInfo::SetupHitboxLevelInfo(j["kick"], hitboxInfos[KICK]);*/
 }
 
-void Coyote::Setup()
-{
-	SetSpawnRect();
-
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		myBonus = game->CreateBonus("NewScenes/postcoyotefight");
-	}
-	else
-	{
-		myBonus = NULL;
-	}
-}
-
 
 void Coyote::ResetEnemy()
 {
@@ -165,6 +162,7 @@ void Coyote::ResetEnemy()
 
 	stopStartPool.Reset();
 	fireflySummonGroup.Reset();
+	pulsePool->Reset();
 
 	currNode = NULL;
 	patternIndex = -1;
@@ -173,6 +171,8 @@ void Coyote::ResetEnemy()
 	facingRight = true;
 
 	HitboxesOff();
+
+	
 
 	StartFight();
 
@@ -200,6 +200,7 @@ void Coyote::SeqWait()
 	action = SEQ_WAIT;
 	frame = 0;
 	stopStartPool.Reset();
+	pulsePool->Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	facingRight = false;
@@ -281,20 +282,20 @@ void Coyote::ActionEnded()
 
 			if (patternType[patternIndex] == PATTERN_MOVE)
 			{
-				Wait(30);
+Wait(30);
 			}
 			else
 			{
 				++patternIndex;
-				SetAction(patternType[patternIndex-1]);
+				SetAction(patternType[patternIndex - 1]);
 			}
-			
+
 		}
 		else
 		{
 			++patternIndex;
-			SetAction(patternType[patternIndex-1]);
-			
+			SetAction(patternType[patternIndex - 1]);
+
 		}
 
 		break;
@@ -313,6 +314,34 @@ void Coyote::ActionEnded()
 			SetAction(PATTERN_MOVE);
 		}
 
+		break;
+	}
+	case PATTERN_BULLETS:
+	{
+		if (patternIndex == numPatternMoves)
+		{
+			//SetAction(PATTERN_MOVE);
+			//++patternIndex;
+			Wait(30);
+		}
+		else
+		{
+			SetAction(PATTERN_MOVE);
+		}
+		break;
+	}
+	case PATTERN_PULSE:
+	{
+		if (patternIndex == numPatternMoves)
+		{
+			//SetAction(PATTERN_MOVE);
+			//++patternIndex;
+			Wait(30);
+		}
+		else
+		{
+			SetAction(PATTERN_MOVE);
+		}
 		break;
 	}
 	case WAIT:
@@ -342,7 +371,7 @@ void Coyote::HandleAction()
 	{
 	case SUMMON:
 	{
-		if( frame == 20 && slowCounter == 1)
+		if (frame == 20 && slowCounter == 1)
 		{
 			fireflySummonGroup.Summon();
 		}
@@ -350,7 +379,7 @@ void Coyote::HandleAction()
 	}
 	case PLAN_PATTERN:
 	{
-		if (frame % patternFlickerFrames == 0 )
+		if (frame % patternFlickerFrames == 0)
 		{
 			int mult = frame / patternFlickerFrames;
 			if (mult < numPatternMoves)
@@ -365,6 +394,14 @@ void Coyote::HandleAction()
 				else if (patternType[mult] == PATTERN_RUSH)
 				{
 					patternPreview.setFillColor(Color::Red);
+				}
+				else if (patternType[mult] == PATTERN_BULLETS)
+				{
+					patternPreview.setFillColor(Color::Green);
+				}
+				else if (patternType[mult] == PATTERN_PULSE)
+				{
+					patternPreview.setFillColor(Color::Cyan);
 				}
 			}
 
@@ -422,6 +459,18 @@ void Coyote::StartAction()
 			
 		}
 		//stopStartPool.Throw(GetPosition(), PlayerDir());
+		break;
+	}
+	case PATTERN_BULLETS:
+	{
+		launchers[1]->position = GetPosition();
+		launchers[1]->facingDir = PlayerDir();
+		launchers[1]->Fire();
+		break;
+	}
+	case PATTERN_PULSE:
+	{
+		pulsePool->Pulse(0, GetPosition(), 20, 100, 1000, 120, Color::Yellow, Color::Transparent, NULL);
 		break;
 	}
 	case PATTERN_MOVE:
@@ -483,6 +532,17 @@ void Coyote::StartAction()
 
 void Coyote::SetupPostFightScenes()
 {
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("NewScenes/postcoyotefight");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
+
+
 	if (postFightScene != NULL)
 	{
 		postFightScene = new CoyotePostFightScene;

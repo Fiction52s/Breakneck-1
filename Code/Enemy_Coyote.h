@@ -7,6 +7,8 @@
 #include "SummonGroup.h"
 #include "Boss.h"
 
+struct PulseAttackPool;
+
 struct CoyotePostFightScene;
 
 struct Coyote : Boss, Summoner, RayCastHandler,
@@ -21,6 +23,8 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 		PLAN_PATTERN,
 		PATTERN_MOVE,
 		PATTERN_RUSH,
+		PATTERN_BULLETS,
+		PATTERN_PULSE,
 		DANCE_PREP,
 		DANCE,
 		SUMMON,
@@ -40,6 +44,7 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	SummonGroup fireflySummonGroup;
 	SummonGroup babyScorpionGroup;
 
+	PulseAttackPool *pulsePool;
 	
 
 	V2d currBabyScorpPos;
@@ -76,7 +81,6 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	void UpdateSprite();
 	void ResetEnemy();
 	int SetLaunchersStartIndex(int ind);
-	void Setup();
 
 	//boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
