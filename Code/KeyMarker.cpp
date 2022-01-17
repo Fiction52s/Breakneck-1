@@ -225,9 +225,12 @@ void KeyMarker::Reset()
 	}
 	else if (markerType == ENEMY)
 	{
-		int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
-		keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
-		keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
+		if (sess->currentZone != NULL)
+		{
+			int numEnemiesRemaining = sess->currentZone->GetNumRemainingKillableEnemies();
+			keyNumberNeededHUD->SetNumber(numEnemiesRemaining);
+			keyNumberNeededHUDBack->SetNumber(numEnemiesRemaining);
+		}
 
 		keyNumberNeededHUD->ts = ts_enemyNumDark;
 	}

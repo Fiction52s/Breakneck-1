@@ -74,6 +74,8 @@ BlockerChain::BlockerChain(ActorParams *ap)
 		skinIndex = 8;
 	}
 
+	
+
 	for (int i = 0; i < 16; ++i)
 	{
 		paletteArray[i] = sf::Glsl::Vec4(paletteImage.getPixel(i, skinIndex));
@@ -106,6 +108,7 @@ BlockerChain::BlockerChain(ActorParams *ap)
 
 	SetSpawnRect();
 
+	//paramsVariation is 0. Number might be useless at this point
 	UpdateParams(ap);
 }
 
@@ -122,7 +125,8 @@ void BlockerChain::EnemyDraw(sf::RenderTarget *target)
 
 Tileset *BlockerChain::GetTileset(int variation)
 {
-	switch (variation)
+	return GetSizedTileset("Enemies/blocker_w1_192x192.png");
+	/*switch (variation)
 	{
 	case Blocker::GREY:
 		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
@@ -148,7 +152,7 @@ Tileset *BlockerChain::GetTileset(int variation)
 	case Blocker::BLACK:											 
 		return GetSizedTileset("Enemies/blocker_w1_192x192.png");
 		break;
-	}
+	}*/
 }
 
 Enemy *BlockerChain::CreateEnemy(V2d &pos, int ind)
@@ -159,7 +163,10 @@ Enemy *BlockerChain::CreateEnemy(V2d &pos, int ind)
 void BlockerChain::ReadParams(ActorParams *params)
 {
 	BlockerParams *bParams = (BlockerParams*)params;
+	//bType might eventually be used for reforming blockers etc
+	//i dont think its used for blocker color variations anymore
 	paramsVariation = bParams->bType;
+
 	paramsSpacing = bParams->spacing;
 	fill = bParams->fill;
 }
@@ -398,7 +405,8 @@ bool Blocker::IsFastDying()
 {
 	//if( receivedHit->hType == HitboxInfo::)
 
-	switch (bc->chainEnemyVariation)
+	//switch (bc->chainEnemyVariation)
+	switch( bc->blockerType )
 	{
 	case GREY:
 		return true;
