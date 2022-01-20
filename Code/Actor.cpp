@@ -8476,7 +8476,8 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed <= steepClimbSpeedThresh )
+					if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB 
+						&& action != STEEPCLIMBATTACK)
 					{
 						offsetX = -offsetX;
 						groundSpeed = 0;
@@ -8761,7 +8762,9 @@ V2d Actor::UpdateReversePhysics()
 				}
 				else if( nextSteep && nextMovingUp )
 				{
-					if( groundSpeed >= -steepClimbSpeedThresh )
+					if( groundSpeed >= -steepClimbSpeedThresh
+						&& action != STEEPCLIMB
+						&& action != STEEPCLIMBATTACK)
 					{
 						groundSpeed = 0;
 						offsetX = -offsetX;
@@ -9399,7 +9402,8 @@ V2d Actor::UpdateReversePhysics()
 								{
 									if (bounceFlameOn && abs(groundSpeed) > 1)
 									{
-										if (action != STEEPCLIMB)
+										if (action != STEEPCLIMB
+											&& action != STEEPCLIMBATTACK)
 										{
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;
@@ -11602,7 +11606,8 @@ void Actor::UpdatePhysics()
 				{
 					if( e0n.x > 0 && e0n.y > -steepThresh )
 					{
-						if( groundSpeed >= -steepClimbSpeedThresh )
+						if( groundSpeed >= -steepClimbSpeedThresh &&
+							action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 						{
 							groundSpeed = 0;
 							break;
@@ -11643,12 +11648,15 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									facingRight = false;
 									if (!IsGroundAttackAction(action))
 									{
+										if (action != STEEPCLING)
+										{
+											SetAction(STEEPSLIDE);
+											frame = 0;
 
-										SetAction(STEEPSLIDE);
-										frame = 0;
+											facingRight = false;
+										}
 									}
 									ground = next;
 									q = length( ground->v1 - ground->v0 );	
@@ -11701,7 +11709,8 @@ void Actor::UpdatePhysics()
 				{
 					if( e1n.x < 0 && e1n.y > -steepThresh )
 					{
-						if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB )
+						if( groundSpeed <= steepClimbSpeedThresh && action != STEEPCLIMB
+							&& action != STEEPCLIMBATTACK)
 						{
 							groundSpeed = 0;
 							break;
@@ -11741,12 +11750,15 @@ void Actor::UpdatePhysics()
 								}
 								else
 								{
-									facingRight = true;
+									
 									if (!IsGroundAttackAction(action))
 									{
-
-										SetAction(STEEPSLIDE);
-										frame = 0;
+										if (action != STEEPCLING)
+										{
+											SetAction(STEEPSLIDE);
+											frame = 0;
+											facingRight = true;
+										}
 									}
 									ground = next;
 									q = 0;
@@ -12184,7 +12196,7 @@ void Actor::UpdatePhysics()
 								{
 									if( bounceFlameOn && abs( groundSpeed ) > 1)
 									{
-										if( action != STEEPCLIMB )
+										if( action != STEEPCLIMB && action != STEEPCLIMBATTACK)
 										{
 											storedBounceGroundSpeed = groundSpeed * slowMultiple;
 											groundedWallBounce = true;

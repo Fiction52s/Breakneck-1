@@ -217,6 +217,7 @@ void Actor::STEEPCLIMB_Update()
 	else
 	{
 		groundSpeed += dot(V2d(0, GetGravity() * factor), normalize(ground->v1 - ground->v0)) / slowMultiple;
+		//cout << "groundspeed: " << groundSpeed << endl;
 	}
 }
 
