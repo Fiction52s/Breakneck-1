@@ -31,7 +31,7 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	BasicCircleHitBodySetup(16);
+	//BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);
 
 	hitBody.hitboxInfo = hitboxInfo;
@@ -85,7 +85,7 @@ void TigerTarget::ResetEnemy()
 	action = NEUTRAL;
 	frame = 0;
 
-	DefaultHitboxesOn();
+	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
 	UpdateHitboxes();

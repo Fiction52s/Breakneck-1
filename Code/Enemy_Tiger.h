@@ -41,7 +41,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
 
-	SummonGroup spinTurretSummonGroup;
+	//SummonGroup spinTurretSummonGroup;
 
 	TigerGrindBulletPool snakePool;
 
@@ -54,7 +54,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
 	NodeGroup nodeGroupC;
-	//NodeGroup nodeGroupGrind;
+	NodeGroup nodeGroupGrind;
 
 	V2d lastTargetDestroyedPos;
 

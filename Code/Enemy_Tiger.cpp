@@ -26,8 +26,8 @@ Tiger::Tiger(ActorParams *ap)
 	palmSummonGroup(this,
 		new BasicGroundEnemyParams(sess->types["palmturret"], 1),
 		2, 2, 1),
-	spinTurretSummonGroup(this, new BasicAirEnemyParams(sess->types["tigerspinturret"], 1),
-		4, 4, 1, true),
+	//spinTurretSummonGroup(this, new BasicAirEnemyParams(sess->types["tigerspinturret"], 1),
+	//	4, 4, 1, true),
 	targetGroup(this, new BasicAirEnemyParams(sess->types["tigertarget"], 1),
 		3, 3, 1, true),
 	nodeGroupA(2)
@@ -41,7 +41,7 @@ Tiger::Tiger(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
-	actionLength[TEST] = 60;//10000;
+	actionLength[TEST] = 180;//10000;
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
@@ -51,7 +51,7 @@ Tiger::Tiger(ActorParams *ap)
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
 	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
+	//stageMgr.AddActiveOption(0, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
@@ -110,7 +110,7 @@ void Tiger::LoadParams()
 void Tiger::ResetEnemy()
 {
 	snakePool.Reset();
-	spinTurretSummonGroup.Reset();
+	//spinTurretSummonGroup.Reset();
 	palmSummonGroup.Reset();
 	targetGroup.Reset();
 
@@ -282,7 +282,7 @@ void Tiger::StartAction()
 	}
 	case THROW_SPINTURRET:
 	{
-		PoiInfo *node = nodeGroupA.AlwaysGetNextNode();//nodeGroupGrind.AlwaysGetNextNode();
+		PoiInfo *node = nodeGroupGrind.AlwaysGetNextNode();//nodeGroupGrind.AlwaysGetNextNode();
 		snakePool.ThrowAt(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), node);
 		//spinTurretSummonGroup.Summon();
 		break;
@@ -383,7 +383,7 @@ void Tiger::SetupNodeVectors()
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "B"));
 	nodeGroupC.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "C"));
-	//nodeGroupGrind.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
+	nodeGroupGrind.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
 }
 
 void Tiger::DrawMinimap( sf::RenderTarget *target )
@@ -391,7 +391,7 @@ void Tiger::DrawMinimap( sf::RenderTarget *target )
 	Enemy::DrawMinimap(target);
 	palmSummonGroup.DrawMinimap(target);
 	targetGroup.DrawMinimap(target);
-	spinTurretSummonGroup.DrawMinimap(target);
+	//spinTurretSummonGroup.DrawMinimap(target);
 }
 
 void Tiger::FrameIncrement()
@@ -410,6 +410,10 @@ bool Tiger::IsDecisionValid(int d)
 	{
 		return false;
 	}
+	else if (d == TEST && targetGroup.numActiveEnemies != 0)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -424,7 +428,7 @@ void Tiger::SeqWait()
 	action = SEQ_WAIT;
 	frame = 0;
 	snakePool.Reset();
-	spinTurretSummonGroup.Reset();
+	//spinTurretSummonGroup.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
 	enemyMover.Reset();
@@ -484,11 +488,11 @@ void Tiger::InitEnemyForSummon(SummonGroup *group,
 		e->startPosInfo.SetGround(summonNode->poly,
 			summonNode->edgeIndex, summonNode->edgeQuantity);
 	}
-	else if (group == &spinTurretSummonGroup)
+	/*else if (group == &spinTurretSummonGroup)
 	{
 		TigerSpinTurret *t = (TigerSpinTurret*)e;
 		t->Init(GetPosition(), PlayerDir());
-	}
+	}*/
 	else if (group == &targetGroup)
 	{
 		PoiInfo *summonNode;
