@@ -9,6 +9,9 @@ struct TigerTarget : Enemy
 	enum Action
 	{
 		NEUTRAL,
+		HEAT_UP,
+		ATTACK_TIGER,
+		ATTACK_PLAYER,
 		A_Count
 	};
 

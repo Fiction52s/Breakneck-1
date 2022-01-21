@@ -41,13 +41,15 @@ Tiger::Tiger(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
-	actionLength[TEST] = 180;//10000;
+	actionLength[CHARGE_FLAME_TARGETS] = 300;//180;
+	actionLength[CHARGE_FLAME_STUN] = 180;
+	actionLength[FLAME_TARGET_ATTACK] = 120;
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
-	stageMgr.AddActiveOption(0, TEST, 2);
+	stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
 	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
@@ -169,8 +171,12 @@ void Tiger::ActionEnded()
 	case MOVE_JUMP:
 	case SUMMON:
 	case THROW_SPINTURRET:
-	case TEST:
+	case FLAME_TARGET_ATTACK:
+	case CHARGE_FLAME_STUN:
 		Decide();
+		break;
+	case CHARGE_FLAME_TARGETS:
+		SetAction( FLAME_TARGET_ATTACK );
 		break;
 	case COMBOMOVE:
 		SetNextComboAction();

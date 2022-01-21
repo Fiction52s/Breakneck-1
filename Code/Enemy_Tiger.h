@@ -26,6 +26,9 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		SUMMON,
 		THROW_SPINTURRET,
 		SEQ_WAIT,
+		CHARGE_FLAME_TARGETS,
+		FLAME_TARGET_ATTACK,
+		CHARGE_FLAME_STUN,
 		A_Count
 	};
 

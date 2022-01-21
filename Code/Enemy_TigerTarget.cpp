@@ -18,6 +18,9 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 2;
+	actionLength[HEAT_UP] = 120;
+	actionLength[ATTACK_TIGER] = 2;
+	actionLength[ATTACK_PLAYER] = 2;
 
 	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
 	sprite.setTexture(*ts->texture);
@@ -31,7 +34,7 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	//BasicCircleHitBodySetup(16);
+	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);
 
 	hitBody.hitboxInfo = hitboxInfo;
@@ -68,23 +71,20 @@ void TigerTarget::SetLevel(int lev)
 //		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 //		ConfirmHitNoKill();
 //
-//		if (receivedHit->hType == HitboxInfo::COMBO)
-//		{
-//			comboHitEnemy->ComboKill(this);
-//		}
-//
-//		action = DISSIPATE;
+//		action = ATTACK_TIGER;
 //		frame = 0;
 //		HitboxesOff();
+//		//DefaultH
 //		HurtboxesOff();
 //	}
 //}
 
 void TigerTarget::ResetEnemy()
 {
-	action = NEUTRAL;
+	action = HEAT_UP;
 	frame = 0;
 
+	HitboxesOff();
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
@@ -102,7 +102,9 @@ void TigerTarget::ActionEnded()
 		frame = 0;
 		switch (action)
 		{
-		case NEUTRAL:
+		case HEAT_UP:
+			numHealth = 0;
+			dead = true;
 			break;
 		}
 	}
