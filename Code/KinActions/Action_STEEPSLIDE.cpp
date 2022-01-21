@@ -6,7 +6,7 @@ using namespace std;
 
 void Actor::STEEPSLIDE_Start()
 {
-	repeatingSound = ActivateSound(PlayerSounds::S_STEEPSLIDE, true);
+	ActivateRepeatingSound(PlayerSounds::S_STEEPSLIDE, true);
 
 	V2d norm = ground->Normal();
 

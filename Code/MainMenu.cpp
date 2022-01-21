@@ -742,9 +742,9 @@ void MainMenu::Init()
 	indEffectPool->Reset();
 
 
-	soundBuffers[S_DOWN] = soundManager.GetSound( "menu_down" );
-	soundBuffers[S_UP] = soundManager.GetSound( "menu_up" );
-	soundBuffers[S_SELECT] = soundManager.GetSound( "menu_select" );
+	soundInfos[S_DOWN] = soundManager.GetSound( "menu_down" );
+	soundInfos[S_UP] = soundManager.GetSound( "menu_up" );
+	soundInfos[S_SELECT] = soundManager.GetSound( "menu_select" );
 
 	ts_loadBG = NULL;
 

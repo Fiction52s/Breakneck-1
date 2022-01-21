@@ -1132,12 +1132,12 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 }
 
 
-sf::SoundBuffer *Session::GetSound(const std::string &name)
+SoundInfo *Session::GetSound(const std::string &name)
 {
 	return soundManager->GetSound(name);
 }
 
-SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundBuffer *buffer, bool loop)
+SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundInfo *si, bool loop)
 {
 	sf::Rect<double> soundRect = screenRect;
 	double soundExtra = 300;
@@ -1148,7 +1148,7 @@ SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundBuffer *buffer, bool loop)
 
 	if (soundRect.contains(pos))
 	{
-		return soundNodeList->ActivateSound(buffer, loop);
+		return soundNodeList->ActivateSound(si, loop);
 	}
 	else
 	{
@@ -1156,14 +1156,14 @@ SoundNode *Session::ActivateSoundAtPos(V2d &pos, SoundBuffer *buffer, bool loop)
 	}
 }
 
-SoundNode *Session::ActivateSound(sf::SoundBuffer *buffer, bool loop)
+SoundNode *Session::ActivateSound(SoundInfo *si, bool loop)
 {
-	return soundNodeList->ActivateSound(buffer, loop);
+	return soundNodeList->ActivateSound(si, loop);
 }
 
-SoundNode *Session::ActivatePauseSound(sf::SoundBuffer *buffer, bool loop)
+SoundNode *Session::ActivatePauseSound(SoundInfo *si, bool loop)
 {
-	return pauseSoundNodeList->ActivateSound(buffer, loop);
+	return pauseSoundNodeList->ActivateSound(si, loop);
 }
 
 void Session::AllocateEffects()

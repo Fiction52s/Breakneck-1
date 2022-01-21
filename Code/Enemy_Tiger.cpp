@@ -41,17 +41,17 @@ Tiger::Tiger(ActorParams *ap)
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
-	actionLength[TEST] = 10000;
+	actionLength[TEST] = 60;//10000;
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
 	stageMgr.AddActiveOption(0, TEST, 2);
-	//stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
-	//stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
+	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
 	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
-	//stageMgr.AddActiveOption(0, SUMMON, 2);
+	stageMgr.AddActiveOption(0, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
@@ -169,6 +169,7 @@ void Tiger::ActionEnded()
 	case MOVE_JUMP:
 	case SUMMON:
 	case THROW_SPINTURRET:
+	case TEST:
 		Decide();
 		break;
 	case COMBOMOVE:
@@ -197,24 +198,27 @@ void Tiger::HandleAction()
 	}
 	case MOVE_GRIND:
 	{
-		double dist = PlayerDist();
+		/*double dist = PlayerDist();
 		if (framesSinceRush > 60 && dist > 500 && dist < 2000)
 		{
 			SetAction(MOVE_RUSH);
-		}
+		}*/
 		break;
 	}
 	case TEST:
 	{
-		if (targetGroup.numActiveEnemies == 0)
-		{
-			nodeGroupC.pickers[0].ShuffleActiveOptions();
-			for (int i = 0; i < 3; ++i)
-			{
-				targetGroup.Summon();
-			}
-			
-		}
+		//if (targetGroup.numActiveEnemies == 0)
+		//{
+		//	nodeGroupC.pickers[0].ShuffleActiveOptions();
+		//	for (int i = 0; i < 3; ++i)
+		//	{
+		//		targetGroup.Summon();
+		//	}
+		//	
+		//	//snakePool.Throw( TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
+		//}
+
+		
 		break;
 	}
 	}
@@ -278,7 +282,9 @@ void Tiger::StartAction()
 	}
 	case THROW_SPINTURRET:
 	{
-		spinTurretSummonGroup.Summon();
+		PoiInfo *node = nodeGroupA.AlwaysGetNextNode();//nodeGroupGrind.AlwaysGetNextNode();
+		snakePool.ThrowAt(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), node);
+		//spinTurretSummonGroup.Summon();
 		break;
 	}
 	case MOVE_LUNGE:
@@ -333,6 +339,8 @@ void Tiger::StartAction()
 		{
 			targetGroup.Summon();
 		}
+
+		//snakePool.Throw( TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
 		break;
 	}
 
@@ -375,6 +383,7 @@ void Tiger::SetupNodeVectors()
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "B"));
 	nodeGroupC.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "C"));
+	//nodeGroupGrind.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_TIGER, "A"));
 }
 
 void Tiger::DrawMinimap( sf::RenderTarget *target )

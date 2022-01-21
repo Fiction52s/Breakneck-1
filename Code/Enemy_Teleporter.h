@@ -44,7 +44,7 @@ struct Teleporter : Enemy
 	bool TryTeleport();
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
-	sf::SoundBuffer *launchSoundBuf;
+	SoundInfo *launchSoundBuf;
 
 	void UpdateSprite();
 	void DirectKill();

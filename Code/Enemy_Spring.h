@@ -33,7 +33,7 @@ struct Spring : Enemy
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
-	sf::SoundBuffer *launchSoundBuf;
+	SoundInfo *launchSoundBuf;
 	
 	void UpdateSprite();
 	void DirectKill();

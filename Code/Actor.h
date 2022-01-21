@@ -24,6 +24,8 @@
 #include "EnemyTracker.h"
 #include "PlayerSkinShader.h"
 
+struct SoundInfo;
+
 struct SwordProjectile;
 
 struct PState;
@@ -826,7 +828,7 @@ struct Actor : QuadTreeCollider,
 	sf::Sprite grindAttackSprite;
 	Tileset *ts_blockShield;
 	
-	std::vector<sf::SoundBuffer*> soundBuffers;
+	std::vector<SoundInfo*> soundInfos;
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
 	Tileset *ts_fx_launchParticle;
@@ -876,6 +878,8 @@ struct Actor : QuadTreeCollider,
 	EffectPool *uairLightningPool[4];
 	EffectPool *dairLightningPool[4];
 	EffectPool *gateBlackFXPool;
+	//might need more repeating sounds
+	//in future, but for now this works.
 	SoundNode *repeatingSound;
 	Team team;
 	int spriteAction;
@@ -1337,6 +1341,7 @@ struct Actor : QuadTreeCollider,
 	bool PowerButtonHeld();
 	bool PowerButtonPressed();
 	SoundNode * ActivateSound(int st, bool loop = false);
+	SoundNode *ActivateRepeatingSound(int st, bool loop = false);
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,
 		Tileset *ts,
@@ -1363,7 +1368,7 @@ struct Actor : QuadTreeCollider,
 	QuadTree *GetBarrierTree();
 	QuadTree *GetBorderTree();
 	Collider &GetCollider();
-	sf::SoundBuffer * GetSound(const std::string &name);
+	SoundInfo * GetSound(const std::string &name);
 	CollisionBody *CreateCollisionBody(const std::string &str);
 	bool IsGroundAttack(int a);
 	GameController &GetController(int index);
@@ -1608,6 +1613,7 @@ struct Actor : QuadTreeCollider,
 	double GetBounceFlameAccel();
 	void GroundExtraAccel();
 	double GetDashSpeed();
+	void StopRepeatingSound();
 	double GetOriginalDashSpeed();
 	double GetAirDashSpeed();
 	void AddToFlyCounter(int count);

@@ -661,7 +661,7 @@ Tileset *Enemy::GetSizedTileset(const std::string &s)
 	}
 }
 
-sf::SoundBuffer * Enemy::GetSound(const std::string &s)
+SoundInfo * Enemy::GetSound(const std::string &s)
 {
 	if (sess->specialTempSoundManager != NULL)
 	{

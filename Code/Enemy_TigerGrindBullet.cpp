@@ -43,7 +43,7 @@ void GrindFirePool::Reset()
 	}
 }
 
-GrindFire * GrindFirePool::Create(V2d &pos, Edge *ground, double quant )
+GrindFire * GrindFirePool::Create( int type, V2d &pos, Edge *ground, double quant )
 {
 	GrindFire *bs = NULL;
 	for (int i = 0; i < numFires; ++i)
@@ -51,7 +51,7 @@ GrindFire * GrindFirePool::Create(V2d &pos, Edge *ground, double quant )
 		bs = fireVec[i];
 		if (!bs->spawned)
 		{
-			bs->Create(pos, ground, quant );
+			bs->Create( type, pos, ground, quant );
 			break;
 		}
 	}
@@ -69,8 +69,8 @@ GrindFire::GrindFire(sf::Vertex *myQuad, GrindFirePool *pool)
 	SetNumActions(A_Count);
 	SetEditorActions(BURN, 0, 0);
 
-	actionLength[BURN] = 4;
-	animFactor[BURN] = 6;
+	actionLength[BURN] = 4 * 20;
+	animFactor[BURN] = 1;
 
 	quad = myQuad;
 
@@ -92,6 +92,12 @@ GrindFire::GrindFire(sf::Vertex *myQuad, GrindFirePool *pool)
 
 void GrindFire::ResetEnemy()
 {
+	/*switch (gbType)
+	{
+		case TigerGrindBullet::G
+	}*/
+
+
 	ClearRect(quad);
 
 	facingRight = true;
@@ -135,8 +141,10 @@ V2d GrindFire::GetThrowDir(V2d &dir)
 	return V2d(cos(trueAngle), -sin(trueAngle));
 }
 
-void GrindFire::Create(V2d &pos, Edge *ground, double quant )
+void GrindFire::Create( int type, V2d &pos, Edge *ground, double quant )
 {
+	gbType = type;
+
 	Reset();
 	sess->AddEnemy(this);
 
@@ -215,7 +223,7 @@ void TigerGrindBulletPool::Reset()
 	}
 }
 
-TigerGrindBullet * TigerGrindBulletPool::Throw(V2d &pos, V2d &dir)
+TigerGrindBullet * TigerGrindBulletPool::Throw( int type, V2d &pos, V2d &dir)
 {
 	TigerGrindBullet *bs = NULL;
 	for (int i = 0; i < numBullets; ++i)
@@ -223,7 +231,22 @@ TigerGrindBullet * TigerGrindBulletPool::Throw(V2d &pos, V2d &dir)
 		bs = bulletVec[i];
 		if (!bs->spawned)
 		{
-			bs->Throw(pos, dir);
+			bs->Throw(type, pos, dir);
+			break;
+		}
+	}
+	return bs;
+}
+
+TigerGrindBullet * TigerGrindBulletPool::ThrowAt(int type, V2d &pos, PoiInfo *dest)
+{
+	TigerGrindBullet *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (!bs->spawned)
+		{
+			bs->ThrowAt(type, pos, dest);
 			break;
 		}
 	}
@@ -244,7 +267,10 @@ TigerGrindBullet::TigerGrindBullet(sf::Vertex *myQuad, TigerGrindBulletPool *poo
 	actionLength[THROWN] = 1;
 	animFactor[THROWN] = 1;
 
-	actionLength[GRIND] = 10;
+	actionLength[THROWN_AT] = 1;
+	animFactor[THROWN] = 1;
+
+	actionLength[GRIND] = 4;
 	animFactor[GRIND] = 1;
 
 	quad = myQuad;
@@ -278,6 +304,8 @@ void TigerGrindBullet::ResetEnemy()
 	action = THROWN;
 	frame = 0;
 
+	destPoi = NULL;
+
 	firePool.Reset();
 
 	DefaultHitboxesOn();
@@ -287,9 +315,7 @@ void TigerGrindBullet::ResetEnemy()
 
 void TigerGrindBullet::HitTerrainAerial(Edge *e, double quant)
 {
-	action = GRIND;
-	frame = 0;
-	surfaceMover->SetSpeed(10);
+	StartGrind();
 }
 
 void TigerGrindBullet::SetLevel(int lev)
@@ -323,8 +349,10 @@ V2d TigerGrindBullet::GetThrowDir(V2d &dir)
 	return V2d(cos(trueAngle), -sin(trueAngle));
 }
 
-void TigerGrindBullet::Throw(V2d &pos, V2d &dir)
+void TigerGrindBullet::Throw( int type, V2d &pos, V2d &dir)
 {
+	gbType = (GrindBulletType)type;
+
 	Reset();
 	sess->AddEnemy(this);
 
@@ -336,8 +364,70 @@ void TigerGrindBullet::Throw(V2d &pos, V2d &dir)
 	surfaceMover->velocity = dir * flySpeed;
 }
 
+void TigerGrindBullet::ThrowAt(int type, V2d &pos, PoiInfo *pi)
+{
+	gbType = (GrindBulletType)type;
+
+	Reset();
+	sess->AddEnemy(this);
+
+	currPosInfo.position = pos;
+	currPosInfo.ground = NULL;
+
+	surfaceMover->Set(currPosInfo);
+
+	action = THROWN_AT;
+	frame = 0;
+	destPoi = pi;
+
+	V2d diff = pi->edge->GetPosition(pi->edgeQuantity) - GetPosition();
+	V2d dir = normalize( diff );
+
+	surfaceMover->collisionOn = false;
+	surfaceMover->velocity = dir * flySpeed;
+
+	framesToArriveToDestPoi = ceil(length(diff) / flySpeed);
+}
+
+void TigerGrindBullet::StartGrind()
+{
+	action = GRIND;
+	frame = 0;
+
+	double speed = 10;
+
+	switch (gbType)
+	{
+	case GB_REGULAR_CW:
+		speed = 10;
+		break;
+	case GB_REGULAR_CCW:
+		speed = -10;
+		break;
+	case GB_FAST_CW:
+		speed = 15;
+		break;
+	case GB_FAST_CCW:
+		speed = -15;
+		break;
+	}
+	surfaceMover->SetSpeed(speed);
+}
+
 void TigerGrindBullet::FrameIncrement()
 {
+	if (action == THROWN_AT)
+	{
+		--framesToArriveToDestPoi;
+		if (framesToArriveToDestPoi <= 0)
+		{
+			PositionInfo posInfo;
+			posInfo.SetGround(destPoi->poly, destPoi->edgeIndex, destPoi->edgeQuantity);
+			surfaceMover->Set(posInfo);
+			StartGrind();
+			destPoi = NULL;
+		}
+	}
 }
 
 void TigerGrindBullet::ProcessState()
@@ -348,15 +438,17 @@ void TigerGrindBullet::ProcessState()
 		{
 		case THROWN:
 			break;
+		case THROWN_AT:
+			break;
 		case GRIND:
 			break;
 		}
 		frame = 0;
 	}
 
-	if (action == GRIND)
+	if (action == GRIND && frame == 1)
 	{
-		firePool.Create(GetPosition(), surfaceMover->ground, surfaceMover->edgeQuantity);
+		firePool.Create( gbType, GetPosition(), surfaceMover->ground, surfaceMover->edgeQuantity);
 	}
 }
 

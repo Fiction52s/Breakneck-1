@@ -6,6 +6,27 @@ using namespace std;
 using namespace sf;
 
 
+void SoundNode::Play(SoundInfo *p_info, int p_volume, bool p_loop)
+{
+	info = p_info;
+	loop = p_loop;
+	volume = p_volume;
+
+	sound.stop();
+	sound.setBuffer(*(info->buffer));
+	sound.setLoop(loop);
+	sound.setVolume(volume);
+	sound.play();
+}
+
+void SoundNode::Stop()
+{
+	sound.stop();
+	info = NULL;
+	volume = -1;
+	loop = false;
+}
+
 SoundNodeList::SoundNodeList( int p_maxSounds )
 {
 	maxSounds = p_maxSounds;
@@ -59,9 +80,9 @@ SoundNodeList::~SoundNodeList()
 	}
 }
 
-SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
+SoundNode * SoundNodeList::ActivateSound(SoundInfo *info, bool loop)
 {
-	if (buffer == NULL)
+	if (info == NULL || info->buffer == NULL )
 		return NULL;
 
 	if (soundVolume == 0)
@@ -78,11 +99,10 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 			curr = curr->next;
 		}
 
-		curr->sound.stop();
-		curr->sound.setBuffer( *buffer );
-		curr->sound.setLoop(loop);
-		curr->sound.setVolume(soundVolume);
-		curr->sound.play();
+		//curr->sound.stop();
+
+		curr->Play(info, soundVolume, loop);
+
 		return curr;
 		
 	}
@@ -95,10 +115,8 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 			activeList = inactiveList;
 			inactiveList = NULL;
 
-			activeList->sound.setBuffer( *buffer );
-			activeList->sound.setLoop(loop);
-			activeList->sound.setVolume(soundVolume);
-			activeList->sound.play();
+			activeList->Play(info, soundVolume, loop);
+
 			return activeList;
 			//activeList->sound.get
 		}
@@ -115,10 +133,8 @@ SoundNode * SoundNodeList::ActivateSound(SoundBuffer *buffer, bool loop )
 			inactiveList = next;
 			next->prev = NULL;
 
-			activeList->sound.setBuffer( *buffer );
-			activeList->sound.setLoop(loop);
-			activeList->sound.setVolume(soundVolume);
-			activeList->sound.play();
+			activeList->Play(info, soundVolume, loop);
+
 			return activeList;
 		}
 	}
@@ -133,7 +149,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 	if( sn->next == NULL && sn->prev == NULL )
 	{
 		//cout << "a" << endl;
-		sn->sound.stop();
+		sn->Stop();
 		sn->next = inactiveList;
 		inactiveList->prev = sn;
 		inactiveList = sn;
@@ -151,7 +167,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 			//cout << "before b count: " << a << ", inactive: " << n << endl;
 		//	cout << "b" << endl;
 			//assert( sn != activeList );
-			sn->sound.stop();
+			sn->Stop();
 
 			sn->prev->next = NULL;
 			sn->prev = NULL;
@@ -177,7 +193,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 		else if( sn->prev == NULL )
 		{
 			//cout << "c" << endl;
-			sn->sound.stop();
+			sn->Stop();
 			sn->next->prev = NULL;
 			activeList = sn->next;
 
@@ -200,7 +216,7 @@ void SoundNodeList::DeactivateSound( SoundNode *sn )
 		else
 		{
 			//cout << "d" << endl;
-			sn->sound.stop();
+			sn->Stop();
 			SoundNode * next = sn->next;
 			SoundNode * prev = sn->prev;
 			next->prev = prev;
@@ -358,13 +374,13 @@ SoundManager::~SoundManager()
 //	return ms->music;
 //}
 
-sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
+SoundInfo * SoundManager::GetSound( const std::string &name )
 {
 	for( list<SoundInfo*>::iterator it = sounds.begin(); it != sounds.end(); ++it )
 	{
 		if( (*it)->name == name )
 		{
-			return (*it)->buffer;
+			return (*it);
 		}
 	}
 
@@ -395,7 +411,7 @@ sf::SoundBuffer * SoundManager::GetSound( const std::string &name )
 	}
 	
 
-	return si->buffer;
+	return si;
 	//make sure to set up tileset here
 }
 

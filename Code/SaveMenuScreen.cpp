@@ -395,7 +395,7 @@ bool SaveMenuScreen::Update()
 			mainMenu->transAlpha = 255;
 			mainMenu->worldMap->state = WorldMap::PLANET;//WorldMap::PLANET_AND_SPACE;
 			mainMenu->worldMap->frame = 0;
-			mainMenu->soundNodeList->ActivateSound(mainMenu->soundBuffers[MainMenu::S_SELECT]);
+			mainMenu->soundNodeList->ActivateSound(mainMenu->soundInfos[MainMenu::S_SELECT]);
 
 			mainMenu->worldMap->InitSelectors();
 			return true;

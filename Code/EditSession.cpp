@@ -11078,6 +11078,16 @@ void EditSession::CleanupTestPlayerMode()
 	fader->Reset();
 	swiper->Reset();
 
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->StopRepeatingSound();
+		}
+	}
+
 	
 
 	ResetEnemies();
@@ -11105,6 +11115,8 @@ void EditSession::CleanupTestPlayerMode()
 	{
 		(*it)->ResetState();
 	}
+
+	//soundNodeList->Clear(); turn back on again
 
 	for (auto it = rails.begin(); it != rails.end(); ++it)
 	{
@@ -13151,6 +13163,17 @@ void EditSession::HandleEvents()
 					background->FlipShown();
 				continue;
 			}
+			else if (ev.key.code == sf::Keyboard::F10)
+			{
+				SoundNode *test = soundNodeList->activeList;
+				int n = 0;
+				while (test != NULL)
+				{
+					cout << n << ": " << test->info->name << endl;
+					test = test->next;
+					++n;
+				}
+			}
 		}
 
 		bool focuseHandled = false;
@@ -13654,6 +13677,7 @@ void EditSession::EditModeHandleEvent()
 			/*brushManager->SaveBrush(selectedBrush, "Resources/Brushes/", 
 				"testbrush");*/
 		}
+		
 		break;
 	}
 	case Event::KeyReleased:

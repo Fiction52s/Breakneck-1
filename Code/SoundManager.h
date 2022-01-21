@@ -22,7 +22,7 @@ struct SoundManager
 {
 	~SoundManager();
 	//sf::Music *GetMusic( const std::string &name );
-	sf::SoundBuffer *GetSound( const std::string &name );
+	SoundInfo *GetSound( const std::string &name );
 	void ClearAll();
 	std::list<SoundInfo*> sounds;
 	//std::list<MusicInfo*> songs;
@@ -31,14 +31,22 @@ struct SoundManager
 
 struct SoundNode
 {
-	SoundNode()
-		:next( NULL ),
-		prev( NULL )
-	{
-	}
 	SoundNode *next;
 	SoundNode *prev;
 	sf::Sound sound;
+	SoundInfo *info;
+	bool loop;
+	int volume;
+
+	SoundNode()
+		:next(NULL),
+		prev(NULL)
+	{
+	}
+	void Play(SoundInfo *info,
+		int volume,
+		bool loop );
+	void Stop();
 };
 
 struct SoundNodeList
@@ -55,7 +63,7 @@ struct SoundNodeList
 	int GetInactiveCount();
 	SoundNode *activeList;
 	SoundNode *inactiveList;
-	SoundNode * ActivateSound( sf::SoundBuffer *buffer,
+	SoundNode * ActivateSound( SoundInfo *info,
 		bool loop = false);
 	void Pause( bool p );
 	bool paused;

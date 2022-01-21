@@ -11,6 +11,7 @@
 #include "MovingGeo.h"
 #include "VectorMath.h"
 #include <SFML/Audio.hpp>
+#include "SoundManager.h"
 
 struct Edge;
 struct MovementSequence;
@@ -460,7 +461,7 @@ struct SuperSequence : Sequence
 	int portraitFrame;
 
 	int portraitEnterFrames;
-	sf::SoundBuffer *birdSound;
+	SoundInfo *birdSound;
 
 	SuperSequence();
 	void Reset();

@@ -667,7 +667,7 @@ void Actor::SetSession(Session *p_sess,
 //}
 
 
-sf::SoundBuffer * Actor::GetSound(const std::string &name)
+SoundInfo * Actor::GetSound(const std::string &name)
 {
 	return sess->soundManager->GetSound(name);
 }
@@ -753,9 +753,9 @@ SoundNode * Actor::ActivateSound(int st, bool loop )
 		return NULL;
 	}
 
-	SoundBuffer *sb = soundBuffers[st];
+	SoundInfo *si = soundInfos[st];
 
-	if (sb == NULL)
+	if (si == NULL)
 		return NULL;
 
 	
@@ -763,8 +763,19 @@ SoundNode * Actor::ActivateSound(int st, bool loop )
 	//for multiplayer testing
 	//if (hitlagFrames == 0)
 	//{
-		return sess->soundNodeList->ActivateSound(sb, loop);
+		return sess->soundNodeList->ActivateSound(si, loop);
 	//}
+}
+
+SoundNode * Actor::ActivateRepeatingSound(int st, bool loop )
+{
+	if (simulationMode)
+	{
+		return NULL;
+	}
+	StopRepeatingSound();
+	repeatingSound = ActivateSound(st, loop);
+	return repeatingSound;
 }
 
 void Actor::DeactivateSound(SoundNode *sn)
@@ -2918,7 +2929,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
 
-	soundBuffers.resize(PlayerSounds::S_Count);
+	soundInfos.resize(PlayerSounds::S_Count);
 
 	maxFallSpeedWhileHitting = 4.0;
 	hitGrassHitInfo.damage = 60;//3 * 60;
@@ -3159,72 +3170,68 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 		cout << "TIME SLOW SHADER NOT LOADING CORRECTLY" << endl;
 		assert( 0 && "time slow shader not loaded" );
 	}*/
-
-
-	//int sizeofsoundbuf = sizeof(soundBuffers);
-	//memset(soundBuffers, 0, sizeofsoundbuf );
 		
-	soundBuffers[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
-	soundBuffers[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
-	soundBuffers[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
-	soundBuffers[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
-	soundBuffers[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
-	soundBuffers[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
-	soundBuffers[PlayerSounds::S_FAIR1] = GetSound("Kin/fair");
-	soundBuffers[PlayerSounds::S_JUMP] = GetSound("Kin/jump");
-	soundBuffers[PlayerSounds::S_LAND] = GetSound("Kin/land");
-	soundBuffers[PlayerSounds::S_RUN_STEP1] = GetSound( "Kin/run_01a" );
-	soundBuffers[PlayerSounds::S_RUN_STEP2] = GetSound( "Kin/run_01b" );
-	soundBuffers[PlayerSounds::S_SLIDE] = GetSound("Kin/slide");
-	soundBuffers[PlayerSounds::S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
-	soundBuffers[PlayerSounds::S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
-	soundBuffers[PlayerSounds::S_STANDATTACK] = GetSound("Kin/stand");
-	soundBuffers[PlayerSounds::S_STEEPSLIDE] = GetSound("Kin/steep");
-	soundBuffers[PlayerSounds::S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
-	soundBuffers[PlayerSounds::S_UAIR] = GetSound("Kin/uair");
-	soundBuffers[PlayerSounds::S_WALLATTACK] = GetSound("Kin/wall_att");
-	soundBuffers[PlayerSounds::S_WALLJUMP] = GetSound("Kin/walljump");
-	soundBuffers[PlayerSounds::S_WALLSLIDE] = GetSound("Kin/wallslide");
+	soundInfos[PlayerSounds::S_HITCEILING] = GetSound("Kin/ceiling");
+	soundInfos[PlayerSounds::S_CLIMB_STEP1] = GetSound("Kin/climb_01a");
+	soundInfos[PlayerSounds::S_CLIMB_STEP2] = GetSound("Kin/climb_02a");
+	soundInfos[PlayerSounds::S_DAIR] = GetSound("Kin/dair");
+	soundInfos[PlayerSounds::S_DOUBLE] = GetSound("Kin/doublejump");
+	soundInfos[PlayerSounds::S_DOUBLEBACK] = GetSound("Kin/doublejump_back");
+	soundInfos[PlayerSounds::S_FAIR1] = GetSound("Kin/fair");
+	soundInfos[PlayerSounds::S_JUMP] = GetSound("Kin/jump");
+	soundInfos[PlayerSounds::S_LAND] = GetSound("Kin/land");
+	soundInfos[PlayerSounds::S_RUN_STEP1] = GetSound( "Kin/run_01a" );
+	soundInfos[PlayerSounds::S_RUN_STEP2] = GetSound( "Kin/run_01b" );
+	soundInfos[PlayerSounds::S_SLIDE] = GetSound("Kin/slide");
+	soundInfos[PlayerSounds::S_SPRINT_STEP1] = GetSound( "Kin/sprint_01a" );
+	soundInfos[PlayerSounds::S_SPRINT_STEP2] = GetSound( "Kin/sprint_01b" );
+	soundInfos[PlayerSounds::S_STANDATTACK] = GetSound("Kin/stand");
+	soundInfos[PlayerSounds::S_STEEPSLIDE] = GetSound("Kin/steep");
+	soundInfos[PlayerSounds::S_STEEPSLIDEATTACK] = GetSound("Kin/steep_att");
+	soundInfos[PlayerSounds::S_UAIR] = GetSound("Kin/uair");
+	soundInfos[PlayerSounds::S_WALLATTACK] = GetSound("Kin/wall_att");
+	soundInfos[PlayerSounds::S_WALLJUMP] = GetSound("Kin/walljump");
+	soundInfos[PlayerSounds::S_WALLSLIDE] = GetSound("Kin/wallslide");
 
-	soundBuffers[PlayerSounds::S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
-	soundBuffers[PlayerSounds::S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
-	soundBuffers[PlayerSounds::S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
-	soundBuffers[PlayerSounds::S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH1] = GetSound("Kin/goal_kill_01");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH2] = GetSound("Kin/goal_kill_02");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH3] = GetSound("Kin/goal_kill_03");
+	soundInfos[PlayerSounds::S_GOALKILLSLASH4] = GetSound("Kin/goal_kill_04");
 
-	soundBuffers[PlayerSounds::S_ENEMY_GATE_UNLOCKED] = GetSound("Test/Explode");
-	soundBuffers[PlayerSounds::S_OPEN_ENEMY_GATE] = GetSound("Zone/Gate_Open_03");
+	soundInfos[PlayerSounds::S_ENEMY_GATE_UNLOCKED] = GetSound("Test/Explode");
+	soundInfos[PlayerSounds::S_OPEN_ENEMY_GATE] = GetSound("Zone/Gate_Open_03");
 
-	soundBuffers[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
+	soundInfos[PlayerSounds::S_HIT] = GetSound("Enemies/turret_shoot");
 
-	soundBuffers[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
-	soundBuffers[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
+	soundInfos[PlayerSounds::S_DESTROY_GOAL] = GetSound("Test/Explode");
+	soundInfos[PlayerSounds::S_LEVEL_COMPLETE] = GetSound("Zone/Level_Complete_06");
 
-	soundBuffers[PlayerSounds::S_ENTER_W1] = GetSound("Test/Crawler_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W2] = GetSound("Test/Bird_Theme_04");
-	soundBuffers[PlayerSounds::S_ENTER_W3] = GetSound("Test/Coyote_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W4] = GetSound("Test/Tiger_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W5] = GetSound("Test/Gator_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W6] = GetSound("Test/Skele_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
-	soundBuffers[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
-	soundBuffers[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
-	//soundBuffers[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
+	soundInfos[PlayerSounds::S_ENTER_W1] = GetSound("Test/Crawler_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W2] = GetSound("Test/Bird_Theme_04");
+	soundInfos[PlayerSounds::S_ENTER_W3] = GetSound("Test/Coyote_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W4] = GetSound("Test/Tiger_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W5] = GetSound("Test/Gator_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W6] = GetSound("Test/Skele_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W7] = GetSound("Test/Core_Theme_01");
+	soundInfos[PlayerSounds::S_ENTER_W8] = GetSound("Test/Bear_Theme_01");
+	soundInfos[PlayerSounds::S_HURT] = GetSound("Kin/Hurt_02");
+	//soundInfos[S_GRAVREVERSE] = GetSound("Kin/gravreverse");
 
-	/*soundBuffers[S_DASH_START] = GetSound( "Kin/dash_02" );
-	soundBuffers[S_HIT] = GetSound( "kin_hitspack_short" );
-	soundBuffers[S_HURT] = GetSound( "Kin/hit_1b" );
-	soundBuffers[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
-	soundBuffers[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
+	/*soundInfos[S_DASH_START] = GetSound( "Kin/dash_02" );
+	soundInfos[S_HIT] = GetSound( "kin_hitspack_short" );
+	soundInfos[S_HURT] = GetSound( "Kin/hit_1b" );
+	soundInfos[S_HIT_AND_KILL] = GetSound( "Kin/kin_hitspack" );
+	soundInfos[S_HIT_AND_KILL_KEY] = GetSound( "Kin/key_kill" );
 		
-	soundBuffers[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
-	soundBuffers[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
+	soundInfos[S_GRAVREVERSE] = GetSound( "Kin/gravreverse" );
+	soundInfos[S_BOUNCEJUMP] = GetSound( "Kin/bounce" );
 		
-	soundBuffers[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
-	soundBuffers[S_ENTER] = GetSound( "Kin/enter" );
-	soundBuffers[S_EXIT] = GetSound( "Kin/exit" );
+	soundInfos[S_TIMESLOW] = GetSound( "Kin/time_slow_1" );
+	soundInfos[S_ENTER] = GetSound( "Kin/enter" );
+	soundInfos[S_EXIT] = GetSound( "Kin/exit" );
 
-	soundBuffers[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
-	soundBuffers[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
+	soundInfos[S_DIAGUPATTACK] = soundBuffers[S_FAIR1];
+	soundInfos[S_DIAGDOWNATTACK] = soundBuffers[S_FAIR1];*/
 
 
 	currHitboxInfo = new HitboxInfo();
@@ -6756,11 +6763,7 @@ void Actor::SetAction( int a )
 	frame = 0;
 	currHitboxes = NULL;
 
-	if (repeatingSound != NULL)
-	{
-		DeactivateSound(repeatingSound);
-		repeatingSound = NULL;
-	}
+	StopRepeatingSound();
 
 	StartAction();
 		
@@ -14096,10 +14099,8 @@ void Actor::PhysicsResponse()
 					{
 						if( currInput.LLeft() && !currInput.LDown() )
 						{
-							//cout << "setting to wallcling" << endl;
 							facingRight = true;
 							SetAction(WALLCLING);
-							repeatingSound = ActivateSound(PlayerSounds::S_WALLSLIDE, true);
 							frame = 0;
 						}
 					}
@@ -14107,10 +14108,8 @@ void Actor::PhysicsResponse()
 					{
 						if( currInput.LRight() && !currInput.LDown() )
 						{
-							//cout << "setting to wallcling" << endl;
 							facingRight = false;
 							SetAction(WALLCLING);
-							repeatingSound = ActivateSound(PlayerSounds::S_WALLSLIDE, true);
 							
 							frame = 0;
 						}
@@ -21493,3 +21492,16 @@ void Actor::UpdateInHitlag()
 	 }
  }
 
+ void Actor::StopRepeatingSound()
+ {
+	 if (simulationMode)
+	 {
+		 return;
+	 }
+
+	 if (repeatingSound != NULL)
+	 {
+		 DeactivateSound(repeatingSound);
+		 repeatingSound = NULL;
+	 }
+ }

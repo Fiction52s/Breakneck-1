@@ -1,11 +1,12 @@
 #include "Actor.h"
+#include "SoundTypes.h"
 
 using namespace sf;
 using namespace std;
 
 void Actor::WALLCLING_Start()
 {
-	
+	ActivateRepeatingSound(PlayerSounds::S_WALLSLIDE, true);
 }
 
 void Actor::WALLCLING_End()

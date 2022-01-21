@@ -7,6 +7,7 @@
 struct Shield;
 
 
+
 struct BasicTurret : Enemy, LauncherEnemy
 {
 	enum Action
@@ -35,7 +36,7 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void BulletHitPlayer( int playerIndex,
 		BasicBullet *b,
 		int hitResult );
-	sf::SoundBuffer *fireSound;
+	SoundInfo *fireSound;
 	CollisionBox prelimBox[3];
 
 	void ResetEnemy();

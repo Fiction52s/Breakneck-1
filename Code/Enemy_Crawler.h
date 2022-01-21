@@ -18,7 +18,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
-	sf::SoundBuffer *deathSound;
+	SoundInfo *deathSound;
 	double totalDistBeforeBurrow;
 	double currDistTravelled;
 	Tileset *ts;

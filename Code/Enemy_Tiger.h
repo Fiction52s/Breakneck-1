@@ -54,6 +54,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
 	NodeGroup nodeGroupC;
+	//NodeGroup nodeGroupGrind;
 
 	V2d lastTargetDestroyedPos;
 

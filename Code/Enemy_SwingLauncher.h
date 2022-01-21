@@ -13,7 +13,7 @@ struct SwingLauncher : Enemy
 		A_Count
 	};
 
-	sf::SoundBuffer *launchSoundBuf;
+	SoundInfo *launchSoundBuf;
 	Tileset *ts_idle;
 	Tileset *ts_recover;
 	Tileset *ts_springing;

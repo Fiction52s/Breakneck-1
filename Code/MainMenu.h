@@ -581,7 +581,7 @@ struct MainMenu
 	GameRunType gameRunType;
 	SaveFile *GetCurrentProgress();
 	ControlProfileManager *cpm;
-	sf::SoundBuffer *soundBuffers[SoundType::S_Count];
+	SoundInfo *soundInfos[SoundType::S_Count];
 	MapSelectionMenu *mapSelectionMenu;
 	OptionsMenuScreen *optionsMenu;
 	CreditsMenuScreen *creditsMenu;

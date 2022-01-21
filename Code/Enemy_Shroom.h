@@ -31,7 +31,7 @@ struct Shroom : Enemy
 		sf::FloatRect &rect);
 	void SetZoneSpritePosition();
 
-	sf::SoundBuffer *hitSound;
+	SoundInfo *hitSound;
 
 	Tileset *ts;
 
@@ -68,7 +68,7 @@ struct ShroomJelly : Enemy
 
 	Tileset *ts;
 	
-	sf::SoundBuffer *floatSound;
+	SoundInfo *floatSound;
 
 	int cycleLimit;
 	int currentCycle;

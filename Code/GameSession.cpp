@@ -1561,20 +1561,20 @@ bool GameSession::Load()
 	cout << "weird timing 2" << endl;
 
 	//blah 2
-
-	gameSoundBuffers[S_KEY_COMPLETE_W1] = GetSound( "key_complete_w1.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W2] = GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W3] = GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W4] = GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W5] = GetSound( "key_complete_w2.ogg" );
-	gameSoundBuffers[S_KEY_COMPLETE_W6] = GetSound( "key_complete_w6.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_0] = GetSound( "key_enter_1.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_1] = GetSound( "key_enter_1.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_2] = GetSound( "key_enter_2.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_3] = GetSound( "key_enter_3.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_4] = GetSound( "key_enter_4.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_5] = GetSound( "key_enter_5.ogg" );
-	gameSoundBuffers[S_KEY_ENTER_6] = GetSound( "key_enter_6.ogg" );
+	
+	gameSoundInfos[S_KEY_COMPLETE_W1] = GetSound( "key_complete_w1.ogg" );
+	gameSoundInfos[S_KEY_COMPLETE_W2] = GetSound( "key_complete_w2.ogg" );
+	gameSoundInfos[S_KEY_COMPLETE_W3] = GetSound( "key_complete_w2.ogg" );
+	gameSoundInfos[S_KEY_COMPLETE_W4] = GetSound( "key_complete_w2.ogg" );
+	gameSoundInfos[S_KEY_COMPLETE_W5] = GetSound( "key_complete_w2.ogg" );
+	gameSoundInfos[S_KEY_COMPLETE_W6] = GetSound( "key_complete_w6.ogg" );
+	gameSoundInfos[S_KEY_ENTER_0] = GetSound( "key_enter_1.ogg" );
+	gameSoundInfos[S_KEY_ENTER_1] = GetSound( "key_enter_1.ogg" );
+	gameSoundInfos[S_KEY_ENTER_2] = GetSound( "key_enter_2.ogg" );
+	gameSoundInfos[S_KEY_ENTER_3] = GetSound( "key_enter_3.ogg" );
+	gameSoundInfos[S_KEY_ENTER_4] = GetSound( "key_enter_4.ogg" );
+	gameSoundInfos[S_KEY_ENTER_5] = GetSound( "key_enter_5.ogg" );
+	gameSoundInfos[S_KEY_ENTER_6] = GetSound( "key_enter_6.ogg" );
 
 	//blah 3
 

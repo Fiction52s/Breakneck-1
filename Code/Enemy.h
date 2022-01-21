@@ -8,6 +8,7 @@
 #include <SFML/Audio.hpp>
 #include "ObjectProperties.h"
 #include "ActorParams.h"
+#include "SoundManager.h"
 
 struct Wire;
 struct Zone;
@@ -118,10 +119,10 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	std::vector<Launcher*> launchers;
 	CuttableObject *cutObject;
 	HitboxInfo *hitboxInfo;
-	sf::SoundBuffer *genericDeathSound;
-	sf::SoundBuffer *finalDeathSound;
-	sf::SoundBuffer *keyDeathSound;
-	sf::SoundBuffer *keyUnlockDeathSound;
+	SoundInfo *genericDeathSound;
+	SoundInfo *finalDeathSound;
+	SoundInfo *keyDeathSound;
+	SoundInfo *keyUnlockDeathSound;
 	CollisionBody hurtBody;
 	CollisionBody hitBody;
 	int numLaunchers;
@@ -182,7 +183,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 		int tileWidth,
 		int tileHeight);
 	Tileset *GetSizedTileset(const std::string &s);
-	sf::SoundBuffer * GetSound(const std::string &s);
+	SoundInfo * GetSound(const std::string &s);
 	void SetSummonGroup(SummonGroup *p_summonGroup);
 	bool IsSummoning();
 	virtual ~Enemy();

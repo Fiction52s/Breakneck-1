@@ -337,7 +337,7 @@ struct GameSession : RayCastHandler, Session
 	
 	RaceFight *raceFight;
 	
-	sf::SoundBuffer * gameSoundBuffers[SoundType::Count];
+	SoundInfo * gameSoundInfos[SoundType::Count];
 	
 	
 	std::vector<RailPtr> allRails;

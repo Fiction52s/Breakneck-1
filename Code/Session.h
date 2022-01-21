@@ -540,10 +540,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	void RegisterW7Enemies();
 	void RegisterW8Enemies();
 	void RegisterAllEnemies();
-	sf::SoundBuffer *GetSound(const std::string &name);
-	SoundNode *ActivateSoundAtPos(V2d &pos, sf::SoundBuffer *buffer, bool loop = false);
-	SoundNode *ActivateSound(sf::SoundBuffer *buffer, bool loop = false);
-	SoundNode *ActivatePauseSound(sf::SoundBuffer *buffer, bool loop = false);
+	SoundInfo *GetSound(const std::string &name);
+	SoundNode *ActivateSoundAtPos(V2d &pos,SoundInfo * si, bool loop = false);
+	SoundNode *ActivateSound(SoundInfo *si, bool loop = false);
+	SoundNode *ActivatePauseSound(SoundInfo *si, bool loop = false);
 	int GetPauseFrames();
 	BasicEffect * ActivateEffect(
 		EffectLayer layer,

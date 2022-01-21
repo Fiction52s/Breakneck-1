@@ -6,7 +6,7 @@ using namespace std;
 
 void Actor::SLIDE_Start()
 {
-	repeatingSound = ActivateSound(PlayerSounds::S_SLIDE, true);
+	ActivateRepeatingSound(PlayerSounds::S_SLIDE, true);
 }
 
 void Actor::SLIDE_End()
