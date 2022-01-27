@@ -6,6 +6,7 @@
 #include "Actor.h"
 #include "SequenceW4.h"
 #include "SequenceW6.h"
+#include "Enemy_TigerTarget.h"
 
 using namespace std;
 using namespace sf;
@@ -39,19 +40,25 @@ Tiger::Tiger(ActorParams *ap)
 
 	level = ap->GetLevel();
 
+	moveOnlyMaxFrames = 130;
+
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
-	actionLength[CHARGE_FLAME_TARGETS] = 300;//180;
-	actionLength[CHARGE_FLAME_STUN] = 180;
-	actionLength[FLAME_TARGET_ATTACK] = 120;
+	actionLength[SUMMON_FLAME_TARGETS] = 60;//180;
+	actionLength[HEAT_FLAME_TARGETS] = 60;//180;
+	actionLength[GATHER_ENERGY] = 120;
+	actionLength[JUMP_LAND] = 10;
+	actionLength[JUMP_SQUAT] = 10;
 
-	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
+	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
-	stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
+	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
+	stageMgr.AddActiveOption(0, GATHER_ENERGY, 2);
+
 	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
 	//stageMgr.AddActiveOption(0, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
@@ -111,7 +118,7 @@ void Tiger::LoadParams()
 
 void Tiger::ResetEnemy()
 {
-	snakePool.Reset();
+	//snakePool.Reset();
 	//spinTurretSummonGroup.Reset();
 	palmSummonGroup.Reset();
 	targetGroup.Reset();
@@ -125,6 +132,8 @@ void Tiger::ResetEnemy()
 	HitboxesOff();
 
 	framesSinceRush = 0;
+
+	moveOnlyFrames = 0;//-1;
 
 	StartFight();
 
@@ -167,16 +176,13 @@ void Tiger::ActionEnded()
 	switch (action)
 	{
 	case WAIT:
+	case JUMP_SQUAT:
 	case MOVE_GRIND:
-	case MOVE_JUMP:
 	case SUMMON:
 	case THROW_SPINTURRET:
-	case FLAME_TARGET_ATTACK:
-	case CHARGE_FLAME_STUN:
+	case SUMMON_FLAME_TARGETS:
+	case HEAT_FLAME_TARGETS:
 		Decide();
-		break;
-	case CHARGE_FLAME_TARGETS:
-		SetAction( FLAME_TARGET_ATTACK );
 		break;
 	case COMBOMOVE:
 		SetNextComboAction();
@@ -186,6 +192,29 @@ void Tiger::ActionEnded()
 		enemyMover.currPosInfo.SetSurface(rayCastInfo.rcEdge, rayCastInfo.rcQuant);
 		currPosInfo = enemyMover.currPosInfo;
 		SetAction(MOVE_GRIND);
+		break;
+	}
+	case GATHER_ENERGY:
+	{
+		if (targetGroup.numActiveEnemies == 0 )
+		{
+			SetAction(SUMMON_FLAME_TARGETS);
+		}
+		else
+		{
+			SetAction(HEAT_FLAME_TARGETS);
+		}
+		
+		break;
+	}
+	case MOVE_JUMP:
+	{
+		SetAction(JUMP_LAND);
+		break;
+	}
+	case JUMP_LAND:
+	{
+		SetAction(JUMP_SQUAT);
 		break;
 	}
 	}
@@ -242,6 +271,7 @@ void Tiger::StartAction()
 	{
 	case MOVE_GRIND:
 	{
+
 		int gr = rand() % 2;
 
 		if (facingRight)
@@ -254,14 +284,27 @@ void Tiger::StartAction()
 		}
 
 		double grindSpeed = 20;
+		int grindFrames = 120;
+
+		int gf = rand() % 2;
+
+		if (gf == 0)
+		{
+			grindFrames = 60;
+		}
+		else
+		{
+			grindFrames = 120;
+		}
+
 		if (gr == 0)
 		{
-			enemyMover.SetModeGrind(grindSpeed, 120);
+			enemyMover.SetModeGrind(grindSpeed, grindFrames);
 			facingRight = true;
 		}
 		else if (gr == 1)
 		{
-			enemyMover.SetModeGrind(-grindSpeed, 120);
+			enemyMover.SetModeGrind(-grindSpeed, grindFrames);
 			facingRight = false;
 		}
 		break;
@@ -289,7 +332,7 @@ void Tiger::StartAction()
 	case THROW_SPINTURRET:
 	{
 		PoiInfo *node = nodeGroupGrind.AlwaysGetNextNode();//nodeGroupGrind.AlwaysGetNextNode();
-		snakePool.ThrowAt(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), node);
+		//snakePool.ThrowAt(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), node);
 		//spinTurretSummonGroup.Summon();
 		break;
 	}
@@ -349,6 +392,33 @@ void Tiger::StartAction()
 		//snakePool.Throw( TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
 		break;
 	}
+	case SUMMON_FLAME_TARGETS:
+	{
+		moveOnlyFrames = 0;
+		nodeGroupC.pickers[0].ShuffleActiveOptions();
+		for (int i = 0; i < 3; ++i)
+		{
+			targetGroup.Summon();
+		}
+		break;
+	}
+	case HEAT_FLAME_TARGETS:
+	{
+		moveOnlyFrames = 0;
+		Enemy *e;
+		TigerTarget *tt;
+		for (int i = 0; i < targetGroup.numTotalEnemies; ++i)
+		{
+			e = targetGroup.enemies[i];
+			if (e->active)
+			{
+				tt = (TigerTarget*)e;
+				tt->HeatUp();
+			}
+			
+		}
+	}
+		
 
 	}
 }
@@ -407,7 +477,14 @@ void Tiger::FrameIncrement()
 	{
 		++framesSinceRush;
 	}
-	
+
+	if ((action == MOVE_GRIND || action == MOVE_JUMP) && moveOnlyFrames >= 0)
+	{
+		if (moveOnlyFrames >= 0)
+		{
+			++moveOnlyFrames;
+		}
+	}
 }
 
 bool Tiger::IsDecisionValid(int d)
@@ -416,7 +493,12 @@ bool Tiger::IsDecisionValid(int d)
 	{
 		return false;
 	}
-	else if (d == TEST && targetGroup.numActiveEnemies != 0)
+	//else if ( (action == SUMMON_FLAME_TARGETS || action == HEAT_FLAME_TARGETS)
+	else if ( d == GATHER_ENERGY && moveOnlyFrames >= 0 && moveOnlyFrames < moveOnlyMaxFrames )
+	{
+		return false;
+	}
+	else if (action == MOVE_GRIND && d == MOVE_GRIND)
 	{
 		return false;
 	}
@@ -433,7 +515,7 @@ void Tiger::SeqWait()
 {
 	action = SEQ_WAIT;
 	frame = 0;
-	snakePool.Reset();
+	//snakePool.Reset();
 	//spinTurretSummonGroup.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
@@ -456,6 +538,15 @@ void Tiger::UpdateSprite()
 	sprite.setTexture(*ts_move->texture);
 	ts_move->SetSubRect(sprite, 0, !facingRight);
 
+	if (action == GATHER_ENERGY)
+	{
+		sprite.setColor(Color::Red);
+	}
+	else
+	{
+		sprite.setColor(Color::White);
+	}
+
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
@@ -463,7 +554,7 @@ void Tiger::UpdateSprite()
 void Tiger::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-	snakePool.Draw(target);
+	//snakePool.Draw(target);
 }
 
 void Tiger::BulletHitPlayer(

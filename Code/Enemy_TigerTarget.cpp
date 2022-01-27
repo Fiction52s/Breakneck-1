@@ -18,9 +18,11 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	SetEditorActions(NEUTRAL, NEUTRAL, 0);
 
 	actionLength[NEUTRAL] = 2;
-	actionLength[HEAT_UP] = 120;
-	actionLength[ATTACK_TIGER] = 2;
-	actionLength[ATTACK_PLAYER] = 2;
+	actionLength[HEAT_UP] = 60;
+	actionLength[SIMMER] = 10;
+	actionLength[ATTACK_PLAYER] = 60;
+	actionLength[EXPLODE] = 10;
+
 
 	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
 	sprite.setTexture(*ts->texture);
@@ -38,6 +40,11 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	BasicCircleHurtBodySetup(16);
 
 	hitBody.hitboxInfo = hitboxInfo;
+
+	maxSpeed = 40;
+	baseSpeed = 2;
+	accel = .1;
+
 
 	//cutObject->Setup(ts, 0, 0, scale);
 
@@ -81,7 +88,7 @@ void TigerTarget::SetLevel(int lev)
 
 void TigerTarget::ResetEnemy()
 {
-	action = HEAT_UP;
+	action = NEUTRAL;
 	frame = 0;
 
 	HitboxesOff();
@@ -89,6 +96,10 @@ void TigerTarget::ResetEnemy()
 	DefaultHurtboxesOn();
 
 	UpdateHitboxes();
+
+	currHeatLevel = 0;
+
+	speed = baseSpeed;
 
 	UpdateSprite();
 }
@@ -103,8 +114,12 @@ void TigerTarget::ActionEnded()
 		switch (action)
 		{
 		case HEAT_UP:
-			numHealth = 0;
+			action = SIMMER;
+			break;
+		case EXPLODE:
 			dead = true;
+			numHealth = 0;
+			sess->RemoveEnemy(this);
 			break;
 		}
 	}
@@ -133,10 +148,47 @@ void TigerTarget::ProcessState()
 
 void TigerTarget::UpdateEnemyPhysics()
 {
-	/*V2d movementVec = velocity;
-	movementVec /= slowMultiple * (double)numPhysSteps;
+	if (action == ATTACK_PLAYER)
+	{
+		velocity = PlayerDir() * speed;
 
-	currPosInfo.position += movementVec;*/
+		speed += accel;
+		if (speed > maxSpeed)
+		{
+			speed = maxSpeed;
+		}
+
+		currPosInfo.position += velocity;
+	}
+}
+
+
+void TigerTarget::HeatUp()
+{
+	if (action == NEUTRAL)
+	{
+		currHeatLevel = 0;
+		action = HEAT_UP;
+		frame = 0;
+	}
+	else
+	{
+		assert(action == HEAT_UP || action == SIMMER );
+		++currHeatLevel;
+
+		if (currHeatLevel == 1)
+		{
+			action = ATTACK_PLAYER;
+			frame = 0;
+			DefaultHitboxesOn();
+			HurtboxesOff();
+		}
+		else
+		{
+			action = HEAT_UP;
+			frame = 0;
+		}
+	}
 }
 
 void TigerTarget::UpdateSprite()
@@ -145,10 +197,33 @@ void TigerTarget::UpdateSprite()
 	switch (action)
 	{
 	case NEUTRAL:
-		//sprite.setColor(Color::White);
+		sprite.setColor(Color::White);
+		break;
+	case HEAT_UP:
+	case SIMMER:
+	{
+		if (currHeatLevel == 0)
+		{
+			sprite.setColor(Color::Red);
+		}
+		else if (currHeatLevel == 1)
+		{
+			sprite.setColor(Color::Blue);
+		}
+		else if (currHeatLevel == 2)
+		{
+			sprite.setColor(Color::Cyan);
+		}
+		else
+		{
+			sprite.setColor(Color::Magenta);
+		}
+		break;
+	}
+	case EXPLODE:
+		sprite.setColor(Color::Magenta);
 		break;
 
-		break;
 	}
 
 	ts->SetSubRect(sprite, 0, !facingRight);
@@ -160,4 +235,14 @@ void TigerTarget::UpdateSprite()
 void TigerTarget::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+void TigerTarget::IHitPlayer(int index)
+{
+	if (action == ATTACK_PLAYER)
+	{
+		action = EXPLODE;
+		frame = 0;
+		HitboxesOff();
+	}
 }

@@ -17,8 +17,11 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	enum Action
 	{
 		WAIT,
+		GATHER_ENERGY,
 		MOVE_GRIND,
 		MOVE_JUMP,
+		JUMP_LAND,
+		JUMP_SQUAT,
 		MOVE_LUNGE,
 		MOVE_RUSH,
 		TEST,
@@ -26,9 +29,8 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		SUMMON,
 		THROW_SPINTURRET,
 		SEQ_WAIT,
-		CHARGE_FLAME_TARGETS,
-		FLAME_TARGET_ATTACK,
-		CHARGE_FLAME_STUN,
+		SUMMON_FLAME_TARGETS,
+		HEAT_FLAME_TARGETS,
 		A_Count
 	};
 
@@ -38,6 +40,9 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 
 	TigerPostFightScene *postFightScene;
 	TigerPostFight2Scene *postFightScene2;
+
+	int moveOnlyFrames;
+	int moveOnlyMaxFrames;
 
 
 
