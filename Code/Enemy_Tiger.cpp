@@ -54,6 +54,13 @@ Tiger::Tiger(ActorParams *ap)
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	sprite.setColor(Color::Red);
 
+	TigerTarget *target = NULL;
+	for (int i = 0; i < targetGroup.numTotalEnemies; ++i)
+	{
+		target = (TigerTarget*)targetGroup.enemies[i];
+		target->tiger = this;
+	}
+
 	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
 	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);

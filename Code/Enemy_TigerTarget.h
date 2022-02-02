@@ -12,6 +12,8 @@ struct TigerTarget : Enemy
 		HEAT_UP,
 		SIMMER,
 		ATTACK_PLAYER,
+		HIT_BY_PLAYER,
+		ATTACK_TIGER,
 		EXPLODE,
 		A_Count
 	};
@@ -26,6 +28,8 @@ struct TigerTarget : Enemy
 	double maxSpeed;
 	double accel;
 
+	Enemy *tiger;
+
 	TigerTarget(ActorParams *ap);
 
 	void ProcessState();
@@ -35,6 +39,8 @@ struct TigerTarget : Enemy
 	//void ProcessHit();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
+	void ProcessHit();
+	void ComboHit();
 
 	void SetLevel(int lev);
 
