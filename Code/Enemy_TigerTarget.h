@@ -42,6 +42,7 @@ struct TigerTarget : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessHit();
 	void ComboHit();
+	bool CanComboHit( Enemy *e );
 
 	void SetLevel(int lev);
 

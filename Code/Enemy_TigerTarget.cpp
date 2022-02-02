@@ -368,3 +368,11 @@ void TigerTarget::ComboHit()
 		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }
+
+bool TigerTarget::CanComboHit( Enemy *e )
+{
+	if (e->type == EnemyType::EN_TIGERBOSS)
+		return true;
+
+	return false;
+}

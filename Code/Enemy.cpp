@@ -1743,6 +1743,11 @@ void Enemy::ComboHit()
 	//empty default
 }
 
+bool Enemy::CanComboHit(Enemy *e)
+{
+	return true;
+}
+
 void Enemy::ComboKill(Enemy *e)
 {
 	//empty default
@@ -2072,11 +2077,14 @@ HitboxInfo * Enemy::IsHit(int pIndex )
 		ComboObject *co = player->IntersectMyComboHitboxes(this, currHurtboxes, currHurtboxFrame);
 		if (co != NULL)
 		{
-			HitboxInfo *hi = co->enemyHitboxInfo;
+			if (co->enemy->CanComboHit(this))
+			{
+				HitboxInfo *hi = co->enemyHitboxInfo;
 
-			co->enemy->ComboHit();
-			comboHitEnemy = co->enemy;
-			return hi;
+				co->enemy->ComboHit();
+				comboHitEnemy = co->enemy;
+				return hi;
+			}
 		}
 
 	}

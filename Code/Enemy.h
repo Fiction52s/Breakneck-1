@@ -257,6 +257,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual int GetNumCamPoints() { return 1; }
 	virtual V2d GetCamPoint(int index) { return GetPosition(); }
 	virtual void ComboHit();
+	virtual bool CanComboHit(Enemy *e);
 	virtual void ComboKill( Enemy *e );
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
 	CollisionBody *currHitboxes;
