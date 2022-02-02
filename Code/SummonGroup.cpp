@@ -115,6 +115,9 @@ void SummonGroup::DrawMinimap(sf::RenderTarget *target)
 {
 	for (int i = 0; i < numTotalEnemies; ++i)
 	{
-		enemies[i]->DrawMinimap(target);
+		if (enemies[i]->active)
+		{
+			enemies[i]->DrawMinimap(target);
+		}
 	}
 }

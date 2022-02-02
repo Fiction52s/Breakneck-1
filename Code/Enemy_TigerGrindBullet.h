@@ -65,6 +65,7 @@ struct TigerGrindBulletPool
 
 	TigerGrindBullet * ThrowAt(int type, V2d &pos, PoiInfo *pi );
 	void Draw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<TigerGrindBullet*> bulletVec;
 	sf::Vertex *verts;
 	Tileset *ts;

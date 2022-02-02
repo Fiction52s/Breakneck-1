@@ -114,6 +114,9 @@ void TigerTarget::ResetEnemy()
 	//DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	comboObj->Reset();
+	comboObj->enemyHitboxFrame = 0;
+
 	UpdateHitboxes();
 
 	currHeatLevel = 0;
@@ -349,7 +352,6 @@ void TigerTarget::ProcessHit()
 		//IntRect ir;
 
 		//sprite.setTextureRect(ir);
-		//cout << "add combo obj: " << comboObj << endl;
 		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }
@@ -363,7 +365,6 @@ void TigerTarget::ComboHit()
 		action = EXPLODE;
 		frame = 0;
 		sess->PlayerRemoveActiveComboer(comboObj);
-		//cout << "remove combo obj: " << comboObj << endl;
 		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }

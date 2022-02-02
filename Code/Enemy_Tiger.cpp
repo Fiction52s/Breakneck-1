@@ -90,8 +90,8 @@ Tiger::Tiger(ActorParams *ap)
 
 	LoadParams();
 
-	BasicCircleHurtBodySetup(16);
-	BasicCircleHitBodySetup(16);
+	BasicCircleHurtBodySetup(64);
+	BasicCircleHitBodySetup(64);
 
 	ResetEnemy();
 }
@@ -482,6 +482,7 @@ void Tiger::DrawMinimap( sf::RenderTarget *target )
 	Enemy::DrawMinimap(target);
 	palmSummonGroup.DrawMinimap(target);
 	targetGroup.DrawMinimap(target);
+	snakePool.DrawMinimap(target);
 	//spinTurretSummonGroup.DrawMinimap(target);
 }
 

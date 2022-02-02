@@ -259,6 +259,17 @@ void TigerGrindBulletPool::Draw(sf::RenderTarget *target)
 	target->draw(verts, bulletVec.size() * 4, sf::Quads, ts->texture);
 }
 
+void TigerGrindBulletPool::DrawMinimap(sf::RenderTarget * target)
+{
+	for (auto it = bulletVec.begin(); it != bulletVec.end(); ++it)
+	{
+		if ((*it)->active)
+		{
+			(*it)->DrawMinimap(target);
+		}
+	}
+}
+
 TigerGrindBullet::TigerGrindBullet(sf::Vertex *myQuad, TigerGrindBulletPool *pool)
 	:Enemy(EnemyType::EN_TIGERGRINDBULLET, NULL)
 {

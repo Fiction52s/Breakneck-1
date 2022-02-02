@@ -77,7 +77,6 @@ void SwarmMember::Throw( V2d &pos )
 
 	spawned = false;
 	sess->AddEnemy(this);
-	active = true;
 	currPosInfo.position = pos + targetOffset;
 	velocity = normalize(targetOffset) * 6.0;
 }
