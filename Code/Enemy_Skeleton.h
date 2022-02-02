@@ -21,9 +21,20 @@ struct Skeleton : Boss, RayCastHandler
 		COMBOMOVE,
 		MOVE,
 		SEQ_WAIT,
+		JUMPSQUAT,
+		HOP,
+		LAND,
 		A_Count
 	};
 
+	enum PatternMoveType
+	{
+		PM_RISING_ZIP,
+		PM_SWING,
+		PM_HOP,
+	};
+
+	PatternMoveType currentPatternMoveType;
 	PoiInfo *currNode;
 	RandomPicker patternTypePicker;
 
@@ -37,6 +48,10 @@ struct Skeleton : Boss, RayCastHandler
 	std::vector<int> patternOrder;
 	int patternIndex;
 
+	V2d hopTarget;
+	double hopSpeed;
+	double hopExtraHeight;
+
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
 
@@ -48,9 +63,13 @@ struct Skeleton : Boss, RayCastHandler
 	//CircleGroup testGroup;
 	//CircleGroup testGroup2;
 
-	Tileset *ts_punch;
-	Tileset *ts_kick;
-	Tileset *ts_move;
+	//Tileset *ts_punch;
+	//Tileset *ts_kick;
+	//Tileset *ts_move;
+
+	Tileset *ts_charge;
+	Tileset *ts_stand;
+	Tileset *ts_hop;
 
 	bool ignorePointsCloserThanPlayer;
 	double playerDist;
@@ -86,8 +105,8 @@ struct Skeleton : Boss, RayCastHandler
 	void StartFight();
 	void LoadParams();
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
-	
-
+	void Hop(V2d &pos, double p_hopSpeed, double p_hopExtraHeight);
+	void FinishPatternMove();
 	
 
 	//Rollback

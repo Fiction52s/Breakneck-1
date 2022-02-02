@@ -53,11 +53,11 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	myBonus = NULL;
 
-	stageMgr.AddActiveOption(0, TEST_POST, 2);
+	//stageMgr.AddActiveOption(0, TEST_POST, 2);
 	
 
-	//stageMgr.AddActiveOption(0, CHASE, 2);
-	//stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
+	stageMgr.AddActiveOption(0, CHASE, 2);
+	stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
 
 
 	stageMgr.AddActiveOption(1, CHASE, 2);
@@ -139,21 +139,6 @@ CrawlerQueen::~CrawlerQueen()
 
 	if (myBonus != NULL)
 		delete myBonus;
-}
-
-void CrawlerQueen::Setup()
-{
-	SetSpawnRect();
-
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
-	}
-	else
-	{
-		myBonus = NULL;
-	}
 }
 
 void CrawlerQueen::LoadParams()
@@ -597,6 +582,17 @@ void CrawlerQueen::StartAction()
 
 void CrawlerQueen::SetupPostFightScenes()
 {
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("FinishedScenes/W1/postcrawlerfight1");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
+
+
 	if (level == 1)
 	{
 		if (postFightScene2 != NULL)

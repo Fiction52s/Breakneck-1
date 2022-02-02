@@ -163,6 +163,7 @@ void GrindFire::ProcessState()
 		switch (action)
 		{
 		case BURN:
+			ClearRect(quad);
 			sess->RemoveEnemy(this);
 			spawned = false;
 			break;
@@ -273,6 +274,12 @@ TigerGrindBullet::TigerGrindBullet(sf::Vertex *myQuad, TigerGrindBulletPool *poo
 	actionLength[GRIND] = 4;
 	animFactor[GRIND] = 1;
 
+	actionLength[DISSIPATE] = 10;
+	animFactor[DISSIPATE] = 1;
+
+	maxBurnFrames = 120;
+	
+
 	quad = myQuad;
 
 	ts = pool->ts;
@@ -308,9 +315,12 @@ void TigerGrindBullet::ResetEnemy()
 
 	firePool.Reset();
 
+	currBurnFrame = 0;
+
 	DefaultHitboxesOn();
 
 	UpdateHitboxes();
+	
 }
 
 void TigerGrindBullet::HitTerrainAerial(Edge *e, double quant)
@@ -393,6 +403,7 @@ void TigerGrindBullet::StartGrind()
 {
 	action = GRIND;
 	frame = 0;
+	currBurnFrame = 0;
 
 	double speed = 10;
 
@@ -428,10 +439,20 @@ void TigerGrindBullet::FrameIncrement()
 			destPoi = NULL;
 		}
 	}
+	else if (action == GRIND)
+	{
+		if (currBurnFrame < maxBurnFrames)
+		{
+			++currBurnFrame;
+			//action = DISSIPATE;
+			//frame = 0;
+		}
+	}
 }
 
 void TigerGrindBullet::ProcessState()
 {
+
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
@@ -442,14 +463,46 @@ void TigerGrindBullet::ProcessState()
 			break;
 		case GRIND:
 			break;
+		case DISSIPATE:
+			break;
 		}
 		frame = 0;
 	}
 
-	if (action == GRIND && frame == 1)
+	if (action == DISSIPATE)
+	{
+		bool anyActive = false;
+		for (auto it = firePool.fireVec.begin(); it != firePool.fireVec.end(); ++it)
+		{
+			if ((*it)->active)
+			{
+				anyActive = true;
+				break;
+			}
+		}
+
+		if (!anyActive)
+		{
+			dead = true;
+			numHealth = 0;
+			sess->RemoveEnemy(this);
+			return;
+		}
+	}
+	
+	
+
+	if (action == GRIND && frame == 1 && currBurnFrame < maxBurnFrames)
 	{
 		firePool.Create( gbType, GetPosition(), surfaceMover->ground, surfaceMover->edgeQuantity);
 	}
+	else if (action == GRIND && currBurnFrame == maxBurnFrames)
+	{
+		action = DISSIPATE;
+		frame = 0;
+		HitboxesOff();
+	}
+	
 }
 
 void TigerGrindBullet::IHitPlayer(int index)
@@ -458,8 +511,15 @@ void TigerGrindBullet::IHitPlayer(int index)
 
 void TigerGrindBullet::UpdateSprite()
 {
-	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
+	if (action != DISSIPATE)
+	{
+		ts->SetQuadSubRect(quad, 0);
+		SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
+	}
+	else
+	{
+		ClearRect(quad);
+	}
 }
 
 void TigerGrindBullet::EnemyDraw(sf::RenderTarget *target)

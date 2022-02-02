@@ -118,7 +118,7 @@ void Tiger::LoadParams()
 
 void Tiger::ResetEnemy()
 {
-	//snakePool.Reset();
+	snakePool.Reset();
 	//spinTurretSummonGroup.Reset();
 	palmSummonGroup.Reset();
 	targetGroup.Reset();
@@ -226,7 +226,7 @@ void Tiger::HandleAction()
 	{
 	case SUMMON:
 	{
-		if( frame == 20 && slowCounter == 1 )
+		if (frame == 20 && slowCounter == 1)
 		{
 			palmSummonGroup.Summon();
 		}
@@ -253,7 +253,15 @@ void Tiger::HandleAction()
 		//	//snakePool.Throw( TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
 		//}
 
-		
+
+		break;
+	}
+	case MOVE_JUMP:
+	{
+		if (enemyMover.actionFrame == enemyMover.actionTotalDuration/2)
+		{
+			snakePool.Throw(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
+		}
 		break;
 	}
 	}
@@ -515,7 +523,7 @@ void Tiger::SeqWait()
 {
 	action = SEQ_WAIT;
 	frame = 0;
-	//snakePool.Reset();
+	snakePool.Reset();
 	//spinTurretSummonGroup.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
@@ -554,7 +562,7 @@ void Tiger::UpdateSprite()
 void Tiger::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
-	//snakePool.Draw(target);
+	snakePool.Draw(target);
 }
 
 void Tiger::BulletHitPlayer(

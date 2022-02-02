@@ -70,7 +70,6 @@ struct Gator : Boss, Summoner, BonusHandler
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
-	void Setup();
 	//void HandleRemove();
 
 	//Boss functions

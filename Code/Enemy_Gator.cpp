@@ -42,12 +42,12 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	stageMgr.AddActiveOption(0, TEST_POST, 2);
-	/*stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(0, TEST_POST, 2);
+	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
 	stageMgr.AddActiveOption(0, REDIRECT_ORBS, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);*/
+	stageMgr.AddActiveOption(0, SUMMON, 2);
 
 	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
 	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
@@ -125,22 +125,6 @@ void Gator::ResetEnemy()
 
 	UpdateSprite();
 }
-
-void Gator::Setup()
-{
-	SetSpawnRect();
-
-	if (sess->IsSessTypeGame())
-	{
-		GameSession *game = GameSession::GetSession();
-		myBonus = game->CreateBonus("BossTest/gatorfightpost");
-	}
-	else
-	{
-		myBonus = NULL;
-	}
-}
-
 
 void Gator::InitBonus()
 {
@@ -387,6 +371,16 @@ void Gator::StartAction()
 }
 void Gator::SetupPostFightScenes()
 {
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		myBonus = game->CreateBonus("BossTest/gatorfightpost");
+	}
+	else
+	{
+		myBonus = NULL;
+	}
+
 	if (postFightScene == NULL)
 	{
 		postFightScene = new GatorPostFightScene;

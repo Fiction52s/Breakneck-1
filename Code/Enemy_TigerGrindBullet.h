@@ -79,6 +79,7 @@ struct TigerGrindBullet : Enemy,
 		THROWN,
 		THROWN_AT,
 		GRIND,
+		DISSIPATE,
 		A_Count
 	};
 
@@ -99,6 +100,9 @@ struct TigerGrindBullet : Enemy,
 
 	int hitlagFrames;
 	int hitstunFrames;
+
+	int maxBurnFrames;
+	int currBurnFrame;
 
 	double flySpeed;
 

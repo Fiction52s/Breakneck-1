@@ -126,7 +126,7 @@ struct EnemyMover
 		int frames);
 	void SetModeGrind(
 		double speed, int frames);
-	void SetModeNodeProjectile(
+	int SetModeNodeProjectile(
 		V2d &nodePos, V2d &grav, double height);
 	void SetModeNodeLinear(
 		V2d &nodePos,

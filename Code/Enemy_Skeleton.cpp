@@ -21,7 +21,11 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	level = ap->GetLevel();
 
-	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+	//ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
+
+	ts_charge = GetSizedTileset("Bosses/Skeleton/skele_charge_128x128.png");
+	ts_stand = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
+	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
 
 
 	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
@@ -33,11 +37,19 @@ Skeleton::Skeleton(ActorParams *ap)
 	stageMgr.AddActiveOption(2, MOVE_WIRE_DASH, 2);
 
 	stageMgr.AddActiveOption(3, MOVE_WIRE_DASH, 2);
+
+	actionLength[JUMPSQUAT] = 2;
+	//actionLength[HOP] = 2;
+	actionLength[LAND] = 2;
+
+	animFactor[JUMPSQUAT] = 3;//1
+	//animFactor[HOP] = 1;
+	animFactor[LAND] = 3;
 	
 
 	postFightScene = NULL;
 
-	sprite.setColor(Color::Black);
+	//sprite.setColor(Color::Black);
 
 	LoadParams();
 
@@ -143,34 +155,32 @@ void Skeleton::ActionEnded()
 	}
 	case PATTERN_MOVE:
 	{
-		if (patternIndex == numPatternMoves - 1)
-		{
-			/*if (stageMgr.GetCurrStage() > 0)
-			{
-			launchers[0]->position = GetPosition();
-			launchers[0]->facingDir = PlayerDir();
-			launchers[0]->Fire();
-			}*/
-
-			if (patternType[patternIndex] == PATTERN_MOVE)
-			{
-				Wait(30);
-			}
-			else
-			{
-				++patternIndex;
-				SetAction(patternType[patternIndex - 1]);
-			}
-		}
-		else
-		{
-			++patternIndex;
-			SetAction(patternType[patternIndex - 1]);
-
-		}
+		FinishPatternMove();
 
 		break;
 	}
+	case JUMPSQUAT:
+	{
+		SetAction(HOP);
+		int hopFrames = enemyMover.SetModeNodeProjectile(hopTarget, V2d(0, 2), 100);
+			//enemyMover.SetModeNodeJump(hopTarget, hopExtraHeight, hopSpeed);
+		animFactor[HOP] = hopFrames / 2;
+		//used a different algorithm in sequenceskeleton, maybe change this
+		//out at some point
+		break;
+	}
+	case HOP:
+	{
+		SetAction(LAND);
+		break;
+	}
+	case LAND:
+	{
+		FinishPatternMove();
+		//Decide();
+		break;
+	}
+		
 	}
 }
 
@@ -313,6 +323,8 @@ void Skeleton::StartMovement(V2d &pos)
 		ignorePointsCloserThanPlayer = false;
 		RayCast(this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd);
 
+		currentPatternMoveType = PM_RISING_ZIP;
+
 		if (rayCastInfo.rcEdge != NULL)
 		{
 			assert(rayCastInfo.rcEdge != NULL);
@@ -324,12 +336,15 @@ void Skeleton::StartMovement(V2d &pos)
 		}
 		else
 		{
+			//what happens here??
 		}
 		//enemyMover.SetModeZipAndFall(, speed, centerPoint, nodePos);
 
 	}
 	else if (absNodeDiffX > 600)
 	{
+
+		currentPatternMoveType = PM_SWING;
 
 		//stuff
 		V2d along = nodePos - GetPosition();
@@ -371,7 +386,11 @@ void Skeleton::StartMovement(V2d &pos)
 	}
 	else
 	{
-		enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
+		Hop(nodePos, 5, 100);
+		//hopTarget = nodePos;
+		//SetAction(JUMPSQUAT);
+		//currentPatternMoveType = PM_HOP;
+		//enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
 	}
 }
 
@@ -399,7 +418,7 @@ bool Skeleton::IsDecisionValid(int d)
 
 bool Skeleton::IsEnemyMoverAction(int a)
 {
-	return a == MOVE_WIRE_DASH || a == MOVE_OTHER || a == PATTERN_MOVE;
+	return a == MOVE_WIRE_DASH || a == MOVE_OTHER || a == PATTERN_MOVE || a == HOP;
 }
 
 void Skeleton::DebugDraw(sf::RenderTarget *target)
@@ -434,9 +453,52 @@ void Skeleton::UpdateSprite()
 	case WAIT:
 	case MOVE:
 	case COMBOMOVE:
-		sprite.setTexture(*ts_move->texture);
-		ts_move->SetSubRect(sprite, 0, !facingRight);
+		sprite.setTexture(*ts_stand->texture);
+		ts_stand->SetSubRect(sprite, 0, !facingRight);
 		break;
+	case PATTERN_MOVE:
+	{
+		switch (currentPatternMoveType)
+		{
+		case PM_RISING_ZIP:
+		{
+			sprite.setTexture(*ts_stand->texture);
+			ts_stand->SetSubRect(sprite, 0, !facingRight);
+			break;
+		}
+		case PM_SWING:
+		{
+			sprite.setTexture(*ts_stand->texture);
+			ts_stand->SetSubRect(sprite, 0, !facingRight);
+		}
+		case PM_HOP:
+		{
+
+			break;
+		}
+		}
+		break;
+	}
+	case JUMPSQUAT: 
+	case HOP: 
+	case LAND:
+	{
+		int extra = 0;
+		switch (action)
+		{
+		case JUMPSQUAT:
+			extra = 0;
+			break;
+		case HOP:
+			extra = 2;
+			break;
+		case LAND:
+			extra = 4;
+			break;
+		}
+		sprite.setTexture(*ts_hop->texture);
+		ts_hop->SetSubRect(sprite, frame / animFactor[action] + extra, !facingRight);
+	}
 	}
 
 	sprite.setPosition(GetPositionF());
@@ -531,5 +593,53 @@ void Skeleton::HandleRayCollision(Edge *edge, double edgeQuantity,
 			rayCastInfo.rcEdge = edge;
 			rayCastInfo.rcQuant = edgeQuantity;
 		}
+	}
+}
+
+void Skeleton::Hop(V2d &pos, double p_hopSpeed, double p_hopExtraHeight)
+{
+	SetAction(JUMPSQUAT);
+
+	if (pos.x < GetPosition().x)
+	{
+		facingRight = false;
+	}
+	else if (pos.x > GetPosition().x)
+	{
+		facingRight = true;
+	}
+
+	hopTarget = pos;// +V2d(0, -extraHeight);
+	hopSpeed = p_hopSpeed;
+	hopExtraHeight = p_hopExtraHeight;
+
+}
+
+void Skeleton::FinishPatternMove()
+{
+	if (patternIndex == numPatternMoves - 1)
+	{
+		/*if (stageMgr.GetCurrStage() > 0)
+		{
+		launchers[0]->position = GetPosition();
+		launchers[0]->facingDir = PlayerDir();
+		launchers[0]->Fire();
+		}*/
+
+		if (patternType[patternIndex] == PATTERN_MOVE)
+		{
+			Wait(30);
+		}
+		else
+		{
+			++patternIndex;
+			SetAction(patternType[patternIndex - 1]);
+		}
+	}
+	else
+	{
+		++patternIndex;
+		SetAction(patternType[patternIndex - 1]);
+
 	}
 }

@@ -35,7 +35,8 @@ BirdShurikenPool::BirdShurikenPool(Enemy *p_parentEnemy)
 
 	parentEnemy = p_parentEnemy;
 
-	ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	//ts = sess->GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	ts = sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
 }
 
 BirdShurikenPool::~BirdShurikenPool()
@@ -139,7 +140,8 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	launchers[0]->hitboxInfo->damage = 18;
 	frame = 0;
 
-	ts = GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
+	ts = sess->GetSizedTileset("Bosses/Bird/bird_shuriken_256x256.png");
+	//ts = GetSizedTileset("Bosses/Bird/shuriken01_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
 
@@ -158,6 +160,7 @@ BirdShuriken::BirdShuriken( sf::Vertex *myQuad )
 	ts_bulletExplode = sess->GetTileset("FX/bullet_explode3_64x64.png", 64, 64);
 
 	//cutObject->Setup(ts, 53, 52, scale);
+	rotSpeed = PI * .1;
 
 	thrownSpeed = 15;
 	accel = .15;
@@ -187,6 +190,8 @@ void BirdShuriken::ResetEnemy()
 
 	action = THROWN;
 	frame = 0;
+
+	currentRot = 0;
 
 	//DefaultHurtboxesOn();
 	DefaultHitboxesOn();
@@ -569,7 +574,11 @@ void BirdShuriken::UpdateEnemyPhysics()
 void BirdShuriken::UpdateSprite()
 {
 	ts->SetQuadSubRect(quad, 0);
-	SetRectCenter(quad, 128, 128, GetPositionF());
+
+	SetRectRotation(quad, currentRot, 128, 128, GetPositionF());
+	//SetRectCenter(quad, 128, 128, GetPositionF());
+
+	//SetRectCenter(quad, 128, 128, GetPositionF());
 
 	if (shurType == UNDODGEABLE)
 	{
@@ -579,6 +588,16 @@ void BirdShuriken::UpdateSprite()
 	{
 		SetRectColor(quad, Color::White);
 	}
+
+	currentRot += rotSpeed;
+	/*if (currentRot > PI * 2)
+	{
+		currentRot -= PI * 2;
+	}
+	else if (currentRot < -PI * 2)
+	{
+		currentRot += PI * 2;
+	}*/
 }
 
 void BirdShuriken::EnemyDraw(sf::RenderTarget *target)

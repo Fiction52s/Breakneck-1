@@ -65,6 +65,9 @@ struct BirdShuriken : Enemy, LauncherEnemy,
 	double speed;
 	Tileset *ts;
 
+	float currentRot;
+	float rotSpeed;
+
 	int hitlagFrames;
 	int hitstunFrames;
 

@@ -218,10 +218,9 @@ void EnemyMover::SetModeGrind(double speed, int frames)
 	grindSpeed = speed;
 }
 
-void EnemyMover::SetModeNodeProjectile(
+int EnemyMover::SetModeNodeProjectile(
 	V2d &nodePos, V2d &grav, double height)
 {
-
 	V2d currPos = currPosInfo.GetPosition();
 	currPosInfo.SetAerial(currPos);
 
@@ -250,6 +249,8 @@ void EnemyMover::SetModeNodeProjectile(
 	actionTotalDuration = totalTime;
 	SetMoveType(NODE_PROJECTILE);
 	targetPos = nodePos;
+
+	return actionTotalDuration;
 }
 
 void EnemyMover::SetModeChase(V2d *target, V2d &offset, double maxVel,
