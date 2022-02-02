@@ -45,6 +45,7 @@ TigerTarget::TigerTarget(ActorParams *ap)
 
 	maxSpeed = 40;
 	baseSpeed = 2;
+	hitByPlayerSpeed = 10;
 	accel = .1;
 
 	comboObj = new ComboObject(this);
@@ -182,19 +183,20 @@ void TigerTarget::UpdateEnemyPhysics()
 			speed = maxSpeed;
 		}
 
-		currPosInfo.position += velocity;
+		currPosInfo.position += velocity / numPhysSteps / (double)slowMultiple;
 	}
 	else if (action == HIT_BY_PLAYER)
 	{
 		V2d dir = normalize( tiger->GetPosition() - GetPosition());
 		velocity += dir * .1;
 
-		if (length(velocity) > baseSpeed)
+		if (length(velocity) > hitByPlayerSpeed)
 		{
-			velocity = normalize(velocity) * baseSpeed;
+			velocity = normalize(velocity) * hitByPlayerSpeed;
 		}
 
-		currPosInfo.position += velocity;
+		//currPosInfo.position += velocity;
+		currPosInfo.position += velocity / numPhysSteps / (double)slowMultiple;
 	}
 	else if (action == ATTACK_TIGER)
 	{
@@ -207,7 +209,8 @@ void TigerTarget::UpdateEnemyPhysics()
 			speed = maxSpeed;
 		}
 
-		currPosInfo.position += velocity;
+		currPosInfo.position += velocity / numPhysSteps / (double)slowMultiple;
+		//currPosInfo.position += velocity;
 	}
 }
 
@@ -312,7 +315,7 @@ void TigerTarget::ProcessHit()
 		action = HIT_BY_PLAYER;
 		frame = 0;
 
-		speed = baseSpeed;
+		speed = hitByPlayerSpeed;
 		//SetHitboxes(hitBody, 0);
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
@@ -346,6 +349,7 @@ void TigerTarget::ProcessHit()
 		//IntRect ir;
 
 		//sprite.setTextureRect(ir);
+		//cout << "add combo obj: " << comboObj << endl;
 		sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }
@@ -359,6 +363,7 @@ void TigerTarget::ComboHit()
 		action = EXPLODE;
 		frame = 0;
 		sess->PlayerRemoveActiveComboer(comboObj);
+		//cout << "remove combo obj: " << comboObj << endl;
 		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }

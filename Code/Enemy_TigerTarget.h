@@ -25,6 +25,7 @@ struct TigerTarget : Enemy
 	V2d velocity;
 	double speed;
 	double baseSpeed;
+	double hitByPlayerSpeed;
 	double maxSpeed;
 	double accel;
 

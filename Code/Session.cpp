@@ -7440,7 +7440,7 @@ void Session::SetCurrentBoss(Boss *b)
 	if (hud != NULL && hud->hType == HUD::ADVENTURE)
 	{
 		AdventureHUD *ah = (AdventureHUD*)hud;
-		ah->bossHealthBar = b->healthBar;
+		ah->SetBossHealthBar(b->healthBar);
 	}
 }
 

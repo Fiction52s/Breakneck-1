@@ -197,6 +197,7 @@ struct AdventureHUD : HUD
 	~AdventureHUD();
 	void UpdateKeyNumbers();
 	void UpdateEnemyNumbers();
+	void SetBossHealthBar(BossHealth *bh);
 	void Hide(int frames = 0);
 	void Show(int frames = 0);
 	void Draw(sf::RenderTarget *target);

@@ -696,8 +696,6 @@ void CrawlerQueen::ActivatePostFightScene()
 
 void CrawlerQueen::UpdateSprite()
 {
-	healthBar->Update();
-
 	bool isAerial = enemyMover.currPosInfo.IsAerial();
 	if (!isAerial)
 	{

@@ -231,6 +231,24 @@ void AdventureHUD::UpdateEnemyNumbers()
 	}
 }
 
+void AdventureHUD::SetBossHealthBar(BossHealth *bh)
+{
+	bossHealthBar = bh;
+
+	if (state == SHOWN)
+	{
+		bossHealthBar->SetTopLeft(bossHealthShowPos);
+	}
+	else if (state == HIDDEN)
+	{
+		bossHealthBar->SetTopLeft(bossHealthHidePos);
+	}
+	else
+	{
+		//todo
+	}
+}
+
 void AdventureHUD::Hide(int frames)
 {
 	if (frames == 0)
@@ -406,6 +424,12 @@ void AdventureHUD::Update()
 	{
 		
 	}*/
+
+	if (bossHealthBar != NULL)
+	{
+		bossHealthBar->Update();
+	}
+	//healthBar->Update();
 
 	timer->SetNumFrames(sess->GetPlayer(0)->numFramesToLive);
 	timer->Update();
