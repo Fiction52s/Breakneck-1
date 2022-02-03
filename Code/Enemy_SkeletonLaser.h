@@ -5,6 +5,7 @@
 #include <vector>
 
 struct PoiInfo;
+struct SkeletonLaser;
 
 struct SkeletonLaserPool
 {
@@ -14,10 +15,10 @@ struct SkeletonLaserPool
 	SkeletonLaser * Throw(int type, V2d &pos, V2d &dir);
 
 	SkeletonLaser * ThrowAt(int type, V2d &pos, PoiInfo *pi);
-	void Draw(sf::RenderTarget *target);
+	//void Draw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<SkeletonLaser*> laserVec;
-	sf::Vertex *verts;
+	//sf::Vertex *verts;
 	Tileset *ts;
 	int numLasers;
 };
@@ -30,7 +31,6 @@ struct SkeletonLaser : Enemy,
 	{
 		THROWN,
 		THROWN_AT,
-		GRIND,
 		DISSIPATE,
 		A_Count
 	};
@@ -48,17 +48,30 @@ struct SkeletonLaser : Enemy,
 
 	double flySpeed;
 
+	double lengthLimit;
+
 	V2d velocity;
 
-	sf::Vertex *quad;
+	//sf::Vertex *quad;
+
+	sf::Vertex *quads;
 
 	LaserType laserType;
 
 	PoiInfo *destPoi;
 	int framesToArriveToDestPoi;
 
-	SkeletonLaser(sf::Vertex *quad,
+	int maxBounces;
+	int currBounce;
+
+	std::vector<V2d> anchorPositions;
+
+	double laserWidth;
+
+
+	SkeletonLaser(//sf::Vertex *quad,
 		SkeletonLaserPool *pool);
+	void ClearQuads();
 	V2d GetThrowDir(V2d &dir);
 	void Throw(int type, V2d &pos, V2d &dir);
 	void ThrowAt(int type, V2d &pos, PoiInfo *pi);

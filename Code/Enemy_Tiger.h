@@ -18,6 +18,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	{
 		WAIT,
 		GATHER_ENERGY,
+		START_GRIND,
 		MOVE_GRIND,
 		MOVE_JUMP,
 		JUMP_LAND,
@@ -48,6 +49,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
+	Tileset *ts_grind;
 
 	//SummonGroup spinTurretSummonGroup;
 

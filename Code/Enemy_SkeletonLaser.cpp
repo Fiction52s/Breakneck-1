@@ -16,11 +16,11 @@ SkeletonLaserPool::SkeletonLaserPool()
 	ts = NULL;
 	numLasers = 10;
 	laserVec.resize(numLasers);
-	verts = new Vertex[numLasers * 4];
+	//verts = new Vertex[numLasers * 4];
 	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
 	for (int i = 0; i < numLasers; ++i)
 	{
-		laserVec[i] = new SkeletonLaser(verts + 4 * i, this);
+		laserVec[i] = new SkeletonLaser(/*verts + 4 * i, */this);
 	}
 }
 
@@ -32,7 +32,7 @@ SkeletonLaserPool::~SkeletonLaserPool()
 		delete laserVec[i];
 	}
 
-	delete[] verts;
+	//delete[] verts;
 }
 
 void SkeletonLaserPool::Reset()
@@ -73,11 +73,6 @@ SkeletonLaser * SkeletonLaserPool::ThrowAt(int type, V2d &pos, PoiInfo *dest)
 	return bs;
 }
 
-void SkeletonLaserPool::Draw(sf::RenderTarget *target)
-{
-	target->draw(verts, laserVec.size() * 4, sf::Quads, ts->texture);
-}
-
 void SkeletonLaserPool::DrawMinimap(sf::RenderTarget * target)
 {
 	for (auto it = laserVec.begin(); it != laserVec.end(); ++it)
@@ -89,7 +84,7 @@ void SkeletonLaserPool::DrawMinimap(sf::RenderTarget * target)
 	}
 }
 
-SkeletonLaser::SkeletonLaser(sf::Vertex *myQuad, SkeletonLaserPool *pool)
+SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	:Enemy(EnemyType::EN_SKELETONLASER, NULL)
 {
 	SetNumActions(A_Count);
@@ -101,17 +96,22 @@ SkeletonLaser::SkeletonLaser(sf::Vertex *myQuad, SkeletonLaserPool *pool)
 	actionLength[THROWN_AT] = 1;
 	animFactor[THROWN] = 1;
 
-	actionLength[GRIND] = 4;
-	animFactor[GRIND] = 1;
-
 	actionLength[DISSIPATE] = 10;
 	animFactor[DISSIPATE] = 1;
 
-	quad = myQuad;
+	maxBounces = 100;
+
+	laserWidth = 10;
+
+	anchorPositions.reserve(maxBounces + 1);
+	quads = new Vertex[maxBounces * 4];
+	//quad = myQuad;
 
 	ts = pool->ts;
 
-	CreateSurfaceMover(startPosInfo, 12, this);
+	CreateSurfaceMover(startPosInfo, laserWidth, this);
+
+	highResPhysics = true;
 
 	hitboxInfo = new HitboxInfo;
 	hitboxInfo->damage = 18;
@@ -121,22 +121,30 @@ SkeletonLaser::SkeletonLaser(sf::Vertex *myQuad, SkeletonLaserPool *pool)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
+	lengthLimit = 500;
+
 	BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	flySpeed = 10;
+	flySpeed = 30;
 
 	ResetEnemy();
 }
 
 void SkeletonLaser::ResetEnemy()
 {
-	ClearRect(quad);
+	ClearQuads();
+	
+	currBounce = 0;
 
 	facingRight = true;
 
+	surfaceMover->collisionOn = true;
+
 	action = THROWN;
 	frame = 0;
+
+	anchorPositions.clear();
 
 	destPoi = NULL;
 
@@ -146,8 +154,47 @@ void SkeletonLaser::ResetEnemy()
 
 }
 
+void SkeletonLaser::ClearQuads()
+{
+	for (int i = 0; i < maxBounces; ++i)
+	{
+		ClearRect(quads + i * 4);
+	}
+}
+
 void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
 {
+	
+	if (currBounce == maxBounces)
+	{
+		action = DISSIPATE;
+		ClearQuads();
+		frame = 0;
+		surfaceMover->velocity = V2d(0, 0);
+		surfaceMover->collisionOn = false;
+	}
+	else
+	{
+		V2d en = e->Normal();
+		V2d pos = e->GetPosition(quant);
+
+		if (pos == e->v0)
+		{
+			en = normalize(GetPosition() - pos);
+		}
+		else if (pos == e->v1)
+		{
+			en = normalize(GetPosition() - pos);
+		}
+		double d = dot(surfaceMover->velocity, en);
+		V2d ref = surfaceMover->velocity - (2.0 * d * en);
+
+		anchorPositions.push_back(GetPosition());
+
+		surfaceMover->Jump(ref);
+
+		++currBounce;
+	}
 	//StartGrind();
 }
 
@@ -195,6 +242,8 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 	surfaceMover->Set(currPosInfo);
 
 	surfaceMover->velocity = dir * flySpeed;
+
+	anchorPositions.push_back(pos);
 }
 
 void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
@@ -220,6 +269,8 @@ void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 	surfaceMover->velocity = dir * flySpeed;
 
 	framesToArriveToDestPoi = ceil(length(diff) / flySpeed);
+
+	anchorPositions.push_back(pos);
 }
 
 void SkeletonLaser::FrameIncrement()
@@ -240,7 +291,6 @@ void SkeletonLaser::FrameIncrement()
 
 void SkeletonLaser::ProcessState()
 {
-
 	if (frame == actionLength[action] * animFactor[action])
 	{
 		switch (action)
@@ -248,8 +298,6 @@ void SkeletonLaser::ProcessState()
 		case THROWN:
 			break;
 		case THROWN_AT:
-			break;
-		case GRIND:
 			break;
 		case DISSIPATE:
 			break;
@@ -301,17 +349,83 @@ void SkeletonLaser::UpdateSprite()
 {
 	if (action != DISSIPATE)
 	{
-		ts->SetQuadSubRect(quad, 0);
-		SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
-	}
-	else
-	{
-		ClearRect(quad);
+		ClearQuads();
+		for (int i = 0; i < maxBounces; ++i)
+		{
+			SetRectColor( quads + i * 4, Color::Magenta);
+		}
+		
+		//for (int i = 0; i < currBounce + 1; ++i)
+		{
+		//	V2d laserDir = normalize(throwPos - laserAnchor);
+		}
+
+		double totalLength = 0;
+
+		V2d currPos,tailPos,laserDir,laserCenter;
+		double laserAngle,laserLength;
+
+		currPos = GetPosition();
+		tailPos = anchorPositions[currBounce];
+		laserLength = length(currPos - tailPos);
+		laserDir = normalize(currPos - tailPos);
+
+		if (laserLength > lengthLimit)
+		{
+			tailPos = currPos - laserDir * lengthLimit;
+			totalLength = lengthLimit;
+			laserLength = lengthLimit;
+		}
+		else
+		{
+			totalLength += laserLength;
+		}
+		
+		laserAngle = GetVectorAngleCW(laserDir);
+		laserCenter = (currPos + tailPos) / 2.0;
+		
+
+		SetRectRotation(quads, laserAngle, laserLength, laserWidth, Vector2f(laserCenter));
+	
+		for (int i = currBounce; i > 0; --i)
+		{
+			if (totalLength >= lengthLimit)
+			{
+				break;
+			}
+
+			currPos = anchorPositions[i]; 
+			tailPos = anchorPositions[i - 1];
+			laserLength = length(currPos - tailPos);
+			laserDir = normalize(currPos - tailPos);
+
+			if (totalLength + laserLength > lengthLimit)
+			{
+				tailPos = currPos - laserDir * (lengthLimit - totalLength);
+				laserLength = lengthLimit - totalLength;
+				totalLength = lengthLimit;
+			}
+			else
+			{
+				totalLength += laserLength;
+			}
+
+			laserAngle = GetVectorAngleCW(laserDir);
+			laserCenter = (currPos + tailPos) / 2.0;
+
+			SetRectRotation(quads + (currBounce - ( i - 1 )) * 4, laserAngle, laserLength, laserWidth, Vector2f(laserCenter));
+		}
+		
+
+		
+		//ts->SetQuadSubRect(quad, 0);
+		//SetRectCenter(quad, ts->tileWidth, ts->tileWidth, GetPositionF());
 	}
 }
 
 void SkeletonLaser::EnemyDraw(sf::RenderTarget *target)
 {
+	target->draw(quads, maxBounces * 4, sf::Quads);
 	//firePool.Draw(target);
 }
 

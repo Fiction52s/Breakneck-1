@@ -50,8 +50,15 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[JUMP_LAND] = 10;
 	actionLength[JUMP_SQUAT] = 10;
 
+	actionLength[START_GRIND] = 8;
+	animFactor[START_GRIND] = 3;
+
+	actionLength[MOVE_GRIND] = 8;
+	animFactor[MOVE_GRIND] = 3;
+
 	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
+	ts_grind = GetSizedTileset("Bosses/Tiger/tiger_grind_256x256.png");
 	sprite.setColor(Color::Red);
 
 	TigerTarget *target = NULL;
@@ -62,7 +69,7 @@ Tiger::Tiger(ActorParams *ap)
 	}
 
 	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
-	stageMgr.AddActiveOption(0, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(0, START_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
 	stageMgr.AddActiveOption(0, GATHER_ENERGY, 2);
 
@@ -70,13 +77,13 @@ Tiger::Tiger(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, SUMMON, 2);
 	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
 
-	stageMgr.AddActiveOption(1, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(1, START_GRIND, 2);
 	stageMgr.AddActiveOption(1, MOVE_JUMP, 2);
 
-	stageMgr.AddActiveOption(2, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(2, START_GRIND, 2);
 	stageMgr.AddActiveOption(2, MOVE_JUMP, 2);
 
-	stageMgr.AddActiveOption(3, MOVE_GRIND, 2);
+	stageMgr.AddActiveOption(3, START_GRIND, 2);
 	stageMgr.AddActiveOption(3, MOVE_JUMP, 2);
 
 	SetNumLaunchers(1);
@@ -198,7 +205,7 @@ void Tiger::ActionEnded()
 	{
 		enemyMover.currPosInfo.SetSurface(rayCastInfo.rcEdge, rayCastInfo.rcQuant);
 		currPosInfo = enemyMover.currPosInfo;
-		SetAction(MOVE_GRIND);
+		SetAction(START_GRIND);
 		break;
 	}
 	case GATHER_ENERGY:
@@ -222,6 +229,11 @@ void Tiger::ActionEnded()
 	case JUMP_LAND:
 	{
 		SetAction(JUMP_SQUAT);
+		break;
+	}
+	case START_GRIND:
+	{
+		SetAction(MOVE_GRIND);
 		break;
 	}
 	}
@@ -551,8 +563,23 @@ void Tiger::StartFight()
 
 void Tiger::UpdateSprite()
 {
-	sprite.setTexture(*ts_move->texture);
-	ts_move->SetSubRect(sprite, 0, !facingRight);
+	if (action == START_GRIND)
+	{
+		sprite.setTexture(*ts_grind->texture);
+		ts_grind->SetSubRect(sprite, frame / animFactor[START_GRIND], !facingRight);
+	}
+	else if (action == MOVE_GRIND)
+	{
+		int f = frame % (actionLength[MOVE_GRIND] * animFactor[MOVE_GRIND]);
+		sprite.setTexture(*ts_grind->texture);
+		ts_grind->SetSubRect(sprite, f / animFactor[MOVE_GRIND] + 8, !facingRight);
+	}
+	else
+	{
+		sprite.setTexture(*ts_move->texture);
+		ts_move->SetSubRect(sprite, 0, !facingRight);
+	}
+	
 
 	if (action == GATHER_ENERGY)
 	{
@@ -562,6 +589,7 @@ void Tiger::UpdateSprite()
 	{
 		sprite.setColor(Color::White);
 	}
+
 
 	sprite.setPosition(GetPositionF());
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);

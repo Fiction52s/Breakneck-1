@@ -27,10 +27,13 @@ Skeleton::Skeleton(ActorParams *ap)
 	ts_stand = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
 	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
 
+	stageMgr.AddActiveOption(0, TEST_LASERS, 2);
 
-	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
+
+	extraHeight = 64;
 
 	stageMgr.AddActiveOption(1, MOVE_WIRE_DASH, 2);
 
@@ -41,6 +44,8 @@ Skeleton::Skeleton(ActorParams *ap)
 	actionLength[JUMPSQUAT] = 2;
 	//actionLength[HOP] = 2;
 	actionLength[LAND] = 2;
+
+	actionLength[TEST_LASERS] = 90;
 
 	animFactor[JUMPSQUAT] = 3;//1
 	//animFactor[HOP] = 1;
@@ -103,10 +108,11 @@ void Skeleton::LoadParams()
 
 void Skeleton::ResetEnemy()
 {
-	orbPool.Reset();
 
 	currNode = NULL;
 	patternIndex = -1;
+
+	laserPool.Reset();
 
 	facingRight = true;
 
@@ -144,6 +150,7 @@ void Skeleton::ActionEnded()
 	case WAIT:
 	case MOVE_WIRE_DASH:
 	case MOVE_OTHER:
+	case TEST_LASERS:
 		Decide();
 		break;
 	case PLAN_PATTERN:
@@ -302,7 +309,11 @@ void Skeleton::StartAction()
 		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
 		break;
 	}
-		
+	case TEST_LASERS:
+	{
+		laserPool.Throw(0, GetPosition() + V2d(0, -extraHeight), PlayerDir());
+		break;
+	}
 	}
 }
 
@@ -501,7 +512,7 @@ void Skeleton::UpdateSprite()
 	}
 	}
 
-	sprite.setPosition(GetPositionF());
+	sprite.setPosition(GetPositionF() + Vector2f( 0, -extraHeight ));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 
@@ -515,7 +526,7 @@ void Skeleton::EnemyDraw(sf::RenderTarget *target)
 	
 
 	DrawSprite(target, sprite);
-	orbPool.Draw(target);
+	//laserPool.Draw(target);
 }
 
 void Skeleton::SetPatternLength(int len)

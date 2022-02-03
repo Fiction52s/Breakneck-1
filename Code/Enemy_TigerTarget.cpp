@@ -15,19 +15,40 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	SetLevel(ap->GetLevel());
 
 	SetNumActions(A_Count);
-	SetEditorActions(NEUTRAL, NEUTRAL, 0);
+	//SetEditorActions(NEUTRAL, NEUTRAL, 0);
+	SetEditorActions(FLAME_LEVEL_1, FLAME_LEVEL_1, 0);
 
-	actionLength[NEUTRAL] = 2;
-	actionLength[HEAT_UP] = 60;
-	actionLength[SIMMER] = 10;
-	actionLength[ATTACK_PLAYER] = 60;
-	actionLength[HIT_BY_PLAYER] = 60;
-	actionLength[ATTACK_TIGER] = 60;
+	actionLength[START_BURN] = 4;
+	animFactor[START_BURN] = 3;
+
+
+	actionLength[FLAME_LEVEL_1] = 15;
+	animFactor[FLAME_LEVEL_1] = 3;
+
+	actionLength[FLAME_LEVEL_2] = 14;
+	animFactor[FLAME_LEVEL_2] = 3;
+	//actionLength[NEUTRAL] = 2;
+	//actionLength[HEAT_UP] = 60;
+	//actionLength[SIMMER] = 10;
+	actionLength[ATTACK_PLAYER] = 13;
+	animFactor[ATTACK_PLAYER] = 3;
+
+	actionLength[HIT_BY_PLAYER] = 13;
+	animFactor[HIT_BY_PLAYER] = 3;
+
+	actionLength[ATTACK_TIGER] = 13;
+	animFactor[ATTACK_TIGER] = 3;
+
+	//actionLength[ATTACK_TIGER] = 60;
 	actionLength[EXPLODE] = 10;
 
+	maxHitByPlayerFrames = 60;
 
-	ts = GetSizedTileset("Bosses/Coyote/babyscorpion_64x64.png");
-	sprite.setTexture(*ts->texture);
+
+	ts_bigFlame = GetSizedTileset("Bosses/Tiger/tiger_fire_1_192x192.png");
+	ts_smallFlame = GetSizedTileset("Bosses/Tiger/tiger_fire_2_160x160.png");
+	ts_attack = GetSizedTileset("Bosses/Tiger/tiger_fire_3_80x80.png");
+	sprite.setTexture(*ts_bigFlame->texture);
 	sprite.setScale(scale, scale);
 
 	hitboxInfo = new HitboxInfo;
@@ -107,7 +128,8 @@ void TigerTarget::SetLevel(int lev)
 
 void TigerTarget::ResetEnemy()
 {
-	action = NEUTRAL;
+	action = START_BURN;
+	//action = NEUTRAL;
 	frame = 0;
 
 	HitboxesOff();
@@ -123,6 +145,8 @@ void TigerTarget::ResetEnemy()
 
 	speed = baseSpeed;
 
+	currHitByPlayerFrame = 0;
+
 	UpdateSprite();
 }
 
@@ -135,9 +159,12 @@ void TigerTarget::ActionEnded()
 		frame = 0;
 		switch (action)
 		{
-		case HEAT_UP:
-			action = SIMMER;
+		case START_BURN:
+			action = FLAME_LEVEL_1;
 			break;
+		//case HEAT_UP:
+		//	action = SIMMER;
+		//	break;
 		case EXPLODE:
 			dead = true;
 			numHealth = 0;
@@ -145,8 +172,8 @@ void TigerTarget::ActionEnded()
 			break;
 		case HIT_BY_PLAYER:
 		{
-			action = ATTACK_TIGER;
-			frame = 0;
+			//action = ATTACK_TIGER;
+			//frame = 0;
 			break;
 		}
 		}
@@ -160,7 +187,7 @@ void TigerTarget::ProcessState()
 	double dist = PlayerDist();
 	V2d dir = PlayerDir();
 
-	switch (action)
+	/*switch (action)
 	{
 	case NEUTRAL:
 		break;
@@ -171,7 +198,7 @@ void TigerTarget::ProcessState()
 	case NEUTRAL:
 		break;
 		break;
-	}
+	}*/
 }
 
 void TigerTarget::UpdateEnemyPhysics()
@@ -223,8 +250,20 @@ void TigerTarget::HeatUp()
 	if (action == HIT_BY_PLAYER || action == ATTACK_PLAYER || action == ATTACK_TIGER)
 		return;
 
-
-	if (action == NEUTRAL)
+	if (action == START_BURN || action == FLAME_LEVEL_1)
+	{
+		action = FLAME_LEVEL_2;
+		frame = 0;
+	}
+	else if( action == FLAME_LEVEL_2 )
+	{
+		action = ATTACK_PLAYER;
+		speed = baseSpeed;
+		frame = 0;
+		DefaultHitboxesOn();
+		HurtboxesOff();
+	}
+	/*if (action == NEUTRAL)
 	{
 		currHeatLevel = 0;
 		action = HEAT_UP;
@@ -248,7 +287,7 @@ void TigerTarget::HeatUp()
 			action = HEAT_UP;
 			frame = 0;
 		}
-	}
+	}*/
 }
 
 void TigerTarget::UpdateSprite()
@@ -256,37 +295,83 @@ void TigerTarget::UpdateSprite()
 	int trueFrame;
 	switch (action)
 	{
-	case NEUTRAL:
-		sprite.setColor(Color::White);
-		break;
-	case HEAT_UP:
-	case SIMMER:
+	case START_BURN:
 	{
-		if (currHeatLevel == 0)
-		{
-			sprite.setColor(Color::Red);
-		}
-		else if (currHeatLevel == 1)
-		{
-			sprite.setColor(Color::Blue);
-		}
-		else if (currHeatLevel == 2)
-		{
-			sprite.setColor(Color::Cyan);
-		}
-		else
-		{
-			sprite.setColor(Color::Magenta);
-		}
+		ts_bigFlame->SetSpriteTexture(sprite);
+		ts_bigFlame->SetSubRect(sprite, frame / animFactor[START_BURN]);
 		break;
 	}
-	case EXPLODE:
+	case FLAME_LEVEL_1:
+	{
+		ts_bigFlame->SetSpriteTexture(sprite);
+		ts_bigFlame->SetSubRect(sprite, frame / animFactor[FLAME_LEVEL_1] 
+			+ actionLength[START_BURN]);
+		break;
+	}
+	case FLAME_LEVEL_2:
+	{
+		ts_smallFlame->SetSpriteTexture(sprite);
+		ts_smallFlame->SetSubRect(sprite, frame / animFactor[FLAME_LEVEL_2]);
+		break;
+	}
+	case ATTACK_PLAYER:
+	{
+		ts_attack->SetSpriteTexture(sprite);
+		ts_attack->SetSubRect(sprite, frame / animFactor[ATTACK_PLAYER]);
+		break;
+	}
+	case ATTACK_TIGER:
+	{
+		ts_attack->SetSpriteTexture(sprite);
+		ts_attack->SetSubRect(sprite, frame / animFactor[ATTACK_PLAYER]);
+		break;
+	}
+	case HIT_BY_PLAYER:
+	{
+		ts_attack->SetSpriteTexture(sprite);
+		ts_attack->SetSubRect(sprite, frame / animFactor[ATTACK_PLAYER]);
+		break;
+	}
+	//case NEUTRAL:
+	//{
+	//	ts_bigFlame->SetSpriteTexture(sprite);
+	//	ts_bigFlame->SetSubRect( sprite, )
+	//	//sprite.setColor(Color::White);
+	//	break;
+	//}
+	//	
+	//case HEAT_UP:
+	//case SIMMER:
+	//{
+	//	if (currHeatLevel == 0)
+	//	{
+
+	//	}
+	//	/*if (currHeatLevel == 0)
+	//	{
+	//		sprite.setColor(Color::Red);
+	//	}
+	//	else if (currHeatLevel == 1)
+	//	{
+	//		sprite.setColor(Color::Blue);
+	//	}
+	//	else if (currHeatLevel == 2)
+	//	{
+	//		sprite.setColor(Color::Cyan);
+	//	}
+	//	else
+	//	{
+	//		sprite.setColor(Color::Magenta);
+	//	}*/
+	//	break;
+	//}
+	/*case EXPLODE:
 		sprite.setColor(Color::Magenta);
-		break;
+		break;*/
 
 	}
 
-	ts->SetSubRect(sprite, 0, !facingRight);
+	//ts->SetSubRect(sprite, 0, !facingRight);
 	sprite.setOrigin(sprite.getLocalBounds().width / 2,
 		sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
@@ -375,4 +460,18 @@ bool TigerTarget::CanComboHit( Enemy *e )
 		return true;
 
 	return false;
+}
+
+void TigerTarget::FrameIncrement()
+{
+	if (action == HIT_BY_PLAYER)
+	{
+		++currHitByPlayerFrame;
+
+		if (currHitByPlayerFrame == maxHitByPlayerFrames)
+		{
+			action = ATTACK_TIGER;
+			frame = 0;
+		}
+	}
 }

@@ -8,9 +8,12 @@ struct TigerTarget : Enemy
 {
 	enum Action
 	{
-		NEUTRAL,
-		HEAT_UP,
-		SIMMER,
+		START_BURN,
+		FLAME_LEVEL_1,
+		FLAME_LEVEL_2,
+		//NEUTRAL,
+		//HEAT_UP,
+		//SIMMER,
 		ATTACK_PLAYER,
 		HIT_BY_PLAYER,
 		ATTACK_TIGER,
@@ -18,7 +21,9 @@ struct TigerTarget : Enemy
 		A_Count
 	};
 
-	Tileset *ts;
+	Tileset *ts_bigFlame;
+	Tileset *ts_smallFlame;
+	Tileset *ts_attack;
 
 	int currHeatLevel;
 
@@ -28,6 +33,9 @@ struct TigerTarget : Enemy
 	double hitByPlayerSpeed;
 	double maxSpeed;
 	double accel;
+
+	int maxHitByPlayerFrames;
+	int currHitByPlayerFrame;
 
 	Enemy *tiger;
 
@@ -43,6 +51,7 @@ struct TigerTarget : Enemy
 	void ProcessHit();
 	void ComboHit();
 	bool CanComboHit( Enemy *e );
+	void FrameIncrement();
 
 	void SetLevel(int lev);
 

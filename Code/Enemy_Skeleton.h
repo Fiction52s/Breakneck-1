@@ -4,7 +4,8 @@
 #include "Boss.h"
 #include "Bullet.h"
 #include "Movement.h"
-#include "Enemy_GatorWaterOrb.h"
+#include "Enemy_SkeletonLaser.h"
+
 
 struct SkeletonPostFightScene;
 struct CoyoteHelper;
@@ -24,6 +25,7 @@ struct Skeleton : Boss, RayCastHandler
 		JUMPSQUAT,
 		HOP,
 		LAND,
+		TEST_LASERS,
 		A_Count
 	};
 
@@ -34,9 +36,12 @@ struct Skeleton : Boss, RayCastHandler
 		PM_HOP,
 	};
 
+	SkeletonLaserPool laserPool;
 	PatternMoveType currentPatternMoveType;
 	PoiInfo *currNode;
 	RandomPicker patternTypePicker;
+
+	double extraHeight;
 
 	RandomPicker patternOrderPicker;
 	sf::CircleShape patternPreview;
@@ -57,8 +62,6 @@ struct Skeleton : Boss, RayCastHandler
 
 	SkeletonPostFightScene *postFightScene;
 	CoyoteHelper *coyHelper;
-
-	GatorWaterOrbPool orbPool;
 
 	//CircleGroup testGroup;
 	//CircleGroup testGroup2;
