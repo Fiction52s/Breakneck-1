@@ -311,7 +311,8 @@ void Skeleton::StartAction()
 	}
 	case TEST_LASERS:
 	{
-		laserPool.Throw(0, GetPosition() + V2d(0, -extraHeight), PlayerDir());
+		laserPool.Throw(0, GetPosition() + V2d(0, -extraHeight), 
+			PlayerDir( V2d( 0, -extraHeight ), V2d() ));
 		break;
 	}
 	}

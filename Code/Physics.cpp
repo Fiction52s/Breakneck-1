@@ -695,6 +695,11 @@ void CollisionBox::DebugDraw( CollisionBox::BoxType bType, sf::RenderTarget *tar
 		{
 			col = Color(0, 0, 255, 100);
 		}
+		else
+		{
+			col = Color::White;
+			//fail state
+		}
 
 		sf::Vertex quad[4];
 		for (int i = 0; i < 4; ++i)
@@ -2529,7 +2534,7 @@ void CollisionBody::AddBasicCircle( int frame, double radius, double angle,
 {
 	CollisionBox box;
 	box.isCircle = true;
-	box.globalAngle = angle;
+	box.localAngle = angle;
 	box.offset.x = offset.x;
 	box.offset.y = offset.y;
 	box.rw = radius;
@@ -2542,7 +2547,7 @@ void CollisionBody::AddBasicRect( int frame, double hw, double hh,
 {
 	CollisionBox box;
 	box.isCircle = false;
-	box.globalAngle = angle;
+	box.localAngle = angle;
 	box.offset.x = offset.x;
 	box.offset.y = offset.y;
 	box.rw = hw;

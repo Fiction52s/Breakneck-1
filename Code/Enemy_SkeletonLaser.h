@@ -67,7 +67,7 @@ struct SkeletonLaser : Enemy,
 	std::vector<V2d> anchorPositions;
 
 	double laserWidth;
-
+	//CollisionBody laserBody;
 
 	SkeletonLaser(//sf::Vertex *quad,
 		SkeletonLaserPool *pool);
@@ -81,9 +81,12 @@ struct SkeletonLaser : Enemy,
 	void HandleHitAndSurvive();
 	void IHitPlayer(int index = 0);
 	void UpdateSprite();
+	void UpdateHitboxes();
 	void ResetEnemy();
 	void FrameIncrement();
-
+	//void DebugDraw(sf::RenderTarget *target);
+	bool CanBeHitByPlayer();
+	bool CanBeHitByComboer();
 	void HitTerrainAerial(Edge *, double);
 };
 

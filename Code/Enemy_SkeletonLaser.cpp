@@ -84,6 +84,11 @@ void SkeletonLaserPool::DrawMinimap(sf::RenderTarget * target)
 	}
 }
 
+//void SkeletonLaserPool::DebugDraw(sf::RenderTarget *target)
+//{
+//	target->
+//}
+
 SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	:Enemy(EnemyType::EN_SKELETONLASER, NULL)
 {
@@ -109,6 +114,19 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 
 	ts = pool->ts;
 
+
+	hitBody.SetupNumFrames(1);
+	hitBody.SetupNumBoxesOnFrame(0, maxBounces);
+
+	hurtBody.SetupNumFrames(1);
+	hurtBody.SetupNumBoxesOnFrame(0, maxBounces);
+	//hitBody.boxType = CollisionBox::BoxType::Hit;
+	//CollisionBox cb;
+	//cb.AddBasicRect(0, w, h, angle, offset);
+	//laserBody.AddCollisionBox()
+	
+	
+
 	CreateSurfaceMover(startPosInfo, laserWidth, this);
 
 	highResPhysics = true;
@@ -123,7 +141,7 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 
 	lengthLimit = 500;
 
-	BasicCircleHitBodySetup(16);
+	//BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
 	flySpeed = 30;
@@ -149,8 +167,8 @@ void SkeletonLaser::ResetEnemy()
 	destPoi = NULL;
 
 	DefaultHitboxesOn();
-
-	UpdateHitboxes();
+	DefaultHurtboxesOn();
+	//UpdateHitboxes();
 
 }
 
@@ -244,6 +262,8 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 	surfaceMover->velocity = dir * flySpeed;
 
 	anchorPositions.push_back(pos);
+
+	UpdateHitboxes();
 }
 
 void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
@@ -271,6 +291,8 @@ void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 	framesToArriveToDestPoi = ceil(length(diff) / flySpeed);
 
 	anchorPositions.push_back(pos);
+
+	UpdateHitboxes();
 }
 
 void SkeletonLaser::FrameIncrement()
@@ -354,11 +376,6 @@ void SkeletonLaser::UpdateSprite()
 		{
 			SetRectColor( quads + i * 4, Color::Magenta);
 		}
-		
-		//for (int i = 0; i < currBounce + 1; ++i)
-		{
-		//	V2d laserDir = normalize(throwPos - laserAnchor);
-		}
 
 		double totalLength = 0;
 
@@ -423,12 +440,112 @@ void SkeletonLaser::UpdateSprite()
 	}
 }
 
+void SkeletonLaser::UpdateHitboxes()
+{
+	//BasicUpdateHitboxes();
+	//BasicUpdateHitboxInfo();
+
+	if (anchorPositions.empty())
+	{
+		return;
+	}
+	
+	hitBody.ResetFrames();
+	hurtBody.ResetFrames();
+
+
+	double totalLength = 0;
+
+	V2d currPos, tailPos, laserDir, laserCenter;
+	double laserAngle, laserLength;
+
+	currPos = GetPosition();
+	tailPos = anchorPositions[currBounce];
+	laserLength = length(currPos - tailPos);
+	laserDir = normalize(currPos - tailPos);
+
+	if (laserLength > lengthLimit)
+	{
+		tailPos = currPos - laserDir * lengthLimit;
+		totalLength = lengthLimit;
+		laserLength = lengthLimit;
+	}
+	else
+	{
+		totalLength += laserLength;
+	}
+
+	laserAngle = GetVectorAngleCW(laserDir);
+	laserCenter = (currPos + tailPos) / 2.0;
+
+	if (laserLength != 0)
+	{
+		hitBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+		hurtBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+	}
+	
+
+	for (int i = currBounce; i > 0; --i)
+	{
+		if (totalLength >= lengthLimit)
+		{
+			break;
+		}
+
+		currPos = anchorPositions[i];
+		tailPos = anchorPositions[i - 1];
+		laserLength = length(currPos - tailPos);
+		laserDir = normalize(currPos - tailPos);
+
+		if (totalLength + laserLength > lengthLimit)
+		{
+			tailPos = currPos - laserDir * (lengthLimit - totalLength);
+			laserLength = lengthLimit - totalLength;
+			totalLength = lengthLimit;
+		}
+		else
+		{
+			totalLength += laserLength;
+		}
+
+		laserAngle = GetVectorAngleCW(laserDir);
+		laserCenter = (currPos + tailPos) / 2.0;
+
+		if (laserLength != 0)
+		{
+			hitBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+			hurtBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+		}
+		
+		//SetRectRotation(quads + (currBounce - (i - 1)) * 4, laserAngle, laserLength, laserWidth, Vector2f(laserCenter));
+	}
+
+	hitBody.SetBasicPos(V2d(0, 0));
+	hurtBody.SetBasicPos(V2d(0, 0));
+}
+
 void SkeletonLaser::EnemyDraw(sf::RenderTarget *target)
 {
+	//laserBody.DebugDraw(0, target);
 	target->draw(quads, maxBounces * 4, sf::Quads);
 	//firePool.Draw(target);
 }
 
+//void SkeletonLaser::DebugDraw(sf::RenderTarget *target)
+//{
+//	hitBody.DebugDraw( 0, target);
+//}
+
 void SkeletonLaser::HandleHitAndSurvive()
 {
+}
+
+bool SkeletonLaser::CanBeHitByPlayer()
+{
+	return false;
+}
+
+bool SkeletonLaser::CanBeHitByComboer()
+{
+	return false;
 }
