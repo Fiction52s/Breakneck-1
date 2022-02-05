@@ -17,7 +17,9 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	enum Action
 	{
 		WAIT,
-		GATHER_ENERGY,
+		GATHER_ENERGY_START,
+		GATHER_ENERGY_LOOP,
+		GATHER_ENERGY_END,
 		START_GRIND,
 		MOVE_GRIND,
 		MOVE_JUMP,
@@ -45,11 +47,13 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	int moveOnlyFrames;
 	int moveOnlyMaxFrames;
 
-
+	int maxChargeLoopFrames;
+	int currChargeLoopFrame;
 
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
 	Tileset *ts_grind;
+	Tileset *ts_roar;
 
 	//SummonGroup spinTurretSummonGroup;
 

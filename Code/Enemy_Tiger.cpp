@@ -46,7 +46,16 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[THROW_SPINTURRET] = 60;
 	actionLength[SUMMON_FLAME_TARGETS] = 60;//180;
 	actionLength[HEAT_FLAME_TARGETS] = 60;//180;
-	actionLength[GATHER_ENERGY] = 120;
+	
+	actionLength[GATHER_ENERGY_START] = 9;
+	animFactor[GATHER_ENERGY_START] = 3;
+
+	actionLength[GATHER_ENERGY_LOOP] = 1;
+
+	actionLength[GATHER_ENERGY_END] = 4;
+	animFactor[GATHER_ENERGY_END] = 3;
+
+
 	actionLength[JUMP_LAND] = 10;
 	actionLength[JUMP_SQUAT] = 10;
 
@@ -59,7 +68,8 @@ Tiger::Tiger(ActorParams *ap)
 	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	ts_grind = GetSizedTileset("Bosses/Tiger/tiger_grind_256x256.png");
-	sprite.setColor(Color::Red);
+	ts_roar = GetSizedTileset("Bosses/Tiger/tiger_roar_256x160.png");
+	//sprite.setColor(Color::Red);
 
 	TigerTarget *target = NULL;
 	for (int i = 0; i < targetGroup.numTotalEnemies; ++i)
@@ -71,7 +81,7 @@ Tiger::Tiger(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
 	stageMgr.AddActiveOption(0, START_GRIND, 2);
 	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
-	stageMgr.AddActiveOption(0, GATHER_ENERGY, 2);
+	stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
 	//stageMgr.AddActiveOption(0, SUMMON, 2);
@@ -96,6 +106,9 @@ Tiger::Tiger(ActorParams *ap)
 	postFightScene2 = NULL;
 
 	LoadParams();
+
+	maxChargeLoopFrames = 60;
+	
 
 	BasicCircleHurtBodySetup(64);
 	BasicCircleHitBodySetup(64);
@@ -136,6 +149,8 @@ void Tiger::ResetEnemy()
 	//spinTurretSummonGroup.Reset();
 	palmSummonGroup.Reset();
 	targetGroup.Reset();
+
+	currChargeLoopFrame = 0;
 
 	lastTargetDestroyedPos = V2d(0, 0);
 
@@ -191,7 +206,6 @@ void Tiger::ActionEnded()
 	{
 	case WAIT:
 	case JUMP_SQUAT:
-	case MOVE_GRIND:
 	case SUMMON:
 	case THROW_SPINTURRET:
 	case SUMMON_FLAME_TARGETS:
@@ -208,7 +222,18 @@ void Tiger::ActionEnded()
 		SetAction(START_GRIND);
 		break;
 	}
-	case GATHER_ENERGY:
+	case GATHER_ENERGY_START:
+	{
+		SetAction(GATHER_ENERGY_LOOP);
+		currChargeLoopFrame = 0;
+		break;
+	}
+	case GATHER_ENERGY_LOOP:
+	{
+		frame = 0;
+		break;
+	}
+	case GATHER_ENERGY_END:
 	{
 		if (targetGroup.numActiveEnemies == 0 )
 		{
@@ -219,6 +244,11 @@ void Tiger::ActionEnded()
 			SetAction(HEAT_FLAME_TARGETS);
 		}
 		
+		break;
+	}
+	case MOVE_GRIND:
+	{
+		SetAction(MOVE_JUMP);
 		break;
 	}
 	case MOVE_JUMP:
@@ -513,6 +543,15 @@ void Tiger::FrameIncrement()
 			++moveOnlyFrames;
 		}
 	}
+
+	if (action == GATHER_ENERGY_LOOP)
+	{
+		++currChargeLoopFrame;
+		if (currChargeLoopFrame == maxChargeLoopFrames)
+		{
+			SetAction(GATHER_ENERGY_END);
+		}
+	}
 }
 
 bool Tiger::IsDecisionValid(int d)
@@ -522,7 +561,7 @@ bool Tiger::IsDecisionValid(int d)
 		return false;
 	}
 	//else if ( (action == SUMMON_FLAME_TARGETS || action == HEAT_FLAME_TARGETS)
-	else if ( d == GATHER_ENERGY && moveOnlyFrames >= 0 && moveOnlyFrames < moveOnlyMaxFrames )
+	else if ( d == GATHER_ENERGY_START && moveOnlyFrames >= 0 && moveOnlyFrames < moveOnlyMaxFrames )
 	{
 		return false;
 	}
@@ -574,6 +613,21 @@ void Tiger::UpdateSprite()
 		sprite.setTexture(*ts_grind->texture);
 		ts_grind->SetSubRect(sprite, f / animFactor[MOVE_GRIND] + 8, !facingRight);
 	}
+	else if (action == GATHER_ENERGY_START)
+	{
+		sprite.setTexture(*ts_roar->texture);
+		ts_roar->SetSubRect(sprite, frame / animFactor[GATHER_ENERGY_START], !facingRight);
+	}
+	else if (action == GATHER_ENERGY_LOOP)
+	{
+		sprite.setTexture(*ts_roar->texture);
+		ts_roar->SetSubRect(sprite, frame / animFactor[GATHER_ENERGY_LOOP] + 8, !facingRight);
+	}
+	else if (action == GATHER_ENERGY_END)
+	{
+		sprite.setTexture(*ts_roar->texture);
+		ts_roar->SetSubRect(sprite, frame / animFactor[GATHER_ENERGY_END] + 18, !facingRight);
+	}
 	else
 	{
 		sprite.setTexture(*ts_move->texture);
@@ -581,17 +635,46 @@ void Tiger::UpdateSprite()
 	}
 	
 
-	if (action == GATHER_ENERGY)
+	if (action == GATHER_ENERGY_START)
 	{
-		sprite.setColor(Color::Red);
+		//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+		//sprite.setColor(Color::Red);
 	}
 	else
 	{
-		sprite.setColor(Color::White);
+		//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+		//sprite.setColor(Color::White);
 	}
 
+	if (action == MOVE_GRIND)
+	{
+		sprite.setRotation(0);
+	}
+	else
+	{
+		sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+	}
+	
 
-	sprite.setPosition(GetPositionF());
+	double extra = 64;
+	if (action == MOVE_GRIND)
+	{
+		extra = 0;
+	}
+	else if (action == START_GRIND)
+	{
+		if (frame / animFactor[START_GRIND] == 6)
+		{
+			extra = extra * .7;
+		}
+		else if (frame / animFactor[START_GRIND] == 7)
+		{
+			extra = extra * .3;
+		}
+		//double fac = ((double)frame) / (actionLength[START_GRIND] * animFactor[START_GRIND]);
+		//extra = extra * (1.f - fac);
+	}
+	sprite.setPosition(GetPositionF() + Vector2f( 0, -extra ));
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 }
 

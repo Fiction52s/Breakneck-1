@@ -39,13 +39,15 @@ Bird::Bird(ActorParams *ap)
 
 	level = ap->GetLevel();
 
-	actionLength[PUNCH] = 14;
+	//actionLength[PUNCH] = 14;
+	actionLength[PUNCH] = 28;
 	actionLength[SUMMON] = 60;
 	actionLength[SHURIKEN_SHOTGUN] = 60;
 	actionLength[UNDODGEABLE_SHURIKEN] = 60;
 	actionLength[KICK] = 10;
 
-	animFactor[PUNCH] = 3;
+	//animFactor[PUNCH] = 3;
+	animFactor[PUNCH] = 2;
 	animFactor[KICK] = 3;
 
 	hitOffsetMap[PUNCH] = V2d(100, 0);
@@ -75,7 +77,7 @@ Bird::Bird(ActorParams *ap)
 	stageMgr.AddActiveOption(3, UNDODGEABLE_SHURIKEN, 2);
 
 	ts_move = GetSizedTileset("Bosses/Bird/intro_256x256.png");
-	ts_punch = GetSizedTileset("Bosses/Bird/punch_256x256.png");
+	ts_punch = GetSizedTileset("Bosses/Bird/bird_punch_256x256.png");
 	ts_kick = GetSizedTileset("Bosses/Bird/kick_256x256.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
 
@@ -85,7 +87,7 @@ Bird::Bird(ActorParams *ap)
 	LoadParams();
 
 	CreateHitboxManager("Bosses/Bird");
-	SetupHitboxes(PUNCH, "punch");
+	SetupHitboxes(PUNCH, "punch1");
 
 
 	myBonus = NULL;
@@ -564,7 +566,7 @@ void Bird::UpdateSprite()
 		break;
 	case PUNCH:
 		sprite.setTexture(*ts_punch->texture);
-		ts_punch->SetSubRect(sprite, frame / animFactor[action] + 14, !facingRight);
+		ts_punch->SetSubRect(sprite, frame / animFactor[action], !facingRight);
 		break;
 	case KICK:
 		sprite.setTexture(*ts_kick->texture);
