@@ -27,13 +27,14 @@ Skeleton::Skeleton(ActorParams *ap)
 	ts_stand = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
 	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
 
-	stageMgr.AddActiveOption(0, TEST_LASERS, 2);
+	//stageMgr.AddActiveOption(0, TEST_LASERS, 2);
 
-	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
 
-	extraHeight = 64;
+	extraHeight = 32;
+	eyeExtraHeight = 32;
 
 	stageMgr.AddActiveOption(1, MOVE_WIRE_DASH, 2);
 
@@ -50,6 +51,8 @@ Skeleton::Skeleton(ActorParams *ap)
 	animFactor[JUMPSQUAT] = 3;//1
 	//animFactor[HOP] = 1;
 	animFactor[LAND] = 3;
+
+	SetRectColor(wireQuad, Color::Red);
 	
 
 	postFightScene = NULL;
@@ -108,7 +111,6 @@ void Skeleton::LoadParams()
 
 void Skeleton::ResetEnemy()
 {
-
 	currNode = NULL;
 	patternIndex = -1;
 
@@ -117,6 +119,10 @@ void Skeleton::ResetEnemy()
 	facingRight = true;
 
 	rayCastInfo.tree = sess->terrainTree;
+
+	currPosInfo.SetAerial();
+	currPosInfo.position += V2d(0, -extraHeight);
+	enemyMover.currPosInfo = currPosInfo;
 
 	BossReset();
 
@@ -263,7 +269,8 @@ void Skeleton::StartAction()
 	case MOVE_OTHER:
 	{
 		V2d nodePos = nodeGroupB.AlwaysGetNextNode()->pos;
-		StartMovement(nodePos);
+		//StartMovement(nodePos + V2d( 0, -extraHeight));
+		StartMovement(nodePos + V2d(0, -extraHeight));
 		break;
 	}
 	case PATTERN_MOVE:
@@ -278,7 +285,10 @@ void Skeleton::StartAction()
 			}
 		}
 		currNode = pattern[trueIndex];
-		StartMovement(currNode->pos);
+		StartMovement(currNode->pos + V2d( 0, -extraHeight ));
+
+		laserPool.Throw(0, GetPosition() + V2d( 0, -eyeExtraHeight),
+			PlayerDir( V2d( 0, -eyeExtraHeight), V2d() ));
 		break;
 	}
 	case PLAN_PATTERN:
@@ -355,13 +365,19 @@ void Skeleton::StartMovement(V2d &pos)
 	}
 	else if (absNodeDiffX > 600)
 	{
+		//enemyMover.currPosInfo.position += V2d(0, -extraHeight);
+		//currPosInfo = enemyMover.currPosInfo;
 
 		currentPatternMoveType = PM_SWING;
 
+		
+		//nodePos += V2d(0, -extraHeight);
+		V2d myPos = GetPosition();// +V2d(0, -extraHeight);
+
 		//stuff
-		V2d along = nodePos - GetPosition();
-		V2d midPoint = GetPosition() + along / 4.0;
-		V2d centerPoint = (nodePos + GetPosition()) / 2.0;
+		V2d along = nodePos - myPos;
+		V2d midPoint = myPos + along / 4.0;
+		V2d centerPoint = (nodePos + myPos) / 2.0;
 		along = normalize(along);
 
 		V2d other(along.y, -along.x);
@@ -386,6 +402,7 @@ void Skeleton::StartMovement(V2d &pos)
 
 			V2d basePos = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant);
 
+			//basePos += V2d(0, -extraHeight);
 			//V2d dir = normalize(basePos - GetPosition());
 			//V2d along(-dir.y, dir.x);
 
@@ -512,9 +529,47 @@ void Skeleton::UpdateSprite()
 		ts_hop->SetSubRect(sprite, frame / animFactor[action] + extra, !facingRight);
 	}
 	}
-
-	sprite.setPosition(GetPositionF() + Vector2f( 0, -extraHeight ));
+	currPosInfo = enemyMover.currPosInfo;
+	sprite.setPosition(GetPositionF() + Vector2f(0, -extraHeight)); //skeleton sprite is spaced badly
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	UpdateWireQuad();
+}
+
+V2d Skeleton::GetCenter()
+{
+	return GetPosition() + V2d(0, -extraHeight);
+}
+
+void Skeleton::UpdateWireQuad()
+{
+	if (enemyMover.moveType == EnemyMover::RADIAL_DOUBLE_JUMP
+		|| enemyMover.moveType == EnemyMover::ZIP_AND_FALL
+		|| enemyMover.moveType == EnemyMover::SWING
+		|| enemyMover.moveType == EnemyMover::SWINGJUMP)
+	{
+
+		V2d currWirePos = enemyMover.swingAnchor;
+		V2d currPos = currPosInfo.GetPosition();//GetCenter();//currPosInfo.GetPosition();
+		V2d other = normalize(currWirePos - currPos);
+		other = V2d(other.y, -other.x);
+		double width = 5;
+
+		wireQuad[0] = Vector2f(currPos + other * width);
+		wireQuad[1] = Vector2f(currPos - other * width);
+		wireQuad[2] = Vector2f(currWirePos - other * width);
+		wireQuad[3] = Vector2f(currWirePos + other * width);
+		SetRectColor(wireQuad, Color::Red);
+	}
+	else
+	{
+		ClearRect(wireQuad);
+	}
+	
+	/*V2d A = currPos + other * width;
+	V2d B = swingAnchor + other * width;
+	V2d C = swingAnchor - other * width;
+	V2d D = currPos - other * width;*/
 }
 
 void Skeleton::EnemyDraw(sf::RenderTarget *target)
@@ -525,8 +580,17 @@ void Skeleton::EnemyDraw(sf::RenderTarget *target)
 		target->draw( patternNumberText);
 	}
 	
+	/*sf::CircleShape cs;
+	cs.setFillColor(Color::Green);
+	cs.setRadius(20);
+	cs.setOrigin(cs.getLocalBounds().width / 2, cs.getLocalBounds().height / 2);
+	cs.setPosition(GetPositionF());*/
+
+	target->draw(wireQuad, 4, sf::Quads);
 
 	DrawSprite(target, sprite);
+
+	//target->draw(cs);
 	//laserPool.Draw(target);
 }
 

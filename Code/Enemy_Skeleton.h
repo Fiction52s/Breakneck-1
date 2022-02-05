@@ -42,6 +42,7 @@ struct Skeleton : Boss, RayCastHandler
 	RandomPicker patternTypePicker;
 
 	double extraHeight;
+	double eyeExtraHeight;
 
 	RandomPicker patternOrderPicker;
 	sf::CircleShape patternPreview;
@@ -77,6 +78,8 @@ struct Skeleton : Boss, RayCastHandler
 	bool ignorePointsCloserThanPlayer;
 	double playerDist;
 
+	sf::Vertex wireQuad[4];
+
 	Skeleton(ActorParams *ap);
 	~Skeleton();
 
@@ -110,6 +113,8 @@ struct Skeleton : Boss, RayCastHandler
 	void HandleRayCollision(Edge *edge, double edgeQuantity, double rayPortion);
 	void Hop(V2d &pos, double p_hopSpeed, double p_hopExtraHeight);
 	void FinishPatternMove();
+	void UpdateWireQuad();
+	V2d GetCenter();
 	
 
 	//Rollback

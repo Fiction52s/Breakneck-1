@@ -478,10 +478,12 @@ void SkeletonLaser::UpdateHitboxes()
 	laserAngle = GetVectorAngleCW(laserDir);
 	laserCenter = (currPos + tailPos) / 2.0;
 
+	bool laserOn = false;
 	if (laserLength != 0)
 	{
 		hitBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
 		hurtBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+		laserOn = true;
 	}
 	
 
@@ -515,13 +517,17 @@ void SkeletonLaser::UpdateHitboxes()
 		{
 			hitBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
 			hurtBody.AddBasicRect(0, laserLength / 2, laserWidth / 2, laserAngle, laserCenter);
+			laserOn = true;
 		}
 		
 		//SetRectRotation(quads + (currBounce - (i - 1)) * 4, laserAngle, laserLength, laserWidth, Vector2f(laserCenter));
 	}
 
-	hitBody.SetBasicPos(V2d(0, 0));
-	hurtBody.SetBasicPos(V2d(0, 0));
+	if (laserOn)
+	{
+		hitBody.SetBasicPos(V2d(0, 0));
+		hurtBody.SetBasicPos(V2d(0, 0));
+	}
 }
 
 void SkeletonLaser::EnemyDraw(sf::RenderTarget *target)
