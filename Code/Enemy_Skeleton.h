@@ -25,7 +25,10 @@ struct Skeleton : Boss, RayCastHandler
 		JUMPSQUAT,
 		HOP,
 		LAND,
-		TEST_LASERS,
+		SHOOT_LASER,
+		GATHER_ENERGY_START,
+		GATHER_ENERGY_LOOP,
+		GATHER_ENERGY_END,
 		A_Count
 	};
 
@@ -74,6 +77,7 @@ struct Skeleton : Boss, RayCastHandler
 	Tileset *ts_charge;
 	Tileset *ts_stand;
 	Tileset *ts_hop;
+	Tileset *ts_laser;
 
 	bool ignorePointsCloserThanPlayer;
 	double playerDist;
@@ -115,6 +119,7 @@ struct Skeleton : Boss, RayCastHandler
 	void FinishPatternMove();
 	void UpdateWireQuad();
 	V2d GetCenter();
+	void FrameIncrement();
 	
 
 	//Rollback

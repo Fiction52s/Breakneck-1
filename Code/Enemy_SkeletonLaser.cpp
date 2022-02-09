@@ -149,6 +149,11 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	ResetEnemy();
 }
 
+SkeletonLaser::~SkeletonLaser()
+{
+	delete quads;
+}
+
 void SkeletonLaser::ResetEnemy()
 {
 	ClearQuads();

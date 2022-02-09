@@ -58,6 +58,7 @@ void Boss::BossReset()
 	commandQueue.clear();
 	currCommandIndex = 0;
 	nextAction = -1;
+	prevDecision = -1;
 }
 
 void Boss::QueueCommand(BossCommand &cm)
@@ -254,19 +255,27 @@ void Boss::TryExecuteDecision()
 {
 	if (decide)
 	{
+		int next;
 		if (stageMgr.stageChanged)
 		{
-			SetAction(ChooseActionAfterStageChange());
+			next = ChooseActionAfterStageChange();
+			if (next == -1)
+			{
+				next = ChooseNextAction();
+			}
 			stageMgr.stageChanged = false;
 		}
 		else if (nextAction != -1)
 		{
-			SetAction(nextAction);
+			next = nextAction;
 		}
 		else
 		{
-			SetAction(ChooseNextAction());
+			next = ChooseNextAction();
 		}
+
+		prevDecision = next;
+		SetAction(next);
 		decide = false;
 	}
 }

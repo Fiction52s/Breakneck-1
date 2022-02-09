@@ -71,6 +71,7 @@ struct SkeletonLaser : Enemy,
 
 	SkeletonLaser(//sf::Vertex *quad,
 		SkeletonLaserPool *pool);
+	~SkeletonLaser();
 	void ClearQuads();
 	V2d GetThrowDir(V2d &dir);
 	void Throw(int type, V2d &pos, V2d &dir);

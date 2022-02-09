@@ -114,6 +114,7 @@ void SequenceTiger::FrameIncrement()
 		--waitFrames;
 	}
 
+
 	enemyMover.FrameIncrement();
 	currPosInfo = enemyMover.currPosInfo;
 }

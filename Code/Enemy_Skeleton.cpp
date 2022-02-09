@@ -26,12 +26,16 @@ Skeleton::Skeleton(ActorParams *ap)
 	ts_charge = GetSizedTileset("Bosses/Skeleton/skele_charge_128x128.png");
 	ts_stand = GetSizedTileset("Bosses/Skeleton/skele_128x128.png");
 	ts_hop = GetSizedTileset("Bosses/Skeleton/skele_hop_128x128.png");
+	ts_laser = GetSizedTileset("Bosses/Skeleton/skele_laser_160x128.png");
 
-	//stageMgr.AddActiveOption(0, TEST_LASERS, 2);
-
+	//stageMgr.AddActiveOption(0, SHOOT_LASER, 2);
+	//stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
+	
 	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
+
+	maxChargeLoopFrames = 60;
 
 	extraHeight = 32;
 	eyeExtraHeight = 32;
@@ -46,11 +50,22 @@ Skeleton::Skeleton(ActorParams *ap)
 	//actionLength[HOP] = 2;
 	actionLength[LAND] = 2;
 
-	actionLength[TEST_LASERS] = 90;
+	actionLength[SHOOT_LASER] = 21;
+	animFactor[SHOOT_LASER] = 3;
 
 	animFactor[JUMPSQUAT] = 3;//1
 	//animFactor[HOP] = 1;
 	animFactor[LAND] = 3;
+
+	actionLength[GATHER_ENERGY_START] = 10;
+	animFactor[GATHER_ENERGY_START] = 1;
+
+	actionLength[GATHER_ENERGY_LOOP] = 5;
+	animFactor[GATHER_ENERGY_LOOP] = 4;
+
+	actionLength[GATHER_ENERGY_END] = 10;
+	animFactor[GATHER_ENERGY_END] = 1;
+
 
 	SetRectColor(wireQuad, Color::Red);
 	
@@ -70,6 +85,7 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
+	patternTypePicker.AddActiveOption(SHOOT_LASER);
 
 	pattern.reserve(9);
 	patternType.reserve(9);
@@ -124,6 +140,15 @@ void Skeleton::ResetEnemy()
 	currPosInfo.position += V2d(0, -extraHeight);
 	enemyMover.currPosInfo = currPosInfo;
 
+	if (sess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = sess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+		}
+	}
+
 	BossReset();
 
 	StartFight();
@@ -156,7 +181,6 @@ void Skeleton::ActionEnded()
 	case WAIT:
 	case MOVE_WIRE_DASH:
 	case MOVE_OTHER:
-	case TEST_LASERS:
 		Decide();
 		break;
 	case PLAN_PATTERN:
@@ -193,6 +217,58 @@ void Skeleton::ActionEnded()
 		//Decide();
 		break;
 	}
+	case SHOOT_LASER:
+	{
+		SetAction(PATTERN_MOVE);
+		/*if (patternIndex == numPatternMoves - 1)
+		{
+			Wait(30);
+		}
+		else
+		{
+			
+		}*/
+		
+
+		/*if (patternIndex == numPatternMoves - 1)
+		{
+			if (patternType[patternIndex] == PATTERN_MOVE)
+			{
+				Wait(30);
+			}
+			else
+			{
+				++patternIndex;
+				SetAction(patternType[patternIndex - 1]);
+			}
+		}
+		else
+		{
+			++patternIndex;
+			SetAction(patternType[patternIndex - 1]);
+
+		}*/
+		//FinishPatternMove();
+		//Decide(); //for now
+		break;
+	}
+	case GATHER_ENERGY_START:
+	{
+		SetAction(GATHER_ENERGY_LOOP);
+		currChargeLoopFrame = 0;
+		break;
+	}
+	case GATHER_ENERGY_LOOP:
+	{
+		frame = 0;
+		break;
+	}
+	case GATHER_ENERGY_END:
+	{
+		Decide();
+
+		break;
+	}
 		
 	}
 }
@@ -218,16 +294,35 @@ void Skeleton::HandleAction()
 				//patternNumber.setString( )
 				//patternNumber.setPosition(patternPreview.getPosition());
 
-				if (patternType[mult] == PATTERN_MOVE)
+				if (patternType[patternOrder[mult]] == PATTERN_MOVE)
 				{
 					patternPreview.setFillColor(Color::Magenta);
 				}
-				/*else if (patternType[mult] == PATTERN_RUSH)
+				else if (patternType[patternOrder[mult]] == SHOOT_LASER)
 				{
-					patternPreview.setFillColor(Color::Red);
-				}*/
+					patternPreview.setFillColor(Color::Yellow);
+				}
 			}
 		}
+		break;
+	}
+	case SHOOT_LASER:
+	{
+		if (frame == 9 * animFactor[SHOOT_LASER] && slowCounter == 1)
+		{
+			V2d offset = V2d(0, -extraHeight);
+			if (facingRight)
+			{
+				offset += V2d(20, 16);
+			}
+			else
+			{
+				offset += V2d(-20, 16);
+			}
+			laserPool.Throw(0, GetPosition() + offset,
+				PlayerDir(offset, V2d()));
+		}
+		
 		break;
 	}
 	}
@@ -287,8 +382,8 @@ void Skeleton::StartAction()
 		currNode = pattern[trueIndex];
 		StartMovement(currNode->pos + V2d( 0, -extraHeight ));
 
-		laserPool.Throw(0, GetPosition() + V2d( 0, -eyeExtraHeight),
-			PlayerDir( V2d( 0, -eyeExtraHeight), V2d() ));
+		//laserPool.Throw(0, GetPosition() + V2d( 0, -eyeExtraHeight),
+		//	PlayerDir( V2d( 0, -eyeExtraHeight), V2d() ));
 		break;
 	}
 	case PLAN_PATTERN:
@@ -319,12 +414,19 @@ void Skeleton::StartAction()
 		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
 		break;
 	}
-	case TEST_LASERS:
+	case SHOOT_LASER:
 	{
-		laserPool.Throw(0, GetPosition() + V2d(0, -extraHeight), 
-			PlayerDir( V2d( 0, -extraHeight ), V2d() ));
+		if (PlayerDir().x > 0)
+		{
+			facingRight = true;
+		}
+		else if (PlayerDir().x < 0)
+		{
+			facingRight = false;
+		}
 		break;
 	}
+	
 	}
 }
 
@@ -420,6 +522,19 @@ void Skeleton::StartMovement(V2d &pos)
 		//SetAction(JUMPSQUAT);
 		//currentPatternMoveType = PM_HOP;
 		//enemyMover.SetModeNodeProjectile(nodePos, V2d(0, 2), 100);
+	}
+}
+
+void Skeleton::FrameIncrement()
+{
+	Boss::FrameIncrement();
+	if (action == GATHER_ENERGY_LOOP)
+	{
+		++currChargeLoopFrame;
+		if (currChargeLoopFrame == maxChargeLoopFrames)
+		{
+			SetAction(GATHER_ENERGY_END);
+		}
 	}
 }
 
@@ -528,8 +643,34 @@ void Skeleton::UpdateSprite()
 		sprite.setTexture(*ts_hop->texture);
 		ts_hop->SetSubRect(sprite, frame / animFactor[action] + extra, !facingRight);
 	}
+	case SHOOT_LASER:
+	{
+		ts_laser->SetSpriteTexture(sprite);
+		ts_laser->SetSubRect(sprite, frame / animFactor[action], !facingRight );
+		break;
 	}
-	currPosInfo = enemyMover.currPosInfo;
+	case GATHER_ENERGY_START:
+	{
+		ts_charge->SetSpriteTexture(sprite);
+		ts_charge->SetSubRect(sprite, 0, !facingRight);
+		break;
+	}
+	case GATHER_ENERGY_LOOP:
+	{
+		ts_charge->SetSpriteTexture(sprite);
+		ts_charge->SetSubRect(sprite, frame/ animFactor[action], !facingRight);
+		break;
+	}
+	case GATHER_ENERGY_END:
+	{
+		ts_charge->SetSpriteTexture(sprite);
+		ts_charge->SetSubRect(sprite, 4, !facingRight);
+		break;
+	}
+	}
+
+	//sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+
 	sprite.setPosition(GetPositionF() + Vector2f(0, -extraHeight)); //skeleton sprite is spaced badly
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 
@@ -706,11 +847,11 @@ void Skeleton::FinishPatternMove()
 		{
 			Wait(30);
 		}
-		else
+		/*else
 		{
 			++patternIndex;
 			SetAction(patternType[patternIndex - 1]);
-		}
+		}*/
 	}
 	else
 	{

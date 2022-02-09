@@ -28,6 +28,7 @@ struct Boss : Enemy
 	BossHealth *healthBar;
 
 	int nextAction;
+	int prevDecision;
 
 	std::vector<BossCommand> commandQueue;
 	int currCommandIndex;
@@ -37,6 +38,9 @@ struct Boss : Enemy
 
 	std::map<int, V2d> hitOffsetMap;
 	std::map<int, int> hitboxStartFrame;
+
+	int maxChargeLoopFrames;
+	int currChargeLoopFrame;
 
 	//std::vector<BossCommand> 
 

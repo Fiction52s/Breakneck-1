@@ -47,9 +47,6 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	int moveOnlyFrames;
 	int moveOnlyMaxFrames;
 
-	int maxChargeLoopFrames;
-	int currChargeLoopFrame;
-
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;
 	Tileset *ts_grind;

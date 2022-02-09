@@ -177,7 +177,7 @@ void Coyote::ResetEnemy()
 		CameraShot *cs = sess->cameraShotMap["fightcam"];
 		if (cs != NULL)
 		{
-			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 1);
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
 		}
 	}
 

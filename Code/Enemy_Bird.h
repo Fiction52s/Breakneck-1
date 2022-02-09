@@ -21,17 +21,25 @@ struct Bird : Summoner, Boss
 		WAIT,
 		COMBOMOVE,
 		PUNCH,
+		PUNCH2,
 		KICK,
 		MOVE_NODE_LINEAR,
 		MOVE_NODE_QUADRATIC,
 		MOVE_CHASE,
+		//MOVE_NODE_LINEAR_BASIC_SHURIKEN,
+		//MOVE_NODE_QUADRATIC_BASIC_SHURIKEN,
 		RUSH,
 		MOVE,
-		SHURIKEN_SHOTGUN,
+		SHURIKEN_SHOTGUN_1,
+		SHURIKEN_SHOTGUN_2,
+		BASIC_SHURIKEN,
 		UNDODGEABLE_SHURIKEN,
 		SUMMON,
 		SEQ_WAIT,
 		TEST_POST,
+		GATHER_ENERGY_START,
+		GATHER_ENERGY_LOOP,
+		GATHER_ENERGY_END,
 		A_Count
 	};
 
@@ -40,7 +48,12 @@ struct Bird : Summoner, Boss
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
 
+	RandomPicker attackPicker;
+
 	GameSession *myBonus;
+
+	std::vector<int> waitFrames;
+	std::vector<int> chargeFrames;
 
 	BirdPostFightScene * postFightScene;
 	BirdPostFight2Scene *postFightScene2;
@@ -51,9 +64,19 @@ struct Bird : Summoner, Boss
 	int fireCounter;
 
 	Tileset *ts_punch;
+	Tileset *ts_punch2;
 	Tileset *ts_kick;
-	Tileset *ts_move;
+	Tileset *ts_idle;
 	Tileset *ts_bulletExplode;
+	Tileset *ts_charge;
+	Tileset *ts_throw;
+
+	int summonStartStage;
+	int shotgunStartStage;
+	int chaseStartStage;
+
+	int idleCounter;
+	int idleAnimFactor;
 
 	Bird(ActorParams *ap);
 	~Bird();

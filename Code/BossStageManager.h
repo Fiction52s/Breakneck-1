@@ -16,6 +16,7 @@ struct BossStageManager
 
 	BossStageManager();
 	void AddActiveOption(int stageIndex, int option, int reps = 1);
+	void AddActiveOptionToStages(int startStageIndex, int option, int reps = 1, int maxStage = -1);
 	void Setup(int numStages, int hitsPerStage);
 	void Reset();
 	void AddBossStage(int numHits);

@@ -25,6 +25,20 @@ void BossStageManager::AddActiveOption(int stageIndex, int option, int reps)
 	decisionPickers[stageIndex].AddActiveOption(option, reps);
 }
 
+void BossStageManager::AddActiveOptionToStages(int startStageIndex,
+	int option, int reps, int maxStage)
+{
+	if (maxStage == -1)
+	{
+		maxStage = numStages - 1;
+	}
+	for (int i = startStageIndex; i <= maxStage; ++i)
+	{
+		decisionPickers[i].AddActiveOption(option, reps);
+	}
+	
+}
+
 void BossStageManager::AddBossStage(int numHits)
 {
 	stageHits.push_back(numHits);
