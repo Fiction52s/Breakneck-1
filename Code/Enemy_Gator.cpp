@@ -35,6 +35,12 @@ Gator::Gator(ActorParams *ap)
 	hitboxStartFrame[TRIPLE_LUNGE_2] = 0;
 	hitboxStartFrame[TRIPLE_LUNGE_3] = 0;
 
+	actionLength[TEST_ORBS] = 180;
+	animFactor[TEST_ORBS] = 1;
+
+	actionLength[CREATE_ORB_CIRCLE] = 180;
+	animFactor[CREATE_ORB_CIRCLE] = 1;
+
 	postFightScene = NULL;
 
 	redirectRate = 20;
@@ -42,24 +48,27 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	//stageMgr.AddActiveOption(0, TEST_POST, 2);
-	stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
-	stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
-	stageMgr.AddActiveOption(0, REDIRECT_ORBS, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
+	stageMgr.AddActiveOption(0, CREATE_ORB_CIRCLE, 2);
+	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
 
-	stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
-	stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(1, MOVE_NODE_QUADRATIC, 2);
+	////stageMgr.AddActiveOption(0, TEST_POST, 2);
+	////stageMgr.AddActiveOption(0, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(0, MOVE_NODE_LINEAR, 2);
+	//stageMgr.AddActiveOption(0, MOVE_NODE_QUADRATIC, 2);
+	//stageMgr.AddActiveOption(0, REDIRECT_ORBS, 2);
+	////stageMgr.AddActiveOption(0, SUMMON, 2);
 
-	stageMgr.AddActiveOption(2, MOVE_CHASE, 2);
-	stageMgr.AddActiveOption(2, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(2, MOVE_NODE_QUADRATIC, 2);
+	//stageMgr.AddActiveOption(1, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(1, MOVE_NODE_LINEAR, 2);
+	//stageMgr.AddActiveOption(1, MOVE_NODE_QUADRATIC, 2);
 
-	stageMgr.AddActiveOption(3, MOVE_CHASE, 2);
-	stageMgr.AddActiveOption(3, MOVE_NODE_LINEAR, 2);
-	stageMgr.AddActiveOption(3, MOVE_NODE_QUADRATIC, 2);
+	//stageMgr.AddActiveOption(2, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(2, MOVE_NODE_LINEAR, 2);
+	//stageMgr.AddActiveOption(2, MOVE_NODE_QUADRATIC, 2);
+
+	//stageMgr.AddActiveOption(3, MOVE_CHASE, 2);
+	//stageMgr.AddActiveOption(3, MOVE_NODE_LINEAR, 2);
+	//stageMgr.AddActiveOption(3, MOVE_NODE_QUADRATIC, 2);
 
 	myBonus = NULL;
 
@@ -116,6 +125,15 @@ void Gator::ResetEnemy()
 
 	BossReset();
 
+	if (sess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = sess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+		}
+	}
+
 	facingRight = true;
 
 	HitboxesOff();
@@ -166,7 +184,7 @@ void Gator::ActionEnded()
 		if (!redirectingOrbs)
 		{
 			V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
-			orbPool.Throw(GetPosition(), nodePos, orbTypePicker.AlwaysGetNextOption());
+			orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::NODE_GROW_HIT);//orbTypePicker.AlwaysGetNextOption());
 		}
 		Wait(10);
 		//Decide();
@@ -230,6 +248,24 @@ void Gator::ActionEnded()
 	case TRIPLE_LUNGE_WAIT_2:
 		SetAction(TRIPLE_LUNGE_3);
 		break;
+	case TEST_ORBS:
+	{
+		orbPool.StopChase();
+		if (TrySetActionToNextAction())
+		{
+			facingRight = GetCurrCommand().facingRight;
+		}
+		else
+		{
+			Decide();
+		}
+		break;
+	}
+	case CREATE_ORB_CIRCLE:
+	{
+		orbPool.Reset();
+		break;
+	}
 	}
 }
 
@@ -274,8 +310,22 @@ void Gator::HandleAction()
 			SetHitboxes(hitBodies[action], 0);
 		}
 		break;
+	case CREATE_ORB_CIRCLE:
+	{
+		if (frame == 30)
+		{
+			orbPool.RotateCircle(.01 * PI, .005, .05 * PI );
+		}
+		if (frame == 60)
+		{
+			orbPool.ExpandCircle( 2.0, .1, 10.0 );
+		}
+		break;
+	}
 	
 	}
+
+	orbPool.Update();
 }
 
 void Gator::StartAction()
@@ -350,6 +400,15 @@ void Gator::StartAction()
 		//orbPool.Redirect(PlayerDir() * 20.0);
 		break;
 	}
+	case TEST_ORBS:
+	{
+		orbPool.GroupChase(&targetPlayer->position);
+	}
+	case CREATE_ORB_CIRCLE:
+	{
+		orbPool.CreateCircle(GetPosition(), 5, 200, 32, 0);
+		break;
+	}
 	case ATTACK:
 	{
 		break;
@@ -404,6 +463,10 @@ bool Gator::IsDecisionValid(int d)
 	{
 		return false;
 	}
+	else if (d == TEST_ORBS && orbPool.GetNumGrowingOrbs() < 3)
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -450,6 +513,7 @@ void Gator::FrameIncrement()
 void Gator::DebugDraw(sf::RenderTarget *target)
 {
 	enemyMover.DebugDraw(target);
+	nodeGroupA.Draw(target);
 	Enemy::DebugDraw(target);
 }
 

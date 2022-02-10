@@ -34,8 +34,19 @@ GatorWaterOrbPool::~GatorWaterOrbPool()
 	delete[] verts;
 }
 
+
+
 void GatorWaterOrbPool::Reset()
 {
+	chaseTarget = NULL;
+	circleRotateSpeed = 0;
+	circleRotateAccel = 0;
+	circleRotateMaxSpeed = 0;
+
+	circleExpandSpeed = 0;
+	circleExpandAccel = 0;
+	circleExpandMaxSpeed = 0;
+
 	GatorWaterOrb *orb = NULL;
 	for (int i = 0; i < numBullets; ++i)
 	{
@@ -52,6 +63,84 @@ void GatorWaterOrbPool::Reset()
 	{
 		bulletVec[i]->Reset();
 	}
+}
+
+void GatorWaterOrbPool::RotateCircle(double rotSpeed, double rotAccel,
+	double maxRotSpeed)
+{
+	circleRotateSpeed = rotSpeed;
+	circleRotateAccel = rotAccel;
+	circleRotateMaxSpeed = maxRotSpeed;
+	if (circleRotateMaxSpeed == 0)
+	{
+		circleRotateMaxSpeed = circleRotateSpeed;
+	}
+}
+
+void GatorWaterOrbPool::ExpandCircle(double expandSpeed,
+	double accel, double maxExpandSpeed)
+{
+	circleExpandSpeed = expandSpeed;
+	circleExpandAccel = accel;
+	circleExpandMaxSpeed = maxExpandSpeed;
+	if (circleExpandMaxSpeed == 0)
+	{
+		circleExpandMaxSpeed = circleExpandSpeed;
+	}
+}
+
+void GatorWaterOrbPool::CreateCircle(V2d &pos, int numOrbs,
+	double radius, double orbRadius, double startAngle)
+{
+	GatorWaterOrb *orb = NULL;
+
+	circleCenter = pos;
+	circleRadius = radius;
+
+	V2d centerPos = pos;
+	V2d offset(radius, 0);
+
+	RotateCW(offset, startAngle);
+
+	double angleChange = (2 * PI) / numOrbs;
+
+	int numOrbsMade = 0;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		orb = bulletVec[i];
+		if (!orb->active)
+		{
+			orb->CreateForCircle(centerPos + offset, orbRadius);
+			RotateCW(offset, angleChange);
+			++numOrbsMade;
+
+			if (numOrbsMade == numOrbs)
+			{
+				break;
+			}
+		}
+	}
+}
+
+V2d GatorWaterOrbPool::GetActiveCenter()
+{
+	GatorWaterOrb *orb = NULL;
+	V2d center;
+	V2d total;
+	int numActive = 0;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		orb = bulletVec[i];
+		if (orb->active)
+		{
+			total += orb->GetPosition();
+			++numActive;
+		}
+	}
+
+	center = total / (double)numActive;
+
+	return center;
 }
 
 bool GatorWaterOrbPool::CanThrow()
@@ -133,7 +222,6 @@ bool GatorWaterOrbPool::RedirectOldestAtPlayer(Actor *player,double speed )
 
 bool GatorWaterOrbPool::RedirectOldest(V2d &vel)
 {
-	
 	GatorWaterOrb *oldest = GetOldest();
 
 	if (oldest != NULL)
@@ -161,12 +249,97 @@ int GatorWaterOrbPool::GetNumGrowingOrbs()
 	return numGrowing;
 }
 
+void GatorWaterOrbPool::GroupChase(V2d *target)
+{
+	chaseTarget = target;
+	GatorWaterOrb *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (bs->active && bs->action == GatorWaterOrb::GROWING)
+		{
+			bs->GroupChase();
+		}
+	}
+}
+
+void GatorWaterOrbPool::Update()
+{
+	GatorWaterOrb *orb = NULL;
+
+	V2d centerPos = circleCenter;
+	//V2d offset(circleRadius, 0);
+	V2d orbCenter;
+
+	V2d orbOffset;
+
+	V2d dir;
+
+	circleRadius += circleExpandSpeed;
+
+	circleRotateSpeed += circleRotateAccel;
+
+	if (circleRotateSpeed > 0 && circleRotateSpeed > circleRotateMaxSpeed)
+	{
+		circleRotateSpeed = circleRotateMaxSpeed;
+	}
+	else if (circleRotateSpeed < 0 && circleRotateSpeed < -circleRotateMaxSpeed)
+	{
+		circleRotateSpeed = -circleRotateMaxSpeed;
+	}
+
+	circleExpandSpeed += circleExpandAccel;
+	
+	if (circleExpandSpeed > 0 && circleExpandSpeed > circleExpandMaxSpeed)
+	{
+		circleExpandSpeed = circleExpandMaxSpeed;
+	}
+	else if (circleExpandSpeed < 0 && circleExpandSpeed < -circleExpandMaxSpeed)
+	{
+		circleExpandSpeed = -circleExpandMaxSpeed;
+	}
+
+	for (int i = 0; i < numBullets; ++i)
+	{
+		orb = bulletVec[i];
+		if (orb->active)
+		{
+			orbCenter = orb->GetPosition();
+			orbOffset = orbCenter - circleCenter;
+
+			if (circleExpandSpeed != 0)
+			{
+				dir = normalize(orbOffset);
+				orbOffset = dir * circleRadius;
+			}
+
+			RotateCW(orbOffset, circleRotateSpeed);
+			orb->currPosInfo.SetPosition(circleCenter + orbOffset);
+		}
+	}
+}
+
+void GatorWaterOrbPool::StopChase()
+{
+	chaseTarget = NULL;
+	GatorWaterOrb *bs = NULL;
+	for (int i = 0; i < numBullets; ++i)
+	{
+		bs = bulletVec[i];
+		if (bs->active && bs->action == GatorWaterOrb::GROUP_CHASE)
+		{
+			bs->Die();
+		}
+	}	
+}
+
+
 void GatorWaterOrbPool::Draw(sf::RenderTarget *target)
 {
 	target->draw(verts, bulletVec.size() * 4, sf::Quads, ts->texture);
 }
 
-GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *pool)
+GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *p_pool)
 	:Enemy(EnemyType::EN_GATORORB, NULL)
 {
 	SetNumActions(A_Count);
@@ -176,6 +349,8 @@ GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *pool)
 	animFactor[FLYING] = 1;
 
 	quad = myQuad;
+
+	pool = p_pool;
 
 	ts = pool->ts;
 
@@ -199,6 +374,9 @@ GatorWaterOrb::GatorWaterOrb(sf::Vertex *myQuad, GatorWaterOrbPool *pool)
 	origFramesToLive = 600;
 	maxFlySpeed = 60;
 	accel = .05;
+
+	chaseAccel = 1.0;
+	maxChaseVel = 15;
 
 	ResetEnemy();
 }
@@ -239,6 +417,39 @@ void GatorWaterOrb::SetLevel(int lev)
 		break;
 	}
 }
+
+void GatorWaterOrb::GroupChase()
+{
+	action = GROUP_CHASE;
+	frame = 0;
+	velocity = V2d(0, 0);
+	startChasingPos = GetPosition();
+}
+
+void GatorWaterOrb::CreateForCircle(V2d &pos, double orbRadius )
+{
+	Reset();
+
+	sess->AddEnemy(this);
+
+	action = CIRCLE_APPEAR;
+	frame = 0;
+	velocity = V2d(0, 0);
+
+	currPosInfo.position = pos;
+	currPosInfo.ground = NULL;
+
+	growing = false;
+	velocity = V2d(0, 0);
+	framesToLive = -1;//origFramesToLive;
+
+	orbType = NODE_GROW_HIT;
+
+	flySpeed = 10;
+
+	currRadius = orbRadius;
+}
+
 
 void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 {
@@ -330,6 +541,27 @@ void GatorWaterOrb::ProcessState()
 		}
 
 		hitBody.GetCollisionBoxes(0).at(0).rw = currRadius;
+	}
+
+	if (action == GROUP_CHASE)
+	{
+		V2d activeCenter = pool->GetActiveCenter();//GetPosition();//
+		V2d chasePos = *pool->chaseTarget;
+
+		V2d diff = chasePos - activeCenter;
+		V2d dir = normalize(diff);
+
+		double sizeFactor = (currRadius-startRadius) / (maxRadius - startRadius);
+		double currMaxChaseVel = maxChaseVel - sizeFactor * 10;
+
+		currMaxChaseVel = maxChaseVel;
+
+		velocity += dir * chaseAccel;
+
+		if (length(velocity) > currMaxChaseVel)
+		{
+			velocity = normalize(velocity) * currMaxChaseVel;
+		}
 	}
 }
 

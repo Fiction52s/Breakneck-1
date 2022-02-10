@@ -29,6 +29,8 @@ struct Gator : Boss, Summoner, BonusHandler
 		TRIPLE_LUNGE_WAIT_2,
 		TRIPLE_LUNGE_3,
 		REDIRECT_ORBS,
+		TEST_ORBS,
+		CREATE_ORB_CIRCLE,
 		SEQ_WAIT,
 		TEST_POST,
 		A_Count
