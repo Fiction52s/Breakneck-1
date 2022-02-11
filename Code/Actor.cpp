@@ -10223,7 +10223,10 @@ void Actor::TryDashBoost()
 
 		BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 			ts_fx_dashBoost, position, false, GroundedAngle(), 5, 4, fr, 1);
-		be->sprite.setScale(1, 4);
+		if (be != NULL)
+		{
+			be->sprite.setScale(1, 4);
+		}
 		//ActivateEts_fx_dashBoostFX
 
 		double dashFactor = 1.85;//1.5;
@@ -10265,7 +10268,12 @@ void Actor::TryDashBoost()
 
 		V2d rumbleDir = normalize(trueVel);
 		//sess->cam.SetRumble(round(6 * rumbleDir.x), round(6 * rumbleDir.y), 6);
-		sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
+
+		if (!simulationMode)
+		{
+			sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
+		}
+		
 		//sess->cam.SetRumble(6, 6, 6);
 
 		/*double dashFactor = 3.0;
@@ -10399,12 +10407,20 @@ void Actor::ActivateAirdashBoost()
 
 	BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
 		ts_fx_dashBoost, position, false, ang, 5, 4, true, 1);
-	be->sprite.setScale(1, 4);
+	if (be != NULL)
+	{
+		be->sprite.setScale(1, 4);
+	}
+	
 
 
 	V2d rumbleDir = normalize(velocity);
 	//sess->cam.SetRumble(round(6 * rumbleDir.x), round(6 * rumbleDir.y), 6, 0, true );
-	sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
+	if (!simulationMode)
+	{
+		sess->cam.SetRumble(round(4 * rumbleDir.x), round(4 * rumbleDir.y), 6, 0, true);
+	}
+	
 	//sess->cam.SetRumble(6, 6, 6 );
 }
 
@@ -15781,7 +15797,7 @@ void Actor::UpdatePostPhysics()
 		return;
 	}
 
-	if (kinMode == K_DESPERATION)
+	if (kinMode == K_DESPERATION && !simulationMode)
 	{
 		float despFactor = GetSurvivalFrame() / (float)maxDespFrames;
 		float lengthFactor = min(1.f, despFactor + .3f);//min(1.f, despFactor + .3f);

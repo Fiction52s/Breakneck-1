@@ -10,7 +10,8 @@
 
 struct GatorPostFightScene;
 
-struct Gator : Boss, Summoner, BonusHandler
+struct Gator : Boss, Summoner, BonusHandler,
+	RayCastHandler
 {
 	//DOMINATION
 	enum Action
@@ -33,12 +34,18 @@ struct Gator : Boss, Summoner, BonusHandler
 		CREATE_ORB_CIRCLE,
 		SEQ_WAIT,
 		TEST_POST,
+		CIRCLE_ORB_STUFF,
 		A_Count
 	};
 
 	NodeGroup nodeGroupA;
 
-	GatorWaterOrbPool orbPool;
+
+	std::vector<V2d> nodePosAVec;
+	std::vector<int> nodeDistances;
+	std::vector<V2d> nodePosAVecSorted;
+	const static int NUM_ORB_POOLS = 3;
+	GatorWaterOrbPool orbPool[NUM_ORB_POOLS];
 	GatorSuperOrbPool superOrbPool;
 
 	RandomPicker orbTypePicker;
@@ -94,6 +101,13 @@ struct Gator : Boss, Summoner, BonusHandler
 	void SeqWait();
 	void StartFight();
 	void LoadParams();
+
+	void SortNodePosAVec();
+
+	void OrbAttack1_1();
+	void OrbAttack1_2();
+
+	void OrbAttack2();
 
 	void InitBonus();
 
