@@ -31,10 +31,14 @@ struct GatorWaterOrbPool
 	void Chase(V2d *target,
 		double p_chaseAccel,
 		double p_chaseMaxSpeed );
+	void CircleChase(V2d *target, double p_chaseAccel,
+		double p_chaseMaxSpeed);
+	void StopChase();
+	void StopCircleChase();
 	void CreateCircle(V2d &pos, int numOrbs,
 		double radius, double orbRadius,
-		double startAngle );
-	void StopChase();
+		double startAngle,
+		int orbType = 0);
 	void SetCircleTimeToLive(int frames);
 	void SetCircleVelocity(V2d &vel);
 	GatorWaterOrb *GetOldest();
@@ -43,12 +47,16 @@ struct GatorWaterOrbPool
 	void RotateCircle(double rotSpeed,
 		double rotAccel = 0 ,
 		double maxRotSpeed = 0 );
+
 	void ExpandCircle(double expandSpeed,
 		double accel = 0, double maxExpandSpeed = 0 );
+	void ExpandCircleToRadius( double endSize, double expandSpeed,
+		double accel = 0, double maxExpandSpeed = 0);
 	void ChangeAllCircleOrbsRadiusOverTime(double orbGrowSpeed,
 		double goalRadius );
 	void SetCircleFollowPos(V2d *followTarget);
 	void StopCircleFollow();
+	bool IsChangingSize();
 
 	void Update();
 	
@@ -60,9 +68,12 @@ struct GatorWaterOrbPool
 	V2d circleVel;
 	V2d circleCenter;
 	double circleRadius;
+	bool useCircleGoalRadius;
+	double circleGoalRadius;
 	double circleExpandSpeed;
 	double circleExpandAccel;
 	double circleExpandMaxSpeed;
+	
 	V2d *followTarget;
 	V2d followOffset;
 
@@ -71,6 +82,8 @@ struct GatorWaterOrbPool
 	Tileset *ts;
 	int numBullets;
 	V2d *chaseTarget;
+	double chaseAccel;
+	double chaseMaxSpeed;
 	int action;
 	V2d GetActiveCenter();
 };
@@ -132,7 +145,8 @@ struct GatorWaterOrb : Enemy
 	void UpdateEnemyPhysics();
 	void Die();
 	void Throw(V2d &pos, V2d &dir, int orbType );
-	void CreateForCircle(V2d &pos, double orbRadius );
+	void CreateForCircle(V2d &pos, double orbRadius,
+		int orbType );
 	void Redirect(V2d &vel);
 	void SetLevel(int lev);
 	void GroupChase(double p_chaseAccel, 

@@ -24,6 +24,10 @@ struct Gator : Boss, Summoner, BonusHandler,
 		COMBOMOVE,
 		MOVE,
 		SUMMON,
+		MOVE_WANTS_TO_BITE,
+		BITE_ATTACK,
+		BITE_STUCK,
+		BITE_RECOVER,
 		TRIPLE_LUNGE_1,
 		TRIPLE_LUNGE_WAIT_1,
 		TRIPLE_LUNGE_2,
@@ -38,8 +42,17 @@ struct Gator : Boss, Summoner, BonusHandler,
 		A_Count
 	};
 
-	NodeGroup nodeGroupA;
+	enum MoveMode
+	{
+		MM_STOP,
+		MM_APPROACH,
+		MM_FLEE,
+		MM_RANDOM,
+	};
 
+	NodeGroup nodeGroupA;
+	
+	int moveMode;
 
 	std::vector<V2d> nodePosAVec;
 	std::vector<int> nodeDistances;
@@ -59,8 +72,11 @@ struct Gator : Boss, Summoner, BonusHandler,
 	Tileset *ts_punch;
 	Tileset *ts_kick;
 	Tileset *ts_move;
+	Tileset *ts_bite;
 
 	GatorPostFightScene *postFightScene;
+
+	V2d biteRushDir;
 
 	GameSession *myBonus;
 
@@ -102,12 +118,28 @@ struct Gator : Boss, Summoner, BonusHandler,
 	void StartFight();
 	void LoadParams();
 
-	void SortNodePosAVec();
+	void MoveRandomly();
+	void MoveTowardsPlayer();
+	void MoveAwayFromPlayer();
 
+	void SortNodePosAVec( V2d &sortPos );
+	void UpdateMove();
+
+	void OrbAttack1();
 	void OrbAttack1_1();
 	void OrbAttack1_2();
+	void OrbAttack1_3();
+
 
 	void OrbAttack2();
+
+	void OrbAttack3();
+
+	void OrbAttack4();
+
+	void OrbAttack5();
+
+	void TimeOrbAttack1();
 
 	void InitBonus();
 

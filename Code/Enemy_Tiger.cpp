@@ -152,6 +152,15 @@ void Tiger::ResetEnemy()
 
 	currChargeLoopFrame = 0;
 
+	if (sess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = sess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+		}
+	}
+
 	lastTargetDestroyedPos = V2d(0, 0);
 
 	BossReset();
