@@ -15,6 +15,7 @@ struct SkeletonLaserPool
 	SkeletonLaser * Throw(int type, V2d &pos, V2d &dir);
 
 	SkeletonLaser * ThrowAt(int type, V2d &pos, PoiInfo *pi);
+	void RedirectAllTowards(V2d &pos);
 	//void Draw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<SkeletonLaser*> laserVec;
@@ -81,6 +82,7 @@ struct SkeletonLaser : Enemy,
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
 	void IHitPlayer(int index = 0);
+	void RedirectTowards(V2d &pos);
 	void UpdateSprite();
 	void UpdateHitboxes();
 	void ResetEnemy();
@@ -89,6 +91,8 @@ struct SkeletonLaser : Enemy,
 	bool CanBeHitByPlayer();
 	bool CanBeHitByComboer();
 	void HitTerrainAerial(Edge *, double);
+	void TryBounce(V2d &newVel);
+	void Dissipate();
 };
 
 #endif

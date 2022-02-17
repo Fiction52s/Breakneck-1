@@ -45,6 +45,8 @@ struct Coyote : Boss, Summoner, RayCastHandler,
 	SummonGroup babyScorpionGroup;
 
 	PulseAttackPool *pulsePool;
+
+	PoiInfo rushNode;
 	
 
 	V2d currBabyScorpPos;

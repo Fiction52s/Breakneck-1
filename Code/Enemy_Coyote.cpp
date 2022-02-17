@@ -34,7 +34,7 @@ Coyote::Coyote(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(4, 4);
+	StageSetup(8, 4);
 
 	actionLength[SUMMON] = 60;
 	actionLength[DANCE_PREP] = 60;
@@ -46,11 +46,7 @@ Coyote::Coyote(ActorParams *ap)
 	numPatternMoves = 3;
 
 	
-	patternTypePicker.Reset();
-	patternTypePicker.AddActiveOption(PATTERN_RUSH);
-	patternTypePicker.AddActiveOption(PATTERN_MOVE);
-	patternTypePicker.AddActiveOption(PATTERN_BULLETS);
-	patternTypePicker.AddActiveOption(PATTERN_PULSE);
+	
 
 	ts_move = GetSizedTileset("Bosses/Coyote/coy_stand_80x64.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode3_64x64.png");
@@ -73,18 +69,21 @@ Coyote::Coyote(ActorParams *ap)
 
 
 
-	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	stageMgr.AddActiveOptionToStages(0, PLAN_PATTERN, 2);
+
+	//stageMgr.AddActiveOptionToStages(5, SUMMON, 2);
+	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 	//stageMgr.AddActiveOption(0, TEST_POST, 1);
 
-	stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
-	//stageMgr.AddActiveOption(1, MOVE, 2);
-	//stageMgr.AddActiveOption(1, SUMMON, 2);
+	//stageMgr.AddActiveOption(1, PLAN_PATTERN, 2);
+	////stageMgr.AddActiveOption(1, MOVE, 2);
+	////stageMgr.AddActiveOption(1, SUMMON, 2);
 
-	stageMgr.AddActiveOption(2, MOVE, 2);
-	stageMgr.AddActiveOption(2, SUMMON, 2);
+	//stageMgr.AddActiveOption(2, MOVE, 2);
+	//stageMgr.AddActiveOption(2, SUMMON, 2);
 
-	stageMgr.AddActiveOption(3, MOVE, 2);
-	stageMgr.AddActiveOption(3, SUMMON, 2);
+	//stageMgr.AddActiveOption(3, MOVE, 2);
+	//stageMgr.AddActiveOption(3, SUMMON, 2);
 
 	
 
@@ -95,7 +94,7 @@ Coyote::Coyote(ActorParams *ap)
 	launchers[0]->Reset();
 
 	launchers[1] = new Launcher(this, BasicBullet::OWL, 6*6, 6, GetPosition(), V2d(1, 0), PI / 3, 300);
-	launchers[1]->SetBulletSpeed(10);
+	launchers[1]->SetBulletSpeed(15);
 	launchers[1]->hitboxInfo->damage = 18;
 	launchers[1]->Reset();
 
@@ -172,6 +171,12 @@ void Coyote::ResetEnemy()
 
 	HitboxesOff();
 
+	patternTypePicker.Reset();
+	//patternTypePicker.AddActiveOption(PATTERN_RUSH);
+	patternTypePicker.AddActiveOption(PATTERN_MOVE);
+	//patternTypePicker.AddActiveOption(PATTERN_BULLETS);
+	//patternTypePicker.AddActiveOption(PATTERN_PULSE);
+
 	if (sess->preLevelScene == NULL) //fight testing
 	{
 		CameraShot *cs = sess->cameraShotMap["fightcam"];
@@ -193,10 +198,10 @@ void Coyote::ResetEnemy()
 	frame = 0;
 
 	bounceCounter = -1;
-	
 
-	enemyMover.currPosInfo.SetAerial();
-	currPosInfo.SetAerial();
+
+	//enemyMover.currPosInfo.SetAerial();
+	//currPosInfo.SetAerial();
 
 	UpdateSprite();
 }
@@ -237,6 +242,34 @@ bool Coyote::TryComboMove(V2d &comboPos, int comboMoveDuration,
 
 int Coyote::ChooseActionAfterStageChange()
 {
+	if (stageMgr.currStage == 2)
+	{
+		patternTypePicker.Reset();
+		patternTypePicker.AddActiveOption(PATTERN_RUSH, 2);
+		patternTypePicker.AddActiveOption(PATTERN_MOVE, 2);
+		//patternTypePicker.AddActiveOption(PATTERN_BULLETS);
+		//patternTypePicker.AddActiveOption(PATTERN_PULSE);
+	}
+	else if( stageMgr.currStage == 4 )
+	{
+		patternTypePicker.Reset();
+		patternTypePicker.AddActiveOption(PATTERN_RUSH, 2);
+		patternTypePicker.AddActiveOption(PATTERN_MOVE, 2);
+		patternTypePicker.AddActiveOption(PATTERN_BULLETS,2);
+	}
+	else if (stageMgr.currStage == 6)
+	{
+		patternTypePicker.Reset();
+		patternTypePicker.AddActiveOption(PATTERN_RUSH, 2);
+		patternTypePicker.AddActiveOption(PATTERN_MOVE, 2);
+		patternTypePicker.AddActiveOption(PATTERN_BULLETS, 2);
+		patternTypePicker.AddActiveOption(PATTERN_PULSE,2);
+	}
+
+	
+	//patternTypePicker.AddActiveOption(PATTERN_PULSE);
+
+
 	return Boss::ChooseActionAfterStageChange();
 }
 
@@ -437,6 +470,7 @@ void Coyote::StartAction()
 		}
 		enemyMover.currPosInfo.SetAerial();
 		currPosInfo.SetAerial();
+
 		V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
 		if (nodePos == GetPosition())
 		{
@@ -445,6 +479,7 @@ void Coyote::StartAction()
 		
 
 		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 30);
+		//enemyMover.SetDestNode(currNode);
 		/*if (length(nodePos - GetPosition()) < 100)
 		{
 			enemyMover.SetModeNodeLinear(nodePos, CubicBezier(), 20);
@@ -459,11 +494,15 @@ void Coyote::StartAction()
 	case PATTERN_RUSH:
 	case RUSH:
 	{
+		enemyMover.currPosInfo.SetAerial();
+		currPosInfo.SetAerial();
 		if (ExecuteRayCast(GetPosition() + PlayerDir() * 1.0 , GetPosition() + PlayerDir() * 3000.0));
 		{
 			V2d rayPos = rayCastInfo.GetRayHitPos();
+			rushNode.SetGrounded(rayCastInfo.rcEdge->poly, rayCastInfo.rcEdge->edgeIndex, rayCastInfo.rcQuant);
+
 			enemyMover.SetModeNodeLinearConstantSpeed(rayPos, CubicBezier(), 60);
-			
+			enemyMover.SetDestNode(&rushNode);
 		}
 		//stopStartPool.Throw(GetPosition(), PlayerDir());
 		break;
@@ -477,13 +516,16 @@ void Coyote::StartAction()
 	}
 	case PATTERN_PULSE:
 	{
-		pulsePool->Pulse(0, GetPosition(), 20, 100, 1000, 120, Color::Yellow, Color::Transparent, NULL);
+		pulsePool->Pulse(0, GetPosition(), 20, 100, 2000, 60, Color::Yellow, Color::Yellow, NULL);
 		break;
 	}
 	case PATTERN_MOVE:
 	{
+		enemyMover.currPosInfo.SetAerial();
+		currPosInfo.SetAerial();
 		currNode = pattern[patternIndex];
 		enemyMover.SetModeNodeLinearConstantSpeed(currNode->pos, CubicBezier(), 60);
+		enemyMover.SetDestNode(currNode);
 		//stopStartPool.Throw(GetPosition(), PlayerDir());
 		break;
 	}
@@ -603,8 +645,20 @@ void Coyote::UpdateSprite()
 	sprite.setTexture(*ts_move->texture);
 	ts_move->SetSubRect(sprite, 0, !facingRight);
 
+
+	/*if (action == MOVE_GRIND)
+	{
+		sprite.setRotation(0);
+	}
+	else*/
+	{
+		sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+	}
+
 	sprite.setPosition(GetPositionF());
-	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
+
+	float extra = 32;
+	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2 + extra);
 }
 
 void Coyote::EnemyDraw(sf::RenderTarget *target)

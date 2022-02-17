@@ -829,6 +829,7 @@ void EnemyMover::FinishTargetedMovement()
 		{
 			currPosInfo.SetAerial(targetPI->pos);
 		}
+		targetPI = NULL;
 	}
 	else
 	{

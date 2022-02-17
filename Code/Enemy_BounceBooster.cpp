@@ -159,6 +159,7 @@ void BounceBooster::UpdateSprite()
 	}
 	else
 	{
+		tile = 4;
 		switch (action)
 		{
 		case NEUTRAL:

@@ -73,6 +73,19 @@ SkeletonLaser * SkeletonLaserPool::ThrowAt(int type, V2d &pos, PoiInfo *dest)
 	return bs;
 }
 
+void SkeletonLaserPool::RedirectAllTowards(V2d &pos)
+{
+	SkeletonLaser *bs = NULL;
+	for (int i = 0; i < numLasers; ++i)
+	{
+		bs = laserVec[i];
+		if (bs->active)
+		{
+			bs->RedirectTowards(pos);
+		}
+	}
+}
+
 void SkeletonLaserPool::DrawMinimap(sf::RenderTarget * target)
 {
 	for (auto it = laserVec.begin(); it != laserVec.end(); ++it)
@@ -185,40 +198,57 @@ void SkeletonLaser::ClearQuads()
 	}
 }
 
-void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
+void SkeletonLaser::RedirectTowards(V2d &pos)
 {
-	
+	V2d newVel = normalize((pos - GetPosition())) 
+		* length( surfaceMover->velocity );
+	TryBounce(newVel);
+}
+
+void SkeletonLaser::Dissipate()
+{
+	action = DISSIPATE;
+	ClearQuads();
+	frame = 0;
+	surfaceMover->velocity = V2d(0, 0);
+	surfaceMover->collisionOn = false;
+	HitboxesOff();
+	HurtboxesOff();
+}
+
+void SkeletonLaser::TryBounce(V2d &newVel)
+{
 	if (currBounce == maxBounces)
 	{
-		action = DISSIPATE;
-		ClearQuads();
-		frame = 0;
-		surfaceMover->velocity = V2d(0, 0);
-		surfaceMover->collisionOn = false;
+		Dissipate();
 	}
 	else
 	{
-		V2d en = e->Normal();
-		V2d pos = e->GetPosition(quant);
-
-		if (pos == e->v0)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		else if (pos == e->v1)
-		{
-			en = normalize(GetPosition() - pos);
-		}
-		double d = dot(surfaceMover->velocity, en);
-		V2d ref = surfaceMover->velocity - (2.0 * d * en);
-
 		anchorPositions.push_back(GetPosition());
 
-		surfaceMover->Jump(ref);
+		surfaceMover->Jump(newVel);
 
 		++currBounce;
 	}
-	//StartGrind();
+}
+
+void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
+{
+	V2d en = e->Normal();
+	V2d pos = e->GetPosition(quant);
+
+	if (pos == e->v0)
+	{
+		en = normalize(GetPosition() - pos);
+	}
+	else if (pos == e->v1)
+	{
+		en = normalize(GetPosition() - pos);
+	}
+	double d = dot(surfaceMover->velocity, en);
+	V2d ref = surfaceMover->velocity - (2.0 * d * en);
+
+	TryBounce(ref);
 }
 
 void SkeletonLaser::SetLevel(int lev)
@@ -327,6 +357,9 @@ void SkeletonLaser::ProcessState()
 		case THROWN_AT:
 			break;
 		case DISSIPATE:
+			sess->RemoveEnemy(this);
+			dead = true;
+			numHealth = 0;
 			break;
 		}
 		frame = 0;

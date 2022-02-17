@@ -61,7 +61,8 @@ void Actor::BOOSTERBOUNCEGROUND_UpdateSprite()
 		angle = atan2(currNormal.x, -currNormal.y);
 	}
 
-	int yOffset = -75;
+	//i have no idea what this code was doing or why
+	/*int yOffset = -75;
 	if (frame < 6)
 	{
 		if ((facingRight && !reversed) || (!facingRight && reversed))
@@ -80,7 +81,9 @@ void Actor::BOOSTERBOUNCEGROUND_UpdateSprite()
 	else
 	{
 		sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height + yOffset);
-	}
+	}*/
+	int yOffset = -20;
+	sprite->setOrigin(sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height + yOffset);// +yOffset);
 	//sprite->setOrigin( sprite->getLocalBounds().width / 2, sprite->getLocalBounds().height / 2);
 
 	sprite->setRotation(angle / PI * 180);
@@ -114,4 +117,5 @@ int Actor::BOOSTERBOUNCEGROUND_GetActionLength()
 Tileset * Actor::BOOSTERBOUNCEGROUND_GetTileset()
 {
 	return GetActionTileset("bounce_wall_96x64.png");
+	//return GetActionTileset("brake_64x64.png");
 }

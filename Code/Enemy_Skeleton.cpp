@@ -53,6 +53,9 @@ Skeleton::Skeleton(ActorParams *ap)
 	actionLength[SHOOT_LASER] = 21;
 	animFactor[SHOOT_LASER] = 3;
 
+	actionLength[REDIRECT_TEST] = 60;
+	animFactor[REDIRECT_TEST] = 1;
+
 	animFactor[JUMPSQUAT] = 3;//1
 	//animFactor[HOP] = 1;
 	animFactor[LAND] = 3;
@@ -86,6 +89,7 @@ Skeleton::Skeleton(ActorParams *ap)
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
 	patternTypePicker.AddActiveOption(SHOOT_LASER);
+	patternTypePicker.AddActiveOption(REDIRECT_TEST);
 
 	pattern.reserve(9);
 	patternType.reserve(9);
@@ -217,37 +221,17 @@ void Skeleton::ActionEnded()
 		//Decide();
 		break;
 	}
+	case REDIRECT_TEST:
 	case SHOOT_LASER:
 	{
-		SetAction(PATTERN_MOVE);
-		/*if (patternIndex == numPatternMoves - 1)
+		if (patternIndex == numPatternMoves)
 		{
 			Wait(30);
 		}
 		else
 		{
-			
-		}*/
-		
-
-		/*if (patternIndex == numPatternMoves - 1)
-		{
-			if (patternType[patternIndex] == PATTERN_MOVE)
-			{
-				Wait(30);
-			}
-			else
-			{
-				++patternIndex;
-				SetAction(patternType[patternIndex - 1]);
-			}
+			SetAction(PATTERN_MOVE);
 		}
-		else
-		{
-			++patternIndex;
-			SetAction(patternType[patternIndex - 1]);
-
-		}*/
 		//FinishPatternMove();
 		//Decide(); //for now
 		break;
@@ -301,6 +285,10 @@ void Skeleton::HandleAction()
 				else if (patternType[patternOrder[mult]] == SHOOT_LASER)
 				{
 					patternPreview.setFillColor(Color::Yellow);
+				}
+				else if (patternType[patternOrder[mult]] == REDIRECT_TEST)
+				{
+					patternPreview.setFillColor(Color::Cyan);
 				}
 			}
 		}
@@ -424,6 +412,11 @@ void Skeleton::StartAction()
 		{
 			facingRight = false;
 		}
+		break;
+	}
+	case REDIRECT_TEST:
+	{
+		laserPool.RedirectAllTowards(sess->GetPlayerPos(0));
 		break;
 	}
 	
@@ -847,11 +840,11 @@ void Skeleton::FinishPatternMove()
 		{
 			Wait(30);
 		}
-		/*else
+		else
 		{
-			++patternIndex;
-			SetAction(patternType[patternIndex - 1]);
-		}*/
+			SetAction(patternType[patternIndex]);
+			++patternIndex; //to finish after lasers etc
+		}
 	}
 	else
 	{

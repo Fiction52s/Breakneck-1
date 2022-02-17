@@ -26,6 +26,7 @@ struct Skeleton : Boss, RayCastHandler
 		HOP,
 		LAND,
 		SHOOT_LASER,
+		REDIRECT_TEST,
 		GATHER_ENERGY_START,
 		GATHER_ENERGY_LOOP,
 		GATHER_ENERGY_END,

@@ -6,6 +6,14 @@
 
 using namespace sf;
 
+PoiInfo::PoiInfo()
+{
+	name = "";
+	edge = NULL;
+	poly = NULL;
+	edgeIndex = -1;
+}
+
 PoiInfo::PoiInfo(const std::string &pname, Vector2i &p)
 {
 	name = pname;
@@ -26,4 +34,13 @@ PoiInfo::PoiInfo(const std::string &pname, PolyPtr p, int eIndex, double q)
 
 	pos = edge->GetPosition(edgeQuantity);
 
+}
+
+void PoiInfo::SetGrounded(PolyPtr p, int eIndex, double q)
+{
+	poly = p;
+	edgeIndex = eIndex;
+	edgeQuantity = q;
+	edge = p->GetEdge(eIndex);
+	pos = edge->GetPosition(edgeQuantity);
 }

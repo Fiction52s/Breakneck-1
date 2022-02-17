@@ -21,23 +21,26 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 		new BasicGroundEnemyParams(sess->types["crawler"], 1),
 		5, 5, 1),
 	bombSummonGroup(this, new ActorParams(sess->types["queenfloatingbomb"]),
-		10, 10, 1, true)
+		20, 20, 1, true)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(4, 8);
+	StageSetup(8, 2);
 
 	level = ap->GetLevel();
+
+	scale = 1.5;
+	sprite.setScale(scale, scale);
 
 	actionLength[DIG_IN] = 21;
 	actionLength[DIG_OUT] = 12;
 	actionLength[SLASH] = 26;
 	actionLength[UNDERGROUND] = 60;
 	actionLength[SUMMON] = 60;
-	actionLength[BOOST] = 180;
+	actionLength[BOOST] = 120;//180;
 	actionLength[BOOSTCHARGE] = 11;
-	actionLength[CHASE] = 180;
+	actionLength[CHASE] = 120;//180;
 	actionLength[LUNGESTART] = 10;
 	actionLength[LUNGE] = 1000;
 	actionLength[LUNGELAND] = 14;
@@ -53,43 +56,21 @@ CrawlerQueen::CrawlerQueen(ActorParams *ap)
 
 	myBonus = NULL;
 
+	//stageMgr.AddActiveOptionToStages(0, DIG_IN, 2);
 	//stageMgr.AddActiveOption(0, TEST_POST, 2);
 	
+	stageMgr.AddActiveOptionToStages(0, CHASE, 2);
 
-	stageMgr.AddActiveOption(0, CHASE, 2);
-	stageMgr.AddActiveOption(0, BOOSTCHARGE, 2);
+	stageMgr.AddActiveOptionToStages(1, BOOSTCHARGE, 2);
 
+	stageMgr.AddActiveOptionToStages(2, DIG_IN, 2);
 
-	stageMgr.AddActiveOption(1, CHASE, 2);
-	stageMgr.AddActiveOption(1, DIG_IN, 2);
-	stageMgr.AddActiveOption(1, BOOSTCHARGE, 2);
-	//stageMgr.AddActiveOption(1, SUMMON, 2);
+	stageMgr.AddActiveOptionToStages(3, SUMMON, 2);
 
-	stageMgr.AddActiveOption(2, CHASE, 2);
-	stageMgr.AddActiveOption(2, DIG_IN, 2);
-	stageMgr.AddActiveOption(2, BOOSTCHARGE, 2);
-	stageMgr.AddActiveOption(2, SUMMON, 2);
-
-	stageMgr.AddActiveOption(3, CHASE, 2);
-	stageMgr.AddActiveOption(3, DIG_IN, 2);
-	stageMgr.AddActiveOption(3, BOOSTCHARGE, 2);
-	stageMgr.AddActiveOption(3, SUMMON, 2);
-
-	/*stageMgr.AddActiveOption(1, MOVE, 2);
-	stageMgr.AddActiveOption(1, SUMMON, 2);
-	stageMgr.AddActiveOption(1, DIG_IN, 2);
-
-	stageMgr.AddActiveOption(2, MOVE, 2);
-	stageMgr.AddActiveOption(2, SUMMON, 2);
-	stageMgr.AddActiveOption(2, DIG_IN, 2);
-
-	stageMgr.AddActiveOption(3, MOVE, 2);
-	stageMgr.AddActiveOption(3, SUMMON, 2);
-	stageMgr.AddActiveOption(3, DIG_IN, 2);*/
-
-	digDecidePicker.AddActiveOption(DIG_OUT, 2);
-	digDecidePicker.AddActiveOption(LUNGESTART, 2);
-	digDecidePicker.AddActiveOption(SLASH, 2);
+	//digDecidePicker.AddActiveOption(DIG_OUT, 2);
+	//digDecidePicker.AddActiveOption(LUNGESTART, 2);
+	//digDecidePicker.AddActiveOption(SLASH, 2);
+	//digDecidePicker.AddActiveOption(GROUND_SHAKE, 2);
 
 	clockwisePicker.AddActiveOption(0, 2);
 	clockwisePicker.AddActiveOption(1, 2);
@@ -165,6 +146,9 @@ void CrawlerQueen::ResetEnemy()
 		myBonus->RestartLevel();
 	}
 
+	//digDecidePicker.Reset();
+	//digDecidePicker.AddActiveOption(SLASH, 2);
+
 	wasAerial = false;
 	
 	BossReset();
@@ -215,6 +199,8 @@ void CrawlerQueen::GoUnderground(int numFrames)
 	action = UNDERGROUND;
 	frame = 0;
 	actionLength[UNDERGROUND] = numFrames;
+	HitboxesOff();
+	HurtboxesOff();
 }
 
 void CrawlerQueen::ActionEnded()
@@ -302,7 +288,8 @@ bool CrawlerQueen::GetPlayerClockwise()
 
 double CrawlerQueen::GetCurrDashSpeed()
 {
-	switch (stageMgr.GetCurrStage())
+	return 30;
+	/*switch (stageMgr.GetCurrStage())
 	{
 	case 0:
 		return 30;
@@ -312,12 +299,13 @@ double CrawlerQueen::GetCurrDashSpeed()
 		return 40;
 	case 3:
 		return 45;
-	}
+	}*/
 }
 
 double CrawlerQueen::GetCurrBoostSpeed()
 {
-	switch (stageMgr.GetCurrStage())
+	return 60;
+	/*switch (stageMgr.GetCurrStage())
 	{
 	case 0:
 		return 60;
@@ -327,12 +315,13 @@ double CrawlerQueen::GetCurrBoostSpeed()
 		return 80;
 	case 3:
 		return 90;
-	}
+	}*/
 }
 
 double CrawlerQueen::GetCurrThrowSpeed()
 {
-	switch (stageMgr.GetCurrStage())
+	return 3;
+	/*switch (stageMgr.GetCurrStage())
 	{
 	case 0:
 		return 6;
@@ -342,7 +331,7 @@ double CrawlerQueen::GetCurrThrowSpeed()
 		return 18;
 	case 3:
 		return 25;
-	}
+	}*/
 }
 
 int CrawlerQueen::GetNumSimulationFramesRequired()
@@ -367,9 +356,9 @@ void CrawlerQueen::HandleAction()
 
 		if (chaseOver)
 		{
-			if (frame < 150)
+			if (frame < actionLength[CHASE] - 30)
 			{
-				frame = 150;
+				frame = actionLength[CHASE] - 30;
 			}
 		}
 
@@ -419,7 +408,7 @@ void CrawlerQueen::HandleAction()
 
 			double diff = PI / 6;
 
-			RotateCCW(bombThrowDir, diff *2 );
+			RotateCCW(bombThrowDir, diff * 2 );
 
 			for (int i = 0; i < 5; ++i)
 			{
@@ -529,6 +518,8 @@ void CrawlerQueen::StartAction()
 	}
 	case SLASH:
 	{
+		DefaultHurtboxesOn();
+		DefaultHitboxesOn();
 		surfaceMover->SetSpeed(0);
 		break;
 	}
@@ -554,6 +545,9 @@ void CrawlerQueen::StartAction()
 	}
 	case LUNGESTART:
 	{
+		DefaultHurtboxesOn();
+		DefaultHitboxesOn();
+
 		V2d gn = surfaceMover->ground->Normal();
 		if (gn.x > 0)
 		{
@@ -574,6 +568,12 @@ void CrawlerQueen::StartAction()
 			sess->RemoveBoss(this);
 			game->SetBonus(myBonus, GetPosition());
 		}
+		break;
+	}
+	case DIG_OUT:
+	{
+		DefaultHurtboxesOn();
+		DefaultHitboxesOn();
 		break;
 	}
 
@@ -675,6 +675,36 @@ void CrawlerQueen::RespondToTakingFullHit()
 
 int CrawlerQueen::ChooseActionAfterStageChange()
 {
+	
+	if (stageMgr.currStage == 2)
+	{
+		digDecidePicker.Reset();
+		digDecidePicker.AddActiveOption(DIG_OUT, 2);
+		digDecidePicker.AddActiveOption(LUNGESTART, 2);
+		digDecidePicker.AddActiveOption(SLASH, 2);
+		//digDecidePicker.AddActiveOption(LUNGESTART, 2);
+	}
+	else if (stageMgr.currStage == 3)
+	{
+		//digDecidePicker.Reset();
+		//digDecidePicker.AddActiveOption(DIG_OUT, 2);
+		
+		//digDecidePicker.AddActiveOption(SLASH, 2);
+	}
+	/*else if (stageMgr.currStage == 4)
+	{
+		digDecidePicker.Reset();
+		digDecidePicker.AddActiveOption(DIG_OUT, 2);
+		digDecidePicker.AddActiveOption(LUNGESTART, 2);
+		
+	}*/
+	/*else if (stageMgr.currStage == 5)
+	{
+		digDecidePicker.AddActiveOption(DIG_OUT, 2);
+		digDecidePicker.AddActiveOption(LUNGESTART, 2);
+	}*/
+
+
 	return ChooseNextAction();//will add stages to crawler later
 }
 
@@ -1029,7 +1059,8 @@ void CrawlerQueen::InitEnemyForSummon(SummonGroup *group,
 	{
 		PoiInfo *summonNode;
 
-		summonNode = nodeGroupB.AlwaysGetNextNode();
+		//nodeGroupB
+		summonNode = nodeGroupA.AlwaysGetNextNode();
 		e->startPosInfo.SetGround(summonNode->poly,
 			summonNode->edgeIndex, summonNode->edgeQuantity);
 	}
