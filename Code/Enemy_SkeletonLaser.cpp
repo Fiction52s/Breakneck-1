@@ -14,7 +14,7 @@ SkeletonLaserPool::SkeletonLaserPool()
 	Session *sess = Session::GetSession();
 
 	ts = NULL;
-	numLasers = 10;
+	numLasers = 100;//5;//10;
 	laserVec.resize(numLasers);
 	//verts = new Vertex[numLasers * 4];
 	ts = sess->GetSizedTileset("Bosses/Coyote/coyotebullet_32x32.png");
@@ -86,6 +86,32 @@ void SkeletonLaserPool::RedirectAllTowards(V2d &pos)
 	}
 }
 
+void SkeletonLaserPool::SetAllSpeed(double speed)
+{
+	SkeletonLaser *bs = NULL;
+	for (int i = 0; i < numLasers; ++i)
+	{
+		bs = laserVec[i];
+		if (bs->active)
+		{
+			bs->SetSpeed(speed);
+		}
+	}
+}
+
+void SkeletonLaserPool::SetAllSpeedDefault()
+{
+	SkeletonLaser *bs = NULL;
+	for (int i = 0; i < numLasers; ++i)
+	{
+		bs = laserVec[i];
+		if (bs->active)
+		{
+			bs->SetSpeedDefault();
+		}
+	}
+}
+
 void SkeletonLaserPool::DrawMinimap(sf::RenderTarget * target)
 {
 	for (auto it = laserVec.begin(); it != laserVec.end(); ++it)
@@ -118,14 +144,18 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	animFactor[DISSIPATE] = 1;
 
 	maxBounces = 100;
-
-	laserWidth = 10;
+	
 
 	anchorPositions.reserve(maxBounces + 1);
 	quads = new Vertex[maxBounces * 4];
 	//quad = myQuad;
 
 	ts = pool->ts;
+
+	origTimeToLive = 300;
+	laserWidth = 10;
+	lengthLimit = 1000;//500;
+	flySpeed = 30;
 
 
 	hitBody.SetupNumFrames(1);
@@ -152,12 +182,12 @@ SkeletonLaser::SkeletonLaser(/*sf::Vertex *myQuad, */SkeletonLaserPool *pool)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-	lengthLimit = 500;
+	
 
 	//BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	flySpeed = 30;
+	
 
 	ResetEnemy();
 }
@@ -179,6 +209,8 @@ void SkeletonLaser::ResetEnemy()
 
 	action = THROWN;
 	frame = 0;
+
+	timeToLive = origTimeToLive;
 
 	anchorPositions.clear();
 
@@ -203,6 +235,11 @@ void SkeletonLaser::RedirectTowards(V2d &pos)
 	V2d newVel = normalize((pos - GetPosition())) 
 		* length( surfaceMover->velocity );
 	TryBounce(newVel);
+	action = REDIRECTED;
+	frame = 0;
+	timeToLive = 180;
+	laserWidth = 30;
+	surfaceMover->collisionOn = false;
 }
 
 void SkeletonLaser::Dissipate()
@@ -234,6 +271,8 @@ void SkeletonLaser::TryBounce(V2d &newVel)
 
 void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
 {
+	V2d newVel;
+	
 	V2d en = e->Normal();
 	V2d pos = e->GetPosition(quant);
 
@@ -247,8 +286,20 @@ void SkeletonLaser::HitTerrainAerial(Edge *e, double quant)
 	}
 	double d = dot(surfaceMover->velocity, en);
 	V2d ref = surfaceMover->velocity - (2.0 * d * en);
+	
+	V2d playerDir = PlayerDir();
 
-	TryBounce(ref);
+	if (laserType == LT_HOME && dot(en, playerDir) > 0)
+	{
+		newVel = playerDir * length(ref);
+	}
+	else
+	{
+		newVel = ref;
+	}
+	
+
+	TryBounce(newVel);
 }
 
 void SkeletonLaser::SetLevel(int lev)
@@ -282,9 +333,61 @@ V2d SkeletonLaser::GetThrowDir(V2d &dir)
 	return V2d(cos(trueAngle), -sin(trueAngle));
 }
 
+void SkeletonLaser::SetSpeed(double speed)
+{
+	surfaceMover->velocity = normalize(surfaceMover->velocity) * speed;
+}
+
+void SkeletonLaser::SetSpeedDefault()
+{
+	surfaceMover->velocity = normalize(surfaceMover->velocity) * flySpeed;
+}
+
+void SkeletonLaser::SetLaserTypeParams()
+{
+	switch (laserType)
+	{
+	case LT_REGULAR:
+	{
+		origTimeToLive = 60 * 30;
+		laserWidth = 10;
+		lengthLimit = 500;
+		flySpeed = 30;
+		headColor = Color::Magenta;
+		tailColor = Color::Magenta;
+		tailColor.a = 50;
+		break;
+	}
+	case LT_LONG:
+	{
+		origTimeToLive = 60 * 30;
+		laserWidth = 20;
+		lengthLimit = 1500;
+		flySpeed = 20;
+		headColor = Color::Red;
+		tailColor = Color::Red;
+		tailColor.a = 50;
+		break;
+	}
+	case LT_HOME:
+	{
+		origTimeToLive = 60 * 30;
+		laserWidth = 20;
+		lengthLimit = 2000;
+		flySpeed = 30;
+		headColor = Color::Green;
+		tailColor = Color::Green;
+		tailColor.a = 50;
+		break;
+	}
+	}
+}
+
 void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 {
 	laserType = (LaserType)type;
+
+	SetLaserTypeParams();
 
 	Reset();
 	sess->AddEnemy(this);
@@ -304,6 +407,8 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 {
 	laserType = (LaserType)type;
+
+	SetLaserTypeParams();
 
 	Reset();
 	sess->AddEnemy(this);
@@ -342,6 +447,15 @@ void SkeletonLaser::FrameIncrement()
 			surfaceMover->Set(posInfo);
 			//StartGrind();
 			destPoi = NULL;
+		}
+	}
+
+	if (action != DISSIPATE)
+	{
+		--timeToLive;
+		if (timeToLive == 0)
+		{
+			Dissipate();
 		}
 	}
 }
@@ -410,9 +524,28 @@ void SkeletonLaser::UpdateSprite()
 	if (action != DISSIPATE)
 	{
 		ClearQuads();
-		for (int i = 0; i < maxBounces; ++i)
+
+		if (action != REDIRECTED)
 		{
-			SetRectColor( quads + i * 4, Color::Magenta);
+			for (int i = 0; i < maxBounces; ++i)
+			{
+				/*quads[i * 4 + 0].color = tailColor;
+				quads[i * 4 + 1].color = headColor;
+				quads[i * 4 + 2].color = headColor;
+				quads[i * 4 + 3].color = tailColor;*/
+				SetRectColor(quads + i * 4, headColor);
+			}
+		}
+		else
+		{
+			for (int i = 0; i < maxBounces; ++i)
+			{
+				/*quads[i * 4 + 0].color = tailColor;
+				quads[i * 4 + 1].color = headColor;
+				quads[i * 4 + 2].color = headColor;
+				quads[i * 4 + 3].color = tailColor;*/
+				SetRectColor(quads + i * 4, Color::Yellow);
+			}
 		}
 
 		double totalLength = 0;

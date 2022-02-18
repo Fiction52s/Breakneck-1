@@ -53,7 +53,7 @@ Skeleton::Skeleton(ActorParams *ap)
 	actionLength[SHOOT_LASER] = 21;
 	animFactor[SHOOT_LASER] = 3;
 
-	actionLength[REDIRECT_TEST] = 60;
+	actionLength[REDIRECT_TEST] = 61;
 	animFactor[REDIRECT_TEST] = 1;
 
 	animFactor[JUMPSQUAT] = 3;//1
@@ -95,7 +95,7 @@ Skeleton::Skeleton(ActorParams *ap)
 	patternType.reserve(9);
 	patternOrder.reserve(9);
 
-	SetPatternLength(5);
+	SetPatternLength(3);
 
 	patternPreview.setFillColor(Color::Magenta);
 	patternPreview.setRadius(60);
@@ -222,6 +222,18 @@ void Skeleton::ActionEnded()
 		break;
 	}
 	case REDIRECT_TEST:
+	{
+		if (patternIndex == numPatternMoves)
+		{
+			Wait(30);
+		}
+		else
+		{
+			SetAction(PATTERN_MOVE);
+		}
+
+		break;
+	}
 	case SHOOT_LASER:
 	{
 		if (patternIndex == numPatternMoves)
@@ -307,10 +319,34 @@ void Skeleton::HandleAction()
 			{
 				offset += V2d(-20, 16);
 			}
-			laserPool.Throw(0, GetPosition() + offset,
-				PlayerDir(offset, V2d()));
+			V2d shootDir = PlayerDir(offset, V2d());
+			double angChange = .1 * PI;
+
+			int shootType = 0;
+			laserPool.Throw(shootType, GetPosition() + offset,
+				shootDir );
+			RotateCCW(shootDir, angChange);
+			laserPool.Throw(shootType, GetPosition() + offset,
+				shootDir);
+			RotateCW(shootDir, angChange * 2);
+			laserPool.Throw(shootType, GetPosition() + offset,
+				shootDir);
 		}
 		
+		break;
+	}
+	case REDIRECT_TEST:
+	{
+		if (frame == 60 && slowCounter == 1)
+		{
+			laserPool.SetAllSpeed(50);
+			laserPool.RedirectAllTowards(sess->GetPlayerPos(0));
+		}
+		/*else if (frame == 150 && slowCounter == 1)
+		{
+			laserPool.SetAllSpeed(40);
+			laserPool.RedirectAllTowards(sess->GetPlayerPos(0));
+		}*/
 		break;
 	}
 	}
@@ -416,7 +452,7 @@ void Skeleton::StartAction()
 	}
 	case REDIRECT_TEST:
 	{
-		laserPool.RedirectAllTowards(sess->GetPlayerPos(0));
+		laserPool.SetAllSpeed(5);
 		break;
 	}
 	
@@ -852,4 +888,9 @@ void Skeleton::FinishPatternMove()
 		SetAction(patternType[patternIndex - 1]);
 
 	}
+}
+
+int Skeleton::GetNumSimulationFramesRequired()
+{
+	return 0;
 }

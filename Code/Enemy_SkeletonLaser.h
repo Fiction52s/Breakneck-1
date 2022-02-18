@@ -16,6 +16,8 @@ struct SkeletonLaserPool
 
 	SkeletonLaser * ThrowAt(int type, V2d &pos, PoiInfo *pi);
 	void RedirectAllTowards(V2d &pos);
+	void SetAllSpeed(double speed);
+	void SetAllSpeedDefault();
 	//void Draw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<SkeletonLaser*> laserVec;
@@ -33,12 +35,15 @@ struct SkeletonLaser : Enemy,
 		THROWN,
 		THROWN_AT,
 		DISSIPATE,
+		REDIRECTED,
 		A_Count
 	};
 
 	enum LaserType
 	{
 		LT_REGULAR,
+		LT_LONG,
+		LT_HOME,
 		LT_Count,
 	};
 
@@ -65,9 +70,16 @@ struct SkeletonLaser : Enemy,
 	int maxBounces;
 	int currBounce;
 
+	int timeToLive;
+	int origTimeToLive;
+
 	std::vector<V2d> anchorPositions;
 
 	double laserWidth;
+
+	sf::Color headColor;
+	sf::Color tailColor;
+
 	//CollisionBody laserBody;
 
 	SkeletonLaser(//sf::Vertex *quad,
@@ -93,6 +105,9 @@ struct SkeletonLaser : Enemy,
 	void HitTerrainAerial(Edge *, double);
 	void TryBounce(V2d &newVel);
 	void Dissipate();
+	void SetSpeed(double speed);
+	void SetSpeedDefault();
+	void SetLaserTypeParams();
 };
 
 #endif

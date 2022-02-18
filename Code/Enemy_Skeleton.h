@@ -93,6 +93,7 @@ struct Skeleton : Boss, RayCastHandler
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	int GetNumSimulationFramesRequired();
 
 	void SetPatternLength(int len);
 	//Boss functions
@@ -121,6 +122,7 @@ struct Skeleton : Boss, RayCastHandler
 	void UpdateWireQuad();
 	V2d GetCenter();
 	void FrameIncrement();
+	
 	
 
 	//Rollback
