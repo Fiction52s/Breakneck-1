@@ -55,9 +55,9 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	//stageMgr.AddActiveOption(0, CREATE_ORB_CIRCLE, 2);
+	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK, 2);
 	//stageMgr.AddActiveOption(0, CIRCLE_ORB_STUFF, 2);
-	stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);
+	//stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);
 
 
 	////stageMgr.AddActiveOption(0, TEST_POST, 2);
@@ -148,7 +148,7 @@ void Gator::ResetEnemy()
 		}
 	}
 
-	moveMode = MM_APPROACH;
+	moveMode = MM_STOP;
 
 	facingRight = true;
 
@@ -328,6 +328,11 @@ void Gator::ActionEnded()
 {
 	switch (action)
 	{
+	case MOVE_TO_ORB_ATTACK:
+	{
+		SetAction(CIRCLE_ORB_STUFF);
+		break;
+	}
 	case MOVE_NODE_LINEAR:
 	case MOVE_NODE_QUADRATIC:
 		if (!redirectingOrbs)
@@ -417,7 +422,14 @@ void Gator::ActionEnded()
 	}
 	case MOVE_WANTS_TO_BITE:
 	{
-		Wait(10);
+		SetAction(MOVE_WANTS_TO_BITE);
+		//Decide();
+		//Wait(10);
+		break;
+	}
+	case MOVE_WANTS_TO_TRIPLE_RUSH:
+	{
+		SetAction(MOVE_WANTS_TO_TRIPLE_RUSH);
 		break;
 	}
 	case BITE_ATTACK:
@@ -442,6 +454,12 @@ void Gator::StartAction()
 {
 	switch (action)
 	{
+	case MOVE_TO_ORB_ATTACK:
+	{
+		MoveRandomly();
+		//moveMode = MM_RANDOM;
+		break;
+	}
 	case MOVE_NODE_LINEAR:
 	{
 		MoveTowardsPlayer();
@@ -502,7 +520,8 @@ void Gator::StartAction()
 		QueueCommand(bc);
 		QueueCommand(bc);
 
-		enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * (PlayerDist() + 200), CubicBezier(), 30);
+		//+200
+		enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * (PlayerDist() + 0), CubicBezier(), 30);
 		/*if (PlayerDist() < 400)
 		{
 		enemyMover.SetModeNodeLinearConstantSpeed(GetPosition() + PlayerDir() * (PlayerDist() + 200 ), CubicBezier(), 20);
@@ -529,7 +548,7 @@ void Gator::StartAction()
 	}
 	case CREATE_ORB_CIRCLE:
 	{
-
+		//MoveRandomly();
 		break;
 	}
 	case ATTACK:
@@ -549,7 +568,9 @@ void Gator::StartAction()
 	}
 	case CIRCLE_ORB_STUFF:
 	{
-		moveMode = MM_APPROACH;
+		//MoveTowardsPlayer();
+		//moveMode = MM_RANDOM;
+		//moveMode = MM_APPROACH;
 		break;
 	}
 	case BITE_ATTACK:
@@ -584,6 +605,11 @@ void Gator::StartAction()
 		break;
 	}
 	case MOVE_WANTS_TO_BITE:
+	{
+		MoveTowardsPlayer();
+		break;
+	}
+	case MOVE_WANTS_TO_TRIPLE_RUSH:
 	{
 		MoveTowardsPlayer();
 		break;
@@ -688,15 +714,15 @@ void Gator::HandleAction()
 	}
 	case CIRCLE_ORB_STUFF:
 	{
-		//UpdateMove();
-
-
-		if (orbPool[0].GetNumActive() == 0
+		if ( frame > 0 && orbPool[0].GetNumActive() == 0
 			&& orbPool[1].GetNumActive() == 0
 			&& orbPool[2].GetNumActive() == 0)
 		{
-			moveMode = MM_APPROACH;
-			frame = 0;
+			Decide();
+			//Wait(10000);
+			break;
+			//moveMode = MM_APPROACH;
+			//frame = 0;
 		}
 
 		
@@ -733,7 +759,8 @@ void Gator::HandleAction()
 		//OrbAttack3();
 		//OrbAttack1_1();
 		//OrbAttack1_2();
-		//OrbAttack2();
+		//UpdateMove();
+		OrbAttack2();
 		break;
 	}
 	case MOVE_NODE_LINEAR:
@@ -749,7 +776,7 @@ void Gator::HandleAction()
 	}
 	case MOVE_WANTS_TO_BITE:
 	{
-		if (PlayerDist() < 600)
+		if (PlayerDist() < 900)
 		{
 			if (!ExecuteRayCast(GetPosition(), sess->GetPlayerPos(0)))
 			{
@@ -758,9 +785,23 @@ void Gator::HandleAction()
 		}
 		break;
 	}
+	case MOVE_WANTS_TO_TRIPLE_RUSH:
+	{
+		if (PlayerDist() < 600)
+		{
+			if (!ExecuteRayCast(GetPosition(), sess->GetPlayerPos(0)))
+			{
+				SetAction(TRIPLE_LUNGE_1);
+			}
+		}
+		break;
+	}
+
 	
 	}
 
+
+	//UpdateMove();
 
 	for (int i = 0; i < NUM_ORB_POOLS; ++i)
 	{
@@ -931,10 +972,12 @@ void Gator::OrbAttack2()
 		pool.ExpandCircleToRadius(250, 10);
 		pool.SetCircleFollowPos(&currPosInfo.position);
 		pool.ChangeAllCircleOrbsRadiusOverTime(1.0, 32);
+		//pool.RotateCircle(0, .001, .008 * PI);
+		pool.RotateCircle(0, .005, .02 * PI);
 	}
 	if (frame == 30)
 	{
-		pool.RotateCircle(0, .005, .02 * PI);
+		
 	}
 	if (frame == 60)
 	{
@@ -943,16 +986,16 @@ void Gator::OrbAttack2()
 		//- pool.GetActiveCenter());
 		//pool.SetCircleVelocity(velDir * 10.0);
 	}
-	if (frame == 90)
+	if (frame == 100)
 	{
 		pool.RotateCircle(0);
-		pool.ExpandCircle(10.0);//2.0, .1, 10.0 );
+		pool.ExpandCircle(20.0);//2.0, .1, 10.0 );
 	}
 	else if (frame == 120)
 	{
 		pool.SetCircleTimeToLive(150);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 12);//15);
+		pool.Chase(&targetPlayer->position, 1.0, 20);//15);
 	}
 }
 
@@ -1235,7 +1278,9 @@ bool Gator::IsEnemyMoverAction(int a)
 		|| a == TRIPLE_LUNGE_3
 		|| a == BITE_ATTACK
 		|| a == MOVE_WANTS_TO_BITE
-		|| a == BITE_RECOVER; //bite attack temp here
+		|| a == MOVE_WANTS_TO_TRIPLE_RUSH
+		|| a == BITE_RECOVER
+		|| a == MOVE_TO_ORB_ATTACK; //bite attack temp here
 }
 
 void Gator::SeqWait()

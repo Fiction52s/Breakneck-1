@@ -31,7 +31,8 @@ Skeleton::Skeleton(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, SHOOT_LASER, 2);
 	//stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
 	
-	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	stageMgr.AddActiveOption(0, CHASE_MOVE, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
 
@@ -55,6 +56,9 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	actionLength[REDIRECT_TEST] = 61;
 	animFactor[REDIRECT_TEST] = 1;
+
+	actionLength[LASER_SPAM] = 60;
+	animFactor[LASER_SPAM] = 1;
 
 	animFactor[JUMPSQUAT] = 3;//1
 	//animFactor[HOP] = 1;
@@ -88,8 +92,9 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
-	patternTypePicker.AddActiveOption(SHOOT_LASER);
-	patternTypePicker.AddActiveOption(REDIRECT_TEST);
+	patternTypePicker.AddActiveOption(LASER_SPAM);
+	//patternTypePicker.AddActiveOption(SHOOT_LASER);
+	//patternTypePicker.AddActiveOption(REDIRECT_TEST);
 
 	pattern.reserve(9);
 	patternType.reserve(9);
@@ -187,6 +192,11 @@ void Skeleton::ActionEnded()
 	case MOVE_OTHER:
 		Decide();
 		break;
+	case CHASE_MOVE:
+	{
+		SetAction(CHASE_MOVE);
+		break;
+	}
 	case PLAN_PATTERN:
 	{
 		patternIndex = 0;
@@ -196,6 +206,7 @@ void Skeleton::ActionEnded()
 	}
 	case PATTERN_MOVE:
 	{
+		cout << "finish move" << endl;
 		FinishPatternMove();
 
 		break;
@@ -246,6 +257,18 @@ void Skeleton::ActionEnded()
 		}
 		//FinishPatternMove();
 		//Decide(); //for now
+		break;
+	}
+	case LASER_SPAM:
+	{
+		if (patternIndex == numPatternMoves)
+		{
+			Wait(30);
+		}
+		else
+		{
+			SetAction(PATTERN_MOVE);
+		}
 		break;
 	}
 	case GATHER_ENERGY_START:
@@ -302,6 +325,10 @@ void Skeleton::HandleAction()
 				{
 					patternPreview.setFillColor(Color::Cyan);
 				}
+				else if (patternType[patternOrder[mult]] == LASER_SPAM)
+				{
+					patternPreview.setFillColor(Color::Red);
+				}
 			}
 		}
 		break;
@@ -322,15 +349,17 @@ void Skeleton::HandleAction()
 			V2d shootDir = PlayerDir(offset, V2d());
 			double angChange = .1 * PI;
 
-			int shootType = 0;
+			int shootType = 2;
 			laserPool.Throw(shootType, GetPosition() + offset,
+				shootDir);
+			/*laserPool.Throw(shootType, GetPosition() + offset,
 				shootDir );
 			RotateCCW(shootDir, angChange);
 			laserPool.Throw(shootType, GetPosition() + offset,
 				shootDir);
 			RotateCW(shootDir, angChange * 2);
 			laserPool.Throw(shootType, GetPosition() + offset,
-				shootDir);
+				shootDir);*/
 		}
 		
 		break;
@@ -347,6 +376,79 @@ void Skeleton::HandleAction()
 			laserPool.SetAllSpeed(40);
 			laserPool.RedirectAllTowards(sess->GetPlayerPos(0));
 		}*/
+		break;
+	}
+	case LASER_SPAM:
+	{
+		if (slowCounter == 1)
+		{
+			int division = 10;
+			if (frame % 3 == 0 )//frame % division == 0 && frame / division < 3)
+			{
+				//cout << "active: " << laserPool.getnu
+				V2d offset = V2d(0, -extraHeight);
+				if (facingRight)
+				{
+					offset += V2d(20, 16);
+				}
+				else
+				{
+					offset += V2d(-20, 16);
+				}
+				V2d shootDir = PlayerDir(offset, V2d());//V2d(0, -1);//
+				int numLasers = 20;
+				double angChange = (1.0 * PI) / numLasers;//.1 * PI;
+
+				int spamCounter = frame / division;
+
+				//RotateCCW(shootDir, (angChange / 2) * spamCounter );
+				int shootType = 3;
+				laserPool.Throw(shootType, GetPosition() + offset,
+					shootDir);
+
+				/*
+				for (int i = 0; i < numLasers; ++i)
+				{
+					
+					RotateCCW(shootDir, angChange);
+				}*/
+			}
+		}
+		break;
+	}
+	case PATTERN_MOVE:
+	{
+		if (frame % 3 == 0)//frame % division == 0 && frame / division < 3)
+		{
+			//cout << "active: " << laserPool.getnu
+			V2d offset = V2d(0, -extraHeight);
+			if (facingRight)
+			{
+				offset += V2d(20, 16);
+			}
+			else
+			{
+				offset += V2d(-20, 16);
+			}
+			offset = V2d(0, 0);
+			V2d shootDir = PlayerDir(offset, V2d());//V2d(0, -1);//
+			int numLasers = 20;
+			double angChange = (1.0 * PI) / numLasers;//.1 * PI;
+
+			//int spamCounter = frame / division;
+
+			//RotateCCW(shootDir, (angChange / 2) * spamCounter );
+			int shootType = 3;
+			laserPool.Throw(shootType, GetPosition() + offset,
+				shootDir);
+
+			/*
+			for (int i = 0; i < numLasers; ++i)
+			{
+
+			RotateCCW(shootDir, angChange);
+			}*/
+		}
 		break;
 	}
 	}
@@ -394,7 +496,8 @@ void Skeleton::StartAction()
 	}
 	case PATTERN_MOVE:
 	{
-		int trueIndex = 0;
+		cout << "start pattern move" << endl;
+		int trueIndex = -1;
 		for (int i = 0; i < numPatternMoves; ++i)
 		{
 			if (patternOrder[i] == patternIndex)
@@ -403,13 +506,22 @@ void Skeleton::StartAction()
 				break;
 			}
 		}
+
+		assert(trueIndex != -1);
 		currNode = pattern[trueIndex];
+
 		StartMovement(currNode->pos + V2d( 0, -extraHeight ));
 
 		//laserPool.Throw(0, GetPosition() + V2d( 0, -eyeExtraHeight),
 		//	PlayerDir( V2d( 0, -eyeExtraHeight), V2d() ));
 		break;
 	}
+	case CHASE_MOVE:
+	{
+		StartMovement(sess->GetPlayerPos( 0 ) );
+		break;
+	}
+
 	case PLAN_PATTERN:
 	{
 		//babyScorpionGroup.Reset();
@@ -455,6 +567,11 @@ void Skeleton::StartAction()
 		laserPool.SetAllSpeed(5);
 		break;
 	}
+	case LASER_SPAM:
+	{
+		cout << "start laser spam" << endl;
+		break;
+	}
 	
 	}
 }
@@ -470,6 +587,7 @@ void Skeleton::StartMovement(V2d &pos)
 
 	if (nodeDiff.y < -600)
 	{
+		cout << "zipping" << endl;
 		rayCastInfo.rcEdge = NULL;
 		rayCastInfo.rayStart = nodePos + V2d(0, -10);
 		rayCastInfo.rayEnd = nodePos + V2d(0, -1) * 5000.0;//other * 5000.0;
@@ -496,6 +614,7 @@ void Skeleton::StartMovement(V2d &pos)
 	}
 	else if (absNodeDiffX > 600)
 	{
+		cout << "swinging" << endl;
 		//enemyMover.currPosInfo.position += V2d(0, -extraHeight);
 		//currPosInfo = enemyMover.currPosInfo;
 
@@ -546,6 +665,7 @@ void Skeleton::StartMovement(V2d &pos)
 	}
 	else
 	{
+		cout << "hopping" << endl;
 		Hop(nodePos, 5, 100);
 		//hopTarget = nodePos;
 		//SetAction(JUMPSQUAT);
@@ -591,7 +711,8 @@ bool Skeleton::IsDecisionValid(int d)
 
 bool Skeleton::IsEnemyMoverAction(int a)
 {
-	return a == MOVE_WIRE_DASH || a == MOVE_OTHER || a == PATTERN_MOVE || a == HOP;
+	return a == MOVE_WIRE_DASH || a == MOVE_OTHER || a == PATTERN_MOVE || a == HOP
+		|| a == CHASE_MOVE;
 }
 
 void Skeleton::DebugDraw(sf::RenderTarget *target)
@@ -894,3 +1015,30 @@ int Skeleton::GetNumSimulationFramesRequired()
 {
 	return 0;
 }
+
+//void Skeleton::ShootStandingLaser(int shootType,V2d &pos,V2d &dir)
+//{
+//	V2d offset = V2d(0, -extraHeight);
+//	if (facingRight)
+//	{
+//		offset += V2d(20, 16);
+//	}
+//	else
+//	{
+//		offset += V2d(-20, 16);
+//	}
+//	V2d shootDir = PlayerDir(offset, V2d());
+//	double angChange = .1 * PI;
+//
+//	int shootType = 2;
+//	laserPool.Throw(shootType, GetPosition() + offset,
+//		shootDir);
+//	/*laserPool.Throw(shootType, GetPosition() + offset,
+//	shootDir );
+//	RotateCCW(shootDir, angChange);
+//	laserPool.Throw(shootType, GetPosition() + offset,
+//	shootDir);
+//	RotateCW(shootDir, angChange * 2);
+//	laserPool.Throw(shootType, GetPosition() + offset,
+//	shootDir);*/
+//}

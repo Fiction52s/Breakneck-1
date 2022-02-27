@@ -49,7 +49,7 @@ SkeletonLaser * SkeletonLaserPool::Throw(int type, V2d &pos, V2d &dir)
 	for (int i = 0; i < numLasers; ++i)
 	{
 		bs = laserVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			bs->Throw(type, pos, dir);
 			break;
@@ -64,7 +64,7 @@ SkeletonLaser * SkeletonLaserPool::ThrowAt(int type, V2d &pos, PoiInfo *dest)
 	for (int i = 0; i < numLasers; ++i)
 	{
 		bs = laserVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			bs->ThrowAt(type, pos, dest);
 			break;
@@ -374,9 +374,20 @@ void SkeletonLaser::SetLaserTypeParams()
 		origTimeToLive = 60 * 30;
 		laserWidth = 20;
 		lengthLimit = 2000;
-		flySpeed = 30;
+		flySpeed = 40;
 		headColor = Color::Green;
 		tailColor = Color::Green;
+		tailColor.a = 50;
+		break;
+	}
+	case LT_NO_COLLIDE:
+	{
+		origTimeToLive = 60 * 3;//60 * 30;
+		laserWidth = 6;
+		lengthLimit = 50;
+		flySpeed = 30;
+		headColor = Color::Cyan;
+		tailColor = Color::Cyan;
 		tailColor.a = 50;
 		break;
 	}
@@ -391,6 +402,11 @@ void SkeletonLaser::Throw(int type, V2d &pos, V2d &dir)
 
 	Reset();
 	sess->AddEnemy(this);
+
+	if (type == LT_NO_COLLIDE)
+	{
+		surfaceMover->collisionOn = false;
+	}
 
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
@@ -412,6 +428,11 @@ void SkeletonLaser::ThrowAt(int type, V2d &pos, PoiInfo *pi)
 
 	Reset();
 	sess->AddEnemy(this);
+
+	if (type == LT_NO_COLLIDE)
+	{
+		surfaceMover->collisionOn = false;
+	}
 
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
@@ -499,6 +520,11 @@ void SkeletonLaser::ProcessState()
 			return;
 		}*/
 	}
+
+	/*if (laserType == LT_NO_COLLIDE)
+	{
+
+	}*/
 
 
 

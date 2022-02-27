@@ -44,6 +44,7 @@ struct SkeletonLaser : Enemy,
 		LT_REGULAR,
 		LT_LONG,
 		LT_HOME,
+		LT_NO_COLLIDE,
 		LT_Count,
 	};
 

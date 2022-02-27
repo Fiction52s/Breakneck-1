@@ -30,6 +30,8 @@ struct Skeleton : Boss, RayCastHandler
 		GATHER_ENERGY_START,
 		GATHER_ENERGY_LOOP,
 		GATHER_ENERGY_END,
+		LASER_SPAM,
+		CHASE_MOVE,
 		A_Count
 	};
 
@@ -122,7 +124,9 @@ struct Skeleton : Boss, RayCastHandler
 	void UpdateWireQuad();
 	V2d GetCenter();
 	void FrameIncrement();
-	
+	/*void ShootStandingLaser(
+		int shootType,
+		V2d &dir);*/
 	
 
 	//Rollback
