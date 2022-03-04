@@ -17,7 +17,7 @@ struct GatorWaterOrbPool
 	GatorWaterOrbPool();
 	~GatorWaterOrbPool();
 	void Reset();
-	GatorWaterOrb * Throw(V2d &pos, V2d &dir,
+	GatorWaterOrb * Throw(V2d &pos, V2d &dest,
 		int orbType );
 	void Draw(sf::RenderTarget *target);
 	void Redirect(V2d &vel);
@@ -144,9 +144,10 @@ struct GatorWaterOrb : Enemy
 		GatorWaterOrbPool *pool);
 	void UpdateEnemyPhysics();
 	void Die();
-	void Throw(V2d &pos, V2d &dir, int orbType );
+	void Throw(V2d &pos, V2d &dest, int orbType );
 	void CreateForCircle(V2d &pos, double orbRadius,
 		int orbType );
+	void SetTimeToLive(int f);
 	void Redirect(V2d &vel);
 	void SetLevel(int lev);
 	void GroupChase(double p_chaseAccel, 

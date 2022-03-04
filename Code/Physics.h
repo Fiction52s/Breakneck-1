@@ -116,7 +116,8 @@ struct HitboxInfo
 		hitsThroughInvincibility(false),
 		flipHorizontalKB( false ),
 		flipVerticalKB( false ),
-		reversableKnockback(true )
+		reversableKnockback(true ),
+		sensor(false)
 	{
 		kbDir = normalize(V2d(1, -1));
 		//gravMultiplier = .5;
@@ -152,6 +153,7 @@ struct HitboxInfo
 	bool flipHorizontalKB;
 	bool flipVerticalKB;
 	bool reversableKnockback;
+	bool sensor; //doesn't register as recent hitter
 	
 };
 

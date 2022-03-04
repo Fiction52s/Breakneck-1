@@ -18,7 +18,7 @@ Gator::Gator(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(4, 4);
+	StageSetup(8, 2);
 
 	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 	ts_bite = GetSizedTileset("Bosses/Gator/gator_dash_512x320.png");
@@ -45,8 +45,8 @@ Gator::Gator(ActorParams *ap)
 	actionLength[TEST_ORBS] = 180;
 	animFactor[TEST_ORBS] = 1;
 
-	actionLength[CREATE_ORB_CIRCLE] = -1;
-	animFactor[CREATE_ORB_CIRCLE] = 1;
+	actionLength[TIME_ORB_ATTACK] = 90;
+	animFactor[TIME_ORB_ATTACK] = 1;
 
 	postFightScene = NULL;
 
@@ -55,7 +55,13 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK, 2);
+	stageMgr.AddActiveOptionToStages(0, MOVE_WANTS_TO_BITE, 2);
+	stageMgr.AddActiveOptionToStages(0, TIME_ORB_ATTACK, 2);
+	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_1, 2);
+	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_2, 2);
+	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_3, 2);
+
+	//stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK, 2);
 	//stageMgr.AddActiveOption(0, CIRCLE_ORB_STUFF, 2);
 	//stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);
 
@@ -84,6 +90,7 @@ Gator::Gator(ActorParams *ap)
 	LoadParams();
 
 	CreateHitboxManager("Bosses/Gator");
+	SetupHitboxes(CHASE_ATTACK, "dominance");
 	SetupHitboxes(TRIPLE_LUNGE_1, "dominance");
 	SetupHitboxes(TRIPLE_LUNGE_2, "dominance");
 	SetupHitboxes(TRIPLE_LUNGE_3, "dominance");
@@ -115,6 +122,7 @@ void Gator::LoadParams()
 	json j;
 	is >> j;
 
+	HitboxInfo::SetupHitboxLevelInfo(j["dominance"], hitboxInfos[CHASE_ATTACK]);
 	HitboxInfo::SetupHitboxLevelInfo(j["dominance"], hitboxInfos[ATTACK]);
 	HitboxInfo::SetupHitboxLevelInfo(j["dominance"], hitboxInfos[TRIPLE_LUNGE_1]);
 	HitboxInfo::SetupHitboxLevelInfo(j["dominance"], hitboxInfos[TRIPLE_LUNGE_2]);
@@ -129,12 +137,15 @@ void Gator::ResetEnemy()
 		myBonus->RestartLevel();
 	}
 
+	currMoveSpeed = 10;
+
 	rayCastInfo.tree = sess->terrainTree;
 
 	for (int i = 0; i < NUM_ORB_POOLS; ++i)
 	{
 		orbPool[i].Reset();
 	}
+	timeOrbPool.Reset();
 	swarmSummonGroup.Reset();
 
 	BossReset();
@@ -212,7 +223,7 @@ void Gator::MoveRandomly()
 			facingRight = false;
 		}
 
-		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
+		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), currMoveSpeed);
 	}
 }
 
@@ -251,7 +262,7 @@ void Gator::MoveTowardsPlayer()
 			{
 				facingRight = false;
 			}
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 20);//10);//20);
+			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), currMoveSpeed);//10);//20);
 		}
 	}
 }
@@ -291,10 +302,20 @@ void Gator::MoveAwayFromPlayer()
 			{
 				facingRight = false;
 			}
-			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);//20);
+			enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), currMoveSpeed);//20);
 		}
 
 	}
+}
+
+void Gator::ThrowTimeOrbTowardsPlayer()
+{
+
+}
+
+void Gator::ThrowTimeOrbRandomly()
+{
+
 }
 
 void Gator::UpdateMove()
@@ -328,9 +349,25 @@ void Gator::ActionEnded()
 {
 	switch (action)
 	{
-	case MOVE_TO_ORB_ATTACK:
+	case TIME_ORB_ATTACK:
 	{
-		SetAction(CIRCLE_ORB_STUFF);
+		SetAction(CHASE_ATTACK);
+		//Decide();
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_1:
+	{
+		SetAction(ORB_ATTACK_1);
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_2:
+	{
+		SetAction(ORB_ATTACK_2);
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_3:
+	{
+		SetAction(ORB_ATTACK_3);
 		break;
 	}
 	case MOVE_NODE_LINEAR:
@@ -372,8 +409,9 @@ void Gator::ActionEnded()
 	case COMBOMOVE:
 		SetNextComboAction();
 		break;
-	case MOVE_CHASE:
-		SetAction(TRIPLE_LUNGE_1);
+	case CHASE_ATTACK:
+		Decide();
+		//SetAction(BITE_ATTACK);
 		break;
 	case TRIPLE_LUNGE_1:
 		if (TrySetActionToNextAction())
@@ -415,11 +453,6 @@ void Gator::ActionEnded()
 		}
 		break;
 	}
-	case CREATE_ORB_CIRCLE:
-	{
-		//orbPool.Reset();
-		break;
-	}
 	case MOVE_WANTS_TO_BITE:
 	{
 		SetAction(MOVE_WANTS_TO_BITE);
@@ -454,8 +487,28 @@ void Gator::StartAction()
 {
 	switch (action)
 	{
-	case MOVE_TO_ORB_ATTACK:
+	case TIME_ORB_ATTACK:
 	{
+		//TimeOrbAttack1();
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_1:
+	{
+		currMoveSpeed = 20;
+		MoveRandomly();
+		//moveMode = MM_RANDOM;
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_2:
+	{
+		currMoveSpeed = 20;
+		MoveRandomly();
+		//moveMode = MM_RANDOM;
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_3:
+	{
+		currMoveSpeed = 20;
 		MoveRandomly();
 		//moveMode = MM_RANDOM;
 		break;
@@ -495,11 +548,11 @@ void Gator::StartAction()
 
 		break;
 	}
-	case MOVE_CHASE:
+	case CHASE_ATTACK:
 	{
 		V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
 		enemyMover.SetModeChase(&targetPlayer->position, V2d(0, 0),
-			8, .9, 90);
+			12, 1.5, 180);
 		//orbPool.Throw(GetPosition(), nodePos, GatorWaterOrb::OrbType::NODE_GROW);
 		break;
 	}
@@ -546,11 +599,6 @@ void Gator::StartAction()
 	{
 		//orbPool.GroupChase(&targetPlayer->position);
 	}
-	case CREATE_ORB_CIRCLE:
-	{
-		//MoveRandomly();
-		break;
-	}
 	case ATTACK:
 	{
 		break;
@@ -566,7 +614,7 @@ void Gator::StartAction()
 		}
 		break;
 	}
-	case CIRCLE_ORB_STUFF:
+	case ORB_ATTACK_2:
 	{
 		//MoveTowardsPlayer();
 		//moveMode = MM_RANDOM;
@@ -606,6 +654,10 @@ void Gator::StartAction()
 	}
 	case MOVE_WANTS_TO_BITE:
 	{
+		SortNodePosBVec(sess->GetPlayerPos(0));
+		GatorWaterOrb *orb = timeOrbPool.Throw(GetPosition(), nodePosBVec[0], 1);
+		orb->ChangeRadiusOverTime(.5, 150);
+		orb->SetTimeToLive(360);
 		MoveTowardsPlayer();
 		break;
 	}
@@ -693,74 +745,58 @@ void Gator::HandleAction()
 	case TRIPLE_LUNGE_2:
 	case TRIPLE_LUNGE_3:
 	case ATTACK:
+	case CHASE_ATTACK:
 		if (!actionHitPlayer)
 		{
 			SetHitboxes(hitBodies[action], 0);
 		}
 		break;
-	case CREATE_ORB_CIRCLE:
+	case TIME_ORB_ATTACK:
 	{
-		//OrbAttack1_1();
-		//OrbAttack1_2();
-
-		OrbAttack2();
-
-
-
-
-
-
+		/*if (frame > 0 && orbPool[0].GetNumActive() == 0
+			&& orbPool[1].GetNumActive() == 0
+			&& orbPool[2].GetNumActive() == 0)
+		{
+			Decide();
+			break;
+		}*/
+		TimeOrbAttack1();
 		break;
 	}
-	case CIRCLE_ORB_STUFF:
+	case ORB_ATTACK_1:
+	{
+		if (frame > 0 && orbPool[0].GetNumActive() == 0
+			&& orbPool[1].GetNumActive() == 0
+			&& orbPool[2].GetNumActive() == 0)
+		{
+			Decide();
+			break;
+		}
+		OrbAttack1();
+		break;
+	}
+	case ORB_ATTACK_2:
 	{
 		if ( frame > 0 && orbPool[0].GetNumActive() == 0
 			&& orbPool[1].GetNumActive() == 0
 			&& orbPool[2].GetNumActive() == 0)
 		{
 			Decide();
-			//Wait(10000);
 			break;
-			//moveMode = MM_APPROACH;
-			//frame = 0;
 		}
-
-		
-		int r = rand() % 4;
-		/*if (frame == 0)
-		{
-			if (r == 0)
-			{
-				OrbAttack1();
-			}
-			else if (r == 1)
-			{
-				OrbAttack2();
-			}
-			else if (r == 2)
-			{
-				OrbAttack3();
-			}
-			else if (r == 3)
-			{
-				OrbAttack4();
-			}
-		}*/
-
-		//OrbAttack2();
-		//TimeOrbAttack1();
-		if (frame == 0)
-		{
-			//V2d nodePos = nodeGroupA.AlwaysGetNextNode()->pos;
-			//orbPool[0].Throw(GetPosition(), nodePos, orbTypePicker.AlwaysGetNextOption());
-		}
-		
-		//OrbAttack1();
-		//OrbAttack3();
-		//OrbAttack1_1();
-		//OrbAttack1_2();
-		//UpdateMove();
 		OrbAttack2();
+		break;
+	}
+	case ORB_ATTACK_3:
+	{
+		if (frame > 0 && orbPool[0].GetNumActive() == 0
+			&& orbPool[1].GetNumActive() == 0
+			&& orbPool[2].GetNumActive() == 0)
+		{
+			Decide();
+			break;
+		}
+		OrbAttack3();
 		break;
 	}
 	case MOVE_NODE_LINEAR:
@@ -807,6 +843,8 @@ void Gator::HandleAction()
 	{
 		orbPool[i].Update();
 	}
+
+	timeOrbPool.Update();
 }
 
 void Gator::SortNodePosAVec( V2d &sortPos)
@@ -835,8 +873,39 @@ void Gator::SortNodePosAVec( V2d &sortPos)
 	}
 }
 
+void Gator::SortNodePosBVec(V2d &sortPos)
+{
+	int numNodes = nodePosBVec.size();
+
+	for (int i = 0; i < numNodes; ++i)
+	{
+		nodePosBVec[i] = nodeGroupB.nodeVec->at(i)->pos;
+	}
+
+	//V2d playerPos = sess->GetPlayerPos(0);
+	V2d temp;
+	for (int i = 1; i < numNodes; ++i)
+	{
+		for (int j = i; j >= 1; --j)
+		{
+			if (length(nodePosBVec[j] - sortPos)
+				< length(nodePosBVec[j - 1] - sortPos))
+			{
+				temp = nodePosBVec[j - 1];
+				nodePosBVec[j - 1] = nodePosBVec[j];
+				nodePosBVec[j] = temp;
+			}
+		}
+	}
+}
+
 void Gator::OrbAttack1()
 {
+	if (frame == 0)
+	{
+		int r = rand() % 360;
+		orbAttack1Angle = r / 180.0 * PI;
+	}
 	OrbAttack1_1();
 	OrbAttack1_2();
 	//OrbAttack1_3();
@@ -850,12 +919,12 @@ void Gator::OrbAttack1_1()
 
 	if (frame == 0)
 	{
-		int r = rand() % 360;
-		double startAngle = r / 180.0 * PI;
-		pool.CreateCircle(GetPosition(), 5, 20, 1, startAngle);
+		//int r = rand() % 360;
+		//double startAngle = r / 180.0 * PI;
+		pool.CreateCircle(GetPosition(), 5, 20, 1, orbAttack1Angle + (PI *2) / 5);
 		pool.ExpandCircleToRadius(200, 10);
 		pool.SetCircleFollowPos(&currPosInfo.position);
-		pool.ChangeAllCircleOrbsRadiusOverTime(1.0, 32);
+		pool.ChangeAllCircleOrbsRadiusOverTime(1.0, 24);
 	}
 	if (frame == 30)
 	{
@@ -872,13 +941,17 @@ void Gator::OrbAttack1_1()
 		//moveMode = MM_STOP;
 		//enemyMover.SetMoveType(EnemyMover::NONE);
 		//orbPool.RotateCircle(0);
-		pool.ExpandCircle(8.0);//2.0, .1, 10.0 );
+		pool.ExpandCircle(10);//2.0, .1, 10.0 );
 	}
+	/*else if (frame == 119)
+	{
+		pool.ExpandCircle(.0);
+	}*/
 	else if (frame == 120)
 	{
-		pool.SetCircleTimeToLive(180);
+		pool.SetCircleTimeToLive(360);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 5);//15);
+		pool.Chase(&targetPlayer->position, 1.0, 2);//5);//15);
 	}
 }
 
@@ -889,12 +962,10 @@ void Gator::OrbAttack1_2()
 	//first circle
 	if (frame == 0)
 	{
-		int r = rand() % 360;
-		double startAngle = r / 180.0 * PI;
-		pool.CreateCircle(GetPosition(), 5, 50, 1, startAngle);
+		pool.CreateCircle(GetPosition(), 5, 50, 1, orbAttack1Angle);
 		pool.ExpandCircleToRadius(400, 20);
 		pool.SetCircleFollowPos(&currPosInfo.position);
-		pool.ChangeAllCircleOrbsRadiusOverTime(2.0, 64);
+		pool.ChangeAllCircleOrbsRadiusOverTime(2.0, 48);
 	}
 	if (frame == 30)
 	{
@@ -909,13 +980,13 @@ void Gator::OrbAttack1_2()
 	if (frame == 90)
 	{
 		//orbPool.RotateCircle(0);
-		pool.ExpandCircle(10.0);//2.0, .1, 10.0 );
+		pool.ExpandCircle(14);//10.0);//2.0, .1, 10.0 );
 	}
 	else if (frame == 120)
 	{
-		pool.SetCircleTimeToLive(180);
+		pool.SetCircleTimeToLive(360);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 3);//10);
+		pool.Chase(&targetPlayer->position, 1.0, 1);//10);
 	}
 }
 
@@ -965,6 +1036,7 @@ void Gator::OrbAttack1_3()
 void Gator::OrbAttack2()
 {
 	GatorWaterOrbPool &pool = orbPool[0];
+
 	//first circle
 	if (frame == 0)
 	{
@@ -973,7 +1045,15 @@ void Gator::OrbAttack2()
 		pool.SetCircleFollowPos(&currPosInfo.position);
 		pool.ChangeAllCircleOrbsRadiusOverTime(1.0, 32);
 		//pool.RotateCircle(0, .001, .008 * PI);
-		pool.RotateCircle(0, .005, .02 * PI);
+
+		double rotateDir = 1.0;
+		/*int cw = rand() % 2;
+		if( cw == 0 )
+		{
+			rotateDir = -rotateDir;
+		}*/
+
+		pool.RotateCircle(0, .005 * rotateDir, .02 * PI * rotateDir);
 	}
 	if (frame == 30)
 	{
@@ -993,10 +1073,14 @@ void Gator::OrbAttack2()
 	}
 	else if (frame == 120)
 	{
-		pool.SetCircleTimeToLive(150);
+		pool.SetCircleTimeToLive(180);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 20);//15);
+		pool.Chase(&targetPlayer->position, .7/*1.0*/, 20);//15);
 	}
+	//else if (frame == 120 + 90)
+	//{
+	//	pool.Chase(&targetPlayer->position, .2, 20);//15);
+	//}
 }
 
 void Gator::OrbAttack3()
@@ -1006,6 +1090,7 @@ void Gator::OrbAttack3()
 
 	int throwFrame = 60;
 
+	double expandRate = 12;
 	if (frame == 0)
 	{
 		int r = rand() % 360;
@@ -1021,33 +1106,31 @@ void Gator::OrbAttack3()
 		pool.StopCircleFollow();
 		V2d velDir = normalize(sess->GetPlayerPos(0)
 			- pool.circleCenter);
-		pool.SetCircleVelocity(velDir * 15.0);
-		pool.CircleChase(&sess->GetPlayer(0)->position, 1.0, 15);
+		double speed = 15;//15
+		pool.SetCircleVelocity(velDir * speed);
+		pool.CircleChase(&sess->GetPlayer(0)->position, .5, speed);
 		
 		//pool.
 		
 	}
 	if (frame == throwFrame + 30)
 	{
-		pool.ExpandCircleToRadius(500, 10);//2, .1, 10);
+		pool.ExpandCircleToRadius(500, expandRate);//2, .1, 10);
 	}
-	if (frame == throwFrame + 60)
+	else if (frame == throwFrame + 60)
 	{
-		pool.ExpandCircleToRadius(50, -10);//-2, -.1, -10);
-		pool.SetCircleVelocity(V2d());
-		pool.StopCircleChase();
-		//pool.RotateCircle(0);
-		//pool.ExpandCircle(10.0);//2.0, .1, 10.0 );
+		pool.ExpandCircleToRadius(200, -expandRate);//-2, -.1, -10);
 	}
 	else if (frame == throwFrame + 90)
 	{
-		
-		
-		pool.SetCircleTimeToLive(20);
-		
-		
-		//pool.EndCircle();
-		//pool.Chase(&targetPlayer->position, 1.0, 15);//15);
+		pool.ExpandCircleToRadius(500, expandRate);
+	}
+	else if (frame == throwFrame + 120)
+	{
+		pool.ExpandCircleToRadius(50, -expandRate);//-2, -.1, -10);
+		pool.SetCircleVelocity(V2d());
+		pool.StopCircleChase();
+		pool.SetCircleTimeToLive(90);//60);
 	}
 }
 
@@ -1170,15 +1253,20 @@ void Gator::TimeOrbAttack1()
 
 	int throwFrame = 90;
 
+
+	//orbPool[0].Throw(GetPosition(), sess->GetPlayerPos(0), GatorWaterOrb::NODE_GROW_SLOW);
+
 	if (frame == 0)
 	{
 		int r = rand() % 360;
 		double startAngle = 0;//r / 180.0 * PI;
-		pool.CreateCircle(GetPosition(), 5, 50, 1, startAngle, 
+		pool.Reset();
+		pool.CreateCircle(GetPosition(), 1, 0, 1, startAngle, 
 			GatorWaterOrb::OrbType::NODE_GROW_SLOW);
-		pool.ExpandCircleToRadius(800, 10);
-		pool.SetCircleFollowPos(&currPosInfo.position);
-		pool.ChangeAllCircleOrbsRadiusOverTime(5.0, 300);
+		//pool.ExpandCircleToRadius(800, 10);
+		//pool.SetCircleFollowPos(&currPosInfo.position);
+		pool.ChangeAllCircleOrbsRadiusOverTime(20.0, 800);
+		pool.SetCircleTimeToLive(160);
 		//pool.RotateCircle(0, .0002, .01 * PI);
 		//pool.RotateCircle(0, .004, .06 * PI);
 	}
@@ -1246,10 +1334,12 @@ void Gator::SetupPostFightScenes()
 void Gator::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_GATOR, "A"));
-	int numNodes = nodeGroupA.nodeVec->size();
-	nodePosAVec.resize(numNodes);
-	nodeDistances.resize(numNodes);
-	nodePosAVecSorted.resize(numNodes);
+	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_GATOR, "B"));
+	int numANodes = nodeGroupA.nodeVec->size();
+	nodePosAVec.resize(numANodes);
+
+	int numBNodes = nodeGroupB.nodeVec->size();
+	nodePosBVec.resize(numBNodes);
 }
 
 bool Gator::IsDecisionValid(int d)
@@ -1273,14 +1363,16 @@ bool Gator::IsDecisionValid(int d)
 bool Gator::IsEnemyMoverAction(int a)
 {
 	return a == MOVE_NODE_LINEAR || a == MOVE_NODE_QUADRATIC
-		|| a == MOVE_CHASE || a == TRIPLE_LUNGE_1
+		|| a == CHASE_ATTACK || a == TRIPLE_LUNGE_1
 		|| a == TRIPLE_LUNGE_2
 		|| a == TRIPLE_LUNGE_3
 		|| a == BITE_ATTACK
 		|| a == MOVE_WANTS_TO_BITE
 		|| a == MOVE_WANTS_TO_TRIPLE_RUSH
 		|| a == BITE_RECOVER
-		|| a == MOVE_TO_ORB_ATTACK; //bite attack temp here
+		|| a == MOVE_TO_ORB_ATTACK_1
+		|| a == MOVE_TO_ORB_ATTACK_2
+		|| a == MOVE_TO_ORB_ATTACK_3; //bite attack temp here
 }
 
 void Gator::SeqWait()
@@ -1292,6 +1384,7 @@ void Gator::SeqWait()
 	{
 		orbPool[i].Reset();
 	}
+	timeOrbPool.Reset();
 	superOrbPool.Reset();
 	SetCurrPosInfo(startPosInfo);
 	enemyMover.currPosInfo = currPosInfo;
@@ -1369,6 +1462,8 @@ void Gator::EnemyDraw(sf::RenderTarget *target)
 	{
 		orbPool[i].Draw(target);
 	}
+
+	timeOrbPool.Draw(target);
 	
 	superOrbPool.Draw(target);
 	DrawSprite(target, sprite);
@@ -1421,4 +1516,9 @@ void Gator::SetFromBytes(unsigned char *bytes)
 	//fireCounter = d.fireCounter;
 
 	bytes += sizeof(MyData);
+}
+
+int Gator::GetNumSimulationFramesRequired()
+{
+	return 0;
 }

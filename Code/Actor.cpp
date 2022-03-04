@@ -20763,7 +20763,8 @@ Actor::HitResult Actor::CheckIfImHitByEnemy( void *hitter, CollisionBody *hitBod
 			return HitResult::MISS;
 		}
 
-		AddRecentHitter(hitter);
+		if( hitBody->hitboxInfo != NULL && !hitBody->hitboxInfo->sensor )
+			AddRecentHitter(hitter);
 
 
 		if (IsInvincible()

@@ -198,6 +198,7 @@ void GatorWaterOrbPool::EndCircle()
 
 	followTarget = NULL;
 	followOffset = V2d();
+	chaseTarget = NULL;
 
 	circleVel = V2d(0, 0);
 
@@ -231,22 +232,22 @@ bool GatorWaterOrbPool::CanThrow()
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bs = bulletVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			return true;
 		}
 	}
 }
 
-GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dir, int orbType )
+GatorWaterOrb * GatorWaterOrbPool::Throw(V2d &pos, V2d &dest, int orbType )
 {
 	GatorWaterOrb *bs = NULL;
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bs = bulletVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
-			bs->Throw(pos, dir, orbType);
+			bs->Throw(pos, dest, orbType);
 			break;
 		}
 	}
@@ -259,7 +260,7 @@ void GatorWaterOrbPool::Redirect(V2d &vel)
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bs = bulletVec[i];
-		if (bs->spawned )
+		if (bs->active)
 		{
 			bs->Redirect(vel);
 		}
@@ -655,13 +656,22 @@ void GatorWaterOrb::CreateForCircle(V2d &pos, double orbRadius,
 
 	orbType = p_orbType;
 
+	if (orbType == NODE_GROW_SLOW)
+	{
+		hitboxInfo->sensor = true;
+	}
+	else
+	{
+		hitboxInfo->sensor = false;
+	}
+
 	flySpeed = 10;
 
 	currRadius = orbRadius;
 }
 
 
-void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
+void GatorWaterOrb::Throw(V2d &pos, V2d &dest, int p_orbType )
 {
 	Reset();
 	sess->AddEnemy(this);
@@ -677,14 +687,23 @@ void GatorWaterOrb::Throw(V2d &pos, V2d &dir, int p_orbType )
 
 	orbType = p_orbType;
 
+	if (orbType == NODE_GROW_HIT)
+	{
+		hitboxInfo->sensor = false;
+	}
+	else
+	{
+		hitboxInfo->sensor = true;
+	}
+
 	flySpeed = 10;
 
 	quadraticMove->SetFrameDuration(60);
 	quadraticMove->A = pos;
 	quadraticMove->B = sess->GetPlayerPos(0);
-	quadraticMove->C = dir;
+	quadraticMove->C = dest;
 	quadraticMove->start = pos;
-	quadraticMove->end = dir;
+	quadraticMove->end = dest;
 	quadraticMoveSeq.Reset();
 
 	currRadius = ts->tileWidth / 2;
@@ -698,6 +717,11 @@ void GatorWaterOrb::Redirect(V2d &vel)
 	frame = 0;
 	framesToLive = 180;
 	growthFactor = 0;
+}
+
+void GatorWaterOrb::SetTimeToLive(int f)
+{
+	framesToLive = f;
 }
 
 void GatorWaterOrb::FrameIncrement()

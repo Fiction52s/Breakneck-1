@@ -26,7 +26,9 @@ struct Gator : Boss, Summoner, BonusHandler,
 		SUMMON,
 		MOVE_WANTS_TO_BITE,
 		MOVE_WANTS_TO_TRIPLE_RUSH,
-		MOVE_TO_ORB_ATTACK,
+		MOVE_TO_ORB_ATTACK_1,
+		MOVE_TO_ORB_ATTACK_2,
+		MOVE_TO_ORB_ATTACK_3,
 		BITE_ATTACK,
 		BITE_STUCK,
 		BITE_RECOVER,
@@ -37,10 +39,13 @@ struct Gator : Boss, Summoner, BonusHandler,
 		TRIPLE_LUNGE_3,
 		REDIRECT_ORBS,
 		TEST_ORBS,
-		CREATE_ORB_CIRCLE,
+		ORB_ATTACK_1,
+		ORB_ATTACK_2,
+		ORB_ATTACK_3,
 		SEQ_WAIT,
 		TEST_POST,
-		CIRCLE_ORB_STUFF,
+		TIME_ORB_ATTACK,
+		CHASE_ATTACK,
 		A_Count
 	};
 
@@ -53,14 +58,15 @@ struct Gator : Boss, Summoner, BonusHandler,
 	};
 
 	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
 	
 	int moveMode;
 
 	std::vector<V2d> nodePosAVec;
-	std::vector<int> nodeDistances;
-	std::vector<V2d> nodePosAVecSorted;
+	std::vector<V2d> nodePosBVec;
 	const static int NUM_ORB_POOLS = 3;
 	GatorWaterOrbPool orbPool[NUM_ORB_POOLS];
+	GatorWaterOrbPool timeOrbPool;
 	GatorSuperOrbPool superOrbPool;
 
 	RandomPicker orbTypePicker;
@@ -76,6 +82,8 @@ struct Gator : Boss, Summoner, BonusHandler,
 	Tileset *ts_move;
 	Tileset *ts_bite;
 
+	double currMoveSpeed;
+
 	GatorPostFightScene *postFightScene;
 
 	V2d biteRushDir;
@@ -83,6 +91,8 @@ struct Gator : Boss, Summoner, BonusHandler,
 	GameSession *myBonus;
 
 	V2d oldPlayerPos;
+
+	double orbAttack1Angle;
 
 	Gator(ActorParams *ap);
 	~Gator();
@@ -97,6 +107,7 @@ struct Gator : Boss, Summoner, BonusHandler,
 	void UpdateSprite();
 	void ResetEnemy();
 	void FrameIncrement();
+	int GetNumSimulationFramesRequired();
 	//void HandleRemove();
 
 	//Boss functions
@@ -113,6 +124,7 @@ struct Gator : Boss, Summoner, BonusHandler,
 	void SetupNodeVectors();
 	bool IsDecisionValid(int d);
 	bool IsEnemyMoverAction(int a);
+	
 
 
 	//My functions
@@ -124,7 +136,11 @@ struct Gator : Boss, Summoner, BonusHandler,
 	void MoveTowardsPlayer();
 	void MoveAwayFromPlayer();
 
+	void ThrowTimeOrbTowardsPlayer();
+	void ThrowTimeOrbRandomly();
+
 	void SortNodePosAVec( V2d &sortPos );
+	void SortNodePosBVec(V2d &sortPos);
 	void UpdateMove();
 
 	void OrbAttack1();
