@@ -955,3 +955,8 @@ void EnemyMover::SetMoveType(MoveType mt)
 	actionFrame = 0;
 	targetPI = NULL;
 }
+
+void EnemyMover::Stop()
+{
+	SetMoveType(NONE);
+}

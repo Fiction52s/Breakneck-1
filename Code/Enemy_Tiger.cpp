@@ -30,17 +30,15 @@ Tiger::Tiger(ActorParams *ap)
 	//spinTurretSummonGroup(this, new BasicAirEnemyParams(sess->types["tigerspinturret"], 1),
 	//	4, 4, 1, true),
 	targetGroup(this, new BasicAirEnemyParams(sess->types["tigertarget"], 1),
-		3, 3, 1, true),
+		6, 6, 1, true),
 	nodeGroupA(2)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE_GRIND, 0, 0);
 
-	StageSetup(4, 4);
+	StageSetup(8, 2);
 
 	level = ap->GetLevel();
-
-	moveOnlyMaxFrames = 130;
 
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
@@ -65,6 +63,9 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[MOVE_GRIND] = 8;
 	animFactor[MOVE_GRIND] = 3;
 
+	actionLength[FLAME_STUN] = 180;
+	animFactor[FLAME_STUN] = 1;
+
 	ts_move = GetSizedTileset("Bosses/Tiger/tiger_walk_256x160.png");
 	ts_bulletExplode = GetSizedTileset("FX/bullet_explode2_64x64.png");
 	ts_grind = GetSizedTileset("Bosses/Tiger/tiger_grind_256x256.png");
@@ -80,21 +81,13 @@ Tiger::Tiger(ActorParams *ap)
 
 	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
 	stageMgr.AddActiveOption(0, START_GRIND, 2);
-	stageMgr.AddActiveOption(0, MOVE_JUMP, 2);
+	stageMgr.AddActiveOption(0, JUMP_SQUAT, 2);
 	stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
+	stageMgr.AddActiveOption(0, SUMMON, 2);
 
-	//stageMgr.AddActiveOption(0, MOVE_RUSH, 2);
-	//stageMgr.AddActiveOption(0, SUMMON, 2);
-	//stageMgr.AddActiveOption(0, THROW_SPINTURRET, 2);
-
-	stageMgr.AddActiveOption(1, START_GRIND, 2);
-	stageMgr.AddActiveOption(1, MOVE_JUMP, 2);
-
-	stageMgr.AddActiveOption(2, START_GRIND, 2);
-	stageMgr.AddActiveOption(2, MOVE_JUMP, 2);
-
-	stageMgr.AddActiveOption(3, START_GRIND, 2);
-	stageMgr.AddActiveOption(3, MOVE_JUMP, 2);
+	stageMgr.AddActiveOptionToStages(0, START_GRIND, 2);
+	stageMgr.AddActiveOptionToStages(0, JUMP_SQUAT, 2);
+	stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
@@ -152,6 +145,8 @@ void Tiger::ResetEnemy()
 
 	currChargeLoopFrame = 0;
 
+	moveOnlyMaxFrames = 130;
+
 	if (sess->preLevelScene == NULL) //fight testing
 	{
 		CameraShot *cs = sess->cameraShotMap["fightcam"];
@@ -161,9 +156,13 @@ void Tiger::ResetEnemy()
 		}
 	}
 
+	numFlamesHitBy = 0;
+
 	lastTargetDestroyedPos = V2d(0, 0);
 
 	BossReset();
+
+	currMaxTargets = 3;
 
 	facingRight = true;
 
@@ -192,6 +191,19 @@ bool Tiger::TryComboMove(V2d &comboPos, int comboMoveDuration,
 
 int Tiger::ChooseActionAfterStageChange()
 {
+	if (stageMgr.currStage == 2)
+	{
+		moveOnlyMaxFrames = 30;
+	}
+	else if (stageMgr.currStage == 2)
+	{
+		moveOnlyMaxFrames = 20;
+	}
+	else if (stageMgr.currStage == 3)
+	{
+		moveOnlyMaxFrames = 90;
+	}
+
 	return Boss::ChooseActionAfterStageChange();
 }
 
@@ -214,7 +226,7 @@ void Tiger::ActionEnded()
 	switch (action)
 	{
 	case WAIT:
-	case JUMP_SQUAT:
+	case JUMP_LAND:
 	case SUMMON:
 	case THROW_SPINTURRET:
 	case SUMMON_FLAME_TARGETS:
@@ -265,9 +277,9 @@ void Tiger::ActionEnded()
 		SetAction(JUMP_LAND);
 		break;
 	}
-	case JUMP_LAND:
+	case JUMP_SQUAT:
 	{
-		SetAction(JUMP_SQUAT);
+		SetAction(MOVE_JUMP);
 		break;
 	}
 	case START_GRIND:
@@ -275,6 +287,16 @@ void Tiger::ActionEnded()
 		SetAction(MOVE_GRIND);
 		break;
 	}
+	case FLAME_STUN:
+	{
+		SetAction(MOVE_JUMP);
+		//Decide();
+		break;
+	}
+	/*case FLAME_STUN_AIR:
+	{
+		if( frame <= actionLength[FLAME_STUN_GROUND] * animFactor[FLAME_STUN_GROUND])
+	}*/
 	}
 }
 
@@ -291,6 +313,7 @@ void Tiger::HandleAction()
 	}
 	case MOVE_GRIND:
 	{
+		SetAction(MOVE_JUMP);
 		/*double dist = PlayerDist();
 		if (framesSinceRush > 60 && dist > 500 && dist < 2000)
 		{
@@ -320,6 +343,9 @@ void Tiger::HandleAction()
 		{
 			snakePool.Throw(TigerGrindBullet::GB_REGULAR_CW, GetPosition(), PlayerDir());
 		}
+
+
+		
 		break;
 	}
 	}
@@ -377,10 +403,22 @@ void Tiger::StartAction()
 	}
 	case MOVE_JUMP:
 	{
+		double jumpHeight = 200;
+
+		/*if (enemyMover.currPosInfo.ground != NULL
+			&& enemyMover.currPosInfo.GetEdge()->Normal().y > 0)
+		{
+			jumpHeight = 1;
+		}*/
+
+
 		enemyMover.currPosInfo.SetAerial();
 		currPosInfo.SetAerial();
 		PoiInfo *node = nodeGroupA.AlwaysGetNextNode();
-		enemyMover.SetModeNodeProjectile(node->pos, V2d(0, 1.5), 200);
+
+		
+
+		enemyMover.SetModeNodeProjectile(node->pos, V2d(0, 1.5), jumpHeight);
 		enemyMover.SetDestNode(node);
 
 		if (node->pos.x >= GetPosition().x)
@@ -462,10 +500,12 @@ void Tiger::StartAction()
 	{
 		moveOnlyFrames = 0;
 		nodeGroupC.pickers[0].ShuffleActiveOptions();
-		for (int i = 0; i < 3; ++i)
+		for (int i = 0; i < currMaxTargets; ++i)
 		{
 			targetGroup.Summon();
 		}
+
+		numFlamesHitBy = 0;
 		break;
 	}
 	case HEAT_FLAME_TARGETS:
@@ -483,6 +523,11 @@ void Tiger::StartAction()
 			}
 			
 		}
+	}
+	case FLAME_STUN:
+	{
+		enemyMover.Stop();
+		break;
 	}
 		
 
@@ -547,10 +592,7 @@ void Tiger::FrameIncrement()
 
 	if ((action == MOVE_GRIND || action == MOVE_JUMP) && moveOnlyFrames >= 0)
 	{
-		if (moveOnlyFrames >= 0)
-		{
-			++moveOnlyFrames;
-		}
+		++moveOnlyFrames;
 	}
 
 	if (action == GATHER_ENERGY_LOOP)
@@ -611,6 +653,8 @@ void Tiger::StartFight()
 
 void Tiger::UpdateSprite()
 {
+	sprite.setColor(Color::White);
+
 	if (action == START_GRIND)
 	{
 		sprite.setTexture(*ts_grind->texture);
@@ -636,6 +680,12 @@ void Tiger::UpdateSprite()
 	{
 		sprite.setTexture(*ts_roar->texture);
 		ts_roar->SetSubRect(sprite, frame / animFactor[GATHER_ENERGY_END] + 18, !facingRight);
+	}
+	else if (action == FLAME_STUN )
+	{
+		sprite.setTexture(*ts_roar->texture);
+		ts_roar->SetSubRect(sprite, 0, !facingRight);
+		sprite.setColor(Color::Red);
 	}
 	else
 	{
@@ -806,4 +856,27 @@ void Tiger::SetFromBytes(unsigned char *bytes)
 
 
 	bytes += sizeof(MyData);
+}
+
+int Tiger::GetNumSimulationFramesRequired()
+{
+	return 0;
+}
+
+void Tiger::HitWithFlame()
+{
+	numFlamesHitBy++;
+
+	if (numFlamesHitBy == currMaxTargets)
+	{
+		SetAction(FLAME_STUN);
+		/*if (action == MOVE_JUMP)
+		{
+			SetAction(FLAME_STUN_AIR);
+		}
+		else
+		{
+			SetAction(FLAME_STUN_GROUND);
+		}*/
+	}
 }

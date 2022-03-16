@@ -49,7 +49,7 @@ GrindFire * GrindFirePool::Create( int type, V2d &pos, Edge *ground, double quan
 	for (int i = 0; i < numFires; ++i)
 	{
 		bs = fireVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			bs->Create( type, pos, ground, quant );
 			break;
@@ -230,7 +230,7 @@ TigerGrindBullet * TigerGrindBulletPool::Throw( int type, V2d &pos, V2d &dir)
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bs = bulletVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			bs->Throw(type, pos, dir);
 			break;
@@ -245,7 +245,7 @@ TigerGrindBullet * TigerGrindBulletPool::ThrowAt(int type, V2d &pos, PoiInfo *de
 	for (int i = 0; i < numBullets; ++i)
 	{
 		bs = bulletVec[i];
-		if (!bs->spawned)
+		if (!bs->active)
 		{
 			bs->ThrowAt(type, pos, dest);
 			break;

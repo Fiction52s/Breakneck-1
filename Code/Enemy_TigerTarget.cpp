@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_TigerTarget.h"
 #include "Actor.h"
+#include "Enemy_Tiger.h"
 
 using namespace std;
 using namespace sf;
@@ -450,6 +451,9 @@ void TigerTarget::ComboHit()
 		action = EXPLODE;
 		frame = 0;
 		sess->PlayerRemoveActiveComboer(comboObj);
+		Tiger *t = (Tiger*)tiger;
+		t->HitWithFlame();
+		
 		//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 	}
 }

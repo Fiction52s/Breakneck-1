@@ -114,6 +114,7 @@ struct EnemyMover
 		sf::Color c);
 	void SetModeWait(int frames);
 	void SetMoveType(MoveType mt);
+	void Stop();
 	void SetModeSwing(
 		V2d &p_swingAnchor, V2d &startPos,
 		double endAngle, double startSpeed);

@@ -34,6 +34,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		SEQ_WAIT,
 		SUMMON_FLAME_TARGETS,
 		HEAT_FLAME_TARGETS,
+		FLAME_STUN,
 		A_Count
 	};
 
@@ -67,6 +68,11 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	NodeGroup nodeGroupC;
 	NodeGroup nodeGroupGrind;
 
+
+	int numFlamesHitBy;
+	int currMaxTargets;
+
+
 	V2d lastTargetDestroyedPos;
 
 	Tiger(ActorParams *ap);
@@ -89,13 +95,14 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		double rayPortion);
 	void FrameIncrement();
 	void DrawMinimap(sf::RenderTarget * target);
+	int GetNumSimulationFramesRequired();
+	int ChooseActionAfterStageChange();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,
 		int moveDurationBeforeStartNextAction,
 		V2d &comboOffset);
 	void HandleSummonedChildRemoval(Enemy *e);
-	int ChooseActionAfterStageChange();
 	void ActivatePostFightScene();
 	void ActionEnded();
 	void HandleAction();
@@ -104,11 +111,13 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 	void SetupNodeVectors();
 	bool IsDecisionValid(int d);
 	bool IsEnemyMoverAction(int a);
+	
 
 	//My functions
 	void SeqWait();
 	void StartFight();
 	void LoadParams();
+	void HitWithFlame();
 
 	//Rollback
 	struct MyData : StoredEnemyData

@@ -24,6 +24,8 @@ struct Gator : Boss, Summoner, BonusHandler,
 		COMBOMOVE,
 		MOVE,
 		SUMMON,
+		THROW_TIME_ORB,
+		THROW_TIME_ORB_AND_MOVE,
 		MOVE_WANTS_TO_BITE,
 		MOVE_WANTS_TO_TRIPLE_RUSH,
 		MOVE_TO_ORB_ATTACK_1,
@@ -61,6 +63,9 @@ struct Gator : Boss, Summoner, BonusHandler,
 	NodeGroup nodeGroupB;
 	
 	int moveMode;
+
+	int timeOrbReps;
+	int currTimeOrbRep;
 
 	std::vector<V2d> nodePosAVec;
 	std::vector<V2d> nodePosBVec;

@@ -18,7 +18,7 @@ Gator::Gator(ActorParams *ap)
 	SetNumActions(A_Count);
 	SetEditorActions(MOVE, 0, 0);
 
-	StageSetup(8, 2);
+	StageSetup(8, 4);
 
 	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 	ts_bite = GetSizedTileset("Bosses/Gator/gator_dash_512x320.png");
@@ -32,7 +32,7 @@ Gator::Gator(ActorParams *ap)
 	actionLength[BITE_ATTACK] = 20;
 	animFactor[BITE_ATTACK] = 1;
 
-	actionLength[BITE_STUCK] = 30;
+	actionLength[BITE_STUCK] = 60;
 	animFactor[BITE_STUCK] = 1;
 
 	actionLength[ATTACK] = 10;
@@ -48,6 +48,12 @@ Gator::Gator(ActorParams *ap)
 	actionLength[TIME_ORB_ATTACK] = 90;
 	animFactor[TIME_ORB_ATTACK] = 1;
 
+	actionLength[THROW_TIME_ORB] = 40;
+	animFactor[THROW_TIME_ORB] = 1;
+
+	actionLength[THROW_TIME_ORB_AND_MOVE] = 40;
+	animFactor[THROW_TIME_ORB_AND_MOVE] = 1;
+
 	postFightScene = NULL;
 
 	redirectRate = 20;
@@ -55,11 +61,61 @@ Gator::Gator(ActorParams *ap)
 	orbTypePicker.AddActiveOption(0, 2);
 	orbTypePicker.AddActiveOption(1, 2);
 
-	stageMgr.AddActiveOptionToStages(0, MOVE_WANTS_TO_BITE, 2);
-	stageMgr.AddActiveOptionToStages(0, TIME_ORB_ATTACK, 2);
+
+	stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
+	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_2, 2);
+	//stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
+	/*stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_2, 2);
+	stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_3, 2);
+	stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);*/
+
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_1, 2);
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_2, 2);
+	stageMgr.AddActiveOption(1, MOVE_TO_ORB_ATTACK_3, 2);
+	stageMgr.AddActiveOption(1, MOVE_WANTS_TO_BITE, 2);
+
+	stageMgr.AddActiveOptionToStages(2, THROW_TIME_ORB_AND_MOVE, 2);
+	
+
+
+	//stageMgr.AddActiveOption(0, THROW_TIME_ORB, 2);
+
+	
+
+	stageMgr.AddActiveOption(2, TIME_ORB_ATTACK, 2);
+
+	stageMgr.AddActiveOption(3, THROW_TIME_ORB, 2);
+	stageMgr.AddActiveOption(3, TIME_ORB_ATTACK, 2);
+	/*stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB, 2);
 	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_1, 2);
 	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_2, 2);
 	stageMgr.AddActiveOptionToStages(0, MOVE_TO_ORB_ATTACK_3, 2);
+	stageMgr.AddActiveOptionToStages(0, TIME_ORB_ATTACK, 2);
+	stageMgr.AddActiveOptionToStages(0, MOVE_WANTS_TO_BITE, 2);*/
+
+	//stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB_AND_MOVE, 2);
+
+	//stageMgr.AddActiveOptionToStages(0, THROW_TIME_ORB, 2);
+	//stageMgr.AddActiveOption(0, THROW_TIME_ORB, 2);
+	//stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK_2, 2);
+	//stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);
+
+	//stageMgr.AddActiveOption(0, THROW_TIME_ORB, 2);
+	//stageMgr.AddActiveOption(0, MOVE_WANTS_TO_BITE, 2);
+	
+	/*stageMgr.AddActiveOptionToStages(1, MOVE_WANTS_TO_BITE, 2);
+
+	stageMgr.AddActiveOptionToStages(2, MOVE_TO_ORB_ATTACK_3, 2);
+
+	stageMgr.AddActiveOptionToStages(3, THROW_TIME_ORB, 2);
+
+	stageMgr.AddActiveOptionToStages(4, MOVE_TO_ORB_ATTACK_1, 2);
+
+	stageMgr.AddActiveOptionToStages(5, TIME_ORB_ATTACK, 2);*/
+
+	
+	
+	
 
 	//stageMgr.AddActiveOption(0, MOVE_TO_ORB_ATTACK, 2);
 	//stageMgr.AddActiveOption(0, CIRCLE_ORB_STUFF, 2);
@@ -349,6 +405,17 @@ void Gator::ActionEnded()
 {
 	switch (action)
 	{
+	case THROW_TIME_ORB:
+	{
+		Decide();
+		break;
+	}
+	case THROW_TIME_ORB_AND_MOVE:
+	{
+		//currMoveSpeed = 20;
+		SetAction(MOVE_WANTS_TO_BITE);
+		break;
+	}
 	case TIME_ORB_ATTACK:
 	{
 		SetAction(CHASE_ATTACK);
@@ -410,7 +477,8 @@ void Gator::ActionEnded()
 		SetNextComboAction();
 		break;
 	case CHASE_ATTACK:
-		Decide();
+		Wait(30);
+		//Decide();
 		//SetAction(BITE_ATTACK);
 		break;
 	case TRIPLE_LUNGE_1:
@@ -455,7 +523,14 @@ void Gator::ActionEnded()
 	}
 	case MOVE_WANTS_TO_BITE:
 	{
-		SetAction(MOVE_WANTS_TO_BITE);
+		if (prevAction == THROW_TIME_ORB_AND_MOVE)
+		{
+			Decide();
+		}
+		else
+		{
+			SetAction(MOVE_WANTS_TO_BITE);
+		}
 		//Decide();
 		//Wait(10);
 		break;
@@ -487,6 +562,31 @@ void Gator::StartAction()
 {
 	switch (action)
 	{
+	case THROW_TIME_ORB:
+	{
+		V2d testPos = nodeGroupB.AlwaysGetNextNode()->pos;
+		//SortNodePosBVec(sess->GetPlayerPos(0));
+		GatorWaterOrb *orb = timeOrbPool.Throw(GetPosition(), testPos, 1);
+		orb->ChangeRadiusOverTime(.5, 150);
+		orb->SetTimeToLive(60 * 6);
+		break;
+	}
+	case THROW_TIME_ORB_AND_MOVE:
+	{
+		SortNodePosBVec(sess->GetPlayerPos(0));
+		GatorWaterOrb *orb = timeOrbPool.Throw(GetPosition(), nodePosBVec[0], 1);
+		orb->ChangeRadiusOverTime(.5, 150);
+		orb->SetTimeToLive(360 * 2);
+		enemyMover.Stop();
+		/*orb = timeOrbPool.Throw(GetPosition(), nodePosBVec[1], 1);
+		orb->ChangeRadiusOverTime(.5, 150);
+		orb->SetTimeToLive(360 * 2);
+
+		orb = timeOrbPool.Throw(GetPosition(), nodePosBVec[2], 1);
+		orb->ChangeRadiusOverTime(.5, 150);
+		orb->SetTimeToLive(360 * 2);*/
+		break;
+	}
 	case TIME_ORB_ATTACK:
 	{
 		//TimeOrbAttack1();
@@ -494,22 +594,28 @@ void Gator::StartAction()
 	}
 	case MOVE_TO_ORB_ATTACK_1:
 	{
-		currMoveSpeed = 20;
-		MoveRandomly();
+		currMoveSpeed = 10;
+		//currMoveSpeed = 1;
+		MoveAwayFromPlayer();
+		//MoveRandomly();
 		//moveMode = MM_RANDOM;
 		break;
 	}
 	case MOVE_TO_ORB_ATTACK_2:
 	{
-		currMoveSpeed = 20;
-		MoveRandomly();
+		currMoveSpeed = 10;
+		//MoveRandomly();
+		MoveAwayFromPlayer();
+		//MoveAwayFromPlayer();
 		//moveMode = MM_RANDOM;
 		break;
 	}
 	case MOVE_TO_ORB_ATTACK_3:
 	{
-		currMoveSpeed = 20;
-		MoveRandomly();
+		currMoveSpeed = 10;
+		//currMoveSpeed = 20;
+		//MoveRandomly();
+		MoveAwayFromPlayer();
 		//moveMode = MM_RANDOM;
 		break;
 	}
@@ -614,13 +720,31 @@ void Gator::StartAction()
 		}
 		break;
 	}
+	case ORB_ATTACK_1:
+	{
+		//currMoveSpeed = 4;
+		//MoveTowardsPlayer();
+		MoveRandomly();
+		break;
+	}
 	case ORB_ATTACK_2:
 	{
+		//currMoveSpeed = 4;
+		//MoveTowardsPlayer();
+		MoveRandomly();
 		//MoveTowardsPlayer();
 		//moveMode = MM_RANDOM;
 		//moveMode = MM_APPROACH;
 		break;
 	}
+	case ORB_ATTACK_3:
+	{
+		//currMoveSpeed = 4;
+		//MoveTowardsPlayer();
+		MoveRandomly();
+		break;
+	}
+
 	case BITE_ATTACK:
 	{
 		double dist = 4000;
@@ -654,10 +778,7 @@ void Gator::StartAction()
 	}
 	case MOVE_WANTS_TO_BITE:
 	{
-		SortNodePosBVec(sess->GetPlayerPos(0));
-		GatorWaterOrb *orb = timeOrbPool.Throw(GetPosition(), nodePosBVec[0], 1);
-		orb->ChangeRadiusOverTime(.5, 150);
-		orb->SetTimeToLive(360);
+		currMoveSpeed = 20;
 		MoveTowardsPlayer();
 		break;
 	}
@@ -763,6 +884,21 @@ void Gator::HandleAction()
 		TimeOrbAttack1();
 		break;
 	}
+	/*case MOVE_TO_ORB_ATTACK_1:
+	{
+		OrbAttack1();
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_2:
+	{
+		OrbAttack2();
+		break;
+	}
+	case MOVE_TO_ORB_ATTACK_3:
+	{
+		OrbAttack3();
+		break;
+	}*/
 	case ORB_ATTACK_1:
 	{
 		if (frame > 0 && orbPool[0].GetNumActive() == 0
@@ -773,6 +909,7 @@ void Gator::HandleAction()
 			break;
 		}
 		OrbAttack1();
+		MoveTowardsPlayer();
 		break;
 	}
 	case ORB_ATTACK_2:
@@ -785,6 +922,7 @@ void Gator::HandleAction()
 			break;
 		}
 		OrbAttack2();
+		MoveTowardsPlayer();
 		break;
 	}
 	case ORB_ATTACK_3:
@@ -797,6 +935,7 @@ void Gator::HandleAction()
 			break;
 		}
 		OrbAttack3();
+		MoveTowardsPlayer();
 		break;
 	}
 	case MOVE_NODE_LINEAR:
@@ -949,9 +1088,11 @@ void Gator::OrbAttack1_1()
 	}*/
 	else if (frame == 120)
 	{
-		pool.SetCircleTimeToLive(360);
+		//pool.SetCircleTimeToLive(360);
+		pool.SetCircleTimeToLive(240);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 2);//5);//15);
+		//pool.Chase(&targetPlayer->position, 1.0, 2);//5);//15);
+		pool.Chase(&targetPlayer->position, 1.0, 10);//5);//15);
 	}
 }
 
@@ -984,9 +1125,11 @@ void Gator::OrbAttack1_2()
 	}
 	else if (frame == 120)
 	{
-		pool.SetCircleTimeToLive(360);
+		//pool.SetCircleTimeToLive(360);
+		pool.SetCircleTimeToLive(240);
 		pool.EndCircle();
-		pool.Chase(&targetPlayer->position, 1.0, 1);//10);
+		//pool.Chase(&targetPlayer->position, 1.0, 1);//10);
+		pool.Chase(&targetPlayer->position, 1.0, 7);//10);
 	}
 }
 
@@ -1356,6 +1499,11 @@ bool Gator::IsDecisionValid(int d)
 	{
 		return false;
 	}
+	else if (d == THROW_TIME_ORB && prevDecision == THROW_TIME_ORB)
+	{
+		return false;
+	}
+	
 
 	return true;
 }
