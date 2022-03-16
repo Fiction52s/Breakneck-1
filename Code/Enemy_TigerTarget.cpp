@@ -17,17 +17,17 @@ TigerTarget::TigerTarget(ActorParams *ap)
 
 	SetNumActions(A_Count);
 	//SetEditorActions(NEUTRAL, NEUTRAL, 0);
-	SetEditorActions(FLAME_LEVEL_1, FLAME_LEVEL_1, 0);
+	SetEditorActions(BURN_LOOP_HEAT_UP, BURN_LOOP_HEAT_UP, 0);
 
 	actionLength[START_BURN] = 4;
 	animFactor[START_BURN] = 3;
 
 
-	actionLength[FLAME_LEVEL_1] = 15;
-	animFactor[FLAME_LEVEL_1] = 3;
+	actionLength[BURN_LOOP_HEAT_UP] = 15;
+	animFactor[BURN_LOOP_HEAT_UP] = 3;
 
-	actionLength[FLAME_LEVEL_2] = 14;
-	animFactor[FLAME_LEVEL_2] = 3;
+	actionLength[BURN_LOOP_2] = 14;
+	animFactor[BURN_LOOP_2] = 3;
 	//actionLength[NEUTRAL] = 2;
 	//actionLength[HEAT_UP] = 60;
 	//actionLength[SIMMER] = 10;
@@ -44,6 +44,8 @@ TigerTarget::TigerTarget(ActorParams *ap)
 	actionLength[EXPLODE] = 10;
 
 	maxHitByPlayerFrames = 60;
+
+	burnBeforeReadyFrames = 60;
 
 
 	ts_bigFlame = GetSizedTileset("Bosses/Tiger/tiger_fire_1_192x192.png");
@@ -144,6 +146,8 @@ void TigerTarget::ResetEnemy()
 
 	currHeatLevel = 0;
 
+	currBurnFrame = 0;
+
 	speed = baseSpeed;
 
 	currHitByPlayerFrame = 0;
@@ -161,7 +165,7 @@ void TigerTarget::ActionEnded()
 		switch (action)
 		{
 		case START_BURN:
-			action = FLAME_LEVEL_1;
+			action = BURN_LOOP_HEAT_UP;
 			break;
 		//case HEAT_UP:
 		//	action = SIMMER;
@@ -188,6 +192,11 @@ void TigerTarget::ProcessState()
 	double dist = PlayerDist();
 	V2d dir = PlayerDir();
 
+	if (action == BURN_LOOP_HEAT_UP && currBurnFrame >= burnBeforeReadyFrames)
+	{
+		action = BURN_LOOP_2;
+		frame = 0;
+	}
 	/*switch (action)
 	{
 	case NEUTRAL:
@@ -246,54 +255,40 @@ void TigerTarget::UpdateEnemyPhysics()
 }
 
 
-void TigerTarget::HeatUp()
+void TigerTarget::AttackPlayer()
 {
-	if (action == HIT_BY_PLAYER || action == ATTACK_PLAYER || action == ATTACK_TIGER)
+	//if (action == HIT_BY_PLAYER || action == ATTACK_PLAYER || action == ATTACK_TIGER)
+	//	return;
+
+	if (action != BURN_LOOP_2)
+	{
+		assert(0);
 		return;
+	}
 
-	if (action == START_BURN || action == FLAME_LEVEL_1)
-	{
-		action = FLAME_LEVEL_2;
-		frame = 0;
-	}
-	else if( action == FLAME_LEVEL_2 )
-	{
-		action = ATTACK_PLAYER;
-		speed = baseSpeed;
-		frame = 0;
-		DefaultHitboxesOn();
-		HurtboxesOff();
-	}
-	/*if (action == NEUTRAL)
-	{
-		currHeatLevel = 0;
-		action = HEAT_UP;
-		frame = 0;
-	}
-	else
-	{
-		assert(action == HEAT_UP || action == SIMMER );
-		++currHeatLevel;
+	action = ATTACK_PLAYER;
+	speed = baseSpeed;
+	frame = 0;
+	DefaultHitboxesOn();
+	HurtboxesOff();
+}
 
-		if (currHeatLevel == 1)
-		{
-			action = ATTACK_PLAYER;
-			speed = baseSpeed;
-			frame = 0;
-			DefaultHitboxesOn();
-			HurtboxesOff();
-		}
-		else
-		{
-			action = HEAT_UP;
-			frame = 0;
-		}
-	}*/
+bool TigerTarget::IsReadyToThrow()
+{
+	return active && action == BURN_LOOP_2;
+}
+
+void TigerTarget::SetBurnFrames(int f)
+{
+	burnBeforeReadyFrames = f;
 }
 
 void TigerTarget::UpdateSprite()
 {
 	int trueFrame;
+
+	sprite.setScale(scale, scale);
+
 	switch (action)
 	{
 	case START_BURN:
@@ -302,17 +297,19 @@ void TigerTarget::UpdateSprite()
 		ts_bigFlame->SetSubRect(sprite, frame / animFactor[START_BURN]);
 		break;
 	}
-	case FLAME_LEVEL_1:
+	case BURN_LOOP_HEAT_UP:
 	{
 		ts_bigFlame->SetSpriteTexture(sprite);
-		ts_bigFlame->SetSubRect(sprite, frame / animFactor[FLAME_LEVEL_1] 
+		ts_bigFlame->SetSubRect(sprite, frame / animFactor[BURN_LOOP_HEAT_UP]
 			+ actionLength[START_BURN]);
+
+		//sprite.setScale(scale, scale);
 		break;
 	}
-	case FLAME_LEVEL_2:
+	case BURN_LOOP_2:
 	{
 		ts_smallFlame->SetSpriteTexture(sprite);
-		ts_smallFlame->SetSubRect(sprite, frame / animFactor[FLAME_LEVEL_2]);
+		ts_smallFlame->SetSubRect(sprite, frame / animFactor[BURN_LOOP_2]);
 		break;
 	}
 	case ATTACK_PLAYER:
@@ -477,5 +474,10 @@ void TigerTarget::FrameIncrement()
 			action = ATTACK_TIGER;
 			frame = 0;
 		}
+	}
+
+	if (action == START_BURN || action == BURN_LOOP_HEAT_UP)
+	{
+		++currBurnFrame;
 	}
 }

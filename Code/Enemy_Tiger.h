@@ -33,7 +33,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 		THROW_SPINTURRET,
 		SEQ_WAIT,
 		SUMMON_FLAME_TARGETS,
-		HEAT_FLAME_TARGETS,
+		LAUNCH_FLAME_TARGETS,
 		FLAME_STUN,
 		A_Count
 	};
@@ -47,6 +47,7 @@ struct Tiger : Boss, LauncherEnemy, Summoner,
 
 	int moveOnlyFrames;
 	int moveOnlyMaxFrames;
+	int defaultMoveOnlyFrames;
 
 	Tileset *ts_move;
 	Tileset *ts_bulletExplode;

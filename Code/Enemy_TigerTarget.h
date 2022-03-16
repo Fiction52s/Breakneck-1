@@ -9,11 +9,8 @@ struct TigerTarget : Enemy
 	enum Action
 	{
 		START_BURN,
-		FLAME_LEVEL_1,
-		FLAME_LEVEL_2,
-		//NEUTRAL,
-		//HEAT_UP,
-		//SIMMER,
+		BURN_LOOP_HEAT_UP,
+		BURN_LOOP_2,
 		ATTACK_PLAYER,
 		HIT_BY_PLAYER,
 		ATTACK_TIGER,
@@ -37,6 +34,10 @@ struct TigerTarget : Enemy
 	int maxHitByPlayerFrames;
 	int currHitByPlayerFrame;
 
+	int burnBeforeReadyFrames;
+
+	int currBurnFrame;
+
 	Enemy *tiger;
 
 	TigerTarget(ActorParams *ap);
@@ -44,7 +45,7 @@ struct TigerTarget : Enemy
 	void ProcessState();
 	void UpdateEnemyPhysics();
 	void IHitPlayer(int index = 0);
-	void HeatUp();
+	void AttackPlayer();
 	//void ProcessHit();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -52,6 +53,9 @@ struct TigerTarget : Enemy
 	void ComboHit();
 	bool CanComboHit( Enemy *e );
 	void FrameIncrement();
+	bool IsReadyToThrow();
+	void SetBurnFrames(int f);
+
 
 	void SetLevel(int lev);
 

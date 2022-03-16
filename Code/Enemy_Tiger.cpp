@@ -43,7 +43,7 @@ Tiger::Tiger(ActorParams *ap)
 	actionLength[SUMMON] = 60;
 	actionLength[THROW_SPINTURRET] = 60;
 	actionLength[SUMMON_FLAME_TARGETS] = 60;//180;
-	actionLength[HEAT_FLAME_TARGETS] = 60;//180;
+	actionLength[LAUNCH_FLAME_TARGETS] = 60;//180;
 	
 	actionLength[GATHER_ENERGY_START] = 9;
 	animFactor[GATHER_ENERGY_START] = 3;
@@ -79,15 +79,11 @@ Tiger::Tiger(ActorParams *ap)
 		target->tiger = this;
 	}
 
-	//stageMgr.AddActiveOption(0, CHARGE_FLAME_TARGETS, 2);
-	stageMgr.AddActiveOption(0, START_GRIND, 2);
-	stageMgr.AddActiveOption(0, JUMP_SQUAT, 2);
-	stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
-	stageMgr.AddActiveOption(0, SUMMON, 2);
 
 	stageMgr.AddActiveOptionToStages(0, START_GRIND, 2);
 	stageMgr.AddActiveOptionToStages(0, JUMP_SQUAT, 2);
 	stageMgr.AddActiveOptionToStages(0, GATHER_ENERGY_START, 2);
+	//stageMgr.AddActiveOptionToStages(0, SUMMON, 2);
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
@@ -102,6 +98,7 @@ Tiger::Tiger(ActorParams *ap)
 
 	maxChargeLoopFrames = 60;
 	
+	defaultMoveOnlyFrames = 360;
 
 	BasicCircleHurtBodySetup(64);
 	BasicCircleHitBodySetup(64);
@@ -145,7 +142,7 @@ void Tiger::ResetEnemy()
 
 	currChargeLoopFrame = 0;
 
-	moveOnlyMaxFrames = 130;
+	moveOnlyMaxFrames = defaultMoveOnlyFrames;
 
 	if (sess->preLevelScene == NULL) //fight testing
 	{
@@ -191,9 +188,14 @@ bool Tiger::TryComboMove(V2d &comboPos, int comboMoveDuration,
 
 int Tiger::ChooseActionAfterStageChange()
 {
-	if (stageMgr.currStage == 2)
+	float factor = (float)stageMgr.currStage / stageMgr.numStages;
+	moveOnlyMaxFrames = defaultMoveOnlyFrames - 160 * factor;
+
+	/*20 -> 180
+
+	if (stageMgr.currStage == 1)
 	{
-		moveOnlyMaxFrames = 30;
+		moveOnlyMaxFrames = 180;
 	}
 	else if (stageMgr.currStage == 2)
 	{
@@ -202,7 +204,7 @@ int Tiger::ChooseActionAfterStageChange()
 	else if (stageMgr.currStage == 3)
 	{
 		moveOnlyMaxFrames = 90;
-	}
+	}*/
 
 	return Boss::ChooseActionAfterStageChange();
 }
@@ -230,8 +232,15 @@ void Tiger::ActionEnded()
 	case SUMMON:
 	case THROW_SPINTURRET:
 	case SUMMON_FLAME_TARGETS:
-	case HEAT_FLAME_TARGETS:
-		Decide();
+	case LAUNCH_FLAME_TARGETS:
+		if (moveOnlyFrames >= moveOnlyMaxFrames)
+		{
+			SetAction(GATHER_ENERGY_START);
+		}
+		else
+		{
+			Decide();
+		}
 		break;
 	case COMBOMOVE:
 		SetNextComboAction();
@@ -262,7 +271,7 @@ void Tiger::ActionEnded()
 		}
 		else
 		{
-			SetAction(HEAT_FLAME_TARGETS);
+			SetAction(LAUNCH_FLAME_TARGETS);
 		}
 		
 		break;
@@ -313,7 +322,10 @@ void Tiger::HandleAction()
 	}
 	case MOVE_GRIND:
 	{
-		SetAction(MOVE_JUMP);
+		if (moveOnlyFrames >= moveOnlyMaxFrames)
+		{
+			SetAction(MOVE_JUMP);
+		}
 		/*double dist = PlayerDist();
 		if (framesSinceRush > 60 && dist > 500 && dist < 2000)
 		{
@@ -508,18 +520,18 @@ void Tiger::StartAction()
 		numFlamesHitBy = 0;
 		break;
 	}
-	case HEAT_FLAME_TARGETS:
+	case LAUNCH_FLAME_TARGETS:
 	{
 		moveOnlyFrames = 0;
 		Enemy *e;
-		TigerTarget *tt;
+		TigerTarget *tt = NULL;
 		for (int i = 0; i < targetGroup.numTotalEnemies; ++i)
 		{
 			e = targetGroup.enemies[i];
-			if (e->active)
+			tt = (TigerTarget*)e;
+			if (tt->IsReadyToThrow())
 			{
-				tt = (TigerTarget*)e;
-				tt->HeatUp();
+				tt->AttackPlayer();
 			}
 			
 		}
@@ -785,6 +797,11 @@ void Tiger::InitEnemyForSummon(SummonGroup *group,
 			summonNode = nodeGroupC.AlwaysGetNextNode();
 		}
 		e->startPosInfo.SetAerial(summonNode->pos);
+
+		TigerTarget *tt = (TigerTarget*)e;
+
+		tt->SetBurnFrames(moveOnlyMaxFrames);
+
 		//cout << "summon pos:" << summonNode->pos.x << ", " << summonNode->pos.y << endl;
 	}
 }
