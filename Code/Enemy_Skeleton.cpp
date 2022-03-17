@@ -31,8 +31,8 @@ Skeleton::Skeleton(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, SHOOT_LASER, 2);
 	//stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
 	
-	//stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
-	stageMgr.AddActiveOption(0, CHASE_MOVE, 2);
+	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
+	//stageMgr.AddActiveOption(0, CHASE_MOVE, 2);
 
 	//stageMgr.AddActiveOption(0, MOVE_OTHER, 2);
 
@@ -50,6 +50,9 @@ Skeleton::Skeleton(ActorParams *ap)
 	actionLength[JUMPSQUAT] = 2;
 	//actionLength[HOP] = 2;
 	actionLength[LAND] = 2;
+
+	actionLength[SHOOT_LASER_HOMING] = 21;
+	animFactor[SHOOT_LASER_HOMING] = 3;
 
 	actionLength[SHOOT_LASER] = 21;
 	animFactor[SHOOT_LASER] = 3;
@@ -93,8 +96,9 @@ Skeleton::Skeleton(ActorParams *ap)
 	patternTypePicker.Reset();
 	patternTypePicker.AddActiveOption(PATTERN_MOVE);
 	patternTypePicker.AddActiveOption(LASER_SPAM);
-	//patternTypePicker.AddActiveOption(SHOOT_LASER);
-	//patternTypePicker.AddActiveOption(REDIRECT_TEST);
+	patternTypePicker.AddActiveOption(SHOOT_LASER);
+	patternTypePicker.AddActiveOption(SHOOT_LASER_HOMING);
+	patternTypePicker.AddActiveOption(REDIRECT_TEST);
 
 	pattern.reserve(9);
 	patternType.reserve(9);
@@ -245,6 +249,7 @@ void Skeleton::ActionEnded()
 
 		break;
 	}
+	case SHOOT_LASER_HOMING:
 	case SHOOT_LASER:
 	{
 		if (patternIndex == numPatternMoves)
@@ -329,13 +334,18 @@ void Skeleton::HandleAction()
 				{
 					patternPreview.setFillColor(Color::Red);
 				}
+				else if (patternType[patternOrder[mult]] == SHOOT_LASER_HOMING)
+				{
+					patternPreview.setFillColor(Color::Green);
+				}
 			}
 		}
 		break;
 	}
+	case SHOOT_LASER_HOMING:
 	case SHOOT_LASER:
 	{
-		if (frame == 9 * animFactor[SHOOT_LASER] && slowCounter == 1)
+		if (frame == 9 * animFactor[action] && slowCounter == 1)
 		{
 			V2d offset = V2d(0, -extraHeight);
 			if (facingRight)
@@ -349,7 +359,13 @@ void Skeleton::HandleAction()
 			V2d shootDir = PlayerDir(offset, V2d());
 			double angChange = .1 * PI;
 
-			int shootType = 2;
+			
+			int shootType = 0;
+
+			if (action == SHOOT_LASER_HOMING)
+			{
+				shootType = 2;
+			}
 			laserPool.Throw(shootType, GetPosition() + offset,
 				shootDir);
 			/*laserPool.Throw(shootType, GetPosition() + offset,
@@ -383,7 +399,7 @@ void Skeleton::HandleAction()
 		if (slowCounter == 1)
 		{
 			int division = 10;
-			if (frame % 3 == 0 )//frame % division == 0 && frame / division < 3)
+			if (frame % 5 == 0 )//frame % division == 0 && frame / division < 3)
 			{
 				//cout << "active: " << laserPool.getnu
 				V2d offset = V2d(0, -extraHeight);
@@ -418,7 +434,7 @@ void Skeleton::HandleAction()
 	}
 	case PATTERN_MOVE:
 	{
-		if (frame % 3 == 0)//frame % division == 0 && frame / division < 3)
+		if (frame % 10 == 0)//frame % division == 0 && frame / division < 3)
 		{
 			//cout << "active: " << laserPool.getnu
 			V2d offset = V2d(0, -extraHeight);
@@ -439,8 +455,8 @@ void Skeleton::HandleAction()
 
 			//RotateCCW(shootDir, (angChange / 2) * spamCounter );
 			int shootType = 3;
-			laserPool.Throw(shootType, GetPosition() + offset,
-				shootDir);
+			//laserPool.Throw(shootType, GetPosition() + offset,
+			//	shootDir);
 
 			/*
 			for (int i = 0; i < numLasers; ++i)
@@ -550,6 +566,7 @@ void Skeleton::StartAction()
 		actionLength[PLAN_PATTERN] = patternFlickerFrames * numPatternMoves;
 		break;
 	}
+	case SHOOT_LASER_HOMING:
 	case SHOOT_LASER:
 	{
 		if (PlayerDir().x > 0)
@@ -793,6 +810,7 @@ void Skeleton::UpdateSprite()
 		sprite.setTexture(*ts_hop->texture);
 		ts_hop->SetSubRect(sprite, frame / animFactor[action] + extra, !facingRight);
 	}
+	case SHOOT_LASER_HOMING:
 	case SHOOT_LASER:
 	{
 		ts_laser->SetSpriteTexture(sprite);

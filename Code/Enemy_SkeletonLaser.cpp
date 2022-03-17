@@ -79,7 +79,9 @@ void SkeletonLaserPool::RedirectAllTowards(V2d &pos)
 	for (int i = 0; i < numLasers; ++i)
 	{
 		bs = laserVec[i];
-		if (bs->active)
+		if (bs->active && bs->laserType != SkeletonLaser::LT_NO_COLLIDE
+			&& bs->action != SkeletonLaser::REDIRECTED 
+			&& bs->action != SkeletonLaser::DISSIPATE)
 		{
 			bs->RedirectTowards(pos);
 		}
@@ -238,7 +240,7 @@ void SkeletonLaser::RedirectTowards(V2d &pos)
 	action = REDIRECTED;
 	frame = 0;
 	timeToLive = 180;
-	laserWidth = 30;
+	//laserWidth = 30;
 	surfaceMover->collisionOn = false;
 }
 
@@ -351,7 +353,7 @@ void SkeletonLaser::SetLaserTypeParams()
 	{
 		origTimeToLive = 60 * 30;
 		laserWidth = 10;
-		lengthLimit = 500;
+		lengthLimit = 1000;//1500;//500;
 		flySpeed = 30;
 		headColor = Color::Magenta;
 		tailColor = Color::Magenta;
@@ -371,9 +373,9 @@ void SkeletonLaser::SetLaserTypeParams()
 	}
 	case LT_HOME:
 	{
-		origTimeToLive = 60 * 30;
+		origTimeToLive = 60 * 15;//30;
 		laserWidth = 20;
-		lengthLimit = 2000;
+		lengthLimit = 700;//2000;
 		flySpeed = 40;
 		headColor = Color::Green;
 		tailColor = Color::Green;
