@@ -18,6 +18,7 @@ struct Skeleton : Boss, RayCastHandler
 		PLAN_PATTERN,
 		PATTERN_MOVE,
 		MOVE_WIRE_DASH,
+		DASH_RECOVER,
 		MOVE_OTHER,
 		COMBOMOVE,
 		MOVE,

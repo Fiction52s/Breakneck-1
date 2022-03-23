@@ -4,8 +4,11 @@
 #include "Boss.h"
 #include "Bullet.h"
 #include "Movement.h"
+#include "Enemy_Thorn.h"
 
 struct FinalSkeletonPostFightScene;
+struct ThornPool;
+
 
 struct GreySkeleton : Boss
 {
@@ -14,15 +17,19 @@ struct GreySkeleton : Boss
 		WAIT,
 		COMBOMOVE,
 		MOVE,
+		THORN_TEST,
 		SEQ_WAIT,
 		A_Count
 	};
 
 	NodeGroup nodeGroupA;
+	NodeGroup nodeGroupB;
 
 	Tileset *ts_move;
 
 	FinalSkeletonPostFightScene *postFightScene;
+
+	ThornPool thornPool;
 
 	GreySkeleton(ActorParams *ap);
 
@@ -33,6 +40,7 @@ struct GreySkeleton : Boss
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+	int GetNumSimulationFramesRequired();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

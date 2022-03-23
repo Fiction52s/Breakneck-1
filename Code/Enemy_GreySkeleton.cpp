@@ -6,6 +6,7 @@
 #include "Actor.h"
 #include "SequenceW7.h"
 
+
 using namespace std;
 using namespace sf;
 
@@ -22,15 +23,21 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 	sprite.setColor(Color::Green);
 
+
+	actionLength[THORN_TEST] = 300;
+	animFactor[THORN_TEST] = 1;
+
 	postFightScene = NULL;
 
-	stageMgr.AddActiveOption(0, MOVE, 2);
+	stageMgr.AddActiveOption(0, THORN_TEST, 2);
+
+	/*stageMgr.AddActiveOption(0, MOVE, 2);
 
 	stageMgr.AddActiveOption(1, MOVE, 2);
 
 	stageMgr.AddActiveOption(2, MOVE, 2);
 
-	stageMgr.AddActiveOption(3, MOVE, 2);
+	stageMgr.AddActiveOption(3, MOVE, 2);*/
 
 	LoadParams();
 
@@ -64,11 +71,26 @@ void GreySkeleton::ResetEnemy()
 {
 	facingRight = true;
 
+	
+
+	HitboxesOff();
+
+	UpdateSprite();
+
+	thornPool.Reset();
+
+	if (sess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = sess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+		}
+	}
+
 	BossReset();
 
 	StartFight();
-
-	HitboxesOff();
 
 	UpdateSprite();
 }
@@ -117,6 +139,7 @@ void GreySkeleton::ActionEnded()
 	{
 	case WAIT:
 	case MOVE:
+	case THORN_TEST:
 		Decide();
 		break;
 	}
@@ -137,6 +160,22 @@ void GreySkeleton::StartAction()
 		enemyMover.SetModeNodeLinearConstantSpeed(nodePos, CubicBezier(), 10);
 		break;
 	}
+	case THORN_TEST:
+	{
+		PoiInfo *node;
+
+		for (int i = 0; i < 3; ++i)
+		{
+			node = nodeGroupB.AlwaysGetNextNode();
+			thornPool.Throw(0, node->pos, node->edge->Normal() );
+		}
+		
+		
+		//thornPool.Throw(0, nodeGroupB.AlwaysGetNextNode()->pos, PlayerDir());
+		//thornPool.Throw(0, nodeGroupB.AlwaysGetNextNode()->pos, PlayerDir());
+		//thornPool.Throw(0, GetPosition(), PlayerDir());
+		break;
+	}
 	}
 }
 
@@ -153,6 +192,7 @@ void GreySkeleton::SetupPostFightScenes()
 void GreySkeleton::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "A"));
+	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "B"));
 }
 
 bool GreySkeleton::IsDecisionValid(int d)
@@ -219,4 +259,9 @@ void GreySkeleton::SetFromBytes(unsigned char *bytes)
 	//fireCounter = d.fireCounter;
 
 	bytes += sizeof(MyData);
+}
+
+int GreySkeleton::GetNumSimulationFramesRequired()
+{
+	return 0;
 }

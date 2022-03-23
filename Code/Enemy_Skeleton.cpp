@@ -31,6 +31,7 @@ Skeleton::Skeleton(ActorParams *ap)
 	//stageMgr.AddActiveOption(0, SHOOT_LASER, 2);
 	//stageMgr.AddActiveOption(0, GATHER_ENERGY_START, 2);
 	
+	//stageMgr.AddActiveOption(0, MOVE_WIRE_DASH, 2);
 	stageMgr.AddActiveOption(0, PLAN_PATTERN, 2);
 	//stageMgr.AddActiveOption(0, CHASE_MOVE, 2);
 
@@ -56,6 +57,9 @@ Skeleton::Skeleton(ActorParams *ap)
 
 	actionLength[SHOOT_LASER] = 21;
 	animFactor[SHOOT_LASER] = 3;
+
+	actionLength[DASH_RECOVER] = 30;
+	animFactor[DASH_RECOVER] = 1;
 
 	actionLength[REDIRECT_TEST] = 61;
 	animFactor[REDIRECT_TEST] = 1;
@@ -192,10 +196,15 @@ void Skeleton::ActionEnded()
 	switch (action)
 	{
 	case WAIT:
-	case MOVE_WIRE_DASH:
+	case DASH_RECOVER:
 	case MOVE_OTHER:
 		Decide();
 		break;
+	case MOVE_WIRE_DASH:
+	{
+		SetAction(DASH_RECOVER);
+		break;
+	}
 	case CHASE_MOVE:
 	{
 		SetAction(CHASE_MOVE);
