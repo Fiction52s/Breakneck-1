@@ -27,9 +27,17 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	actionLength[THORN_TEST] = 300;
 	animFactor[THORN_TEST] = 1;
 
+	actionLength[SHAPE_TEST] = 180;
+	animFactor[SHAPE_TEST] = 1;
+
 	postFightScene = NULL;
 
-	stageMgr.AddActiveOption(0, THORN_TEST, 2);
+	//stageMgr.AddActiveOption(0, THORN_TEST, 2);
+	stageMgr.AddActiveOption(0, SHAPE_TEST, 2);
+
+	leftHand = NULL;
+
+	rightHand = new Hand(true);
 
 	/*stageMgr.AddActiveOption(0, MOVE, 2);
 
@@ -51,6 +59,12 @@ GreySkeleton::~GreySkeleton()
 {
 	if (postFightScene != NULL)
 		delete postFightScene;
+
+	if (leftHand != NULL)
+		delete leftHand;
+
+	if (rightHand != NULL)
+		delete rightHand;
 }
 
 void GreySkeleton::LoadParams()
@@ -78,6 +92,7 @@ void GreySkeleton::ResetEnemy()
 	UpdateSprite();
 
 	thornPool.Reset();
+	shapePool.Reset();
 
 	if (sess->preLevelScene == NULL) //fight testing
 	{
@@ -93,6 +108,8 @@ void GreySkeleton::ResetEnemy()
 	StartFight();
 
 	UpdateSprite();
+
+	
 }
 
 void GreySkeleton::SeqWait()
@@ -140,6 +157,8 @@ void GreySkeleton::ActionEnded()
 	case WAIT:
 	case MOVE:
 	case THORN_TEST:
+	case HAND_TEST:
+	case SHAPE_TEST:
 		Decide();
 		break;
 	}
@@ -174,6 +193,20 @@ void GreySkeleton::StartAction()
 		//thornPool.Throw(0, nodeGroupB.AlwaysGetNextNode()->pos, PlayerDir());
 		//thornPool.Throw(0, nodeGroupB.AlwaysGetNextNode()->pos, PlayerDir());
 		//thornPool.Throw(0, GetPosition(), PlayerDir());
+		break;
+	}
+	case HAND_TEST:
+	{
+		rightHand->Appear(GetPosition() + V2d(200, 0));
+		break;
+	}
+	case SHAPE_TEST:
+	{
+		int possibleOffset = 100;
+		int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+		int yOffset = (rand() % possibleOffset) - possibleOffset / 2;
+
+		shapePool.Appear( 0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset));
 		break;
 	}
 	}

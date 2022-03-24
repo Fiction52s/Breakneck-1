@@ -86,7 +86,7 @@ void ThornPool::DrawMinimap(sf::RenderTarget * target)
 
 
 Thorn::Thorn(/*sf::Vertex *myQuad, */ThornPool *pool)
-	:Enemy(EnemyType::EN_SKELETONLASER, NULL)
+	:Enemy(EnemyType::EN_THORN, NULL)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, 0, 0);

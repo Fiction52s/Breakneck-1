@@ -5,9 +5,10 @@
 #include "Bullet.h"
 #include "Movement.h"
 #include "Enemy_Thorn.h"
+#include "Enemy_Hand.h"
+#include "Enemy_AppearingShape.h"
 
 struct FinalSkeletonPostFightScene;
-struct ThornPool;
 
 
 struct GreySkeleton : Boss
@@ -18,6 +19,8 @@ struct GreySkeleton : Boss
 		COMBOMOVE,
 		MOVE,
 		THORN_TEST,
+		HAND_TEST,
+		SHAPE_TEST,
 		SEQ_WAIT,
 		A_Count
 	};
@@ -30,6 +33,11 @@ struct GreySkeleton : Boss
 	FinalSkeletonPostFightScene *postFightScene;
 
 	ThornPool thornPool;
+
+	AppearingShapePool shapePool;
+
+	Hand *leftHand;
+	Hand *rightHand;
 
 	GreySkeleton(ActorParams *ap);
 
