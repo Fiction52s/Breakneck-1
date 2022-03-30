@@ -293,7 +293,7 @@ void GreySkeleton::StartAction()
 	}
 	case BOMB_TEST:
 	{
-		bombPool.Throw(BeamBomb::BOMB_SINGLE, GetPosition() + V2d(200, 0), V2d(1, 1));
+		bombPool.Throw(BeamBomb::BOMB_NORMAL, GetPosition() + V2d(200, 0), V2d(1, 1));
 		break;
 	}
 	}

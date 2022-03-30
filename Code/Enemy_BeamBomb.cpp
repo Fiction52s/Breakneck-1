@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_BeamBomb.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -97,7 +98,7 @@ BeamBomb::BeamBomb(/*sf::Vertex *myQuad, */BeamBombPool *pool)
 	actionLength[BLAST_TEST] = 100000;
 	animFactor[BLAST_TEST] = 1;
 
-	maxNumRays = 20;
+	maxNumRays = 8;
 
 	quads = new Vertex[maxNumRays * 4];
 	rayHitPoints.resize(maxNumRays);
@@ -209,7 +210,7 @@ void BeamBomb::SetBombTypeParams()
 	case BOMB_NORMAL:
 	{
 		numRays = maxNumRays;
-		currRotVel = 0;//.02 * PI;
+		currRotVel = .006 * PI;
 		break;
 	}
 	case BOMB_SINGLE:
@@ -585,3 +586,47 @@ void BeamBomb::HitTerrainAerial(Edge * edge, double quant)
 //		}
 //	}
 //}
+
+bool BeamBomb::CheckHitPlayer(int index)
+{
+
+	Actor *player = sess->GetPlayer(index);
+
+	if (player == NULL)
+		return false;
+
+
+	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
+	{
+		Actor::HitResult hitResult = player->CheckIfImHitByEnemy(this, currHitboxes, currHitboxFrame, 
+			currHitboxes->hitboxInfo->hitPosType, GetPosition(), facingRight, 
+			currHitboxes->hitboxInfo->canBeParried, currHitboxes->hitboxInfo->canBeBlocked);
+
+		if (hitResult != Actor::HitResult::MISS)
+		{
+			if (hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
+			{
+				if (hitResult == Actor::HitResult::FULLBLOCK)
+				{
+					IHitPlayerShield(index);
+				}
+				else
+				{
+					IHitPlayer(index);
+				}
+
+				if (currHitboxes->hitboxInfo != NULL)
+				{
+					pauseFrames = currHitboxes->hitboxInfo->hitlagFrames;
+					pauseBeganThisFrame = true;
+					pauseFramesFromAttacking = true;
+				}
+				player->ApplyHit(currHitboxes->hitboxInfo,
+					NULL, hitResult, GetPosition());
+			}
+		}
+	}
+
+
+	return false;
+}
