@@ -42,7 +42,8 @@ void AppearingShapePool::Reset()
 	}
 }
 
-AppearingShape * AppearingShapePool::Appear(int shapeType, double size, V2d &pos)
+AppearingShape * AppearingShapePool::Appear(int shapeType, double size, V2d &pos,
+	int appearFrames, int hitFrames, int disappearFrames )
 {
 	AppearingShape *bs = NULL;
 	for (int i = 0; i < numShapes; ++i)
@@ -50,7 +51,7 @@ AppearingShape * AppearingShapePool::Appear(int shapeType, double size, V2d &pos
 		bs = shapeVec[i];
 		if (!bs->active)
 		{
-			bs->Appear(shapeType, size, pos);
+			bs->Appear(shapeType, size, pos, appearFrames, hitFrames, disappearFrames );
 			break;
 		}
 	}
@@ -81,7 +82,7 @@ AppearingShape::AppearingShape( AppearingShapePool *sp )
 	actionLength[APPEAR] = 60;
 	animFactor[APPEAR] = 1;
 
-	actionLength[HIT] = 60;
+	actionLength[HIT] = 10;
 	animFactor[HIT] = 1;
 
 	actionLength[DISAPPEAR] = 60;
@@ -105,11 +106,12 @@ AppearingShape::AppearingShape( AppearingShapePool *sp )
 	hitboxInfo->knockback = 4;
 
 	numCirclePoints = 20;
+	numVerts = numCirclePoints + 2;
 	assert(numCirclePoints >= 3);
-	quads = new Vertex[numCirclePoints + 1];
+	verts = new Vertex[numVerts];
 
 	BasicCircleHitBodySetup(16);
-	BasicCircleHurtBodySetup(16);
+	//BasicCircleHurtBodySetup(16);
 
 	hitBody.hitboxInfo = hitboxInfo;
 
@@ -119,7 +121,7 @@ AppearingShape::AppearingShape( AppearingShapePool *sp )
 
 AppearingShape::~AppearingShape()
 {
-	delete[]quads;
+	delete[]verts;
 }
 
 void AppearingShape::ResetEnemy()
@@ -133,7 +135,7 @@ void AppearingShape::ResetEnemy()
 	frame = 0;
 
 	DefaultHitboxesOn();
-	DefaultHurtboxesOn();
+	//DefaultHurtboxesOn();
 
 	UpdateHitboxes();
 
@@ -154,10 +156,12 @@ void AppearingShape::ActionEnded()
 		case APPEAR:
 			action = HIT;
 			frame = 0;
+			DefaultHitboxesOn();
 			break;
 		case HIT:
 			action = DISAPPEAR;
 			frame = 0;
+			HitboxesOff();
 			break;
 		case DISAPPEAR:
 			sess->RemoveEnemy(this);
@@ -193,12 +197,12 @@ void AppearingShape::UpdateSprite()
 		break;
 	}*/
 
-	float factor = frame / (actionLength[action] * animFactor[action]);
+	float factor = (float)frame / (actionLength[action] * animFactor[action]);
 	switch (action)
 	{
 	case APPEAR:
 	{
-		SetColor(Color(255, 255, 255, factor * 255));
+		SetColor(Color(255, 255, 255, factor * 100.f * factor));
 		break;
 	}
 	case HIT:
@@ -208,7 +212,7 @@ void AppearingShape::UpdateSprite()
 	}
 	case DISAPPEAR:
 	{
-		SetColor(Color(255, 255, 255, (1.f - factor) * 255));
+		SetColor(Color(0, 255, 0, (1.f - factor) * 255));
 		break;
 	}
 	}
@@ -222,7 +226,7 @@ void AppearingShape::EnemyDraw(sf::RenderTarget *target)
 	{
 	case SHAPE_CIRCLE:
 	{
-		target->draw(quads, numCirclePoints + 1, sf::TriangleFan);
+		target->draw(verts, numCirclePoints + 2, sf::TriangleFan);
 		break;
 	}
 	case SHAPE_SQUARE:
@@ -234,7 +238,8 @@ void AppearingShape::EnemyDraw(sf::RenderTarget *target)
 	//DrawSprite(target, sprite);
 }
 
-void AppearingShape::Appear( int shapeType, double p_size, V2d &pos)
+void AppearingShape::Appear( int p_shapeType, double p_size, V2d &pos,
+	int appearFrames, int hitFrames, int disappearFrames )
 {
 	if (!active)
 	{
@@ -244,10 +249,17 @@ void AppearingShape::Appear( int shapeType, double p_size, V2d &pos)
 		action = APPEAR;
 		frame = 0;
 
+		actionLength[APPEAR] = appearFrames;
+		actionLength[HIT] = hitFrames;
+		actionLength[DISAPPEAR] = disappearFrames;
+
+
 		currPosInfo.position = pos;
 		currPosInfo.ground = NULL;
 
 		size = p_size;
+
+		shapeType = p_shapeType;
 
 		switch (shapeType)
 		{
@@ -261,7 +273,7 @@ void AppearingShape::Appear( int shapeType, double p_size, V2d &pos)
 
 		hitBody.AddBasicCircle(0, size, 0, V2d());
 
-		DefaultHitboxesOn();
+		HitboxesOff();
 
 		UpdateHitboxes();
 	}
@@ -272,15 +284,15 @@ void AppearingShape::UpdateVertices()
 	if (shapeType == SHAPE_CIRCLE)
 	{
 		Vector2f currPos = GetPositionF();
-		quads[0].position = currPos;
+		verts[0].position = currPos;
 		Vector2f offset(size, 0);
 		Vector2f tempOffset;
 		Transform t;
 
-		for (int i = 1; i <= numCirclePoints; ++i)
+		for (int i = 1; i < numVerts; ++i)
 		{
 			tempOffset = t.transformPoint(offset);
-			quads[i].position = currPos + tempOffset;
+			verts[i].position = currPos + tempOffset;
 			t.rotate(360.f / numCirclePoints);
 		}
 	}
@@ -288,8 +300,8 @@ void AppearingShape::UpdateVertices()
 
 void AppearingShape::SetColor(Color c)
 {
-	for (int i = 0; i < numCirclePoints + 1; ++i)
+	for (int i = 0; i < numVerts; ++i)
 	{
-		quads[i].color = c;
+		verts[i].color = c;
 	}
 }

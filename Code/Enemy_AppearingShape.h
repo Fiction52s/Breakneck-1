@@ -11,7 +11,10 @@ struct AppearingShapePool
 	~AppearingShapePool();
 	void Reset();
 	AppearingShape * Appear(int type, 
-		double size, V2d &pos);
+		double size, V2d &pos, 
+		int appearFrames,
+		int hitFrames,
+		int disappearFrames );
 	void DrawMinimap(sf::RenderTarget * target);
 	std::vector<AppearingShape*> shapeVec;
 	Tileset *ts;
@@ -42,15 +45,17 @@ struct AppearingShape : Enemy
 
 	double size;
 
-	sf::Vertex *quads;
+	sf::Vertex *verts;
 
 	int numCirclePoints;
+	int numVerts;
 
 	AppearingShape( AppearingShapePool *sp );
 	~AppearingShape();
 
 	void Appear( int shapeType, double size,
-		V2d &pos);
+		V2d &pos, int appearFrames,
+		int hitFrames, int disappearFrames );
 
 	void ProcessState();
 	void ActionEnded();

@@ -43,7 +43,7 @@ void ThornPool::Reset()
 	}
 }
 
-Thorn * ThornPool::Throw(int type, V2d &pos, V2d &dir)
+Thorn * ThornPool::Throw(int thornType, V2d &pos, V2d &dir)
 {
 	Thorn *thorn = NULL;
 	for (int i = 0; i < numThorns; ++i)
@@ -51,7 +51,7 @@ Thorn * ThornPool::Throw(int type, V2d &pos, V2d &dir)
 		thorn = thornVec[i];
 		if (!thorn->active)
 		{
-			thorn->Throw(type, pos, dir);
+			thorn->Throw(thornType, pos, dir);
 			break;
 		}
 	}
@@ -97,13 +97,13 @@ Thorn::Thorn(/*sf::Vertex *myQuad, */ThornPool *pool)
 	actionLength[GROW] = 100000;
 	animFactor[GROW] = 1;
 
-	actionLength[HOLD] = 1;
+	actionLength[HOLD] = 10;
 	animFactor[HOLD] = 1;
 
-	actionLength[SHRINK] = 1;
+	actionLength[SHRINK] = 100000;
 	animFactor[SHRINK] = 1;
 
-	maxPastPositions = 300;
+	maxPastPositions = 300;//180; //300
 
 
 	pastPositions.reserve(maxPastPositions);
@@ -127,9 +127,10 @@ Thorn::Thorn(/*sf::Vertex *myQuad, */ThornPool *pool)
 	accel = .3;//.5;
 	maxSpeed = 8;
 
+	startWidth = 50;
 
-
-	//CreateSurfaceMover(startPosInfo, laserWidth, this);
+	CreateSurfaceMover(startPosInfo, 16, this);
+	surfaceMover->collisionOn = false;
 
 	//highResPhysics = true;
 
@@ -141,7 +142,8 @@ Thorn::Thorn(/*sf::Vertex *myQuad, */ThornPool *pool)
 	hitboxInfo->hitstunFrames = 10;
 	hitboxInfo->knockback = 4;
 
-
+	BasicCircleHurtBodySetup(16);
+	//BasicCircleHitBodySetup(16);
 
 	//BasicCircleHitBodySetup(16);
 	hitBody.hitboxInfo = hitboxInfo;
@@ -211,27 +213,71 @@ void Thorn::SetLevel(int lev)
 	}
 }
 
-void Thorn::UpdateEnemyPhysics()
+void Thorn::SetThornTypeParams()
 {
-	V2d movementVec = velocity;
-	movementVec /= slowMultiple * (double)numPhysSteps;
-
-	currPosInfo.position += movementVec;
-
-	if (action == GROW && frame > 0)
+	switch (thornType)
 	{
-		velocity += PlayerDir() * accel;
-
-		if (length(velocity) > maxSpeed)
-		{
-			velocity = normalize(velocity) * maxSpeed;
-		}
+	case THORN_NORMAL:
+	{
+		accel = .3;//.5;
+		maxSpeed = 8;
+		thornColor = Color::White;
+		currMaxPastPositions = maxPastPositions;
+		startWidth = 50;
+		break;
+	}
+	case THORN_FAST:
+	{
+		accel = 2.0;//.3;//.5;
+		maxSpeed = 20;
+		thornColor = Color::Green;
+		currMaxPastPositions = 180;//120;
+		startWidth = 50;
+		break;
+	}
 	}
 }
 
-void Thorn::Throw(int type, V2d &pos, V2d &dir)
+void Thorn::UpdateEnemyPhysics()
 {
-	thornType = (ThornType)type;
+	Enemy::UpdateEnemyPhysics();
+	/*if (thornType == THORN_PHYS)
+	{
+		if (action == GROW && frame > 0)
+		{
+			surfaceMover->velocity += PlayerDir() * accel;
+
+			if (length(surfaceMover->velocity) > maxSpeed)
+			{
+				surfaceMover->velocity = normalize(surfaceMover->velocity) * maxSpeed;
+			}
+		}
+
+	}
+	else
+	{
+		V2d movementVec = velocity;
+		movementVec /= slowMultiple * (double)numPhysSteps;
+
+		currPosInfo.position += movementVec;
+
+		if (action == GROW && frame > 0)
+		{
+			velocity += PlayerDir() * accel;
+
+			if (length(velocity) > maxSpeed)
+			{
+				velocity = normalize(velocity) * maxSpeed;
+			}
+		}
+	}*/
+}
+
+void Thorn::Throw(int p_thornType, V2d &pos, V2d &dir)
+{
+	thornType = (ThornType)p_thornType;
+
+	SetThornTypeParams();
 
 	//SetLaserTypeParams();
 
@@ -243,13 +289,21 @@ void Thorn::Throw(int type, V2d &pos, V2d &dir)
 		surfaceMover->collisionOn = false;
 	}*/
 
+	surfaceMover->velocity = dir * min(10.0, maxSpeed);//maxSpeed;
+	
+
 	velocity = dir * maxSpeed;//5.0;
 
 	currPosInfo.position = pos;
 	currPosInfo.ground = NULL;
 
+	surfaceMover->Set(currPosInfo);
+
 	//numActivePositions = 1;
 	numActivePositions = 0;
+
+
+	DefaultHurtboxesOn();
 	
 	//pastPositions.push_back(pos);
 	//anchorPositions.push_back(pos);
@@ -308,6 +362,8 @@ void Thorn::ProcessState()
 		case GROW:
 			break;
 		case HOLD:
+			action = SHRINK;
+			frame = 0;
 			break;
 		case SHRINK:
 		{
@@ -323,7 +379,7 @@ void Thorn::ProcessState()
 
 	if (action == GROW)
 	{
-		if (numActivePositions == maxPastPositions)
+		if (numActivePositions == currMaxPastPositions)
 		{
 			action = HOLD;
 			frame = 0;
@@ -334,6 +390,34 @@ void Thorn::ProcessState()
 			{
 				pastPositions.push_back(GetPosition());
 				++numActivePositions;
+			}
+		}
+
+		surfaceMover->velocity += PlayerDir() * accel;
+		if (length(surfaceMover->velocity) > maxSpeed)
+		{
+			surfaceMover->velocity = normalize(surfaceMover->velocity) * maxSpeed;
+		}
+	}
+	else if (action == SHRINK)
+	{
+		if (numActivePositions == 0)
+		{
+			sess->RemoveEnemy(this);
+			dead = true;
+			numHealth = 0;
+		}
+		else
+		{
+			int shrinkMultiplier = 2;
+			for( int i = 0; i < shrinkMultiplier; ++i )
+			{
+				pastPositions.pop_back();
+				--numActivePositions;
+				if (pastPositions.size() == 0)
+				{
+					break;
+				}
 			}
 		}
 	}
@@ -355,7 +439,8 @@ void Thorn::UpdateSprite()
 			quads[i * 4 + 1].color = headColor;
 			quads[i * 4 + 2].color = headColor;
 			quads[i * 4 + 3].color = tailColor;*/
-			SetRectColor(quads + i * 4, Color::Red);
+			SetRectColor(quads + i * 4, thornColor);
+			
 		}
 
 		V2d oldPos;
@@ -398,7 +483,7 @@ void Thorn::UpdateSprite()
 			}
 
 
-			double startWidth = 50;
+			
 			double prevDistFromRoot = 0;
 			double currDistFromRoot = 0;
 
@@ -428,10 +513,10 @@ void Thorn::UpdateSprite()
 				along = normalize(currPos - oldPos);
 				other = V2d(along.y, -along.x);
 
-				quads[(i - 1) * 4 + 0] = Vector2f(oldPos - normals[i-1] * prevWidthRatio);
-				quads[(i - 1) * 4 + 1] = Vector2f(currPos - normals[i] * currWidthRatio);
-				quads[(i - 1) * 4 + 2] = Vector2f(currPos + normals[i] * currWidthRatio);
-				quads[(i - 1) * 4 + 3] = Vector2f(oldPos + normals[i-1] * prevWidthRatio);
+				quads[(i - 1) * 4 + 0].position = Vector2f(oldPos - normals[i-1] * prevWidthRatio);
+				quads[(i - 1) * 4 + 1].position = Vector2f(currPos - normals[i] * currWidthRatio);
+				quads[(i - 1) * 4 + 2].position = Vector2f(currPos + normals[i] * currWidthRatio);
+				quads[(i - 1) * 4 + 3].position = Vector2f(oldPos + normals[i-1] * prevWidthRatio);
 			}
 
 		}
@@ -441,7 +526,7 @@ void Thorn::UpdateSprite()
 
 void Thorn::UpdateHitboxes()
 {
-	
+	Enemy::UpdateHitboxes();
 	//if (pastPosit.empty())
 	//{
 	//	return;
@@ -530,7 +615,7 @@ void Thorn::UpdateHitboxes()
 void Thorn::EnemyDraw(sf::RenderTarget *target)
 {
 	//laserBody.DebugDraw(0, target);
-	target->draw(quads, maxPastPositions * 4, sf::Quads);
+	target->draw(quads, currMaxPastPositions * 4, sf::Quads);
 	//firePool.Draw(target);
 }
 
@@ -551,4 +636,9 @@ bool Thorn::CanBeHitByPlayer()
 bool Thorn::CanBeHitByComboer()
 {
 	return false;
+}
+
+void Thorn::HitTerrainAerial(Edge * edge, double quant)
+{
+	surfaceMover->ground = NULL;
 }

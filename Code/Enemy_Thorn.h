@@ -21,7 +21,7 @@ struct ThornPool
 };
 
 
-struct Thorn : Enemy
+struct Thorn : Enemy, SurfaceMoverHandler
 {
 	enum Action
 	{
@@ -35,6 +35,8 @@ struct Thorn : Enemy
 	enum ThornType
 	{
 		THORN_NORMAL,
+		THORN_FAST,
+		THORN_PHYS,
 		THORN_Count,
 	};
 
@@ -60,6 +62,9 @@ struct Thorn : Enemy
 	//int origTimeToLive;
 
 	int maxPastPositions;
+	int currMaxPastPositions;
+
+	double startWidth;
 
 	double accel;
 	double maxSpeed;
@@ -71,6 +76,7 @@ struct Thorn : Enemy
 
 	double laserWidth;
 
+	sf::Color thornColor;
 	//sf::Color headColor;
 	//sf::Color tailColor;
 
@@ -92,7 +98,8 @@ struct Thorn : Enemy
 	void UpdateHitboxes();
 	void ResetEnemy();
 	void FrameIncrement();
-	
+	void SetThornTypeParams();
+	void HitTerrainAerial(Edge * edge, double quant);
 	bool CanBeHitByPlayer();
 	bool CanBeHitByComboer();
 };

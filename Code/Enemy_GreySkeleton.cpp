@@ -32,8 +32,9 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 
 	postFightScene = NULL;
 
+	stageMgr.AddActiveOption(0, BOMB_TEST, 2);
 	//stageMgr.AddActiveOption(0, THORN_TEST, 2);
-	stageMgr.AddActiveOption(0, SHAPE_TEST, 2);
+	//stageMgr.AddActiveOption(0, SHAPE_TEST, 2);
 
 	leftHand = NULL;
 
@@ -93,6 +94,7 @@ void GreySkeleton::ResetEnemy()
 
 	thornPool.Reset();
 	shapePool.Reset();
+	bombPool.Reset();
 
 	if (sess->preLevelScene == NULL) //fight testing
 	{
@@ -166,7 +168,57 @@ void GreySkeleton::ActionEnded()
 
 void GreySkeleton::HandleAction()
 {
+	switch (action)
+	{
+	case SHAPE_TEST:
+	{
+		if (frame % 90 == 0 )//% 20 == 0)
+		{
+			int possibleOffset = 100;
+			int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			int yOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			shapePool.Appear(0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset), 60, 10, 10);
+		}
+		//for (int i = 0; i < 3; ++i)
+		{
+			/*int possibleOffset = 100;
+			int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			int yOffset = (rand() % possibleOffset) - possibleOffset / 2;*/
 
+			/*float min = 200;
+			if (xOffset >= 0)
+			{
+			xOffset += min;
+			}
+			else if (xOffset < 0)
+			{
+			xOffset -= min;
+			}
+
+			if (yOffset >= 0)
+			{
+			yOffset += min;
+			}
+			else if (yOffset  < 0)
+			{
+			yOffset -= min;
+			}*/
+
+			//shapePool.Appear(0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset), 60);
+		}
+		break;
+	}
+	case THORN_TEST:
+	{
+		if (frame % 90 == 0)//% 20 == 0)
+		{
+			int possibleOffset = 100;
+			int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			int yOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			shapePool.Appear(0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset), 60, 10, 10);
+		}
+	}
+	}
 }
 
 void GreySkeleton::StartAction()
@@ -183,10 +235,11 @@ void GreySkeleton::StartAction()
 	{
 		PoiInfo *node;
 
+		int thornType = rand() % 2;
 		for (int i = 0; i < 3; ++i)
 		{
 			node = nodeGroupB.AlwaysGetNextNode();
-			thornPool.Throw(0, node->pos, node->edge->Normal() );
+			thornPool.Throw(thornType, node->pos, node->edge->Normal() );
 		}
 		
 		
@@ -202,11 +255,45 @@ void GreySkeleton::StartAction()
 	}
 	case SHAPE_TEST:
 	{
-		int possibleOffset = 100;
-		int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
-		int yOffset = (rand() % possibleOffset) - possibleOffset / 2;
+		/*if (frame % 20 == 0)
+		{
+			int possibleOffset = 100;
+			int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			int yOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			shapePool.Appear(0, 200, sess->GetPlayerPos(0) + V2d(xOffset, yOffset), 60);
+		}*/
+		//for (int i = 0; i < 3; ++i)
+		{
+			/*int possibleOffset = 100;
+			int xOffset = (rand() % possibleOffset) - possibleOffset / 2;
+			int yOffset = (rand() % possibleOffset) - possibleOffset / 2;*/
 
-		shapePool.Appear( 0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset));
+			/*float min = 200;
+			if (xOffset >= 0)
+			{
+				xOffset += min;
+			}
+			else if (xOffset < 0)
+			{
+				xOffset -= min;
+			}
+
+			if (yOffset >= 0)
+			{
+				yOffset += min;
+			}
+			else if (yOffset  < 0)
+			{
+				yOffset -= min;
+			}*/
+
+			//shapePool.Appear(0, 400, sess->GetPlayerPos(0) + V2d(xOffset, yOffset), 60);
+		}
+		break;
+	}
+	case BOMB_TEST:
+	{
+		bombPool.Throw(BeamBomb::BOMB_SINGLE, GetPosition() + V2d(200, 0), V2d(1, 1));
 		break;
 	}
 	}

@@ -7,6 +7,7 @@
 #include "Enemy_Thorn.h"
 #include "Enemy_Hand.h"
 #include "Enemy_AppearingShape.h"
+#include "Enemy_BeamBomb.h"
 
 struct FinalSkeletonPostFightScene;
 
@@ -19,7 +20,10 @@ struct GreySkeleton : Boss
 		COMBOMOVE,
 		MOVE,
 		THORN_TEST,
+		CREATE_HANDS,
+		SLAP_TEST,
 		HAND_TEST,
+		BOMB_TEST,
 		SHAPE_TEST,
 		SEQ_WAIT,
 		A_Count
@@ -35,6 +39,8 @@ struct GreySkeleton : Boss
 	ThornPool thornPool;
 
 	AppearingShapePool shapePool;
+
+	BeamBombPool bombPool;
 
 	Hand *leftHand;
 	Hand *rightHand;
