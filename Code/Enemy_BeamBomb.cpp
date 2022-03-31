@@ -87,7 +87,7 @@ void BeamBombPool::DrawMinimap(sf::RenderTarget * target)
 
 
 BeamBomb::BeamBomb(/*sf::Vertex *myQuad, */BeamBombPool *pool)
-	:Enemy(EnemyType::EN_THORN, NULL)//, cg( 20, 40, Color::Green, 12 )
+	:Enemy(EnemyType::EN_BEAMBOMB, NULL)//, cg( 20, 40, Color::Green, 12 )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, 0, 0);
@@ -98,7 +98,7 @@ BeamBomb::BeamBomb(/*sf::Vertex *myQuad, */BeamBombPool *pool)
 	actionLength[BLAST_TEST] = 100000;
 	animFactor[BLAST_TEST] = 1;
 
-	maxNumRays = 8;
+	maxNumRays = 40;
 
 	quads = new Vertex[maxNumRays * 4];
 	rayHitPoints.resize(maxNumRays);
@@ -108,7 +108,8 @@ BeamBomb::BeamBomb(/*sf::Vertex *myQuad, */BeamBombPool *pool)
 
 	rayLengthLimit = 8000;
 
-	
+	hitBody.SetupNumFrames(1);
+	hitBody.SetupNumBoxesOnFrame(0, maxNumRays);
 
 	
 	rayWidth = 10;
@@ -157,6 +158,8 @@ void BeamBomb::ResetEnemy()
 
 	//cg.ShowAll();
 
+	numRays = 0;
+
 	facingRight = true;
 
 	currRotation = 0;
@@ -170,7 +173,8 @@ void BeamBomb::ResetEnemy()
 
 	destPoi = NULL;
 
-	//DefaultHitboxesOn();
+
+	DefaultHitboxesOn();
 	//DefaultHurtboxesOn();
 	//UpdateHitboxes();
 
@@ -209,7 +213,7 @@ void BeamBomb::SetBombTypeParams()
 	{
 	case BOMB_NORMAL:
 	{
-		numRays = maxNumRays;
+		numRays = 4;
 		currRotVel = .006 * PI;
 		break;
 	}
@@ -282,12 +286,12 @@ void BeamBomb::Throw(int p_bombType, V2d &pos, V2d &dir)
 {
 	bombType = (BeamBombType)p_bombType;
 
-	SetBombTypeParams();
-
 	//SetLaserTypeParams();
 
 	Reset();
 	sess->AddEnemy(this);
+
+	SetBombTypeParams();
 
 	/*if (type == LT_NO_COLLIDE)
 	{
@@ -380,10 +384,11 @@ void BeamBomb::ProcessState()
 		V2d offset(rayLengthLimit, 0);
 		RotateCW(offset, currRotation);
 		V2d endPoint;
+		V2d myPos = GetPosition();
 		for (int i = 0; i < numRays; ++i)
 		{
-			endPoint = GetPosition() + offset;
-			if (ExecuteRayCast(GetPosition(), GetPosition() + offset ) )
+			endPoint = myPos + offset;
+			if (ExecuteRayCast(myPos, myPos + offset ) )
 			{
 				V2d rayPos = rayCastInfo.GetRayHitPos();
 				rayHitPoints[i] = rayPos;
@@ -392,6 +397,8 @@ void BeamBomb::ProcessState()
 			{
 				rayHitPoints[i] = endPoint;
 			}
+
+			//if(IsEdgeTouchingQuad(myPos, rayHitPoints[i],)
 
 			RotateCW(offset, 2 * PI / numRays);
 		}
@@ -419,6 +426,7 @@ void BeamBomb::UpdateSprite()
 				length(diff), 
 				rayWidth, 
 				Vector2f((rayHitPoints[i] + GetPosition()) / 2.0));
+
 			SetRectColor(quads + i * 4, Color::Red);
 
 			/*cg.SetPosition(i, Vector2f(rayHitPoints[i]));
@@ -438,7 +446,28 @@ void BeamBomb::UpdateSprite()
 
 void BeamBomb::UpdateHitboxes()
 {
-	Enemy::UpdateHitboxes();
+	V2d myPos = GetPosition();
+	V2d rayDest;
+	V2d diff;
+	V2d center;
+	double angle;
+
+	hitBody.ResetFrames();
+
+	for (int i = 0; i < numRays; ++i)
+	{
+		rayDest = rayHitPoints[i];
+		diff = rayDest - myPos;
+		center = (myPos + rayDest) / 2.0;
+		angle = GetVectorAngleCW(normalize(diff));
+		hitBody.AddBasicRect(0, length(diff) / 2, rayWidth / 2, angle, center);
+	}
+
+	if (numRays > 0)
+	{
+		hitBody.SetBasicPos(V2d(0,0));
+	}
+	//Enemy::UpdateHitboxes();
 	//if (pastPosit.empty())
 	//{
 	//	return;
@@ -587,46 +616,46 @@ void BeamBomb::HitTerrainAerial(Edge * edge, double quant)
 //	}
 //}
 
-bool BeamBomb::CheckHitPlayer(int index)
-{
-
-	Actor *player = sess->GetPlayer(index);
-
-	if (player == NULL)
-		return false;
-
-
-	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
-	{
-		Actor::HitResult hitResult = player->CheckIfImHitByEnemy(this, currHitboxes, currHitboxFrame, 
-			currHitboxes->hitboxInfo->hitPosType, GetPosition(), facingRight, 
-			currHitboxes->hitboxInfo->canBeParried, currHitboxes->hitboxInfo->canBeBlocked);
-
-		if (hitResult != Actor::HitResult::MISS)
-		{
-			if (hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
-			{
-				if (hitResult == Actor::HitResult::FULLBLOCK)
-				{
-					IHitPlayerShield(index);
-				}
-				else
-				{
-					IHitPlayer(index);
-				}
-
-				if (currHitboxes->hitboxInfo != NULL)
-				{
-					pauseFrames = currHitboxes->hitboxInfo->hitlagFrames;
-					pauseBeganThisFrame = true;
-					pauseFramesFromAttacking = true;
-				}
-				player->ApplyHit(currHitboxes->hitboxInfo,
-					NULL, hitResult, GetPosition());
-			}
-		}
-	}
-
-
-	return false;
-}
+//bool BeamBomb::CheckHitPlayer(int index)
+//{
+//
+//	Actor *player = sess->GetPlayer(index);
+//
+//	if (player == NULL)
+//		return false;
+//
+//
+//	if (currHitboxes != NULL && currHitboxes->hitboxInfo != NULL)
+//	{
+//		Actor::HitResult hitResult = player->CheckIfImHitByEnemy(this, currHitboxes, currHitboxFrame, 
+//			currHitboxes->hitboxInfo->hitPosType, GetPosition(), facingRight, 
+//			currHitboxes->hitboxInfo->canBeParried, currHitboxes->hitboxInfo->canBeBlocked);
+//
+//		if (hitResult != Actor::HitResult::MISS)
+//		{
+//			if (hitResult != Actor::HitResult::INVINCIBLEHIT) //needs a second check in case ihitplayer changes the hitboxes
+//			{
+//				if (hitResult == Actor::HitResult::FULLBLOCK)
+//				{
+//					IHitPlayerShield(index);
+//				}
+//				else
+//				{
+//					IHitPlayer(index);
+//				}
+//
+//				if (currHitboxes->hitboxInfo != NULL)
+//				{
+//					pauseFrames = currHitboxes->hitboxInfo->hitlagFrames;
+//					pauseBeganThisFrame = true;
+//					pauseFramesFromAttacking = true;
+//				}
+//				player->ApplyHit(currHitboxes->hitboxInfo,
+//					NULL, hitResult, GetPosition());
+//			}
+//		}
+//	}
+//
+//
+//	return false;
+//}

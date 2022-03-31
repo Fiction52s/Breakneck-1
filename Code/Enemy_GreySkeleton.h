@@ -10,7 +10,7 @@
 #include "Enemy_BeamBomb.h"
 
 struct FinalSkeletonPostFightScene;
-
+struct GreyEye;
 
 struct GreySkeleton : Boss
 {
@@ -26,6 +26,7 @@ struct GreySkeleton : Boss
 		BOMB_TEST,
 		SHAPE_TEST,
 		SEQ_WAIT,
+		EYE_TEST,
 		A_Count
 	};
 
@@ -42,6 +43,9 @@ struct GreySkeleton : Boss
 
 	BeamBombPool bombPool;
 
+	const static int NUM_EYES = 6;
+	GreyEye *eyes[NUM_EYES];
+
 	Hand *leftHand;
 	Hand *rightHand;
 
@@ -55,6 +59,7 @@ struct GreySkeleton : Boss
 	void UpdateSprite();
 	void ResetEnemy();
 	int GetNumSimulationFramesRequired();
+	void Setup();
 
 	//Boss functions
 	bool TryComboMove(V2d &comboPos, int comboMoveDuration,

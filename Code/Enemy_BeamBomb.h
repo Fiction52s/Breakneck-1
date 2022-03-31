@@ -92,7 +92,7 @@ struct BeamBomb : Enemy, SurfaceMoverHandler,
 	void HitTerrainAerial(Edge * edge, double quant);
 	bool CanBeHitByPlayer();
 	bool CanBeHitByComboer();
-	bool CheckHitPlayer( int index);
+	//bool CheckHitPlayer( int index);
 	//void HandleRayCollision(Edge *edge, double edgeQuantity,
 	//	double rayPortion);
 };

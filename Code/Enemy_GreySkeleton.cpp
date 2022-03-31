@@ -5,6 +5,7 @@
 #include "Enemy_GreySkeleton.h"
 #include "Actor.h"
 #include "SequenceW7.h"
+#include "Enemy_GreyEye.h"
 
 
 using namespace std;
@@ -32,13 +33,19 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 
 	postFightScene = NULL;
 
-	stageMgr.AddActiveOption(0, BOMB_TEST, 2);
+	stageMgr.AddActiveOption(0, EYE_TEST, 2);
+	//stageMgr.AddActiveOption(0, BOMB_TEST, 2);
 	//stageMgr.AddActiveOption(0, THORN_TEST, 2);
 	//stageMgr.AddActiveOption(0, SHAPE_TEST, 2);
 
 	leftHand = NULL;
 
 	rightHand = new Hand(true);
+
+	for (int i = 0; i < NUM_EYES; ++i)
+	{
+		eyes[i] = new GreyEye(i);
+	}
 
 	/*stageMgr.AddActiveOption(0, MOVE, 2);
 
@@ -66,6 +73,11 @@ GreySkeleton::~GreySkeleton()
 
 	if (rightHand != NULL)
 		delete rightHand;
+
+	for (int i = 0; i < NUM_EYES; ++i)
+	{
+		delete eyes[i];
+	}
 }
 
 void GreySkeleton::LoadParams()
@@ -296,6 +308,16 @@ void GreySkeleton::StartAction()
 		bombPool.Throw(BeamBomb::BOMB_NORMAL, GetPosition() + V2d(200, 0), V2d(1, 1));
 		break;
 	}
+	case EYE_TEST:
+	{
+		V2d offset(0, 200);
+		for (int i = 0; i < NUM_EYES; ++i)
+		{
+			eyes[i]->Appear(GetPosition() + offset);
+			RotateCW(offset, PI / 3.0);
+		}
+		break;
+	}
 	}
 }
 
@@ -313,6 +335,16 @@ void GreySkeleton::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "B"));
+}
+
+void GreySkeleton::Setup()
+{
+	Boss::Setup();
+
+	for (int i = 0; i < NUM_EYES; ++i)
+	{
+		eyes[i]->Setup();
+	}
 }
 
 bool GreySkeleton::IsDecisionValid(int d)
