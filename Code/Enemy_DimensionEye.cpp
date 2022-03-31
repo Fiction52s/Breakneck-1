@@ -135,7 +135,7 @@ void DimensionEye::ProcessHit()
 
 		if (game != NULL)
 		{
-			game->SetBonus(myBonus, GetPosition());
+			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
 
 			action = DIE;
 			frame = 0;

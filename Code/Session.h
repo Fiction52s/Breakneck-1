@@ -193,6 +193,14 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	enum BonusType
+	{
+		BONUS_NONE,
+		BONUS_DEFAULT,
+		BONUS_GREY_SKELETON,
+		BONUS_Count,
+	};
+
 	float waterShaderCounter;
 	Tileset *ts_water;
 	sf::Shader *waterShaders;
@@ -836,6 +844,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int transFrames);
 	void SetupPokeTriangleScreenGroup();
 	void CleanupPokeTriangleScreenGroup();
+	virtual int GetBonusType() { return BONUS_NONE; }
 };
 
 #endif

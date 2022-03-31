@@ -76,7 +76,10 @@ GreySkeleton::~GreySkeleton()
 
 	for (int i = 0; i < NUM_EYES; ++i)
 	{
-		delete eyes[i];
+		if (eyes[i] != NULL)
+		{
+			delete eyes[i];
+		}
 	}
 }
 

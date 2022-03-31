@@ -5245,7 +5245,7 @@ void Session::TriggerBarrier(Barrier *b)
 			GameSession *game = GameSession::GetSession();
 			if (game != NULL)
 			{
-				game->SetBonus(b->myBonus, V2d(0, 0));
+				game->SetBonus(b->myBonus, V2d(0,0), Session::BONUS_DEFAULT);
 			}
 		}
 	}

@@ -566,7 +566,7 @@ void CrawlerQueen::StartAction()
 		if (game != NULL)
 		{
 			sess->RemoveBoss(this);
-			game->SetBonus(myBonus, GetPosition());
+			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
 		}
 		break;
 	}

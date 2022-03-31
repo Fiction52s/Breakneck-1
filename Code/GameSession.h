@@ -305,6 +305,8 @@ struct GameSession : RayCastHandler, Session
 	bool bestTimeGhostOn;
 	bool bestReplayOn;
 
+
+
 	//from mainmenu
 
 	sf::RenderTexture *mapTex;
@@ -384,6 +386,7 @@ struct GameSession : RayCastHandler, Session
 	bool activateBonus;
 	V2d bonusReturnPos;
 	BonusHandler *bonusHandler;
+	int bonusType;
 	
 	Gate *unlockedGateList;
 	sf::Vector2f oldCamBotLeft;
@@ -425,9 +428,9 @@ struct GameSession : RayCastHandler, Session
 	std::string GetBestTimeGhostPath();
 	std::string GetBestReplayPath();
 	GameSession * CreateBonus(const std::string &bonusName);
-	void ActivateBonus(V2d &returnPos);
 	void SetBonus(GameSession *bonus,
-		V2d &returnPos, BonusHandler *bHandler = NULL);
+		V2d &returnPos, int p_bonusType, 
+		BonusHandler *bHandler = NULL);
 	void ReturnFromBonus();
 	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
@@ -580,5 +583,6 @@ struct GameSession : RayCastHandler, Session
 	void CleanupPauseMenu();
 
 	bool HasLog(int logIndex);
+	int GetBonusType();
 };
 #endif

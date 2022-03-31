@@ -117,7 +117,7 @@ void WarpTransitionSequence::UpdateState()
 
 			if (game != NULL)
 			{
-				game->SetBonus(bonus, V2d(0,0));
+				game->SetBonus(bonus, V2d(0, 0), Session::BONUS_DEFAULT);
 				game->ClearFade();
 				//sess->SetGameSessionState(GameSession::RUN);
 			}

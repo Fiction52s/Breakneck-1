@@ -346,6 +346,7 @@ int GameSession::TryToActivateBonus()
 			bonusGame->Run();
 
 			bonusHandler = NULL;
+			bonusType = BONUS_NONE;
 			pauseMenu->game = this;
 			currSession = this;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -408,13 +409,6 @@ int GameSession::TryToActivateBonus()
 	return bonusReturnVal;
 }
 
-
-void GameSession::ActivateBonus(V2d &returnPos)
-{
-	activateBonus = true;
-	bonusReturnPos = returnPos;
-}
-
 string GameSession::GetBestTimeGhostPath()
 {
 	assert(saveFile != NULL);
@@ -464,11 +458,13 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName)
 
 
 void GameSession::SetBonus(GameSession *bonus,
-	V2d &returnPos, BonusHandler *bHandler)
+	V2d &returnPos, int p_bonusType, BonusHandler *bHandler)
 {
 	assert(bonus != NULL);
 
-	ActivateBonus(returnPos);
+	activateBonus = true;
+	bonusReturnPos = returnPos;
+	bonusType = p_bonusType;
 	bonusHandler = bHandler;
 	bonusGame = bonus;
 	bonusGame->cam.offset = cam.offset;
@@ -3156,7 +3152,7 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
-
+	
 	bestTimeGhostOn = false;
 	bestReplayOn = false;
 
@@ -3166,6 +3162,7 @@ void GameSession::Init()
 	boostEntrance = false;
 
 	activateBonus = false;
+	bonusType = BONUS_NONE;
 	bonusGame = NULL;
 	bonusHandler = NULL;
 	gateMarkers = NULL;
@@ -3685,6 +3682,7 @@ void GameSession::RestartLevel()
 	frameRateDisplay.Reset();
 
 	activateBonus = false;
+	bonusType = BONUS_NONE;
 
 	if( gateMarkers != NULL)
 		gateMarkers->Reset();
@@ -4967,4 +4965,16 @@ bool GameSession::HasLog(int logIndex)
 		return saveFile->HasLog(logIndex);
 	}
 	return false;
+}
+
+int GameSession::GetBonusType()
+{
+	if( parentGame == NULL)
+	{
+		return BONUS_NONE;
+	}
+	else
+	{
+		return parentGame->bonusType;
+	}
 }

@@ -143,7 +143,7 @@ void GreyEye::ProcessHit()
 		{
 			if (action == BASE_WORLD_IDLE)
 			{
-				game->SetBonus(myBonus, GetPosition());
+				game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
 
 				action = DIE;
 				frame = 0;

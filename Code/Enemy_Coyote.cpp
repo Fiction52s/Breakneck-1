@@ -572,7 +572,7 @@ void Coyote::StartAction()
 		{
 			sess->RemoveBoss(this);
 			//oldPlayerPos = sess->GetPlayerPos(0);
-			game->SetBonus(myBonus, GetPosition());
+			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
 		}
 		break;
 	}
