@@ -472,7 +472,7 @@ void Bird::StartAction()
 		if (game != NULL)
 		{
 			sess->RemoveBoss(this);
-			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
+			game->SetBonus(myBonus, GetPosition());
 		}
 		break;
 	}

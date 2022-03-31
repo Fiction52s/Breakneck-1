@@ -120,6 +120,14 @@ enum BossFightType
 	BossFightType_Count
 };
 
+enum BonusType
+{
+	BONUSTYPE_DEFAULT,
+	BONUSTYPE_GREY_SKELETON,
+	BONUSTYPE_NONE,
+	BONUSTYPE_Count,
+};
+
 struct Session : TilesetManager, QuadTreeCollider
 {
 	const static int PLAYER_OPTION_BIT_COUNT = 32 * 8;
@@ -193,13 +201,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-	enum BonusType
-	{
-		BONUS_NONE,
-		BONUS_DEFAULT,
-		BONUS_GREY_SKELETON,
-		BONUS_Count,
-	};
+	
 
 	float waterShaderCounter;
 	Tileset *ts_water;
@@ -844,7 +846,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		int transFrames);
 	void SetupPokeTriangleScreenGroup();
 	void CleanupPokeTriangleScreenGroup();
-	virtual int GetBonusType() { return BONUS_NONE; }
+	virtual int GetBonusType() { return BONUSTYPE_NONE; }
 };
 
 #endif

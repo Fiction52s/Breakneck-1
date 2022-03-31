@@ -161,7 +161,7 @@ void CrawlerAttackScene::UpdateState()
 
 			if (game != NULL)
 			{
-				game->SetBonus(myBonus, V2d(0,0), Session::BONUS_DEFAULT);
+				game->SetBonus(myBonus, V2d(0,0));
 				game->ClearFade();
 			}
 			//sess->Fade(false, 30, Color::Black);

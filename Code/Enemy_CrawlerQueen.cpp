@@ -566,7 +566,7 @@ void CrawlerQueen::StartAction()
 		if (game != NULL)
 		{
 			sess->RemoveBoss(this);
-			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
+			game->SetBonus(myBonus, GetPosition());
 		}
 		break;
 	}
@@ -591,7 +591,6 @@ void CrawlerQueen::SetupPostFightScenes()
 	{
 		myBonus = NULL;
 	}
-
 
 	if (level == 1)
 	{

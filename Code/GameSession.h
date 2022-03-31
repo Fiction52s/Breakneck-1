@@ -427,9 +427,10 @@ struct GameSession : RayCastHandler, Session
 
 	std::string GetBestTimeGhostPath();
 	std::string GetBestReplayPath();
-	GameSession * CreateBonus(const std::string &bonusName);
+	GameSession * CreateBonus(const std::string &bonusName,
+		int p_bonusType = BONUSTYPE_DEFAULT);
 	void SetBonus(GameSession *bonus,
-		V2d &returnPos, int p_bonusType, 
+		V2d &returnPos, 
 		BonusHandler *bHandler = NULL);
 	void ReturnFromBonus();
 	void DrawRaceFightScore(sf::RenderTarget *target);

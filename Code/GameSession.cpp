@@ -346,7 +346,7 @@ int GameSession::TryToActivateBonus()
 			bonusGame->Run();
 
 			bonusHandler = NULL;
-			bonusType = BONUS_NONE;
+			bonusType = BONUSTYPE_NONE;
 			pauseMenu->game = this;
 			currSession = this;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -442,11 +442,12 @@ std::string GameSession::GetBestReplayPath()
 	}
 }
 
-GameSession * GameSession::CreateBonus(const std::string &bonusName)
+GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonusType )
 {
 	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
 	
 	GameSession *newBonus = new GameSession(saveFile, p);
+	newBonus->bonusType = p_bonusType;
 	newBonus->SetParentGame(this);
 	newBonus->Load();
 
@@ -458,13 +459,12 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName)
 
 
 void GameSession::SetBonus(GameSession *bonus,
-	V2d &returnPos, int p_bonusType, BonusHandler *bHandler)
+	V2d &returnPos, BonusHandler *bHandler)
 {
 	assert(bonus != NULL);
 
 	activateBonus = true;
 	bonusReturnPos = returnPos;
-	bonusType = p_bonusType;
 	bonusHandler = bHandler;
 	bonusGame = bonus;
 	bonusGame->cam.offset = cam.offset;
@@ -3162,7 +3162,7 @@ void GameSession::Init()
 	boostEntrance = false;
 
 	activateBonus = false;
-	bonusType = BONUS_NONE;
+	bonusType = BONUSTYPE_NONE;
 	bonusGame = NULL;
 	bonusHandler = NULL;
 	gateMarkers = NULL;
@@ -3682,7 +3682,6 @@ void GameSession::RestartLevel()
 	frameRateDisplay.Reset();
 
 	activateBonus = false;
-	bonusType = BONUS_NONE;
 
 	if( gateMarkers != NULL)
 		gateMarkers->Reset();
@@ -4969,12 +4968,12 @@ bool GameSession::HasLog(int logIndex)
 
 int GameSession::GetBonusType()
 {
-	if( parentGame == NULL)
+	if (parentGame == NULL)
 	{
-		return BONUS_NONE;
+		return BONUSTYPE_NONE;
 	}
 	else
 	{
-		return parentGame->bonusType;
+		return bonusType;
 	}
 }

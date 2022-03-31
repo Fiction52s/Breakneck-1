@@ -1,4 +1,4 @@
-#include "Session.h"
+#include "GameSession.h"
 #include <iostream>
 #include "VectorMath.h"
 #include <assert.h>
@@ -6,7 +6,6 @@
 #include "Actor.h"
 #include "SequenceW7.h"
 #include "Enemy_GreyEye.h"
-
 
 using namespace std;
 using namespace sf;
@@ -24,6 +23,16 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	ts_move = GetSizedTileset("Bosses/Gator/dominance_384x384.png");
 	sprite.setColor(Color::Green);
 
+
+	isBonus = false;
+	GameSession *game = GameSession::GetSession();
+	if (game != NULL)
+	{
+		if (game->GetBonusType() == BONUSTYPE_GREY_SKELETON)
+		{
+			isBonus = true;
+		}
+	}
 
 	actionLength[THORN_TEST] = 300;
 	animFactor[THORN_TEST] = 1;
@@ -44,7 +53,7 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 
 	for (int i = 0; i < NUM_EYES; ++i)
 	{
-		eyes[i] = new GreyEye(i);
+		eyes[i] = new GreyEye(i, this);
 	}
 
 	/*stageMgr.AddActiveOption(0, MOVE, 2);

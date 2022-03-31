@@ -5,6 +5,7 @@
 #include <assert.h>
 #include "Enemy_GreyEye.h"
 #include "Actor.h"
+#include "Enemy_GreySkeleton.h"
 
 #include "PauseMenu.h"
 
@@ -15,20 +16,27 @@ void GreyEye::Setup()
 {
 	SetSpawnRect();
 
-	GameSession *game = GameSession::GetSession();
-	if (game != NULL)
+	if (!isBonusEye)
 	{
-		myBonus = game->CreateBonus("Bosses/greyw1");
-	}
-	else
-	{
-		myBonus = NULL;
+		GameSession *game = GameSession::GetSession();
+		if (game != NULL)
+		{
+			//cout << "load bonus" << endl;
+			myBonus = game->CreateBonus("BossTest/greyskeleton_blue", BONUSTYPE_GREY_SKELETON);
+		}
+		else
+		{
+			myBonus = NULL;
+		}
 	}
 }
 
-GreyEye::GreyEye( int eyeType )
+GreyEye::GreyEye( int p_eyeType, GreySkeleton *gs )
 	:Enemy(EnemyType::EN_GREYEYE, NULL)
 {
+	greySkel = gs;
+	eyeType = (EyeType)p_eyeType;
+
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, 0, 0);
 
@@ -39,6 +47,12 @@ GreyEye::GreyEye( int eyeType )
 	actionLength[DIE] = 60;
 	animFactor[DIE] = 1;
 
+	isBonusEye = gs->isBonus;
+
+	if (isBonusEye)
+	{
+		sprite.setColor(Color::Red);
+	}
 
 	ts = GetSizedTileset("Bosses/GreySkeleton/dimensioneye_80x80.png");
 
@@ -143,7 +157,7 @@ void GreyEye::ProcessHit()
 		{
 			if (action == BASE_WORLD_IDLE)
 			{
-				game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
+				game->SetBonus(myBonus, GetPosition());
 
 				action = DIE;
 				frame = 0;
@@ -151,7 +165,7 @@ void GreyEye::ProcessHit()
 				HitboxesOff();
 				HurtboxesOff();
 			}
-			else if (action == DIMENSION_IDLE)
+			else if (action == DIMENSION_WORLD_IDLE)
 			{
 				if (game != NULL)
 				{
@@ -194,8 +208,19 @@ void GreyEye::Appear( V2d &pos )
 
 	DefaultHurtboxesOn();
 
-	action = BASE_WORLD_IDLE;
-	frame = 0;
+	if (isBonusEye)
+	{
+		action = DIMENSION_WORLD_IDLE;
+		frame = 0;
+	}
+	else
+	{
+		action = BASE_WORLD_IDLE;
+		frame = 0;
+	}
+	
+
+	
 
 	UpdateHitboxes();
 }

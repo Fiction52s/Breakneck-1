@@ -188,7 +188,7 @@ bool GroundedWarper::CheckHitPlayer(int index)
 
 			if (game != NULL)
 			{
-				game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT);
+				game->SetBonus(myBonus, GetPosition());
 				HitboxesOff();
 			}
 		}

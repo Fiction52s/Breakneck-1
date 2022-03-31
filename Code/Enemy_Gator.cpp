@@ -716,7 +716,7 @@ void Gator::StartAction()
 		if (game != NULL)
 		{
 			oldPlayerPos = sess->GetPlayerPos(0);
-			game->SetBonus(myBonus, GetPosition(), Session::BONUS_DEFAULT, this);
+			game->SetBonus(myBonus, GetPosition(), this);
 		}
 		break;
 	}

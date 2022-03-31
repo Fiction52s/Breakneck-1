@@ -27,8 +27,11 @@ struct GreySkeleton : Boss
 		SHAPE_TEST,
 		SEQ_WAIT,
 		EYE_TEST,
+		HIDE,
 		A_Count
 	};
+
+	bool isBonus;
 
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
