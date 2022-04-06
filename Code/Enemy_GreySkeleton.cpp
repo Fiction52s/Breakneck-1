@@ -6,6 +6,7 @@
 #include "Actor.h"
 #include "SequenceW7.h"
 #include "Enemy_GreyEye.h"
+#include "GreyWarpSequence.h"
 
 using namespace std;
 using namespace sf;
@@ -24,15 +25,16 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 	sprite.setColor(Color::Green);
 
 
-	isBonus = false;
+	bonusType = BONUSTYPE_NONE;
 	GameSession *game = GameSession::GetSession();
 	if (game != NULL)
 	{
 		if (game->GetBonusType() == BONUSTYPE_GREY_SKELETON)
 		{
-			isBonus = true;
+			bonusType = BONUSTYPE_GREY_SKELETON;
 		}
 	}
+	bonusType = BONUSTYPE_GREY_SKELETON;
 
 	actionLength[THORN_TEST] = 300;
 	animFactor[THORN_TEST] = 1;
@@ -42,10 +44,19 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 
 	postFightScene = NULL;
 
-	stageMgr.AddActiveOption(0, EYE_TEST, 2);
-	//stageMgr.AddActiveOption(0, BOMB_TEST, 2);
-	//stageMgr.AddActiveOption(0, THORN_TEST, 2);
-	//stageMgr.AddActiveOption(0, SHAPE_TEST, 2);
+	warpSeq = NULL;
+	if (bonusType == BONUSTYPE_NONE)
+	{
+		warpSeq = new GreyWarpSequence;
+
+
+		stageMgr.AddActiveOption(0, EYE_TEST, 2);
+	}
+	else
+	{
+		stageMgr.AddActiveOption(0, EYE_BONUS_TEST, 2);
+	}
+
 
 	leftHand = NULL;
 
@@ -56,13 +67,6 @@ GreySkeleton::GreySkeleton(ActorParams *ap)
 		eyes[i] = new GreyEye(i, this);
 	}
 
-	/*stageMgr.AddActiveOption(0, MOVE, 2);
-
-	stageMgr.AddActiveOption(1, MOVE, 2);
-
-	stageMgr.AddActiveOption(2, MOVE, 2);
-
-	stageMgr.AddActiveOption(3, MOVE, 2);*/
 
 	LoadParams();
 
@@ -90,6 +94,11 @@ GreySkeleton::~GreySkeleton()
 			delete eyes[i];
 		}
 	}
+
+	if (warpSeq != NULL)
+	{
+		delete warpSeq;
+	}
 }
 
 void GreySkeleton::LoadParams()
@@ -110,7 +119,9 @@ void GreySkeleton::ResetEnemy()
 {
 	facingRight = true;
 
-	
+	visible = true;
+
+	currWarpEye = NULL;
 
 	HitboxesOff();
 
@@ -120,22 +131,29 @@ void GreySkeleton::ResetEnemy()
 	shapePool.Reset();
 	bombPool.Reset();
 
-	if (sess->preLevelScene == NULL) //fight testing
-	{
-		CameraShot *cs = sess->cameraShotMap["fightcam"];
-		if (cs != NULL)
-		{
-			sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
-		}
-	}
-
 	BossReset();
 
 	StartFight();
 
 	UpdateSprite();
 
-	
+	if (bonusType == BONUSTYPE_NONE)
+	{
+		if (sess->preLevelScene == NULL) //fight testing
+		{
+			CameraShot *cs = sess->cameraShotMap["fightcam"];
+			if (cs != NULL)
+			{
+				sess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+			}
+		}
+	}
+	else
+	{
+		HitboxesOff();
+		HurtboxesOff();
+		visible = false;
+	}
 }
 
 void GreySkeleton::SeqWait()
@@ -330,6 +348,20 @@ void GreySkeleton::StartAction()
 		}
 		break;
 	}
+	case EYE_BONUS_TEST:
+	{
+		eyes[0]->Appear(nodeGroupC.AlwaysGetNextNode()->pos);
+
+		PoiInfo *node;
+
+		int thornType = 1;//rand() % 2;
+		for (int i = 0; i < 3; ++i)
+		{
+			node = thornNodeGroup.AlwaysGetNextNode();
+			thornPool.Throw(thornType, node->pos, node->edge->Normal());
+		}
+		break;
+	}
 	}
 }
 
@@ -347,6 +379,16 @@ void GreySkeleton::SetupNodeVectors()
 {
 	nodeGroupA.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "A"));
 	nodeGroupB.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "B"));
+	nodeGroupC.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "C"));
+
+	eyeNodeGroup[0].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_BLUE"));
+	eyeNodeGroup[1].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_GREEN"));
+	eyeNodeGroup[2].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_YELLOW"));
+	eyeNodeGroup[3].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_ORANGE"));
+	eyeNodeGroup[4].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_RED"));
+	eyeNodeGroup[5].SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "EYE_MAGENTA"));
+
+	thornNodeGroup.SetNodeVec(sess->GetBossNodeVector(BossFightType::FT_SKELETON2, "THORN"));
 }
 
 void GreySkeleton::Setup()
@@ -392,7 +434,10 @@ void GreySkeleton::UpdateSprite()
 
 void GreySkeleton::EnemyDraw(sf::RenderTarget *target)
 {
-	DrawSprite(target, sprite);
+	if (visible)
+	{
+		DrawSprite(target, sprite);
+	}
 	//orbPool.Draw(target);
 }
 
@@ -428,4 +473,30 @@ void GreySkeleton::SetFromBytes(unsigned char *bytes)
 int GreySkeleton::GetNumSimulationFramesRequired()
 {
 	return 0;
+}
+
+void GreySkeleton::ReturnFromBonus()
+{
+	for (int i = 0; i < NUM_EYES; ++i)
+	{
+		eyes[i]->currPosInfo.position = eyeNodeGroup[i].nodeVec[0].at(0)->pos;
+		eyes[i]->WarpReturn();
+	}
+
+	sess->GetPlayer(0)->position = currWarpEye->GetPosition();
+	currWarpEye = NULL;
+}
+
+void GreySkeleton::InitBonus()
+{
+	Session *bonusSess = Session::GetSession();
+	if (bonusSess->preLevelScene == NULL) //fight testing
+	{
+		CameraShot *cs = bonusSess->cameraShotMap["fightcam"];
+		if (cs != NULL)
+		{
+			bonusSess->cam.Set(Vector2f(cs->centerPos), cs->zoom, 0);
+		}
+	}
+	bonusSess->Fade(true, 20, Color::White, true, EffectLayer::IN_FRONT_OF_UI);
 }

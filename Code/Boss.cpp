@@ -396,8 +396,13 @@ void Boss::ProcessHit()
 
 void Boss::Init()
 {
-
 	sess->SetCurrentBoss(this);
+}
+
+void Boss::SetSpawnRect()
+{
+	double dist = 100000;
+	spawnRect = sf::Rect<double>(GetPosition() + V2d(-dist / 2, -dist / 2), V2d(dist, dist));
 }
 
 //PositionInfo Boss::CheckGround(PositionInfo &startPos,

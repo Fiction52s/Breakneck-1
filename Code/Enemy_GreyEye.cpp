@@ -47,7 +47,10 @@ GreyEye::GreyEye( int p_eyeType, GreySkeleton *gs )
 	actionLength[DIE] = 60;
 	animFactor[DIE] = 1;
 
-	isBonusEye = gs->isBonus;
+	actionLength[WARP_RETURN] = 60;
+	animFactor[WARP_RETURN] = 1;
+
+	isBonusEye = gs->bonusType != BONUSTYPE_NONE;
 
 	if (isBonusEye)
 	{
@@ -114,6 +117,14 @@ void GreyEye::ProcessState()
 			dead = true;
 			numHealth = 0;
 			break;
+		case WARP_RETURN:
+		{
+			action = BASE_WORLD_IDLE;
+			frame = 0;
+			DefaultHitboxesOn();
+			DefaultHurtboxesOn();
+			break;
+		}
 		}
 	}
 }
@@ -157,13 +168,14 @@ void GreyEye::ProcessHit()
 		{
 			if (action == BASE_WORLD_IDLE)
 			{
-				game->SetBonus(myBonus, GetPosition());
+				game->SetBonus(myBonus, GetPosition(), greySkel);
+				greySkel->currWarpEye = this;
+				//game->CrossFade(10, 10, 10, Color::White, true);
+				//action = DIE;
+				//frame = 0;
 
-				action = DIE;
-				frame = 0;
-
-				HitboxesOff();
-				HurtboxesOff();
+				//HitboxesOff();
+				//HurtboxesOff();
 			}
 			else if (action == DIMENSION_WORLD_IDLE)
 			{
@@ -198,7 +210,7 @@ void GreyEye::ProcessHit()
 }
 
 
-void GreyEye::Appear( V2d &pos )
+void GreyEye::Appear(V2d &pos)
 {
 	Reset();
 	sess->AddEnemy(this);
@@ -218,9 +230,18 @@ void GreyEye::Appear( V2d &pos )
 		action = BASE_WORLD_IDLE;
 		frame = 0;
 	}
-	
 
-	
+
+
 
 	UpdateHitboxes();
+}
+
+
+void GreyEye::WarpReturn()
+{
+	action = WARP_RETURN;
+	frame = 0;
+	HitboxesOff();
+	HurtboxesOff();
 }

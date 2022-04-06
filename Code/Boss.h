@@ -82,7 +82,7 @@ struct Boss : Enemy
 	void SetBasicActiveHitbox();
 	void SetupHitboxes(int a, const std::string &name);
 	void Wait(int numFrames);
-
+	virtual void SetSpawnRect();
 	//virtual void MovementEnded();
 
 	void IHitPlayer(int index = 0);

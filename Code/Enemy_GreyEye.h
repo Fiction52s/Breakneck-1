@@ -14,13 +14,19 @@ struct GreyEye : Enemy
 		BASE_WORLD_IDLE,
 		DIMENSION_WORLD_IDLE,
 		IDLE,
+		WARP_RETURN,
 		DIE,
 		A_Count
 	};
 
 	enum EyeType
 	{
+		EYE_BLUE,
+		EYE_GREEN,
+		EYE_YELLOW,
+		EYE_ORANGE,
 		EYE_RED,
+		EYE_MAGENTA,
 		EYE_Count,
 	};
 
@@ -43,6 +49,7 @@ struct GreyEye : Enemy
 	void ResetEnemy();
 	void Appear( V2d &pos );
 	void UpdateEnemyPhysics();
+	void WarpReturn();
 };
 
 #endif

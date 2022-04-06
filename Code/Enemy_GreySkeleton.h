@@ -8,11 +8,15 @@
 #include "Enemy_Hand.h"
 #include "Enemy_AppearingShape.h"
 #include "Enemy_BeamBomb.h"
+#include "BonusHandler.h"
 
 struct FinalSkeletonPostFightScene;
 struct GreyEye;
 
-struct GreySkeleton : Boss
+struct GreyWarpSequence;
+
+struct GreySkeleton : Boss,
+	BonusHandler
 {
 	enum Action
 	{
@@ -27,14 +31,26 @@ struct GreySkeleton : Boss
 		SHAPE_TEST,
 		SEQ_WAIT,
 		EYE_TEST,
+		EYE_BONUS_TEST,
 		HIDE,
 		A_Count
 	};
 
-	bool isBonus;
+	int bonusType;
+
+	bool visible;
 
 	NodeGroup nodeGroupA;
 	NodeGroup nodeGroupB;
+
+	NodeGroup nodeGroupC;
+
+	const static int NUM_EYES = 6;
+
+	NodeGroup thornNodeGroup;
+	NodeGroup eyeNodeGroup[NUM_EYES];
+
+	GreyWarpSequence *warpSeq;
 
 	Tileset *ts_move;
 
@@ -46,7 +62,9 @@ struct GreySkeleton : Boss
 
 	BeamBombPool bombPool;
 
-	const static int NUM_EYES = 6;
+	GreyEye *currWarpEye;
+
+	
 	GreyEye *eyes[NUM_EYES];
 
 	Hand *leftHand;
@@ -83,6 +101,8 @@ struct GreySkeleton : Boss
 	void SeqWait();
 	void StartFight();
 	void LoadParams();
+	void ReturnFromBonus();
+	void InitBonus();
 
 	//Rollback
 	struct MyData : StoredEnemyData

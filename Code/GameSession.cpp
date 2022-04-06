@@ -342,11 +342,14 @@ int GameSession::TryToActivateBonus()
 
 			pauseMenu->game = bonusGame;
 
+			bonusGame->oneFrameMode = oneFrameMode;
+
 			bonusGame->RestartLevel();
+
 			bonusGame->Run();
 
-			bonusHandler = NULL;
-			bonusType = BONUSTYPE_NONE;
+			
+			
 			pauseMenu->game = this;
 			currSession = this;
 			for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -367,6 +370,17 @@ int GameSession::TryToActivateBonus()
 			//cout << "Restarting clock" << "\n";
 			//gameClock.restart();
 			currentTime = gameClock.getElapsedTime().asSeconds();
+
+			if (bonusHandler != NULL)
+			{
+				bonusHandler->ReturnFromBonus();
+			}
+
+			bonusType = BONUSTYPE_NONE;
+			
+
+			bonusHandler = NULL;
+
 
 			if (bonusGame->returnVal == GR_BONUS_RETURN)
 			{
@@ -2282,12 +2296,17 @@ int GameSession::Run()
 	if (recPlayer != NULL)
 		recPlayer->StartRecording();
 
+	/*if (parentGame != NULL && parentGame->bonusHandler != NULL)
+	{
+		parentGame->bonusHandler->InitBonus();
+	}*/
+
+	RestartLevel();
+
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
 	{
 		parentGame->bonusHandler->InitBonus();
 	}
-
-	RestartLevel();
 
 	while( !quit )
 	{

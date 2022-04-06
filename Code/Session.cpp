@@ -2754,7 +2754,8 @@ bool Session::OneFrameModeUpdate()
 {
 	//turned off for the beta
 	
-	bool skipInput = IsSessTypeEdit() && IsKeyPressed(sf::Keyboard::PageUp);
+	//fix this so you can only tas in the editor right after testing this.
+	bool skipInput = /*IsSessTypeEdit() && */ IsKeyPressed(sf::Keyboard::PageUp);
 
 	if (skipInput && !oneFrameMode)
 	{

@@ -3,7 +3,8 @@
 
 struct BonusHandler
 {
-	virtual void InitBonus() = 0;
+	virtual void InitBonus() {}
+	virtual void ReturnFromBonus() {}
 };
 
 #endif

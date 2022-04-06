@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_Thorn.h"
+#include "MovingGeo.h"
 
 using namespace std;
 using namespace sf;
@@ -393,10 +394,13 @@ void Thorn::ProcessState()
 			}
 		}
 
-		surfaceMover->velocity += PlayerDir() * accel;
-		if (length(surfaceMover->velocity) > maxSpeed)
+		if (frame > 0)
 		{
-			surfaceMover->velocity = normalize(surfaceMover->velocity) * maxSpeed;
+			surfaceMover->velocity += PlayerDir() * accel;
+			//if (length(surfaceMover->velocity) > maxSpeed)
+			{
+				surfaceMover->velocity = normalize(surfaceMover->velocity) * maxSpeed;
+			}
 		}
 	}
 	else if (action == SHRINK)
@@ -433,13 +437,17 @@ void Thorn::UpdateSprite()
 	{
 		ClearQuads();
 
+		Color b = thornColor;
+		Color a = Color::White;
+
+		if( numActivePositions > 0 )
 		for (int i = 0; i < maxPastPositions; ++i)
 		{
 			/*quads[i * 4 + 0].color = tailColor;
 			quads[i * 4 + 1].color = headColor;
 			quads[i * 4 + 2].color = headColor;
 			quads[i * 4 + 3].color = tailColor;*/
-			SetRectColor(quads + i * 4, thornColor);
+			SetRectColor(quads + i * 4, GetBlendColor(thornColor, b, ((float)i) / numActivePositions));//thornColor);
 			
 		}
 
