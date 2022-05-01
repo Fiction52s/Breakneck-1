@@ -354,10 +354,11 @@ void GreySkeleton::StartAction()
 
 		PoiInfo *node;
 
-		int thornType = 1;//rand() % 2;
-		for (int i = 0; i < 3; ++i)
+		int thornType = 0;//rand() % 2;
+		int numThorns = thornNodeGroup.nodeVec->size();
+		for (int i = 0; i < numThorns; ++i)
 		{
-			node = thornNodeGroup.AlwaysGetNextNode();
+			node = thornNodeGroup.nodeVec->at(i);//thornNodeGroup.AlwaysGetNextNode();
 			thornPool.Throw(thornType, node->pos, node->edge->Normal());
 		}
 		break;
@@ -479,7 +480,7 @@ void GreySkeleton::ReturnFromBonus()
 {
 	for (int i = 0; i < NUM_EYES; ++i)
 	{
-		eyes[i]->currPosInfo.position = eyeNodeGroup[i].nodeVec[0].at(0)->pos;
+		eyes[i]->currPosInfo.position = eyeNodeGroup[i].nodeVec->at(0)->pos;
 		eyes[i]->WarpReturn();
 	}
 
