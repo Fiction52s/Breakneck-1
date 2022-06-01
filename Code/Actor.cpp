@@ -2944,7 +2944,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	hasWallJumpRechargeAirDash = false;
 	numRemainingExtraAirdashBoosts = 0;
 
-	grindLimitBeforeSlow = 120;
+	grindLimitBeforeSlow = 30;
 	
 	action = -1;
 
@@ -18999,7 +18999,7 @@ void Actor::ConfirmEnemyKill( Enemy *e )
 	}
 
 
-	if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))
+	//if (HasUpgrade(UPGRADE_W3_SCORPION_ENEMY_KILL_BOUNCE))
 	{
 		if (!bouncedFromKill)
 		{

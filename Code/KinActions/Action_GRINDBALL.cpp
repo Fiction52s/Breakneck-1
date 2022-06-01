@@ -387,6 +387,7 @@ void Actor::GRINDBALL_Update()
 	double slowDecel = 0;
 	
 	double dSpeed = GetDashSpeed();
+	double grindDecelLimit = GetMaxSpeed() / 2.0;//30; //might need to adjust more later
 
 	double currDecel = slowDecel;
 	if (framesGrinding >= grindLimitBeforeSlow)
@@ -398,20 +399,33 @@ void Actor::GRINDBALL_Update()
 	{
 		grindSpeed = std::min(GetMaxSpeed(), grindSpeed);
 
-		grindSpeed -= currDecel;
-		if (grindSpeed < dSpeed)
+		double oldGrindSpeed = grindSpeed;
+
+
+		if (grindSpeed > grindDecelLimit)
 		{
-			grindSpeed = dSpeed;
+			grindSpeed -= currDecel;
+
+			if (grindSpeed < grindDecelLimit)
+			{
+				grindSpeed = grindDecelLimit;
+			}
 		}
 	}
 	else
 	{
 		grindSpeed = std::max(-GetMaxSpeed(), grindSpeed);
 
-		grindSpeed += currDecel;
-		if (grindSpeed > -dSpeed)
+		double oldGrindSpeed = grindSpeed;
+
+		if (grindSpeed < -grindDecelLimit)
 		{
-			grindSpeed = -dSpeed;
+			grindSpeed += currDecel;
+
+			if (grindSpeed > -grindDecelLimit)
+			{
+				grindSpeed = -grindDecelLimit;
+			}
 		}
 	}
 

@@ -24,6 +24,7 @@
 //#include <crtdbg.h>
 #include "Enemy.h"
 #include <vld.h>
+#include "steam/steam_api.h"
 
 
 
@@ -66,6 +67,67 @@ void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionB
 		//rect rect
 	}
 }
+
+// Purpose: callback hook for debug text emitted from the Steam API
+//-----------------------------------------------------------------------------
+extern "C" void __cdecl SteamAPIDebugTextHook(int nSeverity, const char *pchDebugText)
+{
+	// if you're running in the debugger, only warnings (nSeverity >= 1) will be sent
+	// if you add -debug_steamapi to the command-line, a lot of extra informational messages will also be sent
+	//OutputDebugStringA(pchDebugText);
+	printf(pchDebugText);
+
+	if (nSeverity >= 1)
+	{
+		// place to set a breakpoint for catching API errors
+		int x = 3;
+		(void)x;
+	}
+}
+
+void OutputDebugString(const std::string &str)
+{
+	cout << str;
+}
+
+void Alert(const std::string &str, const std::string &detail)
+{
+	cout << "Message: " << str << ", Detail: " << detail;
+}
+
+int SteamStartup()
+{
+	if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))
+	{
+		// if Steam is not running or the game wasn't started through Steam, SteamAPI_RestartAppIfNecessary starts the 
+		// local Steam client and also launches this game again.
+
+		// Once you get a public Steam AppID assigned for this game, you need to replace k_uAppIdInvalid with it and
+		// removed steam_appid.txt from the game depot.
+
+		return EXIT_FAILURE;
+	}
+
+	if (!SteamAPI_Init())
+	{
+		OutputDebugString("SteamAPI_Init() failed\n");
+		Alert("Fatal Error", "Steam must be running to play this game (SteamAPI_Init() failed).\n");
+		return EXIT_FAILURE;
+	}
+
+	SteamClient()->SetWarningMessageHook(&SteamAPIDebugTextHook);
+
+	if (!SteamUser()->BLoggedOn())
+	{
+		OutputDebugString("Steam user is not logged in\n");
+		Alert("Fatal Error", "Steam user must be logged in to play this game (SteamUser()->BLoggedOn() returned false).\n");
+		return EXIT_FAILURE;
+	}
+
+	return 0;
+}
+
+
 
 //#define _CRTDBG_MAP_ALLOC
 //#include <stdlib.h>
@@ -132,6 +194,11 @@ int main()
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();	*/
 
+	/*int result = SteamStartup();
+	if (result != 0)
+		return result;*/
+
+
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
@@ -142,6 +209,10 @@ int main()
 INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PSTR lpCmdLine, INT nCmdShow)
 {
+	int result = SteamStartup();
+	if (result != 0)
+		return result;
+
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
