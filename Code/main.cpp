@@ -194,9 +194,9 @@ int main()
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();	*/
 
-	/*int result = SteamStartup();
+	int result = SteamStartup();
 	if (result != 0)
-		return result;*/
+		return result;
 
 
 	MainMenu *mm = new MainMenu();
