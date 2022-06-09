@@ -3,11 +3,58 @@
 
 using namespace std;
 
-void WorkshopTester::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
+//struct WorkshopManager
+//{
+//	WorkshopManager();
+//	void UploadMap();
+//	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
+//	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
+//	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
+//	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
+//private:
+//
+//	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
+//	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
+//
+//};
+//struct WorkshopManager
+//{
+//	WorkshopManager();
+//	void UploadMap();
+//	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
+//	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
+//	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
+//	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
+//private:
+//	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
+//	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
+//	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
+//
+//};
+
+//maybe put these in the struct?
+CCallResult<WorkshopManager, CreateItemResult_t> OnCreateItemResultCallResult;
+CCallResult<WorkshopManager, SubmitItemUpdateResult_t> OnSubmitItemUpdateResultCallResult;
+CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
+
+WorkshopManager::WorkshopManager()
+{
+
+}
+
+void WorkshopManager::UploadMap()
+{
+	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
+	OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopManager::OnCreatedItem);
+}
+
+void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
 {
 	switch (callback->m_eResult)
 	{
 	case k_EResultOK:
+		//EItemUpdateStatus GetItemUpdateProgress(UGCUpdateHandle_t handle, uint64 *punBytesProcessed, uint64*punBytesTotal);
+		//EItemUpdateStatus itemStatus = SteamUGC()->GetItemUpdateProgress()
 		cout << "item updated successfully" << endl;
 		break;
 	default:
@@ -16,7 +63,7 @@ void WorkshopTester::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
 	}
 }
 
-void WorkshopTester::OnCreatedItem(CreateItemResult_t *callback, bool bIOFailure)
+void WorkshopManager::OnCreatedItem(CreateItemResult_t *callback, bool bIOFailure)
 {
 	//char rgchString[256];
 	switch (callback->m_eResult)
@@ -29,17 +76,11 @@ void WorkshopTester::OnCreatedItem(CreateItemResult_t *callback, bool bIOFailure
 		break;
 	}
 
-
-
-
-
 	if (callback->m_eResult == k_EResultOK)
 	{
-		uploadedID = callback->m_nPublishedFileId;
-
 		cout << "need legal agreement? " << (int)(callback->m_bUserNeedsToAcceptWorkshopLegalAgreement) << endl;
 
-		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), uploadedID);
+		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), callback->m_nPublishedFileId);
 
 		SteamUGC()->SetItemTitle(updateHandle, "b01");
 		SteamUGC()->SetItemDescription(updateHandle, "test description");
@@ -50,12 +91,11 @@ void WorkshopTester::OnCreatedItem(CreateItemResult_t *callback, bool bIOFailure
 
 		SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
 
-		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopTester::OnItemUpdated);
+		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopManager::OnItemUpdated);
 	}
-	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", callback->m_eResult);
 }
 
-void WorkshopTester::OnItemUpdated(SubmitItemUpdateResult_t *callback, bool bIOFailure)
+void WorkshopManager::OnItemUpdated(SubmitItemUpdateResult_t *callback, bool bIOFailure)
 {
 	//char rgchString[256];
 	switch (callback->m_eResult)
@@ -69,7 +109,7 @@ void WorkshopTester::OnItemUpdated(SubmitItemUpdateResult_t *callback, bool bIOF
 	}
 }
 
-void WorkshopTester::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool bIOFailure)
+void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool bIOFailure)
 {
 	//char rgchString[256];
 
@@ -141,7 +181,7 @@ void WorkshopTester::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool b
 }
 
 //return true on success
-bool WorkshopTester::LoadWorkshopItem(PublishedFileId_t workshopItemID)
+bool WorkshopManager::LoadWorkshopItem(PublishedFileId_t workshopItemID)
 {
 	uint32 unItemState = SteamUGC()->GetItemState(workshopItemID);
 
