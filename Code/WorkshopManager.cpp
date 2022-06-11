@@ -1,36 +1,9 @@
+
 #include "WorkshopManager.h"
 #include <iostream>
+#include "MapBrowser.h"
 
 using namespace std;
-
-//struct WorkshopManager
-//{
-//	WorkshopManager();
-//	void UploadMap();
-//	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
-//	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
-//	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
-//	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
-//private:
-//
-//	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
-//	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
-//
-//};
-//struct WorkshopManager
-//{
-//	WorkshopManager();
-//	void UploadMap();
-//	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
-//	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
-//	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
-//	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
-//private:
-//	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
-//	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
-//	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
-//
-//};
 
 //maybe put these in the struct?
 CCallResult<WorkshopManager, CreateItemResult_t> OnCreateItemResultCallResult;
@@ -39,7 +12,8 @@ CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResul
 
 WorkshopManager::WorkshopManager()
 {
-
+	queryType = Q_TEST;
+	queryState = QS_NOT_QUERYING;
 }
 
 void WorkshopManager::UploadMap()
@@ -113,90 +87,141 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 {
 	//char rgchString[256];
 
-
-
+	bool querySuccess = false;
 	switch (callback->m_eResult)
 	{
 	case k_EResultOK:
-	{
 		cout << "query success. " << callback->m_unTotalMatchingResults << " items available" << endl;
-
-		int numResultsReturned = callback->m_unNumResultsReturned;
-
-		//
-		for (int i = 0; i < numResultsReturned; ++i)
-		{
-			SteamUGCDetails_t details;
-			bool success = SteamUGC()->GetQueryUGCResult(callback->m_handle, i, &details);
-			if (success && details.m_eResult == EResult::k_EResultOK)
-			{
-				cout << i << "- " << details.m_rgchTitle << ": " << details.m_rgchDescription << endl;
-
-				uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
-
-				if ((itemState & k_EItemStateSubscribed))
-				{
-					cout << "item is already subbed to" << endl;
-				}
-				else
-				{
-					cout << "subbing to item" << endl;
-					SteamUGC()->SubscribeItem(details.m_nPublishedFileId);
-				}
-
-				if (itemState & k_EItemStateDownloading)
-				{
-					cout << "item is downloading" << endl;
-				}
-				else if (itemState & k_EItemStateInstalled)
-				{
-					cout << "item is already installed" << endl;
-					//uint64 fileSize;
-					//char path[1024];
-					//uint32 timestamp;
-					//cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
-
-					//cout << path << endl;
-
-					//cout << details.
-
-					//cout << "details: " << details.
-
-					LoadWorkshopItem(details.m_nPublishedFileId);
-				}
-			}
-
-
-		}
-
-
+		querySuccess = true;
 		break;
-	}
 	default:
 		cout << "query failed" << endl;
+		querySuccess = false;
 		break;
+	}
+
+	if (querySuccess)
+	{
+		if (queryType == Q_TEST)
+		{
+			int numResultsReturned = callback->m_unNumResultsReturned;
+			queryResults->reserve(numResultsReturned);
+			for (int i = 0; i < numResultsReturned; ++i)
+			{
+				SteamUGCDetails_t details;
+				bool success = SteamUGC()->GetQueryUGCResult(callback->m_handle, i, &details);
+				if (success && details.m_eResult == EResult::k_EResultOK)
+				{
+					cout << i << "- " << details.m_rgchTitle << ": " << details.m_rgchDescription << endl;
+
+					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
+
+					MapNode *newNode = new MapNode;
+					newNode->mapName = details.m_rgchTitle;
+					newNode->description = details.m_rgchDescription;
+					//details.m_hPreviewFile
+					//MapNode *newNode = LoadWorkshopItem(details);
+
+					queryResults->push_back(newNode);
+				}
+			}
+		}
+		else
+		{
+			cout << "query success. " << callback->m_unTotalMatchingResults << " items available" << endl;
+
+			int numResultsReturned = callback->m_unNumResultsReturned;
+
+			//
+			for (int i = 0; i < numResultsReturned; ++i)
+			{
+				SteamUGCDetails_t details;
+				bool success = SteamUGC()->GetQueryUGCResult(callback->m_handle, i, &details);
+				if (success && details.m_eResult == EResult::k_EResultOK)
+				{
+					cout << i << "- " << details.m_rgchTitle << ": " << details.m_rgchDescription << endl;
+
+					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
+
+					if ((itemState & k_EItemStateSubscribed))
+					{
+						cout << "item is already subbed to" << endl;
+					}
+					else
+					{
+						cout << "subbing to item" << endl;
+						SteamUGC()->SubscribeItem(details.m_nPublishedFileId);
+					}
+
+					if (itemState & k_EItemStateDownloading)
+					{
+						cout << "item is downloading" << endl;
+					}
+					else if (itemState & k_EItemStateInstalled)
+					{
+						cout << "item is already installed" << endl;
+						//uint64 fileSize;
+						//char path[1024];
+						//uint32 timestamp;
+						//cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
+
+						//cout << path << endl;
+
+						//cout << details.
+
+						//cout << "details: " << details.
+
+						//LoadWorkshopItem(details.m_nPublishedFileId);
+					}
+				}
+
+
+			}
+		}
 	}
 
 	SteamUGC()->ReleaseQueryUGCRequest(callback->m_handle);
+
+	queryState = QS_NOT_QUERYING;
 }
 
 //return true on success
-bool WorkshopManager::LoadWorkshopItem(PublishedFileId_t workshopItemID)
+MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 {
-	uint32 unItemState = SteamUGC()->GetItemState(workshopItemID);
+	uint32 unItemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
 	if (!(unItemState & k_EItemStateInstalled))
-		return false;
+		return NULL;
 
 	uint32 unTimeStamp = 0;
 	uint64 unSizeOnDisk = 0;
 	char szItemFolder[1024] = { 0 };
 
-	if (!SteamUGC()->GetItemInstallInfo(workshopItemID, &unSizeOnDisk, szItemFolder, sizeof(szItemFolder), &unTimeStamp))
-		return false;
+	if (!SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &unSizeOnDisk, szItemFolder, sizeof(szItemFolder), &unTimeStamp))
+		return NULL;
 
-
+	MapNode *newNode = new MapNode;
+	newNode->folderPath = szItemFolder;
+	newNode->mapName = details.m_rgchTitle;
+	newNode->type = MapNode::FILE;
+	newNode->filePath = string(szItemFolder) + "\\" + string(details.m_rgchTitle);
 	//is.open(folder
 
 	cout << "folder: " << szItemFolder << endl;
+
+	return newNode;
+}
+
+void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults)
+{
+	queryType = Q_TEST;
+	queryState = QS_WAITING_FOR_RESULTS;
+	queryResults = p_queryResults;
+	auto queryHandle = SteamUGC()->CreateQueryAllUGCRequest(EUGCQuery::k_EUGCQuery_RankedByLastUpdatedDate,
+		EUGCMatchingUGCType::k_EUGCMatchingUGCType_Items, SteamUtils()->GetAppID(),
+		SteamUtils()->GetAppID(), 1);
+	SteamUGC()->SetMatchAnyTag(queryHandle, true);
+	auto sendRequestAPICall = SteamUGC()->SendQueryUGCRequest(queryHandle);
+
+	OnQueryCompletedCallResult.Set(sendRequestAPICall, this, &WorkshopManager::OnQueryCompleted);
 }

@@ -36,6 +36,9 @@
 #include "CustomMapClient.h"
 #include "LoadingBackpack.h"
 
+#include "MapBrowserScreen.h"
+#include "steam/steam_api.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -369,7 +372,7 @@ MainMenu::MainMenu()
 	activatedMainMenuOptions[3] = true;		//level editor
 	activatedMainMenuOptions[4] = true;		//options
 	activatedMainMenuOptions[5] = true;		//tutorial
-	activatedMainMenuOptions[6] = false;	//credits
+	activatedMainMenuOptions[6] = true;	//credits
 	activatedMainMenuOptions[7] = true;		//exit
 
 	for (int i = 0; i < MainMenuOptions::M_Count; ++i)
@@ -515,9 +518,9 @@ MainMenu::MainMenu()
 
 	creditsMenu = new CreditsMenuScreen(this);
 
-	loadingBackpack = new LoadingBackpack(&tilesetManager);
+	mapBrowserScreen = new MapBrowserScreen(this);
 
-	
+	loadingBackpack = new LoadingBackpack(&tilesetManager);
 }
 
 void MainMenu::SetupWindow()
@@ -530,7 +533,7 @@ void MainMenu::SetupWindow()
 	window->setKeyRepeatEnabled(false);
 
 	mouseGrabbed = true;//false;//true;
-	mouseVisible = false;//false;//true;//false;
+	mouseVisible = true;//false;//true;//false;
 
 	SetMouseGrabbed(mouseGrabbed);
 	SetMouseVisible(mouseVisible);
@@ -697,6 +700,7 @@ MainMenu::~MainMenu()
 	delete mapSelectionMenu;
 	delete optionsMenu;
 	delete creditsMenu;
+	delete mapBrowserScreen;
 	
 
 	delete fader;
@@ -1507,6 +1511,8 @@ void MainMenu::Run()
 
 		accumulator += frameTime;
 
+		
+
 		preScreenTexture->clear(Color::Transparent);
 		window->clear(Color::Transparent);
 		
@@ -1531,6 +1537,8 @@ void MainMenu::Run()
 			//does it loop like this to fix some kind of drawing issue?
 			do
 			{
+				mousePixelPos = GetPixelPos();
+				MOUSE.Update(mousePixelPos);
 				//added this so going back from the thanks screen
 				//doesnt inta select a level. carrying over inputs
 				//between menus makes no sense.
@@ -1541,6 +1549,8 @@ void MainMenu::Run()
 			} while (changedMode);
 			
 			musicPlayer->Update();
+
+			SteamAPI_RunCallbacks();
 
 			fader->Update();
 			swiper->Update();
@@ -2510,7 +2520,8 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		creditsMenu->Update();
+		mapBrowserScreen->Update();
+		//creditsMenu->Update();
 		break;
 	}
 	case TRANS_CREDITS_TO_MAIN:
@@ -2753,7 +2764,17 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 	}
 
-	if (menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X ||
+	bool isMouseClickedOnCurrentOption = false;
+
+	//probably refine this later to capture the mouse etc zzz
+	if (QuadContainsPoint(mainMenuOptionQuads + saSelector->currIndex * 4,
+		MOUSE.GetFloatPos()) && MOUSE.IsMouseLeftClicked())
+	{
+		isMouseClickedOnCurrentOption = true;
+	}
+	
+
+	if (isMouseClickedOnCurrentOption || menuCurrInput.A || menuCurrInput.back || menuCurrInput.Y || menuCurrInput.X ||
 		menuCurrInput.rightShoulder || menuCurrInput.leftShoulder)
 	{
 		soundNodeList->ActivateSound(soundManager.GetSound("main_menu_select"));
@@ -2802,6 +2823,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
+			mapBrowserScreen->Start();
 			SetMode(TRANS_MAIN_TO_CREDITS);
 			break;
 		}
@@ -2823,6 +2845,21 @@ void MainMenu::TitleMenuModeUpdate()
 
 		int oldIndex = saSelector->currIndex;
 		int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+
+		//if mouse is enabled, lets you mouse over to select
+		for (int i = 0; i < saSelector->totalItems; ++i)
+		{
+			if (activatedMainMenuOptions[i] && saSelector->currIndex != i )
+			{
+				if (QuadContainsPoint(mainMenuOptionQuads + i * 4,
+					MOUSE.GetFloatPos()))
+				{
+					saSelector->SetIndex(i);
+					break;
+				}
+			}
+		}
+		
 
 		if (res != 0)
 		{
@@ -3014,7 +3051,8 @@ void MainMenu::DrawMode( Mode m )
 	case CREDITS:
 	{
 		preScreenTexture->setView(v);
-		creditsMenu->Draw(preScreenTexture);
+		mapBrowserScreen->Draw(preScreenTexture);
+		//creditsMenu->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAPSELECT_TO_MULTIPREVIEW:

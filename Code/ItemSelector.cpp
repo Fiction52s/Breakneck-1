@@ -1,4 +1,5 @@
 #include "ItemSelector.h"
+#include <assert.h>
 
 using namespace std;
 using namespace sf;
@@ -105,6 +106,13 @@ SingleAxisSelector::~SingleAxisSelector()
 {
 	delete[] waitFrames;
 	delete[] waitModeThresh;
+}
+
+void SingleAxisSelector::SetIndex(int ind)
+{
+	assert(ind >= 0 && ind < totalItems);
+	oldCurrIndex = currIndex;
+	currIndex = ind;
 }
 
 void SingleAxisSelector::SetTotalSize( int total )

@@ -3,7 +3,8 @@
 #pragma once
 
 #include "steam/steam_api.h"
-
+#include <string>
+#include <vector>
 //struct WorkshopManager
 //{
 //	WorkshopManager();
@@ -19,14 +20,32 @@
 //
 //};
 
+struct MapNode;
 struct WorkshopManager
 {
+	enum QueryType
+	{
+		Q_TEST,
+	};
+
+	enum QueryState
+	{
+		QS_NOT_QUERYING,
+		QS_WAITING_FOR_RESULTS,
+	};
+
+	QueryType queryType;
+	QueryState queryState;
+	std::vector<MapNode*> *queryResults;
+
 	WorkshopManager();
 	void UploadMap();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
 	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
 	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
-	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
+	//void OnQueryAllCompleted(SteamUGCQueryCompleted_t *callback, bool bIOFailure);
+	MapNode * LoadWorkshopItem(SteamUGCDetails_t &details );
+	void Query(std::vector<MapNode*> *p_queryResults );
 private:
 	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
 	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);

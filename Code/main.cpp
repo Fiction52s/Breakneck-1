@@ -35,30 +35,30 @@ using namespace boost::filesystem;
 
 
 
-void perspectiveGL( GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar )
+void perspectiveGL(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdouble zFar)
 {
-    const GLdouble pi = 3.1415926535897932384626433832795;
-    GLdouble fW, fH;
+	const GLdouble pi = 3.1415926535897932384626433832795;
+	GLdouble fW, fH;
 
-    //fH = tan( (fovY / 2) / 180 * pi ) * zNear;
-    fH = tan( fovY / 360 * pi ) * zNear;
-    fW = fH * aspect;
+	//fH = tan( (fovY / 2) / 180 * pi ) * zNear;
+	fH = tan(fovY / 360 * pi) * zNear;
+	fW = fH * aspect;
 
-    glFrustum( -fW, fW, -fH, fH, zNear, zFar );
+	glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 }
 
 
-void collideShapes( Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1 )
+void collideShapes(Actor &a, const CollisionBox &b, Actor &a1, const CollisionBox &b1)
 {
-	if( b.isCircle && b1.isCircle )
+	if (b.isCircle && b1.isCircle)
 	{
 		//circle circle
 	}
-	else if( b.isCircle )
+	else if (b.isCircle)
 	{
 		//circle rect
 	}
-	else if( b1.isCircle )
+	else if (b1.isCircle)
 	{
 		//circle rect
 	}
@@ -128,7 +128,6 @@ int SteamStartup()
 }
 
 
-
 //#define _CRTDBG_MAP_ALLOC
 //#include <stdlib.h>
 //#include <crtdbg.h>
@@ -137,8 +136,8 @@ int main()
 {
 	//_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
 	// _CrtSetDbgFlag (
- //     _CRTDBG_ALLOC_MEM_DF |
- //     _CRTDBG_LEAK_CHECK_DF
+	//     _CRTDBG_ALLOC_MEM_DF |
+	//     _CRTDBG_LEAK_CHECK_DF
 	//  | _CRTDBG_CHECK_ALWAYS_DF
 	//	);
 
@@ -147,25 +146,25 @@ int main()
 	// //state.
 
 	//_CrtSetReportMode ( _CRT_ERROR,
- //     _CRTDBG_MODE_DEBUG);
+	//     _CRTDBG_MODE_DEBUG);
 
 	std::cout << "starting program" << endl;
-	
+
 	//return 0;
 	//GCC::USBDriver driver;
 	//GCC::VJoyGCControllers joys(driver);
 
 	/*while (true)
 	{
-		auto controllers = driver.getState();
+	auto controllers = driver.getState();
 
-		if (controllers[0].buttons.a)
-		{
-			cout << (int)(controllers[0].axis.left_x) << endl;
-			break;
-		}
+	if (controllers[0].buttons.a)
+	{
+	cout << (int)(controllers[0].axis.left_x) << endl;
+	break;
+	}
 	}*/
-	
+
 	/*Text mainMenu[5];
 	int fontSize = 32;
 
@@ -173,7 +172,7 @@ int main()
 	int yoffset = 200;
 	int xoffset = 200;
 	int index = 0;*/
-	
+
 	/*Primitive prim;
 
 	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
@@ -194,10 +193,9 @@ int main()
 	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
 	glLoadIdentity();	*/
 
-	/*int result = SteamStartup();
+	int result = SteamStartup();
 	if (result != 0)
-		return result;*/
-
+		return result;
 
 	MainMenu *mm = new MainMenu();
 	mm->Run();

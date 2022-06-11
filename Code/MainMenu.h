@@ -25,6 +25,7 @@ struct Config;
 
 struct SaveFile;
 struct SaveMenuScreen;
+struct MapBrowserScreen;
 struct MainMenu;
 struct PauseMenu;
 struct LevelSelector;
@@ -587,6 +588,10 @@ struct MainMenu
 	CreditsMenuScreen *creditsMenu;
 	SaveMenuScreen *saveMenu;
 	SingleAxisSelector *saSelector;
+	MapBrowserScreen *mapBrowserScreen;
+
+	sf::Vector2i mousePixelPos;
+	
 
 	SaveFile *currSaveFile;
 	void UpdateMenuOptionText();

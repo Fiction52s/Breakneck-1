@@ -34,6 +34,7 @@ struct SingleAxisSelector
 	~SingleAxisSelector();
 	void ResetCounters();
 	void Reset();
+	void SetIndex(int ind);
 	int *waitFrames;// [3];
 	int *waitModeThresh;//[2];
 	int framesWaiting;
