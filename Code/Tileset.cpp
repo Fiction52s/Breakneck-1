@@ -348,6 +348,23 @@ Tileset * TilesetManager::GetTileset( const std::string & s, int tileWidth, int 
 	return Create(cat, s, tileWidth, tileHeight);
 }
 
+//when the texture has already been created and you want to give ownership to this tilesetmanager and produce a tileset
+Tileset *TilesetManager::GetTileset(const std::string & s, sf::Texture *tex)
+{
+	TilesetCategory cat = C_DEFAULT;
+
+	Tileset *t = new Tileset();
+	t->texture = tex;
+
+	t->tileWidth = tex->getSize().x;
+	t->tileHeight = tex->getSize().y;
+	t->sourceName = s;
+
+	Add(cat, s, t);
+
+	return t;
+}
+
 
 Tileset *TilesetManager::GetUpdatedTileset(
 	const std::string & s, int tileWidth, int tileHeight)

@@ -14,6 +14,10 @@ void MapNode::Draw(sf::RenderTarget *target)
 	//target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
 }
 
+MapNode::~MapNode()
+{
+}
+
 MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	int p_cols, int p_rows, int extraImageRects)
 	:handler(p_handler)
@@ -26,6 +30,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	action = A_IDLE;
 
 	workshop = new WorkshopManager;
+	workshop->mapBrowser = this;
 
 	float boxSize = 150;
 	Vector2f spacing(60, 60);
@@ -65,6 +70,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 			NULL, 0, boxSize);
 		imageRects[i]->SetShown(true);
 		imageRects[i]->Init();
+
+		
 	}
 
 
@@ -131,6 +138,10 @@ void MapBrowser::ClearNodes()
 {
 	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
+		if ((*it)->ts_preview != NULL)
+		{
+			DestroyTileset((*it)->ts_preview);
+		}
 		delete (*it);
 	}
 	nodes.clear();
@@ -140,11 +151,11 @@ void MapBrowser::Update()
 {
 	switch (action)
 	{
-	case A_WAITING_FOR_RESULTS:
+	case A_WAITING_FOR_QUERY_RESULTS:
 	{
 		if (workshop->queryState == WorkshopManager::QS_NOT_QUERYING)
 		{
-			action = A_IDLE;
+			
 
 			for (auto it = nodes.begin(); it != nodes.end(); ++it)
 			{
@@ -158,6 +169,28 @@ void MapBrowser::Update()
 			maxTopRow = numRowsTaken - rows;
 			if (maxTopRow < 0)
 				maxTopRow = 0;
+
+			action = A_WAITING_FOR_PREVIEW_RESULTS;
+			
+			workshop->DownloadPreviewFiles(&nodes);
+
+			//PopulateRects();
+		}
+		break;
+	}
+	case A_WAITING_FOR_PREVIEW_RESULTS:
+	{
+		if (workshop->queryState == WorkshopManager::QS_NOT_QUERYING)
+		{
+			action = A_IDLE;
+
+			for (auto it = nodes.begin(); it != nodes.end(); ++it)
+			{
+				if ((*it)->previewTex != NULL)
+				{
+					(*it)->ts_preview = GetTileset("WorkshopPreview/" + (*it)->mapName, (*it)->previewTex);
+				}
+			}
 
 			PopulateRects();
 		}
@@ -236,8 +269,17 @@ void MapBrowser::SetToWorkshop()
 	fMode = WORKSHOP;
 	ClearNodes();
 
-	action = A_WAITING_FOR_RESULTS;
+	action = A_WAITING_FOR_QUERY_RESULTS;
 	workshop->Query(&nodes);
+
+	for (int i = 0; i < totalRects; ++i)
+	{
+		imageRects[i]->SetShown(false);
+	}
+	/*for (int i = 0; i < totalRects; ++i)
+	{
+		icRect = imageRects[i];
+	}*/
 	//PopulateRects();
 }
 

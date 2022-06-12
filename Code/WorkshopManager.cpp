@@ -9,6 +9,7 @@ using namespace std;
 CCallResult<WorkshopManager, CreateItemResult_t> OnCreateItemResultCallResult;
 CCallResult<WorkshopManager, SubmitItemUpdateResult_t> OnSubmitItemUpdateResultCallResult;
 CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
+CCallResult<WorkshopManager, HTTPRequestCompleted_t> OnHTTPRequestCompletedCallResult;
 
 WorkshopManager::WorkshopManager()
 {
@@ -34,6 +35,65 @@ void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
 	default:
 		cout << "failed to update item: " << (int)(callback->m_eResult) << endl;
 		break;
+	}
+}
+
+void WorkshopManager::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback, bool bIOFailure)
+{
+	if (callback->m_bRequestSuccessful)
+	{
+		uint32 bodySize;
+		SteamHTTP()->GetHTTPResponseBodySize(callback->m_hRequest, &bodySize);
+
+		uint8 *buffer = new uint8[bodySize];
+
+		SteamHTTP()->GetHTTPResponseBodyData(callback->m_hRequest, buffer, bodySize);
+
+		MapNode *matchingNode = NULL;
+		for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
+		{
+			if ((*it)->previewRequestHandle == callback->m_hRequest)
+			{
+				matchingNode = (*it);
+				break;
+			}
+		}
+
+		if (matchingNode == NULL)
+		{
+			cout << "no matching node!" << endl;
+			assert(0);
+		}
+		else
+		{
+			matchingNode->previewTex = new sf::Texture;
+			matchingNode->previewTex->loadFromMemory(buffer, bodySize);
+			matchingNode->checkingForPreview = false;
+			cout << "http query successful" << endl;
+		}
+
+		delete[] buffer;
+
+		
+	}
+	else
+	{
+		cout << "failed to query http" << endl;
+	}
+
+	bool allChecksCompleted = true;
+	for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
+	{
+		if ((*it)->checkingForPreview )
+		{
+			allChecksCompleted = false;
+			break;
+		}
+	}
+
+	if (allChecksCompleted)
+	{
+		queryState = QS_NOT_QUERYING;
 	}
 }
 
@@ -106,6 +166,9 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 		{
 			int numResultsReturned = callback->m_unNumResultsReturned;
 			queryResults->reserve(numResultsReturned);
+
+			char urlTest[1024];
+
 			for (int i = 0; i < numResultsReturned; ++i)
 			{
 				SteamUGCDetails_t details;
@@ -119,10 +182,20 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 					MapNode *newNode = new MapNode;
 					newNode->mapName = details.m_rgchTitle;
 					newNode->description = details.m_rgchDescription;
+					
+					bool result = SteamUGC()->GetQueryUGCPreviewURL(callback->m_handle, 
+						i, urlTest, 1024);
+					if (result)
+					{
+						newNode->previewURL = urlTest;
+					}
+
+					queryResults->push_back(newNode);
+
 					//details.m_hPreviewFile
 					//MapNode *newNode = LoadWorkshopItem(details);
 
-					queryResults->push_back(newNode);
+					
 				}
 			}
 		}
@@ -224,4 +297,50 @@ void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults)
 	auto sendRequestAPICall = SteamUGC()->SendQueryUGCRequest(queryHandle);
 
 	OnQueryCompletedCallResult.Set(sendRequestAPICall, this, &WorkshopManager::OnQueryCompleted);
+}
+
+void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResults)
+{
+	queryResults = p_previewResults;
+	queryState = QS_WAITING_FOR_RESULTS;
+	for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
+	{
+		(*it)->checkingForPreview = false;
+		if ((*it)->previewURL == "")
+		{
+			continue;
+		}
+
+		HTTPRequestHandle rh = SteamHTTP()->CreateHTTPRequest(
+			EHTTPMethod::k_EHTTPMethodGET,
+			(*it)->previewURL.c_str());
+
+		
+
+		if (rh == INVALID_HTTPREQUEST_HANDLE)
+		{
+			cout << "http request failed" << endl;
+			
+		}
+		else
+		{
+			(*it)->previewRequestHandle = rh;
+			(*it)->checkingForPreview = true;
+			//SteamHTTP()->SendHTTPRequest( rh,)
+			SteamAPICall_t call;
+			bool httpResult = SteamHTTP()->SendHTTPRequest(rh, &call);
+			if (!httpResult)
+			{
+				cout << "failed send" << endl;
+			}
+			else
+			{
+				OnHTTPRequestCompletedCallResult.Set(call, this,
+					&WorkshopManager::OnHTTPRequestCompleted);
+				cout << "send successful" << endl;
+			}
+
+		}
+	}
+	
 }

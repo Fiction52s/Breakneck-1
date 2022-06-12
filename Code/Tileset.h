@@ -49,6 +49,7 @@ struct TilesetManager
 	Tileset * GetTileset(const std::string & s, int tileWidth = 0, int tileHeight = 0);
 	Tileset *GetUpdatedTileset(
 		const std::string & s, int tileWidth, int tileHeight );
+	Tileset *GetTileset(const std::string &s, sf::Texture *t);
 	void ClearTilesets();
 	int GetMemoryUsage();
 	void DestroyTilesetIfExists(const std::string &sourceName,

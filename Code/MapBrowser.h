@@ -4,6 +4,7 @@
 #include "GUI.h"
 #include "Tileset.h"
 #include <boost/filesystem.hpp>
+#include "steam/steam_api.h"
 
 
 struct WorkshopManager;
@@ -17,14 +18,28 @@ struct MapNode
 		FOLDER,
 	};
 
-	MapNode() { ts_preview = NULL; type = FILE; index = -1; }
+	enum Action
+	{
+		IDLE,
+		LOADING_PREVIEW,
+	};
+
+	MapNode() { ts_preview = NULL; type = FILE; index = -1;
+	previewTex = NULL;
+	}
+	~MapNode();
 	Type type;
 	void Draw(sf::RenderTarget *target);
 	boost::filesystem::path folderPath;
 	std::string mapName;
 	boost::filesystem::path filePath;
 	std::string description;
+	std::string previewURL;
 	Tileset *ts_preview;
+	sf::Texture *previewTex;
+	bool checkingForPreview;
+	//sf::Texture previewTexture;
+	HTTPRequestHandle previewRequestHandle;
 	int index;
 };
 
@@ -81,7 +96,8 @@ struct MapBrowser : TilesetManager,
 	enum Action : int
 	{
 		A_IDLE,
-		A_WAITING_FOR_RESULTS,
+		A_WAITING_FOR_QUERY_RESULTS,
+		A_WAITING_FOR_PREVIEW_RESULTS,
 	};
 
 	Action action;
@@ -107,6 +123,7 @@ struct MapBrowser : TilesetManager,
 	void AddFolder(const boost::filesystem::path &folderPath);
 	void ClearNodes();
 	void PopulateRects();
+	void UpdatePreviews();
 	void Start(const std::string &ext,
 		Mode fMode, const std::string &path);
 	void StartRelative(const std::string &ext,
