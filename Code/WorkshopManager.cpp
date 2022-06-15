@@ -397,9 +397,24 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
 		SteamUGC()->SetItemDescription(updateHandle, edit->mapHeader->description.c_str());//"test description 2");
 
-		boost::filesystem::create_directory("testpublish");
-
 		uploadFolder = boost::filesystem::current_path().append("\\testpublish");
+
+		if (boost::filesystem::exists(uploadFolder))
+		{
+			try
+			{
+				boost::filesystem::remove_all(uploadFolder);
+			}
+			catch (const boost::filesystem::filesystem_error& e)
+			{
+				cout << "remove error: " << e.what() << endl;
+
+				return;
+			}
+			
+		}
+
+		boost::filesystem::create_directory("testpublish");
 
 		boost::filesystem::path previewUploadPath = uploadFolder.string() 
 			+ "\\" + mapName + ".png";
@@ -440,7 +455,20 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 
 void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure)
 {
-	//boost::filesystem::remove(uploadFolder);
+	if (boost::filesystem::exists(uploadFolder))
+	{
+		try
+		{
+			boost::filesystem::remove_all(uploadFolder);
+		}
+		catch (const boost::filesystem::filesystem_error& e)
+		{
+			cout << "remove error: " << e.what() << endl;
+
+			return;
+		}
+
+	}
 	//char rgchString[256];
 	switch (pCallback->m_eResult)
 	{
