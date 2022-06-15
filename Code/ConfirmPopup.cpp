@@ -45,13 +45,13 @@ void ConfirmPopup::ButtonCallback(Button *b,
 		{
 		case SAVE_CURRENT:
 		{
-			edit->WriteFile(edit->currentFile);
+			edit->WriteFile();
 			edit->ReloadNew();
 			break;
 		}
 		case SAVE_CURRENT_EXIT:
 		{
-			edit->WriteFile(edit->currentFile);
+			edit->WriteFile();
 
 			edit->quit = true;
 			edit->returnVal = 1;

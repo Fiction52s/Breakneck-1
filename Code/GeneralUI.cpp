@@ -21,7 +21,7 @@ GeneralUI::GeneralUI()
 	mainPanel->SetAutoSpacing(true);
 
 	std::vector<string> fileOptions = { "New Map", "Open Map",  "Save Map", "Save Map As", "Edit Adventure",
-	"Create Adventure", "EXIT" };
+	"Create Adventure", "Publish", "EXIT" };
 	fileDropdown = mainPanel->AddMenuDropdown("File", Vector2i(0, 0), 
 		Vector2i(fileWidth, height), 200, fileOptions);
 	std::vector<string> editOptions(EditOptions_Count);
@@ -84,8 +84,14 @@ void GeneralUI::MenuDropdownCallback(MenuDropdown *menuDrop, const std::string &
 			edit->adventureCreator->Open();
 			break;
 		}
+		case PUBLISH:
+		{
+			edit->PublishMap();
+			break;
+		}
 		case EXIT_EDITOR:
 		{
+			
 			//are you sure you want to exit without saving?
 		}
 		}

@@ -1243,7 +1243,7 @@ void MainMenu::CustomMapsOption()
 
 	window->setView(oldView);
 	SetMouseGrabbed(true);
-	SetMouseVisible(false);
+	//SetMouseVisible(false);
 	//preScreenTexture->setView(oldPreView);
 }
 

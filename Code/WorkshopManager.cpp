@@ -2,13 +2,12 @@
 #include "WorkshopManager.h"
 #include <iostream>
 #include "MapBrowser.h"
+#include "EditSession.h"
 
 using namespace std;
 
 //maybe put these in the struct?
-CCallResult<WorkshopManager, CreateItemResult_t> OnCreateItemResultCallResult;
-CCallResult<WorkshopManager, SubmitItemUpdateResult_t> OnSubmitItemUpdateResultCallResult;
-CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
+
 
 
 WorkshopManager::WorkshopManager()
@@ -19,8 +18,8 @@ WorkshopManager::WorkshopManager()
 
 void WorkshopManager::UploadMap()
 {
-	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
-	OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopManager::OnCreatedItem);
+	//SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
+	//OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopManager::OnCreatedItem);
 }
 
 void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
@@ -125,7 +124,7 @@ void WorkshopManager::OnCreatedItem(CreateItemResult_t *callback, bool bIOFailur
 
 		SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
 
-		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopManager::OnItemUpdated);
+		//OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopManager::OnItemUpdated);
 	}
 }
 
@@ -357,4 +356,99 @@ void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResul
 		}
 	}
 	
+}
+
+WorkshopUploader::WorkshopUploader()
+{
+	edit = EditSession::GetSession();
+	assert(edit != NULL);
+}
+
+void WorkshopUploader::PublishMap()
+{
+	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
+	OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopUploader::OnCreatedItem);
+}
+
+void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure)
+{	
+	//char rgchString[256];
+	switch (pCallback->m_eResult)
+	{
+	case k_EResultOK:
+		cout << "created item successfully" << endl;
+		break;
+	default:
+		cout << "failed to create item: " << (int)(pCallback->m_eResult) << endl;
+		break;
+	}
+
+	PublishedFileId_t uploadId;
+	if (pCallback->m_eResult == k_EResultOK)
+	{
+		uploadId = pCallback->m_nPublishedFileId;
+
+		cout << "need legal agreement? " << (int)(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement) << endl;
+
+		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), uploadId);
+
+		string mapName = edit->filePath.stem().string();
+		
+		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
+		SteamUGC()->SetItemDescription(updateHandle, edit->mapHeader->description.c_str());//"test description 2");
+
+		boost::filesystem::create_directory("testpublish");
+
+		uploadFolder = boost::filesystem::current_path().append("\\testpublish");
+
+		boost::filesystem::path previewUploadPath = uploadFolder.string() 
+			+ "\\" + mapName + ".png";
+
+		boost::filesystem::path previewPath = edit->filePath.parent_path().string() 
+			+ "\\" + edit->filePath.stem().string() + ".png";
+
+
+		boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + ".brknk";
+
+		//eventually these need to be in try-catches because they can force the function to return
+		//early
+		try
+		{
+			boost::filesystem::copy_file(edit->filePath, uploadFilePath);
+			boost::filesystem::copy_file(previewPath, previewUploadPath);
+		}
+		catch (const boost::filesystem::filesystem_error& e)
+		{
+			cout << "copy error: " << e.what() << endl;
+
+			return;
+		}
+		
+
+		SteamUGC()->SetItemContent(updateHandle, uploadFolder.string().c_str());
+			//"C:\\Users\\ficti\\Documents\\Visual Studio 2015"
+			//"\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02");
+		SteamUGC()->SetItemPreview(updateHandle, previewUploadPath.string().c_str());//"C:\\Users\\ficti\\Documents\\Visual Studio 2015\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02\\b02.png");
+		SteamUGC()->SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+
+		SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
+
+		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopUploader::OnItemUpdated);
+	}
+	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
+}
+
+void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure)
+{
+	//boost::filesystem::remove(uploadFolder);
+	//char rgchString[256];
+	switch (pCallback->m_eResult)
+	{
+	case k_EResultOK:
+		cout << "edited item successfully" << endl;
+		break;
+	default:
+		cout << "failed to edit item: " << (int)(pCallback->m_eResult) << endl;
+		break;
+	}
 }

@@ -59,7 +59,7 @@
 
 #include "GameMode.h"
 
-
+#include "steam\steam_api.h"
 
 
 
@@ -4353,6 +4353,8 @@ void Session::HitlagUpdate()
 
 	cam.UpdateRumble();
 
+	SteamAPI_RunCallbacks();
+
 	fader->Update();
 	swiper->Update();
 	mainMenu->UpdateEffects();
@@ -6454,6 +6456,8 @@ bool Session::RunGameModeUpdate()
 		if (gateMarkers != NULL)
 			gateMarkers->Update(&cam);
 
+		SteamAPI_RunCallbacks();
+
 		fader->Update();
 		swiper->Update();
 
@@ -6538,6 +6542,7 @@ bool Session::FrozenGameModeUpdate()
 
 		ActiveSequenceUpdate();
 
+		SteamAPI_RunCallbacks();
 		fader->Update();
 		swiper->Update();
 
@@ -6599,6 +6604,8 @@ bool Session::SequenceGameModeUpdate()
 		ActiveSequenceUpdate();
 
 		mainMenu->musicPlayer->Update();
+
+		SteamAPI_RunCallbacks();
 
 		fader->Update();
 		swiper->Update();
@@ -6841,6 +6848,8 @@ bool Session::GGPORunGameModeUpdate()
 
 	if (gateMarkers != NULL)
 		gateMarkers->Update(&cam);
+
+	SteamAPI_RunCallbacks();
 
 	fader->Update();
 	swiper->Update();

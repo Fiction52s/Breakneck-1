@@ -557,9 +557,17 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 			uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
 
 
-			if (itemState & k_EItemStateInstalled)
+			if (itemState & k_EItemStateInstalled && !selectedNode->mapDownloaded)
 			{
+				//if the item is not installed when the query first runs, this checks again and sets the filepath
 				selectedNode->mapDownloaded = true;
+
+				uint64 fileSize;
+				char path[1024];
+				uint32 timestamp;
+				cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
+
+				selectedNode->filePath = string(path) + "\\" + selectedNode->mapName + ".brknk";
 			}
 
 			if (selectedNode->mapDownloaded)

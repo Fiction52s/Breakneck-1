@@ -63,6 +63,8 @@ struct AdventureCreator;
 struct FileChooser;
 struct ReplayPlayer;
 
+struct WorkshopUploader;
+
 struct GrassDiff
 {
 	PolyPtr poly;
@@ -148,6 +150,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+	WorkshopUploader *workshopUploader;
 	MusicInfo *previewMusic;
 	MusicSelectorUI *musicSelectorUI;
 	ReplayPlayer *debugReplayPlayer;
@@ -223,7 +226,6 @@ struct EditSession : GUIHandler, Session
 	bool justCompletedRailWithClick;
 	bool lastLeftMouseDown;
 	sf::View v;
-	std::string currentFile;
 	static double zoomMultiple;
 	sf::Vector2f testPoint;
 	double minimumEdgeLength;
@@ -403,6 +405,8 @@ struct EditSession : GUIHandler, Session
 	void CleanupTestPlayerMode();
 	void RepPlayerUpdateInput();
 
+	void PublishMap();
+
 	void UpdateEnvShaders();
 	void Load();
 	void Init();
@@ -434,7 +438,7 @@ struct EditSession : GUIHandler, Session
 	bool ReadSpecialTerrain(std::ifstream &is);
 	bool ReadGates(std::ifstream &is);
 	bool ReadRails(std::ifstream &is);
-	void WriteFile(std::string fileName);
+	bool WriteFile();
 	void WritePolygons(std::ofstream &of,
 		int bgPlatCount0 );
 	void WriteSpecialPolygons(std::ofstream &of);

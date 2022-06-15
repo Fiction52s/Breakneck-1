@@ -835,6 +835,7 @@ struct GeneralUI : GUIHandler
 		SAVE_MAP_AS,
 		EDIT_ADVENTURE,
 		CREATE_ADVENTURE,
+		PUBLISH,
 		EXIT_EDITOR,
 	};
 

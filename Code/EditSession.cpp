@@ -56,6 +56,8 @@
 
 #include "Config.h"
 
+#include "WorkshopManager.h"
+
 //#define GGPO_ON
 
 using namespace std;
@@ -1778,6 +1780,8 @@ EditSession::~EditSession()
 
 	delete musicSelectorUI;
 
+	delete workshopUploader;
+
 	delete brushManager;
 
 	delete fileChooser;
@@ -2701,7 +2705,7 @@ void EditSession::WritePlayerOptions(std::ofstream &of)
 	playerOptionsField.Save(of);
 }
 
-void EditSession::WriteFile(string fileName)
+bool EditSession::WriteFile()
 {
 	saveUpdated = true;
 
@@ -2802,11 +2806,22 @@ void EditSession::WriteFile(string fileName)
 	of.close();
 
 	string from = tempMap;
-	string to = fileName;
+	string to = filePath.string();
 	boost::filesystem::copy_file(from, to, boost::filesystem::copy_option::overwrite_if_exists);
 	boost::filesystem::remove(from);
 
 	CreatePreview(Vector2i( 1920 / 2 - 48, 1080 / 2 - 48 ));
+
+
+	
+
+
+	return true;
+
+	//boost::filesystem::create_directory("testupload");
+
+
+
 	//CreatePreview(Vector2i(960 * 1.25f, 540 * ));
 
 	//enemies here
@@ -3708,6 +3723,8 @@ void EditSession::Init()
 
 	musicSelectorUI = new MusicSelectorUI;
 
+	workshopUploader = new WorkshopUploader;
+
 	confirmPopup = new ConfirmPopup();
 
 	graph = new EditorGraph;
@@ -3800,8 +3817,6 @@ void EditSession::DefaultInit()
 	
 
 	UpdateFullBounds();
-
-	currentFile = "";
 }
 
 void EditSession::UpdateNumPlayers()
@@ -3921,8 +3936,6 @@ int EditSession::EditRun()
 	Color testColor(0x75, 0x70, 0x90);
 
 	preScreenTex->setView(view);
-
-	currentFile = filePath.string();
 
 	mode = EDIT;
 	SetMode(EDIT);
@@ -4089,8 +4102,8 @@ int EditSession::EditRun()
 	{
 		if (runToResave)
 		{
-			cout << "run to resave: writing to file: " << currentFile << endl;
-			WriteFile(currentFile);
+			cout << "run to resave: writing to file: " << filePath.string() << endl;
+			WriteFile();
 			break;
 		}
 
@@ -4212,6 +4225,8 @@ int EditSession::EditRun()
 			}
 		}
 		
+		SteamAPI_RunCallbacks();
+
 		//ShowMostRecentError();
 
 		/*int testSize = 0;
@@ -4298,7 +4313,6 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 					+ "\\" + mapName + ".brknk";
 				filePathStr = pathStr;
 				filePath = pathStr;
-				currentFile = filePathStr;
 
 				RemoveActivePanel(newMapPanel);
 			}
@@ -4791,11 +4805,12 @@ void EditSession::ChooseFileSave(FileChooser *fc,
 	}
 	else if (fc->ext == ".brknk")
 	{
+		//folderPath = ;
 		string fp = fc->currPath.string() + "\\" + fileName + ".brknk";
+		
 		filePath = fp;
 		filePathStr = fp;
-		currentFile = fp;
-		WriteFile(fp);
+		WriteFile();
 	}
 }
 
@@ -7942,7 +7957,6 @@ void EditSession::CreatePreview(Vector2i imageSize)
 	ssPrev << filePath.parent_path().string() << "\\" << filePath.stem().string() << ".png";
 	std::string previewFile = ssPrev.str();
 	img.saveToFile( previewFile );
-	//currentFile
 }
 
 //needs cleanup badly
@@ -12890,14 +12904,14 @@ void EditSession::TryReloadNew()
 
 void EditSession::TrySaveMap()
 {
-	if (currentFile == "")
+	if (filePath.string() == "")
 	{
 		SaveMapDialog();
 	}
 	else
 	{
-		cout << "writing to file: " << currentFile << endl;
-		WriteFile(currentFile);
+		cout << "writing to file: " << filePath.string() << endl;
+		WriteFile();
 	}
 }
 
@@ -14773,6 +14787,8 @@ void EditSession::ChooseRectEvent(ChooseRect *cr, int eventType)
 	}
 }
 
+
+
 void EditSession::PasteModeUpdate()
 {
 	if (MOUSE.IsMouseLeftClicked())
@@ -15183,5 +15199,14 @@ void EditSession::TransformModeUpdate()
 		{
 			dec->UpdateTransformation(transformTools);
 		}
+	}
+}
+
+#include "steam/steam_api.h"
+void EditSession::PublishMap()
+{
+	if (WriteFile())
+	{
+		workshopUploader->PublishMap();
 	}
 }

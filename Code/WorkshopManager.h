@@ -5,6 +5,7 @@
 #include "steam/steam_api.h"
 #include <string>
 #include <vector>
+#include <boost/filesystem.hpp>
 //struct WorkshopManager
 //{
 //	WorkshopManager();
@@ -22,6 +23,7 @@
 
 struct MapNode;
 struct MapBrowser;
+struct EditSession;
 
 struct WorkshopManager
 {
@@ -41,6 +43,10 @@ struct WorkshopManager
 	std::vector<MapNode*> *queryResults;
 	MapBrowser *mapBrowser;
 
+	
+	
+	CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
+
 	WorkshopManager();
 	void UploadMap();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
@@ -56,6 +62,21 @@ private:
 	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
 	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
 
+};
+
+struct WorkshopUploader
+{
+	CCallResult<WorkshopUploader, CreateItemResult_t> OnCreateItemResultCallResult;
+	CCallResult<WorkshopUploader, SubmitItemUpdateResult_t> OnSubmitItemUpdateResultCallResult;
+
+	EditSession *edit;
+
+	boost::filesystem::path uploadFolder;
+
+	WorkshopUploader();
+	void PublishMap();
+	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
+	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
 };
 
 
