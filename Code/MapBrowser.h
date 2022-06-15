@@ -74,6 +74,8 @@ struct MapBrowserHandler : GUIHandler
 	virtual void SliderCallback(Slider *slider) {}
 	//---------
 
+	bool CheckIfSelectedItemInstalled();
+
 	MapBrowser *chooser;
 };
 
@@ -94,6 +96,8 @@ struct DefaultMapBrowserHandler : MapBrowserHandler
 	Tileset *ts_largePreview;
 
 	sf::Text descriptionText;
+
+	
 };
 
 struct MapBrowser : TilesetManager,

@@ -48,7 +48,6 @@ struct WorkshopManager
 	CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
 
 	WorkshopManager();
-	void UploadMap();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
 	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
 	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);

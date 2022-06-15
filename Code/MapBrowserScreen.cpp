@@ -13,7 +13,9 @@ MapBrowserScreen::MapBrowserScreen(MainMenu *mm)
 
 	SetRectColor(bgQuad, Color::Blue);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
-	//browser = new MapBrowser( )
+
+	//SetRectColor(downloadingQuad, Color::Red);
+	//SetRectCenter(downloadingQuad, 300, 300, Vector2f(960, 540));
 }
 
 MapBrowserScreen::~MapBrowserScreen()
@@ -39,6 +41,9 @@ void MapBrowserScreen::Update()
 
 	browserHandler->Update();
 
+	
+
+
 	if (MOUSE.IsMouseRightClicked())
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
@@ -49,6 +54,10 @@ void MapBrowserScreen::Update()
 
 void MapBrowserScreen::Draw(sf::RenderTarget *target)
 {
+	/*if (browserHandler->chooser->action == MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD)
+	{
+		SetRectColor(downloadingQuad, Color::Red);
+	}*/
 	//target->draw(bgQuad, 4, sf::Quads);
 	browserHandler->chooser->panel->Draw(target);
 }

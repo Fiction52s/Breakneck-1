@@ -16,12 +16,6 @@ WorkshopManager::WorkshopManager()
 	queryState = QS_NOT_QUERYING;
 }
 
-void WorkshopManager::UploadMap()
-{
-	//SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
-	//OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopManager::OnCreatedItem);
-}
-
 void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
 {
 	switch (callback->m_eResult)

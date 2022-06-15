@@ -553,46 +553,66 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 
 			MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
 
-			
-			uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
-
-
-			if (itemState & k_EItemStateInstalled && !selectedNode->mapDownloaded)
+			if (CheckIfSelectedItemInstalled())
 			{
-				//if the item is not installed when the query first runs, this checks again and sets the filepath
-				selectedNode->mapDownloaded = true;
-
-				uint64 fileSize;
-				char path[1024];
-				uint32 timestamp;
-				cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
-
-				selectedNode->filePath = string(path) + "\\" + selectedNode->mapName + ".brknk";
-			}
-
-			if (selectedNode->mapDownloaded)
-			{
-				assert(itemState & k_EItemStateInstalled);
 				mm->RunWorkshopMap(selectedNode->filePath.string());
 			}
 			else
 			{
+				uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
 				if (!(itemState & k_EItemStateSubscribed))
 				{
 					cout << "subbing to item" << endl;
 					SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
+					cout << "map download started" << endl;
 				}
-				else if (itemState &k_EItemStateDownloading)
+				/*else if (itemState &k_EItemStateDownloading)
 				{
 					cout << "downloading map" << endl;
+
 				}
 				else if (itemState &k_EItemStateDownloadPending)
 				{
 					cout << "map downoad pending" << endl;
-				}
+				}*/
 
-				chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
+				mm->DownloadAndRunWorkshopMap();
+
+
+
+				//chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
 			}
+
+			//if (itemState & k_EItemStateInstalled && !selectedNode->mapDownloaded)
+			//{
+			//	//if the item is not installed when the query first runs, this checks again and sets the filepath
+			//	
+			//}
+
+			//if (selectedNode->mapDownloaded)
+			//{
+			//	assert(itemState & k_EItemStateInstalled);
+			//	mm->RunWorkshopMap(selectedNode->filePath.string());
+			//}
+			//else
+			//{
+			//	if (!(itemState & k_EItemStateSubscribed))
+			//	{
+			//		cout << "subbing to item" << endl;
+			//		SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
+			//	}
+			//	else if (itemState &k_EItemStateDownloading)
+			//	{
+			//		cout << "downloading map" << endl;
+			//		
+			//	}
+			//	else if (itemState &k_EItemStateDownloadPending)
+			//	{
+			//		cout << "map downoad pending" << endl;
+			//	}
+
+			//	chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
+			//}
 		}
 		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
@@ -622,6 +642,36 @@ void DefaultMapBrowserHandler::ChangePath()
 {
 	ts_largePreview = NULL;
 	chooser->ClearTilesets();
+}
+
+
+//return true if installed. sets the filepath if its installation is just being registered.
+bool MapBrowserHandler::CheckIfSelectedItemInstalled()
+{
+	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
+
+	if (selectedNode == NULL)
+		return false;
+
+	uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
+
+	if (itemState & k_EItemStateInstalled )
+	{
+		if (!selectedNode->mapDownloaded)
+		{
+			selectedNode->mapDownloaded = true;
+
+			uint64 fileSize;
+			char path[1024];
+			uint32 timestamp;
+			cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
+
+			selectedNode->filePath = string(path) + "\\" + selectedNode->mapName + ".brknk";
+		}
+		return true;
+	}
+
+	return false;
 }
 
 void DefaultMapBrowserHandler::Update()

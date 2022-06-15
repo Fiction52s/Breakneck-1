@@ -510,10 +510,13 @@ struct MainMenu
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
 		TRANS_WORLDMAP_TO_LOADING,
-		RUNWORKSHOPMAP,
+		DOWNLOAD_WORKSHOP_MAP,
+		RUN_WORKSHOP_MAP,
 		BROWSE_WORKSHOP,
 		INTROMOVIE,
 		THANKS_FOR_PLAYING,
+		DOWNLOADSTART,
+		DOWNLOADLOOP,
 		EXITING,
 	};
 
@@ -532,6 +535,7 @@ struct MainMenu
 	};
 
 	//testing
+
 	std::string currWorkshopMap;
 
 	Mode modeLoadingFrom;
@@ -553,6 +557,7 @@ struct MainMenu
 	void UpdateMenuInput();
 
 	void RunWorkshopMap(const std::string &path);
+	void DownloadAndRunWorkshopMap();
 
 	void UnlockSkin(int skinIndex);
 	bool IsSkinUnlocked(int skinIndex);

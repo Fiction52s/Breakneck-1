@@ -39,6 +39,8 @@
 #include "MapBrowserScreen.h"
 #include "steam/steam_api.h"
 
+#include "MapBrowser.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -181,7 +183,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
-	case RUNWORKSHOPMAP:
+	case RUN_WORKSHOP_MAP:
 	{
 		assert(currWorkshopSession != NULL);
 		delete currWorkshopSession;
@@ -235,7 +237,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
-	case RUNWORKSHOPMAP:
+	case RUN_WORKSHOP_MAP:
 	{
 		assert(currWorkshopSession == NULL);
 		currWorkshopSession = new GameSession(currSaveFile, currWorkshopMap);
@@ -2001,7 +2003,6 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-
 	case LOADINGMENULOOP:
 		loadingBackpack->Update();
 
@@ -2627,7 +2628,7 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-	case RUNWORKSHOPMAP:
+	case RUN_WORKSHOP_MAP:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -2662,6 +2663,37 @@ void MainMenu::HandleMenuMode()
 		mapBrowserScreen->Update();
 		break;
 	}
+	case DOWNLOADSTART:
+	{
+		if (fader->IsFullyFadedOut())
+		{
+			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			SetMode(DOWNLOADLOOP);
+			//loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
+			//StartLoadModeScreen();
+		}
+		break;
+	}
+	case DOWNLOADLOOP:
+		loadingBackpack->Update();
+
+		if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+		{
+			cout << "map download complete" << endl;
+
+			modeToLoad = RUN_WORKSHOP_MAP;
+
+			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+			if (selectedNode == NULL)
+				assert(0);
+
+
+			currWorkshopMap = selectedNode->filePath.string();
+			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
+			SetMode(LOADINGMENULOOP);
+		}
+		break;
 	}
 
 	
@@ -3160,8 +3192,19 @@ void MainMenu::DrawMode( Mode m )
 		mapBrowserScreen->Draw(preScreenTexture);
 		break;
 	}
-	case RUNWORKSHOPMAP:
+	case RUN_WORKSHOP_MAP:
 	{
+		break;
+	}
+	case DOWNLOADSTART:
+	{
+		DrawMode(modeLoadingFrom);
+		break;
+	}
+	case DOWNLOADLOOP:
+	{
+		preScreenTexture->setView(v);
+		loadingBackpack->Draw(preScreenTexture);
 		break;
 	}
 	default:
@@ -3184,6 +3227,12 @@ void MainMenu::DrawMode( Mode m )
 void MainMenu::RunWorkshopMap(const std::string &path)
 {
 	currWorkshopMap = path;
-	LoadMode(MainMenu::RUNWORKSHOPMAP);
+	LoadMode(MainMenu::RUN_WORKSHOP_MAP);
 	//SetMode(MainMenu::RUNWORKSHOPMAP);
+}
+
+void MainMenu::DownloadAndRunWorkshopMap()
+{
+	//currWorkshopMap = path;
+	LoadMode(MainMenu::DOWNLOADSTART);
 }

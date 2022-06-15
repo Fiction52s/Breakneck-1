@@ -15,6 +15,8 @@ struct MapBrowserScreen
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
 
+	//sf::Vertex downloadingQuad[4];
+
 	MapBrowserScreen(MainMenu *mm);
 	~MapBrowserScreen();
 
