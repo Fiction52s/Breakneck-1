@@ -22,14 +22,12 @@ struct MapNode
 	{
 		IDLE,
 		LOADING_PREVIEW,
+		DOWNLOADING,
 	};
 
-	MapNode() { ts_preview = NULL; type = FILE; index = -1;
-	previewTex = NULL;
-	}
-	~MapNode();
+	Action action;
 	Type type;
-	void Draw(sf::RenderTarget *target);
+	bool mapDownloaded;
 	boost::filesystem::path folderPath;
 	std::string mapName;
 	boost::filesystem::path filePath;
@@ -40,7 +38,20 @@ struct MapNode
 	bool checkingForPreview;
 	//sf::Texture previewTexture;
 	HTTPRequestHandle previewRequestHandle;
+	PublishedFileId_t publishedFileId;
+	ImageChooseRect *chooseRect;
 	int index;
+	CCallResult<MapNode,
+		HTTPRequestCompleted_t>
+		OnHTTPRequestCompletedCallResult;
+
+	MapNode();
+	~MapNode();
+	void Draw(sf::RenderTarget *target);
+	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
+		bool bIOFailure);
+	void RequestDownloadPreview();
+	
 };
 
 struct MapBrowserHandler : GUIHandler
@@ -81,6 +92,8 @@ struct DefaultMapBrowserHandler : MapBrowserHandler
 
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
+
+	sf::Text descriptionText;
 };
 
 struct MapBrowser : TilesetManager,
@@ -98,6 +111,7 @@ struct MapBrowser : TilesetManager,
 		A_IDLE,
 		A_WAITING_FOR_QUERY_RESULTS,
 		A_WAITING_FOR_PREVIEW_RESULTS,
+		A_WAITING_FOR_MAP_DOWNLOAD,
 	};
 
 	Action action;
@@ -132,6 +146,7 @@ struct MapBrowser : TilesetManager,
 	void TurnOff();
 	//void HideConfirmButton();
 
+	ImageChooseRect *selectedRect;
 	WorkshopManager *workshop;
 	Mode fMode;
 	MapBrowserHandler *handler;
@@ -152,7 +167,7 @@ struct MapBrowser : TilesetManager,
 	Panel *panel;
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
-	Button *upButton;
+	Button *playButton;
 	sf::Text *folderPathText;
 };
 

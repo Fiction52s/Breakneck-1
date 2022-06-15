@@ -179,6 +179,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 			delete saveMenu;
 			saveMenu = NULL;
 		}
+		break;
+	}
+	case RUNWORKSHOPMAP:
+	{
+		assert(currWorkshopSession != NULL);
+		delete currWorkshopSession;
+		currWorkshopSession = NULL;
+		
+		break;
 	}
 
 	}
@@ -224,6 +233,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(currTutorialSession == NULL);
 		currTutorialSession = new GameSession(currSaveFile, "Resources/Maps/Beta3/tut1.brknk");
 		GameSession::sLoad(currTutorialSession);
+		break;
+	}
+	case RUNWORKSHOPMAP:
+	{
+		assert(currWorkshopSession == NULL);
+		currWorkshopSession = new GameSession(currSaveFile, currWorkshopMap);
+		GameSession::sLoad(currWorkshopSession);
 		break;
 	}
 	}
@@ -329,6 +345,7 @@ MainMenu::MainMenu()
 
 	currEditSession = NULL;
 	currTutorialSession = NULL;
+	currWorkshopSession = NULL;
 
 	currSaveFile = NULL;
 
@@ -1909,7 +1926,7 @@ void MainMenu::HandleMenuMode()
 
 		if (A || B || X || Y || r || l)
 		{
-			SetMode( SPLASH_TRANS );
+			SetMode(SPLASH_TRANS);
 			changedMode = true;
 		}
 		break;
@@ -1920,9 +1937,9 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		
+
 		SetMode(TITLEMENU);
-		
+
 		break;
 	}
 	case TITLEMENU:
@@ -1962,7 +1979,7 @@ void MainMenu::HandleMenuMode()
 				//window->setVerticalSyncEnabled(true);
 				delete loadThread;
 				loadThread = NULL;
-				SetMode( RUNNINGMAP );
+				SetMode(RUNNINGMAP);
 				//fader->CrossFade(30, 0, Color::Black);
 				//return HandleMenuMode();
 				//cout << "RUNNING MAP" << endl;
@@ -1984,7 +2001,7 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-	
+
 	case LOADINGMENULOOP:
 		loadingBackpack->Update();
 
@@ -2033,10 +2050,10 @@ void MainMenu::HandleMenuMode()
 
 		if (deadThread == NULL)
 		{
-			if ( loadThread != NULL )//loadThread->try_join_for(boost::chrono::milliseconds(0)))
+			if (loadThread != NULL)//loadThread->try_join_for(boost::chrono::milliseconds(0)))
 			{
 				//loadThread->join();
-				
+
 			}
 		}
 
@@ -2047,19 +2064,19 @@ void MainMenu::HandleMenuMode()
 			gameRunType = GRT_ADVENTURE;
 			SetMode(RUNNINGMAP);
 		}
-		else if ( worldMap->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && worldMap->kinBoostScreen->IsBoosting())
+		else if (worldMap->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && worldMap->kinBoostScreen->IsBoosting())
 		{
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
 			worldMap->kinBoostScreen->End();
-			
+
 			//gameRunType = GRT_ADVENTURE;
 			//SetMode(RUNNINGMAP);
 			//window->setVerticalSyncEnabled(true);
 			//kinBoostScreen->
 			//kinBoostScreen->End();
-			
-			
+
+
 			//swiper->Swipe(Swiper::W1, 15);
 			//return HandleMenuMode();
 		}
@@ -2067,16 +2084,16 @@ void MainMenu::HandleMenuMode()
 		{
 			//kinBoostScreen->Update();
 
-			if (worldMap->kinBoostScreen->frame == 60 && worldMap->kinBoostScreen->IsBoosting() )
+			if (worldMap->kinBoostScreen->frame == 60 && worldMap->kinBoostScreen->IsBoosting())
 			{
 				//window->setVerticalSyncEnabled(false);
 				//window->setFramerateLimit(60);
 				//string levelPath = kinBoostScreen->level->GetFullName();//kinBoostScreen->levName;
 				Level *lev = worldMap->kinBoostScreen->level;
-				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &worldMap->adventureFile.GetMap( lev->index ), lev);
+				deadThread = new boost::thread(MainMenu::sGoToNextLevel, this, &worldMap->adventureFile.GetMap(lev->index), lev);
 				worldMap->kinBoostScreen->level = NULL;
 			}
-			
+
 		}
 		worldMap->kinBoostScreen->Update();
 		break;
@@ -2093,7 +2110,7 @@ void MainMenu::HandleMenuMode()
 		GameSession::GameResultType result =
 			(GameSession::GameResultType)currLevel->Run();
 
-		
+
 
 		SaveFile *currFile = GetCurrentProgress();
 		if (result == GameSession::GR_WIN || result == GameSession::GR_WINCONTINUE)
@@ -2249,7 +2266,7 @@ void MainMenu::HandleMenuMode()
 		{
 			LoadMode(TITLEMENU);
 		}
-		
+
 		break;
 	}
 	case ADVENTURETUTORIAL:
@@ -2283,9 +2300,9 @@ void MainMenu::HandleMenuMode()
 		//worldMap->state = WorldMap::PLANET;
 		//worldMap->frame = 0;
 
-		
 
-		
+
+
 		break;
 	}
 	case SAVEMENU:
@@ -2311,7 +2328,7 @@ void MainMenu::HandleMenuMode()
 		}
 		if (transFrame == transLength)
 		{
-			SetMode( SAVEMENU );
+			SetMode(SAVEMENU);
 			break;
 		}
 
@@ -2391,7 +2408,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MULTIPREVIEW );
+		SetMode(MULTIPREVIEW);
 		/*if (slideCurrFrame > numSlideFrames)
 		{
 		menuMode = MULTIPREVIEW;
@@ -2408,7 +2425,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MAPSELECT );
+		SetMode(MAPSELECT);
 		/*if (slideCurrFrame > numSlideFrames)
 		{
 		menuMode = MAPSELECT;
@@ -2425,7 +2442,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( MAPSELECT );
+		SetMode(MAPSELECT);
 		/*if (slideCurrFrame > numSlideFrames)
 		{
 		menuMode = MAPSELECT;
@@ -2460,7 +2477,7 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		SetMode( OPTIONS );
+		SetMode(OPTIONS);
 		config->WaitForLoad();
 
 		optionsMenu->Load();
@@ -2520,8 +2537,8 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		mapBrowserScreen->Update();
-		//creditsMenu->Update();
+		
+		creditsMenu->Update();
 		break;
 	}
 	case TRANS_CREDITS_TO_MAIN:
@@ -2542,7 +2559,7 @@ void MainMenu::HandleMenuMode()
 		if (modeFrame == 1)
 		{
 			fader->CrossFade(30, 0, 30, Color::Black);
-		}		
+		}
 
 		if (modeFrame == 30)
 		{
@@ -2552,7 +2569,7 @@ void MainMenu::HandleMenuMode()
 		{
 			menuPrevInput = ControllerState();
 			menuCurrInput = ControllerState();
-			worldMap->Update( menuPrevInput, menuCurrInput);
+			worldMap->Update(menuPrevInput, menuCurrInput);
 		}
 		break;
 	}
@@ -2564,7 +2581,7 @@ void MainMenu::HandleMenuMode()
 		}
 		ControllerState &introInput = GetCurrInputUnfiltered(0);
 		introMovie->skipHolder->Update(introInput.A);
-		if (!introMovie->Update() )
+		if (!introMovie->Update())
 		{
 			//fader->CrossFade(30, 0, 30, Color::Black);
 			introMovie->Stop();
@@ -2573,7 +2590,7 @@ void MainMenu::HandleMenuMode()
 			{
 				delete loadThread;
 				loadThread = NULL;
-				SetMode( RUNNINGMAP );
+				SetMode(RUNNINGMAP);
 				gameRunType = GameRunType::GRT_ADVENTURE;
 			}
 			else
@@ -2610,7 +2627,41 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
+	case RUNWORKSHOPMAP:
+	{
+		while (window->pollEvent(ev))
+		{
 
+		}
+
+		View oldView = window->getView();
+
+		int result = currWorkshopSession->Run();
+
+		window->setView(oldView);
+
+		if (result == GameSession::GR_EXITGAME)
+		{
+			SetMode(EXITING);
+			quit = true;
+		}
+		else
+		{
+			LoadMode(BROWSE_WORKSHOP);
+		}
+
+		break;
+	}
+	case BROWSE_WORKSHOP:
+	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
+		mapBrowserScreen->Update();
+		break;
+	}
 	}
 
 	
@@ -2824,7 +2875,8 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_CREDITS:
 		{
 			mapBrowserScreen->Start();
-			SetMode(TRANS_MAIN_TO_CREDITS);
+			SetMode(BROWSE_WORKSHOP);
+			//SetMode(TRANS_MAIN_TO_CREDITS);
 			break;
 		}
 		case M_EXIT:
@@ -3051,8 +3103,8 @@ void MainMenu::DrawMode( Mode m )
 	case CREDITS:
 	{
 		preScreenTexture->setView(v);
-		mapBrowserScreen->Draw(preScreenTexture);
-		//creditsMenu->Draw(preScreenTexture);
+		
+		creditsMenu->Draw(preScreenTexture);
 		break;
 	}
 	case TRANS_MAPSELECT_TO_MULTIPREVIEW:
@@ -3102,6 +3154,16 @@ void MainMenu::DrawMode( Mode m )
 	{
 		break;
 	}
+	case BROWSE_WORKSHOP:
+	{
+		preScreenTexture->setView(v);
+		mapBrowserScreen->Draw(preScreenTexture);
+		break;
+	}
+	case RUNWORKSHOPMAP:
+	{
+		break;
+	}
 	default:
 		assert(0);
 		break;
@@ -3117,4 +3179,11 @@ void MainMenu::DrawMode( Mode m )
 		preScreenTexture->setView(v);
 		worldMap->kinBoostScreen->DrawLateKin(preScreenTexture);
 	}
+}
+
+void MainMenu::RunWorkshopMap(const std::string &path)
+{
+	currWorkshopMap = path;
+	LoadMode(MainMenu::RUNWORKSHOPMAP);
+	//SetMode(MainMenu::RUNWORKSHOPMAP);
 }

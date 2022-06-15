@@ -9,6 +9,18 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
+MapNode::MapNode()
+{
+	checkingForPreview = false;
+	ts_preview = NULL;
+	type = FILE;
+	index = -1;
+	previewTex = NULL;
+	action = IDLE;
+	chooseRect = NULL;
+	mapDownloaded = false;
+}
+
 void MapNode::Draw(sf::RenderTarget *target)
 {
 	//target->draw(previewSpr, 4, sf::Quads, ts_preview->texture);
@@ -16,6 +28,71 @@ void MapNode::Draw(sf::RenderTarget *target)
 
 MapNode::~MapNode()
 {
+}
+
+void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
+	bool bIOFailure)
+{
+	if (callback->m_bRequestSuccessful)
+	{
+		uint32 bodySize;
+		SteamHTTP()->GetHTTPResponseBodySize(callback->m_hRequest, &bodySize);
+
+		uint8 *buffer = new uint8[bodySize];
+
+		SteamHTTP()->GetHTTPResponseBodyData(callback->m_hRequest, buffer, bodySize);
+
+		previewTex = new sf::Texture;
+		previewTex->loadFromMemory(buffer, bodySize);
+
+		checkingForPreview = false;
+		cout << "got preview successfully" << endl;
+
+		delete[] buffer;
+	}
+	else
+	{
+		cout << "failed to get preview" << endl;
+	}
+
+	checkingForPreview = false;
+}
+
+
+void MapNode::RequestDownloadPreview()
+{
+	checkingForPreview = false;
+	if (previewURL == "")
+	{
+		return;
+	}
+
+	HTTPRequestHandle rh = SteamHTTP()->CreateHTTPRequest(
+		EHTTPMethod::k_EHTTPMethodGET,
+		previewURL.c_str());
+
+	if (rh == INVALID_HTTPREQUEST_HANDLE)
+	{
+		cout << "http request failed" << endl;
+	}
+	else
+	{
+		previewRequestHandle = rh;
+		checkingForPreview = true;
+
+		SteamAPICall_t call;
+		bool httpResult = SteamHTTP()->SendHTTPRequest(rh, &call);
+		if (!httpResult)
+		{
+			cout << "failed send" << endl;
+		}
+		else
+		{
+			OnHTTPRequestCompletedCallResult.Set(call, this,
+				&MapNode::OnHTTPRequestCompleted);
+			cout << "send successful" << endl;
+		}
+	}
 }
 
 MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
@@ -55,7 +132,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	panel->MouseUpdate();
 
-	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
+	playButton = panel->AddButton("play", Vector2i(10, 10), Vector2f(30, 30), "play");
 	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
 
 	int x, y;
@@ -156,11 +233,9 @@ void MapBrowser::Update()
 		if (workshop->queryState == WorkshopManager::QS_NOT_QUERYING)
 		{
 			
-
 			for (auto it = nodes.begin(); it != nodes.end(); ++it)
 			{
-				//string previewPath = (*it)->filePath.string() + ".png";
-				//(*it)->ts_preview = GetTileset(previewPath);
+				(*it)->RequestDownloadPreview();
 			}
 
 			numEntries = nodes.size();
@@ -171,8 +246,6 @@ void MapBrowser::Update()
 				maxTopRow = 0;
 
 			action = A_WAITING_FOR_PREVIEW_RESULTS;
-			
-			workshop->DownloadPreviewFiles(&nodes);
 
 			//PopulateRects();
 		}
@@ -180,10 +253,18 @@ void MapBrowser::Update()
 	}
 	case A_WAITING_FOR_PREVIEW_RESULTS:
 	{
-		if (workshop->queryState == WorkshopManager::QS_NOT_QUERYING)
+		bool waitingForPreviewResults = false;
+		for (auto it = nodes.begin(); it != nodes.end(); ++it)
 		{
-			action = A_IDLE;
+			if ((*it)->checkingForPreview)
+			{
+				waitingForPreviewResults = true;
+				break;
+			}
+		}
 
+		if (!waitingForPreviewResults)
+		{
 			for (auto it = nodes.begin(); it != nodes.end(); ++it)
 			{
 				if ((*it)->previewTex != NULL)
@@ -193,7 +274,11 @@ void MapBrowser::Update()
 			}
 
 			PopulateRects();
+
+			action = A_IDLE;
 		}
+
+
 		break;
 	}
 	}
@@ -266,6 +351,8 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 void MapBrowser::SetToWorkshop()
 {
+	Init();
+
 	fMode = WORKSHOP;
 	ClearNodes();
 
@@ -301,6 +388,7 @@ void MapBrowser::PopulateRects()
 		icRect->SetName(node->mapName);
 		ts = node->ts_preview;
 		icRect->SetInfo(node);
+		node->chooseRect = icRect;
 
 		if (ts != NULL)
 			icRect->SetImage(ts, ts->GetSubRect(0));
@@ -336,15 +424,28 @@ void MapBrowser::Init()
 	if (fMode == OPEN)
 	{
 		panel->confirmButton->text.setString("Open");
+
+		fileNameTextBox->SetString("");
+		fileNameTextBox->focused = true;
+		fileNameTextBox->SetCursorIndex(0);
+		panel->SetFocusedMember(fileNameTextBox);
+	}
+	else if( fMode == SAVE )
+	{
+		panel->confirmButton->text.setString("Save");
+
+		fileNameTextBox->SetString("");
+		fileNameTextBox->focused = true;
+		fileNameTextBox->SetCursorIndex(0);
+		panel->SetFocusedMember(fileNameTextBox);
 	}
 	else
 	{
-		panel->confirmButton->text.setString("Save");
+		panel->confirmButton->text.setString("getridof");
 	}
-	fileNameTextBox->SetString("");
-	fileNameTextBox->focused = true;
-	fileNameTextBox->SetCursorIndex(0);
-	panel->SetFocusedMember(fileNameTextBox);
+	
+
+	selectedRect = NULL;
 }
 
 void MapBrowser::Start(const std::string &p_ext,
@@ -444,9 +545,48 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	{
 		Confirm();
 	}
-	else if (b == chooser->upButton)
+	else if (b == chooser->playButton)
 	{
-		chooser->SetPath(chooser->currPath.parent_path().string());
+		if (chooser->selectedRect != NULL)
+		{
+			MainMenu *mm = MainMenu::GetInstance();
+
+			MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
+
+			
+			uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
+
+
+			if (itemState & k_EItemStateInstalled)
+			{
+				selectedNode->mapDownloaded = true;
+			}
+
+			if (selectedNode->mapDownloaded)
+			{
+				assert(itemState & k_EItemStateInstalled);
+				mm->RunWorkshopMap(selectedNode->filePath.string());
+			}
+			else
+			{
+				if (!(itemState & k_EItemStateSubscribed))
+				{
+					cout << "subbing to item" << endl;
+					SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
+				}
+				else if (itemState &k_EItemStateDownloading)
+				{
+					cout << "downloading map" << endl;
+				}
+				else if (itemState &k_EItemStateDownloadPending)
+				{
+					cout << "map downoad pending" << endl;
+				}
+
+				chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
+			}
+		}
+		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
 }
 
@@ -454,8 +594,20 @@ DefaultMapBrowserHandler::DefaultMapBrowserHandler()
 	:MapBrowserHandler(4, 4)
 {
 	ts_largePreview = NULL;
+
+	Vector2f previewTopLeft = Vector2f(1000, 540 - 492 / 2);
+
 	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
-	SetRectTopLeft(largePreview, 912, 492, Vector2f(1000, 540 - 492 / 2));
+	SetRectTopLeft(largePreview, 912, 492, previewTopLeft);
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	Vector2f previewBotLeft = previewTopLeft + Vector2f(0, 492);
+
+	descriptionText.setFont(mm->arial);
+	descriptionText.setCharacterSize(20);
+	descriptionText.setPosition(previewBotLeft + Vector2f(0, 30));
+	descriptionText.setFillColor(Color::Red);
 }
 
 void DefaultMapBrowserHandler::ChangePath()
@@ -517,16 +669,42 @@ void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
 		//chooser->edit->ChooseFileSave(chooser, fileName);
 		chooser->TurnOff();
 	}
+	else if (chooser->fMode == MapBrowser::WORKSHOP)
+	{
+		MapNode *mn = (MapNode*)cr->info;
+
+		MainMenu *mm = MainMenu::GetInstance();
+
+		for (int i = 0; i < chooser->totalRects; ++i)
+		{
+			chooser->imageRects[i]->Deselect();
+		}
+		
+		cr->Select();
+
+		chooser->selectedRect = cr->GetAsImageChooseRect();
+
+		//cr->SetIdleColor()
+		
+
+		
+	}
 }
 
 void DefaultMapBrowserHandler::FocusFile(ChooseRect *cr)
 {
 	ts_largePreview = cr->GetAsImageChooseRect()->ts;
+
+	MapNode *mn = (MapNode*)cr->info;
+
+	descriptionText.setString(mn->description);
 }
 
 void DefaultMapBrowserHandler::UnfocusFile(ChooseRect *cr)
 {
 	ts_largePreview = NULL;
+
+	descriptionText.setString("");
 }
 
 void DefaultMapBrowserHandler::Draw(sf::RenderTarget *target)
@@ -535,5 +713,7 @@ void DefaultMapBrowserHandler::Draw(sf::RenderTarget *target)
 	if (ts_largePreview)
 	{
 		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
+
+		target->draw(descriptionText);
 	}
 }

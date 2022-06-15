@@ -229,6 +229,9 @@ struct ChooseRect : PanelMember
 	
 	virtual void UpdateSprite(int frameUpdate) {}
 	virtual void UpdatePanelPos() {}
+
+	void Select();
+	void Deselect();
 	
 	sf::IntRect bounds;
 	int quadIndex;
@@ -244,6 +247,9 @@ struct ChooseRect : PanelMember
 	sf::Color mouseOverColor;
 	sf::Color idleColor;
 	sf::Color defaultIdleColor;
+	sf::Color selectedIdleColor;
+	sf::Color selectedMouseOverColor;
+	bool selected;
 	void *info;
 	bool circleMode;
 	int circleRadius;

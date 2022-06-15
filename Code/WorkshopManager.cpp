@@ -9,7 +9,7 @@ using namespace std;
 CCallResult<WorkshopManager, CreateItemResult_t> OnCreateItemResultCallResult;
 CCallResult<WorkshopManager, SubmitItemUpdateResult_t> OnSubmitItemUpdateResultCallResult;
 CCallResult<WorkshopManager, SteamUGCQueryCompleted_t> OnQueryCompletedCallResult;
-CCallResult<WorkshopManager, HTTPRequestCompleted_t> OnHTTPRequestCompletedCallResult;
+
 
 WorkshopManager::WorkshopManager()
 {
@@ -179,9 +179,24 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 
 					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
+					
+
+
 					MapNode *newNode = new MapNode;
 					newNode->mapName = details.m_rgchTitle;
 					newNode->description = details.m_rgchDescription;
+					newNode->publishedFileId = details.m_nPublishedFileId;
+					newNode->mapDownloaded = itemState & k_EItemStateInstalled;
+
+					if (newNode->mapDownloaded)
+					{
+						uint64 fileSize;
+						char path[1024];
+						uint32 timestamp;
+						cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
+
+						newNode->filePath = string(path) + "\\" + newNode->mapName + ".brknk";
+					}
 					
 					bool result = SteamUGC()->GetQueryUGCPreviewURL(callback->m_handle, 
 						i, urlTest, 1024);
@@ -302,7 +317,6 @@ void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults)
 void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResults)
 {
 	queryResults = p_previewResults;
-	queryState = QS_WAITING_FOR_RESULTS;
 	for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
 	{
 		(*it)->checkingForPreview = false;
@@ -335,8 +349,8 @@ void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResul
 			}
 			else
 			{
-				OnHTTPRequestCompletedCallResult.Set(call, this,
-					&WorkshopManager::OnHTTPRequestCompleted);
+				(*it)->OnHTTPRequestCompletedCallResult.Set(call, (*it),
+					&MapNode::OnHTTPRequestCompleted);
 				cout << "send successful" << endl;
 			}
 

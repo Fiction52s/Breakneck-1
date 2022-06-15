@@ -510,6 +510,8 @@ struct MainMenu
 		CREDITS,
 		TRANS_CREDITS_TO_MAIN,
 		TRANS_WORLDMAP_TO_LOADING,
+		RUNWORKSHOPMAP,
+		BROWSE_WORKSHOP,
 		INTROMOVIE,
 		THANKS_FOR_PLAYING,
 		EXITING,
@@ -529,6 +531,9 @@ struct MainMenu
 		GRT_FREEPLAY
 	};
 
+	//testing
+	std::string currWorkshopMap;
+
 	Mode modeLoadingFrom;
 	Mode modeToLoad;
 	void LoadMode(Mode m);
@@ -546,6 +551,8 @@ struct MainMenu
 	void UpdateMenuMode();
 	void CheckForControllers();
 	void UpdateMenuInput();
+
+	void RunWorkshopMap(const std::string &path);
 
 	void UnlockSkin(int skinIndex);
 	bool IsSkinUnlocked(int skinIndex);
@@ -691,6 +698,7 @@ struct MainMenu
 
 	EditSession *currEditSession;
 	GameSession *currTutorialSession;
+	GameSession *currWorkshopSession;
 	GameSession *currLevel;
 	GameSession *deadLevel;
 	void HandleMenuMode();

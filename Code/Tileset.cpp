@@ -353,6 +353,11 @@ Tileset *TilesetManager::GetTileset(const std::string & s, sf::Texture *tex)
 {
 	TilesetCategory cat = C_DEFAULT;
 
+	Tileset *alreadyExistsTS = Find(cat, s);
+	if (alreadyExistsTS != NULL)
+		return alreadyExistsTS;
+
+
 	Tileset *t = new Tileset();
 	t->texture = tex;
 

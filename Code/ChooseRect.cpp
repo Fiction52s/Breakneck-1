@@ -16,7 +16,15 @@ ChooseRect::ChooseRect(ChooseRectIdentity ident, ChooseRectType crType,
 	idleColor = Color::Black;
 	idleColor.a = 100;
 
+	selectedIdleColor = Color::Magenta;
+	selectedIdleColor.a = 100;
+
+	selectedMouseOverColor = Color::Red;
+	selectedMouseOverColor.a = 100;
+
 	showName = true;
+
+	selected = false;
 
 	defaultIdleColor = idleColor;
 
@@ -144,7 +152,36 @@ void ChooseRect::SetActive(bool a)
 void ChooseRect::Deactivate()
 {
 	focused = false;
+	selected = false;
 	SetRectColor(quad, idleColor);
+}
+
+void ChooseRect::Select()
+{
+	selected = true;
+
+	if (focused)
+	{
+		SetRectColor(quad, selectedMouseOverColor);
+	}
+	else
+	{
+		SetRectColor(quad, selectedIdleColor);
+	}
+}
+
+void ChooseRect::Deselect()
+{
+	selected = false;
+
+	if (focused)
+	{
+		SetRectColor(quad, mouseOverColor);
+	}
+	else
+	{
+		SetRectColor(quad, idleColor);
+	}
 }
 
 bool ChooseRect::ContainsPoint(sf::Vector2i &mousePos)
@@ -193,7 +230,15 @@ bool ChooseRect::MouseUpdate()
 	{
 		if (ContainsPoint(mousePos))
 		{
-			SetRectColor(quad, mouseOverColor);
+			if (selected)
+			{
+				SetRectColor(quad, selectedMouseOverColor);
+			}
+			else
+			{
+				SetRectColor(quad, mouseOverColor);
+			}
+			
 			if (!focused)
 			{
 				panel->handler->ChooseRectEvent(this, E_FOCUSED);
@@ -202,7 +247,15 @@ bool ChooseRect::MouseUpdate()
 		}
 		else
 		{
-			SetRectColor(quad, idleColor);
+			if (selected)
+			{
+				SetRectColor(quad, selectedIdleColor);
+			}
+			else
+			{
+				SetRectColor(quad, idleColor);
+			}
+			
 			if (focused)
 			{
 				panel->handler->ChooseRectEvent(this, E_UNFOCUSED);
