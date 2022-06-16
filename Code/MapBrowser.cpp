@@ -120,6 +120,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	topRow = 0;
 	maxTopRow = 0;
 
+	
+
 	imageRects = new ImageChooseRect*[totalRects];
 
 	panel = new Panel("mapchooser", 1920,
@@ -134,6 +136,13 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	playButton = panel->AddButton("play", Vector2i(10, 10), Vector2f(30, 30), "play");
 	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+
+	Vector2i pageButtonOrigin(750, 990);
+
+	prevPageButton = panel->AddButton("prevpage", Vector2i(pageButtonOrigin), Vector2f(30, 30), "<");
+	nextPageButton = panel->AddButton("nextpage", Vector2i(pageButtonOrigin + Vector2i(60, 0)), Vector2f(30, 30), ">");
+	
+	
 
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
@@ -224,6 +233,7 @@ void MapBrowser::ClearNodes()
 	nodes.clear();
 }
 
+const static int STEAM_MAX_ITEMS_RETURNED_IN_QUERY = 50;
 void MapBrowser::Update()
 {
 	switch (action)
@@ -232,21 +242,42 @@ void MapBrowser::Update()
 	{
 		if (workshop->queryState == WorkshopManager::QS_NOT_QUERYING)
 		{
-			
-			for (auto it = nodes.begin(); it != nodes.end(); ++it)
+			if (workshop->queryTotalItems > 0)
 			{
-				(*it)->RequestDownloadPreview();
+				maxWorkshopPages = 1 + ((workshop->queryTotalItems-1) / STEAM_MAX_ITEMS_RETURNED_IN_QUERY);
+
+				if (maxWorkshopPages > 1)
+				{
+					prevPageButton->ShowMember();
+					nextPageButton->ShowMember();
+				}
+				else
+				{
+					prevPageButton->HideMember();
+					nextPageButton->HideMember();
+				}
+
+				//maxWorkshopPages = 1;
+
+				for (auto it = nodes.begin(); it != nodes.end(); ++it)
+				{
+					(*it)->RequestDownloadPreview();
+				}
+
+				numEntries = nodes.size();
+
+				int numRowsTaken = ceil(((float)numEntries) / cols);
+				maxTopRow = numRowsTaken - rows;
+				if (maxTopRow < 0)
+					maxTopRow = 0;
+
+				action = A_WAITING_FOR_PREVIEW_RESULTS;
+
 			}
-
-			numEntries = nodes.size();
-
-			int numRowsTaken = ceil(((float)numEntries) / cols);
-			maxTopRow = numRowsTaken - rows;
-			if (maxTopRow < 0)
-				maxTopRow = 0;
-
-			action = A_WAITING_FOR_PREVIEW_RESULTS;
-
+			else
+			{
+				action = A_IDLE;
+			}
 			//PopulateRects();
 		}
 		break;
@@ -354,20 +385,25 @@ void MapBrowser::SetToWorkshop()
 	Init();
 
 	fMode = WORKSHOP;
-	ClearNodes();
+	
+	currWorkshopPage = 1;
 
+	QueryMaps();
+}
+
+void MapBrowser::QueryMaps()
+{
 	action = A_WAITING_FOR_QUERY_RESULTS;
-	workshop->Query(&nodes);
 
+	ClearNodes();
 	for (int i = 0; i < totalRects; ++i)
 	{
 		imageRects[i]->SetShown(false);
 	}
-	/*for (int i = 0; i < totalRects; ++i)
-	{
-		icRect = imageRects[i];
-	}*/
-	//PopulateRects();
+
+	topRow = 0;
+
+	workshop->Query(&nodes, currWorkshopPage);
 }
 
 void MapBrowser::PopulateRects()
@@ -444,7 +480,7 @@ void MapBrowser::Init()
 		panel->confirmButton->text.setString("getridof");
 	}
 	
-
+	currWorkshopPage = 1;
 	selectedRect = NULL;
 }
 
@@ -616,10 +652,34 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
+	else if (b == chooser->prevPageButton)
+	{
+		chooser->currWorkshopPage--;
+		if (chooser->currWorkshopPage < 1)
+		{
+			chooser->currWorkshopPage = 1;
+		}
+		else
+		{
+			chooser->QueryMaps();
+		}
+	}
+	else if (b == chooser->nextPageButton)
+	{
+		chooser->currWorkshopPage++;
+		if (chooser->currWorkshopPage > chooser->maxWorkshopPages)
+		{
+			chooser->currWorkshopPage = chooser->maxWorkshopPages;
+		}
+		else
+		{
+			chooser->QueryMaps();
+		}
+	}
 }
 
 DefaultMapBrowserHandler::DefaultMapBrowserHandler()
-	:MapBrowserHandler(4, 4)
+	:MapBrowserHandler(4,4)
 {
 	ts_largePreview = NULL;
 

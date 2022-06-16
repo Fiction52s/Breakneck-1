@@ -120,6 +120,9 @@ struct MapBrowser : TilesetManager,
 
 	Action action;
 
+	int currWorkshopPage;
+	int maxWorkshopPages;
+
 	MapBrowser(MapBrowserHandler *handler,
 		int p_cols, int p_rows, int extraImageRects = 0);
 	~MapBrowser();
@@ -131,6 +134,8 @@ struct MapBrowser : TilesetManager,
 	void Deactivate();
 	void MouseScroll(int delta);
 	void LateDraw(sf::RenderTarget *target);
+
+	void QueryMaps();
 	//---------
 
 
@@ -172,6 +177,9 @@ struct MapBrowser : TilesetManager,
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
 	Button *playButton;
+	Button *nextPageButton;
+	Button *prevPageButton;
+	sf::Text pageLabel;
 	sf::Text *folderPathText;
 };
 

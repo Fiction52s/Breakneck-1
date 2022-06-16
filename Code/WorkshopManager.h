@@ -42,6 +42,7 @@ struct WorkshopManager
 	QueryState queryState;
 	std::vector<MapNode*> *queryResults;
 	MapBrowser *mapBrowser;
+	int queryTotalItems;
 
 	
 	
@@ -54,7 +55,7 @@ struct WorkshopManager
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback, bool bIOFailure);
 	//void OnQueryAllCompleted(SteamUGCQueryCompleted_t *callback, bool bIOFailure);
 	MapNode * LoadWorkshopItem(SteamUGCDetails_t &details );
-	void Query(std::vector<MapNode*> *p_queryResults );
+	void Query(std::vector<MapNode*> *p_queryResults, int page );
 	void DownloadPreviewFiles(std::vector<MapNode*> *p_previewResults);
 private:
 	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);

@@ -2657,7 +2657,7 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-
+			mapBrowserScreen->browserHandler->chooser->panel->HandleEvent(ev);
 		}
 
 		mapBrowserScreen->Update();

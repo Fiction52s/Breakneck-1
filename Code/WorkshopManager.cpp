@@ -153,11 +153,15 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 		break;
 	}
 
+	queryTotalItems = -1;
+
 	if (querySuccess)
 	{
 		if (queryType == Q_TEST)
 		{
+
 			int numResultsReturned = callback->m_unNumResultsReturned;
+			queryTotalItems = callback->m_unTotalMatchingResults;
 			queryResults->reserve(numResultsReturned);
 
 			char urlTest[1024];
@@ -293,14 +297,14 @@ MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 	return newNode;
 }
 
-void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults)
+void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults, int page)
 {
 	queryType = Q_TEST;
 	queryState = QS_WAITING_FOR_RESULTS;
 	queryResults = p_queryResults;
 	auto queryHandle = SteamUGC()->CreateQueryAllUGCRequest(EUGCQuery::k_EUGCQuery_RankedByLastUpdatedDate,
 		EUGCMatchingUGCType::k_EUGCMatchingUGCType_Items, SteamUtils()->GetAppID(),
-		SteamUtils()->GetAppID(), 1);
+		SteamUtils()->GetAppID(), page);
 	SteamUGC()->SetMatchAnyTag(queryHandle, true);
 	auto sendRequestAPICall = SteamUGC()->SendQueryUGCRequest(queryHandle);
 
