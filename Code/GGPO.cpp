@@ -114,7 +114,8 @@ advance_frame_callback(int flags)
 		sess->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
 	}
 	sess->UpdateAllPlayersInput();
-	sess->GGPORunGameModeUpdate();
+
+	sess->SimulateGGPOGameFrame();
 	return true;
 }
 

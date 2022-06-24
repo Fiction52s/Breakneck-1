@@ -202,7 +202,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	};
 
 	
-
+	bool simulationMode; //for running frames with ggpo without creating sounds or visual fx
 	float waterShaderCounter;
 	Tileset *ts_water;
 	sf::Shader *waterShaders;
@@ -439,6 +439,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	Session(SessionType p_sessType, const boost::filesystem::path &p_filePath);
 	virtual ~Session();
+	void SimulateGGPOGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
 	void CloseOffLimitZones();

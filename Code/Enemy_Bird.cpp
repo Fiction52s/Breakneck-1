@@ -873,7 +873,7 @@ void Bird::InitEnemyForSummon(SummonGroup *group,
 //Rollback functions
 int Bird::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	return sizeof(MyData);// +launchers[0]->GetNumStoredBytes();
 }
 
 void Bird::StoreBytes(unsigned char *bytes)
@@ -887,7 +887,7 @@ void Bird::StoreBytes(unsigned char *bytes)
 
 	bytes += sizeof(MyData);
 
-	launchers[0]->StoreBytes(bytes);
+	//launchers[0]->StoreBytes(bytes);
 }
 
 void Bird::SetFromBytes(unsigned char *bytes)
@@ -901,6 +901,6 @@ void Bird::SetFromBytes(unsigned char *bytes)
 
 	bytes += sizeof(MyData);
 
-	launchers[0]->SetFromBytes(bytes);
+	//launchers[0]->SetFromBytes(bytes);
 }
 

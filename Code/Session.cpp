@@ -1563,7 +1563,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	timeSyncFrames = 0;
 
-	
+	simulationMode = false;
 
 	frameRateDisplay.InitText(mainMenu->arial);
 	runningTimerDisplay.InitText(mainMenu->arial);
@@ -3926,6 +3926,13 @@ void Session::SetupGateMarkers()
 	}
 
 	//gateMarkers = new GateMarkerGroup()
+}
+
+void Session::SimulateGGPOGameFrame()
+{
+	simulationMode = true;
+	GGPORunGameModeUpdate();
+	simulationMode = false;
 }
 
 void Session::CleanupGates()

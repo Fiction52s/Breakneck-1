@@ -748,7 +748,7 @@ void Actor::SetToOriginalPos()
 
 SoundNode * Actor::ActivateSound(int st, bool loop )
 {
-	if (simulationMode)
+	if (simulationMode)// || sess->simulationMode)
 	{
 		return NULL;
 	}
@@ -769,7 +769,7 @@ SoundNode * Actor::ActivateSound(int st, bool loop )
 
 SoundNode * Actor::ActivateRepeatingSound(int st, bool loop )
 {
-	if (simulationMode)
+	if (simulationMode)// || sess->simulationMode)
 	{
 		return NULL;
 	}
