@@ -40,6 +40,8 @@
 //enemy stuff:
 #include "SoundManager.h"
 #include "GGPO.h"
+#include "LobbyManager.h"
+#include "ConnectionManager.h"
 
 
 
@@ -1575,6 +1577,9 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	playerAndEnemiesFrozen = false;
 	playerFrozen = false;
 
+	lobbyManager = NULL;
+	connectionManager = NULL;
+
 	currSuperPlayer = NULL;
 	superSequence = NULL;
 	inputVis = NULL;
@@ -1949,6 +1954,8 @@ Session::~Session()
 	}
 
 	CleanupSuperSequence();
+
+	CleanupNetplay();
 }
 
 void Session::UpdateDecorLayers()
@@ -3900,6 +3907,34 @@ void Session::CloseOffLimitZones()
 			(*it)->visited = true;
 			(*it)->ReformAllGates();
 		}
+	}
+}
+
+void Session::SetupNetplay()
+{
+	if (lobbyManager == NULL)
+	{
+		lobbyManager = new LobbyManager;
+	}
+
+	if (connectionManager == NULL)
+	{
+		connectionManager = new ConnectionManager;
+	}
+}
+
+void Session::CleanupNetplay()
+{
+	if (lobbyManager != NULL)
+	{
+		delete lobbyManager;
+		lobbyManager = NULL;
+	}
+
+	if (connectionManager != NULL)
+	{
+		delete connectionManager;
+		connectionManager = NULL;
 	}
 }
 

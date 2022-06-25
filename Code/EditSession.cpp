@@ -58,6 +58,9 @@
 
 #include "WorkshopManager.h"
 
+#include "LobbyManager.h"
+#include "ConnectionManager.h"
+
 #define GGPO_ON
 
 using namespace std;
@@ -435,6 +438,14 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 	return true;
 }
 
+void EditSession::TestNetplay()
+{
+	cout << "testing netplay" << endl;
+	SetMode(NETPLAY_TEST_GATHER_USERS);
+
+	lobbyManager->FindLobby();
+}
+
 void EditSession::RepPlayerUpdateInput()
 {
 	if (debugReplayPlayerOn && debugReplayPlayer != NULL)
@@ -588,13 +599,13 @@ void EditSession::InitGGPO()
 	
 	if (sync)
 	{
-		result = ggpo_start_synctest(&ggpo, &cb, "bn", num_players,
+		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", num_players,
 			sizeof(int), 1);
 	}
 	else
 	{
-		result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players,
-			sizeof(int), localPort);
+		result = ggpo_start_session(&ggpo, &cb, "breakneck", num_players,
+			sizeof(int));//, localPort);
 	}
 	
 	
@@ -619,15 +630,17 @@ void EditSession::InitGGPO()
 	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
 //	local_player = myIndex;
 	
-	int ipLen = ipStr.length();
-	for (int i = 0; i < ipLen; ++i)
-	{
-		ggpoPlayers[otherIndex].u.remote.ip_address[i] = ipStr[i];
-	}
-	ggpoPlayers[otherIndex].u.remote.ip_address[ipLen] = '\0';
+	//int ipLen = ipStr.length();
+	//for (int i = 0; i < ipLen; ++i)
+	//{
+	//	ggpoPlayers[otherIndex].u.remote.ip_address[i] = ipStr[i];
+	//}
+	//ggpoPlayers[otherIndex].u.remote.ip_address[ipLen] = '\0';
 
-	//ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
-	ggpoPlayers[otherIndex].u.remote.port = otherPort;
+	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
+	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
+	
+	ggpoPlayers[otherIndex].u.remote.connection = connectionManager->connection;
 
 	int i;
 	for (i = 0; i < num_players; i++) {
@@ -1440,6 +1453,11 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	handleEventFunctions[TRANSFORM] = &EditSession::TransformModeHandleEvent;
 	handleEventFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeHandleEvent;
 
+	handleEventFunctions[NETPLAY_TEST_GATHER_USERS] = &EditSession::NetplayTestGatherUsersModeHandleEvent;
+	handleEventFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeHandleEvent;
+
+
+
 	updateModeFunctions[CREATE_TERRAIN] = &EditSession::CreateTerrainModeUpdate;
 	updateModeFunctions[EDIT] = &EditSession::EditModeUpdate;
 	updateModeFunctions[SELECT_MODE] = &EditSession::SelectModeUpdate;
@@ -1456,6 +1474,9 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	//updateModeFunctions[TEST_PLAYER] = &EditSession::TestPlayerModeUpdate;
 	updateModeFunctions[TRANSFORM] = &EditSession::TransformModeUpdate;
 	updateModeFunctions[MOVE_BORDER] = &EditSession::MoveBorderModeUpdate;
+
+	updateModeFunctions[NETPLAY_TEST_GATHER_USERS] = &EditSession::NetplayTestGatherUsersModeUpdate;
+	updateModeFunctions[NETPLAY_TEST_GET_CONNECTIONS] = &EditSession::NetplayTestGetConnectionsModeUpdate;
 
 	ggpoStatsPanel = NULL;
 	currGrassType = 0;
@@ -3679,6 +3700,10 @@ void EditSession::Init()
 	
 	SetupShardMenu();
 	SetupLogMenu();
+
+#ifdef GGPO_ON
+	SetupNetplay();
+#endif
 
 	SetupShardsCapturedField();
 
@@ -13061,8 +13086,16 @@ void EditSession::GeneralEventHandler()
 				{
 					//make this only to some modes later
 					
+					//NETPLAY_TEST_GATHER_USERS,
+						//NETPLAY_TEST_GET_CONNECTIONS,
 
+#ifdef GGPO_ON
+					TestNetplay();
+#else
 					TestPlayerMode();
+#endif
+
+					
 					//quit = true;
 				}
 				else if (ev.key.code == Keyboard::Escape)
@@ -13273,7 +13306,13 @@ void EditSession::CreateTerrainModeHandleEvent()
 		else if (ev.key.code == Keyboard::T )
 		{
 			//eventually something telling the create mode that you can here from create terrain
+			//TestPlayerMode();
+
+#ifdef GGPO_ON
+			TestNetplay();
+#else
 			TestPlayerMode();
+#endif
 			
 		}
 		else if (ev.key.code == Keyboard::G)
@@ -14076,6 +14115,51 @@ void EditSession::MoveBorderModeUpdate()
 
 }
 
+void EditSession::NetplayTestGatherUsersModeUpdate()
+{
+	lobbyManager->Update();
+
+	if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
+	{
+		SetMode(NETPLAY_TEST_GET_CONNECTIONS);
+
+		if (lobbyManager->currentLobby.createdByMe)
+		{
+			cout << "create listen socket" << endl;
+			connectionManager->CreateListenSocket();
+		}
+		else
+		{
+			cout << "other test " << endl;
+			//this is really bad/messy for 4 players. figure out how to do multiple p2p connections soon
+			CSteamID myId = SteamUser()->GetSteamID();
+			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+			{
+				if ((*it) == myId)
+				{
+					continue;
+				}
+
+				cout << "try to connect" << endl;
+				connectionManager->ConnectToID((*it));
+			}
+		}
+	}
+}
+
+void EditSession::NetplayTestGetConnectionsModeUpdate()
+{
+	if (connectionManager->connected)
+	{
+		lobbyManager->LeaveLobby(); //need to see if this causes problems or not. I don't think so.
+
+		//InitGGPO(); //call this once I have the connections ready.
+		//SetActionRunGame();
+		cout << "leaving lobby and starting the game" << endl;
+		TestPlayerMode();
+	}
+}
+
 void EditSession::TestPlayerModeHandleEvent()
 {
 	switch (ev.type)
@@ -14100,6 +14184,14 @@ void EditSession::TestPlayerModeHandleEvent()
 		}
 	}
 	}
+}
+
+void EditSession::NetplayTestGatherUsersModeHandleEvent()
+{
+}
+
+void EditSession::NetplayTestGetConnectionsModeHandleEvent()
+{
 }
 
 void EditSession::UpdateMode()

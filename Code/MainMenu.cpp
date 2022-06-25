@@ -416,14 +416,10 @@ MainMenu::MainMenu()
 	if (musicManager->songMap.empty())
 	{
 		cout << "music manager is empty. no songs loaded" << endl;
-		assert(0);
+		//assert(0);
 		
 	}
 
-	MusicInfo *filmMusicInfo = musicManager->songMap["w0_0_Film"];
-	filmMusicInfo->Load();
-	
-	
   	int wholeX = 1920;
 	int wholeY = 1080;
 	int halfX = wholeX / 2;
@@ -444,8 +440,15 @@ MainMenu::MainMenu()
 
 	musicPlayer = new MusicPlayer(this);
 
+	//clean this up for when someone doesn't have the music maybe? shouldn't crash at least.
 	menuMusic = musicManager->songMap["w0_2_Breakneck_Menu_01"];
-	menuMusic->Load();
+	if (menuMusic != NULL)
+	{
+		menuMusic->Load();
+	}
+	
+
+	//cout << "DDDDDD " << endl;
 
 	titleScreen = new TitleScreen(this);
 	//cout << "start mm constfr" << endl;

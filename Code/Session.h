@@ -27,6 +27,8 @@ struct GGPONonGameState;
 struct SaveGameState;
 struct GGPOSession;
 struct GGPOPlayer;
+struct LobbyManager;
+struct ConnectionManager;
 
 struct QNode;
 struct SoundManager;
@@ -391,6 +393,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	int totalFramesBeforeGoal;
 
 	GGPOSession *ggpo;
+	LobbyManager *lobbyManager;
+	ConnectionManager *connectionManager;
 
 	SuperSequence *superSequence;
 
@@ -399,6 +403,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	PState *playerSimState;
 	Actor *currSuperPlayer;
+
 
 	static Session *GetSession();
 
@@ -442,6 +447,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SimulateGGPOGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
+	void SetupNetplay();
+	void CleanupNetplay();
 	void CloseOffLimitZones();
 	void CleanupZones();
 	void DrawZones(sf::RenderTarget *target);

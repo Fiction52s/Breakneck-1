@@ -113,6 +113,8 @@ struct EditSession : GUIHandler, Session
 		TRANSFORM,
 		MOVE_BORDER,
 		MAP_OPTIONS,
+		NETPLAY_TEST_GATHER_USERS,
+		NETPLAY_TEST_GET_CONNECTIONS,
 		EMODE_Count
 	};
 
@@ -404,6 +406,11 @@ struct EditSession : GUIHandler, Session
 	void TestPlayerMode();
 	void CleanupTestPlayerMode();
 	void RepPlayerUpdateInput();
+
+	void TestNetplay();
+
+
+
 
 	void PublishMap();
 
@@ -701,6 +708,9 @@ struct EditSession : GUIHandler, Session
 	void MoveBorderModeHandleEvent();
 	void TransformModeHandleEvent();
 	void TestPlayerModeHandleEvent();
+	void NetplayTestGatherUsersModeHandleEvent();
+	void NetplayTestGetConnectionsModeHandleEvent();
+
 	void CreateTerrainModeUpdate();
 	void CreateRailsModeUpdate();
 	void EditModeUpdate();
@@ -715,6 +725,8 @@ struct EditSession : GUIHandler, Session
 	void CreateImagesModeUpdate();
 	void TransformModeUpdate();
 	void MoveBorderModeUpdate();
+	void NetplayTestGatherUsersModeUpdate();
+	void NetplayTestGetConnectionsModeUpdate();
 	
 
 

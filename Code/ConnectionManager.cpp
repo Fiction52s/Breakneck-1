@@ -65,7 +65,7 @@ void ConnectionManager::OnConnectionStatusChangedCallback(SteamNetConnectionStat
 		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute)
 		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
 	{
-		cout << "connection is complete! attempting to send a message" << endl;
+		cout << "connection is complete!" << endl;
 
 		connection = pCallback->m_hConn;
 

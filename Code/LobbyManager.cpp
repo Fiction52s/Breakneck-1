@@ -80,6 +80,7 @@ void LobbyManager::PrintLobbies()
 
 void LobbyManager::FindLobby()
 {
+	cout << "finding lobby" << endl;
 	RefreshLobbyList();
 }
 
