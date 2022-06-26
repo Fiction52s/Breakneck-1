@@ -840,7 +840,6 @@ struct EditSession : GUIHandler, Session
 	void SequenceGameModeRespondToGoalDestroyed();
 
 	bool GGPOTestPlayerModeUpdate();
-	void InitGGPO();
 
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;

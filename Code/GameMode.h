@@ -109,4 +109,33 @@ struct FightMode : GameMode
 	void EndGame();
 };
 
+struct RaceMode : GameMode
+{
+	struct MyData
+	{
+		int test;
+		/*int p0Health;
+		int p1Health;
+		int p0Meter;
+		int p1Meter;*/
+	};
+
+	MyData data;
+
+	//int maxHealth;
+	//int meterSection;
+	//int numMeterSections;
+
+	RaceMode();
+	~RaceMode();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	HUD *CreateHUD();
+	void Setup();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
+
 #endif

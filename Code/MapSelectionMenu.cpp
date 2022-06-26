@@ -366,8 +366,9 @@ void MapSelectionMenu::LoadMap()
 	int pIndex = GetPairIndex(cIndex);
 
 
-
-	gs = new GameSession(NULL, allItems[pIndex].second.item->path.string());
+	MatchParams mp;
+	mp.filePath = allItems[pIndex].second.item->path.string();
+	gs = new GameSession(mp);
 
 	gs->progressDisplay = progressDisplay;
 

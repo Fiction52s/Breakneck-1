@@ -25,6 +25,7 @@
 #include "PoiInfo.h"
 
 #include "Session.h"
+#include "MatchParams.h"
 
 struct BonusHandler;
 
@@ -170,6 +171,7 @@ struct ZonePropertiesObj
 	int zoneType;
 	float drainFactor;
 };
+
 
 struct GameSession : RayCastHandler, Session
 {
@@ -424,6 +426,8 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
+	MatchParams matchParams;
+
 
 	std::string GetBestTimeGhostPath();
 	std::string GetBestReplayPath();
@@ -439,8 +443,8 @@ struct GameSession : RayCastHandler, Session
 	static int IsSteepGround(sf::Vector2<double> &normal);
 	static int IsWall(sf::Vector2<double> &normal);
 
-	GameSession(SaveFile *sf,
-		const boost::filesystem::path &p_filePath);
+	GameSession(MatchParams &mp);//SaveFile *sf,
+		//const boost::filesystem::path &p_filePath);
 	~GameSession();
 
 	
@@ -585,5 +589,7 @@ struct GameSession : RayCastHandler, Session
 
 	bool HasLog(int logIndex);
 	int GetBonusType();
+
+	HSteamNetConnection GetConnection();
 };
 #endif

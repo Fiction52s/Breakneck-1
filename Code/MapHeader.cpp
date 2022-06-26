@@ -259,6 +259,23 @@ bool MapHeader::Replace(boost::filesystem::path &p )
 	return true;
 }
 
+int MapHeader::GetNumPlayerPositions()
+{
+	switch (gameMode)
+	{
+	case T_BASIC:
+		return 1;
+	case T_REACHENEMYBASE:
+		return 2;
+	case T_FIGHT:
+		return 2;
+	case T_RACE:
+		return 1;
+	default:
+		return 1;
+	}
+}
+
 int MapHeader::GetNumPlayers()
 {
 	switch (gameMode)
@@ -268,6 +285,8 @@ int MapHeader::GetNumPlayers()
 	case T_REACHENEMYBASE:
 		return 2;
 	case T_FIGHT:
+		return 2;
+	case T_RACE:
 		return 2;
 	default:
 		return 1;

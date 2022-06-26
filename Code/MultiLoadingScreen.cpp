@@ -46,7 +46,9 @@ void MultiLoadingScreen::Reset(boost::filesystem::path p_path)
 		delete loadThread;
 	}
 
-	gs = new GameSession(NULL, p_path.string());
+	MatchParams mp;
+	mp.filePath = p_path.string();
+	gs = new GameSession(mp);
 
 	gs->progressDisplay = progressDisplay;
 

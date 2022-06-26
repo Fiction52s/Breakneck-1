@@ -18,6 +18,7 @@
 #include "Enemy_BasicEffect.h"
 #include "BitField.h"
 #include "ScoreDisplay.h"
+#include "steam/steam_api.h"
 
 struct Nexus;
 
@@ -818,6 +819,10 @@ struct Session : TilesetManager, QuadTreeCollider
 	//SaveGameState *saveStates[10];
 	//bool usedSaveState[10];
 	GGPOPlayer *ggpoPlayers;
+	bool ggpoSyncTest;
+
+	virtual void InitGGPO();
+	virtual HSteamNetConnection GetConnection();
 	bool GGPORunGameModeUpdate();
 	void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,

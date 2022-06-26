@@ -233,14 +233,23 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case ADVENTURETUTORIAL:
 	{
 		assert(currTutorialSession == NULL);
-		currTutorialSession = new GameSession(currSaveFile, "Resources/Maps/Beta3/tut1.brknk");
+		MatchParams mp;
+		mp.saveFile = currSaveFile;
+		mp.filePath = "Resources/Maps/Beta3/tut1.brknk";
+
+		currTutorialSession = new GameSession(mp);
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
 	case RUN_WORKSHOP_MAP:
 	{
 		assert(currWorkshopSession == NULL);
-		currWorkshopSession = new GameSession(currSaveFile, currWorkshopMap);
+
+		MatchParams mp;
+		mp.saveFile = currSaveFile;
+		mp.filePath = currWorkshopMap;
+
+		currWorkshopSession = new GameSession(mp);
 		GameSession::sLoad(currWorkshopSession);
 		break;
 	}
@@ -850,7 +859,11 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 
 		//v.setSize( 1920, 1080 );
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, p_path );
+
+		MatchParams mp;
+		mp.filePath = p_path;
+
+		GameSession *gs = new GameSession( mp);
 		GameSession::sLoad(gs);
 		
 		gameRunType = GRT_FREEPLAY;
@@ -873,7 +886,11 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 	{
 		gameRunType = MainMenu::GRT_FREEPLAY;
 		window->setView( v );
-		GameSession *gs = new GameSession( NULL, p_path );
+
+		MatchParams mp;
+		mp.filePath = p_path;
+
+		GameSession *gs = new GameSession(mp);
 		GameSession::sLoad(gs);
 		
 		result = gs->Run();
@@ -1037,11 +1054,11 @@ void MainMenu::CustomMapsOption()
 	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 175, 50 ), "CREATE NEW" );
 	p.AddButton( "Delete", Vector2i( 500, 10), Vector2f( 150, 50 ), "DELETE" );
 
-	p.AddButton("Login", Vector2i(1150, 300), Vector2f(300, 50), "LOGIN");
-	p.AddButton( "Upload", Vector2i(1150, 400), Vector2f(300, 50), "UPLOAD TO SERVER");
-	p.AddButton( "List", Vector2i(1150, 500), Vector2f(300, 50), "PRINT SERVER MAPS");
-	p.AddButton("Download", Vector2i(1150, 600), Vector2f(300, 50), "DOWNLOAD A MAP");
-	p.AddButton("Remove", Vector2i(1150, 900), Vector2f(300, 50), "REMOVE A MAP");
+	p.AddButton("Quickplay", Vector2i(1150, 300), Vector2f(300, 50), "QUICKPLAY");
+	//p.AddButton( "Upload", Vector2i(1150, 400), Vector2f(300, 50), "UPLOAD TO SERVER");
+	//p.AddButton( "List", Vector2i(1150, 500), Vector2f(300, 50), "PRINT SERVER MAPS");
+	//p.AddButton("Download", Vector2i(1150, 600), Vector2f(300, 50), "DOWNLOAD A MAP");
+	//p.AddButton("Remove", Vector2i(1150, 900), Vector2f(300, 50), "REMOVE A MAP");
 	
 	//p.AddButton("Remove", Vector2i(600, 300), Vector2f(300, 50), "REMOVE FROM SERVER");
 
@@ -1717,7 +1734,11 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	//sf::sleep(sf::milliseconds(5000));
 
-	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
+	MatchParams mp;
+	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
+	mp.filePath = levelPath;
+
+	currLevel = new GameSession(mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
 	currLevel->bestReplayOn = loadParams.bestReplayOn;
 	currLevel->level = loadParams.level;
@@ -1798,7 +1819,11 @@ void MainMenu::PlayIntroMovie()
 	gameRunType = GameRunType::GRT_ADVENTURE;
 	//SetModeLoadingMap(wIndex);
 
-	currLevel = new GameSession(saveMenu->files[saveMenu->selectedSaveIndex], levelPath);
+
+	MatchParams mp;
+	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
+	mp.filePath = levelPath;
+	currLevel = new GameSession(mp);
 	currLevel->level = lev;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -1833,7 +1858,12 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 
 	delete old;
 
-	m->currLevel = new GameSession(m->saveMenu->files[m->saveMenu->selectedSaveIndex], levName);
+	
+	MatchParams mp;
+	mp.saveFile = m->saveMenu->files[m->saveMenu->selectedSaveIndex];
+	mp.filePath = levName;
+
+	m->currLevel = new GameSession(mp);
 	m->currLevel->level = lev;
 	m->currLevel->boostEntrance = true;
 	//
@@ -1910,7 +1940,11 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		GameSession *gs = new GameSession(NULL, "Resources/Maps/W1/arena04.brknk");
+
+		MatchParams mp;
+		mp.filePath = "Resources/Maps/W1/arena04.brknk";
+
+		GameSession *gs = new GameSession(mp);
 		GameSession::sLoad(gs);
 		gs->Run();
 

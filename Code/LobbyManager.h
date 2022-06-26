@@ -45,6 +45,8 @@ struct LobbyManager
 	LobbyParams paramsForMakingLobby;
 	Lobby currentLobby;
 
+	bool isLobbyCreator;
+
 	CCallResult<LobbyManager, LobbyCreated_t> m_SteamCallResultLobbyCreated;
 	CCallResult<LobbyManager, LobbyMatchList_t> m_SteamCallResultLobbyMatchList;
 	CCallResult<LobbyManager, LobbyEnter_t> m_SteamCallResultLobbyEnter;
@@ -59,6 +61,7 @@ struct LobbyManager
 
 	void OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure);
 	bool IsInLobby();
+	bool IsLobbyCreator();
 
 	bool CurrentLobbyHasMaxMembers();
 	int GetNumCurrentLobbyMembers();

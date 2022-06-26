@@ -22,7 +22,10 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		if (b->name == "Play")
 		{
 			menu->gameRunType = MainMenu::GRT_FREEPLAY;
-			GameSession *gs = new GameSession(NULL, ls.GetSelectedPath());
+			MatchParams mp;
+			mp.filePath = ls.GetSelectedPath();
+
+			GameSession *gs = new GameSession(mp);
 			GameSession::sLoad(gs);
 			gs->Run();
 			//gs->Reload(ls.fullPaths[ls.selectedIndex+1]);
@@ -45,20 +48,10 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else if (b->name == "Upload")
 		{
-#ifdef __AWS__ON__
-			string path = "Resources/Maps/" + ls.localPaths[ls.selectedIndex];
-			string name = ls.text[ls.selectedIndex].getString().toAnsiString();
+		}
+		else if (b->name == "Quickplay")
+		{
 
-			bool res = ls.customMapClient->AttemptUploadMapToServer(path, name, true);
-			if (res)
-			{
-				cout << "successful upload" << endl;
-			}
-			else
-			{
-				cout << "upload failed" << endl;
-			}
-#endif
 		}
 	}
 	else
@@ -78,98 +71,6 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 		showNamePopup = false;
 		ls.newLevelName = b->panel->textBoxes["name"]->text.getString().toAnsiString();
 	}
-#ifdef __AWS__ON__
-	else if (b->name == "List")
-	{
-		cout << "..getting map list.." << endl;
-		ls.customMapClient->AttempGetMapListFromServer();
-		ls.customMapClient->PrintMapEntries();
-	}
-	else if (b->name == "Download")
-	{
-		ls.customMapClient->AttempGetMapListFromServer();
-		showDownloadPopup = true;
-	}
-	else if (b->name == "downloadok")
-	{
-		showDownloadPopup = false;
-		stringstream ss;
-		ss << b->panel->textBoxes["index"]->text.getString().toAnsiString();
-		int index;
-		ss >> index;
-		if (!ss.fail())
-		{
-			if (index >= 0 && index < ls.customMapClient->mapEntries.size())
-			{
-				cout << "attempting to download a map" << endl;
-				CustomMapEntry &entry = ls.customMapClient->mapEntries[index];
-				ls.customMapClient->AttemptDownloadMapFromServer(
-					"Resources/Maps/DownloadedMaps/", entry);
-			}
-			else
-			{
-				cout << "invalid index: " << index << endl;
-			}
-		}
-		else
-		{
-			cout << "index could not be read." << endl;
-		}
-	}
-	else if (b->name == "Login")
-	{
-		if (!ls.customMapClient->IsLoggedIn())
-		{
-			showLoginPopup = true;
-		}
-		else
-		{
-			cout << "you are already logged in" << endl;
-		}
-	}
-	else if (b->name == "loginok")
-	{
-		showLoginPopup = false;
-		string user = b->panel->textBoxes["user"]->text.getString().toAnsiString();
-		string pass = b->panel->textBoxes["pass"]->text.getString().toAnsiString();
-		ls.customMapClient->AttemptUserLogin(user, pass);
-	}
-	else if (b->name == "Remove")
-	{
-		ls.customMapClient->AttempGetMapListFromServer();
-		showRemovePopup = true;
-	}
-	else if (b->name == "removeok")
-	{
-		showRemovePopup = false;
-
-		stringstream ss;
-		ss << b->panel->textBoxes["index"]->text.getString().toAnsiString();
-		int index;
-		ss >> index;
-		if (!ss.fail())
-		{
-			if (index >= 0 && index < ls.customMapClient->mapEntries.size())
-			{
-				cout << "attempting to remove a map" << endl;
-				CustomMapEntry &entry = ls.customMapClient->mapEntries[index];
-				bool res = ls.customMapClient->AttemptDeleteMapFromServer(entry);
-				if (!res)
-				{
-					cout << "failed to remove map" << endl;
-				}
-			}
-			else
-			{
-				cout << "invalid index: " << index << endl;
-			}
-		}
-		else
-		{
-			cout << "index could not be read." << endl;
-		}
-	}
-#endif
 }
 
 void CustomMapsHandler::TextBoxCallback(TextBox *tb, const std::string & e)

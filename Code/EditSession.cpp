@@ -61,7 +61,7 @@
 #include "LobbyManager.h"
 #include "ConnectionManager.h"
 
-#define GGPO_ON
+//#define GGPO_ON
 
 using namespace std;
 using namespace sf;
@@ -194,7 +194,7 @@ void EditSession::UpdateDecorSprites()
 
 V2d EditSession::GetPlayerSpawnPos( int i )
 {
-	if (mapHeader == NULL || mapHeader->GetNumPlayers() == 1)
+	if (mapHeader == NULL || mapHeader->GetNumPlayerPositions() == 1)
 	{
 		if (HoldingControl())
 		{
@@ -311,6 +311,12 @@ void EditSession::UpdateCamera()
 		break;
 	}
 	case MapHeader::T_FIGHT:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		break;
+	}
+	case MapHeader::T_RACE:
 	{
 		cam.SetCamType(Camera::CamType::FIGHTING);
 		cam.Update();
@@ -541,125 +547,6 @@ void EditSession::UpdateNetworkStats()
 	}
 }
 
-void EditSession::InitGGPO()
-{
-	timeSyncFrames = 0;
-	//srand(400);
-	srand(time(0));
-	WSADATA wd = { 0 };
-	WSAStartup(MAKEWORD(2, 2), &wd);
-
-	GGPOSessionCallbacks cb = { 0 };
-	cb.begin_game = begin_game_callback;
-	cb.advance_frame = advance_frame_callback;
-	cb.load_game_state = load_game_state_callback;
-	cb.save_game_state = save_game_state_callback;
-	cb.free_buffer = free_buffer;
-	cb.on_event = on_event_callback;
-	cb.log_game_state = log_game_state;
-
-	/*for (int i = 0; i < 10; ++i)
-	{
-		saveStates[i] = new SaveGameState;
-		usedSaveState[i] = false;
-	}*/
-
-	currSaveState = new SaveGameState;
-	ngs = new GGPONonGameState;
-	ggpoPlayers = new GGPOPlayer[4];
-
-	GGPOErrorCode result;
-
-	unsigned short localPort = 7000;
-	unsigned short otherPort = 7001;
-
-	bool shift = HoldingShift();
-	if (shift)
-	{
-		localPort = 7001;
-		otherPort = 7000;
-	}
-
-	int frameDelay = 0;
-	string ipStr;// = "127.0.0.1";
-
-	ifstream is;
-	is.open("Resources/ggpotest.txt");
-	is >> frameDelay;
-	is >> ipStr;
-
-	int sync;
-	is >> sync;
-
-
-	//int offset = 1, local_player = 0;
-	int num_players = 2;
-	ngs->num_players = num_players;
-
-	
-	if (sync)
-	{
-		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", num_players,
-			sizeof(int), 1);
-	}
-	else
-	{
-		result = ggpo_start_session(&ggpo, &cb, "breakneck", num_players,
-			sizeof(int));//, localPort);
-	}
-	
-	
-
-	//ggpo_log(ggpo, "test\n");
-	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
-	ggpo_set_disconnect_timeout(ggpo, 0); //3000
-	ggpo_set_disconnect_notify_start(ggpo, 1000);
-	int myIndex = 0;
-	int otherIndex = 1;
-	if (shift)
-	{
-		myIndex = 1;
-		otherIndex = 0;
-	}
-
-	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
-	ggpoPlayers[myIndex].player_num = myIndex + 1;
-	ggpoPlayers[otherIndex].size = sizeof(ggpoPlayers[otherIndex]);
-	ggpoPlayers[otherIndex].player_num = otherIndex + 1;
-	ggpoPlayers[myIndex].type = GGPO_PLAYERTYPE_LOCAL;
-	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
-//	local_player = myIndex;
-	
-	//int ipLen = ipStr.length();
-	//for (int i = 0; i < ipLen; ++i)
-	//{
-	//	ggpoPlayers[otherIndex].u.remote.ip_address[i] = ipStr[i];
-	//}
-	//ggpoPlayers[otherIndex].u.remote.ip_address[ipLen] = '\0';
-
-	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
-	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
-	
-	ggpoPlayers[otherIndex].u.remote.connection = connectionManager->connection;
-
-	int i;
-	for (i = 0; i < num_players; i++) {
-		GGPOPlayerHandle handle;
-		result = ggpo_add_player(ggpo, ggpoPlayers + i, &handle);
-		ngs->playerInfo[i].handle = handle;
-		ngs->playerInfo[i].type = ggpoPlayers[i].type;
-		if (ggpoPlayers[i].type == GGPO_PLAYERTYPE_LOCAL) {
-			ngs->playerInfo[i].connect_progress = 100;
-			ngs->local_player_handle = handle;
-			ngs->SetConnectState(handle, Connecting);
-			ggpo_set_frame_delay(ggpo, handle, frameDelay);
-		}
-		else {
-			ngs->playerInfo[i].connect_progress = 0;
-		}
-	}
-}
-
 void EditSession::TestPlayerMode()
 {
 	if (mode != TEST_PLAYER)
@@ -676,9 +563,11 @@ void EditSession::TestPlayerMode()
 	if (hud != NULL)
 	{
 		hud->Reset();
+
+		hud->Show();
 	}
 
-	hud->Show();
+	
 
 	for (int i = 0; i < 3; ++i)
 	{
@@ -1504,7 +1393,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 
 	SetupWaterShaders();
 	
-	
+	ggpoSyncTest = true;
 
 	transformTools = new TransformTools();
 
@@ -2803,8 +2692,8 @@ bool EditSession::WriteFile()
 
 	WriteDecor(of);
 
-	int numPlayers = mapHeader->GetNumPlayers();
-	for (int i = 0; i < numPlayers; ++i)
+	int numPlayerPositions = mapHeader->GetNumPlayerPositions();
+	for (int i = 0; i < numPlayerPositions; ++i)
 	{
 		Vector2i playerIntPos(playerMarkers[i]->GetIntPos());
 		of << playerIntPos.x << " " << playerIntPos.y << endl;
@@ -3846,12 +3735,12 @@ void EditSession::DefaultInit()
 
 void EditSession::UpdateNumPlayers()
 {
-	int numPlayers = mapHeader->GetNumPlayers();
+	int numPlayerPositions = mapHeader->GetNumPlayerPositions();
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (players[i] != NULL)
 		{
-			if (i >= numPlayers)
+			if (i >= numPlayerPositions)
 			{
 				playerMarkers[i]->Deactivate();
 				players[i] = NULL;
@@ -3859,7 +3748,7 @@ void EditSession::UpdateNumPlayers()
 		}
 		else
 		{
-			if (i < numPlayers)
+			if (i < numPlayerPositions)
 			{
 				if (players[i] == NULL)
 				{
@@ -11169,7 +11058,7 @@ void EditSession::CleanupTestPlayerMode()
 		ggpo_close_session(ggpo);
 		ggpo = NULL;
 
-		WSACleanup();
+		//WSACleanup();
 
 		delete currSaveState;
 		delete ngs;
@@ -13090,7 +12979,14 @@ void EditSession::GeneralEventHandler()
 						//NETPLAY_TEST_GET_CONNECTIONS,
 
 #ifdef GGPO_ON
-					TestNetplay();
+					if (ggpoSyncTest)
+					{
+						TestPlayerMode();
+					}
+					else
+					{
+						TestNetplay();
+					}
 #else
 					TestPlayerMode();
 #endif
@@ -13309,7 +13205,14 @@ void EditSession::CreateTerrainModeHandleEvent()
 			//TestPlayerMode();
 
 #ifdef GGPO_ON
-			TestNetplay();
+			if (ggpoSyncTest)
+			{
+				TestPlayerMode();
+			}
+			else
+			{
+				TestNetplay();
+			}
 #else
 			TestPlayerMode();
 #endif
@@ -14151,7 +14054,7 @@ void EditSession::NetplayTestGetConnectionsModeUpdate()
 {
 	if (connectionManager->connected)
 	{
-		lobbyManager->LeaveLobby(); //need to see if this causes problems or not. I don't think so.
+		//lobbyManager->LeaveLobby(); //need to see if this causes problems or not. I don't think so.
 
 		//InitGGPO(); //call this once I have the connections ready.
 		//SetActionRunGame();

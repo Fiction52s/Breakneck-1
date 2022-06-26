@@ -2,6 +2,7 @@
 #include <windows.h>
 #include "Session.h"
 #include <iostream>
+#include "LobbyManager.h"
 
 using namespace std;
 
@@ -52,6 +53,13 @@ on_event_callback(GGPOEvent *info)
 	int progress;
 	switch (info->code) {
 	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
+
+		if (sess->lobbyManager != NULL)
+		{
+			cout << "leaving lobby because ggpo is now connected" << endl;
+			sess->lobbyManager->LeaveLobby();
+		}
+
 		cout << "connected to peer" << endl;
 		sess->ngs->SetConnectState(info->u.connected.player, Synchronizing);
 		break;

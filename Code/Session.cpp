@@ -1563,6 +1563,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	gameMode = NULL;
 
+	ggpoSyncTest = false;
+
 	timeSyncFrames = 0;
 
 	simulationMode = false;
@@ -6784,6 +6786,117 @@ bool Session::PlayerIsFacingRight(int index)
 	}
 }
 
+void Session::InitGGPO()
+{
+	timeSyncFrames = 0;
+	//srand(400);
+	srand(time(0));
+	//WSADATA wd = { 0 };
+	//WSAStartup(MAKEWORD(2, 2), &wd);
+
+	GGPOSessionCallbacks cb = { 0 };
+	cb.begin_game = begin_game_callback;
+	cb.advance_frame = advance_frame_callback;
+	cb.load_game_state = load_game_state_callback;
+	cb.save_game_state = save_game_state_callback;
+	cb.free_buffer = free_buffer;
+	cb.on_event = on_event_callback;
+	cb.log_game_state = log_game_state;
+
+	/*for (int i = 0; i < 10; ++i)
+	{
+	saveStates[i] = new SaveGameState;
+	usedSaveState[i] = false;
+	}*/
+
+	currSaveState = new SaveGameState;
+	ngs = new GGPONonGameState;
+	ggpoPlayers = new GGPOPlayer[4];
+
+	GGPOErrorCode result;
+
+	int frameDelay = 2;
+
+	//ifstream is;
+	//is.open("Resources/ggpotest.txt");
+	//is >> frameDelay;
+	//is >> ipStr;
+
+	//int sync;
+	//is >> sync;
+
+
+	//int offset = 1, local_player = 0;
+	int num_players = 2;
+	ngs->num_players = num_players;
+
+	//bool sync = true;
+
+
+	if (ggpoSyncTest)
+	{
+		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", num_players,
+			sizeof(int), 1);
+	}
+	else
+	{
+		result = ggpo_start_session(&ggpo, &cb, "breakneck", num_players,
+			sizeof(int));//, localPort);
+	}
+
+
+
+	//ggpo_log(ggpo, "test\n");
+	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
+	ggpo_set_disconnect_timeout(ggpo, 0); //3000
+	ggpo_set_disconnect_notify_start(ggpo, 1000);
+	int myIndex = 0;
+	int otherIndex = 1;
+
+	if (!lobbyManager->IsLobbyCreator())
+	{
+		myIndex = 1;
+		otherIndex = 0;
+	}
+
+	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
+	ggpoPlayers[myIndex].player_num = myIndex + 1;
+	ggpoPlayers[otherIndex].size = sizeof(ggpoPlayers[otherIndex]);
+	ggpoPlayers[otherIndex].player_num = otherIndex + 1;
+	ggpoPlayers[myIndex].type = GGPO_PLAYERTYPE_LOCAL;
+	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
+	//	local_player = myIndex;
+
+	//int ipLen = ipStr.length();
+	//for (int i = 0; i < ipLen; ++i)
+	//{
+	//	ggpoPlayers[otherIndex].u.remote.ip_address[i] = ipStr[i];
+	//}
+	//ggpoPlayers[otherIndex].u.remote.ip_address[ipLen] = '\0';
+
+	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
+	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
+
+	ggpoPlayers[otherIndex].u.remote.connection = GetConnection();
+
+	int i;
+	for (i = 0; i < num_players; i++) {
+		GGPOPlayerHandle handle;
+		result = ggpo_add_player(ggpo, ggpoPlayers + i, &handle);
+		ngs->playerInfo[i].handle = handle;
+		ngs->playerInfo[i].type = ggpoPlayers[i].type;
+		if (ggpoPlayers[i].type == GGPO_PLAYERTYPE_LOCAL) {
+			ngs->playerInfo[i].connect_progress = 100;
+			ngs->local_player_handle = handle;
+			ngs->SetConnectState(handle, Connecting);
+			ggpo_set_frame_delay(ggpo, handle, frameDelay);
+		}
+		else {
+			ngs->playerInfo[i].connect_progress = 0;
+		}
+	}
+}
+
 bool Session::GGPORunGameModeUpdate()
 {
 	//if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
@@ -7253,6 +7366,9 @@ void Session::SetupGameMode()
 	case MapHeader::T_FIGHT:
 		gameMode = new FightMode;
 		break;
+	case MapHeader::T_RACE:
+		gameMode = new RaceMode;
+		break;
 	}
 }
 
@@ -7604,4 +7720,9 @@ void Session::CleanupPokeTriangleScreenGroup()
 			pokeTriangleScreenGroup = NULL;
 		}
 	}
+}
+
+HSteamNetConnection Session::GetConnection()
+{
+	return NULL;
 }

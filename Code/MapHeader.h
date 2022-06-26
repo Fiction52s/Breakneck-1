@@ -16,6 +16,7 @@ struct MapHeader
 		T_BASIC,
 		T_REACHENEMYBASE,
 		T_FIGHT,
+		T_RACE,
 	};
 
 	MapHeader()
@@ -37,6 +38,7 @@ struct MapHeader
 	int GetTop();
 	int GetRight();
 	int GetBot();
+	int GetNumPlayerPositions();
 	int GetNumPlayers();
 	void ClearSongs();
 	void AddSong(const std::string &songName,

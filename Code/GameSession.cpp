@@ -69,6 +69,9 @@
 
 #include "BonusHandler.h"
 #include "GameMode.h"
+
+#include "MatchParams.h"
+#include "ConnectionManager.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -460,7 +463,11 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 {
 	boost::filesystem::path p("Resources/Maps/" + bonusName + ".brknk");
 	
-	GameSession *newBonus = new GameSession(saveFile, p);
+	MatchParams mp;
+	mp.saveFile = saveFile;
+	mp.filePath = p;
+
+	GameSession *newBonus = new GameSession(mp);
 	newBonus->bonusType = p_bonusType;
 	newBonus->SetParentGame(this);
 	newBonus->Load();
@@ -734,9 +741,11 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupUnusedTilests();
 }
 
-GameSession::GameSession(SaveFile *sf, const boost::filesystem::path &p_filePath )
-	:Session( Session::SESS_GAME, p_filePath), saveFile( sf )
+GameSession::GameSession(MatchParams &mp )
+	:Session( Session::SESS_GAME, mp.filePath)
 {
+	matchParams = mp;
+	saveFile = mp.saveFile;
 	currSession = this;
 	Init();
 }
@@ -1810,7 +1819,7 @@ void GameSession::SetupPlayers()
 	}
 	else
 	{
-		for (int i = 1; i < mapHeader->GetNumPlayers(); ++i)
+		for (int i = 1; i < matchParams.numPlayers; ++i )//mapHeader->GetNumPlayerPositions(); ++i)
 		{
 			players[i] = new Actor(this, NULL, i);
 			//if( players[i] != NULL )
@@ -2104,6 +2113,15 @@ void GameSession::SetupBestTimeGhost()
 
 int GameSession::Run()
 {
+	if (matchParams.connectionManager != NULL )
+	{
+		if (!matchParams.connectionManager->connected)
+		{
+			assert(false && "game run connection manager failure");
+		}
+		InitGGPO();
+	}
+
 	oldShaderZoom = -1;
 	goalDestroyed = false;
 	frameRateDisplay.showFrameRate = true;
@@ -2342,10 +2360,27 @@ int GameSession::Run()
 			preScreenTex->clear(Color::Red);
 			postProcessTex2->clear(Color::Red);
 
-			if (!RunGameModeUpdate())
+			if (matchParams.connectionManager != NULL)
 			{
-				continue;
+				if (!matchParams.connectionManager->connected)
+				{
+					cout << "connection is terminated. ending match." << endl;
+					quit = true;
+					returnVal = GR_EXITLEVEL;
+					break;
+				}
+
+				if (!GGPORunGameModeUpdate())
+					continue;
 			}
+			else
+			{
+				if (!RunGameModeUpdate())
+				{
+					continue;
+				}
+			}
+			
 
 			sf::Event ev;
 			while (window->pollEvent(ev))
@@ -3153,8 +3188,14 @@ int GameSession::Run()
 	{
 		pauseMenu->game = NULL;
 	}
-
 	
+	//handle this outside of game session. you might want to hold onto the connection and play multiple rounds!
+
+	/*if (matchParams.connectionManager != NULL )
+	{
+		cout << "closing connection from the game" << endl;
+		matchParams.connectionManager->CloseConnection();
+	}*/
 
 	fader->Clear();
 
@@ -4492,6 +4533,11 @@ void GameSession::RecGhostRecordFrame()
 		recGhost->RecordFrame();
 }
 
+
+HSteamNetConnection GameSession::GetConnection()
+{
+	return matchParams.connectionManager->connection;
+}
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )
 	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
