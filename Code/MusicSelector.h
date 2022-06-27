@@ -92,6 +92,8 @@ struct MusicManager
 	bool rLoadMusicNames( const boost::filesystem::path &p );
 	bool LoadSong(const std::string &name );
 	bool DebugLoadMusic();
+
+	MusicInfo *GetMusicInfo( const std::string &name );
 	std::list<std::string> folderPaths;
 	//std::list<boost::filesystem::path> songPaths;
 	std::map<std::string, MusicInfo*> songMap;

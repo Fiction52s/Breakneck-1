@@ -3,6 +3,12 @@
 MatchParams::MatchParams()
 {
 	saveFile = NULL;
-	connectionManager = NULL;
-	numPlayers = -1;
+	netplayManager = NULL;
+	numPlayers = 1;
 }
+
+//void MatchParams::SetToNetplay(LobbyManager *lb, ConnectionManager *cm)
+//{
+//	lobbyManager = lb;
+//	connectionManager = cm;
+//}

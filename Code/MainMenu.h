@@ -459,6 +459,8 @@ struct LevelLoadParams
 
 std::string GetTimeStr(int numFrames);
 
+struct NetplayManager;
+
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -517,6 +519,7 @@ struct MainMenu
 		THANKS_FOR_PLAYING,
 		DOWNLOADSTART,
 		DOWNLOADLOOP,
+		QUICKPLAY_TEST,
 		EXITING,
 	};
 
@@ -535,6 +538,8 @@ struct MainMenu
 	};
 
 	//testing
+
+	NetplayManager *netplayManager;
 
 	std::string currWorkshopMap;
 

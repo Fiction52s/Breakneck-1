@@ -40,6 +40,7 @@
 #include "steam/steam_api.h"
 
 #include "MapBrowser.h"
+#include "NetplayManager.h"
 
 using namespace std;
 using namespace sf;
@@ -237,7 +238,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		mp.saveFile = currSaveFile;
 		mp.filePath = "Resources/Maps/Beta3/tut1.brknk";
 
-		currTutorialSession = new GameSession(mp);
+		currTutorialSession = new GameSession(&mp);
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
@@ -249,7 +250,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		mp.saveFile = currSaveFile;
 		mp.filePath = currWorkshopMap;
 
-		currWorkshopSession = new GameSession(mp);
+		currWorkshopSession = new GameSession(&mp);
 		GameSession::sLoad(currWorkshopSession);
 		break;
 	}
@@ -396,7 +397,7 @@ MainMenu::MainMenu()
 
 	activatedMainMenuOptions[0] = true;		//adventure
 	activatedMainMenuOptions[1] = false;		//freeplay
-	activatedMainMenuOptions[2] = false;	//local multiplayer
+	activatedMainMenuOptions[2] = true;//false;	//local multiplayer
 	activatedMainMenuOptions[3] = true;		//level editor
 	activatedMainMenuOptions[4] = true;		//options
 	activatedMainMenuOptions[5] = true;		//tutorial
@@ -421,6 +422,8 @@ MainMenu::MainMenu()
 	}
 
 	introMovie = new IntroMovie(this);
+
+	netplayManager = new NetplayManager;
 
 	if (musicManager->songMap.empty())
 	{
@@ -450,7 +453,7 @@ MainMenu::MainMenu()
 	musicPlayer = new MusicPlayer(this);
 
 	//clean this up for when someone doesn't have the music maybe? shouldn't crash at least.
-	menuMusic = musicManager->songMap["w0_2_Breakneck_Menu_01"];
+	menuMusic = musicManager->GetMusicInfo("w0_2_Breakneck_Menu_01");
 	if (menuMusic != NULL)
 	{
 		menuMusic->Load();
@@ -688,6 +691,9 @@ MainMenu::~MainMenu()
 	if( introMovie != NULL)
 		delete introMovie;
 
+	if (netplayManager != NULL)
+		delete netplayManager;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		delete controllers[i];
@@ -863,7 +869,7 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 		MatchParams mp;
 		mp.filePath = p_path;
 
-		GameSession *gs = new GameSession( mp);
+		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
 		
 		gameRunType = GRT_FREEPLAY;
@@ -890,7 +896,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 		MatchParams mp;
 		mp.filePath = p_path;
 
-		GameSession *gs = new GameSession(mp);
+		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
 		
 		result = gs->Run();
@@ -1738,7 +1744,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
 	mp.filePath = levelPath;
 
-	currLevel = new GameSession(mp);
+	currLevel = new GameSession(&mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
 	currLevel->bestReplayOn = loadParams.bestReplayOn;
 	currLevel->level = loadParams.level;
@@ -1823,7 +1829,7 @@ void MainMenu::PlayIntroMovie()
 	MatchParams mp;
 	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
 	mp.filePath = levelPath;
-	currLevel = new GameSession(mp);
+	currLevel = new GameSession(&mp);
 	currLevel->level = lev;
 
 	loadThread = new boost::thread(GameSession::sLoad, currLevel);
@@ -1863,7 +1869,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	mp.saveFile = m->saveMenu->files[m->saveMenu->selectedSaveIndex];
 	mp.filePath = levName;
 
-	m->currLevel = new GameSession(mp);
+	m->currLevel = new GameSession(&mp);
 	m->currLevel->level = lev;
 	m->currLevel->boostEntrance = true;
 	//
@@ -1944,7 +1950,7 @@ void MainMenu::HandleMenuMode()
 		MatchParams mp;
 		mp.filePath = "Resources/Maps/W1/arena04.brknk";
 
-		GameSession *gs = new GameSession(mp);
+		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
 		gs->Run();
 
@@ -2731,6 +2737,40 @@ void MainMenu::HandleMenuMode()
 			SetMode(LOADINGMENULOOP);
 		}
 		break;
+	case QUICKPLAY_TEST:
+		while (window->pollEvent(ev))
+		{
+			switch (ev.type)
+			{
+			case sf::Event::KeyPressed:
+			{
+				if (ev.key.code == Keyboard::Escape)
+				{
+					SetMode(TITLEMENU);
+					netplayManager->Abort();
+					//quit = true;
+				}
+			}
+			}
+		}
+
+		loadingBackpack->Update();
+		
+		netplayManager->Update();
+
+		if (netplayManager->IsReadyToRun())
+		{
+			MatchParams mp;
+			mp.netplayManager = netplayManager;
+			mp.numPlayers = 2;
+			mp.filePath = "Resources/Maps/W2/afighting1.brknk";
+			netplayManager->RunMatch(&mp);
+		}
+		if (netplayManager->IsIdle() )
+		{
+			SetMode(TITLEMENU);
+		}
+		break;
 	}
 
 	
@@ -2918,7 +2958,10 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
-			SetMode(TRANS_MAIN_TO_MAPSELECT);
+			netplayManager->isSyncTest = true;
+			netplayManager->FindMatch();
+			SetMode(QUICKPLAY_TEST);
+			//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
 		case M_LEVEL_EDITOR:
@@ -3239,6 +3282,12 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case DOWNLOADLOOP:
+	{
+		preScreenTexture->setView(v);
+		loadingBackpack->Draw(preScreenTexture);
+		break;
+	}
+	case QUICKPLAY_TEST:
 	{
 		preScreenTexture->setView(v);
 		loadingBackpack->Draw(preScreenTexture);

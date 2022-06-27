@@ -368,7 +368,7 @@ void MapSelectionMenu::LoadMap()
 
 	MatchParams mp;
 	mp.filePath = allItems[pIndex].second.item->path.string();
-	gs = new GameSession(mp);
+	gs = new GameSession(&mp);
 
 	gs->progressDisplay = progressDisplay;
 

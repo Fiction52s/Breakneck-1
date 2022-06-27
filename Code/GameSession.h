@@ -443,7 +443,7 @@ struct GameSession : RayCastHandler, Session
 	static int IsSteepGround(sf::Vector2<double> &normal);
 	static int IsWall(sf::Vector2<double> &normal);
 
-	GameSession(MatchParams &mp);//SaveFile *sf,
+	GameSession(MatchParams *mp);//SaveFile *sf,
 		//const boost::filesystem::path &p_filePath);
 	~GameSession();
 

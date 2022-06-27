@@ -25,7 +25,7 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 			MatchParams mp;
 			mp.filePath = ls.GetSelectedPath();
 
-			GameSession *gs = new GameSession(mp);
+			GameSession *gs = new GameSession(&mp);
 			GameSession::sLoad(gs);
 			gs->Run();
 			//gs->Reload(ls.fullPaths[ls.selectedIndex+1]);

@@ -2,7 +2,7 @@
 #include <windows.h>
 #include "Session.h"
 #include <iostream>
-#include "LobbyManager.h"
+#include "NetplayManager.h"
 
 using namespace std;
 
@@ -54,10 +54,10 @@ on_event_callback(GGPOEvent *info)
 	switch (info->code) {
 	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
 
-		if (sess->lobbyManager != NULL)
+		if (sess->netplayManager != NULL )
 		{
 			cout << "leaving lobby because ggpo is now connected" << endl;
-			sess->lobbyManager->LeaveLobby();
+			sess->netplayManager->LeaveLobby();
 		}
 
 		cout << "connected to peer" << endl;

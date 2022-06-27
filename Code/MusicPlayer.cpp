@@ -49,6 +49,7 @@ void MusicPlayer::UpdateVolume()
 
 void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 {
+	
 	//MusicInfo *newMusic = musicMap[name];
 	
 	StopFades();
@@ -56,6 +57,11 @@ void MusicPlayer::PlayMusic(MusicInfo *newMusic, sf::Time startTime)
 	if (currMusic != NULL)
 	{
 		StopMusic(currMusic);
+	}
+
+	if (newMusic == NULL)
+	{
+		return;
 	}
 		
 

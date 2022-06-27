@@ -40,8 +40,7 @@
 //enemy stuff:
 #include "SoundManager.h"
 #include "GGPO.h"
-#include "LobbyManager.h"
-#include "ConnectionManager.h"
+#include "NetplayManager.h"
 
 
 
@@ -1563,8 +1562,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	gameMode = NULL;
 
-	ggpoSyncTest = false;
-
 	timeSyncFrames = 0;
 
 	simulationMode = false;
@@ -1579,8 +1576,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	playerAndEnemiesFrozen = false;
 	playerFrozen = false;
 
-	lobbyManager = NULL;
-	connectionManager = NULL;
+	netplayManager = NULL;
 
 	currSuperPlayer = NULL;
 	superSequence = NULL;
@@ -1957,7 +1953,7 @@ Session::~Session()
 
 	CleanupSuperSequence();
 
-	CleanupNetplay();
+	//CleanupNetplay();
 }
 
 void Session::UpdateDecorLayers()
@@ -3914,29 +3910,18 @@ void Session::CloseOffLimitZones()
 
 void Session::SetupNetplay()
 {
-	if (lobbyManager == NULL)
+	if (netplayManager == NULL)
 	{
-		lobbyManager = new LobbyManager;
-	}
-
-	if (connectionManager == NULL)
-	{
-		connectionManager = new ConnectionManager;
+		netplayManager = new NetplayManager;
 	}
 }
 
 void Session::CleanupNetplay()
 {
-	if (lobbyManager != NULL)
+	if (netplayManager != NULL)
 	{
-		delete lobbyManager;
-		lobbyManager = NULL;
-	}
-
-	if (connectionManager != NULL)
-	{
-		delete connectionManager;
-		connectionManager = NULL;
+		delete netplayManager;
+		netplayManager = NULL;
 	}
 }
 
@@ -6833,7 +6818,7 @@ void Session::InitGGPO()
 	//bool sync = true;
 
 
-	if (ggpoSyncTest)
+	if (netplayManager->isSyncTest)
 	{
 		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", num_players,
 			sizeof(int), 1);
@@ -6853,7 +6838,9 @@ void Session::InitGGPO()
 	int myIndex = 0;
 	int otherIndex = 1;
 
-	if (!lobbyManager->IsLobbyCreator())
+	//bool shift = IsKeyPressed(Keyboard::LShift);
+
+	if ( netplayManager != NULL && !netplayManager->IsLobbyCreator() )
 	{
 		myIndex = 1;
 		otherIndex = 0;
@@ -6877,7 +6864,11 @@ void Session::InitGGPO()
 	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
-	ggpoPlayers[otherIndex].u.remote.connection = GetConnection();
+	if (netplayManager != NULL)
+	{
+		ggpoPlayers[otherIndex].u.remote.connection = netplayManager->GetConnection();
+	}
+	
 
 	int i;
 	for (i = 0; i < num_players; i++) {

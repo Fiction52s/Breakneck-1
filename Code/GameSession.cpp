@@ -69,9 +69,9 @@
 
 #include "BonusHandler.h"
 #include "GameMode.h"
+#include "ggponet.h"
 
-#include "MatchParams.h"
-#include "ConnectionManager.h"
+#include "NetplayManager.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -467,7 +467,7 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	mp.saveFile = saveFile;
 	mp.filePath = p;
 
-	GameSession *newBonus = new GameSession(mp);
+	GameSession *newBonus = new GameSession(&mp);
 	newBonus->bonusType = p_bonusType;
 	newBonus->SetParentGame(this);
 	newBonus->Load();
@@ -741,11 +741,12 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 	CleanupUnusedTilests();
 }
 
-GameSession::GameSession(MatchParams &mp )
-	:Session( Session::SESS_GAME, mp.filePath)
+GameSession::GameSession(MatchParams *mp )
+	:Session( Session::SESS_GAME, mp->filePath)
 {
-	matchParams = mp;
-	saveFile = mp.saveFile;
+	matchParams = *mp;
+	saveFile = matchParams.saveFile;
+	netplayManager = matchParams.netplayManager;
 	currSession = this;
 	Init();
 }
@@ -1297,7 +1298,7 @@ void GameSession::ProcessActor(ActorPtr a)
 void GameSession::ProcessAllActors()
 {
 	//how does this know the right number of bullets?
-	CreateBulletQuads();
+	//CreateBulletQuads();
 
 
 	if (raceFight != NULL)
@@ -1565,7 +1566,7 @@ bool GameSession::Load()
 
 	SetupQuadTrees();
 
-	cout << "weird timing 1" << endl;
+	//cout << "weird timing 1" << endl;
 
 	AllocateEffects();
 	
@@ -1577,7 +1578,7 @@ bool GameSession::Load()
 		return false;
 	}
 
-	cout << "weird timing 2" << endl;
+	//cout << "weird timing 2" << endl;
 
 	//blah 2
 	
@@ -1616,7 +1617,7 @@ bool GameSession::Load()
 	
 
 
-	cout << "weird timing 3" << endl;
+	//cout << "weird timing 3" << endl;
 	if (!ShouldContinueLoading())
 	{
 		cout << "cleanup B" << endl;
@@ -1624,7 +1625,7 @@ bool GameSession::Load()
 		
 		return false;
 	}
-	cout << "weird timing 4" << endl;
+	//cout << "weird timing 4" << endl;
 
 	if (parentGame != NULL)
 	{
@@ -1671,6 +1672,9 @@ bool GameSession::Load()
 
 	SetupGameMode();
 	gameMode->Setup();
+
+	//create bullet quads after game mode because game mode might make new enemies with bullets
+	CreateBulletQuads();
 
 	
 
@@ -2113,9 +2117,9 @@ void GameSession::SetupBestTimeGhost()
 
 int GameSession::Run()
 {
-	if (matchParams.connectionManager != NULL )
+	if (matchParams.netplayManager != NULL)
 	{
-		if (!matchParams.connectionManager->connected)
+		if (!matchParams.netplayManager->IsConnected() )
 		{
 			assert(false && "game run connection manager failure");
 		}
@@ -2360,9 +2364,9 @@ int GameSession::Run()
 			preScreenTex->clear(Color::Red);
 			postProcessTex2->clear(Color::Red);
 
-			if (matchParams.connectionManager != NULL)
+			if (matchParams.netplayManager != NULL)
 			{
-				if (!matchParams.connectionManager->connected)
+				if (!matchParams.netplayManager->IsConnected() )
 				{
 					cout << "connection is terminated. ending match." << endl;
 					quit = true;
@@ -2370,8 +2374,25 @@ int GameSession::Run()
 					break;
 				}
 
-				if (!GGPORunGameModeUpdate())
-					continue;
+				ggpo_idle(ggpo, 5);
+
+				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
+				{
+					--timeSyncFrames;
+					accumulator -= TIMESTEP;
+				}
+				else
+				{
+					while (accumulator >= TIMESTEP)
+					{
+						GGPORunFrame();
+						accumulator -= TIMESTEP;
+					}
+				}
+
+
+				//if (!GGPORunGameModeUpdate())
+				//	continue;
 			}
 			else
 			{
@@ -3188,14 +3209,7 @@ int GameSession::Run()
 	{
 		pauseMenu->game = NULL;
 	}
-	
-	//handle this outside of game session. you might want to hold onto the connection and play multiple rounds!
 
-	/*if (matchParams.connectionManager != NULL )
-	{
-		cout << "closing connection from the game" << endl;
-		matchParams.connectionManager->CloseConnection();
-	}*/
 
 	fader->Clear();
 
@@ -4536,7 +4550,14 @@ void GameSession::RecGhostRecordFrame()
 
 HSteamNetConnection GameSession::GetConnection()
 {
-	return matchParams.connectionManager->connection;
+	if (matchParams.netplayManager != NULL)
+	{
+		return matchParams.netplayManager->GetConnection();
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )

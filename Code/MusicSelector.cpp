@@ -660,3 +660,15 @@ bool MusicManager::DebugLoadMusic()
 
 	return true;
 }
+
+MusicInfo *MusicManager::GetMusicInfo(const std::string &name)
+{
+	if (songMap.count(name) > 0)
+	{
+		return songMap[name];
+	}
+	else
+	{
+		return NULL;
+	}
+}

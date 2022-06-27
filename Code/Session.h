@@ -28,8 +28,7 @@ struct GGPONonGameState;
 struct SaveGameState;
 struct GGPOSession;
 struct GGPOPlayer;
-struct LobbyManager;
-struct ConnectionManager;
+struct NetplayManager;
 
 struct QNode;
 struct SoundManager;
@@ -394,8 +393,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	int totalFramesBeforeGoal;
 
 	GGPOSession *ggpo;
-	LobbyManager *lobbyManager;
-	ConnectionManager *connectionManager;
+	NetplayManager *netplayManager;
 
 	SuperSequence *superSequence;
 
@@ -819,7 +817,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	//SaveGameState *saveStates[10];
 	//bool usedSaveState[10];
 	GGPOPlayer *ggpoPlayers;
-	bool ggpoSyncTest;
 
 	virtual void InitGGPO();
 	virtual HSteamNetConnection GetConnection();

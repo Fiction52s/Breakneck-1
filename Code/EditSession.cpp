@@ -446,10 +446,10 @@ bool EditSession::GGPOTestPlayerModeUpdate()
 
 void EditSession::TestNetplay()
 {
-	cout << "testing netplay" << endl;
+	/*cout << "testing netplay" << endl;
 	SetMode(NETPLAY_TEST_GATHER_USERS);
 
-	lobbyManager->FindLobby();
+	lobbyManager->FindLobby();*/
 }
 
 void EditSession::RepPlayerUpdateInput()
@@ -1392,8 +1392,7 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	LoadPolyShader();
 
 	SetupWaterShaders();
-	
-	ggpoSyncTest = true;
+
 
 	transformTools = new TransformTools();
 
@@ -14020,47 +14019,47 @@ void EditSession::MoveBorderModeUpdate()
 
 void EditSession::NetplayTestGatherUsersModeUpdate()
 {
-	lobbyManager->Update();
+	//lobbyManager->Update();
 
-	if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
-	{
-		SetMode(NETPLAY_TEST_GET_CONNECTIONS);
+	//if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
+	//{
+	//	SetMode(NETPLAY_TEST_GET_CONNECTIONS);
 
-		if (lobbyManager->currentLobby.createdByMe)
-		{
-			cout << "create listen socket" << endl;
-			connectionManager->CreateListenSocket();
-		}
-		else
-		{
-			cout << "other test " << endl;
-			//this is really bad/messy for 4 players. figure out how to do multiple p2p connections soon
-			CSteamID myId = SteamUser()->GetSteamID();
-			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
-			{
-				if ((*it) == myId)
-				{
-					continue;
-				}
+	//	if (lobbyManager->currentLobby.createdByMe)
+	//	{
+	//		cout << "create listen socket" << endl;
+	//		connectionManager->CreateListenSocket();
+	//	}
+	//	else
+	//	{
+	//		cout << "other test " << endl;
+	//		//this is really bad/messy for 4 players. figure out how to do multiple p2p connections soon
+	//		CSteamID myId = SteamUser()->GetSteamID();
+	//		for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	//		{
+	//			if ((*it) == myId)
+	//			{
+	//				continue;
+	//			}
 
-				cout << "try to connect" << endl;
-				connectionManager->ConnectToID((*it));
-			}
-		}
-	}
+	//			cout << "try to connect" << endl;
+	//			connectionManager->ConnectToID((*it));
+	//		}
+	//	}
+	//}
 }
 
 void EditSession::NetplayTestGetConnectionsModeUpdate()
 {
-	if (connectionManager->connected)
-	{
-		//lobbyManager->LeaveLobby(); //need to see if this causes problems or not. I don't think so.
+	//if (connectionManager->connected)
+	//{
+	//	//lobbyManager->LeaveLobby(); //need to see if this causes problems or not. I don't think so.
 
-		//InitGGPO(); //call this once I have the connections ready.
-		//SetActionRunGame();
-		cout << "leaving lobby and starting the game" << endl;
-		TestPlayerMode();
-	}
+	//	//InitGGPO(); //call this once I have the connections ready.
+	//	//SetActionRunGame();
+	//	cout << "leaving lobby and starting the game" << endl;
+	//	TestPlayerMode();
+	//}
 }
 
 void EditSession::TestPlayerModeHandleEvent()

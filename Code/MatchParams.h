@@ -4,7 +4,7 @@
 #include <boost/filesystem.hpp>
 #include "steam\steam_api.h"
 
-struct ConnectionManager;
+struct NetplayManager;
 struct SaveFile;
 
 struct MatchParams
@@ -12,7 +12,8 @@ struct MatchParams
 	MatchParams();
 	boost::filesystem::path filePath;
 	SaveFile *saveFile;
-	ConnectionManager *connectionManager;
+	NetplayManager *netplayManager;
+	//void SetToNetplay(NetplayManager *netplayManager);//LobbyManager *lb, ConnectionManager *cm);
 	int numPlayers;
 
 };
