@@ -236,7 +236,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		assert(currTutorialSession == NULL);
 		MatchParams mp;
 		mp.saveFile = currSaveFile;
-		mp.filePath = "Resources/Maps/Beta3/tut1.brknk";
+		mp.mapPath = "Resources/Maps/Beta3/tut1.brknk";
 
 		currTutorialSession = new GameSession(&mp);
 		GameSession::sLoad(currTutorialSession);
@@ -248,7 +248,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		MatchParams mp;
 		mp.saveFile = currSaveFile;
-		mp.filePath = currWorkshopMap;
+		mp.mapPath = currWorkshopMap;
 
 		currWorkshopSession = new GameSession(&mp);
 		GameSession::sLoad(currWorkshopSession);
@@ -867,7 +867,7 @@ void MainMenu::GameEditLoop( const std::string &p_path )
 		window->setView( v );
 
 		MatchParams mp;
-		mp.filePath = p_path;
+		mp.mapPath = p_path;
 
 		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
@@ -894,7 +894,7 @@ void MainMenu::GameEditLoop2( const std::string &p_path )
 		window->setView( v );
 
 		MatchParams mp;
-		mp.filePath = p_path;
+		mp.mapPath = p_path;
 
 		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
@@ -1742,7 +1742,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	MatchParams mp;
 	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
-	mp.filePath = levelPath;
+	mp.mapPath = levelPath;
 
 	currLevel = new GameSession(&mp);
 	currLevel->bestTimeGhostOn = loadParams.bestTimeGhostOn;
@@ -1828,7 +1828,7 @@ void MainMenu::PlayIntroMovie()
 
 	MatchParams mp;
 	mp.saveFile = saveMenu->files[saveMenu->selectedSaveIndex];
-	mp.filePath = levelPath;
+	mp.mapPath = levelPath;
 	currLevel = new GameSession(&mp);
 	currLevel->level = lev;
 
@@ -1867,7 +1867,7 @@ void MainMenu::sGoToNextLevel(MainMenu *m, AdventureMap *am, Level *lev )//const
 	
 	MatchParams mp;
 	mp.saveFile = m->saveMenu->files[m->saveMenu->selectedSaveIndex];
-	mp.filePath = levName;
+	mp.mapPath = levName;
 
 	m->currLevel = new GameSession(&mp);
 	m->currLevel->level = lev;
@@ -1948,7 +1948,7 @@ void MainMenu::HandleMenuMode()
 		}
 
 		MatchParams mp;
-		mp.filePath = "Resources/Maps/W1/arena04.brknk";
+		mp.mapPath = "Resources/Maps/W1/arena04.brknk";
 
 		GameSession *gs = new GameSession(&mp);
 		GameSession::sLoad(gs);
@@ -2760,11 +2760,12 @@ void MainMenu::HandleMenuMode()
 
 		if (netplayManager->IsReadyToRun())
 		{
-			MatchParams mp;
+			
+			/*MatchParams mp;
 			mp.netplayManager = netplayManager;
 			mp.numPlayers = 2;
 			mp.filePath = "Resources/Maps/W2/afighting1.brknk";
-			netplayManager->RunMatch(&mp);
+			netplayManager->RunMatch(&mp);*/
 		}
 		if (netplayManager->IsIdle() )
 		{
@@ -2958,7 +2959,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
-			netplayManager->isSyncTest = true;
+			//netplayManager->isSyncTest = true;
 			netplayManager->FindMatch();
 			SetMode(QUICKPLAY_TEST);
 			//SetMode(TRANS_MAIN_TO_MAPSELECT);

@@ -1,6 +1,7 @@
 #include "LobbyManager.h"
 #include <string>
 #include <iostream>
+#include "LobbyMessage.h"
 
 using namespace std;
 
@@ -8,7 +9,7 @@ LobbyManager::LobbyManager()
 {
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
-	isLobbyCreator = false;
+	createdCurrentLobby = false;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyParams &lp)
@@ -38,7 +39,7 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 	{
 		// success
 		currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
-		currentLobby.createdByMe = true;
+		//currentLobby.createdByMe = true;
 
 		// set the name of the lobby if it's ours
 		string lobbyName = SteamFriends()->GetPersonaName();
@@ -52,10 +53,10 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		action = A_IN_LOBBY;
 
-		isLobbyCreator = true;
+		createdCurrentLobby = true;
 
-		string test = "test messageeeee";
-		SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
+		//string test = "test messageeeee";
+		//SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
 	}
 	else
 	{
@@ -72,7 +73,7 @@ bool LobbyManager::IsInLobby()
 
 bool LobbyManager::IsLobbyCreator()
 {
-	return isLobbyCreator;
+	return createdCurrentLobby;
 }
 
 void LobbyManager::PrintLobbies()
@@ -89,7 +90,7 @@ void LobbyManager::PrintLobbies()
 void LobbyManager::FindLobby()
 {
 	cout << "finding lobby" << endl;
-	isLobbyCreator = false;
+	createdCurrentLobby = false;
 	RefreshLobbyList();
 }
 
@@ -100,17 +101,8 @@ void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
 }
 
-void LobbyManager::OnLobbyChatMessageCallback(LobbyChatMsg_t *pCallback)
-{
-	cout << "lobby chat message callback" << endl;
 
-	void *pvData[1024 * 4];
-	int bufSize = 4 * 1024;
 
-	SteamMatchmaking()->GetLobbyChatEntry(pCallback->m_ulSteamIDLobby, pCallback->m_iChatID, NULL, pvData, bufSize, NULL);
-
-	cout << "message: " << (char*)pvData << endl;
-}
 
 void LobbyManager::OnLobbyEnterCallback(LobbyEnter_t *pCallback)
 {
@@ -267,7 +259,7 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 
 		// add the lobby to the list
 		Lobby lobby;
-		lobby.createdByMe = false;
+		//lobby.createdByMe = false;
 		lobby.m_steamIDLobby = steamIDLobby;
 
 		// pull the name from the lobby metadata

@@ -10,7 +10,7 @@ struct SaveFile;
 struct MatchParams
 {
 	MatchParams();
-	boost::filesystem::path filePath;
+	boost::filesystem::path mapPath;
 	SaveFile *saveFile;
 	NetplayManager *netplayManager;
 	//void SetToNetplay(NetplayManager *netplayManager);//LobbyManager *lb, ConnectionManager *cm);

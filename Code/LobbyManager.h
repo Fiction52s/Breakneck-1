@@ -4,7 +4,7 @@
 #include "steam/steam_api.h"
 #include <list>
 #include <string>
-
+#include "LobbyMessage.h"
 
 // an item in the list of lobbies we've found to display
 struct Lobby
@@ -12,7 +12,7 @@ struct Lobby
 	CSteamID m_steamIDLobby;
 	//char m_rgchName[256];
 	std::string name;
-	bool createdByMe;
+	//bool createdByMe;
 	int maxMembers;
 	std::list<CSteamID> memberList;
 };
@@ -45,7 +45,9 @@ struct LobbyManager
 	LobbyParams paramsForMakingLobby;
 	Lobby currentLobby;
 
-	bool isLobbyCreator;
+	bool createdCurrentLobby;
+
+	
 
 	CCallResult<LobbyManager, LobbyCreated_t> m_SteamCallResultLobbyCreated;
 	CCallResult<LobbyManager, LobbyMatchList_t> m_SteamCallResultLobbyMatchList;
@@ -78,7 +80,7 @@ struct LobbyManager
 
 	//STEAM_CALLBACK(LobbyTester, OnLobbyDataUpdatedCallback, LobbyDataUpdate_t, m_CallbackLobbyDataUpdated);
 	STEAM_CALLBACK(LobbyManager, OnLobbyChatUpdateCallback, LobbyChatUpdate_t);
-	STEAM_CALLBACK(LobbyManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
+	
 	STEAM_CALLBACK(LobbyManager, OnLobbyEnterCallback, LobbyEnter_t);
 	STEAM_CALLBACK(LobbyManager, OnLobbyDataUpdateCallback, LobbyDataUpdate_t);
 

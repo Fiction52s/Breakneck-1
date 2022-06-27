@@ -47,7 +47,7 @@ void MultiLoadingScreen::Reset(boost::filesystem::path p_path)
 	}
 
 	MatchParams mp;
-	mp.filePath = p_path.string();
+	mp.mapPath = p_path.string();
 	gs = new GameSession(&mp);
 
 	gs->progressDisplay = progressDisplay;

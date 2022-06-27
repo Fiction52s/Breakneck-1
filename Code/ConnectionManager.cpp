@@ -119,6 +119,7 @@ void ConnectionManager::CloseConnection()
 	{
 		//this destroys ALL connections. needs to be handled differently for more than 2 players
 		SteamNetworkingSockets()->CloseListenSocket(listenSocket);
+		listenSocket = 0;
 	}
 }
 

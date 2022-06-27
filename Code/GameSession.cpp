@@ -465,7 +465,7 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	
 	MatchParams mp;
 	mp.saveFile = saveFile;
-	mp.filePath = p;
+	mp.mapPath = p;
 
 	GameSession *newBonus = new GameSession(&mp);
 	newBonus->bonusType = p_bonusType;
