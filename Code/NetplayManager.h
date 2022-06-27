@@ -10,6 +10,15 @@
 struct MatchParams;
 struct GameSession;
 
+struct NetplayPlayer
+{
+	NetplayPlayer();
+	CSteamID id;
+	HSteamNetConnection connection;
+	bool isMe;
+	int index;
+};
+
 struct NetplayManager
 {
 	enum Action
@@ -17,6 +26,7 @@ struct NetplayManager
 		A_IDLE,
 		A_GATHERING_USERS,
 		A_GET_CONNECTIONS,
+		A_WAIT_TO_LOAD_MAP,
 		A_LOAD_MAP,
 		A_READY_TO_RUN,
 		A_RUNNING_MATCH,
@@ -25,6 +35,8 @@ struct NetplayManager
 	Action action;
 	sf::Vertex quad[4];
 	bool isSyncTest;
+
+	bool receivedMapLoadSignal;
 
 	boost::thread *loadThread;
 
@@ -36,6 +48,8 @@ struct NetplayManager
 
 	MatchParams matchParams;
 
+	NetplayPlayer netplayPlayers[4];
+
 	bool clientsDoneLoadingMap[4];
 
 	NetplayManager();
@@ -46,14 +60,17 @@ struct NetplayManager
 	bool IsIdle();
 	void LeaveLobby();
 	void RunMatch();
+	
 	HSteamNetConnection GetConnection();
 	bool IsHost();
 	void Abort();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	void FindMatch();
-	void LoadMap(MatchParams *mp);
+	void LoadMap();
 	void HandleMessage(LobbyMessage &msg);
+	CSteamID GetHostID();
+	CSteamID GetMyID();
 
 	void BroadcastLoadMapSignal();
 

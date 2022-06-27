@@ -7,6 +7,12 @@
 using namespace std;
 using namespace sf;
 
+NetplayPlayer::NetplayPlayer()
+{
+	connection = 0;
+	isMe = false;
+}
+
 NetplayManager::NetplayManager()
 {
 	lobbyManager = NULL;
@@ -18,6 +24,10 @@ NetplayManager::NetplayManager()
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
 	isSyncTest = false;
+
+	//choose this in a separate function soon
+	//matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
+	matchParams.netplayManager = this;
 }
 
 NetplayManager::~NetplayManager()
@@ -55,32 +65,6 @@ bool NetplayManager::IsReadyToRun()
 	return action == A_READY_TO_RUN;
 }
 
-void NetplayManager::LoadMap(MatchParams *mp)
-{
-	//if (IsReadyToRun())
-	//{
-	//	cout << "running match" << endl;
-	//	//cout << "leaving lobby and starting the game" << endl;
-	//	action = A_RUNNING_MATCH;
-
-	//	//MatchParams mp;
-	//	//mp.netplayManager = this;
-	//	//mp.numPlayers = 2;
-	//	//mp.filePath = "Resources/Maps/W2/afighting1.brknk";
-	//	
-
-	//	GameSession::sLoad(game);
-	//	game->Run();
-
-	//	delete game;
-	//	game = NULL;
-
-	//	//Abort();
-	//	//connectionManager->CloseConnection();
-	//	action = A_IDLE;
-	//}
-}
-
 void NetplayManager::LeaveLobby()
 {
 	if (lobbyManager != NULL)
@@ -116,7 +100,28 @@ void NetplayManager::Update()
 
 		if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
 		{
+			assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
+			int memberIndex = 0;
+			playerIndex = -1;
+			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+			{
+				netplayPlayers[memberIndex].index = memberIndex;
+				netplayPlayers[memberIndex].id = (*it);
+				netplayPlayers[memberIndex].connection = 0;
+				netplayPlayers[memberIndex].isMe = false;
+
+				if ((*it) == GetMyID())
+				{
+					netplayPlayers[memberIndex].isMe = true;
+					playerIndex = memberIndex;
+				}
+
+				++memberIndex;
+			}
+
 			action = A_GET_CONNECTIONS;
+
+			if( playerIndex < )
 
 			if (IsHost())
 			{
@@ -149,9 +154,23 @@ void NetplayManager::Update()
 		//if connected to all others
 		if (connectionManager->connected)
 		{
-			string test = "test messageeeee";
-			SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
+			action = A_WAIT_TO_LOAD_MAP;
+			if (IsHost())
+			{
+				BroadcastLoadMapSignal();
+			}
+			//string test = "test messageeeee";
+			//SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
 			//LoadMap();
+		}
+		break;
+	}
+	case A_WAIT_TO_LOAD_MAP:
+	{
+		if (receivedMapLoadSignal)
+		{
+			action = A_LOAD_MAP;
+			LoadMap();
 		}
 		break;
 	}
@@ -176,7 +195,7 @@ void NetplayManager::Update()
 void NetplayManager::BroadcastLoadMapSignal()
 {
 	LobbyMessage msg;
-	msg.mapPath = "Resources/Maps/W2/afighting1.brknk";
+	msg.mapPath = "Resources/Maps/W2/afighting1.brknk";//matchParams.mapPath.string();//
 	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_LOAD_MAP;
 
 	uint8 *buffer;
@@ -187,19 +206,30 @@ void NetplayManager::BroadcastLoadMapSignal()
 	delete[] buffer;
 }
 
-void NetplayManager::LoadMap(MatchParams *mp)
+CSteamID NetplayManager::GetHostID()
+{
+	return SteamMatchmaking()->GetLobbyOwner(lobbyManager->currentLobby.m_steamIDLobby);
+}
+
+CSteamID NetplayManager::GetMyID()
+{
+	return SteamUser()->GetSteamID();
+}
+
+void NetplayManager::LoadMap()
 {
 	action = A_LOAD_MAP;
 
-	if (IsHost())
+	/*if (IsHost())
 	{
 		string test = "test messageeeee";
 		SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
-	}
+	}*/
 
+	matchParams.numPlayers = lobbyManager->GetNumMembers();
 
 	assert(game == NULL);
-	game = new GameSession(mp);
+	game = new GameSession(&matchParams);
 
 	assert(loadThread == NULL);
 	loadThread = new boost::thread(GameSession::sLoad, game);
@@ -257,14 +287,17 @@ bool NetplayManager::IsHost()
 	}
 	else
 	{
-		if (lobbyManager != NULL)
+		//assert(lobbyManager->currentLobby.m_steamIDLobby != 0);
+		return GetHostID() == GetMyID();
+
+		/*if (lobbyManager != NULL)
 		{
 			return lobbyManager->IsLobbyCreator();
 		}
 		else
 		{
 			return true;
-		}
+		}*/
 	}
 }
 
@@ -272,11 +305,15 @@ void NetplayManager::HandleMessage(LobbyMessage &msg)
 {
 	msg.Print();
 
-	CSteamID lobbyOwner = SteamMatchmaking()->GetLobbyOwner(lobbyManager->currentLobby.m_steamIDLobby);
-	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_LOAD_MAP && lobbyOwner == msg.sender)
+	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_LOAD_MAP && GetHostID() == msg.sender)
 	{
+		cout << "received a message to load the map from the host" << endl;
+
+		receivedMapLoadSignal = true;
 		matchParams.mapPath = msg.mapPath;
-		cout << "received a message to load the map from the lobby owner" << endl;
+		matchParams.numPlayers = lobbyManager->GetNumMembers();
+		//LoadMap();
+
 	}
 }
 

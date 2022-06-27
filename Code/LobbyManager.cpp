@@ -9,7 +9,6 @@ LobbyManager::LobbyManager()
 {
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
-	createdCurrentLobby = false;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyParams &lp)
@@ -53,7 +52,6 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		action = A_IN_LOBBY;
 
-		createdCurrentLobby = true;
 
 		//string test = "test messageeeee";
 		//SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
@@ -71,11 +69,6 @@ bool LobbyManager::IsInLobby()
 	return action == A_IN_LOBBY;
 }
 
-bool LobbyManager::IsLobbyCreator()
-{
-	return createdCurrentLobby;
-}
-
 void LobbyManager::PrintLobbies()
 {
 	int index = 0;
@@ -90,7 +83,6 @@ void LobbyManager::PrintLobbies()
 void LobbyManager::FindLobby()
 {
 	cout << "finding lobby" << endl;
-	createdCurrentLobby = false;
 	RefreshLobbyList();
 }
 
@@ -101,7 +93,10 @@ void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
 }
 
-
+int LobbyManager::GetNumMembers()
+{
+	return currentLobby.memberList.size();
+}
 
 
 void LobbyManager::OnLobbyEnterCallback(LobbyEnter_t *pCallback)
