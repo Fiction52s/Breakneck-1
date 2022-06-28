@@ -9,8 +9,17 @@ using namespace sf;
 
 NetplayPlayer::NetplayPlayer()
 {
+	Clear();
+}
+
+void NetplayPlayer::Clear()
+{
 	connection = 0;
 	isMe = false;
+	isConnectedTo = false;
+	doneConnectingToAllPeers = false;
+	readyToRun = false;
+	
 }
 
 NetplayManager::NetplayManager()
@@ -24,6 +33,11 @@ NetplayManager::NetplayManager()
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
 	isSyncTest = false;
+
+	receivedMapLoadSignal = false;
+	receivedGameStartSignal = false;
+
+	numPlayers = -1;
 
 	//choose this in a separate function soon
 	//matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
@@ -79,13 +93,43 @@ void NetplayManager::Abort()
 		delete lobbyManager;
 		lobbyManager = NULL;
 	}
+
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			SteamNetworkingSockets()->CloseConnection(netplayPlayers[i].connection, 0, NULL, false);
+			//netplayPlayers[i].connection = 0;
+			//netplayPlayers[i].isConnectedTo = false;
+		}
+	}
+
+	if ( connectionManager != NULL && connectionManager->listenSocket != 0)
+	{
+		SteamNetworkingSockets()->CloseListenSocket(connectionManager->listenSocket);
+	}
+
 	if (connectionManager != NULL)
 	{
-		connectionManager->CloseConnection();
+		//connectionManager->CloseConnection();
 		delete connectionManager;
 		connectionManager = NULL;
 	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].Clear();
+	}
+
+	numPlayers = -1;
+
 	action = A_IDLE;
+
+	receivedMapLoadSignal = false;
+	receivedGameStartSignal = false;
 }
 
 void NetplayManager::Update()
@@ -100,15 +144,16 @@ void NetplayManager::Update()
 
 		if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
 		{
+			numPlayers = 2;
 			assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
 			int memberIndex = 0;
 			playerIndex = -1;
 			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
 			{
+				netplayPlayers[memberIndex].Clear();
+
 				netplayPlayers[memberIndex].index = memberIndex;
 				netplayPlayers[memberIndex].id = (*it);
-				netplayPlayers[memberIndex].connection = 0;
-				netplayPlayers[memberIndex].isMe = false;
 
 				if ((*it) == GetMyID())
 				{
@@ -121,29 +166,17 @@ void NetplayManager::Update()
 
 			action = A_GET_CONNECTIONS;
 
-			if( playerIndex < )
-
-			if (IsHost())
+			if (playerIndex < numPlayers - 1)
 			{
-				cout << "create listen socket" << endl;
 				connectionManager->CreateListenSocket();
 			}
-			else
-			{
-				cout << "other test " << endl;
-				//this is really bad/messy for 4 players. figure out how to do multiple p2p connections soon
-				CSteamID myId = SteamUser()->GetSteamID();
-				
-				for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
-				{
-					if ((*it) == myId)
-					{
-						continue;
-					}
 
-					cout << "try to connect" << endl;
-					connectionManager->ConnectToID((*it));
-				}
+			SteamNetworkingIdentity identity;
+			for (int i = playerIndex - 1; i >=0; --i)
+			{
+				identity.SetSteamID(netplayPlayers[i].id);
+
+				netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
 			}
 		}
 		break;
@@ -151,17 +184,59 @@ void NetplayManager::Update()
 
 	case A_GET_CONNECTIONS:
 	{
-		//if connected to all others
-		if (connectionManager->connected)
+		bool connectedToAll = true;
+		for (int i = 0; i < numPlayers; ++i)
 		{
-			action = A_WAIT_TO_LOAD_MAP;
+			if (i == playerIndex)
+			{
+				continue;
+			}
+
+			if (!netplayPlayers[i].isConnectedTo)
+			{
+				connectedToAll = false;
+				break;
+			}
+		}
+
+		//if connected to all others
+		if (connectedToAll)
+		{
 			if (IsHost())
 			{
-				BroadcastLoadMapSignal();
+				action = A_WAIT_FOR_ALL_TO_CONNECT;
 			}
-			//string test = "test messageeeee";
-			//SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
-			//LoadMap();
+			else
+			{
+				PeerBroadcastDoneConnectingSignal();
+
+				action = A_WAIT_TO_LOAD_MAP;
+			}
+		}
+		break;
+	}
+	case A_WAIT_FOR_ALL_TO_CONNECT:
+	{
+		assert(IsHost());
+		
+		bool allDoneConnecting = true;
+		for (int i = 0; i < numPlayers; ++i)
+		{
+			if (i == playerIndex)
+				continue;
+
+			if (!netplayPlayers[i].doneConnectingToAllPeers)
+			{
+				allDoneConnecting = false;
+				break;
+			}
+		}
+
+		if (allDoneConnecting)
+		{
+			action = A_WAIT_TO_LOAD_MAP;
+
+			HostBroadcastLoadMapSignal();
 		}
 		break;
 	}
@@ -169,7 +244,6 @@ void NetplayManager::Update()
 	{
 		if (receivedMapLoadSignal)
 		{
-			action = A_LOAD_MAP;
 			LoadMap();
 		}
 		break;
@@ -178,32 +252,229 @@ void NetplayManager::Update()
 	{
 		if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 		{
+			delete loadThread;
+			loadThread = NULL;
+
+			if (isSyncTest)
+			{
+				RunMatch();
+			}
+			else
+			{
+				if (IsHost())
+				{
+					action = A_WAIT_FOR_ALL_READY;
+				}
+				else
+				{
+					action = A_READY_TO_RUN;
+					PeerBroadcastReadyToRunSignal();
+				}
+			}
+			
+		}
+		break;
+	}
+	case A_WAIT_FOR_ALL_READY:
+	{
+		assert(IsHost());
+
+		bool allReady = true;
+		for (int i = 0; i < numPlayers; ++i)
+		{
+			if (i == playerIndex)
+				continue;
+
+			if (!netplayPlayers[i].readyToRun)
+			{
+				allReady = false;
+				break;
+			}
+		}
+
+		if (allReady)
+		{
 			action = A_READY_TO_RUN;
+
+			HostBroadcastGameStartSignal();
 		}
 		break;
 	}
 	case A_READY_TO_RUN:
 	{
+		if (receivedGameStartSignal)
+		{
+			RunMatch();
+		}
 		break;
 	}
 	case A_RUNNING_MATCH:
 		break;
-	
+
 	}
 }
 
-void NetplayManager::BroadcastLoadMapSignal()
+void NetplayManager::HostBroadcastLoadMapSignal()
 {
+	assert(IsHost());
+
 	LobbyMessage msg;
 	msg.mapPath = "Resources/Maps/W2/afighting1.brknk";//matchParams.mapPath.string();//
-	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_LOAD_MAP;
+	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_HOST_LOAD_MAP;
 
-	uint8 *buffer;
+	uint8 *buffer = NULL;
 	int bufferSize = msg.CreateBinaryMessage(buffer);
 
 	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
 
 	delete[] buffer;
+}
+
+void NetplayManager::PeerBroadcastDoneConnectingSignal()
+{
+	LobbyMessage msg;
+	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_PEER_DONE_CONNECTING;
+
+	uint8 *buffer = NULL;
+	int bufferSize = msg.CreateBinaryMessage(buffer);
+
+	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
+
+	delete[] buffer;
+}
+
+void NetplayManager::HostBroadcastGameStartSignal()
+{
+	LobbyMessage msg;
+	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_HOST_GAME_START;
+
+	uint8 *buffer = NULL;
+	int bufferSize = msg.CreateBinaryMessage(buffer);
+
+	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
+
+	delete[] buffer;
+}
+
+void NetplayManager::PeerBroadcastReadyToRunSignal()
+{
+	LobbyMessage msg;
+	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_PEER_READY_TO_RUN;
+
+	uint8 *buffer = NULL;
+	int bufferSize = msg.CreateBinaryMessage(buffer);
+
+	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
+
+	delete[] buffer;
+}
+
+int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
+{
+	int connectionIndex = -1;
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		cout << "test: " << netplayPlayers[i].connection << ", " << con << endl;
+		if (netplayPlayers[i].connection == con)
+		{
+			connectionIndex = i;
+			break;
+		}
+	}
+
+	return connectionIndex;
+}
+
+void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *pCallback)
+{
+	//cout << "connection status changed callback" << endl;
+	
+	int connectionIndex = GetConnectionIndex(pCallback->m_hConn);
+	//assert(connectionIndex >= 0);
+
+	if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_None
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connecting)
+	{
+		if (pCallback->m_info.m_hListenSocket)
+		{
+			EResult result = SteamNetworkingSockets()->AcceptConnection(pCallback->m_hConn);
+
+			for (int i = 0; i < numPlayers; ++i)
+			{
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].id == pCallback->m_info.m_identityRemote.GetSteamID())
+				{
+					cout << "setting connection " << i << endl;
+					netplayPlayers[i].connection = pCallback->m_hConn;
+					connectionIndex = i;
+					break;
+				}
+				
+			}
+			//pCallback->m_info.m_identityRemote
+
+			if (result == k_EResultOK)
+			{
+				cout << "accepting connection to " << connectionIndex << endl;
+			}
+			else
+			{
+				cout << "failing to accept connection to " << connectionIndex << endl;
+			}
+		}
+		else
+		{
+			cout << "connecting but I'm not the one with a listen socket" << endl;
+		}
+	}
+	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_FindingRoute)
+	{
+		cout << "finding route.." << endl;
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_FindingRoute)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_Connected)
+	{
+		cout << "connection to " << connectionIndex << " is complete!" << endl;
+
+		netplayPlayers[connectionIndex].isConnectedTo = true;
+		
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ClosedByPeer)
+	{
+		cout << "connection closed by peer: " << pCallback->m_info.m_eEndReason << endl;
+
+		//do I still need to close the connection?
+		//SteamNetworkingSockets()->CloseConnection(connection, 0, NULL, false);
+		netplayPlayers[connectionIndex].isConnectedTo = false;
+		//connected = false;
+	}
+	else if ((pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connecting
+		|| pCallback->m_eOldState == k_ESteamNetworkingConnectionState_Connected)
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_ProblemDetectedLocally)
+	{
+		cout << "connection state problem locally detected: " << pCallback->m_info.m_eEndReason << endl;
+
+		netplayPlayers[connectionIndex].isConnectedTo = false;
+	}
+	else if (pCallback->m_eOldState == k_ESteamNetworkingConnectionState_ClosedByPeer
+		&& pCallback->m_info.m_eState == k_ESteamNetworkingConnectionState_None)
+	{
+		//connection returned to default state
+	}
+	else
+	{
+		//cout << "state is confused" << endl;
+		cout << "confused: " << "old: " << pCallback->m_eOldState << ", new state: " << pCallback->m_info.m_eState << endl;
+	}
 }
 
 CSteamID NetplayManager::GetHostID()
@@ -226,7 +497,11 @@ void NetplayManager::LoadMap()
 		SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
 	}*/
 
-	matchParams.numPlayers = lobbyManager->GetNumMembers();
+	if (!isSyncTest)
+	{
+		matchParams.numPlayers = lobbyManager->GetNumMembers();
+	}
+	
 
 	assert(game == NULL);
 	game = new GameSession(&matchParams);
@@ -235,20 +510,42 @@ void NetplayManager::LoadMap()
 	loadThread = new boost::thread(GameSession::sLoad, game);
 }
 
+int NetplayManager::RunMatch()
+{
+	action = A_RUNNING_MATCH;
+	int gameResult = game->Run();
+	delete game;
+	game = NULL;
+
+	Abort();
+
+	//eventually needs to go to like, another game? rematches etc
+	action = A_MATCH_COMPLETE;
+
+	return gameResult;
+}
+
 void NetplayManager::FindMatch()
 {
 	Abort();
 
 	if (isSyncTest)
 	{
-		action = A_READY_TO_RUN;
+		matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
+		matchParams.numPlayers = 2;
+
+		LoadMap();
+		
+		receivedGameStartSignal = true;
 	}
 	else
 	{
-		lobbyManager = new LobbyManager(this);
+		lobbyManager = new LobbyManager;
 		connectionManager = new ConnectionManager;
 
 		action = A_GATHERING_USERS;
+
+		
 
 		lobbyManager->FindLobby();
 	}
@@ -305,15 +602,54 @@ void NetplayManager::HandleMessage(LobbyMessage &msg)
 {
 	msg.Print();
 
-	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_LOAD_MAP && GetHostID() == msg.sender)
+	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_HOST_LOAD_MAP && GetHostID() == msg.sender)
 	{
+		assert(action == A_WAIT_TO_LOAD_MAP);
 		cout << "received a message to load the map from the host" << endl;
 
-		receivedMapLoadSignal = true;
 		matchParams.mapPath = msg.mapPath;
 		matchParams.numPlayers = lobbyManager->GetNumMembers();
-		//LoadMap();
 
+		receivedMapLoadSignal = true;
+	}
+	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_HOST_GAME_START && GetHostID() == msg.sender)
+	{
+		assert(action == A_READY_TO_RUN);
+		cout << "received a message to start the game from the host" << endl;
+
+		RunMatch();
+	}
+	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_PEER_DONE_CONNECTING)
+	{
+		if (IsHost())
+		{
+			for (int i = 0; i < numPlayers; ++i)
+			{
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].id == msg.sender)
+				{
+					netplayPlayers[i].doneConnectingToAllPeers = true;
+				}
+			}
+		}
+	}
+	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_PEER_READY_TO_RUN)
+	{
+		if (IsHost())
+		{
+			for (int i = 0; i < numPlayers; ++i)
+			{
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].id == msg.sender)
+				{
+					netplayPlayers[i].readyToRun = true;
+				}
+			}
+		}
 	}
 }
 

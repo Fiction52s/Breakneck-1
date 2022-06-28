@@ -23,7 +23,6 @@ struct ConnectionManager
 
 
 	STEAM_CALLBACK(ConnectionManager, OnMessagesSessionFailedCallback, SteamNetworkingMessagesSessionFailed_t);
-	STEAM_CALLBACK(ConnectionManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);
 };
 
 #endif

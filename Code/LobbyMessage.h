@@ -8,7 +8,10 @@ struct LobbyMessage
 {
 	enum MessageType : uint8
 	{
-		MESSAGE_TYPE_LOAD_MAP,
+		MESSAGE_TYPE_PEER_DONE_CONNECTING,
+		MESSAGE_TYPE_HOST_LOAD_MAP,
+		MESSAGE_TYPE_PEER_READY_TO_RUN,
+		MESSAGE_TYPE_HOST_GAME_START,
 	};
 
 	struct MessageHeader
@@ -21,7 +24,7 @@ struct LobbyMessage
 	std::string mapPath;
 
 	void SetFromBytes(uint8*bytes);
-	int CreateBinaryMessage(uint8 *bytesOut);
+	int CreateBinaryMessage(uint8 *&bytesOut);
 	void Print();
 	
 

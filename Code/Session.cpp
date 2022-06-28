@@ -6840,7 +6840,14 @@ void Session::InitGGPO()
 
 	//bool shift = IsKeyPressed(Keyboard::LShift);
 
-	if ( netplayManager != NULL && !netplayManager->IsLobbyCreator() )
+	/*for (int i = 0; i < netplayManager->numPlayers; ++i)
+	{
+
+	}*/
+
+	//this needs to be gone over for more than 2 players etc
+
+	if ( !netplayManager->IsHost() )//!netplayManager->Is() )
 	{
 		myIndex = 1;
 		otherIndex = 0;
@@ -6864,9 +6871,13 @@ void Session::InitGGPO()
 	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
-	if (netplayManager != NULL)
+	
+	for (int i = 0; i < netplayManager->numPlayers; ++i)
 	{
-		ggpoPlayers[otherIndex].u.remote.connection = netplayManager->GetConnection();
+		if (i == netplayManager->playerIndex)
+			continue;
+
+		ggpoPlayers[otherIndex].u.remote.connection = netplayManager->netplayPlayers[i].connection;//netplayManager->GetConnection();
 	}
 	
 

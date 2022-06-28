@@ -742,7 +742,7 @@ void GameSession::Reload(const boost::filesystem::path &p_filePath)
 }
 
 GameSession::GameSession(MatchParams *mp )
-	:Session( Session::SESS_GAME, mp->filePath)
+	:Session( Session::SESS_GAME, mp->mapPath)
 {
 	matchParams = *mp;
 	saveFile = matchParams.saveFile;
