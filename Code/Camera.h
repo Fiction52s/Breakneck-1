@@ -122,6 +122,8 @@ struct Camera
 	double bottom;
 	double right;
 
+	bool isFirstFrameSet;
+
 	//int bType;
 
 	double GetEnemyZoomTarget( Actor *a );

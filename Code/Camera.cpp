@@ -73,6 +73,7 @@ void Camera::Reset()
 	pos.x = 0;
 	pos.y = 0;
 	oldFramesGrinding = 0;
+	isFirstFrameSet = false;
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -1448,7 +1449,6 @@ void Camera::UpdateEaseOut()
 
 void Camera::UpdateVS( Actor *a, Actor *a2 )
 {
-
 	float targetZoomFactor = zoomFactor;
 
 	V2d center = (a->position + a2->position) / 2.0;
@@ -1465,6 +1465,9 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	double zy = disty / res.y;
 	
 	double maxDist = max( zx, zy );
+
+	cout << "pos0x: " << a->position.x << ", pos1x: " << a2->position.x << endl;
+	//cout << "maxDist: " << maxDist << endl;
 	
 	if( zx == maxDist )
 	{
@@ -1503,12 +1506,27 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	else if( targetZoomFactor > maxZoom )
 		targetZoomFactor = maxZoom;
 
-	float rz = .25;
-	zoomFactor = targetZoomFactor * rz + zoomFactor * (1-rz);
 	
-	float r = .25;
-	pos.x = center.x * r + pos.x * (1-r) ;
-	pos.y = center.y * r + pos.y * (1-r);
+	
+	if (isFirstFrameSet)
+	{
+		float r = .25;
+		pos.x = center.x * r + pos.x * (1 - r);
+		pos.y = center.y * r + pos.y * (1 - r);
+
+		float rz = .25;
+		zoomFactor = targetZoomFactor * rz + zoomFactor * (1 - rz);
+	}
+	else
+	{
+		pos.x = center.x;
+		pos.y = center.y;
+		isFirstFrameSet = true;
+
+		zoomFactor = targetZoomFactor;
+	}
+	//pos.x = center.x;
+	//pos.y = center.y;
 
 	//cout << "zoomfactor: " << zoomFactor << endl;
 }

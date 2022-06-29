@@ -242,6 +242,8 @@ void GameSession::UpdateCamera()
 	double camWidth = 960 * cam.GetZoom();
 	double camHeight = 540 * cam.GetZoom();
 
+	//cout << "camPos: " << camPos.x << ", " << camPos.y << endl;
+
 	screenRect = sf::Rect<double>(cam.GetRect());//sf::Rect<double>(camPos.x - camWidth / 2, camPos.y - camHeight / 2, camWidth, camHeight);
 
 	view.setSize(Vector2f( 960 * cam.GetZoom(), 540 * cam.GetZoom()));
@@ -3869,27 +3871,12 @@ void GameSession::RestartLevel()
 	}
 
 
-	//testEmit->SetPos(Vector2f(GetPlayer(0)->position))
-
-
-	cam.Reset();
-
 	cutPlayerInput = false;
 
 
 	if (parentGame == NULL)
 	{
-
-
 		Actor *p;
-		for (int i = 0; i < MAX_PLAYERS; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				p->position = V2d(playerOrigPos[i]);
-			}
-		}
 
 		for (int i = 0; i < 4; ++i)
 		{
@@ -3898,6 +3885,10 @@ void GameSession::RestartLevel()
 				player->Respawn();
 		}
 	}
+
+	cam.Reset();
+
+	//cam.Update();
 
 	if (repPlayer != NULL)
 	{
@@ -3944,7 +3935,7 @@ void GameSession::RestartLevel()
 
 	ResetBarriers();
 
-	cam.SetManual( false );
+	//cam.SetManual( false );
 
 	activeSequence = NULL;
 
