@@ -9,6 +9,7 @@
 
 struct MatchParams;
 struct GameSession;
+struct UdpMsg;
 
 struct NetplayPlayer
 {
@@ -21,14 +22,21 @@ struct NetplayPlayer
 	int index;
 	bool doneConnectingToAllPeers;
 	bool readyToRun;
-	
+	bool isHost;
 };
 
 struct NetplayManager
 {
+	enum Channels
+	{
+		CHANNEL_GGPO,
+		CHANNEL_SESSION,
+	};
+
 	enum Action
 	{
 		A_IDLE,
+		A_CHECKING_FOR_LOBBIES,
 		A_GATHERING_USERS,
 		A_GET_CONNECTIONS,
 		A_WAIT_FOR_ALL_TO_CONNECT,
@@ -54,6 +62,10 @@ struct NetplayManager
 	ConnectionManager *connectionManager;
 	GameSession *game;
 
+	
+
+	
+
 	int playerIndex;
 
 	MatchParams matchParams;
@@ -65,12 +77,20 @@ struct NetplayManager
 	NetplayManager();
 	~NetplayManager();
 
-	bool IsConnected();
 	bool IsReadyToRun();
 	bool IsIdle();
 	void LeaveLobby();
 	int RunMatch();
 	int GetConnectionIndex(HSteamNetConnection &con);
+	void SetHost();
+	
+	void SendSignalToHost(int type);
+	void SendSignalToAllClients(int type);
+
+
+
+	void ReceiveMessages();
+	HSteamNetConnection GetHostConnection();
 	
 	HSteamNetConnection GetConnection();
 	bool IsHost();
@@ -79,16 +99,13 @@ struct NetplayManager
 	void Draw(sf::RenderTarget *target);
 	void FindMatch();
 	void LoadMap();
-	void HandleMessage(LobbyMessage &msg);
+	void HandleLobbyMessage(LobbyMessage &msg);
+	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
 	CSteamID GetHostID();
 	CSteamID GetMyID();
+	void SendUdpMsg(HSteamNetConnection con, UdpMsg *msg);
 
-	void HostBroadcastLoadMapSignal();
-	void HostBroadcastGameStartSignal();
-
-
-	void PeerBroadcastDoneConnectingSignal();
-	void PeerBroadcastReadyToRunSignal();
+	void BroadcastMapDetailsToLobby();
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);

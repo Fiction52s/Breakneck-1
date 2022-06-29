@@ -1817,7 +1817,6 @@ void GameSession::SetupPlayers()
 			//if( players[i] != NULL )
 			//	players[i]->Respawn(); //need a special bonus respawn later
 		}
-
 		m_numActivePlayers = parentGame->m_numActivePlayers;
 		return;
 	}
@@ -2119,12 +2118,17 @@ int GameSession::Run()
 {
 	if (matchParams.netplayManager != NULL)
 	{
+		cout << "initializing ggpo" << endl;
+		InitGGPO();
+	}
+	/*if (matchParams.netplayManager != NULL)
+	{
 		if (!matchParams.netplayManager->IsConnected() )
 		{
 			assert(false && "game run connection manager failure");
 		}
-		InitGGPO();
-	}
+		
+	}*/
 
 	oldShaderZoom = -1;
 	goalDestroyed = false;
@@ -2366,7 +2370,7 @@ int GameSession::Run()
 
 			if (matchParams.netplayManager != NULL)
 			{
-				if (!matchParams.netplayManager->IsConnected() )
+				if( IsKeyPressed( Keyboard::Escape))
 				{
 					cout << "connection is terminated. ending match." << endl;
 					quit = true;
@@ -2410,10 +2414,11 @@ int GameSession::Run()
 				{
 					if (gameState == RUN)
 					{
-						if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+						//temporarily remove this to test netplay
+						/*if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 						{
 							gameState = PAUSE;
-						}
+						}*/
 					}
 						
 				}
@@ -4545,19 +4550,6 @@ void GameSession::RecGhostRecordFrame()
 {
 	if (recGhost != NULL)
 		recGhost->RecordFrame();
-}
-
-
-HSteamNetConnection GameSession::GetConnection()
-{
-	if (matchParams.netplayManager != NULL)
-	{
-		return matchParams.netplayManager->GetConnection();
-	}
-	else
-	{
-		return 0;
-	}
 }
 
 GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )

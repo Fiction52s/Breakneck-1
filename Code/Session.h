@@ -34,6 +34,8 @@ struct QNode;
 struct SoundManager;
 struct SoundNode;
 
+struct UdpMsg;
+
 
 struct Actor;
 struct MainMenu;
@@ -819,7 +821,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPOPlayer *ggpoPlayers;
 
 	virtual void InitGGPO();
-	virtual HSteamNetConnection GetConnection();
 	bool GGPORunGameModeUpdate();
 	void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,
@@ -857,6 +858,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetupPokeTriangleScreenGroup();
 	void CleanupPokeTriangleScreenGroup();
 	virtual int GetBonusType() { return BONUSTYPE_NONE; }
+	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
 };
 
 #endif

@@ -9,6 +9,8 @@
 #include "sdr.h"
 #include "udp.h"
 #include <iostream>
+#include "Session.h"
+#include "NetplayManager.h"
 
 using namespace std;
 
@@ -16,6 +18,7 @@ Sdr::Sdr() :
 	listenConnection(0),
 	_callbacks(NULL)
 {
+	sess = Session::GetSession();
 }
 
 Sdr::~Sdr(void)
@@ -66,7 +69,18 @@ bool Sdr::OnLoopPoll(void *cookie)
 			{
 				Log("recvfrom returned (len:%d from %d).\n", messages[0]->GetSize(), listenConnection);
 				UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
-				_callbacks->OnMsg(listenConnection, msg, messages[0]->GetSize());
+
+				if (msg->IsGameMsg() )
+				{
+					sess->HandleMessage(listenConnection, messages[0]);
+				}
+				else
+				{
+					_callbacks->OnMsg(listenConnection, msg, messages[0]->GetSize());
+				}
+
+				messages[0]->Release();
+
 			}
 			else
 			{

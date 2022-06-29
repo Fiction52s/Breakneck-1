@@ -2758,18 +2758,14 @@ void MainMenu::HandleMenuMode()
 		
 		netplayManager->Update();
 
-		if (netplayManager->IsReadyToRun())
+		if (netplayManager->action == NetplayManager::A_MATCH_COMPLETE)
 		{
-			
+			SetMode(TITLEMENU);
 			/*MatchParams mp;
 			mp.netplayManager = netplayManager;
 			mp.numPlayers = 2;
 			mp.filePath = "Resources/Maps/W2/afighting1.brknk";
 			netplayManager->RunMatch(&mp);*/
-		}
-		if (netplayManager->IsIdle() )
-		{
-			SetMode(TITLEMENU);
 		}
 		break;
 	}

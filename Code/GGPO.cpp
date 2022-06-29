@@ -53,12 +53,12 @@ on_event_callback(GGPOEvent *info)
 	int progress;
 	switch (info->code) {
 	case GGPO_EVENTCODE_CONNECTED_TO_PEER:
-
-		if (sess->netplayManager != NULL )
+		
+		/*if (sess->netplayManager != NULL)
 		{
 			cout << "leaving lobby because ggpo is now connected" << endl;
 			sess->netplayManager->LeaveLobby();
-		}
+		}*/
 
 		cout << "connected to peer" << endl;
 		sess->ngs->SetConnectState(info->u.connected.player, Synchronizing);
@@ -92,7 +92,7 @@ on_event_callback(GGPOEvent *info)
 		sess->ngs->SetConnectState(info->u.disconnected.player, Disconnected);
 		break;
 	case GGPO_EVENTCODE_TIMESYNC:
-		cout << "timesync" << endl;
+		cout << "timesync: " << info->u.timesync.frames_ahead << endl;
 		//Sleep(1000 * info->u.timesync.frames_ahead / 60 ); //buggy
 		sess->timeSyncFrames = info->u.timesync.frames_ahead;
 		break;

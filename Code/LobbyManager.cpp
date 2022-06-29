@@ -46,11 +46,17 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "name", lobbyName.c_str());
 
+		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "mapPath", paramsForMakingLobby.mapPath.c_str());
+
+		//SteamMatchmaking()->RequestLobbyData(currentLobby.m_steamIDLobby);
+
 		//use to set params paramsForMakingLobby
 
 		cout << "created: " << lobbyName << " successfully." << endl;
 
 		action = A_IN_LOBBY;
+
+
 
 
 		//string test = "test messageeeee";
@@ -110,6 +116,23 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 {
 	cout << "lobby data update callback" << endl;
 
+	if (pCallback->m_bSuccess)
+	{
+		for (auto it = lobbyList.begin(); it != lobbyList.end(); ++it)
+		{
+			if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
+			{
+				(*it).dataIsRetrieved = true;
+				cout << "data received for lobby!" << endl;
+
+				if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
+				{
+					action = A_IN_LOBBY;
+				}
+				break;
+			}
+		}
+	}
 	//figure this out later
 
 	/*for (auto it = lobbyList.begin(); it != lobbyList.end(); ++it)
@@ -179,7 +202,17 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 		return;
 	}
 
-	action = A_IN_LOBBY;
+	if (currentLobby.dataIsRetrieved)
+	{
+		action = A_IN_LOBBY;
+		cout << "current lobby data has already been received" << endl;
+	}
+	else
+	{
+		action = A_IN_LOBBY_WAITING_FOR_DATA;
+		cout << "current lobby data has NOT been received yet" << endl;
+	}
+	
 
 	// move forward the state
 	currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
@@ -199,15 +232,18 @@ void LobbyManager::ProcessLobbyList()
 {
 	if (lobbyList.empty())
 	{
-		LobbyParams lp;
+		/*LobbyParams lp;
 		lp.maxMembers = 2;
 
-		TryCreatingLobby(lp);
+		TryCreatingLobby(lp);*/
+
+		action = A_FOUND_NO_LOBBIES;
 	}
 	else
 	{
 		PrintLobbies();
-		TryJoiningLobby();
+		action = A_FOUND_LOBBIES;
+		//TryJoiningLobby();
 	}
 }
 
@@ -269,6 +305,7 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 			//need to figure out how to use this!
 			SteamMatchmaking()->RequestLobbyData(steamIDLobby);
 
+			//lobby.
 			lobby.name = "Lobby " + to_string(steamIDLobby.GetAccountID());
 			// results will be returned via LobbyDataUpdate_t callback
 		}

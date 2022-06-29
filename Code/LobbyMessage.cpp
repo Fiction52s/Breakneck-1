@@ -13,7 +13,7 @@ void LobbyMessage::SetFromBytes(uint8*bytes)
 
 	//bytes += sizeof(uint32);
 
-	if (header.messageType == MESSAGE_TYPE_HOST_LOAD_MAP)
+	if (header.messageType == MESSAGE_TYPE_SHARE_MAP_DETAILS)
 	{
 		mapPath = (char*)bytes;
 
@@ -31,7 +31,7 @@ int LobbyMessage::CreateBinaryMessage( uint8 *&bytesOut)
 
 	numBytesStoredTotal += headerSize;
 
-	if (header.messageType == MESSAGE_TYPE_HOST_LOAD_MAP)
+	if (header.messageType == MESSAGE_TYPE_SHARE_MAP_DETAILS)
 	{
 		numBytesStoredTotal += strLength;
 	}
@@ -43,7 +43,7 @@ int LobbyMessage::CreateBinaryMessage( uint8 *&bytesOut)
 	memcpy(byteCurrent, &header, headerSize);
 	byteCurrent += headerSize;
 	
-	if (header.messageType == MESSAGE_TYPE_HOST_LOAD_MAP)
+	if (header.messageType == MESSAGE_TYPE_SHARE_MAP_DETAILS)
 	{
 		for (int i = 0; i < strLength - 1; ++i)
 		{
@@ -60,21 +60,12 @@ int LobbyMessage::CreateBinaryMessage( uint8 *&bytesOut)
 
 void LobbyMessage::Print()
 {
-	cout << "MESSAGE::  ";
+	cout << "LOBBY MESSAGE::  ";
 	switch (header.messageType)
 	{
-	case MESSAGE_TYPE_PEER_DONE_CONNECTING:
-		cout << "type: peer_done_connecting" << endl;
-		break;
-	case MESSAGE_TYPE_HOST_LOAD_MAP:
-		cout << "type: host_load_map ";
+	case MESSAGE_TYPE_SHARE_MAP_DETAILS:
+		cout << "type: share_map_details ";
 		cout << "path: " << mapPath << endl;
-		break;
-	case MESSAGE_TYPE_PEER_READY_TO_RUN:
-		cout << "type: peer_ready_to_run" << endl;
-		break;
-	case MESSAGE_TYPE_HOST_GAME_START:
-		cout << "type: host_game_start" << endl;
 		break;
 	default:
 		assert(false && "message header is invalid");

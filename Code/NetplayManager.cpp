@@ -3,6 +3,7 @@
 #include "GameSession.h"
 #include "MatchParams.h"
 #include "LobbyMessage.h"
+#include "ggpo\network\udp_msg.h"
 
 using namespace std;
 using namespace sf;
@@ -19,6 +20,7 @@ void NetplayPlayer::Clear()
 	isConnectedTo = false;
 	doneConnectingToAllPeers = false;
 	readyToRun = false;
+	isHost = false;
 	
 }
 
@@ -47,26 +49,6 @@ NetplayManager::NetplayManager()
 NetplayManager::~NetplayManager()
 {
 	Abort();
-}
-
-bool NetplayManager::IsConnected()
-{
-	if (isSyncTest)
-	{
-		return true;
-	}
-	else
-	{
-		if (connectionManager == NULL)
-		{
-			return false;
-		}
-		else
-		{
-			return connectionManager->connected;
-		}
-	}
-	
 }
 
 bool NetplayManager::IsIdle()
@@ -138,11 +120,30 @@ void NetplayManager::Update()
 	{
 	case A_IDLE:
 		break;
+	case A_CHECKING_FOR_LOBBIES:
+	{
+		if (lobbyManager->action == LobbyManager::A_FOUND_LOBBIES)
+		{
+			lobbyManager->TryJoiningLobby();
+			action = A_GATHERING_USERS;
+
+		}
+		else if (lobbyManager->action == LobbyManager::A_FOUND_NO_LOBBIES)
+		{
+			LobbyParams lp;
+			lp.maxMembers = 2;
+			lp.mapPath = "Resources/Maps/W2/afighting1.brknk";
+			lobbyManager->TryCreatingLobby(lp);
+			action = A_GATHERING_USERS;
+		}
+		break;
+	}
 	case A_GATHERING_USERS:
 	{
 		lobbyManager->Update();
 
-		if (lobbyManager->GetNumCurrentLobbyMembers() == 2)
+		int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
+		if (numLobbyMembers == 2)
 		{
 			numPlayers = 2;
 			assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
@@ -164,6 +165,11 @@ void NetplayManager::Update()
 				++memberIndex;
 			}
 
+			matchParams.mapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
+			cout << "setting mapPath to: " << matchParams.mapPath << endl;
+
+			matchParams.numPlayers = numLobbyMembers;
+
 			action = A_GET_CONNECTIONS;
 
 			if (playerIndex < numPlayers - 1)
@@ -178,6 +184,8 @@ void NetplayManager::Update()
 
 				netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
 			}
+
+			SetHost();
 		}
 		break;
 	}
@@ -208,8 +216,8 @@ void NetplayManager::Update()
 			}
 			else
 			{
-				PeerBroadcastDoneConnectingSignal();
-
+				LeaveLobby();
+				SendSignalToHost(UdpMsg::Game_Done_Connecting);
 				action = A_WAIT_TO_LOAD_MAP;
 			}
 		}
@@ -232,11 +240,16 @@ void NetplayManager::Update()
 			}
 		}
 
+		//host behavior
 		if (allDoneConnecting)
 		{
 			action = A_WAIT_TO_LOAD_MAP;
 
-			HostBroadcastLoadMapSignal();
+			LeaveLobby();
+
+			SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
+
+			LoadMap();
 		}
 		break;
 	}
@@ -268,10 +281,9 @@ void NetplayManager::Update()
 				else
 				{
 					action = A_READY_TO_RUN;
-					PeerBroadcastReadyToRunSignal();
+					SendSignalToHost(UdpMsg::Game_Done_Loading);
 				}
 			}
-			
 		}
 		break;
 	}
@@ -296,7 +308,9 @@ void NetplayManager::Update()
 		{
 			action = A_READY_TO_RUN;
 
-			HostBroadcastGameStartSignal();
+			SendSignalToAllClients(UdpMsg::Game_Host_Says_Start);
+
+			RunMatch();
 		}
 		break;
 	}
@@ -310,17 +324,62 @@ void NetplayManager::Update()
 	}
 	case A_RUNNING_MATCH:
 		break;
+	}
 
+	ReceiveMessages();
+}
+
+void NetplayManager::ReceiveMessages()
+{
+	SteamNetworkingMessage_t *messages[1];
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == playerIndex)
+		{
+			continue;
+		}
+
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			for (;;)
+			{
+				int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(netplayPlayers[i].connection, messages, 1);
+
+				if (numMsges == 1)
+				{
+					UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
+
+					cout << "received messageeee" << endl;
+					if (msg->IsGameMsg())
+					{
+						HandleMessage(netplayPlayers[i].connection, messages[0]);
+					}
+					else
+					{
+						assert(0);
+					}
+
+					messages[0]->Release();
+
+				}
+				else
+				{
+					break;
+				}
+			}
+
+		}
 	}
 }
 
-void NetplayManager::HostBroadcastLoadMapSignal()
+void NetplayManager::BroadcastMapDetailsToLobby()
 {
 	assert(IsHost());
 
 	LobbyMessage msg;
 	msg.mapPath = "Resources/Maps/W2/afighting1.brknk";//matchParams.mapPath.string();//
-	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_HOST_LOAD_MAP;
+	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_SHARE_MAP_DETAILS;
 
 	uint8 *buffer = NULL;
 	int bufferSize = msg.CreateBinaryMessage(buffer);
@@ -330,43 +389,76 @@ void NetplayManager::HostBroadcastLoadMapSignal()
 	delete[] buffer;
 }
 
-void NetplayManager::PeerBroadcastDoneConnectingSignal()
+void NetplayManager::SendUdpMsg( HSteamNetConnection con, UdpMsg *msg)
 {
-	LobbyMessage msg;
-	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_PEER_DONE_CONNECTING;
+	//(char *)entry.msg, entry.msg->PacketSize(), 0, entry.connection
 
-	uint8 *buffer = NULL;
-	int bufferSize = msg.CreateBinaryMessage(buffer);
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(con, (char*)msg, msg->PacketSize(), k_EP2PSendReliable, NULL);
 
-	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
-
-	delete[] buffer;
+	if (res == k_EResultOK)
+	{
+		//Log("sent packet length %d to %d. res: %d\n", len, p_connection, res);
+	}
+	else
+	{
+		//cout << "failing to send packet" << endl;
+	}
 }
 
-void NetplayManager::HostBroadcastGameStartSignal()
+void NetplayManager::SendSignalToHost(int type)
 {
-	LobbyMessage msg;
-	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_HOST_GAME_START;
+	assert(!IsHost());
+	UdpMsg msg((UdpMsg::MsgType)type);
 
-	uint8 *buffer = NULL;
-	int bufferSize = msg.CreateBinaryMessage(buffer);
-
-	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
-
-	delete[] buffer;
+	cout << "attempt to send msg to host " << type << endl;
+	HSteamNetConnection con = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (netplayPlayers[i].isHost)
+		{
+			if (i != playerIndex)
+			{
+				SendUdpMsg(netplayPlayers[i].connection, &msg);
+				cout << "sending signal to host: " << type << endl;
+			}
+			break;
+		}
+	}
 }
 
-void NetplayManager::PeerBroadcastReadyToRunSignal()
+void NetplayManager::SendSignalToAllClients(int type)
 {
-	LobbyMessage msg;
-	msg.header.messageType = LobbyMessage::MESSAGE_TYPE_PEER_READY_TO_RUN;
+	assert(IsHost());
+	UdpMsg msg((UdpMsg::MsgType)type);
 
-	uint8 *buffer = NULL;
-	int bufferSize = msg.CreateBinaryMessage(buffer);
+	HSteamNetConnection con = 0;
+	cout << "sending signal to clients: " << type << endl;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (!netplayPlayers[i].isHost)
+		{
+			assert(i != playerIndex);
+			SendUdpMsg(netplayPlayers[i].connection, &msg);
+		}
+	}	
+}
 
-	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
+HSteamNetConnection NetplayManager::GetHostConnection()
+{
+	HSteamNetConnection con = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (netplayPlayers[i].isHost)
+		{
+			if (i != playerIndex)
+			{
+				con = netplayPlayers[i].connection;
+			}
+			break;
+		}
+	}
 
-	delete[] buffer;
+	return con;
 }
 
 int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
@@ -377,7 +469,7 @@ int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
 		if (i == playerIndex)
 			continue;
 
-		cout << "test: " << netplayPlayers[i].connection << ", " << con << endl;
+		//cout << "test: " << netplayPlayers[i].connection << ", " << con << endl;
 		if (netplayPlayers[i].connection == con)
 		{
 			connectionIndex = i;
@@ -386,6 +478,21 @@ int NetplayManager::GetConnectionIndex(HSteamNetConnection &con)
 	}
 
 	return connectionIndex;
+}
+
+void NetplayManager::SetHost()
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		netplayPlayers[i].isHost = false;
+		if (GetHostID() == netplayPlayers[i].id)
+		{
+			netplayPlayers[i].isHost = true;
+			break;
+		}
+	}
+
+	lobbyManager->LeaveLobby();
 }
 
 void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *pCallback)
@@ -497,10 +604,10 @@ void NetplayManager::LoadMap()
 		SteamMatchmaking()->SendLobbyChatMsg(currentLobby.m_steamIDLobby, test.c_str(), test.length() + 1);
 	}*/
 
-	if (!isSyncTest)
-	{
-		matchParams.numPlayers = lobbyManager->GetNumMembers();
-	}
+	//if (!isSyncTest)
+	//{
+	//	matchParams.numPlayers = 2;//lobbyManager->GetNumMembers();
+	//}
 	
 
 	assert(game == NULL);
@@ -543,9 +650,7 @@ void NetplayManager::FindMatch()
 		lobbyManager = new LobbyManager;
 		connectionManager = new ConnectionManager;
 
-		action = A_GATHERING_USERS;
-
-		
+		action = A_CHECKING_FOR_LOBBIES;
 
 		lobbyManager->FindLobby();
 	}
@@ -584,42 +689,47 @@ bool NetplayManager::IsHost()
 	}
 	else
 	{
-		//assert(lobbyManager->currentLobby.m_steamIDLobby != 0);
-		return GetHostID() == GetMyID();
-
-		/*if (lobbyManager != NULL)
+		if (lobbyManager == NULL)
 		{
-			return lobbyManager->IsLobbyCreator();
+			assert(0);
+		}
+
+		if (lobbyManager->action == LobbyManager::A_IN_LOBBY)
+		{
+			return GetHostID() == GetMyID();
 		}
 		else
 		{
-			return true;
-		}*/
+			return netplayPlayers[playerIndex].isHost;
+		}
 	}
 }
 
-void NetplayManager::HandleMessage(LobbyMessage &msg)
+void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 {
 	msg.Print();
 
-	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_HOST_LOAD_MAP && GetHostID() == msg.sender)
+	//still need a lobby message to set our game name
+
+	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_SHARE_MAP_DETAILS && GetHostID() == msg.sender)
 	{
 		assert(action == A_WAIT_TO_LOAD_MAP);
-		cout << "received a message to load the map from the host" << endl;
+		cout << "received a message on which map we're playing" << endl;
 
 		matchParams.mapPath = msg.mapPath;
 		matchParams.numPlayers = lobbyManager->GetNumMembers();
-
-		receivedMapLoadSignal = true;
 	}
-	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_HOST_GAME_START && GetHostID() == msg.sender)
+}
+
+void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *steamMsg)
+{
+	UdpMsg *msg = (UdpMsg*)steamMsg->GetData();
+
+	cout << "handling message" << endl;
+
+	switch (msg->hdr.type)
 	{
-		assert(action == A_READY_TO_RUN);
-		cout << "received a message to start the game from the host" << endl;
-
-		RunMatch();
-	}
-	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_PEER_DONE_CONNECTING)
+	case UdpMsg::Game_Done_Connecting:
 	{
 		if (IsHost())
 		{
@@ -628,14 +738,26 @@ void NetplayManager::HandleMessage(LobbyMessage &msg)
 				if (i == playerIndex)
 					continue;
 
-				if (netplayPlayers[i].id == msg.sender)
+				if (netplayPlayers[i].connection == connection)
 				{
 					netplayPlayers[i].doneConnectingToAllPeers = true;
+					break;
 				}
 			}
 		}
+		else
+		{
+			assert(0);
+		}
+		break;
 	}
-	else if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_PEER_READY_TO_RUN)
+	case UdpMsg::Game_Host_Says_Load:
+	{
+		cout << "received a message to load the map from the host" << endl;
+		receivedMapLoadSignal = true;
+		break;
+	}
+	case UdpMsg::Game_Done_Loading:
 	{
 		if (IsHost())
 		{
@@ -644,12 +766,25 @@ void NetplayManager::HandleMessage(LobbyMessage &msg)
 				if (i == playerIndex)
 					continue;
 
-				if (netplayPlayers[i].id == msg.sender)
+				if (netplayPlayers[i].connection == connection)
 				{
 					netplayPlayers[i].readyToRun = true;
+					break;
 				}
 			}
 		}
+		else
+		{
+			assert(0);
+		}
+		break;
+	}
+	case UdpMsg::Game_Host_Says_Start:
+	{
+		cout << "received a message to start the game from the host" << endl;
+		RunMatch();
+		break;
+	}
 	}
 }
 
@@ -665,5 +800,5 @@ void NetplayManager::OnLobbyChatMessageCallback(LobbyChatMsg_t *pCallback)
 	msg.sender = pCallback->m_ulSteamIDUser;
 	msg.SetFromBytes(pvData);
 
-	HandleMessage(msg);
+	HandleLobbyMessage(msg);
 }

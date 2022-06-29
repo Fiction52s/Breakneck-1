@@ -9,17 +9,25 @@
 // an item in the list of lobbies we've found to display
 struct Lobby
 {
+	Lobby()
+	{
+		m_steamIDLobby.Clear();
+		maxMembers = 0;
+		dataIsRetrieved = false;
+	}
 	CSteamID m_steamIDLobby;
 	//char m_rgchName[256];
 	std::string name;
 	//bool createdByMe;
 	int maxMembers;
 	std::list<CSteamID> memberList;
+	bool dataIsRetrieved;
 };
 
 struct LobbyParams
 {
 	int maxMembers;
+	std::string mapPath;
 };
 
 struct LobbyManager
@@ -28,8 +36,11 @@ struct LobbyManager
 	{
 		A_IDLE,
 		A_REQUEST_CREATE_LOBBY,
+		A_IN_LOBBY_WAITING_FOR_DATA,
 		A_IN_LOBBY,
 		A_REQUEST_LOBBY_LIST,
+		A_FOUND_LOBBIES,
+		A_FOUND_NO_LOBBIES,
 		A_REQUEST_JOIN_LOBBY,
 		A_ERROR,
 	};

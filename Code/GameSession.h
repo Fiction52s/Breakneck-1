@@ -589,7 +589,5 @@ struct GameSession : RayCastHandler, Session
 
 	bool HasLog(int logIndex);
 	int GetBonusType();
-
-	HSteamNetConnection GetConnection();
 };
 #endif

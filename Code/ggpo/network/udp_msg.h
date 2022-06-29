@@ -13,9 +13,25 @@
 
 #pragma pack(push, 1)
 
+#include <assert.h>
+
 struct UdpMsg
 {
-   enum MsgType {
+	 enum MsgType { 
+      Invalid,
+      SyncRequest,
+      SyncReply,   
+      Input,
+      QualityReport,
+      QualityReply,
+      KeepAlive, 
+      InputAck,
+	  Game_Host_Says_Load,
+	  Game_Done_Connecting,
+	  Game_Done_Loading,
+	  Game_Host_Says_Start	
+   };
+  /* enum MsgType { 
       Invalid       = 0,
       SyncRequest   = 1,
       SyncReply     = 2,
@@ -24,7 +40,10 @@ struct UdpMsg
       QualityReply  = 5,
       KeepAlive     = 6,
       InputAck      = 7,
-   };
+	  Game_Done_Loading 
+	  Game_Load		= 8,
+	  Game_Start	= 9,
+   };*/
 
    struct connect_status {
       unsigned int   disconnected:1;
@@ -94,9 +113,24 @@ public:
          size = (int)((char *)&u.input.bits - (char *)&u.input);
          size += (u.input.num_bits + 7) / 8;
          return size;
+
+	  case Game_Done_Connecting: return 0;
+	  case Game_Host_Says_Load: return 0;
+	  case Game_Done_Loading: return 0;
+	  case Game_Host_Says_Start: return 0;
+	  
       }
-      ASSERT(false);
+
+      assert(false);
       return 0;
+   }
+	   
+   bool IsGameMsg()
+   {
+	   return hdr.type == UdpMsg::Game_Done_Loading
+		   || hdr.type == UdpMsg::Game_Host_Says_Load
+		   || hdr.type == UdpMsg::Game_Host_Says_Start
+		   || hdr.type == UdpMsg::Game_Done_Connecting;
    }
 
    UdpMsg(MsgType t) { hdr.type = (uint8)t; }
@@ -105,3 +139,4 @@ public:
 #pragma pack(pop)
 
 #endif   
+

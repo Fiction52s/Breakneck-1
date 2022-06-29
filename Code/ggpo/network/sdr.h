@@ -16,6 +16,8 @@
 
 #define MAX_UDP_ENDPOINTS     16
 
+struct Session;
+
 //static const int MAX_UDP_PACKET_SIZE = 4096;
 
 class Sdr : public IPollSink
@@ -51,6 +53,7 @@ public:
 public:
 	~Sdr(void);
 protected:
+	Session *sess;
 	// Network transmission information
 	HSteamNetConnection listenConnection;
 	// state management

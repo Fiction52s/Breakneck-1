@@ -7724,7 +7724,7 @@ void Session::CleanupPokeTriangleScreenGroup()
 	}
 }
 
-HSteamNetConnection Session::GetConnection()
+void Session::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg)
 {
-	return NULL;
+	netplayManager->HandleMessage(connection, msg);
 }
