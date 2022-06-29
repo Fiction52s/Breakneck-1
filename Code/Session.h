@@ -821,6 +821,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	GGPOPlayer *ggpoPlayers;
 
 	virtual void InitGGPO();
+	virtual void CleanupGGPO();
 	bool GGPORunGameModeUpdate();
 	void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,

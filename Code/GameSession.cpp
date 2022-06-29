@@ -2123,6 +2123,10 @@ int GameSession::Run()
 		cout << "initializing ggpo" << endl;
 		InitGGPO();
 	}
+
+	
+	
+
 	/*if (matchParams.netplayManager != NULL)
 	{
 		if (!matchParams.netplayManager->IsConnected() )
@@ -3222,6 +3226,21 @@ int GameSession::Run()
 	{
 		pauseMenu->game = NULL;
 	}
+
+	if (matchParams.netplayManager != NULL)
+	{
+		cout << "cleaning up ggpo" << endl;
+		ggpo_close_session(ggpo);
+		CleanupGGPO();
+	}
+	
+
+	//ggpo cleans up after itself
+	/*if (matchParams.netplayManager != NULL)
+	{
+		cout << "cleaning up ggpo" << endl;
+		CleanupGGPO();
+	}*/
 
 
 	fader->Clear();

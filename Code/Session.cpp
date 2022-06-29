@@ -6899,6 +6899,13 @@ void Session::InitGGPO()
 	}
 }
 
+void Session::CleanupGGPO()
+{
+	delete currSaveState;
+	delete ngs;
+	delete[] ggpoPlayers;
+}
+
 bool Session::GGPORunGameModeUpdate()
 {
 	//if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)

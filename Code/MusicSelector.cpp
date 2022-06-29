@@ -133,6 +133,8 @@ void MusicSelector::UpdateNames()
 		topIndex = numTotalSongs - 1;
 	}
 
+	
+
 	int ind = topIndex;
 	//for (int i = 0; i < topIndex; ++i)
 	//{
@@ -159,6 +161,10 @@ void MusicSelector::UpdateNames()
 
 		if (ind == numTotalSongs)
 			ind = 0;
+
+		//probably need this to be cleaner later. its for when the music isnt loading correctly
+		if (songs[ind] == NULL)
+			continue;
 
 		nameStr = songs[ind]->songPath.filename().stem().string();
 		musicNames[i].setString(nameStr);

@@ -1927,8 +1927,8 @@ void TerrainPolygon::GenerateBorderMesh()
 	BorderInfo *currEdgeNumQuadPtr;
 	V2d along,norm, startInner, startOuter;
 
-	double out = 16;
-	double in = 64 - out;
+	double out = 16;//8;//16;
+	double in = 64 - out;//8;//64 - out;
 
 	double inwardExtra, nextInwardExtra, startAlong, truEnd, currLen;
 
@@ -2012,8 +2012,8 @@ void TerrainPolygon::GenerateBorderMesh()
 			currEndInner = startInner + endAlong * along;
 			currEndOuter = startOuter + endAlong * along;
 
-			double realHeightLeft = 64.0;
-			double realHeightRight = 64.0;
+			double realHeightLeft = 64;//16;//64.0;
+			double realHeightRight = 64;//16;//64.0;
 
 			//doesnt work because the quads start above the edge.
 			//can be fixed later by splitting some quads up into
