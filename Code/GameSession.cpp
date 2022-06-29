@@ -2331,6 +2331,12 @@ int GameSession::Run()
 
 	RestartLevel();
 
+	if (netplayManager != NULL) //testing!
+	{
+		fader->Fade(true, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	}
+	
+
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
 	{
 		parentGame->bonusHandler->InitBonus();

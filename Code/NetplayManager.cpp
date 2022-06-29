@@ -26,7 +26,7 @@ void NetplayPlayer::Clear()
 
 NetplayManager::NetplayManager()
 {
-	lobbyManager = NULL;
+	lobbyManager = NULL; 
 	connectionManager = NULL;
 	loadThread = NULL;
 	game = NULL;
