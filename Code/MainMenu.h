@@ -461,6 +461,8 @@ std::string GetTimeStr(int numFrames);
 
 struct NetplayManager;
 
+struct CustomCursor;
+
 struct MainMenu
 {
 	//int [ControllerTypes::Count]
@@ -539,6 +541,7 @@ struct MainMenu
 
 	//testing
 
+	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 
 	std::string currWorkshopMap;

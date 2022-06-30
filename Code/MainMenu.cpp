@@ -42,6 +42,8 @@
 #include "MapBrowser.h"
 #include "NetplayManager.h"
 
+#include "CustomCursor.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -347,6 +349,7 @@ MainMenu::MainMenu()
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
 	
+	
 
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
@@ -566,6 +569,10 @@ void MainMenu::SetupWindow()
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);
 
+	customCursor = new CustomCursor;
+	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
+	customCursor->Init(window);
+
 	mouseGrabbed = true;//false;//true;
 	mouseVisible = true;//false;//true;//false;
 
@@ -682,6 +689,8 @@ MainMenu::~MainMenu()
 
 	window->close();
 
+	delete customCursor;
+
 	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
@@ -776,6 +785,9 @@ void MainMenu::Init()
 
 	fader = new Fader;
 	swiper = new Swiper();
+	
+	
+
 
 	Swiper::LoadSwipeType( this, Swiper::W1);
 	
@@ -1584,6 +1596,7 @@ void MainMenu::Run()
 			{
 				mousePixelPos = GetPixelPos();
 				MOUSE.Update(mousePixelPos);
+
 				//added this so going back from the thanks screen
 				//doesnt inta select a level. carrying over inputs
 				//between menus makes no sense.
@@ -1612,6 +1625,15 @@ void MainMenu::Run()
 			break;
 		}
 		
+
+		if (MOUSE.IsMouseDownLeft() )
+		{
+			customCursor->SetClicked();
+		}
+		else
+		{
+			customCursor->SetNormal();
+		}
 
 		DrawMode(menuMode);
 

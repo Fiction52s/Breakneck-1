@@ -34,7 +34,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	receivedMapLoadSignal = false;
 	receivedGameStartSignal = false;
@@ -76,6 +76,7 @@ void NetplayManager::Abort()
 		lobbyManager = NULL;
 	}
 
+	//there might be something off with this, i keep getting exit crashes right after this
 	for (int i = 0; i < numPlayers; ++i)
 	{
 		if (i == playerIndex)
@@ -84,6 +85,7 @@ void NetplayManager::Abort()
 		if (netplayPlayers[i].isConnectedTo)
 		{
 			SteamNetworkingSockets()->CloseConnection(netplayPlayers[i].connection, 0, NULL, false);
+			netplayPlayers[i].isConnectedTo = false;
 			//netplayPlayers[i].connection = 0;
 			//netplayPlayers[i].isConnectedTo = false;
 		}
