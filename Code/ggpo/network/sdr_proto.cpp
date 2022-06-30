@@ -8,6 +8,7 @@
 #include "types.h"
 #include "sdr_proto.h"
 #include "bitvector.h"
+#include <iostream>
 
 static const int UDP_HEADER_SIZE = 28;     /* Size of IP + UDP headers */
 static const int NUM_SYNC_PACKETS = 5;
@@ -456,6 +457,7 @@ SdrProtocol::LogMsg(const char *prefix, UdpMsg *msg)
 		Log("%s input ack.\n", prefix);
 		break;
 	default:
+		std::cout << "unknown udpmsg type: " << msg->hdr.type << std::endl;
 		ASSERT(FALSE && "Unknown UdpMsg type.");
 	}
 }

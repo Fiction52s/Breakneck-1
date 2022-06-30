@@ -6,6 +6,7 @@
 #include "ConnectionManager.h"
 #include <boost/thread.hpp>
 #include "MatchParams.h"
+#include <list>
 
 struct MatchParams;
 struct GameSession;
@@ -42,10 +43,8 @@ struct NetplayManager
 		A_GET_CONNECTIONS,
 		A_WAIT_FOR_ALL_TO_CONNECT,
 		A_WAIT_TO_LOAD_MAP,
-		A_WAIT_TO_GGPO_SYNC,
 		A_LOAD_MAP,
-		A_LOAD_MAP_AND_WAIT_FOR_ALL,
-		A_GGPO_SYNC,
+		A_WAIT_FOR_GGPO_SYNC,
 		A_READY_TO_RUN,
 		A_WAIT_FOR_ALL_READY,
 		A_RUNNING_MATCH,
@@ -67,7 +66,7 @@ struct NetplayManager
 	ConnectionManager *connectionManager;
 	GameSession *game;
 
-	
+	std::list<SteamNetworkingMessage_t*> messageQueue;
 
 	
 

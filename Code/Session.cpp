@@ -6832,6 +6832,8 @@ void Session::InitGGPO()
 	int num_players = 2;
 	ngs->num_players = num_players;
 
+	cout << "initializing ggpo" << endl;
+
 	//bool sync = true;
 
 
@@ -6919,7 +6921,7 @@ void Session::InitGGPO()
 void Session::UpdateJustGGPO()
 {
 	ggpo_idle(ggpo, 5);
-	ggpo_advance_frame(ggpo);
+	//ggpo_advance_frame(ggpo);
 }
 
 void Session::CleanupGGPO()
@@ -7134,6 +7136,7 @@ bool Session::GGPORunGameModeUpdate()
 //}
 void Session::GGPORunFrame()
 {
+	//cout << "ggpo run frame " << endl;
 	int disconnect_flags;
 	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
 
@@ -7165,6 +7168,8 @@ void Session::GGPORunFrame()
 	int input = GetCurrInput(0).GetCompressedState();
 	//input = rand();
 	GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
+
+	//cout << "ggpo run frame: " << result << endl;
 	//cout << "local player handle: " << ngs->local_player_handle << "\n";
 
 	//static ControllerState lastCurr;
@@ -7182,7 +7187,7 @@ void Session::GGPORunFrame()
 			}
 
 			//lastCurr = GetCurrInput(1);
-
+			//cout << "actually update the game" << endl;
 			UpdateAllPlayersInput();
 			GGPORunGameModeUpdate();
 			//frameCC++;

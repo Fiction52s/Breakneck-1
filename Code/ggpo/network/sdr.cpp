@@ -63,6 +63,32 @@ bool Sdr::OnLoopPoll(void *cookie)
 
 		for (;;)
 		{
+			for (auto it = sess->netplayManager->messageQueue.begin(); it != sess->netplayManager->messageQueue.end();)
+			{
+				cout << "processing queued message" << endl;
+				if ((*it)->GetConnection() == listenConnection)
+				{
+					UdpMsg *msg = (UdpMsg *)(*it)->GetData();
+
+					if (msg->IsGameMsg())
+					{
+						sess->HandleMessage(listenConnection, (*it));
+					}
+					else
+					{
+						_callbacks->OnMsg(listenConnection, msg, (*it)->GetSize());
+					}
+
+					(*it)->Release();
+					sess->netplayManager->messageQueue.erase(it++);
+				}
+				else
+				{
+					++it;
+				}
+			}
+
+
 			int numMsges = SteamNetworkingSockets()->ReceiveMessagesOnConnection(listenConnection, messages, 1);
 
 			if (numMsges == 1)
@@ -80,7 +106,6 @@ bool Sdr::OnLoopPoll(void *cookie)
 				}
 
 				messages[0]->Release();
-
 			}
 			else
 			{

@@ -2120,7 +2120,7 @@ int GameSession::Run()
 {
 	if (matchParams.netplayManager != NULL)
 	{
-		cout << "initializing ggpo" << endl;
+		//cout << "initializing ggpo" << endl;
 		//InitGGPO();
 	}
 
@@ -2384,7 +2384,7 @@ int GameSession::Run()
 			{
 				if( IsKeyPressed( Keyboard::Escape))
 				{
-					cout << "connection is terminated. ending match." << endl;
+					cout << "esc is pressed. ending match." << endl;
 					quit = true;
 					returnVal = GR_EXITLEVEL;
 					break;
