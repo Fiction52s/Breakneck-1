@@ -21,6 +21,7 @@ struct NetplayPlayer
 	bool isMe;
 	int index;
 	bool doneConnectingToAllPeers;
+	bool doneLoading;
 	bool readyToRun;
 	bool isHost;
 };
@@ -41,7 +42,10 @@ struct NetplayManager
 		A_GET_CONNECTIONS,
 		A_WAIT_FOR_ALL_TO_CONNECT,
 		A_WAIT_TO_LOAD_MAP,
+		A_WAIT_TO_GGPO_SYNC,
 		A_LOAD_MAP,
+		A_LOAD_MAP_AND_WAIT_FOR_ALL,
+		A_GGPO_SYNC,
 		A_READY_TO_RUN,
 		A_WAIT_FOR_ALL_READY,
 		A_RUNNING_MATCH,
@@ -55,6 +59,7 @@ struct NetplayManager
 	int numPlayers;
 	bool receivedMapLoadSignal;
 	bool receivedGameStartSignal;
+	bool receivedStartGGPOSignal;
 
 	boost::thread *loadThread;
 

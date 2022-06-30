@@ -73,6 +73,7 @@ on_event_callback(GGPOEvent *info)
 		sess->ngs->UpdateConnectProgress(info->u.synchronized.player, 100);
 		break;
 	case GGPO_EVENTCODE_RUNNING:
+		sess->ggpoReady = true;
 		cout << "running" << endl;
 		sess->ngs->SetConnectState(Running);
 		//renderer->SetStatusText("");

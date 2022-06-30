@@ -1466,7 +1466,7 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 	
 	double maxDist = max( zx, zy );
 
-	cout << "pos0x: " << a->position.x << ", pos1x: " << a2->position.x << endl;
+	//cout << "pos0x: " << a->position.x << ", pos1x: " << a2->position.x << endl;
 	//cout << "maxDist: " << maxDist << endl;
 	
 	if( zx == maxDist )

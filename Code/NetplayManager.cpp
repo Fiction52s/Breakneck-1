@@ -19,6 +19,7 @@ void NetplayPlayer::Clear()
 	isMe = false;
 	isConnectedTo = false;
 	doneConnectingToAllPeers = false;
+	doneLoading = false;
 	readyToRun = false;
 	isHost = false;
 	
@@ -26,7 +27,7 @@ void NetplayPlayer::Clear()
 
 NetplayManager::NetplayManager()
 {
-	lobbyManager = NULL; 
+	lobbyManager = NULL;
 	connectionManager = NULL;
 	loadThread = NULL;
 	game = NULL;
@@ -38,6 +39,7 @@ NetplayManager::NetplayManager()
 
 	receivedMapLoadSignal = false;
 	receivedGameStartSignal = false;
+	receivedStartGGPOSignal = false;
 
 	numPlayers = -1;
 
@@ -69,6 +71,7 @@ void NetplayManager::LeaveLobby()
 
 void NetplayManager::Abort()
 {
+	cout << "abort" << endl;
 	if (lobbyManager != NULL)
 	{
 		lobbyManager->LeaveLobby();
@@ -114,6 +117,7 @@ void NetplayManager::Abort()
 
 	receivedMapLoadSignal = false;
 	receivedGameStartSignal = false;
+	receivedStartGGPOSignal = false;
 }
 
 void NetplayManager::Update()
@@ -134,7 +138,16 @@ void NetplayManager::Update()
 		{
 			LobbyParams lp;
 			lp.maxMembers = 2;
-			lp.mapPath = "Resources/Maps/W2/afighting1.brknk";
+
+			int r = rand() % 2;
+			if (r == 0)
+			{
+				lp.mapPath = "Resources/Maps/W2/afighting1.brknk";
+			}
+			else
+			{
+				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
+			}
 			lobbyManager->TryCreatingLobby(lp);
 			action = A_GATHERING_USERS;
 		}
@@ -194,6 +207,8 @@ void NetplayManager::Update()
 
 	case A_GET_CONNECTIONS:
 	{
+		ReceiveMessages();
+
 		bool connectedToAll = true;
 		for (int i = 0; i < numPlayers; ++i)
 		{
@@ -223,12 +238,16 @@ void NetplayManager::Update()
 				action = A_WAIT_TO_LOAD_MAP;
 			}
 		}
+
+		
 		break;
 	}
 	case A_WAIT_FOR_ALL_TO_CONNECT:
 	{
 		assert(IsHost());
 		
+		ReceiveMessages();
+
 		bool allDoneConnecting = true;
 		for (int i = 0; i < numPlayers; ++i)
 		{
@@ -257,6 +276,8 @@ void NetplayManager::Update()
 	}
 	case A_WAIT_TO_LOAD_MAP:
 	{
+		ReceiveMessages();
+
 		if (receivedMapLoadSignal)
 		{
 			LoadMap();
@@ -265,11 +286,91 @@ void NetplayManager::Update()
 	}
 	case A_LOAD_MAP:
 	{
+		ReceiveMessages();
 		if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
 		{
 			delete loadThread;
 			loadThread = NULL;
 
+			if (IsHost())
+			{
+				game->InitGGPO();
+
+				action = A_WAIT_FOR_ALL_READY;
+
+				SendSignalToAllClients(UdpMsg::Game_Host_Says_GGPO_Sync);
+			}
+			else
+			{
+				//SendSignalToHost(UdpMsg::Game_Done_Loading);
+				action = A_WAIT_TO_GGPO_SYNC;
+			}
+			
+			//action = A_GGPO_SYNC;
+			//game->InitGGPO();
+		}
+		break;
+	}
+	case A_LOAD_MAP_AND_WAIT_FOR_ALL:
+	{
+		assert(IsHost());
+
+		ReceiveMessages();
+		if (loadThread->try_join_for(boost::chrono::milliseconds(0)))
+		{
+			delete loadThread;
+			loadThread = NULL;
+
+			bool allDoneLoading = true;
+			for (int i = 0; i < 4; ++i)
+			{
+				if (i == playerIndex)
+				{
+					continue;
+				}
+				if (!netplayPlayers[i].doneLoading)
+				{
+					allDoneLoading = false;
+					break;
+				}
+			}
+
+			if (allDoneLoading)
+			{
+
+			}
+			if (IsHost())
+			{
+				game->InitGGPO();
+
+				action = A_WAIT_FOR_ALL_READY;
+
+				SendSignalToAllClients(UdpMsg::Game_Host_Says_GGPO_Sync);
+			}
+			else
+			{
+				//SendSignalToHost(UdpMsg::Game_Done_Loading);
+				action = A_WAIT_TO_GGPO_SYNC;
+			}
+
+			//action = A_GGPO_SYNC;
+			//game->InitGGPO();
+		}
+		break;
+	}
+	case A_WAIT_TO_GGPO_SYNC:
+	{
+		if (receivedStartGGPOSignal)
+		{
+			game->InitGGPO();
+		}
+		break;
+	}
+	case A_GGPO_SYNC:
+	{
+		game->UpdateJustGGPO();
+		if (game->IsGGPOReady())
+		{
 			if (isSyncTest)
 			{
 				RunMatch();
@@ -283,10 +384,11 @@ void NetplayManager::Update()
 				else
 				{
 					action = A_READY_TO_RUN;
-					SendSignalToHost(UdpMsg::Game_Done_Loading);
+					SendSignalToHost(UdpMsg::Game_Ready_To_Run);
 				}
 			}
 		}
+		//ggpo_idle
 		break;
 	}
 	case A_WAIT_FOR_ALL_READY:
@@ -328,7 +430,7 @@ void NetplayManager::Update()
 		break;
 	}
 
-	ReceiveMessages();
+	
 }
 
 void NetplayManager::ReceiveMessages()
@@ -359,7 +461,9 @@ void NetplayManager::ReceiveMessages()
 					}
 					else
 					{
-						assert(0);
+						cout << "ignoring ggpo message" << endl;
+						//should never be here. this just means its time to start using ggpo to receive messages instead.
+						//assert(0);
 					}
 
 					messages[0]->Release();
@@ -598,7 +702,15 @@ CSteamID NetplayManager::GetMyID()
 
 void NetplayManager::LoadMap()
 {
-	action = A_LOAD_MAP;
+	if (IsHost())
+	{
+		action = A_LOAD_MAP_AND_WAIT_FOR_ALL;
+	}
+	else
+	{
+		action = A_LOAD_MAP;
+	}
+	
 
 	/*if (IsHost())
 	{
@@ -759,6 +871,11 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		receivedMapLoadSignal = true;
 		break;
 	}
+	case UdpMsg::Game_Host_Says_GGPO_Sync:
+	{
+		receivedStartGGPOSignal = true;
+		break;
+	}
 	case UdpMsg::Game_Done_Loading:
 	{
 		if (IsHost())
@@ -770,7 +887,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 
 				if (netplayPlayers[i].connection == connection)
 				{
-					netplayPlayers[i].readyToRun = true;
+					netplayPlayers[i].doneLoading = true;
 					break;
 				}
 			}

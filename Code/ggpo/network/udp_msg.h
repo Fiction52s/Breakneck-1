@@ -28,7 +28,9 @@ struct UdpMsg
       InputAck,
 	  Game_Host_Says_Load,
 	  Game_Done_Connecting,
-	  Game_Done_Loading,
+	  Game_Ready_To_Run,
+	  Game_Host_Says_GGPO_Sync,
+	  Game_Done_GGPO_Connecting,
 	  Game_Host_Says_Start	
    };
   /* enum MsgType { 

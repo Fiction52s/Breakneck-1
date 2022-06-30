@@ -2121,10 +2121,10 @@ int GameSession::Run()
 	if (matchParams.netplayManager != NULL)
 	{
 		cout << "initializing ggpo" << endl;
-		InitGGPO();
+		//InitGGPO();
 	}
 
-	
+	firstUpdateHasHappened = false;
 	
 
 	/*if (matchParams.netplayManager != NULL)

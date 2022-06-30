@@ -1543,6 +1543,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	ggpoReady = false;
+
 	flowHandler.sess = this;
 	mainMenu = MainMenu::GetInstance();
 	preScreenTex = MainMenu::preScreenTexture;
@@ -1554,6 +1556,8 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	waterShaderCounter = 0.f;
 
 	bossNodeVectorMap.resize(BossFightType_Count);
+
+	firstUpdateHasHappened = false;
 
 	playerSimState = new PState;
 
@@ -5961,6 +5965,8 @@ void Session::DrawGoalPulse(sf::RenderTarget *target)
 	}
 }
 
+
+
 void Session::SetupShardMenu()
 {
 	if (parentGame != NULL)
@@ -6132,6 +6138,16 @@ void Session::SetupInputVis()
 void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 {
 	target->setView(view);
+
+	if (!firstUpdateHasHappened)
+	{
+		LayeredDraw(EffectLayer::IN_FRONT, target);
+
+		//target->setView(view);
+		DrawKinOverFader(target);
+
+		return;
+	}
 
 	if (background != NULL)
 		background->Draw(target);
@@ -6773,6 +6789,7 @@ bool Session::PlayerIsFacingRight(int index)
 
 void Session::InitGGPO()
 {
+	ggpoReady = false;
 	timeSyncFrames = 0;
 	//srand(400);
 	srand(time(0));
@@ -6899,6 +6916,12 @@ void Session::InitGGPO()
 	}
 }
 
+void Session::UpdateJustGGPO()
+{
+	ggpo_idle(ggpo, 5);
+	ggpo_advance_frame(ggpo);
+}
+
 void Session::CleanupGGPO()
 {
 	delete currSaveState;
@@ -6914,6 +6937,10 @@ bool Session::GGPORunGameModeUpdate()
 	//	cout << "different inputs" << endl;
 	//}
 
+	if (!firstUpdateHasHappened)
+	{
+		firstUpdateHasHappened = true;
+	}
 
 	collider.ClearDebug();
 
@@ -7734,4 +7761,9 @@ void Session::CleanupPokeTriangleScreenGroup()
 void Session::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg)
 {
 	netplayManager->HandleMessage(connection, msg);
+}
+
+bool Session::IsGGPOReady()
+{
+	return ggpoReady;
 }

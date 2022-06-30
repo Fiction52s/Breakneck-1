@@ -205,7 +205,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-	
+	bool firstUpdateHasHappened;
 	bool simulationMode; //for running frames with ggpo without creating sounds or visual fx
 	float waterShaderCounter;
 	Tileset *ts_water;
@@ -394,6 +394,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	RunningTimerDisplay runningTimerDisplay;
 	int totalFramesBeforeGoal;
 
+	bool ggpoReady;
 	GGPOSession *ggpo;
 	NetplayManager *netplayManager;
 
@@ -441,10 +442,12 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual int Run() = 0;
 	virtual void DebugDraw(sf::RenderTarget *target);
 	virtual void UpdateDecorSprites();
+	bool IsGGPOReady();
 
 
 	Session(SessionType p_sessType, const boost::filesystem::path &p_filePath);
 	virtual ~Session();
+	void UpdateJustGGPO();
 	void SimulateGGPOGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
