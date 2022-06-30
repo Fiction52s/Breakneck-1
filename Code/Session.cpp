@@ -6141,6 +6141,7 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	if (!firstUpdateHasHappened)
 	{
+		cout << "first update draw" << endl;
 		LayeredDraw(EffectLayer::IN_FRONT, target);
 
 		//target->setView(view);

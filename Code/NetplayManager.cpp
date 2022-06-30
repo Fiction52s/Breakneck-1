@@ -284,7 +284,7 @@ void NetplayManager::Update()
 
 			if (isSyncTest)
 			{
-				RunMatch();
+				action = A_READY_TO_RUN;
 			}
 			else
 			{
@@ -315,10 +315,15 @@ void NetplayManager::Update()
 			}
 			else
 			{
-				action = A_READY_TO_RUN;
+				action = A_WAITING_FOR_START_MESSAGE;
 				SendSignalToHost(UdpMsg::Game_Done_Loading);
 			}
 		}
+		break;
+	}
+	case A_WAITING_FOR_START_MESSAGE:
+	{
+
 		break;
 	}
 	case A_WAIT_FOR_ALL_READY:
@@ -340,20 +345,17 @@ void NetplayManager::Update()
 
 		if (allReady)
 		{
-			//action = A_READY_TO_RUN;
-
-			SendSignalToAllClients(UdpMsg::Game_Host_Says_Start);
-
-			RunMatch();
+			action = A_READY_TO_RUN;
+			//RunMatch();
 		}
 		break;
 	}
 	case A_READY_TO_RUN:
 	{
-		if (receivedGameStartSignal)
+		/*if (receivedGameStartSignal)
 		{
 			RunMatch();
-		}
+		}*/
 		break;
 	}
 	case A_RUNNING_MATCH:
@@ -659,9 +661,18 @@ int NetplayManager::RunMatch()
 {
 	action = A_RUNNING_MATCH;
 
+
+
 	if (isSyncTest)
 	{
 		game->InitGGPO();
+	}
+	else
+	{
+		if (IsHost())
+		{
+			SendSignalToAllClients(UdpMsg::Game_Host_Says_Start);
+		}
 	}
 
 
@@ -830,7 +841,9 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	}
 	case UdpMsg::Game_Host_Says_Start:
 	{
+		assert(!IsHost());
 		cout << "received a message to start the game from the host" << endl;
+		assert(action == A_WAITING_FOR_START_MESSAGE);
 		//receivedGameStartSignal = true;
 		RunMatch();
 		break;

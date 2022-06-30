@@ -2780,6 +2780,20 @@ void MainMenu::HandleMenuMode()
 		
 		netplayManager->Update();
 
+		if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
+			|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
+		{
+			SetMode(QUICKPLAY_PLAY);
+			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+		}
+		break;
+	case QUICKPLAY_PLAY:
+	{
+		loadingBackpack->Update();
+
+		netplayManager->Update();
+
+
 		if (netplayManager->action == NetplayManager::A_MATCH_COMPLETE)
 		{
 			SetMode(TITLEMENU);
@@ -2789,7 +2803,23 @@ void MainMenu::HandleMenuMode()
 			mp.filePath = "Resources/Maps/W2/afighting1.brknk";
 			netplayManager->RunMatch(&mp);*/
 		}
+		else if (!fader->IsFading())
+		{
+			if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
+				|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
+			{
+				if (netplayManager->action == NetplayManager::A_READY_TO_RUN)
+				{
+					netplayManager->RunMatch();
+				}
+			}
+			else
+			{
+				assert(0);
+			}
+		}
 		break;
+	}
 	}
 
 	
@@ -3307,6 +3337,12 @@ void MainMenu::DrawMode( Mode m )
 		break;
 	}
 	case QUICKPLAY_TEST:
+	{
+		preScreenTexture->setView(v);
+		loadingBackpack->Draw(preScreenTexture);
+		break;
+	}
+	case QUICKPLAY_PLAY:
 	{
 		preScreenTexture->setView(v);
 		loadingBackpack->Draw(preScreenTexture);
