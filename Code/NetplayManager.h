@@ -15,7 +15,14 @@ struct UdpMsg;
 
 struct DesyncCheckInfo
 {
+	DesyncCheckInfo()
+	{
+		action = 0;
+		actionFrame = 0;
+	}
 	V2d pos;
+	uint32 action;
+	uint32 actionFrame;
 };
 
 
@@ -37,6 +44,7 @@ struct NetplayPlayer
 	NetplayPlayer();
 	void Clear();
 	void AddDesyncCheckInfo(DesyncCheckInfo &dci);
+	void RemoveDesyncCheckInfo();
 	const DesyncCheckInfo & GetDesyncCheckInfo(int framesAgo);
 };
 
@@ -63,6 +71,7 @@ struct NetplayManager
 		A_WAIT_FOR_ALL_READY,
 		A_RUNNING_MATCH,
 		A_MATCH_COMPLETE,
+		A_DISCONNECT,
 	};
 
 	Action action;
@@ -115,6 +124,7 @@ struct NetplayManager
 	
 	HSteamNetConnection GetConnection();
 	void AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci );
+	void RemoveDesyncCheckInfos(int numRollbackFrames);
 	bool IsHost();
 	void Abort();
 	void Update();

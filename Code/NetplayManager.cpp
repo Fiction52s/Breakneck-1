@@ -35,6 +35,15 @@ void NetplayPlayer::AddDesyncCheckInfo(DesyncCheckInfo &dci)
 	desyncCheckInfoArray[0] = dci;
 }
 
+void NetplayPlayer::RemoveDesyncCheckInfo()
+{
+	for (int i = 0; i < MAX_DESYNC_CHECK_INFOS_STORED-1; ++i)
+	{
+		desyncCheckInfoArray[i] = desyncCheckInfoArray[i + 1];
+	}
+	desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED-1] = DesyncCheckInfo();
+}
+
 
 
 const DesyncCheckInfo & NetplayPlayer::GetDesyncCheckInfo(int framesAgo)
@@ -622,6 +631,11 @@ void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusC
 	{
 		cout << "connection closed by peer: " << pCallback->m_info.m_eEndReason << endl;
 
+		action = A_DISCONNECT;
+		//Abort();
+		//for now, just close the match when anyone quits. eventually be able to handle people leaving in certain
+		//game modes, as long as they aren't the host.
+
 		//do I still need to close the connection?
 		//SteamNetworkingSockets()->CloseConnection(connection, 0, NULL, false);
 		netplayPlayers[connectionIndex].isConnectedTo = false;
@@ -705,8 +719,12 @@ int NetplayManager::RunMatch()
 
 	Abort();
 
+	if (action == A_RUNNING_MATCH)
+	{
+		action = A_MATCH_COMPLETE;
+	}
 	//eventually needs to go to like, another game? rematches etc
-	action = A_MATCH_COMPLETE;
+	
 
 	return gameResult;
 }
@@ -763,7 +781,23 @@ HSteamNetConnection NetplayManager::GetConnection()
 void NetplayManager::AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci )
 {
 	netplayPlayers[pIndex].AddDesyncCheckInfo(dci);
+	//cout << "add desync check for player: " << pIndex << "\n";
+	//cout << "action: " << dci.action << ", " << dci.actionFrame << endl;
 	//netplayPlayers[pIndex].desyncCheckInfoArray[0] = 
+	
+}
+
+void NetplayManager::RemoveDesyncCheckInfos(int numRollbackFrames)
+{
+	int numRemovals = numRollbackFrames -1;
+	for (int i = 0; i < 4; ++i)
+	{
+		for (int r = 0; r < numRemovals; ++r)
+		{
+			netplayPlayers[i].RemoveDesyncCheckInfo();
+		}
+		
+	}
 	
 }
 
@@ -875,14 +909,15 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		cout << "received a message to start the game from the host" << endl;
 		assert(action == A_WAITING_FOR_START_MESSAGE);
 
-		steamMsg->Release();
-		//receivedGameStartSignal = true;
-		RunMatch();
+		action = A_READY_TO_RUN;
+		//steamMsg->Release();
+		//steamMsg = NULL; //set to NULL to avoid double delete
+		//RunMatch();
 		break;
 	}
 	}
 
-	if (hdrType != UdpMsg::Game_Host_Says_Start)
+	if (steamMsg != NULL )
 	{
 		steamMsg->Release();
 	}
@@ -910,10 +945,14 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 
 	UdpMsg msg(UdpMsg::Game_Desync_Check);
 
-	msg.u.desync_info.x = netplayPlayers[playerIndex].GetDesyncCheckInfo(0).pos.x;
-	msg.u.desync_info.y = netplayPlayers[playerIndex].GetDesyncCheckInfo(0).pos.y;
+	const DesyncCheckInfo &dci = netplayPlayers[playerIndex].GetDesyncCheckInfo(0);
+	msg.u.desync_info.x = dci.pos.x;
+	msg.u.desync_info.y = dci.pos.y;
 
 	msg.u.desync_info.frame_number = currGameFrame;
+
+	msg.u.desync_info.player_action = dci.action;
+	msg.u.desync_info.player_action_frame = dci.actionFrame;
 
 	//cout << "sending "
 	HSteamNetConnection con = 0;
@@ -944,6 +983,7 @@ const DesyncCheckInfo & NetplayManager::GetDesyncCheckInfo(SteamNetworkingMessag
 		if (netplayPlayers[i].connection == steamMsg->GetConnection())
 		{
 			targetPlayerIndex = i;
+			break;
 		}
 	}
 

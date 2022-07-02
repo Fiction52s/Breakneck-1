@@ -6945,6 +6945,7 @@ void Session::CleanupGGPO()
 
 void Session::AddDesyncCheckInfo()
 {
+	//cout << "add desync check info: " << totalGameFrames << endl;
 	if (netplayManager != NULL)
 	{
 		Actor *p;
@@ -6955,13 +6956,15 @@ void Session::AddDesyncCheckInfo()
 			{
 				DesyncCheckInfo dci;
 				dci.pos = p->position;
+				dci.action = p->action;
+				dci.actionFrame = p->frame;
 				netplayManager->AddDesyncCheckInfo(i, dci);
 			}
 		}
 
 		if (!netplayManager->IsHost())
 		{
-			if (totalGameFrames % 10 == 0)
+			if (totalGameFrames % 10 == 0 && totalGameFrames > 0)
 			{
 				netplayManager->SendDesyncCheckToHost(totalGameFrames);
 			}	
@@ -7306,7 +7309,10 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	bytes += saveSize;
 	gameMode->SetFromBytes(bytes);
 
-	//cout << "rollback. setting frame to: " << currSaveState->totalGameFrames << " from " << totalGameFrames << "\n";
+	int rollbackFrames = totalGameFrames - currSaveState->totalGameFrames;
+
+	
+
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;
 	inactiveEnemyList = currSaveState->inactiveEnemyList;
@@ -7315,6 +7321,16 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	currSuperPlayer = currSaveState->currSuperPlayer;
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
+
+	//cout << "loading state: " << totalGameFrames << endl;
+
+	
+	if ( netplayManager != NULL)
+	{
+		cout << "rollback of " << rollbackFrames << endl;
+		//rollback the desync checker system also
+		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
+	}
 
 	return true;
 }
@@ -7861,23 +7877,30 @@ void Session::ProcessDesyncMessageQueue()
 
 	for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
 	{
-		cout << "processing desync check" << endl;
+		//cout << "processing desync check" << endl;
 
 		UdpMsg *msg = (UdpMsg*)(*it)->GetData();
 		int frameDifference = totalGameFrames - msg->u.desync_info.frame_number;
 
 		if (frameDifference >= 0)
 		{
+			//cout << "frameDifference: " << frameDifference << endl;
 			const DesyncCheckInfo & dci = netplayManager->GetDesyncCheckInfo((*it), frameDifference);
-			if (msg->u.desync_info.x == dci.pos.x && msg->u.desync_info.y == dci.pos.y)
+			if (msg->u.desync_info.x == dci.pos.x && msg->u.desync_info.y == dci.pos.y && msg->u.desync_info.player_action == dci.action
+				&& msg->u.desync_info.player_action_frame == dci.actionFrame )
 			{
-				cout << "frameDifference: " << frameDifference << endl;
 				//no desync!
-				cout << "no desync" << endl;
+				/*cout << "no desync comparing: " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
+				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
+				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
+				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;*/
 			}
 			else
 			{
-				cout << "DESYNC DETECTED" << endl;
+				cout << "DESYNC DETECTED comparing " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
+				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
+				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
+				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
 			}
 		}
 		else

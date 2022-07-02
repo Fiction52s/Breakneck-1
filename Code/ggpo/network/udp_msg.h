@@ -98,6 +98,8 @@ struct UdpMsg
 		  double x;
 		  double y;
 		  uint32 frame_number;
+		  uint32 player_action;
+		  uint32 player_action_frame;
 	  } desync_info;
 
    } u;

@@ -2396,6 +2396,13 @@ int GameSession::Run()
 					break;
 				}
 
+				if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
+				{
+					quit = true;
+					returnVal = GR_EXITLEVEL;
+					break;
+				}
+
 				ggpo_idle(ggpo, 5);
 
 				if (accumulator >= TIMESTEP && timeSyncFrames > 0)

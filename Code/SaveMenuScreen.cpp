@@ -7,6 +7,7 @@
 #include "Fader.h"
 #include "SkinMenu.h"
 #include "MusicPlayer.h"
+#include "MenuPopup.h"
 
 using namespace sf;
 using namespace std;
@@ -102,9 +103,12 @@ SaveMenuScreen::SaveMenuScreen(MainMenu *p_mainMenu)
 	:mainMenu(p_mainMenu),
 	playerSkinShader( "player" ),
 	maskPlayerSkinShader( "player" ),
-	confirmPopup( p_mainMenu ), infoPopup( p_mainMenu ),
+	confirmPopup( p_mainMenu ),
 	decisionPopup( p_mainMenu )
 {
+	infoPopup = new MenuInfoPopup(p_mainMenu);
+
+
 	menuOffset = Vector2f(0, 0);
 
 	startWithTutorial = false;
@@ -305,6 +309,8 @@ SaveMenuScreen::~SaveMenuScreen()
 		}
 		delete fileDisplay[i];
 	}
+
+	delete infoPopup;
 }
 
 void SaveMenuScreen::SaveSelectedFile()
@@ -551,7 +557,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = INFOPOP;
 				frame = 0;
-				infoPopup.SetText("Deleted save file");
+				infoPopup->SetText("Deleted save file");
 
 				defaultFiles[selectedSaveIndex] = true;
 				files[selectedSaveIndex]->Delete();
@@ -566,7 +572,7 @@ bool SaveMenuScreen::Update()
 		}
 		else if (action == INFOPOP)
 		{
-			bool res = infoPopup.Update(menuCurrInput, menuPrevInput);
+			bool res = infoPopup->Update(menuCurrInput, menuPrevInput);
 			if (res)
 			{
 				action = WAIT;
@@ -610,7 +616,7 @@ bool SaveMenuScreen::Update()
 				{
 					action = INFOPOP;
 					frame = 0;
-					infoPopup.SetText("Cannot overwrite existing file");
+					infoPopup->SetText("Cannot overwrite existing file");
 				}
 			}
 			else if (menuCurrInput.B && !menuPrevInput.B)
@@ -630,7 +636,7 @@ bool SaveMenuScreen::Update()
 			{
 				action = INFOPOP;
 				frame = 0;
-				infoPopup.SetText("Copied save file successfully");
+				infoPopup->SetText("Copied save file successfully");
 
 				files[copiedIndex]->CopyTo(files[selectedSaveIndex]);
 				files[selectedSaveIndex]->Save();
@@ -938,7 +944,7 @@ void SaveMenuScreen::Draw(sf::RenderTarget *target)
 	}
 	else if (action == INFOPOP)
 	{
-		infoPopup.Draw(target);
+		infoPopup->Draw(target);
 	}
 }
 
@@ -1165,57 +1171,4 @@ void SaveMenuDecisionPopup::SetText(const std::string &str)
 		+ optionText.getLocalBounds().width / 2, 0);
 	size = Vector2f(max(optionText.getGlobalBounds().width + 40.f, 500.f), 300);
 	SetPos(position);
-}
-
-
-
-SaveMenuInfoPopup::SaveMenuInfoPopup(MainMenu *mainMenu)
-{
-	size = Vector2f(500, 300);
-	SetRectColor(popupBGQuad, Color::Black);
-
-	text.setFont(mainMenu->arial);
-	text.setCharacterSize(40);
-	text.setFillColor(Color::White);
-	text.setString("HELLO");
-
-	SetPos(Vector2f(960, 540));
-}
-
-bool SaveMenuInfoPopup::Update(ControllerState &currInput,
-	ControllerState &prevInput)
-{
-	if( (currInput.A && !prevInput.A)
-		|| (currInput.B && !prevInput.B)
-		|| (currInput.Y && !prevInput.Y)
-		|| (currInput.X && !prevInput.X)
-		|| (currInput.rightShoulder && !prevInput.rightShoulder) )
-	{
-		return true;
-	}
-
-	return false;
-}
-
-void SaveMenuInfoPopup::SetPos(sf::Vector2f &pos)
-{
-	position = pos;
-	SetRectCenter(popupBGQuad, size.x, size.y, pos);
-	text.setPosition(pos);
-}
-
-void SaveMenuInfoPopup::SetText(const std::string &str)
-{
-	text.setString(str);
-	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2, 
-		text.getLocalBounds().top + text.getLocalBounds().height / 2 );
-	size.x = text.getGlobalBounds().width + 40;
-	size.y = text.getGlobalBounds().height + 40;
-	SetPos(position);
-}
-
-void SaveMenuInfoPopup::Draw(sf::RenderTarget *target)
-{
-	target->draw(popupBGQuad, 4, sf::Quads);
-	target->draw(text);
 }

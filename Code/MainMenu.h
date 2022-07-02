@@ -36,6 +36,40 @@ struct ControlSettingsMenu;
 
 struct EffectPool;
 
+struct ControlProfile;
+struct ControlProfileMenu;
+struct MapSelectionMenu;
+struct ControlProfileManager;
+struct UIControlGrid;
+struct FillRing;
+
+struct KinBoostScreen;
+struct SingleAxisSelector;
+struct UIVerticalControlList;
+
+//you should retain the last 
+struct MusicSelector;
+struct RecordGhostMenu;
+
+struct Parallax;
+struct SingleAxisSelector;
+struct MusicManager;
+struct FillRing;
+struct Level;
+struct TitleScreen;
+struct IntroMovie;
+struct MusicPlayer;
+struct Fader;
+struct Swiper;
+struct LoadingBackpack;
+
+struct MenuInfoPopup;
+struct MapSelectionItem;
+struct LoadingMapProgressDisplay;
+
+#define ColorGL( c ) sf::Glsl::Vec4( c )// c.r, c.g, c.b, c.a )
+//#define _WIN32_WINNT 0x0601
+
 struct CustomMapsHandler : GUIHandler
 {
 	//LevelSelector &ls;
@@ -54,14 +88,7 @@ struct CustomMapsHandler : GUIHandler
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 };
 
-struct ControlProfile;
-struct ControlProfileMenu;
-struct MapSelectionMenu;
-struct ControlProfileManager;
-struct UIControlGrid;
-struct FillRing;
 
-struct KinBoostScreen;
 
 struct MultiSelectionSection : UIEventHandlerBase
 {
@@ -118,7 +145,7 @@ struct MultiSelectionSection : UIEventHandlerBase
 	//Tileset *ts_bg;
 };
 
-struct LoadingMapProgressDisplay;
+
 struct MultiLoadingScreen
 {
 	MultiLoadingScreen( MainMenu *p_mainMenu );
@@ -141,8 +168,7 @@ struct MultiLoadingScreen
 	
 };
 
-#define ColorGL( c ) sf::Glsl::Vec4( c )// c.r, c.g, c.b, c.a )
-//#define _WIN32_WINNT 0x0601
+
 
 struct OptionsMenuScreen : UIEventHandlerBase
 {
@@ -176,7 +202,6 @@ struct OptionsMenuScreen : UIEventHandlerBase
 
 
 
-struct MapSelectionItem;
 struct MapCollection
 {
 	enum Tags
@@ -247,12 +272,7 @@ struct MapIndexInfo
 	MapSelectionItem *item;
 };
 
-struct SingleAxisSelector;
-struct UIVerticalControlList;
 
-//you should retain the last 
-struct MusicSelector;
-struct RecordGhostMenu;
 
 struct MapSelectionMenu
 {
@@ -423,17 +443,7 @@ struct CreditsMenuScreen
 	sf::Vector2f menuOffset;
 };
 
-struct Parallax;
-struct SingleAxisSelector;
-struct MusicManager;
-struct FillRing;
-struct Level;
-struct TitleScreen;
-struct IntroMovie;
-struct MusicPlayer;
-struct Fader;
-struct Swiper;
-struct LoadingBackpack;
+
 
 struct LevelLoadParams
 {
@@ -485,6 +495,7 @@ struct MainMenu
 		SPLASH,
 		SPLASH_TRANS,
 		TITLEMENU,
+		TITLEMENU_INFOPOP,
 		WORLDMAP,
 		LOADINGMAP,
 		LOADINGMENUSTART,
@@ -542,6 +553,7 @@ struct MainMenu
 
 	//testing
 
+	MenuInfoPopup *infoPopup;
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 

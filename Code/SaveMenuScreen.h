@@ -10,6 +10,7 @@ struct MainMenu;
 struct SaveFile;
 struct WorldMap;
 struct SkinMenu;
+struct MenuInfoPopup;
 
 struct SaveFileDisplay
 {
@@ -83,21 +84,7 @@ struct SaveMenuDecisionPopup
 	void Draw(sf::RenderTarget *target);
 };
 
-struct SaveMenuInfoPopup
-{
-	sf::Vector2f size;
-	sf::Text text;
-	sf::Vector2f position;
-	sf::Vertex popupBGQuad[4];
 
-
-	SaveMenuInfoPopup(MainMenu*mainMenu);
-	void SetText(const std::string &str);
-	bool Update(ControllerState &currInput,
-		ControllerState &prevInput);
-	void SetPos(sf::Vector2f &pos);
-	void Draw(sf::RenderTarget *target);
-};
 
 struct SaveMenuScreen : TilesetManager
 {
@@ -121,7 +108,7 @@ struct SaveMenuScreen : TilesetManager
 
 	int copiedIndex;
 	SaveMenuConfirmPopup confirmPopup;
-	SaveMenuInfoPopup infoPopup;
+	MenuInfoPopup *infoPopup;
 	SaveMenuDecisionPopup decisionPopup;
 	bool startWithTutorial;
 	int currSkin;

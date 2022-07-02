@@ -43,6 +43,7 @@
 #include "NetplayManager.h"
 
 #include "CustomCursor.h"
+#include "MenuPopup.h"
 
 using namespace std;
 using namespace sf;
@@ -380,6 +381,8 @@ MainMenu::MainMenu()
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
 
+	infoPopup = new MenuInfoPopup(this);
+
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
@@ -694,6 +697,8 @@ MainMenu::~MainMenu()
 	delete loadingBackpack;
 	delete cpm;
 	delete musicManager;
+
+	delete infoPopup;
 
 	delete controlSettingsMenu;
 
@@ -2016,6 +2021,12 @@ void MainMenu::HandleMenuMode()
 		TitleMenuModeUpdate();
 		break;
 	}
+	case TITLEMENU_INFOPOP:
+	{
+		titleScreen->Update();
+		infoPopup->Update(menuCurrInput, menuPrevInput);
+		break;
+	}
 	case WORLDMAP:
 	case WORLDMAP_COLONY:
 	{
@@ -2798,7 +2809,7 @@ void MainMenu::HandleMenuMode()
 
 		if (netplayManager->action == NetplayManager::A_MATCH_COMPLETE)
 		{
-			SetMode(TITLEMENU);
+			
 			/*MatchParams mp;
 			mp.netplayManager = netplayManager;
 			mp.numPlayers = 2;
@@ -2807,17 +2818,21 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (!fader->IsFading())
 		{
-			if (netplayManager->action == NetplayManager::A_WAITING_FOR_START_MESSAGE
-				|| netplayManager->action == NetplayManager::A_READY_TO_RUN)
+			if (netplayManager->action == NetplayManager::A_READY_TO_RUN)
 			{
-				if (netplayManager->action == NetplayManager::A_READY_TO_RUN)
+				netplayManager->RunMatch();
+
+				
+
+				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
-					netplayManager->RunMatch();
+					infoPopup->Pop("here testing", 60);
+					SetMode(TITLEMENU_INFOPOP);
 				}
-			}
-			else
-			{
-				assert(0);
+				else
+				{
+					SetMode(TITLEMENU);
+				}
 			}
 		}
 		break;
@@ -3127,6 +3142,12 @@ void MainMenu::DrawMode( Mode m )
 	case TITLEMENU:
 	{
 		titleScreen->Draw(preScreenTexture);
+		break;
+	}
+	case TITLEMENU_INFOPOP:
+	{
+		titleScreen->Draw(preScreenTexture);
+		infoPopup->Draw(preScreenTexture);
 		break;
 	}
 	case WORLDMAP:
