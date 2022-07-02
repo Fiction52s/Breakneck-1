@@ -52,7 +52,7 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		//use to set params paramsForMakingLobby
 
-		cout << "created: " << lobbyName << " successfully." << endl;
+		cout << "created: " << lobbyName << " successfully. map path: " << paramsForMakingLobby.mapPath  << endl;
 
 		action = A_IN_LOBBY;
 

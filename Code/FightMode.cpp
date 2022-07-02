@@ -4,6 +4,7 @@
 #include "HUD.h"
 #include "Enemy_Gator.h"
 #include "Enemy_Bird.h"
+#include "FightEndSequence.h"
 
 using namespace std;
 using namespace sf;
@@ -17,12 +18,16 @@ FightMode::FightMode()
 	birdParams = new BasicAirEnemyParams(sess->types["bird"], 1);
 	birdParams->CreateMyEnemy();
 	testBird = (Bird*)birdParams->myEnemy;
+
+	endSeq = new FightEndSequence;
+	endSeq->Init();
 }
 
 FightMode::~FightMode()
 {
 	delete gatorParams;
 	delete birdParams;
+	delete endSeq;
 }
 
 int FightMode::GetNumStoredBytes()
@@ -76,6 +81,11 @@ HUD *FightMode::CreateHUD()
 
 bool FightMode::CheckVictoryConditions()
 {
+	if (done)
+	{
+		return false;
+	}
+
 	bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
 	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
 	if (p0TouchedKillGrass || p1TouchedKillGrass 
@@ -88,5 +98,9 @@ bool FightMode::CheckVictoryConditions()
 
 void FightMode::EndGame()
 {
-	sess->RestartGame();
+	cout << "game over" << endl;
+	endSeq->Reset();
+	sess->SetActiveSequence(endSeq);
+	done = true;
+	//sess->RestartGame();
 }

@@ -5114,7 +5114,10 @@ void Actor::ReactToBeingHit()
 		}
 		else if (actorIndex == 1)
 		{
+			cout << "p2 taking: " << receivedHit->damage;// << endl;
 			fm->data.p1Health -= receivedHit->damage;
+
+			cout << " health is now: " << fm->data.p1Health << endl;
 			if (fm->data.p1Health < 0)
 				fm->data.p1Health = 0;
 		}
@@ -14253,6 +14256,9 @@ void Actor::PhysicsResponse()
 		HitResult checkHit = HitResult::MISS;
 
 		HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
+
+
+		hi.damage = 10; //just testing for now
 
 		if (currAttackHitBlock[target] < 0)
 		{

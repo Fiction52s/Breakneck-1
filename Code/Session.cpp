@@ -6335,7 +6335,7 @@ void Session::ActiveStorySequenceUpdate()
 
 bool Session::RunGameModeUpdate()
 {
-	collider.ClearDebug();
+	collider.ClearDebug(); //not sure if this is exactly where this should be, but its a bit irrelevant
 
 	//double testMult = accumulator / TIMESTEP;
 	//if (testMult > 10)
@@ -6346,6 +6346,11 @@ bool Session::RunGameModeUpdate()
 
 	while (accumulator >= TIMESTEP)
 	{	
+		if (!firstUpdateHasHappened)
+		{
+			firstUpdateHasHappened = true;
+		}
+
 		if (!OneFrameModeUpdate())
 		{
 			break;
@@ -6354,6 +6359,12 @@ bool Session::RunGameModeUpdate()
 		if (!RunPreUpdate())
 			break;
 
+
+		if (gameMode->CheckVictoryConditions())
+		{
+			gameMode->EndGame();
+			break;
+		}
 
 		if (!playerAndEnemiesFrozen)
 		{
@@ -6453,11 +6464,12 @@ bool Session::RunGameModeUpdate()
 
 		UpdateReplayGhostSprites();
 
-		if (gameMode->CheckVictoryConditions())
+		//old location
+		/*if (gameMode->CheckVictoryConditions())
 		{
 			gameMode->EndGame();
 			break;
-		}
+		}*/
 
 		if (!RunPostUpdate())
 		{
@@ -6793,7 +6805,7 @@ void Session::InitGGPO()
 	ggpoReady = false;
 	timeSyncFrames = 0;
 	//srand(400);
-	srand(time(0));
+	
 	//WSADATA wd = { 0 };
 	//WSAStartup(MAKEWORD(2, 2), &wd);
 

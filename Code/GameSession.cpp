@@ -1659,7 +1659,14 @@ bool GameSession::Load()
 	
 	
 
-	
+	SetupGameMode();
+	gameMode->Setup();
+
+	if (GetGameMode() == MapHeader::T_FIGHT)
+	{
+		matchParams.numPlayers = 2;
+		cout << "setting numplayers to 2 for fight mode. testing only" << endl;
+	}
 
 	SetupPlayers();
 
@@ -1672,8 +1679,7 @@ bool GameSession::Load()
 	//}
 	//m_numActivePlayers = mapHeader->GetNumPlayers(); //not really used
 
-	SetupGameMode();
-	gameMode->Setup();
+	
 
 	//create bullet quads after game mode because game mode might make new enemies with bullets
 	CreateBulletQuads();
@@ -3689,7 +3695,7 @@ void GameSession::SetOriginalMusic()
 	}
 
 	//TODO : use a better random algorithm later
-	srand(time(0));
+	//srand(time(0));
 
 	if (pointsTotal > 0)
 	{

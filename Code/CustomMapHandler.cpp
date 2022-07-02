@@ -27,6 +27,8 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 
 			GameSession *gs = new GameSession(&mp);
 			GameSession::sLoad(gs);
+
+			//if( gs->gameMode)
 			gs->Run();
 			//gs->Reload(ls.fullPaths[ls.selectedIndex+1]);
 			//gs->Run();

@@ -8,6 +8,7 @@ struct Enemy;
 struct HUD;
 struct Gator;
 struct Bird;
+struct FightEndSequence;
 
 struct GameMode
 {
@@ -92,6 +93,9 @@ struct FightMode : GameMode
 	Gator *testGator;
 	BasicAirEnemyParams *birdParams;
 	Bird *testBird;
+
+	FightEndSequence *endSeq;
+
 
 	int maxHealth;
 	int meterSection;

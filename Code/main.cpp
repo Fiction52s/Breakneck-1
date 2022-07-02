@@ -197,6 +197,8 @@ int main()
 	if (result != 0)
 		return result;
 
+	srand(time(0));
+
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
