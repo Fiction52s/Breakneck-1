@@ -7823,30 +7823,28 @@ void Session::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessa
 	{
 	case UdpMsg::Game_Desync_Check:
 	{
+		assert(netplayManager->IsHost());
 		if (netplayManager->IsHost())
 		{
-			cout << "pushing to desync queue" << endl;
-			//cout << "catch and release message" << endl;
+			//cout << "pushing to desync queue" << endl;
 			netplayManager->desyncMessageQueue.push_back(steamMsg);
 			//steamMsg->Release();
 			handled = true;
 			break;
 		}
-
-
-		steamMsg->Release();
-		handled = true;
-		break;
+		else
+		{
+			steamMsg->Release();
+			handled = true;
+			break;
+		}
 	}
 	}
 
 	if (!handled)
 	{
 		netplayManager->HandleMessage(connection, steamMsg);
-	}
-
-	
-	
+	}	
 }
 
 bool Session::IsGGPOReady()
