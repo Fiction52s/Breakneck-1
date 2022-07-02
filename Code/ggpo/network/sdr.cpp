@@ -37,6 +37,8 @@ void Sdr::Init(Poll *poll, Callbacks *callbacks)
 
 void Sdr::SendTo(char *buffer, int len, int flags, HSteamNetConnection p_connection)
 {
+	UdpMsg *msg = (UdpMsg*)buffer;
+	//cout << "sending msg thru sdr: " << msg->hdr.type << endl;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(p_connection, buffer, len, k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
@@ -63,24 +65,30 @@ bool Sdr::OnLoopPoll(void *cookie)
 
 		for (;;)
 		{
-			for (auto it = sess->netplayManager->messageQueue.begin(); it != sess->netplayManager->messageQueue.end();)
+			for (auto it = sess->netplayManager->ggpoMessageQueue.begin(); it != sess->netplayManager->ggpoMessageQueue.end();)
 			{
-				cout << "processing queued message" << endl;
+				
 				if ((*it)->GetConnection() == listenConnection)
 				{
 					UdpMsg *msg = (UdpMsg *)(*it)->GetData();
 
+					cout << "processing queued message: " << (int)msg->hdr.type << endl;
+
 					if (msg->IsGameMsg())
 					{
 						sess->HandleMessage(listenConnection, (*it));
+
+						//sess has to release its own messages
 					}
 					else
 					{
 						_callbacks->OnMsg(listenConnection, msg, (*it)->GetSize());
+
+						(*it)->Release();
 					}
 
-					(*it)->Release();
-					sess->netplayManager->messageQueue.erase(it++);
+					
+					it = sess->netplayManager->ggpoMessageQueue.erase(it);
 				}
 				else
 				{
@@ -103,9 +111,11 @@ bool Sdr::OnLoopPoll(void *cookie)
 				else
 				{
 					_callbacks->OnMsg(listenConnection, msg, messages[0]->GetSize());
+
+					messages[0]->Release();
 				}
 
-				messages[0]->Release();
+				
 			}
 			else
 			{

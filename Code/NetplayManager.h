@@ -7,15 +7,22 @@
 #include <boost/thread.hpp>
 #include "MatchParams.h"
 #include <list>
+#include "VectorMath.h"
 
 struct MatchParams;
 struct GameSession;
 struct UdpMsg;
 
+struct DesyncCheckInfo
+{
+	V2d pos;
+};
+
+
 struct NetplayPlayer
 {
-	NetplayPlayer();
-	void Clear();
+	const static int MAX_DESYNC_CHECK_INFOS_STORED = 180;
+
 	CSteamID id;
 	bool isConnectedTo;
 	HSteamNetConnection connection;
@@ -25,6 +32,12 @@ struct NetplayPlayer
 	bool doneLoading;
 	bool readyToRun;
 	bool isHost;
+	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
+
+	NetplayPlayer();
+	void Clear();
+	void AddDesyncCheckInfo(DesyncCheckInfo &dci);
+	const DesyncCheckInfo & GetDesyncCheckInfo(int framesAgo);
 };
 
 struct NetplayManager
@@ -67,9 +80,10 @@ struct NetplayManager
 	ConnectionManager *connectionManager;
 	GameSession *game;
 
-	std::list<SteamNetworkingMessage_t*> messageQueue;
+	std::list<SteamNetworkingMessage_t*> ggpoMessageQueue;
+	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
 
-	
+
 
 	int playerIndex;
 
@@ -92,12 +106,15 @@ struct NetplayManager
 	void SendSignalToHost(int type);
 	void SendSignalToAllClients(int type);
 
+	void SendDesyncCheckToHost( int currGameFrame );
+
 
 
 	void ReceiveMessages();
 	HSteamNetConnection GetHostConnection();
 	
 	HSteamNetConnection GetConnection();
+	void AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci );
 	bool IsHost();
 	void Abort();
 	void Update();
@@ -109,6 +126,7 @@ struct NetplayManager
 	CSteamID GetHostID();
 	CSteamID GetMyID();
 	void SendUdpMsg(HSteamNetConnection con, UdpMsg *msg);
+	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
 
 	void BroadcastMapDetailsToLobby();
 	

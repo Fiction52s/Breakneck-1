@@ -22,7 +22,25 @@ void NetplayPlayer::Clear()
 	doneConnectingToAllPeers = false;
 	readyToRun = false;
 	isHost = false;
-	
+
+	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
+}
+
+void NetplayPlayer::AddDesyncCheckInfo(DesyncCheckInfo &dci)
+{
+	for (int i = NetplayPlayer::MAX_DESYNC_CHECK_INFOS_STORED - 1; i >= 1 ; --i)
+	{
+		desyncCheckInfoArray[i] = desyncCheckInfoArray[i - 1];
+	}
+	desyncCheckInfoArray[0] = dci;
+}
+
+
+
+const DesyncCheckInfo & NetplayPlayer::GetDesyncCheckInfo(int framesAgo)
+{
+	assert(framesAgo >= 0 && framesAgo < MAX_DESYNC_CHECK_INFOS_STORED);
+	return desyncCheckInfoArray[framesAgo];
 }
 
 NetplayManager::NetplayManager()
@@ -369,6 +387,8 @@ void NetplayManager::ReceiveMessages()
 {
 	SteamNetworkingMessage_t *messages[1];
 
+	//Session *sess = Session::GetSession();
+
 	for (int i = 0; i < 4; ++i)
 	{
 		if (i == playerIndex)
@@ -387,17 +407,19 @@ void NetplayManager::ReceiveMessages()
 					UdpMsg *msg = (UdpMsg *)messages[0]->GetData();
 
 					
-
+					
 					//cout << "received messageeee" << endl;
 					if (msg->IsGameMsg())
 					{
 						HandleMessage(netplayPlayers[i].connection, messages[0]);
-						messages[0]->Release();
+						//messages[0]->Release();
 					}
 					else
 					{
 						//ggpo message(s) that we received before our own ggpo is up and running
-						messageQueue.push_back(messages[0]);
+						ggpoMessageQueue.push_back(messages[0]);
+
+						//cout << "queueing message with type: " << (int)msg->hdr.type << endl;
 					}
 
 					
@@ -433,6 +455,7 @@ void NetplayManager::SendUdpMsg( HSteamNetConnection con, UdpMsg *msg)
 {
 	//(char *)entry.msg, entry.msg->PacketSize(), 0, entry.connection
 
+	//cout << "sending msg thru netplay manager: " << msg->hdr.type << endl;
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(con, (char*)msg, msg->PacketSize(), k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
@@ -737,6 +760,13 @@ HSteamNetConnection NetplayManager::GetConnection()
 	}
 }
 
+void NetplayManager::AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci )
+{
+	netplayPlayers[pIndex].AddDesyncCheckInfo(dci);
+	//netplayPlayers[pIndex].desyncCheckInfoArray[0] = 
+	
+}
+
 bool NetplayManager::IsHost()
 {
 	if (isSyncTest)
@@ -782,8 +812,8 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	UdpMsg *msg = (UdpMsg*)steamMsg->GetData();
 
 	
-
-	switch (msg->hdr.type)
+	uint8 hdrType = msg->hdr.type;
+	switch (hdrType)
 	{
 	case UdpMsg::Game_Done_Connecting:
 	{
@@ -844,11 +874,19 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		assert(!IsHost());
 		cout << "received a message to start the game from the host" << endl;
 		assert(action == A_WAITING_FOR_START_MESSAGE);
+
+		steamMsg->Release();
 		//receivedGameStartSignal = true;
 		RunMatch();
 		break;
 	}
 	}
+
+	if (hdrType != UdpMsg::Game_Host_Says_Start)
+	{
+		steamMsg->Release();
+	}
+	
 }
 
 void NetplayManager::OnLobbyChatMessageCallback(LobbyChatMsg_t *pCallback)
@@ -864,4 +902,52 @@ void NetplayManager::OnLobbyChatMessageCallback(LobbyChatMsg_t *pCallback)
 	msg.SetFromBytes(pvData);
 
 	HandleLobbyMessage(msg);
+}
+
+void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
+{
+	assert(!IsHost());
+
+	UdpMsg msg(UdpMsg::Game_Desync_Check);
+
+	msg.u.desync_info.x = netplayPlayers[playerIndex].GetDesyncCheckInfo(0).pos.x;
+	msg.u.desync_info.y = netplayPlayers[playerIndex].GetDesyncCheckInfo(0).pos.y;
+
+	msg.u.desync_info.frame_number = currGameFrame;
+
+	//cout << "sending "
+	HSteamNetConnection con = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (netplayPlayers[i].isHost)
+		{
+			if (i != playerIndex)
+			{
+				SendUdpMsg(netplayPlayers[i].connection, &msg);
+				cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
+			}
+			break;
+		}
+	}
+}
+
+const DesyncCheckInfo & NetplayManager::GetDesyncCheckInfo(SteamNetworkingMessage_t *steamMsg, int framesAgo)
+{
+	UdpMsg *msg = (UdpMsg*)steamMsg->GetData();
+
+	int targetPlayerIndex = -1;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == playerIndex)
+			continue;
+
+		if (netplayPlayers[i].connection == steamMsg->GetConnection())
+		{
+			targetPlayerIndex = i;
+		}
+	}
+
+	assert(targetPlayerIndex >= 0);
+
+	return netplayPlayers[targetPlayerIndex].GetDesyncCheckInfo( framesAgo );
 }

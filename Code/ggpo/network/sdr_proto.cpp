@@ -457,7 +457,7 @@ SdrProtocol::LogMsg(const char *prefix, UdpMsg *msg)
 		Log("%s input ack.\n", prefix);
 		break;
 	default:
-		std::cout << "unknown udpmsg type: " << msg->hdr.type << std::endl;
+		std::cout << prefix << "unknown udpmsg type: " << msg->hdr.type << std::endl;
 		ASSERT(FALSE && "Unknown UdpMsg type.");
 	}
 }

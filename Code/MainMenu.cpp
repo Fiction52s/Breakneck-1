@@ -1689,8 +1689,10 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 
 	if (style != p_style)
 	{
+		//sf::ContextSettings contextSettings( 0, 0, 0, 0)
+
 		window->create( sf::VideoMode(windowWidth, windowHeight), "Breakneck",
-			config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
+			config->GetData().windowStyle, sf::ContextSettings());
 		style = p_style;
 	}
 	else

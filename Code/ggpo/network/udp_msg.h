@@ -29,7 +29,8 @@ struct UdpMsg
 	  Game_Host_Says_Load,
 	  Game_Done_Connecting,
 	  Game_Done_Loading,
-	  Game_Host_Says_Start	
+	  Game_Host_Says_Start,
+	  Game_Desync_Check,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -92,6 +93,13 @@ struct UdpMsg
          int               ack_frame:31;
       } input_ack;
 
+	  struct
+	  {
+		  double x;
+		  double y;
+		  uint32 frame_number;
+	  } desync_info;
+
    } u;
 
 public:
@@ -118,6 +126,7 @@ public:
 	  case Game_Host_Says_Load: return 0;
 	  case Game_Done_Loading: return 0;
 	  case Game_Host_Says_Start: return 0;
+	  case Game_Desync_Check: return sizeof(u.desync_info);
 	  
       }
 
@@ -127,10 +136,11 @@ public:
 	   
    bool IsGameMsg()
    {
-	   return hdr.type == UdpMsg::Game_Done_Loading
-		   || hdr.type == UdpMsg::Game_Host_Says_Load
-		   || hdr.type == UdpMsg::Game_Host_Says_Start
-		   || hdr.type == UdpMsg::Game_Done_Connecting;
+	   return hdr.type == Game_Done_Loading
+		   || hdr.type == Game_Host_Says_Load
+		   || hdr.type == Game_Host_Says_Start
+		   || hdr.type == Game_Done_Connecting
+		   || hdr.type == Game_Desync_Check;
    }
 
    UdpMsg(MsgType t) { hdr.type = (uint8)t; }

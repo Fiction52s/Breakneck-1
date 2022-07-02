@@ -447,6 +447,7 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	Session(SessionType p_sessType, const boost::filesystem::path &p_filePath);
 	virtual ~Session();
+	void AddDesyncCheckInfo();
 	void UpdateJustGGPO();
 	void SimulateGGPOGameFrame();
 	void CleanupGates();
@@ -863,6 +864,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupPokeTriangleScreenGroup();
 	virtual int GetBonusType() { return BONUSTYPE_NONE; }
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
+	void ProcessDesyncMessageQueue();
 };
 
 #endif

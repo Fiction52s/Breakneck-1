@@ -61,8 +61,7 @@
 #include "GameMode.h"
 
 #include "steam\steam_api.h"
-
-
+#include "ggpo\network\udp_msg.h"
 
 using namespace sf;
 using namespace std;
@@ -6944,6 +6943,32 @@ void Session::CleanupGGPO()
 	delete[] ggpoPlayers;
 }
 
+void Session::AddDesyncCheckInfo()
+{
+	if (netplayManager != NULL)
+	{
+		Actor *p;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = players[i];
+			if (p != NULL)
+			{
+				DesyncCheckInfo dci;
+				dci.pos = p->position;
+				netplayManager->AddDesyncCheckInfo(i, dci);
+			}
+		}
+
+		if (!netplayManager->IsHost())
+		{
+			if (totalGameFrames % 10 == 0)
+			{
+				netplayManager->SendDesyncCheckToHost(totalGameFrames);
+			}	
+		}
+	}
+}
+
 bool Session::GGPORunGameModeUpdate()
 {
 	//if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
@@ -6970,10 +6995,16 @@ bool Session::GGPORunGameModeUpdate()
 	if (pauseFrames > 0)
 	{
 		HitlagUpdate(); //the full update while in hitlag
+
+		ProcessDesyncMessageQueue(); //netplay only
+
+		AddDesyncCheckInfo(); //netplay only
+
 		ggpo_advance_frame(ggpo);
 		return true;
 	}
 
+	
 	//RepPlayerUpdateInput();
 
 	//RecPlayerRecordFrame();
@@ -6983,6 +7014,10 @@ bool Session::GGPORunGameModeUpdate()
 	ActiveSequenceUpdate();
 	if (switchGameState)
 		return true;
+
+	ProcessDesyncMessageQueue(); //netplay only
+
+	AddDesyncCheckInfo(); //netplay only
 
 	UpdatePlayersPrePhysics();
 
@@ -7776,12 +7811,87 @@ void Session::CleanupPokeTriangleScreenGroup()
 	}
 }
 
-void Session::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg)
+void Session::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *steamMsg)
 {
-	netplayManager->HandleMessage(connection, msg);
+	assert(netplayManager != NULL);
+
+	UdpMsg *msg = (UdpMsg*)steamMsg->GetData();
+
+	bool handled = false;
+
+	switch (msg->hdr.type)
+	{
+	case UdpMsg::Game_Desync_Check:
+	{
+		if (netplayManager->IsHost())
+		{
+			cout << "pushing to desync queue" << endl;
+			//cout << "catch and release message" << endl;
+			netplayManager->desyncMessageQueue.push_back(steamMsg);
+			//steamMsg->Release();
+			handled = true;
+			break;
+		}
+
+
+		steamMsg->Release();
+		handled = true;
+		break;
+	}
+	}
+
+	if (!handled)
+	{
+		netplayManager->HandleMessage(connection, steamMsg);
+	}
+
+	
+	
 }
 
 bool Session::IsGGPOReady()
 {
 	return ggpoReady;
+}
+
+void Session::ProcessDesyncMessageQueue()
+{
+	if (netplayManager == NULL)
+	{
+		return;
+	}
+
+	for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
+	{
+		cout << "processing desync check" << endl;
+
+		UdpMsg *msg = (UdpMsg*)(*it)->GetData();
+		int frameDifference = totalGameFrames - msg->u.desync_info.frame_number;
+
+		if (frameDifference >= 0)
+		{
+			const DesyncCheckInfo & dci = netplayManager->GetDesyncCheckInfo((*it), frameDifference);
+			if (msg->u.desync_info.x == dci.pos.x && msg->u.desync_info.y == dci.pos.y)
+			{
+				cout << "frameDifference: " << frameDifference << endl;
+				//no desync!
+				cout << "no desync" << endl;
+			}
+			else
+			{
+				cout << "DESYNC DETECTED" << endl;
+			}
+		}
+		else
+		{
+			cout << "weird desync check message from the future" << endl;
+			
+			//sync message from the future who cares for now LOL
+		}
+
+		(*it)->Release();
+	}
+
+	netplayManager->desyncMessageQueue.clear();
+	
 }
