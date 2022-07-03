@@ -789,7 +789,7 @@ void NetplayManager::AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci )
 
 void NetplayManager::RemoveDesyncCheckInfos(int numRollbackFrames)
 {
-	int numRemovals = numRollbackFrames -1;
+	int numRemovals = numRollbackFrames;
 	for (int i = 0; i < 4; ++i)
 	{
 		for (int r = 0; r < numRemovals; ++r)

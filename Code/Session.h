@@ -798,6 +798,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void RecGhostRecordFrame() {}
 	virtual void UpdateReplayGhostSprites() {}
 	bool RunGameModeUpdate();
+	bool GGPOFrozenGameModeUpdate();
 	bool FrozenGameModeUpdate();
 	bool SequenceGameModeUpdate();
 	void DrawGameSequence(sf::RenderTarget *target);

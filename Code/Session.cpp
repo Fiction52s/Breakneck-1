@@ -6586,6 +6586,51 @@ bool Session::RunGameModeUpdate()
 	return true;
 }
 
+bool Session::GGPOFrozenGameModeUpdate()
+{
+	while (accumulator >= TIMESTEP)
+	{
+		if (!OneFrameModeUpdate())
+		{
+			break;
+		}
+
+		//AddDesyncCheckInfo(); //netplay only
+
+		//ProcessDesyncMessageQueue(); //netplay only
+
+		
+
+		UpdateControllers();
+
+		ActiveSequenceUpdate();
+
+		SteamAPI_RunCallbacks();
+		fader->Update();
+		swiper->Update();
+
+		pokeTriangleScreenGroup->Update();
+
+		ggpo_advance_frame(ggpo); //I think you get a weird ggpo assert on framecount without this. game freezes on game ending
+
+		if (gameState != FROZEN)
+		{
+			break;
+		}
+
+		accumulator -= TIMESTEP;
+
+		
+	}
+
+	if (gameState != FROZEN)
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool Session::FrozenGameModeUpdate()
 {
 	while (accumulator >= TIMESTEP)
@@ -6964,7 +7009,7 @@ void Session::AddDesyncCheckInfo()
 
 		if (!netplayManager->IsHost())
 		{
-			if (totalGameFrames % 10 == 0 && totalGameFrames > 0)
+			if (totalGameFrames % 2 == 0 && totalGameFrames > 0)
 			{
 				netplayManager->SendDesyncCheckToHost(totalGameFrames);
 			}	
@@ -6999,9 +7044,9 @@ bool Session::GGPORunGameModeUpdate()
 	{
 		HitlagUpdate(); //the full update while in hitlag
 
-		ProcessDesyncMessageQueue(); //netplay only
-
 		AddDesyncCheckInfo(); //netplay only
+
+		ProcessDesyncMessageQueue(); //netplay only
 
 		ggpo_advance_frame(ggpo);
 		return true;
@@ -7018,9 +7063,9 @@ bool Session::GGPORunGameModeUpdate()
 	if (switchGameState)
 		return true;
 
-	ProcessDesyncMessageQueue(); //netplay only
-
 	AddDesyncCheckInfo(); //netplay only
+
+	ProcessDesyncMessageQueue(); //netplay only
 
 	UpdatePlayersPrePhysics();
 
@@ -7327,7 +7372,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	
 	if ( netplayManager != NULL)
 	{
-		cout << "rollback of " << rollbackFrames << endl;
+		//cout << "rollback of " << rollbackFrames << endl;
 		//rollback the desync checker system also
 		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
 	}

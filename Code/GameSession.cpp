@@ -2485,10 +2485,19 @@ int GameSession::Run()
 			{
 			}
 
-			if (!FrozenGameModeUpdate())
+			if (netplayManager != NULL)
 			{
-				continue;
+				if (!GGPOFrozenGameModeUpdate())
+					continue;
 			}
+			else
+			{
+				if (!FrozenGameModeUpdate())
+				{
+					continue;
+				}
+			}
+			
 
 			Sprite preTexSprite;
 			preTexSprite.setTexture(preScreenTex->getTexture());
