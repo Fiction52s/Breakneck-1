@@ -7003,6 +7003,19 @@ void Session::AddDesyncCheckInfo()
 				dci.pos = p->position;
 				dci.action = p->action;
 				dci.actionFrame = p->frame;
+				dci.gameFrame = totalGameFrames;
+
+				//just for testing
+				if (i == 0)
+				{
+					dci.health = ((FightMode*)gameMode)->data.p0Health;
+				}
+				else if (i == 1)
+				{
+					dci.health = ((FightMode*)gameMode)->data.p1Health;
+				}
+
+				
 				netplayManager->AddDesyncCheckInfo(i, dci);
 			}
 		}
@@ -7337,7 +7350,7 @@ bool Session::SaveState(unsigned char **buffer,
 	tempBuf += sizeof(SaveGameState);
 	gameMode->StoreBytes(tempBuf);
 	
-	ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
+	//ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
 	int offset = 0;//sizeof(SaveGameState) + sizeof(ReachEnemyBaseMode::ReachEnemyBaseModeData);//64;//sizeof(SaveGameState);
@@ -7372,7 +7385,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	
 	if ( netplayManager != NULL)
 	{
-		//cout << "rollback of " << rollbackFrames << endl;
+		cout << "rollback of " << rollbackFrames << endl;
 		//rollback the desync checker system also
 		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
 	}
@@ -7948,6 +7961,8 @@ void Session::ProcessDesyncMessageQueue()
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
 
 				netplayManager->desyncDetected = true;
+
+				netplayManager->DumpDesyncInfo();
 				//cout << "TOOK A SCREENSHOT" << endl;
 				//tookScreenShot = true;
 				//Image im = window->capture();

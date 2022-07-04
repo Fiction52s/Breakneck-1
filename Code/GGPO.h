@@ -150,7 +150,7 @@ struct PState
 	int hitstunFrames;
 	int setHitstunFrames;
 	int invincibleFrames;
-	HitboxInfo *receivedHit;
+	HitboxInfo receivedHit;
 	//sf::Vector2<double> bubblePos[5];
 	double xOffset;
 	int action;
@@ -360,6 +360,9 @@ struct PState
 	bool bouncedFromKill;
 
 	int numFramesToLive;
+
+	int shieldPushbackFrames;
+	bool shieldPushbackRight;
 	//HitboxInfo currVSHitboxInfo;
 };
 

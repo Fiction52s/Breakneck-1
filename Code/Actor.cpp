@@ -377,6 +377,9 @@ void Actor::PopulateState(PState *ps)
 	ps->directionalInputFreezeFrames = directionalInputFreezeFrames;
 
 	ps->numFramesToLive = numFramesToLive;
+
+	ps->shieldPushbackFrames = shieldPushbackFrames;
+	ps->shieldPushbackRight = shieldPushbackRight;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -606,6 +609,9 @@ void Actor::PopulateFromState(PState *ps)
 	directionalInputFreezeFrames = ps->directionalInputFreezeFrames;
 
 	numFramesToLive = ps->numFramesToLive;
+
+	shieldPushbackFrames = ps->shieldPushbackFrames;
+	shieldPushbackRight = ps->shieldPushbackRight;
 }
 
 
@@ -4461,7 +4467,7 @@ void Actor::Respawn( bool setStartPos )
 	hitlagFrames = 0;
 	hitstunFrames = 0;
 	invincibleFrames = 0;
-	receivedHit = NULL;
+	receivedHit.hType = HitboxInfo::NO_HITBOX;
 	speedParticleCounter = 1;
 	speedLevel = 0;
 	currentSpeedBar = 0;//60;
@@ -4931,12 +4937,12 @@ bool Actor::IsActionAirBlock(int a)
 
 void Actor::ProcessReceivedHit()
 {
-	if (receivedHit != NULL)
+	if (receivedHit.hType != HitboxInfo::NO_HITBOX)
 	{
 		assert(action != DEATH);
 
 		attackingHitlag = false;
-		hitlagFrames = receivedHit->hitlagFrames + receivedHit->extraDefenderHitlag;
+		hitlagFrames = receivedHit.hitlagFrames + receivedHit.extraDefenderHitlag;
 
 		
 		/*else
@@ -4954,7 +4960,7 @@ void Actor::ProcessReceivedHit()
 		{
 			if (IsActionGroundBlock(action))
 			{
-				blockstunFrames = receivedHit->hitstunFrames * blockstunFactor;
+				blockstunFrames = receivedHit.hitstunFrames * blockstunFactor;
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
@@ -4964,67 +4970,25 @@ void Actor::ProcessReceivedHit()
 				
 				if (otherPos.x < position.x)
 				{
-					groundSpeed += receivedHit->knockback * shieldKBFactor;
+					groundSpeed += receivedHit.knockback * shieldKBFactor;
 				}
 				else
 				{
-					groundSpeed -= receivedHit->knockback * shieldKBFactor;//kbImpulse;
+					groundSpeed -= receivedHit.knockback * shieldKBFactor;//kbImpulse;
 				}
 			}
 			else if (IsActionAirBlock(action))
 			{
-				blockstunFrames = receivedHit->hitstunFrames / 2;
+				blockstunFrames = receivedHit.hitstunFrames / 2;
 				invincibleFrames = 0;
 
 				V2d otherPos = receivedHitPosition;
 
 				double shieldKBFactor = 1.0;//2.0;//.5;
 
-				V2d kb = CalcKnockback(receivedHit) * shieldKBFactor;
+				V2d kb = CalcKnockback(&receivedHit) * shieldKBFactor;
 
 				velocity = kb;
-
-				//RestoreAirOptions();
-
-				/*if (action == AIRBLOCKDOWN)
-				{
-					if ((velocity.x > 0 && kb.x > 0) || (velocity.x < 0 && kb.x < 0 ))
-					{
-						velocity.y = kb.y;
-						velocity.x += kb.x;
-					}
-					else
-					{
-						velocity = kb;
-					}
-				}
-				else
-				{
-					if (dot(velocity, kb) > 0)
-					{
-						velocity += kb;
-					}
-					else*/
-					//{
-						//velocity = kb;
-					//}
-				//}
-
-				
-
-				
-
-
-				//if (receivedHit->knockback > 0)
-				//{
-				//	velocity = kb * shieldKBFactor;//eceivedHit->GetKnockbackVector() 
-				//		//* shieldKBFactor;
-				//}
-				//else
-				//{
-				//	velocity.x *= (1 - receivedHit->drainX);
-				//	velocity.y *= (1 - receivedHit->drainY);
-				//}
 			}
 
 			if (receivedHitReaction == FULLBLOCK)
@@ -5075,7 +5039,7 @@ void Actor::ProcessReceivedHit()
 		}
 		}
 
-		receivedHit = NULL;
+		receivedHit.hType = HitboxInfo::NO_HITBOX;
 	}
 }
 
@@ -5087,16 +5051,16 @@ void Actor::ReactToBeingHit()
 	}
 
 	blockstunFrames = 0;
-	hitstunFrames = receivedHit->hitstunFrames;
+	hitstunFrames = receivedHit.hitstunFrames;
 	setHitstunFrames = hitstunFrames;
-	hitstunGravMultiplier = receivedHit->gravMultiplier;
-	if (receivedHit->invincibleFrames == -1)
+	hitstunGravMultiplier = receivedHit.gravMultiplier;
+	if (receivedHit.invincibleFrames == -1)
 	{
-		invincibleFrames = receivedHit->hitstunFrames + 20;//25;//receivedHit->damage;
+		invincibleFrames = receivedHit.hitstunFrames + 20;//25;//receivedHit->damage;
 	}
 	else
 	{
-		invincibleFrames = receivedHit->invincibleFrames;
+		invincibleFrames = receivedHit.invincibleFrames;
 	}
 
 	ActivateSound(PlayerSounds::S_HURT);
@@ -5106,7 +5070,7 @@ void Actor::ReactToBeingHit()
 		FightMode *fm = (FightMode*)sess->gameMode;
 		if (actorIndex == 0)
 		{
-			fm->data.p0Health -= receivedHit->damage;
+			fm->data.p0Health -= receivedHit.damage;
 			if (fm->data.p0Health < 0)
 			{
 				fm->data.p0Health = 0;
@@ -5115,7 +5079,7 @@ void Actor::ReactToBeingHit()
 		else if (actorIndex == 1)
 		{
 			//cout << "p2 taking: " << receivedHit->damage;// << endl;
-			fm->data.p1Health -= receivedHit->damage;
+			fm->data.p1Health -= receivedHit.damage;
 
 			//cout << " health is now: " << fm->data.p1Health << endl;
 			if (fm->data.p1Health < 0)
@@ -5124,11 +5088,11 @@ void Actor::ReactToBeingHit()
 	}
 	else
 	{
-		int damage = receivedHit->damage;
+		int damage = receivedHit.damage;
 
 		int damageUpgrades = 0;
 
-		switch (receivedHit->hType)
+		switch (receivedHit.hType)
 		{
 		case HitboxInfo::BLUE:
 		{
@@ -5231,7 +5195,7 @@ void Actor::ReactToBeingHit()
 				{
 					position = op;
 
-					DrainTimer(receivedHit->damage);
+					DrainTimer(receivedHit.damage);
 
 					//apply extra damage since you cant stand up
 				}
@@ -5262,7 +5226,7 @@ void Actor::ReactToBeingHit()
 
 					//owner->powerWheel->Damage( receivedHit->damage );
 
-					DrainTimer(receivedHit->damage);
+					DrainTimer(receivedHit.damage);
 
 					//apply extra damage since you cant stand up
 				}
@@ -5846,10 +5810,10 @@ void Actor::ProcessHitGrass()
 	{
 		if (invincibleFrames == 0)
 		{
-			receivedHit = &hitGrassHitInfo;
+			receivedHit = hitGrassHitInfo;
 			ReactToBeingHit();
 			invincibleFrames += 30;
-			receivedHit = NULL;
+			receivedHit.hType = HitboxInfo::NO_HITBOX;
 		}
 	}
 }
@@ -13408,13 +13372,13 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 		currInput.Y = false; //need to go over toggling again and make sure it works.
 	}
 
-	if (receivedHit->knockback > 0)
+	if (receivedHit.knockback > 0)
 	{
-		groundSpeed = receivedHit->GetKnockbackVector().x;
+		groundSpeed = receivedHit.GetKnockbackVector().x;
 	}
 	else
 	{
-		groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+		groundSpeed *= (1 - receivedHit.drainX) * abs(grindNorm.y) + (1 - receivedHit.drainY) * abs(grindNorm.x);
 	}
 
 	frame = 0;
@@ -13444,14 +13408,14 @@ void Actor::HitOutOfCeilingGrindIntoAir()
 	//SetAction( JUMP );
 	SetAction(AIRHITSTUN);
 	frame = 0;
-	if (receivedHit->knockback > 0)
+	if (receivedHit.knockback > 0)
 	{
-		velocity = receivedHit->GetKnockbackVector();
+		velocity = receivedHit.GetKnockbackVector();
 	}
 	else
 	{
-		velocity.x *= (1 - receivedHit->drainX);
-		velocity.y *= (1 - receivedHit->drainY);
+		velocity.x *= (1 - receivedHit.drainX);
+		velocity.y *= (1 - receivedHit.drainY);
 	}
 
 	if (toggleGrindInput)
@@ -13474,7 +13438,7 @@ bool Actor::TryHandleHitWhileRewindBoosted()
 	if (rewindOnHitFrames > 0)
 	{
 		SetAirPos(rewindBoosterPos, facingRight);
-		receivedHit = NULL;
+		receivedHit.hType = HitboxInfo::NO_HITBOX;
 		invincibleFrames = 0;
 		rightWire->Reset();
 		leftWire->Reset();
@@ -13498,7 +13462,7 @@ bool Actor::TryHandleHitInRewindWater()
 		position = waterEntrancePosition;
 		b.rh = waterEntrancePhysHeight;
 		invincibleFrames = 0;
-		receivedHit = NULL;
+		receivedHit.hType = HitboxInfo::NO_HITBOX;
 		rightWire->Reset();
 		leftWire->Reset();
 
@@ -13564,13 +13528,13 @@ void Actor::HitOutOfGrind()
 	SetAction(GROUNDHITSTUN);
 	frame = 0;
 
-	if (receivedHit->knockback > 0)
+	if (receivedHit.knockback > 0)
 	{
-		groundSpeed = receivedHit->GetKnockbackVector().x;
+		groundSpeed = receivedHit.GetKnockbackVector().x;
 	}
 	else
 	{
-		groundSpeed *= (1 - receivedHit->drainX) * abs(grindNorm.y) + (1 - receivedHit->drainY) * abs(grindNorm.x);
+		groundSpeed *= (1 - receivedHit.drainX) * abs(grindNorm.y) + (1 - receivedHit.drainY) * abs(grindNorm.x);
 	}
 
 	if (toggleGrindInput)
@@ -13596,28 +13560,28 @@ void Actor::HitWhileGrounded()
 	SetAction(GROUNDHITSTUN);
 	frame = 0;
 
-	if (receivedHit->knockback > 0)
+	if (receivedHit.knockback > 0)
 	{
-		groundSpeed = receivedHit->GetKnockbackVector().x;
+		groundSpeed = receivedHit.GetKnockbackVector().x;
 	}
 	else
 	{
-		groundSpeed *= (1 - receivedHit->drainX) * abs(currNormal.y) + (1 - receivedHit->drainY) * abs(currNormal.x);
+		groundSpeed *= (1 - receivedHit.drainX) * abs(currNormal.y) + (1 - receivedHit.drainY) * abs(currNormal.x);
 	}
 }
 
-V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
+V2d Actor::CalcKnockback(HitboxInfo *hit)
 {
 	double upwardsMult = 2.0;
 
 	V2d knockbackVec;
-	if (receivedHit->knockback > 0)
+	if (hit->knockback > 0)
 	{
 		V2d diff = position - receivedHitPosition;
-		if (receivedHit->hitPosType == HitboxInfo::OMNI)
+		if (hit->hitPosType == HitboxInfo::OMNI)
 		{
 			V2d hitDir = normalize(diff);
-			knockbackVec = hitDir * receivedHit->knockback;
+			knockbackVec = hitDir * hit->knockback;
 			if (knockbackVec.y < 0)
 			{
 				knockbackVec.y *= upwardsMult;
@@ -13625,7 +13589,7 @@ V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
 		}
 		else
 		{
-			knockbackVec = receivedHit->GetKnockbackVector();
+			knockbackVec = hit->GetKnockbackVector();
 
 			if (receivedHitPlayer == NULL) //enemies only
 			{
@@ -13634,8 +13598,8 @@ V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
 					knockbackVec.y *= upwardsMult;
 				}
 
-				if ( receivedHit->reversableKnockback && ((diff.x < 0 && !receivedHit->flipHorizontalKB)
-					|| (diff.x > 0 && receivedHit->flipHorizontalKB)))
+				if (hit->reversableKnockback && ((diff.x < 0 && !hit->flipHorizontalKB)
+					|| (diff.x > 0 && hit->flipHorizontalKB)))
 				{
 					knockbackVec.x = -knockbackVec.x;
 				}
@@ -13644,8 +13608,8 @@ V2d Actor::CalcKnockback(HitboxInfo *receivedHit)
 	}
 	else
 	{
-		knockbackVec.x *= (1 - receivedHit->drainX);
-		knockbackVec.y *= (1 - receivedHit->drainY);
+		knockbackVec.x *= (1 - hit->drainX);
+		knockbackVec.y *= (1 - hit->drainY);
 	}
 
 	return knockbackVec;
@@ -13662,7 +13626,7 @@ void Actor::HitWhileAerial()
 	SetAction(AIRHITSTUN);
 	frame = 0;
 
-	velocity = CalcKnockback(receivedHit);
+	velocity = CalcKnockback(&receivedHit);
 }
 
 void Actor::ApplyBlockFriction()
@@ -18164,9 +18128,9 @@ void Actor::ApplyHit( HitboxInfo *info,
 	//if (invincibleFrames == 0)
 	
 	{
-		if (receivedHit == NULL || info->damage > receivedHit->damage)
+		if (receivedHit.hType == HitboxInfo::NO_HITBOX || info->damage > receivedHit.damage)
 		{
-			receivedHit = info;
+			receivedHit = *info;
 			receivedHitPlayer = attackingPlayer;
 			//receivedHitEnemy = attackingEnemy;
 			receivedHitReaction = res;

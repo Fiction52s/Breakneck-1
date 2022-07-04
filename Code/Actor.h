@@ -709,7 +709,7 @@ struct Actor : QuadTreeCollider,
 	int hitstunFrames;
 	int setHitstunFrames;
 	int invincibleFrames;
-	HitboxInfo *receivedHit;
+	HitboxInfo receivedHit;
 	HitboxInfo hitGrassHitInfo;
 	
 	

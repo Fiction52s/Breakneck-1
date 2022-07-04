@@ -19,10 +19,14 @@ struct DesyncCheckInfo
 	{
 		action = 0;
 		actionFrame = 0;
+		health = -1;
+		gameFrame = -1;
 	}
 	V2d pos;
 	uint32 action;
 	uint32 actionFrame;
+	int health;
+	int gameFrame;
 };
 
 
@@ -46,6 +50,7 @@ struct NetplayPlayer
 	void AddDesyncCheckInfo(DesyncCheckInfo &dci);
 	void RemoveDesyncCheckInfo();
 	const DesyncCheckInfo & GetDesyncCheckInfo(int framesAgo);
+	void DumpDesyncInfo();
 };
 
 struct NetplayManager
@@ -137,6 +142,7 @@ struct NetplayManager
 	CSteamID GetMyID();
 	void SendUdpMsg(HSteamNetConnection con, UdpMsg *msg);
 	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
+	void DumpDesyncInfo();
 
 	void BroadcastMapDetailsToLobby();
 	

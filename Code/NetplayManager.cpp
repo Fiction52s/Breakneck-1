@@ -52,6 +52,16 @@ const DesyncCheckInfo & NetplayPlayer::GetDesyncCheckInfo(int framesAgo)
 	return desyncCheckInfoArray[framesAgo];
 }
 
+void NetplayPlayer::DumpDesyncInfo()
+{
+	cout << "dumping for player: " << index << endl;
+	for (int i = 0; i < MAX_DESYNC_CHECK_INFOS_STORED; ++i)
+	{
+		DesyncCheckInfo &dci = desyncCheckInfoArray[i];
+		cout << "i: " << i << ", frame: " << dci.gameFrame << ", pos: " << dci.pos.x << ", " << dci.pos.y << ", action: " << dci.action << ", actionframe: " << dci.actionFrame << ", health: " << dci.health << "\n";
+	}
+}
+
 NetplayManager::NetplayManager()
 {
 	lobbyManager = NULL;
@@ -958,6 +968,8 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 	msg.u.desync_info.player_action = dci.action;
 	msg.u.desync_info.player_action_frame = dci.actionFrame;
 
+	msg.u.desync_info.health = dci.health;
+
 	//cout << "sending "
 	HSteamNetConnection con = 0;
 	for (int i = 0; i < 4; ++i)
@@ -967,7 +979,7 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 			if (i != playerIndex)
 			{
 				SendUdpMsg(netplayPlayers[i].connection, &msg);
-				cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
+				//cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
 			}
 			break;
 		}
@@ -994,4 +1006,12 @@ const DesyncCheckInfo & NetplayManager::GetDesyncCheckInfo(SteamNetworkingMessag
 	assert(targetPlayerIndex >= 0);
 
 	return netplayPlayers[targetPlayerIndex].GetDesyncCheckInfo( framesAgo );
+}
+
+void NetplayManager::DumpDesyncInfo()
+{
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		netplayPlayers[i].DumpDesyncInfo();
+	}
 }

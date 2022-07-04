@@ -87,6 +87,7 @@ struct HitboxInfo
 		WIREHITBLUE,
 		SCORPIONSTRIKE,
 		COMBO,
+		NO_HITBOX,
 		Count
 	};
 
@@ -104,7 +105,7 @@ struct HitboxInfo
 	};
 
 	HitboxInfo()
-		:knockback(0),
+		/*:knockback(0),
 		drainX(0), drainY(0), hitstunFrames(1), hitlagFrames(1), damage(10),
 		freezeDuringStun(false), hType(NORMAL), hitToSidePlayerIsOn(true),
 		invincibleFrames( -1 ), gravMultiplier( 1.0 ),
@@ -117,11 +118,37 @@ struct HitboxInfo
 		flipHorizontalKB( false ),
 		flipVerticalKB( false ),
 		reversableKnockback(true ),
-		sensor(false)
+		sensor(false)*/
 	{
+		Clear();
 		kbDir = normalize(V2d(1, -1));
 		//gravMultiplier = .5;
 	};
+
+	void Clear()
+	{
+		knockback = 0;
+		drainX = 0;
+		drainY = 0;
+		hitstunFrames = 1;
+		hitlagFrames = 1;
+		damage = 10;
+		freezeDuringStun = false;
+		hType = NORMAL;
+		hitToSidePlayerIsOn = true;
+		invincibleFrames = -1;
+		gravMultiplier = 1.0;
+		extraDefenderHitlag = 0;
+		hitBlockCancelDelay = 0;
+		hitPosType = AIRFORWARD;
+		canBeBlocked = true;
+		canBeParried = true;
+		hitsThroughInvincibility = false;
+		flipHorizontalKB = false;
+		flipVerticalKB = false;
+		reversableKnockback = true;
+		sensor = false;
+	}
 
 	static bool IsAirType(HitPosType hpt);
 	static void SetupHitboxLevelInfo(

@@ -2393,6 +2393,8 @@ int GameSession::Run()
 					cout << "esc is pressed. ending match." << endl;
 					quit = true;
 					returnVal = GR_EXITLEVEL;
+
+					netplayManager->DumpDesyncInfo();
 					break;
 				}
 
@@ -2400,6 +2402,8 @@ int GameSession::Run()
 				{
 					quit = true;
 					returnVal = GR_EXITLEVEL;
+
+					netplayManager->DumpDesyncInfo();
 					break;
 				}
 
@@ -2487,6 +2491,8 @@ int GameSession::Run()
 
 				quit = true;
 				returnVal = GR_EXITLEVEL;
+
+				netplayManager->Abort();
 			}
 
 		}
@@ -2501,6 +2507,7 @@ int GameSession::Run()
 
 			if (netplayManager != NULL)
 			{
+				ggpo_idle(ggpo, 5);
 				if (!GGPOFrozenGameModeUpdate())
 					continue;
 			}
