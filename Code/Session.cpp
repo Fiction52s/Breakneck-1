@@ -7946,6 +7946,12 @@ void Session::ProcessDesyncMessageQueue()
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
 				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
+
+				netplayManager->desyncDetected = true;
+				//cout << "TOOK A SCREENSHOT" << endl;
+				//tookScreenShot = true;
+				//Image im = window->capture();
+				//im.saveToFile( "Resources/Debug/desync.png" );//+ string(dt) + ".png" );
 			}
 		}
 		else

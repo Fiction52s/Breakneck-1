@@ -59,6 +59,8 @@ NetplayManager::NetplayManager()
 	loadThread = NULL;
 	game = NULL;
 
+	desyncDetected = false;
+
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
@@ -137,6 +139,8 @@ void NetplayManager::Abort()
 	}
 
 	numPlayers = -1;
+
+	desyncDetected = false;
 
 	action = A_IDLE;
 

@@ -92,7 +92,7 @@ struct NetplayManager
 	std::list<SteamNetworkingMessage_t*> ggpoMessageQueue;
 	std::list<SteamNetworkingMessage_t*> desyncMessageQueue;
 
-
+	bool desyncDetected;
 
 	int playerIndex;
 

@@ -2475,6 +2475,20 @@ int GameSession::Run()
 				debugScreenRecorder->Update(preTex0);
 
 			window->draw(preTexSprite);//, &timeSlowShader );
+
+			if (netplayManager != NULL && netplayManager->desyncDetected)
+			{
+				sf::Vector2u windowSize = window->getSize();
+				sf::Texture texture;
+				texture.create(windowSize.x, windowSize.y);
+				texture.update(*window);
+				sf::Image screenshot = texture.copyToImage();
+				screenshot.saveToFile("Resources/Debug/desync.png");
+
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+			}
+
 		}
 		else if(gameState == FROZEN )
 		{
