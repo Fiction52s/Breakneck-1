@@ -5114,10 +5114,10 @@ void Actor::ReactToBeingHit()
 		}
 		else if (actorIndex == 1)
 		{
-			cout << "p2 taking: " << receivedHit->damage;// << endl;
+			//cout << "p2 taking: " << receivedHit->damage;// << endl;
 			fm->data.p1Health -= receivedHit->damage;
 
-			cout << " health is now: " << fm->data.p1Health << endl;
+			//cout << " health is now: " << fm->data.p1Health << endl;
 			if (fm->data.p1Health < 0)
 				fm->data.p1Health = 0;
 		}
