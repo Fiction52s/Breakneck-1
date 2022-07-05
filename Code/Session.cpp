@@ -6991,8 +6991,11 @@ void Session::CleanupGGPO()
 void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;
+
+	
 	if (netplayManager != NULL)
 	{
+
 		Actor *p;
 		for (int i = 0; i < 4; ++i)
 		{
@@ -7015,6 +7018,11 @@ void Session::AddDesyncCheckInfo()
 					dci.health = ((FightMode*)gameMode)->data.p1Health;
 				}
 
+				if (!netplayManager->IsHost())
+				{
+					cout << "add desync info for frame: " << totalGameFrames << ", pos: " << dci.pos.x << ", " << dci.pos.y << ", action: " << dci.action
+						<< ", actionframe: " << dci.actionFrame << endl;
+				}
 				
 				netplayManager->AddDesyncCheckInfo(i, dci);
 			}
@@ -7367,6 +7375,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	bytes += saveSize;
 	gameMode->SetFromBytes(bytes);
 
+	int oldTotalGameFrames = totalGameFrames;
 	int rollbackFrames = totalGameFrames - currSaveState->totalGameFrames;
 
 	
@@ -7385,7 +7394,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	
 	if ( netplayManager != NULL)
 	{
-		cout << "rollback of " << rollbackFrames << endl;
+		cout << "rollback of " << rollbackFrames << " from " << oldTotalGameFrames << " back to " << totalGameFrames << endl;
 		//rollback the desync checker system also
 		netplayManager->RemoveDesyncCheckInfos(rollbackFrames);
 	}
@@ -7945,7 +7954,8 @@ void Session::ProcessDesyncMessageQueue()
 			//cout << "frameDifference: " << frameDifference << endl;
 			const DesyncCheckInfo & dci = netplayManager->GetDesyncCheckInfo((*it), frameDifference);
 			if (msg->u.desync_info.x == dci.pos.x && msg->u.desync_info.y == dci.pos.y && msg->u.desync_info.player_action == dci.action
-				&& msg->u.desync_info.player_action_frame == dci.actionFrame )
+				&& msg->u.desync_info.player_action_frame == dci.actionFrame
+				&& msg->u.desync_info.health == dci.health )
 			{
 				//no desync!
 				/*cout << "no desync comparing: " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
@@ -7959,6 +7969,7 @@ void Session::ProcessDesyncMessageQueue()
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
 				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
+				cout << "my health: " << dci.health << ", their health: " << msg->u.desync_info.health << endl;
 
 				netplayManager->desyncDetected = true;
 

@@ -610,6 +610,7 @@ void Actor::PopulateFromState(PState *ps)
 
 	numFramesToLive = ps->numFramesToLive;
 
+	//these aren't even used for anything!
 	shieldPushbackFrames = ps->shieldPushbackFrames;
 	shieldPushbackRight = ps->shieldPushbackRight;
 }
@@ -843,6 +844,12 @@ void Actor::SetCurrHitboxes(CollisionBody *cBody,
 			currHitboxes = cBody;
 			currHitboxFrame = p_frame;
 		}
+	}
+	else
+	{
+		//recent add. trying to fix rollback issue?
+		currHitboxes = NULL;
+		currHitboxFrame = 0;
 	}
 }
 
@@ -14265,6 +14272,7 @@ void Actor::PhysicsResponse()
 			else if (checkHit == HitResult::FULLBLOCK 
 				|| checkHit == HitResult::HALFBLOCK)
 			{
+				//doesnt currently affect anything!
 				shieldPushbackFrames = 30;
 				if (pTarget->position.x >= position.x)
 				{
