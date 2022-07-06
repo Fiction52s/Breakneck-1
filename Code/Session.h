@@ -205,6 +205,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	bool desyncCheckerActive;
 	bool firstUpdateHasHappened;
 	bool simulationMode; //for running frames with ggpo without creating sounds or visual fx
 	float waterShaderCounter;
@@ -405,6 +406,8 @@ struct Session : TilesetManager, QuadTreeCollider
 
 	PState *playerSimState;
 	Actor *currSuperPlayer;
+
+	bool frameConfirmed;
 
 
 	static Session *GetSession();
@@ -866,6 +869,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual int GetBonusType() { return BONUSTYPE_NONE; }
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
 	void ProcessDesyncMessageQueue();
+	void ConfirmFrame( int frameCheck );
 };
 
 #endif

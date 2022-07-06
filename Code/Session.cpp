@@ -1544,6 +1544,10 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	ggpoReady = false;
 
+	desyncCheckerActive = false;
+
+	frameConfirmed = false;
+
 	flowHandler.sess = this;
 	mainMenu = MainMenu::GetInstance();
 	preScreenTex = MainMenu::preScreenTexture;
@@ -6841,6 +6845,9 @@ bool Session::PlayerIsFacingRight(int index)
 
 void Session::InitGGPO()
 {
+	desyncCheckerActive = true;
+
+
 	ggpoReady = false;
 	timeSyncFrames = 0;
 	//srand(400);
@@ -6987,6 +6994,8 @@ void Session::AddDesyncCheckInfo()
 {
 	//cout << "add desync check info: " << totalGameFrames << endl;
 
+	if (!desyncCheckerActive)
+		return;
 	
 	if (netplayManager != NULL)
 	{
@@ -7023,9 +7032,9 @@ void Session::AddDesyncCheckInfo()
 			}
 		}
 
-		if (!netplayManager->IsHost())
+		if (!netplayManager->IsHost() && frameConfirmed )
 		{
-			if (totalGameFrames % 2 == 0 && totalGameFrames > 0)
+			//if (totalGameFrames % 2 == 0 && totalGameFrames > 0)
 			{
 				netplayManager->SendDesyncCheckToHost(totalGameFrames);
 			}	
@@ -7060,9 +7069,12 @@ bool Session::GGPORunGameModeUpdate()
 	{
 		HitlagUpdate(); //the full update while in hitlag
 
-		AddDesyncCheckInfo(); //netplay only
+		if (frameConfirmed)
+		{
+			AddDesyncCheckInfo(); //netplay only
 
-		ProcessDesyncMessageQueue(); //netplay only
+			ProcessDesyncMessageQueue(); //netplay only
+		}
 
 		ggpo_advance_frame(ggpo);
 		return true;
@@ -7082,7 +7094,6 @@ bool Session::GGPORunGameModeUpdate()
 		ggpo_advance_frame(ggpo);
 		return true;
 	}
-		
 
 	AddDesyncCheckInfo(); //netplay only
 
@@ -7290,6 +7301,8 @@ void Session::GGPORunFrame()
 	//cout << "local player handle: " << ngs->local_player_handle << "\n";
 
 	//static ControllerState lastCurr;
+
+	frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
 
 	if (GGPO_SUCCEEDED(result))
 	{
@@ -7965,12 +7978,16 @@ void Session::ProcessDesyncMessageQueue()
 		return;
 	}
 
-	for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
+	if (!desyncCheckerActive)
 	{
-		(*it)->Release();
+		for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
+		{
+			(*it)->Release();
+		}
+		netplayManager->desyncMessageQueue.clear();
+		return;
 	}
-	netplayManager->desyncMessageQueue.clear();
-	return;
+	
 
 	//real code below. temporarily turned off.
 
@@ -8020,4 +8037,11 @@ void Session::ProcessDesyncMessageQueue()
 
 	netplayManager->desyncMessageQueue.clear();
 	
+}
+
+void Session::ConfirmFrame(int frameCheck)
+{
+	assert(frameConfirmed == false);
+	frameConfirmed = true;
+	cout << "confirm frame: " << frameCheck << endl;
 }

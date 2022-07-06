@@ -199,3 +199,10 @@ free_buffer(void *buffer)
 {
 	free(buffer);
 }
+
+void __cdecl 
+confirm_frame(int frameCount)
+{
+	Session *sess = Session::GetSession();
+	sess->ConfirmFrame(frameCount);
+}

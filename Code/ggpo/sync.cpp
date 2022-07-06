@@ -110,16 +110,30 @@ Sync::SynchronizeInputs(void *values, int size)
 
    ASSERT(size >= _config.num_players * _config.input_size);
 
+   bool allConfirmed = true;
    memset(output, 0, size);
    for (int i = 0; i < _config.num_players; i++) {
       GameInput input;
+	  bool confirmed;
       if (_local_connect_status[i].disconnected && _framecount > _local_connect_status[i].last_frame) {
          disconnect_flags |= (1 << i);
          input.erase();
+		 allConfirmed = false;
       } else {
-         _input_queues[i].GetInput(_framecount, &input);
+         confirmed = _input_queues[i].GetInput(_framecount, &input);
+		 if (!confirmed)
+		 {
+			 allConfirmed = false;
+		 }
+		 
       }
       memcpy(output + (i * _config.input_size), input.bits, _config.input_size);
+   }
+
+
+   if (allConfirmed)
+   {
+	   _callbacks.
    }
    return disconnect_flags;
 }

@@ -404,4 +404,7 @@ log_game_state(char *filename, unsigned char *buffer, int);
 void __cdecl
 free_buffer(void *buffer);
 
+void __cdecl 
+confirm_frame(int frameCount);
+
 #endif

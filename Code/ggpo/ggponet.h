@@ -252,6 +252,10 @@ typedef struct {
     * structure above for more information.
     */
    bool (__cdecl *on_event)(GGPOEvent *info);
+
+
+
+   void(__cdecl *confirm_frame)( int frameCount );
 } GGPOSessionCallbacks;
 
 /*
