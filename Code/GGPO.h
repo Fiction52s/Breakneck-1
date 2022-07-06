@@ -366,6 +366,7 @@ struct PState
 	//HitboxInfo currVSHitboxInfo;
 };
 
+struct Sequence;
 struct SaveGameState
 {
 	PState states[2];
@@ -375,6 +376,8 @@ struct SaveGameState
 	Enemy *inactiveEnemyList;
 	int pauseFrames;
 	Actor *currSuperPlayer;
+	int gameState; //game mode such as RUN or FROZEN
+	Sequence  *activeSequence;
 };
 
 int fletcher32_checksum(short *data, 

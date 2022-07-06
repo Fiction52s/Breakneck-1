@@ -37,6 +37,7 @@ int FightMode::GetNumStoredBytes()
 
 void FightMode::StoreBytes(unsigned char *bytes)
 {
+	data.done = (int)done;
 	int dataSize = sizeof(MyData);
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
@@ -49,6 +50,8 @@ void FightMode::StoreBytes(unsigned char *bytes)
 void FightMode::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
+
+	done = (bool)data.done;
 
 	bytes += sizeof(MyData);
 	testGator->SetFromBytes(bytes);
@@ -101,6 +104,7 @@ void FightMode::EndGame()
 	cout << "game over" << endl;
 	endSeq->Reset();
 	sess->SetActiveSequence(endSeq);
+	sess->ActiveSequenceUpdate();
 	done = true;
 	//sess->RestartGame();
 }

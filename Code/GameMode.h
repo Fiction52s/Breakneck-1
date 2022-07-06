@@ -81,6 +81,7 @@ struct FightMode : GameMode
 {
 	struct MyData
 	{
+		int done; //better than a bool for packing rn
 		int p0Health;
 		int p1Health;
 		int p0Meter;

@@ -2411,6 +2411,8 @@ int GameSession::Run()
 
 				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
 				{
+					//turn these back on later
+					//ggpo_idle(ggpo, 5);
 					--timeSyncFrames;
 					accumulator -= TIMESTEP;
 				}
@@ -2418,9 +2420,21 @@ int GameSession::Run()
 				{
 					while (accumulator >= TIMESTEP)
 					{
+						//ggpo_idle(ggpo, 5);
 						GGPORunFrame();
 						accumulator -= TIMESTEP;
+
+						if (switchGameState)
+						{
+							break;
+						}
 					}
+
+					//dont do this because you still need to draw the frame
+					/*if (switchGameState)
+					{
+						continue;
+					}*/
 				}
 
 
@@ -2435,7 +2449,6 @@ int GameSession::Run()
 				}
 			}
 			
-
 			sf::Event ev;
 			while (window->pollEvent(ev))
 			{
@@ -2508,8 +2521,31 @@ int GameSession::Run()
 			if (netplayManager != NULL)
 			{
 				ggpo_idle(ggpo, 5);
-				if (!GGPOFrozenGameModeUpdate())
-					continue;
+
+				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
+				{
+					--timeSyncFrames;
+					accumulator -= TIMESTEP;
+				}
+				else
+				{
+					while (accumulator >= TIMESTEP)
+					{
+						GGPOFrozenGameModeUpdate();
+						//GGPORunFrame();
+						accumulator -= TIMESTEP;
+
+						if (switchGameState)
+						{
+							break;
+						}
+					}
+
+					/*if (switchGameState)
+					{
+						continue;
+					}*/
+				}
 			}
 			else
 			{

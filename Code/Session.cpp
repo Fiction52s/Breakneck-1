@@ -5096,7 +5096,12 @@ void Session::ActiveSequenceUpdate()
 					goalDestroyed = true;
 				}
 
+				//if (gameState == SEQUENCE) //if this sets it to run when its frozen, sometimes you can get a weird bug in multiplayer endings.
+				//{
+				//	
+				//}
 				gameState = RUN;
+				switchGameState = true; //turned this on so the while loop will know to exit early and not run more frames in the wrong gameState
 				activeSequence = NULL;
 			}
 		}
@@ -6588,40 +6593,30 @@ bool Session::RunGameModeUpdate()
 
 bool Session::GGPOFrozenGameModeUpdate()
 {
-	while (accumulator >= TIMESTEP)
+	if (!OneFrameModeUpdate())
 	{
-		if (!OneFrameModeUpdate())
-		{
-			break;
-		}
-
-		//AddDesyncCheckInfo(); //netplay only
-
-		//ProcessDesyncMessageQueue(); //netplay only
-
-		
-
-		UpdateControllers();
-
-		ActiveSequenceUpdate();
-
-		SteamAPI_RunCallbacks();
-		fader->Update();
-		swiper->Update();
-
-		pokeTriangleScreenGroup->Update();
-
-		ggpo_advance_frame(ggpo); //I think you get a weird ggpo assert on framecount without this. game freezes on game ending
-
-		if (gameState != FROZEN)
-		{
-			break;
-		}
-
-		accumulator -= TIMESTEP;
-
-		
+		return true;
 	}
+
+	//AddDesyncCheckInfo(); //netplay only
+
+	//ProcessDesyncMessageQueue(); //netplay only
+
+	UpdateControllers();
+
+	ActiveSequenceUpdate();
+	if (switchGameState)
+	{
+		return false;
+	}
+
+	SteamAPI_RunCallbacks();
+	fader->Update();
+	swiper->Update();
+
+	pokeTriangleScreenGroup->Update();
+
+	//ggpo_advance_frame(ggpo); //I think you get a weird ggpo assert on framecount without this. game freezes on game ending
 
 	if (gameState != FROZEN)
 	{
@@ -7082,7 +7077,12 @@ bool Session::GGPORunGameModeUpdate()
 
 	ActiveSequenceUpdate();
 	if (switchGameState)
+	{
+		cout << "switch game state" << endl;
+		ggpo_advance_frame(ggpo);
 		return true;
+	}
+		
 
 	AddDesyncCheckInfo(); //netplay only
 
@@ -7306,7 +7306,13 @@ void Session::GGPORunFrame()
 			//lastCurr = GetCurrInput(1);
 			//cout << "actually update the game" << endl;
 			UpdateAllPlayersInput();
+
+			assert(gameState == GameState::RUN);
+
 			GGPORunGameModeUpdate();
+			
+
+			
 			//frameCC++;
 			//accumulator -= TIMESTEP;
 			
@@ -7344,6 +7350,8 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->inactiveEnemyList = inactiveEnemyList;
 	currSaveState->pauseFrames = pauseFrames;
 	currSaveState->currSuperPlayer = currSuperPlayer;
+	currSaveState->gameState = gameState;
+	currSaveState->activeSequence = activeSequence;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -7386,6 +7394,21 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	activeEnemyListTail = currSaveState->activeEnemyListTail;
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = currSaveState->currSuperPlayer;
+
+	
+
+	if (gameState != (GameState)currSaveState->gameState)
+	{
+		cout << "ROLLING BACK GAME STATE BUG??" << endl;
+	}
+	if (activeSequence != currSaveState->activeSequence)
+	{
+		cout << "ROLLING BACK SEQUENCE: current: " << activeSequence << ", new: " << currSaveState->activeSequence << endl;
+	}
+
+	gameState = (GameState)currSaveState->gameState;
+	activeSequence = currSaveState->activeSequence;
+
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 
@@ -7944,6 +7967,15 @@ void Session::ProcessDesyncMessageQueue()
 
 	for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
 	{
+		(*it)->Release();
+	}
+	netplayManager->desyncMessageQueue.clear();
+	return;
+
+	//real code below. temporarily turned off.
+
+	for (auto it = netplayManager->desyncMessageQueue.begin(); it != netplayManager->desyncMessageQueue.end(); ++it)
+	{
 		//cout << "processing desync check" << endl;
 
 		UdpMsg *msg = (UdpMsg*)(*it)->GetData();
@@ -7974,10 +8006,6 @@ void Session::ProcessDesyncMessageQueue()
 				netplayManager->desyncDetected = true;
 
 				netplayManager->DumpDesyncInfo();
-				//cout << "TOOK A SCREENSHOT" << endl;
-				//tookScreenShot = true;
-				//Image im = window->capture();
-				//im.saveToFile( "Resources/Debug/desync.png" );//+ string(dt) + ".png" );
 			}
 		}
 		else
