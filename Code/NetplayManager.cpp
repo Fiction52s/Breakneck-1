@@ -732,7 +732,19 @@ int NetplayManager::RunMatch()
 	delete game;
 	game = NULL;
 
+	bool disconnected = false;
+	if (action == A_DISCONNECT)
+	{
+		disconnected = true;
+		//eventually make this more complex to account for different failure states
+	}
+
 	Abort();
+
+	if (disconnected)
+	{
+		action = A_DISCONNECT;
+	}
 
 	if (action == A_RUNNING_MATCH)
 	{

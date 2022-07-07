@@ -2024,7 +2024,12 @@ void MainMenu::HandleMenuMode()
 	case TITLEMENU_INFOPOP:
 	{
 		titleScreen->Update();
-		infoPopup->Update(menuCurrInput, menuPrevInput);
+		if (infoPopup->Update(menuCurrInput, menuPrevInput))
+		{
+			cout << "exited info popup" << endl;
+			//exited the info popup
+			SetMode(TITLEMENU);
+		}
 		break;
 	}
 	case WORLDMAP:
@@ -2826,11 +2831,13 @@ void MainMenu::HandleMenuMode()
 
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
+					cout << "EXITED ON DISCONNECT" << endl;
 					infoPopup->Pop("here testing", 60);
 					SetMode(TITLEMENU_INFOPOP);
 				}
 				else
 				{
+					cout << "action test: " << (int)netplayManager->action << endl;
 					SetMode(TITLEMENU);
 				}
 			}
