@@ -21407,10 +21407,9 @@ void Actor::UpdateInHitlag()
 
  void Actor::SetSkin(int skinIndex)
  {
-	 if (skinIndex == SKIN_NORMAL && owner != NULL && owner->saveFile != NULL)
+	 if (skinIndex == SKIN_NORMAL)
 	 {
-		 int defaultSkin = owner->saveFile->defaultSkinIndex;
-		 currSkinIndex = defaultSkin;
+		 currSkinIndex = sess->GetPlayerNormalSkin(actorIndex);
 	 }
 	 else
 	 {

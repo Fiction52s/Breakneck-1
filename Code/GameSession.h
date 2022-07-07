@@ -589,5 +589,6 @@ struct GameSession : RayCastHandler, Session
 
 	bool HasLog(int logIndex);
 	int GetBonusType();
+	int GetPlayerNormalSkin(int index);
 };
 #endif

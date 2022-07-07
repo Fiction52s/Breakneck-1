@@ -44,6 +44,7 @@ struct NetplayPlayer
 	bool readyToRun;
 	bool isHost;
 	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
+	int skinIndex;
 
 	NetplayPlayer();
 	void Clear();

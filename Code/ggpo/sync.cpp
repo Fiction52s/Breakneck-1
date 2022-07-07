@@ -133,7 +133,7 @@ Sync::SynchronizeInputs(void *values, int size)
 
    if (allConfirmed)
    {
-	   _callbacks.
+	   _callbacks.confirm_frame(_framecount);
    }
    return disconnect_flags;
 }

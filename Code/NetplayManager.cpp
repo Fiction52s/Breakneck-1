@@ -22,6 +22,7 @@ void NetplayPlayer::Clear()
 	doneConnectingToAllPeers = false;
 	readyToRun = false;
 	isHost = false;
+	skinIndex = 0;
 
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
@@ -979,7 +980,7 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 			if (i != playerIndex)
 			{
 				SendUdpMsg(netplayPlayers[i].connection, &msg);
-				//cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
+				cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
 			}
 			break;
 		}

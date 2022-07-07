@@ -5150,3 +5150,17 @@ int GameSession::GetBonusType()
 		return bonusType;
 	}
 }
+
+int GameSession::GetPlayerNormalSkin(int index)
+{
+	if (saveFile != NULL)
+	{
+		return saveFile->defaultSkinIndex;
+	}
+	else if (netplayManager != NULL)
+	{
+		return netplayManager->netplayPlayers[index].skinIndex;
+	}
+
+	return Actor::SKIN_NORMAL;
+}

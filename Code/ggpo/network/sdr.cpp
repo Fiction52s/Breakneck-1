@@ -47,7 +47,7 @@ void Sdr::SendTo(char *buffer, int len, int flags, HSteamNetConnection p_connect
 	}
 	else
 	{
-		cout << "failing to send packet" << endl;
+		cout << "failed to send packet" << endl;
 		//if you are failing to send, the connectionManager should notice!
 
 

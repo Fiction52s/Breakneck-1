@@ -116,6 +116,7 @@ advance_frame_callback(int flags)
 
 	Session *sess = Session::GetSession();
 
+	sess->frameConfirmed = false;
 	ggpo_synchronize_input(sess->ggpo, (void *)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS,
 		&disconnect_flags);
 	for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)

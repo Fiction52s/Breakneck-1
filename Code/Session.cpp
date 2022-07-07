@@ -6863,6 +6863,7 @@ void Session::InitGGPO()
 	cb.free_buffer = free_buffer;
 	cb.on_event = on_event_callback;
 	cb.log_game_state = log_game_state;
+	cb.confirm_frame = confirm_frame;
 
 	/*for (int i = 0; i < 10; ++i)
 	{
@@ -6930,6 +6931,29 @@ void Session::InitGGPO()
 		myIndex = 1;
 		otherIndex = 0;
 	}
+
+	for (int i = 0; i < netplayManager->numPlayers; ++i)
+	{
+		int normalSkin = Actor::SKIN_NORMAL;
+		switch (i)
+		{
+		case 0:
+			normalSkin = Actor::SKIN_NORMAL;
+			break;
+		case 1:
+			normalSkin = Actor::SKIN_RED;
+			break;
+		case 2:
+			normalSkin = Actor::SKIN_GOLD;
+			break;
+		case 3:
+			normalSkin = Actor::SKIN_BONFIRE;
+			break;
+		}
+
+		netplayManager->netplayPlayers[i].skinIndex = normalSkin;
+	}
+	
 
 	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
 	ggpoPlayers[myIndex].player_num = myIndex + 1;
@@ -7302,10 +7326,11 @@ void Session::GGPORunFrame()
 
 	//static ControllerState lastCurr;
 
-	frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
+	
 
 	if (GGPO_SUCCEEDED(result))
 	{
+		frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
 		result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
 		if (GGPO_SUCCEEDED(result))
 		{
@@ -8043,5 +8068,10 @@ void Session::ConfirmFrame(int frameCheck)
 {
 	assert(frameConfirmed == false);
 	frameConfirmed = true;
-	cout << "confirm frame: " << frameCheck << endl;
+	//cout << "confirm frame: " << frameCheck << endl;
+}
+
+int Session::GetPlayerNormalSkin(int index)
+{
+	return Actor::SKIN_NORMAL;
 }

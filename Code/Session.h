@@ -870,6 +870,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
 	void ProcessDesyncMessageQueue();
 	void ConfirmFrame( int frameCheck );
+	virtual int GetPlayerNormalSkin(int index);
 };
 
 #endif
