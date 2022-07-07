@@ -6614,7 +6614,7 @@ bool Session::GGPOFrozenGameModeUpdate()
 		return false;
 	}
 
-	SteamAPI_RunCallbacks();
+	//SteamAPI_RunCallbacks();
 	fader->Update();
 	swiper->Update();
 
@@ -7193,8 +7193,6 @@ bool Session::GGPORunGameModeUpdate()
 
 	if (gateMarkers != NULL)
 		gateMarkers->Update(&cam);
-
-	SteamAPI_RunCallbacks();
 
 	fader->Update();
 	swiper->Update();

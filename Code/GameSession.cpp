@@ -2408,11 +2408,13 @@ int GameSession::Run()
 				}
 
 				ggpo_idle(ggpo, 5);
+				SteamAPI_RunCallbacks();
 
 				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
 				{
 					//turn these back on later
 					//ggpo_idle(ggpo, 5);
+					
 					--timeSyncFrames;
 					accumulator -= TIMESTEP;
 				}
@@ -2421,6 +2423,7 @@ int GameSession::Run()
 					while (accumulator >= TIMESTEP)
 					{
 						//ggpo_idle(ggpo, 5);
+						//SteamAPI_RunCallbacks();
 						GGPORunFrame();
 						accumulator -= TIMESTEP;
 
@@ -2521,6 +2524,7 @@ int GameSession::Run()
 			if (netplayManager != NULL)
 			{
 				ggpo_idle(ggpo, 5);
+				SteamAPI_RunCallbacks();
 
 				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
 				{
