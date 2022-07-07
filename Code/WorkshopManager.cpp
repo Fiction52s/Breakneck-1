@@ -180,7 +180,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 
 
 					MapNode *newNode = new MapNode;
-					newNode->mapName = details.m_rgchTitle;
+					newNode->nodeName = details.m_rgchTitle;
 					newNode->description = details.m_rgchDescription;
 					newNode->publishedFileId = details.m_nPublishedFileId;
 					newNode->mapDownloaded = itemState & k_EItemStateInstalled;
@@ -192,7 +192,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 						uint32 timestamp;
 						cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
 
-						newNode->filePath = string(path) + "\\" + newNode->mapName + ".brknk";
+						newNode->filePath = string(path) + "\\" + newNode->nodeName + ".brknk";
 					}
 					
 					bool result = SteamUGC()->GetQueryUGCPreviewURL(callback->m_handle, 
@@ -287,7 +287,7 @@ MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 
 	MapNode *newNode = new MapNode;
 	newNode->folderPath = szItemFolder;
-	newNode->mapName = details.m_rgchTitle;
+	newNode->nodeName = details.m_rgchTitle;
 	newNode->type = MapNode::FILE;
 	newNode->filePath = string(szItemFolder) + "\\" + string(details.m_rgchTitle);
 	//is.open(folder

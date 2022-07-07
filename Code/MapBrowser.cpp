@@ -134,7 +134,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	panel->MouseUpdate();
 
-	playButton = panel->AddButton("play", Vector2i(10, 10), Vector2f(30, 30), "play");
+	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
+	playButton = panel->AddButton("play", Vector2i(100, 10), Vector2f(30, 30), "play");
 	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
@@ -156,8 +157,6 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 			NULL, 0, boxSize);
 		imageRects[i]->SetShown(true);
 		imageRects[i]->Init();
-
-		
 	}
 
 
@@ -206,6 +205,9 @@ void MapBrowser::AddFile(const path &p_filePath)
 	string previewPath = middleTest + ".png";
 	mapNode->ts_preview = GetTileset(previewPath);
 
+	mapNode->nodeName = mapNode->filePath.filename().stem().string();
+
+	nodes.push_back(mapNode);
 }
 
 void MapBrowser::AddFolder(const path &p_filePath)
@@ -216,6 +218,8 @@ void MapBrowser::AddFolder(const path &p_filePath)
 
 	string previewPath = "Resources/Menu/foldericon_100x100.png";
 	mapNode->ts_preview = GetSizedTileset(previewPath);
+
+	mapNode->nodeName = mapNode->filePath.filename().stem().string();
 
 	nodes.push_back(mapNode);
 }
@@ -300,7 +304,7 @@ void MapBrowser::Update()
 			{
 				if ((*it)->previewTex != NULL)
 				{
-					(*it)->ts_preview = GetTileset("WorkshopPreview/" + (*it)->mapName, (*it)->previewTex);
+					(*it)->ts_preview = GetTileset("WorkshopPreview/" + (*it)->nodeName, (*it)->previewTex);
 				}
 			}
 
@@ -380,11 +384,11 @@ void MapBrowser::SetPath(const std::string &p_path)
 	PopulateRects();
 }
 
-void MapBrowser::SetToWorkshop()
+void MapBrowser::StartWorkshop()
 {
-	Init();
+	mode = WORKSHOP;
 
-	fMode = WORKSHOP;
+	Init();
 	
 	currWorkshopPage = 1;
 
@@ -421,7 +425,7 @@ void MapBrowser::PopulateRects()
 		icRect = imageRects[i - start];
 		node = nodes[i];
 
-		icRect->SetName(node->mapName);
+		icRect->SetName(node->nodeName);
 		ts = node->ts_preview;
 		icRect->SetInfo(node);
 		node->chooseRect = icRect;
@@ -457,7 +461,7 @@ void MapBrowser::TurnOff()
 void MapBrowser::Init()
 {
 	//edit->AddActivePanel(panel);
-	if (fMode == OPEN)
+	if (mode == OPEN)
 	{
 		panel->confirmButton->text.setString("Open");
 
@@ -466,7 +470,7 @@ void MapBrowser::Init()
 		fileNameTextBox->SetCursorIndex(0);
 		panel->SetFocusedMember(fileNameTextBox);
 	}
-	else if( fMode == SAVE )
+	else if(mode == SAVE )
 	{
 		panel->confirmButton->text.setString("Save");
 
@@ -485,20 +489,20 @@ void MapBrowser::Init()
 }
 
 void MapBrowser::Start(const std::string &p_ext,
-	MapBrowser::Mode p_fMode, const std::string &path)
+	MapBrowser::Mode p_mode, const std::string &path)
 {
 	ext = p_ext;
-	fMode = p_fMode;
+	mode = p_mode;
 	Init();
 
 	SetPath(path);
 }
 
 void MapBrowser::StartRelative(const std::string &p_ext,
-	MapBrowser::Mode p_fMode, const std::string &path)
+	MapBrowser::Mode p_mode, const std::string &path)
 {
 	ext = p_ext;
-	fMode = p_fMode;
+	mode = p_mode;
 	Init();
 
 	SetRelativePath(path);
@@ -613,42 +617,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 				}*/
 
 				mm->DownloadAndRunWorkshopMap();
-
-
-
-				//chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
 			}
-
-			//if (itemState & k_EItemStateInstalled && !selectedNode->mapDownloaded)
-			//{
-			//	//if the item is not installed when the query first runs, this checks again and sets the filepath
-			//	
-			//}
-
-			//if (selectedNode->mapDownloaded)
-			//{
-			//	assert(itemState & k_EItemStateInstalled);
-			//	mm->RunWorkshopMap(selectedNode->filePath.string());
-			//}
-			//else
-			//{
-			//	if (!(itemState & k_EItemStateSubscribed))
-			//	{
-			//		cout << "subbing to item" << endl;
-			//		SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
-			//	}
-			//	else if (itemState &k_EItemStateDownloading)
-			//	{
-			//		cout << "downloading map" << endl;
-			//		
-			//	}
-			//	else if (itemState &k_EItemStateDownloadPending)
-			//	{
-			//		cout << "map downoad pending" << endl;
-			//	}
-
-			//	chooser->action = MapBrowser::A_WAITING_FOR_MAP_DOWNLOAD;
-			//}
 		}
 		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
@@ -676,6 +645,39 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 			chooser->QueryMaps();
 		}
 	}
+	else if (b == chooser->upButton)
+	{
+		chooser->SetPath(chooser->currPath.parent_path().string());
+	}
+}
+
+//return true if installed. sets the filepath if its installation is just being registered.
+bool MapBrowserHandler::CheckIfSelectedItemInstalled()
+{
+	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
+
+	if (selectedNode == NULL)
+		return false;
+
+	uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
+
+	if (itemState & k_EItemStateInstalled)
+	{
+		if (!selectedNode->mapDownloaded)
+		{
+			selectedNode->mapDownloaded = true;
+
+			uint64 fileSize;
+			char path[1024];
+			uint32 timestamp;
+			cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
+
+			selectedNode->filePath = string(path) + "\\" + selectedNode->nodeName + ".brknk";
+		}
+		return true;
+	}
+
+	return false;
 }
 
 DefaultMapBrowserHandler::DefaultMapBrowserHandler()
@@ -704,36 +706,6 @@ void DefaultMapBrowserHandler::ChangePath()
 	chooser->ClearTilesets();
 }
 
-
-//return true if installed. sets the filepath if its installation is just being registered.
-bool MapBrowserHandler::CheckIfSelectedItemInstalled()
-{
-	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
-
-	if (selectedNode == NULL)
-		return false;
-
-	uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
-
-	if (itemState & k_EItemStateInstalled )
-	{
-		if (!selectedNode->mapDownloaded)
-		{
-			selectedNode->mapDownloaded = true;
-
-			uint64 fileSize;
-			char path[1024];
-			uint32 timestamp;
-			cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
-
-			selectedNode->filePath = string(path) + "\\" + selectedNode->mapName + ".brknk";
-		}
-		return true;
-	}
-
-	return false;
-}
-
 void DefaultMapBrowserHandler::Update()
 {
 	chooser->Update();
@@ -749,11 +721,11 @@ void DefaultMapBrowserHandler::Confirm()
 	string fileName = chooser->fileNameTextBox->GetString();
 	if (fileName != "")
 	{
-		if (chooser->fMode == MapBrowser::OPEN)
+		if (chooser->mode == MapBrowser::OPEN)
 		{
 			//chooser->edit->ChooseFileOpen(chooser, fileName);
 		}
-		else if (chooser->fMode == MapBrowser::SAVE)
+		else if (chooser->mode == MapBrowser::SAVE)
 		{
 			//chooser->edit->ChooseFileSave(chooser, fileName);
 		}
@@ -764,7 +736,19 @@ void DefaultMapBrowserHandler::Confirm()
 void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
 {
 	string fileName = cr->nameText.getString().toAnsiString();
-	if (chooser->fMode == MapBrowser::OPEN)
+
+	MapNode *mn = (MapNode*)cr->info;
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	for (int i = 0; i < chooser->totalRects; ++i)
+	{
+		chooser->imageRects[i]->Deselect();
+	}
+
+	cr->Select();
+
+	if (chooser->mode == MapBrowser::OPEN)
 	{
 		bool found = false;
 		for (int i = 0; i < chooser->nodes.size(); ++i)
@@ -779,33 +763,17 @@ void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
 		if (found)
 		{
 			//chooser->edit->ChooseFileOpen(chooser, fileName);
-			chooser->TurnOff();
+			//chooser->TurnOff();
 		}
 	}
-	else if (chooser->fMode == MapBrowser::SAVE)
+	else if (chooser->mode == MapBrowser::SAVE)
 	{
 		//chooser->edit->ChooseFileSave(chooser, fileName);
-		chooser->TurnOff();
+		//chooser->TurnOff();
 	}
-	else if (chooser->fMode == MapBrowser::WORKSHOP)
+	else if (chooser->mode == MapBrowser::WORKSHOP)
 	{
-		MapNode *mn = (MapNode*)cr->info;
-
-		MainMenu *mm = MainMenu::GetInstance();
-
-		for (int i = 0; i < chooser->totalRects; ++i)
-		{
-			chooser->imageRects[i]->Deselect();
-		}
-		
-		cr->Select();
-
-		chooser->selectedRect = cr->GetAsImageChooseRect();
-
-		//cr->SetIdleColor()
-		
-
-		
+		chooser->selectedRect = cr->GetAsImageChooseRect();	
 	}
 }
 

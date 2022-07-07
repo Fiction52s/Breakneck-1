@@ -25,8 +25,17 @@ MapBrowserScreen::~MapBrowserScreen()
 
 void MapBrowserScreen::Start()
 {
-	//browserHandler->chooser->StartRelative(".brknk", MapBrowser::SAVE, "Resources\\Maps\\CustomMaps");
-	browserHandler->chooser->SetToWorkshop();
+	if (Keyboard::isKeyPressed(sf::Keyboard::LShift))
+	{
+		browserHandler->chooser->StartRelative(".brknk", MapBrowser::OPEN, "Resources\\Maps");
+	}
+	else
+	{
+		browserHandler->chooser->StartWorkshop();
+	}
+
+	//browserHandler->chooser->SetToWorkshop();
+	//Start
 }
 
 void MapBrowserScreen::Update()

@@ -25,22 +25,26 @@ struct MapNode
 		DOWNLOADING,
 	};
 
-	Action action;
 	Type type;
-	bool mapDownloaded;
-	boost::filesystem::path folderPath;
-	std::string mapName;
+
+	Action action;
 	boost::filesystem::path filePath;
+	Tileset *ts_preview;
+	int index;
+
+	//new
+	
+	bool mapDownloaded;
+	std::string nodeName;
+	boost::filesystem::path folderPath;
 	std::string description;
 	std::string previewURL;
-	Tileset *ts_preview;
 	sf::Texture *previewTex;
 	bool checkingForPreview;
-	//sf::Texture previewTexture;
 	HTTPRequestHandle previewRequestHandle;
 	PublishedFileId_t publishedFileId;
 	ImageChooseRect *chooseRect;
-	int index;
+	
 	CCallResult<MapNode,
 		HTTPRequestCompleted_t>
 		OnHTTPRequestCompletedCallResult;
@@ -51,7 +55,6 @@ struct MapNode
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
 	void RequestDownloadPreview();
-	
 };
 
 struct MapBrowserHandler : GUIHandler
@@ -110,6 +113,7 @@ struct MapBrowser : TilesetManager,
 		SAVE
 	};
 
+	//new vars
 	enum Action : int
 	{
 		A_IDLE,
@@ -119,45 +123,49 @@ struct MapBrowser : TilesetManager,
 	};
 
 	Action action;
-
+	ImageChooseRect *selectedRect;
+	WorkshopManager *workshop;
 	int currWorkshopPage;
 	int maxWorkshopPages;
+	Button *playButton;
+	Button *nextPageButton;
+	Button *prevPageButton;
+	sf::Text pageLabel;
 
 	MapBrowser(MapBrowserHandler *handler,
 		int p_cols, int p_rows, int extraImageRects = 0);
 	~MapBrowser();
 
+	//new functions
 	void Update();
+	void QueryMaps();
+	
+
 	//panelupdater functions
 	bool MouseUpdate();
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void MouseScroll(int delta);
 	void LateDraw(sf::RenderTarget *target);
-
-	void QueryMaps();
+	
 	//---------
-
-
 	void SetRelativePath(const std::string &p_relPath);
 	void SetPath(const std::string &p_path);
-	void SetToWorkshop();
 	void AddFile(const boost::filesystem::path &filePath);
 	void AddFolder(const boost::filesystem::path &folderPath);
 	void ClearNodes();
 	void PopulateRects();
-	void UpdatePreviews();
+	
 	void Start(const std::string &ext,
-		Mode fMode, const std::string &path);
+		Mode mode, const std::string &path);
 	void StartRelative(const std::string &ext,
-		Mode fMode, const std::string &path);
+		Mode mode, const std::string &path);
+	void StartWorkshop();
 	void Init();
 	void TurnOff();
 	//void HideConfirmButton();
 
-	ImageChooseRect *selectedRect;
-	WorkshopManager *workshop;
-	Mode fMode;
+	Mode mode;
 	MapBrowserHandler *handler;
 
 	std::string ext;
@@ -173,13 +181,14 @@ struct MapBrowser : TilesetManager,
 
 	std::vector<MapNode*> nodes;
 
+	//EditSession *edit; //removed var
+	
 	Panel *panel;
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
-	Button *playButton;
-	Button *nextPageButton;
-	Button *prevPageButton;
-	sf::Text pageLabel;
+	Button *upButton;
+	
+	
 	sf::Text *folderPathText;
 };
 
