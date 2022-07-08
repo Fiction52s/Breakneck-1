@@ -110,7 +110,8 @@ struct MapBrowser : TilesetManager,
 	{
 		WORKSHOP,
 		OPEN,
-		SAVE
+		SAVE,
+		CREATE_LOBBY,
 	};
 
 	//new vars

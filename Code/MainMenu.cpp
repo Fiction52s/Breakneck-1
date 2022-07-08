@@ -171,7 +171,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
-	case RUNNINGMAP:
+	case RUN_ADVENTURE_MAP:
 	{
 		if (worldMap != NULL)
 		{
@@ -187,12 +187,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
-	case RUN_WORKSHOP_MAP:
+	case RUN_FREEPLAY_MAP:
 	{
-		assert(currWorkshopSession != NULL);
-		delete currWorkshopSession;
-		currWorkshopSession = NULL;
-		
+		if (currFreePlaySession != NULL)
+		{
+			delete currFreePlaySession;
+			currFreePlaySession = NULL;
+		}
 		break;
 	}
 
@@ -245,16 +246,16 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		GameSession::sLoad(currTutorialSession);
 		break;
 	}
-	case RUN_WORKSHOP_MAP:
+	case RUN_FREEPLAY_MAP:
 	{
-		assert(currWorkshopSession == NULL);
+		assert(currFreePlaySession == NULL);
 
 		MatchParams mp;
-		mp.saveFile = currSaveFile;
-		mp.mapPath = currWorkshopMap;
+		mp.saveFile = NULL;//currSaveFile;
+		mp.mapPath = freePlayMapName;
 
-		currWorkshopSession = new GameSession(&mp);
-		GameSession::sLoad(currWorkshopSession);
+		currFreePlaySession = new GameSession(&mp);
+		GameSession::sLoad(currFreePlaySession);
 		break;
 	}
 	}
@@ -361,7 +362,7 @@ MainMenu::MainMenu()
 
 	currEditSession = NULL;
 	currTutorialSession = NULL;
-	currWorkshopSession = NULL;
+	currFreePlaySession = NULL;
 
 	currSaveFile = NULL;
 
@@ -1707,10 +1708,10 @@ void MainMenu::ResizeWindow( int p_windowWidth,
 	}
 }
 
-void MainMenu::SetModeLoadingMap( int wIndex )
+void MainMenu::SetModeAdventureLoadingMap( int wIndex )
 {
 	musicPlayer->FadeOutCurrentMusic(30);
-	SetMode( LOADINGMAP );
+	SetMode(LOAD_ADVENTURE_MAP);
 	//wIndex = min(wIndex, 1); //because there are only screens for 2 worlds
 
 	stringstream ss;
@@ -1760,7 +1761,7 @@ void MainMenu::AdventureLoadLevel(LevelLoadParams &loadParams)
 
 	int wIndex = loadParams.world;
 	gameRunType = GameRunType::GRT_ADVENTURE;
-	SetModeLoadingMap(wIndex);
+	SetModeAdventureLoadingMap(wIndex);
 
 	//doneLoading = false;
 
@@ -2053,7 +2054,7 @@ void MainMenu::HandleMenuMode()
 
 		break;
 	}
-	case LOADINGMAP:
+	case LOAD_ADVENTURE_MAP:
 	{
 		loadingBackpack->Update();
 
@@ -2064,7 +2065,7 @@ void MainMenu::HandleMenuMode()
 				//window->setVerticalSyncEnabled(true);
 				delete loadThread;
 				loadThread = NULL;
-				SetMode(RUNNINGMAP);
+				SetMode(RUN_ADVENTURE_MAP);
 				//fader->CrossFade(30, 0, Color::Black);
 				//return HandleMenuMode();
 				//cout << "RUNNING MAP" << endl;
@@ -2146,7 +2147,7 @@ void MainMenu::HandleMenuMode()
 			//mainMenu->fader->Fade(true, 30, Color::Black, true);
 			fader->Fade(true, 30, Color::Black, true, EffectLayer::IN_FRONT_OF_UI);
 			gameRunType = GRT_ADVENTURE;
-			SetMode(RUNNINGMAP);
+			SetMode(RUN_ADVENTURE_MAP);
 		}
 		else if (worldMap->kinBoostScreen->level == NULL && loadThread == NULL && deadThread == NULL && worldMap->kinBoostScreen->IsBoosting())
 		{
@@ -2183,7 +2184,7 @@ void MainMenu::HandleMenuMode()
 		break;
 	}
 
-	case RUNNINGMAP:
+	case RUN_ADVENTURE_MAP:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -2674,14 +2675,14 @@ void MainMenu::HandleMenuMode()
 			{
 				delete loadThread;
 				loadThread = NULL;
-				SetMode(RUNNINGMAP);
+				SetMode(RUN_ADVENTURE_MAP);
 				gameRunType = GameRunType::GRT_ADVENTURE;
 			}
 			else
 			{
 				//menuMode = LOADINGMAP;
 				gameRunType = GameRunType::GRT_ADVENTURE;
-				SetModeLoadingMap(0);
+				SetModeAdventureLoadingMap(0);
 			}
 
 		}
@@ -2711,7 +2712,7 @@ void MainMenu::HandleMenuMode()
 		}
 		break;
 	}
-	case RUN_WORKSHOP_MAP:
+	case RUN_FREEPLAY_MAP:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -2720,7 +2721,7 @@ void MainMenu::HandleMenuMode()
 
 		View oldView = window->getView();
 
-		int result = currWorkshopSession->Run();
+		int result = currFreePlaySession->Run();
 
 		window->setView(oldView);
 
@@ -2746,25 +2747,25 @@ void MainMenu::HandleMenuMode()
 		mapBrowserScreen->Update();
 		break;
 	}
-	case DOWNLOADSTART:
+	case DOWNLOAD_WORKSHOP_MAP_START:
 	{
 		if (fader->IsFullyFadedOut())
 		{
 			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
-			SetMode(DOWNLOADLOOP);
+			SetMode(DOWNLOAD_WORKSHOP_MAP_LOOP);
 			//loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			//StartLoadModeScreen();
 		}
 		break;
 	}
-	case DOWNLOADLOOP:
+	case DOWNLOAD_WORKSHOP_MAP_LOOP:
 		loadingBackpack->Update();
 
 		if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
 		{
 			cout << "map download complete" << endl;
 
-			modeToLoad = RUN_WORKSHOP_MAP;
+			modeToLoad = RUN_FREEPLAY_MAP;
 
 			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
@@ -2772,7 +2773,7 @@ void MainMenu::HandleMenuMode()
 				assert(0);
 
 
-			currWorkshopMap = selectedNode->filePath.string();
+			freePlayMapName = selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
@@ -3176,7 +3177,7 @@ void MainMenu::DrawMode( Mode m )
 		multiLoadingScreen->Draw(preScreenTexture);
 		break;
 	}
-	case LOADINGMAP:
+	case LOAD_ADVENTURE_MAP:
 	{
 		preScreenTexture->setView(v);
 		preScreenTexture->draw(loadingBGSpr);
@@ -3341,7 +3342,7 @@ void MainMenu::DrawMode( Mode m )
 		preScreenTexture->draw(thanksQuad, 4, sf::Quads, ts_thanksForPlaying->texture);
 		break;
 	}
-	case RUNNINGMAP:
+	case RUN_ADVENTURE_MAP:
 	{
 		break;
 	}
@@ -3351,16 +3352,16 @@ void MainMenu::DrawMode( Mode m )
 		mapBrowserScreen->Draw(preScreenTexture);
 		break;
 	}
-	case RUN_WORKSHOP_MAP:
+	case RUN_FREEPLAY_MAP:
 	{
 		break;
 	}
-	case DOWNLOADSTART:
+	case DOWNLOAD_WORKSHOP_MAP_START:
 	{
 		DrawMode(modeLoadingFrom);
 		break;
 	}
-	case DOWNLOADLOOP:
+	case DOWNLOAD_WORKSHOP_MAP_LOOP:
 	{
 		preScreenTexture->setView(v);
 		loadingBackpack->Draw(preScreenTexture);
@@ -3395,15 +3396,15 @@ void MainMenu::DrawMode( Mode m )
 	}
 }
 
-void MainMenu::RunWorkshopMap(const std::string &path)
+void MainMenu::RunFreePlayMap(const std::string &path)
 {
-	currWorkshopMap = path;
-	LoadMode(MainMenu::RUN_WORKSHOP_MAP);
+	freePlayMapName = path;
+	LoadMode(MainMenu::RUN_FREEPLAY_MAP);
 	//SetMode(MainMenu::RUNWORKSHOPMAP);
 }
 
 void MainMenu::DownloadAndRunWorkshopMap()
 {
 	//currWorkshopMap = path;
-	LoadMode(MainMenu::DOWNLOADSTART);
+	LoadMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
 }

@@ -497,12 +497,12 @@ struct MainMenu
 		TITLEMENU,
 		TITLEMENU_INFOPOP,
 		WORLDMAP,
-		LOADINGMAP,
+		LOAD_ADVENTURE_MAP,
 		LOADINGMENUSTART,
 		LOADINGMENULOOP,
 		LOADINGMENUEND,
 		KINBOOSTLOADINGMAP,
-		RUNNINGMAP,
+		RUN_ADVENTURE_MAP,
 		RUNNINGEDITOR,
 		SAVEMENU,
 		TUTORIAL,
@@ -526,12 +526,12 @@ struct MainMenu
 		TRANS_CREDITS_TO_MAIN,
 		TRANS_WORLDMAP_TO_LOADING,
 		DOWNLOAD_WORKSHOP_MAP,
-		RUN_WORKSHOP_MAP,
+		RUN_FREEPLAY_MAP,
 		BROWSE_WORKSHOP,
 		INTROMOVIE,
 		THANKS_FOR_PLAYING,
-		DOWNLOADSTART,
-		DOWNLOADLOOP,
+		DOWNLOAD_WORKSHOP_MAP_START,
+		DOWNLOAD_WORKSHOP_MAP_LOOP,
 		QUICKPLAY_TEST,
 		QUICKPLAY_PLAY,
 		EXITING,
@@ -557,7 +557,7 @@ struct MainMenu
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 
-	std::string currWorkshopMap;
+	std::string freePlayMapName;
 
 	Mode modeLoadingFrom;
 	Mode modeToLoad;
@@ -577,7 +577,7 @@ struct MainMenu
 	void CheckForControllers();
 	void UpdateMenuInput();
 
-	void RunWorkshopMap(const std::string &path);
+	void RunFreePlayMap(const std::string &path);
 	void DownloadAndRunWorkshopMap();
 
 	void UnlockSkin(int skinIndex);
@@ -654,7 +654,7 @@ struct MainMenu
 	void GameEditLoop2( const std::string &filename);
 	void CustomMapsOption();
 	void GGPOOption();
-	void SetModeLoadingMap( int wIndex );
+	void SetModeAdventureLoadingMap( int wIndex );
 	void SetModeKinBoostLoadingMap(int variation);
 
 	sf::IntRect GetButtonIconTile(int controllerIndex, int baseButtonIndex);
@@ -724,7 +724,7 @@ struct MainMenu
 
 	EditSession *currEditSession;
 	GameSession *currTutorialSession;
-	GameSession *currWorkshopSession;
+	GameSession *currFreePlaySession;
 	GameSession *currLevel;
 	GameSession *deadLevel;
 	void HandleMenuMode();

@@ -392,6 +392,8 @@ void MapBrowser::StartWorkshop()
 	
 	currWorkshopPage = 1;
 
+	upButton->HideMember();
+
 	QueryMaps();
 }
 
@@ -479,6 +481,15 @@ void MapBrowser::Init()
 		fileNameTextBox->SetCursorIndex(0);
 		panel->SetFocusedMember(fileNameTextBox);
 	}
+	else if (mode == CREATE_LOBBY)
+	{
+		panel->confirmButton->text.setString("Save");
+
+		fileNameTextBox->SetString("");
+		fileNameTextBox->focused = true;
+		fileNameTextBox->SetCursorIndex(0);
+		panel->SetFocusedMember(fileNameTextBox);
+	}
 	else
 	{
 		panel->confirmButton->text.setString("getridof");
@@ -495,6 +506,8 @@ void MapBrowser::Start(const std::string &p_ext,
 	mode = p_mode;
 	Init();
 
+	upButton->ShowMember();
+
 	SetPath(path);
 }
 
@@ -504,6 +517,8 @@ void MapBrowser::StartRelative(const std::string &p_ext,
 	ext = p_ext;
 	mode = p_mode;
 	Init();
+
+	upButton->ShowMember();
 
 	SetRelativePath(path);
 }
@@ -593,31 +608,39 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 
 			MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
 
-			if (CheckIfSelectedItemInstalled())
+			if (chooser->mode == MapBrowser::WORKSHOP)
 			{
-				mm->RunWorkshopMap(selectedNode->filePath.string());
+				if (CheckIfSelectedItemInstalled())
+				{
+					mm->RunFreePlayMap(selectedNode->filePath.string());
+				}
+				else
+				{
+					uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
+					if (!(itemState & k_EItemStateSubscribed))
+					{
+						cout << "subbing to item" << endl;
+						SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
+						cout << "map download started" << endl;
+					}
+					/*else if (itemState &k_EItemStateDownloading)
+					{
+					cout << "downloading map" << endl;
+
+					}
+					else if (itemState &k_EItemStateDownloadPending)
+					{
+					cout << "map downoad pending" << endl;
+					}*/
+
+					mm->DownloadAndRunWorkshopMap();
+				}
 			}
 			else
 			{
-				uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
-				if (!(itemState & k_EItemStateSubscribed))
-				{
-					cout << "subbing to item" << endl;
-					SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
-					cout << "map download started" << endl;
-				}
-				/*else if (itemState &k_EItemStateDownloading)
-				{
-					cout << "downloading map" << endl;
-
-				}
-				else if (itemState &k_EItemStateDownloadPending)
-				{
-					cout << "map downoad pending" << endl;
-				}*/
-
-				mm->DownloadAndRunWorkshopMap();
+				mm->RunFreePlayMap(selectedNode->filePath.string());
 			}
+			
 		}
 		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
