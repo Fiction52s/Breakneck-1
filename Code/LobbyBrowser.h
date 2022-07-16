@@ -6,7 +6,7 @@
 #include "GUI.h"
 
 
-struct LobbyManager;
+struct NetplayManager;
 
 struct LobbyNode
 {
@@ -30,60 +30,7 @@ struct LobbyChooseRect : ChooseRect
 	void SetName(const std::string &name);
 };
 
-struct LobbyListChooser;
-struct LobbyListChooserHandler : GUIHandler
-{
-	LobbyListChooserHandler(int rows);
-	virtual ~LobbyListChooserHandler();
-	virtual void ClickText(ChooseRect *cr) = 0;
-	//virtual void Cancel() = 0;
-	//virtual void Confirm() = 0;
-	//virtual void ClickFile(ChooseRect *cr) = 0;
-	//virtual void FocusFile(ChooseRect *cr) = 0;
-	//virtual void UnfocusFile(ChooseRect *cr) = 0;
-	virtual	bool MouseUpdate() { return true; }
-	virtual void Draw(sf::RenderTarget *target) {}
-	//virtual void ChangePath() {}
-	virtual void LateDraw(sf::RenderTarget *target) {}
-
-	////guihandler functions
-	//virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
-	//virtual void ButtonCallback(Button *b, const std::string & e);
-	//virtual void SliderCallback(Slider *slider) {}
-	//---------
-	//virtual void PanelCallback(Panel *p, const std::string & e);
-
-	LobbyListChooser *chooser;
-};
-
-struct LobbyChooserHandler : LobbyListChooserHandler
-{
-	enum State
-	{
-		BROWSE,
-	};
-
-	State state;
-
-	LobbyChooserHandler(int rows);
-	~LobbyChooserHandler();
-	bool MouseUpdate();
-	void Draw(sf::RenderTarget *target);
-
-	void ClickText(ChooseRect *cr);
-	//virtual void ChangePath() {}
-	void LateDraw(sf::RenderTarget *target);
-
-	////guihandler functions
-	void ChooseRectEvent(ChooseRect *cr, int eventType);
-	void ButtonCallback(Button *b, const std::string & e);
-	//virtual void SliderCallback(Slider *slider) {}
-	//---------
-	//void DropdownCallback(Dropdown *dropdown, const std::string & e);
-	void PanelCallback(Panel *p, const std::string & e);
-};
-
-struct LobbyListChooser : PanelUpdater
+struct LobbySelector : PanelUpdater, GUIHandler
 {
 	int topRow;
 	int maxTopRow;
@@ -91,11 +38,8 @@ struct LobbyListChooser : PanelUpdater
 	int totalRects;
 	LobbyChooseRect **lobbyRects;
 	Panel *panel;
-	LobbyListChooserHandler *handler;
 	std::string playingSongName;
 	CheckBox *playOriginalCheckbox;
-
-	LobbyManager *lobbyManager;
 
 	LobbyChooseRect *currPlayingRect;
 	LobbyChooseRect *currPlayingMyRect;
@@ -103,31 +47,34 @@ struct LobbyListChooser : PanelUpdater
 	//Button *cancelButton;
 
 
-	LobbyListChooser(LobbyListChooserHandler *handler, int rows);
-	~LobbyListChooser();
+	LobbySelector( int rows);
+	~LobbySelector();
 	void SetPlayingColor(const std::string &str);
 	void SetStoppedColor();
 	void OpenPopup();
 	void ClosePopup();
-	bool MouseUpdate();
 	void Draw(sf::RenderTarget *target);
-	void Deactivate();
 	void MouseScroll(int delta);
-	void LateDraw(sf::RenderTarget *target);
 	void PopulateRects();
+
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
 };
 
 struct LobbyBrowser
 {
-	LobbyChooserHandler *lobbyChooserHandler;
+	LobbySelector *lobbySelector;
 
 	enum Action
 	{
 		A_GET_LOBBIES,
 		A_IDLE,
+		A_AUTO_REFRESH_LOBBIES,
 	};
 
 	Action action;
+	int frame;
 
 	LobbyBrowser();
 	~LobbyBrowser();
@@ -135,6 +82,8 @@ struct LobbyBrowser
 	void Draw(sf::RenderTarget *target);
 	void OpenPopup();
 	void ClosePopup();
+	void SetAction(Action a);
+	bool HandleEvent(sf::Event ev);
 };
 
 #endif

@@ -108,6 +108,14 @@ void NetplayManager::LeaveLobby()
 		lobbyManager->LeaveLobby();
 }
 
+void NetplayManager::Init()
+{
+	Abort();
+
+	lobbyManager = new LobbyManager;
+	connectionManager = new ConnectionManager;
+}
+
 void NetplayManager::Abort()
 {
 	if (lobbyManager != NULL)
@@ -758,10 +766,10 @@ int NetplayManager::RunMatch()
 
 void NetplayManager::FindMatch()
 {
-	Abort();
-
 	if (isSyncTest)
 	{
+		Abort();
+
 		matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
 		matchParams.numPlayers = 2;
 
@@ -771,8 +779,7 @@ void NetplayManager::FindMatch()
 	}
 	else
 	{
-		lobbyManager = new LobbyManager;
-		connectionManager = new ConnectionManager;
+		Init();
 
 		action = A_CHECKING_FOR_LOBBIES;
 

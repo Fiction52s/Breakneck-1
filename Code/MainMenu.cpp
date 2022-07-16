@@ -2760,7 +2760,7 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			lobbyBrowser->lobbyChooserHandler->chooser->panel->HandleEvent(ev);
+			lobbyBrowser->HandleEvent(ev);
 		}
 
 		lobbyBrowser->Update();

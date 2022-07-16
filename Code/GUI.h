@@ -105,7 +105,7 @@ struct PanelUpdater
 	{
 
 	}
-	virtual bool MouseUpdate() = 0;
+	virtual bool MouseUpdate() { return true; };
 	virtual void Draw(sf::RenderTarget *target){}
 	virtual void LateDraw(sf::RenderTarget *target) {}
 	virtual void Deactivate() {}

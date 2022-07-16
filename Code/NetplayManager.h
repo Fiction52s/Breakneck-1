@@ -111,6 +111,7 @@ struct NetplayManager
 	NetplayManager();
 	~NetplayManager();
 
+	void Init();
 	bool IsReadyToRun();
 	bool IsIdle();
 	void LeaveLobby();
