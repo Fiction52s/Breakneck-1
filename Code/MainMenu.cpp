@@ -45,6 +45,8 @@
 #include "CustomCursor.h"
 #include "MenuPopup.h"
 
+#include "LobbyBrowser.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -432,6 +434,8 @@ MainMenu::MainMenu()
 
 	netplayManager = new NetplayManager;
 
+	lobbyBrowser = new LobbyBrowser;
+
 	if (musicManager->songMap.empty())
 	{
 		cout << "music manager is empty. no songs loaded" << endl;
@@ -708,6 +712,11 @@ MainMenu::~MainMenu()
 
 	if (netplayManager != NULL)
 		delete netplayManager;
+
+	if (lobbyBrowser != NULL)
+	{
+		delete lobbyBrowser;
+	}
 
 	for (int i = 0; i < 4; ++i)
 	{
@@ -2747,6 +2756,17 @@ void MainMenu::HandleMenuMode()
 		mapBrowserScreen->Update();
 		break;
 	}
+	case LOBBY_BROWSER:
+	{
+		while (window->pollEvent(ev))
+		{
+			lobbyBrowser->lobbyChooserHandler->chooser->panel->HandleEvent(ev);
+		}
+
+		lobbyBrowser->Update();
+
+		break;
+	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
 	{
 		if (fader->IsFullyFadedOut())
@@ -3060,8 +3080,12 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
-			mapBrowserScreen->Start();
-			SetMode(BROWSE_WORKSHOP);
+			lobbyBrowser->OpenPopup();
+			SetMode(LOBBY_BROWSER);
+
+			//mapBrowserScreen->Start();
+			//SetMode(BROWSE_WORKSHOP);
+
 			//SetMode(TRANS_MAIN_TO_CREDITS);
 			break;
 		}
@@ -3350,6 +3374,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		mapBrowserScreen->Draw(preScreenTexture);
+		break;
+	}
+	case LOBBY_BROWSER:
+	{
+		preScreenTexture->setView(v);
+		lobbyBrowser->Draw(preScreenTexture);
 		break;
 	}
 	case RUN_FREEPLAY_MAP:

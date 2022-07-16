@@ -79,7 +79,7 @@ void LobbyManager::PrintLobbies()
 {
 	int index = 0;
 	cout << "printing lobbies" << endl;
-	for (auto it = lobbyList.begin(); it != lobbyList.end(); ++it)
+	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 	{
 		cout << index << ": " << (*it).name << endl;
 		++index;
@@ -118,7 +118,7 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 
 	if (pCallback->m_bSuccess)
 	{
-		for (auto it = lobbyList.begin(); it != lobbyList.end(); ++it)
+		for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 		{
 			if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 			{
@@ -185,8 +185,8 @@ void LobbyManager::TryJoiningLobby()
 {
 	action = A_REQUEST_JOIN_LOBBY;
 
-	cout << "found a lobby. Attempting to join: " << lobbyList.front().name << endl;
-	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyList.front().m_steamIDLobby);
+	cout << "found a lobby. Attempting to join: " << lobbyVec[0].name << endl;
+	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[0].m_steamIDLobby);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
 
@@ -217,7 +217,7 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 	// move forward the state
 	currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
 
-	for (auto it = lobbyList.begin(); it != lobbyList.end(); ++it)
+	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 	{
 		if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 		{
@@ -230,7 +230,7 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 
 void LobbyManager::ProcessLobbyList()
 {
-	if (lobbyList.empty())
+	if (lobbyVec.empty())
 	{
 		/*LobbyParams lp;
 		lp.maxMembers = 2;
@@ -264,7 +264,7 @@ void LobbyManager::RefreshLobbyList()
 
 void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bIOFailure)
 {
-	lobbyList.clear();
+	lobbyVec.clear();
 	m_bRequestingLobbies = false;
 
 	if (bIOFailure)
@@ -284,6 +284,7 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 	}
 
 	// lobbies are returned in order of closeness to the user, so add them to the list in that order
+	lobbyVec.reserve(pCallback->m_nLobbiesMatching);
 	for (uint32 iLobby = 0; iLobby < pCallback->m_nLobbiesMatching; iLobby++)
 	{
 		CSteamID steamIDLobby = SteamMatchmaking()->GetLobbyByIndex(iLobby);
@@ -310,7 +311,7 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 			// results will be returned via LobbyDataUpdate_t callback
 		}
 
-		lobbyList.push_back(lobby);
+		lobbyVec.push_back(lobby);
 		
 	}
 

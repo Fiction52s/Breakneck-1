@@ -2,9 +2,10 @@
 #define __LOBBY_MANAGER_H__
 
 #include "steam/steam_api.h"
-#include <list>
+#include <vector>
 #include <string>
 #include "LobbyMessage.h"
+#include <list>
 
 // an item in the list of lobbies we've found to display
 struct Lobby
@@ -49,7 +50,7 @@ struct LobbyManager
 
 	// Track whether we are in the middle of a refresh or not
 	bool m_bRequestingLobbies;
-	std::list<Lobby> lobbyList;
+	std::vector<Lobby> lobbyVec;
 
 	bool readyForGameStart;
 

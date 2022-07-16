@@ -14,6 +14,7 @@ struct Enemy;
 struct EnemyChooseRect;
 struct ImageChooseRect;
 struct TextChooseRect;
+struct LobbyChooseRect;
 
 struct ActorParams;
 struct Tileset;
@@ -193,6 +194,7 @@ struct ChooseRect : PanelMember
 		I_MUSICLIBRARY,
 		I_MUSICLEVEL,
 		I_LOGLIBRARY,
+		I_LOBBY,
 	};
 
 	sf::Text nameText;
@@ -652,6 +654,7 @@ struct Panel
 		sf::Vector2f &position, Tileset *ts, const sf::IntRect &rect, int bSize = 100 );
 	TextChooseRect * AddTextRect(ChooseRect::ChooseRectIdentity ident,
 		sf::Vector2f &position, sf::Vector2f &bSize, const std::string &text);
+	LobbyChooseRect * AddLobbyRect(sf::Vector2f &position, sf::Vector2f &bSize);
 	void SetPosition(const sf::Vector2i &p_pos);
 	void SetCenterPos(const sf::Vector2i &p_pos);
 	bool HandleEvent(sf::Event ev);
@@ -677,15 +680,19 @@ struct Panel
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
 	void ReserveTextRects(int num);
+	void ReserveLobbyRects(int num);
 	int reservedEnemyRectCount;
 	int reservedImageRectCount;
 	int reservedTextRectCount;
+	int reservedLobbyRectCount;
 	std::vector<EnemyChooseRect*> enemyChooseRects;
 	std::vector<ImageChooseRect*> imageChooseRects;
 	std::vector<TextChooseRect*> textChooseRects;
+	std::vector<LobbyChooseRect*> lobbyChooseRects;
 	sf::Vertex *enemyChooseRectQuads;
 	sf::Vertex *imageChooseRectQuads;
 	sf::Vertex *textChooseRectQuads;
+	sf::Vertex *lobbyChooseRectQuads;
 
 	const sf::Vector2i &GetMousePos();
 

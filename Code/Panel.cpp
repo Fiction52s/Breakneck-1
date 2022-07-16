@@ -5,6 +5,7 @@
 #include "EditorDecorInfo.h"
 #include "EditSession.h"
 #include "MusicSelector.h"
+#include "LobbyBrowser.h"
 
 using namespace sf;
 using namespace std;
@@ -16,8 +17,11 @@ Panel::Panel(const string &n, int width, int height, GUIHandler *h, bool pop)
 	imageChooseRectQuads = NULL;
 	enemyChooseRectQuads = NULL;
 	textChooseRectQuads = NULL;
+	lobbyChooseRectQuads = NULL;
 	reservedEnemyRectCount = 0;
 	reservedImageRectCount = 0;
+	reservedTextRectCount = 0;
+	reservedLobbyRectCount = 0;
 	arial.loadFromFile("Resources/Fonts/Breakneck_Font_01.ttf");
 	SetPosition(Vector2i(0, 0));
 	extraUpdater = NULL;
@@ -109,6 +113,16 @@ Panel::~Panel()
 	{
 		delete[] textChooseRectQuads;
 	}
+
+	for (auto it = lobbyChooseRects.begin(); it != lobbyChooseRects.end(); ++it)
+	{
+		delete (*it);
+	}
+	if (lobbyChooseRectQuads != NULL)
+	{
+		delete[] lobbyChooseRectQuads;
+	}
+	
 
 
 	/*for (auto it = enemyChoosers.begin(); it != enemyChoosers.end(); ++it)
@@ -439,6 +453,11 @@ bool Panel::MouseUpdate()
 		bool temp = (*it)->MouseUpdate();
 	}
 
+	for (auto it = lobbyChooseRects.begin(); it != lobbyChooseRects.end(); ++it)
+	{
+		bool temp = (*it)->MouseUpdate();
+	}
+
 	if (extraUpdater != NULL)
 		extraUpdater->MouseUpdate();
 
@@ -566,6 +585,13 @@ void Panel::ReserveTextRects(int num)
 	textChooseRectQuads = new Vertex[num * 4];
 }
 
+void Panel::ReserveLobbyRects(int num)
+{
+	reservedLobbyRectCount = num;
+	lobbyChooseRects.reserve(num);
+	lobbyChooseRectQuads = new Vertex[num * 4];
+}
+
 void Panel::AddAutoSpaceX(int x)
 {
 	if (autoSpace.x && !autoSpacePaused)
@@ -642,6 +668,20 @@ TextChooseRect * Panel::AddTextRect(ChooseRect::ChooseRectIdentity ident,
 	AddAutoSpaceY(bSize.y + position.y);
 
 	return icRect;
+}
+
+LobbyChooseRect * Panel::AddLobbyRect(sf::Vector2f &position, sf::Vector2f &bSize)
+{
+	assert(lobbyChooseRects.size() < reservedLobbyRectCount);
+	LobbyChooseRect *lcRect = new LobbyChooseRect(ChooseRect::ChooseRectIdentity::I_LOBBY,
+		lobbyChooseRectQuads + lobbyChooseRects.size() * 4,
+		Vector2f(autoStart) + position, "testtt", bSize, this);
+	lobbyChooseRects.push_back(lcRect);
+
+	AddAutoSpaceX(bSize.x + position.x);
+	AddAutoSpaceY(bSize.y + position.y);
+
+	return lcRect;
 }
 
 Slider * Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
@@ -961,6 +1001,12 @@ void Panel::Draw(RenderTarget *target)
 
 	target->draw(textChooseRectQuads, 4 * textChooseRects.size(), sf::Quads);
 	for (auto it = textChooseRects.begin(); it != textChooseRects.end(); ++it)
+	{
+		(*it)->Draw(target);
+	}
+
+	target->draw(lobbyChooseRectQuads, 4 * lobbyChooseRects.size(), sf::Quads);
+	for (auto it = lobbyChooseRects.begin(); it != lobbyChooseRects.end(); ++it)
 	{
 		(*it)->Draw(target);
 	}
