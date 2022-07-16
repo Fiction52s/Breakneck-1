@@ -19,8 +19,6 @@ LobbyListChooserHandler::~LobbyListChooserHandler()
 LobbyChooserHandler::LobbyChooserHandler(int rows)
 	:LobbyListChooserHandler(rows)
 {
-	grabbedText = chooser->lobbyRects[0]->nameText;
-	grabbedText.setString("");
 }
 
 LobbyChooserHandler::~LobbyChooserHandler()
@@ -59,7 +57,18 @@ void LobbyChooserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
 		{
-			ClickText(cr);
+
+			for (int i = 0; i < chooser->totalRects; ++i)
+			{
+				if (chooser->lobbyRects[i] != cr)
+				{
+					chooser->lobbyRects[i]->Deselect();
+				}
+			}
+			cr->Select();
+
+
+			//ClickText(cr);
 		}
 		else if (eventType == ChooseRect::ChooseRectEventType::E_RIGHTCLICKED)
 		{
@@ -132,16 +141,6 @@ void LobbyChooserHandler::ButtonCallback(Button *b, const std::string & e)
 
 bool LobbyChooserHandler::MouseUpdate()
 {
-	if (MOUSE.IsMouseLeftReleased())
-	{
-		state = BROWSE;
-		grabbedString = "";
-	}
-
-	if (state == DRAG)
-	{
-		grabbedText.setPosition(Vector2f(chooser->panel->GetMousePos()));
-	}
 	return true;
 }
 
@@ -149,13 +148,13 @@ void LobbyChooserHandler::ClickText(ChooseRect *cr)
 {
 	//FileNode *fn = (FileNode*)cr->info;
 
-	grabbedString = cr->nameText.getString();
-	grabbedText.setString(grabbedString);
-	grabbedText.setOrigin(grabbedText.getLocalBounds().left
-		+ grabbedText.getLocalBounds().width / 2,
-		grabbedText.getLocalBounds().top
-		+ grabbedText.getLocalBounds().height / 2);
-	state = DRAG;
+	//grabbedString = cr->nameText.getString();
+	//grabbedText.setString(grabbedString);
+	//grabbedText.setOrigin(grabbedText.getLocalBounds().left
+	//	+ grabbedText.getLocalBounds().width / 2,
+	//	grabbedText.getLocalBounds().top
+	//	+ grabbedText.getLocalBounds().height / 2);
+	//state = DRAG;
 
 	//chooser->HideSlider(grabbedString);
 }
@@ -167,10 +166,10 @@ void LobbyChooserHandler::Draw(sf::RenderTarget *target)
 
 void LobbyChooserHandler::LateDraw(sf::RenderTarget *target)
 {
-	if (state == DRAG)
-	{
-		target->draw(grabbedText);
-	}
+	//if (state == DRAG)
+	//{
+	//	target->draw(grabbedText);
+	//}
 }
 
 LobbyListChooser::LobbyListChooser(LobbyListChooserHandler *p_handler, int rows)
@@ -212,7 +211,7 @@ LobbyListChooser::LobbyListChooser(LobbyListChooserHandler *p_handler, int rows)
 		lobbyRects[i]->Init();
 	}
 
-	panel->SetConfirmButton(panel->AddButton("ok", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "OK"));
+	panel->AddButton("join", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "JOIN");
 	//panel->SetCancelButton(panel->AddButton("cancel", Vector2i(140, panel->size.y - 100), Vector2f(100, 40), "Cancel"));
 }
 

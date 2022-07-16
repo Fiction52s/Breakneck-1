@@ -61,11 +61,8 @@ struct LobbyChooserHandler : LobbyListChooserHandler
 	enum State
 	{
 		BROWSE,
-		DRAG,
 	};
 
-	sf::Text grabbedText;
-	std::string grabbedString;
 	State state;
 
 	LobbyChooserHandler(int rows);
