@@ -280,7 +280,7 @@ void LobbyBrowser::OpenPopup()
 
 	ClearSelection();
 
-	netplayManager->Init();
+	
 
 	SetAction(A_GET_LOBBIES);
 }

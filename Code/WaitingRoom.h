@@ -12,6 +12,7 @@ struct WaitingRoom : GUIHandler
 		A_WAITING_FOR_MEMBERS,
 		A_READY_TO_START,
 		A_STARTING,
+		A_LEAVE_ROOM,
 	};
 
 	Action action;

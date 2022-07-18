@@ -128,11 +128,11 @@ struct MapBrowser : TilesetManager,
 	
 
 	//panelupdater functions
-	bool MouseUpdate();
+	//bool MouseUpdate();
 	void Draw(sf::RenderTarget *target);
 	void Deactivate();
 	void MouseScroll(int delta);
-	void LateDraw(sf::RenderTarget *target);
+	//void LateDraw(sf::RenderTarget *target);
 	
 	//---------
 	void SetRelativePath(const std::string &p_relPath);
@@ -141,7 +141,7 @@ struct MapBrowser : TilesetManager,
 	void AddFolder(const boost::filesystem::path &folderPath);
 	void ClearNodes();
 	void PopulateRects();
-	bool IsCustomMapSelected();
+	//bool IsCustomMapSelected();
 	
 	void Start(const std::string &ext,
 		Mode mode, const std::string &path);
@@ -178,6 +178,30 @@ struct MapBrowser : TilesetManager,
 	
 	
 	sf::Text *folderPathText;
+};
+
+struct MapOptionsPopup : GUIHandler
+{
+	enum Action
+	{
+		A_INACTIVE,
+		A_ACTIVE,
+		A_CONFIRMED,
+		A_CANCELLED,
+	};
+
+	Panel *panel;
+	bool active;
+	Action action;
+
+	MapOptionsPopup();
+	~MapOptionsPopup();
+	void Activate();
+	void Update();
+	void HandleEvent(sf::Event ev);
+	void Draw(sf::RenderTarget *target);
+
+	void ButtonCallback(Button *b, const std::string & e);
 };
 
 #endif

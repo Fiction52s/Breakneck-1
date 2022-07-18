@@ -9,7 +9,7 @@ using namespace sf;
 MapBrowserScreen::MapBrowserScreen(MainMenu *mm)
 {
 	mainMenu = mm;
-	browserHandler = new DefaultMapBrowserHandler;
+	browserHandler = new MapBrowserHandler(4, 4 );
 
 	SetRectColor(bgQuad, Color::Blue);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
@@ -25,7 +25,7 @@ MapBrowserScreen::~MapBrowserScreen()
 
 void MapBrowserScreen::StartLocalBrowsing()
 {
-	browserHandler->chooser->StartRelative(".brknk", MapBrowser::OPEN, "Resources\\Maps");
+	browserHandler->chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
 }
 
 void MapBrowserScreen::StartWorkshopBrowsing()

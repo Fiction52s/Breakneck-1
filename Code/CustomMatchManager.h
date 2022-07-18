@@ -7,6 +7,8 @@
 struct LobbyBrowser;
 struct WaitingRoom;
 struct MapBrowserScreen;
+struct MapOptionsPopup;
+struct MapNode;
 
 struct CustomMatchManager
 {
@@ -15,7 +17,8 @@ struct CustomMatchManager
 		A_IDLE,
 		A_LOBBY_BROWSER,
 		A_CHOOSE_MAP,
-		A_CHOOSE_MAP_SETTINGS,
+		A_CHOOSE_MAP_OPTIONS,
+		A_CREATING_LOBBY,
 		A_WAITING_ROOM,
 		A_READY,
 	};
@@ -26,6 +29,9 @@ struct CustomMatchManager
 	LobbyBrowser *lobbyBrowser;
 	WaitingRoom *waitingRoom;
 	MapBrowserScreen * mapBrowserScreen;
+	MapOptionsPopup *mapOptionsPopup;
+
+	MapNode *selectedMap;
 
 	CustomMatchManager();
 	~CustomMatchManager();

@@ -2768,6 +2768,11 @@ void MainMenu::HandleMenuMode()
 
 		customMatchManager->Update();
 
+		if (customMatchManager->action == CustomMatchManager::A_READY)
+		{
+			SetMode(QUICKPLAY_TEST);
+		}
+
 		break;
 	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
@@ -3083,15 +3088,15 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
-			customMatchManager->CreateCustomLobby();
-			/*if (IsKeyPressed(Keyboard::LShift))
+			
+			if (IsKeyPressed(Keyboard::LShift))
 			{
-				
+				customMatchManager->CreateCustomLobby();
 			}
 			else
 			{
 				customMatchManager->BrowseCustomLobbies();
-			}*/
+			}
 
 			SetMode(CUSTOM_MATCH_SETUP);
 			

@@ -9,6 +9,7 @@ struct LobbyMessage
 	enum MessageType : uint8
 	{
 		MESSAGE_TYPE_SHARE_MAP_DETAILS,
+		MESSAGE_TYPE_START_CUSTOM_MATCH,
 	};
 
 	struct MessageHeader

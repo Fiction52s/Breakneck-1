@@ -186,10 +186,10 @@ MapBrowser::~MapBrowser()
 	delete workshop;
 }
 
-bool MapBrowser::MouseUpdate()
-{
-	return handler->MouseUpdate();
-}
+//bool MapBrowser::MouseUpdate()
+//{
+//	return handler->MouseUpdate();
+//}
 
 void MapBrowser::Draw(sf::RenderTarget *target)
 {
@@ -230,7 +230,7 @@ void MapBrowser::ClearNodes()
 {
 	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
-		if ((*it)->ts_preview != NULL)
+		if ( (*it)->type == MapNode::FILE && (*it)->ts_preview != NULL)
 		{
 			DestroyTileset((*it)->ts_preview);
 		}
@@ -473,7 +473,7 @@ void MapBrowser::Init()
 		fileNameTextBox->SetCursorIndex(0);
 		panel->SetFocusedMember(fileNameTextBox);*/
 	}
-	else if (mode == CREATE_LOBBY)
+	else if (mode == CREATE_CUSTOM_GAME)
 	{
 		panel->confirmButton->text.setString("Create");
 
@@ -495,7 +495,7 @@ void MapBrowser::Init()
 	{
 
 	}
-	else if (mode == CREATE_LOBBY)
+	else if (mode == CREATE_CUSTOM_GAME)
 	{
 
 	}
@@ -824,7 +824,6 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 	else if (chooser->mode == MapBrowser::CREATE_CUSTOM_GAME)
 	{
 		chooser->selectedRect = cr->GetAsImageChooseRect();
-
 	}
 }
 
@@ -853,4 +852,77 @@ void MapBrowserHandler::Draw(sf::RenderTarget *target)
 
 		target->draw(descriptionText);
 	}
+}
+
+MapOptionsPopup::MapOptionsPopup()
+{
+	panel = new Panel("mapoptions", 300,
+		300, this, true);
+
+	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
+	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+
+
+
+	panel->confirmButton =
+		panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
+	panel->cancelButton =
+		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+
+	panel->StopAutoSpacing();
+
+	panel->SetCenterPos(Vector2i(960, 540));
+
+	action = A_INACTIVE;
+
+	/*panel->ReserveImageRects(totalRects + extraImageRects);
+	panel->extraUpdater = this;*/
+
+	//panel->MouseUpdate();
+
+	/*upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
+	playButton = panel->AddButton("play", Vector2i(100, 10), Vector2f(30, 30), "play");
+	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+
+	Vector2i pageButtonOrigin(750, 990);
+
+	prevPageButton = panel->AddButton("prevpage", Vector2i(pageButtonOrigin), Vector2f(30, 30), "<");
+	nextPageButton = panel->AddButton("nextpage", Vector2i(pageButtonOrigin + Vector2i(60, 0)), Vector2f(30, 30), ">");*/
+}
+
+MapOptionsPopup::~MapOptionsPopup()
+{
+	delete panel;
+}
+
+void MapOptionsPopup::Update()
+{
+	panel->MouseUpdate();
+}
+
+void MapOptionsPopup::HandleEvent(sf::Event ev)
+{
+	panel->HandleEvent(ev);
+}
+
+void MapOptionsPopup::Draw(sf::RenderTarget *target)
+{
+	panel->Draw(target);
+}
+
+void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b->name == "ok")
+	{
+		action = A_CONFIRMED;
+	}
+	else if (b->name == "cancel")
+	{
+		action = A_CANCELLED;
+	}
+}
+
+void MapOptionsPopup::Activate()
+{
+	action = A_ACTIVE;
 }

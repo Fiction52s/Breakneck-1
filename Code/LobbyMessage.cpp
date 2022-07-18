@@ -67,6 +67,11 @@ void LobbyMessage::Print()
 		cout << "type: share_map_details ";
 		cout << "path: " << mapPath << endl;
 		break;
+	case MESSAGE_TYPE_START_CUSTOM_MATCH:
+	{
+		cout << "custom match start" << endl;
+		break;
+	}
 	default:
 		assert(false && "message header is invalid");
 		break;

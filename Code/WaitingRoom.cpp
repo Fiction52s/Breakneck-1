@@ -7,7 +7,7 @@ using namespace sf;
 
 WaitingRoom::WaitingRoom()
 {
-	panel = new Panel("listchooser", 1000, 500, this, true);
+	panel = new Panel("waitingroom", 1000, 500, this, true);
 	panel->SetCenterPos(Vector2i(960, 540));
 
 	startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
@@ -43,6 +43,8 @@ void WaitingRoom::Update()
 	}
 
 	}
+
+	panel->MouseUpdate();
 }
 
 void WaitingRoom::Draw(sf::RenderTarget *target)\
@@ -57,6 +59,15 @@ void WaitingRoom::OpenPopup()
 	assert(netplayManager->lobbyManager->IsInLobby());
 
 	startButton->HideMember();
+
+	if (netplayManager->IsHost())
+	{
+		startButton->ShowMember();
+	}
+	else
+	{
+		startButton->HideMember();
+	}
 
 	/*if (netplayManager->IsHost())
 	{
@@ -84,7 +95,7 @@ void WaitingRoom::SetAction(Action a)
 
 bool WaitingRoom::HandleEvent(sf::Event ev)
 {
-
+	return panel->HandleEvent(ev);
 }
 
 
@@ -97,10 +108,11 @@ void WaitingRoom::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b == startButton)
 	{
-		
+		SetAction(A_READY_TO_START);
 	}
 	else if (b == leaveButton)
 	{
+		SetAction(A_LEAVE_ROOM);
 		//go back
 	}
 }

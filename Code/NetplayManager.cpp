@@ -474,6 +474,16 @@ void NetplayManager::ReceiveMessages()
 	}
 }
 
+void NetplayManager::BroadcastLobbyMessage(LobbyMessage &msg)
+{
+	uint8 *buffer = NULL;
+	int bufferSize = msg.CreateBinaryMessage(buffer);
+
+	SteamMatchmaking()->SendLobbyChatMsg(lobbyManager->currentLobby.m_steamIDLobby, buffer, bufferSize);
+
+	delete[] buffer;
+}
+
 void NetplayManager::BroadcastMapDetailsToLobby()
 {
 	assert(IsHost());
@@ -872,13 +882,18 @@ void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 
 	//still need a lobby message to set our game name
 
-	if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_SHARE_MAP_DETAILS && GetHostID() == msg.sender)
+	/*if (msg.header.messageType == LobbyMessage::MESSAGE_TYPE_SHARE_MAP_DETAILS && GetHostID() == msg.sender)
 	{
 		assert(action == A_WAIT_TO_LOAD_MAP);
 		cout << "received a message on which map we're playing" << endl;
 
 		matchParams.mapPath = msg.mapPath;
 		matchParams.numPlayers = lobbyManager->GetNumMembers();
+	}*/
+
+	if ( !IsHost() && msg.sender == GetHostID() && LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH)
+	{
+		StartConnecting();
 	}
 }
 
@@ -1043,7 +1058,7 @@ void NetplayManager::DumpDesyncInfo()
 	}
 }
 
-void NetplayManager::CreateCustomLobby(LobbyParams &lp)
+void NetplayManager::TryCreateCustomLobby(LobbyParams &lp)
 {
 	lobbyManager->TryCreatingLobby(lp);
 	action = A_CUSTOM_HOST_GATHERING_USERS;

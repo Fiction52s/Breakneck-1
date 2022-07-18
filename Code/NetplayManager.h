@@ -147,9 +147,10 @@ struct NetplayManager
 	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
 	void DumpDesyncInfo();
 
-	void CreateCustomLobby(LobbyParams &lp);
+	void TryCreateCustomLobby(LobbyParams &lp);
 
 	void BroadcastMapDetailsToLobby();
+	void BroadcastLobbyMessage(LobbyMessage &msg);
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
