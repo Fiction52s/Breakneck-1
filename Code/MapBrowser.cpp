@@ -107,7 +107,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	action = A_IDLE;
 
 	workshop = new WorkshopManager;
-	workshop->mapBrowser = this;
+	//workshop->mapBrowser = this;
 
 	float boxSize = 150;
 	Vector2f spacing(60, 60);
@@ -162,10 +162,12 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 960), Vector2i(30, 0));
-	fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+
+
 
 	panel->confirmButton =
-		panel->AddButton("save", Vector2i(0, 0), Vector2f(60, 30), "Save");
+		panel->AddButton("confirm", Vector2i(0, 0), Vector2f(60, 30), "confirm");
 	panel->cancelButton =
 		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
 
@@ -333,6 +335,8 @@ void MapBrowser::SetPath(const std::string &p_path)
 {
 	ClearNodes();
 
+	handler->ClearSelection();
+
 	topRow = 0;
 
 	handler->ChangePath();
@@ -382,19 +386,6 @@ void MapBrowser::SetPath(const std::string &p_path)
 		maxTopRow = 0;
 
 	PopulateRects();
-}
-
-void MapBrowser::StartWorkshop()
-{
-	mode = WORKSHOP;
-
-	Init();
-	
-	currWorkshopPage = 1;
-
-	upButton->HideMember();
-
-	QueryMaps();
 }
 
 void MapBrowser::QueryMaps()
@@ -462,39 +453,57 @@ void MapBrowser::TurnOff()
 
 void MapBrowser::Init()
 {
+	//ClearNodes();
 	//edit->AddActivePanel(panel);
 	if (mode == OPEN)
 	{
 		panel->confirmButton->text.setString("Open");
 
-		fileNameTextBox->SetString("");
+		/*fileNameTextBox->SetString("");
 		fileNameTextBox->focused = true;
 		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);
+		panel->SetFocusedMember(fileNameTextBox);*/
 	}
 	else if(mode == SAVE )
 	{
 		panel->confirmButton->text.setString("Save");
 
-		fileNameTextBox->SetString("");
+		/*fileNameTextBox->SetString("");
 		fileNameTextBox->focused = true;
 		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);
+		panel->SetFocusedMember(fileNameTextBox);*/
 	}
 	else if (mode == CREATE_LOBBY)
 	{
-		panel->confirmButton->text.setString("Save");
+		panel->confirmButton->text.setString("Create");
 
-		fileNameTextBox->SetString("");
+		/*fileNameTextBox->SetString("");
 		fileNameTextBox->focused = true;
 		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);
+		panel->SetFocusedMember(fileNameTextBox);*/
 	}
 	else
 	{
 		panel->confirmButton->text.setString("getridof");
 	}
 	
+	if (mode == OPEN)
+	{
+		
+	}
+	else if (mode == SAVE)
+	{
+
+	}
+	else if (mode == CREATE_LOBBY)
+	{
+
+	}
+	else if (mode == WORKSHOP)
+	{
+
+	}
+
 	currWorkshopPage = 1;
 	selectedRect = NULL;
 }
@@ -523,6 +532,19 @@ void MapBrowser::StartRelative(const std::string &p_ext,
 	SetRelativePath(path);
 }
 
+void MapBrowser::StartWorkshop()
+{
+	mode = WORKSHOP;
+
+	Init();
+
+	currWorkshopPage = 1;
+
+	upButton->HideMember();
+
+	QueryMaps();
+}
+
 void MapBrowser::MouseScroll(int delta)
 {
 	int oldTopRow = topRow;
@@ -545,14 +567,25 @@ void MapBrowser::MouseScroll(int delta)
 	}
 }
 
-void MapBrowser::LateDraw(sf::RenderTarget *target)
-{
-	handler->LateDraw(target);
-}
-
 MapBrowserHandler::MapBrowserHandler(int cols, int rows, int extraImageRects)
 {
 	chooser = new MapBrowser(this, cols, rows, extraImageRects);
+
+	ts_largePreview = NULL;
+
+	Vector2f previewTopLeft = Vector2f(1000, 540 - 492 / 2);
+
+	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
+	SetRectTopLeft(largePreview, 912, 492, previewTopLeft);
+
+	MainMenu *mm = MainMenu::GetInstance();
+
+	Vector2f previewBotLeft = previewTopLeft + Vector2f(0, 492);
+
+	descriptionText.setFont(mm->arial);
+	descriptionText.setCharacterSize(20);
+	descriptionText.setPosition(previewBotLeft + Vector2f(0, 30));
+	descriptionText.setFillColor(Color::Red);
 }
 
 MapBrowserHandler::~MapBrowserHandler()
@@ -670,6 +703,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == chooser->upButton)
 	{
+		
 		chooser->SetPath(chooser->currPath.parent_path().string());
 	}
 }
@@ -703,43 +737,37 @@ bool MapBrowserHandler::CheckIfSelectedItemInstalled()
 	return false;
 }
 
-DefaultMapBrowserHandler::DefaultMapBrowserHandler()
-	:MapBrowserHandler(4,4)
-{
-	ts_largePreview = NULL;
-
-	Vector2f previewTopLeft = Vector2f(1000, 540 - 492 / 2);
-
-	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
-	SetRectTopLeft(largePreview, 912, 492, previewTopLeft);
-
-	MainMenu *mm = MainMenu::GetInstance();
-
-	Vector2f previewBotLeft = previewTopLeft + Vector2f(0, 492);
-
-	descriptionText.setFont(mm->arial);
-	descriptionText.setCharacterSize(20);
-	descriptionText.setPosition(previewBotLeft + Vector2f(0, 30));
-	descriptionText.setFillColor(Color::Red);
-}
-
-void DefaultMapBrowserHandler::ChangePath()
+void MapBrowserHandler::ChangePath()
 {
 	ts_largePreview = NULL;
 	chooser->ClearTilesets();
 }
 
-void DefaultMapBrowserHandler::Update()
+void MapBrowserHandler::ClearSelection()
+{
+	for (int i = 0; i < chooser->totalRects; ++i)
+	{
+		chooser->imageRects[i]->Deselect();
+	}
+}
+
+void MapBrowserHandler::SelectRect(ChooseRect *cr)
+{
+	ClearSelection();
+	cr->Select();
+}
+
+void MapBrowserHandler::Update()
 {
 	chooser->Update();
 }
 
-void DefaultMapBrowserHandler::Cancel()
+void MapBrowserHandler::Cancel()
 {
 	chooser->TurnOff();
 }
 
-void DefaultMapBrowserHandler::Confirm()
+void MapBrowserHandler::Confirm()
 {
 	string fileName = chooser->fileNameTextBox->GetString();
 	if (fileName != "")
@@ -756,7 +784,7 @@ void DefaultMapBrowserHandler::Confirm()
 	}
 }
 
-void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
+void MapBrowserHandler::ClickFile(ChooseRect *cr)
 {
 	string fileName = cr->nameText.getString().toAnsiString();
 
@@ -764,12 +792,7 @@ void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	for (int i = 0; i < chooser->totalRects; ++i)
-	{
-		chooser->imageRects[i]->Deselect();
-	}
-
-	cr->Select();
+	SelectRect(cr);
 
 	if (chooser->mode == MapBrowser::OPEN)
 	{
@@ -798,9 +821,14 @@ void DefaultMapBrowserHandler::ClickFile(ChooseRect *cr)
 	{
 		chooser->selectedRect = cr->GetAsImageChooseRect();	
 	}
+	else if (chooser->mode == MapBrowser::CREATE_CUSTOM_GAME)
+	{
+		chooser->selectedRect = cr->GetAsImageChooseRect();
+
+	}
 }
 
-void DefaultMapBrowserHandler::FocusFile(ChooseRect *cr)
+void MapBrowserHandler::FocusFile(ChooseRect *cr)
 {
 	ts_largePreview = cr->GetAsImageChooseRect()->ts;
 
@@ -809,14 +837,14 @@ void DefaultMapBrowserHandler::FocusFile(ChooseRect *cr)
 	descriptionText.setString(mn->description);
 }
 
-void DefaultMapBrowserHandler::UnfocusFile(ChooseRect *cr)
+void MapBrowserHandler::UnfocusFile(ChooseRect *cr)
 {
 	ts_largePreview = NULL;
 
 	descriptionText.setString("");
 }
 
-void DefaultMapBrowserHandler::Draw(sf::RenderTarget *target)
+void MapBrowserHandler::Draw(sf::RenderTarget *target)
 {
 	//chooser->panel->Draw(target);
 	if (ts_largePreview)

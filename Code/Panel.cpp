@@ -1041,7 +1041,7 @@ bool Panel::SendKey(sf::Keyboard::Key k, bool shift)
 {
 	if (k == Keyboard::Return)
 	{
-		if (confirmButton != NULL)
+		if (confirmButton != NULL && !confirmButton->hidden)
 		{
 			SendEvent(confirmButton, "pressed");
 		}
@@ -1049,7 +1049,7 @@ bool Panel::SendKey(sf::Keyboard::Key k, bool shift)
 	}
 	else if (k == Keyboard::Escape)
 	{
-		if (cancelButton != NULL)
+		if (cancelButton != NULL && !cancelButton->hidden)
 		{
 			SendEvent(cancelButton, "pressed");
 		}

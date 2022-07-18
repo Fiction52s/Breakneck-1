@@ -23,21 +23,19 @@ MapBrowserScreen::~MapBrowserScreen()
 	delete browserHandler;
 }
 
-void MapBrowserScreen::Start()
+void MapBrowserScreen::StartLocalBrowsing()
 {
 	browserHandler->chooser->StartRelative(".brknk", MapBrowser::OPEN, "Resources\\Maps");
+}
 
-	/*if (Keyboard::isKeyPressed(sf::Keyboard::LShift))
-	{
-		browserHandler->chooser->StartRelative(".brknk", MapBrowser::OPEN, "Resources\\Maps");
-	}
-	else
-	{
-		browserHandler->chooser->StartWorkshop();
-	}*/
+void MapBrowserScreen::StartWorkshopBrowsing()
+{
+	browserHandler->chooser->StartWorkshop();
+}
 
-	//browserHandler->chooser->SetToWorkshop();
-	//Start
+bool MapBrowserScreen::HandleEvent(sf::Event ev)
+{
+	return browserHandler->chooser->panel->HandleEvent(ev);
 }
 
 void MapBrowserScreen::Update()

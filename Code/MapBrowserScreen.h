@@ -6,11 +6,11 @@
 
 struct MainMenu;
 struct MapBrowser;
-struct DefaultMapBrowserHandler;
+struct MapBrowserHandler;
 
 struct MapBrowserScreen
 {
-	DefaultMapBrowserHandler *browserHandler;
+	MapBrowserHandler *browserHandler;
 	//MapBrowser *browser;
 	MainMenu *mainMenu;
 	sf::Vertex bgQuad[4];
@@ -20,7 +20,10 @@ struct MapBrowserScreen
 	MapBrowserScreen(MainMenu *mm);
 	~MapBrowserScreen();
 
-	void Start();
+	void StartLocalBrowsing();
+	void StartWorkshopBrowsing();
+
+	bool HandleEvent(sf::Event ev);
 	
 	void Update();
 	void Draw(sf::RenderTarget *target);

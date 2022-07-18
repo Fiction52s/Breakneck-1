@@ -60,31 +60,7 @@ struct MapNode
 struct MapBrowserHandler : GUIHandler
 {
 	MapBrowserHandler(int cols, int rows, int extraImageRects = 0);
-	virtual ~MapBrowserHandler();
-	virtual void Cancel() = 0;
-	virtual void Confirm() = 0;
-	virtual void ClickFile(ChooseRect *cr) = 0;
-	virtual void FocusFile(ChooseRect *cr) = 0;
-	virtual void UnfocusFile(ChooseRect *cr) = 0;
-	virtual bool MouseUpdate() { return true; }
-	virtual void Draw(sf::RenderTarget *target) {}
-	virtual void ChangePath() {}
-	virtual void LateDraw(sf::RenderTarget *target) {}
-
-	//guihandler functions
-	virtual void ChooseRectEvent(ChooseRect *cr, int eventType);
-	virtual void ButtonCallback(Button *b, const std::string & e);
-	virtual void SliderCallback(Slider *slider) {}
-	//---------
-
-	bool CheckIfSelectedItemInstalled();
-
-	MapBrowser *chooser;
-};
-
-struct DefaultMapBrowserHandler : MapBrowserHandler
-{
-	DefaultMapBrowserHandler();
+	~MapBrowserHandler();
 	void Cancel();
 	void Confirm();
 	void ClickFile(ChooseRect *cr);
@@ -92,13 +68,22 @@ struct DefaultMapBrowserHandler : MapBrowserHandler
 	void UnfocusFile(ChooseRect *cr);
 	void Draw(sf::RenderTarget *target);
 	void ChangePath();
+	void ClearSelection();
+	void SelectRect(ChooseRect *cr);
 
 	void Update();
+	bool CheckIfSelectedItemInstalled();
+
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
+	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
 
 	sf::Text descriptionText;
+
+	MapBrowser *chooser;
 
 	
 };
@@ -111,7 +96,7 @@ struct MapBrowser : TilesetManager,
 		WORKSHOP,
 		OPEN,
 		SAVE,
-		CREATE_LOBBY,
+		CREATE_CUSTOM_GAME,
 	};
 
 	//new vars
@@ -156,6 +141,7 @@ struct MapBrowser : TilesetManager,
 	void AddFolder(const boost::filesystem::path &folderPath);
 	void ClearNodes();
 	void PopulateRects();
+	bool IsCustomMapSelected();
 	
 	void Start(const std::string &ext,
 		Mode mode, const std::string &path);
@@ -188,6 +174,7 @@ struct MapBrowser : TilesetManager,
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
 	Button *upButton;
+
 	
 	
 	sf::Text *folderPathText;

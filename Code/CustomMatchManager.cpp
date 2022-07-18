@@ -1,7 +1,11 @@
+#include <assert.h>
 #include "CustomMatchManager.h"
 #include "LobbyBrowser.h"
 #include "WaitingRoom.h"
-#include <assert.h>
+#include "MapBrowser.h"
+#include "MapBrowserScreen.h"
+#include "MainMenu.h"
+
 
 using namespace sf;
 using namespace std;
@@ -10,6 +14,7 @@ CustomMatchManager::CustomMatchManager()
 {
 	lobbyBrowser = new LobbyBrowser;
 	waitingRoom = new WaitingRoom;
+	
 
 	SetAction(A_IDLE);
 
@@ -36,6 +41,8 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 		lobbyBrowser->HandleEvent(ev);
 		break;
 	case A_CHOOSE_MAP:
+		mapBrowserScreen->HandleEvent(ev);
+		//mapBrowserScreen->browserHandler->chooser->
 		break;
 	case A_CHOOSE_MAP_SETTINGS:
 		break;
@@ -48,8 +55,9 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 
 void CustomMatchManager::CreateCustomLobby()
 {
-	assert(action == A_LOBBY_BROWSER);
-
+	//assert(action == A_LOBBY_BROWSER);
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+	mapBrowserScreen->StartLocalBrowsing();
 	SetAction(A_CHOOSE_MAP);
 }
 
@@ -72,6 +80,7 @@ bool CustomMatchManager::Update()
 		}
 		break;
 	case A_CHOOSE_MAP:
+		mapBrowserScreen->Update();
 		break;
 	case A_CHOOSE_MAP_SETTINGS:
 		break;
@@ -93,6 +102,7 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		lobbyBrowser->panel->Draw(target);
 		break;
 	case A_CHOOSE_MAP:
+		mapBrowserScreen->Draw(target);
 		break;
 	case A_CHOOSE_MAP_SETTINGS:
 		break;

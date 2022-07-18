@@ -41,7 +41,7 @@ struct WorkshopManager
 	QueryType queryType;
 	QueryState queryState;
 	std::vector<MapNode*> *queryResults;
-	MapBrowser *mapBrowser;
+	//MapBrowser *mapBrowser;
 	int queryTotalItems;
 
 	

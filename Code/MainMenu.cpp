@@ -565,6 +565,9 @@ MainMenu::MainMenu()
 
 	mapBrowserScreen = new MapBrowserScreen(this);
 
+	
+
+
 	loadingBackpack = new LoadingBackpack(&tilesetManager);
 }
 
@@ -3080,14 +3083,15 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
-			if (IsKeyPressed(Keyboard::LShift))
+			customMatchManager->CreateCustomLobby();
+			/*if (IsKeyPressed(Keyboard::LShift))
 			{
-				customMatchManager->CreateCustomLobby();
+				
 			}
 			else
 			{
 				customMatchManager->BrowseCustomLobbies();
-			}
+			}*/
 
 			SetMode(CUSTOM_MATCH_SETUP);
 			

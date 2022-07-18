@@ -3,8 +3,10 @@
 
 #include <SFML/Graphics.hpp>
 
+
 struct LobbyBrowser;
 struct WaitingRoom;
+struct MapBrowserScreen;
 
 struct CustomMatchManager
 {
@@ -23,6 +25,7 @@ struct CustomMatchManager
 
 	LobbyBrowser *lobbyBrowser;
 	WaitingRoom *waitingRoom;
+	MapBrowserScreen * mapBrowserScreen;
 
 	CustomMatchManager();
 	~CustomMatchManager();
