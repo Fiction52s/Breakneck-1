@@ -5,15 +5,6 @@
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
 
-
-struct NetplayManager;
-
-struct LobbyNode
-{
-	std::string lobbyName;
-	std::string hostName;
-};
-
 struct LobbyChooseRect : ChooseRect
 {
 	LobbyChooseRect(ChooseRectIdentity ident,
@@ -38,20 +29,11 @@ struct LobbySelector : PanelUpdater, GUIHandler
 	int totalRects;
 	LobbyChooseRect **lobbyRects;
 	Panel *panel;
-	std::string playingSongName;
-	CheckBox *playOriginalCheckbox;
-
-	LobbyChooseRect *currPlayingRect;
-	LobbyChooseRect *currPlayingMyRect;
-	//Button *okButton;
-	//Button *cancelButton;
-
+	LobbyChooseRect *currSelectedRect;
 
 	LobbySelector( int rows);
 	~LobbySelector();
-	void SetPlayingColor(const std::string &str);
-	void SetStoppedColor();
-	void OpenPopup();
+	void Start();
 	void ClosePopup();
 	void Draw(sf::RenderTarget *target);
 	void MouseScroll(int delta);
@@ -62,16 +44,25 @@ struct LobbySelector : PanelUpdater, GUIHandler
 	void PanelCallback(Panel *p, const std::string & e);
 };
 
-struct LobbyBrowser
+struct LobbyBrowser : PanelUpdater, GUIHandler
 {
-	LobbySelector *lobbySelector;
-
 	enum Action
 	{
 		A_GET_LOBBIES,
 		A_IDLE,
 		A_AUTO_REFRESH_LOBBIES,
+		A_TRY_JOIN_LOBBY,
+		A_IN_LOBBY,
 	};
+
+	int topRow;
+	int maxTopRow;
+	int numEntries;
+	int totalRects;
+	LobbyChooseRect **lobbyRects;
+	Panel *panel;
+	LobbyChooseRect *currSelectedRect;
+
 
 	Action action;
 	int frame;
@@ -84,6 +75,15 @@ struct LobbyBrowser
 	void ClosePopup();
 	void SetAction(Action a);
 	bool HandleEvent(sf::Event ev);
+
+	void MouseScroll(int delta);
+	void PopulateRects();
+
+	void ClearSelection();
+
+	void ChooseRectEvent(ChooseRect *cr, int eventType);
+	void ButtonCallback(Button *b, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
 };
 
 #endif

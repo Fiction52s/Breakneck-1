@@ -45,7 +45,7 @@
 #include "CustomCursor.h"
 #include "MenuPopup.h"
 
-#include "LobbyBrowser.h"
+#include "CustomMatchManager.h"
 
 using namespace std;
 using namespace sf;
@@ -434,7 +434,7 @@ MainMenu::MainMenu()
 
 	netplayManager = new NetplayManager;
 
-	lobbyBrowser = new LobbyBrowser;
+	customMatchManager = new CustomMatchManager;
 
 	if (musicManager->songMap.empty())
 	{
@@ -713,9 +713,9 @@ MainMenu::~MainMenu()
 	if (netplayManager != NULL)
 		delete netplayManager;
 
-	if (lobbyBrowser != NULL)
+	if (customMatchManager != NULL)
 	{
-		delete lobbyBrowser;
+		delete customMatchManager;
 	}
 
 	for (int i = 0; i < 4; ++i)
@@ -2756,14 +2756,14 @@ void MainMenu::HandleMenuMode()
 		mapBrowserScreen->Update();
 		break;
 	}
-	case LOBBY_BROWSER:
+	case CUSTOM_MATCH_SETUP:
 	{
 		while (window->pollEvent(ev))
 		{
-			lobbyBrowser->HandleEvent(ev);
+			customMatchManager->HandleEvent(ev);
 		}
 
-		lobbyBrowser->Update();
+		customMatchManager->Update();
 
 		break;
 	}
@@ -3053,7 +3053,7 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_LOCAL_MULTIPLAYER:
 		{
 			//netplayManager->isSyncTest = true;
-			netplayManager->FindMatch();
+			netplayManager->FindQuickplayMatch();
 			SetMode(QUICKPLAY_TEST);
 			//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
@@ -3080,8 +3080,17 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_CREDITS:
 		{
-			lobbyBrowser->OpenPopup();
-			SetMode(LOBBY_BROWSER);
+			if (IsKeyPressed(Keyboard::LShift))
+			{
+				customMatchManager->CreateCustomLobby();
+			}
+			else
+			{
+				customMatchManager->BrowseCustomLobbies();
+			}
+
+			SetMode(CUSTOM_MATCH_SETUP);
+			
 
 			//mapBrowserScreen->Start();
 			//SetMode(BROWSE_WORKSHOP);
@@ -3376,10 +3385,10 @@ void MainMenu::DrawMode( Mode m )
 		mapBrowserScreen->Draw(preScreenTexture);
 		break;
 	}
-	case LOBBY_BROWSER:
+	case CUSTOM_MATCH_SETUP:
 	{
 		preScreenTexture->setView(v);
-		lobbyBrowser->Draw(preScreenTexture);
+		customMatchManager->Draw(preScreenTexture);
 		break;
 	}
 	case RUN_FREEPLAY_MAP:

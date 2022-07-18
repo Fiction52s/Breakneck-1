@@ -67,7 +67,7 @@ struct LobbyManager
 	void Update();
 
 	void TryCreatingLobby(LobbyParams &lp);
-	void TryJoiningLobby();
+	void TryJoiningLobby( int lobbyIndex );
 
 	void OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure);
 	bool IsInLobby();

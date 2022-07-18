@@ -167,18 +167,66 @@ void NetplayManager::Abort()
 	receivedGameStartSignal = false;
 }
 
+void NetplayManager::StartConnecting()
+{
+	int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
+
+	numPlayers = numLobbyMembers; //2
+	assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
+	int memberIndex = 0;
+	playerIndex = -1;
+	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	{
+		netplayPlayers[memberIndex].Clear();
+
+		netplayPlayers[memberIndex].index = memberIndex;
+		netplayPlayers[memberIndex].id = (*it);
+
+		if ((*it) == GetMyID())
+		{
+			netplayPlayers[memberIndex].isMe = true;
+			playerIndex = memberIndex;
+		}
+
+		++memberIndex;
+	}
+
+	matchParams.mapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
+	cout << "setting mapPath to: " << matchParams.mapPath << endl;
+
+	matchParams.numPlayers = numLobbyMembers;
+
+	action = A_GET_CONNECTIONS;
+
+	if (playerIndex < numPlayers - 1)
+	{
+		connectionManager->CreateListenSocket();
+	}
+
+	SteamNetworkingIdentity identity;
+	for (int i = playerIndex - 1; i >= 0; --i)
+	{
+		identity.SetSteamID(netplayPlayers[i].id);
+
+		netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+	}
+
+	SetHost();
+}
+
+
 void NetplayManager::Update()
 {
 	switch (action)
 	{
 	case A_IDLE:
 		break;
-	case A_CHECKING_FOR_LOBBIES:
+	case A_QUICKPLAY_CHECKING_FOR_LOBBIES:
 	{
 		if (lobbyManager->action == LobbyManager::A_FOUND_LOBBIES)
 		{
-			lobbyManager->TryJoiningLobby();
-			action = A_GATHERING_USERS;
+			lobbyManager->TryJoiningLobby(0);
+			action = A_QUICKPLAY_GATHERING_USERS;
 
 		}
 		else if (lobbyManager->action == LobbyManager::A_FOUND_NO_LOBBIES)
@@ -196,62 +244,21 @@ void NetplayManager::Update()
 				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
 			}
 			lobbyManager->TryCreatingLobby(lp);
-			action = A_GATHERING_USERS;
+			action = A_QUICKPLAY_GATHERING_USERS;
 		}
 		break;
 	}
-	case A_GATHERING_USERS:
+	case A_QUICKPLAY_GATHERING_USERS:
 	{
 		lobbyManager->Update();
 
 		int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
 		if (numLobbyMembers == 2)
 		{
-			numPlayers = 2;
-			assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
-			int memberIndex = 0;
-			playerIndex = -1;
-			for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
-			{
-				netplayPlayers[memberIndex].Clear();
-
-				netplayPlayers[memberIndex].index = memberIndex;
-				netplayPlayers[memberIndex].id = (*it);
-
-				if ((*it) == GetMyID())
-				{
-					netplayPlayers[memberIndex].isMe = true;
-					playerIndex = memberIndex;
-				}
-
-				++memberIndex;
-			}
-
-			matchParams.mapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
-			cout << "setting mapPath to: " << matchParams.mapPath << endl;
-
-			matchParams.numPlayers = numLobbyMembers;
-
-			action = A_GET_CONNECTIONS;
-
-			if (playerIndex < numPlayers - 1)
-			{
-				connectionManager->CreateListenSocket();
-			}
-
-			SteamNetworkingIdentity identity;
-			for (int i = playerIndex - 1; i >=0; --i)
-			{
-				identity.SetSteamID(netplayPlayers[i].id);
-
-				netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
-			}
-
-			SetHost();
+			StartConnecting();
 		}
 		break;
 	}
-
 	case A_GET_CONNECTIONS:
 	{
 		bool connectedToAll = true;
@@ -764,7 +771,7 @@ int NetplayManager::RunMatch()
 	return gameResult;
 }
 
-void NetplayManager::FindMatch()
+void NetplayManager::FindQuickplayMatch()
 {
 	if (isSyncTest)
 	{
@@ -781,7 +788,7 @@ void NetplayManager::FindMatch()
 	{
 		Init();
 
-		action = A_CHECKING_FOR_LOBBIES;
+		action = A_QUICKPLAY_CHECKING_FOR_LOBBIES;
 
 		lobbyManager->FindLobby();
 	}
@@ -1034,4 +1041,10 @@ void NetplayManager::DumpDesyncInfo()
 	{
 		netplayPlayers[i].DumpDesyncInfo();
 	}
+}
+
+void NetplayManager::CreateCustomLobby(LobbyParams &lp)
+{
+	lobbyManager->TryCreatingLobby(lp);
+	action = A_CUSTOM_HOST_GATHERING_USERS;
 }

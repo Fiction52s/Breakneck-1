@@ -181,12 +181,12 @@ void LobbyManager::LeaveLobby()
 	action = A_IDLE;
 }
 
-void LobbyManager::TryJoiningLobby()
+void LobbyManager::TryJoiningLobby( int lobbyIndex )
 {
 	action = A_REQUEST_JOIN_LOBBY;
 
-	cout << "found a lobby. Attempting to join: " << lobbyVec[0].name << endl;
-	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[0].m_steamIDLobby);
+	cout << "found a lobby. Attempting to join: " << lobbyVec[lobbyIndex].name << endl;
+	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[lobbyIndex].m_steamIDLobby);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
 

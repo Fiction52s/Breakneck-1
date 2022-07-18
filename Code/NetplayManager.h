@@ -65,8 +65,9 @@ struct NetplayManager
 	enum Action
 	{
 		A_IDLE,
-		A_CHECKING_FOR_LOBBIES,
-		A_GATHERING_USERS,
+		A_QUICKPLAY_CHECKING_FOR_LOBBIES,
+		A_QUICKPLAY_GATHERING_USERS,
+		A_CUSTOM_HOST_GATHERING_USERS,
 		A_GET_CONNECTIONS,
 		A_WAIT_FOR_ALL_TO_CONNECT,
 		A_WAIT_TO_LOAD_MAP,
@@ -125,7 +126,7 @@ struct NetplayManager
 	void SendDesyncCheckToHost( int currGameFrame );
 
 
-
+	void StartConnecting();
 	void ReceiveMessages();
 	HSteamNetConnection GetHostConnection();
 	
@@ -136,7 +137,7 @@ struct NetplayManager
 	void Abort();
 	void Update();
 	void Draw(sf::RenderTarget *target);
-	void FindMatch();
+	void FindQuickplayMatch();
 	void LoadMap();
 	void HandleLobbyMessage(LobbyMessage &msg);
 	void HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *msg);
@@ -145,6 +146,8 @@ struct NetplayManager
 	void SendUdpMsg(HSteamNetConnection con, UdpMsg *msg);
 	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
 	void DumpDesyncInfo();
+
+	void CreateCustomLobby(LobbyParams &lp);
 
 	void BroadcastMapDetailsToLobby();
 	

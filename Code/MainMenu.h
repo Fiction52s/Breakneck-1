@@ -470,7 +470,7 @@ struct LevelLoadParams
 std::string GetTimeStr(int numFrames);
 
 struct NetplayManager;
-struct LobbyBrowser;
+struct CustomMatchManager;
 
 struct CustomCursor;
 
@@ -535,7 +535,7 @@ struct MainMenu
 		DOWNLOAD_WORKSHOP_MAP_LOOP,
 		QUICKPLAY_TEST,
 		QUICKPLAY_PLAY,
-		LOBBY_BROWSER,
+		CUSTOM_MATCH_SETUP,
 		EXITING,
 	};
 
@@ -558,7 +558,7 @@ struct MainMenu
 	MenuInfoPopup *infoPopup;
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
-	LobbyBrowser *lobbyBrowser;
+	CustomMatchManager *customMatchManager;
 
 	std::string freePlayMapName;
 
