@@ -244,7 +244,8 @@ void NetplayManager::StartConnecting()
 		
 		if (!mapVerified)
 		{
-			string downloadPath = "Resources/Maps/UserDownloads/" + receivedCreatorIDStr;
+			string userDownloadsPath = "Resources/Maps/UserDownloads/";
+			string downloadPath = userDownloadsPath + receivedCreatorIDStr +"/";
 
 			if (boost::filesystem::exists(downloadPath) && boost::filesystem::is_directory( downloadPath ) )
 			{
@@ -288,6 +289,19 @@ void NetplayManager::StartConnecting()
 			}
 			else
 			{
+				if (!(boost::filesystem::exists(userDownloadsPath) && boost::filesystem::is_directory(downloadPath)))
+				{
+					try
+					{
+						cout << "making user downloads folder" << endl;
+						boost::filesystem::create_directory(userDownloadsPath);
+					}
+					catch (boost::filesystem::filesystem_error &e)
+					{
+						std::cerr << e.what() << '\n';
+					}
+				}
+
 				cout << "user downloads folder for: " << receivedCreatorIDStr << " doesnt exist yet. creating." << endl;
 				try
 				{
