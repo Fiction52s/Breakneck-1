@@ -2304,7 +2304,9 @@ void EditSession::ProcessHeader()
 void EditSession::WriteMapHeader(ofstream &of)
 {
 	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 8;
+	mapHeader->ver2 = 9;
+
+	mapHeader->creatorID = SteamUser()->GetSteamID().ConvertToUint64();
 
 	ShardParams *sp = NULL;
 	LogParams *lp = NULL;

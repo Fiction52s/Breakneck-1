@@ -7,6 +7,9 @@
 #include "MainMenu.h"
 #include "NetplayManager.h"
 #include "LobbyMessage.h"
+#include <fstream>
+#include "md5.h"
+#include "MapHeader.h"
 
 
 using namespace sf;
@@ -102,7 +105,28 @@ bool CustomMatchManager::Update()
 			SetAction(A_CREATING_LOBBY);
 			LobbyParams lp;
 			lp.mapPath = boost::filesystem::relative(selectedMap->filePath).string();
+			lp.fileHash = md5file(lp.mapPath);
+
+			std::ifstream is;
+			is.open(lp.mapPath);
+
+			assert(is.is_open());
+			std::string content((std::istreambuf_iterator<char>(is)),
+				(std::istreambuf_iterator<char>()));
+			md5(content);
+
+			is.clear();
+			is.seekg(0, ios::beg);
+
+			MapHeader mh;
+			mh.Load(is);
+			is.close();
+
+			lp.creatorID = mh.creatorID;
+
 			cout << "creating custom lobby test: " << lp.mapPath << endl;
+			cout << "hash: " << lp.fileHash << endl;
+			cout << "creatorID: " << lp.creatorID << endl;
 			lp.maxMembers = 2;
 			netplayManager->TryCreateCustomLobby(lp);
 			//cout << "waiting room" << endl;

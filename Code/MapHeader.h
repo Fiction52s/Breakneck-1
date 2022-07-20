@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 #include <boost/filesystem.hpp>
+#include "steam\steamtypes.h"
 
 struct MapHeader
 {
@@ -26,7 +27,7 @@ struct MapHeader
 		numVertices(-1), songLevelsModified(false), numShards(0),
 		numLogs(0),drainSeconds(60), bossFightType(0), envName("w1_01"),
 		envWorldType(0), preLevelSceneName("NONE"),
-		postLevelSceneName("NONE")
+		postLevelSceneName("NONE"), creatorID( 0 )
 	{
 
 	}
@@ -64,6 +65,7 @@ struct MapHeader
 	std::vector<LogInfo> logInfoVec;
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;
+	uint64 creatorID;
 
 	std::map < std::string, int > songLevels;
 	std::vector<std::string> songOrder;

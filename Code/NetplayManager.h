@@ -40,6 +40,7 @@ struct NetplayPlayer
 	bool isMe;
 	int index;
 	bool doneConnectingToAllPeers;
+	bool doneVerifyingMap;
 	bool doneLoading;
 	bool readyToRun;
 	bool isHost;
@@ -69,7 +70,10 @@ struct NetplayManager
 		A_QUICKPLAY_GATHERING_USERS,
 		A_CUSTOM_HOST_GATHERING_USERS,
 		A_GET_CONNECTIONS,
+		A_WAIT_FOR_ALL_TO_VERIFY,
 		A_WAIT_FOR_ALL_TO_CONNECT,
+		A_WAIT_TO_VERIFY,
+		A_WAIT_FOR_MAP_FROM_HOST,
 		A_WAIT_TO_LOAD_MAP,
 		A_LOAD_MAP,
 		A_WAIT_FOR_GGPO_SYNC,
@@ -87,8 +91,10 @@ struct NetplayManager
 
 	int numPlayers;
 	bool receivedMapLoadSignal;
+	bool receivedMapVerifySignal;
 	bool receivedGameStartSignal;
 	bool receivedStartGGPOSignal;
+	bool receivedMap;
 
 	boost::thread *loadThread;
 
@@ -108,6 +114,8 @@ struct NetplayManager
 	NetplayPlayer netplayPlayers[4];
 
 	bool clientsDoneLoadingMap[4];
+
+	boost::filesystem::path mapDownloadFilePath;
 
 	NetplayManager();
 	~NetplayManager();
@@ -146,6 +154,7 @@ struct NetplayManager
 	void SendUdpMsg(HSteamNetConnection con, UdpMsg *msg);
 	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
 	void DumpDesyncInfo();
+	void SendMapToClient(HSteamNetConnection connection, boost::filesystem::path &p);
 
 	void TryCreateCustomLobby(LobbyParams &lp);
 

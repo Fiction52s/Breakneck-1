@@ -48,11 +48,18 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "mapPath", paramsForMakingLobby.mapPath.c_str());
 
+		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "fileHash", paramsForMakingLobby.fileHash.c_str());
+
+		string creatorIDStr = to_string(paramsForMakingLobby.creatorID);
+		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "creatorID", creatorIDStr.c_str());
+
+
 		//SteamMatchmaking()->RequestLobbyData(currentLobby.m_steamIDLobby);
 
 		//use to set params paramsForMakingLobby
 
 		cout << "created: " << lobbyName << " successfully. map path: " << paramsForMakingLobby.mapPath  << endl;
+		cout << "creatorID: " << creatorIDStr << endl;
 
 		action = A_IN_LOBBY;
 

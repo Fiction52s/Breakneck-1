@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <sstream>
 #include <iostream>
+#include "steam\steam_api.h"
 
 using namespace std;
 using namespace sf;
@@ -111,22 +112,30 @@ bool MapHeader::Load(std::ifstream &is)
 		is.get();
 	}
 
-	string collectionName;
-	is >> collectionName;
-
-	if (collectionName == "")
+	if (ver1 < 2 || ( ver1 == 2 && ver2 <= 8 ) )
 	{
-		string test;
-		is >> test;
-		int bb = 65;
-		assert(0);
+		string collectionName;
+		is >> collectionName;
+
+		if (collectionName == "")
+		{
+			string test;
+			is >> test;
+			int bb = 65;
+			assert(0);
+		}
+	}
+	else
+	{
+		is >> creatorID;
 	}
 
+	
 	
 
 	is >> gameMode;
 
-	if (ver1 < 2 || (ver1 == 2 && ver2 < 8 ) )
+	if (ver1 < 2 || (ver1 == 2 && ver2 <= 7 ) )
 	{
 		is >> envWorldType;
 	}
@@ -160,6 +169,9 @@ bool MapHeader::Load(std::ifstream &is)
 
 void MapHeader::Save(std::ofstream &of)
 {
+
+	//new version 2.9
+	//curr version 2.8
 	of << ver1 << "." << ver2 << "\n";
 	of << description << "<>\n";
 
@@ -187,7 +199,10 @@ void MapHeader::Save(std::ofstream &of)
 		of << (*it).first << "\n" << (*it).second << "\n";
 	}*/
 
-	of << collectionName << "\n";
+
+	//of << collectionName << "\n";
+	of << creatorID << "\n";
+
 	of << gameMode << "\n";
 
 	//of << (int)envType << " " << envLevel << endl;

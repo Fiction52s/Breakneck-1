@@ -26,11 +26,15 @@ struct UdpMsg
       QualityReply,
       KeepAlive, 
       InputAck,
+	  Game_Client_Done_Connecting,
+	  Game_Host_Says_Verify_Map,
+	  Game_Client_Needs_Map,
+	  Game_Client_Done_Verifying,
 	  Game_Host_Says_Load,
-	  Game_Done_Connecting,
-	  Game_Done_Loading,
+	  Game_Client_Done_Loading,
 	  Game_Host_Says_Start,
 	  Game_Desync_Check,
+	  Game_Map,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -110,6 +114,7 @@ public:
       return sizeof(hdr) + PayloadSize();
    }
 
+
    int PayloadSize() {
       int size;
 
@@ -125,25 +130,25 @@ public:
          size += (u.input.num_bits + 7) / 8;
          return size;
 
-	  case Game_Done_Connecting: return 0;
+	  case Game_Client_Done_Connecting: return 0;
+	  case Game_Host_Says_Verify_Map: return 0;
+	  case Game_Client_Needs_Map: return 0;
+	  case Game_Client_Done_Verifying: return 0;
 	  case Game_Host_Says_Load: return 0;
-	  case Game_Done_Loading: return 0;
+	  case Game_Client_Done_Loading: return 0;
 	  case Game_Host_Says_Start: return 0;
 	  case Game_Desync_Check: return sizeof(u.desync_info);
+	  case Game_Map: return 0;
 	  
       }
 
       assert(false);
       return 0;
    }
-	   
+
    bool IsGameMsg()
    {
-	   return hdr.type == Game_Done_Loading
-		   || hdr.type == Game_Host_Says_Load
-		   || hdr.type == Game_Host_Says_Start
-		   || hdr.type == Game_Done_Connecting
-		   || hdr.type == Game_Desync_Check;
+	   return(hdr.type > InputAck);
    }
 
    UdpMsg(MsgType t) { hdr.type = (uint8)t; }

@@ -29,6 +29,8 @@ struct LobbyParams
 {
 	int maxMembers;
 	std::string mapPath;
+	std::string fileHash;
+	uint64 creatorID;
 };
 
 struct LobbyManager
