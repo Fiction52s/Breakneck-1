@@ -891,8 +891,9 @@ void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 		matchParams.numPlayers = lobbyManager->GetNumMembers();
 	}*/
 
-	if ( !IsHost() && msg.sender == GetHostID() && LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH)
+	if ( msg.sender == GetHostID() && LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH)
 	{
+		//when all players start connecting, even host
 		StartConnecting();
 	}
 }

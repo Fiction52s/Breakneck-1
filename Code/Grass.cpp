@@ -1,6 +1,7 @@
 #include "Grass.h"
 #include "GameSession.h"
 #include "EditorTerrain.h"
+#include <iostream>
 
 using namespace std;
 using namespace sf;

@@ -99,10 +99,10 @@ bool CustomMatchManager::Update()
 	case A_CHOOSE_MAP_OPTIONS:
 		if (mapOptionsPopup->action == MapOptionsPopup::A_CONFIRMED)
 		{
-
 			SetAction(A_CREATING_LOBBY);
 			LobbyParams lp;
-			lp.mapPath = selectedMap->filePath.string();
+			lp.mapPath = boost::filesystem::relative(selectedMap->filePath).string();
+			cout << "creating custom lobby test: " << lp.mapPath << endl;
 			lp.maxMembers = 2;
 			netplayManager->TryCreateCustomLobby(lp);
 			//cout << "waiting room" << endl;
@@ -119,13 +119,12 @@ bool CustomMatchManager::Update()
 		if (netplayManager->lobbyManager->IsInLobby())
 		{
 			SetAction(A_WAITING_ROOM);
+			waitingRoom->OpenPopup();
 		}
 		break;
 	}
 	case A_WAITING_ROOM:
 	{
-		
-
 		if (netplayManager->IsHost())
 		{
 			if (waitingRoom->action == WaitingRoom::A_READY_TO_START)
@@ -135,6 +134,7 @@ bool CustomMatchManager::Update()
 				LobbyMessage lm;
 				lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;
 				netplayManager->BroadcastLobbyMessage(lm);
+				cout << "broadcasting start message" << endl;
 
 				//return false;
 			}
@@ -143,6 +143,7 @@ bool CustomMatchManager::Update()
 		{
 			if (netplayManager->action == NetplayManager::A_GET_CONNECTIONS)
 			{
+				cout << "processed start message" << endl;
 				waitingRoom->SetAction(WaitingRoom::A_READY_TO_START);
 				SetAction(A_READY);
 				//return false;

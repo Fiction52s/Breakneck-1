@@ -1,5 +1,6 @@
 #include "Sequence.h"
 #include "Session.h"
+#include <iostream>
 
 using namespace std;
 using namespace sf;
