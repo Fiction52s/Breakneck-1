@@ -186,6 +186,7 @@ void LobbyManager::LeaveLobby()
 {
 	SteamMatchmaking()->LeaveLobby(currentLobby.m_steamIDLobby);
 	action = A_IDLE;
+	cout << "leaving lobby" << endl;
 }
 
 void LobbyManager::TryJoiningLobby( int lobbyIndex )

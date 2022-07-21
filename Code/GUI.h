@@ -43,7 +43,8 @@ struct UIMouse
 		static UIMouse instance;
 		return instance;
 	}
-	
+
+
 	UIMouse(UIMouse const&) = delete;
 	void operator=(UIMouse const&) = delete;
 
@@ -61,6 +62,8 @@ struct UIMouse
 	void ResetMouse();
 	bool IsConsumed() { return consumed; }
 	void Consume() { consumed = true; }
+	void SetRenderWindow(sf::RenderWindow *rw);
+	bool IsWindowFocused();
 private:
 	UIMouse();
 	
@@ -71,6 +74,8 @@ private:
 	bool isMouseDownRight;
 	bool lastMouseDownRight;
 	bool consumed;
+
+	sf::RenderWindow *currWindow;
 
 };
 
@@ -195,6 +200,10 @@ struct ChooseRect : PanelMember
 		I_MUSICLEVEL,
 		I_LOGLIBRARY,
 		I_LOBBY,
+		I_ONLINEMENU_WORKSHOP,
+		I_ONLINEMENU_QUICKPLAY,
+		I_ONLINEMENU_CREATE_LOBBY,
+		I_ONLINEMENU_JOIN_LOBBY,
 	};
 
 	sf::Text nameText;

@@ -199,7 +199,7 @@ void NetplayManager::StartConnecting()
 	}
 
 	boost::filesystem::path receivedMapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
-	string receivedHash = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "fileHash");
+	mapDownloadReceivedHash = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "fileHash");
 
 	string receivedCreatorIDStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "creatorID");
 
@@ -223,8 +223,8 @@ void NetplayManager::StartConnecting()
 		if (boost::filesystem::exists(receivedMapPath))
 		{
 			string myHash = md5file(receivedMapPath.string());
-			bool same = (receivedHash == myHash);
-			cout << "received hash: " << receivedHash << ", my hash: " << myHash << endl;
+			bool same = (mapDownloadReceivedHash == myHash);
+			cout << "received hash: " << mapDownloadReceivedHash << ", my hash: " << myHash << endl;
 			if (same)
 			{
 				cout << "hashes match!" << endl;
@@ -266,7 +266,7 @@ void NetplayManager::StartConnecting()
 								cout << "file matches mapName. Checking hash" << endl;
 
 								string myHash = md5file((*it).string());
-								bool same = (receivedHash == myHash);
+								bool same = (mapDownloadReceivedHash == myHash);
 								
 								if (same)
 								{
@@ -275,7 +275,6 @@ void NetplayManager::StartConnecting()
 									matchParams.mapPath = (*it);
 									cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 								}
-
 							}
 							
 						}
@@ -469,11 +468,27 @@ void NetplayManager::Update()
 	{
 		if (receivedMap)
 		{
-			SendSignalToHost(UdpMsg::Game_Client_Done_Verifying);
+			string myHash = md5file(mapDownloadFilePath.string());
+			bool same = (mapDownloadReceivedHash == myHash);
+			
+			if (same)
+			{
+				cout << "received map from host and it was verified correctly." << endl;
+				matchParams.mapPath = mapDownloadFilePath;
 
-			//need to actually verify the map, but lets skip this for now
+				mapDownloadFilePath = "";
+				mapDownloadReceivedHash = "";
 
-			action = A_WAIT_TO_LOAD_MAP;
+				SendSignalToHost(UdpMsg::Game_Client_Done_Verifying);
+
+				action = A_WAIT_TO_LOAD_MAP;
+			}
+			else
+			{
+				cout << "received map over the network, but the hash doesn't match what it's supposed to be. requesting again." << endl;
+				receivedMap = false;
+				SendSignalToHost(UdpMsg::Game_Client_Needs_Map);
+			}
 		}
 		break;
 	}
@@ -1252,10 +1267,6 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		fwrite(mapBinary, 1, sizeOfMap, file);
 		fclose(file);
 		cout << "finished saving new map: " << mapDownloadFilePath << endl;
-
-		matchParams.mapPath = mapDownloadFilePath;
-
-		mapDownloadFilePath = "";
 
 		receivedMap = true;
 

@@ -106,6 +106,7 @@ struct MapBrowser : TilesetManager,
 		A_WAITING_FOR_QUERY_RESULTS,
 		A_WAITING_FOR_PREVIEW_RESULTS,
 		A_WAITING_FOR_MAP_DOWNLOAD,
+		A_CANCELLED,
 	};
 
 	Action action;

@@ -46,6 +46,8 @@ LobbyBrowser::LobbyBrowser()
 	}
 
 	panel->AddButton("join", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "JOIN");
+	panel->SetCancelButton(panel->AddButton("back", Vector2i(20 + 150, panel->size.y - 100), Vector2f(100, 40), "BACK"));
+	
 }
 
 LobbyBrowser::~LobbyBrowser()
@@ -231,9 +233,10 @@ void LobbyBrowser::ButtonCallback(Button *b, const std::string & e)
 		}
 		//ClosePopup();
 	}
-	else if (b->name == "cancel")
+	else if (b->name == "back")
 	{
-		ClosePopup();
+		SetAction(A_RETURN_TO_MENU);
+		//ClosePopup();
 	}
 }
 

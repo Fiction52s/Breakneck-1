@@ -53,6 +53,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 		A_AUTO_REFRESH_LOBBIES,
 		A_TRY_JOIN_LOBBY,
 		A_IN_LOBBY,
+		A_RETURN_TO_MENU,
 	};
 
 	int topRow;

@@ -46,6 +46,7 @@
 #include "MenuPopup.h"
 
 #include "CustomMatchManager.h"
+#include "OnlineMenuScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -565,7 +566,7 @@ MainMenu::MainMenu()
 
 	mapBrowserScreen = new MapBrowserScreen(this);
 
-	
+	onlineMenuScreen = new OnlineMenuScreen(this);
 
 
 	loadingBackpack = new LoadingBackpack(&tilesetManager);
@@ -579,6 +580,8 @@ void MainMenu::SetupWindow()
 	window = new RenderWindow(sf::VideoMode(windowWidth, windowHeight), "Breakneck",
 		config->GetData().windowStyle, sf::ContextSettings(0, 0, 0, 0, 0));
 	window->setKeyRepeatEnabled(false);
+
+	MOUSE.SetRenderWindow(window);
 
 	customCursor = new CustomCursor;
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
@@ -765,6 +768,7 @@ MainMenu::~MainMenu()
 	delete optionsMenu;
 	delete creditsMenu;
 	delete mapBrowserScreen;
+	delete onlineMenuScreen;
 	
 
 	delete fader;
@@ -803,6 +807,8 @@ void MainMenu::Init()
 
 	fader = new Fader;
 	swiper = new Swiper();
+
+	
 	
 	
 
@@ -2759,6 +2765,37 @@ void MainMenu::HandleMenuMode()
 		mapBrowserScreen->Update();
 		break;
 	}
+	case ONLINE_MENU:
+	{
+		while (window->pollEvent(ev))
+		{
+			onlineMenuScreen->HandleEvent(ev);
+		}
+		onlineMenuScreen->Update();
+
+		switch (onlineMenuScreen->action)
+		{
+		case OnlineMenuScreen::A_WORKSHOP:
+			break;
+		case OnlineMenuScreen::A_QUICKPLAY:
+			netplayManager->FindQuickplayMatch();
+			SetMode(QUICKPLAY_TEST);
+			break;
+		case OnlineMenuScreen::A_CREATE_LOBBY:
+			customMatchManager->CreateCustomLobby();
+			SetMode(CUSTOM_MATCH_SETUP);		
+			break;
+		case OnlineMenuScreen::A_JOIN_LOBBY:
+			customMatchManager->BrowseCustomLobbies();
+			SetMode(CUSTOM_MATCH_SETUP);
+			break;
+		case OnlineMenuScreen::A_CANCELLED:
+			SetMode(TITLEMENU);
+			break;
+		}
+		
+		break;
+	}
 	case CUSTOM_MATCH_SETUP:
 	{
 		while (window->pollEvent(ev))
@@ -2766,7 +2803,12 @@ void MainMenu::HandleMenuMode()
 			customMatchManager->HandleEvent(ev);
 		}
 
-		customMatchManager->Update();
+		if (!customMatchManager->Update())
+		{
+			onlineMenuScreen->Start();
+			SetMode(ONLINE_MENU);
+			break;
+		}
 
 		if (customMatchManager->action == CustomMatchManager::A_READY)
 		{
@@ -3060,9 +3102,12 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
+			onlineMenuScreen->Start();
+			SetMode(ONLINE_MENU);
+
 			//netplayManager->isSyncTest = true;
-			netplayManager->FindQuickplayMatch();
-			SetMode(QUICKPLAY_TEST);
+			//netplayManager->FindQuickplayMatch();
+			//SetMode(QUICKPLAY_TEST);
 			//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
@@ -3392,6 +3437,12 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		mapBrowserScreen->Draw(preScreenTexture);
+		break;
+	}
+	case ONLINE_MENU:
+	{
+		preScreenTexture->setView(v);
+		onlineMenuScreen->Draw(preScreenTexture);
 		break;
 	}
 	case CUSTOM_MATCH_SETUP:

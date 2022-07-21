@@ -10,11 +10,17 @@ using namespace std;
 
 UIMouse::UIMouse()
 {
+	currWindow = NULL;
 	ResetMouse();
 }
 
 void UIMouse::Update(sf::Vector2i &mPos)
 {
+	if (!IsWindowFocused())
+	{
+		return;
+	}
+
 	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
 	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
 
@@ -65,4 +71,22 @@ void UIMouse::ResetMouse()
 	lastMouseDownLeft = false;
 	isMouseDownRight = false;
 	lastMouseDownRight = false;
+}
+
+void UIMouse::SetRenderWindow(sf::RenderWindow *rw)
+{
+	currWindow = rw;
+}
+
+bool UIMouse::IsWindowFocused()
+{
+	if (currWindow == NULL)
+		return false;
+
+	if (currWindow->hasFocus())
+	{
+		return true;
+	}
+
+	return false;
 }

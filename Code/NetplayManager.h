@@ -116,6 +116,7 @@ struct NetplayManager
 	bool clientsDoneLoadingMap[4];
 
 	boost::filesystem::path mapDownloadFilePath;
+	std::string mapDownloadReceivedHash;
 
 	NetplayManager();
 	~NetplayManager();

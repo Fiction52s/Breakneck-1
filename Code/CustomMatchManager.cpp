@@ -29,6 +29,8 @@ CustomMatchManager::~CustomMatchManager()
 {
 	delete lobbyBrowser;
 	delete waitingRoom;
+
+	delete mapOptionsPopup;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -90,6 +92,11 @@ bool CustomMatchManager::Update()
 		{
 			SetAction(A_WAITING_ROOM);
 		}
+		else if (lobbyBrowser->action == LobbyBrowser::A_RETURN_TO_MENU)
+		{
+			SetAction(A_IDLE);
+			return false;
+		}
 		break;
 	case A_CHOOSE_MAP:
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
@@ -97,6 +104,12 @@ bool CustomMatchManager::Update()
 			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 			action = A_CHOOSE_MAP_OPTIONS;
 			mapOptionsPopup->Activate();
+		}
+
+		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		{
+			SetAction(A_IDLE);
+			return false;
 		}
 		break;
 	case A_CHOOSE_MAP_OPTIONS:
@@ -151,7 +164,7 @@ bool CustomMatchManager::Update()
 	{
 		if (netplayManager->IsHost())
 		{
-			if (waitingRoom->action == WaitingRoom::A_READY_TO_START)
+			if (waitingRoom->action == WaitingRoom::A_STARTING)
 			{
 				SetAction(A_READY);
 
@@ -176,9 +189,9 @@ bool CustomMatchManager::Update()
 		
 		if( waitingRoom->action == WaitingRoom::A_LEAVE_ROOM)
 		{
-			BrowseCustomLobbies();
-			//SetAction(A_IDLE);
-			//return false;
+			//BrowseCustomLobbies();
+			SetAction(A_IDLE);
+			return false;
 		}
 		break;
 	}

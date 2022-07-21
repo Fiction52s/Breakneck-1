@@ -448,6 +448,7 @@ void MapBrowser::Deactivate()
 
 void MapBrowser::TurnOff()
 {
+	action = A_CANCELLED;
 	//edit->RemoveActivePanel(panel);
 }
 
@@ -740,7 +741,7 @@ bool MapBrowserHandler::CheckIfSelectedItemInstalled()
 void MapBrowserHandler::ChangePath()
 {
 	ts_largePreview = NULL;
-	chooser->ClearTilesets();
+	//chooser->ClearTilesets();
 }
 
 void MapBrowserHandler::ClearSelection()
@@ -749,12 +750,14 @@ void MapBrowserHandler::ClearSelection()
 	{
 		chooser->imageRects[i]->Deselect();
 	}
+	chooser->selectedRect = NULL;
 }
 
 void MapBrowserHandler::SelectRect(ChooseRect *cr)
 {
 	ClearSelection();
 	cr->Select();
+	chooser->selectedRect = cr->GetAsImageChooseRect();
 }
 
 void MapBrowserHandler::Update()

@@ -471,6 +471,7 @@ std::string GetTimeStr(int numFrames);
 
 struct NetplayManager;
 struct CustomMatchManager;
+struct OnlineMenuScreen;
 
 struct CustomCursor;
 
@@ -536,6 +537,7 @@ struct MainMenu
 		QUICKPLAY_TEST,
 		QUICKPLAY_PLAY,
 		CUSTOM_MATCH_SETUP,
+		ONLINE_MENU,
 		EXITING,
 	};
 
@@ -559,6 +561,8 @@ struct MainMenu
 	CustomCursor *customCursor;
 	NetplayManager *netplayManager;
 	CustomMatchManager *customMatchManager;
+	OnlineMenuScreen *onlineMenuScreen;
+
 
 	std::string freePlayMapName;
 

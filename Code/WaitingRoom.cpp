@@ -12,6 +12,7 @@ WaitingRoom::WaitingRoom()
 
 	startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
 	leaveButton = panel->AddButton("leave", Vector2i(20 + 200, panel->size.y - 100), Vector2f(100, 40), "LEAVE");
+	panel->SetCancelButton(leaveButton);
 }
 
 WaitingRoom::~WaitingRoom()
@@ -27,10 +28,11 @@ void WaitingRoom::Update()
 	{
 	case A_WAITING_FOR_MEMBERS:
 	{
-		/*if (netplayManager->lobbyManager->GetNumMembers())
+		if (netplayManager->lobbyManager->GetNumMembers() == 2) //fix this later for more members
 		{
-
-		}*/
+			action = A_READY_TO_START;
+			startButton->ShowMember();
+		}
 		break;
 	}
 	case A_READY_TO_START:
@@ -60,14 +62,14 @@ void WaitingRoom::OpenPopup()
 
 	startButton->HideMember();
 
-	if (netplayManager->IsHost())
+	/*if (netplayManager->IsHost())
 	{
 		startButton->ShowMember();
 	}
 	else
 	{
 		startButton->HideMember();
-	}
+	}*/
 
 	/*if (netplayManager->IsHost())
 	{
@@ -108,7 +110,7 @@ void WaitingRoom::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b == startButton)
 	{
-		SetAction(A_READY_TO_START);
+		SetAction(A_STARTING);
 	}
 	else if (b == leaveButton)
 	{
