@@ -18,6 +18,8 @@ Button::Button(const string &n, int posx, int posy, int width, int height, sf::F
 
 	auto bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
+
+	SetPos(pos);
 }
 
 void Button::Deactivate()

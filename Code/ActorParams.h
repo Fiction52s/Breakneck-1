@@ -48,12 +48,16 @@ struct BasicAirEnemyParams : public ActorParams
 	virtual void Draw(sf::RenderTarget *target);
 };
 
+struct PlayerSkinShader;
 struct PlayerParams : public ActorParams
 {
+	PlayerSkinShader *skinShader;
+
 	PlayerParams( ActorType *at,
 		sf::Vector2i pos);
 	PlayerParams(ActorType *at,
 		std::ifstream &is );
+	~PlayerParams();
 
 	bool CanApply();
 	//void Deactivate();
@@ -61,6 +65,7 @@ struct PlayerParams : public ActorParams
 	//void Activate();
 	void SetParams();
 	void SetPanelInfo();
+	void Draw(sf::RenderTarget *target);
 };
 
 //extra

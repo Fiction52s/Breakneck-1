@@ -194,7 +194,9 @@ void EditSession::UpdateDecorSprites()
 
 V2d EditSession::GetPlayerSpawnPos( int i )
 {
-	if (mapHeader == NULL || mapHeader->GetNumPlayerPositions() == 1)
+
+	return playerMarkers[i]->GetPosition();
+	/*if (mapHeader == NULL || mapHeader->GetNumPlayerPositions() == 1)
 	{
 		if (HoldingControl())
 		{
@@ -208,7 +210,7 @@ V2d EditSession::GetPlayerSpawnPos( int i )
 	else
 	{
 		return playerMarkers[i]->GetPosition();
-	}
+	}*/
 }
 
 void EditSession::ClearSelectedBrush()
@@ -301,22 +303,22 @@ bool EditSession::UpdateRunModeBackAndStartButtons()
 
 void EditSession::UpdateCamera()
 {
-	switch (mapHeader->gameMode)
+	switch (gameModeType)
 	{
-	case MapHeader::T_BASIC:
+	case MatchParams::GAME_MODE_BASIC:
 	{
 		cam.SetCamType(Camera::CamType::BASIC);
 		cam.playerIndex = 0;
 		cam.Update();
 		break;
 	}
-	case MapHeader::T_FIGHT:
+	case MatchParams::GAME_MODE_FIGHT:
 	{
 		cam.SetCamType(Camera::CamType::FIGHTING);
 		cam.Update();
 		break;
 	}
-	case MapHeader::T_RACE:
+	case MatchParams::GAME_MODE_RACE:
 	{
 		cam.SetCamType(Camera::CamType::FIGHTING);
 		cam.Update();
@@ -2303,10 +2305,56 @@ void EditSession::ProcessHeader()
 
 void EditSession::WriteMapHeader(ofstream &of)
 {
-	mapHeader->ver1 = 2;
-	mapHeader->ver2 = 9;
+	//mapHeader->ver1 = 2;
+	//mapHeader->ver2 = 9;
+
+	mapHeader->ver1 = 3;
+	mapHeader->ver2 = 0;
+
+	int pointCount = 0;
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		if ((*it)->layer == 0)
+		{
+			pointCount += (*it)->GetNumPoints();
+		}
+	}
+	//of << pointCount << endl;
+	mapHeader->numVertices = pointCount;
 
 	mapHeader->creatorID = SteamUser()->GetSteamID().ConvertToUint64();
+	//possibleGameModeTypeFlags
+
+	/*enum GameModeFlags
+	{
+		MI_HAS_GOAL,
+		MI_HAS_BASES,
+	};*/
+
+	bool hGoal = false;
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		ActorGroup *group = (*it).second;
+		for (list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2)
+		{
+			if ((*it2)->type->IsGoalType())
+			{
+				hGoal = true;
+				break;
+			}
+		}
+	}
+
+	if (hGoal)
+	{
+		mapHeader->possibleGameModeTypeFlags |= 1 << MapHeader::GameModeFlags::MI_HAS_GOAL;
+	}
+
+	//
+
+	//possibleGameModeTypeFlags
+	//of << numPlayerSpawns << "\n";
+	//of << possibleGameModeTypeFlags << "\n";
 
 	ShardParams *sp = NULL;
 	LogParams *lp = NULL;
@@ -2619,20 +2667,8 @@ void EditSession::WritePlayerOptions(std::ofstream &of)
 bool EditSession::WriteFile()
 {
 	saveUpdated = true;
-
-	bool hGoal = false;
-	for( map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it )
-	{
-		ActorGroup *group = (*it).second;
-		for( list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2 )
-		{
-			if( (*it2)->type->IsGoalType() )
-			{
-				hGoal = true;
-				break;
-			}
-		}
-	}
+	
+	
 
 	/*if( !hasGoal )
 	{
@@ -2648,22 +2684,8 @@ bool EditSession::WriteFile()
 	of.open(tempMap);
 
 
-	int pointCount = 0;
-	int bgPlatCount0 = 0;
-
-	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
-	{
-		if ((*it)->layer == 0)
-		{
-			pointCount += (*it)->GetNumPoints();
-		}
-		else if ((*it)->layer == 1)
-		{
-			bgPlatCount0++;
-		}
-	}
-	//of << pointCount << endl;
-	mapHeader->numVertices = pointCount;
+	
+	
 
 
 	int tempTop = mapHeader->topBounds;
@@ -2693,7 +2715,7 @@ bool EditSession::WriteFile()
 
 	WriteDecor(of);
 
-	int numPlayerPositions = mapHeader->GetNumPlayerPositions();
+	int numPlayerPositions = mapHeader->numPlayerSpawns;
 	for (int i = 0; i < numPlayerPositions; ++i)
 	{
 		Vector2i playerIntPos(playerMarkers[i]->GetIntPos());
@@ -2704,6 +2726,15 @@ bool EditSession::WriteFile()
 
 	WriteInversePoly(of);
 
+
+	int bgPlatCount0 = 0;
+	for (list<PolyPtr>::iterator it = polygons.begin(); it != polygons.end(); ++it)
+	{
+		if ((*it)->layer == 1)
+		{
+			bgPlatCount0++;
+		}
+	}
 	WritePolygons(of, bgPlatCount0);
 
 	WriteRails(of);
@@ -3707,11 +3738,15 @@ void EditSession::DefaultInit()
 	mapHeader = new MapHeader;
 	mapHeader->description = "no description";
 	mapHeader->collectionName = "default";
-	mapHeader->gameMode = MapHeader::T_BASIC;
+
+	//mapHeader->gameMode = //MapHeader::T_BASIC;
+	mapHeader->numPlayerSpawns = 1;
 
 	mapHeader->envName = "w1_01";//newMapInfo.envName;//"";//"w1_01";
 
 	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
+
+	mapHeader->numPlayerSpawns = 
 	
 	mapHeader->leftBounds = -1500;
 	mapHeader->topBounds = -1500;
@@ -3728,20 +3763,19 @@ void EditSession::DefaultInit()
 	for (int i = 0; i < 4; ++i)
 	{
 		playerOrigPos[i] = Vector2i(0, 0);
-	}
-	
+	}	
 
 	UpdateFullBounds();
 }
 
-void EditSession::UpdateNumPlayers()
+void EditSession::SetNumPlayers( int num )
 {
-	int numPlayerPositions = mapHeader->GetNumPlayerPositions();
+	mapHeader->numPlayerSpawns = num;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (players[i] != NULL)
 		{
-			if (i >= numPlayerPositions)
+			if (i >= num)
 			{
 				playerMarkers[i]->Deactivate();
 				players[i] = NULL;
@@ -3749,7 +3783,7 @@ void EditSession::UpdateNumPlayers()
 		}
 		else
 		{
-			if (i < numPlayerPositions)
+			if (i < num)
 			{
 				if (players[i] == NULL)
 				{
@@ -3764,12 +3798,12 @@ void EditSession::UpdateNumPlayers()
 					else if (i == 2)
 					{
 						playerMarkers[i]->MoveTo(
-							playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
+							playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
 					}
 					else if (i == 3)
 					{
 						playerMarkers[i]->MoveTo(
-							playerMarkers[0]->GetIntPos() + Vector2i(0, 100));
+							playerMarkers[0]->GetIntPos() + Vector2i(100, 100));
 					}
 				}
 			}
@@ -3780,7 +3814,7 @@ void EditSession::UpdateNumPlayers()
 
 void EditSession::SetGameMode(int newMode)
 {
-	if (newMode == mapHeader->gameMode)
+	if (newMode == gameModeType)
 	{
 		return;
 	}
@@ -3791,7 +3825,7 @@ void EditSession::SetGameMode(int newMode)
 		gameMode = NULL;
 	}
 
-	mapHeader->gameMode = newMode;
+	gameModeType = newMode;
 
 	SetupGameMode();
 
@@ -3804,7 +3838,7 @@ void EditSession::SetGameMode(int newMode)
 	SetupHUD();
 
 
-	UpdateNumPlayers();
+	//UpdateNumPlayers();
 }
 
 int EditSession::EditRun()
@@ -3896,7 +3930,7 @@ int EditSession::EditRun()
 
 	ParamsInfo playerPI("player", NULL, NULL,
 		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
-		GetTileset("Kin/jump_64x64.png", 64, 64));
+		GetSizedTileset("Kin/jump_64x64.png"));
 
 	if (playerType == NULL)
 	{
@@ -3925,9 +3959,10 @@ int EditSession::EditRun()
 	}
 
 
-	int gm = mapHeader->gameMode;
-	mapHeader->gameMode = -1;
-	SetGameMode(gm);
+	SetGameMode(MatchParams::GAME_MODE_BASIC);
+	//int gm = mapHeader->gameMode;
+	//mapHeader->gameMode = -1;
+	//SetGameMode(gm);
 
 	//UpdateNumPlayers();
 

@@ -22,6 +22,11 @@ MenuInfoPopup::MenuInfoPopup(MainMenu *mainMenu)
 	forcedStayOpenFrames = 0;
 }
 
+MenuInfoPopup::~MenuInfoPopup()
+{
+	delete panel;
+}
+
 void MenuInfoPopup::Pop(const std::string &str, int p_forcedStayOpenFrames )
 {
 	action = A_OPEN;

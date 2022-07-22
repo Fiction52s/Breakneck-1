@@ -21,7 +21,7 @@ void FightHUD::Update()
 {
 	mini->Update();
 
-	assert(sess->GetGameMode() == MapHeader::T_FIGHT);
+	assert(sess->gameModeType == MatchParams::GAME_MODE_FIGHT);
 
 	FightMode *fm = (FightMode*)sess->gameMode;
 

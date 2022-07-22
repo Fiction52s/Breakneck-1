@@ -219,16 +219,16 @@ void GameSession::UpdateCamera()
 
 	oldView = view;
 
-	switch (mapHeader->gameMode)
+	switch (gameModeType)
 	{
-	case MapHeader::T_BASIC:
+	case MatchParams::GAME_MODE_BASIC:
 	{
 		cam.SetCamType(Camera::CamType::BASIC);
 		cam.playerIndex = 0;
 		cam.Update();
 		break;
 	}
-	case MapHeader::T_FIGHT:
+	case MatchParams::GAME_MODE_FIGHT:
 	{
 		cam.SetCamType(Camera::CamType::FIGHTING);
 		cam.Update();
@@ -468,6 +468,7 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	MatchParams mp;
 	mp.saveFile = saveFile;
 	mp.mapPath = p;
+	mp.gameModeType = gameModeType;
 
 	GameSession *newBonus = new GameSession(&mp);
 	newBonus->bonusType = p_bonusType;
@@ -749,6 +750,7 @@ GameSession::GameSession(MatchParams *mp )
 	matchParams = *mp;
 	saveFile = matchParams.saveFile;
 	netplayManager = matchParams.netplayManager;
+	gameModeType = matchParams.gameModeType;
 	currSession = this;
 	Init();
 }
@@ -1662,7 +1664,7 @@ bool GameSession::Load()
 	SetupGameMode();
 	gameMode->Setup();
 
-	if (GetGameMode() == MapHeader::T_FIGHT)
+	if (gameModeType == MatchParams::GAME_MODE_FIGHT)
 	{
 		matchParams.numPlayers = 2;
 		cout << "setting numplayers to 2 for fight mode. testing only" << endl;
@@ -2014,7 +2016,7 @@ void GameSession::SetupRecGhost()
 	{
 		recGhost = parentGame->recGhost;
 	}
-	else if (mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
+	else if (gameModeType == MatchParams::GAME_MODE_BASIC && recGhost == NULL )//mapHeader->gameMode == MapHeader::MapType::T_BASIC && recGhost == NULL)
 	{
 		recGhost = new RecordGhost(GetPlayer(0));
 	}

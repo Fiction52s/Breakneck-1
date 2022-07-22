@@ -9,27 +9,57 @@
 #include <vector>
 #include <boost/filesystem.hpp>
 #include "steam\steamtypes.h"
+#include "MatchParams.h"
 
 struct MapHeader
 {
-	enum MapType
+	enum GameModeFlags
 	{
-		T_BASIC,
-		T_REACHENEMYBASE,
-		T_FIGHT,
-		T_RACE,
+		MI_HAS_GOAL,
+		MI_HAS_BASES,
 	};
 
 	MapHeader()
 		:ver1(0), ver2(0), collectionName("nothing"),
-		description("no description"), gameMode(T_BASIC),
+		description("no description"), numPlayerSpawns(1),
 		leftBounds(0), topBounds(0), boundsWidth(0), boundsHeight(0),
 		numVertices(-1), songLevelsModified(false), numShards(0),
 		numLogs(0),drainSeconds(60), bossFightType(0), envName("w1_01"),
 		envWorldType(0), preLevelSceneName("NONE"),
-		postLevelSceneName("NONE"), creatorID( 0 )
+		postLevelSceneName("NONE"), creatorID( 0 ),
+		possibleGameModeTypeFlags(0)
 	{
 
+	}
+
+	static int GetGameModeTypeMinPlayers( int gm)
+	{
+		switch (gm)
+		{
+		case MatchParams::GAME_MODE_BASIC:
+			return 1;
+		case MatchParams::GAME_MODE_REACHENEMYBASE:
+			return 2;
+		case MatchParams::GAME_MODE_FIGHT:
+			return 2;
+		case MatchParams::GAME_MODE_RACE:
+			return 1;
+		}
+	}
+
+	static int GetGameModeTypeMaxPlayers(int gm)
+	{
+		switch (gm)
+		{
+		case MatchParams::GAME_MODE_BASIC:
+			return 1;
+		case MatchParams::GAME_MODE_REACHENEMYBASE:
+			return 2;
+		case MatchParams::GAME_MODE_FIGHT:
+			return 2;
+		case MatchParams::GAME_MODE_RACE:
+			return 1;
+		}
 	}
 
 	bool Load(std::ifstream &is);
@@ -39,8 +69,8 @@ struct MapHeader
 	int GetTop();
 	int GetRight();
 	int GetBot();
-	int GetNumPlayerPositions();
-	int GetNumPlayers();
+	//int GetNumPlayerPositions();
+	//int GetNumPlayers();
 	void ClearSongs();
 	void AddSong(const std::string &songName,
 		int songLevel);
@@ -49,7 +79,7 @@ struct MapHeader
 	int ver2;
 	std::string collectionName;
 	std::string description;
-	int gameMode;
+	
 	int drainSeconds;
 	std::string envName;
 	int envWorldType;
@@ -66,11 +96,16 @@ struct MapHeader
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;
 	uint64 creatorID;
+	
 
 	std::map < std::string, int > songLevels;
 	std::vector<std::string> songOrder;
 
 	bool songLevelsModified;
+
+	//int gameMode;
+	int numPlayerSpawns;
+	int possibleGameModeTypeFlags;
 };
 
 #endif

@@ -50,6 +50,10 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "fileHash", paramsForMakingLobby.fileHash.c_str());
 
+		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "gameModeType", to_string(paramsForMakingLobby.gameModeType).c_str());
+
+
+
 		string creatorIDStr = to_string(paramsForMakingLobby.creatorID);
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "creatorID", creatorIDStr.c_str());
 
@@ -263,6 +267,7 @@ void LobbyManager::RefreshLobbyList()
 		// request all lobbies for this game
 		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->RequestLobbyList();
 		// set the function to call when this API call has completed
+		//m_SteamCallResultLobbyMatchList.Cancel();
 		m_SteamCallResultLobbyMatchList.Set(hSteamAPICall, this, &LobbyManager::OnLobbyMatchListCallback);
 
 		action = A_REQUEST_LOBBY_LIST;

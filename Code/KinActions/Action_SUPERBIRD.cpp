@@ -18,7 +18,7 @@ void Actor::SUPERBIRD_Start()
 		sess->SetActiveSequence(sess->superSequence);
 
 		sess->Pause(3 * 16);
-		if (sess->GetGameMode() == MapHeader::T_FIGHT)
+		if (sess->gameModeType == MatchParams::GAME_MODE_FIGHT)
 		{
 			FightMode *fm = (FightMode*)sess->gameMode;
 

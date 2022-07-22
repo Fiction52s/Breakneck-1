@@ -781,7 +781,7 @@ CheckBox * Panel::AddLabeledCheckBox(
 }
 
 Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
-	const std::string &labelText, int width, int maxValue)
+	const std::string &labelText, int width, int minValue, int maxValue, int defaultValue )
 {
 	int extraSpacing = 8;
 
@@ -795,7 +795,7 @@ Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
 
 	labelStart.y += 6;
 
-	return AddSlider(name, pos, width, 0, maxValue, 0);
+	return AddSlider(name, pos, width, minValue, maxValue, defaultValue);
 }
 
 TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,

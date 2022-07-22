@@ -90,11 +90,13 @@ bool CustomMatchManager::Update()
 	case A_LOBBY_BROWSER:
 		if (lobbyBrowser->action == LobbyBrowser::A_IN_LOBBY)
 		{
+			waitingRoom->OpenPopup();
 			SetAction(A_WAITING_ROOM);
 		}
 		else if (lobbyBrowser->action == LobbyBrowser::A_RETURN_TO_MENU)
 		{
 			SetAction(A_IDLE);
+			netplayManager->Abort();
 			return false;
 		}
 		break;
@@ -103,12 +105,13 @@ bool CustomMatchManager::Update()
 		{
 			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 			action = A_CHOOSE_MAP_OPTIONS;
-			mapOptionsPopup->Activate();
+			mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
 		}
 
 		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
 		{
 			SetAction(A_IDLE);
+			netplayManager->Abort();
 			return false;
 		}
 		break;
@@ -116,32 +119,12 @@ bool CustomMatchManager::Update()
 		if (mapOptionsPopup->action == MapOptionsPopup::A_CONFIRMED)
 		{
 			SetAction(A_CREATING_LOBBY);
-			LobbyParams lp;
-			lp.mapPath = boost::filesystem::relative(selectedMap->filePath).string();
-			lp.fileHash = md5file(lp.mapPath);
 
-			std::ifstream is;
-			is.open(lp.mapPath);
+			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyParams->mapPath << endl;
+			cout << "hash: " << mapOptionsPopup->currLobbyParams->fileHash << endl;
+			cout << "creatorID: " << mapOptionsPopup->currLobbyParams->creatorID << endl;
 
-			assert(is.is_open());
-			std::string content((std::istreambuf_iterator<char>(is)),
-				(std::istreambuf_iterator<char>()));
-			md5(content);
-
-			is.clear();
-			is.seekg(0, ios::beg);
-
-			MapHeader mh;
-			mh.Load(is);
-			is.close();
-
-			lp.creatorID = mh.creatorID;
-
-			cout << "creating custom lobby test: " << lp.mapPath << endl;
-			cout << "hash: " << lp.fileHash << endl;
-			cout << "creatorID: " << lp.creatorID << endl;
-			lp.maxMembers = 2;
-			netplayManager->TryCreateCustomLobby(lp);
+			netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyParams);
 			//cout << "waiting room" << endl;
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
@@ -172,8 +155,6 @@ bool CustomMatchManager::Update()
 				lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;
 				netplayManager->BroadcastLobbyMessage(lm);
 				cout << "broadcasting start message" << endl;
-
-				//return false;
 			}
 		}
 		else
@@ -183,13 +164,13 @@ bool CustomMatchManager::Update()
 				cout << "processed start message" << endl;
 				waitingRoom->SetAction(WaitingRoom::A_READY_TO_START);
 				SetAction(A_READY);
-				//return false;
 			}
 		}
 		
 		if( waitingRoom->action == WaitingRoom::A_LEAVE_ROOM)
 		{
 			//BrowseCustomLobbies();
+			netplayManager->Abort();
 			SetAction(A_IDLE);
 			return false;
 		}

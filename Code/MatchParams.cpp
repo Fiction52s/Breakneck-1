@@ -5,6 +5,7 @@ MatchParams::MatchParams()
 	saveFile = NULL;
 	netplayManager = NULL;
 	numPlayers = 1;
+	gameModeType = MatchParams::GAME_MODE_BASIC;
 }
 
 //void MatchParams::SetToNetplay(LobbyManager *lb, ConnectionManager *cm)

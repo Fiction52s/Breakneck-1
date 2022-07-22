@@ -9,13 +9,22 @@ struct SaveFile;
 
 struct MatchParams
 {
-	MatchParams();
+	enum GameModeType
+	{
+		GAME_MODE_BASIC,
+		GAME_MODE_REACHENEMYBASE,
+		GAME_MODE_FIGHT,
+		GAME_MODE_RACE,
+	};
+
 	boost::filesystem::path mapPath;
 	SaveFile *saveFile;
 	NetplayManager *netplayManager;
 	//void SetToNetplay(NetplayManager *netplayManager);//LobbyManager *lb, ConnectionManager *cm);
 	int numPlayers;
+	int gameModeType;
 
+	MatchParams();
 };
 
 #endif

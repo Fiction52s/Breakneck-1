@@ -108,7 +108,7 @@ void MultiplayerBase::ProcessState()
 
 HitboxInfo *MultiplayerBase::IsHit(int pIndex)
 {
-	if (sess->GetGameMode() == MapHeader::T_REACHENEMYBASE)
+	if (sess->gameModeType == MatchParams::GAME_MODE_REACHENEMYBASE)
 	{
 		ReachEnemyBaseMode *rbm = (ReachEnemyBaseMode*)sess->gameMode;
 		if (pIndex == 0)

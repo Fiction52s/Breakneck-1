@@ -125,7 +125,7 @@ void EditModeUI::AddKinOptionSlider( int world, const std::string &text,
 	const std::string &toolTipText, int upgradeIndex, int maxQuant)
 {
 	kinSliders[world][upgradeIndex] = kinOptionsPanel->AddLabeledSlider(text, Vector2i(0, 0),
-		text, 100, maxQuant);
+		text, 100, 0, maxQuant, 0);
 	kinSliders[world][upgradeIndex]->SetToolTip(toolTipText);
 	kinSliders[world][upgradeIndex]->SetInnerDisplayMode(true);
 }

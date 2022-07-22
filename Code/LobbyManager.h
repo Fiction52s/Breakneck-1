@@ -27,10 +27,17 @@ struct Lobby
 
 struct LobbyParams
 {
+	LobbyParams()
+	{
+		maxMembers = 0;
+		creatorID = 0;
+		gameModeType = 0;
+	}
 	int maxMembers;
 	std::string mapPath;
 	std::string fileHash;
 	uint64 creatorID;
+	int gameModeType;
 };
 
 struct LobbyManager

@@ -9,6 +9,8 @@
 
 struct WorkshopManager;
 struct MapBrowser;
+struct MapHeader;
+struct LobbyParams;
 
 struct MapNode
 {
@@ -195,9 +197,14 @@ struct MapOptionsPopup : GUIHandler
 	bool active;
 	Action action;
 
+	MapHeader *currMapHeader;
+	LobbyParams *currLobbyParams;
+	int chosenGameModeType;
+	std::string mapPath;
+
 	MapOptionsPopup();
 	~MapOptionsPopup();
-	void Activate();
+	void Activate( const std::string &p_mapPath );
 	void Update();
 	void HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);

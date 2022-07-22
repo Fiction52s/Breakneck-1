@@ -2293,7 +2293,7 @@ bool Session::ReadDecor(std::ifstream &is)
 
 bool Session::ReadPlayersStartPos(std::ifstream &is)
 {
-	int numPlayers = mapHeader->GetNumPlayers();
+	int numPlayers = mapHeader->numPlayerSpawns;
 
 	for (int i = 0; i < numPlayers; ++i)
 	{
@@ -7533,10 +7533,6 @@ void Session::EndLevelNoScene()
 	}
 }
 
-int Session::GetGameMode()
-{
-	return mapHeader->gameMode;
-}
 
 bool Session::IsMapVersionNewerThanOrEqualTo(int ver1, int ver2)
 {
@@ -7586,18 +7582,18 @@ void Session::DrawPlayerShields(sf::RenderTarget *target)
 
 void Session::SetupGameMode()
 {
-	switch (mapHeader->gameMode)
+	switch (gameModeType)
 	{
-	case MapHeader::T_BASIC:
+	case MatchParams::GAME_MODE_BASIC:
 		gameMode = new BasicMode;
 		break;
-	case MapHeader::T_REACHENEMYBASE:
+	case MatchParams::GAME_MODE_REACHENEMYBASE:
 		gameMode = new ReachEnemyBaseMode;
 		break;
-	case MapHeader::T_FIGHT:
+	case MatchParams::GAME_MODE_FIGHT:
 		gameMode = new FightMode;
 		break;
-	case MapHeader::T_RACE:
+	case MatchParams::GAME_MODE_RACE:
 		gameMode = new RaceMode;
 		break;
 	}

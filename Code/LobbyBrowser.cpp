@@ -240,6 +240,14 @@ void LobbyBrowser::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
+void LobbyBrowser::ClearLobbyRects()
+{
+	for (int i = 0; i < totalRects; ++i)
+	{
+		lobbyRects[i]->SetShown(false);
+	}
+}
+
 void LobbyBrowser::PopulateRects()
 {
 	cout << "populating" << endl;
@@ -282,6 +290,7 @@ void LobbyBrowser::OpenPopup()
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 
 	ClearSelection();
+	ClearLobbyRects();
 
 	
 

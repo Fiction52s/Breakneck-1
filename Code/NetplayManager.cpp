@@ -203,6 +203,10 @@ void NetplayManager::StartConnecting()
 
 	string receivedCreatorIDStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "creatorID");
 
+	string receivedGameModeTypeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "gameModeType");
+
+	int receivedGameModeType = stoi(receivedGameModeTypeStr);
+
 	string mapFile = receivedMapPath.filename().string();
 
 	mapDownloadFilePath = "";
@@ -210,10 +214,13 @@ void NetplayManager::StartConnecting()
 
 	bool mapVerified = false;
 
+	matchParams.gameModeType = receivedGameModeType;
+
 	if (IsHost())
 	{
 		mapVerified = true;
 		matchParams.mapPath = receivedMapPath;
+		
 		cout << "host setting mapPath to: " << matchParams.mapPath << endl;
 	}
 	else
@@ -355,6 +362,7 @@ void NetplayManager::Update()
 		{
 			LobbyParams lp;
 			lp.maxMembers = 2;
+			lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
 
 			int r = rand() % 2;
 			if (r == 0)
@@ -365,6 +373,10 @@ void NetplayManager::Update()
 			{
 				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
 			}
+
+			lp.fileHash = md5file(lp.mapPath);
+			lp.creatorID = 0;
+
 			lobbyManager->TryCreatingLobby(lp);
 			action = A_QUICKPLAY_GATHERING_USERS;
 		}
@@ -984,6 +996,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
 		matchParams.numPlayers = 2;
+		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
 
 		LoadMap();
 		

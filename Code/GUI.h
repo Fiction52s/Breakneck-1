@@ -643,7 +643,7 @@ struct Panel
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
 	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
-		int maxValue);
+		int minValue, int maxValue, int defaultValue);
 	
 	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
 		int textBoxLengthLimit, const std::string &initialText, const std::string &labelText );
@@ -828,7 +828,7 @@ struct MapOptionsUI : GUIHandler
 	TextBox* drainTextbox;
 	Dropdown *preDropdown;
 	Dropdown *postDropdown;
-	Dropdown *gameModeDropdown;
+	Slider *numPlayersSlider;
 
 	MapOptionsUI();
 	~MapOptionsUI();

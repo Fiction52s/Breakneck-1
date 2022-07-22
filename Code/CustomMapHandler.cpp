@@ -24,6 +24,8 @@ void CustomMapsHandler::ButtonCallback(Button *b, const std::string & e)
 			menu->gameRunType = MainMenu::GRT_FREEPLAY;
 			MatchParams mp;
 			mp.mapPath = ls.GetSelectedPath();
+			mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+			mp.numPlayers = 1;
 
 			GameSession *gs = new GameSession(&mp);
 			GameSession::sLoad(gs);

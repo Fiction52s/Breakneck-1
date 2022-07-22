@@ -368,6 +368,8 @@ void MapSelectionMenu::LoadMap()
 
 	MatchParams mp;
 	mp.mapPath = allItems[pIndex].second.item->path.string();
+	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+	mp.numPlayers = 1;
 	gs = new GameSession(&mp);
 
 	gs->progressDisplay = progressDisplay;
@@ -612,31 +614,31 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 			else
 			{
 
-				MapSelectionItem *item = allItems[pIndex].second.item;
-				if (item->headerInfo->gameMode == MapHeader::T_REACHENEMYBASE)
-				{
-					//mainMenu->multiLoadingScreen->Reset(item->path);
-					//mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
+				//MapSelectionItem *item = allItems[pIndex].second.item;
+				//if (item->headerInfo->gameMode == MapHeader::T_REACHENEMYBASE)
+				//{
+				//	//mainMenu->multiLoadingScreen->Reset(item->path);
+				//	//mainMenu->SetMode(MainMenu::Mode::TRANS_MAPSELECT_TO_MULTIPREVIEW);
 
-					state = S_TO_MULTI_TRANS;
-					multiTransFrame = 0;
-					//multiProfileRow.setPosition(multiRowOffPos);
-					multiSelect.setPosition(multiSelectOffPos);
-					for (int i = 0; i < 4; ++i)
-					{
-						multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiRowOffPos.y));
-					}
+				//	state = S_TO_MULTI_TRANS;
+				//	multiTransFrame = 0;
+				//	//multiProfileRow.setPosition(multiRowOffPos);
+				//	multiSelect.setPosition(multiSelectOffPos);
+				//	for (int i = 0; i < 4; ++i)
+				//	{
+				//		multiPlayerSection[i]->SetTopMid(menuOffset + Vector2f(480 * i + 240, multiRowOffPos.y));
+				//	}
 
-					LoadMap();
-					return;
-				}
-				else
-				{
-					//single player
-					state = S_SELECTING_SKIN;
+				//	LoadMap();
+				//	return;
+				//}
+				//else
+				//{
+				//	//single player
+				//	state = S_SELECTING_SKIN;
 
-					LoadMap();
-				}
+				//	LoadMap();
+				//}
 
 
 			}
@@ -1203,15 +1205,17 @@ void MapSelectionMenu::UpdateItemText()
 		itemName[i].setOrigin(0, 0);
 		if (p.second.item != NULL)
 		{
-			MapSelectionItem *item = p.second.item;
+			//taken out while doing the game mode stuff because I don't need this menu anymore
+
+			/*MapSelectionItem *item = p.second.item;
 			switch (item->headerInfo->gameMode)
 			{
-			case MapHeader::T_BASIC:
+			case MatchParams::GAME_MODE_BASIC:
 			{
 				col = Color::Cyan;
 				break;
 			}
-			case MapHeader::T_REACHENEMYBASE:
+			case MatchParams::GAME_MODE_REACHENEMYBASE:
 			{
 				col = Color::White;
 				break;
@@ -1220,7 +1224,7 @@ void MapSelectionMenu::UpdateItemText()
 			{
 				col = Color::Yellow;
 			}
-			}
+			}*/
 			itemName[i].setFillColor(col);
 		}
 		else if (p.second.coll != NULL)

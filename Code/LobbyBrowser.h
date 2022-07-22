@@ -79,6 +79,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 
 	void MouseScroll(int delta);
 	void PopulateRects();
+	void ClearLobbyRects();
 
 	void ClearSelection();
 

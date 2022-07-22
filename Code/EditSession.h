@@ -845,7 +845,7 @@ struct EditSession : GUIHandler, Session
 	std::string postLevelSceneName;
 
 	void SetGameMode(int gm);
-	void UpdateNumPlayers();
+	void SetNumPlayers( int num );
 	void UpdateTerrainStates();
 	void UpdateRailStates();
 

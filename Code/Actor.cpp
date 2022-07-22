@@ -3858,16 +3858,16 @@ double Actor::GetMaxSpeed()
 
 void Actor::SetGameMode()
 {
-	int mapType;
-	if (sess->mapHeader == NULL)
-	{
-		//blank editor files only:
-		mapType = MapHeader::MapType::T_BASIC;
-	}
-	else
-	{
-		mapType = sess->mapHeader->gameMode;
-	}
+	//int mapType;
+	//if (sess->mapHeader == NULL)
+	//{
+	//	//blank editor files only:
+	//	mapType = MapHeader::T_BASIC;
+	//}
+	//else
+	//{
+	//	mapType = sess->matchp
+	//}
 }
 
 void Actor::SetFBubbleFrame(int i, float val)
@@ -5072,7 +5072,7 @@ void Actor::ReactToBeingHit()
 
 	ActivateSound(PlayerSounds::S_HURT);
 
-	if (sess->GetGameMode() == MapHeader::T_FIGHT)
+	if (sess->gameModeType == MatchParams::GAME_MODE_FIGHT)
 	{
 		FightMode *fm = (FightMode*)sess->gameMode;
 		if (actorIndex == 0)
@@ -5305,7 +5305,7 @@ void Actor::SetKinMode(Mode m)
 
 void Actor::UpdateDrain()
 {
-	if (sess->GetGameMode() != MapHeader::T_BASIC)
+	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC)
 	{
 		return;
 	}

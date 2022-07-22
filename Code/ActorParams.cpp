@@ -12,6 +12,7 @@
 #include "Action.h"
 #include "ShardMenu.h"
 #include "LogMenu.h"
+#include "PlayerSkinShader.h"
 
 using namespace std;
 using namespace sf;
@@ -32,17 +33,25 @@ sf::Font *PoiParams::font = NULL;
 
 
 
+
 //remnove the postype thing. we have 2 bools for that already
 PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos)
 	:ActorParams(at)
 {
+	skinShader = new PlayerSkinShader("player");
 	PlaceAerial(pos);
 }
 
 PlayerParams::PlayerParams(ActorType *at, ifstream &is)
 	: ActorParams(at)
 {
+	skinShader = new PlayerSkinShader("player");
 	LoadAerial(is);
+}
+
+PlayerParams::~PlayerParams()
+{
+	delete skinShader;
 }
 
 bool PlayerParams::CanApply()
@@ -87,6 +96,31 @@ ActorParams *PlayerParams::Copy()
 {
 	assert(false);
 	return NULL;
+}
+
+void PlayerParams::Draw(sf::RenderTarget *target)
+{
+	Vector2f viewCenter = target->getView().getCenter();
+	Vector2f viewSize = target->getView().getSize();
+	//if (image.getGlobalBounds().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+	//	viewSize.x, viewSize.y)))
+	if (GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
+		viewSize.x, viewSize.y)))
+	{
+		DrawMonitor(target);
+
+		if (myEnemy != NULL)
+			myEnemy->Draw(target);
+		else
+		{
+			target->draw(image);
+		}
+
+		DrawBoundary(target);
+
+		DrawQuad(target);
+
+	}
 }
 
 

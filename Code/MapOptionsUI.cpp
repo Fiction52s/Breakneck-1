@@ -60,11 +60,7 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel->UnpauseAutoSpacing();
 	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
 
-
-	vector<string> gameModeOptions = { "basic", "base", "fight", "race" };
-	gameModeDropdown = mapOptionsPanel->AddDropdown("gamemode", 
-		Vector2i(0, 0), Vector2i(250, 28), gameModeOptions , 0);
-
+	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 0), "Num player spawns: ", 100, 1, 4, 1);
 
 	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 70), Vector2f(60, 30), "OK");
 	mapOptionsPanel->SetConfirmButton(okButton);
@@ -126,7 +122,8 @@ void MapOptionsUI::OpenMapOptionsPopup()
 	assert(res);
 	res = postDropdown->SetSelectedText(edit->mapHeader->postLevelSceneName);
 	assert(res);
-	gameModeDropdown->SetSelectedIndex(edit->mapHeader->gameMode);
+
+	numPlayersSlider->SetCurrValue(edit->mapHeader->numPlayerSpawns);
 }
 
 void MapOptionsUI::CloseMapOptionsPopup()
@@ -145,7 +142,8 @@ void MapOptionsUI::CloseMapOptionsPopup()
 
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
-	edit->SetGameMode(gameModeDropdown->selectedIndex);
+	edit->SetNumPlayers(numPlayersSlider->GetCurrValue());
+	//edit->SetGameMode(gameModeDropdown->selectedIndex);
 	edit->RemoveActivePanel(mapOptionsPanel);
 }
 

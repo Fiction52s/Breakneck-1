@@ -19,6 +19,7 @@ bool MapHeader::Load(std::ifstream &is)
 
 	string versionString;
 	is >> versionString;
+
 	int sepIndex = versionString.find('.');
 	string part1 = versionString.substr(0, sepIndex);
 	string part2 = versionString.substr(sepIndex + 1);
@@ -130,10 +131,43 @@ bool MapHeader::Load(std::ifstream &is)
 		is >> creatorID;
 	}
 
+	if (ver1 >= 3)
+	{
+		is >> numPlayerSpawns;
+		is >> possibleGameModeTypeFlags;
+	}
 	
 	
+	if (ver1 < 3)
+	{
+		int oldGameMode;
+		is >> oldGameMode;
 
-	is >> gameMode;
+		switch (oldGameMode)
+		{
+		case MatchParams::GAME_MODE_BASIC:
+		{
+			numPlayerSpawns = 1;
+			break;
+		}
+		case MatchParams::GAME_MODE_FIGHT:
+		{
+			numPlayerSpawns = 2;
+			break;
+		}
+		case MatchParams::GAME_MODE_RACE:
+		{
+			numPlayerSpawns = 2;
+			break;
+		}
+		case MatchParams::GAME_MODE_REACHENEMYBASE:
+		{
+			numPlayerSpawns = 2;
+			break;
+		}
+		}
+	}
+	
 
 	if (ver1 < 2 || (ver1 == 2 && ver2 <= 7 ) )
 	{
@@ -159,10 +193,10 @@ bool MapHeader::Load(std::ifstream &is)
 	
 	description = ss.str();
 
-	if (ver1 < 2 || ( ver1 == 2 && ver2 < 3) )
+	/*if (ver1 < 2 || ( ver1 == 2 && ver2 < 3) )
 	{
 		gameMode = T_BASIC;
-	}
+	}*/
 
 	return true;
 }
@@ -170,9 +204,9 @@ bool MapHeader::Load(std::ifstream &is)
 void MapHeader::Save(std::ofstream &of)
 {
 
-	//new version 2.9
+	//new version 3, only go up by an integer every time from now on
 	//curr version 2.8
-	of << ver1 << "." << ver2 << "\n";
+	of << ver1 << "\n"; // << "." << ver2 << "\n";
 	of << description << "<>\n";
 
 	of << numShards << "\n";
@@ -193,21 +227,11 @@ void MapHeader::Save(std::ofstream &of)
 		of << (*it) << "\n" << songLevels[(*it)] << "\n";
 	}
 
-	/*of << songLevels.size() << "\n";
-	for (auto it = songLevels.begin(); it != songLevels.end(); ++it)
-	{
-		of << (*it).first << "\n" << (*it).second << "\n";
-	}*/
-
-
-	//of << collectionName << "\n";
 	of << creatorID << "\n";
 
-	of << gameMode << "\n";
+	of << numPlayerSpawns << "\n";
+	of << possibleGameModeTypeFlags << "\n";
 
-	//of << (int)envType << " " << envLevel << endl;
-
-	//of << envWorldType << " ";
 	of << envName << endl;
 
 	of << leftBounds << " " << topBounds << " " << boundsWidth << " " << boundsHeight << endl;
@@ -272,40 +296,6 @@ bool MapHeader::Replace(boost::filesystem::path &p )
 	//mh->songLevelsModified = false;
 
 	return true;
-}
-
-int MapHeader::GetNumPlayerPositions()
-{
-	switch (gameMode)
-	{
-	case T_BASIC:
-		return 1;
-	case T_REACHENEMYBASE:
-		return 2;
-	case T_FIGHT:
-		return 2;
-	case T_RACE:
-		return 1;
-	default:
-		return 1;
-	}
-}
-
-int MapHeader::GetNumPlayers()
-{
-	switch (gameMode)
-	{
-	case T_BASIC:
-		return 1;
-	case T_REACHENEMYBASE:
-		return 2;
-	case T_FIGHT:
-		return 2;
-	case T_RACE:
-		return 2;
-	default:
-		return 1;
-	}
 }
 
 void MapHeader::ClearSongs()

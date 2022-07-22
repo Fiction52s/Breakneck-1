@@ -27,6 +27,7 @@ struct MenuInfoPopup : GUIHandler
 	int forcedStayOpenFrames;
 
 	MenuInfoPopup(MainMenu*mainMenu);
+	~MenuInfoPopup();
 	void SetText(const std::string &str);
 	void Pop(const std::string &str, int forcedStayOpenFrames = 0);
 	bool Update(ControllerState &currInput,

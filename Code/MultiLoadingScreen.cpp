@@ -48,6 +48,8 @@ void MultiLoadingScreen::Reset(boost::filesystem::path p_path)
 
 	MatchParams mp;
 	mp.mapPath = p_path.string();
+	mp.gameModeType = MatchParams::GAME_MODE_BASIC;
+	mp.numPlayers = 1;
 	gs = new GameSession(&mp);
 
 	gs->progressDisplay = progressDisplay;

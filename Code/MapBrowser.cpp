@@ -3,6 +3,8 @@
 #include <iostream>
 #include "EditSession.h"
 #include "WorkshopManager.h"
+#include "LobbyManager.h"
+#include "md5.h"
 //#include "steam/steam_api.h"
 
 using namespace std;
@@ -879,6 +881,12 @@ MapOptionsPopup::MapOptionsPopup()
 
 	action = A_INACTIVE;
 
+	chosenGameModeType = -1;
+	chosenGameModeType = MatchParams::GAME_MODE_FIGHT;
+
+	currMapHeader = new MapHeader;
+	currLobbyParams = new LobbyParams;
+
 	/*panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;*/
 
@@ -897,6 +905,8 @@ MapOptionsPopup::MapOptionsPopup()
 MapOptionsPopup::~MapOptionsPopup()
 {
 	delete panel;
+	delete currMapHeader;
+	delete currLobbyParams;
 }
 
 void MapOptionsPopup::Update()
@@ -926,7 +936,27 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
-void MapOptionsPopup::Activate()
+void MapOptionsPopup::Activate( const std::string &p_mapPath )
 {
+	currLobbyParams->mapPath = p_mapPath;
+
+	std::ifstream is;
+	is.open(p_mapPath);
+
+	assert(is.is_open());
+	std::string content((std::istreambuf_iterator<char>(is)),
+		(std::istreambuf_iterator<char>()));
+	currLobbyParams->fileHash = md5(content);
+
+	is.clear();
+	is.seekg(0, ios::beg);
+
+	currMapHeader->Load(is);
+	is.close();
+
+	currLobbyParams->creatorID = currMapHeader->creatorID;
+	currLobbyParams->maxMembers = 2;
+	currLobbyParams->gameModeType = MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
+
 	action = A_ACTIVE;
 }

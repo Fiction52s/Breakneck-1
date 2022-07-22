@@ -136,7 +136,7 @@ void MultiplayerProgressTarget::ProcessHit()
 		hitBy[receivedHitIndex] = true;
 		receivedHit = NULL;
 
-		if (sess->GetGameMode() == MapHeader::T_REACHENEMYBASE)
+		if (sess->gameModeType == MatchParams::GAME_MODE_REACHENEMYBASE)
 		{
 			ReachEnemyBaseMode *rbm = (ReachEnemyBaseMode*)sess->gameMode;
 			if (receivedHitIndex == 0)
