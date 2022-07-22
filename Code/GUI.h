@@ -421,6 +421,7 @@ struct Button : PanelMember
 	void Draw( sf::RenderTarget *target );
 	bool MouseUpdate();
 	void Deactivate();
+	void SetPos(sf::Vector2i &pos);
 	sf::Vector2i pos;
 	sf::Vector2f size;
 	sf::Text text;

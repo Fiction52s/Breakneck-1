@@ -1014,6 +1014,11 @@ void MainMenu::SetMode(Mode m)
 		selectorAnimFrame = 0;
 	}
 
+	if (menuMode == ONLINE_MENU)
+	{
+		onlineMenuScreen->Start();
+	}
+
 	if (menuMode == SAVEMENU)
 	{
 		if (oldMode != WORLDMAP)
@@ -2805,7 +2810,6 @@ void MainMenu::HandleMenuMode()
 
 		if (!customMatchManager->Update())
 		{
-			onlineMenuScreen->Start();
 			SetMode(ONLINE_MENU);
 			break;
 		}
@@ -2857,7 +2861,7 @@ void MainMenu::HandleMenuMode()
 			{
 				if (ev.key.code == Keyboard::Escape)
 				{
-					SetMode(TITLEMENU);
+					SetMode(ONLINE_MENU);
 					netplayManager->Abort();
 					//quit = true;
 				}
@@ -2898,12 +2902,10 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
-				
-
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
 					cout << "EXITED ON DISCONNECT" << endl;
-					infoPopup->Pop("here testing", 60);
+					infoPopup->Pop("Opponent disconnected", 60);
 					SetMode(TITLEMENU_INFOPOP);
 				}
 				else
@@ -3134,7 +3136,11 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_CREDITS:
 		{
 			
-			if (IsKeyPressed(Keyboard::LShift))
+			//cout << "EXITED ON DISCONNECT" << endl;
+			//infoPopup->Pop("Opponent disconnected", 60);
+			//SetMode(TITLEMENU_INFOPOP);
+
+			/*if (IsKeyPressed(Keyboard::LShift))
 			{
 				customMatchManager->CreateCustomLobby();
 			}
@@ -3143,7 +3149,7 @@ void MainMenu::TitleMenuModeUpdate()
 				customMatchManager->BrowseCustomLobbies();
 			}
 
-			SetMode(CUSTOM_MATCH_SETUP);
+			SetMode(CUSTOM_MATCH_SETUP);*/
 			
 
 			//mapBrowserScreen->Start();

@@ -18,13 +18,19 @@ Button::Button(const string &n, int posx, int posy, int width, int height, sf::F
 
 	auto bounds = text.getLocalBounds();
 	text.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
-	text.setPosition(pos.x + size.x / 2, pos.y + size.y / 2);
 }
 
 void Button::Deactivate()
 {
 	clickedDown = false;
 }
+
+void Button::SetPos(sf::Vector2i &p_pos)
+{
+	pos = p_pos;
+	text.setPosition(pos.x + size.x / 2, pos.y + size.y / 2);
+}
+
 
 bool Button::MouseUpdate()
 {

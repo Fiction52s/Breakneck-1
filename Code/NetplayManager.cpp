@@ -1322,7 +1322,7 @@ void NetplayManager::SendDesyncCheckToHost( int currGameFrame )
 			if (i != playerIndex)
 			{
 				SendUdpMsg(netplayPlayers[i].connection, &msg);
-				cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
+				//cout << "sending desync check to host: " << msg.u.desync_info.x << ", " << msg.u.desync_info.y << "   : " << currGameFrame << endl;
 			}
 			break;
 		}

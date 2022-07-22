@@ -507,6 +507,7 @@ void MapBrowser::Init()
 
 	currWorkshopPage = 1;
 	selectedRect = NULL;
+	action = A_IDLE;
 }
 
 void MapBrowser::Start(const std::string &p_ext,

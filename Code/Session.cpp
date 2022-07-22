@@ -7048,8 +7048,8 @@ void Session::AddDesyncCheckInfo()
 
 				if (!netplayManager->IsHost())
 				{
-					cout << "add desync info for frame: " << totalGameFrames << ", pos: " << dci.pos.x << ", " << dci.pos.y << ", action: " << dci.action
-						<< ", actionframe: " << dci.actionFrame << endl;
+					/*cout << "add desync info for frame: " << totalGameFrames << ", pos: " << dci.pos.x << ", " << dci.pos.y << ", action: " << dci.action
+						<< ", actionframe: " << dci.actionFrame << endl;*/
 				}
 				
 				netplayManager->AddDesyncCheckInfo(i, dci);

@@ -30,8 +30,11 @@ void WaitingRoom::Update()
 	{
 		if (netplayManager->lobbyManager->GetNumMembers() == 2) //fix this later for more members
 		{
+			if (netplayManager->IsHost())
+			{
+				startButton->ShowMember();
+			}
 			action = A_READY_TO_START;
-			startButton->ShowMember();
 		}
 		break;
 	}

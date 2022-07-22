@@ -6,13 +6,16 @@ using namespace std;
 
 MenuInfoPopup::MenuInfoPopup(MainMenu *mainMenu)
 {
-	size = Vector2f(500, 300);
-	SetRectColor(popupBGQuad, Color::Black);
+	size =Vector2f(500, 300);
 
-	text.setFont(mainMenu->arial);
-	text.setCharacterSize(40);
-	text.setFillColor(Color::White);
-	text.setString("HELLO");
+	panel = new Panel("menuinfopopup", size.x, size.y, this, true);
+	//SetRectColor(popupBGQuad, Color::Black);
+
+	infoText = panel->AddLabel("infolabel", Vector2i(10, 10), 30, "");
+
+	okButton = panel->AddButton("ok", Vector2i(10, 100), Vector2f(100, 30), "OK");
+	panel->SetConfirmButton(okButton);
+	panel->SetCancelButton(okButton);
 
 	SetPos(Vector2f(960, 540));
 
@@ -21,6 +24,7 @@ MenuInfoPopup::MenuInfoPopup(MainMenu *mainMenu)
 
 void MenuInfoPopup::Pop(const std::string &str, int p_forcedStayOpenFrames )
 {
+	action = A_OPEN;
 	forcedStayOpenFrames = p_forcedStayOpenFrames;
 	SetText(str);
 }
@@ -28,6 +32,8 @@ void MenuInfoPopup::Pop(const std::string &str, int p_forcedStayOpenFrames )
 bool MenuInfoPopup::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
+	panel->MouseUpdate();
+
 	if (forcedStayOpenFrames > 0)
 	{
 		--forcedStayOpenFrames;
@@ -43,28 +49,55 @@ bool MenuInfoPopup::Update(ControllerState &currInput,
 		return true;
 	}
 
+	if (action == A_CLOSED)
+	{
+		return true;
+	}
+
 	return false;
 }
 
 void MenuInfoPopup::SetPos(sf::Vector2f &pos)
 {
 	position = pos;
-	SetRectCenter(popupBGQuad, size.x, size.y, pos);
-	text.setPosition(pos);
+	panel->SetCenterPos(Vector2i(pos));
+	
+	//SetRectCenter(popupBGQuad, size.x, size.y, pos);
+	//text.setPosition(pos);
 }
 
 void MenuInfoPopup::SetText(const std::string &str)
 {
-	text.setString(str);
-	text.setOrigin(text.getLocalBounds().left + text.getLocalBounds().width / 2,
-		text.getLocalBounds().top + text.getLocalBounds().height / 2);
-	size.x = text.getGlobalBounds().width + 40;
-	size.y = text.getGlobalBounds().height + 40;
+	infoText->setString(str);
+	//infoText->setOrigin(infoText->getLocalBounds().left + infoText->getLocalBounds().width / 2, 0);
+		//infoText->getLocalBounds().top + infoText->getLocalBounds().height / 2);
+	size.x = infoText->getGlobalBounds().width + 40;
+	size.y = infoText->getCharacterSize() + infoText->getPosition().y + 20 + okButton->size.y + 10;//infoText->getGlobalBounds().height + 80;
+
+	
+
+	panel->SetSize(size);
+	okButton->SetPos(Vector2i(size.x / 2 - okButton->size.x / 2, size.y - okButton->size.y - 10));
+	//okButton->pos =
+
 	SetPos(position);
 }
 
 void MenuInfoPopup::Draw(sf::RenderTarget *target)
 {
-	target->draw(popupBGQuad, 4, sf::Quads);
-	target->draw(text);
+	panel->Draw(target);
+}
+
+void MenuInfoPopup::HandleEvent(sf::Event ev)
+{
+	panel->HandleEvent(ev);
+}
+
+void MenuInfoPopup::ButtonCallback(Button *b, const std::string & e)
+{
+	if (b->name == "ok")
+	{
+		action = A_CLOSED;
+	}
+	
 }
