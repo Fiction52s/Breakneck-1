@@ -179,7 +179,7 @@ void NetplayManager::StartConnecting()
 	int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
 
 	numPlayers = numLobbyMembers; //2
-	assert(GetHostID() == lobbyManager->currentLobby.memberList.front());
+	assert(GetHostID() == lobbyManager->currentLobby.memberList.front().id);
 	int memberIndex = 0;
 	playerIndex = -1;
 	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
@@ -187,9 +187,9 @@ void NetplayManager::StartConnecting()
 		netplayPlayers[memberIndex].Clear();
 
 		netplayPlayers[memberIndex].index = memberIndex;
-		netplayPlayers[memberIndex].id = (*it);
+		netplayPlayers[memberIndex].id = (*it).id;
 
-		if ((*it) == GetMyID())
+		if ((*it).id == GetMyID())
 		{
 			netplayPlayers[memberIndex].isMe = true;
 			playerIndex = memberIndex;

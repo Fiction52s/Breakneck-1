@@ -7,7 +7,21 @@
 #include "LobbyMessage.h"
 #include <list>
 
+struct WaitingRoom;
+
 // an item in the list of lobbies we've found to display
+
+struct LobbyMember
+{
+	CSteamID id;
+	std::string name;
+	LobbyMember(CSteamID p_id, const char *p_name)
+	{
+		id = p_id;
+		name = p_name;
+	}
+};
+
 struct Lobby
 {
 	Lobby()
@@ -21,7 +35,7 @@ struct Lobby
 	std::string name;
 	//bool createdByMe;
 	int maxMembers;
-	std::list<CSteamID> memberList;
+	std::list<LobbyMember> memberList;
 	bool dataIsRetrieved;
 };
 
@@ -61,6 +75,7 @@ struct LobbyManager
 	bool m_bRequestingLobbies;
 	std::vector<Lobby> lobbyVec;
 
+	WaitingRoom *currWaitingRoom;
 	bool readyForGameStart;
 
 	LobbyParams paramsForMakingLobby;

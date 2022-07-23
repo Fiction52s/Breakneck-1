@@ -21,6 +21,8 @@ struct WaitingRoom : GUIHandler
 	Panel *panel;
 	Button *startButton;
 	Button *leaveButton;
+	
+	TextChooseRect *memberNameRects[4];
 
 	WaitingRoom();
 	~WaitingRoom();
@@ -30,6 +32,7 @@ struct WaitingRoom : GUIHandler
 	void ClosePopup();
 	void SetAction(Action a);
 	bool HandleEvent(sf::Event ev);
+	void UpdateMemberList();
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);

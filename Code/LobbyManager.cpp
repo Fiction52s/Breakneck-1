@@ -2,6 +2,7 @@
 #include <string>
 #include <iostream>
 #include "LobbyMessage.h"
+#include "WaitingRoom.h"
 
 using namespace std;
 
@@ -9,6 +10,7 @@ LobbyManager::LobbyManager()
 {
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
+	currWaitingRoom = NULL;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyParams &lp)
@@ -167,7 +169,12 @@ void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
 	{
 		currUser = SteamMatchmaking()->GetLobbyMemberByIndex(lobbyID, i);
 
-		currentLobby.memberList.push_back(currUser);
+		currentLobby.memberList.push_back(LobbyMember(currUser, SteamFriends()->GetFriendPersonaName( currUser )));
+	}
+
+	if (currWaitingRoom != NULL)
+	{
+		currWaitingRoom->UpdateMemberList();
 	}
 }
 
@@ -190,6 +197,7 @@ void LobbyManager::LeaveLobby()
 {
 	SteamMatchmaking()->LeaveLobby(currentLobby.m_steamIDLobby);
 	action = A_IDLE;
+	currWaitingRoom = NULL;
 	cout << "leaving lobby" << endl;
 }
 

@@ -101,21 +101,7 @@ struct MusicManager
 };
 
 
-struct TextChooseRect : ChooseRect
-{
-	TextChooseRect(ChooseRectIdentity ident,
-		sf::Vertex *v, sf::Vector2f &position,
-		const std::string &str, sf::Vector2f &boxSize,
-		Panel *p);
 
-	void UpdatePanelPos();
-	void Draw(sf::RenderTarget *target);
-	void SetSize(sf::Vector2f &bSize );
-	void SetText(const std::string &str);
-	void UpdateTextPosition();
-	void SetTextHeight(int height);
-	void SetName(const std::string &name);
-};
 
 struct ListChooser;
 struct MapHeader;

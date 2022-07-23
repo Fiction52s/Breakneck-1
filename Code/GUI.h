@@ -204,6 +204,7 @@ struct ChooseRect : PanelMember
 		I_ONLINEMENU_QUICKPLAY,
 		I_ONLINEMENU_CREATE_LOBBY,
 		I_ONLINEMENU_JOIN_LOBBY,
+		I_LOBBY_MEMBER,
 	};
 
 	sf::Text nameText;
@@ -310,6 +311,22 @@ struct ImageChooseRect : ChooseRect
 	sf::View view;
 	int tileIndex;
 	std::string decorName;
+};
+
+struct TextChooseRect : ChooseRect
+{
+	TextChooseRect(ChooseRectIdentity ident,
+		sf::Vertex *v, sf::Vector2f &position,
+		const std::string &str, sf::Vector2f &boxSize,
+		Panel *p);
+
+	void UpdatePanelPos();
+	void Draw(sf::RenderTarget *target);
+	void SetSize(sf::Vector2f &bSize);
+	void SetText(const std::string &str);
+	void UpdateTextPosition();
+	void SetTextHeight(int height);
+	void SetName(const std::string &name);
 };
 
 struct BrushChooseRect : ChooseRect

@@ -1,6 +1,7 @@
 #include "WaitingRoom.h"
 #include "MainMenu.h"
 #include "NetplayManager.h"
+#include "LobbyManager.h"
 
 using namespace std;
 using namespace sf;
@@ -12,6 +13,19 @@ WaitingRoom::WaitingRoom()
 
 	startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
 	leaveButton = panel->AddButton("leave", Vector2i(20 + 200, panel->size.y - 100), Vector2f(100, 40), "LEAVE");
+
+	panel->ReserveTextRects(4);
+
+	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+	for (int i = 0; i < 4; ++i)
+	{
+		memberNameRects[i] = panel->AddTextRect(ChooseRect::I_LOBBY_MEMBER, Vector2f(), sf::Vector2f(200, 40), "");
+		memberNameRects[i]->Init();
+		memberNameRects[i]->SetShown(false);
+
+	}
+	panel->StopAutoSpacing();
+
 	panel->SetCancelButton(leaveButton);
 }
 
@@ -49,6 +63,8 @@ void WaitingRoom::Update()
 
 	}
 
+	
+
 	panel->MouseUpdate();
 }
 
@@ -63,7 +79,11 @@ void WaitingRoom::OpenPopup()
 
 	assert(netplayManager->lobbyManager->IsInLobby());
 
+	netplayManager->lobbyManager->currWaitingRoom = this;
+
 	startButton->HideMember();
+
+	UpdateMemberList();
 
 	/*if (netplayManager->IsHost())
 	{
@@ -125,4 +145,24 @@ void WaitingRoom::ButtonCallback(Button *b, const std::string & e)
 void WaitingRoom::PanelCallback(Panel *p, const std::string & e)
 {
 
+}
+
+void WaitingRoom::UpdateMemberList()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		memberNameRects[i]->SetShown(false);
+
+	}
+
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	auto &memberList = netplayManager->lobbyManager->currentLobby.memberList;
+	int index = 0;
+	for (auto it = memberList.begin();
+		it != memberList.end(); ++it)
+	{
+		memberNameRects[index]->SetText((*it).name);
+		memberNameRects[index]->SetShown(true);
+		++index;
+	}
 }
