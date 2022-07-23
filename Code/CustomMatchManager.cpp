@@ -169,6 +169,10 @@ bool CustomMatchManager::Update()
 		
 		if( waitingRoom->action == WaitingRoom::A_LEAVE_ROOM)
 		{
+			if (waitingRoom->ownerID == netplayManager->GetMyID() )
+			{
+				SteamMatchmaking()->SetLobbyJoinable(netplayManager->lobbyManager->currentLobby.m_steamIDLobby, false);
+			}
 			//BrowseCustomLobbies();
 			netplayManager->Abort();
 			SetAction(A_IDLE);

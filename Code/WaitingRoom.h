@@ -4,6 +4,7 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
+#include "steam/steam_api.h"
 
 struct WaitingRoom : GUIHandler
 {
@@ -23,6 +24,7 @@ struct WaitingRoom : GUIHandler
 	Button *leaveButton;
 	
 	TextChooseRect *memberNameRects[4];
+	CSteamID ownerID;
 
 	WaitingRoom();
 	~WaitingRoom();
@@ -37,6 +39,7 @@ struct WaitingRoom : GUIHandler
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
+	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
 };
 
 #endif

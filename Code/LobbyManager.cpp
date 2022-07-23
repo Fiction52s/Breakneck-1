@@ -110,6 +110,11 @@ void LobbyManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 	cout << "lobby chat update callback. updated member list" << endl;
 
 	PopulateLobbyList(pCallback->m_ulSteamIDLobby);
+
+	if (currWaitingRoom != NULL)
+	{
+		currWaitingRoom->OnLobbyChatUpdateCallback(pCallback);
+	}	
 }
 
 int LobbyManager::GetNumMembers()

@@ -85,6 +85,8 @@ void WaitingRoom::OpenPopup()
 
 	UpdateMemberList();
 
+	ownerID = netplayManager->GetHostID();
+
 	/*if (netplayManager->IsHost())
 	{
 		startButton->ShowMember();
@@ -164,5 +166,18 @@ void WaitingRoom::UpdateMemberList()
 		memberNameRects[index]->SetText((*it).name);
 		memberNameRects[index]->SetShown(true);
 		++index;
+	}
+}
+
+void WaitingRoom::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
+{
+	if (pCallback->m_ulSteamIDUserChanged == ownerID.ConvertToUint64())
+	{
+		uint32 flags = pCallback->m_rgfChatMemberStateChange;
+		if ((flags & k_EChatMemberStateChangeLeft) || (flags & k_EChatMemberStateChangeDisconnected))
+		{
+			cout << "HOST LEFT THE LOBBY, SO I'LL LEAVE" << endl;
+			SetAction(A_LEAVE_ROOM);
+		}
 	}
 }

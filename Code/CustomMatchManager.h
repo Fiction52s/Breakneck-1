@@ -30,6 +30,7 @@ struct CustomMatchManager
 	WaitingRoom *waitingRoom;
 	MapBrowserScreen * mapBrowserScreen;
 	MapOptionsPopup *mapOptionsPopup;
+	
 
 	MapNode *selectedMap;
 
