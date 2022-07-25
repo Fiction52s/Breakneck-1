@@ -40,6 +40,45 @@ PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos, int p_playerIndex)
 {
 	playerIndex = p_playerIndex;
 
+	/*sf::Text *t = new sf::Text(text, arial, characterHeight);
+	t->setPosition(autoStart.x + labelPos.x, autoStart.y + labelPos.y);
+	t->setFillColor(Color::Black);
+	auto lb = t->getLocalBounds();
+	t->setOrigin(lb.left, lb.top);
+
+	auto bounds = t->getLocalBounds();
+
+	AddAutoSpaceX(bounds.width + labelPos.x);
+	AddAutoSpaceY(bounds.height + labelPos.y);*/
+
+	EditSession *edit = EditSession::GetSession();
+	numberText.setFont(edit->arial);
+	numberText.setCharacterSize(40);
+
+	Color c = Color::White;
+	switch (playerIndex)
+	{
+	case 0:
+		c = Color::Green;
+		break;
+	case 1:
+		c = Color::Red;
+		break;
+	case 2:
+		c = Color::Cyan;
+		break;
+	case 3:
+		c = Color::Magenta;
+		break;
+	}
+
+	numberText.setFillColor(c);
+	numberText.setOutlineColor(Color::Black);
+	numberText.setOutlineThickness(2);
+	numberText.setString(to_string(playerIndex+1));
+	auto &bounds = numberText.getLocalBounds();
+	numberText.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height);
+
 	skinShader = new PlayerSkinShader("player");
 	skinShader->SetSkin(playerIndex);
 	PlaceAerial(pos);
@@ -110,7 +149,11 @@ void PlayerParams::Draw(sf::RenderTarget *target)
 	if (GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
 		viewSize.x, viewSize.y)))
 	{
+		numberText.setPosition(Vector2f(GetPosition()) + Vector2f(0, -40));
+
+
 		target->draw(image, &(skinShader->pShader));
+		target->draw(numberText);
 
 		/*DrawMonitor(target);
 

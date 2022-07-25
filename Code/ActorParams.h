@@ -53,6 +53,7 @@ struct PlayerParams : public ActorParams
 {
 	PlayerSkinShader *skinShader;
 	int playerIndex;
+	sf::Text numberText;
 
 	PlayerParams( ActorType *at,
 		sf::Vector2i pos, int playerIndex );

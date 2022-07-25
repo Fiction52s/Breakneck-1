@@ -188,14 +188,14 @@ void MapOptionsUI::PanelCallback(Panel *p, const std::string & e)
 {
 	if (e == "leftclickoffpopup")
 	{
-		if (p == mapOptionsPanel)
+		/*if (p == mapOptionsPanel)
 		{
 			CloseMapOptionsPopup();
 		}
 		else
 		{
 			edit->RemoveActivePanel(p);
-		}
+		}*/
 		
 		/*if (p == bgOptionsPanel)
 		{
