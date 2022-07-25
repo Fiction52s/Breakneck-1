@@ -45,7 +45,7 @@ LobbyBrowser::LobbyBrowser()
 		lobbyRects[i]->Init();
 	}
 
-	panel->AddButton("join", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "JOIN");
+	joinButton = panel->AddButton("join", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "JOIN");
 	panel->SetCancelButton(panel->AddButton("back", Vector2i(20 + 150, panel->size.y - 100), Vector2f(100, 40), "BACK"));
 	
 }
@@ -128,7 +128,7 @@ void LobbyBrowser::ClearSelection()
 	{
 		lobbyRects[i]->Deselect();
 	}
-
+	joinButton->HideMember();
 }
 
 void LobbyBrowser::MouseScroll(int delta)
@@ -194,7 +194,7 @@ void LobbyBrowser::ChooseRectEvent(ChooseRect *cr, int eventType)
 			}
 			cr->Select();
 			currSelectedRect = (LobbyChooseRect*)cr;
-
+			joinButton->ShowMember();
 
 			//ClickText(cr);
 		}
@@ -230,6 +230,7 @@ void LobbyBrowser::ButtonCallback(Button *b, const std::string & e)
 			int selectedIndex = (int)currSelectedRect->info;
 			lobbyManager->TryJoiningLobby(selectedIndex);
 			action = A_TRY_JOIN_LOBBY;
+			joinButton->HideMember();
 		}
 		//ClosePopup();
 	}
@@ -288,6 +289,8 @@ void LobbyBrowser::PopulateRects()
 void LobbyBrowser::OpenPopup()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	joinButton->ShowMember();
 
 	ClearSelection();
 	ClearLobbyRects();

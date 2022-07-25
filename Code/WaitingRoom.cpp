@@ -50,6 +50,14 @@ void WaitingRoom::Update()
 			}
 			action = A_READY_TO_START;
 		}
+		else
+		{
+			if (action == A_READY_TO_START)
+			{
+				action = A_WAITING_FOR_MEMBERS;
+				startButton->HideMember();
+			}
+		}
 		break;
 	}
 	case A_READY_TO_START:

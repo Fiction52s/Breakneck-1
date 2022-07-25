@@ -62,6 +62,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 	int totalRects;
 	LobbyChooseRect **lobbyRects;
 	Panel *panel;
+	Button *joinButton;
 	LobbyChooseRect *currSelectedRect;
 
 
