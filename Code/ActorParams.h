@@ -52,11 +52,10 @@ struct PlayerSkinShader;
 struct PlayerParams : public ActorParams
 {
 	PlayerSkinShader *skinShader;
+	int playerIndex;
 
 	PlayerParams( ActorType *at,
-		sf::Vector2i pos);
-	PlayerParams(ActorType *at,
-		std::ifstream &is );
+		sf::Vector2i pos, int playerIndex );
 	~PlayerParams();
 
 	bool CanApply();

@@ -11,6 +11,9 @@ struct PlayerSkinShader
 	void SetDefaultPlayerVars();
 	void BlendSkins(int first, int second, float progress);
 	void SetSubRect( Tileset *ts, sf::IntRect &ir);
+	void SetAuraColor(sf::Color c);
+	void SetQuad(sf::Glsl::Vec4 &v);
+	void SetQuad(Tileset *ts, int tile);
 	const static int NUM_PALETTE_COLORS = 64;
 	sf::Image skinPaletteImage;
 	sf::Shader pShader;

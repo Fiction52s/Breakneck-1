@@ -18192,7 +18192,7 @@ bool Actor::IsVisibleAction(int a)
 
 void Actor::SetAuraColor(Color c)
 {
-	skinShader.pShader.setUniform("u_auraColor", ColorGL(c));
+	skinShader.SetAuraColor(c);
 }
 
 void Actor::Draw( sf::RenderTarget *target )
@@ -19358,8 +19358,7 @@ void Actor::SetSpriteTile(int tileIndex, bool noFlipX, bool noFlipY)
 
 	if (kinMode == K_NORMAL || kinMode == K_DESPERATION)
 	{		
-		skinShader.pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
-			(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+		skinShader.SetQuad(ts, currTileIndex);
 			
 		static float testCounter = 0;
 		skinShader.pShader.setUniform("u_slide", testCounter);

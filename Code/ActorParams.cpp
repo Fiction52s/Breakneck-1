@@ -35,19 +35,22 @@ sf::Font *PoiParams::font = NULL;
 
 
 //remnove the postype thing. we have 2 bools for that already
-PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos)
+PlayerParams::PlayerParams(ActorType *at, sf::Vector2i pos, int p_playerIndex)
 	:ActorParams(at)
 {
+	playerIndex = p_playerIndex;
+
 	skinShader = new PlayerSkinShader("player");
+	skinShader->SetSkin(playerIndex);
 	PlaceAerial(pos);
 }
 
-PlayerParams::PlayerParams(ActorType *at, ifstream &is)
-	: ActorParams(at)
-{
-	skinShader = new PlayerSkinShader("player");
-	LoadAerial(is);
-}
+//PlayerParams::PlayerParams(ActorType *at, ifstream &is)
+//	: ActorParams(at)
+//{
+//	skinShader = new PlayerSkinShader("player");
+//	LoadAerial(is);
+//}
 
 PlayerParams::~PlayerParams()
 {
@@ -107,14 +110,16 @@ void PlayerParams::Draw(sf::RenderTarget *target)
 	if (GetAABB().intersects(FloatRect(viewCenter.x - viewSize.x / 2, viewCenter.y - viewSize.y / 2,
 		viewSize.x, viewSize.y)))
 	{
-		DrawMonitor(target);
+		target->draw(image, &(skinShader->pShader));
+
+		/*DrawMonitor(target);
 
 		if (myEnemy != NULL)
 			myEnemy->Draw(target);
 		else
 		{
 			target->draw(image);
-		}
+		}*/
 
 		DrawBoundary(target);
 

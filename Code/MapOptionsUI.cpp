@@ -60,7 +60,7 @@ MapOptionsUI::MapOptionsUI()
 	mapOptionsPanel->UnpauseAutoSpacing();
 	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
 
-	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 0), "Num player spawns: ", 100, 1, 4, 1);
+	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 40), "Num player spawns: ", 100, 1, 4, 1);
 
 	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 70), Vector2f(60, 30), "OK");
 	mapOptionsPanel->SetConfirmButton(okButton);
@@ -202,4 +202,9 @@ void MapOptionsUI::PanelCallback(Panel *p, const std::string & e)
 			edit->RemoveActivePanel(p);
 		}*/
 	}
+}
+
+void MapOptionsUI::SliderCallback(Slider *slider)
+{
+	edit->SetNumPlayers(slider->GetCurrValue());
 }

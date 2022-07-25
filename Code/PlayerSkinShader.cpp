@@ -70,3 +70,24 @@ void PlayerSkinShader::FillPaletteArray(int skinIndex)
 		paletteArray[i] = sf::Glsl::Vec4(skinPaletteImage.getPixel(i, skinIndex));
 	}
 }
+
+void PlayerSkinShader::SetAuraColor(Color c)
+{
+	pShader.setUniform("u_auraColor", ColorGL(c));
+}
+
+void PlayerSkinShader::SetQuad(sf::Glsl::Vec4 &v)
+{
+	pShader.setUniform("u_quad", v);
+}
+
+void PlayerSkinShader::SetQuad(Tileset *ts, int tile)
+{
+	IntRect ir = ts->GetSubRect(tile);
+
+	float width = ts->texture->getSize().x;
+	float height = ts->texture->getSize().y;
+
+	pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
+		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
+}

@@ -851,6 +851,7 @@ struct MapOptionsUI : GUIHandler
 	~MapOptionsUI();
 	void CloseMapOptionsPopup();
 	void OpenMapOptionsPopup();
+	void SliderCallback(Slider *slider);
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);

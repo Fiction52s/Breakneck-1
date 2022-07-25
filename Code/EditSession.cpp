@@ -3928,9 +3928,11 @@ int EditSession::EditRun()
 	ActorGroup *playerGroup = new ActorGroup("player");
 	groups["player"] = playerGroup;
 
+	Tileset *ts_playerType = GetSizedTileset("Kin/jump_64x64.png");
+
 	ParamsInfo playerPI("player", NULL, NULL,
-		Vector2i(), Vector2i(22, 42), false, false, false, false, 1, 0,
-		GetSizedTileset("Kin/jump_64x64.png"));
+		Vector2i(), Vector2i(22, 42), false, false, false, false, true, false, false, 1, -1, ts_playerType, 
+		11);
 
 	if (playerType == NULL)
 	{
@@ -3942,7 +3944,7 @@ int EditSession::EditRun()
 	PlayerParams *currPlayerMarker;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		currPlayerMarker = new PlayerParams(playerType, Vector2i(0, 0));
+		currPlayerMarker = new PlayerParams(playerType, Vector2i(0, 0), i);
 		currPlayerMarker->group = groups["player"];
 		//if( )
 		groups["player"]->actors.push_back(currPlayerMarker);
@@ -3969,20 +3971,17 @@ int EditSession::EditRun()
 	reloadNew = false;
 
 	//SetupHUD();
-
 	
-	
-	
-	
+	SetNumPlayers(mapHeader->numPlayerSpawns);
 	//-------------------------
 
-	for (int i = 0; i < MAX_PLAYERS; ++i)
+	/*for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		if (players[i] != NULL)
 		{
 			players[i]->SetGameMode();
 		}
-	}
+	}*/
 
 	cam.Init(GetPlayerPos(0));
 
