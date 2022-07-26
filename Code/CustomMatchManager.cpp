@@ -69,7 +69,17 @@ void CustomMatchManager::CreateCustomLobby()
 	netplayManager->Init();
 
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
-	mapBrowserScreen->StartLocalBrowsing();
+
+	if (sf::Keyboard::isKeyPressed(Keyboard::LShift))
+	{
+		mapBrowserScreen->StartWorkshopBrowsing();
+	}
+	else
+	{
+		mapBrowserScreen->StartLocalBrowsing();
+	}
+
+	
 	SetAction(A_CHOOSE_MAP);
 }
 
@@ -104,8 +114,26 @@ bool CustomMatchManager::Update()
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 		{
 			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
-			action = A_CHOOSE_MAP_OPTIONS;
-			mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
+			
+
+			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+			{
+				//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
+				mapOptionsPopup->Activate(selectedMap);
+				action = A_CHOOSE_MAP_OPTIONS;
+			}
+			else
+			{
+				action = A_DOWNLOADING_WORKSHOP_MAP;
+
+				uint32 itemState = SteamUGC()->GetItemState(selectedMap->publishedFileId);
+				if (!(itemState & k_EItemStateSubscribed))
+				{
+					cout << "subbing to item" << endl;
+					SteamUGC()->SubscribeItem(selectedMap->publishedFileId);
+					cout << "map download started" << endl;
+				}
+			}
 		}
 
 		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
@@ -115,6 +143,23 @@ bool CustomMatchManager::Update()
 			return false;
 		}
 		break;
+	case A_DOWNLOADING_WORKSHOP_MAP:
+	{
+		if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+		{
+			cout << "map download complete" << endl;
+
+			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+			if (selectedNode == NULL)
+				assert(0);
+
+			//boost::filesystem::relative(selectedMap->filePath).string()
+			mapOptionsPopup->Activate( selectedNode );
+			action = A_CHOOSE_MAP_OPTIONS;
+		}
+		break;
+	}
 	case A_CHOOSE_MAP_OPTIONS:
 		if (mapOptionsPopup->action == MapOptionsPopup::A_CONFIRMED)
 		{
@@ -221,6 +266,11 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	case A_CHOOSE_MAP:
 		mapBrowserScreen->Draw(target);
 		break;
+	case A_DOWNLOADING_WORKSHOP_MAP:
+	{
+
+		break;
+	}
 	case A_CHOOSE_MAP_OPTIONS:
 		mapBrowserScreen->Draw(target);
 		mapOptionsPopup->Draw(target);

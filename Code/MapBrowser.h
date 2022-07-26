@@ -46,6 +46,7 @@ struct MapNode
 	HTTPRequestHandle previewRequestHandle;
 	PublishedFileId_t publishedFileId;
 	ImageChooseRect *chooseRect;
+	bool isWorkshop;
 	
 	CCallResult<MapNode,
 		HTTPRequestCompleted_t>
@@ -57,6 +58,7 @@ struct MapNode
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
 	void RequestDownloadPreview();
+	bool CheckIfFullyInstalled();
 };
 
 struct MapBrowserHandler : GUIHandler
@@ -111,6 +113,7 @@ struct MapBrowser : TilesetManager,
 		A_CANCELLED,
 	};
 
+	bool isWorkshop;
 	Action action;
 	ImageChooseRect *selectedRect;
 	WorkshopManager *workshop;
@@ -150,7 +153,7 @@ struct MapBrowser : TilesetManager,
 		Mode mode, const std::string &path);
 	void StartRelative(const std::string &ext,
 		Mode mode, const std::string &path);
-	void StartWorkshop();
+	void StartWorkshop( Mode mode );
 	void Init();
 	void TurnOff();
 	//void HideConfirmButton();
@@ -204,7 +207,7 @@ struct MapOptionsPopup : GUIHandler
 
 	MapOptionsPopup();
 	~MapOptionsPopup();
-	void Activate( const std::string &p_mapPath );
+	void Activate( MapNode *mp );
 	void Update();
 	void HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);

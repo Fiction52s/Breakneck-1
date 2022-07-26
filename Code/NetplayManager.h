@@ -74,6 +74,7 @@ struct NetplayManager
 		A_WAIT_FOR_ALL_TO_CONNECT,
 		A_WAIT_TO_VERIFY,
 		A_WAIT_FOR_MAP_FROM_HOST,
+		A_WAIT_FOR_MAP_FROM_WORKSHOP,
 		A_WAIT_TO_LOAD_MAP,
 		A_LOAD_MAP,
 		A_WAIT_FOR_GGPO_SYNC,
@@ -115,6 +116,9 @@ struct NetplayManager
 
 	bool clientsDoneLoadingMap[4];
 
+	bool checkWorkshopMap;
+	std::string receivedMapName;
+	PublishedFileId_t workshopDownloadPublishedFileId;
 	boost::filesystem::path mapDownloadFilePath;
 	std::string mapDownloadReceivedHash;
 

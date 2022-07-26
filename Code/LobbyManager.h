@@ -46,12 +46,16 @@ struct LobbyParams
 		maxMembers = 0;
 		creatorID = 0;
 		gameModeType = 0;
+		isWorkshopMap = false;
+		publishedFileId = 0;
 	}
 	int maxMembers;
 	std::string mapPath;
 	std::string fileHash;
 	uint64 creatorID;
 	int gameModeType;
+	bool isWorkshopMap;
+	PublishedFileId_t publishedFileId;
 };
 
 struct LobbyManager

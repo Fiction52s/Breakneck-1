@@ -176,14 +176,13 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 
 					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
-					
-
 
 					MapNode *newNode = new MapNode;
 					newNode->nodeName = details.m_rgchTitle;
 					newNode->description = details.m_rgchDescription;
 					newNode->publishedFileId = details.m_nPublishedFileId;
 					newNode->mapDownloaded = itemState & k_EItemStateInstalled;
+					newNode->isWorkshop = true;
 
 					if (newNode->mapDownloaded)
 					{
@@ -290,6 +289,7 @@ MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 	newNode->nodeName = details.m_rgchTitle;
 	newNode->type = MapNode::FILE;
 	newNode->filePath = string(szItemFolder) + "\\" + string(details.m_rgchTitle);
+	newNode->isWorkshop = true;
 	//is.open(folder
 
 	cout << "folder: " << szItemFolder << endl;

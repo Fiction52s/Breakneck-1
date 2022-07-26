@@ -9,6 +9,7 @@
 #include "md5.h"
 #include <vector>
 #include <fstream>
+#include "MapBrowser.h" //for MapNode
 
 using namespace std;
 using namespace sf;
@@ -198,19 +199,37 @@ void NetplayManager::StartConnecting()
 		++memberIndex;
 	}
 
-	boost::filesystem::path receivedMapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
-	mapDownloadReceivedHash = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "fileHash");
+	checkWorkshopMap = false;
+	workshopDownloadPublishedFileId = 0;
+	mapDownloadFilePath = "";
 
-	string receivedCreatorIDStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "creatorID");
+	boost::filesystem::path receivedMapPath;
+	string receivedCreatorIDStr;
+
+	receivedMapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
+
+	mapDownloadReceivedHash = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "fileHash");
 
 	string receivedGameModeTypeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "gameModeType");
 
+	string receivedIsWorkshopModeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "isWorkshop");
+
+	receivedMapName = receivedMapPath.stem().string();
+
+	if (receivedIsWorkshopModeStr == "true")
+	{
+		checkWorkshopMap = true;
+
+		string receivedPublishedFileIdStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "publishedFileId");
+		workshopDownloadPublishedFileId = stoll(receivedPublishedFileIdStr);
+	}
+	else
+	{
+		receivedCreatorIDStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "creatorID");
+		
+	}
+
 	int receivedGameModeType = stoi(receivedGameModeTypeStr);
-
-	string mapFile = receivedMapPath.filename().string();
-
-	mapDownloadFilePath = "";
-	//uint64 receivedCreatorID = stoull(receivedCreatorIDStr);
 
 	bool mapVerified = false;
 
@@ -218,109 +237,151 @@ void NetplayManager::StartConnecting()
 
 	if (IsHost())
 	{
-		mapVerified = true;
-		matchParams.mapPath = receivedMapPath;
-		
-		cout << "host setting mapPath to: " << matchParams.mapPath << endl;
-	}
-	else
-	{
-		
-		//first check if the file exists 
-		if (boost::filesystem::exists(receivedMapPath))
+		if (checkWorkshopMap)
 		{
-			string myHash = md5file(receivedMapPath.string());
-			bool same = (mapDownloadReceivedHash == myHash);
-			cout << "received hash: " << mapDownloadReceivedHash << ", my hash: " << myHash << endl;
-			if (same)
+			MapNode mp;
+			mp.publishedFileId = workshopDownloadPublishedFileId;
+			mp.isWorkshop = true;
+			mp.nodeName = receivedMapName;
+
+			if (mp.CheckIfFullyInstalled())
 			{
-				cout << "hashes match!" << endl;
-				mapVerified = true;
-				matchParams.mapPath = receivedMapPath;
-				cout << "client setting mapPath to: " << matchParams.mapPath << endl;
+				matchParams.mapPath = mp.filePath;
 			}
 			else
 			{
-				cout << "hashes dont match :(" << endl;
+				assert(0);
 			}
 		}
 		else
 		{
-			cout << "file doesn't exist at the received path. checking other options." << endl;
+			mapVerified = true;
+			matchParams.mapPath = receivedMapPath;
 		}
+
 		
-		if (!mapVerified)
+
+		cout << "host setting mapPath to: " << matchParams.mapPath << endl;
+	}
+	else
+	{
+		if (checkWorkshopMap)
 		{
-			string userDownloadsPath = "Resources/Maps/UserDownloads/";
-			string downloadPath = userDownloadsPath + receivedCreatorIDStr +"/";
-
-			if (boost::filesystem::exists(downloadPath) && boost::filesystem::is_directory( downloadPath ) )
+			MapNode mp;
+			mp.publishedFileId = workshopDownloadPublishedFileId;
+			mp.isWorkshop = true;
+			mp.nodeName = receivedMapName;
+			
+			if (mp.CheckIfFullyInstalled())
 			{
-				vector<boost::filesystem::path> v;
-				copy(boost::filesystem::directory_iterator(downloadPath), boost::filesystem::directory_iterator(), back_inserter(v));
+				checkWorkshopMap = false;
+				//mapVerified = true; //maybe verify hash later
+				matchParams.mapPath = mp.filePath;
+				cout << "item is fully installed at the outset: " << mp.filePath << endl;
+			}
+			//MapNode 
+		}
+		else
+		{
+			string mapFile = receivedMapPath.filename().string();
 
-				sort(v.begin(), v.end());
-
-				for (vector<boost::filesystem::path>::const_iterator it(v.begin()); it != v.end(); ++it)
+			//first check if the file exists 
+			if (boost::filesystem::exists(receivedMapPath))
+			{
+				string myHash = md5file(receivedMapPath.string());
+				bool same = (mapDownloadReceivedHash == myHash);
+				cout << "received hash: " << mapDownloadReceivedHash << ", my hash: " << myHash << endl;
+				if (same)
 				{
-					if (boost::filesystem::is_regular_file((*it)))
-					{
-						if ((*it).extension().string() == ".brknk")
-						{
-							cout << "found file in folder: " << (*it).stem().string() << endl;
-							if ((*it).filename().string() == mapFile)
-							{
-								cout << "file matches mapName. Checking hash" << endl;
-
-								string myHash = md5file((*it).string());
-								bool same = (mapDownloadReceivedHash == myHash);
-								
-								if (same)
-								{
-									cout << "hashes match in download folder" << endl;
-									mapVerified = true;
-									matchParams.mapPath = (*it);
-									cout << "client setting mapPath to: " << matchParams.mapPath << endl;
-								}
-							}
-							
-						}
-					}
+					cout << "hashes match!" << endl;
+					mapVerified = true;
+					matchParams.mapPath = receivedMapPath;
+					cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 				}
-
-				if (!mapVerified)
+				else
 				{
-					mapDownloadFilePath = downloadPath + mapFile;
+					cout << "hashes dont match :(" << endl;
 				}
 			}
 			else
 			{
-				if (!(boost::filesystem::exists(userDownloadsPath) && boost::filesystem::is_directory(downloadPath)))
+				cout << "file doesn't exist at the received path. checking other options." << endl;
+			}
+
+			if (!mapVerified)
+			{
+				string userDownloadsPath = "Resources/Maps/UserDownloads/";
+				string downloadPath = userDownloadsPath + receivedCreatorIDStr + "/";
+
+				if (boost::filesystem::exists(downloadPath) && boost::filesystem::is_directory(downloadPath))
 				{
+					vector<boost::filesystem::path> v;
+					copy(boost::filesystem::directory_iterator(downloadPath), boost::filesystem::directory_iterator(), back_inserter(v));
+
+					sort(v.begin(), v.end());
+
+					for (vector<boost::filesystem::path>::const_iterator it(v.begin()); it != v.end(); ++it)
+					{
+						if (boost::filesystem::is_regular_file((*it)))
+						{
+							if ((*it).extension().string() == ".brknk")
+							{
+								cout << "found file in folder: " << (*it).stem().string() << endl;
+								if ((*it).filename().string() == mapFile)
+								{
+									cout << "file matches mapName. Checking hash" << endl;
+
+									string myHash = md5file((*it).string());
+									bool same = (mapDownloadReceivedHash == myHash);
+
+									if (same)
+									{
+										cout << "hashes match in download folder" << endl;
+										mapVerified = true;
+										matchParams.mapPath = (*it);
+										cout << "client setting mapPath to: " << matchParams.mapPath << endl;
+									}
+								}
+
+							}
+						}
+					}
+
+					if (!mapVerified)
+					{
+						mapDownloadFilePath = downloadPath + mapFile;
+					}
+				}
+				else
+				{
+					if (!(boost::filesystem::exists(userDownloadsPath) && boost::filesystem::is_directory(downloadPath)))
+					{
+						try
+						{
+							cout << "making user downloads folder" << endl;
+							boost::filesystem::create_directory(userDownloadsPath);
+						}
+						catch (boost::filesystem::filesystem_error &e)
+						{
+							std::cerr << e.what() << '\n';
+						}
+					}
+
+					cout << "user downloads folder for: " << receivedCreatorIDStr << " doesnt exist yet. creating." << endl;
 					try
 					{
-						cout << "making user downloads folder" << endl;
-						boost::filesystem::create_directory(userDownloadsPath);
+						boost::filesystem::create_directory(downloadPath);
 					}
 					catch (boost::filesystem::filesystem_error &e)
 					{
 						std::cerr << e.what() << '\n';
 					}
-				}
 
-				cout << "user downloads folder for: " << receivedCreatorIDStr << " doesnt exist yet. creating." << endl;
-				try
-				{
-					boost::filesystem::create_directory(downloadPath);
+					mapDownloadFilePath = downloadPath + mapFile;
 				}
-				catch (boost::filesystem::filesystem_error &e)
-				{
-					std::cerr << e.what() << '\n';
-				}
-
-				mapDownloadFilePath = downloadPath + mapFile;
 			}
 		}
+		
 	}
 	
 
@@ -461,7 +522,40 @@ void NetplayManager::Update()
 	{
 		if (receivedMapVerifySignal)
 		{
-			if (mapDownloadFilePath != "")
+			if (checkWorkshopMap)
+			{
+				MapNode mp;
+				mp.publishedFileId = workshopDownloadPublishedFileId;
+				mp.isWorkshop = true;
+				mp.nodeName = receivedMapName;
+
+				if (mp.CheckIfFullyInstalled())
+				{
+					checkWorkshopMap = false;
+					//mapVerified = true; //maybe verify hash later
+					matchParams.mapPath = mp.filePath;
+					cout << "workshop item is fully installed when asked to verify: " << mp.filePath << endl;
+
+					SendSignalToHost(UdpMsg::Game_Client_Done_Verifying);
+
+					//map is already verified
+					action = A_WAIT_TO_LOAD_MAP;
+				}
+				else
+				{
+					uint32 itemState = SteamUGC()->GetItemState(mp.publishedFileId);
+					if (!(itemState & k_EItemStateSubscribed))
+					{
+						cout << "subbing to item" << endl;
+						SteamUGC()->SubscribeItem(mp.publishedFileId);
+						cout << "map download started" << endl;
+					}
+
+					cout << "wait for map from workshop" << endl;
+					action = A_WAIT_FOR_MAP_FROM_WORKSHOP;
+				}
+			}
+			else if (mapDownloadFilePath != "")
 			{
 				SendSignalToHost(UdpMsg::Game_Client_Needs_Map);
 				action = A_WAIT_FOR_MAP_FROM_HOST;
@@ -500,6 +594,32 @@ void NetplayManager::Update()
 				cout << "received map over the network, but the hash doesn't match what it's supposed to be. requesting again." << endl;
 				receivedMap = false;
 				SendSignalToHost(UdpMsg::Game_Client_Needs_Map);
+			}
+		}
+		break;
+	}
+	case A_WAIT_FOR_MAP_FROM_WORKSHOP:
+	{
+		assert(checkWorkshopMap);
+
+		if (checkWorkshopMap)
+		{
+			MapNode mp;
+			mp.publishedFileId = workshopDownloadPublishedFileId;
+			mp.isWorkshop = true;
+			mp.nodeName = receivedMapName;
+
+			if (mp.CheckIfFullyInstalled())
+			{
+				checkWorkshopMap = false;
+				//mapVerified = true; //maybe verify hash later
+				matchParams.mapPath = mp.filePath;
+				cout << "workshop item is fully installed after waiting: " << mp.filePath << endl;
+
+				SendSignalToHost(UdpMsg::Game_Client_Done_Verifying);
+
+				//map is already verified
+				action = A_WAIT_TO_LOAD_MAP;
 			}
 		}
 		break;

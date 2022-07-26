@@ -30,7 +30,7 @@ void MapBrowserScreen::StartLocalBrowsing()
 
 void MapBrowserScreen::StartWorkshopBrowsing()
 {
-	browserHandler->chooser->StartWorkshop();
+	browserHandler->chooser->StartWorkshop( MapBrowser::CREATE_CUSTOM_GAME );
 }
 
 bool MapBrowserScreen::HandleEvent(sf::Event ev)

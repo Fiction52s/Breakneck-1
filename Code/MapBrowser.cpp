@@ -21,6 +21,8 @@ MapNode::MapNode()
 	action = IDLE;
 	chooseRect = NULL;
 	mapDownloaded = false;
+	publishedFileId = 0;
+	isWorkshop = false;
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -97,6 +99,32 @@ void MapNode::RequestDownloadPreview()
 	}
 }
 
+bool MapNode::CheckIfFullyInstalled()
+{
+	if (!isWorkshop)
+		return true;
+
+	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
+
+	if (itemState & k_EItemStateInstalled && !(itemState & k_EItemStateNeedsUpdate))
+	{
+		if (!mapDownloaded)
+		{
+			mapDownloaded = true;
+
+			uint64 fileSize;
+			char path[1024];
+			uint32 timestamp;
+			cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
+
+			filePath = string(path) + "\\" + nodeName + ".brknk";
+		}
+		return true;
+	}
+
+	return false;
+}
+
 MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	int p_cols, int p_rows, int extraImageRects)
 	:handler(p_handler)
@@ -121,6 +149,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	topRow = 0;
 	maxTopRow = 0;
+
+	isWorkshop = false;
 
 	
 
@@ -519,6 +549,8 @@ void MapBrowser::Start(const std::string &p_ext,
 	mode = p_mode;
 	Init();
 
+	isWorkshop = false;
+
 	upButton->ShowMember();
 
 	SetPath(path);
@@ -531,14 +563,18 @@ void MapBrowser::StartRelative(const std::string &p_ext,
 	mode = p_mode;
 	Init();
 
+	isWorkshop = false;
+
 	upButton->ShowMember();
 
 	SetRelativePath(path);
 }
 
-void MapBrowser::StartWorkshop()
+void MapBrowser::StartWorkshop( MapBrowser::Mode p_mode )
 {
-	mode = WORKSHOP;
+	mode = p_mode;
+	
+	isWorkshop = true;
 
 	Init();
 
@@ -720,25 +756,10 @@ bool MapBrowserHandler::CheckIfSelectedItemInstalled()
 	if (selectedNode == NULL)
 		return false;
 
-	uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
-
-	if (itemState & k_EItemStateInstalled)
-	{
-		if (!selectedNode->mapDownloaded)
-		{
-			selectedNode->mapDownloaded = true;
-
-			uint64 fileSize;
-			char path[1024];
-			uint32 timestamp;
-			cout << SteamUGC()->GetItemInstallInfo(selectedNode->publishedFileId, &fileSize, path, 1024, &timestamp);
-
-			selectedNode->filePath = string(path) + "\\" + selectedNode->nodeName + ".brknk";
-		}
+	if (!chooser->isWorkshop)
 		return true;
-	}
 
-	return false;
+	return selectedNode->CheckIfFullyInstalled();
 }
 
 void MapBrowserHandler::ChangePath()
@@ -936,12 +957,21 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
-void MapOptionsPopup::Activate( const std::string &p_mapPath )
+void MapOptionsPopup::Activate( MapNode *mp )
 {
-	currLobbyParams->mapPath = p_mapPath;
+	//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
+	if (mp->isWorkshop)
+	{
+		currLobbyParams->mapPath = mp->filePath.string();
+	}
+	else
+	{
+		currLobbyParams->mapPath = boost::filesystem::relative(mp->filePath).string();
+	}
+	
 
 	std::ifstream is;
-	is.open(p_mapPath);
+	is.open(currLobbyParams->mapPath);
 
 	assert(is.is_open());
 	std::string content((std::istreambuf_iterator<char>(is)),
@@ -957,6 +987,8 @@ void MapOptionsPopup::Activate( const std::string &p_mapPath )
 	currLobbyParams->creatorID = currMapHeader->creatorID;
 	currLobbyParams->maxMembers = 2;
 	currLobbyParams->gameModeType = MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
+	currLobbyParams->isWorkshopMap = mp->isWorkshop;
+	currLobbyParams->publishedFileId = mp->publishedFileId;
 
 	action = A_ACTIVE;
 }

@@ -54,7 +54,16 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "gameModeType", to_string(paramsForMakingLobby.gameModeType).c_str());
 
-
+		//string isWorkshopStr = //to_string((int)paramsForMakingLobby.isWorkshopMap);
+		if (paramsForMakingLobby.isWorkshopMap)
+		{
+			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "isWorkshop", "true");
+			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "publishedFileId", to_string(paramsForMakingLobby.publishedFileId).c_str());
+		}
+		else
+		{
+			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "isWorkshop", "false");
+		}
 
 		string creatorIDStr = to_string(paramsForMakingLobby.creatorID);
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "creatorID", creatorIDStr.c_str());
