@@ -381,6 +381,11 @@ void Actor::PopulateState(PState *ps)
 
 	ps->shieldPushbackFrames = shieldPushbackFrames;
 	ps->shieldPushbackRight = shieldPushbackRight;
+
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		ps->recentHitters[i] = recentHitters[i];
+	}
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -614,6 +619,11 @@ void Actor::PopulateFromState(PState *ps)
 	//these aren't even used for anything!
 	shieldPushbackFrames = ps->shieldPushbackFrames;
 	shieldPushbackRight = ps->shieldPushbackRight;
+
+	for (int i = 0; i < MAX_HITTERS; ++i)
+	{
+		recentHitters[i] = ps->recentHitters[i];
+	}
 }
 
 
@@ -5086,7 +5096,12 @@ void Actor::ReactToBeingHit()
 		FightMode *fm = (FightMode*)sess->gameMode;
 		if (actorIndex == 0)
 		{
-			fm->data.p0Health -= receivedHit.damage;
+			int realDamage = receivedHit.damage;
+			if (receivedHitPlayer == NULL)
+			{
+				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
+			}
+			fm->data.p0Health -= realDamage;
 			if (fm->data.p0Health < 0)
 			{
 				fm->data.p0Health = 0;
@@ -18148,6 +18163,7 @@ void Actor::ApplyHit( HitboxInfo *info,
 	{
 		if (receivedHit.hType == HitboxInfo::NO_HITBOX || info->damage > receivedHit.damage)
 		{
+			cout << "apply hit" << endl;
 			receivedHit = *info;
 			receivedHitPlayer = attackingPlayer;
 			//receivedHitEnemy = attackingEnemy;

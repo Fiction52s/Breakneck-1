@@ -7378,6 +7378,14 @@ int Session::GetSaveDataSize()
 
 	totalSize += gameMode->GetNumStoredBytes();
 
+	int enemySize = 0;
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		enemySize += (*it)->GetNumStoredBytes();
+	}
+
+	totalSize += enemySize;
+
 	return totalSize;
 }
 
@@ -7412,12 +7420,24 @@ bool Session::SaveState(unsigned char **buffer,
 	unsigned char *tempBuf = *buffer;
 	tempBuf += sizeof(SaveGameState);
 	gameMode->StoreBytes(tempBuf);
+
+	tempBuf += gameMode->GetNumStoredBytes();
+
+	int totalEnemySize = 0;
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->StoreBytes(tempBuf);
+		totalEnemySize += (*it)->GetNumStoredBytes();
+		tempBuf += (*it)->GetNumStoredBytes();
+	}
+
+	cout << "save state" << endl;
 	
 	//ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);
-	int offset = 0;//sizeof(SaveGameState) + sizeof(ReachEnemyBaseMode::ReachEnemyBaseModeData);//64;//sizeof(SaveGameState);
-	int fletchLen = *len;//sizeof(BaseData); //*len;//sizeof(SaveGameState);//*len;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
+	int offset = sizeof(SaveGameState) + gameMode->GetNumStoredBytes();//sizeof(SaveGameState) + sizeof(ReachEnemyBaseMode::ReachEnemyBaseModeData);//64;//sizeof(SaveGameState);
+	int fletchLen = totalEnemySize;//sizeof(SaveGameState);//*len;//sizeof(BaseData); //*len;//sizeof(SaveGameState);//*len;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
 	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);// currSaveState->states[1].hitlagFrames;//
 	return true;
 }
@@ -7429,11 +7449,17 @@ bool Session::LoadState(unsigned char *bytes, int len)
 
 	bytes += saveSize;
 	gameMode->SetFromBytes(bytes);
+	bytes += gameMode->GetNumStoredBytes();
+
+	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
 
 	int oldTotalGameFrames = totalGameFrames;
 	int rollbackFrames = totalGameFrames - currSaveState->totalGameFrames;
 
-	
 
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;
@@ -7442,7 +7468,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = currSaveState->currSuperPlayer;
 
-	
+	cout << "load state" << endl;
 
 	if (gameState != (GameState)currSaveState->gameState)
 	{

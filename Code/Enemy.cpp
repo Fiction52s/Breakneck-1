@@ -1926,6 +1926,15 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.pauseFramesFromAttacking = pauseFramesFromAttacking;
 	ed.dead = dead;
 	ed.spawned = spawned;
+
+	if (surfaceMover != NULL)
+	{
+		ed.surfaceMoverData = *surfaceMover;
+	}
+	else if (groundMover != NULL)
+	{
+		ed.groundMoverData = *groundMover;
+	}
 }
 void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 {
@@ -1935,7 +1944,24 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	receivedHitPlayer = ed.receivedHitPlayer;
 	comboHitEnemy = ed.comboHitEnemy;
 	numHealth = ed.numHealth;
+
 	currPosInfo = ed.currPosInfo;
+
+	if (surfaceMover != NULL)
+	{
+		*surfaceMover = ed.surfaceMoverData;
+	}
+	else if (groundMover != NULL)
+	{
+		*groundMover = ed.groundMoverData;
+	}
+
+	/*if (currShield != NULL)
+	{
+		currShield->SetPosition(GetPosition());
+	}*/
+
+	//currPosInfo = ed.currPosInfo;
 	facingRight = ed.facingRight;
 	action = ed.action;
 	frame = ed.frame;
@@ -2116,10 +2142,13 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 		
 		HitboxInfo::HitPosType hpt = body->hitboxInfo->hitPosType;
 
+		
 		Actor::HitResult hitResult = player->CheckIfImHitByEnemy( this, body, currHitboxFrame, hpt,
 			GetPosition(), IsHitFacingRight(),
 			body->hitboxInfo->canBeParried,
 			body->hitboxInfo->canBeBlocked);
+		//Actor::HitResult hitResult = Actor::HitResult::MISS;
+
 
 		if (hitResult != Actor::HitResult::MISS)
 		{
@@ -2135,12 +2164,12 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 					IHitPlayer(index);
 				}
 
-				if (body->hitboxInfo != NULL)
+				/*if (body->hitboxInfo != NULL)
 				{
 					pauseFrames = body->hitboxInfo->hitlagFrames;
 					pauseBeganThisFrame = true;
 					pauseFramesFromAttacking = true;
-				}
+				}*/
 				player->ApplyHit(body->hitboxInfo,
 					NULL, hitResult, GetPosition());
 			}

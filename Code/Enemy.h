@@ -79,6 +79,9 @@ struct StoredEnemyData
 	bool pauseFramesFromAttacking;
 	bool dead;
 	bool spawned;
+
+	SurfaceMover surfaceMoverData;
+	GroundMover groundMoverData;
 };
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 

@@ -23,6 +23,7 @@ int RaceMode::GetNumStoredBytes()
 
 void RaceMode::StoreBytes(unsigned char *bytes)
 {
+	data.done = (int)done;
 	int dataSize = sizeof(MyData);
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
@@ -31,6 +32,8 @@ void RaceMode::StoreBytes(unsigned char *bytes)
 void RaceMode::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
+
+	done = (bool)data.done;
 
 	bytes += sizeof(MyData);
 }
@@ -51,6 +54,13 @@ HUD *RaceMode::CreateHUD()
 
 bool RaceMode::CheckVictoryConditions()
 {
+	if (done)
+	{
+		return false;
+	}
+
+
+
 	/*bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
 	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
 	if (p0TouchedKillGrass || p1TouchedKillGrass

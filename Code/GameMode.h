@@ -118,6 +118,7 @@ struct RaceMode : GameMode
 {
 	struct MyData
 	{
+		int done;
 		int test;
 		/*int p0Health;
 		int p1Health;
@@ -127,6 +128,7 @@ struct RaceMode : GameMode
 
 	MyData data;
 
+	FightEndSequence *endSeq;
 	//int maxHealth;
 	//int meterSection;
 	//int numMeterSections;

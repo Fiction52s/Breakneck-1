@@ -44,7 +44,7 @@ struct SurfaceRailMoverHandler : SurfaceMoverHandler
 struct SurfaceMover : QuadTreeCollider
 {
 	//some virtual functions
-
+	SurfaceMover();
 	SurfaceMover(Edge *startGround,
 		double startQuantity,
 		double radius);
@@ -99,6 +99,12 @@ struct SurfaceMover : QuadTreeCollider
 
 	void SetHandler(SurfaceMoverHandler *h);
 
+	/*virtual int GetNumStoredBytes() { return 0; }
+	virtual void StoreBytes(unsigned char *bytes) {
+		assert(0);
+	}
+	virtual void SetFromBytes(unsigned char *bytes) {}*/
+
 	SurfaceMoverHandler *surfaceHandler;
 	//move clockwise or counterclockwise
 	//and receive callbacks for stuff happening
@@ -131,6 +137,7 @@ struct SurfaceRailMover : SurfaceMover
 
 struct GroundMover : SurfaceMover
 {
+	GroundMover();
 	GroundMover(Edge *startGround,
 		double startQuantity,
 		double radius,

@@ -43,7 +43,7 @@ void Crawler::SetLevel(int p_level)
 }
 
 Crawler::Crawler(ActorParams *ap )
-	:Enemy( EnemyType::EN_CRAWLER, ap ), groundSpeed( 5 )
+	:Enemy( EnemyType::EN_CRAWLER, ap ), baseSpeed( 5 )
 {
 	SetNumActions(A_Count);
 	SetEditorActions(CRAWL, CRAWL, 0);
@@ -119,8 +119,6 @@ void Crawler::ResetEnemy()
 	
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
-
-	currDistTravelled = 0;
 
 	frame = 0;
 
@@ -267,11 +265,11 @@ void Crawler::ProcessState()
 			frame = 0;
 			if (facingRight)
 			{
-				surfaceMover->SetSpeed(groundSpeed);
+				surfaceMover->SetSpeed(baseSpeed);
 			}
 			else
 			{
-				surfaceMover->SetSpeed(-groundSpeed);
+				surfaceMover->SetSpeed(-baseSpeed);
 			}
 			break;
 		case CRAWL:
@@ -675,4 +673,36 @@ void Crawler::AttemptRunAwayBoost()
 	{
 		Accelerate(.05);
 	}
+}
+
+int Crawler::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Crawler::StoreBytes(unsigned char *bytes)
+{
+	MyData d;
+	memset(&d, 0, sizeof(MyData));
+	StoreBasicEnemyData(d);
+
+	d.framesUntilBurrow = framesUntilBurrow;
+	d.groundSpeed = surfaceMover->groundSpeed;
+
+	memcpy(bytes, &d, sizeof(MyData));
+
+	bytes += sizeof(MyData);
+}
+
+void Crawler::SetFromBytes(unsigned char *bytes)
+{
+	MyData d;
+	memcpy(&d, bytes, sizeof(MyData));
+
+	SetBasicEnemyData(d);
+
+	framesUntilBurrow = d.framesUntilBurrow;
+	surfaceMover->SetSpeed(d.groundSpeed);
+
+	bytes += sizeof(MyData);
 }

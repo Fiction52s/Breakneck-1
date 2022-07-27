@@ -133,8 +133,6 @@ struct SaveWireInfo
 
 struct PState
 {
-	const static int MAX_BUBBLES = 5;
-
 	V2d position;
 	V2d velocity;
 	int flashFrames;
@@ -202,9 +200,9 @@ struct PState
 	bool inBubble;
 	bool oldInBubble;
 
-	sf::Vector2<double> bubblePos[MAX_BUBBLES];
-	int bubbleRadiusSize[MAX_BUBBLES];
-	int bubbleFramesToLive[MAX_BUBBLES];
+	sf::Vector2<double> bubblePos[Actor::MAX_BUBBLES];
+	int bubbleRadiusSize[Actor::MAX_BUBBLES];
+	int bubbleFramesToLive[Actor::MAX_BUBBLES];
 	int currBubble;
 	bool currAttackHit;
 	bool bounceAttackHit;
@@ -363,6 +361,8 @@ struct PState
 
 	int shieldPushbackFrames;
 	bool shieldPushbackRight;
+
+	Actor::Hitter recentHitters[Actor::MAX_HITTERS];
 	//HitboxInfo currVSHitboxInfo;
 };
 

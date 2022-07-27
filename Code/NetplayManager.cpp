@@ -81,7 +81,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = false;
+	isSyncTest = true;
 
 	Abort();
 
@@ -1114,7 +1114,7 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Abort();
 
-		matchParams.mapPath = "Resources/Maps/W2/afighting1.brknk";
+		matchParams.mapPath = "Resources/Maps/W2/afighting3.brknk";
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
 

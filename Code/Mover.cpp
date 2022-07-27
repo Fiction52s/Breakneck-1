@@ -17,6 +17,24 @@
 using namespace std;
 using namespace sf;
 
+SurfaceMover::SurfaceMover()
+{
+	sess = Session::GetSession();
+
+	surfaceHandler = NULL;
+	collisionOn = true;
+	physBody.isCircle = true;
+	physBody.rw = 0;
+	physBody.rh = 0;
+	physBody.offset = V2d(0, 0);
+	force = V2d(0, 0);
+	ground = NULL;
+	edgeQuantity = 0;
+	roll = false;
+	groundSpeed = 0;
+	UpdateGroundPos();
+}
+
 SurfaceMover::SurfaceMover(Edge *startGround, 
 	double startQuantity, double radius )// double mSpeed )
 	:ground( startGround ), edgeQuantity( startQuantity ),
@@ -1049,6 +1067,14 @@ void SurfaceMover::DebugDraw(RenderTarget *target)
 	physBody.DebugDraw(CollisionBox::Physics, target);
 }
 
+
+GroundMover::GroundMover()
+	:SurfaceMover( NULL, 0, 0 )
+{
+	steeps = false;
+	handler = NULL;
+	reverse = false;
+}
 
 GroundMover::GroundMover( Edge *startGround, double startQuantity, 
 	double radius, bool p_steeps, GroundMoverHandler *p_handler )
