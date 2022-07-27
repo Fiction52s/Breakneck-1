@@ -86,6 +86,8 @@ struct FightMode : GameMode
 		int p1Health;
 		int p0Meter;
 		int p1Meter;
+		int endSeqState;
+		int endSeqFrame;
 	};
 
 	MyData data;
