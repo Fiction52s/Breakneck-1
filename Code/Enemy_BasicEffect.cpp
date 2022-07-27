@@ -4,6 +4,7 @@
 #include "VectorMath.h"
 #include <assert.h>
 #include "Enemy_BasicEffect.h"
+#include "PlayerSkinShader.h"
 
 using namespace std;
 using namespace sf;
@@ -20,6 +21,7 @@ BasicEffect::BasicEffect ()
 	activated = false;
 	animationFactor = 1;
 	stored_frame = 0;
+	//effectType = EFFECT_TYPE_BASIC;
 }
 
 BasicEffect::BasicEffect(BasicEffect &be)
@@ -36,6 +38,12 @@ BasicEffect::BasicEffect(BasicEffect &be)
 	layer = be.layer;
 	stored_frame = be.stored_frame;
 	startFrame = be.startFrame;
+	//effectType = EFFECT_TYPE_BASIC;
+}
+
+BasicEffect::~BasicEffect()
+{
+
 }
 
 void BasicEffect::HandleNoHealth()
@@ -62,6 +70,7 @@ void BasicEffect::ResetEnemy()
 	frame = 0;
 	activated = false;
 }
+
 
 void BasicEffect::Init( Tileset *t, sf::Vector2<double> pos, double angle, int fc, int af, bool right, float p_depth )
 {
@@ -109,7 +118,8 @@ void BasicEffect::EnemyDraw(sf::RenderTarget *target )
 	float newFactor = oldFactor * depth;
 	newView.setSize(Vector2f(960, 540) * newFactor);
 	target->setView(newView);
-	target->draw( sprite );	
+	target->draw(sprite);
+	
 	target->setView(oldView);
 }
 
@@ -124,4 +134,42 @@ void BasicEffect::DebugDraw(sf::RenderTarget *target)
 
 void BasicEffect::UpdateHitboxes()
 {
+}
+
+
+
+PlayerEffect::PlayerEffect()
+{
+	playerShader = new PlayerSkinShader("player");
+	//effectType = EFFECT_TYPE_PLAYER;
+}
+
+PlayerEffect::~PlayerEffect()
+{
+	delete playerShader;
+}
+
+void PlayerEffect::EnemyDraw(sf::RenderTarget *target)
+{
+	target->draw(sprite, &(playerShader->pShader));
+}
+
+void PlayerEffect::SetSkin(int index)
+{
+	playerShader->SetSkin(index);
+}
+
+void PlayerEffect::BlendSkins(int first, int second, float progress)
+{
+	playerShader->BlendSkins(first, second, progress);
+}
+
+void PlayerEffect::UpdateSprite()
+{
+	//ts->SetSubRect(sprite, frame / animationFactor + startFrame, !facingRight);
+
+
+	playerShader->SetQuad(ts, frame / animationFactor + startFrame);
+
+
 }

@@ -1129,6 +1129,17 @@ void Session::DrawEffects(EffectLayer layer, sf::RenderTarget *target)
 	{
 		target->setView(oldView);
 	}
+
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+
+		if (p != NULL)
+		{
+			p->DrawEffects(layer, target);
+		}
+	}
 }
 
 

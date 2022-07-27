@@ -73,6 +73,7 @@
 #include "SoundTypes.h"
 #include "MotionGhostEffect.h"
 #include "TimerHUD.h"
+#include "PaletteShader.h"
 
 using namespace sf;
 using namespace std;
@@ -809,8 +810,39 @@ BasicEffect * Actor::ActivateEffect(
 		return NULL;
 	}
 	
-	return sess->ActivateEffect(layer, ts, pos, pauseImmune, angle, frameCount, animationFactor,
+	BasicEffect *be = sess->ActivateEffect(layer, ts, pos, pauseImmune, angle, frameCount, animationFactor,
 		right, startFrame, depth);
+	return be;
+}
+
+EffectInstance * Actor::ActivateEffect(int pfxType, sf::Vector2f &pos, double angle, int frameCount, int animFactor, bool right, int startFrame)
+{
+	if (simulationMode)
+		return NULL;
+
+	EffectInstance params;
+	Transform t;
+
+	t.rotate(angle);
+
+	if (!right)
+	{
+		t.scale(Vector2f(-1, 1));
+	}
+
+	params.SetParams(Vector2f(pos), t, frameCount, animFactor, startFrame);
+	EffectInstance *ei = effectPools[pfxType].pool->ActivateEffect(&params);
+
+	return ei;
+}
+
+EffectInstance * Actor::ActivateEffect(int pfxType, EffectInstance *params)
+{
+	if (simulationMode)
+		return NULL;
+
+	EffectInstance *ei = effectPools[pfxType].pool->ActivateEffect(params);
+	return ei;
 }
 
 GameController &Actor::GetController(int index)
@@ -861,109 +893,100 @@ Collider &Actor::GetCollider()
 void Actor::SetupFXTilesets()
 {
 	string folder = "Kin/FX/";
-	ts_fairSwordLightning[0] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png");
-	ts_fairSwordLightning[1] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png");
-	ts_fairSwordLightning[2] = sess->GetSizedTileset( folder, "fair_sword_lightninga_256x256.png");
 
-	ts_dairSwordLightning[0] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png");
-	ts_dairSwordLightning[1] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png");
-	ts_dairSwordLightning[2] = sess->GetSizedTileset(folder,"dair_sword_lightninga_256x256.png");
+	effectPools.resize(PLAYERFX_Count);
 
-	ts_uairSwordLightning[0] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png");
-	ts_uairSwordLightning[1] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png");
-	ts_uairSwordLightning[2] = sess->GetSizedTileset(folder,"uair_sword_lightninga_256x256.png");
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20 );
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
 
-	ts_bounceBoost = sess->GetSizedTileset(folder, "bounceboost_256x192.png");
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
 
-	ts_fx_hurtSpack = sess->GetSizedTileset(folder, "hurt_spack_128x160.png");
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
 
-	ts_fx_dashStart = sess->GetSizedTileset(folder, "fx_dashstart_160x160.png");
-	ts_fx_dashRepeat = sess->GetSizedTileset(folder, "fx_dashrepeat_192x128.png");
+	effectPools[PLAYERFX_BOUNCE_BOOST].Set(sess->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_HURT_SPACK].Set(sess->GetSizedTileset(folder, "hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_land[0] = sess->GetSizedTileset(folder, "land_a_128x128.png");
-	ts_fx_land[1] = sess->GetSizedTileset(folder,"land_b_192x208.png");
-	ts_fx_land[2] = sess->GetSizedTileset(folder,"land_c_256x256.png");
-	ts_fx_runStart[0] = sess->GetSizedTileset(folder,"runstart_a_128x128.png");
-	ts_fx_runStart[1] = sess->GetSizedTileset(folder,"runstart_b_224x224.png");
-	ts_fx_runStart[2] = sess->GetSizedTileset(folder,"runstart_c_224x224.png");
+	effectPools[PLAYERFX_DASH_START].Set(sess->GetSizedTileset(folder, "fx_dashstart_160x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DASH_REPEAT].Set(sess->GetSizedTileset(folder, "fx_dashrepeat_192x128.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_sprint = sess->GetSizedTileset(folder, "fx_sprint_176x176.png");
-	ts_fx_run = sess->GetSizedTileset(folder, "fx_run_144x128.png");
-	ts_fx_bigRunRepeat = sess->GetSizedTileset(folder, "fx_bigrunrepeat_176x112.png");
+	effectPools[PLAYERFX_LAND_0].Set(sess->GetSizedTileset(folder, "land_a_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_1].Set(sess->GetSizedTileset(folder, "land_b_192x208.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "land_c_256x256.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_jump[0] = sess->GetSizedTileset(folder,"jump_a_128x80.png");
-	ts_fx_jump[1] = sess->GetSizedTileset(folder,"jump_b_160x192.png");
-	ts_fx_jump[2] = sess->GetSizedTileset(folder,"jump_c_160x192.png");
+	effectPools[PLAYERFX_RUN_START_0].Set(sess->GetSizedTileset(folder, "runstart_a_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN_START_1].Set(sess->GetSizedTileset(folder, "runstart_b_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_RUN_START_2].Set(sess->GetSizedTileset(folder, "runstart_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_wallJump[0] = sess->GetSizedTileset(folder,"walljump_a_160x160.png");
-	ts_fx_wallJump[1] = sess->GetSizedTileset(folder,"walljump_b_224x224.png");
-	ts_fx_wallJump[2] = sess->GetSizedTileset(folder,"walljump_c_224x224.png");
-	ts_fx_double = sess->GetSizedTileset(folder, "fx_doublejump_196x160.png");
-	ts_fx_gravReverse = sess->GetSizedTileset(folder, "fx_grav_reverse_128x128.png");
+	effectPools[PLAYERFX_SPRINT].Set(sess->GetSizedTileset(folder, "fx_sprint_176x176.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_chargeBlue0 = sess->GetSizedTileset(folder,"elec_01_128x128.png");
-	ts_fx_chargeBlue1 = sess->GetSizedTileset(folder,"elec_03_128x128.png");
-	ts_fx_chargeBlue2 = sess->GetSizedTileset(folder,"elec_04_128x128.png");
-	ts_fx_chargePurple = sess->GetSizedTileset(folder, "elec_02_128x128.png");
+	effectPools[PLAYERFX_RUN].Set(sess->GetSizedTileset(folder, "fx_run_144x128.png"), EffectType::FX_REGULAR, 20);
 
+	effectPools[PLAYERFX_BIG_RUN_REPEAT].Set(sess->GetSizedTileset(folder, "fx_bigrunrepeat_176x112.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_rightWire = sess->GetSizedTileset(folder, "wire_boost_r_64x64.png");
-	ts_fx_leftWire = sess->GetSizedTileset(folder, "wire_boost_b_64x64.png");
-	ts_fx_doubleWire = sess->GetSizedTileset(folder, "wire_boost_m_64x64.png");
+	effectPools[PLAYERFX_JUMP_0].Set(sess->GetSizedTileset(folder, "jump_a_128x80.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_1].Set(sess->GetSizedTileset(folder, "jump_b_160x192.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_JUMP_2].Set(sess->GetSizedTileset(folder, "jump_c_160x192.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_airdashDiagonal = sess->GetSizedTileset(folder, "fx_airdash_diagonal_1_128x128.png");
-	ts_fx_airdashUp = sess->GetSizedTileset(folder, "fx_airdash_128x128.png");
-	ts_fx_airdashHover = sess->GetSizedTileset(folder, "fx_airdash_hold_1_96x80.png");
+	effectPools[PLAYERFX_WALLJUMP_0].Set(sess->GetSizedTileset(folder, "walljump_a_160x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_1].Set(sess->GetSizedTileset(folder, "walljump_b_224x224.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_WALLJUMP_2].Set(sess->GetSizedTileset(folder, "walljump_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_death_1a = sess->GetSizedTileset(folder,"death_fx_1a_256x256.png");
-	ts_fx_death_1b = sess->GetSizedTileset(folder,"death_fx_1b_128x80.png");
-	ts_fx_death_1c = sess->GetSizedTileset(folder,"death_fx_1c_128x128.png");
-	ts_fx_death_1d = sess->GetSizedTileset(folder,"death_fx_1d_48x48.png");
-	ts_fx_death_1e = sess->GetSizedTileset(folder,"death_fx_1e_160x160.png");
-	ts_fx_death_1f = sess->GetSizedTileset(folder,"death_fx_1f_160x160.png");
+	effectPools[PLAYERFX_DOUBLE].Set(sess->GetSizedTileset(folder, "fx_doublejump_196x160.png"), EffectType::FX_REGULAR, 20);
 
-	ts_fx_gateEnter = sess->GetSizedTileset(folder, "gateenter_256x320.png");
+	effectPools[PLAYERFX_GRAV_REVERSE].Set(sess->GetSizedTileset(folder, "fx_grav_reverse_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	for (int i = 0; i < 7; ++i)
-	{
-		smallLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 4, 1.f);
-	}
+	effectPools[PLAYERFX_CHARGE_BLUE_0].Set(sess->GetSizedTileset(folder, "elec_01_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_CHARGE_BLUE_1].Set(sess->GetSizedTileset(folder, "elec_03_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_CHARGE_BLUE_2].Set(sess->GetSizedTileset(folder, "elec_04_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	smallLightningPool[0]->ts = sess->GetSizedTileset(folder,"elec_01_96x96.png");
-	smallLightningPool[1]->ts = sess->GetSizedTileset(folder,"elec_02_96x96.png");
-	smallLightningPool[2]->ts = sess->GetSizedTileset(folder,"elec_03_96x96.png");
-	smallLightningPool[3]->ts = sess->GetSizedTileset(folder,"elec_04_96x96.png");
-	smallLightningPool[4]->ts = sess->GetSizedTileset(folder,"elec_05_96x96.png");
-	smallLightningPool[5]->ts = sess->GetSizedTileset(folder,"elec_06_96x96.png");
-	smallLightningPool[6]->ts = sess->GetSizedTileset(folder,"elec_07_96x96.png");
+	effectPools[PLAYERFX_CHARGE_PURPLE].Set(sess->GetSizedTileset(folder, "elec_02_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	for (int i = 0; i < 3; ++i)
-	{
-		fairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		fairLightningPool[i]->ts = sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png");
-		dairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		dairLightningPool[i]->ts = sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png");
-		uairLightningPool[i] = new EffectPool(EffectType::FX_RELATIVE, 20, 1.f);
-		uairLightningPool[i]->ts = sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png");
-	}
+	effectPools[PLAYERFX_RIGHT_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_r_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LEFT_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_b_64x64.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DOUBLE_WIRE_BOOST].Set(sess->GetSizedTileset(folder, "wire_boost_m_64x64.png"), EffectType::FX_REGULAR, 20);
 
-	gateBlackFXPool = new EffectPool(EffectType::FX_RELATIVE, 2, 1.f);
-	gateBlackFXPool->ts = sess->GetSizedTileset(folder, "keydrain_160x160.png");
+	effectPools[PLAYERFX_AIRDASH_DIAGONAL].Set(sess->GetSizedTileset(folder, "fx_airdash_diagonal_1_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	ts_key = sess->GetSizedTileset("FX/key_128x128.png");
+	effectPools[PLAYERFX_AIRDASH_UP].Set(sess->GetSizedTileset(folder, "fx_airdash_128x128.png"), EffectType::FX_REGULAR, 20);
 
-	keyExplodePool = new EffectPool(EffectType::FX_REGULAR, 32, 1.f);
-	keyExplodePool->ts = ts_key;
+	effectPools[PLAYERFX_AIRDASH_HOVER].Set(sess->GetSizedTileset(folder, "fx_airdash_hold_1_96x80.png"), EffectType::FX_REGULAR, 20);
+
+	effectPools[PLAYERFX_DEATH_1A].Set(sess->GetSizedTileset(folder, "death_fx_1a_256x256.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DEATH_1B].Set(sess->GetSizedTileset(folder, "death_fx_1b_128x80.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DEATH_1C].Set(sess->GetSizedTileset(folder, "death_fx_1c_128x128.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DEATH_1D].Set(sess->GetSizedTileset(folder, "death_fx_1d_48x48.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DEATH_1E].Set(sess->GetSizedTileset(folder, "death_fx_1e_160x160.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_DEATH_1F].Set(sess->GetSizedTileset(folder, "death_fx_1f_160x160.png"), EffectType::FX_REGULAR, 20);
+
+	effectPools[PLAYERFX_GATE_ENTER].Set(sess->GetSizedTileset(folder, "gateenter_256x320.png"), EffectType::FX_REGULAR, 20);
+
+	effectPools[PLAYERFX_SMALL_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "elec_01_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "elec_02_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "elec_03_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_3].Set(sess->GetSizedTileset(folder, "elec_04_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_4].Set(sess->GetSizedTileset(folder, "elec_05_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_5].Set(sess->GetSizedTileset(folder, "elec_06_96x96.png"), EffectType::FX_RELATIVE, 4);
+	effectPools[PLAYERFX_SMALL_LIGHTNING_6].Set(sess->GetSizedTileset(folder, "elec_07_96x96.png"), EffectType::FX_RELATIVE, 4);
+
+	effectPools[PLAYERFX_GATE_BLACK].Set(sess->GetSizedTileset(folder, "keydrain_160x160.png"), EffectType::FX_RELATIVE, 2);
+
+	effectPools[PLAYERFX_KEY].Set(sess->GetSizedTileset("FX/key_128x128.png"), EffectType::FX_REGULAR, 32);
 	keyExplodeUpdater = new KeyExplodeUpdater(this);
-	keyExplodePool->SetUpdater(keyExplodeUpdater);
-	ts_keyExplode = sess->GetSizedTileset("FX/keyexplode_128x128.png");
+	effectPools[PLAYERFX_KEY].pool->SetUpdater(keyExplodeUpdater);
 
-	ts_fx_dashBoost = sess->GetSizedTileset("Kin/FX/sprint_ring_128x256.png");
+	effectPools[PLAYERFX_KEY_EXPLODE].Set(sess->GetSizedTileset("FX/keyexplode_128x128.png"), EffectType::FX_REGULAR, 32);
 
-	ts_fx_sprintStar = sess->GetSizedTileset("Kin/FX/sprint_star_96x96.png");
-	
+	effectPools[PLAYERFX_DASH_BOOST].Set(sess->GetSizedTileset(folder, "sprint_ring_128x256.png"), EffectType::FX_REGULAR, 4);
 
-	ts_fx_launchParticle = sess->GetSizedTileset("Kin/FX/launch_fx_192x128.png");
+	effectPools[PLAYERFX_SPRINT_STAR].Set(sess->GetSizedTileset(folder, "sprint_star_96x96.png"), EffectType::FX_RELATIVE, 100);
+
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
+	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
 
 	keyExplodeRingGroup = new MovingGeoGroup;
 	keyExplodeRingGroup->AddGeo(new MovingRing(32, 20, 300, 12, 12, Vector2f(0, 0), Vector2f(0, 0),
@@ -986,6 +1009,15 @@ void Actor::SetupFXTilesets()
 		Color::Cyan, Color(0, 0, 100, 0),
 		/*Color( 200, 200, 200, 255 ), Color(200, 200, 200, 0)*/ 30));
 	enoughKeysToExitRingGroup->Init();
+
+	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
+	{
+		if ((*it).pool != NULL)
+		{
+			(*it).pool->effectShader = &(fxPaletteShader->pShader);
+		}
+		
+	}
 }
 
 void Actor::SetupSwordTilesets()
@@ -2961,6 +2993,9 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	
 	action = -1;
 
+	fxPaletteShader = new PaletteShader("kinfx", "Resources/Kin/kin_palette_64x30.png");
+	fxPaletteShader->SetPaletteIndex(0);
+
 	birdCommands.resize(3);
 	for (int i = 0; i < 3; ++i)
 	{
@@ -3051,17 +3086,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 
 	railTest.setSize(Vector2f(64, 64));
 	railTest.setFillColor(Color( COLOR_ORANGE.r, COLOR_ORANGE.g, COLOR_ORANGE.b, 80 ));
-	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);
-
-	launcherEffectPool[0] = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
-	launcherEffectPool[1] = new EffectPool(EffectType::FX_REGULAR, 100, 1.0);
-	launcherEffectPool[0]->SetTileset(ts_fx_launchParticle);
-	launcherEffectPool[1]->SetTileset(ts_fx_launchParticle);
-	
-
-	sprintSparkPool = new EffectPool(EffectType::FX_RELATIVE, 100, 1.0);
-	sprintSparkPool->SetTileset(ts_fx_sprintStar);
-
+	railTest.setOrigin(railTest.getLocalBounds().width / 2, railTest.getLocalBounds().height / 2);	
 
 	ts_dirtyAura = sess->GetTileset("Kin/FX/dark_aura_w1_384x384.png", 384, 384);
 	dirtyAuraSprite.setTexture(*ts_dirtyAura->texture);
@@ -3764,14 +3789,7 @@ Actor::~Actor()
 
 	if( kinMask != NULL)
 		delete kinMask;
-	for (int i = 0; i < 7; ++i)
-	{
-		delete smallLightningPool[i];
-	}
 
-	delete launcherEffectPool[0];
-	delete launcherEffectPool[1];
-	delete sprintSparkPool;
 
 	//delete risingAuraPool;
 	for (int i = 0; i < 3; ++i)
@@ -3779,15 +3797,13 @@ Actor::~Actor()
 		delete motionGhostsEffects[i];
 	}
 
-	for (int i = 0; i < 3; ++i)
-	{
-		delete fairLightningPool[i];
-		delete uairLightningPool[i];
-		delete dairLightningPool[i];
-	}
-	delete gateBlackFXPool;
+	//need to clear this so that the pools delete. Not sure why the default
+	//deletion doesn't do it.
+	effectPools.clear();
 
-	delete keyExplodePool;
+	delete fxPaletteShader;
+
+	//delete keyExplodePool;
 	delete keyExplodeUpdater;
 	delete keyExplodeRingGroup;
 	delete enemyExplodeRingGroup;
@@ -4219,7 +4235,8 @@ void Actor::CreateKeyExplosion( int gateCategory )
 		params.SetParams(floatPos + adjustedPoint, tr, 16, 4, 0);
 		params.SetVelocityParams(normalize(adjustedPoint) * 4.f, Vector2f(), 10.f);
 
-		keyExplodePool->ActivateEffect(&params);
+		ActivateEffect(PLAYERFX_KEY, &params);
+		//keyExplodePool->ActivateEffect(&params);
 
 		posTransform.rotate(360.f / numKeysHeld);
 	}
@@ -4250,13 +4267,13 @@ void Actor::CreateAttackLightning()
 	switch (action)
 	{
 	case FAIR:
-		currLockedFairFX = (RelEffectInstance*)fairLightningPool[0]->ActivateEffect(&params);
+		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0, &params);
 		break;
 	case DAIR:
-		currLockedDairFX = (RelEffectInstance*)dairLightningPool[0]->ActivateEffect(&params);
+		currLockedDairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_DAIR_SWORD_LIGHTNING_0, &params);
 		break;
 	case UAIR:
-		currLockedUairFX = (RelEffectInstance*)uairLightningPool[0]->ActivateEffect(&params);
+		currLockedUairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_UAIR_SWORD_LIGHTNING_0, &params);
 		break;
 	}
 }
@@ -4369,8 +4386,7 @@ void Actor::Respawn( bool setStartPos )
 
 	bouncedFromKill = false;
 
-	launcherEffectPool[0]->DeactivateAll();
-	launcherEffectPool[1]->DeactivateAll();
+	ClearAllEffects();
 
 	hitEnemyDuringPhysics = false;
 
@@ -4524,14 +4540,7 @@ void Actor::Respawn( bool setStartPos )
 	currLockedDairFX = NULL;
 	currLockedUairFX = NULL;
 
-	for (int i = 0; i < 3; ++i)
-	{
-		fairLightningPool[i]->Reset();
-		dairLightningPool[i]->Reset();
-		uairLightningPool[i]->Reset();
-	}
-
-	gateBlackFXPool->Reset();
+	ClearAllEffects();
 
 	regrindOffCount = 3;
 	prevRail = NULL;
@@ -4841,9 +4850,9 @@ void Actor::KinModeUpdate()
 
 			for (int i = 0; i < 3; ++i)
 			{
-				fairLightningPool[i]->Reset();
-				dairLightningPool[i]->Reset();
-				uairLightningPool[i]->Reset();
+				effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+				effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0 + i].pool->Reset();
+				effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0 + i].pool->Reset();	
 			}
 			
 		}
@@ -4958,7 +4967,7 @@ void Actor::ProcessReceivedHit()
 		}*/
 		//receivedHit->hitPosType = 
 		
-		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_hurtSpack, position, true, 0, 12, 1, facingRight);
+		ActivateEffect(PLAYERFX_HURT_SPACK, Vector2f(position), 0, 12, 1, facingRight);
 
 		switch (receivedHitReaction)
 		{
@@ -5981,7 +5990,7 @@ void Actor::ActivateLauncherEffect(int tile)
 	ef.SetParams(Vector2f(position), ti, 1, 32, tile);
 
 	//ef.SetVelocityParams( Vector2f( 0, )
-	launcherEffectPool[0]->ActivateEffect(&ef);
+	ActivateEffect(PLAYERFX_LAUNCH_PARTICLE_0, &ef);
 
 	ef.SetParams(Vector2f(position), ti, 1, 32, tile + 1);
 
@@ -6002,7 +6011,7 @@ void Actor::ActivateLauncherEffect(int tile)
 	}
 
 	ef.color = Color(255, 255, 255, colorFactor * 255);
-	launcherEffectPool[1]->ActivateEffect(&ef);
+	ActivateEffect(PLAYERFX_LAUNCH_PARTICLE_1, &ef);
 }
 
 bool Actor::CheckExtendedAirdash()
@@ -9613,9 +9622,9 @@ bool Actor::ExitGrind(bool jump)
 				frame = 0;
 
 
-				double angle = GroundedAngle();
+				double angle = GroundedAngle() / PI * 180.0;
 
-				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+				ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), angle, 25, 1, facingRight);
 				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
 		}
@@ -10195,12 +10204,18 @@ void Actor::TryDashBoost()
 			fr = !facingRight;
 		}
 
-		BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			ts_fx_dashBoost, position, false, GroundedAngle(), 5, 4, fr, 1);
-		if (be != NULL)
+		EffectInstance params;
+		Transform t;
+		if (fr)
 		{
-			be->sprite.setScale(1, 4);
+			t.scale(Vector2f(-1, 0));
 		}
+
+		t.scale(1, 4);
+		t.rotate(GroundedAngle() / PI * 180.0);
+		params.SetParams(Vector2f(position), t, 5, 4, 1);
+
+		ActivateEffect(PLAYERFX_DASH_BOOST, &params);
 		//ActivateEts_fx_dashBoostFX
 
 		double dashFactor = 1.85;//1.5;
@@ -10379,14 +10394,15 @@ void Actor::ActivateAirdashBoost()
 
 	double ang = GetVectorAngleCW(velDir);// / PI * 180.0;
 
-	BasicEffect *be = ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-		ts_fx_dashBoost, position, false, ang, 5, 4, true, 1);
-	if (be != NULL)
-	{
-		be->sprite.setScale(1, 4);
-	}
-	
 
+	EffectInstance params;
+	Transform t;
+
+	t.scale(1, 4);
+	t.rotate(ang / PI * 180.0);
+	params.SetParams(Vector2f(position), t, 5, 4, 1);
+
+	ActivateEffect(PLAYERFX_DASH_BOOST, &params);
 
 	V2d rumbleDir = normalize(velocity);
 	//sess->cam.SetRumble(round(6 * rumbleDir.x), round(6 * rumbleDir.y), 6, 0, true );
@@ -10839,7 +10855,7 @@ void Actor::StopGrind()
 
 				double angle = GroundedAngle();
 
-				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+				ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
 				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
 		}
@@ -12920,7 +12936,7 @@ void Actor::UpdatePhysics()
 				V2d gno = ground->Normal();
 
 
-				double angle = atan2( gno.x, -gno.y );
+				double angle = atan2(gno.x, -gno.y);
 				
 				if( -gno.y > -steepThresh )
 				{
@@ -12934,9 +12950,11 @@ void Actor::UpdatePhysics()
 				movement = 0;
 			
 				offsetX = ( position.x + b.offset.x )  - minContact.position.x;
+				
+				
 
-				ActivateEffect( EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight );
-				ActivateSound(PlayerSounds::S_GRAVREVERSE );
+				ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
+				ActivateSound(PlayerSounds::S_GRAVREVERSE);
 			}
 			else if(!touchedGrass[Grass::ANTIGRIND] 
 				&& tempCollision //&& currPowerMode == PMODE_GRIND 
@@ -13222,7 +13240,8 @@ void Actor::HandleTouchedGate()
 		//fair should be 25 but meh
 
 		//gateBlackFX = (RelEffectInstance*)gateBlackFXPool->ActivateEffect(&params);
-		gateBlackFXPool->ActivateEffect(&params);
+
+		ActivateEffect(PLAYERFX_GATE_BLACK, &params);
 
 		//lock all the gates from this zone now that I chose one
 
@@ -13297,8 +13316,7 @@ void Actor::HandleTouchedGate()
 		V2d enterPos = edge->v1 + normalize(edge->v0 - edge->v1) * (1.0-alongAmount) * edge->GetLength()
 			+ nEdge * 0.0; //could change this for offset along the normal
 
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-			ts_fx_gateEnter, enterPos, false, ang, 8, 3, true);
+		ActivateEffect(PLAYERFX_GATE_ENTER, Vector2f(enterPos), RadiansToDegrees(ang), 8, 3, true);
 
 		//set gate action to disperse
 		//maybe have another gate action when you're on the gate and its not sure whether to blow up or not
@@ -13393,9 +13411,7 @@ void Actor::HitOutOfCeilingGrindAndReverse()
 
 	double angle = GroundedAngle();
 
-
-
-	ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+	ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
 	ActivateSound(PlayerSounds::S_GRAVREVERSE);
 }
 
@@ -15149,12 +15165,7 @@ void Actor::UpdateSmallLightning()
 
 		int r = rand() % 7;
 
-		smallLightningPool[r]->ActivateEffect(&params);
-	}
-
-	for (int i = 0; i < 7; ++i)
-	{
-		smallLightningPool[i]->Update();
+		ActivateEffect(PLAYERFX_SMALL_LIGHTNING_0 + r, &params);
 	}
 }
 
@@ -15415,14 +15426,8 @@ void Actor::UpdateSpeedParticles()
 	{
 		if (speedLevel == 1)
 		{
-			Tileset *tset = NULL;
+			int effectIndex = 0;
 			int randTex = rand() % 3;
-			if (randTex == 0)
-				tset = ts_fx_chargeBlue0;
-			else if (randTex == 1)
-				tset = ts_fx_chargeBlue1;
-			else
-				tset = ts_fx_chargeBlue2;
 
 			int rx = 30;
 			int ry = 30;
@@ -15440,9 +15445,7 @@ void Actor::UpdateSpeedParticles()
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
 
-
-
-				ActivateEffect(EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight);
+				ActivateEffect(PLAYERFX_CHARGE_BLUE_0 + randTex, Vector2f(truePos), RadiansToDegrees(angle), 6, 3, facingRight);
 			}
 			else
 			{
@@ -15453,7 +15456,8 @@ void Actor::UpdateSpeedParticles()
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
 				double angle = atan2(currNormal.x, currNormal.y);
-				ActivateEffect(EffectLayer::IN_FRONT, tset, truePos, false, angle, 6, 3, facingRight);
+
+				ActivateEffect(PLAYERFX_CHARGE_BLUE_0 + randTex, Vector2f(truePos), RadiansToDegrees(angle), 6, 3, facingRight);
 			}
 
 		}
@@ -15472,7 +15476,7 @@ void Actor::UpdateSpeedParticles()
 				truePos += V2d(randx, randy);
 				double angle = GroundedAngle();
 
-				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight);
+				ActivateEffect(PLAYERFX_CHARGE_PURPLE, Vector2f(truePos), RadiansToDegrees(angle), 6, 3, facingRight);
 			}
 			else
 			{
@@ -15483,9 +15487,11 @@ void Actor::UpdateSpeedParticles()
 				randy -= ry / 2;
 				truePos += V2d(randx, randy);
 				double angle = atan2(currNormal.x, currNormal.y);
-				ActivateEffect(EffectLayer::IN_FRONT, ts_fx_chargePurple, truePos, false, angle, 6, 3, facingRight);
+				ActivateEffect(PLAYERFX_CHARGE_PURPLE, Vector2f(truePos), RadiansToDegrees(angle), 6, 3, facingRight);
 			}
 		}
+
+		
 
 		speedParticleCounter = 0;
 	}
@@ -15493,12 +15499,16 @@ void Actor::UpdateSpeedParticles()
 void Actor::UpdateAttackLightning()
 {
 	CreateAttackLightning();
+}
 
-	for (int i = 0; i < 3; ++i)
+void Actor::UpdateAllEffects()
+{
+	for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
 	{
-		fairLightningPool[i]->Update();
-		dairLightningPool[i]->Update();
-		uairLightningPool[i]->Update();
+		if ((*it).pool != NULL)
+		{
+			(*it).pool->Update();
+		}
 	}
 }
 
@@ -15877,8 +15887,8 @@ void Actor::UpdatePostPhysics()
 	UpdateSprite();
 
 	UpdateAttackLightning();
-	
-	gateBlackFXPool->Update();
+
+	UpdateAllEffects();
 
 	UpdateSpeedBar();
 
@@ -18239,10 +18249,6 @@ void Actor::Draw( sf::RenderTarget *target )
 		target->draw(dirtyAuraSprite);
 	}
 
-	launcherEffectPool[0]->Draw(target);
-	launcherEffectPool[1]->Draw(target);
-
-
 	if( bounceFlameOn && !IsExitAction( action ) && !IsGoalKillAction(action) && action != GRINDBALL 
 		&& action != RAILGRIND )
 	{
@@ -18524,28 +18530,12 @@ void Actor::Draw( sf::RenderTarget *target )
 			target->draw( bubbleSprite );// &timeSlowShader );
 		}
 	}
-	
-	for (int i = 0; i < 3; ++i)
-	{
-		fairLightningPool[i]->Draw(target);
-		dairLightningPool[i]->Draw(target);
-		uairLightningPool[i]->Draw(target);
-	}
-
-	gateBlackFXPool->Draw(target);
-
-	for (int i = 0; i < 7; ++i)
-	{
-		smallLightningPool[i]->Draw(target);
-	}
-
-	sprintSparkPool->Draw(target);
 
 	keyExplodeRingGroup->Draw(target);
 	enemyExplodeRingGroup->Draw(target);
 	enemiesClearedRingGroup->Draw(target);
 	enoughKeysToExitRingGroup->Draw(target);
-	keyExplodePool->Draw(target);
+	//keyExplodePool->Draw(target);
 }
 
 void Actor::DrawShield(sf::RenderTarget *target)
@@ -18834,7 +18824,7 @@ void Actor::UpdateSprite()
 		ah->powerSelector->Update(currPowerMode);
 	}
 
-	keyExplodePool->Update();
+	/*keyExplodePool->Update();*/
 	if (!keyExplodeRingGroup->Update())
 	{
 		//keyExplodeRingGroup->Reset();
@@ -18851,12 +18841,7 @@ void Actor::UpdateSprite()
 	boosterRingSprite.setOrigin(boosterRingSprite.getLocalBounds().width / 2,
 		boosterRingSprite.getLocalBounds().height / 2);
 
-	sprintSparkPool->Update();
-
 	UpdateRisingAura();
-
-	launcherEffectPool[0]->Update();
-	launcherEffectPool[1]->Update();
 
 	UpdateLockedFX();
 
@@ -18901,6 +18886,8 @@ void Actor::UpdateSprite()
 	{
 		bool r = rightWire->state == Wire::PULLING;
 		bool l = leftWire->state == Wire::PULLING;
+
+
 		if( r && l && doubleWireBoost )
 		{
 			
@@ -18908,14 +18895,14 @@ void Actor::UpdateSprite()
 		}
 		else if( r && rightWireBoost )
 		{
-			ActivateEffect( EffectLayer::BEHIND_ENEMIES, ts_fx_rightWire, position, false, 
-				atan2( rightWireBoostDir.y, rightWireBoostDir.x ), 8, 2, true );
+			double angle = atan2(rightWireBoostDir.y, rightWireBoostDir.x);
+			ActivateEffect(PLAYERFX_RIGHT_WIRE_BOOST, Vector2f(position), RadiansToDegrees(angle), 8, 2, true);
 			//create right wire boost
 		}
 		else if( l && leftWireBoost )
 		{
-			ActivateEffect( EffectLayer::BEHIND_ENEMIES, ts_fx_leftWire, position, false, 
-				atan2( leftWireBoostDir.y, leftWireBoostDir.x ), 8, 2, true );
+			double angle = atan2(leftWireBoostDir.y, leftWireBoostDir.x);
+			ActivateEffect(PLAYERFX_LEFT_WIRE_BOOST, Vector2f(position), RadiansToDegrees(angle), 8, 2, true);
 			//create left wire boost
 		}
 	}
@@ -20187,8 +20174,7 @@ void Actor::SetExpr( int ex )
 void Actor::ExecuteDoubleJump()
 {
 	//add direction later
-	ActivateEffect(EffectLayer::BEHIND_ENEMIES, ts_fx_double,
-		V2d(position.x, position.y - 20), false, 0, 14, 2, facingRight);
+	ActivateEffect(PLAYERFX_DOUBLE, Vector2f(position.x, position.y - 20), 0, 14, 2, facingRight);
 
 	//velocity = groundSpeed * normalize(ground->v1 - ground->v0 );
 	if (velocity.y > 0)
@@ -20323,18 +20309,7 @@ void Actor::ExecuteWallJump()
 		fxPos += V2d(0, 0);
 	}
 
-	switch (speedLevel)
-	{
-	case 0:
-		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[0], fxPos, false, 0, 7, 3, facingRight);
-		break;
-	case 1:
-		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[1], fxPos, false, 0, 7, 3, facingRight);
-		break;
-	case 2:
-		ActivateEffect(EffectLayer::IN_FRONT, ts_fx_wallJump[2], fxPos, false, 0, 7, 3, facingRight);
-		break;
-	}
+	ActivateEffect(PLAYERFX_WALLJUMP_0 + speedLevel, Vector2f(fxPos), 0, 7, 3, facingRight);
 }
 
 int Actor::GetDoubleJump()
@@ -21424,6 +21399,7 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 skinShader.SetSkin(currSkinIndex);
+	 fxPaletteShader->SetPaletteIndex(currSkinIndex);
  }
 
  void Actor::BlendSkins(int first, int second, float progress)
@@ -21496,5 +21472,56 @@ void Actor::UpdateInHitlag()
 	 {
 		 DeactivateSound(repeatingSound);
 		 repeatingSound = NULL;
+	 }
+ }
+
+ Actor::FXInfo::FXInfo()
+ {
+	 pool = NULL;
+	 layer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES;
+	 pauseImmune = false;
+	 //startFrame = 0;
+	 //duration = 0;
+	 //animFactor = 0;
+ }
+
+ Actor::FXInfo::~FXInfo()
+ {
+	 if (pool != NULL)
+	 {
+		 delete pool;
+	 }
+ }
+
+ void Actor::FXInfo::Set(Tileset *p_ts, int p_fxType, int p_maxEffects, EffectLayer p_effectLayer, bool p_pauseImmune )
+ {
+	 pool = new EffectPool((EffectType)p_fxType, p_maxEffects);
+	 pool->ts = p_ts;
+
+	 layer = p_effectLayer;
+
+	 pauseImmune = p_pauseImmune;
+ }
+
+ void Actor::DrawEffects(int effectLayer, sf::RenderTarget *target)
+ {
+	 for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
+	 {
+		 if( (*it).pool != NULL && (*it).layer == effectLayer)
+		 {
+			 fxPaletteShader->SetTileset((*it).pool->ts);
+			 (*it).pool->Draw(target);
+		 }
+	 }
+ }
+
+ void Actor::ClearAllEffects()
+ {
+	 for (auto it = effectPools.begin(); it != effectPools.end(); ++it)
+	 {
+		 if ((*it).pool != NULL)
+		 {
+			 (*it).pool->Reset();
+		 }
 	 }
  }

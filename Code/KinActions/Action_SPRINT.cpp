@@ -262,14 +262,12 @@ void Actor::SPRINT_UpdateSprite()
 
 	if (frame == 2 * 4 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
-			pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight);
+		ActivateEffect(PLAYERFX_SPRINT, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 10, 2, facingRight);
 		ActivateSound(PlayerSounds::S_SPRINT_STEP1);
 	}
 	else if (frame == 6 * 4 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_sprint,
-			pp + gn * 48.0 + along * xExtraStart, false, angle, 10, 2, facingRight);
+		ActivateEffect(PLAYERFX_SPRINT, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 10, 2, facingRight);
 		ActivateSound(PlayerSounds::S_SPRINT_STEP2);
 	}
 

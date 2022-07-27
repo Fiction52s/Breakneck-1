@@ -17,6 +17,7 @@ struct PoolMember
 struct ObjectPool
 {
 	ObjectPool();
+	virtual ~ObjectPool();
 	virtual void Reset() { ResetPool(); }
 	void ResetPool();
 	PoolMember *activeListStart;

@@ -808,11 +808,6 @@ void MainMenu::Init()
 	fader = new Fader;
 	swiper = new Swiper();
 
-	
-	
-	
-
-
 	Swiper::LoadSwipeType( this, Swiper::W1);
 	
 	indEffectPool = new EffectPool(EffectType::FX_IND, 4);

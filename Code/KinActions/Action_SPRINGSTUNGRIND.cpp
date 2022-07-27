@@ -202,7 +202,7 @@ void Actor::SPRINGSTUNGRIND_Change()
 
 					double angle = GroundedAngle();
 
-					ActivateEffect(EffectLayer::IN_FRONT, ts_fx_gravReverse, position, false, angle, 25, 1, facingRight);
+					ActivateEffect(PLAYERFX_GRAV_REVERSE, Vector2f(position), RadiansToDegrees(angle), 25, 1, facingRight);
 					ActivateSound(PlayerSounds::S_GRAVREVERSE);
 				}
 			}

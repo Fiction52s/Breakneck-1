@@ -151,7 +151,7 @@ void Actor::SPRINGSTUNBOUNCEGROUND_Update()
 		V2d bn = bounceEdge->Normal();
 		double angle = atan2(bn.x, -bn.y);
 		bouncePos += bn * 80.0;
-		ActivateEffect(EffectLayer::IN_FRONT, ts_bounceBoost, bouncePos, false, angle, 30, 1, facingRight);
+		ActivateEffect(PLAYERFX_BOUNCE_BOOST, Vector2f(bouncePos), RadiansToDegrees(angle), 30, 1, facingRight);
 	}
 
 	velocity.x = 0;

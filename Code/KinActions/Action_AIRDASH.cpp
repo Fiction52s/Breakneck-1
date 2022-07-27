@@ -382,45 +382,44 @@ void Actor::AIRDASH_UpdateSprite()
 		{
 			//cout << "frame: " << frame << endl;
 			//if( frame % 4 == 1 )
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashHover, V2d(position.x, position.y + 70),
-				false, 0, 12, 1, facingRight);
+			ActivateEffect(PLAYERFX_AIRDASH_HOVER, Vector2f(position.x, position.y + 70), 0, 12, 1, facingRight);
 		}
 		else if (horizontal)
 		{
 			//cout << "STUFF???" << endl;
 			if (velocity.x > 0)
 			{
-				ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x - 64, position.y - 18), false, PI / 2.0, 15, 3, true);
+				ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x - 64, position.y - 18), RadiansToDegrees(PI / 2.0), 15, 3, true);
 			}
 			else
 			{
-				ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x + 64, position.y - 18), false, -PI / 2.0, 15, 3, true);
+				ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x + 64, position.y - 18), RadiansToDegrees(-PI / 2.0), 15, 3, true);
 			}
 		}
 		else if (velocity.x == 0 && velocity.y < 0)
 		{
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x, position.y + 64), false, 0, 15, 3, facingRight);
+			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y + 64), 0, 15, 3, facingRight);
 		}
 		else if (velocity.x == 0 && velocity.y > 0)
 		{
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashUp, V2d(position.x, position.y + 0), false, PI, 15, 3, facingRight);
+			ActivateEffect(PLAYERFX_AIRDASH_UP, Vector2f(position.x, position.y), RadiansToDegrees( PI ), 15, 3, facingRight);
 		}
 		else if (velocity.x > 0 && velocity.y > 0)
 		{
 			V2d pos = V2d(position.x - 40, position.y - 60);
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashDiagonal, pos, false, PI, 15, 3, true);//facingRight );
+			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(pos), RadiansToDegrees(PI), 15, 3, true);
 		}
 		else if (velocity.x < 0 && velocity.y > 0)
 		{
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashDiagonal, V2d(position.x + 40, position.y - 60), false, PI, 15, 3, false);//facingRight );
+			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 40, position.y - 60 ), RadiansToDegrees(PI), 15, 3, false);
 		}
 		else if (velocity.x < 0 && velocity.y < 0)
 		{
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashDiagonal, V2d(position.x + 54, position.y + 60), false, 0, 15, 3, true);
+			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x + 54, position.y + 60), 0, 15, 3, true);
 		}
 		else if (velocity.x > 0 && velocity.y < 0)
 		{
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_airdashDiagonal, V2d(position.x - 54, position.y + 60), false, 0, 15, 3, false);
+			ActivateEffect(PLAYERFX_AIRDASH_DIAGONAL, Vector2f(position.x - 54, position.y + 60), 0, 15, 3, false);
 		}
 
 		//cout << "airdash fx" << endl;

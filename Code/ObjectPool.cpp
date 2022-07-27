@@ -8,6 +8,11 @@ ObjectPool::ObjectPool()
 	Reset();
 }
 
+ObjectPool::~ObjectPool()
+{
+
+}
+
 void ObjectPool::ResetPool()
 {
 	DeactivateAll();
@@ -146,5 +151,10 @@ void ObjectPool::DeactivateAll()
 		tNext = curr->pmnext;
 		DeactivatePoolMember(curr);
 		curr = tNext;
+	}
+
+	if (numActiveMembers > 0)
+	{
+		assert(0);
 	}
 }

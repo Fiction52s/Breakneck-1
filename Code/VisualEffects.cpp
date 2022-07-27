@@ -317,10 +317,19 @@ Tileset *EffectInstance::GetTileset()
 
 void EffectInstance::SetSubRect(IntRect &sub)
 {
-	parent->va[index * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
+	if (parent->effectShader != NULL)
+	{
+		Tileset *t_ts = GetTileset();
+		SetRectSubRectGL(parent->va + index * 4, sub, Vector2f(t_ts->texture->getSize()));
+	}
+	else
+	{
+		SetRectSubRect(parent->va + index * 4, sub);
+	}
+	/*parent->va[index * 4 + 0].texCoords = Vector2f(sub.left, sub.top);
 	parent->va[index * 4 + 1].texCoords = Vector2f(sub.left + sub.width, sub.top);
 	parent->va[index * 4 + 2].texCoords = Vector2f(sub.left + sub.width, sub.top + sub.height);
-	parent->va[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);
+	parent->va[index * 4 + 3].texCoords = Vector2f(sub.left, sub.top + sub.height);*/
 }
 
 bool EffectInstance::Update()

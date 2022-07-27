@@ -76,21 +76,7 @@ void Actor::RUN_UpdateSprite()
 		(currInput.LLeft() && !prevInput.LLeft())
 		|| (currInput.LRight() && !prevInput.LRight())))
 	{
-		switch (speedLevel)
-		{
-		case 0:
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[0],
-				pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
-			break;
-		case 1:
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[1],
-				pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
-			break;
-		case 2:
-			ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_runStart[2],
-				pp + gn * 40.0 + along * xExtraStartRun, false, angle, 6, 3, fr);
-			break;
-		}
+		ActivateEffect(PLAYERFX_RUN_START_0 + speedLevel, Vector2f(pp + gn * 40.0 + along * xExtraStartRun), RadiansToDegrees(angle), 6, 3, fr);
 	}
 
 	double xExtraStart = -48.0;
@@ -102,14 +88,12 @@ void Actor::RUN_UpdateSprite()
 
 	if (frame == 3 * 4 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-			pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr);
+		ActivateEffect(PLAYERFX_RUN, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 8, 3, fr);
 		ActivateSound(PlayerSounds::S_RUN_STEP1);
 	}
 	else if (frame == 8 * 4 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES, ts_fx_run,
-			pp + gn * 48.0 + along * xExtraStart, false, angle, 8, 3, fr);
+		ActivateEffect(PLAYERFX_RUN, Vector2f(pp + gn * 48.0 + along * xExtraStart), RadiansToDegrees(angle), 8, 3, fr);
 		ActivateSound(PlayerSounds::S_RUN_STEP2);
 	}
 

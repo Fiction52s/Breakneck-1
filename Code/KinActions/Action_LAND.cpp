@@ -212,19 +212,8 @@ void Actor::LAND_UpdateSprite()
 		}
 
 		//cout << "activating" << endl;
-		switch (speedLevel)
-		{
-		case 0:
-			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[0], fxPos, false, angle, 8, 2, facingRight);
-			break;
-		case 1:
-			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[1], fxPos, false, angle, 8, 2, facingRight);
-			break;
-		case 2:
-			ActivateEffect(EffectLayer::IN_FRONT, ts_fx_land[2], fxPos, false, angle, 9, 2, facingRight);
-			break;
-		}
 
+		ActivateEffect(PLAYERFX_LAND_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(angle), 8, 2, facingRight);
 	}
 }
 

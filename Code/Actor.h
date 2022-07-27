@@ -25,12 +25,14 @@
 #include "PlayerSkinShader.h"
 
 struct SoundInfo;
+struct PaletteShader;
 
 struct SwordProjectile;
 
 struct PState;
 
 struct EditSession;
+struct EffectInstance;
 
 struct Session;
 struct TerrainPolygon;
@@ -90,6 +92,7 @@ struct KeyExplodeUpdater;
 struct ShapeEmitter;
 
 struct BasicEffect;
+struct PlayerEffect;
 
 struct Wire;
 
@@ -458,6 +461,101 @@ struct Actor : QuadTreeCollider,
 		Count
 	};
 
+	enum PlayerEffectType
+	{
+		PLAYERFX_FAIR_SWORD_LIGHTNING_0,
+		PLAYERFX_FAIR_SWORD_LIGHTNING_1,
+		PLAYERFX_FAIR_SWORD_LIGHTNING_2,
+		PLAYERFX_DAIR_SWORD_LIGHTNING_0,
+		PLAYERFX_DAIR_SWORD_LIGHTNING_1,
+		PLAYERFX_DAIR_SWORD_LIGHTNING_2,
+		PLAYERFX_UAIR_SWORD_LIGHTNING_0,
+		PLAYERFX_UAIR_SWORD_LIGHTNING_1,
+		PLAYERFX_UAIR_SWORD_LIGHTNING_2,
+		PLAYERFX_BOUNCE_BOOST,
+		PLAYERFX_HURT_SPACK,
+		PLAYERFX_DASH_START,
+		PLAYERFX_DASH_REPEAT,
+		PLAYERFX_LAND_0,
+		PLAYERFX_LAND_1,
+		PLAYERFX_LAND_2,
+		PLAYERFX_RUN_START_0,
+		PLAYERFX_RUN_START_1,
+		PLAYERFX_RUN_START_2,
+		PLAYERFX_SPRINT,
+		PLAYERFX_RUN,
+		PLAYERFX_BIG_RUN_REPEAT,
+		PLAYERFX_JUMP_0,
+		PLAYERFX_JUMP_1,
+		PLAYERFX_JUMP_2,
+		PLAYERFX_WALLJUMP_0,
+		PLAYERFX_WALLJUMP_1,
+		PLAYERFX_WALLJUMP_2,
+		PLAYERFX_DOUBLE,
+		PLAYERFX_GRAV_REVERSE,
+		PLAYERFX_CHARGE_BLUE_0,
+		PLAYERFX_CHARGE_BLUE_1,
+		PLAYERFX_CHARGE_BLUE_2,
+		PLAYERFX_CHARGE_PURPLE,
+		PLAYERFX_RIGHT_WIRE_BOOST,
+		PLAYERFX_LEFT_WIRE_BOOST,
+		PLAYERFX_DOUBLE_WIRE_BOOST,
+		PLAYERFX_AIRDASH_DIAGONAL,
+		PLAYERFX_AIRDASH_UP,
+		PLAYERFX_AIRDASH_HOVER,
+		PLAYERFX_DEATH_1A,
+		PLAYERFX_DEATH_1B,
+		PLAYERFX_DEATH_1C,
+		PLAYERFX_DEATH_1D,
+		PLAYERFX_DEATH_1E,
+		PLAYERFX_DEATH_1F,
+		PLAYERFX_GATE_ENTER,
+		PLAYERFX_SMALL_LIGHTNING_0,
+		PLAYERFX_SMALL_LIGHTNING_1,
+		PLAYERFX_SMALL_LIGHTNING_2,
+		PLAYERFX_SMALL_LIGHTNING_3,
+		PLAYERFX_SMALL_LIGHTNING_4,
+		PLAYERFX_SMALL_LIGHTNING_5,
+		PLAYERFX_SMALL_LIGHTNING_6,
+		PLAYERFX_GATE_BLACK,
+		PLAYERFX_KEY,
+		PLAYERFX_KEY_EXPLODE,
+		PLAYERFX_DASH_BOOST,
+		PLAYERFX_SPRINT_STAR,
+		PLAYERFX_LAUNCH_PARTICLE_0,
+		PLAYERFX_LAUNCH_PARTICLE_1,
+		PLAYERFX_Count,
+	};
+
+	struct FXInfo
+	{
+		EffectLayer layer;
+		EffectPool *pool;
+		bool pauseImmune;
+		
+		//int startFrame;
+		//int duration;
+		//int animFactor;
+
+
+		FXInfo();
+		~FXInfo();
+		void Set(Tileset *ts, int fxType, int maxEffects, EffectLayer effectLayer = EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
+			bool p_pauseImmune = false);
+
+		/*void Set(Tileset *p_ts, int p_startFrame, int p_duration, int p_animFactor, int p_maxReps)
+		{
+			ts = p_ts;
+			startFrame = p_startFrame;
+			duration = p_duration;
+			animFactor = p_animFactor;
+		}*/
+
+	};
+
+	std::vector<FXInfo> effectPools;
+	PaletteShader *fxPaletteShader;
+
 	enum AirTriggerBehavior
 	{
 		AT_NONE,
@@ -805,11 +903,6 @@ struct Actor : QuadTreeCollider,
 	PlayerSkinShader skinShader;
 	PlayerSkinShader exitAuraShader;
 
-	EffectPool *launcherEffectPool[2];
-	EffectPool *sprintSparkPool;
-
-	//std::map<std::string, EffectPool*> effectPoolMap;
-
 	int superActiveLimit;
 	int attackLevelCounterLimit;
 	sf::Vector2f fairSwordOffset[3];
@@ -831,7 +924,6 @@ struct Actor : QuadTreeCollider,
 	std::vector<SoundInfo*> soundInfos;
 	Tileset *ts_exitAura;
 	Tileset *ts_dirtyAura;
-	Tileset *ts_fx_launchParticle;
 	Tileset *ts_lowGravRing;
 	sf::Sprite boosterRingSprite;
 	
@@ -856,13 +948,11 @@ struct Actor : QuadTreeCollider,
 	std::vector<void(Actor::*)()> timeDepFrameIncFuncs;
 	std::vector<int(Actor::*)()> getActionLengthFuncs;
 	std::vector<Tileset*(Actor::*)()> getTilesetFuncs;
-	EffectPool *smallLightningPool[7];
 	EffectPool *risingAuraPool;
 	MotionGhostEffect *motionGhostsEffects[3];
 	EffectPool *keyExplodePool;
 	KeyExplodeUpdater *keyExplodeUpdater;
 	Tileset *ts_keyExplode;
-	Tileset *ts_key;
 	MovingGeoGroup *keyExplodeRingGroup;
 	MovingGeoGroup *enemyExplodeRingGroup;
 	MovingGeoGroup *enemiesClearedRingGroup;
@@ -874,10 +964,6 @@ struct Actor : QuadTreeCollider,
 	AirTrigger *currAirTrigger;
 	bool showDirtyAura;
 	AirTriggerBehavior airTrigBehavior;
-	EffectPool *fairLightningPool[4];
-	EffectPool *uairLightningPool[4];
-	EffectPool *dairLightningPool[4];
-	EffectPool *gateBlackFXPool;
 	//might need more repeating sounds
 	//in future, but for now this works.
 	SoundNode *repeatingSound;
@@ -904,11 +990,6 @@ struct Actor : QuadTreeCollider,
 	bool toggleBounceInput;
 	bool toggleTimeSlowInput;
 	bool toggleGrindInput;
-	Tileset *ts_fx_sprintStar;
-	Tileset *ts_fx_dashBoost;
-	Tileset *ts_fx_rightWire;
-	Tileset *ts_fx_leftWire;
-	Tileset *ts_fx_doubleWire;
 	bool hitGoal;
 	Nexus *hitNexus;
 
@@ -963,9 +1044,7 @@ struct Actor : QuadTreeCollider,
 	Tileset * tsgstripurp;
 	Tileset * tsgstrirgb;
 	Tileset *ts_grindAttackFX;
-	sf::Sprite fairSword;
-	Tileset *ts_fairSword[3];
-	Tileset *ts_fairSwordLightning[3];
+	
 	RelEffectInstance *currLockedFairFX;
 	RelEffectInstance *currLockedDairFX;
 	RelEffectInstance *currLockedUairFX;
@@ -976,10 +1055,10 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_grindLungeSword[3];
 	
 	Tileset *ts_dairSword[3];
-	Tileset *ts_dairSwordLightning[3];
-	
 	Tileset *ts_uairSword[3];
-	Tileset *ts_uairSwordLightning[3];
+	Tileset *ts_fairSword[3];
+
+	sf::Sprite fairSword;
 	
 
 	Tileset *ts_standAttackSword[3];
@@ -1006,7 +1085,6 @@ struct Actor : QuadTreeCollider,
 	double bounceFlameAccel0;
 	double bounceFlameAccel1;
 	double bounceFlameAccel2;
-	Tileset *ts_bounceBoost;
 	
 	bool scorpSet;
 
@@ -1041,33 +1119,7 @@ struct Actor : QuadTreeCollider,
 	Tileset *ts_scorpBounce;
 	Tileset *ts_scorpBounceWall;
 	sf::Sprite scorpSprite;
-	Tileset * ts_fx_airdashUp;
-	Tileset * ts_fx_airdashDiagonal;
-	Tileset * ts_fx_airdashSmall;
-	Tileset * ts_fx_airdashHover;
-	Tileset *ts_fx_run;
-	Tileset *ts_fx_runStart[3];
-	Tileset *ts_fx_sprint;
-	Tileset * ts_fx_double;
-	Tileset * ts_fx_wallJump[3];
-	Tileset * ts_fx_gravReverse;
-	Tileset * ts_fx_bigRunRepeat;
-	Tileset * ts_fx_chargeBlue0;
-	Tileset * ts_fx_chargeBlue1;
-	Tileset * ts_fx_chargeBlue2;
-	Tileset * ts_fx_chargePurple;
-	Tileset *ts_fx_hurtSpack;
-	Tileset *ts_fx_dashStart;
-	Tileset *ts_fx_dashRepeat;
-	Tileset *ts_fx_land[3];
-	Tileset *ts_fx_jump[3];
-	Tileset *ts_fx_death_1a;
-	Tileset *ts_fx_death_1b;
-	Tileset *ts_fx_death_1c;
-	Tileset *ts_fx_death_1d;
-	Tileset *ts_fx_death_1e;
-	Tileset *ts_fx_death_1f;
-	Tileset *ts_fx_gateEnter;
+	
 	int speedParticleCounter;
 	int speedParticleRate;
 	
@@ -1353,6 +1405,8 @@ struct Actor : QuadTreeCollider,
 		bool right,
 		int startFrame = 0,
 		float depth = 1.f);
+	EffectInstance * ActivateEffect(int pfxType, sf::Vector2f &pos, double angle, int frameCount, int animFactor, bool right, int startFrame = 0);
+	EffectInstance * ActivateEffect(int pfxType, EffectInstance *params );
 	void DeactivateSound(SoundNode *sn);
 	void SetToOriginalPos();
 	void UpdatePowersMenu();
@@ -1527,6 +1581,7 @@ struct Actor : QuadTreeCollider,
 	bool BasicAirAttackAction();
 	sf::Vector2<double> UpdateReversePhysics();
 	void Draw( sf::RenderTarget *target );
+	void DrawEffects(int effectLayer, sf::RenderTarget *target);
 	void DrawPlayerSprite(sf::RenderTarget *target);
 	void MiniDraw(sf::RenderTarget *target);
 	void DeathDraw(sf::RenderTarget *target);
@@ -1601,6 +1656,7 @@ struct Actor : QuadTreeCollider,
 	void UpdateMotionGhosts();
 	void UpdateSpeedParticles();
 	void UpdateAttackLightning();
+	void UpdateAllEffects();
 	void UpdatePlayerShader();
 	void TryEndLevel();
 	void UpdateDashBooster();
@@ -1739,7 +1795,7 @@ struct Actor : QuadTreeCollider,
 		int animMult,
 		sf::Vector2f &swordOffset );
 	void ApplyBlockFriction();
-
+	void ClearAllEffects();
 	//kin action functions
 
 	void AIMWAIT_Start();

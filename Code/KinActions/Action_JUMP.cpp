@@ -136,18 +136,7 @@ void Actor::JUMP_Update()
 
 				fxPos += currNormal * 16.0;
 
-				switch (speedLevel)
-				{
-				case 0:
-					ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[0], fxPos, false, ang, 6, 4, facingRight);
-					break;
-				case 1:
-					ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[1], fxPos, false, ang, 6, 4, facingRight);
-					break;
-				case 2:
-					ActivateEffect(EffectLayer::IN_FRONT, ts_fx_jump[2], fxPos, false, ang, 6, 4, facingRight);
-					break;
-				}
+				ActivateEffect(PLAYERFX_JUMP_0 + speedLevel, Vector2f(fxPos), RadiansToDegrees(ang), 6, 4, facingRight);
 
 				//ActivateEffect( EffectLayer::IN_FRONT, ts_fx_jump, fxPos , false, ang, 6, 4, facingRight );
 

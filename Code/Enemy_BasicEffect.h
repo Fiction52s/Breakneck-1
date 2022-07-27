@@ -3,12 +3,15 @@
 
 #include "Enemy.h"
 
+struct PlayerSkinShader;
+
 struct BasicEffect : Enemy
 {
 	BasicEffect();
 	BasicEffect(BasicEffect &be);
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
+	virtual ~BasicEffect();
+	virtual void EnemyDraw(sf::RenderTarget *target);
+	virtual void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void UpdateHitboxes();
 	void ResetEnemy();
@@ -32,7 +35,18 @@ struct BasicEffect : Enemy
 	EffectLayer layer;
 	int stored_frame;
 	int startFrame;
-	//sf::Vector2<double> position;
+};
+
+struct PlayerEffect : BasicEffect
+{
+	PlayerEffect();
+	~PlayerEffect();
+	void SetSkin(int index);
+	void BlendSkins(int first, int second, float progress);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+
+	PlayerSkinShader *playerShader;
 };
 
 #endif
