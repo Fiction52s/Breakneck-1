@@ -1,10 +1,15 @@
 #include "ObjectPool.h"
 #include <assert.h>
+#include <iostream>
+
+using namespace std;
 
 ObjectPool::ObjectPool()
 {
 	activeListStart = NULL;
 	inactiveListStart = NULL;
+	numInactiveMembers = 0;
+	numActiveMembers = 0;
 	Reset();
 }
 
@@ -16,11 +21,15 @@ ObjectPool::~ObjectPool()
 void ObjectPool::ResetPool()
 {
 	DeactivateAll();
+
 	numInactiveMembers = 0;
 	numActiveMembers = 0;
 
 	activeListStart = NULL;
 	activeListEnd = NULL;
+
+	
+	
 	//inactiveListStart = NULL;
 }
 
@@ -155,6 +164,7 @@ void ObjectPool::DeactivateAll()
 
 	if (numActiveMembers > 0)
 	{
+		cout << "object pool error. deactivated all but: " << numActiveMembers << " remain." << endl;
 		assert(0);
 	}
 }
