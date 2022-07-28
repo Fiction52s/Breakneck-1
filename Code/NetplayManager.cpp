@@ -1069,7 +1069,7 @@ int NetplayManager::RunMatch()
 
 	if (isSyncTest)
 	{
-		game->InitGGPO();
+		//game->InitGGPO();
 	}
 	else
 	{

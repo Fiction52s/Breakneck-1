@@ -8,21 +8,27 @@ using namespace sf;
 using namespace std;
 
 AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
-	:va(NULL), particlePos(NULL), maxSpeed(100), playerTarget( NULL ),
-	activeList( NULL ), inactiveList( NULL ), abType( p_abType ), sess( p_sess )
+	:va(NULL), maxSpeed(100), abType( p_abType ), sess( p_sess )
 {
-	switch (p_abType)
-	{
-	case ENERGY:
-		maxNumParticles = 256;
-		break;
-	case DARK:
-		maxNumParticles = 64;
-		break;
-	case SHARD:
-		maxNumParticles = 64;
-		break;
-	}
+	data.activeList = false;
+	data.inactiveList = false;
+	data.directKilled = false;
+
+	maxNumParticles = sess->GetNumTotalEnergyParticles(p_abType);
+
+	allParticles.reserve(maxNumParticles);
+	//switch (p_abType)
+	//{
+	//case ENERGY:
+	//	maxNumParticles = sess->GetNumTotalEnergyParticles( p_abType); //256;
+	//	break;
+	//case DARK:
+	//	maxNumParticles = sess->(p_abType);//64;
+	//	break;
+	//case SHARD:
+	//	maxNumParticles = 64;
+	//	break;
+	//}
 
 	va = new Vertex[maxNumParticles * 4];
 
@@ -52,30 +58,28 @@ AbsorbParticles::AbsorbParticles(Session *p_sess, AbsorbType p_abType )
 		animFactor = 3;
 		break;
 	}
-
-	//particlePos = new Vector2f[maxNumParticles];
 }
 
-sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
+sf::Vector2f AbsorbParticles::SingleEnergyParticle::GetTargetPos(AbsorbType abType)
 {
 	switch (abType)
 	{
 	case ENERGY:
 	{
-		V2d playerPos = playerTarget->position;
+		V2d playerPos = data.playerTarget->position;
 		return Vector2f(playerPos);
 		break;
 	}
 	case DARK:
 	{
-		V2d playerPos = playerTarget->position;
+		V2d playerPos = data.playerTarget->position;
 		return Vector2f(playerPos);
 		//return Vector2f(1920 - 100, 100);
 		break;
 	}
 	case SHARD:
 	{
-		V2d playerPos = playerTarget->position;
+		V2d playerPos = data.playerTarget->position;
 		return Vector2f(playerPos);//Vector2f(286, 202);
 		break;
 	}
@@ -85,47 +89,93 @@ sf::Vector2f AbsorbParticles::GetTargetPos(AbsorbType abType)
 void AbsorbParticles::AllocateParticle( int tileIndex )
 {
 	SingleEnergyParticle *sp = new SingleEnergyParticle(this, tileIndex );
-	if (inactiveList == NULL)
-		inactiveList = sp;
+	if (data.inactiveList == NULL)
+		data.inactiveList = sp;
 	else
 	{
-		sp->next = inactiveList;
-		inactiveList->prev = sp;
-		inactiveList = sp;
+		sp->data.next = data.inactiveList;
+		data.inactiveList->data.prev = sp;
+		data.inactiveList = sp;
+	}
+
+	allParticles.push_back(sp);
+}
+
+int AbsorbParticles::GetNumStoredBytes()
+{
+	return sizeof(MyData) + sizeof(SingleEnergyParticle::MyData) * maxNumParticles;
+}
+
+void AbsorbParticles::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+	for (auto it = allParticles.begin(); it != allParticles.end(); ++it)
+	{
+		(*it)->StoreBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
 	}
 }
+
+void AbsorbParticles::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+	for (auto it = allParticles.begin(); it != allParticles.end(); ++it)
+	{
+		(*it)->SetFromBytes(bytes);
+		bytes += (*it)->GetNumStoredBytes();
+	}
+}
+
+//void AbsorbParticles::SingleEnergyParticle::StoreBytes(unsigned char *bytes)
+//{
+//	memcpy(bytes, &data, sizeof(MyData));
+//
+//	bytes += sizeof(MyData);
+//}
+//
+//void AbsorbParticles::SingleEnergyParticle::SetFromBytes(unsigned char *bytes)
+//{
+//	memcpy(&data, bytes, sizeof(MyData));
+//
+//	bytes += sizeof(MyData);
+//}
 
 AbsorbParticles::~AbsorbParticles()
 {
 	delete[] va;
 
-	SingleEnergyParticle *sp = activeList;
+	for (auto it = allParticles.begin(); it != allParticles.end(); ++it)
+	{
+		delete (*it);
+	}
+
+	/*SingleEnergyParticle *sp = data.activeList;
 	SingleEnergyParticle *tNext;
 	while (sp != NULL)
 	{
-		tNext = sp->next;
+		tNext = sp->data.next;
 		delete sp;
 		sp = tNext;
 	}
 
-	sp = inactiveList;
+	sp = data.inactiveList;
 	while (sp != NULL)
 	{
-		tNext = sp->next;
+		tNext = sp->data.next;
 		delete sp;
 		sp = tNext;
-	}
+	}*/
 }
 
 void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos,
 	float p_startAngle )
 {
-	playerTarget = p_playerTarget;
+	cout << "activate particles" << endl;
 	float startSpeed = 4;
 
 	int numProjectiles = storedHits;
-	
-	startAngle = p_startAngle;
 
 	Transform t;
 	t.rotate(p_startAngle / PI * 180.f );
@@ -134,6 +184,8 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	Vector2f startPos;
 	Vector2f targetPos;
 	V2d startVel;
+
+	targetPos = Vector2f(p_playerTarget->position);
 
 	switch( abType )
 	{
@@ -146,7 +198,6 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 	case DARK:
 	{
 		startPos = Vector2f(p_pos);
-		targetPos = Vector2f(playerTarget->position);
 		vel = normalize(Vector2f(startPos) - targetPos) * startSpeed; //away from player
 		/*startPos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		targetPos = GetTargetPos(DARK);
@@ -159,7 +210,6 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 		//owner->ActivateEffect()
 
 		startPos = Vector2f(p_pos);//Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
-		targetPos = GetTargetPos(SHARD);
 		//pos = Vector2f(playerTarget->owner->preScreenTex->mapCoordsToPixel(Vector2f(p_pos)));
 		//startPos = Vector2f(400, 200);
 		t = Transform::Identity;
@@ -185,17 +235,17 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 		sp = GetInactiveParticle();
 		assert(sp != NULL);
 
-		sp->Activate(startPos, t.transformPoint(vel));
+		sp->Activate( p_playerTarget, startPos, t.transformPoint(vel));
 
-		if (activeList == NULL)
+		if (data.activeList == NULL)
 		{
-			activeList = sp;
+			data.activeList = sp;
 		}
 		else
 		{
-			sp->next = activeList;
-			activeList->prev = sp;
-			activeList = sp;
+			sp->data.next = data.activeList;
+			data.activeList->data.prev = sp;
+			data.activeList = sp;
 		}
 		
 		t.rotate(360.f / numProjectiles);
@@ -206,8 +256,10 @@ void AbsorbParticles::Activate(Actor *p_playerTarget, int storedHits, V2d &p_pos
 
 AbsorbParticles::SingleEnergyParticle::SingleEnergyParticle(AbsorbParticles *p_parent,
 	int p_tileIndex )
-	:parent( p_parent ), next( NULL ), prev( NULL ), tileIndex( p_tileIndex )
+	:parent( p_parent ), tileIndex( p_tileIndex )
 {
+	data.next = NULL;
+	data.prev = NULL;
 	Clear();
 }
 
@@ -238,7 +290,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 		va[tileIndex * 4 + 2].color = Color::Green;
 		va[tileIndex * 4 + 3].color = Color::Cyan;*/
 		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
-			(frame % (9 * parent->animFactor)) / parent->animFactor));
+			(data.frame % (9 * parent->animFactor)) / parent->animFactor));
 		break;
 	}
 	case DARK:
@@ -247,7 +299,7 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 		sub.height = 128;
 		//SetRectColor(va + tileIndex * 4, Color(Color::White));
 		SetRectSubRect(va + tileIndex * 4, parent->ts->GetSubRect(
-			(frame % (16 * parent->animFactor)) / parent->animFactor));
+			(data.frame % (16 * parent->animFactor)) / parent->animFactor));
 		/*va[tileIndex * 4 + 0].color = Color::Black;
 		va[tileIndex * 4 + 1].color = Color::Black;
 		va[tileIndex * 4 + 2].color = Color::Black;
@@ -265,28 +317,30 @@ void AbsorbParticles::SingleEnergyParticle::UpdateSprite()
 	}
 
 	//cout << "pos: " << pos.x << ", " << pos.y << "   targetPos" << targetPos.x << ", " << targetPos.y << endl;
-	SetRectCenter(va + tileIndex * 4, sub.width, sub.height, pos);
+	SetRectCenter(va + tileIndex * 4, sub.width, sub.height, data.pos);
 }
 
-void AbsorbParticles::SingleEnergyParticle::Activate( Vector2f &p_pos, Vector2f &vel )
+void AbsorbParticles::SingleEnergyParticle::Activate( Actor *p_playerTarget, Vector2f &p_pos, Vector2f &vel )
 {
-	frame = 0;
-	velocity = vel;
-	pos = p_pos;
+	data.frame = 0;
+	data.velocity = vel;
+	data.pos = p_pos;
 	
-	next = NULL;
-	prev = NULL;
-	lockFrame = -1;
+	data.next = NULL;
+	data.prev = NULL;
+	data.lockFrame = -1;
+
+	data.playerTarget = p_playerTarget;
 }
 
 bool AbsorbParticles::SingleEnergyParticle::Update()
 {
-	assert(parent->playerTarget != NULL);
+	assert( data.playerTarget != NULL );
 
 	float accel = 1;
-	Vector2f targetPos = parent->GetTargetPos(parent->abType);
+	Vector2f targetPos = GetTargetPos(parent->abType);
 	
-	if (parent->directKilled)
+	if (parent->data.directKilled)
 	{
 		switch (parent->abType)
 		{
@@ -294,7 +348,7 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 		{
 			Tileset *tss = parent->sess->GetTileset("FX/keyexplode_128x128.png", 128, 128);
 			parent->sess->ActivateEffect(EffectLayer::BETWEEN_PLAYER_AND_ENEMIES,
-				tss, V2d(pos), true, 0, 6, 3, true);
+				tss, V2d(data.pos), true, 0, 6, 3, true);
 			break;
 		}
 		}
@@ -302,26 +356,26 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	}
 
 
-	float len = length(targetPos - pos);
-	if ( lockFrame != -1 || (len < 60 && frame > 30) )
+	float len = length(targetPos - data.pos);
+	if (data.lockFrame != -1 || (len < 60 && data.frame > 30) )
 	{
-		if (lockFrame == -1)
+		if (data.lockFrame == -1)
 		{
-			lockFrame = frame;
-			lockDist = len;
+			data.lockFrame = data.frame;
+			data.lockDist = len;
 		}
-		int diffFrame = frame - lockFrame;
+		int diffFrame = data.frame - data.lockFrame;
 		float distPortion = (float)diffFrame / 10;
-		pos = targetPos + normalize(pos - targetPos ) * lockDist * ( 1.f - distPortion );
+		data.pos = targetPos + normalize(data.pos - targetPos ) * data.lockDist * ( 1.f - distPortion );
 	}
 	else
 	{
-		pos += velocity;
+		data.pos += data.velocity;
 	}
 
 	float blahFactor = 0;
 
-	if (frame < 20)
+	if (data.frame < 20)
 	{
 		accel = .01;
 	}
@@ -336,20 +390,20 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 			accel = 1.f;
 		}
 	}
-	velocity += normalize(targetPos - pos) * accel;
+	data.velocity += normalize(targetPos - data.pos) * accel;
 
-	if (frame > 30)
+	if (data.frame > 30)
 	{
-		velocity = (length(velocity) * normalize(targetPos - pos));
+		data.velocity = (length(data.velocity) * normalize(targetPos - data.pos));
 	}
 
 
-	if (length(velocity) > parent->maxSpeed)
+	if (length(data.velocity) > parent->maxSpeed)
 	{
-		velocity = normalize(velocity) * (float)parent->maxSpeed;
+		data.velocity = normalize(data.velocity) * (float)parent->maxSpeed;
 	}
 
-	if ( length(targetPos - pos) < 1.f && frame > 30 )
+	if ( length(targetPos - data.pos) < 1.f && data.frame > 30 )
 	{
 		switch (parent->abType)
 		{
@@ -377,21 +431,41 @@ bool AbsorbParticles::SingleEnergyParticle::Update()
 	}
 
 
-	++frame;
+	++data.frame;
 	return true;
+}
+
+
+int AbsorbParticles::SingleEnergyParticle::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void AbsorbParticles::SingleEnergyParticle::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+
+	bytes += sizeof(MyData);
+}
+
+void AbsorbParticles::SingleEnergyParticle::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+
+	bytes += sizeof(MyData);
 }
 
 AbsorbParticles::SingleEnergyParticle *AbsorbParticles::GetInactiveParticle()
 {
-	if (inactiveList == NULL)
+	if (data.inactiveList == NULL)
 		return NULL;
 	
-	SingleEnergyParticle *sp = inactiveList;
+	SingleEnergyParticle *sp = data.inactiveList;
 
-	if (inactiveList->next != NULL)
-		inactiveList->next->prev = NULL;
+	if (data.inactiveList->data.next != NULL)
+		data.inactiveList->data.next->data.prev = NULL;
 
-	inactiveList = inactiveList->next;
+	data.inactiveList = data.inactiveList->data.next;
 
 	return sp;
 }
@@ -400,40 +474,40 @@ void AbsorbParticles::DeactivateParticle(AbsorbParticles::SingleEnergyParticle *
 {
 	sp->Clear();
 
-	if (activeList == NULL)
+	if (data.activeList == NULL)
 		assert(0);
 
-	if (sp->prev == NULL)
+	if (sp->data.prev == NULL)
 	{
-		if (sp->next != NULL)
-			sp->next->prev = NULL;
-		activeList = sp->next;
+		if (sp->data.next != NULL)
+			sp->data.next->data.prev = NULL;
+		data.activeList = sp->data.next;
 	}
 	else
 	{
-		sp->prev->next = sp->next;
-		if (sp->next != NULL)
-			sp->next->prev = sp->prev;
+		sp->data.prev->data.next = sp->data.next;
+		if (sp->data.next != NULL)
+			sp->data.next->data.prev = sp->data.prev;
 	}
 
-	sp->prev = NULL;
-	sp->next = NULL;
+	sp->data.prev = NULL;
+	sp->data.next = NULL;
 
-	if (inactiveList != NULL)
+	if (data.inactiveList != NULL)
 	{
-		sp->next = inactiveList;
-		inactiveList->prev = sp;
+		sp->data.next = data.inactiveList;
+		data.inactiveList->data.prev = sp;
 	}
-	inactiveList = sp;
+	data.inactiveList = sp;
 }
 
 void AbsorbParticles::Update()
 {
-	SingleEnergyParticle *sp = activeList;
+	SingleEnergyParticle *sp = data.activeList;
 	SingleEnergyParticle *tNext = NULL;
 	while (sp != NULL)
 	{
-		tNext = sp->next;
+		tNext = sp->data.next;
 		if (sp->Update())
 		{
 			sp->UpdateSprite();
@@ -446,7 +520,7 @@ void AbsorbParticles::Update()
 		sp = tNext;
 	}
 
-	directKilled = false;
+	data.directKilled = false;
 }
 
 void AbsorbParticles::Draw(sf::RenderTarget *target)
@@ -467,14 +541,14 @@ void AbsorbParticles::Draw(sf::RenderTarget *target)
 
 void AbsorbParticles::KillAllActive()
 {
-	directKilled = true;
+	data.directKilled = true;
 }
 
 void AbsorbParticles::Reset()
 {
-	directKilled = false;
-	while (activeList != NULL)
+	data.directKilled = false;
+	while (data.activeList != NULL)
 	{
-		DeactivateParticle(activeList);
+		DeactivateParticle(data.activeList);
 	}
 }

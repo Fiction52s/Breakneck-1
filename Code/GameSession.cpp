@@ -1551,7 +1551,7 @@ bool GameSession::Load()
 
 	SetupPokeTriangleScreenGroup();
 
-	SetupAbsorbParticles();
+	
 
 	const ConfigData &cd = mainMenu->config->GetData();
 	soundNodeList->SetSoundVolume(cd.soundVolume);
@@ -1659,7 +1659,7 @@ bool GameSession::Load()
 	ReadFile();
 
 	
-	
+	SetupAbsorbParticles();
 
 	SetupGameMode();
 	gameMode->Setup();

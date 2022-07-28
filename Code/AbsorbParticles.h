@@ -2,7 +2,7 @@
 #define __ABSORBPARTICLES_H__
 
 #include <SFML\Graphics.hpp>
-
+#include "VectorMath.h"
 
 struct Session;
 struct Actor;
@@ -19,58 +19,72 @@ struct AbsorbParticles
 	
 	struct SingleEnergyParticle
 	{
-		
+		//36 bytes. kinda sucks. could make it 32 with some packing
+		struct MyData
+		{
+			sf::Vector2f pos;
+			sf::Vector2f velocity;
+			int frame;
+			int lockFrame;
+			float lockDist;
+			SingleEnergyParticle *next;
+			SingleEnergyParticle *prev;
+			Actor *playerTarget;
+		};
+
+		MyData data;
+		int tileIndex;
+		AbsorbParticles *parent;
+
 		SingleEnergyParticle(AbsorbParticles *parent,
 			int tileIndex );
 		void UpdateSprite();
 		bool Update();
-		void Activate(sf::Vector2f &pos, sf::Vector2f &vel);
+		void Activate( Actor *p_playerTarget, sf::Vector2f &pos, sf::Vector2f &vel);
 		void Clear();
-		sf::Vector2f pos;
-		int frame;
-		int tileIndex;
-		sf::Vector2f velocity;
-		AbsorbParticles *parent;
-		int lockFrame;
-		float lockDist;
+		int GetNumStoredBytes();
+		void StoreBytes(unsigned char *bytes);
+		void SetFromBytes(unsigned char *bytes);
+		sf::Vector2f GetTargetPos(AbsorbType ab);
 
-		SingleEnergyParticle *next;
-		SingleEnergyParticle *prev;
-		
-		//Vector2f accel;
 	};
 
-	void KillAllActive();
-	bool directKilled;
+	struct MyData
+	{
+		SingleEnergyParticle *activeList;
+		SingleEnergyParticle *inactiveList;
+		bool directKilled;
+	};
+	MyData data;
+
+
+	std::vector<SingleEnergyParticle*> allParticles;
+	sf::Vertex *va;
+	int maxNumParticles;
+	Session *sess;
+	Tileset *ts;
+	Tileset *ts_explodeDestroy;
+	int animFactor;
+	double maxSpeed;
 	AbsorbType abType;
-	sf::Vector2f GetTargetPos(AbsorbType ab);
+
+	void KillAllActive();
 	AbsorbParticles(Session *sess,
 		AbsorbType p_abType );
 	~AbsorbParticles();	
 	void Reset();
-	sf::Vertex *va;
-	int maxNumParticles;
+	
 	void Activate( Actor *playerTarget, int storedHits, 
-		sf::Vector2<double> &pos,
+		V2d &pos,
 		float startAngle = 0 );
 	void Update();
 	void Draw(sf::RenderTarget *rt);
-	float startAngle;
-	Session *sess;
-	Tileset *ts;
-	//Tileset *ts_explodeCreate;
-	Tileset *ts_explodeDestroy;
-	int animFactor;
-	sf::Vector2f pos;
-	sf::Vector2f *particlePos;
-	int numActivatedParticles;
-	Actor *playerTarget;
-	double maxSpeed;
 	SingleEnergyParticle *GetInactiveParticle();
 	void DeactivateParticle(SingleEnergyParticle *sp);
-	SingleEnergyParticle *activeList;
-	SingleEnergyParticle *inactiveList;
 	void AllocateParticle(int tileIndex );
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

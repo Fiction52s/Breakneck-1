@@ -4435,6 +4435,7 @@ void Session::SetupAbsorbParticles()
 void Session::ActivateAbsorbParticles(int absorbType, Actor *p, int storedHits,
 	V2d &pos, float startAngle)
 {
+	
 	switch (absorbType)
 	{
 	case AbsorbParticles::ENERGY:
@@ -5675,6 +5676,40 @@ void Session::QueryFlyTerrainTree(sf::Rect<double>&rect)
 		queryMode = QUERY_FLYTERRAIN;
 		flyTerrainTree->Query(this, rect);
 	}
+}
+
+int Session::GetNumTotalEnergyParticles(int absorbType)
+{
+	int total = 0;
+	switch (absorbType)
+	{
+	case AbsorbParticles::ENERGY:
+	{
+		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		{
+			total += (*it)->GetNumEnergyAbsorbParticles();
+		}
+		break;
+	}
+	case AbsorbParticles::DARK:
+	{
+		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		{
+			total += (*it)->GetNumDarkAbsorbParticles();	
+		}
+		break;
+	}
+	case AbsorbParticles::SHARD:
+	{
+		for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
+		{
+			total += (*it)->GetNumShardAbsorbParticles();
+		}
+		break;
+	}
+	}
+
+	return total;
 }
 
 void Session::DrawStoryLayer(EffectLayer ef, sf::RenderTarget *target)
@@ -7388,17 +7423,16 @@ int Session::GetSaveDataSize()
 
 	totalSize += enemySize;
 
+	totalSize += absorbParticles->GetNumStoredBytes();
+	totalSize += absorbDarkParticles->GetNumStoredBytes();
+	totalSize += absorbShardParticles->GetNumStoredBytes();
+
 	return totalSize;
 }
 
 bool Session::SaveState(unsigned char **buffer,
 	int *len, int *checksum, int frame)
 {
-	/*int unusedState = 0;
-	for (int i = 0; i < 10; ++i)
-	{
-
-	}*/
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
@@ -7433,6 +7467,15 @@ bool Session::SaveState(unsigned char **buffer,
 		tempBuf += (*it)->GetNumStoredBytes();
 	}
 
+	absorbParticles->StoreBytes(tempBuf);
+	tempBuf += absorbParticles->GetNumStoredBytes();
+
+	absorbDarkParticles->StoreBytes(tempBuf);
+	tempBuf += absorbDarkParticles->GetNumStoredBytes();
+
+	absorbShardParticles->StoreBytes(tempBuf);
+	tempBuf += absorbShardParticles->GetNumStoredBytes();
+
 	//cout << "save state:" << totalGameFrames << endl;
 	
 	//ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
@@ -7458,6 +7501,16 @@ bool Session::LoadState(unsigned char *bytes, int len)
 		(*it)->SetFromBytes(bytes);
 		bytes += (*it)->GetNumStoredBytes();
 	}
+
+	absorbParticles->SetFromBytes(bytes);
+	bytes += absorbParticles->GetNumStoredBytes();
+
+	absorbDarkParticles->SetFromBytes(bytes);
+	bytes += absorbDarkParticles->GetNumStoredBytes();
+
+	absorbShardParticles->SetFromBytes(bytes);
+	bytes += absorbShardParticles->GetNumStoredBytes();
+
 
 	int oldTotalGameFrames = totalGameFrames;
 	int rollbackFrames = totalGameFrames - currSaveState->totalGameFrames;

@@ -1722,12 +1722,12 @@ void Enemy::ConfirmKill()
 	if (hasMonitor && !suppressMonitor)
 	{
 		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
-			sess->GetPlayer(0), 1, GetPosition());
+			sess->GetPlayer(0), GetNumDarkAbsorbParticles(), GetPosition());
 	}
 	else
 	{
 		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-			sess->GetPlayer(0), 6, GetPosition());
+			sess->GetPlayer(0), GetNumEnergyAbsorbParticles(), GetPosition());
 	}
 
 	dead = true;
@@ -2164,12 +2164,12 @@ bool Enemy::BasicCheckHitPlayer(CollisionBody *body, int index)
 					IHitPlayer(index);
 				}
 
-				/*if (body->hitboxInfo != NULL)
+				if (body->hitboxInfo != NULL)
 				{
 					pauseFrames = body->hitboxInfo->hitlagFrames;
 					pauseBeganThisFrame = true;
 					pauseFramesFromAttacking = true;
-				}*/
+				}
 				player->ApplyHit(body->hitboxInfo,
 					NULL, hitResult, GetPosition());
 			}
@@ -2195,6 +2195,24 @@ int Enemy::SetLaunchersStartIndex(int ind)
 	}
 
 	return currIndex;
+}
+
+int Enemy::GetNumEnergyAbsorbParticles()
+{ 
+	return 6; 
+}
+
+int Enemy::GetNumDarkAbsorbParticles()
+{
+	if (hasMonitor) 
+		return 1;
+	else 
+		return 0;
+}
+
+int Enemy::GetNumShardAbsorbParticles()
+{ 
+	return 0; 
 }
 
 int HittableObject::GetReceivedHitPlayerIndex()

@@ -657,6 +657,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void QuerySpecialTerrainTree(sf::Rect<double>&rect);
 	void QueryFlyTerrainTree(sf::Rect<double>&rect);
 
+	int GetNumTotalEnergyParticles(int absorbType);
+
 	void DrawAllMapWires(
 		sf::RenderTarget *target);
 	void DrawColoredMapTerrain(
