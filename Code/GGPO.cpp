@@ -6,6 +6,90 @@
 
 using namespace std;
 
+void SaveGameState::Print()
+{
+	cout << "totalGameFrames: " << totalGameFrames << "\n";
+	cout << "activeEnemyList: " << activeEnemyList << "\n";
+	cout << "activeEnemyListTail: " << activeEnemyListTail << "\n";
+	cout << "inactiveEnemyList: " << inactiveEnemyList << "\n";
+	cout << "pauseFrames: " << pauseFrames << "\n";
+	cout << "currSuperPlayer: " << currSuperPlayer << "\n";
+	cout << "gameState: " << gameState << "\n";
+	cout << "activeSequence: " << activeSequence << "\n";
+}
+
+void PState::Print()
+{
+	cout << "position: " << position.x << ", " << position.y << "\n";
+	cout << "velocity: " << velocity.x << ", " << velocity.y << "\n";
+	cout << "flashFrames: " << flashFrames << "\n";
+	cout << "bufferedAttack: " << bufferedAttack << "\n";
+	cout << "doubleJumpBufferedAttack: " << doubleJumpBufferedAttack << "\n";
+	cout << "wallJumpBufferedAttack: " << wallJumpBufferedAttack << "\n";
+	cout << "pauseBufferedAttack: " << pauseBufferedAttack << "\n";
+	cout << "pauseBufferedJump: " << pauseBufferedJump << "\n";
+	cout << "pauseBufferedDash: " << pauseBufferedDash << "\n";
+	cout << "attackingHitlag: " << attackingHitlag << "\n";
+	cout << "hitlagFrames: " << hitlagFrames << "\n";
+	cout << "hitstunFrames: " << hitstunFrames << "\n";
+	cout << "setHitstunFrames: " << setHitstunFrames << "\n";
+	cout << "invincibleFrames: " << invincibleFrames << "\n";
+	cout << "receivedHit: " << "not implemented" << "\n";
+	cout << "xOffset: " << xOffset << "\n";
+	cout << "action: " << action << "\n";
+	cout << "frame: " << frame << "\n";
+	cout << "groundSpeed: " << groundSpeed << "\n";
+	cout << "prevInput: " << prevInput << "\n";
+	cout << "currInput: " << currInput << "\n";
+	cout << "ground: " << ground << "\n";
+	cout << "quant: " << quant << "\n";
+	cout << "brh: " << brh << "\n";
+	cout << "byoffset: " << byoffset << "\n";
+	cout << "bpos: " << bpos.x << ", " << bpos.y << "\n";
+	cout << "facingRight: " << facingRight << "\n";
+	cout << "holdDouble: " << holdDouble << "\n";
+	cout << "framesSinceClimbBoost: " << framesSinceClimbBoost << "\n";
+	cout << "holdJump: " << holdJump << "\n";
+	cout << "wallJumpFrameCounter: " << wallJumpFrameCounter << "\n";
+	cout << "hasDoubleJump: " << hasDoubleJump << "\n";
+	cout << "framesInAir: " << framesInAir << "\n";
+	cout << "hasAirDash: " << hasAirDash << "\n";
+	cout << "numRemainingExtraAirdashBoosts: " << numRemainingExtraAirdashBoosts << "\n";
+	cout << "storedGroundSpeed: " << storedGroundSpeed << "\n";
+	cout << "currBBoostCounter: " << currBBoostCounter << "\n";
+	cout << "currAirdashBoostCounter: " << currAirdashBoostCounter << "\n";
+	cout << "steepJump: " << steepJump << "\n";
+	cout << "speedLevel: " << speedLevel << "\n";
+	cout << "currentSpeedBar: " << currentSpeedBar << "\n";
+	cout << "airDashStall: " << airDashStall << "\n";
+	cout << "startAirDashVel: " << startAirDashVel.x << ", " << startAirDashVel.y << "\n";
+	cout << "extraAirDashY: " << extraAirDashY << "\n";
+	cout << "oldAction: " << oldAction << "\n";
+	cout << "oldVelocity: " << oldVelocity.x << ", " << oldVelocity.y << "\n";
+	cout << "reversed: " << reversed << "\n";
+	cout << "storedReverseSpeed: " << storedReverseSpeed << "\n";
+	cout << "grindActionCurrent: " << grindActionCurrent << "\n";
+	cout << "framesGrinding: " << framesGrinding << "\n";
+	cout << "framesNotGrinding: " << framesNotGrinding << "\n";
+	cout << "framesSinceGrindAttempt: " << framesSinceGrindAttempt << "\n";
+	cout << "maxFramesSinceGrindAttempt: " << maxFramesSinceGrindAttempt << "\n";
+	cout << "grindEdge: " << grindEdge << "\n";
+	cout << "grindQuantity: " << grindQuantity << "\n";
+	cout << "grindSpeed: " << grindSpeed << "\n";
+	cout << "slowMultiple: " << slowMultiple << "\n";
+	cout << "slowCounter: " << slowCounter << "\n";
+	cout << "inBubble: " << inBubble << "\n";
+	cout << "oldInBubble: " << oldInBubble << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+	//cout << "hasAirDash: " << hasAirDash << "\n";
+}
+
 int fletcher32_checksum(short *data, size_t len)
 {
 	int sum1 = 0xffff, sum2 = 0xffff;

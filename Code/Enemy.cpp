@@ -1919,6 +1919,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.facingRight = facingRight;
 	ed.action = action;
 	ed.frame = frame;
+	ed.active = active;
 
 	ed.prev = prev;
 	ed.next = next;
@@ -1926,6 +1927,7 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.pauseFramesFromAttacking = pauseFramesFromAttacking;
 	ed.dead = dead;
 	ed.spawned = spawned;
+
 
 	if (surfaceMover != NULL)
 	{
@@ -1965,6 +1967,7 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	facingRight = ed.facingRight;
 	action = ed.action;
 	frame = ed.frame;
+	active = ed.active;
 
 	prev = ed.prev;
 	next = ed.next;
@@ -2484,8 +2487,8 @@ void BasicPathFollower::SetParams(ActorParams *ap)
 
 void BasicPathFollower::Reset()
 {
-	targetNode = 1;
-	forward = true;
+	data.targetNode = 1;
+	data.forward = true;
 }
 
 void BasicPathFollower::AdvanceTargetNode()
@@ -2493,28 +2496,28 @@ void BasicPathFollower::AdvanceTargetNode()
 	int pathLength = path.size();
 	if (loop)
 	{
-		++targetNode;
-		if (targetNode == pathLength)
-			targetNode = 0;
+		++data.targetNode;
+		if (data.targetNode == pathLength)
+			data.targetNode = 0;
 	}
 	else
 	{
-		if (forward)
+		if (data.forward)
 		{
-			++targetNode;
-			if (targetNode == pathLength)
+			++data.targetNode;
+			if (data.targetNode == pathLength)
 			{
-				targetNode -= 2;
-				forward = false;
+				data.targetNode -= 2;
+				data.forward = false;
 			}
 		}
 		else
 		{
-			--targetNode;
-			if (targetNode < 0)
+			--data.targetNode;
+			if (data.targetNode < 0)
 			{
-				targetNode = 1;
-				forward = true;
+				data.targetNode = 1;
+				data.forward = true;
 			}
 		}
 	}
@@ -2526,7 +2529,7 @@ void BasicPathFollower::Move(double movement, V2d &pos )
 	{
 		while (movement != 0)
 		{
-			V2d targetPoint = V2d(path[targetNode].x, path[targetNode].y);
+			V2d targetPoint = V2d(path[data.targetNode].x, path[data.targetNode].y);
 			V2d diff = targetPoint - pos;
 			double len = length(diff);
 			if (len >= abs(movement))
@@ -2542,4 +2545,21 @@ void BasicPathFollower::Move(double movement, V2d &pos )
 			}
 		}
 	}
+}
+
+int BasicPathFollower::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void BasicPathFollower::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void BasicPathFollower::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
 }

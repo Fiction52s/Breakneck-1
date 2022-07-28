@@ -18,11 +18,19 @@ struct Crawler : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
+
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+		int framesUntilBurrow;
+	};
+
+	MyData data;
+
 	SoundInfo *deathSound;
 	Tileset *ts;
 
 	int maxFramesUntilBurrow;
-	int framesUntilBurrow;
 
 	double baseSpeed;
 
@@ -59,12 +67,7 @@ struct Crawler : Enemy, SurfaceMoverHandler
 	void ResetEnemy();
 	//void UpdateEnemyPhysics();
 
-	//Rollback
-	struct MyData : StoredEnemyData
-	{
-		int framesUntilBurrow;
-		double groundSpeed;
-	};
+	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

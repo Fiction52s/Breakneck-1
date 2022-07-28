@@ -119,20 +119,20 @@ void Patroller::ResetEnemy()
 	SetCurrPosInfo(startPosInfo);
 	pathFollower.Reset();
 	facingRight = origFacingRight;
-	aimingFrames = 0;
+	data.aimingFrames = 0;
 	if (facingRight)
 	{
-		turnFrame = (6 * turnAnimFactor) - 1;
+		data.turnFrame = (6 * turnAnimFactor) - 1;
 	}
 	else
 	{
-		turnFrame = 0;
+		data.turnFrame = 0;
 	}
-	targetAngle = 0;
-	currentAngle = targetAngle;
+	data.targetAngle = 0;
+	data.currentAngle = data.targetAngle;
 
 	eye->Reset();
-	fireCounter = 0;
+	data.fireCounter = 0;
 	action = S_FLAP;
 	frame = 0;
 
@@ -142,8 +142,8 @@ void Patroller::ResetEnemy()
 	UpdateHitboxes();
 	UpdateSprite();
 
-	targetAngle = 0;
-	currentAngle = targetAngle;
+	data.targetAngle = 0;
+	data.currentAngle = data.targetAngle;
 }
 
 
@@ -165,7 +165,7 @@ void Patroller::ProcessState()
 		{
 			action = S_BEAKHOLDOPEN;
 			launchers[0]->position = GetPosition();
-			launchers[0]->facingDir = normalize(targetPos - GetPosition());
+			launchers[0]->facingDir = normalize(data.targetPos - GetPosition());
 			launchers[0]->Fire();
 			sess->ActivateSoundAtPos( GetPosition(), shootSound);
 			break;
@@ -175,7 +175,7 @@ void Patroller::ProcessState()
 			break;
 		case S_BEAKCLOSE:
 			action = S_FLAP;
-			aimingFrames = 0;
+			data.aimingFrames = 0;
 			break;
 		}
 	}
@@ -186,32 +186,32 @@ void Patroller::ProcessState()
 	{
 		sf::Vector2f dir = Vector2f(normalize(playerPos - GetPosition()));
 		float dist = length(playerPos - GetPosition());
-		targetPos = playerPos;
-		targetAngle = -atan2(dir.y, -dir.x) + PI / 2;
-		if (targetAngle < 0)
-			targetAngle += 2 * PI;
-		else if (targetAngle > 2 * PI)
+		data.targetPos = playerPos;
+		data.targetAngle = -atan2(dir.y, -dir.x) + PI / 2;
+		if (data.targetAngle < 0)
+			data.targetAngle += 2 * PI;
+		else if (data.targetAngle > 2 * PI)
 		{
-			targetAngle -= 2 * PI;
+			data.targetAngle -= 2 * PI;
 		}
 
 		if (playerPos.x < GetPosition().x)
 		{
-			if (turnFrame > 0)
-				--turnFrame;
+			if (data.turnFrame > 0)
+				--data.turnFrame;
 		}
 		else if (playerPos.x > GetPosition().x)
 		{
-			if (turnFrame < 6 * turnAnimFactor)
-				++turnFrame;
+			if (data.turnFrame < 6 * turnAnimFactor)
+				++data.turnFrame;
 		}
 
 		if (eye->IsEyeActivated())
 		{
-			if (aimingFrames == maxAimingFrames)
+			if (data.aimingFrames == maxAimingFrames)
 			{
-				if (turnFrame == 0 || turnFrame == 6 * turnAnimFactor
-					&& abs( targetAngle - currentAngle ) < .3)
+				if (data.turnFrame == 0 || data.turnFrame == 6 * turnAnimFactor
+					&& abs(data.targetAngle - data.currentAngle ) < .3)
 				{
 					action = S_BEAKOPEN;
 					frame = 0;
@@ -219,7 +219,7 @@ void Patroller::ProcessState()
 			}
 			else
 			{
-				aimingFrames++;
+				data.aimingFrames++;
 			}
 		}
 		break;
@@ -237,61 +237,61 @@ void Patroller::ProcessState()
 
 	if (action != S_BEAKHOLDOPEN)
 	{
-		if (currentAngle > targetAngle)
+		if (data.currentAngle > data.targetAngle)
 		{
-			float diff = currentAngle - targetAngle;
-			float revDiff = (2 * PI - currentAngle) + targetAngle;
+			float diff = data.currentAngle - data.targetAngle;
+			float revDiff = (2 * PI - data.currentAngle) + data.targetAngle;
 			if (diff >= revDiff)
 			{
-				currentAngle += beakTurnSpeed;
-				if (currentAngle >= 2 * PI)
+				data.currentAngle += beakTurnSpeed;
+				if (data.currentAngle >= 2 * PI)
 				{
-					currentAngle -= 2 * PI;
+					data.currentAngle -= 2 * PI;
 				}
 			}
 			else
 			{
-				currentAngle -= beakTurnSpeed;
-				if (currentAngle < 0)
-					currentAngle += 2 * PI;
+				data.currentAngle -= beakTurnSpeed;
+				if (data.currentAngle < 0)
+					data.currentAngle += 2 * PI;
 			}
 		}
-		else if (currentAngle < targetAngle)
+		else if (data.currentAngle < data.targetAngle)
 		{
-			float diff = targetAngle - currentAngle;
-			float revDiff = (2 * PI - targetAngle) + currentAngle;
+			float diff = data.targetAngle - data.currentAngle;
+			float revDiff = (2 * PI - data.targetAngle) + data.currentAngle;
 
 			if (diff >= revDiff)
 			{
-				currentAngle -= beakTurnSpeed;
-				if (currentAngle < 0)
-					currentAngle += 2 * PI;
+				data.currentAngle -= beakTurnSpeed;
+				if (data.currentAngle < 0)
+					data.currentAngle += 2 * PI;
 			}
 			else
 			{
-				currentAngle += beakTurnSpeed;
-				if (currentAngle >= 2 * PI)
+				data.currentAngle += beakTurnSpeed;
+				if (data.currentAngle >= 2 * PI)
 				{
-					currentAngle -= 2 * PI;
+					data.currentAngle -= 2 * PI;
 				}
 			}
 		}
 
-		if (abs(targetAngle - currentAngle) < beakTurnSpeed * 2)
+		if (abs(data.targetAngle - data.currentAngle) < beakTurnSpeed * 2)
 		{
-			currentAngle = targetAngle;
+			data.currentAngle = data.targetAngle;
 		}
 	}
 }
 
 void Patroller::HandleHitAndSurvive()
 {
-	fireCounter = 0;
+	data.fireCounter = 0;
 }
 
 void Patroller::HandleNoHealth()
 {
-	cutObject->SetFlipHoriz( sin( currentAngle ) < 0 );
+	cutObject->SetFlipHoriz( sin(data.currentAngle ) < 0 );
 	//cutObject->SetCutRootPos(Vector2f( position ));
 }
 
@@ -325,7 +325,7 @@ void Patroller::UpdateSprite()
 	SetRectCenter(bodyVA + 4, ts->tileWidth * scale, ts->tileHeight * scale, posF);
 	
 	bool turnedLeft;
-	if (turnFrame == 0)
+	if (data.turnFrame == 0)
 		turnedLeft = true;
 	else
 		turnedLeft = false;
@@ -333,16 +333,16 @@ void Patroller::UpdateSprite()
 
 	if (action == S_FLAP)
 	{
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
+		SetRectRotation(bodyVA + 4, data.currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF);
 		SetRectSubRect(bodyVA, ts->GetSubRect(frame / animFactor[S_FLAP]));
-		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + turnFrame / turnAnimFactor));
+		SetRectSubRect(bodyVA + 4, ts->GetSubRect(27 + data.turnFrame / turnAnimFactor));
 	}
 	else if (action == S_BEAKOPEN)
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
+		SetRectRotation(bodyVA + 4, data.currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + frame / animFactor[S_BEAKOPEN]));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(34 + frame / animFactor[S_BEAKOPEN]));
@@ -351,7 +351,7 @@ void Patroller::UpdateSprite()
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
+		SetRectRotation(bodyVA + 4, data.currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(24 + ( (actionLength[S_BEAKCLOSE]-1)
 			- frame / animFactor[S_BEAKOPEN]) ) );
@@ -362,7 +362,7 @@ void Patroller::UpdateSprite()
 	{
 		SetRectRotation(bodyVA, 0, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
-		SetRectRotation(bodyVA + 4, currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
+		SetRectRotation(bodyVA + 4, data.currentAngle, ts->tileWidth * scale, ts->tileHeight * scale,
 			posF, !turnedLeft);
 		SetRectSubRect(bodyVA, ts->GetSubRect(26));
 		SetRectSubRect(bodyVA + 4, ts->GetSubRect(36));
@@ -469,8 +469,52 @@ void Patroller::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void Patroller::UpdateHitboxes()
 {
-	hurtBody.SetBasicPos(GetPosition(), currentAngle);
-	hitBody.SetBasicPos(GetPosition(), currentAngle);
+	hurtBody.SetBasicPos(GetPosition(), data.currentAngle);
+	hitBody.SetBasicPos(GetPosition(), data.currentAngle);
 
 	BasicUpdateHitboxInfo();
+}
+
+int Patroller::GetNumStoredBytes()
+{
+	//return 0;
+	return sizeof(MyData) +eye->GetNumStoredBytes() + pathFollower.GetNumStoredBytes() + launchers[0]->GetNumStoredBytes();
+}
+
+void Patroller::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+	
+	eye->StoreBytes(bytes);
+
+	bytes += eye->GetNumStoredBytes();
+
+	pathFollower.StoreBytes(bytes);
+
+	bytes += pathFollower.GetNumStoredBytes();
+
+	launchers[0]->StoreBytes(bytes);
+
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Patroller::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+	SetBasicEnemyData(data);
+
+	eye->SetFromBytes(bytes);
+
+	bytes += eye->GetNumStoredBytes();
+
+	pathFollower.SetFromBytes(bytes);
+
+	bytes += pathFollower.GetNumStoredBytes();
+
+	launchers[0]->SetFromBytes(bytes);
+
+	bytes += launchers[0]->GetNumStoredBytes();
 }

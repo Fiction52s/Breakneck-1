@@ -33,8 +33,8 @@ PatrollerEye::PatrollerEye(Patroller *p)
 
 void PatrollerEye::Reset()
 {
-	frame = 0;
-	state = S_WAITING;
+	data.frame = 0;
+	data.state = S_WAITING;
 }
 
 void PatrollerEye::Draw(sf::RenderTarget *target, sf::Shader *sh)
@@ -42,44 +42,43 @@ void PatrollerEye::Draw(sf::RenderTarget *target, sf::Shader *sh)
 	sf::RenderStates rs;
 	rs.shader = sh;
 	rs.texture = ts_eye->texture;
-	//rs.te
 	target->draw(eye, 8, sf::Quads, rs);
 }
 
 bool PatrollerEye::IsEyeActivated()
 {
-	return state == S_TARGET || state == S_ACTIVE;
+	return data.state == S_TARGET || data.state == S_ACTIVE;
 }
 
 void PatrollerEye::ProcessState( sf::Vector2f &targetPos )
 {
-	sf::Vector2f dir = normalize(targetPos - pos);
-	float dist = length(targetPos - pos);
-	angle = atan2(dir.y, dir.x);
-	float angleDeg = angle / PI * 180.f;
+	sf::Vector2f dir = normalize(targetPos - data.pos);
+	float dist = length(targetPos - data.pos);
+	data.angle = atan2(dir.y, dir.x);
+	float angleDeg = data.angle / PI * 180.f;
 
-	switch (state)
+	switch (data.state)
 	{
 	case S_WAITING:
 	{
 		if (dist < activateRange )
 		{
 			if (actionLength[S_STARTUP] > 0)
-				state = S_STARTUP;
+				data.state = S_STARTUP;
 			else if (actionLength[S_TARGET] > 0)
-				state = S_TARGET;
+				data.state = S_TARGET;
 			else
-				state = S_ACTIVE;
-			frame = 0;
+				data.state = S_ACTIVE;
+			data.frame = 0;
 		}
 		break;
 	}
 	case S_STARTUP:
 	{
-		if (frame == actionLength[S_STARTUP])
+		if (data.frame == actionLength[S_STARTUP])
 		{
-			state = S_WAITTOTARGET;
-			frame = 0;
+			data.state = S_WAITTOTARGET;
+			data.frame = 0;
 		}
 		break;
 	}
@@ -88,27 +87,27 @@ void PatrollerEye::ProcessState( sf::Vector2f &targetPos )
 		if (dist < trackRange)
 		{
 			if (actionLength[S_TARGET] > 0)
-				state = S_TARGET;
+				data.state = S_TARGET;
 			else
-				state = S_ACTIVE;
-			frame = 0;
+				data.state = S_ACTIVE;
+			data.frame = 0;
 		}
 		else if (dist < deactivateRange)
 		{
 		}
 		else
 		{
-			state = S_SHUTDOWN;
-			frame = 0;
+			data.state = S_SHUTDOWN;
+			data.frame = 0;
 		}
 		break;
 	}
 	case S_TARGET:
 	{
-		if (frame == actionLength[S_TARGET])
+		if (data.frame == actionLength[S_TARGET])
 		{
-			state = S_ACTIVE;
-			frame = 0;
+			data.state = S_ACTIVE;
+			data.frame = 0;
 		}
 		break;
 	}
@@ -116,32 +115,32 @@ void PatrollerEye::ProcessState( sf::Vector2f &targetPos )
 	{
 		if (dist > deactivateTrackRange)
 		{
-			state = S_UNTARGET;
-			frame = 0;
+			data.state = S_UNTARGET;
+			data.frame = 0;
 		}
 		break;
 	}
 	case S_UNTARGET:
 	{
-		if (frame == actionLength[S_UNTARGET])
+		if (data.frame == actionLength[S_UNTARGET])
 		{
-			state = S_WAITTOTARGET;
-			frame = 0;
+			data.state = S_WAITTOTARGET;
+			data.frame = 0;
 		}
 		break;
 	}
 	case S_SHUTDOWN:
 	{
-		if (frame == actionLength[S_SHUTDOWN])
+		if (data.frame == actionLength[S_SHUTDOWN])
 		{
-			state = S_WAITING;
-			frame = 0;
+			data.state = S_WAITING;
+			data.frame = 0;
 		}
 		break;
 	}
 	}
 
-	switch (state)
+	switch (data.state)
 	{
 	case S_WAITING:
 	{
@@ -175,13 +174,13 @@ void PatrollerEye::ProcessState( sf::Vector2f &targetPos )
 	}
 	}
 
-	if (state == S_ACTIVE)
+	if (data.state == S_ACTIVE)
 	{
 		
 	}
 	else
 	{
-		angle = 0;
+		data.angle = 0;
 	}
 
 	//std::cout << "state: " << state << " frame: " << frame << std::endl;
@@ -191,7 +190,7 @@ void PatrollerEye::UpdateSprite()
 {
 	//std::cout << "state: " << state << "frame: " << frame << std::endl;
 	int tile = 0;
-	switch (state)
+	switch (data.state)
 	{
 	case S_WAITING:
 	{
@@ -200,7 +199,7 @@ void PatrollerEye::UpdateSprite()
 	}
 	case S_STARTUP:
 	{
-		tile = frame / animFactor[S_STARTUP] + 1;
+		tile = data.frame / animFactor[S_STARTUP] + 1;
 		break;
 	}
 	case S_WAITTOTARGET:
@@ -225,20 +224,37 @@ void PatrollerEye::UpdateSprite()
 	}
 	case S_SHUTDOWN:
 	{
-		tile = (1 - frame ) / animFactor[S_STARTUP] + 1;
+		tile = (1 - data.frame ) / animFactor[S_STARTUP] + 1;
 		break;
 	}
 	}
 	SetRectSubRect(eye, ts_eye->GetSubRect(tile));
 
-	++frame;
+	++data.frame;
 }
 
 void PatrollerEye::SetPosition(sf::Vector2f &p_pos)
 {
-	pos = p_pos;
-	SetRectRotation(eye, angle, ts_eye->tileWidth * parent->scale, ts_eye->tileHeight * parent->scale, pos);
+	data.pos = p_pos;
+	SetRectRotation(eye, data.angle, ts_eye->tileWidth * parent->scale, ts_eye->tileHeight * parent->scale, data.pos);
 	SetRectCenter(highlight, ts_eye->tileWidth * parent->scale, ts_eye->tileHeight * parent->scale, p_pos);
 	//SetRectRotation(highlight, 0, ts_eye->tileWidth, ts_eye->tileHeight, pos);
 	//SetRectCenter(eye, ts_eye->tileWidth, ts_eye->tileHeight, p_pos);
+}
+
+int PatrollerEye::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void PatrollerEye::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void PatrollerEye::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
 }

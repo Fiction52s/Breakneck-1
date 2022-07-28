@@ -115,7 +115,7 @@ void Crawler::ResetEnemy()
 {
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
-	framesUntilBurrow = maxFramesUntilBurrow;
+	data.framesUntilBurrow = maxFramesUntilBurrow;
 	
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
@@ -248,7 +248,7 @@ void Crawler::ProcessState()
 
 	if (action != BURROW && action != UNDERGROUND)
 	{
-		if (framesUntilBurrow == 0)
+		if (data.framesUntilBurrow == 0)
 		{
 			action = BURROW;
 			frame = 0;
@@ -300,7 +300,7 @@ void Crawler::ProcessState()
 		case UNDERGROUND:
 			DefaultHurtboxesOn();
 			action = UNBURROW;
-			framesUntilBurrow = maxFramesUntilBurrow;
+			data.framesUntilBurrow = maxFramesUntilBurrow;
 			frame = 0;
 			DecideDirection();
 			break;
@@ -402,8 +402,8 @@ void Crawler::ProcessState()
 
 void Crawler::FrameIncrement()
 {
-	if (framesUntilBurrow > 0)
-		--framesUntilBurrow;
+	if (data.framesUntilBurrow > 0)
+		--data.framesUntilBurrow;
 }
 
 void Crawler::EnemyDraw(sf::RenderTarget *target )
@@ -686,9 +686,6 @@ void Crawler::StoreBytes(unsigned char *bytes)
 	memset(&d, 0, sizeof(MyData));
 	StoreBasicEnemyData(d);
 
-	d.framesUntilBurrow = framesUntilBurrow;
-	d.groundSpeed = surfaceMover->groundSpeed;
-
 	memcpy(bytes, &d, sizeof(MyData));
 
 	bytes += sizeof(MyData);
@@ -700,9 +697,6 @@ void Crawler::SetFromBytes(unsigned char *bytes)
 	memcpy(&d, bytes, sizeof(MyData));
 
 	SetBasicEnemyData(d);
-
-	framesUntilBurrow = d.framesUntilBurrow;
-	surfaceMover->SetSpeed(d.groundSpeed);
 
 	bytes += sizeof(MyData);
 }

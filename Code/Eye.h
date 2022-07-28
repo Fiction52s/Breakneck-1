@@ -40,30 +40,40 @@ struct PatrollerEye
 		S_SHUTDOWN,
 		S_Count
 	};
+
+	struct MyData
+	{
+		int frame;
+		int state;
+		sf::Vector2f pos;
+		float angle;
+	};
+
+	MyData data;
+
+	int actionLength[S_Count];
+	int animFactor[S_Count];
+	float activateRange;
+	float trackRange;
+	float deactivateTrackRange;
+	float deactivateRange;
+	Patroller *parent;
 	sf::Vertex eye[8];
 	sf::Vertex *highlight;
 	Tileset *ts_eye;
-	void Reset();
+
 	PatrollerEye::PatrollerEye(Patroller *p);
-	State state;
+	void Reset();
 	void UpdateSprite();
 	bool IsEyeActivated();
 	void Draw(sf::RenderTarget *target,
 		sf::Shader *sh = NULL );
 	void ProcessState(sf::Vector2f &targetPos);
 	void SetPosition(sf::Vector2f &pos);
-	sf::Vector2f pos;
-	int actionLength[S_Count];
-	int animFactor[S_Count];
-	int frame;
-	sf::Transform rotateEye;
-	float angle;
-	float activateRange;
-	float trackRange;
-	float deactivateTrackRange;
-	float deactivateRange;
 
-	Patroller *parent;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

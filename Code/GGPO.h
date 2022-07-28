@@ -364,6 +364,8 @@ struct PState
 
 	Actor::Hitter recentHitters[Actor::MAX_HITTERS];
 	//HitboxInfo currVSHitboxInfo;
+
+	void Print();
 };
 
 struct Sequence;
@@ -378,6 +380,7 @@ struct SaveGameState
 	Actor *currSuperPlayer;
 	int gameState; //game mode such as RUN or FROZEN
 	Sequence  *activeSequence;
+	void Print();
 };
 
 int fletcher32_checksum(short *data, 

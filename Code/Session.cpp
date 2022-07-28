@@ -1369,7 +1369,7 @@ void Session::AddEnemy(Enemy *e)
 {
 	//do not spawn shards that are already captured in the file.
 	
-	//cout << "spawning enemy! of type: " << e->type << endl;
+	cout << "spawning enemy! of type: " << e->type << endl;
 	if (e->spawned)
 	{
 		assert(e->spawned == false);
@@ -7478,6 +7478,8 @@ bool Session::SaveState(unsigned char **buffer,
 
 	//cout << "save state:" << totalGameFrames << endl;
 	
+
+	//currSaveState->Print();
 	//ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
 	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
 	int pSize = sizeof(PState);

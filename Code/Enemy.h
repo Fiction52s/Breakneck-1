@@ -72,6 +72,7 @@ struct StoredEnemyData
 	bool facingRight;
 	int action;
 	int frame;
+	bool active;
 
 	Enemy *prev;
 	Enemy *next;
@@ -372,9 +373,15 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 struct BasicPathFollower
 {
+
+	struct MyData
+	{
+		bool forward;
+		int targetNode;
+	};
+
+	MyData data;
 	bool loop;
-	int targetNode;
-	bool forward;
 	std::vector<sf::Vector2i> path;
 	int nodeWaitFrames; //need to implement this
 
@@ -382,6 +389,10 @@ struct BasicPathFollower
 	void Reset();
 	void AdvanceTargetNode();
 	void Move(double amount, V2d &pos );
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

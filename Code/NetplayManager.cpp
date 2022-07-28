@@ -1114,7 +1114,7 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Abort();
 
-		matchParams.mapPath = "Resources/Maps/W2/afighting3.brknk";
+		matchParams.mapPath = "Resources/Maps/W2/afighting5.brknk";
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
 

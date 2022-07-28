@@ -18,8 +18,31 @@ struct Patroller : Enemy, LauncherEnemy
 
 	PatrollerEye *eye;
 
+
+	//Rollback
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+		int aimingFrames;
+		int turnFrame;
+		float targetAngle;
+		V2d targetPos;
+		float currentAngle;
+	};
+	MyData data;
+
+	SoundInfo *shootSound;
+
+	int maxAimingFrames;
+	int turnAnimFactor;
+	double speed;
+	float beakTurnSpeed;
+
+	BasicPathFollower pathFollower;
+	sf::Vertex bodyVA[4 * 2];
+	Tileset *ts;
+
 	void UpdateOnPlacement(ActorParams *ap);
-	//static Enemy *Create(ActorParams *ap);
 	Patroller(ActorParams *ap);//bool hasMonitor,
 		//sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop, int speed);
 	~Patroller();
@@ -43,28 +66,9 @@ struct Patroller : Enemy, LauncherEnemy
 	void UpdateHitboxes();
 	void HandleNoHealth();
 
-	int turnFrame;
-	int turnAnimFactor;
-
-	int aimingFrames;
-	int maxAimingFrames;
-
-
-	float targetAngle;
-	V2d targetPos;
-	float currentAngle;
-	float beakTurnSpeed;
-	SoundInfo *shootSound;
-
-	int fireCounter;
-	BasicPathFollower pathFollower;
-	double acceleration;
-	double speed;
-
-	sf::Vertex bodyVA[4 * 2];
-	//sf::Vertex bodyAuraVA[4 * 2];
-	Tileset *ts;
-	bool facingRight;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
