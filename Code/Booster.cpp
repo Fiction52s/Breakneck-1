@@ -179,3 +179,21 @@ void Booster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int Booster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Booster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Booster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

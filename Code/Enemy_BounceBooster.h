@@ -13,6 +13,12 @@ struct BounceBooster : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts;
 	Tileset *ts_refresh;
 	int strength;
@@ -29,6 +35,10 @@ struct BounceBooster : Enemy
 
 	bool Boost();
 	bool IsBoostable();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

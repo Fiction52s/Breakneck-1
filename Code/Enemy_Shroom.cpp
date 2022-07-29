@@ -79,7 +79,7 @@ void Shroom::ResetEnemy()
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
-	jellySpawnable = true;
+	data.jellySpawnable = true;
 	slowMultiple = 1;
 
 	DefaultHitboxesOn();
@@ -129,7 +129,7 @@ void Shroom::ProcessState()
 void Shroom::DirectKill()
 {
 	Enemy::DirectKill();
-	jellySpawnable = false;
+	data.jellySpawnable = false;
 }
 
 void Shroom::EnemyDraw(sf::RenderTarget *target)
@@ -156,7 +156,7 @@ void Shroom::UpdateSprite()
 
 void Shroom::HandleNoHealth()
 {
-	if( jellySpawnable )
+	if(data.jellySpawnable )
 		sess->AddEnemy(jelly);
 }
 
@@ -178,6 +178,31 @@ void Shroom::SetZoneSpritePosition()
 {
 	jelly->SetZoneSpritePosition();
 	Enemy::SetZoneSpritePosition();
+}
+
+int Shroom::GetNumStoredBytes()
+{
+	return sizeof(MyData) + jelly->GetNumStoredBytes();
+}
+
+void Shroom::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	jelly->StoreBytes(bytes);
+	bytes += jelly->GetNumStoredBytes();
+}
+
+void Shroom::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	jelly->SetFromBytes(bytes);
+	bytes += jelly->GetNumStoredBytes();
 }
 
 void ShroomJelly::SetLevel(int lev)
@@ -222,7 +247,6 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 
 	floatSound = GetSound("Enemies/shroom_float");
 
-	angle = 0;
 
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setScale(scale, scale);
@@ -298,7 +322,6 @@ ShroomJelly::ShroomJelly(Shroom *shr )
 	animFactor[SHOT] = 1;
 	animFactor[EXPLODING] = 1;
 
-	currentCycle = 0;
 	cycleLimit = 3;
 
 	UpdateSprite();
@@ -366,12 +389,12 @@ ShroomJelly::~ShroomJelly()
 void ShroomJelly::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (currHits >= hitLimit)
+	++data.currHits;
+	if (data.currHits >= hitLimit)
 	{
 		action = EXPLODING;
 		//comboObj->enemyHitboxFrame = 1;
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		frame = 0;
 	}
 }
@@ -382,20 +405,20 @@ void ShroomJelly::ResetEnemy()
 	//comboObj->Reset();
 	//comboObj->enemyHitboxFrame = 0;
 	action = WAIT;
-	currentCycle = 0;
+	data.currentCycle = 0;
 	frame = 0;
 	dead = false;
 	receivedHit = NULL;
 	slowCounter = 1;
 	slowMultiple = 1;
-	velocity = V2d(0, 0);
-	shootFrames = 0;
-	currHits = 0;
+	data.velocity = V2d(0, 0);
+	data.shootFrames = 0;
+	data.currHits = 0;
 }
 
 void ShroomJelly::UpdateEnemyPhysics()
 {
-	V2d movement = velocity / numPhysSteps / (double)slowMultiple;
+	V2d movement = data.velocity / numPhysSteps / (double)slowMultiple;
 	currPosInfo.position += movement;
 }
 
@@ -423,11 +446,11 @@ void ShroomJelly::ProcessState()
 		case DROOPING:
 			action = RISING;
 			sess->ActivateSoundAtPos(GetPosition(), floatSound);
-			currentCycle++;
-			if (currentCycle == cycleLimit)
+			data.currentCycle++;
+			if (data.currentCycle == cycleLimit)
 			{
 				action = DISSIPATING;
-				velocity = V2d(0, 0);
+				data.velocity = V2d(0, 0);
 			}
 			break;
 		case EXPLODING:
@@ -439,7 +462,7 @@ void ShroomJelly::ProcessState()
 		case SHOT:
 			action = EXPLODING;
 			//comboObj->enemyHitboxFrame = 1;
-			velocity = V2d(0, 0);
+			data.velocity = V2d(0, 0);
 			break;
 		}
 	}
@@ -463,15 +486,15 @@ void ShroomJelly::ProcessState()
 		{
 			if (abs(playerPos.x - position.x) < 10)
 			{
-				velocity.x = 0;
+				data.velocity.x = 0;
 			}
 			else if (playerPos.x > position.x)
 			{
-				velocity.x = 5;
+				data.velocity.x = 5;
 			}
 			else
 			{
-				velocity.x = -5;
+				data.velocity.x = -5;
 			}
 		}
 
@@ -480,13 +503,13 @@ void ShroomJelly::ProcessState()
 			//double f = (double)frame / (double)animFactor[RISING]
 			//	/ (double)actionLength[RISING];
 			//risingBez.GetValue( f );
-			velocity.y = -5;
+			data.velocity.y = -5;
 
 
 		}
 		else if (action == DROOPING)
 		{
-			velocity.y = 5;
+			data.velocity.y = 5;
 		}
 	}
 }
@@ -540,5 +563,24 @@ void ShroomJelly::UpdateSprite()
 			keySprite.getLocalBounds().height / 2);
 		keySprite.setPosition(GetPositionF());
 	}
+}
+
+int ShroomJelly::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void ShroomJelly::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void ShroomJelly::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }
 

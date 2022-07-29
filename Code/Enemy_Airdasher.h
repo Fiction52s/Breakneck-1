@@ -15,6 +15,29 @@ struct Airdasher : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int hitFrame;
+		int currHits;
+		V2d currOrig;
+		int physStepIndex;
+		V2d dashDir;
+		int chargeFrames;
+		V2d playerDir;
+	};
+	MyData data;
+
+	CubicBezier dashBez;
+	CubicBezier returnBez;
+	int maxCharge;
+	double speed;
+	int hitLimit;
+	int dashFrames;
+	int returnFrames;
+	double dashRadius;
+
+	Tileset *ts;
+
 	Airdasher(ActorParams *ap);
 	~Airdasher();
 	void ProcessState();
@@ -29,30 +52,9 @@ struct Airdasher : Enemy
 	void SetFacingSide( V2d pDir );
 	void IHitPlayer(int index = 0);
 	void UpdateHitboxes();
-
-	int hitLimit;
-	int currHits;
-
-	V2d playerDir;
-	V2d velocity;
-	V2d dashDir;
-
-	int hitFrame;
-	int chargeFrames;
-	int maxCharge;
-
-	CubicBezier dashBez;
-	CubicBezier returnBez;
-
-	double dashRadius;
-	int dashFrames;
-	int returnFrames;
-
-	int physStepIndex;
-	V2d currOrig;
-	double speed;
-
-	Tileset *ts;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

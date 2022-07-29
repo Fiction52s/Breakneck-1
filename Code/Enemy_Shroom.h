@@ -14,9 +14,23 @@ struct Shroom : Enemy
 		A_Count
 	};
 
+
+	struct MyData : StoredEnemyData
+	{
+		bool jellySpawnable;
+	};
+	MyData data;
+
+	SoundInfo *hitSound;
+
+	Tileset *ts;
+
+	
+
+	ShroomJelly *jelly;
+
 	Shroom(ActorParams * ap);
 	~Shroom();
-	
 	
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -31,13 +45,9 @@ struct Shroom : Enemy
 		sf::FloatRect &rect);
 	void SetZoneSpritePosition();
 
-	SoundInfo *hitSound;
-
-	Tileset *ts;
-
-	bool jellySpawnable;
-
-	ShroomJelly *jelly;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct ShroomJelly : Enemy
@@ -54,11 +64,29 @@ struct ShroomJelly : Enemy
 		A_Count
 	};
 
-	void SetLevel(int lev);
+	struct MyData : StoredEnemyData
+	{
+		int currentCycle;
+		int shootFrames;
+		int currHits;
+		V2d velocity;
+	};
+	MyData data;
+
+	SoundInfo *floatSound;
+	int cycleLimit;
+	int shootLimit;
+	int hitLimit;
+	Tileset *ts;
+	CubicBezier risingBez;
+	CubicBezier fallingBez;
+
+	Shroom *shroom;
+	
 	ShroomJelly(Shroom *shr);
 	~ShroomJelly();
+	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
-	
 	void UpdateSprite();
 	void ResetEnemy();
 	void ProcessState();
@@ -66,26 +94,9 @@ struct ShroomJelly : Enemy
 	//void ProcessHit();
 	void ComboHit();
 
-	Tileset *ts;
-	
-	SoundInfo *floatSound;
-
-	int cycleLimit;
-	int currentCycle;
-
-	int shootFrames;
-	int shootLimit;
-	int hitLimit;
-	int currHits;
-
-	V2d velocity;
-
-	CubicBezier risingBez;
-	CubicBezier fallingBez;
-
-	double angle;
-
-	Shroom *shroom;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

@@ -336,11 +336,6 @@ void Comboer::FrameIncrement()
 		else
 		{
 			++data.shootFrames;
-
-			if (data.shootFrames == shootLimit)
-			{
-				int x = 5;
-			}
 		}
 	}
 }

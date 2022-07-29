@@ -96,9 +96,9 @@ void Airdasher::ResetEnemy()
 {
 	SetCurrPosInfo(startPosInfo);
 
-	hitFrame = -1;
-	currHits = 0;
-	currOrig = startPosInfo.GetPosition();
+	data.hitFrame = -1;
+	data.currHits = 0;
+	data.currOrig = startPosInfo.GetPosition();
 	action = S_FLOAT;
 	frame = 0;
 	sprite.setRotation(0);
@@ -175,26 +175,26 @@ void Airdasher::ProcessState()
 		{
 			action = S_CHARGE;
 			frame = 0;
-			chargeFrames = 0;
-			playerDir = normalize(playerPos - GetPosition());
+			data.chargeFrames = 0;
+			data.playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
 		}
 		else if (action == S_CHARGE)
 		{
-			playerDir = normalize(playerPos - GetPosition());
+			data.playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
-			if (chargeFrames == maxCharge)
+			if (data.chargeFrames == maxCharge)
 			{
-				dashDir = playerDir;
+				data.dashDir = data.playerDir;
 				action = S_DASH;
 				frame = 0;
-				physStepIndex = 0;
+				data.physStepIndex = 0;
 				
 				//cout << "angle : " << angle << endl;
 			}
 			else
 			{
-				chargeFrames++;
+				data.chargeFrames++;
 			}
 		}
 	}
@@ -241,23 +241,23 @@ void Airdasher::SetFacingSide( V2d pDir )
 
 double Airdasher::SetFacingPlayerAngle()
 {
-	double angle = -atan2(playerDir.y, -playerDir.x) / PI * 180.0;
+	double angle = -atan2(data.playerDir.y, -data.playerDir.x) / PI * 180.0;
 	
 
-	if (playerDir.x < 0)
+	if (data.playerDir.x < 0)
 	{
 		facingRight = false;
 	}
-	else if (playerDir.x > 0)
+	else if (data.playerDir.x > 0)
 	{
 		facingRight = true;
 		angle += 180;
 	}
-	else if (playerDir.y == 1)
+	else if (data.playerDir.y == 1)
 	{
 		facingRight = true;
 	}
-	else if (playerDir.y == -1)
+	else if (data.playerDir.y == -1)
 	{
 		facingRight = false;
 	}
@@ -274,42 +274,42 @@ double Airdasher::SetFacingPlayerAngle()
 void Airdasher::UpdateEnemyPhysics()
 {
 	V2d playerPos = sess->GetPlayerPos();
-	V2d dest = currOrig + playerDir * dashRadius;
+	V2d dest = data.currOrig + data.playerDir * dashRadius;
 	switch (action)
 	{
 	case S_DASH:
 	{
-		double a = (double)physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
+		double a = (double)data.physStepIndex / (dashFrames * NUM_MAX_STEPS * 5);
 		if (a > 1.0)
 		{
 			action = S_OUT;
 			frame = 0;
-			physStepIndex = 0;
+			data.physStepIndex = 0;
 			break;
 		}
 		double f = dashBez.GetValue(a);
 		double rf = 1.0 - f;
 
-		currPosInfo.position = currOrig * rf + dest * f;
+		currPosInfo.position = data.currOrig * rf + dest * f;
 
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
 
-		physStepIndex += steps;
+		data.physStepIndex += steps;
 		break;
 	}
 	case S_RETURN:
 	{
-		V2d d = currOrig + playerDir * ( dashRadius / 2.0 );
-		double a = (double)physStepIndex / (returnFrames * NUM_MAX_STEPS * 5);
+		V2d d = data.currOrig + data.playerDir * ( dashRadius / 2.0 );
+		double a = (double)data.physStepIndex / (returnFrames * NUM_MAX_STEPS * 5);
 		if (a > 1.0)
 		{
 			action = S_CHARGE;
-			playerDir = normalize(playerPos - GetPosition());
+			data.playerDir = normalize(playerPos - GetPosition());
 			SetFacingPlayerAngle();
-			chargeFrames = maxCharge - 5;
+			data.chargeFrames = maxCharge - 5;
 			frame = 0;
-			currOrig = GetPosition();
+			data.currOrig = GetPosition();
 			break;
 		}
 		double f = returnBez.GetValue(a);
@@ -320,7 +320,7 @@ void Airdasher::UpdateEnemyPhysics()
 
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
 
-		physStepIndex += steps;
+		data.physStepIndex += steps;
 		break;
 	}
 		
@@ -374,4 +374,23 @@ void Airdasher::UpdateSprite()
 void Airdasher::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int Airdasher::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Airdasher::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Airdasher::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

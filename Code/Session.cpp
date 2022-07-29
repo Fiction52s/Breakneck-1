@@ -5650,10 +5650,6 @@ void Session::UpdateEnemiesPostPhysics()
 		}
 
 		current = temp;
-		if (current != NULL)
-		{
-			int xxx = 5;
-		}
 	}
 
 	/*for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)

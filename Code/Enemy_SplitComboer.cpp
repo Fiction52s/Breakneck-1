@@ -87,12 +87,12 @@ void SplitPiece::ResetEnemy()
 	sprite.setTextureRect(sc->ts->GetSubRect(0));
 	sprite.setRotation(0);
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 	//SetHitboxes(&hitBody, 0);
 	action = S_FLY;
 	frame = 0;
 	
-	currHits = 0;
+	data.currHits = 0;
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -123,7 +123,7 @@ void SplitPiece::UpdateEnemyPhysics()
 {
 	if( action == S_FLY )
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -133,8 +133,8 @@ void SplitPiece::UpdateEnemyPhysics()
 void SplitPiece::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (currHits >= hitLimit)
+	++data.currHits;
+	if (data.currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
@@ -169,8 +169,33 @@ void SplitPiece::EnemyDraw(sf::RenderTarget *target)
 void SplitPiece::Shoot(V2d dir)
 {
 	comboObj->enemyHitboxInfo->hDir = dir;
-	velocity = dir * sc->shootSpeed;
+	data.velocity = dir * sc->shootSpeed;
 	sess->PlayerAddActiveComboObj(comboObj);
+}
+
+int SplitPiece::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void SplitPiece::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void SplitPiece::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }
 
 void SplitComboer::SetLevel(int lev)
@@ -268,7 +293,6 @@ void SplitComboer::ResetEnemy()
 	pieces[1]->Reset();
 	sprite.setTextureRect(ts->GetSubRect(1));
 	sprite.setRotation(0);
-	velocity = V2d(0, 0);
 	SetHitboxes(&hitBody, 0);
 	SetHurtboxes(&hurtBody, 0);
 	pathFollower.Reset();
@@ -395,4 +419,41 @@ void SplitComboer::SetZoneSpritePosition()
 	pieces[0]->SetZoneSpritePosition();
 	pieces[1]->SetZoneSpritePosition();
 	Enemy::SetZoneSpritePosition();
+}
+
+int SplitComboer::GetNumStoredBytes()
+{
+	return sizeof(MyData) + pieces[0]->GetNumStoredBytes() * NUM_PIECES + pathFollower.GetNumStoredBytes();
+}
+
+void SplitComboer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < NUM_PIECES; ++i)
+	{
+		pieces[i]->StoreBytes(bytes);
+		bytes += pieces[i]->GetNumStoredBytes();
+	}
+
+	pathFollower.StoreBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
+}
+
+void SplitComboer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < NUM_PIECES; ++i)
+	{
+		pieces[i]->SetFromBytes(bytes);
+		bytes += pieces[i]->GetNumStoredBytes();
+	}
+
+	pathFollower.SetFromBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
 }

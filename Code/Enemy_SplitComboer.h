@@ -15,27 +15,31 @@ struct SplitPiece : Enemy
 		S_Count
 	};
 
-	void SetLevel(int lev);
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+		int currHits;
+	};
+	MyData data;
+
+	SplitComboer *sc;
+	int hitLimit;
+
 	SplitPiece(SplitComboer *splitComb);
 	~SplitPiece();
+	void SetLevel(int lev);
 	bool CountsForEnemyGate() { return false; }
-
 	void ComboHit();
-
 	void ProcessState();
 	void UpdateEnemyPhysics();
-
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
 	void Shoot(V2d dir);
 
-	SplitComboer *sc;
-
-	V2d velocity;
-
-	int currHits;
-	int hitLimit;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 
@@ -48,37 +52,40 @@ struct SplitComboer : Enemy
 		S_Count
 	};
 
-	void UpdateOnPlacement(ActorParams *ap);
-	void UpdatePath();
-	void SetLevel(int lev);
+	struct MyData : StoredEnemyData
+	{
 
-	SplitComboer(ActorParams *ap);
-	//SplitComboer(sf::Vector2i pos, std::list<sf::Vector2i> &path, bool loop,
-	//	int p_level);
-	~SplitComboer();
+	};
+	MyData data;
 
-	SplitPiece *pieces[2];
+	const static int NUM_PIECES = 2;
 
-	void CheckedMiniDraw(sf::RenderTarget *target,
-		sf::FloatRect &rect);
-	void SetZoneSpritePosition();
-
-	void ProcessState();
-	void ProcessHit();
-	void UpdateEnemyPhysics();
-	
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-
-	V2d velocity;
+	SplitPiece *pieces[NUM_PIECES];
 
 	BasicPathFollower pathFollower;
 	double acceleration;
 	double speed;
 	Tileset *ts;
-
 	double shootSpeed;
+
+	SplitComboer(ActorParams *ap);
+	~SplitComboer();
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
+	void CheckedMiniDraw(sf::RenderTarget *target,
+		sf::FloatRect &rect);
+	void SetZoneSpritePosition();
+	void ProcessState();
+	void ProcessHit();
+	void UpdateEnemyPhysics();
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
