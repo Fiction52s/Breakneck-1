@@ -152,7 +152,6 @@ WireJuggler::WireJuggler( ActorParams *ap )
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
-	comboObj->enemyHitboxFrame = 0;
 
 	ResetEnemy();
 }
@@ -200,7 +199,6 @@ void WireJuggler::ResetEnemy()
 
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 
 

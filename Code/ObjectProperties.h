@@ -175,24 +175,29 @@ private:
 
 struct ComboObject
 {
-	ComboObject(Enemy *en)
-		:enemyHitboxFrame(-1),
-		nextComboObj(NULL),
-		enemyHitboxInfo(NULL),
-		enemy(en), enemyHitBody( CollisionBox::Hit )
+	CollisionBody enemyHitBody;
+	
+	struct MyData
 	{
-	}
+		bool active;
+		int enemyHitboxFrame;
+		ComboObject *nextComboObj;
+	};
+
+	MyData data;
+	HitboxInfo *enemyHitboxInfo;
+	Enemy *enemy;
+
+	ComboObject::ComboObject(Enemy *en);
 	~ComboObject();
 	void Reset();
 	V2d GetComboPos();
-	CollisionBody enemyHitBody;
-	HitboxInfo *enemyHitboxInfo;
-	int enemyHitboxFrame;
-	ComboObject *nextComboObj;
 	void ComboHit();
 	void Draw(sf::RenderTarget *target);
-	Enemy *enemy;
-	bool active;
+	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

@@ -83,6 +83,13 @@ struct StoredEnemyData
 
 	SurfaceMover surfaceMoverData;
 	GroundMover groundMoverData;
+
+	int currHitboxFrame;
+	int currHurtboxFrame;
+
+	CollisionBody *currHitboxes;
+	CollisionBody *currHurtboxes;
+
 };
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 
@@ -117,9 +124,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	bool pauseFramesFromAttacking;
 	int frame;
 	bool dead;
-
 	bool active;
-	CollisionBody *currHurtboxes;
 	SummonGroup *summonGroup;
 	int currHitboxFrame;
 	int currHurtboxFrame;
@@ -179,6 +184,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	int maxHealth;
 	std::string name;
 	int playerIndex; //-1 for all players
+	CollisionBody *currHitboxes;
+	CollisionBody *currHurtboxes;
 	
 
 	Enemy(EnemyType t, ActorParams *ap);
@@ -267,7 +274,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	virtual bool CanComboHit(Enemy *e);
 	virtual void ComboKill( Enemy *e );
 	virtual void SetZone(Zone *p_zone) { zone = p_zone; }
-	CollisionBody *currHitboxes;
+	
 	static void SyncSpriteInfo(sf::Sprite &dest, sf::Sprite &source);
 	void SetHitboxes(CollisionBody *cb, int frame = 0);
 	void ClearHitboxes() { 

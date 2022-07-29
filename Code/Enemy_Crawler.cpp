@@ -682,21 +682,14 @@ int Crawler::GetNumStoredBytes()
 
 void Crawler::StoreBytes(unsigned char *bytes)
 {
-	MyData d;
-	memset(&d, 0, sizeof(MyData));
-	StoreBasicEnemyData(d);
-
-	memcpy(bytes, &d, sizeof(MyData));
-
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
 	bytes += sizeof(MyData);
 }
 
 void Crawler::SetFromBytes(unsigned char *bytes)
 {
-	MyData d;
-	memcpy(&d, bytes, sizeof(MyData));
-
-	SetBasicEnemyData(d);
-
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
 	bytes += sizeof(MyData);
 }

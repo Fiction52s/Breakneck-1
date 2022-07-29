@@ -363,6 +363,8 @@ struct PState
 	bool shieldPushbackRight;
 
 	Actor::Hitter recentHitters[Actor::MAX_HITTERS];
+
+	ComboObject *activeComboObjList;
 	//HitboxInfo currVSHitboxInfo;
 
 	void Print();

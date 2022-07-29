@@ -386,6 +386,8 @@ void Actor::PopulateState(PState *ps)
 	{
 		ps->recentHitters[i] = recentHitters[i];
 	}
+
+	ps->activeComboObjList = activeComboObjList;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -624,6 +626,8 @@ void Actor::PopulateFromState(PState *ps)
 	{
 		recentHitters[i] = ps->recentHitters[i];
 	}
+
+	activeComboObjList = ps->activeComboObjList;
 }
 
 
@@ -4290,11 +4294,12 @@ void Actor::CreateAttackLightning()
 
 void Actor::AddActiveComboObj(ComboObject *c)
 {
-	if (c->active)
+	cout << "try adding comboer" << endl;
+	if (c->data.active)
 		return;
 
-	//cout << "adding comboer: " << 
-
+	
+	cout << "adding comboer" << endl;
 
 	//int numComboers = 0;
 
@@ -4313,28 +4318,30 @@ void Actor::AddActiveComboObj(ComboObject *c)
 
 	//cout << "adding comboer. size after: " << numComboers + 1 << endl;
 
-	c->active = true;
+	c->data.active = true;
 	if (activeComboObjList == NULL)
 	{
 		activeComboObjList = c;
 	}
 	else
 	{
-		c->nextComboObj = activeComboObjList;
+		c->data.nextComboObj = activeComboObjList;
 		activeComboObjList = c;
 	}
 }
 
 void Actor::RemoveActiveComboObj(ComboObject *c)
 {
-	if (!c->active)
+	cout << "try removing comboer" << endl;
+
+	if (!c->data.active)
 		return;
 
 	if (activeComboObjList == NULL)
 		return;
 	//assert(activeComboObjList != NULL);
 
-
+	cout << "removing comboer" << endl;
 
 	//int numComboers = 0;
 
@@ -4348,10 +4355,10 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 
 
 
-	c->active = false;
+	c->data.active = false;
 	if (c == activeComboObjList)
 	{
-		activeComboObjList = activeComboObjList->nextComboObj;
+		activeComboObjList = activeComboObjList->data.nextComboObj;
 	}
 
 	ComboObject *curr = activeComboObjList;
@@ -4360,15 +4367,15 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 	{
 		if (curr == c)
 		{
-			prev->nextComboObj = curr->nextComboObj;
+			prev->data.nextComboObj = curr->data.nextComboObj;
 			break;
 		}
 
 		prev = curr;
-		curr = curr->nextComboObj;
+		curr = curr->data.nextComboObj;
 	}
 
-	c->nextComboObj = NULL;
+	c->data.nextComboObj = NULL;
 }
 
 void Actor::DebugDrawComboObj(sf::RenderTarget *target)
@@ -4377,7 +4384,7 @@ void Actor::DebugDrawComboObj(sf::RenderTarget *target)
 	while (curr != NULL)
 	{
 		curr->Draw(target);
-		curr = curr->nextComboObj;
+		curr = curr->data.nextComboObj;
 	}
 }
 
@@ -10464,7 +10471,7 @@ bool Actor::EnemyIsFar(V2d &enemyPos)
 			isFar = (len > MAX_VELOCITY * 2);
 			if (!isFar)
 				return false;
-			curr = curr->nextComboObj;
+			curr = curr->data.nextComboObj;
 		}
 	}
 
@@ -10482,12 +10489,12 @@ ComboObject * Actor::IntersectMyComboHitboxes(Enemy *e, CollisionBody *cb,
 	{
 		if (e != curr->enemy)
 		{
-			if (curr->enemyHitBody.Intersects(curr->enemyHitboxFrame, cb, cbFrame))
+			if (curr->enemyHitBody.Intersects(curr->data.enemyHitboxFrame, cb, cbFrame))
 			{
 				return curr;
 			}
 		}
-		curr = curr->nextComboObj;
+		curr = curr->data.nextComboObj;
 	}
 
 	return NULL;

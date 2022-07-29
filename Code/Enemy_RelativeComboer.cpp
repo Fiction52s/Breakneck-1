@@ -101,7 +101,6 @@ RelativeComboer::RelativeComboer(ActorParams *ap )
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
-	comboObj->enemyHitboxFrame = 0;
 
 	maxLatchFrames = 20 * 60;
 
@@ -134,7 +133,6 @@ void RelativeComboer::ResetEnemy()
 	sprite.setRotation(0);
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();

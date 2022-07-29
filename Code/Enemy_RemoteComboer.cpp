@@ -73,8 +73,6 @@ RemoteComboer::RemoteComboer(ActorParams *ap)
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
-	comboObj->enemyHitboxFrame = 0;
-
 	ResetEnemy();
 }
 
@@ -106,7 +104,6 @@ void RemoteComboer::ResetEnemy()
 	shootFrames = 0;
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 
 	DefaultHurtboxesOn();

@@ -11,13 +11,13 @@ using namespace sf;
 
 FightMode::FightMode()
 {
-	gatorParams = new BasicAirEnemyParams(sess->types["gator"], 1);
+	/*gatorParams = new BasicAirEnemyParams(sess->types["gator"], 1);
 	gatorParams->CreateMyEnemy();
 	testGator = (Gator*)gatorParams->myEnemy;
 
 	birdParams = new BasicAirEnemyParams(sess->types["bird"], 1);
 	birdParams->CreateMyEnemy();
-	testBird = (Bird*)birdParams->myEnemy;
+	testBird = (Bird*)birdParams->myEnemy;*/
 
 	endSeq = new FightEndSequence;
 	endSeq->Init();
@@ -25,14 +25,14 @@ FightMode::FightMode()
 
 FightMode::~FightMode()
 {
-	delete gatorParams;
-	delete birdParams;
+	//delete gatorParams;
+	//delete birdParams;
 	delete endSeq;
 }
 
 int FightMode::GetNumStoredBytes()
 {
-	return sizeof(MyData) + testGator->GetNumStoredBytes() + testBird->GetNumStoredBytes();
+	return sizeof(MyData);// +testGator->GetNumStoredBytes() + testBird->GetNumStoredBytes();
 }
 
 void FightMode::StoreBytes(unsigned char *bytes)
@@ -44,9 +44,9 @@ void FightMode::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
 
-	testGator->StoreBytes(bytes);
+	/*testGator->StoreBytes(bytes);
 	bytes += testGator->GetNumStoredBytes();
-	testBird->StoreBytes(bytes);
+	testBird->StoreBytes(bytes);*/
 }
 
 void FightMode::SetFromBytes(unsigned char *bytes)
@@ -58,9 +58,9 @@ void FightMode::SetFromBytes(unsigned char *bytes)
 	endSeq->frame = data.endSeqFrame;
 
 	bytes += sizeof(MyData);
-	testGator->SetFromBytes(bytes);
+	/*testGator->SetFromBytes(bytes);
 	bytes += testGator->GetNumStoredBytes();
-	testBird->SetFromBytes(bytes);
+	testBird->SetFromBytes(bytes);*/
 }
 
 void FightMode::Setup()
@@ -72,8 +72,8 @@ void FightMode::Setup()
 
 void FightMode::StartGame()
 {
-	testGator->Reset();
-	testBird->Reset();
+	//testGator->Reset();
+	//testBird->Reset();
 
 	data.p0Health = maxHealth;
 	data.p1Health = maxHealth;

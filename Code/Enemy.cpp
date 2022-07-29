@@ -968,7 +968,7 @@ std::vector<CollisionBox> * Enemy::GetComboHitboxes()
 		CollisionBody &body = comboObj->enemyHitBody;
 		if (!body.Empty())
 		{
-			return &body.GetCollisionBoxes(comboObj->enemyHitboxFrame);
+			return &body.GetCollisionBoxes(comboObj->data.enemyHitboxFrame);
 		}
 	}
 
@@ -1928,6 +1928,8 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.dead = dead;
 	ed.spawned = spawned;
 
+	//cout << "store receivedHit: " << receivedHit << endl;
+
 
 	if (surfaceMover != NULL)
 	{
@@ -1937,6 +1939,11 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	{
 		ed.groundMoverData = *groundMover;
 	}
+
+	ed.currHitboxes = currHitboxes;
+	ed.currHitboxFrame = currHitboxFrame;
+	ed.currHurtboxes = currHurtboxes;
+	ed.currHurtboxFrame = currHurtboxFrame;
 }
 void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 {
@@ -1957,6 +1964,13 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	{
 		*groundMover = ed.groundMoverData;
 	}
+
+	currHitboxes = ed.currHitboxes;
+	currHitboxFrame = ed.currHitboxFrame;
+	currHurtboxes = ed.currHurtboxes;
+	currHurtboxFrame = ed.currHurtboxFrame;
+
+	//cout << "set receivedHit: " << receivedHit << endl;
 
 	/*if (currShield != NULL)
 	{
@@ -2449,9 +2463,31 @@ void CuttableObject::IncrementFrame()
 	}
 }
 
+
+ComboObject::ComboObject(Enemy *en)
+	:enemy(en), enemyHitBody(CollisionBox::Hit)
+{
+	data.enemyHitboxFrame = -1;
+	data.nextComboObj = NULL;
+	enemyHitboxInfo = NULL;
+}
+
+ComboObject::~ComboObject()
+{
+	if (enemyHitboxInfo != NULL)
+		delete enemyHitboxInfo;
+}
+
+void ComboObject::Reset()
+{
+	data.enemyHitboxFrame = 0;
+	data.nextComboObj = NULL;
+	data.active = false;
+}
+
 V2d ComboObject::GetComboPos()
 {
-	sf::Rect<double> r = enemyHitBody.GetAABB(enemyHitboxFrame);
+	sf::Rect<double> r = enemyHitBody.GetAABB(data.enemyHitboxFrame);
 	
 	return V2d(r.left + r.width / 2.0, r.top + r.height / 2.0);
 }
@@ -2461,22 +2497,26 @@ void ComboObject::ComboHit()
 
 }
 
-void ComboObject::Reset()
-{
-	enemyHitboxFrame = 0;
-	nextComboObj = NULL;
-	active = false;
-}
-
 void ComboObject::Draw(RenderTarget *target)
 {
-	enemyHitBody.DebugDraw( enemyHitboxFrame, target);
+	enemyHitBody.DebugDraw(data.enemyHitboxFrame, target);
 }
 
-ComboObject::~ComboObject()
+int ComboObject::GetNumStoredBytes()
 {
-	if (enemyHitboxInfo != NULL)
-		delete enemyHitboxInfo;
+	return sizeof(MyData);
+}
+
+void ComboObject::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void ComboObject::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
 }
 
 void BasicPathFollower::SetParams(ActorParams *ap)

@@ -83,8 +83,6 @@ ExplodingBarrel::ExplodingBarrel(ActorParams *ap)
 
 	comboObj->enemyHitBody.BasicCircleSetup(explosionRadius, GetPosition());
 
-	comboObj->enemyHitboxFrame = 0;
-
 	ResetEnemy();
 }
 
@@ -114,7 +112,6 @@ void ExplodingBarrel::SetLevel(int lev)
 void ExplodingBarrel::ResetEnemy()
 {
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 
 	testCircle.setPosition(GetPositionF());
 

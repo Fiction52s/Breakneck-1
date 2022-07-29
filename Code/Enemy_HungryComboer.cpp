@@ -117,7 +117,6 @@ HungryComboer::HungryComboer(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	comboObj->enemyHitBody.BasicCircleSetup(origSize, GetPosition());
-	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_FLOAT] = 18;
 	actionLength[S_FLY] = 20;
@@ -149,7 +148,6 @@ void HungryComboer::ResetEnemy()
 
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 
 	velocity = V2d(0, 0);
 	

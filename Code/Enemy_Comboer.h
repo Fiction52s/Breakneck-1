@@ -15,14 +15,36 @@ struct Comboer : Enemy
 		S_RETURN,
 		S_Count
 	};
-	bool CountsForEnemyGate() { return false; }
-	void UpdateOnPlacement(ActorParams *ap);
-	void UpdatePath();
-	void SetLevel(int lev);
+
+	struct MyData : StoredEnemyData
+	{
+		int currHits;
+		int shootFrames;
+	};
+
+	MyData data;
+
+
+	V2d velocity;
+	
+	int shootLimit;
+	int hitLimit;
+	
+
+	BasicPathFollower pathFollower;
+
+	double acceleration;
+	double speed;
+
+	Tileset *ts;
 
 	Comboer(ActorParams * ap);
 	~Comboer();
 
+	bool CountsForEnemyGate() { return false; }
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
 	void Return();
 	void ProcessState();
 	void ProcessHit();
@@ -34,18 +56,9 @@ struct Comboer : Enemy
 	void ResetEnemy();
 	void HandleNoHealth();
 
-	V2d velocity;
-	int shootFrames;
-	int shootLimit;
-	int hitLimit;
-	int currHits;
-
-	BasicPathFollower pathFollower;
-
-	double acceleration;
-	double speed;
-	
-	Tileset *ts;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

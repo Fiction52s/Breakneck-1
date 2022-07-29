@@ -5650,6 +5650,10 @@ void Session::UpdateEnemiesPostPhysics()
 		}
 
 		current = temp;
+		if (current != NULL)
+		{
+			int xxx = 5;
+		}
 	}
 
 	/*for (list<Enemy*>::iterator it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
@@ -7433,6 +7437,8 @@ int Session::GetSaveDataSize()
 bool Session::SaveState(unsigned char **buffer,
 	int *len, int *checksum, int frame)
 {
+	cout << "save state: " << totalGameFrames << endl;
+
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[1]->PopulateState(&currSaveState->states[1]);
 	currSaveState->totalGameFrames = totalGameFrames;
@@ -7476,7 +7482,7 @@ bool Session::SaveState(unsigned char **buffer,
 	absorbShardParticles->StoreBytes(tempBuf);
 	tempBuf += absorbShardParticles->GetNumStoredBytes();
 
-	//cout << "save state:" << totalGameFrames << endl;
+	
 	
 
 	//currSaveState->Print();
@@ -7493,6 +7499,8 @@ bool Session::LoadState(unsigned char *bytes, int len)
 {
 	int saveSize = sizeof(SaveGameState);
 	memcpy(currSaveState, bytes, saveSize);
+
+	cout << "loading state: " << currSaveState->totalGameFrames << endl;
 
 	bytes += saveSize;
 	gameMode->SetFromBytes(bytes);
@@ -7542,7 +7550,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	players[0]->PopulateFromState(&currSaveState->states[0]);
 	players[1]->PopulateFromState(&currSaveState->states[1]);
 
-	//cout << "loading state: " << totalGameFrames << endl;
+	
 
 	
 	if ( netplayManager != NULL)

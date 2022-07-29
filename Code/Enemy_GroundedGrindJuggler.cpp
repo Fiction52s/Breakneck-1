@@ -104,7 +104,6 @@ GroundedGrindJuggler::GroundedGrindJuggler(ActorParams *ap)
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
-	comboObj->enemyHitboxFrame = 0;
 
 	actionLength[S_IDLE] = 18;
 	actionLength[S_GRIND] = 20;
@@ -163,7 +162,6 @@ void GroundedGrindJuggler::ResetEnemy()
 	sprite.setRotation(0);
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 
 	DefaultHitboxesOn();

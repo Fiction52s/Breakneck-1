@@ -503,8 +503,9 @@ void Patroller::StoreBytes(unsigned char *bytes)
 void Patroller::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
-	bytes += sizeof(MyData);
 	SetBasicEnemyData(data);
+
+	bytes += sizeof(MyData);
 
 	eye->SetFromBytes(bytes);
 

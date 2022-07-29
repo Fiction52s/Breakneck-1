@@ -86,8 +86,6 @@ TigerTarget::TigerTarget(ActorParams *ap)
 
 	comboObj->enemyHitBody.BasicCircleSetup(16, GetPosition());
 
-	comboObj->enemyHitboxFrame = 0;
-
 
 	//cutObject->Setup(ts, 0, 0, scale);
 
@@ -140,7 +138,6 @@ void TigerTarget::ResetEnemy()
 	DefaultHurtboxesOn();
 
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 
 	UpdateHitboxes();
 

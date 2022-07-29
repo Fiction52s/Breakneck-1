@@ -67,7 +67,6 @@ SplitPiece::SplitPiece( SplitComboer *splitComb )
 	comboObj->enemyHitboxInfo->knockback = 0;
 	comboObj->enemyHitboxInfo->freezeDuringStun = true;
 	comboObj->enemyHitboxInfo->hType = HitboxInfo::COMBO;
-	comboObj->enemyHitboxFrame = 0;
 
 	facingRight = true;
 
@@ -88,7 +87,6 @@ void SplitPiece::ResetEnemy()
 	sprite.setTextureRect(sc->ts->GetSubRect(0));
 	sprite.setRotation(0);
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 	//SetHitboxes(&hitBody, 0);
 	action = S_FLY;

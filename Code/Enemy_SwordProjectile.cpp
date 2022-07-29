@@ -66,8 +66,6 @@ SwordProjectile::SwordProjectile()
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
-	comboObj->enemyHitboxFrame = 0;
-
 	ResetEnemy();
 }
 
@@ -135,7 +133,6 @@ void SwordProjectile::ResetEnemy()
 	shootFrames = 0;
 	currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
 	velocity = V2d(0, 0);
 
 	//DefaultHurtboxesOn();

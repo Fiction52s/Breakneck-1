@@ -72,8 +72,6 @@ Comboer::Comboer(ActorParams *ap )
 
 	comboObj->enemyHitBody.BasicCircleSetup(48, GetPosition());
 
-	comboObj->enemyHitboxFrame = 0;
-
 	ResetEnemy();
 }
 
@@ -124,10 +122,10 @@ void Comboer::Return()
 
 void Comboer::ResetEnemy()
 {	
-	shootFrames = 0;
-	currHits = 0;
+	data.shootFrames = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	comboObj->enemyHitboxFrame = 0;
+
 	velocity = V2d(0, 0);
 	
 	DefaultHurtboxesOn();
@@ -147,7 +145,7 @@ void Comboer::ProcessHit()
 	{
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
-		shootFrames = 0;
+		data.shootFrames = 0;
 		action = S_SHOT;
 		frame = 0;
 		//SetHitboxes(hitBody, 0);
@@ -160,7 +158,7 @@ void Comboer::ProcessHit()
 
 		dir = normalize(receivedHit->hDir);
 
-		//receivedHit = NULL;
+		receivedHit = NULL;
 
 		/*switch (receivedHit->hDir)
 		{
@@ -280,7 +278,6 @@ void Comboer::ProcessState()
 			action = S_RETURN;
 			frame = 0;
 			Return();
-
 			/*numHealth = 0;
 			dead = true;
 			sess->PlayerRemoveActiveComboer(comboObj);*/
@@ -331,14 +328,19 @@ void Comboer::FrameIncrement()
 {
 	if (action == S_SHOT)
 	{
-		if (shootFrames == shootLimit)
+		if (data.shootFrames == shootLimit)
 		{
 			action = S_EXPLODE;
 			frame = 0;
 		}
 		else
 		{
-			++shootFrames;
+			++data.shootFrames;
+
+			if (data.shootFrames == shootLimit)
+			{
+				int x = 5;
+			}
 		}
 	}
 }
@@ -346,8 +348,8 @@ void Comboer::FrameIncrement()
 void Comboer::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (currHits >= hitLimit)
+	++data.currHits;
+	if (data.currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
@@ -378,4 +380,35 @@ void Comboer::UpdateSprite()
 void Comboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int Comboer::GetNumStoredBytes()
+{
+	return sizeof(MyData) + pathFollower.GetNumStoredBytes() + comboObj->GetNumStoredBytes();
+}
+
+void Comboer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	pathFollower.StoreBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void Comboer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	pathFollower.SetFromBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }
