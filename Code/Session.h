@@ -205,6 +205,10 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	uint32 randomState;
+	int GetRand();
+	void SeedRand(uint32 r);
+
 	bool desyncCheckerActive;
 	bool firstUpdateHasHappened;
 	bool simulationMode; //for running frames with ggpo without creating sounds or visual fx

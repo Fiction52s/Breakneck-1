@@ -21,36 +21,16 @@ struct Spring : Enemy
 		TYPE_ANNIHILATION_GLIDE,
 	};
 
-	void UpdateParamsSettings();
-	void AddToWorldTrees();
-	void UpdateOnPlacement(ActorParams *ap);
-	void UpdatePath();
-	void SetLevel(int lev);
-	bool CountsForEnemyGate() { return false; }
+	struct MyData : StoredEnemyData
+	{
 
-	SpringType springType;
-	Spring(ActorParams *ap);
-	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
-	void DrawMinimap(sf::RenderTarget *target);
-	SoundInfo *launchSoundBuf;
-	
-	void UpdateSprite();
-	void DirectKill();
-	
-	void ResetEnemy();
-	void ActionEnded();
-	void Launch();
+	};
+	MyData data;
+
 	Tileset *ts;
 	Tileset *ts_recover;
 	Tileset *ts_particles;
 	Tileset *ts_boost;
-
-	
-	//Tileset *ts_idle;
-	//Tileset *ts_recover;
-	//Tileset *ts_springing;
-	void DebugDraw(sf::RenderTarget *target);
 
 	V2d dir;
 	int speed;
@@ -69,8 +49,33 @@ struct Spring : Enemy
 	int startFrame;
 	int recoverTileseChoice;
 	int recoverStartFrame;
-	
+
 	int numFrames;
+	SpringType springType;
+
+	Spring(ActorParams *ap);
+	void UpdateParamsSettings();
+	void AddToWorldTrees();
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
+	bool CountsForEnemyGate() { return false; }
+	void ProcessState();
+	void EnemyDraw(sf::RenderTarget *target);
+	void DrawMinimap(sf::RenderTarget *target);
+	SoundInfo *launchSoundBuf;
+	
+	void UpdateSprite();
+	void DirectKill();
+	
+	void ResetEnemy();
+	void ActionEnded();
+	void Launch();
+	void DebugDraw(sf::RenderTarget *target);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

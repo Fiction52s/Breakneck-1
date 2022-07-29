@@ -171,6 +171,25 @@ void BlockerChain::ReadParams(ActorParams *params)
 	fill = bParams->fill;
 }
 
+//int BlockerChain::GetNumStoredBytes()
+//{
+//	return sizeof(MyData);
+//}
+//
+//void BlockerChain::StoreBytes(unsigned char *bytes)
+//{
+//	StoreBasicEnemyData(data);
+//	memcpy(bytes, &data, sizeof(MyData));
+//	bytes += sizeof(MyData);
+//}
+//
+//void BlockerChain::SetFromBytes(unsigned char *bytes)
+//{
+//	memcpy(&data, bytes, sizeof(MyData));
+//	SetBasicEnemyData(data);
+//	bytes += sizeof(MyData);
+//}
+
 Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 	:Enemy( EnemyType::EN_BLOCKER, NULL ),//false, 1, false), 
 	bc(p_bc), vaIndex(index)
@@ -194,6 +213,8 @@ Blocker::Blocker( BlockerChain *p_bc, V2d &pos, int index)
 		maxHealth += 5;
 		break;
 	}
+
+	randomStartFrame = 
 
 	minimapCirclePoints = 20;
 	
@@ -266,7 +287,6 @@ void Blocker::ProcessState()
 			numHealth = 0;
 			dead = true;
 			ClearSprite();
-			bc->circleGroup->SetVisible(vaIndex, false);
 			break;
 		}
 	}
@@ -376,7 +396,7 @@ void Blocker::ResetEnemy()
 	dead = false;
 
 	//random start frame so they are all desynced
-	int r = rand() % (animFactor[WAIT] * actionLength[WAIT]);
+	int r = sess->GetRand() % (animFactor[WAIT] * actionLength[WAIT]);
 	frame = r;
 
 	SetHitboxes(&hitBody, 0);
@@ -528,6 +548,21 @@ void Blocker::UpdateSprite()
 	}
 }
 
-//void Blocker::DrawMinimap(sf::RenderTarget *target)
-//{
-//}
+int Blocker::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Blocker::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Blocker::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

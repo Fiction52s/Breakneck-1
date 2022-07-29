@@ -11,6 +11,35 @@ struct EnemyChain : Enemy
 		EXIST,
 		Count
 	};
+
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Enemy **enemies;
+	int numEnemies;
+
+	Tileset *ts;
+	bool checkCol;
+
+	double spacing;
+	int chainEnemyVariation;
+	int paramsVariation;
+	int paramsSpacing;
+
+	std::vector<sf::Vector2i> localPath;
+	std::vector<sf::Vector2i> globalPath;
+	std::vector<V2d> enemyOffsets;
+
+	sf::Vertex *va;
+	CircleGroup *circleGroup;
+	bool fill;
+
+	EnemyChain(ActorParams *ap, EnemyType at);
+	~EnemyChain();
+	void ResetEnemy();
 	//virtual void InitReadParams(ActorParams *params) = 0;
 	virtual void ReadParams(ActorParams *params) = 0;
 	virtual Tileset *GetTileset(int variation) = 0;
@@ -26,11 +55,6 @@ struct EnemyChain : Enemy
 	sf::FloatRect GetAABB();
 	void CreateEnemies();
 	void UpdateFromParams(ActorParams *ap, int numFrames);
-
-	sf::Vertex *va;
-	CircleGroup *circleGroup;
-	EnemyChain(ActorParams *ap, EnemyType at);
-	~EnemyChain();
 	void DrawMinimap(sf::RenderTarget *target);
 	virtual void EnemyDraw(sf::RenderTarget *target);
 	void SetZone(Zone *p_zone);
@@ -44,29 +68,11 @@ struct EnemyChain : Enemy
 	void UpdateEnemyPhysics();
 	void UpdateStartPositions(V2d &pos);
 	void ResetCheckCollisions();
-
 	void UpdateFromPath(ActorParams *ap);
 
-	bool fill;
-
-	int liveFrames;
-	Enemy **enemies;
-	//bool *checkColArr;
-	int numEnemies;
-
-	Tileset *ts;
-	void ResetEnemy();
-
-	bool checkCol;
-
-	double spacing;
-	int chainEnemyVariation;
-	int paramsVariation;
-	int paramsSpacing;
-
-	std::vector<sf::Vector2i> localPath;
-	std::vector<sf::Vector2i> globalPath;
-	std::vector<V2d> enemyOffsets;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

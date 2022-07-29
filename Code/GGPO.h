@@ -382,6 +382,7 @@ struct SaveGameState
 	Actor *currSuperPlayer;
 	int gameState; //game mode such as RUN or FROZEN
 	Sequence  *activeSequence;
+	uint32 randomState;
 	void Print();
 };
 

@@ -334,3 +334,22 @@ void Spring::DrawMinimap(sf::RenderTarget *target)
 		target->draw(enemyCircle);
 	}
 }
+
+int Spring::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Spring::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Spring::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

@@ -1553,6 +1553,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	randomState = 0;
 	ggpoReady = false;
 
 	desyncCheckerActive = false;
@@ -7445,6 +7446,7 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->currSuperPlayer = currSuperPlayer;
 	currSaveState->gameState = gameState;
 	currSaveState->activeSequence = activeSequence;
+	currSaveState->randomState = randomState;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -7528,6 +7530,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	activeEnemyListTail = currSaveState->activeEnemyListTail;
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = currSaveState->currSuperPlayer;
+	randomState = currSaveState->randomState;
 
 	/*cout << "load state: " << totalGameFrames << endl;
 
@@ -8166,4 +8169,15 @@ void Session::ConfirmFrame(int frameCheck)
 int Session::GetPlayerNormalSkin(int index)
 {
 	return Actor::SKIN_NORMAL;
+}
+
+int Session::GetRand()
+{
+	randomState = randomState * 1664525 + 1013904223;
+	return randomState >> 24;
+}
+
+void Session::SeedRand(uint32 r)
+{
+	randomState = r;
 }

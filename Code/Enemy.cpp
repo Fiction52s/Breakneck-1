@@ -1030,11 +1030,14 @@ void Enemy::Reset()
 	currShield = NULL;
 	receivedHit = NULL;
 	receivedHitPlayer = NULL;
+	comboHitEnemy = NULL;
+	action = 0;
 	pauseFrames = 0;
 	frame = 0;
 	summonFrame = 0;
 	active = false;
-
+	currHitboxFrame = 0;
+	currHurtboxFrame = 0;
 	SetCurrPosInfo(startPosInfo);
 
 	for (int i = 0; i < numLaunchers; ++i)
@@ -2602,4 +2605,28 @@ void BasicPathFollower::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
 	bytes += sizeof(MyData);
+}
+
+void StoredEnemyData::Print()
+{
+	cout << "slowMultiple: " << slowMultiple << endl;
+	cout << "slowCounter: " << slowCounter << endl;
+	cout << "receivedHit: " << receivedHit << endl;
+	cout << "receivedHitPlayer: " << receivedHitPlayer << endl;
+	cout << "comboHitEnemy: " << comboHitEnemy << endl;
+	cout << "numHealth: " << numHealth << endl;
+	cout << "facingRight: " << facingRight << endl;
+	cout << "action: " << action << endl;
+	cout << "frame: " << frame << endl;
+	cout << "active: " << active << endl;
+	cout << "prev: " << prev << endl;
+	cout << "next: " << next << endl;
+	cout << "pauseFrames: " << pauseFrames << endl;
+	cout << "pauseFramesFromAttacking: " << pauseFramesFromAttacking << endl;
+	cout << "dead: " << dead << endl;
+	cout << "spawned: " << spawned << endl;
+	cout << "currHitboxFrame: " << currHitboxFrame << endl;
+	cout << "currHurtboxFrame: " << currHurtboxFrame << endl;
+	cout << "currHitboxes: " << currHitboxes << endl;
+	cout << "currHurtboxes: " << currHurtboxes << endl;
 }

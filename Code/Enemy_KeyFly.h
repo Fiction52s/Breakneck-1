@@ -11,6 +11,16 @@ struct KeyFly : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Tileset *ts;
+	Tileset *ts_container;
+	sf::Sprite containerSpr;
+
 	KeyFly(ActorParams *ap);
 	void SetLevel(int lev);
 	void ProcessState();
@@ -20,14 +30,12 @@ struct KeyFly : Enemy
 	void HandleNoHealth();
 	bool CountsForEnemyGate() { return false; }
 	void PlayDeathSound();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 	//void ProcessHit();
 
-	Tileset *ts;
-	Tileset *ts_container;
-
-
-
-	sf::Sprite containerSpr;
+	
 };
 
 #endif

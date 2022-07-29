@@ -516,7 +516,17 @@ void EnemyChain::UpdatePrePhysics()
 	for (int i = 0; i < numEnemies; ++i)
 	{
 		enemies[i]->UpdatePrePhysics();
+		if (enemies[i]->dead)
+		{
+			circleGroup->SetVisible(i, false);
+		}
+		else
+		{
+			circleGroup->SetVisible(i, true);
+		}
 	}
+
+	
 }
 
 void EnemyChain::ProcessState()
@@ -579,4 +589,38 @@ int EnemyChain::GetNumCamPoints()
 V2d EnemyChain::GetCamPoint(int index)
 {
 	return enemies[index]->GetPosition();
+}
+
+int EnemyChain::GetNumStoredBytes()
+{
+	return sizeof(MyData) + enemies[0]->GetNumStoredBytes() * numEnemies;
+}
+
+void EnemyChain::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	cout << "storing enemy chain bytes" << endl;
+	//data.Print();
+
+	for (int i = 0; i < numEnemies; ++i)
+	{
+		enemies[i]->StoreBytes(bytes);
+		bytes += enemies[i]->GetNumStoredBytes();
+	}
+}
+
+void EnemyChain::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < numEnemies; ++i)
+	{
+		enemies[i]->SetFromBytes(bytes);
+		bytes += enemies[i]->GetNumStoredBytes();
+	}
 }

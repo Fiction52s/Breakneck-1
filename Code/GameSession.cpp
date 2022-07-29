@@ -2354,6 +2354,8 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
+	SeedRand(time(0));
+
 	while( !quit )
 	{
 		switchGameState = false;

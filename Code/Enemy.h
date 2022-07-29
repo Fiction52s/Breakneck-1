@@ -90,6 +90,8 @@ struct StoredEnemyData
 	CollisionBody *currHitboxes;
 	CollisionBody *currHurtboxes;
 
+	void Print();
+
 };
 
 struct Enemy : QuadTreeCollider, QuadTreeEntrant, 

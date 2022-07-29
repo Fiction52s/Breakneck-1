@@ -5,12 +5,17 @@
 
 struct CircleGroup
 {
-	CircleGroup(int num, int rad, sf::Color col, int pointsPerCircle);
-	~CircleGroup();
 	int numCircles;
 	sf::Vertex *va;
 	float radius;
 	sf::Color color;
+	int pointsPerCircle;
+	int numVerts;
+	sf::Vector2f *circleCenters;
+
+	CircleGroup(int num, int rad, sf::Color col, int pointsPerCircle);
+	~CircleGroup();
+	
 	void SetColor(int index, sf::Color c);
 	void ResetColor();
 	void SetVisible(int index, bool vis);
@@ -20,10 +25,6 @@ struct CircleGroup
 	float GetRadius();
 	void ShowAll();
 	void HideAll();
-	int pointsPerCircle;
-	int numVerts;
-	sf::Vector2f *circleCenters;
-	//bool ContainsPoint(int index, sf::Vector2f &p);
 };
 
 #endif

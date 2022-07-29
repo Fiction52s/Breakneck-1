@@ -149,3 +149,22 @@ void KeyFly::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, containerSpr);
 	//target->draw(containerSpr);
 }
+
+int KeyFly::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void KeyFly::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void KeyFly::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
