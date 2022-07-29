@@ -29,8 +29,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	SetNumActions(A_Count);
 	SetEditorActions(ATTACK, WAIT, 0);
 
-	firingCounter = 0;
-
 	SetLevel(ap->GetLevel());
 
 	framesWait = 60;
@@ -47,7 +45,6 @@ BasicTurret::BasicTurret(ActorParams *ap )
 	width *= scale;
 	height *= scale;
 	detectRad = 1500;
-	
 
 	SetOffGroundHeight(height / 2.f - 30 * scale);
 
@@ -330,4 +327,32 @@ void BasicTurret::Setup()
 	cutObject->SetRotation(sprite.getRotation());
 
 	SetSpawnRect();
+}
+
+int BasicTurret::GetNumStoredBytes()
+{
+	//return 0;
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void BasicTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void BasicTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+	SetBasicEnemyData(data);
+
+	launchers[0]->SetFromBytes(bytes);
+
+	bytes += launchers[0]->GetNumStoredBytes();
 }

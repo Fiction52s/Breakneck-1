@@ -17,6 +17,26 @@ struct BasicTurret : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	const static int maxBullets = 16;
+
+	struct MyData : StoredEnemyData
+	{
+	};
+
+	MyData data;
+
+	Tileset *ts;
+	Tileset *ts_bulletExplode;
+	HitboxInfo *bulletHitboxInfo;
+	CollisionBody *prelimBody;
+	CollisionBox prelimBox[3];
+	double detectRad;
+	int frameTestCounter;
+	SoundInfo *fireSound;
+	int animationFactor;
+	double bulletSpeed;
+	Shield *testShield;	
+	int framesWait;
 	
 
 	BasicTurret(ActorParams *ap);
@@ -28,37 +48,19 @@ struct BasicTurret : Enemy, LauncherEnemy
 	void UpdateSprite();
 	void DebugDraw(sf::RenderTarget *target);
 	void Setup();
-	Tileset *ts_bulletExplode;
-	int frameTestCounter;
 	void UpdatePreLauncherPhysics();
 	void BulletHitTerrain(BasicBullet *b,
 		Edge *edge, V2d &pos);
 	void BulletHitPlayer( int playerIndex,
 		BasicBullet *b,
 		int hitResult );
-	SoundInfo *fireSound;
-	CollisionBox prelimBox[3];
-
 	void ResetEnemy();
-	Tileset *ts;
-	double detectRad;
-
-	const static int maxBullets = 16;
-
 	void DirectKill();
-
-	Shield *testShield;
-
-	HitboxInfo *bulletHitboxInfo;
-
-	int framesWait;
-	int firingCounter;
-
 	void SetupPreCollision();
-	CollisionBody *prelimBody;
-
-	int animationFactor;
-	double bulletSpeed;
+	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
