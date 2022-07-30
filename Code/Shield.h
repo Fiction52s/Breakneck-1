@@ -24,28 +24,16 @@ struct Shield : HittableObject
 		S_Count
 	};
 
-	Shield( ShieldType type, float rad, int maxH,
-		Enemy *e, HitboxInfo *hInfo = NULL );
-	~Shield();
-	void ConfirmKill();
-	void ConfirmHitNoKill();
-	ShieldType sType;
-	Action action;
-	int frame;
-	HitboxInfo *hitboxInfo;
+	struct MyData
+	{
+		HittableObject hittableObjectData;
 
-	Enemy *parent;
-
-	HitboxInfo * IsHit(int pIndex);
-	void ProcessHit();
-	int pauseFrames;
-
-	bool ProcessState();
-	void UpdateSprite();
-	void Draw(sf::RenderTarget *target);
-	void SetPosition(V2d &pos);
-	V2d GetPosition();
-	void FrameIncrement();
+		int currHits;
+		int pauseFrames;
+		int frame;
+		Action action;
+	};
+	MyData data;
 
 	float radius;
 	Tileset *ts_mask;
@@ -53,8 +41,36 @@ struct Shield : HittableObject
 
 	CollisionBody body;
 	int maxHits;
-	int currHits;
+	
+
+	ShieldType sType;
+	
+	
+	
+	HitboxInfo *hitboxInfo;
+	Enemy *parent;
+
+	Shield( ShieldType type, float rad, int maxH,
+		Enemy *e, HitboxInfo *hInfo = NULL );
+	~Shield();
+	void ConfirmKill();
+	void ConfirmHitNoKill();
+	
+	HitboxInfo * IsHit(int pIndex);
+	void ProcessHit();
+	
 	void Reset();
+	bool ProcessState();
+	void UpdateSprite();
+	void Draw(sf::RenderTarget *target);
+	void SetPosition(V2d &pos);
+	V2d GetPosition();
+	void FrameIncrement();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	
 };
 
 #endif

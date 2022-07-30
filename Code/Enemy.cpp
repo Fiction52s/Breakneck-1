@@ -1450,9 +1450,9 @@ void Enemy::UpdatePostPhysics()
 
 	if (currShield != NULL)
 	{
-		if (currShield->pauseFrames > 0)
+		if (currShield->data.pauseFrames > 0)
 		{
-			--currShield->pauseFrames;
+			--currShield->data.pauseFrames;
 			//if (UpdateAccountingForSlow()) //shield might have its own at some point
 			//{
 			//	
@@ -1484,7 +1484,7 @@ void Enemy::UpdatePostPhysics()
 	
 	if (currShield != NULL)
 	{
-		if( currShield->pauseFrames == 0)
+		if( currShield->data.pauseFrames == 0)
 			currShield->ProcessHit();
 	}
 	else
@@ -1525,7 +1525,7 @@ void Enemy::UpdatePostPhysics()
 		if (!dead)
 		{
 			FrameIncrement();
-			if (currShield != NULL && currShield->pauseFrames == 0 )
+			if (currShield != NULL && currShield->data.pauseFrames == 0 )
 			{
 				currShield->FrameIncrement();
 			}
@@ -1912,12 +1912,13 @@ void Enemy::BasicUpdateHitboxes()
 
 void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 {
-	ed.slowMultiple = slowMultiple;
-	ed.slowCounter = slowCounter;
-	ed.receivedHit = receivedHit;
-	ed.receivedHitPlayer = receivedHitPlayer;
-	ed.comboHitEnemy = comboHitEnemy;
-	ed.numHealth = numHealth;
+	ed.slowableObjectData.slowMultiple = slowMultiple;
+	ed.slowableObjectData.slowCounter = slowCounter;
+	ed.slowableObjectData.isSlowable = isSlowable;
+	ed.hittableObjectData.receivedHit = receivedHit;
+	ed.hittableObjectData.receivedHitPlayer = receivedHitPlayer;
+	ed.hittableObjectData.comboHitEnemy = comboHitEnemy;
+	ed.hittableObjectData.numHealth = numHealth;
 	ed.currPosInfo = currPosInfo;
 	ed.facingRight = facingRight;
 	ed.action = action;
@@ -1947,15 +1948,18 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.currHitboxFrame = currHitboxFrame;
 	ed.currHurtboxes = currHurtboxes;
 	ed.currHurtboxFrame = currHurtboxFrame;
+
+	ed.currShield = currShield;
 }
 void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 {
-	slowMultiple = ed.slowMultiple;
-	slowCounter = ed.slowCounter;
-	receivedHit = ed.receivedHit;
-	receivedHitPlayer = ed.receivedHitPlayer;
-	comboHitEnemy = ed.comboHitEnemy;
-	numHealth = ed.numHealth;
+	slowMultiple = ed.slowableObjectData.slowMultiple;
+	slowCounter = ed.slowableObjectData.slowCounter;
+	isSlowable = ed.slowableObjectData.isSlowable;
+	receivedHit = ed.hittableObjectData.receivedHit;
+	receivedHitPlayer = ed.hittableObjectData.receivedHitPlayer;
+	comboHitEnemy = ed.hittableObjectData.comboHitEnemy;
+	numHealth = ed.hittableObjectData.numHealth;
 
 	currPosInfo = ed.currPosInfo;
 
@@ -1972,6 +1976,8 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	currHitboxFrame = ed.currHitboxFrame;
 	currHurtboxes = ed.currHurtboxes;
 	currHurtboxFrame = ed.currHurtboxFrame;
+
+	currShield = ed.currShield;
 
 	//cout << "set receivedHit: " << receivedHit << endl;
 
@@ -2032,7 +2038,7 @@ void Enemy::CheckPlayerInteractions(int substep, int i)
 		}*/
 		if (currShield != NULL)
 		{
-			if (currShield->pauseFrames == 0)
+			if (currShield->data.pauseFrames == 0)
 				currShield->CheckHit(sess->GetPlayer(i), this);
 		}
 		else
@@ -2609,7 +2615,7 @@ void BasicPathFollower::SetFromBytes(unsigned char *bytes)
 
 void StoredEnemyData::Print()
 {
-	cout << "slowMultiple: " << slowMultiple << endl;
+	/*cout << "slowMultiple: " << storedEneslowMultiple << endl;
 	cout << "slowCounter: " << slowCounter << endl;
 	cout << "receivedHit: " << receivedHit << endl;
 	cout << "receivedHitPlayer: " << receivedHitPlayer << endl;
@@ -2628,5 +2634,5 @@ void StoredEnemyData::Print()
 	cout << "currHitboxFrame: " << currHitboxFrame << endl;
 	cout << "currHurtboxFrame: " << currHurtboxFrame << endl;
 	cout << "currHitboxes: " << currHitboxes << endl;
-	cout << "currHurtboxes: " << currHurtboxes << endl;
+	cout << "currHurtboxes: " << currHurtboxes << endl;*/
 }

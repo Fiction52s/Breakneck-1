@@ -314,3 +314,34 @@ void CurveTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 }
+
+int CurveTurret::GetNumStoredBytes()
+{
+	return sizeof(MyData) + shield->GetNumStoredBytes() + launchers[0]->GetNumStoredBytes();
+}
+
+void CurveTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	shield->StoreBytes(bytes);
+	bytes += shield->GetNumStoredBytes();
+
+	launchers[0]->StoreBytes(bytes);
+	bytes + launchers[0]->GetNumStoredBytes();
+}
+
+void CurveTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	shield->SetFromBytes(bytes);
+	bytes += shield->GetNumStoredBytes();
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes + launchers[0]->GetNumStoredBytes();
+}

@@ -316,6 +316,10 @@ void Launcher::StoreBytes(unsigned char *bytes)
 
 	memcpy(bytes, &d, sizeof(MyData));
 
+	/*cout << "saving launcher: " << endl;
+
+	cout << "inactiveBullets: " << inactiveBullets << endl;
+	cout << "activeBullets: " << activeBullets << endl;*/
 
 	bytes += sizeof(MyData);
 	for (int i = 0; i < totalBullets; ++i)
@@ -757,6 +761,20 @@ void BasicBullet::StoreBytes(unsigned char *bytes)
 	d.transform = transform;
 	d.bounceCount = bounceCount;
 
+	//cout << "storing bullet: \n";
+
+	//cout << "prev: " << prev << "\n";
+	//cout << "next: " << next << "\n";
+	//cout << "gravity: " << gravity.x << ", " << gravity.y << "\n";
+	//cout << "position: " << position.x << ", " << position.y << "\n";
+	//cout << "slowCounter: " << slowCounter << "\n";
+	//cout << "active: " << active << "\n";
+	//cout << "slowMultiple: " << slowMultiple << "\n";
+	//cout << "framesToLive: " << framesToLive << "\n";
+	//cout << "frame: " << frame << "\n";
+	////cout << "framesToLive: " << framesToLive << "\n";
+	//cout << "bounceCount: " << bounceCount << "\n";
+
 	memcpy(bytes, &d, sizeof(MyData));
 }
 
@@ -766,7 +784,7 @@ void BasicBullet::SetFromBytes(unsigned char *bytes)
 	memcpy(&d, bytes, sizeof(MyData));
 	prev = d.prev;
 	next = d.next;
-	gravity = gravity;
+	gravity = d.gravity;
 	position = d.position;
 	velocity = d.velocity;
 	slowCounter = d.slowCounter;
@@ -839,6 +857,7 @@ void BasicBullet::UpdatePrePhysics()
 		slowCounter = 1;
 	}
 
+
 	velocity += gravity / (double)slowMultiple;
 	V2d playerPos = launcher->sess->GetPlayerPos(launcher->playerIndex);
 
@@ -880,6 +899,8 @@ void BasicBullet::UpdatePrePhysics()
 		numPhysSteps = NUM_MAX_STEPS;
 		launcher->sess->GetPlayer(launcher->playerIndex)->highAccuracyHitboxes = true;
 	}
+
+	col = false;
 }
 
 void BasicBullet::UpdatePostPhysics()

@@ -10,13 +10,14 @@ Shield::Shield(ShieldType type, float rad, int maxH, Enemy *e, HitboxInfo *hInfo
 	:sType( type ), maxHits( maxH ), radius( rad ), parent( e ), body( CollisionBox::Hurt )
 {
 	body.BasicCircleSetup(radius);
-	pauseFrames = 0;
 
 	hitboxInfo = hInfo;
 	if (hitboxInfo == NULL && type == T_REFLECT)
 	{
 		assert(0 && "needs a hitbox info");
 	}
+
+	Reset();
 }
 
 Shield::~Shield()
@@ -25,10 +26,10 @@ Shield::~Shield()
 
 void Shield::Reset()
 {
-	currHits = maxHits;
-	action = S_WAIT;
-	frame = 0;
-	pauseFrames = 0;
+	data.currHits = maxHits;
+	data.action = S_WAIT;
+	data.frame = 0;
+	data.pauseFrames = 0;
 }
 
 //returns false when the shield is dead
@@ -36,11 +37,11 @@ bool Shield::ProcessState()
 {
 	receivedHit = NULL;
 
-	if (pauseFrames > 0)
+	if (data.pauseFrames > 0)
 		return true;
 
 	
-	switch (action)
+	switch (data.action)
 	{
 	case S_WAIT:
 		break;
@@ -48,7 +49,7 @@ bool Shield::ProcessState()
 
 		break;
 	case S_BREAK:
-		if (frame == 20)
+		if (data.frame == 20)
 		{
 			return false;
 		}
@@ -57,7 +58,7 @@ bool Shield::ProcessState()
 		break;
 	}
 
-	switch (action)
+	switch (data.action)
 	{
 	case S_WAIT:
 		break;
@@ -79,17 +80,17 @@ void Shield::ConfirmHitNoKill()
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
 		//parent->sess->Pause(5);
-		pauseFrames = receivedHit->hitlagFrames;
+		data.pauseFrames = receivedHit->hitlagFrames;
 	}
 	else
 	{
 		//cout << "set pause frames 5" << endl;
-		pauseFrames = receivedHit->hitlagFrames;
+		data.pauseFrames = receivedHit->hitlagFrames;
 	}
 
-	parent->pauseFrames = pauseFrames;
+	parent->pauseFrames = data.pauseFrames;
 
-	parent->sess->cam.SetRumble(.5, .5, pauseFrames);
+	parent->sess->cam.SetRumble(.5, .5, data.pauseFrames);
 }
 
 V2d Shield::GetPosition()
@@ -105,15 +106,15 @@ void Shield::ConfirmKill()
 	if (receivedHit->hType != HitboxInfo::COMBO)
 	{
 		//parent->sess->Pause(7);
-		pauseFrames = 7;
+		data.pauseFrames = 7;
 	}
 	else
 	{
-		pauseFrames = 7;
+		data.pauseFrames = 7;
 		//cout << "set pause frames 7" << endl;
 	}
 
-	parent->pauseFrames = pauseFrames;
+	parent->pauseFrames = data.pauseFrames;
 
 	//parent->sess->ActivateEffect(EffectLayer::BEHIND_ENEMIES, parent->ts_killSpack, GetPosition(), true, 0, 10, 5, true);
 	parent->sess->cam.SetRumble(1, 1, 7);
@@ -121,13 +122,13 @@ void Shield::ConfirmKill()
 
 void Shield::ProcessHit()
 {
-	if (action != S_BREAK && ReceivedHit() && currHits > 0)
+	if (data.action != S_BREAK && ReceivedHit() && data.currHits > 0)
 	{
-		--currHits;
-		if (currHits == 0)
+		--data.currHits;
+		if (data.currHits == 0)
 		{
-			action = S_BREAK;
-			frame = 0;
+			data.action = S_BREAK;
+			data.frame = 0;
 			ConfirmHitNoKill();
 			parent->sess->PlayerConfirmEnemyKill(parent, GetReceivedHitPlayerIndex());
 		}
@@ -137,15 +138,15 @@ void Shield::ProcessHit()
 			ConfirmHitNoKill();
 			if (sType == T_BLOCK)
 			{
-				action = S_HURT;
+				data.action = S_HURT;
 			}
 			else if (sType == T_REFLECT && receivedHit->hType != HitboxInfo::HitboxType::COMBO)
 			{
-				action = S_REFLECT;
+				data.action = S_REFLECT;
 				parent->sess->PlayerApplyHit(GetReceivedHitPlayerIndex(),
 					hitboxInfo, NULL, Actor::HitResult::HIT, GetPosition() );
 			}
-			frame = 0;
+			data.frame = 0;
 		}
 	}
 	/*else if (action == S_BREAK && ReceivedHit())
@@ -157,7 +158,7 @@ void Shield::ProcessHit()
 
 HitboxInfo * Shield::IsHit(int pIndex )
 {
-	if (action == S_BREAK)
+	if (data.action == S_BREAK)
 	{
 		return NULL;
 	}
@@ -183,12 +184,12 @@ HitboxInfo * Shield::IsHit(int pIndex )
 
 void Shield::FrameIncrement()
 {
-		++frame;
+	++data.frame;
 }
 
 void Shield::UpdateSprite()
 {
-	switch (action)
+	switch (data.action)
 	{
 	case S_WAIT:
 		break;
@@ -206,7 +207,7 @@ void Shield::Draw(sf::RenderTarget *target)
 	V2d pos = body.GetBasicPos();
 	sf::CircleShape test;
 
-	if (pauseFrames > 0)
+	if (data.pauseFrames > 0)
 	{
 		test.setFillColor(Color( 255, 255, 255, 80 ));
 	}
@@ -225,4 +226,34 @@ void Shield::Draw(sf::RenderTarget *target)
 void Shield::SetPosition(V2d &pos)
 {
 	body.SetBasicPos(pos);
+}
+
+int Shield::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Shield::StoreBytes(unsigned char *bytes)
+{
+	data.hittableObjectData.receivedHit = receivedHit;
+	data.hittableObjectData.receivedHitPlayer = receivedHitPlayer;
+	data.hittableObjectData.comboHitEnemy = comboHitEnemy;
+	data.hittableObjectData.numHealth = numHealth;
+	data.hittableObjectData.specterProtected = specterProtected;
+
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Shield::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	
+	receivedHit = data.hittableObjectData.receivedHit;
+	receivedHitPlayer = data.hittableObjectData.receivedHitPlayer;
+	comboHitEnemy = data.hittableObjectData.comboHitEnemy;
+	numHealth = data.hittableObjectData.numHealth;
+	specterProtected = data.hittableObjectData.specterProtected;
+
+	bytes += sizeof(MyData);
 }

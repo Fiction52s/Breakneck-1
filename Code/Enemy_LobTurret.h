@@ -13,14 +13,19 @@ struct LobTurret : Enemy, LauncherEnemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int lobTypeCounter;
+	};
+	MyData data;
+
 	Tileset *ts;
 	Tileset *ts_bulletExplode;
 
 	int framesWait;
-	int firingCounter;
 
 	const static int NUM_LOB_TYPES = 3;
-	int lobTypeCounter;
+	
 	V2d lobDirs[NUM_LOB_TYPES];
 	double lobSpeeds[NUM_LOB_TYPES];
 	bool reverse;
@@ -50,6 +55,10 @@ struct LobTurret : Enemy, LauncherEnemy
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

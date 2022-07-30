@@ -76,7 +76,7 @@ LobTurret::LobTurret(ActorParams *ap)
 
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher(this,
-		BasicBullet::LOB_TURRET, 32, 1, GetPosition(), V2d(0, -1),
+		BasicBullet::LOB_TURRET, 4, 1, GetPosition(), V2d(0, -1),
 		0, 180, true);
 	launchers[0]->SetBulletSpeed(bulletSpeed);
 	launchers[0]->hitboxInfo->damage = 18;
@@ -140,7 +140,7 @@ void LobTurret::UpdateOnPlacement(ActorParams *ap)
 
 void LobTurret::ResetEnemy()
 {
-	lobTypeCounter = 0;
+	data.lobTypeCounter = 0;
 	action = WAIT;
 	frame = 0;
 	DefaultHurtboxesOn();
@@ -210,12 +210,13 @@ void LobTurret::UpdateBullet(BasicBullet *b)
 
 void LobTurret::BulletHitTerrain(BasicBullet *b,
 	Edge *edge,
-	sf::Vector2<double> &pos)
+	V2d &pos)
 {
 	V2d norm = edge->Normal();
 	double angle = atan2(norm.y, -norm.x);
 	sess->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
 	b->launcher->DeactivateBullet(b);
+	cout << "hit terrain" << endl;
 
 	//if (b->launcher->def_e == NULL)
 	//	b->launcher->SetDefaultCollision(max( b->framesToLive -4, 0 ), edge, pos);
@@ -239,6 +240,7 @@ void LobTurret::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void LobTurret::ProcessState()
 {
+	cout << "lob: " << data.lobTypeCounter << endl;
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
 	switch (action)
@@ -266,8 +268,8 @@ void LobTurret::ProcessState()
 		//else if (frame >= 4 * animationFactor && frame <= 4 * animationFactor + 10 && slowCounter == 1)
 		else if (frame == 6 * animFactor[ATTACK] && slowCounter == 1)
 		{
-			V2d currLobDir = lobDirs[lobTypeCounter];
-			double currLobSpeed = lobSpeeds[lobTypeCounter];
+			V2d currLobDir = lobDirs[data.lobTypeCounter];
+			double currLobSpeed = lobSpeeds[data.lobTypeCounter];
 			//launchers[0]
 
 			launchers[0]->bulletSpeed = currLobSpeed;
@@ -278,10 +280,10 @@ void LobTurret::ProcessState()
 			launchers[0]->facingDir = currLobDir;//normalize(playerPos - position);
 			launchers[0]->Fire();
 
-			++lobTypeCounter;
-			if (lobTypeCounter == NUM_LOB_TYPES)
+			++data.lobTypeCounter;
+			if (data.lobTypeCounter == NUM_LOB_TYPES)
 			{
-				lobTypeCounter = 0;
+				data.lobTypeCounter = 0;
 			}
 		}
 		break;
@@ -340,4 +342,29 @@ void LobTurret::UpdateSprite()
 void LobTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
+}
+
+int LobTurret::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void LobTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void LobTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

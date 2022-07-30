@@ -55,7 +55,7 @@ struct SlowableObject
 {
 	int slowCounter;
 	int slowMultiple;
-
+	bool isSlowable;
 
 	SlowableObject()
 	{
@@ -66,8 +66,8 @@ struct SlowableObject
 		isSlowable = slowable;
 	}
 
-	virtual bool IsSlowed(int playerIndex) = 0;
-	virtual int GetSlowFactor(int playerIndex) = 0;
+	virtual bool IsSlowed(int playerIndex) { return false; }
+	virtual int GetSlowFactor(int playerIndex) { return 1; }
 	void ResetSlow()
 	{
 		slowCounter = 1;
@@ -107,23 +107,22 @@ struct SlowableObject
 			return false;
 		}
 	}
-private:
-	bool isSlowable;
 };
 
 struct HittableObject
 {
-	HittableObject() :receivedHit(NULL) {}
-	virtual HitboxInfo * IsHit(int pIndex) = 0;
-	const bool ReceivedHit() { return receivedHit; }
-	bool CheckHit(Actor *player, Enemy* e);
-	int GetReceivedHitPlayerIndex();
-	virtual void ProcessHit() = 0;
 	HitboxInfo *receivedHit;
 	Actor *receivedHitPlayer;
 	Enemy *comboHitEnemy;
 	int numHealth;
 	bool specterProtected;
+
+	HittableObject() :receivedHit(NULL) {}
+	virtual HitboxInfo * IsHit(int pIndex) { return NULL; }
+	const bool ReceivedHit() { return receivedHit; }
+	bool CheckHit(Actor *player, Enemy* e);
+	int GetReceivedHitPlayerIndex();
+	virtual void ProcessHit() {}
 };
 
 struct CuttableObject

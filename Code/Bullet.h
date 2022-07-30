@@ -187,10 +187,11 @@ struct Launcher
 		//sf::Vector2<double> facingDir;
 	};
 
+	double bulletSpeed;
 	BasicBullet *inactiveBullets;
 	BasicBullet *activeBullets;
-	sf::Vector2<double> position;
-	sf::Vector2<double> facingDir;
+	V2d position;
+	V2d facingDir;
 	
 	int bytesStoredPerBullet;
 	int playerIndex;
@@ -205,7 +206,7 @@ struct Launcher
 	int totalBullets;
 	int perShot;
 	HitboxInfo *hitboxInfo;
-	double bulletSpeed;
+	
 	double angleSpread;
 	double amplitude;
 	int wavelength;

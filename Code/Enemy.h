@@ -57,15 +57,8 @@ struct HitParams
 
 struct StoredEnemyData
 {
-	//SlowableObject
-	int slowMultiple;
-	int slowCounter;
-
-	//HittableObject
-	HitboxInfo *receivedHit;
-	Actor *receivedHitPlayer;
-	Enemy *comboHitEnemy;
-	int numHealth;
+	SlowableObject slowableObjectData;
+	HittableObject hittableObjectData;
 
 	//Enemy
 	PositionInfo currPosInfo;
@@ -89,6 +82,8 @@ struct StoredEnemyData
 
 	CollisionBody *currHitboxes;
 	CollisionBody *currHurtboxes;
+
+	Shield *currShield;
 
 	void Print();
 

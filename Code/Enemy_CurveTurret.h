@@ -13,6 +13,30 @@ struct CurveTurret : Enemy, LauncherEnemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	
+	int framesWait;
+	int realWait;
+
+	double spins[16];
+	int startBulletIndex;
+
+	Shield *shield;
+
+	double angle;
+
+	Tileset *ts;
+	Tileset *ts_bulletExplode;
+
+	double bulletSpeed;
+	int turnFactor;
+	int animationFactor;
+
 	CurveTurret(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
 	void ProcessState();
@@ -30,29 +54,11 @@ struct CurveTurret : Enemy, LauncherEnemy
 		int hitResult );
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
-	void FireResponse(BasicBullet *b);
+	void FireResponse(BasicBullet *b);	
 
-	Tileset *ts;
-	Tileset *ts_bulletExplode;
-	const static int maxBullets = 16;
-
-	int framesWait;
-	int firingCounter;
-	int realWait;
-
-	double spins[16];
-	int startBulletIndex;
-
-	Shield *shield;
-
-	double angle;
-
-	sf::Vector2<double> gravity;
-
-	int animationFactor;
-	double bulletSpeed;
-
-	int turnFactor;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
