@@ -190,6 +190,7 @@ AimLauncher::AimLauncher(ActorParams *ap)//SpringType sp, Vector2i &pos, Vector2
 
 	ResetEnemy();
 }
+
 void AimLauncher::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
@@ -244,8 +245,8 @@ void AimLauncher::ActionEnded()
 
 void AimLauncher::SetCurrDir(V2d &newDir)
 {
-	currDir = newDir;
-	double angle = atan2(currDir.x, -currDir.y);
+	data.currDir = newDir;
+	double angle = atan2(data.currDir.x, -data.currDir.y);
 
 	float spriteAngle = angle / PI * 180.0;
 
@@ -339,4 +340,23 @@ void AimLauncher::DrawMinimap(sf::RenderTarget *target)
 		enemyCircle.setPosition(GetPositionF());
 		target->draw(enemyCircle);
 	}
+}
+
+int AimLauncher::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void AimLauncher::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void AimLauncher::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

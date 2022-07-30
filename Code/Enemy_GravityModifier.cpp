@@ -156,6 +156,25 @@ void GravityModifier::EnemyDraw(sf::RenderTarget *target)
 	target->draw(sprite);
 }
 
+int GravityModifier::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void GravityModifier::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void GravityModifier::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+
 //void GravityModifier::DrawMinimap(sf::RenderTarget *target)
 //{
 //	if (!dead)

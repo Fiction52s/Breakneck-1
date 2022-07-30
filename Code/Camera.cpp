@@ -1644,3 +1644,20 @@ double Camera::GetNextMovementZoom( double moveZoom )
 
 	return tempZoomFactor;
 }
+
+//int Camera::GetNumStoredBytes()
+//{
+//	MovementSequence ms;
+//	ms.GetNumStoredBytes();
+//	return sizeof(Camera) + sizeof
+//}
+//
+//void Camera::StoreBytes(unsigned char *bytes)
+//{
+//
+//}
+//
+//void Camera::SetFromBytes(unsigned char *bytes)
+//{
+//
+//}

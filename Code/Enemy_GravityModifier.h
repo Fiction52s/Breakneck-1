@@ -13,8 +13,23 @@ struct GravityModifier : Enemy
 		Count
 	};
 
-	bool CountsForEnemyGate() { return false; }
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Tileset *ts;
+	Tileset *ts_refresh;
+
+	double gravFactor;
+
+	bool increaser;
+	int duration;
+
+	
 	GravityModifier(ActorParams *ap);
+	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void AddToWorldTrees();
@@ -24,13 +39,11 @@ struct GravityModifier : Enemy
 	bool Modify();
 	bool IsModifiable();
 
-	Tileset *ts;
-	Tileset *ts_refresh;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-	double gravFactor;
-
-	bool increaser;
-	int duration;
+	
 };
 
 #endif

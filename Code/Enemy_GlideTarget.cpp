@@ -109,3 +109,22 @@ void GlideTarget::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 }
+
+int GlideTarget::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void GlideTarget::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void GlideTarget::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

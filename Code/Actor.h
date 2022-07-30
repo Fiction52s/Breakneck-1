@@ -738,8 +738,8 @@ struct Actor : QuadTreeCollider,
 	bool holdDouble;
 	int frame;
 	int action;
-	sf::Vector2<double> position;
-	sf::Vector2<double> velocity;
+	V2d position;
+	V2d velocity;
 	bool holdJump;
 	int wallJumpFrameCounter;
 	double groundSpeed;
@@ -761,10 +761,10 @@ struct Actor : QuadTreeCollider,
 	// 0 is not started, 1 is right, 2 is
 	//left
 	bool airDashStall;
-	sf::Vector2<double> startAirDashVel;
+	V2d startAirDashVel;
 	double extraAirDashY;
 	int oldAction;
-	sf::Vector2<double> oldVelocity;
+	V2d oldVelocity;
 	bool reversed;
 	double storedReverseSpeed;
 
@@ -783,7 +783,7 @@ struct Actor : QuadTreeCollider,
 	bool oldInBubble;
 
 
-	sf::Vector2<double> bubblePos[MAX_BUBBLES];
+	V2d bubblePos[MAX_BUBBLES];
 	int bubbleFramesToLive[MAX_BUBBLES];
 	int bubbleRadiusSize[MAX_BUBBLES];
 	CollisionBody bubbleHitboxes[MAX_BUBBLES];
@@ -829,9 +829,9 @@ struct Actor : QuadTreeCollider,
 	bool scorpOn;
 	int framesFlameOn;
 	bool bounceFlameOn;
-	sf::Vector2<double> storedBounceVel;
-	sf::Vector2<double> bounceNorm;
-	sf::Vector2<double> oldBounceNorm;
+	V2d storedBounceVel;
+	V2d bounceNorm;
+	V2d oldBounceNorm;
 	Edge *bounceEdge;
 	double storedBounceGroundSpeed;
 	double bounceQuant;
@@ -1091,8 +1091,8 @@ struct Actor : QuadTreeCollider,
 
 	Session *sess;
 	GravityModifier *currGravModifier;
-	sf::Vector2<double> springVel;
-	sf::Vector2<double> springExtra;
+	V2d springVel;
+	V2d springExtra;
 	int springStunFramesStart;
 	int springStunFrames;
 	V2d teleportSpringDest;

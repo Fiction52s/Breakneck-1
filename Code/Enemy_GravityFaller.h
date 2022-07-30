@@ -17,25 +17,31 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 		A_Count
 	};
 
-	GravityFaller(ActorParams *ap);
+	struct MyData : StoredEnemyData
+	{
+		int chargeFrame;
+		int fallFrames;
+	};
+	MyData data;
 
-	void SetLevel(int lev);
-	int actionLength[A_Count];
-	int animFactor[A_Count];
-	void UpdateEnemyPhysics();
-	void FrameIncrement();
-	Tileset *ts;
+	
+	
+	
 
-	//Shield *shield;
-
-	int fallFrames;
-
+	
 	double gravity;
-	sf::Vector2<double> velocity;
 	double gravityFactor;
 	int chargeLength;
-	int chargeFrame;
+	
 
+	double maxFallSpeed;
+	V2d startNormal;
+	Tileset *ts;
+
+	GravityFaller(ActorParams *ap);
+	void SetLevel(int lev);
+	void UpdateEnemyPhysics();
+	void FrameIncrement();
 	void ProcessState();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
@@ -45,12 +51,11 @@ struct GravityFaller : Enemy, SurfaceMoverHandler
 
 	void HitTerrainAerial(Edge *e, double quant);
 
-	Tileset *ts_walk;
-	Tileset *ts_roll;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-	double maxFallSpeed;
-
-	V2d startNormal;
+	
 };
 
 #endif

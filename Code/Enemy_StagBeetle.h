@@ -14,25 +14,10 @@ struct StagBeetle : Enemy, GroundMoverHandler
 		Count
 	};
 
-	StagBeetle(ActorParams *ap);
-	~StagBeetle();
-	void HandleNoHealth();
-	void ActionEnded();
-	void ProcessState();
-	void UpdateEnemyPhysics();
-	void EnemyDraw(sf::RenderTarget *target);
-	
-	void DebugDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	
-	void ResetEnemy();
-
-	void HitTerrain(double &q);
-	bool StartRoll();
-	void FinishedRoll();
-	void SetLevel(int lev);
-	bool IsFacingTrueRight();
-	void UpdateHitboxes();
+	struct MyData : StoredEnemyData
+	{
+	};
+	MyData data;
 
 	Shield *shield;
 
@@ -43,28 +28,43 @@ struct StagBeetle : Enemy, GroundMoverHandler
 	Tileset *ts_sweep;
 	Tileset *ts_walk;
 
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	GroundMover *testMover;
-	void HitOther();
-	void ReachCliff();
-	void HitOtherAerial(Edge *e);
-	void Land();
-
 	bool reverse;
 
-	sf::Vector2<double> tempVel;
+	V2d tempVel;
 	double gravity;
 
-	int attackFrame;
+	
 	int attackMult;
 	int crawlAnimationFactor;
 	int rollAnimationFactor;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
+
+	StagBeetle(ActorParams *ap);
+	~StagBeetle();
+	void HandleNoHealth();
+	void ActionEnded();
+	void ProcessState();
+	void UpdateEnemyPhysics();
+	void EnemyDraw(sf::RenderTarget *target);
+	void DebugDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	void HitTerrain(double &q);
+	bool StartRoll();
+	void FinishedRoll();
+	void SetLevel(int lev);
+	bool IsFacingTrueRight();
+	void UpdateHitboxes();
+	void HitOther();
+	void ReachCliff();
+	void HitOtherAerial(Edge *e);
+	void Land();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

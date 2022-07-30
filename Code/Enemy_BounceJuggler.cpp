@@ -138,6 +138,7 @@ void BounceJuggler::UpdateJuggleRepsText(int reps)
 {
 	if (limitedJuggles)
 	{
+		data.juggleTextNumber = reps;
 		numJugglesText.setString(to_string(reps));
 		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
 			+ numJugglesText.getLocalBounds().width / 2,
@@ -149,7 +150,7 @@ void BounceJuggler::UpdateJuggleRepsText(int reps)
 void BounceJuggler::ResetEnemy()
 {
 	sprite.setRotation(0);
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
 	surfaceMover->velocity = V2d(0, 0);
 	DefaultHurtboxesOn();
@@ -157,7 +158,7 @@ void BounceJuggler::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 	receivedHit = NULL;
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
@@ -184,6 +185,9 @@ void BounceJuggler::Throw(V2d vel)
 
 void BounceJuggler::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
@@ -191,7 +195,7 @@ void BounceJuggler::Return()
 
 	UpdateJuggleRepsText(0);
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	numHealth = maxHealth;
 }
@@ -201,16 +205,19 @@ void BounceJuggler::Pop()
 	sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
+	++data.currJuggle;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 
-	UpdateJuggleRepsText(juggleReps - currJuggle);
+	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
 void BounceJuggler::PopThrow()
 {
+	action = S_FLY;
+	frame = 0;
+
 	V2d dir;
 
 	if (guidedDir == NULL)
@@ -227,7 +234,7 @@ void BounceJuggler::PopThrow()
 	}
 	else
 	{
-		dir = guidedDir[currJuggle];
+		dir = guidedDir[data.currJuggle];
 	}
 
 	V2d hit = dir * flySpeed;
@@ -249,7 +256,7 @@ void BounceJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && currJuggle == juggleReps - 1)
+			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
@@ -261,15 +268,10 @@ void BounceJuggler::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 				ConfirmHitNoKill();
 
-				action = S_RETURN;
-				frame = 0;
-
 				Return();
 			}
 			else
 			{
-				action = S_FLY;
-				frame = 0;
 				PopThrow();
 			}
 		}
@@ -352,15 +354,13 @@ void BounceJuggler::FrameIncrement()
 {
 	if (action == S_FLY || action == S_BOUNCE)
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 	}
 }
@@ -368,11 +368,9 @@ void BounceJuggler::FrameIncrement()
 void BounceJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
 		Return();
 	}
 }
@@ -453,4 +451,31 @@ void BounceJuggler::HitTerrainAerial(Edge * edge, double quant)
 	frame = 0;
 	//SetHitboxes(hitBody, 0);
 	DefaultHurtboxesOn();
+}
+
+int BounceJuggler::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void BounceJuggler::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void BounceJuggler::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	UpdateJuggleRepsText(data.juggleTextNumber);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

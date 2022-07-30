@@ -710,13 +710,22 @@ BasicBullet::BasicBullet(int indexVA, BType bType, Launcher *launch)
 		break;
 	}
 	double rad = Launcher::GetRadius(bType);
-	bounceCount = 0;
 	/*hurtBody.isCircle = true;
 	hurtBody.globalAngle = 0;
 	hurtBody.offset.x = 0;
 	hurtBody.offset.y = 0;
 	hurtBody.rw = rad;
 	hurtBody.rh = rad;*/
+
+
+	prev = NULL;
+	next = NULL;
+	slowCounter = 1;
+	active = false;
+	slowMultiple = 1;
+	framesToLive = 0;
+	frame = 0;
+	bounceCount = 0;
 
 	hitBody.isCircle = true;
 	hitBody.globalAngle = 0;

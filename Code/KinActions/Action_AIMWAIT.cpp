@@ -57,7 +57,7 @@ void Actor::AIMWAIT_Change()
 
 		double s = currAimLauncher->speed;
 
-		springVel = currAimLauncher->currDir * s;
+		springVel = currAimLauncher->data.currDir * s;
 
 		if (springVel.x > 0)
 		{

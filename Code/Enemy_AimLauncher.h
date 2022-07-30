@@ -22,6 +22,12 @@ struct AimLauncher : Enemy
 		TYPE_HOMING,
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d currDir;
+	};
+	MyData data;
+
 	AimLauncherType aimLauncherType;
 
 	Tileset *ts;
@@ -32,6 +38,22 @@ struct AimLauncher : Enemy
 	sf::Sprite particleSprite;
 	sf::Sprite recoverSprite;
 	sf::Sprite boostSprite;
+
+	int animationFactor;
+
+	V2d origDir;
+	
+
+	int speed;
+	int stunFrames;
+	double dist;
+
+	sf::Vertex bounceQuads[3 * 4];
+	sf::Vertex debugLine[2];
+	sf::Text debugSpeed;
+
+	V2d dest;
+	SoundInfo *launchSoundBuf;
 
 	int tilesetChoice;
 	int startFrame;
@@ -50,7 +72,7 @@ struct AimLauncher : Enemy
 	void ProcessState();
 	void EnemyDraw(sf::RenderTarget *target);
 	void DrawMinimap(sf::RenderTarget *target);
-	SoundInfo *launchSoundBuf;
+	
 
 	void StartAiming();
 	void UpdateSprite();
@@ -59,27 +81,13 @@ struct AimLauncher : Enemy
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 	
 
 	void DebugDraw(sf::RenderTarget *target);
-
-	int animationFactor;
-
-	V2d origDir;
-	V2d currDir;
-
-	int speed;
-	int stunFrames;
-	double dist;
-
-	sf::Vertex bounceQuads[3 * 4];
-
-
-
-	sf::Vertex debugLine[2];
-	sf::Text debugSpeed;
-
-	V2d dest;
 };
 
 #endif

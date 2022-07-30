@@ -16,6 +16,30 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int currHits;
+		int juggleTextNumber;
+		int currJuggle;
+		int waitFrame;
+	};
+	MyData data;
+
+	sf::Text numJugglesText;
+	bool limitedJuggles;
+
+	double flySpeed;
+
+	int hitLimit;
+
+	Tileset *ts;
+
+	int juggleReps;
+
+	V2d *guidedDir;
+
+	int maxWaitFrames;
+
 	bool CountsForEnemyGate() { return false; }
 	BounceJuggler(ActorParams *ap);
 	~BounceJuggler();
@@ -40,23 +64,9 @@ struct BounceJuggler : Enemy, SurfaceMoverHandler
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 
-	sf::Text numJugglesText;
-	bool limitedJuggles;
-
-	double flySpeed;
-
-	int hitLimit;
-	int currHits;
-
-	Tileset *ts;
-
-	int juggleReps;
-	int currJuggle;
-
-	V2d *guidedDir;
-
-	int waitFrame;
-	int maxWaitFrames;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

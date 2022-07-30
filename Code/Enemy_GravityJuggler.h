@@ -16,6 +16,29 @@ struct GravityJuggler : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+		int hitLimit;
+		int currHits;
+		int currJuggle;
+		int juggleTextNumber;
+		int waitFrame;
+	};
+	MyData data;
+
+	sf::Text numJugglesText;
+	bool reversedGrav;
+	bool limitedJuggles;
+	double gravFactor;
+	V2d gDir;
+	double maxFallSpeed;
+	Tileset *ts;
+	bool reversed;
+	int juggleReps;
+	
+	int maxWaitFrames;
+
 	GravityJuggler(ActorParams *ap );
 	~GravityJuggler();
 	void UpdateParamsSettings();
@@ -38,28 +61,9 @@ struct GravityJuggler : Enemy
 	void Throw(V2d vel);
 	void SetLevel(int lev);
 
-	V2d velocity;
-
-	sf::Text numJugglesText;
-	bool reversedGrav;
-	bool limitedJuggles;
-
-	double gravFactor;
-	V2d gDir;
-	double maxFallSpeed;
-
-	int hitLimit;
-	int currHits;
-
-	Tileset *ts;
-
-	bool reversed;
-
-	int juggleReps;
-	int currJuggle;
-
-	int waitFrame;
-	int maxWaitFrames;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

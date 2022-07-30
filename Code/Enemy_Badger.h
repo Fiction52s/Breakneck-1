@@ -18,18 +18,19 @@ struct Badger : Enemy, GroundMoverHandler
 		Count
 	};
 
-	int landedAction;
-	int nextAction;
+	struct MyData : StoredEnemyData
+	{
+		int attackFrame;
+		int landedAction;
+		int nextAction;
+	};
+	MyData data;
 
 	Tileset *ts;
 
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
 	V2d gravity;
 
-	int attackFrame;
+	
 	int attackMult;
 
 	double maxGroundSpeed;
@@ -56,6 +57,10 @@ struct Badger : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 

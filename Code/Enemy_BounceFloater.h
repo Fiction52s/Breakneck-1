@@ -15,6 +15,14 @@ struct BounceFloater : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Tileset *ts;
+
 	bool CountsForEnemyGate() { return false; }
 	BounceFloater(ActorParams *ap);
 	void ProcessState();
@@ -27,7 +35,9 @@ struct BounceFloater : Enemy
 	void HandleNoHealth();
 	void SetLevel(int lev);
 
-	Tileset *ts;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

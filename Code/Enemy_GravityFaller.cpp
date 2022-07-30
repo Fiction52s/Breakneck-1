@@ -107,12 +107,12 @@ void GravityFaller::ResetEnemy()
 
 	action = IDLE;
 	frame = 0;
-	fallFrames = 0;
+	data.fallFrames = 0;
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 	
-	chargeFrame = 0;
+	data.chargeFrame = 0;
 
 	facingRight = false;
 
@@ -143,11 +143,11 @@ void GravityFaller::FrameIncrement()
 {
 	if (action == DOWNCHARGE || action == UPCHARGE)
 	{
-		chargeFrame++;
+		data.chargeFrame++;
 	}
 	else if (action == FALLDOWN || action == FALLUP)
 	{
-		fallFrames++;
+		data.fallFrames++;
 	}
 }
 
@@ -207,18 +207,18 @@ void GravityFaller::ProcessState()
 			{
 				action = UPCHARGE;
 				frame = 0;
-				chargeFrame = 0;
+				data.chargeFrame = 0;
 			}
 			else
 			{
 				action = DOWNCHARGE;
 				frame = 0;
-				chargeFrame = 0;
+				data.chargeFrame = 0;
 			}
 		}
 	}
 
-	if (chargeFrame == chargeLength && ( action == DOWNCHARGE || action == UPCHARGE))
+	if (data.chargeFrame == chargeLength && ( action == DOWNCHARGE || action == UPCHARGE))
 	{
 		surfaceMover->ClearAirForces();
 		if (action == DOWNCHARGE)
@@ -227,7 +227,7 @@ void GravityFaller::ProcessState()
 			frame = 0;
 			surfaceMover->Jump(V2d(0, 0));
 			surfaceMover->AddAirForce(startNormal * -gravity);
-			fallFrames = 0;
+			data.fallFrames = 0;
 		}
 		else if (action == UPCHARGE)
 		{
@@ -235,10 +235,10 @@ void GravityFaller::ProcessState()
 			frame = 0;
 			surfaceMover->Jump(V2d(0, 0));
 			surfaceMover->AddAirForce(startNormal * gravity);
-			fallFrames = 0;
+			data.fallFrames = 0;
 		}
 	}
-	else if (((action == FALLDOWN || action == FALLUP) && fallFrames == 30))
+	else if (((action == FALLDOWN || action == FALLUP) && data.fallFrames == 30))
 		/*|| ( action == FALLDOWN && distY < 0 ) 
 		|| (action == FALLUP && distY > 0 ) )*/
 	{
@@ -374,5 +374,24 @@ void GravityFaller::HitTerrainAerial(Edge * e, double quant)
 	}
 
 	frame = 0;
-	chargeFrame = 0;
+	data.chargeFrame = 0;
+}
+
+int GravityFaller::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void GravityFaller::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void GravityFaller::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

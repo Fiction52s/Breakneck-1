@@ -159,6 +159,7 @@ void GravityJuggler::UpdateJuggleRepsText( int reps )
 {
 	if (limitedJuggles)
 	{
+		data.juggleTextNumber = reps;
 		numJugglesText.setString(to_string(reps));
 		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
 			+ numJugglesText.getLocalBounds().width / 2,
@@ -169,14 +170,14 @@ void GravityJuggler::UpdateJuggleRepsText( int reps )
 
 void GravityJuggler::ResetEnemy()
 {
-	hitLimit = -1;
+	data.hitLimit = -1;
 	action = S_FLOAT;
 
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 
 	DefaultHurtboxesOn();
 	//DefaultHitboxesOn();
@@ -187,7 +188,7 @@ void GravityJuggler::ResetEnemy()
 	receivedHit = NULL;
 	UpdateHitboxes();
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(juggleReps);
 
@@ -198,22 +199,25 @@ void GravityJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void GravityJuggler::Throw(V2d vel)
 {
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void GravityJuggler::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(0);
 
@@ -225,17 +229,20 @@ void GravityJuggler::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
+	++data.currJuggle;
 	
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 
-	UpdateJuggleRepsText(juggleReps - currJuggle);
+	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 }
 
 void GravityJuggler::PopThrow()
 {
+	action = S_POP;
+	frame = 0;
+
 	V2d dir; 
 
 	dir = receivedHit->hDir;//normalize(receivedHit->hDir);
@@ -287,7 +294,7 @@ void GravityJuggler::ProcessHit()
 		//Actor *player = owner->GetPlayer(0);
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && currJuggle == juggleReps - 1)
+			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
@@ -299,15 +306,10 @@ void GravityJuggler::ProcessHit()
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
 
-				action = S_RETURN;
-				frame = 0;
-
 				Return();
 			}
 			else
 			{
-				action = S_POP;
-				frame = 0;
 				PopThrow();
 			}
 		}
@@ -348,7 +350,7 @@ void GravityJuggler::ProcessState()
 	}*/
 
 
-	if (action == S_POP && ( (velocity.y >= 0 && !reversedGrav) || ( velocity.y <= 0 && reversedGrav ) ) )
+	if (action == S_POP && ( (data.velocity.y >= 0 && !reversedGrav) || (data.velocity.y <= 0 && reversedGrav ) ) )
 	{
 		action = S_JUGGLE;
 		frame = 0;
@@ -364,25 +366,25 @@ void GravityJuggler::HandleNoHealth()
 void GravityJuggler::Move()
 {
 	double numStep = numPhysSteps;
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * numStep;
 
 	currPosInfo.position += movementVec;
 
-	velocity += gDir * (gravFactor / numStep / slowMultiple);
+	data.velocity += gDir * (gravFactor / numStep / slowMultiple);
 
 	if (reversedGrav)
 	{
-		if (velocity.y < -maxFallSpeed)
+		if (data.velocity.y < -maxFallSpeed)
 		{
-			velocity.y = -maxFallSpeed;
+			data.velocity.y = -maxFallSpeed;
 		}
 	}
 	else
 	{
-		if (velocity.y > maxFallSpeed)
+		if (data.velocity.y > maxFallSpeed)
 		{
-			velocity.y = maxFallSpeed;
+			data.velocity.y = maxFallSpeed;
 		}
 	}
 }
@@ -399,22 +401,20 @@ void GravityJuggler::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void GravityJuggler::FrameIncrement()
 {
 	if (action == S_POP || action == S_JUGGLE)
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 		
 	}
@@ -424,11 +424,9 @@ void GravityJuggler::FrameIncrement()
 void GravityJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if ( hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	if (data.hitLimit > 0 && data.currHits >= data.hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
 		Return();
 	}
 }
@@ -471,4 +469,31 @@ void GravityJuggler::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(numJugglesText);
 	}
+}
+
+int GravityJuggler::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void GravityJuggler::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void GravityJuggler::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	UpdateJuggleRepsText(data.juggleTextNumber);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

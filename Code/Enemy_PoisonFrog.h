@@ -18,24 +18,29 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int invincibleFrames;
+		bool hasDoubleJump;
+	};
+	MyData data;
+
 	bool reverse;
 	Tileset *ts_test;
 	double gravity;
-	V2d velocity;
 	double angle;
 
 	int hitsBeforeHurt;
 	int hitsCounter;
-	int invincibleFrames;
+	
 
 	double xSpeed;
-	int jumpFramesWait;
 	bool steepJump;
 	V2d jumpStrength;
 
 	Tileset *ts_walk;
 	Tileset *ts_roll;
-	bool hasDoubleJump;
+	
 
 	double maxFallSpeed;
 
@@ -57,6 +62,10 @@ struct PoisonFrog : Enemy, GroundMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 	void HandleNoHealth();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

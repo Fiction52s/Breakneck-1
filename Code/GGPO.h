@@ -7,6 +7,7 @@
 #include "Wire.h"
 #include "Grass.h"
 #include "Actor.h"
+#include "Camera.h"
 #pragma comment(lib, "wsock32.lib")
 
 
@@ -351,6 +352,8 @@ struct PState
 	ScorpionLauncher *currScorpionLauncher;
 	ScorpionLauncher *oldScorpionLauncher;
 
+	
+
 	int springStunFrames;
 	int springStunFramesStart;
 	int directionalInputFreezeFrames;
@@ -365,6 +368,13 @@ struct PState
 	Actor::Hitter recentHitters[Actor::MAX_HITTERS];
 
 	ComboObject *activeComboObjList;
+
+	TutorialObject *currTutorialObject;
+	GravityModifier *currGravModifier;
+
+	V2d springVel;
+	double glideTurnFactor;
+
 	//HitboxInfo currVSHitboxInfo;
 
 	void Print();
@@ -383,6 +393,7 @@ struct SaveGameState
 	int gameState; //game mode such as RUN or FROZEN
 	Sequence  *activeSequence;
 	uint32 randomState;
+	Camera cam;
 	void Print();
 };
 

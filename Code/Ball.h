@@ -16,6 +16,34 @@ struct Ball : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{	
+		int currHits;
+		int juggleTextNumber;
+		int currJuggle;
+		int waitFrame;
+	};
+	MyData data;
+
+	double flySpeed;
+
+	bool limitedJuggles;
+	sf::Text numJugglesText;
+
+
+	int hitLimit;
+	
+
+	Tileset *ts;
+
+	int juggleReps;
+	
+
+	V2d *guidedDir;
+
+	
+	int maxWaitFrames;
+
 	bool CountsForEnemyGate() { return false; }
 	Ball(ActorParams *ap);
 	~Ball();
@@ -41,24 +69,9 @@ struct Ball : Enemy, SurfaceMoverHandler
 	void Throw(V2d vel);
 	void UpdateJuggleRepsText(int reps);
 
-	double flySpeed;
-
-	bool limitedJuggles;
-	sf::Text numJugglesText;
-	
-
-	int hitLimit;
-	int currHits;
-
-	Tileset *ts;
-
-	int juggleReps;
-	int currJuggle;
-
-	V2d *guidedDir;
-
-	int waitFrame;
-	int maxWaitFrames;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

@@ -61,12 +61,10 @@ PoisonFrog::PoisonFrog( ActorParams *ap )
 	animFactor[WALLCLING] = 1;
 
 	
-	jumpFramesWait = 60;
 	jumpStrength = V2d(5, 12);
 
 	maxFallSpeed = 25;
 
-	invincibleFrames = 0;
 	double width = 80;
 	double height = 80;
 	ts_test = GetSizedTileset( "Enemies/W2/frog_80x80.png");
@@ -133,8 +131,7 @@ void PoisonFrog::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	invincibleFrames = 0;
-	hasDoubleJump = true;
+	data.hasDoubleJump = true;
 
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
@@ -297,7 +294,7 @@ void PoisonFrog::ProcessState()
 			}
 			else
 			{
-				if (hasDoubleJump )
+				if (data.hasDoubleJump )
 				{
 					//cout << "vel: " << velocity.y << endl;
 					V2d diff = playerPos - GetPosition();
@@ -305,7 +302,7 @@ void PoisonFrog::ProcessState()
 					{
 						if (groundMover->velocity.y < -3 && length(diff) < 300 && diff.y > 0)
 						{
-							hasDoubleJump = false;
+							data.hasDoubleJump = false;
 							groundMover->velocity.y = -jumpStrength.y;
 						}
 					}
@@ -313,7 +310,7 @@ void PoisonFrog::ProcessState()
 					{
 						if (groundMover->velocity.y > 3 && length(diff) < 300 && diff.y < 0)
 						{
-							hasDoubleJump = false;
+							data.hasDoubleJump = false;
 							groundMover->velocity.y = -jumpStrength.y;
 						}
 					}
@@ -563,7 +560,26 @@ void PoisonFrog::Land()
 	//cout << "LANDING" << endl;
 	action = LAND;
 	frame = 0;
-	hasDoubleJump = true;
+	data.hasDoubleJump = true;
 	V2d gn = groundMover->ground->Normal();
 	//angle = atan2(gn.x, -gn.y);
+}
+
+int PoisonFrog::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void PoisonFrog::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void PoisonFrog::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

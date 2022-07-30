@@ -160,3 +160,22 @@ void BounceFloater::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
 }
+
+int BounceFloater::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void BounceFloater::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void BounceFloater::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

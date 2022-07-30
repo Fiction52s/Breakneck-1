@@ -388,6 +388,12 @@ void Actor::PopulateState(PState *ps)
 	}
 
 	ps->activeComboObjList = activeComboObjList;
+
+	ps->currTutorialObject = currTutorialObject;
+	ps->currGravModifier = currGravModifier;
+
+	ps->springVel = springVel;
+	ps->glideTurnFactor = glideTurnFactor;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -628,6 +634,12 @@ void Actor::PopulateFromState(PState *ps)
 	}
 
 	activeComboObjList = ps->activeComboObjList;
+
+	currTutorialObject = ps->currTutorialObject;
+	currGravModifier = ps->currGravModifier;
+
+	springVel = ps->springVel;
+	glideTurnFactor = ps->glideTurnFactor;
 }
 
 
@@ -5116,8 +5128,13 @@ void Actor::ReactToBeingHit()
 		}
 		else if (actorIndex == 1)
 		{
+			int realDamage = receivedHit.damage;
+			if (receivedHitPlayer == NULL)
+			{
+				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
+			}
 			//cout << "p2 taking: " << receivedHit->damage;// << endl;
-			fm->data.p1Health -= receivedHit.damage;
+			fm->data.p1Health -= realDamage;
 
 			//cout << " health is now: " << fm->data.p1Health << endl;
 			if (fm->data.p1Health < 0)

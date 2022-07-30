@@ -9,7 +9,7 @@ using namespace std;
 using namespace sf;
 
 Badger::Badger(ActorParams *ap)
-	:Enemy( EnemyType::EN_BADGER, ap ), moveBezTest( .22,.85,.3,.91 )
+	:Enemy( EnemyType::EN_BADGER, ap )
 {
 	SetNumActions(Count);
 	SetEditorActions(RUN, RUN, 0);
@@ -42,10 +42,9 @@ Badger::Badger(ActorParams *ap)
 	action = RUN;
 
 	dead = false;
-	nextAction = SHORTJUMP;
+	
 	maxFallSpeed = 25;
 
-	attackFrame = -1;
 	attackMult = 10;
 
 	double width = 192;
@@ -79,7 +78,6 @@ Badger::Badger(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	bezLength = 60 * NUM_STEPS;
 
 
 
@@ -118,15 +116,13 @@ void Badger::ResetEnemy()
 	DefaultHitboxesOn();
 
 	facingRight = true;
+
+	data.nextAction = SHORTJUMP;
 	
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
 
-	DefaultHitboxesOn();
-	DefaultHurtboxesOn();
-
-	bezFrame = 0;
-	attackFrame = -1;
+	data.attackFrame = -1;
 	
 	frame = 0;
 
@@ -139,16 +135,16 @@ void Badger::ResetEnemy()
 
 void Badger::UpdateNextAction()
 {
-	switch( nextAction )
+	switch(data.nextAction )
 	{
 	case RUN:
-		nextAction = SHORTJUMP;
+		data.nextAction = SHORTJUMP;
 		break;
 	case SHORTJUMP:
-		nextAction = TALLJUMP;
+		data.nextAction = TALLJUMP;
 		break;
 	case TALLJUMP:
-		nextAction = RUN;
+		data.nextAction = RUN;
 		break;
 	case TALLJUMPSQUAT:
 		{
@@ -179,9 +175,9 @@ void Badger::ActionEnded()
 		switch( action )
 		{
 		case RUN:
-			action = nextAction;
+			action = data.nextAction;
 			UpdateNextAction();
-			cout << "run transition to: " << action << endl;
+			//cout << "run transition to: " << action << endl;
 			frame = 0;
 			break;
 		case LEDGEJUMP:
@@ -207,7 +203,7 @@ void Badger::ActionEnded()
 			break;
 		
 		case LAND:
-			action = nextAction;
+			action = data.nextAction;
 			UpdateNextAction();
 			frame = 0;
 			break;
@@ -230,7 +226,7 @@ void Badger::Jump( double strengthx, double strengthy )
 	}
 	
 
-	landedAction = action;
+	data.landedAction = action;
 
 	V2d gAlong = normalize(groundMover->ground->v1 - groundMover->ground->v0 );
 	if( !facingRight )
@@ -242,7 +238,7 @@ void Badger::Jump( double strengthx, double strengthy )
 		gAlong = (gAlong + V2d( 0, -1 )) / 2.0;
 		V2d jumpVec = gAlong * strengthy;
 		groundMover->Jump( jumpVec );
-		cout << "jump blend: " << jumpVec.x << ", " << jumpVec.y << endl;
+		//cout << "jump blend: " << jumpVec.x << ", " << jumpVec.y << endl;
 	}
 	else
 	{
@@ -376,9 +372,9 @@ void Badger::ProcessState()
 	}
 
 	
-	if( attackFrame == 2 * attackMult )
+	if( data.attackFrame == 2 * attackMult )
 	{
-		attackFrame = -1;
+		data.attackFrame = -1;
 	}
 
 }
@@ -502,20 +498,20 @@ void Badger::UpdateSprite()
 	//case ATTACK:
 	//	break;
 	case LAND:
-		if( landedAction == LEDGEJUMP || landedAction == SHORTJUMP )
+		if( data.landedAction == LEDGEJUMP || data.landedAction == SHORTJUMP )
 		{
 			ir = ts->GetSubRect( frame / animFactor[LAND] + 15 );
 		}
-		else if( landedAction == TALLJUMP )
+		else if(data.landedAction == TALLJUMP )
 		{
 			ir = ts->GetSubRect( frame / animFactor[LAND] + 30 );
 		}
 		break;
 	}
 
-	if( attackFrame >= 0 )
+	if(data.attackFrame >= 0 )
 	{
-		ir = ts->GetSubRect( 28 + attackFrame / attackMult );
+		ir = ts->GetSubRect( 28 + data.attackFrame / attackMult );
 	}
 
 	if( !facingRight )
@@ -612,4 +608,23 @@ void Badger::Land()
 	frame = 0;
 	
 	//cout << "land" << endl;
+}
+
+int Badger::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Badger::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Badger::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

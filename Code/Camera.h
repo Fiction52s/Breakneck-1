@@ -30,39 +30,14 @@ struct Camera
 	};
 
 	CamType camType;
-
-	Camera();
-	void SetCamType(CamType c);
-	float GetZoom();
-	void Set( sf::Vector2f &pos, float zFactor,
-		int zLevel );
-	void Reset();
-	void SetRumble( int xFactor, int yFactor, 
-		int duration, float rotateAngle = 0.f,
-		bool singleDirection = false);
-	void StopRumble();
-	void UpdateRumble();
-	void EaseOutOfManual( int frames );
-	void SetManual( bool man );
-	void SetMovementSeq( MovementSequence *move,
-		bool relative );
-	void Ease(sf::Vector2f &pos, float zFactor,
-		int numFrames, CubicBezier bez = CubicBezier());
-	void UpdateEase();
-	sf::Vector2f GetNewOffset( sf::Vector2<double> &pVel);
-	void Init(sf::Vector2<double> &pos);
 	Session *sess;
 	GameSession *game;
 	sf::Vector2f offsetVel;
-	
-	sf::FloatRect GetRect();
-	sf::Vector2f GetPos();
-	float GetRotation();
 	sf::Vector2f manualPos;
 	sf::Vector2f startManualPos;
 	float startManualZoom;
 	float manualZoom;
-	MovementSequence *currMove;
+	MovementSequence *currMove; //because of how I'm storing the Camera in ggpo.h, this sequence does not get stored for rollbacks
 	bool relativeMoveSeq;
 	sf::Vector2f sequenceStartPos;
 	float sequenceStartZoom;
@@ -88,6 +63,8 @@ struct Camera
 	int rX;
 	int rY;
 
+	int slowMultiple;
+
 	float rumbleRotateDegrees;
 
 	float cameraAngle;
@@ -110,7 +87,7 @@ struct Camera
 	int numActive;
 	int framesActive;
 	int framesFalling;
-	
+
 	sf::Vector2f testOffset;
 	float testZoom;
 
@@ -124,14 +101,35 @@ struct Camera
 
 	bool isFirstFrameSet;
 
-	//int bType;
+	V2d playerPos;
 
+	Camera();
+	void SetCamType(CamType c);
+	float GetZoom();
+	void Set( sf::Vector2f &pos, float zFactor,
+		int zLevel );
+	void Reset();
+	void SetRumble( int xFactor, int yFactor, 
+		int duration, float rotateAngle = 0.f,
+		bool singleDirection = false);
+	void StopRumble();
+	void UpdateRumble();
+	void EaseOutOfManual( int frames );
+	void SetManual( bool man );
+	void SetMovementSeq( MovementSequence *move,
+		bool relative );
+	void Ease(sf::Vector2f &pos, float zFactor,
+		int numFrames, CubicBezier bez = CubicBezier());
+	void UpdateEase();
+	sf::Vector2f GetNewOffset( V2d &pVel);
+	void Init(V2d &pos);
+	sf::FloatRect GetRect();
+	sf::Vector2f GetPos();
+	float GetRotation();
 	double GetEnemyZoomTarget( Actor *a );
 	void Update();
 	void UpdateBasicMode();
 	void UpdateFightingMode();
-
-
 	void UpdateBossFight(int bossFightType);
 	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
@@ -140,11 +138,8 @@ struct Camera
 	double GetMovementZoomTarget( Actor *player );
 	double GetNextMovementZoom( double moveZoom );
 	double GetNextEnemyZoom(double enemyZoom);
-	int slowMultiple;
-
-	sf::Vector2<double> playerPos;
-	sf::Vector2<double> GetPlayerVel( Actor *player);
-	void SetMovementOffset( sf::Vector2<double> &pVel );
+	V2d GetPlayerVel( Actor *player);
+	void SetMovementOffset( V2d &pVel );
 	void UpdateBarrier(Actor *player, float &xChangePos, 
 		float &xChangeNeg, float &yChangePos, 
 		float &yChangeNeg);
@@ -152,9 +147,7 @@ struct Camera
 		double &minX, double &maxX, 
 		double &minY, double &maxY);
 	void UpdateEaseOut();
-
 private:
-	
 	int easeFrame;
 	sf::Vector2f startEase;
 	sf::Vector2f endEase;

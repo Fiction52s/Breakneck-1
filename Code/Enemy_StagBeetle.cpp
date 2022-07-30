@@ -20,8 +20,7 @@ using namespace sf;
 #define COLOR_WHITE Color( 0xff, 0xff, 0xff )
 
 StagBeetle::StagBeetle( ActorParams *ap )
-	:Enemy( EnemyType::EN_STAGBEETLE, ap ),
-	moveBezTest( .22,.85,.3,.91 )
+	:Enemy( EnemyType::EN_STAGBEETLE, ap )
 {
 	SetLevel(ap->GetLevel());
 
@@ -90,12 +89,10 @@ StagBeetle::StagBeetle( ActorParams *ap )
 	BasicCircleHitBodySetup(60);
 	hitBody.hitboxInfo = hitboxInfo;
 
+	shield = NULL;
 
 	crawlAnimationFactor = 5;
 	rollAnimationFactor = 5;
-
-	bezFrame = 0;
-	bezLength = 60 * NUM_STEPS;
 
 	cutObject->SetTileset(ts_death);
 	cutObject->SetSubRectFront(0);
@@ -135,8 +132,6 @@ void StagBeetle::SetLevel(int lev)
 void StagBeetle::DebugDraw(RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
-	//if (!dead)
-		//testMover->physBody.DebugDraw(target);
 }
 
 void StagBeetle::ResetEnemy()
@@ -151,8 +146,6 @@ void StagBeetle::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	bezFrame = 0;
-	attackFrame = -1;
 	frame = 0;
 
 	UpdateSprite();
@@ -193,17 +186,15 @@ bool StagBeetle::IsFacingTrueRight()
 
 void StagBeetle::ProcessState()
 {
-	//cout << "vel: " << testMover->velocity.x << ", " << testMover->velocity.y << endl;
-	//Actor *player = owner->GetPlayer( 0 );
 	V2d playerPos = sess->GetPlayerPos(0);
 	V2d position = GetPosition();
 
 	ActionEnded();
 
-	if( attackFrame == 11 * attackMult )
-	{
-		attackFrame = -1;
-	}
+	//if(data.attackFrame == 11 * attackMult )
+	//{
+	//	data.attackFrame = -1;
+	//}
 
 	switch( action )
 	{
@@ -277,15 +268,9 @@ void StagBeetle::ProcessState()
 	case JUMP:
 		//cout << "jump: " << frame << endl;
 		break;
-//	case ATTACK:
-	//	{
-	//		testMover->SetSpeed( 0 );
-	//	}
-	//	break;
 	case LAND:
 		{
 		//	cout << "land: " << frame << endl;
-			//testMover->SetSpeed( 0 );
 		}
 		break;
 	default:
@@ -476,10 +461,6 @@ void StagBeetle::HitOther()
 		frame = 0;
 	}
 	}
-	
-	//cout << "hit other!" << endl;
-	//testMover->SetSpeed( 0 );
-	//facingRight = !facingRight;
 }
 
 void StagBeetle::ReachCliff()
@@ -512,10 +493,6 @@ void StagBeetle::ReachCliff()
 
 	action = JUMP;
 	frame = 0;
-
-	//cout << "Reach cliff" << endl;
-	//testMover->groundSpeed = -testMover->groundSpeed;
-	//facingRight = !facingRight;
 }
 
 void StagBeetle::HitOtherAerial( Edge *e )
@@ -546,4 +523,23 @@ void StagBeetle::UpdateHitboxes()
 	{
 		hitboxInfo->kbDir = normalize(V2d(1, -.7));
 	}
+}
+
+int StagBeetle::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void StagBeetle::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void StagBeetle::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

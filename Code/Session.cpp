@@ -7447,6 +7447,7 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->gameState = gameState;
 	currSaveState->activeSequence = activeSequence;
 	currSaveState->randomState = randomState;
+	currSaveState->cam = cam;
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -7531,6 +7532,7 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	pauseFrames = currSaveState->pauseFrames;
 	currSuperPlayer = currSaveState->currSuperPlayer;
 	randomState = currSaveState->randomState;
+	cam = currSaveState->cam;
 
 	/*cout << "load state: " << totalGameFrames << endl;
 

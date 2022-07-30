@@ -11,6 +11,14 @@ struct GlideTarget : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Tileset *ts;
+
 	bool CountsForEnemyGate() { return false; }
 	GlideTarget(ActorParams *ap);
 	void SetLevel(int lev);
@@ -21,7 +29,11 @@ struct GlideTarget : Enemy
 	void AddToWorldTrees();
 	void Collect();
 
-	Tileset *ts;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+
+
 	
 };
 
