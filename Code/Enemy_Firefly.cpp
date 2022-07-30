@@ -56,8 +56,8 @@ Firefly::Firefly(ActorParams *ap)
 	hitboxInfo->knockback = 4;
 	hitboxInfo->hType = HitboxInfo::YELLOW;
 
-	pulseBody.BasicCircleSetup(pulseRadius * scale, 0, V2d());
-	pulseBody.hitboxInfo = hitboxInfo;
+	data.pulseBody.BasicCircleSetup(pulseRadius * scale, 0, V2d());
+	data.pulseBody.hitboxInfo = hitboxInfo;
 
 	BasicCircleHitBodySetup(16);
 	BasicCircleHurtBodySetup(16);
@@ -145,7 +145,7 @@ void Firefly::ActionEnded()
 			break;
 		case CHARGE:
 			action = PULSE;
-			SetHitboxes(&pulseBody, 0);
+			SetHitboxes(&data.pulseBody, 0);
 			break;
 		case PULSE:
 			DefaultHitboxesOn();
@@ -224,7 +224,7 @@ void Firefly::UpdateEnemyPhysics()
 
 		currPosInfo.position += movementVec;
 
-		pulseBody.SetBasicPos(currPosInfo.position);
+		data.pulseBody.SetBasicPos(currPosInfo.position);
 	}
 }
 
@@ -273,4 +273,23 @@ void Firefly::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(testCircle);
 	}
+}
+
+int Firefly::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Firefly::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Firefly::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

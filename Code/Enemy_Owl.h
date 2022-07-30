@@ -15,6 +15,12 @@ struct Owl : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		//V2d velocity;
+	};
+	MyData data;
+
 	double ang;
 	V2d fireDir;
 
@@ -31,7 +37,7 @@ struct Owl : Enemy, LauncherEnemy
 
 	CubicBezier flyingBez;
 
-	V2d velocity;
+	
 	double flySpeed;
 
 	Tileset *ts_death;
@@ -59,6 +65,10 @@ struct Owl : Enemy, LauncherEnemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 };
 

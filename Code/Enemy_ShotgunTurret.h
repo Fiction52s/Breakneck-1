@@ -13,11 +13,16 @@ struct ShotgunTurret : Enemy, LauncherEnemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts;
 	Tileset *ts_bulletExplode;
 
 	int framesWait;
-	int firingCounter;
 
 	int animationFactor;
 	double bulletSpeed;
@@ -41,6 +46,10 @@ struct ShotgunTurret : Enemy, LauncherEnemy
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

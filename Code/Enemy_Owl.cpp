@@ -160,7 +160,7 @@ void Owl::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 
 void Owl::ResetEnemy()
 {
-	velocity = V2d( 0, 0 );
+	//data.velocity = V2d( 0, 0 );
 
 	SetCurrPosInfo(startPosInfo);
 	
@@ -435,4 +435,55 @@ void Owl::UpdateSprite()
 void Owl::EnemyDraw( sf::RenderTarget *target )
 {
 	DrawSprite(target, sprite);
+}
+
+int Owl::GetNumStoredBytes()
+{
+	int totalSize = sizeof(MyData);
+
+	if (shield != NULL)
+	{
+		totalSize += shield->GetNumStoredBytes();
+	}
+
+	totalSize += launchers[0]->GetNumStoredBytes() + launchers[1]->GetNumStoredBytes();
+	return totalSize;
+}
+
+void Owl::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	if (shield != NULL)
+	{
+		shield->StoreBytes(bytes);
+		bytes += shield->GetNumStoredBytes();
+	}
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+
+	launchers[1]->StoreBytes(bytes);
+	bytes += launchers[1]->GetNumStoredBytes();
+}
+
+void Owl::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	if (shield != NULL)
+	{
+		shield->SetFromBytes(bytes);
+		bytes += shield->GetNumStoredBytes();
+	}
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+
+	launchers[1]->SetFromBytes(bytes);
+	bytes += launchers[1]->GetNumStoredBytes();
 }

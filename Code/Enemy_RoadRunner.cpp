@@ -417,3 +417,22 @@ void Roadrunner::Land()
 	action = LAND;
 	frame = 0;
 }
+
+int Roadrunner::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Roadrunner::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Roadrunner::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

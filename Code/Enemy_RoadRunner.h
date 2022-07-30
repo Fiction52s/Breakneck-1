@@ -15,6 +15,12 @@ struct Roadrunner : Enemy, GroundMoverHandler
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts;
 	double gravity;
 	double maxGroundSpeed;
@@ -41,6 +47,10 @@ struct Roadrunner : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

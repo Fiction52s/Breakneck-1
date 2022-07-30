@@ -16,6 +16,12 @@ struct Firefly : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		CollisionBody pulseBody;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 	double activatePulseRadius;
@@ -25,7 +31,7 @@ struct Firefly : Enemy
 	double maxSpeed;
 	double accel;
 	double pulseRadius;
-	CollisionBody pulseBody;
+	
 	sf::CircleShape testCircle;
 
 	Firefly(ActorParams *ap);
@@ -41,6 +47,10 @@ struct Firefly : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

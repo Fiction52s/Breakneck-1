@@ -30,10 +30,8 @@ ShotgunTurret::ShotgunTurret(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	framesWait = 60;
 	bulletSpeed = 10;
 	animationFactor = 3;
-	assert(framesWait > 13 * animationFactor);
 
 	ts = GetSizedTileset("Enemies/W3/cactus_160x160.png");
 
@@ -271,3 +269,29 @@ void ShotgunTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 }
+
+int ShotgunTurret::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void ShotgunTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void ShotgunTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
