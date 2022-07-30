@@ -126,7 +126,7 @@ void ShipExitScene::UpdateState()
 
 		if (frame >= enterTime)
 		{
-			sess->GetPlayer(0)->position = V2d(shipMovement.position.x, shipMovement.position.y + 48.0 + 28.0);
+			sess->GetPlayer(0)->position = V2d(shipMovement.GetPos().x, shipMovement.GetPos().y + 48.0 + 28.0);
 			if (frame == enterTime)
 			{
 				EaseShot("shot2", exitTime);
@@ -145,7 +145,7 @@ void ShipExitScene::UpdateState()
 			sess->GetPlayer(0)->position = origPlayer * (1.0 - a) + pAttachPoint * a;
 		}
 
-		if (shipMovement.currMovement == NULL)
+		if (!shipMovement.IsMovementActive())
 		{
 			frame = stateLength[SHIP_SWOOP] - 1;
 			sess->mainMenu->musicPlayer->FadeOutCurrentMusic(30);
@@ -156,8 +156,8 @@ void ShipExitScene::UpdateState()
 			sess->Fade(false, 60, Color::Black);
 		}
 
-		shipSprite.setPosition(shipMovement.position.x,
-			shipMovement.position.y);
+		shipSprite.setPosition(shipMovement.GetPos().x,
+			shipMovement.GetPos().y);
 		break;
 	}
 	}

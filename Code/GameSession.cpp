@@ -748,6 +748,7 @@ GameSession::GameSession(MatchParams *mp )
 	:Session( Session::SESS_GAME, mp->mapPath)
 {
 	matchParams = *mp;
+	SeedRand(matchParams.randSeed);
 	saveFile = matchParams.saveFile;
 	netplayManager = matchParams.netplayManager;
 	gameModeType = matchParams.gameModeType;
@@ -2132,6 +2133,8 @@ int GameSession::Run()
 		//InitGGPO();
 	}
 
+	
+
 	firstUpdateHasHappened = false;
 	
 
@@ -2354,7 +2357,7 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
-	SeedRand(time(0));
+	SeedRand(matchParams.randSeed);
 
 	while( !quit )
 	{

@@ -48,6 +48,7 @@ struct LobbyParams
 		gameModeType = 0;
 		isWorkshopMap = false;
 		publishedFileId = 0;
+		randSeed = 0;
 	}
 	int maxMembers;
 	std::string mapPath;
@@ -55,6 +56,7 @@ struct LobbyParams
 	uint64 creatorID;
 	int gameModeType;
 	bool isWorkshopMap;
+	int randSeed;
 	PublishedFileId_t publishedFileId;
 };
 

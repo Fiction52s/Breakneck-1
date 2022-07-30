@@ -117,8 +117,8 @@ void Bat::SetLevel(int lev)
 void Bat::SetActionEditLoop()
 {
 	Enemy::SetActionEditLoop();
-	currVisual = FLAP;
-	visFrame = 0;
+	data.currVisual = FLAP;
+	data.visFrame = 0;
 }
 
 void Bat::BulletHitTerrain( BasicBullet *b, Edge *edge, V2d &pos )
@@ -148,13 +148,12 @@ void Bat::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult)
 	b->launcher->DeactivateBullet( b );
 }
 
-
 void Bat::ResetEnemy()
 {
-	currVisual = FLAP;
-	visFrame = 0;
-	framesSinceBothered = 0;
-	fireCounter = 0;
+	data.currVisual = FLAP;
+	data.visFrame = 0;
+	data.framesSinceBothered = 0;
+	data.fireCounter = 0;
 	testSeq.Reset();
 	retreatSeq.Reset();
 	returnSeq.Reset();
@@ -173,8 +172,8 @@ void Bat::ResetEnemy()
 
 	UpdateSprite();
 
-	visFrame = 0;
-	currVisual = FLAP;
+	data.visFrame = 0;
+	data.currVisual = FLAP;
 }
 
 void Bat::DirectKill()
@@ -197,23 +196,23 @@ void Bat::DirectKill()
 
 void Bat::FrameIncrement()
 {
-	++fireCounter;
-	++framesSinceBothered;
-	++visFrame;
+	++data.fireCounter;
+	++data.framesSinceBothered;
+	++data.visFrame;
 }
 
 void Bat::ProcessState()
 {
-	if (visFrame == visualLength[currVisual] * visualMult[currVisual])
+	if ( data.visFrame == visualLength[data.currVisual] * visualMult[data.currVisual])
 	{
-		switch (currVisual)
+		switch (data.currVisual)
 		{
 		case FLAP:
-			visFrame = 0;
+			data.visFrame = 0;
 			break;
 		case KICK:
-			visFrame = 0;
-			currVisual = FLAP;
+			data.visFrame = 0;
+			data.currVisual = FLAP;
 			break;
 		}
 	}
@@ -229,7 +228,7 @@ void Bat::ProcessState()
 	V2d pDir = normalize(diff);
 	if (action == FLY)
 	{
-		if (framesSinceBothered >= 60 && startPos != currBasePos )
+		if (data.framesSinceBothered >= 60 && startPos != currBasePos )
 		{
 			action = RETURN;
 			//frame = 0;
@@ -242,7 +241,7 @@ void Bat::ProcessState()
 		}
 		if (length(diff) < detectRange)
 		{
-			framesSinceBothered = 0;
+			data.framesSinceBothered = 0;
 			action = RETREAT;
 			//frame = 0;
 			currBasePos = position;
@@ -252,7 +251,7 @@ void Bat::ProcessState()
 		}
 		else
 		{
-			if (testSeq.currMovement == NULL)
+			if (!testSeq.IsMovementActive())
 			{
 				testSeq.Reset();
 			}
@@ -260,7 +259,7 @@ void Bat::ProcessState()
 	}
 	else if (action == RETREAT)
 	{
-		if (retreatSeq.currMovement == NULL)
+		if (!retreatSeq.IsMovementActive())
 		{
 			retreatSeq.Reset();
 			testSeq.Reset();
@@ -273,14 +272,14 @@ void Bat::ProcessState()
 	{
 		if (length(diff) < detectRange)
 		{
-			framesSinceBothered = 0;
+			data.framesSinceBothered = 0;
 			action = RETREAT;
 			//frame = 0;
 			currBasePos = position;
 			retreatMove->end = -pDir * dodgeRange;
 			retreatSeq.Reset();
 		}
-		else if (returnSeq.currMovement == NULL)
+		else if (!returnSeq.IsMovementActive())
 		{
 			retreatSeq.Reset();
 			testSeq.Reset();
@@ -294,7 +293,7 @@ void Bat::ProcessState()
 	//if( (fireCounter == 0 || fireCounter == 10 || fireCounter == 20/*framesBetween - 1*/) && slowCounter == 1 )// frame == 0 && slowCounter == 1 )
 	if( slowCounter == 1 )//&& action == FLY )
 	{
-		int f = fireCounter % 90;
+		int f = data.fireCounter % 90;
 
 		if (f % 5 == 0 && f >= 25 && f < 50)
 		{
@@ -320,8 +319,8 @@ void Bat::ProcessState()
 
 void Bat::IHitPlayer(int index)
 {
-	currVisual = KICK;
-	visFrame = 0;
+	data.currVisual = KICK;
+	data.visFrame = 0;
 	//Actor *p = owner->GetPlayer(index);
 	V2d playerPos = sess->GetPlayerPos(index);
 	if (playerPos.x > GetPosition().x)
@@ -352,20 +351,20 @@ void Bat::UpdateEnemyPhysics()
 
 	ms->Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
-	currPosInfo.SetPosition(currBasePos + ms->position);
+	currPosInfo.SetPosition(currBasePos + ms->GetPos());
 	//cout << "basePos: " << currBasePos.x << ", " << currBasePos.y << "   ms: " << ms->position.x << ", " << ms->position.y << endl;
 }
 
 void Bat::UpdateSprite()
 {
 	int trueFrame = 0;
-	switch (currVisual)
+	switch (data.currVisual)
 	{
 	case FLAP:
-		trueFrame = visFrame / visualMult[currVisual];
+		trueFrame = data.visFrame / visualMult[data.currVisual];
 		break;
 	case KICK:
-		trueFrame = visFrame / visualMult[currVisual] + visualLength[FLAP];
+		trueFrame = data.visFrame / visualMult[data.currVisual] + visualLength[FLAP];
 		break;
 	}
 	sprite.setTextureRect( ts->GetSubRect( trueFrame) );
@@ -380,5 +379,55 @@ void Bat::EnemyDraw( sf::RenderTarget *target )
 
 void Bat::HandleHitAndSurvive()
 {
-	fireCounter = 0;
+	data.fireCounter = 0;
+}
+
+int Bat::GetNumStoredBytes()
+{
+	return sizeof(MyData) + testSeq.GetNumStoredBytes() + retreatSeq.GetNumStoredBytes() + returnSeq.GetNumStoredBytes() + pathFollower.GetNumStoredBytes()
+		+ launchers[0]->GetNumStoredBytes();
+}
+
+void Bat::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	testSeq.StoreBytes(bytes);
+	bytes += testSeq.GetNumStoredBytes();
+
+	retreatSeq.StoreBytes(bytes);
+	bytes += retreatSeq.GetNumStoredBytes();
+
+	returnSeq.StoreBytes(bytes);
+	bytes += returnSeq.GetNumStoredBytes();
+
+	pathFollower.StoreBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Bat::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	testSeq.SetFromBytes(bytes);
+	bytes += testSeq.GetNumStoredBytes();
+
+	retreatSeq.SetFromBytes(bytes);
+	bytes += retreatSeq.GetNumStoredBytes();
+
+	returnSeq.SetFromBytes(bytes);
+	bytes += returnSeq.GetNumStoredBytes();
+
+	pathFollower.SetFromBytes(bytes);
+	bytes += pathFollower.GetNumStoredBytes();
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

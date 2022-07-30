@@ -254,7 +254,7 @@ void TetheredRusher::UpdateEnemyPhysics()
 	if (action == RUSH || action == RECOVER)
 	{
 		ms.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-		currPosInfo.position = ms.position;
+		currPosInfo.position = ms.GetPos();
 	}
 }
 
@@ -276,27 +276,27 @@ void TetheredRusher::UpdateSprite()
 
 	if (action == RUSH || action == RECOVER)
 	{
-		if (ms.currMovement != NULL)
+		if (ms.IsMovementActive())
 		{
 			int t = 0;
 			for (int i = 0; i < NUM_SEGMENTS; ++i)
 			{
-				int currTime = ms.currTime - ms.currMovementStartTime;
+				int currTime = ms.data.currTime - ms.data.currMovementStartTime;
 
-				if (ms.currMovement == attackMovement)
+				if (ms.data.currMovement == attackMovement)
 				{
 					t = currTime * (i / (double)(NUM_SEGMENTS));
 				}
-				else if ( ms.currMovement == retreatMovement )
+				else if ( ms.data.currMovement == retreatMovement )
 				{
-					t = ms.currMovement->duration - 
-						(ms.currMovement->duration - currTime) 
+					t = ms.data.currMovement->duration - 
+						(ms.data.currMovement->duration - currTime) 
 						* (i / (double)(NUM_SEGMENTS));
 				}
 
 				SetRectCenter(segmentQuads + i * 4,
 					ts->tileWidth, ts->tileHeight,
-					Vector2f(ms.currMovement->GetPosition(t)));
+					Vector2f(ms.data.currMovement->GetPosition(t)));
 			}
 		}
 		else

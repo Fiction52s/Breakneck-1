@@ -214,6 +214,10 @@ void NetplayManager::StartConnecting()
 
 	string receivedIsWorkshopModeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "isWorkshop");
 
+	string receivedRandSeedStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "randSeed");
+
+	matchParams.randSeed = stoi(receivedRandSeedStr);
+
 	receivedMapName = receivedMapPath.stem().string();
 
 	if (receivedIsWorkshopModeStr == "true")
@@ -437,6 +441,7 @@ void NetplayManager::Update()
 
 			lp.fileHash = md5file(lp.mapPath);
 			lp.creatorID = 0;
+			lp.randSeed = time(0);
 
 			lobbyManager->TryCreatingLobby(lp);
 			action = A_QUICKPLAY_GATHERING_USERS;

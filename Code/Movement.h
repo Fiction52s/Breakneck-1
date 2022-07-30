@@ -52,14 +52,6 @@ struct CubicBezier
 	//double GetValue( double time );
 };
 
-struct Rotation
-{
-	Rotation();
-	virtual double GetRotation(int t ) = 0;
-	int duration;
-	Rotation *next;
-};
-
 struct Movement
 {
 	enum Types
@@ -72,11 +64,21 @@ struct Movement
 		Count
 	};
 
-	CubicBezier bez;
-	int duration;
-	Movement *next;
+	struct MovementData
+	{
+		V2d start;
+		V2d end;
+		int duration;
+		CubicBezier bez;
+	};
+
 	V2d start;
 	V2d end;
+	int duration;
+	CubicBezier bez;
+
+
+	Movement *next;
 	Types moveType;
 	CircleGroup *circles;
 	CircleGroup *controlPointCircles;
@@ -92,21 +94,39 @@ struct Movement
 	V2d GetFrameVelocity( int f );
 	virtual V2d GetPosition( int t ) = 0;
 	void DebugDraw( sf::RenderTarget *target );
+	void StoreMovementData(MovementData &md);
+	void SetMovementData(MovementData &md);
+
+	virtual int GetNumStoredBytes() { return 0; }
+	virtual void StoreBytes(unsigned char *bytes){ }
+	virtual void SetFromBytes(unsigned char *bytes) {}
 };
 
 struct WaitMovement : Movement
 {
-	V2d pos;
+	struct MyData : MovementData
+	{
+		V2d pos; //probably useless
+	};
+	MyData data;
 
 	WaitMovement( int duration );
 	V2d GetPosition( int t );
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct QuadraticMovement : Movement
 {
-	V2d A;
-	V2d B;
-	V2d C;
+	struct MyData : MovementData
+	{
+		V2d A;
+		V2d B;
+		V2d C;
+	};
+	MyData data;
 
 	QuadraticMovement(V2d &A,V2d &B,
 		V2d &C, CubicBezier &bez,
@@ -114,14 +134,23 @@ struct QuadraticMovement : Movement
 	double GetArcLength();
 	void SetDebugControlPoints();
 	V2d GetPosition(int t);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct CubicMovement : Movement
 {
-	V2d A;
-	V2d B;
-	V2d C;
-	V2d D;
+	struct MyData : MovementData
+	{
+		V2d A;
+		V2d B;
+		V2d C;
+		V2d D;
+	};
+
+	MyData data;
 
 	CubicMovement( V2d &A,
 		V2d &B,
@@ -131,10 +160,25 @@ struct CubicMovement : Movement
 		int duration );
 	void SetDebugControlPoints();
 	V2d GetPosition( int t );
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct RadialMovement : Movement
 {
+	struct MyData : MovementData
+	{
+		bool clockwise;
+		double startAngle;
+		double endAngle;
+		double radius;
+		V2d basePos;
+	};
+
+	MyData data;
+	
 	RadialMovement( V2d &base, 
 		V2d &startPos,
 		double endAngle, 
@@ -152,39 +196,58 @@ struct RadialMovement : Movement
 		double endAngle,
 		double speed );
 	void SetDebugControlPoints();
-	bool clockwise;
-	double startAngle;
-	double endAngle;
-	double radius;
-	V2d basePos;
 	V2d GetPosition( int t );
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct LineMovement: Movement
 {
+	struct MyData : MovementData
+	{
+	};
+
+	MyData data;
+
 	LineMovement( V2d &A,
 		V2d &B,
 		CubicBezier &bez,
 		int duration );
-		
-	//V2d A;
-	//V2d B;
 
 	V2d GetPosition( int t );
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct GameSession;
 struct MovementSequence
 {
+	struct MyData
+	{
+		V2d position;
+		int currTime;
+		Movement *currMovement;
+		int currMovementStartTime;
+	};
+	MyData data;
+
+	Movement *movementList;
+	int numTotalMovements;
+
 	MovementSequence();
 	~MovementSequence();
-	GameSession *owner;
-	V2d position;
-	double rotation;
-	int currTime;
+
+	V2d GetPos();
+
+	bool IsMovementActive();
 	void AddMovement( Movement *movement );
-	void AddRotation( Rotation *rotation );
 	void InitMovementDebug();
+	void Update(int slowMultiple = 1, int stepsAtOnce = 1);
+	void Reset();
 	void MovementDebugDraw( sf::RenderTarget *target );
 	LineMovement * AddLineMovement( V2d &A,
 		V2d &B, CubicBezier&, int duration );
@@ -198,25 +261,10 @@ struct MovementSequence
 		V2d &startPos, double endAngle, 
 		bool clockwise, 
 		CubicBezier &bez, int duration );
-		
 
-	Movement *movementList;
-	Movement *currMovement;
-	//bool justChanged;
-	
-	//^is almost always null
-	//but when its fed a projectile it
-	//tells u to shoot?
-	int currMovementStartTime;
-	Rotation *rotationList;
-	Rotation *currRotation;
-	
-	int currRotationStartTime;
-	void Update( int slowMultiple = 1, int stepsAtOnce = 1);
-	void Reset();
-	//Projectile *projectileList;
-	//Projectile *currProjectile;
-	//int currProjectileStartTime;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif 

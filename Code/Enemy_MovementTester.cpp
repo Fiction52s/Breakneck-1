@@ -85,9 +85,9 @@ void MovementTester::ResetEnemy()
 
 	moveFrames = 0;
 
-	ms.currMovement = NULL;
+	ms.data.currMovement = NULL;
 
-	curveMovement.currMovement = NULL;
+	curveMovement.data.currMovement = NULL;
 
 	//DefaultHitboxesOn();
 
@@ -150,10 +150,10 @@ void MovementTester::CalcMovement()
 
 		//V2d startMove(10, 0);
 
-		qCurve->A = GetPosition();
+		qCurve->data.A = GetPosition();
 		//qCurve->B = GetPosition() + startMove * 40.0;//other * 200.0;
 		/*curve->C = targetPos + other * 200.0;*/
-		qCurve->C = targetPos;
+		qCurve->data.C = targetPos;
 
 		double arcLength = qCurve->GetArcLength();
 		moveFrames = arcLength / 10.0;

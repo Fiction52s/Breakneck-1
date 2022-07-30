@@ -699,9 +699,9 @@ void GatorWaterOrb::Throw(V2d &pos, V2d &dest, int p_orbType )
 	flySpeed = 10;
 
 	quadraticMove->SetFrameDuration(60);
-	quadraticMove->A = pos;
-	quadraticMove->B = sess->GetPlayerPos(0);
-	quadraticMove->C = dest;
+	quadraticMove->data.A = pos;
+	quadraticMove->data.B = sess->GetPlayerPos(0);
+	quadraticMove->data.C = dest;
 	quadraticMove->start = pos;
 	quadraticMove->end = dest;
 	quadraticMoveSeq.Reset();
@@ -760,7 +760,7 @@ void GatorWaterOrb::ProcessState()
 		frame = 0;
 	}
 
-	if (action == FLYING && quadraticMoveSeq.currMovement == NULL)
+	if (action == FLYING && !quadraticMoveSeq.IsMovementActive())
 	{
 		action = FLOATING;
 		frame = 0;
@@ -865,7 +865,7 @@ void GatorWaterOrb::UpdateEnemyPhysics()
 
 		quadraticMoveSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
-		currPosInfo.position = quadraticMoveSeq.position;
+		currPosInfo.position = quadraticMoveSeq.GetPos();
 	}
 	else if (action == CIRCLE_APPEAR)
 	{

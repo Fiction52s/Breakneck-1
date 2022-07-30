@@ -752,14 +752,14 @@ void Camera::ManualUpdate( Actor *player )
 
 		if (relativeMoveSeq)
 		{
-			pos = sequenceStartPos + Vector2f(currMove->position.x, currMove->position.y);
+			pos = sequenceStartPos + Vector2f(currMove->GetPos().x, currMove->GetPos().y);
 		}
 		else
 		{
-			pos = Vector2f(currMove->position.x, currMove->position.y);
+			pos = Vector2f(currMove->GetPos().x, currMove->GetPos().y);
 		}
 
-		if (currMove->currMovement == NULL)
+		if (!currMove->IsMovementActive())
 			currMove = NULL;
 	}
 

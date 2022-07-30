@@ -54,6 +54,10 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 
 		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "gameModeType", to_string(paramsForMakingLobby.gameModeType).c_str());
 
+		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "randSeed", to_string(paramsForMakingLobby.randSeed).c_str());
+
+
+
 		//string isWorkshopStr = //to_string((int)paramsForMakingLobby.isWorkshopMap);
 		if (paramsForMakingLobby.isWorkshopMap)
 		{

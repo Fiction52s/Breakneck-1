@@ -217,8 +217,24 @@ void Movement::DebugDraw( sf::RenderTarget *target )
 	}
 }
 
-LineMovement::LineMovement( sf::Vector2<double> &a,
-		sf::Vector2<double> &b,
+void Movement::StoreMovementData(MovementData &md)
+{
+	md.start = start;
+	md.end = end;
+	md.duration = duration;
+	md.bez = bez;
+}
+
+void Movement::SetMovementData(MovementData &md )
+{
+	start = md.start;
+	end = md.end;
+	duration = md.duration;
+	bez = md.bez;
+}
+
+LineMovement::LineMovement( V2d &a,
+		V2d &b,
 		CubicBezier &bez,
 		int duration )
 		:Movement( bez, duration, Types::LINE )//, A( a ), B( b )
@@ -235,13 +251,36 @@ V2d LineMovement::GetPosition( int t )
 	return start + ( end - start ) * v;
 }
 
-QuadraticMovement::QuadraticMovement(sf::Vector2<double> &a,
-	sf::Vector2<double> &b, sf::Vector2<double> &c,CubicBezier &bez,
+int LineMovement::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void LineMovement::StoreBytes(unsigned char *bytes)
+{
+	StoreMovementData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void LineMovement::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetMovementData(data);
+	bytes += sizeof(MyData);
+}
+
+QuadraticMovement::QuadraticMovement(V2d &a,
+	V2d &b, V2d &c,CubicBezier &bez,
 	int duration)
-	:Movement(bez, duration, Types::QUADRATIC), A(a), B(b), C(c)
+	:Movement(bez, duration, Types::QUADRATIC)
 {
 	start = a;
 	end = c;
+
+	data.A = a;
+	data.B = b;
+	data.C = c;
 }
 
 
@@ -250,16 +289,16 @@ V2d QuadraticMovement::GetPosition(int t)
 {
 	double v = bez.GetValue(t / (double)duration);
 	double rv = (1 - v);
-	return rv * (rv * A + v * B) + v * (rv * B + v * C);
+	return rv * (rv * data.A + v * data.B) + v * (rv * data.B + v *data.C);
 }
 
 double QuadraticMovement::GetArcLength()
 {
 	V2d a, b;
-	a.x = A.x - 2 * B.x + C.x;
-	a.y = A.y - 2 * B.y + C.y;
-	b.x = 2 * B.x - 2 * A.x;
-	b.y = 2 * B.y - 2 * A.y;
+	a.x = data.A.x - 2 * data.B.x + data.C.x;
+	a.y = data.A.y - 2 * data.B.y + data.C.y;
+	b.x = 2 * data.B.x - 2 * data.A.x;
+	b.y = 2 * data.B.y - 2 * data.A.y;
 
 	double E = 4 * (a.x*a.x + a.y*a.y);
 	double F = 4 * (a.x*b.x + a.y*b.y);
@@ -267,7 +306,7 @@ double QuadraticMovement::GetArcLength()
 
 	if (abs(E) < 0.0000001 )
 	{
-		return length(C - A);
+		return length(data.C - data.A);
 	}
 
 	double Sabc = 2 * sqrt(E + F + G);
@@ -284,36 +323,79 @@ double QuadraticMovement::GetArcLength()
 
 void QuadraticMovement::SetDebugControlPoints()
 {
-	controlPointCircles->SetPosition(0, Vector2f(B));
+	controlPointCircles->SetPosition(0, Vector2f(data.B));
 }
 
-CubicMovement::CubicMovement( sf::Vector2<double> &a,
-		sf::Vector2<double> &b,
-		sf::Vector2<double> &c,
-		sf::Vector2<double> &d,
+int QuadraticMovement::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void QuadraticMovement::StoreBytes(unsigned char *bytes)
+{
+	StoreMovementData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void QuadraticMovement::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetMovementData(data);
+	bytes += sizeof(MyData);
+}
+
+CubicMovement::CubicMovement( V2d &a,
+		V2d &b,
+		V2d &c,
+		V2d &d,
 		CubicBezier &bez,
 		int duration )
-		:Movement( bez, duration, Types::CUBIC ), A( a ), B( b ), C( c), D(d)
+		:Movement( bez, duration, Types::CUBIC )
 {
 	start = a;
 	end = d;
+
+	data.A = a;
+	data.B = b;
+	data.C = c;
+	data.D = d;
 }
 
 V2d CubicMovement::GetPosition( int t )
 {
 	double v = bez.GetValue( t / (double)duration );
 	double rv = ( 1 - v);
-	return pow( rv, 3 ) * A
-		+ 3 * rv * rv * v * B
-		+ 3 * rv * v * v * C
-		+ pow( v, 3 ) * D;
+	return pow( rv, 3 ) * data.A
+		+ 3 * rv * rv * v * data.B
+		+ 3 * rv * v * v * data.C
+		+ pow( v, 3 ) * data.D;
 }
 
 void CubicMovement::SetDebugControlPoints()
 {
-	controlPointCircles->SetPosition(0, Vector2f(B));
-	controlPointCircles->SetPosition(1, Vector2f(C));
+	controlPointCircles->SetPosition(0, Vector2f(data.B));
+	controlPointCircles->SetPosition(1, Vector2f(data.C));
 	controlPointCircles->SetColor(1, Color::Red);
+}
+
+int CubicMovement::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void CubicMovement::StoreBytes(unsigned char *bytes)
+{
+	StoreMovementData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void CubicMovement::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetMovementData(data);
+	bytes += sizeof(MyData);
 }
 
 RadialMovement::RadialMovement( V2d &circleBase, V2d &startPos,
@@ -331,32 +413,33 @@ void RadialMovement::Set(V2d &base, V2d &startPos, double p_endAngle,
 	bool p_clockwise, CubicBezier &p_bez, int frameDuration)
 {
 	SetFrameDuration(frameDuration);
-	basePos = base;
-	radius = length(base - startPos);
-	startAngle = GetVectorAngleCW(normalize(startPos - base));
-	endAngle = p_endAngle;
-	clockwise = p_clockwise; 
+	data.basePos = base;
+	data.radius = length(base - startPos);
+	data.startAngle = GetVectorAngleCW(normalize(startPos - base));
+	data.endAngle = p_endAngle;
+	data.clockwise = p_clockwise;
+
 	bez = p_bez;
 
 	double angleDiff;
-	if (clockwise)
+	if (data.clockwise)
 	{
-		if (startAngle > endAngle)
+		if (data.startAngle > data.endAngle)
 		{
-			endAngle += PI * 2;
+			data.endAngle += PI * 2;
 		}
 		
 	}
 	else
 	{
-		if (startAngle < endAngle)
+		if (data.startAngle < data.endAngle)
 		{
-			startAngle += PI * 2;
+			data.startAngle += PI * 2;
 		}
 	}
 
 	start = startPos;
-	end = V2d(radius * cos(endAngle), radius * sin(endAngle)) + basePos;//GetPosition(duration);
+	end = V2d(data.radius * cos(data.endAngle), data.radius * sin(data.endAngle)) + data.basePos;//GetPosition(duration);
 }
 
 void RadialMovement::Set(V2d &base,
@@ -364,51 +447,70 @@ void RadialMovement::Set(V2d &base,
 	double p_endAngle,
 	double speed)
 {
-	basePos = base;
-	radius = length(base - startPos);
-	startAngle = GetVectorAngleCW(normalize(startPos - base));
-	endAngle = p_endAngle;
-	clockwise = speed >= 0;
+	data.basePos = base;
+	data.radius = length(base - startPos);
+	data.startAngle = GetVectorAngleCW(normalize(startPos - base));
+	data.endAngle = p_endAngle;
+	data.clockwise = speed >= 0;
 
 	double angleDiff;
-	if (clockwise)
+	if (data.clockwise)
 	{
-		if (startAngle > endAngle)
+		if (data.startAngle > data.endAngle)
 		{
-			endAngle += PI * 2;
+			data.endAngle += PI * 2;
 		}
 
 	}
 	else
 	{
-		if (startAngle < endAngle)
+		if (data.startAngle < data.endAngle)
 		{
-			startAngle += PI * 2;
+			data.startAngle += PI * 2;
 		}
 	}
 
-	angleDiff = abs(endAngle - startAngle);
+	angleDiff = abs(data.endAngle - data.startAngle);
 
-	double arcLength = angleDiff * radius;
+	double arcLength = angleDiff * data.radius;
 	int frames = arcLength / abs(speed);
 
 	SetFrameDuration(frames);
 
 	start = startPos;
-	end = V2d(radius * cos(endAngle), radius * sin(endAngle)) + basePos;
+	end = V2d(data.radius * cos(data.endAngle), data.radius * sin(data.endAngle)) + data.basePos;
 }
 
 V2d RadialMovement::GetPosition( int t )
 {
 	double v = bez.GetValue( t / (double)duration );
-	double angle = startAngle + ( endAngle - startAngle ) * v;
+	double angle = data.startAngle + (data.endAngle - data.startAngle ) * v;
 
-	return V2d(radius * cos(angle), radius * sin(angle)) + basePos;
+	return V2d(data.radius * cos(angle), data.radius * sin(angle)) + data.basePos;
 }
 
 void RadialMovement::SetDebugControlPoints()
 {
-	controlPointCircles->SetPosition(0, Vector2f(basePos));
+	controlPointCircles->SetPosition(0, Vector2f(data.basePos));
+}
+
+int RadialMovement::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void RadialMovement::StoreBytes(unsigned char *bytes)
+{
+	StoreMovementData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void RadialMovement::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetMovementData(data);
+	bytes += sizeof(MyData);
 }
 
 WaitMovement::WaitMovement( int duration )
@@ -418,16 +520,37 @@ WaitMovement::WaitMovement( int duration )
 	//end = pos;
 }
 
-sf::Vector2<double> WaitMovement::GetPosition( int t )
+V2d WaitMovement::GetPosition( int t )
 {
-	return pos;
+	return data.pos;
 }
 
-MovementSequence::MovementSequence()
-	:movementList( NULL ), currMovement( NULL ), rotationList( NULL), 
-	currRotation( NULL )
+int WaitMovement::GetNumStoredBytes()
 {
+	return sizeof(MyData);
+}
+
+void WaitMovement::StoreBytes(unsigned char *bytes)
+{
+	StoreMovementData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void WaitMovement::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetMovementData(data);
+	bytes += sizeof(MyData);
+}
+
+
+MovementSequence::MovementSequence()
+	:movementList( NULL )
+{
+	data.currMovement = NULL;
 	Reset();
+	numTotalMovements = 0;
 }
 
 MovementSequence::~MovementSequence()
@@ -443,30 +566,8 @@ MovementSequence::~MovementSequence()
 	movementList = NULL;
 }
 
-//void MovementSequence::PushMovementLauncher( int numTotalBullets, 
-//	int bulletsPerShot, sf::Vector2<double> &position,
-//	sf::Vector2<double> &direction, double angleSpread )
-//{
-//	Movement *curr = movementList;
-//	while( curr->next != NULL )
-//	{
-//		curr = curr->next;
-//	}
-//	//curr is final now
-//	if( curr->launcher != NULL )
-//	{
-//		delete curr->launcher;
-//		cout << "WRITING OVER LAUNCHER!!!" << endl;
-//	}
-//	else
-//	{
-//		curr->launcher = new Launcher( owner, numTotalBullets,
-//			bulletsPerShot, position, direction, angleSpread );
-//	}
-//}
-
-LineMovement * MovementSequence::AddLineMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B, CubicBezier& bez, int duration )
+LineMovement * MovementSequence::AddLineMovement( V2d &A,
+		V2d &B, CubicBezier& bez, int duration )
 {
 	LineMovement *lm = new LineMovement(A, B, bez, duration);
 	AddMovement( lm );
@@ -482,9 +583,9 @@ QuadraticMovement * MovementSequence::AddQuadraticMovement(
 	return qm;
 }
 
-CubicMovement * MovementSequence::AddCubicMovement( sf::Vector2<double> &A,
-		sf::Vector2<double> &B, sf::Vector2<double> &C,
-		sf::Vector2<double> &D, CubicBezier& bez, int duration )
+CubicMovement * MovementSequence::AddCubicMovement( V2d &A,
+		V2d &B, V2d &C,
+		V2d &D, CubicBezier& bez, int duration )
 {
 	CubicMovement *cm = new CubicMovement(A, B, C, D, bez, duration);
  	AddMovement( cm );
@@ -513,95 +614,70 @@ void MovementSequence::InitMovementDebug()
 
 void MovementSequence::MovementDebugDraw( sf::RenderTarget *target )
 {
-	if( currMovement != NULL )
+	if(data.currMovement != NULL )
 	{
-		currMovement->DebugDraw( target );
+		data.currMovement->DebugDraw( target );
 	}
 }
 
 void MovementSequence::Reset()
 {
-	currTime = 0;
-	currMovementStartTime = 0;
-	currRotationStartTime = 0;
+	data.currTime = 0;
+	data.currMovementStartTime = 0;
 
-	currMovement = movementList;
-	currRotation = rotationList;
+	data.currMovement = movementList;
 }
 
 void MovementSequence::Update( int slowMultiple, int stepsAtOnce )
 {
-	if( currMovement != NULL )
+	if(data.currMovement != NULL )
 	{
 		//cout << "before" << endl;
 
 		//first one
 
-		if (currMovement->moveType != Movement::WAIT)
+		if (data.currMovement->moveType != Movement::WAIT)
 		{
 			//cout << "localtime: " << (currTime - currMovementStartTime) << ", dur: " << currMovement->duration << endl;
-			if (currTime - currMovementStartTime == 0)
+			if (data.currTime - data.currMovementStartTime == 0)
 			{
-				position = currMovement->start;
+				data.position = data.currMovement->start;
 			}
 			//last one
-			else if (currTime - currMovementStartTime == currMovement->duration)
+			else if (data.currTime - data.currMovementStartTime == data.currMovement->duration)
 			{
-				position = currMovement->end;
+				data.position = data.currMovement->end;
 			}
 			else
 			{
-				position = currMovement->GetPosition(currTime - currMovementStartTime);
+				data.position = data.currMovement->GetPosition(data.currTime - data.currMovementStartTime);
 			}
 		}
 		//cout << "after" << endl;
 		//cout << "updating pos: " << position.x << ", " << position.y << endl;
 	}
-	if( currRotation != NULL )
-	{
-		rotation = currRotation->GetRotation( currTime );
-	}
 
-	currTime += (5 / slowMultiple) * stepsAtOnce;
+	data.currTime += (5 / slowMultiple) * stepsAtOnce;
 	//currTime++;
-	if( currMovement != NULL )//&& currTime >= currMovement->duration + currMovementStartTime + 1 )
+	if(data.currMovement != NULL )//&& currTime >= currMovement->duration + currMovementStartTime + 1 )
 	{
-		if ((currMovement->next != NULL && currTime >= currMovement->duration + currMovementStartTime )
-			|| (currMovement->next == NULL && currTime >= currMovement->duration + currMovementStartTime + 1 ))
+		if ((data.currMovement->next != NULL && data.currTime >= data.currMovement->duration + data.currMovementStartTime )
+			|| (data.currMovement->next == NULL && data.currTime >= data.currMovement->duration + data.currMovementStartTime + 1 ))
 		{
-			currMovement = currMovement->next;
+			data.currMovement = data.currMovement->next;
 
-			if (currMovement != NULL)
+			if (data.currMovement != NULL)
 			{
 				//cout << "switching:" << currTime << endl;
-				currMovementStartTime = currTime;
+				data.currMovementStartTime = data.currTime;
 			}
 		}
 	}
-	if( currRotation != NULL )
-	{
-		if ((currRotation->next != NULL && currTime >= currRotation->duration + currRotationStartTime)
-			|| (currRotation->next == NULL && currTime >= currRotation->duration + currRotationStartTime + 1))
-		{
-			currRotation = currRotation->next;
-
-			if (currRotation != NULL)
-			{
-				currRotationStartTime = currTime;
-			}
-		}
-	}
-
-	/*if( currMovement == NULL && currRotation == NULL )
-	{
-		return false;
-	}
-
-	return true;*/
 }
 
 void MovementSequence::AddMovement( Movement *movement )
 {
+	++numTotalMovements;
 	if( movementList == NULL )
 	{
 		movementList = movement;
@@ -622,24 +698,54 @@ void MovementSequence::AddMovement( Movement *movement )
 	Reset();
 }
 
-void MovementSequence::AddRotation( Rotation *rotation )
+bool MovementSequence::IsMovementActive()
 {
-	if( rotationList == NULL )
+	return data.currMovement != NULL;
+}
+
+V2d MovementSequence::GetPos()
+{
+	return data.position;
+}
+
+
+int MovementSequence::GetNumStoredBytes()
+{
+	int totalMovementBytes = 0;
+	Movement *curr = movementList;
+	while (curr->next != NULL)
 	{
-		rotationList = rotation;
-		rotation->next = NULL;
-	}
-	else
-	{
-		Rotation *curr = rotationList;
-		while( curr->next != NULL )
-		{
-			curr = curr->next;
-		}
-		//curr is final now
-		curr->next = rotation;
-		rotation->next = NULL;
+		totalMovementBytes += curr->GetNumStoredBytes();
+		curr = curr->next;
 	}
 
-	Reset();
+	return sizeof(MyData) + totalMovementBytes;
+}
+
+void MovementSequence::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	Movement *curr = movementList;
+	while (curr->next != NULL)
+	{
+		curr->StoreBytes(bytes);
+		bytes += curr->GetNumStoredBytes();
+		curr = curr->next;
+	}
+}
+
+void MovementSequence::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	Movement *curr = movementList;
+	while (curr->next != NULL)
+	{
+		curr->SetFromBytes(bytes);
+		bytes += curr->GetNumStoredBytes();
+		curr = curr->next;
+	}
 }

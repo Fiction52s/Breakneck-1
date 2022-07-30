@@ -6,7 +6,7 @@
 
 struct Bat : Enemy, LauncherEnemy
 {
-	enum Action
+	enum Action : int32
 	{
 		FLY,
 		RETREAT,
@@ -14,17 +14,47 @@ struct Bat : Enemy, LauncherEnemy
 		A_Count
 	};
 
-	enum Visual
+	enum Visual : int32
 	{
 		FLAP,
 		KICK,
 		V_Count
 	};
 
-	Visual currVisual;
+	struct MyData : StoredEnemyData
+	{
+		Visual currVisual;
+		int visFrame;
+		int framesSinceBothered;
+		int fireCounter;
+	};
+	MyData data;
+
+	BasicPathFollower pathFollower; //not used rn
+
+	Tileset *ts_bulletExplode;
+
+	V2d currBasePos;
+	V2d retreatPos;
+	V2d startRetreatPos;
+
+	
+
+	double acceleration;
+	double speed;
+	Tileset *ts;
+
+	int hitlagFrames;
+	int hitstunFrames;
+	int animationFactor;
+
+	
 	int visualLength[V_Count];
 	int visualMult[V_Count];
-	int visFrame;
+	
+
+	int bulletSpeed;
+	int framesBetween;
 
 	MovementSequence testSeq;
 	MovementSequence retreatSeq;
@@ -32,7 +62,7 @@ struct Bat : Enemy, LauncherEnemy
 	LineMovement *retreatMove;
 	LineMovement *returnMove;
 	WaitMovement *retreatWait;
-	int framesSinceBothered;
+	
 	Bat(ActorParams *ap );
 
 	void SetActionEditLoop();
@@ -48,7 +78,6 @@ struct Bat : Enemy, LauncherEnemy
 	bool physicsOver;
 	void EnemyDraw(sf::RenderTarget *target);
 	void HandleHitAndSurvive();
-	
 	void IHitPlayer(int index = 0);
 	//void DebugDraw(sf::RenderTarget *target);
 	void UpdateSprite();
@@ -56,26 +85,10 @@ struct Bat : Enemy, LauncherEnemy
 	void ResetEnemy();
 	void UpdateEnemyPhysics();
 	void FrameIncrement();
-	int bulletSpeed;
-	int framesBetween;
 
-	BasicPathFollower pathFollower;
-
-	Tileset *ts_bulletExplode;
-
-	V2d currBasePos;
-	V2d retreatPos;
-	V2d startRetreatPos;
-
-	int fireCounter;
-
-	double acceleration;
-	double speed;
-	Tileset *ts;
-
-	int hitlagFrames;
-	int hitstunFrames;
-	int animationFactor;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

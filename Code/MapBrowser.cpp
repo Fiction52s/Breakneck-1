@@ -968,6 +968,8 @@ void MapOptionsPopup::Activate( MapNode *mp )
 	{
 		currLobbyParams->mapPath = boost::filesystem::relative(mp->filePath).string();
 	}
+
+	currLobbyParams->randSeed = time(0);
 	
 
 	std::ifstream is;

@@ -112,7 +112,7 @@ void Trailer::ApproachMovement()
 void Trailer::ResetEnemy()
 {
 	trailSeq.Reset();
-	trailSeq.currMovement = NULL;
+	trailSeq.data.currMovement = NULL;
 
 	action = IDLE;
 	frame = 0;
@@ -193,10 +193,10 @@ void Trailer::ProcessState()
 
 void Trailer::UpdateEnemyPhysics()
 {
-	if (trailSeq.currMovement != NULL)
+	if (trailSeq.IsMovementActive())
 	{
 		trailSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-		currPosInfo.position = trailSeq.position;
+		currPosInfo.position = trailSeq.GetPos();
 	}	
 }
 

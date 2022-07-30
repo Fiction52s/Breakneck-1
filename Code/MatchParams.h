@@ -23,6 +23,7 @@ struct MatchParams
 	//void SetToNetplay(NetplayManager *netplayManager);//LobbyManager *lb, ConnectionManager *cm);
 	int numPlayers;
 	int gameModeType;
+	int randSeed;
 
 	MatchParams();
 };

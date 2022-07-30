@@ -126,9 +126,9 @@ void Shark::ProcessState()
 	double cs = cos( latchStartAngle );
 	double sn = sin( latchStartAngle );
 
-	V2d truePosOffset( circleSeq.position.x * cs - 
-		circleSeq.position.y * sn, 
-		circleSeq.position.x * sn + circleSeq.position.y * cs );
+	V2d truePosOffset( circleSeq.GetPos().x * cs - 
+		circleSeq.GetPos().y * sn,
+		circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
 	truePosOffset *= length( offsetPlayer );
 	V2d playerPos = sess->GetPlayerPos();
 
@@ -175,14 +175,14 @@ void Shark::ProcessState()
 			action = RUSH;
 			frame = 0;
 			rushSeq.Reset();
-			rushSeq.currMovement->start = truePosOffset;
-			rushSeq.currMovement->end = -truePosOffset;
+			rushSeq.data.currMovement->start = truePosOffset;
+			rushSeq.data.currMovement->end = -truePosOffset;
 			rushSeq.Update(slowMultiple);
 			break;
 		}
 		case RUSH:
 		{
-			assert(rushSeq.currMovement == NULL);
+			assert(!rushSeq.IsMovementActive());
 			action = CIRCLE;
 			circleCounter = 0;
 			truePosOffset = -truePosOffset;
@@ -241,9 +241,9 @@ V2d Shark::GetCircleOffset()
 	double cs = cos(latchStartAngle);
 	double sn = sin(latchStartAngle);
 
-	V2d truePosOffset(circleSeq.position.x * cs -
-		circleSeq.position.y * sn,
-		circleSeq.position.x * sn + circleSeq.position.y * cs);
+	V2d truePosOffset(circleSeq.GetPos().x * cs -
+		circleSeq.GetPos().y * sn,
+		circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs);
 	return truePosOffset;
 }
 
@@ -252,9 +252,9 @@ void Shark::UpdateEnemyPhysics()
 	double cs = cos( latchStartAngle );
 	double sn = sin( latchStartAngle );
 
-	V2d truePosOffset( circleSeq.position.x * cs - 
-		circleSeq.position.y * sn, 
-		circleSeq.position.x * sn + circleSeq.position.y * cs );
+	V2d truePosOffset( circleSeq.GetPos().x * cs -
+		circleSeq.GetPos().y * sn,
+		circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
 
 
 	if( (action == CIRCLE || action == FINALCIRCLE) && latchedOn )
@@ -282,7 +282,7 @@ void Shark::UpdateEnemyPhysics()
 	}
 	else if( action == RUSH )
 	{
-		currPosInfo.position = basePos + rushSeq.position;
+		currPosInfo.position = basePos + rushSeq.GetPos();
 		rushSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 	}
 }
@@ -299,7 +299,7 @@ void Shark::UpdateSprite()
 		}
 		else if (action == RUSH)
 		{
-			currPosInfo.position = basePos + rushSeq.position;
+			currPosInfo.position = basePos + rushSeq.GetPos();
 		}
 	}
 
@@ -353,9 +353,9 @@ void Shark::UpdateSprite()
 			
 		double cs = cos( latchStartAngle );
 		double sn = sin( latchStartAngle );
-		V2d truePosOffset( circleSeq.position.x * cs - 
-			circleSeq.position.y * sn, 
-			circleSeq.position.x * sn + circleSeq.position.y * cs );
+		V2d truePosOffset( circleSeq.GetPos().x * cs - 
+			circleSeq.GetPos().y * sn,
+			circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
 		V2d normOffset = normalize( truePosOffset );
 		double angle = atan2( normOffset.x, -normOffset.y );
 		//angle -= PI / 4;

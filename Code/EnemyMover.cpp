@@ -38,11 +38,11 @@ EnemyMover::~EnemyMover()
 void EnemyMover::Reset()
 {
 	predict = false;
-	linearMovementSeq.currMovement = NULL;
-	quadraticMovementSeq.currMovement = NULL;
-	cubicMovementSeq.currMovement = NULL;
-	doubleQuadraticMovementSeq.currMovement = NULL;
-	radialMovementSeq.currMovement = NULL;
+	linearMovementSeq.data.currMovement = NULL;
+	quadraticMovementSeq.data.currMovement = NULL;
+	cubicMovementSeq.data.currMovement = NULL;
+	doubleQuadraticMovementSeq.data.currMovement = NULL;
+	radialMovementSeq.data.currMovement = NULL;
 	SetMoveType(NONE);
 	lastActionEndVelocity = V2d(0, 0);
 	actionFrame = 0;
@@ -334,11 +334,11 @@ void EnemyMover::SetModeNodeQuadratic(V2d &controlPoint0, V2d &nodePos,
 {
 	SetMoveType(NODE_QUADRATIC);
 	quadraticMove->SetFrameDuration(frameDuration);
-	quadraticMove->A = currPosInfo.GetPosition();
-	quadraticMove->B = controlPoint0;
-	quadraticMove->C = nodePos;
-	quadraticMove->start = quadraticMove->A;
-	quadraticMove->end = quadraticMove->C;
+	quadraticMove->data.A = currPosInfo.GetPosition();
+	quadraticMove->data.B = controlPoint0;
+	quadraticMove->data.C = nodePos;
+	quadraticMove->start = quadraticMove->data.A;
+	quadraticMove->end = quadraticMove->data.C;
 	quadraticMove->InitDebugDraw();
 	quadraticMovementSeq.Reset();
 	actionTotalDuration = frameDuration;
@@ -363,12 +363,12 @@ void EnemyMover::SetModeNodeCubic(V2d &controlPoint0, V2d &controlPoint1,
 {
 	SetMoveType(NODE_CUBIC);
 	cubicMove->SetFrameDuration(frameDuration);
-	cubicMove->A = currPosInfo.GetPosition();
-	cubicMove->B = controlPoint0;
-	cubicMove->C = controlPoint1;
-	cubicMove->D = nodePos;
-	cubicMove->start = cubicMove->A;
-	cubicMove->end = cubicMove->D;
+	cubicMove->data.A = currPosInfo.GetPosition();
+	cubicMove->data.B = controlPoint0;
+	cubicMove->data.C = controlPoint1;
+	cubicMove->data.D = nodePos;
+	cubicMove->start = cubicMove->data.A;
+	cubicMove->end = cubicMove->data.D;
 	cubicMove->InitDebugDraw();
 	cubicMovementSeq.Reset();
 
@@ -393,18 +393,18 @@ void EnemyMover::SetModeNodeDoubleQuadratic(
 {
 	SetMoveType(NODE_DOUBLE_QUADRATIC);
 	doubleQuadtraticMove0->SetFrameDuration(frameDuration / 2);
-	doubleQuadtraticMove0->A = currPosInfo.GetPosition();
-	doubleQuadtraticMove0->C = controlPoint0;
+	doubleQuadtraticMove0->data.A = currPosInfo.GetPosition();
+	doubleQuadtraticMove0->data.C = controlPoint0;
 
-	doubleQuadtraticMove0->start = doubleQuadtraticMove0->A;
-	doubleQuadtraticMove0->end = doubleQuadtraticMove0->C;
+	doubleQuadtraticMove0->start = doubleQuadtraticMove0->data.A;
+	doubleQuadtraticMove0->end = doubleQuadtraticMove0->data.C;
 
 	doubleQuadtraticMove1->SetFrameDuration(frameDuration / 2);
-	doubleQuadtraticMove1->A = controlPoint0;
+	doubleQuadtraticMove1->data.A = controlPoint0;
 
-	doubleQuadtraticMove1->C = nodePos;
-	doubleQuadtraticMove1->start = doubleQuadtraticMove1->A;
-	doubleQuadtraticMove1->end = doubleQuadtraticMove1->C;
+	doubleQuadtraticMove1->data.C = nodePos;
+	doubleQuadtraticMove1->start = doubleQuadtraticMove1->data.A;
+	doubleQuadtraticMove1->end = doubleQuadtraticMove1->data.C;
 
 	V2d dir0 = normalize(doubleQuadtraticMove0->end - doubleQuadtraticMove0->start);
 	V2d dir1 = normalize(doubleQuadtraticMove0->end - doubleQuadtraticMove1->end);
@@ -416,8 +416,8 @@ void EnemyMover::SetModeNodeDoubleQuadratic(
 		nb = -nb;
 	}
 
-	doubleQuadtraticMove0->B = controlPoint0 - nb * spreadFactor;
-	doubleQuadtraticMove1->B = controlPoint0 + nb * spreadFactor;
+	doubleQuadtraticMove0->data.B = controlPoint0 - nb * spreadFactor;
+	doubleQuadtraticMove1->data.B = controlPoint0 + nb * spreadFactor;
 
 	doubleQuadtraticMove0->InitDebugDraw();
 	doubleQuadtraticMove1->InitDebugDraw();
@@ -436,11 +436,11 @@ void EnemyMover::SetModeNodeDoubleQuadraticConstantSpeed(
 {
 	SetModeNodeDoubleQuadratic(controlPoint0, nodePos, cb, 0, spreadFactor);
 
-	int f0 = GetQuadraticFrameEstimate(speed, doubleQuadtraticMove0->A,
-		doubleQuadtraticMove0->B, doubleQuadtraticMove0->C);
+	int f0 = GetQuadraticFrameEstimate(speed, doubleQuadtraticMove0->data.A,
+		doubleQuadtraticMove0->data.B, doubleQuadtraticMove0->data.C);
 	doubleQuadtraticMove0->SetFrameDuration(f0);
-	int f1 = GetQuadraticFrameEstimate(speed, doubleQuadtraticMove1->A,
-		doubleQuadtraticMove1->B, doubleQuadtraticMove1->C);
+	int f1 = GetQuadraticFrameEstimate(speed, doubleQuadtraticMove1->data.A,
+		doubleQuadtraticMove1->data.B, doubleQuadtraticMove1->data.C);
 	doubleQuadtraticMove1->SetFrameDuration(f1);
 	doubleQuadtraticMove0->InitDebugDraw();
 	doubleQuadtraticMove1->InitDebugDraw();
@@ -562,36 +562,36 @@ void EnemyMover::UpdatePhysics(int numPhysSteps,
 	case ZIP_AND_FALL:
 	{
 		MovementSequence *currSeq = NULL;
-		if (linearMovementSeq.currMovement != NULL)
+		if (linearMovementSeq.IsMovementActive())
 		{
 			currSeq = &linearMovementSeq;
 		}
-		else if (quadraticMovementSeq.currMovement != NULL)
+		else if (quadraticMovementSeq.IsMovementActive() )
 		{
 			currSeq = &quadraticMovementSeq;
 		}
-		else if (cubicMovementSeq.currMovement != NULL)
+		else if (cubicMovementSeq.IsMovementActive())
 		{
 			currSeq = &cubicMovementSeq;
 		}
-		else if (doubleQuadraticMovementSeq.currMovement != NULL)
+		else if (doubleQuadraticMovementSeq.IsMovementActive())
 		{
 			currSeq = &doubleQuadraticMovementSeq;
 		}
-		else if (radialMovementSeq.currMovement != NULL)
+		else if (radialMovementSeq.IsMovementActive())
 		{
 			currSeq = &radialMovementSeq;
 		}
 
 		if (currSeq != NULL)
 		{
-			Movement *currMovement = currSeq->currMovement;
+			Movement *currMovement = currSeq->data.currMovement;
 
 			currSeq->Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
-			currPosInfo.position = currSeq->position;
+			currPosInfo.position = currSeq->GetPos();
 
-			if (currSeq->currMovement == NULL)
+			if (!currSeq->IsMovementActive())
 			{
 				targetPos = currPosInfo.position;
 				FinishTargetedMovement();
@@ -775,23 +775,23 @@ void EnemyMover::DebugDraw(sf::RenderTarget *target)
 	case ZIP_AND_FALL:
 	{
 		MovementSequence *currSeq = NULL;
-		if (linearMovementSeq.currMovement != NULL)
+		if (linearMovementSeq.IsMovementActive())
 		{
 			currSeq = &linearMovementSeq;
 		}
-		else if (quadraticMovementSeq.currMovement != NULL)
+		else if (quadraticMovementSeq.IsMovementActive())
 		{
 			currSeq = &quadraticMovementSeq;
 		}
-		else if (cubicMovementSeq.currMovement != NULL)
+		else if (cubicMovementSeq.IsMovementActive())
 		{
 			currSeq = &cubicMovementSeq;
 		}
-		else if (doubleQuadraticMovementSeq.currMovement != NULL)
+		else if (doubleQuadraticMovementSeq.IsMovementActive())
 		{
 			currSeq = &doubleQuadraticMovementSeq;
 		}
-		else if (radialMovementSeq.currMovement != NULL)
+		else if (radialMovementSeq.IsMovementActive())
 		{
 			currSeq = &radialMovementSeq;
 		}
