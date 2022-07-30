@@ -175,10 +175,9 @@ void GrindJuggler::ResetEnemy()
 	//surfaceMover-> =railCollisionOn = true;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
-	currRail = NULL;
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 	
 	action = S_FLOAT;
 	frame = 0;
@@ -190,7 +189,7 @@ void GrindJuggler::ResetEnemy()
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
 
-	numKilled = 0;
+	data.numKilled = 0;
 
 	UpdateKilledNumberText(maxKilled);
 
@@ -203,6 +202,7 @@ void GrindJuggler::UpdateKilledNumberText(int reps)
 {
 	if (limitedKills)
 	{
+		data.numKilledTextNumber = reps;
 		numKilledText.setString(to_string(reps));
 		numKilledText.setOrigin(numKilledText.getLocalBounds().left
 			+ numKilledText.getLocalBounds().width / 2,
@@ -225,6 +225,9 @@ void GrindJuggler::Throw(V2d vel)
 
 void GrindJuggler::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	HurtboxesOff();
@@ -232,7 +235,7 @@ void GrindJuggler::Return()
 
 	surfaceMover->ground = NULL;
 
-	numKilled = 0;
+	data.numKilled = 0;
 
 	numHealth = maxHealth;
 }
@@ -244,7 +247,7 @@ void GrindJuggler::Pop()
 	numHealth = maxHealth;
 	HurtboxesOff();
 	HitboxesOff();
-	waitFrame = 0;
+	data.waitFrame = 0;
 }
 
 void GrindJuggler::PopThrow()
@@ -255,7 +258,7 @@ void GrindJuggler::PopThrow()
 							//cout << "dir: " << dir.x << "," << dir.y << endl;
 	if (dir.x == 0 && dir.y == 0)
 	{
-		dir = normalize(V2d(velocity.y, -velocity.x));//-normalize(velocity);
+		dir = normalize(V2d(data.velocity.y, -data.velocity.x));//-normalize(velocity);
 		assert(dir.x != 0 || dir.y != 0);
 		action = S_FLY;
 		frame = 0;
@@ -373,22 +376,20 @@ void GrindJuggler::UpdateEnemyPhysics()
 		
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void GrindJuggler::FrameIncrement()
 {
 	if (action == S_FLY || action == S_GRIND)
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 	}
 }
@@ -426,7 +427,7 @@ void GrindJuggler::HandleEntrant(QuadTreeEntrant *qte)
 	double c = cross(pos - e->v0, along);
 	double preC = cross((pos - tempVel) - e->v0, along);
 
-	double alongQuantVel = dot(velocity, along);
+	double alongQuantVel = dot(data.velocity, along);
 
 	bool cStuff = (c >= 0 && preC <= 0) || (c <= 0 && preC >= 0);
 
@@ -501,9 +502,9 @@ void GrindJuggler::ComboKill(Enemy *e)
 		surfaceMover->velocity = surfaceMover->ground->Normal() * flySpeed;
 		surfaceMover->ground = NULL;
 
-		++numKilled;
+		++data.numKilled;
 
-		if (limitedKills && numKilled == maxKilled)
+		if (limitedKills && data.numKilled == maxKilled)
 		{
 			if (hasMonitor && !suppressMonitor)
 			{
@@ -511,15 +512,11 @@ void GrindJuggler::ComboKill(Enemy *e)
 					sess->GetPlayer(0), 1, GetPosition());
 				suppressMonitor = true;
 			}
-
-			action = S_RETURN;
-			frame = 0;
-
 			Return();
 
 			return;
 		}
-		UpdateKilledNumberText(maxKilled - numKilled);
+		UpdateKilledNumberText(maxKilled - data.numKilled);
 
 		DefaultHurtboxesOn();
 
@@ -530,11 +527,10 @@ void GrindJuggler::ComboKill(Enemy *e)
 void GrindJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
+		
 		Return();
 	}
 	else
@@ -605,34 +601,32 @@ void GrindJuggler::HitTerrainAerial(Edge * edge, double quant)
 	
 	action = S_GRIND;
 	frame = 0;
-	//sprite.setScale(scale * 2, scale * 2);
-	
-	///*if (b->bounceCount == 2)
-	//{
-	//V2d norm = edge->Normal();
-	//double angle = atan2(norm.y, -norm.x);
-	//owner->ActivateEffect(EffectLayer::IN_FRONT, ts_bulletExplode, pos, true, -angle, 6, 2, true);
-	//b->launcher->DeactivateBullet(b);
-	//}
-	//else*/
-	//{
-	//	V2d en = edge->Normal();
-	//	if (pos == edge->v0)
-	//	{
-	//		en = normalize(position - pos);
-	//	}
-	//	else if (pos == edge->v1)
-	//	{
-	//		en = normalize(position - pos);
-	//	}
-	//	double d = dot(velocity, en);
-	//	V2d ref = velocity - (2.0 * d * en);
-	//	velocity = ref;
-	//	mover->ground = NULL;
-	//}
+}
 
-	//action = S_BOUNCE;
-	//frame = 0;
-	////SetHitboxes(hitBody, 0);
-	//SetHurtboxes(hurtBody, 0);
+int GrindJuggler::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void GrindJuggler::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void GrindJuggler::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	bytes += sizeof(MyData);
+
+	UpdateKilledNumberText(data.numKilledTextNumber);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

@@ -32,8 +32,6 @@ Turtle::Turtle( ActorParams *ap )
 	actionLength[FADEIN] = 4;//60;
 	actionLength[FADEOUT] = 17;//90;
 	actionLength[INVISIBLE] = 30;
-
-	fireCounter = 0;
 	
 	SetNumLaunchers(1);
 	launchers[0] = new Launcher( this, BasicBullet::TURTLE, 12, 12, GetPosition(), V2d( 1, 0 ), PI * .5, 90, false );
@@ -133,12 +131,13 @@ void Turtle::ResetEnemy()
 		facingRight = false;
 	else
 		facingRight = true;
-	fireCounter = 0;
+	
 
 	action = NEUTRAL;
 	frame = 0;
 	
-	
+	data.playerTrackPos = V2d();
+	data.fireCounter = 0;
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -166,7 +165,7 @@ void Turtle::ActionEnded()
 		frame = 0;
 		break;
 	case INVISIBLE:
-		currPosInfo.position = playerTrackPos;
+		currPosInfo.position = data.playerTrackPos;
 		if (playerPos.x < GetPosition().x)
 		{
 			facingRight = false;
@@ -187,7 +186,7 @@ void Turtle::ActionEnded()
 		frame = 0;
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
-		playerTrackPos = playerPos;
+		data.playerTrackPos = playerPos;
 		break;
 	}
 	}
@@ -246,7 +245,7 @@ void Turtle::ProcessState()
 		launchers[0]->facingDir = normalize(sess->GetPlayerPos(0) - GetPosition());
 		launchers[0]->Reset();
 		launchers[0]->Fire();
-		fireCounter = 0;
+		data.fireCounter = 0;
 	}
 }
 
@@ -295,4 +294,29 @@ void Turtle::EnemyDraw( sf::RenderTarget *target )
 {
 	if( action != INVISIBLE )
 		DrawSprite(target, sprite);
+}
+
+int Turtle::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Turtle::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Turtle::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

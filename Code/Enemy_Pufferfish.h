@@ -17,6 +17,12 @@ struct Pufferfish : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	Tileset *ts;
@@ -35,11 +41,15 @@ struct Pufferfish : Enemy, LauncherEnemy
 	void DirectKill();
 	void ActionEnded();
 	void EnemyDraw(sf::RenderTarget *target);
-
-	void SetLevel(int lev);
-
 	void UpdateSprite();
 	void ResetEnemy();
+	void SetLevel(int lev);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+
+	
 };
 
 #endif

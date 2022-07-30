@@ -94,7 +94,7 @@ void Widow::ResetEnemy()
 	frame = 0;
 
 
-	fireCounter = 0;
+	data.fireCounter = 0;
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -319,19 +319,19 @@ void Widow::ProcessState()
 
 	if (action != IDLE)
 	{
-		if (fireCounter == 30)
+		if (data.fireCounter == 30)
 		{
 			launchers[0]->position = GetPosition();
 			launchers[0]->facingDir = PlayerDir();
 			launchers[0]->Fire();
-			fireCounter = 0;
+			data.fireCounter = 0;
 		}
 	}
 }
 
 void Widow::FrameIncrement()
 {
-	++fireCounter;
+	++data.fireCounter;
 }
 
 void Widow::EnemyDraw(sf::RenderTarget *target)
@@ -462,4 +462,29 @@ void Widow::DirectKill()
 	}
 
 	receivedHit = NULL;
+}
+
+int Widow::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Widow::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Widow::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

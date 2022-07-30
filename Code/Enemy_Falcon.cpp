@@ -95,30 +95,30 @@ void Falcon::FlyMovement()
 {
 	if (false)//(PlayerDist() < 100)
 	{
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 	}
 	else
 	{
 		V2d playerDir = PlayerDir(V2d(), testOffsetDir * 100.0);
-		velocity.x += playerDir.x * accel.x;
-		velocity.y += playerDir.y * accel.y;
+		data.velocity.x += playerDir.x * accel.x;
+		data.velocity.y += playerDir.y * accel.y;
 
-		if (velocity.x > maxSpeed.x )
+		if (data.velocity.x > maxSpeed.x )
 		{
-			velocity.x = maxSpeed.x;
+			data.velocity.x = maxSpeed.x;
 		}
-		else if (velocity.x < -maxSpeed.x)
+		else if (data.velocity.x < -maxSpeed.x)
 		{
-			velocity.x = -maxSpeed.x;
+			data.velocity.x = -maxSpeed.x;
 		}
 
-		if (velocity.y > maxSpeed.y)
+		if (data.velocity.y > maxSpeed.y)
 		{
-			velocity.y = maxSpeed.y;
+			data.velocity.y = maxSpeed.y;
 		}
-		else if (velocity.y < -maxSpeed.y)
+		else if (data.velocity.y < -maxSpeed.y)
 		{
-			velocity.y = -maxSpeed.y;
+			data.velocity.y = -maxSpeed.y;
 		}
 
 		if (playerDir.x >= 0)
@@ -141,6 +141,10 @@ void Falcon::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	data.recoverFrame = 0;
+
+	data.velocity = V2d();
+
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -161,7 +165,7 @@ void Falcon::ActionEnded()
 			break;
 		case RUSH:
 			action = FLY;
-			recoverFrame = 0;
+			data.recoverFrame = 0;
 			break;
 		}
 	}
@@ -171,7 +175,7 @@ void Falcon::FrameIncrement()
 {
 	if (action == FLY)
 	{
-		++recoverFrame;
+		++data.recoverFrame;
 	}
 }
 
@@ -188,7 +192,7 @@ void Falcon::ProcessState()
 		if (dist < attentionRadius)
 		{
 			action = FLY;
-			recoverFrame = 0;
+			data.recoverFrame = 0;
 			frame = 0;
 			testOffsetDir = -dir;
 		}
@@ -199,11 +203,11 @@ void Falcon::ProcessState()
 			action = NEUTRAL;
 			frame = 0;
 		}
-		else if (recoverFrame == recoverDuration )
+		else if (data.recoverFrame == recoverDuration )
 		{
 			action = RUSH;
 			frame = 0;
-			velocity = dir * rushSpeed;
+			data.velocity = dir * rushSpeed;
 		}
 		break;
 	case RUSH:
@@ -216,7 +220,7 @@ void Falcon::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		break;
 	case FLY:
 		FlyMovement();
@@ -230,7 +234,7 @@ void Falcon::UpdateEnemyPhysics()
 {
 	if (action == FLY || action == RUSH )
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -255,7 +259,7 @@ void Falcon::UpdateSprite()
 	case RUSH:
 		tile = frame / animFactor[RUSH] + 7;
 		
-		double ang = GetVectorAngleCW(velocity);
+		double ang = GetVectorAngleCW(data.velocity);
 		if (facingRight)
 		{
 			sprite.setRotation(ang / PI * 180.0);
@@ -277,4 +281,23 @@ void Falcon::UpdateSprite()
 void Falcon::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int Falcon::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Falcon::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Falcon::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

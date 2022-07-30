@@ -16,14 +16,16 @@ struct Turtle : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+		V2d playerTrackPos;
+	};
+	MyData data;
+
 	Tileset *ts_bulletExplode;
 	int bulletSpeed;
-
-	int fireCounter;
-
 	Tileset *ts;
-
-	V2d playerTrackPos;
 
 	Turtle(ActorParams *ap);
 	void BulletHitTerrain(BasicBullet *b,
@@ -41,6 +43,10 @@ struct Turtle : Enemy, LauncherEnemy
 	
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

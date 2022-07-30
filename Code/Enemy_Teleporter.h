@@ -15,43 +15,11 @@ struct Teleporter : Enemy
 		A_Count
 	};
 
-	Tileset *ts;
-	Tileset *ts_recover;
-	Tileset *ts_particles;
-	Tileset *ts_boost;
+	struct MyData : StoredEnemyData
+	{
 
-	sf::Sprite particleSprite;
-	sf::Sprite recoverSprite;
-	sf::Sprite boostSprite;
-
-	int tilesetChoice;
-	int startFrame;
-	int recoverTileseChoice;
-	int recoverStartFrame;
-	bool CountsForEnemyGate() { return false; }
-	void AddToWorldTrees();
-	void UpdateOnPlacement(ActorParams *ap);
-	void UpdatePath();
-	void SetLevel(int lev);
-	void AddToGame();
-	//void UpdateParamsSettings();
-
-	Teleporter(ActorParams *ap);
-	~Teleporter();
-
-	void CreateSecondary(ActorParams *ap);
-	void ReceivePlayer();
-	bool TryTeleport();
-	void ProcessState();
-	void EnemyDraw(sf::RenderTarget *target);
-	SoundInfo *launchSoundBuf;
-
-	void UpdateSprite();
-	void DirectKill();
-
-	void ResetEnemy();
-	void ActionEnded();
-	void DebugDraw(sf::RenderTarget *target);
+	};
+	MyData data;
 
 	int animationFactor;
 
@@ -70,6 +38,52 @@ struct Teleporter : Enemy
 
 	TeleporterParams *otherParams;
 	Teleporter *otherTele;
+
+	Tileset *ts;
+	Tileset *ts_recover;
+	Tileset *ts_particles;
+	Tileset *ts_boost;
+
+	sf::Sprite particleSprite;
+	sf::Sprite recoverSprite;
+	sf::Sprite boostSprite;
+
+	int tilesetChoice;
+	int startFrame;
+	int recoverTileseChoice;
+	int recoverStartFrame;
+
+	Teleporter(ActorParams *ap);
+	~Teleporter();
+
+	bool CountsForEnemyGate() { return false; }
+	void AddToWorldTrees();
+	void UpdateOnPlacement(ActorParams *ap);
+	void UpdatePath();
+	void SetLevel(int lev);
+	void AddToGame();
+	//void UpdateParamsSettings();
+
+	
+
+	void CreateSecondary(ActorParams *ap);
+	void ReceivePlayer();
+	bool TryTeleport();
+	void ProcessState();
+	void EnemyDraw(sf::RenderTarget *target);
+	SoundInfo *launchSoundBuf;
+
+	void UpdateSprite();
+	void DirectKill();
+
+	void ResetEnemy();
+	void ActionEnded();
+	void DebugDraw(sf::RenderTarget *target);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	
 };
 
 #endif

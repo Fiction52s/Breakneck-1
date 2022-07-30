@@ -172,3 +172,22 @@ void PhaseBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int PhaseBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void PhaseBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void PhaseBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

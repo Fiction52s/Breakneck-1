@@ -14,9 +14,16 @@ struct Cheetah : Enemy, GroundMoverHandler
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int preChargeFrame;
+		int chargeFrame;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
-	int preChargeFrames;
+	
 	int preChargeLimit;
 	double boostSpeed;
 
@@ -30,14 +37,10 @@ struct Cheetah : Enemy, GroundMoverHandler
 
 	Tileset *ts;
 
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-	int chargeFrames;
-	int chargeCounter;
+	V2d tempVel;
+	V2d gravity;
+	
+	int chargeLimit;
 
 	int attackFrame;
 	int attackMult;
@@ -65,6 +68,10 @@ struct Cheetah : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 

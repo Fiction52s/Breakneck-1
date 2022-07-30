@@ -40,8 +40,6 @@ PalmTurret::PalmTurret(ActorParams *ap)
 
 	SetLevel(ap->GetLevel());
 
-	bulletSpeed = 10;
-	animationFactor = 3;
 	finalLaserWidth = 100;
 	laserLength = 3000;
 
@@ -147,7 +145,7 @@ void PalmTurret::StartCharge()
 	action = CHARGE;
 	frame = 0;
 
-	currLaserWidth = 10;
+	data.currLaserWidth = 10;
 
 	V2d laserAnchor = position + currPosInfo.GetEdge()->Normal() * 40.0;
 
@@ -157,7 +155,7 @@ void PalmTurret::StartCharge()
 	
 	laserBody.SetBasicPos(0, laserCenter, laserAngle);
 
-	UpdateLaserWidth(currLaserWidth);
+	UpdateLaserWidth(data.currLaserWidth);
 
 	SetRectColor(laserQuad, Color::White);
 }
@@ -174,6 +172,7 @@ bool PalmTurret::CheckHitPlayer(int index)
 
 void PalmTurret::UpdateLaserWidth(double w)
 {
+	data.currLaserWidth = w;
 	SetRectRotation(laserQuad, laserAngle, laserLength, w, Vector2f(laserCenter));
 }
 
@@ -191,8 +190,7 @@ void PalmTurret::ActionEnded()
 		case CHARGE:
 		{
 			action = FIRE;
-			currLaserWidth = finalLaserWidth;
-			UpdateLaserWidth(currLaserWidth);
+			UpdateLaserWidth(finalLaserWidth);
 			SetRectColor(laserQuad, Color::Red);
 			break;
 		}
@@ -252,12 +250,12 @@ void PalmTurret::ProcessState()
 	}
 	case CHARGE:
 	{	
-		currLaserWidth += 3.0;
-		if (currLaserWidth > finalLaserWidth)
+		data.currLaserWidth += 3.0;
+		if (data.currLaserWidth > finalLaserWidth)
 		{
-			currLaserWidth = finalLaserWidth;
+			data.currLaserWidth = finalLaserWidth;
 		}
-		UpdateLaserWidth(currLaserWidth);
+		UpdateLaserWidth(data.currLaserWidth);
 		break;
 	}
 	case FIRE:
@@ -323,4 +321,23 @@ void PalmTurret::UpdateSprite()
 	sprite.setOrigin(sprite.getLocalBounds().width / 2, sprite.getLocalBounds().height / 2);
 	sprite.setPosition(GetPositionF());
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
+}
+
+int PalmTurret::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void PalmTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void PalmTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

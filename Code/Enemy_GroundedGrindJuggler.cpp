@@ -148,6 +148,7 @@ void GroundedGrindJuggler::UpdateJuggleRepsText(int reps)
 {
 	if (limitedJuggles)
 	{
+		data.juggleTextNumber = reps;
 		numJugglesText.setString(to_string(reps));
 		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
 			+ numJugglesText.getLocalBounds().width / 2,
@@ -160,9 +161,9 @@ void GroundedGrindJuggler::ResetEnemy()
 {
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
-	currHits = 0;
+	
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -176,7 +177,10 @@ void GroundedGrindJuggler::ResetEnemy()
 
 	UpdateHitboxes();
 
-	currJuggle = 0;
+	data.currJuggle = 0;
+	data.currHits = 0;
+	data.velocity = V2d(0, 0);
+	data.waitFrame = 0;
 
 	UpdateJuggleRepsText(juggleReps);
 
@@ -188,10 +192,10 @@ void GroundedGrindJuggler::Push(double strength)
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
+	++data.currJuggle;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 
 	sess->PlayerAddActiveComboObj(comboObj);
 
@@ -204,18 +208,21 @@ void GroundedGrindJuggler::Push(double strength)
 		surfaceMover->SetSpeed(-strength);
 	}
 
-	UpdateJuggleRepsText(juggleReps - currJuggle);
+	UpdateJuggleRepsText(juggleReps - data.currJuggle);
 	
 }
 
 void GroundedGrindJuggler::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	HitboxesOff();
 	HurtboxesOff();
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(0);
 
@@ -230,7 +237,7 @@ void GroundedGrindJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && currJuggle == juggleReps - 1)
+			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
@@ -241,10 +248,6 @@ void GroundedGrindJuggler::ProcessHit()
 
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
-
-				action = S_RETURN;
-				frame = 0;
-
 				Return();
 			}
 			else
@@ -308,7 +311,7 @@ void GroundedGrindJuggler::HandleNoHealth()
 
 void GroundedGrindJuggler::Move()
 {
-	surfaceMover->velocity = velocity;
+	surfaceMover->velocity = data.velocity;
 	surfaceMover->Move(slowMultiple, numPhysSteps);
 }
 
@@ -324,7 +327,7 @@ void GroundedGrindJuggler::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void GroundedGrindJuggler::FrameIncrement()
@@ -356,15 +359,13 @@ void GroundedGrindJuggler::FrameIncrement()
 
 	if (action == S_SLOW || action == S_GRIND || action == S_STOPPED )
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 	}
 }
@@ -392,11 +393,9 @@ void GroundedGrindJuggler::ComboKill(Enemy *e)
 void GroundedGrindJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
 		Return();
 	}
 	else
@@ -489,4 +488,32 @@ void GroundedGrindJuggler::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(numJugglesText);
 	}
+}
+
+int GroundedGrindJuggler::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void GroundedGrindJuggler::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void GroundedGrindJuggler::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	bytes += sizeof(MyData);
+
+	UpdateJuggleRepsText(data.juggleTextNumber);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

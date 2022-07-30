@@ -942,7 +942,7 @@ void Actor::SetupFXTilesets()
 
 	effectPools[PLAYERFX_LAND_0].Set(sess->GetSizedTileset(folder, "land_a_128x128.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_LAND_1].Set(sess->GetSizedTileset(folder, "land_b_192x208.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "land_c_256x256.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "land_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
 	effectPools[PLAYERFX_RUN_START_0].Set(sess->GetSizedTileset(folder, "runstart_a_128x128.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_RUN_START_1].Set(sess->GetSizedTileset(folder, "runstart_b_224x224.png"), EffectType::FX_REGULAR, 20);

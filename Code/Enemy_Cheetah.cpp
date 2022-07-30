@@ -9,7 +9,7 @@ using namespace std;
 using namespace sf;
 
 Cheetah::Cheetah(ActorParams *ap)
-	:Enemy(EnemyType::EN_CHEETAH, ap), moveBezTest(.22, .85, .3, .91)
+	:Enemy(EnemyType::EN_CHEETAH, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, IDLE, 0);
@@ -25,7 +25,7 @@ Cheetah::Cheetah(ActorParams *ap)
 	boostPastDist = 400;
 	boostSpeed = 60;
 
-	chargeFrames = 30;
+	chargeLimit = 30;
 
 	actionLength[IDLE] = 6;
 	actionLength[CHARGE] = 8;
@@ -72,8 +72,6 @@ Cheetah::Cheetah(ActorParams *ap)
 
 	cutObject->Setup(ts, 23, 24, scale);
 
-	bezLength = 60 * NUM_STEPS;
-
 	ResetEnemy();
 }
 
@@ -112,11 +110,10 @@ void Cheetah::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	bezFrame = 0;
-	attackFrame = -1;
-
 	action = IDLE;
 	frame = 0;
+
+	data.preChargeFrame = 0;
 
 	UpdateSprite();
 	UpdateHitboxes();
@@ -136,7 +133,7 @@ void Cheetah::ActionEnded()
 			break;
 		case BOOST:
 			action = RUN;
-			preChargeFrames = 0;
+			data.preChargeFrame = 0;
 			frame = 0;
 			break;
 		}
@@ -170,7 +167,7 @@ void Cheetah::ProcessState()
 		{
 			action = RUN;
 			frame = 0;
-			preChargeFrames = 0;
+			data.preChargeFrame = 0;
 		}
 		break;
 	case RUN:
@@ -182,18 +179,18 @@ void Cheetah::ProcessState()
 		}
 		else
 		{
-			if (preChargeFrames == preChargeLimit)
+			if (data.preChargeFrame == preChargeLimit)
 			{
 				action = CHARGE;
 				frame = 0;
-				chargeCounter = 0;
+				data.chargeFrame = 0;
 			}
 		}
 		break;
 	}
 	case CHARGE:
 
-		if (chargeFrames == chargeCounter)
+		if (data.chargeFrame == chargeLimit)
 		{
 			action = BOOST;
 			frame = 0;
@@ -222,13 +219,13 @@ void Cheetah::ProcessState()
 	{
 		RunMovement();
 
-		++preChargeFrames;
+		++data.preChargeFrame;
 		break;
 	}
 	case CHARGE:
 		RunMovement();
 
-		++chargeCounter;
+		++data.chargeFrame;
 		break;
 	case BOOST:
 		if (groundMover->groundSpeed > 0)
@@ -238,7 +235,7 @@ void Cheetah::ProcessState()
 				groundMover->SetSpeed(maxGroundSpeed);
 				facingRight = false;
 				action = RUN;
-				preChargeFrames = 0;
+				data.preChargeFrame = 0;
 				frame = 0;
 			}
 		}
@@ -250,7 +247,7 @@ void Cheetah::ProcessState()
 				facingRight = true;
 				action = RUN;
 				frame = 0;
-				preChargeFrames = 0;
+				data.preChargeFrame = 0;
 			}
 		}
 
@@ -420,4 +417,23 @@ void Cheetah::Land()
 	frame = 0;
 
 	//cout << "land" << endl;
+}
+
+int Cheetah::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Cheetah::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Cheetah::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

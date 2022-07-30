@@ -17,25 +17,24 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int waitFrame;
+		int currJuggle;
+		int currHits;
+		int juggleTextNumber;
+		V2d velocity;
+	};
+	MyData data;
+
 	bool limitedJuggles;
 	sf::Text numJugglesText;
-
-	V2d velocity;
-
 	int hitLimit;
-	int currHits;
-
 	Tileset *ts;
-
 	int juggleReps;
-	int currJuggle;
-
-	int waitFrame;
 	int maxWaitFrames;
-
 	double friction;
 	double pushStart;
-
 	bool clockwise;
 
 	GroundedGrindJuggler(ActorParams *ap);
@@ -57,6 +56,10 @@ struct GroundedGrindJuggler : Enemy, SurfaceMoverHandler
 	void Return();
 	void Push(double strength);
 	void UpdateJuggleRepsText(int reps);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 
 };

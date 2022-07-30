@@ -14,15 +14,22 @@ struct Falcon : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int recoverFrame;
+		V2d velocity;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 
 	Tileset *ts;
-	V2d velocity;
+	
 	V2d maxSpeed;
 	V2d accel;
 	double rushSpeed;
-	int recoverFrame;
+	
 	int recoverDuration;
 	V2d testOffsetDir;
 
@@ -40,6 +47,10 @@ struct Falcon : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

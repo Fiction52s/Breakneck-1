@@ -18,26 +18,38 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 		S_Count
 	};
 
+
+	struct MyData : StoredEnemyData
+	{
+		int currHits;
+		V2d velocity;
+		int numKilled;
+		int waitFrame;
+		int numKilledTextNumber;
+	};
+
+	MyData data;
+
 	bool limitedKills;
 	sf::Text numKilledText;
 
-	Rail *currRail;
+	
 	Edge *railEdge;
 	double railQuant;
 	double railSpeed;
 
-	V2d velocity;
+	
 
 	int hitLimit;
-	int currHits;
+	
 
 	Tileset *ts;
 
 	int maxKilled;
-	int numKilled;
+	
 
 	double flySpeed;
-	int waitFrame;
+	
 	int maxWaitFrames;
 
 	bool clockwise;
@@ -72,6 +84,10 @@ struct GrindJuggler : Enemy, SurfaceRailMoverHandler
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

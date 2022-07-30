@@ -15,25 +15,24 @@ struct PalmTurret : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		double currLaserWidth;
+	};
+	MyData data;
+
 	Tileset *ts;
 
 	double attentionRadius;
 	double ignoreRadius;
 
-	int firingCounter;
-
-	int animationFactor;
-	double bulletSpeed;
-
 	sf::Vertex laserQuad[4];
 	double laserAngle;
 	V2d laserCenter;
 	double finalLaserWidth;
-	double currLaserWidth;
+	
 	double laserLength;
-	void UpdateLaserWidth(double w);
-	bool CheckHitPlayer(int index = 0);
-
+	
 	CollisionBody laserBody;
 	HitboxInfo *laserHitboxInfo;
 
@@ -47,6 +46,12 @@ struct PalmTurret : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void StartCharge();
+	void UpdateLaserWidth(double w);
+	bool CheckHitPlayer(int index = 0);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

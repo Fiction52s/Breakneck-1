@@ -182,3 +182,22 @@ void MomentumBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int MomentumBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void MomentumBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void MomentumBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

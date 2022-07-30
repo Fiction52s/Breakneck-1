@@ -19,6 +19,12 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+	};
+	MyData data;
+
 	Tileset *ts;
 
 	sf::CircleShape ccwCircle;
@@ -35,7 +41,7 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 	double maxGroundSpeed;
 	double maxFallSpeed;
 
-	int fireCounter;
+	
 
 	Widow(ActorParams *ap);
 	~Widow();
@@ -65,6 +71,10 @@ struct Widow : Enemy, RayCastHandler, SurfaceMoverHandler,
 	void BulletHitPlayer(int playerIndex,
 		BasicBullet *b, int hitResult);
 	void DirectKill();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

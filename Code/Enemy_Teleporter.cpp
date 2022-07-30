@@ -432,3 +432,22 @@ void Teleporter::EnemyDraw(sf::RenderTarget *target)
 		}
 	}
 }
+
+int Teleporter::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Teleporter::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Teleporter::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
