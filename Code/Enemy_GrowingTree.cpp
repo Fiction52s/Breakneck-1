@@ -148,9 +148,9 @@ void GrowingTree::ResetEnemy()
 
 	action = NEUTRAL0;
 	
-	repCounter = 0;
+	data.repCounter = 0;
 
-	powerLevel = 0;
+	data.powerLevel = 0;
 
 	frame = 0;
 
@@ -176,24 +176,24 @@ void GrowingTree::ActionEnded()
 		case NEUTRAL2:
 			break;
 		case ATTACK0:
-			++repCounter;
-			if (repCounter == repsToLevelUp)
+			++data.repCounter;
+			if (data.repCounter == repsToLevelUp)
 			{
 				action = ATTACK1;
-				repCounter = 0;
-				powerLevel = 1;
+				data.repCounter = 0;
+				data.powerLevel = 1;
 			}
 			break;
 		case LEVEL0TO1:
 			action = ATTACK1;
 			break;
 		case ATTACK1:
-			++repCounter;
-			if (repCounter == repsToLevelUp)
+			++data.repCounter;
+			if (data.repCounter == repsToLevelUp)
 			{
 				action = ATTACK2;
-				repCounter = 0;
-				powerLevel = 2;
+				data.repCounter = 0;
+				data.powerLevel = 2;
 			}
 			break;
 		case LEVEL1TO2:
@@ -285,8 +285,8 @@ void GrowingTree::ProcessState()
 	if ((action == ATTACK0 || action == ATTACK1 || action == ATTACK2)
 		&& frame == 1 && slowCounter == 1)
 	{
-		launchers[powerLevel]->facingDir = PlayerDir();
-		launchers[powerLevel]->Fire();
+		launchers[data.powerLevel]->facingDir = PlayerDir();
+		launchers[data.powerLevel]->Fire();
 	}
 }
 
@@ -358,7 +358,7 @@ void GrowingTree::UpdateSprite()
 	sprite.setRotation(currPosInfo.GetGroundAngleDegrees());
 	
 
-	switch( powerLevel )
+	switch(data.powerLevel )
 	{
 	case 0:
 	//	sprite.setColor( Color::White );
@@ -416,4 +416,36 @@ void GrowingTree::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult
 	}
 
 	b->launcher->DeactivateBullet(b);
+}
+
+int GrowingTree::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void GrowingTree::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->StoreBytes(bytes);
+		bytes += launchers[i]->GetNumStoredBytes();
+	}
+	
+}
+
+void GrowingTree::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		launchers[i]->StoreBytes(bytes);
+		bytes += launchers[i]->GetNumStoredBytes();
+	}
 }

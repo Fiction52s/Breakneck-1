@@ -184,3 +184,22 @@ void AntiTimeSlowBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int AntiTimeSlowBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void AntiTimeSlowBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void AntiTimeSlowBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

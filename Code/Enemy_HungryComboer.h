@@ -18,25 +18,30 @@ struct HungryComboer : Enemy, EnemyTracker
 		A_Count
 	};
 
-	Enemy *chaseTarget;
-	int chaseIndex;
-
-	V2d velocity;
-
-	double gravFactor;
-	double maxFallSpeed;
+	struct MyData : StoredEnemyData
+	{
+		int numEatenTextNumber;
+		int currHits;
+		V2d velocity;
+		int growthLevel;
+		Enemy *chaseTarget;
+		int chaseIndex;
+		int waitFrame;
+		int numEaten;
+	};
+	MyData data;
 
 	bool limitedEating;
 	sf::Text numEatenText;
 
 	int hitLimit;
-	int currHits;
+	
 
 	Tileset *ts;
 
 	bool returnsToPlayer;
 
-	int growthLevel;
+	
 	int numGrowthLevels;
 	double origScale;
 	double origSize;
@@ -44,9 +49,9 @@ struct HungryComboer : Enemy, EnemyTracker
 	double flySpeed;
 
 	int maxEdible;
-	int numEaten;
+	
 
-	int waitFrame;
+	
 	int maxWaitFrames;
 
 	
@@ -80,7 +85,9 @@ struct HungryComboer : Enemy, EnemyTracker
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
 
-	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

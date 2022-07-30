@@ -141,15 +141,15 @@ void HungryComboer::ResetEnemy()
 {
 	sprite.setRotation(0);
 
-	growthLevel = 0;
+	data.growthLevel = 0;
 
 	scale = origScale;
 	UpdateScale();
 
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
 
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 	
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -157,12 +157,13 @@ void HungryComboer::ResetEnemy()
 	action = S_FLOAT;
 	frame = 0;
 
-	
-	numEaten = 0;
+	data.waitFrame = 0;
+	data.numEaten = 0;
 
 	UpdateEatenNumberText(maxEdible);
 
-	chaseTarget = NULL;
+	data.chaseTarget = NULL;
+	data.chaseIndex = 0;
 
 	UpdateHitboxes();
 
@@ -194,6 +195,7 @@ void HungryComboer::UpdateEatenNumberText(int reps)
 {
 	if (limitedEating)
 	{
+		data.numEatenTextNumber = reps;
 		numEatenText.setString(to_string(reps));
 		numEatenText.setOrigin(numEatenText.getLocalBounds().left
 			+ numEatenText.getLocalBounds().width / 2,
@@ -206,12 +208,12 @@ void HungryComboer::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void HungryComboer::Throw(V2d vel)
 {
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void HungryComboer::Return()
@@ -225,7 +227,7 @@ void HungryComboer::Return()
 	UpdateScale();
 	UpdateEatenNumberText(0);
 
-	numEaten = 0;
+	data.numEaten = 0;
 
 	numHealth = maxHealth;
 }
@@ -237,7 +239,7 @@ void HungryComboer::Pop()
 	numHealth = maxHealth;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 }
 
 void HungryComboer::PopThrow()
@@ -262,7 +264,7 @@ void HungryComboer::ProcessHit()
 		if (numHealth <= 0)
 		{
 			action = S_FLY;
-			chaseTarget = NULL;
+			data.chaseTarget = NULL;
 			frame = 0;
 			PopThrow();
 		}
@@ -298,9 +300,9 @@ void HungryComboer::ProcessState()
 
 	if (action == S_TRACKENEMY)
 	{
-		if (chaseTarget != NULL && chaseTarget->dead)
+		if (data.chaseTarget != NULL && data.chaseTarget->dead)
 		{
-			chaseTarget = NULL;
+			data.chaseTarget = NULL;
 		}
 
 		//if (chaseTarget == NULL)
@@ -309,22 +311,22 @@ void HungryComboer::ProcessState()
 			int foundIndex = 0;
 			if (GetClosestEnemyPos(GetPosition(), 1000, foundEnemy, foundIndex))
 			{
-				chaseTarget = foundEnemy;
-				chaseIndex = foundIndex;
+				data.chaseTarget = foundEnemy;
+				data.chaseIndex = foundIndex;
 			}
 		}
 	}
 
-	if ((action == S_TRACKENEMY && chaseTarget != NULL) || action == S_TRACKPLAYER)
+	if ((action == S_TRACKENEMY && data.chaseTarget != NULL) || action == S_TRACKPLAYER)
 	{
 		double accel = 1;// .5;//.5;
 		V2d trackPos = GetTrackPos();
 		V2d trackDir = normalize(trackPos - GetPosition());
-		velocity += trackDir * accel;
+		data.velocity += trackDir * accel;
 		double fSpeed = GetFlySpeed();
-		if (length(velocity) > fSpeed)
+		if (length(data.velocity) > fSpeed)
 		{
-			velocity = normalize(velocity) * fSpeed;
+			data.velocity = normalize(data.velocity) * fSpeed;
 		}
 	}
 }
@@ -332,7 +334,7 @@ void HungryComboer::ProcessState()
 double HungryComboer::GetFlySpeed()
 {
 	double fSpeed = flySpeed;
-	fSpeed -= growthLevel * 1.0;
+	fSpeed -= data.growthLevel * 1.0;
 	return fSpeed;
 }
 
@@ -354,9 +356,9 @@ bool HungryComboer::IsValidTrackEnemy(Enemy *e)
 
 void HungryComboer::ComboKill(Enemy *e)
 {
-	if (chaseTarget == e)
+	if (data.chaseTarget == e)
 	{
-		chaseTarget = NULL;
+		data.chaseTarget = NULL;
 	}
 
 	if (returnsToPlayer)
@@ -365,9 +367,9 @@ void HungryComboer::ComboKill(Enemy *e)
 		frame = 0;
 	}
 
-	++numEaten;
+	++data.numEaten;
 
-	if (limitedEating && numEaten == maxEdible)
+	if (limitedEating && data.numEaten == maxEdible)
 	{
 		if (hasMonitor && !suppressMonitor)
 		{
@@ -383,11 +385,11 @@ void HungryComboer::ComboKill(Enemy *e)
 
 		return;
 	}
-	UpdateEatenNumberText(maxEdible - numEaten);
+	UpdateEatenNumberText(maxEdible - data.numEaten);
 	
-	if (growthLevel < numGrowthLevels)
+	if (data.growthLevel < numGrowthLevels)
 	{
-		growthLevel++;
+		data.growthLevel++;
 		scale += .2;
 		UpdateScale();
 	}
@@ -405,9 +407,9 @@ V2d HungryComboer::GetTrackPos()
 {
 	if (action == S_TRACKENEMY)
 	{
-		if (chaseTarget != NULL)
+		if (data.chaseTarget != NULL)
 		{
-			return chaseTarget->GetCamPoint(chaseIndex);
+			return data.chaseTarget->GetCamPoint(data.chaseIndex);
 		}
 		else
 		{
@@ -429,7 +431,7 @@ void HungryComboer::HandleNoHealth()
 void HungryComboer::Move()
 {
 	double numStep = numPhysSteps;
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * numStep;
 
 	currPosInfo.position += movementVec;
@@ -465,7 +467,7 @@ void HungryComboer::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void HungryComboer::UpdateScale()
@@ -516,9 +518,9 @@ void HungryComboer::FrameIncrement()
 void HungryComboer::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	waitFrame = 0;
-	if (hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	data.waitFrame = 0;
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
 		action = S_RETURN;
 		frame = 0;
@@ -564,4 +566,31 @@ void HungryComboer::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(numEatenText);
 	}
+}
+
+int HungryComboer::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void HungryComboer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void HungryComboer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	UpdateEatenNumberText(data.numEatenTextNumber);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

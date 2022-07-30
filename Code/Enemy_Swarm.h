@@ -13,6 +13,23 @@ struct SwarmMember : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int framesToLive;
+		V2d velocity;
+	};
+	MyData data;
+
+
+	V2d targetOffset;
+	Swarm *parent;
+	double maxSpeed;
+	int vaIndex;
+
+	sf::VertexArray &va;
+
+	double bulletSpeed;
+
 	SwarmMember(Swarm *parent,
 		sf::VertexArray &va, int index,
 		V2d &targetOffset,
@@ -26,20 +43,9 @@ struct SwarmMember : Enemy
 	void FrameIncrement();
 	void Throw(V2d &pos);
 
-	int framesToLive;
-
-	Swarm *parent;
-	double maxSpeed;
-	int vaIndex;
-	V2d targetOffset;
-
-	V2d velocity;
-
-	bool active;
-
-	sf::VertexArray &va;
-
-	double bulletSpeed;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct Swarm : Enemy
@@ -53,6 +59,27 @@ struct Swarm : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		bool dying;
+	};
+	MyData data;
+
+	int liveFrames;
+
+	
+	Tileset *ts;
+	Tileset *ts_swarm;
+
+	const static int NUM_SWARM = 5;
+	sf::VertexArray swarmVA;
+	SwarmMember *members[NUM_SWARM];
+
+	Tileset *ts_swarmExplode;
+
+	sf::Vector2f spriteSize;
+	double maxSpeed;
+
 	Swarm(ActorParams *ap);
 	~Swarm();
 	void SetLevel(int lev);
@@ -65,20 +92,9 @@ struct Swarm : Enemy
 	void Launch();
 	void ResetEnemy();
 
-	int liveFrames;
-
-	bool dying;
-	Tileset *ts;
-	Tileset *ts_swarm;
-
-	const static int NUM_SWARM = 5;
-	sf::VertexArray swarmVA;
-	SwarmMember *members[NUM_SWARM];
-
-	Tileset *ts_swarmExplode;
-
-	sf::Vector2f spriteSize;
-	double maxSpeed;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

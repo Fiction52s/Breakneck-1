@@ -103,14 +103,14 @@ void Shark::SetLevel(int lev)
 
 void Shark::ResetEnemy()
 {
-	circleCounter = 0;
-	wakeCounter = 0;
+	data.circleCounter = 0;
+	data.wakeCounter = 0;
 	action = WAKEUP;
-	latchStartAngle = 0;
-	latchedOn = false;
+	data.latchStartAngle = 0;
+	data.latchedOn = false;
 	circleSeq.Reset();
 
-	basePos = GetPosition();
+	data.basePos = GetPosition();
 
 	frame = 0;
 	
@@ -123,13 +123,13 @@ void Shark::ResetEnemy()
 
 void Shark::ProcessState()
 {
-	double cs = cos( latchStartAngle );
-	double sn = sin( latchStartAngle );
+	double cs = cos(data.latchStartAngle );
+	double sn = sin(data.latchStartAngle );
 
 	V2d truePosOffset( circleSeq.GetPos().x * cs - 
 		circleSeq.GetPos().y * sn,
 		circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
-	truePosOffset *= length( offsetPlayer );
+	truePosOffset *= length(data.offsetPlayer );
 	V2d playerPos = sess->GetPlayerPos();
 
 	if (frame == actionLength[action] * animFactor[action])
@@ -142,16 +142,16 @@ void Shark::ProcessState()
 			break;
 		case WAKEUP:
 		{
-			circleCounter = 0;
+			data.circleCounter = 0;
 			action = CIRCLE;
 			frame = 0;
-			latchedOn = true;
-			offsetPlayer = basePos - playerPos;
-			origOffset = offsetPlayer;
-			V2d offsetDir = normalize(offsetPlayer);
-			latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
+			data.latchedOn = true;
+			data.offsetPlayer = data.basePos - playerPos;
+			data.origOffset = data.offsetPlayer;
+			V2d offsetDir = normalize(data.offsetPlayer);
+			data.latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
 
-			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), circleFrames );
+			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), data.circleFrames );
 			circleMovement->InitDebugDraw();
 			circleSeq.Reset();
 
@@ -160,7 +160,7 @@ void Shark::ProcessState()
 			//testing
 
 			circleSeq.Update(slowMultiple);
-			basePos = playerPos;
+			data.basePos = playerPos;
 			break;
 		}
 		case APPROACH:
@@ -168,7 +168,7 @@ void Shark::ProcessState()
 		case CIRCLE:
 			circleSeq.Reset();
 			circleSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-			++circleCounter;
+			++data.circleCounter;
 			break;
 		case FINALCIRCLE:
 		{
@@ -184,11 +184,11 @@ void Shark::ProcessState()
 		{
 			assert(!rushSeq.IsMovementActive());
 			action = CIRCLE;
-			circleCounter = 0;
+			data.circleCounter = 0;
 			truePosOffset = -truePosOffset;
-			offsetPlayer = truePosOffset;
+			data.offsetPlayer = truePosOffset;
 			V2d offsetDir = normalize(truePosOffset);
-			latchStartAngle = atan2(offsetDir.y, offsetDir.x);
+			data.latchStartAngle = atan2(offsetDir.y, offsetDir.x);
 			circleSeq.Reset();
 			circleSeq.Update(slowMultiple);
 		}
@@ -214,7 +214,7 @@ void Shark::ProcessState()
 		{
 			action = FINALCIRCLE;
 			frame = 0;
-			attackOffset = truePosOffset;
+			data.attackOffset = truePosOffset;
 		}
 		break;
 	case FINALCIRCLE:
@@ -238,8 +238,8 @@ void Shark::ProcessState()
 
 V2d Shark::GetCircleOffset()
 {
-	double cs = cos(latchStartAngle);
-	double sn = sin(latchStartAngle);
+	double cs = cos(data.latchStartAngle);
+	double sn = sin(data.latchStartAngle);
 
 	V2d truePosOffset(circleSeq.GetPos().x * cs -
 		circleSeq.GetPos().y * sn,
@@ -249,17 +249,17 @@ V2d Shark::GetCircleOffset()
 
 void Shark::UpdateEnemyPhysics()
 {
-	double cs = cos( latchStartAngle );
-	double sn = sin( latchStartAngle );
+	double cs = cos(data.latchStartAngle );
+	double sn = sin(data.latchStartAngle );
 
 	V2d truePosOffset( circleSeq.GetPos().x * cs -
 		circleSeq.GetPos().y * sn,
 		circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
 
 
-	if( (action == CIRCLE || action == FINALCIRCLE) && latchedOn )
+	if( (action == CIRCLE || action == FINALCIRCLE) && data.latchedOn )
 	{
-		currPosInfo.position = basePos + truePosOffset * length( offsetPlayer );
+		currPosInfo.position = data.basePos + truePosOffset * length(data.offsetPlayer );
 
 		circleSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 
@@ -282,24 +282,24 @@ void Shark::UpdateEnemyPhysics()
 	}
 	else if( action == RUSH )
 	{
-		currPosInfo.position = basePos + rushSeq.GetPos();
+		currPosInfo.position = data.basePos + rushSeq.GetPos();
 		rushSeq.Update( slowMultiple, NUM_MAX_STEPS / numPhysSteps);
 	}
 }
 
 void Shark::UpdateSprite()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
 		V2d playerPos = sess->GetPlayerPos(0);
-		basePos = playerPos;
+		data.basePos = playerPos;
 		if ((action == CIRCLE || action == FINALCIRCLE))
 		{
-			currPosInfo.position = basePos + GetCircleOffset() * length(offsetPlayer);
+			currPosInfo.position = data.basePos + GetCircleOffset() * length(data.offsetPlayer);
 		}
 		else if (action == RUSH)
 		{
-			currPosInfo.position = basePos + rushSeq.GetPos();
+			currPosInfo.position = data.basePos + rushSeq.GetPos();
 		}
 	}
 
@@ -351,8 +351,8 @@ void Shark::UpdateSprite()
 		double div = 2 * PI / 12.0;
 
 			
-		double cs = cos( latchStartAngle );
-		double sn = sin( latchStartAngle );
+		double cs = cos(data.latchStartAngle );
+		double sn = sin(data.latchStartAngle );
 		V2d truePosOffset( circleSeq.GetPos().x * cs - 
 			circleSeq.GetPos().y * sn,
 			circleSeq.GetPos().x * sn + circleSeq.GetPos().y * cs );
@@ -380,7 +380,7 @@ void Shark::UpdateSprite()
 			//int f = frame / animFactor[RUSH];
 			IntRect ir = ts_bite->GetSubRect( frame / animFactor[RUSH] );
 			
-			if( attackOffset.x <= 0 )
+			if(data.attackOffset.x <= 0 )
 			{
 			}
 			else
@@ -400,7 +400,7 @@ void Shark::UpdateSprite()
 			//if( angle < 0 )
 		//		angle += PI * 2;
 
-			double angle = GetVectorAngleCW(attackOffset);
+			double angle = GetVectorAngleCW(data.attackOffset);
 			sprite.setOrigin( sprite.getLocalBounds().width / 2, 
 				sprite.getLocalBounds().height / 2 );
 			sprite.setRotation( angle / PI * 180.0 );
@@ -417,4 +417,35 @@ void Shark::UpdateSprite()
 void Shark::EnemyDraw( sf::RenderTarget *target )
 {
 	DrawSprite(target, sprite);
+}
+
+int Shark::GetNumStoredBytes()
+{
+	return sizeof(MyData) + circleSeq.GetNumStoredBytes() + rushSeq.GetNumStoredBytes();
+}
+
+void Shark::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	circleSeq.StoreBytes(bytes);
+	bytes += circleSeq.GetNumStoredBytes();
+
+	rushSeq.StoreBytes(bytes);
+	bytes += rushSeq.GetNumStoredBytes();
+}
+
+void Shark::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	circleSeq.SetFromBytes(bytes);
+	bytes += circleSeq.GetNumStoredBytes();
+
+	rushSeq.SetFromBytes(bytes);
+	bytes += rushSeq.GetNumStoredBytes();
 }

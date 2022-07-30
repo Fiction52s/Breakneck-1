@@ -17,35 +17,32 @@ struct RelativeComboer : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int numKilledTextNumber;
+		int latchFrame;
+		int specialPauseFrames;
+		V2d velocity;
+		int currHits;
+		int numKilled;
+		int waitFrame;
+		bool latchedOn;
+		V2d basePos;
+		V2d offsetPos;
+	};
+	MyData data;
+
 	bool limitedKills;
 	sf::Text numKilledText;
 
-	int latchFrame;
 	int maxLatchFrames;
-
-	int specialPauseFrames;
-
-	V2d velocity;
-
 	int hitLimit;
-	int currHits;
-
 	Tileset *ts;
-
 	bool detachOnKill;
-
 	int maxKilled;
-	int numKilled;
-
-	int waitFrame;
 	int maxWaitFrames;
-
 	double flySpeed;
-
-	bool latchedOn;
-	V2d basePos;
-
-	V2d offsetPos;
+	
 	bool CountsForEnemyGate() { return false; }
 	RelativeComboer(
 		ActorParams *ap);/*GameSession *owner, bool hasMonitor,
@@ -75,6 +72,10 @@ struct RelativeComboer : Enemy
 
 	void Throw(double a, double strength);
 	void Throw(V2d vel);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 };
 

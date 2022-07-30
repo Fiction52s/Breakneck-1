@@ -19,16 +19,23 @@ struct GrowingTree : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int repCounter;
+		int powerLevel;
+	};
+	MyData data;
+
 	double pulseRadius;
 	int pulseFrame;
 	Tileset *ts_bulletExplode;
-	int powerLevel;
+	
 	int totalBullets;
 	Tileset *ts;
 	int startPowerLevel;
 	double attentionRadius;
 	double ignoreRadius;
-	int repCounter;
+	
 	int repsToLevelUp;
 
 	GrowingTree(ActorParams *ap);
@@ -50,7 +57,9 @@ struct GrowingTree : Enemy, LauncherEnemy
 		BasicBullet *b,
 		int hitResult);
 
-	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

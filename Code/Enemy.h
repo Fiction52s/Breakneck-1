@@ -85,6 +85,8 @@ struct StoredEnemyData
 
 	Shield *currShield;
 
+	double scale;
+
 	void Print();
 
 };

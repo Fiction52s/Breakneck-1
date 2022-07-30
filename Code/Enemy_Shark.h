@@ -16,27 +16,32 @@ struct Shark : Enemy
 		A_Count
 	};
 
-	int circleCounter;
+	struct MyData : StoredEnemyData
+	{
+		int circleCounter;
+		int wakeCounter;
+		int circleFrames;
+		double latchStartAngle;
+		V2d basePos;
+		V2d origOffset;
+		V2d attackOffset;
+		V2d offsetPlayer;
+		bool latchedOn;
+	};
+	MyData data;
 
-	int wakeCounter;
 	int wakeCap;
-
-	int circleFrames;
 	double attackAngle;
-
-	double latchStartAngle;
+	
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;
 
 	RadialMovement *circleMovement;
-
-	V2d basePos;
+	
 	sf::Color testColor; //for temp anim
 	double acceleration;
 	double speed;
-	V2d origOffset;
-	V2d attackOffset;
-
+	
 	Tileset *ts_circle;
 	Tileset *ts_bite;
 	Tileset *ts_death;
@@ -44,9 +49,6 @@ struct Shark : Enemy
 	bool facingRight;
 
 	CubicBezier approachAccelBez;
-
-	V2d offsetPlayer;
-	bool latchedOn;
 
 	Shark( ActorParams *ap );
 	void SetLevel(int lev);
@@ -56,6 +58,10 @@ struct Shark : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	V2d GetCircleOffset();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 

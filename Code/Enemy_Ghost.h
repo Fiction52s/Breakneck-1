@@ -15,31 +15,23 @@ struct Ghost : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int awakeFrames;
+		double latchStartAngle;
+		V2d basePos;
+		bool latchedOn;
+		int totalFrame;
+		V2d offsetPlayer;
+		V2d origOffset;
+	};
+	MyData data;
 
 	double detectionRadius;
-	double latchStartAngle;
-
-	int awakeFrames;
+	
 	int awakeCap;
 
-	bool latchedOn;
-	V2d basePos;
-
-	double acceleration;
-	double speed;
-
-	int approachFrames;
-	int totalFrame;
-	V2d origOffset;
-
 	Tileset *ts;
-
-	int hitlagFrames;
-	int hitstunFrames;
-
-	CubicBezier approachAccelBez;
-
-	V2d offsetPlayer;
 
 	Ghost(ActorParams *ap);
 	void SetLevel(int lev);
@@ -50,6 +42,10 @@ struct Ghost : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void Bite();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

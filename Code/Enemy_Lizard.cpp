@@ -124,7 +124,7 @@ void Lizard::ResetEnemy()
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
-	fireWaitCounter = 0;
+	data.fireWaitCounter = 0;
 
 	frame = 0;
 
@@ -266,7 +266,7 @@ void Lizard::ProcessState()
 		break;
 	}
 
-	if (action != IDLE && fireWaitCounter == 0 && slowCounter == 1)
+	if (action != IDLE && data.fireWaitCounter == 0 && slowCounter == 1)
 	{
 		//ground has to be not null.
 		launchers[0]->position = GetPosition();
@@ -325,10 +325,10 @@ void Lizard::FrameIncrement()
 {
 	if (action != IDLE)
 	{
-		fireWaitCounter++;
-		if (fireWaitCounter == fireWaitDuration)
+		data.fireWaitCounter++;
+		if (data.fireWaitCounter == fireWaitDuration)
 		{
-			fireWaitCounter = 0;
+			data.fireWaitCounter = 0;
 		}
 	}
 }
@@ -449,7 +449,7 @@ void Lizard::Land()
 
 void Lizard::BulletHitTerrain(BasicBullet *b,
 	Edge *edge,
-	sf::Vector2<double> &pos)
+	V2d &pos)
 {
 	/*V2d norm = edge->Normal();
 	double angle = atan2(norm.y, -norm.x);
@@ -482,4 +482,29 @@ void Lizard::UpdateBullet(BasicBullet *b)
 void Lizard::DirectKill()
 {
 
+}
+
+int Lizard::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Lizard::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Lizard::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

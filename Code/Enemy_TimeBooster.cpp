@@ -182,3 +182,21 @@ void TimeBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int TimeBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void TimeBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void TimeBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

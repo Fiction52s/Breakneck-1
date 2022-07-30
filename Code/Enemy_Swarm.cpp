@@ -14,10 +14,10 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 		:Enemy( EnemyType::EN_SWARMMEMBER, 5 ), va( p_va ), 
 		vaIndex( index ), parent( p_parent ), maxSpeed( p_maxSpeed )
 {
-	framesToLive = parent->liveFrames;
+	data.framesToLive = parent->liveFrames;
 	targetOffset = p_targetOffset;
 
-	velocity = V2d( 0, 0 );
+	data.velocity = V2d( 0, 0 );
 	frame = 0;
 	slowMultiple = 1;
 	slowCounter = 1;
@@ -44,7 +44,7 @@ SwarmMember::SwarmMember(Swarm *p_parent,
 
 void SwarmMember::ProcessState()
 {
-	if (framesToLive == 0)
+	if (data.framesToLive == 0)
 	{
 		numHealth = 0;
 		active = false;
@@ -62,9 +62,9 @@ void SwarmMember::HandleNoHealth()
 
 void SwarmMember::FrameIncrement()
 {
-	if (framesToLive > 0)
+	if (data.framesToLive > 0)
 	{
-		--framesToLive;
+		--data.framesToLive;
 	}
 }
 
@@ -78,7 +78,7 @@ void SwarmMember::Throw( V2d &pos )
 	spawned = false;
 	sess->AddEnemy(this);
 	currPosInfo.position = pos + targetOffset;
-	velocity = normalize(targetOffset) * 6.0;
+	data.velocity = normalize(targetOffset) * 6.0;
 }
 
 void SwarmMember::ClearSprite()
@@ -120,7 +120,7 @@ void SwarmMember::UpdateSprite()
 void SwarmMember::UpdateEnemyPhysics()
 {
 	double steps = numPhysSteps;
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * steps;
 
 	currPosInfo.position += movementVec;
@@ -129,11 +129,11 @@ void SwarmMember::UpdateEnemyPhysics()
 	V2d dir(pPos - GetPosition());
 	dir = normalize(dir);
 	double gFactor = .5;
-	velocity += gFactor * dir / (double)slowMultiple / steps;
+	data.velocity += gFactor * dir / (double)slowMultiple / steps;
 
-	if (length(velocity) > maxSpeed)
+	if (length(data.velocity) > maxSpeed)
 	{
-		velocity = normalize(velocity) * maxSpeed;
+		data.velocity = normalize(data.velocity) * maxSpeed;
 	}
 }
 
@@ -145,18 +145,37 @@ void SwarmMember::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
-	framesToLive = parent->liveFrames;
+	data.framesToLive = parent->liveFrames;
 	
 	
 	active = false;
 
-	velocity = V2d( 0, 0 );
+	data.velocity = V2d( 0, 0 );
 	slowMultiple = 1;
 	slowCounter = 1;
 	receivedHit = NULL;
 
 	UpdateHitboxes();
 	ClearSprite();
+}
+
+int SwarmMember::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void SwarmMember::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void SwarmMember::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }
 
 
@@ -270,7 +289,7 @@ void Swarm::ResetEnemy()
 	DefaultHurtboxesOn();
 
 	dead = false;
-	dying = false;
+	data.dying = false;
 
 	for( int i = 0; i < NUM_SWARM; ++i )
 	{
@@ -344,7 +363,7 @@ void Swarm::ProcessState()
 
 	if( activeMembers == 0 )
 	{
-		if (!dying && !dead)
+		if (!data.dying && !dead)
 		{
 			if (action == USED)
 			{
@@ -363,7 +382,7 @@ void Swarm::ProcessState()
 				}
 			}
 		}
-		else if (dying)
+		else if (data.dying)
 		{
 			dead = true;
 			numHealth = 0;
@@ -377,12 +396,12 @@ void Swarm::HandleNoHealth()
 	numHealth = 1;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	dying = true;
+	data.dying = true;
 }
 
 void Swarm::EnemyDraw(sf::RenderTarget *target )
 {
-	if (!dying)
+	if (!data.dying)
 	{
 		DrawSprite(target, sprite);
 	}
@@ -391,7 +410,7 @@ void Swarm::EnemyDraw(sf::RenderTarget *target )
 
 void Swarm::UpdateSprite()
 {
-	if( !dying )
+	if( !data.dying )
 	{
 		switch( action )
 		{
@@ -414,3 +433,33 @@ void Swarm::UpdateSprite()
 	}
 }
 
+int Swarm::GetNumStoredBytes()
+{
+	return sizeof(MyData) + members[0]->GetNumStoredBytes() * NUM_SWARM;
+}
+
+void Swarm::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < NUM_SWARM; ++i)
+	{
+		members[i]->StoreBytes(bytes);
+		bytes += members[i]->GetNumStoredBytes();
+	}
+}
+
+void Swarm::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	for (int i = 0; i < NUM_SWARM; ++i)
+	{
+		members[i]->SetFromBytes(bytes);
+		bytes += members[i]->GetNumStoredBytes();
+	}
+}

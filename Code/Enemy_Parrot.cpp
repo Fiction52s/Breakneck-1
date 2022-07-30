@@ -97,7 +97,8 @@ void Parrot::ResetEnemy()
 	action = NEUTRAL;
 	frame = 0;
 
-	fireCounter = 0;
+	data.velocity = V2d();
+	data.fireCounter = 0;
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -111,7 +112,7 @@ void Parrot::FrameIncrement()
 {
 	if (action != NEUTRAL && action != ATTACK )
 	{
-		++fireCounter;
+		++data.fireCounter;
 	}
 	
 }
@@ -165,12 +166,12 @@ void Parrot::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		break;
 	case FLY:
 	case ATTACK:
-		velocity += PlayerDir(V2d(), V2d( 0, -300 )) * accel;
-		CapVectorLength(velocity, maxSpeed);
+		data.velocity += PlayerDir(V2d(), V2d( 0, -300 )) * accel;
+		CapVectorLength(data.velocity, maxSpeed);
 		break;
 	}
 
@@ -201,11 +202,11 @@ void Parrot::ProcessState()
 
 	if (action == FLY)
 	{
-		if (fireCounter == 30)
+		if (data.fireCounter == 30)
 		{
 			action = ATTACK;
 			frame = 0;
-			fireCounter = 0;
+			data.fireCounter = 0;
 		}
 	}
 
@@ -216,7 +217,7 @@ void Parrot::UpdateEnemyPhysics()
 {
 	if (action == FLY || action == ATTACK)
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -276,4 +277,29 @@ void Parrot::DirectKill()
 	}
 
 	receivedHit = NULL;
+}
+
+int Parrot::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Parrot::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Parrot::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

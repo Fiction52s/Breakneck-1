@@ -125,24 +125,24 @@ RelativeComboer::~RelativeComboer()
 
 void RelativeComboer::ResetEnemy()
 {
-	latchFrame = 0;
+	data.latchFrame = 0;
 	
 	//sprite.setColor(Color::White);
-	specialPauseFrames = 0;
+	data.specialPauseFrames = 0;
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 	action = S_FLOAT;
 	frame = 0;
 	
-	basePos = startPosInfo.position;
-	latchedOn = false;
+	data.basePos = startPosInfo.position;
+	data.latchedOn = false;
 
-	numKilled = 0;
+	data.numKilled = 0;
 
 	UpdateKilledNumberText(maxKilled);
 
@@ -159,6 +159,7 @@ void RelativeComboer::UpdateKilledNumberText(int reps)
 {
 	if (limitedKills)
 	{
+		data.numKilledTextNumber = reps;
 		numKilledText.setString(to_string(reps));
 		numKilledText.setOrigin(numKilledText.getLocalBounds().left
 			+ numKilledText.getLocalBounds().width / 2,
@@ -171,12 +172,12 @@ void RelativeComboer::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void RelativeComboer::Throw(V2d vel)
 {
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void RelativeComboer::Return()
@@ -186,7 +187,7 @@ void RelativeComboer::Return()
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
-	numKilled = 0;
+	data.numKilled = 0;
 
 	numHealth = maxHealth;
 
@@ -200,7 +201,7 @@ void RelativeComboer::Pop()
 	numHealth = maxHealth;
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 }
 
 void RelativeComboer::PopThrow()
@@ -231,9 +232,9 @@ void RelativeComboer::ProcessHit()
 		{
 			action = S_FLY;
 			frame = 0;
-			latchedOn = true;
-			latchFrame = 0;
-			offsetPos = GetPosition() - sess->GetPlayerPos(0);
+			data.latchedOn = true;
+			data.latchFrame = 0;
+			data.offsetPos = GetPosition() - sess->GetPlayerPos(0);
 			PopThrow();
 		}
 		else
@@ -261,7 +262,7 @@ void RelativeComboer::ProcessState()
 			SetCurrPosInfo(startPosInfo);
 			DefaultHurtboxesOn();
 			DefaultHitboxesOn();
-			latchedOn = false;
+			data.latchedOn = false;
 			//basePos = origPos;
 			break;
 		}
@@ -276,17 +277,17 @@ void RelativeComboer::HandleNoHealth()
 void RelativeComboer::Move()
 {
 	double numStep = numPhysSteps;
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * numStep;
 
-	offsetPos += movementVec;
+	data.offsetPos += movementVec;
 }
 
 void RelativeComboer::UpdateEnemyPhysics()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		basePos = sess->GetPlayerPos(0);
+		data.basePos = sess->GetPlayerPos(0);
 	}
 	else
 	{
@@ -294,7 +295,7 @@ void RelativeComboer::UpdateEnemyPhysics()
 
 	}
 
-	if (specialPauseFrames == 0)
+	if (data.specialPauseFrames == 0)
 	{
 
 
@@ -309,23 +310,23 @@ void RelativeComboer::UpdateEnemyPhysics()
 
 	}
 
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		currPosInfo.position = offsetPos + basePos;
+		currPosInfo.position = data.offsetPos + data.basePos;
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void RelativeComboer::FrameIncrement()
 {
-	if (specialPauseFrames > 0)
+	if (data.specialPauseFrames > 0)
 	{
-		--specialPauseFrames;
+		--data.specialPauseFrames;
 	}
 	if (action == S_FLY )
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
 			action = S_RETURN;
 			frame = 0;
@@ -333,15 +334,15 @@ void RelativeComboer::FrameIncrement()
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 
 	}
 
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		latchFrame++;
-		if (latchFrame == maxLatchFrames)
+		data.latchFrame++;
+		if (data.latchFrame == maxLatchFrames)
 		{
 			action = S_RETURN;
 			frame = 0;
@@ -357,14 +358,14 @@ void RelativeComboer::ComboKill(Enemy *e)
 	{
 		action = S_WAIT;
 		frame = 0;
-		latchedOn = false;
+		data.latchedOn = false;
 		DefaultHurtboxesOn();
 		//sprite.setColor(Color::Blue);
 	}
 
-	++numKilled;
+	++data.numKilled;
 
-	if (limitedKills && numKilled == maxKilled)
+	if (limitedKills && data.numKilled == maxKilled)
 	{
 		if (hasMonitor && !suppressMonitor)
 		{
@@ -380,7 +381,7 @@ void RelativeComboer::ComboKill(Enemy *e)
 
 		return;
 	}
-	UpdateKilledNumberText(maxKilled - numKilled);
+	UpdateKilledNumberText(maxKilled - data.numKilled);
 
 	sess->PlayerRestoreAirOptions(0);
 }
@@ -388,10 +389,10 @@ void RelativeComboer::ComboKill(Enemy *e)
 void RelativeComboer::ComboHit()
 {
 	//pauseFrames = 5;
-	specialPauseFrames = 5;
-	++currHits;
-	velocity = V2d(0, 0);
-	if (hitLimit > 0 && currHits >= hitLimit)
+	data.specialPauseFrames = 5;
+	++data.currHits;
+	data.velocity = V2d(0, 0);
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
 		action = S_RETURN;
 		frame = 0;
@@ -401,10 +402,10 @@ void RelativeComboer::ComboHit()
 
 void RelativeComboer::UpdateSprite()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		basePos = sess->GetPlayerPos(0);
-		currPosInfo.position = basePos + offsetPos;
+		data.basePos = sess->GetPlayerPos(0);
+		currPosInfo.position = data.basePos + data.offsetPos;
 	}
 
 	int tile = 0;
@@ -450,4 +451,31 @@ void RelativeComboer::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(numKilledText);
 	}
+}
+
+int RelativeComboer::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void RelativeComboer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void RelativeComboer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	UpdateKilledNumberText(data.numKilledTextNumber);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

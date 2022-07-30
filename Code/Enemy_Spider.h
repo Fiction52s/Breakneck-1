@@ -14,6 +14,27 @@ struct Spider : Enemy, RayCastHandler, SurfaceMoverHandler
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int framesLaseringPlayer;
+		int laserLevel;
+		int laserCounter;
+		bool canSeePlayer;
+	};
+	MyData data;
+
+	V2d closestPos;
+	Edge *closestEdge;
+	double closestQuant;
+	bool closestClockwiseFromCurrent;
+
+	Tileset *ts;
+
+	HitboxInfo *laserInfo0;
+	HitboxInfo *laserInfo1;
+	HitboxInfo *laserInfo2;
+	HitboxInfo *laserInfo3;
+
 	Spider(ActorParams *ap);
 	~Spider();
 	void ActionEnded();
@@ -41,37 +62,9 @@ struct Spider : Enemy, RayCastHandler, SurfaceMoverHandler
 	void HitOtherAerial(Edge *e);
 	void Land();
 
-	V2d closestPos;
-	Edge *closestEdge;
-	double closestQuant;
-	bool closestClockwiseFromCurrent;
-
-	Tileset *ts;
-
-	bool canSeePlayer;
-
-	int framesLaseringPlayer;
-	int laserLevel;
-
-	double laserAngle;
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-	HitboxInfo *laserInfo0;
-	HitboxInfo *laserInfo1;
-	HitboxInfo *laserInfo2;
-	HitboxInfo *laserInfo3;
-	int laserCounter;
-
-	V2d gravity;
-
-	int attackFrame;
-	int attackMult;
-
-	double maxGroundSpeed;
-	double maxFallSpeed;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

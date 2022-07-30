@@ -14,17 +14,20 @@ struct Parrot : Enemy, LauncherEnemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+		int fireCounter;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 
 	Tileset *ts;
-	V2d velocity;
+	
 	double maxSpeed;
 	double accel;
-
-	int fireCounter;
-
-
 
 	Parrot(ActorParams *ap);
 
@@ -45,6 +48,10 @@ struct Parrot : Enemy, LauncherEnemy
 	void BulletHitPlayer(int playerIndex,
 		BasicBullet *b, int hitResult);
 	void DirectKill();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

@@ -9,7 +9,7 @@ using namespace std;
 using namespace sf;
 
 Ghost::Ghost( ActorParams *ap )
-	:Enemy( EnemyType::EN_GHOST, ap), approachAccelBez( 1,.01,.86,.32 ) 
+	:Enemy( EnemyType::EN_GHOST, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(BITE, APPROACH, 0);
@@ -17,8 +17,6 @@ Ghost::Ghost( ActorParams *ap )
 	SetLevel(ap->GetLevel());
 
 	detectionRadius = 600;
-	approachFrames = 180 * 3;
-	speed = 1;
 	awakeCap = 60;
 
 	actionLength[WAKEUP] = 60;
@@ -57,15 +55,15 @@ Ghost::Ghost( ActorParams *ap )
 void Ghost::ResetEnemy()
 {
 	action = WAKEUP;
-	awakeFrames = 0;
-	latchStartAngle = 0;
-	latchedOn = false;
-	totalFrame = 0;
+	data.awakeFrames = 0;
+	data.latchStartAngle = 0;
+	data.latchedOn = false;
+	data.totalFrame = 0;
 	
 	facingRight = (sess->GetPlayerPos(0).x - GetPosition().x) >= 0;
 
 	frame = 0;
-	basePos = startPosInfo.position;
+	data.basePos = startPosInfo.position;
 
 	sprite.setColor(Color( 255, 255, 255, 100 ));
 
@@ -95,7 +93,7 @@ void Ghost::SetLevel(int lev)
 
 void Ghost::Bite()
 {
-	offsetPlayer = V2d(0, 0);
+	data.offsetPlayer = V2d(0, 0);
 	action = BITE;
 	frame = 0;
 	sprite.setColor(Color::White);
@@ -118,7 +116,7 @@ void Ghost::ProcessState()
 		else if( action == EXPLODE )
 		{
 			action = RETURN;
-			offsetPlayer = origOffset;
+			data.offsetPlayer = data.origOffset;
 			sprite.setColor(Color(255, 255, 255, 100));
 
 			HitboxesOff();
@@ -138,7 +136,7 @@ void Ghost::ProcessState()
 		SetHitboxes(NULL, 0);
 	}
 
-	if( action == APPROACH && offsetPlayer.x == 0 && offsetPlayer.y == 0 )
+	if( action == APPROACH && data.offsetPlayer.x == 0 && data.offsetPlayer.y == 0 )
 	{
 		assert(0); //should this even bit hit?
 		Bite();
@@ -155,9 +153,9 @@ void Ghost::ProcessState()
 	{
 		if( WithinDistance( playerPos, GetPosition(), 1000 ))
 		{
-			awakeFrames++;
+			data.awakeFrames++;
 
-			if (awakeFrames == awakeCap)
+			if (data.awakeFrames == awakeCap)
 			{
 				action = APPROACH;
 				frame = 0;
@@ -170,52 +168,52 @@ void Ghost::ProcessState()
 					facingRight = true;
 				}
 
-				latchedOn = true;
-				offsetPlayer = basePos - playerPos;//owner->GetPlayer( 0 )->position - basePos;
-				origOffset = offsetPlayer;//length( offsetPlayer );
-				V2d offsetDir = normalize(offsetPlayer);
-				basePos = playerPos;
+				data.latchedOn = true;
+				data.offsetPlayer = data.basePos - playerPos;//owner->GetPlayer( 0 )->position - basePos;
+				data.origOffset = data.offsetPlayer;//length( offsetPlayer );
+				V2d offsetDir = normalize(data.offsetPlayer);
+				data.basePos = playerPos;
 			}
 		}
 		else
 		{
-			awakeFrames--;
-			if (awakeFrames < 0)
-				awakeFrames = 0;
+			data.awakeFrames--;
+			if (data.awakeFrames < 0)
+				data.awakeFrames = 0;
 		}
 	}
 }
 
 void Ghost::UpdateEnemyPhysics()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		basePos = sess->GetPlayerPos(0);
+		data.basePos = sess->GetPlayerPos(0);
 
 		
-		if (action == APPROACH && latchedOn)
+		if (action == APPROACH && data.latchedOn)
 		{
-			offsetPlayer += -normalize(offsetPlayer) * 1.0 / numPhysSteps;
+			data.offsetPlayer += -normalize(data.offsetPlayer) * 1.0 / numPhysSteps;
 
-			if (length(offsetPlayer) < 1.0)
+			if (length(data.offsetPlayer) < 1.0)
 			{
 				Bite();
 			}
 		}
 
-		currPosInfo.position = basePos + offsetPlayer;
+		currPosInfo.position = data.basePos + data.offsetPlayer;
 	}
 }
 void Ghost::UpdateSprite()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
 		V2d playerPos = sess->GetPlayerPos(0);
-		basePos = playerPos;
-		currPosInfo.position = basePos + offsetPlayer;
+		data.basePos = playerPos;
+		currPosInfo.position = data.basePos + data.offsetPlayer;
 	}
 	
-	double lenDiff = length(offsetPlayer);//owner->GetPlayer(0)->position - position;
+	double lenDiff = length(data.offsetPlayer);//owner->GetPlayer(0)->position - position;
 	//length(diff);
 	IntRect ir;
 	switch (action)

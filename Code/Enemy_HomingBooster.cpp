@@ -182,3 +182,21 @@ void HomingBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int HomingBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void HomingBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void HomingBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

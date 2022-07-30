@@ -17,7 +17,12 @@ struct Lizard : Enemy, GroundMoverHandler,
 		Count
 	};
 
-	int fireWaitCounter;
+	struct MyData : StoredEnemyData
+	{
+		int fireWaitCounter;
+	};
+	MyData data;
+
 	int fireWaitDuration;
 	bool bulletClockwise;
 
@@ -60,6 +65,10 @@ struct Lizard : Enemy, GroundMoverHandler,
 	void UpdateBullet(BasicBullet *b);
 	void FireResponse(BasicBullet *b);
 	void DirectKill();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

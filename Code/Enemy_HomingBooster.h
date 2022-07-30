@@ -13,8 +13,18 @@ struct HomingBooster : Enemy
 		Count
 	};
 
-	HomingBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
+	struct MyData : StoredEnemyData
+	{
 
+	};
+	MyData data;
+
+	Tileset *ts;
+	Tileset *ts_refresh;
+
+	int strength;
+
+	HomingBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 	void ProcessState();
 	void SetLevel(int lev);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -25,10 +35,9 @@ struct HomingBooster : Enemy
 	bool IsBoostable();
 	void AddToWorldTrees();
 
-	Tileset *ts;
-	Tileset *ts_refresh;
-
-	int strength;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

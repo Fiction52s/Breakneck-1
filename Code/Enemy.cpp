@@ -1932,6 +1932,8 @@ void Enemy::StoreBasicEnemyData(StoredEnemyData &ed)
 	ed.dead = dead;
 	ed.spawned = spawned;
 
+	ed.scale = scale;
+
 	//cout << "store receivedHit: " << receivedHit << endl;
 
 
@@ -1976,6 +1978,8 @@ void Enemy::SetBasicEnemyData(StoredEnemyData &ed)
 	currHitboxFrame = ed.currHitboxFrame;
 	currHurtboxes = ed.currHurtboxes;
 	currHurtboxFrame = ed.currHurtboxFrame;
+
+	scale = ed.scale;
 
 	currShield = ed.currShield;
 

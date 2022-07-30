@@ -18,14 +18,6 @@ Spider::Spider( ActorParams *ap )
 
 	SetLevel(ap->GetLevel());
 
-	gravity = V2d( 0, .6 );
-	maxGroundSpeed = 20;
-
-	maxFallSpeed = 25;
-
-	attackFrame = -1;
-	attackMult = 10;
-
 	CreateSurfaceMover(startPosInfo, 32, this);
 	surfaceMover->SetSpeed( 0 );
 
@@ -78,8 +70,6 @@ Spider::Spider( ActorParams *ap )
 	laserInfo3->hitstunFrames = 0;
 	laserInfo3->knockback = 0;
 
-	bezLength = 60 * NUM_STEPS;
-
 	cutObject->SetTileset(ts);
 	cutObject->SetSubRectFront(0);
 	cutObject->SetSubRectBack(1);
@@ -99,16 +89,13 @@ Spider::~Spider()
 void Spider::ResetEnemy()
 {
 	rayCastInfo.Reset();
-	framesLaseringPlayer = 0;
-	laserCounter = 0;
-	laserLevel = 0;
+	data.framesLaseringPlayer = 0;
+	data.laserCounter = 0;
+	data.laserLevel = 0;
 
 	surfaceMover->Set(startPosInfo);
 	surfaceMover->SetSpeed(0);
 	surfaceMover->ClearAirForces();
-
-	bezFrame = 0;
-	attackFrame = -1;
 	
 	action = MOVE;
 	frame = 0;
@@ -323,7 +310,7 @@ void Spider::ProcessState()
 	double len = length(playerPos - GetPosition() );
 	bool outsideRange = len >= 500 && len < 1500;//1200; //bounds
 	if( outsideRange && length( GetPosition() - closestPos ) > 20
-		&& !canSeePlayer )
+		&& !data.canSeePlayer )
 	{
 		if(closestClockwiseFromCurrent)
 		{
@@ -371,10 +358,6 @@ void Spider::ProcessState()
 		break;
 	}
 
-	if( attackFrame == 2 * attackMult )
-	{
-		attackFrame = -1;
-	}
 
 	frame = 0;
 }
@@ -396,10 +379,10 @@ void Spider::FrameIncrement()
 void Spider::UpdatePostPhysics()
 {
 	
-	if( laserCounter == 0 )
+	if(data.laserCounter == 0 )
 	{
 		HitboxInfo *currLaserInfo = NULL;
-		switch( laserLevel )
+		switch(data.laserLevel )
 		{
 		case 0:
 			break;
@@ -425,28 +408,27 @@ void Spider::UpdatePostPhysics()
 				NULL, Actor::HitResult::HIT, GetPosition());
 		}
 
-		++laserCounter;
+		++data.laserCounter;
 	}
 	else
 	{
-		if( laserCounter == 20 )
+		if(data.laserCounter == 20 )
 		{
-			laserCounter = 0;
+			data.laserCounter = 0;
 		}
 		else
 		{
-			++laserCounter;
+			++data.laserCounter;
 		}
 	}
 
 	V2d playerPos = sess->GetPlayerPos(0);
 	if( length( playerPos - GetPosition() ) < 1200 )
 	{
+		rayCastInfo.Reset();
 		rayCastInfo.rayStart = GetPosition();
-		V2d laserDir( cos( laserAngle ), sin( laserAngle ) );
 
 		rayCastInfo.rayEnd = playerPos;
-		rayCastInfo.rcEdge = NULL;
 		RayCast( this, sess->terrainTree->startNode, rayCastInfo.rayStart, rayCastInfo.rayEnd );
 
 		if(rayCastInfo.rcEdge != NULL )
@@ -454,62 +436,62 @@ void Spider::UpdatePostPhysics()
 			V2d rcPoint = rayCastInfo.rcEdge->GetPosition(rayCastInfo.rcQuant );
 			if( length( rcPoint - GetPosition() ) < length(playerPos - GetPosition() ) )
 			{
-				canSeePlayer = false;
+				data.canSeePlayer = false;
 			}
 			else
 			{
-				canSeePlayer = true;
+				data.canSeePlayer = true;
 			}
 		}
 		else
 		{
-			canSeePlayer = true;
+			data.canSeePlayer = true;
 		}
 	}
 	else
 	{
-		canSeePlayer = false;
+		data.canSeePlayer = false;
 	}
 
-	if( canSeePlayer )
+	if(data.canSeePlayer )
 	{
-		framesLaseringPlayer += 1;
+		data.framesLaseringPlayer += 1;
 	}
 	else
 	{
-		framesLaseringPlayer = 0;
+		data.framesLaseringPlayer = 0;
 		//laserCounter = 0;
 	}
 
-	if( framesLaseringPlayer > 240 )
+	if(data.framesLaseringPlayer > 240 )
 	{
-		if( laserLevel != 3 )
+		if(data.laserLevel != 3 )
 		{
-			laserLevel = 3;
-			laserCounter = 0;
+			data.laserLevel = 3;
+			data.laserCounter = 0;
 		}
 		
 	}
-	else if( framesLaseringPlayer > 180 )
+	else if(data.framesLaseringPlayer > 180 )
 	{
-		if( laserLevel != 2 )
+		if(data.laserLevel != 2 )
 		{
-			laserLevel = 2;
-			laserCounter = 0;
+			data.laserLevel = 2;
+			data.laserCounter = 0;
 		}
 	}
-	else if( framesLaseringPlayer > 120 )
+	else if(data.framesLaseringPlayer > 120 )
 	{
-		if( laserLevel != 1 )
+		if(data.laserLevel != 1 )
 		{
-			laserLevel = 1;
-			laserCounter = 0;
+			data.laserLevel = 1;
+			data.laserCounter = 0;
 		}
 	}
 	else
 	{
-		laserLevel = 0;
-		laserCounter = 0;
+		data.laserLevel = 0;
+		data.laserCounter = 0;
 	}
 
 	Enemy::UpdatePostPhysics();
@@ -528,7 +510,7 @@ void Spider::EnemyDraw(sf::RenderTarget *target )
 	target->draw(cs);
 
 	Color laserColor;
-	switch (laserLevel)
+	switch (data.laserLevel)
 	{
 	case 0:
 		laserColor = Color::White;
@@ -544,7 +526,7 @@ void Spider::EnemyDraw(sf::RenderTarget *target )
 		break;
 	}
 
-	if (canSeePlayer)
+	if (data.canSeePlayer)
 	{
 		V2d rcPoint;
 		if (rayCastInfo.rcEdge != NULL)
@@ -663,4 +645,23 @@ void Spider::HandleRayCollision( Edge *edge, double equant, double rayPortion )
 	}
 
 	RayCastHandler::HandleRayCollision(edge, equant, rayPortion);
+}
+
+int Spider::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Spider::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Spider::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }
