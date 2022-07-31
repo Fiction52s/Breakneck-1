@@ -42,6 +42,7 @@ struct SwarmMember : Enemy
 	void HandleNoHealth();
 	void FrameIncrement();
 	void Throw(V2d &pos);
+	
 
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
@@ -88,7 +89,7 @@ struct Swarm : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	void UpdateSprite();
 	void HandleNoHealth();
-
+	int GetNumEnergyAbsorbParticles();
 	void Launch();
 	void ResetEnemy();
 

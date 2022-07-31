@@ -272,3 +272,22 @@ void Ghost::EnemyDraw( sf::RenderTarget *target )
 void Ghost::DrawMinimap( sf::RenderTarget *target )
 {
 }
+
+int Ghost::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Ghost::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Ghost::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

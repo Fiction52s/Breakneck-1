@@ -433,6 +433,11 @@ void Swarm::UpdateSprite()
 	}
 }
 
+int Swarm::GetNumEnergyAbsorbParticles()
+{
+	return Enemy::GetNumEnergyAbsorbParticles() + NUM_SWARM * members[0]->GetNumEnergyAbsorbParticles();
+}
+
 int Swarm::GetNumStoredBytes()
 {
 	return sizeof(MyData) + members[0]->GetNumStoredBytes() * NUM_SWARM;

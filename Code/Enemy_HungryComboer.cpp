@@ -81,10 +81,6 @@ HungryComboer::HungryComboer(ActorParams *ap)
 
 	action = S_FLOAT;
 
-	gravFactor = 1.0;
-
-	maxFallSpeed = 15;
-
 	ts = GetSizedTileset("Enemies/comboers_128x128.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -218,6 +214,9 @@ void HungryComboer::Throw(V2d vel)
 
 void HungryComboer::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
@@ -377,10 +376,6 @@ void HungryComboer::ComboKill(Enemy *e)
 				sess->GetPlayer(0), 1, GetPosition());
 			suppressMonitor = true;
 		}
-
-		action = S_RETURN;
-		frame = 0;
-
 		Return();
 
 		return;
@@ -483,15 +478,13 @@ void HungryComboer::FrameIncrement()
 {
 	if (action == S_FLY || action == S_TRACKENEMY || action == S_TRACKPLAYER)
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 
 	}
@@ -522,8 +515,6 @@ void HungryComboer::ComboHit()
 	data.waitFrame = 0;
 	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
 		Return();
 	}
 }

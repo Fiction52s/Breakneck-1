@@ -47,7 +47,6 @@ GrowingTree::GrowingTree( ActorParams *ap )
 	totalBullets = 32;
 	startPowerLevel = 0;
 	pulseRadius = 1000;
-	powerLevel = 0;
 	repsToLevelUp = 3;
 
 	ts = GetSizedTileset("Enemies/W5/sprout_160x160.png");
@@ -420,7 +419,13 @@ void GrowingTree::BulletHitPlayer(int playerIndex, BasicBullet *b, int hitResult
 
 int GrowingTree::GetNumStoredBytes()
 {
-	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+	int totalLauncherBytes = 0;
+	for (int i = 0; i < numLaunchers; ++i)
+	{
+		totalLauncherBytes += launchers[i]->GetNumStoredBytes();
+	}
+
+	return sizeof(MyData) + totalLauncherBytes;
 }
 
 void GrowingTree::StoreBytes(unsigned char *bytes)
@@ -445,7 +450,7 @@ void GrowingTree::SetFromBytes(unsigned char *bytes)
 
 	for (int i = 0; i < numLaunchers; ++i)
 	{
-		launchers[i]->StoreBytes(bytes);
+		launchers[i]->SetFromBytes(bytes);
 		bytes += launchers[i]->GetNumStoredBytes();
 	}
 }

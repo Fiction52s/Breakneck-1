@@ -318,7 +318,7 @@ void Lizard::UpdateEnemyPhysics()
 void Lizard::FireResponse( BasicBullet *b )
 {
 	GrindBullet *gb = (GrindBullet*)b;
-	gb->clockwise = bulletClockwise;
+	gb->data.clockwise = bulletClockwise;
 }
 
 void Lizard::FrameIncrement()

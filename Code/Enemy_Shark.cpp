@@ -151,7 +151,7 @@ void Shark::ProcessState()
 			V2d offsetDir = normalize(data.offsetPlayer);
 			data.latchStartAngle = GetVectorAngleCW(offsetDir);//atan2(offsetDir.y, offsetDir.x);
 
-			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), data.circleFrames );
+			circleMovement->Set(V2d(), V2d( 1, 0 ), 2 * PI, true, CubicBezier(), circleFrames );
 			circleMovement->InitDebugDraw();
 			circleSeq.Reset();
 

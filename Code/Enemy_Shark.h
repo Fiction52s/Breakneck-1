@@ -20,7 +20,6 @@ struct Shark : Enemy
 	{
 		int circleCounter;
 		int wakeCounter;
-		int circleFrames;
 		double latchStartAngle;
 		V2d basePos;
 		V2d origOffset;
@@ -32,6 +31,7 @@ struct Shark : Enemy
 
 	int wakeCap;
 	double attackAngle;
+	int circleFrames;
 	
 	MovementSequence circleSeq;
 	MovementSequence rushSeq;

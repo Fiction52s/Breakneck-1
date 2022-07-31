@@ -44,7 +44,7 @@ struct Shroom : Enemy
 	void CheckedMiniDraw(sf::RenderTarget *target,
 		sf::FloatRect &rect);
 	void SetZoneSpritePosition();
-
+	int GetNumEnergyAbsorbParticles();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

@@ -60,6 +60,7 @@ Launcher::Launcher(LauncherEnemy *p_handler, BasicBullet::BType p_bulletType,
 
 	bulletVA = NULL;
 	
+	sizeof(sf::Transform);
 
 	skipPlayerCollideForSubstep = false;
 	bulletType = p_bulletType;
@@ -749,60 +750,56 @@ void BasicBullet::SetIndex(int ind)
 	index = ind;
 }
 
+void BasicBullet::StoreBasicBulletData(BulletData &bd)
+{
+	bd.prev = prev;
+	bd.next = next;
+	bd.gravity = gravity;
+	bd.position = position;
+	bd.velocity = velocity;
+	bd.slowCounter = slowCounter;
+	bd.active = active;
+	bd.slowMultiple = slowMultiple;
+	bd.framesToLive = framesToLive;
+	bd.frame = frame;
+	bd.transform = transform;
+	bd.bounceCount = bounceCount;
+}
+void BasicBullet::SetBasicBulletData(BulletData &bd)
+{
+	prev = bd.prev;
+	next = bd.next;
+	gravity = bd.gravity;
+	position = bd.position;
+	velocity = bd.velocity;
+	slowCounter = bd.slowCounter;
+	active = bd.active;
+	slowMultiple = bd.slowMultiple;
+	framesToLive = bd.framesToLive;
+	frame = bd.frame;
+	transform = bd.transform;
+	bounceCount = bd.bounceCount;
+}
+
 int BasicBullet::GetNumStoredBytes()
 {
-	return sizeof(MyData);
+	return sizeof(BulletData);
 }
+
 void BasicBullet::StoreBytes(unsigned char *bytes)
 {
-	MyData d;
-	memset(&d, 0, sizeof(MyData));
-	d.prev = prev;
-	d.next = next;
-	d.gravity = gravity;
-	d.position = position;
-	d.velocity = velocity;
-	d.slowCounter = slowCounter;
-	d.active = active;
-	d.slowMultiple = slowMultiple;
-	d.framesToLive = framesToLive;
-	d.frame = frame;
-	d.transform = transform;
-	d.bounceCount = bounceCount;
+	BulletData d;
+	memset(&d, 0, sizeof(BulletData));
+	StoreBasicBulletData(d);
 
-	//cout << "storing bullet: \n";
-
-	//cout << "prev: " << prev << "\n";
-	//cout << "next: " << next << "\n";
-	//cout << "gravity: " << gravity.x << ", " << gravity.y << "\n";
-	//cout << "position: " << position.x << ", " << position.y << "\n";
-	//cout << "slowCounter: " << slowCounter << "\n";
-	//cout << "active: " << active << "\n";
-	//cout << "slowMultiple: " << slowMultiple << "\n";
-	//cout << "framesToLive: " << framesToLive << "\n";
-	//cout << "frame: " << frame << "\n";
-	////cout << "framesToLive: " << framesToLive << "\n";
-	//cout << "bounceCount: " << bounceCount << "\n";
-
-	memcpy(bytes, &d, sizeof(MyData));
+	memcpy(bytes, &d, sizeof(BulletData));
 }
 
 void BasicBullet::SetFromBytes(unsigned char *bytes)
 {
-	MyData d;
-	memcpy(&d, bytes, sizeof(MyData));
-	prev = d.prev;
-	next = d.next;
-	gravity = d.gravity;
-	position = d.position;
-	velocity = d.velocity;
-	slowCounter = d.slowCounter;
-	active = d.active;
-	slowMultiple = d.slowMultiple;
-	framesToLive = d.framesToLive;
-	frame = d.frame;
-	transform = d.transform;
-	bounceCount = d.bounceCount;
+	BulletData d;
+	memcpy(&d, bytes, sizeof(BulletData));
+	SetBasicBulletData(d);
 }
 
 void BasicBullet::DebugDraw(sf::RenderTarget *target)
@@ -1308,8 +1305,8 @@ void SinBullet::UpdatePhysics()
 	}
 }
 
-void SinBullet::Reset(sf::Vector2<double> &pos,
-	sf::Vector2<double> &vel)
+void SinBullet::Reset(V2d &pos,
+	V2d &vel)
 {
 	BasicBullet::Reset(pos, vel);
 	tempadd = V2d(0, 0);
@@ -1323,7 +1320,7 @@ GrindBullet::GrindBullet(int indexVA, Launcher *launcher)
 
 bool GrindBullet::CanInteractWithTerrain()
 {
-	return launcher->interactWithTerrain && grindEdge == NULL;
+	return launcher->interactWithTerrain && data.grindEdge == NULL;
 }
 
 void GrindBullet::UpdatePrePhysics()
@@ -1335,12 +1332,12 @@ bool GrindBullet::HitTerrain()
 {
 	launcher->handler->BulletHitTerrain(this,
 		minContact.edge, minContact.position);
-	grindEdge = minContact.edge;
-	edgeQuantity = grindEdge->GetQuantity(minContact.position);
-	grindSpeed = launcher->bulletSpeed;
-	if (!clockwise)
+	data.grindEdge = minContact.edge;
+	data.edgeQuantity = data.grindEdge->GetQuantity(minContact.position);
+	data.grindSpeed = launcher->bulletSpeed;
+	if (!data.clockwise)
 	{
-		grindSpeed = -grindSpeed;
+		data.grindSpeed = -data.grindSpeed;
 	}
 
 	
@@ -1350,10 +1347,10 @@ bool GrindBullet::HitTerrain()
 
 void GrindBullet::UpdatePhysics()
 {
-	if (grindEdge != NULL)
+	if (data.grindEdge != NULL)
 	{
 		double factor = slowMultiple * (double)numPhysSteps;
-		double movement = grindSpeed / factor;
+		double movement = data.grindSpeed / factor;
 
 		//int grindEdgeIndex = edge->//currPosInfo.GetEdgeIndex();
 		//PolyPtr groundPoly = currPosInfo.ground;
@@ -1361,55 +1358,55 @@ void GrindBullet::UpdatePhysics()
 
 		while (!approxEquals(movement, 0))
 		{
-			double gLen = grindEdge->GetLength();
+			double gLen = data.grindEdge->GetLength();
 
 			if (movement > 0)
 			{
-				double extra = edgeQuantity + movement - gLen;
+				double extra = data.edgeQuantity + movement - gLen;
 
 				if (extra > 0)
 				{
-					movement -= gLen - edgeQuantity;
-					grindEdge = grindEdge->GetNextEdge();
+					movement -= gLen - data.edgeQuantity;
+					data.grindEdge = data.grindEdge->GetNextEdge();
 					//++grindEdgeIndex;
 					//if (grindEdgeIndex == numPoints)
 					//{
 					//	grindEdgeIndex = 0;
 				//	}
 
-					edgeQuantity = 0;
+					data.edgeQuantity = 0;
 				}
 				else
 				{
-					edgeQuantity += movement;
+					data.edgeQuantity += movement;
 					movement = 0;
 				}
 			}
 			else
 			{
-				double extra = edgeQuantity + movement;
+				double extra = data.edgeQuantity + movement;
 
 				if (extra < 0)
 				{
 					movement -= movement - extra;
-					grindEdge = grindEdge->GetPrevEdge();
+					data.grindEdge = data.grindEdge->GetPrevEdge();
 					//--grindEdgeIndex;
 					//if (grindEdgeIndex < 0)
 				//	{
 				//		grindEdgeIndex = numPoints - 1;
 				//	}
-					edgeQuantity = grindEdge->GetLength();
+					data.edgeQuantity = data.grindEdge->GetLength();
 				}
 				else
 				{
-					edgeQuantity += movement;
+					data.edgeQuantity += movement;
 					movement = 0;
 				}
 			}
 		}
 
-		velocity = grindEdge->Along() * grindSpeed;
-		position = grindEdge->GetPosition(edgeQuantity);
+		velocity = data.grindEdge->Along() * data.grindSpeed;
+		position = data.grindEdge->GetPosition(data.edgeQuantity);
 		hitBody.globalPosition = position;
 
 		if (!launcher->skipPlayerCollideForSubstep)
@@ -1438,9 +1435,28 @@ void GrindBullet::Reset(V2d &pos,
 	V2d &vel)
 {
 	BasicBullet::Reset(pos, vel);
-	grindEdge = NULL;
-	edgeQuantity = -1;
-	clockwise = true;
+	data.grindEdge = NULL;
+	data.edgeQuantity = -1;
+	data.clockwise = true;
+}
+
+
+
+int GrindBullet::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void GrindBullet::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicBulletData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+}
+
+void GrindBullet::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicBulletData(data);
 }
 
 

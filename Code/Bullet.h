@@ -53,13 +53,13 @@ struct BasicBullet : QuadTreeCollider
 		Count
 	};
 
-	struct MyData
+	struct BulletData
 	{
 		BasicBullet *prev;
 		BasicBullet *next;
-		sf::Vector2<double> gravity;
-		sf::Vector2<double> position;
-		sf::Vector2<double> velocity;
+		V2d gravity;
+		V2d position;
+		V2d velocity;
 		int slowCounter;
 		bool active;
 		int slowMultiple;
@@ -71,9 +71,9 @@ struct BasicBullet : QuadTreeCollider
 
 	BasicBullet *prev;
 	BasicBullet *next;
-	sf::Vector2<double> gravity;
-	sf::Vector2<double> position;
-	sf::Vector2<double> velocity;
+	V2d gravity;
+	V2d position;
+	V2d velocity;
 	int slowCounter;
 	bool active;
 	int slowMultiple;
@@ -90,16 +90,16 @@ struct BasicBullet : QuadTreeCollider
 	double numPhysSteps;
 	bool col;
 	Contact minContact;
-	sf::Vector2<double> tempVel;
+	V2d tempVel;
 	Launcher *launcher;
 	
 
 	BasicBullet(int indexVA, BType bType, Launcher *launcher);
 
 	virtual bool CanInteractWithTerrain();
-	int GetNumStoredBytes();
-	void StoreBytes(unsigned char *bytes);
-	void SetFromBytes(unsigned char *bytes);
+	virtual int GetNumStoredBytes();
+	virtual void StoreBytes(unsigned char *bytes);
+	virtual void SetFromBytes(unsigned char *bytes);
 
 	void SetIndex(int ind);
 	virtual void HandleEntrant(QuadTreeEntrant *qte);
@@ -117,26 +117,37 @@ struct BasicBullet : QuadTreeCollider
 	virtual bool HitTerrain();
 	void HitPlayer( int pIndex, 
 		int hitResult );
+	void StoreBasicBulletData(BulletData &bd);
+	void SetBasicBulletData(BulletData &bd);
 };
 
 struct SinBullet : BasicBullet
 {
+	SinBullet *prev;
+	SinBullet *next;
+	CollisionBox hurtBody;
+	V2d tempadd;
+
 	SinBullet(int indexVA, Launcher *launcher);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void Reset(
 		sf::Vector2<double> &pos,
 		sf::Vector2<double> &vel);
-
-	SinBullet *prev;
-	SinBullet *next;
-	//int slowCounter;
-	CollisionBox hurtBody;
-	sf::Vector2<double> tempadd;
 };
 
 struct GrindBullet : BasicBullet
 {
+	struct MyData : BulletData
+	{
+		double grindSpeed;
+		bool clockwise;
+		Edge *grindEdge;
+		double edgeQuantity;
+	};
+
+	MyData data;
+
 	GrindBullet(int indexVA, Launcher *launcher);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
@@ -144,17 +155,10 @@ struct GrindBullet : BasicBullet
 		V2d &vel);
 	bool HitTerrain();
 	bool CanInteractWithTerrain();
-	
-	double grindSpeed;
-	bool clockwise;
-	Edge *grindEdge;
-	double edgeQuantity;
 
-	//SinBullet *prev;
-	//SinBullet *next;
-	//int slowCounter;
-	//CollisionBox hurtBody;
-	//sf::Vector2<double> tempadd;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct CopycatBullet : BasicBullet
