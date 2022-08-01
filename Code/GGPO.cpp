@@ -90,6 +90,76 @@ void PState::Print()
 	//cout << "hasAirDash: " << hasAirDash << "\n";
 }
 
+ExtraState::ExtraState()
+{
+	for (int i = 0; i < 2; ++i)
+	{
+		futurePositions[i] = NULL;
+	}
+	numFrames = 0;
+}
+
+ExtraState::~ExtraState()
+{
+	for (int i = 0; i < 2; ++i)
+	{
+		if (futurePositions[i] != NULL)
+		{
+			delete[] futurePositions[i];
+		}
+	}
+}
+
+void ExtraState::SetNumSimulationFrames(int num)
+{
+	if (numFrames == num)
+		return;
+
+	numFrames = num;
+
+	for (int i = 0; i < 2; ++i)
+	{
+		if (futurePositions[i] != NULL)
+		{
+			delete[] futurePositions[i];
+			futurePositions[i] = NULL;
+		}
+	}
+
+	if (numFrames > 0)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			futurePositions[i] = new V2d[numFrames];
+		}
+	}
+}
+
+int ExtraState::GetNumStoredBytes()
+{
+	return numFrames * sizeof(V2d) * 2;
+}
+
+void ExtraState::StoreBytes(unsigned char *bytes)
+{
+	int positionsSize = numFrames * sizeof(V2d);
+	for (int i = 0; i < 2; ++i)
+	{
+		memcpy(futurePositions[i], bytes, positionsSize);
+		bytes += positionsSize;
+	}
+}
+
+void ExtraState::SetFromBytes(unsigned char *bytes)
+{
+	int positionsSize = numFrames * sizeof(V2d);
+	for (int i = 0; i < 2; ++i)
+	{
+		memcpy(bytes, futurePositions[i], positionsSize);
+		bytes += positionsSize;
+	}
+}
+
 int fletcher32_checksum(short *data, size_t len)
 {
 	int sum1 = 0xffff, sum2 = 0xffff;

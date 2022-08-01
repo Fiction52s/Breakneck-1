@@ -10,7 +10,7 @@ using namespace std;
 using namespace sf;
 
 Copycat::Copycat(ActorParams *ap)
-	:Enemy(EnemyType::EN_COPYCAT, ap), moveBezTest(.22, .85, .3, .91)
+	:Enemy(EnemyType::EN_COPYCAT, ap)
 {
 	SetNumActions(A_Count);
 	SetEditorActions(IDLE, IDLE, 0);
@@ -18,13 +18,6 @@ Copycat::Copycat(ActorParams *ap)
 	SetLevel(ap->GetLevel());
 
 	maxGroundSpeed = 20;
-	jumpStrength = 5;
-
-	preChargeLimit = 40;
-
-	turnaroundDist = 100;
-	boostPastDist = 400;
-	boostSpeed = 100;
 
 	actionLength[IDLE] = 10;
 	actionLength[STAND] = 10;
@@ -34,8 +27,6 @@ Copycat::Copycat(ActorParams *ap)
 
 	animFactor[IDLE] = 1;
 
-	gravity = V2d(0, 1.0);
-
 	airAccel = 3.0;
 
 	maxFallSpeed = 25;
@@ -44,7 +35,6 @@ Copycat::Copycat(ActorParams *ap)
 	ignoreRadius = 2000;
 
 	player = sess->GetPlayer(0);
-
 
 	runAccel = 1.0;
 	runDecel = 1.0;//runAccel * 3.0;
@@ -80,8 +70,6 @@ Copycat::Copycat(ActorParams *ap)
 	launchers[0]->SetBulletSpeed(15);
 	launchers[0]->Reset();
 
-	bezLength = 60 * NUM_STEPS;
-
 	ResetEnemy();
 }
 
@@ -113,18 +101,15 @@ void Copycat::HandleNoHealth()
 
 void Copycat::ResetEnemy()
 {
-	hasDoubleJump = true;
+	data.hasDoubleJump = true;
 
-	fireCounter = 0;
+	data.fireCounter = 0;
 	facingRight = true;
 	groundMover->Set(startPosInfo);
 	groundMover->SetSpeed(0);
 
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
-
-	bezFrame = 0;
-	attackFrame = -1;
 
 	action = IDLE;
 	frame = 0;
@@ -304,16 +289,16 @@ void Copycat::ProcessState()
 
 	if (action != IDLE)
 	{
-		if (fireCounter == 30)
+		if (data.fireCounter == 30)
 		{
 			launchers[0]->position = GetPosition();
 			launchers[0]->facingDir = PlayerDir();
 			launchers[0]->Fire();
-			fireCounter = 0;
+			data.fireCounter = 0;
 		}
 		else
 		{
-			++fireCounter;
+			++data.fireCounter;
 		}
 	}
 	
@@ -325,7 +310,7 @@ bool Copycat::TryJump()
 	if (player->JumpButtonPressed())
 	{
 		action = JUMP;
-		hasDoubleJump = true;
+		data.hasDoubleJump = true;
 		frame = 0;
 
 		if (HoldingLeft())
@@ -353,13 +338,13 @@ bool Copycat::TryJump()
 
 bool Copycat::TryDoubleJump()
 {
-	if ( hasDoubleJump && player->JumpButtonPressed() 
+	if (data.hasDoubleJump && player->JumpButtonPressed()
 		&& groundMover->ground == NULL )
 	{
 		action = DOUBLEJUMP;
 		frame = 0;
 
-		hasDoubleJump = false;
+		data.hasDoubleJump = false;
 
 		if (HoldingLeft())
 		{
@@ -547,7 +532,7 @@ void Copycat::Land()
 		action = STAND;
 	}
 
-	hasDoubleJump = true;
+	data.hasDoubleJump = true;
 
 
 	groundMover->groundSpeed = groundMover->velocity.x;
@@ -595,4 +580,29 @@ void Copycat::DirectKill()
 	}
 
 	receivedHit = NULL;
+}
+
+int Copycat::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void Copycat::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void Copycat::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

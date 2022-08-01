@@ -129,6 +129,8 @@ void Chess::ResetEnemy()
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
 
+	data.velocity = V2d();
+
 	UpdateHitboxes();
 
 	UpdateSprite();
@@ -177,7 +179,7 @@ void Chess::StartRush()
 
 	//testCircle.setPosition(Vector2f(futurePos));
 
-	velocity = rushDir * speed;
+	data.velocity = rushDir * speed;
 }
 
 void Chess::ProcessState()
@@ -213,7 +215,7 @@ void Chess::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		break;
 	case RUSH:
 		break;
@@ -229,26 +231,26 @@ void Chess::ProcessState()
 		{
 			if (dir.x > 0)
 			{
-				velocity.x += accel;//V2d(0, 10);
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity.x += accel;//V2d(0, 10);
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 			else if (dir.x < 0)
 			{
-				velocity.x += -accel;//V2d(0, 10);
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity.x += -accel;//V2d(0, 10);
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 		}
 		else if( chessType == VERT )
 		{
 			if (dir.y > 0)
 			{
-				velocity.y += accel;//V2d(0, 10);
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity.y += accel;//V2d(0, 10);
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 			else if (dir.y < 0)
 			{
-				velocity.y += -accel;//V2d(0, 10);
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity.y += -accel;//V2d(0, 10);
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 		}
 		else if (chessType == DIAGDOWNRIGHT)
@@ -257,13 +259,13 @@ void Chess::ProcessState()
 			double d = dot(dir, downRight);
 			if (d > 0)
 			{
-				velocity += downRight * accel;
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity += downRight * accel;
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 			else if (d < 0)
 			{
-				velocity += downRight * -accel;
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity += downRight * -accel;
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 		}
 		else if (chessType == DIAGUPRIGHT)
@@ -272,13 +274,13 @@ void Chess::ProcessState()
 			double d = dot(dir, upRight);
 			if (d > 0)
 			{
-				velocity += upRight * accel;
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity += upRight * accel;
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 			else if (d < 0)
 			{
-				velocity += upRight * -accel;
-				CapVectorLength(velocity, maxSpeed);
+				data.velocity += upRight * -accel;
+				CapVectorLength(data.velocity, maxSpeed);
 			}
 		}
 		
@@ -297,7 +299,7 @@ void Chess::UpdateEnemyPhysics()
 {
 	if (action == RUSH || action == CHASE)
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -333,4 +335,29 @@ void Chess::UpdateSprite()
 void Chess::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int Chess::GetNumStoredBytes()
+{
+	return sizeof(MyData) + shield->GetNumStoredBytes();
+}
+
+void Chess::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	shield->StoreBytes(bytes);
+	bytes += shield->GetNumStoredBytes();
+}
+
+void Chess::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	shield->SetFromBytes(bytes);
+	bytes += shield->GetNumStoredBytes();
 }

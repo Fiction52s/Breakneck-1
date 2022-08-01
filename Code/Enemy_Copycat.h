@@ -18,6 +18,13 @@ struct Copycat : Enemy, GroundMoverHandler,
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+		bool hasDoubleJump;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 	int preChargeFrames;
@@ -30,29 +37,10 @@ struct Copycat : Enemy, GroundMoverHandler,
 	double turnaroundDist;
 	double boostPastDist;
 
-	Action landedAction;
-	Action nextAction;
-
 	Tileset *ts;
-
-	CubicBezier moveBezTest;
-	int bezFrame;
-	int bezLength;
-
-
-	sf::Vector2<double> tempVel;
-	sf::Vector2<double> gravity;
-
-	int attackFrame;
-	int attackMult;
 
 	double maxGroundSpeed;
 	double maxFallSpeed;
-
-	int fireCounter;
-	
-	bool hasDoubleJump;
-	double jumpStrength;
 
 	Actor *player;
 
@@ -85,6 +73,10 @@ struct Copycat : Enemy, GroundMoverHandler,
 	void BulletHitPlayer(int playerIndex,
 		BasicBullet *b, int hitResult);
 	void DirectKill();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 

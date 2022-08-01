@@ -26,6 +26,7 @@ struct GroundedWarper;
 
 struct GGPONonGameState;
 struct SaveGameState;
+struct ExtraState;
 struct GGPOSession;
 struct GGPOPlayer;
 struct NetplayManager;
@@ -226,12 +227,11 @@ struct Session : TilesetManager, QuadTreeCollider
 	ShipExitScene *shipExitScene;
 	GameState gameState;
 	HUD *hud;
-	int numCalculatedFuturePositions;
-	int numSimulatedFramesRequired;
+	
 	const static int MAX_SIMULATED_FUTURE_PLAYER_FRAMES = 120;
-	V2d futurePlayerPos[MAX_SIMULATED_FUTURE_PLAYER_FRAMES];
-	const static int PAST_PLAYER_FRAMES = 120;
-	V2d pastPlayerPos[PAST_PLAYER_FRAMES];
+	int numSimulatedFramesRequired;
+	//const static int PAST_PLAYER_FRAMES = 120;
+	//V2d pastPlayerPos[PAST_PLAYER_FRAMES];
 
 	Fader *fader;
 	Swiper *swiper;
@@ -409,7 +409,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	ShardMenu *shardMenu;
 	LogMenu *logMenu;
 
-	PState *playerSimState;
 	Actor *currSuperPlayer;
 
 	bool frameConfirmed;
@@ -755,6 +754,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupShipEntrance();
 	void CleanupShipExit();
 	void UpdateEnemiesPreFrameCalculations();
+	void InitPreFrameCalculations();
 	void UpdatePreFrameCalculations();
 	void UpdateEnemiesPrePhysics();
 	void UpdatePhysics();
@@ -828,6 +828,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
+	ExtraState *currExtraState;
 	sf::CircleShape testSimCircle;
 
 	int GetSaveDataSize();
@@ -849,9 +850,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	void CleanupSuperSequence();
 	void DrawPlayerShields(sf::RenderTarget *target);
 	void SetupGameMode();
-	void ForwardSimulatePlayer(int index, int frames, bool storePositions = false);
-	void RevertSimulatedPlayer(int index);
-	V2d GetFuturePlayerPos(int futureFrames);
+	V2d GetFuturePlayerPos(int futureFrames, int index = 0);
+	void PlayerMustSimulateAtLeast(int f, int index = 0);
 	Enemy* GetEnemy(int enType);
 	GroundedWarper *GetWarper(const std::string levelWarp);
 	V2d CalcBounceReflectionVel(Edge *e, V2d &vel);

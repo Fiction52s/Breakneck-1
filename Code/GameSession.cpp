@@ -1660,6 +1660,9 @@ bool GameSession::Load()
 	ReadFile();
 
 	
+
+
+	
 	SetupAbsorbParticles();
 
 	SetupGameMode();
@@ -1672,6 +1675,19 @@ bool GameSession::Load()
 	}
 
 	SetupPlayers();
+
+
+	{
+		Actor *p = NULL;
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			p = GetPlayer(i);
+			if (p != NULL)
+			{
+				p->UpdateNumFuturePositions();
+			}
+		}
+	}
 
 	recPlayer = new RecordPlayer(GetPlayer(0));
 	

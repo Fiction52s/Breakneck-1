@@ -356,17 +356,20 @@ void MovementTester::SetHitboxInfo(int a)
 
 void MovementTester::CalcTargetAfterHit()
 {
-	sess->ForwardSimulatePlayer(targetPlayerIndex, sess->GetPlayer(targetPlayerIndex)->hitstunFrames);
+	Actor *p = sess->GetPlayer(targetPlayerIndex);
+	p->ForwardSimulate(p->hitstunFrames, false );
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
-	sess->RevertSimulatedPlayer(targetPlayerIndex);
+	p->RevertAfterSimulating();
 	predictCircle.setPosition(Vector2f(targetPos));
 }
 
 void MovementTester::CalcPlayerFuturePos(int frames)
 {
-	sess->ForwardSimulatePlayer(targetPlayerIndex, frames);
+	Actor *p = sess->GetPlayer(targetPlayerIndex);
+
+	p->ForwardSimulate(frames, false );
 	targetPos = sess->GetPlayerPos(targetPlayerIndex);
-	sess->RevertSimulatedPlayer(targetPlayerIndex);
+	p->RevertAfterSimulating();
 	predictCircle.setPosition(Vector2f(targetPos));
 }
 

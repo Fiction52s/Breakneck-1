@@ -23,12 +23,17 @@ struct Chess : Enemy
 		DIAGUPRIGHT,
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+	};
+	MyData data;
+
 	int chessType;
 	double attentionRadius;
 	double ignoreRadius;
 
 	Tileset *ts;
-	V2d velocity;
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
@@ -48,6 +53,10 @@ struct Chess : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

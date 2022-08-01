@@ -181,3 +181,22 @@ void FreeFlightBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int FreeFlightBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void FreeFlightBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void FreeFlightBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

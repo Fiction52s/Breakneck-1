@@ -30,6 +30,7 @@ struct PaletteShader;
 struct SwordProjectile;
 
 struct PState;
+struct ExtraState;
 
 struct EditSession;
 struct EffectInstance;
@@ -626,7 +627,11 @@ struct Actor : QuadTreeCollider,
 	const static int MAX_BUBBLES = 5;
 
 	//havent put into rollback yet
+	int numCalculatedFuturePositions;
+	V2d* futurePositions;
+	PState *preSimulationState;
 
+	int currFrameSimulationFrames;
 
 	//--empty for now
 
@@ -1321,6 +1326,8 @@ struct Actor : QuadTreeCollider,
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
+	void PopulateExtraState(ExtraState *es);
+	void PopulateFromExtraState(ExtraState *es);
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 
@@ -1782,6 +1789,9 @@ struct Actor : QuadTreeCollider,
 
 	bool IsValidTrackEnemy(Enemy *e);
 
+	void RevertAfterSimulating();
+	void ForwardSimulate(int frames, bool storePositions);
+
 	void UpdateGroundedSwordSprite(
 		Tileset *ts,
 		int startFrame,
@@ -1796,6 +1806,11 @@ struct Actor : QuadTreeCollider,
 		sf::Vector2f &swordOffset );
 	void ApplyBlockFriction();
 	void ClearAllEffects();
+	void UpdatePreFrameCalculations();
+	void InitPreFrameCalculations();
+	void UpdateNumFuturePositions();
+	
+	//void PopulateFromState(PState *ps);
 	//kin action functions
 
 	void AIMWAIT_Start();

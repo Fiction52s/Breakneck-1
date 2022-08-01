@@ -13,6 +13,17 @@ struct FreeFlightBooster : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	Tileset *ts;
+	Tileset *ts_refresh;
+
+	int strength;
+
 	FreeFlightBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
@@ -25,10 +36,9 @@ struct FreeFlightBooster : Enemy
 	bool IsBoostable();
 	void AddToWorldTrees();
 
-	Tileset *ts;
-	Tileset *ts_refresh;
-
-	int strength;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

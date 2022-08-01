@@ -38,8 +38,6 @@ FutureChecker::FutureChecker(ActorParams *ap)
 	accel = 2.0;
 	maxSpeed = 10.0;
 
-	fireCounter = 0;
-
 	ts = GetSizedTileset("Enemies/W4/turtle_80x64.png");
 	sprite.setTexture(*ts->texture);
 	sprite.setScale(scale, scale);
@@ -101,12 +99,12 @@ void FutureChecker::ResetEnemy()
 		facingRight = false;
 	else
 		facingRight = true;
-	fireCounter = 0;
+	data.fireCounter = 0;
 
 	action = NEUTRAL;
 	frame = 0;
 
-	velocity = V2d();
+	data.velocity = V2d();
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -136,11 +134,11 @@ void FutureChecker::ActionEnded()
 			break;
 		case FIRE:
 			action = FADEOUT;
-			velocity = V2d();
+			data.velocity = V2d();
 			frame = 0;
 			break;
 		case INVISIBLE:
-			currPosInfo.position = sess->GetFuturePlayerPos( 25 );
+			currPosInfo.position = sess->GetFuturePlayerPos(predictFrames, 0 );
 			if (playerPos.x < GetPosition().x)
 			{
 				facingRight = false;
@@ -155,18 +153,26 @@ void FutureChecker::ActionEnded()
 		case FADEIN:
 			//action = FIRE;
 			action = FADEOUT;
-			velocity = V2d();
+			data.velocity = V2d();
 			frame = 0;
 			break;
 		case FADEOUT:
-			velocity = V2d();
+			data.velocity = V2d();
 			action = INVISIBLE;
 			frame = 0;
 			SetHitboxes(NULL, 0);
 			SetHurtboxes(NULL, 0);
-			playerTrackPos = playerPos;
+			data.playerTrackPos = playerPos;
 			break;
 		}
+	}
+}
+
+void FutureChecker::UpdatePreFrameCalculations()
+{
+	if (action == INVISIBLE && frame == actionLength[action] * animFactor[action])
+	{
+		sess->PlayerMustSimulateAtLeast(GetNumSimulationFramesRequired(), 0);
 	}
 }
 
@@ -220,7 +226,7 @@ void FutureChecker::ProcessState()
 	case FADEOUT:
 		if (PlayerDist() > 30)
 		{
-			velocity = PlayerDir() * maxSpeed;
+			data.velocity = PlayerDir() * maxSpeed;
 		}
 		//velocity += PlayerDir() * accel;
 		//CapVectorLength(velocity, maxSpeed);
@@ -230,7 +236,7 @@ void FutureChecker::ProcessState()
 
 void FutureChecker::UpdateEnemyPhysics()
 {
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * (double)numPhysSteps;
 
 	currPosInfo.position += movementVec;
@@ -278,4 +284,23 @@ void FutureChecker::EnemyDraw(sf::RenderTarget *target)
 {
 	if (action != INVISIBLE)
 		DrawSprite(target, sprite);
+}
+
+int FutureChecker::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void FutureChecker::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void FutureChecker::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

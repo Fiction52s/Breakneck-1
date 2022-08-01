@@ -642,6 +642,21 @@ void Actor::PopulateFromState(PState *ps)
 	glideTurnFactor = ps->glideTurnFactor;
 }
 
+void Actor::PopulateExtraState( ExtraState *es )
+{
+	for (int i = 0; i < sess->numSimulatedFramesRequired; ++i)
+	{
+		es->futurePositions[actorIndex][i] = futurePositions[i];
+	}
+}
+
+void Actor::PopulateFromExtraState( ExtraState *es )
+{
+	for (int i = 0; i < sess->numSimulatedFramesRequired; ++i)
+	{
+		futurePositions[i] = es->futurePositions[actorIndex][i];
+	}
+}
 
 void Actor::SetSession(Session *p_sess,
 	GameSession *game,
@@ -3000,6 +3015,8 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
 
+	preSimulationState = NULL;
+	futurePositions = NULL;
 	soundInfos.resize(PlayerSounds::S_Count);
 
 	maxFallSpeedWhileHitting = 4.0;
@@ -3799,6 +3816,11 @@ Actor::~Actor()
 		delete (*it);
 	}*/
 
+	if (preSimulationState != NULL)
+	{
+		delete preSimulationState;
+	}
+
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
 	{
 		delete swordProjectiles[i];
@@ -4412,6 +4434,8 @@ void Actor::Respawn( bool setStartPos )
 		numFramesToLive = -1;
 	}
 	
+
+	numCalculatedFuturePositions = 0;
 
 	bouncedFromKill = false;
 
@@ -21564,4 +21588,87 @@ void Actor::UpdateInHitlag()
 			 (*it).pool->Reset();
 		 }
 	 }
+ }
+
+ void Actor::RevertAfterSimulating()
+ {
+	 assert(preSimulationState != NULL);
+	 PopulateFromState(preSimulationState);
+ }
+
+ void Actor::ForwardSimulate(int frames, bool storePositions)
+ {
+	 assert(preSimulationState != NULL);
+
+	 assert(frames <= Session::MAX_SIMULATED_FUTURE_PLAYER_FRAMES);
+
+	 PopulateState(preSimulationState);
+	 simulationMode = true;
+
+	 numCalculatedFuturePositions = frames;
+
+	 int numSteps;
+	 for (int i = 0; i < frames; ++i)
+	 {
+		 UpdatePrePhysics();
+		 physicsOver = false;
+		 highAccuracyHitboxes = false; //maybe get this a few more substeps in the future. not sure why its not as accurate.
+		 int numSteps = GetNumSteps();
+		 for (int substep = 0; substep < numSteps; ++substep)
+		 {
+			 UpdatePhysics();
+		 }
+		 UpdatePostPhysics();
+		 sess->UpdatePlayerInput(actorIndex);
+
+		 if (storePositions)
+		 {
+			 futurePositions[i] = position;
+		 }
+	 }
+	 simulationMode = false;
+ }
+
+ void Actor::InitPreFrameCalculations()
+ {
+	 numCalculatedFuturePositions = 0;
+	 currFrameSimulationFrames = 0;
+ }
+
+ void Actor::UpdatePreFrameCalculations()
+ {
+	 if (currFrameSimulationFrames > 0)
+	 {
+		 ForwardSimulate(currFrameSimulationFrames, true);
+		 RevertAfterSimulating();
+	 }
+ }
+
+ void Actor::UpdateNumFuturePositions()
+ {
+	 int num = sess->numSimulatedFramesRequired;
+	 if (num == 0)
+	 {
+		 if (preSimulationState != NULL)
+		 {
+			 delete preSimulationState;
+			 preSimulationState = NULL;
+		 }
+	 }
+	 else
+	 {
+		 if (preSimulationState == NULL)
+		 {
+			 preSimulationState = new PState;
+			 memset(preSimulationState, 0, sizeof(PState));
+		 }
+	 }
+
+	 if (futurePositions != NULL)
+	 {
+		 delete futurePositions;
+		 futurePositions = NULL;
+	 }
+
+	 futurePositions = new V2d[num];
  }

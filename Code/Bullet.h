@@ -123,17 +123,26 @@ struct BasicBullet : QuadTreeCollider
 
 struct SinBullet : BasicBullet
 {
-	SinBullet *prev;
-	SinBullet *next;
-	CollisionBox hurtBody;
-	V2d tempadd;
+	struct MyData : BulletData
+	{
+		V2d tempadd;
+	};
+
+	MyData data;
+
+	//CollisionBox hurtBody;
+	
 
 	SinBullet(int indexVA, Launcher *launcher);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 	void Reset(
-		sf::Vector2<double> &pos,
-		sf::Vector2<double> &vel);
+		V2d &pos,
+		V2d &vel);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct GrindBullet : BasicBullet
@@ -163,22 +172,31 @@ struct GrindBullet : BasicBullet
 
 struct CopycatBullet : BasicBullet
 {
+	struct MyData : BulletData
+	{
+		V2d destination;
+		V2d trueVel;
+		int attackIndex;
+	};
+
+	MyData data;
+
+	
+	double speed;
+	
+
 	CopycatBullet(int indexVA, Launcher *launcher);
 	void UpdatePrePhysics();
 	void UpdatePhysics();
 
 	//modified reset
 	void Reset(
-		sf::Vector2<double> &pos0,
-		sf::Vector2<double> &pos1);
+		V2d &pos0,
+		V2d &pos1);
 
-	CopycatBullet *prev;
-	CopycatBullet *next;
-	sf::Vector2<double> destination;
-	sf::Vector2<double> trueVel;
-	double speed;
-	int attackIndex;
-	//CollisionBox hurtBody;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 struct Launcher

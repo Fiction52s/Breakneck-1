@@ -1574,8 +1574,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	firstUpdateHasHappened = false;
 
-	playerSimState = new PState;
-
 	specialTempTilesetManager = NULL;
 	specialTempSoundManager = NULL;
 
@@ -1701,7 +1699,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 Session::~Session()
 {
-	delete playerSimState;
 	//new stuff
 	if ( parentGame == NULL && soundManager != NULL)
 	{
@@ -5538,14 +5535,25 @@ void Session::UpdateEnemiesPreFrameCalculations()
 	}
 }
 
+void Session::InitPreFrameCalculations()
+{
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->InitPreFrameCalculations();
+	}
+}
+
 void Session::UpdatePreFrameCalculations()
 {
-	numCalculatedFuturePositions = 0;
-	if (numSimulatedFramesRequired > 0)
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
-		ForwardSimulatePlayer(0, numSimulatedFramesRequired, true);
-		//ForwardSimulatePlayer(0, 10, true);
-		RevertSimulatedPlayer(0);
+		p = GetPlayer(i);
+		if (p != NULL)
+			p->UpdatePreFrameCalculations();
 	}
 }
 
@@ -5558,7 +5566,7 @@ void Session::UpdatePhysics()
 		return;
 	}
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		p = GetPlayer(i);
 		if (p != NULL)
@@ -6425,9 +6433,16 @@ bool Session::RunGameModeUpdate()
 		{
 			if (!playerFrozen)
 			{
+				InitPreFrameCalculations();
+			}
+
+			UpdateEnemiesPreFrameCalculations();
+
+			if (!playerFrozen)
+			{
 				UpdatePreFrameCalculations();
 			}
-			UpdateEnemiesPreFrameCalculations();
+			
 		}
 
 		UpdateControllers();
@@ -6921,8 +6936,12 @@ void Session::InitGGPO()
 	}*/
 
 	currSaveState = new SaveGameState;
+	currExtraState = new ExtraState;
 	ngs = new GGPONonGameState;
 	ggpoPlayers = new GGPOPlayer[4];
+
+
+	currExtraState->SetNumSimulationFrames(numSimulatedFramesRequired);
 
 	GGPOErrorCode result;
 
@@ -7059,6 +7078,7 @@ void Session::UpdateJustGGPO()
 void Session::CleanupGGPO()
 {
 	delete currSaveState;
+	delete currExtraState;
 	delete ngs;
 	delete[] ggpoPlayers;
 }
@@ -7122,6 +7142,9 @@ bool Session::GGPORunGameModeUpdate()
 	//	cout << "p0:: L: " << (int)players[0]->currInput.LLeft() << ", R: " << (int)players[0]->currInput.LRight() << ", p1:: L: " << (int)players[1]->currInput.LLeft() << ", " << (int)players[1]->currInput.LRight() << endl;
 	//	cout << "different inputs" << endl;
 	//}
+
+
+
 	switchGameState = false;
 
 	if (!firstUpdateHasHappened)
@@ -7138,6 +7161,21 @@ bool Session::GGPORunGameModeUpdate()
 
 	if (!RunPreUpdate())
 		return true;
+
+	if (!playerAndEnemiesFrozen)
+	{
+		if (!playerFrozen)
+		{
+			InitPreFrameCalculations();
+		}
+
+		UpdateEnemiesPreFrameCalculations();
+
+		if (!playerFrozen)
+		{
+			UpdatePreFrameCalculations();
+		}
+	}
 
 	if (pauseFrames > 0)
 	{
@@ -7428,6 +7466,8 @@ int Session::GetSaveDataSize()
 	totalSize += absorbDarkParticles->GetNumStoredBytes();
 	totalSize += absorbShardParticles->GetNumStoredBytes();
 
+	totalSize += currExtraState->GetNumStoredBytes();
+
 	return totalSize;
 }
 
@@ -7437,7 +7477,9 @@ bool Session::SaveState(unsigned char **buffer,
 	cout << "save state: " << totalGameFrames << endl;
 
 	players[0]->PopulateState(&currSaveState->states[0]);
+	players[0]->PopulateExtraState(currExtraState);
 	players[1]->PopulateState(&currSaveState->states[1]);
+	players[1]->PopulateExtraState(currExtraState);
 	currSaveState->totalGameFrames = totalGameFrames;
 	currSaveState->activeEnemyList = activeEnemyList;
 	currSaveState->activeEnemyListTail = activeEnemyListTail;
@@ -7448,6 +7490,9 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->activeSequence = activeSequence;
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
+
+	
+
 	*len = GetSaveDataSize();
 	*buffer = (unsigned char *)malloc(*len);
 	memset(*buffer, 0, *len);
@@ -7456,12 +7501,13 @@ bool Session::SaveState(unsigned char **buffer,
 		return false;
 	}
 	memcpy(*buffer, currSaveState, sizeof(SaveGameState));
-
-
 	unsigned char *tempBuf = *buffer;
 	tempBuf += sizeof(SaveGameState);
-	gameMode->StoreBytes(tempBuf);
 
+	currExtraState->StoreBytes(tempBuf);
+	tempBuf += currExtraState->GetNumStoredBytes();
+
+	gameMode->StoreBytes(tempBuf);
 	tempBuf += gameMode->GetNumStoredBytes();
 
 	int totalEnemySize = 0;
@@ -7496,12 +7542,15 @@ bool Session::SaveState(unsigned char **buffer,
 
 bool Session::LoadState(unsigned char *bytes, int len)
 {
-	int saveSize = sizeof(SaveGameState);
-	memcpy(currSaveState, bytes, saveSize);
-
 	cout << "loading state: " << currSaveState->totalGameFrames << endl;
 
+	int saveSize = sizeof(SaveGameState);
+	memcpy(currSaveState, bytes, saveSize);
 	bytes += saveSize;
+
+	currExtraState->SetFromBytes(bytes);
+	bytes += currExtraState->GetNumStoredBytes();
+
 	gameMode->SetFromBytes(bytes);
 	bytes += gameMode->GetNumStoredBytes();
 
@@ -7702,52 +7751,25 @@ void Session::SetupGameMode()
 	}
 }
 
-V2d Session::GetFuturePlayerPos(int futureFrames)
+V2d Session::GetFuturePlayerPos(int futureFrames, int index )
 {
-	assert(futureFrames > 0 && futureFrames < numCalculatedFuturePositions - 1);
-	return futurePlayerPos[futureFrames - 1];
-}
-
-void Session::ForwardSimulatePlayer(int index, int frames, bool storePositions)
-{
-	assert(frames <= MAX_SIMULATED_FUTURE_PLAYER_FRAMES);
 	Actor *p = GetPlayer(index);
 	assert(p != NULL);
+	assert(futureFrames > 0 && futureFrames < p->numCalculatedFuturePositions- 1);
 
-	p->PopulateState(playerSimState);
-	p->simulationMode = true;
-	
-	numCalculatedFuturePositions = frames;
+	return p->futurePositions[futureFrames - 1];
+}
 
-	int numSteps;
-	for (int i = 0; i < frames; ++i)
+void Session::PlayerMustSimulateAtLeast(int f, int index )
+{
+	Actor *p = GetPlayer(index);
+	assert(p != NULL);
+	if (p->currFrameSimulationFrames < f)
 	{
-		p->UpdatePrePhysics();
-		p->physicsOver = false;
-		p->highAccuracyHitboxes = false; //maybe get this a few more substeps in the future. not sure why its not as accurate.
-		int numSteps = p->GetNumSteps();
-		for (substep = 0; substep < numSteps; ++substep)
-		{
-			p->UpdatePhysics();
-		}
-		p->UpdatePostPhysics();
-		UpdatePlayerInput(index);
-
-		if (storePositions)
-		{
-			futurePlayerPos[i] = p->position;
-		}
+		p->currFrameSimulationFrames = f;
 	}
-	p->simulationMode = false;
 }
 
-void Session::RevertSimulatedPlayer(int index)
-{
-	Actor *p = GetPlayer(index);
-	assert(p != NULL);
-
-	p->PopulateFromState(playerSimState);
-}
 
 Enemy * Session::GetEnemy(int enType)
 {

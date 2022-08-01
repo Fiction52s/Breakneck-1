@@ -16,16 +16,18 @@ struct FutureChecker : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		int fireCounter;
+		V2d velocity;
+		V2d playerTrackPos;
+	};
+	MyData data;
+
 	Tileset *ts_bulletExplode;
 	int bulletSpeed;
 	const static int predictFrames;
-
-	int fireCounter;
-
 	Tileset *ts;
-
-	V2d playerTrackPos;
-	V2d velocity;
 	double accel;
 	double maxSpeed;
 
@@ -37,6 +39,10 @@ struct FutureChecker : Enemy
 	void EnemyDraw(sf::RenderTarget *target);
 	int GetNumSimulationFramesRequired();
 	void SetLevel(int lev);
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	void UpdatePreFrameCalculations();
 
 	void UpdateSprite();
 	void ResetEnemy();

@@ -920,6 +920,15 @@ void EditSession::TestPlayerMode()
 		}
 	}
 
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->UpdateNumFuturePositions();
+		}
+	}
+
 	CreateBulletQuads();
 	/*for (auto it = groups.begin(); it != groups.end(); ++it)
 	{

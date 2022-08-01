@@ -1225,7 +1225,7 @@ void SinBullet::UpdatePrePhysics()
 
 	//cout << "framestolive: " << framesToLive << endl;
 	//cout << "position: " << position.x << ", " << position.y << endl;
-	position -= tempadd;
+	position -= data.tempadd;
 
 	int waveLength = launcher->wavelength * 5;
 	int ftl = framesToLive * 5;
@@ -1248,9 +1248,9 @@ void SinBullet::UpdatePrePhysics()
 	//dir = normalize( velocity );
 
 	double d = dot(dir, other);
-	tempadd = sin(t) * launcher->amplitude * other;//d * other * launcher->amplitude;
+	data.tempadd = sin(t) * launcher->amplitude * other;//d * other * launcher->amplitude;
 
-	position += tempadd;//other * sin(t) * launcher->amplitude;//tempadd;
+	position += data.tempadd;//other * sin(t) * launcher->amplitude;//tempadd;
 						//cout << "tempadd: " << tempadd.x << ", " << tempadd.y << endl;
 
 						//tempadd = dir * 100.0;
@@ -1286,7 +1286,7 @@ void SinBullet::UpdatePhysics()
 		}*/
 
 		hitBody.globalPosition = position;
-		hurtBody.globalPosition = position;
+		//hurtBody.globalPosition = position;
 
 		Actor *player = launcher->sess->GetPlayer(launcher->playerIndex);
 		//player->CheckIfImHit( )
@@ -1309,7 +1309,24 @@ void SinBullet::Reset(V2d &pos,
 	V2d &vel)
 {
 	BasicBullet::Reset(pos, vel);
-	tempadd = V2d(0, 0);
+	data.tempadd = V2d(0, 0);
+}
+
+int SinBullet::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void SinBullet::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicBulletData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+}
+
+void SinBullet::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicBulletData(data);
 }
 
 GrindBullet::GrindBullet(int indexVA, Launcher *launcher)
@@ -1506,9 +1523,9 @@ void CopycatBullet::UpdatePhysics()
 			movementLen = 0;
 		}
 
-		if (length(destination - position) <= move)
+		if (length(data.destination - position) <= move)
 		{
-			position = destination;
+			position = data.destination;
 			velocity = V2d(0, 0);
 			launcher->handler->BulletHitTarget(this);
 			return;
@@ -1534,15 +1551,32 @@ void CopycatBullet::UpdatePhysics()
 	}
 }
 
-void CopycatBullet::Reset(sf::Vector2<double> &pos0,
-	sf::Vector2<double> &pos1)
+void CopycatBullet::Reset(V2d &pos0,
+	V2d &pos1)
 {
 	if (bulletType == BasicBullet::COPYCAT)
 	{
-		attackIndex = launcher->handler->GetAttackIndex();
+		data.attackIndex = launcher->handler->GetAttackIndex();
 	}
-	destination = pos1;
-	trueVel = normalize(pos1 - pos0) * speed;
-	BasicBullet::Reset(pos0, trueVel);
+	data.destination = pos1;
+	data.trueVel = normalize(pos1 - pos0) * speed;
+	BasicBullet::Reset(pos0, data.trueVel);
 	//tempadd = V2d( 0, 0 );
+}
+
+int CopycatBullet::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void CopycatBullet::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicBulletData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+}
+
+void CopycatBullet::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicBulletData(data);
 }
