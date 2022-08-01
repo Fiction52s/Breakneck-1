@@ -58,7 +58,7 @@ Trailer::Trailer(ActorParams *ap)
 
 	hitBody.hitboxInfo = hitboxInfo;
 
-	trailMove = trailSeq.AddLineMovement(V2d(), V2d(), CubicBezier(0, 0, 1, 1),
+	trailMove = data.trailSeq.AddLineMovement(V2d(), V2d(), CubicBezier(0, 0, 1, 1),
 		actionLength[TRAIL] * animFactor[TRAIL]);
 
 	Color circleColor = Color::Red;
@@ -101,18 +101,18 @@ void Trailer::ApproachMovement()
 {
 	if (PlayerDist() < 100)
 	{
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 	}
 	else
 	{
-		velocity = PlayerDir() * maxSpeed;
+		data.velocity = PlayerDir() * maxSpeed;
 	}
 }
 
 void Trailer::ResetEnemy()
 {
-	trailSeq.Reset();
-	trailSeq.data.currMovement = NULL;
+	data.trailSeq.Reset();
+	data.trailSeq.data.currMovement = NULL;
 
 	action = IDLE;
 	frame = 0;
@@ -150,7 +150,7 @@ void Trailer::StartTrail()
 	action = TRAIL;
 	trailMove->start = GetPosition();
 	trailMove->end = sess->GetPlayerPos();
-	trailSeq.Reset();
+	data.trailSeq.Reset();
 }
 
 void Trailer::ProcessState()
@@ -193,10 +193,10 @@ void Trailer::ProcessState()
 
 void Trailer::UpdateEnemyPhysics()
 {
-	if (trailSeq.IsMovementActive())
+	if (data.trailSeq.IsMovementActive())
 	{
-		trailSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-		currPosInfo.position = trailSeq.GetPos();
+		data.trailSeq.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+		currPosInfo.position = data.trailSeq.GetPos();
 	}	
 }
 

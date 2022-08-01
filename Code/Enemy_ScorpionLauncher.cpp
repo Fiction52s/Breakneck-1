@@ -221,3 +221,22 @@ void ScorpionLauncher::DrawMinimap(sf::RenderTarget *target)
 		target->draw(enemyCircle);
 	}
 }
+
+int ScorpionLauncher::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void ScorpionLauncher::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void ScorpionLauncher::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

@@ -130,10 +130,10 @@ void SwordProjectile::ComboKill(Enemy *e)
 
 void SwordProjectile::ResetEnemy()
 {
-	shootFrames = 0;
-	currHits = 0;
+	data.shootFrames = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 
 	//DefaultHurtboxesOn();
 	//DefaultHitboxesOn();
@@ -161,7 +161,7 @@ void SwordProjectile::Throw( int playerIndex, V2d &pos, V2d &dir)
 	action = S_SHOT;
 	frame = 0;
 	comboObj->enemyHitboxInfo->hDir = normalizedDir;
-	velocity = normalizedDir * speed;
+	data.velocity = normalizedDir * speed;
 	sess->PlayerAddActiveComboObj(comboObj,playerIndex );
 }
 
@@ -197,7 +197,7 @@ void SwordProjectile::UpdateEnemyPhysics()
 	{
 	case S_SHOT:
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -205,21 +205,21 @@ void SwordProjectile::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void SwordProjectile::FrameIncrement()
 {
 	if (action == S_SHOT)
 	{
-		if (shootFrames == shootLimit)
+		if (data.shootFrames == shootLimit)
 		{
 			action = S_EXPLODE;
 			frame = 0;
 		}
 		else
 		{
-			++shootFrames;
+			++data.shootFrames;
 		}
 	}
 }
@@ -227,8 +227,8 @@ void SwordProjectile::FrameIncrement()
 void SwordProjectile::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (currHits >= hitLimit)
+	++data.currHits;
+	if (data.currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
@@ -246,4 +246,29 @@ void SwordProjectile::UpdateSprite()
 void SwordProjectile::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int SwordProjectile::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void SwordProjectile::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void SwordProjectile::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

@@ -194,3 +194,21 @@ void SwordProjectileBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int SwordProjectileBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void SwordProjectileBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void SwordProjectileBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

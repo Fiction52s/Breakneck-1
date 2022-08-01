@@ -99,6 +99,12 @@ LaserJays::~LaserJays()
 {
 	if (!secondary)
 	{
+		if (sess->IsSessTypeGame())
+		{
+			//in the game itself, the other enemy gets deleted from fullenemylist
+			otherParams->myEnemy = NULL;
+		}
+		
 		delete otherParams;
 	}
 }
@@ -154,7 +160,7 @@ void LaserJays::ApproachMovement()
 {
 	if (PlayerDist() < 100)
 	{
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 	}
 	else
 	{
@@ -164,8 +170,8 @@ void LaserJays::ApproachMovement()
 			offset.y = -offset.y;
 		}
 		V2d targetDir = PlayerDir(V2d(), V2d(offset));
-		velocity += targetDir * accel;
-		CapVectorLength(velocity, maxSpeed);
+		data.velocity += targetDir * accel;
+		CapVectorLength(data.velocity, maxSpeed);
 	}
 }
 
@@ -271,7 +277,7 @@ void LaserJays::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		break;
 	case APPROACH:
 		ApproachMovement();
@@ -292,7 +298,7 @@ void LaserJays::UpdateEnemyPhysics()
 {
 	if (action == APPROACH || action == CHARGE || action == PULSE || action == RECOVER)
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -356,4 +362,23 @@ void LaserJays::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(laserQuad, 4, sf::Quads);
 	}
+}
+
+int LaserJays::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void LaserJays::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void LaserJays::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

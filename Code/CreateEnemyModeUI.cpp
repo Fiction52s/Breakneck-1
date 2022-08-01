@@ -184,7 +184,7 @@ CreateEnemyModeUI::CreateEnemyModeUI()
 
 	int extraWorldSpacing = (1920 - totalWorldSize) / 2;
 
-	libPanel = new Panel("libpanel", totalWorldSize + 20, 600, edit, false);
+	libPanel = new Panel("libpanel", totalWorldSize + 20, 700, edit, false);
 	libPanel->SetPosition(Vector2i(100, 140));
 	libPanel->SetColor(panelColor);
 

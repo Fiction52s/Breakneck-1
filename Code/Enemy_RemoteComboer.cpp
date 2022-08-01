@@ -101,10 +101,10 @@ void RemoteComboer::SetLevel(int lev)
 
 void RemoteComboer::ResetEnemy()
 {
-	shootFrames = 0;
-	currHits = 0;
+	data.shootFrames = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 
 	DefaultHurtboxesOn();
 	//DefaultHitboxesOn();
@@ -123,7 +123,7 @@ void RemoteComboer::ProcessHit()
 		sess->PlayerConfirmEnemyNoKill(this, GetReceivedHitPlayerIndex());
 		ConfirmHitNoKill();
 		action = S_SHOT;
-		shootFrames = 0;
+		data.shootFrames = 0;
 		frame = 0;
 		SetHitboxes(NULL, 0);
 		SetHurtboxes(NULL, 0);
@@ -154,7 +154,7 @@ void RemoteComboer::ProcessHit()
 
 
 
-		velocity = dir * speed;
+		data.velocity = dir * speed;
 
 		IntRect ir;
 
@@ -231,10 +231,10 @@ void RemoteComboer::ProcessState()
 	{
 		double accel = 1.5;
 		V2d dir8 = controlPlayer->currInput.GetLeft8Dir();
-		velocity += dir8 * accel;
-		if (length(velocity) > speed)
+		data.velocity += dir8 * accel;
+		if (length(data.velocity) > speed)
 		{
-			velocity = normalize(velocity) * speed;
+			data.velocity = normalize(data.velocity) * speed;
 		}
 	}
 }
@@ -254,7 +254,7 @@ void RemoteComboer::UpdateEnemyPhysics()
 	}
 	case S_SHOT:
 	{
-		V2d movementVec = velocity;
+		V2d movementVec = data.velocity;
 		movementVec /= slowMultiple * (double)numPhysSteps;
 
 		currPosInfo.position += movementVec;
@@ -262,16 +262,16 @@ void RemoteComboer::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void RemoteComboer::FrameIncrement()
 {
 	if (action == S_SHOT)
 	{
-		if (shootFrames == shootLimit)
+		if (data.shootFrames == shootLimit)
 		{
-			velocity = V2d(0, 0);
+			data.velocity = V2d(0, 0);
 			sess->PlayerRemoveActiveComboer(comboObj);
 			action = S_RETURN;
 			//action = S_EXPLODE;
@@ -279,7 +279,7 @@ void RemoteComboer::FrameIncrement()
 		}
 		else
 		{
-			++shootFrames;
+			++data.shootFrames;
 		}
 	}
 }
@@ -287,8 +287,8 @@ void RemoteComboer::FrameIncrement()
 void RemoteComboer::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (currHits >= hitLimit)
+	++data.currHits;
+	if (data.currHits >= hitLimit)
 	{
 		action = S_EXPLODE;
 		frame = 0;
@@ -319,4 +319,29 @@ void RemoteComboer::UpdateSprite()
 void RemoteComboer::EnemyDraw(sf::RenderTarget *target)
 {
 	DrawSprite(target, sprite);
+}
+
+int RemoteComboer::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void RemoteComboer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void RemoteComboer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

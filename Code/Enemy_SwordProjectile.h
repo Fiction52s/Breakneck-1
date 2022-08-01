@@ -14,6 +14,22 @@ struct SwordProjectile : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+		int shootFrames;
+		int currHits;
+	};
+	MyData data;
+
+	double speed;
+	
+
+	int shootLimit;
+	int hitLimit;
+	
+	Tileset *ts;
+
 	void SetLevel(int lev);
 
 	SwordProjectile();
@@ -30,17 +46,13 @@ struct SwordProjectile : Enemy
 	void ResetEnemy();
 	void HandleNoHealth();
 	void ComboKill(Enemy *e);
-
-	V2d velocity;
-	int shootFrames;
-	int shootLimit;
-	int hitLimit;
-	int currHits;
 	bool IsActive();
 
-	double speed;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-	Tileset *ts;
+	
 };
 
 #endif

@@ -183,3 +183,22 @@ void SwingLauncher::EnemyDraw(sf::RenderTarget *target)
 {
 	target->draw(sprite);
 }
+
+int SwingLauncher::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void SwingLauncher::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void SwingLauncher::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

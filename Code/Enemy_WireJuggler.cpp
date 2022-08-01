@@ -164,6 +164,7 @@ void WireJuggler::UpdateJuggleRepsText(int reps)
 {
 	if (limitedJuggles)
 	{
+		data.juggleTextNumber = reps;
 		numJugglesText.setString(to_string(reps));
 		numJugglesText.setOrigin(numJugglesText.getLocalBounds().left
 			+ numJugglesText.getLocalBounds().width / 2,
@@ -197,10 +198,11 @@ void WireJuggler::ResetEnemy()
 	sprite.setTextureRect(ts->GetSubRect(0));
 	sprite.setRotation(0);
 
-	currHits = 0;
+	data.currHits = 0;
 	comboObj->Reset();
-	velocity = V2d(0, 0);
-
+	data.velocity = V2d(0, 0);
+	
+	data.waitFrame = 0;
 
 	DefaultHitboxesOn();
 	DefaultHurtboxesOn();
@@ -210,7 +212,7 @@ void WireJuggler::ResetEnemy()
 
 	UpdateHitboxes();
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	UpdateSprite();
 }
@@ -240,7 +242,7 @@ void WireJuggler::HandleWireUnanchored(Wire *w)
 void WireJuggler::HandleWireAnchored(Wire *w)
 {
 	action = S_HELD;
-	velocity = V2d(0, 0);
+	data.velocity = V2d(0, 0);
 	frame = 0;
 }
 
@@ -248,22 +250,25 @@ void WireJuggler::Throw(double a, double strength)
 {
 	V2d vel(strength, 0);
 	RotateCCW(vel, a);
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void WireJuggler::Throw(V2d vel)
 {
-	velocity = vel;
+	data.velocity = vel;
 }
 
 void WireJuggler::Return()
 {
+	action = S_RETURN;
+	frame = 0;
+
 	sess->PlayerRemoveActiveComboer(comboObj);
 
 	SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
 
-	currJuggle = 0;
+	data.currJuggle = 0;
 
 	UpdateJuggleRepsText(0);
 
@@ -275,10 +280,10 @@ void WireJuggler::Pop()
 	sess->PlayerConfirmEnemyNoKill(this);
 	ConfirmHitNoKill();
 	numHealth = maxHealth;
-	++currJuggle;
+	++data.currJuggle;
 	//SetHurtboxes(NULL, 0);
 	SetHitboxes(NULL, 0);
-	waitFrame = 0;
+	data.waitFrame = 0;
 }
 
 void WireJuggler::PopThrow()
@@ -358,7 +363,7 @@ void WireJuggler::ProcessHit()
 
 		if (numHealth <= 0)
 		{
-			if ( limitedJuggles && currJuggle == juggleReps - 1)
+			if ( limitedJuggles && data.currJuggle == juggleReps - 1)
 			{
 				if (hasMonitor && !suppressMonitor)
 				{
@@ -369,9 +374,6 @@ void WireJuggler::ProcessHit()
 
 				sess->PlayerConfirmEnemyNoKill(this);
 				ConfirmHitNoKill();
-
-				action = S_RETURN;
-				frame = 0;
 
 				Return();
 			}
@@ -412,7 +414,7 @@ void WireJuggler::ProcessState()
 		}
 	}
 
-	if (action == S_POP && ((velocity.y >= 0 && !reversedGrav) || (velocity.y <= 0 && reversedGrav)))
+	if (action == S_POP && ((data.velocity.y >= 0 && !reversedGrav) || (data.velocity.y <= 0 && reversedGrav)))
 	{
 		action = S_JUGGLE;
 		frame = 0;
@@ -428,25 +430,25 @@ void WireJuggler::HandleNoHealth()
 void WireJuggler::Move()
 {
 	double numStep = numPhysSteps;
-	V2d movementVec = velocity;
+	V2d movementVec = data.velocity;
 	movementVec /= slowMultiple * numStep;
 
 	currPosInfo.position += movementVec;
 
-	velocity += gDir * (gravFactor / numStep / slowMultiple);
+	data.velocity += gDir * (gravFactor / numStep / slowMultiple);
 
 	if (reversedGrav)
 	{
-		if (velocity.y < -maxFallSpeed)
+		if (data.velocity.y < -maxFallSpeed)
 		{
-			velocity.y = -maxFallSpeed;
+			data.velocity.y = -maxFallSpeed;
 		}
 	}
 	else
 	{
-		if (velocity.y > maxFallSpeed)
+		if (data.velocity.y > maxFallSpeed)
 		{
-			velocity.y = maxFallSpeed;
+			data.velocity.y = maxFallSpeed;
 		}
 	}
 }
@@ -463,22 +465,20 @@ void WireJuggler::UpdateEnemyPhysics()
 	}
 	}
 
-	comboObj->enemyHitboxInfo->hDir = normalize(velocity);
+	comboObj->enemyHitboxInfo->hDir = normalize(data.velocity);
 }
 
 void WireJuggler::FrameIncrement()
 {
 	if (action == S_POP || action == S_JUGGLE)
 	{
-		if (waitFrame == maxWaitFrames)
+		if (data.waitFrame == maxWaitFrames)
 		{
-			action = S_RETURN;
-			frame = 0;
 			Return();
 		}
 		else
 		{
-			waitFrame++;
+			data.waitFrame++;
 		}
 	}
 
@@ -487,11 +487,10 @@ void WireJuggler::FrameIncrement()
 void WireJuggler::ComboHit()
 {
 	pauseFrames = 5;
-	++currHits;
-	if (hitLimit > 0 && currHits >= hitLimit)
+	++data.currHits;
+	if (hitLimit > 0 && data.currHits >= hitLimit)
 	{
-		action = S_RETURN;
-		frame = 0;
+		
 		Return();
 	}
 }
@@ -538,4 +537,31 @@ void WireJuggler::EnemyDraw(sf::RenderTarget *target)
 	{
 		target->draw(numJugglesText);
 	}
+}
+
+int WireJuggler::GetNumStoredBytes()
+{
+	return sizeof(MyData) + comboObj->GetNumStoredBytes();
+}
+
+void WireJuggler::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	comboObj->StoreBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
+}
+
+void WireJuggler::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+
+	UpdateJuggleRepsText(data.juggleTextNumber);
+	bytes += sizeof(MyData);
+
+	comboObj->SetFromBytes(bytes);
+	bytes += comboObj->GetNumStoredBytes();
 }

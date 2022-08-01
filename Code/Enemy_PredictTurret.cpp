@@ -37,6 +37,8 @@ PredictTurret::PredictTurret(ActorParams *ap)
 
 	ts = GetSizedTileset("Enemies/W2/curveturret_144x96.png");
 
+	futureFrames = 30;
+
 	double width = ts->tileWidth;
 	double height = ts->tileHeight;
 
@@ -210,7 +212,6 @@ void PredictTurret::ProcessState()
 		}
 		else if (frame == 4 * animationFactor && slowCounter == 1)
 		{
-			int futureFrames = 30;
 			V2d launchPos = launchers[0]->position;
 			V2d futurePos = sess->GetFuturePlayerPos(futureFrames);
 			V2d futureDir = normalize(futurePos - launchPos);
@@ -283,4 +284,42 @@ void PredictTurret::UpdateSprite()
 void PredictTurret::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
+}
+
+void PredictTurret::UpdatePreFrameCalculations()
+{
+	if (action == ATTACK && (frame == 4 * animationFactor && slowCounter == 1))
+	{
+		sess->PlayerMustSimulateAtLeast(GetNumSimulationFramesRequired(), 0);
+	}
+}
+
+int PredictTurret::GetNumSimulationFramesRequired()
+{
+	return futureFrames + 2;
+}
+
+int PredictTurret::GetNumStoredBytes()
+{
+	return sizeof(MyData) + launchers[0]->GetNumStoredBytes();
+}
+
+void PredictTurret::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	launchers[0]->StoreBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
+}
+
+void PredictTurret::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	launchers[0]->SetFromBytes(bytes);
+	bytes += launchers[0]->GetNumStoredBytes();
 }

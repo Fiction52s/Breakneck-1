@@ -16,12 +16,18 @@ struct LaserJays : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		V2d velocity;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 	double activatePulseRadius;
 
 	Tileset *ts;
-	V2d velocity;
+	
 	double maxSpeed;
 	double accel;
 	CollisionBody laserBody;
@@ -52,6 +58,10 @@ struct LaserJays : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

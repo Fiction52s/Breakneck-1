@@ -186,3 +186,22 @@ void RewindBooster::DrawMinimap(sf::RenderTarget *target)
 	}
 }
 
+int RewindBooster::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void RewindBooster::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void RewindBooster::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
+

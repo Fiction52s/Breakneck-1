@@ -72,8 +72,8 @@ Skunk::Skunk(ActorParams *ap)
 	BasicCircleHitBodySetup(48);
 	hitBody.hitboxInfo = hitboxInfo;
 
-	explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
-	explosion.hitboxInfo = hitboxInfo;
+	data.explosion.BasicCircleSetup(explosionRadius * scale, 0, V2d());
+	data.explosion.hitboxInfo = hitboxInfo;
 
 	explosionHitboxInfo.damage = 180;
 	explosionHitboxInfo.drainX = 0;
@@ -83,7 +83,7 @@ Skunk::Skunk(ActorParams *ap)
 	explosionHitboxInfo.knockback = 20;
 	explosionHitboxInfo.hitPosType = HitboxInfo::HitPosType::OMNI;
 	
-	explosion.hitboxInfo = &explosionHitboxInfo;
+	data.explosion.hitboxInfo = &explosionHitboxInfo;
 	
 
 	cutObject->SetTileset(ts);
@@ -353,8 +353,8 @@ void Skunk::ProcessHit()
 				groundMover->SetSpeed(0);
 			}
 			frame = 0;
-			explosion.SetBasicPos(GetPosition());
-			SetHitboxes(&explosion, 0);
+			data.explosion.SetBasicPos(GetPosition());
+			SetHitboxes(&data.explosion, 0);
 			HurtboxesOff();
 			//sess->PlayerAddActiveComboObj(comboObj, GetReceivedHitPlayerIndex());
 
@@ -537,4 +537,23 @@ void Skunk::Land()
 		action = LAND;
 		frame = 0;
 	}
+}
+
+int Skunk::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Skunk::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Skunk::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

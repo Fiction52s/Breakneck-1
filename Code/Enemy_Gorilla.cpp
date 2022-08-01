@@ -68,10 +68,9 @@ Gorilla::Gorilla( ActorParams *ap )
 
 	action = WAKEUP;
 
-	latchedOn = false;
+	
 
 	approachFrames = 180 * 3;
-	totalFrame = 0;
 
 	animationFactor = 5;
 
@@ -107,11 +106,11 @@ Gorilla::Gorilla( ActorParams *ap )
 	wallHitboxInfo->knockback = 4;
 	wallHitboxInfo->hType = HitboxInfo::MAGENTA;
 
-	wallHitBody.SetupNumFrames(1);
-	wallHitBody.SetupNumBoxesOnFrame(0, 1);
-	wallHitBody.AddBasicRect(0, wallHitboxWidth/2, wallHitboxHeight/2, 0, V2d());
+	data.wallHitBody.SetupNumFrames(1);
+	data.wallHitBody.SetupNumBoxesOnFrame(0, 1);
+	data.wallHitBody.AddBasicRect(0, wallHitboxWidth/2, wallHitboxHeight/2, 0, V2d());
 	
-	wallHitBody.hitboxInfo = wallHitboxInfo;
+	data.wallHitBody.hitboxInfo = wallHitboxInfo;
 	
 
 	ts_wall = GetSizedTileset("Enemies/W6/gorillawall_400x50.png");
@@ -143,17 +142,17 @@ void Gorilla::ResetEnemy()
 	action = WAKEUP;
 	facingRight = origFacingRight;
 
-	latchStartAngle = 0;
-	latchedOn = false;
-	totalFrame = 0;
-	currWallHitboxes = NULL;
+	data.latchStartAngle = 0;
+	data.latchedOn = false;
+	data.totalFrame = 0;
+	data.currWallHitboxes = NULL;
 	
 	DefaultHurtboxesOn();
 	DefaultHitboxesOn();
 
 	dead = false;
 	frame = 0;
-	basePos = startPosInfo.GetPosition();
+	data.basePos = startPosInfo.GetPosition();
 	
 	receivedHit = NULL;
 
@@ -180,9 +179,9 @@ void Gorilla::ActionEnded()
 		case WAKEUP:
 		{
 			action = ALIGN;
-			alignFrames = 0;
+			data.alignFrames = 0;
 			frame = 0;
-			physStepIndex = 0;
+			data.physStepIndex = 0;
 			if (playerPos.x < GetPosition().x)
 			{
 				facingRight = false;
@@ -192,15 +191,15 @@ void Gorilla::ActionEnded()
 				facingRight = true;
 			}
 
-			latchedOn = true;
-			offsetPlayer = basePos - playerPos;
-			origOffset = offsetPlayer;
-			V2d offsetDir = normalize(offsetPlayer);
+			data.latchedOn = true;
+			data.offsetPlayer = data.basePos - playerPos;
+			data.origOffset = data.offsetPlayer;
+			V2d offsetDir = normalize(data.offsetPlayer);
 
-			basePos = playerPos;
+			data.basePos = playerPos;
 
-			double currRadius = length(offsetPlayer);
-			alignMoveFrames = 60;// *5 * NUM_STEPS;
+			double currRadius = length(data.offsetPlayer);
+			data.alignMoveFrames = 60;// *5 * NUM_STEPS;
 			break;
 		}
 		case ALIGN:
@@ -216,20 +215,20 @@ void Gorilla::ActionEnded()
 			break;
 		case RECOVER:
 			{
-				latchedOn = true;
-				offsetPlayer = basePos - playerPos;
-				origOffset = offsetPlayer;
-				V2d offsetDir = normalize( offsetPlayer );
+				data.latchedOn = true;
+				data.offsetPlayer = data.basePos - playerPos;
+				data.origOffset = data.offsetPlayer;
+				V2d offsetDir = normalize(data.offsetPlayer );
 
-				basePos = playerPos;
-				currWallHitboxes = NULL;
+				data.basePos = playerPos;
+				data.currWallHitboxes = NULL;
 
 				action = ALIGN;
-				double currRadius = length( offsetPlayer );
-				alignMoveFrames = 60;
+				double currRadius = length(data.offsetPlayer );
+				data.alignMoveFrames = 60;
 				frame = 0;
-				physStepIndex = 0;
-				alignFrames = 0;
+				data.physStepIndex = 0;
+				data.alignFrames = 0;
 
 				if( playerPos.x < GetPosition().x )
 				{
@@ -269,14 +268,14 @@ void Gorilla::ProcessState()
 		break;
 	case ALIGN:
 		{
-			if( alignFrames >= alignMoveFrames )
+			if(data.alignFrames >= data.alignMoveFrames )
 			{
 				action = FOLLOW;
 				frame = 0;
 			}
 			else
 			{
-				++alignFrames;
+				++data.alignFrames;
 			}
 		}
 		break;
@@ -292,9 +291,9 @@ void Gorilla::ProcessState()
 		{
 			V2d test = myPos - playerPos;
 	
-			V2d playerDir = -normalize( origOffset );
+			V2d playerDir = -normalize(data.origOffset );
 
-			CollisionBox &wallHitbox = wallHitBody.GetCollisionBoxes(0).front();
+			CollisionBox &wallHitbox = data.wallHitBody.GetCollisionBoxes(0).front();
 
 			wallHitbox.globalPosition = myPos + playerDir * wallAmountCloser;
 			wallHitbox.globalAngle = atan2( playerDir.x, -playerDir.y );
@@ -303,10 +302,10 @@ void Gorilla::ProcessState()
 				wallHitbox.globalPosition.y );
 			wallSprite.setRotation( wallHitbox.globalAngle / PI * 180.0 );
 
-			currWallHitboxes = &wallHitBody;
+			data.currWallHitboxes = &data.wallHitBody;
 
-			latchedOn = false;
-			basePos = myPos;
+			data.latchedOn = false;
+			data.basePos = myPos;
 		}
 		break;
 	case RECOVER:
@@ -318,9 +317,9 @@ void Gorilla::ProcessState()
 void Gorilla::UpdateEnemyPhysics()
 {
 	V2d playerPos = sess->GetPlayerPos(0);
-	if( latchedOn )
+	if(data.latchedOn )
 	{
-		basePos = playerPos;
+		data.basePos = playerPos;
 	}
 	else
 	{
@@ -328,7 +327,7 @@ void Gorilla::UpdateEnemyPhysics()
 		
 	}
 
-	V2d offsetDir = normalize( offsetPlayer );
+	V2d offsetDir = normalize(data.offsetPlayer );
 
 
 
@@ -356,16 +355,16 @@ void Gorilla::UpdateEnemyPhysics()
 		int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;*/
 
 			CubicBezier b(0, 0, 1, 1);
-			double f = b.GetValue(physStepIndex / ((double)alignMoveFrames * NUM_MAX_STEPS * 5));
+			double f = b.GetValue(data.physStepIndex / ((double)data.alignMoveFrames * NUM_MAX_STEPS * 5));
 
 			V2d idealOffset = offsetDir * idealRadius;
 			
 			
-			offsetPlayer = origOffset * (1.0 - f) + idealOffset * f;
+			data.offsetPlayer = data.origOffset * (1.0 - f) + idealOffset * f;
 			//alignFrames += 5 / slowMultiple;
 			int steps = (5 / slowMultiple) * NUM_MAX_STEPS / numPhysSteps;
 
-			physStepIndex += steps;
+			data.physStepIndex += steps;
 		}
 		//frame = 0;
 		break;
@@ -385,18 +384,18 @@ void Gorilla::UpdateEnemyPhysics()
 		break;
 	}
 
-	if( latchedOn )
+	if(data.latchedOn )
 	{
-		currPosInfo.position = basePos + offsetPlayer;
+		currPosInfo.position = data.basePos + data.offsetPlayer;
 	}
 }
 
 
 void Gorilla::UpdateSprite()
 {
-	if (latchedOn)
+	if (data.latchedOn)
 	{
-		currPosInfo.position = basePos + offsetPlayer;
+		currPosInfo.position = data.basePos + data.offsetPlayer;
 	}
 
 	V2d diff = sess->GetPlayerPos(0) - GetPosition();
@@ -445,12 +444,31 @@ void Gorilla::DebugDraw(sf::RenderTarget *target)
 {
 	Enemy::DebugDraw(target);
 
-	if (currWallHitboxes != NULL)
-		currWallHitboxes->DebugDraw(0, target);
+	if (data.currWallHitboxes != NULL)
+		data.currWallHitboxes->DebugDraw(0, target);
 }
 
 
 bool Gorilla::CheckHitPlayer(int index)
 {
-	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(currWallHitboxes, index);
+	return BasicCheckHitPlayer(currHitboxes, index) || BasicCheckHitPlayer(data.currWallHitboxes, index);
+}
+
+int Gorilla::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Gorilla::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Gorilla::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

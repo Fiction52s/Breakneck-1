@@ -16,21 +16,34 @@ struct Gorilla : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		double latchStartAngle;
+		V2d basePos;
+		int totalFrame;
+		CollisionBody *currWallHitboxes;
+		V2d offsetPlayer;
+		V2d origOffset;
+		bool latchedOn;
+		int alignMoveFrames;
+		int alignFrames;
+		CollisionBody wallHitBody;
+		int physStepIndex;
+	};
+	MyData data;
 	
-	double latchStartAngle;
+	
 	bool origFacingRight;
 
-	V2d basePos;
+	
 
-	int alignMoveFrames;
+	
 	int createWallFrame;
-	int alignFrames;
+	
 	int followFrames;
 
-	int physStepIndex;
+	
 
-	CollisionBody wallHitBody;
-	CollisionBody *currWallHitboxes;
 	HitboxInfo *wallHitboxInfo;
 
 	double wallWidth;
@@ -39,7 +52,7 @@ struct Gorilla : Enemy
 	double speed;
 
 	int approachFrames;
-	int totalFrame;
+	
 
 	Tileset *ts;
 
@@ -56,13 +69,7 @@ struct Gorilla : Enemy
 	int hitstunFrames;
 	int animationFactor;
 
-	bool facingRight;
-
 	CubicBezier approachAccelBez;
-
-	V2d offsetPlayer;
-	V2d origOffset;
-	bool latchedOn;
 
 	Gorilla(ActorParams *ap);
 	~Gorilla();
@@ -80,6 +87,10 @@ struct Gorilla : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	bool CheckHitPlayer(int index = 0);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 	
 };

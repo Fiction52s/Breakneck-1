@@ -16,11 +16,19 @@ struct RemoteComboer : Enemy
 		S_Count
 	};
 
-	V2d velocity;
-	int shootFrames;
+	struct MyData : StoredEnemyData
+	{
+		int currHits;
+		int shootFrames;
+		V2d velocity;
+	};
+	MyData data;
+
+	
+	
 	int shootLimit;
 	int hitLimit;
-	int currHits;
+	
 
 	double acceleration;
 	double speed;
@@ -43,6 +51,10 @@ struct RemoteComboer : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

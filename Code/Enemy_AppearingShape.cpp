@@ -305,3 +305,22 @@ void AppearingShape::SetColor(Color c)
 		verts[i].color = c;
 	}
 }
+
+int AppearingShape::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void AppearingShape::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void AppearingShape::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

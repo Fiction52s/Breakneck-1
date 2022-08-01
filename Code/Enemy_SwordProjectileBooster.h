@@ -13,6 +13,19 @@ struct SwordProjectileBooster : Enemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
+	bool enemyProjectile;
+
+	Tileset *ts;
+	Tileset *ts_refresh;
+
+	int strength;
+
 	SwordProjectileBooster(ActorParams *ap);//sf::Vector2i &pos, int level);
 
 	void ProcessState();
@@ -25,12 +38,11 @@ struct SwordProjectileBooster : Enemy
 	bool IsBoostable();
 	void AddToWorldTrees();
 
-	bool enemyProjectile;
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
-	Tileset *ts;
-	Tileset *ts_refresh;
-
-	int strength;
+	
 };
 
 #endif

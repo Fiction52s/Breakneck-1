@@ -82,11 +82,11 @@ TetheredRusher::TetheredRusher(ActorParams *ap)
 		ts->SetQuadSubRect(segmentQuads + i * 4, 0);
 	}
 
-	attackMovement= ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
+	attackMovement= data.ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RUSH] * animFactor[RUSH]);
 
 	//needs 1 less frame of movement than the length of the animation for some reason. Otherwise it slowly moves
 	//off of its base. works with this fix though.
-	retreatMovement = ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER] - 1);
+	retreatMovement = data.ms.AddLineMovement(V2d(), V2d(), CubicBezier(), actionLength[RECOVER] * animFactor[RECOVER] - 1);
 	
 
 	ResetEnemy();
@@ -228,7 +228,7 @@ void TetheredRusher::ProcessState()
 			{
 				facingRight = false;
 			}
-			ms.Reset();
+			data.ms.Reset();
 		}
 		break;
 	case RUSH:
@@ -240,7 +240,7 @@ void TetheredRusher::ProcessState()
 	switch (action)
 	{
 	case NEUTRAL:
-		velocity = V2d(0, 0);
+		data.velocity = V2d(0, 0);
 		break;
 	case RUSH:
 		break;
@@ -253,8 +253,8 @@ void TetheredRusher::UpdateEnemyPhysics()
 {
 	if (action == RUSH || action == RECOVER)
 	{
-		ms.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
-		currPosInfo.position = ms.GetPos();
+		data.ms.Update(slowMultiple, NUM_MAX_STEPS / numPhysSteps);
+		currPosInfo.position = data.ms.GetPos();
 	}
 }
 
@@ -276,27 +276,27 @@ void TetheredRusher::UpdateSprite()
 
 	if (action == RUSH || action == RECOVER)
 	{
-		if (ms.IsMovementActive())
+		if (data.ms.IsMovementActive())
 		{
 			int t = 0;
 			for (int i = 0; i < NUM_SEGMENTS; ++i)
 			{
-				int currTime = ms.data.currTime - ms.data.currMovementStartTime;
+				int currTime = data.ms.data.currTime - data.ms.data.currMovementStartTime;
 
-				if (ms.data.currMovement == attackMovement)
+				if (data.ms.data.currMovement == attackMovement)
 				{
 					t = currTime * (i / (double)(NUM_SEGMENTS));
 				}
-				else if ( ms.data.currMovement == retreatMovement )
+				else if (data.ms.data.currMovement == retreatMovement )
 				{
-					t = ms.data.currMovement->duration - 
-						(ms.data.currMovement->duration - currTime) 
+					t = data.ms.data.currMovement->duration -
+						(data.ms.data.currMovement->duration - currTime)
 						* (i / (double)(NUM_SEGMENTS));
 				}
 
 				SetRectCenter(segmentQuads + i * 4,
 					ts->tileWidth, ts->tileHeight,
-					Vector2f(ms.data.currMovement->GetPosition(t)));
+					Vector2f(data.ms.data.currMovement->GetPosition(t)));
 			}
 		}
 		else
@@ -364,4 +364,24 @@ void TetheredRusher::EnemyDraw(sf::RenderTarget *target)
 	DrawSprite(target, sprite);
 
 	
+}
+
+
+int TetheredRusher::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void TetheredRusher::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void TetheredRusher::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
 }

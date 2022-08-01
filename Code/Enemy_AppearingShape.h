@@ -39,6 +39,13 @@ struct AppearingShape : Enemy
 		A_Count
 	};
 
+
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts;
 	
 	int shapeType;
@@ -65,6 +72,10 @@ struct AppearingShape : Enemy
 	void UpdateSprite();
 	void SetColor(sf::Color c);
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

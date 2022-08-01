@@ -179,3 +179,22 @@ void Specter::EnemyDraw( sf::RenderTarget *target )
 }
 
 bool Specter::CanTouchSpecter() { return false; }
+
+int Specter::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Specter::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Specter::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

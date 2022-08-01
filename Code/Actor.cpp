@@ -3821,6 +3821,12 @@ Actor::~Actor()
 		delete preSimulationState;
 	}
 
+	if (futurePositions != NULL)
+	{
+		delete[] futurePositions;
+		futurePositions = NULL;
+	}
+
 	for (int i = 0; i < NUM_SWORD_PROJECTILES; ++i)
 	{
 		delete swordProjectiles[i];
@@ -21666,7 +21672,7 @@ void Actor::UpdateInHitlag()
 
 	 if (futurePositions != NULL)
 	 {
-		 delete futurePositions;
+		 delete [] futurePositions;
 		 futurePositions = NULL;
 	 }
 

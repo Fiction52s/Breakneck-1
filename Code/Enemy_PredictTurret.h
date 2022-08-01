@@ -13,6 +13,12 @@ struct PredictTurret : Enemy, LauncherEnemy
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	Tileset *ts;
 	Tileset *ts_bulletExplode;
 
@@ -22,6 +28,8 @@ struct PredictTurret : Enemy, LauncherEnemy
 
 	int animationFactor;
 	double bulletSpeed;
+
+	int futureFrames;
 
 	PredictTurret(ActorParams *ap);
 	void EnemyDraw(sf::RenderTarget *target);
@@ -41,6 +49,12 @@ struct PredictTurret : Enemy, LauncherEnemy
 	void UpdateBullet(BasicBullet *b);
 	void ResetEnemy();
 	void FireResponse(BasicBullet *b);
+	int GetNumSimulationFramesRequired();
+	void UpdatePreFrameCalculations();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

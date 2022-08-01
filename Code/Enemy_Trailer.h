@@ -14,18 +14,25 @@ struct Trailer : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		MovementSequence trailSeq;
+		V2d velocity;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 
 	Tileset *ts;
-	V2d velocity;
+	
 	double maxSpeed;
 	double accel;
 	double pulseRadius;
 	CollisionBody pulseBody;
 	sf::CircleShape testCircle;
 
-	MovementSequence trailSeq;
+	
 	LineMovement *trailMove;
 
 	Trailer(ActorParams *ap);
@@ -42,6 +49,10 @@ struct Trailer : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

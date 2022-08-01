@@ -13,6 +13,12 @@ struct SwingLauncher : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	SoundInfo *launchSoundBuf;
 	Tileset *ts_idle;
 	Tileset *ts_recover;
@@ -28,27 +34,26 @@ struct SwingLauncher : Enemy
 
 	sf::Vertex debugLine[2];
 	sf::Text debugSpeed;
-
+	bool clockwiseLaunch;
 	V2d anchor;
-	bool CountsForEnemyGate() { return false; }
+
 	SwingLauncher(ActorParams *ap );
+	bool CountsForEnemyGate() { return false; }
 	void ProcessState();
 	void AddToWorldTrees();
 	void UpdateParamsSettings();
 	void UpdatePath();
 	void EnemyDraw(sf::RenderTarget *target);
-	
-
 	void UpdateSprite();
 	void DirectKill();
-
-	bool clockwiseLaunch;
-
 	void ResetEnemy();
 	void ActionEnded();
 	void Launch();
-	
 	void DebugDraw(sf::RenderTarget *target);
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 	
 };

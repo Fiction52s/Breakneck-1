@@ -235,3 +235,22 @@ void ExplodingBarrel::EnemyDraw(sf::RenderTarget *target)
 		target->draw(testCircle);
 	}
 }
+
+int ExplodingBarrel::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void ExplodingBarrel::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void ExplodingBarrel::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}

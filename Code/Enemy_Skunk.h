@@ -16,6 +16,12 @@ struct Skunk : Enemy, GroundMoverHandler
 		Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+		CollisionBody explosion;
+	};
+	MyData data;
+
 	Tileset *ts;
 	double gravity;
 	double maxGroundSpeed;
@@ -24,7 +30,7 @@ struct Skunk : Enemy, GroundMoverHandler
 	double runDecel;
 	double attentionRadius;
 	double ignoreRadius;
-	CollisionBody explosion;
+	
 	sf::CircleShape testCircle;
 	double explosionRadius;
 	HitboxInfo explosionHitboxInfo;
@@ -49,6 +55,9 @@ struct Skunk : Enemy, GroundMoverHandler
 	void ReachCliff();
 	void HitOtherAerial(Edge *e);
 	void Land();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

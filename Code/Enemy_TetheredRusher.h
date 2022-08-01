@@ -15,18 +15,26 @@ struct TetheredRusher : Enemy
 		A_Count
 	};
 
+
+	struct MyData : StoredEnemyData
+	{
+		MovementSequence ms;
+		V2d velocity;
+	};
+	MyData data;
+
 	double attentionRadius;
 	double ignoreRadius;
 	double chainRadius;
 
 	Tileset *ts;
-	V2d velocity;
+	
 	double maxSpeed;
 	double accel;
 	sf::CircleShape testCircle;
 	sf::CircleShape anchorCircle;
 
-	MovementSequence ms;
+	
 	LineMovement *attackMovement;
 	LineMovement *retreatMovement;
 	V2d anchorPos;
@@ -50,6 +58,10 @@ struct TetheredRusher : Enemy
 
 	void UpdateSprite();
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

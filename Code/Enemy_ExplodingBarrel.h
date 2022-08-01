@@ -16,11 +16,15 @@ struct ExplodingBarrel : Enemy
 		S_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	sf::CircleShape testCircle;
 	Tileset *ts;
 	CollisionBody explosion;
-
-	
 
 	ExplodingBarrel(ActorParams * ap);
 	~ExplodingBarrel();
@@ -35,6 +39,9 @@ struct ExplodingBarrel : Enemy
 	void UpdateSprite();
 	void ResetEnemy();
 	void HandleNoHealth();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 	
 };

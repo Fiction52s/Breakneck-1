@@ -34,6 +34,12 @@ struct Specter : Enemy
 		A_Count
 	};
 
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
+
 	SpecterArea myArea;
 
 	int radius;
@@ -56,6 +62,10 @@ struct Specter : Enemy
 	void UpdateSprite();
 
 	void ResetEnemy();
+
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 
 	
 };
