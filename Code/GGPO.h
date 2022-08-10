@@ -377,6 +377,8 @@ struct PState
 
 	//HitboxInfo currVSHitboxInfo;
 
+	bool hitGoal;
+
 	void Print();
 };
 

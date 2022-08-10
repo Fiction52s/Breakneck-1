@@ -9,9 +9,11 @@ const int GoalPulse::circlePoints = 32;
 
 GoalPulse::GoalPulse()
 	:circleVA( sf::Quads, circlePoints * 4 ), innerRadius( 100 ), 
-	outerRadius( 200 ), show( false ), frame( 0 ), pulseLength( 60 ),
+	outerRadius( 200 ), pulseLength( 60 ),
 	maxOuterRadius( 3000.f ), maxInnerRadius( 2800.f )
 {
+	data.show = false;
+	data.frame = 0;
 	minInnerRadius = innerRadius;
 	minOuterRadius = outerRadius;
 	//UpdatePoints();	
@@ -24,37 +26,37 @@ void GoalPulse::SetPosition(sf::Vector2f &pos)
 
 void GoalPulse::Reset()
 {
-	frame = 0;
-	show = false;
+	data.frame = 0;
+	data.show = false;
 }
 
 void GoalPulse::StartPulse()
 {
-	frame = 0;
-	show = true;
+	data.frame = 0;
+	data.show = true;
 }
 
 void GoalPulse::Update()
 {
-	if( show )
+	if(data.show )
 	{
-		if( frame == pulseLength + 1 )
+		if(data.frame == pulseLength + 1 )
 		{
-			frame = 0;
-			show = false;
+			data.frame = 0;
+			data.show = false;
 		}
 		else
 		{
 			CubicBezier innerBez( 0, 0, 1, 1 );
 			CubicBezier outerBez( 0, 0, 1, 1 );
 
-			double innerQ = innerBez.GetValue( frame / (double)pulseLength );
-			double outerQ = outerBez.GetValue( frame / (double)pulseLength );
+			double innerQ = innerBez.GetValue(data.frame / (double)pulseLength );
+			double outerQ = outerBez.GetValue(data.frame / (double)pulseLength );
 
 			innerRadius = minInnerRadius * (1.0 - innerQ) + maxInnerRadius * innerQ;
 			outerRadius = minOuterRadius * (1.0 - outerQ) + maxOuterRadius * outerQ;
 
-			++frame;
+			++data.frame;
 		}
 
 		UpdatePoints();
@@ -63,6 +65,10 @@ void GoalPulse::Update()
 
 void GoalPulse::UpdatePoints()
 {
+	if (!data.show)
+	{
+		return;
+	}
 	Transform tr;
 	Vector2f offsetInner( 0, -innerRadius );
 	Vector2f offsetOuter( 0, -outerRadius );
@@ -85,9 +91,26 @@ void GoalPulse::UpdatePoints()
 
 void GoalPulse::Draw( sf::RenderTarget *target )
 {
-	if( show )
+	if(data.show )
 	{
 		target->draw( circleVA );
 	}
 	
+}
+
+int GoalPulse::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void GoalPulse::StoreBytes(unsigned char *bytes)
+{
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void GoalPulse::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	bytes += sizeof(MyData);
 }

@@ -76,12 +76,12 @@ NetplayManager::NetplayManager()
 	loadThread = NULL;
 	game = NULL;
 
-	desyncDetected = false;
+	desyncDetected = true;//false;
 
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -427,9 +427,10 @@ void NetplayManager::Update()
 		{
 			LobbyParams lp;
 			lp.maxMembers = 2;
-			lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
+			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
+			lp.gameModeType = MatchParams::GAME_MODE_RACE;
 
-			int r = rand() % 2;
+			/*int r = rand() % 2;
 			if (r == 0)
 			{
 				lp.mapPath = "Resources/Maps/W2/afighting1.brknk";
@@ -437,7 +438,8 @@ void NetplayManager::Update()
 			else
 			{
 				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
-			}
+			}*/
+			lp.mapPath = "Resources/Maps/W2/afighting6.brknk";
 
 			lp.fileHash = md5file(lp.mapPath);
 			lp.creatorID = 0;
@@ -1119,9 +1121,9 @@ void NetplayManager::FindQuickplayMatch()
 	{
 		Abort();
 
-		matchParams.mapPath = "Resources/Maps/W2/afighting5.brknk";
+		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
+		matchParams.gameModeType = MatchParams::GAME_MODE_RACE;
 
 		LoadMap();
 		

@@ -114,7 +114,6 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 
 	const static int minSubstepToCheckHits;
 
-
 	bool facingRight;
 	PositionInfo currPosInfo;
 	int action;
@@ -191,6 +190,8 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	Enemy(EnemyType t, int w);
 	void OnCreate( ActorParams *ap,
 		int w );
+
+	void SetPlayerWorld(int p);
 
 	Tileset * GetTileset(const std::string &s,
 		int tileWidth,

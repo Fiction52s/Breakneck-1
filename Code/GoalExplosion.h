@@ -7,14 +7,14 @@ struct Session;
 
 struct GoalPulse
 {
-	GoalPulse();
-	sf::VertexArray circleVA;
-	void Draw( sf::RenderTarget *target );
-	void Reset();
-	void Update();
-	void UpdatePoints();
-	void SetPosition(sf::Vector2f &pos);
-	void StartPulse();
+	struct MyData
+	{
+		int frame;
+		bool show;
+	};
+
+	MyData data;
+
 	sf::Vector2f position;
 	float innerRadius;
 	float outerRadius;
@@ -25,8 +25,19 @@ struct GoalPulse
 	float minOuterRadius;
 	float maxInnerRadius;
 	float minInnerRadius;
-	int frame;
-	bool show;
+	
+	sf::VertexArray circleVA;
+
+	GoalPulse();
+	void Draw( sf::RenderTarget *target );
+	void Reset();
+	void Update();
+	void UpdatePoints();
+	void SetPosition(sf::Vector2f &pos);
+	void StartPulse();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif

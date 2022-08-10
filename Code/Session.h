@@ -457,6 +457,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void AddDesyncCheckInfo();
 	void UpdateJustGGPO();
 	void SimulateGGPOGameFrame();
+	void SimulateGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
 	void SetupNetplay();

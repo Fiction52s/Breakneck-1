@@ -122,6 +122,8 @@ struct RaceMode : GameMode
 	{
 		int done;
 		int test;
+		int endSeqState;
+		int endSeqFrame;
 		/*int p0Health;
 		int p1Health;
 		int p0Meter;
@@ -137,6 +139,40 @@ struct RaceMode : GameMode
 
 	RaceMode();
 	~RaceMode();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	HUD *CreateHUD();
+	void Setup();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
+
+struct ParallelRaceMode : GameMode
+{
+	struct MyData
+	{
+		int done;
+		int test;
+		int endSeqState;
+		int endSeqFrame;
+		/*int p0Health;
+		int p1Health;
+		int p0Meter;
+		int p1Meter;*/
+	};
+
+	MyData data;
+
+	FightEndSequence *endSeq;
+	GameSession *testGame;
+	//int maxHealth;
+	//int meterSection;
+	//int numMeterSections;
+
+	ParallelRaceMode();
+	~ParallelRaceMode();
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

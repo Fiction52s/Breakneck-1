@@ -16,17 +16,11 @@ struct Goal : Enemy
 		A_Count
 	};
 
-	Goal(ActorParams *ap);
-	~Goal();
-	void SetMapGoalPos();
-	bool CountsForEnemyGate() { return false; }
-	void DrawMinimap(sf::RenderTarget *target);
-	void EnemyDraw(sf::RenderTarget *target);
-	void UpdateSprite();
-	void ResetEnemy();
-	void HandleNoHealth();
-	void ProcessState();
-	void ConfirmKill();
+	struct MyData : StoredEnemyData
+	{
+
+	};
+	MyData data;
 
 	int explosionLength;
 	int explosionAnimFactor;
@@ -43,8 +37,22 @@ struct Goal : Enemy
 
 	int deathFrame;
 	int animationFactor;
-	bool dead;
-	sf::Vector2<double> gn;
+	V2d gn;
+
+	Goal(ActorParams *ap);
+	~Goal();
+	void SetMapGoalPos();
+	bool CountsForEnemyGate() { return false; }
+	void DrawMinimap(sf::RenderTarget *target);
+	void EnemyDraw(sf::RenderTarget *target);
+	void UpdateSprite();
+	void ResetEnemy();
+	void HandleNoHealth();
+	void ProcessState();
+	void ConfirmKill();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 

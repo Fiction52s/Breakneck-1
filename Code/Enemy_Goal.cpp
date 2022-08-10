@@ -7,6 +7,7 @@
 #include "Enemy_Goal.h"
 #include "MapHeader.h"
 #include "ActorParamsBase.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -177,7 +178,7 @@ void Goal::ProcessState()
 
 void Goal::HandleNoHealth()
 {
-	sess->PlayerHitGoal(0);
+	sess->PlayerHitGoal(receivedHitPlayer->actorIndex);
 	sess->KillAllEnemies();
 	frame = 0;
 	
@@ -276,4 +277,29 @@ void Goal::EnemyDraw(sf::RenderTarget *target )
 void Goal::DrawMinimap( sf::RenderTarget *target )
 {
 	target->draw( miniSprite );
+}
+
+int Goal::GetNumStoredBytes()
+{
+	return sizeof(MyData) + sess->goalPulse->GetNumStoredBytes();
+}
+
+void Goal::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+
+	sess->goalPulse->StoreBytes(bytes);
+	bytes += sess->goalPulse->GetNumStoredBytes();
+}
+
+void Goal::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+
+	sess->goalPulse->SetFromBytes(bytes);
+	bytes += sess->goalPulse->GetNumStoredBytes();
 }

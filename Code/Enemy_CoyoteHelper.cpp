@@ -408,7 +408,7 @@ bool CoyoteHelper::CheckHitPlayer(int index)
 
 	if (player == NULL)
 		return false;
-	
+
 
 	if (currHitboxes != NULL )//&& currHitboxes->hitboxInfo != NULL)
 	{

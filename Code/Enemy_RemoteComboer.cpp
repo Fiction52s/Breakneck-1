@@ -160,7 +160,7 @@ void RemoteComboer::ProcessHit()
 
 
 
-		if (velocity.x == 0 || velocity.y == 0)
+		if (data.velocity.x == 0 || data.velocity.y == 0)
 		{
 			ir = ts->GetSubRect(1);
 			sprite.setTextureRect(ts->GetSubRect(1));
@@ -171,13 +171,13 @@ void RemoteComboer::ProcessHit()
 
 		}
 
-		if (velocity.x < 0)
+		if (data.velocity.x < 0)
 		{
 			ir = sf::IntRect(ir.left + ir.width, ir.top, -ir.width, ir.height);
 		}
-		if (velocity.x == 0)
+		if (data.velocity.x == 0)
 		{
-			if (velocity.y > 0)
+			if (data.velocity.y > 0)
 			{
 				sprite.setRotation(90);
 			}
@@ -188,11 +188,11 @@ void RemoteComboer::ProcessHit()
 		}
 		else
 		{
-			if (velocity.x > 0 && velocity.y > 0)
+			if (data.velocity.x > 0 && data.velocity.y > 0)
 			{
 				sprite.setRotation(90);
 			}
-			else if (velocity.x < 0 && velocity.y > 0)
+			else if (data.velocity.x < 0 && data.velocity.y > 0)
 			{
 				sprite.setRotation(-90);
 			}

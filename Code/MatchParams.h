@@ -15,6 +15,7 @@ struct MatchParams
 		GAME_MODE_REACHENEMYBASE,
 		GAME_MODE_FIGHT,
 		GAME_MODE_RACE,
+		GAME_MODE_PARALLEL_RACE,
 	};
 
 	boost::filesystem::path mapPath;

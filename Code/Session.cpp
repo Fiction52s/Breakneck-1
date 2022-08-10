@@ -3973,6 +3973,13 @@ void Session::SimulateGGPOGameFrame()
 	simulationMode = false;
 }
 
+void Session::SimulateGameFrame()
+{
+	//simulationMode = true;
+	RunGameModeUpdate();
+	//simulationMode = false;
+}
+
 void Session::CleanupGates()
 {
 	for (auto it = gates.begin(); it != gates.end(); ++it)

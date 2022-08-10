@@ -9,23 +9,23 @@
 using namespace std;
 using namespace sf;
 
-RaceMode::RaceMode()
+ParallelRaceMode::ParallelRaceMode()
 {
 	endSeq = new FightEndSequence;
 	endSeq->Init();
 }
 
-RaceMode::~RaceMode()
+ParallelRaceMode::~ParallelRaceMode()
 {
 	delete endSeq;
 }
 
-int RaceMode::GetNumStoredBytes()
+int ParallelRaceMode::GetNumStoredBytes()
 {
 	return sizeof(MyData);
 }
 
-void RaceMode::StoreBytes(unsigned char *bytes)
+void ParallelRaceMode::StoreBytes(unsigned char *bytes)
 {
 	data.done = (int)done;
 	data.endSeqState = endSeq->state;
@@ -35,7 +35,7 @@ void RaceMode::StoreBytes(unsigned char *bytes)
 	bytes += dataSize;
 }
 
-void RaceMode::SetFromBytes(unsigned char *bytes)
+void ParallelRaceMode::SetFromBytes(unsigned char *bytes)
 {
 	memcpy(&data, bytes, sizeof(MyData));
 
@@ -46,21 +46,21 @@ void RaceMode::SetFromBytes(unsigned char *bytes)
 	bytes += sizeof(MyData);
 }
 
-void RaceMode::Setup()
+void ParallelRaceMode::Setup()
 {
 }
 
-void RaceMode::StartGame()
+void ParallelRaceMode::StartGame()
 {
 }
 
-HUD *RaceMode::CreateHUD()
+HUD *ParallelRaceMode::CreateHUD()
 {
 	return NULL;
 	//return new FightHUD;
 }
 
-bool RaceMode::CheckVictoryConditions()
+bool ParallelRaceMode::CheckVictoryConditions()
 {
 	if (done)
 	{
@@ -80,16 +80,16 @@ bool RaceMode::CheckVictoryConditions()
 	/*bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
 	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
 	if (p0TouchedKillGrass || p1TouchedKillGrass
-		|| data.p0Health == 0 || data.p1Health == 0)
+	|| data.p0Health == 0 || data.p1Health == 0)
 	{
-		return true;
+	return true;
 	}
 	return false;*/
 
 	return false;
 }
 
-void RaceMode::EndGame()
+void ParallelRaceMode::EndGame()
 {
 	cout << "game over" << endl;
 	endSeq->Reset();

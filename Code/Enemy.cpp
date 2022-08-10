@@ -916,7 +916,7 @@ bool Enemy::ReadBool(std::ifstream &is,
 void Enemy::PlayKeyDeathSound()
 {
 	if (sess->currentZone != NULL
-		&& sess->currentZone->HasKeyGateOfNumber(sess->GetPlayer(0)->numKeysHeld))
+		&& sess->currentZone->HasKeyGateOfNumber(receivedHitPlayer->numKeysHeld))
 	{
 		sess->ActivateSound(keyUnlockDeathSound);
 	}
@@ -1398,16 +1398,29 @@ void Enemy::UpdatePrePhysics()
 	}
 
 
-	Actor *player = sess->GetPlayer(0);
-	bool isFar = player->EnemyIsFar(GetPosition());
-	//isFar = false;
-	if (isFar)
+	bool isCloseEnoughForAddedPrecision = false;
+
+	Actor *player = NULL;
+	for (int i = 0; i < 4; ++i)
 	{
-		numPhysSteps = NUM_STEPS;
+		player = sess->GetPlayer(i);
+		if (player != NULL)
+		{
+			if (!player->EnemyIsFar(GetPosition()))
+			{
+				isCloseEnoughForAddedPrecision = true;
+				break;
+			}
+		}
+	}
+
+	if (isCloseEnoughForAddedPrecision)
+	{
+		numPhysSteps = NUM_MAX_STEPS;
 	}
 	else
 	{
-		numPhysSteps = NUM_MAX_STEPS;
+		numPhysSteps = NUM_STEPS;
 		//player->highAccuracyHitboxes = true;
 	}
 
@@ -1480,7 +1493,14 @@ void Enemy::UpdatePostPhysics()
 	//	//return;
 	//}
 
-	SlowCheck(0); //moved here from physics for speed?
+	for (int i = 0; i < 4; ++i)
+	{
+		if (sess->GetPlayer(i) != NULL)
+		{
+			SlowCheck(i);
+		}
+	}
+	 //moved here from physics for speed?
 	
 	if (currShield != NULL)
 	{
@@ -1682,6 +1702,7 @@ void Enemy::ConfirmKill()
 
 	HitboxInfo::HitboxType hType;
 	
+	
 	if (receivedHit != NULL)
 	{
 		hType = receivedHit->hType;
@@ -1725,12 +1746,12 @@ void Enemy::ConfirmKill()
 	if (hasMonitor && !suppressMonitor)
 	{
 		sess->ActivateAbsorbParticles( AbsorbParticles::AbsorbType::DARK,
-			sess->GetPlayer(0), GetNumDarkAbsorbParticles(), GetPosition());
+			receivedHitPlayer, GetNumDarkAbsorbParticles(), GetPosition());
 	}
 	else
 	{
 		sess->ActivateAbsorbParticles(AbsorbParticles::AbsorbType::ENERGY,
-			sess->GetPlayer(0), GetNumEnergyAbsorbParticles(), GetPosition());
+			receivedHitPlayer, GetNumEnergyAbsorbParticles(), GetPosition());
 	}
 
 	dead = true;

@@ -235,6 +235,12 @@ void GameSession::UpdateCamera()
 		//cam.playerIndex = 0;
 		break;
 	}
+	case MatchParams::GAME_MODE_RACE:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		break;
+	}
 	}
 	
 
@@ -1494,7 +1500,7 @@ bool GameSession::Load()
 	//testEmit = new LeafEmitter;// (4, 1000);// PI, PI / 6, 0, 0, 1000, 1000);
 	//testEmit->SetTileset(GetTileset("Env/leaves_128x128.png", 128, 128));
 	//testEmit->CreateParticles();
-	
+
 	//testEmit->SetRatePerSecond(120);
 
 	//testEmit->posSpawner = new BoxPosSpawner(400, 400);
@@ -1513,7 +1519,7 @@ bool GameSession::Load()
 
 	replayText.setFont(mainMenu->arial);
 	replayText.setCharacterSize(48);
-	replayText.setFillColor(Color( 255, 0, 0, 150 ));
+	replayText.setFillColor(Color(255, 0, 0, 150));
 	replayText.setOutlineColor(Color::Black);
 	replayText.setOutlineThickness(3);
 	replayText.setString("REPLAY");
@@ -1530,13 +1536,13 @@ bool GameSession::Load()
 	SetupSoundLists();
 
 	SetupShardsCapturedField();
-	
+
 	/*SetupShardMenu();
 	SetupLogMenu();
 
 	SetupPauseMenu();*/
 
-	if( progressDisplay != NULL )
+	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("started loading!", 0);
 
 	if (!ShouldContinueLoading())
@@ -1547,12 +1553,12 @@ bool GameSession::Load()
 	}
 
 	//return true;
-	
+
 	//inputVis = new InputVisualizer;
 
 	SetupPokeTriangleScreenGroup();
 
-	
+
 
 	const ConfigData &cd = mainMenu->config->GetData();
 	soundNodeList->SetSoundVolume(cd.soundVolume);
@@ -1574,44 +1580,45 @@ bool GameSession::Load()
 	//cout << "weird timing 1" << endl;
 
 	AllocateEffects();
-	
+
 	if (!ShouldContinueLoading())
 	{
 		cout << "cleanup A" << endl;
 		Cleanup();
-		
+
 		return false;
 	}
 
 	//cout << "weird timing 2" << endl;
 
 	//blah 2
-	
-	gameSoundInfos[S_KEY_COMPLETE_W1] = GetSound( "key_complete_w1.ogg" );
-	gameSoundInfos[S_KEY_COMPLETE_W2] = GetSound( "key_complete_w2.ogg" );
-	gameSoundInfos[S_KEY_COMPLETE_W3] = GetSound( "key_complete_w2.ogg" );
-	gameSoundInfos[S_KEY_COMPLETE_W4] = GetSound( "key_complete_w2.ogg" );
-	gameSoundInfos[S_KEY_COMPLETE_W5] = GetSound( "key_complete_w2.ogg" );
-	gameSoundInfos[S_KEY_COMPLETE_W6] = GetSound( "key_complete_w6.ogg" );
-	gameSoundInfos[S_KEY_ENTER_0] = GetSound( "key_enter_1.ogg" );
-	gameSoundInfos[S_KEY_ENTER_1] = GetSound( "key_enter_1.ogg" );
-	gameSoundInfos[S_KEY_ENTER_2] = GetSound( "key_enter_2.ogg" );
-	gameSoundInfos[S_KEY_ENTER_3] = GetSound( "key_enter_3.ogg" );
-	gameSoundInfos[S_KEY_ENTER_4] = GetSound( "key_enter_4.ogg" );
-	gameSoundInfos[S_KEY_ENTER_5] = GetSound( "key_enter_5.ogg" );
-	gameSoundInfos[S_KEY_ENTER_6] = GetSound( "key_enter_6.ogg" );
+
+	gameSoundInfos[S_KEY_COMPLETE_W1] = GetSound("key_complete_w1.ogg");
+	gameSoundInfos[S_KEY_COMPLETE_W2] = GetSound("key_complete_w2.ogg");
+	gameSoundInfos[S_KEY_COMPLETE_W3] = GetSound("key_complete_w2.ogg");
+	gameSoundInfos[S_KEY_COMPLETE_W4] = GetSound("key_complete_w2.ogg");
+	gameSoundInfos[S_KEY_COMPLETE_W5] = GetSound("key_complete_w2.ogg");
+	gameSoundInfos[S_KEY_COMPLETE_W6] = GetSound("key_complete_w6.ogg");
+	gameSoundInfos[S_KEY_ENTER_0] = GetSound("key_enter_1.ogg");
+	gameSoundInfos[S_KEY_ENTER_1] = GetSound("key_enter_1.ogg");
+	gameSoundInfos[S_KEY_ENTER_2] = GetSound("key_enter_2.ogg");
+	gameSoundInfos[S_KEY_ENTER_3] = GetSound("key_enter_3.ogg");
+	gameSoundInfos[S_KEY_ENTER_4] = GetSound("key_enter_4.ogg");
+	gameSoundInfos[S_KEY_ENTER_5] = GetSound("key_enter_5.ogg");
+	gameSoundInfos[S_KEY_ENTER_6] = GetSound("key_enter_6.ogg");
 
 	//blah 3
 
 	cutPlayerInput = false;
 	activeEnvPlants = NULL;
-	totalGameFrames = 0;	
+	totalGameFrames = 0;
 	totalFramesBeforeGoal = -1;
 	originalZone = NULL;
-	
+
 	unlockedGateList = NULL;
 	activatedZoneList = NULL;
 
+	debugScreenRecorder = NULL; //debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
 
 	activeSequence = NULL;
 
@@ -1619,7 +1626,7 @@ bool GameSession::Load()
 
 	//repGhost = new ReplayGhost( player );
 
-	
+
 
 
 	//cout << "weird timing 3" << endl;
@@ -1627,7 +1634,7 @@ bool GameSession::Load()
 	{
 		cout << "cleanup B" << endl;
 		Cleanup();
-		
+
 		return false;
 	}
 	//cout << "weird timing 4" << endl;
@@ -1641,9 +1648,9 @@ bool GameSession::Load()
 		if (players[0] == NULL)
 			players[0] = new Actor(this, NULL, 0);
 	}
-	
+
 	cout << "about to open file" << endl;
-	
+
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("opening map file!", 1);
 
@@ -1659,19 +1666,20 @@ bool GameSession::Load()
 
 	ReadFile();
 
-	
 
 
-	
+
+
 	SetupAbsorbParticles();
 
 	SetupGameMode();
 	gameMode->Setup();
 
-	if (gameModeType == MatchParams::GAME_MODE_FIGHT)
+	if (gameModeType == MatchParams::GAME_MODE_FIGHT
+		|| gameModeType == MatchParams::GAME_MODE_RACE)
 	{
 		matchParams.numPlayers = 2;
-		cout << "setting numplayers to 2 for fight mode. testing only" << endl;
+		cout << "setting numplayers to 2 for testing only" << endl;
 	}
 
 	SetupPlayers();
@@ -1710,13 +1718,18 @@ bool GameSession::Load()
 	bool blackBorder[2];
 	bool topBorderOn = false;
 	SetupGlobalBorderQuads(blackBorder, topBorderOn);
-	hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+	if (hud != NULL && hud->mini != NULL)
+	{
+		hud->mini->SetupBorderQuads(blackBorder, topBorderOn, mapHeader);
+		kinMapSpawnIcon.setTexture(*hud->mini->ts_miniIcons->texture);
+		kinMapSpawnIcon.setTextureRect(hud->mini->ts_miniIcons->GetSubRect(1));
+		kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
+			kinMapSpawnIcon.getLocalBounds().height / 2);
+	}
+	
 
 
-	kinMapSpawnIcon.setTexture(*hud->mini->ts_miniIcons->texture);
-	kinMapSpawnIcon.setTextureRect(hud->mini->ts_miniIcons->GetSubRect(1));
-	kinMapSpawnIcon.setOrigin(kinMapSpawnIcon.getLocalBounds().width / 2,
-		kinMapSpawnIcon.getLocalBounds().height / 2);
+	
 
 
 	if (topBorderOn)
@@ -2143,92 +2156,37 @@ void GameSession::SetupBestTimeGhost()
 
 int GameSession::Run()
 {
-	if (matchParams.netplayManager != NULL)
-	{
-		//cout << "initializing ggpo" << endl;
-		//InitGGPO();
-	}
-
-	
-
+	oneFrameMode = false;
+	skipped = false;
+	quit = false;
+	returnVal = GR_EXITLEVEL;
 	firstUpdateHasHappened = false;
-	
-
-	/*if (matchParams.netplayManager != NULL)
-	{
-		if (!matchParams.netplayManager->IsConnected() )
-		{
-			assert(false && "game run connection manager failure");
-		}
-		
-	}*/
 
 	oldShaderZoom = -1;
 	goalDestroyed = false;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
-
-	ClearEmitters();
+	goalDestroyed = false;
+	
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
 
 	mainMenu->SetMouseGrabbed(true);
 	mainMenu->SetMouseVisible(false);
 
-	currStorySequence = NULL;
-
 	View oldPreTexView = preScreenTex->getView();
 	View oldWindowView = window->getView();
 
 	preScreenTex->setView(view);
-	
+
+
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
-
-	sf::CircleShape circle(30);
-	circle.setFillColor(Color::Blue);
-
-	currentTime = 0;
-	accumulator = TIMESTEP + .1;
-
-	Vector2<double> otherPlayerPos;
-	double zoomMultiple = 1;
-
-	Color borderColor = sf::Color::Green;
-	int max = 1000000;
-	sf::Vertex border[] =
-	{
-		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor),
-		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
-		sf::Vertex(sf::Vector2<float>(-max, max), borderColor),
-		sf::Vertex(sf::Vector2<float>(max, max), borderColor),
-		sf::Vertex(sf::Vector2<float>(max, max), borderColor),
-		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
-		sf::Vertex(sf::Vector2<float>(max, -max), borderColor),
-		sf::Vertex(sf::Vector2<float>(-max, -max), borderColor)
-	};
-
 	
-	skipped = false;
-	oneFrameMode = false;
-	quit = false;
-
-	returnVal = GR_EXITLEVEL;
-
-	goalDestroyed = false;
-
-	debugScreenRecorder = NULL;
-
-	//debugScreenRecorder = new ScreenRecorder("BACKWARDS_DASH_JUMP");
-
 	View v;
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
-	
-	frameRateDisplay.Reset();
-
-	int flowSize = 64;
 
 	if (raceFight != NULL)
 	{
@@ -2257,14 +2215,8 @@ int GameSession::Run()
 	{
 		repGhost->OpenGhost("testghost.bghst");
 	}*/
-
-	
-
-	
-		
-
 	testBuf.byteIndex = 0;
-
+	
 	//boost::thread *threa = NULL;
 	//ofstream of;
 	//if (recPlayer != NULL)//&& !repPlayer->init )
@@ -2272,7 +2224,7 @@ int GameSession::Run()
 	//	of.open("tempreplay.brep", ios::binary | ios::out);
 	//	threa = new boost::thread(&(Buf::ThreadedBufferWrite), &testBuf, &of );
 	//}
-
+	
 	
 	SetOriginalMusic();
 
@@ -2295,39 +2247,6 @@ int GameSession::Run()
 		SetActiveSequence(shipEnterScene);
 	}
 
-	/*for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		if (GetPlayer(i) != NULL)
-		{
-			SetPlayerOptionField(i);
-		}
-	}*/
-
-	if (parentGame != NULL)
-	{
-		for (int i = 0; i < MAX_PLAYERS; ++i)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				if (p->ground != NULL)
-				{
-					p->SetAirPos(V2d(playerOrigPos[i]), p->facingRight);
-
-					//doesnt account for bouncing or grinding
-				}
-				else
-				{
-					p->position = V2d(playerOrigPos[i]);
-				}
-
-				
-				//p->SetAirPos(V2d(playerOrigPos[i]), p->facingRight);
-				//p->Respawn(); //need a special bonus respawn later
-			}
-		}
-	}
-
 	if (saveFile == NULL)
 	{
 		for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -2339,34 +2258,12 @@ int GameSession::Run()
 		}
 	}
 
-	if (repPlayer != NULL)
-	{
-		repPlayer->Reset();
-	}
-	
-	gameMode->StartGame();
-	currSuperPlayer = NULL;
-	gameClock.restart();
-
-	//testing
-	/*cam.Set(Vector2f(GetPlayerPos()), 1.0, 0);
-	cam.EaseOutOfManual(60);*/
-
-	if (recPlayer != NULL)
-		recPlayer->StartRecording();
-
-	/*if (parentGame != NULL && parentGame->bonusHandler != NULL)
-	{
-		parentGame->bonusHandler->InitBonus();
-	}*/
-
 	RestartLevel();
 
 	if (netplayManager != NULL) //testing!
 	{
 		fader->Fade(true, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 	}
-	
 
 	if (parentGame != NULL && parentGame->bonusHandler != NULL)
 	{
@@ -3364,7 +3261,6 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
-	
 	bestTimeGhostOn = false;
 	bestReplayOn = false;
 
@@ -3376,6 +3272,7 @@ void GameSession::Init()
 	activateBonus = false;
 	bonusType = BONUSTYPE_NONE;
 	bonusGame = NULL;
+	raceTestGame = NULL;
 	bonusHandler = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;

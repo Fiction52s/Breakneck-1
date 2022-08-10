@@ -394,6 +394,8 @@ void Actor::PopulateState(PState *ps)
 
 	ps->springVel = springVel;
 	ps->glideTurnFactor = glideTurnFactor;
+
+	ps->hitGoal = hitGoal;
 	//ps->hasWallJumpRecharge = hasWallJumpRecharge;
 }
 
@@ -640,6 +642,8 @@ void Actor::PopulateFromState(PState *ps)
 
 	springVel = ps->springVel;
 	glideTurnFactor = ps->glideTurnFactor;
+
+	hitGoal = ps->hitGoal;
 }
 
 void Actor::PopulateExtraState( ExtraState *es )
@@ -15292,6 +15296,11 @@ void Actor::HitGoal()
 
 void Actor::ProcessHitGoal()
 {
+	if (sess->gameModeType != MatchParams::GAME_MODE_BASIC)
+	{
+		return;
+	}
+
 	if (hitGoal)// && action != GOALKILL && action != EXIT && action != GOALKILLWAIT && action != EXITWAIT)
 	{
 		

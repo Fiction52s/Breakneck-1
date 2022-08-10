@@ -222,3 +222,22 @@ void Trailer::EnemyDraw(sf::RenderTarget *target)
 		target->draw(testCircle);
 	}
 }
+
+int Trailer::GetNumStoredBytes()
+{
+	return sizeof(MyData);
+}
+
+void Trailer::StoreBytes(unsigned char *bytes)
+{
+	StoreBasicEnemyData(data);
+	memcpy(bytes, &data, sizeof(MyData));
+	bytes += sizeof(MyData);
+}
+
+void Trailer::SetFromBytes(unsigned char *bytes)
+{
+	memcpy(&data, bytes, sizeof(MyData));
+	SetBasicEnemyData(data);
+	bytes += sizeof(MyData);
+}
