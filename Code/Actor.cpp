@@ -4443,7 +4443,15 @@ void Actor::Respawn( bool setStartPos )
 	{
 		numFramesToLive = -1;
 	}
-	
+
+	prevInput.Clear();
+	currInput.Clear();
+	storedGroundSpeed = 0;
+	currAirdashBoostCounter = 0;
+	edgeQuantity = 0;
+	extraAirDashY = 0;
+	storedReverseSpeed = 0;
+	setHitstunFrames = 0;
 
 	numCalculatedFuturePositions = 0;
 

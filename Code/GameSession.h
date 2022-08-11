@@ -424,7 +424,7 @@ struct GameSession : RayCastHandler, Session
 	bool nextFrameRestart;
 	bool showTerrainDecor;
 	
-	bool isParallelSession;
+	
 	
 	int returnVal;
 
@@ -437,7 +437,6 @@ struct GameSession : RayCastHandler, Session
 		int p_bonusType = BONUSTYPE_DEFAULT);
 
 	GameSession *CreateParallelSession();
-	void GGPORunFrame();
 
 	void SetBonus(GameSession *bonus,
 		V2d &returnPos, 

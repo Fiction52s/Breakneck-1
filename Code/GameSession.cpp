@@ -504,6 +504,7 @@ GameSession *GameSession::CreateParallelSession()
 
 	GameSession *parallelGame = new GameSession(&mp);
 	parallelGame->isParallelSession = true;
+	
 
 	parallelGame->SetParentTilesetManager(this);
 	parallelGame->currSaveState = new SaveGameState;
@@ -802,6 +803,14 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}*/
 
+	if (isParallelSession)
+	{
+		assert(currSaveState != NULL);
+		delete currSaveState;
+
+		assert(currExtraState != NULL);
+		delete currExtraState;
+	}
 
 
 	for( int i = 0; i < allPolysVec.size(); ++i)
@@ -2355,15 +2364,15 @@ bool GameSession::RunMainLoopOnce()
 
 			if (!isParallelSession)
 			{
-				DrawGame(preScreenTex);
-				/*if (totalGameFrames % 60 < 30)
+				
+				if (totalGameFrames % 60 < 30)
 				{
-					
+					DrawGame(preScreenTex);
 				}
 				else
 				{
 					prm->testGame->DrawGame(preScreenTex);
-				}*/
+				}
 			}
 		}
 
@@ -3385,7 +3394,6 @@ int GameSession::Run()
 void GameSession::Init()
 {
 	continueLoading = true;
-	isParallelSession = false;
 	bestTimeGhostOn = false;
 	bestReplayOn = false;
 
@@ -3461,106 +3469,6 @@ void GameSession::Init()
 	postProcessTex2->setSmooth(false);
 	ReadDecorImagesFile();
 	testBuf.SetRecOver(false);
-}
-
-void GameSession::GGPORunFrame()
-{
-	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
-	{
-		Session::GGPORunFrame();
-		return;
-	}
-
-	if (isParallelSession)
-	{
-		cout << "update parallel session" << endl;
-		UpdateAllPlayersInput();
-		GGPORunGameModeUpdate();
-	}
-	else
-	{
-		//cout << "ggpo run frame " << endl;
-		int disconnect_flags;
-		int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
-
-		//UpdateControllers();
-
-		bool gccEnabled = mainMenu->gccDriverEnabled;
-
-		if (gccEnabled)
-			gcControllers = mainMenu->gccDriver->getState();
-
-
-		Actor *p = NULL;
-		for (int i = 0; i < 4; ++i)
-		{
-			GameController &con = GetController(i);
-			if (gccEnabled)
-				con.gcController = gcControllers[i];
-
-			con.UpdateState();
-
-			GetCurrInput(i) = con.GetState();
-			GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
-		}
-
-
-
-		assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
-		//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
-		int input = GetCurrInput(0).GetCompressedState();
-		//input = rand();
-		GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
-
-		//cout << "ggpo run frame: " << result << endl;
-		//cout << "local player handle: " << ngs->local_player_handle << "\n";
-
-		//static ControllerState lastCurr;
-
-
-		if (GGPO_SUCCEEDED(result))
-		{
-			frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
-			result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
-			if (GGPO_SUCCEEDED(result))
-			{
-				//GetPrevInput(1) = lastCurr;
-
-				for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
-				{
-					GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
-				}
-
-				cout << "ggpo frame" << endl;
-				//cout << GetCurrInput(0).A << endl;
-
-				/*ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-				assert(prm->testGame != NULL);
-
-				for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
-				{
-					prm->testGame->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
-				}*/
-
-				//lastCurr = GetCurrInput(1);
-				//cout << "actually update the game" << endl;
-				UpdateAllPlayersInput();
-
-				assert(gameState == GameState::RUN);
-
-				GGPORunGameModeUpdate();
-
-				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-				//prm->testGame->GGPORunFrame();
-
-				//frameCC++;
-				//accumulator -= TIMESTEP;
-
-			}
-
-		}
-	}
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)

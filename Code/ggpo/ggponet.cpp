@@ -130,6 +130,7 @@ GGPOErrorCode ggpo_disconnect_player(GGPOSession *ggpo,
 GGPOErrorCode
 ggpo_advance_frame(GGPOSession *ggpo)
 {
+	assert(ggpo != NULL);
 	if (!ggpo) {
 		return GGPO_ERRORCODE_INVALID_SESSION;
 	}

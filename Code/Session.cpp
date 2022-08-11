@@ -1553,6 +1553,7 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	isParallelSession = false;
 	randomState = 0;
 	ggpoReady = false;
 
@@ -2757,6 +2758,14 @@ void Session::UpdateAllPlayersInput()
 	for (int i = 0; i < MAX_PLAYERS; ++i)
 	{
 		UpdatePlayerInput(i);
+	}
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession )
+	{
+		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+		//prm->testGame->GetPlayer(0)->currInput = GetPlayer(0)->currInput;
+		//prm->testGame->GetPlayer(0)->prevInput = GetPlayer(0)->prevInput;
+		prm->testGame->UpdateAllPlayersInput();
 	}
 }
 
@@ -3968,8 +3977,17 @@ void Session::SetupGateMarkers()
 void Session::SimulateGGPOGameFrame()
 {
 	simulationMode = true;
+
 	GGPORunGameModeUpdate();
+
 	simulationMode = false;
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession )
+	{
+		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+		prm->testGame->SimulateGGPOGameFrame();
+	}
 }
 
 void Session::SimulateGameFrame()
@@ -7073,6 +7091,16 @@ void Session::InitGGPO()
 			ngs->playerInfo[i].connect_progress = 0;
 		}
 	}
+
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	{
+		if (!isParallelSession)
+		{
+			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+			prm->testGame->ggpo = ggpo;
+		}
+	}
 }
 
 void Session::UpdateJustGGPO()
@@ -7149,6 +7177,11 @@ bool Session::GGPORunGameModeUpdate()
 	//	cout << "different inputs" << endl;
 	//}
 
+	/*if (isParallelSession)
+	{
+		ggpo_advance_frame(ggpo);
+		return true;
+	}*/
 
 
 	switchGameState = false;
@@ -7336,24 +7369,14 @@ bool Session::GGPORunGameModeUpdate()
 		//return true;
 	}
 
-	ggpo_advance_frame(ggpo);
-
-	/*if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
+	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
 	{
 		ggpo_advance_frame(ggpo);
 	}
-	else
+	else if( isParallelSession )
 	{
-		if (IsSessTypeGame())
-		{
-			GameSession *game = (GameSession*)this;
-			if (game->isParallelSession)
-			{
-				cout << "Advance frame" << endl;
-				ggpo_advance_frame(ggpo);
-			}
-		}
-	}*/
+		ggpo_advance_frame(ggpo);
+	}
 
 	return true;
 }
@@ -7395,6 +7418,7 @@ bool Session::GGPORunGameModeUpdate()
 //}
 void Session::GGPORunFrame()
 {
+	assert(!isParallelSession);
 	//cout << "ggpo run frame " << endl;
 	int disconnect_flags;
 	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
@@ -7455,11 +7479,12 @@ void Session::GGPORunFrame()
 
 			GGPORunGameModeUpdate();
 			
-
-			
-			//frameCC++;
-			//accumulator -= TIMESTEP;
-			
+			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+			{
+				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+				
+				prm->testGame->GGPORunGameModeUpdate();
+			}
 		}
 		
 	}
@@ -7494,6 +7519,7 @@ int Session::GetNumStoredBytes()
 
 void Session::StoreBytes(unsigned char *bytes)
 {
+	
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[0]->PopulateExtraState(currExtraState);
 	players[1]->PopulateState(&currSaveState->states[1]);
@@ -7536,6 +7562,11 @@ void Session::StoreBytes(unsigned char *bytes)
 
 	absorbShardParticles->StoreBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
+
+	/*if (isParallelSession)
+	{
+		currSaveState->states[0].Print();
+	}*/
 }
 
 void Session::SetFromBytes(unsigned char *bytes)

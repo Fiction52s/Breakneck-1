@@ -206,6 +206,8 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
+	bool isParallelSession;
+
 	uint32 randomState;
 	int GetRand();
 	void SeedRand(uint32 r);
@@ -456,7 +458,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual ~Session();
 	void AddDesyncCheckInfo();
 	void UpdateJustGGPO();
-	void SimulateGGPOGameFrame();
+	virtual void SimulateGGPOGameFrame();
 	void SimulateGameFrame();
 	void CleanupGates();
 	void SetupGateMarkers();
