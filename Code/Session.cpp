@@ -1696,7 +1696,6 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 }
 
 
-
 Session::~Session()
 {
 	//new stuff
@@ -7339,7 +7338,22 @@ bool Session::GGPORunGameModeUpdate()
 
 	ggpo_advance_frame(ggpo);
 
-	
+	/*if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
+	{
+		ggpo_advance_frame(ggpo);
+	}
+	else
+	{
+		if (IsSessTypeGame())
+		{
+			GameSession *game = (GameSession*)this;
+			if (game->isParallelSession)
+			{
+				cout << "Advance frame" << endl;
+				ggpo_advance_frame(ggpo);
+			}
+		}
+	}*/
 
 	return true;
 }
@@ -7455,7 +7469,7 @@ void Session::GGPORunFrame()
 	//draw after then loop again
 }
 
-int Session::GetSaveDataSize()
+int Session::GetNumStoredBytes()
 {
 	int totalSize = sizeof(SaveGameState);
 
@@ -7478,11 +7492,8 @@ int Session::GetSaveDataSize()
 	return totalSize;
 }
 
-bool Session::SaveState(unsigned char **buffer,
-	int *len, int *checksum, int frame)
+void Session::StoreBytes(unsigned char *bytes)
 {
-	cout << "save state: " << totalGameFrames << endl;
-
 	players[0]->PopulateState(&currSaveState->states[0]);
 	players[0]->PopulateExtraState(currExtraState);
 	players[1]->PopulateState(&currSaveState->states[1]);
@@ -7498,59 +7509,37 @@ bool Session::SaveState(unsigned char **buffer,
 	currSaveState->randomState = randomState;
 	currSaveState->cam = cam;
 
-	
+	int saveSize = sizeof(SaveGameState);
 
-	*len = GetSaveDataSize();
-	*buffer = (unsigned char *)malloc(*len);
-	memset(*buffer, 0, *len);
+	memcpy(bytes, currSaveState, saveSize);
+	bytes += saveSize;
 
-	if (!*buffer) {
-		return false;
-	}
-	memcpy(*buffer, currSaveState, sizeof(SaveGameState));
-	unsigned char *tempBuf = *buffer;
-	tempBuf += sizeof(SaveGameState);
+	currExtraState->StoreBytes(bytes);
+	bytes += currExtraState->GetNumStoredBytes();
 
-	currExtraState->StoreBytes(tempBuf);
-	tempBuf += currExtraState->GetNumStoredBytes();
-
-	gameMode->StoreBytes(tempBuf);
-	tempBuf += gameMode->GetNumStoredBytes();
+	gameMode->StoreBytes(bytes);
+	bytes += gameMode->GetNumStoredBytes();
 
 	int totalEnemySize = 0;
 	for (auto it = fullEnemyList.begin(); it != fullEnemyList.end(); ++it)
 	{
-		(*it)->StoreBytes(tempBuf);
+		(*it)->StoreBytes(bytes);
 		totalEnemySize += (*it)->GetNumStoredBytes();
-		tempBuf += (*it)->GetNumStoredBytes();
+		bytes += (*it)->GetNumStoredBytes();
 	}
 
-	absorbParticles->StoreBytes(tempBuf);
-	tempBuf += absorbParticles->GetNumStoredBytes();
+	absorbParticles->StoreBytes(bytes);
+	bytes += absorbParticles->GetNumStoredBytes();
 
-	absorbDarkParticles->StoreBytes(tempBuf);
-	tempBuf += absorbDarkParticles->GetNumStoredBytes();
+	absorbDarkParticles->StoreBytes(bytes);
+	bytes += absorbDarkParticles->GetNumStoredBytes();
 
-	absorbShardParticles->StoreBytes(tempBuf);
-	tempBuf += absorbShardParticles->GetNumStoredBytes();
-
-	
-	
-
-	//currSaveState->Print();
-	//ReachEnemyBaseMode *rebm = (ReachEnemyBaseMode*)gameMode;
-	//*checksum = fletcher32_checksum((short *)*buffer, *len / 2);
-	int pSize = sizeof(PState);
-	int offset = 0;//sizeof(SaveGameState) + gameMode->GetNumStoredBytes();//sizeof(SaveGameState) + sizeof(ReachEnemyBaseMode::ReachEnemyBaseModeData);//64;//sizeof(SaveGameState);
-	int fletchLen = *len;//totalEnemySize;//sizeof(SaveGameState);//*len;//sizeof(BaseData); //*len;//sizeof(SaveGameState);//*len;//pSize;//(*len) - offset;//16;//464;//640;//sizeof(Test);//64;// pSize / 2;//pSize;//*len;//*len;//*len;//*len;//64;// pSize / 2;;//*len;//8;//(*len) - offset;
-	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);// currSaveState->states[1].hitlagFrames;//
-	return true;
+	absorbShardParticles->StoreBytes(bytes);
+	bytes += absorbShardParticles->GetNumStoredBytes();
 }
 
-bool Session::LoadState(unsigned char *bytes, int len)
+void Session::SetFromBytes(unsigned char *bytes)
 {
-	cout << "loading state: " << currSaveState->totalGameFrames << endl;
-
 	int saveSize = sizeof(SaveGameState);
 	memcpy(currSaveState, bytes, saveSize);
 	bytes += saveSize;
@@ -7576,11 +7565,6 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	absorbShardParticles->SetFromBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
-
-	int oldTotalGameFrames = totalGameFrames;
-	int rollbackFrames = totalGameFrames - currSaveState->totalGameFrames;
-
-
 	totalGameFrames = currSaveState->totalGameFrames;
 	activeEnemyList = currSaveState->activeEnemyList;
 	inactiveEnemyList = currSaveState->inactiveEnemyList;
@@ -7589,6 +7573,45 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	currSuperPlayer = currSaveState->currSuperPlayer;
 	randomState = currSaveState->randomState;
 	cam = currSaveState->cam;
+
+	gameState = (GameState)currSaveState->gameState;
+	activeSequence = currSaveState->activeSequence;
+
+	players[0]->PopulateFromState(&currSaveState->states[0]);
+	players[1]->PopulateFromState(&currSaveState->states[1]);
+}
+
+bool Session::SaveState(unsigned char **buffer,
+	int *len, int *checksum, int frame)
+{
+	cout << "save state: " << totalGameFrames << endl;
+
+	*len = GetNumStoredBytes();
+	*buffer = (unsigned char *)malloc(*len);
+	memset(*buffer, 0, *len);
+
+	if (!*buffer) {
+		return false;
+	}
+
+	StoreBytes(*buffer);
+
+	int pSize = sizeof(PState);
+	int offset = 0;
+	int fletchLen = *len;
+	*checksum = fletcher32_checksum((short *)((*buffer)+offset), fletchLen/2);
+	return true;
+}
+
+bool Session::LoadState(unsigned char *bytes, int len)
+{
+	cout << "loading state: " << currSaveState->totalGameFrames << endl;
+
+	int oldTotalGameFrames = totalGameFrames;
+
+	SetFromBytes(bytes);
+
+	int rollbackFrames = oldTotalGameFrames - currSaveState->totalGameFrames;
 
 	/*cout << "load state: " << totalGameFrames << endl;
 
@@ -7600,15 +7623,6 @@ bool Session::LoadState(unsigned char *bytes, int len)
 	{
 		cout << "ROLLING BACK SEQUENCE: current: " << activeSequence << ", new: " << currSaveState->activeSequence << endl;
 	}*/
-
-	gameState = (GameState)currSaveState->gameState;
-	activeSequence = currSaveState->activeSequence;
-
-	players[0]->PopulateFromState(&currSaveState->states[0]);
-	players[1]->PopulateFromState(&currSaveState->states[1]);
-
-	
-
 	
 	if ( netplayManager != NULL)
 	{
@@ -7754,6 +7768,9 @@ void Session::SetupGameMode()
 		break;
 	case MatchParams::GAME_MODE_RACE:
 		gameMode = new RaceMode;
+		break;
+	case MatchParams::GAME_MODE_PARALLEL_RACE:
+		gameMode = new ParallelRaceMode;
 		break;
 	}
 }

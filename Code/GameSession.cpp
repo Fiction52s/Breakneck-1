@@ -70,6 +70,7 @@
 #include "BonusHandler.h"
 #include "GameMode.h"
 #include "ggponet.h"
+#include "GGPO.h"
 
 #include "NetplayManager.h"
 //#include "Enemy_Badger.h"
@@ -236,6 +237,12 @@ void GameSession::UpdateCamera()
 		break;
 	}
 	case MatchParams::GAME_MODE_RACE:
+	{
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		break;
+	}
+	case MatchParams::GAME_MODE_PARALLEL_RACE:
 	{
 		cam.SetCamType(Camera::CamType::FIGHTING);
 		cam.Update();
@@ -485,6 +492,31 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	pauseMenu->game = this;
 
 	return newBonus;
+}
+
+GameSession *GameSession::CreateParallelSession()
+{
+	MatchParams mp;
+	/*mp.saveFile = saveFile;
+	mp.mapPath = matchParams.mapPath;
+	mp.gameModeType = matchParams.gameModeType;*/
+	mp = matchParams;
+
+	GameSession *parallelGame = new GameSession(&mp);
+	parallelGame->isParallelSession = true;
+
+	parallelGame->SetParentTilesetManager(this);
+	parallelGame->currSaveState = new SaveGameState;
+	parallelGame->currExtraState = new ExtraState;
+	//parallelGame->SetParentGame(this);
+	parallelGame->Load();
+
+	parallelGame->RestartLevel();
+
+	currSession = this;
+	pauseMenu->game = this;
+
+	return parallelGame;
 }
 
 
@@ -1844,6 +1876,32 @@ bool GameSession::Load()
 	if (progressDisplay != NULL)
 		progressDisplay->SetProgressString("done loading!", 0);
 
+
+	oneFrameMode = false;
+	skipped = false;
+	quit = false;
+	returnVal = GR_EXITLEVEL;
+	firstUpdateHasHappened = false;
+	gameState = RUN;
+	SeedRand(matchParams.randSeed);
+
+	oldShaderZoom = -1;
+	goalDestroyed = false;
+	frameRateDisplay.showFrameRate = true;
+	runningTimerDisplay.showRunningTimer = true;
+	goalDestroyed = false;
+
+	if (saveFile == NULL)
+	{
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			if (GetPlayer(i) != NULL)
+			{
+				SetPlayerOptionField(i);
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -2154,19 +2212,946 @@ void GameSession::SetupBestTimeGhost()
 	}
 }
 
+//return false means continue/go again
+bool GameSession::RunMainLoopOnce()
+{
+	//cout << this << " << run loop once" << endl;
+	switchGameState = false;
+	double newTime = gameClock.getElapsedTime().asSeconds();
+	double frameTime = newTime - currentTime;
+
+	if (frameTime > 0.25)
+	{
+		/*if (parentGame != NULL)
+		{
+		cout << "child game" << "\n";
+		}
+		else
+		{
+		cout << "yep thats my clock" << "\n";
+		}
+		cout << "new time: " << newTime << "\n";
+		cout << "big frametime: " << frameTime << "\n";*/
+		frameTime = 0.25;
+	}
+	//frameTime = 0.167;//0.25;	
+	currentTime = newTime;
+
+	frameRateDisplay.Update(frameTime);
+	UpdateRunningTimerText();
+
+	if( !isParallelSession )
+	{ 
+		accumulator += frameTime;
+	}
+	
+
+	if (gameState == RUN)
+	{
+		window->clear(Color::Red);
+		preScreenTex->clear(Color::Red);
+		postProcessTex2->clear(Color::Red);
+
+		if (matchParams.netplayManager != NULL)
+		{
+			if (IsKeyPressed(Keyboard::Escape))
+			{
+				cout << "esc is pressed. ending match." << endl;
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->DumpDesyncInfo();
+				return true;
+			}
+
+			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
+			{
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->DumpDesyncInfo();
+				return true;
+			}
+
+			if (!isParallelSession)
+			{
+				ggpo_idle(ggpo, 5);
+				SteamAPI_RunCallbacks();
+			}
+			
+
+			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
+			{
+				//turn these back on later
+				//ggpo_idle(ggpo, 5);
+
+				--timeSyncFrames;
+				accumulator -= TIMESTEP;
+			}
+			else
+			{
+				while (accumulator >= TIMESTEP)
+				{
+					//ggpo_idle(ggpo, 5);
+					//SteamAPI_RunCallbacks();
+					GGPORunFrame();
+					accumulator -= TIMESTEP;
+
+					if (switchGameState)
+					{
+						break;
+					}
+				}
+
+				//dont do this because you still need to draw the frame
+				/*if (switchGameState)
+				{
+				continue;
+				}*/
+			}
+
+
+			//if (!GGPORunGameModeUpdate())
+			//	continue;
+		}
+		else
+		{
+			if (!RunGameModeUpdate())
+			{
+				return false;
+			}
+		}
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			if (ev.type == Event::LostFocus)
+			{
+				if (gameState == RUN)
+				{
+					//temporarily remove this to test netplay
+					/*if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+					{
+					gameState = PAUSE;
+					}*/
+				}
+
+			}
+			else if (ev.type == sf::Event::GainedFocus)
+			{
+				//if( state == PAUSE )
+				//	state = RUN;
+			}
+		}
+
+		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			DrawGame(preScreenTex);
+		}
+		else
+		{
+			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+			//assert(prm->testGame != NULL);
+
+			if (!isParallelSession)
+			{
+				DrawGame(preScreenTex);
+				/*if (totalGameFrames % 60 < 30)
+				{
+					
+				}
+				else
+				{
+					prm->testGame->DrawGame(preScreenTex);
+				}*/
+			}
+		}
+
+		if (!isParallelSession)
+		{
+			if (repPlayer != NULL)
+			{
+				preScreenTex->setView(uiView);
+				preScreenTex->draw(replayText);
+				preScreenTex->setView(view);
+			}
+
+			preScreenTex->display();
+
+			const Texture &preTex0 = preScreenTex->getTexture();
+			Sprite preTexSprite(preTex0);
+			preTexSprite.setPosition(-960 / 2, -540 / 2);
+			preTexSprite.setScale(.5, .5);
+			preTexSprite.setTexture(preTex0);
+
+			if (debugScreenRecorder != NULL)
+				debugScreenRecorder->Update(preTex0);
+
+			window->draw(preTexSprite);//, &timeSlowShader );
+
+			if (netplayManager != NULL && netplayManager->desyncDetected)
+			{
+				sf::Vector2u windowSize = window->getSize();
+				sf::Texture texture;
+				texture.create(windowSize.x, windowSize.y);
+				texture.update(*window);
+				sf::Image screenshot = texture.copyToImage();
+				screenshot.saveToFile("Resources/Debug/desync.png");
+
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->Abort();
+			}
+		}
+	}
+	else if (gameState == FROZEN)
+	{
+		window->clear();
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+		}
+
+		if (netplayManager != NULL)
+		{
+			ggpo_idle(ggpo, 5);
+			SteamAPI_RunCallbacks();
+
+			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
+			{
+				--timeSyncFrames;
+				accumulator -= TIMESTEP;
+			}
+			else
+			{
+				while (accumulator >= TIMESTEP)
+				{
+					GGPOFrozenGameModeUpdate();
+					//GGPORunFrame();
+					accumulator -= TIMESTEP;
+
+					if (switchGameState)
+					{
+						break;
+					}
+				}
+
+				/*if (switchGameState)
+				{
+				continue;
+				}*/
+			}
+		}
+		else
+		{
+			if (!FrozenGameModeUpdate())
+			{
+				return false;
+			}
+		}
+
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+	}
+	else if (gameState == MAP)
+	{
+		window->clear();
+
+		View v;
+		v.setCenter(0, 0);
+		v.setSize(1920 / 2, 1080 / 2);
+		window->setView(v);
+
+		window->setView(v);
+
+		View bigV;
+		bigV.setCenter(0, 0);
+		bigV.setSize(1920, 1080);
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+
+		//accumulator += frameTime;
+
+		while (accumulator >= TIMESTEP)
+		{
+			UpdateControllers();
+
+			if ((GetCurrInput(0).back && !GetPrevInput(0).back) && gameState == MAP)
+			{
+				gameState = RUN;
+				soundNodeList->Pause(false);
+				ActivatePauseSound(GetSound("pause_off"));
+			}
+
+			accumulator -= TIMESTEP;
+		}
+
+		View vv;
+		vv.setCenter(pauseMenu->mapCenter);
+		vv.setSize(mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor);
+
+		mapTex->clear();
+		mapTex->setView(vv);
+		mapTex->clear(Color(0, 0, 0, 255));
+
+		View vuiView;
+		vuiView.setSize(Vector2f(mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f));
+		vuiView.setCenter(0, 0);
+
+		for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+		{
+			(*it)->Draw(mapTex);
+		}
+
+		sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+			vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
+
+		QueryBorderTree(mapRect);
+
+
+		DrawColoredMapTerrain(mapTex, Color(Color::Green));
+
+		testGateCount = 0;
+		queryMode = QUERY_GATE;
+		gateList = NULL;
+		gateTree->Query(this, mapRect);
+		Gate *mGateList = gateList;
+		while (gateList != NULL)
+		{
+			gateList->MapDraw(mapTex);
+
+			Gate *next = gateList->next;//edgeA->edge1;
+			gateList = next;
+		}
+
+		if (currentZone != NULL)
+		{
+			for (list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it)
+			{
+				//cout << "drawing map" << endl;
+				(*it)->DrawMinimap(mapTex);
+				/*if( (*it)->spawned && !(*it)->dead )
+				{
+
+				}*/
+			}
+		}
+
+		Vector2i b = mapTex->mapCoordsToPixel(Vector2f(GetPlayer(0)->position.x, GetPlayer(0)->position.y));
+
+		mapTex->setView(vuiView);
+
+		Vector2f realPos = mapTex->mapPixelToCoords(b);
+		realPos.x = floor(realPos.x + .5f);
+		realPos.y = floor(realPos.y + .5f);
+
+		//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+		//kinMinimapIcon.setPosition( realPos );
+		//mapTex->draw( kinMinimapIcon );
+
+		mapTex->setView(vv);
+
+		Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos[0].x, playerOrigPos[0].y));
+
+		mapTex->setView(vuiView);
+
+		Vector2f realPos1 = mapTex->mapPixelToCoords(b1);
+		realPos1.x = floor(realPos1.x + .5f);
+		realPos1.y = floor(realPos1.y + .5f);
+
+		//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+		kinMapSpawnIcon.setPosition(realPos1);
+		mapTex->draw(kinMapSpawnIcon);
+
+		mapTex->setView(vv);
+
+		Vector2i bGoal = mapTex->mapCoordsToPixel(Vector2f(goalPos.x, goalPos.y));
+
+		mapTex->setView(vuiView);
+
+		Vector2f realPosGoal = mapTex->mapPixelToCoords(bGoal);
+		realPosGoal.x = floor(realPosGoal.x + .5f);
+		realPosGoal.y = floor(realPosGoal.y + .5f);
+
+		Sprite mapTexSprite;
+		mapTexSprite.setTexture(mapTex->getTexture());
+		mapTexSprite.setOrigin(mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2);
+		mapTexSprite.setPosition(0, 0);
+
+		mapTexSprite.setScale(.5, -.5);
+		//cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
+		window->draw(mapTexSprite);
+	}
+	else if (gameState == RACEFIGHT_RESULTS)
+	{
+		/*quit = true;
+		returnVal = 1;
+		break;*/
+		//TODO
+		View v;
+		v.setCenter(0, 0);
+		v.setSize(1920 / 2, 1080 / 2);
+		window->setView(v);
+
+		window->setView(v);
+
+		preScreenTex->clear();
+		window->clear();
+
+		preScreenTex->setView(uiView);
+
+		//accumulator += frameTime;
+
+		while (accumulator >= TIMESTEP)
+		{
+			accumulator -= TIMESTEP;
+
+
+
+			UpdateControllers();
+
+			//if( GetCurrInput( 0 ).start )
+			//{
+			//	//break;
+			//	quit = true;
+			//	returnVal = 1;
+
+			//	break;
+			//}
+
+			raceFight->victoryScreen->Update();
+
+			if (raceFight->victoryScreen->IsDone())
+			{
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+				break;
+			}
+			//raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
+
+		}
+
+		raceFight->victoryScreen->Draw(preScreenTex);
+		//raceFight->testWindow->Draw( preScreenTex );
+
+		preScreenTex->display();
+		const Texture &preTex = preScreenTex->getTexture();
+
+		Sprite preTexSprite(preTex);
+		preTexSprite.setPosition(-960 / 2, -540 / 2);//-960 / 2, -540 / 2 );
+
+		preTexSprite.setScale(.5, .5);
+
+		window->draw(preTexSprite);
+
+		++raceFight->raceFightResultsFrame;
+	}
+	else if (gameState == STORY)
+	{
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			/*if( ev.type == sf::Event::KeyPressed )
+			{
+			if( ev.key.code = Keyboard::O )
+			{
+			state = RUN;
+			soundNodeList->Pause( false );
+			break;
+			}
+			}*/
+			if (ev.type == sf::Event::GainedFocus)
+			{
+				//state = RUN;
+				//soundNodeList->Pause( false );
+				//break;
+			}
+			else if (ev.type == sf::Event::KeyPressed)
+			{
+				//if( ev.key.code == Keyboard::
+			}
+		}
+
+		//accumulator += frameTime;
+		Sprite preTexSprite;
+
+		View v;
+		v.setCenter(0, 0);
+		v.setSize(1920 / 2, 1080 / 2);
+
+		if (accumulator >= TIMESTEP)
+		{
+			window->clear();
+			window->setView(v);
+			preScreenTex->clear();
+
+			UpdateControllers();
+
+			if (currStorySequence != NULL)
+			{
+				//if( false )
+				if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
+				{
+					gameState = RUN;
+					//preScreenTex->setView(uiView);
+					//currStorySequence->Draw(preScreenTex);
+					currStorySequence->EndSequence();
+					currStorySequence = NULL;
+				}
+				else
+				{
+				}
+			}
+
+			mainMenu->musicPlayer->Update();
+
+			fader->Update();
+			swiper->Update();
+			mainMenu->UpdateEffects();
+			accumulator -= TIMESTEP;
+		}
+
+
+
+		if (currStorySequence != NULL)
+		{
+			preScreenTex->setView(uiView);
+			currStorySequence->Draw(preScreenTex);
+		}
+
+		preScreenTex->setView(uiView);
+		fader->Draw(EffectLayer::IN_FRONT_OF_UI, preScreenTex);
+		//swiper->Draw(preScreenTex);
+
+		mainMenu->DrawEffects(preScreenTex);
+
+		DrawFrameRate(preScreenTex);
+
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+		//UpdateInput();
+
+	}
+	else if (gameState == SEQUENCE)
+	{
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+		}
+
+		window->clear();
+		preScreenTex->clear();
+
+		if (!SequenceGameModeUpdate())
+		{
+			return false;
+		}
+
+		DrawGameSequence(preScreenTex);
+
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+		//UpdateInput();
+
+	}
+	else if (gameState == PAUSE)
+	{
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+			/*if( ev.type == sf::Event::KeyPressed )
+			{
+			if( ev.key.code = Keyboard::O )
+			{
+			state = RUN;
+			soundNodeList->Pause( false );
+			break;
+			}
+			}*/
+			if (ev.type == sf::Event::GainedFocus)
+			{
+				//state = RUN;
+				//soundNodeList->Pause( false );
+				//break;
+			}
+			else if (ev.type == sf::Event::KeyPressed)
+			{
+				//if( ev.key.code == Keyboard::
+			}
+		}
+
+		//savedinput when you enter pause
+
+		//accumulator += frameTime;
+
+		bool instantQuitForBonus = false;
+		//cout << "frames: " << (int)(accumulator / TIMESTEP) << endl;
+		while (accumulator >= TIMESTEP)
+		{
+			UpdateControllers();
+
+			ControllerState &curr = GetCurrInputUnfiltered(0);
+			ControllerState &prev = GetPrevInputUnfiltered(0);
+
+			if (pauseMenu->currentTab == PauseMenu::PAUSE)
+			{
+				if (curr.Y && !prev.Y && !bestTimeGhostOn)
+				{
+					if (parentGame != NULL)
+					{
+						/*quit = true;
+						returnVal = GR_BONUS_RESPAWN;
+						break;*/
+					}
+					else
+					{
+						bestTimeGhostOn = true;
+						bestReplayOn = false;
+
+						if (repPlayer != NULL)
+						{
+							delete repPlayer;
+							repPlayer = NULL;
+						}
+
+						SetupBestTimeGhost();
+						RestartLevel();
+					}
+				}
+				else if (curr.X && !prev.X)
+				{
+					if (parentGame != NULL)
+					{
+						quit = true;
+						returnVal = GR_BONUS_RESPAWN;
+						break;
+					}
+					else
+					{
+						RestartLevel();
+					}
+				}
+				else if (curr.B && curr.PDown() && !prev.PDown())
+				{
+					if (recPlayer != NULL)
+					{
+						ActivatePauseSound(GetSound("pause_off"));
+						recPlayer->numTotalFrames = recPlayer->frame;
+						recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
+					}
+				}
+
+			}
+
+
+
+			PauseMenu::UpdateResponse ur = pauseMenu->Update(curr, prev);
+			switch (ur)
+			{
+			case PauseMenu::R_NONE:
+			{
+				//do nothing as usual
+				break;
+			}
+			case PauseMenu::R_P_RESUME:
+			{
+				gameState = GameSession::RUN;
+				ActivatePauseSound(GetSound("pause_off"));
+				soundNodeList->Pause(false);
+				//pauseMenu->shardMenu->StopMusic();
+				break;
+			}
+			case PauseMenu::R_P_RESPAWN:
+			{
+				if (parentGame != NULL)
+				{
+					//parentGame->RestartGame();
+					quit = true;
+					returnVal = GR_BONUS_RESPAWN;
+					break;
+				}
+				else
+				{
+
+					RestartLevel();
+
+					//moved this stuff into restart level
+					/*gameState = GameSession::RUN;
+					gameClock.restart();
+					currentTime = 0;
+					accumulator = TIMESTEP + .1;
+					frameRateDisplay.Reset();*/
+				}
+
+
+				//soundNodeList->Pause( false );
+				//kill sounds on respawn
+				break;
+			}
+			case PauseMenu::R_P_EXITLEVEL:
+			{
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+				mainMenu->musicPlayer->StopCurrentMusic();
+				break;
+			}
+			case PauseMenu::R_P_EXITTITLE:
+			{
+				quit = true;
+				returnVal = GR_EXITTITLE;
+				mainMenu->musicPlayer->StopCurrentMusic();
+				break;
+			}
+			case PauseMenu::R_P_EXITGAME:
+			{
+				quit = true;
+				returnVal = GR_EXITGAME;
+				mainMenu->musicPlayer->StopCurrentMusic();
+				break;
+			}
+
+			}
+
+			if (gameState != PAUSE)
+			{
+				break;
+			}
+
+			accumulator -= TIMESTEP;
+		}
+
+
+
+		if (instantQuitForBonus)
+		{
+			return false;
+		}
+
+		if (gameState != PAUSE)
+		{
+			return false;
+		}
+
+		//if( currInput.
+
+		/*if( IsKeyPressed( Keyboard::O ) )
+		{
+		state = RUN;
+		soundNodeList->Pause( false );
+		}*/
+		pauseTex->clear();
+		window->clear();
+		Sprite preTexSprite;
+		preTexSprite.setTexture(preScreenTex->getTexture());
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		window->draw(preTexSprite);
+
+		pauseMenu->Draw(pauseTex);
+
+		pauseTex->display();
+		Sprite pauseMenuSprite;
+		pauseMenuSprite.setTexture(pauseTex->getTexture());
+		//bgSprite.setPosition( );
+		pauseMenuSprite.setPosition((1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
+		pauseMenuSprite.setScale(.5, .5);
+		window->draw(pauseMenuSprite);
+
+		//draw map
+
+		if (pauseMenu->currentTab == PauseMenu::MAP)
+		{
+			View vv;
+			vv.setCenter(pauseMenu->mapCenter);
+			vv.setSize(mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor);
+
+			mapTex->clear();
+			mapTex->setView(vv);
+			mapTex->clear(Color(0, 0, 0, 255));
+
+			View vuiView;
+			vuiView.setSize(Vector2f(mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f));
+			vuiView.setCenter(0, 0);
+
+			for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
+			{
+				(*it)->Draw(mapTex);
+			}
+
+
+			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
+				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
+
+			QueryBorderTree(mapRect);
+
+
+			DrawColoredMapTerrain(mapTex, Color(Color::Green));
+
+			/*Color testColor(0x75, 0x70, 0x90, 191);
+			testColor = Color::Green;
+			TerrainPiece * listVAIter = listVA;
+			while (listVAIter != NULL)
+			{
+			if (listVAIter->visible)
+			{
+			int vertexCount = listVAIter->terrainVA->getVertexCount();
+			for (int i = 0; i < vertexCount; ++i)
+			{
+			(*listVAIter->terrainVA)[i].color = testColor;
+			}
+			mapTex->draw(*listVAIter->terrainVA);
+			for (int i = 0; i < vertexCount; ++i)
+			{
+			(*listVAIter->terrainVA)[i].color = Color::White;
+			}
+			}
+
+			listVAIter = listVAIter->next;
+			}*/
+
+			testGateCount = 0;
+			queryMode = QUERY_GATE;
+			gateList = NULL;
+			gateTree->Query(this, mapRect);
+			Gate *mGateList = gateList;
+			while (gateList != NULL)
+			{
+				gateList->MapDraw(mapTex);
+
+				Gate *next = gateList->next;//edgeA->edge1;
+				gateList = next;
+			}
+
+
+
+
+			Vector2i b = mapTex->mapCoordsToPixel(Vector2f(GetPlayer(0)->position.x, GetPlayer(0)->position.y));
+
+			mapTex->setView(vuiView);
+
+			Vector2f realPos = mapTex->mapPixelToCoords(b);
+			realPos.x = floor(realPos.x + .5f);
+			realPos.y = floor(realPos.y + .5f);
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+
+			//mapTex->draw( kinMinimapIcon );
+
+			mapTex->setView(vv);
+
+			Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos[0].x, playerOrigPos[0].y));
+
+			mapTex->setView(vuiView);
+
+			Vector2f realPos1 = mapTex->mapPixelToCoords(b1);
+			realPos1.x = floor(realPos1.x + .5f);
+			realPos1.y = floor(realPos1.y + .5f);
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+			kinMapSpawnIcon.setPosition(realPos1);
+			mapTex->draw(kinMapSpawnIcon);
+
+			mapTex->setView(vv);
+
+			Vector2i bGoal = mapTex->mapCoordsToPixel(Vector2f(goalPos.x, goalPos.y));
+
+			mapTex->setView(vuiView);
+
+			Vector2f realPosGoal = mapTex->mapPixelToCoords(bGoal);
+			realPosGoal.x = floor(realPosGoal.x + .5f);
+			realPosGoal.y = floor(realPosGoal.y + .5f);
+
+			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
+
+
+
+			//goalMapIcon.setPosition(realPosGoal);
+			//mapTex->draw(goalMapIcon);
+
+			if (currentZone != NULL)
+			{
+				for (list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it)
+				{
+					//cout << "drawing map" << endl;
+					(*it)->DrawMinimap(mapTex);
+				}
+			}
+
+			//mapTex->clear();
+			Sprite mapTexSprite;
+			mapTexSprite.setTexture(mapTex->getTexture());
+			mapTexSprite.setOrigin(mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2);
+			mapTexSprite.setPosition(0, 0);
+
+
+			//pauseTex->setView( bigV );
+			//window->setView( bigV );
+
+			//mapTexSprite.setScale( .5, -.5 );
+			mapTexSprite.setScale(.5, -.5);
+			//mapTexSprite.setScale( 1, -1 );
+
+			window->draw(mapTexSprite);
+			//pauseTex->draw( mapTexSprite );
+
+			//pauseTex->setV
+		}
+
+
+
+
+	}
+
+	if (!isParallelSession)
+	{
+		window->display();
+	}
+	
+
+	return true;
+}
+
 int GameSession::Run()
 {
-	oneFrameMode = false;
+	/*oneFrameMode = false;
 	skipped = false;
 	quit = false;
 	returnVal = GR_EXITLEVEL;
 	firstUpdateHasHappened = false;
+	gameState = RUN;
+	SeedRand(matchParams.randSeed);
 
 	oldShaderZoom = -1;
 	goalDestroyed = false;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
 	goalDestroyed = false;
+
+	if (saveFile == NULL)
+	{
+		for (int i = 0; i < MAX_PLAYERS; ++i)
+		{
+			if (GetPlayer(i) != NULL)
+			{
+				SetPlayerOptionField(i);
+			}
+		}
+	}*/
 	
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
@@ -2178,7 +3163,6 @@ int GameSession::Run()
 	View oldWindowView = window->getView();
 
 	preScreenTex->setView(view);
-
 
 	Actor *p0 = GetPlayer(0);
 	Actor *p = NULL;
@@ -2197,10 +3181,6 @@ int GameSession::Run()
 
 		raceFight->raceFightResultsFrame = 0;
 		raceFight->victoryScreen->SetupColumns();
-	}
-	else
-	{
-		gameState = RUN;
 	}
 
 	//might move replay stuff later
@@ -2247,17 +3227,6 @@ int GameSession::Run()
 		SetActiveSequence(shipEnterScene);
 	}
 
-	if (saveFile == NULL)
-	{
-		for (int i = 0; i < MAX_PLAYERS; ++i)
-		{
-			if (GetPlayer(i) != NULL)
-			{
-				SetPlayerOptionField(i);
-			}
-		}
-	}
-
 	RestartLevel();
 
 	if (netplayManager != NULL) //testing!
@@ -2270,870 +3239,24 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
-	SeedRand(matchParams.randSeed);
+	
 
-	while( !quit )
+	while (!quit)
 	{
-		switchGameState = false;
-		double newTime = gameClock.getElapsedTime().asSeconds();
-		double frameTime = newTime - currentTime;
+		double oldAccumulator = accumulator;
+		while (!RunMainLoopOnce()) {}
 
-		if ( frameTime > 0.25 )
+		/*if ( !isParallelSession && gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
-			/*if (parentGame != NULL)
-			{
-				cout << "child game" << "\n";
-			}
-			else
-			{
-				cout << "yep thats my clock" << "\n";
-			}
-			cout << "new time: " << newTime << "\n";
-			cout << "big frametime: " << frameTime << "\n";*/
-			frameTime = 0.25;	
-		}
-		//frameTime = 0.167;//0.25;	
-        currentTime = newTime;
-
-		frameRateDisplay.Update(frameTime);
-		UpdateRunningTimerText();
-
-		accumulator += frameTime;
-
-		if(gameState == RUN )
-		{
-			window->clear(Color::Red);
-			preScreenTex->clear(Color::Red);
-			postProcessTex2->clear(Color::Red);
-
-			if (matchParams.netplayManager != NULL)
-			{
-				if( IsKeyPressed( Keyboard::Escape))
-				{
-					cout << "esc is pressed. ending match." << endl;
-					quit = true;
-					returnVal = GR_EXITLEVEL;
-
-					netplayManager->DumpDesyncInfo();
-					break;
-				}
-
-				if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
-				{
-					quit = true;
-					returnVal = GR_EXITLEVEL;
-
-					netplayManager->DumpDesyncInfo();
-					break;
-				}
-
-				ggpo_idle(ggpo, 5);
-				SteamAPI_RunCallbacks();
-
-				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
-				{
-					//turn these back on later
-					//ggpo_idle(ggpo, 5);
-					
-					--timeSyncFrames;
-					accumulator -= TIMESTEP;
-				}
-				else
-				{
-					while (accumulator >= TIMESTEP)
-					{
-						//ggpo_idle(ggpo, 5);
-						//SteamAPI_RunCallbacks();
-						GGPORunFrame();
-						accumulator -= TIMESTEP;
-
-						if (switchGameState)
-						{
-							break;
-						}
-					}
-
-					//dont do this because you still need to draw the frame
-					/*if (switchGameState)
-					{
-						continue;
-					}*/
-				}
-
-
-				//if (!GGPORunGameModeUpdate())
-				//	continue;
-			}
-			else
-			{
-				if (!RunGameModeUpdate())
-				{
-					continue;
-				}
-			}
-			
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-				if (ev.type == Event::LostFocus)
-				{
-					if (gameState == RUN)
-					{
-						//temporarily remove this to test netplay
-						/*if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
-						{
-							gameState = PAUSE;
-						}*/
-					}
-						
-				}
-				else if (ev.type == sf::Event::GainedFocus)
-				{
-					//if( state == PAUSE )
-					//	state = RUN;
-				}
-			}
-
-			DrawGame(preScreenTex);
-
-			if (repPlayer != NULL)
-			{
-				preScreenTex->setView(uiView);
-				preScreenTex->draw(replayText);
-				preScreenTex->setView(view);
-			}
-
-			preScreenTex->display();
-
-			const Texture &preTex0 = preScreenTex->getTexture();
-			Sprite preTexSprite(preTex0);
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			preTexSprite.setTexture(preTex0);
-
-			if (debugScreenRecorder != NULL)
-				debugScreenRecorder->Update(preTex0);
-
-			window->draw(preTexSprite);//, &timeSlowShader );
-
-			if (netplayManager != NULL && netplayManager->desyncDetected)
-			{
-				sf::Vector2u windowSize = window->getSize();
-				sf::Texture texture;
-				texture.create(windowSize.x, windowSize.y);
-				texture.update(*window);
-				sf::Image screenshot = texture.copyToImage();
-				screenshot.saveToFile("Resources/Debug/desync.png");
-
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-
-				netplayManager->Abort();
-			}
-
-		}
-		else if(gameState == FROZEN )
-		{
-			window->clear();
-
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-			}
-
-			if (netplayManager != NULL)
-			{
-				ggpo_idle(ggpo, 5);
-				SteamAPI_RunCallbacks();
-
-				if (accumulator >= TIMESTEP && timeSyncFrames > 0)
-				{
-					--timeSyncFrames;
-					accumulator -= TIMESTEP;
-				}
-				else
-				{
-					while (accumulator >= TIMESTEP)
-					{
-						GGPOFrozenGameModeUpdate();
-						//GGPORunFrame();
-						accumulator -= TIMESTEP;
-
-						if (switchGameState)
-						{
-							break;
-						}
-					}
-
-					/*if (switchGameState)
-					{
-						continue;
-					}*/
-				}
-			}
-			else
-			{
-				if (!FrozenGameModeUpdate())
-				{
-					continue;
-				}
-			}
-			
-
-			Sprite preTexSprite;
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
-		}
-		else if(gameState == MAP )
-		{
-			window->clear();
-
-			window->setView( v );
-
-			View bigV;
-			bigV.setCenter( 0, 0 );
-			bigV.setSize( 1920, 1080 );
-
-			Sprite preTexSprite;
-			preTexSprite.setTexture( preScreenTex->getTexture() );
-			preTexSprite.setPosition( -960 / 2, -540 / 2 );
-			preTexSprite.setScale( .5, .5 );
-			window->draw( preTexSprite );
-
-			//accumulator += frameTime;
-
-			while ( accumulator >= TIMESTEP  )
-			{
-				UpdateControllers();
-
-				if( ( GetCurrInput( 0 ).back && !GetPrevInput( 0 ).back ) && gameState == MAP )
-				{
-					gameState = RUN;
-					soundNodeList->Pause( false );
-					ActivatePauseSound(GetSound("pause_off"));
-				}
-
-				accumulator -= TIMESTEP;
-			}
-		
-			View vv;
-			vv.setCenter( pauseMenu->mapCenter );
-			vv.setSize(  mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor );
-
-			mapTex->clear();
-			mapTex->setView( vv );
-			mapTex->clear( Color( 0, 0, 0, 255 ) );
-			
-			View vuiView;
-			vuiView.setSize( Vector2f( mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f ) );
-			vuiView.setCenter( 0, 0 );
-			
-			for( list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it )
-			{
-				(*it)->Draw( mapTex );
-			}
-
-			sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-				vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y );
-
-			QueryBorderTree(mapRect);
-			
-
-			DrawColoredMapTerrain(mapTex, Color(Color::Green));
-
-			testGateCount = 0;
-			queryMode = QUERY_GATE;
-			gateList = NULL;
-			gateTree->Query( this, mapRect );
-			Gate *mGateList = gateList;
-			while( gateList != NULL )
-			{
-				gateList->MapDraw(mapTex);
-
-				Gate *next = gateList->next;//edgeA->edge1;
-				gateList = next;
-			}
-
-			if( currentZone != NULL )
-			{
-				for( list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it )
-				{
-					//cout << "drawing map" << endl;
-					(*it)->DrawMinimap( mapTex );
-					/*if( (*it)->spawned && !(*it)->dead )
-					{
-
-					}*/
-				}
-			}
-
-			Vector2i b = mapTex->mapCoordsToPixel( Vector2f( p0->position.x, p0->position.y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPos = mapTex->mapPixelToCoords( b );
-			realPos.x = floor( realPos.x + .5f );
-			realPos.y = floor( realPos.y + .5f );
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			//kinMinimapIcon.setPosition( realPos );
-			//mapTex->draw( kinMinimapIcon );
-
-			mapTex->setView( vv );			
-
-			Vector2i b1 = mapTex->mapCoordsToPixel( Vector2f(playerOrigPos[0].x, playerOrigPos[0].y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPos1 = mapTex->mapPixelToCoords( b1 );
-			realPos1.x = floor( realPos1.x + .5f );
-			realPos1.y = floor( realPos1.y + .5f );
-
-			//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-			kinMapSpawnIcon.setPosition( realPos1 );
-			mapTex->draw( kinMapSpawnIcon );
-			
-			mapTex->setView( vv );
-
-			Vector2i bGoal = mapTex->mapCoordsToPixel( Vector2f( goalPos.x, goalPos.y ) );
-
-			mapTex->setView( vuiView );
-
-			Vector2f realPosGoal = mapTex->mapPixelToCoords( bGoal );
-			realPosGoal.x = floor( realPosGoal.x + .5f );
-			realPosGoal.y = floor( realPosGoal.y + .5f );
-
-			Sprite mapTexSprite;
-			mapTexSprite.setTexture( mapTex->getTexture() );
-			mapTexSprite.setOrigin( mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2 );
-			mapTexSprite.setPosition( 0, 0 );
-
-			mapTexSprite.setScale( .5, -.5 );
-			//cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
-			window->draw( mapTexSprite );
-		}
-		else if(gameState == RACEFIGHT_RESULTS )
-		{
-			/*quit = true;
-			returnVal = 1;
-			break;*/
-			//TODO
-			window->setView( v );
-
-			preScreenTex->clear();
-			window->clear();
-
-			preScreenTex->setView( uiView );
-
-			//accumulator += frameTime;
-
-			while ( accumulator >= TIMESTEP  )
-			{
-				accumulator -= TIMESTEP;
-			
-
-			
-				UpdateControllers();
-
-			//if( GetCurrInput( 0 ).start )
-			//{
-			//	//break;
-			//	quit = true;
-			//	returnVal = 1;
-
-			//	break;
-			//}
-
-			raceFight->victoryScreen->Update();
-
-			if (raceFight->victoryScreen->IsDone())
-			{
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-				break;
-			}
-			//raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
-
-			}
-
-			raceFight->victoryScreen->Draw( preScreenTex );
-			//raceFight->testWindow->Draw( preScreenTex );
-
-			preScreenTex->display();
-			const Texture &preTex = preScreenTex->getTexture();
-		
-			Sprite preTexSprite( preTex );
-			preTexSprite.setPosition( -960 / 2, -540 /2 );//-960 / 2, -540 / 2 );
-			
-			preTexSprite.setScale( .5, .5 );		
-
-			window->draw( preTexSprite );
-
-			++raceFight->raceFightResultsFrame;
-		}
-		else if (gameState == STORY)
-		{
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-				/*if( ev.type == sf::Event::KeyPressed )
-				{
-				if( ev.key.code = Keyboard::O )
-				{
-				state = RUN;
-				soundNodeList->Pause( false );
-				break;
-				}
-				}*/
-				if (ev.type == sf::Event::GainedFocus)
-				{
-					//state = RUN;
-					//soundNodeList->Pause( false );
-					//break;
-				}
-				else if (ev.type == sf::Event::KeyPressed)
-				{
-					//if( ev.key.code == Keyboard::
-				}
-			}
-
-			//accumulator += frameTime;
-			Sprite preTexSprite;
-			if (accumulator >= TIMESTEP)
-			{
-				window->clear();
-				window->setView(v);
-				preScreenTex->clear();
-
-				UpdateControllers();
-
-				if (currStorySequence != NULL)
-				{
-					//if( false )
-					if (!currStorySequence->Update(GetPrevInput(0), GetCurrInput(0)))
-					{
-						gameState = RUN;
-						//preScreenTex->setView(uiView);
-						//currStorySequence->Draw(preScreenTex);
-						currStorySequence->EndSequence();
-						currStorySequence = NULL;
-					}
-					else
-					{
-					}
-				}
-				
-				mainMenu->musicPlayer->Update();
-
-				fader->Update();
-				swiper->Update();
-				mainMenu->UpdateEffects();
-				accumulator -= TIMESTEP;
-			}
-
-			
-
-			if (currStorySequence != NULL)
-			{
-				preScreenTex->setView(uiView);
-				currStorySequence->Draw(preScreenTex);
-			}
-
-			preScreenTex->setView(uiView);
-			fader->Draw(EffectLayer::IN_FRONT_OF_UI, preScreenTex);
-			//swiper->Draw(preScreenTex);
-
-			mainMenu->DrawEffects(preScreenTex);
-
-			DrawFrameRate(preScreenTex);
-
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
-			//UpdateInput();
-
-		}
-		else if (gameState == SEQUENCE)
-		{
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-			}
-
-			window->clear();
-			preScreenTex->clear();
-
-			if (!SequenceGameModeUpdate())
-			{
-				continue;
-			}
-
-			DrawGameSequence(preScreenTex);
-
-			Sprite preTexSprite;
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
-			//UpdateInput();
-
-		}
-		else if (gameState == PAUSE)
-		{
-			sf::Event ev;
-			while (window->pollEvent(ev))
-			{
-				/*if( ev.type == sf::Event::KeyPressed )
-				{
-				if( ev.key.code = Keyboard::O )
-				{
-				state = RUN;
-				soundNodeList->Pause( false );
-				break;
-				}
-				}*/
-				if (ev.type == sf::Event::GainedFocus)
-				{
-					//state = RUN;
-					//soundNodeList->Pause( false );
-					//break;
-				}
-				else if (ev.type == sf::Event::KeyPressed)
-				{
-					//if( ev.key.code == Keyboard::
-				}
-			}
-
-			//savedinput when you enter pause
-
-			//accumulator += frameTime;
-
-			bool instantQuitForBonus = false;
-			//cout << "frames: " << (int)(accumulator / TIMESTEP) << endl;
-			while (accumulator >= TIMESTEP)
-			{
-				UpdateControllers();
-
-				ControllerState &curr = GetCurrInputUnfiltered(0);
-				ControllerState &prev = GetPrevInputUnfiltered(0);
-
-				if (pauseMenu->currentTab == PauseMenu::PAUSE)
-				{
-					if (curr.Y && !prev.Y && !bestTimeGhostOn)
-					{
-						if (parentGame != NULL)
-						{
-							/*quit = true;
-							returnVal = GR_BONUS_RESPAWN;
-							break;*/
-						}
-						else
-						{
-							bestTimeGhostOn = true;
-							bestReplayOn = false;
-
-							if (repPlayer != NULL)
-							{
-								delete repPlayer;
-								repPlayer = NULL;
-							}
-
-							SetupBestTimeGhost();
-							RestartLevel();
-						}
-					}
-					else if (curr.X && !prev.X)
-					{
-						if (parentGame != NULL)
-						{
-							quit = true;
-							returnVal = GR_BONUS_RESPAWN;
-							break;
-						}
-						else
-						{
-							RestartLevel();
-						}
-					}
-					else if (curr.B && curr.PDown() && !prev.PDown())
-					{
-						if (recPlayer != NULL)
-						{
-							ActivatePauseSound(GetSound("pause_off"));
-							recPlayer->numTotalFrames = recPlayer->frame;
-							recPlayer->WriteToFile("Resources/Debug/debugreplay.brep");
-						}
-					}
-					
-				}
-				
-
-
-				PauseMenu::UpdateResponse ur = pauseMenu->Update(curr,prev);
-				switch (ur)
-				{
-				case PauseMenu::R_NONE:
-				{
-					//do nothing as usual
-					break;
-				}
-				case PauseMenu::R_P_RESUME:
-				{
-					gameState = GameSession::RUN;
-					ActivatePauseSound(GetSound("pause_off"));
-					soundNodeList->Pause(false);
-					//pauseMenu->shardMenu->StopMusic();
-					break;
-				}
-				case PauseMenu::R_P_RESPAWN:
-				{
-					if (parentGame != NULL)
-					{
-						//parentGame->RestartGame();
-						quit = true;
-						returnVal = GR_BONUS_RESPAWN;
-						break;
-					}
-					else
-					{
-						
-						RestartLevel();
-
-						//moved this stuff into restart level
-						/*gameState = GameSession::RUN;
-						gameClock.restart();
-						currentTime = 0;
-						accumulator = TIMESTEP + .1;
-						frameRateDisplay.Reset();*/
-					}
-
-					
-					//soundNodeList->Pause( false );
-					//kill sounds on respawn
-					break;
-				}
-				case PauseMenu::R_P_EXITLEVEL:
-				{
-					quit = true;
-					returnVal = GR_EXITLEVEL;
-					mainMenu->musicPlayer->StopCurrentMusic();
-					break;
-				}
-				case PauseMenu::R_P_EXITTITLE:
-				{
-					quit = true;
-					returnVal = GR_EXITTITLE;
-					mainMenu->musicPlayer->StopCurrentMusic();
-					break;
-				}
-				case PauseMenu::R_P_EXITGAME:
-				{
-					quit = true;
-					returnVal = GR_EXITGAME;
-					mainMenu->musicPlayer->StopCurrentMusic();
-					break;
-				}
-
-				}
-
-				if (gameState != PAUSE)
-				{
-					break;
-				}
-
-				accumulator -= TIMESTEP;
-			}
-
-			
-
-			if (instantQuitForBonus)
-			{
-				continue;
-			}
-
-			if (gameState != PAUSE)
-			{
-				continue;
-			}
-
-			//if( currInput.
-
-			/*if( IsKeyPressed( Keyboard::O ) )
-			{
-			state = RUN;
-			soundNodeList->Pause( false );
-			}*/
-			pauseTex->clear();
-			window->clear();
-			Sprite preTexSprite;
-			preTexSprite.setTexture(preScreenTex->getTexture());
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			window->draw(preTexSprite);
-
-			pauseMenu->Draw(pauseTex);
-
-			pauseTex->display();
-			Sprite pauseMenuSprite;
-			pauseMenuSprite.setTexture(pauseTex->getTexture());
-			//bgSprite.setPosition( );
-			pauseMenuSprite.setPosition((1920 - 1820) / 4 - 960 / 2, (1080 - 980) / 4 - 540 / 2);
-			pauseMenuSprite.setScale(.5, .5);
-			window->draw(pauseMenuSprite);
-
-			//draw map
-
-			if (pauseMenu->currentTab == PauseMenu::MAP)
-			{
-				View vv;
-				vv.setCenter(pauseMenu->mapCenter);
-				vv.setSize(mapTex->getSize().x * pauseMenu->mapZoomFactor, mapTex->getSize().y * pauseMenu->mapZoomFactor);
-
-				mapTex->clear();
-				mapTex->setView(vv);
-				mapTex->clear(Color(0, 0, 0, 255));
-
-				View vuiView;
-				vuiView.setSize(Vector2f(mapTex->getSize().x * 1.f, mapTex->getSize().y * 1.f));
-				vuiView.setCenter(0, 0);
-
-				for (list<Zone*>::iterator it = zones.begin(); it != zones.end(); ++it)
-				{
-					(*it)->Draw(mapTex);
-				}
-
-				
-				sf::Rect<double> mapRect(vv.getCenter().x - vv.getSize().x / 2.0,
-					vv.getCenter().y - vv.getSize().y / 2.0, vv.getSize().x, vv.getSize().y);
-
-				QueryBorderTree(mapRect);
-
-				
-				DrawColoredMapTerrain(mapTex, Color(Color::Green));
-
-				/*Color testColor(0x75, 0x70, 0x90, 191);
-				testColor = Color::Green;
-				TerrainPiece * listVAIter = listVA;
-				while (listVAIter != NULL)
-				{
-					if (listVAIter->visible)
-					{
-						int vertexCount = listVAIter->terrainVA->getVertexCount();
-						for (int i = 0; i < vertexCount; ++i)
-						{
-							(*listVAIter->terrainVA)[i].color = testColor;
-						}
-						mapTex->draw(*listVAIter->terrainVA);
-						for (int i = 0; i < vertexCount; ++i)
-						{
-							(*listVAIter->terrainVA)[i].color = Color::White;
-						}
-					}
-
-					listVAIter = listVAIter->next;
-				}*/
-
-				testGateCount = 0;
-				queryMode = QUERY_GATE;
-				gateList = NULL;
-				gateTree->Query(this, mapRect);
-				Gate *mGateList = gateList;
-				while (gateList != NULL)
-				{
-					gateList->MapDraw(mapTex);
-
-					Gate *next = gateList->next;//edgeA->edge1;
-					gateList = next;
-				}
-
-
-
-
-				Vector2i b = mapTex->mapCoordsToPixel(Vector2f(p0->position.x, p0->position.y));
-
-				mapTex->setView(vuiView);
-
-				Vector2f realPos = mapTex->mapPixelToCoords(b);
-				realPos.x = floor(realPos.x + .5f);
-				realPos.y = floor(realPos.y + .5f);
-
-				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-
-				//mapTex->draw( kinMinimapIcon );
-
-				mapTex->setView(vv);
-
-				Vector2i b1 = mapTex->mapCoordsToPixel(Vector2f(playerOrigPos[0].x, playerOrigPos[0].y));
-
-				mapTex->setView(vuiView);
-
-				Vector2f realPos1 = mapTex->mapPixelToCoords(b1);
-				realPos1.x = floor(realPos1.x + .5f);
-				realPos1.y = floor(realPos1.y + .5f);
-
-				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-				kinMapSpawnIcon.setPosition(realPos1);
-				mapTex->draw(kinMapSpawnIcon);
-
-				mapTex->setView(vv);
-
-				Vector2i bGoal = mapTex->mapCoordsToPixel(Vector2f(goalPos.x, goalPos.y));
-
-				mapTex->setView(vuiView);
-
-				Vector2f realPosGoal = mapTex->mapPixelToCoords(bGoal);
-				realPosGoal.x = floor(realPosGoal.x + .5f);
-				realPosGoal.y = floor(realPosGoal.y + .5f);
-
-				//cout << "vuiVew size: " << vuiView.getSize().x << ", " << vuiView.getSize().y << endl;
-				
-				
-				
-				//goalMapIcon.setPosition(realPosGoal);
-				//mapTex->draw(goalMapIcon);
-
-				if (currentZone != NULL)
-				{
-					for (list<Enemy*>::iterator it = currentZone->allEnemies.begin(); it != currentZone->allEnemies.end(); ++it)
-					{
-						//cout << "drawing map" << endl;
-						(*it)->DrawMinimap(mapTex);
-					}
-				}
-
-				//mapTex->clear();
-				Sprite mapTexSprite;
-				mapTexSprite.setTexture(mapTex->getTexture());
-				mapTexSprite.setOrigin(mapTexSprite.getLocalBounds().width / 2, mapTexSprite.getLocalBounds().height / 2);
-				mapTexSprite.setPosition(0, 0);
-
-
-				//pauseTex->setView( bigV );
-				//window->setView( bigV );
-
-				//mapTexSprite.setScale( .5, -.5 );
-				mapTexSprite.setScale(.5, -.5);
-				//mapTexSprite.setScale( 1, -1 );
-
-				window->draw(mapTexSprite);
-				//pauseTex->draw( mapTexSprite );
-
-				//pauseTex->setV
-			}
-
-
-
-
-		}
-
-		window->display();
-
-		
-		
+			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+			assert(prm->testGame != NULL);
+
+			prm->testGame->accumulator = oldAccumulator;
+			prm->testGame->timeSyncFrames = timeSyncFrames;
+			while (!prm->testGame->RunMainLoopOnce()) {}
+		}*/
 	}
+
 
 	if (parentGame == NULL)
 	{
@@ -3261,6 +3384,8 @@ int GameSession::Run()
 
 void GameSession::Init()
 {
+	continueLoading = true;
+	isParallelSession = false;
 	bestTimeGhostOn = false;
 	bestReplayOn = false;
 
@@ -3336,6 +3461,106 @@ void GameSession::Init()
 	postProcessTex2->setSmooth(false);
 	ReadDecorImagesFile();
 	testBuf.SetRecOver(false);
+}
+
+void GameSession::GGPORunFrame()
+{
+	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+	{
+		Session::GGPORunFrame();
+		return;
+	}
+
+	if (isParallelSession)
+	{
+		cout << "update parallel session" << endl;
+		UpdateAllPlayersInput();
+		GGPORunGameModeUpdate();
+	}
+	else
+	{
+		//cout << "ggpo run frame " << endl;
+		int disconnect_flags;
+		int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
+
+		//UpdateControllers();
+
+		bool gccEnabled = mainMenu->gccDriverEnabled;
+
+		if (gccEnabled)
+			gcControllers = mainMenu->gccDriver->getState();
+
+
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			GameController &con = GetController(i);
+			if (gccEnabled)
+				con.gcController = gcControllers[i];
+
+			con.UpdateState();
+
+			GetCurrInput(i) = con.GetState();
+			GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		}
+
+
+
+		assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
+		//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();
+		int input = GetCurrInput(0).GetCompressedState();
+		//input = rand();
+		GGPOErrorCode result = ggpo_add_local_input(ggpo, ngs->local_player_handle, &input, sizeof(input));
+
+		//cout << "ggpo run frame: " << result << endl;
+		//cout << "local player handle: " << ngs->local_player_handle << "\n";
+
+		//static ControllerState lastCurr;
+
+
+		if (GGPO_SUCCEEDED(result))
+		{
+			frameConfirmed = false; //to make sure to only send desync checks on confirmed frames
+			result = ggpo_synchronize_input(ggpo, (void*)compressedInputs, sizeof(int) * GGPO_MAX_PLAYERS, &disconnect_flags);
+			if (GGPO_SUCCEEDED(result))
+			{
+				//GetPrevInput(1) = lastCurr;
+
+				for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
+				{
+					GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+				}
+
+				cout << "ggpo frame" << endl;
+				//cout << GetCurrInput(0).A << endl;
+
+				/*ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+				assert(prm->testGame != NULL);
+
+				for (int i = 0; i < GGPO_MAX_PLAYERS; ++i)
+				{
+					prm->testGame->GetCurrInput(i).SetFromCompressedState(compressedInputs[i]);
+				}*/
+
+				//lastCurr = GetCurrInput(1);
+				//cout << "actually update the game" << endl;
+				UpdateAllPlayersInput();
+
+				assert(gameState == GameState::RUN);
+
+				GGPORunGameModeUpdate();
+
+				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+				//prm->testGame->GGPORunFrame();
+
+				//frameCC++;
+				//accumulator -= TIMESTEP;
+
+			}
+
+		}
+	}
 }
 
 void GameSession::SetStorySeq(StorySequence *storySeq)
@@ -3537,6 +3762,7 @@ void GameSession::CleanupPauseMenu()
 
 void GameSession::UpdateEnvShaders()
 {
+	//sometimes gets called like 8 times in a frame wtf?
 	Vector2f botLeft(view.getCenter().x - view.getSize().x / 2,
 		view.getCenter().y + view.getSize().y / 2);
 
@@ -3636,6 +3862,7 @@ void GameSession::DrawReplayGhosts(sf::RenderTarget *target)
 
 void GameSession::UpdatePolyShaders( Vector2f &botLeft, Vector2f &playertest)
 {
+	//cout << "here?" << endl;
 	//oldShaderZoom is only used in editor. Need to optimize this in GameSession as well
 	bool first = oldShaderZoom < 0;
 

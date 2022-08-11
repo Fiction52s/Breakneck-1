@@ -1,6 +1,8 @@
 #ifndef __GAMEMODE_H__
 #define __GAMEMODE_H__
 
+#include <vector>
+
 struct Session;
 struct MultiplayerBase;
 struct BasicAirEnemyParams;
@@ -9,6 +11,7 @@ struct HUD;
 struct Gator;
 struct Bird;
 struct FightEndSequence;
+struct GameSession;
 
 struct GameMode
 {

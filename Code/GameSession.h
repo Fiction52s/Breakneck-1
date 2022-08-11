@@ -424,7 +424,7 @@ struct GameSession : RayCastHandler, Session
 	bool nextFrameRestart;
 	bool showTerrainDecor;
 	
-	
+	bool isParallelSession;
 	
 	int returnVal;
 
@@ -435,6 +435,10 @@ struct GameSession : RayCastHandler, Session
 	std::string GetBestReplayPath();
 	GameSession * CreateBonus(const std::string &bonusName,
 		int p_bonusType = BONUSTYPE_DEFAULT);
+
+	GameSession *CreateParallelSession();
+	void GGPORunFrame();
+
 	void SetBonus(GameSession *bonus,
 		V2d &returnPos, 
 		BonusHandler *bHandler = NULL);
@@ -592,5 +596,7 @@ struct GameSession : RayCastHandler, Session
 	bool HasLog(int logIndex);
 	int GetBonusType();
 	int GetPlayerNormalSkin(int index);
+
+	bool RunMainLoopOnce(); //return false means go again
 };
 #endif

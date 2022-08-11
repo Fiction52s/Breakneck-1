@@ -1,16 +1,29 @@
-#include "Session.h"
 #include "GameMode.h"
 #include "Actor.h"
 #include "HUD.h"
 #include "Enemy_Gator.h"
 #include "Enemy_Bird.h"
 #include "FightEndSequence.h"
+#include "GameSession.h"
 
 using namespace std;
 using namespace sf;
 
 ParallelRaceMode::ParallelRaceMode()
 {
+	testGame = NULL;
+
+	if (sess->IsSessTypeGame())
+	{
+		GameSession *game = GameSession::GetSession();
+		if (game != NULL)
+		{
+			if (!game->isParallelSession)
+			{
+				testGame = game->CreateParallelSession();
+			}
+		}
+	}
 	endSeq = new FightEndSequence;
 	endSeq->Init();
 }
@@ -18,11 +31,21 @@ ParallelRaceMode::ParallelRaceMode()
 ParallelRaceMode::~ParallelRaceMode()
 {
 	delete endSeq;
+
+	if (testGame != NULL)
+	{
+		delete testGame;
+	}
 }
 
 int ParallelRaceMode::GetNumStoredBytes()
 {
-	return sizeof(MyData);
+	int total = sizeof(MyData);
+	if (testGame != NULL)
+	{
+		total += testGame->GetNumStoredBytes();
+	}
+	return total;
 }
 
 void ParallelRaceMode::StoreBytes(unsigned char *bytes)
@@ -33,6 +56,12 @@ void ParallelRaceMode::StoreBytes(unsigned char *bytes)
 	int dataSize = sizeof(MyData);
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
+
+	if (testGame != NULL)
+	{
+		testGame->StoreBytes(bytes);
+		bytes += testGame->GetNumStoredBytes();
+	}
 }
 
 void ParallelRaceMode::SetFromBytes(unsigned char *bytes)
@@ -44,6 +73,12 @@ void ParallelRaceMode::SetFromBytes(unsigned char *bytes)
 	endSeq->frame = data.endSeqFrame;
 
 	bytes += sizeof(MyData);
+
+	if (testGame != NULL)
+	{
+		testGame->SetFromBytes(bytes);
+		bytes += testGame->GetNumStoredBytes();
+	}
 }
 
 void ParallelRaceMode::Setup()

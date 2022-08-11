@@ -832,7 +832,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	ExtraState *currExtraState;
 	sf::CircleShape testSimCircle;
 
-	int GetSaveDataSize();
 	//SaveGameState *saveStates[10];
 	//bool usedSaveState[10];
 	GGPOPlayer *ggpoPlayers;
@@ -840,7 +839,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void InitGGPO();
 	virtual void CleanupGGPO();
 	bool GGPORunGameModeUpdate();
-	void GGPORunFrame();
+	virtual void GGPORunFrame();
 	bool SaveState(unsigned char **buffer,
 		int *len, int *checksum, int frame);
 	bool LoadState(unsigned char *buffer, int len);
@@ -878,6 +877,9 @@ struct Session : TilesetManager, QuadTreeCollider
 	void ProcessDesyncMessageQueue();
 	void ConfirmFrame( int frameCheck );
 	virtual int GetPlayerNormalSkin(int index);
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
 };
 
 #endif
