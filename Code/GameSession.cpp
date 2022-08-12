@@ -2281,16 +2281,6 @@ bool GameSession::RunMainLoopOnce()
 
 		if (matchParams.netplayManager != NULL)
 		{
-			if (IsKeyPressed(Keyboard::Escape))
-			{
-				cout << "esc is pressed. ending match." << endl;
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-
-				netplayManager->DumpDesyncInfo();
-				return true;
-			}
-
 			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
 			{
 				quit = true;
@@ -2302,6 +2292,16 @@ bool GameSession::RunMainLoopOnce()
 
 			if (!isParallelSession)
 			{
+				if (IsKeyPressed(Keyboard::Escape))
+				{
+					cout << "esc is pressed. ending match." << endl;
+					quit = true;
+					returnVal = GR_EXITLEVEL;
+
+					netplayManager->DumpDesyncInfo();
+					return true;
+				}
+
 				ggpo_idle(ggpo, 5);
 				SteamAPI_RunCallbacks();
 			}
@@ -2329,17 +2329,7 @@ bool GameSession::RunMainLoopOnce()
 						break;
 					}
 				}
-
-				//dont do this because you still need to draw the frame
-				/*if (switchGameState)
-				{
-				continue;
-				}*/
 			}
-
-
-			//if (!GGPORunGameModeUpdate())
-			//	continue;
 		}
 		else
 		{

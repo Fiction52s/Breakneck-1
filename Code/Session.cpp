@@ -7207,19 +7207,6 @@ void Session::AddDesyncCheckInfo()
 
 bool Session::GGPORunGameModeUpdate()
 {
-	//if (players[0]->currInput.leftStickPad != players[1]->currInput.leftStickPad)
-	//{
-	//	cout << "p0:: L: " << (int)players[0]->currInput.LLeft() << ", R: " << (int)players[0]->currInput.LRight() << ", p1:: L: " << (int)players[1]->currInput.LLeft() << ", " << (int)players[1]->currInput.LRight() << endl;
-	//	cout << "different inputs" << endl;
-	//}
-
-	/*if (isParallelSession)
-	{
-		ggpo_advance_frame(ggpo);
-		return true;
-	}*/
-
-
 	switchGameState = false;
 
 	if (!firstUpdateHasHappened)
@@ -7308,14 +7295,6 @@ bool Session::GGPORunGameModeUpdate()
 	RecGhostRecordFrame();
 
 	UpdateReplayGhostSprites();
-
-	/*if (gameMode->CheckVictoryConditions())
-	{
-		ggpo_advance_frame(ggpo);
-		gameMode->EndGame();
-
-		return true;
-	}*/
 
 	if (!RunPostUpdate())
 	{
