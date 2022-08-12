@@ -626,6 +626,8 @@ struct Actor : QuadTreeCollider,
 
 	const static int MAX_BUBBLES = 5;
 
+	PState *pState;
+
 	//havent put into rollback yet
 	int numCalculatedFuturePositions;
 	V2d* futurePositions;
@@ -1810,6 +1812,11 @@ struct Actor : QuadTreeCollider,
 	void InitPreFrameCalculations();
 	void UpdateNumFuturePositions();
 	
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+
+
 	//void PopulateFromState(PState *ps);
 	//kin action functions
 

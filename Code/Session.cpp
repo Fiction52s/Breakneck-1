@@ -6964,6 +6964,16 @@ void Session::InitGGPO()
 	ngs = new GGPONonGameState;
 	ggpoPlayers = new GGPOPlayer[4];
 
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->pState = new PState;
+		}
+	}
+
 
 	currExtraState->SetNumSimulationFrames(numSimulatedFramesRequired);
 
@@ -7496,7 +7506,20 @@ void Session::GGPORunFrame()
 
 int Session::GetNumStoredBytes()
 {
-	int totalSize = sizeof(SaveGameState);
+	int totalSize = 0;
+	
+	totalSize += sizeof(SaveGameState);
+	totalSize += currExtraState->GetNumStoredBytes();
+
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			totalSize += p->GetNumStoredBytes();
+		}
+	}
 
 	totalSize += gameMode->GetNumStoredBytes();
 
@@ -7512,18 +7535,11 @@ int Session::GetNumStoredBytes()
 	totalSize += absorbDarkParticles->GetNumStoredBytes();
 	totalSize += absorbShardParticles->GetNumStoredBytes();
 
-	totalSize += currExtraState->GetNumStoredBytes();
-
 	return totalSize;
 }
 
 void Session::StoreBytes(unsigned char *bytes)
 {
-	
-	players[0]->PopulateState(&currSaveState->states[0]);
-	players[0]->PopulateExtraState(currExtraState);
-	players[1]->PopulateState(&currSaveState->states[1]);
-	players[1]->PopulateExtraState(currExtraState);
 	currSaveState->totalGameFrames = totalGameFrames;
 	currSaveState->activeEnemyList = activeEnemyList;
 	currSaveState->activeEnemyListTail = activeEnemyListTail;
@@ -7540,8 +7556,28 @@ void Session::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, currSaveState, saveSize);
 	bytes += saveSize;
 
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->PopulateExtraState(currExtraState);
+		}
+	}
+
 	currExtraState->StoreBytes(bytes);
 	bytes += currExtraState->GetNumStoredBytes();
+
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->StoreBytes(bytes);
+			bytes += p->GetNumStoredBytes();
+		}
+	}
 
 	gameMode->StoreBytes(bytes);
 	bytes += gameMode->GetNumStoredBytes();
@@ -7578,6 +7614,17 @@ void Session::SetFromBytes(unsigned char *bytes)
 	currExtraState->SetFromBytes(bytes);
 	bytes += currExtraState->GetNumStoredBytes();
 
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->SetFromBytes(bytes);
+			bytes += p->GetNumStoredBytes();
+		}
+	}
+
 	gameMode->SetFromBytes(bytes);
 	bytes += gameMode->GetNumStoredBytes();
 
@@ -7607,9 +7654,6 @@ void Session::SetFromBytes(unsigned char *bytes)
 
 	gameState = (GameState)currSaveState->gameState;
 	activeSequence = currSaveState->activeSequence;
-
-	players[0]->PopulateFromState(&currSaveState->states[0]);
-	players[1]->PopulateFromState(&currSaveState->states[1]);
 }
 
 bool Session::SaveState(unsigned char **buffer,

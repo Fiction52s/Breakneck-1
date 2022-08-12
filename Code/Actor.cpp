@@ -3019,6 +3019,7 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	skinShader("player"), exitAuraShader( "boostplayer" )
 	{
 
+	pState = NULL;
 	preSimulationState = NULL;
 	futurePositions = NULL;
 	soundInfos.resize(PlayerSounds::S_Count);
@@ -3819,6 +3820,9 @@ Actor::~Actor()
 	{
 		delete (*it);
 	}*/
+
+	if (pState != NULL)
+		delete pState;
 
 	if (preSimulationState != NULL)
 	{
@@ -21694,4 +21698,21 @@ void Actor::UpdateInHitlag()
 	 }
 
 	 futurePositions = new V2d[num];
+ }
+
+ int Actor::GetNumStoredBytes()
+ {
+	 return sizeof(PState);
+ }
+
+ void Actor::StoreBytes(unsigned char *bytes)
+ {
+	 PopulateState(pState);
+	 memcpy(bytes, pState, sizeof(PState));
+ }
+
+ void Actor::SetFromBytes(unsigned char *bytes)
+ {
+	 memcpy(pState, bytes, sizeof(PState));
+	 PopulateFromState(pState);
  }

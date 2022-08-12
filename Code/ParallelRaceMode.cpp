@@ -102,14 +102,14 @@ bool ParallelRaceMode::CheckVictoryConditions()
 		return false;
 	}
 
-	if (sess->GetPlayer(0)->hitGoal)
+	/*if (sess->GetPlayer(0)->hitGoal)
 	{
 		return true;
 	}
 	else if (sess->GetPlayer(1)->hitGoal)
 	{
 		return true;
-	}
+	}*/
 
 
 	/*bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];

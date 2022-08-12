@@ -385,7 +385,6 @@ struct PState
 struct Sequence;
 struct SaveGameState
 {
-	PState states[2];
 	int totalGameFrames;
 	Enemy *activeEnemyList;
 	Enemy *activeEnemyListTail;
@@ -401,10 +400,12 @@ struct SaveGameState
 
 struct ExtraState
 {
-	ExtraState();
-	~ExtraState();
 	V2d *futurePositions[2];
 	int numFrames;
+
+	ExtraState();
+	~ExtraState();
+	
 	void SetNumSimulationFrames(int num);
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);

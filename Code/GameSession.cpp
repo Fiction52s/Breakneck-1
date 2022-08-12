@@ -244,8 +244,11 @@ void GameSession::UpdateCamera()
 	}
 	case MatchParams::GAME_MODE_PARALLEL_RACE:
 	{
-		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.SetCamType(Camera::CamType::BASIC);
+		cam.playerIndex = 0;
 		cam.Update();
+		/*cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();*/
 		break;
 	}
 	}
@@ -509,8 +512,19 @@ GameSession *GameSession::CreateParallelSession()
 	parallelGame->SetParentTilesetManager(this);
 	parallelGame->currSaveState = new SaveGameState;
 	parallelGame->currExtraState = new ExtraState;
+
 	//parallelGame->SetParentGame(this);
 	parallelGame->Load();
+
+	Actor *p = NULL;
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		p = parallelGame->GetPlayer(i);
+		if (p != NULL)
+		{
+			p->pState = new PState;
+		}
+	}
 
 	parallelGame->RestartLevel();
 
@@ -1929,11 +1943,15 @@ void GameSession::SetupPlayers()
 	}
 	else
 	{
-		for (int i = 1; i < matchParams.numPlayers; ++i )//mapHeader->GetNumPlayerPositions(); ++i)
+
+		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
-			players[i] = new Actor(this, NULL, i);
-			//if( players[i] != NULL )
-			//	players[i]->Respawn(); //need a special bonus respawn later
+			for (int i = 1; i < matchParams.numPlayers; ++i)//mapHeader->GetNumPlayerPositions(); ++i)
+			{
+				players[i] = new Actor(this, NULL, i);
+				//if( players[i] != NULL )
+				//	players[i]->Respawn(); //need a special bonus respawn later
+			}
 		}
 	}
 
