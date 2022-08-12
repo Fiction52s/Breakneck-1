@@ -45,6 +45,7 @@ void Actor::EXITBOOST_UpdateSprite()
 
 	if (frame == 59 * 2)
 	{
+		//wtf are independent effects LOL
 		owner->mainMenu->ActivateIndEffect(
 			owner->mainMenu->tilesetManager.GetTileset("Kin/FX/exitenergy_0_512x512.png", 512, 512), V2d(960, 540), false, 0, 4, 2, true, 2);
 	}

@@ -480,12 +480,11 @@ struct Actor : QuadTreeCollider,
 		PLAYERFX_LAND_0,
 		PLAYERFX_LAND_1,
 		PLAYERFX_LAND_2,
-		PLAYERFX_RUN_START_0,
-		PLAYERFX_RUN_START_1,
-		PLAYERFX_RUN_START_2,
-		PLAYERFX_SPRINT,
+		PLAYERFX_RUN_START,
+		PLAYERFX_SPRINT_0,
+		PLAYERFX_SPRINT_1,
+		PLAYERFX_SPRINT_2,
 		PLAYERFX_RUN,
-		PLAYERFX_BIG_RUN_REPEAT,
 		PLAYERFX_JUMP_0,
 		PLAYERFX_JUMP_1,
 		PLAYERFX_JUMP_2,
@@ -494,30 +493,21 @@ struct Actor : QuadTreeCollider,
 		PLAYERFX_WALLJUMP_2,
 		PLAYERFX_DOUBLE,
 		PLAYERFX_GRAV_REVERSE,
-		PLAYERFX_CHARGE_BLUE_0,
-		PLAYERFX_CHARGE_BLUE_1,
-		PLAYERFX_CHARGE_BLUE_2,
-		PLAYERFX_CHARGE_PURPLE,
+		PLAYERFX_SPEED_LEVEL_CHARGE,
 		PLAYERFX_RIGHT_WIRE_BOOST,
 		PLAYERFX_LEFT_WIRE_BOOST,
 		PLAYERFX_DOUBLE_WIRE_BOOST,
 		PLAYERFX_AIRDASH_DIAGONAL,
 		PLAYERFX_AIRDASH_UP,
 		PLAYERFX_AIRDASH_HOVER,
-		PLAYERFX_DEATH_1A,
+		/*PLAYERFX_DEATH_1A,
 		PLAYERFX_DEATH_1B,
 		PLAYERFX_DEATH_1C,
 		PLAYERFX_DEATH_1D,
 		PLAYERFX_DEATH_1E,
-		PLAYERFX_DEATH_1F,
+		PLAYERFX_DEATH_1F,*/
 		PLAYERFX_GATE_ENTER,
-		PLAYERFX_SMALL_LIGHTNING_0,
-		PLAYERFX_SMALL_LIGHTNING_1,
-		PLAYERFX_SMALL_LIGHTNING_2,
-		PLAYERFX_SMALL_LIGHTNING_3,
-		PLAYERFX_SMALL_LIGHTNING_4,
-		PLAYERFX_SMALL_LIGHTNING_5,
-		PLAYERFX_SMALL_LIGHTNING_6,
+		PLAYERFX_SMALL_LIGHTNING,
 		PLAYERFX_GATE_BLACK,
 		PLAYERFX_KEY,
 		PLAYERFX_KEY_EXPLODE,
@@ -525,6 +515,10 @@ struct Actor : QuadTreeCollider,
 		PLAYERFX_SPRINT_STAR,
 		PLAYERFX_LAUNCH_PARTICLE_0,
 		PLAYERFX_LAUNCH_PARTICLE_1,
+		PLAYERFX_ENTER,
+		PLAYERFX_EXITENERGY_0,
+		PLAYERFX_EXITENERGY_1,
+		PLAYERFX_EXITENERGY_2,
 		PLAYERFX_Count,
 	};
 
@@ -930,8 +924,7 @@ struct Actor : QuadTreeCollider,
 	
 	std::vector<SoundInfo*> soundInfos;
 	Tileset *ts_exitAura;
-	Tileset *ts_dirtyAura;
-	Tileset *ts_lowGravRing;
+	Tileset *ts_antiTimeSlowRing;
 	sf::Sprite boosterRingSprite;
 	
 	sf::Shader despFaceShader;
@@ -943,7 +936,6 @@ struct Actor : QuadTreeCollider,
 	bool canStandUp;
 	V2d currNormal;
 	Tileset *ts_kinFace;
-	sf::Sprite dirtyAuraSprite;//for when you're absorbing a power
 	sf::Sprite exitAuraSprite;
 	std::vector<void(Actor::*)()> startActionFuncs;
 	std::vector<void(Actor::*)()> endActionFuncs;
@@ -969,7 +961,6 @@ struct Actor : QuadTreeCollider,
 	RisingParticleUpdater *rpu;
 	GroundTrigger *storedTrigger;
 	AirTrigger *currAirTrigger;
-	bool showDirtyAura;
 	AirTriggerBehavior airTrigBehavior;
 	//might need more repeating sounds
 	//in future, but for now this works.
@@ -1467,7 +1458,6 @@ struct Actor : QuadTreeCollider,
 	void UpdateRisingAura();
 	void UpdateLockedFX();
 	void ProcessSpecialTerrain();
-	void SetDirtyAura(bool on);
 	void TurnFace();
 	void StandInPlace();
 	void WaitInPlace();

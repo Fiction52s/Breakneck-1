@@ -90,11 +90,11 @@ bool GetAirdashPowerSeq::Update()
 			sess->mainMenu->musicPlayer->TransitionMusic(sceneMusic, 60);
 			//owner->cam.SetManual(true);
 			sess->cam.Ease(Vector2f(player->position.x, player->position.y - 68), .75, 60, CubicBezier());
-			player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
-			player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
-				player->dirtyAuraSprite.getLocalBounds().height / 2);
+			//player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect( 0 ));
+			//player->dirtyAuraSprite.setOrigin(player->dirtyAuraSprite.getLocalBounds().width / 2,
+			//	player->dirtyAuraSprite.getLocalBounds().height / 2);
 
-			player->SetDirtyAura(true);
+			//player->SetDirtyAura(true);
 			
 			player->SeqKneel();
 		}
@@ -128,11 +128,11 @@ bool GetAirdashPowerSeq::Update()
 			if (ff >= 0 && ff < 10 * 3)
 			//if( frame < 10 * 3 )
 			{
-				player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(ff / 3 + 15));
+			//	player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect(ff / 3 + 15));
 			}
 			else
 			{
-				player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+			//	player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
 			}
 
 
@@ -142,7 +142,7 @@ bool GetAirdashPowerSeq::Update()
 	{
 		if (frame == 0)
 		{
-			player->SetDirtyAura(false);
+		//	player->SetDirtyAura(false);
 		}
 		break;
 	}
@@ -204,11 +204,11 @@ bool GetAirdashPowerSeq::Update()
 
 	if (state != EXPEL_ENERGY)
 	{
-		player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
+	//	player->dirtyAuraSprite.setTextureRect(player->ts_dirtyAura->GetSubRect((frame % (15 * 3) / 3)));
 	}
 	
-	player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x, 
-		player->sprite->getPosition().y - 32));
+	//player->dirtyAuraSprite.setPosition(Vector2f(player->sprite->getPosition().x, 
+	//	player->sprite->getPosition().y - 32));
 
 	if (sess->GetGameSessionState() == GameSession::SEQUENCE)
 	{

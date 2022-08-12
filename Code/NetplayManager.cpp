@@ -81,7 +81,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -1124,7 +1124,6 @@ void NetplayManager::FindQuickplayMatch()
 		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;
 		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
-
 
 		LoadMap();
 		

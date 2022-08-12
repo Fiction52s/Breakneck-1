@@ -2378,19 +2378,19 @@ bool GameSession::RunMainLoopOnce()
 		else
 		{
 			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-			//assert(prm->testGame != NULL);
 
 			if (!isParallelSession)
 			{
+				DrawGame(preScreenTex);
 				
-				if (totalGameFrames % 60 < 30)
+				/*if (totalGameFrames % 60 < 30)
 				{
-					DrawGame(preScreenTex);
+					
 				}
 				else
 				{
 					prm->testGame->DrawGame(preScreenTex);
-				}
+				}*/
 			}
 		}
 
@@ -5233,6 +5233,10 @@ int GameSession::GetPlayerNormalSkin(int index)
 	if (saveFile != NULL)
 	{
 		return saveFile->defaultSkinIndex;
+	}
+	else if (isParallelSession)
+	{
+		return 1; //just for testing
 	}
 	else if (netplayManager != NULL)
 	{

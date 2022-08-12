@@ -2112,6 +2112,21 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 			p->Draw(target);
 		}
 	}
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession)
+	{
+		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = prm->testGame->GetPlayer(i);
+			if (p != NULL)
+			{
+				p->Draw(target);
+			}
+		}
+	}
 }
 
 void Session::UpdatePlayerWireQuads()
@@ -2693,7 +2708,14 @@ void Session::UpdateControllers()
 
 void Session::UpdatePlayerInput(int index)
 {
-	Actor *player = GetPlayer(index);
+	int playerInd = index;
+
+	if( isParallelSession )
+	{
+		playerInd = 0;
+	}
+
+	Actor *player = GetPlayer(playerInd);
 	if (player == NULL)
 		return;
 
@@ -2765,7 +2787,8 @@ void Session::UpdateAllPlayersInput()
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 		//prm->testGame->GetPlayer(0)->currInput = GetPlayer(0)->currInput;
 		//prm->testGame->GetPlayer(0)->prevInput = GetPlayer(0)->prevInput;
-		prm->testGame->UpdateAllPlayersInput();
+		prm->testGame->UpdatePlayerInput(1);
+		//prm->testGame->UpdateAllPlayersInput();
 	}
 }
 
@@ -7030,8 +7053,11 @@ void Session::InitGGPO()
 
 	if ( !netplayManager->IsHost() )//!netplayManager->Is() )
 	{
-		myIndex = 1;
-		otherIndex = 0;
+		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			myIndex = 1;
+			otherIndex = 0;
+		}
 	}
 
 	for (int i = 0; i < netplayManager->numPlayers; ++i)

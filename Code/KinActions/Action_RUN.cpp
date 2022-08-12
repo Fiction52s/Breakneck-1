@@ -76,7 +76,7 @@ void Actor::RUN_UpdateSprite()
 		(currInput.LLeft() && !prevInput.LLeft())
 		|| (currInput.LRight() && !prevInput.LRight())))
 	{
-		ActivateEffect(PLAYERFX_RUN_START_0 + speedLevel, Vector2f(pp + gn * 40.0 + along * xExtraStartRun), RadiansToDegrees(angle), 6, 3, fr);
+		ActivateEffect(PLAYERFX_RUN_START, Vector2f(pp + gn * 40.0 + along * xExtraStartRun), RadiansToDegrees(angle), 6, 3, fr);
 	}
 
 	double xExtraStart = -48.0;

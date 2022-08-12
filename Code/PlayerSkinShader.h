@@ -14,7 +14,7 @@ struct PlayerSkinShader
 	void SetAuraColor(sf::Color c);
 	void SetQuad(sf::Glsl::Vec4 &v);
 	void SetQuad(Tileset *ts, int tile);
-	const static int NUM_PALETTE_COLORS = 64;
+	const static int NUM_PALETTE_COLORS = 164;
 	sf::Image skinPaletteImage;
 	sf::Shader pShader;
 	sf::Glsl::Vec4 paletteArray[NUM_PALETTE_COLORS];
