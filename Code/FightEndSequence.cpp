@@ -2,6 +2,7 @@
 #include "GameSession.h"
 #include "ParticleEffects.h"
 #include "Actor.h"
+#include "GameMode.h"
 
 using namespace sf;
 using namespace std;
@@ -50,6 +51,14 @@ void FightEndSequence::UpdateState()
 			sess->cam.SetRumble(10, 10, 90);
 
 			sess->SetGameSessionState(GameSession::FROZEN);
+
+			if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !sess->isParallelSession)
+			{
+				ParallelRaceMode *prm = (ParallelRaceMode*)sess->gameMode;
+				
+				
+				prm->testGame->SetGameSessionState(GameSession::FROZEN);
+			}
 			//sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			//sess->cam.SetRumble(10, 10, 90, 4);
 		}

@@ -2080,6 +2080,22 @@ void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
 
 void Session::DrawPlayerWires( RenderTarget *target )
 {
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession)
+	{
+		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+		Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = prm->testGame->GetPlayer(i);
+			if (p != NULL)
+			{
+				p->DrawWires(target);
+			}
+		}
+	}
+
+
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
@@ -2103,16 +2119,6 @@ void Session::SetPlayerInputOn(bool on )
 
 void Session::DrawPlayers(sf::RenderTarget *target)
 {
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
-			p->Draw(target);
-		}
-	}
-
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession)
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
@@ -2125,6 +2131,16 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 			{
 				p->Draw(target);
 			}
+		}
+	}
+
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			p->Draw(target);
 		}
 	}
 }
@@ -4001,7 +4017,8 @@ void Session::SimulateGGPOGameFrame()
 {
 	simulationMode = true;
 
-	GGPORunGameModeUpdate();
+	RunGGPOModeUpdate();
+	//GGPORunGameModeUpdate();
 
 	simulationMode = false;
 
@@ -4010,6 +4027,11 @@ void Session::SimulateGGPOGameFrame()
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
 		prm->testGame->SimulateGGPOGameFrame();
+	}
+
+	if (!isParallelSession)
+	{
+		ggpo_advance_frame(ggpo); //only update this once
 	}
 }
 
@@ -7384,14 +7406,14 @@ bool Session::GGPORunGameModeUpdate()
 		//return true;
 	}
 
-	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
+	/*if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
 	{
 		ggpo_advance_frame(ggpo);
 	}
 	else if( isParallelSession )
 	{
 		ggpo_advance_frame(ggpo);
-	}
+	}*/
 
 	return true;
 }
@@ -7490,16 +7512,19 @@ void Session::GGPORunFrame()
 			//cout << "actually update the game" << endl;
 			UpdateAllPlayersInput();
 
-			assert(gameState == GameState::RUN);
+			//assert(gameState == GameState::RUN);
 
-			GGPORunGameModeUpdate();
-			
+			RunGGPOModeUpdate();
+
 			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-				
-				prm->testGame->GGPORunGameModeUpdate();
+
+				prm->testGame->RunGGPOModeUpdate();
 			}
+
+			ggpo_advance_frame(ggpo);
+			
 		}
 		
 	}
@@ -8308,4 +8333,17 @@ int Session::GetRand()
 void Session::SeedRand(uint32 r)
 {
 	randomState = r;
+}
+
+void Session::RunGGPOModeUpdate()
+{
+	switch (gameState)
+	{
+	case GameState::RUN:
+		GGPORunGameModeUpdate();
+		break;
+	case GameState::FROZEN:
+		GGPOFrozenGameModeUpdate();
+		break;
+	}
 }

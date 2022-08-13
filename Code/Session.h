@@ -882,6 +882,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
+	void RunGGPOModeUpdate();
 };
 
 #endif

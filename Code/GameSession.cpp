@@ -2267,13 +2267,9 @@ bool GameSession::RunMainLoopOnce()
 	frameRateDisplay.Update(frameTime);
 	UpdateRunningTimerText();
 
-	if( !isParallelSession )
-	{ 
-		accumulator += frameTime;
-	}
+	accumulator += frameTime;
 	
-
-	if (gameState == RUN)
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
 		window->clear(Color::Red);
 		preScreenTex->clear(Color::Red);
@@ -2281,6 +2277,16 @@ bool GameSession::RunMainLoopOnce()
 
 		if (matchParams.netplayManager != NULL)
 		{
+			if (IsKeyPressed(Keyboard::Escape))
+			{
+				cout << "esc is pressed. ending match." << endl;
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->DumpDesyncInfo();
+				return true;
+			}
+
 			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
 			{
 				quit = true;
@@ -2290,22 +2296,115 @@ bool GameSession::RunMainLoopOnce()
 				return true;
 			}
 
-			if (!isParallelSession)
+
+			ggpo_idle(ggpo, 5);
+			SteamAPI_RunCallbacks();
+
+			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
 			{
-				if (IsKeyPressed(Keyboard::Escape))
-				{
-					cout << "esc is pressed. ending match." << endl;
-					quit = true;
-					returnVal = GR_EXITLEVEL;
+				//turn these back on later
+				//ggpo_idle(ggpo, 5);
 
-					netplayManager->DumpDesyncInfo();
-					return true;
-				}
-
-				ggpo_idle(ggpo, 5);
-				SteamAPI_RunCallbacks();
+				--timeSyncFrames;
+				accumulator -= TIMESTEP;
 			}
-			
+			else
+			{
+				while (accumulator >= TIMESTEP)
+				{
+					//ggpo_idle(ggpo, 5);
+					//SteamAPI_RunCallbacks();
+					GGPORunFrame();
+					accumulator -= TIMESTEP;
+
+					/*if (switchGameState)
+					{
+						break;
+					}*/
+				}
+			}
+		}
+		else
+		{
+			if (!RunGameModeUpdate())
+			{
+				return false;
+			}
+		}
+
+		sf::Event ev;
+		while (window->pollEvent(ev))
+		{
+		}
+
+
+		DrawGame(preScreenTex);
+
+		if (repPlayer != NULL)
+		{
+			preScreenTex->setView(uiView);
+			preScreenTex->draw(replayText);
+			preScreenTex->setView(view);
+		}
+
+		preScreenTex->display();
+
+		const Texture &preTex0 = preScreenTex->getTexture();
+		Sprite preTexSprite(preTex0);
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		preTexSprite.setTexture(preTex0);
+
+		if (debugScreenRecorder != NULL)
+			debugScreenRecorder->Update(preTex0);
+
+		window->draw(preTexSprite);//, &timeSlowShader );
+
+		if (netplayManager != NULL && netplayManager->desyncDetected)
+		{
+			sf::Vector2u windowSize = window->getSize();
+			sf::Texture texture;
+			texture.create(windowSize.x, windowSize.y);
+			texture.update(*window);
+			sf::Image screenshot = texture.copyToImage();
+			screenshot.saveToFile("Resources/Debug/desync.png");
+
+			quit = true;
+			returnVal = GR_EXITLEVEL;
+
+			netplayManager->Abort();
+		}
+	}
+	else if (gameState == RUN)
+	{
+		window->clear(Color::Red);
+		preScreenTex->clear(Color::Red);
+		postProcessTex2->clear(Color::Red);
+
+		if (matchParams.netplayManager != NULL)
+		{
+			if (IsKeyPressed(Keyboard::Escape))
+			{
+				cout << "esc is pressed. ending match." << endl;
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->DumpDesyncInfo();
+				return true;
+			}
+
+			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
+			{
+				quit = true;
+				returnVal = GR_EXITLEVEL;
+
+				netplayManager->DumpDesyncInfo();
+				return true;
+			}
+
+
+			ggpo_idle(ggpo, 5);
+			SteamAPI_RunCallbacks();
 
 			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
 			{
@@ -2361,65 +2460,65 @@ bool GameSession::RunMainLoopOnce()
 			}
 		}
 
-		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+
+		DrawGame(preScreenTex);
+		//if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
+		//{
+		//	DrawGame(preScreenTex);
+		//}
+		//else
+		//{
+		//	ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+		//	if (!isParallelSession)
+		//	{
+		//		DrawGame(preScreenTex);
+		//		
+		//		//if (totalGameFrames % 60 < 30)
+		//		//{
+		//		//	
+		//		//}
+		//		//else
+		//		//{
+		//		//	prm->testGame->DrawGame(preScreenTex);
+		//		//}
+		//	}
+		//}
+
+		
+		if (repPlayer != NULL)
 		{
-			DrawGame(preScreenTex);
+			preScreenTex->setView(uiView);
+			preScreenTex->draw(replayText);
+			preScreenTex->setView(view);
 		}
-		else
+
+		preScreenTex->display();
+
+		const Texture &preTex0 = preScreenTex->getTexture();
+		Sprite preTexSprite(preTex0);
+		preTexSprite.setPosition(-960 / 2, -540 / 2);
+		preTexSprite.setScale(.5, .5);
+		preTexSprite.setTexture(preTex0);
+
+		if (debugScreenRecorder != NULL)
+			debugScreenRecorder->Update(preTex0);
+
+		window->draw(preTexSprite);//, &timeSlowShader );
+
+		if (netplayManager != NULL && netplayManager->desyncDetected)
 		{
-			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+			sf::Vector2u windowSize = window->getSize();
+			sf::Texture texture;
+			texture.create(windowSize.x, windowSize.y);
+			texture.update(*window);
+			sf::Image screenshot = texture.copyToImage();
+			screenshot.saveToFile("Resources/Debug/desync.png");
 
-			if (!isParallelSession)
-			{
-				DrawGame(preScreenTex);
-				
-				/*if (totalGameFrames % 60 < 30)
-				{
-					
-				}
-				else
-				{
-					prm->testGame->DrawGame(preScreenTex);
-				}*/
-			}
-		}
+			quit = true;
+			returnVal = GR_EXITLEVEL;
 
-		if (!isParallelSession)
-		{
-			if (repPlayer != NULL)
-			{
-				preScreenTex->setView(uiView);
-				preScreenTex->draw(replayText);
-				preScreenTex->setView(view);
-			}
-
-			preScreenTex->display();
-
-			const Texture &preTex0 = preScreenTex->getTexture();
-			Sprite preTexSprite(preTex0);
-			preTexSprite.setPosition(-960 / 2, -540 / 2);
-			preTexSprite.setScale(.5, .5);
-			preTexSprite.setTexture(preTex0);
-
-			if (debugScreenRecorder != NULL)
-				debugScreenRecorder->Update(preTex0);
-
-			window->draw(preTexSprite);//, &timeSlowShader );
-
-			if (netplayManager != NULL && netplayManager->desyncDetected)
-			{
-				sf::Vector2u windowSize = window->getSize();
-				sf::Texture texture;
-				texture.create(windowSize.x, windowSize.y);
-				texture.update(*window);
-				sf::Image screenshot = texture.copyToImage();
-				screenshot.saveToFile("Resources/Debug/desync.png");
-
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-
-				netplayManager->Abort();
-			}
+			netplayManager->Abort();
 		}
 	}
 	else if (gameState == FROZEN)

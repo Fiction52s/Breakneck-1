@@ -1123,7 +1123,8 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
+		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
+		//matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 
 		LoadMap();
 		

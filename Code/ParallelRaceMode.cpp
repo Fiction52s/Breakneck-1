@@ -102,6 +102,18 @@ bool ParallelRaceMode::CheckVictoryConditions()
 		return false;
 	}
 
+	if (testGame != NULL)
+	{
+		if (sess->GetPlayer(0)->hitGoal)
+		{
+			return true;
+		}
+		else if (testGame->GetPlayer(0)->hitGoal)
+		{
+			return true;
+		}
+	}
+
 	/*if (sess->GetPlayer(0)->hitGoal)
 	{
 		return true;

@@ -941,17 +941,17 @@ void Actor::SetupFXTilesets()
 
 	effectPools.resize(PLAYERFX_Count);
 
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20 );
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
-	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "fair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_FAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "fair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
-	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "dair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_DAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "dair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
-	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "uair_sword_lightninga_256x256.png"), EffectType::FX_RELATIVE, 20);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_0].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_1].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
+	effectPools[PLAYERFX_UAIR_SWORD_LIGHTNING_2].Set(sess->GetSizedTileset(folder, "uair_sword_lightning_256x256.png"), EffectType::FX_RELATIVE, 20, EffectLayer::IN_FRONT);
 
 	effectPools[PLAYERFX_BOUNCE_BOOST].Set(sess->GetSizedTileset(folder, "bounceboost_256x192.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_HURT_SPACK].Set(sess->GetSizedTileset(folder, "fx_hurt_spack_128x160.png"), EffectType::FX_REGULAR, 20);
@@ -4310,24 +4310,32 @@ void Actor::CreateAttackLightning()
 	{
 		tr.scale(Vector2f(-1, 1));
 	}
+
+	/*if (speedLevel == 1)
+	{
+		tr.scale(2, 2);
+	}*/
+
 	params.SetParams(Vector2f(0, 0), tr, 23, 1, 0, &spriteCenter );
 	//fair should be 25 but meh
 
-	if (!facingRight)
+	/*if (!facingRight)
 	{
 		tr.scale(-1, 1);
-	}
+	}*/
+
+	
 
 	switch (action)
 	{
 	case FAIR:
-		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0, &params);
+		currLockedFairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_FAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
 		break;
 	case DAIR:
-		currLockedDairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_DAIR_SWORD_LIGHTNING_0, &params);
+		currLockedDairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_DAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
 		break;
 	case UAIR:
-		currLockedUairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_UAIR_SWORD_LIGHTNING_0, &params);
+		currLockedUairFX = (RelEffectInstance*)ActivateEffect(PLAYERFX_UAIR_SWORD_LIGHTNING_0 + speedLevel, &params);
 		break;
 	}
 }
