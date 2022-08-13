@@ -2269,66 +2269,52 @@ bool GameSession::RunMainLoopOnce()
 
 	accumulator += frameTime;
 	
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	if (netplayManager != NULL)
 	{
-		window->clear(Color::Red);
-		preScreenTex->clear(Color::Red);
-		postProcessTex2->clear(Color::Red);
-
-		if (matchParams.netplayManager != NULL)
+		if (IsKeyPressed(Keyboard::Escape))
 		{
-			if (IsKeyPressed(Keyboard::Escape))
-			{
-				cout << "esc is pressed. ending match." << endl;
-				quit = true;
-				returnVal = GR_EXITLEVEL;
+			cout << "esc is pressed. ending match." << endl;
+			quit = true;
+			returnVal = GR_EXITLEVEL;
 
-				netplayManager->DumpDesyncInfo();
-				return true;
-			}
+			netplayManager->DumpDesyncInfo();
+			return true;
+		}
 
-			if (netplayManager != NULL && netplayManager->action == NetplayManager::A_DISCONNECT)
-			{
-				quit = true;
-				returnVal = GR_EXITLEVEL;
+		if (netplayManager->action == NetplayManager::A_DISCONNECT)
+		{
+			quit = true;
+			returnVal = GR_EXITLEVEL;
 
-				netplayManager->DumpDesyncInfo();
-				return true;
-			}
+			netplayManager->DumpDesyncInfo();
+			return true;
+		}
 
 
-			ggpo_idle(ggpo, 5);
-			SteamAPI_RunCallbacks();
+		ggpo_idle(ggpo, 5);
+		SteamAPI_RunCallbacks();
 
-			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
-			{
-				//turn these back on later
-				//ggpo_idle(ggpo, 5);
+		if (accumulator >= TIMESTEP && timeSyncFrames > 0)
+		{
+			//turn these back on later
+			//ggpo_idle(ggpo, 5);
 
-				--timeSyncFrames;
-				accumulator -= TIMESTEP;
-			}
-			else
-			{
-				while (accumulator >= TIMESTEP)
-				{
-					//ggpo_idle(ggpo, 5);
-					//SteamAPI_RunCallbacks();
-					GGPORunFrame();
-					accumulator -= TIMESTEP;
-
-					/*if (switchGameState)
-					{
-						break;
-					}*/
-				}
-			}
+			--timeSyncFrames;
+			accumulator -= TIMESTEP;
 		}
 		else
 		{
-			if (!RunGameModeUpdate())
+			while (accumulator >= TIMESTEP)
 			{
-				return false;
+				//ggpo_idle(ggpo, 5);
+				//SteamAPI_RunCallbacks();
+				GGPORunFrame();
+				accumulator -= TIMESTEP;
+
+				/*if (switchGameState)
+				{
+				break;
+				}*/
 			}
 		}
 
@@ -2337,8 +2323,11 @@ bool GameSession::RunMainLoopOnce()
 		{
 		}
 
+		window->clear(Color::Red);
+		preScreenTex->clear(Color::Red);
+		postProcessTex2->clear(Color::Red);
 
-		DrawGame(preScreenTex);
+		DrawGame(preScreenTex); //draw game differently if you are in a diff mode. i dont mind drawing it in frozen mode tho
 
 		if (repPlayer != NULL)
 		{
@@ -2530,44 +2519,10 @@ bool GameSession::RunMainLoopOnce()
 		{
 		}
 
-		if (netplayManager != NULL)
+		if (!FrozenGameModeUpdate())
 		{
-			ggpo_idle(ggpo, 5);
-			SteamAPI_RunCallbacks();
-
-			if (accumulator >= TIMESTEP && timeSyncFrames > 0)
-			{
-				--timeSyncFrames;
-				accumulator -= TIMESTEP;
-			}
-			else
-			{
-				while (accumulator >= TIMESTEP)
-				{
-					GGPOFrozenGameModeUpdate();
-					//GGPORunFrame();
-					accumulator -= TIMESTEP;
-
-					if (switchGameState)
-					{
-						break;
-					}
-				}
-
-				/*if (switchGameState)
-				{
-				continue;
-				}*/
-			}
+			return false;
 		}
-		else
-		{
-			if (!FrozenGameModeUpdate())
-			{
-				return false;
-			}
-		}
-
 
 		Sprite preTexSprite;
 		preTexSprite.setTexture(preScreenTex->getTexture());

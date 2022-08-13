@@ -4342,12 +4342,12 @@ void Actor::CreateAttackLightning()
 
 void Actor::AddActiveComboObj(ComboObject *c)
 {
-	cout << "try adding comboer" << endl;
+	//cout << "try adding comboer" << endl;
 	if (c->data.active)
 		return;
 
 	
-	cout << "adding comboer" << endl;
+	//cout << "adding comboer" << endl;
 
 	//int numComboers = 0;
 
@@ -4380,7 +4380,7 @@ void Actor::AddActiveComboObj(ComboObject *c)
 
 void Actor::RemoveActiveComboObj(ComboObject *c)
 {
-	cout << "try removing comboer" << endl;
+	//cout << "try removing comboer" << endl;
 
 	if (!c->data.active)
 		return;
@@ -4389,7 +4389,7 @@ void Actor::RemoveActiveComboObj(ComboObject *c)
 		return;
 	//assert(activeComboObjList != NULL);
 
-	cout << "removing comboer" << endl;
+	//cout << "removing comboer" << endl;
 
 	//int numComboers = 0;
 
