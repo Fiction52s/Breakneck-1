@@ -13,6 +13,8 @@ struct MatchParams;
 struct GameSession;
 struct UdpMsg;
 
+struct MatchResultsScreen;
+
 struct DesyncCheckInfo
 {
 	DesyncCheckInfo()
@@ -165,6 +167,10 @@ struct NetplayManager
 
 	void BroadcastMapDetailsToLobby();
 	void BroadcastLobbyMessage(LobbyMessage &msg);
+
+	void CleanupMatch();
+
+	MatchResultsScreen *CreateResultsScreen();
 	
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);

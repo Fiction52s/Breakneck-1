@@ -12,53 +12,6 @@ struct GameSession;
 
 struct TimerHUD;
 
-
-struct RaceFightHUD
-{
-	/*enum MaskState
-	{
-		NEUTRAL,
-		RED,
-		BLUE
-	};*/
-
-	enum PlayerColor
-	{
-		BLUE,
-		RED,
-		GREEN,
-		PURPLE,
-		NONE
-	};
-
-	RaceFightHUD(GameSession::RaceFight *rf );
-	sf::Sprite mask;
-	ImageText *scoreRed;
-	ImageText *scoreBlue;
-	GameSession *owner;
-	Tileset *ts_mask;
-
-	Tileset *ts_smallMask;
-
-	Tileset *ts_fx_gainPointBlue;
-	Tileset *ts_fx_gainPointRed;
-	Tileset *ts_ready;
-
-	sf::Sprite smallMask;
-
-	void Draw(sf::RenderTarget *target);
-	void UpdateScore( PlayerColor pc, int newScore );
-	void UpdateScore();
-	
-
-	void SetRaceWinner( PlayerColor pc );
-	void ScorePoint( PlayerColor pc );
-
-	GameSession::RaceFight *raceFight;
-};
-
-
-
 struct Minimap;
 struct Actor;
 struct MomentumBar;

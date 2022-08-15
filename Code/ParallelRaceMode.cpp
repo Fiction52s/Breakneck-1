@@ -5,6 +5,7 @@
 #include "Enemy_Bird.h"
 #include "FightEndSequence.h"
 #include "GameSession.h"
+#include "NetplayManager.h"
 
 using namespace std;
 using namespace sf;
@@ -104,34 +105,40 @@ bool ParallelRaceMode::CheckVictoryConditions()
 
 	if (testGame != NULL)
 	{
+		
+		
+		int winningIndex = -1;
+		//int losingIndex = -1;
 		if (sess->GetPlayer(0)->hitGoal)
 		{
-			return true;
+			winningIndex = sess->netplayManager->playerIndex;
+			//sess->SetMatchPlacings(0, 1);
 		}
 		else if (testGame->GetPlayer(0)->hitGoal)
 		{
+			if (sess->netplayManager->playerIndex == 0)
+			{
+				winningIndex = 1;
+			}
+			else
+			{
+				winningIndex = 0;
+			}
+			
+			//sess->SetMatchPlacings(0, 1);
+		}
+
+		if (winningIndex >= 0)
+		{
+			cout << "game ending. I am index: " << sess->netplayManager->playerIndex << endl;
+			//cout << "wining index: " << winningIndex << ", losingIndex: " << losingIndex << endl;
+			cout << "the winning player had an index of: " << sess->netplayManager->netplayPlayers[winningIndex].index << endl;
+			cout << "current game frame: " << sess->totalGameFrames << endl;
+			//cout << "the other player had an index of: " << sess->netplayManager->netplayPlayers[losingIndex].index << endl;
 			return true;
 		}
+		
 	}
-
-	/*if (sess->GetPlayer(0)->hitGoal)
-	{
-		return true;
-	}
-	else if (sess->GetPlayer(1)->hitGoal)
-	{
-		return true;
-	}*/
-
-
-	/*bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
-	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
-	if (p0TouchedKillGrass || p1TouchedKillGrass
-	|| data.p0Health == 0 || data.p1Health == 0)
-	{
-	return true;
-	}
-	return false;*/
 
 	return false;
 }

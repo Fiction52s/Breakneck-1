@@ -199,7 +199,6 @@ struct Session : TilesetManager, QuadTreeCollider
 		CUTPAUSE,
 		CUTSCENE,
 		PAUSE,
-		RACEFIGHT_RESULTS,
 		STORY,
 		SEQUENCE,
 		FROZEN,
@@ -211,6 +210,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	uint32 randomState;
 	int GetRand();
 	void SeedRand(uint32 r);
+
+	std::vector<int> matchPlacings;
 
 	bool desyncCheckerActive;
 	bool firstUpdateHasHappened;
@@ -786,7 +787,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	void UpdateRain();
 	void DrawRain(sf::RenderTarget *target);
 	virtual void DrawRails(sf::RenderTarget *target) = 0;
-	virtual void DrawRaceFightScore(sf::RenderTarget *target) {}
 	virtual void DrawScoreDisplay(sf::RenderTarget *target);
 	void DrawFrameRate(sf::RenderTarget *target);
 	void DrawRunningTimer(sf::RenderTarget *target);
@@ -796,7 +796,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	virtual void DrawReplayGhosts(sf::RenderTarget *target) {}
 	void DrawGame(sf::RenderTarget *target);
 	void UpdateRunningTimerText();
-	virtual void UpdateRaceFightScore() {}
 	virtual void UpdateEnvPlants() {}
 	virtual void UpdateEnvShaders() {}
 	virtual void UpdateCamera() = 0;
@@ -883,6 +882,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);
 	void RunGGPOModeUpdate();
+	void SetMatchPlacings(int p1Placing, int p2Placing = -1, int p3Placing = -1, int p4Placing = -1);
 };
 
 #endif

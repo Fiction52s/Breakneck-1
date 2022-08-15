@@ -47,6 +47,7 @@
 
 #include "CustomMatchManager.h"
 #include "OnlineMenuScreen.h"
+#include "MatchResultsScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -568,6 +569,7 @@ MainMenu::MainMenu()
 
 	onlineMenuScreen = new OnlineMenuScreen(this);
 
+	matchResultsScreen = NULL;
 
 	loadingBackpack = new LoadingBackpack(&tilesetManager);
 }
@@ -1013,8 +1015,11 @@ void MainMenu::SetMode(Mode m)
 	{
 		onlineMenuScreen->Start();
 	}
-
-	if (menuMode == SAVEMENU)
+	else if (menuMode == MATCH_RESULTS)
+	{
+		matchResultsScreen->Reset();
+	}
+	else if (menuMode == SAVEMENU)
 	{
 		if (oldMode != WORLDMAP)
 		{
@@ -1987,23 +1992,6 @@ void MainMenu::HandleMenuMode()
 	sf::Event ev;
 	switch (menuMode)
 	{
-	case DEBUG_RACEFIGHT_RESULTS:
-	{
-		gameRunType = MainMenu::GRT_FREEPLAY;
-		while (window->pollEvent(ev))
-		{
-
-		}
-
-		MatchParams mp;
-		mp.mapPath = "Resources/Maps/W1/arena04.brknk";
-
-		GameSession *gs = new GameSession(&mp);
-		GameSession::sLoad(gs);
-		gs->Run();
-
-		break;
-	}
 	case SPLASH:
 	{
 		while (window->pollEvent(ev))
@@ -2897,6 +2885,10 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
+				matchResultsScreen = netplayManager->CreateResultsScreen();
+
+				netplayManager->CleanupMatch();
+
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
 					cout << "EXITED ON DISCONNECT" << endl;
@@ -2906,10 +2898,20 @@ void MainMenu::HandleMenuMode()
 				else
 				{
 					cout << "action test: " << (int)netplayManager->action << endl;
-					SetMode(TITLEMENU);
+					//SetMode(TITLEMENU);
+					SetMode(MATCH_RESULTS);
 				}
 			}
 		}
+		break;
+	}
+	case MATCH_RESULTS:
+	{
+		while (window->pollEvent(ev))
+		{
+			//matchResultsScreen->HandleEvent(ev);
+		}
+		matchResultsScreen->Update();
 		break;
 	}
 	}
@@ -3479,6 +3481,12 @@ void MainMenu::DrawMode( Mode m )
 		loadingBackpack->Draw(preScreenTexture);
 		break;
 	}
+	case MATCH_RESULTS:
+	{
+		preScreenTexture->setView(v);
+		matchResultsScreen->Draw(preScreenTexture);
+		break;
+	}
 	default:
 		assert(0);
 		break;
@@ -3507,4 +3515,9 @@ void MainMenu::DownloadAndRunWorkshopMap()
 {
 	//currWorkshopMap = path;
 	LoadMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
+}
+
+void MainMenu::SetToMatchResults(GameSession *p_game)
+{
+
 }

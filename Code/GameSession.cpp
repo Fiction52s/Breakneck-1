@@ -24,7 +24,6 @@
 #include <boost/thread.hpp>
 #include <iostream>
 #include "ImageText.h"
-#include "VictoryScreen.h"
 #include "UIWindow.h"
 #include "Config.h"
 #include "ControlProfile.h"
@@ -73,6 +72,8 @@
 #include "GGPO.h"
 
 #include "NetplayManager.h"
+
+#include "MatchResultsScreen.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -135,18 +136,7 @@ GameSession * GameSession::currSession = NULL;
 bool GameSession::UpdateRunModeBackAndStartButtons()
 {
 	Actor *p0 = GetPlayer(0);
-	if (raceFight != NULL)
-	{
-		if (raceFight->gameOver || GetCurrInput(0).back)
-		{
-			gameState = RACEFIGHT_RESULTS;
-			raceFight->raceFightResultsFrame = 0;
-			raceFight->victoryScreen->Reset();
-			raceFight->victoryScreen->SetupColumns();
-			return true;
-		}
-	}
-	else if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
+	if (!p0->IsGoalKillAction(p0->action) && !p0->IsExitAction(p0->action))
 	{
 		ControllerState &currInput = GetCurrInput(0);
 		ControllerState &prevInput = GetPrevInput(0);
@@ -280,17 +270,6 @@ void GameSession::DrawShockwaves(sf::RenderTarget *target)
 		(*it)->Draw(postProcessTex2, target);
 	}*/
 }
-
-
-void GameSession::DrawRaceFightScore(sf::RenderTarget *target)
-{
-	if (raceFight != NULL)
-	{
-		raceFight->DrawScore(target);
-	}
-}
-
-
 
 
 void GameSession::DrawTerrain(sf::RenderTarget *target)
@@ -612,14 +591,6 @@ bool GameSession::RunPostUpdate()
 	}
 
 	return true;
-}
-
-void GameSession::UpdateRaceFightScore()
-{
-	if (raceFight != NULL)
-	{
-		raceFight->UpdateScore();
-	}
 }
 
 void GameSession::SequenceGameModeRespondToGoalDestroyed()
@@ -1367,11 +1338,6 @@ void GameSession::ProcessAllActors()
 	//CreateBulletQuads();
 
 
-	if (raceFight != NULL)
-	{
-		raceFight->Init();
-	}
-
 	if (mapHeader->preLevelSceneName != "NONE")
 	{
 		preLevelScene = Sequence::CreateScene(mapHeader->preLevelSceneName);
@@ -1964,45 +1930,6 @@ void GameSession::SetupPlayers()
 			p->position = V2d(playerOrigPos[i]);
 		}
 	}
-
-	/*if (raceFight != NULL)
-	{
-		if( players[1] == NULL )
-			players[1] = new Actor(this, NULL, 1);
-	}
-	else
-	{
-		players[1] = NULL;
-	}
-
-	players[2] = NULL;
-	players[3] = NULL;
-
-	Actor *tempP = NULL;;
-	for (int i = 1; i < 4; ++i)
-	{
-		tempP = GetPlayer(i);
-		if (tempP != NULL)
-		{
-			tempP->position = GetPlayer(0)->position;
-		}
-	}*/
-
-	/*m_numActivePlayers = 0;
-	Actor *activePlayer = NULL;
-	Actor *tempPlayer = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (tempPlayer = GetPlayer(i))
-		{
-			if (!activePlayer)
-			{
-				activePlayer = tempPlayer;
-			}
-			++m_numActivePlayers;
-		}
-	}
-	assert(activePlayer);*/
 }
 
 void GameSession::SetupShaders()
@@ -2663,70 +2590,6 @@ bool GameSession::RunMainLoopOnce()
 		//cout << "size: " << mapTexSprite.getLocalBounds().width << ", " << mapTexSprite.getLocalBounds().height << endl;
 		window->draw(mapTexSprite);
 	}
-	else if (gameState == RACEFIGHT_RESULTS)
-	{
-		/*quit = true;
-		returnVal = 1;
-		break;*/
-		//TODO
-		View v;
-		v.setCenter(0, 0);
-		v.setSize(1920 / 2, 1080 / 2);
-		window->setView(v);
-
-		window->setView(v);
-
-		preScreenTex->clear();
-		window->clear();
-
-		preScreenTex->setView(uiView);
-
-		//accumulator += frameTime;
-
-		while (accumulator >= TIMESTEP)
-		{
-			accumulator -= TIMESTEP;
-
-
-
-			UpdateControllers();
-
-			//if( GetCurrInput( 0 ).start )
-			//{
-			//	//break;
-			//	quit = true;
-			//	returnVal = 1;
-
-			//	break;
-			//}
-
-			raceFight->victoryScreen->Update();
-
-			if (raceFight->victoryScreen->IsDone())
-			{
-				quit = true;
-				returnVal = GR_EXITLEVEL;
-				break;
-			}
-			//raceFight->testWindow->Update( GetCurrInput( 0 ), GetPrevInput( 0 ) );
-
-		}
-
-		raceFight->victoryScreen->Draw(preScreenTex);
-		//raceFight->testWindow->Draw( preScreenTex );
-
-		preScreenTex->display();
-		const Texture &preTex = preScreenTex->getTexture();
-
-		Sprite preTexSprite(preTex);
-		preTexSprite.setPosition(-960 / 2, -540 / 2);//-960 / 2, -540 / 2 );
-
-		preTexSprite.setScale(.5, .5);
-
-		window->draw(preTexSprite);
-
-		++raceFight->raceFightResultsFrame;
-	}
 	else if (gameState == STORY)
 	{
 		sf::Event ev;
@@ -3223,6 +3086,11 @@ int GameSession::Run()
 			}
 		}
 	}*/
+
+	for (int i = 0; i < MAX_PLAYERS; ++i)
+	{
+		matchPlacings[i] = -1;
+	}
 	
 	bool oldMouseGrabbed = mainMenu->GetMouseGrabbed();
 	bool oldMouseVisible = mainMenu->GetMouseVisible();
@@ -3242,17 +3110,6 @@ int GameSession::Run()
 	v.setCenter(0, 0);
 	v.setSize(1920 / 2, 1080 / 2);
 	window->setView(v);
-
-	if (raceFight != NULL)
-	{
-		raceFight->victoryScreen->Reset();
-		gameState = RUN;//RACEFIGHT_RESULTS;
-		raceFight->place[0] = 1;
-		raceFight->place[1] = 2;
-
-		raceFight->raceFightResultsFrame = 0;
-		raceFight->victoryScreen->SetupColumns();
-	}
 
 	//might move replay stuff later
 	cout << "loop about to start" << endl;
@@ -3491,7 +3348,6 @@ void GameSession::Init()
 	va = NULL;
 	activeEnemyList = NULL;
 	activeEnemyListTail = NULL;
-	raceFight = NULL;
 	recPlayer = NULL;
 	repPlayer = NULL;
 	recGhost = NULL;
@@ -4021,9 +3877,6 @@ void GameSession::RestartLevel()
 	//accumulator = TIMESTEP + .1;
 	currStorySequence = NULL;
 	currSuperPlayer = NULL;
-
-	if( raceFight != NULL )
-		raceFight->Reset();
 
 	background->Reset();
 	//keeps lighting the same when going into bonuses with the same bg
@@ -4768,474 +4621,6 @@ void GameSession::RecGhostRecordFrame()
 		recGhost->RecordFrame();
 }
 
-GameSession::RaceFight::RaceFight( GameSession *p_owner, int raceFightMaxSeconds )
-	: owner( p_owner ), playerScore( 0 ), player2Score( 0 ), hitByPlayerList( NULL ),
-	hitByPlayer2List( NULL ), numTargets( 0 )
-{
-	hud = new RaceFightHUD(this);
-
-	Tileset *scoreTS = owner->GetTileset( "HUD/number_score_80x80.png", 80, 80 );
-	Tileset *score2TS = scoreTS;
-	int numDigits = 2;
-	playerScoreImage = new ImageText( 2, scoreTS );
-	playerScoreImage->SetTopRight(Vector2f( 1920/2 - 200, 0 ));
-	player2ScoreImage = new ImageText( 2, score2TS );
-	player2ScoreImage->SetTopRight(Vector2f( 1920/2 + 200 + 80 * 2, 0 ));
-
-	gameTimer = new TimerText( scoreTS );
-	gameTimer->SetTopRight(Vector2f( 1920/2 + 80 * 2.5, 0 ));
-	gameTimer->SetNumber( raceFightMaxSeconds );
-
-	victoryScreen = new ResultsScreen( owner );
-
-	Reset();
-
-	tempAllTargets.setFont( owner->mainMenu->arial );
-	tempAllTargets.setCharacterSize( 12 );
-	tempAllTargets.setFillColor( Color::Red );
-}
-
-int GameSession::RaceFight::NumDigits( int number )
-{
-	int digits = 0;
-	do
-	{
-		++digits;
-		number /= 10;
-	}
-	while( number > 0 );
-
-	return digits;
-}
-
-void GameSession::RaceFight::Init()
-{
-	//after we know how many total targets we have
-	int digits = NumDigits( numTargets );
-	numberTargetsRemainingImage = new ImageText( digits, playerScoreImage->ts );
-	numberTargetsRemainingImage->SetTopRight(Vector2f( 1920/2 + 80 * 3, 90 ));
-	numberTargetsTotalImage = new ImageText( digits, playerScoreImage->ts );
-	numberTargetsTotalImage->SetTopRight(Vector2f( 1920/2 + 80 * 2, 90 ));
-	numberTargetsTotalImage->UpdateSprite();
-
-	raceWinnerIndex = -1;
-	gameOver = false;
-	memset(place, 0, sizeof(place));
-
-	playerScore = 0;
-	player2Score = 0;
-}
-
-void GameSession::RaceFight::RemoveFromPlayerHitList( RaceFightTarget *target )
-{
-	assert( hitByPlayerList != NULL );
-
-	--playerScore;
-	cout << "subbig playerscore is now: " << playerScore << endl;
-	if( hitByPlayerList->pPrev == NULL && hitByPlayerList->pNext == NULL )
-	{
-		cout << "a" << endl;
-		assert( hitByPlayerList == target );
-		hitByPlayerList = NULL;
-	}
-	else if( target == hitByPlayerList )
-	{
-		cout << "b" << endl;
-		target->pNext->pPrev = NULL;
-		RaceFightTarget *newListHead = target->pNext;
-		target->pNext = NULL;
-		hitByPlayerList = newListHead;
-	}
-	else if( target->pPrev != NULL && target->pNext != NULL )
-	{
-		cout << "c" << endl;
-		target->pPrev->pNext = target->pNext;
-		target->pNext->pPrev = target->pPrev;
-		target->pPrev = NULL;
-		target->pNext = NULL;
-	}
-	else if( target->pNext == NULL )
-	{
-		cout << "d" << endl;
-		target->pPrev->pNext = NULL;
-		target->pPrev = NULL;
-	}
-}
-
-void GameSession::RaceFight::RemoveFromPlayer2HitList( RaceFightTarget *target )
-{
-	assert( hitByPlayer2List != NULL );
-
-	--player2Score;
-	//cout << "subbig player2score is now: " << player2Score << endl;
-	if( hitByPlayer2List->p2Prev == NULL && hitByPlayer2List->p2Next == NULL )
-	{
-		//cout << "e" << endl;
-		assert( hitByPlayer2List == target );
-		hitByPlayer2List = NULL;
-	}
-	else if( target == hitByPlayer2List )
-	{
-		//cout << "f" << endl;
-		target->p2Next->p2Prev = NULL;
-		RaceFightTarget *newListHead = target->p2Next;
-		target->p2Next = NULL;
-		hitByPlayer2List = newListHead;
-	}
-	else if( target->p2Prev != NULL && target->p2Next != NULL )
-	{
-		//cout << "g" << endl;
-		target->p2Prev->p2Next = target->p2Next;
-		target->p2Next->p2Prev = target->p2Prev;
-		target->p2Prev = NULL;
-		target->p2Next = NULL;
-	}
-	else if( target->p2Next == NULL )
-	{
-		//cout << "h" << endl;
-		target->p2Prev->p2Next = NULL;
-		target->p2Prev = NULL;
-	}
-}
-
-void GameSession::RaceFight::HitByPlayer( int playerIndex,
-			RaceFightTarget *target )
-{
-	assert( target != NULL );
-	Actor *player = NULL;
-	if( playerIndex == 0 )
-	{
-		player = owner->GetPlayer( 0 );
-		
-		playerScore++;
-		hud->ScorePoint(RaceFightHUD::PlayerColor::BLUE);
-		if( target->action == RaceFightTarget::Action::PLAYER2 )
-		{
-			RemoveFromPlayer2HitList( target );
-			target->action = RaceFightTarget::Action::PLAYER1;
-			//playerScoreImage->SetNumber( playerScore );
-			//hud->UpdateScore();
-		}
-
-		target->gameTimeP1Hit = gameTimer->value;
-		//player2ScoreImage->SetNumber( player2Score );
-		
-
-		if( hitByPlayerList == NULL )
-		{
-			hitByPlayerList = target;
-			target->pPrev = NULL;
-			target->pNext = NULL;
-		}
-		else
-		{
-			target->pNext = hitByPlayerList;
-			hitByPlayerList->pPrev = target;
-			hitByPlayerList = target;
-		}
-
-		if( raceWinnerIndex == -1 && playerScore == numTargets )
-		{
-			gameOver = true;
-			place[0] = 1;
-			place[1] = 2;
-			return;
-		}
-		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
-		{
-			raceWinnerIndex = 0;
-			hud->SetRaceWinner(RaceFightHUD::BLUE);
-		}
-	}
-	else if( playerIndex == 1 )
-	{
-		player = owner->GetPlayer( 1 );
-
-		player2Score++;
-		hud->ScorePoint(RaceFightHUD::PlayerColor::RED);
-		if( target->action == RaceFightTarget::Action::PLAYER1 )
-		{
-			RemoveFromPlayerHitList( target );
-			target->action = RaceFightTarget::Action::PLAYER2;
-			//playerScoreImage->SetNumber( playerScore );
-		}
-		
-
-		target->gameTimeP2Hit = gameTimer->value;
-		//player2ScoreImage->SetNumber( player2Score );
-		
-		if( hitByPlayer2List == NULL )
-		{
-			hitByPlayer2List = target;
-			target->p2Prev = NULL;
-			target->p2Next = NULL;
-		}
-		else
-		{
-			target->p2Next = hitByPlayer2List;
-			hitByPlayer2List->p2Prev = target;
-			hitByPlayer2List = target;
-		}
-
-		if( raceWinnerIndex == -1 && player2Score == numTargets )
-		{
-			gameOver = true;
-			place[0] = 2;
-			place[1] = 1;
-			return;
-		}
-		else if( raceWinnerIndex == -1 && GetNumRemainingTargets() == 0 )
-		{
-			raceWinnerIndex = 1;
-			hud->SetRaceWinner(RaceFightHUD::RED);
-		}
-	}
-
-	hud->UpdateScore();
-}
-
-void GameSession::RaceFight::Reset()
-{
-	playerScore = 0;
-	player2Score = 0;
-	hitByPlayerList = NULL;
-	hitByPlayer2List = NULL;
-	frameCounter = 0;
-	playerHitCounter = 0;
-	player2HitCounter = 0;
-	gameOver = false;
-	memset(place, 0, sizeof(place));
-}
-
-void GameSession::RaceFight::PlayerHitByPlayer( int attacker,
-			int defender )
-{
-	Actor *at = NULL;
-	Actor *def = NULL;
-	if( attacker == 0 )
-	{
-		at = owner->GetPlayer( 0 );
-		def = owner->GetPlayer( 1 );
-
-		++playerHitCounter;
-		if( raceWinnerIndex == -1 )
-		{
-			if( hitByPlayer2List != NULL )
-			{
-				HitByPlayer( attacker, hitByPlayer2List );
-			}
-		}
-		else
-		{
-			if( playerScore < player2Score 
-				|| ( playerScore == player2Score && raceWinnerIndex == 1 ) )
-			{
-				//losing
-				assert( hitByPlayer2List != NULL );
-				
-				
-				//inefficient but I'm lazy
-				RaceFightTarget *last = hitByPlayer2List;
-				while( last->next != NULL )
-				{
-					last = last->p2Next;
-				}
-				last->action = RaceFightTarget::Action::PLAYER1;
-
-				HitByPlayer( attacker, last );
-			}
-			else
-			{
-				//winning
-				gameOver = true;
-				place[0] = 1;
-				place[1] = 2;
-			}
-		}
-	}
-	else
-	{
-		++player2HitCounter;
-
-		at = owner->GetPlayer( 1 );
-		def = owner->GetPlayer( 0 );
-
-		if( raceWinnerIndex == -1 ) //race is not over
-		{
-			if( hitByPlayerList != NULL )
-			{
-				//hitByPlayerList->action = RaceFightTarget::Action::PLAYER2;
-				HitByPlayer( attacker, hitByPlayerList );
-			}
-		}
-		else //race is over
-		{
-			if( player2Score < playerScore 
-				|| ( player2Score == playerScore && raceWinnerIndex == 0 ) )
-			{
-				//losing
-				assert( hitByPlayerList != NULL );
-				
-				
-				//inefficient but I'm lazy
-				RaceFightTarget *last = hitByPlayerList;
-				while( last->next != NULL )
-				{
-					last = last->pNext;
-				}
-				last->action = RaceFightTarget::Action::PLAYER2;
-
-				HitByPlayer( attacker, last );
-			}
-			else
-			{
-				//winning
-				gameOver = true;
-				place[0] = 2;
-				place[1] = 1;
-			}
-		}
-	}
-
-
-}
-
-int GameSession::RaceFight::GetNumRemainingTargets()
-{
-	return numTargets - ( playerScore + player2Score );
-}
-
-void GameSession::RaceFight::DrawScore( sf::RenderTarget *target )
-{
-	//target->draw( scoreTestSprite );
-	hud->Draw(target);
-	//playerScoreImage->Draw( target );
-	//player2ScoreImage->Draw( target );
-
-	//gameTimer->Draw( target );
-
-	//numberTargetsTotalImage->Draw( target );
-	//numberTargetsRemainingImage->Draw( target );
-}
-
-void GameSession::RaceFight::UpdateScore()
-{
-	gameTimer->UpdateSprite();
-	playerScoreImage->UpdateSprite();
-	player2ScoreImage->UpdateSprite();
-
-	numberTargetsRemainingImage->SetNumber( GetNumRemainingTargets() );
-	numberTargetsRemainingImage->UpdateSprite();
-
-	TickFrame();
-}
-
-void GameSession::RaceFight::TickClock()
-{
-	testWindow->Update( owner->GetCurrInput( 0 ), owner->GetPrevInput( 0 ) );
-
-	if( gameTimer->value > 0 )
-		gameTimer->SetNumber( gameTimer->value-- );
-
-	if( gameTimer->value == 0 )
-	{
-		gameOver = true;
-
-		if( raceWinnerIndex == -1 ) //race isnt over
-		{
-			 if( playerScore < player2Score )
-			 {
-				 place[0] = 2;
-				 place[1] = 1;
-			 }
-			 else if( playerScore > player2Score )
-			 {
-				 place[0] = 1;
-				 place[1] = 2;
-			 }
-			 else
-			 {
-				 if( playerHitCounter < player2HitCounter )
-				 {
-					 place[0] = 2;
-					 place[1] = 1;
-				 }
-				 else if( playerHitCounter > player2HitCounter )
-				 {
-					 place[0] = 1;
-					 place[1] = 2;
-				 }
-				 else
-				 {
-					 if( playerScore == 0 )
-					 {
-						 //draw
-						 assert( player2Score == 0 );
-						 place[0] = 1;
-						 place[1] = 1;
-					 }
-					 else
-					 {
-						 RaceFightTarget *last1 = hitByPlayerList;
-						 RaceFightTarget *last2 = hitByPlayer2List;
-
-						 while( last1->pNext != NULL )
-						 {
-							 last1 = last1->pNext;
-						 }
-						 while( last2->p2Next != NULL )
-						 {
-							 last2 = last2->p2Next;
-						 }
-
-						 int lastTimeP1 = last1->gameTimeP1Hit;
-						 int lastTimeP2 = last2->gameTimeP2Hit;
-
-						 if( lastTimeP1 > lastTimeP2 ) //greater time means hit sooner
-						 {
-							 place[0] = 1;
-							 place[1] = 2;
-						 }
-						 else if( lastTimeP1 < lastTimeP2 )//greater time means hit sooner
-						 {
-							 place[0] = 2;
-							 place[1] = 1;
-						 }
-						 else
-						 {
-							 //draw
-							 place[0] = 1;
-							 place[1] = 1;
-						 }
-					 }
-				 }
-			 }
-		}
-		else
-		{
-
-		}
-	}
-}
-
-void GameSession::RaceFight::TickFrame()
-{
-	if( frameCounter == 60 )
-	{
-		int val = gameTimer->value - 1;
-		if( val > 0 )		
-		{
-			gameTimer->SetNumber( val );
-			
-		}
-		frameCounter = 0;
-	}
-	else
-	{
-		++frameCounter;
-	}
-}
-
 GameSession::DecorDraw::DecorDraw(sf::Vertex *q,
 	int numVerts,
 	Tileset *t)
@@ -5288,4 +4673,15 @@ int GameSession::GetPlayerNormalSkin(int index)
 	}
 
 	return Actor::SKIN_NORMAL;
+}
+
+MatchResultsScreen *GameSession::CreateResultsScreen()
+{
+	switch (matchParams.gameModeType)
+	{
+	default:
+		return new VictoryScreen2PlayerVS(this);
+	}
+
+	return NULL;
 }

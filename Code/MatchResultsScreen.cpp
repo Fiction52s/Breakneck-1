@@ -1,4 +1,4 @@
-#include "VictoryScreen.h"
+#include "MatchResultsScreen.h"
 #include "GameSession.h"
 #include "UIWindow.h"
 #include "MapHeader.h"
@@ -6,29 +6,23 @@
 using namespace std;
 using namespace sf;
 
-VictoryScreen2PlayerVS::VictoryScreen2PlayerVS( GameSession *p_owner )
-	:owner( p_owner )
+VictoryScreen2PlayerVS::VictoryScreen2PlayerVS( GameSession *p_game )
+	:game( p_game )
 {
-	player1Bar = new PlayerInfoBar( owner, 1920/2, 0 );
-	player2Bar = new PlayerInfoBar( owner, 1920/2, 1 );
+	player1Bar = new PlayerInfoBar(game, 1920/2, 0 );
+	player2Bar = new PlayerInfoBar(game, 1920/2, 1 );
 	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
-void VictoryScreen::Reset()
+void MatchResultsScreen::Reset()
 {
 	frame = 0;
 }
 
-void VictoryScreen2PlayerVS::Draw( sf::RenderTarget *target )
-{
-	player1Bar->Draw( target );
-	player2Bar->Draw( target );
-}
-
 void VictoryScreen2PlayerVS::Update()
 {
-	player1Bar->Update( owner->GetCurrInput( 0 ).A && !owner->GetPrevInput( 0 ).A );
-	player2Bar->Update( owner->GetCurrInput( 1 ).A && !owner->GetPrevInput( 1 ).A );
+	player1Bar->Update(game->GetCurrInput( 0 ).A && !game->GetPrevInput( 0 ).A );
+	player2Bar->Update(game->GetCurrInput( 1 ).A && !game->GetPrevInput( 1 ).A );
 	++frame;
 }
 
@@ -41,7 +35,13 @@ void VictoryScreen2PlayerVS::UpdateSprites()
 
 void VictoryScreen2PlayerVS::Reset()
 {
-	VictoryScreen::Reset();
+	MatchResultsScreen::Reset();
+}
+
+void VictoryScreen2PlayerVS::Draw(sf::RenderTarget *target)
+{
+	player1Bar->Draw(target);
+	player2Bar->Draw(target);
 }
 
 PlayerInfoBar::PlayerInfoBar( GameSession *p_owner, int width, int playerIndex )
@@ -286,14 +286,14 @@ void ResultsScreen::SetupColumns()
 		SetBoxPos(i, 1080);
 	}
 
-	int currPlace;
+	int currPlace = 0;
 	switch (owner->gameModeType)
 	{
 	case MatchParams::GAME_MODE_REACHENEMYBASE:
 	{
 		for (int i = 0; i < 4; ++i)
 		{
-			currPlace = owner->raceFight->place[i];
+			//currPlace = owner->raceFight->place[i];
 			if (currPlace == 1)
 			{
 				ts_column[i] = GetTeamTileset(owner->GetPlayerTeamIndex(i), true);
@@ -331,7 +331,7 @@ void ResultsScreen::Update()
 			{
 				if (owner->gameModeType == MatchParams::GAME_MODE_REACHENEMYBASE)
 				{
-					if (owner->raceFight->place[i] == 1 && frame <= slideInFrames[0])
+					/*if (owner->raceFight->place[i] == 1 && frame <= slideInFrames[0])
 					{
 						double f = (double)frame / slideInFrames[0];
 						double a = slideInBez[1].GetValue(f);
@@ -342,13 +342,6 @@ void ResultsScreen::Update()
 					{
 						double f = (double)(frame - slideInFrames[1]) / slideInStartFrame[1];
 						double a = slideInBez[1].GetValue(f);
-
-						SetBoxPos(i, 1080.0 * (1.0 - a));
-					}
-					/*else if (owner->raceFight->place[i] == 3 && frame <= secondPlaceStartSlideFrame + secondPlaceSlideInFrames)
-					{
-						double f = (double)(frame - secondPlaceStartSlideFrame) / secondPlaceSlideInFrames;
-						double a = secondPlaceBez.GetValue(f);
 
 						SetBoxPos(i, 1080.0 * (1.0 - a));
 					}*/
@@ -483,8 +476,8 @@ void ResultsScreen::Draw(RenderTarget *target)
 	{
 		for (int i = 0; i < 4; ++i)
 		{
-			if( owner->raceFight->place[i] > 0 )
-				target->draw(columnSprites[i]);
+			//if( owner->raceFight->place[i] > 0 )
+			//	target->draw(columnSprites[i]);
 		}
 		break;
 	}

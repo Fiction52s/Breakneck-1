@@ -4696,10 +4696,7 @@ void Actor::Respawn( bool setStartPos )
 	//	motionGhosts[i].setPosition( position.x, position.y );
 	//}
 
-	if( owner != NULL && owner->raceFight != NULL )
-	{
-		invincibleFrames = 180;
-	}
+
 
 	//kinFace.setTextureRect(ts_kinFace->GetSubRect(expr + 6));
 	//kinFaceBG.setTextureRect(ts_kinFace->GetSubRect(0));
@@ -14310,7 +14307,7 @@ void Actor::PhysicsResponse()
 	}
 	
 	//multiplayer
-	if( currHitboxes != NULL && !simulationMode )//&& owner->raceFight != NULL )
+	if( currHitboxes != NULL && !simulationMode )
 	{
 		Actor *pTarget = NULL;
 		int target = 0;

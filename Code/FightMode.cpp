@@ -5,6 +5,7 @@
 #include "Enemy_Gator.h"
 #include "Enemy_Bird.h"
 #include "FightEndSequence.h"
+#include "NetplayManager.h"
 
 using namespace std;
 using namespace sf;
@@ -95,9 +96,20 @@ bool FightMode::CheckVictoryConditions()
 
 	bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
 	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
-	if (p0TouchedKillGrass || p1TouchedKillGrass 
-		|| data.p0Health == 0 || data.p1Health == 0 )
+
+	bool p0Dead = p0TouchedKillGrass || data.p0Health == 0;
+	bool p1Dead = p1TouchedKillGrass || data.p1Health == 0;
+	if (p0Dead || p1Dead )
 	{
+		if (p0Dead)
+		{
+			sess->SetMatchPlacings(1, 0);
+		}
+		else if( p1Dead )
+		{
+			sess->SetMatchPlacings(0, 1);
+		}
+
 		return true;
 	}
 	return false;

@@ -34,6 +34,7 @@ struct ZoneNode;
 struct Actor;
 struct ComboObject;
 
+struct MatchResultsScreen;
 struct BoxEmitter;
 struct ShapeEmitter;
 struct Minimap;
@@ -45,7 +46,6 @@ struct ReplayPlayer;
 struct RecordGhost;
 struct ReplayGhost;
 struct Config;
-struct RaceFightHUD;
 struct InputVisualizer;
 struct TerrainDecorInfo;
 
@@ -90,9 +90,6 @@ struct Sequence;
 struct EnterNexus1Seq;
 struct ShipExitScene;
 
-
-struct VictoryScreen;
-struct VictoryScreen2PlayerVS;
 struct UIWindow;
 struct Parallax;
 
@@ -202,60 +199,6 @@ struct GameSession : RayCastHandler, Session
 		int numVertices;
 	};
 
-	struct RaceFight
-	{
-		RaceFight(GameSession *owner,
-			int raceFightMaxSeconds);
-		void Reset();
-		int playerScore;
-		int player2Score;
-		void DrawScore(sf::RenderTarget *target);
-		void UpdateScore();
-		void Init();
-
-		RaceFightHUD *hud;
-		//RaceFightTarget *targetList;
-		GameSession *owner;
-
-		sf::Text tempAllTargets;
-
-		ResultsScreen *victoryScreen;
-
-		RaceFightTarget *hitByPlayerList;
-		RaceFightTarget *hitByPlayer2List;
-		void HitByPlayer(int playerIndex,
-			RaceFightTarget *target);
-
-		void PlayerHitByPlayer(int attacker,
-			int defender);
-		void TickClock();
-		void TickFrame();
-		int NumDigits(int number);
-		void RemoveFromPlayerHitList(RaceFightTarget *target);
-		void RemoveFromPlayer2HitList(RaceFightTarget *target);
-		int frameCounter;
-
-		int numTargets;
-		ImageText *playerScoreImage;
-		ImageText *player2ScoreImage;
-		int raceFightResultsFrame;
-		TimerText *gameTimer;
-		ImageText *numberTargetsRemainingImage;
-		ImageText *numberTargetsTotalImage;
-		int GetNumRemainingTargets();
-
-		UIWindow *testWindow;
-
-		int playerHitCounter;
-		int player2HitCounter;
-
-		bool gameOver;
-		int place[4];
-		//int p3Place;
-		//int p4Place;
-		int raceWinnerIndex;
-	};
-
 	enum GameResultType
 	{
 		GR_BONUS_RETURN,
@@ -337,9 +280,6 @@ struct GameSession : RayCastHandler, Session
 	bool usePolyShader;
 	bool hasGrass[6];
 	bool hasAnyGrass;
-	
-	
-	RaceFight *raceFight;
 	
 	SoundInfo * gameSoundInfos[SoundType::Count];
 	
@@ -442,7 +382,6 @@ struct GameSession : RayCastHandler, Session
 		V2d &returnPos, 
 		BonusHandler *bHandler = NULL);
 	void ReturnFromBonus();
-	void DrawRaceFightScore(sf::RenderTarget *target);
 	static int IsFlatGround(sf::Vector2<double> &normal);
 	static int IsSlopedGround(sf::Vector2<double> &normal);
 	static int IsSteepGround(sf::Vector2<double> &normal);
@@ -579,7 +518,6 @@ struct GameSession : RayCastHandler, Session
 	void DrawDecor(EffectLayer ef, sf::RenderTarget *target);
 
 	bool RunPreUpdate();
-	void UpdateRaceFightScore();
 	void UpdateSoundNodeLists();
 	void RecPlayerRecordFrame();
 	void RepPlayerUpdateInput();
@@ -597,5 +535,6 @@ struct GameSession : RayCastHandler, Session
 	int GetPlayerNormalSkin(int index);
 
 	bool RunMainLoopOnce(); //return false means go again
+	MatchResultsScreen *CreateResultsScreen();
 };
 #endif

@@ -1088,8 +1088,10 @@ int NetplayManager::RunMatch()
 
 
 	int gameResult = game->Run();
-	delete game;
-	game = NULL;
+
+
+	//delete game;
+	//game = NULL;
 
 	bool disconnected = false;
 	if (action == A_DISCONNECT)
@@ -1113,6 +1115,18 @@ int NetplayManager::RunMatch()
 	
 
 	return gameResult;
+}
+
+MatchResultsScreen *NetplayManager::CreateResultsScreen()
+{
+	assert(game != NULL);
+	return game->CreateResultsScreen();
+}
+
+void NetplayManager::CleanupMatch()
+{
+	delete game;
+	game = NULL;
 }
 
 void NetplayManager::FindQuickplayMatch()

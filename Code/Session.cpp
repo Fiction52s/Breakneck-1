@@ -1553,6 +1553,8 @@ void Session::DrawBullets(sf::RenderTarget *target)
 Session::Session( SessionType p_sessType, const boost::filesystem::path &p_filePath)
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
+	matchPlacings.resize(4);
+
 	isParallelSession = false;
 	randomState = 0;
 	ggpoReady = false;
@@ -4031,6 +4033,18 @@ void Session::SimulateGGPOGameFrame()
 
 	if (!isParallelSession)
 	{
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			if (gameMode->CheckVictoryConditions())
+			{
+				//ggpo_advance_frame(ggpo);
+				gameMode->EndGame();
+
+				//return true;
+			}
+		}
+
+
 		ggpo_advance_frame(ggpo); //only update this once
 	}
 }
@@ -6354,8 +6368,6 @@ void Session::DrawGame(sf::RenderTarget *target)//sf::RenderTarget *target)
 
 	pokeTriangleScreenGroup->Draw(target);
 
-	DrawRaceFightScore(target);
-
 	DrawScoreDisplay(target);
 
 	DrawFrameRate(target);
@@ -6667,8 +6679,6 @@ bool Session::RunGameModeUpdate()
 		UpdateTopClouds();
 
 		mainMenu->UpdateEffects();
-
-		UpdateRaceFightScore();
 
 		UpdateGoalFlow();
 
@@ -7104,6 +7114,7 @@ void Session::InitGGPO()
 		netplayManager->netplayPlayers[i].skinIndex = normalSkin;
 	}
 	
+	//myIndex and otherIndex have nothing to do with playerIndex (which is determined by lobby order currently)
 
 	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
 	ggpoPlayers[myIndex].player_num = myIndex + 1;
@@ -7286,6 +7297,7 @@ bool Session::GGPORunGameModeUpdate()
 	ActiveSequenceUpdate();
 	if (switchGameState)
 	{
+		//good chance this will be a problem at some point since I moved ggpo_advance_frame out of the normal function for parallel races
 		cout << "switch game state" << endl;
 		ggpo_advance_frame(ggpo);
 		return true;
@@ -7370,8 +7382,6 @@ bool Session::GGPORunGameModeUpdate()
 
 	mainMenu->UpdateEffects();
 
-	UpdateRaceFightScore();
-
 	UpdateGoalFlow();
 
 	QueryToSpawnEnemies();
@@ -7398,13 +7408,17 @@ bool Session::GGPORunGameModeUpdate()
 
 	totalGameFrames++;
 
-	if (gameMode->CheckVictoryConditions())
+	if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
-		//ggpo_advance_frame(ggpo);
-		gameMode->EndGame();
+		if (gameMode->CheckVictoryConditions())
+		{
+			//ggpo_advance_frame(ggpo);
+			gameMode->EndGame();
 
-		//return true;
+			//return true;
+		}
 	}
+	
 
 	/*if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE )
 	{
@@ -7521,6 +7535,17 @@ void Session::GGPORunFrame()
 				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
 				prm->testGame->RunGGPOModeUpdate();
+			}
+
+			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+			{
+				if (gameMode->CheckVictoryConditions())
+				{
+					//ggpo_advance_frame(ggpo);
+					gameMode->EndGame();
+
+					//return true;
+				}
 			}
 
 			ggpo_advance_frame(ggpo);
@@ -8346,4 +8371,12 @@ void Session::RunGGPOModeUpdate()
 		GGPOFrozenGameModeUpdate();
 		break;
 	}
+}
+
+void Session::SetMatchPlacings(int p1Placing, int p2Placing, int p3Placing, int p4Placing)
+{
+	matchPlacings[0] = p1Placing;
+	matchPlacings[1] = p2Placing;
+	matchPlacings[2] = p3Placing;
+	matchPlacings[3] = p4Placing;
 }

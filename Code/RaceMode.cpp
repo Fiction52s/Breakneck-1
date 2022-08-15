@@ -69,22 +69,14 @@ bool RaceMode::CheckVictoryConditions()
 
 	if (sess->GetPlayer(0)->hitGoal)
 	{
+		sess->SetMatchPlacings(0, 1);
 		return true;
 	}
 	else if (sess->GetPlayer(1)->hitGoal)
 	{
+		sess->SetMatchPlacings(1, 0);
 		return true;
 	}
-
-
-	/*bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
-	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
-	if (p0TouchedKillGrass || p1TouchedKillGrass
-		|| data.p0Health == 0 || data.p1Health == 0)
-	{
-		return true;
-	}
-	return false;*/
 
 	return false;
 }

@@ -6,8 +6,10 @@
 #include "Movement.h"
 
 struct UIWindow;
-struct VictoryScreen
+struct MatchResultsScreen
 {
+	MatchResultsScreen() { Reset(); }
+	~MatchResultsScreen() {}
 	virtual void Draw( sf::RenderTarget *target ) = 0;
 	virtual void Update() = 0;
 	virtual void ResetSprites() = 0;
@@ -64,15 +66,15 @@ struct PlayerInfoBar
 	UIWindow *uiWindow;
 };
 
-struct VictoryScreen2PlayerVS : VictoryScreen
+struct VictoryScreen2PlayerVS : MatchResultsScreen
 {
-	VictoryScreen2PlayerVS( GameSession *owner );
+	VictoryScreen2PlayerVS( GameSession *p_game );
 	void Draw( sf::RenderTarget *target );
 	void Update();
 	void ResetSprites();
 	void UpdateSprites();
 	void Reset();
-	GameSession *owner;
+	GameSession *game;
 
 	PlayerInfoBar *player1Bar;
 	PlayerInfoBar *player2Bar;
@@ -80,7 +82,7 @@ struct VictoryScreen2PlayerVS : VictoryScreen
 };
 
 struct Tileset;
-struct ResultsScreen : VictoryScreen
+struct ResultsScreen : MatchResultsScreen
 {
 	enum State
 	{

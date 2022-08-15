@@ -36,6 +36,8 @@ struct ControlSettingsMenu;
 
 struct EffectPool;
 
+struct MatchResultsScreen;
+
 struct ControlProfile;
 struct ControlProfileMenu;
 struct MapSelectionMenu;
@@ -516,7 +518,6 @@ struct MainMenu
 		MULTIPREVIEW,
 		TRANS_MAPSELECT_TO_MULTIPREVIEW,
 		TRANS_MULTIPREVIEW_TO_MAPSELECT,
-		DEBUG_RACEFIGHT_RESULTS,
 		TRANS_MAIN_TO_MAPSELECT,
 		MAPSELECT,
 		TRANS_MAPSELECT_TO_MAIN,
@@ -538,6 +539,7 @@ struct MainMenu
 		QUICKPLAY_PLAY,
 		CUSTOM_MATCH_SETUP,
 		ONLINE_MENU,
+		MATCH_RESULTS,
 		EXITING,
 	};
 
@@ -562,6 +564,7 @@ struct MainMenu
 	NetplayManager *netplayManager;
 	CustomMatchManager *customMatchManager;
 	OnlineMenuScreen *onlineMenuScreen;
+	MatchResultsScreen *matchResultsScreen;
 
 
 	std::string freePlayMapName;
@@ -583,9 +586,11 @@ struct MainMenu
 	void UpdateMenuMode();
 	void CheckForControllers();
 	void UpdateMenuInput();
+	
 
 	void RunFreePlayMap(const std::string &path);
 	void DownloadAndRunWorkshopMap();
+	void SetToMatchResults(GameSession *p_game);
 
 	void UnlockSkin(int skinIndex);
 	bool IsSkinUnlocked(int skinIndex);
@@ -847,6 +852,8 @@ struct MainMenu
 	
 	sf::Vector2f topCenter;
 	sf::Vector2f bottomCenter;
+
+	
 	//int saveKinFaceFactor;
 };
 
