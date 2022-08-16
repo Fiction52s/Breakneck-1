@@ -11,11 +11,12 @@ using namespace std;
 Dropdown::Dropdown(const std::string &n, sf::Vector2i &p_pos,
 	sf::Vector2i &p_size, sf::Font &f,
 	const std::vector<std::string> &p_options, int p_defaultIndex, Panel *p)
-	:PanelMember(p), pos(p_pos), clickedDown(false), characterHeight(size.y - 4), size(p_size), name(n),
+	:PanelMember(p), pos(p_pos), clickedDown(false), characterHeight(size.y - 8), size(p_size), name(n),
 	myFont(f), defaultIndex(p_defaultIndex), expanded(false)
 {
 	selectedIndex = -1;
 	baseIndex = 0;
+	dropdownRects = NULL;
 	SetOptions(p_options);
 }
 
@@ -62,6 +63,11 @@ void Dropdown::Deactivate()
 
 void Dropdown::SetOptions(const std::vector<std::string> &p_options)
 {
+	if (dropdownRects != NULL)
+	{
+		delete[] dropdownRects;
+	}
+
 	options = p_options;
 
 	numOptions = options.size();

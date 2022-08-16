@@ -165,7 +165,10 @@ void MapOptionsPopup::Activate(MapNode *mp)
 	}
 	modeDropdown->SetOptions(gameModeOptions);
 	modeDropdown->UpdateOptions();
+	modeDropdown->selectedIndex = -1;
 	modeDropdown->SetSelectedIndex(0);
+
+	UpdateNumPlayerOptions();
 	
 
 	//numPlayersDropdown = panel->AddDropdown( "numplayersdropdown", Vector2f( 0, 0 ), Vector2f( 50, 28 ), 
@@ -186,8 +189,23 @@ void MapOptionsPopup::UpdateNumPlayerOptions()
 		playerNumOptionsStr.push_back(to_string((*it)));
 	}
 
+
+
+	int startIndex = 0;
+	int ind = 0;
+	for (auto it = playerNumOptionsStr.begin(); it != playerNumOptionsStr.end(); ++it)
+	{
+		if ((*it) == numPlayersDropdown->GetSelectedText())
+		{
+			startIndex = ind;
+			break;
+		}
+		++ind;
+	}
+
 	numPlayersDropdown->SetOptions(playerNumOptionsStr);
 	numPlayersDropdown->UpdateOptions();
-	numPlayersDropdown->SetSelectedIndex(0);
+	numPlayersDropdown->selectedIndex = -1;
+	numPlayersDropdown->SetSelectedIndex(startIndex);
 	
 }

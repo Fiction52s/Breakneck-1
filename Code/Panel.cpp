@@ -380,6 +380,7 @@ bool Panel::MouseUpdate()
 		if (temp)
 		{
 			dropdownUsedMouse = true;
+			break;
 			//return true;
 		}
 	}
@@ -1011,9 +1012,21 @@ void Panel::Draw(RenderTarget *target)
 		(*it)->Draw(target);
 	}
 
+	Dropdown *expandedDrop = NULL;
 	for (auto it = dropdowns.begin(); it != dropdowns.end(); ++it)
 	{
-		(*it).second->Draw(target);
+		if (!(*it).second->expanded)
+		{
+			(*it).second->Draw(target);
+		}
+		else
+		{
+			expandedDrop = (*it).second;
+		}
+	}
+	if (expandedDrop != NULL)
+	{
+		expandedDrop->Draw(target);
 	}
 
 	for (auto it = menuDropdowns.begin(); it != menuDropdowns.end(); ++it)
