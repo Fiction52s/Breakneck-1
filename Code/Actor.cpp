@@ -961,7 +961,7 @@ void Actor::SetupFXTilesets()
 
 	effectPools[PLAYERFX_LAND_0].Set(sess->GetSizedTileset(folder, "fx_land_a_128x128.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_LAND_1].Set(sess->GetSizedTileset(folder, "fx_land_b_192x208.png"), EffectType::FX_REGULAR, 20);
-	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "fx_land_c_256x256.png"), EffectType::FX_REGULAR, 20);
+	effectPools[PLAYERFX_LAND_2].Set(sess->GetSizedTileset(folder, "fx_land_c_224x224.png"), EffectType::FX_REGULAR, 20);
 
 	effectPools[PLAYERFX_RUN_START].Set(sess->GetSizedTileset(folder, "fx_runstart_128x128.png"), EffectType::FX_REGULAR, 20);
 
@@ -4311,10 +4311,14 @@ void Actor::CreateAttackLightning()
 		tr.scale(Vector2f(-1, 1));
 	}
 
-	/*if (speedLevel == 1)
+	if (speedLevel == 1)
 	{
-		tr.scale(2, 2);
-	}*/
+		tr.scale(1.125, 1.125);
+	}
+	else if (speedLevel == 2)
+	{
+		tr.scale(1.5, 1.5);
+	}
 
 	params.SetParams(Vector2f(0, 0), tr, 23, 1, 0, &spriteCenter );
 	//fair should be 25 but meh

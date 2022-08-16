@@ -186,33 +186,6 @@ struct MapBrowser : TilesetManager,
 	sf::Text *folderPathText;
 };
 
-struct MapOptionsPopup : GUIHandler
-{
-	enum Action
-	{
-		A_INACTIVE,
-		A_ACTIVE,
-		A_CONFIRMED,
-		A_CANCELLED,
-	};
 
-	Panel *panel;
-	bool active;
-	Action action;
-
-	MapHeader *currMapHeader;
-	LobbyParams *currLobbyParams;
-	int chosenGameModeType;
-	std::string mapPath;
-
-	MapOptionsPopup();
-	~MapOptionsPopup();
-	void Activate( MapNode *mp );
-	void Update();
-	void HandleEvent(sf::Event ev);
-	void Draw(sf::RenderTarget *target);
-
-	void ButtonCallback(Button *b, const std::string & e);
-};
 
 #endif

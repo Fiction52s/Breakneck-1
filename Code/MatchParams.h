@@ -16,6 +16,7 @@ struct MatchParams
 		GAME_MODE_FIGHT,
 		GAME_MODE_RACE,
 		GAME_MODE_PARALLEL_RACE,
+		GAME_MODE_Count,
 	};
 
 	boost::filesystem::path mapPath;
@@ -27,6 +28,9 @@ struct MatchParams
 	int randSeed;
 
 	MatchParams();
+	static std::string GetGameModeName(int gm);
+	static bool IsMultiplayerMode(int gm);
+	static std::vector<int> GetNumPlayerOptions(int gm);
 };
 
 #endif

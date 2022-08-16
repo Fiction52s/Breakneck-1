@@ -10,6 +10,63 @@ using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
 
+//enum GameModeType
+//{
+//	GAME_MODE_BASIC,
+//	GAME_MODE_REACHENEMYBASE,
+//	GAME_MODE_FIGHT,
+//	GAME_MODE_RACE,
+//	GAME_MODE_PARALLEL_RACE,
+//};
+
+bool MapHeader::CanRunAsMode(int gm )
+{
+	bool hasGoal = possibleGameModeTypeFlags & (1 << MapHeader::GameModeFlags::MI_HAS_GOAL);
+
+	switch (gm)
+	{
+	case MatchParams::GAME_MODE_BASIC:
+	{
+		if (hasGoal)
+		{
+			return true;
+		}
+		break;
+	}
+	case MatchParams::GAME_MODE_REACHENEMYBASE:
+	{
+		return false;
+		break;
+	}
+	case MatchParams::GAME_MODE_FIGHT:
+	{
+		if (numPlayerSpawns >= 2)
+		{
+			return true;
+		}
+		break;
+	}
+	case MatchParams::GAME_MODE_RACE:
+	{
+		if (numPlayerSpawns >= 2 && hasGoal )
+		{
+			return true;
+		}
+		break;
+	}
+	case MatchParams::GAME_MODE_PARALLEL_RACE:
+	{
+		if (hasGoal)
+		{
+			return true;
+		}
+		break;
+	}
+	}
+
+	return false;
+}
+
 bool MapHeader::Load(std::ifstream &is)
 {
 	assert(is.is_open());

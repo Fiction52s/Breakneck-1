@@ -10,6 +10,7 @@
 #include <fstream>
 #include "md5.h"
 #include "MapHeader.h"
+#include "MapOptionsPopup.h"
 
 
 using namespace sf;
@@ -268,13 +269,19 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	case A_DOWNLOADING_WORKSHOP_MAP:
 	{
-
 		break;
 	}
 	case A_CHOOSE_MAP_OPTIONS:
+	{
 		mapBrowserScreen->Draw(target);
+		sf::RectangleShape rect;
+		rect.setFillColor(Color(0, 0, 0, 100));
+		rect.setSize(Vector2f(1920, 1080));
+		rect.setPosition(0, 0);
+		target->draw(rect);
 		mapOptionsPopup->Draw(target);
 		break;
+	}
 	case A_CREATING_LOBBY:
 	{
 		mapBrowserScreen->Draw(target);

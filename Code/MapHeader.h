@@ -32,36 +32,7 @@ struct MapHeader
 
 	}
 
-	static int GetGameModeTypeMinPlayers( int gm)
-	{
-		switch (gm)
-		{
-		case MatchParams::GAME_MODE_BASIC:
-			return 1;
-		case MatchParams::GAME_MODE_REACHENEMYBASE:
-			return 2;
-		case MatchParams::GAME_MODE_FIGHT:
-			return 2;
-		case MatchParams::GAME_MODE_RACE:
-			return 1;
-		}
-	}
-
-	static int GetGameModeTypeMaxPlayers(int gm)
-	{
-		switch (gm)
-		{
-		case MatchParams::GAME_MODE_BASIC:
-			return 1;
-		case MatchParams::GAME_MODE_REACHENEMYBASE:
-			return 2;
-		case MatchParams::GAME_MODE_FIGHT:
-			return 2;
-		case MatchParams::GAME_MODE_RACE:
-			return 1;
-		}
-	}
-
+	bool CanRunAsMode(int gm);
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);
 	bool Replace(boost::filesystem::path &p);
