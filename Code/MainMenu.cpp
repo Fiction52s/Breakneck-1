@@ -2885,7 +2885,7 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
-				matchResultsScreen = netplayManager->CreateResultsScreen();
+				//matchResultsScreen = netplayManager->CreateResultsScreen();
 
 				netplayManager->CleanupMatch();
 
@@ -2898,8 +2898,8 @@ void MainMenu::HandleMenuMode()
 				else
 				{
 					cout << "action test: " << (int)netplayManager->action << endl;
-					//SetMode(TITLEMENU);
-					SetMode(MATCH_RESULTS);
+					SetMode(TITLEMENU);
+					//SetMode(MATCH_RESULTS);
 				}
 			}
 		}

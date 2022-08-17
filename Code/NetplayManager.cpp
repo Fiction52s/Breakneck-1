@@ -30,6 +30,7 @@ void NetplayPlayer::Clear()
 	isHost = false;
 	skinIndex = 0;
 
+
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
 
@@ -75,13 +76,14 @@ NetplayManager::NetplayManager()
 	connectionManager = NULL;
 	loadThread = NULL;
 	game = NULL;
+	playerIndex = -1;
 
 	desyncDetected = true;//false;
 
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -161,6 +163,8 @@ void NetplayManager::Abort()
 	{
 		netplayPlayers[i].Clear();
 	}
+
+	CleanupMatch();
 
 	numPlayers = -1;
 
@@ -1072,13 +1076,7 @@ int NetplayManager::RunMatch()
 {
 	action = A_RUNNING_MATCH;
 
-
-
-	if (isSyncTest)
-	{
-		//game->InitGGPO();
-	}
-	else
+	if( !isSyncTest )
 	{
 		if (IsHost())
 		{
@@ -1125,8 +1123,11 @@ MatchResultsScreen *NetplayManager::CreateResultsScreen()
 
 void NetplayManager::CleanupMatch()
 {
-	delete game;
-	game = NULL;
+	if (game != NULL)
+	{
+		delete game;
+		game = NULL;
+	}
 }
 
 void NetplayManager::FindQuickplayMatch()
@@ -1134,6 +1135,8 @@ void NetplayManager::FindQuickplayMatch()
 	if (isSyncTest)
 	{
 		Abort();
+
+		playerIndex = 0;
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;

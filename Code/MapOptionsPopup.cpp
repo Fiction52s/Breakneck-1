@@ -93,7 +93,8 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 	{
 		currLobbyParams->randSeed = time(0);
 		currLobbyParams->creatorID = currMapHeader->creatorID;
-		currLobbyParams->maxMembers = 2;
+		//currLobbyParams->maxMembers = 2;
+		currLobbyParams->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
 		currLobbyParams->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
 
 		cout << "game mode confirmed as: " << currLobbyParams->gameModeType << endl;

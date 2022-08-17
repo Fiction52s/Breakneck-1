@@ -25,7 +25,7 @@
 #include "PoiInfo.h"
 
 #include "Session.h"
-#include "MatchParams.h"
+
 
 struct BonusHandler;
 
@@ -368,7 +368,7 @@ struct GameSession : RayCastHandler, Session
 	
 	int returnVal;
 
-	MatchParams matchParams;
+	
 
 
 	std::string GetBestTimeGhostPath();

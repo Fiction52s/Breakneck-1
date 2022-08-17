@@ -19,6 +19,7 @@
 #include "BitField.h"
 #include "ScoreDisplay.h"
 #include "steam/steam_api.h"
+#include "MatchParams.h"
 
 struct Nexus;
 
@@ -26,7 +27,6 @@ struct GroundedWarper;
 
 struct GGPONonGameState;
 struct SaveGameState;
-struct ExtraState;
 struct GGPOSession;
 struct GGPOPlayer;
 struct NetplayManager;
@@ -206,6 +206,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	};
 
 	bool isParallelSession;
+
+	MatchParams matchParams;
 
 	uint32 randomState;
 	int GetRand();
@@ -830,7 +832,6 @@ struct Session : TilesetManager, QuadTreeCollider
 	
 	GGPONonGameState *ngs;
 	SaveGameState *currSaveState;
-	ExtraState *currExtraState;
 	sf::CircleShape testSimCircle;
 
 	//SaveGameState *saveStates[10];

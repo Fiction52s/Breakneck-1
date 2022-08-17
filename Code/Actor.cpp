@@ -646,22 +646,6 @@ void Actor::PopulateFromState(PState *ps)
 	hitGoal = ps->hitGoal;
 }
 
-void Actor::PopulateExtraState( ExtraState *es )
-{
-	for (int i = 0; i < sess->numSimulatedFramesRequired; ++i)
-	{
-		es->futurePositions[actorIndex][i] = futurePositions[i];
-	}
-}
-
-void Actor::PopulateFromExtraState( ExtraState *es )
-{
-	for (int i = 0; i < sess->numSimulatedFramesRequired; ++i)
-	{
-		futurePositions[i] = es->futurePositions[actorIndex][i];
-	}
-}
-
 void Actor::SetSession(Session *p_sess,
 	GameSession *game,
 	EditSession *edit)
@@ -21677,8 +21661,8 @@ void Actor::UpdateInHitlag()
 
  void Actor::UpdateNumFuturePositions()
  {
-	 int num = sess->numSimulatedFramesRequired;
-	 if (num == 0)
+	 int numFrames = sess->numSimulatedFramesRequired;
+	 if (numFrames == 0)
 	 {
 		 if (preSimulationState != NULL)
 		 {
@@ -21701,22 +21685,48 @@ void Actor::UpdateInHitlag()
 		 futurePositions = NULL;
 	 }
 
-	 futurePositions = new V2d[num];
+	 futurePositions = new V2d[numFrames];
  }
 
  int Actor::GetNumStoredBytes()
  {
-	 return sizeof(PState);
+	 int totalSize = 0;
+
+	 totalSize += sizeof(PState);
+
+	 totalSize += sess->numSimulatedFramesRequired * sizeof(V2d);
+
+	 return totalSize;
  }
 
  void Actor::StoreBytes(unsigned char *bytes)
  {
 	 PopulateState(pState);
 	 memcpy(bytes, pState, sizeof(PState));
+
+	 bytes += sizeof(PState);
+
+	 int numFrames = sess->numSimulatedFramesRequired;
+
+	 int positionsSize = numFrames * sizeof(V2d);
+
+	 memcpy(bytes, futurePositions, positionsSize);
+
+	 bytes += positionsSize;
  }
 
  void Actor::SetFromBytes(unsigned char *bytes)
  {
 	 memcpy(pState, bytes, sizeof(PState));
 	 PopulateFromState(pState);
+
+	 bytes += sizeof(PState);
+
+	 int numFrames = sess->numSimulatedFramesRequired;
+
+	 int positionsSize = numFrames * sizeof(V2d);
+
+	 memcpy(futurePositions, bytes, positionsSize);
+
+	 bytes += positionsSize;
  }

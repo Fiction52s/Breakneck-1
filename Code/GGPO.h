@@ -398,20 +398,6 @@ struct SaveGameState
 	void Print();
 };
 
-struct ExtraState
-{
-	V2d *futurePositions[2];
-	int numFrames;
-
-	ExtraState();
-	~ExtraState();
-	
-	void SetNumSimulationFrames(int num);
-	int GetNumStoredBytes();
-	void StoreBytes(unsigned char *bytes);
-	void SetFromBytes(unsigned char *bytes);
-};
-
 int fletcher32_checksum(short *data, 
 	size_t len);
 

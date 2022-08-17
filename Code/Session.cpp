@@ -7015,7 +7015,6 @@ void Session::InitGGPO()
 	}*/
 
 	currSaveState = new SaveGameState;
-	currExtraState = new ExtraState;
 	ngs = new GGPONonGameState;
 	ggpoPlayers = new GGPOPlayer[4];
 
@@ -7029,12 +7028,11 @@ void Session::InitGGPO()
 		}
 	}
 
-
-	currExtraState->SetNumSimulationFrames(numSimulatedFramesRequired);
-
 	GGPOErrorCode result;
 
 	int frameDelay = 2;
+
+	int numPlayers = matchParams.numPlayers;
 
 	//ifstream is;
 	//is.open("Resources/ggpotest.txt");
@@ -7046,8 +7044,7 @@ void Session::InitGGPO()
 
 
 	//int offset = 1, local_player = 0;
-	int num_players = 2;
-	ngs->num_players = num_players;
+	ngs->num_players = numPlayers; //used to be hardcoded to 2
 
 	cout << "initializing ggpo" << endl;
 
@@ -7056,12 +7053,12 @@ void Session::InitGGPO()
 
 	if (netplayManager->isSyncTest)
 	{
-		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", num_players,
+		result = ggpo_start_synctest(&ggpo, &cb, "breakneck_synctest", numPlayers,
 			sizeof(int), 1);
 	}
 	else
 	{
-		result = ggpo_start_session(&ggpo, &cb, "breakneck", num_players,
+		result = ggpo_start_session(&ggpo, &cb, "breakneck", numPlayers,
 			sizeof(int));//, localPort);
 	}
 
@@ -7071,8 +7068,8 @@ void Session::InitGGPO()
 	//result = ggpo_start_session(&ggpo, &cb, "vectorwar", num_players, sizeof(int), localport);
 	ggpo_set_disconnect_timeout(ggpo, 0); //3000
 	ggpo_set_disconnect_notify_start(ggpo, 1000);
-	int myIndex = 0;
-	int otherIndex = 1;
+	//int myIndex = 0;
+	//int otherIndex = 1;
 
 	//bool shift = IsKeyPressed(Keyboard::LShift);
 
@@ -7087,12 +7084,12 @@ void Session::InitGGPO()
 	{
 		if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
-			myIndex = 1;
-			otherIndex = 0;
+			//myIndex = 1;
+			//otherIndex = 0;
 		}
 	}
 
-	for (int i = 0; i < netplayManager->numPlayers; ++i)
+	for (int i = 0; i < numPlayers; ++i)
 	{
 		int normalSkin = Actor::SKIN_NORMAL;
 		switch (i)
@@ -7116,12 +7113,49 @@ void Session::InitGGPO()
 	
 	//myIndex and otherIndex have nothing to do with playerIndex (which is determined by lobby order currently)
 
-	ggpoPlayers[myIndex].size = sizeof(ggpoPlayers[myIndex]);
-	ggpoPlayers[myIndex].player_num = myIndex + 1;
-	ggpoPlayers[otherIndex].size = sizeof(ggpoPlayers[otherIndex]);
-	ggpoPlayers[otherIndex].player_num = otherIndex + 1;
-	ggpoPlayers[myIndex].type = GGPO_PLAYERTYPE_LOCAL;
-	ggpoPlayers[otherIndex].type = GGPO_PLAYERTYPE_REMOTE;
+	int playerIndex = netplayManager->playerIndex;
+	int myIndex = playerIndex;
+
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+	{
+		myIndex = 0;
+	}
+
+
+
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == myIndex)
+		{
+			ggpoPlayers[i].size = sizeof(ggpoPlayers[i]);
+			ggpoPlayers[i].player_num = i + 1;
+			ggpoPlayers[i].type = GGPO_PLAYERTYPE_LOCAL;
+		}
+		else
+		{
+			ggpoPlayers[i].size = sizeof(ggpoPlayers[i]);
+			ggpoPlayers[i].player_num = i + 1;
+			ggpoPlayers[i].type = GGPO_PLAYERTYPE_REMOTE;
+
+
+			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+			{
+				//because everyone thinks they're player 0
+				int realIndex = i;
+				if (realIndex <= playerIndex)
+				{
+					--realIndex;
+				}
+
+				ggpoPlayers[i].u.remote.connection = netplayManager->netplayPlayers[realIndex].connection;
+			}
+			else
+			{
+				ggpoPlayers[i].u.remote.connection = netplayManager->netplayPlayers[i].connection;
+			}
+			
+		}
+	}
 	//	local_player = myIndex;
 
 	//int ipLen = ipStr.length();
@@ -7134,18 +7168,9 @@ void Session::InitGGPO()
 	////ggpoPlayers[otherIndex].u.remote.ip_address = ipStr.c_str();
 	//ggpoPlayers[otherIndex].u.remote.port = otherPort;
 
-	
-	for (int i = 0; i < netplayManager->numPlayers; ++i)
-	{
-		if (i == netplayManager->playerIndex)
-			continue;
-
-		ggpoPlayers[otherIndex].u.remote.connection = netplayManager->netplayPlayers[i].connection;//netplayManager->GetConnection();
-	}
-	
 
 	int i;
-	for (i = 0; i < num_players; i++) {
+	for (i = 0; i < numPlayers; i++) {
 		GGPOPlayerHandle handle;
 		result = ggpo_add_player(ggpo, ggpoPlayers + i, &handle);
 		ngs->playerInfo[i].handle = handle;
@@ -7181,7 +7206,6 @@ void Session::UpdateJustGGPO()
 void Session::CleanupGGPO()
 {
 	delete currSaveState;
-	delete currExtraState;
 	delete ngs;
 	delete[] ggpoPlayers;
 }
@@ -7564,7 +7588,6 @@ int Session::GetNumStoredBytes()
 	int totalSize = 0;
 	
 	totalSize += sizeof(SaveGameState);
-	totalSize += currExtraState->GetNumStoredBytes();
 
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)
@@ -7617,18 +7640,6 @@ void Session::StoreBytes(unsigned char *bytes)
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			p->PopulateExtraState(currExtraState);
-		}
-	}
-
-	currExtraState->StoreBytes(bytes);
-	bytes += currExtraState->GetNumStoredBytes();
-
-	for (int i = 0; i < MAX_PLAYERS; ++i)
-	{
-		p = GetPlayer(i);
-		if (p != NULL)
-		{
 			p->StoreBytes(bytes);
 			bytes += p->GetNumStoredBytes();
 		}
@@ -7665,9 +7676,6 @@ void Session::SetFromBytes(unsigned char *bytes)
 	int saveSize = sizeof(SaveGameState);
 	memcpy(currSaveState, bytes, saveSize);
 	bytes += saveSize;
-
-	currExtraState->SetFromBytes(bytes);
-	bytes += currExtraState->GetNumStoredBytes();
 
 	Actor *p = NULL;
 	for (int i = 0; i < MAX_PLAYERS; ++i)

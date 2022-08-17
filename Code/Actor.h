@@ -30,7 +30,6 @@ struct PaletteShader;
 struct SwordProjectile;
 
 struct PState;
-struct ExtraState;
 
 struct EditSession;
 struct EffectInstance;
@@ -1319,8 +1318,6 @@ struct Actor : QuadTreeCollider,
 
 	void PopulateState(PState *ps);
 	void PopulateFromState(PState *ps);
-	void PopulateExtraState(ExtraState *es);
-	void PopulateFromExtraState(ExtraState *es);
 	bool TryClimbBoost(V2d &gNorm);
 	CollisionBody * GetBubbleHitbox(int index);
 

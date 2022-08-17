@@ -490,7 +490,6 @@ GameSession *GameSession::CreateParallelSession()
 
 	parallelGame->SetParentTilesetManager(this);
 	parallelGame->currSaveState = new SaveGameState;
-	parallelGame->currExtraState = new ExtraState;
 
 	//parallelGame->SetParentGame(this);
 	parallelGame->Load();
@@ -792,9 +791,6 @@ void GameSession::Cleanup()
 	{
 		assert(currSaveState != NULL);
 		delete currSaveState;
-
-		assert(currExtraState != NULL);
-		delete currExtraState;
 	}
 
 
