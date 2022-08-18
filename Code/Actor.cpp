@@ -1979,6 +1979,18 @@ void Actor::SetupActionFunctions()
 		&Actor::GROUNDTECHINPLACE_GetActionLength,
 		&Actor::GROUNDTECHINPLACE_GetTileset);
 
+	SetupFuncsForAction(HIDDEN,
+		&Actor::HIDDEN_Start,
+		&Actor::HIDDEN_End,
+		&Actor::HIDDEN_Change,
+		&Actor::HIDDEN_Update,
+		&Actor::HIDDEN_UpdateSprite,
+		&Actor::HIDDEN_TransitionToAction,
+		&Actor::HIDDEN_TimeIndFrameInc,
+		&Actor::HIDDEN_TimeDepFrameInc,
+		&Actor::HIDDEN_GetActionLength,
+		&Actor::HIDDEN_GetTileset);
+
 	SetupFuncsForAction(HOMINGATTACK,
 		&Actor::HOMINGATTACK_Start,
 		&Actor::HOMINGATTACK_End,
@@ -5143,32 +5155,19 @@ void Actor::ReactToBeingHit()
 	if (sess->gameModeType == MatchParams::GAME_MODE_FIGHT)
 	{
 		FightMode *fm = (FightMode*)sess->gameMode;
-		if (actorIndex == 0)
-		{
-			int realDamage = receivedHit.damage;
-			if (receivedHitPlayer == NULL)
-			{
-				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
-			}
-			fm->data.health[0] -= realDamage;
-			if (fm->data.health[0] < 0)
-			{
-				fm->data.health[0] = 0;
-			}
-		}
-		else if (actorIndex == 1)
-		{
-			int realDamage = receivedHit.damage;
-			if (receivedHitPlayer == NULL)
-			{
-				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
-			}
-			//cout << "p2 taking: " << receivedHit->damage;// << endl;
-			fm->data.health[1] -= realDamage;
 
-			//cout << " health is now: " << fm->data.p1Health << endl;
-			if (fm->data.health[1] < 0)
-				fm->data.health[1] = 0;
+		int realDamage = receivedHit.damage;
+		if (receivedHitPlayer == NULL)
+		{
+			realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
+		}
+		fm->data.health[actorIndex] -= realDamage;
+		if (fm->data.health[actorIndex] <= 0)
+		{
+			fm->data.health[actorIndex] = 0;
+
+			SetAction(DEATH);
+			return;
 		}
 	}
 	else
@@ -6463,6 +6462,9 @@ void Actor::UpdatePrePhysics()
 {
 	//cout << "update pre" << endl;
 	if (action == DEATH && simulationMode)
+		return;
+
+	if (action == HIDDEN)
 		return;
 	/*static int skinTest = 0;
 	SetSkin(skinTest / 3);
@@ -11503,7 +11505,7 @@ void Actor::UpdatePhysics()
 	if (IsIntroAction(action) || IsGoalKillAction(action) || action == EXIT
 		|| action == RIDESHIP || action == WAITFORSHIP || action == SEQ_WAIT
 		|| action == GRABSHIP || action == EXITWAIT || action == EXITBOOST
-		|| action == DEATH || hitEnemyDuringPhysics)
+		|| action == DEATH || action == HIDDEN || hitEnemyDuringPhysics)
 		return;
 
 	UpdateWirePhysics();
@@ -15871,6 +15873,11 @@ void Actor::UpdatePostPhysics()
 		return;
 	}
 
+	if (action == HIDDEN)
+	{
+		return;
+	}
+
 	if (kinMode == K_DESPERATION && !simulationMode)
 	{
 		float despFactor = GetSurvivalFrame() / (float)maxDespFrames;
@@ -18279,7 +18286,8 @@ void Actor::DrawPlayerSprite( sf::RenderTarget *target )
 bool Actor::IsVisibleAction(int a)
 {
 	if (a == DEATH || a == EXITWAIT || a == SPAWNWAIT 
-		|| a == SEQ_LOOKUPDISAPPEAR || a == SPRINGSTUNTELEPORT)
+		|| a == SEQ_LOOKUPDISAPPEAR || a == SPRINGSTUNTELEPORT
+		|| a == HIDDEN )
 	{
 		return false;
 	}

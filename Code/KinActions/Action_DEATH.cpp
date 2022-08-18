@@ -13,7 +13,6 @@ void Actor::DEATH_Start()
 
 void Actor::DEATH_End()
 {
-	
 	frame = 0;
 	dead = true;
 }
@@ -41,8 +40,16 @@ void Actor::DEATH_Update()
 	{
 		if (owner != NULL)
 		{
-			//owner->NextFrameRestartLevel();	
-			owner->RestartGame();
+			//owner->NextFrameRestartLevel();
+			if (owner->gameModeType == MatchParams::GAME_MODE_FIGHT)
+			{
+				SetAction(HIDDEN);
+				dead = true; //lets hope this doesnt mess with anything
+			}
+			else
+			{
+				owner->RestartGame();
+			}
 		}
 		else if (editOwner != NULL)
 		{

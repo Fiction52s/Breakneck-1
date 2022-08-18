@@ -29,6 +29,7 @@ struct Camera
 		FIGHTING,
 	};
 
+	double playerPosFactor[4];
 	CamType camType;
 	Session *sess;
 	GameSession *game;
@@ -133,8 +134,7 @@ struct Camera
 	void UpdateBossFight(int bossFightType);
 	void ManualUpdate( Actor *a );
 	void UpdateZoomLevel(ControllerState &con, ControllerState &prevcon);
-	void UpdateVS( Actor *a, 
-		Actor *a2 );
+	void UpdateVS();
 	double GetMovementZoomTarget( Actor *player );
 	double GetNextMovementZoom( double moveZoom );
 	double GetNextEnemyZoom(double enemyZoom);

@@ -97,33 +97,65 @@ bool FightMode::CheckVictoryConditions()
 
 	//fight should only be 2 players, like a fighitng game. can use deathmatch for more than 2
 
-	bool playerDead[4];
+	int numAlive = 0;
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
-		playerDead[i] = false;
-
 		p = sess->GetPlayer(i);
-
-		if (p != NULL)
+		if (p != NULL && !p->dead)
 		{
-			if (p->touchedGrass[Grass::HIT] || data.health[i] == 0 )
-			{
-				playerDead[i] = true;
-			}
+			++numAlive;
 		}
 	}
 
-	if (playerDead[0])
+	bool playerDead[4];
+	
+	if (numAlive == 1)
 	{
-		sess->SetMatchPlacings(1, 0);
-		return true;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = sess->GetPlayer(i);
+			if (p != NULL && !p->dead)
+			{
+				sess->SetMatchPlacings(i);
+				return true;
+				//doesnt account for 2nd place yet
+			}
+		}
 	}
-	else if (playerDead[1])
-	{
-		sess->SetMatchPlacings(0, 1);
-		return true;
-	}
+	//for (int i = 0; i < 4; ++i)
+	//{
+	//	playerDead[i] = false;
+
+	//	p = sess->GetPlayer(i);
+
+	//	if (p != NULL)
+	//	{
+	//		if (p->touchedGrass[Grass::HIT] || data.health[i] == 0 )
+	//		{
+	//			if (numAlive > 2)
+	//			{
+	//				//die? maybe have the player do this themselves??
+	//			}
+	//			else
+	//			{
+	//				playerDead[i] = true;
+	//			}
+	//			
+	//		}
+	//	}
+	//}
+
+	//if (playerDead[0])
+	//{
+	//	sess->SetMatchPlacings(1, 0);
+	//	return true;
+	//}
+	//else if (playerDead[1])
+	//{
+	//	sess->SetMatchPlacings(0, 1);
+	//	return true;
+	//}
 
 	return false;
 }

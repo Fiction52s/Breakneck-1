@@ -82,8 +82,7 @@ struct HUD
 
 struct FightHUD : HUD
 {
-	sf::RectangleShape p0HealthRect;
-	sf::RectangleShape p1HealthRect;
+	sf::RectangleShape healthRects[4];
 	sf::RectangleShape p0MeterRect[6];
 	sf::RectangleShape p1MeterRect[6];
 

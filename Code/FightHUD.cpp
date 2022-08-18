@@ -3,6 +3,7 @@
 #include "Minimap.h"
 #include "MapHeader.h"
 #include "GameMode.h"
+#include "Actor.h"
 
 using namespace std;
 using namespace sf;
@@ -25,35 +26,42 @@ void FightHUD::Update()
 
 	FightMode *fm = (FightMode*)sess->gameMode;
 
-	Color p0Color = Color::Green;
-	float mh = fm->maxHealth;
-	if (fm->data.health[0] < mh * .33)
-	{
-		p0Color = Color::Red;
-	}
-	else if (fm->data.health[0] < mh * .67)
-	{
-		p0Color = Color::Yellow;
-	}
+	//Color barColors[4];
 
-	Color p1Color = Color::Green;
-	if (fm->data.health[1] < mh * .33)
+	//Color p0Color = Color::Green;
+	float mh = fm->maxHealth;
+
+	Vector2f barPositions[4];
+
+	int barHeight = 30;
+	int barSpacing = 10;
+	int barStart = 10;
+	int barWidth = 700;
+
+	barPositions[0] = Vector2f(960 - 10 - barWidth, barStart);
+	barPositions[1] = Vector2f(960 + 10, barStart);
+	barPositions[2] = Vector2f(960 - 10 - barWidth, barStart + barHeight + barSpacing);
+	barPositions[3] = Vector2f(960 + 10, barStart + barHeight + barSpacing);
+
+	Color barColor;
+	for (int i = 0; i < 4; ++i)
 	{
-		p1Color = Color::Red;
+		barColor = Color::Green;
+		if (fm->data.health[i] < mh * .33)
+		{
+			barColor = Color::Red;
+		}
+		else if (fm->data.health[i] < mh * .67)
+		{
+			barColor = Color::Yellow;
+		}
+
+		
+		healthRects[i].setSize(Vector2f(barWidth * (fm->data.health[i] / mh), barHeight));
+		//healthRects[i].setOrigin(0, 0);
+		healthRects[i].setFillColor(barColor);
+		healthRects[i].setPosition(barPositions[i]);
 	}
-	else if (fm->data.health[1] < mh * .67)
-	{
-		p1Color = Color::Yellow;
-	}
-	
-	p0HealthRect.setSize(Vector2f(700 * (fm->data.health[0] / mh), 30));
-	p0HealthRect.setOrigin( p0HealthRect.getLocalBounds().width, 0);
-	p0HealthRect.setFillColor(p0Color);
-	p0HealthRect.setPosition(Vector2f(960 - 10, 10));
-	
-	p1HealthRect.setSize(Vector2f(700 * (fm->data.health[1] / mh), 30));
-	p1HealthRect.setFillColor(p1Color);
-	p1HealthRect.setPosition(Vector2f(960 + 10, 10));
 }
 
 
@@ -65,6 +73,13 @@ void FightHUD::Draw(RenderTarget *target)
 {
 	mini->Draw(target);
 
-	target->draw(p0HealthRect);
-	target->draw(p1HealthRect);
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL && !p->dead)
+		{
+			target->draw(healthRects[i]);
+		}
+	}
 }

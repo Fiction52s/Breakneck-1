@@ -458,6 +458,7 @@ struct Actor : QuadTreeCollider,
 		UPTILT2,
 		UPTILT3,
 		SEQ_GATORSTUN,
+		HIDDEN,
 		Count
 	};
 
@@ -2448,6 +2449,17 @@ struct Actor : QuadTreeCollider,
 	void GROUNDTECHINPLACE_TimeDepFrameInc();
 	int GROUNDTECHINPLACE_GetActionLength();
 	Tileset * GROUNDTECHINPLACE_GetTileset();
+
+	void HIDDEN_Start();
+	void HIDDEN_End();
+	void HIDDEN_Change();
+	void HIDDEN_Update();
+	void HIDDEN_UpdateSprite();
+	void HIDDEN_TransitionToAction(int a);
+	void HIDDEN_TimeIndFrameInc();
+	void HIDDEN_TimeDepFrameInc();
+	int HIDDEN_GetActionLength();
+	Tileset * HIDDEN_GetTileset();
 
 	void HOMINGATTACK_Start();
 	void HOMINGATTACK_End();

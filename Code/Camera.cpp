@@ -74,6 +74,12 @@ void Camera::Reset()
 	pos.y = 0;
 	oldFramesGrinding = 0;
 	isFirstFrameSet = false;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		playerPosFactor[i] = 1.0;
+	}
+	
 }
 
 void Camera::EaseOutOfManual( int frames )
@@ -1405,7 +1411,7 @@ void Camera::UpdateBasicMode()
 
 void Camera::UpdateFightingMode()
 {
-	UpdateVS(sess->GetPlayer(0), sess->GetPlayer(1));
+	UpdateVS();//sess->GetPlayer(0), sess->GetPlayer(1));
 }
 
 void Camera::Update()
@@ -1447,19 +1453,112 @@ void Camera::UpdateEaseOut()
 	}
 }
 
-void Camera::UpdateVS( Actor *a, Actor *a2 )
+void Camera::UpdateVS()
 {
 	float targetZoomFactor = zoomFactor;
 
-	V2d center = (a->position + a2->position) / 2.0;
+	V2d center;
+	Actor *p = NULL;
+	int numUsedPlayers = 0;
+
+	V2d positions[4];
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL && !p->dead)
+		{
+			++numUsedPlayers;
+			positions[i] = p->position;
+			//center += p->position;
+		}
+		else if (p != NULL )
+		{
+			playerPosFactor[i] -= 1.0 / 60.0;
+			if (playerPosFactor[i] <= 0)
+			{
+				playerPosFactor[i] = 0;
+			}
+			else
+			{
+				++numUsedPlayers;
+				positions[i] = p->position;
+			}
+		}
+	}
+
+	for (int i = 0; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL && playerPosFactor[i] > 0)
+		{
+			//cout << "adding pos: " << p->position.x << ", " << p->position.y << "\n";
+			center += p->position;//* playerPosFactor[i] * ( 1.0 / numUsedPlayers );
+		}
+	}
+
+	center /= (double)numUsedPlayers;
+
+	//cout << "center: " << center.x << ", " << center.y << "\n";
+	V2d cen = center;
+	V2d newCenter;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL && playerPosFactor[i] > 0)
+		{
+			V2d diff = p->position - center;
+			diff *= playerPosFactor[i];
+			newCenter += center + diff;
+			//cout << "diff: " << diff.x << ", " << diff.y << "\n";
+		}
+	}
+
+	center = newCenter / (double)numUsedPlayers;
+	//cout << "final center: " << center.x << ", " << center.y << "\n";
+
+
+	//center.x /= numUsedPlayers;
+	//center.y /= numUsedPlayers;
 
 	Vector2f res( 1920 / 2, 1080 / 2 );
 
 	float xExtra = 600;
 	float yExtra = 400;
 
-	double distx = abs( a->position.x - a2->position.x ) + xExtra * 2;
-	double disty = abs(a->position.y - a2->position.y) + yExtra * 2;
+	double left = sess->GetPlayer(0)->position.x;
+	double right = left;
+	
+	double top = sess->GetPlayer(0)->position.y;
+	double bottom = top;
+
+	for (int i = 1; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL &&  !p->dead )
+		{
+			if (p->position.x < left)
+			{
+				left = p->position.x;
+			}
+			if (p->position.x > right)
+			{
+				right = p->position.x;
+			}
+
+			if (p->position.y < top)
+			{
+				top = p->position.y;
+			}
+			if (p->position.y > bottom)
+			{
+				bottom = p->position.y;
+			}
+		}
+	}
+
+	double distx = abs( right - left ) + xExtra * 2;
+	double disty = abs(bottom - top) + yExtra * 2;
 
 	double zx = distx / res.x;
 	double zy = disty / res.y;
@@ -1513,9 +1612,11 @@ void Camera::UpdateVS( Actor *a, Actor *a2 )
 		float r = .25;
 		pos.x = center.x * r + pos.x * (1 - r);
 		pos.y = center.y * r + pos.y * (1 - r);
+		//pos.x = center.x;
+		//pos.y = center.y;
 
 		float rz = .25;
-		zoomFactor = targetZoomFactor * rz + zoomFactor * (1 - rz);
+		zoomFactor = 1.5;//targetZoomFactor * rz + zoomFactor * (1 - rz);
 	}
 	else
 	{
