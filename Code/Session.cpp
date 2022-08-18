@@ -7268,11 +7268,11 @@ void Session::AddDesyncCheckInfo()
 				//just for testing
 				if (i == 0)
 				{
-					dci.health = ((FightMode*)gameMode)->data.p0Health;
+					dci.health = ((FightMode*)gameMode)->data.health[0];
 				}
 				else if (i == 1)
 				{
-					dci.health = ((FightMode*)gameMode)->data.p1Health;
+					dci.health = ((FightMode*)gameMode)->data.health[1];
 				}
 
 				if (!netplayManager->IsHost())
