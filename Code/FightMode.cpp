@@ -76,10 +76,11 @@ void FightMode::StartGame()
 	//testGator->Reset();
 	//testBird->Reset();
 
-	data.p0Health = maxHealth;
-	data.p1Health = maxHealth;
-	data.p0Meter = 0;
-	data.p1Meter = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		data.health[i] = maxHealth;
+		data.meter[i] = 0;
+	}
 }
 
 HUD *FightMode::CreateHUD()
@@ -94,24 +95,36 @@ bool FightMode::CheckVictoryConditions()
 		return false;
 	}
 
-	bool p0TouchedKillGrass = sess->GetPlayer(0)->touchedGrass[Grass::HIT];
-	bool p1TouchedKillGrass = sess->GetPlayer(1)->touchedGrass[Grass::HIT];
+	//fight should only be 2 players, like a fighitng game. can use deathmatch for more than 2
 
-	bool p0Dead = p0TouchedKillGrass || data.p0Health == 0;
-	bool p1Dead = p1TouchedKillGrass || data.p1Health == 0;
-	if (p0Dead || p1Dead )
+	bool playerDead[4];
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
 	{
-		if (p0Dead)
-		{
-			sess->SetMatchPlacings(1, 0);
-		}
-		else if( p1Dead )
-		{
-			sess->SetMatchPlacings(0, 1);
-		}
+		playerDead[i] = false;
 
+		p = sess->GetPlayer(i);
+
+		if (p != NULL)
+		{
+			if (p->touchedGrass[Grass::HIT] || data.health[i] == 0 )
+			{
+				playerDead[i] = true;
+			}
+		}
+	}
+
+	if (playerDead[0])
+	{
+		sess->SetMatchPlacings(1, 0);
 		return true;
 	}
+	else if (playerDead[1])
+	{
+		sess->SetMatchPlacings(0, 1);
+		return true;
+	}
+
 	return false;
 }
 

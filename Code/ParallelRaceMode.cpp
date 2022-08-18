@@ -12,7 +12,10 @@ using namespace sf;
 
 ParallelRaceMode::ParallelRaceMode()
 {
-	testGame = NULL;
+	for (int i = 0; i < 3; ++i)
+	{
+		parallelGames[i] = NULL;
+	}
 
 	if (sess->IsSessTypeGame())
 	{
@@ -21,7 +24,10 @@ ParallelRaceMode::ParallelRaceMode()
 		{
 			if (!game->isParallelSession)
 			{
-				testGame = game->CreateParallelSession();
+				for (int i = 0; i < game->matchParams.numPlayers-1; ++i)
+				{
+					parallelGames[i] = game->CreateParallelSession();
+				}
 			}
 		}
 	}
@@ -33,18 +39,25 @@ ParallelRaceMode::~ParallelRaceMode()
 {
 	delete endSeq;
 
-	if (testGame != NULL)
+	for (int i = 0; i < 3; ++i)
 	{
-		delete testGame;
+		if (parallelGames[i] != NULL)
+		{
+			delete parallelGames[i];
+		}
 	}
 }
 
 int ParallelRaceMode::GetNumStoredBytes()
 {
 	int total = sizeof(MyData);
-	if (testGame != NULL)
+
+	for (int i = 0; i < 3; ++i)
 	{
-		total += testGame->GetNumStoredBytes();
+		if (parallelGames[i] != NULL)
+		{
+			total += parallelGames[i]->GetNumStoredBytes();
+		}
 	}
 	return total;
 }
@@ -58,10 +71,13 @@ void ParallelRaceMode::StoreBytes(unsigned char *bytes)
 	memcpy(bytes, &data, dataSize);
 	bytes += dataSize;
 
-	if (testGame != NULL)
+	for (int i = 0; i < 3; ++i)
 	{
-		testGame->StoreBytes(bytes);
-		bytes += testGame->GetNumStoredBytes();
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->StoreBytes(bytes);
+			bytes += parallelGames[i]->GetNumStoredBytes();
+		}
 	}
 }
 
@@ -75,10 +91,13 @@ void ParallelRaceMode::SetFromBytes(unsigned char *bytes)
 
 	bytes += sizeof(MyData);
 
-	if (testGame != NULL)
+	for (int i = 0; i < 3; ++i)
 	{
-		testGame->SetFromBytes(bytes);
-		bytes += testGame->GetNumStoredBytes();
+		if (parallelGames[i] != NULL)
+		{
+			parallelGames[i]->SetFromBytes(bytes);
+			bytes += parallelGames[i]->GetNumStoredBytes();
+		}
 	}
 }
 
@@ -103,9 +122,23 @@ bool ParallelRaceMode::CheckVictoryConditions()
 		return false;
 	}
 
-	if (testGame != NULL)
+	if (!sess->isParallelSession)
 	{
-		
+		/*Actor *p = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			p = sess->GetPlayer(i);
+			if (p != NULL)
+			{
+				if (p->hitGoal)
+				{
+					sess->SetMatchPlacings(i);
+					return true;
+				}
+			}
+		}*/
+
+
 		
 		int winningIndex = -1;
 		//int losingIndex = -1;
@@ -114,18 +147,26 @@ bool ParallelRaceMode::CheckVictoryConditions()
 			winningIndex = sess->netplayManager->playerIndex;
 			//sess->SetMatchPlacings(0, 1);
 		}
-		else if (testGame->GetPlayer(0)->hitGoal)
+
+		if (winningIndex == -1)
 		{
-			if (sess->netplayManager->playerIndex == 0)
+			for (int i = 0; i < 3; ++i)
 			{
-				winningIndex = 1;
+				if (parallelGames[i] != NULL)
+				{
+					if (parallelGames[i]->GetPlayer(0)->hitGoal)
+					{
+						winningIndex = i;
+						if (i >= sess->netplayManager->playerIndex)
+						{
+							++winningIndex;
+						}
+
+						break;
+
+					}
+				}
 			}
-			else
-			{
-				winningIndex = 0;
-			}
-			
-			//sess->SetMatchPlacings(0, 1);
 		}
 
 		if (winningIndex >= 0)

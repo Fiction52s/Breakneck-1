@@ -1692,12 +1692,12 @@ bool GameSession::Load()
 	SetupGameMode();
 	gameMode->Setup();
 
-	if (gameModeType == MatchParams::GAME_MODE_FIGHT
+	/*if (gameModeType == MatchParams::GAME_MODE_FIGHT
 		|| gameModeType == MatchParams::GAME_MODE_RACE)
 	{
 		matchParams.numPlayers = 2;
 		cout << "setting numplayers to 2 for testing only" << endl;
-	}
+	}*/
 
 	SetupPlayers();
 
@@ -2374,29 +2374,6 @@ bool GameSession::RunMainLoopOnce()
 
 
 		DrawGame(preScreenTex);
-		//if (gameModeType != MatchParams::GAME_MODE_PARALLEL_RACE)
-		//{
-		//	DrawGame(preScreenTex);
-		//}
-		//else
-		//{
-		//	ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-
-		//	if (!isParallelSession)
-		//	{
-		//		DrawGame(preScreenTex);
-		//		
-		//		//if (totalGameFrames % 60 < 30)
-		//		//{
-		//		//	
-		//		//}
-		//		//else
-		//		//{
-		//		//	prm->testGame->DrawGame(preScreenTex);
-		//		//}
-		//	}
-		//}
-
 		
 		if (repPlayer != NULL)
 		{
@@ -3169,16 +3146,6 @@ int GameSession::Run()
 	{
 		double oldAccumulator = accumulator;
 		while (!RunMainLoopOnce()) {}
-
-		/*if ( !isParallelSession && gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
-		{
-			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-			assert(prm->testGame != NULL);
-
-			prm->testGame->accumulator = oldAccumulator;
-			prm->testGame->timeSyncFrames = timeSyncFrames;
-			while (!prm->testGame->RunMainLoopOnce()) {}
-		}*/
 	}
 
 
@@ -3320,7 +3287,6 @@ void GameSession::Init()
 	activateBonus = false;
 	bonusType = BONUSTYPE_NONE;
 	bonusGame = NULL;
-	raceTestGame = NULL;
 	bonusHandler = NULL;
 	gateMarkers = NULL;
 	inversePolygon = NULL;

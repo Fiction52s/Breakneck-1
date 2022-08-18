@@ -72,7 +72,7 @@ bool Sdr::OnLoopPoll(void *cookie)
 				{
 					UdpMsg *msg = (UdpMsg *)(*it)->GetData();
 
-					cout << "processing queued message: " << (int)msg->hdr.type << endl;
+					cout << "processing queued message: " << (int)msg->hdr.type << " from connection " << listenConnection << endl;
 
 					if (msg->IsGameMsg())
 					{

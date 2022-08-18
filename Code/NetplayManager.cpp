@@ -718,7 +718,6 @@ void NetplayManager::Update()
 	}
 	case A_WAITING_FOR_START_MESSAGE:
 	{
-
 		break;
 	}
 	case A_WAIT_FOR_ALL_READY:
@@ -869,7 +868,7 @@ void NetplayManager::SendSignalToHost(int type)
 			if (i != playerIndex)
 			{
 				SendUdpMsg(netplayPlayers[i].connection, &msg);
-				cout << "sending signal to host: " << type << endl;
+				cout << "sending signal to host at index " << i << " on connection " << netplayPlayers[i].connection << ": " << type << endl;
 			}
 			break;
 		}
@@ -1319,7 +1318,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 				}
 			}
 
-			cout << "handling game done connecting message" << endl;
+			cout << "handling game done connecting message from index on connection " << connection << endl;
 		}
 		else
 		{

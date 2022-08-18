@@ -2086,13 +2086,19 @@ void Session::DrawPlayerWires( RenderTarget *target )
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
-		Actor *p = NULL;
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
-			p = prm->testGame->GetPlayer(i);
-			if (p != NULL)
+			if (prm->parallelGames[i] != NULL)
 			{
-				p->DrawWires(target);
+				Actor *p = NULL;
+				for (int j = 0; j < 4; ++j)
+				{
+					p = prm->parallelGames[i]->GetPlayer(j);
+					if (p != NULL)
+					{
+						p->DrawWires(target);
+					}
+				}
 			}
 		}
 	}
@@ -2125,13 +2131,19 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
-		Actor *p = NULL;
-		for (int i = 0; i < 4; ++i)
+		for (int i = 0; i < 3; ++i)
 		{
-			p = prm->testGame->GetPlayer(i);
-			if (p != NULL)
+			if (prm->parallelGames[i] != NULL)
 			{
-				p->Draw(target);
+				Actor *p = NULL;
+				for (int j = 0; j < 4; ++j)
+				{
+					p = prm->parallelGames[i]->GetPlayer(j);
+					if (p != NULL)
+					{
+						p->Draw(target);
+					}
+				}
 			}
 		}
 	}
@@ -2803,10 +2815,15 @@ void Session::UpdateAllPlayersInput()
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession )
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-		//prm->testGame->GetPlayer(0)->currInput = GetPlayer(0)->currInput;
-		//prm->testGame->GetPlayer(0)->prevInput = GetPlayer(0)->prevInput;
-		prm->testGame->UpdatePlayerInput(1);
-		//prm->testGame->UpdateAllPlayersInput();
+		for (int i = 0; i < 3; ++i)
+		{
+			if (prm->parallelGames[i] != NULL)
+			{
+				int realIndex = i;
+				if( netplayManager->playerIndex)
+				prm->parallelGames[i]->UpdatePlayerInput(i+1); //1
+			}
+		}
 	}
 }
 
@@ -4028,7 +4045,13 @@ void Session::SimulateGGPOGameFrame()
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
-		prm->testGame->SimulateGGPOGameFrame();
+		for (int i = 0; i < 3; ++i)
+		{
+			if (prm->parallelGames[i] != NULL)
+			{
+				prm->parallelGames[i]->SimulateGGPOGameFrame();
+			}
+		}
 	}
 
 	if (!isParallelSession)
@@ -7121,7 +7144,11 @@ void Session::InitGGPO()
 		myIndex = 0;
 	}
 
-
+	cout << "connections:" << endl;
+	for (int i = 0; i < 4; ++i)
+	{
+		cout << i << ": " << netplayManager->netplayPlayers[i].connection << endl;
+	}
 
 	for (int i = 0; i < numPlayers; ++i)
 	{
@@ -7192,7 +7219,13 @@ void Session::InitGGPO()
 		if (!isParallelSession)
 		{
 			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
-			prm->testGame->ggpo = ggpo;
+			for (int i = 0; i < 3; ++i)
+			{
+				if (prm->parallelGames[i] != NULL)
+				{
+					prm->parallelGames[i]->ggpo = ggpo;
+				}
+			}
 		}
 	}
 }
@@ -7558,7 +7591,13 @@ void Session::GGPORunFrame()
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
-				prm->testGame->RunGGPOModeUpdate();
+				for (int i = 0; i < 3; ++i)
+				{
+					if (prm->parallelGames[i] != NULL)
+					{
+						prm->parallelGames[i]->RunGGPOModeUpdate();
+					}
+				}
 			}
 
 			if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)

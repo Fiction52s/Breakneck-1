@@ -324,8 +324,6 @@ struct GameSession : RayCastHandler, Session
 	sf::Shader timeSlowShader; //actually time slow shader
 	
 	GameSession *bonusGame; //make this a container later
-
-	GameSession *raceTestGame;
 	
 	bool activateBonus;
 	V2d bonusReturnPos;

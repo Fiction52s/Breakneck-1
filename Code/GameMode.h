@@ -85,10 +85,8 @@ struct FightMode : GameMode
 	struct MyData
 	{
 		int done; //better than a bool for packing rn
-		int p0Health;
-		int p1Health;
-		int p0Meter;
-		int p1Meter;
+		int health[4];
+		int meter[4];
 		int endSeqState;
 		int endSeqFrame;
 	};
@@ -169,7 +167,7 @@ struct ParallelRaceMode : GameMode
 	MyData data;
 
 	FightEndSequence *endSeq;
-	GameSession *testGame;
+	GameSession *parallelGames[3];
 	//int maxHealth;
 	//int meterSection;
 	//int numMeterSections;

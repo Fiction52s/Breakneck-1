@@ -67,15 +67,18 @@ bool RaceMode::CheckVictoryConditions()
 		return false;
 	}
 
-	if (sess->GetPlayer(0)->hitGoal)
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
 	{
-		sess->SetMatchPlacings(0, 1);
-		return true;
-	}
-	else if (sess->GetPlayer(1)->hitGoal)
-	{
-		sess->SetMatchPlacings(1, 0);
-		return true;
+		p = sess->GetPlayer(i);
+		if (p != NULL)
+		{
+			if (p->hitGoal)
+			{
+				sess->SetMatchPlacings(i);
+				return true;
+			}
+		}
 	}
 
 	return false;

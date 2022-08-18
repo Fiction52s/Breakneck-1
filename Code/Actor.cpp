@@ -5150,10 +5150,10 @@ void Actor::ReactToBeingHit()
 			{
 				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
 			}
-			fm->data.p0Health -= realDamage;
-			if (fm->data.p0Health < 0)
+			fm->data.health[0] -= realDamage;
+			if (fm->data.health[0] < 0)
 			{
-				fm->data.p0Health = 0;
+				fm->data.health[0] = 0;
 			}
 		}
 		else if (actorIndex == 1)
@@ -5164,11 +5164,11 @@ void Actor::ReactToBeingHit()
 				realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
 			}
 			//cout << "p2 taking: " << receivedHit->damage;// << endl;
-			fm->data.p1Health -= realDamage;
+			fm->data.health[1] -= realDamage;
 
 			//cout << " health is now: " << fm->data.p1Health << endl;
-			if (fm->data.p1Health < 0)
-				fm->data.p1Health = 0;
+			if (fm->data.health[1] < 0)
+				fm->data.health[1] = 0;
 		}
 	}
 	else
@@ -13829,6 +13829,87 @@ void Actor::HitGroundWhileInAirHitstun()
 	}
 }
 
+void Actor::TryHitPlayer(int targetIndex)
+{
+	if (targetIndex == actorIndex)
+		return; //its me!
+
+	if (currHitboxes != NULL && !simulationMode)
+	{
+		Actor *pTarget = NULL;
+		int target = 0;
+		pTarget = sess->GetPlayer(targetIndex);
+
+		if (pTarget == NULL)
+			return;
+
+		HitResult checkHit = HitResult::MISS;
+
+		HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
+
+
+		hi.damage = 10; //just testing for now
+
+		if (currAttackHitBlock[target] < 0)
+		{
+			checkHit = pTarget->CheckIfImHit(currHitboxes, currHitboxFrame,
+				hi.hitPosType, position, facingRight,
+				hi.canBeParried, hi.canBeBlocked);
+		}
+
+		if (checkHit != HitResult::MISS && checkHit != HitResult::INVINCIBLEHIT)
+		{
+			*currVSHitboxInfo = hi;
+
+			currVSHitboxInfo->flipHorizontalKB = !facingRight;
+			//if (!facingRight)
+			//	currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
+
+			attackingHitlag = true;
+			hitlagFrames = currVSHitboxInfo->hitlagFrames;
+			pTarget->ApplyHit(currVSHitboxInfo, this, checkHit, position);
+
+			if (checkHit == HitResult::HIT)
+			{
+				//need to work these in later for hitlag, they are only here for testing for now.
+				if (hasHitRechargeDoubleJump && !hasDoubleJump)
+				{
+					hasDoubleJump = true;
+					hasHitRechargeDoubleJump = false;
+				}
+				if (hasHitRechargeAirDash && !hasAirDash)
+				{
+					hasAirDash = true;
+					hasHitRechargeAirDash = false;
+				}
+
+				currAttackHit = true;
+			}
+			else if (checkHit == HitResult::FULLBLOCK
+				|| checkHit == HitResult::HALFBLOCK)
+			{
+				//doesnt currently affect anything!
+				shieldPushbackFrames = 30;
+				if (pTarget->position.x >= position.x)
+				{
+					shieldPushbackRight = false;
+				}
+				else
+				{
+					shieldPushbackRight = true;
+				}
+
+				currAttackHitBlock[target] = frame;
+			}
+		}
+		else
+		{
+
+		}
+
+	}
+}
+
 void Actor::PhysicsResponse()
 {
 	V2d gn;
@@ -14295,87 +14376,9 @@ void Actor::PhysicsResponse()
 	}
 	
 	//multiplayer
-	if( currHitboxes != NULL && !simulationMode )
+	for (int i = 0; i < 4; ++i)
 	{
-		Actor *pTarget = NULL;
-		int target = 0;
-		if( actorIndex == 0 )
-		{
-			target = 1;
-		}
-		else if( actorIndex == 1 )
-		{
-			target = 0;
-		}
-		pTarget = sess->GetPlayer( target );
-
-		HitResult checkHit = HitResult::MISS;
-
-		HitboxInfo &hi = hitboxInfos[action][currActionSuperLevel];
-
-
-		hi.damage = 10; //just testing for now
-
-		if (currAttackHitBlock[target] < 0)
-		{
-			if (pTarget != NULL)
-			{
-				checkHit = pTarget->CheckIfImHit(currHitboxes, currHitboxFrame,
-					hi.hitPosType, position, facingRight,
-					hi.canBeParried, hi.canBeBlocked);
-			}
-		}
-
-		if (checkHit != HitResult::MISS && checkHit != HitResult::INVINCIBLEHIT)
-		{
-			*currVSHitboxInfo = hi;
-
-			currVSHitboxInfo->flipHorizontalKB = !facingRight;
-			//if (!facingRight)
-			//	currVSHitboxInfo->kbDir.x = -currVSHitboxInfo->kbDir.x;
-
-			attackingHitlag = true;
-			hitlagFrames = currVSHitboxInfo->hitlagFrames;
-			pTarget->ApplyHit(currVSHitboxInfo, this, checkHit, position );
-
-			if (checkHit == HitResult::HIT)
-			{
-				//need to work these in later for hitlag, they are only here for testing for now.
-				if (hasHitRechargeDoubleJump && !hasDoubleJump)
-				{
-					hasDoubleJump = true;
-					hasHitRechargeDoubleJump = false;
-				}
-				if (hasHitRechargeAirDash && !hasAirDash)
-				{
-					hasAirDash = true;
-					hasHitRechargeAirDash = false;
-				}
-
-				currAttackHit = true;
-			}
-			else if (checkHit == HitResult::FULLBLOCK 
-				|| checkHit == HitResult::HALFBLOCK)
-			{
-				//doesnt currently affect anything!
-				shieldPushbackFrames = 30;
-				if (pTarget->position.x >= position.x)
-				{
-					shieldPushbackRight = false;
-				}
-				else
-				{
-					shieldPushbackRight = true;
-				}
-				
-				currAttackHitBlock[target] = frame;
-			}
-		}
-		else
-		{
-
-		}
-		
+		TryHitPlayer(i);
 	}
 }
 

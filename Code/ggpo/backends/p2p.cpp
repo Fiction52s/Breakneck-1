@@ -6,6 +6,9 @@
  */
 
 #include "p2p.h"
+#include <iostream>
+
+using namespace std;
 
 static const int RECOMMENDATION_INTERVAL           = 240;
 static const int DEFAULT_DISCONNECT_TIMEOUT        = 5000;
@@ -76,6 +79,7 @@ Peer2PeerBackend::AddRemotePlayer(HSteamNetConnection p_connection,
     */
    _synchronizing = true;
    
+   cout << "add remote player. set sdr listen socket to : " << p_connection << endl;
    _endpoints[queue].Init(&_sdr[queue], _poll, queue, p_connection, _local_connect_status);
    _endpoints[queue].SetDisconnectTimeout(_disconnect_timeout);
    _endpoints[queue].SetDisconnectNotifyStart(_disconnect_notify_start);

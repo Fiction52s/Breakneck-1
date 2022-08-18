@@ -56,8 +56,13 @@ void FightEndSequence::UpdateState()
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)sess->gameMode;
 				
-				
-				prm->testGame->SetGameSessionState(GameSession::FROZEN);
+				for (int i = 0; i < 3; ++i)
+				{
+					if (prm->parallelGames[i] != NULL)
+					{
+						prm->parallelGames[i]->SetGameSessionState(GameSession::FROZEN);
+					}
+				}
 			}
 			//sess->cam.Ease(Vector2f(player->position), 1, 60, CubicBezier());
 			//sess->cam.SetRumble(10, 10, 90, 4);

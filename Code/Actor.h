@@ -1555,6 +1555,7 @@ struct Actor : QuadTreeCollider,
 		bool canBeParried,
 		bool canBeBlocked);
 	HitResult CheckHitByEnemy(Enemy *e);
+	void TryHitPlayer(int targetIndex);
 	std::pair<bool, bool> PlayerHitMe(int otherPlayerIndex);
 	void ShipPickupPoint( double eq,
 		bool facingRight );
