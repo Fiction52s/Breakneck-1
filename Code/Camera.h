@@ -29,6 +29,7 @@ struct Camera
 		FIGHTING,
 	};
 
+	sf::Vector2f velocity;
 	double playerPosFactor[4];
 	CamType camType;
 	Session *sess;

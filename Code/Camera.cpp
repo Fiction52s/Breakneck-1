@@ -1463,6 +1463,7 @@ void Camera::UpdateVS()
 
 	V2d positions[4];
 
+	
 	for (int i = 0; i < 4; ++i)
 	{
 		p = sess->GetPlayer(i);
@@ -1472,7 +1473,7 @@ void Camera::UpdateVS()
 			positions[i] = p->position;
 			//center += p->position;
 		}
-		else if (p != NULL )
+		/*else if (p != NULL )
 		{
 			playerPosFactor[i] -= 1.0 / 60.0;
 			if (playerPosFactor[i] <= 0)
@@ -1484,13 +1485,13 @@ void Camera::UpdateVS()
 				++numUsedPlayers;
 				positions[i] = p->position;
 			}
-		}
+		}*/
 	}
 
 	for (int i = 0; i < 4; ++i)
 	{
 		p = sess->GetPlayer(i);
-		if (p != NULL && playerPosFactor[i] > 0)
+		if (p != NULL && !p->dead)//&& playerPosFactor[i] > 0)
 		{
 			//cout << "adding pos: " << p->position.x << ", " << p->position.y << "\n";
 			center += p->position;//* playerPosFactor[i] * ( 1.0 / numUsedPlayers );
@@ -1505,7 +1506,7 @@ void Camera::UpdateVS()
 	for (int i = 0; i < 4; ++i)
 	{
 		p = sess->GetPlayer(i);
-		if (p != NULL && playerPosFactor[i] > 0)
+		if (p != NULL && !p->dead )//playerPosFactor[i] > 0)
 		{
 			V2d diff = p->position - center;
 			diff *= playerPosFactor[i];
@@ -1514,7 +1515,7 @@ void Camera::UpdateVS()
 		}
 	}
 
-	center = newCenter / (double)numUsedPlayers;
+	//center = newCenter / (double)numUsedPlayers;
 	//cout << "final center: " << center.x << ", " << center.y << "\n";
 
 
@@ -1556,6 +1557,9 @@ void Camera::UpdateVS()
 			}
 		}
 	}
+
+	center.x = (left + right) / 2.0;
+	center.y = (bottom + top) / 2.0;
 
 	double distx = abs( right - left ) + xExtra * 2;
 	double disty = abs(bottom - top) + yExtra * 2;
@@ -1610,21 +1614,73 @@ void Camera::UpdateVS()
 	if (isFirstFrameSet)
 	{
 		float r = .25;
-		pos.x = center.x * r + pos.x * (1 - r);
-		pos.y = center.y * r + pos.y * (1 - r);
+
+		Vector2f diff = Vector2f(center) - pos;
+		Vector2f dir = normalize( diff );
+		double len = length(diff);
+
+		float accel = .3;
+		
+		double baseSpeed = 10.0;
+		double speedFactor = 100.0;
+
+		double velTest = baseSpeed * len / speedFactor;
+		velTest = min(baseSpeed * 2, velTest);
+		velTest = max(2.0, velTest);
+
+
+		
+		if (len < velTest)
+		{
+			pos = Vector2f(center);
+		}
+		else
+		{
+			pos += dir * (float)velTest;
+		}
+		//pos.x = center.x * r + pos.x * (1 - r);
+		//pos.y = center.y * r + pos.y * (1 - r);
 		//pos.x = center.x;
 		//pos.y = center.y;
 
+		double baseZoomSpeed = .05;
+		double zoomSpeedFactor = .5;
+
+		double zoomDiff = abs(targetZoomFactor - zoomFactor);
+
+		double zoomTest = baseZoomSpeed * zoomDiff / zoomSpeedFactor;
+
+		zoomTest = min(baseZoomSpeed * 2, zoomTest);
+		zoomTest = max(.005, zoomTest);
+
+		if (zoomDiff < zoomTest)
+		{
+			zoomFactor = targetZoomFactor;
+		}
+		else
+		{
+			if (targetZoomFactor < zoomFactor)
+			{
+				zoomFactor = zoomFactor - zoomTest;
+			}
+			else
+			{
+				zoomFactor = zoomFactor + zoomTest;
+			}
+			//pos += dir * (float)velTest;
+		}
+
 		float rz = .25;
-		zoomFactor = 1.5;//targetZoomFactor * rz + zoomFactor * (1 - rz);
+		//zoomFactor = 1.5;//targetZoomFactor * rz + zoomFactor * (1 - rz);
 	}
 	else
 	{
 		pos.x = center.x;
 		pos.y = center.y;
 		isFirstFrameSet = true;
+		velocity = Vector2f();
 
-		zoomFactor = targetZoomFactor;
+		zoomFactor = targetZoomFactor;//1.5;//targetZoomFactor;
 	}
 	//pos.x = center.x;
 	//pos.y = center.y;
