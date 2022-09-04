@@ -2141,6 +2141,7 @@ void Session::DrawPlayers(sf::RenderTarget *target)
 					p = prm->parallelGames[i]->GetPlayer(j);
 					if (p != NULL)
 					{
+						//cout << "draw enemy player from world: " << i << " drawing player " << j << endl;
 						p->Draw(target);
 					}
 				}
@@ -2819,9 +2820,12 @@ void Session::UpdateAllPlayersInput()
 		{
 			if (prm->parallelGames[i] != NULL)
 			{
-				int realIndex = i;
-				if( netplayManager->playerIndex)
-				prm->parallelGames[i]->UpdatePlayerInput(i+1); //1
+				/*int realIndex = i;
+				if (i >= netplayManager->playerIndex)
+				{
+					realIndex = i + 1;
+				}*/
+				prm->parallelGames[i]->UpdatePlayerInput(i+1);
 			}
 		}
 	}
@@ -7112,31 +7116,30 @@ void Session::InitGGPO()
 		}
 	}
 
+	int playerIndex = netplayManager->playerIndex;
+
+	int normalSkins[4] = { Actor::SKIN_NORMAL, Actor::SKIN_RED, Actor::SKIN_GOLD, Actor::SKIN_BONFIRE };
+
 	for (int i = 0; i < numPlayers; ++i)
 	{
 		int normalSkin = Actor::SKIN_NORMAL;
-		switch (i)
+		int realIndex = i;
+
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
-		case 0:
-			normalSkin = Actor::SKIN_NORMAL;
-			break;
-		case 1:
-			normalSkin = Actor::SKIN_RED;
-			break;
-		case 2:
-			normalSkin = Actor::SKIN_GOLD;
-			break;
-		case 3:
-			normalSkin = Actor::SKIN_BONFIRE;
-			break;
+			
 		}
+
+		normalSkin = normalSkins[realIndex];
 
 		netplayManager->netplayPlayers[i].skinIndex = normalSkin;
 	}
+
+	netplayManager->netplayPlayers[playerIndex].skinIndex = normalSkins[playerIndex];
 	
 	//myIndex and otherIndex have nothing to do with playerIndex (which is determined by lobby order currently)
 
-	int playerIndex = netplayManager->playerIndex;
+	
 	int myIndex = playerIndex;
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)

@@ -1989,6 +1989,15 @@ void MainMenu::ReturnToWorldAfterLevel()
 void MainMenu::HandleMenuMode()
 {
 
+	//important note:
+
+	//every mode MUST HANDLE EVENTS or the program will crash outside of the dev environment randomly.
+
+	//while (window->pollEvent(ev))
+	//{
+
+	//}
+
 	sf::Event ev;
 	switch (menuMode)
 	{
@@ -2030,6 +2039,11 @@ void MainMenu::HandleMenuMode()
 	}
 	case TITLEMENU_INFOPOP:
 	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
 		titleScreen->Update();
 		if (infoPopup->Update(menuCurrInput, menuPrevInput))
 		{
@@ -2062,6 +2076,11 @@ void MainMenu::HandleMenuMode()
 	}
 	case LOAD_ADVENTURE_MAP:
 	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
 		loadingBackpack->Update();
 
 		if (loadThread != NULL)
@@ -2087,6 +2106,11 @@ void MainMenu::HandleMenuMode()
 	}
 	case LOADINGMENUSTART:
 	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
 		if (fader->IsFullyFadedOut())
 		{
 			StartLoadModeScreen();
@@ -2094,6 +2118,11 @@ void MainMenu::HandleMenuMode()
 		break;
 	}
 	case LOADINGMENULOOP:
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
 		loadingBackpack->Update();
 
 		if (loadThread != NULL)
@@ -2113,6 +2142,11 @@ void MainMenu::HandleMenuMode()
 		break;
 	case LOADINGMENUEND:
 	{
+		//havent tested but should be necessary here
+		while (window->pollEvent(ev))
+		{
+		}
+
 		if (fader->IsFullyFadedOut())
 		{
 			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
@@ -3087,11 +3121,6 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
 			LoadMode(SAVEMENU);
-			//SetMode(TRANS_MAIN_TO_SAVE);
-			//swiper->Swipe(Swiper::SwipeType::W1, 15);
-
-			
-			//fader->CrossFade(30, 0, 30, Color::Black);
 			break;
 		}
 		case M_FREE_PLAY:

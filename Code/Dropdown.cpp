@@ -227,6 +227,10 @@ void Dropdown::MouseScroll(int delta)
 		{
 			baseIndex = 0;
 		}
+		else if (numOptions <= 10)
+		{
+			baseIndex = oldIndex;
+		}
 		else if (baseIndex > numOptions - 10)
 		{
 			baseIndex = numOptions - 10;

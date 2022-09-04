@@ -78,12 +78,12 @@ NetplayManager::NetplayManager()
 	game = NULL;
 	playerIndex = -1;
 
-	desyncDetected = true;//false;
+	desyncDetected = false;//false;
 
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
