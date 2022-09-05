@@ -205,7 +205,7 @@ struct Session : TilesetManager, QuadTreeCollider
 		MAP
 	};
 
-	bool isParallelSession;
+	int parallelSessionIndex; //-1 if not parallel
 
 	MatchParams matchParams;
 
@@ -884,6 +884,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	void SetFromBytes(unsigned char *bytes);
 	void RunGGPOModeUpdate();
 	void SetMatchPlacings(int p1Placing, int p2Placing = -1, int p3Placing = -1, int p4Placing = -1);
+	bool IsParallelSession() { return parallelSessionIndex >= 0; }
 };
 
 #endif

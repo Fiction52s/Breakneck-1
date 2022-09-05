@@ -1555,7 +1555,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 {
 	matchPlacings.resize(4);
 
-	isParallelSession = false;
+	parallelSessionIndex = -1;
 	randomState = 0;
 	ggpoReady = false;
 
@@ -2082,7 +2082,7 @@ void Session::SetupWaterShader(sf::Shader &waterShader, int waterIndex )
 
 void Session::DrawPlayerWires( RenderTarget *target )
 {
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession)
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
@@ -2127,7 +2127,7 @@ void Session::SetPlayerInputOn(bool on )
 
 void Session::DrawPlayers(sf::RenderTarget *target)
 {
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession)
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
@@ -2741,7 +2741,7 @@ void Session::UpdatePlayerInput(int index)
 {
 	int playerInd = index;
 
-	if( isParallelSession )
+	if(IsParallelSession())
 	{
 		playerInd = 0;
 	}
@@ -2813,7 +2813,7 @@ void Session::UpdateAllPlayersInput()
 		UpdatePlayerInput(i);
 	}
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession )
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession() )
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 		for (int i = 0; i < 3; ++i)
@@ -4045,7 +4045,7 @@ void Session::SimulateGGPOGameFrame()
 
 	simulationMode = false;
 
-	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !isParallelSession )
+	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !IsParallelSession())
 	{
 		ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
@@ -4058,7 +4058,7 @@ void Session::SimulateGGPOGameFrame()
 		}
 	}
 
-	if (!isParallelSession)
+	if (!IsParallelSession())
 	{
 		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
@@ -7219,7 +7219,7 @@ void Session::InitGGPO()
 
 	if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 	{
-		if (!isParallelSession)
+		if (!IsParallelSession())
 		{
 			ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 			for (int i = 0; i < 3; ++i)
@@ -7529,7 +7529,7 @@ bool Session::GGPORunGameModeUpdate()
 //}
 void Session::GGPORunFrame()
 {
-	assert(!isParallelSession);
+	assert(!IsParallelSession());
 	//cout << "ggpo run frame " << endl;
 	int disconnect_flags;
 	int compressedInputs[GGPO_MAX_PLAYERS] = { 0 };
@@ -7682,7 +7682,9 @@ void Session::StoreBytes(unsigned char *bytes)
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
+			
 			p->StoreBytes(bytes);
+
 			bytes += p->GetNumStoredBytes();
 		}
 	}
@@ -7707,7 +7709,7 @@ void Session::StoreBytes(unsigned char *bytes)
 	absorbShardParticles->StoreBytes(bytes);
 	bytes += absorbShardParticles->GetNumStoredBytes();
 
-	/*if (isParallelSession)
+	/*if (IsParallelSession())
 	{
 		currSaveState->states[0].Print();
 	}*/

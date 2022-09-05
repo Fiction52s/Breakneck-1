@@ -637,7 +637,7 @@ void Camera::UpdateRumble()
 		Vector2f rumbleDir(rumbleX, rumbleY);
 		Vector2f oppRumbleDir(-rumbleDir);
 
-		int r = rand() % 3;
+		int r = sess->GetRand() % 3;
 
 		if (r == 0)
 		{
@@ -658,8 +658,8 @@ void Camera::UpdateRumble()
 	else
 	{
 		//this needs to be random?
-		int fx = (rand() % 3) - 1;
-		int fy = (rand() % 3) - 1;
+		int fx = (sess->GetRand() % 3) - 1;
+		int fy = (sess->GetRand() % 3) - 1;
 
 		rX = fx * rumbleX * GetZoom();
 		rY = fy * rumbleY * GetZoom();
@@ -667,7 +667,7 @@ void Camera::UpdateRumble()
 
 	
 
-	int fr = (rand() % 3) - 1;
+	int fr = (sess->GetRand() % 3) - 1;
 	cameraAngle = rumbleRotateDegrees * fr;
 
 	//pos += sf::Vector2f( rX, rY );

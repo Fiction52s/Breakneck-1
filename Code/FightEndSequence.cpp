@@ -52,7 +52,7 @@ void FightEndSequence::UpdateState()
 
 			sess->SetGameSessionState(GameSession::FROZEN);
 
-			if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !sess->isParallelSession)
+			if (sess->gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE && !sess->IsParallelSession())
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)sess->gameMode;
 				

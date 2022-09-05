@@ -22,11 +22,11 @@ ParallelRaceMode::ParallelRaceMode()
 		GameSession *game = GameSession::GetSession();
 		if (game != NULL)
 		{
-			if (!game->isParallelSession)
+			if (!game->IsParallelSession())
 			{
 				for (int i = 0; i < game->matchParams.numPlayers-1; ++i)
 				{
-					parallelGames[i] = game->CreateParallelSession();
+					parallelGames[i] = game->CreateParallelSession(i);
 				}
 			}
 		}
@@ -122,7 +122,7 @@ bool ParallelRaceMode::CheckVictoryConditions()
 		return false;
 	}
 
-	if (!sess->isParallelSession)
+	if (!sess->IsParallelSession())
 	{
 		/*Actor *p = NULL;
 		for (int i = 0; i < 4; ++i)

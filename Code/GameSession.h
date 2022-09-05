@@ -374,7 +374,7 @@ struct GameSession : RayCastHandler, Session
 	GameSession * CreateBonus(const std::string &bonusName,
 		int p_bonusType = BONUSTYPE_DEFAULT);
 
-	GameSession *CreateParallelSession();
+	GameSession *CreateParallelSession( int parIndex );
 
 	void SetBonus(GameSession *bonus,
 		V2d &returnPos, 

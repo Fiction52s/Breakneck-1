@@ -476,7 +476,7 @@ GameSession * GameSession::CreateBonus(const std::string &bonusName, int p_bonus
 	return newBonus;
 }
 
-GameSession *GameSession::CreateParallelSession()
+GameSession *GameSession::CreateParallelSession( int parIndex )
 {
 	MatchParams mp;
 	/*mp.saveFile = saveFile;
@@ -485,7 +485,7 @@ GameSession *GameSession::CreateParallelSession()
 	mp = matchParams;
 
 	GameSession *parallelGame = new GameSession(&mp);
-	parallelGame->isParallelSession = true;
+	parallelGame->parallelSessionIndex = parIndex;
 	
 
 	parallelGame->SetParentTilesetManager(this);
@@ -787,7 +787,7 @@ void GameSession::Cleanup()
 		bonusGame = NULL;
 	}*/
 
-	if (isParallelSession)
+	if (IsParallelSession())
 	{
 		assert(currSaveState != NULL);
 		delete currSaveState;
@@ -3024,7 +3024,7 @@ bool GameSession::RunMainLoopOnce()
 
 	}
 
-	if (!isParallelSession)
+	if (!IsParallelSession())
 	{
 		window->display();
 	}
@@ -3711,7 +3711,7 @@ void GameSession::SetOriginalMusic()
 
 	if (pointsTotal > 0)
 	{
-		int r = rand() % (pointsTotal);
+		int r = GetRand() % (pointsTotal);
 
 		for (auto it = mapHeader->songLevels.begin(); it != mapHeader->songLevels.end(); ++it)
 		{
@@ -4103,7 +4103,7 @@ sf::VertexArray * GameSession::SetupPlants( Edge *startEdge, Tileset *ts )//, in
 			{
 				for(int i = 0; i < numQuads; ++i )
 				{
-					int r = rand() % 2;
+					int r = GetRand() % 2;
 					if( r == 0 )
 					{
 						info.push_back( PlantInfo( te, quadWidth * i, quadWidth ) );
@@ -4199,7 +4199,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 	while( true )
 	{
 		//cout << "running loop" << endl;
-		r = rand() % diffApartMax;
+		r = GetRand() % diffApartMax;
 		travelDistance = minDistanceApart + r;
 
 		momentum = travelDistance;
@@ -4249,7 +4249,7 @@ sf::VertexArray *GameSession::SetupBushes( int bgLayer, Edge *startEdge, Tileset
 			rPen = 0;
 		else
 		{
-			rPen = rand() % diffPenMax;
+			rPen = GetRand() % diffPenMax;
 		}
 		
 		penDistance = minPen + rPen;
@@ -4625,13 +4625,31 @@ int GameSession::GetPlayerNormalSkin(int index)
 	{
 		return saveFile->defaultSkinIndex;
 	}
-	else if (isParallelSession)
-	{
-		return 1; //just for testing
-	}
 	else if (netplayManager != NULL)
 	{
-		return netplayManager->netplayPlayers[index].skinIndex;
+		int realIndex = index;
+		if (gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+		{
+			int adjustedIndex = index;
+			if (IsParallelSession())
+			{
+				assert(index == 0); //each parallel session can only have 1 player so far
+
+				adjustedIndex = parallelSessionIndex + 1;
+			}
+
+			realIndex = adjustedIndex;
+			if (adjustedIndex == 0)
+			{
+				realIndex = netplayManager->playerIndex;
+			}
+			else if (adjustedIndex <= netplayManager->playerIndex)
+			{
+				realIndex = adjustedIndex - 1;
+			}
+		}
+
+		return netplayManager->netplayPlayers[realIndex].skinIndex;
 	}
 
 	return Actor::SKIN_NORMAL;

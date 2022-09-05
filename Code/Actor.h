@@ -1800,6 +1800,9 @@ struct Actor : QuadTreeCollider,
 	void UpdatePreFrameCalculations();
 	void InitPreFrameCalculations();
 	void UpdateNumFuturePositions();
+
+
+
 	
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
