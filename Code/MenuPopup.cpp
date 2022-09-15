@@ -37,10 +37,10 @@ void MenuInfoPopup::Pop(const std::string &str, int p_forcedStayOpenFrames )
 bool MenuInfoPopup::Update(ControllerState &currInput,
 	ControllerState &prevInput)
 {
-	cout << "starting mouse update\n";
+	//cout << "starting mouse update\n";
 	panel->MouseUpdate();
 
-	cout << "finished mouse update\n";
+	//cout << "finished mouse update\n";
 
 	if (forcedStayOpenFrames > 0)
 	{

@@ -87,6 +87,7 @@ struct FightMode : GameMode
 		int done; //better than a bool for packing rn
 		int health[4];
 		int meter[4];
+		int killCounter[4];
 		int endSeqState;
 		int endSeqFrame;
 	};

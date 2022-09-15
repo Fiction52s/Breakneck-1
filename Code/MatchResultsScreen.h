@@ -4,18 +4,23 @@
 #include "SFML/Graphics.hpp"
 #include "Input.h"
 #include "Movement.h"
+#include "MatchStats.h"
+#include "Tileset.h"
+
+
 
 struct UIWindow;
-struct MatchResultsScreen
+struct MatchResultsScreen : TilesetManager
 {
-	MatchResultsScreen() { Reset(); }
-	~MatchResultsScreen() {}
+	MatchResultsScreen(MatchStats *mStats);
+	virtual ~MatchResultsScreen();
 	virtual void Draw( sf::RenderTarget *target ) = 0;
-	virtual void Update() = 0;
+	virtual bool Update() = 0; //return false when done
 	virtual void ResetSprites() = 0;
 	virtual void UpdateSprites() = 0;
 	virtual void Reset();
 	int frame;
+	MatchStats *matchStats;
 };
 
 struct Tileset;
@@ -24,53 +29,40 @@ struct GameSession;
 
 struct PlayerInfoBar
 {
-	
-
-	enum State
+	enum Action
 	{
-		STATE_INITIAL_WAIT, //TODO
-		STATE_SHOW_FACE,
-		STATE_WAIT,
-		STATE_WAIT_EXPANDED,
-		STATE_CLOSED
+		A_IDLE,
+		A_RISE,
+		A_WAIT,
+		A_DONE,
+		A_Count
 	};
 
-	State currState;
-
-	enum QuadIndex
-	{
-		BOT_QUAD_INDEX = 0,
-		STRETCH_QUAD_INDEX = 1,
-		TOP_QUAD_INDEX = 2
-	};
-
-	PlayerInfoBar( GameSession *owner, int width,
-		int playerIndex );
-	void Update( bool pressedA );
+	MatchResultsScreen *resultsScreen;
+	Action action;
 	int frame;
-	State state;
-	void Draw( sf::RenderTarget *target );
+	sf::Vertex quad[4];
+	int actionLength[A_Count];
+
+	sf::Text nameText;
+
+	int waitHeight;
+	int startHeight;
+	int width;
+	int currHeight;
+	int pIndex;
+
+	PlayerInfoBar(MatchResultsScreen *mrs, int playerIndex );
+	void Update( bool pressedA );
 	void SetHeight( int height );
-	
-	GameSession *owner;
-	
-	int framesBeforeShowFace;
-	int framesExpandingShowFace;
-	int framesExpandingFull;
-	int framesToClose;
-
-	int heightWait;
-	int heightShowFace;
-	int heightFull;
-
-	UIWindow *uiWindow;
+	void Draw(sf::RenderTarget *target);
 };
 
 struct VictoryScreen2PlayerVS : MatchResultsScreen
 {
-	VictoryScreen2PlayerVS( GameSession *p_game );
+	VictoryScreen2PlayerVS(MatchStats *mStats);
 	void Draw( sf::RenderTarget *target );
-	void Update();
+	bool Update();
 	void ResetSprites();
 	void UpdateSprites();
 	void Reset();
@@ -82,48 +74,48 @@ struct VictoryScreen2PlayerVS : MatchResultsScreen
 };
 
 struct Tileset;
-struct ResultsScreen : MatchResultsScreen
-{
-	enum State
-	{
-		FADEIN,
-		SLIDEIN,
-		WAIT,
-		SLIDEOUT,
-		FADEOUT,
-		DONE,
-	};
-
-	State state;
-	ResultsScreen(GameSession *owner);
-	void Draw(sf::RenderTarget *target);
-	void Update();
-	void ResetSprites();
-	void UpdateSprites();
-	void Reset();
-	bool IsDone();
-	GameSession *owner;
-	void SetupColumns();
-
-	Tileset *ts_column[4];
-	int maxPlacing;
-
-	sf::Sprite columnSprites[4];
-
-	bool columnReady[4];
-
-	Tileset * GetTeamTileset(int teamIndex, bool win);
-	Tileset * GetSoloTilset(int soloIndex, bool win);
-
-	void SetTile(int boxIndex, int tile);
-	void SetBoxPos(int boxIndex, float yHeight);
-
-	CubicBezier slideInBez[4];
-	int slideInStartFrame[4];
-	int slideInFrames[4];
-
-	CubicBezier slideOutBez;
-	int slideOutFrames;
-};
+//struct ResultsScreen : MatchResultsScreen
+//{
+//	enum State
+//	{
+//		FADEIN,
+//		SLIDEIN,
+//		WAIT,
+//		SLIDEOUT,
+//		FADEOUT,
+//		DONE,
+//	};
+//
+//	State state;
+//	ResultsScreen(GameSession *owner);
+//	void Draw(sf::RenderTarget *target);
+//	bool Update();
+//	void ResetSprites();
+//	void UpdateSprites();
+//	void Reset();
+//	bool IsDone();
+//	GameSession *owner;
+//	void SetupColumns();
+//
+//	Tileset *ts_column[4];
+//	int maxPlacing;
+//
+//	sf::Sprite columnSprites[4];
+//
+//	bool columnReady[4];
+//
+//	Tileset * GetTeamTileset(int teamIndex, bool win);
+//	Tileset * GetSoloTilset(int soloIndex, bool win);
+//
+//	void SetTile(int boxIndex, int tile);
+//	void SetBoxPos(int boxIndex, float yHeight);
+//
+//	CubicBezier slideInBez[4];
+//	int slideInStartFrame[4];
+//	int slideInFrames[4];
+//
+//	CubicBezier slideOutBez;
+//	int slideOutFrames;
+//};
 
 #endif

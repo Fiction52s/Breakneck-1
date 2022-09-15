@@ -5161,10 +5161,16 @@ void Actor::ReactToBeingHit()
 		{
 			realDamage = receivedHit.damage / 10; //enemies do too much dmg for this mode
 		}
+
 		fm->data.health[actorIndex] -= realDamage;
 		if (fm->data.health[actorIndex] <= 0)
 		{
 			fm->data.health[actorIndex] = 0;
+
+			if (receivedHitPlayer != NULL)
+			{
+				fm->data.killCounter[receivedHitPlayer->actorIndex]++;
+			}
 
 			SetAction(DEATH);
 			return;

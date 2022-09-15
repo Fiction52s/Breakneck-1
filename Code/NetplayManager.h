@@ -46,6 +46,7 @@ struct NetplayPlayer
 	bool doneLoading;
 	bool readyToRun;
 	bool isHost;
+	std::string name;
 	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
 	int skinIndex;
 

@@ -74,6 +74,8 @@
 #include "NetplayManager.h"
 
 #include "MatchResultsScreen.h"
+
+#include "MatchStats.h"
 //#include "Enemy_Badger.h"
 //#include "Enemy_Bat.h"
 //#infclude "Enemy_StagBeetle.h"
@@ -4657,10 +4659,34 @@ int GameSession::GetPlayerNormalSkin(int index)
 
 MatchResultsScreen *GameSession::CreateResultsScreen()
 {
+	MatchStats *stats = new MatchStats;
+	Actor *p = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		p = GetPlayer(i);
+		if (p != NULL)
+		{
+			stats->playerStats[i] = new PlayerStats( p );
+			stats->playerStats[i]->name = netplayManager->netplayPlayers[i].name;
+			stats->playerStats[i]->skinIndex = netplayManager->netplayPlayers[i].skinIndex;
+			stats->playerStats[i]->placing = matchPlacings[i];
+
+			switch (matchParams.gameModeType)
+			{
+			case MatchParams::GAME_MODE_FIGHT:
+			{
+				FightMode *fm = (FightMode*)gameMode;
+				stats->playerStats[i]->kills = fm->data.killCounter[i];
+				break;
+			}
+			}
+		}
+	}
+
 	switch (matchParams.gameModeType)
 	{
 	default:
-		return new VictoryScreen2PlayerVS(this);
+		return new VictoryScreen2PlayerVS( stats );
 	}
 
 	return NULL;

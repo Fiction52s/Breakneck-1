@@ -66,7 +66,7 @@ void FightMode::SetFromBytes(unsigned char *bytes)
 
 void FightMode::Setup()
 {
-	maxHealth = 100;
+	maxHealth = 10;
 	meterSection = 10;
 	numMeterSections = 6;
 }
@@ -80,6 +80,7 @@ void FightMode::StartGame()
 	{
 		data.health[i] = maxHealth;
 		data.meter[i] = 0;
+		data.killCounter[0] = 0;
 	}
 }
 

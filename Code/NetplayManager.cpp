@@ -164,7 +164,7 @@ void NetplayManager::Abort()
 		netplayPlayers[i].Clear();
 	}
 
-	CleanupMatch();
+	//CleanupMatch();
 
 	numPlayers = -1;
 
@@ -193,6 +193,7 @@ void NetplayManager::StartConnecting()
 
 		netplayPlayers[memberIndex].index = memberIndex;
 		netplayPlayers[memberIndex].id = (*it).id;
+		netplayPlayers[memberIndex].name = (*it).name;
 
 		if ((*it).id == GetMyID())
 		{
@@ -491,6 +492,13 @@ void NetplayManager::Update()
 			}
 			else
 			{
+				/*int index = 0;
+				for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+				{
+					netplayPlayers[index].name = (*it).name;
+					++index;
+				}*/
+
 				LeaveLobby();
 				SendSignalToHost(UdpMsg::Game_Client_Done_Connecting);
 				action = A_WAIT_TO_VERIFY;//A_WAIT_TO_LOAD_MAP;
@@ -1139,8 +1147,14 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;
-		//matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
-		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
+		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
+
+		netplayPlayers[0].name = SteamFriends()->GetPersonaName();
+		for (int i = 1; i < 4; ++i)
+		{
+			netplayPlayers[i].name = "CPU" + to_string(i - 1);
+		}
+		//matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 
 		LoadMap();
 		

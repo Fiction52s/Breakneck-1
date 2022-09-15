@@ -11,7 +11,7 @@ FightEndSequence::FightEndSequence()
 {
 	sess = Session::GetSession();
 
-	ts_game = sess->GetSizedTileset("Menu/gameovervs_700x300.png");
+	ts_game = sess->GetSizedTileset("Menu/GAME_384x256.png");
 	ts_game->SetSpriteTexture(gameSprite);
 
 	gameSprite.setOrigin(gameSprite.getLocalBounds().width / 2, gameSprite.getLocalBounds().height / 2);

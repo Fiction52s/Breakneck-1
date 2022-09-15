@@ -2903,7 +2903,6 @@ void MainMenu::HandleMenuMode()
 
 		netplayManager->Update();
 
-
 		if (netplayManager->action == NetplayManager::A_MATCH_COMPLETE)
 		{
 			
@@ -2919,21 +2918,26 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
-				//matchResultsScreen = netplayManager->CreateResultsScreen();
-
-				netplayManager->CleanupMatch();
+				
+				//results screen instead...
 
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
+					//fix this so when the opponent disconnects after the game has ended that everything is still fine.
+					netplayManager->CleanupMatch();
 					cout << "EXITED ON DISCONNECT" << endl;
 					infoPopup->Pop("Opponent disconnected", 60);
 					SetMode(TITLEMENU_INFOPOP);
 				}
 				else
 				{
-					cout << "action test: " << (int)netplayManager->action << endl;
-					SetMode(TITLEMENU);
-					//SetMode(MATCH_RESULTS);
+					//netplayManager->CleanupMatch();
+					//cout << "action test: " << (int)netplayManager->action << endl;
+					//SetMode(TITLEMENU);
+
+					matchResultsScreen = netplayManager->CreateResultsScreen();
+					netplayManager->CleanupMatch();
+					SetMode(MATCH_RESULTS);
 				}
 			}
 		}
@@ -2945,7 +2949,11 @@ void MainMenu::HandleMenuMode()
 		{
 			//matchResultsScreen->HandleEvent(ev);
 		}
-		matchResultsScreen->Update();
+		if (!matchResultsScreen->Update())
+		{
+			netplayManager->CleanupMatch();
+			SetMode(TITLEMENU);
+		}
 		break;
 	}
 	}
@@ -3119,8 +3127,10 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 		case M_ADVENTURE:
 		{
-			musicPlayer->FadeOutCurrentMusic(30);
-			LoadMode(SAVEMENU);
+			SetMode(MATCH_RESULTS);
+			matchResultsScreen = netplayManager->CreateResultsScreen();
+			//musicPlayer->FadeOutCurrentMusic(30);
+			//LoadMode(SAVEMENU);
 			break;
 		}
 		case M_FREE_PLAY:
