@@ -7,6 +7,7 @@ MatchStats::MatchStats()
 	{
 		playerStats[i] = NULL;
 	}
+	netplay = false;
 }
 MatchStats::~MatchStats()
 {

@@ -4660,6 +4660,10 @@ int GameSession::GetPlayerNormalSkin(int index)
 MatchResultsScreen *GameSession::CreateResultsScreen()
 {
 	MatchStats *stats = new MatchStats;
+
+	if (netplayManager != NULL)
+		stats->netplay = true;
+
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{

@@ -2951,7 +2951,9 @@ void MainMenu::HandleMenuMode()
 		}
 		if (!matchResultsScreen->Update())
 		{
-			netplayManager->CleanupMatch();
+			//netplayManager->CleanupMatch();
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
 			SetMode(TITLEMENU);
 		}
 		break;

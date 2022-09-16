@@ -61,6 +61,7 @@ struct PlayerInfoBar
 struct VictoryScreen2PlayerVS : MatchResultsScreen
 {
 	VictoryScreen2PlayerVS(MatchStats *mStats);
+	~VictoryScreen2PlayerVS();
 	void Draw( sf::RenderTarget *target );
 	bool Update();
 	void ResetSprites();

@@ -17,6 +17,7 @@ struct MatchStats
 {
 	MatchStats();
 	~MatchStats();
+	bool netplay;
 	PlayerStats *playerStats[4];
 };
 
