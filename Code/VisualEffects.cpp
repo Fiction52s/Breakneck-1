@@ -277,11 +277,14 @@ void EffectInstance::ApplyTransform()
 {
 	float width = parent->ts->tileWidth;
 	float height = parent->ts->tileHeight;
+
+	//width *= 
+
 	Vector2f p[4];
 	p[0] = Vector2f(-width / 2.f, -height / 2.f);
-	p[1] = Vector2f(+width / 2.f, -height / 2.f);
-	p[2] = Vector2f(+width / 2.f, +height / 2.f);
-	p[3] = Vector2f(-width / 2.f, +height / 2.f);
+	p[1] = Vector2f(width / 2.f, -height / 2.f);
+	p[2] = Vector2f(width / 2.f, height / 2.f);
+	p[3] = Vector2f(-width / 2.f, height / 2.f);
 
 	for (int i = 0; i < 4; ++i)
 	{

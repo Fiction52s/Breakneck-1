@@ -10286,13 +10286,23 @@ void Actor::TryDashBoost()
 
 		EffectInstance params;
 		Transform t;
-		if (fr)
+		if (!fr)
 		{
-			t.scale(Vector2f(-1, 0));
+		//	t.scale(Vector2f(-1, 1));
 		}
 
-		t.scale(1, 4);
+		//must scale after rotating
 		t.rotate(GroundedAngle() / PI * 180.0);
+
+		if (!fr)
+		{
+			t.scale(-1, 4);
+		}
+		else
+		{
+			t.scale(1, 4);
+		}
+
 		params.SetParams(Vector2f(position), t, 5, 4, 1);
 
 		ActivateEffect(PLAYERFX_DASH_BOOST, &params);
@@ -10478,8 +10488,9 @@ void Actor::ActivateAirdashBoost()
 	EffectInstance params;
 	Transform t;
 
-	t.scale(1, 4);
+	//apparently you must rotate before scaling to get accurate results!
 	t.rotate(ang / PI * 180.0);
+	t.scale(1, 4);
 	params.SetParams(Vector2f(position), t, 5, 4, 1);
 
 	ActivateEffect(PLAYERFX_DASH_BOOST, &params);
