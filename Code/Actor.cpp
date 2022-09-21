@@ -979,6 +979,8 @@ void Actor::SetupFXTilesets()
 
 	effectPools[PLAYERFX_AIRDASH_HOVER].Set(sess->GetSizedTileset(folder, "fx_airdash_hold_96x80.png"), EffectType::FX_REGULAR, 20);
 
+	
+
 	/*effectPools[PLAYERFX_DEATH_1A].Set(sess->GetSizedTileset(folder, "death_fx_1a_256x256.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_DEATH_1B].Set(sess->GetSizedTileset(folder, "death_fx_1b_128x80.png"), EffectType::FX_REGULAR, 20);
 	effectPools[PLAYERFX_DEATH_1C].Set(sess->GetSizedTileset(folder, "death_fx_1c_128x128.png"), EffectType::FX_REGULAR, 20);
@@ -1006,7 +1008,7 @@ void Actor::SetupFXTilesets()
 	effectPools[PLAYERFX_LAUNCH_PARTICLE_0].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
 	effectPools[PLAYERFX_LAUNCH_PARTICLE_1].Set(sess->GetSizedTileset(folder, "launch_fx_192x128.png"), EffectType::FX_REGULAR, 100);
 
-	effectPools[PLAYERFX_ENTER].Set(sess->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 2);
+	effectPools[PLAYERFX_ENTER].Set(sess->GetSizedTileset(folder, "fx_enter_256x256.png"), EffectType::FX_REGULAR, 1, EffectLayer::IN_FRONT);
 
 	//hopefully no problem making only 1 of these
 	effectPools[PLAYERFX_EXITENERGY_0].Set(sess->GetSizedTileset(folder, "exitenergy_0_512x512.png"), EffectType::FX_IND, 1);
@@ -5170,6 +5172,7 @@ void Actor::ReactToBeingHit()
 			if (receivedHitPlayer != NULL)
 			{
 				fm->data.killCounter[receivedHitPlayer->actorIndex]++;
+				fm->KillPlayer(actorIndex);
 			}
 
 			SetAction(DEATH);

@@ -31,6 +31,28 @@ FightMode::~FightMode()
 	delete endSeq;
 }
 
+void FightMode::KillPlayer(int index)
+{
+	int numAlive = 0;
+	Actor *p = NULL;
+	
+	for (int i = 0; i < 4; ++i)
+	{
+		p = sess->GetPlayer(i);
+		if (p != NULL && !p->dead)
+		{
+			++numAlive;
+		}
+	}
+
+	int totalPlayers = sess->matchParams.numPlayers;
+
+	int deathOrderNum = totalPlayers - numAlive;
+
+	data.deathOrder[index] = deathOrderNum;
+	
+}
+
 int FightMode::GetNumStoredBytes()
 {
 	return sizeof(MyData);// +testGator->GetNumStoredBytes() + testBird->GetNumStoredBytes();
@@ -80,7 +102,8 @@ void FightMode::StartGame()
 	{
 		data.health[i] = maxHealth;
 		data.meter[i] = 0;
-		data.killCounter[0] = 0;
+		data.killCounter[i] = 0;
+		data.deathOrder[i] = -1;
 	}
 }
 
@@ -113,16 +136,39 @@ bool FightMode::CheckVictoryConditions()
 	
 	if (numAlive == 1)
 	{
+		int placings[4];
+
+		int victoryIndex = -1;
 		for (int i = 0; i < 4; ++i)
 		{
 			p = sess->GetPlayer(i);
 			if (p != NULL && !p->dead)
 			{
-				sess->SetMatchPlacings(i);
-				return true;
-				//doesnt account for 2nd place yet
+				victoryIndex = i;
+				break;
 			}
 		}
+
+		placings[victoryIndex] = 0;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (i == victoryIndex)
+				continue;
+
+			p = sess->GetPlayer(i);
+			if (p != NULL )
+			{
+				placings[i] = sess->matchParams.numPlayers - (data.deathOrder[i] + 1);
+			}
+			else
+			{
+				placings[i] = -1;
+			}
+		}
+
+		
+		sess->SetMatchPlacings(placings[0], placings[1], placings[2], placings[3]);
+		return true;
 	}
 	//for (int i = 0; i < 4; ++i)
 	//{

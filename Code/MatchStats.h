@@ -18,6 +18,7 @@ struct MatchStats
 	MatchStats();
 	~MatchStats();
 	bool netplay;
+	int gameModeType;
 	PlayerStats *playerStats[4];
 };
 

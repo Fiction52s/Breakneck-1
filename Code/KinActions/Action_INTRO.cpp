@@ -26,7 +26,8 @@ void Actor::INTRO_UpdateSprite()
 {
 	if (frame == 0 && slowCounter == 1)
 	{
-		ActivateEffect(EffectLayer::IN_FRONT, sess->GetSizedTileset("Kin/FX/fx_enter_256x256.png"), position, false, 0, 22, 2, true);
+		ActivateEffect(PLAYERFX_ENTER, Vector2f(position), 0, 22, 2, true);
+		//ActivateEffect(EffectLayer::IN_FRONT, sess->GetSizedTileset("Kin/FX/fx_enter_256x256.png"), position, false, 0, 22, 2, true);
 	}
 	/*else if (frame / 2 >= 5)
 	{

@@ -7229,6 +7229,17 @@ void Session::InitGGPO()
 					prm->parallelGames[i]->ggpo = ggpo;
 				}
 			}
+			Actor *p = GetPlayer(0);
+			p->Respawn();
+
+			for (int i = 0; i < 3; ++i)
+			{
+				if (prm->parallelGames[i] != NULL)
+				{
+					p = prm->parallelGames[i]->GetPlayer(0);
+					p->Respawn();//SetSkin(Actor::SKIN_NORMAL);
+				}
+			}
 		}
 	}
 }

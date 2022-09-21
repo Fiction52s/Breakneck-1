@@ -2918,13 +2918,12 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
-				
+				netplayManager->CleanupMatch();
 				//results screen instead...
 
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
 				{
 					//fix this so when the opponent disconnects after the game has ended that everything is still fine.
-					netplayManager->CleanupMatch();
 					cout << "EXITED ON DISCONNECT" << endl;
 					infoPopup->Pop("Opponent disconnected", 60);
 					SetMode(TITLEMENU_INFOPOP);
@@ -2935,8 +2934,7 @@ void MainMenu::HandleMenuMode()
 					//cout << "action test: " << (int)netplayManager->action << endl;
 					//SetMode(TITLEMENU);
 
-					matchResultsScreen = netplayManager->CreateResultsScreen();
-					netplayManager->CleanupMatch();
+					matchResultsScreen = netplayManager->resultsScreen;
 					SetMode(MATCH_RESULTS);
 				}
 			}

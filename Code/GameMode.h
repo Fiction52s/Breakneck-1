@@ -88,6 +88,7 @@ struct FightMode : GameMode
 		int health[4];
 		int meter[4];
 		int killCounter[4];
+		int deathOrder[4];
 		int endSeqState;
 		int endSeqFrame;
 	};
@@ -108,6 +109,7 @@ struct FightMode : GameMode
 
 	FightMode();
 	~FightMode();
+	void KillPlayer(int index);
 	int GetNumStoredBytes();
 	void StoreBytes(unsigned char *bytes);
 	void SetFromBytes(unsigned char *bytes);

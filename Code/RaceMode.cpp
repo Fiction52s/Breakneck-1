@@ -67,6 +67,7 @@ bool RaceMode::CheckVictoryConditions()
 		return false;
 	}
 
+	int goalHitIndex = -1;
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
@@ -75,10 +76,36 @@ bool RaceMode::CheckVictoryConditions()
 		{
 			if (p->hitGoal)
 			{
-				sess->SetMatchPlacings(i);
-				return true;
+				goalHitIndex = i;
+				break;
 			}
 		}
+	}
+
+	if (goalHitIndex >= 0)
+	{
+		int placings[4];
+		for (int i = 0; i < 4; ++i)
+		{
+			p = sess->GetPlayer(i);
+			if (i == goalHitIndex)
+			{
+				placings[i] = 0;
+			}
+			else
+			{
+				if (p != NULL)
+				{
+					placings[i] = 1;
+				}
+				else
+				{
+					placings[i] = -1;
+				}
+			}
+		}
+		sess->SetMatchPlacings(placings[0], placings[1], placings[2], placings[3]);
+		return true;
 	}
 
 	return false;

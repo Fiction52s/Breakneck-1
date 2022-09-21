@@ -1094,6 +1094,7 @@ int NetplayManager::RunMatch()
 
 	int gameResult = game->Run();
 
+	resultsScreen = game->CreateResultsScreen(); //netplay always needs a results screen
 
 	//delete game;
 	//game = NULL;
@@ -1147,7 +1148,7 @@ void NetplayManager::FindQuickplayMatch()
 
 		matchParams.mapPath = "Resources/Maps/W2/afighting6.brknk";
 		matchParams.numPlayers = 2;
-		matchParams.gameModeType = MatchParams::GAME_MODE_FIGHT;
+		matchParams.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;
 
 		netplayPlayers[0].name = SteamFriends()->GetPersonaName();
 		for (int i = 1; i < 4; ++i)

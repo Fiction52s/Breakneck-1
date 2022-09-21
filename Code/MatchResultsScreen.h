@@ -25,7 +25,7 @@ struct MatchResultsScreen : TilesetManager
 
 struct Tileset;
 struct GameSession;
-
+struct PlayerSkinShader;
 
 struct PlayerInfoBar
 {
@@ -44,6 +44,10 @@ struct PlayerInfoBar
 	sf::Vertex quad[4];
 	int actionLength[A_Count];
 
+	sf::Sprite kinSprite;
+	PlayerSkinShader *skinShader;
+	
+
 	sf::Text nameText;
 
 	int waitHeight;
@@ -51,17 +55,21 @@ struct PlayerInfoBar
 	int width;
 	int currHeight;
 	int pIndex;
+	sf::Text infoText;
+
+	sf::Sprite placingSpr;
 
 	PlayerInfoBar(MatchResultsScreen *mrs, int playerIndex );
+	~PlayerInfoBar();
 	void Update( bool pressedA );
 	void SetHeight( int height );
 	void Draw(sf::RenderTarget *target);
 };
 
-struct VictoryScreen2PlayerVS : MatchResultsScreen
+struct VictoryScreen4Player : MatchResultsScreen
 {
-	VictoryScreen2PlayerVS(MatchStats *mStats);
-	~VictoryScreen2PlayerVS();
+	VictoryScreen4Player(MatchStats *mStats);
+	~VictoryScreen4Player();
 	void Draw( sf::RenderTarget *target );
 	bool Update();
 	void ResetSprites();
@@ -69,9 +77,9 @@ struct VictoryScreen2PlayerVS : MatchResultsScreen
 	void Reset();
 	GameSession *game;
 
-	PlayerInfoBar *player1Bar;
-	PlayerInfoBar *player2Bar;
 	
+
+	PlayerInfoBar *playerBar[4];
 };
 
 struct Tileset;

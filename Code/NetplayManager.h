@@ -125,6 +125,8 @@ struct NetplayManager
 	boost::filesystem::path mapDownloadFilePath;
 	std::string mapDownloadReceivedHash;
 
+	MatchResultsScreen *resultsScreen;
+
 	NetplayManager();
 	~NetplayManager();
 
