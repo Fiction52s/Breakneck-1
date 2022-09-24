@@ -181,7 +181,10 @@ bool ParallelRaceMode::CheckVictoryConditions()
 			{
 				placings[i] = 1;
 			}
-			placings[winningIndex] = 0;
+			placings[sess->netplayManager->netplayPlayers[winningIndex].index] = 0;
+
+
+			cout << "placings: " << placings[0] << ", " << placings[1] << ", " << placings[2] << ", " << placings[3] << "\n";
 			sess->SetMatchPlacings(placings[0], placings[1], placings[2], placings[3]);
 			//cout << "the other player had an index of: " << sess->netplayManager->netplayPlayers[losingIndex].index << endl;
 			return true;

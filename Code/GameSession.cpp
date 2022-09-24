@@ -4668,16 +4668,42 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 
 	Actor *p = NULL;
 
+	int playerParIndex = -1;
+	int myPlayerIndex = netplayManager->playerIndex;
 
-	int realIndex = -1;
 	for (int i = 0; i < 4; ++i)
 	{
-		realIndex = i;
 		if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
 		{
-			int parallelIndex = i - 1;
+			//int parallelIndex = i - 1;
+			if (i == myPlayerIndex)
+			{
+				playerParIndex = 0;
+			}
+			else if (i > myPlayerIndex)
+			{
+				playerParIndex = i;
+			}
+			else
+			{
+				playerParIndex = i + 1;
+			}
 
-			if (i > 0)
+			if (playerParIndex == 0)
+			{
+				p = GetPlayer(0);
+			}
+			else
+			{
+				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+				if (prm->parallelGames[playerParIndex-1] != NULL)
+				{
+					p = prm->parallelGames[playerParIndex-1]->GetPlayer(0);
+				}
+			}
+
+			/*if (i > 0)
 			{
 				ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
 
@@ -4709,7 +4735,7 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 			else if (adjustedIndex <= netplayManager->playerIndex)
 			{
 				realIndex = adjustedIndex - 1;
-			}
+			}*/
 		}
 		else
 		{
@@ -4719,8 +4745,8 @@ MatchResultsScreen *GameSession::CreateResultsScreen()
 		if (p != NULL)
 		{
 			stats->playerStats[i] = new PlayerStats( p );
-			stats->playerStats[i]->name = netplayManager->netplayPlayers[realIndex].name;
-			stats->playerStats[i]->skinIndex = netplayManager->netplayPlayers[realIndex].skinIndex;
+			stats->playerStats[i]->name = netplayManager->netplayPlayers[i].name;
+			stats->playerStats[i]->skinIndex = netplayManager->netplayPlayers[i].skinIndex;
 			stats->playerStats[i]->placing = matchPlacings[i];
 
 			switch (matchParams.gameModeType)

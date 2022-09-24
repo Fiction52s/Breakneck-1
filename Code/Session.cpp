@@ -7266,11 +7266,48 @@ void Session::AddDesyncCheckInfo()
 	
 	if (netplayManager != NULL)
 	{
+		int playerParIndex = -1;
+		int myPlayerIndex = netplayManager->playerIndex;
 
+		//hopefully fixed this desync issue...
 		Actor *p;
 		for (int i = 0; i < 4; ++i)
 		{
-			p = players[i];
+			if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
+			{
+				if (i == myPlayerIndex)
+				{
+					playerParIndex = 0;
+				}
+				else if (i > myPlayerIndex)
+				{
+					playerParIndex = i;
+				}
+				else
+				{
+					playerParIndex = i + 1;
+				}
+
+				if (playerParIndex == 0)
+				{
+					p = GetPlayer(0);
+				}
+				else
+				{
+					ParallelRaceMode *prm = (ParallelRaceMode*)gameMode;
+
+					if (prm->parallelGames[playerParIndex - 1] != NULL)
+					{
+						p = prm->parallelGames[playerParIndex - 1]->GetPlayer(0);
+					}
+				}
+			}
+			else
+			{
+				p = GetPlayer(i);
+			}
+
+			//p = players[i];
 			if (p != NULL)
 			{
 				DesyncCheckInfo dci;
@@ -7280,14 +7317,14 @@ void Session::AddDesyncCheckInfo()
 				dci.gameFrame = totalGameFrames;
 
 				//just for testing
-				if (i == 0)
+				/*if (i == 0)
 				{
 					dci.health = ((FightMode*)gameMode)->data.health[0];
 				}
 				else if (i == 1)
 				{
 					dci.health = ((FightMode*)gameMode)->data.health[1];
-				}
+				}*/
 
 				if (!netplayManager->IsHost())
 				{
@@ -8364,8 +8401,8 @@ void Session::ProcessDesyncMessageQueue()
 			//cout << "frameDifference: " << frameDifference << endl;
 			const DesyncCheckInfo & dci = netplayManager->GetDesyncCheckInfo((*it), frameDifference);
 			if (msg->u.desync_info.x == dci.pos.x && msg->u.desync_info.y == dci.pos.y && msg->u.desync_info.player_action == dci.action
-				&& msg->u.desync_info.player_action_frame == dci.actionFrame
-				&& msg->u.desync_info.health == dci.health )
+				&& msg->u.desync_info.player_action_frame == dci.actionFrame )
+			//	&& msg->u.desync_info.health == dci.health )
 			{
 				//no desync!
 				/*cout << "no desync comparing: " << totalGameFrames << " and " << msg->u.desync_info.frame_number << "\n";
@@ -8379,7 +8416,7 @@ void Session::ProcessDesyncMessageQueue()
 				cout << "my action: " << dci.action << ", their action: " << msg->u.desync_info.player_action << "\n";
 				cout << "my action frame: " << dci.actionFrame << ", their action frame: " << msg->u.desync_info.player_action_frame << "\n";
 				cout << "my pos: " << dci.pos.x << ", " << dci.pos.y << ", their pos: " << msg->u.desync_info.x << ", " << msg->u.desync_info.y << endl;
-				cout << "my health: " << dci.health << ", their health: " << msg->u.desync_info.health << endl;
+				//cout << "my health: " << dci.health << ", their health: " << msg->u.desync_info.health << endl;
 
 				netplayManager->desyncDetected = true;
 
