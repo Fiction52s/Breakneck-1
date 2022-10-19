@@ -40,6 +40,27 @@ VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 			playerBar[i] = NULL;
 		}
 	}
+
+	Tileset *ts_bg = GetSizedTileset("Menu/Results/win_bg_960x540.png");
+	Tileset *ts_win = GetSizedTileset("Menu/Results/win_960x540.png");
+	Tileset *ts_kin = GetSizedTileset("Menu/Results/win_kin_1_960x540.png");
+
+	action = A_SHOW_WINNER;
+	frame = 0;
+
+	SetRectCenter(fadeQuad, 1920, 1080, Vector2f(960, 540));
+
+	ts_bg->SetSpriteTexture(bgSpr);
+	bgSpr.setScale(2, 2);
+
+	ts_win->SetSpriteTexture(winSpr);
+	winSpr.setScale(2, 2);
+
+	ts_kin->SetSpriteTexture(kinSpr);
+	kinSpr.setScale(2, 2);
+
+	fadeFrames = 60;
+	SetRectColor(fadeQuad, Color(0, 0, 0, 0));
 	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
@@ -55,48 +76,94 @@ VictoryScreen4Player::~VictoryScreen4Player()
 
 bool VictoryScreen4Player::Update()
 {
-	MainMenu *mm = MainMenu::GetInstance();
+	int opacity = 0;
+	int finalOpacity = 200;
 
-	bool confirmComplete = false;
-	if (matchStats->netplay)
+	if (action == A_SHOW_WINNER && frame == 30)
 	{
-		confirmComplete = mm->menuCurrInput.start;
+		action = A_FADE_WINNER;
+		frame = 0;
+	}
+	else if (action == A_FADE_WINNER && frame == fadeFrames)
+	{
+		action = A_SHOW_RESULTS;
+		frame = 0;
+		opacity = finalOpacity;
+	}
+
+	if (action == A_SHOW_RESULTS)
+	{
+		MainMenu *mm = MainMenu::GetInstance();
+
+		bool confirmComplete = false;
+		if (matchStats->netplay)
+		{
+			confirmComplete = mm->menuCurrInput.start;
+			/*for (int i = 0; i < 4; ++i)
+			{
+				if (mm->GetCurrInput(i).start && mm->GetPrevInput(i).start)
+				{
+					confirmComplete = true;
+					break;
+				}
+			}*/
+		}
+
+		for (int i = 0; i < 4; ++i)
+		{
+			if (playerBar[i] != NULL)
+			{
+				playerBar[i]->Update(confirmComplete);
+			}
+		}
+
+		bool done = true;
+		for (int i = 0; i < 4; ++i)
+		{
+			if (playerBar[i] != NULL)
+			{
+				if (playerBar[i]->action != PlayerInfoBar::A_DONE)
+				{
+					done = false;
+					break;
+				}
+			}
+		}
+
+		if (done)
+		{
+			if (confirmComplete)
+				return false;
+		}
+
+		int activateWait = 15;
+		if (frame % activateWait == 0 )
+		{
+			int index = frame / activateWait;
+
+			if (index < 4 && playerBar[index] != NULL)
+			{
+				playerBar[index]->Activate();
+			}
+		}
 		/*for (int i = 0; i < 4; ++i)
 		{
-			if (mm->GetCurrInput(i).start && mm->GetPrevInput(i).start)
+			if (playerBar[i] != NULL)
 			{
-				confirmComplete = true;
-				break;
+				playerBar[i]->Activate();
 			}
 		}*/
 	}
-	
-	for (int i = 0; i < 4; ++i)
+
+
+	if (action == A_FADE_WINNER)
 	{
-		if (playerBar[i] != NULL)
-		{
-			playerBar[i]->Update(confirmComplete);
-		}
-	}
-	
-	bool done = true;
-	for (int i = 0; i < 4; ++i)
-	{
-		if (playerBar[i] != NULL)
-		{
-			if (playerBar[i]->action != PlayerInfoBar::A_DONE)
-			{
-				done = false;
-				break;
-			}
-		}
+		float factor = ((float)frame) / fadeFrames;
+
+		opacity = finalOpacity * factor;
+		SetRectColor(fadeQuad, Color(0, 0, 0, opacity));
 	}
 
-	if (done)
-	{
-		if (confirmComplete)
-			return false;
-	}
 	++frame;
 
 	return true;
@@ -116,6 +183,11 @@ void VictoryScreen4Player::Reset()
 
 void VictoryScreen4Player::Draw(sf::RenderTarget *target)
 {
+	target->draw(bgSpr);
+	target->draw(kinSpr);
+	target->draw(winSpr);
+	target->draw(fadeQuad, 4, sf::Quads );
+
 	for (int i = 0; i < 4; ++i)
 	{
 		if (playerBar[i] != NULL)
@@ -126,8 +198,8 @@ void VictoryScreen4Player::Draw(sf::RenderTarget *target)
 PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 	:resultsScreen( mrs )
 {
-	action = A_IDLE;
-	frame = 0;
+	//action = A_IDLE;
+	//frame = 0;
 	pIndex = playerIndex;
 
 	width = 1920  / 4;
@@ -195,13 +267,19 @@ PlayerInfoBar::PlayerInfoBar( MatchResultsScreen *mrs, int playerIndex )
 	
 
 	actionLength[A_IDLE] = 1;
-	actionLength[A_RISE] = 60;
+	actionLength[A_RISE] = 30;
 	actionLength[A_WAIT] = 1;
 	actionLength[A_DONE] = 1;
+
+	action = A_IDLE;
+	frame = 0;
+	SetHeight(startHeight);
 
 	sf::Color rectColors[] = { Color::Green, Color::Red, Color::Cyan, Color::Yellow };
 
 	SetRectColor(quad, rectColors[pIndex]);
+
+	//SetHeight(0);
 }
 
 PlayerInfoBar::~PlayerInfoBar()
@@ -211,13 +289,23 @@ PlayerInfoBar::~PlayerInfoBar()
 
 void PlayerInfoBar::Draw( sf::RenderTarget *target )
 {
-	target->draw(quad, 4, sf::Quads);
-	target->draw(nameText);
-	target->draw(infoText);
+	if (action != A_IDLE)
+	{
+		target->draw(quad, 4, sf::Quads);
+		target->draw(nameText);
+		target->draw(infoText);
 
-	target->draw(kinSprite, &skinShader->pShader);
+		target->draw(kinSprite, &skinShader->pShader);
 
-	target->draw(placingSpr);
+		target->draw(placingSpr);
+	}
+}
+
+void PlayerInfoBar::Activate()
+{
+	action = A_RISE;
+	frame = 0;
+	SetHeight(startHeight);
 }
 
 void PlayerInfoBar::Update( bool pressedA )
@@ -248,8 +336,9 @@ void PlayerInfoBar::Update( bool pressedA )
 	{
 	case A_IDLE:
 	{
-		action = A_RISE;
-		frame = 0;
+		//action = A_RISE;
+		//frame = 0;
+		//SetHeight(0);
 		break;
 	}
 	case A_RISE:

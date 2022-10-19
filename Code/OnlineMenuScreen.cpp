@@ -15,6 +15,8 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 10), Vector2i(30, 0));
 
+	//panel->AddHyperLink("test", Vector2i(0, 0), 30, "test link", "blah");
+
 	panel->ReserveImageRects(Action::Count);
 
 	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i( 20, 0 ));

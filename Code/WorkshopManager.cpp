@@ -3,6 +3,8 @@
 #include <iostream>
 #include "MapBrowser.h"
 #include "EditSession.h"
+#include "MapPublishPopup.h"
+#include "MapPostPublishPopup.h"
 
 using namespace std;
 
@@ -359,6 +361,11 @@ void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResul
 WorkshopUploader::WorkshopUploader()
 {
 	edit = EditSession::GetSession();
+	
+	publishPopup = new MapPublishPopup;
+
+	postPublishPopup = new MapPostPublishPopup;
+
 	assert(edit != NULL);
 }
 
@@ -366,6 +373,11 @@ void WorkshopUploader::PublishMap()
 {
 	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
 	OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopUploader::OnCreatedItem);
+}
+
+void WorkshopUploader::ActivatePublishPopup()
+{
+	publishPopup->Activate();
 }
 
 void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure)
@@ -392,8 +404,10 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 
 		string mapName = edit->filePath.stem().string();
 		
-		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
+		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str()); //publishPopup->//mapName.c_str());//"b02");
 		SteamUGC()->SetItemDescription(updateHandle, edit->mapHeader->description.c_str());//"test description 2");
+
+		SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
 
 		uploadFolder = boost::filesystem::current_path().append("\\testpublish");
 
@@ -409,7 +423,6 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 
 				return;
 			}
-			
 		}
 
 		boost::filesystem::create_directory("testpublish");
@@ -447,6 +460,11 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 		SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
 
 		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopUploader::OnItemUpdated);
+
+		bool signedAgreement = !(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
+
+		postPublishPopup->Activate(signedAgreement, uploadId);
+
 	}
 	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
 }

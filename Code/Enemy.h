@@ -191,6 +191,7 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void OnCreate( ActorParams *ap,
 		int w );
 
+
 	void SetPlayerWorld(int p);
 
 	Tileset * GetTileset(const std::string &s,
@@ -373,6 +374,11 @@ struct Enemy : QuadTreeCollider, QuadTreeEntrant,
 	void CheckTouchingSpecterField(SpecterArea *sa);
 	virtual bool IsTouchingSpecterField(SpecterArea *sa);
 	virtual std::vector<CollisionBox>  * GetComboHitboxes();
+
+	Actor *GetFocusedPlayer();
+	V2d GetFocusedPlayerPos();
+	double GetFocusedPlayerDist();
+	V2d GetFocusedPlayerDir();
 	
 };
 

@@ -243,6 +243,13 @@ void GameSession::UpdateCamera()
 		cam.Update();*/
 		break;
 	}
+	case MatchParams::GAME_MODE_COOP:
+	{
+		//eventually need another cam type which is fighting + enemies for coop
+		cam.SetCamType(Camera::CamType::FIGHTING);
+		cam.Update();
+		break;
+	}
 	}
 	
 

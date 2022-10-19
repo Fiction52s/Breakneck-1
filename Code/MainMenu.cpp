@@ -407,7 +407,7 @@ MainMenu::MainMenu()
 	selectorSprite.setTexture(*ts_menuSelector->texture);
 
 	activatedMainMenuOptions[0] = true;		//adventure
-	activatedMainMenuOptions[1] = false;		//freeplay
+	activatedMainMenuOptions[1] = true;		//freeplay
 	activatedMainMenuOptions[2] = true;//false;	//local multiplayer
 	activatedMainMenuOptions[3] = true;		//level editor
 	activatedMainMenuOptions[4] = true;		//options

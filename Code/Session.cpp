@@ -494,8 +494,12 @@ void Session::RegisterW2Enemies()
 
 	AddBasicGroundWorldEnemy("gravityfaller", 2, CreateEnemy<GravityFaller>, Vector2i(0, 0), Vector2i(32, 32), true, true, false, false, 3);
 
+	//at some point there was a crash creating a default enemy for both of these. Recompiling seemed to fix it. Probably some heap corruption garbage.
 	AddWorldEnemy("gravityincreaser", 2, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
 	AddWorldEnemy("gravitydecreaser", 2, CreateEnemy<GravityModifier>, SetParamsType<GravityModifierParams>, Vector2i(0, 0), Vector2i(32, 32), false, false, false, false, true, false, false);
+
+	
+
 	//AddBasicAerialWorldEnemy("gravityincreaser", 2, Vector2i(0, 0), Vector2i(32, 32), false, true, false, false, 3,
 	//	GetTileset("Enemies/grav_increase_256x256.png", 256, 256));
 
@@ -7270,7 +7274,7 @@ void Session::AddDesyncCheckInfo()
 		int myPlayerIndex = netplayManager->playerIndex;
 
 		//hopefully fixed this desync issue...
-		Actor *p;
+		Actor *p = NULL;
 		for (int i = 0; i < 4; ++i)
 		{
 			if (matchParams.gameModeType == MatchParams::GAME_MODE_PARALLEL_RACE)
@@ -8001,6 +8005,9 @@ void Session::SetupGameMode()
 		break;
 	case MatchParams::GAME_MODE_PARALLEL_RACE:
 		gameMode = new ParallelRaceMode;
+		break;
+	case MatchParams::GAME_MODE_COOP:
+		gameMode = new CoopMode;
 		break;
 	}
 }

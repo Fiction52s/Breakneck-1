@@ -140,7 +140,7 @@ void Airdasher::UpdateHitboxes()
 
 void Airdasher::ProcessState()
 {
-	V2d playerPos = sess->GetPlayerPos();
+	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos();
 	
 
 	if (frame == actionLength[action] * animFactor[action])

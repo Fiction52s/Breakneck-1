@@ -152,6 +152,7 @@ struct EditSession : GUIHandler, Session
 	static EditSession *GetSession();
 	static EditSession *currSession;
 
+
 	WorkshopUploader *workshopUploader;
 	MusicInfo *previewMusic;
 	MusicSelectorUI *musicSelectorUI;
@@ -188,6 +189,7 @@ struct EditSession : GUIHandler, Session
 	bool initialViewSet;
 	sf::Sprite playerZoomIcon;
 	ConfirmPopup *confirmPopup;
+	MessagePopup *messagePopup;
 	bool saveUpdated;
 	int tempWriteIndex;
 	sf::RenderTexture *mapPreviewTex;

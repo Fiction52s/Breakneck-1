@@ -1698,6 +1698,8 @@ EditSession::~EditSession()
 
 	delete confirmPopup;
 
+	delete messagePopup;
+
 	delete musicSelectorUI;
 
 	delete workshopUploader;
@@ -3592,6 +3594,7 @@ void EditSession::SetupBrushPanels()
 
 void EditSession::Init()
 {
+	cout << "init1" << endl;
 	frameRateDisplay.showFrameRate = true;
 	runningTimerDisplay.showRunningTimer = true;
 
@@ -3657,13 +3660,14 @@ void EditSession::Init()
 
 	SetupEnemyTypes();
 
+	
+
 	brushManager = new BrushManager;
 	fileChooser = new DefaultFileSelector;
 	adventureCreator = new AdventureCreator;
 
 	for (auto it = types.begin(); it != types.end(); ++it)
 	{
-		//cout << "creating default for: " << (*it).first << endl;
 		(*it).second->CreateDefaultEnemy();
 	}
 
@@ -3676,11 +3680,15 @@ void EditSession::Init()
 	SetupBrushPanels();
 	SetupNewMapPanel();
 
+	
+
 	musicSelectorUI = new MusicSelectorUI;
 
 	workshopUploader = new WorkshopUploader;
 
 	confirmPopup = new ConfirmPopup();
+
+	messagePopup = new MessagePopup();
 
 	graph = new EditorGraph;
 
@@ -3694,7 +3702,6 @@ void EditSession::Init()
 	editModeUI = new EditModeUI();
 
 	mapOptionsUI = new MapOptionsUI();
-
 
 	polygonInProgress = new TerrainPolygon();
 	railInProgress = new TerrainRail();
@@ -3755,7 +3762,7 @@ void EditSession::DefaultInit()
 
 	mapHeader->envWorldType = 0;//newMapInfo.envWorldType;
 
-	mapHeader->numPlayerSpawns = 
+	//SetNumPlayers(1);
 	
 	mapHeader->leftBounds = -1500;
 	mapHeader->topBounds = -1500;
@@ -15246,6 +15253,6 @@ void EditSession::PublishMap()
 {
 	if (WriteFile())
 	{
-		workshopUploader->PublishMap();
+		workshopUploader->ActivatePublishPopup();
 	}
 }

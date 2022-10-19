@@ -16,6 +16,7 @@ struct MatchParams
 		GAME_MODE_FIGHT,
 		GAME_MODE_RACE,
 		GAME_MODE_PARALLEL_RACE,
+		GAME_MODE_COOP,
 		GAME_MODE_Count,
 	};
 

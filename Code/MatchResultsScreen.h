@@ -19,6 +19,7 @@ struct MatchResultsScreen : TilesetManager
 	virtual void ResetSprites() = 0;
 	virtual void UpdateSprites() = 0;
 	virtual void Reset();
+	int action;
 	int frame;
 	MatchStats *matchStats;
 };
@@ -61,6 +62,7 @@ struct PlayerInfoBar
 
 	PlayerInfoBar(MatchResultsScreen *mrs, int playerIndex );
 	~PlayerInfoBar();
+	void Activate();
 	void Update( bool pressedA );
 	void SetHeight( int height );
 	void Draw(sf::RenderTarget *target);
@@ -68,6 +70,14 @@ struct PlayerInfoBar
 
 struct VictoryScreen4Player : MatchResultsScreen
 {
+	enum Action
+	{
+		A_SHOW_WINNER,
+		A_FADE_WINNER,
+		A_SHOW_RESULTS,
+		A_Count
+	};
+
 	VictoryScreen4Player(MatchStats *mStats);
 	~VictoryScreen4Player();
 	void Draw( sf::RenderTarget *target );
@@ -76,6 +86,13 @@ struct VictoryScreen4Player : MatchResultsScreen
 	void UpdateSprites();
 	void Reset();
 	GameSession *game;
+
+	int fadeFrames;
+	
+	sf::Sprite bgSpr;
+	sf::Sprite winSpr;
+	sf::Sprite kinSpr;
+	sf::Vertex fadeQuad[4];
 
 	
 

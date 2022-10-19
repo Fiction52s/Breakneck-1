@@ -2266,6 +2266,58 @@ int Enemy::GetNumShardAbsorbParticles()
 	return 0; 
 }
 
+Actor *Enemy::GetFocusedPlayer()
+{
+	double closestDistance = -1;
+	int closestIndex = -1;
+	Actor *p = NULL;
+	if (playerIndex == -1)
+	{
+		for( int i = 0; i < 4; ++i )
+		{
+			p = sess->GetPlayer(i);
+			if (p != NULL)
+			{
+				if (closestIndex == -1)
+				{
+					closestIndex = i;
+					closestDistance = PlayerDist(i);
+				}
+				else
+				{
+					double currDist = PlayerDist(i);
+					if (currDist < closestDistance)
+					{
+						closestDistance = currDist;
+						closestIndex = i;
+					}
+				}
+			}
+		}
+	}
+
+	assert(closestDistance != -1);
+
+	return sess->GetPlayer(closestIndex);
+}
+
+V2d Enemy::GetFocusedPlayerPos()
+{
+	return GetFocusedPlayer()->position;
+}
+
+double Enemy::GetFocusedPlayerDist()
+{
+	return PlayerDist(GetFocusedPlayer()->actorIndex);
+}
+
+V2d Enemy::GetFocusedPlayerDir()
+{
+	return PlayerDir(GetFocusedPlayer()->actorIndex);
+}
+
+
+
 int HittableObject::GetReceivedHitPlayerIndex()
 {
 	return receivedHitPlayer->actorIndex;

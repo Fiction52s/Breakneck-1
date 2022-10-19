@@ -187,4 +187,37 @@ struct ParallelRaceMode : GameMode
 	void EndGame();
 };
 
+struct CoopMode : GameMode
+{
+	struct MyData
+	{
+		int done;
+		int test;
+		int endSeqState;
+		int endSeqFrame;
+		/*int p0Health;
+		int p1Health;
+		int p0Meter;
+		int p1Meter;*/
+	};
+
+	MyData data;
+
+	FightEndSequence *endSeq;
+	//int maxHealth;
+	//int meterSection;
+	//int numMeterSections;
+
+	CoopMode();
+	~CoopMode();
+	int GetNumStoredBytes();
+	void StoreBytes(unsigned char *bytes);
+	void SetFromBytes(unsigned char *bytes);
+	HUD *CreateHUD();
+	void Setup();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
+
 #endif

@@ -138,7 +138,7 @@ void Crawler::ResetEnemy()
 void Crawler::DecideDirection()
 {
 	V2d position = GetPosition();
-	V2d playerPos = sess->GetPlayerPos(0);
+	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos(0);
 	V2d gn = surfaceMover->ground->Normal();
 	if (gn.y < 0)
 	{
@@ -521,7 +521,7 @@ bool Crawler::ShouldAttack()
 		return false;
 	}
 
-	V2d playerPos = sess->GetPlayerPos(0);
+	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (facingRight)
@@ -562,7 +562,7 @@ bool Crawler::ShouldDash()
 	if (action != CRAWL && action != ROLL && action != DECIDE )
 		return false;
 
-	V2d playerPos = sess->GetPlayerPos(0);
+	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (facingRight)
@@ -587,7 +587,7 @@ bool Crawler::ShouldDash()
 
 bool Crawler::PlayerInFront()
 {
-	V2d playerPos = sess->GetPlayerPos(0);
+	V2d playerPos = GetFocusedPlayerPos();//sess->GetPlayerPos(0);
 
 	V2d dir;
 	if (facingRight)
@@ -661,7 +661,7 @@ bool Crawler::TryDash()
 bool Crawler::IsPlayerChasingMe()
 {
 	return (!PlayerInFront() &&
-		length(sess->GetPlayerPos(0) - GetPosition()) < 400);
+		length(GetFocusedPlayerPos() - GetPosition()) < 400);
 }
 
 void Crawler::AttemptRunAwayBoost()

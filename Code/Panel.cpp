@@ -71,6 +71,11 @@ Panel::~Panel()
 		delete (*it).second;
 	}
 
+	for (auto it = hyperLinks.begin(); it != hyperLinks.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
 	for (auto it = labels.begin(); it != labels.end(); ++it)
 	{
 		delete (*it).second;
@@ -427,6 +432,13 @@ bool Panel::MouseUpdate()
 
 	}
 
+	for (auto it = hyperLinks.begin(); it != hyperLinks.end(); ++it)
+	{
+		//(*it).SendKey( k, shift );
+		bool temp = (*it).second->MouseUpdate();
+
+	}
+
 	for (auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		//(*it).SendKey( k, shift );
@@ -500,6 +512,11 @@ void Panel::UpdateSprites(int numUpdateFrames)
 void Panel::SendEvent(Button *b, const std::string & e)
 {
 	handler->ButtonCallback(b, e);
+}
+
+void Panel::SendEvent(HyperLink *link, const std::string & e)
+{
+	handler->HyperLinkCallback(link, e);
 }
 
 void Panel::SendEvent(GridSelector *gs, const std::string & e)
@@ -756,6 +773,21 @@ Button *Panel::AddButton(const string &name, sf::Vector2i pos, sf::Vector2f size
 	return button;
 }
 
+HyperLink * Panel::AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
+	const std::string &link)
+{
+	assert(hyperLinks.count(name) == 0);
+	HyperLink *hyperLink = new HyperLink(name, autoStart.x + pos.x, autoStart.y + pos.y, characterHeight, arial, text, link, this);
+	hyperLinks[name] = hyperLink;
+
+	auto bounds = hyperLink->text.getGlobalBounds();//getLocalBounds();
+
+	AddAutoSpaceX(bounds.width + pos.x);
+	AddAutoSpaceY(bounds.height + pos.y);
+
+	return hyperLink;
+}
+
 CheckBox * Panel::AddCheckBox(const string &name, sf::Vector2i pos, bool startChecked)
 {
 	assert(checkBoxes.count(name) == 0);
@@ -903,6 +935,11 @@ void Panel::Deactivate()
 		(*it).second->Deactivate();
 	}
 
+	for (auto it = hyperLinks.begin(); it != hyperLinks.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
 	for (auto it = checkBoxes.begin(); it != checkBoxes.end(); ++it)
 	{
 		(*it).second->Deactivate();
@@ -969,6 +1006,11 @@ void Panel::Draw(RenderTarget *target)
 	}
 
 	for (auto it = buttons.begin(); it != buttons.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
+
+	for (auto it = hyperLinks.begin(); it != hyperLinks.end(); ++it)
 	{
 		(*it).second->Draw(target);
 	}

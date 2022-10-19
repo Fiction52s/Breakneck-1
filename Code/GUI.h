@@ -24,6 +24,7 @@ struct EditSession;
 
 struct Button;
 struct GridSelector;
+struct HyperLink;
 struct Button;
 struct CheckBox;
 struct Slider;
@@ -86,6 +87,7 @@ struct GUIHandler
 	virtual void ButtonCallback(Button *b, const std::string & e) {}
 	virtual void TextBoxCallback(TextBox *tb, const std::string & e) {}
 	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) {}
+	virtual void HyperLinkCallback(HyperLink *link, const std::string &e) {}
 	virtual void CheckBoxCallback(CheckBox *cb, const std::string & e) {}
 	virtual void SliderCallback(Slider *slider ) {}
 	virtual void DropdownCallback(Dropdown *dropdown, const std::string & e) {}
@@ -448,6 +450,24 @@ struct Button : PanelMember
 	bool clickedDown;
 };
 
+struct HyperLink : PanelMember
+{
+	HyperLink(const std::string &name, int posx, int posy, int characterHeight, sf::Font &f, const std::string & text, const std::string &linkURL, Panel *panel);
+	void Draw(sf::RenderTarget *target);
+	bool MouseUpdate();
+	void Deactivate();
+	void SetPos(sf::Vector2i &pos);
+	void SetLinkURL(const std::string &url);
+	sf::Vector2i pos;
+	sf::Text text;
+	std::string name;
+	std::string linkURL;
+
+	int characterHeight;
+	bool hoveredOver;
+	bool clickedDown;
+};
+
 struct Slider : PanelMember
 {
 	Slider(const std::string &name, sf::Vector2i &pos,
@@ -657,6 +677,8 @@ struct Panel
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
 	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
+	HyperLink * AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
+		const std::string &link );
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
 	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
@@ -688,6 +710,7 @@ struct Panel
 
 	bool SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
+	void SendEvent(HyperLink *link, const std::string & e);
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
 	void SendEvent( CheckBox *cb, const std::string & e );
@@ -698,6 +721,7 @@ struct Panel
 	std::string name;
 	std::map<std::string, TextBox*> textBoxes;
 	std::map<std::string, Button*> buttons;
+	std::map<std::string, HyperLink*> hyperLinks;
 	std::map<std::string, sf::Text*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
@@ -829,6 +853,18 @@ struct ConfirmPopup : GUIHandler
 	ConfirmPopup();
 	~ConfirmPopup();
 	void Pop(ConfirmType ct);
+	void ButtonCallback(Button *b,
+		const std::string &e);
+};
+
+struct MessagePopup : GUIHandler
+{
+	Panel *panel;
+	EditSession *edit;
+
+	MessagePopup();
+	~MessagePopup();
+	void Pop(const std::string &str);
 	void ButtonCallback(Button *b,
 		const std::string &e);
 };

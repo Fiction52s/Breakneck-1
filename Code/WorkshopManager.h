@@ -24,6 +24,8 @@
 struct MapNode;
 struct MapBrowser;
 struct EditSession;
+struct MapPublishPopup;
+struct MapPostPublishPopup;
 
 struct WorkshopManager
 {
@@ -73,8 +75,12 @@ struct WorkshopUploader
 
 	boost::filesystem::path uploadFolder;
 
+	MapPublishPopup *publishPopup;
+	MapPostPublishPopup *postPublishPopup;
+
 	WorkshopUploader();
 	void PublishMap();
+	void ActivatePublishPopup();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
 	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
 };
