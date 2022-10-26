@@ -58,11 +58,11 @@ void TextBox::SetString(const std::string &str)
 
 	lineStartIndexes.clear();
 	lineStartIndexes.push_back(0);
-	for (int i = 0; i < strLen; ++i)
+	for (int i = 0; i < strLen-1; ++i)
 	{
 		if (str.at(i) == '\n')
-		{			
-			lineStartIndexes.push_back(i);
+		{
+			lineStartIndexes.push_back(i+1);
 		}
 	}
 
@@ -197,11 +197,11 @@ void TextBox::SetCursorIndex(Vector2i &localMousePos)
 	}
 	else
 	{
-		if (localMousePos.x >= widths[rowEnd + 1])
+		if (localMousePos.x >= widths[rowEnd])
 			//if (localMousePos.x >= middle)
 		{
 			//cout << "failed" << endl;
-			chosenIndex = rowEnd + 1;
+			chosenIndex = rowEnd;
 		}
 	}
 	
@@ -393,21 +393,23 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	case Keyboard::BackSpace:
 	{
 		//text.setString( text.getString().substring( 0, cursorIndex ) + text.getString().substring( cursorIndex + 1 ) );
-		cursorIndex -= 1;
 
-		if (cursorIndex < 0)
-			cursorIndex = 0;
-		else
+		if (cursorIndex > 0)
 		{
-
 			sf::String s = text.getString();
 			if (s.getSize() > 0)
 			{
-				s.erase(cursorIndex);
+				s.erase(cursorIndex-1);
 				SetString(s);
+				SetCursorIndex(cursorIndex - 1);
 			}
 		}
 
+		break;
+	}
+	case Keyboard::Enter:
+	{
+		c = '\n';
 		break;
 	}
 	case Keyboard::Left:
@@ -416,6 +418,73 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	case Keyboard::Right:
 		SetCursorIndex(cursorIndex + 1);
 		break;
+	case Keyboard::Up:
+	{
+		int row = GetIndexRow(cursorIndex);
+
+		if (row == 0)
+		{
+			break;
+		}
+		else
+		{
+			int startIndex = lineStartIndexes[row];
+			int colIndex = cursorIndex - startIndex;
+			int prevRowStart = lineStartIndexes[row - 1];
+
+			int prevRowLength = startIndex - prevRowStart - 1;
+
+			if (colIndex > prevRowLength)
+			{
+				colIndex = prevRowLength;
+			}
+
+			SetCursorIndex(prevRowStart + colIndex);
+			break;
+		}
+	}
+	case Keyboard::Down:
+	{
+		int row = GetIndexRow(cursorIndex);
+		int numLines = lineStartIndexes.size();
+
+		if (row == numLines -1)
+		{
+			break;
+		}
+		else
+		{
+			int strLen = text.getString().getSize();
+
+			int startIndex = lineStartIndexes[row];
+			int colIndex = cursorIndex - startIndex;
+
+			int nextRowStart = lineStartIndexes[row + 1];
+
+			int nextnextRowStart;
+			if (row < numLines - 2)
+			{
+				nextnextRowStart = lineStartIndexes[row + 2];
+			}
+			else
+			{
+				nextnextRowStart = strLen;
+			}
+
+			int newIndex = nextRowStart + colIndex;
+
+			int nextRowLength = nextnextRowStart - nextRowStart - 1;
+
+			if (colIndex > nextRowLength)
+			{
+				colIndex = nextRowLength;
+			}
+
+			SetCursorIndex(nextRowStart + colIndex);
+			break;
+		}
+		break;
+	}
 	case Keyboard::BackSlash:
 		c = '\\';
 		break;
