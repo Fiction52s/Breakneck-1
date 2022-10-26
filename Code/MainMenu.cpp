@@ -1101,6 +1101,8 @@ void MainMenu::CustomMapsOption()
 	p.AddButton( "Create New", Vector2i( 100, 200 ), Vector2f( 175, 50 ), "CREATE NEW" );
 	p.AddButton( "Delete", Vector2i( 500, 10), Vector2f( 150, 50 ), "DELETE" );
 
+	TextBox *test = p.AddTextBox("description", Vector2i(500, 500), 5, 50, 20, 100, "0123456789\n0123456789");//"hello world here\nI am doing my thing");
+
 	p.AddButton("Quickplay", Vector2i(1150, 300), Vector2f(300, 50), "QUICKPLAY");
 	//p.AddButton( "Upload", Vector2i(1150, 400), Vector2f(300, 50), "UPLOAD TO SERVER");
 	//p.AddButton( "List", Vector2i(1150, 500), Vector2f(300, 50), "PRINT SERVER MAPS");
@@ -1198,6 +1200,10 @@ void MainMenu::CustomMapsOption()
 						else if (customMapHandler.showRemovePopup)
 						{
 							removePopup.SendKey(ev.key.code, ev.key.shift);
+						}
+						else
+						{
+							test->SendKey(ev.key.code, ev.key.shift);
 						}
 						
 						

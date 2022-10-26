@@ -408,7 +408,8 @@ struct GridSelector : PanelMember
 
 struct TextBox : PanelMember
 {
-	TextBox( const std::string &name, int posx, int posy, int width, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	TextBox( const std::string &name, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	~TextBox();
 	void SetString(const std::string &str);
 	std::string GetString();
 	void SendKey( sf::Keyboard::Key k, bool shift );
@@ -418,20 +419,64 @@ struct TextBox : PanelMember
 	void SetCursorIndex( sf::Vector2i &mousePos );
 	void Deactivate();
 	void SetNumbersOnly(bool b);
+	int GetLineWidth(int lineIndex);
+	int GetIndexRow(int index);
+	int GetIndexCol(int index);
 	sf::Vector2i pos;
 	int width;
+	int height;
+	int numRows;
+	int numCols;
 	std::string name;
 	int maxLength;
 	sf::Text text;
+	sf::Text testText;
 	int cursorIndex;
 	sf::Text cursor;
 	int characterHeight;
+	float lineSpacing;
 	int verticalBorder;
 	int leftBorder;
 	bool clickedDown;
 	bool focused;
 	sf::Vector2i size;
 	bool numbersOnly;
+	std::vector<int> widths;
+	std::vector<int> lineStartIndexes;
+};
+
+struct MultiLineTextBox : PanelMember
+{
+	MultiLineTextBox(const std::string &name, int posx, int posy, int rows, int cols, int charHeight, 
+		int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	void SetString(const std::string &str);
+	std::string GetString();
+	void SendKey(sf::Keyboard::Key k, bool shift);
+	void Draw(sf::RenderTarget *target);
+	bool MouseUpdate();
+	int GetLineWidth(int lineNumber);
+	void SetCursorIndex(int index);
+	void SetCursorIndex(sf::Vector2i &mousePos);
+	void Deactivate();
+	void SetNumbersOnly(bool b);
+	sf::Vector2i pos;
+	int width;
+	std::string name;
+	int maxLength;
+	sf::Text text;
+	sf::Text testText;
+	int cursorIndex;
+	sf::Text cursor;
+	int verticalBorder;
+	int leftBorder;
+	bool clickedDown;
+	bool focused;
+	sf::Vector2i size;
+	bool numbersOnly;
+
+	int charHeight;
+	int numRows;
+	int numCols;
 };
 
 struct Button : PanelMember
@@ -675,7 +720,8 @@ struct Panel
 		sf::Vector2i &size, int optionWidth,
 		const std::vector<std::string> &p_options );
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
-	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText );
+	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText );
+	TextBox * AddTextBox(const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText);
 	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	HyperLink * AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
 		const std::string &link );
@@ -861,12 +907,22 @@ struct MessagePopup : GUIHandler
 {
 	Panel *panel;
 	EditSession *edit;
+	int action;
 
+	enum Action
+	{
+		A_INACTIVE,
+		A_ACTIVE,
+	};
+
+	
 	MessagePopup();
 	~MessagePopup();
+	void Update();
 	void Pop(const std::string &str);
 	void ButtonCallback(Button *b,
 		const std::string &e);
+	void Draw(sf::RenderTarget *target);
 };
 
 struct MapOptionsUI : GUIHandler

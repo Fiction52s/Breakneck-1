@@ -167,6 +167,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 			queryResults->reserve(numResultsReturned);
 
 			char urlTest[1024];
+			char metaData[1024];
 
 			for (int i = 0; i < numResultsReturned; ++i)
 			{
@@ -179,8 +180,20 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
 
+
+					SteamUGC()->GetQueryUGCMetadata(callback->m_handle, i, metaData, 1024);
+
+					string fileName = metaData;
+
+					if (fileName == "")
+					{
+						fileName = details.m_rgchTitle;
+						cout << "metadata failed" << endl;
+					}
+
 					MapNode *newNode = new MapNode;
 					newNode->nodeName = details.m_rgchTitle;
+					newNode->fileName = fileName;
 					newNode->description = details.m_rgchDescription;
 					newNode->publishedFileId = details.m_nPublishedFileId;
 					newNode->mapDownloaded = itemState & k_EItemStateInstalled;
@@ -193,7 +206,8 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 						uint32 timestamp;
 						cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
 
-						newNode->filePath = string(path) + "\\" + newNode->nodeName + ".brknk";
+						//newNode->filePath = string(path) + "\\" + newNode->nodeName + ".brknk";
+						newNode->filePath = string(path) + "\\" + newNode->fileName + ".brknk";
 					}
 					
 					bool result = SteamUGC()->GetQueryUGCPreviewURL(callback->m_handle, 
@@ -271,9 +285,14 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 	queryState = QS_NOT_QUERYING;
 }
 
+
+//depreciated for now!!!!!
 //return true on success
 MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 {
+	//depreciated for now!!!!!
+
+
 	uint32 unItemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
 	if (!(unItemState & k_EItemStateInstalled))
@@ -285,6 +304,9 @@ MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
 
 	if (!SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &unSizeOnDisk, szItemFolder, sizeof(szItemFolder), &unTimeStamp))
 		return NULL;
+
+	//this isn't implemented!
+	//newNode->fileName = 
 
 	MapNode *newNode = new MapNode;
 	newNode->folderPath = szItemFolder;
@@ -369,6 +391,12 @@ WorkshopUploader::WorkshopUploader()
 	assert(edit != NULL);
 }
 
+WorkshopUploader::~WorkshopUploader()
+{
+	delete publishPopup;
+	delete postPublishPopup;
+}
+
 void WorkshopUploader::PublishMap()
 {
 	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
@@ -403,8 +431,10 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), uploadId);
 
 		string mapName = edit->filePath.stem().string();
+
+		string publishTitle = publishPopup->mapNameTextBox->GetString();
 		
-		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str()); //publishPopup->//mapName.c_str());//"b02");
+		SteamUGC()->SetItemTitle(updateHandle, publishTitle.c_str()); //publishPopup->//mapName.c_str());//"b02");
 		SteamUGC()->SetItemDescription(updateHandle, edit->mapHeader->description.c_str());//"test description 2");
 
 		SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());

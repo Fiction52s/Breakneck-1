@@ -16,6 +16,8 @@ MessagePopup::MessagePopup()
 	Button *button = panel->AddButton("ok", Vector2i(10, 100), Vector2f(50, 30), "OK");
 	panel->SetConfirmButton(button);
 	panel->SetCancelButton(button);
+
+	action = A_INACTIVE;
 }
 
 MessagePopup::~MessagePopup()
@@ -23,9 +25,19 @@ MessagePopup::~MessagePopup()
 	delete panel;
 }
 
+void MessagePopup::Update()
+{
+	panel->MouseUpdate();
+}
+
 void MessagePopup::Pop(const std::string &message)
 {
-	edit->AddActivePanel(panel);
+	if (edit != NULL)
+	{
+		edit->AddActivePanel(panel);
+	}
+
+	action = A_ACTIVE;
 
 	panel->labels["message"]->setString(message);
 }
@@ -33,5 +45,15 @@ void MessagePopup::Pop(const std::string &message)
 void MessagePopup::ButtonCallback(Button *b,
 	const std::string &e)
 {
-	edit->RemoveActivePanel(panel);
+	if (edit != NULL)
+	{
+		edit->RemoveActivePanel(panel);
+	}
+
+	action = A_INACTIVE;
+}
+
+void MessagePopup::Draw(sf::RenderTarget *target)
+{
+	panel->Draw(target);
 }

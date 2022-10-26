@@ -12800,6 +12800,7 @@ void EditSession::DrawUI()
 
 	errorBar.Draw(preScreenTex);
 
+	//draw first to last
 	for (auto it = activePanels.begin(); it != activePanels.end(); ++it)
 	{
 		(*it)->Draw(preScreenTex);

@@ -79,6 +79,7 @@ struct WorkshopUploader
 	MapPostPublishPopup *postPublishPopup;
 
 	WorkshopUploader();
+	~WorkshopUploader();
 	void PublishMap();
 	void ActivatePublishPopup();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);

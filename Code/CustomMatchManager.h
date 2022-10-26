@@ -9,6 +9,7 @@ struct WaitingRoom;
 struct MapBrowserScreen;
 struct MapOptionsPopup;
 struct MapNode;
+struct MessagePopup;
 
 struct CustomMatchManager
 {
@@ -22,15 +23,18 @@ struct CustomMatchManager
 		A_CREATING_LOBBY,
 		A_WAITING_ROOM,
 		A_READY,
+		A_ERROR_MESSAGE,
 	};
 
 	Action action;
-	int frame = 0;
+	int frame;
 
 	LobbyBrowser *lobbyBrowser;
 	WaitingRoom *waitingRoom;
 	MapBrowserScreen * mapBrowserScreen;
 	MapOptionsPopup *mapOptionsPopup;
+	MessagePopup *messagePopup;
+	int preErrorAction;
 	
 
 	MapNode *selectedMap;
@@ -39,6 +43,7 @@ struct CustomMatchManager
 	~CustomMatchManager();
 	void CreateCustomLobby();
 	void BrowseCustomLobbies();
+	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);
 	bool Update();

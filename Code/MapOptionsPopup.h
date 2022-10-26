@@ -37,7 +37,7 @@ struct MapOptionsPopup : GUIHandler
 
 	MapOptionsPopup();
 	~MapOptionsPopup();
-	void Activate(MapNode *mp);
+	bool Activate(MapNode *mp);
 	void Update();
 	void HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);

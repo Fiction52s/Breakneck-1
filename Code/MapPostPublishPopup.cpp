@@ -1,4 +1,5 @@
 #include "MapPostPublishPopup.h"
+#include "MapPublishPopup.h"
 #include "MapHeader.h"
 #include "LobbyManager.h"
 #include "MapBrowser.h"
@@ -19,7 +20,9 @@ MapPostPublishPopup::MapPostPublishPopup()
 
 	panel->extraUpdater = this;
 
-	mapNameText = panel->AddLabel("namelabel", Vector2i(10, 10), 40, "");
+	mapNameText = panel->AddLabel("success", Vector2i(10, 10), 30, "Map successfully published:");
+
+	mapNameText = panel->AddLabel("namelabel", Vector2i(10, 10+50), 40, "");
 
 	panel->SetAutoSpacing(false, true, Vector2i(500, 0), Vector2i(0, 10));
 
@@ -121,10 +124,10 @@ void MapPostPublishPopup::Activate( bool agreementSigned, PublishedFileId_t uplo
 		}
 
 		ts_preview->SetSpriteTexture(previewSpr);
-		previewSpr.setPosition(10, 70);
+		previewSpr.setPosition(10, 70 + 50);
 		previewSpr.setScale(.5, .5);
 
-		mapNameText->setString(edit->filePath.stem().string());
+		mapNameText->setString(edit->workshopUploader->publishPopup->mapNameTextBox->GetString());
 	}
 
 	if (agreementSigned)

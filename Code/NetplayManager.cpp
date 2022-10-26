@@ -251,7 +251,7 @@ void NetplayManager::StartConnecting()
 			MapNode mp;
 			mp.publishedFileId = workshopDownloadPublishedFileId;
 			mp.isWorkshop = true;
-			mp.nodeName = receivedMapName;
+			mp.fileName = receivedMapName;
 
 			if (mp.CheckIfFullyInstalled())
 			{
@@ -279,7 +279,7 @@ void NetplayManager::StartConnecting()
 			MapNode mp;
 			mp.publishedFileId = workshopDownloadPublishedFileId;
 			mp.isWorkshop = true;
-			mp.nodeName = receivedMapName;
+			mp.fileName = receivedMapName;
 			
 			if (mp.CheckIfFullyInstalled())
 			{
@@ -546,7 +546,7 @@ void NetplayManager::Update()
 				MapNode mp;
 				mp.publishedFileId = workshopDownloadPublishedFileId;
 				mp.isWorkshop = true;
-				mp.nodeName = receivedMapName;
+				mp.fileName = receivedMapName;
 
 				if (mp.CheckIfFullyInstalled())
 				{
@@ -626,7 +626,7 @@ void NetplayManager::Update()
 			MapNode mp;
 			mp.publishedFileId = workshopDownloadPublishedFileId;
 			mp.isWorkshop = true;
-			mp.nodeName = receivedMapName;
+			mp.fileName = receivedMapName;
 
 			if (mp.CheckIfFullyInstalled())
 			{

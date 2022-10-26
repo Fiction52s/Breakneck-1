@@ -28,7 +28,7 @@ MapPublishPopup::MapPublishPopup()
 
 	panel->AddHyperLink("agreementlink", Vector2i(0, 0), 24, "workshop terms of service", "https://steamcommunity.com/sharedfiles/workshoplegalagreement");
 
-	panel->SetAutoSpacing(true, false, Vector2i(500, 300), Vector2i(30, 0));
+	panel->SetAutoSpacing(true, false, Vector2i(500, 400), Vector2i(30, 0));
 	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
 
 	panel->confirmButton =
@@ -42,12 +42,12 @@ MapPublishPopup::MapPublishPopup()
 
 	action = A_INACTIVE;
 
-	panel->AddLabeledTextBox("description", Vector2i(10, 300), 500, 120, "", "Description:");
+	//panel->AddLabeledTextBox("description", Vector2i(10, 300), 500, 120, "", "Description:");
+	panel->AddTextBox("description", Vector2i(10, 300), 50, 5, 20, 100, "hello world here\nI am doing my thing");
 
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
 	ts_preview = NULL;
-
 }
 
 MapPublishPopup::~MapPublishPopup()
@@ -83,25 +83,23 @@ void MapPublishPopup::ButtonCallback(Button *b, const std::string & e)
 		action = A_CANCELLED;
 	}
 
-	if (action == A_CONFIRMED)
+	
+	EditSession *edit = EditSession::GetSession();
+	if (edit != NULL)
 	{
-		EditSession *edit = EditSession::GetSession();
-		if (edit != NULL)
+		if (action == A_CONFIRMED && mapNameTextBox->GetString().length() == 0)
 		{
-			if (mapNameTextBox->GetString().length() == 0)
-			{
-				edit->messagePopup->Pop("Name needs to be at least 1 character long.");
-				action = A_ACTIVE;
-				return;
-			}
-			else
-			{
-				edit->RemoveActivePanel(panel);
+			edit->messagePopup->Pop("Name needs to be at least 1 character long.");
+			action = A_ACTIVE;
+			return;
+		}
+		else
+		{
+			edit->RemoveActivePanel(panel);
 
-				if (action == A_CONFIRMED)
-				{
-					edit->workshopUploader->PublishMap();
-				}
+			if (action == A_CONFIRMED)
+			{
+				edit->workshopUploader->PublishMap();
 			}
 		}
 	}

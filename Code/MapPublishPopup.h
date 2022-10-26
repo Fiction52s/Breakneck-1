@@ -31,6 +31,7 @@ struct MapPublishPopup : GUIHandler, TilesetManager, PanelUpdater
 
 	MapPublishPopup();
 	~MapPublishPopup();
+	int GetLineWidth( int lineNumber );
 	void Activate();
 	void Update();
 	void HandleEvent(sf::Event ev);

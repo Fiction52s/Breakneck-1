@@ -8,14 +8,22 @@
 using namespace sf;
 using namespace std;
 
-TextBox::TextBox(const string &n, int posx, int posy, int width_p, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
-	:PanelMember(p), pos(posx, posy), width(width_p), maxLength(lengthLimit), clickedDown(false), name(n)
+TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
+	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
 {
 	numbersOnly = false;
 	focused = false;
 	leftBorder = 3;
 	verticalBorder = 10;
-	characterHeight = 20;
+	characterHeight = 20;//charHeight
+
+	numRows = rows;
+	numCols = cols;
+
+	lineSpacing = f.getLineSpacing(characterHeight);
+
+	width = numCols * characterHeight * 2;
+	height = numRows * characterHeight;
 
 	cursor.setString("|");
 	cursor.setFont(f);
@@ -27,15 +35,75 @@ TextBox::TextBox(const string &n, int posx, int posy, int width_p, int lengthLim
 	text.setCharacterSize(characterHeight);
 	text.setPosition(pos.x + leftBorder, pos.y);
 
+	testText.setFont(f);
+	testText.setFillColor(Color::Black);
+	testText.setCharacterSize(characterHeight);
+	testText.setPosition(pos.x + leftBorder, pos.y);
+
 	SetString(initialText);
 	SetCursorIndex(initialText.length());
 
-	size = Vector2i(width, characterHeight + verticalBorder);
+	size = Vector2i(width, height + verticalBorder);
+}
+
+TextBox::~TextBox()
+{
 }
 
 void TextBox::SetString(const std::string &str)
 {
 	text.setString(str);
+
+	int strLen = str.length();
+
+	lineStartIndexes.clear();
+	lineStartIndexes.push_back(0);
+	for (int i = 0; i < strLen; ++i)
+	{
+		if (str.at(i) == '\n')
+		{			
+			lineStartIndexes.push_back(i);
+		}
+	}
+
+	widths.resize(strLen + 1);
+
+	int lineIndex = 0;
+	int startIndex = 0;
+	for (int i = 0; i <= strLen; ++i)
+	{
+		startIndex = lineStartIndexes[lineIndex];
+		testText.setString(text.getString().substring(startIndex, i - startIndex));
+		widths[i] = testText.getGlobalBounds().width;//testText.getLocalBounds().width;
+
+		if (i < strLen)
+		{
+			if (str.at(i) == '\n')
+			{
+				lineIndex++;
+			}
+		}	
+	}
+}
+
+int TextBox::GetIndexRow(int index)
+{
+	int numLines = lineStartIndexes.size();
+
+	for (int i = 0; i < numLines - 1; ++i)
+	{
+		if (index < lineStartIndexes[i + 1])
+		{
+			return i;
+		}
+	}
+
+	return numLines - 1;
+}
+
+int TextBox::GetIndexCol(int index)
+{
+	return 0;
 }
 
 std::string TextBox::GetString()
@@ -57,22 +125,134 @@ void TextBox::SetNumbersOnly(bool b)
 void TextBox::SetCursorIndex(int index)
 {
 	cursorIndex = index;
-	cursor.setPosition(pos.x + text.getLocalBounds().width + leftBorder, pos.y);
+
+	if (cursorIndex < 0)
+		cursorIndex = 0;
+
+	int strLen = text.getString().getSize();
+	if (cursorIndex > strLen)
+		cursorIndex = strLen;
+
+	
+
+	int indexRow = GetIndexRow(cursorIndex);
+	//int indexCol = GetIndexCol(cursorIndex);
+
+	cursor.setPosition(pos.x + widths[cursorIndex] + leftBorder, pos.y + indexRow * lineSpacing);
 	//cursor.setPosition(text.getLocalBounds().width + leftBorder, pos.y);
 }
 
-void TextBox::SetCursorIndex(Vector2i &mousePos)
+void TextBox::SetCursorIndex(Vector2i &localMousePos)
 {
-	//do this later
+	int strLen = text.getString().getSize();
 
-	/*int stringLength = text.getString().getSize();
-	Text textCopy( text );
-	Text temp( text );
-	for( int i = 0; i < stringLength; ++i )
+	int chosenIndex = -1;
+	int middle;
+
+	int currRow = 0;
+	int numRows = lineStartIndexes.size();
+
+	int row = localMousePos.y / (lineSpacing);
+
+	if (row < 0)
+		row = 0;
+
+	if (row >= numRows)
+		row = numRows - 1;
+
+	int rowStart = lineStartIndexes[row];
+	int rowEnd;
+	if (row == numRows-1)
 	{
-	temp.setString( text.getString().substring(
+		rowEnd = strLen;
+	}
+	else
+	{
+		rowEnd = lineStartIndexes[row + 1]-1;
+	}
+	//for (int i = 0; i < numLines; ++i)
+	//{
 
-	}*/
+	//}
+
+	for (int i = rowStart; i <= rowEnd; ++i)
+	{
+		//middle = (widths[i + 1] + widths[i]) / 2;
+		//if( localMousePos.x < middle )
+		if (localMousePos.x >= widths[i] && localMousePos.x <= widths[i + 1] )
+		{
+			chosenIndex = i;
+			break;
+		}
+	}
+
+	if (row == numRows - 1)
+	{
+		if (localMousePos.x >= widths[strLen])
+			//if (localMousePos.x >= middle)
+		{
+			//cout << "failed" << endl;
+			chosenIndex = strLen + 1;
+		}
+	}
+	else
+	{
+		if (localMousePos.x >= widths[rowEnd + 1])
+			//if (localMousePos.x >= middle)
+		{
+			//cout << "failed" << endl;
+			chosenIndex = rowEnd + 1;
+		}
+	}
+	
+
+	if (chosenIndex == -1)
+	{
+		chosenIndex = 0;
+	}
+
+	SetCursorIndex(chosenIndex);
+	//cursorIndex = chosenIndex;
+	//cursor.setPosition(pos.x + widths[chosenIndex] + leftBorder, pos.y);
+}
+
+int TextBox::GetLineWidth(int lineNumber)
+{
+	string str = text.getString();
+
+	int len = str.length();
+
+	int currLine = 0;
+
+	int startChar = 0;
+	int endChar = -1;
+
+	for (int i = 0; i <= len; ++i)
+	{
+		if (i == len)
+		{
+			endChar = i;
+			break;
+		}
+		else if (str.at(i) == '\n')
+		{
+			if (lineNumber == currLine)
+			{
+				endChar = i;
+				break;
+			}
+			else
+			{
+				startChar = i + 1;
+				currLine++;
+			}
+		}
+	}
+
+	string sub = str.substr(startChar, endChar - startChar);
+	testText.setString(sub);
+
+	return testText.getGlobalBounds().width;
 }
 
 void TextBox::SendKey(Keyboard::Key k, bool shift)
@@ -224,20 +404,17 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 			if (s.getSize() > 0)
 			{
 				s.erase(cursorIndex);
-				text.setString(s);
+				SetString(s);
 			}
 		}
 
 		break;
 	}
 	case Keyboard::Left:
-		cursorIndex -= 1;
-		if (cursorIndex < 0)
-			cursorIndex = 0;
+		SetCursorIndex(cursorIndex - 1);
 		break;
 	case Keyboard::Right:
-		if (cursorIndex < text.getString().getSize())
-			cursorIndex += 1;
+		SetCursorIndex(cursorIndex + 1);
 		break;
 	case Keyboard::BackSlash:
 		c = '\\';
@@ -263,14 +440,13 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		sf::String s = text.getString();
 
 		s.insert(cursorIndex, sf::String(c));
-		text.setString(s);
-		cursorIndex++;
+		SetString(s);
+		SetCursorIndex(cursorIndex + 1);
+		//cursorIndex++;
 	}
 
-	sf::Text test;
-	test = text;
-	test.setString(test.getString().substring(0, cursorIndex));
-	cursor.setPosition(pos.x + test.getLocalBounds().width, pos.y);
+	//testText.setString(text.getString().substring(0, cursorIndex));
+	//cursor.setPosition(pos.x + testText.getLocalBounds().width, pos.y);
 }
 
 bool TextBox::MouseUpdate()
@@ -279,7 +455,8 @@ bool TextBox::MouseUpdate()
 		return false;
 
 	sf::Vector2i mousePos = panel->GetMousePos();
-	sf::Rect<int> r(pos.x, pos.y, width, characterHeight + verticalBorder);
+	sf::Vector2i localMousePos = panel->GetMousePos() - pos;
+	sf::Rect<int> r(pos.x, pos.y, size.x, size.y);
 
 	bool containsMouse = r.contains(mousePos);
 	UpdateToolTip(containsMouse);
@@ -301,41 +478,8 @@ bool TextBox::MouseUpdate()
 		{
 			clickedDown = false;
 
-			//need to make it so that if you click a letter the cursor goes to the left of it. too lazy for now.
+			SetCursorIndex(localMousePos);
 
-			/*int textLength = text.getString().getSize();
-
-			sf::Text tempText;
-			tempText = text;
-			tempText.setString( text.getString().substring( 0, 1 ) );
-
-			sf::Rect<int> first( pos.x, pos.y, tempText.getLocalBounds().width / 2 , characterHeight + verticalBorder );
-			if( first.contains( sf::Vector2i( posx, posy ) ) )
-			{
-			cursorIndex = 0;
-			cursor.setPosition( pos.x, pos.y);
-			}*/
-
-			//if( textLength > 1 )
-			//{
-			//	int startX = 0;
-			//	for( int i = 1; i <= textLength; ++i )
-			//	{
-			//		tempText.setString( text.getString().substring( 0, i );
-			//		 //= tempText.getLocalBounds().left + tempText.getLocalBounds().width;
-
-			//		//tempText.setString( text.getString().substring( i-1, 2 ) );
-			//		sf::Rect<int> temp( pos.x + startX, pos.y, tempText.getLocalBounds().width / 2 , characterHeight + verticalBorder );
-			//		if( temp.contains( sf::Vector2i( posx, posy ) ) )
-			//		{
-
-			//		}
-			//	}
-			//}
-
-			//SetCursorIndex( pos );
-			cursor.setPosition(pos.x + text.getLocalBounds().width + leftBorder, pos.y);
-			cursorIndex = text.getString().getSize();
 			return true;
 		}
 		else

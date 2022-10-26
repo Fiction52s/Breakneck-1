@@ -97,7 +97,8 @@ void Alert(const std::string &str, const std::string &detail)
 
 int SteamStartup()
 {
-	if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))
+	AppId_t myId = 1987710;
+	if (SteamAPI_RestartAppIfNecessary(k_uAppIdInvalid))//myId))//k_uAppIdInvalid))
 	{
 		// if Steam is not running or the game wasn't started through Steam, SteamAPI_RestartAppIfNecessary starts the 
 		// local Steam client and also launches this game again.

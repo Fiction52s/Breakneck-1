@@ -23,7 +23,11 @@ CustomMatchManager::CustomMatchManager()
 	
 	mapOptionsPopup = new MapOptionsPopup;
 
+	messagePopup = new MessagePopup;
+
 	SetAction(A_IDLE);
+
+	preErrorAction = A_IDLE;
 }
 
 CustomMatchManager::~CustomMatchManager()
@@ -32,6 +36,8 @@ CustomMatchManager::~CustomMatchManager()
 	delete waitingRoom;
 
 	delete mapOptionsPopup;
+
+	delete messagePopup;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -92,6 +98,22 @@ void CustomMatchManager::BrowseCustomLobbies()
 	lobbyBrowser->OpenPopup();
 }
 
+void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
+{
+	if (mapOptionsPopup->Activate(mp))
+	{
+		action = A_CHOOSE_MAP_OPTIONS;
+	}
+	else
+	{
+		messagePopup->Pop("ERROR: Map choice not valid.");
+		preErrorAction = action;
+		action = A_ERROR_MESSAGE;
+		selectedMap = NULL;
+		mapBrowserScreen->browserHandler->ClearSelection();
+	}
+}
+
 bool CustomMatchManager::Update()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -120,8 +142,7 @@ bool CustomMatchManager::Update()
 			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
 			{
 				//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
-				mapOptionsPopup->Activate(selectedMap);
-				action = A_CHOOSE_MAP_OPTIONS;
+				TryActivateOptionsPanel(selectedMap);
 			}
 			else
 			{
@@ -155,9 +176,8 @@ bool CustomMatchManager::Update()
 			if (selectedNode == NULL)
 				assert(0);
 
+			TryActivateOptionsPanel(selectedNode);
 			//boost::filesystem::relative(selectedMap->filePath).string()
-			mapOptionsPopup->Activate( selectedNode );
-			action = A_CHOOSE_MAP_OPTIONS;
 		}
 		break;
 	}
@@ -180,6 +200,15 @@ bool CustomMatchManager::Update()
 			mapBrowserScreen->browserHandler->ClearSelection();
 		}
 		break;
+	case A_ERROR_MESSAGE:
+	{
+		if (messagePopup->action == MessagePopup::A_INACTIVE)
+		{
+			action = (Action)preErrorAction;
+			frame = 0;
+		}
+		break;
+	}
 	case A_CREATING_LOBBY:
 	{
 		if (netplayManager->lobbyManager->IsInLobby())
@@ -241,6 +270,9 @@ bool CustomMatchManager::Update()
 	case A_CHOOSE_MAP_OPTIONS:
 		mapOptionsPopup->Update();
 		break;
+	case A_ERROR_MESSAGE:
+		messagePopup->Update();
+		break;
 	case A_WAITING_ROOM:
 		waitingRoom->Update();
 		break;
@@ -282,6 +314,9 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		mapOptionsPopup->Draw(target);
 		break;
 	}
+	case A_ERROR_MESSAGE:
+		messagePopup->Draw(target);
+		break;
 	case A_CREATING_LOBBY:
 	{
 		mapBrowserScreen->Draw(target);

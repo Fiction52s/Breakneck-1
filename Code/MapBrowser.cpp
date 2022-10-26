@@ -117,7 +117,7 @@ bool MapNode::CheckIfFullyInstalled()
 			uint32 timestamp;
 			cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
 
-			filePath = string(path) + "\\" + nodeName + ".brknk";
+			filePath = string(path) + "\\" + fileName + ".brknk";
 		}
 		return true;
 	}
@@ -239,7 +239,8 @@ void MapBrowser::AddFile(const path &p_filePath)
 	string previewPath = middleTest + ".png";
 	mapNode->ts_preview = GetTileset(previewPath);
 
-	mapNode->nodeName = mapNode->filePath.filename().stem().string();
+	mapNode->fileName = mapNode->filePath.filename().stem().string();
+	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
 	nodes.push_back(mapNode);
 }
@@ -253,15 +254,28 @@ void MapBrowser::AddFolder(const path &p_filePath)
 	string previewPath = "Resources/Menu/foldericon_100x100.png";
 	mapNode->ts_preview = GetSizedTileset(previewPath);
 
-	mapNode->nodeName = mapNode->filePath.filename().stem().string();
+	mapNode->fileName = mapNode->filePath.filename().stem().string();
+	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
 	nodes.push_back(mapNode);
 }
 
 void MapBrowser::ClearNodes()
 {
+	int nodeIndex = 0;
 	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
+		//cout << "destroying node: " << nodeIndex << endl;
+
+		/*if (nodeIndex == 36)
+		{
+			int x = 5;
+		}*/
+
+		nodeIndex++;
+
+		
+
 		if ( (*it)->type == MapNode::FILE && (*it)->ts_preview != NULL)
 		{
 			DestroyTileset((*it)->ts_preview);
@@ -338,7 +352,8 @@ void MapBrowser::Update()
 			{
 				if ((*it)->previewTex != NULL)
 				{
-					(*it)->ts_preview = GetTileset("WorkshopPreview/" + (*it)->nodeName, (*it)->previewTex);
+					//using publishedFileId allows for unique items, and not getting confused on duplicate names.
+					(*it)->ts_preview = GetTileset("WorkshopPreview/" + to_string((*it)->publishedFileId), (*it)->previewTex);//(*it)->nodeName, (*it)->previewTex);
 				}
 			}
 

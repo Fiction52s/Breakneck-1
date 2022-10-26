@@ -38,6 +38,7 @@ struct MapNode
 	
 	bool mapDownloaded;
 	std::string nodeName;
+	std::string fileName; //node name can be different from file name
 	boost::filesystem::path folderPath;
 	std::string description;
 	std::string previewURL;

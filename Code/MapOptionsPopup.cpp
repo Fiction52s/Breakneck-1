@@ -115,7 +115,7 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 	}
 }
 
-void MapOptionsPopup::Activate(MapNode *mp)
+bool MapOptionsPopup::Activate(MapNode *mp)
 {
 	//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
 	if (mp->isWorkshop)
@@ -164,10 +164,20 @@ void MapOptionsPopup::Activate(MapNode *mp)
 			gameModeDropdownModes.push_back(i);
 		}
 	}
+
+	if (gameModeOptions.empty())
+	{
+		return false;
+	}
+	
+
 	modeDropdown->SetOptions(gameModeOptions);
 	modeDropdown->UpdateOptions();
 	modeDropdown->selectedIndex = -1;
 	modeDropdown->SetSelectedIndex(0);
+
+
+	
 
 	UpdateNumPlayerOptions();
 	
@@ -178,6 +188,8 @@ void MapOptionsPopup::Activate(MapNode *mp)
 	currLobbyParams->publishedFileId = mp->publishedFileId;
 
 	action = A_ACTIVE;
+
+	return true;
 }
 
 void MapOptionsPopup::UpdateNumPlayerOptions()
