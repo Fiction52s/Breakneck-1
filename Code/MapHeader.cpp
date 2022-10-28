@@ -106,30 +106,58 @@ bool MapHeader::Load(std::ifstream &is)
 	char curr = 0;
 	stringstream ss;
 	string tempStr;
-	if (!is.get()) //get newline char out of the way
+
+	if (ver1 >= 4)
 	{
-		assert(0);
-	}
-	while (true)
-	{
-		last = curr;
-		if (!is.get(curr))
+		int numDescriptionChars;
+
+		is >> numDescriptionChars;
+
+		if (!is.get()) //get newline char out of the way
 		{
 			assert(0);
 		}
 
-		if (last == '<' && curr == '>')
+		for (int i = 0; i < numDescriptionChars; ++i)
 		{
-			break;
-		}
-		else
-		{
-			if (last != 0)
+			if (!is.get(curr))
 			{
-				ss << last;
+				assert(0);
+			}
+
+			ss << curr;
+		}
+
+	}
+	else
+	{
+		if (!is.get()) //get newline char out of the way
+		{
+			assert(0);
+		}
+		while (true)
+		{
+			last = curr;
+			if (!is.get(curr))
+			{
+				assert(0);
+			}
+
+			if (last == '<' && curr == '>')
+			{
+				break;
+			}
+			else
+			{
+				if (last != 0)
+				{
+					ss << last;
+				}
 			}
 		}
 	}
+
+	description = ss.str();
 
 	is >> numShards;
 	shardInfoVec.reserve(16);
@@ -248,7 +276,7 @@ bool MapHeader::Load(std::ifstream &is)
 
 	collectionName = collectionName;
 	
-	description = ss.str();
+	
 
 	/*if (ver1 < 2 || ( ver1 == 2 && ver2 < 3) )
 	{
@@ -261,10 +289,13 @@ bool MapHeader::Load(std::ifstream &is)
 void MapHeader::Save(std::ofstream &of)
 {
 
-	//new version 3, only go up by an integer every time from now on
-	//curr version 2.8
+	//current version is 4, go up by an integer every time from now on
 	of << ver1 << "\n"; // << "." << ver2 << "\n";
-	of << description << "<>\n";
+
+	of << description.size() << "\n";
+
+	of << description << "\n";
+	//of << description << "<>\n";
 
 	of << numShards << "\n";
 	for (auto it = shardInfoVec.begin(); it != shardInfoVec.end(); ++it)

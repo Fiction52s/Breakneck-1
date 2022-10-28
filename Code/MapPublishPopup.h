@@ -28,6 +28,7 @@ struct MapPublishPopup : GUIHandler, TilesetManager, PanelUpdater
 	Tileset *ts_preview;
 	sf::Sprite previewSpr;
 	TextBox *mapNameTextBox;
+	TextBox *descriptionTextBox;
 
 	MapPublishPopup();
 	~MapPublishPopup();

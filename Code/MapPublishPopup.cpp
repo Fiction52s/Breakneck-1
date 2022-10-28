@@ -13,22 +13,22 @@ using namespace sf;
 MapPublishPopup::MapPublishPopup()
 {
 	panel = new Panel("mapoptions", 800,
-		500, this, true);
+		600, this, true);
 
 	SetGameResourcesMode(false);
 
 	panel->extraUpdater = this;
 
-	mapNameTextBox = panel->AddLabeledTextBox("name", Vector2i(10, 10), 300, 30, "", "Name:");
+	mapNameTextBox = panel->AddLabeledTextBox("name", Vector2i(10, 10), true, 1, 20, 20, 20, "", "Name:");
 	
 
 	panel->SetAutoSpacing(false, true, Vector2i(500, 0), Vector2i(0, 10));
 
-	panel->AddLabel("agreementlabel", Vector2i(0, 10), 24, "By submitting this item, \nyou agree to the");
+	panel->AddLabel("agreementlabel", Vector2i(0, 100), 24, "By submitting this item, \nyou agree to the");
 
 	panel->AddHyperLink("agreementlink", Vector2i(0, 0), 24, "workshop terms of service", "https://steamcommunity.com/sharedfiles/workshoplegalagreement");
 
-	panel->SetAutoSpacing(true, false, Vector2i(500, 400), Vector2i(30, 0));
+	panel->SetAutoSpacing(true, false, Vector2i(500, 550), Vector2i(30, 0));
 	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
 
 	panel->confirmButton =
@@ -43,7 +43,8 @@ MapPublishPopup::MapPublishPopup()
 	action = A_INACTIVE;
 
 	//panel->AddLabeledTextBox("description", Vector2i(10, 300), 500, 120, "", "Description:");
-	panel->AddTextBox("description", Vector2i(10, 300), 50, 5, 20, 100, "hello world here\nI am doing my thing");
+	//panel->AddTextBox("description", Vector2i(10, 300), 5, 35, 20, 1000, "");
+	descriptionTextBox = panel->AddLabeledTextBox("description", Vector2i(10, 320), false, 5, 35, 20, 1000, "", "Description:");
 
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
@@ -136,6 +137,8 @@ void MapPublishPopup::Activate()
 		previewSpr.setScale(.5, .5);
 
 		mapNameTextBox->SetString(edit->filePath.stem().string());
+
+		descriptionTextBox->SetString(edit->mapHeader->description);
 	}
 
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));

@@ -833,18 +833,27 @@ Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
 	return AddSlider(name, pos, width, minValue, maxValue, defaultValue);
 }
 
-TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
-	int textBoxLengthLimit, const std::string &initialText, const std::string &labelText)
+TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit,
+	const std::string &initialText, const std::string &labelText)
 {
 	int extraSpacing = 8;
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 	labelStart.y += 6;
 	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
-	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+
+	if (labelToleft)
+	{
+		pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	}
+	else
+	{
+		pos.y += t->getLocalBounds().top + t->getLocalBounds().height + extraSpacing;
+	}
+
 	autoStart = oldAutoStart;
 	//needs to be fixed soon
-	return AddTextBox(name, pos, 100, 1, 20, textBoxLengthLimit, initialText);
+	return AddTextBox(name, pos, rows, cols, charHeight, lengthLimit, initialText);
 }
 
 TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText)
@@ -1114,9 +1123,34 @@ bool Panel::SendKey(sf::Keyboard::Key k, bool shift)
 {
 	if (k == Keyboard::Return)
 	{
-		if (confirmButton != NULL && !confirmButton->hidden)
+		bool isMultilineTextBoxFocused = false;
+		for (map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
 		{
-			SendEvent(confirmButton, "pressed");
+			if ((*it).second->focused && (*it).second->maxRows > 1 )
+			{
+				isMultilineTextBoxFocused = true;
+				break;
+			}
+		}
+
+		if (!isMultilineTextBoxFocused)
+		{
+			if (confirmButton != NULL && !confirmButton->hidden)
+			{
+				SendEvent(confirmButton, "pressed");
+			}
+		}
+		else
+		{
+			for (map<string, TextBox*>::iterator it = textBoxes.begin(); it != textBoxes.end(); ++it)
+			{
+				if ((*it).second->focused)
+				{
+					(*it).second->SendKey(k, shift);
+					SendEvent((*it).second, "modified");
+					return true;
+				}
+			}
 		}
 		return true;
 	}

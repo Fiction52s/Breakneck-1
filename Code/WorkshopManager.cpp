@@ -434,10 +434,12 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 
 		string publishTitle = publishPopup->mapNameTextBox->GetString();
 		
-		SteamUGC()->SetItemTitle(updateHandle, publishTitle.c_str()); //publishPopup->//mapName.c_str());//"b02");
-		SteamUGC()->SetItemDescription(updateHandle, edit->mapHeader->description.c_str());//"test description 2");
+		//SteamUGC()->SetItemTitle(updateHandle, "c01");//publishTitle.c_str()); //publishPopup->//mapName.c_str());//"b02");
+		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
+		SteamUGC()->SetItemDescription(updateHandle, publishPopup->descriptionTextBox->GetString().c_str());
+		//edit->mapHeader->description.c_str());//"test description 2");
 
-		SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
+		//SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
 
 		uploadFolder = boost::filesystem::current_path().append("\\testpublish");
 
@@ -494,7 +496,6 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 		bool signedAgreement = !(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
 
 		postPublishPopup->Activate(signedAgreement, uploadId);
-
 	}
 	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
 }

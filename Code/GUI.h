@@ -425,8 +425,8 @@ struct TextBox : PanelMember
 	sf::Vector2i pos;
 	int width;
 	int height;
-	int numRows;
-	int numCols;
+	int maxRows;
+	int maxCols;
 	std::string name;
 	int maxLength;
 	sf::Text text;
@@ -730,8 +730,8 @@ struct Panel
 	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
 		int minValue, int maxValue, int defaultValue);
 	
-	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, int textBoxWidth,
-		int textBoxLengthLimit, const std::string &initialText, const std::string &labelText );
+	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit, 
+		const std::string &initialText, const std::string &labelText );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
@@ -933,11 +933,13 @@ struct MapOptionsUI : GUIHandler
 	EditSession *edit;
 	Button *bgButton;
 	Button *musicButton;
+	TextBox *descriptionBox;
 	Button *okButton;
 	TextBox* drainTextbox;
 	Dropdown *preDropdown;
 	Dropdown *postDropdown;
 	Slider *numPlayersSlider;
+	int oldMode;
 
 	MapOptionsUI();
 	~MapOptionsUI();

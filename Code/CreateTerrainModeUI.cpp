@@ -46,8 +46,7 @@ CreateTerrainModeUI::CreateTerrainModeUI()
 	gridSizeTextbox->SetToolTip("Set the grid spacing");
 	SetGridSize(edit->graph->GetSpacing());
 
-	minEdgeLenTextbox = mainPanel->AddLabeledTextBox("minedge", Vector2i(0, 0),
-		100, 4, "", "Min Draw Edge Length:");
+	minEdgeLenTextbox = mainPanel->AddLabeledTextBox("minedge", Vector2i(0, 0), true, 1, 4, 20, 4, "", "Min Draw Edge Length:");
 	minEdgeLenTextbox->SetNumbersOnly(true);
 	minEdgeLenTextbox->SetToolTip("Minimum edge length while drawing polygons.\nIf zoomed out, it uses screen pixels,"
 		"\nand if zoomed in, it uses world pixels");

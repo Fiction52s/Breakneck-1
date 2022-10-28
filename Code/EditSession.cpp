@@ -2319,7 +2319,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//mapHeader->ver1 = 2;
 	//mapHeader->ver2 = 9;
 
-	mapHeader->ver1 = 3;
+	mapHeader->ver1 = 4;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -11216,6 +11216,12 @@ void EditSession::SetMode(Emode m)
 		editCurrentTime = 0;
 		editAccumulator = TIMESTEP + .1;
 		justCompletedPolyWithClick = false;
+		break;
+	}
+	case MAP_OPTIONS:
+	{
+		mapOptionsUI->oldMode = oldMode;
+		mapOptionsUI->OpenMapOptionsPopup();
 		break;
 	}
 		

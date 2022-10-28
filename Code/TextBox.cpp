@@ -14,16 +14,16 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 	numbersOnly = false;
 	focused = false;
 	leftBorder = 3;
-	verticalBorder = 10;
+	verticalBorder = 0;
 	characterHeight = 20;//charHeight
 
-	numRows = rows;
-	numCols = cols;
+	maxRows = rows;
+	maxCols = cols;
 
 	lineSpacing = f.getLineSpacing(characterHeight);
 
-	width = numCols * characterHeight * 2;
-	height = numRows * characterHeight;
+	
+	
 
 	cursor.setString("|");
 	cursor.setFont(f);
@@ -39,6 +39,20 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 	testText.setFillColor(Color::Black);
 	testText.setCharacterSize(characterHeight);
 	testText.setPosition(pos.x + leftBorder, pos.y);
+
+	char *ws = new char[maxCols+1];
+	for (int i = 0; i < maxCols; ++i)
+	{
+		ws[i] = 'W';
+	}
+	ws[maxCols] = '\0';
+
+	testText.setString(ws);
+
+	delete[] ws;
+
+	width = testText.getGlobalBounds().width + leftBorder * 2;
+	height = maxRows * lineSpacing;
 
 	SetString(initialText);
 	SetCursorIndex(initialText.length());
@@ -58,7 +72,7 @@ void TextBox::SetString(const std::string &str)
 
 	lineStartIndexes.clear();
 	lineStartIndexes.push_back(0);
-	for (int i = 0; i < strLen-1; ++i)
+	for (int i = 0; i < strLen; ++i)
 	{
 		if (str.at(i) == '\n')
 		{
@@ -81,6 +95,11 @@ void TextBox::SetString(const std::string &str)
 			if (str.at(i) == '\n')
 			{
 				lineIndex++;
+
+				if (lineIndex == lineStartIndexes.size())
+				{
+					break;
+				}
 			}
 		}	
 	}
@@ -113,7 +132,7 @@ std::string TextBox::GetString()
 
 void TextBox::Deactivate()
 {
-	//focused = false;
+	//focused = false; //recently turned this line back on
 	clickedDown = false;
 }
 
@@ -150,21 +169,21 @@ void TextBox::SetCursorIndex(Vector2i &localMousePos)
 	int middle;
 
 	int currRow = 0;
-	int numRows = lineStartIndexes.size();
+	int numLines = lineStartIndexes.size();
 
 	int row = localMousePos.y / (lineSpacing);
 
 	if (row < 0)
 		row = 0;
 
-	if (row >= numRows)
-		row = numRows - 1;
+	if (row >= numLines)
+		row = numLines - 1;
 
 	int rowStart = lineStartIndexes[row];
 	int rowEnd;
-	if (row == numRows-1)
+	if (row == numLines -1)
 	{
-		rowEnd = strLen;
+		rowEnd = strLen-1;
 	}
 	else
 	{
@@ -186,7 +205,7 @@ void TextBox::SetCursorIndex(Vector2i &localMousePos)
 		}
 	}
 
-	if (row == numRows - 1)
+	if (row == numLines - 1)
 	{
 		if (localMousePos.x >= widths[strLen])
 			//if (localMousePos.x >= middle)
@@ -409,7 +428,11 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 	}
 	case Keyboard::Enter:
 	{
-		c = '\n';
+		int numLines = lineStartIndexes.size();
+		if (numLines < maxRows)
+		{
+			c = '\n';
+		}
 		break;
 	}
 	case Keyboard::Left:
@@ -473,7 +496,7 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 			int newIndex = nextRowStart + colIndex;
 
-			int nextRowLength = nextnextRowStart - nextRowStart - 1;
+			int nextRowLength = nextnextRowStart - nextRowStart; //-1
 
 			if (colIndex > nextRowLength)
 			{
@@ -482,6 +505,34 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 
 			SetCursorIndex(nextRowStart + colIndex);
 			break;
+		}
+		break;
+	}
+	case Keyboard::Home:
+	{
+		int row = GetIndexRow(cursorIndex);
+
+		int startIndex = lineStartIndexes[row];
+
+		SetCursorIndex(startIndex);
+			
+		break;
+	}
+	case Keyboard::End:
+	{
+		int row = GetIndexRow(cursorIndex);
+		int numLines = lineStartIndexes.size();
+		
+
+		if (row == numLines - 1)
+		{
+			int strLen = text.getString().getSize();
+			SetCursorIndex(strLen);
+		}
+		else
+		{
+			int nextStartIndex = lineStartIndexes[row + 1];
+			SetCursorIndex(nextStartIndex - 1);
 		}
 		break;
 	}
@@ -506,11 +557,34 @@ void TextBox::SendKey(Keyboard::Key k, bool shift)
 		{
 			c = '_';
 		}
+
+		int row = GetIndexRow(cursorIndex);
+		int rowStart = lineStartIndexes[row];
+
+		int rowEnd;
+		if (row == lineStartIndexes.size() - 1)
+		{
+			rowEnd = text.getString().getSize();
+		}
+		else
+		{
+			int nextStart = lineStartIndexes[row + 1];
+			rowEnd = nextStart - 1;
+		}
+
+		int rowWidth = rowEnd - rowStart;
+
 		sf::String s = text.getString();
 
-		s.insert(cursorIndex, sf::String(c));
+		string charStr(1, c);
+		if (rowWidth >= maxCols)
+		{
+			charStr = "\n" + charStr;
+		}
+
+		s.insert(cursorIndex, sf::String(charStr));
 		SetString(s);
-		SetCursorIndex(cursorIndex + 1);
+		SetCursorIndex(cursorIndex + charStr.size());
 		//cursorIndex++;
 	}
 
@@ -538,6 +612,7 @@ bool TextBox::MouseUpdate()
 		}
 		else
 		{
+			focused = false;
 			clickedDown = false;
 		}
 	}

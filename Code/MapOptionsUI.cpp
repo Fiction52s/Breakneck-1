@@ -8,19 +8,20 @@ using namespace std;
 MapOptionsUI::MapOptionsUI()
 {
 	edit = EditSession::GetSession();
-	mapOptionsPanel = new Panel("mapoptions", 600, 600, this, true);
+	mapOptionsPanel = new Panel("mapoptions", 700, 800, this, true);
 
-	mapOptionsPanel->SetPosition(Vector2i(960 - mapOptionsPanel->size.x / 2,
-		540 - mapOptionsPanel->size.y / 2 - 300));
+	mapOptionsPanel->SetCenterPos(Vector2i(960, 540));
 
 	mapOptionsPanel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
 	mapOptionsPanel->AddLabel("mapnamelabel", Vector2i(0, 0), 28, "Map Name: " + edit->filePath.stem().string());
-	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 50), 200, 10, "", "Time to Drain (seconds): ");
+
+	descriptionBox = mapOptionsPanel->AddLabeledTextBox("description", Vector2i(0, 30), false, 5, 35, 20, 1000, "", "Description:");
+
+	drainTextbox = mapOptionsPanel->AddLabeledTextBox("drain", Vector2i(0, 20), true, 1, 10, 20, 10, "", "Time to Drain (seconds): ");
 	drainTextbox->SetNumbersOnly(true);
 	bgButton = mapOptionsPanel->AddButton("bgbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Environment");
 	musicButton = mapOptionsPanel->AddButton("musicbutton", Vector2i(0, 20), Vector2f(300, 30), "Set Music");
-	
 
 	string fileName = "Resources/Editor/SpecialOptions/extrascene_options.txt";
 
@@ -61,6 +62,8 @@ MapOptionsUI::MapOptionsUI()
 	postDropdown = mapOptionsPanel->AddDropdown("post", Vector2i(300, 0), Vector2i(250, 28), specialTypeOptions, 0);
 
 	numPlayersSlider = mapOptionsPanel->AddLabeledSlider("numplayersslider", Vector2i(0, 40), "Num player spawns: ", 100, 1, 4, 1);
+
+	
 
 	okButton = mapOptionsPanel->AddButton("ok", Vector2i(0, 70), Vector2f(60, 30), "OK");
 	mapOptionsPanel->SetConfirmButton(okButton);
@@ -124,6 +127,8 @@ void MapOptionsUI::OpenMapOptionsPopup()
 	assert(res);
 
 	numPlayersSlider->SetCurrValue(edit->mapHeader->numPlayerSpawns);
+
+	descriptionBox->SetString(edit->mapHeader->description);
 }
 
 void MapOptionsUI::CloseMapOptionsPopup()
@@ -143,8 +148,12 @@ void MapOptionsUI::CloseMapOptionsPopup()
 	edit->mapHeader->preLevelSceneName = preDropdown->GetSelectedText();
 	edit->mapHeader->postLevelSceneName = postDropdown->GetSelectedText();
 	edit->SetNumPlayers(numPlayersSlider->GetCurrValue());
+
+	edit->mapHeader->description = descriptionBox->GetString();
 	//edit->SetGameMode(gameModeDropdown->selectedIndex);
 	edit->RemoveActivePanel(mapOptionsPanel);
+
+	edit->SetMode((EditSession::Emode)oldMode);
 }
 
 void MapOptionsUI::ChooseRectEvent(ChooseRect *cr, int eventType)
