@@ -26,6 +26,8 @@ struct MapBrowser;
 struct EditSession;
 struct MapPublishPopup;
 struct MapPostPublishPopup;
+struct MapPublishFailurePopup;
+struct MapPublishLoadingPopup;
 
 struct WorkshopManager
 {
@@ -75,8 +77,20 @@ struct WorkshopUploader
 
 	boost::filesystem::path uploadFolder;
 
+	bool currAgreementSigned;
+	PublishedFileId_t currUploadID;
+
+
 	MapPublishPopup *publishPopup;
-	MapPostPublishPopup *postPublishPopup;
+	MapPostPublishPopup *postPublishSuccessPopup;
+	MapPublishFailurePopup *failurePopup;
+	MapPublishLoadingPopup *loadingPopup;
+
+	int maxUploadAttempts;
+	int currUploadAttempt;
+
+	//sf::Sprite uploadingSprite;
+	//Tileset *ts_upload;
 
 	WorkshopUploader();
 	~WorkshopUploader();
@@ -84,6 +98,7 @@ struct WorkshopUploader
 	void ActivatePublishPopup();
 	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
 	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
+	void TryUpdateItem(bool agreementSigned, PublishedFileId_t id);
 };
 
 

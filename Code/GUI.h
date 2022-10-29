@@ -117,6 +117,7 @@ struct PanelUpdater
 	virtual void LateDraw(sf::RenderTarget *target) {}
 	virtual void Deactivate() {}
 	virtual void MouseScroll(int delta) {}
+	virtual void UpdateFrame(int numUpdateFrames) {}
 private:
 };
 
@@ -709,6 +710,7 @@ struct Panel
 		int posx, int posy, bool checkContained = false );*/
 	bool MouseUpdate();
 	void UpdateSprites(int numUpdateFrames = 1);
+	void UpdateFrame(int numUpdateFrames = 1);
 	Slider * AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
 	Slider * AddFloatSlider(const std::string &name, sf::Vector2i &pos,

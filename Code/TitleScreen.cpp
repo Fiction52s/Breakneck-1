@@ -13,17 +13,19 @@ using namespace sf;
 TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 	:mainMenu( p_mainMenu )
 {
-	ts_breakneckTitle = GetTileset("Title/breakneck_1034x835.png", 1034, 835);
+	ts_breakneckTitle = GetSizedTileset("Title/Kinetic_Title_1024x440.png");//GetTileset("Title/breakneck_1034x835.png", 1034, 835);
 	//ts_backgroundTitle = tilesetManager.GetTileset( "Title/title_bg_1920x1080.png", 1920, 1080 );
 	ts_titleBG = GetTileset("Title/title_base_1920x1080.png", 1920, 1080);
-	ts_emergenceTitle = GetTileset("Title/emergence_337x51.png", 337, 51);
+	//ts_emergenceTitle = GetTileset("Title/emergence_337x51.png", 337, 51);
 
 	titleBGSprite.setTexture(*ts_titleBG->texture);
 	breakneckTitleSprite.setTexture(*ts_breakneckTitle->texture);
-	emergenceTitleSprite.setTexture(*ts_emergenceTitle->texture);
+	//emergenceTitleSprite.setTexture(*ts_emergenceTitle->texture);
 
-	breakneckTitleSprite.setPosition(444, 0 + 20);
-	emergenceTitleSprite.setPosition(794, 233 + 20);
+	breakneckTitleSprite.setOrigin(breakneckTitleSprite.getLocalBounds().width / 2, 0);
+	//breakneckTitleSprite.setPosition(444, 0 + 20);
+	breakneckTitleSprite.setPosition(960 + 300, 0 + 20);
+	//emergenceTitleSprite.setPosition(794, 233 + 20);
 
 	background = new Background(p_mainMenu);
 
@@ -178,6 +180,6 @@ void TitleScreen::Draw(sf::RenderTarget *target)
 	mainMenu->DrawMenuOptionText(target);
 
 	target->draw(breakneckTitleSprite);
-	target->draw(emergenceTitleSprite);
+	//target->draw(emergenceTitleSprite);
 	
 }

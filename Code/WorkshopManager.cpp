@@ -5,6 +5,8 @@
 #include "EditSession.h"
 #include "MapPublishPopup.h"
 #include "MapPostPublishPopup.h"
+#include "MapPublishFailurePopup.h"
+#include "MapPublishLoadingPopup.h"
 
 using namespace std;
 
@@ -386,7 +388,14 @@ WorkshopUploader::WorkshopUploader()
 	
 	publishPopup = new MapPublishPopup;
 
-	postPublishPopup = new MapPostPublishPopup;
+	postPublishSuccessPopup = new MapPostPublishPopup;
+
+	failurePopup = new MapPublishFailurePopup;
+
+	loadingPopup = new MapPublishLoadingPopup;
+
+	maxUploadAttempts = 50;
+	currUploadAttempt = 0;
 
 	assert(edit != NULL);
 }
@@ -394,13 +403,18 @@ WorkshopUploader::WorkshopUploader()
 WorkshopUploader::~WorkshopUploader()
 {
 	delete publishPopup;
-	delete postPublishPopup;
+	delete postPublishSuccessPopup;
+	delete failurePopup;
+	delete loadingPopup;
 }
 
 void WorkshopUploader::PublishMap()
 {
 	SteamAPICall_t hSteamAPICall = SteamUGC()->CreateItem(SteamUtils()->GetAppID(), k_EWorkshopFileTypeCommunity);
 	OnCreateItemResultCallResult.Set(hSteamAPICall, this, &WorkshopUploader::OnCreatedItem);
+
+	
+	currUploadAttempt = 0;
 }
 
 void WorkshopUploader::ActivatePublishPopup()
@@ -420,84 +434,92 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 		cout << "failed to create item: " << (int)(pCallback->m_eResult) << endl;
 		break;
 	}
-
-	PublishedFileId_t uploadId;
 	if (pCallback->m_eResult == k_EResultOK)
 	{
-		uploadId = pCallback->m_nPublishedFileId;
+		loadingPopup->Activate();
+		loadingPopup->SetAttempt(0, maxUploadAttempts);
+		TryUpdateItem( !pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement, pCallback->m_nPublishedFileId);
+	}
+	else
+	{
+		//failure
+	}
+	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
+}
 
-		cout << "need legal agreement? " << (int)(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement) << endl;
+void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t uploadId )
+{
+	cout << "need legal agreement? " << (int)(agreementSigned) << endl;
 
-		UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), uploadId);
+	UGCUpdateHandle_t updateHandle = SteamUGC()->StartItemUpdate(SteamUtils()->GetAppID(), uploadId);
 
-		string mapName = edit->filePath.stem().string();
+	string mapName = edit->filePath.stem().string();
 
-		string publishTitle = publishPopup->mapNameTextBox->GetString();
+	string publishTitle = publishPopup->mapNameTextBox->GetString();
 		
-		//SteamUGC()->SetItemTitle(updateHandle, "c01");//publishTitle.c_str()); //publishPopup->//mapName.c_str());//"b02");
-		SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
-		SteamUGC()->SetItemDescription(updateHandle, publishPopup->descriptionTextBox->GetString().c_str());
-		//edit->mapHeader->description.c_str());//"test description 2");
+	SteamUGC()->SetItemTitle(updateHandle, publishTitle.c_str()); //publishPopup->//mapName.c_str());//"b02");
+	//SteamUGC()->SetItemTitle(updateHandle, mapName.c_str());//"b02");
+	SteamUGC()->SetItemDescription(updateHandle, publishPopup->descriptionTextBox->GetString().c_str());
+	//edit->mapHeader->description.c_str());//"test description 2");
 
-		//SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
+	SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
 
-		uploadFolder = boost::filesystem::current_path().append("\\testpublish");
+	uploadFolder = boost::filesystem::current_path().append("\\testpublish");
 
-		if (boost::filesystem::exists(uploadFolder))
-		{
-			try
-			{
-				boost::filesystem::remove_all(uploadFolder);
-			}
-			catch (const boost::filesystem::filesystem_error& e)
-			{
-				cout << "remove error: " << e.what() << endl;
-
-				return;
-			}
-		}
-
-		boost::filesystem::create_directory("testpublish");
-
-		boost::filesystem::path previewUploadPath = uploadFolder.string() 
-			+ "\\" + mapName + ".png";
-
-		boost::filesystem::path previewPath = edit->filePath.parent_path().string() 
-			+ "\\" + edit->filePath.stem().string() + ".png";
-
-
-		boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + ".brknk";
-
-		//eventually these need to be in try-catches because they can force the function to return
-		//early
+	if (boost::filesystem::exists(uploadFolder))
+	{
 		try
 		{
-			boost::filesystem::copy_file(edit->filePath, uploadFilePath);
-			boost::filesystem::copy_file(previewPath, previewUploadPath);
+			boost::filesystem::remove_all(uploadFolder);
 		}
 		catch (const boost::filesystem::filesystem_error& e)
 		{
-			cout << "copy error: " << e.what() << endl;
+			cout << "remove error: " << e.what() << endl;
 
 			return;
 		}
+	}
+
+	boost::filesystem::create_directory("testpublish");
+
+	boost::filesystem::path previewUploadPath = uploadFolder.string() 
+		+ "\\" + mapName + ".png";
+
+	boost::filesystem::path previewPath = edit->filePath.parent_path().string() 
+		+ "\\" + edit->filePath.stem().string() + ".png";
+
+
+	boost::filesystem::path uploadFilePath = uploadFolder.string() + "\\" + mapName + ".brknk";
+
+	//eventually these need to be in try-catches because they can force the function to return
+	//early
+	try
+	{
+		boost::filesystem::copy_file(edit->filePath, uploadFilePath);
+		boost::filesystem::copy_file(previewPath, previewUploadPath);
+	}
+	catch (const boost::filesystem::filesystem_error& e)
+	{
+		cout << "copy error: " << e.what() << endl;
+
+		return;
+	}
 		
 
-		SteamUGC()->SetItemContent(updateHandle, uploadFolder.string().c_str());
-			//"C:\\Users\\ficti\\Documents\\Visual Studio 2015"
-			//"\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02");
-		SteamUGC()->SetItemPreview(updateHandle, previewUploadPath.string().c_str());//"C:\\Users\\ficti\\Documents\\Visual Studio 2015\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02\\b02.png");
-		SteamUGC()->SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
+	SteamUGC()->SetItemContent(updateHandle, uploadFolder.string().c_str());
+		//"C:\\Users\\ficti\\Documents\\Visual Studio 2015"
+		//"\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02");
+	SteamUGC()->SetItemPreview(updateHandle, previewUploadPath.string().c_str());//"C:\\Users\\ficti\\Documents\\Visual Studio 2015\\Projects\\SteamworksTest\\SteamworksTest\\Resources\\b02\\b02.png");
+	SteamUGC()->SetItemVisibility(updateHandle, ERemoteStoragePublishedFileVisibility::k_ERemoteStoragePublishedFileVisibilityPublic);
 
-		SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
+	SteamAPICall_t itemUpdateStatus = SteamUGC()->SubmitItemUpdate(updateHandle, NULL);
 
-		OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopUploader::OnItemUpdated);
+	OnSubmitItemUpdateResultCallResult.Set(itemUpdateStatus, this, &WorkshopUploader::OnItemUpdated);
 
-		bool signedAgreement = !(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
+	//bool signedAgreement = agreementSigned;//!(pCallback->m_bUserNeedsToAcceptWorkshopLegalAgreement);
 
-		postPublishPopup->Activate(signedAgreement, uploadId);
-	}
-	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
+	currAgreementSigned = agreementSigned;
+	currUploadID = uploadId;
 }
 
 void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure)
@@ -521,9 +543,29 @@ void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool b
 	{
 	case k_EResultOK:
 		cout << "edited item successfully" << endl;
+		loadingPopup->ClosePopup();
+		postPublishSuccessPopup->Activate(currAgreementSigned, currUploadID);
 		break;
 	default:
 		cout << "failed to edit item: " << (int)(pCallback->m_eResult) << endl;
+
+		if (currUploadAttempt == maxUploadAttempts)
+		{
+			failurePopup->Activate(currUploadID, pCallback->m_eResult);
+			loadingPopup->ClosePopup();
+
+			SteamUGC()->DeleteItem(currUploadID);
+		}
+		else
+		{
+			++currUploadAttempt;
+			loadingPopup->SetAttempt(currUploadAttempt, maxUploadAttempts);
+			TryUpdateItem(currAgreementSigned, currUploadID);
+			cout << "attempting to edit again: " << currUploadAttempt << endl;
+		}
+
+		
+		
 		break;
 	}
 }

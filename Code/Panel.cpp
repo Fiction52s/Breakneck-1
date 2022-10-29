@@ -507,6 +507,14 @@ void Panel::UpdateSprites(int numUpdateFrames)
 	}
 
 	UpdateToolTip(numUpdateFrames);
+
+	UpdateFrame(numUpdateFrames);
+}
+
+void Panel::UpdateFrame(int numUpdateFrames)
+{
+	if (extraUpdater != NULL)
+		extraUpdater->UpdateFrame(numUpdateFrames);
 }
 
 void Panel::SendEvent(Button *b, const std::string & e)
