@@ -35,7 +35,7 @@ struct MapPublishFailurePopup : GUIHandler, TilesetManager, PanelUpdater
 
 	MapPublishFailurePopup();
 	~MapPublishFailurePopup();
-	void Activate(PublishedFileId_t uploadID, int errorCode );
+	void Activate(PublishedFileId_t uploadID, int errorCode, bool onCreate );
 	void Update();
 	void HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);

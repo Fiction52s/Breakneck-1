@@ -442,6 +442,7 @@ void WorkshopUploader::OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFail
 	}
 	else
 	{
+		failurePopup->Activate(currUploadID, pCallback->m_eResult, true);
 		//failure
 	}
 	//sprintf_safe(rgchString, "SteamServerConnectFailure_t: %d\n", pCallback->m_eResult);
@@ -551,7 +552,7 @@ void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool b
 
 		if (currUploadAttempt == maxUploadAttempts)
 		{
-			failurePopup->Activate(currUploadID, pCallback->m_eResult);
+			failurePopup->Activate(currUploadID, pCallback->m_eResult, false);
 			loadingPopup->ClosePopup();
 
 			SteamUGC()->DeleteItem(currUploadID);
@@ -563,9 +564,6 @@ void WorkshopUploader::OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool b
 			TryUpdateItem(currAgreementSigned, currUploadID);
 			cout << "attempting to edit again: " << currUploadAttempt << endl;
 		}
-
-		
-		
 		break;
 	}
 }

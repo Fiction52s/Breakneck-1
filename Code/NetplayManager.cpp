@@ -132,6 +132,17 @@ void NetplayManager::Abort()
 		lobbyManager = NULL;
 	}
 
+	if (loadThread != NULL)
+	{
+		assert(game != NULL);
+		game->SetContinueLoading(false);
+		loadThread->join();
+		delete loadThread;
+		loadThread = NULL;
+		CleanupMatch();
+	}
+	
+
 	//there might be something off with this, i keep getting exit crashes right after this
 	for (int i = 0; i < numPlayers; ++i)
 	{

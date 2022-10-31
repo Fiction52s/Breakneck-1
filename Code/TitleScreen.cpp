@@ -24,7 +24,7 @@ TitleScreen::TitleScreen(MainMenu *p_mainMenu)
 
 	breakneckTitleSprite.setOrigin(breakneckTitleSprite.getLocalBounds().width / 2, 0);
 	//breakneckTitleSprite.setPosition(444, 0 + 20);
-	breakneckTitleSprite.setPosition(960 + 300, 0 + 20);
+	breakneckTitleSprite.setPosition(960, 0);// + 20);
 	//emergenceTitleSprite.setPosition(794, 233 + 20);
 
 	background = new Background(p_mainMenu);

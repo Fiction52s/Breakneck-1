@@ -3315,6 +3315,9 @@ void GameSession::Init()
 	enemyTree = NULL;
 	staticItemTree = NULL;
 	terrainBGTree = NULL;
+	activeEnemyItemTree = NULL;
+	airTriggerTree = NULL;
+	inverseEdgeTree = NULL;
 	scoreDisplay = NULL;
 	va = NULL;
 	activeEnemyList = NULL;

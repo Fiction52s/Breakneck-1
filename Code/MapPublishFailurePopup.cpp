@@ -94,7 +94,7 @@ void MapPublishFailurePopup::ButtonCallback(Button *b, const std::string & e)
 	}
 }
 
-void MapPublishFailurePopup::Activate(PublishedFileId_t uploadID, int errorCode )
+void MapPublishFailurePopup::Activate(PublishedFileId_t uploadID, int errorCode, bool onCreate )
 {
 	EditSession *edit = EditSession::GetSession();
 	if (edit != NULL)
@@ -118,7 +118,14 @@ void MapPublishFailurePopup::Activate(PublishedFileId_t uploadID, int errorCode 
 		previewSpr.setPosition(10, 70 + 50);
 		previewSpr.setScale(.5, .5);*/
 
-		mapNameText->setString("Map failed to upload. Error is: " + to_string(errorCode));
+		if (!onCreate)
+		{
+			mapNameText->setString("Map failed to upload. Error on editing is: " + to_string(errorCode));
+		}
+		else
+		{
+			mapNameText->setString("Map failed to upload. Error on creating is: " + to_string(errorCode));
+		}
 	}
 
 	//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
