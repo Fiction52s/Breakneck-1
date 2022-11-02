@@ -104,8 +104,36 @@ bool MapHeader::Load(std::ifstream &is)
 	//get description
 	char last = 0;
 	char curr = 0;
-	stringstream ss;
+	stringstream descriptionSS;
+	stringstream nameSS;
 	string tempStr;
+
+	if (ver1 >= 5)
+	{
+		int numNameChars;
+		is >> numNameChars;
+
+		if (!is.get()) //get newline char out of the way
+		{
+			assert(0);
+		}
+
+		for (int i = 0; i < numNameChars; ++i)
+		{
+			if (!is.get(curr))
+			{
+				assert(0);
+			}
+
+			nameSS << curr;
+		}
+
+		fullName = nameSS.str();
+	}
+	else
+	{
+		fullName = "----";
+	}
 
 	if (ver1 >= 4)
 	{
@@ -125,7 +153,7 @@ bool MapHeader::Load(std::ifstream &is)
 				assert(0);
 			}
 
-			ss << curr;
+			descriptionSS << curr;
 		}
 
 	}
@@ -151,13 +179,13 @@ bool MapHeader::Load(std::ifstream &is)
 			{
 				if (last != 0)
 				{
-					ss << last;
+					descriptionSS << last;
 				}
 			}
 		}
 	}
 
-	description = ss.str();
+	description = descriptionSS.str();
 
 	is >> numShards;
 	shardInfoVec.reserve(16);
@@ -196,6 +224,11 @@ bool MapHeader::Load(std::ifstream &is)
 		songOrder.push_back(tempSongStr);
 		songLevels[tempSongStr] = oftenLevel;
 		is.get();
+	}
+
+	if (ver1 >= 6)
+	{
+		is >> creatorName;
 	}
 
 	if (ver1 < 2 || ( ver1 == 2 && ver2 <= 8 ) )
@@ -292,6 +325,10 @@ void MapHeader::Save(std::ofstream &of)
 	//current version is 4, go up by an integer every time from now on
 	of << ver1 << "\n"; // << "." << ver2 << "\n";
 
+	of << fullName.size() << "\n";
+
+	of << fullName << "\n";
+
 	of << description.size() << "\n";
 
 	of << description << "\n";
@@ -313,6 +350,11 @@ void MapHeader::Save(std::ofstream &of)
 	for (auto it = songOrder.begin(); it != songOrder.end(); ++it)
 	{
 		of << (*it) << "\n" << songLevels[(*it)] << "\n";
+	}
+
+	if (ver1 >= 6)
+	{
+		of << creatorName << "\n";
 	}
 
 	of << creatorID << "\n";

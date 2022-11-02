@@ -35,6 +35,29 @@ void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
 	}
 }
 
+void WorkshopManager::OnPersonaStateChange(PersonaStateChange_t *callback)
+{
+	if (callback->m_nChangeFlags & k_EPersonaChangeName)
+	{
+		for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
+		{
+			if ((*it)->creatorId == callback->m_ulSteamID)
+			{
+				if ((*it)->checkingForCreatorName)
+				{
+					(*it)->checkingForCreatorName = false;
+					(*it)->creatorName = SteamFriends()->GetFriendPersonaName(callback->m_ulSteamID);
+				}
+			}
+		}
+	}
+	else
+	{
+		int x = 5;
+	}
+	//callback->
+}
+
 void WorkshopManager::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback, bool bIOFailure)
 {
 	if (callback->m_bRequestSuccessful)
@@ -181,9 +204,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 
 					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
 
-
-
-					SteamUGC()->GetQueryUGCMetadata(callback->m_handle, i, metaData, 1024);
+					bool getMetadataSuccess = SteamUGC()->GetQueryUGCMetadata(callback->m_handle, i, metaData, 1024);
 
 					string fileName = metaData;
 
@@ -192,9 +213,34 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 						fileName = details.m_rgchTitle;
 						cout << "metadata failed" << endl;
 					}
+					
+					
+					
+					//SteamFriends()->GetFriendPersonaName
+
+					//details.m_ulSteamIDOwner
+					//details.m_rtimeUpdated
 
 					MapNode *newNode = new MapNode;
-					newNode->nodeName = details.m_rgchTitle;
+
+					newNode->creatorId = details.m_ulSteamIDOwner;
+
+					queryResults->push_back(newNode);
+
+					bool needsToRequestInfo = SteamFriends()->RequestUserInformation(details.m_ulSteamIDOwner, true);
+
+					if (needsToRequestInfo)
+					{
+						newNode->checkingForCreatorName = true;
+					}
+					else
+					{
+						newNode->creatorNameRetrieved = true;
+						newNode->creatorName = SteamFriends()->GetFriendPersonaName(details.m_ulSteamIDOwner);
+					}
+
+					newNode->nodeName = details.m_rgchTitle;//fileName;
+					newNode->fullMapName = details.m_rgchTitle;
 					newNode->fileName = fileName;
 					newNode->description = details.m_rgchDescription;
 					newNode->publishedFileId = details.m_nPublishedFileId;
@@ -219,7 +265,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 						newNode->previewURL = urlTest;
 					}
 
-					queryResults->push_back(newNode);
+					
 
 					//details.m_hPreviewFile
 					//MapNode *newNode = LoadWorkshopItem(details);
@@ -332,6 +378,7 @@ void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults, int page)
 		EUGCMatchingUGCType::k_EUGCMatchingUGCType_Items, SteamUtils()->GetAppID(),
 		SteamUtils()->GetAppID(), page);
 	SteamUGC()->SetMatchAnyTag(queryHandle, true);
+	SteamUGC()->SetReturnMetadata(queryHandle, true);
 	auto sendRequestAPICall = SteamUGC()->SendQueryUGCRequest(queryHandle);
 
 	OnQueryCompletedCallResult.Set(sendRequestAPICall, this, &WorkshopManager::OnQueryCompleted);
@@ -463,7 +510,7 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 	SteamUGC()->SetItemDescription(updateHandle, publishPopup->descriptionTextBox->GetString().c_str());
 	//edit->mapHeader->description.c_str());//"test description 2");
 
-	SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
+	bool submitMetadataSuccess = SteamUGC()->SetItemMetadata(updateHandle, mapName.c_str());
 
 	uploadFolder = boost::filesystem::current_path().append("\\testpublish");
 
@@ -483,7 +530,7 @@ void WorkshopUploader::TryUpdateItem( bool agreementSigned, PublishedFileId_t up
 
 	boost::filesystem::create_directory("testpublish");
 
-	boost::filesystem::path previewUploadPath = uploadFolder.string() 
+	boost::filesystem::path previewUploadPath = uploadFolder.string()
 		+ "\\" + mapName + ".png";
 
 	boost::filesystem::path previewPath = edit->filePath.parent_path().string() 

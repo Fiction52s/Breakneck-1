@@ -4,6 +4,7 @@
 #include <SFML/System.hpp>
 #include <list>
 #include "Movement.h"
+#include <vector>
 
 struct Panel;
 struct GUIHandler;
@@ -34,6 +35,7 @@ struct ChooseRect;
 struct GateInfo;
 struct MenuDropdown;
 struct TerrainRail;
+struct TabGroup;
 
 struct Brush;
 
@@ -85,6 +87,7 @@ private:
 struct GUIHandler
 {
 	virtual void ButtonCallback(Button *b, const std::string & e) {}
+	virtual void TabGroupCallback(TabGroup *tg, const std::string &e) {}
 	virtual void TextBoxCallback(TextBox *tb, const std::string & e) {}
 	virtual void GridSelectorCallback(GridSelector *gs, const std::string & e) {}
 	virtual void HyperLinkCallback(HyperLink *link, const std::string &e) {}
@@ -504,6 +507,7 @@ struct HyperLink : PanelMember
 	void Deactivate();
 	void SetPos(sf::Vector2i &pos);
 	void SetLinkURL(const std::string &url);
+	void SetString(const std::string &str);
 	sf::Vector2i pos;
 	sf::Text text;
 	std::string name;
@@ -660,6 +664,32 @@ struct CheckBox : PanelMember
 	sf::Vector2i size;
 };
 
+struct TabGroup : PanelMember
+{
+	TabGroup(const std::string &name, int posx, int posy, std::vector<std::string> &tabStrings, int memberWidth, int height, sf::Font &f, Panel *panel );
+	~TabGroup();
+	void Draw(sf::RenderTarget *target);
+	bool MouseUpdate();
+	void Deactivate();
+	void SetPos(sf::Vector2i &pos);
+	void SelectTab(int index);
+	sf::Vector2i pos;
+	sf::Vector2f memberSize;
+	sf::Vector2f totalSize;
+	std::string name;
+
+	int characterHeight;
+
+	std::vector<sf::Text> tabNames;
+	sf::Vertex *quads;
+
+	sf::Color selectedColor;
+	sf::Color unselectedColor;
+
+	int currTabIndex;
+	int numTabs;
+};
+
 struct Panel
 {
 	Panel( const std::string &name, int width, 
@@ -711,6 +741,7 @@ struct Panel
 	bool MouseUpdate();
 	void UpdateSprites(int numUpdateFrames = 1);
 	void UpdateFrame(int numUpdateFrames = 1);
+	TabGroup *AddTabGroup(const std::string &name, sf::Vector2i &pos, std::vector<std::string> &tabStrings, int memberWidth, int height);
 	Slider * AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);
 	Slider * AddFloatSlider(const std::string &name, sf::Vector2i &pos,
@@ -758,6 +789,7 @@ struct Panel
 
 	bool SendKey( sf::Keyboard::Key k, bool shift );
 	void SendEvent( Button *b, const std::string & e );
+	void SendEvent(TabGroup *tg, const std::string &e);
 	void SendEvent(HyperLink *link, const std::string & e);
 	void SendEvent( GridSelector *gs, const std::string & e );
 	void SendEvent( TextBox *tb, const std::string & e );
@@ -776,6 +808,7 @@ struct Panel
 	std::map<std::string, Dropdown*> dropdowns;
 	std::map<std::string, MenuDropdown*> menuDropdowns;
 	std::map<std::string, Slider*> sliders;
+	std::map<std::string, TabGroup*> tabGroups;
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
 	void ReserveTextRects(int num);

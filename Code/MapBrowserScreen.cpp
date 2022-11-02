@@ -26,11 +26,14 @@ MapBrowserScreen::~MapBrowserScreen()
 void MapBrowserScreen::StartLocalBrowsing()
 {
 	browserHandler->chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+	//browserHandler->chooser->
 }
 
 void MapBrowserScreen::StartWorkshopBrowsing()
 {
 	browserHandler->chooser->StartWorkshop( MapBrowser::CREATE_CUSTOM_GAME );
+	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
 }
 
 bool MapBrowserScreen::HandleEvent(sf::Event ev)

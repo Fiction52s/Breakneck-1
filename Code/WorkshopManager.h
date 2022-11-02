@@ -63,6 +63,7 @@ struct WorkshopManager
 	void DownloadPreviewFiles(std::vector<MapNode*> *p_previewResults);
 private:
 	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
+	STEAM_CALLBACK(WorkshopManager, OnPersonaStateChange, PersonaStateChange_t);
 	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
 	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
 

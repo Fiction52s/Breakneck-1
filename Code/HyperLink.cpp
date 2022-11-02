@@ -35,6 +35,11 @@ void HyperLink::SetLinkURL( const std::string &url )
 	linkURL = url;
 }
 
+void HyperLink::SetString(const std::string &str)
+{
+	text.setString(str);
+}
+
 void HyperLink::SetPos(sf::Vector2i &p_pos)
 {
 	pos = p_pos;

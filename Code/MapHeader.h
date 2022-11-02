@@ -49,6 +49,7 @@ struct MapHeader
 	int ver1;
 	int ver2;
 	std::string collectionName;
+	std::string fullName;
 	std::string description;
 	
 	int drainSeconds;
@@ -67,6 +68,7 @@ struct MapHeader
 	std::string preLevelSceneName;
 	std::string postLevelSceneName;
 	uint64 creatorID;
+	std::string creatorName;
 	
 
 	std::map < std::string, int > songLevels;

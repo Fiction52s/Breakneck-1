@@ -22,7 +22,7 @@ OnlineMenuScreen::OnlineMenuScreen(MainMenu *mm)
 	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i( 20, 0 ));
 	ImageChooseRect *icr = NULL;
 	icr = panel->AddImageRect(ChooseRect::I_ONLINEMENU_WORKSHOP, Vector2f(0, 0), NULL, sf::IntRect(), 200);
-	icr->SetName("Workshop");
+	icr->SetName(" Browse Workshop");
 	icr->SetShown(true);
 	icr->Init();
 

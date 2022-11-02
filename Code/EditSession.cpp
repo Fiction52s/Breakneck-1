@@ -2319,7 +2319,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//mapHeader->ver1 = 2;
 	//mapHeader->ver2 = 9;
 
-	mapHeader->ver1 = 4;
+	mapHeader->ver1 = 6;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -2334,6 +2334,10 @@ void EditSession::WriteMapHeader(ofstream &of)
 	mapHeader->numVertices = pointCount;
 
 	mapHeader->creatorID = SteamUser()->GetSteamID().ConvertToUint64();
+
+	mapHeader->creatorName = SteamFriends()->GetPersonaName();
+
+	mapHeader->fullName = filePath.stem().string();
 	//possibleGameModeTypeFlags
 
 	/*enum GameModeFlags

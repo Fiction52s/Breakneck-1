@@ -61,6 +61,12 @@ Panel::~Panel()
 	{
 		delete (*it).second;
 	}
+
+	for (auto it = tabGroups.begin(); it != tabGroups.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
 	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		delete (*it).second;
@@ -404,6 +410,15 @@ bool Panel::MouseUpdate()
 		}*/
 	}
 
+	for (auto it = tabGroups.begin(); it != tabGroups.end(); ++it)
+	{
+		bool temp = (*it).second->MouseUpdate();
+		/*if (temp)
+		{
+		return withinPanel;
+		}*/
+	}
+
 	bool textFocused = false;
 	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
@@ -520,6 +535,11 @@ void Panel::UpdateFrame(int numUpdateFrames)
 void Panel::SendEvent(Button *b, const std::string & e)
 {
 	handler->ButtonCallback(b, e);
+}
+
+void Panel::SendEvent(TabGroup *tg, const std::string & e)
+{
+	handler->TabGroupCallback(tg, e);
 }
 
 void Panel::SendEvent(HyperLink *link, const std::string & e)
@@ -710,6 +730,18 @@ LobbyChooseRect * Panel::AddLobbyRect(sf::Vector2f &position, sf::Vector2f &bSiz
 	AddAutoSpaceY(bSize.y + position.y);
 
 	return lcRect;
+}
+
+TabGroup *Panel::AddTabGroup(const std::string &name, sf::Vector2i &pos, std::vector<std::string> &tabStrings, int memberWidth, int height)
+{
+	assert(tabGroups.count(name) == 0);
+	TabGroup *tabGroup = new TabGroup(name, autoStart.x + pos.x, autoStart.y + pos.y, tabStrings, memberWidth, height, arial, this);
+	tabGroups[name] = tabGroup;
+
+	AddAutoSpaceX(tabGroup->totalSize.x + pos.x);
+	AddAutoSpaceY(tabGroup->totalSize.y + pos.y);
+
+	return tabGroup;
 }
 
 Slider * Panel::AddSlider(const std::string &name, sf::Vector2i &pos,
@@ -958,6 +990,11 @@ void Panel::Deactivate()
 		(*it).second->Deactivate();
 	}
 
+	for (auto it = tabGroups.begin(); it != tabGroups.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
 	for (auto it = textBoxes.begin(); it != textBoxes.end(); ++it)
 	{
 		(*it).second->Deactivate();
@@ -1059,6 +1096,11 @@ void Panel::Draw(RenderTarget *target)
 	}
 
 	for (auto it = sliders.begin(); it != sliders.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
+
+	for (auto it = tabGroups.begin(); it != tabGroups.end(); ++it)
 	{
 		(*it).second->Draw(target);
 	}

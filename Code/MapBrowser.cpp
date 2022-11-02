@@ -23,6 +23,10 @@ MapNode::MapNode()
 	mapDownloaded = false;
 	publishedFileId = 0;
 	isWorkshop = false;
+	nameAndDescriptionUpdated = false;
+	creatorNameRetrieved = false;
+	checkingForCreatorName = false;
+	creatorId = 0;
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -99,6 +103,12 @@ void MapNode::RequestDownloadPreview()
 	}
 }
 
+void MapNode::RequestCreatorInfo()
+{
+	//not used rn might clean up later
+	//SteamFriends()->RequestUserInformation(details.m_ulSteamIDOwner, true);
+}
+
 bool MapNode::CheckIfFullyInstalled()
 {
 	if (!isWorkshop)
@@ -159,16 +169,22 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel = new Panel("mapchooser", 1920,
 		1080 - 28, handler, true);
 
-	panel->SetPosition(Vector2i(0, 28));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
+
+
+	panel->SetPosition(Vector2i(0, 0));//960 - panel->size.x / 2, 540 - panel->size.y / 2 ));
 
 	panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;
 
 	panel->MouseUpdate();
 
-	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
-	playButton = panel->AddButton("play", Vector2i(100, 10), Vector2f(30, 30), "play");
-	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+
+	vector<string> tabNames = { "Local", "Workshop" };
+	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, 30);
+
+	upButton = panel->AddButton("up", Vector2i(10, 50), Vector2f(30, 30), "up");
+	playButton = panel->AddButton("play", Vector2i(100, 50), Vector2f(30, 30), "play");
+	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 50), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
 
@@ -176,7 +192,6 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	nextPageButton = panel->AddButton("nextpage", Vector2i(pageButtonOrigin + Vector2i(60, 0)), Vector2f(30, 30), ">");
 	
 	
-
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
 	{
@@ -346,6 +361,15 @@ void MapBrowser::Update()
 			}
 		}
 
+		for (auto it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			if ((*it)->checkingForCreatorName)
+			{
+				waitingForPreviewResults = true;
+				break;
+			}
+		}
+
 		if (!waitingForPreviewResults)
 		{
 			for (auto it = nodes.begin(); it != nodes.end(); ++it)
@@ -433,6 +457,8 @@ void MapBrowser::SetPath(const std::string &p_path)
 		maxTopRow = 0;
 
 	PopulateRects();
+
+	//MOUSE.ResetMouse(); //can load rects and mouse can be clicked down on one of thema lready and its weird.
 }
 
 void MapBrowser::QueryMaps()
@@ -523,7 +549,7 @@ void MapBrowser::Init()
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{
-		panel->confirmButton->text.setString("Create");
+		panel->confirmButton->text.setString("Create Lobby");
 
 		/*fileNameTextBox->SetString("");
 		fileNameTextBox->focused = true;
@@ -630,17 +656,26 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, int extraImageRects)
 
 	Vector2f previewTopLeft = Vector2f(1000, 540 - 492 / 2);
 
-	SetRectSubRect(largePreview, FloatRect(0, 0, 912, 492));
-	SetRectTopLeft(largePreview, 912, 492, previewTopLeft);
+	Vector2f previewSize(912, 492);
+
+	SetRectSubRect(largePreview, FloatRect(0, 0, previewSize.x, previewSize.y));
+	SetRectTopLeft(largePreview, previewSize.x, previewSize.y, previewTopLeft);
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	Vector2f previewBotLeft = previewTopLeft + Vector2f(0, 492);
+	Vector2f previewBotLeft = previewTopLeft + Vector2f(0, previewSize.y);
 
 	descriptionText.setFont(mm->arial);
 	descriptionText.setCharacterSize(20);
 	descriptionText.setPosition(previewBotLeft + Vector2f(0, 30));
 	descriptionText.setFillColor(Color::Red);
+
+	fullNameText.setFont(mm->arial);
+	fullNameText.setCharacterSize(40);
+	fullNameText.setPosition(previewTopLeft + Vector2f(0, -50));
+	fullNameText.setFillColor(Color::Black);
+
+	creatorLink = chooser->panel->AddHyperLink("creatorlink", Vector2i(previewTopLeft + Vector2f(0, -100)), 40, "", "");
 }
 
 MapBrowserHandler::~MapBrowserHandler()
@@ -651,7 +686,8 @@ MapBrowserHandler::~MapBrowserHandler()
 void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	MapNode *node = (MapNode*)cr->info;
-	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED)
+	if (eventType == ChooseRect::ChooseRectEventType::E_FOCUSED
+		|| eventType == ChooseRect::ChooseRectEventType::E_LEFTRELEASED)//left released so that it catches the mouse when first loading
 	{
 		if (node->type == MapNode::FILE)
 		{
@@ -673,6 +709,7 @@ void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 		}
 		else if (node->type == MapNode::FILE)
 		{
+			//FocusFile(cr);
 			ClickFile(cr);
 		}
 	}
@@ -760,6 +797,19 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	{
 		
 		chooser->SetPath(chooser->currPath.parent_path().string());
+	}
+}
+
+void MapBrowserHandler::TabGroupCallback(TabGroup *tg, const std::string &e)
+{
+	//need to revisit the whole Create_Custom_Game thing eventually
+	if (tg->currTabIndex == 0)
+	{
+		chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+	}
+	else if (tg->currTabIndex == 1)
+	{
+		chooser->StartWorkshop(MapBrowser::CREATE_CUSTOM_GAME);
 	}
 }
 
@@ -875,7 +925,55 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 
 	MapNode *mn = (MapNode*)cr->info;
 
+	if ( !mn->isWorkshop && !mn->nameAndDescriptionUpdated)
+	{
+		ifstream is;
+		is.open(mn->filePath.string());
+
+		if (is.is_open())
+		{
+			MapHeader mh;
+			mh.Load(is);
+
+			if (mh.fullName == "----")
+			{
+				//need to figure out how to get the workshop name here.
+				mn->fullMapName = mn->nodeName;
+			}
+			else
+			{
+				mn->fullMapName = mh.fullName;
+			}
+
+			mn->description = mh.description;
+
+			is.close();
+
+			mn->nameAndDescriptionUpdated = true;
+
+			mn->creatorId = mh.creatorID;
+			mn->creatorName = mh.creatorName;
+		}
+		else
+		{
+
+		}
+	}
+
+	fullNameText.setString(mn->fullMapName);
 	descriptionText.setString(mn->description);
+
+	if (mn->isWorkshop)
+	{
+		//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
+		creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mn->creatorId));
+		creatorLink->SetString(mn->creatorName);
+		creatorLink->ShowMember();
+	}
+	else
+	{
+		creatorLink->HideMember();
+	}
 }
 
 void MapBrowserHandler::UnfocusFile(ChooseRect *cr)
@@ -883,6 +981,8 @@ void MapBrowserHandler::UnfocusFile(ChooseRect *cr)
 	ts_largePreview = NULL;
 
 	descriptionText.setString("");
+	fullNameText.setString("");
+	creatorLink->HideMember();
 }
 
 void MapBrowserHandler::Draw(sf::RenderTarget *target)
@@ -893,5 +993,6 @@ void MapBrowserHandler::Draw(sf::RenderTarget *target)
 		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
 
 		target->draw(descriptionText);
+		target->draw(fullNameText);
 	}
 }

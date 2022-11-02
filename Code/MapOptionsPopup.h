@@ -23,6 +23,12 @@ struct MapOptionsPopup : GUIHandler
 	bool active;
 	Action action;
 
+	sf::Sprite previewSpr;
+	Tileset *ts_preview;
+
+	
+
+
 	MapHeader *currMapHeader;
 	LobbyParams *currLobbyParams;
 	int chosenGameModeType;
@@ -34,6 +40,14 @@ struct MapOptionsPopup : GUIHandler
 	std::vector<std::string> gameModeOptions;
 
 	std::vector<int> playerNumOptions;
+
+	sf::Vector2i previewPos;
+	HyperLink *creatorLink;
+	sf::Text *creatorLabel;
+	sf::Text *creatorByLabel;
+	HyperLink *nameLink;
+	sf::Text *nameLabel;
+	sf::Text *descriptionText;
 
 	MapOptionsPopup();
 	~MapOptionsPopup();

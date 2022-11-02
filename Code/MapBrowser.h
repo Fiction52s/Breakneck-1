@@ -40,7 +40,9 @@ struct MapNode
 	std::string nodeName;
 	std::string fileName; //node name can be different from file name
 	boost::filesystem::path folderPath;
+	bool nameAndDescriptionUpdated;
 	std::string description;
+	std::string fullMapName;
 	std::string previewURL;
 	sf::Texture *previewTex;
 	bool checkingForPreview;
@@ -48,6 +50,10 @@ struct MapNode
 	PublishedFileId_t publishedFileId;
 	ImageChooseRect *chooseRect;
 	bool isWorkshop;
+	bool creatorNameRetrieved;
+	bool checkingForCreatorName;
+	std::string creatorName;
+	uint64 creatorId;
 	
 	CCallResult<MapNode,
 		HTTPRequestCompleted_t>
@@ -60,6 +66,7 @@ struct MapNode
 		bool bIOFailure);
 	void RequestDownloadPreview();
 	bool CheckIfFullyInstalled();
+	void RequestCreatorInfo();
 };
 
 struct MapBrowserHandler : GUIHandler
@@ -81,12 +88,16 @@ struct MapBrowserHandler : GUIHandler
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
+	void TabGroupCallback(TabGroup *tg, const std::string &e);
 	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
 
+	sf::Text fullNameText;
 	sf::Text descriptionText;
+
+	HyperLink *creatorLink;
 
 	MapBrowser *chooser;
 
@@ -124,6 +135,8 @@ struct MapBrowser : TilesetManager,
 	Button *nextPageButton;
 	Button *prevPageButton;
 	sf::Text pageLabel;
+
+	
 
 	MapBrowser(MapBrowserHandler *handler,
 		int p_cols, int p_rows, int extraImageRects = 0);

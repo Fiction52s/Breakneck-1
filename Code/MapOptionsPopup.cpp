@@ -10,20 +10,35 @@ using namespace sf;
 
 MapOptionsPopup::MapOptionsPopup()
 {
-	panel = new Panel("mapoptions", 500,
-		300, this, true);
+	//panel = new Panel("mapoptions", 500,
+	//	300, this, true);
 
-	panel->SetAutoSpacing(true, false, Vector2i(10, 250), Vector2i(30, 0));
-	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+	
 
-	panel->confirmButton =
-		panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
-	panel->cancelButton =
-		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+	previewPos = Vector2i(10, 110);
+	Vector2i previewSize(912, 492);
+	Vector2i previewBotLeft = previewPos + Vector2i(0, previewSize.y);
 
-	panel->StopAutoSpacing();
+	Vector2i rightColumStart(previewPos.x + previewSize.x + 10, 10);
+
+	panel = new Panel("mapoptions", rightColumStart.x + 410,
+		800, this, true);
+
 
 	panel->SetCenterPos(Vector2i(960, 540));
+
+	
+	previewSpr.setPosition(Vector2f(previewPos + panel->pos));
+
+	nameLink = panel->AddHyperLink("namelink", previewPos + Vector2i(0, -100), 40, "", "");
+	nameLabel = panel->AddLabel("namelabel", previewPos + Vector2i(0, -100), 40, "");
+
+	creatorByLabel = panel->AddLabel( "creatorbylabel", previewPos + Vector2i(0, -50 + 5), 25, "By: ");
+	creatorLabel = panel->AddLabel("creatorlabel", previewPos + Vector2i(50, -50), 25, "");
+	creatorLink = panel->AddHyperLink("creatorlink", previewPos + Vector2i(50, -50), 25, "", "");
+
+	descriptionText = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
+	descriptionText->setFillColor(Color::Red);
 
 	action = A_INACTIVE;
 
@@ -39,7 +54,7 @@ MapOptionsPopup::MapOptionsPopup()
 
 	playerNumOptions.reserve(4);
 
-	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+	panel->SetAutoSpacing(false, true, rightColumStart, Vector2i(0, 20));
 
 	std::vector<string> blankOptions;
 	blankOptions.push_back("");
@@ -49,6 +64,15 @@ MapOptionsPopup::MapOptionsPopup()
 
 	numPlayersDropdown = panel->AddDropdown("numplayersdropdown", Vector2i(0, 0), Vector2i(400, 28), blankOptions, 0);
 	numPlayersDropdown->SetToolTip("Choose Num Players");
+
+	panel->SetAutoSpacing(true, false, rightColumStart + Vector2i(0, panel->size.y - 50), Vector2i(30, 0));
+
+	panel->confirmButton =
+		panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
+	panel->cancelButton =
+		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+
+	panel->StopAutoSpacing();
 
 	/*panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;*/
@@ -85,6 +109,7 @@ void MapOptionsPopup::HandleEvent(sf::Event ev)
 void MapOptionsPopup::Draw(sf::RenderTarget *target)
 {
 	panel->Draw(target);
+	target->draw(previewSpr);
 }
 
 void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
@@ -126,6 +151,62 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	{
 		currLobbyParams->mapPath = boost::filesystem::relative(mp->filePath).string();
 	}
+
+	ts_preview = mp->ts_preview;
+	if (ts_preview != NULL && ts_preview->texture != NULL)
+	{
+		ts_preview->SetSpriteTexture(previewSpr);	
+	}
+
+	descriptionText->setString(mp->description);
+	
+	if (mp->isWorkshop)
+	{
+		nameLabel->setString("");
+
+		nameLink->SetString(mp->fullMapName);
+		nameLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(mp->publishedFileId));
+	}
+	else
+	{
+		nameLabel->setString(mp->fullMapName);
+
+		nameLink->HideMember();
+
+		if (!mp->creatorNameRetrieved)
+		{
+			bool needsToRequestInfo = SteamFriends()->RequestUserInformation(mp->creatorId, true);
+
+			if (needsToRequestInfo)
+			{
+				mp->checkingForCreatorName = true;
+			}
+			else
+			{
+				mp->creatorNameRetrieved = true;
+				mp->creatorName = SteamFriends()->GetFriendPersonaName(mp->creatorId);
+			}
+		}
+	}
+
+	if (mp->creatorNameRetrieved)
+	{
+		creatorLink->ShowMember();
+		creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mp->creatorId));
+		creatorLink->SetString(mp->creatorName);
+		creatorLabel->setString("");
+	}
+	else
+	{
+		creatorLink->HideMember();
+		creatorLabel->setString(mp->creatorName);
+		//creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mp->creatorId));
+		//creatorLink->SetString(mp->creatorName);
+	}
+	
+
+	//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
+
 
 	//currLobbyParams->randSeed = time(0);
 
