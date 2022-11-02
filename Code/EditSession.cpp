@@ -2319,7 +2319,7 @@ void EditSession::WriteMapHeader(ofstream &of)
 	//mapHeader->ver1 = 2;
 	//mapHeader->ver2 = 9;
 
-	mapHeader->ver1 = 6;
+	mapHeader->ver1 = 7;
 	mapHeader->ver2 = 0;
 
 	int pointCount = 0;
@@ -2346,6 +2346,13 @@ void EditSession::WriteMapHeader(ofstream &of)
 		MI_HAS_BASES,
 	};*/
 
+	//of << numGameObjects;
+	//of << functionalWidth;
+	//of << functionalHeight;
+
+	
+
+
 	bool hGoal = false;
 	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
 	{
@@ -2364,6 +2371,85 @@ void EditSession::WriteMapHeader(ofstream &of)
 	{
 		mapHeader->possibleGameModeTypeFlags |= 1 << MapHeader::GameModeFlags::MI_HAS_GOAL;
 	}
+
+	int numObjects = 0;
+	for (map<string, ActorGroup*>::iterator it = groups.begin(); it != groups.end(); ++it)
+	{
+		ActorGroup *group = (*it).second;
+
+		if (group->name == "player")
+			continue;
+
+		for (list<ActorPtr>::iterator it2 = group->actors.begin(); it2 != group->actors.end(); ++it2)
+		{
+			++numObjects;
+		}
+	}
+	mapHeader->numGameObjects = numObjects;
+
+
+	int funcLeft, funcTop, funcRight, funcBot;
+
+	if (inversePolygon != NULL)
+	{
+		funcLeft = inversePolygon->left;
+		funcTop = inversePolygon->top;
+		funcRight = inversePolygon->right;
+		funcBot = inversePolygon->bottom;
+	}
+	else
+	{
+		int pLeft = 0;
+		int pTop = 0;
+		int pRight = 0;
+		int pBot = 0;
+		for (auto it = polygons.begin(); it != polygons.end(); ++it)
+		{
+			if (polygons.front() == (*it))
+			{
+				pLeft = (*it)->left;
+				pTop = (*it)->top;
+				pRight = (*it)->right;
+				pBot = (*it)->bottom;
+			}
+			else
+			{
+				pLeft = min((*it)->left, pLeft);
+				pRight = max((*it)->right, pRight);
+				pTop = min((*it)->top, pTop);
+				pBot = max((*it)->bottom, pBot);
+			}
+		}
+
+		funcLeft = pLeft;
+		funcTop = mapHeader->topBounds;
+		funcRight = pRight;
+		funcBot = pBot;
+	}
+
+
+	if (funcLeft < mapHeader->leftBounds)
+	{
+		funcLeft = mapHeader->leftBounds;
+	}
+
+	if (funcTop < mapHeader->topBounds)
+	{
+		funcTop = mapHeader->topBounds;
+	}
+
+	int bRight = mapHeader->leftBounds + mapHeader->boundsWidth;
+	if (funcRight > bRight)
+	{
+		funcRight = bRight;
+	}
+
+	int funcWidth = funcRight - funcLeft;
+	int funcHeight = funcBot - funcTop;
+
+
+	mapHeader->functionalWidth = funcWidth;
+	mapHeader->functionalHeight = funcHeight;
 
 	//
 
@@ -3757,7 +3843,6 @@ void EditSession::DefaultInit()
 {
 	mapHeader = new MapHeader;
 	mapHeader->description = "no description";
-	mapHeader->collectionName = "default";
 
 	//mapHeader->gameMode = //MapHeader::T_BASIC;
 	mapHeader->numPlayerSpawns = 1;

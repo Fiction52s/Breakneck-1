@@ -254,40 +254,40 @@ void MapSelectionMenu::LoadItems()
 			string pFile = string("Maps/Previews/") + (*it).relative_path().stem().string() + string("_preview_912x492.png");//string("Maps/") + (*it).filename().stem().string() + string("_preview_960x540.png");
 																															 //string defaultFile = "Menu/nopreview_960x540.png";
 
-			if (collectionMap.find(mh->collectionName) != collectionMap.end())
-			{
-				MapSelectionItem *item = new MapSelectionItem((*it), mh);
+			//if (collectionMap.find(mh->collectionName) != collectionMap.end())
+			//{
+			//	MapSelectionItem *item = new MapSelectionItem((*it), mh);
 
-				//load textures in one at a time. loading all textures like this is insane.
-				item->ts_preview = NULL; //mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
-				if (item->ts_preview == NULL)
-				{
-					//item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
-				}
+			//	//load textures in one at a time. loading all textures like this is insane.
+			//	item->ts_preview = NULL; //mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
+			//	if (item->ts_preview == NULL)
+			//	{
+			//		//item->ts_preview = mainMenu->tilesetManager.GetTileset(defaultFile, 960, 540);
+			//	}
 
-				MapCollection *temp = collectionMap[mh->collectionName];
+			//	MapCollection *temp = collectionMap[mh->collectionName];
 
-				item->collection = temp;
+			//	item->collection = temp;
 
-				temp->collectionName = mh->collectionName;
-				temp->maps.push_back(item);
-			}
-			else
-			{
-				MapSelectionItem *item = new MapSelectionItem((*it), mh);
+			//	temp->collectionName = mh->collectionName;
+			//	temp->maps.push_back(item);
+			//}
+			//else
+			//{
+			//	MapSelectionItem *item = new MapSelectionItem((*it), mh);
 
-				item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
+			//	item->ts_preview = mainMenu->tilesetManager.GetTileset(pFile, 960, 540);
 
-				MapCollection *coll = new MapCollection;
-				collectionMap[mh->collectionName] = coll;
+			//	MapCollection *coll = new MapCollection;
+			//	collectionMap[mh->collectionName] = coll;
 
-				item->collection = coll;
+			//	item->collection = coll;
 
-				coll->collectionName = mh->collectionName;
-				coll->maps.push_back(item);
+			//	coll->collectionName = mh->collectionName;
+			//	coll->maps.push_back(item);
 
 
-			}
+			//}
 		}
 		else
 		{

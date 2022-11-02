@@ -46,7 +46,7 @@ bool MatchParams::IsMultiplayerMode(int gm)
 	return true;
 }
 
-std::vector<int> MatchParams::GetNumPlayerOptions(int gm)
+std::vector<int> MatchParams::GetNumPlayerOptions(int gm, int numSpawns)
 {
 	vector<int> options;
 	options.reserve(4); //max_players
@@ -59,12 +59,16 @@ std::vector<int> MatchParams::GetNumPlayerOptions(int gm)
 		break;
 	case GAME_MODE_FIGHT:
 		options.push_back(2);
-		options.push_back(3);
-		options.push_back(4);
+		if (numSpawns >= 3 )
+			options.push_back(3);
+		if( numSpawns >= 4)
+			options.push_back(4);
 		break;
 	case GAME_MODE_RACE:
 		options.push_back(2);
+		if (numSpawns >= 3)
 		options.push_back(3);
+		if (numSpawns >= 4)
 		options.push_back(4);
 		break;
 	case GAME_MODE_PARALLEL_RACE:

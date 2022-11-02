@@ -297,9 +297,6 @@ bool Dropdown::MouseUpdate()
 
 	}
 
-
-
-
 	if (MOUSE.IsMouseLeftReleased() && expanded)
 	{
 		for (int i = 0; i < numOptions; ++i)

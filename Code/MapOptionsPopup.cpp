@@ -58,8 +58,14 @@ MapOptionsPopup::MapOptionsPopup()
 
 	panel->SetAutoSpacing(false, true, rightColumStart, Vector2i(0, 20));
 
-	fileLink = panel->AddLabeledHyperLink("filelink", Vector2i(0, 0), 20, "", "", "File: ");
+	fileLink = panel->AddLabeledHyperLink("filelink", Vector2i(0, 0), 20, "", "", "File:");
 
+	panel->AddLabel("maxnumplayerslabel", Vector2i(0, 0), 20, "Max Players: ");
+	panel->AddLabel("numverticeslabel", Vector2i(0, 0), 20, "Number of Vertices: ");
+	panel->AddLabel("numgameobjectslabel", Vector2i(0, 0), 20, "Number of objects: ");
+	panel->AddLabel("sizelabel", Vector2i(0, 0), 20, "Size: ");
+
+	//panel->AddLabel("numobjectslabel", Vector2i(0, 0), 20, "Number of Objects: ");
 
 	std::vector<string> blankOptions;
 	blankOptions.push_back("");
@@ -246,6 +252,37 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	}
 	panel->dropdowns.clear();*/
 
+	//currMapHeader->
+
+	panel->labels["maxnumplayerslabel"]->setString( "Number of Player Spawns: " + to_string(currMapHeader->numPlayerSpawns));
+	panel->labels["numverticeslabel"]->setString("Number of Vertices: " + to_string( currMapHeader->numVertices));
+
+
+	string numGameObjectsStr;
+
+	if (currMapHeader->numGameObjects == -1)
+	{
+		numGameObjectsStr = "?";
+	}
+	else
+	{
+		numGameObjectsStr = to_string(currMapHeader->numGameObjects);
+	}
+
+	panel->labels["numgameobjectslabel"]->setString("Number of objects: " + numGameObjectsStr);
+
+	string sizeStr;
+	if (currMapHeader->functionalWidth == -1 || currMapHeader->functionalHeight == -1)
+	{
+		sizeStr = "? x ?";
+	}
+	else
+	{
+		sizeStr = to_string(currMapHeader->functionalWidth) + " x " + to_string(currMapHeader->functionalHeight);
+	}
+
+	panel->labels["sizelabel"]->setString("Size: " + sizeStr);
+
 	
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
 
@@ -292,15 +329,14 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 void MapOptionsPopup::UpdateNumPlayerOptions()
 {
-	playerNumOptions = MatchParams::GetNumPlayerOptions(gameModeDropdownModes[modeDropdown->selectedIndex]);
+	//currMapHeader->numPlayerSpawns
+	playerNumOptions = MatchParams::GetNumPlayerOptions(gameModeDropdownModes[modeDropdown->selectedIndex], currMapHeader->numPlayerSpawns);
 
 	std::vector<string> playerNumOptionsStr;
 	for (auto it = playerNumOptions.begin(); it != playerNumOptions.end(); ++it)
 	{
 		playerNumOptionsStr.push_back(to_string((*it)));
 	}
-
-
 
 	int startIndex = 0;
 	int ind = 0;

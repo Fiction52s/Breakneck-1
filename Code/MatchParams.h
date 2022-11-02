@@ -31,7 +31,7 @@ struct MatchParams
 	MatchParams();
 	static std::string GetGameModeName(int gm);
 	static bool IsMultiplayerMode(int gm);
-	static std::vector<int> GetNumPlayerOptions(int gm);
+	static std::vector<int> GetNumPlayerOptions(int gm, int numSpawns);
 };
 
 #endif

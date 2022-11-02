@@ -559,7 +559,8 @@ MainMenu::MainMenu()
 
 	multiLoadingScreen = new MultiLoadingScreen( this );
 
-	mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
+	mapSelectionMenu = NULL;
+	//mapSelectionMenu = new MapSelectionMenu(this, Vector2f(0, 100));
 
 	optionsMenu = new OptionsMenuScreen(this);
 
@@ -766,7 +767,12 @@ MainMenu::~MainMenu()
 	delete window;
 
 	delete multiLoadingScreen;
-	delete mapSelectionMenu;
+
+	if (mapSelectionMenu != NULL)
+	{
+		delete mapSelectionMenu;
+	}
+	
 	delete optionsMenu;
 	delete creditsMenu;
 	delete mapBrowserScreen;

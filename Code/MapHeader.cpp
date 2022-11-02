@@ -255,9 +255,7 @@ bool MapHeader::Load(std::ifstream &is)
 		is >> numPlayerSpawns;
 		is >> possibleGameModeTypeFlags;
 	}
-	
-	
-	if (ver1 < 3)
+	else
 	{
 		int oldGameMode;
 		is >> oldGameMode;
@@ -288,6 +286,19 @@ bool MapHeader::Load(std::ifstream &is)
 	}
 	
 
+	if (ver1 >= 7)
+	{
+		is >> numGameObjects;
+		is >> functionalWidth;
+		is >> functionalHeight;
+	}
+	else
+	{
+		numGameObjects = -1;
+		functionalWidth = -1;
+		functionalHeight = -1;
+	}
+
 	if (ver1 < 2 || (ver1 == 2 && ver2 <= 7 ) )
 	{
 		is >> envWorldType;
@@ -307,16 +318,6 @@ bool MapHeader::Load(std::ifstream &is)
 		is >> preLevelSceneName;
 		is >> postLevelSceneName;
 	}
-
-	collectionName = collectionName;
-	
-	
-
-	/*if (ver1 < 2 || ( ver1 == 2 && ver2 < 3) )
-	{
-		gameMode = T_BASIC;
-	}*/
-
 	return true;
 }
 
@@ -362,6 +363,10 @@ void MapHeader::Save(std::ofstream &of)
 
 	of << numPlayerSpawns << "\n";
 	of << possibleGameModeTypeFlags << "\n";
+
+	of << numGameObjects << "\n";
+	of << functionalWidth << "\n";
+	of << functionalHeight << "\n";
 
 	of << envName << endl;
 

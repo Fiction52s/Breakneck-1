@@ -26,8 +26,6 @@ struct MapOptionsPopup : GUIHandler
 	sf::Sprite previewSpr;
 	Tileset *ts_preview;
 
-	
-
 
 	MapHeader *currMapHeader;
 	LobbyParams *currLobbyParams;
