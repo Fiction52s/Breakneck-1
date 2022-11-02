@@ -33,9 +33,9 @@ MapOptionsPopup::MapOptionsPopup()
 	nameLink = panel->AddHyperLink("namelink", previewPos + Vector2i(0, -100), 40, "", "");
 	nameLabel = panel->AddLabel("namelabel", previewPos + Vector2i(0, -100), 40, "");
 
-	creatorByLabel = panel->AddLabel( "creatorbylabel", previewPos + Vector2i(0, -50 + 5), 25, "By: ");
-	creatorLabel = panel->AddLabel("creatorlabel", previewPos + Vector2i(50, -50), 25, "");
-	creatorLink = panel->AddHyperLink("creatorlink", previewPos + Vector2i(50, -50), 25, "", "");
+	creatorByLabel = panel->AddLabel( "creatorbylabel", previewPos + Vector2i(0, -50 + 6), 25, "By: ");
+	creatorLabel = panel->AddLabel("creatorlabel", previewPos + Vector2i(40, -50), 25, "");
+	creatorLink = panel->AddHyperLink("creatorlink", previewPos + Vector2i(40, -50), 25, "", "");
 
 	descriptionText = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
 	descriptionText->setFillColor(Color::Red);
@@ -54,15 +54,24 @@ MapOptionsPopup::MapOptionsPopup()
 
 	playerNumOptions.reserve(4);
 
+	
+
 	panel->SetAutoSpacing(false, true, rightColumStart, Vector2i(0, 20));
+
+	fileLink = panel->AddLabeledHyperLink("filelink", Vector2i(0, 0), 20, "", "", "File: ");
+
 
 	std::vector<string> blankOptions;
 	blankOptions.push_back("");
 
-	modeDropdown = panel->AddDropdown("gamemodedropdown", Vector2i(0, 0), Vector2i(400, 28), blankOptions, 0);
+	panel->AddLabel("gamemodelabel", Vector2i(0,0), 20, "Game Mode:");
+
+	modeDropdown = panel->AddDropdown("gamemodedropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
 	modeDropdown->SetToolTip("Choose Map Mode");
 
-	numPlayersDropdown = panel->AddDropdown("numplayersdropdown", Vector2i(0, 0), Vector2i(400, 28), blankOptions, 0);
+	panel->AddLabel("playernumberlabel", Vector2i(0, 0), 20, "Number of Players:");
+
+	numPlayersDropdown = panel->AddDropdown("numplayersdropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
 	numPlayersDropdown->SetToolTip("Choose Num Players");
 
 	panel->SetAutoSpacing(true, false, rightColumStart + Vector2i(0, panel->size.y - 50), Vector2i(30, 0));
@@ -129,6 +138,8 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 	else if (b->name == "cancel")
 	{
 		action = A_CANCELLED;
+		
+
 	}
 }
 
@@ -139,6 +150,7 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 		UpdateNumPlayerOptions();
 	}
 }
+
 
 bool MapOptionsPopup::Activate(MapNode *mp)
 {
@@ -155,7 +167,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	ts_preview = mp->ts_preview;
 	if (ts_preview != NULL && ts_preview->texture != NULL)
 	{
-		ts_preview->SetSpriteTexture(previewSpr);	
+		ts_preview->SetSpriteTexture(previewSpr);
 	}
 
 	descriptionText->setString(mp->description);
@@ -164,6 +176,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	{
 		nameLabel->setString("");
 
+		nameLink->ShowMember();
 		nameLink->SetString(mp->fullMapName);
 		nameLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(mp->publishedFileId));
 	}
@@ -204,7 +217,9 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 		//creatorLink->SetString(mp->creatorName);
 	}
 	
-
+	//panel->labels["filenamelabel"]->setString("File: " + mp->filePath.filename().string());
+	fileLink->SetLinkFileAndFolder(mp->filePath.string(), mp->folderPath.string());
+	fileLink->SetString(mp->filePath.filename().string());
 	//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));
 
 
@@ -269,6 +284,8 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	currLobbyParams->publishedFileId = mp->publishedFileId;
 
 	action = A_ACTIVE;
+
+
 
 	return true;
 }

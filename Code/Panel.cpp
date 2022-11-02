@@ -821,9 +821,11 @@ HyperLink * Panel::AddHyperLink(const std::string &name, sf::Vector2i pos, int c
 	hyperLinks[name] = hyperLink;
 
 	auto bounds = hyperLink->text.getGlobalBounds();//getLocalBounds();
+	bounds.height = hyperLink->text.getFont()->getLineSpacing( characterHeight );
 
 	AddAutoSpaceX(bounds.width + pos.x);
 	AddAutoSpaceY(bounds.height + pos.y);
+
 
 	return hyperLink;
 }
@@ -894,6 +896,19 @@ TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bo
 	autoStart = oldAutoStart;
 	//needs to be fixed soon
 	return AddTextBox(name, pos, rows, cols, charHeight, lengthLimit, initialText);
+}
+
+HyperLink * Panel::AddLabeledHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
+	const std::string &link, const std::string &labelText)
+{
+	int extraSpacing = 8;
+	Vector2i oldAutoStart = autoStart;
+	Vector2i labelStart = pos;
+	labelStart.y += 6;
+	sf::Text *t = AddLabel(name + "label", labelStart, characterHeight, labelText);
+	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	autoStart = oldAutoStart;
+	return AddHyperLink(name, pos, characterHeight, text, link);
 }
 
 TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText)

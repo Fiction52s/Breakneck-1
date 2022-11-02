@@ -27,6 +27,7 @@ MapNode::MapNode()
 	creatorNameRetrieved = false;
 	checkingForCreatorName = false;
 	creatorId = 0;
+	mapUpdating = false;
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -116,11 +117,14 @@ bool MapNode::CheckIfFullyInstalled()
 
 	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
 
-	if (itemState & k_EItemStateInstalled && !(itemState & k_EItemStateNeedsUpdate))
+	bool installed = itemState & k_EItemStateInstalled;
+	bool needsUpdate = itemState & k_EItemStateNeedsUpdate;
+	if ( installed && !needsUpdate )
 	{
 		if (!mapDownloaded)
 		{
 			mapDownloaded = true;
+			mapUpdating = false;
 
 			uint64 fileSize;
 			char path[1024];
@@ -128,8 +132,24 @@ bool MapNode::CheckIfFullyInstalled()
 			cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
 
 			filePath = string(path) + "\\" + fileName + ".brknk";
+			folderPath = path;
 		}
 		return true;
+	}
+	else if (needsUpdate && !mapUpdating )
+	{
+		cout << "not sure if this update code is needed" << endl;
+		bool result = SteamUGC()->DownloadItem(publishedFileId, true);
+		if (result)
+		{
+			mapUpdating = true;
+			cout << "starting download update" << endl;
+			//started download
+		}
+		else
+		{
+			cout << "update cannot be downloaded.." << endl;
+		}
 	}
 
 	return false;

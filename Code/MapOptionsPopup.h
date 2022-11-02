@@ -43,11 +43,14 @@ struct MapOptionsPopup : GUIHandler
 
 	sf::Vector2i previewPos;
 	HyperLink *creatorLink;
+
 	sf::Text *creatorLabel;
 	sf::Text *creatorByLabel;
 	HyperLink *nameLink;
 	sf::Text *nameLabel;
 	sf::Text *descriptionText;
+
+	HyperLink *fileLink;
 
 	MapOptionsPopup();
 	~MapOptionsPopup();

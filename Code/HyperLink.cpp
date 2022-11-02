@@ -1,9 +1,12 @@
 #include "GUI.h"
+#include <ShlObj.h> //for opening an explorer window
 #include <assert.h>
 #include <iostream>
 #include "Session.h"
 #include "EditorDecorInfo.h"
 #include "EditSession.h"
+
+
 
 using namespace sf;
 using namespace std;
@@ -11,6 +14,7 @@ using namespace std;
 HyperLink::HyperLink(const std::string &n, int posx, int posy, int charHeight, sf::Font &f, const std::string & t, const std::string &p_linkURL, Panel *p)
 	:PanelMember(p), pos(posx, posy), clickedDown(false), hoveredOver(false), name(n)
 {
+	linkType = LINK_WEBPAGE;
 	linkURL = p_linkURL;
 	characterHeight = charHeight;
 	text.setString(t);
@@ -18,9 +22,6 @@ HyperLink::HyperLink(const std::string &n, int posx, int posy, int charHeight, s
 	text.setFont(f);
 	text.setFillColor(Color::White);
 	text.setCharacterSize(characterHeight);
-
-	//auto bounds = text.getLocalBounds();
-	//text.setOrigin(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2);
 
 	SetPos(pos);
 }
@@ -33,6 +34,14 @@ void HyperLink::Deactivate()
 void HyperLink::SetLinkURL( const std::string &url )
 {
 	linkURL = url;
+	linkType = LINK_WEBPAGE;
+}
+
+void HyperLink::SetLinkFileAndFolder(const std::string &fileStr, const std::string folderStr)
+{
+	file = fileStr;
+	folder = folderStr;
+	linkType = LINK_FILE;
 }
 
 void HyperLink::SetString(const std::string &str)
@@ -47,9 +56,10 @@ void HyperLink::SetPos(sf::Vector2i &p_pos)
 	text.setPosition(pos.x, pos.y);
 }
 
-
+//#include <ShlObj.h> //for opening an explorer window
 bool HyperLink::MouseUpdate()
 {
+
 	if (hidden)
 		return false;
 
@@ -81,7 +91,27 @@ bool HyperLink::MouseUpdate()
 			clickedDown = false;
 			panel->SendEvent(this, "pressed");
 
-			SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());//"https://steamcommunity.com/sharedfiles/workshoplegalagreement");
+			if (linkType == LINK_WEBPAGE)
+			{
+				SteamFriends()->ActivateGameOverlayToWebPage(linkURL.c_str());
+			}
+			else if( linkType == LINK_FILE )
+			{
+#ifdef _WIN32
+//#include <ShlObj.h> //for opening an explorer window
+				ITEMIDLIST *dir = ILCreateFromPath(folder.c_str());
+				LPITEMIDLIST *items = new LPITEMIDLIST[1];
+				items[0] = ILCreateFromPath(file.c_str());
+				SHOpenFolderAndSelectItems(dir, 1, (LPCITEMIDLIST*)items, 0);
+				ILFree(items[0]);
+				ILFree(dir);
+				delete[] items;
+#endif
+			}
+			else
+			{
+				assert(0);
+			}
 			return true;
 		}
 		else

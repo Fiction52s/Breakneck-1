@@ -6,6 +6,7 @@
 #include <iostream>
 #include "steam\steam_api.h"
 
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;

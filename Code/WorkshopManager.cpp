@@ -256,6 +256,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 
 						//newNode->filePath = string(path) + "\\" + newNode->nodeName + ".brknk";
 						newNode->filePath = string(path) + "\\" + newNode->fileName + ".brknk";
+						newNode->folderPath = path;
 					}
 					
 					bool result = SteamUGC()->GetQueryUGCPreviewURL(callback->m_handle, 

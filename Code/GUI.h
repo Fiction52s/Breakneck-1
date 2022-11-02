@@ -501,17 +501,27 @@ struct Button : PanelMember
 
 struct HyperLink : PanelMember
 {
+	enum LinkType
+	{
+		LINK_WEBPAGE,
+		LINK_FILE,
+	};
+
 	HyperLink(const std::string &name, int posx, int posy, int characterHeight, sf::Font &f, const std::string & text, const std::string &linkURL, Panel *panel);
 	void Draw(sf::RenderTarget *target);
 	bool MouseUpdate();
 	void Deactivate();
 	void SetPos(sf::Vector2i &pos);
 	void SetLinkURL(const std::string &url);
+	void SetLinkFileAndFolder(const std::string &fileStr, const std::string folderStr);
 	void SetString(const std::string &str);
 	sf::Vector2i pos;
 	sf::Text text;
 	std::string name;
 	std::string linkURL;
+	std::string file;
+	std::string folder;
+	int linkType;
 
 	int characterHeight;
 	bool hoveredOver;
@@ -765,6 +775,8 @@ struct Panel
 	
 	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit, 
 		const std::string &initialText, const std::string &labelText );
+	HyperLink * AddLabeledHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
+		const std::string &link, const std::string &labelText );
 	GridSelector * AddGridSelector( const std::string &name, sf::Vector2i pos, 
 		int sizex, int sizey, 
 		int tilesizex, int tilesizey,
