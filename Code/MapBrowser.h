@@ -55,16 +55,32 @@ struct MapNode
 	bool checkingForCreatorName;
 	std::string creatorName;
 	uint64 creatorId;
+
+	bool subscribing;
+	bool unsubscribing;
 	
 	CCallResult<MapNode,
 		HTTPRequestCompleted_t>
 		OnHTTPRequestCompletedCallResult;
 
+	CCallResult<MapNode,
+		RemoteStorageSubscribePublishedFileResult_t> onRemoteStorageSubscribePublishedFileResultCallResult;
+
+	CCallResult<MapNode,
+		RemoteStorageUnsubscribePublishedFileResult_t> onRRemoteStorageUnsubscribePublishedFileResultCallResult;
+
 	MapNode();
 	~MapNode();
+	bool IsSubscribed();
+	void Subscribe();
+	void Unsubscribe();
 	void Draw(sf::RenderTarget *target);
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
+
+	void OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure);
+	void OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure);
+
 	void RequestDownloadPreview();
 	bool CheckIfFullyInstalled();
 	void RequestCreatorInfo();
@@ -78,7 +94,7 @@ struct MapBrowserHandler : GUIHandler
 	void Confirm();
 	void ClickFile(ChooseRect *cr);
 	void FocusFile(ChooseRect *cr);
-	void UnfocusFile(ChooseRect *cr);
+	void UnfocusFile();//ChooseRect *cr);
 	void Draw(sf::RenderTarget *target);
 	void ChangePath();
 	void ClearSelection();
@@ -86,6 +102,8 @@ struct MapBrowserHandler : GUIHandler
 
 	void Update();
 	bool CheckIfSelectedItemInstalled();
+	void SubscribeToItem();
+	void UnsubscribeFromItem();
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
@@ -132,10 +150,15 @@ struct MapBrowser : TilesetManager,
 	WorkshopManager *workshop;
 	int currWorkshopPage;
 	int maxWorkshopPages;
-	Button *playButton;
 	Button *nextPageButton;
 	Button *prevPageButton;
 	sf::Text pageLabel;
+
+	Button *saveButton;
+	Button *openButton;
+	Button *createLobbyButton;
+	Button *okButton;
+	Button *cancelButton;
 
 	
 

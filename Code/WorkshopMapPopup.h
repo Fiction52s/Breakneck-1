@@ -1,5 +1,5 @@
-#ifndef __MAP_OPTIONS_POPUP_H__
-#define __MAP_OPTIONS_POPUP_H__
+#ifndef __WORKSHOP_MAP_POPUP_H__
+#define __WORKSHOP_MAP_POPUP_H__
 
 #include "GUI.h"
 #include <vector>
@@ -9,26 +9,18 @@ struct MapHeader;
 struct LobbyParams;
 struct MapNode;
 
-struct MapOptionsPopup : GUIHandler
+struct WorkshopMapPopup : GUIHandler
 {
 	enum Action
 	{
 		A_INACTIVE,
 		A_ACTIVE,
 		A_HOST,
-		A_CANCELLED,
 		A_EDIT,
 		A_PLAY,
 		A_SAVE,
+		A_BACK,
 	};
-
-	enum Mode
-	{
-		MODE_WORKSHOP_BROWSE,
-		MODE_CREATE_LOBBY,
-	};
-
-	int mode;
 
 	Panel *panel;
 	bool active;
@@ -39,17 +31,8 @@ struct MapOptionsPopup : GUIHandler
 
 
 	MapHeader *currMapHeader;
-	LobbyParams *currLobbyParams;
-
 	int chosenGameModeType;
 	std::string mapPath;
-	Dropdown *modeDropdown;
-	Dropdown *numPlayersDropdown;
-
-	std::vector<int> gameModeDropdownModes;
-	std::vector<std::string> gameModeOptions;
-
-	std::vector<int> playerNumOptions;
 
 	sf::Vector2i previewPos;
 	HyperLink *creatorLink;
@@ -59,23 +42,31 @@ struct MapOptionsPopup : GUIHandler
 	HyperLink *nameLink;
 	sf::Text *nameLabel;
 	sf::Text *descriptionText;
+	MapNode *currMapNode;
 
 	HyperLink *fileLink;
 
-	//create lobby mode
-	Button *createLobbyHostButton;
-	Button *createLobbyCancelButton;
+	Button *editLocalCopyButton;
+	Button *playButton; //hitting this will take you to freeplay mode with this map selected.
+	Button *hostButton;
+	Button *saveLocalCopyButton;
+	Button *backButton;
+	Button *subscribeButton;
+	Button *unsubscribeButton;
 
-	MapOptionsPopup();
-	~MapOptionsPopup();
+	WorkshopMapPopup();
+	~WorkshopMapPopup();
+	
+	void CheckSubscription();
+	void CheckHeader();
 	bool Activate(MapNode *mp);
+	void Deactivate();
 	void Update();
 	void HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);
-	void UpdateNumPlayerOptions();
 
 	void ButtonCallback(Button *b, const std::string & e);
-	void DropdownCallback(Dropdown *dropdown, const std::string & e);
+	void PanelCallback(Panel *p, const std::string & e);
 };
 
 #endif

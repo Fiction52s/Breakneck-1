@@ -244,7 +244,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 					newNode->fileName = fileName;
 					newNode->description = details.m_rgchDescription;
 					newNode->publishedFileId = details.m_nPublishedFileId;
-					newNode->mapDownloaded = itemState & k_EItemStateInstalled;
+					newNode->mapDownloaded = itemState & k_EItemStateInstalled; //check if subscribed or not?
 					newNode->isWorkshop = true;
 
 					if (newNode->mapDownloaded)

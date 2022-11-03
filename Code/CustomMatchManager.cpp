@@ -77,18 +77,36 @@ void CustomMatchManager::CreateCustomLobby()
 
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 
-	
-	if (sf::Keyboard::isKeyPressed(Keyboard::LShift))
+	mapBrowserScreen->StartLocalBrowsing();
+	/*if (sf::Keyboard::isKeyPressed(Keyboard::LShift))
 	{
 		mapBrowserScreen->StartWorkshopBrowsing();
 	}
 	else
 	{
 		mapBrowserScreen->StartLocalBrowsing();
-	}
+	}*/
 
 	
 	SetAction(A_CHOOSE_MAP);
+}
+
+void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
+{
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	netplayManager->Init();
+
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+
+	SetAction(A_CHOOSE_MAP);
+
+	if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+	{
+		selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+	}
+
+	assert(selectedMap != NULL);
+	TryActivateOptionsPanel(selectedMap);
 }
 
 void CustomMatchManager::BrowseCustomLobbies()
@@ -101,7 +119,7 @@ void CustomMatchManager::BrowseCustomLobbies()
 
 void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 {
-	if (mapOptionsPopup->Activate(mp))
+	if (mapOptionsPopup->Activate(mp) )
 	{
 		action = A_CHOOSE_MAP_OPTIONS;
 	}
@@ -148,14 +166,7 @@ bool CustomMatchManager::Update()
 			else
 			{
 				action = A_DOWNLOADING_WORKSHOP_MAP;
-
-				uint32 itemState = SteamUGC()->GetItemState(selectedMap->publishedFileId);
-				if (!(itemState & k_EItemStateSubscribed))
-				{
-					cout << "subbing to item" << endl;
-					SteamUGC()->SubscribeItem(selectedMap->publishedFileId);
-					cout << "map download started" << endl;
-				}
+				selectedMap->Subscribe();
 			}
 		}
 
@@ -183,7 +194,7 @@ bool CustomMatchManager::Update()
 		break;
 	}
 	case A_CHOOSE_MAP_OPTIONS:
-		if (mapOptionsPopup->action == MapOptionsPopup::A_CONFIRMED)
+		if (mapOptionsPopup->action == MapOptionsPopup::A_HOST)
 		{
 			SetAction(A_CREATING_LOBBY);
 

@@ -70,6 +70,7 @@ MapOptionsPopup::MapOptionsPopup()
 	std::vector<string> blankOptions;
 	blankOptions.push_back("");
 
+
 	panel->AddLabel("gamemodelabel", Vector2i(0,0), 20, "Game Mode:");
 
 	modeDropdown = panel->AddDropdown("gamemodedropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
@@ -80,15 +81,18 @@ MapOptionsPopup::MapOptionsPopup()
 	numPlayersDropdown = panel->AddDropdown("numplayersdropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
 	numPlayersDropdown->SetToolTip("Choose Num Players");
 
-	panel->SetAutoSpacing(true, false, rightColumStart + Vector2i(0, panel->size.y - 50), Vector2i(30, 0));
+	//panel->SetAutoSpacing(true, false, rightColumStart + Vector2i(0, panel->size.y - 50), Vector2i(30, 0));
 
-	panel->confirmButton =
-		panel->AddButton("ok", Vector2i(0, 0), Vector2f(60, 30), "Host");
-	panel->cancelButton =
-		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+	
+	panel->SetAutoSpacing(false, true, rightColumStart + Vector2i(0, 300), Vector2i(0, 20));
+
+	createLobbyHostButton = panel->AddButton("host", Vector2i(0, 0), Vector2f(60, 30), "Host");
+	createLobbyCancelButton = panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+
+	panel->confirmButton = createLobbyHostButton;
+	panel->cancelButton = createLobbyCancelButton;
 
 	panel->StopAutoSpacing();
-
 	/*panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;*/
 
@@ -129,7 +133,7 @@ void MapOptionsPopup::Draw(sf::RenderTarget *target)
 
 void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 {
-	if (b->name == "ok")
+	if( b == createLobbyHostButton )
 	{
 		currLobbyParams->randSeed = time(0);
 		currLobbyParams->creatorID = currMapHeader->creatorID;
@@ -139,13 +143,11 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 
 		cout << "game mode confirmed as: " << currLobbyParams->gameModeType << endl;
 
-		action = A_CONFIRMED;
+		action = A_HOST;
 	}
-	else if (b->name == "cancel")
+	else if (b == createLobbyCancelButton )
 	{
 		action = A_CANCELLED;
-		
-
 	}
 }
 
@@ -160,7 +162,6 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 
 bool MapOptionsPopup::Activate(MapNode *mp)
 {
-	//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
 	if (mp->isWorkshop)
 	{
 		currLobbyParams->mapPath = mp->filePath.string();
@@ -322,7 +323,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 	action = A_ACTIVE;
 
-
+	
 
 	return true;
 }

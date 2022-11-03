@@ -7,6 +7,7 @@
 struct MainMenu;
 struct MapBrowser;
 struct MapBrowserHandler;
+struct WorkshopMapPopup;
 
 struct MapBrowserScreen
 {
@@ -21,7 +22,7 @@ struct MapBrowserScreen
 	~MapBrowserScreen();
 
 	void StartLocalBrowsing();
-	void StartWorkshopBrowsing();
+	void StartWorkshopBrowsing( int mode );
 
 	bool HandleEvent(sf::Event ev);
 	

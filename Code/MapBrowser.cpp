@@ -28,6 +28,8 @@ MapNode::MapNode()
 	checkingForCreatorName = false;
 	creatorId = 0;
 	mapUpdating = false;
+	subscribing = false;
+	unsubscribing = false;
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -37,6 +39,65 @@ void MapNode::Draw(sf::RenderTarget *target)
 
 MapNode::~MapNode()
 {
+	//was maybe getting a memory leak here, put this here to see if it happens, and it doesn't...can't reproduce sigh
+	/*if (previewTex != NULL)
+	{
+		delete previewTex;
+	}*/
+}
+
+bool MapNode::IsSubscribed()
+{
+	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
+
+	if ((itemState & k_EItemStateSubscribed))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+void MapNode::Subscribe()
+{
+	if (!IsSubscribed())
+	{
+		SteamAPICall_t call = SteamUGC()->SubscribeItem(publishedFileId);
+		onRemoteStorageSubscribePublishedFileResultCallResult.Set(call, this, &MapNode::OnSubscribe);
+		subscribing = true;
+	}
+}
+
+void MapNode::Unsubscribe()
+{
+	if( IsSubscribed() )
+	{
+		SteamAPICall_t call = SteamUGC()->UnsubscribeItem(publishedFileId);
+		onRRemoteStorageUnsubscribePublishedFileResultCallResult.Set(call, this, &MapNode::OnUnsubscribe);
+		unsubscribing = true;
+	}
+}
+
+void MapNode::OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure)
+{
+	subscribing = false;
+	if (callback->m_eResult == k_EResultOK)
+	{
+		
+	}
+}
+
+void MapNode::OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure)
+{
+	unsubscribing = false;
+	if (callback->m_eResult == k_EResultOK)
+	{
+		mapDownloaded = false;
+		mapUpdating = false;
+
+		filePath = "";
+		folderPath = "";
+	}
 }
 
 void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
@@ -55,13 +116,13 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		previewTex->loadFromMemory(buffer, bodySize);
 
 		checkingForPreview = false;
-		cout << "got preview successfully" << endl;
+		//cout << "got preview successfully" << endl;
 
 		delete[] buffer;
 	}
 	else
 	{
-		cout << "failed to get preview" << endl;
+		//cout << "failed to get preview" << endl;
 	}
 
 	checkingForPreview = false;
@@ -99,7 +160,7 @@ void MapNode::RequestDownloadPreview()
 		{
 			OnHTTPRequestCompletedCallResult.Set(call, this,
 				&MapNode::OnHTTPRequestCompleted);
-			cout << "send successful" << endl;
+			//cout << "send successful" << endl;
 		}
 	}
 }
@@ -117,7 +178,7 @@ bool MapNode::CheckIfFullyInstalled()
 
 	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
 
-	bool installed = itemState & k_EItemStateInstalled;
+	bool installed = itemState & k_EItemStateInstalled && itemState & k_EItemStateSubscribed;
 	bool needsUpdate = itemState & k_EItemStateNeedsUpdate;
 	if ( installed && !needsUpdate )
 	{
@@ -203,7 +264,6 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, 30);
 
 	upButton = panel->AddButton("up", Vector2i(10, 50), Vector2f(30, 30), "up");
-	playButton = panel->AddButton("play", Vector2i(100, 50), Vector2f(30, 30), "play");
 	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 50), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
@@ -233,12 +293,19 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 
 
-	panel->confirmButton =
-		panel->AddButton("confirm", Vector2i(0, 0), Vector2f(60, 30), "confirm");
-	panel->cancelButton =
-		panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+	
+	saveButton = panel->AddButton("save", Vector2i(0, 0), Vector2f(60, 30), "Save");
+	cancelButton = panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+
+	panel->cancelButton = cancelButton;
+
+		//panel->confirmButton =
+			//panel->cancelButton =
 
 	panel->StopAutoSpacing();
+
+	openButton = panel->AddButton("open", saveButton->pos + Vector2i(0, 0), Vector2f(60, 30), "Open");
+	createLobbyButton = panel->AddButton("createlobby", saveButton->pos + Vector2i(0, 0), Vector2f(100, 30), "Create Lobby");
 
 	//fileNameTextBox->HideMember();
 	//panel->confirmButton->HideMember();
@@ -309,11 +376,11 @@ void MapBrowser::ClearNodes()
 
 		nodeIndex++;
 
-		
-
 		if ( (*it)->type == MapNode::FILE && (*it)->ts_preview != NULL)
 		{
 			DestroyTileset((*it)->ts_preview);
+			(*it)->ts_preview = NULL;
+			(*it)->previewTex = NULL;
 		}
 		delete (*it);
 	}
@@ -551,34 +618,46 @@ void MapBrowser::Init()
 	//edit->AddActivePanel(panel);
 	if (mode == OPEN)
 	{
-		panel->confirmButton->text.setString("Open");
-
-		/*fileNameTextBox->SetString("");
-		fileNameTextBox->focused = true;
-		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);*/
+		openButton->ShowMember();
+		saveButton->HideMember();
+		createLobbyButton->HideMember();
+		panel->confirmButton = openButton;
 	}
 	else if(mode == SAVE )
 	{
-		panel->confirmButton->text.setString("Save");
-
-		/*fileNameTextBox->SetString("");
-		fileNameTextBox->focused = true;
-		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);*/
+		openButton->HideMember();
+		saveButton->ShowMember();
+		createLobbyButton->HideMember();
+		panel->confirmButton = saveButton;
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{
-		panel->confirmButton->text.setString("Create Lobby");
+		openButton->HideMember();
+		saveButton->HideMember();
+		createLobbyButton->ShowMember();
+		panel->confirmButton = createLobbyButton;
+	}
 
-		/*fileNameTextBox->SetString("");
-		fileNameTextBox->focused = true;
-		fileNameTextBox->SetCursorIndex(0);
-		panel->SetFocusedMember(fileNameTextBox);*/
+	nextPageButton->HideMember();
+	prevPageButton->HideMember();
+
+	if (mode == WORKSHOP)
+	{
+		upButton->HideMember();
+
+		openButton->HideMember();
+		saveButton->HideMember();
+		createLobbyButton->HideMember();
+
+		panel->cancelButton = NULL;
+		panel->confirmButton = NULL;
+
+		cancelButton->HideMember();
 	}
 	else
 	{
-		panel->confirmButton->text.setString("getridof");
+		upButton->ShowMember();
+		cancelButton->ShowMember();
 	}
 	
 	if (mode == OPEN)
@@ -638,6 +717,8 @@ void MapBrowser::StartWorkshop( MapBrowser::Mode p_mode )
 	isWorkshop = true;
 
 	Init();
+
+	folderPathText->setString("");
 
 	currWorkshopPage = 1;
 
@@ -718,7 +799,7 @@ void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		if (node->type == MapNode::FILE)
 		{
-			UnfocusFile(cr);
+			UnfocusFile();// (cr);
 		}
 	}
 	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
@@ -737,57 +818,13 @@ void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 
 void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 {
-	if (b == b->panel->cancelButton)
+	if (b == chooser->cancelButton )
 	{
 		Cancel();
 	}
-	else if (b == b->panel->confirmButton)
+	else if (b == chooser->saveButton || b == chooser->openButton || b == chooser->createLobbyButton)
 	{
 		Confirm();
-	}
-	else if (b == chooser->playButton)
-	{
-		if (chooser->selectedRect != NULL)
-		{
-			MainMenu *mm = MainMenu::GetInstance();
-
-			MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
-
-			if (chooser->mode == MapBrowser::WORKSHOP)
-			{
-				if (CheckIfSelectedItemInstalled())
-				{
-					mm->RunFreePlayMap(selectedNode->filePath.string());
-				}
-				else
-				{
-					uint32 itemState = SteamUGC()->GetItemState(selectedNode->publishedFileId);
-					if (!(itemState & k_EItemStateSubscribed))
-					{
-						cout << "subbing to item" << endl;
-						SteamUGC()->SubscribeItem(selectedNode->publishedFileId);
-						cout << "map download started" << endl;
-					}
-					/*else if (itemState &k_EItemStateDownloading)
-					{
-					cout << "downloading map" << endl;
-
-					}
-					else if (itemState &k_EItemStateDownloadPending)
-					{
-					cout << "map downoad pending" << endl;
-					}*/
-
-					mm->DownloadAndRunWorkshopMap();
-				}
-			}
-			else
-			{
-				mm->RunFreePlayMap(selectedNode->filePath.string());
-			}
-			
-		}
-		//chooser->SetPath(chooser->currPath.parent_path().string());
 	}
 	else if (b == chooser->prevPageButton)
 	{
@@ -815,7 +852,6 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == chooser->upButton)
 	{
-		
 		chooser->SetPath(chooser->currPath.parent_path().string());
 	}
 }
@@ -847,6 +883,20 @@ bool MapBrowserHandler::CheckIfSelectedItemInstalled()
 	return selectedNode->CheckIfFullyInstalled();
 }
 
+void MapBrowserHandler::SubscribeToItem()
+{
+	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
+
+	selectedNode->Subscribe();
+}
+
+void MapBrowserHandler::UnsubscribeFromItem()
+{
+	MapNode *selectedNode = (MapNode*)chooser->selectedRect->info;
+
+	selectedNode->Unsubscribe();
+}
+
 void MapBrowserHandler::ChangePath()
 {
 	ts_largePreview = NULL;
@@ -855,11 +905,12 @@ void MapBrowserHandler::ChangePath()
 
 void MapBrowserHandler::ClearSelection()
 {
+	chooser->selectedRect = NULL;
+
 	for (int i = 0; i < chooser->totalRects; ++i)
 	{
 		chooser->imageRects[i]->Deselect();
-	}
-	chooser->selectedRect = NULL;
+	}	
 }
 
 void MapBrowserHandler::SelectRect(ChooseRect *cr)
@@ -996,7 +1047,7 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 	}
 }
 
-void MapBrowserHandler::UnfocusFile(ChooseRect *cr)
+void MapBrowserHandler::UnfocusFile()//(ChooseRect *cr)
 {
 	ts_largePreview = NULL;
 

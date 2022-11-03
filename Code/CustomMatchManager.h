@@ -42,6 +42,7 @@ struct CustomMatchManager
 	CustomMatchManager();
 	~CustomMatchManager();
 	void CreateCustomLobby();
+	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);

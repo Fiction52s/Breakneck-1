@@ -2,6 +2,7 @@
 #include <iostream>
 #include "MainMenu.h"
 #include "MapBrowser.h"
+#include "WorkshopMapPopup.h"
 
 using namespace std;
 using namespace sf;
@@ -26,13 +27,23 @@ MapBrowserScreen::~MapBrowserScreen()
 void MapBrowserScreen::StartLocalBrowsing()
 {
 	browserHandler->chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
+	browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
 	//browserHandler->chooser->
 }
 
-void MapBrowserScreen::StartWorkshopBrowsing()
+void MapBrowserScreen::StartWorkshopBrowsing( int mode )
 {
-	browserHandler->chooser->StartWorkshop( MapBrowser::CREATE_CUSTOM_GAME );
+	//MapBrowser::CREATE_CUSTOM_GAME
+	if (mode == MapBrowser::CREATE_CUSTOM_GAME)
+	{
+		browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
+	}
+	else if( mode == MapBrowser::WORKSHOP)
+	{
+		browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
+	}
+	browserHandler->chooser->StartWorkshop((MapBrowser::Mode)mode );
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
 }
 

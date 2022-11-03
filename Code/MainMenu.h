@@ -26,6 +26,7 @@ struct Config;
 struct SaveFile;
 struct SaveMenuScreen;
 struct MapBrowserScreen;
+struct WorkshopBrowser;
 struct MainMenu;
 struct PauseMenu;
 struct LevelSelector;
@@ -538,6 +539,7 @@ struct MainMenu
 		QUICKPLAY_TEST,
 		QUICKPLAY_PLAY,
 		CUSTOM_MATCH_SETUP,
+		CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER,
 		ONLINE_MENU,
 		MATCH_RESULTS,
 		EXITING,
@@ -634,6 +636,7 @@ struct MainMenu
 	SaveMenuScreen *saveMenu;
 	SingleAxisSelector *saSelector;
 	MapBrowserScreen *mapBrowserScreen;
+	WorkshopBrowser *workshopBrowser;
 
 	sf::Vector2i mousePixelPos;
 	

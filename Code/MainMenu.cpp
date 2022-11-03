@@ -48,6 +48,8 @@
 #include "CustomMatchManager.h"
 #include "OnlineMenuScreen.h"
 #include "MatchResultsScreen.h"
+#include "WorkshopMapPopup.h"
+#include "WorkshopBrowser.h"
 
 using namespace std;
 using namespace sf;
@@ -568,6 +570,8 @@ MainMenu::MainMenu()
 
 	mapBrowserScreen = new MapBrowserScreen(this);
 
+	workshopBrowser = NULL;
+
 	onlineMenuScreen = new OnlineMenuScreen(this);
 
 	matchResultsScreen = NULL;
@@ -777,6 +781,11 @@ MainMenu::~MainMenu()
 	delete creditsMenu;
 	delete mapBrowserScreen;
 	delete onlineMenuScreen;
+
+	if (workshopBrowser != NULL)
+	{
+		delete workshopBrowser;
+	}
 	
 
 	delete fader;
@@ -2803,10 +2812,38 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			mapBrowserScreen->browserHandler->chooser->panel->HandleEvent(ev);
+			workshopBrowser->HandleEvent(ev);//browserHandler->chooser->panel->HandleEvent(ev);
 		}
 
-		mapBrowserScreen->Update();
+		if (workshopBrowser->action == WorkshopBrowser::A_BACK)
+		{
+			SetMode(ONLINE_MENU);
+			delete workshopBrowser;
+			workshopBrowser = NULL;
+			break;
+		}
+		else if (workshopBrowser->workshopMapPopup->action == WorkshopMapPopup::A_HOST)
+		{
+			SetMode(CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER);
+			customMatchManager->CreateCustomLobbyFromWorkshopBrowser();
+			//delete workshopBrowser;
+			//workshopBrowser = NULL;
+		}
+
+		workshopBrowser->Update();
+
+		/*if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		{
+			SetMode(ONLINE_MENU);
+		}
+		else if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
+		{
+			MapNode *mn = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+			mapBrowserScreen->workshopPopup->Activate(mn);
+		}*/
+
+		
 		break;
 	}
 	case ONLINE_MENU:
@@ -2820,6 +2857,18 @@ void MainMenu::HandleMenuMode()
 		switch (onlineMenuScreen->action)
 		{
 		case OnlineMenuScreen::A_WORKSHOP:
+
+			//mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+
+			//mapBrowserScreen->StartWorkshopBrowsing( MapBrowser::WORKSHOP );
+
+			assert(workshopBrowser == NULL);
+			workshopBrowser = new WorkshopBrowser;
+
+			workshopBrowser->Start();
+
+			SetMode(BROWSE_WORKSHOP);
+
 			break;
 		case OnlineMenuScreen::A_QUICKPLAY:
 			netplayManager->FindQuickplayMatch();
@@ -2858,6 +2907,25 @@ void MainMenu::HandleMenuMode()
 			SetMode(QUICKPLAY_TEST);
 		}
 
+		break;
+	}
+	case CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER:
+	{
+		while (window->pollEvent(ev))
+		{
+			customMatchManager->HandleEvent(ev);
+		}
+
+		if (!customMatchManager->Update())
+		{
+			SetMode(BROWSE_WORKSHOP);
+			break;
+		}
+
+		if (customMatchManager->action == CustomMatchManager::A_READY)
+		{
+			SetMode(QUICKPLAY_TEST);
+		}
 		break;
 	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
@@ -3500,7 +3568,7 @@ void MainMenu::DrawMode( Mode m )
 	case BROWSE_WORKSHOP:
 	{
 		preScreenTexture->setView(v);
-		mapBrowserScreen->Draw(preScreenTexture);
+		workshopBrowser->Draw(preScreenTexture);
 		break;
 	}
 	case ONLINE_MENU:
@@ -3509,6 +3577,7 @@ void MainMenu::DrawMode( Mode m )
 		onlineMenuScreen->Draw(preScreenTexture);
 		break;
 	}
+	case CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER:
 	case CUSTOM_MATCH_SETUP:
 	{
 		preScreenTexture->setView(v);
@@ -3575,6 +3644,7 @@ void MainMenu::RunFreePlayMap(const std::string &path)
 void MainMenu::DownloadAndRunWorkshopMap()
 {
 	//currWorkshopMap = path;
+	mapBrowserScreen->browserHandler->SubscribeToItem();
 	LoadMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
 }
 
