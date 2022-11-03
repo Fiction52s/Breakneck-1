@@ -35,7 +35,7 @@ struct CustomMatchManager
 	MapOptionsPopup *mapOptionsPopup;
 	MessagePopup *messagePopup;
 	int preErrorAction;
-	
+	bool fromWorkshopBrowser;
 
 	MapNode *selectedMap;
 

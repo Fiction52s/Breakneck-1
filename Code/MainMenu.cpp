@@ -2815,6 +2815,8 @@ void MainMenu::HandleMenuMode()
 			workshopBrowser->HandleEvent(ev);//browserHandler->chooser->panel->HandleEvent(ev);
 		}
 
+		workshopBrowser->Update();
+
 		if (workshopBrowser->action == WorkshopBrowser::A_BACK)
 		{
 			SetMode(ONLINE_MENU);
@@ -2824,13 +2826,14 @@ void MainMenu::HandleMenuMode()
 		}
 		else if (workshopBrowser->workshopMapPopup->action == WorkshopMapPopup::A_HOST)
 		{
+			workshopBrowser->workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
 			SetMode(CUSTOM_MATCH_SETUP_FROM_WORKSHOP_BROWSER);
 			customMatchManager->CreateCustomLobbyFromWorkshopBrowser();
 			//delete workshopBrowser;
 			//workshopBrowser = NULL;
 		}
 
-		workshopBrowser->Update();
+		//workshopBrowser->Update();
 
 		/*if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
 		{

@@ -70,6 +70,7 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 
 void CustomMatchManager::CreateCustomLobby()
 {
+	fromWorkshopBrowser = false;
 	//assert(action == A_LOBBY_BROWSER);
 
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -93,6 +94,8 @@ void CustomMatchManager::CreateCustomLobby()
 
 void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 {
+	fromWorkshopBrowser = true;
+
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
 
@@ -207,9 +210,21 @@ bool CustomMatchManager::Update()
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
 		{
-			SetAction(A_CHOOSE_MAP);
-			selectedMap = NULL;
-			mapBrowserScreen->browserHandler->ClearSelection();
+			if (fromWorkshopBrowser)
+			{
+				SetAction(A_IDLE);
+				netplayManager->Abort();
+				selectedMap = NULL;
+				//mapBrowserScreen->browserHandler->ClearSelection();
+				return false;
+			}
+			else
+			{
+				SetAction(A_CHOOSE_MAP);
+				selectedMap = NULL;
+				mapBrowserScreen->browserHandler->ClearSelection();
+			}
+			
 		}
 		break;
 	case A_ERROR_MESSAGE:
