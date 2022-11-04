@@ -27,6 +27,8 @@ CustomMatchManager::CustomMatchManager()
 
 	SetAction(A_IDLE);
 
+	fromWorkshopBrowser = false;
+
 	preErrorAction = A_IDLE;
 }
 
@@ -101,7 +103,7 @@ void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 
-	SetAction(A_CHOOSE_MAP);
+	//SetAction(A_CHOOSE_MAP);
 
 	if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 	{
