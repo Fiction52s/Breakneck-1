@@ -231,8 +231,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	//workshop->mapBrowser = this;
 
 	float boxSize = 150;
-	Vector2f spacing(60, 60);
-	Vector2f startRects(10, 100);
+	Vector2f spacing(20, 20);
+	Vector2f startRects(10, 60);
 
 	cols = p_cols;
 	rows = p_rows;
@@ -263,13 +263,12 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	vector<string> tabNames = { "Local", "Workshop" };
 	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, 30);
 
-	upButton = panel->AddButton("up", Vector2i(10, 50), Vector2f(30, 30), "up");
-	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 50), 30, "");
+	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
+	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
 
-	prevPageButton = panel->AddButton("prevpage", Vector2i(pageButtonOrigin), Vector2f(30, 30), "<");
-	nextPageButton = panel->AddButton("nextpage", Vector2i(pageButtonOrigin + Vector2i(60, 0)), Vector2f(30, 30), ">");
+	
 	
 	
 	int x, y;
@@ -286,16 +285,18 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 		imageRects[i]->Init();
 	}
 
-
-
-	panel->SetAutoSpacing(true, false, Vector2i(10, 960), Vector2i(30, 0));
-	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
+	Vector2i belowRects = Vector2i(startRects) + Vector2i(0, (boxSize + spacing.y) * rows);
+	belowRects += Vector2i(0, 10);
 
 
 
+	//panel->SetAutoSpacing(true, false, belowRects, Vector2i(30, 0));
+	//AddLabel(name + "label", labelStart, 24, labelText);
+	fileNameTextBox = panel->AddLabeledTextBox("filename", belowRects, true, 1, 30, 20, 30, "", "Filename:");
+	fileNameTextBoxLabel = panel->labels["filenamelabel"];
 	
-	saveButton = panel->AddButton("save", Vector2i(0, 0), Vector2f(60, 30), "Save");
-	cancelButton = panel->AddButton("cancel", Vector2i(0, 0), Vector2f(80, 30), "Cancel");
+	saveButton = panel->AddButton("save", belowRects + Vector2i(0, 40), Vector2f(60, 30), "Save");
+	cancelButton = panel->AddButton("cancel", belowRects + Vector2i(120, 40), Vector2f(80, 30), "Cancel");
 
 	panel->cancelButton = cancelButton;
 
@@ -306,6 +307,11 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	openButton = panel->AddButton("open", saveButton->pos + Vector2i(0, 0), Vector2f(60, 30), "Open");
 	createLobbyButton = panel->AddButton("createlobby", saveButton->pos + Vector2i(0, 0), Vector2f(100, 30), "Create Lobby");
+
+	belowRects += Vector2i((boxSize + spacing.x) * cols, 0) + Vector2i( -100, 0 );
+
+	prevPageButton = panel->AddButton("prevpage", Vector2i(belowRects), Vector2f(30, 30), "<");
+	nextPageButton = panel->AddButton("nextpage", Vector2i(belowRects + Vector2i(45, 0)), Vector2f(30, 30), ">");
 
 	//fileNameTextBox->HideMember();
 	//panel->confirmButton->HideMember();
@@ -499,9 +505,40 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 	handler->ChangePath();
 
+	//int maxPathShownLength = 50;
+
 	folderPathText->setString(p_path);
 
 	path p(p_path);
+
+
+	//get to formatting this later!
+	//int panelRight = panel->size.x;
+
+	
+	/*if (folderPathText->getGlobalBounds().width + folderPathText->getGlobalBounds().left > panel->size.x)
+	{
+		int numFolders = 2;
+		string *parentNames = new string[numFolders];
+		int numFolders = 2;
+		
+		path p2 = p;
+		for (int i = 0; i < numFolders; ++i)
+		{
+			if (p2.has_parent_path())
+			{
+				parentNames[i] = p2.parent_path().filename().string();
+			}
+		}
+		
+		if (p2.has_parent_path())
+		{
+
+		}
+		
+	}*/
+
+	
 	currPath = p;
 
 	assert(exists(p));
@@ -571,6 +608,9 @@ void MapBrowser::PopulateRects()
 	path *folderPath;
 
 	int start = topRow * cols;
+	int maxNameCharsShown = 15;
+
+	int defaultNameSize = 18;
 
 	int i;
 	for (i = start; i < numEntries && i < start + totalRects; ++i)
@@ -579,6 +619,31 @@ void MapBrowser::PopulateRects()
 		node = nodes[i];
 
 		icRect->SetName(node->nodeName);
+		icRect->SetNameSize(defaultNameSize);
+
+		bool check = false;
+		for (int z = 1; z <= 4; ++z)
+		{
+			if (icRect->nameText.getGlobalBounds().width > icRect->boxSize.x)
+			{
+				icRect->SetNameSize(defaultNameSize - z);
+				check = true;
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		if (check)
+		{
+			if (icRect->nameText.getGlobalBounds().width > icRect->boxSize.x)
+			{
+				string adjustedNodeName = node->nodeName.substr(0, maxNameCharsShown) + "...";
+				icRect->SetName(adjustedNodeName);
+			}
+		}
+		
 		ts = node->ts_preview;
 		icRect->SetInfo(node);
 		node->chooseRect = icRect;
@@ -612,6 +677,18 @@ void MapBrowser::TurnOff()
 	//edit->RemoveActivePanel(panel);
 }
 
+void MapBrowser::ShowFileNameTextBox()
+{
+	fileNameTextBox->ShowMember();
+	fileNameTextBoxLabel->setString("Filename:");
+}
+
+void MapBrowser::HideFileNameTextBox()
+{
+	fileNameTextBox->HideMember();
+	fileNameTextBoxLabel->setString("");
+}
+
 void MapBrowser::Init()
 {
 	//ClearNodes();
@@ -621,7 +698,10 @@ void MapBrowser::Init()
 		openButton->ShowMember();
 		saveButton->HideMember();
 		createLobbyButton->HideMember();
+		
 		panel->confirmButton = openButton;
+		ShowFileNameTextBox();
+		fileNameTextBox->SetString("");
 	}
 	else if(mode == SAVE )
 	{
@@ -629,6 +709,8 @@ void MapBrowser::Init()
 		saveButton->ShowMember();
 		createLobbyButton->HideMember();
 		panel->confirmButton = saveButton;
+		ShowFileNameTextBox();
+		fileNameTextBox->SetString("");
 	}
 	else if (mode == CREATE_CUSTOM_GAME)
 	{
@@ -636,7 +718,11 @@ void MapBrowser::Init()
 		saveButton->HideMember();
 		createLobbyButton->ShowMember();
 		panel->confirmButton = createLobbyButton;
+		HideFileNameTextBox();
 	}
+
+	
+	
 
 	nextPageButton->HideMember();
 	prevPageButton->HideMember();
@@ -645,9 +731,12 @@ void MapBrowser::Init()
 	{
 		upButton->HideMember();
 
+
 		openButton->HideMember();
 		saveButton->HideMember();
 		createLobbyButton->HideMember();
+
+		HideFileNameTextBox();
 
 		panel->cancelButton = NULL;
 		panel->confirmButton = NULL;
@@ -658,6 +747,11 @@ void MapBrowser::Init()
 	{
 		upButton->ShowMember();
 		cancelButton->ShowMember();
+	}
+
+	if (panel->confirmButton != NULL)
+	{
+		cancelButton->SetPos(panel->confirmButton->pos + Vector2i(panel->confirmButton->size.x + 30, 0));
 	}
 	
 	if (mode == OPEN)
@@ -749,9 +843,14 @@ void MapBrowser::MouseScroll(int delta)
 	}
 }
 
-MapBrowserHandler::MapBrowserHandler(int cols, int rows, int extraImageRects)
+MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool showPreview, int extraImageRects)
 {
 	chooser = new MapBrowser(this, cols, rows, extraImageRects);
+
+	if (!showPreview)
+	{
+		chooser->panel->SetSize(Vector2f(850, 840));
+	}
 
 	ts_largePreview = NULL;
 
@@ -835,6 +934,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else
 		{
+			ts_largePreview = NULL;
 			chooser->QueryMaps();
 		}
 	}
@@ -847,6 +947,7 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 		}
 		else
 		{
+			ts_largePreview = NULL;
 			chooser->QueryMaps();
 		}
 	}
@@ -943,8 +1044,14 @@ void MapBrowserHandler::Confirm()
 		{
 			//chooser->edit->ChooseFileSave(chooser, fileName);
 		}
-		chooser->TurnOff();
+		//chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
+		//chooser->TurnOff();
 	}
+
+	
+	chooser->TurnOff();
+
+	chooser->action = MapBrowser::A_CONFIRMED; //hopefully this doesnt add any weird bugs
 }
 
 void MapBrowserHandler::ClickFile(ChooseRect *cr)
@@ -977,6 +1084,7 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 	}
 	else if (chooser->mode == MapBrowser::SAVE)
 	{
+		chooser->fileNameTextBox->SetString(mn->fileName);
 		//chooser->edit->ChooseFileSave(chooser, fileName);
 		//chooser->TurnOff();
 	}

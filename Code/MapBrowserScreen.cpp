@@ -10,7 +10,7 @@ using namespace sf;
 MapBrowserScreen::MapBrowserScreen(MainMenu *mm)
 {
 	mainMenu = mm;
-	browserHandler = new MapBrowserHandler(4, 4 );
+	browserHandler = new MapBrowserHandler(5, 5, true );
 
 	SetRectColor(bgQuad, Color::Blue);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
@@ -67,10 +67,10 @@ void MapBrowserScreen::Update()
 	
 
 
-	if (MOUSE.IsMouseRightClicked())
+	/*if (MOUSE.IsMouseRightClicked())
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}
+	}*/
 
 	//cout << MOUSE.GetPos().x << endl;
 }

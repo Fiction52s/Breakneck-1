@@ -149,7 +149,6 @@ struct PanelMember
 	sf::Vector2i lastMouse;
 	//virtual void Lock() { locked = true; }
 	//virtual void Unlock() { locked = false; }
-
 	bool locked;
 	bool hidden;
 	Panel *panel;
@@ -215,6 +214,8 @@ struct ChooseRect : PanelMember
 
 	sf::Text nameText;
 	virtual void SetName(const std::string &name);
+	void SetNameSize(int charHeight);
+	int GetNameSize();
 	void ShowName(bool show);
 	bool showName;
 
@@ -267,6 +268,7 @@ struct ChooseRect : PanelMember
 	sf::Color defaultIdleColor;
 	sf::Color selectedIdleColor;
 	sf::Color selectedMouseOverColor;
+
 	bool selected;
 	void *info;
 	bool circleMode;
@@ -931,7 +933,7 @@ struct ConfirmPopup : GUIHandler
 {
 	enum ConfirmType
 	{
-		OVERWRITE_MAP,
+		DEFAULT,
 		SAVE_CURRENT,
 		SAVE_CURRENT_EXIT,
 	};
@@ -940,12 +942,20 @@ struct ConfirmPopup : GUIHandler
 	Panel *panel;
 	EditSession *edit;
 
-	
+	enum Action
+	{
+		A_ACTIVE,
+		A_YES,
+		A_NO,
+	};
+
+	int action;
 
 
 	ConfirmPopup();
 	~ConfirmPopup();
-	void Pop(ConfirmType ct);
+	void SetQuestion(const std::string &q);
+	void Pop(ConfirmType ct = ConfirmType::DEFAULT);
 	void ButtonCallback(Button *b,
 		const std::string &e);
 };

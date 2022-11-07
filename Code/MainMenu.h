@@ -38,6 +38,7 @@ struct ControlSettingsMenu;
 struct EffectPool;
 
 struct MatchResultsScreen;
+struct FreeplayScreen;
 
 struct ControlProfile;
 struct ControlProfileMenu;
@@ -531,6 +532,7 @@ struct MainMenu
 		TRANS_WORLDMAP_TO_LOADING,
 		DOWNLOAD_WORKSHOP_MAP,
 		RUN_FREEPLAY_MAP,
+		FREEPLAY,
 		BROWSE_WORKSHOP,
 		INTROMOVIE,
 		THANKS_FOR_PLAYING,
@@ -567,6 +569,7 @@ struct MainMenu
 	CustomMatchManager *customMatchManager;
 	OnlineMenuScreen *onlineMenuScreen;
 	MatchResultsScreen *matchResultsScreen;
+	FreeplayScreen *freeplayScreen;
 
 
 	std::string freePlayMapName;

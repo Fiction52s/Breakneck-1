@@ -881,7 +881,7 @@ TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bo
 	int extraSpacing = 8;
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
-	labelStart.y += 6;
+	//labelStart.y += 6;
 	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
 
 	if (labelToleft)
@@ -930,7 +930,7 @@ TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int width
 	int charHeight = 20;
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
 	assert(textBoxes.count(name) == 0);
-	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, width / charHeight, 1, charHeight, lengthLimit, arial, this, initialText);
+	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, 1, lengthLimit, charHeight, lengthLimit, arial, this, initialText);
 	textBoxes[name] = tb;
 
 	AddAutoSpaceX(tb->size.x + pos.x);

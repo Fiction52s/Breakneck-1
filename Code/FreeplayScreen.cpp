@@ -11,6 +11,8 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 
 	SetRectColor(bgQuad, Color::Magenta);
 	SetRectCenter(bgQuad, 1920, 1080, Vector2f(960, 540));
+
+	Start();
 }
 
 FreeplayScreen::~FreeplayScreen()

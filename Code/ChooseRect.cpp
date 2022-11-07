@@ -74,6 +74,18 @@ void ChooseRect::SetName(const std::string &name)
 		0);
 }
 
+void ChooseRect::SetNameSize(int charHeight)
+{
+	nameText.setCharacterSize(charHeight);
+	nameText.setOrigin(nameText.getLocalBounds().left + nameText.getLocalBounds().width / 2,
+		0);
+}
+
+int ChooseRect::GetNameSize()
+{
+	return nameText.getCharacterSize();
+}
+
 void ChooseRect::ShowName(bool show)
 {
 	showName = show;

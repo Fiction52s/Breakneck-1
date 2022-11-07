@@ -15,6 +15,8 @@ ConfirmPopup::ConfirmPopup()
 
 	panel->SetConfirmButton(panel->AddButton("yes", Vector2i(10, 100), Vector2f(50, 30), "Yes"));
 	panel->SetCancelButton(panel->AddButton("no", Vector2i(70, 100), Vector2f(50, 30), "No"));
+
+	action = A_ACTIVE;
 }
 
 ConfirmPopup::~ConfirmPopup()
@@ -22,17 +24,34 @@ ConfirmPopup::~ConfirmPopup()
 	delete panel;
 }
 
+void ConfirmPopup::SetQuestion(const std::string &q)
+{
+	panel->labels["question"]->setString(q);
+}
+
 void ConfirmPopup::Pop(ConfirmType ct)
 {
-	edit->AddActivePanel(panel);
+	if (edit != NULL)
+	{
+		edit->AddActivePanel(panel);
+	}
+	
 	type = ct;
+
+	action = A_ACTIVE;
 
 	switch (type)
 	{
 	case SAVE_CURRENT:
 	case SAVE_CURRENT_EXIT:
-		panel->labels["question"]->setString("Changes to current map have not been saved.\nSave before continuing?");
+		SetQuestion("Changes to current map have not been saved.\nSave before continuing?");
 		break;
+	case DEFAULT:
+	{
+		SetQuestion("");
+		//panel->labels["question"]->setString("Changes to current map have not been saved.\nSave before continuing?");
+		break;
+	}
 	}
 }
 
@@ -41,6 +60,8 @@ void ConfirmPopup::ButtonCallback(Button *b,
 {
 	if (b == panel->confirmButton)
 	{
+		action = A_YES;
+
 		switch (type)
 		{
 		case SAVE_CURRENT:
@@ -61,6 +82,8 @@ void ConfirmPopup::ButtonCallback(Button *b,
 	}
 	else if (b == panel->cancelButton)
 	{
+		action = A_NO;
+
 		switch (type)
 		{
 		case SAVE_CURRENT:
@@ -79,5 +102,9 @@ void ConfirmPopup::ButtonCallback(Button *b,
 		
 	}
 
-	edit->RemoveActivePanel(panel);
+	if (edit != NULL)
+	{
+		edit->RemoveActivePanel(panel);
+	}
+	
 }

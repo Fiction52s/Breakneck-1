@@ -88,7 +88,7 @@ struct MapNode
 
 struct MapBrowserHandler : GUIHandler
 {
-	MapBrowserHandler(int cols, int rows, int extraImageRects = 0);
+	MapBrowserHandler(int cols, int rows, bool showPreview, int extraImageRects = 0);
 	~MapBrowserHandler();
 	void Cancel();
 	void Confirm();
@@ -142,6 +142,8 @@ struct MapBrowser : TilesetManager,
 		A_WAITING_FOR_PREVIEW_RESULTS,
 		A_WAITING_FOR_MAP_DOWNLOAD,
 		A_CANCELLED,
+		A_CONFIRMED,
+
 	};
 
 	bool isWorkshop;
@@ -194,6 +196,9 @@ struct MapBrowser : TilesetManager,
 	void StartWorkshop( Mode mode );
 	void Init();
 	void TurnOff();
+
+	void ShowFileNameTextBox();
+	void HideFileNameTextBox();
 	//void HideConfirmButton();
 
 	Mode mode;
@@ -217,6 +222,7 @@ struct MapBrowser : TilesetManager,
 	Panel *panel;
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
+	sf::Text *fileNameTextBoxLabel;
 	Button *upButton;
 
 	

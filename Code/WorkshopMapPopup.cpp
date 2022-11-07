@@ -4,9 +4,13 @@
 #include "MapBrowser.h"
 #include "md5.h"
 #include "MainMenu.h"
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace sf;
+
+using namespace boost::filesystem;
+
 
 
 WorkshopMapPopup::WorkshopMapPopup()
@@ -113,14 +117,15 @@ void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
 
 		MainMenu *mm = MainMenu::GetInstance();
 
-		if (currMapNode->CheckIfFullyInstalled())
+		mm->DownloadAndRunWorkshopMap();
+		/*if (currMapNode->CheckIfFullyInstalled())
 		{
 			mm->RunFreePlayMap(currMapNode->filePath.string());
 		}
 		else
 		{
 			mm->DownloadAndRunWorkshopMap();
-		}
+		}*/
 
 	}
 	else if (b == hostButton)
@@ -129,7 +134,46 @@ void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == saveLocalCopyButton)
 	{
+		action = A_SAVE;
 
+		//if (currMapNode->CheckIfFullyInstalled())
+		//{
+		//	string userNumber = currMapNode->folderPath.parent_path().filename().string();
+		//	path workshopDownloadFolder = current_path().string() + string("/Resources/Maps/WorkshopDownloads/");//currMapNode->folderPath.parent_path();
+		//	path userFolder = workshopDownloadFolder.string() + userNumber + "/";
+
+
+		//	try
+		//	{
+		//		if (!boost::filesystem::exists(userFolder))
+		//		{
+		//			if (!boost::filesystem::create_directory(userFolder))
+		//			{
+		//				cout << "directory creation failure" << endl;
+		//				assert(0);
+		//				action = A_ACTIVE;
+		//				return;
+		//			}
+		//		}
+
+		//		//assume directory exists now
+		//		string mapNumber = currMapNode->folderPath.filename().string();
+		//		path mapFolder = userFolder.string() + mapNumber + "/";
+
+		//		if (boost::filesystem::exists(mapFolder))
+		//		{
+		//			//tell the user that 
+		//		}
+
+		//	}
+		//	catch (boost::filesystem::filesystem_error const & e)
+		//	{
+		//		cout << "fs error: " << e.what() << "\n";
+		//	}
+		//	
+
+		//	//boost::filesystem::copy_file(from to, copy_option::fail_if_exists);
+		//}
 	}
 	else if (b == backButton)
 	{

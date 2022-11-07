@@ -5,6 +5,8 @@
 
 struct WorkshopMapPopup;
 struct MapBrowserScreen;
+struct SavePopup;
+struct MessagePopup;
 
 struct WorkshopBrowser
 {
@@ -13,10 +15,14 @@ struct WorkshopBrowser
 		A_IDLE,
 		A_BROWSER,
 		A_POPUP,
+		A_SAVE_POPUP,
+		A_SAVE_MESSAGE,
 		A_BACK,
 	};
 
 	WorkshopMapPopup *workshopMapPopup;
+	SavePopup *savePopup;
+	MessagePopup *saveMessagePopup;
 	MapBrowserScreen *mapBrowserScreen;
 	int action;
 	int frame;

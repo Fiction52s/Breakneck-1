@@ -22,9 +22,6 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 
 	lineSpacing = f.getLineSpacing(characterHeight);
 
-	
-	
-
 	cursor.setString("|");
 	cursor.setFont(f);
 	cursor.setFillColor(Color::Red);
@@ -157,7 +154,8 @@ void TextBox::SetCursorIndex(int index)
 	int indexRow = GetIndexRow(cursorIndex);
 	//int indexCol = GetIndexCol(cursorIndex);
 
-	cursor.setPosition(pos.x + widths[cursorIndex] + leftBorder, pos.y + indexRow * lineSpacing);
+	//the -3 is just to sliiightly make things look nicer
+	cursor.setPosition(pos.x + widths[cursorIndex] + leftBorder, pos.y + indexRow * lineSpacing - 3);
 	//cursor.setPosition(text.getLocalBounds().width + leftBorder, pos.y);
 }
 

@@ -3,13 +3,14 @@
 
 
 #include <SFML/Graphics.hpp>
+#include "Tileset.h"
 
 struct MainMenu;
 struct MapBrowser;
 struct MapBrowserHandler;
 struct WorkshopMapPopup;
 
-struct FreeplayScreen
+struct FreeplayScreen : TilesetManager
 {
 	enum Action
 	{

@@ -50,6 +50,7 @@
 #include "MatchResultsScreen.h"
 #include "WorkshopMapPopup.h"
 #include "WorkshopBrowser.h"
+#include "FreeplayScreen.h"
 
 using namespace std;
 using namespace sf;
@@ -202,6 +203,15 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		}
 		break;
 	}
+	case FREEPLAY:
+	{
+		if (freeplayScreen != NULL)
+		{
+			delete freeplayScreen;
+			freeplayScreen = NULL;
+		}
+		break;
+	}
 
 	}
 
@@ -263,6 +273,13 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		currFreePlaySession = new GameSession(&mp);
 		GameSession::sLoad(currFreePlaySession);
 		break;
+	}
+	case FREEPLAY:
+	{
+		assert(freeplayScreen == NULL);
+
+		freeplayScreen = new FreeplayScreen(this);
+		freeplayScreen->Start();
 	}
 	}
 }
@@ -369,6 +386,7 @@ MainMenu::MainMenu()
 	currEditSession = NULL;
 	currTutorialSession = NULL;
 	currFreePlaySession = NULL;
+	freeplayScreen = NULL;
 
 	currSaveFile = NULL;
 
@@ -2937,6 +2955,7 @@ void MainMenu::HandleMenuMode()
 		{
 			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 			SetMode(DOWNLOAD_WORKSHOP_MAP_LOOP);
+			
 			//loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			//StartLoadModeScreen();
 		}
@@ -2949,19 +2968,28 @@ void MainMenu::HandleMenuMode()
 		{
 			cout << "map download complete" << endl;
 
-			modeToLoad = RUN_FREEPLAY_MAP;
+			modeToLoad = FREEPLAY;//RUN_FREEPLAY_MAP;
 
 			MapNode *selectedNode = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
 
 			if (selectedNode == NULL)
 				assert(0);
 
-
 			freePlayMapName = selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
 		break;
+	case FREEPLAY:
+	{
+		freeplayScreen->Update();
+
+		if (freeplayScreen->action == FreeplayScreen::A_READY)
+		{
+			LoadMode(RUN_FREEPLAY_MAP);
+		}
+		break;
+	}
 	case QUICKPLAY_TEST:
 		while (window->pollEvent(ev))
 		{
@@ -3589,6 +3617,11 @@ void MainMenu::DrawMode( Mode m )
 	}
 	case RUN_FREEPLAY_MAP:
 	{
+		break;
+	}
+	case FREEPLAY:
+	{
+		freeplayScreen->Draw(preScreenTexture);
 		break;
 	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
