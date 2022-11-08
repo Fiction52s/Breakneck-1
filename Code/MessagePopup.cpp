@@ -13,7 +13,7 @@ MessagePopup::MessagePopup()
 
 	panel->AddLabel("message", Vector2i(10, 10), 28, "");
 
-	Button *button = panel->AddButton("ok", Vector2i(10, 100), Vector2f(50, 30), "OK");
+	Button *button = panel->AddButton("ok", Vector2i(panel->size.x / 2, 100), Vector2f(50, 30), "OK");
 	panel->SetConfirmButton(button);
 	panel->SetCancelButton(button);
 

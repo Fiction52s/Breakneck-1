@@ -285,10 +285,16 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 		imageRects[i]->Init();
 	}
 
-	Vector2i belowRects = Vector2i(startRects) + Vector2i(0, (boxSize + spacing.y) * rows);
-	belowRects += Vector2i(0, 10);
+	int boxesTotalWidth = ((boxSize + spacing.x) * cols) - spacing.x;
+	int boxesTotalHeight = ((boxSize + spacing.y) * rows) - spacing.y;
+	Vector2i belowRects = Vector2i(startRects) + Vector2i(0, boxesTotalHeight);
+	belowRects += Vector2i(0, 20);
+
+	Vector2i rightOfRects = Vector2i(startRects) + Vector2i(boxesTotalWidth, 0);
+	rightOfRects += Vector2i(20, 0);
 
 
+	mapScroller = panel->AddScrollBar("scroll", rightOfRects, Vector2i(30, boxesTotalHeight), 4, 4);
 
 	//panel->SetAutoSpacing(true, false, belowRects, Vector2i(30, 0));
 	//AddLabel(name + "label", labelStart, 24, labelText);
@@ -612,6 +618,9 @@ void MapBrowser::PopulateRects()
 
 	int defaultNameSize = 18;
 
+	mapScroller->SetRows(ceil(numEntries / (float)cols), rows);
+	mapScroller->SetIndex(topRow);
+
 	int i;
 	for (i = start; i < numEntries && i < start + totalRects; ++i)
 	{
@@ -843,9 +852,11 @@ void MapBrowser::MouseScroll(int delta)
 	}
 }
 
-MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool showPreview, int extraImageRects)
+MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int extraImageRects)
 {
 	chooser = new MapBrowser(this, cols, rows, extraImageRects);
+
+	showPreview = p_showPreview;
 
 	if (!showPreview)
 	{
@@ -876,6 +887,11 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool showPreview, int e
 	fullNameText.setFillColor(Color::Black);
 
 	creatorLink = chooser->panel->AddHyperLink("creatorlink", Vector2i(previewTopLeft + Vector2f(0, -100)), 40, "", "");
+
+	if (!showPreview)
+	{
+		creatorLink->HideMember();
+	}
 }
 
 MapBrowserHandler::~MapBrowserHandler()
@@ -968,6 +984,11 @@ void MapBrowserHandler::TabGroupCallback(TabGroup *tg, const std::string &e)
 	{
 		chooser->StartWorkshop(MapBrowser::CREATE_CUSTOM_GAME);
 	}
+}
+
+void MapBrowserHandler::ScrollBarCallback(ScrollBar *sb, const std::string &e)
+{
+
 }
 
 //return true if installed. sets the filepath if its installation is just being registered.
@@ -1100,8 +1121,12 @@ void MapBrowserHandler::ClickFile(ChooseRect *cr)
 
 void MapBrowserHandler::FocusFile(ChooseRect *cr)
 {
+	if (!showPreview)
+		return;
+	
+	
 	ts_largePreview = cr->GetAsImageChooseRect()->ts;
-
+	
 	MapNode *mn = (MapNode*)cr->info;
 
 	if ( !mn->isWorkshop && !mn->nameAndDescriptionUpdated)

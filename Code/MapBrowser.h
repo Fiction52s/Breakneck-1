@@ -108,10 +108,12 @@ struct MapBrowserHandler : GUIHandler
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
 	void TabGroupCallback(TabGroup *tg, const std::string &e);
+	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
 	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];
 	Tileset *ts_largePreview;
+	bool showPreview;
 
 	sf::Text fullNameText;
 	sf::Text descriptionText;
@@ -155,6 +157,8 @@ struct MapBrowser : TilesetManager,
 	Button *nextPageButton;
 	Button *prevPageButton;
 	sf::Text pageLabel;
+
+	ScrollBar *mapScroller;
 
 	Button *saveButton;
 	Button *openButton;

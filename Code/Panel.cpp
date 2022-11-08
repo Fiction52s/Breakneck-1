@@ -92,6 +92,11 @@ Panel::~Panel()
 		delete (*it).second;
 	}
 
+	for (auto it = scrollBars.begin(); it != scrollBars.end(); ++it)
+	{
+		delete (*it).second;
+	}
+
 	for (auto it = gridSelectors.begin(); it != gridSelectors.end(); ++it)
 	{
 		delete (*it).second;
@@ -488,6 +493,12 @@ bool Panel::MouseUpdate()
 		bool temp = (*it)->MouseUpdate();
 	}
 
+	for (auto it = scrollBars.begin(); it != scrollBars.end(); ++it)
+	{
+		//(*it).SendKey( k, shift );
+		bool temp = (*it).second->MouseUpdate();
+	}
+
 	if (extraUpdater != NULL)
 		extraUpdater->MouseUpdate();
 
@@ -560,6 +571,11 @@ void Panel::SendEvent(TextBox *tb, const std::string & e)
 void Panel::SendEvent(CheckBox *cb, const std::string & e)
 {
 	handler->CheckBoxCallback(cb, e);
+}
+
+void Panel::SendEvent(ScrollBar *sb, const std::string &e)
+{
+	handler->ScrollBarCallback(sb, e);
 }
 
 void Panel::SendEvent(Dropdown *drop, const std::string & e)
@@ -875,6 +891,18 @@ Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
 	return AddSlider(name, pos, width, minValue, maxValue, defaultValue);
 }
 
+ScrollBar *Panel::AddScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows)
+{
+	assert(scrollBars.count(name) == 0);
+	ScrollBar *sb = new ScrollBar(name, Vector2i( autoStart.x + pos.x, autoStart.y + pos.y), size, p_numRows, p_numDisplayedRows, this);
+	scrollBars[name] = sb;
+
+	AddAutoSpaceX(sb->size.x + pos.x);
+	AddAutoSpaceY(sb->size.y + pos.y);
+
+	return sb;
+}
+
 TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit,
 	const std::string &initialText, const std::string &labelText)
 {
@@ -1045,6 +1073,11 @@ void Panel::Deactivate()
 		(*it)->Deactivate();
 	}
 
+	for (auto it = scrollBars.begin(); it != scrollBars.end(); ++it)
+	{
+		(*it).second->Deactivate();
+	}
+
 	if (extraUpdater != NULL)
 		extraUpdater->Deactivate();
 
@@ -1074,6 +1107,11 @@ void Panel::Draw(RenderTarget *target)
 	rs.setFillColor( Color( 83, 102, 188) );
 	rs.setPosition( 0, 0 );
 	target->draw( rs );*/
+
+	for (auto it = scrollBars.begin(); it != scrollBars.end(); ++it)
+	{
+		(*it).second->Draw(target);
+	}
 
 	for (auto it = labels.begin(); it != labels.end(); ++it)
 	{

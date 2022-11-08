@@ -36,6 +36,7 @@ struct GateInfo;
 struct MenuDropdown;
 struct TerrainRail;
 struct TabGroup;
+struct ScrollBar;
 
 struct Brush;
 
@@ -97,6 +98,7 @@ struct GUIHandler
 	virtual void PanelCallback(Panel *p, const std::string & e) {}
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
 	virtual void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e) {}
+	virtual void ScrollBarCallback(ScrollBar *sb, const std::string &e) {}
 
 };
 
@@ -702,6 +704,34 @@ struct TabGroup : PanelMember
 	int numTabs;
 };
 
+struct ScrollBar : PanelMember
+{
+	sf::Vector2i pos;
+	sf::Vector2i size;
+	int numRows;
+	int numDisplayedRows;
+
+	sf::Color bgColor;
+	sf::Color selectorColor;
+	std::string name;
+
+	sf::Vertex quads[8];
+
+	int maxIndex;
+	int cursorHeight;
+	int currIndex;
+
+
+	ScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows, Panel *panel );
+	~ScrollBar();
+	void SetRows(int p_numRows, int p_numDisplayedRows);
+	void SetIndex(int ind);
+	void Draw(sf::RenderTarget *target);
+	bool MouseUpdate();
+	void Deactivate();
+	void SetPos(sf::Vector2i &pos);
+};
+
 struct Panel
 {
 	Panel( const std::string &name, int width, 
@@ -774,6 +804,7 @@ struct Panel
 	CheckBox * AddLabeledCheckBox(const std::string &name, sf::Vector2i pos, const std::string &labelText, bool startChecked = false);
 	Slider * AddLabeledSlider(const std::string &name, sf::Vector2i pos, const std::string &labelText, int width,
 		int minValue, int maxValue, int defaultValue);
+	ScrollBar *AddScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows);
 	
 	TextBox * AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bool labelToleft, int rows, int cols, int charHeight, int lengthLimit, 
 		const std::string &initialText, const std::string &labelText );
@@ -811,6 +842,7 @@ struct Panel
 	void SendEvent(Dropdown *drop, const std::string & e);
 	void SendEvent(Slider *slide );
 	void SendEvent(MenuDropdown *menuDrop, const std::string & e);
+	void SendEvent(ScrollBar *scrollBar, const std::string &e);
 	sf::Font arial;
 	std::string name;
 	std::map<std::string, TextBox*> textBoxes;
@@ -823,6 +855,7 @@ struct Panel
 	std::map<std::string, MenuDropdown*> menuDropdowns;
 	std::map<std::string, Slider*> sliders;
 	std::map<std::string, TabGroup*> tabGroups;
+	std::map<std::string, ScrollBar*> scrollBars;
 	void ReserveEnemyRects(int num);
 	void ReserveImageRects(int num);
 	void ReserveTextRects(int num);

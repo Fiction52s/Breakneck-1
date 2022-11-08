@@ -131,17 +131,58 @@ void WorkshopBrowser::Update()
 
 		if (savePopup->action == SavePopup::A_CONFIRMED)
 		{
-			if (savePopup->browserHandler->chooser->fileNameTextBox->GetString() == "")
+			string fileNameStr = savePopup->browserHandler->chooser->fileNameTextBox->GetString();
+			if ( fileNameStr == "")
 			{
 				//check all valid filenames here plz
 				savePopup->action = SavePopup::A_ACTIVE;
 			}
 			else
 			{
+				MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+				string copyLocation = savePopup->browserHandler->chooser->currPath.string() + "\\" + fileNameStr;
+				string mapCopy = copyLocation + ".brknk";
+				string previewCopy = copyLocation + ".png";
+
+				string filePath = mp->filePath.string();
+				string previewPath = mp->folderPath.string() + "\\" + mp->fileName + ".png";
+
+				bool error = false;
+				try
+				{
+					if (boost::filesystem::copy_file(mp->filePath, mapCopy, boost::filesystem::copy_option::overwrite_if_exists))
+					{
+						if (boost::filesystem::exists(previewPath))
+						{
+							if (!boost::filesystem::copy_file(previewPath, previewCopy, boost::filesystem::copy_option::overwrite_if_exists))
+							{
+								error = true;
+							}
+						}
+					}
+					else
+					{
+						error = true;
+					}
+				}
+				catch (boost::filesystem::filesystem_error &e)
+				{
+					error = true;
+				}
+
 				action = A_SAVE_MESSAGE;
-				saveMessagePopup->Pop("Successfully saved file");
 				workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
 				savePopup->Deactivate();
+
+				if (error)
+				{
+					saveMessagePopup->Pop("An unknown error occurred.");
+				}
+				else
+				{
+					saveMessagePopup->Pop("Successfully saved file");
+				}
 			}
 		}
 		else if (savePopup->action == SavePopup::A_CANCELLED )
