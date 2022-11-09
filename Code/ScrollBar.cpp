@@ -18,7 +18,7 @@ ScrollBar::ScrollBar(const std::string &n, sf::Vector2i &p_pos, sf::Vector2i &p_
 	SetRectColor(quads + 4, selectorColor);
 
 	SetRows(p_numRows, p_numDisplayedRows);
-	SetIndex(0);
+	clickedDown = false;
 }
 
 ScrollBar::~ScrollBar()
@@ -48,14 +48,26 @@ void ScrollBar::SetRows(int p_numRows, int p_numDisplayedRows)
 
 	int spacing = size.y / (float)numRows;
 	cursorHeight = spacing * (numRows - maxIndex);
+
+	SetIndex(0);
 }
 
 void ScrollBar::SetIndex(int ind)
 {
 	int spacing = size.y / (float)numRows;
 
+	if (ind < 0)
+	{
+		ind = 0;
+	}
+	else if (ind > maxIndex)
+	{
+		ind = maxIndex;
+	}
+
 	currIndex = ind;
-	SetRectTopLeft(quads + 4, size.x, cursorHeight, Vector2f(pos + Vector2i(0, spacing * currIndex)));
+	cursorPos = pos + Vector2i(0, spacing * currIndex);
+	SetRectTopLeft(quads + 4, size.x, cursorHeight, Vector2f(cursorPos));
 }
 
 void ScrollBar::SetPos(sf::Vector2i &p_pos)
@@ -71,9 +83,12 @@ bool ScrollBar::MouseUpdate()
 	if (hidden)
 		return false;
 
-	/*Vector2i mousePos = panel->GetMousePos();
+	int spacing = size.y / (float)numRows;
 
-	sf::Rect<int> r(pos.x, pos.y, totalSize.x, totalSize.y);
+	Vector2i mousePos = panel->GetMousePos();
+
+	//sf::Rect<int> r(pos.x, pos.y, size.x, size.y);
+	sf::Rect<int> r(cursorPos.x, cursorPos.y, size.x, cursorHeight);
 
 	Vector2i adjustedMousePos = mousePos - pos;
 
@@ -84,17 +99,29 @@ bool ScrollBar::MouseUpdate()
 	{
 		if (containsMouse)
 		{
-			int mouseIndex = adjustedMousePos.x / memberSize.x;
-
-			mouseIndex = max(0, mouseIndex);
-			mouseIndex = min(numTabs, mouseIndex);
-
-			SelectTab(mouseIndex);
-
-			panel->SendEvent(this, "tabselected");
+			clickedDown = true;
+			clickedPos = mousePos;
+			clickedIndex = currIndex;
 		}
-	}*/
+		else
+		{
+			clickedDown = false;
+		}
+	}
+	else
+	{
+		if (MOUSE.IsMouseDownLeft() )
+		{
+			int delta = (mousePos.y - clickedPos.y) / spacing;
 
+			SetIndex(clickedIndex + delta);
+			panel->SendEvent(this, "indexchange");
+		}
+		else
+		{
+			clickedDown = false;
+		}
+	}
 	return false;
 }
 

@@ -716,11 +716,16 @@ struct ScrollBar : PanelMember
 	std::string name;
 
 	sf::Vertex quads[8];
+	sf::Vector2i cursorPos;
 
 	int maxIndex;
 	int cursorHeight;
 	int currIndex;
 
+	sf::Vector2i clickedPos;
+	int clickedIndex;
+
+	bool clickedDown;
 
 	ScrollBar(const std::string &name, sf::Vector2i &pos, sf::Vector2i &size, int p_numRows, int p_numDisplayedRows, Panel *panel );
 	~ScrollBar();

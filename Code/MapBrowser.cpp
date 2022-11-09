@@ -988,7 +988,8 @@ void MapBrowserHandler::TabGroupCallback(TabGroup *tg, const std::string &e)
 
 void MapBrowserHandler::ScrollBarCallback(ScrollBar *sb, const std::string &e)
 {
-
+	chooser->topRow = sb->currIndex;
+	chooser->PopulateRects();
 }
 
 //return true if installed. sets the filepath if its installation is just being registered.
