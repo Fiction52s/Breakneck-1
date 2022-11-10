@@ -6,20 +6,6 @@
 #include <string>
 #include <vector>
 #include <boost/filesystem.hpp>
-//struct WorkshopManager
-//{
-//	WorkshopManager();
-//	void UploadMap();
-//	void OnCreatedItem(CreateItemResult_t *pCallback, bool bIOFailure);
-//	void OnItemUpdated(SubmitItemUpdateResult_t *pCallback, bool bIOFailure);
-//	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
-//	bool LoadWorkshopItem(PublishedFileId_t workshopItemID);
-//private:
-//	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
-//	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
-//	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
-//
-//};
 
 struct MapNode;
 struct MapBrowser;
@@ -58,7 +44,6 @@ struct WorkshopManager
 	void OnQueryCompleted(SteamUGCQueryCompleted_t *pCallback, bool bIOFailure);
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback, bool bIOFailure);
 	//void OnQueryAllCompleted(SteamUGCQueryCompleted_t *callback, bool bIOFailure);
-	MapNode * LoadWorkshopItem(SteamUGCDetails_t &details );
 	void Query(std::vector<MapNode*> *p_queryResults, int page );
 	void DownloadPreviewFiles(std::vector<MapNode*> *p_previewResults);
 private:

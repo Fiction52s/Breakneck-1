@@ -33,6 +33,7 @@ struct WorkshopBrowser
 
 	WorkshopBrowser();
 	~WorkshopBrowser();
+	void RequestPreviews();
 	void Start();
 	void Quit();
 	void HandleEvent(sf::Event ev);

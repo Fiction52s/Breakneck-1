@@ -14,6 +14,7 @@ using namespace boost::filesystem;
 MapNode::MapNode()
 {
 	checkingForPreview = false;
+	myBrowser = NULL;
 	ts_preview = NULL;
 	type = FILE;
 	index = -1;
@@ -76,6 +77,21 @@ void MapNode::Unsubscribe()
 		SteamAPICall_t call = SteamUGC()->UnsubscribeItem(publishedFileId);
 		onRRemoteStorageUnsubscribePublishedFileResultCallResult.Set(call, this, &MapNode::OnUnsubscribe);
 		unsubscribing = true;
+	}
+}
+
+void MapNode::ClearPreview()
+{
+	if (type == MapNode::FILE && ts_preview != NULL)
+	{
+		assert(myBrowser != NULL);
+		myBrowser->DestroyTileset(ts_preview);
+		ts_preview = NULL;
+		previewTex = NULL;
+		if (chooseRect != NULL)
+		{
+			chooseRect->SetImage(NULL, 0);
+		}
 	}
 }
 
@@ -146,31 +162,50 @@ void MapNode::OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callb
 void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 	bool bIOFailure)
 {
-	if (callback->m_bRequestSuccessful)
+	if (checkingForPreview)
 	{
-		uint32 bodySize;
-		SteamHTTP()->GetHTTPResponseBodySize(callback->m_hRequest, &bodySize);
+		if (callback->m_bRequestSuccessful)
+		{
+			uint32 bodySize;
+			SteamHTTP()->GetHTTPResponseBodySize(callback->m_hRequest, &bodySize);
 
-		uint8 *buffer = new uint8[bodySize];
+			uint8 *buffer = new uint8[bodySize];
 
-		SteamHTTP()->GetHTTPResponseBodyData(callback->m_hRequest, buffer, bodySize);
+			SteamHTTP()->GetHTTPResponseBodyData(callback->m_hRequest, buffer, bodySize);
 
-		previewTex = new sf::Texture;
-		previewTex->loadFromMemory(buffer, bodySize);
+			assert(previewTex == NULL);
+
+			//cout << "creating texture " << to_string(publishedFileId) << "\n";
+			previewTex = new sf::Texture;
+			if (!previewTex->loadFromMemory(buffer, bodySize))
+			{
+				delete previewTex;
+				previewTex = NULL;
+			}
+			else
+			{
+				assert(myBrowser != NULL);
+				ts_preview = myBrowser->GetTileset("WorkshopPreview/" + to_string(publishedFileId), previewTex);
+			}
+
+			delete[] buffer;
+
+			if (ts_preview != NULL)
+			{
+				if (chooseRect != NULL)
+				{
+					chooseRect->SetImage(ts_preview, 0);
+				}
+			}
+		}
+		else
+		{
+			//cout << "failed to get preview" << endl;
+		}
 
 		checkingForPreview = false;
-		//cout << "got preview successfully" << endl;
-
-		delete[] buffer;
 	}
-	else
-	{
-		//cout << "failed to get preview" << endl;
-	}
-
-	checkingForPreview = false;
 }
-
 
 void MapNode::RequestDownloadPreview()
 {
@@ -435,6 +470,7 @@ void MapBrowser::Draw(sf::RenderTarget *target)
 void MapBrowser::AddFile(const path &p_filePath)
 {
 	MapNode *mapNode = new MapNode;
+	mapNode->myBrowser = this;
 	mapNode->filePath = p_filePath;
 	mapNode->type = MapNode::FILE;
 	string pathStr = p_filePath.string();
@@ -452,6 +488,7 @@ void MapBrowser::AddFile(const path &p_filePath)
 void MapBrowser::AddFolder(const path &p_filePath)
 {
 	MapNode *mapNode = new MapNode;
+	mapNode->myBrowser = this;
 	mapNode->filePath = p_filePath;
 	mapNode->type = MapNode::FOLDER;
 
@@ -466,27 +503,20 @@ void MapBrowser::AddFolder(const path &p_filePath)
 
 void MapBrowser::ClearNodes()
 {
-	int nodeIndex = 0;
+	ClearPreviews();
 	for (auto it = nodes.begin(); it != nodes.end(); ++it)
 	{
-		//cout << "destroying node: " << nodeIndex << endl;
-
-		/*if (nodeIndex == 36)
-		{
-			int x = 5;
-		}*/
-
-		nodeIndex++;
-
-		if ( (*it)->type == MapNode::FILE && (*it)->ts_preview != NULL)
-		{
-			DestroyTileset((*it)->ts_preview);
-			(*it)->ts_preview = NULL;
-			(*it)->previewTex = NULL;
-		}
 		delete (*it);
 	}
 	nodes.clear();
+}
+
+void MapBrowser::RequestAllPreviews()
+{
+	for (auto it = nodes.begin(); it != nodes.end(); ++it)
+	{
+		(*it)->RequestDownloadPreview();
+	}
 }
 
 const static int STEAM_MAX_ITEMS_RETURNED_IN_QUERY = 50;
@@ -500,7 +530,7 @@ void MapBrowser::Update()
 		{
 			if (workshop->queryTotalItems > 0)
 			{
-				maxWorkshopPages = 1 + ((workshop->queryTotalItems-1) / STEAM_MAX_ITEMS_RETURNED_IN_QUERY);
+				maxWorkshopPages = 1 + ((workshop->queryTotalItems - 1) / STEAM_MAX_ITEMS_RETURNED_IN_QUERY);
 
 				if (maxWorkshopPages > 1)
 				{
@@ -517,8 +547,10 @@ void MapBrowser::Update()
 
 				for (auto it = nodes.begin(); it != nodes.end(); ++it)
 				{
-					(*it)->RequestDownloadPreview();
+					(*it)->myBrowser = this;
 				}
+
+				//RequestAllPreviews();
 
 				numEntries = nodes.size();
 
@@ -541,14 +573,14 @@ void MapBrowser::Update()
 	case A_WAITING_FOR_PREVIEW_RESULTS:
 	{
 		bool waitingForPreviewResults = false;
-		for (auto it = nodes.begin(); it != nodes.end(); ++it)
+		/*for (auto it = nodes.begin(); it != nodes.end(); ++it)
 		{
 			if ((*it)->checkingForPreview)
 			{
 				waitingForPreviewResults = true;
 				break;
 			}
-		}
+		}*/
 
 		for (auto it = nodes.begin(); it != nodes.end(); ++it)
 		{
@@ -561,14 +593,14 @@ void MapBrowser::Update()
 
 		if (!waitingForPreviewResults)
 		{
-			for (auto it = nodes.begin(); it != nodes.end(); ++it)
-			{
-				if ((*it)->previewTex != NULL)
-				{
-					//using publishedFileId allows for unique items, and not getting confused on duplicate names.
-					(*it)->ts_preview = GetTileset("WorkshopPreview/" + to_string((*it)->publishedFileId), (*it)->previewTex);//(*it)->nodeName, (*it)->previewTex);
-				}
-			}
+			//for (auto it = nodes.begin(); it != nodes.end(); ++it)
+			//{
+			//	if ((*it)->previewTex != NULL)
+			//	{
+			//		//using publishedFileId allows for unique items, and not getting confused on duplicate names.
+			//		(*it)->ts_preview = GetTileset("WorkshopPreview/" + to_string((*it)->publishedFileId), (*it)->previewTex);
+			//	}
+			//}
 
 			PopulateRects();
 
@@ -576,6 +608,24 @@ void MapBrowser::Update()
 		}
 
 
+		break;
+	}
+	case A_IDLE:
+	{
+		//request the previews in order
+		int nodeIndex = 0;
+		for (auto it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			if ((*it)->ts_preview == NULL)
+			{
+				if (!(*it)->checkingForPreview)
+				{
+					(*it)->RequestDownloadPreview();
+				}
+				break;
+			}
+			++nodeIndex;
+		}
 		break;
 	}
 	}
@@ -681,6 +731,32 @@ void MapBrowser::SetPath(const std::string &p_path)
 	//MOUSE.ResetMouse(); //can load rects and mouse can be clicked down on one of thema lready and its weird.
 }
 
+void MapBrowser::ClearPreviews()
+{
+	for( auto it = nodes.begin(); it != nodes.end(); ++it )
+	{
+		(*it)->ClearPreview();
+	}
+}
+
+void MapBrowser::ClearAllPreviewsButSelected()
+{
+	if (selectedRect == NULL)
+	{
+		ClearPreviews();
+		return;
+	}	
+
+	MapNode *selectedNode = (MapNode*)selectedRect->info;
+	for (auto it = nodes.begin(); it != nodes.end(); ++it)
+	{
+		if ((*it) != selectedNode)
+		{
+			(*it)->ClearPreview();
+		}
+	}
+}
+
 void MapBrowser::QueryMaps()
 {
 	action = A_WAITING_FOR_QUERY_RESULTS;
@@ -710,6 +786,11 @@ void MapBrowser::PopulateRects()
 
 	mapScroller->SetRows(ceil(numEntries / (float)cols), rows);
 	mapScroller->SetIndex(topRow);
+
+	for (auto it = nodes.begin(); it != nodes.end(); ++it)
+	{
+		(*it)->chooseRect = NULL;
+	}
 
 	int i;
 	for (i = start; i < numEntries && i < start + totalRects; ++i)
@@ -946,6 +1027,8 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int
 {
 	chooser = new MapBrowser(this, cols, rows, extraImageRects);
 
+	focusedRect = NULL;
+
 	showPreview = p_showPreview;
 
 	if (!showPreview)
@@ -961,6 +1044,12 @@ MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int
 
 	SetRectSubRect(largePreview, FloatRect(0, 0, previewSize.x, previewSize.y));
 	SetRectTopLeft(largePreview, previewSize.x, previewSize.y, previewTopLeft);
+
+	SetRectSubRect(noPreviewQuad, FloatRect(0, 0, previewSize.x, previewSize.y));
+	SetRectTopLeft(noPreviewQuad, previewSize.x, previewSize.y, previewTopLeft);
+	SetRectColor(noPreviewQuad, Color::Black);
+
+	
 
 	MainMenu *mm = MainMenu::GetInstance();
 
@@ -1004,7 +1093,10 @@ void MapBrowserHandler::ChooseRectEvent(ChooseRect *cr, int eventType)
 	{
 		if (node->type == MapNode::FILE)
 		{
-			UnfocusFile();// (cr);
+			if (focusedRect == cr)
+			{
+				ClearFocus();
+			}
 		}
 	}
 	else if (eventType == ChooseRect::ChooseRectEventType::E_LEFTCLICKED)
@@ -1136,6 +1228,15 @@ void MapBrowserHandler::SelectRect(ChooseRect *cr)
 void MapBrowserHandler::Update()
 {
 	chooser->Update();
+
+	if (focusedRect != NULL && ts_largePreview == NULL)
+	{	
+		MapNode *mn = (MapNode*)focusedRect->info;
+		if (mn->ts_preview != NULL )
+		{
+			ts_largePreview = mn->ts_preview;
+		}
+	}
 }
 
 void MapBrowserHandler::Cancel()
@@ -1216,9 +1317,13 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 		return;
 	
 	
-	ts_largePreview = cr->GetAsImageChooseRect()->ts;
+	//ts_largePreview = cr->GetAsImageChooseRect()->ts;
 	
 	MapNode *mn = (MapNode*)cr->info;
+
+	focusedRect = cr->GetAsImageChooseRect();
+
+	ts_largePreview = mn->ts_preview;//cr->GetAsImageChooseRect()->ts;
 
 	if ( !mn->isWorkshop && !mn->nameAndDescriptionUpdated)
 	{
@@ -1271,10 +1376,10 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 	}
 }
 
-void MapBrowserHandler::UnfocusFile()//(ChooseRect *cr)
+void MapBrowserHandler::ClearFocus()
 {
 	ts_largePreview = NULL;
-
+	focusedRect = NULL;
 	descriptionText.setString("");
 	fullNameText.setString("");
 	creatorLink->HideMember();
@@ -1286,8 +1391,12 @@ void MapBrowserHandler::Draw(sf::RenderTarget *target)
 	if (ts_largePreview)
 	{
 		target->draw(largePreview, 4, sf::Quads, ts_largePreview->texture);
-
-		target->draw(descriptionText);
-		target->draw(fullNameText);
 	}
+	else
+	{
+		target->draw(noPreviewQuad, 4, sf::Quads);
+	}
+
+	target->draw(descriptionText);
+	target->draw(fullNameText);
 }

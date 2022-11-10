@@ -44,6 +44,9 @@ bool SavePopup::Activate(const std::string &activationPath, const std::string &d
 void SavePopup::Deactivate()
 {
 	action = A_INACTIVE;
+	browserHandler->ClearFocus();
+	browserHandler->ClearSelection();
+	browserHandler->chooser->ClearNodes();
 }
 
 bool SavePopup::HandleEvent(sf::Event ev)

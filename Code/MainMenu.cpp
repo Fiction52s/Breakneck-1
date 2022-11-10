@@ -282,6 +282,11 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		freeplayScreen = new FreeplayScreen(this);
 		freeplayScreen->Start();
 	}
+	case BROWSE_WORKSHOP:
+	{
+		workshopBrowser->mapBrowserScreen->browserHandler->chooser->RequestAllPreviews();
+		break;
+	}
 	}
 }
 

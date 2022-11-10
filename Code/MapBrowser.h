@@ -36,6 +36,7 @@ struct MapNode
 
 	//new
 	
+	MapBrowser *myBrowser;
 	bool mapDownloaded;
 	bool mapUpdating;
 	int downloadResult;
@@ -82,6 +83,7 @@ struct MapNode
 	void Draw(sf::RenderTarget *target);
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
+	void ClearPreview();
 
 	void OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure);
 	void OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure);
@@ -99,7 +101,7 @@ struct MapBrowserHandler : GUIHandler
 	void Confirm();
 	void ClickFile(ChooseRect *cr);
 	void FocusFile(ChooseRect *cr);
-	void UnfocusFile();//ChooseRect *cr);
+	void ClearFocus();
 	void Draw(sf::RenderTarget *target);
 	void ChangePath();
 	void ClearSelection();
@@ -117,6 +119,7 @@ struct MapBrowserHandler : GUIHandler
 	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];
+	sf::Vertex noPreviewQuad[4];
 	Tileset *ts_largePreview;
 	bool showPreview;
 
@@ -124,6 +127,8 @@ struct MapBrowserHandler : GUIHandler
 	sf::Text descriptionText;
 
 	HyperLink *creatorLink;
+
+	ChooseRect *focusedRect;
 
 	MapBrowser *chooser;
 
@@ -156,6 +161,7 @@ struct MapBrowser : TilesetManager,
 	bool isWorkshop;
 	Action action;
 	ImageChooseRect *selectedRect;
+	
 	WorkshopManager *workshop;
 	int currWorkshopPage;
 	int maxWorkshopPages;
@@ -181,7 +187,9 @@ struct MapBrowser : TilesetManager,
 	void Update();
 	void QueryMaps();
 	
-
+	void ClearPreviews();
+	void ClearAllPreviewsButSelected();
+	void RequestAllPreviews();
 	//panelupdater functions
 	//bool MouseUpdate();
 	void Draw(sf::RenderTarget *target);

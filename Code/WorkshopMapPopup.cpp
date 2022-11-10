@@ -120,19 +120,6 @@ void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
 	else if (b == playButton)
 	{
 		action = A_PLAY;
-
-		MainMenu *mm = MainMenu::GetInstance();
-
-		mm->DownloadAndRunWorkshopMap();
-		/*if (currMapNode->CheckIfFullyInstalled())
-		{
-			mm->RunFreePlayMap(currMapNode->filePath.string());
-		}
-		else
-		{
-			mm->DownloadAndRunWorkshopMap();
-		}*/
-
 	}
 	else if (b == hostButton)
 	{

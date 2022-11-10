@@ -19,7 +19,7 @@ void ImageChooseRect::SetImage(Tileset *p_ts, const sf::IntRect &subRect)
 {
 	if (p_ts == NULL)
 	{
-		SetShown(false);
+		//SetShown(false);
 		ts = p_ts;
 		tileIndex = -1;
 		return;

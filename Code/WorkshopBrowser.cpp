@@ -74,9 +74,14 @@ void WorkshopBrowser::Start()
 void WorkshopBrowser::Quit()
 {
 	action = A_BACK;
-	mapBrowserScreen->browserHandler->UnfocusFile();
+	
+	mapBrowserScreen->browserHandler->ClearFocus();
 	mapBrowserScreen->browserHandler->ClearSelection();
 	mapBrowserScreen->browserHandler->chooser->ClearNodes();
+}
+
+void WorkshopBrowser::RequestPreviews()
+{
 }
 
 void WorkshopBrowser::Update()
@@ -118,7 +123,15 @@ void WorkshopBrowser::Update()
 			
 			break;
 		case WorkshopMapPopup::Action::A_PLAY:
+		{
+			MainMenu *mm = MainMenu::GetInstance();
+
+			mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
+			workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
+			mm->DownloadAndRunWorkshopMap();
 			break;
+		}
+			
 		case WorkshopMapPopup::Action::A_SAVE_AND_EDIT:
 		case WorkshopMapPopup::Action::A_SAVE:
 		{

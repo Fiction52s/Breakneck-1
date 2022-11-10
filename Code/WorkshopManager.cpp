@@ -267,64 +267,7 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 					}
 
 					
-
-					//details.m_hPreviewFile
-					//MapNode *newNode = LoadWorkshopItem(details);
-
-					
 				}
-			}
-		}
-		else
-		{
-			cout << "query success. " << callback->m_unTotalMatchingResults << " items available" << endl;
-
-			int numResultsReturned = callback->m_unNumResultsReturned;
-
-			//
-			for (int i = 0; i < numResultsReturned; ++i)
-			{
-				SteamUGCDetails_t details;
-				bool success = SteamUGC()->GetQueryUGCResult(callback->m_handle, i, &details);
-				if (success && details.m_eResult == EResult::k_EResultOK)
-				{
-					cout << i << "- " << details.m_rgchTitle << ": " << details.m_rgchDescription << endl;
-
-					uint32 itemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
-
-					if ((itemState & k_EItemStateSubscribed))
-					{
-						cout << "item is already subbed to" << endl;
-					}
-					else
-					{
-						cout << "subbing to item" << endl;
-						SteamUGC()->SubscribeItem(details.m_nPublishedFileId);
-					}
-
-					if (itemState & k_EItemStateDownloading)
-					{
-						cout << "item is downloading" << endl;
-					}
-					else if (itemState & k_EItemStateInstalled)
-					{
-						cout << "item is already installed" << endl;
-						//uint64 fileSize;
-						//char path[1024];
-						//uint32 timestamp;
-						//cout << SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &fileSize, path, 1024, &timestamp);
-
-						//cout << path << endl;
-
-						//cout << details.
-
-						//cout << "details: " << details.
-
-						//LoadWorkshopItem(details.m_nPublishedFileId);
-					}
-				}
-
-
 			}
 		}
 	}
@@ -332,42 +275,6 @@ void WorkshopManager::OnQueryCompleted(SteamUGCQueryCompleted_t *callback, bool 
 	SteamUGC()->ReleaseQueryUGCRequest(callback->m_handle);
 
 	queryState = QS_NOT_QUERYING;
-}
-
-
-//depreciated for now!!!!!
-//return true on success
-MapNode * WorkshopManager::LoadWorkshopItem(SteamUGCDetails_t &details)
-{
-	//depreciated for now!!!!!
-
-
-	uint32 unItemState = SteamUGC()->GetItemState(details.m_nPublishedFileId);
-
-	if (!(unItemState & k_EItemStateInstalled))
-		return NULL;
-
-	uint32 unTimeStamp = 0;
-	uint64 unSizeOnDisk = 0;
-	char szItemFolder[1024] = { 0 };
-
-	if (!SteamUGC()->GetItemInstallInfo(details.m_nPublishedFileId, &unSizeOnDisk, szItemFolder, sizeof(szItemFolder), &unTimeStamp))
-		return NULL;
-
-	//this isn't implemented!
-	//newNode->fileName = 
-
-	MapNode *newNode = new MapNode;
-	newNode->folderPath = szItemFolder;
-	newNode->nodeName = details.m_rgchTitle;
-	newNode->type = MapNode::FILE;
-	newNode->filePath = string(szItemFolder) + "\\" + string(details.m_rgchTitle);
-	newNode->isWorkshop = true;
-	//is.open(folder
-
-	cout << "folder: " << szItemFolder << endl;
-
-	return newNode;
 }
 
 void WorkshopManager::Query(std::vector<MapNode*> *p_queryResults, int page)
