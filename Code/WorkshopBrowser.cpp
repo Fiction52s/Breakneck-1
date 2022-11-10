@@ -16,6 +16,7 @@ WorkshopBrowser::WorkshopBrowser()
 	saveMessagePopup = new MessagePopup;
 	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
 	assert(mapBrowserScreen != NULL);
+	editAfterSaving = false;
 }
 
 WorkshopBrowser::~WorkshopBrowser()
@@ -102,22 +103,49 @@ void WorkshopBrowser::Update()
 		switch (workshopMapPopup->action)
 		{
 		case WorkshopMapPopup::Action::A_BACK:
+		{
 			action = A_BROWSER;
 			//selectedMap = NULL;
 			mapBrowserScreen->browserHandler->ClearSelection();
 			break;
-		case WorkshopMapPopup::Action::A_EDIT:
+
+			MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+			savePopup->Activate("Resources\\Maps\\WorkshopDownloads", mp->fileName);
 			break;
+		}
 		case WorkshopMapPopup::Action::A_HOST:
 			
 			break;
 		case WorkshopMapPopup::Action::A_PLAY:
 			break;
+		case WorkshopMapPopup::Action::A_SAVE_AND_EDIT:
 		case WorkshopMapPopup::Action::A_SAVE:
 		{
 			MapNode *mp = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
-			action = A_SAVE_POPUP;
-			savePopup->Activate("Resources\\Maps\\WorkshopDownloads", mp->fileName );
+
+			if (mp->CheckIfFullyInstalled())
+			{
+				if (workshopMapPopup->action == WorkshopMapPopup::Action::A_SAVE_AND_EDIT)
+				{
+					editAfterSaving = true;
+				}
+				else
+				{
+					editAfterSaving = false;
+				}
+
+				action = A_SAVE_POPUP;
+				savePopup->Activate("Resources\\Maps\\WorkshopDownloads", mp->fileName);
+			}
+			else
+			{
+				if (!mp->IsSubscribed())
+				{
+					mp->Subscribe();
+				}
+			}
+			
 			break;
 		}
 			
@@ -171,17 +199,21 @@ void WorkshopBrowser::Update()
 					error = true;
 				}
 
+				
 				action = A_SAVE_MESSAGE;
 				workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
 				savePopup->Deactivate();
 
+
 				if (error)
 				{
 					saveMessagePopup->Pop("An unknown error occurred.");
+					savedPath = "";
 				}
 				else
-				{
+				{	
 					saveMessagePopup->Pop("Successfully saved file");
+					savedPath = mapCopy;
 				}
 			}
 		}
@@ -204,6 +236,23 @@ void WorkshopBrowser::Update()
 		if (saveMessagePopup->action == MessagePopup::A_INACTIVE)
 		{
 			action = A_POPUP;
+			
+			if (editAfterSaving)
+			{
+				if (savedPath == "")
+				{
+					workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
+				}
+				else
+				{
+					workshopMapPopup->action = WorkshopMapPopup::A_EDIT;
+				}
+			}
+			else
+			{
+				workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
+			}
+			
 		}
 		break;
 	}

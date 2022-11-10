@@ -16,6 +16,7 @@ struct WorkshopMapPopup : GUIHandler
 		A_INACTIVE,
 		A_ACTIVE,
 		A_HOST,
+		A_SAVE_AND_EDIT,
 		A_EDIT,
 		A_PLAY,
 		A_SAVE,

@@ -143,7 +143,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		titleScreen = NULL;
 		break;
 	}
-	case RUNNINGEDITOR:
+	case RUN_EDITOR_MAP:
 	{
 		assert(currEditSession != NULL);
 		delete currEditSession;
@@ -246,9 +246,9 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		titleScreen = new TitleScreen(this);
 		titleScreen->Reset();
 		break;
-	case RUNNINGEDITOR:
+	case RUN_EDITOR_MAP:
 		assert(currEditSession == NULL);
-		currEditSession = new EditSession(this, "");
+		currEditSession = new EditSession(this, editMapName);
 		break;
 	case TUTORIAL:
 	case ADVENTURETUTORIAL:
@@ -268,7 +268,7 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		MatchParams mp;
 		mp.saveFile = NULL;//currSaveFile;
-		mp.mapPath = freePlayMapName;
+		mp.mapPath = freeplayMapName;
 
 		currFreePlaySession = new GameSession(&mp);
 		GameSession::sLoad(currFreePlaySession);
@@ -1031,7 +1031,7 @@ void MainMenu::SetMode(Mode m)
 		changedMode = true;
 	}
 
-	if (menuMode == RUNNINGEDITOR)
+	if (menuMode == RUN_EDITOR_MAP)
 		fader->Clear();
 
 	if (menuMode == KINBOOSTLOADINGMAP)
@@ -1059,6 +1059,11 @@ void MainMenu::SetMode(Mode m)
 			musicPlayer->PlayMusic(menuMusic);
 		}
 		saveMenu->SetSkin(GetCurrentProgress()->defaultSkinIndex);
+	}
+	else if (menuMode == BROWSE_WORKSHOP)
+	{
+		SetMouseGrabbed(true);
+		SetMouseVisible(true);
 	}
 
 	if (menuMode == WORLDMAP_COLONY)
@@ -2401,7 +2406,7 @@ void MainMenu::HandleMenuMode()
 		break;
 
 	}
-	case RUNNINGEDITOR:
+	case RUN_EDITOR_MAP:
 	{
 		while (window->pollEvent(ev))
 		{
@@ -2415,7 +2420,8 @@ void MainMenu::HandleMenuMode()
 		window->setView(oldView);
 		SetMouseVisible(false);
 
-		LoadMode(TITLEMENU);
+		//LoadMode(TITLEMENU);
+		LoadMode(preEditMode);
 		break;
 	}
 	case TUTORIAL:
@@ -2850,6 +2856,11 @@ void MainMenu::HandleMenuMode()
 			//delete workshopBrowser;
 			//workshopBrowser = NULL;
 		}
+		else if (workshopBrowser->workshopMapPopup->action == WorkshopMapPopup::A_EDIT)
+		{
+			workshopBrowser->workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
+			RunEditor(BROWSE_WORKSHOP, workshopBrowser->savedPath);
+		}
 
 		//workshopBrowser->Update();
 
@@ -2975,7 +2986,7 @@ void MainMenu::HandleMenuMode()
 			if (selectedNode == NULL)
 				assert(0);
 
-			freePlayMapName = selectedNode->filePath.string();
+			freeplayMapName = selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
@@ -3084,6 +3095,12 @@ void MainMenu::HandleMenuMode()
 }
 
 
+void MainMenu::RunEditor(Mode preMode, const std::string &p_editMapName)
+{
+	preEditMode = preMode;
+	editMapName = p_editMapName;
+	LoadMode(RUN_EDITOR_MAP);
+}
 
 void MainMenu::LoadMode(Mode m)
 {
@@ -3273,7 +3290,7 @@ void MainMenu::TitleMenuModeUpdate()
 		case M_LEVEL_EDITOR:
 		{
 			musicPlayer->FadeOutCurrentMusic(30);
-			LoadMode(RUNNINGEDITOR);
+			RunEditor(TITLEMENU, "");
 				//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
@@ -3574,7 +3591,7 @@ void MainMenu::DrawMode( Mode m )
 	case INTROMOVIE:
 		introMovie->Draw(preScreenTexture);
 		break;
-	case RUNNINGEDITOR:
+	case RUN_EDITOR_MAP:
 	{
 		break;
 	}
@@ -3672,7 +3689,7 @@ void MainMenu::DrawMode( Mode m )
 
 void MainMenu::RunFreePlayMap(const std::string &path)
 {
-	freePlayMapName = path;
+	freeplayMapName = path;
 	LoadMode(MainMenu::RUN_FREEPLAY_MAP);
 	//SetMode(MainMenu::RUNWORKSHOPMAP);
 }

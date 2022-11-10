@@ -30,6 +30,7 @@ SavePopup::~SavePopup()
 bool SavePopup::Activate(const std::string &activationPath, const std::string &defaultFileName )
 {
 	action = A_ACTIVE;
+	browserHandler->chooser->panel->SetCenterPos(Vector2i(960, 540));
 	browserHandler->chooser->StartRelative(".brknk", MapBrowser::SAVE, activationPath);//"Resources\\Maps\\WorkshopDownloads");
 	browserHandler->chooser->panel->tabGroups["tabs"]->HideMember();
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);

@@ -109,7 +109,7 @@ void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b == editLocalCopyButton)
 	{
-
+		action = A_SAVE_AND_EDIT;
 	}
 	else if (b == playButton)
 	{

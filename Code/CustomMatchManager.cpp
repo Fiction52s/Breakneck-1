@@ -111,7 +111,16 @@ void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 	}
 
 	assert(selectedMap != NULL);
-	TryActivateOptionsPanel(selectedMap);
+
+	if( selectedMap->CheckIfFullyInstalled() )
+	{
+		TryActivateOptionsPanel(selectedMap);
+	}
+	else
+	{
+		action = A_DOWNLOADING_WORKSHOP_MAP;
+		selectedMap->Subscribe();
+	}
 }
 
 void CustomMatchManager::BrowseCustomLobbies()
@@ -330,6 +339,7 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	case A_DOWNLOADING_WORKSHOP_MAP:
 	{
+		mapBrowserScreen->Draw(target);
 		break;
 	}
 	case A_CHOOSE_MAP_OPTIONS:

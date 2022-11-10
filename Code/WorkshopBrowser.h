@@ -26,6 +26,8 @@ struct WorkshopBrowser
 	MapBrowserScreen *mapBrowserScreen;
 	int action;
 	int frame;
+	bool editAfterSaving;
+	std::string savedPath;
 
 	WorkshopBrowser();
 	~WorkshopBrowser();
