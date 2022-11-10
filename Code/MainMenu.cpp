@@ -53,6 +53,8 @@
 #include "FreeplayScreen.h"
 #include "WorkshopManager.h"
 
+#include "PostMatchOptionsPopup.h"
+
 using namespace std;
 using namespace sf;
 using namespace boost::filesystem;
@@ -1073,6 +1075,10 @@ void MainMenu::SetMode(Mode m)
 	else if (menuMode == MATCH_RESULTS)
 	{
 		matchResultsScreen->Reset();
+	}
+	else if (menuMode == POST_MATCH_OPTIONS)
+	{
+		customMatchManager->postMatchPopup->Start();
 	}
 	else if (menuMode == SAVEMENU)
 	{
@@ -3104,6 +3110,7 @@ void MainMenu::HandleMenuMode()
 					SetMode(TITLEMENU_INFOPOP);
 
 					netplayManager->CleanupMatch();
+					netplayManager->Abort();
 				}
 				else
 				{
@@ -3129,15 +3136,57 @@ void MainMenu::HandleMenuMode()
 		if (!matchResultsScreen->Update())
 		{
 			//netplayManager->CleanupMatch();
+
+			SetMode(POST_MATCH_OPTIONS);
+			//SetMode(TITLEMENU);
+		}
+		break;
+	}
+	case POST_MATCH_OPTIONS:
+	{
+		while (window->pollEvent(ev))
+		{
+			customMatchManager->postMatchPopup->HandleEvent(ev);
+			//matchResultsScreen->HandleEvent(ev);
+		}
+
+		customMatchManager->postMatchPopup->Update();
+
+		if (customMatchManager->postMatchPopup->action != PostMatchOptionsPopup::A_IDLE)
+		{
 			delete matchResultsScreen;
 			matchResultsScreen = NULL;
+		}
 
+		switch (customMatchManager->postMatchPopup->action)
+		{
+		case PostMatchOptionsPopup::A_REMATCH:
+		{
 			netplayManager->game->InitGGPO();
 			netplayManager->action = NetplayManager::A_READY_TO_RUN;
 			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
-			SetMode(QUICKPLAY_PLAY);
 
-			//SetMode(TITLEMENU);
+			SetMode(QUICKPLAY_PLAY);
+			break;
+		}
+		case PostMatchOptionsPopup::A_CHOOSE_MAP:
+		{
+			netplayManager->CleanupMatch();
+			netplayManager->Abort();
+
+			SetMode(TITLEMENU);
+			break;
+		}
+		case PostMatchOptionsPopup::A_LEAVE:
+		{
+			netplayManager->CleanupMatch();
+			netplayManager->Abort();
+
+			SetMode(TITLEMENU);
+
+			break;
+		}
+
 		}
 		break;
 	}
@@ -3721,6 +3770,15 @@ void MainMenu::DrawMode( Mode m )
 	{
 		preScreenTexture->setView(v);
 		matchResultsScreen->Draw(preScreenTexture);
+		break;
+	}
+	case POST_MATCH_OPTIONS:
+	{
+		preScreenTexture->setView(v);
+		matchResultsScreen->Draw(preScreenTexture);
+
+		customMatchManager->postMatchPopup->Draw(preScreenTexture);
+
 		break;
 	}
 	default:

@@ -12,6 +12,7 @@
 #include "MapHeader.h"
 #include "MapOptionsPopup.h"
 #include "WorkshopBrowser.h"
+#include "PostMatchOptionsPopup.h"
 
 using namespace sf;
 using namespace std;
@@ -24,6 +25,8 @@ CustomMatchManager::CustomMatchManager()
 	mapOptionsPopup = new MapOptionsPopup;
 
 	messagePopup = new MessagePopup;
+
+	postMatchPopup = new PostMatchOptionsPopup;
 
 	SetAction(A_IDLE);
 
@@ -40,6 +43,8 @@ CustomMatchManager::~CustomMatchManager()
 	delete mapOptionsPopup;
 
 	delete messagePopup;
+
+	delete postMatchPopup;
 }
 
 void CustomMatchManager::SetAction(Action a)

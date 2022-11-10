@@ -10,6 +10,7 @@ struct MapBrowserScreen;
 struct MapOptionsPopup;
 struct MapNode;
 struct MessagePopup;
+struct PostMatchOptionsPopup;
 
 struct CustomMatchManager
 {
@@ -34,6 +35,7 @@ struct CustomMatchManager
 	MapBrowserScreen * mapBrowserScreen;
 	MapOptionsPopup *mapOptionsPopup;
 	MessagePopup *messagePopup;
+	PostMatchOptionsPopup *postMatchPopup;
 	int preErrorAction;
 	bool fromWorkshopBrowser;
 
