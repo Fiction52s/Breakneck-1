@@ -125,14 +125,6 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
-	if (fromMode == BROWSE_WORKSHOP
-		&& toMode == FREEPLAY)//DOWNLOAD_WORKSHOP_MAP_START)
-	{
-		workshopBrowser->mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
-		//workshopBrowser->mapBrowserScreen->browserHandler->ts_largePreview = NULL;
-		//workshopBrowser->workshopMapPopup->ts_preview = NULL;
-	}
-
 	switch (fromMode)
 	{
 	case SAVEMENU:
@@ -256,9 +248,17 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 		titleScreen->Reset();
 		break;
 	case RUN_EDITOR_MAP:
+	{
+		if (fromMode == BROWSE_WORKSHOP)
+		{
+			workshopBrowser->ClearAllPreviewsButSelected();
+		}
+
 		assert(currEditSession == NULL);
 		currEditSession = new EditSession(this, editMapName);
 		break;
+	}
+	
 	case TUTORIAL:
 	case ADVENTURETUTORIAL:
 	{
@@ -285,6 +285,12 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	}
 	case FREEPLAY:
 	{
+		if (fromMode == BROWSE_WORKSHOP)
+		{
+			workshopBrowser->ClearAllPreviewsButSelected();
+		}
+
+
 		assert(freeplayScreen == NULL);
 
 		freeplayScreen = new FreeplayScreen(this);

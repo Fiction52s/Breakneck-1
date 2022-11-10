@@ -321,3 +321,9 @@ void WorkshopBrowser::Draw(sf::RenderTarget *target)
 	}
 }
 
+void WorkshopBrowser::ClearAllPreviewsButSelected()
+{
+	mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
+	//workshopBrowser->mapBrowserScreen->browserHandler->ts_largePreview = NULL;
+	//workshopBrowser->workshopMapPopup->ts_preview = NULL;
+}

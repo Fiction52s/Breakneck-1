@@ -33,6 +33,7 @@ struct WorkshopBrowser
 
 	WorkshopBrowser();
 	~WorkshopBrowser();
+	void ClearAllPreviewsButSelected();
 	void RequestPreviews();
 	void Start();
 	void Quit();
