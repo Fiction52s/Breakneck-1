@@ -82,16 +82,22 @@ void MapNode::Unsubscribe()
 
 void MapNode::ClearPreview()
 {
-	if (type == MapNode::FILE && ts_preview != NULL)
+	if (type == MapNode::FILE )
 	{
-		assert(myBrowser != NULL);
-		myBrowser->DestroyTileset(ts_preview);
-		ts_preview = NULL;
-		previewTex = NULL;
-		if (chooseRect != NULL)
+		if (ts_preview != NULL)
 		{
-			chooseRect->SetImage(NULL, 0);
+			assert(myBrowser != NULL);
+			myBrowser->DestroyTileset(ts_preview);
+			ts_preview = NULL;
+			previewTex = NULL;
+			if (chooseRect != NULL)
+			{
+				chooseRect->SetImage(NULL, 0);
+			}
 		}
+		
+		checkingForPreview = false; //even if you receive a preview after this you dont want it.
+		
 	}
 }
 
@@ -175,7 +181,7 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 
 			assert(previewTex == NULL);
 
-			//cout << "creating texture " << to_string(publishedFileId) << "\n";
+			cout << "creating texture " << to_string(publishedFileId) << "\n";
 			previewTex = new sf::Texture;
 			if (!previewTex->loadFromMemory(buffer, bodySize))
 			{
@@ -210,6 +216,12 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 void MapNode::RequestDownloadPreview()
 {
 	checkingForPreview = false;
+
+	if (ts_preview != NULL)
+	{
+		return;
+	}
+
 	if (previewURL == "")
 	{
 		return;
@@ -733,6 +745,7 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 void MapBrowser::ClearPreviews()
 {
+	cout << "clear previews" << endl;
 	for( auto it = nodes.begin(); it != nodes.end(); ++it )
 	{
 		(*it)->ClearPreview();

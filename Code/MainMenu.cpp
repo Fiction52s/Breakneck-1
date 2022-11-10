@@ -125,6 +125,14 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
+	if (fromMode == BROWSE_WORKSHOP
+		&& toMode == DOWNLOAD_WORKSHOP_MAP_START)
+	{
+		workshopBrowser->mapBrowserScreen->browserHandler->ts_largePreview = NULL;
+		workshopBrowser->mapBrowserScreen->browserHandler->chooser->ClearPreviews();
+		workshopBrowser->workshopMapPopup->ts_preview = NULL;
+	}
+
 	switch (fromMode)
 	{
 	case SAVEMENU:
@@ -281,11 +289,6 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 
 		freeplayScreen = new FreeplayScreen(this);
 		freeplayScreen->Start();
-	}
-	case BROWSE_WORKSHOP:
-	{
-		workshopBrowser->mapBrowserScreen->browserHandler->chooser->RequestAllPreviews();
-		break;
 	}
 	}
 }

@@ -126,7 +126,7 @@ void WorkshopBrowser::Update()
 		{
 			MainMenu *mm = MainMenu::GetInstance();
 
-			mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
+			//mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
 			workshopMapPopup->action = WorkshopMapPopup::A_ACTIVE;
 			mm->DownloadAndRunWorkshopMap();
 			break;

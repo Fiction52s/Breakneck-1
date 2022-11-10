@@ -27,7 +27,7 @@ struct WorkshopMapPopup : GUIHandler
 	bool active;
 	Action action;
 
-	sf::Sprite previewSpr;
+	sf::Vertex previewQuad[4];
 	Tileset *ts_preview;
 
 	int currStatus;

@@ -26,7 +26,8 @@ WorkshopMapPopup::WorkshopMapPopup()
 
 	panel->SetCenterPos(Vector2i(960, 540));
 
-	previewSpr.setPosition(Vector2f(previewPos + panel->pos));
+	SetRectTopLeft(previewQuad, previewSize.x, previewSize.y, Vector2f(previewPos + panel->pos));
+	SetRectSubRect(previewQuad, sf::FloatRect(0, 0, previewSize.x, previewSize.y));
 
 	nameLink = panel->AddHyperLink("namelink", previewPos + Vector2i(0, -100), 40, "", "");
 	nameLabel = panel->AddLabel("namelabel", previewPos + Vector2i(0, -100), 40, "");
@@ -98,6 +99,11 @@ void WorkshopMapPopup::Update()
 	CheckStatus();
 
 	panel->MouseUpdate();
+
+	if (currMapNode != NULL && ts_preview == NULL && currMapNode->ts_preview != NULL)
+	{
+		ts_preview = currMapNode->ts_preview;
+	}
 }
 
 void WorkshopMapPopup::HandleEvent(sf::Event ev)
@@ -108,7 +114,10 @@ void WorkshopMapPopup::HandleEvent(sf::Event ev)
 void WorkshopMapPopup::Draw(sf::RenderTarget *target)
 {
 	panel->Draw(target);
-	target->draw(previewSpr);
+	if (ts_preview != NULL)
+	{
+		target->draw(previewQuad, 4, sf::Quads, ts_preview->texture);
+	}
 }
 
 void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
@@ -199,10 +208,6 @@ bool WorkshopMapPopup::Activate(MapNode *mp)
 	}
 
 	ts_preview = mp->ts_preview;
-	if (ts_preview != NULL && ts_preview->texture != NULL)
-	{
-		ts_preview->SetSpriteTexture(previewSpr);
-	}
 
 	descriptionText->setString(mp->description);
 

@@ -39,7 +39,7 @@ void ImageChooseRect::SetImage(Tileset *p_ts, int p_index)
 {
 	if (p_ts == NULL)
 	{
-		SetShown(false);
+		//SetShown(false);
 		ts = p_ts;
 		tileIndex = p_index;
 		return;
