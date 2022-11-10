@@ -1117,11 +1117,12 @@ int NetplayManager::RunMatch()
 		//eventually make this more complex to account for different failure states
 	}
 
-	Abort();
+	//	Abort();
 
 	if (disconnected)
 	{
 		action = A_DISCONNECT;
+		Abort();
 	}
 
 	if (action == A_RUNNING_MATCH)

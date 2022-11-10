@@ -7055,7 +7055,10 @@ void Session::InitGGPO()
 		p = GetPlayer(i);
 		if (p != NULL)
 		{
-			p->pState = new PState;
+			if (p->pState == NULL)
+			{
+				p->pState = new PState;
+			}
 		}
 	}
 
@@ -7259,6 +7262,10 @@ void Session::CleanupGGPO()
 	delete currSaveState;
 	delete ngs;
 	delete[] ggpoPlayers;
+
+	currSaveState = NULL;
+	ngs = NULL;
+	ggpoPlayers = NULL;
 }
 
 void Session::AddDesyncCheckInfo()

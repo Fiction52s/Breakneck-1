@@ -8,7 +8,6 @@
 #include "Tileset.h"
 
 
-
 struct UIWindow;
 struct MatchResultsScreen : TilesetManager
 {

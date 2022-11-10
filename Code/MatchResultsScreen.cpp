@@ -73,7 +73,6 @@ VictoryScreen4Player::~VictoryScreen4Player()
 	}
 }
 
-
 bool VictoryScreen4Player::Update()
 {
 	int opacity = 0;

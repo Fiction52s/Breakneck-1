@@ -97,6 +97,7 @@ void FightMode::StartGame()
 {
 	//testGator->Reset();
 	//testBird->Reset();
+	done = false;
 
 	for (int i = 0; i < 4; ++i)
 	{

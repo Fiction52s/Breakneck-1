@@ -3149,7 +3149,7 @@ int GameSession::Run()
 		parentGame->bonusHandler->InitBonus();
 	}
 
-	
+	quit = false;
 
 	while (!quit)
 	{
@@ -3259,14 +3259,6 @@ int GameSession::Run()
 		ggpo_close_session(ggpo);
 		CleanupGGPO();
 	}
-	
-
-	//ggpo cleans up after itself
-	/*if (matchParams.netplayManager != NULL)
-	{
-		cout << "cleaning up ggpo" << endl;
-		CleanupGGPO();
-	}*/
 
 
 	fader->Clear();

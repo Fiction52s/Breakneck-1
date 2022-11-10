@@ -3094,7 +3094,6 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->RunMatch();
 
-				netplayManager->CleanupMatch();
 				//results screen instead...
 
 				if (netplayManager->action == NetplayManager::A_DISCONNECT)
@@ -3103,12 +3102,16 @@ void MainMenu::HandleMenuMode()
 					cout << "EXITED ON DISCONNECT" << endl;
 					infoPopup->Pop("Opponent disconnected", 60);
 					SetMode(TITLEMENU_INFOPOP);
+
+					netplayManager->CleanupMatch();
 				}
 				else
 				{
 					//netplayManager->CleanupMatch();
 					//cout << "action test: " << (int)netplayManager->action << endl;
 					//SetMode(TITLEMENU);
+
+					//netplayManager->CleanupMatch();
 
 					matchResultsScreen = netplayManager->resultsScreen;
 					SetMode(MATCH_RESULTS);
@@ -3128,7 +3131,13 @@ void MainMenu::HandleMenuMode()
 			//netplayManager->CleanupMatch();
 			delete matchResultsScreen;
 			matchResultsScreen = NULL;
-			SetMode(TITLEMENU);
+
+			netplayManager->game->InitGGPO();
+			netplayManager->action = NetplayManager::A_READY_TO_RUN;
+			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			SetMode(QUICKPLAY_PLAY);
+
+			//SetMode(TITLEMENU);
 		}
 		break;
 	}
@@ -3309,10 +3318,10 @@ void MainMenu::TitleMenuModeUpdate()
 		{
 		case M_ADVENTURE:
 		{
-			SetMode(MATCH_RESULTS);
-			matchResultsScreen = netplayManager->CreateResultsScreen();
-			//musicPlayer->FadeOutCurrentMusic(30);
-			//LoadMode(SAVEMENU);
+			//SetMode(MATCH_RESULTS);
+			//matchResultsScreen = netplayManager->CreateResultsScreen();
+			musicPlayer->FadeOutCurrentMusic(30);
+			LoadMode(SAVEMENU);
 			break;
 		}
 		case M_FREE_PLAY:

@@ -11,7 +11,7 @@
 #include "md5.h"
 #include "MapHeader.h"
 #include "MapOptionsPopup.h"
-
+#include "WorkshopBrowser.h"
 
 using namespace sf;
 using namespace std;
@@ -210,6 +210,13 @@ bool CustomMatchManager::Update()
 	case A_CHOOSE_MAP_OPTIONS:
 		if (mapOptionsPopup->action == MapOptionsPopup::A_HOST)
 		{
+			if (fromWorkshopBrowser)
+			{
+				MainMenu::GetInstance()->workshopBrowser->ClearAllPreviewsButSelected();
+
+				//works for now, but this process needs to be cleaned up later for better looking loading
+			}
+
 			SetAction(A_CREATING_LOBBY);
 
 			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyParams->mapPath << endl;
