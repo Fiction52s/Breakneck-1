@@ -26,6 +26,7 @@ struct Fader
 		int pauseFrames, int fadeInFrames,
 		sf::Color c, bool skipKin = false);
 	bool IsFullyFadedOut();
+	bool IsFullyFadedIn();
 	bool IsFading();
 	void Update();
 	void Clear();

@@ -126,11 +126,11 @@ void MainMenu::sLevelLoad(MainMenu *mm, GameSession *gs)
 void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 {
 	if (fromMode == BROWSE_WORKSHOP
-		&& toMode == DOWNLOAD_WORKSHOP_MAP_START)
+		&& toMode == FREEPLAY)//DOWNLOAD_WORKSHOP_MAP_START)
 	{
-		workshopBrowser->mapBrowserScreen->browserHandler->ts_largePreview = NULL;
-		workshopBrowser->mapBrowserScreen->browserHandler->chooser->ClearPreviews();
-		workshopBrowser->workshopMapPopup->ts_preview = NULL;
+		workshopBrowser->mapBrowserScreen->browserHandler->chooser->ClearAllPreviewsButSelected();
+		//workshopBrowser->mapBrowserScreen->browserHandler->ts_largePreview = NULL;
+		//workshopBrowser->workshopMapPopup->ts_preview = NULL;
 	}
 
 	switch (fromMode)
@@ -1101,7 +1101,7 @@ void MainMenu::SetMode(Mode m)
 		ts_thanksForPlaying->SetQuadSubRect(thanksQuad, 0);
 		SetRectTopLeft(thanksQuad, 1920, 1080, Vector2f(0, 0));
 	}
-	else if( oldMode == THANKS_FOR_PLAYING )
+	else if (oldMode == THANKS_FOR_PLAYING)
 	{
 		tilesetManager.DestroyTileset(ts_thanksForPlaying);
 		ts_thanksForPlaying = NULL;
@@ -2978,6 +2978,11 @@ void MainMenu::HandleMenuMode()
 	}
 	case DOWNLOAD_WORKSHOP_MAP_START:
 	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
 		if (fader->IsFullyFadedOut())
 		{
 			fader->Fade(true, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
@@ -2989,9 +2994,16 @@ void MainMenu::HandleMenuMode()
 		break;
 	}
 	case DOWNLOAD_WORKSHOP_MAP_LOOP:
+		while (window->pollEvent(ev))
+		{
+
+		}
+
 		loadingBackpack->Update();
 
-		if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+		//put the code here to download if not responding etc just like in the workshop
+
+		if ( fader->IsFullyFadedIn() && mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
 		{
 			cout << "map download complete" << endl;
 
@@ -3009,6 +3021,11 @@ void MainMenu::HandleMenuMode()
 		break;
 	case FREEPLAY:
 	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
 		freeplayScreen->Update();
 
 		if (freeplayScreen->action == FreeplayScreen::A_READY)
@@ -3047,6 +3064,11 @@ void MainMenu::HandleMenuMode()
 		break;
 	case QUICKPLAY_PLAY:
 	{
+		while (window->pollEvent(ev))
+		{
+
+		}
+
 		loadingBackpack->Update();
 
 		netplayManager->Update();
@@ -3714,7 +3736,17 @@ void MainMenu::DownloadAndRunWorkshopMap()
 {
 	//currWorkshopMap = path;
 	mapBrowserScreen->browserHandler->SubscribeToItem();
-	LoadMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
+	modeLoadingFrom = menuMode;	
+	modeToLoad = MainMenu::DOWNLOAD_WORKSHOP_MAP_LOOP;
+	SetMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_START);
+
+	fader->Fade(false, 60, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+	//modeLoadingFrom = menuMode;
+
+	//SetMode(LOADINGMENUSTART);
+
+	//modeToLoad = m;
+	//LoadMode(MainMenu::DOWNLOAD_WORKSHOP_MAP_LOOP);
 }
 
 void MainMenu::SetToMatchResults(GameSession *p_game)

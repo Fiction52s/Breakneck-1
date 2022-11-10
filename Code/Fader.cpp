@@ -53,6 +53,11 @@ bool Fader::IsFullyFadedOut()
 	return fadeAlpha == 255;
 }
 
+bool Fader::IsFullyFadedIn()
+{
+	return fadeAlpha == 0;
+}
+
 void Fader::Reset()
 {
 	fadeLength = 0;

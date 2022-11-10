@@ -181,7 +181,7 @@ void MapNode::OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 
 			assert(previewTex == NULL);
 
-			cout << "creating texture " << to_string(publishedFileId) << "\n";
+			//cout << "creating texture " << to_string(publishedFileId) << "\n";
 			previewTex = new sf::Texture;
 			if (!previewTex->loadFromMemory(buffer, bodySize))
 			{
@@ -745,7 +745,7 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 void MapBrowser::ClearPreviews()
 {
-	cout << "clear previews" << endl;
+	//cout << "clear previews" << endl;
 	for( auto it = nodes.begin(); it != nodes.end(); ++it )
 	{
 		(*it)->ClearPreview();
