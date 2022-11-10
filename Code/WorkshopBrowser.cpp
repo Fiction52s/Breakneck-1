@@ -307,3 +307,4 @@ void WorkshopBrowser::Draw(sf::RenderTarget *target)
 	}
 	}
 }
+

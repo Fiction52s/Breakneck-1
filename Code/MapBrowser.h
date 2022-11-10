@@ -38,6 +38,7 @@ struct MapNode
 	
 	bool mapDownloaded;
 	bool mapUpdating;
+	int downloadResult;
 	std::string nodeName;
 	std::string fileName; //node name can be different from file name
 	boost::filesystem::path folderPath;
@@ -49,6 +50,7 @@ struct MapNode
 	bool checkingForPreview;
 	HTTPRequestHandle previewRequestHandle;
 	PublishedFileId_t publishedFileId;
+	
 	ImageChooseRect *chooseRect;
 	bool isWorkshop;
 	bool creatorNameRetrieved;
@@ -74,6 +76,9 @@ struct MapNode
 	bool IsSubscribed();
 	void Subscribe();
 	void Unsubscribe();
+	void TryUpdate();
+	void CheckDownloadResult();
+	void UpdateInstallInfo();
 	void Draw(sf::RenderTarget *target);
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);

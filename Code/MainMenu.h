@@ -27,6 +27,7 @@ struct SaveFile;
 struct SaveMenuScreen;
 struct MapBrowserScreen;
 struct WorkshopBrowser;
+struct WorkshopManager;
 struct MainMenu;
 struct PauseMenu;
 struct LevelSelector;
@@ -644,6 +645,7 @@ struct MainMenu
 	SingleAxisSelector *saSelector;
 	MapBrowserScreen *mapBrowserScreen;
 	WorkshopBrowser *workshopBrowser;
+	WorkshopManager *workshopManager;
 
 	sf::Vector2i mousePixelPos;
 	

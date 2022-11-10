@@ -64,6 +64,7 @@ struct WorkshopManager
 private:
 	STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
 	STEAM_CALLBACK(WorkshopManager, OnPersonaStateChange, PersonaStateChange_t);
+	STEAM_CALLBACK(WorkshopManager, OnDownloadItemResult, DownloadItemResult_t);
 	//STEAM_CALLBACK(WorkshopManager, OnItemUpdatesSubmitted, SubmitItemUpdateResult_t);
 	//STEAM_CALLBACK(WorkshopManager, OnCreatedItem, CreateItemResult_t);
 

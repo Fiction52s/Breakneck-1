@@ -2,6 +2,7 @@
 #define __WORKSHOP_BROWSER_H__
 
 #include <SFML/Graphics.hpp>
+#include <steam/steam_api.h>
 
 struct WorkshopMapPopup;
 struct MapBrowserScreen;
@@ -28,6 +29,7 @@ struct WorkshopBrowser
 	int frame;
 	bool editAfterSaving;
 	std::string savedPath;
+	
 
 	WorkshopBrowser();
 	~WorkshopBrowser();

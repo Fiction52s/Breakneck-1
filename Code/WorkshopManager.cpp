@@ -430,6 +430,37 @@ void WorkshopManager::DownloadPreviewFiles(std::vector<MapNode*> *p_previewResul
 	
 }
 
+void WorkshopManager::OnDownloadItemResult(DownloadItemResult_t *callback)
+{
+	if (callback->m_unAppID == SteamUtils()->GetAppID())
+	{
+		for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
+		{
+			if ((*it)->publishedFileId == callback->m_nPublishedFileId)
+			{
+				(*it)->downloadResult = callback->m_eResult;
+				break;
+			}
+		}
+		/*if (callback->m_eResult == k_EResultNoConnection)
+		{
+			cout << "download no connection" << endl;
+		}
+		else if (callback->m_eResult == k_EResultTimeout)
+		{
+			cout << "download timeout" << endl;
+		}
+		else if (callback->m_eResult == k_EResultOK)
+		{
+			cout << "download success" << endl;
+		}
+		else
+		{
+			cout << "download result: " << (int)callback->m_eResult << endl;
+		}*/
+	}
+}
+
 WorkshopUploader::WorkshopUploader()
 {
 	edit = EditSession::GetSession();

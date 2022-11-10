@@ -30,6 +30,8 @@ struct WorkshopMapPopup : GUIHandler
 	sf::Sprite previewSpr;
 	Tileset *ts_preview;
 
+	int currStatus;
+
 
 	MapHeader *currMapHeader;
 	int chosenGameModeType;
@@ -61,6 +63,7 @@ struct WorkshopMapPopup : GUIHandler
 	void CheckSubscription();
 	void CheckHeader();
 	bool Activate(MapNode *mp);
+	void CheckStatus();
 	void Deactivate();
 	void Update();
 	void HandleEvent(sf::Event ev);

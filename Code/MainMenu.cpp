@@ -51,6 +51,7 @@
 #include "WorkshopMapPopup.h"
 #include "WorkshopBrowser.h"
 #include "FreeplayScreen.h"
+#include "WorkshopManager.h"
 
 using namespace std;
 using namespace sf;
@@ -458,6 +459,8 @@ MainMenu::MainMenu()
 
 	customMatchManager = new CustomMatchManager;
 
+	workshopManager = new WorkshopManager; //needs to be made before any mapbrowsers
+
 	if (musicManager->songMap.empty())
 	{
 		cout << "music manager is empty. no songs loaded" << endl;
@@ -747,6 +750,11 @@ MainMenu::~MainMenu()
 	if (customMatchManager != NULL)
 	{
 		delete customMatchManager;
+	}
+
+	if (workshopManager != NULL)
+	{
+		delete workshopManager;
 	}
 
 	for (int i = 0; i < 4; ++i)

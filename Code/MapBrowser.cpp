@@ -30,6 +30,7 @@ MapNode::MapNode()
 	mapUpdating = false;
 	subscribing = false;
 	unsubscribing = false;
+	downloadResult = -1;
 }
 
 void MapNode::Draw(sf::RenderTarget *target)
@@ -76,6 +77,48 @@ void MapNode::Unsubscribe()
 		onRRemoteStorageUnsubscribePublishedFileResultCallResult.Set(call, this, &MapNode::OnUnsubscribe);
 		unsubscribing = true;
 	}
+}
+
+void MapNode::TryUpdate()
+{
+	if (!isWorkshop || mapUpdating || !IsSubscribed() )
+		return;
+
+	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
+
+	bool installed = itemState & k_EItemStateInstalled && itemState & k_EItemStateSubscribed;
+	bool needsUpdate = itemState & k_EItemStateNeedsUpdate;
+
+	downloadResult = -1;
+
+	if (needsUpdate && !mapUpdating)
+	{
+		bool result = SteamUGC()->DownloadItem(publishedFileId, true);
+		if (result)
+		{
+			mapUpdating = true;
+			cout << "starting download update" << endl;
+			//started download
+		}
+		else
+		{
+			cout << "update cannot be downloaded.." << endl;
+		}
+	}
+	/*else if (needsUpdate && mapUpdating)
+	{
+		uint64 bytesDownloaded;
+		uint64 bytesTotal;
+		bool infoAvailable = SteamUGC()->GetItemDownloadInfo(publishedFileId, &bytesDownloaded, &bytesTotal);
+		if (infoAvailable)
+		{
+			cout << "downloaded: " << bytesDownloaded << " of " << bytesTotal << "\n";
+		}
+		else
+		{
+			cout << "info not available!" << endl;
+		}
+	}*/
 }
 
 void MapNode::OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure)
@@ -171,6 +214,51 @@ void MapNode::RequestCreatorInfo()
 	//SteamFriends()->RequestUserInformation(details.m_ulSteamIDOwner, true);
 }
 
+void MapNode::UpdateInstallInfo()
+{
+	if (!mapDownloaded)
+	{
+		mapDownloaded = true;
+		mapUpdating = false;
+
+		uint64 fileSize;
+		char path[1024];
+		uint32 timestamp;
+		cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
+
+		filePath = string(path) + "\\" + fileName + ".brknk";
+		folderPath = path;
+	}
+}
+
+void MapNode::CheckDownloadResult()
+{
+	if (mapUpdating)
+	{
+		if (downloadResult != -1)
+		{
+			if (downloadResult == k_EResultOK)
+			{
+				cout << "download success" << endl;
+				mapUpdating = false;
+				UpdateInstallInfo();
+			}
+			else if (downloadResult == k_EResultNoConnection)
+			{
+			cout << "download no connection" << endl;
+			}
+			else if (downloadResult == k_EResultTimeout)
+			{
+			cout << "download timeout" << endl;
+			}
+			else
+			{
+			cout << "download result: " << downloadResult << endl;
+			}
+		}
+	}
+}
+
 bool MapNode::CheckIfFullyInstalled()
 {
 	if (!isWorkshop)
@@ -182,36 +270,38 @@ bool MapNode::CheckIfFullyInstalled()
 	bool needsUpdate = itemState & k_EItemStateNeedsUpdate;
 	if ( installed && !needsUpdate )
 	{
-		if (!mapDownloaded)
-		{
-			mapDownloaded = true;
-			mapUpdating = false;
-
-			uint64 fileSize;
-			char path[1024];
-			uint32 timestamp;
-			cout << SteamUGC()->GetItemInstallInfo(publishedFileId, &fileSize, path, 1024, &timestamp);
-
-			filePath = string(path) + "\\" + fileName + ".brknk";
-			folderPath = path;
-		}
+		UpdateInstallInfo();
 		return true;
 	}
-	else if (needsUpdate && !mapUpdating )
-	{
-		cout << "not sure if this update code is needed" << endl;
-		bool result = SteamUGC()->DownloadItem(publishedFileId, true);
-		if (result)
-		{
-			mapUpdating = true;
-			cout << "starting download update" << endl;
-			//started download
-		}
-		else
-		{
-			cout << "update cannot be downloaded.." << endl;
-		}
-	}
+	//else if (needsUpdate && !mapUpdating )
+	//{
+	//	cout << "not sure if this update code is needed" << endl;
+	//	bool result = SteamUGC()->DownloadItem(publishedFileId, true);
+	//	if (result)
+	//	{
+	//		mapUpdating = true;
+	//		cout << "starting download update" << endl;
+	//		//started download
+	//	}
+	//	else
+	//	{
+	//		cout << "update cannot be downloaded.." << endl;
+	//	}
+	//}
+	//else if (needsUpdate && mapUpdating)
+	//{
+	//	uint64 bytesDownloaded;
+	//	uint64 bytesTotal;
+	//	bool infoAvailable = SteamUGC()->GetItemDownloadInfo(publishedFileId, &bytesDownloaded, &bytesTotal);
+	//	if (infoAvailable)
+	//	{
+	//		cout << "downloaded: " << bytesDownloaded << " of " << bytesTotal << "\n";
+	//	}
+	//	else
+	//	{
+	//		cout << "info not available!" << endl;
+	//	}
+	//}
 
 	return false;
 }
@@ -227,7 +317,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 
 	action = A_IDLE;
 
-	workshop = new WorkshopManager;
+	workshop = MainMenu::GetInstance()->workshopManager;//new WorkshopManager;
 	//workshop->mapBrowser = this;
 
 	float boxSize = 150;
@@ -329,7 +419,7 @@ MapBrowser::~MapBrowser()
 	ClearNodes();
 	delete panel;
 	delete[] imageRects;
-	delete workshop;
+	//delete workshop;
 }
 
 //bool MapBrowser::MouseUpdate()

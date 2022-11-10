@@ -47,6 +47,8 @@ WorkshopMapPopup::WorkshopMapPopup()
 
 	panel->SetAutoSpacing(false, true, rightColumStart, Vector2i(0, 20));
 
+	panel->AddLabel("statuslabel", Vector2i(0, 0), 20, "Status:");
+
 	fileLink = panel->AddLabeledHyperLink("filelink", Vector2i(0, 0), 20, "", "", "File:");
 
 	panel->AddLabel("maxnumplayerslabel", Vector2i(0, 0), 20, "Max Players: ");
@@ -73,6 +75,8 @@ WorkshopMapPopup::WorkshopMapPopup()
 	//panel->SetAutoSpacing(false, true, rightColumStart + Vector2i(0, 300), Vector2i(0, 20));
 	subscribeButton = panel->AddButton("subscribe", rightColumStart + Vector2i(0, 600), Vector2f(400, 50), "Subscribe");
 	unsubscribeButton = panel->AddButton("unsubscribe", rightColumStart + Vector2i(0, 600), Vector2f(400, 50), "Unsubscribe");
+
+	currStatus = -1;
 }
 
 WorkshopMapPopup::~WorkshopMapPopup()
@@ -90,6 +94,8 @@ void WorkshopMapPopup::Update()
 	CheckSubscription();
 
 	CheckHeader();
+
+	CheckStatus();
 
 	panel->MouseUpdate();
 }
@@ -232,7 +238,10 @@ bool WorkshopMapPopup::Activate(MapNode *mp)
 		creatorLabel->setString(mp->creatorName);
 	}
 
+
+	currStatus = -1;
 	CheckHeader();
+	CheckStatus();
 
 	action = A_ACTIVE;
 	return true;
@@ -265,6 +274,86 @@ void WorkshopMapPopup::CheckSubscription()
 	}
 }
 
+void WorkshopMapPopup::CheckStatus()
+{
+	if (currMapNode == NULL)
+	{
+		panel->labels["statuslabel"]->setString("Status: ");
+		return;
+	}
+
+	int oldStatus = currStatus;
+	currStatus = SteamUGC()->GetItemState(currMapNode->publishedFileId);
+
+	if (currStatus == oldStatus)
+		return;
+
+
+	bool fullyInstalled = (currStatus & k_EItemStateInstalled) && (currStatus & k_EItemStateSubscribed);
+
+	string statusStr = "";
+	if (fullyInstalled)
+	{
+		statusStr = "Installed";
+	}
+	else if (currStatus & k_EItemStateNeedsUpdate)
+	{
+		statusStr = "Attempting Download";
+
+		if (currMapNode->mapUpdating && currMapNode->downloadResult != -1)
+		{
+			switch (currMapNode->downloadResult)
+			{
+			case k_EResultOK:
+			{
+
+				break;
+			}
+			case k_EResultTimeout:
+			{
+				statusStr = "ERROR - TIMEOUT";
+				break;
+			}
+			default:
+			{
+				statusStr = "ERROR - " + to_string(currMapNode->downloadResult);
+			}
+			}
+		}
+	}
+	else if (currStatus & k_EItemStateDownloadPending)
+	{
+		statusStr = "Download Pending";
+	}
+	else if (currStatus & k_EItemStateDownloading)
+	{
+		statusStr = "Downloading";
+
+		uint64 bytesDownloaded;
+		uint64 bytesTotal;
+		bool infoAvailable = SteamUGC()->GetItemDownloadInfo(currMapNode->publishedFileId, &bytesDownloaded, &bytesTotal);
+		if (infoAvailable)
+		{
+			int percentDownloaded = roundf((((float)bytesDownloaded) / bytesTotal) * 100.f);
+			statusStr += " " + to_string(percentDownloaded) + "%";
+		}
+		else
+		{
+			cout << "info not available!" << endl;
+		}
+	}
+	else if (!(currStatus &k_EItemStateSubscribed))
+	{
+		statusStr = "Unsubscribed";
+	}
+	else
+	{
+		statusStr = to_string(currStatus);
+	}
+
+	panel->labels["statuslabel"]->setString("Status: " + statusStr);
+}
+
 void WorkshopMapPopup::CheckHeader()
 {
 	if (currMapNode == NULL )
@@ -281,6 +370,11 @@ void WorkshopMapPopup::CheckHeader()
 
 	if (currMapHeader != NULL)
 		return;
+
+	if (!installed )
+	{
+		currMapNode->TryUpdate();
+	}
 
 	if (installed )
 	{

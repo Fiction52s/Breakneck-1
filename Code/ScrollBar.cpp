@@ -110,7 +110,7 @@ bool ScrollBar::MouseUpdate()
 	}
 	else
 	{
-		if (MOUSE.IsMouseDownLeft() )
+		if (MOUSE.IsMouseDownLeft() && clickedDown)
 		{
 			int delta = (mousePos.y - clickedPos.y) / spacing;
 
