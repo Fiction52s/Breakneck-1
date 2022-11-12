@@ -5,6 +5,7 @@
 #include "WorkshopManager.h"
 #include "LobbyManager.h"
 #include "md5.h"
+#include "UIController.h"
 //#include "steam/steam_api.h"
 
 using namespace std;
@@ -642,6 +643,13 @@ void MapBrowser::Update()
 	}
 	}
 
+	int scroll = UICONTROLLER.ConsumeScroll();
+	if (scroll != 0)
+	{
+		MouseScroll(scroll);
+	}
+
+
 	panel->UpdateSlide(1);
 	panel->MouseUpdate();
 	panel->UpdateSprites();
@@ -944,6 +952,7 @@ void MapBrowser::Init()
 
 	if (panel->confirmButton != NULL)
 	{
+		panel->cancelButton = cancelButton;
 		cancelButton->SetPos(panel->confirmButton->pos + Vector2i(panel->confirmButton->size.x + 30, 0));
 	}
 	
@@ -1185,6 +1194,11 @@ void MapBrowserHandler::ScrollBarCallback(ScrollBar *sb, const std::string &e)
 {
 	chooser->topRow = sb->currIndex;
 	chooser->PopulateRects();
+}
+
+void MapBrowserHandler::CancelCallback()
+{
+	Cancel();
 }
 
 //return true if installed. sets the filepath if its installation is just being registered.

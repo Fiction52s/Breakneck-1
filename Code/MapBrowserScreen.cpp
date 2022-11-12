@@ -63,16 +63,6 @@ void MapBrowserScreen::Update()
 	}*/
 
 	browserHandler->Update();
-
-	
-
-
-	/*if (MOUSE.IsMouseRightClicked())
-	{
-		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}*/
-
-	//cout << MOUSE.GetPos().x << endl;
 }
 
 void MapBrowserScreen::Draw(sf::RenderTarget *target)

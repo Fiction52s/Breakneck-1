@@ -1,6 +1,7 @@
 #include "MusicSelector.h"
 #include "MainMenu.h"
 #include "EditSession.h"
+#include "UIMouse.h"
 
 using namespace sf;
 using namespace std;

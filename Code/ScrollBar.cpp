@@ -1,6 +1,7 @@
 #include "GUI.h"
 #include <assert.h>
 #include <iostream>
+#include "UIMouse.h"
 //#include "Session.h"
 
 using namespace sf;

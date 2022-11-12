@@ -5,6 +5,7 @@
 #include "Enemy.h"
 #include "EditSession.h"
 #include "EditorDecorInfo.h"
+#include "UIMouse.h"
 
 using namespace std;
 using namespace sf;

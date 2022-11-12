@@ -60,6 +60,7 @@
 
 #include "LobbyManager.h"
 #include "ConnectionManager.h"
+#include "UIMouse.h"
 
 //#define GGPO_ON
 

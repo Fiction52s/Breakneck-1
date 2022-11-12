@@ -6,6 +6,7 @@
 #include "EditSession.h"
 #include "MusicSelector.h"
 #include "LobbyBrowser.h"
+#include "UIMouse.h"
 
 using namespace sf;
 using namespace std;
@@ -348,6 +349,10 @@ const sf::Vector2i &Panel::GetMousePos()
 //checkcontained is mostly for debug, have to redo panels better soon
 bool Panel::MouseUpdate()
 {
+	MainMenu *mm = MainMenu::GetInstance();
+
+	ControllerUpdate();
+
 	Vector2i mPos = MOUSE.GetPos();
 	if (!(mPos.x >= pos.x && mPos.x <= pos.x + size.x &&
 		mPos.y >= pos.y && mPos.y <= pos.y + size.y))
@@ -505,6 +510,37 @@ bool Panel::MouseUpdate()
 	return true;
 }
 
+void Panel::ControllerUpdate()
+{
+	MainMenu *mm = MainMenu::GetInstance();
+	bool confirm = false;
+	bool cancel = false;
+	for (int i = 0; i < 4; ++i)
+	{
+		ControllerState &currState = mm->GetCurrInputUnfiltered(i);
+		ControllerState &prevState = mm->GetPrevInputUnfiltered(i);
+
+		if (currState.start && !prevState.start)
+		{
+			confirm = true;
+		}
+
+		if (currState.B && !prevState.B)
+		{
+			cancel = true;
+		}
+	}
+
+	if (confirm)
+	{
+		Confirm();
+	}
+	else if (cancel)
+	{
+		Cancel();
+	}
+}
+
 void Panel::UpdateSlide(int numUpdateFrames)
 {
 	if (slideDuration > 0)
@@ -591,6 +627,24 @@ void Panel::SendEvent(Slider *slide)
 void Panel::SendEvent(MenuDropdown *menuDrop, const std::string & e)
 {
 	handler->MenuDropdownCallback(menuDrop, e);
+}
+
+void Panel::Confirm()
+{
+	/*if (confirmButton != NULL && !confirmButton->hidden)
+	{
+		SendEvent(confirmButton, "pressed");
+	}*/
+	handler->ConfirmCallback();
+}
+
+void Panel::Cancel()
+{
+	/*if (cancelButton != NULL && !cancelButton->hidden)
+	{
+		SendEvent(cancelButton, "pressed");
+	}*/
+	handler->CancelCallback();
 }
 
 bool Panel::HandleEvent(sf::Event ev)
@@ -1238,10 +1292,7 @@ bool Panel::SendKey(sf::Keyboard::Key k, bool shift)
 
 		if (!isMultilineTextBoxFocused)
 		{
-			if (confirmButton != NULL && !confirmButton->hidden)
-			{
-				SendEvent(confirmButton, "pressed");
-			}
+			Confirm();
 		}
 		else
 		{
@@ -1259,10 +1310,7 @@ bool Panel::SendKey(sf::Keyboard::Key k, bool shift)
 	}
 	else if (k == Keyboard::Escape)
 	{
-		if (cancelButton != NULL && !cancelButton->hidden)
-		{
-			SendEvent(cancelButton, "pressed");
-		}
+		Cancel();
 		return true;
 	}
 

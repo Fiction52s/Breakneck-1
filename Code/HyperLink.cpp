@@ -5,6 +5,7 @@
 #include "Session.h"
 #include "EditorDecorInfo.h"
 #include "EditSession.h"
+#include "UIMouse.h"
 
 
 

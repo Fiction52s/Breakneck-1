@@ -159,6 +159,10 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 	}
 }
 
+void MapOptionsPopup::CancelCallback()
+{
+	action = A_CANCELLED;
+}
 
 bool MapOptionsPopup::Activate(MapNode *mp)
 {

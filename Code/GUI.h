@@ -40,50 +40,7 @@ struct ScrollBar;
 
 struct Brush;
 
-struct UIMouse
-{
-	static UIMouse &GetInstance()
-	{
-		static UIMouse instance;
-		return instance;
-	}
 
-
-	UIMouse(UIMouse const&) = delete;
-	void operator=(UIMouse const&) = delete;
-
-	bool IsMouseDownLeft();
-	bool IsMouseDownRight();
-	bool IsMouseLeftClicked();
-	bool IsMouseLeftReleased();
-	bool IsMouseRightClicked();
-	bool IsMouseRightReleased();
-	void Update(sf::Vector2i &mousePos);
-	const sf::Vector2i &GetPos() 
-	{ return mousePos; }
-	sf::Vector2f GetFloatPos()
-	{return sf::Vector2f(mousePos);}
-	void ResetMouse();
-	bool IsConsumed() { return consumed; }
-	void Consume() { consumed = true; }
-	void SetRenderWindow(sf::RenderWindow *rw);
-	bool IsWindowFocused();
-private:
-	UIMouse();
-	
-	sf::Vector2i mousePos;
-	bool isMouseDownLeft;
-	bool lastMouseDownLeft;
-
-	bool isMouseDownRight;
-	bool lastMouseDownRight;
-	bool consumed;
-
-	sf::RenderWindow *currWindow;
-
-};
-
-#define MOUSE UIMouse::GetInstance()
 
 struct GUIHandler
 {
@@ -99,7 +56,8 @@ struct GUIHandler
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
 	virtual void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e) {}
 	virtual void ScrollBarCallback(ScrollBar *sb, const std::string &e) {}
-
+	virtual void CancelCallback() {}
+	virtual void ConfirmCallback() {}
 };
 
 struct ToolTip
@@ -789,8 +747,11 @@ struct Panel
 	/*bool Update(bool mouseDownLeft, bool mouseDownRight,
 		int posx, int posy, bool checkContained = false );*/
 	bool MouseUpdate();
+	void ControllerUpdate();
 	void UpdateSprites(int numUpdateFrames = 1);
 	void UpdateFrame(int numUpdateFrames = 1);
+	void Confirm();
+	void Cancel();
 	TabGroup *AddTabGroup(const std::string &name, sf::Vector2i &pos, std::vector<std::string> &tabStrings, int memberWidth, int height);
 	Slider * AddSlider(const std::string &name, sf::Vector2i &pos,
 		int width, int minValue, int maxValue, int defaultValue);

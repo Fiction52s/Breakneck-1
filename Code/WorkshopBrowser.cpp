@@ -5,6 +5,7 @@
 #include "MapBrowserScreen.h"
 #include "MapBrowser.h"
 #include "SavePopup.h"
+#include "UIController.h"
 
 using namespace sf;
 using namespace std;
@@ -90,6 +91,12 @@ void WorkshopBrowser::Update()
 	{
 	case A_BROWSER:
 	{
+		if (UICONTROLLER.cancel)
+		{
+			Quit();
+			break;
+		}
+
 		mapBrowserScreen->Update();
 
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)

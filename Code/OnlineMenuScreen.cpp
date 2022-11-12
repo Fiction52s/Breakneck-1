@@ -110,8 +110,13 @@ void OnlineMenuScreen::ButtonCallback(Button *b, const std::string & e)
 {
 	if (b->name == "back")
 	{
-		action = A_CANCELLED;
+		CancelCallback();
 	}
+}
+
+void OnlineMenuScreen::CancelCallback()
+{
+	action = A_CANCELLED;
 }
 
 void OnlineMenuScreen::Update()

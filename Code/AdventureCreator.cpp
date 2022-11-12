@@ -2,6 +2,7 @@
 #include "VectorMath.h"
 #include <iostream>
 #include "EditSession.h"
+#include "UIMouse.h"
 
 using namespace sf;
 using namespace std;

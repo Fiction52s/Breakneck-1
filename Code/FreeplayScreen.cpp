@@ -1,6 +1,7 @@
 #include <iostream>
 #include "MainMenu.h"
 #include "FreeplayScreen.h"
+#include "UIMouse.h"
 
 using namespace std;
 using namespace sf;

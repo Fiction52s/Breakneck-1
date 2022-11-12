@@ -179,7 +179,8 @@ void WorkshopMapPopup::ButtonCallback(Button *b, const std::string & e)
 	}
 	else if (b == backButton)
 	{
-		action = A_BACK;
+		CancelCallback();
+		//action = A_BACK;
 	}
 	else if (b == subscribeButton)
 	{
@@ -425,6 +426,12 @@ void WorkshopMapPopup::PanelCallback(Panel *p, const std::string & e)
 {
 	if (e == "leftclickoffpopup")
 	{
-		action = A_BACK;
+		CancelCallback();
+		//action = A_BACK;
 	}
+}
+
+void WorkshopMapPopup::CancelCallback()
+{
+	action = A_BACK;
 }

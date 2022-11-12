@@ -54,6 +54,8 @@
 #include "WorkshopManager.h"
 
 #include "PostMatchOptionsPopup.h"
+#include "UIMouse.h"
+#include "UIController.h"
 
 using namespace std;
 using namespace sf;
@@ -626,6 +628,7 @@ void MainMenu::SetupWindow()
 	window->setKeyRepeatEnabled(false);
 
 	MOUSE.SetRenderWindow(window);
+	UICONTROLLER.SetRenderWindow(window);
 
 	customCursor = new CustomCursor;
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
@@ -1215,6 +1218,7 @@ void MainMenu::CustomMapsOption()
 	SetMouseVisible(true);
 
 	UIMouse::GetInstance();
+	UIController::GetInstance();
 	//window->setMouseCursorVisible(true);
 	//window->setMouseCursorGrabbed(true);
 
@@ -1651,6 +1655,9 @@ void MainMenu::Run()
 	//SetMode(TRANS_MAIN_TO_MAPSELECT);
 	//SetMode(SPLASH);
 	menuMode = TITLEMENU;
+
+	vector<ControllerState> controllerStatesForMouse;
+	controllerStatesForMouse.reserve(4);
 	
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1705,13 +1712,23 @@ void MainMenu::Run()
 			//does it loop like this to fix some kind of drawing issue?
 			do
 			{
+				UpdateMenuInput();
+
 				mousePixelPos = GetPixelPos();
-				MOUSE.Update(mousePixelPos);
+
+				controllerStatesForMouse.clear();
+				for (int i = 0; i < 4; ++i)
+				{
+					controllerStatesForMouse.push_back(GetCurrInputUnfiltered(i));
+				}
+
+				MOUSE.Update(mousePixelPos, controllerStatesForMouse);
+
+				UICONTROLLER.Update();
 
 				//added this so going back from the thanks screen
 				//doesnt inta select a level. carrying over inputs
 				//between menus makes no sense.
-				UpdateMenuInput();
 
 				changedMode = false;
 				HandleMenuMode();
@@ -2871,9 +2888,10 @@ void MainMenu::HandleMenuMode()
 
 		if (workshopBrowser->action == WorkshopBrowser::A_BACK)
 		{
-			SetMode(ONLINE_MENU);
 			delete workshopBrowser;
 			workshopBrowser = NULL;
+
+			SetMode(ONLINE_MENU);
 			break;
 		}
 		else if (workshopBrowser->workshopMapPopup->action == WorkshopMapPopup::A_HOST)

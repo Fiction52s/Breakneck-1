@@ -1,9 +1,5 @@
-#include "GUI.h"
-#include <assert.h>
-#include <iostream>
-#include "Session.h"
-#include "EditorDecorInfo.h"
-#include "EditSession.h"
+#include "UIMouse.h"
+#include "Input.h"
 
 using namespace sf;
 using namespace std;
@@ -12,9 +8,26 @@ UIMouse::UIMouse()
 {
 	currWindow = NULL;
 	ResetMouse();
+	
 }
 
 void UIMouse::Update(sf::Vector2i &mPos)
+{
+	vector<ControllerState> states;
+	Update(mPos, states);
+}
+
+const sf::Vector2i &UIMouse::GetPos()
+{
+	return myPos;
+}
+
+sf::Vector2f UIMouse::GetFloatPos()
+{
+	return sf::Vector2f(myPos);
+}
+
+void UIMouse::Update(sf::Vector2i &p_mousePos, std::vector<ControllerState> & states)
 {
 	if (!IsWindowFocused())
 	{
@@ -24,13 +37,74 @@ void UIMouse::Update(sf::Vector2i &mPos)
 	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
 	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
 
+	for (auto it = states.begin(); it != states.end(); ++it)
+	{
+		if ((*it).JumpButtonDown())
+		{
+			mouseDownL = true;
+		}
+		if ((*it).DashButtonDown())
+		{
+			mouseDownR = true;
+		}
+	}
+
 	lastMouseDownLeft = isMouseDownLeft;
 	isMouseDownLeft = mouseDownL;
 
 	lastMouseDownRight = isMouseDownRight;
 	isMouseDownRight = mouseDownR;
 
-	mousePos = mPos;
+	mousePos = p_mousePos;
+
+	ControllerState *nonNeutralState = NULL;
+	for (auto it = states.begin(); it != states.end(); ++it)
+	{
+		//if (!(*it).IsLeftNeutral())
+		if( (*it).leftStickMagnitude > 0 )
+		{
+			nonNeutralState = &(*it);
+			break;
+		}
+	}
+
+	if (nonNeutralState == NULL )
+	{
+		myPos = mousePos;
+	}
+	else
+	{
+		if (nonNeutralState->leftStickMagnitude > 0)
+		{
+			float x = cos(nonNeutralState->leftStickRadians) * nonNeutralState->leftStickMagnitude;
+			float y = -sin(nonNeutralState->leftStickRadians) * nonNeutralState->leftStickMagnitude;
+			float maxSpeed = 20;
+			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
+			myPos += movement;
+		}
+		else
+		{
+			if (nonNeutralState->LLeft())
+			{
+				myPos.x -= 10;
+			}
+			else if (nonNeutralState->LRight())
+			{
+				myPos.x += 10;
+			}
+
+			if (nonNeutralState->LUp())
+			{
+				myPos.y -= 10;
+			}
+			else if (nonNeutralState->LDown())
+			{
+				myPos.y += 10;
+			}
+		}
+
+		sf::Mouse::setPosition(myPos);
+	}
 
 	consumed = false;
 }
@@ -71,6 +145,7 @@ void UIMouse::ResetMouse()
 	lastMouseDownLeft = false;
 	isMouseDownRight = false;
 	lastMouseDownRight = false;
+	controllerMode = false;
 }
 
 void UIMouse::SetRenderWindow(sf::RenderWindow *rw)
@@ -89,4 +164,11 @@ bool UIMouse::IsWindowFocused()
 	}
 
 	return false;
+}
+
+void UIMouse::SetPosition(sf::Vector2i &pos)
+{
+	mousePos = pos;
+	myPos = pos;
+	sf::Mouse::setPosition(myPos);
 }

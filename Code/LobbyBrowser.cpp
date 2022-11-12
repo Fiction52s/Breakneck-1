@@ -161,6 +161,11 @@ void LobbyBrowser::PanelCallback(Panel *p, const std::string & e)
 	}
 }
 
+void LobbyBrowser::CancelCallback()
+{
+	SetAction(A_RETURN_TO_MENU);
+}
+
 void LobbyBrowser::ChooseRectEvent(ChooseRect *cr, int eventType)
 {
 	if (cr->rectIdentity == ChooseRect::I_LOBBY)

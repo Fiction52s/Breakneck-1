@@ -71,6 +71,7 @@ struct WorkshopMapPopup : GUIHandler
 
 	void ButtonCallback(Button *b, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
+	void CancelCallback();
 };
 
 #endif
