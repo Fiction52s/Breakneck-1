@@ -91,7 +91,7 @@ void WorkshopBrowser::Update()
 	{
 	case A_BROWSER:
 	{
-		if (UICONTROLLER.cancel)
+		if (UICONTROLLER.IsCancelPressed())
 		{
 			Quit();
 			break;

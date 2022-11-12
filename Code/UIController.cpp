@@ -21,21 +21,32 @@ void UIController::Update()
 
 	MainMenu *mm = MainMenu::GetInstance();
 
-	confirm = false;
-	cancel = false;
+	confirmPressed = false;
+	cancelPressed = false;
+	confirmHeld = false;
+	cancelHeld = false;
 
 	for (int i = 0; i < 4; ++i)
 	{
 		ControllerState &prevState = mm->GetPrevInputUnfiltered(i);
 		ControllerState &currState = mm->GetCurrInputUnfiltered(i);
 
-		if (!prevState.start && currState.start)
+		if (currState.start)
 		{
-			confirm = true;
+			confirmHeld = true;
+			if (!prevState.start)
+			{
+				confirmPressed = true;
+			}
 		}
-		else if (!prevState.B && currState.B)
+
+		if (currState.B)
 		{
-			cancel = true;
+			cancelHeld = true;
+			if (!prevState.B)
+			{
+				cancelPressed = true;
+			}
 		}
 	}
 
@@ -94,6 +105,26 @@ void UIController::Update()
 	}
 }
 
+bool UIController::IsConfirmHeld()
+{
+	return confirmHeld;
+}
+
+bool UIController::IsConfirmPressed()
+{
+	return confirmPressed;
+}
+
+bool UIController::IsCancelHeld()
+{
+	return cancelHeld;
+}
+
+bool UIController::IsCancelPressed()
+{
+	return cancelPressed;
+}
+
 int UIController::ConsumeScroll()
 {
 	int s = scrollCounter;  //cut off decimal
@@ -103,8 +134,12 @@ int UIController::ConsumeScroll()
 
 void UIController::Reset()
 {
-	confirm = false;
-	cancel = false;
+	confirmPressed = false;
+	confirmHeld = false;
+
+	cancelPressed = false;
+	cancelHeld = false;
+	
 	scrollCounter = 0;
 }
 

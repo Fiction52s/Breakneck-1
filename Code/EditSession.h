@@ -228,7 +228,6 @@ struct EditSession : GUIHandler, Session
 	sf::Vector2i oldPointGrabPos;
 	bool justCompletedPolyWithClick;
 	bool justCompletedRailWithClick;
-	bool lastLeftMouseDown;
 	sf::View v;
 	static double zoomMultiple;
 	sf::Vector2f testPoint;

@@ -61,6 +61,7 @@
 #include "LobbyManager.h"
 #include "ConnectionManager.h"
 #include "UIMouse.h"
+#include "UIController.h"
 
 //#define GGPO_ON
 
@@ -4149,6 +4150,9 @@ int EditSession::EditRun()
 
 	editClock.restart();
 
+	vector<ControllerState> controllerStatesForMouse;
+	controllerStatesForMouse.reserve(4);
+
 	while (window->pollEvent(ev))
 	{
 	}
@@ -4175,112 +4179,124 @@ int EditSession::EditRun()
 			spriteUpdateFrames = mult;
 
 			editAccumulator -= mult * TIMESTEP;
-		}
+			//}
 
-		pixelPos = GetPixelPos();
+			pixelPos = GetPixelPos();
 
-		oldWorldPosTest = worldPos;
-		worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
-		//eventually also use this in create enemy mode
-		if (IsSingleActorSelected())
-		{
-			//no longer used because of multi-move
-			//worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
-			worldPosRail = ConvertPointToRail(Vector2i(worldPos));
-		}
-
-		preScreenTex->setView(uiView);
-		uiMouse = preScreenTex->mapPixelToCoords(pixelPos);
-		uiMousePos = uiMouse;
-
-		preScreenTex->setView(view);
-
-		testPoint.x = worldPos.x;
-		testPoint.y = worldPos.y;
-
-		if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
-		{
-			V2d pathBack(patrolPath.back());
-			V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
-
-			if (IsKeyPressed(Keyboard::LShift))
+			oldWorldPosTest = worldPos;
+			worldPos = V2d(preScreenTex->mapPixelToCoords(pixelPos));
+			//eventually also use this in create enemy mode
+			if (IsSingleActorSelected())
 			{
-				double angle = atan2(-temp.y, temp.x);
-				if (angle < 0)
+				//no longer used because of multi-move
+				//worldPosGround = ConvertPointToGround(Vector2i(worldPos.x, worldPos.y));
+				worldPosRail = ConvertPointToRail(Vector2i(worldPos));
+			}
+
+			preScreenTex->setView(uiView);
+			uiMouse = preScreenTex->mapPixelToCoords(pixelPos);
+			uiMousePos = uiMouse;
+
+			preScreenTex->setView(view);
+
+			testPoint.x = worldPos.x;
+			testPoint.y = worldPos.y;
+
+			if (mode == CREATE_PATROL_PATH || mode == SET_DIRECTION)
+			{
+				V2d pathBack(patrolPath.back());
+				V2d temp = V2d(testPoint.x, testPoint.y) - pathBack;
+
+				if (IsKeyPressed(Keyboard::LShift))
 				{
-					angle += PI * 2.0;
+					double angle = atan2(-temp.y, temp.x);
+					if (angle < 0)
+					{
+						angle += PI * 2.0;
+					}
+					double len = length(temp);
+					double mult = angle / (PI / 4.0);
+					double dec = mult - floor(mult);
+					int iMult = mult;
+					if (dec >= .5)
+					{
+						iMult++;
+					}
+
+					angle = iMult * PI / 4.0;
+					V2d testVec(len, 0);
+					RotateCCW(testVec, angle);
+					testPoint = Vector2f(pathBack + testVec);
+					temp = testVec;
 				}
-				double len = length(temp);
-				double mult = angle / (PI / 4.0);
-				double dec = mult - floor(mult);
-				int iMult = mult;
-				if (dec >= .5)
+			}
+
+			UpdateControllers();
+			//MOUSE.Update(pixelPos);
+
+			controllerStatesForMouse.clear();
+			for (int i = 0; i < 4; ++i)
+			{
+				controllerStatesForMouse.push_back(GetCurrInputUnfiltered(i));
+			}
+
+			MOUSE.Update(pixelPos, controllerStatesForMouse);
+
+			UICONTROLLER.Update();
+
+			if (IsKeyPressed(Keyboard::Num5))
+			{
+				Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f,
+					scaleSprite.getGlobalBounds().height / 2.f);
+				scaleSprite.setPosition(Vector2f(pixelPos) - halfSize);
+				scaleSpriteBGRect.setPosition(Vector2f(pixelPos) - halfSize);
+			}
+			else
+			{
+				scaleSprite.setPosition(0, 80);
+				scaleSpriteBGRect.setPosition(0, 80);
+			}
+
+			//showGraph = false;
+
+			if (quit)
+				break;
+
+
+			if (mode == PAUSED)
+			{
+				while (window->pollEvent(ev))
 				{
-					iMult++;
+					PausedModeHandleEvent();
 				}
-
-				angle = iMult * PI / 4.0;
-				V2d testVec(len, 0);
-				RotateCCW(testVec, angle);
-				testPoint = Vector2f(pathBack + testVec);
-				temp = testVec;
 			}
-		}
-
-		MOUSE.Update(pixelPos);
-
-		if (IsKeyPressed(Keyboard::Num5))
-		{
-			Vector2f halfSize(scaleSprite.getGlobalBounds().width / 2.f,
-				scaleSprite.getGlobalBounds().height / 2.f);
-			scaleSprite.setPosition(Vector2f(pixelPos) - halfSize);
-			scaleSpriteBGRect.setPosition(Vector2f(pixelPos) - halfSize);
-		}
-		else
-		{
-			scaleSprite.setPosition(0, 80);
-			scaleSpriteBGRect.setPosition(0, 80);
-		}
-
-		//showGraph = false;
-
-		if (quit)
-			break;
-
-
-		if (mode == PAUSED)
-		{
-			while (window->pollEvent(ev))
+			else
 			{
-				PausedModeHandleEvent();
+				HandleEvents();
+
+				if (mode != PAUSED)
+					UpdateMode();
 			}
-		}
-		else
-		{
-			HandleEvents();
 
-			if (mode != PAUSED)
-				UpdateMode();
-		}
+			UpdatePanning();
 
-		UpdatePanning();
-
-		if (background != NULL )
-		{
-			background->Update(view.getCenter(), spriteUpdateFrames);
-		}
-		
-		UpdateFullBounds();
-
-		if (mode != TEST_PLAYER || ( mode == TEST_PLAYER && oneFrameMode ))
-		{
-			for (int i = 0; i < spriteUpdateFrames; ++i)
+			if (background != NULL)
 			{
-				UpdateEnvShaders();
+				background->Update(view.getCenter(), spriteUpdateFrames);
 			}
+
+			UpdateFullBounds();
+
+			if (mode != TEST_PLAYER || (mode == TEST_PLAYER && oneFrameMode))
+			{
+				for (int i = 0; i < spriteUpdateFrames; ++i)
+				{
+					UpdateEnvShaders();
+				}
+			}
+
+			SteamAPI_RunCallbacks();
 		}
-		
-		SteamAPI_RunCallbacks();
 
 		//ShowMostRecentError();
 
@@ -11284,8 +11300,13 @@ void EditSession::SetMode(Emode m)
 		ClearSelectedBrush();
 		createEnemyModeUI->showLibrary = false;
 		createEnemyModeUI->SetShown(true);
+
+		//maybe have to clear the mouse here? because i just commented this out
+		//lastLeftMouseDown = false;
+		MOUSE.ResetMouse();
+
 		//AddActivePanel(createEnemyModeUI->topbarPanel);
-		lastLeftMouseDown = false;//IsMousePressed( Mouse::)
+		
 		//grabbedActor = NULL;
 		editClock.restart();
 		editCurrentTime = 0;
@@ -11836,10 +11857,11 @@ void EditSession::PreventNearPrimaryAnglesOnRailInProgress()
 
 void EditSession::TryAddPointToPolygonInProgress()
 {
-	bool mouseDown = IsMousePressed(Mouse::Left);
+	//bool mouseDown = IsMousePressed(Mouse::Left);
 	
-	bool justClicked = mouseDown && !lastLeftMouseDown;
-	if (!panning && mouseDown)
+	bool justClicked = MOUSE.IsMouseLeftClicked();//mouseDown && !lastLeftMouseDown;
+	//if (!panning && mouseDown)
+	if( !panning && MOUSE.IsMouseDownLeft())
 	{
 		Vector2i worldi(round(testPoint.x), round(testPoint.y));
 
@@ -11875,7 +11897,7 @@ void EditSession::TryAddPointToPolygonInProgress()
 		}
 	}
 
-	lastLeftMouseDown = mouseDown;
+	//lastLeftMouseDown = mouseDown;
 }
 
 void EditSession::TryAddPointToRailInProgress()
@@ -14288,8 +14310,23 @@ void EditSession::CreateTerrainModeUpdate()
 	{
 		justCompletedPolyWithClick = false;
 	}
+
+	if (UICONTROLLER.IsCancelPressed())
+	{
+		//code is mirrored in the event handler
+		if (createTerrainModeUI->GetCurrDrawTool() == TOOL_DRAW)
+		{
+			removeProgressPointWaiter->Reset();
+			RemovePointFromPolygonInProgress();
+		}
+		else
+		{
+			boxDrawStarted = false;
+		}
+	}
 	
-	UpdateInputNonGame();
+	
+	//UpdateInputNonGame();
 
 	if (GetCurrInput(0).start && !GetPrevInput(0).start)
 	{
@@ -14297,7 +14334,9 @@ void EditSession::CreateTerrainModeUpdate()
 		return;
 	}
 
-	if (IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete))
+	bool back = IsKeyPressed(sf::Keyboard::X) || IsKeyPressed(sf::Keyboard::Delete) || UICONTROLLER.IsCancelHeld();
+
+	if (back)
 	{
 		if (!focusedPanel)
 		{

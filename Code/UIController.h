@@ -19,14 +19,21 @@ struct UIController
 	void Reset();
 	void SetRenderWindow(sf::RenderWindow *rw);
 	bool IsWindowFocused();
-	bool confirm;
-	bool cancel;
 	int ConsumeScroll();
+	bool IsConfirmHeld();
+	bool IsConfirmPressed();
+	bool IsCancelHeld();
+	bool IsCancelPressed();
 private:
 	UIController();
 	sf::RenderWindow *currWindow;
 	float scrollCounter;
 	float maxScroll;
+
+	bool confirmPressed;
+	bool cancelPressed;
+	bool confirmHeld;
+	bool cancelHeld;
 };
 
 #define UICONTROLLER UIController::GetInstance()
