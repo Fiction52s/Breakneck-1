@@ -635,7 +635,7 @@ void Panel::Confirm()
 	{
 		SendEvent(confirmButton, "pressed");
 	}*/
-	handler->ConfirmCallback();
+	handler->ConfirmCallback(this);
 }
 
 void Panel::Cancel()
@@ -644,7 +644,7 @@ void Panel::Cancel()
 	{
 		SendEvent(cancelButton, "pressed");
 	}*/
-	handler->CancelCallback();
+	handler->CancelCallback(this);
 }
 
 bool Panel::HandleEvent(sf::Event ev)

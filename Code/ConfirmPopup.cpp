@@ -79,32 +79,40 @@ void ConfirmPopup::ButtonCallback(Button *b,
 			break;
 		}
 		}
+
+		if (edit != NULL)
+		{
+			edit->RemoveActivePanel(panel);
+		}
 	}
 	else if (b == panel->cancelButton)
 	{
-		action = A_NO;
+		CancelCallback(panel);
+	}
+}
 
-		switch (type)
-		{
-		case SAVE_CURRENT:
-		{
-			edit->ReloadNew();
-			break;
-		}
-		case SAVE_CURRENT_EXIT:
-		{
-			edit->quit = true;
-			edit->returnVal = 1;
-			break;
-		}
-			
-		}
-		
+void ConfirmPopup::CancelCallback(Panel *p)
+{
+	action = A_NO;
+
+	switch (type)
+	{
+	case SAVE_CURRENT:
+	{
+		edit->ReloadNew();
+		break;
+	}
+	case SAVE_CURRENT_EXIT:
+	{
+		edit->quit = true;
+		edit->returnVal = 1;
+		break;
+	}
+
 	}
 
 	if (edit != NULL)
 	{
 		edit->RemoveActivePanel(panel);
 	}
-	
 }

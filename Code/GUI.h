@@ -56,8 +56,8 @@ struct GUIHandler
 	virtual void ChooseRectEvent(ChooseRect *cr, int eventType) {}
 	virtual void MenuDropdownCallback(MenuDropdown *menuDrop, const std::string & e) {}
 	virtual void ScrollBarCallback(ScrollBar *sb, const std::string &e) {}
-	virtual void CancelCallback() {}
-	virtual void ConfirmCallback() {}
+	virtual void CancelCallback(Panel *p) {}
+	virtual void ConfirmCallback(Panel *p) {}
 };
 
 struct ToolTip
@@ -960,6 +960,7 @@ struct ConfirmPopup : GUIHandler
 	void Pop(ConfirmType ct = ConfirmType::DEFAULT);
 	void ButtonCallback(Button *b,
 		const std::string &e);
+	void CancelCallback(Panel *p);
 };
 
 struct MessagePopup : GUIHandler
@@ -981,6 +982,8 @@ struct MessagePopup : GUIHandler
 	void Pop(const std::string &str);
 	void ButtonCallback(Button *b,
 		const std::string &e);
+	void CancelCallback(Panel *p);
+	void ConfirmCallback(Panel *p);
 	void Draw(sf::RenderTarget *target);
 };
 

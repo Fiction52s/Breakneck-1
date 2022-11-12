@@ -161,7 +161,7 @@ void LobbyBrowser::PanelCallback(Panel *p, const std::string & e)
 	}
 }
 
-void LobbyBrowser::CancelCallback()
+void LobbyBrowser::CancelCallback(Panel *p)
 {
 	SetAction(A_RETURN_TO_MENU);
 }

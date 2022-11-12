@@ -41,6 +41,11 @@ void MusicChooserHandler::PanelCallback(Panel *p, const std::string & e)
 	}
 }
 
+void MusicChooserHandler::CancelCallback(Panel *p)
+{
+	chooser->ClosePopup();
+}
+
 void MusicChooserHandler::DropdownCallback(Dropdown *dropdown, const std::string & e)
 {
 	chooser->topRow = 0;

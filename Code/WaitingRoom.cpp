@@ -157,6 +157,11 @@ void WaitingRoom::PanelCallback(Panel *p, const std::string & e)
 
 }
 
+void WaitingRoom::CancelCallback(Panel *p)
+{
+	SetAction(A_LEAVE_ROOM);
+}
+
 void WaitingRoom::UpdateMemberList()
 {
 	for (int i = 0; i < 4; ++i)

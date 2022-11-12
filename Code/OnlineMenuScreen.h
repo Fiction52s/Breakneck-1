@@ -31,7 +31,7 @@ struct OnlineMenuScreen : GUIHandler
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
-	void CancelCallback();
+	void CancelCallback(Panel *p);
 
 	bool HandleEvent(sf::Event ev);
 	void Start();

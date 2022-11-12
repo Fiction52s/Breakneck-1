@@ -116,7 +116,7 @@ struct MapBrowserHandler : GUIHandler
 	void ButtonCallback(Button *b, const std::string & e);
 	void TabGroupCallback(TabGroup *tg, const std::string &e);
 	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
-	void CancelCallback();
+	void CancelCallback(Panel *p);
 	//void SliderCallback(Slider *slider);
 
 	sf::Vertex largePreview[4];

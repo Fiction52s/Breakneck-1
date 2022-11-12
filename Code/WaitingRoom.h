@@ -39,6 +39,7 @@ struct WaitingRoom : GUIHandler
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
+	void CancelCallback(Panel *p);
 	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
 };
 

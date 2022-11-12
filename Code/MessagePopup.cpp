@@ -45,15 +45,25 @@ void MessagePopup::Pop(const std::string &message)
 void MessagePopup::ButtonCallback(Button *b,
 	const std::string &e)
 {
+	ConfirmCallback(b->panel);
+}
+
+void MessagePopup::Draw(sf::RenderTarget *target)
+{
+	panel->Draw(target);
+}
+
+void MessagePopup::CancelCallback(Panel *p)
+{
+	ConfirmCallback(p);
+}
+
+void MessagePopup::ConfirmCallback(Panel *p)
+{
 	if (edit != NULL)
 	{
 		edit->RemoveActivePanel(panel);
 	}
 
 	action = A_INACTIVE;
-}
-
-void MessagePopup::Draw(sf::RenderTarget *target)
-{
-	panel->Draw(target);
 }

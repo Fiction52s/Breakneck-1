@@ -159,6 +159,7 @@ struct MusicChooserHandler : ListChooserHandler
 	//---------
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void PanelCallback(Panel *p, const std::string & e);
+	void CancelCallback(Panel *p);
 };
 
 struct ListChooser : PanelUpdater

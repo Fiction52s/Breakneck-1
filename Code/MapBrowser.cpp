@@ -1196,7 +1196,7 @@ void MapBrowserHandler::ScrollBarCallback(ScrollBar *sb, const std::string &e)
 	chooser->PopulateRects();
 }
 
-void MapBrowserHandler::CancelCallback()
+void MapBrowserHandler::CancelCallback(Panel *p)
 {
 	Cancel();
 }
