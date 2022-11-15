@@ -83,7 +83,7 @@ NetplayManager::NetplayManager()
 	SetRectColor(quad, Color::Red);
 	SetRectCenter(quad, 400, 400, Vector2f(960, 540));
 
-	isSyncTest = true;
+	isSyncTest = false;
 
 	Abort();
 
@@ -177,6 +177,8 @@ void NetplayManager::Abort()
 
 	//CleanupMatch();
 
+	previewPath = "";
+
 	numPlayers = -1;
 
 	desyncDetected = false;
@@ -190,14 +192,28 @@ void NetplayManager::Abort()
 	receivedMap = false;
 }
 
-void NetplayManager::StartConnecting()
+void NetplayManager::UpdateNetplayPlayers()
 {
+	cout << "updating netplay players" << endl;
+
 	int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
 
-	numPlayers = numLobbyMembers; //2
-	assert(GetHostID() == lobbyManager->currentLobby.memberList.front().id);
+	numPlayers = numLobbyMembers;
+
 	int memberIndex = 0;
 	playerIndex = -1;
+
+	map<CSteamID, HSteamNetConnection> connections;
+
+	for (int i = 0; i < 4; ++i)
+	{
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			connections[netplayPlayers[i].id] = netplayPlayers[i].connection;
+		}
+		netplayPlayers[i].Clear();
+	}
+
 	for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
 	{
 		netplayPlayers[memberIndex].Clear();
@@ -205,6 +221,15 @@ void NetplayManager::StartConnecting()
 		netplayPlayers[memberIndex].index = memberIndex;
 		netplayPlayers[memberIndex].id = (*it).id;
 		netplayPlayers[memberIndex].name = (*it).name;
+
+		auto con = connections.find((*it).id);
+		if (con != connections.end())
+		{
+			netplayPlayers[memberIndex].isConnectedTo = true;
+			netplayPlayers[memberIndex].connection = (*con).second;
+			connections.erase(con);
+			cout << "found old connection for: " << memberIndex << endl;
+		}
 
 		if ((*it).id == GetMyID())
 		{
@@ -214,6 +239,59 @@ void NetplayManager::StartConnecting()
 
 		++memberIndex;
 	}
+
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		netplayPlayers[i].isHost = false;
+		if (GetHostID() == netplayPlayers[i].id)
+		{
+			netplayPlayers[i].isHost = true;
+			break;
+		}
+	}
+}
+
+void NetplayManager::StartConnecting()
+{
+	//int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
+
+	//numPlayers = numLobbyMembers; //2
+	//assert(GetHostID() == lobbyManager->currentLobby.memberList.front().id);
+	//int memberIndex = 0;
+	//playerIndex = -1;
+
+	//HSteamNetConnection tempConnection;
+	//bool tempIsConnected;
+	//for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
+	//{
+	//	tempIsConnected = netplayPlayers[memberIndex].isConnectedTo;
+	//	tempConnection = netplayPlayers[memberIndex].connection;
+
+	//	netplayPlayers[memberIndex].Clear();
+
+	//	netplayPlayers[memberIndex].index = memberIndex;
+	//	netplayPlayers[memberIndex].id = (*it).id;
+	//	netplayPlayers[memberIndex].name = (*it).name;
+
+	//	if (tempIsConnected)
+	//	{
+	//		netplayPlayers[memberIndex].isConnectedTo = tempIsConnected;
+	//		netplayPlayers[memberIndex].connection = tempConnection;
+	//		cout << "keeping old connection" << "\n";
+	//	}
+
+	//	if ((*it).id == GetMyID())
+	//	{
+	//		netplayPlayers[memberIndex].isMe = true;
+	//		playerIndex = memberIndex;
+	//	}
+
+	//	++memberIndex;
+	//}
+
+	cout << "start connecting" << endl;
+
+	UpdateNetplayPlayers();
 
 	checkWorkshopMap = false;
 	workshopDownloadPublishedFileId = 0;
@@ -405,7 +483,7 @@ void NetplayManager::StartConnecting()
 	}
 	
 
-	matchParams.numPlayers = numLobbyMembers;
+	matchParams.numPlayers = numPlayers;
 
 	action = A_GET_CONNECTIONS;
 
@@ -419,7 +497,10 @@ void NetplayManager::StartConnecting()
 	{
 		identity.SetSteamID(netplayPlayers[i].id);
 
-		netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+		if (netplayPlayers[i].connection == 0)
+		{
+			netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+		}
 	}
 
 	SetHost();
@@ -960,7 +1041,7 @@ void NetplayManager::SetHost()
 		}
 	}
 
-	lobbyManager->LeaveLobby();
+	//lobbyManager->LeaveLobby();
 }
 
 void NetplayManager::OnConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t *pCallback)
@@ -1233,7 +1314,7 @@ void NetplayManager::RemoveDesyncCheckInfos(int numRollbackFrames)
 
 bool NetplayManager::IsHost()
 {
-	if (isSyncTest)
+	if (isSyncTest) //if synctest is turned on for quickplay, itll ruin the ishost checks in custom matches also
 	{
 		return true;
 	}
@@ -1272,8 +1353,16 @@ void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 
 	if ( msg.sender == GetHostID() && LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH)
 	{
-		//when all players start connecting, even host
-		StartConnecting();
+		if (IsHost())
+		{
+			//testing for now, host starts connecting before.
+		}
+		else
+		{
+			//when all players start connecting, even host
+			StartConnecting();
+		}
+		
 	}
 }
 
@@ -1293,6 +1382,49 @@ void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::fil
 	is.read(&data[0], file_size_in_byte);
 	is.close();
 	
+	int bufferSize = sizeof(UdpMsg) + file_size_in_byte;
+	char*buffer = new char[bufferSize];
+	char *tempBuffer = buffer;
+	UdpMsg *bufferMsg = (UdpMsg*)buffer;
+	*bufferMsg = msg;
+	tempBuffer += sizeof(UdpMsg);
+
+	for (int i = 0; i < file_size_in_byte; ++i)
+	{
+		tempBuffer[i] = data[i];
+	}
+
+	cout << "done building buffer for sending map" << endl;
+
+	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
+
+	if (res == k_EResultOK)
+	{
+		cout << "succeeded in sending map" << endl;
+		//Log("sent packet length %d to %d. res: %d\n", len, p_connection, res);
+	}
+	else
+	{
+		//cout << "failing to send packet" << endl;
+	}
+}
+
+void NetplayManager::SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p)
+{
+	UdpMsg msg(UdpMsg::Game_Preview);
+
+	std::ifstream is;
+	is.open(p.string(), std::ios::binary);
+	assert(is.is_open());
+
+	is.seekg(0, std::ios::end);
+	size_t file_size_in_byte = is.tellg();
+	std::vector<char> data; // used to store text data
+	data.resize(file_size_in_byte);
+	is.seekg(0, std::ios::beg);
+	is.read(&data[0], file_size_in_byte);
+	is.close();
+
 	int bufferSize = sizeof(UdpMsg) + file_size_in_byte;
 	char*buffer = new char[bufferSize];
 	char *tempBuffer = buffer;
@@ -1456,6 +1588,23 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 
 		break;
 	}
+	case UdpMsg::Game_Preview:
+	{
+		assert(!IsHost() && mapDownloadFilePath != "");
+
+		char *previewBinary = (char*)steamMsgData + sizeof(UdpMsg);
+		int sizeofPreview = steamMsg->GetSize() - sizeof(UdpMsg);
+
+		cout << "received preview. attempting to write to file." << endl;
+
+		previewPath = boost::filesystem::current_path().string() + "/testpreview.png";
+
+		FILE *file = fopen(previewPath.string().c_str(), "wb");
+		fwrite(previewBinary, 1, sizeofPreview, file);
+		fclose(file);
+		cout << "finished saving preview: " << previewPath << endl;
+		break;
+	}
 	}
 
 	if (steamMsg != NULL )
@@ -1547,4 +1696,18 @@ void NetplayManager::TryCreateCustomLobby(LobbyParams &lp)
 {
 	lobbyManager->TryCreatingLobby(lp);
 	action = A_CUSTOM_HOST_GATHERING_USERS;
+}
+
+void NetplayManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
+{
+	if (pCallback->m_ulSteamIDUserChanged != GetMyID().ConvertToUint64())
+	{
+		uint32 flags = pCallback->m_rgfChatMemberStateChange;
+		if ((flags & k_EChatMemberStateChangeEntered))
+		{
+			cout << "member joined. updating netplay players" << endl;
+			UpdateNetplayPlayers();
+		}
+		
+	}
 }

@@ -15,10 +15,12 @@ struct LobbyMember
 {
 	CSteamID id;
 	std::string name;
+	HSteamNetConnection connection;
 	LobbyMember(CSteamID p_id, const char *p_name)
 	{
 		id = p_id;
 		name = p_name;
+		connection = 0;
 	}
 };
 

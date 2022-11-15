@@ -18,7 +18,10 @@ ConnectionManager::ConnectionManager()
 
 void ConnectionManager::CreateListenSocket()
 {
-	listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, NULL);
+	if (listenSocket == NULL)
+	{
+		listenSocket = SteamNetworkingSockets()->CreateListenSocketP2P(0, 0, NULL);
+	}
 }
 
 void ConnectionManager::OnMessagesSessionFailedCallback(SteamNetworkingMessagesSessionFailed_t *pCallback)

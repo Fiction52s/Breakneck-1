@@ -161,8 +161,31 @@ bool CustomMatchManager::Update()
 	case A_LOBBY_BROWSER:
 		if (lobbyBrowser->action == LobbyBrowser::A_IN_LOBBY)
 		{
-			waitingRoom->OpenPopup();
-			SetAction(A_WAITING_ROOM);
+			//waitingRoom->OpenPopup();
+			//SetAction(A_WAITING_ROOM);
+			netplayManager->UpdateNetplayPlayers();
+
+			for (int i = 0; i < 4; ++i)
+			{
+				if (netplayManager->netplayPlayers[i].isHost)
+				{
+					if (i != netplayManager->playerIndex)
+					{
+						SteamNetworkingIdentity identity;
+						identity.SetSteamID(netplayManager->netplayPlayers[i].id);
+							
+						cout << "attempting to connect to host" << endl;
+						netplayManager->netplayPlayers[i].connection = SteamNetworkingSockets()->ConnectP2P(identity, 0, 0, NULL);
+						break;
+					}
+				}
+			}
+
+			cout << "connect to hosttt action" << endl;
+			
+
+			SetAction(A_CONNECT_TO_HOST);
+
 		}
 		else if (lobbyBrowser->action == LobbyBrowser::A_RETURN_TO_MENU)
 		{
@@ -171,6 +194,28 @@ bool CustomMatchManager::Update()
 			return false;
 		}
 		break;
+	case A_CONNECT_TO_HOST:
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			if (netplayManager->netplayPlayers[i].isHost)
+			{
+				if (netplayManager->netplayPlayers[i].isConnectedTo)
+				{
+					waitingRoom->OpenPopup();
+					SetAction(A_WAITING_ROOM);
+					cout << "host connected. joining waiting room" << endl;
+				}
+				else
+				{
+					cout << "not connected to host yet" << endl;
+				}
+				
+				break;
+			}
+		}
+		break;
+	}
 	case A_CHOOSE_MAP:
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 		{
@@ -264,6 +309,7 @@ bool CustomMatchManager::Update()
 		if (netplayManager->lobbyManager->IsInLobby())
 		{
 			SetAction(A_WAITING_ROOM);
+			netplayManager->connectionManager->CreateListenSocket();
 			waitingRoom->OpenPopup();
 		}
 		break;
@@ -275,6 +321,8 @@ bool CustomMatchManager::Update()
 			if (waitingRoom->action == WaitingRoom::A_STARTING)
 			{
 				SetAction(A_READY);
+
+				netplayManager->StartConnecting();
 
 				LobbyMessage lm;
 				lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;

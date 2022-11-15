@@ -35,6 +35,7 @@ struct UdpMsg
 	  Game_Host_Says_Start,
 	  Game_Desync_Check,
 	  Game_Map,
+	  Game_Preview,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -139,6 +140,7 @@ public:
 	  case Game_Host_Says_Start: return 0;
 	  case Game_Desync_Check: return sizeof(u.desync_info);
 	  case Game_Map: return 0;
+	  case Game_Preview: return 0;
 	  
       }
 

@@ -123,6 +123,7 @@ struct NetplayManager
 	std::string receivedMapName;
 	PublishedFileId_t workshopDownloadPublishedFileId;
 	boost::filesystem::path mapDownloadFilePath;
+	boost::filesystem::path previewPath;
 	std::string mapDownloadReceivedHash;
 
 	MatchResultsScreen *resultsScreen;
@@ -151,6 +152,7 @@ struct NetplayManager
 	HSteamNetConnection GetConnection();
 	void AddDesyncCheckInfo( int pIndex, DesyncCheckInfo &dci );
 	void RemoveDesyncCheckInfos(int numRollbackFrames);
+	void UpdateNetplayPlayers();
 	bool IsHost();
 	void Abort();
 	void Update();
@@ -165,6 +167,7 @@ struct NetplayManager
 	const DesyncCheckInfo & GetDesyncCheckInfo(SteamNetworkingMessage_t *msg, int framesAgo);
 	void DumpDesyncInfo();
 	void SendMapToClient(HSteamNetConnection connection, boost::filesystem::path &p);
+	void SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p);
 
 	void TryCreateCustomLobby(LobbyParams &lp);
 
@@ -178,6 +181,8 @@ struct NetplayManager
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);
+
+	void OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback);
 };
 
 #endif

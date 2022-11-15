@@ -193,4 +193,13 @@ void WaitingRoom::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 			SetAction(A_LEAVE_ROOM);
 		}
 	}
+	else
+	{
+		NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+		//assert(netplayManager->lobbyManager->IsInLobby());
+
+		//netplayManager->lobbyManager->currWaitingRoom = this;
+		netplayManager->OnLobbyChatUpdateCallback(pCallback);
+	}
 }
