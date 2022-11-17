@@ -110,7 +110,7 @@ void WaitingRoom::OpenPopup()
 	}
 	else
 	{
-		
+
 	}*/
 
 	SetAction(A_WAITING_FOR_MEMBERS);
@@ -186,6 +186,13 @@ void WaitingRoom::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 {
 	if (pCallback->m_ulSteamIDUserChanged == ownerID.ConvertToUint64())
 	{
+		NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+		if (netplayManager->IsConnectedToHost() || netplayManager->IsHost() )
+		{
+			return;
+		}
+
+
 		uint32 flags = pCallback->m_rgfChatMemberStateChange;
 		if ((flags & k_EChatMemberStateChangeLeft) || (flags & k_EChatMemberStateChangeDisconnected))
 		{

@@ -138,6 +138,7 @@ struct NetplayManager
 	int RunMatch();
 	int GetConnectionIndex(HSteamNetConnection &con);
 	void SetHost();
+	bool IsConnectedToHost();
 	
 	void SendSignalToHost(int type);
 	void SendSignalToAllClients(int type);

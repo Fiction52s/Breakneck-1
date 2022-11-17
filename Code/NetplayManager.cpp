@@ -123,6 +123,29 @@ void NetplayManager::Init()
 	connectionManager = new ConnectionManager;
 }
 
+bool NetplayManager::IsConnectedToHost()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (netplayPlayers[i].isHost )
+		{
+			if (netplayPlayers[i].isMe)
+			{
+				return false; //I am host.
+			}
+
+			if (netplayPlayers[i].isConnectedTo)
+			{
+				return true;
+			}
+
+			return false;
+		}
+	}
+
+	return false;
+}
+
 void NetplayManager::Abort()
 {
 	if (lobbyManager != NULL)
