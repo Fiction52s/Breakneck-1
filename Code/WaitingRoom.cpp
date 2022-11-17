@@ -95,8 +95,14 @@ void WaitingRoom::Draw(sf::RenderTarget *target)
 void WaitingRoom::SetPreview(const std::string &previewPath)
 {
 	ClearPreview();
-
+	
 	ts_preview = GetTileset(previewPath);
+
+	if (ts_preview == NULL)
+	{
+		cout << "preview path failed: " << previewPath << endl;
+		return;
+	}
 
 	SetRectSubRect(previewQuad, ts_preview->GetSubRect(0));
 

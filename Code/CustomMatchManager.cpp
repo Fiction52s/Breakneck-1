@@ -203,7 +203,8 @@ bool CustomMatchManager::Update()
 			{
 				if (netplayManager->netplayPlayers[i].isConnectedTo)
 				{
-					SetAction(A_WAIT_FOR_PREVIEW);
+					waitingRoom->OpenPopup();
+					SetAction(A_WAITING_ROOM);
 					netplayManager->RequestPreviewFromHost();
 					cout << "host connected. requesting preview" << endl;
 				}
@@ -216,17 +217,7 @@ bool CustomMatchManager::Update()
 			}
 		}
 		break;
-	}
-	case A_WAIT_FOR_PREVIEW:
-	{
-		if (netplayManager->receivedPreview)
-		{
-			waitingRoom->SetPreview(netplayManager->previewPath.string());
-			waitingRoom->OpenPopup();
-			SetAction(A_WAITING_ROOM);
-		}
-		break;
-	}
+	}	
 	case A_CHOOSE_MAP:
 		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 		{
@@ -321,6 +312,11 @@ bool CustomMatchManager::Update()
 		{
 			SetAction(A_WAITING_ROOM);
 			netplayManager->connectionManager->CreateListenSocket();
+
+			boost::filesystem::path mapPath = mapOptionsPopup->currLobbyParams->mapPath;
+			string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
+
+			waitingRoom->SetPreview(previewPath);
 			waitingRoom->OpenPopup();
 		}
 		break;
@@ -343,6 +339,12 @@ bool CustomMatchManager::Update()
 		}
 		else
 		{
+			if (netplayManager->receivedPreview)
+			{
+				waitingRoom->SetPreview(netplayManager->previewPath.string());
+			}
+
+
 			if (netplayManager->action == NetplayManager::A_GET_CONNECTIONS)
 			{
 				cout << "processed start message" << endl;

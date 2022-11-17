@@ -24,7 +24,6 @@ struct CustomMatchManager
 		A_CREATING_LOBBY,
 		A_WAITING_ROOM,
 		A_CONNECT_TO_HOST,
-		A_WAIT_FOR_PREVIEW,
 		A_READY,
 		A_ERROR_MESSAGE,
 	};
