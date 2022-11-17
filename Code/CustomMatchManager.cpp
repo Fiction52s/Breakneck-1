@@ -316,6 +316,8 @@ bool CustomMatchManager::Update()
 			boost::filesystem::path mapPath = mapOptionsPopup->currLobbyParams->mapPath;
 			string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
 
+			netplayManager->previewPath = previewPath;
+
 			waitingRoom->SetPreview(previewPath);
 			waitingRoom->OpenPopup();
 		}
@@ -339,7 +341,7 @@ bool CustomMatchManager::Update()
 		}
 		else
 		{
-			if (netplayManager->receivedPreview)
+			if (netplayManager->receivedPreview && waitingRoom->ts_preview == NULL )
 			{
 				waitingRoom->SetPreview(netplayManager->previewPath.string());
 			}

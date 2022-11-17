@@ -106,11 +106,11 @@ void WaitingRoom::SetPreview(const std::string &previewPath)
 
 	SetRectSubRect(previewQuad, ts_preview->GetSubRect(0));
 
-	cout << "setting waiting room preview: " << previewPath << endl;
+	//cout << "setting waiting room preview: " << previewPath << endl;
 
 	if (ts_preview != NULL)
 	{
-		cout << "preview successfully set" << endl;
+	//	cout << "preview successfully set" << endl;
 	}
 }
 
@@ -174,7 +174,6 @@ bool WaitingRoom::HandleEvent(sf::Event ev)
 {
 	return panel->HandleEvent(ev);
 }
-
 
 void WaitingRoom::ChooseRectEvent(ChooseRect *cr, int eventType)
 {

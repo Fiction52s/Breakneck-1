@@ -1484,14 +1484,14 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		cout << "client needs preview" << endl;
 		if (IsHost())
 		{
-			boost::filesystem::path previewPath = matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
-
+			//boost::filesystem::path previewPath = //matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
 			try
 			{
+				cout << "previewPath: " << previewPath << endl;
 				if (boost::filesystem::exists(previewPath))
 				{
 					SendPreviewToClient(connection, previewPath);
-					cout << "previewPath: " << previewPath << endl;
+					
 				}
 				else
 				{
