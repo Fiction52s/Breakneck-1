@@ -72,6 +72,7 @@ struct NetplayManager
 		A_QUICKPLAY_CHECKING_FOR_LOBBIES,
 		A_QUICKPLAY_GATHERING_USERS,
 		A_CUSTOM_HOST_GATHERING_USERS,
+		A_WAIT_FOR_PREVIEW,
 		A_GET_CONNECTIONS,
 		A_WAIT_FOR_ALL_TO_VERIFY,
 		A_WAIT_FOR_ALL_TO_CONNECT,
@@ -99,6 +100,7 @@ struct NetplayManager
 	bool receivedGameStartSignal;
 	bool receivedStartGGPOSignal;
 	bool receivedMap;
+	bool receivedPreview;
 
 	boost::thread *loadThread;
 
@@ -171,6 +173,7 @@ struct NetplayManager
 	void SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p);
 
 	void TryCreateCustomLobby(LobbyParams &lp);
+	void RequestPreviewFromHost();
 
 	void BroadcastMapDetailsToLobby();
 	void BroadcastLobbyMessage(LobbyMessage &msg);

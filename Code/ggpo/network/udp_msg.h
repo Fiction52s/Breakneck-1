@@ -36,6 +36,7 @@ struct UdpMsg
 	  Game_Desync_Check,
 	  Game_Map,
 	  Game_Preview,
+	  Game_Client_Needs_Preview,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -141,7 +142,7 @@ public:
 	  case Game_Desync_Check: return sizeof(u.desync_info);
 	  case Game_Map: return 0;
 	  case Game_Preview: return 0;
-	  
+	  case Game_Client_Needs_Preview: return 0;
       }
 
       assert(false);

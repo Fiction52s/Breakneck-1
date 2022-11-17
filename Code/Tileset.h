@@ -43,7 +43,7 @@ struct TilesetManager
 	};
 
 	TilesetManager();
-	~TilesetManager();
+	virtual ~TilesetManager();
 	Tileset * GetSizedTileset(const std::string & s);
 	Tileset * GetSizedTileset(const std::string &folder, const std::string & s);
 	Tileset * GetTileset(const std::string & s, int tileWidth = 0, int tileHeight = 0);

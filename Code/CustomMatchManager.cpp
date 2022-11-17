@@ -13,6 +13,7 @@
 #include "MapOptionsPopup.h"
 #include "WorkshopBrowser.h"
 #include "PostMatchOptionsPopup.h"
+//#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
 using namespace std;
@@ -202,9 +203,9 @@ bool CustomMatchManager::Update()
 			{
 				if (netplayManager->netplayPlayers[i].isConnectedTo)
 				{
-					waitingRoom->OpenPopup();
-					SetAction(A_WAITING_ROOM);
-					cout << "host connected. joining waiting room" << endl;
+					SetAction(A_WAIT_FOR_PREVIEW);
+					netplayManager->RequestPreviewFromHost();
+					cout << "host connected. requesting preview" << endl;
 				}
 				else
 				{
@@ -213,6 +214,16 @@ bool CustomMatchManager::Update()
 				
 				break;
 			}
+		}
+		break;
+	}
+	case A_WAIT_FOR_PREVIEW:
+	{
+		if (netplayManager->receivedPreview)
+		{
+			waitingRoom->SetPreview(netplayManager->previewPath.string());
+			waitingRoom->OpenPopup();
+			SetAction(A_WAITING_ROOM);
 		}
 		break;
 	}
@@ -382,6 +393,9 @@ bool CustomMatchManager::Update()
 	case A_READY:
 		break;
 	}
+
+	//testing this
+	netplayManager->Update();
 
 	//return false when its time to progress the match
 	return true;

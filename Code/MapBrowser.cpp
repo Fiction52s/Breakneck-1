@@ -16,9 +16,9 @@ MapNode::MapNode()
 {
 	checkingForPreview = false;
 	myBrowser = NULL;
-	ts_preview = NULL;
 	type = FILE;
 	index = -1;
+	ts_preview = NULL;
 	previewTex = NULL;
 	action = IDLE;
 	chooseRect = NULL;

@@ -5,8 +5,9 @@
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
 #include "steam/steam_api.h"
+#include "Tileset.h"
 
-struct WaitingRoom : GUIHandler
+struct WaitingRoom : GUIHandler, TilesetManager
 {
 	enum Action
 	{
@@ -26,15 +27,21 @@ struct WaitingRoom : GUIHandler
 	TextChooseRect *memberNameRects[4];
 	CSteamID ownerID;
 
+	Tileset *ts_preview;
+	sf::Vertex previewQuad[4];
+
+
 	WaitingRoom();
 	~WaitingRoom();
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	void OpenPopup();
 	void ClosePopup();
+	void SetPreview(const std::string &previewPath);
 	void SetAction(Action a);
 	bool HandleEvent(sf::Event ev);
 	void UpdateMemberList();
+	void ClearPreview();
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);

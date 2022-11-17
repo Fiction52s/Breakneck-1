@@ -8,6 +8,8 @@ using namespace sf;
 
 WaitingRoom::WaitingRoom()
 {
+	TilesetManager::SetGameResourcesMode(false);
+
 	panel = new Panel("waitingroom", 1000, 500, this, true);
 	panel->SetCenterPos(Vector2i(960, 540));
 
@@ -27,6 +29,10 @@ WaitingRoom::WaitingRoom()
 	panel->StopAutoSpacing();
 
 	panel->SetCancelButton(leaveButton);
+
+	ts_preview = NULL;
+
+	SetRectCenter(previewQuad, 912, 492, Vector2f(960, 540));
 }
 
 WaitingRoom::~WaitingRoom()
@@ -76,9 +82,39 @@ void WaitingRoom::Update()
 	panel->MouseUpdate();
 }
 
-void WaitingRoom::Draw(sf::RenderTarget *target)\
+void WaitingRoom::Draw(sf::RenderTarget *target)
 {
 	panel->Draw(target);
+	
+	if (ts_preview != NULL)
+	{
+		target->draw(previewQuad, 4, sf::Quads, ts_preview->texture);
+	}
+}
+
+void WaitingRoom::SetPreview(const std::string &previewPath)
+{
+	ClearPreview();
+
+	ts_preview = GetTileset(previewPath);
+
+	SetRectSubRect(previewQuad, ts_preview->GetSubRect(0));
+
+	cout << "setting waiting room preview: " << previewPath << endl;
+
+	if (ts_preview != NULL)
+	{
+		cout << "preview successfully set" << endl;
+	}
+}
+
+void WaitingRoom::ClearPreview()
+{
+	if (ts_preview != NULL)
+	{
+		DestroyTileset(ts_preview);
+		ts_preview = NULL;
+	}
 }
 
 void WaitingRoom::OpenPopup()

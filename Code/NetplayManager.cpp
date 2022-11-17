@@ -213,6 +213,7 @@ void NetplayManager::Abort()
 	receivedGameStartSignal = false;
 	receivedStartGGPOSignal = false;
 	receivedMap = false;
+	receivedPreview = false;
 }
 
 void NetplayManager::UpdateNetplayPlayers()
@@ -263,15 +264,8 @@ void NetplayManager::UpdateNetplayPlayers()
 		++memberIndex;
 	}
 
-	for (int i = 0; i < numPlayers; ++i)
-	{
-		netplayPlayers[i].isHost = false;
-		if (GetHostID() == netplayPlayers[i].id)
-		{
-			netplayPlayers[i].isHost = true;
-			break;
-		}
-	}
+
+	SetHost();
 }
 
 void NetplayManager::StartConnecting()
@@ -613,6 +607,7 @@ void NetplayManager::Update()
 					netplayPlayers[index].name = (*it).name;
 					++index;
 				}*/
+
 
 				LeaveLobby();
 				SendSignalToHost(UdpMsg::Game_Client_Done_Connecting);
@@ -1460,13 +1455,13 @@ void NetplayManager::SendPreviewToClient(HSteamNetConnection connection, boost::
 		tempBuffer[i] = data[i];
 	}
 
-	cout << "done building buffer for sending map" << endl;
+	cout << "done building buffer for sending preview" << endl;
 
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "succeeded in sending map" << endl;
+		cout << "succeeded in sending preview" << endl;
 		//Log("sent packet length %d to %d. res: %d\n", len, p_connection, res);
 	}
 	else
@@ -1484,6 +1479,38 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	uint8 hdrType = msg->hdr.type;
 	switch (hdrType)
 	{
+	case UdpMsg::Game_Client_Needs_Preview:
+	{
+		cout << "client needs preview" << endl;
+		if (IsHost())
+		{
+			boost::filesystem::path previewPath = matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
+
+			try
+			{
+				if (boost::filesystem::exists(previewPath))
+				{
+					SendPreviewToClient(connection, previewPath);
+					cout << "previewPath: " << previewPath << endl;
+				}
+				else
+				{
+					cout << "preview cant be sent as it doesnt exist" << endl;
+				}
+			}
+			catch (boost::filesystem::filesystem_error &e)
+			{
+
+			}
+
+			
+		}
+		else
+		{
+			assert(0);
+		}
+		break;
+	}
 	case UdpMsg::Game_Client_Done_Connecting:
 	{
 		if (IsHost())
@@ -1613,7 +1640,7 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	}
 	case UdpMsg::Game_Preview:
 	{
-		assert(!IsHost() && mapDownloadFilePath != "");
+		//assert(!IsHost() && mapDownloadFilePath != "");
 
 		char *previewBinary = (char*)steamMsgData + sizeof(UdpMsg);
 		int sizeofPreview = steamMsg->GetSize() - sizeof(UdpMsg);
@@ -1626,6 +1653,9 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		fwrite(previewBinary, 1, sizeofPreview, file);
 		fclose(file);
 		cout << "finished saving preview: " << previewPath << endl;
+
+		action = A_IDLE;
+		receivedPreview = true;
 		break;
 	}
 	}
@@ -1733,4 +1763,10 @@ void NetplayManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 		}
 		
 	}
+}
+
+void NetplayManager::RequestPreviewFromHost()
+{
+	SendSignalToHost(UdpMsg::Game_Client_Needs_Preview);
+	action = A_WAIT_FOR_PREVIEW;
 }
