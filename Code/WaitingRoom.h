@@ -7,6 +7,26 @@
 #include "steam/steam_api.h"
 #include "Tileset.h"
 
+struct WaitingRoom;
+struct PlayerBox
+{
+	HyperLink *playerName;
+	int index;
+	sf::Vector2i topLeft;
+	sf::Vertex bgQuad[4];
+	WaitingRoom *waitingRoom;
+
+	void Init(WaitingRoom *wr, int index );
+	void Draw(sf::RenderTarget *target);
+	void SetName(const std::string &name);
+	void Show();
+	void Hide();
+	void SetTopLeft(sf::Vector2i &pos);
+private:
+	bool show;
+	std::string playerNameStr;
+};
+
 struct WaitingRoom : GUIHandler, TilesetManager
 {
 	enum Action
@@ -23,12 +43,22 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	Panel *panel;
 	Button *startButton;
 	Button *leaveButton;
+
+	int playerBoxWidth;
+	int playerBoxHeight;
+	int playerBoxSpacing;
 	
-	TextChooseRect *memberNameRects[4];
+	//PlayerBox players[4];
+	PlayerBox playerBoxes[4];
+	//TextChooseRect *memberNameRects[4];
+
 	CSteamID ownerID;
 
 	Tileset *ts_preview;
 	sf::Vertex previewQuad[4];
+	sf::Vector2f previewBottomLeft;
+
+	int maxPlayers;
 
 
 	WaitingRoom();
@@ -38,6 +68,7 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	void OpenPopup();
 	void ClosePopup();
 	void SetPreview(const std::string &previewPath);
+	void SetMaxPlayers(int n);
 	void SetAction(Action a);
 	bool HandleEvent(sf::Event ev);
 	void UpdateMemberList();

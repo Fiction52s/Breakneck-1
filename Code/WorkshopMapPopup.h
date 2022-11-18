@@ -6,7 +6,6 @@
 #include <string>
 
 struct MapHeader;
-struct LobbyParams;
 struct MapNode;
 
 struct WorkshopMapPopup : GUIHandler

@@ -8,7 +8,6 @@
 #include "Tileset.h"
 
 struct MapHeader;
-struct LobbyParams;
 struct MapNode;
 
 struct MapPublishPopup : GUIHandler, TilesetManager, PanelUpdater

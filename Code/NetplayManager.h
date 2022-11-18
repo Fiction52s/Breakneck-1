@@ -172,7 +172,7 @@ struct NetplayManager
 	void SendMapToClient(HSteamNetConnection connection, boost::filesystem::path &p);
 	void SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p);
 
-	void TryCreateCustomLobby(LobbyParams &lp);
+	void TryCreateCustomLobby(LobbyData &ld);
 	void RequestPreviewFromHost();
 
 	void BroadcastMapDetailsToLobby();

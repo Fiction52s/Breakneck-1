@@ -6,11 +6,73 @@
 using namespace std;
 using namespace sf;
 
+void PlayerBox::Init(WaitingRoom *wr, int p_index)
+{
+	index = p_index;
+
+	playerNameStr = "";
+	playerName = wr->panel->AddHyperLink("p" + to_string(index) + "link", Vector2i( 0, 0 ), 30, "", "");
+
+	waitingRoom = wr;
+
+	SetRectColor(bgQuad, Color::Red);
+
+	SetTopLeft(Vector2i(0, 0));//Vector2i(100, 700) + Vector2i(index * (spacing + width), 0));
+
+	Show();
+}
+void PlayerBox::Show()
+{
+	show = true;
+	playerName->SetString(playerNameStr);
+	SetTopLeft(topLeft);
+}
+void PlayerBox::Hide()
+{
+	show = false;
+	playerName->SetString("");
+}
+
+void PlayerBox::SetTopLeft(sf::Vector2i &pos)
+{
+	topLeft = pos;
+
+	Vector2i centerX(topLeft.x + waitingRoom->playerBoxWidth / 2, topLeft.y + waitingRoom->playerBoxHeight / 2);
+
+	Vector2i namePos(waitingRoom->playerBoxWidth / 2, 0);
+
+	SetRectTopLeft(bgQuad, waitingRoom->playerBoxWidth, waitingRoom->playerBoxHeight, Vector2f(topLeft));
+
+	playerName->SetPos(pos + namePos);
+	auto &bounds = playerName->text.getLocalBounds();
+	playerName->SetPos(Vector2i(playerName->pos.x - (bounds.left + bounds.width / 2), playerName->pos.y));
+}
+
+void PlayerBox::SetName(const std::string &name)
+{
+	playerNameStr = name;
+
+	if (show)
+	{
+		playerName->SetString(playerNameStr);
+		SetTopLeft(topLeft);
+	}
+}
+
+void PlayerBox::Draw(sf::RenderTarget *target)
+{
+	if (!show)
+		return;
+
+	target->draw(bgQuad, 4, sf::Quads);
+}
+
 WaitingRoom::WaitingRoom()
 {
 	TilesetManager::SetGameResourcesMode(false);
 
-	panel = new Panel("waitingroom", 1000, 500, this, true);
+	panel = new Panel("waitingroom", 1920, 1080, this, true);
+	panel->SetColor(Color::Transparent);
 	panel->SetCenterPos(Vector2i(960, 540));
 
 	startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
@@ -18,21 +80,36 @@ WaitingRoom::WaitingRoom()
 
 	panel->ReserveTextRects(4);
 
-	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));
+
+
+
+	//panel->SetAutoSpacing(true, false, Vector2i(10, 500), Vector2i(0, 20));
 	for (int i = 0; i < 4; ++i)
 	{
-		memberNameRects[i] = panel->AddTextRect(ChooseRect::I_LOBBY_MEMBER, Vector2f(), sf::Vector2f(200, 40), "");
-		memberNameRects[i]->Init();
-		memberNameRects[i]->SetShown(false);
+		playerBoxes[i].Init(this, i);
+		//players[i].playerName = panel->AddHyperLink("p" + to_string(i) + "link", Vector2i(0, 0), 30, "", "");
+		//memberNameRects[i] = panel->AddTextRect(ChooseRect::I_LOBBY_MEMBER, Vector2f(), sf::Vector2f(200, 40), "");
+		//memberNameRects[i]->Init();
+		//memberNameRects[i]->SetShown(false);
 
 	}
+
+	Vector2f previewSize(912, 492);
+	Vector2f previewPos(960 - previewSize.x / 2, 200);
+	SetRectTopLeft(previewQuad, previewSize.x, previewSize.y, previewPos);
+
+	previewBottomLeft = previewPos + Vector2f(0, previewSize.y);
+
 	panel->StopAutoSpacing();
 
 	panel->SetCancelButton(leaveButton);
 
 	ts_preview = NULL;
 
-	SetRectCenter(previewQuad, 912, 492, Vector2f(960, 540));
+	playerBoxWidth = 300;
+	playerBoxHeight = 300;
+	playerBoxSpacing = 100;
+	
 }
 
 WaitingRoom::~WaitingRoom()
@@ -84,6 +161,11 @@ void WaitingRoom::Update()
 
 void WaitingRoom::Draw(sf::RenderTarget *target)
 {
+	for (int i = 0; i < 4; ++i)
+	{
+		playerBoxes[i].Draw(target);
+	}
+
 	panel->Draw(target);
 	
 	if (ts_preview != NULL)
@@ -123,6 +205,48 @@ void WaitingRoom::ClearPreview()
 	}
 }
 
+void WaitingRoom::SetMaxPlayers(int n)
+{
+	maxPlayers = n;
+
+	for (int i = maxPlayers; i < 4; ++i)
+	{
+		playerBoxes[i].Hide();
+	}
+
+	Vector2i left(960, previewBottomLeft.y + 50);//150
+	if (maxPlayers % 2 == 0)
+	{
+		left.x -= playerBoxSpacing / 2 + playerBoxWidth + (playerBoxSpacing + playerBoxWidth) * (maxPlayers / 2 - 1);
+	}
+	else
+	{
+		left.x -= playerBoxWidth / 2 + (playerBoxSpacing + playerBoxWidth) * (maxPlayers / 2);
+	}
+
+	//left + Vector2f(nodeSize / 2, 0) + Vector2f((pathLen + nodeSize) * node, 0);
+	for (int i = 0; i < maxPlayers; ++i)
+	{
+		playerBoxes[i].SetTopLeft(left + Vector2i((playerBoxSpacing + playerBoxWidth) * i, 0));
+		playerBoxes[i].Show();
+	}
+
+	/*Vector2i centerOrigin(960, previewBottomLeft.y + 100);
+	if (maxPlayers == 2)
+	{
+		playerBoxes[0].SetTopLeft(centerOrigin + Vector2i(-playerBoxSpacing / 2 - playerBoxWidth, 0));
+		playerBoxes[1].SetTopLeft(centerOrigin + Vector2i(playerBoxSpacing / 2 , 0));
+	}
+	else if (maxPlayers == 3)
+	{
+		playerBoxes[0].SetTopLeft(centerOrigin + Vector2i(-playerBoxWidth, 0));
+		playerBoxes[1].SetTopLeft(centerOrigin + Vector2i(playerBoxSpacing / 2, 0));
+		playerBoxes[1].SetTopLeft(centerOrigin + Vector2i(playerBoxSpacing / 2, 0));
+	}*/
+	
+	//Vector2i(100, 700) + Vector2i(index * (spacing + width), 0));
+}
+
 void WaitingRoom::OpenPopup()
 {
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -132,6 +256,10 @@ void WaitingRoom::OpenPopup()
 	netplayManager->lobbyManager->currWaitingRoom = this;
 
 	startButton->HideMember();
+
+	SetMaxPlayers(netplayManager->lobbyManager->currentLobby.data.maxMembers);
+
+	//SetMaxPlayers(netplayManager->lobbyManager);
 
 	UpdateMemberList();
 
@@ -207,8 +335,9 @@ void WaitingRoom::UpdateMemberList()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		memberNameRects[i]->SetShown(false);
-
+	//	memberNameRects[i]->SetShown(false);
+		playerBoxes[i].playerName->SetLinkURL("");
+		playerBoxes[i].playerName->SetString("");
 	}
 
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
@@ -217,8 +346,10 @@ void WaitingRoom::UpdateMemberList()
 	for (auto it = memberList.begin();
 		it != memberList.end(); ++it)
 	{
-		memberNameRects[index]->SetText((*it).name);
-		memberNameRects[index]->SetShown(true);
+		playerBoxes[index].playerName->SetLinkURL("https://steamcommunity.com/profiles/" + to_string((*it).id.ConvertToUint64()));
+		playerBoxes[index].SetName((*it).name);
+		//memberNameRects[index]->SetText((*it).name);
+		//memberNameRects[index]->SetShown(true);
 		++index;
 	}
 }

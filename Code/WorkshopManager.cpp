@@ -18,6 +18,7 @@ WorkshopManager::WorkshopManager()
 {
 	queryType = Q_TEST;
 	queryState = QS_NOT_QUERYING;
+	queryResults = NULL;
 }
 
 void WorkshopManager::OnItemUpdatesSubmitted(SubmitItemUpdateResult_t *callback)
@@ -39,6 +40,11 @@ void WorkshopManager::OnPersonaStateChange(PersonaStateChange_t *callback)
 {
 	if (callback->m_nChangeFlags & k_EPersonaChangeName)
 	{
+		if (queryResults == NULL)
+		{
+			return;
+		}
+
 		for (auto it = queryResults->begin(); it != queryResults->end(); ++it)
 		{
 			if ((*it)->creatorId == callback->m_ulSteamID)

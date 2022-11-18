@@ -46,7 +46,7 @@ MapOptionsPopup::MapOptionsPopup()
 	chosenGameModeType = MatchParams::GAME_MODE_FIGHT;
 
 	currMapHeader = new MapHeader;
-	currLobbyParams = new LobbyParams;
+	currLobbyData = new LobbyData;
 
 	gameModeOptions.reserve(MatchParams::GAME_MODE_Count);
 
@@ -112,7 +112,7 @@ MapOptionsPopup::~MapOptionsPopup()
 {
 	delete panel;
 	delete currMapHeader;
-	delete currLobbyParams;
+	delete currLobbyData;
 }
 
 void MapOptionsPopup::Update()
@@ -135,13 +135,13 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 {
 	if( b == createLobbyHostButton )
 	{
-		currLobbyParams->randSeed = time(0);
-		currLobbyParams->creatorID = currMapHeader->creatorID;
+		currLobbyData->randSeed = time(0);
+		currLobbyData->creatorId = currMapHeader->creatorID;
 		//currLobbyParams->maxMembers = 2;
-		currLobbyParams->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
-		currLobbyParams->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
+		currLobbyData->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
+		currLobbyData->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
 
-		cout << "game mode confirmed as: " << currLobbyParams->gameModeType << endl;
+		cout << "game mode confirmed as: " << currLobbyData->gameModeType << endl;
 
 		action = A_HOST;
 	}
@@ -166,13 +166,19 @@ void MapOptionsPopup::CancelCallback(Panel *p)
 
 bool MapOptionsPopup::Activate(MapNode *mp)
 {
+	// set the name of the lobby if it's ours
+	string lobbyName = SteamFriends()->GetPersonaName();
+	lobbyName += "'s lobby";
+
+	currLobbyData->lobbyName = lobbyName;
+
 	if (mp->isWorkshop)
 	{
-		currLobbyParams->mapPath = mp->filePath.string();
+		currLobbyData->mapPath = mp->filePath.string();
 	}
 	else
 	{
-		currLobbyParams->mapPath = boost::filesystem::relative(mp->filePath).string();
+		currLobbyData->mapPath = boost::filesystem::relative(mp->filePath).string();
 	}
 
 	ts_preview = mp->ts_preview;
@@ -238,12 +244,12 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 
 	std::ifstream is;
-	is.open(currLobbyParams->mapPath);
+	is.open(currLobbyData->mapPath);
 
 	assert(is.is_open());
 	std::string content((std::istreambuf_iterator<char>(is)),
 		(std::istreambuf_iterator<char>()));
-	currLobbyParams->fileHash = md5(content);
+	currLobbyData->fileHash = md5(content);
 
 	is.clear();
 	is.seekg(0, ios::beg);
@@ -322,8 +328,8 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 	//numPlayersDropdown = panel->AddDropdown( "numplayersdropdown", Vector2f( 0, 0 ), Vector2f( 50, 28 ), 
 
-	currLobbyParams->isWorkshopMap = mp->isWorkshop;
-	currLobbyParams->publishedFileId = mp->publishedFileId;
+	currLobbyData->isWorkshopMap = mp->isWorkshop;
+	currLobbyData->publishedFileId = mp->publishedFileId;
 
 	action = A_ACTIVE;
 

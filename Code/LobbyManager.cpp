@@ -6,6 +6,72 @@
 
 using namespace std;
 
+bool LobbyData::Update( CSteamID lobbyId )
+{
+	lobbyName = SteamMatchmaking()->GetLobbyData(lobbyId, "name");
+
+	if (lobbyName == "")
+	{
+		return false;
+	}
+
+	mapPath = SteamMatchmaking()->GetLobbyData(lobbyId, "mapPath");
+
+	fileHash = SteamMatchmaking()->GetLobbyData(lobbyId, "fileHash");
+
+	string gameModeTypeStr = SteamMatchmaking()->GetLobbyData(lobbyId, "gameModeType");
+	gameModeType = stoi(gameModeTypeStr);
+
+	string receivedIsWorkshopModeStr = SteamMatchmaking()->GetLobbyData(lobbyId, "isWorkshop");
+	isWorkshopMap = (receivedIsWorkshopModeStr == "true");
+
+	string receivedRandSeedStr = SteamMatchmaking()->GetLobbyData(lobbyId, "randSeed");
+	randSeed = stoi(receivedRandSeedStr);
+
+	string maxMembersStr = SteamMatchmaking()->GetLobbyData(lobbyId, "maxMembers");
+	maxMembers = stoi(maxMembersStr);
+	
+	string creatorIdStr = SteamMatchmaking()->GetLobbyData(lobbyId, "creatorID");
+	creatorId = stoll(creatorIdStr);
+
+	return true;
+}
+
+void LobbyData::SetLobbyData(CSteamID lobbyId)
+{
+	SteamMatchmaking()->SetLobbyData(lobbyId, "name", lobbyName.c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "mapPath", mapPath.c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "fileHash", fileHash.c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "gameModeType", to_string(gameModeType).c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "randSeed", to_string(randSeed).c_str());
+
+	SteamMatchmaking()->SetLobbyData(lobbyId, "maxMembers", to_string(maxMembers).c_str());
+
+	//string isWorkshopStr = //to_string((int)paramsForMakingLobby.isWorkshopMap);
+	if (isWorkshopMap)
+	{
+		SteamMatchmaking()->SetLobbyData(lobbyId, "isWorkshop", "true");
+		SteamMatchmaking()->SetLobbyData(lobbyId, "publishedFileId", to_string(publishedFileId).c_str());
+	}
+	else
+	{
+		SteamMatchmaking()->SetLobbyData(lobbyId, "isWorkshop", "false");
+	}
+
+	string creatorIDStr = to_string(creatorId);
+	SteamMatchmaking()->SetLobbyData(lobbyId, "creatorID", creatorIDStr.c_str());
+}
+
+void Lobby::Set(CSteamID p_lobbyId)
+{
+	m_steamIDLobby = p_lobbyId;
+	data.SetLobbyData(m_steamIDLobby);
+}
+
 LobbyManager::LobbyManager()
 {
 	action = A_IDLE;
@@ -13,13 +79,13 @@ LobbyManager::LobbyManager()
 	currWaitingRoom = NULL;
 }
 
-void LobbyManager::TryCreatingLobby(LobbyParams &lp)
+void LobbyManager::TryCreatingLobby(LobbyData &ld)
 {
 	if (!m_SteamCallResultLobbyCreated.IsActive())
 	{
-		paramsForMakingLobby = lp;
+		currentLobby.data = ld;
 
-		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, paramsForMakingLobby.maxMembers);
+		SteamAPICall_t hSteamAPICall = SteamMatchmaking()->CreateLobby(k_ELobbyTypePublic, currentLobby.data.maxMembers);
 		m_SteamCallResultLobbyCreated.Set(hSteamAPICall, this, &LobbyManager::OnLobbyCreated);
 		action = A_REQUEST_CREATE_LOBBY;
 		cout << "attempting to create lobby" << endl;
@@ -39,46 +105,10 @@ void LobbyManager::OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure)
 	if (pCallback->m_eResult == k_EResultOK)
 	{
 		// success
-		currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
-		//currentLobby.createdByMe = true;
+		currentLobby.Set(pCallback->m_ulSteamIDLobby);
 
-		// set the name of the lobby if it's ours
-		string lobbyName = SteamFriends()->GetPersonaName();
-		lobbyName += "'s lobby";
-
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "name", lobbyName.c_str());
-
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "mapPath", paramsForMakingLobby.mapPath.c_str());
-
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "fileHash", paramsForMakingLobby.fileHash.c_str());
-
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "gameModeType", to_string(paramsForMakingLobby.gameModeType).c_str());
-
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "randSeed", to_string(paramsForMakingLobby.randSeed).c_str());
-
-
-
-		//string isWorkshopStr = //to_string((int)paramsForMakingLobby.isWorkshopMap);
-		if (paramsForMakingLobby.isWorkshopMap)
-		{
-			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "isWorkshop", "true");
-			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "publishedFileId", to_string(paramsForMakingLobby.publishedFileId).c_str());
-		}
-		else
-		{
-			SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "isWorkshop", "false");
-		}
-
-		string creatorIDStr = to_string(paramsForMakingLobby.creatorID);
-		SteamMatchmaking()->SetLobbyData(currentLobby.m_steamIDLobby, "creatorID", creatorIDStr.c_str());
-
-
-		//SteamMatchmaking()->RequestLobbyData(currentLobby.m_steamIDLobby);
-
-		//use to set params paramsForMakingLobby
-
-		cout << "created: " << lobbyName << " successfully. map path: " << paramsForMakingLobby.mapPath  << endl;
-		cout << "creatorID: " << creatorIDStr << endl;
+		cout << "created: " << currentLobby.data.lobbyName << " successfully. map path: " << currentLobby.data.mapPath  << endl;
+		//cout << "creatorID: " << creatorIDStr << endl;
 
 		action = A_IN_LOBBY;
 
@@ -107,7 +137,7 @@ void LobbyManager::PrintLobbies()
 	cout << "printing lobbies" << endl;
 	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 	{
-		cout << index << ": " << (*it).name << endl;
+		cout << index << ": " << (*it).data.lobbyName << endl;
 		++index;
 	}
 }
@@ -154,12 +184,18 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 			if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 			{
 				(*it).dataIsRetrieved = true;
+				(*it).data.Update((*it).m_steamIDLobby);
 				cout << "data received for lobby!" << endl;
 
-				if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
+				if (IsAllLobbyDataReceived() && action == A_FOUND_LOBBIES_WAITING_FOR_DATA)
 				{
-					action = A_IN_LOBBY;
+					action = A_FOUND_LOBBIES;
 				}
+
+				//if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
+				//{
+				//	action = A_IN_LOBBY;
+				//}
 				break;
 			}
 		}
@@ -223,7 +259,7 @@ void LobbyManager::TryJoiningLobby( int lobbyIndex )
 {
 	action = A_REQUEST_JOIN_LOBBY;
 
-	cout << "found a lobby. Attempting to join: " << lobbyVec[lobbyIndex].name << endl;
+	cout << "found a lobby. Attempting to join: " << lobbyVec[lobbyIndex].data.lobbyName << endl;
 	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[lobbyIndex].m_steamIDLobby);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
@@ -240,6 +276,17 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 		return;
 	}
 
+	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+	{
+		if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
+		{
+			currentLobby = (*it);
+			cout << "joined lobby: " << (*it).data.lobbyName << " successfully" << endl;
+			break;
+		}
+	}
+
+
 	if (currentLobby.dataIsRetrieved)
 	{
 		action = A_IN_LOBBY;
@@ -253,34 +300,38 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 	
 
 	// move forward the state
-	currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
+	//currentLobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
 
-	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+	/*for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 	{
 		if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 		{
 			currentLobby = (*it);
-			cout << "joined lobby: " << (*it).name << " successfully" << endl;
+			cout << "joined lobby: " << (*it).data.lobbyName << " successfully" << endl;
 			break;
 		}
-	}
+	}*/
 }
 
 void LobbyManager::ProcessLobbyList()
 {
 	if (lobbyVec.empty())
 	{
-		/*LobbyParams lp;
-		lp.maxMembers = 2;
-
-		TryCreatingLobby(lp);*/
-
 		action = A_FOUND_NO_LOBBIES;
 	}
 	else
 	{
 		PrintLobbies();
-		action = A_FOUND_LOBBIES;
+
+		if (IsAllLobbyDataReceived())
+		{
+			action = A_FOUND_LOBBIES;
+		}
+		else
+		{
+			action = A_FOUND_LOBBIES_WAITING_FOR_DATA;
+		}
+		
 		//TryJoiningLobby();
 	}
 }
@@ -334,27 +385,48 @@ void LobbyManager::OnLobbyMatchListCallback(LobbyMatchList_t *pCallback, bool bI
 		lobby.m_steamIDLobby = steamIDLobby;
 
 		// pull the name from the lobby metadata
-		const char *pchLobbyName = SteamMatchmaking()->GetLobbyData(steamIDLobby, "name");
-		if (pchLobbyName && pchLobbyName[0])
+
+		if (lobby.data.Update(steamIDLobby))
 		{
-			lobby.name = pchLobbyName;
+			lobby.dataIsRetrieved = true;
+			//lobby.name = "Lobby " + to_string(steamIDLobby.GetAccountID());
 		}
 		else
 		{
-			// we don't have info about the lobby yet, request it
-			//need to figure out how to use this!
 			SteamMatchmaking()->RequestLobbyData(steamIDLobby);
-
-			//lobby.
-			lobby.name = "Lobby " + to_string(steamIDLobby.GetAccountID());
-			// results will be returned via LobbyDataUpdate_t callback
 		}
+		//const char *pchLobbyName = SteamMatchmaking()->GetLobbyData(steamIDLobby, "name");
+		//if (pchLobbyName && pchLobbyName[0])
+		//{
+		//	lobby.data.name = pchLobbyName;
+		//}
+		//else
+		//{
+		//	// we don't have info about the lobby yet, request it
+		//	//need to figure out how to use this!
+		//	SteamMatchmaking()->RequestLobbyData(steamIDLobby);
+
+		//	//lobby.
+		//	lobby.name = "Lobby " + to_string(steamIDLobby.GetAccountID());
+		//	// results will be returned via LobbyDataUpdate_t callback
+		//}
 
 		lobbyVec.push_back(lobby);
 		
 	}
 
 	ProcessLobbyList();
+}
+
+bool LobbyManager::IsAllLobbyDataReceived()
+{
+	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+	{
+		if (!(*it).dataIsRetrieved)
+			return false;
+	}
+
+	return true;
 }
 
 bool LobbyManager::CurrentLobbyHasMaxMembers()

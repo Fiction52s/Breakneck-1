@@ -317,38 +317,31 @@ void NetplayManager::StartConnecting()
 	boost::filesystem::path receivedMapPath;
 	string receivedCreatorIDStr;
 
-	receivedMapPath = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "mapPath");
+	//possibly just clean this up even more later
+	LobbyData &lobbyData = lobbyManager->currentLobby.data;
 
-	mapDownloadReceivedHash = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "fileHash");
+	receivedMapPath = lobbyData.mapPath;
 
-	string receivedGameModeTypeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "gameModeType");
+	mapDownloadReceivedHash = lobbyData.fileHash;
 
-	string receivedIsWorkshopModeStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "isWorkshop");
-
-	string receivedRandSeedStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "randSeed");
-
-	matchParams.randSeed = stoi(receivedRandSeedStr);
+	matchParams.gameModeType = lobbyData.gameModeType;
+	matchParams.randSeed = lobbyData.randSeed;
 
 	receivedMapName = receivedMapPath.stem().string();
 
-	if (receivedIsWorkshopModeStr == "true")
+	if (lobbyData.isWorkshopMap)
 	{
 		checkWorkshopMap = true;
-
-		string receivedPublishedFileIdStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "publishedFileId");
-		workshopDownloadPublishedFileId = stoll(receivedPublishedFileIdStr);
+		workshopDownloadPublishedFileId = lobbyData.publishedFileId;
 	}
 	else
 	{
-		receivedCreatorIDStr = SteamMatchmaking()->GetLobbyData(lobbyManager->currentLobby.m_steamIDLobby, "creatorID");
-		
+		receivedCreatorIDStr = to_string(lobbyData.creatorId);
 	}
-
-	int receivedGameModeType = stoi(receivedGameModeTypeStr);
 
 	bool mapVerified = false;
 
-	matchParams.gameModeType = receivedGameModeType;
+	
 
 	if (IsHost())
 	{
@@ -539,10 +532,10 @@ void NetplayManager::Update()
 		}
 		else if (lobbyManager->action == LobbyManager::A_FOUND_NO_LOBBIES)
 		{
-			LobbyParams lp;
-			lp.maxMembers = 2;
+			LobbyData ld;
+			ld.maxMembers = 2;
 			//lp.gameModeType = MatchParams::GAME_MODE_FIGHT;
-			lp.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
+			ld.gameModeType = MatchParams::GAME_MODE_PARALLEL_RACE;//MatchParams::GAME_MODE_RACE;
 
 			/*int r = rand() % 2;
 			if (r == 0)
@@ -553,13 +546,20 @@ void NetplayManager::Update()
 			{
 				lp.mapPath = "Resources/Maps/W2/afighting2.brknk";
 			}*/
-			lp.mapPath = "Resources/Maps/W2/afighting6.brknk";
 
-			lp.fileHash = md5file(lp.mapPath);
-			lp.creatorID = 0;
-			lp.randSeed = time(0);
+			// set the name of the lobby if it's ours
+			string lobbyName = SteamFriends()->GetPersonaName();
+			lobbyName += "'s lobby";
 
-			lobbyManager->TryCreatingLobby(lp);
+			ld.lobbyName = lobbyName;
+
+			ld.mapPath = "Resources/Maps/W2/afighting6.brknk";
+
+			ld.fileHash = md5file(ld.mapPath);
+			ld.creatorId = 0;
+			ld.randSeed = time(0);
+
+			lobbyManager->TryCreatingLobby(ld);
 			action = A_QUICKPLAY_GATHERING_USERS;
 		}
 		break;
@@ -1745,9 +1745,9 @@ void NetplayManager::DumpDesyncInfo()
 	}
 }
 
-void NetplayManager::TryCreateCustomLobby(LobbyParams &lp)
+void NetplayManager::TryCreateCustomLobby(LobbyData &ld)
 {
-	lobbyManager->TryCreatingLobby(lp);
+	lobbyManager->TryCreatingLobby(ld);
 	action = A_CUSTOM_HOST_GATHERING_USERS;
 }
 

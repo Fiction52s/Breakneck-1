@@ -9,7 +9,6 @@
 #include "steam/isteamremotestorage.h"
 
 struct MapHeader;
-struct LobbyParams;
 struct MapNode;
 
 struct MapPublishLoadingPopup : GUIHandler, TilesetManager, PanelUpdater

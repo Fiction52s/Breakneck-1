@@ -6,7 +6,7 @@
 #include <string>
 
 struct MapHeader;
-struct LobbyParams;
+struct LobbyData;
 struct MapNode;
 
 struct MapOptionsPopup : GUIHandler
@@ -39,7 +39,7 @@ struct MapOptionsPopup : GUIHandler
 
 
 	MapHeader *currMapHeader;
-	LobbyParams *currLobbyParams;
+	LobbyData *currLobbyData;
 
 	int chosenGameModeType;
 	std::string mapPath;

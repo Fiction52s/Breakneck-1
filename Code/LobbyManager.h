@@ -24,42 +24,47 @@ struct LobbyMember
 	}
 };
 
+struct LobbyData
+{
+	LobbyData()
+	{
+		gameModeType = 0;
+		isWorkshopMap = false;
+		randSeed = 0;
+		maxMembers = 0;
+		publishedFileId = 0;
+		creatorId = 0;
+	}
+
+	std::string lobbyName;
+	std::string mapPath;
+	std::string fileHash;
+	int gameModeType;
+	bool isWorkshopMap;
+	int randSeed;
+	int maxMembers;
+	uint64 publishedFileId;
+	uint64 creatorId;
+
+	bool Update( CSteamID lobbyId );
+	void SetLobbyData(CSteamID lobbyId);
+};
+
 struct Lobby
 {
 	Lobby()
 	{
 		m_steamIDLobby.Clear();
-		maxMembers = 0;
 		dataIsRetrieved = false;
 	}
+
+	void Set(CSteamID p_lobbyId);
+
 	CSteamID m_steamIDLobby;
-	//char m_rgchName[256];
-	std::string name;
-	//bool createdByMe;
-	int maxMembers;
+
+	LobbyData data;
 	std::list<LobbyMember> memberList;
 	bool dataIsRetrieved;
-};
-
-struct LobbyParams
-{
-	LobbyParams()
-	{
-		maxMembers = 0;
-		creatorID = 0;
-		gameModeType = 0;
-		isWorkshopMap = false;
-		publishedFileId = 0;
-		randSeed = 0;
-	}
-	int maxMembers;
-	std::string mapPath;
-	std::string fileHash;
-	uint64 creatorID;
-	int gameModeType;
-	bool isWorkshopMap;
-	int randSeed;
-	PublishedFileId_t publishedFileId;
 };
 
 struct LobbyManager
@@ -72,6 +77,7 @@ struct LobbyManager
 		A_IN_LOBBY,
 		A_REQUEST_LOBBY_LIST,
 		A_FOUND_LOBBIES,
+		A_FOUND_LOBBIES_WAITING_FOR_DATA,
 		A_FOUND_NO_LOBBIES,
 		A_REQUEST_JOIN_LOBBY,
 		A_ERROR,
@@ -86,7 +92,7 @@ struct LobbyManager
 	WaitingRoom *currWaitingRoom;
 	bool readyForGameStart;
 
-	LobbyParams paramsForMakingLobby;
+	LobbyData dataForMakingLobby;
 	Lobby currentLobby;
 
 	CCallResult<LobbyManager, LobbyCreated_t> m_SteamCallResultLobbyCreated;
@@ -97,8 +103,9 @@ struct LobbyManager
 
 	void PopulateLobbyList( CSteamID lobbyID );
 	void Update();
+	bool IsAllLobbyDataReceived();
 
-	void TryCreatingLobby(LobbyParams &lp);
+	void TryCreatingLobby(LobbyData &ld);
 	void TryJoiningLobby( int lobbyIndex );
 
 	void OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure);

@@ -10,7 +10,6 @@
 struct WorkshopManager;
 struct MapBrowser;
 struct MapHeader;
-struct LobbyParams;
 
 struct MapNode
 {

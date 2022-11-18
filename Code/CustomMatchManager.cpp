@@ -271,11 +271,11 @@ bool CustomMatchManager::Update()
 
 			SetAction(A_CREATING_LOBBY);
 
-			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyParams->mapPath << endl;
-			cout << "hash: " << mapOptionsPopup->currLobbyParams->fileHash << endl;
-			cout << "creatorID: " << mapOptionsPopup->currLobbyParams->creatorID << endl;
+			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
+			cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
+			cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
 
-			netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyParams);
+			netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyData);
 			//cout << "waiting room" << endl;
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
@@ -313,7 +313,7 @@ bool CustomMatchManager::Update()
 			SetAction(A_WAITING_ROOM);
 			netplayManager->connectionManager->CreateListenSocket();
 
-			boost::filesystem::path mapPath = mapOptionsPopup->currLobbyParams->mapPath;
+			boost::filesystem::path mapPath = mapOptionsPopup->currLobbyData->mapPath;
 			string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
 
 			netplayManager->previewPath = previewPath;

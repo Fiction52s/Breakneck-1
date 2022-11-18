@@ -98,7 +98,8 @@ void LobbyBrowser::Update()
 			SetAction(A_IN_LOBBY);
 		}
 		else if (lobbyManager->action != LobbyManager::A_IN_LOBBY_WAITING_FOR_DATA
-			&& lobbyManager->action != LobbyManager::A_REQUEST_JOIN_LOBBY)
+			&& lobbyManager->action != LobbyManager::A_REQUEST_JOIN_LOBBY
+			&& lobbyManager->action != LobbyManager::A_IN_LOBBY_WAITING_FOR_DATA)
 		{
 			if (lobbyManager->action == LobbyManager::A_IDLE)
 			{
@@ -265,6 +266,7 @@ void LobbyBrowser::PopulateRects()
 	LobbyManager *lobbyManager = MainMenu::GetInstance()->netplayManager->lobbyManager;
 
 	numEntries = lobbyManager->lobbyVec.size();
+
 	maxTopRow = numEntries - totalRects;
 	if (maxTopRow < 0)
 		maxTopRow = 0;
@@ -273,7 +275,7 @@ void LobbyBrowser::PopulateRects()
 	{
 		lcRect = lobbyRects[i - start];
 
-		lcRect->SetText(lobbyManager->lobbyVec[i].name);
+		lcRect->SetText(lobbyManager->lobbyVec[i].data.lobbyName);
 
 		lcRect->SetInfo((void*)i);
 
