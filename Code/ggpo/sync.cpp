@@ -258,7 +258,20 @@ Sync::FindSavedFrameIndex(int frame)
 bool
 Sync::CreateQueues(Config &config)
 {
-   delete [] _input_queues;
+	delete[] _input_queues;
+
+	//the issue here turned out to be that config.numplayers was not getting set correctly
+	if (_input_queues != NULL)
+	{
+		//i added this. weird crash. no idea why. it was trying to delete a null input_queue before making these at the start of a match
+		//absolutely no idea how this bug happened, but gonna put this here for now
+		
+	}
+	else
+	{
+		//std::cout << "_input_queues is NULL here, seems unintended" << std::endl;
+	}
+   
    _input_queues = new InputQueue[_config.num_players];
 
    for (int i = 0; i < _config.num_players; i++) {

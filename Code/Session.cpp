@@ -7068,6 +7068,10 @@ void Session::InitGGPO()
 
 	int numPlayers = matchParams.numPlayers;
 
+	if (numPlayers == -1)
+	{
+		assert(0);
+	}
 	//ifstream is;
 	//is.open("Resources/ggpotest.txt");
 	//is >> frameDelay;
@@ -7825,7 +7829,7 @@ void Session::SetFromBytes(unsigned char *bytes)
 bool Session::SaveState(unsigned char **buffer,
 	int *len, int *checksum, int frame)
 {
-	cout << "save state: " << totalGameFrames << endl;
+	//cout << "save state: " << totalGameFrames << endl;
 
 	*len = GetNumStoredBytes();
 	*buffer = (unsigned char *)malloc(*len);
@@ -7846,7 +7850,7 @@ bool Session::SaveState(unsigned char **buffer,
 
 bool Session::LoadState(unsigned char *bytes, int len)
 {
-	cout << "loading state: " << currSaveState->totalGameFrames << endl;
+	//cout << "loading state: " << currSaveState->totalGameFrames << endl;
 
 	int oldTotalGameFrames = totalGameFrames;
 

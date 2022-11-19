@@ -2,6 +2,7 @@
 #include "MainMenu.h"
 #include "NetplayManager.h"
 #include "LobbyManager.h"
+#include "MapHeader.h"
 
 using namespace std;
 using namespace sf;
@@ -80,8 +81,9 @@ WaitingRoom::WaitingRoom()
 
 	panel->ReserveTextRects(4);
 
+	mapHeader = NULL;
 
-
+	
 
 	//panel->SetAutoSpacing(true, false, Vector2i(10, 500), Vector2i(0, 20));
 	for (int i = 0; i < 4; ++i)
@@ -95,10 +97,19 @@ WaitingRoom::WaitingRoom()
 	}
 
 	Vector2f previewSize(912, 492);
-	Vector2f previewPos(960 - previewSize.x / 2, 200);
+	Vector2f previewPos(960 - previewSize.x / 2, 120);
+
+	
+
 	SetRectTopLeft(previewQuad, previewSize.x, previewSize.y, previewPos);
 
 	previewBottomLeft = previewPos + Vector2f(0, previewSize.y);
+
+	nameText = panel->AddLabel("namelabel", Vector2i(previewPos) + Vector2i(0, -100), 40, "");
+	nameText->setFillColor(Color::White);
+
+	descriptionText = panel->AddLabel("description", Vector2i(previewBottomLeft) + Vector2i(0, 20), 20, "");
+	descriptionText->setFillColor(Color::Red);
 
 	panel->StopAutoSpacing();
 
@@ -115,6 +126,12 @@ WaitingRoom::WaitingRoom()
 WaitingRoom::~WaitingRoom()
 {
 	delete panel;
+
+	if (mapHeader != NULL)
+	{
+		delete mapHeader;
+		mapHeader = NULL;
+	}
 }
 
 void WaitingRoom::Update()
@@ -125,20 +142,31 @@ void WaitingRoom::Update()
 	{
 	case A_WAITING_FOR_MEMBERS:
 	{
-		if (netplayManager->lobbyManager->GetNumMembers() == 2) //fix this later for more members
+		if (netplayManager->IsHost())
 		{
-			if (netplayManager->IsHost())
+			//fix this later. waiting room has the header and the lobby info, so we can figure out when the start button is valid.
+			if (netplayManager->lobbyManager->GetNumMembers() >= 2 && netplayManager->AllClientsHaveReceivedAllData())
 			{
 				startButton->ShowMember();
+				action = A_READY_TO_START;
 			}
-			action = A_READY_TO_START;
 		}
 		else
 		{
-			if (action == A_READY_TO_START)
+			if (netplayManager->previewPath != "" && ts_preview == NULL)
 			{
-				action = A_WAITING_FOR_MEMBERS;
-				startButton->HideMember();
+				SetPreview(netplayManager->previewPath.string());
+			}
+
+			if (netplayManager->matchParams.mapPath != "" && mapHeader == NULL)
+			{
+				UpdateMapHeader(netplayManager->matchParams.mapPath.string());
+			}
+
+			if (mapHeader != NULL && netplayManager->previewPath != "")
+			{
+				action = A_READY_TO_START;
+				netplayManager->SendReceivedAllDataSignalToHost();
 			}
 		}
 		break;
@@ -153,8 +181,6 @@ void WaitingRoom::Update()
 	}
 
 	}
-
-	
 
 	panel->MouseUpdate();
 }
@@ -171,6 +197,34 @@ void WaitingRoom::Draw(sf::RenderTarget *target)
 	if (ts_preview != NULL)
 	{
 		target->draw(previewQuad, 4, sf::Quads, ts_preview->texture);
+	}
+}
+
+void WaitingRoom::UpdateMapHeader( const std::string &mapPath )
+{
+	if (mapHeader != NULL)
+	{
+		delete mapHeader;
+		mapHeader = NULL;
+	}
+
+	ifstream is;
+	is.open(mapPath);
+
+	if (is.is_open())
+	{
+		mapHeader = new MapHeader;
+
+		mapHeader->Load(is);
+
+		descriptionText->setString(mapHeader->description);
+		nameText->setString(mapHeader->fullName);
+
+		is.close();
+	}
+	else
+	{
+		cout << "cannot update map header for waiting room. file at: " << mapPath << endl;
 	}
 }
 
@@ -214,7 +268,7 @@ void WaitingRoom::SetMaxPlayers(int n)
 		playerBoxes[i].Hide();
 	}
 
-	Vector2i left(960, previewBottomLeft.y + 50);//150
+	Vector2i left(960, previewBottomLeft.y + 100);//50);//150
 	if (maxPlayers % 2 == 0)
 	{
 		left.x -= playerBoxSpacing / 2 + playerBoxWidth + (playerBoxSpacing + playerBoxWidth) * (maxPlayers / 2 - 1);
@@ -260,6 +314,12 @@ void WaitingRoom::OpenPopup()
 	SetMaxPlayers(netplayManager->lobbyManager->currentLobby.data.maxMembers);
 
 	//SetMaxPlayers(netplayManager->lobbyManager);
+
+	if (mapHeader == NULL)
+	{
+		descriptionText->setString("");
+		nameText->setString("");
+	}
 
 	UpdateMemberList();
 

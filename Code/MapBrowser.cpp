@@ -51,6 +51,9 @@ MapNode::~MapNode()
 
 bool MapNode::IsSubscribed()
 {
+	if (!isWorkshop)
+		return true;
+
 	uint32 itemState = SteamUGC()->GetItemState(publishedFileId);
 
 	if ((itemState & k_EItemStateSubscribed))
@@ -63,6 +66,9 @@ bool MapNode::IsSubscribed()
 
 void MapNode::Subscribe()
 {
+	if (!isWorkshop)
+		return;
+
 	if (!IsSubscribed())
 	{
 		SteamAPICall_t call = SteamUGC()->SubscribeItem(publishedFileId);
@@ -73,6 +79,9 @@ void MapNode::Subscribe()
 
 void MapNode::Unsubscribe()
 {
+	if (!isWorkshop)
+		return;
+
 	if( IsSubscribed() )
 	{
 		SteamAPICall_t call = SteamUGC()->UnsubscribeItem(publishedFileId);

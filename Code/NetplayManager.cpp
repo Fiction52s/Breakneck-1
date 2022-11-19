@@ -29,6 +29,7 @@ void NetplayPlayer::Clear()
 	readyToRun = false;
 	isHost = false;
 	skinIndex = 0;
+	hasAllData = false;
 
 
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
@@ -213,7 +214,8 @@ void NetplayManager::Abort()
 	receivedGameStartSignal = false;
 	receivedStartGGPOSignal = false;
 	receivedMap = false;
-	receivedPreview = false;
+	waitingForMap = false;
+	waitingForPreview = false;
 }
 
 void NetplayManager::UpdateNetplayPlayers()
@@ -223,6 +225,8 @@ void NetplayManager::UpdateNetplayPlayers()
 	int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
 
 	numPlayers = numLobbyMembers;
+
+	matchParams.numPlayers = numPlayers; //always keep this synced up with numPlayers
 
 	int memberIndex = 0;
 	playerIndex = -1;
@@ -268,126 +272,96 @@ void NetplayManager::UpdateNetplayPlayers()
 	SetHost();
 }
 
-void NetplayManager::StartConnecting()
+bool NetplayManager::ClientCheckWorkshopMapInstalled()
 {
-	//int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
+	if (checkWorkshopMap)
+	{
+		MapNode mp;
+		mp.publishedFileId = workshopDownloadPublishedFileId;
+		mp.isWorkshop = true;
+		mp.fileName = receivedMapName;
 
-	//numPlayers = numLobbyMembers; //2
-	//assert(GetHostID() == lobbyManager->currentLobby.memberList.front().id);
-	//int memberIndex = 0;
-	//playerIndex = -1;
+		if (mp.CheckIfFullyInstalled())
+		{
+			checkWorkshopMap = false;
+			//mapVerified = true; //maybe verify hash later
+			matchParams.mapPath = mp.filePath;
+			previewPath = mp.filePath.parent_path().string() + "\\" + mp.filePath.stem().string() + ".png";
 
-	//HSteamNetConnection tempConnection;
-	//bool tempIsConnected;
-	//for (auto it = lobbyManager->currentLobby.memberList.begin(); it != lobbyManager->currentLobby.memberList.end(); ++it)
-	//{
-	//	tempIsConnected = netplayPlayers[memberIndex].isConnectedTo;
-	//	tempConnection = netplayPlayers[memberIndex].connection;
+			cout << "client fully installed workshop map" << endl;
 
-	//	netplayPlayers[memberIndex].Clear();
+			return true;
+		}
+	}
+	else
+	{
+		return true;
+	}
 
-	//	netplayPlayers[memberIndex].index = memberIndex;
-	//	netplayPlayers[memberIndex].id = (*it).id;
-	//	netplayPlayers[memberIndex].name = (*it).name;
+	return false;
+}
 
-	//	if (tempIsConnected)
-	//	{
-	//		netplayPlayers[memberIndex].isConnectedTo = tempIsConnected;
-	//		netplayPlayers[memberIndex].connection = tempConnection;
-	//		cout << "keeping old connection" << "\n";
-	//	}
-
-	//	if ((*it).id == GetMyID())
-	//	{
-	//		netplayPlayers[memberIndex].isMe = true;
-	//		playerIndex = memberIndex;
-	//	}
-
-	//	++memberIndex;
-	//}
-
-	cout << "start connecting" << endl;
-
-	UpdateNetplayPlayers();
-
+void NetplayManager::CheckForMapAndSetMatchParams()
+{
 	checkWorkshopMap = false;
 	workshopDownloadPublishedFileId = 0;
 	mapDownloadFilePath = "";
+	receivedMapName = "";
 
-	boost::filesystem::path receivedMapPath;
-	string receivedCreatorIDStr;
-
-	//possibly just clean this up even more later
 	LobbyData &lobbyData = lobbyManager->currentLobby.data;
-
-	receivedMapPath = lobbyData.mapPath;
-
-	mapDownloadReceivedHash = lobbyData.fileHash;
 
 	matchParams.gameModeType = lobbyData.gameModeType;
 	matchParams.randSeed = lobbyData.randSeed;
-
-	receivedMapName = receivedMapPath.stem().string();
-
-	if (lobbyData.isWorkshopMap)
-	{
-		checkWorkshopMap = true;
-		workshopDownloadPublishedFileId = lobbyData.publishedFileId;
-	}
-	else
-	{
-		receivedCreatorIDStr = to_string(lobbyData.creatorId);
-	}
-
-	bool mapVerified = false;
-
-	
+	//matchParams.numPlayers = numPlayers;
 
 	if (IsHost())
 	{
-		if (checkWorkshopMap)
-		{
-			MapNode mp;
-			mp.publishedFileId = workshopDownloadPublishedFileId;
-			mp.isWorkshop = true;
-			mp.fileName = receivedMapName;
-
-			if (mp.CheckIfFullyInstalled())
-			{
-				matchParams.mapPath = mp.filePath;
-			}
-			else
-			{
-				assert(0);
-			}
-		}
-		else
-		{
-			mapVerified = true;
-			matchParams.mapPath = receivedMapPath;
-		}
-
-		
-
-		cout << "host setting mapPath to: " << matchParams.mapPath << endl;
+		matchParams.mapPath = lobbyData.mapPath;
+		//for host, is preview already set?
 	}
 	else
 	{
+		
+
+		boost::filesystem::path receivedMapPath = lobbyData.mapPath;
+		string receivedCreatorIDStr;
+		receivedMapName = receivedMapPath.stem().string();
+		mapDownloadReceivedHash = lobbyData.fileHash;
+
+		if (lobbyData.isWorkshopMap)
+		{
+			checkWorkshopMap = true;
+			workshopDownloadPublishedFileId = lobbyData.publishedFileId;
+		}
+		else
+		{
+			receivedCreatorIDStr = to_string(lobbyData.creatorId);
+		}
+
+
+		bool mapVerified = false;
+
 		if (checkWorkshopMap)
 		{
 			MapNode mp;
 			mp.publishedFileId = workshopDownloadPublishedFileId;
 			mp.isWorkshop = true;
 			mp.fileName = receivedMapName;
-			
+
 			if (mp.CheckIfFullyInstalled())
 			{
 				checkWorkshopMap = false;
 				//mapVerified = true; //maybe verify hash later
 				matchParams.mapPath = mp.filePath;
+
+				previewPath = mp.filePath.parent_path().string() + "\\" + mp.filePath.stem().string() + ".png";
+
 				cout << "item is fully installed at the outset: " << mp.filePath << endl;
 			}
-			//MapNode 
+			else
+			{
+				mp.Subscribe();
+			}
 		}
 		else
 		{
@@ -404,6 +378,9 @@ void NetplayManager::StartConnecting()
 					cout << "hashes match!" << endl;
 					mapVerified = true;
 					matchParams.mapPath = receivedMapPath;
+
+					previewPath = receivedMapPath.parent_path().string() + "\\" + receivedMapPath.stem().string() + ".png";
+
 					cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 				}
 				else
@@ -447,6 +424,8 @@ void NetplayManager::StartConnecting()
 										cout << "hashes match in download folder" << endl;
 										mapVerified = true;
 										matchParams.mapPath = (*it);
+										previewPath = matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
+
 										cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 									}
 								}
@@ -489,13 +468,15 @@ void NetplayManager::StartConnecting()
 				}
 			}
 		}
-		
 	}
-	
 
-	matchParams.numPlayers = numPlayers;
+}
 
-	action = A_GET_CONNECTIONS;
+void NetplayManager::ConnectToAll()
+{
+	action = A_CONNECT_TO_ALL;
+
+	UpdateNetplayPlayers();
 
 	if (playerIndex < numPlayers - 1)
 	{
@@ -515,7 +496,6 @@ void NetplayManager::StartConnecting()
 
 	SetHost();
 }
-
 
 void NetplayManager::Update()
 {
@@ -571,11 +551,13 @@ void NetplayManager::Update()
 		int numLobbyMembers = lobbyManager->GetNumCurrentLobbyMembers();
 		if (numLobbyMembers == 2)
 		{
-			StartConnecting();
+			ConnectToAll();
+			CheckForMapAndSetMatchParams();
+			
 		}
 		break;
 	}
-	case A_GET_CONNECTIONS:
+	case A_CONNECT_TO_ALL:
 	{
 		bool connectedToAll = true;
 		for (int i = 0; i < numPlayers; ++i)
@@ -611,7 +593,8 @@ void NetplayManager::Update()
 
 				LeaveLobby();
 				SendSignalToHost(UdpMsg::Game_Client_Done_Connecting);
-				action = A_WAIT_TO_VERIFY;//A_WAIT_TO_LOAD_MAP;
+				//action = A_WAIT_TO_VERIFY;//A_WAIT_TO_LOAD_MAP;
+				action = A_WAIT_TO_LOAD_MAP;
 			}
 		}
 		break;
@@ -638,12 +621,12 @@ void NetplayManager::Update()
 		{
 			LeaveLobby();
 
-			//SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
-			SendSignalToAllClients(UdpMsg::Game_Host_Says_Verify_Map);
+			SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
+			//SendSignalToAllClients(UdpMsg::Game_Host_Says_Verify_Map);
 
-			//LoadMap();
+			LoadMap();
 
-			action = A_WAIT_FOR_ALL_TO_VERIFY;
+			//action = A_WAIT_FOR_ALL_TO_VERIFY;
 		}
 		break;
 	}
@@ -1377,15 +1360,42 @@ void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 		}
 		else
 		{
-			//when all players start connecting, even host
-			StartConnecting();
+			//all clients start the process to eventually load the game and play, starting with connecting to everyone
+			ConnectToAll();
 		}
 		
 	}
 }
 
+bool NetplayManager::AllClientsHaveReceivedAllData()
+{
+	bool allHaveData = true;
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+		{
+			continue;
+		}
+
+		if (netplayPlayers[i].isConnectedTo && !netplayPlayers[i].hasAllData)
+		{
+			allHaveData = false;
+			break;
+		}
+	}
+
+	return allHaveData;
+}
+
 void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::filesystem::path &p)
 {
+	cout << "send map to client: " << p << endl;
+	if (!IsHost())
+	{
+		assert(0);
+		return;
+	}
+
 	UdpMsg msg(UdpMsg::Game_Map);
 
 	std::ifstream is;
@@ -1429,6 +1439,32 @@ void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::fil
 
 void NetplayManager::SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p)
 {
+	cout << "send preview to client: " << p << endl;
+	if (!IsHost())
+	{
+		assert(0);
+		return;
+	}
+
+	try
+	{
+		if (!boost::filesystem::exists(p))
+		{
+			cout << "preview cant be sent as it doesnt exist: " << p << endl;
+			return;
+		}
+		else
+		{
+			cout << "sending preview to client. previewPath: " << p << endl;
+		}
+	}
+	catch (boost::filesystem::filesystem_error &e)
+	{
+		cout << "preview cant be sent because of file error" << endl;
+		return;
+	}
+
+
 	UdpMsg msg(UdpMsg::Game_Preview);
 
 	std::ifstream is;
@@ -1481,29 +1517,72 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	{
 	case UdpMsg::Game_Client_Needs_Preview:
 	{
-		cout << "client needs preview" << endl;
+		SendPreviewToClient(connection, previewPath);
+		break;
+	}
+	case UdpMsg::Game_Preview:
+	{
+		if (waitingForPreview)
+		{
+			char *previewBinary = (char*)steamMsgData + sizeof(UdpMsg);
+			int sizeofPreview = steamMsg->GetSize() - sizeof(UdpMsg);
+
+			cout << "received preview. attempting to write to file." << endl;
+
+			previewPath = boost::filesystem::current_path().string() + "/testpreview.png";
+
+			FILE *file = fopen(previewPath.string().c_str(), "wb");
+			fwrite(previewBinary, 1, sizeofPreview, file);
+			fclose(file);
+			cout << "finished saving preview: " << previewPath << endl;
+
+			action = A_IDLE;
+			waitingForPreview = false;
+		}
+		break;
+	}
+	case UdpMsg::Game_Client_Needs_Map:
+	{
+		SendMapToClient(connection, matchParams.mapPath);
+		break;
+	}
+	case UdpMsg::Game_Map:
+	{
+		if (waitingForMap)
+		{
+			assert(!IsHost() && mapDownloadFilePath != "");
+
+			char *mapBinary = (char*)steamMsgData + sizeof(UdpMsg);
+			int sizeOfMap = steamMsg->GetSize() - sizeof(UdpMsg);
+
+			cout << "received game map. attempting to write to file." << endl;
+			FILE *file = fopen(mapDownloadFilePath.string().c_str(), "wb");
+			fwrite(mapBinary, 1, sizeOfMap, file);
+			fclose(file);
+			cout << "finished saving new map: " << mapDownloadFilePath << endl;
+
+			receivedMap = true;
+			waitingForMap = false;
+
+			matchParams.mapPath = mapDownloadFilePath;
+		}
+		break;
+	}
+	case UdpMsg::Game_Client_Has_Received_All_Data:
+	{
 		if (IsHost())
 		{
-			//boost::filesystem::path previewPath = //matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
-			try
+			for (int i = 0; i < numPlayers; ++i)
 			{
-				cout << "previewPath: " << previewPath << endl;
-				if (boost::filesystem::exists(previewPath))
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].connection == connection)
 				{
-					SendPreviewToClient(connection, previewPath);
-					
-				}
-				else
-				{
-					cout << "preview cant be sent as it doesnt exist" << endl;
+					netplayPlayers[i].hasAllData = true;
+					break;
 				}
 			}
-			catch (boost::filesystem::filesystem_error &e)
-			{
-
-			}
-
-			
 		}
 		else
 		{
@@ -1539,20 +1618,6 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	{
 		cout << "received a message to verify the map" << endl;
 		receivedMapVerifySignal = true;
-		break;
-	}
-	case UdpMsg::Game_Client_Needs_Map:
-	{
-		if (IsHost())
-		{
-			cout << "handling client needs map message" << endl;
-
-			SendMapToClient(connection, matchParams.mapPath);
-		}
-		else
-		{
-			assert(0);
-		}
 		break;
 	}
 	case UdpMsg::Game_Client_Done_Verifying:
@@ -1619,43 +1684,6 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		//steamMsg->Release();
 		//steamMsg = NULL; //set to NULL to avoid double delete
 		//RunMatch();
-		break;
-	}
-	case UdpMsg::Game_Map:
-	{
-		assert(!IsHost() && mapDownloadFilePath != "");
-
-		char *mapBinary = (char*)steamMsgData + sizeof(UdpMsg);
-		int sizeOfMap = steamMsg->GetSize() - sizeof(UdpMsg);
-
-		cout << "received game map. attempting to write to file." << endl;
-		FILE *file = fopen(mapDownloadFilePath.string().c_str(), "wb");
-		fwrite(mapBinary, 1, sizeOfMap, file);
-		fclose(file);
-		cout << "finished saving new map: " << mapDownloadFilePath << endl;
-
-		receivedMap = true;
-
-		break;
-	}
-	case UdpMsg::Game_Preview:
-	{
-		//assert(!IsHost() && mapDownloadFilePath != "");
-
-		char *previewBinary = (char*)steamMsgData + sizeof(UdpMsg);
-		int sizeofPreview = steamMsg->GetSize() - sizeof(UdpMsg);
-
-		cout << "received preview. attempting to write to file." << endl;
-
-		previewPath = boost::filesystem::current_path().string() + "/testpreview.png";
-
-		FILE *file = fopen(previewPath.string().c_str(), "wb");
-		fwrite(previewBinary, 1, sizeofPreview, file);
-		fclose(file);
-		cout << "finished saving preview: " << previewPath << endl;
-
-		action = A_IDLE;
-		receivedPreview = true;
 		break;
 	}
 	}
@@ -1767,6 +1795,19 @@ void NetplayManager::OnLobbyChatUpdateCallback(LobbyChatUpdate_t *pCallback)
 
 void NetplayManager::RequestPreviewFromHost()
 {
+	cout << "sending request for preview" << endl;
+	waitingForPreview = true;
 	SendSignalToHost(UdpMsg::Game_Client_Needs_Preview);
-	action = A_WAIT_FOR_PREVIEW;
+}
+
+void NetplayManager::RequestMapFromHost()
+{
+	cout << "sending request for map" << endl;
+	waitingForMap = true;
+	SendSignalToHost(UdpMsg::Game_Client_Needs_Map);
+}
+
+void NetplayManager::SendReceivedAllDataSignalToHost()
+{
+	SendSignalToHost(UdpMsg::Game_Client_Has_Received_All_Data);
 }

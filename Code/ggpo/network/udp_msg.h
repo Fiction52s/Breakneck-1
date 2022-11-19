@@ -30,6 +30,7 @@ struct UdpMsg
 	  Game_Host_Says_Verify_Map,
 	  Game_Client_Needs_Map,
 	  Game_Client_Done_Verifying,
+	  Game_Client_Has_Received_All_Data,
 	  Game_Host_Says_Load,
 	  Game_Client_Done_Loading,
 	  Game_Host_Says_Start,
@@ -136,6 +137,7 @@ public:
 	  case Game_Host_Says_Verify_Map: return 0;
 	  case Game_Client_Needs_Map: return 0;
 	  case Game_Client_Done_Verifying: return 0;
+	  case Game_Client_Has_Received_All_Data: return 0;
 	  case Game_Host_Says_Load: return 0;
 	  case Game_Client_Done_Loading: return 0;
 	  case Game_Host_Says_Start: return 0;

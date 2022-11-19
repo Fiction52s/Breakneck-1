@@ -42,6 +42,7 @@ struct NetplayPlayer
 	bool isMe;
 	int index;
 	bool doneConnectingToAllPeers;
+	bool hasPreviewAndMap;
 	bool doneVerifyingMap;
 	bool doneLoading;
 	bool readyToRun;
@@ -49,6 +50,7 @@ struct NetplayPlayer
 	std::string name;
 	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
 	int skinIndex;
+	bool hasAllData;
 
 	NetplayPlayer();
 	void Clear();
@@ -73,7 +75,7 @@ struct NetplayManager
 		A_QUICKPLAY_GATHERING_USERS,
 		A_CUSTOM_HOST_GATHERING_USERS,
 		A_WAIT_FOR_PREVIEW,
-		A_GET_CONNECTIONS,
+		A_CONNECT_TO_ALL,
 		A_WAIT_FOR_ALL_TO_VERIFY,
 		A_WAIT_FOR_ALL_TO_CONNECT,
 		A_WAIT_TO_VERIFY,
@@ -101,6 +103,9 @@ struct NetplayManager
 	bool receivedStartGGPOSignal;
 	bool receivedMap;
 	bool receivedPreview;
+
+	bool waitingForMap;
+	bool waitingForPreview;
 
 	boost::thread *loadThread;
 
@@ -130,6 +135,7 @@ struct NetplayManager
 
 	MatchResultsScreen *resultsScreen;
 
+
 	NetplayManager();
 	~NetplayManager();
 
@@ -146,9 +152,7 @@ struct NetplayManager
 	void SendSignalToAllClients(int type);
 
 	void SendDesyncCheckToHost( int currGameFrame );
-
-
-	void StartConnecting();
+	void ConnectToAll();
 	void ReceiveMessages();
 	HSteamNetConnection GetHostConnection();
 	
@@ -174,11 +178,18 @@ struct NetplayManager
 
 	void TryCreateCustomLobby(LobbyData &ld);
 	void RequestPreviewFromHost();
+	void RequestMapFromHost();
+	void SendReceivedAllDataSignalToHost();
 
 	void BroadcastMapDetailsToLobby();
 	void BroadcastLobbyMessage(LobbyMessage &msg);
 
+	void CheckForMapAndSetMatchParams();
+	bool ClientCheckWorkshopMapInstalled();
+
 	void CleanupMatch();
+
+	bool AllClientsHaveReceivedAllData();
 
 	MatchResultsScreen *CreateResultsScreen();
 	

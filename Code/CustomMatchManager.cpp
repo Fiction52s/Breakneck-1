@@ -203,16 +203,31 @@ bool CustomMatchManager::Update()
 			{
 				if (netplayManager->netplayPlayers[i].isConnectedTo)
 				{
+					cout << "connected to host" << endl;
+
 					waitingRoom->OpenPopup();
 					SetAction(A_WAITING_ROOM);
-					netplayManager->RequestPreviewFromHost();
-					cout << "host connected. requesting preview" << endl;
+					
+					netplayManager->CheckForMapAndSetMatchParams();
+
+					if (netplayManager->matchParams.mapPath == "")
+					{
+						netplayManager->RequestMapFromHost();
+					}
+					else
+					{
+						waitingRoom->UpdateMapHeader(netplayManager->matchParams.mapPath.string());
+					}
+
+					if (netplayManager->previewPath == "")
+					{
+						netplayManager->RequestPreviewFromHost();
+					}
+					else
+					{
+						waitingRoom->SetPreview(netplayManager->previewPath.string());
+					}
 				}
-				else
-				{
-					cout << "not connected to host yet" << endl;
-				}
-				
 				break;
 			}
 		}
@@ -318,7 +333,10 @@ bool CustomMatchManager::Update()
 
 			netplayManager->previewPath = previewPath;
 
+			netplayManager->CheckForMapAndSetMatchParams();
+
 			waitingRoom->SetPreview(previewPath);
+			waitingRoom->UpdateMapHeader(mapPath.string());
 			waitingRoom->OpenPopup();
 		}
 		break;
@@ -331,7 +349,7 @@ bool CustomMatchManager::Update()
 			{
 				SetAction(A_READY);
 
-				netplayManager->StartConnecting();
+				netplayManager->ConnectToAll();
 
 				LobbyMessage lm;
 				lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;
@@ -341,16 +359,10 @@ bool CustomMatchManager::Update()
 		}
 		else
 		{
-			if (netplayManager->receivedPreview && waitingRoom->ts_preview == NULL )
-			{
-				waitingRoom->SetPreview(netplayManager->previewPath.string());
-			}
-
-
-			if (netplayManager->action == NetplayManager::A_GET_CONNECTIONS)
+			if (netplayManager->action == NetplayManager::A_CONNECT_TO_ALL)
 			{
 				cout << "processed start message" << endl;
-				waitingRoom->SetAction(WaitingRoom::A_READY_TO_START);
+				waitingRoom->SetAction(WaitingRoom::A_READY_TO_START); //set back to before start button was pressed.
 				SetAction(A_READY);
 			}
 		}

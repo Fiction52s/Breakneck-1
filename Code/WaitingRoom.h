@@ -8,6 +8,9 @@
 #include "Tileset.h"
 
 struct WaitingRoom;
+
+struct MapHeader;
+
 struct PlayerBox
 {
 	HyperLink *playerName;
@@ -44,6 +47,8 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	Button *startButton;
 	Button *leaveButton;
 
+	MapHeader *mapHeader;
+
 	int playerBoxWidth;
 	int playerBoxHeight;
 	int playerBoxSpacing;
@@ -57,6 +62,8 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	Tileset *ts_preview;
 	sf::Vertex previewQuad[4];
 	sf::Vector2f previewBottomLeft;
+	sf::Text *nameText;
+	sf::Text *descriptionText;
 
 	int maxPlayers;
 
@@ -73,6 +80,7 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	bool HandleEvent(sf::Event ev);
 	void UpdateMemberList();
 	void ClearPreview();
+	void UpdateMapHeader( const std::string &mapPath );
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);
