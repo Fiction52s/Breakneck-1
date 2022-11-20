@@ -13,6 +13,7 @@
 #include "MapOptionsPopup.h"
 #include "WorkshopBrowser.h"
 #include "PostMatchOptionsPopup.h"
+#include "PostMatchClientPopup.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -28,6 +29,8 @@ CustomMatchManager::CustomMatchManager()
 	messagePopup = new MessagePopup;
 
 	postMatchPopup = new PostMatchOptionsPopup;
+
+	postMatchClientPopup = new PostMatchClientPopup;
 
 	SetAction(A_IDLE);
 
@@ -46,6 +49,8 @@ CustomMatchManager::~CustomMatchManager()
 	delete messagePopup;
 
 	delete postMatchPopup;
+
+	delete postMatchClientPopup;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -73,6 +78,32 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 		break;
 	case A_READY:
 		break;
+	case A_POST_MATCH_HOST:
+	{
+		postMatchPopup->HandleEvent(ev);
+		break;
+	}
+	case A_POST_MATCH_CLIENT:
+	{
+		postMatchClientPopup->HandleEvent(ev);
+		break;
+	}
+	}
+}
+
+void CustomMatchManager::OpenPostMatchPopup()
+{
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	if (netplayManager->IsHost())
+	{
+		postMatchPopup->Start();
+
+		action = A_POST_MATCH_HOST;
+	}
+	else
+	{
+		postMatchClientPopup->Start();
+		action = A_POST_MATCH_CLIENT;
 	}
 }
 
@@ -408,6 +439,34 @@ bool CustomMatchManager::Update()
 	}
 	case A_READY:
 		break;
+	case A_POST_MATCH_HOST:
+	{
+		postMatchPopup->Update();
+
+		switch (postMatchPopup->action)
+		{
+		case PostMatchOptionsPopup::A_REMATCH:
+			action = A_POST_MATCH_HOST_REMATCH;
+			break;
+		case PostMatchOptionsPopup::A_CHOOSE_MAP:
+			action = A_POST_MATCH_HOST_CHOOSE_MAP;
+			break;
+		case PostMatchOptionsPopup::A_LEAVE:
+			action = A_POST_MATCH_HOST_LEAVE;
+			break;
+		}	
+		break;
+	}
+	case A_POST_MATCH_CLIENT:
+	{
+		postMatchClientPopup->Update();
+
+		if (postMatchClientPopup->action == PostMatchClientPopup::A_LEAVE)
+		{
+			action = A_POST_MATCH_CLIENT_LEAVE;
+		}
+		break;
+	}
 	}
 
 	//testing this
@@ -457,5 +516,15 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	case A_READY:
 		break;
+	case A_POST_MATCH_HOST:
+	{
+		postMatchPopup->Draw(target);
+		break;
+	}
+	case A_POST_MATCH_CLIENT:
+	{
+		postMatchClientPopup->Draw(target);
+		break;
+	}
 	}
 }

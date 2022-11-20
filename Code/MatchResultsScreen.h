@@ -7,6 +7,7 @@
 #include "MatchStats.h"
 #include "Tileset.h"
 
+struct MessagePopup;
 
 struct UIWindow;
 struct MatchResultsScreen : TilesetManager
@@ -74,6 +75,7 @@ struct VictoryScreen4Player : MatchResultsScreen
 		A_SHOW_WINNER,
 		A_FADE_WINNER,
 		A_SHOW_RESULTS,
+		A_WAITING_FOR_OTHERS,
 		A_Count
 	};
 
@@ -84,7 +86,10 @@ struct VictoryScreen4Player : MatchResultsScreen
 	void ResetSprites();
 	void UpdateSprites();
 	void Reset();
+	void WaitForOthers();
 	GameSession *game;
+
+	MessagePopup *waitingPopup;
 
 	int fadeFrames;
 	

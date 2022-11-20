@@ -1075,13 +1075,13 @@ void MainMenu::SetMode(Mode m)
 	{
 		onlineMenuScreen->Start();
 	}
-	else if (menuMode == MATCH_RESULTS)
+	else if (menuMode == NETPLAY_MATCH_RESULTS)
 	{
 		matchResultsScreen->Reset();
 	}
 	else if (menuMode == POST_MATCH_OPTIONS)
 	{
-		customMatchManager->postMatchPopup->Start();
+		customMatchManager->OpenPostMatchPopup();
 	}
 	else if (menuMode == SAVEMENU)
 	{
@@ -3116,6 +3116,7 @@ void MainMenu::HandleMenuMode()
 		{
 			if (netplayManager->action == NetplayManager::A_READY_TO_RUN)
 			{
+				cout << "RUNNING MATCHHHHHHHH" << endl;
 				netplayManager->RunMatch();
 
 				//results screen instead...
@@ -3139,24 +3140,38 @@ void MainMenu::HandleMenuMode()
 					//netplayManager->CleanupMatch();
 
 					matchResultsScreen = netplayManager->resultsScreen;
-					SetMode(MATCH_RESULTS);
+					SetMode(NETPLAY_MATCH_RESULTS);
 				}
 			}
 		}
 		break;
 	}
-	case MATCH_RESULTS:
+	case NETPLAY_MATCH_RESULTS:
 	{
 		while (window->pollEvent(ev))
 		{
 			//matchResultsScreen->HandleEvent(ev);
 		}
+
+		netplayManager->Update();
+
+		if (netplayManager->CheckResultsScreen())
+		{
+			SetMode(POST_MATCH_OPTIONS);
+			break;
+		}
+
 		if (!matchResultsScreen->Update())
 		{
-			//netplayManager->CleanupMatch();
-
 			SetMode(POST_MATCH_OPTIONS);
 			//SetMode(TITLEMENU);
+		}
+
+
+		if (netplayManager->action == NetplayManager::A_WAIT_FOR_GGPO_SYNC)
+		{
+			cout << "got signal to rematch too early" << endl;
+			SetMode(POST_MATCH_OPTIONS);
 		}
 		break;
 	}
@@ -3164,30 +3179,79 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-			customMatchManager->postMatchPopup->HandleEvent(ev);
+			customMatchManager->HandleEvent(ev);
 			//matchResultsScreen->HandleEvent(ev);
 		}
 
-		customMatchManager->postMatchPopup->Update();
+		if ( !netplayManager->IsHost() && netplayManager->action == NetplayManager::A_WAIT_FOR_GGPO_SYNC)
+		{
+			delete matchResultsScreen;
+			matchResultsScreen = NULL;
 
-		if (customMatchManager->postMatchPopup->action != PostMatchOptionsPopup::A_IDLE)
+			cout << "client starting map rematch!!" << endl;
+			netplayManager->game->InitGGPO();
+			SetMode(QUICKPLAY_PLAY);
+			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			break;
+		}
+
+		customMatchManager->Update();
+
+		bool isHost = netplayManager->IsHost();
+		if ( (isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_HOST)
+			|| (!isHost && customMatchManager->action != CustomMatchManager::A_POST_MATCH_CLIENT))
 		{
 			delete matchResultsScreen;
 			matchResultsScreen = NULL;
 		}
 
-		switch (customMatchManager->postMatchPopup->action)
+		switch (customMatchManager->action)
 		{
-		case PostMatchOptionsPopup::A_REMATCH:
+		case CustomMatchManager::A_POST_MATCH_CLIENT:
+		{
+			if (!netplayManager->IsConnectedToHost())
+			{
+				netplayManager->CleanupMatch();
+				netplayManager->Abort();
+				SetMode(TITLEMENU);
+			}
+			
+			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_CLIENT_LEAVE:
+		{
+			netplayManager->CleanupMatch();
+			netplayManager->Abort();
+
+			SetMode(TITLEMENU);
+			 
+			//some signal to tell the host that you have left, or just disconnect? probably just disconnect
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_HOST_LEAVE:
+		{
+			netplayManager->CleanupMatch();
+			netplayManager->Abort();
+
+			SetMode(TITLEMENU);
+
+			//instead of just disconnecting, need to send a signal to the clients on which option was chosen.
+			break;
+		}
+		case CustomMatchManager::A_POST_MATCH_HOST_REMATCH:
 		{
 			netplayManager->game->InitGGPO();
-			netplayManager->action = NetplayManager::A_READY_TO_RUN;
+			netplayManager->HostInitiateRematch();
+			
 			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
 
 			SetMode(QUICKPLAY_PLAY);
+			//QUICKPLAY_PLAY
+			//SetMode(QUICKPLAY_TEST);
 			break;
 		}
-		case PostMatchOptionsPopup::A_CHOOSE_MAP:
+		case CustomMatchManager::A_POST_MATCH_HOST_CHOOSE_MAP:
 		{
 			netplayManager->CleanupMatch();
 			netplayManager->Abort();
@@ -3195,17 +3259,8 @@ void MainMenu::HandleMenuMode()
 			SetMode(TITLEMENU);
 			break;
 		}
-		case PostMatchOptionsPopup::A_LEAVE:
-		{
-			netplayManager->CleanupMatch();
-			netplayManager->Abort();
-
-			SetMode(TITLEMENU);
-
-			break;
 		}
 
-		}
 		break;
 	}
 	}
@@ -3784,7 +3839,7 @@ void MainMenu::DrawMode( Mode m )
 		loadingBackpack->Draw(preScreenTexture);
 		break;
 	}
-	case MATCH_RESULTS:
+	case NETPLAY_MATCH_RESULTS:
 	{
 		preScreenTexture->setView(v);
 		matchResultsScreen->Draw(preScreenTexture);
@@ -3795,7 +3850,7 @@ void MainMenu::DrawMode( Mode m )
 		preScreenTexture->setView(v);
 		matchResultsScreen->Draw(preScreenTexture);
 
-		customMatchManager->postMatchPopup->Draw(preScreenTexture);
+		customMatchManager->Draw(preScreenTexture);		
 
 		break;
 	}

@@ -38,6 +38,9 @@ struct UdpMsg
 	  Game_Map,
 	  Game_Preview,
 	  Game_Client_Needs_Preview,
+	  Game_Host_Rematch,
+	  Game_Client_Finished_Results_Screen,
+	  Game_Host_Show_Post_Options,
    };
   /* enum MsgType { 
       Invalid       = 0,
@@ -145,6 +148,8 @@ public:
 	  case Game_Map: return 0;
 	  case Game_Preview: return 0;
 	  case Game_Client_Needs_Preview: return 0;
+	  case Game_Host_Rematch: return 0;
+	  case Game_Client_Finished_Results_Screen: return 0;
       }
 
       assert(false);

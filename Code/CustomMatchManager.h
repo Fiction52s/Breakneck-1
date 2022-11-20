@@ -11,6 +11,7 @@ struct MapOptionsPopup;
 struct MapNode;
 struct MessagePopup;
 struct PostMatchOptionsPopup;
+struct PostMatchClientPopup;
 
 struct CustomMatchManager
 {
@@ -26,6 +27,12 @@ struct CustomMatchManager
 		A_CONNECT_TO_HOST,
 		A_READY,
 		A_ERROR_MESSAGE,
+		A_POST_MATCH_HOST,
+		A_POST_MATCH_CLIENT,
+		A_POST_MATCH_CLIENT_LEAVE,
+		A_POST_MATCH_HOST_REMATCH,
+		A_POST_MATCH_HOST_CHOOSE_MAP,
+		A_POST_MATCH_HOST_LEAVE
 	};
 
 	Action action;
@@ -37,6 +44,7 @@ struct CustomMatchManager
 	MapOptionsPopup *mapOptionsPopup;
 	MessagePopup *messagePopup;
 	PostMatchOptionsPopup *postMatchPopup;
+	PostMatchClientPopup *postMatchClientPopup;
 	int preErrorAction;
 	bool fromWorkshopBrowser;
 
@@ -44,6 +52,7 @@ struct CustomMatchManager
 
 	CustomMatchManager();
 	~CustomMatchManager();
+	void OpenPostMatchPopup();
 	void CreateCustomLobby();
 	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();

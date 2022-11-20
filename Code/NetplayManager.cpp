@@ -30,6 +30,7 @@ void NetplayPlayer::Clear()
 	isHost = false;
 	skinIndex = 0;
 	hasAllData = false;
+	finishedWithResultsScreen = false;
 
 
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
@@ -216,6 +217,7 @@ void NetplayManager::Abort()
 	receivedMap = false;
 	waitingForMap = false;
 	waitingForPreview = false;
+	receivedPostOptionsSignal = false;
 }
 
 void NetplayManager::UpdateNetplayPlayers()
@@ -1189,6 +1191,8 @@ int NetplayManager::RunMatch()
 
 	resultsScreen = game->CreateResultsScreen(); //netplay always needs a results screen
 
+	ClearClientsFinishingResultsScreen();
+
 	//delete game;
 	//game = NULL;
 
@@ -1686,6 +1690,43 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 		//RunMatch();
 		break;
 	}
+	case UdpMsg::Game_Host_Rematch:
+	{
+		assert(!IsHost());
+		cout << "host sent rematch signal" << endl;
+		action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;
+		break;
+	}
+	case UdpMsg::Game_Client_Finished_Results_Screen:
+	{
+		if (IsHost())
+		{
+			for (int i = 0; i < numPlayers; ++i)
+			{
+				if (i == playerIndex)
+					continue;
+
+				if (netplayPlayers[i].connection == connection)
+				{
+					netplayPlayers[i].finishedWithResultsScreen = true;
+					break;
+				}
+			}
+
+			cout << "handle client finished with results screen msg: " << connection << endl;
+		}
+		else
+		{
+			assert(0);
+		}
+		break;
+	}
+	case UdpMsg::Game_Host_Show_Post_Options:
+	{
+		assert(!IsHost());
+		receivedPostOptionsSignal = true;
+		break;
+	}
 	}
 
 	if (steamMsg != NULL )
@@ -1810,4 +1851,72 @@ void NetplayManager::RequestMapFromHost()
 void NetplayManager::SendReceivedAllDataSignalToHost()
 {
 	SendSignalToHost(UdpMsg::Game_Client_Has_Received_All_Data);
+}
+
+void NetplayManager::SendFinishedResultsScreenSignalToHost()
+{
+	SendSignalToHost(UdpMsg::Game_Client_Finished_Results_Screen);
+}
+
+void NetplayManager::ClearClientsFinishingResultsScreen()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].finishedWithResultsScreen = false;
+	}
+	receivedPostOptionsSignal = false;
+}
+
+void NetplayManager::HostInitiateRematch()
+{
+	action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;//NetplayManager::A_READY_TO_RUN;
+	SendSignalToAllClients(UdpMsg::Game_Host_Rematch);
+}
+
+void NetplayManager::HostFinishResultsScreen()
+{
+	assert(IsHost());
+	netplayPlayers[playerIndex].finishedWithResultsScreen = true;
+}
+
+bool NetplayManager::AllPlayersHaveFinishedWithResultsScreen()
+{
+	assert(IsHost());
+	if (!netplayPlayers[playerIndex].finishedWithResultsScreen)
+	{
+		return false;
+	}
+
+	bool allFinished = true;
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+		{
+			continue;
+		}
+
+		if (netplayPlayers[i].isConnectedTo && !netplayPlayers[i].finishedWithResultsScreen)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool NetplayManager::CheckResultsScreen()
+{
+	if (!IsHost())
+	{
+		return false;
+	}
+	//assert(IsHost());
+
+	if (AllPlayersHaveFinishedWithResultsScreen())
+	{
+		SendSignalToAllClients(UdpMsg::Game_Host_Show_Post_Options);
+		return true;
+	}
+
+	return false;
 }

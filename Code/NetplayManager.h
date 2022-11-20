@@ -47,6 +47,7 @@ struct NetplayPlayer
 	bool doneLoading;
 	bool readyToRun;
 	bool isHost;
+	bool finishedWithResultsScreen;
 	std::string name;
 	DesyncCheckInfo desyncCheckInfoArray[MAX_DESYNC_CHECK_INFOS_STORED];
 	int skinIndex;
@@ -103,6 +104,7 @@ struct NetplayManager
 	bool receivedStartGGPOSignal;
 	bool receivedMap;
 	bool receivedPreview;
+	bool receivedPostOptionsSignal;
 
 	bool waitingForMap;
 	bool waitingForPreview;
@@ -184,6 +186,8 @@ struct NetplayManager
 	void BroadcastMapDetailsToLobby();
 	void BroadcastLobbyMessage(LobbyMessage &msg);
 
+	void HostInitiateRematch();
+
 	void CheckForMapAndSetMatchParams();
 	bool ClientCheckWorkshopMapInstalled();
 
@@ -192,7 +196,14 @@ struct NetplayManager
 	bool AllClientsHaveReceivedAllData();
 
 	MatchResultsScreen *CreateResultsScreen();
-	
+
+	void SendFinishedResultsScreenSignalToHost();
+
+	void ClearClientsFinishingResultsScreen();
+	void HostFinishResultsScreen();
+
+	bool AllPlayersHaveFinishedWithResultsScreen();
+	bool CheckResultsScreen();
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);

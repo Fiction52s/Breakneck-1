@@ -4,6 +4,7 @@
 #include "MapHeader.h"
 #include "MainMenu.h"
 #include "PlayerSkinShader.h"
+#include "NetplayManager.h"
 
 using namespace std;
 using namespace sf;
@@ -61,6 +62,8 @@ VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 
 	fadeFrames = 60;
 	SetRectColor(fadeQuad, Color(0, 0, 0, 0));
+
+	waitingPopup = new MessagePopup;
 	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
@@ -70,6 +73,25 @@ VictoryScreen4Player::~VictoryScreen4Player()
 	{
 		if (playerBar[i] != NULL)
 			delete playerBar[i];
+	}
+
+	delete waitingPopup;
+}
+
+void VictoryScreen4Player::WaitForOthers()
+{
+	action = A_WAITING_FOR_OTHERS;
+	frame = 0;
+	waitingPopup->Pop("Waiting for other players...");
+
+	MainMenu *mm = MainMenu::GetInstance();
+	if (!mm->netplayManager->IsHost())
+	{
+		mm->netplayManager->SendFinishedResultsScreenSignalToHost();
+	}
+	else
+	{
+		mm->netplayManager->HostFinishResultsScreen();
 	}
 }
 
@@ -90,14 +112,37 @@ bool VictoryScreen4Player::Update()
 		opacity = finalOpacity;
 	}
 
+	if (action == A_WAITING_FOR_OTHERS)
+	{		
+		assert(matchStats->netplay);
+		MainMenu *mm = MainMenu::GetInstance();
+
+		if (mm->netplayManager->receivedPostOptionsSignal)
+		{
+			return false;
+		}
+	}
+
+
 	if (action == A_SHOW_RESULTS)
 	{
 		MainMenu *mm = MainMenu::GetInstance();
+
 
 		bool confirmComplete = false;
 		if (matchStats->netplay)
 		{
 			confirmComplete = mm->menuCurrInput.start;
+
+			if (!mm->netplayManager->IsHost())
+			{
+				if (frame >= 60 * 5)
+				{
+					WaitForOthers();
+					return true;
+				}
+			}
+			
 			/*for (int i = 0; i < 4; ++i)
 			{
 				if (mm->GetCurrInput(i).start && mm->GetPrevInput(i).start)
@@ -132,7 +177,11 @@ bool VictoryScreen4Player::Update()
 		if (done)
 		{
 			if (confirmComplete)
-				return false;
+			{
+				WaitForOthers();
+				return true;
+			}
+				
 		}
 
 		int activateWait = 15;
@@ -191,6 +240,16 @@ void VictoryScreen4Player::Draw(sf::RenderTarget *target)
 	{
 		if (playerBar[i] != NULL)
 			playerBar[i]->Draw(target);
+	}
+
+	if (action == A_WAITING_FOR_OTHERS)
+	{
+		sf::RectangleShape rect;
+		rect.setFillColor(Color(0, 0, 0, 100));
+		rect.setSize(Vector2f(1920, 1080));
+		rect.setPosition(0, 0);
+		target->draw(rect);
+		waitingPopup->Draw(target);
 	}
 }
 
