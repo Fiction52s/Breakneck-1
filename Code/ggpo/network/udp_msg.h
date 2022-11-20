@@ -150,9 +150,10 @@ public:
 	  case Game_Client_Needs_Preview: return 0;
 	  case Game_Host_Rematch: return 0;
 	  case Game_Client_Finished_Results_Screen: return 0;
+	  case Game_Host_Show_Post_Options: return 0;
       }
 
-      assert(false);
+      //assert(false);
       return 0;
    }
 

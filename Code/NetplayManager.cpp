@@ -1876,6 +1876,7 @@ void NetplayManager::HostInitiateRematch()
 void NetplayManager::HostFinishResultsScreen()
 {
 	assert(IsHost());
+	cout << "host finished with results screen" << endl;
 	netplayPlayers[playerIndex].finishedWithResultsScreen = true;
 }
 
@@ -1914,6 +1915,7 @@ bool NetplayManager::CheckResultsScreen()
 
 	if (AllPlayersHaveFinishedWithResultsScreen())
 	{
+		cout << "tell clients to go to post options" << endl;
 		SendSignalToAllClients(UdpMsg::Game_Host_Show_Post_Options);
 		return true;
 	}

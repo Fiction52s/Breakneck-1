@@ -134,14 +134,16 @@ bool VictoryScreen4Player::Update()
 		{
 			confirmComplete = mm->menuCurrInput.start;
 
-			if (!mm->netplayManager->IsHost())
+			if (frame >= 60 * 5)
 			{
-				if (frame >= 60 * 5)
-				{
-					WaitForOthers();
-					return true;
-				}
+				WaitForOthers();
+				return true;
 			}
+
+			/*if (!mm->netplayManager->IsHost())
+			{
+				
+			}*/
 			
 			/*for (int i = 0; i < 4; ++i)
 			{
