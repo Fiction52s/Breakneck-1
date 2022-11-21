@@ -5,6 +5,7 @@
 #include "MainMenu.h"
 #include "PlayerSkinShader.h"
 #include "NetplayManager.h"
+#include "LoadingPopup.h"
 
 using namespace std;
 using namespace sf;
@@ -63,7 +64,7 @@ VictoryScreen4Player::VictoryScreen4Player( MatchStats *mStats )
 	fadeFrames = 60;
 	SetRectColor(fadeQuad, Color(0, 0, 0, 0));
 
-	waitingPopup = new MessagePopup;
+	waitingPopup = new LoadingPopup;
 	//player2Bar->SetBottomLeftPos( Vector2f( 0, 128 ) );
 }
 
@@ -82,7 +83,7 @@ void VictoryScreen4Player::WaitForOthers()
 {
 	action = A_WAITING_FOR_OTHERS;
 	frame = 0;
-	waitingPopup->Pop("Waiting for other players...");
+	waitingPopup->Pop("Waiting for other players", "");
 
 	MainMenu *mm = MainMenu::GetInstance();
 	if (!mm->netplayManager->IsHost())
@@ -113,7 +114,9 @@ bool VictoryScreen4Player::Update()
 	}
 
 	if (action == A_WAITING_FOR_OTHERS)
-	{		
+	{	
+		waitingPopup->Update();
+
 		assert(matchStats->netplay);
 		MainMenu *mm = MainMenu::GetInstance();
 

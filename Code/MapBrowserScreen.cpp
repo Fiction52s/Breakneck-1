@@ -29,6 +29,7 @@ void MapBrowserScreen::StartLocalBrowsing()
 	browserHandler->chooser->StartRelative(".brknk", MapBrowser::CREATE_CUSTOM_GAME, "Resources\\Maps");
 	browserHandler->chooser->panel->tabGroups["tabs"]->ShowMember();
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(0);
+	browserHandler->ClearFocus();
 	//browserHandler->chooser->
 }
 
@@ -45,6 +46,7 @@ void MapBrowserScreen::StartWorkshopBrowsing( int mode )
 	}
 	browserHandler->chooser->StartWorkshop((MapBrowser::Mode)mode );
 	browserHandler->chooser->panel->tabGroups["tabs"]->SelectTab(1);
+	browserHandler->ClearFocus();
 }
 
 bool MapBrowserScreen::HandleEvent(sf::Event ev)

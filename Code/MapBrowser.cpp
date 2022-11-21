@@ -1268,9 +1268,12 @@ void MapBrowserHandler::Update()
 	if (focusedRect != NULL && ts_largePreview == NULL)
 	{	
 		MapNode *mn = (MapNode*)focusedRect->info;
-		if (mn->ts_preview != NULL )
+		if (mn->type == MapNode::FILE)
 		{
-			ts_largePreview = mn->ts_preview;
+			if (mn->ts_preview != NULL)
+			{
+				ts_largePreview = mn->ts_preview;
+			}
 		}
 	}
 }
