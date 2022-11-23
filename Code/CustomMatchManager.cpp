@@ -14,7 +14,6 @@
 #include "WorkshopBrowser.h"
 #include "PostMatchOptionsPopup.h"
 #include "PostMatchClientPopup.h"
-#include "LobbyInvitePopup.h"
 //#include "ggpo/network/udp_msg.h"
 
 using namespace sf;
@@ -32,8 +31,6 @@ CustomMatchManager::CustomMatchManager()
 	postMatchPopup = new PostMatchOptionsPopup;
 
 	postMatchClientPopup = new PostMatchClientPopup;
-
-	lobbyInvitePopup = new LobbyInvitePopup;
 
 	SetAction(A_IDLE);
 
@@ -58,8 +55,6 @@ CustomMatchManager::~CustomMatchManager()
 	delete postMatchPopup;
 
 	delete postMatchClientPopup;
-
-	delete lobbyInvitePopup;
 }
 
 void CustomMatchManager::SetAction(Action a)
@@ -97,29 +92,7 @@ void CustomMatchManager::HandleEvent(sf::Event ev)
 		postMatchClientPopup->HandleEvent(ev);
 		break;
 	}
-	case A_LOBBY_BROWSER_JOIN_REQUEST_POPUP:
-	{
-		lobbyInvitePopup->HandleEvent(ev);
-		break;
 	}
-	}
-}
-
-void CustomMatchManager::OpenLobbyInvitePopup(CSteamID lobbyId, CSteamID senderId)
-{
-	if (action == A_LOBBY_BROWSER)
-	{
-		SetAction(A_LOBBY_BROWSER_JOIN_REQUEST_POPUP);
-	}
-	else
-	{
-		SetAction(A_LOBBY_BROWSER_JOIN_REQUEST_POPUP);
-	}
-
-	lobbyInvitePopup->OpenPopup(lobbyId, senderId);
-
-	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
-	netplayManager->lobbyManager->receivedJoinRequest = false;
 }
 
 void CustomMatchManager::OpenPostMatchPopup()
@@ -279,33 +252,11 @@ bool CustomMatchManager::Update()
 		}
 		else if (netplayManager->lobbyManager->receivedJoinRequest)
 		{
-			OpenLobbyInvitePopup(netplayManager->lobbyManager->joinRequestLobbyId,
-				netplayManager->lobbyManager->joinRequestSender);
+			cout << "attempting to join invited lobby" << endl;
+			netplayManager->lobbyManager->receivedJoinRequest = false;
+			lobbyBrowser->TryJoinLobby(netplayManager->lobbyManager->joinRequestLobbyId);
 		}
 		break;
-	case A_LOBBY_BROWSER_JOIN_REQUEST_POPUP:
-	{
-		switch (lobbyInvitePopup->action)
-		{
-		case LobbyInvitePopup::A_CONFIRMED:
-		{
-			//SetAction(A_LOBBY_BROWSER_JOIN_REQUEST_POPUP_WAIT_TO_JOIN);
-			lobbyBrowser->TryJoinLobby(lobbyInvitePopup->lobbyId);
-			break;
-		}
-		case LobbyInvitePopup::A_CANCELLED:
-		{
-			SetAction(A_LOBBY_BROWSER);
-			break;
-		}
-		}
-		break;
-	}
-	/*case A_LOBBY_BROWSER_JOIN_REQUEST_POPUP_WAIT_TO_JOIN:
-	{
-
-		break;
-	}*/
 	case A_CONNECT_TO_HOST:
 	{
 		for (int i = 0; i < 4; ++i)
@@ -584,11 +535,6 @@ bool CustomMatchManager::Update()
 	case A_LOBBY_BROWSER:
 		lobbyBrowser->Update();
 		break;
-	case A_LOBBY_BROWSER_JOIN_REQUEST_POPUP:
-	{
-		lobbyInvitePopup->Update();
-		break;
-	}
 	case A_CHOOSE_MAP:
 		mapBrowserScreen->Update();
 		break;
@@ -672,13 +618,6 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 	case A_LOBBY_BROWSER:
 		lobbyBrowser->panel->Draw(target);
 		break;
-	case A_LOBBY_BROWSER_JOIN_REQUEST_POPUP:
-	{
-		lobbyBrowser->panel->Draw(target);
-		DrawPopupBG(target);
-		lobbyInvitePopup->Draw(target);
-		break;
-	}
 	case A_CHOOSE_MAP:
 		mapBrowserScreen->Draw(target);
 		break;

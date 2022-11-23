@@ -349,7 +349,7 @@ void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
 
 void LobbyManager::OnGameLobbyJoinRequestedCallback(GameLobbyJoinRequested_t *pCallback )
 {
-
+	SetJoinRequest(pCallback->m_steamIDLobby, pCallback->m_steamIDFriend);
 }
 
 void LobbyManager::Update()

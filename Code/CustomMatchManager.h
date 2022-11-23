@@ -20,8 +20,6 @@ struct CustomMatchManager
 	{
 		A_IDLE,
 		A_LOBBY_BROWSER,
-		A_LOBBY_BROWSER_JOIN_REQUEST_POPUP,
-		//A_LOBBY_BROWSER_JOIN_REQUEST_POPUP_WAIT_TO_JOIN,
 		A_CHOOSE_MAP,
 		A_DOWNLOADING_WORKSHOP_MAP,
 		A_CHOOSE_MAP_OPTIONS,
@@ -71,7 +69,6 @@ struct CustomMatchManager
 	void StartClientWaitingRoomForNextMap();
 	void Draw(sf::RenderTarget *target);
 	void DrawPopupBG(sf::RenderTarget *target);
-	void OpenLobbyInvitePopup(CSteamID lobbyId, CSteamID senderId);
 
 };
 
