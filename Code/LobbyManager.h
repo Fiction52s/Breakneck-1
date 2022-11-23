@@ -110,6 +110,10 @@ struct LobbyManager
 	LobbyData dataForMakingLobby;
 	Lobby currentLobby;
 
+	bool receivedJoinRequest;
+	CSteamID joinRequestLobbyId;
+	CSteamID joinRequestSender;
+
 	CCallResult<LobbyManager, LobbyCreated_t> m_SteamCallResultLobbyCreated;
 	CCallResult<LobbyManager, LobbyMatchList_t> m_SteamCallResultLobbyMatchList;
 	CCallResult<LobbyManager, LobbyEnter_t> m_SteamCallResultLobbyEnter;
@@ -120,8 +124,12 @@ struct LobbyManager
 	void Update();
 	bool IsAllLobbyDataReceived();
 
+	void SetJoinRequest(CSteamID lobby, CSteamID sender);
+	void ClearJoinRequest();
+
 	void TryCreatingLobby(LobbyData &ld);
 	void TryJoiningLobby( int lobbyIndex );
+	void TryJoiningLobby(CSteamID id);
 
 	void OnLobbyCreated(LobbyCreated_t *pCallback, bool bIOFailure);
 	bool IsInLobby();
@@ -146,6 +154,7 @@ struct LobbyManager
 	
 	STEAM_CALLBACK(LobbyManager, OnLobbyEnterCallback, LobbyEnter_t);
 	STEAM_CALLBACK(LobbyManager, OnLobbyDataUpdateCallback, LobbyDataUpdate_t);
+	STEAM_CALLBACK(LobbyManager, OnGameLobbyJoinRequestedCallback, GameLobbyJoinRequested_t);
 
 
 };

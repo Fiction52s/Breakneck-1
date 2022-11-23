@@ -79,6 +79,8 @@ WaitingRoom::WaitingRoom()
 	startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
 	leaveButton = panel->AddButton("leave", Vector2i(20 + 200, panel->size.y - 100), Vector2f(100, 40), "LEAVE");
 
+	inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
+
 	panel->ReserveTextRects(4);
 
 	mapHeader = NULL;
@@ -145,10 +147,20 @@ void WaitingRoom::Update()
 		if (netplayManager->IsHost())
 		{
 			//fix this later. waiting room has the header and the lobby info, so we can figure out when the start button is valid.
-			if (netplayManager->lobbyManager->GetNumMembers() >= 2 && netplayManager->AllClientsHaveReceivedAllData())
+			int numMembers = netplayManager->lobbyManager->GetNumMembers();
+			if (numMembers >= 2 && netplayManager->AllClientsHaveReceivedAllData())
 			{
 				startButton->ShowMember();
 				action = A_READY_TO_START;
+			}
+
+			if( netplayManager->lobbyManager->CurrentLobbyHasMaxMembers())
+			{
+				inviteButton->HideMember();
+			}
+			else
+			{
+				inviteButton->ShowMember();
 			}
 		}
 		else
@@ -173,6 +185,17 @@ void WaitingRoom::Update()
 	}
 	case A_READY_TO_START:
 	{
+		if (netplayManager->IsHost())
+		{
+			if (netplayManager->lobbyManager->CurrentLobbyHasMaxMembers())
+			{
+				inviteButton->HideMember();
+			}
+			else
+			{
+				inviteButton->ShowMember();
+			}
+		}
 		break;
 	}
 	case A_STARTING:
@@ -313,6 +336,15 @@ void WaitingRoom::OpenPopup()
 
 	SetMaxPlayers(netplayManager->lobbyManager->currentLobby.data.maxMembers);
 
+	if (netplayManager->IsHost())
+	{
+		inviteButton->ShowMember();
+	}
+	else
+	{
+		inviteButton->HideMember();
+	}
+
 	//SetMaxPlayers(netplayManager->lobbyManager);
 
 	//ClosePopup();
@@ -390,6 +422,12 @@ void WaitingRoom::ButtonCallback(Button *b, const std::string & e)
 	{
 		SetAction(A_LEAVE_ROOM);
 		//go back
+	}
+	else if (b == inviteButton)
+	{
+		NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+		assert(netplayManager->lobbyManager->IsInLobby());
+		SteamFriends()->ActivateGameOverlayInviteDialog(netplayManager->lobbyManager->currentLobby.m_steamIDLobby);
 	}
 }
 

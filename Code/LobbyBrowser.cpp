@@ -132,6 +132,14 @@ void LobbyBrowser::ClearSelection()
 	joinButton->HideMember();
 }
 
+void LobbyBrowser::TryJoinLobby(CSteamID id)
+{
+	LobbyManager *lobbyManager = MainMenu::GetInstance()->netplayManager->lobbyManager;
+	lobbyManager->TryJoiningLobby(id);
+	action = A_TRY_JOIN_LOBBY;
+	joinButton->HideMember();
+}
+
 void LobbyBrowser::MouseScroll(int delta)
 {
 	int oldTopRow = topRow;

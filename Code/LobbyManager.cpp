@@ -163,6 +163,21 @@ LobbyManager::LobbyManager()
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
 	currWaitingRoom = NULL;
+	ClearJoinRequest();
+}
+
+void LobbyManager::SetJoinRequest(CSteamID lobby, CSteamID sender)
+{
+	joinRequestLobbyId = lobby;
+	joinRequestSender = sender;
+	receivedJoinRequest = true;
+}
+
+void LobbyManager::ClearJoinRequest()
+{
+	joinRequestLobbyId.Clear();
+	joinRequestSender.Clear();
+	receivedJoinRequest = false;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyData &ld)
@@ -332,6 +347,11 @@ void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
 	}
 }
 
+void LobbyManager::OnGameLobbyJoinRequestedCallback(GameLobbyJoinRequested_t *pCallback )
+{
+
+}
+
 void LobbyManager::Update()
 {
 	switch (action)
@@ -361,6 +381,13 @@ void LobbyManager::TryJoiningLobby( int lobbyIndex )
 
 	cout << "found a lobby. Attempting to join: " << lobbyVec[lobbyIndex].data.lobbyName << endl;
 	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[lobbyIndex].m_steamIDLobby);
+	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
+}
+
+void LobbyManager::TryJoiningLobby(CSteamID id)
+{
+	action = A_REQUEST_JOIN_LOBBY;
+	auto apiCall = SteamMatchmaking()->JoinLobby(id);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
 
@@ -531,7 +558,15 @@ bool LobbyManager::IsAllLobbyDataReceived()
 
 bool LobbyManager::CurrentLobbyHasMaxMembers()
 {
-	return false;
+	if (action != A_IN_LOBBY)
+		return false;
+
+	if (GetNumMembers() < currentLobby.data.maxMembers)
+	{
+		return false;
+	}
+	
+	return true;
 	//if( currentLobby.mem)
 }
 

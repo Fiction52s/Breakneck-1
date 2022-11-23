@@ -46,6 +46,7 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	Panel *panel;
 	Button *startButton;
 	Button *leaveButton;
+	Button *inviteButton;
 
 	MapHeader *mapHeader;
 

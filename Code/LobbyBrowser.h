@@ -4,6 +4,7 @@
 #include <string>
 #include <SFML/Graphics.hpp>
 #include "GUI.h"
+#include <steam/steam_api.h>
 
 struct LobbyChooseRect : ChooseRect
 {
@@ -83,6 +84,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 	void ClearLobbyRects();
 
 	void ClearSelection();
+	void TryJoinLobby(CSteamID id);
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);

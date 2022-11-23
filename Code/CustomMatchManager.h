@@ -2,7 +2,7 @@
 #define __CUSTOM_MATCH_MANAGER_H__
 
 #include <SFML/Graphics.hpp>
-
+#include "steam/steam_api.h"
 
 struct LobbyBrowser;
 struct WaitingRoom;
@@ -12,6 +12,7 @@ struct MapNode;
 struct MessagePopup;
 struct PostMatchOptionsPopup;
 struct PostMatchClientPopup;
+struct LobbyInvitePopup;
 
 struct CustomMatchManager
 {
@@ -19,6 +20,8 @@ struct CustomMatchManager
 	{
 		A_IDLE,
 		A_LOBBY_BROWSER,
+		A_LOBBY_BROWSER_JOIN_REQUEST_POPUP,
+		//A_LOBBY_BROWSER_JOIN_REQUEST_POPUP_WAIT_TO_JOIN,
 		A_CHOOSE_MAP,
 		A_DOWNLOADING_WORKSHOP_MAP,
 		A_CHOOSE_MAP_OPTIONS,
@@ -48,6 +51,7 @@ struct CustomMatchManager
 	MessagePopup *messagePopup;
 	PostMatchOptionsPopup *postMatchPopup;
 	PostMatchClientPopup *postMatchClientPopup;
+	LobbyInvitePopup *lobbyInvitePopup;
 	int preErrorAction;
 	bool fromWorkshopBrowser;
 
@@ -66,6 +70,8 @@ struct CustomMatchManager
 	bool Update();
 	void StartClientWaitingRoomForNextMap();
 	void Draw(sf::RenderTarget *target);
+	void DrawPopupBG(sf::RenderTarget *target);
+	void OpenLobbyInvitePopup(CSteamID lobbyId, CSteamID senderId);
 
 };
 
