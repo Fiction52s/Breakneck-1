@@ -3183,15 +3183,35 @@ void MainMenu::HandleMenuMode()
 			//matchResultsScreen->HandleEvent(ev);
 		}
 
-		if ( !netplayManager->IsHost() && netplayManager->action == NetplayManager::A_WAIT_FOR_GGPO_SYNC)
+		if ( !netplayManager->IsHost() && netplayManager->postMatchOptionReceived != -1 )//NetplayManager::A_WAIT_FOR_GGPO_SYNC)
 		{
-			delete matchResultsScreen;
-			matchResultsScreen = NULL;
+			switch (netplayManager->postMatchOptionReceived)
+			{
+			case NetplayManager::POST_MATCH_A_REMATCH:
+			{
+				delete matchResultsScreen;
+				matchResultsScreen = NULL;
 
-			cout << "client starting map rematch!!" << endl;
-			netplayManager->game->InitGGPO();
-			SetMode(QUICKPLAY_PLAY);
-			fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+				cout << "client starting map rematch!!" << endl;
+				netplayManager->game->InitGGPO();
+				SetMode(QUICKPLAY_PLAY);
+				fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
+				break;
+			}
+			case NetplayManager::POST_MATCH_A_CHOOSE_MAP:
+			{
+				netplayManager->CleanupMatch();
+				SetMode(CUSTOM_MATCH_SETUP);
+				customMatchManager->StartClientWaitingRoomForNextMap();
+				break;
+			}
+			case NetplayManager::POST_MATCH_A_LEAVE:
+			{
+				break;
+			}
+			}
+			
+			
 			break;
 		}
 
@@ -3253,10 +3273,16 @@ void MainMenu::HandleMenuMode()
 		}
 		case CustomMatchManager::A_POST_MATCH_HOST_CHOOSE_MAP:
 		{
-			netplayManager->CleanupMatch();
-			netplayManager->Abort();
+			//netplayManager->CleanupMatch();
+			//netplayManager->Abort();
+			//SetMode(TITLEMENU);
 
-			SetMode(TITLEMENU);
+			netplayManager->CleanupMatch();
+			netplayManager->SendPostMatchChooseMapSignalToClients();
+			customMatchManager->BrowseForNextMap();
+			SetMode(CUSTOM_MATCH_SETUP);
+
+			//now go to map choosing stage
 			break;
 		}
 		}

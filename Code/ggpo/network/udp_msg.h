@@ -41,6 +41,9 @@ struct UdpMsg
 	  Game_Host_Rematch,
 	  Game_Client_Finished_Results_Screen,
 	  Game_Host_Show_Post_Options,
+	  Game_Host_Post_Choose_Map,
+	  Game_Host_Next_Map_Data,
+	  Game_Host_Says_Connect_To_All,
    };
   /* enum MsgType { 
       Invalid       = 0,

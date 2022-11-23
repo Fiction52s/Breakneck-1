@@ -37,6 +37,10 @@ CustomMatchManager::CustomMatchManager()
 	fromWorkshopBrowser = false;
 
 	preErrorAction = A_IDLE;
+
+	currMapIndex = 0;
+
+	nextMapMode = false;
 }
 
 CustomMatchManager::~CustomMatchManager()
@@ -107,8 +111,27 @@ void CustomMatchManager::OpenPostMatchPopup()
 	}
 }
 
+void CustomMatchManager::BrowseForNextMap()
+{
+	currMapIndex++;
+
+	nextMapMode = true;
+
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	netplayManager->previewPath = "";
+	netplayManager->matchParams.mapPath = "";
+
+	netplayManager->ClearDataForNextMatch();
+
+	mapBrowserScreen->StartLocalBrowsing();
+	SetAction(A_CHOOSE_MAP);
+}
+
 void CustomMatchManager::CreateCustomLobby()
 {
+	currMapIndex = 0;
+	nextMapMode = false;
 	fromWorkshopBrowser = false;
 	//assert(action == A_LOBBY_BROWSER);
 
@@ -162,6 +185,8 @@ void CustomMatchManager::CreateCustomLobbyFromWorkshopBrowser()
 
 void CustomMatchManager::BrowseCustomLobbies()
 {
+	currMapIndex = 0;
+	nextMapMode = false;
 	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
 	netplayManager->Init();
 	SetAction(A_LOBBY_BROWSER);
@@ -282,12 +307,20 @@ bool CustomMatchManager::Update()
 			}
 		}
 
-		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+		if (nextMapMode)
 		{
-			SetAction(A_IDLE);
-			netplayManager->Abort();
-			return false;
+			
 		}
+		else
+		{
+			if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
+			{
+				SetAction(A_IDLE);
+				netplayManager->Abort();
+				return false;
+			}
+		}
+		
 		break;
 	case A_DOWNLOADING_WORKSHOP_MAP:
 	{
@@ -315,13 +348,40 @@ bool CustomMatchManager::Update()
 				//works for now, but this process needs to be cleaned up later for better looking loading
 			}
 
-			SetAction(A_CREATING_LOBBY);
+			if (nextMapMode)
+			{
+				mapOptionsPopup->currLobbyData->mapIndex = currMapIndex;
+				netplayManager->lobbyManager->currentLobby.data = *mapOptionsPopup->currLobbyData;
+				mapOptionsPopup->currLobbyData->SetLobbyData(netplayManager->lobbyManager->currentLobby.m_steamIDLobby);
+				
 
-			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
-			cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
-			cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+				//netplayManager->SendLobbyDataForNextMapToClients(mapOptionsPopup->currLobbyData);
+				SetAction(A_WAITING_ROOM);
 
-			netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyData);
+				boost::filesystem::path mapPath = mapOptionsPopup->currLobbyData->mapPath;
+				string previewPath = mapPath.parent_path().string() + "\\" + mapPath.stem().string() + ".png";
+
+				netplayManager->previewPath = previewPath;
+
+				netplayManager->CheckForMapAndSetMatchParams();
+
+				waitingRoom->OpenPopup();
+				waitingRoom->SetPreview(previewPath);
+				waitingRoom->UpdateMapHeader(mapPath.string());
+				
+				//send a packet of data containing a buffer of lobbyData
+			}
+			else
+			{
+				SetAction(A_CREATING_LOBBY);
+
+				cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
+				cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
+				cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+
+				netplayManager->TryCreateCustomLobby(*mapOptionsPopup->currLobbyData);
+			}
+			
 			//cout << "waiting room" << endl;
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
@@ -366,9 +426,10 @@ bool CustomMatchManager::Update()
 
 			netplayManager->CheckForMapAndSetMatchParams();
 
+			waitingRoom->OpenPopup();
 			waitingRoom->SetPreview(previewPath);
 			waitingRoom->UpdateMapHeader(mapPath.string());
-			waitingRoom->OpenPopup();
+			
 		}
 		break;
 	}
@@ -380,21 +441,69 @@ bool CustomMatchManager::Update()
 			{
 				SetAction(A_READY);
 
-				netplayManager->ConnectToAll();
+				if (!nextMapMode)
+				{
+					netplayManager->ConnectToAll();
 
-				LobbyMessage lm;
-				lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;
-				netplayManager->BroadcastLobbyMessage(lm);
-				cout << "broadcasting start message" << endl;
+					netplayManager->SendConnectToAllSignalToAllClients();
+				}
+				else
+				{
+					netplayManager->HostStartLoading();
+				}
+				
+				//LobbyMessage lm;
+				//lm.header.messageType = LobbyMessage::MESSAGE_TYPE_START_CUSTOM_MATCH;
+				//netplayManager->BroadcastLobbyMessage(lm);
+				//cout << "broadcasting start message" << endl;
 			}
 		}
 		else
 		{
-			if (netplayManager->action == NetplayManager::A_CONNECT_TO_ALL)
+			if (nextMapMode)
 			{
-				cout << "processed start message" << endl;
-				waitingRoom->SetAction(WaitingRoom::A_READY_TO_START); //set back to before start button was pressed.
-				SetAction(A_READY);
+				if (netplayManager->lobbyManager->currentLobby.data.mapIndex > currMapIndex )//netplayManager->receivedNextMapData)
+				{
+					currMapIndex = netplayManager->lobbyManager->currentLobby.data.mapIndex;
+					//maybe tell the lobby manager to refresh or check for updates to the lobby if this doens't match
+					
+					//netplayManager->receivedNextMapData = false;
+
+					netplayManager->CheckForMapAndSetMatchParams();
+
+					if (netplayManager->matchParams.mapPath == "")
+					{
+						netplayManager->RequestMapFromHost();
+					}
+					else
+					{
+						waitingRoom->UpdateMapHeader(netplayManager->matchParams.mapPath.string());
+					}
+
+					if (netplayManager->previewPath == "")
+					{
+						netplayManager->RequestPreviewFromHost();
+					}
+					else
+					{
+						waitingRoom->SetPreview(netplayManager->previewPath.string());
+					}
+				}
+
+				/*if (waitingRoom->action == WaitingRoom::A_READY_TO_START)
+				{
+					SetAction(A_READY);
+				}*/
+			}
+			else
+			{
+				if (netplayManager->action == NetplayManager::A_CONNECT_TO_ALL)
+				{
+					//not even sure if this code gets run anymore??
+					cout << "processed start message" << endl;
+					waitingRoom->SetAction(WaitingRoom::A_READY_TO_START); //set back to before start button was pressed.
+					SetAction(A_READY);
+				}
 			}
 		}
 		
@@ -431,6 +540,18 @@ bool CustomMatchManager::Update()
 		break;
 	case A_WAITING_ROOM:
 		waitingRoom->Update();
+
+		if (!netplayManager->IsHost() && nextMapMode && waitingRoom->action == WaitingRoom::A_READY_TO_START && netplayManager->action == NetplayManager::A_IDLE)
+		{
+			netplayManager->action = NetplayManager::A_WAIT_TO_LOAD_MAP;
+		}
+		
+		if (netplayManager->action == NetplayManager::A_WAIT_TO_LOAD_MAP && netplayManager->receivedMapLoadSignal)
+		{
+			//right before map starts loading
+			SetAction(A_READY); //just added this.
+		}
+
 		break;
 	case A_CREATING_LOBBY:
 	{
@@ -527,4 +648,56 @@ void CustomMatchManager::Draw(sf::RenderTarget *target)
 		break;
 	}
 	}
+}
+
+void CustomMatchManager::StartClientWaitingRoomForNextMap()
+{
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+
+	//currMapIndex++; //remain at the current value until the lobby makes you change it
+
+	nextMapMode = true;
+
+	cout << "client is now set to next map mode!" << endl;
+
+
+	netplayManager->receivedMapLoadSignal = false;
+	netplayManager->receivedMapVerifySignal = false;
+	netplayManager->receivedGameStartSignal = false;
+	netplayManager->receivedStartGGPOSignal = false;
+	netplayManager->receivedMap = false;
+	netplayManager->waitingForMap = false;
+	netplayManager->waitingForPreview = false;
+	netplayManager->receivedPostOptionsSignal = false;
+	netplayManager->receivedNextMapData = false;
+
+	netplayManager->action = NetplayManager::A_IDLE;
+
+	netplayManager->previewPath = "";
+	netplayManager->matchParams.mapPath = "";
+
+	waitingRoom->OpenPopup();
+
+	SetAction(A_WAITING_ROOM);
+
+	/*netplayManager->CheckForMapAndSetMatchParams(netplayManager->);
+
+	if (netplayManager->matchParams.mapPath == "")
+	{
+		netplayManager->RequestMapFromHost();
+	}
+	else
+	{
+		waitingRoom->UpdateMapHeader(netplayManager->matchParams.mapPath.string());
+	}
+
+	if (netplayManager->previewPath == "")
+	{
+		netplayManager->RequestPreviewFromHost();
+	}
+	else
+	{
+		waitingRoom->SetPreview(netplayManager->previewPath.string());
+	}*/
+
 }

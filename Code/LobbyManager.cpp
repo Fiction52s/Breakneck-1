@@ -30,10 +30,12 @@ bool LobbyData::Update( CSteamID lobbyId )
 
 	string maxMembersStr = SteamMatchmaking()->GetLobbyData(lobbyId, "maxMembers");
 	maxMembers = stoi(maxMembersStr);
+
+	string mapIndexStr = SteamMatchmaking()->GetLobbyData(lobbyId, "mapIndex");
+	mapIndex = stoi(mapIndexStr);
 	
 	string creatorIdStr = SteamMatchmaking()->GetLobbyData(lobbyId, "creatorID");
 	creatorId = stoll(creatorIdStr);
-
 	return true;
 }
 
@@ -51,6 +53,8 @@ void LobbyData::SetLobbyData(CSteamID lobbyId)
 
 	SteamMatchmaking()->SetLobbyData(lobbyId, "maxMembers", to_string(maxMembers).c_str());
 
+	SteamMatchmaking()->SetLobbyData(lobbyId, "mapIndex", to_string(mapIndex).c_str());
+
 	//string isWorkshopStr = //to_string((int)paramsForMakingLobby.isWorkshopMap);
 	if (isWorkshopMap)
 	{
@@ -64,6 +68,88 @@ void LobbyData::SetLobbyData(CSteamID lobbyId)
 
 	string creatorIDStr = to_string(creatorId);
 	SteamMatchmaking()->SetLobbyData(lobbyId, "creatorID", creatorIDStr.c_str());
+}
+
+int LobbyData::GetNumStoredBytes()
+{
+	return lobbyName.length() + 1
+		+ mapPath.length() + 1
+		+ fileHash.length() + 1
+		+ sizeof(gameModeType)
+		+ sizeof(isWorkshopMap)
+		+ sizeof(randSeed)
+		+ sizeof(maxMembers)
+		+ sizeof(publishedFileId)
+		+ sizeof(creatorId)
+		+ sizeof(mapIndex);
+}
+
+void LobbyData::StoreBytes(unsigned char *bytes)
+{
+	bytes += StoreString(lobbyName, bytes);
+	bytes += StoreString(mapPath, bytes);
+	bytes += StoreString(fileHash, bytes);
+	bytes += StoreInt(gameModeType, bytes);
+	bytes += StoreBool(isWorkshopMap, bytes);
+	bytes += StoreInt(randSeed, bytes);
+	bytes += StoreInt(maxMembers, bytes);
+	bytes += StoreInt(mapIndex, bytes);
+	bytes += StoreUint64(publishedFileId, bytes);
+	bytes += StoreUint64(creatorId, bytes);
+}
+
+void LobbyData::SetFromBytes(unsigned char *bytes)
+{
+	bytes += ReadString(lobbyName, bytes);
+	bytes += ReadString(mapPath, bytes);
+	bytes += ReadString(fileHash, bytes);
+
+	memcpy(&gameModeType, bytes, sizeof(gameModeType));
+	bytes += sizeof(gameModeType);
+	memcpy(&isWorkshopMap, bytes, sizeof(isWorkshopMap));
+	bytes += sizeof(isWorkshopMap);
+	memcpy(&randSeed, bytes, sizeof(randSeed));
+	bytes += sizeof(randSeed);
+	memcpy(&maxMembers, bytes, sizeof(maxMembers));
+	bytes += sizeof(maxMembers);
+
+	memcpy(&mapIndex, bytes, sizeof(mapIndex));
+	bytes += sizeof(mapIndex);
+
+	memcpy(&publishedFileId, bytes, sizeof(publishedFileId));
+	bytes += sizeof(publishedFileId);
+	memcpy(&creatorId, bytes, sizeof(creatorId));
+	bytes += sizeof(creatorId);
+}
+
+int LobbyData::StoreString(std::string &myStr, unsigned char *bytes)
+{
+	memcpy(bytes, myStr.c_str(), myStr.length() + 1);
+	return myStr.length() + 1;
+}
+int LobbyData::StoreInt(int &myInt, unsigned char *bytes)
+{
+	memcpy(&myInt, bytes, sizeof(myInt));
+	bytes += sizeof(myInt);
+	return sizeof(myInt);
+}
+int LobbyData::StoreBool(bool &myBool, unsigned char *bytes)
+{
+	memcpy(&myBool, bytes, sizeof(myBool));
+	bytes += sizeof(myBool);
+	return sizeof(myBool);
+}
+int LobbyData::StoreUint64(uint64 &myUint64, unsigned char *bytes)
+{
+	memcpy(&myUint64, bytes, sizeof(myUint64));
+	bytes += sizeof(myUint64);
+	return sizeof(myUint64);
+}
+
+int LobbyData::ReadString(std::string &myStr, unsigned char *bytes)
+{
+	myStr = string((char*)bytes);
+	return myStr.length() + 1;
 }
 
 void Lobby::Set(CSteamID p_lobbyId)
@@ -177,26 +263,40 @@ void LobbyManager::OnLobbyDataUpdateCallback(LobbyDataUpdate_t *pCallback)
 {
 	cout << "lobby data update callback" << endl;
 
+
+
 	if (pCallback->m_bSuccess)
 	{
-		for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+		if (action == A_IN_LOBBY)
 		{
-			if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
+			if (currentLobby.m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 			{
-				(*it).dataIsRetrieved = true;
-				(*it).data.Update((*it).m_steamIDLobby);
-				cout << "data received for lobby!" << endl;
-
-				if (IsAllLobbyDataReceived() && action == A_FOUND_LOBBIES_WAITING_FOR_DATA)
+				currentLobby.dataIsRetrieved = true;
+				currentLobby.data.Update(pCallback->m_ulSteamIDLobby);
+				cout << "data received for current lobby" << endl;
+			}
+		}
+		else
+		{
+			for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+			{
+				if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
 				{
-					action = A_FOUND_LOBBIES;
-				}
+					(*it).dataIsRetrieved = true;
+					(*it).data.Update((*it).m_steamIDLobby);
+					cout << "data received for lobby!" << endl;
 
-				//if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
-				//{
-				//	action = A_IN_LOBBY;
-				//}
-				break;
+					if (action == A_FOUND_LOBBIES_WAITING_FOR_DATA && IsAllLobbyDataReceived())
+					{
+						action = A_FOUND_LOBBIES;
+					}
+
+					//if (action == A_IN_LOBBY_WAITING_FOR_DATA && (*it).m_steamIDLobby == currentLobby.m_steamIDLobby)
+					//{
+					//	action = A_IN_LOBBY;
+					//}
+					break;
+				}
 			}
 		}
 	}

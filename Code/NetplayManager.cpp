@@ -32,7 +32,6 @@ void NetplayPlayer::Clear()
 	hasAllData = false;
 	finishedWithResultsScreen = false;
 
-
 	//memset(desyncCheckInfoArray, 0, sizeof(DesyncCheckInfo) * MAX_DESYNC_CHECK_INFOS_STORED);
 }
 
@@ -218,6 +217,8 @@ void NetplayManager::Abort()
 	waitingForMap = false;
 	waitingForPreview = false;
 	receivedPostOptionsSignal = false;
+	receivedNextMapData = false;
+	postMatchOptionReceived = -1;
 }
 
 void NetplayManager::UpdateNetplayPlayers()
@@ -303,6 +304,7 @@ bool NetplayManager::ClientCheckWorkshopMapInstalled()
 	return false;
 }
 
+//void NetplayManager::CheckForMapAndSetMatchParams( LobbyData &lobbyData )
 void NetplayManager::CheckForMapAndSetMatchParams()
 {
 	checkWorkshopMap = false;
@@ -310,6 +312,7 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 	mapDownloadFilePath = "";
 	receivedMapName = "";
 
+	//LobbyData &lobbyData = *ld;//lobbyManager->currentLobby.data;
 	LobbyData &lobbyData = lobbyManager->currentLobby.data;
 
 	matchParams.gameModeType = lobbyData.gameModeType;
@@ -381,7 +384,7 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 					mapVerified = true;
 					matchParams.mapPath = receivedMapPath;
 
-					previewPath = receivedMapPath.parent_path().string() + "\\" + receivedMapPath.stem().string() + ".png";
+					previewPath = receivedMapPath.parent_path().string() + "/" + receivedMapPath.stem().string() + ".png";
 
 					cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 				}
@@ -426,7 +429,7 @@ void NetplayManager::CheckForMapAndSetMatchParams()
 										cout << "hashes match in download folder" << endl;
 										mapVerified = true;
 										matchParams.mapPath = (*it);
-										previewPath = matchParams.mapPath.parent_path().string() + "\\" + matchParams.mapPath.stem().string() + ".png";
+										previewPath = matchParams.mapPath.parent_path().string() + "/" + matchParams.mapPath.stem().string() + ".png";
 
 										cout << "client setting mapPath to: " << matchParams.mapPath << endl;
 									}
@@ -593,7 +596,10 @@ void NetplayManager::Update()
 				}*/
 
 
-				LeaveLobby();
+				//LeaveLobby();
+
+
+
 				SendSignalToHost(UdpMsg::Game_Client_Done_Connecting);
 				//action = A_WAIT_TO_VERIFY;//A_WAIT_TO_LOAD_MAP;
 				action = A_WAIT_TO_LOAD_MAP;
@@ -621,12 +627,14 @@ void NetplayManager::Update()
 		//host behavior
 		if (allDoneConnecting)
 		{
-			LeaveLobby();
-
-			SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
+			//LeaveLobby();
+			HostStartLoading();
+			//SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
+			//LoadMap();
+			
 			//SendSignalToAllClients(UdpMsg::Game_Host_Says_Verify_Map);
 
-			LoadMap();
+			
 
 			//action = A_WAIT_FOR_ALL_TO_VERIFY;
 		}
@@ -1165,7 +1173,7 @@ void NetplayManager::LoadMap()
 	//{
 	//	matchParams.numPlayers = 2;//lobbyManager->GetNumMembers();
 	//}
-	
+	cout << "loading map" << endl;
 
 	assert(game == NULL);
 	game = new GameSession(&matchParams);
@@ -1233,6 +1241,7 @@ void NetplayManager::CleanupMatch()
 	{
 		delete game;
 		game = NULL;
+		cout << "cleaning up map" << endl;
 	}
 }
 
@@ -1371,6 +1380,11 @@ void NetplayManager::HandleLobbyMessage(LobbyMessage &msg)
 	}
 }
 
+void NetplayManager::SendConnectToAllSignalToAllClients()
+{
+	SendSignalToAllClients(UdpMsg::Game_Host_Says_Connect_To_All);
+}
+
 bool NetplayManager::AllClientsHaveReceivedAllData()
 {
 	bool allHaveData = true;
@@ -1393,14 +1407,38 @@ bool NetplayManager::AllClientsHaveReceivedAllData()
 
 void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::filesystem::path &p)
 {
-	cout << "send map to client: " << p << endl;
-	if (!IsHost())
+	assert(IsHost());
+	SendFileToConnection(connection, p, UdpMsg::Game_Map);
+}
+
+void NetplayManager::SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p)
+{
+	assert(IsHost());
+	SendFileToConnection(connection, p, UdpMsg::Game_Preview);
+}
+
+void NetplayManager::SendFileToConnection(HSteamNetConnection connection, boost::filesystem::path &p,
+	int udpMsgType)
+{
+	try
 	{
-		assert(0);
+		if (!boost::filesystem::exists(p))
+		{
+			cout << "file cant be sent as it doesnt exist: " << p << endl;
+			return;
+		}
+		else
+		{
+			cout << "sending file to connection: " << p << endl;
+		}
+	}
+	catch (boost::filesystem::filesystem_error &e)
+	{
+		cout << "file cant be sent because of file error" << endl;
 		return;
 	}
 
-	UdpMsg msg(UdpMsg::Game_Map);
+	UdpMsg msg((UdpMsg::MsgType)udpMsgType);
 
 	std::ifstream is;
 	is.open(p.string(), std::ios::binary);
@@ -1413,7 +1451,7 @@ void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::fil
 	is.seekg(0, std::ios::beg);
 	is.read(&data[0], file_size_in_byte);
 	is.close();
-	
+
 	int bufferSize = sizeof(UdpMsg) + file_size_in_byte;
 	char*buffer = new char[bufferSize];
 	char *tempBuffer = buffer;
@@ -1426,13 +1464,13 @@ void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::fil
 		tempBuffer[i] = data[i];
 	}
 
-	cout << "done building buffer for sending map" << endl;
+	//cout << "done building buffer for sending preview" << endl;
 
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "succeeded in sending map" << endl;
+		cout << "succeeded in sending file: " << p << endl;
 		//Log("sent packet length %d to %d. res: %d\n", len, p_connection, res);
 	}
 	else
@@ -1441,73 +1479,52 @@ void NetplayManager::SendMapToClient( HSteamNetConnection connection, boost::fil
 	}
 }
 
-void NetplayManager::SendPreviewToClient(HSteamNetConnection connection, boost::filesystem::path &p)
+void NetplayManager::SendBufferToConnection(HSteamNetConnection connection, unsigned char *buf, int bufSize, int udpMsgType)
 {
-	cout << "send preview to client: " << p << endl;
-	if (!IsHost())
-	{
-		assert(0);
-		return;
-	}
+	UdpMsg msg((UdpMsg::MsgType)udpMsgType);
 
-	try
-	{
-		if (!boost::filesystem::exists(p))
-		{
-			cout << "preview cant be sent as it doesnt exist: " << p << endl;
-			return;
-		}
-		else
-		{
-			cout << "sending preview to client. previewPath: " << p << endl;
-		}
-	}
-	catch (boost::filesystem::filesystem_error &e)
-	{
-		cout << "preview cant be sent because of file error" << endl;
-		return;
-	}
-
-
-	UdpMsg msg(UdpMsg::Game_Preview);
-
-	std::ifstream is;
-	is.open(p.string(), std::ios::binary);
-	assert(is.is_open());
-
-	is.seekg(0, std::ios::end);
-	size_t file_size_in_byte = is.tellg();
-	std::vector<char> data; // used to store text data
-	data.resize(file_size_in_byte);
-	is.seekg(0, std::ios::beg);
-	is.read(&data[0], file_size_in_byte);
-	is.close();
-
-	int bufferSize = sizeof(UdpMsg) + file_size_in_byte;
+	int bufferSize = sizeof(UdpMsg) + bufSize + 1;
 	char*buffer = new char[bufferSize];
 	char *tempBuffer = buffer;
 	UdpMsg *bufferMsg = (UdpMsg*)buffer;
 	*bufferMsg = msg;
 	tempBuffer += sizeof(UdpMsg);
 
-	for (int i = 0; i < file_size_in_byte; ++i)
-	{
-		tempBuffer[i] = data[i];
-	}
-
-	cout << "done building buffer for sending preview" << endl;
+	memcpy(tempBuffer, buf, bufSize);
 
 	EResult res = SteamNetworkingSockets()->SendMessageToConnection(connection, buffer, bufferSize, k_EP2PSendReliable, NULL);
 
 	if (res == k_EResultOK)
 	{
-		cout << "succeeded in sending preview" << endl;
+		cout << "succeeded in sending buffer of size: " << bufSize << " with msg type: " << udpMsgType << endl;
 		//Log("sent packet length %d to %d. res: %d\n", len, p_connection, res);
 	}
 	else
 	{
 		//cout << "failing to send packet" << endl;
 	}
+}
+
+void NetplayManager::SendLobbyDataForNextMapToClients(LobbyData *ld)
+{
+	int numBytes = ld->GetNumStoredBytes();
+	unsigned char *bytes = new unsigned char[numBytes];
+	ld->StoreBytes(bytes);
+
+	for (int i = 0; i < numPlayers; ++i)
+	{
+		if (i == playerIndex)
+		{
+			continue;
+		}
+
+		if (netplayPlayers[i].isConnectedTo)
+		{
+			SendBufferToConnection(netplayPlayers[i].connection, bytes, numBytes, UdpMsg::Game_Host_Next_Map_Data);
+		}
+	}
+
+	delete[] bytes;
 }
 
 void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworkingMessage_t *steamMsg)
@@ -1693,8 +1710,11 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	case UdpMsg::Game_Host_Rematch:
 	{
 		assert(!IsHost());
+
+		postMatchOptionReceived = POST_MATCH_A_REMATCH;//UdpMsg::Game_Host_Rematch;
+
 		cout << "host sent rematch signal" << endl;
-		action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;
+		//action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;
 		break;
 	}
 	case UdpMsg::Game_Client_Finished_Results_Screen:
@@ -1725,6 +1745,38 @@ void NetplayManager::HandleMessage(HSteamNetConnection connection, SteamNetworki
 	{
 		assert(!IsHost());
 		receivedPostOptionsSignal = true;
+		break;
+	}
+	case UdpMsg::Game_Host_Next_Map_Data:
+	{
+		assert(!IsHost());
+
+		if (!receivedNextMapData)
+		{
+			unsigned char *buf = (unsigned char*)steamMsgData + sizeof(UdpMsg);
+			int bufSize = steamMsg->GetSize() - sizeof(UdpMsg);
+			nextMapData.SetFromBytes(buf);
+
+			receivedNextMapData = true;
+			//cout << "received game map. attempting to write to file." << endl;
+			//FILE *file = fopen(mapDownloadFilePath.string().c_str(), "wb");
+			//fwrite(buf, 1, bufSize, file);
+			//fclose(file);
+			//cout << "finished saving new map: " << mapDownloadFilePath << endl;
+		}
+		
+
+		break;
+	}
+	case UdpMsg::Game_Host_Post_Choose_Map:
+	{
+		postMatchOptionReceived = POST_MATCH_A_CHOOSE_MAP;//UdpMsg::Game_Host_Post_Choose_Map;
+		break;
+	}
+	case UdpMsg::Game_Host_Says_Connect_To_All:
+	{
+		assert(!IsHost());
+		ConnectToAll();
 		break;
 	}
 	}
@@ -1867,6 +1919,16 @@ void NetplayManager::ClearClientsFinishingResultsScreen()
 	receivedPostOptionsSignal = false;
 }
 
+void NetplayManager::ClearDataForNextMatch()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		netplayPlayers[i].hasAllData = false;
+		netplayPlayers[i].readyToRun = false;
+		netplayPlayers[i].doneLoading = false;
+	}
+}
+
 void NetplayManager::HostInitiateRematch()
 {
 	action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;//NetplayManager::A_READY_TO_RUN;
@@ -1921,4 +1983,15 @@ bool NetplayManager::CheckResultsScreen()
 	}
 
 	return false;
+}
+
+void NetplayManager::SendPostMatchChooseMapSignalToClients()
+{
+	SendSignalToAllClients(UdpMsg::Game_Host_Post_Choose_Map);
+}
+
+void NetplayManager::HostStartLoading()
+{
+	SendSignalToAllClients(UdpMsg::Game_Host_Says_Load);
+	LoadMap();
 }

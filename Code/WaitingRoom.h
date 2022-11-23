@@ -73,7 +73,7 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	void Update();
 	void Draw(sf::RenderTarget *target);
 	void OpenPopup();
-	void ClosePopup();
+	void Clear();
 	void SetPreview(const std::string &previewPath);
 	void SetMaxPlayers(int n);
 	void SetAction(Action a);

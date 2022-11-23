@@ -69,6 +69,13 @@ struct NetplayManager
 		CHANNEL_SESSION,
 	};
 
+	enum PostMatchAction
+	{
+		POST_MATCH_A_REMATCH,
+		POST_MATCH_A_CHOOSE_MAP,
+		POST_MATCH_A_LEAVE,
+	};
+
 	enum Action
 	{
 		A_IDLE,
@@ -105,6 +112,11 @@ struct NetplayManager
 	bool receivedMap;
 	bool receivedPreview;
 	bool receivedPostOptionsSignal;
+
+	int postMatchOptionReceived;
+
+	bool receivedNextMapData;
+	LobbyData nextMapData;
 
 	bool waitingForMap;
 	bool waitingForPreview;
@@ -153,6 +165,8 @@ struct NetplayManager
 	void SendSignalToHost(int type);
 	void SendSignalToAllClients(int type);
 
+	void HostStartLoading();
+
 	void SendDesyncCheckToHost( int currGameFrame );
 	void ConnectToAll();
 	void ReceiveMessages();
@@ -188,6 +202,7 @@ struct NetplayManager
 
 	void HostInitiateRematch();
 
+	//void CheckForMapAndSetMatchParams( LobbyData &lobbyData );
 	void CheckForMapAndSetMatchParams();
 	bool ClientCheckWorkshopMapInstalled();
 
@@ -201,9 +216,22 @@ struct NetplayManager
 
 	void ClearClientsFinishingResultsScreen();
 	void HostFinishResultsScreen();
+	void ClearDataForNextMatch();
+
+	void SendPostMatchChooseMapSignalToClients();
 
 	bool AllPlayersHaveFinishedWithResultsScreen();
 	bool CheckResultsScreen();
+
+	void SendConnectToAllSignalToAllClients();
+
+	void SendFileToConnection(HSteamNetConnection connection, boost::filesystem::path &p,
+		int udpMsgType );
+
+	void SendBufferToConnection(HSteamNetConnection connection, unsigned char *buf, int bufSize,
+		int udpMsgType);
+
+	void SendLobbyDataForNextMapToClients(LobbyData *ld);
 
 	STEAM_CALLBACK(NetplayManager, OnLobbyChatMessageCallback, LobbyChatMsg_t);
 	STEAM_CALLBACK(NetplayManager, OnConnectionStatusChangedCallback, SteamNetConnectionStatusChangedCallback_t);

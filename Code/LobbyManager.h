@@ -32,8 +32,10 @@ struct LobbyData
 		isWorkshopMap = false;
 		randSeed = 0;
 		maxMembers = 0;
+		mapIndex = 0;
 		publishedFileId = 0;
 		creatorId = 0;
+		
 	}
 
 	std::string lobbyName;
@@ -43,11 +45,24 @@ struct LobbyData
 	bool isWorkshopMap;
 	int randSeed;
 	int maxMembers;
+	int mapIndex; //when running next maps
 	uint64 publishedFileId;
 	uint64 creatorId;
+	
 
 	bool Update( CSteamID lobbyId );
 	void SetLobbyData(CSteamID lobbyId);
+	int GetNumStoredBytes();
+	void StoreBytes( unsigned char *bytes );
+	void SetFromBytes(unsigned char *bytes);
+private:
+	int ReadString( std::string &myStr, unsigned char *bytes);
+	int StoreString(std::string &myStr, unsigned char *bytes);
+	int StoreInt(int &myInt, unsigned char *bytes);
+	int StoreBool(bool &myBool, unsigned char *bytes);
+	int StoreUint64(uint64 &myUint64, unsigned char *bytes);
+
+	//unsigned char * MakeBuffer( int &bufferLen );
 };
 
 struct Lobby

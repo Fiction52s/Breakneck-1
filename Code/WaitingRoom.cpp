@@ -308,18 +308,21 @@ void WaitingRoom::OpenPopup()
 	assert(netplayManager->lobbyManager->IsInLobby());
 
 	netplayManager->lobbyManager->currWaitingRoom = this;
-
+ 
 	startButton->HideMember();
 
 	SetMaxPlayers(netplayManager->lobbyManager->currentLobby.data.maxMembers);
 
 	//SetMaxPlayers(netplayManager->lobbyManager);
 
-	if (mapHeader == NULL)
+	//ClosePopup();
+	Clear();
+
+	/*if (mapHeader == NULL)
 	{
 		descriptionText->setString("");
 		nameText->setString("");
-	}
+	}*/
 
 	UpdateMemberList();
 
@@ -346,9 +349,18 @@ void WaitingRoom::OpenPopup()
 	SetAction(A_WAITING_FOR_MEMBERS);
 }
 
-void WaitingRoom::ClosePopup()
+void WaitingRoom::Clear()
 {
+	ClearPreview();
 
+	if (mapHeader != NULL)
+	{
+		delete mapHeader;
+		mapHeader = NULL;
+	}
+
+	descriptionText->setString("");
+	nameText->setString("");
 }
 
 void WaitingRoom::SetAction(Action a)

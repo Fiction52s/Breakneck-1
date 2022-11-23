@@ -38,6 +38,9 @@ struct CustomMatchManager
 	Action action;
 	int frame;
 
+	int currMapIndex;
+	bool nextMapMode;
+
 	LobbyBrowser *lobbyBrowser;
 	WaitingRoom *waitingRoom;
 	MapBrowserScreen * mapBrowserScreen;
@@ -54,12 +57,14 @@ struct CustomMatchManager
 	~CustomMatchManager();
 	void OpenPostMatchPopup();
 	void CreateCustomLobby();
+	void BrowseForNextMap();
 	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);
 	bool Update();
+	void StartClientWaitingRoomForNextMap();
 	void Draw(sf::RenderTarget *target);
 
 };
