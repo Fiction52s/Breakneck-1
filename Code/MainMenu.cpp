@@ -3192,6 +3192,8 @@ void MainMenu::HandleMenuMode()
 				delete matchResultsScreen;
 				matchResultsScreen = NULL;
 
+				netplayManager->action = NetplayManager::A_WAIT_FOR_GGPO_SYNC;
+
 				cout << "client starting map rematch!!" << endl;
 				netplayManager->game->InitGGPO();
 				SetMode(QUICKPLAY_PLAY);
