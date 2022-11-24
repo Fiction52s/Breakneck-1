@@ -163,21 +163,6 @@ LobbyManager::LobbyManager()
 	action = A_IDLE;
 	m_bRequestingLobbies = false;
 	currWaitingRoom = NULL;
-	ClearJoinRequest();
-}
-
-void LobbyManager::SetJoinRequest(CSteamID lobby, CSteamID sender)
-{
-	joinRequestLobbyId = lobby;
-	joinRequestSender = sender;
-	receivedJoinRequest = true;
-}
-
-void LobbyManager::ClearJoinRequest()
-{
-	joinRequestLobbyId.Clear();
-	joinRequestSender.Clear();
-	receivedJoinRequest = false;
 }
 
 void LobbyManager::TryCreatingLobby(LobbyData &ld)
@@ -347,10 +332,7 @@ void LobbyManager::PopulateLobbyList( CSteamID lobbyID )
 	}
 }
 
-void LobbyManager::OnGameLobbyJoinRequestedCallback(GameLobbyJoinRequested_t *pCallback )
-{
-	SetJoinRequest(pCallback->m_steamIDLobby, pCallback->m_steamIDFriend);
-}
+
 
 void LobbyManager::Update()
 {
@@ -378,15 +360,17 @@ void LobbyManager::LeaveLobby()
 void LobbyManager::TryJoiningLobby( int lobbyIndex )
 {
 	action = A_REQUEST_JOIN_LOBBY;
+	requestJoinFromInvite = false;
 
 	cout << "found a lobby. Attempting to join: " << lobbyVec[lobbyIndex].data.lobbyName << endl;
 	auto apiCall = SteamMatchmaking()->JoinLobby(lobbyVec[lobbyIndex].m_steamIDLobby);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
 
-void LobbyManager::TryJoiningLobby(CSteamID id)
+void LobbyManager::TryJoiningLobbyFromInvite(CSteamID id)
 {
 	action = A_REQUEST_JOIN_LOBBY;
+	requestJoinFromInvite = true;
 	auto apiCall = SteamMatchmaking()->JoinLobby(id);
 	m_SteamCallResultLobbyEnter.Set(apiCall, this, &LobbyManager::OnLobbyEnter);
 }
@@ -403,15 +387,37 @@ void LobbyManager::OnLobbyEnter(LobbyEnter_t *pCallback, bool bIOFailure)
 		return;
 	}
 
-	for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
+	if (!requestJoinFromInvite)
 	{
-		if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
+		for (auto it = lobbyVec.begin(); it != lobbyVec.end(); ++it)
 		{
-			currentLobby = (*it);
-			cout << "joined lobby: " << (*it).data.lobbyName << " successfully" << endl;
-			break;
+			if ((*it).m_steamIDLobby == pCallback->m_ulSteamIDLobby)
+			{
+				currentLobby = (*it);
+				cout << "joined lobby: " << (*it).data.lobbyName << " successfully" << endl;
+				break;
+			}
 		}
 	}
+	else
+	{
+		Lobby lobby;
+		lobby.m_steamIDLobby = pCallback->m_ulSteamIDLobby;
+
+		// pull the name from the lobby metadata
+
+		if (lobby.data.Update(lobby.m_steamIDLobby))
+		{
+			lobby.dataIsRetrieved = true;
+		}
+		else
+		{
+			SteamMatchmaking()->RequestLobbyData(lobby.m_steamIDLobby);
+		}
+
+		currentLobby = lobby;
+	}
+	
 
 
 	if (currentLobby.dataIsRetrieved)

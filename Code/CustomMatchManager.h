@@ -12,7 +12,6 @@ struct MapNode;
 struct MessagePopup;
 struct PostMatchOptionsPopup;
 struct PostMatchClientPopup;
-struct LobbyInvitePopup;
 
 struct CustomMatchManager
 {
@@ -49,7 +48,6 @@ struct CustomMatchManager
 	MessagePopup *messagePopup;
 	PostMatchOptionsPopup *postMatchPopup;
 	PostMatchClientPopup *postMatchClientPopup;
-	LobbyInvitePopup *lobbyInvitePopup;
 	int preErrorAction;
 	bool fromWorkshopBrowser;
 
@@ -62,6 +60,7 @@ struct CustomMatchManager
 	void BrowseForNextMap();
 	void CreateCustomLobbyFromWorkshopBrowser();
 	void BrowseCustomLobbies();
+	void TryEnterLobbyFromInvite(CSteamID lobbyId);
 	void TryActivateOptionsPanel( MapNode *mp );
 	void SetAction(Action a);
 	void HandleEvent(sf::Event ev);

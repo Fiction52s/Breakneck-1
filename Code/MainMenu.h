@@ -17,6 +17,7 @@
 #include <boost/filesystem.hpp>
 #include "GCC/USBDriver.h"
 #include "GCC/VJoyGCController.h"
+#include "steam/steam_api.h"
 
 struct MapHeader;
 
@@ -832,6 +833,8 @@ struct MainMenu
 
 	void CopyMap(CustomMapsHandler *cmp,
 		Panel *namePop);
+
+	STEAM_CALLBACK(MainMenu, OnGameLobbyJoinRequestedCallback, GameLobbyJoinRequested_t);
 
 
 	sf::Vertex mainMenuOptionQuads[M_Count * 4];

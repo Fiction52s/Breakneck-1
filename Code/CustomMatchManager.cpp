@@ -193,6 +193,23 @@ void CustomMatchManager::BrowseCustomLobbies()
 	lobbyBrowser->OpenPopup();
 }
 
+void CustomMatchManager::TryEnterLobbyFromInvite( CSteamID lobbyId )
+{
+	cout << "TryEnterLobbyFromInvite start" << endl;
+	currMapIndex = 0;
+	nextMapMode = false;
+	NetplayManager *netplayManager = MainMenu::GetInstance()->netplayManager;
+	netplayManager->Init();
+
+	lobbyBrowser->ClearSelection();
+	lobbyBrowser->ClearLobbyRects();
+
+	//lobbyBrowser->OpenPopup();
+	lobbyBrowser->TryJoinLobbyFromInvite(lobbyId);
+	SetAction(A_LOBBY_BROWSER);
+	cout << "TryEnterLobbyFromInvite end" << endl;
+}
+
 void CustomMatchManager::TryActivateOptionsPanel( MapNode *mp )
 {
 	if (mapOptionsPopup->Activate(mp) )
@@ -249,12 +266,6 @@ bool CustomMatchManager::Update()
 			SetAction(A_IDLE);
 			netplayManager->Abort();
 			return false;
-		}
-		else if (netplayManager->lobbyManager->receivedJoinRequest)
-		{
-			cout << "attempting to join invited lobby" << endl;
-			netplayManager->lobbyManager->receivedJoinRequest = false;
-			lobbyBrowser->TryJoinLobby(netplayManager->lobbyManager->joinRequestLobbyId);
 		}
 		break;
 	case A_CONNECT_TO_HOST:

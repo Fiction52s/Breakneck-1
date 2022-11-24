@@ -84,7 +84,7 @@ struct LobbyBrowser : PanelUpdater, GUIHandler
 	void ClearLobbyRects();
 
 	void ClearSelection();
-	void TryJoinLobby(CSteamID id);
+	void TryJoinLobbyFromInvite(CSteamID id);
 
 	void ChooseRectEvent(ChooseRect *cr, int eventType);
 	void ButtonCallback(Button *b, const std::string & e);

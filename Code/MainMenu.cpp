@@ -56,6 +56,7 @@
 #include "PostMatchOptionsPopup.h"
 #include "UIMouse.h"
 #include "UIController.h"
+#include "LobbyBrowser.h"
 
 using namespace std;
 using namespace sf;
@@ -2961,7 +2962,8 @@ void MainMenu::HandleMenuMode()
 			SetMode(CUSTOM_MATCH_SETUP);
 			break;
 		case OnlineMenuScreen::A_CANCELLED:
-			SetMode(TITLEMENU);
+			LoadMode(TITLEMENU);
+			//SetMode(TITLEMENU);
 			break;
 		}
 		
@@ -3235,7 +3237,8 @@ void MainMenu::HandleMenuMode()
 			{
 				netplayManager->CleanupMatch();
 				netplayManager->Abort();
-				SetMode(TITLEMENU);
+				//SetMode(TITLEMENU);
+				LoadMode(TITLEMENU);
 			}
 			
 			//fader->Fade(false, 30, Color::Black, false, EffectLayer::IN_FRONT_OF_UI);
@@ -3481,8 +3484,9 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_LOCAL_MULTIPLAYER:
 		{
-			onlineMenuScreen->Start();
-			SetMode(ONLINE_MENU);
+			//onlineMenuScreen->Start();
+			LoadMode(ONLINE_MENU);
+			//SetMode(ONLINE_MENU);
 
 			//netplayManager->isSyncTest = true;
 			//netplayManager->FindQuickplayMatch();
@@ -3926,4 +3930,26 @@ void MainMenu::DownloadAndRunWorkshopMap()
 void MainMenu::SetToMatchResults(GameSession *p_game)
 {
 
+}
+
+void MainMenu::OnGameLobbyJoinRequestedCallback(GameLobbyJoinRequested_t *pCallback)
+{
+	if (menuMode == CUSTOM_MATCH_SETUP && customMatchManager->action == CustomMatchManager::A_LOBBY_BROWSER)
+	{
+		cout << "attempting to join invited lobby" << endl;
+		customMatchManager->lobbyBrowser->TryJoinLobbyFromInvite(pCallback->m_steamIDLobby);
+
+		//netplayManager->lobbyManager->TryJoiningLobby(pCallback->m_steamIDLobby);
+		//lobbyBrowser->TryJoinLobby(netplayManager->lobbyManager->joinRequestLobbyId);
+	}
+	else if (menuMode == TITLEMENU)
+	{
+		cout << "attempting to join invited lobby from title screen" << endl;
+
+		TransitionMode(menuMode, CUSTOM_MATCH_SETUP);
+		SetMode(CUSTOM_MATCH_SETUP);
+		onlineMenuScreen->Start();
+		customMatchManager->TryEnterLobbyFromInvite(pCallback->m_steamIDLobby);
+	}
+	//SetJoinRequest(pCallback->m_steamIDLobby, pCallback->m_steamIDFriend);
 }

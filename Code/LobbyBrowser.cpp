@@ -132,10 +132,10 @@ void LobbyBrowser::ClearSelection()
 	joinButton->HideMember();
 }
 
-void LobbyBrowser::TryJoinLobby(CSteamID id)
+void LobbyBrowser::TryJoinLobbyFromInvite(CSteamID id)
 {
 	LobbyManager *lobbyManager = MainMenu::GetInstance()->netplayManager->lobbyManager;
-	lobbyManager->TryJoiningLobby(id);
+	lobbyManager->TryJoiningLobbyFromInvite(id);
 	action = A_TRY_JOIN_LOBBY;
 	joinButton->HideMember();
 }
