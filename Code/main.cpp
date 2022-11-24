@@ -200,6 +200,13 @@ int main()
 
 	srand(time(0));
 
+	char commandLine[1024];
+	SteamApps()->GetLaunchCommandLine(commandLine, 1024);
+
+	string commandStr = commandLine;
+
+	cout << "commandStr: " << commandStr << endl;
+
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
@@ -218,9 +225,13 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (result != 0)
 		return result;
 
+	srand(time(0));
+
 	MainMenu *mm = new MainMenu();
 	mm->Run();
 	delete mm;
+
+	SteamAPI_Shutdown();
 
 	return 0;
 }
