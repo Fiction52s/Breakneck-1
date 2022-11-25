@@ -499,7 +499,7 @@ bool GameController::UpdatePS5()
 
 	ControllerState tempState;
 
-	controllerType = ControllerType::CTYPE_PS5;
+	//controllerType = ControllerType::CTYPE_PS5;
 	
 	/*int lTrigger = GetGCCLeftTrigger();
 	int rTrigger = GetGCCRightTrigger();
@@ -662,7 +662,7 @@ bool GameController::UpdateGCC()
 	//if (== INPUTFORMAT_GAMECUBE && gcController.enabled)
 	ControllerState tempState;
 
-	controllerType = ControllerType::CTYPE_GAMECUBE;
+	//controllerType = ControllerType::CTYPE_GAMECUBE;
 	if (gcDefaultControl.x < 0)
 	{
 		gcDefaultControl.x = gcController.axis.left_x;
@@ -827,7 +827,7 @@ bool GameController::UpdateXBOX()
 
 	if (result == ERROR_SUCCESS)
 	{
-		controllerType = ControllerType::CTYPE_XBOX;
+		//controllerType = ControllerType::CTYPE_XBOX;
 		//cout << "updating controller state " << m_index << endl;
 		double LX = state.Gamepad.sThumbLX;
 		double LY = state.Gamepad.sThumbLY;
@@ -971,7 +971,7 @@ bool GameController::UpdateKeyboard()
 
 	if (m_index == 0)
 	{
-		controllerType = ControllerType::CTYPE_KEYBOARD; //change to keyboard soon
+		//controllerType = ControllerType::CTYPE_KEYBOARD; //change to keyboard soon
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
 		//WORD b = state.Gamepad.wButtons;
@@ -1112,6 +1112,24 @@ bool GameController::UpdateState()
 	ControllerState tempState;
 	
 	int defaultInputFormat = MainMenu::GetInstance()->config->GetData().defaultInputFormat;
+
+	switch (controllerType)
+	{
+	case ControllerType::CTYPE_GAMECUBE:
+		res = UpdateGCC();
+		break;
+	case ControllerType::CTYPE_XBOX:
+		res = UpdateXBOX();
+		break;
+	case ControllerType::CTYPE_PS5:
+		res = UpdatePS5();
+		break;
+	case ControllerType::CTYPE_KEYBOARD:
+		res = UpdateKeyboard();
+		break;
+	}
+
+	return res;
 
 	if (defaultInputFormat == ControllerType::CTYPE_GAMECUBE)
 	{
@@ -1673,9 +1691,10 @@ int GameController::Pressed( XBoxButton b )
 }
 
 float GameController::stickThresh = .45;//.4;
-GameController::GameController( DWORD index )
+GameController::GameController( DWORD index, ControllerType ct )
 	:m_index( index ), window( NULL )
 {
+	controllerType = ct;
 	gcDefaultControl.x = -1;
 	gcDefaultControl.y = -1;
 	gcDefaultC.x = -1;
@@ -2023,13 +2042,13 @@ std::string GetXBoxButtonString( XBoxButton button )
 
 AllControllers::AllControllers()
 {
-	windowsControllers.reserve(4);
-	gcControllers.reserve(4);
+	windowsControllers.resize(4);
+	gcControllers.resize(4);
 	rawGCControllers.reserve(4);
 	for (int i = 0; i < 4; ++i)
 	{
-		windowsControllers.push_back(new GameController(i));
-		gcControllers.push_back(new GameController(i));
+		windowsControllers[i] = new GameController(i, CTYPE_XBOX);
+		gcControllers[i] = new GameController(i, CTYPE_GAMECUBE);
 	}
 	window = NULL;
 }

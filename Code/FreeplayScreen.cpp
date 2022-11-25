@@ -166,7 +166,15 @@ void FreeplayScreen::Update()
 {
 	for (int i = 0; i < 4; ++i)
 	{
+		if (CONTROLLERS.GetWindowsController(i)->GetUnfilteredState().A)
+		{
+			cout << i << " on" << endl;
+		}
 
+		if (CONTROLLERS.GetGCController(i)->GetUnfilteredState().A)
+		{
+			cout << "gcc " << i << " on" << endl;
+		}
 	}
 
 

@@ -207,7 +207,7 @@ public:
 	///index 0-3, corresponding to the different physical
 	///controllers. 0 = top left light, 1 = top right light,
 	///2 = bottom left light, 3 = bottom right light
-	GameController( DWORD index);
+	GameController( DWORD index, ControllerType ct );
 	sf::RenderWindow *window;
 	///Gets if the controller is plugged in or functioning
 	bool IsKeyPressed(int k);
