@@ -487,14 +487,14 @@ void MapSelectionMenu::UpdateMultiInput()
 
 			ControllerState &pInput = mainMenu->GetPrevInput(i);
 			ControllerState &cInput = mainMenu->GetCurrInput(i);
-			GameController &c = mainMenu->GetController(i);
+			GameController *c = NULL;//mainMenu->GetController(i);
 
 			//pInput = cInput;
-			bool active = c.UpdateState();
+			bool active = c->UpdateState();
 
 			if (active)
 			{
-				cInput = c.GetState();
+				cInput = c->GetState();
 				multiMusicCurr.A |= (cInput.A && !pInput.A);
 				multiMusicCurr.B |= (cInput.B && !pInput.B);
 				multiMusicCurr.X |= (cInput.X && !pInput.X);
@@ -526,14 +526,14 @@ void MapSelectionMenu::UpdateMultiInput()
 
 			ControllerState &pInput = mainMenu->GetPrevInput(i);
 			ControllerState &cInput = mainMenu->GetCurrInput(i);
-			GameController &c = mainMenu->GetController(i);
+			GameController *c = NULL;//mainMenu->GetController(i);
 
 			//pInput = cInput;
-			bool active = c.UpdateState();
+			bool active = c->UpdateState();
 
 			if (active)
 			{
-				cInput = c.GetState();
+				cInput = c->GetState();
 				multiGhostCurr.A |= (cInput.A && !pInput.A);
 				multiGhostCurr.B |= (cInput.B && !pInput.B);
 				multiGhostCurr.X |= (cInput.X && !pInput.X);
@@ -774,7 +774,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 					ReplaceHeader(mi->path, mi->headerInfo);
 				}
 
-				mainMenu->GetController(singleSection->playerIndex).SetFilter(singleSection->profileSelect->currProfile->filter);
+				//mainMenu->GetController(singleSection->playerIndex)->SetFilter(singleSection->profileSelect->currProfile->filter);
 
 				list< GhostEntry*> ghosts;
 				ghostSelector->GetActiveList(ghosts);
@@ -793,7 +793,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 				for (int i = 0; i < 4; ++i)
 				{
-					mainMenu->GetController(i).SetFilter(filter);
+					//mainMenu->GetController(i)->SetFilter(filter);
 				}
 
 				ghostSelector->UpdateLoadedFolders();
@@ -1046,7 +1046,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 				{
 					for (int i = 0; i < 4; ++i)
 					{
-						mainMenu->GetController(i).SetFilter(multiPlayerSection[i]->profileSelect->currProfile->filter);
+						//mainMenu->GetController(i)->SetFilter(multiPlayerSection[i]->profileSelect->currProfile->filter);
 					}
 					mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
 					int res = gs->Run();
@@ -1056,7 +1056,7 @@ void MapSelectionMenu::Update(ControllerState &currInput,
 
 					for (int i = 0; i < 4; ++i)
 					{
-						mainMenu->GetController(i).SetFilter(filter);
+						//mainMenu->GetController(i)->SetFilter(filter);
 					}
 
 					/*delete loadThread;

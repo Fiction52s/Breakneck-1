@@ -1036,7 +1036,7 @@ void MapSector::UpdateSelectorSprite()
 
 void MapSector::UpdateOptionButtons()
 {
-	ControllerType ct = ms->mainMenu->GetController(0).GetCType();
+	ControllerType ct = CONTROLLERS.GetWindowsController(0)->GetCType();//ms->mainMenu->GetController(0)->GetCType();
 	int tileOffset = 0;
 	switch (ct)
 	{

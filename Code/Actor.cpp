@@ -874,7 +874,7 @@ EffectInstance * Actor::ActivateEffect(int pfxType, EffectInstance *params)
 	return ei;
 }
 
-GameController &Actor::GetController(int index)
+GameController *Actor::GetController(int index)
 {
 	if (owner != NULL)
 	{
@@ -882,7 +882,7 @@ GameController &Actor::GetController(int index)
 	}
 	else if (editOwner != NULL)
 	{
-		return editOwner->mainMenu->GetController(actorIndex);
+		return editOwner->GetController(actorIndex);
 	}
 	else
 	{
@@ -3138,10 +3138,10 @@ Actor::Actor( GameSession *gs, EditSession *es, int p_actorIndex )
 	spriteAction = FAIR;
 	currTileIndex = 0;
 
-	GameController &cont = GetController(actorIndex);
-	toggleBounceInput = cont.keySettings.toggleBounce;
-	toggleTimeSlowInput = cont.keySettings.toggleTimeSlow;
-	toggleGrindInput = cont.keySettings.toggleGrind;
+	GameController *cont = GetController(actorIndex);
+	toggleBounceInput = cont->keySettings.toggleBounce;
+	toggleTimeSlowInput = cont->keySettings.toggleTimeSlow;
+	toggleGrindInput = cont->keySettings.toggleGrind;
 	speedParticleRate = 10; //20
 	//re = new RotaryParticleEffect( this );
 	//re1 = new RotaryParticleEffect( this );

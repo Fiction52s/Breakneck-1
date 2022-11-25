@@ -1423,7 +1423,7 @@ struct Actor : QuadTreeCollider,
 	SoundInfo * GetSound(const std::string &name);
 	CollisionBody *CreateCollisionBody(const std::string &str);
 	bool IsGroundAttack(int a);
-	GameController &GetController(int index);
+	GameController *GetController(int index);
 	void HandleGroundTrigger(GroundTrigger *trigger);
 	void CheckForAirTrigger();
 	void HandleAirTrigger();

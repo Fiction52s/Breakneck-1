@@ -2020,3 +2020,101 @@ std::string GetXBoxButtonString( XBoxButton button )
 		return "";
 	}
 }
+
+AllControllers::AllControllers()
+{
+	windowsControllers.reserve(4);
+	gcControllers.reserve(4);
+	rawGCControllers.reserve(4);
+	for (int i = 0; i < 4; ++i)
+	{
+		windowsControllers.push_back(new GameController(i));
+		gcControllers.push_back(new GameController(i));
+	}
+	window = NULL;
+}
+
+AllControllers::~AllControllers()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		delete windowsControllers[i];
+		delete gcControllers[i];
+	}
+
+	if (joys != NULL)
+		delete joys;
+
+	if (gccDriver != NULL)
+		delete gccDriver;
+}
+
+void AllControllers::Update()
+{
+	GCCUpdate();
+
+	for (int i = 0; i < 4; ++i)
+	{
+		windowsControllers[i]->UpdateState();
+	}
+}
+
+GameController * AllControllers::GetGCController(int index)
+{
+	return gcControllers[index];
+}
+
+GameController * AllControllers::GetWindowsController(int index)
+{
+	return windowsControllers[index];
+}
+
+void AllControllers::GCCUpdate()
+{
+	if (gccDriverEnabled)
+		rawGCControllers = gccDriver->getState();
+
+	int numRawGCC = rawGCControllers.size();
+
+	for (int i = 0; i < numRawGCC; ++i)
+	{
+		gcControllers[i]->gcController = rawGCControllers[i];
+		gcControllers[i]->UpdateState();
+	}
+}
+
+void AllControllers::CheckForControllers()
+{
+	//ps5ControllerManager.CheckForControllers();
+
+	//ps5ControllerManager.InitControllers(this);
+	gccDriver = new GCC::USBDriver;
+	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
+	{
+		//cout << "ready" << endl;
+		gccDriverEnabled = true;
+		joys = new GCC::VJoyGCControllers(*gccDriver);
+		{
+			auto controllers = gccDriver->getState();
+			//for (int i = 0; i < 4; ++i)
+			//{
+			//	//GameController &c = GetController(i);
+
+			//	//c.gcDefaultControl.x = controllers[i].enabled
+			//}
+		}
+	}
+	else
+	{
+		//cout << "failing" << endl;
+		joys = NULL;
+		gccDriverEnabled = false;
+		delete gccDriver;
+		gccDriver = NULL;
+	}
+}
+
+void AllControllers::SetRenderWindow(sf::RenderWindow *rw)
+{
+	window = rw;
+}

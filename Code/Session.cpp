@@ -1584,6 +1584,14 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	specialTempTilesetManager = NULL;
 	specialTempSoundManager = NULL;
 
+	for (int i = 0; i < 4; ++i)
+	{
+		SetController(i, CONTROLLERS.GetWindowsController(i));//mainMenu->GetController(i)); //placeholder until things are cleaned up more
+		//controllers[i] = NULL;
+	}
+
+
+
 	gameMode = NULL;
 
 	timeSyncFrames = 0;
@@ -2667,9 +2675,15 @@ ControllerState &Session::GetCurrInputUnfiltered(int index)
 	return mainMenu->GetCurrInputUnfiltered(index);
 }
 
-GameController &Session::GetController(int index)
+void Session::SetController(int index, GameController *c)
 {
-	return mainMenu->GetController(index);
+	controllers[index] = c;
+}
+
+GameController * Session::GetController(int index)
+{
+	//changed because I want to assign controllers at the freeplay menu
+	return controllers[index];//mainMenu->GetController(index);
 }
 
 Actor *Session::GetPlayer(int index)
@@ -2680,10 +2694,7 @@ Actor *Session::GetPlayer(int index)
 
 void Session::UpdateControllersOneFrameMode()
 {
-	bool gccEnabled = mainMenu->gccDriverEnabled;
-
-	if (gccEnabled)
-		gcControllers = mainMenu->gccDriver->getState();
+	CONTROLLERS.Update();
 
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
@@ -2697,25 +2708,17 @@ void Session::UpdateControllersOneFrameMode()
 			p->prevInput = GetCurrInput(i);
 		}*/
 
-		GameController &con = GetController(i);
-		if (gccEnabled)
-			con.gcController = gcControllers[i];
+		GameController *con = GetController(i);
 
-		con.UpdateState();
-
-		GetCurrInput(i) = con.GetState();
-		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		GetCurrInput(i) = con->GetState();
+		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
 	}
 }
 
 void Session::UpdateControllers()
 {
-	bool gccEnabled = mainMenu->gccDriverEnabled;
-
-	if (gccEnabled)
-		gcControllers = mainMenu->gccDriver->getState();
-
-
+	CONTROLLERS.Update();
+	
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
@@ -2730,14 +2733,10 @@ void Session::UpdateControllers()
 			}
 		}*/
 
-		GameController &con = GetController(i);
-		if (gccEnabled)
-			con.gcController = gcControllers[i];
+		GameController *con = GetController(i);
 
-		con.UpdateState();
-
-		GetCurrInput(i) = con.GetState();
-		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		GetCurrInput(i) = con->GetState();
+		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
 	}
 }
 
@@ -2755,7 +2754,7 @@ void Session::UpdatePlayerInput(int index)
 		return;
 
 	ControllerState &pCurr = player->currInput;
-	GameController &controller = GetController(index);
+	GameController *controller = GetController(index);
 	ControllerState &currInput = GetCurrInput(index);
 	ControllerState &prevInput = GetPrevInput(index);
 
@@ -2773,7 +2772,7 @@ void Session::UpdatePlayerInput(int index)
 		player->currInput = currInput;
 		//player->prevInput = prevInput;
 
-		if (controller.keySettings.toggleBounce)
+		if (controller->keySettings.toggleBounce)
 		{
 			if (currInput.X && !prevInput.X)
 			{
@@ -2784,7 +2783,7 @@ void Session::UpdatePlayerInput(int index)
 				pCurr.X = alreadyBounce;
 			}
 		}
-		if (controller.keySettings.toggleGrind)
+		if (controller->keySettings.toggleGrind)
 		{
 			if (currInput.Y && !prevInput.Y)
 			{
@@ -2795,7 +2794,7 @@ void Session::UpdatePlayerInput(int index)
 				pCurr.Y = alreadyGrind;
 			}
 		}
-		if (controller.keySettings.toggleTimeSlow)
+		if (controller->keySettings.toggleTimeSlow)
 		{
 			if (currInput.leftShoulder && !prevInput.leftShoulder)
 			{
@@ -2869,18 +2868,6 @@ bool Session::OneFrameModeUpdate()
 		/*if (GetCurrInput(0).PLeft())
 		{
 			skipInput = true;
-		}*/
-
-		/*vector<GCC::GCController> controllers;
-		if (mainMenu->gccDriverEnabled)
-			controllers = mainMenu->gccDriver->getState();
-
-		for (int i = 0; i < 4; ++i)
-		{
-			GameController &c = GetController(i);
-			if (mainMenu->gccDriverEnabled)
-				c.gcController = controllers[i];
-			c.UpdateState();
 		}*/
 
 		bool stopSkippingInput = IsKeyPressed(sf::Keyboard::PageDown);
@@ -7599,26 +7586,16 @@ void Session::GGPORunFrame()
 
 	//UpdateControllers();
 
-	bool gccEnabled = mainMenu->gccDriverEnabled;
-
-	if (gccEnabled)
-		gcControllers = mainMenu->gccDriver->getState();
-
+	CONTROLLERS.Update();
 
 	Actor *p = NULL;
 	for (int i = 0; i < 4; ++i)
 	{
-		GameController &con = GetController(i);
-		if (gccEnabled)
-			con.gcController = gcControllers[i];
+		GameController *con = GetController(i);
 
-		con.UpdateState();
-
-		GetCurrInput(i) = con.GetState();
-		GetCurrInputUnfiltered(i) = con.GetUnfilteredState();
+		GetCurrInput(i) = con->GetState();
+		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
 	}
-	
-
 
 	assert(ngs->local_player_handle != GGPO_INVALID_HANDLE);
 	//int input = GetCurrInput(ngs->local_player_handle - 1).GetCompressedState();

@@ -155,7 +155,7 @@ void MultiLoadingScreen::Update()
 		{
 			for (int i = 0; i < 4; ++i)
 			{
-				mainMenu->GetController(i).SetFilter(playerSection[i]->profileSelect->currProfile->filter);
+				//mainMenu->GetController(i)->SetFilter(playerSection[i]->profileSelect->currProfile->filter);
 			}
 
 			mainMenu->gameRunType = MainMenu::GRT_FREEPLAY;
@@ -167,7 +167,7 @@ void MultiLoadingScreen::Update()
 
 			for (int i = 0; i < 4; ++i)
 			{
-				mainMenu->GetController(i).SetFilter(filter);
+				//mainMenu->GetController(i)->SetFilter(filter);
 			}
 
 			delete loadThread;

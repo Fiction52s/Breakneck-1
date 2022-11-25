@@ -7,7 +7,7 @@
 using namespace std;
 using namespace sf;
 
-void PlayerBox::Init(WaitingRoom *wr, int p_index)
+void WaitingRoomPlayerBox::Init(WaitingRoom *wr, int p_index)
 {
 	index = p_index;
 
@@ -22,19 +22,19 @@ void PlayerBox::Init(WaitingRoom *wr, int p_index)
 
 	Show();
 }
-void PlayerBox::Show()
+void WaitingRoomPlayerBox::Show()
 {
 	show = true;
 	playerName->SetString(playerNameStr);
 	SetTopLeft(topLeft);
 }
-void PlayerBox::Hide()
+void WaitingRoomPlayerBox::Hide()
 {
 	show = false;
 	playerName->SetString("");
 }
 
-void PlayerBox::SetTopLeft(sf::Vector2i &pos)
+void WaitingRoomPlayerBox::SetTopLeft(sf::Vector2i &pos)
 {
 	topLeft = pos;
 
@@ -49,7 +49,7 @@ void PlayerBox::SetTopLeft(sf::Vector2i &pos)
 	playerName->SetPos(Vector2i(playerName->pos.x - (bounds.left + bounds.width / 2), playerName->pos.y));
 }
 
-void PlayerBox::SetName(const std::string &name)
+void WaitingRoomPlayerBox::SetName(const std::string &name)
 {
 	playerNameStr = name;
 
@@ -60,7 +60,7 @@ void PlayerBox::SetName(const std::string &name)
 	}
 }
 
-void PlayerBox::Draw(sf::RenderTarget *target)
+void WaitingRoomPlayerBox::Draw(sf::RenderTarget *target)
 {
 	if (!show)
 		return;
@@ -81,7 +81,7 @@ WaitingRoom::WaitingRoom()
 
 	inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
 
-	panel->ReserveTextRects(4);
+	//panel->ReserveTextRects(4);
 
 	mapHeader = NULL;
 
@@ -121,8 +121,7 @@ WaitingRoom::WaitingRoom()
 
 	playerBoxWidth = 300;
 	playerBoxHeight = 300;
-	playerBoxSpacing = 100;
-	
+	playerBoxSpacing = 100;	
 }
 
 WaitingRoom::~WaitingRoom()

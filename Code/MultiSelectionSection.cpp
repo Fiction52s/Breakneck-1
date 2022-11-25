@@ -198,7 +198,7 @@ void MultiSelectionSection::Update()
 		}
 
 		ControlProfile *oldProf = profileSelect->currProfile;
-		profileSelect->tempCType = mm->GetController(playerIndex).GetCType();
+		//profileSelect->tempCType = mm->GetController(playerIndex)->GetCType();
 		profileSelect->Update(currInput, prevInput);
 
 		/*if (profileSelect->currProfile != oldProf)

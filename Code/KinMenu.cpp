@@ -241,9 +241,9 @@ void KinMenu::UpdatePowers(Actor *player)
 
 void KinMenu::UpdateCommandButton()
 {
-	GameController &con = game->GetController(0);
+	GameController *con = game->GetController(0);
 	ts_currentButtons = NULL;
-	ControllerType cType = con.GetCType();
+	ControllerType cType = con->GetCType();
 	switch (cType)
 	{
 	case CTYPE_XBOX:

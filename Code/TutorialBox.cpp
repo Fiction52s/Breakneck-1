@@ -137,13 +137,13 @@ void TutorialBox::SetText(const std::string &str)
 
 		
 
-		ControllerType cType = sess->GetController(0).GetCType();
+		ControllerType cType = sess->GetController(0)->GetCType();
 		int bIndex = 0;
 		switch (cType)
 		{
 		case CTYPE_XBOX:
 		{
-			bIndex = sess->GetController(0).filter[buttonInfos[i].buttonType] - 1;
+			bIndex = sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
 			/*switch (b)
 			{
 			case ControllerSettings::JUMP:
@@ -163,7 +163,7 @@ void TutorialBox::SetText(const std::string &str)
 		}
 			
 		case CTYPE_GAMECUBE:
-			bIndex = sess->GetController(0).filter[buttonInfos[i].buttonType] - 1;
+			bIndex = sess->GetController(0)->filter[buttonInfos[i].buttonType] - 1;
 			break;
 		}
 		//dash = x

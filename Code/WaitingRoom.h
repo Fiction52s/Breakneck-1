@@ -11,7 +11,7 @@ struct WaitingRoom;
 
 struct MapHeader;
 
-struct PlayerBox
+struct WaitingRoomPlayerBox
 {
 	HyperLink *playerName;
 	int index;
@@ -55,7 +55,7 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	int playerBoxSpacing;
 	
 	//PlayerBox players[4];
-	PlayerBox playerBoxes[4];
+	WaitingRoomPlayerBox playerBoxes[4];
 	//TextChooseRect *memberNameRects[4];
 
 	CSteamID ownerID;

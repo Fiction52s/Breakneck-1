@@ -550,7 +550,7 @@ void SelectBar::Reset()
 
 	int tileOffset = 0;
 
-	ControllerType ct = sess->GetController(0).GetCType();
+	ControllerType ct = sess->GetController(0)->GetCType();
 	switch (ct)
 	{
 	case ControllerType::CTYPE_XBOX:

@@ -187,7 +187,7 @@ void OptionsMenu::UpdateOptionModeQuads()
 void OptionsMenu::Update( ControllerState &currInput,
 		ControllerState &prevInput )
 {
-	ControllerType cType = mainMenu->GetController(0).GetCType();
+	ControllerType cType = CONTROLLERS.GetWindowsController(0)->GetCType();//mainMenu->GetController(0)->GetCType();
 	switch (state)
 	{
 	case CHOOSESTATE:

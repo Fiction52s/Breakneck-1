@@ -6,7 +6,8 @@
 #include <SFML/Graphics.hpp>
 #include "GCC/GCController.h"
 #include "PS5Controller.h"
-
+#include "GCC/USBDriver.h"
+#include "GCC/VJoyGCController.h"
 //true if down, false if up
 //^^make this more efficient if I'm using it for networking
 //  later
@@ -253,6 +254,44 @@ private:
 	const static double GC_LEFT_STICK_DEADZONE;
 	const static double GC_RIGHT_STICK_DEADZONE;
 };
+
+struct AllControllers
+{
+	static AllControllers &GetInstance()
+	{
+		static AllControllers instance;
+		return instance;
+	}
+	AllControllers(AllControllers const&) = delete;
+	void operator=(AllControllers const&) = delete;
+
+	GameController * GetGCController(int index);
+	GameController * GetWindowsController(int index);
+	
+	void Update();
+	void CheckForControllers();
+	void SetRenderWindow(sf::RenderWindow *rw);
+private:
+	std::vector<GameController*> gcControllers;
+	std::vector<GameController*> windowsControllers;
+
+	GCC::USBDriver *gccDriver;
+	GCC::VJoyGCControllers *joys;
+	bool gccDriverEnabled;
+	std::vector<GCC::GCController> rawGCControllers;
+	sf::RenderWindow *window;
+
+	PS5ControllerManager ps5ControllerManager;
+
+	AllControllers();
+	~AllControllers();
+
+	void GCCUpdate();
+};
+
+#define CONTROLLERS AllControllers::GetInstance()
+
+
 
 //wButtons
 /*XINPUT_GAMEPAD_DPAD_UP         0x00000001

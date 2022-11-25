@@ -1429,11 +1429,11 @@ EditSession::EditSession( MainMenu *p_mainMenu, const boost::filesystem::path &p
 	for (int i = 0; i < 4; ++i)
 	{
 		
-		GameController &con = GetController(i);
-		if (con.IsConnected())
+		GameController *con = GetController(i);
+		if (con->IsConnected())
 		{
-			currProfile->tempCType = con.GetCType();
-			con.SetFilter(currProfile->GetCurrFilter());
+			currProfile->tempCType = con->GetCType();
+			con->SetFilter(currProfile->GetCurrFilter());
 		}
 	}
 

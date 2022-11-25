@@ -312,12 +312,6 @@ void MainMenu::sTransitionMode(MainMenu *mm, Mode fromMode, Mode toMode )
 	mm->TransitionMode(fromMode, toMode);
 }
 
-
-GameController &MainMenu::GetController( int index )
-{
-	return *controllers[index];
-}
-
 void MainMenu::UpdateMenuOptionText()
 {
 	int breatheFrames = 180;
@@ -344,44 +338,6 @@ void MainMenu::UpdateMenuOptionText()
 	SetRectColor(mainMenuOptionHighlight + saSelector->currIndex * 4, Color( 255, 255, 255, baseAlpha + alpha * (255.f - baseAlpha ) ));
 
 	selectorSprite.setPosition(selectorSpriteXPos, selectorSpriteYPosBase + selectorSpriteYPosInterval * saSelector->currIndex);
-}
-
-void MainMenu::CheckForControllers()
-{
-	//currently only checks for gamecube, xbox doesnt need it.
-	//cout << "start checking" << endl;
-
-	ps5ControllerManager.CheckForControllers();
-
-	ps5ControllerManager.InitControllers(this);
-	
-
-	gccDriver = new GCC::USBDriver;
-	if (gccDriver->getStatus() == GCC::USBDriver::Status::READY)
-	{
-		//cout << "ready" << endl;
-		gccDriverEnabled = true;
-		joys = new GCC::VJoyGCControllers(*gccDriver);
-		{
-			auto controllers = gccDriver->getState();
-			//for (int i = 0; i < 4; ++i)
-			//{
-			//	//GameController &c = GetController(i);
-
-			//	//c.gcDefaultControl.x = controllers[i].enabled
-			//}
-		}
-	}
-	else
-	{
-		//cout << "failing" << endl;
-		joys = NULL;
-		gccDriverEnabled = false;
-		delete gccDriver;
-		gccDriver = NULL;
-	}
-
-	//cout << "end checking" << endl;
 }
 
 MainMenu::MainMenu()
@@ -416,12 +372,16 @@ MainMenu::MainMenu()
 	transLength = 60;
 	transFrame = 0;
 
-	for (int i = 0; i < 4; ++i)
-	{
-		controllers[i] = new GameController(i);
-	}
+	config = new Config();
+	config->WaitForLoad();
+	windowWidth = config->GetData().resolutionX;
+	windowHeight = config->GetData().resolutionY;
+	style = config->GetData().windowStyle;
 
-	CheckForControllers();
+	CONTROLLERS.CheckForControllers();
+	CONTROLLERS.Update();
+
+	//CONTROLLERS.Update();
 
 	cpm = new ControlProfileManager;
 	cpm->LoadProfiles();
@@ -431,6 +391,8 @@ MainMenu::MainMenu()
 	//MusicManager mm(this);
 	musicManager = new MusicManager(this);
 	musicManager->LoadMusicNames();
+
+	
 
 	controlSettingsMenu = new ControlSettingsMenu(this, &tilesetManager);
 
@@ -499,11 +461,7 @@ MainMenu::MainMenu()
 	bottomCenter = Vector2f(halfX, halfY + wholeY);
 
 
-	config = new Config();
-	config->WaitForLoad();
-	windowWidth = config->GetData().resolutionX;
-	windowHeight = config->GetData().resolutionY;
-	style = config->GetData().windowStyle;
+	
 
 	musicPlayer = new MusicPlayer(this);
 
@@ -514,7 +472,7 @@ MainMenu::MainMenu()
 		menuMusic->Load();
 	}
 	
-
+	
 	//cout << "DDDDDD " << endl;
 
 	titleScreen = new TitleScreen(this);
@@ -631,6 +589,8 @@ void MainMenu::SetupWindow()
 	MOUSE.SetRenderWindow(window);
 	UICONTROLLER.SetRenderWindow(window);
 
+	CONTROLLERS.SetRenderWindow(window);
+
 	customCursor = new CustomCursor;
 	//Tileset *ts_cursor = tilesetManager.GetSizedTileset("arrow_editor_36x36.png");
 	customCursor->Init(window);
@@ -640,13 +600,6 @@ void MainMenu::SetupWindow()
 
 	SetMouseGrabbed(mouseGrabbed);
 	SetMouseVisible(mouseVisible);
-
-
-	for (int i = 0; i < 4; ++i)
-	{
-		controllers[i]->window = window;
-		controllers[i]->UpdateState();
-	}
 
 	assert(window != NULL);
 	window->setVerticalSyncEnabled(true);
@@ -777,10 +730,6 @@ MainMenu::~MainMenu()
 		delete workshopManager;
 	}
 
-	for (int i = 0; i < 4; ++i)
-	{
-		delete controllers[i];
-	}
 	delete config;
 
 	delete musicPlayer;
@@ -837,12 +786,6 @@ MainMenu::~MainMenu()
 	delete fader;
 	delete swiper;
 	delete indEffectPool;
-
-	if (joys != NULL)
-		delete joys;
-
-	if( gccDriver != NULL )
-		delete gccDriver;
 
 	delete globalFile;
 }
@@ -1412,7 +1355,7 @@ void MainMenu::GGPOOption()
 
 sf::IntRect MainMenu::GetButtonIconTile(int controllerIndex, int baseButtonIndex)
 {
-	ControllerType controllerType = GetController(controllerIndex).GetCType();
+	ControllerType controllerType = CONTROLLERS.GetWindowsController(controllerIndex)->GetCType();
 
 	/*CTYPE_XBOX,
 		CTYPE_GAMECUBE,
@@ -1437,7 +1380,7 @@ sf::IntRect MainMenu::GetButtonIconTile(int controllerIndex, int baseButtonIndex
 
 Tileset * MainMenu::GetButtonIconTileset(int controllerIndex )
 {
-	ControllerType controllerType = GetController(controllerIndex).GetCType();
+	ControllerType controllerType = CONTROLLERS.GetWindowsController(controllerIndex)->GetCType();//GetController(controllerIndex)->GetCType();
 
 	if (controllerType == CTYPE_KEYBOARD)
 	{
@@ -1546,27 +1489,25 @@ void MainMenu::UpdateMenuInput()
 	//int upCount = 0;
 	//int downCount = 0;
 
-	vector<GCC::GCController> controllers;
-	if (gccDriverEnabled)
-		controllers = gccDriver->getState();
+	CONTROLLERS.Update();
 
 
 	for (int i = 0; i < 4; ++i)
 	{
 		ControllerState &prevInput = GetPrevInputUnfiltered(i);
 		ControllerState &currInput = GetCurrInputUnfiltered(i);
-		GameController &c = GetController(i);
+		GameController *c = CONTROLLERS.GetWindowsController(i);//GetController(i);
 
 		prevInput = currInput;
 
 
-		if (gccDriverEnabled)
-			c.gcController = controllers[i];
-		bool active = c.UpdateState();
+		//if (gccDriverEnabled)
+		//	c->gcController = controllers[i];
+		bool active = c->UpdateState();
 
 		if (active)
 		{
-			currInput = c.GetUnfilteredState();
+			currInput = c->GetUnfilteredState();
 
 			menuCurrInput.A |= (currInput.A && !prevInput.A);
 			menuCurrInput.B |= (currInput.B && !prevInput.B);
@@ -3479,7 +3420,8 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 		case M_FREE_PLAY:
 		{
-			SetMode(TRANS_MAIN_TO_MAPSELECT);
+			LoadMode(FREEPLAY);
+			//SetMode(TRANS_MAIN_TO_MAPSELECT);
 			break;
 		}
 		case M_LOCAL_MULTIPLAYER:

@@ -37,7 +37,7 @@ void PS5ControllerManager::InitControllers(MainMenu *mm)
 {
 	for (int i = 0; i < numControllers; ++i)
 	{
-		mm->GetController(i).ps5Controller.InitContext(infos[i]);
+		//mm->GetController(i)->ps5Controller.InitContext(infos[i]);
 	}
 
 }

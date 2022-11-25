@@ -121,7 +121,7 @@ bool OptionsMenuScreen::ButtonEvent(UIEvent eType,
 		}
 		else if (pButton == checkForControllerButton)
 		{
-			mainMenu->CheckForControllers();
+			CONTROLLERS.CheckForControllers();
 		}
 	
 		

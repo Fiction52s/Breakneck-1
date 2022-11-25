@@ -15,8 +15,6 @@
 #include "ItemSelector.h"
 #include "Movement.h"
 #include <boost/filesystem.hpp>
-#include "GCC/USBDriver.h"
-#include "GCC/VJoyGCController.h"
 #include "steam/steam_api.h"
 
 struct MapHeader;
@@ -597,7 +595,6 @@ struct MainMenu
 	void CreateRenderTextures();
 	void SetupWindow();
 	void UpdateMenuMode();
-	void CheckForControllers();
 	void UpdateMenuInput();
 	
 
@@ -611,12 +608,6 @@ struct MainMenu
 
 
 	std::vector<void(MainMenu::*)()> updateModeFuncs;
-
-	GCC::USBDriver *gccDriver;
-	GCC::VJoyGCControllers *joys;
-	bool gccDriverEnabled;
-
-	PS5ControllerManager ps5ControllerManager;
 
 	sf::Vector2i GetPixelPos();
 
@@ -702,8 +693,6 @@ struct MainMenu
 	sf::Vertex thanksQuad[4];
 	//GameController controller;
 	//GameController controller2;
-	GameController *controllers[4];
-	GameController &GetController( int index );
 	SoundManager soundManager;
 	SoundNodeList * soundNodeList;
 	TilesetManager tilesetManager;

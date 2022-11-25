@@ -298,6 +298,7 @@ struct Session : TilesetManager, QuadTreeCollider
 	bool cutPlayerInput;
 	MainMenu *mainMenu;
 	std::vector<GCC::GCController> gcControllers;
+	GameController *controllers[4];
 	std::vector<Actor*> players;
 	
 	HitboxManager *hitboxManager;
@@ -625,7 +626,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	ControllerState &GetCurrInput(int index);
 	ControllerState &GetPrevInputUnfiltered(int index);
 	ControllerState &GetCurrInputUnfiltered(int index);
-	GameController &GetController(int index);
+	GameController *GetController(int index);
+	void SetController(int index, GameController *c);
 	void UpdatePlayerInput(int index);
 	void UpdateAllPlayersInput();
 	void UpdateControllers();
@@ -837,6 +839,8 @@ struct Session : TilesetManager, QuadTreeCollider
 	//SaveGameState *saveStates[10];
 	//bool usedSaveState[10];
 	GGPOPlayer *ggpoPlayers;
+
+	
 
 	virtual void InitGGPO();
 	virtual void CleanupGGPO();

@@ -90,7 +90,7 @@ ControlSettingsMenu::ControlSettingsMenu( MainMenu *p_mm, TilesetManager *tm)
 		SetRectColor(labelQuads + i * 4, Color(Color::White));
 	}
 
-	pSel->currProfile->tempCType = mainMenu->GetController(0).GetCType();
+	pSel->currProfile->tempCType = CONTROLLERS.GetWindowsController(0)->GetCType();
 	UpdateXboxButtonIcons();
 
 	UpdateSelectedQuad();
@@ -170,10 +170,10 @@ void ControlSettingsMenu::SetActionTile(int actionIndex, int actionType)
 
 void ControlSettingsMenu::SetButtonAssoc()
 {
-	GameController &con = mainMenu->GetController(0);
-	pSel->currProfile->tempCType = con.GetCType();
+	GameController *con = CONTROLLERS.GetWindowsController(0);//NULL;//mainMenu->GetController(0);
+	pSel->currProfile->tempCType = con->GetCType();
 
-	con.SetFilter(pSel->currProfile->GetCurrFilter());
+	con->SetFilter(pSel->currProfile->GetCurrFilter());
 
 	SaveFile *currFile = mainMenu->GetCurrentProgress();
 	if (currFile != NULL)
@@ -185,8 +185,8 @@ void ControlSettingsMenu::SetButtonAssoc()
 
 ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &currInput, ControllerState &prevInput )
 {
-	GameController &con = mainMenu->GetController(0);
-	ControllerType cType = con.GetCType();
+	GameController *con = CONTROLLERS.GetWindowsController(0);//NULL;//mainMenu->GetController(0);
+	ControllerType cType = con->GetCType();
 
 
 	UpdateState uState = NORMAL;
@@ -296,7 +296,7 @@ ControlSettingsMenu::UpdateState ControlSettingsMenu::Update( ControllerState &c
 					SetFilterDefault(fil);
 				}
 
-				mainMenu->GetController(0).SetFilter(fil);
+				//mainMenu->GetController(0)->SetFilter(fil);
 				
 				
 				return CONFIRM;
