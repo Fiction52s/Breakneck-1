@@ -129,7 +129,7 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 		playerBoxes[i]->SetTopLeft(left + Vector2i((playerBoxSpacing + playerBoxWidth) * i, 0));
 	}
 
-	
+	joinHoldFrames = 30;
 
 	Start();
 }
@@ -149,7 +149,10 @@ void FreeplayScreen::Start()
 	for (int i = 0; i < 4; ++i)
 	{
 		playerBoxes[i]->ClearInfo();
+		gccHeldStartFrames[i] = 0;
+		windowsHeldStartFrames[i] = 0;
 	}
+	joinedControllers.clear();
 }
 
 void FreeplayScreen::Quit()
@@ -166,15 +169,30 @@ void FreeplayScreen::Update()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		if (CONTROLLERS.GetWindowsController(i)->GetUnfilteredState().A)
+		if (CONTROLLERS.GetWindowsController(i)->GetUnfilteredState().start)
 		{
-			cout << i << " on" << endl;
+			windowsHeldStartFrames[i]++;
+		}
+		else
+		{
+			windowsHeldStartFrames[i] = 0;
 		}
 
-		if (CONTROLLERS.GetGCController(i)->GetUnfilteredState().A)
+		if (CONTROLLERS.GetGCController(i)->GetUnfilteredState().start)
 		{
-			cout << "gcc " << i << " on" << endl;
+			gccHeldStartFrames[i]++;
 		}
+		else
+		{
+			gccHeldStartFrames[i] = 0;
+		}
+	}
+
+	GameController *testController = NULL;
+	for (int i = 0; i < 4; ++i)
+	{
+		TryControllerJoin(CONTROLLERS.GetWindowsController(i));
+		TryControllerJoin(CONTROLLERS.GetGCController(i));
 	}
 
 
@@ -189,6 +207,40 @@ void FreeplayScreen::Update()
 	{
 		mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
 	}*/
+}
+
+void FreeplayScreen::TryControllerJoin(GameController *con)
+{
+	if (joinedControllers.size() == 4)
+		return;
+
+	switch (con->GetCType())
+	{
+	case CTYPE_XBOX:
+		if (windowsHeldStartFrames[con->GetIndex()] < joinHoldFrames)
+			return;
+		break;
+	case CTYPE_GAMECUBE:
+		if (gccHeldStartFrames[con->GetIndex()] < joinHoldFrames)
+			return;
+		break;
+	}
+
+	bool alreadyJoined = false;
+	for (auto it = joinedControllers.begin(); it != joinedControllers.end(); ++it)
+	{
+		if ((*it) == con)
+		{
+			alreadyJoined = true;
+			break;
+		}
+	}
+
+	if (!alreadyJoined)
+	{
+		joinedControllers.push_back(con);
+		cout << "added controller: " << con->GetCType() << ", index: " << con->GetIndex() << endl;
+	}
 }
 
 void FreeplayScreen::Draw(sf::RenderTarget *target)

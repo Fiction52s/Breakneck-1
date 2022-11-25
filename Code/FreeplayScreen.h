@@ -57,6 +57,11 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	int playerBoxSpacing;
 
 	FreeplayPlayerBox *playerBoxes[4];
+	int gccHeldStartFrames[4];
+	int windowsHeldStartFrames[4];
+	int joinHoldFrames;
+
+	std::vector<GameController*> joinedControllers;
 
 	FreeplayScreen(MainMenu *mm);
 	~FreeplayScreen();
@@ -64,6 +69,8 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	void Start();
 	void Quit();
 	bool HandleEvent(sf::Event ev);
+
+	void TryControllerJoin(GameController *con);
 
 	void Update();
 	void Draw(sf::RenderTarget *target);
