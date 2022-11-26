@@ -2045,11 +2045,20 @@ AllControllers::AllControllers()
 	windowsControllers.resize(4);
 	gcControllers.resize(4);
 	rawGCControllers.reserve(4);
+
+
+	gccCurrState.resize(4);
+	gccPrevState.resize(4);
+	windowsCurrState.resize(4);
+	windowsPrevState.resize(4);
+
 	for (int i = 0; i < 4; ++i)
 	{
 		windowsControllers[i] = new GameController(i, CTYPE_XBOX);
 		gcControllers[i] = new GameController(i, CTYPE_GAMECUBE);
 	}
+
+	keyboardController = new GameController(0, CTYPE_KEYBOARD);
 	window = NULL;
 }
 
@@ -2060,6 +2069,8 @@ AllControllers::~AllControllers()
 		delete windowsControllers[i];
 		delete gcControllers[i];
 	}
+
+	delete keyboardController;
 
 	if (joys != NULL)
 		delete joys;
@@ -2074,8 +2085,14 @@ void AllControllers::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
+		windowsPrevState[i] = windowsCurrState[i];
 		windowsControllers[i]->UpdateState();
+		windowsCurrState[i] = windowsControllers[i]->GetUnfilteredState();
 	}
+
+	keyboardPrevState = keyboardCurrState;
+	keyboardController->UpdateState();
+	keyboardCurrState = keyboardController->GetUnfilteredState();
 }
 
 GameController * AllControllers::GetGCController(int index)
@@ -2088,17 +2105,48 @@ GameController * AllControllers::GetWindowsController(int index)
 	return windowsControllers[index];
 }
 
+GameController * AllControllers::GetController(int cType, int index)
+{
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+		return windowsControllers[index];
+	case CTYPE_GAMECUBE:
+		return gcControllers[index];
+	case CTYPE_PS5:
+		return NULL;
+	case CTYPE_KEYBOARD:
+	{
+		if (index == 0)
+			return keyboardController;
+		else
+			return NULL;
+	}
+	}
+
+	assert(0);
+	return NULL;
+}
+
 void AllControllers::GCCUpdate()
 {
-	if (gccDriverEnabled)
+	if (!gccDriverEnabled)
+	{
+		return;
+	}
+	else
+	{
 		rawGCControllers = gccDriver->getState();
+	}
 
 	int numRawGCC = rawGCControllers.size();
 
 	for (int i = 0; i < numRawGCC; ++i)
 	{
+		gccPrevState[i] = gccCurrState[i];
 		gcControllers[i]->gcController = rawGCControllers[i];
 		gcControllers[i]->UpdateState();
+		gccCurrState[i] = gcControllers[i]->GetUnfilteredState();
 	}
 }
 

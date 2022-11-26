@@ -2996,7 +2996,7 @@ void MainMenu::HandleMenuMode()
 	{
 		while (window->pollEvent(ev))
 		{
-
+			freeplayScreen->HandleEvent(ev);
 		}
 
 		freeplayScreen->Update();
@@ -3004,6 +3004,10 @@ void MainMenu::HandleMenuMode()
 		if (freeplayScreen->action == FreeplayScreen::A_READY)
 		{
 			LoadMode(RUN_FREEPLAY_MAP);
+		}
+		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
+		{
+			LoadMode(TITLEMENU);
 		}
 		break;
 	}
@@ -3498,7 +3502,7 @@ void MainMenu::TitleMenuModeUpdate()
 		}
 
 		int oldIndex = saSelector->currIndex;
-		int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
+		//int res = saSelector->UpdateIndex(menuCurrInput.LUp(), menuCurrInput.LDown());
 
 		//if mouse is enabled, lets you mouse over to select
 		for (int i = 0; i < saSelector->totalItems; ++i)
@@ -3509,40 +3513,41 @@ void MainMenu::TitleMenuModeUpdate()
 					MOUSE.GetFloatPos()))
 				{
 					saSelector->SetIndex(i);
+					soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
 					break;
 				}
 			}
 		}
 		
 
-		if (res != 0)
+		/*if (res != 0)
 		{
 			soundNodeList->ActivateSound(soundManager.GetSound("main_menu_change"));
-		}
+		}*/
 
-		while (!activatedMainMenuOptions[saSelector->currIndex])
-		{
-			if (saSelector->currIndex != oldIndex)
-			{
-				if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
-				{
-					//down
-					++saSelector->currIndex;
-					if (saSelector->currIndex == saSelector->totalItems)
-					{
-						saSelector->currIndex = 0;
-					}
-				}
-				else
-				{
-					--saSelector->currIndex;
-					if (saSelector->currIndex < 0)
-					{
-						saSelector->currIndex = saSelector->totalItems - 1;
-					}
-				}
-			}
-		}
+		//while (!activatedMainMenuOptions[saSelector->currIndex])
+		//{
+		//	if (saSelector->currIndex != oldIndex)
+		//	{
+		//		if (saSelector->currIndex > oldIndex || (saSelector->currIndex == 0 && oldIndex == saSelector->totalItems - 1))
+		//		{
+		//			//down
+		//			++saSelector->currIndex;
+		//			if (saSelector->currIndex == saSelector->totalItems)
+		//			{
+		//				saSelector->currIndex = 0;
+		//			}
+		//		}
+		//		else
+		//		{
+		//			--saSelector->currIndex;
+		//			if (saSelector->currIndex < 0)
+		//			{
+		//				saSelector->currIndex = saSelector->totalItems - 1;
+		//			}
+		//		}
+		//	}
+		//}
 
 	}
 

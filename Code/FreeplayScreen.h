@@ -13,20 +13,28 @@ struct FreeplayScreen;
 
 struct FreeplayPlayerBox
 {
-	sf::Text *playerName;
+	enum Action
+	{
+		A_WAITING_FOR_JOIN,
+		A_HAS_PLAYER,
+	};
+
+	sf::Text playerNameText;
 	int index;
 	sf::Vector2i topLeft;
 	sf::Vertex bgQuad[4];
 	FreeplayScreen *fps;
-	sf::Text *numberText;
+	sf::Text numberText;
+	sf::Text pressText;
 
-	int controllerType;
-	int controllerIndex; //might be 2nd xbox controller but 4th player etc.
-	int joinOrder;
+	GameController *controller;
+
+	int action;
 
 	FreeplayPlayerBox(FreeplayScreen *p_fps, int index);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
+	void SetController(GameController *con);
 	void Show();
 	void Hide();
 	void SetTopLeft(sf::Vector2i &pos);
@@ -57,11 +65,9 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	int playerBoxSpacing;
 
 	FreeplayPlayerBox *playerBoxes[4];
-	int gccHeldStartFrames[4];
-	int windowsHeldStartFrames[4];
-	int joinHoldFrames;
-
-	std::vector<GameController*> joinedControllers;
+	//int gccHeldStartFrames[4];
+	//int windowsHeldStartFrames[4];
+	//int joinHoldFrames;
 
 	FreeplayScreen(MainMenu *mm);
 	~FreeplayScreen();
@@ -71,6 +77,9 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	bool HandleEvent(sf::Event ev);
 
 	void TryControllerJoin(GameController *con);
+	bool IsFull();
+	bool AlreadyJoined(GameController *con);
+	FreeplayPlayerBox *GetNextOpenBox();
 
 	void Update();
 	void Draw(sf::RenderTarget *target);

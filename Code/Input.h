@@ -267,6 +267,7 @@ struct AllControllers
 
 	GameController * GetGCController(int index);
 	GameController * GetWindowsController(int index);
+	GameController * GetController(int cType, int index);
 	
 	void Update();
 	void CheckForControllers();
@@ -274,6 +275,16 @@ struct AllControllers
 private:
 	std::vector<GameController*> gcControllers;
 	std::vector<GameController*> windowsControllers;
+	GameController *keyboardController;
+
+	std::vector<ControllerState> gccCurrState;
+	std::vector<ControllerState> gccPrevState;
+
+	std::vector<ControllerState> windowsCurrState;
+	std::vector<ControllerState> windowsPrevState;
+
+	ControllerState keyboardCurrState;
+	ControllerState keyboardPrevState;
 
 	GCC::USBDriver *gccDriver;
 	GCC::VJoyGCControllers *joys;

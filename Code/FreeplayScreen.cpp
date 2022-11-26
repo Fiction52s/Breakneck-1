@@ -13,9 +13,23 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 
 	fps = p_fps;
 
-	playerName = fps->panel->AddLabel("p" + to_string(index) + "label", Vector2i(0, 0), 30, "");
+	Font &f = MainMenu::GetInstance()->arial;
 
-	numberText = fps->panel->AddLabel("p" + to_string(index) + "numberlabel", Vector2i(0, 0), 60, "");
+	playerNameText.setCharacterSize(30);
+	playerNameText.setFont(f);
+	playerNameText.setFillColor(Color::White);
+
+	numberText.setCharacterSize(30);
+	numberText.setFont(f);
+	numberText.setFillColor(Color::White);
+
+	pressText.setCharacterSize(30);
+	pressText.setFont(f);
+	pressText.setFillColor(Color::White);
+
+	pressText.setString("Press Start");
+	auto localB = pressText.getLocalBounds();
+	pressText.setOrigin(localB.left + localB.width / 2, localB.top + localB.height / 2);
 
 	SetRectColor(bgQuad, Color::Red);
 
@@ -28,27 +42,24 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 
 void FreeplayPlayerBox::ClearInfo()
 {
-	controllerType = -1;
-	controllerIndex = -1;
-	joinOrder = -1;
+	controller = NULL;
 	SetName("");
-	numberText->setString("");
+	action = A_WAITING_FOR_JOIN;
 }
 
 void FreeplayPlayerBox::Show()
 {
 	show = true;
-	playerName->setString(playerNameStr);
 	SetTopLeft(topLeft);
-	numberText->setString(to_string(index));
-	numberText->setOrigin(numberText->getLocalBounds().left + numberText->getLocalBounds().width / 2,
-		numberText->getLocalBounds().top + numberText->getLocalBounds().height / 2);
+	//numberText->setString(to_string(index));
+	//numberText->setOrigin(numberText->getLocalBounds().left + numberText->getLocalBounds().width / 2,
+	//	numberText->getLocalBounds().top + numberText->getLocalBounds().height / 2);
 }
 void FreeplayPlayerBox::Hide()
 {
 	show = false;
-	playerName->setString("");
-	numberText->setString("");
+	//playerNameText->setString("");
+	//numberText->setString("");
 }
 
 void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
@@ -57,15 +68,22 @@ void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 
 	Vector2i center(topLeft.x + fps->playerBoxWidth / 2, topLeft.y + fps->playerBoxHeight / 2);
 
-	numberText->setPosition(Vector2f(center));
+	pressText.setPosition(Vector2f(center));
+	//numberText->setPosition(Vector2f(center));
 
 	Vector2i namePos(fps->playerBoxWidth / 2, 0);
 
 	SetRectTopLeft(bgQuad, fps->playerBoxWidth, fps->playerBoxHeight, Vector2f(topLeft));
 
-	playerName->setPosition(Vector2f(pos + namePos));
-	auto &bounds = playerName->getLocalBounds();
-	playerName->setPosition(Vector2f(playerName->getPosition().x - (bounds.left + bounds.width / 2), playerName->getPosition().y));
+	//playerName->setPosition(Vector2f(pos + namePos));
+	//auto &bounds = playerName->getLocalBounds();
+	//playerName->setPosition(Vector2f(playerName->getPosition().x - (bounds.left + bounds.width / 2), playerName->getPosition().y));
+}
+
+void FreeplayPlayerBox::SetController(GameController *con)
+{
+	controller = con;
+	action = A_HAS_PLAYER;
 }
 
 void FreeplayPlayerBox::SetName(const std::string &name)
@@ -74,7 +92,7 @@ void FreeplayPlayerBox::SetName(const std::string &name)
 
 	if (show)
 	{
-		playerName->setString(playerNameStr);
+		playerNameText.setString(playerNameStr);
 		SetTopLeft(topLeft);
 	}
 }
@@ -85,6 +103,17 @@ void FreeplayPlayerBox::Draw(sf::RenderTarget *target)
 		return;
 
 	target->draw(bgQuad, 4, sf::Quads);
+
+	if (action == A_HAS_PLAYER)
+	{
+		target->draw(playerNameText);
+		target->draw(numberText);
+	}
+	else
+	{
+		target->draw(pressText);
+	}
+	
 }
 
 FreeplayScreen::FreeplayScreen(MainMenu *mm)
@@ -129,7 +158,7 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 		playerBoxes[i]->SetTopLeft(left + Vector2i((playerBoxSpacing + playerBoxWidth) * i, 0));
 	}
 
-	joinHoldFrames = 30;
+	joinHoldFrames = 1;
 
 	Start();
 }
@@ -152,7 +181,6 @@ void FreeplayScreen::Start()
 		gccHeldStartFrames[i] = 0;
 		windowsHeldStartFrames[i] = 0;
 	}
-	joinedControllers.clear();
 }
 
 void FreeplayScreen::Quit()
@@ -162,11 +190,13 @@ void FreeplayScreen::Quit()
 
 bool FreeplayScreen::HandleEvent(sf::Event ev)
 {
-	return false;//browserHandler->chooser->panel->HandleEvent(ev);
+	return panel->HandleEvent(ev);
 }
 
 void FreeplayScreen::Update()
 {
+	panel->MouseUpdate();
+
 	for (int i = 0; i < 4; ++i)
 	{
 		if (CONTROLLERS.GetWindowsController(i)->GetUnfilteredState().start)
@@ -209,9 +239,48 @@ void FreeplayScreen::Update()
 	}*/
 }
 
+bool FreeplayScreen::IsFull()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (playerBoxes[i]->controller == NULL)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool FreeplayScreen::AlreadyJoined(GameController *con)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (playerBoxes[i]->controller == con)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+FreeplayPlayerBox *FreeplayScreen::GetNextOpenBox()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (playerBoxes[i]->controller == NULL)
+		{
+			return playerBoxes[i];
+		}
+	}
+
+	return NULL;
+}
+
 void FreeplayScreen::TryControllerJoin(GameController *con)
 {
-	if (joinedControllers.size() == 4)
+	if( IsFull() )
 		return;
 
 	switch (con->GetCType())
@@ -226,19 +295,12 @@ void FreeplayScreen::TryControllerJoin(GameController *con)
 		break;
 	}
 
-	bool alreadyJoined = false;
-	for (auto it = joinedControllers.begin(); it != joinedControllers.end(); ++it)
+	if (!AlreadyJoined(con))
 	{
-		if ((*it) == con)
-		{
-			alreadyJoined = true;
-			break;
-		}
-	}
+		FreeplayPlayerBox *next = GetNextOpenBox();
+		assert(next != NULL);
 
-	if (!alreadyJoined)
-	{
-		joinedControllers.push_back(con);
+		next->SetController(con);
 		cout << "added controller: " << con->GetCType() << ", index: " << con->GetIndex() << endl;
 	}
 }
