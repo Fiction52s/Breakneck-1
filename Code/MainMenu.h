@@ -478,6 +478,7 @@ struct CustomMatchManager;
 struct OnlineMenuScreen;
 
 struct CustomCursor;
+struct MatchParams;
 
 struct MainMenu
 {
@@ -573,8 +574,8 @@ struct MainMenu
 	MatchResultsScreen *matchResultsScreen;
 	FreeplayScreen *freeplayScreen;
 
+	MatchParams *freeplayMatchParams;
 
-	std::string freeplayMapName;
 	std::string editMapName;
 	Mode preFreeplayMode;
 	Mode preEditMode;
@@ -598,7 +599,7 @@ struct MainMenu
 	void UpdateMenuInput();
 	
 
-	void RunFreePlayMap(const std::string &path);
+	//void RunFreePlayMap(const MatchParams *params);
 	void DownloadAndRunWorkshopMap();
 	void SetToMatchResults(GameSession *p_game);
 

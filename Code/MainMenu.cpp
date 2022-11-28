@@ -279,27 +279,28 @@ void MainMenu::TransitionMode(Mode fromMode, Mode toMode)
 	case RUN_FREEPLAY_MAP:
 	{
 		assert(currFreePlaySession == NULL);
+		//assert(freeplayScreen != NULL);
 
-		MatchParams mp;
-		mp.saveFile = NULL;//currSaveFile;
-		mp.mapPath = freeplayMapName;
+		//MatchParams mp = freeplayScreen->GetMatchParams();
 
-		currFreePlaySession = new GameSession(&mp);
+		currFreePlaySession = new GameSession(freeplayMatchParams);
 		GameSession::sLoad(currFreePlaySession);
 		break;
 	}
 	case FREEPLAY:
 	{
+		assert(freeplayScreen == NULL);
+		freeplayScreen = new FreeplayScreen(this);
+		freeplayScreen->Start();
+
 		if (fromMode == BROWSE_WORKSHOP)
 		{
 			workshopBrowser->ClearAllPreviewsButSelected();
 		}
-
-
-		assert(freeplayScreen == NULL);
-
-		freeplayScreen = new FreeplayScreen(this);
-		freeplayScreen->Start();
+		else if (fromMode == RUN_FREEPLAY_MAP)
+		{
+			freeplayScreen->SetFromMatchParams(*freeplayMatchParams);
+		}
 	}
 	}
 }
@@ -350,7 +351,7 @@ MainMenu::MainMenu()
 	selectorAnimDuration = 21;
 	selectorAnimFactor = 3;
 	
-	
+	freeplayMatchParams = new MatchParams;
 
 	globalFile = new GlobalSaveFile;
 	if (!globalFile->Load())
@@ -703,6 +704,8 @@ MainMenu::~MainMenu()
 	currInstance = NULL;
 
 	window->close();
+
+	delete freeplayMatchParams;
 
 	delete customCursor;
 
@@ -2775,7 +2778,8 @@ void MainMenu::HandleMenuMode()
 		}
 		else
 		{
-			LoadMode(BROWSE_WORKSHOP);
+			LoadMode(FREEPLAY);
+			//LoadMode(BROWSE_WORKSHOP);
 		}
 
 		break;
@@ -2948,7 +2952,8 @@ void MainMenu::HandleMenuMode()
 			if (selectedNode == NULL)
 				assert(0);
 
-			freeplayMapName = selectedNode->filePath.string();
+			freeplayMatchParams->Clear();
+			freeplayMatchParams->mapPath = selectedNode->filePath.string();
 			loadThread = new boost::thread(MainMenu::sTransitionMode, this, modeLoadingFrom, modeToLoad);
 			SetMode(LOADINGMENULOOP);
 		}
@@ -2964,7 +2969,10 @@ void MainMenu::HandleMenuMode()
 
 		if (freeplayScreen->action == FreeplayScreen::A_START)
 		{
-			LoadMode(RUN_FREEPLAY_MAP);
+			//LoadMode(RUN_FREEPLAY_MAP);
+			//RunFreePlayMap(freeplayScreen->GetMatchParams().mapPath.string());
+			*freeplayMatchParams = freeplayScreen->GetMatchParams();
+			LoadMode(MainMenu::RUN_FREEPLAY_MAP);
 		}
 		else if (freeplayScreen->action == FreeplayScreen::A_BACK)
 		{
@@ -3811,12 +3819,12 @@ void MainMenu::DrawMode( Mode m )
 	}
 }
 
-void MainMenu::RunFreePlayMap(const std::string &path)
-{
-	freeplayMapName = path;
-	LoadMode(MainMenu::RUN_FREEPLAY_MAP);
-	//SetMode(MainMenu::RUNWORKSHOPMAP);
-}
+//void MainMenu::RunFreePlayMap(const MatchParams &params)
+//{
+//	//freeplayMapName = path;
+//	LoadMode(MainMenu::RUN_FREEPLAY_MAP);
+//	//SetMode(MainMenu::RUNWORKSHOPMAP);
+//}
 
 void MainMenu::DownloadAndRunWorkshopMap()
 {

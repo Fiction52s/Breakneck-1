@@ -3,6 +3,8 @@
 
 #include <boost/filesystem.hpp>
 #include "steam\steam_api.h"
+#include "Input.h"
+#include <vector>
 
 struct NetplayManager;
 struct SaveFile;
@@ -28,7 +30,12 @@ struct MatchParams
 	int gameModeType;
 	int randSeed;
 
+	std::vector<int> playerSkins;
+	std::vector<ControllerDualStateQueue*> controllerStateVec;
+
 	MatchParams();
+	void Clear();
+	bool HasControllerStates();
 	static std::string GetGameModeName(int gm);
 	static bool IsMultiplayerMode(int gm);
 	static std::vector<int> GetNumPlayerOptions(int gm, int numSpawns);

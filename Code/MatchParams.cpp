@@ -5,11 +5,34 @@ using namespace std;
 
 MatchParams::MatchParams()
 {
+	Clear();
+}
+
+void MatchParams::Clear()
+{
 	saveFile = NULL;
 	netplayManager = NULL;
 	numPlayers = 1;
 	gameModeType = MatchParams::GAME_MODE_BASIC;
 	randSeed = 0;
+	controllerStateVec.clear();
+	controllerStateVec.resize(4);
+	playerSkins.clear();
+	playerSkins.resize(4);
+}
+
+
+bool MatchParams::HasControllerStates()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (controllerStateVec[i] != NULL)
+		{
+			return true;
+		}
+	}
+	
+	return false;
 }
 
 std::string MatchParams::GetGameModeName(int gm)

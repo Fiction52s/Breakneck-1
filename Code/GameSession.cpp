@@ -780,6 +780,15 @@ GameSession::GameSession(MatchParams *mp )
 	:Session( Session::SESS_GAME, mp->mapPath)
 {
 	matchParams = *mp;
+
+	if (matchParams.HasControllerStates())
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			SetControllerStates(i, matchParams.controllerStateVec[i]);
+		}
+	}
+
 	SeedRand(matchParams.randSeed);
 	saveFile = matchParams.saveFile;
 	netplayManager = matchParams.netplayManager;
@@ -3240,7 +3249,9 @@ int GameSession::Run()
 	{
 		for (int i = 0; i < 4; ++i)
 		{
-			SetFilterDefault(GetController(i)->filter);
+			//fix this soon
+			if(GetController(i) != NULL )
+				SetFilterDefault(GetController(i)->filter);
 		}
 	}
 

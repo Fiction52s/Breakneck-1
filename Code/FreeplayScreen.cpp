@@ -19,6 +19,8 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 
 	Font &f = MainMenu::GetInstance()->arial;
 
+	skinIndex = -1;
+
 	playerNameText.setCharacterSize(30);
 	playerNameText.setFont(f);
 	playerNameText.setFillColor(Color::White);
@@ -49,6 +51,7 @@ void FreeplayPlayerBox::ClearInfo()
 	controllerStates = NULL;
 	SetName("");
 	action = A_WAITING_FOR_JOIN;
+	skinIndex = -1;
 }
 
 void FreeplayPlayerBox::Show()
@@ -86,6 +89,9 @@ void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 
 void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates)
 {
+	if (conStates == NULL)
+		return;
+
 	controllerStates = conStates;
 	action = A_HAS_PLAYER;
 }
@@ -237,6 +243,23 @@ void FreeplayScreen::TryActivateOptionsPanel(MapNode *mp)
 	}
 }
 
+const MatchParams &FreeplayScreen::GetMatchParams()
+{
+	return currParams;
+	//cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
+	//cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
+	//cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+}
+
+void FreeplayScreen::SetFromMatchParams(MatchParams &mp)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		playerBoxes[i]->SetControllerStates(mp.controllerStateVec[i]);
+		playerBoxes[i]->skinIndex = mp.playerSkins[i];
+	}
+}
+
 void FreeplayScreen::Update()
 {
 	switch (action)
@@ -286,11 +309,22 @@ void FreeplayScreen::Update()
 	{
 		if (mapOptionsPopup->action == MapOptionsPopup::A_HOST)
 		{
-			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
-			cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
-			cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+			//cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
+			//cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
+			//cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
 
 			SetAction(A_START);
+
+			currParams.gameModeType = MatchParams::GAME_MODE_BASIC;//mapOptionsPopup->currLobbyData->gameModeType;
+			currParams.mapPath = mapOptionsPopup->currLobbyData->mapPath;
+			currParams.numPlayers = NumActivePlayers();
+			currParams.randSeed = time(0);
+
+			for (int i = 0; i < 4; ++i)
+			{
+				currParams.controllerStateVec[i] = playerBoxes[i]->controllerStates;
+			}
+
 			//cout << "waiting room" << endl;
 		}
 		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
@@ -410,6 +444,18 @@ void FreeplayScreen::TryControllerJoin(ControllerDualStateQueue *conStates)
 	}
 }
 
+int FreeplayScreen::NumActivePlayers()
+{
+	int numActive = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (playerBoxes[i]->controllerStates != NULL)
+			++numActive;
+	}
+
+	return numActive;
+}
+
 void FreeplayScreen::DrawPopupBG(sf::RenderTarget *target)
 {
 	sf::RectangleShape rect;
@@ -418,6 +464,8 @@ void FreeplayScreen::DrawPopupBG(sf::RenderTarget *target)
 	rect.setPosition(0, 0);
 	target->draw(rect);
 }
+
+
 
 void FreeplayScreen::Draw(sf::RenderTarget *target)
 {
@@ -454,7 +502,6 @@ void FreeplayScreen::Draw(sf::RenderTarget *target)
 		break;
 	}
 	}
-	
 }
 
 void FreeplayScreen::SetAction(int a)

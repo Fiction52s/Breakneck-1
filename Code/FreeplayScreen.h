@@ -4,6 +4,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Tileset.h"
+#include "MatchParams.h"
 
 struct MainMenu;
 struct MapBrowser;
@@ -28,6 +29,7 @@ struct FreeplayPlayerBox
 	FreeplayScreen *fps;
 	sf::Text numberText;
 	sf::Text pressText;
+	int skinIndex;
 
 	ControllerDualStateQueue *controllerStates;
 
@@ -73,6 +75,8 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 
 	FreeplayPlayerBox *playerBoxes[4];
 	MapOptionsPopup *mapOptionsPopup;
+
+	MatchParams currParams;
 	//int gccHeldStartFrames[4];
 	//int windowsHeldStartFrames[4];
 	//int joinHoldFrames;
@@ -94,6 +98,11 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	void TryActivateOptionsPanel(MapNode *mp);
 
 	void DrawPopupBG(sf::RenderTarget *target);
+
+	int NumActivePlayers();
+
+	const MatchParams &GetMatchParams();
+	void SetFromMatchParams(MatchParams &mp);
 
 	void Update();
 	void Draw(sf::RenderTarget *target);
