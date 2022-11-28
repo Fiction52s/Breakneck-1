@@ -39,11 +39,11 @@ struct WorkshopMapPopup : GUIHandler
 	sf::Vector2i previewPos;
 	HyperLink *creatorLink;
 
-	sf::Text *creatorLabel;
-	sf::Text *creatorByLabel;
+	Label *creatorLabel;
+	Label *creatorByLabel;
 	HyperLink *nameLink;
-	sf::Text *nameLabel;
-	sf::Text *descriptionText;
+	Label *nameLabel;
+	Label *descriptionLabel;
 	MapNode *currMapNode;
 
 	HyperLink *fileLink;

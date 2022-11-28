@@ -902,8 +902,8 @@ CheckBox * Panel::AddLabeledCheckBox(
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 	labelStart.y += 6;
-	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
-	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	Label *lab = AddLabel(name + "label", labelStart, 24, labelText);
+	pos.x += lab->text.getLocalBounds().left + lab->text.getLocalBounds().width + extraSpacing;
 	autoStart = oldAutoStart;
 	return AddCheckBox(name, pos, startChecked);
 }
@@ -916,9 +916,9 @@ Slider * Panel::AddLabeledSlider(const std::string &name, sf::Vector2i pos,
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 
-	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
+	Label *lab = AddLabel(name + "label", labelStart, 24, labelText);
 
-	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	pos.x += lab->text.getLocalBounds().left + lab->text.getLocalBounds().width + extraSpacing;
 	autoStart = oldAutoStart;
 
 	labelStart.y += 6;
@@ -945,15 +945,15 @@ TextBox * Panel::AddLabeledTextBox(const std::string &name, sf::Vector2i pos, bo
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 	//labelStart.y += 6;
-	sf::Text *t = AddLabel(name + "label", labelStart, 24, labelText);
+	Label *lab = AddLabel(name + "label", labelStart, 24, labelText);
 
 	if (labelToleft)
 	{
-		pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+		pos.x += lab->text.getLocalBounds().left + lab->text.getLocalBounds().width + extraSpacing;
 	}
 	else
 	{
-		pos.y += t->getLocalBounds().top + t->getLocalBounds().height + extraSpacing;
+		pos.y += lab->text.getLocalBounds().top + lab->text.getLocalBounds().height + extraSpacing;
 	}
 
 	autoStart = oldAutoStart;
@@ -968,8 +968,8 @@ HyperLink * Panel::AddLabeledHyperLink(const std::string &name, sf::Vector2i pos
 	Vector2i oldAutoStart = autoStart;
 	Vector2i labelStart = pos;
 	labelStart.y += 6;
-	sf::Text *t = AddLabel(name + "label", labelStart, characterHeight, labelText);
-	pos.x += t->getLocalBounds().left + t->getLocalBounds().width + extraSpacing;
+	Label *lab = AddLabel(name + "label", labelStart, characterHeight, labelText);
+	pos.x += lab->text.getLocalBounds().left + lab->text.getLocalBounds().width + extraSpacing;
 	autoStart = oldAutoStart;
 	return AddHyperLink(name, pos, characterHeight, text, link);
 }
@@ -1003,23 +1003,29 @@ TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int width
 	//textBoxes.push_back(  );
 }
 
-sf::Text * Panel::AddLabel(const std::string &name, sf::Vector2i labelPos, int characterHeight, const std::string &text)
+Label * Panel::AddLabel(const std::string &name, sf::Vector2i labelPos, int characterHeight, const std::string &str)
 {
 	assert(labels.count(name) == 0);
-	sf::Text *t = new sf::Text(text, arial, characterHeight);
-	t->setPosition(autoStart.x + labelPos.x, autoStart.y + labelPos.y);
-	t->setFillColor(Color::Black);
-	auto lb = t->getLocalBounds();
-	t->setOrigin(lb.left, lb.top);
 
-	auto bounds = t->getLocalBounds();
+	Label *lab = new Label( this );
+
+	lab->text.setFont(arial);
+	lab->text.setCharacterSize(characterHeight);
+	lab->text.setString(str);
+	lab->text.setFillColor(Color::Black);
+	lab->text.setPosition(autoStart.x + labelPos.x, autoStart.y + labelPos.y);
+	
+	auto lb = lab->text.getLocalBounds();
+	lab->text.setOrigin(lb.left, lb.top);
+
+	auto bounds = lab->text.getLocalBounds();
 
 	AddAutoSpaceX(bounds.width + labelPos.x);
 	AddAutoSpaceY(bounds.height + labelPos.y);
 
-	labels[name] = t;
+	labels[name] = lab;
 
-	return t;
+	return lab;
 }
 
 GridSelector * Panel::AddGridSelector(const std::string &name, sf::Vector2i pos,
@@ -1153,7 +1159,7 @@ void Panel::Draw(RenderTarget *target)
 		//Vector2f labelPos = (*it).second->getPosition();
 
 		//(*it).second->setPosition( pos.x + labelPos.x, pos.y + labelPos.y );
-		target->draw(*(*it).second);
+		(*it).second->Draw(target);
 
 		//(*it).second->setPosition( labelPos.x, labelPos.y );
 	}

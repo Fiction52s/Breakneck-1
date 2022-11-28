@@ -17,7 +17,7 @@ LoadingPopup::LoadingPopup()
 	panel = new Panel("loadingpanel", 500, 200, this, true);
 	panel->SetPosition(Vector2i(960 - panel->size.x / 2, 540 - panel->size.y / 2));
 
-	messageText = panel->AddLabel("message", Vector2i(10, 10), 28, "");
+	messageLabel = panel->AddLabel("message", Vector2i(10, 10), 28, "");
 
 	//Button *button = panel->AddButton("ok", Vector2i(panel->size.x / 2, 100), Vector2f(50, 30), "OK");
 	//panel->SetConfirmButton(button);
@@ -52,7 +52,7 @@ void LoadingPopup::UpdateFullMessage()
 		}
 
 		fullStr += postDotsStr;
-		messageText->setString(fullStr);
+		messageLabel->text.setString(fullStr);
 	}
 }
 

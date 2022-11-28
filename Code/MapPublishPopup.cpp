@@ -20,7 +20,6 @@ MapPublishPopup::MapPublishPopup()
 	panel->extraUpdater = this;
 
 	mapNameTextBox = panel->AddLabeledTextBox("name", Vector2i(10, 10), true, 1, 20, 20, 20, "", "Name:");
-	
 
 	panel->SetAutoSpacing(false, true, Vector2i(500, 0), Vector2i(0, 10));
 

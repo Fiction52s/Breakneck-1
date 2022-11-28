@@ -1,5 +1,5 @@
-#ifndef __MAP_OPTIONS_POPUP_H__
-#define __MAP_OPTIONS_POPUP_H__
+#ifndef __FREEPLAY_MAP_OPTIONS_POPUP_H__
+#define ___FREEPLAY_MAP_OPTIONS_POPUP_H__
 
 #include "GUI.h"
 #include <vector>
@@ -9,7 +9,7 @@ struct MapHeader;
 struct LobbyData;
 struct MapNode;
 
-struct MapOptionsPopup : GUIHandler
+struct FreeplayMapOptionsPopup : GUIHandler
 {
 	enum Action
 	{
@@ -26,7 +26,6 @@ struct MapOptionsPopup : GUIHandler
 	{
 		MODE_WORKSHOP_BROWSE,
 		MODE_CREATE_LOBBY,
-		MODE_FREEPLAY,
 	};
 
 	int mode;
@@ -45,7 +44,6 @@ struct MapOptionsPopup : GUIHandler
 	int chosenGameModeType;
 	std::string mapPath;
 	Dropdown *modeDropdown;
-	Dropdown *numPlayersDropdown;
 
 	std::vector<int> gameModeDropdownModes;
 	std::vector<std::string> gameModeOptions;
@@ -55,11 +53,11 @@ struct MapOptionsPopup : GUIHandler
 	sf::Vector2i previewPos;
 	HyperLink *creatorLink;
 
-	Label *creatorLabel;
-	Label *creatorByLabel;
+	sf::Text *creatorLabel;
+	sf::Text *creatorByLabel;
 	HyperLink *nameLink;
-	Label *nameLabel;
-	Label *descriptionLabel;
+	sf::Text *nameLabel;
+	sf::Text *descriptionText;
 
 	HyperLink *fileLink;
 
@@ -67,8 +65,8 @@ struct MapOptionsPopup : GUIHandler
 	Button *createLobbyHostButton;
 	Button *createLobbyCancelButton;
 
-	MapOptionsPopup( int p_mode );
-	~MapOptionsPopup();
+	FreeplayMapOptionsPopup();
+	~FreeplayMapOptionsPopup();
 	bool Activate(MapNode *mp);
 	void Update();
 	bool HandleEvent(sf::Event ev);

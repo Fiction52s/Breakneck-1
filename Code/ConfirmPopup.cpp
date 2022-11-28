@@ -26,7 +26,7 @@ ConfirmPopup::~ConfirmPopup()
 
 void ConfirmPopup::SetQuestion(const std::string &q)
 {
-	panel->labels["question"]->setString(q);
+	panel->labels["question"]->text.setString(q);
 }
 
 void ConfirmPopup::Pop(ConfirmType ct)

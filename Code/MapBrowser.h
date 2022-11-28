@@ -240,12 +240,12 @@ struct MapBrowser : TilesetManager,
 	Panel *panel;
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
-	sf::Text *fileNameTextBoxLabel;
+	Label *fileNameTextBoxLabel;
 	Button *upButton;
 
 	
 	
-	sf::Text *folderPathText;
+	Label *folderPathLabel;
 };
 
 

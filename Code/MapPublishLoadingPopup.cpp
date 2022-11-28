@@ -20,7 +20,7 @@ MapPublishLoadingPopup::MapPublishLoadingPopup()
 
 	panel->extraUpdater = this;
 
-	mapNameText = panel->AddLabel("uploading", Vector2i(10, 10), 30, "");
+	uploadLabel = panel->AddLabel("uploading", Vector2i(10, 10), 30, "");
 
 
 
@@ -63,7 +63,7 @@ void MapPublishLoadingPopup::SetAttempt(int p_currAttempt, int p_maxAttempts)
 		}
 
 		word += ", Attempt " + to_string(currAttempt) + "/" + to_string(maxAttempts);
-		mapNameText->setString(word);
+		uploadLabel->text.setString(word);
 	}
 }
 
@@ -86,7 +86,7 @@ void MapPublishLoadingPopup::UpdateFrame(int numUpdateFrames)
 			}
 
 			word += ", Attempt " + to_string(currAttempt) + "/" + to_string(maxAttempts);
-			mapNameText->setString(word);
+			uploadLabel->text.setString(word);
 		}
 
 		++frame;
@@ -175,7 +175,7 @@ void MapPublishLoadingPopup::Activate()
 		previewSpr.setPosition(10, 70 + 50);
 		previewSpr.setScale(.5, .5);*/
 
-		mapNameText->setString("Uploading");
+		uploadLabel->text.setString("Uploading");
 	}
 
 	//mapLink->SetLinkURL("steam://url/CommunityFilePage/" + to_string(uploadID));

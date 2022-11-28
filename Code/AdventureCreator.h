@@ -44,7 +44,7 @@ struct AdventureCreator : FileChooserHandler
 	FileNode *grabbedFile;
 	FileNode tempGrabbedFile;
 
-	sf::Text *sectorLabel;
+	Label *sectorLabel;
 
 	void SetRectNode(ChooseRect *cr, FileNode *fn);
 	int GetNodeStart();

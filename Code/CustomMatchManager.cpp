@@ -24,7 +24,7 @@ CustomMatchManager::CustomMatchManager()
 	lobbyBrowser = new LobbyBrowser;
 	waitingRoom = new WaitingRoom;
 	
-	mapOptionsPopup = new MapOptionsPopup;
+	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_CREATE_LOBBY);
 
 	messagePopup = new MessagePopup;
 

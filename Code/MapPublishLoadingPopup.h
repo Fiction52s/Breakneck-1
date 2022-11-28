@@ -24,7 +24,7 @@ struct MapPublishLoadingPopup : GUIHandler, TilesetManager, PanelUpdater
 	Panel *panel;
 	bool active;
 	Action action;
-	sf::Text *mapNameText;
+	Label *uploadLabel;
 	Tileset *ts_preview;
 	sf::Sprite previewSpr;
 

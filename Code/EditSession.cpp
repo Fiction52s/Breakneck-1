@@ -542,12 +542,12 @@ void EditSession::UpdateNetworkStats()
 		GGPONetworkStats ns;
 		ggpo_get_network_stats(ggpo, ngs->playerInfo[remoteIndex].handle, &ns);
 
-		ggpoStatsPanel->labels["kbps_sent"]->setString( "kbps_sent: " + to_string(ns.network.kbps_sent));
-		ggpoStatsPanel->labels["ping"]->setString( "ping: " + to_string(ns.network.ping));
-		ggpoStatsPanel->labels["recv"]->setString( "recv_queue_len: " + to_string(ns.network.recv_queue_len));
-		ggpoStatsPanel->labels["send"]->setString( "send_queue_len: " + to_string(ns.network.send_queue_len));
-		ggpoStatsPanel->labels["local"]->setString( "local_frames_behind: " + to_string(ns.timesync.local_frames_behind));
-		ggpoStatsPanel->labels["remote"]->setString("remote_frames_behind: " + to_string(ns.timesync.remote_frames_behind));
+		ggpoStatsPanel->labels["kbps_sent"]->text.setString( "kbps_sent: " + to_string(ns.network.kbps_sent));
+		ggpoStatsPanel->labels["ping"]->text.setString( "ping: " + to_string(ns.network.ping));
+		ggpoStatsPanel->labels["recv"]->text.setString( "recv_queue_len: " + to_string(ns.network.recv_queue_len));
+		ggpoStatsPanel->labels["send"]->text.setString( "send_queue_len: " + to_string(ns.network.send_queue_len));
+		ggpoStatsPanel->labels["local"]->text.setString( "local_frames_behind: " + to_string(ns.timesync.local_frames_behind));
+		ggpoStatsPanel->labels["remote"]->text.setString("remote_frames_behind: " + to_string(ns.timesync.remote_frames_behind));
 	}
 }
 
@@ -4370,7 +4370,7 @@ void EditSession::ButtonCallback( Button *b, const std::string & e )
 				ss >> d;
 				mapHeader->drainSeconds = d;
 
-				string pathStr = newMapPanel->labels["pathlabel"]->getString().toAnsiString()
+				string pathStr = newMapPanel->labels["pathlabel"]->text.getString().toAnsiString()
 					+ "\\" + mapName + ".brknk";
 				filePathStr = pathStr;
 				filePath = pathStr;
@@ -4691,14 +4691,14 @@ void EditSession::GridSelectorCallback( GridSelector *gs, const std::string & p_
 		}
 		shard->SetShard(world, realX, realY);
 
-		panel->labels["shardtype"]->setString(name);
+		panel->labels["shardtype"]->text.setString(name);
 	}
 	else if (panel->name == "shardselector")
 	{
 		tempGridResult = name;
 		tempGridX = gs->selectedX;
 		tempGridY = gs->selectedY;
-		panel->labels["shardtype"]->setString(name);
+		panel->labels["shardtype"]->text.setString(name);
 	}
 }
 

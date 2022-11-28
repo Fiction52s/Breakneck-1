@@ -427,7 +427,7 @@ void AdventureCreator::ChooseSector(int s)
 	//sectorRequirementsSlider->SetCurrValue(
 	//	adventure->worlds[currWorld - 1].sectors[currSector - 1].requiredRunes);
 
-	sectorLabel->setString("Sector " + to_string(currSector));
+	sectorLabel->text.setString("Sector " + to_string(currSector));
 	//update maps
 }
 

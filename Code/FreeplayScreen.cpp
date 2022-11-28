@@ -143,7 +143,7 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 		playerBoxes[i] = new FreeplayPlayerBox(this, i);
 	}
 
-	mapOptionsPopup = new MapOptionsPopup;
+	mapOptionsPopup = new MapOptionsPopup(MapOptionsPopup::MODE_FREEPLAY);
 
 	int numBoxes = 4;
 	playerBoxWidth = 300;

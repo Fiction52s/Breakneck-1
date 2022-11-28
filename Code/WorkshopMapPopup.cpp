@@ -36,8 +36,8 @@ WorkshopMapPopup::WorkshopMapPopup()
 	creatorLabel = panel->AddLabel("creatorlabel", previewPos + Vector2i(40, -50), 25, "");
 	creatorLink = panel->AddHyperLink("creatorlink", previewPos + Vector2i(40, -50), 25, "", "");
 
-	descriptionText = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
-	descriptionText->setFillColor(Color::Red);
+	descriptionLabel = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
+	descriptionLabel->text.setFillColor(Color::Red);
 
 	action = A_INACTIVE;
 
@@ -210,9 +210,9 @@ bool WorkshopMapPopup::Activate(MapNode *mp)
 
 	ts_preview = mp->ts_preview;
 
-	descriptionText->setString(mp->description);
+	descriptionLabel->text.setString(mp->description);
 
-	nameLabel->setString("");
+	nameLabel->text.setString("");
 
 	nameLink->ShowMember();
 	nameLink->SetString(mp->fullMapName);
@@ -223,12 +223,12 @@ bool WorkshopMapPopup::Activate(MapNode *mp)
 		creatorLink->ShowMember();
 		creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mp->creatorId));
 		creatorLink->SetString(mp->creatorName);
-		creatorLabel->setString("");
+		creatorLabel->text.setString("");
 	}
 	else
 	{
 		creatorLink->HideMember();
-		creatorLabel->setString(mp->creatorName);
+		creatorLabel->text.setString(mp->creatorName);
 	}
 
 
@@ -271,7 +271,7 @@ void WorkshopMapPopup::CheckStatus()
 {
 	if (currMapNode == NULL)
 	{
-		panel->labels["statuslabel"]->setString("Status: ");
+		panel->labels["statuslabel"]->text.setString("Status: ");
 		return;
 	}
 
@@ -344,7 +344,7 @@ void WorkshopMapPopup::CheckStatus()
 		statusStr = to_string(currStatus);
 	}
 
-	panel->labels["statuslabel"]->setString("Status: " + statusStr);
+	panel->labels["statuslabel"]->text.setString("Status: " + statusStr);
 }
 
 void WorkshopMapPopup::CheckHeader()
@@ -381,8 +381,8 @@ void WorkshopMapPopup::CheckHeader()
 		fileLink->SetLinkFileAndFolder(currMapNode->filePath.string(), currMapNode->folderPath.string());
 		fileLink->SetString(currMapNode->filePath.filename().string());
 
-		panel->labels["maxnumplayerslabel"]->setString("Number of Player Spawns: " + to_string(currMapHeader->numPlayerSpawns));
-		panel->labels["numverticeslabel"]->setString("Number of Vertices: " + to_string(currMapHeader->numVertices));
+		panel->labels["maxnumplayerslabel"]->text.setString("Number of Player Spawns: " + to_string(currMapHeader->numPlayerSpawns));
+		panel->labels["numverticeslabel"]->text.setString("Number of Vertices: " + to_string(currMapHeader->numVertices));
 
 		string numGameObjectsStr;
 
@@ -395,7 +395,7 @@ void WorkshopMapPopup::CheckHeader()
 			numGameObjectsStr = to_string(currMapHeader->numGameObjects);
 		}
 
-		panel->labels["numgameobjectslabel"]->setString("Number of objects: " + numGameObjectsStr);
+		panel->labels["numgameobjectslabel"]->text.setString("Number of objects: " + numGameObjectsStr);
 
 		string sizeStr;
 		if (currMapHeader->functionalWidth == -1 || currMapHeader->functionalHeight == -1)
@@ -407,7 +407,7 @@ void WorkshopMapPopup::CheckHeader()
 			sizeStr = to_string(currMapHeader->functionalWidth) + " x " + to_string(currMapHeader->functionalHeight);
 		}
 
-		panel->labels["sizelabel"]->setString("Size: " + sizeStr);
+		panel->labels["sizelabel"]->text.setString("Size: " + sizeStr);
 	}
 	else
 	{
@@ -415,10 +415,10 @@ void WorkshopMapPopup::CheckHeader()
 		//fileLink->SetLinkFileAndFolder(currMapNode->filePath.string(), currMapNode->folderPath.string());
 		//fileLink->SetString("");
 
-		panel->labels["maxnumplayerslabel"]->setString("Number of Player Spawns: ?");
-		panel->labels["numverticeslabel"]->setString("Number of Vertices: ?");
-		panel->labels["numgameobjectslabel"]->setString("Number of objects: ?");
-		panel->labels["sizelabel"]->setString("Size: ? x ?");
+		panel->labels["maxnumplayerslabel"]->text.setString("Number of Player Spawns: ?");
+		panel->labels["numverticeslabel"]->text.setString("Number of Vertices: ?");
+		panel->labels["numgameobjectslabel"]->text.setString("Number of objects: ?");
+		panel->labels["sizelabel"]->text.setString("Size: ? x ?");
 	}
 }
 

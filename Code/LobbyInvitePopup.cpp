@@ -21,7 +21,7 @@ LobbyInvitePopup::LobbyInvitePopup()
 
 	//mapNameText = panel->AddLabel("failure", Vector2i(10, 10), 30, "Map failed to upload. Error is: ");
 
-	inviteMessage = panel->AddLabel("invitelabel", Vector2i(0, 0), 30, "has invited you to join a lobby");
+	inviteMessageLabel = panel->AddLabel("invitelabel", Vector2i(0, 0), 30, "has invited you to join a lobby");
 	inviteSenderName = panel->AddHyperLink("senderlink", Vector2i(10, 10), 30, "", "");
 
 	panel->SetAutoSpacing(true, false, Vector2i(10, 100), Vector2i(30, 0));
@@ -84,7 +84,7 @@ void LobbyInvitePopup::OpenPopup(CSteamID p_lobbyId, CSteamID p_senderId)
 
 	auto senderGlobalBounds = inviteSenderName->text.getGlobalBounds();
 	int spacing = 20;
-	inviteMessage->setPosition(senderGlobalBounds.left + senderGlobalBounds.width + spacing, inviteSenderName->pos.y);
+	inviteMessageLabel->text.setPosition(senderGlobalBounds.left + senderGlobalBounds.width + spacing, inviteSenderName->pos.y);
 
 	action = A_ACTIVE;
 }

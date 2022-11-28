@@ -24,13 +24,13 @@ struct MapPostPublishPopup : GUIHandler, TilesetManager, PanelUpdater
 	Panel *panel;
 	bool active;
 	Action action;
-	sf::Text *mapNameText;
+	Label *mapNameLabel;
 	Tileset *ts_preview;
 	sf::Sprite previewSpr;
 	
 	HyperLink *mapLink;
 	HyperLink *agreementLink;
-	sf::Text *remainPrivateText;
+	Label *remainPrivateLabel;
 
 	MapPostPublishPopup();
 	~MapPostPublishPopup();

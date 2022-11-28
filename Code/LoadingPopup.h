@@ -18,7 +18,7 @@ struct LoadingPopup : GUIHandler
 	int frame;
 	std::string preDotsStr;
 	std::string postDotsStr;
-	sf::Text *messageText;
+	Label *messageLabel;
 
 	LoadingPopup();
 	~LoadingPopup();

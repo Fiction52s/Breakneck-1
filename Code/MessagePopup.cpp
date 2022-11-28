@@ -39,7 +39,7 @@ void MessagePopup::Pop(const std::string &message)
 
 	action = A_ACTIVE;
 
-	panel->labels["message"]->setString(message);
+	panel->labels["message"]->text.setString(message);
 }
 
 void MessagePopup::ButtonCallback(Button *b,

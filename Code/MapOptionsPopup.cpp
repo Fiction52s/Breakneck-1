@@ -8,11 +8,11 @@ using namespace std;
 using namespace sf;
 
 
-MapOptionsPopup::MapOptionsPopup()
+MapOptionsPopup::MapOptionsPopup( int p_mode )
 {
 	//panel = new Panel("mapoptions", 500,
 	//	300, this, true);
-
+	mode = p_mode;
 	
 
 	previewPos = Vector2i(10, 110);
@@ -37,8 +37,8 @@ MapOptionsPopup::MapOptionsPopup()
 	creatorLabel = panel->AddLabel("creatorlabel", previewPos + Vector2i(40, -50), 25, "");
 	creatorLink = panel->AddHyperLink("creatorlink", previewPos + Vector2i(40, -50), 25, "", "");
 
-	descriptionText = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
-	descriptionText->setFillColor(Color::Red);
+	descriptionLabel = panel->AddLabel("description", previewBotLeft + Vector2i(0, 20), 20, "");
+	descriptionLabel->text.setFillColor(Color::Red);
 
 	action = A_INACTIVE;
 
@@ -187,11 +187,11 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 		ts_preview->SetSpriteTexture(previewSpr);
 	}
 
-	descriptionText->setString(mp->description);
+	descriptionLabel->text.setString(mp->description);
 	
 	if (mp->isWorkshop)
 	{
-		nameLabel->setString("");
+		nameLabel->text.setString("");
 
 		nameLink->ShowMember();
 		nameLink->SetString(mp->fullMapName);
@@ -199,7 +199,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	}
 	else
 	{
-		nameLabel->setString(mp->fullMapName);
+		nameLabel->text.setString(mp->fullMapName);
 
 		nameLink->HideMember();
 
@@ -224,12 +224,12 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 		creatorLink->ShowMember();
 		creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mp->creatorId));
 		creatorLink->SetString(mp->creatorName);
-		creatorLabel->setString("");
+		creatorLabel->text.setString("");
 	}
 	else
 	{
 		creatorLink->HideMember();
-		creatorLabel->setString(mp->creatorName);
+		creatorLabel->text.setString(mp->creatorName);
 		//creatorLink->SetLinkURL("https://steamcommunity.com/profiles/" + to_string(mp->creatorId));
 		//creatorLink->SetString(mp->creatorName);
 	}
@@ -265,8 +265,8 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 	//currMapHeader->
 
-	panel->labels["maxnumplayerslabel"]->setString( "Number of Player Spawns: " + to_string(currMapHeader->numPlayerSpawns));
-	panel->labels["numverticeslabel"]->setString("Number of Vertices: " + to_string( currMapHeader->numVertices));
+	panel->labels["maxnumplayerslabel"]->text.setString( "Number of Player Spawns: " + to_string(currMapHeader->numPlayerSpawns));
+	panel->labels["numverticeslabel"]->text.setString("Number of Vertices: " + to_string( currMapHeader->numVertices));
 
 
 	string numGameObjectsStr;
@@ -280,7 +280,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 		numGameObjectsStr = to_string(currMapHeader->numGameObjects);
 	}
 
-	panel->labels["numgameobjectslabel"]->setString("Number of objects: " + numGameObjectsStr);
+	panel->labels["numgameobjectslabel"]->text.setString("Number of objects: " + numGameObjectsStr);
 
 	string sizeStr;
 	if (currMapHeader->functionalWidth == -1 || currMapHeader->functionalHeight == -1)
@@ -292,7 +292,7 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 		sizeStr = to_string(currMapHeader->functionalWidth) + " x " + to_string(currMapHeader->functionalHeight);
 	}
 
-	panel->labels["sizelabel"]->setString("Size: " + sizeStr);
+	panel->labels["sizelabel"]->text.setString("Size: " + sizeStr);
 
 	
 	panel->SetAutoSpacing(false, true, Vector2i(10, 10), Vector2i(0, 20));

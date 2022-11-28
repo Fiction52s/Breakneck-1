@@ -411,7 +411,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel->AddTabGroup("tabs", Vector2i(0, 0), tabNames, 200, 30);
 
 	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
-	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+	folderPathLabel = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
 
 	Vector2i pageButtonOrigin(750, 990);
 
@@ -682,7 +682,7 @@ void MapBrowser::SetPath(const std::string &p_path)
 
 	//int maxPathShownLength = 50;
 
-	folderPathText->setString(p_path);
+	folderPathLabel->text.setString(p_path);
 
 	path p(p_path);
 
@@ -890,13 +890,13 @@ void MapBrowser::TurnOff()
 void MapBrowser::ShowFileNameTextBox()
 {
 	fileNameTextBox->ShowMember();
-	fileNameTextBoxLabel->setString("Filename:");
+	fileNameTextBoxLabel->text.setString("Filename:");
 }
 
 void MapBrowser::HideFileNameTextBox()
 {
 	fileNameTextBox->HideMember();
-	fileNameTextBoxLabel->setString("");
+	fileNameTextBoxLabel->text.setString("");
 }
 
 void MapBrowser::Init()
@@ -1023,7 +1023,7 @@ void MapBrowser::StartWorkshop( MapBrowser::Mode p_mode )
 
 	Init();
 
-	folderPathText->setString("");
+	folderPathLabel->text.setString("");
 
 	currWorkshopPage = 1;
 

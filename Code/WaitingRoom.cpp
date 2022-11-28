@@ -107,11 +107,11 @@ WaitingRoom::WaitingRoom()
 
 	previewBottomLeft = previewPos + Vector2f(0, previewSize.y);
 
-	nameText = panel->AddLabel("namelabel", Vector2i(previewPos) + Vector2i(0, -100), 40, "");
-	nameText->setFillColor(Color::White);
+	nameLabel = panel->AddLabel("namelabel", Vector2i(previewPos) + Vector2i(0, -100), 40, "");
+	nameLabel->text.setFillColor(Color::White);
 
-	descriptionText = panel->AddLabel("description", Vector2i(previewBottomLeft) + Vector2i(0, 20), 20, "");
-	descriptionText->setFillColor(Color::Red);
+	descriptionLabel = panel->AddLabel("description", Vector2i(previewBottomLeft) + Vector2i(0, 20), 20, "");
+	descriptionLabel->text.setFillColor(Color::Red);
 
 	panel->StopAutoSpacing();
 
@@ -239,8 +239,8 @@ void WaitingRoom::UpdateMapHeader( const std::string &mapPath )
 
 		mapHeader->Load(is);
 
-		descriptionText->setString(mapHeader->description);
-		nameText->setString(mapHeader->fullName);
+		descriptionLabel->text.setString(mapHeader->description);
+		nameLabel->text.setString(mapHeader->fullName);
 
 		is.close();
 	}
@@ -390,8 +390,8 @@ void WaitingRoom::Clear()
 		mapHeader = NULL;
 	}
 
-	descriptionText->setString("");
-	nameText->setString("");
+	descriptionLabel->text.setString("");
+	nameLabel->text.setString("");
 }
 
 void WaitingRoom::SetAction(Action a)

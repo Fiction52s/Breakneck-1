@@ -47,7 +47,7 @@ FileChooser::FileChooser( FileChooserHandler *p_handler,
 	panel->extraUpdater = this;
 	
 	upButton = panel->AddButton("up", Vector2i(10, 10), Vector2f(30, 30), "up");
-	folderPathText = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
+	folderPathLabel = panel->AddLabel("folderpath", Vector2i(50, 10), 30, "");
 
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
@@ -147,7 +147,7 @@ void FileChooser::SetPath(const std::string &p_path)
 
 	handler->ChangePath();
 
-	folderPathText->setString(p_path);
+	folderPathLabel->text.setString(p_path);
 
 	path p(p_path);
 	currPath = p;

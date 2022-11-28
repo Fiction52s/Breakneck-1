@@ -23,7 +23,7 @@ struct PostMatchClientPopup : GUIHandler
 	sf::Vertex bgQuad[4];
 	Panel *panel;
 
-	sf::Text *waitingText;
+	Label *waitingLabel;
 
 	int secondsToWait;
 

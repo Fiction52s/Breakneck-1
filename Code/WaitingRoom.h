@@ -63,8 +63,8 @@ struct WaitingRoom : GUIHandler, TilesetManager
 	Tileset *ts_preview;
 	sf::Vertex previewQuad[4];
 	sf::Vector2f previewBottomLeft;
-	sf::Text *nameText;
-	sf::Text *descriptionText;
+	Label *nameLabel;
+	Label *descriptionLabel;
 
 	int maxPlayers;
 

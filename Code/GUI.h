@@ -115,6 +115,18 @@ struct PanelMember
 	ToolTip *toolTip;
 };
 
+struct Label : PanelMember
+{
+	sf::Text text;
+
+	Label( Panel * p);
+	void Draw(sf::RenderTarget *target);
+	void SetTopLeftPosition(sf::Vector2i &pos);
+	void SetCenterPosition(sf::Vector2i &pos);
+	void SetTopCenterPosition(sf::Vector2i &pos);
+	bool MouseUpdate();
+};
+
 struct ChooseRect : PanelMember
 {
 	enum ChooseRectType
@@ -766,7 +778,7 @@ struct Panel
 	Button * AddButton( const std::string &name, sf::Vector2i pos, sf::Vector2f size, const std::string &text );
 	TextBox * AddTextBox( const std::string &name, sf::Vector2i pos, int rows, int cols, int charHeight, int lengthLimit, const std::string &initialText );
 	TextBox * AddTextBox(const std::string &name, sf::Vector2i pos, int width, int lengthLimit, const std::string &initialText);
-	sf::Text * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
+	Label * AddLabel( const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text );
 	HyperLink * AddHyperLink(const std::string &name, sf::Vector2i pos, int characterHeight, const std::string &text,
 		const std::string &link );
 	CheckBox * AddCheckBox( const std::string &name, sf::Vector2i pos, bool startChecked = false );
@@ -817,7 +829,7 @@ struct Panel
 	std::map<std::string, TextBox*> textBoxes;
 	std::map<std::string, Button*> buttons;
 	std::map<std::string, HyperLink*> hyperLinks;
-	std::map<std::string, sf::Text*> labels;
+	std::map<std::string, Label*> labels;
 	std::map<std::string, CheckBox*> checkBoxes;
 	std::map<std::string, GridSelector*> gridSelectors;
 	std::map<std::string, Dropdown*> dropdowns;

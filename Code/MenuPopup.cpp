@@ -11,7 +11,7 @@ MenuInfoPopup::MenuInfoPopup(MainMenu *mainMenu)
 	panel = new Panel("menuinfopopup", size.x, size.y, this, true);
 	//SetRectColor(popupBGQuad, Color::Black);
 
-	infoText = panel->AddLabel("infolabel", Vector2i(10, 10), 30, "");
+	infoLabel = panel->AddLabel("infolabel", Vector2i(10, 10), 30, "");
 
 	okButton = panel->AddButton("ok", Vector2i(10, 100), Vector2f(100, 30), "OK");
 	panel->SetConfirmButton(okButton);
@@ -76,11 +76,11 @@ void MenuInfoPopup::SetPos(sf::Vector2f &pos)
 
 void MenuInfoPopup::SetText(const std::string &str)
 {
-	infoText->setString(str);
+	infoLabel->text.setString(str);
 	//infoText->setOrigin(infoText->getLocalBounds().left + infoText->getLocalBounds().width / 2, 0);
 		//infoText->getLocalBounds().top + infoText->getLocalBounds().height / 2);
-	size.x = infoText->getGlobalBounds().width + 40;
-	size.y = infoText->getCharacterSize() + infoText->getPosition().y + 20 + okButton->size.y + 10;//infoText->getGlobalBounds().height + 80;
+	size.x = infoLabel->text.getGlobalBounds().width + 40;
+	size.y = infoLabel->text.getCharacterSize() + infoLabel->text.getPosition().y + 20 + okButton->size.y + 10;//infoText->getGlobalBounds().height + 80;
 
 	
 

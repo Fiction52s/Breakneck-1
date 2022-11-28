@@ -23,7 +23,7 @@ struct LobbyInvitePopup : GUIHandler, TilesetManager, PanelUpdater
 	Action action;
 	
 	HyperLink *inviteSenderName;
-	sf::Text *inviteMessage;
+	Label *inviteMessageLabel;
 
 	Button *confirmButton;
 	Button *cancelButton;

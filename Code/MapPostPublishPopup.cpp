@@ -20,13 +20,13 @@ MapPostPublishPopup::MapPostPublishPopup()
 
 	panel->extraUpdater = this;
 
-	mapNameText = panel->AddLabel("success", Vector2i(10, 10), 30, "Map successfully published:");
+	panel->AddLabel("success", Vector2i(10, 10), 30, "Map successfully published:");
 
-	mapNameText = panel->AddLabel("namelabel", Vector2i(10, 10+50), 40, "");
+	mapNameLabel = panel->AddLabel("namelabel", Vector2i(10, 10+50), 40, "");
 
 	panel->SetAutoSpacing(false, true, Vector2i(500, 0), Vector2i(0, 10));
 
-	remainPrivateText = panel->AddLabel("remainprivatelabel", Vector2i(0, 10), 24, "Your maps will remain hidden\nuntil you accept the ");
+	remainPrivateLabel = panel->AddLabel("remainprivatelabel", Vector2i(0, 10), 24, "Your maps will remain hidden\nuntil you accept the ");
 
 	agreementLink = panel->AddHyperLink("agreementlink", Vector2i(0, 0), 24, "Workshop terms of service", "");
 
@@ -127,17 +127,17 @@ void MapPostPublishPopup::Activate( bool agreementSigned, PublishedFileId_t uplo
 		previewSpr.setPosition(10, 70 + 50);
 		previewSpr.setScale(.5, .5);
 
-		mapNameText->setString(edit->workshopUploader->publishPopup->mapNameTextBox->GetString());
+		mapNameLabel->text.setString(edit->workshopUploader->publishPopup->mapNameTextBox->GetString());
 	}
 
 	if (agreementSigned)
 	{
-		remainPrivateText->setFillColor(Color::Transparent);
+		remainPrivateLabel->text.setFillColor(Color::Transparent);
 		agreementLink->HideMember();
 	}
 	else
 	{
-		remainPrivateText->setFillColor(Color::Black);
+		remainPrivateLabel->text.setFillColor(Color::Black);
 		agreementLink->ShowMember();
 	}
 

@@ -20,9 +20,7 @@ MapPublishFailurePopup::MapPublishFailurePopup()
 
 	panel->extraUpdater = this;
 
-	mapNameText = panel->AddLabel("failure", Vector2i(10, 10), 30, "Map failed to upload. Error is: ");
-
-
+	errorLabel = panel->AddLabel("failure", Vector2i(10, 10), 30, "Map failed to upload. Error is: ");
 
 	panel->SetAutoSpacing(true, false, Vector2i(500, 300), Vector2i(30, 0));
 	//fileNameTextBox = panel->AddTextBox("filename", Vector2i(0, 0), 500, 40, "");
@@ -120,11 +118,11 @@ void MapPublishFailurePopup::Activate(PublishedFileId_t uploadID, int errorCode,
 
 		if (!onCreate)
 		{
-			mapNameText->setString("Map failed to upload. Error on editing is: " + to_string(errorCode));
+			errorLabel->text.setString("Map failed to upload. Error on editing is: " + to_string(errorCode));
 		}
 		else
 		{
-			mapNameText->setString("Map failed to upload. Error on creating is: " + to_string(errorCode));
+			errorLabel->text.setString("Map failed to upload. Error on creating is: " + to_string(errorCode));
 		}
 	}
 

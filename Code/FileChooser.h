@@ -130,7 +130,7 @@ struct FileChooser : TilesetManager,
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
 	Button *upButton;
-	sf::Text *folderPathText;
+	Label *folderPathLabel;
 };
 
 //struct FolderNode

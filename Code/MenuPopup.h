@@ -20,7 +20,7 @@ struct MenuInfoPopup : GUIHandler
 	Panel *panel;
 	Button *okButton;
 	sf::Vector2f size;
-	sf::Text *infoText;
+	Label *infoLabel;
 	sf::Vector2f position;
 	//sf::Vertex popupBGQuad[4];
 

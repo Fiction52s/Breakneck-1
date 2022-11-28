@@ -17,7 +17,7 @@ PostMatchClientPopup::PostMatchClientPopup()
 
 	panel->ReserveImageRects(Action::Count);
 
-	waitingText = panel->AddLabel("waitinglabel", sf::Vector2i(10, 10), 30, "");
+	waitingLabel = panel->AddLabel("waitinglabel", sf::Vector2i(10, 10), 30, "");
 
 	panel->SetAutoSpacing(true, false, Vector2i(200, 200), Vector2i(20, 0));
 	ImageChooseRect *icr = NULL;
@@ -108,7 +108,7 @@ void PostMatchClientPopup::UpdateMsg()
 
 		waitingMsg += "(" + to_string(GetSecondsRemaining()) + ")";
 		//mapNameText->setString(word);
-		waitingText->setString(waitingMsg);
+		waitingLabel->text.setString(waitingMsg);
 	}
 }
 
