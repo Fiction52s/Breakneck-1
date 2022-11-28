@@ -11,23 +11,7 @@ UIMouse::UIMouse()
 	
 }
 
-void UIMouse::Update(sf::Vector2i &mPos)
-{
-	vector<ControllerState> states;
-	Update(mPos, states);
-}
-
-const sf::Vector2i &UIMouse::GetPos()
-{
-	return myPos;
-}
-
-sf::Vector2f UIMouse::GetFloatPos()
-{
-	return sf::Vector2f(myPos);
-}
-
-void UIMouse::Update(sf::Vector2i &p_mousePos, std::vector<ControllerState> & states)
+void UIMouse::Update(sf::Vector2i &p_mousePos)
 {
 	if (!IsWindowFocused())
 	{
@@ -37,16 +21,13 @@ void UIMouse::Update(sf::Vector2i &p_mousePos, std::vector<ControllerState> & st
 	bool mouseDownL = Mouse::isButtonPressed(Mouse::Left);
 	bool mouseDownR = Mouse::isButtonPressed(Mouse::Right);
 
-	for (auto it = states.begin(); it != states.end(); ++it)
+	if (CONTROLLERS.ButtonHeld_A())
 	{
-		if ((*it).JumpButtonDown())
-		{
-			mouseDownL = true;
-		}
-		if ((*it).DashButtonDown())
-		{
-			mouseDownR = true;
-		}
+		mouseDownL = true;
+	}
+	if (CONTROLLERS.ButtonHeld_X())
+	{
+		mouseDownR = true;
 	}
 
 	lastMouseDownLeft = isMouseDownLeft;
@@ -57,47 +38,57 @@ void UIMouse::Update(sf::Vector2i &p_mousePos, std::vector<ControllerState> & st
 
 	mousePos = p_mousePos;
 
-	ControllerState *nonNeutralState = NULL;
-	for (auto it = states.begin(); it != states.end(); ++it)
+	ControllerDualStateQueue *nonNeutralStates = NULL;
+	ControllerDualStateQueue *currStates = NULL;
+	double mag = 0;
+	for (int i = 0; i < CTYPE_NONE; ++i)
 	{
-		//if (!(*it).IsLeftNeutral())
-		if( (*it).leftStickMagnitude > 0 )
+		for (int j = 0; j < 4; ++j)
 		{
-			nonNeutralState = &(*it);
-			break;
+			currStates = CONTROLLERS.GetStateQueue(i, j);
+			if (currStates != NULL)
+			{
+				mag = currStates->GetCurrState().leftStickMagnitude;
+				if (mag > 0)
+				{
+					nonNeutralStates = currStates;
+					break;
+				}
+			}
 		}
 	}
 
-	if (nonNeutralState == NULL )
+	if (nonNeutralStates == NULL)
 	{
 		myPos = mousePos;
 	}
 	else
 	{
-		if (nonNeutralState->leftStickMagnitude > 0)
+		ControllerState currState = nonNeutralStates->GetCurrState();
+		if (currState.leftStickMagnitude > 0)
 		{
-			float x = cos(nonNeutralState->leftStickRadians) * nonNeutralState->leftStickMagnitude;
-			float y = -sin(nonNeutralState->leftStickRadians) * nonNeutralState->leftStickMagnitude;
+			float x = cos(currState.leftStickRadians) * currState.leftStickMagnitude;
+			float y = -sin(currState.leftStickRadians) * currState.leftStickMagnitude;
 			float maxSpeed = 20;
 			sf::Vector2i movement(round(x * maxSpeed), round(y * maxSpeed));
 			myPos += movement;
 		}
 		else
 		{
-			if (nonNeutralState->LLeft())
+			if (currState.LLeft())
 			{
 				myPos.x -= 10;
 			}
-			else if (nonNeutralState->LRight())
+			else if (currState.LRight())
 			{
 				myPos.x += 10;
 			}
 
-			if (nonNeutralState->LUp())
+			if (currState.LUp())
 			{
 				myPos.y -= 10;
 			}
-			else if (nonNeutralState->LDown())
+			else if (currState.LDown())
 			{
 				myPos.y += 10;
 			}
@@ -107,6 +98,16 @@ void UIMouse::Update(sf::Vector2i &p_mousePos, std::vector<ControllerState> & st
 	}
 
 	consumed = false;
+}
+
+const sf::Vector2i &UIMouse::GetPos()
+{
+	return myPos;
+}
+
+sf::Vector2f UIMouse::GetFloatPos()
+{
+	return sf::Vector2f(myPos);
 }
 
 bool UIMouse::IsMouseDownLeft()

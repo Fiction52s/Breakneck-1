@@ -120,9 +120,9 @@ void MapOptionsPopup::Update()
 	panel->MouseUpdate();
 }
 
-void MapOptionsPopup::HandleEvent(sf::Event ev)
+bool MapOptionsPopup::HandleEvent(sf::Event ev)
 {
-	panel->HandleEvent(ev);
+	return panel->HandleEvent(ev);
 }
 
 void MapOptionsPopup::Draw(sf::RenderTarget *target)

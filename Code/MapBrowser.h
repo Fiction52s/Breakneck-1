@@ -96,6 +96,7 @@ struct MapBrowserHandler : GUIHandler
 {
 	MapBrowserHandler(int cols, int rows, bool showPreview, int extraImageRects = 0);
 	~MapBrowserHandler();
+	void Clear();
 	void Cancel();
 	void Confirm();
 	void ClickFile(ChooseRect *cr);

@@ -404,7 +404,7 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	panel->ReserveImageRects(totalRects + extraImageRects);
 	panel->extraUpdater = this;
 
-	panel->MouseUpdate();
+	//panel->MouseUpdate();
 
 
 	vector<string> tabNames = { "Local", "Workshop" };
@@ -1281,6 +1281,13 @@ void MapBrowserHandler::Update()
 void MapBrowserHandler::Cancel()
 {
 	chooser->TurnOff();
+}
+
+void MapBrowserHandler::Clear()
+{
+	ClearFocus();
+	ClearSelection();
+	chooser->ClearNodes();
 }
 
 void MapBrowserHandler::Confirm()

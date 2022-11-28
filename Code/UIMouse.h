@@ -23,7 +23,7 @@ struct UIMouse
 	bool IsMouseRightClicked();
 	bool IsMouseRightReleased();
 	void Update(sf::Vector2i &mousePos);
-	void Update(sf::Vector2i &mousePos, std::vector<ControllerState> & states);
+	//void Update(sf::Vector2i &mousePos, std::vector<ControllerState> & states);
 	const sf::Vector2i &GetPos();
 	sf::Vector2f GetFloatPos();
 	void ResetMouse();

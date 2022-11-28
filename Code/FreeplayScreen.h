@@ -10,6 +10,8 @@ struct MapBrowser;
 struct MapBrowserHandler;
 struct WorkshopMapPopup;
 struct FreeplayScreen;
+struct MapNode;
+struct MapOptionsPopup;
 
 struct FreeplayPlayerBox
 {
@@ -27,14 +29,14 @@ struct FreeplayPlayerBox
 	sf::Text numberText;
 	sf::Text pressText;
 
-	GameController *controller;
+	ControllerDualStateQueue *controllerStates;
 
 	int action;
 
 	FreeplayPlayerBox(FreeplayScreen *p_fps, int index);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
-	void SetController(GameController *con);
+	void SetControllerStates(ControllerDualStateQueue *conStates);
 	void Show();
 	void Hide();
 	void SetTopLeft(sf::Vector2i &pos);
@@ -49,8 +51,11 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	enum Action
 	{
 		A_WAITING_FOR_PLAYERS,
-		A_READY,
+		A_CHOOSE_MAP,
+		A_START,
 		A_BACK,
+		A_DOWNLOADING_WORKSHOP_MAP,
+		A_CHOOSE_MAP_OPTIONS,
 	};
 
 	int action;
@@ -64,10 +69,15 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	int playerBoxHeight;
 	int playerBoxSpacing;
 
+	MapNode *selectedMap;
+
 	FreeplayPlayerBox *playerBoxes[4];
+	MapOptionsPopup *mapOptionsPopup;
 	//int gccHeldStartFrames[4];
 	//int windowsHeldStartFrames[4];
 	//int joinHoldFrames;
+
+	MapBrowserScreen *mapBrowserScreen;
 
 	FreeplayScreen(MainMenu *mm);
 	~FreeplayScreen();
@@ -76,10 +86,14 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	void Quit();
 	bool HandleEvent(sf::Event ev);
 
-	void TryControllerJoin(GameController *con);
+	void TryControllerJoin(ControllerDualStateQueue *conStates);
 	bool IsFull();
-	bool AlreadyJoined(GameController *con);
+	bool AlreadyJoined(ControllerDualStateQueue *conStates);
 	FreeplayPlayerBox *GetNextOpenBox();
+	void StartBrowsing();
+	void TryActivateOptionsPanel(MapNode *mp);
+
+	void DrawPopupBG(sf::RenderTarget *target);
 
 	void Update();
 	void Draw(sf::RenderTarget *target);

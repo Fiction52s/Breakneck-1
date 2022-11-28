@@ -1558,6 +1558,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 	:playerOptionsField(PLAYER_OPTION_BIT_COUNT)
 {
 	matchPlacings.resize(4);
+	controllerStates.resize(4);
 
 	parallelSessionIndex = -1;
 	randomState = 0;
@@ -1586,7 +1587,7 @@ Session::Session( SessionType p_sessType, const boost::filesystem::path &p_fileP
 
 	for (int i = 0; i < 4; ++i)
 	{
-		SetController(i, CONTROLLERS.GetWindowsController(i));//mainMenu->GetController(i)); //placeholder until things are cleaned up more
+		SetControllerStates(i, CONTROLLERS.GetStateQueue( CTYPE_XBOX, i ));//mainMenu->GetController(i)); //placeholder until things are cleaned up more
 		//controllers[i] = NULL;
 	}
 
@@ -2655,35 +2656,75 @@ bool Session::ReadFile()
 	return true;
 }
 
-ControllerState &Session::GetPrevInput(int index)
+ControllerState Session::GetPrevInput(int index)
 {
-	return mainMenu->GetPrevInput(index);
+	if (controllerStates[index] != NULL)
+	{
+		return controllerStates[index]->GetPrevState();
+	}
+	else
+	{
+		return ControllerState();
+	}
+
+	//return //mainMenu->GetPrevInput(index);
 }
 
-ControllerState &Session::GetCurrInput(int index)
+//eventually fix things, since there is currently no filtering
+ControllerState Session::GetCurrInput(int index)
 {
-	return mainMenu->GetCurrInput(index);
+	if (controllerStates[index] != NULL)
+	{
+		return controllerStates[index]->GetCurrState();
+	}
+	else
+	{
+		return ControllerState();
+	}
 }
 
-ControllerState &Session::GetPrevInputUnfiltered(int index)
+ControllerState Session::GetPrevInputUnfiltered(int index)
 {
-	return mainMenu->GetPrevInputUnfiltered(index);
+	if (controllerStates[index] != NULL)
+	{
+		return controllerStates[index]->GetPrevState();
+	}
+	else
+	{
+		return ControllerState();
+	}
 }
 
-ControllerState &Session::GetCurrInputUnfiltered(int index)
+ControllerState Session::GetCurrInputUnfiltered(int index)
 {
-	return mainMenu->GetCurrInputUnfiltered(index);
+	if (controllerStates[index] != NULL)
+	{
+		return controllerStates[index]->GetCurrState();
+	}
+	else
+	{
+		return ControllerState();
+	}
 }
 
-void Session::SetController(int index, GameController *c)
+void Session::SetControllerStates(int index, ControllerDualStateQueue *conStates)
 {
-	controllers[index] = c;
+	controllerStates[index] = conStates;
+	//controllers[index] = c;
 }
 
 GameController * Session::GetController(int index)
 {
+	if (controllerStates[index] == NULL)
+	{
+		return NULL;
+	}
+	else
+	{
+		return controllerStates[index]->con;
+	}
 	//changed because I want to assign controllers at the freeplay menu
-	return controllers[index];//mainMenu->GetController(index);
+	//return con//mainMenu->GetController(index);
 }
 
 Actor *Session::GetPlayer(int index)
@@ -2708,10 +2749,10 @@ void Session::UpdateControllersOneFrameMode()
 			p->prevInput = GetCurrInput(i);
 		}*/
 
-		GameController *con = GetController(i);
+		//GameController *con = GetController(i);
 
-		GetCurrInput(i) = con->GetState();
-		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
+		//GetCurrInput(i) = //con->GetState();
+		//GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
 	}
 }
 
@@ -2719,25 +2760,25 @@ void Session::UpdateControllers()
 {
 	CONTROLLERS.Update();
 	
-	Actor *p = NULL;
-	for (int i = 0; i < 4; ++i)
-	{
-		GetPrevInput(i) = GetCurrInput(i);
-		GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
-		/*if (!cutPlayerInput)
-		{
-			p = GetPlayer(i);
-			if (p != NULL)
-			{
-				p->prevInput = GetCurrInput(i);
-			}
-		}*/
+	//Actor *p = NULL;
+	//for (int i = 0; i < 4; ++i)
+	//{
+	//	GetPrevInput(i) = GetCurrInput(i);
+	//	GetPrevInputUnfiltered(i) = GetCurrInputUnfiltered(i);
+	//	/*if (!cutPlayerInput)
+	//	{
+	//		p = GetPlayer(i);
+	//		if (p != NULL)
+	//		{
+	//			p->prevInput = GetCurrInput(i);
+	//		}
+	//	}*/
 
-		GameController *con = GetController(i);
+	//	GameController *con = GetController(i);
 
-		GetCurrInput(i) = con->GetState();
-		GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
-	}
+	//	GetCurrInput(i) = con->GetState();
+	//	GetCurrInputUnfiltered(i) = con->GetUnfilteredState();
+	//}
 }
 
 void Session::UpdatePlayerInput(int index)
@@ -2755,8 +2796,8 @@ void Session::UpdatePlayerInput(int index)
 
 	ControllerState &pCurr = player->currInput;
 	GameController *controller = GetController(index);
-	ControllerState &currInput = GetCurrInput(index);
-	ControllerState &prevInput = GetPrevInput(index);
+	ControllerState currSessInput = GetCurrInput(index);
+	ControllerState prevSessInput = GetPrevInput(index);
 
 	bool alreadyBounce = pCurr.X;
 	bool alreadyGrind = pCurr.Y;
@@ -2769,12 +2810,12 @@ void Session::UpdatePlayerInput(int index)
 	else
 	{
 		player->prevInput = player->currInput;
-		player->currInput = currInput;
+		player->currInput = currSessInput;
 		//player->prevInput = prevInput;
 
 		if (controller->keySettings.toggleBounce)
 		{
-			if (currInput.X && !prevInput.X)
+			if (currSessInput.X && !prevSessInput.X)
 			{
 				pCurr.X = !alreadyBounce;
 			}
@@ -2785,7 +2826,7 @@ void Session::UpdatePlayerInput(int index)
 		}
 		if (controller->keySettings.toggleGrind)
 		{
-			if (currInput.Y && !prevInput.Y)
+			if (currSessInput.Y && !prevSessInput.Y)
 			{
 				pCurr.Y = !alreadyGrind;
 			}
@@ -2796,10 +2837,9 @@ void Session::UpdatePlayerInput(int index)
 		}
 		if (controller->keySettings.toggleTimeSlow)
 		{
-			if (currInput.leftShoulder && !prevInput.leftShoulder)
+			if (currSessInput.leftShoulder && !prevSessInput.leftShoulder)
 			{
 				pCurr.leftShoulder = !alreadyTimeSlow;
-
 			}
 			else
 			{

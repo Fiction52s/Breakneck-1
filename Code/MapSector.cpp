@@ -1069,7 +1069,8 @@ void MapSector::UpdateSectorArrows()
 		tile = 2;
 	}
 
-	if (ms->mainMenu->GetCurrInputUnfiltered(0).LLeft())
+	//fix this later
+	if (CONTROLLERS.ButtonPressed_LeftShoulder() )//ms->mainMenu->GetCurrInputUnfiltered(0).LLeft())
 	{
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile + 1);
 	}
@@ -1078,7 +1079,7 @@ void MapSector::UpdateSectorArrows()
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads, tile);
 	}
 
-	if (ms->mainMenu->GetCurrInputUnfiltered(0).LRight())
+	if (CONTROLLERS.ButtonPressed_RightShoulder())
 	{
 		ts_sectorArrows->SetQuadSubRect(sectorArrowQuads + 4, tile + 1, true);
 	}

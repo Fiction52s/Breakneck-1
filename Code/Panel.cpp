@@ -512,30 +512,11 @@ bool Panel::MouseUpdate()
 
 void Panel::ControllerUpdate()
 {
-	MainMenu *mm = MainMenu::GetInstance();
-	bool confirm = false;
-	bool cancel = false;
-	for (int i = 0; i < 4; ++i)
-	{
-		ControllerState &currState = mm->GetCurrInputUnfiltered(i);
-		ControllerState &prevState = mm->GetPrevInputUnfiltered(i);
-
-		if (currState.start && !prevState.start)
-		{
-			confirm = true;
-		}
-
-		if (currState.B && !prevState.B)
-		{
-			cancel = true;
-		}
-	}
-
-	if (confirm)
+	if (CONTROLLERS.ButtonPressed_Start())
 	{
 		Confirm();
 	}
-	else if (cancel)
+	else if (CONTROLLERS.ButtonPressed_B())
 	{
 		Cancel();
 	}

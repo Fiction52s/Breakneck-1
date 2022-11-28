@@ -26,50 +26,45 @@ void UIController::Update()
 	confirmHeld = false;
 	cancelHeld = false;
 
-	for (int i = 0; i < 4; ++i)
+	if (CONTROLLERS.ButtonHeld_Start())
 	{
-		ControllerState &prevState = mm->GetPrevInputUnfiltered(i);
-		ControllerState &currState = mm->GetCurrInputUnfiltered(i);
-
-		if (currState.start)
+		confirmHeld = true;
+		if (CONTROLLERS.ButtonPressed_Start())
 		{
-			confirmHeld = true;
-			if (!prevState.start)
-			{
-				confirmPressed = true;
-			}
+			confirmPressed = true;
 		}
+	}
 
-		if (currState.B)
+	if (CONTROLLERS.ButtonHeld_B())
+	{
+		cancelHeld = true;
+		if (CONTROLLERS.ButtonPressed_B())
 		{
-			cancelHeld = true;
-			if (!prevState.B)
+			cancelPressed = true;
+		}
+	}
+
+	ControllerDualStateQueue *foundStates = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			auto *states = CONTROLLERS.GetStateQueue(i, j);
+			if ( states != NULL && states->GetCurrState().rightStickMagnitude > 0)
 			{
-				cancelPressed = true;
+				foundStates = states;
+				break;
 			}
 		}
 	}
 
-	int foundIndex = -1;
-	for (int i = 0; i < 4; ++i)
-	{
-		ControllerState &currState = mm->GetCurrInputUnfiltered(i);
-
-		if (currState.rightStickMagnitude > 0)
-		{
-			foundIndex = i;
-			break;
-			
-		}
-	}
-
-	if (foundIndex == -1)
+	if (foundStates == NULL )
 	{
 		scrollCounter = 0;
 	}
 	else
 	{
-		ControllerState &currState = mm->GetCurrInputUnfiltered(foundIndex);
+		ControllerState currState = foundStates->GetCurrState();
 		float y = sin(currState.rightStickRadians) * currState.rightStickMagnitude;
 
 		y /= 4;

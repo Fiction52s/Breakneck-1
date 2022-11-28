@@ -76,9 +76,7 @@ void WorkshopBrowser::Quit()
 {
 	action = A_BACK;
 	
-	mapBrowserScreen->browserHandler->ClearFocus();
-	mapBrowserScreen->browserHandler->ClearSelection();
-	mapBrowserScreen->browserHandler->chooser->ClearNodes();
+	mapBrowserScreen->browserHandler->Clear();
 }
 
 void WorkshopBrowser::RequestPreviews()

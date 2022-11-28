@@ -241,6 +241,7 @@ public:
 	int gcDefaultLeftTrigger;
 	int gcDefaultRightTrigger;
 private:
+	bool isConnected;
 	DWORD m_index;
 	bool UpdateGCC();
 	bool UpdateXBOX();
@@ -253,6 +254,51 @@ private:
 	const static DWORD TRIGGER_THRESHOLD;
 	const static double GC_LEFT_STICK_DEADZONE;
 	const static double GC_RIGHT_STICK_DEADZONE;
+};
+
+struct ControllerStateQueue
+{
+	std::vector<ControllerState> states;
+	GameController *con;
+
+	ControllerStateQueue(int size, GameController *con );
+	void AddInput(ControllerState &s);
+	int GetNumStates();
+	bool ButtonHeld_A();
+	bool ButtonPressed_A();
+	bool ButtonHeld_B();
+	bool ButtonPressed_B();
+	bool ButtonHeld_X();
+	bool ButtonPressed_X();
+	bool ButtonHeld_Y();
+	bool ButtonPressed_Y();
+	bool ButtonHeld_LeftShoulder();
+	bool ButtonPressed_LeftShoulder();
+	bool ButtonHeld_RightShoulder();
+	bool ButtonPressed_RightShoulder();
+	bool ButtonHeld_Start();
+	bool ButtonPressed_Start();
+	bool ButtonHeld_Any();
+	bool ButtonPressed_Any();
+
+	int GetControllerType();
+	int GetIndex();
+	const ControllerState &GetCurrState();
+	const ControllerState &GetPrevState();
+	
+	/*bool ButtonHeld_Jump();
+	bool ButtonPressed_Jump();
+	bool ButtonHeld_Dash();
+	bool ButtonPressed_Dash();
+	bool ButtonHeld_Attack();
+	bool ButtonPressed_Attack();*/
+};
+
+
+
+struct ControllerDualStateQueue : ControllerStateQueue
+{
+	ControllerDualStateQueue(GameController *con );
 };
 
 struct AllControllers
@@ -268,23 +314,44 @@ struct AllControllers
 	GameController * GetGCController(int index);
 	GameController * GetWindowsController(int index);
 	GameController * GetController(int cType, int index);
+
+	//ControllerState GetCurrState(int cType, int index);
+	//ControllerState GetPrevState(int cType, int index);
+	ControllerDualStateQueue * GetStateQueue( int cType, int index);
+	ControllerDualStateQueue * GetStateQueue(GameController *con);
 	
 	void Update();
 	void CheckForControllers();
 	void SetRenderWindow(sf::RenderWindow *rw);
+
+
+	bool ButtonHeld_A();
+	bool ButtonPressed_A();
+	bool ButtonHeld_B();
+	bool ButtonPressed_B();
+	bool ButtonHeld_X();
+	bool ButtonPressed_X();
+	bool ButtonHeld_Y();
+	bool ButtonPressed_Y();
+	bool ButtonHeld_LeftShoulder();
+	bool ButtonPressed_LeftShoulder();
+	bool ButtonHeld_RightShoulder();
+	bool ButtonPressed_RightShoulder();
+	bool ButtonHeld_Start();
+	bool ButtonPressed_Start();
+	bool ButtonHeld_Any();
+	bool ButtonPressed_Any();
+
+
 private:
 	std::vector<GameController*> gcControllers;
 	std::vector<GameController*> windowsControllers;
 	GameController *keyboardController;
 
-	std::vector<ControllerState> gccCurrState;
-	std::vector<ControllerState> gccPrevState;
+	std::vector<ControllerDualStateQueue*> gccStatesVec;
+	std::vector<ControllerDualStateQueue*> windowsStatesVec;
 
-	std::vector<ControllerState> windowsCurrState;
-	std::vector<ControllerState> windowsPrevState;
-
-	ControllerState keyboardCurrState;
-	ControllerState keyboardPrevState;
+	ControllerDualStateQueue *keyboardStates;
 
 	GCC::USBDriver *gccDriver;
 	GCC::VJoyGCControllers *joys;

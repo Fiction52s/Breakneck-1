@@ -70,7 +70,7 @@ struct MapOptionsPopup : GUIHandler
 	~MapOptionsPopup();
 	bool Activate(MapNode *mp);
 	void Update();
-	void HandleEvent(sf::Event ev);
+	bool HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);
 	void UpdateNumPlayerOptions();
 

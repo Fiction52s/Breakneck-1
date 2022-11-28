@@ -651,7 +651,7 @@ bool SaveMenuScreen::Update()
 		}
 	}
 
-	if (mainMenu->currInputUnfiltered[0].rightShoulder)
+	if (CONTROLLERS.ButtonHeld_RightShoulder())
 	{
 		ts_skinButton->SetSubRect(skinButtonSpr, 1);
 	}

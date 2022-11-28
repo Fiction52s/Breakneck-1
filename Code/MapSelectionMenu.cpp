@@ -485,32 +485,32 @@ void MapSelectionMenu::UpdateMultiInput()
 				continue;
 			}
 
-			ControllerState &pInput = mainMenu->GetPrevInput(i);
-			ControllerState &cInput = mainMenu->GetCurrInput(i);
-			GameController *c = NULL;//mainMenu->GetController(i);
+			//ControllerState &pInput = mainMenu->GetPrevInput(i);
+			//ControllerState &cInput = mainMenu->GetCurrInput(i);
+			//GameController *c = NULL;//mainMenu->GetController(i);
 
-			//pInput = cInput;
-			bool active = c->UpdateState();
+			////pInput = cInput;
+			//bool active = c->UpdateState();
 
-			if (active)
-			{
-				cInput = c->GetState();
-				multiMusicCurr.A |= (cInput.A && !pInput.A);
-				multiMusicCurr.B |= (cInput.B && !pInput.B);
-				multiMusicCurr.X |= (cInput.X && !pInput.X);
-				multiMusicCurr.Y |= (cInput.Y && !pInput.Y);
-				multiMusicCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
-				multiMusicCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
-				multiMusicCurr.start |= (cInput.start && !pInput.start);
-				multiMusicCurr.leftTrigger = max(multiMusicCurr.leftTrigger, cInput.leftTrigger);
-				multiMusicCurr.rightTrigger = max(multiMusicCurr.rightTrigger, cInput.rightTrigger);
-				multiMusicCurr.back |= (cInput.back && !pInput.back);
-				multiMusicCurr.leftStickPad |= cInput.leftStickPad;
-			}
-			else
-			{
-				cInput.Set(ControllerState());
-			}
+			//if (active)
+			//{
+			//	cInput = c->GetState();
+			//	multiMusicCurr.A |= (cInput.A && !pInput.A);
+			//	multiMusicCurr.B |= (cInput.B && !pInput.B);
+			//	multiMusicCurr.X |= (cInput.X && !pInput.X);
+			//	multiMusicCurr.Y |= (cInput.Y && !pInput.Y);
+			//	multiMusicCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+			//	multiMusicCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+			//	multiMusicCurr.start |= (cInput.start && !pInput.start);
+			//	multiMusicCurr.leftTrigger = max(multiMusicCurr.leftTrigger, cInput.leftTrigger);
+			//	multiMusicCurr.rightTrigger = max(multiMusicCurr.rightTrigger, cInput.rightTrigger);
+			//	multiMusicCurr.back |= (cInput.back && !pInput.back);
+			//	multiMusicCurr.leftStickPad |= cInput.leftStickPad;
+			//}
+			//else
+			//{
+			//	cInput.Set(ControllerState());
+			//}
 		}
 	}
 	else if (multiSelectorState == MS_GHOST)
@@ -524,32 +524,32 @@ void MapSelectionMenu::UpdateMultiInput()
 				continue;
 			}
 
-			ControllerState &pInput = mainMenu->GetPrevInput(i);
-			ControllerState &cInput = mainMenu->GetCurrInput(i);
-			GameController *c = NULL;//mainMenu->GetController(i);
+			//ControllerState &pInput = mainMenu->GetPrevInput(i);
+			//ControllerState &cInput = mainMenu->GetCurrInput(i);
+			//GameController *c = NULL;//mainMenu->GetController(i);
 
-			//pInput = cInput;
-			bool active = c->UpdateState();
+			////pInput = cInput;
+			//bool active = c->UpdateState();
 
-			if (active)
-			{
-				cInput = c->GetState();
-				multiGhostCurr.A |= (cInput.A && !pInput.A);
-				multiGhostCurr.B |= (cInput.B && !pInput.B);
-				multiGhostCurr.X |= (cInput.X && !pInput.X);
-				multiGhostCurr.Y |= (cInput.Y && !pInput.Y);
-				multiGhostCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
-				multiGhostCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
-				multiGhostCurr.start |= (cInput.start && !pInput.start);
-				multiGhostCurr.leftTrigger = max(multiGhostCurr.leftTrigger, cInput.leftTrigger);
-				multiGhostCurr.rightTrigger = max(multiGhostCurr.rightTrigger, cInput.rightTrigger);
-				multiGhostCurr.back |= (cInput.back && !pInput.back);
-				multiGhostCurr.leftStickPad |= cInput.leftStickPad;
-			}
-			else
-			{
-				cInput.Set(ControllerState());
-			}
+			//if (active)
+			//{
+			//	cInput = c->GetState();
+			//	multiGhostCurr.A |= (cInput.A && !pInput.A);
+			//	multiGhostCurr.B |= (cInput.B && !pInput.B);
+			//	multiGhostCurr.X |= (cInput.X && !pInput.X);
+			//	multiGhostCurr.Y |= (cInput.Y && !pInput.Y);
+			//	multiGhostCurr.rightShoulder |= (cInput.rightShoulder && !pInput.rightShoulder);
+			//	multiGhostCurr.leftShoulder |= (cInput.leftShoulder && !pInput.leftShoulder);
+			//	multiGhostCurr.start |= (cInput.start && !pInput.start);
+			//	multiGhostCurr.leftTrigger = max(multiGhostCurr.leftTrigger, cInput.leftTrigger);
+			//	multiGhostCurr.rightTrigger = max(multiGhostCurr.rightTrigger, cInput.rightTrigger);
+			//	multiGhostCurr.back |= (cInput.back && !pInput.back);
+			//	multiGhostCurr.leftStickPad |= cInput.leftStickPad;
+			//}
+			//else
+			//{
+			//	cInput.Set(ControllerState());
+			//}
 		}
 	}
 }

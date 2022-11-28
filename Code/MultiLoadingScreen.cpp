@@ -135,10 +135,10 @@ void MultiLoadingScreen::Update()
 		}
 		if (!playerSection[i]->active)
 		{
-			if (mainMenu->GetCurrInput(i).B && !mainMenu->GetPrevInput(i).B)
+			/*if (mainMenu->GetCurrInput(i).B && !mainMenu->GetPrevInput(i).B)
 			{
 
-			}
+			}*/
 		}
 	}
 

@@ -1392,28 +1392,6 @@ Tileset * MainMenu::GetButtonIconTileset(int controllerIndex )
 	}
 }
 
-ControllerState &MainMenu::GetPrevInput( int index )
-{
-	return prevInput[index];
-}
-
-
-ControllerState &MainMenu::GetCurrInput( int index )
-{
-	return currInput[index];
-}
-
-ControllerState &MainMenu::GetPrevInputUnfiltered(int index)
-{
-	return prevInputUnfiltered[index];
-}
-
-
-ControllerState &MainMenu::GetCurrInputUnfiltered(int index)
-{
-	return currInputUnfiltered[index];
-}
-
 
 void MainMenu::CopyMap( CustomMapsHandler *cmh, Panel *namePop )
 {
@@ -1494,32 +1472,23 @@ void MainMenu::UpdateMenuInput()
 
 	for (int i = 0; i < 4; ++i)
 	{
-		ControllerState &prevInput = GetPrevInputUnfiltered(i);
-		ControllerState &currInput = GetCurrInputUnfiltered(i);
 		GameController *c = CONTROLLERS.GetWindowsController(i);//GetController(i);
 
-		prevInput = currInput;
+		ControllerStateQueue *states = CONTROLLERS.GetStateQueue(c);
 
-
-		//if (gccDriverEnabled)
-		//	c->gcController = controllers[i];
-		bool active = c->UpdateState();
-
-		if (active)
+		if (c->IsConnected())
 		{
-			currInput = c->GetUnfilteredState();
-
-			menuCurrInput.A |= (currInput.A && !prevInput.A);
-			menuCurrInput.B |= (currInput.B && !prevInput.B);
-			menuCurrInput.X |= (currInput.X && !prevInput.X);
-			menuCurrInput.Y |= (currInput.Y && !prevInput.Y);
-			menuCurrInput.rightShoulder |= (currInput.rightShoulder && !prevInput.rightShoulder);
-			menuCurrInput.leftShoulder |= (currInput.leftShoulder && !prevInput.leftShoulder);
-			menuCurrInput.start |= (currInput.start && !prevInput.start);
-			menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
-			menuCurrInput.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
-			menuCurrInput.back |= (currInput.back && !prevInput.back);
-			menuCurrInput.leftStickPad |= currInput.leftStickPad;
+			menuCurrInput.A |= states->ButtonPressed_A();
+			menuCurrInput.B |= states->ButtonPressed_B();
+			menuCurrInput.X |= states->ButtonPressed_X();
+			menuCurrInput.Y |= states->ButtonPressed_Y();
+			menuCurrInput.rightShoulder |= states->ButtonPressed_RightShoulder();
+			menuCurrInput.leftShoulder |= states->ButtonPressed_LeftShoulder();
+			menuCurrInput.start |= states->ButtonPressed_Start();
+			//menuCurrInput.leftTrigger = max(menuCurrInput.leftTrigger, currInput.leftTrigger);
+			//menuCurrInput.rightTrigger = max(menuCurrInput.rightTrigger, currInput.rightTrigger);
+			//menuCurrInput.back |= (currInput.back && !prevInput.back);
+			menuCurrInput.leftStickPad |= states->GetCurrState().leftStickPad;
 
 			/*menuCurrInput.A |= currInput.A;
 			menuCurrInput.B |= currInput.B;
@@ -1535,7 +1504,7 @@ void MainMenu::UpdateMenuInput()
 		}
 		else
 		{
-			currInput.Set(ControllerState());
+			//currInput.Set(ControllerState());
 		}
 
 	}
@@ -1598,8 +1567,6 @@ void MainMenu::Run()
 	//SetMode(SPLASH);
 	menuMode = TITLEMENU;
 
-	vector<ControllerState> controllerStatesForMouse;
-	controllerStatesForMouse.reserve(4);
 	
 #if defined( USE_MOVIE_TEST )
 	sf::Shader sh;
@@ -1658,13 +1625,7 @@ void MainMenu::Run()
 
 				mousePixelPos = GetPixelPos();
 
-				controllerStatesForMouse.clear();
-				for (int i = 0; i < 4; ++i)
-				{
-					controllerStatesForMouse.push_back(GetCurrInputUnfiltered(i));
-				}
-
-				MOUSE.Update(mousePixelPos, controllerStatesForMouse);
+				MOUSE.Update(mousePixelPos);
 
 				UICONTROLLER.Update();
 
@@ -2746,8 +2707,8 @@ void MainMenu::HandleMenuMode()
 		{
 
 		}
-		ControllerState &introInput = GetCurrInputUnfiltered(0);
-		introMovie->skipHolder->Update(introInput.A);
+		//ControllerState &introInput = GetCurrInputUnfiltered(0);
+		introMovie->skipHolder->Update(CONTROLLERS.ButtonHeld_A());
 		if (!introMovie->Update())
 		{
 			//fader->CrossFade(30, 0, 30, Color::Black);
@@ -3001,7 +2962,7 @@ void MainMenu::HandleMenuMode()
 
 		freeplayScreen->Update();
 
-		if (freeplayScreen->action == FreeplayScreen::A_READY)
+		if (freeplayScreen->action == FreeplayScreen::A_START)
 		{
 			LoadMode(RUN_FREEPLAY_MAP);
 		}

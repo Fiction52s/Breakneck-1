@@ -77,136 +77,136 @@ bool MultiSelectionSection::ButtonEvent(UIEvent eType,
 void MultiSelectionSection::Update()
 {
 	MainMenu *mm = mainMenu;
-	ControllerState &currInput = mm->GetCurrInput(playerIndex);
-	ControllerState &prevInput = mm->GetPrevInput(playerIndex);
+	//ControllerState &currInput = mm->GetCurrInput(playerIndex);
+	//ControllerState &prevInput = mm->GetPrevInput(playerIndex);
 
-	if (!active)
-	{
-		bool a = currInput.A && !prevInput.A;
-		if (a)
-		{
-			active = true;
-			bHoldFrames = 0;
-		}
-		return;
-	}
-	else
-	{
-		if (profileSelect->state == ControlProfileMenu::S_SELECTED)
-		{
-			if (currInput.B)
-			{
-				holdingB = true;
-			}
-			else
-			{
-				holdingB = false;
-				bHoldFrames = 0;
-			}
+	//if (!active)
+	//{
+	//	bool a = currInput.A && !prevInput.A;
+	//	if (a)
+	//	{
+	//		active = true;
+	//		bHoldFrames = 0;
+	//	}
+	//	return;
+	//}
+	//else
+	//{
+	//	if (profileSelect->state == ControlProfileMenu::S_SELECTED)
+	//	{
+	//		if (currInput.B)
+	//		{
+	//			holdingB = true;
+	//		}
+	//		else
+	//		{
+	//			holdingB = false;
+	//			bHoldFrames = 0;
+	//		}
 
-			if (holdingB)
-			{
-				if (backLoader->Fill(1) > 0)
-				{
+	//		if (holdingB)
+	//		{
+	//			if (backLoader->Fill(1) > 0)
+	//			{
 
-				}
-				backLoader->Update();
-			}
-			else
-			{
-				backLoader->Drain(1);
-				backLoader->Update();
-			}
-		}
-		else
-		{
-			holdingB = false;
-		}
-	}
+	//			}
+	//			backLoader->Update();
+	//		}
+	//		else
+	//		{
+	//			backLoader->Drain(1);
+	//			backLoader->Update();
+	//		}
+	//	}
+	//	else
+	//	{
+	//		holdingB = false;
+	//	}
+	//}
 
-	//if (!IsReady())
-	{
-		bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed());
-		bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed());
+	////if (!IsReady())
+	//{
+	//	bool rT = (currInput.RightTriggerPressed() && !prevInput.RightTriggerPressed());
+	//	bool lT = (currInput.LeftTriggerPressed() && !prevInput.LeftTriggerPressed());
 
-		bool rS = (currInput.rightShoulder && !prevInput.rightShoulder);
-		bool lS = (currInput.leftShoulder && !prevInput.leftShoulder);
-		if (rT)
-		{
-			switch (team)
-			{
-			case T_NOT_CHOSEN:
-			{
-				team = T_RED;
-				break;
-			}
-			case T_RED:
-			{
-				team = T_BLUE;
-				break;
-			}
-			case T_BLUE:
-			{
-				team = T_RED;
-				break;
-			}
-			}
-		}
-		else if (lT)
-		{
-			switch (team)
-			{
-			case T_NOT_CHOSEN:
-			{
-				team = T_BLUE;
-				break;
-			}
-			case T_RED:
-			{
-				team = T_BLUE;
-				break;
-			}
-			case T_BLUE:
-			{
-				team = T_RED;
-				break;
-			}
-			}
-		}
+	//	bool rS = (currInput.rightShoulder && !prevInput.rightShoulder);
+	//	bool lS = (currInput.leftShoulder && !prevInput.leftShoulder);
+	//	if (rT)
+	//	{
+	//		switch (team)
+	//		{
+	//		case T_NOT_CHOSEN:
+	//		{
+	//			team = T_RED;
+	//			break;
+	//		}
+	//		case T_RED:
+	//		{
+	//			team = T_BLUE;
+	//			break;
+	//		}
+	//		case T_BLUE:
+	//		{
+	//			team = T_RED;
+	//			break;
+	//		}
+	//		}
+	//	}
+	//	else if (lT)
+	//	{
+	//		switch (team)
+	//		{
+	//		case T_NOT_CHOSEN:
+	//		{
+	//			team = T_BLUE;
+	//			break;
+	//		}
+	//		case T_RED:
+	//		{
+	//			team = T_BLUE;
+	//			break;
+	//		}
+	//		case T_BLUE:
+	//		{
+	//			team = T_RED;
+	//			break;
+	//		}
+	//		}
+	//	}
 
-		if (rS)
-		{
-			if (skinIndex < S_Count)
-			{
-				++skinIndex;
-			}
-			else
-			{
-				skinIndex = 0;
-			}
-		}
-		else if (lS)
-		{
-			if (skinIndex > 0)
-			{
-				--skinIndex;
-			}
-			else
-			{
-				skinIndex = S_Count - 1;
-			}
-		}
+	//	if (rS)
+	//	{
+	//		if (skinIndex < S_Count)
+	//		{
+	//			++skinIndex;
+	//		}
+	//		else
+	//		{
+	//			skinIndex = 0;
+	//		}
+	//	}
+	//	else if (lS)
+	//	{
+	//		if (skinIndex > 0)
+	//		{
+	//			--skinIndex;
+	//		}
+	//		else
+	//		{
+	//			skinIndex = S_Count - 1;
+	//		}
+	//	}
 
-		ControlProfile *oldProf = profileSelect->currProfile;
-		//profileSelect->tempCType = mm->GetController(playerIndex)->GetCType();
-		profileSelect->Update(currInput, prevInput);
+	//	ControlProfile *oldProf = profileSelect->currProfile;
+	//	//profileSelect->tempCType = mm->GetController(playerIndex)->GetCType();
+	//	profileSelect->Update(currInput, prevInput);
 
-		/*if (profileSelect->currProfile != oldProf)
-		{
-		selectedProfileText.setString(profileSelect->currProfile->name);
-		selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
-		}*/
-	}
+	//	/*if (profileSelect->currProfile != oldProf)
+	//	{
+	//	selectedProfileText.setString(profileSelect->currProfile->name);
+	//	selectedProfileText.setOrigin(selectedProfileText.getLocalBounds().width / 2, 0);
+	//	}*/
+	//}
 
 	int numPlayersActive = 0;
 	if (parent != NULL)

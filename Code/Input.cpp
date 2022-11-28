@@ -11,7 +11,7 @@ using namespace std;
 using namespace sf;
 
 #define PI 3.14159265359
-const DWORD GameController::LEFT_STICK_DEADZONE = 7849;
+const DWORD GameController::LEFT_STICK_DEADZONE = 8500;//7849;
 const DWORD GameController::RIGHT_STICK_DEADZONE = 8689;
 const DWORD GameController::TRIGGER_THRESHOLD = 30;
 const double GameController::GC_LEFT_STICK_DEADZONE = .1;
@@ -1129,6 +1129,9 @@ bool GameController::UpdateState()
 		break;
 	}
 
+	isConnected = res;
+
+
 	return res;
 
 	if (defaultInputFormat == ControllerType::CTYPE_GAMECUBE)
@@ -1703,6 +1706,8 @@ GameController::GameController( DWORD index, ControllerType ct )
 	gcDefaultLeftTrigger = -1;
 	gcDefaultRightTrigger = -1;
 
+	isConnected = false;
+
 	//UpdateState();
 	/*for( int i = 0; i < ControllerSettings::Count; ++i )
 	{
@@ -1730,14 +1735,15 @@ ControllerType GameController::GetCType()
 
 bool GameController::IsConnected()
 {
-	if (controllerType != CTYPE_NONE)
+	return isConnected;
+	/*if (controllerType != CTYPE_NONE)
 	{
 		return true;
 	}
 	else
 	{
 		return false;
-	}
+	}*/
 }
 
 
@@ -2047,16 +2053,20 @@ AllControllers::AllControllers()
 	rawGCControllers.reserve(4);
 
 
-	gccCurrState.resize(4);
-	gccPrevState.resize(4);
-	windowsCurrState.resize(4);
-	windowsPrevState.resize(4);
+	gccStatesVec.resize(4);
+	windowsStatesVec.resize(4);
 
 	for (int i = 0; i < 4; ++i)
 	{
 		windowsControllers[i] = new GameController(i, CTYPE_XBOX);
 		gcControllers[i] = new GameController(i, CTYPE_GAMECUBE);
+
+		gccStatesVec[i] = new ControllerDualStateQueue( gcControllers[i] );
+
+		windowsStatesVec[i] = new ControllerDualStateQueue( windowsControllers[i] );
 	}
+
+	keyboardStates = new ControllerDualStateQueue( keyboardController );
 
 	keyboardController = new GameController(0, CTYPE_KEYBOARD);
 	window = NULL;
@@ -2068,8 +2078,11 @@ AllControllers::~AllControllers()
 	{
 		delete windowsControllers[i];
 		delete gcControllers[i];
+		delete gccStatesVec[i];
+		delete windowsStatesVec[i];
 	}
 
+	delete keyboardStates;
 	delete keyboardController;
 
 	if (joys != NULL)
@@ -2085,14 +2098,12 @@ void AllControllers::Update()
 
 	for (int i = 0; i < 4; ++i)
 	{
-		windowsPrevState[i] = windowsCurrState[i];
 		windowsControllers[i]->UpdateState();
-		windowsCurrState[i] = windowsControllers[i]->GetUnfilteredState();
+		windowsStatesVec[i]->AddInput(windowsControllers[i]->GetUnfilteredState());
 	}
 
-	keyboardPrevState = keyboardCurrState;
 	keyboardController->UpdateState();
-	keyboardCurrState = keyboardController->GetUnfilteredState();
+	keyboardStates->AddInput(keyboardController->GetUnfilteredState());
 }
 
 GameController * AllControllers::GetGCController(int index)
@@ -2113,6 +2124,8 @@ GameController * AllControllers::GetController(int cType, int index)
 		return windowsControllers[index];
 	case CTYPE_GAMECUBE:
 		return gcControllers[index];
+	case CTYPE_PS4:
+		return NULL;
 	case CTYPE_PS5:
 		return NULL;
 	case CTYPE_KEYBOARD:
@@ -2143,10 +2156,9 @@ void AllControllers::GCCUpdate()
 
 	for (int i = 0; i < numRawGCC; ++i)
 	{
-		gccPrevState[i] = gccCurrState[i];
 		gcControllers[i]->gcController = rawGCControllers[i];
 		gcControllers[i]->UpdateState();
-		gccCurrState[i] = gcControllers[i]->GetUnfilteredState();
+		gccStatesVec[i]->AddInput(gcControllers[i]->GetUnfilteredState());
 	}
 }
 
@@ -2184,4 +2196,433 @@ void AllControllers::CheckForControllers()
 void AllControllers::SetRenderWindow(sf::RenderWindow *rw)
 {
 	window = rw;
+}
+
+bool AllControllers::ButtonHeld_A()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_A())
+				return true;
+		}
+	}
+	
+	return false;
+}
+
+bool AllControllers::ButtonPressed_A()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_A())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_B()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_B())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_B()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_B())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_X()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_X())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_X()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_X())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_Y()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_Y())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_Y()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_Y())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_LeftShoulder()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_LeftShoulder())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_LeftShoulder()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_LeftShoulder())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_RightShoulder()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_RightShoulder())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_RightShoulder()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_RightShoulder())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_Start()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_Start())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_Start()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_Start())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonHeld_Any()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonHeld_Any())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+bool AllControllers::ButtonPressed_Any()
+{
+	ControllerDualStateQueue *states = NULL;
+	for (int i = 0; i < CTYPE_NONE; ++i)
+	{
+		for (int j = 0; j < 4; ++j)
+		{
+			states = GetStateQueue(i, j);
+			if (states != NULL && states->ButtonPressed_Any())
+				return true;
+		}
+	}
+
+	return false;
+}
+
+ControllerDualStateQueue * AllControllers::GetStateQueue(GameController *con)
+{
+	return GetStateQueue(con->GetCType(), con->GetIndex());
+}
+
+ControllerDualStateQueue * AllControllers::GetStateQueue(int cType, int index)
+{
+	switch (cType)
+	{
+	case CTYPE_XBOX:
+		return windowsStatesVec[index];
+	case CTYPE_GAMECUBE:
+		return gccStatesVec[index];
+	case CTYPE_PS4:
+		return NULL;
+	case CTYPE_PS5:
+		return NULL;
+	case CTYPE_KEYBOARD:
+	{
+		if (index == 0)
+			return keyboardStates;
+		else
+			return NULL;
+	}
+	}
+
+	assert(0);
+	return NULL;
+}
+
+ControllerStateQueue::ControllerStateQueue(int size, GameController *p_con )
+{
+	assert(size > 1);
+	states.resize(size);
+	con = p_con;
+}
+
+void ControllerStateQueue::AddInput(ControllerState &s)
+{
+	int numStates = states.size();
+	for (int i = numStates - 1; i > 0; --i)
+	{
+		states[i] = states[i - 1];
+	}
+
+	states[0] = s;
+}
+
+int ControllerStateQueue::GetNumStates()
+{
+	return states.size();
+}
+
+bool ControllerStateQueue::ButtonHeld_A()
+{
+	return states[0].A;
+}
+
+bool ControllerStateQueue::ButtonPressed_A()
+{
+	return states[0].A && !states[1].A;
+}
+
+bool ControllerStateQueue::ButtonHeld_B()
+{
+	return states[0].B;
+}
+
+bool ControllerStateQueue::ButtonPressed_B()
+{
+	return states[0].B && !states[1].B;
+}
+
+bool ControllerStateQueue::ButtonHeld_X()
+{
+	return states[0].X;
+}
+
+bool ControllerStateQueue::ButtonPressed_X()
+{
+	return states[0].X && !states[1].X;
+}
+
+bool ControllerStateQueue::ButtonHeld_Y()
+{
+	return states[0].Y;
+}
+
+bool ControllerStateQueue::ButtonPressed_Y()
+{
+	return states[0].Y && !states[1].Y;
+}
+
+bool ControllerStateQueue::ButtonHeld_LeftShoulder()
+{
+	return states[0].leftShoulder;
+}
+
+bool ControllerStateQueue::ButtonPressed_LeftShoulder()
+{
+	return states[0].leftShoulder && !states[1].leftShoulder;
+}
+
+bool ControllerStateQueue::ButtonHeld_RightShoulder()
+{
+	return states[0].rightShoulder;
+}
+
+bool ControllerStateQueue::ButtonPressed_RightShoulder()
+{
+	return states[0].rightShoulder && !states[1].rightShoulder;
+}
+
+bool ControllerStateQueue::ButtonHeld_Start()
+{
+	return states[0].start;
+}
+
+bool ControllerStateQueue::ButtonPressed_Start()
+{
+	return states[0].start && !states[1].start;
+}
+
+bool ControllerStateQueue::ButtonHeld_Any()
+{
+	return ButtonHeld_A() || ButtonHeld_B() || ButtonHeld_X() || ButtonHeld_Y() || ButtonHeld_LeftShoulder() || ButtonHeld_RightShoulder();
+}
+
+bool ControllerStateQueue::ButtonPressed_Any()
+{
+	return ButtonPressed_A() || ButtonPressed_B() || ButtonPressed_X() || ButtonPressed_Y() || ButtonPressed_LeftShoulder() || ButtonPressed_RightShoulder();
+}
+
+int ControllerStateQueue::GetControllerType()
+{
+	if (con != NULL)
+	{
+		return con->GetCType();
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int ControllerStateQueue::GetIndex()
+{
+	if (con != NULL)
+	{
+		return con->GetIndex();
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+const ControllerState &ControllerStateQueue::GetCurrState()
+{
+	return states[0];
+}
+
+const ControllerState &ControllerStateQueue::GetPrevState()
+{
+	return states[1];
+}
+
+ControllerDualStateQueue::ControllerDualStateQueue( GameController *p_con )
+	:ControllerStateQueue(2, p_con)
+{
+
 }

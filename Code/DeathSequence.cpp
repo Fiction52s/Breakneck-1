@@ -108,19 +108,6 @@ void DeathSequence::UpdateState()
 			sess->Fade(false, 14, Color::White, true);
 		}
 
-		/*int freezeFrame = 100;
-		if (frame == freezeFrame)
-		{
-			owner->state = GameSession::FROZEN;
-			emitter->SetOn(false);
-		}
-		else if (frame > freezeFrame)
-		{
-			if (owner->GetCurrInputUnfiltered(0).A && !owner->GetPrevInputUnfiltered(0).A)
-			{
-				owner->state = GameSession::RUN;
-			}
-		}*/
 
 		if (sess->GetGameSessionState() == Session::RUN)
 			if (!geoGroup->Update())

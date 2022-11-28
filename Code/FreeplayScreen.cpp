@@ -2,6 +2,10 @@
 #include "MainMenu.h"
 #include "FreeplayScreen.h"
 #include "UIMouse.h"
+#include "MapBrowserScreen.h"
+#include "MapBrowser.h"
+#include "MapOptionsPopup.h"
+#include "LobbyManager.h"
 //#include "Input.h"
 
 using namespace std;
@@ -42,7 +46,7 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 
 void FreeplayPlayerBox::ClearInfo()
 {
-	controller = NULL;
+	controllerStates = NULL;
 	SetName("");
 	action = A_WAITING_FOR_JOIN;
 }
@@ -80,9 +84,9 @@ void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 	//playerName->setPosition(Vector2f(playerName->getPosition().x - (bounds.left + bounds.width / 2), playerName->getPosition().y));
 }
 
-void FreeplayPlayerBox::SetController(GameController *con)
+void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates)
 {
-	controller = con;
+	controllerStates = conStates;
 	action = A_HAS_PLAYER;
 }
 
@@ -124,6 +128,8 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 	panel->SetColor(Color::Transparent);
 	panel->SetCenterPos(Vector2i(960, 540));
 
+	mapBrowserScreen = MainMenu::GetInstance()->mapBrowserScreen;
+	assert(mapBrowserScreen != NULL);
 	//startButton = panel->AddButton("start", Vector2i(20, panel->size.y - 100), Vector2f(100, 40), "START");
 	//leaveButton = panel->AddButton("leave", Vector2i(20 + 200, panel->size.y - 100), Vector2f(100, 40), "LEAVE");
 
@@ -136,6 +142,8 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 	{
 		playerBoxes[i] = new FreeplayPlayerBox(this, i);
 	}
+
+	mapOptionsPopup = new MapOptionsPopup;
 
 	int numBoxes = 4;
 	playerBoxWidth = 300;
@@ -158,8 +166,6 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 		playerBoxes[i]->SetTopLeft(left + Vector2i((playerBoxSpacing + playerBoxWidth) * i, 0));
 	}
 
-	joinHoldFrames = 1;
-
 	Start();
 }
 
@@ -170,6 +176,8 @@ FreeplayScreen::~FreeplayScreen()
 	{
 		delete playerBoxes[i];
 	}
+
+	delete mapOptionsPopup;
 }
 
 void FreeplayScreen::Start()
@@ -178,59 +186,168 @@ void FreeplayScreen::Start()
 	for (int i = 0; i < 4; ++i)
 	{
 		playerBoxes[i]->ClearInfo();
-		gccHeldStartFrames[i] = 0;
-		windowsHeldStartFrames[i] = 0;
 	}
 }
 
 void FreeplayScreen::Quit()
 {
-
+	action = A_BACK;
+	mapBrowserScreen->browserHandler->Clear();
 }
 
 bool FreeplayScreen::HandleEvent(sf::Event ev)
 {
-	return panel->HandleEvent(ev);
+	switch (action)
+	{
+	case A_WAITING_FOR_PLAYERS:
+		return panel->HandleEvent(ev);
+	case A_CHOOSE_MAP:
+		return mapBrowserScreen->HandleEvent(ev);
+	case A_CHOOSE_MAP_OPTIONS:
+		return mapOptionsPopup->HandleEvent(ev);
+	}
+	
+	return false;
+}
+
+void FreeplayScreen::StartBrowsing()
+{
+	action = A_CHOOSE_MAP;
+	frame = 0;
+	mapBrowserScreen->browserHandler->ClearSelection();
+	//mapBrowserScreen->browserHandler->chooser->ClearNodes();
+	//would clear nodes, but everyone is supposed to clear their own nodes so this would be redundant
+	//actually all 3 of these would be redundant
+	mapBrowserScreen->StartLocalBrowsing();
+}
+
+void FreeplayScreen::TryActivateOptionsPanel(MapNode *mp)
+{
+	if (mapOptionsPopup->Activate(mp))
+	{
+		action = A_CHOOSE_MAP_OPTIONS;
+	}
+	else
+	{
+		//messagePopup->Pop("ERROR: Map choice not valid.");
+		//preErrorAction = action;
+		//action = A_ERROR_MESSAGE;
+		//selectedMap = NULL;
+		//mapBrowserScreen->browserHandler->ClearSelection();
+	}
 }
 
 void FreeplayScreen::Update()
 {
-	panel->MouseUpdate();
-
-	for (int i = 0; i < 4; ++i)
+	switch (action)
 	{
-		if (CONTROLLERS.GetWindowsController(i)->GetUnfilteredState().start)
+	case A_WAITING_FOR_PLAYERS:
+	{
+		ControllerDualStateQueue *states = NULL;
+		for (int i = 0; i < 4; ++i)
 		{
-			windowsHeldStartFrames[i]++;
+			states = playerBoxes[i]->controllerStates;
+			if ( states != NULL)
+			{
+				if (states->ButtonPressed_Start())
+				{
+					StartBrowsing();
+				}
+			}
 		}
-		else
+		break;
+	}
+	case A_CHOOSE_MAP:
+
+		if (mapBrowserScreen->browserHandler->chooser->selectedRect != NULL)
 		{
-			windowsHeldStartFrames[i] = 0;
+			selectedMap = (MapNode*)mapBrowserScreen->browserHandler->chooser->selectedRect->info;
+
+			if (mapBrowserScreen->browserHandler->CheckIfSelectedItemInstalled())
+			{
+				//mapOptionsPopup->Activate(boost::filesystem::relative(selectedMap->filePath).string());
+				TryActivateOptionsPanel(selectedMap);
+			}
+			else
+			{
+				action = A_DOWNLOADING_WORKSHOP_MAP;
+				selectedMap->Subscribe();
+			}
 		}
 
-		if (CONTROLLERS.GetGCController(i)->GetUnfilteredState().start)
+		if (mapBrowserScreen->browserHandler->chooser->action == MapBrowser::A_CANCELLED)
 		{
-			gccHeldStartFrames[i]++;
+			SetAction(A_WAITING_FOR_PLAYERS);
+			//Quit();
+			return;
 		}
-		else
+		break;
+	case A_CHOOSE_MAP_OPTIONS:
+	{
+		if (mapOptionsPopup->action == MapOptionsPopup::A_HOST)
 		{
-			gccHeldStartFrames[i] = 0;
+			cout << "creating custom lobby test: " << mapOptionsPopup->currLobbyData->mapPath << endl;
+			cout << "hash: " << mapOptionsPopup->currLobbyData->fileHash << endl;
+			cout << "creatorID: " << mapOptionsPopup->currLobbyData->creatorId << endl;
+
+			SetAction(A_START);
+			//cout << "waiting room" << endl;
 		}
+		else if (mapOptionsPopup->action == MapOptionsPopup::A_CANCELLED)
+		{
+			SetAction(A_CHOOSE_MAP);
+			selectedMap = NULL;
+			mapBrowserScreen->browserHandler->ClearSelection();
+
+		}
+		break;
+	}
+	case A_START:
+		break;
+	case A_BACK:
+		break;
 	}
 
-	GameController *testController = NULL;
-	for (int i = 0; i < 4; ++i)
+	switch (action)
 	{
-		TryControllerJoin(CONTROLLERS.GetWindowsController(i));
-		TryControllerJoin(CONTROLLERS.GetGCController(i));
+	case A_WAITING_FOR_PLAYERS:
+	{
+		panel->MouseUpdate();
+
+		ControllerDualStateQueue *states = NULL;
+		for (int i = 0; i < 4; ++i)
+		{
+			states = CONTROLLERS.GetStateQueue(CTYPE_XBOX, i);
+			if (states->ButtonPressed_Start())
+			{
+				TryControllerJoin(states);
+			}
+
+			states = CONTROLLERS.GetStateQueue(CTYPE_GAMECUBE, i);
+			if (states->ButtonPressed_Start())
+			{
+				TryControllerJoin(states);
+			}
+		}
+		break;
+	}
+	case A_CHOOSE_MAP:
+		mapBrowserScreen->Update();
+		break;
+	case A_CHOOSE_MAP_OPTIONS:
+		mapOptionsPopup->Update();
+		break;
+	case A_START:
+		break;
+	case A_BACK:
+		break;
 	}
 
-
-	if (MOUSE.IsMouseRightClicked())
-	{
-		SetAction(A_READY);
-	//mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
-	}
+	//if (MOUSE.IsMouseRightClicked())
+	//{
+	//	SetAction(A_READY);
+	////mainMenu->SetMode(MainMenu::Mode::TRANS_CREDITS_TO_MAIN);
+	//}
 
 
 	/*if (MOUSE.IsMouseRightClicked())
@@ -243,7 +360,7 @@ bool FreeplayScreen::IsFull()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		if (playerBoxes[i]->controller == NULL)
+		if (playerBoxes[i]->controllerStates == NULL)
 		{
 			return false;
 		}
@@ -252,11 +369,11 @@ bool FreeplayScreen::IsFull()
 	return true;
 }
 
-bool FreeplayScreen::AlreadyJoined(GameController *con)
+bool FreeplayScreen::AlreadyJoined(ControllerDualStateQueue *conStates)
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		if (playerBoxes[i]->controller == con)
+		if (playerBoxes[i]->controllerStates == conStates)
 		{
 			return true;
 		}
@@ -269,7 +386,7 @@ FreeplayPlayerBox *FreeplayScreen::GetNextOpenBox()
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		if (playerBoxes[i]->controller == NULL)
+		if (playerBoxes[i]->controllerStates == NULL)
 		{
 			return playerBoxes[i];
 		}
@@ -278,43 +395,66 @@ FreeplayPlayerBox *FreeplayScreen::GetNextOpenBox()
 	return NULL;
 }
 
-void FreeplayScreen::TryControllerJoin(GameController *con)
+void FreeplayScreen::TryControllerJoin(ControllerDualStateQueue *conStates)
 {
 	if( IsFull() )
 		return;
 
-	switch (con->GetCType())
-	{
-	case CTYPE_XBOX:
-		if (windowsHeldStartFrames[con->GetIndex()] < joinHoldFrames)
-			return;
-		break;
-	case CTYPE_GAMECUBE:
-		if (gccHeldStartFrames[con->GetIndex()] < joinHoldFrames)
-			return;
-		break;
-	}
-
-	if (!AlreadyJoined(con))
+	if (!AlreadyJoined(conStates))
 	{
 		FreeplayPlayerBox *next = GetNextOpenBox();
 		assert(next != NULL);
 
-		next->SetController(con);
-		cout << "added controller: " << con->GetCType() << ", index: " << con->GetIndex() << endl;
+		next->SetControllerStates(conStates);
+		cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
 	}
+}
+
+void FreeplayScreen::DrawPopupBG(sf::RenderTarget *target)
+{
+	sf::RectangleShape rect;
+	rect.setFillColor(Color(0, 0, 0, 100));
+	rect.setSize(Vector2f(1920, 1080));
+	rect.setPosition(0, 0);
+	target->draw(rect);
 }
 
 void FreeplayScreen::Draw(sf::RenderTarget *target)
 {
-	target->draw(bgQuad, 4, sf::Quads);
-
-	for (int i = 0; i < 4; ++i)
+	switch (action)
 	{
-		playerBoxes[i]->Draw(target);
-	}
+	case A_BACK:
+	case A_WAITING_FOR_PLAYERS:
+	{
+		target->draw(bgQuad, 4, sf::Quads);
 
-	panel->Draw(target);
+		for (int i = 0; i < 4; ++i)
+		{
+			playerBoxes[i]->Draw(target);
+		}
+
+		panel->Draw(target);
+		break;
+	}
+	case A_CHOOSE_MAP:
+	{
+		mapBrowserScreen->Draw(target);
+		break;
+	}
+	case A_DOWNLOADING_WORKSHOP_MAP:
+	{
+		mapBrowserScreen->Draw(target);
+		break;
+	}
+	case A_CHOOSE_MAP_OPTIONS:
+	{
+		mapBrowserScreen->Draw(target);
+		DrawPopupBG(target);
+		mapOptionsPopup->Draw(target);
+		break;
+	}
+	}
+	
 }
 
 void FreeplayScreen::SetAction(int a)
@@ -325,5 +465,5 @@ void FreeplayScreen::SetAction(int a)
 
 void FreeplayScreen::CancelCallback(Panel *p)
 {
-	SetAction(A_BACK);
+	Quit();
 }

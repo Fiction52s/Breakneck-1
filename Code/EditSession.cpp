@@ -4150,9 +4150,6 @@ int EditSession::EditRun()
 
 	editClock.restart();
 
-	vector<ControllerState> controllerStatesForMouse;
-	controllerStatesForMouse.reserve(4);
-
 	while (window->pollEvent(ev))
 	{
 	}
@@ -4232,15 +4229,8 @@ int EditSession::EditRun()
 			}
 
 			UpdateControllers();
-			//MOUSE.Update(pixelPos);
 
-			controllerStatesForMouse.clear();
-			for (int i = 0; i < 4; ++i)
-			{
-				controllerStatesForMouse.push_back(GetCurrInputUnfiltered(i));
-			}
-
-			MOUSE.Update(pixelPos, controllerStatesForMouse);
+			MOUSE.Update(pixelPos);
 
 			UICONTROLLER.Update();
 
