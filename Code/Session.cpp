@@ -8037,6 +8037,9 @@ void Session::SetupGameMode()
 	case MatchParams::GAME_MODE_COOP:
 		gameMode = new CoopMode;
 		break;
+	case MatchParams::GAME_MODE_EXPLORE:
+		gameMode = new ExploreMode(matchParams.numPlayers);
+		break;
 	}
 }
 

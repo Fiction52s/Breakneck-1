@@ -54,6 +54,9 @@ std::string MatchParams::GetGameModeName(int gm)
 	case GAME_MODE_PARALLEL_RACE:
 		return "Speedrun Race/Parallel Race";
 		break;
+	case GAME_MODE_EXPLORE:
+		return "Explore";
+		break;
 	}
 
 	return "game mode string failure";
@@ -98,6 +101,15 @@ std::vector<int> MatchParams::GetNumPlayerOptions(int gm, int numSpawns)
 		options.push_back(2);
 		options.push_back(3);
 		options.push_back(4);
+		break;
+	case GAME_MODE_EXPLORE:
+		options.push_back(1);
+		if( numSpawns >= 2 )
+			options.push_back(2);
+		if( numSpawns >= 3 )
+			options.push_back(3);
+		if (numSpawns >= 4)
+			options.push_back(4);
 		break;
 	}
 

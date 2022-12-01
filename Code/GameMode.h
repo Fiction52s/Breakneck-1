@@ -44,6 +44,17 @@ struct BasicMode : GameMode
 };
 
 
+struct ExploreMode : GameMode
+{
+	int numPlayers;
+
+	ExploreMode( int numP );
+
+	HUD *CreateHUD();
+	void StartGame();
+	bool CheckVictoryConditions();
+	void EndGame();
+};
 
 struct ReachEnemyBaseMode : GameMode
 {

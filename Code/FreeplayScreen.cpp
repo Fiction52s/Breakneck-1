@@ -224,6 +224,44 @@ void FreeplayScreen::StartBrowsing()
 	//mapBrowserScreen->browserHandler->chooser->ClearNodes();
 	//would clear nodes, but everyone is supposed to clear their own nodes so this would be redundant
 	//actually all 3 of these would be redundant
+
+	mapBrowserScreen->browserHandler->chooser->ClearFilters();
+	//NumActivePlayers()
+
+	int numActivePlayers = NumActivePlayers();
+	std::vector<int> numPlayersVec;
+	numPlayersVec.push_back(numActivePlayers);
+
+	std::vector<int> gameModesVec;
+	gameModesVec.reserve(MatchParams::GAME_MODE_Count);
+
+	bool modeFound = false;
+	for (int i = 0; i < MatchParams::GAME_MODE_Count; ++i)
+	{
+		modeFound = false;
+		//4 is max players
+		for (int j = 0; j < 4; ++j)
+		{
+			auto &pVec = MatchParams::GetNumPlayerOptions(i, j);
+			for (auto pIt = pVec.begin(); pIt != pVec.end(); ++pIt)
+			{
+				if ((*pIt) == numActivePlayers )
+				{
+					modeFound = true;
+					gameModesVec.push_back(i);
+					break;
+				}
+			}
+
+			if (modeFound)
+				break;
+		}
+	}
+	
+	mapBrowserScreen->browserHandler->chooser->UpdateNumPlayersCriteria(numPlayersVec);
+	mapBrowserScreen->browserHandler->chooser->UpdateGameModeCriteria(gameModesVec);
+
+
 	mapBrowserScreen->StartLocalBrowsing();
 }
 
@@ -275,6 +313,7 @@ void FreeplayScreen::Update()
 				if (states->ButtonPressed_Start())
 				{
 					StartBrowsing();
+					return; //don't use the same controller inputs for the next menu, gotta skip a frame
 				}
 			}
 		}

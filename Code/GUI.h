@@ -390,6 +390,7 @@ struct GridSelector : PanelMember
 struct TextBox : PanelMember
 {
 	TextBox( const std::string &name, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
+	TextBox(const std::string &name, int posx, int posy, int width, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText);
 	~TextBox();
 	void SetString(const std::string &str);
 	std::string GetString();
@@ -424,6 +425,8 @@ struct TextBox : PanelMember
 	bool numbersOnly;
 	std::vector<int> widths;
 	std::vector<int> lineStartIndexes;
+private:
+	void Init( int row, int col, sf::Font &f, const std::string &initialText);
 };
 
 struct MultiLineTextBox : PanelMember

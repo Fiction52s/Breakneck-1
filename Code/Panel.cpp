@@ -993,7 +993,7 @@ TextBox * Panel::AddTextBox(const std::string &name, sf::Vector2i pos, int width
 	int charHeight = 20;
 	//Button *b = new Button( pos.x, pos.y, size.x, size.y, arial, handler );
 	assert(textBoxes.count(name) == 0);
-	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, 1, lengthLimit, charHeight, lengthLimit, arial, this, initialText);
+	TextBox *tb = new TextBox(name, autoStart.x + pos.x, autoStart.y + pos.y, width, charHeight, lengthLimit, arial, this, initialText); //1, lengthLimit, charHeight, lengthLimit, arial, this, initialText);
 	textBoxes[name] = tb;
 
 	AddAutoSpaceX(tb->size.x + pos.x);

@@ -12,14 +12,91 @@ using namespace std;
 TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
 	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
 {
+	Init(rows, cols, f, initialText);
+
+	char *ws = new char[maxCols + 1];
+	for (int i = 0; i < maxCols; ++i)
+	{
+		ws[i] = 'W';
+	}
+	ws[maxCols] = '\0';
+
+	testText.setString(ws);
+
+	delete[] ws;
+
+	width = testText.getGlobalBounds().width + leftBorder * 2;
+
+	size = Vector2i(width, height + verticalBorder);
+	
+	
+
+	//numbersOnly = false;
+	//focused = false;
+	//leftBorder = 3;
+	//verticalBorder = 0;
+	//characterHeight = 20;//charHeight
+
+	//maxRows = rows;
+	//maxCols = cols;
+
+	//lineSpacing = f.getLineSpacing(characterHeight);
+
+	//cursor.setString("|");
+	//cursor.setFont(f);
+	//cursor.setFillColor(Color::Red);
+	//cursor.setCharacterSize(characterHeight);
+
+	//text.setFont(f);
+	//text.setFillColor(Color::Black);
+	//text.setCharacterSize(characterHeight);
+	//text.setPosition(pos.x + leftBorder, pos.y);
+
+	//testText.setFont(f);
+	//testText.setFillColor(Color::Black);
+	//testText.setCharacterSize(characterHeight);
+	//testText.setPosition(pos.x + leftBorder, pos.y);
+
+	//char *ws = new char[maxCols+1];
+	//for (int i = 0; i < maxCols; ++i)
+	//{
+	//	ws[i] = 'W';
+	//}
+	//ws[maxCols] = '\0';
+
+	//testText.setString(ws);
+
+	//delete[] ws;
+
+	//width = testText.getGlobalBounds().width + leftBorder * 2;
+	//height = maxRows * lineSpacing;
+
+	//SetString(initialText);
+	//SetCursorIndex(initialText.length());
+
+	//size = Vector2i(width, height + verticalBorder);
+}
+
+TextBox::TextBox(const std::string &n, int posx, int posy, int p_width, int charHeight, int lengthLimit, sf::Font &f, Panel *p, const std::string & initialText = "")
+	:PanelMember(p), pos(posx, posy), maxLength(lengthLimit), clickedDown(false), name(n)
+{
+	Init(1, lengthLimit, f, initialText);
+
+	width = p_width;
+
+	size = Vector2i(width, height + verticalBorder);
+}
+
+void TextBox::Init(int row, int col, sf::Font &f, const std::string &initialText)
+{
 	numbersOnly = false;
 	focused = false;
 	leftBorder = 3;
 	verticalBorder = 0;
 	characterHeight = 20;//charHeight
 
-	maxRows = rows;
-	maxCols = cols;
+	maxRows = row;
+	maxCols = col;
 
 	lineSpacing = f.getLineSpacing(characterHeight);
 
@@ -38,24 +115,12 @@ TextBox::TextBox(const string &n, int posx, int posy, int rows, int cols, int ch
 	testText.setCharacterSize(characterHeight);
 	testText.setPosition(pos.x + leftBorder, pos.y);
 
-	char *ws = new char[maxCols+1];
-	for (int i = 0; i < maxCols; ++i)
-	{
-		ws[i] = 'W';
-	}
-	ws[maxCols] = '\0';
-
-	testText.setString(ws);
-
-	delete[] ws;
-
-	width = testText.getGlobalBounds().width + leftBorder * 2;
 	height = maxRows * lineSpacing;
 
 	SetString(initialText);
 	SetCursorIndex(initialText.length());
+	//size = Vector2i(width, height + verticalBorder);
 
-	size = Vector2i(width, height + verticalBorder);
 }
 
 TextBox::~TextBox()

@@ -78,6 +78,7 @@ struct MapOptionsPopup : GUIHandler
 	void ButtonCallback(Button *b, const std::string & e);
 	void DropdownCallback(Dropdown *dropdown, const std::string & e);
 	void CancelCallback(Panel *p);
+	void PanelCallback(Panel *p, const std::string &e );
 };
 
 #endif

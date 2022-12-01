@@ -43,6 +43,38 @@ HUD *BasicMode::CreateHUD()
 	return new AdventureHUD;
 }
 
+ExploreMode::ExploreMode( int p_numPlayers )
+{
+	numPlayers = p_numPlayers;
+}
+
+void ExploreMode::StartGame()
+{
+
+}
+
+bool ExploreMode::CheckVictoryConditions()
+{
+	return false;
+}
+
+void ExploreMode::EndGame()
+{
+	sess->EndLevel();
+}
+
+HUD *ExploreMode::CreateHUD()
+{
+	if( numPlayers == 1 )
+	{
+		return new AdventureHUD;
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
 ReachEnemyBaseMode::ReachEnemyBaseMode()
 {
 	ap0 = new BasicAirEnemyParams(sess->types["multiplayerbase"], 1);

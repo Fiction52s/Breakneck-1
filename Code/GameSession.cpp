@@ -250,6 +250,21 @@ void GameSession::UpdateCamera()
 		cam.Update();
 		break;
 	}
+	case MatchParams::GAME_MODE_EXPLORE:
+	{
+		if (matchParams.numPlayers == 1)
+		{
+			cam.SetCamType(Camera::CamType::BASIC);
+			cam.playerIndex = 0;
+			cam.Update();
+		}
+		else
+		{
+			cam.SetCamType(Camera::CamType::FIGHTING);
+			cam.Update();
+		}
+		break;
+	}
 	}
 	
 

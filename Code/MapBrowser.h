@@ -34,7 +34,7 @@ struct MapNode
 	int index;
 
 	//new
-	
+	MapHeader *header;
 	MapBrowser *myBrowser;
 	bool mapDownloaded;
 	bool mapUpdating;
@@ -83,6 +83,7 @@ struct MapNode
 	void OnHTTPRequestCompleted(HTTPRequestCompleted_t *callback,
 		bool bIOFailure);
 	void ClearPreview();
+	void UpdateHeaderInfo();
 
 	void OnSubscribe(RemoteStorageSubscribePublishedFileResult_t *callback, bool bIOFailure);
 	void OnUnsubscribe(RemoteStorageUnsubscribePublishedFileResult_t *callback, bool bIOFailure);
@@ -116,6 +117,7 @@ struct MapBrowserHandler : GUIHandler
 	void ButtonCallback(Button *b, const std::string & e);
 	void TabGroupCallback(TabGroup *tg, const std::string &e);
 	void ScrollBarCallback(ScrollBar *sb, const std::string &e);
+	void ConfirmCallback(Panel *p);
 	void CancelCallback(Panel *p);
 	//void SliderCallback(Slider *slider);
 
@@ -159,6 +161,11 @@ struct MapBrowser : TilesetManager,
 
 	};
 
+
+	std::string searchStr;
+	std::vector<int> numPlayersAllowed;
+	std::vector<int> gameModesAllowed;
+
 	bool isWorkshop;
 	Action action;
 	ImageChooseRect *selectedRect;
@@ -170,6 +177,9 @@ struct MapBrowser : TilesetManager,
 	Button *prevPageButton;
 	sf::Text pageLabel;
 
+	TextBox *searchBox;
+	Button *searchButton;
+
 	ScrollBar *mapScroller;
 
 	Button *saveButton;
@@ -177,48 +187,7 @@ struct MapBrowser : TilesetManager,
 	Button *createLobbyButton;
 	Button *okButton;
 	Button *cancelButton;
-
 	
-
-	MapBrowser(MapBrowserHandler *handler,
-		int p_cols, int p_rows, int extraImageRects = 0);
-	~MapBrowser();
-
-	//new functions
-	void Update();
-	void QueryMaps();
-	
-	void ClearPreviews();
-	void ClearAllPreviewsButSelected();
-	void RequestAllPreviews();
-	//panelupdater functions
-	//bool MouseUpdate();
-	void Draw(sf::RenderTarget *target);
-	void Deactivate();
-	void MouseScroll(int delta);
-	//void LateDraw(sf::RenderTarget *target);
-	
-	//---------
-	void SetRelativePath(const std::string &p_relPath);
-	void SetPath(const std::string &p_path);
-	void AddFile(const boost::filesystem::path &filePath);
-	void AddFolder(const boost::filesystem::path &folderPath);
-	void ClearNodes();
-	void PopulateRects();
-	//bool IsCustomMapSelected();
-	
-	void Start(const std::string &ext,
-		Mode mode, const std::string &path);
-	void StartRelative(const std::string &ext,
-		Mode mode, const std::string &path);
-	void StartWorkshop( Mode mode );
-	void Init();
-	void TurnOff();
-
-	void ShowFileNameTextBox();
-	void HideFileNameTextBox();
-	//void HideConfirmButton();
-
 	Mode mode;
 	MapBrowserHandler *handler;
 
@@ -236,16 +205,65 @@ struct MapBrowser : TilesetManager,
 	std::vector<MapNode*> nodes;
 
 	//EditSession *edit; //removed var
-	
+
 	Panel *panel;
 	ImageChooseRect **imageRects;
 	TextBox *fileNameTextBox;
 	Label *fileNameTextBoxLabel;
 	Button *upButton;
 
-	
-	
+
+
 	Label *folderPathLabel;
+
+
+	MapBrowser(MapBrowserHandler *handler,
+		int p_cols, int p_rows, int extraImageRects = 0);
+	~MapBrowser();
+
+	//new functions
+	void Update();
+	void QueryMaps();
+	void ClearFilters();
+	
+	void ClearPreviews();
+	void ClearAllPreviewsButSelected();
+	void RequestAllPreviews();
+	//panelupdater functions
+	//bool MouseUpdate();
+	void Draw(sf::RenderTarget *target);
+	void Deactivate();
+	void MouseScroll(int delta);
+
+	void UpdateSearchCriteria(const std::string &s);
+	void UpdateNumPlayersCriteria(std::vector<int> &numAllowedPlayers);
+	void UpdateGameModeCriteria(std::vector<int> &numAllowedPlayers);
+	//void LateDraw(sf::RenderTarget *target);
+	
+	//---------
+	void SetRelativePath(const std::string &p_relPath);
+	void SetPath(const std::string &p_path);
+	void AddFile(const boost::filesystem::path &filePath);
+	void AddFolder(const boost::filesystem::path &folderPath);
+	void ClearNodes();
+	void PopulateRects();
+	void Refresh();
+	//bool IsCustomMapSelected();
+	
+	void Start(const std::string &ext,
+		Mode mode, const std::string &path);
+	void StartRelative(const std::string &ext,
+		Mode mode, const std::string &path);
+	void StartWorkshop( Mode mode );
+	void Init();
+	void TurnOff();
+
+	void ShowFileNameTextBox();
+	void HideFileNameTextBox();
+	bool CheckFilters(MapNode *mn);
+	//void HideConfirmButton();
+
+	
 };
 
 

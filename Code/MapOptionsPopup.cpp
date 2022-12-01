@@ -164,6 +164,15 @@ void MapOptionsPopup::CancelCallback(Panel *p)
 	action = A_CANCELLED;
 }
 
+void MapOptionsPopup::PanelCallback(Panel *p, const std::string &e)
+{
+	if (e == "leftclickoffpopup")
+	{
+		CancelCallback(p);
+		//action = A_BACK;
+	}
+}
+
 bool MapOptionsPopup::Activate(MapNode *mp)
 {
 	// set the name of the lobby if it's ours

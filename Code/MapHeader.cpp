@@ -63,6 +63,38 @@ bool MapHeader::CanRunAsMode(int gm )
 		}
 		break;
 	}
+	case MatchParams::GAME_MODE_EXPLORE:
+	{
+		return true;
+		break;
+	}
+	}
+
+	return false;
+}
+
+bool MapHeader::CanRun(std::vector<int> & numPlayers, std::vector<int> &gameModes)
+{
+	//test all combos of players and game mode and see if it works
+	for (auto gameIt = gameModes.begin(); gameIt != gameModes.end(); ++gameIt)
+	{
+		if (!CanRunAsMode((*gameIt)))
+		{
+			continue;
+		}
+
+		auto playerVec = MatchParams::GetNumPlayerOptions((*gameIt), numPlayerSpawns);
+
+		for (auto possiblePlayersIt = playerVec.begin(); possiblePlayersIt != playerVec.end(); ++possiblePlayersIt)
+		{
+			for (auto paramPlayerOptionsIt = numPlayers.begin(); paramPlayerOptionsIt != numPlayers.end(); ++paramPlayerOptionsIt)
+			{
+				if ((*possiblePlayersIt) == (*paramPlayerOptionsIt))
+				{
+					return true;
+				}
+			}
+		}
 	}
 
 	return false;
@@ -280,6 +312,11 @@ bool MapHeader::Load(std::ifstream &is)
 		case MatchParams::GAME_MODE_REACHENEMYBASE:
 		{
 			numPlayerSpawns = 2;
+			break;
+		}
+		case MatchParams::GAME_MODE_EXPLORE:
+		{
+			numPlayerSpawns = 1;
 			break;
 		}
 		}

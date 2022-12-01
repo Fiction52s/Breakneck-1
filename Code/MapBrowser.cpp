@@ -32,6 +32,7 @@ MapNode::MapNode()
 	mapUpdating = false;
 	subscribing = false;
 	unsubscribing = false;
+	header = NULL;
 	downloadResult = -1;
 }
 
@@ -42,6 +43,8 @@ void MapNode::Draw(sf::RenderTarget *target)
 
 MapNode::~MapNode()
 {
+	if (header != NULL)
+		delete header;
 	//was maybe getting a memory leak here, put this here to see if it happens, and it doesn't...can't reproduce sigh
 	/*if (previewTex != NULL)
 	{
@@ -108,6 +111,46 @@ void MapNode::ClearPreview()
 		
 		checkingForPreview = false; //even if you receive a preview after this you dont want it.
 		
+	}
+}
+
+void MapNode::UpdateHeaderInfo()
+{
+	//eventually work for workshop too
+	//if (!isWorkshop && !nameAndDescriptionUpdated)
+	if( header == NULL )
+	{
+		ifstream is;
+		is.open(filePath.string());
+
+		if (is.is_open())
+		{
+			header = new MapHeader;
+			header->Load(is);
+
+			if (header->fullName == "----")
+			{
+				//need to figure out how to get the workshop name here.
+				fullMapName = nodeName;
+			}
+			else
+			{
+				fullMapName = header->fullName;
+			}
+
+			description = header->description;
+
+			is.close();
+
+			nameAndDescriptionUpdated = true;
+
+			creatorId = header->creatorID;
+			creatorName = header->creatorName;
+		}
+		else
+		{
+			cout << "updateheaderinfo couldnt open: " << filePath.string() << endl;
+		}
 	}
 }
 
@@ -377,6 +420,9 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	workshop = MainMenu::GetInstance()->workshopManager;//new WorkshopManager;
 	//workshop->mapBrowser = this;
 
+	numPlayersAllowed.reserve(4);
+	gameModesAllowed.reserve(MatchParams::GAME_MODE_Count);
+
 	float boxSize = 150;
 	Vector2f spacing(20, 20);
 	Vector2f startRects(10, 60);
@@ -389,8 +435,6 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	maxTopRow = 0;
 
 	isWorkshop = false;
-
-	
 
 	imageRects = new ImageChooseRect*[totalRects];
 
@@ -416,7 +460,8 @@ MapBrowser::MapBrowser(MapBrowserHandler *p_handler,
 	Vector2i pageButtonOrigin(750, 990);
 
 	
-	
+	searchBox = panel->AddTextBox("searchtextbox", Vector2i(600, 10), 300, 40, "");//panel->AddLabeledTextBox("searchtextbox", Vector2i(600, 10), true, 1, 40, 30, 40, "", "Search: ");//panel->AddTextBox("searchtextbox", Vector2i(600, 10), 1, 40, 30, 40, "");
+	searchButton = panel->AddButton("searchbutton", Vector2i(900, 10), Vector2f(100, 50), "SEARCH");
 	
 	int x, y;
 	for (int i = 0; i < totalRects; ++i)
@@ -489,6 +534,48 @@ void MapBrowser::Draw(sf::RenderTarget *target)
 	handler->Draw(target);
 }
 
+bool MapBrowser::CheckFilters(MapNode *mn)
+{
+	bool valid = true;
+
+	/*if (searchStr == "")
+	{
+		return true;
+	}*/
+
+	if (mn->type == MapNode::FILE)
+	{
+		if (mn->header != NULL)
+		{
+			if ( searchStr != "" && mn->fullMapName.find(searchStr) == string::npos)
+			{
+				valid = false;
+			}
+
+			if (!numPlayersAllowed.empty() && !gameModesAllowed.empty())
+			{
+				assert(numPlayersAllowed.size() > 0);
+				if (!mn->header->CanRun(numPlayersAllowed, gameModesAllowed))
+				{
+					valid = false;
+				}
+			}
+		}
+	}
+	else if( mn->type == MapNode::FOLDER )
+	{
+		if (mn->header != NULL)
+		{
+			if (searchStr != "" && mn->nodeName.find(searchStr) != string::npos)
+			{
+				valid = false;
+			}
+		}
+	}
+
+	return valid;
+}
+
 void MapBrowser::AddFile(const path &p_filePath)
 {
 	MapNode *mapNode = new MapNode;
@@ -500,11 +587,19 @@ void MapBrowser::AddFile(const path &p_filePath)
 	string middleTest = pathStr.substr(0, d);
 	string previewPath = middleTest + ".png";
 	mapNode->ts_preview = GetTileset(previewPath);
-
 	mapNode->fileName = mapNode->filePath.filename().stem().string();
 	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
-	nodes.push_back(mapNode);
+	mapNode->UpdateHeaderInfo();
+
+	if (CheckFilters(mapNode))
+	{
+		nodes.push_back(mapNode);
+	}
+	else
+	{
+		delete mapNode;
+	}
 }
 
 void MapBrowser::AddFolder(const path &p_filePath)
@@ -520,7 +615,14 @@ void MapBrowser::AddFolder(const path &p_filePath)
 	mapNode->fileName = mapNode->filePath.filename().stem().string();
 	mapNode->nodeName = mapNode->fileName;//mapNode->filePath.filename().stem().string();
 
-	nodes.push_back(mapNode);
+	if (CheckFilters(mapNode))
+	{
+		nodes.push_back(mapNode);
+	}
+	else
+	{
+		delete mapNode;
+	}
 }
 
 void MapBrowser::ClearNodes()
@@ -881,9 +983,19 @@ void MapBrowser::Deactivate()
 	//ClearTilesets();
 }
 
+void MapBrowser::ClearFilters()
+{
+	numPlayersAllowed.clear();
+	gameModesAllowed.clear();
+	searchStr = "";
+	searchBox->SetString("");
+}
+
 void MapBrowser::TurnOff()
 {
 	action = A_CANCELLED;
+	ClearFilters();
+	
 	//edit->RemoveActivePanel(panel);
 }
 
@@ -1054,6 +1166,29 @@ void MapBrowser::MouseScroll(int delta)
 	}
 }
 
+void MapBrowser::UpdateSearchCriteria(const std::string &s)
+{
+	searchStr = s;
+	Refresh();
+}
+
+void MapBrowser::UpdateNumPlayersCriteria(std::vector<int> &p_numAllowedPlayers)
+{
+	numPlayersAllowed = p_numAllowedPlayers;
+}
+
+void MapBrowser::UpdateGameModeCriteria(std::vector<int> &p_gameModesAllowed)
+{
+	gameModesAllowed = p_gameModesAllowed;
+}
+
+void MapBrowser::Refresh()
+{
+	selectedRect = NULL;
+	action = A_IDLE;
+	SetPath(currPath.string());
+}
+
 MapBrowserHandler::MapBrowserHandler(int cols, int rows, bool p_showPreview, int extraImageRects)
 {
 	chooser = new MapBrowser(this, cols, rows, extraImageRects);
@@ -1154,6 +1289,10 @@ void MapBrowserHandler::ButtonCallback(Button *b, const std::string & e)
 	{
 		Confirm();
 	}
+	else if (b == chooser->searchButton)
+	{
+		chooser->UpdateSearchCriteria(chooser->searchBox->GetString());
+	}
 	else if (b == chooser->prevPageButton)
 	{
 		chooser->currWorkshopPage--;
@@ -1203,6 +1342,18 @@ void MapBrowserHandler::ScrollBarCallback(ScrollBar *sb, const std::string &e)
 {
 	chooser->topRow = sb->currIndex;
 	chooser->PopulateRects();
+}
+
+void MapBrowserHandler::ConfirmCallback(Panel *p)
+{
+	if (chooser->searchBox->focused)
+	{
+		chooser->UpdateSearchCriteria(chooser->searchBox->GetString());
+	}
+	else
+	{
+		Confirm();
+	}
 }
 
 void MapBrowserHandler::CancelCallback(Panel *p)
@@ -1281,6 +1432,8 @@ void MapBrowserHandler::Update()
 void MapBrowserHandler::Cancel()
 {
 	chooser->TurnOff();
+
+
 }
 
 void MapBrowserHandler::Clear()
@@ -1371,40 +1524,7 @@ void MapBrowserHandler::FocusFile(ChooseRect *cr)
 
 	ts_largePreview = mn->ts_preview;//cr->GetAsImageChooseRect()->ts;
 
-	if ( !mn->isWorkshop && !mn->nameAndDescriptionUpdated)
-	{
-		ifstream is;
-		is.open(mn->filePath.string());
-
-		if (is.is_open())
-		{
-			MapHeader mh;
-			mh.Load(is);
-
-			if (mh.fullName == "----")
-			{
-				//need to figure out how to get the workshop name here.
-				mn->fullMapName = mn->nodeName;
-			}
-			else
-			{
-				mn->fullMapName = mh.fullName;
-			}
-
-			mn->description = mh.description;
-
-			is.close();
-
-			mn->nameAndDescriptionUpdated = true;
-
-			mn->creatorId = mh.creatorID;
-			mn->creatorName = mh.creatorName;
-		}
-		else
-		{
-
-		}
-	}
+	mn->UpdateHeaderInfo();
 
 	fullNameText.setString(mn->fullMapName);
 	descriptionText.setString(mn->description);
