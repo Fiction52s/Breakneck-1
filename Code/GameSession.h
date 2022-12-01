@@ -497,7 +497,6 @@ struct GameSession : RayCastHandler, Session
 	void OpenGates(int gCat);
 
 	void CloseGates(int gCat);
-	void KeyboardUpdate( int index );
 	
 	int TryToActivateBonus();
 	void UpdateReplayGhostSprites();

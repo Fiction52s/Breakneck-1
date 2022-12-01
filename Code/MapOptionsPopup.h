@@ -47,6 +47,8 @@ struct MapOptionsPopup : GUIHandler
 	Dropdown *modeDropdown;
 	Dropdown *numPlayersDropdown;
 
+	Label *numPlayersLabel;
+
 	std::vector<int> gameModeDropdownModes;
 	std::vector<std::string> gameModeOptions;
 
@@ -69,7 +71,7 @@ struct MapOptionsPopup : GUIHandler
 
 	MapOptionsPopup( int p_mode );
 	~MapOptionsPopup();
-	bool Activate(MapNode *mp);
+	bool Activate(MapNode *mp, int numP = 0);
 	void Update();
 	bool HandleEvent(sf::Event ev);
 	void Draw(sf::RenderTarget *target);

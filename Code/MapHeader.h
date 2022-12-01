@@ -34,6 +34,7 @@ struct MapHeader
 	}
 
 	bool CanRunAsMode(int gm);
+	bool CanRunAsMode(int numP, int gm);
 	bool CanRun(std::vector<int> & numPlayers, std::vector<int> &gameModes );
 	bool Load(std::ifstream &is);
 	void Save(std::ofstream &of);

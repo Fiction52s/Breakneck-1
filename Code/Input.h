@@ -25,15 +25,7 @@ For each button, its bool its true if the it is down
 struct KeyboardState;
 struct ControllerState
 {
-	ControllerState();
-	void Set( const ControllerState &state );
-	void SetLeftDirection();
-	bool IsLeftNeutral();
-	bool IsRightNeutral();
-	sf::Vector2<double> GetLeft8Dir();
-	int GetCompressedState();
-	void SetFromCompressedState(int s);
-	void InvertLeftStick();
+	
 	double leftStickMagnitude; // 0 - 1.0
 	double leftStickRadians;
 	double rightStickMagnitude; // 0 - 1.0
@@ -43,9 +35,7 @@ struct ControllerState
 	bool LeftTriggerPressed();
 	bool RightTriggerPressed();
 	BYTE triggerThresh;
-	void Clear();
-	void AddState(ControllerState &state);
-	
+	unsigned char leftStickDirection;
 	//bool leftTriggerPress;
 	//bool rightTriggerPress;
 	bool start;
@@ -61,6 +51,19 @@ struct ControllerState
 	unsigned char pad;
 	unsigned char leftStickPad;
 	unsigned char rightStickPad;
+
+	ControllerState();
+	void Set(const ControllerState &state);
+	void SetLeftDirection();
+	bool IsLeftNeutral();
+	bool IsRightNeutral();
+	sf::Vector2<double> GetLeft8Dir();
+	int GetCompressedState();
+	void SetFromCompressedState(int s);
+	void InvertLeftStick();
+	void Clear();
+	void AddState(ControllerState &state);
+
 	bool LUp();
 	bool LDown();
 	bool LLeft();
@@ -83,7 +86,7 @@ struct ControllerState
 	bool DashButtonDown();
 	bool AttackButtonDown();
 
-	unsigned char leftStickDirection;
+
 	//0x1 = up, 0x2 = down, 0x4 = left, 
 				 //0x8 = right
 	
@@ -195,6 +198,19 @@ void LoadInputMapKeyboard( ControllerState &cs,
 	const std::string &fileName,
 	KeyboardFilter &filter );
 
+struct ButtonStick
+{
+	bool oldLeft;
+	bool oldRight;
+	bool oldUp;
+	bool oldDown;
+	sf::Vector2<double> oldStickVec;
+
+	ButtonStick();
+	void Reset();
+	sf::Vector2<double> UpdateStickVec(bool left, bool right, bool up, bool down);
+};
+
 /** Remarks:
 Wrapper for XINPUT controller. Used to access the actual
 controllers and generate state information for use in the 
@@ -227,7 +243,8 @@ public:
 	int GetGCCLeftTrigger();
 	int GetGCCRightTrigger();
 	void UpdateLeftStickPad();
-
+	
+	ButtonStick keyboardStick;
 	XBoxButton filter[ControllerSettings::Count];
 	//ControllerState & GetKeyboardState(); //also updates
 	ControllerState m_state;
@@ -247,6 +264,7 @@ private:
 	bool UpdateXBOX();
 	bool UpdatePS5();
 	bool UpdateKeyboard();
+	
 	ControllerType controllerType;
 
 	const static DWORD LEFT_STICK_DEADZONE;

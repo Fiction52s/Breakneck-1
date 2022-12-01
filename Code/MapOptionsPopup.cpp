@@ -76,7 +76,7 @@ MapOptionsPopup::MapOptionsPopup( int p_mode )
 	modeDropdown = panel->AddDropdown("gamemodedropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
 	modeDropdown->SetToolTip("Choose Map Mode");
 
-	panel->AddLabel("playernumberlabel", Vector2i(0, 0), 20, "Number of Players:");
+	numPlayersLabel = panel->AddLabel("playernumberlabel", Vector2i(0, 0), 20, "Number of Players:");
 
 	numPlayersDropdown = panel->AddDropdown("numplayersdropdown", Vector2i(0, -15), Vector2i(400, 28), blankOptions, 0);
 	numPlayersDropdown->SetToolTip("Choose Num Players");
@@ -138,7 +138,15 @@ void MapOptionsPopup::ButtonCallback(Button *b, const std::string & e)
 		currLobbyData->randSeed = time(0);
 		currLobbyData->creatorId = currMapHeader->creatorID;
 		//currLobbyParams->maxMembers = 2;
-		currLobbyData->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
+		if (numPlayersDropdown->selectedIndex < 0)
+		{
+			currLobbyData->maxMembers = -1; //for freeplay/offline mode
+		}
+		else
+		{
+			currLobbyData->maxMembers = playerNumOptions[numPlayersDropdown->selectedIndex];
+		}
+		
 		currLobbyData->gameModeType = gameModeDropdownModes[modeDropdown->selectedIndex];//MatchParams::GAME_MODE_FIGHT; //eventually option set by popup
 
 		cout << "game mode confirmed as: " << currLobbyData->gameModeType << endl;
@@ -155,7 +163,10 @@ void MapOptionsPopup::DropdownCallback(Dropdown *dropdown, const std::string & e
 {
 	if (dropdown == modeDropdown )
 	{
-		UpdateNumPlayerOptions();
+		if (!numPlayersDropdown->hidden)
+		{
+			UpdateNumPlayerOptions();
+		}
 	}
 }
 
@@ -173,7 +184,7 @@ void MapOptionsPopup::PanelCallback(Panel *p, const std::string &e)
 	}
 }
 
-bool MapOptionsPopup::Activate(MapNode *mp)
+bool MapOptionsPopup::Activate(MapNode *mp, int numP)
 {
 	// set the name of the lobby if it's ours
 	string lobbyName = SteamFriends()->GetPersonaName();
@@ -309,30 +320,62 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 	gameModeOptions.clear();
 	gameModeDropdownModes.clear();
 
-	for (int i = 0; i < MatchParams::GAME_MODE_Count; ++i)
+	if (numP == 0)
 	{
-		if ( MatchParams::IsMultiplayerMode(i) && currMapHeader->CanRunAsMode(i))
+		for (int i = 0; i < MatchParams::GAME_MODE_Count; ++i)
 		{
-			gameModeOptions.push_back(MatchParams::GetGameModeName(i));
-			gameModeDropdownModes.push_back(i);
+			if (MatchParams::IsMultiplayerMode(i) && currMapHeader->CanRunAsMode(i))
+			{
+				gameModeOptions.push_back(MatchParams::GetGameModeName(i));
+				gameModeDropdownModes.push_back(i);
+			}
 		}
 	}
+	else
+	{
+		for (int i = 0; i < MatchParams::GAME_MODE_Count; ++i)
+		{
+			if (currMapHeader->CanRunAsMode(numP, i))//MatchParams::IsMultiplayerMode(i) && currMapHeader->CanRunAsMode(i))
+			{
+				gameModeOptions.push_back(MatchParams::GetGameModeName(i));
+				gameModeDropdownModes.push_back(i);
+			}
+		}
+	}
+	
 
 	if (gameModeOptions.empty())
 	{
 		return false;
 	}
+
+	
 	
 
 	modeDropdown->SetOptions(gameModeOptions);
 	modeDropdown->UpdateOptions();
 	modeDropdown->selectedIndex = -1;
 	modeDropdown->SetSelectedIndex(0);
-
-
 	
+	if (numP > 0)
+	{
+		//currMapHeader->numPlayerSpawns
+		playerNumOptions.clear();
 
-	UpdateNumPlayerOptions();
+		numPlayersDropdown->selectedIndex = -1;
+
+		numPlayersDropdown->HideMember();
+		numPlayersLabel->HideMember();
+		//numPlayersDropdown->SetOptions(playerNumOptionsStr);
+		//numPlayersDropdown->UpdateOptions();
+		//numPlayersDropdown->selectedIndex = -1;
+		//numPlayersDropdown->SetSelectedIndex(startIndex);
+	}
+	else
+	{
+		UpdateNumPlayerOptions();
+	}
+	
 	
 
 	//numPlayersDropdown = panel->AddDropdown( "numplayersdropdown", Vector2f( 0, 0 ), Vector2f( 50, 28 ), 
@@ -349,6 +392,8 @@ bool MapOptionsPopup::Activate(MapNode *mp)
 
 void MapOptionsPopup::UpdateNumPlayerOptions()
 {
+	numPlayersDropdown->ShowMember();
+	numPlayersLabel->ShowMember();
 	//currMapHeader->numPlayerSpawns
 	playerNumOptions = MatchParams::GetNumPlayerOptions(gameModeDropdownModes[modeDropdown->selectedIndex], currMapHeader->numPlayerSpawns);
 

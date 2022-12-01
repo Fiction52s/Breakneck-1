@@ -267,7 +267,7 @@ void FreeplayScreen::StartBrowsing()
 
 void FreeplayScreen::TryActivateOptionsPanel(MapNode *mp)
 {
-	if (mapOptionsPopup->Activate(mp))
+	if (mapOptionsPopup->Activate(mp, NumActivePlayers() ) )
 	{
 		action = A_CHOOSE_MAP_OPTIONS;
 	}
@@ -354,7 +354,7 @@ void FreeplayScreen::Update()
 
 			SetAction(A_START);
 
-			currParams.gameModeType = MatchParams::GAME_MODE_BASIC;//mapOptionsPopup->currLobbyData->gameModeType;
+			currParams.gameModeType = mapOptionsPopup->currLobbyData->gameModeType;//MatchParams::GAME_MODE_BASIC;//mapOptionsPopup->currLobbyData->gameModeType;
 			currParams.mapPath = mapOptionsPopup->currLobbyData->mapPath;
 			currParams.numPlayers = NumActivePlayers();
 			currParams.randSeed = time(0);
@@ -401,6 +401,12 @@ void FreeplayScreen::Update()
 			{
 				TryControllerJoin(states);
 			}
+		}
+
+		states = CONTROLLERS.GetStateQueue(CTYPE_KEYBOARD, 0);
+		if (states->ButtonPressed_Start())
+		{
+			TryControllerJoin(states);
 		}
 		break;
 	}

@@ -73,7 +73,22 @@ bool MapHeader::CanRunAsMode(int gm )
 	return false;
 }
 
-bool MapHeader::CanRun(std::vector<int> & numPlayers, std::vector<int> &gameModes)
+bool MapHeader::CanRunAsMode(int numP, int gm)
+{
+	if (!CanRunAsMode(gm))
+		return false;
+
+	auto playerVec = MatchParams::GetNumPlayerOptions(gm, numPlayerSpawns);
+	for (auto possiblePlayersIt = playerVec.begin(); possiblePlayersIt != playerVec.end(); ++possiblePlayersIt)
+	{
+		if ((*possiblePlayersIt) == numP)
+			return true;
+	}
+
+	return false;
+}
+
+bool MapHeader::CanRun(std::vector<int> & numP, std::vector<int> &gameModes)
 {
 	//test all combos of players and game mode and see if it works
 	for (auto gameIt = gameModes.begin(); gameIt != gameModes.end(); ++gameIt)
@@ -87,7 +102,7 @@ bool MapHeader::CanRun(std::vector<int> & numPlayers, std::vector<int> &gameMode
 
 		for (auto possiblePlayersIt = playerVec.begin(); possiblePlayersIt != playerVec.end(); ++possiblePlayersIt)
 		{
-			for (auto paramPlayerOptionsIt = numPlayers.begin(); paramPlayerOptionsIt != numPlayers.end(); ++paramPlayerOptionsIt)
+			for (auto paramPlayerOptionsIt = numP.begin(); paramPlayerOptionsIt != numP.end(); ++paramPlayerOptionsIt)
 			{
 				if ((*possiblePlayersIt) == (*paramPlayerOptionsIt))
 				{

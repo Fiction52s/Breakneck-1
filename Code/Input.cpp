@@ -428,6 +428,95 @@ bool GameController::IsKeyPressed(int k)
 	return false;
 }
 
+ButtonStick::ButtonStick()
+{
+	Reset();
+}
+void ButtonStick::Reset()
+{
+	oldLeft = false;
+	oldRight = false;
+	oldUp = false;
+	oldDown = false;
+	oldStickVec = Vector2<double>(0, 0);
+}
+
+sf::Vector2<double> ButtonStick::UpdateStickVec(bool left, bool right, bool up, bool down)
+{
+	sf::Vector2<double> stickVec = oldStickVec;
+
+	bool leftPress = left && !oldLeft;
+	bool rightPress = right && !oldRight;
+	bool upPress = up && !oldUp;
+	bool downPress = down && !oldDown;
+
+	if (left && !right)
+	{
+		stickVec.x = -1;
+	}
+	else if (!left && right)
+	{
+		stickVec.x = 1;
+	}
+	else if (left && right)
+	{
+		if (leftPress && !rightPress )
+		{
+			stickVec.x = -1;
+		}
+		else if (!leftPress && rightPress)
+		{
+			stickVec.x = 1;
+		}
+		else if (leftPress && rightPress)
+		{
+			stickVec.x = 0;
+		}
+	}
+	else
+	{
+		stickVec.x = 0;
+	}
+
+	if (up && !down)
+	{
+		stickVec.y = -1;
+	}
+	else if (!up && down)
+	{
+		stickVec.y = 1;
+	}
+	else if (up && down)
+	{
+		if (upPress && !downPress)
+		{
+			stickVec.y = -1;
+		}
+		else if (!upPress && downPress)
+		{
+			stickVec.y = 1;
+		}
+		else if (upPress && downPress)
+		{
+			stickVec.y = 0;
+		}
+	}
+	else
+	{
+		stickVec.y = 0;
+	}
+
+	oldLeft = left;
+	oldRight = right;
+	oldUp = up;
+	oldDown = down;
+	oldStickVec = stickVec;
+
+	return stickVec;
+}
+
+
+
 int GameController::GetGCCLeftTrigger()
 {
 	int lAxis = gcController.axis.l_axis;
@@ -968,12 +1057,12 @@ bool GameController::UpdateXBOX()
 bool GameController::UpdateKeyboard()
 {
 	ControllerState tempState;
-
 	if (m_index == 0)
 	{
 		//controllerType = ControllerType::CTYPE_KEYBOARD; //change to keyboard soon
 		//cout << "updating controller state keyboard " << m_index << endl;
 		using namespace sf;
+
 		//WORD b = state.Gamepad.wButtons;
 		m_state.start = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::PAUSE]);
 		m_state.back = false;//IsKeyPressed(keySettings.buttonMap[KeyboardSettings::MAP]);
@@ -1000,62 +1089,47 @@ bool GameController::UpdateKeyboard()
 		bool left = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::LEFT]);
 		bool right = IsKeyPressed(keySettings.buttonMap[KeyboardSettings::RIGHT]);
 
-		sf::Vector2<double> thing(0, 0);
-		if (left)
+		V2d stickVec = keyboardStick.UpdateStickVec(left, right, up, down);
+		if (length(stickVec) > 0)
 		{
-			//m_state.leftStickMagnitude = 1;
-			thing.x -= 1.0;
-		}
-		if (right)
-		{
-			//m_state.leftStickMagnitude = 1;
-			thing.x += 1.0;
-		}
-
-		if (up)
-		{
-			//m_state.leftStickMagnitude = 1;
-			thing.y -= 1.0;
-		}
-		if (down)
-		{
-			//m_state.leftStickMagnitude = 1;
-			thing.y += 1.0;
-		}
-
-		if (thing.x != 0 || thing.y != 0)
 			m_state.leftStickMagnitude = 1;
+		}
+		else
+		{
+			m_state.leftStickMagnitude = 0;
+		}
+			
+		stickVec = normalize(stickVec);
+		/*double mag = sqrt(thing.x * thing.x + thing.y * thing.y);
+		thing = sf::Vector2<double>(thing.x / mag, thing.y / mag);*/
 
-		double mag = sqrt(thing.x * thing.x + thing.y * thing.y);
-		thing = sf::Vector2<double>(thing.x / mag, thing.y / mag);
-
-		double angle = atan2(thing.y, thing.x);
+		double angle = -atan2(stickVec.y, stickVec.x);
 
 		m_state.leftStickRadians = angle;
 
 
 		m_state.leftStickPad = 0;
 
-		if (right)
+		if (stickVec.x > 0 )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 3;
 			//cout << "RIGHT" << endl;
 		}
-		else if (left)
+		else if (stickVec.x < 0 )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 2;
 			//cout << "LEFT" << endl;
 		}
 
-		if (up)
+		if (stickVec.y < 0 )
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1;
 			//cout << "UP" << endl;
 		}
-		else if (down)
+		else if (stickVec.y > 0)
 		{
 			m_state.leftStickMagnitude = 1.0;
 			m_state.leftStickPad += 1 << 1;
@@ -1760,76 +1834,6 @@ void GameController::SetFilter( XBoxButton *buttons )
 	}
 }
 
-//ControllerState &GameController::GetKeyboardState()
-//{
-//	using namespace sf;
-//
-//	/*if( IsKeyPressed( buttonMap[UP] ) )
-//	{
-//
-//	}*/
-//	//need to address these
-//	//m_state.leftStickMagnitude = normalizedMagnitude;
-//	//m_state.leftStickRadians = atan( normalizedLY / normalizedLX );
-//
-//	//if( normalizedLX < 0.0f )
-//	//	m_state.leftStickRadians += PI;
-//
-//	//m_state.rightStickMagnitude = normalizedMagnitude;
-//	//m_state.rightStickRadians = atan( normalizedRY / normalizedRX );
-//	//if( normalizedRX < 0.0f )
-//	//	m_state.rightStickRadians += PI;
-//
-//	//m_state.leftTrigger = state.Gamepad.bLeftTrigger; //0 or 255
-//	//m_state.rightTrigger = state.Gamepad.bRightTrigger;
-//
-//	//WORD b = state.Gamepad.wButtons;
-//	//m_state.start = (b & 0x10) > 0;
-//	//m_state.back = (b & 0x20) > 0;
-//	//m_state.leftShoulder = (b & 0x100) > 0;
-//	//m_state.rightShoulder = (b & 0x200) > 0;
-//	//m_state.A = (b & 0x1000) > 0;
-//	//m_state.B = (b & 0x2000) > 0;
-//	//m_state.X = (b & 0x4000) > 0;
-//	//m_state.Y = (b & 0x8000) > 0;
-//	//m_state.leftPress = b & XINPUT_GAMEPAD_LEFT_THUMB;
-//	//m_state.rightPress = b & XINPUT_GAMEPAD_RIGHT_THUMB;
-//	//m_state.pad = ( b & 1 ) | ( b & 2 ) | ( b & 4 ) | ( b & 8 ); 
-//
-//	//m_state.leftStickPad = 0;
-//	//m_state.rightStickPad = 0;
-//	//if( m_state.leftStickMagnitude > stickThresh )
-//	//{
-//	//	//cout << "left stick radians: " << currInput.leftStickRadians << endl;
-//	//	float x = cos( m_state.leftStickRadians );
-//	//	float y = sin( m_state.leftStickRadians );
-//
-//	//	if( x > stickThresh )
-//	//		m_state.leftStickPad += 1 << 3;
-//	//	if( x < -stickThresh )
-//	//		m_state.leftStickPad += 1 << 2;
-//	//	if( y > stickThresh )
-//	//		m_state.leftStickPad += 1;
-//	//	if( y < -stickThresh )
-//	//		m_state.leftStickPad += 1 << 1;
-//	//}
-//
-//	//if( m_state.rightStickMagnitude > stickThresh )
-//	//{
-//	//	//cout << "left stick radians: " << m_state.leftStickRadians << endl;
-//	//	float x = cos( m_state.rightStickRadians );
-//	//	float y = sin( m_state.rightStickRadians );
-//
-//	//	if( x > stickThresh )
-//	//		m_state.rightStickPad += 1 << 3;
-//	//	if( x < -stickThresh )
-//	//		m_state.rightStickPad += 1 << 2;
-//	//	if( y > stickThresh )
-//	//		m_state.rightStickPad += 1;
-//	//	if( y < -stickThresh )
-//	//		m_state.rightStickPad += 1 << 1;
-//	//}
-//}
 
 KeyboardFilter::KeyboardFilter()
 {
@@ -2066,9 +2070,10 @@ AllControllers::AllControllers()
 		windowsStatesVec[i] = new ControllerDualStateQueue( windowsControllers[i] );
 	}
 
+	keyboardController = new GameController(0, CTYPE_KEYBOARD);
 	keyboardStates = new ControllerDualStateQueue( keyboardController );
 
-	keyboardController = new GameController(0, CTYPE_KEYBOARD);
+	
 	window = NULL;
 }
 
@@ -2196,6 +2201,8 @@ void AllControllers::CheckForControllers()
 void AllControllers::SetRenderWindow(sf::RenderWindow *rw)
 {
 	window = rw;
+	keyboardController->window = window;
+
 }
 
 bool AllControllers::ButtonHeld_A()
