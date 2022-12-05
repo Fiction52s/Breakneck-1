@@ -91,3 +91,8 @@ void PlayerSkinShader::SetQuad(Tileset *ts, int tile)
 	pShader.setUniform("u_quad", Glsl::Vec4(ir.left / width, ir.top / height,
 		(ir.left + ir.width) / width, (ir.top + ir.height) / height));
 }
+
+void PlayerSkinShader::SetTileset(Tileset *ts)
+{
+	pShader.setUniform("u_texture", *ts->texture);
+}

@@ -13,6 +13,7 @@ struct WorkshopMapPopup;
 struct FreeplayScreen;
 struct MapNode;
 struct MapOptionsPopup;
+struct PlayerSkinShader;
 
 struct FreeplayPlayerBox
 {
@@ -29,19 +30,29 @@ struct FreeplayPlayerBox
 	FreeplayScreen *fps;
 	sf::Text numberText;
 	sf::Text pressText;
+	sf::Text skinNumberText;
 	int skinIndex;
 
 	sf::Vertex controllerIconQuad[4];
 	sf::Vertex portIconQuad[4];
 
+	sf::Vertex kinQuad[4];
+
+	PlayerSkinShader *playerShader;
+
 	ControllerDualStateQueue *controllerStates;
+
+	sf::Sprite kinSprite;
 
 	int action;
 
 	FreeplayPlayerBox(FreeplayScreen *p_fps, int index);
+	~FreeplayPlayerBox();
+	void Update();
+	void SetSkin(int index);
 	void Draw(sf::RenderTarget *target);
 	void SetName(const std::string &name);
-	void SetControllerStates(ControllerDualStateQueue *conStates);
+	void SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex );
 	void Show();
 	void Hide();
 	void SetTopLeft(sf::Vector2i &pos);
@@ -70,6 +81,7 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 
 	Tileset *ts_controllerIcons;
 	Tileset *ts_portIcons;
+	Tileset *ts_kin;
 
 	Panel *panel;
 
@@ -95,6 +107,11 @@ struct FreeplayScreen : TilesetManager, GUIHandler
 	void Start();
 	void Quit();
 	bool HandleEvent(sf::Event ev);
+
+	int GetFirstAvailableSkinIndex();
+	bool IsSkinAvailable(int p_skinIndex);
+	void NextSkin(int playerBoxIndex);
+	void PrevSkin(int playerBoxIndex);
 
 	void TryControllerJoin(ControllerDualStateQueue *conStates);
 	bool IsFull();

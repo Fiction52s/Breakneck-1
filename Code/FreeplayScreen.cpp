@@ -6,6 +6,8 @@
 #include "MapBrowser.h"
 #include "MapOptionsPopup.h"
 #include "LobbyManager.h"
+#include "PlayerSkinShader.h"
+#include "Actor.h"
 //#include "Input.h"
 
 using namespace std;
@@ -33,9 +35,31 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 	pressText.setFont(f);
 	pressText.setFillColor(Color::White);
 
+	
+	skinNumberText.setCharacterSize(16);
+	skinNumberText.setFont(f);
+	skinNumberText.setFillColor(Color::White);
+
+	
+
 	pressText.setString("Press Start");
 	auto localB = pressText.getLocalBounds();
 	pressText.setOrigin(localB.left + localB.width / 2, localB.top + localB.height / 2);
+
+	fps->ts_kin->SetSpriteTexture(kinSprite);
+	fps->ts_kin->SetSubRect(kinSprite, 0);
+	kinSprite.setOrigin(kinSprite.getLocalBounds().width / 2, kinSprite.getLocalBounds().height / 2);
+	kinSprite.setScale(4, 4);
+
+	//fps->ts_kin->SetQuadSubRect(kinQuad, 0);
+
+	playerShader = new PlayerSkinShader("player");
+
+	playerShader->SetTileset(fps->ts_kin);
+
+	playerShader->SetQuad(fps->ts_kin, 0);
+	//playerShader->SetSubRect(fps->ts_kin, fps->ts_kin->GetSubRect(0));
+	playerShader->SetSkin(0);
 
 	SetRectColor(bgQuad, Color::Red);
 
@@ -44,6 +68,27 @@ FreeplayPlayerBox::FreeplayPlayerBox(FreeplayScreen *p_fps, int p_index)
 	ClearInfo();
 
 	Show();
+}
+
+FreeplayPlayerBox::~FreeplayPlayerBox()
+{
+	delete playerShader;
+}
+
+void FreeplayPlayerBox::SetSkin(int index)
+{
+	skinIndex = index;
+	playerShader->SetSkin(skinIndex);
+
+	if (skinIndex < 10)
+	{
+		skinNumberText.setString("S-KIN #0" + to_string(skinIndex));
+	}
+	else
+	{
+		skinNumberText.setString("S-KIN #" + to_string(skinIndex));
+	}
+	
 }
 
 void FreeplayPlayerBox::ClearInfo()
@@ -69,6 +114,21 @@ void FreeplayPlayerBox::Hide()
 	//numberText->setString("");
 }
 
+void FreeplayPlayerBox::Update()
+{
+	if (controllerStates != NULL)
+	{
+		if (controllerStates->ButtonPressed_LeftShoulder())
+		{
+			fps->PrevSkin(index);
+		}
+		else if (controllerStates->ButtonPressed_RightShoulder())
+		{
+			fps->NextSkin(index);
+		}
+	}
+}
+
 void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 {
 	topLeft = pos;
@@ -90,13 +150,19 @@ void FreeplayPlayerBox::SetTopLeft(sf::Vector2i &pos)
 	SetRectTopLeft(controllerIconQuad, controllerIconSize.x, controllerIconSize.y, Vector2f(fps->playerBoxWidth - (controllerIconSize.x + border), border) + Vector2f(topLeft));
 	SetRectTopLeft(portIconQuad, portIconSize.x, portIconSize.y, Vector2f(fps->playerBoxWidth - (portIconSize.x + border), controllerIconSize.y) + Vector2f(topLeft));
 
+	SetRectCenter(kinQuad, fps->ts_kin->tileWidth, fps->ts_kin->tileHeight, Vector2f(center));
+
+	kinSprite.setPosition(Vector2f(center));
+
+	skinNumberText.setPosition(Vector2f(topLeft + Vector2i(210, 250)));
+
 
 	//playerName->setPosition(Vector2f(pos + namePos));
 	//auto &bounds = playerName->getLocalBounds();
 	//playerName->setPosition(Vector2f(playerName->getPosition().x - (bounds.left + bounds.width / 2), playerName->getPosition().y));
 }
 
-void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates)
+void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates, int p_skinIndex)
 {
 	if (conStates == NULL)
 		return;
@@ -131,6 +197,8 @@ void FreeplayPlayerBox::SetControllerStates(ControllerDualStateQueue *conStates)
 
 	fps->ts_controllerIcons->SetQuadSubRect(controllerIconQuad, tileIndex);
 	fps->ts_portIcons->SetQuadSubRect(portIconQuad, controllerStates->GetIndex() );
+
+	SetSkin(p_skinIndex);
 }
 
 void FreeplayPlayerBox::SetName(const std::string &name)
@@ -162,6 +230,11 @@ void FreeplayPlayerBox::Draw(sf::RenderTarget *target)
 		{
 			target->draw(portIconQuad, 4, sf::Quads, fps->ts_portIcons->texture);
 		}
+
+		//target->draw(kinQuad, 4, sf::Quads, &(playerShader->pShader));
+		target->draw(kinSprite, &(playerShader->pShader));
+
+		target->draw(skinNumberText);
 	}
 	else
 	{
@@ -185,6 +258,7 @@ FreeplayScreen::FreeplayScreen(MainMenu *mm)
 
 	ts_controllerIcons = GetSizedTileset( "Menu/controllers_64x64.png" );
 	ts_portIcons = GetSizedTileset("Menu/slots_64x32.png");
+	ts_kin = GetSizedTileset("Kin/stand_64x64.png");
 
 	//inviteButton = panel->AddButton("invite", Vector2i(20 + 200, panel->size.y - 200), Vector2f(270, 40), "INVITE FRIEND");
 
@@ -340,9 +414,83 @@ void FreeplayScreen::SetFromMatchParams(MatchParams &mp)
 {
 	for (int i = 0; i < 4; ++i)
 	{
-		playerBoxes[i]->SetControllerStates(mp.controllerStateVec[i]);
-		playerBoxes[i]->skinIndex = mp.playerSkins[i];
+		playerBoxes[i]->SetControllerStates(mp.controllerStateVec[i], mp.playerSkins[i]);
+		//playerBoxes[i]->skinIndex = mp.playerSkins[i];
 	}
+}
+
+int FreeplayScreen::GetFirstAvailableSkinIndex()
+{
+	int testSkin = 0;
+
+	bool found = false;
+	while (true)
+	{
+		for (int i = 0; i < 4; ++i)
+		{
+			if (playerBoxes[i]->controllerStates != NULL)
+			{
+				if (playerBoxes[i]->skinIndex == testSkin)
+				{
+					testSkin++;
+					break;
+				}
+			}
+		}
+
+		break;
+	}
+
+	return testSkin;
+}
+
+bool FreeplayScreen::IsSkinAvailable(int p_skinIndex)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (playerBoxes[i]->controllerStates != NULL)
+		{
+			if (playerBoxes[i]->skinIndex == p_skinIndex)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void FreeplayScreen::NextSkin(int playerBoxIndex)
+{
+	int nextIndex = playerBoxes[playerBoxIndex]->skinIndex;
+
+	do
+	{
+		nextIndex++;
+		if (nextIndex >= Actor::SKIN_Count)
+		{
+			nextIndex = 0;
+		}
+	} 
+	while (!IsSkinAvailable(nextIndex));
+
+	playerBoxes[playerBoxIndex]->SetSkin(nextIndex);
+}
+
+void FreeplayScreen::PrevSkin(int playerBoxIndex)
+{
+	int prevIndex = playerBoxes[playerBoxIndex]->skinIndex;
+
+	do
+	{
+		prevIndex--;
+		if (prevIndex < 0)
+		{
+			prevIndex = Actor::SKIN_Count - 1;
+		}
+	} while (!IsSkinAvailable(prevIndex));
+
+	playerBoxes[playerBoxIndex]->SetSkin(prevIndex);
 }
 
 void FreeplayScreen::Update()
@@ -432,6 +580,11 @@ void FreeplayScreen::Update()
 	{
 	case A_WAITING_FOR_PLAYERS:
 	{
+		for (int i = 0; i < 4; ++i)
+		{
+			playerBoxes[i]->Update();
+		}
+
 		panel->MouseUpdate();
 
 		ControllerDualStateQueue *states = NULL;
@@ -531,7 +684,7 @@ void FreeplayScreen::TryControllerJoin(ControllerDualStateQueue *conStates)
 		FreeplayPlayerBox *next = GetNextOpenBox();
 		assert(next != NULL);
 
-		next->SetControllerStates(conStates);
+		next->SetControllerStates(conStates, GetFirstAvailableSkinIndex());
 		cout << "added controller: " << conStates->GetControllerType() << ", index: " << conStates->GetIndex() << endl;
 	}
 }
